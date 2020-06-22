@@ -62,10 +62,27 @@ Section proof.
     is_free_lock γ lk -∗
     na_crash_inv Ncrash k R Rcrash
     ={E}=∗ is_crash_lock k γ #lk R Rcrash.
-  Proof using ext_tys.
+  Proof.
+    clear.
     iIntros "Hwand Hfree Hfull".
     iMod (alloc_lock Nlock _ with "Hfree Hfull") as "Hlk".
     iModIntro. rewrite /is_crash_lock. eauto.
+  Qed.
+
+  Lemma alloc_crash_lock_cfupd {γ lk} k' (R Rcrash : iProp Σ):
+    is_free_lock γ lk ={⊤}=∗
+    □ (R -∗ Rcrash) -∗
+    ▷ R -∗
+    is_crash_lock (LVL k') γ #lk R Rcrash ∗ |C={⊤, ∅}_(LVL (S k'))=> Rcrash.
+  Proof.
+    clear.
+    iIntros "Hfree #HRcrash HR".
+    iMod (na_crash_inv_alloc Ncrash k' ⊤ Rcrash R with "[HR] HRcrash") as
+        "(Hfull&Hpending)".
+    { set_solver. }
+    { iFrame "HR". }
+    iMod (alloc_crash_lock' with "HRcrash Hfree Hfull") as "Hlk".
+    by iFrame.
   Qed.
 
   Lemma alloc_crash_lock k k' E Φ Φc e γ lk (R Rcrash : iProp Σ):
@@ -76,15 +93,12 @@ Section proof.
     (is_crash_lock (LVL k') γ #lk R Rcrash -∗
           WPC e @ (LVL k); ⊤; E {{ Φ }} {{ Rcrash -∗ Φc }}) -∗
     WPC e @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc }}.
-  Proof using ext_tys.
+  Proof.
+    clear.
     iIntros (?) "(#HRcrash&HR&Hfree&Hwp)".
-    iMod (na_crash_inv_alloc Ncrash k' ⊤ Rcrash R with "[HR] HRcrash") as
-        "(Hfull&Hpending)".
-    { set_solver. }
-    { iFrame "HR". }
-    iApply (wpc_crash_frame_wand' with "Hpending"); first lia.
+    iMod (alloc_crash_lock_cfupd k' with "HRcrash HR Hfree") as "(Hlk&Hcfupd)".
+    iApply (wpc_crash_frame_wand' with "Hcfupd"); first lia. (* TODO: plug this into iMod *)
     { auto. }
-    iMod (alloc_crash_lock' with "HRcrash Hfree Hfull") as "Hlk".
     iApply ("Hwp" with "Hlk").
   Qed.
 
