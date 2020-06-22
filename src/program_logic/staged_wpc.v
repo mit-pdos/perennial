@@ -447,6 +447,78 @@ Qed.
 Notation base := 4.
 Definition LVL (k: nat) : nat := base ^ ((S (S k))).
 
+Lemma abstract_4k k :
+  ∃ m, 4^k = m ∧ 1<=m.
+Proof.
+  eexists; split; eauto.
+  induction k; simpl; lia.
+Qed.
+
+Lemma LVL_pow k : LVL k = 16 * 4^k.
+Proof.
+  rewrite /LVL /=.
+  lia.
+Qed.
+
+Lemma LVL_le k k':
+  k ≤ k' →
+  LVL k ≤ LVL k'.
+Proof.
+  rewrite /LVL => ?. apply Nat.pow_le_mono_r_iff; auto. lia.
+Qed.
+
+Lemma LVL_mult k1 k2 :
+  LVL k1 * LVL k2 = base*base * LVL (k1 + k2).
+Proof.
+  rewrite !LVL_pow.
+  rewrite Nat.pow_add_r.
+  lia.
+Qed.
+
+Lemma LVL_sum_bound k1 k2 :
+  LVL (k1+k2) ≤ LVL k1 * LVL k2.
+Proof.
+  rewrite LVL_mult.
+  lia.
+Qed.
+
+Lemma LVL_Sk k :
+  LVL (S k) = base*LVL k.
+Proof.
+  rewrite /LVL /=.
+  lia.
+Qed.
+
+Lemma LVL_mult_eq' k1 k2 :
+  LVL k1 * LVL k2 = LVL (S (S (k1 + k2))).
+Proof.
+  rewrite LVL_mult !LVL_Sk.
+  lia.
+Qed.
+
+Lemma base_le_LVL_S k:
+  base + LVL k ≤ LVL (S k).
+Proof.
+  rewrite /LVL.
+  simpl.
+  destruct (abstract_4k k) as [m [-> ?]].
+  lia.
+Qed.
+
+Lemma SSS_LVL k:
+  (S (S (S (LVL k)))) ≤ LVL (S k).
+Proof.
+  etransitivity; [ | apply base_le_LVL_S ].
+  lia.
+Qed.
+
+Lemma SS_LVL k:
+  S (S (LVL k)) ≤ LVL (S k).
+Proof.
+  etransitivity; [ | apply base_le_LVL_S ].
+  lia.
+Qed.
+
 Lemma staged_inv_init_cfupd Γ k k' N E1 P i:
   k' < k →
   ↑N ⊆ E1 →
@@ -563,32 +635,6 @@ Proof.
   { transitivity (4 * base ^ (S (S k))); first by lia. rewrite -Hpow. apply Nat.pow_le_mono_r_iff; eauto. lia. }
   { transitivity (base)%nat; first lia. replace base with (base^1) at 1; last by auto.
     apply Nat.pow_lt_mono_r_iff; eauto. lia. }
-Qed.
-
-Lemma LVL_le k k':
-  k ≤ k' →
-  LVL k ≤ LVL k'.
-Proof.
-  rewrite /LVL => ?. apply Nat.pow_le_mono_r_iff; auto. lia.
-Qed.
-
-Lemma SSS_LVL k:
-  (S (S (S (LVL k)))) ≤ LVL (S k).
-Proof.
-  rewrite /LVL.
-  rewrite {1}(Nat.pow_succ_r' base (S (S k))).
-  replace (S (S (S (base ^ (S (S k)))))) with (3 + (base^(S (S k)))); last by lia.
-  replace (2 * (base ^ (S (S k)))) with (base ^ (S (S k)) + (base ^ (S (S k)))) by lia.
-  apply plus_le_compat; auto.
-  { transitivity (base)%nat; first lia. replace base with (base^1) at 1; last by auto.
-  apply Nat.pow_le_mono_r_iff; eauto. lia. }
-  lia.
-Qed.
-
-Lemma SS_LVL k:
-  S (S (LVL k)) ≤ LVL (S k).
-Proof.
-  etransitivity; last eapply SSS_LVL; eauto.
 Qed.
 
 Lemma wpc_later' s k E1 E2 e Φ Φc :
