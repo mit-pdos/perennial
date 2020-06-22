@@ -156,6 +156,42 @@ Section cfupd.
     iApply fupd_mask_weaken; auto.
   Qed.
 
+  Lemma step_fupdN_weaken_mask E1 E1' k P :
+    E1' ⊆ E1 →
+    (|={E1',E1'}_k=> P) -∗
+    |={E1,E1}_k=> P.
+  Proof.
+    iIntros (?) "HP".
+    iMod (fupd_intro_mask' _ E1') as "Hclo"; first auto.
+    iApply (elim_modal_step_fupdN_mono with "HP").
+    iIntros "HP".
+    iMod "HP".
+    iMod "Hclo" as "_".
+    auto.
+  Qed.
+
+  Theorem cfupd_weaken_all k1 k2 E1 E1' E2 E2' P :
+    (k1 ≤ k2)%nat →
+    E1' ⊆ E1 →
+    E2' ⊆ E2 →
+    cfupd k1 E1' E2' P -∗ cfupd k2 E1 E2 P.
+  Proof.
+    rewrite /cfupd.
+    iIntros (???) "H".
+    iIntros "C". iSpecialize ("H" with "C").
+    iDestruct (step_fupdN_weaken_mask E1 with "H") as "H"; auto.
+    iApply (elim_modal_step_fupd_masks with "H"); auto.
+    iIntros "H".
+    iApply step_fupd_iter_intro; first set_solver.
+    iApply laterN_intro.
+    iApply fupd_intro_mask; first set_solver.
+    iMod (fupd_intro_mask' _ E2') as "_"; first auto.
+    iMod "H". iModIntro.
+    iApply (elim_modal_step_fupdN_subtract with "H"); auto.
+    iIntros "H".
+    iApply step_fupd_iter_intro; auto.
+  Qed.
+
   (* these instances are local to avoid breaking the proofs in this file *)
 
   Local Instance elim_modal_step_fupd p k1 k2 E P Q :
