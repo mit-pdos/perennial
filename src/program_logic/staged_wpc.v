@@ -454,6 +454,13 @@ Proof.
   induction k; simpl; lia.
 Qed.
 
+Lemma abstract_4k' k :
+  ∃ m, 4^k = m ∧ 1≤m ∧ k<m.
+Proof.
+  eexists; split; eauto.
+  induction k; simpl; lia.
+Qed.
+
 Lemma LVL_pow k : LVL k = 16 * 4^k.
 Proof.
   rewrite /LVL /=.
@@ -552,6 +559,45 @@ Proof.
   transitivity (base ^ (S (S k))).
   { apply Nat.pow_le_mono_r_iff; lia. }
   lia.
+Qed.
+
+Lemma LVL_sum_split n m :
+  LVL (n + m) = 4^n * LVL m.
+Proof.
+  rewrite /LVL.
+  replace (S (S (n + m))) with (n + (S (S m))) by lia.
+  rewrite Nat.pow_add_r.
+  reflexivity.
+Qed.
+
+Lemma LVL_scale_weaken n k :
+  n * LVL k ≤ LVL (n+k) - LVL k.
+Proof.
+  rewrite LVL_sum_split.
+  replace (4^n * LVL k - LVL k) with ((4^n-1) * (LVL k)).
+  { apply Nat.mul_le_mono_r.
+    destruct (abstract_4k' n) as [m [-> ?]]; lia. }
+  rewrite Nat.mul_sub_distr_r; lia.
+Qed.
+
+Lemma cfupd_weaken_mult E1 E2 n k P :
+  (|C={E1,E2}_(n * LVL k)=> P) -∗
+  |C={E1,E2}_(LVL (n+k) - LVL k)=> P.
+Proof.
+  iIntros "H".
+  iApply (cfupd_wand with "H"); auto.
+  apply LVL_scale_weaken.
+Qed.
+
+Lemma wpc_crash_frame_wand_mult s n k E Ec e Φ Φc Ψc :
+  (|C={E, ∅}_(n * LVL k)=> Ψc) -∗
+  WPC e @ s; (LVL k); E ; Ec {{ Φ }} {{ Ψc -∗ Φc }} -∗
+  WPC e @ s; (LVL (n + k)); E ; Ec {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "Hcfupd Hwpc".
+  iApply (wpc_crash_frame_wand with "Hwpc").
+  { apply LVL_le; lia. }
+  iApply cfupd_weaken_mult; auto.
 Qed.
 
 Lemma wpc_crash_frame_big_sepS_wand `{Countable A} (σ: gset A)(P: A → iProp Σ) k s E2 e Φ Φc  :
