@@ -13,7 +13,10 @@ From Perennial.program_proof.examples Require Import
 From Perennial.goose_lang.lib Require Export typed_slice into_val.
 
 Module s_inode.
-  Definition t := list Block.
+  Record t :=
+    mk { blocks: list Block; }.
+  Global Instance _eta : Settable t := settable! mk <blocks>.
+  Global Instance _witness : Inhabited t := populate!.
 End s_inode.
 
 (* discrete ofe over lists *)
@@ -44,8 +47,8 @@ Section goose.
     "Hused2" ∷ own γused (● Excl' (alloc.used s)).
 
   (** Our own invariant (added to this is [P blocks]) *)
-  Definition s_inode_inv γblocks (blocks: list Block): iProp Σ :=
-    "Hγblocks" ∷ own γblocks (● Excl' (blocks : listLO Block)).
+  Definition s_inode_inv γblocks (blocks: s_inode.t): iProp Σ :=
+    "Hγblocks" ∷ own γblocks (● Excl' (blocks.(s_inode.blocks) : listLO Block)).
 
   (** In-memory state of the inode (persistent) *)
   Definition s_inode_state l (inode_ref alloc_ref: loc) : iProp Σ :=
@@ -217,7 +220,7 @@ Section goose.
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode l sz k' ∗
         "Hfupd" ∷ (∀ σ mb,
-                      ⌜mb = σ !! int.nat i⌝ -∗
+                      ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑inodeN ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
       SingleInode__Read #l #i @ NotStuck; LVL (S k); ⊤;E2
@@ -242,10 +245,10 @@ Section goose.
     { clear.
       iIntros (σ σ' mb) "[ [-> ->] >HPinode]".
       iInv "Hinv" as "Hinner".
-      iDestruct "Hinner" as (σ') "[>Hsinv HP]".
+      iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
       iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
       rewrite {2}/s_inode_inv. iNamed "Hsinv".
-      iNamed "HPinode".
+      iNamed "HPinode". simpl.
       iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
       iModIntro.
       iFrame.
@@ -294,7 +297,7 @@ Section goose.
     {{{ "Hinode" ∷ is_single_inode l sz k' ∗
         "Hb" ∷ is_block b_s 1 b0 ∗
         "Hfupd" ∷ ((∀ σ σ',
-          ⌜σ' = σ ++ [b0]⌝ -∗
+          ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
         (* TODO: to be able to use an invariant within another HOCAP fupd I had
         to make this fupd from [▷ P(σ)] to [▷ P(σ')] rather than our usual
         [P(σ)] to [P(σ')]; normally we seem to get around this by linearizing at
@@ -338,16 +341,15 @@ Section goose.
         iNamed "HPinode".
         iDestruct (ghost_var_agree with "Hused2 Hused1") as %Heq;
           rewrite -Heq.
-        iInv "Hinv" as (σ0) "[>Hinner HP]" "Hclose".
+        iInv "Hinv" as ([σ0]) "[>Hinner HP]" "Hclose".
         iNamed "Hinner".
-        iDestruct (ghost_var_agree with "Hused2 Hused1") as %?; subst.
         iMod (ghost_var_update _ (union {[addr']} σ.(inode.addrs))
                                with "Hused2 Hused1") as
             "[Hused Hγused]".
-        iDestruct (ghost_var_agree with "Hinner Hownblocks") as %?; subst.
+        iDestruct (ghost_var_agree with "Hinner Hownblocks") as %?; simplify_eq/=.
         iMod (ghost_var_update _ ((σ.(inode.blocks) ++ [b0]) : listLO Block)
                 with "Hinner Hownblocks") as "[Hγblocks Hownblocks]".
-        iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
+        iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]". simpl.
         iMod ("Hclose" with "[Hγblocks HP]") as "_".
         { eauto with iFrame. }
         iModIntro.
