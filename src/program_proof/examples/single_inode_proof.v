@@ -37,22 +37,22 @@ Section goose.
   (** Protocol invariant for inode library *)
   Local Definition Pinode γblocks γused (s: inode.t): iProp Σ :=
     "Hownblocks" ∷ own γblocks (◯ Excl' (s.(inode.blocks): listLO Block)) ∗
-    "Hused1" ∷ own γused (●{1/2} Excl' s.(inode.addrs)).
+    "Hused1" ∷ own γused (◯ Excl' s.(inode.addrs)).
 
   (** Protocol invariant for alloc library *)
   Local Definition Palloc γused (s: alloc.t): iProp Σ :=
-    "Hused2" ∷ own γused (●{1/2} Excl' (alloc.used s)).
+    "Hused2" ∷ own γused (● Excl' (alloc.used s)).
 
-  (** Our own invariant (added to this is [P blocks]). *)
-  Definition s_inode_inv γblocks γused (blocks: list Block) (used: gset u64): iProp Σ :=
-    "Hγblocks" ∷ own γblocks (● Excl' (blocks : listLO Block)) ∗
-    "Hγused" ∷ own γused (◯ Excl' used).
+  (** Our own invariant (added to this is [P blocks]) *)
+  Definition s_inode_inv γblocks (blocks: list Block): iProp Σ :=
+    "Hγblocks" ∷ own γblocks (● Excl' (blocks : listLO Block)).
 
+  (** In-memory state of the inode (persistent) *)
   Definition s_inode_state l (inode_ref alloc_ref: loc) : iProp Σ :=
     "#i" ∷ readonly (l ↦[SingleInode.S :: "i"] #inode_ref) ∗
     "#alloc" ∷ readonly (l ↦[SingleInode.S :: "alloc"] #alloc_ref).
 
-  (** State of unallocated blocks (RALF: is that right?) *)
+  (** State of unallocated blocks *)
   Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
 
   Definition pre_s_inode l sz k'  : iProp Σ :=
@@ -74,9 +74,7 @@ Section goose.
       "#Hinode" ∷ is_inode inode_ref (LVL k') γinode (Pinode γblocks γused) (U64 0) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
-      "#Hinv" ∷ inv N (∃ σ (used:gset u64),
-                          s_inode_inv γblocks γused σ used ∗
-                          P σ)
+      "#Hinv" ∷ inv N (∃ σ, s_inode_inv γblocks σ ∗ P σ)
   .
 
   Definition s_inode_cinv sz σ : iProp Σ :=
@@ -84,12 +82,12 @@ Section goose.
     "Hinode" ∷ (∃ s_inode, "Hinode_cinv" ∷ inode_cinv (U64 0) s_inode ∗
                            "HPinode" ∷ Pinode γblocks γused s_inode) ∗
     "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (sz-1)) ∗
-    "Hs_inode" ∷ (∃ used, s_inode_inv γblocks γused σ used)
+    "Hs_inode" ∷ (s_inode_inv γblocks σ)
   .
   Local Hint Extern 1 (environments.envs_entails _ (s_inode_cinv _)) => unfold s_inode_cinv : core.
 
   Instance s_inode_inv_Timeless :
-    Timeless (s_inode_inv γblocks γused blocks used).
+    Timeless (s_inode_inv γblocks blocks).
   Proof. apply _. Qed.
 
   Theorem unify_used_set γblocks γused s_alloc s_inode :
@@ -100,7 +98,7 @@ Section goose.
     rewrite /Palloc; iNamed 1. (* TODO: shouldn't need to unfold, this is a bug
     in iNamed *)
     iNamed 1.
-    iDestruct (ghost_var_frac_frac_agree with "Hused1 Hused2") as %->.
+    iDestruct (ghost_var_agree with "Hused2 Hused1") as %->.
     auto.
   Qed.
 
@@ -244,16 +242,15 @@ Section goose.
     { clear.
       iIntros (σ σ' mb) "[ [-> ->] >HPinode]".
       iInv "Hinv" as "Hinner".
-      iDestruct "Hinner" as (σ' used) "[>Hsinv HP]".
+      iDestruct "Hinner" as (σ') "[>Hsinv HP]".
       iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
-      iNamed "Hsinv".
+      rewrite {2}/s_inode_inv. iNamed "Hsinv".
       iNamed "HPinode".
       iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
       iModIntro.
       iFrame.
       iSplitL; auto.
-      iNext.
-      iExists _, _; iFrame. }
+      eauto with iFrame. }
     iSplit.
     - iIntros "_".
       crash_case; auto.
@@ -336,26 +333,23 @@ Section goose.
         iEval (rewrite /Palloc) in "HPalloc"; iNamed.
         iEval (rewrite /Palloc /named).
         rewrite alloc_free_reserved //.
-      - iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&HPalloc)".
+      - iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
         iEval (rewrite /Palloc) in "HPalloc"; iNamed.
         iNamed "HPinode".
-        iDestruct (ghost_var_frac_frac_agree with "Hused1 Hused2") as %Heq;
+        iDestruct (ghost_var_agree with "Hused2 Hused1") as %Heq;
           rewrite -Heq.
-        iCombine "Hused1 Hused2" as "Hused".
-        iInv "Hinv" as (σ0 used) "[>Hinner HP]" "Hclose".
+        iInv "Hinv" as (σ0) "[>Hinner HP]" "Hclose".
         iNamed "Hinner".
-        iDestruct (ghost_var_agree with "Hused Hγused") as %?; subst.
+        iDestruct (ghost_var_agree with "Hused2 Hused1") as %?; subst.
         iMod (ghost_var_update _ (union {[addr']} σ.(inode.addrs))
-                               with "Hused Hγused") as
+                               with "Hused2 Hused1") as
             "[Hused Hγused]".
-        iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %?; subst.
+        iDestruct (ghost_var_agree with "Hinner Hownblocks") as %?; subst.
         iMod (ghost_var_update _ ((σ.(inode.blocks) ++ [b0]) : listLO Block)
-                with "Hγblocks Hownblocks") as "[Hγblocks Hownblocks]".
+                with "Hinner Hownblocks") as "[Hγblocks Hownblocks]".
         iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
-        iDestruct "Hused" as "[Hused1 Hused2]".
-        iMod ("Hclose" with "[Hγused Hγblocks HP]") as "_".
-        { iNext.
-          iExists _, _; iFrame. }
+        iMod ("Hclose" with "[Hγblocks HP]") as "_".
+        { eauto with iFrame. }
         iModIntro.
         iFrame.
         rewrite /Palloc.

@@ -567,6 +567,7 @@ Definition free_fupd E (Palloc: alloc.t → iProp Σ) (a:u64) : iProp Σ :=
     ⌜σ !! a = Some block_reserved⌝ -∗
   ▷ Palloc σ ={E}=∗ ▷ Palloc (<[a:=block_free]> σ).
 
+(* This is useless because you need to do this together with some other action. *)
 Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
   (∀ σ : alloc.t,
       ⌜σ !! a = Some block_reserved⌝ -∗
@@ -596,8 +597,8 @@ Theorem wpc_Inode__Append {k E2}
         ⌜inode.wf σ⌝ -∗
         ∀ s,
         ⌜s !! addr' = Some block_reserved⌝ -∗
-         ▷ P σ ∗ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
-         ▷ P σ' ∗ Palloc (<[addr' := block_used]> s) ∗ Q) ∧ Qc)
+         ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
+         ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ Q) ∧ Qc)
   }}}
     Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S k)); ⊤; E2
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
