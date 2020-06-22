@@ -70,9 +70,9 @@ Section proof.
   Qed.
 
   Lemma alloc_crash_lock_cfupd {γ lk} k' (R Rcrash : iProp Σ):
-    is_free_lock γ lk ={⊤}=∗
+    is_free_lock γ lk -∗
     □ (R -∗ Rcrash) -∗
-    ▷ R -∗
+    ▷ R ={⊤}=∗
     is_crash_lock (LVL k') γ #lk R Rcrash ∗ |C={⊤, ∅}_(LVL (S k'))=> Rcrash.
   Proof.
     clear.
@@ -96,7 +96,7 @@ Section proof.
   Proof.
     clear.
     iIntros (?) "(#HRcrash&HR&Hfree&Hwp)".
-    iMod (alloc_crash_lock_cfupd k' with "HRcrash HR Hfree") as "(Hlk&Hcfupd)".
+    iMod (alloc_crash_lock_cfupd k' with "Hfree HRcrash HR") as "(Hlk&Hcfupd)".
     iApply (wpc_crash_frame_wand' with "Hcfupd"); first lia. (* TODO: plug this into iMod *)
     { auto. }
     iApply ("Hwp" with "Hlk").

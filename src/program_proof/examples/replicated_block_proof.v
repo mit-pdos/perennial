@@ -134,7 +134,7 @@ Section goose.
     (k' < S k)%nat →
     {{{ rblock_cinv addr σ }}}
       Open #d_ref #addr @ NotStuck;LVL (S (S k)); ⊤;E2
-    {{{ γ (l:loc), RET #l; is_pre_rblock γ k' l addr σ }}}
+    {{{ γ (l:loc), RET #l; is_pre_rblock γ l addr σ }}}
     {{{ rblock_cinv addr σ }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
