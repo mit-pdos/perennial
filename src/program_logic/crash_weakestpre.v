@@ -16,6 +16,40 @@ Section cfupd.
   Definition cfupd (k: nat) E1 E2 :=
     λ P, (C -∗ |={E1,E1}_(k)=> |={E2, ∅}=> |={∅, ∅}▷=>^(k) |={∅, ∅}=> P)%I.
 
+  Lemma cfupd_wand  (E1 E1' E2 E2' : coPset) (k1 k2 : nat) P Q:
+    E2' ⊆ E2 →
+    E1' ⊆ E1 →
+    k2 ≤ k1 →
+    cfupd k2 E1' E2' P -∗
+    (P -∗ Q) -∗
+    cfupd k1 E1 E2 Q.
+  Proof.
+    iIntros (???) "HP HPQ".
+    iIntros "HC". iSpecialize ("HP" with "[$]").
+    iApply (step_fupdN_inner_wand with "HP"); auto.
+    iIntros "HP".
+    iApply (step_fupdN_inner_wand' with "HP"); auto.
+  Qed.
+
+  Global Instance cfupd_proper_ent k E1 E2 :
+    Proper ((⊢) ==> (⊢)) (cfupd k E1 E2).
+  Proof.
+    iIntros (P Q Hent) "Hfupd".
+    iApply (cfupd_wand with "Hfupd"); eauto.
+    iApply Hent.
+  Qed.
+
+  Global Instance cfupd_proper_equiv k E1 E2 :
+    Proper ((⊣⊢) ==> (⊣⊢)) (cfupd k E1 E2).
+  Proof.
+    intros P Q Hequiv.
+    iSplit; iIntros "H".
+    - iApply (cfupd_wand with "H"); eauto.
+      rewrite Hequiv; auto.
+    - iApply (cfupd_wand with "H"); eauto.
+      rewrite Hequiv; auto.
+  Qed.
+
   Global Instance from_modal_fupd_iter k E P :
     FromModal modality_id
               (Nat.iter k (fupd E E) P)
@@ -476,21 +510,6 @@ Implicit Types Φ : val Λ → iProp Σ.
 Implicit Types Φc : iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
-
-Lemma cfupd_wand  (E1 E1' E2 E2' : coPset) (k1 k2 : nat) P Q:
-  E2' ⊆ E2 →
-  E1' ⊆ E1 →
-  k2 ≤ k1 →
-  (|C={E1',E2'}_k2=> P) -∗
-  (P -∗ Q) -∗
-  |C={E1,E2}_k1=> Q.
-Proof.
-  iIntros (???) "HP HPQ".
-  iIntros "HC". iSpecialize ("HP" with "[$]").
-  iApply (step_fupdN_inner_wand with "HP"); auto.
-  iIntros "HP".
-  iApply (step_fupdN_inner_wand' with "HP"); auto.
-Qed.
 
 Lemma wpc_unfold s k E1 E2 e Φ Φc :
   WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }} ⊣⊢ wpc_pre s k (wpc (PROP:=iProp Σ) s k) E1 E2 e Φ Φc.

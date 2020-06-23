@@ -618,25 +618,6 @@ Proof.
   iApply cfupd_weaken_mult; auto.
 Qed.
 
-Instance cfupd_proper_ent k E1 E2 :
-  Proper ((⊢) ==> (⊢)) (cfupd k E1 E2).
-Proof.
-  iIntros (P Q Hent) "Hfupd".
-  iApply (cfupd_wand with "Hfupd"); eauto.
-  iApply Hent.
-Qed.
-
-Instance cfupd_proper_equiv k E1 E2 :
-  Proper ((⊣⊢) ==> (⊣⊢)) (cfupd k E1 E2).
-Proof.
-  intros P Q Hequiv.
-  iSplit; iIntros "H".
-  - iApply (cfupd_wand with "H"); eauto.
-    rewrite Hequiv; auto.
-  - iApply (cfupd_wand with "H"); eauto.
-    rewrite Hequiv; auto.
-Qed.
-
 Lemma cfupd_big_sepS `{Countable A} (σ: gset A)(P: A → iProp Σ) k E1  :
   ([∗ set] a ∈ σ, |C={E1, ∅}_(LVL k)=> P a) -∗
   |C={E1, ∅}_(LVL (size σ + k))=> ([∗ set] a ∈ σ, P a).
