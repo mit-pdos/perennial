@@ -1,5 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 
+From Perennial.Helpers Require Import ModArith.
 From Perennial.goose_lang Require Import crash_modality wpr_lifting.
 From Perennial.algebra Require Import deletable_heap.
 
@@ -539,11 +540,6 @@ Proof.
   iDestruct (big_sepM_delete _ _ (int.val addr) with "Hstart") as "(Hd1&Hmap)"; first eapply Hin1.
   iDestruct (big_sepM_delete _ _ (int.val (word.add addr 1)) with "Hmap") as "(Hd2&Hmap)".
   { rewrite lookup_delete_ne //=.
-    (* XXX: how to do this very trivial u64 fact:
-
-       int.val addr ≠ int.val (word.add addr 1)
-     *)
-    admit.
-  }
+    apply word_add1_neq. }
   iFrame. iExists _. iFrame.
-Admitted.
+Qed.
