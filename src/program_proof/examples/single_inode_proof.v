@@ -58,18 +58,15 @@ Section goose.
   (** State of unallocated blocks *)
   Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
 
-  Definition pre_s_inode l sz k'  : iProp Σ :=
+  Definition pre_s_inode l (sz: Z) : iProp Σ :=
     ∃ inode_ref alloc_ref
-      γinode γalloc γused γblocks,
+      γinode γused γblocks,
     s_inode_state l inode_ref alloc_ref ∗
     (∃ s_inode, pre_inode inode_ref γinode (U64 0) s_inode ∗
                 Pinode γblocks γused s_inode) ∗
-    (* TODO: is_allocator_pre and the allocator's initialization are very
-    different from the others - it consumes P, and the crash obligation can be
-    initialized without the allocator (because the allocator manages durable
-    state separate from its physical state) *)
-    (∃ s_alloc, is_allocator_pre (Palloc γused)
-                allocΨ allocN γalloc k' (rangeSet 1 (sz-1)) s_alloc).
+    (∃ s_alloc, is_allocator_mem_pre alloc_ref s_alloc ∗
+                ⌜alloc.domain s_alloc = rangeSet 1 (sz-1)⌝ ∗
+                Palloc γused s_alloc).
 
   Definition is_single_inode l (sz: Z) k' : iProp Σ :=
     ∃ (inode_ref alloc_ref: loc) γinode γalloc γused γblocks,
@@ -111,7 +108,7 @@ Section goose.
     (0 < int.val sz)%Z →
     {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 ∗ "HP" ∷ ▷ P σ0 }}}
       Open #d_ref #sz @ NotStuck; LVL (S (S (S k + (int.nat sz-1)))); ⊤; E2
-    {{{ l, RET #l; pre_s_inode l (int.val sz) k' }}}
+    {{{ l, RET #l; pre_s_inode l (int.val sz) }}}
     {{{ ∃ σ', s_inode_cinv (int.val sz) σ' ∗ ▷ P σ' }}}.
   Proof.
     iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
@@ -158,47 +155,13 @@ Section goose.
     iNamed 1.
     iSpecialize ("Hpre_inode" with "Hused_blocks Hdurable").
     wpc_pures.
-    iDestruct "Halloc" as (s_alloc) "(%Halloc_dom&HPalloc&Halloc)".
-    iDestruct (unify_used_set with "[$] [$]") as %Hused.
-    replace (int.nat sz-1)%nat with (set_size (alloc.domain s_alloc)); last first.
-    { rewrite /alloc.domain Halloc_dom.
-      rewrite rangeSet_set_size; word. }
-    (* done constructing free set *)
-
-  (* ugh, we need to distinguish the precondition from the crash condition
-    in that in the precondition we know that the allocator is in a post-crash
-    state; would be nice to have a better pattern for this *)
-    assert (alloc_post_crash s_alloc) by admit.
-    iApply (allocator_crash_obligation _ _ allocN _ _ _
-                                       (E2 ∖ ↑allocN) _ _ k'
-              with "Halloc HPalloc").
-    { lia. }
-    { set_solver. }
-    { set_solver. }
-    { auto. }
-    iIntros (γalloc) "His_alloc".
-    iEval (rewrite /alloc.domain Halloc_dom).
-    iCache with "HΦ HP Hs_inode Hpre_inode HPinode".
-    { iIntros "Halloc".
-      iFromCache. }
     wpc_frame_seq.
-    iApply (wp_newAllocator with "[$Hused $His_alloc]").
+    (* TODO: provide the reconstructed allocator state (a map constructed from
+    the used set and the domain) *)
+    iApply (wp_newAllocator with "[$Hused]").
     { word. }
-    { word_cleanup.
-      rewrite /alloc.domain //. }
-    { rewrite left_id_L Haddr_set Hused.
-      apply alloc_post_crash_used; auto. }
-    iIntros "!>" (alloc_ref) "Halloc".
-    iNamed 1.
-    wpc_pures.
-    iApply (inode_crash_obligation _ _ k' with "HPinode Hpre_inode").
-    { lia. }
-    iIntros "Hinode".
-    iCache with "HΦ HP Hs_inode".
-    { iIntros "Hinode_crash Halloc".
-      crash_case.
-      iExists _; iFrame.
-      iExists _, _; iFrame. }
+
+    (*
     wpc_frame.
     rewrite -wp_fupd.
     wp_apply wp_allocStruct.
@@ -211,9 +174,7 @@ Section goose.
     iNamed 1.
     iApply "HΦ".
     iExists _, _, _, _, _, _; iFrame "# ∗".
-    (* TODO: oops, wasn't supposed to run the inode and allocator crash
-    obligations, instead should move those proofs to the s_inode crash
-    obligation *)
+*)
   Abort.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
