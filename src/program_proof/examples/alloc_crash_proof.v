@@ -323,8 +323,9 @@ Theorem is_allocator_alloc n l σ :
   is_allocator_mem_pre l σ
   ={⊤}=∗
   ∃ γ, is_allocator l (alloc.domain σ) γ n ∗
-  |C={⊤, ↑N}_(LVL (size σ + S n))=> alloc_crash_cond (alloc.domain σ).
+  |C={⊤, ↑N}_(LVL (size (alloc.domain σ) + S (S n)))=> alloc_crash_cond (alloc.domain σ).
 Proof.
+  clear Hitemcrash.
   iIntros "Hunused HP". iNamed 1.
   iMod (gen_heap_strong_init σ) as (γheap Hpf) "(Hctx&Hpts)".
   iMod (ghost_var_alloc (alloc.free σ)) as (γfree) "(Hfree&Hfree_frag)".
@@ -352,12 +353,19 @@ Proof.
   iSplitR.
   { iExists _, _, _; iFrame "#". }
   iMod "Hallocinv" as "_".
+  { pose proof (LVL_gt (size (alloc.domain σ) + S (S n))); lia. }
+  iMod "Hpending" as "_".
+  { change (size (dom _ σ)) with (size (alloc.domain σ)).
+    replace (size (alloc.domain σ) + S (S n))%nat
+            with (S (size (alloc.domain σ) + S n))%nat by lia.
+    rewrite LVL_Sk.
+    lia. }
+  iModIntro. iNext.
 
-
-  iAlways. iIntros "Hinner Hwand !> !> Hset".
-  iApply "Hwand". rewrite /alloc_crash_cond.
+  iIntros "Hset Hinner".
   iNamed "Hinner".
   iExists _. iFrame.
+  fold (alloc.domain σ).
   rewrite /alloc.unused.
   rewrite -Hdom.
   iSplitR; first by auto.
@@ -368,22 +376,7 @@ Proof.
   - iFrame. destruct (decide _); eauto.
   - iDestruct (gen_heap_valid with "[$] Hused") as %Hlookup'.
     iFrame. rewrite decide_False //= => Heq. congruence.
-
-  iApply (wpc_inv' Ninv _ _ _ E2).
-  { assumption. }
-  { solve_ndisj. }
-  
-  }
-
-
-
-  iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref)%I
-          with "[$Hfree_lock] [-]") as "#Hlock".
-  { iExists _; iFrame.
-    iNext. admit.
-
-Abort.
-
+Qed.
 
 Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc E2 E2' n n' σ:
   (n' < n)%nat →
