@@ -132,6 +132,35 @@ Definition Inode__inSize: val :=
     let: "hdr" := Inode__mkHdr "i" in
     disk.Write (struct.loadF Inode.S "addr" "i") "hdr".
 
+(* checkTotalSize determines that the inode is not already at maximum size
+
+   Requires the lock to be held. *)
+Definition Inode__checkTotalSize: val :=
+  rec: "Inode__checkTotalSize" "i" :=
+    (if: struct.loadF Inode.S "size" "i" ≥ MaxBlocks
+    then #false
+    else #true).
+
+(* append adds address a (and whatever data is stored there) to the inode
+
+   Requires the lock to be held.
+
+   In this simple design with only direct blocks, appending never requires
+   internal allocation, so we don't take an allocator.
+
+   This method can only fail due to running out of space in the inode. In this
+   case, append returns ownership of the allocated block. *)
+Definition Inode__appendDirect: val :=
+  rec: "Inode__appendDirect" "i" "a" :=
+    (if: struct.loadF Inode.S "size" "i" < maxDirect
+    then
+      struct.storeF Inode.S "direct" "i" (SliceAppend uint64T (struct.loadF Inode.S "direct" "i") "a");;
+      struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
+      let: "hdr" := Inode__mkHdr "i" in
+      disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
+      #true
+    else #false).
+
 (* Append adds a block to the inode.
 
    Takes ownership of the disk at a on success.
@@ -145,17 +174,16 @@ Definition Inode__Append: val :=
     else
       disk.Write "a" "b";;
       lock.acquire (struct.loadF Inode.S "m" "i");;
-      (if: struct.loadF Inode.S "size" "i" ≥ MaxBlocks
+      let: "ok2" := Inode__checkTotalSize "i" in
+      (if: ~ "ok2"
       then
         lock.release (struct.loadF Inode.S "m" "i");;
+        alloc.Allocator__Free "allocator" "a";;
         #false
       else
-        (if: struct.loadF Inode.S "size" "i" < maxDirect
+        let: "ok3" := Inode__appendDirect "i" "a" in
+        (if: "ok3"
         then
-          struct.storeF Inode.S "direct" "i" (SliceAppend uint64T (struct.loadF Inode.S "direct" "i") "a");;
-          struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
-          let: "hdr" := Inode__mkHdr "i" in
-          disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
           lock.release (struct.loadF Inode.S "m" "i");;
           #true
         else
@@ -172,6 +200,7 @@ Definition Inode__Append: val :=
             (if: ~ "ok"
             then
               lock.release (struct.loadF Inode.S "m" "i");;
+              alloc.Allocator__Free "allocator" "a";;
               #false
             else
               struct.storeF Inode.S "indirect" "i" (SliceAppend uint64T (struct.loadF Inode.S "indirect" "i") "indAddr");;

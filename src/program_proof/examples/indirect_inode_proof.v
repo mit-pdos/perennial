@@ -1012,17 +1012,17 @@ Definition reserve_fupd E (Palloc: alloc.t → iProp Σ) : iProp Σ :=
 
 (* free really means unreserve (we don't have a way to unallocate something
 marked used) *)
-(*Definition free_fupd E (Palloc: alloc.t → iProp Σ) (a:u64) : iProp Σ :=
+(*
+Definition free_fupd E (Palloc: alloc.t → iProp Σ) (a:u64) : iProp Σ :=
   ∀ (σ: alloc.t),
     ⌜σ !! a = Some block_reserved⌝ -∗
   Palloc σ ={E}=∗ Palloc (<[a:=block_free]> σ).
- *)
-(*
+
 Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
   (∀ σ : alloc.t,
       ⌜σ !! a = Some block_reserved⌝ -∗
-      Palloc σ ={E}=∗ Palloc (<[a:=block_used]> σ)).
-*)
+                     Palloc σ ={E}=∗ Palloc (<[a:=block_used]> σ)).
+
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
 Let allocN := nroot.@"allocator".
 
@@ -1036,14 +1036,14 @@ Theorem wpc_Inode__Append
       "Hbdata" ∷ is_block b_s q b0 ∗
       "HQc" ∷ (Q -∗ Qc) ∗
       "%Halloc" ∷ ⌜is_allocator Palloc Ψ alloc_ref domain γalloc n⌝ ∗
-      (*"#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
-      "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗*)
+      "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
+      "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗
       "Hfupd" ∷ ((∀ σ σ' addr',
         ⌜σ' = set inode.blocks (λ bs, bs ++ [b0])
                               (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
         ⌜inode.wf σ⌝ -∗
         ∀ s,
-        (*⌜s !! addr' = Some block_reserved⌝ -∗*)
+        ⌜s !! addr' = Some block_reserved⌝ -∗
          P σ ∗ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
          P σ' ∗ Q)) (*∗ Palloc (<[addr' := block_used]> s) ∗ Q) ∧ Qc)*)
   }}}
@@ -1054,11 +1054,13 @@ Proof.
   iNamed "Hinode". iNamed "Hro_state".
   wp_call.
   Check wp_Reserve.
-  wp_apply (wp_Reserve Palloc Ψ _ alloc_ref _ _); auto.
+  Check is_allocator.
+  wp_apply (wp_Reserve Palloc Ψ _ alloc_ref domain _); auto.
   { (* Reserve fupd *)
     iSplit; eauto.
-    iIntros (σ σ' ma Htrans) "HP".
-    iMod ("Halloc_fupd" with "[] HP"); eauto. }
+    - admit.
+    - iIntros (σ σ' ma Htrans) "HP".
+      iMod ("Halloc_fupd" with "[] HP"); eauto. }
   iSplit.
   { iIntros "_"; iFromCache. }
   iIntros "!>" (a ok) "Hblock".
@@ -1271,5 +1273,5 @@ Proof.
         rewrite lookup_take; auto.
         word.
       }*)
-Admitted.
+Admitted.*)
 End goose.
