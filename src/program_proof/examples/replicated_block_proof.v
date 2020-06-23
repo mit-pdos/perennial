@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 
-From Perennial.goose_lang Require Import crash_modality.
+From Perennial.goose_lang Require Import crash_modality wpr_lifting.
 From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import replicated_block.
@@ -130,14 +130,13 @@ Section goose.
   (* Open is the replicated block's recovery procedure, which constructs the
   in-memory state as well as recovering the synchronization between primary and
   backup, going from the crash invariant to the lock invariant. *)
-  Theorem wpc_Open {k E2} (d_ref: loc) k' addr σ :
-    (k' < S k)%nat →
+  Theorem wpc_Open {k E2} (d_ref: loc) addr σ :
     {{{ rblock_cinv addr σ }}}
       Open #d_ref #addr @ NotStuck;LVL (S (S k)); ⊤;E2
     {{{ γ (l:loc), RET #l; is_pre_rblock γ l addr σ }}}
     {{{ rblock_cinv addr σ }}}.
   Proof.
-    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iDeexHyp "Hbackup".
     wpc_call.
     { eauto with iFrame. }
@@ -393,4 +392,121 @@ Section goose.
     iIntros "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
+  Instance rblock_crash' addr σ :
+    IntoCrash (rblock_cinv addr σ) (λ _, rblock_cinv addr σ).
+  Proof.
+    rewrite /IntoCrash.
+    iIntros "$".
+    auto.
+  Qed.
+
+  (* Silly example client *)
+  Definition OpenRead (d_ref: loc) (addr: u64) : expr :=
+    (let: "l" := Open #d_ref #addr in
+     RepBlock__Read "l" #true).
+
+  Theorem wpc_OpenRead (d_ref: loc) {E2} addr σ:
+    {{{ rblock_cinv addr σ ∗ P σ }}}
+      OpenRead d_ref addr @ NotStuck; LVL 100; ⊤; E2
+    {{{ (x: val), RET x; True }}}
+    {{{ ∃ σ, rblock_cinv addr σ ∗ P σ }}}.
+  Proof using lockG0 stagedG0.
+    rewrite /OpenRead.
+    iIntros (??) "(H&HP) HΦ".
+    wpc_bind (Open _ _).
+    wpc_apply (wpc_Open with "H").
+    iSplit.
+    { iIntros "H". iLeft in "HΦ". iApply "HΦ". eauto with iFrame. }
+    iNext. iIntros (??) "Hpre".
+    iMod (replicated_block_cfupd 98 with "Hpre HP") as "(#Hrblock&Hcfupd)".
+    (* XXX: iMod instances need to understand lvls better *)
+    (* Here is the use of the cfupd to cancel out the rblock_cinv from crash condition,
+       which is important because RepBlock__Read doesn't guarantee rblock_cinv! *)
+    iApply (wpc_crash_frame_wand' with "Hcfupd").
+    { lia. }
+    { auto. }
+    iCache with "HΦ".
+    { by iLeft in "HΦ". }
+    wpc_pures.
+    (* Weaken the levels. *)
+    iApply (wpc_idx_mono _ (LVL 50)).
+    { apply LVL_le. lia. }
+    wpc_apply (wpc_RepBlock__Read with "[HΦ $Hrblock]").
+    { lia. }
+    iSplit.
+    (* XXX: why doesn't the cache fire *)
+    { by iLeft in "HΦ". }
+    iNext. iIntros. iModIntro. iFrame "# ∗".
+    iSplit.
+    { by iLeft in "HΦ". }
+    iIntros. iRight in "HΦ". iApply "HΦ".
+    eauto.
+  Qed.
+
 End goose.
+
+
+Section recov.
+  Context `{!heapG Σ}.
+  Context `{!lockG Σ}.
+  Context `{!crashG Σ}.
+  Context `{!stagedG Σ}.
+
+  (* This has to be in a separate section from the wpc lemmas because we will
+     use different heapG instances after crash *)
+
+  (* Just a simple example of using idempotence *)
+  Theorem wpr_Open (d_ref: loc) k addr σ:
+    rblock_cinv addr σ -∗
+    wpr NotStuck (LVL (S (S k))) ⊤
+        (Open #d_ref #addr)
+        (Open #d_ref #addr)
+        (λ _, True%I)
+        (λ _, True%I)
+        (λ _ _, True%I).
+  Proof using lockG0.
+    iIntros "Hstart".
+    iApply (idempotence_wpr _ (LVL (S (S k))) ⊤ ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ)%I with "[Hstart]").
+    { auto. }
+    { wpc_apply (wpc_Open with "Hstart").
+      iSplit; eauto.
+    }
+    iAlways. iIntros (?????) "H".
+    iDestruct "H" as (σ') "Hstart".
+    iNext. iCrash.
+    (* XXX: iCrash should not have unfolded rblock_inv *)
+    iIntros.
+    iSplit; first done.
+    wpc_apply (wpc_Open with "Hstart").
+    iSplit; eauto.
+  Qed.
+
+  Notation K := 100%nat.
+
+
+  Theorem wpr_OpenRead (d_ref: loc) addr σ:
+    rblock_cinv addr σ -∗
+    wpr NotStuck (LVL 100) ⊤
+        (OpenRead d_ref addr)
+        (OpenRead d_ref addr)
+        (λ _, True%I)
+        (λ _, True%I)
+        (λ _ _, True%I).
+  Proof using lockG0 stagedG0.
+    iIntros "Hstart".
+    iApply (idempotence_wpr _ (LVL 100) ⊤ ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ ∗ True)%I with "[Hstart]").
+    { auto. }
+    { wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart]").
+      iSplit; eauto.
+    }
+    iAlways. iIntros (?????) "H".
+    iDestruct "H" as (σ') "(Hstart&_)".
+    iNext. iCrash.
+    (* XXX: iCrash should not have unfolded rblock_inv *)
+    iIntros (??).
+    iSplit; first done.
+    wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart] []").
+    iSplit; eauto.
+  Qed.
+End recov.
+
