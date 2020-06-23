@@ -16,6 +16,40 @@ Section cfupd.
   Definition cfupd (k: nat) E1 E2 :=
     λ P, (C -∗ |={E1,E1}_(k)=> |={E2, ∅}=> |={∅, ∅}▷=>^(k) |={∅, ∅}=> P)%I.
 
+  Lemma cfupd_wand  (E1 E1' E2 E2' : coPset) (k1 k2 : nat) P Q:
+    E2' ⊆ E2 →
+    E1' ⊆ E1 →
+    k2 ≤ k1 →
+    cfupd k2 E1' E2' P -∗
+    (P -∗ Q) -∗
+    cfupd k1 E1 E2 Q.
+  Proof.
+    iIntros (???) "HP HPQ".
+    iIntros "HC". iSpecialize ("HP" with "[$]").
+    iApply (step_fupdN_inner_wand with "HP"); auto.
+    iIntros "HP".
+    iApply (step_fupdN_inner_wand' with "HP"); auto.
+  Qed.
+
+  Global Instance cfupd_proper_ent k E1 E2 :
+    Proper ((⊢) ==> (⊢)) (cfupd k E1 E2).
+  Proof.
+    iIntros (P Q Hent) "Hfupd".
+    iApply (cfupd_wand with "Hfupd"); eauto.
+    iApply Hent.
+  Qed.
+
+  Global Instance cfupd_proper_equiv k E1 E2 :
+    Proper ((⊣⊢) ==> (⊣⊢)) (cfupd k E1 E2).
+  Proof.
+    intros P Q Hequiv.
+    iSplit; iIntros "H".
+    - iApply (cfupd_wand with "H"); eauto.
+      rewrite Hequiv; auto.
+    - iApply (cfupd_wand with "H"); eauto.
+      rewrite Hequiv; auto.
+  Qed.
+
   Global Instance from_modal_fupd_iter k E P :
     FromModal modality_id
               (Nat.iter k (fupd E E) P)
@@ -282,6 +316,30 @@ Section cfupd.
       modalities *)
   Abort.
 
+  Global Instance elim_modal_cfupd_mask_change p k1 k2 E1 E2 E2' P Q :
+    ElimModal (k1 ≤ k2 ∧ E2 ⊆ E2')%nat p false (cfupd k1 E1 E2 P) True
+              (cfupd k2 E1 E2' Q) (cfupd (k2 - k1) E1 (E2' ∖ E2) (P -∗ Q)).
+  Proof.
+    rewrite /ElimModal intuitionistically_if_elim /cfupd /=.
+    iIntros (?) "[Hfupd HQ]".
+    iIntros "#HC".
+    iSpecialize ("Hfupd" with "HC").
+    iMod "Hfupd"; first lia.
+    iSpecialize ("HQ" with "[//] [$]").
+    iApply (step_fupdN_inner_wand with "HQ"); auto.
+    iIntros "HQ".
+    iEval (rewrite (union_difference_L E2 E2'); last by set_solver).
+    iMod (fupd_mask_frame_r with "Hfupd") as "HP". set_solver.
+    rewrite left_id_L.
+    iEval (replace k2 with ((k2 - k1) + k1) by lia).
+    rewrite Nat_iter_add.
+    iApply (step_fupdN_wand with "HQ").
+    iIntros "HQ".
+    iApply (step_fupdN_wand with "HP").
+    iIntros "HP". iMod "HP". iMod "HQ". iModIntro. by iApply "HQ".
+  Qed.
+
+
   Global Instance elim_modal_cfupd p k1 k2 E1 P Q :
     ElimModal (2*k1 ≤ k2)%nat p false (cfupd k1 E1 ∅ P) P
               (cfupd k2 E1 ∅ Q) (cfupd (k2-2*k1) E1 ∅ Q).
@@ -304,6 +362,36 @@ Section cfupd.
     iMod "HQ"; first lia.
     iApply step_fupd_iter_intro; auto.
   Qed.
+
+  (* I don't think this is provable - JDT *)
+  Global Instance elim_modal_cfupd_mask_change p k1 k2 E1 E2 E2' P Q :
+    ElimModal (k1 ≤ k2 ∧ E2 ⊆ E1)%nat p false (cfupd k1 E1 E2 P) (cfupd k1 E1 ∅ P)
+              (cfupd k2 E1 E2' Q) (cfupd k2 E1 (E2' ∖ E2) Q).
+  Proof.
+  Abort.
+  (*
+    rewrite /ElimModal intuitionistically_if_elim /cfupd /=.
+    iIntros (?) "[Hfupd HQ]".
+    iIntros "#HC".
+    iSpecialize ("Hfupd" with "HC").
+    iMod "Hfupd"; first lia.
+    iSpecialize ("HQ" with "[Hfupd]").
+    { iIntros "_".
+    }
+    iMod (fupd_intro_mask' _ E2) as "Hclo"; first set_solver.
+    iApply (elim_modal_step_fupd_masks_trans with "Hfupd"); first lia.
+
+    iIntros "HP".
+    iSpecialize ("HQ" with "HP HC").
+    iMod "Hclo" as "_".
+    iMod "HQ"; first lia.
+    replace (k2 - k1 - k1 - (k2 - (k1 + (k1 + 0)))) with 0 by lia.
+    simpl.
+    iApply fupd_intro_mask; first set_solver.
+    iMod "HQ"; first lia.
+    iApply step_fupd_iter_intro; auto.
+  Qed.
+   *)
 
   Global Instance cfupd_frame p k E1 E2 R P Q :
     Frame p R P Q →
@@ -476,21 +564,6 @@ Implicit Types Φ : val Λ → iProp Σ.
 Implicit Types Φc : iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
-
-Lemma cfupd_wand  (E1 E1' E2 E2' : coPset) (k1 k2 : nat) P Q:
-  E2' ⊆ E2 →
-  E1' ⊆ E1 →
-  k2 ≤ k1 →
-  (|C={E1',E2'}_k2=> P) -∗
-  (P -∗ Q) -∗
-  |C={E1,E2}_k1=> Q.
-Proof.
-  iIntros (???) "HP HPQ".
-  iIntros "HC". iSpecialize ("HP" with "[$]").
-  iApply (step_fupdN_inner_wand with "HP"); auto.
-  iIntros "HP".
-  iApply (step_fupdN_inner_wand' with "HP"); auto.
-Qed.
 
 Lemma wpc_unfold s k E1 E2 e Φ Φc :
   WPC e @ s; k; E1; E2 {{ Φ }} {{ Φc }} ⊣⊢ wpc_pre s k (wpc (PROP:=iProp Σ) s k) E1 E2 e Φ Φc.
@@ -1057,6 +1130,33 @@ Proof.
   replace (↑N ∖ ↑N) with (∅: coPset) by set_solver.
   iModIntro; iApply ("Hwand" with "[$] [$]").
 Qed.
+
+(* TODO: move before defining wpcs  *)
+Lemma inv_cfupd (N: namespace) E1 P :
+  ↑N ⊆ E1 →
+  inv N P -∗
+  cfupd 0 E1 (↑N) (▷P).
+Proof.
+  iIntros (?) "#Hinv".
+  rewrite /cfupd.
+  iIntros "_".
+  simpl.
+  iApply fupd_intro_mask; first set_solver.
+  iInv N as "H" "Hclo".
+  replace (↑N ∖ ↑N) with (∅: coPset) by set_solver.
+  iModIntro.
+  by iFrame.
+Qed.
+
+Lemma inv_cfupd1 (N: namespace) E1 P :
+  ↑N ⊆ E1 →
+  inv N P -∗
+  cfupd 1 E1 (↑N) P.
+Proof.
+  iIntros (?) "Hinv".
+  iDestruct (inv_cfupd with "Hinv") as "Hcfupd"; eauto.
+  (* TODO: figure out what generic theorem to use for this *)
+Admitted.
 
 Lemma wp_wpc_inv (N: namespace) s E e Φ Φc :
   inv N Φc ∗ WP e @ s ; E {{ Φ }} ⊢ WPC e @ s ; 0 ; E ; ↑N {{ Φ }} {{ ▷ Φc }}.

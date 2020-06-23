@@ -185,6 +185,7 @@ Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
 
 Definition is_allocator_mem_pre (l: loc) σ : iProp Σ :=
   ∃ (lref mref: loc) (γlk: gname),
+    "%Hpostcrash" ∷ ⌜ alloc_post_crash σ ⌝ ∗
     "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
     "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
@@ -196,24 +197,55 @@ Definition is_allocator_pre γ n d freeset : iProp Σ :=
   "Hfreeset_frag" ∷ own (γ.(alloc_free_name)) (◯ (Excl' freeset))
 .
 
-Theorem is_allocator_pre_alloc {n} l σ :
-  ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
-  is_allocator_mem_pre l σ ={⊤}=∗
-  ∃ γ, is_allocator_pre γ n (alloc.domain σ) (alloc.free σ).
+(* TODO: prove something useful for initializing from zero blocks *)
+
+Lemma alloc_post_crash_free_used σ :
+  alloc.free σ = alloc.domain σ ∖ alloc.used σ ↔
+  alloc_post_crash σ.
 Proof.
-  iIntros "Hunused". iNamed 1.
-  iMod (gen_heap_strong_init σ) as (γheap Hpf) "(Hctx&Hpts)".
-  iMod (ghost_var_alloc (alloc.free σ)) as (γfree) "(Hfree&Hfree_frag)".
-  set (γ := {| alloc_status_name := γheap;
-               alloc_free_name := γfree |}).
-  (* TODO: this is where we need to allocate the [free_block]s, which contain a
-  bunch of [na_crash_inv]s. *)
-  iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref)%I
-          with "[$Hfree_lock] [-]") as "#Hlock".
+  clear.
+  rewrite /alloc_post_crash.
+  pose proof (alloc.unused_used_domain σ).
+  pose proof (alloc.unused_used_disjoint σ).
+  set_solver.
+Qed.
+
+Theorem wp_newAllocator γ σ mref (start sz: u64) (used domset freeset : gset u64) :
+  int.val start + int.val sz < 2^64 →
+  alloc.domain σ = rangeSet (int.val start) (int.val sz) →
+  alloc.free σ = alloc.domain σ ∖ alloc.used σ →
+  {{{ is_addrset mref (alloc.used σ)  }}}
+    New #start #sz #mref
+  {{{ l, RET #l; is_allocator_mem_pre l σ }}}.
+Proof using allocG0.
+  iIntros (Hoverflow Hdom Husedeq Φ) "Hused HΦ".
+  wp_call.
+  wp_apply wp_freeRange; first by auto.
+  iIntros (mref') "Hfree".
+  wp_pures.
+  wp_apply (wp_mapRemove with "[$Hfree $Hused]"); iIntros "(Hfree & Hused)".
+  wp_apply wp_new_free_lock.
+  iIntros (γ1 lk) "Hlock".
+  rewrite -wp_fupd.
+  wp_apply wp_allocStruct; auto.
+  iIntros (l) "Hallocator".
+  iDestruct (struct_fields_split with "Hallocator") as "(m&free&_)".
+  iMod (readonly_alloc_1 with "m") as "#m".
+  iMod (readonly_alloc_1 with "free") as "#free".
+  (*
+  iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref')%I
+          with "[$Hlock] [-HΦ]") as "#Hlock".
   { iExists _; iFrame.
-    iNext. admit.
+    rewrite Husedeq Hdom. iFrame.
   }
-Abort.
+   *)
+  iModIntro.
+  iApply ("HΦ" $! _).
+  iExists _, _, _; iFrame "#".
+  rewrite Husedeq Hdom. iFrame.
+  iPureIntro.
+  apply alloc_post_crash_free_used; auto.
+Qed.
 
 Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
 (*
@@ -228,6 +260,9 @@ Qed.
 Global Instance is_allocator_Persistent l γ d n:
   Persistent (is_allocator l d γ n).
 Proof. apply _. Qed.
+
+Definition alloc_crash_cond' σ : iProp Σ :=
+  [∗ set] k ∈ alloc.unused σ, Ψ k.
 
 Definition alloc_crash_cond (d: gset u64) : iProp Σ :=
   ∃ σ, ⌜dom _ σ = d⌝ ∗ P σ ∗ [∗ set] k ∈ alloc.unused σ, Ψ k.
@@ -282,6 +317,67 @@ Proof.
     iModIntro. iFrame.
 Qed.
 
+Theorem is_allocator_alloc n l σ :
+  ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
+  ▷ P σ -∗
+  is_allocator_mem_pre l σ
+  ={⊤}=∗
+  ∃ γ, is_allocator l (alloc.domain σ) γ n ∗
+  |C={⊤, ↑N}_(LVL (size (alloc.domain σ) + S (S n)))=> alloc_crash_cond (alloc.domain σ).
+Proof.
+  clear Hitemcrash.
+  iIntros "Hunused HP". iNamed 1.
+  iMod (gen_heap_strong_init σ) as (γheap Hpf) "(Hctx&Hpts)".
+  iMod (ghost_var_alloc (alloc.free σ)) as (γfree) "(Hfree&Hfree_frag)".
+  set (γ := {| alloc_status_name := γheap;
+               alloc_free_name := γfree |}).
+
+  iMod (inv_alloc Ninv _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx Hfree]") as "#Hinv".
+  { iNext. iExists _. iFrame. eauto. }
+
+  iMod (free_block_init γ n with "[$] [$]") as "(Hpending&Hblock)".
+  { set_solver. }
+  { eauto. }
+
+  iDestruct (cfupd_big_sepS with "Hpending") as "Hpending".
+
+  iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref)%I
+          with "[$Hfree_lock] [Hfreemap Hblock Hfree_frag]") as "#Hlock".
+  { iExists _; iFrame. }
+
+  iDestruct (inv_cfupd1 _ ⊤ with "Hinv") as "-#Hallocinv".
+  { set_solver. }
+
+  iModIntro.
+  iExists γ.
+  iSplitR.
+  { iExists _, _, _; iFrame "#". }
+  iMod "Hallocinv" as "_".
+  { pose proof (LVL_gt (size (alloc.domain σ) + S (S n))); lia. }
+  iMod "Hpending" as "_".
+  { change (size (dom _ σ)) with (size (alloc.domain σ)).
+    replace (size (alloc.domain σ) + S (S n))%nat
+            with (S (size (alloc.domain σ) + S n))%nat by lia.
+    rewrite LVL_Sk.
+    lia. }
+  iModIntro. iNext.
+
+  iIntros "Hset Hinner".
+  iNamed "Hinner".
+  iExists _. iFrame.
+  fold (alloc.domain σ).
+  rewrite /alloc.unused.
+  rewrite -Hdom.
+  iSplitR; first by auto.
+  rewrite -?big_sepM_dom big_sepM_filter.
+  iDestruct (big_sepM_mono_with_inv with "Hstatus Hset") as "(_&$)".
+  iIntros (k x Hlookup) "(Hctx&Hfree)".
+  iDestruct "Hfree" as "[HΨ|Hused]".
+  - iFrame. destruct (decide _); eauto.
+  - iDestruct (gen_heap_valid with "[$] Hused") as %Hlookup'.
+    iFrame. rewrite decide_False //= => Heq. congruence.
+Qed.
+
 Lemma allocator_crash_obligation e (Φ: val → iProp Σ) Φc E2 E2' n n' σ:
   (n' < n)%nat →
   E2 ⊆ E2' →
@@ -330,42 +426,6 @@ Proof using allocG0.
     iFrame. rewrite decide_False //= => Heq. congruence.
 Qed.
 
-(* TODO: prove something useful for initializing from zero blocks *)
-
-
-Theorem wp_newAllocator γ n mref (start sz: u64) used domset freeset :
-  int.val start + int.val sz < 2^64 →
-  domset = rangeSet (int.val start) (int.val sz) →
-  freeset = domset ∖ used →
-  {{{ is_addrset mref used ∗
-      is_allocator_pre γ n (domset) (freeset) }}}
-    New #start #sz #mref
-  {{{ l, RET #l; is_allocator l domset γ n }}}.
-Proof using allocG0.
-  iIntros (Hoverflow Hdom Husedeq Φ) "(Hused&Hpre) HΦ".
-  wp_call.
-  wp_apply wp_freeRange; first by auto.
-  iIntros (mref') "Hfree".
-  wp_pures.
-  wp_apply (wp_mapRemove with "[$Hfree $Hused]"); iIntros "(Hfree & Hused)".
-  wp_apply wp_new_free_lock.
-  iIntros (γ1 lk) "Hlock".
-  rewrite -wp_fupd.
-  wp_apply wp_allocStruct; auto.
-  iIntros (l) "Hallocator".
-  iDestruct (struct_fields_split with "Hallocator") as "(m&free&_)".
-  iNamed "Hpre".
-  iMod (readonly_alloc_1 with "m") as "#m".
-  iMod (readonly_alloc_1 with "free") as "#free".
-  iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref')%I
-          with "[$Hlock] [-HΦ]") as "#Hlock".
-  { iExists _; iFrame.
-    rewrite Husedeq Hdom. iFrame.
-  }
-  iModIntro.
-  iApply ("HΦ" $! _).
-  iExists _, _, _; iFrame "#".
-Qed.
 
 Lemma map_empty_difference `{Countable K} {V} (m: gmap K V) :
   ∅ ∖ m = ∅.

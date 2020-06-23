@@ -579,6 +579,18 @@ Proof.
   lia.
 Qed.
 
+(* TODO: double-check that this special case actually fires *)
+Global Instance elim_modal_cfupd_lvl p s k k' E1 E2 e P Φ Φc :
+  ElimModal (k' ≤ k)%nat p false (cfupd (LVL k') E1 ∅ P) True
+            (WPC e @ s; LVL (S k); E1; E2 {{ Φ }} {{ Φc }})
+            (WPC e @ s; LVL k; E1; E2 {{ Φ }} {{ P -∗ Φc }}).
+Proof.
+  rewrite /ElimModal intuitionistically_if_elim.
+  iIntros (?) "[Hc Hwpc]".
+  iSpecialize ("Hwpc" with "[//]").
+  iApply (wpc_crash_frame_wand' with "Hc Hwpc"); auto.
+Qed.
+
 Lemma LVL_sum_split n m :
   LVL (n + m) = 4^n * LVL m.
 Proof.
@@ -616,25 +628,6 @@ Proof.
   iApply (wpc_crash_frame_wand with "Hwpc").
   { apply LVL_le; lia. }
   iApply cfupd_weaken_mult; auto.
-Qed.
-
-Instance cfupd_proper_ent k E1 E2 :
-  Proper ((⊢) ==> (⊢)) (cfupd k E1 E2).
-Proof.
-  iIntros (P Q Hent) "Hfupd".
-  iApply (cfupd_wand with "Hfupd"); eauto.
-  iApply Hent.
-Qed.
-
-Instance cfupd_proper_equiv k E1 E2 :
-  Proper ((⊣⊢) ==> (⊣⊢)) (cfupd k E1 E2).
-Proof.
-  intros P Q Hequiv.
-  iSplit; iIntros "H".
-  - iApply (cfupd_wand with "H"); eauto.
-    rewrite Hequiv; auto.
-  - iApply (cfupd_wand with "H"); eauto.
-    rewrite Hequiv; auto.
 Qed.
 
 Lemma cfupd_big_sepS `{Countable A} (σ: gset A)(P: A → iProp Σ) k E1  :
@@ -679,15 +672,11 @@ Proof.
     iDestruct "H" as (k') "[% H]".
     iApply (cfupd_weaken_all _ (LVL k) with "H"); auto.
     apply LVL_le; auto. }
-  iApply (wpc_crash_frame_wand with "Hwpc [Hs]").
-  { apply LVL_le; lia. }
-  iApply (cfupd_weaken_all with "Hs"); auto.
   simpl.
-  rewrite LVL_Sk.
-  replace (k + size σ) with (size σ + k) by lia.
-  pose proof (LVL_gt (size σ + k)).
-  pose proof (LVL_le k (size σ + k)).
-  nia.
+  iMod "Hs" as "_".
+  { lia. }
+  iApply (wpc_idx_mono with "Hwpc").
+  apply LVL_le; lia.
 Qed.
 
 Lemma wpc_staged_inv_init Γ s k k' N E1 E2 e Φ Φc P i :
