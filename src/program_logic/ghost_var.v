@@ -3,6 +3,8 @@ From iris.proofmode Require Import base tactics classes.
 From iris.program_logic Require Import weakestpre.
 Unset Implicit Arguments.
 
+(* This could probably be ported to use Iris' [algebra.lib.excl_auth]. *)
+
 Definition ghostR (A: ofeT) := (authR (optionUR (exclR A))).
 
 Section ghost_var_helpers.

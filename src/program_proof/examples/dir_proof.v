@@ -38,6 +38,7 @@ Local Definition inode_used γused (idx: nat) (used: gset u64): iProp Σ :=
 Local Definition inode_allused γused (allused: gmap nat (gset u64)): iProp Σ :=
   own γused (● (Excl <$> allused): allocsR).
 
+(* Twice the same proofs... really this should be abstracted, ideally into Iris. *)
 Lemma inode_blocks_lookup γblocks (idx: nat) (blocks: list Block) (allblocks: gmap nat (list Block)):
   inode_blocks γblocks idx blocks -∗
   inode_allblocks γblocks allblocks -∗
@@ -52,6 +53,20 @@ Proof.
   rewrite Excl_included leibniz_equiv_iff => -> //.
 Qed.
 
+Lemma inode_blocks_update γblocks E (idx: nat) (blocks1 blocks2: list Block) (allblocks: gmap nat (list Block)):
+  inode_blocks γblocks idx blocks1 -∗
+  inode_allblocks γblocks allblocks ={E}=∗
+  inode_blocks γblocks idx blocks2 ∗ inode_allblocks γblocks (<[ idx := blocks2 ]> allblocks).
+Proof.
+  iIntros "Hblocks Hallblocks".
+  iDestruct (inode_blocks_lookup with "Hblocks Hallblocks") as %Hallblocks.
+  iMod (own_update_2 with "Hallblocks Hblocks") as "[Hallblocks $]".
+  { apply: auth_update. apply: singleton_local_update.
+    { by rewrite lookup_fmap Hallblocks. }
+    apply: exclusive_local_update. done. }
+  rewrite -fmap_insert. done.
+Qed.
+
 Lemma inode_used_lookup γused (idx: nat) (used: gset u64) (allused: gmap nat (gset u64)):
   inode_used γused idx used -∗
   inode_allused γused allused -∗
@@ -64,6 +79,20 @@ Proof.
   move: Hincl. rewrite singleton_included_l=> -[oused []].
   rewrite lookup_fmap fmap_Some_equiv=> -[used' [-> ->]].
   rewrite Excl_included leibniz_equiv_iff => -> //.
+Qed.
+
+Lemma inode_used_update γused E (idx: nat) (used1 used2: gset u64) (allused: gmap nat (gset u64)):
+  inode_used γused idx used1 -∗
+  inode_allused γused allused ={E}=∗
+  inode_used γused idx used2 ∗ inode_allused γused (<[ idx := used2 ]> allused).
+Proof.
+  iIntros "Hused Hallused".
+  iDestruct (inode_used_lookup with "Hused Hallused") as %Hallused.
+  iMod (own_update_2 with "Hallused Hused") as "[Hallused $]".
+  { apply: auth_update. apply: singleton_local_update.
+    { by rewrite lookup_fmap Hallused. }
+    apply: exclusive_local_update. done. }
+  rewrite -fmap_insert. done.
 Qed.
 
 (** Protocol invariant for inode library *)
