@@ -110,7 +110,7 @@ Section goose.
     ↑allocN ⊆ E2 →
     (0 < int.val sz)%Z →
     {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 ∗ "HP" ∷ ▷ P σ0 }}}
-      Open #d_ref #sz @ NotStuck; LVL (S (S k + (int.nat sz-1))); ⊤; E2
+      Open #d_ref #sz @ NotStuck; LVL (S (S (S k + (int.nat sz-1)))); ⊤; E2
     {{{ l, RET #l; pre_s_inode l (int.val sz) k' }}}
     {{{ ∃ σ', s_inode_cinv (int.val sz) σ' ∗ ▷ P σ' }}}.
   Proof.

@@ -461,10 +461,29 @@ Proof.
   induction k; simpl; lia.
 Qed.
 
+Tactic Notation "abstract_pow4" constr(k) :=
+  let m := fresh "m" in
+  destruct (abstract_4k' k) as [m [-> ?]]; nia.
+
+Ltac abstract_some_pow4 :=
+  match goal with
+  | |- context[Nat.pow 4 ?k] => abstract_pow4 k
+  end.
+
+Tactic Notation "abstract_pow4" := abstract_some_pow4.
+
 Lemma LVL_pow k : LVL k = 16 * 4^k.
 Proof.
   rewrite /LVL /=.
   lia.
+Qed.
+
+Lemma LVL_gt k : k < LVL k.
+Proof.
+  rewrite /LVL.
+  induction k; simpl.
+  - lia.
+  - abstract_pow4.
 Qed.
 
 Lemma LVL_le k k':
@@ -508,8 +527,7 @@ Lemma base_le_LVL_S k:
 Proof.
   rewrite /LVL.
   simpl.
-  destruct (abstract_4k k) as [m [-> ?]].
-  lia.
+  abstract_pow4.
 Qed.
 
 Lemma SSS_LVL k:
@@ -576,7 +594,7 @@ Proof.
   rewrite LVL_sum_split.
   replace (4^n * LVL k - LVL k) with ((4^n-1) * (LVL k)).
   { apply Nat.mul_le_mono_r.
-    destruct (abstract_4k' n) as [m [-> ?]]; lia. }
+    abstract_pow4. }
   rewrite Nat.mul_sub_distr_r; lia.
 Qed.
 
@@ -600,28 +618,76 @@ Proof.
   iApply cfupd_weaken_mult; auto.
 Qed.
 
-Lemma wpc_crash_frame_big_sepS_wand `{Countable A} (σ: gset A)(P: A → iProp Σ) k s E2 e Φ Φc  :
-  ([∗ set] a ∈ σ, ∃ k', ⌜ k' < k ⌝ ∗ |C={⊤, ∅}_(LVL k')=> P a) -∗
-  WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ ([∗ set] a ∈ σ, P a) -∗ Φc }} -∗
-  WPC e @ s; LVL (k + size σ); ⊤; E2 {{ Φ }} {{ Φc }}.
+Instance cfupd_proper_ent k E1 E2 :
+  Proper ((⊢) ==> (⊢)) (cfupd k E1 E2).
 Proof.
-  iInduction σ as [| x σ ?] "IH" using set_ind_L forall (Φc).
-  - rewrite size_empty right_id. iIntros "_ Hwp".
-    iApply (wpc_mono with "Hwp"); eauto.
-    rewrite big_sepS_empty //=. iIntros "H". by iApply "H".
-  - rewrite big_sepS_union; last by set_solver.
-    rewrite big_sepS_singleton.
-    iIntros "(HPx&Hrest)". iDestruct "HPx" as (k' Hlt) "Hpending".
-    iIntros "Hwp". replace (k + size ({[x]} ∪ σ)) with (S (k + size σ)); last first.
-    { rewrite size_union; last by set_solver. rewrite size_singleton. lia. }
-    iApply (wpc_crash_frame_wand' with "Hpending").
-    { lia. }
-    { eauto. }
-    iApply ("IH" with "Hrest").
-    iApply (wpc_mono with "Hwp"); auto.
-    iIntros "Hwand Hrest HP". iApply "Hwand".
-    rewrite big_sepS_union ?big_sepS_singleton; last by set_solver.
+  iIntros (P Q Hent) "Hfupd".
+  iApply (cfupd_wand with "Hfupd"); eauto.
+  iApply Hent.
+Qed.
+
+Instance cfupd_proper_equiv k E1 E2 :
+  Proper ((⊣⊢) ==> (⊣⊢)) (cfupd k E1 E2).
+Proof.
+  intros P Q Hequiv.
+  iSplit; iIntros "H".
+  - iApply (cfupd_wand with "H"); eauto.
+    rewrite Hequiv; auto.
+  - iApply (cfupd_wand with "H"); eauto.
+    rewrite Hequiv; auto.
+Qed.
+
+Lemma cfupd_big_sepS `{Countable A} (σ: gset A)(P: A → iProp Σ) k E1  :
+  ([∗ set] a ∈ σ, |C={E1, ∅}_(LVL k)=> P a) -∗
+  |C={E1, ∅}_(LVL (size σ + k))=> ([∗ set] a ∈ σ, P a).
+Proof.
+  iIntros "H".
+  iInduction σ as [| x σ ?] "IH" using set_ind_L.
+  - iModIntro. iNext.
+    rewrite big_sepS_empty //.
+  - rewrite -> !big_sepS_union by set_solver.
+    rewrite !big_sepS_singleton.
+    iDestruct "H" as "(Hx & Hrest)".
+    rewrite size_union; last by set_solver.
+    rewrite size_singleton.
+    iMod "Hx".
+    { simpl.
+      rewrite LVL_Sk.
+      pose proof (LVL_gt (size σ+k)).
+      rewrite LVL_sum_split.
+      abstract_pow4. }
+    iFrame "Hx".
+    iMod ("IH" with "Hrest") as "Hrest".
+    { change (1 + size σ + k) with (S (size σ + k)).
+      rewrite LVL_Sk.
+      pose proof (LVL_gt (size σ + k)).
+      pose proof (LVL_le k (size σ + k)).
+      nia. }
+    iModIntro. iModIntro.
     iFrame.
+Qed.
+
+Lemma wpc_crash_frame_big_sepS_wand `{Countable A} (σ: gset A)(P: A → iProp Σ) k s E2 e Φ Φc  :
+  ([∗ set] a ∈ σ, ∃ k', ⌜ k' ≤ k ⌝ ∗ |C={⊤, ∅}_(LVL k')=> P a) -∗
+  WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ ([∗ set] a ∈ σ, P a) -∗ Φc }} -∗
+  WPC e @ s; LVL (S k + size σ); ⊤; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "Hs Hwpc".
+  iDestruct (cfupd_big_sepS with "[Hs]") as "Hs".
+  { iApply (big_sepS_mono with "Hs").
+    iIntros (x ?) "H".
+    iDestruct "H" as (k') "[% H]".
+    iApply (cfupd_weaken_all _ (LVL k) with "H"); auto.
+    apply LVL_le; auto. }
+  iApply (wpc_crash_frame_wand with "Hwpc [Hs]").
+  { apply LVL_le; lia. }
+  iApply (cfupd_weaken_all with "Hs"); auto.
+  simpl.
+  rewrite LVL_Sk.
+  replace (k + size σ) with (size σ + k) by lia.
+  pose proof (LVL_gt (size σ + k)).
+  pose proof (LVL_le k (size σ + k)).
+  nia.
 Qed.
 
 Lemma wpc_staged_inv_init Γ s k k' N E1 E2 e Φ Φc P i :

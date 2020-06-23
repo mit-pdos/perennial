@@ -73,7 +73,8 @@ Section proof.
     is_free_lock γ lk -∗
     □ (R -∗ Rcrash) -∗
     ▷ R ={⊤}=∗
-    is_crash_lock (LVL k') γ #lk R Rcrash ∗ |C={⊤, ∅}_(LVL (S k'))=> Rcrash.
+    is_crash_lock (LVL k') γ #lk R Rcrash ∗
+    |C={⊤, ∅}_(LVL (S k'))=> Rcrash.
   Proof.
     clear.
     iIntros "Hfree #HRcrash HR".

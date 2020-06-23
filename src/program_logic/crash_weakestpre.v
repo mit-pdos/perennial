@@ -156,6 +156,47 @@ Section cfupd.
     iApply fupd_mask_weaken; auto.
   Qed.
 
+  Lemma step_fupdN_fupd E1 E2 k P :
+    E1 ⊆ E2 →
+    (|={E1,E1}▷=>^k |={E1,E2}=> P) ⊣⊢ (|={E1}=> |={E1,E1}▷=>^k |={E1,E2}=> P).
+  Proof.
+    intros Hsub.
+    destruct k; simpl.
+    - iSplit; iIntros "H".
+      + iMod "H".
+        iApply fupd_intro_mask; auto.
+      + iMod "H"; auto.
+    - iSplit; iIntros "H".
+      + by iFrame.
+      + by iMod "H".
+  Qed.
+
+  Lemma step_fupdN_fupd_empty E2 k P :
+    (|={∅,∅}▷=>^k |={∅,E2}=> P) ⊣⊢ (|={∅}=> |={∅,∅}▷=>^k |={∅,E2}=> P).
+  Proof.
+    apply step_fupdN_fupd; set_solver.
+  Qed.
+
+  Theorem elim_modal_step_fupd_masks_trans k1 k2 E1 E2 E3 P Q :
+    (k1 ≤ k2)%nat →
+    (|={E1,E2}_k1=> P) -∗
+    (P -∗ (|={E2,E3}_(k2-k1)=> Q)) -∗
+    (|={E1,E3}_k2=> Q).
+  Proof.
+    iIntros (?) "Hfupd HQ".
+    (* rearrange theorem to an addition rather than a subtraction *)
+    destruct (ineq_to_diff _ _ H0) as (k&kd&->&?&?); subst; clear H0.
+    iApply (elim_modal_step_fupdN_subtract with "Hfupd"); first lia.
+    iIntros "HP".
+    iEval (rewrite step_fupdN_fupd_empty).
+    iMod "HP".
+    iMod ("HQ" with "HP") as "HQ".
+    iModIntro.
+    iApply (elim_modal_step_fupdN_subtract with "HQ"); first lia.
+    iIntros "HQ".
+    iApply step_fupd_iter_intro; auto.
+  Qed.
+
   Lemma step_fupdN_weaken_mask E1 E1' k P :
     E1' ⊆ E1 →
     (|={E1',E1'}_k=> P) -∗
@@ -240,6 +281,29 @@ Section cfupd.
       should just wait and see what principle is needed to combine cfupd
       modalities *)
   Abort.
+
+  Global Instance elim_modal_cfupd p k1 k2 E1 P Q :
+    ElimModal (2*k1 ≤ k2)%nat p false (cfupd k1 E1 ∅ P) P
+              (cfupd k2 E1 ∅ Q) (cfupd (k2-2*k1) E1 ∅ Q).
+  Proof.
+    rewrite /ElimModal intuitionistically_if_elim /cfupd /=.
+    iIntros (?) "[Hfupd HQ]".
+    iIntros "#HC".
+    iSpecialize ("Hfupd" with "HC").
+    iMod "Hfupd"; first lia.
+    iMod (fupd_intro_mask' _ ∅) as "Hclo"; first set_solver.
+    iApply (elim_modal_step_fupd_masks_trans with "Hfupd"); first lia.
+
+    iIntros "HP".
+    iSpecialize ("HQ" with "HP HC").
+    iMod "Hclo" as "_".
+    iMod "HQ"; first lia.
+    replace (k2 - k1 - k1 - (k2 - (k1 + (k1 + 0)))) with 0 by lia.
+    simpl.
+    iApply fupd_intro_mask; first set_solver.
+    iMod "HQ"; first lia.
+    iApply step_fupd_iter_intro; auto.
+  Qed.
 
   Global Instance cfupd_frame p k E1 E2 R P Q :
     Frame p R P Q →
