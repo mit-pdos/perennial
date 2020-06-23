@@ -1045,7 +1045,7 @@ Theorem wpc_Inode__Append {k E2}
   (S (S k) < n)%nat →
   (S (S k) < k')%nat →
   ↑nroot.@"readonly" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
-  {{{ "Hinode" ∷ is_inode l γ P ∗
+  {{{ "Hinode" ∷ is_inode l k γ P ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
       "HQc" ∷ (Q -∗ Qc) ∗
       "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
@@ -1130,6 +1130,7 @@ Proof.
     iIntros (γlk) "His_locked". iNamed 1.
     wpc_pures.
     wpc_bind_seq.
+    (*
     crash_lock_open "His_locked".
     iNamed 1.
     iNamed "Hlockinv".
@@ -1354,7 +1355,7 @@ Proof.
   iIntros (Φ) "(Hinode&Ha&Hfupd) HΦ"; iNamed "Hinode".
   wp_call.
 
-  (*wp_loadField.
+  wp_loadField.
   wp_apply (acquire_spec with "Hlock").
   iIntros "(His_locked&Hlk)"; iNamed "Hlk".
   iNamed "Hlockinv".
@@ -1542,5 +1543,5 @@ Proof.
         rewrite lookup_take; auto.
         word.
       }*)
-Admitted.*)
+Admitted.
 End goose.
