@@ -420,12 +420,9 @@ Section goose.
     { iIntros "H". iLeft in "HΦ". iApply "HΦ". eauto with iFrame. }
     iNext. iIntros (??) "Hpre".
     iMod (replicated_block_cfupd 98 with "Hpre HP") as "(#Hrblock&Hcfupd)".
-    (* XXX: iMod instances need to understand lvls better *)
     (* Here is the use of the cfupd to cancel out the rblock_cinv from crash condition,
        which is important because RepBlock__Read doesn't guarantee rblock_cinv! *)
-    iApply (wpc_crash_frame_wand' with "Hcfupd").
-    { lia. }
-    { auto. }
+    iMod "Hcfupd" as "_".
     iCache with "HΦ".
     { by iLeft in "HΦ". }
     wpc_pures.
@@ -434,12 +431,9 @@ Section goose.
     { apply LVL_le. lia. }
     wpc_apply (wpc_RepBlock__Read with "[HΦ $Hrblock]").
     { lia. }
-    iSplit.
-    (* XXX: why doesn't the cache fire *)
-    { by iLeft in "HΦ". }
+    iSplit; first iFromCache.
     iNext. iIntros. iModIntro. iFrame "# ∗".
-    iSplit.
-    { by iLeft in "HΦ". }
+    iSplit; first iFromCache.
     iIntros. iRight in "HΦ". iApply "HΦ".
     eauto.
   Qed.
