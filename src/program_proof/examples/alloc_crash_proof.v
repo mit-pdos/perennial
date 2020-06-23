@@ -323,20 +323,65 @@ Theorem is_allocator_alloc n l σ :
   is_allocator_mem_pre l σ
   ={⊤}=∗
   ∃ γ, is_allocator l (alloc.domain σ) γ n ∗
-  |C={⊤, ∅}_(LVL (S n))=> alloc_crash_cond (alloc.domain σ).
+  |C={⊤, ↑N}_(LVL (size σ + S n))=> alloc_crash_cond (alloc.domain σ).
 Proof.
-  iIntros "Hunused". iNamed 1.
+  iIntros "Hunused HP". iNamed 1.
   iMod (gen_heap_strong_init σ) as (γheap Hpf) "(Hctx&Hpts)".
   iMod (ghost_var_alloc (alloc.free σ)) as (γfree) "(Hfree&Hfree_frag)".
   set (γ := {| alloc_status_name := γheap;
                alloc_free_name := γfree |}).
-  (* TODO: this is where we need to allocate the [free_block]s, which contain a
-  bunch of [na_crash_inv]s. *)
+
+  iMod (inv_alloc Ninv _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx Hfree]") as "#Hinv".
+  { iNext. iExists _. iFrame. eauto. }
+
+  iMod (free_block_init γ n with "[$] [$]") as "(Hpending&Hblock)".
+  { set_solver. }
+  { eauto. }
+
+  iDestruct (cfupd_big_sepS with "Hpending") as "Hpending".
+
+  iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref)%I
+          with "[$Hfree_lock] [Hfreemap Hblock Hfree_frag]") as "#Hlock".
+  { iExists _; iFrame. }
+
+  iDestruct (inv_cfupd1 _ ⊤ with "Hinv") as "-#Hallocinv".
+  { set_solver. }
+
+  iModIntro.
+  iExists γ.
+  iSplitR.
+  { iExists _, _, _; iFrame "#". }
+
+
+  iFrame "Hinv". iFrame "HWP".
+  iAlways. iIntros "Hinner Hwand !> !> Hset".
+  iApply "Hwand". rewrite /alloc_crash_cond.
+  iNamed "Hinner".
+  iExists _. iFrame.
+  rewrite /alloc.unused.
+  rewrite -Hdom.
+  iSplitR; first by auto.
+  rewrite -?big_sepM_dom big_sepM_filter.
+  iDestruct (big_sepM_mono_with_inv with "Hstatus Hset") as "(_&$)".
+  iIntros (k x Hlookup) "(Hctx&Hfree)".
+  iDestruct "Hfree" as "[HΨ|Hused]".
+  - iFrame. destruct (decide _); eauto.
+  - iDestruct (gen_heap_valid with "[$] Hused") as %Hlookup'.
+    iFrame. rewrite decide_False //= => Heq. congruence.
+
+  iApply (wpc_inv' Ninv _ _ _ E2).
+  { assumption. }
+  { solve_ndisj. }
+  
+  }
+
+
+
   iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref)%I
           with "[$Hfree_lock] [-]") as "#Hlock".
   { iExists _; iFrame.
     iNext. admit.
-  }
+
 Abort.
 
 
