@@ -1,6 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
+From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.examples Require Import
      alloc_addrset alloc_crash_proof inode_proof.
@@ -31,6 +32,8 @@ Section goose.
   Let localN := N.@"local".
   Let allocN := N.@"allocator".
   Let inodeN := N.@"inode".
+
+  Definition num_inodes: nat := 5.
 
   Context (P: dir.t → iProp Σ).
   Implicit Types (σ: dir.t).
@@ -115,7 +118,7 @@ Section goose.
 
   (** Our own invariant (added to this is [P dir]) *)
   Definition dir_inv γblocks (dir: dir.t): iProp Σ :=
-    "%Hdom" ∷ ⌜ dom (gset nat) dir.(dir.inodes) = list_to_set (seq 0 5) ⌝ ∗
+    "%Hdom" ∷ ⌜ dom (gset nat) dir.(dir.inodes) = list_to_set (seq 0 num_inodes) ⌝ ∗
     "Hγblocks" ∷ inode_allblocks γblocks dir.(dir.inodes).
 
   (** In-memory state of the directory (persistent) *)
@@ -139,5 +142,30 @@ Section goose.
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
       "#Hinv" ∷ inv localN (∃ σ, dir_inv γblocks σ ∗ P σ)
   .
+
+  Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
+    (S k < k')%nat →
+    int.nat idx < num_inodes →
+    {{{ "#Hdir" ∷ is_dir l sz k' ∗
+        "Hfupd" ∷ (∀ σ blocks mb,
+                      ⌜σ.(dir.inodes) !! int.nat idx = Some blocks ∧
+                       mb = blocks !! int.nat i⌝ -∗
+                      ▷ P σ ={⊤ ∖ ↑inodeN ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
+    }}}
+      Dir__Read #l #idx #i @ NotStuck; LVL (S k); ⊤;E2
+    {{{ (s:Slice.t) mb, RET (slice_val s);
+        match mb with
+        | None => ⌜s = Slice.nil⌝
+        | Some b => is_block s 1 b
+        end ∗ Q mb }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (? Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    wpc_call.
+    { crash_case; auto. }
+    iCache with "HΦ Hfupd".
+    { crash_case; auto. }
+    iNamed "Hdir". iNamed "Hro_state".
+  Abort.
 
 End goose.
