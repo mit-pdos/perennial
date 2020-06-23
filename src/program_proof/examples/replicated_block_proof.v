@@ -108,8 +108,8 @@ Section goose.
   Theorem replicated_block_cfupd {γ l} k' addr σ0 :
     is_pre_rblock γ l addr σ0 -∗
     ▷ P σ0 ={⊤}=∗
-    is_rblock γ k' l addr ∗
-    |C={⊤,∅}_(LVL (S k'))=> ∃ σ, rblock_cinv addr σ ∗ P σ.
+      is_rblock γ k' l addr ∗
+      |C={⊤,∅}_(LVL (S k'))=> ∃ σ, rblock_cinv addr σ ∗ P σ.
   Proof.
     iIntros "Hpre HP"; iNamed "Hpre".
 
