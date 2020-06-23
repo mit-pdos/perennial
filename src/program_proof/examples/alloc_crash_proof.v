@@ -351,9 +351,9 @@ Proof.
   iExists γ.
   iSplitR.
   { iExists _, _, _; iFrame "#". }
+  iMod "Hallocinv" as "_".
 
 
-  iFrame "Hinv". iFrame "HWP".
   iAlways. iIntros "Hinner Hwand !> !> Hset".
   iApply "Hwand". rewrite /alloc_crash_cond.
   iNamed "Hinner".

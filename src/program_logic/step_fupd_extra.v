@@ -43,6 +43,14 @@ Proof.
   iIntros. iApply step_fupd_intro; auto. iNext. by iApply IHle.
 Qed.
 
+Lemma step_fupdN_fupd_swap {E : coPset} (P: PROP) (n: nat):
+  (|={E,E}▷=>^n |={E}=> P) -∗ |={E}=> |={E, E}▷=>^n P.
+Proof.
+  induction n => //=.
+  iIntros "H". iMod "H". iModIntro. iModIntro. iNext. iMod "H".
+  by iApply IHn.
+Qed.
+
 Lemma step_fupdN_later E1 E2 k (P: PROP):
   E2 ⊆ E1 →
   ▷^k P -∗ |={E1,E2}▷=>^k P.

@@ -316,6 +316,30 @@ Section cfupd.
       modalities *)
   Abort.
 
+  Global Instance elim_modal_cfupd_mask_change p k1 k2 E1 E2 E2' P Q :
+    ElimModal (k1 ≤ k2 ∧ E2 ⊆ E2')%nat p false (cfupd k1 E1 E2 P) True
+              (cfupd k2 E1 E2' Q) (cfupd (k2 - k1) E1 (E2' ∖ E2) (P -∗ Q)).
+  Proof.
+    rewrite /ElimModal intuitionistically_if_elim /cfupd /=.
+    iIntros (?) "[Hfupd HQ]".
+    iIntros "#HC".
+    iSpecialize ("Hfupd" with "HC").
+    iMod "Hfupd"; first lia.
+    iSpecialize ("HQ" with "[//] [$]").
+    iApply (step_fupdN_inner_wand with "HQ"); auto.
+    iIntros "HQ".
+    iEval (rewrite (union_difference_L E2 E2'); last by set_solver).
+    iMod (fupd_mask_frame_r with "Hfupd") as "HP". set_solver.
+    rewrite left_id_L.
+    iEval (replace k2 with ((k2 - k1) + k1) by lia).
+    rewrite Nat_iter_add.
+    iApply (step_fupdN_wand with "HQ").
+    iIntros "HQ".
+    iApply (step_fupdN_wand with "HP").
+    iIntros "HP". iMod "HP". iMod "HQ". iModIntro. by iApply "HQ".
+  Qed.
+
+
   Global Instance elim_modal_cfupd p k1 k2 E1 P Q :
     ElimModal (2*k1 ≤ k2)%nat p false (cfupd k1 E1 ∅ P) P
               (cfupd k2 E1 ∅ Q) (cfupd (k2-2*k1) E1 ∅ Q).
@@ -339,10 +363,13 @@ Section cfupd.
     iApply step_fupd_iter_intro; auto.
   Qed.
 
+  (* I don't think this is provable - JDT *)
   Global Instance elim_modal_cfupd_mask_change p k1 k2 E1 E2 E2' P Q :
     ElimModal (k1 ≤ k2 ∧ E2 ⊆ E1)%nat p false (cfupd k1 E1 E2 P) (cfupd k1 E1 ∅ P)
               (cfupd k2 E1 E2' Q) (cfupd k2 E1 (E2' ∖ E2) Q).
   Proof.
+  Abort.
+  (*
     rewrite /ElimModal intuitionistically_if_elim /cfupd /=.
     iIntros (?) "[Hfupd HQ]".
     iIntros "#HC".
@@ -364,6 +391,7 @@ Section cfupd.
     iMod "HQ"; first lia.
     iApply step_fupd_iter_intro; auto.
   Qed.
+   *)
 
   Global Instance cfupd_frame p k E1 E2 R P Q :
     Frame p R P Q →
