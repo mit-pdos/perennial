@@ -199,6 +199,17 @@ Definition is_allocator_pre γ n d freeset : iProp Σ :=
 
 (* TODO: prove something useful for initializing from zero blocks *)
 
+Lemma alloc_post_crash_free_used σ :
+  alloc.free σ = alloc.domain σ ∖ alloc.used σ ↔
+  alloc_post_crash σ.
+Proof.
+  clear.
+  rewrite /alloc_post_crash.
+  pose proof (alloc.unused_used_domain σ).
+  pose proof (alloc.unused_used_disjoint σ).
+  set_solver.
+Qed.
+
 Theorem wp_newAllocator γ σ mref (start sz: u64) (used domset freeset : gset u64) :
   int.val start + int.val sz < 2^64 →
   alloc.domain σ = rangeSet (int.val start) (int.val sz) →
@@ -232,9 +243,9 @@ Proof using allocG0.
   iApply ("HΦ" $! _).
   iExists _, _, _; iFrame "#".
   rewrite Husedeq Hdom. iFrame.
-  iPureIntro. admit.
-  Fail idtac.
-Admitted.
+  iPureIntro.
+  apply alloc_post_crash_free_used; auto.
+Qed.
 
 Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
 (*
