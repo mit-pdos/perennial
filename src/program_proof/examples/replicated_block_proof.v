@@ -510,3 +510,40 @@ Section recov.
   Qed.
 End recov.
 
+Existing Instances subG_stagedG subG_lockΣ.
+
+From Perennial.program_logic Require Import recovery_adequacy.
+From Perennial.goose_lang Require Export adequacy recovery_adequacy.
+Definition repΣ := #[lockΣ; stagedΣ; heapΣ; crashΣ].
+
+Theorem OpenRead_adequate σ dref addr :
+  (* We assume the addresses we replicate are in the disk domain *)
+  int.val addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
+  int.val (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
+  recv_adequate (CS := heap_crash_lang) NotStuck (OpenRead dref addr) (OpenRead dref addr)
+                σ (λ v _, True) (λ v _, True) (λ _, True).
+Proof.
+  rewrite ?elem_of_dom.
+  intros (d1&Hin1) (d2&Hin2).
+  apply (heap_recv_adequacy (repΣ) _ (LVL 100) _ _ _ _ _ _ (λ _, True)%I).
+  { simpl. auto. }
+  iIntros (??) "Hstart _ _".
+  iModIntro.
+  iSplitL "".
+  { iAlways; iIntros. iMod (fupd_intro_mask' _ ∅); eauto. }
+  iSplitL "".
+  { iAlways; iIntros. iAlways. iMod (fupd_intro_mask' _ ∅); eauto. }
+  iApply wpr_OpenRead.
+  rewrite /ffi_start//=.
+  rewrite /rblock_cinv.
+  iDestruct (big_sepM_delete _ _ (int.val addr) with "Hstart") as "(Hd1&Hmap)"; first eapply Hin1.
+  iDestruct (big_sepM_delete _ _ (int.val (word.add addr 1)) with "Hmap") as "(Hd2&Hmap)".
+  { rewrite lookup_delete_ne //=.
+    (* XXX: how to do this very trivial u64 fact:
+
+       int.val addr ≠ int.val (word.add addr 1)
+     *)
+    admit.
+  }
+  iFrame. iExists _. iFrame.
+Admitted.
