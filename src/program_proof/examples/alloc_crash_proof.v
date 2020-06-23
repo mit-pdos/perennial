@@ -730,15 +730,6 @@ Proof.
 Qed.
 *)
 
-(* TODO: upstream: https://gitlab.mpi-sws.org/iris/stdpp/-/merge_requests/162 *)
-Lemma gset_to_gmap_difference_singleton `{Countable K} {A} (x : A) i (Y: gset K) :
-  gset_to_gmap x (Y ∖ {[i]}) = delete i (gset_to_gmap x Y).
-Proof.
-  apply map_eq; intros j; apply option_eq; intros y.
-  rewrite lookup_delete_Some !lookup_gset_to_gmap_Some elem_of_difference
-    elem_of_singleton; destruct (decide (i = j)); intuition.
-Qed.
-
 (** XXX: should probably make this a WPC in case the fupd requires a durable resource *)
 Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   ↑N ⊆ E →
