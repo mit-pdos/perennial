@@ -28,10 +28,11 @@ Section goose.
   Context `{!inG Σ blocksR}.
   Context `{!inG Σ allocsR}.
 
+  (* FIXME: the mask should be a paremter, not fixed here!
+     Then we can hide the masks of our sub-libs. *)
   Let N := nroot.@"dir".
-  Let localN := N.@"local".
-  Let allocN := N.@"allocator".
-  Let inodeN := N.@"inode".
+  Let allocN := nroot.@"allocator".
+  Let inodeN := nroot.@"inode".
 
   Definition num_inodes: nat := 5.
 
@@ -118,7 +119,7 @@ Section goose.
 
   (** Our own invariant (added to this is [P dir]) *)
   Definition dir_inv γblocks (dir: dir.t): iProp Σ :=
-    (*"%Hdom" ∷ ⌜ dom (gset nat) dir.(dir.inodes) = list_to_set (seq 0 num_inodes) ⌝ ∗ *)
+    "%Hdom" ∷ ⌜ ∀ idx, idx < num_inodes → is_Some (dir.(dir.inodes) !! idx) ⌝ ∗
     "Hγblocks" ∷ inode_allblocks γblocks dir.(dir.inodes).
 
   (** In-memory state of the directory (persistent) *)
@@ -141,7 +142,7 @@ Section goose.
         is_inode inode_ref (LVL k') γinode (Pinode γblocks γused i) (U64 0)) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
-      "#Hinv" ∷ inv localN (∃ σ, dir_inv γblocks σ ∗ P σ)
+      "#Hinv" ∷ inv N (∃ σ, dir_inv γblocks σ ∗ P σ)
   .
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
@@ -166,8 +167,9 @@ Section goose.
     { crash_case; auto. }
     iCache with "HΦ Hfupd".
     { crash_case; auto. }
-    iNamed "Hdir". iNamed "Hro_state". rewrite -Hlen in Hidx.
-    destruct (lookup_lt_is_Some_2 _ _ Hidx) as [inode_ref Hinode_ref].
+    iNamed "Hdir". iNamed "Hro_state".
+    edestruct (lookup_lt_is_Some_2 inode_refs) as [inode_ref Hinode_ref].
+    { rewrite Hlen. done. }
     iDestruct (big_sepL_lookup _ _ _ _ Hinode_ref with "Hinodes") as "Hinode {Hinodes}".
     wpc_frame_seq.
     wp_loadField.
@@ -175,6 +177,27 @@ Section goose.
     wp_apply (wp_SliceGet _ _ _ _ _ inode_refs with "[$inodes_s //]").
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
-  Abort.
+    (* Now we get to the actual read operation. *)
+    iApply wpc_Inode__Read; first done.
+    iFrame "Hinode". iSplit.
+    { iLeft in "HΦ". by iApply "HΦ". }
+    iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
+    iInv N as (σD) "[>Hdir HPD]".
+    (* We need to learn that this inode exists in σD. *)
+    rewrite /dir_inv. iNamed "Hdir".
+    destruct (Hdom _ Hidx) as [σI' HσI'].
+    iDestruct (inode_blocks_lookup with "Hownblocks Hγblocks") as %Hblock.
+    simplify_eq.
+    iMod ("Hfupd" with "[] HPD") as "[HPD HQ]".
+    { iPureIntro. eauto. }
+    iModIntro. iSplitL "Hγblocks HPD".
+    { (* re-establish dir_inv *) eauto 10 with iFrame. }
+    iModIntro. iSplitL "Hownblocks Hused1".
+    { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }
+    iSplit.
+    { iLeft in "HΦ". by iApply "HΦ". }
+    iIntros (s) "Hpost". iRight in "HΦ". iApply "HΦ".
+    iFrame. done.
+  Qed.
 
 End goose.

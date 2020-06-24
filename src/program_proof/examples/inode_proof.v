@@ -307,9 +307,9 @@ Theorem wpc_Inode__Read {k E2} {l γ k' P addr} {off: u64} :
   (S k < k')%nat →
   ∀ Φ Φc,
       "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
-      "Hfupd" ∷ (Φc ∧ ▷ ∀ σ σ' mb,
-        ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
-        ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ' ∗ (Φc ∧ ∀ s,
+      "Hfupd" ∷ (Φc ∧ ▷ ∀ σ mb,
+        ⌜mb = σ.(inode.blocks) !! int.nat off⌝ ∗
+        ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ ∗ (Φc ∧ ∀ s,
           match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end -∗ Φ (slice_val s))) -∗
     WPC Inode__Read #l #off @ NotStuck; LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
@@ -349,9 +349,8 @@ Proof.
   iNamed 1.
   wpc_if_destruct.
   - iRight in "Hfupd".
-    iMod ("Hfupd" $! σ σ None with "[$HP]") as "[HP HQ]".
+    iMod ("Hfupd" $! σ None with "[$HP]") as "[HP HQ]".
     { iPureIntro.
-      split; auto.
       rewrite lookup_ge_None_2 //.
       lia. }
     wpc_pures.
@@ -386,7 +385,7 @@ Proof.
     iDestruct (is_slice_split with "[$Haddrs_small $Haddrs]") as "Haddrs".
     iDestruct (big_sepL2_lookup_acc with "Hdata") as "[Hb Hdata]"; eauto.
     iRight in "Hfupd".
-    iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
+    iMod ("Hfupd" $! σ with "[$HP]") as "[HP HQ]".
     { iPureIntro; eauto. }
     wpc_apply (wpc_Read with "Hb").
     iSplit.
@@ -429,14 +428,14 @@ Theorem wpc_Inode__Read_triple {k E2} {l γ k' P addr} {off: u64} Q :
        | Some b => is_block s 1 b
        | None => ⌜s = Slice.nil⌝
        end) ∗ Q mb }}}
-    {{{ True }}}.
+  {{{ True }}}.
 Proof.
   iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iApply wpc_Inode__Read; first done.
   iFrame "Hinode".
   iSplit.
   { iLeft in "HΦ". iApply "HΦ". done. }
-  iNext. iIntros (σ σ' mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
+  iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
   { iLeft in "HΦ". iApply "HΦ". done. }
   iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame. done.
