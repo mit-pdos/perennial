@@ -140,9 +140,9 @@ Section goose.
       "%Hlen" ∷ ⌜length inode_refs = num_inodes⌝ ∗
       "Hro_state" ∷ dir_state l alloc_ref inode_refs ∗
       "#Hinodes" ∷ ([∗ list] i ↦ inode_ref ∈ inode_refs,
-        is_inode inodeN inode_ref (LVL k') γinode (Pinode γblocks γused i) (U64 0)) ∗
+        is_inode inodeN inode_ref (LVL k') γinode (Pinode γblocks γused i) (U64 (Z.of_nat i))) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
-        allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
+        allocΨ allocN alloc_ref (rangeSet num_inodes (sz-num_inodes)) γalloc k' ∗
       "#Hinv" ∷ inv dirN (∃ σ, dir_inv γblocks σ ∗ P σ)
   .
 
