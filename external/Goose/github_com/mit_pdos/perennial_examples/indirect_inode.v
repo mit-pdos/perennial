@@ -69,8 +69,9 @@ Definition Inode__UsedBlocks: val :=
     ForSlice uint64T <> "a" "direct"
       ("addrs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "addrs") "a");;
     ForSlice uint64T <> "blkAddr" "indirect"
-      ("addrs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "addrs") "blkAddr";;
-      "addrs" <-[slice.T uint64T] SliceAppendSlice uint64T (![slice.T uint64T] "addrs") (readIndirect (struct.loadF Inode.S "d" "i") "blkAddr"));;
+      ("addrs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "addrs") "blkAddr");;
+    ForSlice uint64T <> "blkAddr" "indirect"
+      ("addrs" <-[slice.T uint64T] SliceAppendSlice uint64T (![slice.T uint64T] "addrs") (readIndirect (struct.loadF Inode.S "d" "i") "blkAddr"));;
     ![slice.T uint64T] "addrs".
 
 Definition indNum: val :=
