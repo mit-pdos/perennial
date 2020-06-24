@@ -758,7 +758,7 @@ Proof.
 
       iSpecialize ("Hdata" with "Hb'").
       iAssert (∃ indBlkAddrs padding,
-                  ⌜indBlkAddrsList !! int.nat v = Some indBlkAddrs⌝
+                  ⌜indBlkAddrsList !! int.nat v = Some indBlkAddrs⌝ ∗
                   is_indirect addr indBlkAddrs indBlk (ind_blocks_at_index σ (int.nat v)) padding)%I
         with "[diskAddr HindBlkAddrs Hdata]" as "HaddrIndirect".
       {
