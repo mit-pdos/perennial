@@ -218,4 +218,23 @@ Section goose.
     iFrame. done.
   Qed.
 
+  Lemma reserve_fupd_Palloc E γused :
+    ⊢ reserve_fupd E (Palloc γused).
+  Proof.
+    iIntros (s s' ma Hma) "HPalloc".
+    destruct ma; intuition subst; auto.
+    iModIntro.
+    rewrite /Palloc /named.
+    rewrite alloc_used_reserve //.
+  Qed.
+
+  Lemma free_fupd_Palloc E γused :
+    ⊢ ∀ a, free_fupd E (Palloc γused) a.
+  Proof.
+    iIntros (a s s') "HPalloc".
+    iModIntro.
+    rewrite /Palloc /named.
+    rewrite alloc_free_reserved //.
+  Qed.
+
 End goose.

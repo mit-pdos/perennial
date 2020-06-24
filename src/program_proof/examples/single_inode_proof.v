@@ -322,6 +322,28 @@ Section goose.
       iApply "HΦ"; iFrame.
   Qed.
 
+  (* these two fupds are easy to prove universally because the change they make
+  doesn't affect the free set, which is all that Palloc talks about *)
+
+  Lemma reserve_fupd_Palloc E γused :
+    ⊢ reserve_fupd E (Palloc γused).
+  Proof.
+    iIntros (s s' ma Hma) "HPalloc".
+    destruct ma; intuition subst; auto.
+    iModIntro.
+    rewrite /Palloc /named.
+    rewrite alloc_used_reserve //.
+  Qed.
+
+  Lemma free_fupd_Palloc E γused :
+    ⊢ ∀ a, free_fupd E (Palloc γused) a.
+  Proof.
+    iIntros (a s s') "HPalloc".
+    iModIntro.
+    rewrite /Palloc /named.
+    rewrite alloc_free_reserved //.
+  Qed.
+
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
     (2 + k < k')%nat →
     nroot.@"readonly" ## N →
@@ -341,10 +363,10 @@ Section goose.
     iCache with "HΦ".
     { crash_case; auto. }
     iNamed "Hinode". iNamed "Hro_state".
-    wpc_bind (struct.loadF _ _ _); wpc_frame "HΦ".
+    wpc_bind (struct.loadF _ _ _); wpc_frame.
     wp_loadField.
     iNamed 1.
-    wpc_bind (struct.loadF _ _ _); wpc_frame "HΦ".
+    wpc_bind (struct.loadF _ _ _); wpc_frame.
     wp_loadField.
     iNamed 1.
     wpc_apply (wpc_Inode__Append inodeN allocN Q emp%I
@@ -354,22 +376,14 @@ Section goose.
       iSplitR.
       { by iIntros "_". }
       iSplit; [ | iSplit; [ | iSplit ] ]; try iModIntro.
-      - iIntros (s s' ma Hma) "HPalloc".
-        destruct ma; intuition subst; auto.
-        iEval (rewrite /Palloc) in "HPalloc"; iNamed.
-        iEval (rewrite /Palloc /named).
-        rewrite alloc_used_reserve //.
-      - iIntros (a s s') "HPalloc".
-        iEval (rewrite /Palloc) in "HPalloc"; iNamed.
-        iEval (rewrite /Palloc /named).
-        rewrite alloc_free_reserved //.
+      - iApply reserve_fupd_Palloc.
+      - iApply free_fupd_Palloc.
       - iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
         iEval (rewrite /Palloc) in "HPalloc"; iNamed.
         iNamed "HPinode".
         iDestruct (ghost_var_agree with "Hused2 Hused1") as %Heq;
           rewrite -Heq.
         iInv "Hinv" as ([σ0]) "[>Hinner HP]" "Hclose".
-        iNamed "Hinner".
         iMod (ghost_var_update _ (union {[addr']} σ.(inode.addrs))
                                with "Hused2 Hused1") as
             "[Hused Hγused]".
