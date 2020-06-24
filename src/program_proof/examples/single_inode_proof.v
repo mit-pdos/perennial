@@ -63,16 +63,17 @@ Section goose.
   (** State of unallocated blocks *)
   Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
 
-  Definition pre_s_inode l (sz: Z) : iProp Σ :=
+  Definition pre_s_inode l (sz: Z) σ : iProp Σ :=
     ∃ inode_ref alloc_ref
       γinode γused γblocks,
-    s_inode_state l inode_ref alloc_ref ∗
-    (∃ s_inode, pre_inode inode_ref γinode (U64 0) s_inode ∗
-                Pinode γblocks γused s_inode) ∗
-    (∃ s_alloc, is_allocator_mem_pre alloc_ref s_alloc ∗
-                ⌜alloc.domain s_alloc = rangeSet 1 (sz-1)⌝ ∗
-                ([∗ set] k ∈ alloc.unused s_alloc, allocΨ k) ∗
-                Palloc γused s_alloc).
+    "#Hstate" ∷ s_inode_state l inode_ref alloc_ref ∗
+    "Hs_inv" ∷ s_inode_inv γblocks σ ∗
+    "Hinode" ∷ (∃ s_inode, "Hpre_inode" ∷ pre_inode inode_ref γinode (U64 0) s_inode ∗
+                "HPinode" ∷ Pinode γblocks γused s_inode) ∗
+    "Halloc" ∷ (∃ s_alloc, "Halloc_mem" ∷ is_allocator_mem_pre alloc_ref s_alloc ∗
+                "%Halloc_dom" ∷ ⌜alloc.domain s_alloc = rangeSet 1 (sz-1)⌝ ∗
+                "Hunused" ∷ ([∗ set] k ∈ alloc.unused s_alloc, allocΨ k) ∗
+                "HPalloc" ∷ Palloc γused s_alloc).
 
   Definition is_single_inode l (sz: Z) k' : iProp Σ :=
     ∃ (inode_ref alloc_ref: loc) γinode γalloc γused γblocks,
@@ -88,7 +89,7 @@ Section goose.
     "Hinode" ∷ (∃ s_inode, "Hinode_cinv" ∷ inode_cinv (U64 0) s_inode ∗
                            "HPinode" ∷ Pinode γblocks γused s_inode) ∗
     "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (sz-1)) post_crash ∗
-    "Hs_inode" ∷ (s_inode_inv γblocks σ)
+    "Hs_inode" ∷ s_inode_inv γblocks σ
   .
   Local Hint Extern 1 (environments.envs_entails _ (s_inode_cinv _ _ _)) => unfold s_inode_cinv : core.
 
@@ -120,28 +121,25 @@ Section goose.
     (k' < k)%nat →
     ↑allocN ⊆ E2 →
     (0 < int.val sz)%Z →
-    {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 true ∗ "HP" ∷ ▷ P σ0 }}}
+    {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 true }}}
       Open #d_ref #sz @ NotStuck; LVL (S (S (S k + (int.nat sz-1)))); ⊤; E2
-    {{{ l, RET #l; pre_s_inode l (int.val sz) }}}
-    {{{ ∃ σ', s_inode_cinv (int.val sz) σ' false ∗ ▷ P σ' }}}.
+    {{{ l, RET #l; pre_s_inode l (int.val sz) σ0 }}}
+    {{{ s_inode_cinv (int.val sz) σ0 true }}}.
   Proof.
     iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
-    { iExists _; iFrame.
-      iApply (s_inode_cinv_post_crash with "[$]"). }
+    { iFrame. }
     iNamed "Hcinv".
     iNamed "Hinode".
-    iCache with "HΦ HP Halloc Hs_inode Hinode_cinv HPinode".
+    iCache with "HΦ Halloc Hs_inode Hinode_cinv HPinode".
     { crash_case.
-      iExists _. iFrame.
-      iApply s_inode_cinv_post_crash.
       iExists _, _. iFrame. iExists _. iFrame. }
     wpc_apply (inode_proof.wpc_Open with "Hinode_cinv").
     iSplit.
     { iIntros  "Hinode_cinv".
       iFromCache. }
     iIntros "!>" (inode_ref γ) "Hpre_inode".
-    iCache with "HΦ HP Halloc Hs_inode Hpre_inode HPinode".
+    iCache with "HΦ Halloc Hs_inode Hpre_inode HPinode".
     { iDestruct (pre_inode_to_cinv with "Hpre_inode") as "Hinode_cinv".
       iFromCache. }
     (* finished opening inode *)
@@ -156,14 +154,13 @@ Section goose.
     wpc_pures.
     iDestruct (pre_inode_read_addrs with "Hpre_inode") as (addrs) "(Hused_blocks&Hdurable&Hpre_inode)".
     wpc_bind_seq.
-    wpc_frame "HΦ HP Halloc Hs_inode Hdurable HPinode".
+    wpc_frame "HΦ Halloc Hs_inode Hdurable HPinode".
     { crash_case.
-      iExists _; iFrame.
-      iApply s_inode_cinv_post_crash.
       iExists _, _; iFrame.
       iExists _; iFrame.
       iExists _; iFrame. }
 
+    (* reconstruct the used set from the inode *)
     wp_apply (wp_Inode__UsedBlocks with "Hused_blocks").
     iIntros (s) "(Haddrs&%Haddr_set&Hused_blocks)".
     iDestruct (is_slice_small_read with "Haddrs") as "[Haddrs_small Haddrs]".
@@ -174,10 +171,14 @@ Section goose.
     iNamed 1.
     iSpecialize ("Hpre_inode" with "Hused_blocks Hdurable").
     wpc_pures.
+
+    (* we need to do a little work to prove that the reconstructed used set is
+    correct (since it's just stored in the one inode, this is just unifying two ghost variables) *)
     rewrite left_id_L Haddr_set.
     iDestruct "Halloc" as (s_alloc) "Halloc"; iNamed "Halloc".
     iDestruct (unify_used_set with "HPalloc HPinode") as %Hused_inode.
-    iCache with "HΦ HP Hs_inode Hpre_inode HPinode HPalloc Hunused".
+
+    iCache with "HΦ Hs_inode Hpre_inode HPinode HPalloc Hunused".
     { iAssert (alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (int.val sz - 1)) true)
             with "[HPalloc Hunused]" as "Halloc".
       { iExists _; iFrame "∗ %". }
@@ -203,10 +204,34 @@ Section goose.
     iNamed 1.
     iApply "HΦ".
     iExists inode_ref, alloc_ref, _, _, _.
+    iFrame "Hs_inode".
     iSplitR.
     { iFrame "#". }
     iSplitL "Hpre_inode HPinode".
     { iExists _; iFrame. }
+    iExists _; iFrame "∗ %".
+  Qed.
+
+  Lemma is_allocator_pre_post_crash alloc_ref s_alloc :
+    is_allocator_mem_pre alloc_ref s_alloc -∗ ⌜alloc_post_crash s_alloc⌝.
+  Proof.
+    iNamed 1.
+    iFrame "%".
+  Qed.
+
+  Theorem pre_s_inode_to_cinv l sz σ :
+    pre_s_inode l sz σ -∗
+    s_inode_cinv sz σ true.
+  Proof.
+    iNamed 1.
+    iExists _, _; iFrame.
+    iNamed "Hinode".
+    iNamed "Halloc".
+    iDestruct (is_allocator_pre_post_crash with "Halloc_mem") as %Hpost_crash.
+    iSplitL "Hpre_inode HPinode".
+    { iExists _; iFrame.
+      iNamed "Hpre_inode".
+      iApply inode_linv_to_cinv; auto. }
     iExists _; iFrame "∗ %".
   Qed.
 
