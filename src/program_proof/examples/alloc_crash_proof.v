@@ -247,11 +247,15 @@ Proof.
       eauto.
 Qed.
 
-Definition new_alloc_state (start sz: Z) (used: gset u64): alloc.t :=
+(* this code is no longer used, but left here in case we need to construct an
+allocator state from nothing (say for initialization) since it's a bit
+complicated. *)
+Section new_alloc_state.
+Local Definition new_alloc_state (start sz: Z) (used: gset u64): alloc.t :=
   gset_to_gmap block_used used ∪
   gset_to_gmap block_free (rangeSet start sz).
 
-Lemma new_alloc_state_no_reserved start sz used :
+Local Lemma new_alloc_state_no_reserved start sz used :
   dom (gset u64) (filter (λ '(_, s), s = block_reserved)
                           (new_alloc_state start sz used)) = ∅.
 Proof.
@@ -266,17 +270,31 @@ Proof.
     intuition congruence.
 Qed.
 
-Theorem new_alloc_state_properties start sz used :
+Local Theorem new_alloc_state_properties start sz used :
   used ⊆ rangeSet start sz →
   let σ := new_alloc_state start sz used in
   alloc.domain σ = rangeSet start sz ∧
-  alloc.free σ = alloc.domain σ ∖ alloc.used σ ∧
+  alloc.free σ = alloc.domain σ ∖ used ∧
   alloc.used σ = used.
 Proof.
   clear.
   intros.
   rewrite /alloc.domain.
-  split_and!.
+  assert (alloc.used σ = used).
+  { subst σ; rewrite /new_alloc_state /alloc.used.
+    apply gset_eq; intros.
+    rewrite elem_of_filter_dom /=.
+    setoid_rewrite lookup_union_Some_raw.
+    setoid_rewrite lookup_gset_to_gmap_Some.
+    setoid_rewrite lookup_gset_to_gmap_None.
+    split.
+    - destruct 1 as [y [Hlookup ->]].
+      intuition congruence.
+    - intros.
+      exists block_used; intuition eauto.
+  }
+  rewrite -H0.
+  split_and!; auto.
   - rewrite /new_alloc_state.
     rewrite dom_union_L.
     rewrite !dom_gset_to_gmap.
@@ -284,30 +302,19 @@ Proof.
   - apply alloc_post_crash_free_used.
     apply alloc_post_crash_no_reserved.
     apply new_alloc_state_no_reserved.
-  - subst σ; rewrite /new_alloc_state /alloc.used.
-    apply gset_eq; intros.
-    rewrite elem_of_filter_dom /=.
-    setoid_rewrite lookup_union_Some_raw.
-    setoid_rewrite lookup_gset_to_gmap_Some.
-    setoid_rewrite lookup_gset_to_gmap_None.
-    split.
-    + destruct 1 as [y [Hlookup ->]].
-      intuition congruence.
-    + intros.
-      exists block_used; intuition eauto.
 Qed.
+End new_alloc_state.
 
-(* TODO: remove σ and related assumptions, move those to the postcondition *)
-Theorem wp_newAllocator σ mref (start sz: u64) (used: gset u64) :
+Theorem wp_newAllocator {mref} {start sz: u64} σ (used: gset u64) :
   int.val start + int.val sz < 2^64 →
   alloc.domain σ = rangeSet (int.val start) (int.val sz) →
-  alloc.free σ = alloc.domain σ ∖ alloc.used σ →
   alloc.used σ = used →
+  alloc_post_crash σ →
   {{{ is_addrset mref used  }}}
     New #start #sz #mref
   {{{ l, RET #l; is_allocator_mem_pre l σ }}}.
 Proof using allocG0.
-  iIntros (Hoverflow Hdom Husedeq ? Φ) "Hused HΦ"; subst used.
+  iIntros (Hoverflow Hdom Hused Hfree Φ) "Hused HΦ".
   wp_call.
   wp_apply wp_freeRange; first by auto.
   iIntros (mref') "Hfree".
@@ -322,11 +329,14 @@ Proof using allocG0.
   iMod (readonly_alloc_1 with "m") as "#m".
   iMod (readonly_alloc_1 with "free") as "#free".
   iModIntro.
-  iApply ("HΦ" $! _).
-  iExists _, _, _; iFrame "#".
-  rewrite Husedeq Hdom. iFrame.
-  iPureIntro.
-  apply alloc_post_crash_free_used; auto.
+  iApply "HΦ".
+  iExists _, _, _; iFrame "# ∗".
+  iSplitR; first auto.
+  iExactEq "Hfree".
+  rewrite /named.
+  f_equal.
+  apply alloc_post_crash_free_used in Hfree.
+  congruence.
 Qed.
 
 Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
@@ -346,8 +356,18 @@ Proof. apply _. Qed.
 Definition alloc_crash_cond' σ : iProp Σ :=
   [∗ set] k ∈ alloc.unused σ, Ψ k.
 
-Definition alloc_crash_cond (d: gset u64) : iProp Σ :=
-  ∃ σ, ⌜dom _ σ = d⌝ ∗ P σ ∗ [∗ set] k ∈ alloc.unused σ, Ψ k.
+Definition alloc_crash_cond (d: gset u64) (post_crash: bool) : iProp Σ :=
+  ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
+       "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
+       "HPalloc" ∷ P σ ∗
+       "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
+
+Lemma alloc_crash_cond_from_post_crash d :
+  alloc_crash_cond d true -∗ alloc_crash_cond d false.
+Proof.
+  iNamed 1.
+  iExists _; iFrame "% ∗".
+Qed.
 
 Theorem reserved_block_weaken γ n k R R' :
   □(R -∗ R') -∗
@@ -405,7 +425,7 @@ Theorem is_allocator_alloc n l σ :
   is_allocator_mem_pre l σ
   ={⊤}=∗
   ∃ γ, is_allocator l (alloc.domain σ) γ n ∗
-  |C={⊤, ↑N}_(LVL (size (alloc.domain σ) + S (S n)))=> alloc_crash_cond (alloc.domain σ).
+  |C={⊤, ↑N}_(LVL (size (alloc.domain σ) + S (S n)))=> alloc_crash_cond (alloc.domain σ) false.
 Proof.
   clear Hitemcrash.
   iIntros "Hunused HP". iNamed 1.

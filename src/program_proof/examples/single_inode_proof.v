@@ -71,6 +71,7 @@ Section goose.
                 Pinode γblocks γused s_inode) ∗
     (∃ s_alloc, is_allocator_mem_pre alloc_ref s_alloc ∗
                 ⌜alloc.domain s_alloc = rangeSet 1 (sz-1)⌝ ∗
+                ([∗ set] k ∈ alloc.unused s_alloc, allocΨ k) ∗
                 Palloc γused s_alloc).
 
   Definition is_single_inode l (sz: Z) k' : iProp Σ :=
@@ -82,14 +83,22 @@ Section goose.
       "#Hinv" ∷ inv s_inodeN (∃ σ, s_inode_inv γblocks σ ∗ P σ)
   .
 
-  Definition s_inode_cinv sz σ : iProp Σ :=
+  Definition s_inode_cinv sz σ (post_crash: bool) : iProp Σ :=
     ∃ γblocks γused,
     "Hinode" ∷ (∃ s_inode, "Hinode_cinv" ∷ inode_cinv (U64 0) s_inode ∗
                            "HPinode" ∷ Pinode γblocks γused s_inode) ∗
-    "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (sz-1)) ∗
+    "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (sz-1)) post_crash ∗
     "Hs_inode" ∷ (s_inode_inv γblocks σ)
   .
-  Local Hint Extern 1 (environments.envs_entails _ (s_inode_cinv _)) => unfold s_inode_cinv : core.
+  Local Hint Extern 1 (environments.envs_entails _ (s_inode_cinv _ _ _)) => unfold s_inode_cinv : core.
+
+  Theorem s_inode_cinv_post_crash sz σ :
+    s_inode_cinv sz σ true -∗ s_inode_cinv sz σ false.
+  Proof.
+    iNamed 1.
+    iExists _, _; iFrame.
+    iApply (alloc_crash_cond_from_post_crash with "[$]").
+  Qed.
 
   Instance s_inode_inv_Timeless :
     Timeless (s_inode_inv γblocks blocks).
@@ -111,18 +120,22 @@ Section goose.
     (k' < k)%nat →
     ↑allocN ⊆ E2 →
     (0 < int.val sz)%Z →
-    {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 ∗ "HP" ∷ ▷ P σ0 }}}
+    {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 true ∗ "HP" ∷ ▷ P σ0 }}}
       Open #d_ref #sz @ NotStuck; LVL (S (S (S k + (int.nat sz-1)))); ⊤; E2
     {{{ l, RET #l; pre_s_inode l (int.val sz) }}}
-    {{{ ∃ σ', s_inode_cinv (int.val sz) σ' ∗ ▷ P σ' }}}.
+    {{{ ∃ σ', s_inode_cinv (int.val sz) σ' false ∗ ▷ P σ' }}}.
   Proof.
     iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
-    { eauto with iFrame. }
+    { iExists _; iFrame.
+      iApply (s_inode_cinv_post_crash with "[$]"). }
     iNamed "Hcinv".
     iNamed "Hinode".
     iCache with "HΦ HP Halloc Hs_inode Hinode_cinv HPinode".
-    { crash_case. iExists _. iFrame. iExists _, _. iFrame. iExists _. iFrame. }
+    { crash_case.
+      iExists _. iFrame.
+      iApply s_inode_cinv_post_crash.
+      iExists _, _. iFrame. iExists _. iFrame. }
     wpc_apply (inode_proof.wpc_Open with "Hinode_cinv").
     iSplit.
     { iIntros  "Hinode_cinv".
@@ -146,6 +159,7 @@ Section goose.
     wpc_frame "HΦ HP Halloc Hs_inode Hdurable HPinode".
     { crash_case.
       iExists _; iFrame.
+      iApply s_inode_cinv_post_crash.
       iExists _, _; iFrame.
       iExists _; iFrame.
       iExists _; iFrame. }
@@ -160,13 +174,23 @@ Section goose.
     iNamed 1.
     iSpecialize ("Hpre_inode" with "Hused_blocks Hdurable").
     wpc_pures.
+    rewrite left_id_L Haddr_set.
+    iDestruct "Halloc" as (s_alloc) "Halloc"; iNamed "Halloc".
+    iDestruct (unify_used_set with "HPalloc HPinode") as %Hused_inode.
+    iCache with "HΦ HP Hs_inode Hpre_inode HPinode HPalloc Hunused".
+    { iAssert (alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (int.val sz - 1)) true)
+            with "[HPalloc Hunused]" as "Halloc".
+      { iExists _; iFrame "∗ %". }
+      iFromCache. }
     wpc_frame_seq.
-    (* TODO: provide the reconstructed allocator state (a map constructed from
-    the used set and the domain) *)
-    iApply (wp_newAllocator with "[$Hused]").
+    iApply (wp_newAllocator s_alloc with "Hused").
     { word. }
-
-    (*
+    { word_cleanup; auto. }
+    { congruence. }
+    { auto. }
+    iIntros "!>" (alloc_ref) "Halloc_mem".
+    iNamed 1.
+    wpc_pures.
     wpc_frame.
     rewrite -wp_fupd.
     wp_apply wp_allocStruct.
@@ -178,9 +202,13 @@ Section goose.
     iModIntro.
     iNamed 1.
     iApply "HΦ".
-    iExists _, _, _, _, _, _; iFrame "# ∗".
-*)
-  Abort.
+    iExists inode_ref, alloc_ref, _, _, _.
+    iSplitR.
+    { iFrame "#". }
+    iSplitL "Hpre_inode HPinode".
+    { iExists _; iFrame. }
+    iExists _; iFrame "∗ %".
+  Qed.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
     (S k < k')%nat →
