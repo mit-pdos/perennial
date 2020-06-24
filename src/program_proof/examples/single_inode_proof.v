@@ -235,6 +235,45 @@ Section goose.
     iExists _; iFrame "∗ %".
   Qed.
 
+  Theorem is_single_inode_alloc {E2} k l sz σ :
+    ↑allocN ⊆ E2 →
+    ↑s_inodeN ⊆ E2 →
+    ▷ P σ -∗
+    pre_s_inode l sz σ ={⊤}=∗
+    is_single_inode l sz k ∗
+    (* TODO: level needs to be considerably higher, so admits below work *)
+    |C={⊤,E2}_(LVL k)=> ∃ σ', s_inode_cinv sz σ' false.
+  Proof.
+    iIntros (??) "HP"; iNamed 1.
+    iNamed "Hinode".
+    iNamed "Halloc".
+    iMod (is_allocator_alloc with "Hunused HPalloc Halloc_mem") as (γalloc) "[Halloc Halloc_crash]".
+    iMod (is_inode_alloc inodeN (k:=k) with "HPinode Hpre_inode") as "[Hinode Hinode_crash]".
+    (* TODO: allocate s_inode_inv invariant *)
+    iMod (inv_alloc s_inodeN _ (∃ σ, s_inode_inv γblocks σ ∗ P σ)%I
+            with "[Hs_inv HP]") as "#Hinv".
+    { iNext.
+      iExists _; iFrame. }
+    iDestruct (inv_cfupd1 _ ⊤ with "Hinv") as "Hinv_crash"; auto.
+    rewrite Halloc_dom.
+    iModIntro.
+    iSplitL "Halloc Hinode".
+    { iExists _, _, _, _, _, _.
+      iFrame "# ∗". }
+    iMod "Halloc_crash" as "_".
+    { admit. }
+    iMod "Hinode_crash" as "_".
+    { admit. }
+    iMod "Hinv_crash" as "_".
+    { admit. }
+    { rewrite difference_empty_L.
+      solve_ndisj. }
+    iModIntro. iNext.
+    iIntros "Hs_inode Hinode Halloc".
+    iDestruct "Hs_inode" as (σ') "[Hs_inv HP]".
+    iExists _, _, _; iFrame.
+  Admitted.
+
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode l sz k' ∗

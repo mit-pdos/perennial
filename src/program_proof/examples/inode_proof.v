@@ -165,7 +165,7 @@ Proof.
   - reflexivity.
 Qed.
 
-Theorem inode_alloc {k} l γ P addr σ :
+Theorem is_inode_alloc {k} l γ P addr σ :
   ▷ P σ -∗
   pre_inode l γ addr σ ={⊤}=∗
   is_inode l (LVL k) γ P addr ∗
