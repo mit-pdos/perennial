@@ -94,13 +94,34 @@ Proof.
   rewrite map_filter_lookup_Some; split; eauto.
 Qed.
 
-Lemma alloc_post_crash_used σ :
-  alloc_post_crash σ →
-  alloc.free σ = alloc.domain σ ∖ alloc.used σ.
+Lemma alloc_used_reserve s u :
+  u ∈ alloc.free s →
+  alloc.used (<[u:=block_reserved]> s) =
+  alloc.used s.
 Proof.
-  intros ->.
-  pose proof (alloc.unused_used_domain σ).
-  pose proof (alloc.unused_used_disjoint σ).
+  rewrite /alloc.free /alloc.used.
+  intros Hufree.
+  apply elem_of_dom in Hufree as [status Hufree].
+  apply map_filter_lookup_Some in Hufree as [Hufree ?];
+    simpl in *; subst.
+  rewrite map_filter_insert_not_strong //=.
+Admitted.
+
+Lemma alloc_free_reserved s a :
+  s !! a = Some block_reserved →
+  alloc.used (<[a := block_free]> s) =
+  alloc.used s.
+Proof.
+  rewrite /alloc.used.
+  intros Hareserved.
+  rewrite map_filter_insert_not_strong //=.
+Admitted.
+
+Lemma alloc_used_insert s a :
+  alloc.used (<[a := block_used]> s) = {[a]} ∪ alloc.used s.
+Proof.
+  rewrite /alloc.used.
+  rewrite map_filter_insert //.
   set_solver.
 Qed.
 

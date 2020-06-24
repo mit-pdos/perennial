@@ -322,37 +322,6 @@ Section goose.
       iApply "HΦ"; iFrame.
   Qed.
 
-  Lemma alloc_used_reserve s u :
-    u ∈ alloc.free s →
-    alloc.used (<[u:=block_reserved]> s) =
-    alloc.used s.
-  Proof.
-    rewrite /alloc.free /alloc.used.
-    intros Hufree.
-    apply elem_of_dom in Hufree as [status Hufree].
-    apply map_filter_lookup_Some in Hufree as [Hufree ?];
-      simpl in *; subst.
-    rewrite map_filter_insert_not_strong //=.
-  Admitted.
-
-  Lemma alloc_free_reserved s a :
-    s !! a = Some block_reserved →
-    alloc.used (<[a := block_free]> s) =
-    alloc.used s.
-  Proof.
-    rewrite /alloc.used.
-    intros Hareserved.
-    rewrite map_filter_insert_not_strong //=.
-  Admitted.
-
-  Lemma alloc_used_insert s a :
-    alloc.used (<[a := block_used]> s) = {[a]} ∪ alloc.used s.
-  Proof.
-    rewrite /alloc.used.
-    rewrite map_filter_insert //.
-    set_solver.
-  Qed.
-
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
     (2 + k < k')%nat →
     nroot.@"readonly" ## N →
