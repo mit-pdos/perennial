@@ -28,11 +28,12 @@ Section goose.
   Context `{!inG Σ blocksR}.
   Context `{!inG Σ allocsR}.
 
-  (* FIXME: the mask should be a paremter, not fixed here!
-     Then we can hide the masks of our sub-libs. *)
-  Let N := nroot.@"dir".
-  Let allocN := nroot.@"allocator".
-  Let inodeN := nroot.@"inode".
+  (* The client picks our namespace *)
+  Context (N: namespace).
+  (* We use parts of it ourselves and assign the rest to sub-libraries. *)
+  Let dirN := N.@"dir".
+  Let allocN := N.@"allocator".
+  Let inodeN := N.@"inode".
 
   Definition num_inodes: nat := 5.
 
@@ -139,10 +140,10 @@ Section goose.
       "%Hlen" ∷ ⌜length inode_refs = num_inodes⌝ ∗
       "Hro_state" ∷ dir_state l alloc_ref inode_refs ∗
       "#Hinodes" ∷ ([∗ list] i ↦ inode_ref ∈ inode_refs,
-        is_inode inode_ref (LVL k') γinode (Pinode γblocks γused i) (U64 0)) ∗
+        is_inode inodeN inode_ref (LVL k') γinode (Pinode γblocks γused i) (U64 0)) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
-      "#Hinv" ∷ inv N (∃ σ, dir_inv γblocks σ ∗ P σ)
+      "#Hinv" ∷ inv dirN (∃ σ, dir_inv γblocks σ ∗ P σ)
   .
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
@@ -152,7 +153,7 @@ Section goose.
         "Hfupd" ∷ (∀ σ blocks mb,
                       ⌜σ.(dir.inodes) !! int.nat idx = Some blocks ∧
                        mb = blocks !! int.nat i⌝ -∗
-                      ▷ P σ ={⊤ ∖ ↑inodeN ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
+                      ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
       Dir__Read #l #idx #i @ NotStuck; LVL (S k); ⊤;E2
     {{{ (s:Slice.t) mb, RET (slice_val s);
@@ -182,15 +183,17 @@ Section goose.
     iFrame "Hinode". iSplit.
     { iLeft in "HΦ". by iApply "HΦ". }
     iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
-    iInv N as (σD) "[>Hdir HPD]".
+    iInv dirN as (σD) "[>Hdir HPD]".
     (* We need to learn that this inode exists in σD. *)
     rewrite /dir_inv. iNamed "Hdir".
     destruct (Hdom _ Hidx) as [σI' HσI'].
     iDestruct (inode_blocks_lookup with "Hownblocks Hγblocks") as %Hblock.
     simplify_eq.
-    iMod ("Hfupd" with "[] HPD") as "[HPD HQ]".
+    iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+        last iMod ("Hfupd" with "[] HPD") as "[HPD HQ]".
+    { solve_ndisj. }
     { iPureIntro. eauto. }
-    iModIntro. iSplitL "Hγblocks HPD".
+    iMod "HcloseM" as "_". iModIntro. iSplitL "Hγblocks HPD".
     { (* re-establish dir_inv *) eauto 10 with iFrame. }
     iModIntro. iSplitL "Hownblocks Hused1".
     { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }

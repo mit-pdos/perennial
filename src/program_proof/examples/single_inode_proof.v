@@ -32,9 +32,14 @@ Section goose.
 
   Implicit Types (l:loc) (σ: s_inode.t) (γ: gname).
 
-  Let N := nroot.@"single_inode".
-  Let allocN := nroot.@"allocator".
-  Let inodeN := nroot.@"inode".
+  (* The client picks our namespace *)
+  Context (N: namespace).
+  (* We use parts of it ourselves and assign the rest to sub-libraries. *)
+  Let s_inodeN := N.@"single_inode".
+  Let allocN := N.@"allocator".
+  Let inodeN := N.@"inode".
+
+  (* The client picks our state interpretation *)
   Context (P: s_inode.t → iProp Σ).
 
   (** Protocol invariant for inode library *)
@@ -71,10 +76,10 @@ Section goose.
   Definition is_single_inode l (sz: Z) k' : iProp Σ :=
     ∃ (inode_ref alloc_ref: loc) γinode γalloc γused γblocks,
       "Hro_state" ∷ s_inode_state l inode_ref alloc_ref ∗
-      "#Hinode" ∷ is_inode inode_ref (LVL k') γinode (Pinode γblocks γused) (U64 0) ∗
+      "#Hinode" ∷ is_inode inodeN inode_ref (LVL k') γinode (Pinode γblocks γused) (U64 0) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
-      "#Hinv" ∷ inv N (∃ σ, s_inode_inv γblocks σ ∗ P σ)
+      "#Hinv" ∷ inv s_inodeN (∃ σ, s_inode_inv γblocks σ ∗ P σ)
   .
 
   Definition s_inode_cinv sz σ : iProp Σ :=
@@ -182,7 +187,7 @@ Section goose.
     {{{ "#Hinode" ∷ is_single_inode l sz k' ∗
         "Hfupd" ∷ (∀ σ mb,
                       ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ -∗
-                      ▷ P σ ={⊤ ∖ ↑inodeN ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
+                      ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
       SingleInode__Read #l #i @ NotStuck; LVL (S k); ⊤;E2
     {{{ (s:Slice.t) mb, RET (slice_val s);
@@ -201,16 +206,19 @@ Section goose.
     wpc_bind (struct.loadF _ _ _); wpc_frame.
     wp_loadField.
     iNamed 1.
-    wpc_apply (wpc_Inode__Read_triple Q with "[$Hinode Hfupd]").
+    wpc_apply (wpc_Inode__Read_triple inodeN Q with "[$Hinode Hfupd]").
     { lia. }
     { clear.
       iIntros (σ σ' mb) "[ [-> ->] >HPinode]".
       iInv "Hinv" as "Hinner".
       iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
-      iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
+      iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+        last iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
+      { solve_ndisj. }
       rewrite {2}/s_inode_inv. iNamed "Hsinv".
       iNamed "HPinode". simpl.
       iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
+      iMod "HcloseM" as "_".
       iModIntro.
       iFrame.
       iSplitL; auto.
@@ -255,21 +263,18 @@ Section goose.
 
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
     (2 + k < k')%nat →
+    nroot.@"readonly" ## N →
     {{{ "Hinode" ∷ is_single_inode l sz k' ∗
         "Hb" ∷ is_block b_s 1 b0 ∗
         "Hfupd" ∷ ((∀ σ σ',
           ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
-        (* TODO: to be able to use an invariant within another HOCAP fupd I had
-        to make this fupd from [▷ P(σ)] to [▷ P(σ')] rather than our usual
-        [P(σ)] to [P(σ')]; normally we seem to get around this by linearizing at
-        a Skip? *)
-         ▷ P σ ={⊤ ∖ ↑allocN ∖ ↑inodeN ∖ ↑N}=∗ ▷ P σ' ∗ Q))
+         ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ Q))
     }}}
       SingleInode__Append #l (slice_val b_s) @ NotStuck; LVL (S (S k)); ⊤; E2
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ True }}}.
   Proof.
-    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { crash_case; auto. }
     iCache with "HΦ".
@@ -281,9 +286,9 @@ Section goose.
     wpc_bind (struct.loadF _ _ _); wpc_frame "HΦ".
     wp_loadField.
     iNamed 1.
-    wpc_apply (wpc_Inode__Append Q emp%I
+    wpc_apply (wpc_Inode__Append inodeN allocN Q emp%I
                  with "[$Hb $Hinode $Halloc Hfupd]");
-      try lia; try solve_ndisj.
+      [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].
     {
       iSplitR.
       { by iIntros "_". }
@@ -310,8 +315,11 @@ Section goose.
         iDestruct (ghost_var_agree with "Hinner Hownblocks") as %?; simplify_eq/=.
         iMod (ghost_var_update _ ((σ.(inode.blocks) ++ [b0]) : listLO Block)
                 with "Hinner Hownblocks") as "[Hγblocks Hownblocks]".
-        iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]". simpl.
-        iMod ("Hclose" with "[Hγblocks HP]") as "_".
+        iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+          last iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
+        { solve_ndisj. }
+        iMod "HcloseM" as "_".
+        simpl. iMod ("Hclose" with "[Hγblocks HP]") as "_".
         { eauto with iFrame. }
         iModIntro.
         iFrame.

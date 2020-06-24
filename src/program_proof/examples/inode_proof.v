@@ -36,7 +36,8 @@ Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 Context `{!allocG Σ}.
 
-Let inodeN := nroot.@"inode".
+(* The client picks the namespaces that we use for everything. *)
+Context (inodeN allocN: namespace).
 
 Implicit Types (σ: inode.t) (addr: u64).
 Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
@@ -590,7 +591,6 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
       ▷ Palloc σ ={E}=∗ ▷ Palloc (<[a:=block_used]> σ)).
 
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
-Let allocN := nroot.@"allocator".
 
 Theorem wpc_Inode__Append {k E2}
         {l γ k' P addr}
@@ -600,7 +600,9 @@ Theorem wpc_Inode__Append {k E2}
         (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
   (S (S k) < n)%nat →
   (S (S k) < k')%nat →
-  ↑nroot.@"readonly" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
+  nroot.@"readonly" ## allocN →
+  nroot.@"readonly" ## inodeN →
+  inodeN ## allocN →
   {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
       "HQc" ∷ (Q -∗ Qc) ∗
@@ -620,7 +622,7 @@ Theorem wpc_Inode__Append {k E2}
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
   {{{ Qc }}}.
 Proof.
-  iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+  iIntros (????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call.
   { iRight in "Hfupd"; auto. }
