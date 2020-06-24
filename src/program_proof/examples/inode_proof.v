@@ -164,37 +164,25 @@ Proof.
   - reflexivity.
 Qed.
 
-Definition crash_transformer k E2 Q Qc: iProp Σ :=
-  ∀ e (Φ: val → iProp Σ) (Φc: iProp Σ),
-    (Q -∗ WPC e @ LVL k; ⊤; E2 {{ Φ }} {{ Qc -∗ Φc }}) -∗
-    WPC e @ LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
-
-Theorem inode_crash_obligation {k E2} l γ k' P addr σ :
-  (k' < k)%nat →
+Theorem inode_alloc {k} l γ P addr σ :
   ▷ P σ -∗
-  pre_inode l γ addr σ -∗
-  crash_transformer k E2
-    (is_inode l (LVL k') γ P addr)
-    (∃ σ', inode_cinv addr σ' ∗ P σ').
+  pre_inode l γ addr σ ={⊤}=∗
+  is_inode l (LVL k) γ P addr ∗
+  |C={⊤,∅}_(LVL (S k))=> (∃ σ', inode_cinv addr σ' ∗ P σ').
    (* Crash condition has [P] without extra ▷ because [alloc_crash_lock] strips that later for us. *)
 Proof.
-  iIntros (?) "HP Hinode"; iNamed "Hinode".
-  iIntros (e Φ Φc) "Hwpc".
-  iApply (alloc_crash_lock inodeN inodeN _ k' _ _ _ _ _ _
+  iIntros "HP Hinode"; iNamed "Hinode".
+  iMod (alloc_crash_lock_cfupd inodeN inodeN k
                            (∃ σ, "Hlockinv" ∷ inode_linv l addr σ ∗ "HP" ∷ P σ)%I
                            (∃ σ, "Hlockcinv" ∷ inode_cinv addr σ ∗ "HP" ∷ P σ)%I
-            with "[- $Hfree_lock]").
-  { lia. }
-  iSplitR.
+            with "Hfree_lock [] [Hlockinv HP]") as "[His_lock $]".
   { iIntros "!> Hlock"; iNamed "Hlock".
     iExists _; iFrame.
     iApply inode_linv_to_cinv; auto. }
-  iSplitL "HP Hlockinv".
   { eauto with iFrame. }
-  iIntros "His_lock".
-  iSpecialize ("Hwpc" with "[His_lock Hro_state]").
-  { iExists _, _; iFrame. }
-  iApply (wpc_mono with "Hwpc"); auto.
+  iFrame.
+  iModIntro.
+  iExists _, _; iFrame.
 Qed.
 
 Theorem wpc_Open k E2 {d:loc} {addr σ} :
