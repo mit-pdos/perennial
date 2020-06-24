@@ -6,6 +6,8 @@ From Perennial.goose_lang.lib Require Import into_val.
 
 From iris_string_ident Require Import ltac2_string_ident.
 
+Set Default Proof Using "Type".
+
 Module list.
   Definition untype `{IntoVal V}:
     list V -> list val := fun l => to_val <$> l.
