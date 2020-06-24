@@ -38,7 +38,7 @@ Section goose.
   Definition num_inodes: nat := 5.
 
   Context (P: dir.t → iProp Σ).
-  Implicit Types (σ: dir.t).
+  Implicit Types (dir σ: dir.t).
 
   (** Per-inode statements and lemmas about them. *)
   Local Definition inode_blocks γblocks (idx: nat) (blocks: list Block): iProp Σ :=
@@ -144,6 +144,21 @@ Section goose.
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet num_inodes (sz-num_inodes)) γalloc k' ∗
       "#Hinv" ∷ inv dirN (∃ σ, dir_inv γblocks σ ∗ P σ)
+  .
+
+  Definition pre_dir l (sz: Z) dir : iProp Σ :=
+    ∃ alloc_ref inode_refs γinode γblocks γused,
+      "%Hlen" ∷ ⌜length inode_refs = num_inodes⌝ ∗
+      "Hro_state" ∷ dir_state l alloc_ref inode_refs ∗
+      "Hd_inv" ∷ dir_inv γblocks dir ∗
+      "Hinodes" ∷ (∃ s_inodes,
+                      [∗ list] i↦inode_ref;ino ∈ inode_refs;s_inodes,
+                     pre_inode inode_ref γinode (U64 (Z.of_nat i)) ino) ∗
+      "Halloc" ∷ (∃ s_alloc,
+                     "Halloc_mem" ∷ is_allocator_mem_pre alloc_ref s_alloc ∗
+                     "%Halloc_dom" ∷ ⌜alloc.domain s_alloc = rangeSet num_inodes (sz-num_inodes)⌝ ∗
+                     "Hunused" ∷ ([∗ set] k ∈ alloc.unused s_alloc, allocΨ k) ∗
+                     "HPalloc" ∷ Palloc γused s_alloc)
   .
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
