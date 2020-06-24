@@ -204,6 +204,100 @@ Proof.
   set_solver.
 Qed.
 
+Lemma elem_of_filter_dom {A B} `{Countable A} (P': A * B → Prop) `{∀ x, Decision (P' x)} (m: gmap A B) (x: A) :
+  x ∈ dom (gset A) (filter P' m) ↔ (∃ (y: B), m !! x = Some y ∧ P' (x,y)).
+Proof.
+  split; intros.
+  - apply elem_of_dom in H1 as [y [H1 Hy]%map_filter_lookup_Some];
+      simpl in *; subst.
+    exists y; eauto.
+  - destruct H1 as [y [Hlookup HP]].
+    apply elem_of_dom; eexists.
+    apply map_filter_lookup_Some; eauto.
+Qed.
+
+Lemma alloc_post_crash_no_reserved σ :
+  alloc_post_crash σ ↔
+  dom (gset u64) (filter (λ '(_,s), s = block_reserved) σ) = ∅.
+Proof.
+  rewrite /alloc_post_crash.
+  split; intros.
+  - apply gset_elem_is_empty; intros.
+    rewrite elem_of_filter_dom.
+    destruct 1 as [y [? ->]].
+    assert (x ∈ alloc.free σ).
+    { rewrite H.
+      rewrite /alloc.unused elem_of_filter_dom.
+      eexists; eauto. }
+    apply elem_of_filter_dom in H1 as [? [? Heq]]; simpl in Heq; congruence.
+  - apply gset_eq; intros.
+    rewrite /alloc.free /alloc.unused.
+    rewrite !elem_of_filter_dom.
+    split; intros.
+    + destruct H0 as [? [? ?]]; simpl in *; eauto.
+      exists x0; split; eauto.
+      congruence.
+    + destruct H0 as [? [? ?]]; simpl in *; eauto.
+      exists x0; split; eauto.
+      destruct x0; eauto; try congruence.
+      cut (x ∈ (∅: gset u64)).
+      { rewrite elem_of_empty; contradiction. }
+      rewrite -H.
+      apply elem_of_filter_dom.
+      eauto.
+Qed.
+
+Definition new_alloc_state (start sz: Z) (used: gset u64): alloc.t :=
+  gset_to_gmap block_used used ∪
+  gset_to_gmap block_free (rangeSet start sz).
+
+Lemma new_alloc_state_no_reserved start sz used :
+  dom (gset u64) (filter (λ '(_, s), s = block_reserved)
+                          (new_alloc_state start sz used)) = ∅.
+Proof.
+  clear.
+  apply gset_elem_is_empty; intros x Helem.
+  apply elem_of_dom in Helem as [s1 [Helem Hs1]%map_filter_lookup_Some];
+    simpl in *; subst.
+  apply lookup_union_Some_raw in Helem as [Helem | [? Helem]].
+  - apply lookup_gset_to_gmap_Some in Helem.
+    intuition congruence.
+  - apply lookup_gset_to_gmap_Some in Helem.
+    intuition congruence.
+Qed.
+
+Theorem new_alloc_state_properties start sz used :
+  used ⊆ rangeSet start sz →
+  let σ := new_alloc_state start sz used in
+  alloc.domain σ = rangeSet start sz ∧
+  alloc.free σ = alloc.domain σ ∖ alloc.used σ ∧
+  alloc.used σ = used.
+Proof.
+  clear.
+  intros.
+  rewrite /alloc.domain.
+  split_and!.
+  - rewrite /new_alloc_state.
+    rewrite dom_union_L.
+    rewrite !dom_gset_to_gmap.
+    set_solver.
+  - apply alloc_post_crash_free_used.
+    apply alloc_post_crash_no_reserved.
+    apply new_alloc_state_no_reserved.
+  - subst σ; rewrite /new_alloc_state /alloc.used.
+    apply gset_eq; intros.
+    rewrite elem_of_filter_dom /=.
+    setoid_rewrite lookup_union_Some_raw.
+    setoid_rewrite lookup_gset_to_gmap_Some.
+    setoid_rewrite lookup_gset_to_gmap_None.
+    split.
+    + destruct 1 as [y [Hlookup ->]].
+      intuition congruence.
+    + intros.
+      exists block_used; intuition eauto.
+Qed.
+
+(* TODO: remove σ and related assumptions, move those to the postcondition *)
 Theorem wp_newAllocator σ mref (start sz: u64) (used: gset u64) :
   int.val start + int.val sz < 2^64 →
   alloc.domain σ = rangeSet (int.val start) (int.val sz) →
