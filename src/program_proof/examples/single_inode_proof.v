@@ -201,7 +201,7 @@ Section goose.
     wpc_bind (struct.loadF _ _ _); wpc_frame.
     wp_loadField.
     iNamed 1.
-    wpc_apply (wpc_Inode__Read Q with "[$Hinode Hfupd]").
+    wpc_apply (wpc_Inode__Read_triple Q with "[$Hinode Hfupd]").
     { lia. }
     { clear.
       iIntros (σ σ' mb) "[ [-> ->] >HPinode]".
