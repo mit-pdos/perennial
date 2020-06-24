@@ -118,16 +118,16 @@ Section goose.
 
   (** Our own invariant (added to this is [P dir]) *)
   Definition dir_inv γblocks (dir: dir.t): iProp Σ :=
-    "%Hdom" ∷ ⌜ dom (gset nat) dir.(dir.inodes) = list_to_set (seq 0 num_inodes) ⌝ ∗
+    (*"%Hdom" ∷ ⌜ dom (gset nat) dir.(dir.inodes) = list_to_set (seq 0 num_inodes) ⌝ ∗ *)
     "Hγblocks" ∷ inode_allblocks γblocks dir.(dir.inodes).
 
   (** In-memory state of the directory (persistent) *)
   Definition dir_state (l alloc_l: loc) (inode_refs: list loc) : iProp Σ :=
     ∃ (d_l: loc) (inodes_s: Slice.t),
-      readonly (l ↦[Dir.S :: "d"] #d_l) ∗
-      readonly (l ↦[Dir.S :: "allocator"] #alloc_l) ∗
-      readonly (l ↦[Dir.S :: "inodes"] (slice_val inodes_s)) ∗
-      readonly (is_slice_small inodes_s (struct.ptrT inode.Inode.S) 1 (inode_refs))
+      "#d" ∷ readonly (l ↦[Dir.S :: "d"] #d_l) ∗
+      "#allocator" ∷ readonly (l ↦[Dir.S :: "allocator"] #alloc_l) ∗
+      "#inodes" ∷ readonly (l ↦[Dir.S :: "inodes"] (slice_val inodes_s)) ∗
+      "#inodes_s" ∷ readonly (is_slice_small inodes_s (struct.ptrT inode.Inode.S) 1 (inode_refs))
   .
 
   (** State of unallocated blocks *)
@@ -135,9 +135,10 @@ Section goose.
 
   Definition is_dir l (sz: Z) k' : iProp Σ :=
     ∃ (alloc_ref: loc) (inode_refs: list loc) γinode γalloc γused γblocks,
+      "%Hlen" ∷ ⌜length inode_refs = num_inodes⌝ ∗
       "Hro_state" ∷ dir_state l alloc_ref inode_refs ∗
-      "#Hinode" ∷ [∗ list] i ↦ inode_ref ∈ inode_refs,
-        is_inode inode_ref (LVL k') γinode (Pinode γblocks γused i) (U64 0) ∗
+      "#Hinodes" ∷ ([∗ list] i ↦ inode_ref ∈ inode_refs,
+        is_inode inode_ref (LVL k') γinode (Pinode γblocks γused i) (U64 0)) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
       "#Hinv" ∷ inv localN (∃ σ, dir_inv γblocks σ ∗ P σ)
@@ -165,7 +166,15 @@ Section goose.
     { crash_case; auto. }
     iCache with "HΦ Hfupd".
     { crash_case; auto. }
-    iNamed "Hdir". iNamed "Hro_state".
+    iNamed "Hdir". iNamed "Hro_state". rewrite -Hlen in Hidx.
+    destruct (lookup_lt_is_Some_2 _ _ Hidx) as [inode_ref Hinode_ref].
+    iDestruct (big_sepL_lookup _ _ _ _ Hinode_ref with "Hinodes") as "Hinode {Hinodes}".
+    wpc_frame_seq.
+    wp_loadField.
+    iMod (readonly_load with "inodes_s") as (qinodes) "{inodes_s} inodes_s"; first done.
+    wp_apply (wp_SliceGet _ _ _ _ _ inode_refs with "[$inodes_s //]").
+    iIntros "inodes_s Hrest". iNamed "Hrest".
+    wpc_pures.
   Abort.
 
 End goose.
