@@ -52,15 +52,6 @@ Section goose.
     iExists _; iFrame.
   Qed.
 
-  Instance rblock_crash addr σ :
-    IntoCrash (rblock_linv addr σ) (λ _, rblock_cinv addr σ).
-  Proof.
-    rewrite /IntoCrash.
-    rewrite rblock_linv_to_cinv.
-    iIntros "$".
-    auto.
-  Qed.
-
   (** the abstraction relation for the replicated block is written in HOCAP
   style, by quantifying over an arbitrary caller-specified predicate [P] of the
   block's state. *)
