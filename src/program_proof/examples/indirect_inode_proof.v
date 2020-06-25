@@ -1071,8 +1071,8 @@ Theorem wpc_Inode__Append {k E2}
       "Hfupd" ∷ ((∀ σ σ' addr',
         ⌜length σ.(inode.blocks) < maxDirect -> σ' = set inode.blocks (λ bs, bs ++ [b0])
                               (set inode.direct_addrs ({[addr']} ∪.) σ)⌝ -∗
-        (*⌜length σ.(inode.blocks) >= maxDirect -> ∀ (addrs' : gset u64), σ' = set inode.blocks (λ bs, bs ++ [b0])
-                              (set inode.indirect_addrs ({[(addr', addrs']} ∪.) σ)⌝ -∗*)
+        ⌜length σ.(inode.blocks) >= maxDirect -> ∀ (addrs' : gset u64), σ' = set inode.blocks (λ bs, bs ++ [b0])
+                              (set inode.indirect_addrs (<[addr':=addrs']>) σ)⌝ -∗
         ⌜inode.wf σ⌝ -∗
         ∀ s,
         ⌜s !! addr' = Some block_reserved⌝ -∗
