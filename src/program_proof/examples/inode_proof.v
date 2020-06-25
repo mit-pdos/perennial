@@ -442,24 +442,20 @@ Proof.
   iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame. done.
 Qed.
 
-Theorem wp_Inode__Size {k E2} {l k' γ P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
+Theorem wpc_Inode__Size {k E2} {l k' γ P addr}:
   (S k < k')%nat →
-  {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
-      "HQc" ∷ (∀ a, Q a -∗ Qc) ∗
-      "Hfupd" ∷ ((∀ σ σ' sz,
-          ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
-          ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ' ∗ Q sz) ∧ Qc)
-  }}}
-    Inode__Size #l @ NotStuck; LVL (S k); ⊤; E2
-  {{{ sz, RET #sz; Q sz }}}
-  {{{ True }}}.
+  ∀ Φ Φc,
+      "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
+      "Hfupd" ∷ (Φc ∧ ▷ (∀ σ (sz: u64),
+          ⌜int.nat sz = inode.size σ⌝ ∗
+          ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ ∗ (Φc ∧ Φ (#sz: val)))) -∗
+    WPC Inode__Size #l @ NotStuck; LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+  iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   rewrite /Inode__Size.
-  wpc_pures; auto.
-  iCache with "HΦ"; first crash_case.
-  { auto. }
+  wpc_pures; first by iLeft in "Hfupd".
+  iCache with "Hfupd"; first by iLeft in "Hfupd".
   wpc_frame_seq.
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
@@ -473,18 +469,15 @@ Proof.
   iDestruct (is_slice_sz with "Haddrs") as %Haddrs_sz.
   iDestruct (is_inode_durable_size with "Hdurable") as %Hblocks_length.
 
-  iLeft in "Hfupd".
-  iMod ("Hfupd" $! σ σ addr_s.(Slice.sz) with "[$HP]") as "[HP HQ]".
+  iRight in "Hfupd".
+  iMod ("Hfupd" $! σ addr_s.(Slice.sz) with "[$HP]") as "[HP HQ]".
   { iPureIntro.
-    split; auto.
     rewrite /inode.size.
     autorewrite with len in Haddrs_sz.
     rewrite -Haddrs_sz //. }
 
-  iCache with "HΦ HQ HQc Hdurable HP".
-  { iSplitL "HΦ"; first by iFromCache.
-    iExists _; iFrame.
-    iExists _; iFrame. }
+  iCache with "HQ Hdurable HP".
+  { iLeft in "HQ". eauto 10 with iFrame. }
   wpc_frame.
   wp_loadField.
   wp_apply wp_slice_len.
@@ -492,14 +485,38 @@ Proof.
   iSplitR "HP addrs Haddrs Hdurable"; last first.
   { eauto 10 with iFrame.  }
   iIntros "His_locked".
-  iSplit; first iFromCache.
+  iSplit; first by iLeft in "HQ".
+  iCache with "HQ"; first by iLeft in "HQ".
   wpc_pures.
   wpc_frame.
   wp_loadField.
   wp_apply (crash_lock.release_spec with "His_locked"); auto.
   wp_pures.
   iNamed 1.
-  iApply "HΦ"; iFrame.
+  iRight in "HQ". done.
+Qed.
+
+Theorem wpc_Inode__Size_triple {k E2} {l k' γ P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
+  (S k < k')%nat →
+  {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
+      "HQc" ∷ (∀ a, Q a -∗ Qc) ∗
+      "Hfupd" ∷ ((∀ σ σ' sz,
+          ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
+          ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ' ∗ Q sz) ∧ Qc)
+  }}}
+    Inode__Size #l @ NotStuck; LVL (S k); ⊤; E2
+  {{{ sz, RET #sz; Q sz }}}
+  {{{ True }}}.
+Proof.
+  iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+  iApply wpc_Inode__Size; first done.
+  iFrame "Hinode".
+  iSplit.
+  { iLeft in "HΦ". iApply "HΦ". done. }
+  iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
+  iModIntro. iFrame "HP". iSplit.
+  { iLeft in "HΦ". iApply "HΦ". done. }
+  iRight in "HΦ". iApply "HΦ". done.
 Qed.
 
 Theorem wp_Inode__mkHdr {stk E} l addr_s addrs :

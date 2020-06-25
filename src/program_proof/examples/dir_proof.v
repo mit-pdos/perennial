@@ -218,6 +218,60 @@ Section goose.
     iFrame. done.
   Qed.
 
+  Theorem wpc_Size {k E2} (Q: u64 → iProp Σ) l sz k' (idx: u64):
+    (S k < k')%nat →
+    int.nat idx < num_inodes →
+    {{{ "#Hdir" ∷ is_dir l sz k' ∗
+        "Hfupd" ∷ (∀ σ blocks sz,
+                      ⌜σ.(dir.inodes) !! int.nat idx = Some blocks ∧
+                       int.nat sz = length blocks⌝ -∗
+                      ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q sz)
+    }}}
+      Dir__Size #l #idx @ NotStuck; LVL (S k); ⊤;E2
+    {{{ sz, RET #sz; Q sz }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (? Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    wpc_call.
+    { crash_case; auto. }
+    iCache with "HΦ Hfupd".
+    { crash_case; auto. }
+    iNamed "Hdir". iNamed "Hro_state".
+    edestruct (lookup_lt_is_Some_2 inode_refs) as [inode_ref Hinode_ref].
+    { rewrite Hlen. done. }
+    iDestruct (big_sepL_lookup _ _ _ _ Hinode_ref with "Hinodes") as "Hinode {Hinodes}".
+    wpc_frame_seq.
+    wp_loadField.
+    iMod (readonly_load with "inodes_s") as (qinodes) "{inodes_s} inodes_s"; first done.
+    wp_apply (wp_SliceGet _ _ _ _ _ inode_refs with "[$inodes_s //]").
+    iIntros "inodes_s Hrest". iNamed "Hrest".
+    wpc_pures.
+    (* Now we get to the actual size operation. *)
+    iApply wpc_Inode__Size; first done.
+    iFrame "Hinode". iSplit.
+    { iLeft in "HΦ". by iApply "HΦ". }
+    iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
+    iInv dirN as (σD) "[>Hdir HPD]".
+    (* We need to learn that this inode exists in σD. *)
+    rewrite /dir_inv. iNamed "Hdir".
+    destruct (Hdom _ Hidx) as [σI' HσI'].
+    iDestruct (inode_blocks_lookup with "Hownblocks Hγblocks") as %Hblock.
+    simplify_eq.
+    iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+        last iMod ("Hfupd" with "[] HPD") as "[HPD HQ]".
+    { solve_ndisj. }
+    { iPureIntro. eauto. }
+    iMod "HcloseM" as "_". iModIntro. iSplitL "Hγblocks HPD".
+    { (* re-establish dir_inv *) eauto 10 with iFrame. }
+    iModIntro. iSplitL "Hownblocks Hused1".
+    { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }
+    iSplit.
+    { iLeft in "HΦ". by iApply "HΦ". }
+    iRight in "HΦ". iApply "HΦ".
+    done.
+  Qed.
+
+
   (* these two fupds are easy to prove universally because the change they make
   doesn't affect the free set, which is all that Palloc talks about *)
 
