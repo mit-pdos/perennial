@@ -64,11 +64,10 @@ Section goose.
   Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
 
   Definition pre_s_inode l (sz: Z) σ : iProp Σ :=
-    ∃ inode_ref alloc_ref
-      γinode γused γblocks,
+    ∃ inode_ref alloc_ref γused γblocks,
     "#Hstate" ∷ s_inode_state l inode_ref alloc_ref ∗
     "Hs_inv" ∷ s_inode_inv γblocks σ ∗
-    "Hinode" ∷ (∃ s_inode, "Hpre_inode" ∷ pre_inode inode_ref γinode (U64 0) s_inode ∗
+    "Hinode" ∷ (∃ s_inode, "Hpre_inode" ∷ pre_inode inode_ref (U64 0) s_inode ∗
                 "HPinode" ∷ Pinode γblocks γused s_inode) ∗
     "Halloc" ∷ (∃ s_alloc, "Halloc_mem" ∷ is_allocator_mem_pre alloc_ref s_alloc ∗
                 "%Halloc_dom" ∷ ⌜alloc.domain s_alloc = rangeSet 1 (sz-1)⌝ ∗
@@ -76,9 +75,9 @@ Section goose.
                 "HPalloc" ∷ Palloc γused s_alloc).
 
   Definition is_single_inode l (sz: Z) k' : iProp Σ :=
-    ∃ (inode_ref alloc_ref: loc) γinode γalloc γused γblocks,
+    ∃ (inode_ref alloc_ref: loc) γalloc γused γblocks,
       "Hro_state" ∷ s_inode_state l inode_ref alloc_ref ∗
-      "#Hinode" ∷ is_inode inodeN inode_ref (LVL k') γinode (Pinode γblocks γused) (U64 0) ∗
+      "#Hinode" ∷ is_inode inodeN inode_ref (LVL k') (Pinode γblocks γused) (U64 0) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
       "#Hinv" ∷ inv s_inodeN (∃ σ, s_inode_inv γblocks σ ∗ P σ)
@@ -138,7 +137,7 @@ Section goose.
     iSplit.
     { iIntros  "Hinode_cinv".
       iFromCache. }
-    iIntros "!>" (inode_ref γ) "Hpre_inode".
+    iIntros "!>" (inode_ref) "Hpre_inode".
     iCache with "HΦ Halloc Hs_inode Hpre_inode HPinode".
     { iDestruct (pre_inode_to_cinv with "Hpre_inode") as "Hinode_cinv".
       iFromCache. }
@@ -203,7 +202,7 @@ Section goose.
     iModIntro.
     iNamed 1.
     iApply "HΦ".
-    iExists inode_ref, alloc_ref, _, _, _.
+    iExists inode_ref, alloc_ref, _, _.
     iFrame "Hs_inode".
     iSplitR.
     { iFrame "#". }
@@ -258,7 +257,7 @@ Section goose.
     rewrite Halloc_dom.
     iModIntro.
     iSplitL "Halloc Hinode".
-    { iExists _, _, _, _, _, _.
+    { iExists _, _, _, _, _.
       iFrame "# ∗". }
     iMod "Halloc_crash" as "_".
     { admit. }

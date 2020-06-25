@@ -87,6 +87,8 @@ Proof.
   - iIntros. rewrite difference_diag_L. iModIntro; eauto.
 Qed.
 
+(* TODO: in theory this can implement ElimAcc for iInv support; see
+[elim_acc_wp_nonatomic] *)
 Lemma wpc_na_crash_inv_open s k k' E1 E2 e Φ Φc Q P N:
   ↑N ⊆ E1 →
   S k < k' →

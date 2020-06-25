@@ -91,15 +91,15 @@ Definition inode_state l (d_ref: loc) (lref: loc) addr : iProp Σ :=
   "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
   "#addr" ∷ readonly (l ↦[Inode.S :: "addr"] #addr).
 
-Definition is_inode l k γ P (addr: u64) : iProp Σ :=
-  ∃ (d_ref:loc) (lref: loc),
+Definition is_inode l k P (addr: u64) : iProp Σ :=
+  ∃ γ (d_ref:loc) (lref: loc),
     "Hro_state" ∷ inode_state l d_ref lref addr ∗
     "#Hlock" ∷ is_crash_lock inodeN inodeN k γ #lref
               (∃ σ, "Hlockinv" ∷ inode_linv l addr σ ∗ "HP" ∷ P σ)
               (∃ σ, "Hlockcinv" ∷ inode_cinv addr σ ∗ "HP" ∷ P σ).
 
-Definition pre_inode l γ addr σ : iProp Σ :=
-  ∃ (d_ref:loc) (lref: loc),
+Definition pre_inode l addr σ : iProp Σ :=
+  ∃ γ (d_ref:loc) (lref: loc),
     "Hro_state" ∷ inode_state l d_ref lref addr ∗
     "Hfree_lock" ∷ is_free_lock γ lref ∗
     "Hlockinv" ∷ inode_linv l addr σ.
@@ -121,15 +121,15 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Theorem pre_inode_to_cinv l γ addr σ :
-  pre_inode l γ addr σ -∗ inode_cinv addr σ.
+Theorem pre_inode_to_cinv l addr σ :
+  pre_inode l addr σ -∗ inode_cinv addr σ.
 Proof.
   iNamed 1.
   iApply inode_linv_to_cinv; iFrame.
 Qed.
 
-Global Instance is_inode_Persistent l k γ P addr :
-  Persistent (is_inode l k γ P addr).
+Global Instance is_inode_Persistent l k P addr :
+  Persistent (is_inode l k P addr).
 Proof. apply _. Qed.
 
 (* TODO: these are copied from the circ proof *)
@@ -165,10 +165,10 @@ Proof.
   - reflexivity.
 Qed.
 
-Theorem is_inode_alloc {k} l γ P addr σ :
+Theorem is_inode_alloc {k} l P addr σ :
   ▷ P σ -∗
-  pre_inode l γ addr σ ={⊤}=∗
-  is_inode l (LVL k) γ P addr ∗
+  pre_inode l addr σ ={⊤}=∗
+  is_inode l (LVL k) P addr ∗
   |C={⊤,∅}_(LVL (S k))=> (∃ σ', inode_cinv addr σ' ∗ P σ').
    (* Crash condition has [P] without extra ▷ because [alloc_crash_lock] strips that later for us. *)
 Proof.
@@ -183,13 +183,13 @@ Proof.
   { eauto with iFrame. }
   iFrame.
   iModIntro.
-  iExists _, _; iFrame.
+  iExists _, _, _; iFrame.
 Qed.
 
 Theorem wpc_Open k E2 {d:loc} {addr σ} :
   {{{ inode_cinv addr σ }}}
     inode.Open #d #addr @ NotStuck; k; ⊤; E2
-  {{{ l γ, RET #l; pre_inode l γ addr σ }}}
+  {{{ l, RET #l; pre_inode l addr σ }}}
   {{{ inode_cinv addr σ }}}.
 Proof.
   iIntros (Φ Φc) "Hinode HΦ"; iNamed "Hinode".
@@ -234,7 +234,7 @@ Proof.
   iModIntro.
   iNamed 1.
   iApply "HΦ".
-  iExists _, _; iFrame.
+  iExists _, _, _; iFrame.
   iSplitR.
   { iFrame "#". }
   iExists _, _; iFrame "% ∗".
@@ -264,13 +264,13 @@ Definition used_blocks_pre l σ addrs: iProp Σ :=
 
 (* this lets the caller frame out the durable state for the crash invariant and
 the memory state for UsedBlocks *)
-Theorem pre_inode_read_addrs l γ addr σ :
-  pre_inode l γ addr σ -∗
+Theorem pre_inode_read_addrs l addr σ :
+  pre_inode l addr σ -∗
   ∃ addrs, used_blocks_pre l σ addrs ∗
            is_inode_durable addr σ addrs ∗
            (used_blocks_pre l σ addrs -∗
             is_inode_durable addr σ addrs -∗
-            pre_inode l γ addr σ).
+            pre_inode l addr σ).
 Proof.
   iNamed 1.
   iNamed "Hlockinv".
@@ -281,7 +281,7 @@ Proof.
   iFrame.
   iNamed 1.
   iIntros "Hdurable".
-  iExists _, _; iFrame.
+  iExists _, _, _; iFrame.
   iExists _, _; iFrame "∗ %".
 Qed.
 
@@ -303,11 +303,10 @@ Proof.
 Qed.
 
 
-
-Theorem wpc_Inode__Read {k E2} {l γ k' P addr} {off: u64} :
+Theorem wpc_Inode__Read {k E2} {l k' P addr} {off: u64} :
   (S k < k')%nat →
   ∀ Φ Φc,
-      "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
+      "Hinode" ∷ is_inode l (LVL k') P addr ∗
       "Hfupd" ∷ (Φc ∧ ▷ ∀ σ mb,
         ⌜mb = σ.(inode.blocks) !! int.nat off⌝ ∗
         ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ ∗ (Φc ∧ ∀ s,
@@ -416,9 +415,9 @@ Proof.
     iFrame.
 Qed.
 
-Theorem wpc_Inode__Read_triple {k E2} {l γ k' P addr} {off: u64} Q :
+Theorem wpc_Inode__Read_triple {k E2} {l k' P addr} {off: u64} Q :
   (S k < k')%nat →
-  {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
+  {{{ "Hinode" ∷ is_inode l (LVL k') P addr ∗
       "Hfupd" ∷ (∀ σ σ' mb,
         ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
         ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ' ∗ Q mb)
@@ -442,9 +441,9 @@ Proof.
   iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame. done.
 Qed.
 
-Theorem wp_Inode__Size {k E2} {l k' γ P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
+Theorem wp_Inode__Size {k E2} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
   (S k < k')%nat →
-  {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
+  {{{ "Hinode" ∷ is_inode l (LVL k') P addr ∗
       "HQc" ∷ (∀ a, Q a -∗ Qc) ∗
       "Hfupd" ∷ ((∀ σ σ' sz,
           ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
@@ -593,7 +592,7 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
 
 Theorem wpc_Inode__Append {k E2}
-        {l γ k' P addr}
+        {l k' P addr}
         (* allocator stuff *)
         {Palloc γalloc domain n}
         (Q: iProp Σ) (Qc: iProp Σ)
@@ -603,7 +602,7 @@ Theorem wpc_Inode__Append {k E2}
   nroot.@"readonly" ## allocN →
   nroot.@"readonly" ## inodeN →
   inodeN ## allocN →
-  {{{ "Hinode" ∷ is_inode l (LVL k') γ P addr ∗
+  {{{ "Hinode" ∷ is_inode l (LVL k') P addr ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
       "HQc" ∷ (Q -∗ Qc) ∗
       "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗

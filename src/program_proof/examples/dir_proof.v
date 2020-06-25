@@ -108,9 +108,9 @@ Section goose.
   Qed.
 
   (** Protocol invariant for inode library *)
-  Local Definition Pinode γblocks γused (idx: nat) (s: inode.t): iProp Σ :=
-    "Hownblocks" ∷ inode_blocks γblocks idx s.(inode.blocks) ∗
-    "Hused1" ∷ inode_used γused idx s.(inode.addrs).
+  Local Definition Pinode γblocks γused (ino: nat) (s: inode.t): iProp Σ :=
+    "Hownblocks" ∷ inode_blocks γblocks ino s.(inode.blocks) ∗
+    "Hused1" ∷ inode_used γused ino s.(inode.addrs).
 
   (** Protocol invariant for alloc library *)
   Local Definition Palloc γused (s: alloc.t): iProp Σ :=
@@ -136,30 +136,83 @@ Section goose.
   Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
 
   Definition is_dir l (sz: Z) k' : iProp Σ :=
-    ∃ (alloc_ref: loc) (inode_refs: list loc) γinode γalloc γused γblocks,
+    ∃ (alloc_ref: loc) (inode_refs: list loc) γalloc γused γblocks,
       "%Hlen" ∷ ⌜length inode_refs = num_inodes⌝ ∗
       "Hro_state" ∷ dir_state l alloc_ref inode_refs ∗
       "#Hinodes" ∷ ([∗ list] i ↦ inode_ref ∈ inode_refs,
-        is_inode inodeN inode_ref (LVL k') γinode (Pinode γblocks γused i) (U64 (Z.of_nat i))) ∗
+        is_inode inodeN inode_ref (LVL k') (Pinode γblocks γused i) (U64 (Z.of_nat i))) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet num_inodes (sz-num_inodes)) γalloc k' ∗
       "#Hinv" ∷ inv dirN (∃ σ, dir_inv γblocks σ ∗ P σ)
   .
 
+  Definition dir_cinv sz σ (post_crash: bool) : iProp Σ :=
+    ∃ γblocks γused,
+    "Hinodes" ∷ (∃ s_inodes,
+                    [∗ list] i↦s_inode ∈ s_inodes,
+                   "Hinode_cinv" ∷ inode_cinv (U64 (Z.of_nat i)) s_inode ∗
+                    "HPinode" ∷ Pinode γblocks γused i s_inode) ∗
+    "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ (rangeSet num_inodes (sz-num_inodes)) post_crash ∗
+    "Hs_inode" ∷ dir_inv γblocks σ
+  .
+
+  Lemma dir_cinv_post_crash sz σ :
+    dir_cinv sz σ true -∗ dir_cinv sz σ false.
+  Proof.
+    iNamed 1.
+    iExists _, _; iFrame.
+    iApply alloc_crash_cond_from_post_crash; auto.
+  Qed.
+
   Definition pre_dir l (sz: Z) dir : iProp Σ :=
-    ∃ alloc_ref inode_refs γinode γblocks γused,
+    ∃ alloc_ref inode_refs γblocks γused,
       "%Hlen" ∷ ⌜length inode_refs = num_inodes⌝ ∗
       "Hro_state" ∷ dir_state l alloc_ref inode_refs ∗
       "Hd_inv" ∷ dir_inv γblocks dir ∗
       "Hinodes" ∷ (∃ s_inodes,
-                      [∗ list] i↦inode_ref;ino ∈ inode_refs;s_inodes,
-                     pre_inode inode_ref γinode (U64 (Z.of_nat i)) ino) ∗
+                      [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
+                     pre_inode inode_ref (U64 (Z.of_nat i)) s_inode ∗
+                  Pinode γblocks γused i s_inode) ∗
       "Halloc" ∷ (∃ s_alloc,
                      "Halloc_mem" ∷ is_allocator_mem_pre alloc_ref s_alloc ∗
                      "%Halloc_dom" ∷ ⌜alloc.domain s_alloc = rangeSet num_inodes (sz-num_inodes)⌝ ∗
                      "Hunused" ∷ ([∗ set] k ∈ alloc.unused s_alloc, allocΨ k) ∗
                      "HPalloc" ∷ Palloc γused s_alloc)
   .
+
+  Lemma wpc_openInodes {k E2} (d: loc) γused γblocks s_inodes :
+    {{{ ([∗ list] i↦s_inode ∈ s_inodes,
+          "Hinode_cinv" ∷ inode_cinv (U64 (Z.of_nat i)) s_inode ∗
+          "HPinode" ∷ Pinode γblocks γused i s_inode)
+      }}}
+      openInodes #d @ NotStuck; k; ⊤; E2
+    {{{ inode_s inode_refs, RET (slice_val inode_s);
+        is_slice_small inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
+        [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
+            pre_inode inode_ref (U64 (Z.of_nat i)) s_inode
+    }}}
+    {{{ ([∗ list] i↦s_inode ∈ s_inodes,
+          "Hinode_cinv" ∷ inode_cinv (U64 (Z.of_nat i)) s_inode ∗
+          "HPinode" ∷ Pinode γblocks γused i s_inode) }}}.
+  Proof.
+  Abort.
+
+  Theorem wpc_OpenDir {k E2} (d: loc) (sz: u64) σ0 :
+    {{{ dir_cinv (int.val sz) σ0 true }}}
+      OpenDir #d #sz @ NotStuck; LVL k; ⊤; E2
+    {{{ l, RET #l; pre_dir l (int.val sz) σ0 }}}
+    {{{ dir_cinv (int.val sz) σ0 false }}}.
+  Proof.
+    iIntros (Φ Φc) "Hcinv HΦ".
+    wpc_call.
+    { iApply dir_cinv_post_crash; auto. }
+    iNamed "Hcinv".
+    iCache with "HΦ Hinodes Halloc Hs_inode".
+    { crash_case.
+      iApply dir_cinv_post_crash.
+      iExists _, _; iFrame. }
+    iDeexHyp "Hinodes".
+  Abort.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
     (S k < k')%nat →
