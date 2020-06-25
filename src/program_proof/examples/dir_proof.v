@@ -218,6 +218,9 @@ Section goose.
     iFrame. done.
   Qed.
 
+  (* these two fupds are easy to prove universally because the change they make
+  doesn't affect the free set, which is all that Palloc talks about *)
+
   Lemma reserve_fupd_Palloc E γused :
     ⊢ reserve_fupd E (Palloc γused).
   Proof.
