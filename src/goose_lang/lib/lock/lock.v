@@ -92,8 +92,10 @@ Section proof.
     iIntros "Hl HR".
     iMod (inv_alloc N _ (lock_inv l R) with "[Hl HR]") as "#?".
     { iIntros "!>". iExists false. iFrame.
-      rewrite -fractional.fractional_split.
-      rewrite Qp_quarter_three_quarter; iFrame.
+      rewrite /is_free_lock.
+      iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+      iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+      iFrame.
     }
     iModIntro.
     iExists l.
