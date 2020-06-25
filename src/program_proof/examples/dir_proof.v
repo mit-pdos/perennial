@@ -346,4 +346,36 @@ Section goose.
     rewrite alloc_free_reserved //.
   Qed.
 
+  Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
+    (2 + k < k')%nat →
+    nroot.@"readonly" ## N →
+    int.nat idx < num_inodes →
+    {{{ "#Hdir" ∷ is_dir l sz k' ∗
+        "Hb" ∷ is_block b_s 1 b0 ∗
+        "Hfupd" ∷ (∀ σ blocks,
+                      ⌜σ.(dir.inodes) !! int.nat idx = Some blocks⌝ -∗
+                      ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P (dir.mk $ <[ int.nat idx := blocks ++ [b0] ]> σ.(dir.inodes)) ∗ Q)
+    }}}
+      Dir__Append #l #idx (slice_val b_s) @ NotStuck; LVL (S (S k)); ⊤; E2
+    {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (?? Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    wpc_call.
+    { crash_case; auto. }
+    iCache with "HΦ Hfupd".
+    { crash_case; auto. }
+    iNamed "Hdir". iNamed "Hro_state".
+    edestruct (lookup_lt_is_Some_2 inode_refs) as [inode_ref Hinode_ref].
+    { rewrite Hlen. done. }
+    iDestruct (big_sepL_lookup _ _ _ _ Hinode_ref with "Hinodes") as "Hinode {Hinodes}".
+    wpc_frame_seq.
+    wp_loadField.
+    iMod (readonly_load with "inodes_s") as (qinodes) "{inodes_s} inodes_s"; first done.
+    wp_apply (wp_SliceGet _ _ _ _ _ inode_refs with "[$inodes_s //]").
+    iIntros "inodes_s Hrest". iNamed "Hrest".
+    wpc_pures.
+    (* Now we get to the actual append operation. *)
+  Abort.
+
 End goose.
