@@ -384,14 +384,6 @@ Section goose.
     iIntros "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
-  Instance rblock_crash' addr σ :
-    IntoCrash (rblock_cinv addr σ) (λ _, rblock_cinv addr σ).
-  Proof.
-    rewrite /IntoCrash.
-    iIntros "$".
-    auto.
-  Qed.
-
   (* Silly example client *)
   Definition OpenRead (d_ref: loc) (addr: u64) : expr :=
     (let: "l" := Open #d_ref #addr in
@@ -431,6 +423,15 @@ Section goose.
 
 End goose.
 
+Typeclasses Opaque rblock_cinv.
+
+(* rblock_cinv is durable *)
+Instance rblock_crash `{!heapG Σ} addr σ :
+  IntoCrash (rblock_cinv addr σ) (λ _, rblock_cinv addr σ).
+Proof.
+  rewrite /IntoCrash /rblock_cinv. iIntros "?".
+  iCrash. iFrame.
+Qed.
 
 Section recov.
   Context `{!heapG Σ}.
@@ -460,7 +461,6 @@ Section recov.
     iAlways. iIntros (?????) "H".
     iDestruct "H" as (σ') "Hstart".
     iNext. iCrash.
-    (* XXX: iCrash should not have unfolded rblock_inv *)
     iIntros.
     iSplit; first done.
     wpc_apply (wpc_Open with "Hstart").
