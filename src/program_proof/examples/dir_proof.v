@@ -21,7 +21,6 @@ Local Definition allocsR := authR $ gmapUR nat (exclR $ gset64O).
 
 Section goose.
   Context `{!heapG Σ}.
-  Context `{!lockG Σ}.
   Context `{!allocG Σ}.
   Context `{!crashG Σ}.
   Context `{!stagedG Σ}.

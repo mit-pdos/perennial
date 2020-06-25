@@ -7,7 +7,6 @@ From Perennial.goose_lang Require Import crash_modality.
 
 Section goose_lang.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!walG Σ}.
 Context `{!crashG Σ}.
 
@@ -365,10 +364,10 @@ Proof.
     admit.
   }
   wp_pures.
-  wp_apply (wp_new_free_lock); iIntros (γlock ml) "Hlock".
+  wp_apply (wp_new_free_lock); iIntros (ml) "Hlock".
   iDestruct (memLog_linv_pers_core_strengthen with "[$] [$]") as "HmemLog_linv".
 
-  set (γ' := (set lock_name (λ _, γlock) γ0)).
+  set (γ' := γ0).
 
   wp_pures.
   iDestruct (updates_slice_cap_acc with "Hupd_slice") as "[Hupd_slice Hupds_cap]".
@@ -379,7 +378,7 @@ Proof.
   wp_apply wp_allocStruct; first by auto.
   iIntros (st) "Hwal_state".
   wp_pures.
-  iMod (alloc_lock walN _ _ _ (wal_linv st γ')
+  iMod (alloc_lock walN _ _ (wal_linv st γ')
           with "[$] [HmemLog_linv Hsliding Hwal_state Hstart_exactly HdiskEnd_exactly]") as "#lk".
   { rewrite /wal_linv.
     assert (int.val diskStart + length upds = int.val diskEnd) as Heq_plus.

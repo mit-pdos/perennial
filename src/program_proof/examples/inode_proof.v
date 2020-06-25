@@ -31,7 +31,6 @@ Hint Unfold inode.wf InodeMaxBlocks : word.
 
 Section goose.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 Context `{!allocG Σ}.
@@ -92,16 +91,16 @@ Definition inode_state l (d_ref: loc) (lref: loc) addr : iProp Σ :=
   "#addr" ∷ readonly (l ↦[Inode.S :: "addr"] #addr).
 
 Definition is_inode l k P (addr: u64) : iProp Σ :=
-  ∃ γ (d_ref:loc) (lref: loc),
+  ∃ (d_ref:loc) (lref: loc),
     "Hro_state" ∷ inode_state l d_ref lref addr ∗
-    "#Hlock" ∷ is_crash_lock inodeN inodeN k γ #lref
+    "#Hlock" ∷ is_crash_lock inodeN inodeN k #lref
               (∃ σ, "Hlockinv" ∷ inode_linv l addr σ ∗ "HP" ∷ P σ)
               (∃ σ, "Hlockcinv" ∷ inode_cinv addr σ ∗ "HP" ∷ P σ).
 
 Definition pre_inode l addr σ : iProp Σ :=
-  ∃ γ (d_ref:loc) (lref: loc),
+  ∃ (d_ref:loc) (lref: loc),
     "Hro_state" ∷ inode_state l d_ref lref addr ∗
-    "Hfree_lock" ∷ is_free_lock γ lref ∗
+    "Hfree_lock" ∷ is_free_lock lref ∗
     "Hlockinv" ∷ inode_linv l addr σ.
 
 Global Instance is_inode_crash l addr σ :
@@ -183,7 +182,7 @@ Proof.
   { eauto with iFrame. }
   iFrame.
   iModIntro.
-  iExists _, _, _; iFrame.
+  iExists _, _; iFrame.
 Qed.
 
 Theorem wpc_Open k E2 {d:loc} {addr σ} :
@@ -224,7 +223,7 @@ Proof.
   wp_pures.
   rewrite -wp_fupd.
   wp_apply wp_new_free_lock.
-  iIntros (γ lref) "Hlock".
+  iIntros (lref) "Hlock".
   wp_apply wp_allocStruct; auto.
   iIntros (l) "inode".
   iDestruct (struct_fields_split with "inode") as "(d&m&addr&addrs&_)".
@@ -234,7 +233,7 @@ Proof.
   iModIntro.
   iNamed 1.
   iApply "HΦ".
-  iExists _, _, _; iFrame.
+  iExists _, _; iFrame.
   iSplitR.
   { iFrame "#". }
   iExists _, _; iFrame "% ∗".
@@ -281,7 +280,7 @@ Proof.
   iFrame.
   iNamed 1.
   iIntros "Hdurable".
-  iExists _, _, _; iFrame.
+  iExists _, _; iFrame.
   iExists _, _; iFrame "∗ %".
 Qed.
 
@@ -323,7 +322,7 @@ Proof.
   wpc_frame.
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hlock"); first by set_solver.
-  iIntros (γlk) "His_locked".
+  iIntros "His_locked".
   iNamed 1.
   wpc_pures.
   wpc_bind_seq.
@@ -462,7 +461,7 @@ Proof.
   wpc_frame_seq.
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-  iIntros (γlk) "His_locked".
+  iIntros "His_locked".
   iNamed 1.
   wpc_pures.
   wpc_bind_seq.
@@ -679,7 +678,7 @@ Proof.
     wpc_frame_seq.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-    iIntros (γlk) "His_locked". iNamed 1.
+    iIntros "His_locked". iNamed 1.
     wpc_pures.
     wpc_bind_seq.
     crash_lock_open "His_locked".

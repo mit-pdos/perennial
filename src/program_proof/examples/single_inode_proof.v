@@ -24,7 +24,6 @@ Canonical Structure listLO A := leibnizO (list A).
 
 Section goose.
   Context `{!heapG Σ}.
-  Context `{!lockG Σ}.
   Context `{!crashG Σ}.
   Context `{!allocG Σ}.
   Context `{!stagedG Σ}.

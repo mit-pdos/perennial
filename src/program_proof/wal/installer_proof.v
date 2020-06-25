@@ -36,7 +36,6 @@ End simulation.
 
 Section goose_lang.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
@@ -197,14 +196,14 @@ Theorem wp_Walog__logInstall γ l σₛ :
       "#memLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#condInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
-      "His_locked" ∷ locked γ.(lock_name) ∗
-      "#lk" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
+      "His_locked" ∷ locked #σₛ.(memLock) ∗
+      "#lk" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
       "#cond_install" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock)
   }}}
     Walog__logInstall #l
   {{{ (blkCount installEnd:u64), RET (#blkCount, #installEnd);
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
-      "His_locked" ∷ locked γ.(lock_name)
+      "His_locked" ∷ locked #σₛ.(memLock)
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre". (* TODO: would be nice to do this anonymously *)
@@ -244,7 +243,7 @@ Proof.
   wp_apply (wp_inc_nthread with "[$Hlockinv $st]"); iIntros "Hlockinv".
   wp_pures.
   wp_bind (For _ _ _).
-  wp_apply (wp_forBreak_cond (fun _ => "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ ∗ "Hlocked" ∷ locked γ.(lock_name))%I
+  wp_apply (wp_forBreak_cond (fun _ => "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ ∗ "Hlocked" ∷ locked #σₛ.(memLock))%I
            with "[] [$Hlocked $Hlockinv]").
   { clear Φ.
     iIntros "!>" (Φ) "I HΦ"; iNamed "I".

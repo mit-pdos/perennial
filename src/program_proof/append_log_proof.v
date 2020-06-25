@@ -8,7 +8,6 @@ From Perennial.program_proof Require Import marshal_proof.
 Section heap.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
-Context `{!lockG Σ}.
 Implicit Types v : val.
 Implicit Types z : Z.
 Implicit Types s : Slice.t.
@@ -582,7 +581,7 @@ Theorem wpc_init (sz: u64) k E1 E2 vs:
   {{{ 0 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ }}}
     Init #sz @ NotStuck; k; E1; E2
   {{{ l (ok: bool), RET (#l, #ok); ⌜ int.nat sz > 0 → ok = true ⌝ ∗
-      if ok then ptsto_log l [] ∗ (∃ γ (ml: loc), l ↦[Log.S :: "m"] #ml ∗ is_free_lock γ ml)
+      if ok then ptsto_log l [] ∗ (∃ (ml: loc), l ↦[Log.S :: "m"] #ml ∗ is_free_lock ml)
       else 0 d↦∗ vs }}}
   {{{ 0 d↦∗ vs ∨ (∃ b b' vs', ⌜ vs = b :: vs' ⌝ ∗ 0 d↦∗ (b' :: vs') ) }}}.
 Proof.
@@ -592,7 +591,7 @@ Proof.
   wpc_if_destruct; wpc_pures; try by eauto.
   - wpc_frame "Hdisk HΦ".
     { iApply "HΦ". eauto. }
-    wp_apply wp_new_free_lock; iIntros (γ ml) "_".
+    wp_apply wp_new_free_lock; iIntros (ml) "_".
     wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     wp_pures.
     iIntros "(Hdisk&HΦ)".
@@ -603,7 +602,7 @@ Proof.
     wpc_bind (struct.alloc _ _).
     wpc_frame "Hdisk HΦ".
     { iApply "HΦ". eauto. }
-    wp_apply wp_new_free_lock; iIntros (γ ml) "Hlock".
+    wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
     wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
     wp_pures.
@@ -634,7 +633,7 @@ Proof.
     iSplitL "".
     { eauto. }
     iSplitR "Hm Hlock"; last first.
-    { iExists _, _. iFrame. }
+    { iExists _. iFrame. }
     iExists _, _; iFrame.
     rewrite disk_array_emp.
     iSplitR; first by auto.
@@ -839,7 +838,7 @@ Qed.
 Theorem wpc_Open k E1 E2 vs :
   {{{ crashed_log vs }}}
     Open #() @ NotStuck; k; E1; E2
-  {{{ lptr, RET #lptr; ptsto_log lptr vs ∗ ∃ γ (ml: loc), lptr ↦[Log.S :: "m"] #ml ∗ is_free_lock γ ml }}}
+  {{{ lptr, RET #lptr; ptsto_log lptr vs ∗ ∃ (ml: loc), lptr ↦[Log.S :: "m"] #ml ∗ is_free_lock ml }}}
   {{{ crashed_log vs }}}.
 Proof.
   iIntros (Φ Φc) "Hlog HΦ".
@@ -873,13 +872,13 @@ Proof.
   wp_apply (wp_Dec__GetInt with "Hdec").
   iIntros "_".
   wp_steps.
-  wp_apply wp_new_free_lock; iIntros (γ ml) "Hlock".
+  wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
   wp_apply wp_allocStruct; [ rewrite struct_ty_unfold; val_ty | iIntros (lptr) "Hs" ].
   iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
   iIntros "(?&HΦ&?&?&?)".
   iApply "HΦ".
   rewrite /ptsto_log.
-  iSplitR "Hm Hlock"; last by (iExists _, _; iFrame).
+  iSplitR "Hm Hlock"; last by (iExists _; iFrame).
   iExists _, _; iFrame.
   rewrite /is_hdr.
   iExists _; iFrame.

@@ -19,16 +19,16 @@ Context `{!ffi_interp ffi}.
 Context {ext_tys: ext_types ext}.
 
 Section proof.
-  Context `{!heapG Σ, !lockG Σ, !crashG Σ, stagedG Σ} (Nlock Ncrash: namespace).
+  Context `{!heapG Σ, !crashG Σ, stagedG Σ} (Nlock Ncrash: namespace).
 
-  Definition is_crash_lock k (γlk: gname) (lk: val) (R Rcrash: iProp Σ) : iProp Σ :=
-    is_lock Nlock γlk lk (na_crash_inv Ncrash k R Rcrash) ∗ □ (R -∗ Rcrash).
+  Definition is_crash_lock k (lk: val) (R Rcrash: iProp Σ) : iProp Σ :=
+    is_lock Nlock lk (na_crash_inv Ncrash k R Rcrash) ∗ □ (R -∗ Rcrash).
 
-  Definition crash_locked k γlk lk R Rcrash : iProp Σ :=
+  Definition crash_locked k lk R Rcrash : iProp Σ :=
     (na_crash_inv Ncrash k R Rcrash ∗
-     is_lock Nlock γlk lk (na_crash_inv Ncrash k R Rcrash) ∗
+     is_lock Nlock lk (na_crash_inv Ncrash k R Rcrash) ∗
      □ (R -∗ Rcrash) ∗
-     locked γlk)%I.
+     locked lk)%I.
 
   (*
   Lemma newlock_spec K `{!LanguageCtx K} k k' E Φ Φc (R Rcrash : iProp Σ):
@@ -36,7 +36,7 @@ Section proof.
     □ (R -∗ Rcrash) ∗
     R ∗
     Φc ∗
-    (∀ lk γ, Φc -∗ is_crash_lock (LVL k') γ lk R Rcrash -∗
+    (∀ lk γ, Φc -∗ is_crash_lock (LVL k') lk R Rcrash -∗
              WPC K (of_val lk) @ (LVL k); ⊤; E {{ Φ }} {{ Φc }}) -∗
     WPC K (lock.new #()) @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc ∗ Rcrash }}.
   Proof using ext_tys.
@@ -57,11 +57,11 @@ Section proof.
 *)
 
 
-  Lemma alloc_crash_lock' k E γ lk (R Rcrash : iProp Σ):
+  Lemma alloc_crash_lock' k E lk (R Rcrash : iProp Σ):
     □ (R -∗ Rcrash) -∗
-    is_free_lock γ lk -∗
+    is_free_lock lk -∗
     na_crash_inv Ncrash k R Rcrash
-    ={E}=∗ is_crash_lock k γ #lk R Rcrash.
+    ={E}=∗ is_crash_lock k #lk R Rcrash.
   Proof.
     clear.
     iIntros "Hwand Hfree Hfull".
@@ -69,11 +69,11 @@ Section proof.
     iModIntro. rewrite /is_crash_lock. eauto.
   Qed.
 
-  Lemma alloc_crash_lock_cfupd {γ lk} k' (R Rcrash : iProp Σ):
-    is_free_lock γ lk -∗
+  Lemma alloc_crash_lock_cfupd {lk} k' (R Rcrash : iProp Σ):
+    is_free_lock lk -∗
     □ (R -∗ Rcrash) -∗
     ▷ R ={⊤}=∗
-    is_crash_lock (LVL k') γ #lk R Rcrash ∗
+    is_crash_lock (LVL k') #lk R Rcrash ∗
     |C={⊤, ∅}_(LVL (S k'))=> Rcrash.
   Proof.
     clear.
@@ -86,12 +86,12 @@ Section proof.
     by iFrame.
   Qed.
 
-  Lemma alloc_crash_lock k k' E Φ Φc e γ lk (R Rcrash : iProp Σ):
+  Lemma alloc_crash_lock k k' E Φ Φc e lk (R Rcrash : iProp Σ):
     (k' < k)%nat →
     □ (R -∗ Rcrash) ∗
     ▷ R ∗
-    is_free_lock γ lk ∗
-    (is_crash_lock (LVL k') γ #lk R Rcrash -∗
+    is_free_lock lk ∗
+    (is_crash_lock (LVL k') #lk R Rcrash -∗
           WPC e @ (LVL k); ⊤; E {{ Φ }} {{ Rcrash -∗ Φc }}) -∗
     WPC e @  (LVL (S k)); ⊤; E {{ Φ }} {{ Φc }}.
   Proof.
@@ -103,11 +103,11 @@ Section proof.
     iApply ("Hwp" with "Hlk").
   Qed.
 
-  Lemma acquire_spec k E γ (R Rcrash : iProp Σ) lk:
+  Lemma acquire_spec k E (R Rcrash : iProp Σ) lk:
     ↑Nlock ⊆ E →
-    {{{ is_crash_lock k γ lk R Rcrash }}}
+    {{{ is_crash_lock k lk R Rcrash }}}
     lock.acquire lk @ E
-    {{{ γlk, RET #(); crash_locked k γlk lk R Rcrash }}}.
+    {{{ RET #(); crash_locked k lk R Rcrash }}}.
   Proof.
     iIntros (? Φ) "Hcrash HΦ".
     rewrite /is_crash_lock.
@@ -116,13 +116,13 @@ Section proof.
     iIntros "(?&?)". iApply "HΦ". iFrame. iFrame "#".
   Qed.
 
-  Lemma use_crash_locked E1 E2 k k' Γ e lk R Rcrash Φ Φc:
+  Lemma use_crash_locked E1 E2 k k' e lk R Rcrash Φ Φc:
     (S k < k')%nat →
     ↑Ncrash ⊆ E1 →
     language.to_val e = None →
-    crash_locked (LVL k') Γ lk R Rcrash -∗
+    crash_locked (LVL k') lk R Rcrash -∗
     Φc ∧ (R -∗
-         WPC e @ LVL k; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (crash_locked (LVL k') Γ lk R Rcrash -∗ (Φc ∧ Φ v)) ∗ ▷ R }}
+         WPC e @ LVL k; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (crash_locked (LVL k') lk R Rcrash -∗ (Φc ∧ Φ v)) ∗ ▷ R }}
                                          {{ Φc ∗ ▷ Rcrash }}) -∗
     WPC e @  (LVL (S k)); E1; E2 {{ Φ }} {{ Φc }}.
   Proof.
@@ -140,9 +140,9 @@ Section proof.
       * iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto.
   Qed.
 
-  Lemma release_spec k E Γ (R Rcrash : iProp Σ) lk:
+  Lemma release_spec k E (R Rcrash : iProp Σ) lk:
     ↑Nlock ⊆ E →
-    {{{ crash_locked k Γ lk R Rcrash }}}
+    {{{ crash_locked k lk R Rcrash }}}
     lock.release lk @ E
     {{{ RET #(); True }}}.
   Proof.
@@ -159,10 +159,10 @@ Section proof.
      let: "v" := e in
      lock.release lk)%E.
 
-  Lemma with_lock_spec k k' E γ Φ Φc (R Rcrash : iProp Σ) lk e:
+  Lemma with_lock_spec k k' E Φ Φc (R Rcrash : iProp Σ) lk e:
     (S k < k')%nat →
     to_val e = None →
-    is_crash_lock (LVL k') γ lk R Rcrash ∗
+    is_crash_lock (LVL k') lk R Rcrash ∗
     (Φc ∧ (R -∗ WPC e @ (LVL k); (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (Φc ∧ Φ #()) ∗ ▷ R }} {{ Φc ∗ ▷ Rcrash }})) -∗
     WPC (with_lock lk e) @ (LVL (S k)) ; ⊤; E {{ Φ }} {{ Φc }}.
   Proof.
@@ -173,7 +173,7 @@ Section proof.
     { iDestruct "Hwp" as "($&_)".  }
     iApply (acquire_spec with "Hcrash").
     { set_solver. }
-    iNext. iIntros (?) "H Hwp".
+    iNext. iIntros "H Hwp".
     wpc_pures.
     { iDestruct "Hwp" as "($&_)". }
 
@@ -214,14 +214,14 @@ Ltac crash_lock_open H :=
     | _ => fail 1 "crash_lock_open: wpc needs k of the form LVL (S (S ?k))"
     end;
     match iTypeOf H with
-    | Some (_, crash_locked _ _ (LVL _) _ _ _ _) =>
+    | Some (_, crash_locked _ _ (LVL _) _ _ _) =>
       iApply (use_crash_locked with H);
       [ try lia (* LVL inequality *)
       | try solve_ndisj (* Ncrash namespace *)
       | first [ reflexivity | fail 1 "applied to a value?" ] (* to_val e = None *)
       | iSplit; [ try iFromCache | ]
       ]
-    | Some (_, crash_locked _ _ _ _ _ _ _) =>
+    | Some (_, crash_locked _ _ _ _ _ _) =>
       fail 1 "crash_lock_open:" H "does not have correct LVL"
     | Some (_, _) => fail 1 "crash_lock_open:" H "is not a crash_locked fact"
     | None => fail 1 "crash_lock_open:" H "not found"

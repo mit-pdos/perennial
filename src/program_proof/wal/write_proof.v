@@ -7,7 +7,6 @@ From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 
 Section goose_lang.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
@@ -443,7 +442,7 @@ Proof.
                                 ∗ (txn_pos γ (length σ.(log_state.txns)) pos
                                 -∗ Q pos)) ∧ PreQ else
                                (if ok then Q txn ∗ ∃ txn_id, txn_pos γ txn_id txn else PreQ)) ∗
-                     "Hlocked" ∷ locked γ.(lock_name) ∗
+                     "Hlocked" ∷ locked #σₛ.(memLock) ∗
                      "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ ∗
                      "Hbufs" ∷ if b then updates_slice_frag bufs 1 bs else emp
                 )%I

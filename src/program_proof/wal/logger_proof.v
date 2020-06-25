@@ -5,7 +5,6 @@ From Perennial.program_proof Require Import wal.invariant.
 
 Section goose_lang.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
@@ -26,12 +25,12 @@ Theorem wp_Walog__waitForSpace l γ σₛ :
       "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
       "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
-      "Hlocked" ∷ locked γ.(lock_name) ∗
-      "#His_lock" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
+      "Hlocked" ∷ locked #σₛ.(memLock) ∗
+      "#His_lock" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
   }}}
     Walog__waitForSpace #l
   {{{ σ, RET #();
-      "Hlocked" ∷ locked γ.(lock_name)  ∗
+      "Hlocked" ∷ locked #σₛ.(memLock)  ∗
       "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
       "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
       "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
@@ -44,7 +43,7 @@ Proof.
   wp_call.
   iNamed "Hlkinv".
   wp_apply (wp_forBreak_cond
-              (λ b, "Hlocked" ∷ locked γ.(lock_name) ∗
+              (λ b, "Hlocked" ∷ locked #σₛ.(memLock) ∗
                     "*" ∷ ∃ σ, "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
                                "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
                                "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
@@ -210,16 +209,16 @@ Theorem wp_Walog__logAppend l circ_l γ σₛ :
       "#His_cond1" ∷ is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
       "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
       "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
-      "#His_lock" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
+      "#His_lock" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
       "#Hwal" ∷ is_wal P l γ ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
-      "Hlocked" ∷ locked γ.(lock_name) ∗
+      "Hlocked" ∷ locked #σₛ.(memLock) ∗
       "Hlogger" ∷ logger_inv γ circ_l
   }}}
     Walog__logAppend #l #circ_l
   {{{ (progress:bool), RET #progress;
       wal_linv σₛ.(wal_st) γ ∗
-      locked γ.(lock_name) ∗
+      locked #σₛ.(memLock) ∗
       logger_inv γ circ_l
   }}}.
 Proof.
@@ -395,7 +394,7 @@ Proof.
   wp_apply (wp_inc_nthread with "[$st $Hlkinv]"); iIntros "Hlkinv".
   wp_pures.
   wp_bind (For _ _ _).
-  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗ logger_inv γ circ_l)%I
+  wp_apply (wp_forBreak_cond (fun b => wal_linv σₛ.(wal_st) γ ∗ locked #σₛ.(memLock) ∗ logger_inv γ circ_l)%I
               with "[] [$]").
   { iIntros "!>" (Φ') "(Hlkinv&Hlk_held&Hlogger) HΦ".
     wp_apply (wp_load_shutdown with "[$st $Hlkinv]"); iIntros (shutdown) "Hlkinv".

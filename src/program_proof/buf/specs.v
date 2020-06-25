@@ -13,7 +13,6 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section heap.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).

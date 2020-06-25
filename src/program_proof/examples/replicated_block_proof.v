@@ -25,7 +25,6 @@ End rblock.
 
 Section goose.
   Context `{!heapG Σ}.
-  Context `{!lockG Σ}.
   Context `{!crashG Σ}.
   Context `{!stagedG Σ}.
 
@@ -65,23 +64,23 @@ Section goose.
       "#addr" ∷ readonly (l ↦[RepBlock.S :: "addr"] #addr) ∗
       "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_ref).
 
-  Definition is_pre_rblock (γ: gname) (l: loc) addr σ : iProp Σ :=
+  Definition is_pre_rblock (l: loc) addr σ : iProp Σ :=
     "*" ∷ (∃ (d_ref m_ref: loc),
       "Hro_state" ∷ rblock_state l d_ref m_ref addr ∗
-      "Hfree_lock" ∷ is_free_lock γ m_ref) ∗
+      "Hfree_lock" ∷ is_free_lock m_ref) ∗
     "Hlinv" ∷ rblock_linv addr σ.
 
-  Definition is_rblock (γ: gname) (k': nat) (l: loc) addr : iProp Σ :=
+  Definition is_rblock (k': nat) (l: loc) addr : iProp Σ :=
     ∃ (d_ref m_ref: loc),
       "Hro_state" ∷ rblock_state l d_ref m_ref addr ∗
       (* lock protocol *)
-      "#Hlock" ∷ is_crash_lock N N (LVL k') γ #m_ref
+      "#Hlock" ∷ is_crash_lock N N (LVL k') #m_ref
         (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)
         (∃ σ, "Hclkinv" ∷ rblock_cinv addr σ ∗ "HP" ∷ P σ)
   .
 
-  Global Instance is_rblock_Persistent γ k' l addr :
-    Persistent (is_rblock γ k' l addr).
+  Global Instance is_rblock_Persistent k' l addr :
+    Persistent (is_rblock k' l addr).
   Proof. apply _. Qed.
 
   Definition block0: Block :=
@@ -97,10 +96,10 @@ Section goose.
     - iExists block0; iExact "Hb".
   Qed.
 
-  Theorem replicated_block_cfupd {γ l} k' addr σ0 :
-    is_pre_rblock γ l addr σ0 -∗
+  Theorem replicated_block_cfupd {l} k' addr σ0 :
+    is_pre_rblock l addr σ0 -∗
     ▷ P σ0 ={⊤}=∗
-      is_rblock γ k' l addr ∗
+      is_rblock k' l addr ∗
       |C={⊤,∅}_(LVL (S k'))=> ∃ σ, rblock_cinv addr σ ∗ P σ.
   Proof.
     iIntros "Hpre HP"; iNamed "Hpre".
@@ -125,7 +124,7 @@ Section goose.
   Theorem wpc_Open {k E2} (d_ref: loc) addr σ :
     {{{ rblock_cinv addr σ }}}
       Open #d_ref #addr @ NotStuck;LVL (S (S k)); ⊤;E2
-    {{{ γ (l:loc), RET #l; is_pre_rblock γ l addr σ }}}
+    {{{ (l:loc), RET #l; is_pre_rblock l addr σ }}}
     {{{ rblock_cinv addr σ }}}.
   Proof.
     iIntros (Φ Φc) "Hpre HΦ"; iNamed "Hpre".
@@ -155,7 +154,7 @@ Section goose.
     wpc_bind (lock.new _).
     wpc_frame.
     wp_apply wp_new_free_lock.
-    iIntros (γ m_ref) "Hfree_lock".
+    iIntros (m_ref) "Hfree_lock".
     iNamed 1.
 
     (* allocate struct *)
@@ -192,10 +191,10 @@ Section goose.
       iApply "HΦ"; auto.
   Qed.
 
-  Lemma wpc_RepBlock__Read {k E2} {k' γ l} addr (primary: bool) :
+  Lemma wpc_RepBlock__Read {k E2} {k' l} addr (primary: bool) :
     (S k < k')%nat →
     ∀ Φ Φc,
-        "Hrb" ∷ is_rblock γ k' l addr ∗
+        "Hrb" ∷ is_rblock k' l addr ∗
         "Hfupd" ∷ (Φc (* crash condition before lin.point *) ∧
                    ▷ (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ (Φc (* crash condition after lin.point *) ∧
                                                  (∀ s, is_block s 1 σ -∗ Φ (slice_val s))))) -∗
@@ -211,7 +210,7 @@ Section goose.
     wpc_frame_seq.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-    iIntros (γlk) "His_locked"; iNamed 1.
+    iIntros "His_locked"; iNamed 1.
     wpc_pures.
     wpc_bind (RepBlock__readAddr _ _); wpc_frame.
     wp_apply (wp_RepBlock__readAddr with "addr").
@@ -258,9 +257,9 @@ Section goose.
     iApply "HQ"; iFrame.
   Qed.
 
-  Theorem wpc_RepBlock__Read_triple (Q: Block → iProp Σ) (Qc: iProp Σ) {k E2} {k' γ l} addr (primary: bool) :
+  Theorem wpc_RepBlock__Read_triple (Q: Block → iProp Σ) (Qc: iProp Σ) {k E2} {k' l} addr (primary: bool) :
     (S k < k')%nat →
-    {{{ "Hrb" ∷ is_rblock γ k' l addr ∗ (* replicated block protocol *)
+    {{{ "Hrb" ∷ is_rblock k' l addr ∗ (* replicated block protocol *)
         "HQc" ∷ (∀ σ, Q σ -∗ Qc) ∗ (* crash condition after "linearization point" *)
         "Hfupd" ∷ (Qc (* crash condition before "linearization point" *) ∧
                    (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q σ)) }}}
@@ -279,10 +278,10 @@ Section goose.
     iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
-  Lemma wpc_RepBlock__Write {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
+  Lemma wpc_RepBlock__Write {k E2} l k' addr (s: Slice.t) q (b: Block) :
     (S k < k')%nat →
     ∀ Φ Φc,
-        "Hrb" ∷ is_rblock γ k' l addr ∗
+        "Hrb" ∷ is_rblock k' l addr ∗
         "Hb" ∷ is_block s q b ∗
         "Hfupd" ∷ (Φc ∧ ▷ (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P b ∗ (Φc ∧ (is_block s q b -∗ Φ #())))) -∗
     WPC  RepBlock__Write #l (slice_val s) @ NotStuck; LVL (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
@@ -297,7 +296,7 @@ Section goose.
     wpc_frame_seq.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-    iIntros (γlk) "His_locked".
+    iIntros "His_locked".
     iNamed 1.
 
     wpc_pures.
@@ -364,9 +363,9 @@ Section goose.
     iApply "HΦ"; iFrame.
   Qed.
 
-  Theorem wpc_RepBlock__Write_triple (Q: iProp Σ) (Qc: iProp Σ) {k E2} γ l k' addr (s: Slice.t) q (b: Block) :
+  Theorem wpc_RepBlock__Write_triple (Q: iProp Σ) (Qc: iProp Σ) {k E2} l k' addr (s: Slice.t) q (b: Block) :
     (S k < k')%nat →
-    {{{ "Hrb" ∷ is_rblock γ k' l addr ∗
+    {{{ "Hrb" ∷ is_rblock k' l addr ∗
         "Hb" ∷ is_block s q b ∗
         "HQc" ∷ (Q -∗ Qc) ∗
         "Hfupd" ∷ (Qc ∧ (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P b ∗ Q)) }}}
@@ -394,14 +393,14 @@ Section goose.
       OpenRead d_ref addr @ NotStuck; LVL 100; ⊤; E2
     {{{ (x: val), RET x; True }}}
     {{{ ∃ σ, rblock_cinv addr σ ∗ P σ }}}.
-  Proof using lockG0 stagedG0.
+  Proof using stagedG0.
     rewrite /OpenRead.
     iIntros (??) "(H&HP) HΦ".
     wpc_bind (Open _ _).
     wpc_apply (wpc_Open with "H").
     iSplit.
     { iIntros "H". iLeft in "HΦ". iApply "HΦ". eauto with iFrame. }
-    iNext. iIntros (??) "Hpre".
+    iNext. iIntros (?) "Hpre".
     iMod (replicated_block_cfupd 98 with "Hpre HP") as "(#Hrblock&Hcfupd)".
     (* Here is the use of the cfupd to cancel out the rblock_cinv from crash condition,
        which is important because RepBlock__Read doesn't guarantee rblock_cinv! *)
@@ -435,7 +434,6 @@ Qed.
 
 Section recov.
   Context `{!heapG Σ}.
-  Context `{!lockG Σ}.
   Context `{!crashG Σ}.
   Context `{!stagedG Σ}.
 
@@ -451,7 +449,7 @@ Section recov.
         (λ _, True%I)
         (λ _, True%I)
         (λ _ _, True%I).
-  Proof using lockG0.
+  Proof.
     iIntros "Hstart".
     iApply (idempotence_wpr _ (LVL (S (S k))) ⊤ ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ)%I with "[Hstart]").
     { auto. }
@@ -478,7 +476,7 @@ Section recov.
         (λ _, True%I)
         (λ _, True%I)
         (λ _ _, True%I).
-  Proof using lockG0 stagedG0.
+  Proof using stagedG0.
     iIntros "Hstart".
     iApply (idempotence_wpr _ (LVL 100) ⊤ ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ ∗ True)%I with "[Hstart]").
     { auto. }
@@ -496,11 +494,11 @@ Section recov.
   Qed.
 End recov.
 
-Existing Instances subG_stagedG subG_lockΣ.
+Existing Instances subG_stagedG.
 
 From Perennial.program_logic Require Import recovery_adequacy.
 From Perennial.goose_lang Require Export adequacy recovery_adequacy.
-Definition repΣ := #[lockΣ; stagedΣ; heapΣ; crashΣ].
+Definition repΣ := #[stagedΣ; heapΣ; crashΣ].
 
 Theorem OpenRead_adequate σ dref addr :
   (* We assume the addresses we replicate are in the disk domain *)

@@ -13,7 +13,7 @@ Section refinement.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
 Context `{!refinement_heapG Σ}.
-Context `{!lockG Σ, stagedG Σ}.
+Context `{stagedG Σ}.
 Existing Instance logG0.
 Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
 Context `{Hin_nat_ctx: inG Σ (authR (optionUR (exclR (leibnizO (nat * (spec_lang.(language.expr) →

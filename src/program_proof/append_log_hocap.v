@@ -13,7 +13,7 @@ Canonical Structure log_stateO := leibnizO log_state.
 Section hocap.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
-Context `{!lockG Σ, stagedG Σ}.
+Context `{!stagedG Σ}.
 Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
 
 Implicit Types v : val.
@@ -135,7 +135,7 @@ Definition is_log (k: nat) (l: loc) : iProp Σ :=
   ∃ lk,
   log_inv k ∗
   inv Nlog (∃ q, l ↦[Log.S :: "m"]{q} lk) ∗
-  (∃ γlk, is_crash_lock N1 N2 (LVL k) γlk lk
+  (is_crash_lock N1 N2 (LVL k) lk
                                 (∃ bs, ptsto_log l bs ∗ P (Opened bs l))
                                 log_crash_cond).
 
@@ -161,7 +161,7 @@ Proof.
   iDestruct "His_log" as (?) "H".
   iDestruct "H" as "(#Hlog_inv&Hm&His_lock)".
   iMod (inv_readonly_acc _ with "Hm") as (q) "Hm"; first by set_solver+.
-  iDestruct "His_lock" as (γlk) "His_lock".
+  iDestruct "His_lock" as "His_lock".
   rewrite /Log__Reset.
   wpc_pures; auto.
   { iDestruct "Hvs" as "(_&$)". }
@@ -176,7 +176,7 @@ Proof.
   wpc_frame "HΦ Hvs".
   { crash_case. iDestruct "Hvs" as "(_&$)". }
   wp_apply (crash_lock.acquire_spec with "His_lock"); first by set_solver+.
-  iIntros (Γ) "Hcrash_locked".
+  iIntros "Hcrash_locked".
   iNamed 1.
 
   wpc_pures; auto.
@@ -311,7 +311,7 @@ Proof using PStartedOpening_Timeless.
       ** iApply "HΦ". iDestruct "Hvs" as "($&_)".
       ** iExists (Opening s). iFrame.
     * iNext. iIntros (lptr) "(Hlog&Hlock)".
-      iDestruct "Hlock" as (γ ml) "(Hpts&Hlock)".
+      iDestruct "Hlock" as (ml) "(Hpts&Hlock)".
       iDestruct "Hvs" as "(_&Hvs)".
       iInv "Hinv" as "H" "Hclo".
       iDestruct "H" as (s') "(Hlog_state_to_inv&>Hauth_state)".
@@ -334,7 +334,7 @@ Proof using PStartedOpening_Timeless.
          { iAlways. iDestruct 1 as (?) "(?&?)". iExists _. iFrame. by iApply ptsto_log_crashed. }
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
-         iFrame. iExists _. iFrame.
+         iFrame.
   - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
     { iNext. iExists _. iFrame. }
     iApply step_fupdN_inner_later; auto.
@@ -438,7 +438,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
       iMod ("Hclo" with "[HPOpened Hauth_state Hfrag_state]") as "_".
       { iNext. iExists _; iFrame. }
       iDestruct "Hlog" as "(Hlog&Hlock)".
-      iDestruct "Hlock" as (γ ml) "(Hpts&Hlock)".
+      iDestruct "Hlock" as (ml) "(Hpts&Hlock)".
       iSplitL "HP Hlog".
       { iExists _. iFrame. eauto. }
       iModIntro.
@@ -453,7 +453,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
          { iAlways. iDestruct 1 as (?) "(?&?)". iExists _. iFrame. by iApply ptsto_log_crashed. }
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
-         iFrame. iExists _. iFrame.
+         iFrame.
   - iMod "Hclose". iMod ("Hclo" with "[Hclose Hfrag_state Hauth_state]"); first eauto.
     { iNext. iExists _. iFrame. }
     iApply step_fupdN_inner_later; auto.
@@ -467,7 +467,7 @@ End hocap.
 Section hocap_crash.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
-Context `{!lockG Σ, stagedG Σ}.
+Context `{!stagedG Σ}.
 Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
 
 Implicit Types v : val.

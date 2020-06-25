@@ -13,7 +13,6 @@ Ltac len := autorewrite with len; try word.
 
 Section heap.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!gen_heapPreG u64 bool Σ}.
 
 Implicit Types s : Slice.t.
@@ -50,10 +49,10 @@ Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
   )%I.
 
 Definition is_lockShard (ls : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) : iProp Σ :=
-  ( ∃ (shardlock mptr : loc) γl,
+  ( ∃ (shardlock mptr : loc),
       readonly (ls ↦[lockShard.S :: "mu"] #shardlock) ∗
       readonly (ls ↦[lockShard.S :: "state"] #mptr) ∗
-      is_lock lockN γl #shardlock (is_lockShard_inner mptr shardlock ghostHeap covered P)
+      is_lock lockN #shardlock (is_lockShard_inner mptr shardlock ghostHeap covered P)
   )%I.
 
 Global Instance is_lockShard_persistent ls gh (P : u64 -> iProp Σ) c : Persistent (is_lockShard ls gh c P).
@@ -65,7 +64,7 @@ Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
   {{{ [∗ map] a ↦ _ ∈ covered, P a }}}
     mkLockShard #()
   {{{ ls gh, RET #ls; is_lockShard ls gh covered P }}}.
-Proof using gen_heapPreG0 heapG0 lockG0 Σ.
+Proof using gen_heapPreG0 heapG0 Σ.
   iIntros (Φ) "Hinit HΦ".
   rewrite /mkLockShard.
   wp_pures.
@@ -76,7 +75,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
 
   wp_apply wp_new_free_lock; auto.
 
-  iIntros (γ shardlock) "Hfreelock".
+  iIntros (shardlock) "Hfreelock".
 
   wp_pures.
   iDestruct (is_free_lock_ty with "Hfreelock") as "%".
@@ -106,7 +105,7 @@ Proof using gen_heapPreG0 heapG0 lockG0 Σ.
   iModIntro.
 
   iApply "HΦ".
-  iExists _, _, _.
+  iExists _, _.
   iFrame.
 Qed.
 
@@ -117,7 +116,7 @@ Theorem wp_lockShard__acquire ls gh covered (addr : u64) (id : u64) (P : u64 -> 
   {{{ RET #(); P addr ∗ locked gh addr }}}.
 Proof.
   iIntros (Φ) "[Hls %] HΦ".
-  iDestruct "Hls" as (shardlock mptr γl) "(#Hls_mu&#Hls_state&#Hlock)".
+  iDestruct "Hls" as (shardlock mptr) "(#Hls_mu&#Hls_state&#Hlock)".
 
   wp_call.
   wp_loadField.
@@ -126,7 +125,7 @@ Proof.
 
   wp_pures.
   wp_apply (wp_forBreak
-    (fun b => is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked γl ∗ if b then emp else P addr ∗ locked gh addr)%I
+    (fun b => is_lockShard_inner mptr shardlock gh covered P ∗ lock.locked #shardlock ∗ if b then emp else P addr ∗ locked gh addr)%I
     with "[] [$Hlocked $Hinner]").
 
   {
@@ -338,7 +337,7 @@ Theorem wp_lockShard__release ls (addr : u64) (P : u64 -> iProp Σ) covered gh :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "(Hls & Hp & Haddrlocked) HΦ".
-  iDestruct "Hls" as (shardlock mptr γl) "(#Hls_mu&#Hls_state&#Hlock)".
+  iDestruct "Hls" as (shardlock mptr) "(#Hls_mu&#Hls_state&#Hlock)".
   wp_call.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").

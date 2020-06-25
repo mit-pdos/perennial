@@ -26,17 +26,15 @@ End alloc.
 
 Section goose.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!allocG Σ}.
 
 Let allocN := nroot.@"allocator".
 
 Record alloc_names :=
-  { alloc_lock_name: gname;
-    alloc_used_name: gen_heapG u64 unit Σ;
+  { alloc_used_name: gen_heapG u64 unit Σ;
   }.
 
-Instance alloc_names_eta : Settable _ := settable! Build_alloc_names <alloc_lock_name; alloc_used_name>.
+Instance alloc_names_eta : Settable _ := settable! Build_alloc_names <alloc_used_name>.
 
 Implicit Types (a: u64) (m: gmap u64 ()) (free: gset u64).
 
@@ -60,7 +58,7 @@ Definition is_allocator (l: loc) γ : iProp Σ :=
   ∃ (lref mref: loc),
     "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
-    "#His_lock" ∷ is_lock allocN γ.(alloc_lock_name) #lref
+    "#His_lock" ∷ is_lock allocN #lref
                           (∃ σ, "Hlockinv" ∷ allocator_linv γ mref σ ∗ "HP" ∷ P σ)
 .
 
@@ -97,7 +95,7 @@ Proof using allocG0.
   wp_pures.
   wp_apply (wp_mapRemove with "[$Hfree $Hused]"); iIntros "(Hfree & Hused)".
   wp_apply wp_new_free_lock.
-  iIntros (γ1 lk) "Hlock".
+  iIntros (lk) "Hlock".
   rewrite -wp_fupd.
   wp_apply wp_allocStruct; auto.
   iIntros (l) "Hallocator".
@@ -105,8 +103,8 @@ Proof using allocG0.
   iMod (readonly_alloc_1 with "m") as "#m".
   iMod (readonly_alloc_1 with "free") as "#free".
   iMod (gen_heap_init (gset_to_gmap () used)) as (γ2) "Husedctx".
-  set (γ:={| alloc_lock_name := γ1; alloc_used_name := γ2 |}).
-  iMod (alloc_lock allocN ⊤ _ _
+  set (γ:={| alloc_used_name := γ2 |}).
+  iMod (alloc_lock allocN ⊤ _
                    (∃ σ, "Hlockinv" ∷ allocator_linv γ mref' σ ∗ "HP" ∷ P σ)%I
           with "[$Hlock] [-HΦ]") as "#Hlock".
   { iExists _; iFrame.

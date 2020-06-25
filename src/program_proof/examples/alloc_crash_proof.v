@@ -127,7 +127,6 @@ Qed.
 
 Section goose.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!allocG Σ}.
 Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
@@ -197,20 +196,20 @@ Definition allocator_linv γ n (mref: loc) : iProp Σ :=
 .
 
 Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
-  ∃ (lref mref: loc) (γlk: gname),
+  ∃ (lref mref: loc),
     "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
-    "#His_lock" ∷ is_lock Nlock γlk #lref (allocator_linv γ n mref) ∗
+    "#His_lock" ∷ is_lock Nlock #lref (allocator_linv γ n mref) ∗
     "#Halloc_inv" ∷ inv Ninv (allocator_inv γ d)
 .
 
 Definition is_allocator_mem_pre (l: loc) σ : iProp Σ :=
-  ∃ (lref mref: loc) (γlk: gname),
+  ∃ (lref mref: loc),
     "%Hpostcrash" ∷ ⌜ alloc_post_crash σ ⌝ ∗
     "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
     "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
-    "Hfree_lock" ∷ is_free_lock γlk lref.
+    "Hfree_lock" ∷ is_free_lock lref.
 
 (* TODO: prove something useful for initializing from zero blocks *)
 
@@ -342,7 +341,7 @@ Proof using allocG0.
   wp_pures.
   wp_apply (wp_mapRemove with "[$Hfree $Hused]"); iIntros "(Hfree & Hused)".
   wp_apply wp_new_free_lock.
-  iIntros (γ1 lk) "Hlock".
+  iIntros (lk) "Hlock".
   rewrite -wp_fupd.
   wp_apply wp_allocStruct; auto.
   iIntros (l) "Hallocator".
@@ -351,7 +350,7 @@ Proof using allocG0.
   iMod (readonly_alloc_1 with "free") as "#free".
   iModIntro.
   iApply "HΦ".
-  iExists _, _, _; iFrame "# ∗".
+  iExists _, _; iFrame "# ∗".
   iSplitR; first auto.
   iExactEq "Hfree".
   rewrite /named.
@@ -464,7 +463,7 @@ Proof.
 
   iDestruct (cfupd_big_sepS with "Hpending") as "Hpending".
 
-  iMod (alloc_lock Nlock ⊤ _ _ (allocator_linv γ n mref)%I
+  iMod (alloc_lock Nlock ⊤ _ (allocator_linv γ n mref)%I
           with "[$Hfree_lock] [Hfreemap Hblock Hfree_frag]") as "#Hlock".
   { iExists _; iFrame. }
 
@@ -474,7 +473,7 @@ Proof.
   iModIntro.
   iExists γ.
   iSplitR.
-  { iExists _, _, _; iFrame "#". }
+  { iExists _, _; iFrame "#". }
   iMod "Hallocinv" as "_".
   { pose proof (LVL_gt (size (alloc.domain σ) + S (S n))); lia. }
   iMod "Hpending" as "_".

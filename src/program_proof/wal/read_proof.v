@@ -5,7 +5,6 @@ From Perennial.program_proof Require Import wal.invariant.
 
 Section goose_lang.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).

@@ -15,7 +15,6 @@ Class buftxnG Σ :=
   }.
 
 Section heap.
-Context `{!lockG Σ}.
 Context `{!buftxnG Σ}.
 
 Implicit Types s : Slice.t.

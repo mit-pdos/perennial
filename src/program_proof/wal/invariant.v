@@ -28,7 +28,6 @@ Class walG Σ :=
 
 Section goose_lang.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
@@ -41,7 +40,6 @@ Let circN := walN .@ "circ".
 
 Record wal_names := mkWalNames
   { circ_name: circ_names;
-    lock_name : gname;
     cs_name : gname;
     txns_ctx_name : gen_heapG nat (u64 * list update.t) Σ;
     txns_name : gname;
@@ -53,7 +51,7 @@ Record wal_names := mkWalNames
   }.
 
 Global Instance _eta_wal_names : Settable _ :=
-  settable! mkWalNames <circ_name; lock_name; cs_name; txns_ctx_name; txns_name;
+  settable! mkWalNames <circ_name; cs_name; txns_ctx_name; txns_name;
                         new_installed_name; being_installed_name;
                         diskEnd_avail_name; diskEnd_txn_id_name; start_avail_name>.
 
@@ -237,7 +235,7 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
     "cond_logger" ∷ lock.is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
     "cond_install" ∷ lock.is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
     "cond_shut" ∷ lock.is_cond σₛ.(condShut) #σₛ.(memLock) ∗
-    "lk" ∷ is_lock N γ.(lock_name) #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ).
+    "lk" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ).
 
 Global Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
 

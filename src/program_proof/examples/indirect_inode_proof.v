@@ -62,7 +62,6 @@ Hint Unfold inode.wf MaxBlocks : word.
 
 Section goose.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 Context `{!allocG Σ}.
@@ -136,19 +135,19 @@ Definition inode_state l (d_ref: loc) (lref: loc) : iProp Σ :=
   "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d_ref) ∗
   "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref).
 
-Definition is_inode l k γ P : iProp Σ :=
+Definition is_inode l k P : iProp Σ :=
   ∃ (d lref: loc),
     "Hro_state" ∷ inode_state l d lref ∗
-    "#Hlock" ∷ is_crash_lock inodeN inodeN k γ #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ) True.
+    "#Hlock" ∷ is_crash_lock inodeN inodeN k #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ) True.
 
-Definition pre_inode l γ P σ : iProp Σ :=
+Definition pre_inode l P σ : iProp Σ :=
   ∃ (d lref: loc),
     "Hro_state" ∷ inode_state l d lref ∗
-    "Hfree_lock" ∷ is_free_lock γ lref ∗
+    "Hfree_lock" ∷ is_free_lock lref ∗
     "Hlockinv" ∷ inode_linv l σ.
 
-Global Instance is_inode_Persistent l k γ P:
-  Persistent (is_inode l k γ P).
+Global Instance is_inode_Persistent l k P:
+  Persistent (is_inode l k P).
 Proof. apply _. Qed.
 
 
@@ -192,7 +191,7 @@ Theorem wp_Open k {d:loc} {addr σ P} :
   addr = σ.(inode.addr) ->
   {{{ inode_cinv σ ∗ P σ }}}
     indirect_inode.Open #d #addr
-  {{{ l γ, RET #l; is_inode l k γ P }}}.
+  {{{ l, RET #l; is_inode l k P }}}.
 Proof.
   intros ->.
   iIntros (Φ) "(Hinode&HP) HΦ"; unfold inode_cinv; iNamed "Hinode".
@@ -259,7 +258,7 @@ Proof.
 
   destruct (bool_decide (int.val sz <= maxDirect)) eqn:HnumDir; unfold maxDirect in HnumDir; rewrite HnumDir; wp_pures.
   all: rewrite -wp_fupd; wp_apply wp_new_free_lock.
-  all: iIntros (γ lref) "Hlock".
+  all: iIntros (lref) "Hlock".
   {
     assert (int.val sz <= int.val maxDirect) as HszBound.
     {
@@ -285,7 +284,7 @@ Proof.
     iMod (readonly_alloc_1 with "d") as "#d".
     iMod (readonly_alloc_1 with "m") as "#m".
     (*TODO needs to be crash lock*)
-    iMod (alloc_lock inodeN ⊤ _ _
+    iMod (alloc_lock inodeN ⊤ _
                     (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ)%I
             with "[$Hlock] [-HΦ]") as "#Hlock".
     { iExists _; iFrame.
@@ -307,7 +306,7 @@ Proof.
           { word. }
         }
     }
-    iAssert (is_crash_lock inodeN inodeN k γ #lref (∃ σ, inode_linv l σ ∗ P σ) True) as "#Hcrash_lock".
+    iAssert (is_crash_lock inodeN inodeN k #lref (∃ σ, inode_linv l σ ∗ P σ) True) as "#Hcrash_lock".
     { admit. }
     iModIntro.
     iApply "HΦ".
@@ -346,7 +345,7 @@ Proof.
     iDestruct (struct_fields_split with "Hinode") as "(d&m&addr&sz&direct&indirect&_)".
     iMod (readonly_alloc_1 with "d") as "#d".
     iMod (readonly_alloc_1 with "m") as "#m".
-    iMod (alloc_lock inodeN ⊤ _ _
+    iMod (alloc_lock inodeN ⊤ _
                     (∃ σ, "Hlockinv" ∷ inode_linv l σ ∗ "HP" ∷ P σ)%I
             with "[$Hlock] [-HΦ]") as "#Hlock".
     { iExists _; iFrame.
@@ -373,7 +372,7 @@ Proof.
           by replace (int.nat (U64 (Z.of_nat (num_ind σ)))) with (num_ind σ) by word.
         }
     }
-    iAssert (is_crash_lock inodeN inodeN k γ #lref (∃ σ, inode_linv l σ ∗ P σ) True) as "#Hcrash_lock".
+    iAssert (is_crash_lock inodeN inodeN k #lref (∃ σ, inode_linv l σ ∗ P σ) True) as "#Hcrash_lock".
     { admit. }
     iModIntro.
     iApply "HΦ".

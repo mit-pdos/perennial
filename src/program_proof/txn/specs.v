@@ -23,7 +23,6 @@ Class txnG (Σ: gFunctors) :=
   }.
 
 Section heap.
-Context `{!lockG Σ}.
 Context `{!txnG Σ}.
 
 Implicit Types s : Slice.t.
@@ -129,12 +128,12 @@ Definition is_txn_locked l γ : iProp Σ :=
 
 Definition is_txn (l : loc) (γ : txn_names) : iProp Σ :=
   (
-    ∃ γLock (mu : loc) (walptr : loc),
+    ∃ (mu : loc) (walptr : loc),
       "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
       "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       "Hiswal" ∷ is_wal (wal_heap_inv (txn_walnames γ)) walptr (wal_heap_walnames (txn_walnames γ)) ∗
       "Histxna" ∷ inv invN (is_txn_always γ) ∗
-      "Histxn_lock" ∷ is_lock lockN γLock #mu (is_txn_locked l (txn_walnames γ))
+      "Histxn_lock" ∷ is_lock lockN #mu (is_txn_locked l (txn_walnames γ))
   )%I.
 
 Global Instance is_txn_persistent l γ : Persistent (is_txn l γ) := _.
@@ -196,7 +195,7 @@ Theorem wp_txn_Load l γ a v :
       ⌜ existT b.(bufKind) b.(bufData) = v ⌝ ∗
       mapsto_txn γ a v
   }}}.
-Proof using txnG0 lockG0 Σ.
+Proof using txnG0 Σ.
   iIntros (Φ) "(#Htxn & Hstable) HΦ".
   iNamed "Htxn".
   iNamed "Hstable".
@@ -1080,7 +1079,7 @@ Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
         [∗ map] a ↦ buf ∈ bufamap,
           ∃ data, mapsto_txn γ a (existT buf.(bufKind) data)
   }}}.
-Proof using txnG0 lockG0 Σ.
+Proof using txnG0 Σ.
   iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
   iPoseProof "Htxn" as "Htxn0".
   iNamed "Htxn".

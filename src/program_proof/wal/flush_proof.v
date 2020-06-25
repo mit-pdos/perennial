@@ -5,7 +5,6 @@ From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 
 Section goose_lang.
 Context `{!heapG Σ}.
-Context `{!lockG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
@@ -193,7 +192,7 @@ Proof.
 
   wp_bind (For _ _ _).
   wp_apply (wp_forBreak_cond (λ b,
-               wal_linv σₛ.(wal_st) γ ∗ locked γ.(lock_name) ∗
+               wal_linv σₛ.(wal_st) γ ∗ locked #σₛ.(memLock) ∗
                if b then ⊤ else diskEnd_at_least γ.(circ_name) (int.val pos))%I
            with "[] [$Hlkinv $Hlocked]").
   { iIntros "!>" (Φ') "(Hlkinv&Hlocked&_) HΦ".

@@ -14,7 +14,7 @@ Section refinement.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
 Context `{!refinement_heapG Σ}.
-Context `{!lockG Σ, stagedG Σ}.
+Context `{stagedG Σ}.
 
 Existing Instance logG0.
 Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
@@ -31,8 +31,7 @@ Notation sexpr := (@expr (@spec_ext_op_field log_spec_ext)).
 Notation sval := (@val (@spec_ext_op_field log_spec_ext)).
 
 Class appendG (Σ: gFunctors) :=
-  { append_lockG :> lockG Σ;
-    append_stagedG :> stagedG Σ;
+  { append_stagedG :> stagedG Σ;
     append_stateG :> inG Σ (authR (optionUR (exclR log_stateO)));
     append_nat_ctx :> inG Σ (authR (optionUR (exclR (leibnizO (nat * (spec_lang.(language.expr) →
                                                                        spec_lang.(language.expr)))))))
@@ -82,9 +81,9 @@ Defined.
 (* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
   perhaps specTy_model should be split into two typeclasses? *)
 
-Existing Instances subG_stagedG subG_lockΣ.
+Existing Instances subG_stagedG.
 
-Definition appendΣ := #[lockΣ; stagedΣ;
+Definition appendΣ := #[stagedΣ;
                           GFunctor (authR (optionUR (exclR log_stateO)));
                           GFunctor ((authR (optionUR (exclR (leibnizO (nat * (spec_lang.(language.expr) →
                                                                        spec_lang.(language.expr))))))))].

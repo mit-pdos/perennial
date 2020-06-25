@@ -18,31 +18,23 @@ Context {ext_tys: ext_types ext}.
 
 Local Coercion Var' (s:string): expr := Var s.
 
-(** The CMRA we need. *)
-(* Not bundling heapG, as it may be shared with other users. *)
-Class lockG Σ := LockG { lock_tokG :> inG Σ (exclR unitO) }.
-Definition lockΣ : gFunctors := #[GFunctor (exclR unitO)].
-
-Instance subG_lockΣ {Σ} : subG lockΣ Σ → lockG Σ.
-Proof. solve_inG. Qed.
-
 Section proof.
-  Context `{!heapG Σ, !lockG Σ} (N : namespace).
+  Context `{!heapG Σ} (N : namespace).
 
-  Definition lock_inv (γ : gname) (l : loc) (R : iProp Σ) : iProp Σ :=
-    (∃ b : bool, l ↦ #b ∗ if b then True else own γ (Excl ()) ∗ R)%I.
+  Definition lock_inv (l : loc) (R : iProp Σ) : iProp Σ :=
+    (∃ b : bool, l ↦{1/4} #b ∗ if b then True else l ↦{3/4} #b ∗ R)%I.
 
-  Definition is_lock (γ : gname) (lk : val) (R : iProp Σ) : iProp Σ :=
-    (∃ l: loc, ⌜lk = #l⌝ ∧ inv N (lock_inv γ l R))%I.
+  Definition is_lock (lk : val) (R : iProp Σ) : iProp Σ :=
+    (∃ l: loc, ⌜lk = #l⌝ ∧ inv N (lock_inv l R))%I.
 
-  Theorem is_lock_flat γ lk R :
-    is_lock γ lk R -∗ ⌜∃ (l:loc), lk = #l⌝.
+  Theorem is_lock_flat lk R :
+    is_lock lk R -∗ ⌜∃ (l:loc), lk = #l⌝.
   Proof.
     iIntros "Hl"; iDestruct "Hl" as (l) "[-> _]"; eauto.
   Qed.
 
-  Theorem is_lock_ty γ lk R :
-    is_lock γ lk R -∗ ⌜val_ty lk lockRefT⌝.
+  Theorem is_lock_ty lk R :
+    is_lock lk R -∗ ⌜val_ty lk lockRefT⌝.
   Proof.
     iIntros "Hlk".
     iDestruct (is_lock_flat with "Hlk") as (l) "->".
@@ -50,81 +42,107 @@ Section proof.
     val_ty.
   Qed.
 
-  Definition locked (γ : gname) : iProp Σ := own γ (Excl ()).
+  Definition locked (lk: val) : iProp Σ := ∃ (l:loc), ⌜lk = #l⌝ ∗ l ↦{3/4} #true.
 
-  Lemma locked_exclusive (γ : gname) : locked γ -∗ locked γ -∗ False.
-  Proof. iIntros "H1 H2". by iDestruct (own_valid_2 with "H1 H2") as %?. Qed.
+  Lemma locked_loc (l:loc) :
+    locked #l ⊣⊢ l ↦{3/4} #true.
+  Proof.
+    rewrite /locked.
+    iSplit; auto.
+    iIntros "Hl".
+    iDestruct "Hl" as (l' Heq) "Hl".
+    inversion Heq; subst.
+    auto.
+  Qed.
 
-  Global Instance lock_inv_ne γ l : NonExpansive (lock_inv γ l).
+  Lemma locked_exclusive (lk : val) : locked lk -∗ locked lk -∗ False.
+  Proof.
+    iIntros "H1 H2".
+    iDestruct "H1" as (l1 ->) "H1".
+    iDestruct "H2" as (l2 ?) "H2".
+    inversion H; subst.
+    iCombine "H1 H2" as "H".
+    (* TODO: got a fraction >1 *)
+  Admitted.
+
+  Global Instance lock_inv_ne l : NonExpansive (lock_inv l).
   Proof. solve_proper. Qed.
-  Global Instance is_lock_ne γ l : NonExpansive (is_lock γ l).
+  Global Instance is_lock_ne l : NonExpansive (is_lock l).
   Proof. solve_proper. Qed.
 
   (** The main proofs. *)
-  Global Instance is_lock_persistent γ l R : Persistent (is_lock γ l R).
+  Global Instance is_lock_persistent l R : Persistent (is_lock l R).
   Proof. apply _. Qed.
-  Global Instance locked_timeless γ : Timeless (locked γ).
+  Global Instance locked_timeless l : Timeless (locked l).
   Proof. apply _. Qed.
 
-  Definition is_free_lock γ (l: loc): iProp Σ := l ↦ #false ∗ own γ (Excl ()).
+  Definition is_free_lock (l: loc): iProp Σ := l ↦ #false.
 
-  Theorem is_free_lock_ty γ lk :
-    is_free_lock γ lk -∗ ⌜val_ty #lk lockRefT⌝.
+  Theorem is_free_lock_ty lk :
+    is_free_lock lk -∗ ⌜val_ty #lk lockRefT⌝.
   Proof.
     iIntros "Hlk".
     iPureIntro.
     val_ty.
   Qed.
 
-  Theorem alloc_lock E γ l R : is_free_lock γ l -∗ ▷ R ={E}=∗ is_lock γ #l R.
+  Theorem alloc_lock E l R : is_free_lock l -∗ ▷ R ={E}=∗ is_lock #l R.
   Proof.
-    iIntros "(Hγ&Hl) HR".
-    iMod (inv_alloc N _ (lock_inv γ l R) with "[Hl HR Hγ]") as "#?".
-    { iIntros "!>". iExists false. iFrame. }
+    iIntros "Hl HR".
+    iMod (inv_alloc N _ (lock_inv l R) with "[Hl HR]") as "#?".
+    { iIntros "!>". iExists false. iFrame.
+      rewrite -fractional.fractional_split.
+      rewrite Qp_quarter_three_quarter; iFrame.
+    }
     iModIntro.
     iExists l.
     iSplit; eauto.
   Qed.
 
   Lemma wp_new_free_lock E:
-    {{{ True }}} lock.new #() @ E {{{ γ lk, RET #lk; is_free_lock γ lk }}}.
-  Proof using ext_tys.
+    {{{ True }}} lock.new #() @ E {{{ lk, RET #lk; is_free_lock lk }}}.
+  Proof.
     iIntros (Φ) "_ HΦ".
     wp_call.
-    iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
     wp_apply wp_alloc_untyped; auto.
-    iIntros. iApply "HΦ". iFrame.
   Qed.
 
   Lemma newlock_spec E (R : iProp Σ):
-    {{{ ▷ R }}} lock.new #() @ E {{{ lk γ, RET lk; is_lock γ lk R }}}.
-  Proof using ext_tys.
+    {{{ ▷ R }}} lock.new #() @ E {{{ lk, RET lk; is_lock lk R }}}.
+  Proof.
     iIntros (Φ) "HR HΦ". rewrite -wp_fupd /lock.new /=.
     wp_lam. wp_apply wp_alloc_untyped; first by auto.
     iIntros (l) "Hl".
-    iMod (own_alloc (Excl ())) as (γ) "Hγ"; first done.
     iMod (alloc_lock with "[$] HR") as "Hlock".
     iModIntro.
     iApply "HΦ". iFrame.
   Qed.
 
-  Lemma try_acquire_spec E γ lk R :
+  Lemma try_acquire_spec E lk R :
     ↑N ⊆ E →
-    {{{ is_lock γ lk R }}} lock.try_acquire lk @ E
-    {{{ b, RET #b; if b is true then locked γ ∗ R else True }}}.
+    {{{ is_lock lk R }}} lock.try_acquire lk @ E
+    {{{ b, RET #b; if b is true then locked lk ∗ R else True }}}.
   Proof.
     iIntros (? Φ) "#Hl HΦ". iDestruct "Hl" as (l ->) "#Hinv".
     wp_rec. wp_bind (CmpXchg _ _ _). iInv N as ([]) "[Hl HR]".
     - wp_cmpxchg_fail. iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
       wp_pures. iApply ("HΦ" $! false). done.
-    - wp_cmpxchg_suc. iDestruct "HR" as "[Hγ HR]".
-      iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
-      rewrite /locked. wp_pures. by iApply ("HΦ" $! true with "[$Hγ $HR]").
+    - iDestruct "HR" as "[Hl2 HR]".
+      iCombine "Hl Hl2" as "Hl".
+      rewrite Qp_quarter_three_quarter.
+      wp_cmpxchg_suc.
+      iModIntro.
+      iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+      iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+      iSplitL "Hl1"; first (iNext; iExists true; eauto).
+      rewrite /locked. wp_pures.
+      iApply "HΦ".
+      eauto with iFrame.
   Qed.
 
-  Lemma acquire_spec' E γ lk R :
+  Lemma acquire_spec' E lk R :
     ↑N ⊆ E →
-    {{{ is_lock γ lk R }}} lock.acquire lk @ E {{{ RET #(); locked γ ∗ R }}}.
+    {{{ is_lock lk R }}} lock.acquire lk @ E {{{ RET #(); locked lk ∗ R }}}.
   Proof.
     iIntros (? Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_acquire_spec with "Hl"); auto. iIntros ([]).
@@ -132,32 +150,34 @@ Section proof.
     - iIntros "_". wp_if. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
-  Lemma acquire_spec γ lk R :
-    {{{ is_lock γ lk R }}} lock.acquire lk {{{ RET #(); locked γ ∗ R }}}.
+  Lemma acquire_spec lk R :
+    {{{ is_lock lk R }}} lock.acquire lk {{{ RET #(); locked lk ∗ R }}}.
   Proof. eapply acquire_spec'; auto. Qed.
 
-  Lemma release_spec' E γ lk R :
+  Lemma release_spec' E lk R :
     ↑N ⊆ E →
-    {{{ is_lock γ lk R ∗ locked γ ∗ ▷ R }}} lock.release lk @ E {{{ RET #(); True }}}.
+    {{{ is_lock lk R ∗ locked lk ∗ ▷ R }}} lock.release lk @ E {{{ RET #(); True }}}.
   Proof.
     iIntros (? Φ) "(Hlock & Hlocked & HR) HΦ".
     iDestruct "Hlock" as (l ->) "#Hinv".
     rewrite /lock.release /=. wp_lam.
     wp_bind (CmpXchg _ _ _).
-    iInv N as (b) "[Hl _]".
-    destruct b.
-    - wp_cmpxchg_suc.
-      iModIntro.
-      iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
-      iNext. iExists false. by iFrame.
-    - wp_cmpxchg_fail.
-      iModIntro.
-      iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
-      iNext. iExists false. by iFrame.
+    iInv N as (b) "[>Hl _]".
+
+    iDestruct (locked_loc with "Hlocked") as "Hl2".
+    iDestruct (heap_mapsto_agree with "[$Hl $Hl2]") as %->.
+    iCombine "Hl Hl2" as "Hl".
+    rewrite Qp_quarter_three_quarter.
+    wp_cmpxchg_suc.
+    iModIntro.
+    iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
+    iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+    iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+    iNext. iExists false. iFrame.
   Qed.
 
-  Lemma release_spec γ lk R :
-    {{{ is_lock γ lk R ∗ locked γ ∗ ▷ R }}} lock.release lk {{{ RET #(); True }}}.
+  Lemma release_spec lk R :
+    {{{ is_lock lk R ∗ locked lk ∗ ▷ R }}} lock.release lk {{{ RET #(); True }}}.
   Proof. eapply release_spec'; auto. Qed.
 
   (** cond var proofs *)
@@ -168,8 +188,8 @@ Section proof.
   Global Instance is_cond_persistent c lk :
     Persistent (is_cond c lk) := _.
 
-  Theorem wp_newCond γ lk R :
-    {{{ is_lock γ lk R }}}
+  Theorem wp_newCond lk R :
+    {{{ is_lock lk R }}}
       lock.newCond lk
     {{{ (c: loc), RET #c; is_cond c lk }}}.
   Proof.
@@ -206,10 +226,10 @@ Section proof.
     iApply ("HΦ" with "[//]").
   Qed.
 
-  Theorem wp_condWait γ c lk R :
-    {{{ is_cond c lk ∗ is_lock γ lk R ∗ locked γ ∗ R }}}
+  Theorem wp_condWait c lk R :
+    {{{ is_cond c lk ∗ is_lock lk R ∗ locked lk ∗ R }}}
       lock.condWait #c
-    {{{ RET #(); locked γ ∗ R }}}.
+    {{{ RET #(); locked lk ∗ R }}}.
   Proof.
     iIntros (Φ) "(#Hcond&#Hlock&Hlocked&HR) HΦ".
     wp_call.
