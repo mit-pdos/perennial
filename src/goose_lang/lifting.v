@@ -65,6 +65,14 @@ Section definitions.
     by iFrame.
   Qed.
 
+  Theorem heap_mapsto_frac_valid l q v:
+     heap_mapsto l q v -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
+  Proof.
+    iIntros "H".
+    iDestruct (heap_mapsto_na_acc with "H") as "(Hna&_)".
+    iApply (na_heap_mapsto_frac_valid with "Hna").
+  Qed.
+
   Global Instance heap_mapsto_timeless l q v : Timeless (heap_mapsto l q v).
   Proof. rewrite heap_mapsto_eq. apply _. Qed.
 

@@ -62,8 +62,9 @@ Section proof.
     iDestruct "H2" as (l2 ?) "H2".
     inversion H; subst.
     iCombine "H1 H2" as "H".
-    (* TODO: got a fraction >1 *)
-  Admitted.
+    iDestruct (heap_mapsto_frac_valid with "H") as %Hval.
+    eauto.
+  Qed.
 
   Global Instance lock_inv_ne l : NonExpansive (lock_inv l).
   Proof. solve_proper. Qed.

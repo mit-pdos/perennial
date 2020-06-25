@@ -531,14 +531,14 @@ Proof.
     iDestruct "H0readers" as "(>Hfc&_&>Hpts'&_)".
     iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
     rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
-    iDestruct (na_heap_mapsto_frac_valid2 with "Hpts Hpts'") as %Hval.
+    iDestruct (na_heap_mapsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
     apply Z2Qc_inj_le in Hval. lia.
   }
   {
     iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts'&Hspts'_clo&>Hpts'&_)".
     iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
     rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
-    iDestruct (na_heap_mapsto_frac_valid2 with "Hpts Hpts'") as %Hval.
+    iDestruct (na_heap_mapsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
     exfalso. eapply (Qp_plus_1_nle_1), Hval.
   }
   {
@@ -692,7 +692,7 @@ Proof.
     iDestruct "H0readers" as "(>Hfc&_&>Hpts'&_)".
     iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
     rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
-    iDestruct (na_heap_mapsto_frac_valid2 with "Hpts Hpts'") as %Hval.
+    iDestruct (na_heap_mapsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
     exfalso. rewrite comm in Hval *. eapply (Qp_plus_1_nle_1).
   }
   {

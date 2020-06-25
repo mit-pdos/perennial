@@ -264,7 +264,7 @@ Section na_heap.
   Lemma na_heap_mapsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 ∗ l ↦{q2} v2 ⊢ ⌜v1 = v2⌝.
   Proof. by rewrite na_heap_mapsto_eq na_heap_mapsto_st_agree. Qed.
 
-  Lemma na_heap_mapsto_frac_valid l q st v : na_heap_mapsto_st st l q v -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
+  Lemma na_heap_mapsto_st_frac_valid l q st v : na_heap_mapsto_st st l q v -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
   Proof.
     rewrite /na_heap_mapsto_st.
     rewrite own_valid discrete_valid.
@@ -272,7 +272,10 @@ Section na_heap.
     iPureIntro. naive_solver.
   Qed.
 
-  Lemma na_heap_mapsto_frac_valid2 l q q' st st' v v' :
+  Lemma na_heap_mapsto_frac_valid l q v : na_heap_mapsto l q v -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
+  Proof. by rewrite na_heap_mapsto_eq; apply na_heap_mapsto_st_frac_valid. Qed.
+
+  Lemma na_heap_mapsto_st_frac_valid2 l q q' st st' v v' :
     na_heap_mapsto_st st l q v -∗
     na_heap_mapsto_st st' l q' v' -∗
     ⌜(q ⋅ q' ≤ 1%Qp)%Qc⌝.
