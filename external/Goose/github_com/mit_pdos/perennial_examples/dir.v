@@ -24,12 +24,17 @@ Definition openInodes: val :=
       Continue);;
     ![slice.T (refT (struct.t inode.Inode.S))] "inodes".
 
-Definition OpenDir: val :=
-  rec: "OpenDir" "d" "sz" :=
-    let: "inodes" := openInodes "d" in
+Definition inodeUsedBlocks: val :=
+  rec: "inodeUsedBlocks" "inodes" :=
     let: "used" := NewMap (struct.t alloc.unit.S) in
     ForSlice (refT (struct.t inode.Inode.S)) <> "i" "inodes"
       (alloc.SetAdd "used" (inode.Inode__UsedBlocks "i"));;
+    "used".
+
+Definition Open: val :=
+  rec: "Open" "d" "sz" :=
+    let: "inodes" := openInodes "d" in
+    let: "used" := inodeUsedBlocks "inodes" in
     let: "allocator" := alloc.New NumInodes ("sz" - NumInodes) "used" in
     struct.new Dir.S [
       "d" ::= "d";

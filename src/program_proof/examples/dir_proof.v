@@ -230,9 +230,9 @@ Section goose.
   Proof.
   Abort.
 
-  Theorem wpc_OpenDir {k E2} (d: loc) (sz: u64) σ0 :
+  Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
     {{{ dir_cinv (int.val sz) σ0 true }}}
-      OpenDir #d #sz @ NotStuck; LVL k; ⊤; E2
+      Open #d #sz @ NotStuck; LVL k; ⊤; E2
     {{{ l, RET #l; pre_dir l (int.val sz) σ0 }}}
     {{{ dir_cinv (int.val sz) σ0 false }}}.
   Proof.
