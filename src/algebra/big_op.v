@@ -729,6 +729,33 @@ Section list2.
     iApply ("H" with "H1 H2"); eauto.
   Qed.
 
+  Local Lemma big_sepL2_to_sepL_aux Φ n l1 l2 :
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ (n+k) y1 y2) -∗
+    ([∗ list] k↦y1 ∈ l1, ∃ y2, ⌜l2 !! k = Some y2⌝ ∗ Φ (n+k) y1 y2).
+  Proof.
+    iIntros "H".
+    (iInduction l1 as [|y1 l1] "IH" forall (n l2)).
+    - iDestruct (big_sepL2_length with "H") as %Hlen.
+      assert (l2 = []).
+      { apply length_zero_iff_nil; auto. }
+      subst; simpl.
+      auto.
+    - iDestruct (big_sepL2_cons_inv_l with "H") as (y2 l2' ->) "(HΦ & H)".
+      simpl.
+      iSplitL "HΦ".
+      { eauto with iFrame. }
+      assert (forall k, n + S k = S n + k) as Harith by lia.
+      setoid_rewrite Harith.
+      iApply ("IH" with "H").
+  Qed.
+
+  Lemma big_sepL2_to_sepL_1 Φ l1 l2 :
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) -∗
+    ([∗ list] k↦y1 ∈ l1, ∃ y2, ⌜l2 !! k = Some y2⌝ ∗ Φ k y1 y2).
+  Proof.
+    iApply (big_sepL2_to_sepL_aux Φ O).
+  Qed.
+
   Lemma big_sepL2_mono_with_pers (P: PROP) `{!BiAffine PROP} `{Persistent PROP P} (Φ Ψ: nat → A → B → PROP) l1 l2:
     (∀ k x y, l1 !! k = Some x → l2 !! k = Some y → P -∗ Φ k x y -∗ Ψ k x y) →
     P -∗ ([∗ list] k ↦ x;y ∈ l1;l2, Φ k x y) -∗ [∗ list] k ↦ x;y ∈ l1;l2, Ψ k x y.
@@ -809,6 +836,17 @@ Section list2.
   Qed.
 
 End list2.
+
+(* needs to be outside the section since it changes the context type
+parameters *)
+Lemma big_sepL2_to_sepL_2 {A B} (Φ: nat → A → B → PROP) l1 l2 :
+  ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) -∗
+  ([∗ list] k↦y2 ∈ l2, ∃ y1, ⌜l1 !! k = Some y1⌝ ∗ Φ k y1 y2).
+Proof.
+  iIntros "H".
+  iApply big_sepL2_to_sepL_1.
+  iApply big_sepL2_flip; auto.
+Qed.
 
 Section maplist.
   Context `{Countable K} {V LV : Type}.
