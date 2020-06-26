@@ -118,7 +118,7 @@ iExists _; iFrame; iPureIntro; word : core.
 
 Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 E2 (start max:u64) (l:loc) (body: val) :
   int.val start <= int.val max ->
-  (∀ i, I i -∗ I' i) →
+  (∀ (i:u64), ⌜int.val start ≤ int.val i ≤ int.val max⌝ -∗ I i -∗ I' i) →
   (∀ (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.val i < int.val max⌝ }}}
         body #() @ stk; k; E1; E2
@@ -133,7 +133,12 @@ Proof.
   iIntros (Hstart_max Himpl) "#Hbody".
   iIntros (Φ Φc) "!> (H0 & Hl) HΦ".
   rewrite /For /Continue.
-  wpc_rec Hcrash; first by (rewrite Himpl; crash_case; auto).
+  wpc_rec Hcrash.
+  { crash_case.
+    iDestruct (Himpl with "[%] H0") as "H0".
+    { lia. }
+    iExists _; iFrame.
+    auto. }
   wpc_let Hcrash.
   wpc_let Hcrash.
   wpc_pure (Rec _ _ _) Hcrash.
@@ -145,16 +150,17 @@ Proof.
   clear Heqx Hstart_max.
   iDestruct "H0" as "HIx".
   clear Hcrash.
-  iLöb as "IH" forall (x Hbounds).
+  (iLöb as "IH" forall (x Himpl Hbounds)).
+  iCache with "HΦ HIx".
+  { crash_case.
+    iDestruct (Himpl with "[] [$]") as "?"; eauto.
+    iPureIntro; lia. }
   wpc_pures.
-  { iDestruct (Himpl with "[$]") as "?"; eauto. }
   wpc_bind (load_ty _ _).
-  wpc_frame "HIx HΦ".
-  { crash_case. iDestruct (Himpl with "[$]") as "?"; eauto. }
+  wpc_frame.
   wp_load.
   iIntros "H". iNamed "H".
   wpc_pures.
-  { iDestruct (Himpl with "[$]") as "?"; eauto. }
   wpc_bind (If _ _ _).
   wpc_if_destruct; wpc_pures; auto; try (by (iDestruct (Himpl with "[$]") as "?"; eauto)).
   - wpc_apply ("Hbody" with "[$HIx $Hl]").
@@ -162,18 +168,22 @@ Proof.
     iSplit.
     { iIntros "[IH1 | IH2]"; crash_case; auto. }
     iIntros "!> [HIx Hl]".
+    iCache with "HΦ HIx".
+    { crash_case.
+      iDestruct (Himpl with "[] [$]") as "?"; eauto.
+      iPureIntro; word. }
     wpc_pures.
-    { iDestruct (Himpl with "[$]") as "?"; eauto. }
-    wpc_bind (store_ty _ _).
-    wpc_frame "HIx HΦ".
-    { crash_case. iDestruct (Himpl with "[$]") as "?"; eauto. }
+    wpc_frame_seq.
     wp_load.
     wp_store.
-    iIntros "H". iNamed "H".
+    iNamed 1.
     wpc_pure _ Hcrash.
-    { crash_case. iDestruct (Himpl with "[$]") as "?"; eauto. }
+    { iFromCache. }
     wpc_pure _ Hcrash.
-    iApply ("IH" with "[] HIx Hl").
+    iApply ("IH" with "[%] [] HIx Hl").
+    { iIntros (i Hbound) "HIx".
+      iDestruct (Himpl with "[%] HIx") as "$".
+      revert Hbound; word. }
     { iPureIntro; word. }
     iSplit.
     + iIntros "HIx".

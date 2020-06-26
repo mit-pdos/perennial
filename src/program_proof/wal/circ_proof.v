@@ -1246,7 +1246,7 @@ Proof.
     destruct Hwf.
     rewrite /circΣ.diskEnd.
     word.
-  - iIntros (?) "(H&?&?&$)".
+  - iIntros (??) "(H&?&?&$)".
   - iIntros (i Φₗ Φcₗ) "!> (HI&Hposl&%) HΦ".
     iDestruct "HI" as (Hstart_bound) "(Hbufs&Hdiskaddrs&Hd2)".
     iDestruct "Hbufs" as (bufSlice) "[Hbufsloc Hupds]".
