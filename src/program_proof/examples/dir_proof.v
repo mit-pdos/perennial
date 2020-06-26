@@ -64,7 +64,7 @@ Section goose.
     rewrite Excl_included leibniz_equiv_iff => -> //.
   Qed.
 
-  Lemma inode_blocks_update γblocks E (idx: nat) (blocks1 blocks2: list Block) (allblocks: gmap nat (list Block)):
+  Lemma inode_blocks_update {γblocks E} {idx: nat} (blocks1 blocks2: list Block) (allblocks: gmap nat (list Block)):
     inode_blocks γblocks idx blocks1 -∗
     inode_allblocks γblocks allblocks ={E}=∗
     inode_blocks γblocks idx blocks2 ∗ inode_allblocks γblocks (<[ idx := blocks2 ]> allblocks).
@@ -109,7 +109,7 @@ Section goose.
     rewrite Excl_included leibniz_equiv_iff => -> //.
   Qed.
 
-  Lemma inode_used_update γused E (idx: nat) (used1 used2: gset u64) (allused: gmap nat (gset u64)):
+  Lemma inode_used_update {γused E} {idx: nat} (used1 used2: gset u64) (allused: gmap nat (gset u64)):
     inode_used γused idx used1 -∗
     inode_allused γused allused ={E}=∗
     inode_used γused idx used2 ∗ inode_allused γused (<[ idx := used2 ]> allused).
@@ -380,6 +380,14 @@ Section goose.
     rewrite alloc_free_reserved //.
   Qed.
 
+  Lemma alloc_insert_dom idx (addr: u64) (all_addrs inode_addrs: gset u64) (allocs: gmap nat (gset u64)) :
+    all_addrs = ⋃ (snd <$> map_to_list allocs) →
+    allocs !! idx = Some inode_addrs →
+    {[addr]} ∪ all_addrs =
+    ⋃ (snd <$> map_to_list (<[idx:={[addr]} ∪ inode_addrs]> allocs)).
+  Proof.
+  Admitted.
+
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
     (2 + k < k')%nat →
     nroot.@"readonly" ## N →
@@ -409,7 +417,54 @@ Section goose.
     wp_apply (wp_SliceGet _ _ _ _ _ inode_refs with "[$inodes_s //]").
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
+    wpc_bind (struct.loadF _ _ _). wpc_frame. wp_loadField.
+    iIntros "Hthings". iNamed "Hthings".
     (* Now we get to the actual append operation. *)
-  Abort.
+    iApply (wpc_Inode__Append (n:=k') (k':=k') inodeN allocN);
+      [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].
+    iFrame "Hinode Hb Halloc".
+    iSplit; [ | iSplit; [ | iSplit ] ]; try iModIntro.
+    - iApply reserve_fupd_Palloc.
+    - iApply free_fupd_Palloc.
+    - iLeft in "HΦ". by iApply "HΦ".
+    - iSplit.
+      { (* Failure case *) iRight in "HΦ". iApply "HΦ". done. }
+      iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
+      iEval (rewrite /Palloc) in "HPalloc". iNamed "HPalloc".
+      iNamed "HPinode".
+      iDestruct (inode_used_lookup with "Hused1 Hused2") as %Heq.
+      iInv "Hinv" as ([σ0]) "[>Hinner HP]" "Hclose".
+      iNamed "Hinner".
+      iMod (inode_used_update _ (union {[addr']} σ.(inode.addrs)) with "Hused1 Hused2") as
+          "[Hγused Hused]".
+      iDestruct (inode_blocks_lookup with "Hownblocks Hγblocks") as %Heq2.
+      simplify_eq/=.
+      iMod (inode_blocks_update  _ (σ.(inode.blocks) ++ [b0]) with "Hownblocks Hγblocks") as
+          "[Hownblocks Hγblocks]".
+      iSpecialize ("Hfupd" $! {| dir.inodes := σ0 |}). rewrite Heq2.
+      iMod fupd_intro_mask' as "HcloseM"; last (* adjust mask *)
+        iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
+      { solve_ndisj. }
+      iMod "HcloseM" as "_".
+      simpl. iMod ("Hclose" with "[Hγblocks HP]") as "_".
+      { iNext. iExists _. iFrame "HP". rewrite /dir_inv /=. iFrame.
+        (* Show that the first 5 inodes are still all allocated. *)
+        iPureIntro. intros idx' Hidx'. destruct (decide ((int.nat idx) = idx')) as [->|Hne].
+        - rewrite lookup_insert. eauto.
+        - rewrite lookup_insert_ne //. apply Hdom. done.
+      }
+      iModIntro.
+      iFrame.
+      rewrite /Palloc.
+      iSplitR "HΦ HQ".
+      { iNext. iExists _. iFrame "Hused".
+        (* Show that the domain bookeeping worked out. *)
+        iPureIntro. rewrite alloc_used_insert.
+        apply alloc_insert_dom; auto.
+      }
+      iSplit.
+      { iLeft in "HΦ". by iApply "HΦ". }
+      iRight in "HΦ". by iApply "HΦ".
+  Qed.
 
 End goose.
