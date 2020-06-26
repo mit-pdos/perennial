@@ -213,10 +213,12 @@ Section goose.
                      "HPalloc" ∷ Palloc γused s_alloc)
   .
 
-  Lemma wpc_openInodes {k E2} (d: loc) γused γblocks s_inodes :
+  Opaque struct.t.
+
+  Lemma wpc_openInodes {k E2} (d: loc) s_inodes :
+    length s_inodes = num_inodes →
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
-          "Hinode_cinv" ∷ inode_cinv (U64 (Z.of_nat i)) s_inode ∗
-          "HPinode" ∷ Pinode γblocks γused i s_inode)
+          inode_cinv (U64 (Z.of_nat i)) s_inode)
       }}}
       openInodes #d @ NotStuck; k; ⊤; E2
     {{{ inode_s inode_refs, RET (slice_val inode_s);
@@ -225,9 +227,66 @@ Section goose.
             pre_inode inode_ref (U64 (Z.of_nat i)) s_inode
     }}}
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
-          "Hinode_cinv" ∷ inode_cinv (U64 (Z.of_nat i)) s_inode ∗
-          "HPinode" ∷ Pinode γblocks γused i s_inode) }}}.
+          inode_cinv (U64 (Z.of_nat i)) s_inode) }}}.
   Proof.
+    iIntros (? Φ Φc) "Hinode_cinvs HΦ".
+    rewrite /openInodes; wpc_pures.
+    { auto. }
+    iCache with "HΦ Hinode_cinvs".
+    { crash_case; auto. }
+    wpc_frame_seq.
+    wp_apply wp_ref_of_zero.
+    { auto. }
+    iIntros (ino_l) "Hinodes". iNamed 1.
+    wpc_pures.
+    wpc_frame_seq.
+    wp_apply wp_ref_to.
+    { auto. }
+    iIntros (addr_ref) "Haddr". iNamed 1.
+    wpc_pures.
+    set (inodeT:=(struct.t inode.Inode.S)).
+    wpc_apply (wpc_forUpto
+               (λ n, ∃ (inode_s: Slice.t) (inode_refs: list loc),
+                   "Hinodes" ∷ ino_l ↦[slice.T (refT inodeT)] (slice_val inode_s) ∗
+                   "Hinode_slice" ∷ is_slice inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
+                   (* TODO: first i elements will be pre_inodes, rest are still inode_cinv ∗ Pinode *)
+                   "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;(take (int.nat n) s_inodes),
+                    pre_inode inode_ref i s_inode) ∗
+                   "Hinode_cinvs" ∷ ([∗ list] i↦s_inode ∈ (drop (int.nat n) s_inodes),
+                                     inode_cinv (int.nat n+i) s_inode)
+               )%I
+              (λ n, [∗ list] i↦s_inode ∈ s_inodes,
+                      inode_cinv i s_inode
+              )%I
+              with "[] [Hinodes $Haddr Hinode_cinvs]").
+    { word. }
+    { iIntros (i Hbound); iNamed 1.
+      change (int.val (U64 5)) with (Z.of_nat num_inodes) in Hbound.
+      iDestruct (big_sepL2_length with "Hpre_inodes") as %Hlen.
+      rewrite -> take_length_le in Hlen by lia.
+      iEval (rewrite -[l in big_opL _ _ l](take_drop (int.nat i))).
+      iApply big_sepL_app.
+      rewrite -> take_length_le by lia.
+      iFrame "Hinode_cinvs".
+      iDestruct (big_sepL2_to_sepL_2 with "Hpre_inodes") as "Hpre_inodes".
+      iApply (big_sepL_mono with "Hpre_inodes").
+      iIntros (? ? ?) "Hpre".
+      iDestruct "Hpre" as (? ?) "Hpre".
+      iApply pre_inode_to_cinv; auto. }
+    { iIntros (n Φ' Φc') "!> (inv&Haddr&%Hbound) HΦ".
+      iNamed "inv".
+      wpc_pures.
+      { crash_case.
+        iLeft.
+        admit. (* TODO: re-use earlier proof *) }
+      iCache with "HΦ Hpre_inodes Hinode_cinvs".
+      { crash_case.
+        iLeft.
+        admit. (* TODO: re-use earlier proof *) }
+      wpc_bind (load_ty _ _). wpc_frame. wp_load. iNamed 1.
+      wpc_bind (inode.Open _ _).
+      (* TODO: need to use drop_S to extract inode_cinv (int.nat n) *)
+      wpc_apply inode_proof.wpc_Open.
   Abort.
 
   Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
