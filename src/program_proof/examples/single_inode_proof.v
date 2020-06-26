@@ -367,7 +367,7 @@ Section goose.
     wpc_bind (struct.loadF _ _ _); wpc_frame.
     wp_loadField.
     iNamed 1.
-    wpc_apply (wpc_Inode__Append inodeN allocN Q emp%I
+    wpc_apply (wpc_Inode__Append_triple inodeN allocN Q emp%I
                  with "[$Hb $Hinode $Halloc Hfupd]");
       [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].
     {
@@ -376,6 +376,7 @@ Section goose.
       iSplit; [ | iSplit; [ | iSplit ] ]; try iModIntro.
       - iApply reserve_fupd_Palloc.
       - iApply free_fupd_Palloc.
+      - auto.
       - iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
         iEval (rewrite /Palloc) in "HPalloc"; iNamed.
         iNamed "HPinode".
@@ -399,7 +400,6 @@ Section goose.
         rewrite /Palloc.
         rewrite alloc_used_insert -Heq.
         iFrame.
-      - auto.
     }
     iSplit.
     { iIntros "_".

@@ -498,22 +498,22 @@ Theorem wpc_Inode__Size_triple {k E2} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iP
   (S k < k')%nat →
   {{{ "Hinode" ∷ is_inode l (LVL k') P addr ∗
       "HQc" ∷ (∀ a, Q a -∗ Qc) ∗
-      "Hfupd" ∷ ((∀ σ σ' sz,
+      "Hfupd" ∷ (Qc ∧ (∀ σ σ' sz,
           ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
-          ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ' ∗ Q sz) ∧ Qc)
+          ▷ P σ ={⊤ ∖ ↑inodeN}=∗ ▷ P σ' ∗ Q sz))
   }}}
     Inode__Size #l @ NotStuck; LVL (S k); ⊤; E2
   {{{ sz, RET #sz; Q sz }}}
-  {{{ True }}}.
+  {{{ Qc }}}.
 Proof.
   iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iApply wpc_Inode__Size; first done.
   iFrame "Hinode".
   iSplit.
-  { iLeft in "HΦ". iApply "HΦ". done. }
+  { iLeft in "HΦ". iApply "HΦ". by iLeft in "Hfupd". }
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
-  { iLeft in "HΦ". iApply "HΦ". done. }
+  { iLeft in "HΦ". iApply "HΦ". by iApply "HQc". }
   iRight in "HΦ". iApply "HΦ". done.
 Qed.
 
@@ -611,39 +611,34 @@ Theorem wpc_Inode__Append {k E2}
         {l k' P addr}
         (* allocator stuff *)
         {Palloc γalloc domain n}
-        (Q: iProp Σ) (Qc: iProp Σ)
         (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
   (S (S k) < n)%nat →
   (S (S k) < k')%nat →
   nroot.@"readonly" ## allocN →
   nroot.@"readonly" ## inodeN →
   inodeN ## allocN →
-  {{{ "Hinode" ∷ is_inode l (LVL k') P addr ∗
+  ∀ Φ Φc,
+      "Hinode" ∷ is_inode l (LVL k') P addr ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
-      "HQc" ∷ (Q -∗ Qc) ∗
       "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
       "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
       "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗
-      "Hfupd" ∷ ((∀ σ σ' addr',
+      "Hfupd" ∷ (Φc ∧ ▷ (Φ #false ∧ ∀ σ σ' addr',
         ⌜σ' = set inode.blocks (λ bs, bs ++ [b0])
                               (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
         ⌜inode.wf σ⌝ -∗
         ∀ s,
         ⌜s !! addr' = Some block_reserved⌝ -∗
          ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
-         ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ Q) ∧ Qc)
-  }}}
-    Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S k)); ⊤; E2
-  {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
-  {{{ Qc }}}.
+         ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (Φc ∧ Φ #true))) -∗
+  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+  iIntros (????? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call.
-  { iRight in "Hfupd"; auto. }
-  iCache with "HΦ Hfupd".
-  { crash_case.
-    iRight in "Hfupd"; auto. }
+  { iLeft in "Hfupd"; auto. }
+  iCache with "Hfupd".
+  { iLeft in "Hfupd"; auto. }
   wpc_apply (wpc_Reserve _ _ _ (λ ma, emp)%I emp with "[$Halloc]"); auto.
   { (* Reserve fupd *)
     iSplit; auto.
@@ -655,8 +650,8 @@ Proof.
   wpc_pures.
   wpc_if_destruct.
   - wpc_pures.
-    iRight in "HΦ".
-    by iApply "HΦ".
+    iRight in "Hfupd".
+    by iLeft in "Hfupd".
   - iDestruct "Hblock" as "[_ Hb]".
     wpc_pures.
     wpc_bind_seq.
@@ -664,19 +659,17 @@ Proof.
     iSplit; first by iFromCache.
     iIntros "Hb Hreserved".
     iDeexHyp "Hb".
-    iAssert (□ ∀ b0 R1 R2, int.val a d↦ b0 ∗
-                       ((Qc -∗ Φc) ∧ R1) ∗
-                       (R2 ∧ Qc) -∗
+    iAssert (□ ∀ b0 R, int.val a d↦ b0 ∗
+                      (Φc ∧ R) -∗
                       Φc ∗ ▷ block_cinv Ψ γalloc a)%I as "#Hbc".
-    { iIntros "!>" (b' R1 R2) "(Hb&HΦ&Hfupd)".
-      iRight in "Hfupd".
-      iSplitL "HΦ Hfupd".
-      { crash_case; auto. }
+    { iIntros "!>" (b' R) "(Hb & Hfupd)".
+      iLeft in "Hfupd".
+      iSplitL "Hfupd"; first done.
       iApply block_cinv_free_pred.
       iExists _; iFrame. }
 
-    iCache with "HΦ Hfupd Hb".
-    { iApply ("Hbc" with "[$]"). }
+    iCache with "Hfupd Hb".
+    {  iApply ("Hbc" with "[$]"). }
     wpc_apply (wpc_Write' with "[$Hb $Hbdata]").
     iSplit.
     { iIntros "[Hb|Hb]"; try iFromCache.
@@ -701,8 +694,8 @@ Proof.
     crash_lock_open "His_locked".
     iNamed 1.
     iNamed "Hlockinv".
-    iCache with "HΦ Hfupd HP Hdurable".
-    { iSplitL "HΦ Hfupd"; first by iFromCache.
+    iCache with "Hfupd HP Hdurable".
+    { iSplitL "Hfupd"; first by iFromCache.
       iExists _; iFrame.
       iExists _; iFrame. }
     iDestruct (is_slice_sz with "Haddrs") as %Hlen1.
@@ -743,8 +736,8 @@ Proof.
       wp_pures.
       iNamed 1.
       wpc_pures.
-      iRight in "HΦ".
-      iApply "HΦ"; auto.
+      iRight in "Hfupd".
+      by iLeft in "Hfupd".
     + wpc_pures.
       wpc_frame_seq.
       wp_loadField.
@@ -784,12 +777,13 @@ Proof.
         iApply block_cinv_free_pred.
         iExists _; iFrame. }
       iNamed "Hdurable".
-      iLeft in "Hfupd".
+      iRight in "Hfupd".
       set (σ':=set inode.blocks (λ bs : list Block, bs ++ [b0])
                    (set inode.addrs (union {[a]}) σ)).
+      iRight in "Hfupd".
       iSpecialize ("Hfupd" $! σ σ' a with "[% //] [% //]").
 
-      iMod (mark_used _ _ _ _ _ _ (▷ P σ' ∗ Q)%I with "Hreserved [HP Hfupd]") as "Hget_used".
+      iMod (mark_used _ _ _ _ _ _ (▷ P σ' ∗ (Φc ∧ Φ #true))%I with "Hreserved [HP Hfupd]") as "Hget_used".
       { solve_ndisj. }
       { clear.
         iIntros (s Hreserved) "HPalloc".
@@ -823,14 +817,13 @@ Proof.
           set_solver. }
         simpl; auto. }
       iDestruct (is_inode_durable_wf with "Hdurable") as %Hwf'.
-      iCache Φc with "HΦ HQc HQ".
-      { crash_case.
-        iApply "HQc"; iFrame. }
+      iCache Φc with "HQ".
+      { by iLeft in "HQ". }
       match goal with
       | |- envs_entails _ ((?P ∗ _) ∧ _) =>
-        iCache P with "HΦ HQc HQ HP Hdurable"
+        iCache P with "HQ HP Hdurable"
       end.
-      { iSplitL "HΦ HQc HQ"; first iFromCache.
+      { iSplitL "HQ"; first iFromCache.
         iExists _; iFrame.
         iExists _; iFrame. }
       iCache (block_cinv Ψ γalloc a) with "Hused".
@@ -844,11 +837,11 @@ Proof.
 
       wpc_pures.
       { iSplitR "Hused"; last (iNext; iFromCache).
-        iSplitL "HΦ HQc HQ"; first iFromCache.
+        iSplitL "HQ"; first iFromCache.
         eauto 10 with iFrame. }
       iSplitR "Hused"; last iFromCache.
       iSplit.
-      { iSplitL "HΦ HQc HQ"; first iFromCache.
+      { iSplitL "HQ"; first iFromCache.
         eauto 10 with iFrame. }
       iSplitR "HP Haddrs addrs Hdurable"; last first.
       { iExists _; iFrame.
@@ -861,7 +854,52 @@ Proof.
       wp_apply (crash_lock.release_spec with "His_locked"); auto.
       iNamed 1.
       wpc_pures.
-      iApply "HΦ"; iFrame.
+      (* RALF: we are throwing away an [is_block] here. *)
+      by iRight in "HQ".
 Qed.
 
+Theorem wpc_Inode__Append_triple {k E2}
+        {l k' P addr}
+        (* allocator stuff *)
+        {Palloc γalloc domain n}
+        (Q: iProp Σ) (Qc: iProp Σ)
+        (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
+  (S (S k) < n)%nat →
+  (S (S k) < k')%nat →
+  nroot.@"readonly" ## allocN →
+  nroot.@"readonly" ## inodeN →
+  inodeN ## allocN →
+  {{{ "Hinode" ∷ is_inode l (LVL k') P addr ∗
+      "Hbdata" ∷ is_block b_s q b0 ∗
+      "HQc" ∷ (Q -∗ Qc) ∗
+      "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
+      "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
+      "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗
+      "Hfupd" ∷ (Qc ∧ (∀ σ σ' addr',
+        ⌜σ' = set inode.blocks (λ bs, bs ++ [b0])
+                              (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
+        ⌜inode.wf σ⌝ -∗
+        ∀ s,
+        ⌜s !! addr' = Some block_reserved⌝ -∗
+         ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
+         ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ Q))
+  }}}
+    Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S k)); ⊤; E2
+  {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
+  {{{ Qc }}}.
+Proof.
+  iIntros (????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+  iApply (wpc_Inode__Append (n:=n) (k':=k')); try assumption.
+  iFrame "Hinode Hbdata Halloc_fupd Hfree_fupd Halloc".
+  iSplit.
+  { iLeft in "HΦ". iApply "HΦ". by iLeft in "Hfupd". }
+  iSplit.
+  { iRight in "HΦ". iApply "HΦ". done. }
+  iIntros "!>" (σ σ' addr' Hσ' Hσ s Hs) "HPs".
+  iRight in "Hfupd".
+  iMod ("Hfupd" $! _ _ _ Hσ' Hσ _ Hs with "HPs") as "($ & $ & HQ)".
+  iIntros "!>". iSplit.
+  { iLeft in "HΦ". iApply "HΦ". iApply "HQc". done. }
+  iRight in "HΦ". iApply "HΦ". done.
+Qed.
 End goose.
