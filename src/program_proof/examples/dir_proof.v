@@ -380,11 +380,11 @@ Section goose.
     rewrite alloc_free_reserved //.
   Qed.
 
-  Lemma alloc_insert_dom idx (addr: u64) (all_addrs inode_addrs: gset u64) (allocs: gmap nat (gset u64)) :
-    all_addrs = ⋃ (snd <$> map_to_list allocs) →
+  Lemma alloc_insert_dom idx (new_addrs old_addrs inode_addrs: gset u64) (allocs: gmap nat (gset u64)) :
+    old_addrs = ⋃ (snd <$> map_to_list allocs) →
     allocs !! idx = Some inode_addrs →
-    {[addr]} ∪ all_addrs =
-    ⋃ (snd <$> map_to_list (<[idx:={[addr]} ∪ inode_addrs]> allocs)).
+    new_addrs ∪ old_addrs =
+    ⋃ (snd <$> map_to_list (<[idx:=new_addrs ∪ inode_addrs]> allocs)).
   Proof.
   Admitted.
 
