@@ -404,7 +404,7 @@ Definition is_alloced_blocks_slice σ s (direct_s indirect_s indblks_s : Slice.t
       slice_subslice uint64T ((int.nat direct_s.(Slice.sz)) + (int.nat indirect_s.(Slice.sz)))%nat s.(Slice.sz) s = indblks_s⌝.
 
 Theorem wp_Inode__UsedBlocks {l γ addr σ} :
-  {{{ pre_inode l γ addr σ }}}
+  {{{ pre_inode l addr σ }}}
     Inode__UsedBlocks #l
     {{{ (s direct_s indirect_s indblks_s:Slice.t)
           (dirAddrs indAddrs: list u64) (indBlkAddrsList: list (list u64)),
@@ -415,7 +415,7 @@ Theorem wp_Inode__UsedBlocks {l γ addr σ} :
                         ∃ indBlkAddrs, indBlkAddrsList !! index = Some indBlkAddrs ∧
                                        σ.(inode.indirect_addrs) !! a = Some (list_to_set indBlkAddrs))
         0 (take (num_ind σ) indAddrs)⌝) ∗
-     (is_alloced_blocks_slice σ s direct_s indirect_s indblks_s dirAddrs indAddrs indBlkAddrsList -∗ pre_inode l γ addr σ) }}}.
+     (is_alloced_blocks_slice σ s direct_s indirect_s indblks_s dirAddrs indAddrs indBlkAddrsList -∗ pre_inode l addr σ) }}}.
 Proof.
   iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
   wp_call.
@@ -546,8 +546,8 @@ Proof.
   iSplitR "HindBlks"; auto.
 Qed.
 
-Theorem wp_Inode__Read k {l γ P} {off: u64} Q :
-  {{{ is_inode l k γ P ∗
+Theorem wp_Inode__Read k {l P} {off: u64} Q :
+  {{{ is_inode l k P ∗
       (∀ σ σ' mb,
         ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
         P σ ={⊤}=∗ P σ' ∗ Q mb)
@@ -563,7 +563,7 @@ Proof.
   wp_call.
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-  iIntros (γlk) "His_locked".
+  iIntros "His_locked".
   wp_pures.
 
   iAssert ((∃ σ, inode_linv l σ ∗ P σ)%I) as (σ) "(-#Hlockinv & -#HP)". { admit. }
@@ -789,8 +789,8 @@ Proof.
     }
 Admitted.
 
-Theorem wp_Inode__Size k {l γ P} (Q: u64 -> iProp Σ) :
-  {{{ is_inode l k γ P ∗
+Theorem wp_Inode__Size k {l P} (Q: u64 -> iProp Σ) :
+  {{{ is_inode l k P ∗
       (∀ σ σ',
           ⌜σ' = σ⌝ ∗
           P σ ={⊤}=∗ P σ' ∗ Q (length σ'.(inode.blocks)))
@@ -802,7 +802,7 @@ Proof.
   wp_call.
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-  iIntros (γlk) "His_locked".
+  iIntros "His_locked".
   wp_pures.
 
   iAssert ((∃ σ, inode_linv l σ ∗ P σ)%I) as (σ) "(-#Hlockinv & -#HP)". { admit. }
@@ -1063,7 +1063,7 @@ Theorem wpc_Inode__Append {k E2}
   (S (S k) < n)%nat →
   (S (S k) < k')%nat →
   ↑nroot.@"readonly" ⊆ (@top coPset _) ∖ ↑Ncrash allocN →
-  {{{ "Hinode" ∷ is_inode l (LVL k') γ P ∗
+  {{{ "Hinode" ∷ is_inode l (LVL k') P ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
       "HQc" ∷ (Q -∗ Qc) ∗
       "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
@@ -1147,7 +1147,7 @@ Proof.
     wpc_frame_seq.
     wp_loadField.
     wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-    iIntros (γlk) "His_locked". iNamed 1.
+    iIntros "His_locked". iNamed 1.
     wpc_pures.
     wpc_bind_seq.
 
@@ -1183,9 +1183,10 @@ Proof.
       { auto. }
       { auto. }
       { iSplitL "Hreserved".
-        { iApply (reserved_block_weaken with "[] Hreserved").
+        { admit. (*XXX Now this doesn't work either? *)
+                 (*iApply (reserved_block_weaken with "[] Hreserved").
           iIntros "!> Hda".
-          iExists _; iFrame. }
+          iExists _; iFrame.*) }
         iIntros (σ' Hreserved) "HP".
         (* XXX ? iMod ("Hfree_fupd" with "[//] HP") as "$". *)
         (* auto *)
