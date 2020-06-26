@@ -78,6 +78,23 @@ Section goose.
     rewrite -fmap_insert. done.
   Qed.
 
+  Lemma inode_blocks_alloc E (allblocks: gmap nat (list Block)):
+    ⊢ |={E}=> ∃ γblocks, ([∗ map] idx ↦ blocks ∈ allblocks, inode_blocks γblocks idx blocks) ∗ inode_allblocks γblocks allblocks.
+  Proof.
+    set allblocksR: gmapUR nat (exclR $ listLO Block) := Excl <$> allblocks.
+    iMod (own_alloc (● allblocksR ⋅ ◯ allblocksR)) as (γ) "[Ha Hf]".
+    { rewrite auth_both_valid. split; first done.
+      intros i. rewrite /allblocksR lookup_fmap. by destruct (allblocks !! i). }
+    iModIntro. iExists γ. iFrame "Ha".
+    iInduction allblocks as [|i x m Hnew] "IH" using map_ind.
+    { rewrite big_sepM_empty. done. }
+    rewrite big_sepM_insert // /allblocksR fmap_insert.
+    rewrite (insert_singleton_op (Excl <$> m) i (Excl x: exclR $ listLO Block)); last first.
+    { rewrite lookup_fmap Hnew. done. }
+    rewrite auth_frag_op. iDestruct "Hf" as "[$ Hf]".
+    iApply "IH". done.
+  Qed.
+
   Lemma inode_used_lookup γused (idx: nat) (used: gset u64) (allused: gmap nat (gset u64)):
     inode_used γused idx used -∗
     inode_allused γused allused -∗
@@ -104,6 +121,23 @@ Section goose.
       { by rewrite lookup_fmap Hallused. }
       apply: exclusive_local_update. done. }
     rewrite -fmap_insert. done.
+  Qed.
+
+  Lemma inode_used_alloc E (allused: gmap nat (gset u64)):
+    ⊢ |={E}=> ∃ γused, ([∗ map] idx ↦ used ∈ allused, inode_used γused idx used) ∗ inode_allused γused allused.
+  Proof.
+    set allusedR: gmapUR nat (exclR $ gset64O) := Excl <$> allused.
+    iMod (own_alloc (● allusedR ⋅ ◯ allusedR)) as (γ) "[Ha Hf]".
+    { rewrite auth_both_valid. split; first done.
+      intros i. rewrite /allusedR lookup_fmap. by destruct (allused !! i). }
+    iModIntro. iExists γ. iFrame "Ha".
+    iInduction allused as [|i x m Hnew] "IH" using map_ind.
+    { rewrite big_sepM_empty. done. }
+    rewrite big_sepM_insert // /allusedR fmap_insert.
+    rewrite (insert_singleton_op (Excl <$> m) i (Excl x: exclR $ gset64O)); last first.
+    { rewrite lookup_fmap Hnew. done. }
+    rewrite auth_frag_op. iDestruct "Hf" as "[$ Hf]".
+    iApply "IH". done.
   Qed.
 
   (** Protocol invariant for inode library *)
