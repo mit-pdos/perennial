@@ -660,6 +660,40 @@ Proof.
     iFrame.
 Qed.
 
+Lemma cfupd_big_sepL_aux {A} (l: list A) (Φ: nat → A → iProp Σ) n k E1 :
+  ([∗ list] i↦a ∈ l, |C={E1, ∅}_(LVL k)=> Φ (n + i) a) -∗
+  |C={E1, ∅}_(LVL (length l + k))=> ([∗ list] i↦a ∈ l, Φ (n + i) a).
+Proof.
+  iIntros "H".
+  (iInduction l as [| x l] "IH" forall (n)).
+  - iModIntro. iNext.
+    simpl; auto.
+  - rewrite -> !big_sepL_cons by set_solver.
+    simpl.
+    iDestruct "H" as "(Hx & Hrest)".
+    iMod "Hx".
+    { simpl.
+      rewrite LVL_Sk.
+      pose proof (LVL_gt (length l+k)).
+      rewrite LVL_sum_split.
+      abstract_pow4. }
+    iFrame "Hx".
+    assert (forall k, n + S k = S n + k) as Harith by lia.
+    setoid_rewrite Harith.
+    iMod ("IH" with "Hrest") as "Hrest".
+    { rewrite LVL_Sk.
+      pose proof (LVL_gt (length l + k)).
+      pose proof (LVL_le k (length l + k)).
+      nia. }
+    iModIntro. iModIntro.
+    iFrame.
+Qed.
+
+Lemma cfupd_big_sepL {A} (l: list A) (Φ: nat → A → iProp Σ) k E1 :
+  ([∗ list] i↦a ∈ l, |C={E1, ∅}_(LVL k)=> Φ i a) -∗
+  |C={E1, ∅}_(LVL (length l + k))=> ([∗ list] i↦a ∈ l, Φ i a).
+Proof. iApply (cfupd_big_sepL_aux _ _ 0). Qed.
+
 Lemma wpc_crash_frame_big_sepS_wand `{Countable A} (σ: gset A)(P: A → iProp Σ) k s E2 e Φ Φc  :
   ([∗ set] a ∈ σ, ∃ k', ⌜ k' ≤ k ⌝ ∗ |C={⊤, ∅}_(LVL k')=> P a) -∗
   WPC e @ s; LVL k; ⊤; E2 {{ Φ }} {{ ([∗ set] a ∈ σ, P a) -∗ Φc }} -∗
