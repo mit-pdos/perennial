@@ -22,12 +22,11 @@ Section proof.
   Context `{!heapG Σ, !crashG Σ, stagedG Σ} (Nlock Ncrash: namespace).
 
   Definition is_crash_lock k (lk: val) (R Rcrash: iProp Σ) : iProp Σ :=
-    is_lock Nlock lk (na_crash_inv Ncrash k R Rcrash) ∗ □ (R -∗ Rcrash).
+    is_lock Nlock lk (na_crash_inv Ncrash k R Rcrash).
 
   Definition crash_locked k lk R Rcrash : iProp Σ :=
     (na_crash_inv Ncrash k R Rcrash ∗
      is_lock Nlock lk (na_crash_inv Ncrash k R Rcrash) ∗
-     □ (R -∗ Rcrash) ∗
      locked lk)%I.
 
   (*
@@ -58,13 +57,12 @@ Section proof.
 
 
   Lemma alloc_crash_lock' k E lk (R Rcrash : iProp Σ):
-    □ (R -∗ Rcrash) -∗
     is_free_lock lk -∗
     na_crash_inv Ncrash k R Rcrash
     ={E}=∗ is_crash_lock k #lk R Rcrash.
   Proof.
     clear.
-    iIntros "Hwand Hfree Hfull".
+    iIntros "Hfree Hfull".
     iMod (alloc_lock Nlock _ with "Hfree Hfull") as "Hlk".
     iModIntro. rewrite /is_crash_lock. eauto.
   Qed.
@@ -82,7 +80,7 @@ Section proof.
         "(Hfull&Hpending)".
     { set_solver. }
     { iFrame "HR". }
-    iMod (alloc_crash_lock' with "HRcrash Hfree Hfull") as "Hlk".
+    iMod (alloc_crash_lock' with "Hfree Hfull") as "Hlk".
     by iFrame.
   Qed.
 
@@ -109,10 +107,8 @@ Section proof.
     lock.acquire lk @ E
     {{{ RET #(); crash_locked k lk R Rcrash }}}.
   Proof.
-    iIntros (? Φ) "Hcrash HΦ".
-    rewrite /is_crash_lock.
-    iDestruct "Hcrash" as "(#His_lock&#HRcrash)".
-    wp_apply (acquire_spec' with "His_lock"); auto.
+    iIntros (? Φ) "#Hcrash HΦ".
+    wp_apply (acquire_spec' with "Hcrash"); auto.
     iIntros "(?&?)". iApply "HΦ". iFrame. iFrame "#".
   Qed.
 
@@ -127,7 +123,7 @@ Section proof.
     WPC e @  (LVL (S k)); E1; E2 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (???) "Hcrash_locked H".
-    iDestruct "Hcrash_locked" as "(Hfull&#His_lock&#HRcrash&Hlocked)".
+    iDestruct "Hcrash_locked" as "(Hfull&#His_lock&Hlocked)".
     iApply (wpc_na_crash_inv_open with "[$] [H Hlocked]"); try iFrame; auto.
     iSplit.
     - iDestruct "H" as "($&_)".
@@ -147,7 +143,7 @@ Section proof.
     {{{ RET #(); True }}}.
   Proof.
     iIntros (? Φ) "Hcrash_locked HΦ".
-    iDestruct "Hcrash_locked" as "(Hfull&#His_lock&#?&Hlocked)".
+    iDestruct "Hcrash_locked" as "(Hfull&#His_lock&Hlocked)".
     wp_apply (release_spec' with "[His_lock Hlocked Hfull]"); swap 1 2.
     { iFrame "His_lock". iFrame. }
     { auto. }

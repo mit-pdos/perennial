@@ -391,11 +391,12 @@ Qed.
 
 Theorem reserved_block_weaken γ n k R R' :
   □(R -∗ R') -∗
+  ▷ □(R' -∗ block_cinv γ k) -∗
   reserved_block γ n k R -∗
   reserved_block γ n k R'.
 Proof.
-  iIntros "#HR'"; iNamed 1.
-  iFrame. by iApply (na_crash_inv_weaken with "HR'").
+  iIntros "#HR' #Hwand"; iNamed 1.
+  iFrame. by iApply (na_crash_inv_weaken with "HR' [$]").
 Qed.
 
 Lemma free_big_sepS_to_all σ (Φ: u64 → iProp Σ):
@@ -429,7 +430,7 @@ Proof.
         "(Hbund&Hpend)".
     { auto. }
     { iIntros "!> !> H". iLeft. eauto. }
-    iModIntro. iFrame. 
+    iModIntro. iFrame.
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
     iMod (na_crash_inv_alloc Ncrash _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as

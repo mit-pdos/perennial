@@ -330,8 +330,7 @@ Proof using PStartedOpening_Timeless.
       ** iApply "HΦ". by iApply Hwand.
       ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log.S :: "m"]{q} #ml) with "[Hpts]") as "Hread".
          { iNext; iExists _; iFrame. }
-         iMod (alloc_crash_lock' with "[] Hlock Hfull") as "Hcrash_lock".
-         { iAlways. iDestruct 1 as (?) "(?&?)". iExists _. iFrame. by iApply ptsto_log_crashed. }
+         iMod (alloc_crash_lock' with "Hlock Hfull") as "Hcrash_lock".
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
          iFrame.
@@ -449,8 +448,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
       ** iApply "HΦ". by iApply Hwand.
       ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log.S :: "m"]{q} #ml) with "[Hpts]") as "Hread".
          { iNext; iExists _; iFrame. }
-         iMod (alloc_crash_lock' with "[] Hlock Hfull") as "Hcrash_lock".
-         { iAlways. iDestruct 1 as (?) "(?&?)". iExists _. iFrame. by iApply ptsto_log_crashed. }
+         iMod (alloc_crash_lock' with "Hlock Hfull") as "Hcrash_lock".
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
          { iExists _. rewrite /log_inv_inner. eauto. }
          iFrame.

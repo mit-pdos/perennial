@@ -21,7 +21,7 @@ Implicit Types e : expr Λ.
 
 Definition na_crash_inv_def N k Q P :=
   (∃ Γ Qr bset, staged_inv Γ N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) ∗ staged_bundle Γ Q Qr false bset ∗
-                staged_crash Γ P bset)%I.
+                staged_crash Γ P bset ∗ ▷ □ (Q -∗ P))%I.
 Definition na_crash_inv_aux : seal (@na_crash_inv_def). by eexists. Qed.
 Definition na_crash_inv := (na_crash_inv_aux).(unseal).
 Definition na_crash_inv_eq := (na_crash_inv_aux).(seal_eq).
@@ -48,16 +48,24 @@ Proof.
   iApply (staged_inv_init_cfupd with "[$]"); eauto.
 Qed.
 
+Lemma na_crash_inv_status_wand N k Q P:
+  na_crash_inv N k Q P -∗
+  ▷ □ (Q -∗ P).
+Proof. crash_unseal. iDestruct 1 as (???) "(?&?&?&$)". Qed.
+
 Lemma na_crash_inv_weaken N k Q Q' P :
   □(Q -∗ Q') -∗
+  ▷ □(Q' -∗ P) -∗
   na_crash_inv N k Q P -∗
   na_crash_inv N k Q' P.
 Proof.
   crash_unseal.
-  iIntros "#HQ' H".
-  iDestruct "H" as (? Qr ?) "(Hinv&Hbundle&?)".
+  iIntros "#HQ' #HQ'P H".
+  iDestruct "H" as (? Qr ?) "(Hinv&Hbundle&?&#Hwand)".
   iExists _, Qr, _. iFrame.
+  iSplitL "Hbundle".
   iApply (staged_bundle_weaken_1 with "HQ' Hbundle").
+  iNext. iAlways. iIntros. by iApply "HQ'P".
 Qed.
 
 Lemma wpc_na_crash_inv_open_modify Qnew s k k' E1 E2 e Φ Φc Q P N :
@@ -72,7 +80,7 @@ Lemma wpc_na_crash_inv_open_modify Qnew s k k' E1 E2 e Φ Φc Q P N :
 Proof.
   crash_unseal.
   iIntros (???) "Hbundle Hwp".
-  iDestruct "Hbundle" as (???) "(#Hinv&Hbundle&#Hval)".
+  iDestruct "Hbundle" as (???) "(#Hinv&Hbundle&#Hval&#HQP)".
   iApply (wpc_staged_inv_open _ _ _ _ _ _ _ _ _ _ _ _ Qnew); eauto.
   iFrame "Hinv". iFrame "Hval". iFrame "Hbundle".
   iSplit.
@@ -95,11 +103,18 @@ Lemma wpc_na_crash_inv_open s k k' E1 E2 e Φ Φc Q P N:
   to_val e = None →
   na_crash_inv N (LVL k') Q P -∗
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, ▷ Q ∗ ▷ □ (Q -∗ P) ∗ (na_crash_inv N (LVL k') Q P -∗ (Φc ∧ Φ v))}}
+                    {{λ v, ▷ Q ∗ (na_crash_inv N (LVL k') Q P -∗ (Φc ∧ Φ v))}}
                     {{ Φc ∗ ▷ P }})) -∗
   WPC e @ s; LVL (S k); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (???) "H1 Hwp". iApply (wpc_na_crash_inv_open_modify with "[$] [$]"); auto.
+  iIntros (???) "H1 Hwp".
+  iDestruct (na_crash_inv_status_wand with "H1") as "#Hwand".
+  iApply (wpc_na_crash_inv_open_modify with "[$] [Hwp]"); eauto.
+  iSplit.
+  - iDestruct "Hwp" as "($&_)".
+  - iIntros "HQ". iDestruct "Hwp" as "(_&Hwp)". iSpecialize ("Hwp" with "[$]").
+    iApply (wpc_mono' with "[] [] Hwp"); last eauto.
+    iIntros (?) "($&$)". eauto.
 Qed.
 
 Lemma na_crash_inv_open_modify N k' k E E' P Q R:
@@ -111,7 +126,7 @@ Lemma na_crash_inv_open_modify N k' k E E' P Q R:
 Proof.
   crash_unseal.
   iIntros (?) "Hbundle Hwp".
-  iDestruct "Hbundle" as (???) "(#Hinv&Hbundle&#Hval)".
+  iDestruct "Hbundle" as (???) "(#Hinv&Hbundle&#Hval&#Hwand)".
   iMod (staged_inv_open with "[$]") as "HQ"; auto.
   iMod (fupd_intro_mask' _ ∅) as "Hclo"; first set_solver.
   iModIntro.

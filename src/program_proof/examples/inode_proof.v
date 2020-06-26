@@ -732,9 +732,10 @@ Proof.
       { auto. }
       { auto. }
       { iSplitL "Hreserved".
-        { iApply (reserved_block_weaken with "[] Hreserved").
-          iIntros "!> Hda".
-          iExists _; iFrame. }
+        { iApply (reserved_block_weaken with "[] [] Hreserved").
+          { rewrite /Ψ. eauto. }
+          { rewrite /Ψ/block_cinv. iNext. eauto. }
+        }
         iIntros (σ' Hreserved) "HP".
         iMod ("Hfree_fupd" with "[//] HP") as "$".
         auto. }
