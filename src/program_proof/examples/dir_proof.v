@@ -215,6 +215,16 @@ Section goose.
 
   Opaque struct.t.
 
+  (* TODO: use this to replace list_lookup_lt (it's much easier to remember) *)
+  Local Ltac list_elem_as l i x :=
+    let H := fresh "H" x "_lookup" in
+    destruct (list_lookup_lt _ l i) as [x H];
+    [ try solve [ len ]
+    | ].
+
+  Tactic Notation "list_elem" constr(l) constr(i) "as" ident(x) :=
+    list_elem_as l i x.
+
   Lemma wpc_openInodes {k E2} (d: loc) s_inodes :
     length s_inodes = num_inodes →
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
@@ -255,6 +265,9 @@ Section goose.
                    "Hinode_cinvs" ∷ ([∗ list] i↦s_inode ∈ (drop (int.nat n) s_inodes),
                                      inode_cinv (int.nat n+i) s_inode)
                )%I
+               (* TODO: here prove pre_inode for first n and inode_cinv for
+               rest, so loop proof is easier (need to prove this implies the
+               overall crash condition only once) *)
               (λ n, [∗ list] i↦s_inode ∈ s_inodes,
                       inode_cinv i s_inode
               )%I
@@ -285,8 +298,28 @@ Section goose.
         admit. (* TODO: re-use earlier proof *) }
       wpc_bind (load_ty _ _). wpc_frame. wp_load. iNamed 1.
       wpc_bind (inode.Open _ _).
-      (* TODO: need to use drop_S to extract inode_cinv (int.nat n) *)
-      wpc_apply inode_proof.wpc_Open.
+      change (int.val (U64 5)) with (Z.of_nat num_inodes) in Hbound.
+      list_elem s_inodes (int.nat n) as s_inode.
+      rewrite [drop (int.nat n) s_inodes](drop_S _ s_inode); last by auto.
+      iDestruct (big_sepL_cons with "Hinode_cinvs") as "[Hs_inode Hinode_cinvs]".
+      wpc_apply (inode_proof.wpc_Open with "[Hs_inode]").
+      { replace (U64 $ int.nat n + 0) with n by word.
+        iFrame. }
+      iSplit.
+      { iIntros "Hs_inode".
+        iDestruct (big_sepL_cons (λ k y, inode_cinv (int.nat n + k) y) with "[Hs_inode $Hinode_cinvs]") as "Hinode_cinvs".
+        { replace (U64 $ int.nat n + 0) with n by word.
+          iFrame. }
+        iFromCache. }
+      iIntros "!>" (inode_ref) "Hpre_inode".
+      wpc_frame "HΦ Hpre_inode Hpre_inodes Hinode_cinvs".
+      { crash_case.
+        iLeft.
+        (* TODO: combine Hpre_inode and Hpre_inodes, then do the same trick of
+        proving the goal using the two halves (which should probably be factored
+        out into a lemma) *)
+        admit. }
+      wp_load.
   Abort.
 
   Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
