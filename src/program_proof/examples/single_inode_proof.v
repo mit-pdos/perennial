@@ -233,16 +233,18 @@ Section goose.
     iExists _; iFrame "∗ %".
   Qed.
 
-  Theorem is_single_inode_alloc {E2} k l sz σ :
+  Theorem is_single_inode_alloc {E2} k l (sz: Z) σ :
+    (1 ≤ sz < 2^64)%Z →
     ↑allocN ⊆ E2 →
     ↑s_inodeN ⊆ E2 →
     ▷ P σ -∗
     pre_s_inode l sz σ ={⊤}=∗
     is_single_inode l sz k ∗
-    (* TODO: level needs to be considerably higher, so admits below work *)
-    |C={⊤,E2}_(LVL k)=> ∃ σ', s_inode_cinv sz σ' false.
+    (* TODO: this might be a high enough level, or a higher one might be more
+    convenient *)
+    |C={⊤,E2}_(LVL (Z.to_nat sz + 2 * S (S k)))=> ∃ σ', s_inode_cinv sz σ' false.
   Proof.
-    iIntros (??) "HP"; iNamed 1.
+    iIntros (???) "HP"; iNamed 1.
     iNamed "Hinode".
     iNamed "Halloc".
     iMod (is_allocator_alloc with "Hunused HPalloc Halloc_mem") as (γalloc) "[Halloc Halloc_crash]".
@@ -259,7 +261,9 @@ Section goose.
     { iExists _, _, _, _, _.
       iFrame "# ∗". }
     iMod "Halloc_crash" as "_".
-    { admit. }
+    { rewrite rangeSet_size; try lia.
+      apply LVL_le.
+      lia. }
     iMod "Hinode_crash" as "_".
     { admit. }
     iMod "Hinv_crash" as "_".
