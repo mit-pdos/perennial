@@ -991,7 +991,7 @@ Theorem wp_padInts {Stk E} enc (n: u64) (encoded : list encodable) (off: Z):
     padInts (EncM.to_val enc) #n @Stk ; E
   {{{ RET #()
 ;
-    is_enc enc (encoded ++ (EncUInt64 <$> replicate (int.nat n) (U64 0))) (int.val off-(8*int.val n))
+    is_enc enc (encoded ++ (EncUInt64 <$> replicate (int.nat n) (U64 0))) (off-(8*int.val n))
   }}}.
 Proof.
   iIntros (ϕ) "[%Hi Henc] Hϕ".
@@ -1004,7 +1004,7 @@ Proof.
 
   wp_apply (wp_forUpto (λ i, "%Hiupper_bound" ∷ ⌜int.val i <= int.val n⌝ ∗
                        "Henc" ∷ is_enc enc (encoded ++ (EncUInt64 <$> (replicate (int.nat i) (U64 0))))
-                       (off - (8 * int.nat i)))%I _ _
+                       (off - (8 * int.val i)))%I _ _
                     0 n
             with "[] [Henc Hi] [-]").
   {
@@ -1012,34 +1012,38 @@ Proof.
   }
   {
     iIntros. iModIntro. iIntros (ϕ0) "H Hϕ0".
-    iDestruct "H" as "[H [Hi %Hibound]]"
-.
+    iDestruct "H" as "[H [Hi %Hibound]]"; destruct Hi as [Hn Hoff].
     iNamed "H".
     wp_pures.
-    wp_apply (wp_Enc__PutInt with "Henc").
-    {
-      admit.
-    }
+    wp_apply (wp_Enc__PutInt with "Henc"); [ word | ].
+
+  Set Printing Coercions.
     iIntros "Henc".
     wp_pures.
     iApply "Hϕ0".
     iFrame.
     iSplitR "Henc".
-    - iPureIntro. (*Need to show doesn't overflow*) admit.
-    - (*Need to show that replicate can turn into append*)admit.
+    - iPureIntro. word.
+    - replace (int.nat (word.add i0 1)) with (S (int.nat i0)) by word.
+      rewrite replicate_S_end.
+      rewrite fmap_app; simpl.
+      rewrite app_assoc.
+      replace (off - 8 * int.val (word.add i0 (U64 1))) with (off - 8 * int.val i0 - 8); auto.
+      word.
   }
   {
     iSplitL "Henc"; iFrame; auto.
     iSplitR "Henc".
-    - iPureIntro. admit.
-    - admit. (*need to show 0 replicate and 0 addition*)
+    - iPureIntro. word.
+    - rewrite replicate_0 fmap_nil app_nil_r. rewrite Z.mul_0_r Z.sub_0_r. auto.
   }
 
   iModIntro.
   iIntros "[H Hi]".
+  destruct Hi as [Hn Hoff].
   iNamed "H".
   iApply "Hϕ"; iFrame.
-Admitted.
+Qed.
 
 Theorem wp_Inode__mkHdr {Stk E} l (sz numInd : Z) allocedDirAddrs allocedIndAddrs direct_s indirect_s:
   (length(allocedDirAddrs) <= int.nat maxDirect ∧
