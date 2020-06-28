@@ -403,151 +403,6 @@ Definition is_alloced_blocks_slice σ s (direct_s indirect_s indblks_s : Slice.t
       slice_subslice uint64T (direct_s.(Slice.sz)) ((int.nat direct_s.(Slice.sz)) + (int.nat indirect_s.(Slice.sz)))%nat s = indirect_s ∧
       slice_subslice uint64T ((int.nat direct_s.(Slice.sz)) + (int.nat indirect_s.(Slice.sz)))%nat s.(Slice.sz) s = indblks_s⌝.
 
-Theorem wp_Inode__UsedBlocks {l γ addr σ} :
-  {{{ pre_inode l addr σ }}}
-    Inode__UsedBlocks #l
-    {{{ (s direct_s indirect_s indblks_s:Slice.t)
-          (dirAddrs indAddrs: list u64) (indBlkAddrsList: list (list u64)),
-      RET (slice_val s);
-      is_alloced_blocks_slice σ s direct_s indirect_s indblks_s dirAddrs indAddrs indBlkAddrsList ∗
-      (⌜list_to_set (take (Nat.min (int.nat maxDirect) (length σ.(inode.blocks))) dirAddrs) = σ.(inode.direct_addrs)⌝) ∗
-      (⌜Forall_idx u64 (λ (index : nat) (a: u64),
-                        ∃ indBlkAddrs, indBlkAddrsList !! index = Some indBlkAddrs ∧
-                                       σ.(inode.indirect_addrs) !! a = Some (list_to_set indBlkAddrs))
-        0 (take (num_ind σ) indAddrs)⌝) ∗
-     (is_alloced_blocks_slice σ s direct_s indirect_s indblks_s dirAddrs indAddrs indBlkAddrsList -∗ pre_inode l addr σ) }}}.
-Proof.
-  iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
-  wp_call.
-  iNamed "Hlockinv".
-  wp_apply wp_ref_of_zero; auto.
-  iIntros (l0) "Hl0".
-  wp_let.
-  wp_apply (wp_NewSlice _ _ (uint64T)).
-  iIntros (s) "Hs".
-  wp_store.
-  wp_loadField; wp_let.
-  wp_loadField; wp_let.
-
-  iDestruct (is_slice_split with "Hdirect") as "[Hdirect_small Hdirect]".
-  iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
-  iNamed "Hdurable".
-  destruct Hlen as [HdirLen [HindirLen [HszMax [HnumInd1 HnumInd2]]]].
-
-  wp_apply (wp_forSlicePrefix
-              (fun done todo =>
-               ∃ s usedBlksList,
-                 "%" ∷ ⌜ done ++ todo = (take (length σ.(inode.blocks)) dirAddrs) ⌝ ∗
-                 "%" ∷ ⌜ done = usedBlksList ⌝ ∗
-                 "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
-                 "HusedSlice" ∷ is_slice s uint64T 1 usedBlksList
-      )%I
-  with "[] [Hl0 Hdirect_small Hs]").
-  { iIntros (i a done todo).
-    iModIntro.
-    iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
-    wp_pures.
-    wp_load.
-    wp_apply (wp_SliceAppend (V:=u64) with "[HusedSlice]").
-    {
-      iDestruct (is_slice_sz with "HusedSlice") as %HlenUsed.
-      iSplit; eauto. iPureIntro.
-      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      rewrite /list.untype fmap_length in HlenUsed.
-      assert (length (usedBlksList ++ a :: todo) = length (take (length σ.(inode.blocks)) dirAddrs)).
-      {
-        rewrite -H0 H; auto.
-      }
-      rewrite take_length app_length in H1.
-      word.
-    }
-
-    iIntros (direct_s') "Hdirect".
-    wp_store.
-    iApply "HΦ".
-    iExists direct_s', (usedBlksList ++ [a]).
-    repeat iSplit; auto.
-    - iPureIntro.
-      replace ((done ++ [a]) ++ todo) with (done ++ a :: todo); auto.
-      rewrite cons_middle -app_assoc; auto.
-    - iPureIntro; rewrite H0; auto.
-    - iFrame.
-  }
-  {
-    iFrame.
-    iExists s, [].
-    iFrame.
-    repeat iSplit; auto.
-  }
-
-  iIntros "[Hdirect_small HdirLoop]". iNamed "HdirLoop".
-  wp_pures.
-  wp_apply (wp_forSlicePrefix
-              (fun done todo =>
-               ∃ s usedIndBlks,
-                 "%" ∷ ⌜ done ++ todo = (take (num_ind σ) indAddrs) ⌝ ∗
-                 "%" ∷ ⌜ done = usedIndBlks ⌝ ∗
-                 "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
-                 "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ usedIndBlks)
-      )%I
-  with "[] [Hl0 Hindirect_small indirect HusedSlice]").
-  { iIntros (i a done todo).
-    iModIntro.
-    iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
-    wp_pures.
-    wp_load.
-
-    wp_apply (wp_SliceAppend (V:=u64) with "[HusedSlice]").
-    {
-      iDestruct (is_slice_sz with "HusedSlice") as %HlenUsed.
-      iSplit; eauto. iPureIntro.
-      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      rewrite /list.untype fmap_length in HlenUsed.
-      assert (length (done ++ a :: todo) = length (take (num_ind σ) indAddrs)).
-      {
-        rewrite -H1; auto.
-      }
-      rewrite take_length app_length H2 in H3.
-      rewrite app_length -H0 in HlenUsed.
-      admit.
-    }
-
-    iIntros (indirect_s') "Hindirect".
-    wp_store.
-    iApply "HΦ".
-    iExists indirect_s', (usedIndBlks ++ [a]).
-    repeat iSplit; auto.
-    - iPureIntro.
-      replace ((done ++ [a]) ++ todo) with (done ++ a :: todo); auto.
-      rewrite cons_middle -app_assoc; auto.
-    - iPureIntro. rewrite H2; auto.
-    - iFrame. rewrite app_assoc; auto.
-  }
-  {
-    iFrame.
-    iExists s0, [].
-    rewrite app_nil_l app_nil_r.
-    iFrame.
-    repeat iSplit; auto.
-  }
-  iIntros "[Hindirect_small HindLoop]". iNamed "HindLoop".
-  wp_pures.
-  (*TODO facts about readIndirect*)
-  wp_apply (wp_forSlicePrefix
-              (fun done todo =>
-               ∃ s usedIndBlks blksInIndBlk,
-                 "%" ∷ ⌜ done ++ todo = (take (num_ind σ) indAddrs) ⌝ ∗
-                 "%" ∷ ⌜ done = usedIndBlks ⌝ ∗
-                 "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
-                 "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ usedIndBlks ++ blksInIndBlk)
-      )%I
-  with "[] [Hl0 Hindirect_small HusedSlice]").
-  { iIntros (i a done todo).
-    iModIntro.
-    admit.
-  }
-Admitted.
-
 Theorem wp_indNum {off: u64} :
   {{{
        ⌜int.val off >= maxDirect⌝
@@ -661,6 +516,163 @@ Proof.
   iExists padding.
   iSplitR "HindBlks"; auto.
 Qed.
+
+Theorem wp_Inode__UsedBlocks {l γ addr σ} :
+  {{{ pre_inode l addr σ }}}
+    Inode__UsedBlocks #l
+    {{{ (s direct_s indirect_s indblks_s:Slice.t)
+          (dirAddrs indAddrs: list u64) (indBlkAddrsList: list (list u64)),
+      RET (slice_val s);
+      is_alloced_blocks_slice σ s direct_s indirect_s indblks_s dirAddrs indAddrs indBlkAddrsList ∗
+      (⌜list_to_set (take (Nat.min (int.nat maxDirect) (length σ.(inode.blocks))) dirAddrs) = σ.(inode.direct_addrs)⌝) ∗
+      (⌜Forall_idx u64 (λ (index : nat) (a: u64),
+                        ∃ indBlkAddrs, indBlkAddrsList !! index = Some indBlkAddrs ∧
+                                       σ.(inode.indirect_addrs) !! a = Some (list_to_set indBlkAddrs))
+        0 (take (num_ind σ) indAddrs)⌝) ∗
+     (is_alloced_blocks_slice σ s direct_s indirect_s indblks_s dirAddrs indAddrs indBlkAddrsList -∗ pre_inode l addr σ) }}}.
+Proof.
+  iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
+  wp_call.
+  iNamed "Hlockinv".
+  wp_apply wp_ref_of_zero; auto.
+  iIntros (l0) "Hl0".
+  wp_let.
+  wp_apply (wp_NewSlice _ _ (uint64T)).
+  iIntros (s) "Hs".
+  wp_store.
+  wp_loadField; wp_let.
+  wp_loadField; wp_let.
+
+  iDestruct (is_slice_split with "Hdirect") as "[Hdirect_small Hdirect]".
+  iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
+  iNamed "Hdurable".
+  destruct Hlen as [HdirLen [HindirLen [HszMax [HnumInd1 HnumInd2]]]].
+
+  wp_apply (wp_forSlicePrefix
+              (fun done todo =>
+               ∃ s usedBlksList,
+                 "%" ∷ ⌜ done ++ todo = (take (length σ.(inode.blocks)) dirAddrs) ⌝ ∗
+                 "%" ∷ ⌜ done = usedBlksList ⌝ ∗
+                 "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
+                 "HusedSlice" ∷ is_slice s uint64T 1 usedBlksList
+      )%I
+  with "[] [Hl0 Hdirect_small Hs]").
+  { iIntros (i a done todo).
+    iModIntro.
+    iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
+    wp_pures.
+    wp_load.
+    wp_apply (wp_SliceAppend (V:=u64) with "[HusedSlice]").
+    {
+      iDestruct (is_slice_sz with "HusedSlice") as %HlenUsed.
+      iSplit; eauto. iPureIntro.
+      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      rewrite /list.untype fmap_length in HlenUsed.
+      assert (length (usedBlksList ++ a :: todo) = length (take (length σ.(inode.blocks)) dirAddrs)).
+      {
+        rewrite -H0 H; auto.
+      }
+      rewrite take_length app_length in H1.
+      word.
+    }
+
+    iIntros (direct_s') "Hdirect".
+    wp_store.
+    iApply "HΦ".
+    iExists direct_s', (usedBlksList ++ [a]).
+    repeat iSplit; auto.
+    - iPureIntro.
+      replace ((done ++ [a]) ++ todo) with (done ++ a :: todo); auto.
+      rewrite cons_middle -app_assoc; auto.
+    - iPureIntro; rewrite H0; auto.
+    - iFrame.
+  }
+  {
+    iFrame.
+    iExists s, [].
+    iFrame.
+    repeat iSplit; auto.
+  }
+
+  iIntros "[Hdirect_small HdirLoop]". iNamed "HdirLoop".
+  wp_pures.
+  wp_apply (wp_forSlicePrefix
+              (fun done todo =>
+               ∃ s usedIndBlks,
+                 "%" ∷ ⌜ done ++ todo = (take (num_ind σ) indAddrs) ⌝ ∗
+                 "%" ∷ ⌜ done = usedIndBlks ⌝ ∗
+                 "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
+                 "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ usedIndBlks)
+      )%I
+  with "[] [Hl0 Hindirect_small indirect HusedSlice]").
+  { iIntros (i a done todo).
+    iModIntro.
+    iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
+    wp_pures.
+    wp_load.
+
+    wp_apply (wp_SliceAppend (V:=u64) with "[HusedSlice]").
+    {
+      iDestruct (is_slice_sz with "HusedSlice") as %HlenUsed.
+      iSplit; eauto. iPureIntro.
+      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      rewrite /list.untype fmap_length in HlenUsed.
+      assert (length (done ++ a :: todo) = length (take (num_ind σ) indAddrs)).
+      {
+        rewrite -H1; auto.
+      }
+      rewrite take_length app_length H2 in H3.
+      rewrite app_length -H0 take_length in HlenUsed.
+      word.
+    }
+
+    iIntros (indirect_s') "Hindirect".
+    wp_store.
+    iApply "HΦ".
+    iExists indirect_s', (usedIndBlks ++ [a]).
+    repeat iSplit; auto.
+    - iPureIntro.
+      replace ((done ++ [a]) ++ todo) with (done ++ a :: todo); auto.
+      rewrite cons_middle -app_assoc; auto.
+    - iPureIntro. rewrite H2; auto.
+    - iFrame. rewrite app_assoc; auto.
+  }
+  {
+    iFrame.
+    iExists s0, [].
+    rewrite app_nil_l app_nil_r.
+    iFrame.
+    repeat iSplit; auto.
+  }
+  iIntros "[Hindirect_small HindLoop]". iNamed "HindLoop".
+  wp_pures.
+
+  (*TODO facts about readIndirect*)
+  iNamed "Hro_state".
+  wp_apply (wp_forSlicePrefix
+              (fun done todo =>
+               ∃ s indBlkAddrsList,
+                 "%" ∷ ⌜ done ++ todo = (take (num_ind σ) indAddrs) ⌝ ∗
+                 "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
+                 "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ done ++ (foldl (λ acc x, acc ++ x) [] indBlkAddrsList)) ∗
+                 "HindBlks" ∷ [∗ list] i↦a ∈ done,
+                                            (∃ indBlkAddrs,
+                                                ⌜ indBlkAddrsList !! i = Some indBlkAddrs ⌝ ∗
+                                                ∃ indBlk padding, is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ i) padding)
+      )%I
+  with "[] [Hl0 Hindirect_small HusedSlice Hindirect]").
+  { iIntros (i a done todo).
+    iModIntro.
+    iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
+    wp_pures.
+    wp_loadField.
+    wp_apply wp_readIndirect.
+    {
+      admit.
+    }
+    admit.
+  }
+Admitted.
 
 Theorem wp_Inode__Read k {l P} {off: u64} Q :
   {{{ is_inode l k P ∗
