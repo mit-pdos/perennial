@@ -3,6 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.Helpers Require Import ipm.
 From Perennial.program_proof.examples Require Import
      alloc_addrset alloc_crash_proof inode_proof.
 From Perennial.goose_lang.lib Require Import typed_slice. (* shadows things, should be last *)
@@ -183,9 +184,10 @@ Section goose.
   Definition dir_cinv sz σ (post_crash: bool) : iProp Σ :=
     ∃ γblocks γused,
     "Hinodes" ∷ (∃ s_inodes,
-                    [∗ list] i↦s_inode ∈ s_inodes,
+                    "%Hinode_len" ∷ ⌜length s_inodes = num_inodes⌝ ∗
+                    "Hinodes" ∷ ([∗ list] i↦s_inode ∈ s_inodes,
                    "Hinode_cinv" ∷ inode_cinv (U64 (Z.of_nat i)) s_inode ∗
-                    "HPinode" ∷ Pinode γblocks γused i s_inode) ∗
+                    "HPinode" ∷ Pinode γblocks γused i s_inode)) ∗
     "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ (rangeSet num_inodes (sz-num_inodes)) post_crash ∗
     "Hs_inode" ∷ dir_inv γblocks σ
   .
@@ -213,6 +215,20 @@ Section goose.
                      "Hunused" ∷ ([∗ set] k ∈ alloc.unused s_alloc, allocΨ k) ∗
                      "HPalloc" ∷ Palloc γused s_alloc)
   .
+
+  Lemma pre_inodes_to_cinv inode_refs s_inodes :
+    ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
+        pre_inode inode_ref i s_inode) -∗
+    ([∗ list] i↦s_inode ∈ s_inodes,
+        inode_cinv i s_inode).
+  Proof.
+    iIntros "Hpre".
+    iApply big_sepL2_to_sepL_2 in "Hpre".
+    iApply (big_sepL_mono with "Hpre").
+    iIntros (???) "Hpre".
+    iDestruct "Hpre" as (inode_ref) "(?&Hpre)".
+    iApply pre_inode_to_cinv; eauto.
+  Qed.
 
   Opaque struct.t.
 
@@ -260,7 +276,6 @@ Section goose.
                (λ n, ∃ (inode_s: Slice.t) (inode_refs: list loc),
                    "Hinodes" ∷ ino_l ↦[slice.T (refT inodeT)] (slice_val inode_s) ∗
                    "Hinode_slice" ∷ is_slice inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
-                   (* TODO: first i elements will be pre_inodes, rest are still inode_cinv ∗ Pinode *)
                    "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;(take (int.nat n) s_inodes),
                     pre_inode inode_ref i s_inode) ∗
                    "Hinode_cinvs" ∷ ([∗ list] i↦s_inode ∈ (drop (int.nat n) s_inodes),
@@ -312,9 +327,13 @@ Section goose.
       wpc_frame "HΦ Hpre_inode Hpre_inodes Hinode_cinvs".
       { crash_case.
         iLeft.
-        (* TODO: combine Hpre_inode and Hpre_inodes, then repeat above proof
-        (probably need a lemma for that) *)
-        admit. }
+        iFrame.
+        iSplitL "Hpre_inodes".
+        { admit. (* TODO: re-use earlier proof *) }
+        iApply pre_inode_to_cinv.
+        iExactEq "Hpre_inode".
+        f_equal; word.
+      }
       wp_load.
       wp_apply (wp_SliceAppend' with "Hinode_slice").
       iIntros (inode_s') "Hinode_slice".
@@ -371,17 +390,67 @@ Section goose.
     rewrite -> drop_ge by word.
     wpc_frame_compl "Hinodes".
     { crash_case.
-      iDestruct (big_sepL2_to_sepL_2 with "Hpre_inodes") as "Hpre_inodes".
-      iApply (big_sepL_mono with "Hpre_inodes").
-      iIntros (???) "Hpre".
-      iDestruct "Hpre" as (inod_ref) "(?&Hpre)".
-      iApply pre_inode_to_cinv; eauto. }
+      iApply (pre_inodes_to_cinv with "Hpre_inodes"). }
     wp_load.
     iNamed 1.
     iRight in "HΦ"; iApply "HΦ".
     iFrame.
     iApply (is_slice_to_small with "Hinode_slice").
+    Fail idtac.
   Admitted.
+
+  Theorem wpc_inodeUsedBlocks {k E2} inode_s inode_refs s_inodes :
+    {{{ "Hinode_s" ∷ is_slice_small inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
+        "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
+                    pre_inode inode_ref i s_inode }}}
+      inodeUsedBlocks (slice_val inode_s) @ NotStuck; k; ⊤; E2
+    {{{ (addrs_ref:loc) used, RET #addrs_ref;
+        "Hused_set" ∷ is_addrset addrs_ref used ∗
+        "%Hused_eq" ∷ ⌜used = ⋃ (inode.addrs <$> s_inodes)⌝ ∗
+        "Hinode_s" ∷ is_slice_small inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
+        "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
+                  pre_inode inode_ref i s_inode }}}
+    {{{ [∗ list] i↦s_inode ∈ s_inodes,
+       inode_cinv i s_inode
+    }}}.
+  Proof.
+    iIntros (Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    rewrite /inodeUsedBlocks.
+    wpc_pures.
+    { iApply (pre_inodes_to_cinv with "Hpre_inodes"). }
+    iCache with "HΦ Hpre_inodes".
+    { crash_case.
+      iApply (pre_inodes_to_cinv with "Hpre_inodes"). }
+    wpc_frame_seq.
+    wp_apply wp_NewMap.
+    iIntros (addrs_ref) "Hused_set".
+    iApply is_addrset_from_empty in "Hused_set".
+    iNamed 1.
+    wpc_pures.
+    (* TODO: use wpc_forSlice *)
+    (*
+    wp_apply (wpc_forSlice (V:=loc)
+                (λ n, "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
+                                  pre_inode inode_ref i s_inode) ∗
+               "Hused_set" ∷ is_addrset addrs_ref
+                  (⋃ (take (int.nat n) (inode.addrs <$> s_inodes))))%I
+             with "[] [$Hinode_s $Hpre_inodes]").
+    (* wp_apply (wp_forSlicePrefix (V:=loc) (λ inode_refs_done inode_refs_todo,
+               "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
+                                  pre_inode inode_ref i s_inode) ∗
+               "Hused_set" ∷ is_addrset addrs_ref
+                  (⋃ (take (length inode_refs_done) (inode.addrs <$> s_inodes)))
+             )%I with "[] [Hinode_s Hpre_inodes]"). *)
+    { iIntros (i inode_ref) "!>".
+      iIntros (Φ') "(Hpre&%Hbound&%Hlookup) HΦ"; iNamed "Hpre".
+      wp_pures.
+      iDestruct (big_sepL2_lookup_1_some with "Hpre_inodes") as "%Hs_inode_lookup"; eauto.
+      destruct Hs_inode_lookup as [s_inode Hs_inode_lookup].
+      iDestruct (big_sepL2_lookup_acc with "Hpre_inodes") as "(Hinode&Hpre_inodes)"; eauto.
+      wp_apply (wp_Inode__UsedBlocks with "[Hinode]").
+    }
+*)
+  Abort.
 
   Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
     {{{ dir_cinv (int.val sz) σ0 true }}}
@@ -397,7 +466,35 @@ Section goose.
     { crash_case.
       iApply dir_cinv_post_crash.
       iExists _, _; iFrame. }
-    iDeexHyp "Hinodes".
+    iNamed "Hinodes".
+    iDestruct (big_sepL_sep with "Hinodes") as "(Hinode_cinvs&HPinodes)".
+    wpc_apply (wpc_openInodes with "Hinode_cinvs"); auto.
+    iSplit.
+    { iIntros "Hinode_cinvs".
+      crash_case.
+      iApply dir_cinv_post_crash.
+      iExists _, _; iFrame.
+      iExists _; iFrame "%".
+      iApply big_sepL_sep; iFrame. }
+    iIntros "!>" (inode_s inode_refs) "(Hinode_s & Hpre_inodes)".
+    iCache with "HΦ Hpre_inodes HPinodes Halloc Hs_inode".
+    { crash_case.
+      iApply dir_cinv_post_crash.
+      iExists _, _; iFrame.
+      iExists _; iFrame "%".
+      iApply big_sepL_sep; iFrame.
+      iDestruct (big_sepL2_length with "Hpre_inodes") as %Hlen.
+      iDestruct (big_sepL2_to_sepL_2 with "Hpre_inodes") as "Hpre_inodes".
+      iApply (big_sepL_mono with "Hpre_inodes").
+      iIntros (???) "Hpre".
+      iDestruct "Hpre" as (?) "(?&Hpre)".
+      iApply pre_inode_to_cinv; eauto. }
+    wpc_pures.
+
+    (* do this after calling inodeUsedBlocks, to prove that union of s_inodes
+    used sets is equal to allocator used set *)
+    (* (* TODO: iNamed does something weird with the pure facts here... *)
+    iDestruct "Halloc" as (s_alloc) "Halloc"; iNamed "Halloc". *)
   Abort.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
