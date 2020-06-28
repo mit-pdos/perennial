@@ -66,6 +66,22 @@ Proof.
   done.
 Qed.
 
+Theorem is_slice_zero t q :
+  ⊢ is_slice Slice.nil t q [].
+Proof.
+  rewrite /is_slice /=.
+  iApply slice.is_slice_zero.
+Qed.
+
+Theorem is_slice_small_nil t q s :
+  int.val s.(Slice.sz) = 0 ->
+  ⊢ is_slice_small s t q [].
+Proof.
+  intros Hsz.
+  rewrite /is_slice_small /=.
+  iApply slice.is_slice_small_nil; auto.
+Qed.
+
 Lemma wp_NewSlice stk E t `{!IntoValForType IntoVal0 t} (sz: u64) :
   {{{ True }}}
     NewSlice t #sz @ stk; E

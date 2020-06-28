@@ -35,6 +35,7 @@ Section goose.
   Let inodeN := N.@"inode".
 
   Definition num_inodes: nat := 5.
+  Hint Unfold num_inodes : word.
 
   Context (P: dir.t → iProp Σ).
   Implicit Types (dir σ: dir.t).
@@ -265,36 +266,32 @@ Section goose.
                    "Hinode_cinvs" ∷ ([∗ list] i↦s_inode ∈ (drop (int.nat n) s_inodes),
                                      inode_cinv (int.nat n+i) s_inode)
                )%I
-               (* TODO: here prove pre_inode for first n and inode_cinv for
-               rest, so loop proof is easier (need to prove this implies the
-               overall crash condition only once) *)
-              (λ n, [∗ list] i↦s_inode ∈ s_inodes,
-                      inode_cinv i s_inode
+              (λ n,
+               "Hpre_inodes" ∷ ([∗ list] i↦s_inode ∈ take (int.nat n) s_inodes,
+                                ∃ inode_ref, pre_inode inode_ref i s_inode) ∗
+               "Hinode_cinvs" ∷ ([∗ list] i↦s_inode ∈ drop (int.nat n) s_inodes,
+                      inode_cinv (int.nat n + i) s_inode)
               )%I
               with "[] [Hinodes $Haddr Hinode_cinvs]").
     { word. }
     { iIntros (i Hbound); iNamed 1.
-      change (int.val (U64 5)) with (Z.of_nat num_inodes) in Hbound.
-      iDestruct (big_sepL2_length with "Hpre_inodes") as %Hlen.
-      rewrite -> take_length_le in Hlen by lia.
-      iEval (rewrite -[l in big_opL _ _ l](take_drop (int.nat i))).
-      iApply big_sepL_app.
-      rewrite -> take_length_le by lia.
       iFrame "Hinode_cinvs".
       iDestruct (big_sepL2_to_sepL_2 with "Hpre_inodes") as "Hpre_inodes".
       iApply (big_sepL_mono with "Hpre_inodes").
       iIntros (? ? ?) "Hpre".
       iDestruct "Hpre" as (? ?) "Hpre".
-      iApply pre_inode_to_cinv; auto. }
+      eauto. }
     { iIntros (n Φ' Φc') "!> (inv&Haddr&%Hbound) HΦ".
       iNamed "inv".
       wpc_pures.
       { crash_case.
         iLeft.
+        iFrame.
         admit. (* TODO: re-use earlier proof *) }
       iCache with "HΦ Hpre_inodes Hinode_cinvs".
       { crash_case.
         iLeft.
+        iFrame.
         admit. (* TODO: re-use earlier proof *) }
       wpc_bind (load_ty _ _). wpc_frame. wp_load. iNamed 1.
       wpc_bind (inode.Open _ _).
@@ -315,12 +312,76 @@ Section goose.
       wpc_frame "HΦ Hpre_inode Hpre_inodes Hinode_cinvs".
       { crash_case.
         iLeft.
-        (* TODO: combine Hpre_inode and Hpre_inodes, then do the same trick of
-        proving the goal using the two halves (which should probably be factored
-        out into a lemma) *)
+        (* TODO: combine Hpre_inode and Hpre_inodes, then repeat above proof
+        (probably need a lemma for that) *)
         admit. }
       wp_load.
-  Abort.
+      wp_apply (wp_SliceAppend' with "Hinode_slice").
+      iIntros (inode_s') "Hinode_slice".
+      wp_store.
+      iNamed 1.
+      iRight in "HΦ"; iApply "HΦ".
+      iFrame.
+      iExists _, _; iFrame.
+      iDestruct (big_sepL2_length with "Hpre_inodes") as %Hlens;
+          autorewrite with len in Hlens.
+      replace (int.nat (word.add n 1%Z)) with (S (int.nat n)); last first.
+      { unfold num_inodes in Hbound; word. }
+      iSplitR "Hinode_cinvs".
+      - erewrite take_S_r by eauto.
+        iApply (big_sepL2_app with "Hpre_inodes").
+        simpl.
+        rewrite right_id.
+        iExactEq "Hpre_inode".
+        f_equal.
+        word.
+      - iApply (big_sepL_mono with "Hinode_cinvs").
+        iIntros (?? ?) "Hpre".
+        iExactEq "Hpre".
+        repeat (f_equal; try word). }
+    { iExists Slice.nil, [].
+      iFrame.
+      rewrite big_sepL2_nil.
+      rewrite -is_slice_zero.
+      rewrite /named //. }
+    iSplit.
+    { (* loop crash condition implies overall crash condition *)
+      iIntros "Hinv".
+      iDestruct "Hinv" as (i) "(Hpre&%Hbound')".
+      iNamed "Hpre".
+      crash_case.
+      iEval (rewrite -[l in big_opL _ _ l](take_drop (int.nat i))).
+      rewrite big_sepL_app.
+      iSplitL "Hpre_inodes".
+      - iApply (big_sepL_mono with "Hpre_inodes").
+        iIntros (???) "Hpre".
+        iDestruct "Hpre" as (?) "Hpre".
+        iApply pre_inode_to_cinv; eauto.
+      - iApply (big_sepL_mono with "Hinode_cinvs").
+        iIntros (???) "Hpre".
+        change (int.val (U64 5)) with 5%Z in Hbound'.
+        iExactEq "Hpre".
+        f_equal; len.
+        rewrite H /num_inodes.
+        replace (int.nat i `min` 5)%nat with (int.nat i) by lia.
+        f_equal. }
+    iIntros "!> (Hinv&Haddr)". iNamed "Hinv".
+    change (int.val (U64 5)) with 5%Z.
+    rewrite -> take_ge by word.
+    rewrite -> drop_ge by word.
+    wpc_frame_compl "Hinodes".
+    { crash_case.
+      iDestruct (big_sepL2_to_sepL_2 with "Hpre_inodes") as "Hpre_inodes".
+      iApply (big_sepL_mono with "Hpre_inodes").
+      iIntros (???) "Hpre".
+      iDestruct "Hpre" as (inod_ref) "(?&Hpre)".
+      iApply pre_inode_to_cinv; eauto. }
+    wp_load.
+    iNamed 1.
+    iRight in "HΦ"; iApply "HΦ".
+    iFrame.
+    iApply (is_slice_to_small with "Hinode_slice").
+  Admitted.
 
   Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
     {{{ dir_cinv (int.val sz) σ0 true }}}
