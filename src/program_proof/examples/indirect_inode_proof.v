@@ -423,13 +423,129 @@ Proof.
   wp_apply wp_ref_of_zero; auto.
   iIntros (l0) "Hl0".
   wp_let.
-  Check wp_NewSlice.
-  wp_apply wp_NewSlice; auto.
-  {
-    admit.
-  }
+  wp_apply (wp_NewSlice _ _ (uint64T)).
   iIntros (s) "Hs".
   wp_store.
+  wp_loadField; wp_let.
+  wp_loadField; wp_let.
+
+  iDestruct (is_slice_split with "Hdirect") as "[Hdirect_small Hdirect]".
+  iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
+  iNamed "Hdurable".
+  destruct Hlen as [HdirLen [HindirLen [HszMax [HnumInd1 HnumInd2]]]].
+
+  wp_apply (wp_forSlicePrefix
+              (fun done todo =>
+               ∃ s usedBlksList,
+                 "%" ∷ ⌜ done ++ todo = (take (length σ.(inode.blocks)) dirAddrs) ⌝ ∗
+                 "%" ∷ ⌜ done = usedBlksList ⌝ ∗
+                 "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
+                 "HusedSlice" ∷ is_slice s uint64T 1 usedBlksList
+      )%I
+  with "[] [Hl0 Hdirect_small Hs]").
+  { iIntros (i a done todo).
+    iModIntro.
+    iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
+    wp_pures.
+    wp_load.
+    wp_apply (wp_SliceAppend (V:=u64) with "[HusedSlice]").
+    {
+      iDestruct (is_slice_sz with "HusedSlice") as %HlenUsed.
+      iSplit; eauto. iPureIntro.
+      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      rewrite /list.untype fmap_length in HlenUsed.
+      assert (length (usedBlksList ++ a :: todo) = length (take (length σ.(inode.blocks)) dirAddrs)).
+      {
+        rewrite -H0 H; auto.
+      }
+      rewrite take_length app_length in H1.
+      word.
+    }
+
+    iIntros (direct_s') "Hdirect".
+    wp_store.
+    iApply "HΦ".
+    iExists direct_s', (usedBlksList ++ [a]).
+    repeat iSplit; auto.
+    - iPureIntro.
+      replace ((done ++ [a]) ++ todo) with (done ++ a :: todo); auto.
+      rewrite cons_middle -app_assoc; auto.
+    - iPureIntro; rewrite H0; auto.
+    - iFrame.
+  }
+  {
+    iFrame.
+    iExists s, [].
+    iFrame.
+    repeat iSplit; auto.
+  }
+
+  iIntros "[Hdirect_small HdirLoop]". iNamed "HdirLoop".
+  wp_pures.
+  wp_apply (wp_forSlicePrefix
+              (fun done todo =>
+               ∃ s usedIndBlks,
+                 "%" ∷ ⌜ done ++ todo = (take (num_ind σ) indAddrs) ⌝ ∗
+                 "%" ∷ ⌜ done = usedIndBlks ⌝ ∗
+                 "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
+                 "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ usedIndBlks)
+      )%I
+  with "[] [Hl0 Hindirect_small indirect HusedSlice]").
+  { iIntros (i a done todo).
+    iModIntro.
+    iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
+    wp_pures.
+    wp_load.
+
+    wp_apply (wp_SliceAppend (V:=u64) with "[HusedSlice]").
+    {
+      iDestruct (is_slice_sz with "HusedSlice") as %HlenUsed.
+      iSplit; eauto. iPureIntro.
+      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      rewrite /list.untype fmap_length in HlenUsed.
+      assert (length (done ++ a :: todo) = length (take (num_ind σ) indAddrs)).
+      {
+        rewrite -H1; auto.
+      }
+      rewrite take_length app_length H2 in H3.
+      rewrite app_length -H0 in HlenUsed.
+      admit.
+    }
+
+    iIntros (indirect_s') "Hindirect".
+    wp_store.
+    iApply "HΦ".
+    iExists indirect_s', (usedIndBlks ++ [a]).
+    repeat iSplit; auto.
+    - iPureIntro.
+      replace ((done ++ [a]) ++ todo) with (done ++ a :: todo); auto.
+      rewrite cons_middle -app_assoc; auto.
+    - iPureIntro. rewrite H2; auto.
+    - iFrame. rewrite app_assoc; auto.
+  }
+  {
+    iFrame.
+    iExists s0, [].
+    rewrite app_nil_l app_nil_r.
+    iFrame.
+    repeat iSplit; auto.
+  }
+  iIntros "[Hindirect_small HindLoop]". iNamed "HindLoop".
+  wp_pures.
+  (*TODO facts about readIndirect*)
+  wp_apply (wp_forSlicePrefix
+              (fun done todo =>
+               ∃ s usedIndBlks blksInIndBlk,
+                 "%" ∷ ⌜ done ++ todo = (take (num_ind σ) indAddrs) ⌝ ∗
+                 "%" ∷ ⌜ done = usedIndBlks ⌝ ∗
+                 "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
+                 "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ usedIndBlks ++ blksInIndBlk)
+      )%I
+  with "[] [Hl0 Hindirect_small HusedSlice]").
+  { iIntros (i a done todo).
+    iModIntro.
+    admit.
+  }
 Admitted.
 
 Theorem wp_indNum {off: u64} :
