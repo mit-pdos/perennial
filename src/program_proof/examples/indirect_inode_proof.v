@@ -1017,7 +1017,6 @@ Proof.
     wp_pures.
     wp_apply (wp_Enc__PutInt with "Henc"); [ word | ].
 
-  Set Printing Coercions.
     iIntros "Henc".
     wp_pures.
     iApply "Hϕ0".
@@ -1126,8 +1125,8 @@ Proof.
   }
 
   iIntros "Henc".
-  replace (int.val (int.val 4096 - 8 - 8 * length allocedDirAddrs) -
-           8 * int.val (500 - int.val direct_s.(Slice.sz))) with 88.
+  replace  (int.val (U64 4096) - 8 - 8 * Z.of_nat (length allocedDirAddrs) -
+              8 * int.val (U64 (500 - int.val direct_s.(Slice.sz)))) with 88.
   2: rewrite HDirlen; rewrite HDirlen /maxDirect in HallocedDirAddrsLen; word.
 
   wp_pures.
@@ -1135,8 +1134,9 @@ Proof.
 
   iDestruct (is_slice_split with "Hindirect") as "[Hindirect Hcapind]".
   wp_apply (wp_Enc__PutInts with "[$Henc $Hindirect]").
-  { rewrite HallocedIndAddrsLen. rewrite /maxIndirect in HnumInd. word. }
-
+  { rewrite HallocedIndAddrsLen. rewrite /maxIndirect in HnumInd.
+    word.
+  }
   iIntros "[Henc Hindirect]".
   wp_loadField.
   wp_apply wp_slice_len; wp_pures.
@@ -1181,7 +1181,7 @@ Proof.
       repeat (f_equal; try word).
       rewrite HIndlen in HallocedIndAddrsLen.
       rewrite /maxDirect /maxIndirect HDirlen HIndlen HallocedIndAddrsLen.
-      replace (Z.to_nat (int.val (88 - 8 * numInd) - 8 * int.val (10 - int.val indirect_s.(Slice.sz)) - 8))
+      replace (Z.to_nat (88 - 8 * numInd - 8 * int.val (U64 (10 - int.val indirect_s.(Slice.sz))) - 8))
         with (int.nat 0) by (rewrite -HallocedIndAddrsLen; word).
       rewrite replicate_0 app_nil_r.
       rewrite -HallocedIndAddrsLen.
