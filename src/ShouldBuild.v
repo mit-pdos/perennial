@@ -22,6 +22,7 @@ From Perennial.program_proof.examples Require
      single_inode_proof
      alloc_crash_proof
      indirect_inode_proof
+     indirect_inode_append_proof
      replicated_block_proof.
 From Perennial.goose_lang Require
      ffi.append_log_ffi

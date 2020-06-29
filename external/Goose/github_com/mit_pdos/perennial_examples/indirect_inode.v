@@ -162,6 +162,18 @@ Definition Inode__appendDirect: val :=
       #true
     else #false).
 
+(* writeIndirect preps the block of addrs and
+   adds writes the new indirect block to disk
+
+   Requires the lock to be held. *)
+Definition Inode__writeIndirect: val :=
+  rec: "Inode__writeIndirect" "i" "indAddr" "addrs" :=
+    let: "diskBlk" := prepIndirect "addrs" in
+    disk.Write "indAddr" "diskBlk";;
+    struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
+    let: "hdr" := Inode__mkHdr "i" in
+    disk.Write (struct.loadF Inode.S "addr" "i") "hdr".
+
 (* appendIndirect adds address a (and whatever data is stored there) to the inode
 
    Requires the lock to be held.
@@ -181,18 +193,6 @@ Definition Inode__appendIndirect: val :=
       SliceSet uint64T "addrs" (indOff (struct.loadF Inode.S "size" "i")) "a";;
       Inode__writeIndirect "i" "indAddr" "addrs";;
       #true).
-
-(* writeIndirect preps the block of addrs and
-   adds writes the new indirect block to disk
-
-   Requires the lock to be held. *)
-Definition Inode__writeIndirect: val :=
-  rec: "Inode__writeIndirect" "i" "indAddr" "addrs" :=
-    let: "diskBlk" := prepIndirect "addrs" in
-    disk.Write "indAddr" "diskBlk";;
-    struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
-    let: "hdr" := Inode__mkHdr "i" in
-    disk.Write (struct.loadF Inode.S "addr" "i") "hdr".
 
 (* Append adds a block to the inode.
 
