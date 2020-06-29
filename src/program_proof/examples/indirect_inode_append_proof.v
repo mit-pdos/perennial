@@ -44,6 +44,67 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
 
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
 
+Theorem wp_appendDirect {l σ addr} (a: u64) b:
+  {{{
+    "Ha" ∷ int.val a d↦ b ∗
+    "Hinv" ∷ inode_linv l σ addr
+  }}}
+  Inode__appendDirect #l #a
+  {{{ (ok: bool), RET #ok; if ok then
+      (∀ σ σ', ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
+                         "%Hsize" ∷ ⌜length σ.(inode.blocks) < maxDirect⌝
+                         ∗ "Ha" ∷ int.val a d↦ b
+                         ∗ "Hinv" ∷ inode_linv l σ' addr)
+      else ⌜ length σ.(inode.blocks) >= maxDirect ⌝
+  }}}.
+Proof.
+Admitted.
+
+Theorem wp_writeIndirect {l σ addr} (indA a: u64) (indBlk b: Block) (addrs : list u64) addr_s:
+  {{{
+       "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect⌝ ∗
+       "%Haddrs" ∷ ⌜∃ ls, addrs = ls ++ [a]⌝ ∗
+       "Haddr_s" ∷ is_slice addr_s uint64T 1 addrs ∗
+       "Ha" ∷ int.val a d↦ b ∗
+       "HindA" ∷ int.val indA d↦ indBlk ∗
+       "Hinv" ∷ inode_linv l σ addr
+  }}}
+  Inode__writeIndirect #l #a (slice_val addr_s)
+  {{{ RET #();
+      ∀ σ σ',
+        ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
+                  ("Hinv" ∷ inode_linv l σ' addr
+                          ∗ "Ha" ∷ int.val a d↦ b
+                          ∗ "HIndA" ∷ int.val indA d↦ indBlk)
+  }}}.
+Proof.
+Admitted.
+
+Theorem wp_appendIndirect {l σ addr} (a: u64) b:
+  {{{
+    "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect⌝ ∗
+    "Hinv" ∷ inode_linv l σ addr ∗
+    "Ha" ∷ int.val a d↦ b
+  }}}
+  Inode__appendDirect #l #a
+  {{{ (ok: bool), RET #ok;
+      if ok then
+      (∀ σ σ',
+          ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
+                  "Hinv" ∷ inode_linv l σ' addr ∗ "Ha" ∷ int.val a d↦ b ∗
+                  "Hsize" ∷ ∃ indirect_s,
+                      l ↦[Inode.S :: "indirect"] (slice_val indirect_s) -∗
+                        ⌜ (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1) < int.val indirect_s.(Slice.sz) ⌝)
+      else
+        "Hinv" ∷ inode_linv l σ addr ∗
+        "Ha" ∷ int.val a d↦ b ∗
+        "Hsize" ∷  ∃ indirect_s,
+          l ↦[Inode.S :: "indirect"] (slice_val indirect_s) -∗
+            ⌜ (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1) >= int.val indirect_s.(Slice.sz) ⌝
+  }}}.
+Proof.
+Admitted.
+
 Theorem wpc_Inode__Append {k E2}
         {l k' P addr}
         (* allocator stuff *)
@@ -55,7 +116,7 @@ Theorem wpc_Inode__Append {k E2}
   nroot.@"readonly" ## inodeN →
   inodeN ## allocN →
   ∀ Φ Φc,
-      "Hinode" ∷ is_inode inodeN l (LVL k') P addr ∗
+      "Hinode" ∷ is_inode inodeN l (LVL k') P addr ∗ (* XXX why did I need to put inodeN here? *)
       "Hbdata" ∷ is_block b_s q b0 ∗
       "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
       "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
@@ -68,21 +129,9 @@ Theorem wpc_Inode__Append {k E2}
         ⌜s !! addr' = Some block_reserved⌝ -∗
          ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (Φc ∧ Φ #true))) -∗
-      WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
+  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (????? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
-  wpc_call.
-  { iLeft in "Hfupd"; auto. }
-  iCache with "Hfupd".
-  { iLeft in "Hfupd"; auto. }
 Admitted.
-(*  wpc_apply (wpc_Reserve _ _ _ (λ ma, emp)%I emp with "[$Halloc]"); auto.
-  { (* Reserve fupd *)
-    iSplit; auto.
-    iIntros (σ σ' ma Htrans) "HP".
-    iMod ("Halloc_fupd" with "[] HP"); eauto. }
-  iSplit.
-  { iIntros "_"; iFromCache. }
-  iIntros "!>" (a ok) "Hblock".*)
 End goose.
