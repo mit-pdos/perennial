@@ -406,7 +406,6 @@ Proof.
     wp_apply (crash_lock.release_spec with "His_locked"); auto.
     wp_pures.
     iNamed 1.
-    iRight in "HQ".
     iApply "HQ".
     iFrame.
     rewrite Hlookup2.
@@ -433,11 +432,11 @@ Proof.
   iApply wpc_Inode__Read; first done.
   iFrame "Hinode".
   iSplit.
-  { iLeft in "HΦ". iApply "HΦ". done. }
+  { iApply "HΦ". done. }
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
-  { iLeft in "HΦ". iApply "HΦ". done. }
-  iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame. done.
+  { iApply "HΦ". done. }
+  iIntros (s) "Hblock". iApply "HΦ". iFrame. done.
 Qed.
 
 Theorem wpc_Inode__Size {k E2} {l k' P addr}:
@@ -491,7 +490,7 @@ Proof.
   wp_apply (crash_lock.release_spec with "His_locked"); auto.
   wp_pures.
   iNamed 1.
-  iRight in "HQ". done.
+  by iRight in "HQ".
 Qed.
 
 Theorem wpc_Inode__Size_triple {k E2} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
@@ -510,11 +509,11 @@ Proof.
   iApply wpc_Inode__Size; first done.
   iFrame "Hinode".
   iSplit.
-  { iLeft in "HΦ". iApply "HΦ". by iLeft in "Hfupd". }
+  { iApply "HΦ". by iLeft in "Hfupd". }
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
-  { iLeft in "HΦ". iApply "HΦ". by iApply "HQc". }
-  iRight in "HΦ". iApply "HΦ". done.
+  { iApply "HΦ". by iApply "HQc". }
+  iApply "HΦ". done.
 Qed.
 
 Theorem wp_Inode__mkHdr {stk E} l addr_s addrs :
@@ -892,14 +891,14 @@ Proof.
   iApply (wpc_Inode__Append (n:=n) (k':=k')); try assumption.
   iFrame "Hinode Hbdata Halloc_fupd Hfree_fupd Halloc".
   iSplit.
-  { iLeft in "HΦ". iApply "HΦ". by iLeft in "Hfupd". }
+  { iApply "HΦ". by iLeft in "Hfupd". }
   iSplit.
-  { iRight in "HΦ". iApply "HΦ". done. }
+  { iApply "HΦ". done. }
   iIntros "!>" (σ σ' addr' Hσ' Hσ s Hs) "HPs".
   iRight in "Hfupd".
   iMod ("Hfupd" $! _ _ _ Hσ' Hσ _ Hs with "HPs") as "($ & $ & HQ)".
   iIntros "!>". iSplit.
-  { iLeft in "HΦ". iApply "HΦ". iApply "HQc". done. }
-  iRight in "HΦ". iApply "HΦ". done.
+  { iApply "HΦ". iApply "HQc". done. }
+  iApply "HΦ". done.
 Qed.
 End goose.

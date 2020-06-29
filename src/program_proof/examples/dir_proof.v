@@ -532,7 +532,7 @@ Section goose.
     (* Now we get to the actual read operation. *)
     iApply wpc_Inode__Read; first done.
     iFrame "Hinode". iSplit.
-    { iLeft in "HΦ". by iApply "HΦ". }
+    { by iApply "HΦ". }
     iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
     (* We need to learn that this inode exists in σD. *)
@@ -549,8 +549,8 @@ Section goose.
     iModIntro. iSplitL "Hownblocks Hused1".
     { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }
     iSplit.
-    { iLeft in "HΦ". by iApply "HΦ". }
-    iIntros (s) "Hpost". iRight in "HΦ". iApply "HΦ".
+    { by iApply "HΦ". }
+    iIntros (s) "Hpost". iApply "HΦ".
     iFrame. done.
   Qed.
 
@@ -585,7 +585,7 @@ Section goose.
     (* Now we get to the actual size operation. *)
     iApply wpc_Inode__Size; first done.
     iFrame "Hinode". iSplit.
-    { iLeft in "HΦ". by iApply "HΦ". }
+    { by iApply "HΦ". }
     iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
     (* We need to learn that this inode exists in σD. *)
@@ -601,10 +601,7 @@ Section goose.
     { (* re-establish dir_inv *) eauto 10 with iFrame. }
     iModIntro. iSplitL "Hownblocks Hused1".
     { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }
-    iSplit.
-    { iLeft in "HΦ". by iApply "HΦ". }
-    iRight in "HΦ". iApply "HΦ".
-    done.
+    iSplit; by iApply "HΦ".
   Qed.
 
 
@@ -693,7 +690,7 @@ Section goose.
     iSplit; [ | iSplit; [ | iSplit ] ]; try iModIntro.
     - iApply reserve_fupd_Palloc.
     - iApply free_fupd_Palloc.
-    - iLeft in "HΦ". by iApply "HΦ".
+    - by iApply "HΦ".
     - iSplit.
       { (* Failure case *) iRight in "HΦ". iApply "HΦ". done. }
       iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
@@ -729,9 +726,7 @@ Section goose.
         iPureIntro. rewrite alloc_used_insert.
         apply alloc_insert_dom; auto.
       }
-      iSplit.
-      { iLeft in "HΦ". by iApply "HΦ". }
-      iRight in "HΦ". by iApply "HΦ".
+      iSplit; by iApply "HΦ".
   Qed.
 
 End goose.

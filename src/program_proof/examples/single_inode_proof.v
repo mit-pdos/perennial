@@ -300,28 +300,26 @@ Section goose.
     wpc_bind (struct.loadF _ _ _); wpc_frame.
     wp_loadField.
     iNamed 1.
-    wpc_apply (wpc_Inode__Read_triple inodeN Q with "[$Hinode Hfupd]").
+    wpc_apply (wpc_Inode__Read inodeN (k':=k')).
     { lia. }
-    { clear.
-      iIntros (σ σ' mb) "[ [-> ->] >HPinode]".
-      iInv "Hinv" as "Hinner".
-      iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
-      iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
-        last iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
-      { solve_ndisj. }
-      rewrite {2}/s_inode_inv. iNamed "Hsinv".
-      iNamed "HPinode". simpl.
-      iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
-      iMod "HcloseM" as "_".
-      iModIntro.
-      iFrame.
-      iSplitL; auto.
-      eauto with iFrame. }
-    iSplit.
-    - iIntros "_".
-      crash_case; auto.
-    - iIntros "!>" (s mb) "[Hb HQ]".
-      iApply "HΦ"; iFrame.
+    iFrame "Hinode". iSplit; first iFromCache. clear.
+    iIntros "!>" (σ mb) "[ -> >HPinode]".
+    iInv "Hinv" as "Hinner".
+    iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
+    iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+      last iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
+    { solve_ndisj. }
+    rewrite {2}/s_inode_inv. iNamed "Hsinv".
+    iNamed "HPinode". simpl.
+    iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
+    iMod "HcloseM" as "_".
+    iModIntro.
+    iFrame.
+    iSplitR "HΦ HQ"; first by eauto with iFrame.
+    iModIntro. iSplit.
+    - crash_case; auto.
+    - iIntros (s) "Hb".
+      iApply "HΦ"; iFrame. done.
   Qed.
 
   (* these two fupds are easy to prove universally because the change they make
@@ -371,46 +369,40 @@ Section goose.
     wpc_bind (struct.loadF _ _ _); wpc_frame.
     wp_loadField.
     iNamed 1.
-    wpc_apply (wpc_Inode__Append_triple inodeN allocN Q emp%I
-                 with "[$Hb $Hinode $Halloc Hfupd]");
+    wpc_apply (wpc_Inode__Append inodeN allocN (n:=k') (k':=k'));
       [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].
-    {
-      iSplitR.
-      { by iIntros "_". }
-      iSplit; [ | iSplit; [ | iSplit ] ]; try iModIntro.
-      - iApply reserve_fupd_Palloc.
-      - iApply free_fupd_Palloc.
-      - auto.
-      - iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
-        iEval (rewrite /Palloc) in "HPalloc"; iNamed.
-        iNamed "HPinode".
-        iDestruct (ghost_var_agree with "Hused2 Hused1") as %Heq;
-          rewrite -Heq.
-        iInv "Hinv" as ([σ0]) "[>Hinner HP]" "Hclose".
-        iMod (ghost_var_update _ (union {[addr']} σ.(inode.addrs))
-                               with "Hused2 Hused1") as
-            "[Hused Hγused]".
-        iDestruct (ghost_var_agree with "Hinner Hownblocks") as %?; simplify_eq/=.
-        iMod (ghost_var_update _ ((σ.(inode.blocks) ++ [b0]) : listLO Block)
-                with "Hinner Hownblocks") as "[Hγblocks Hownblocks]".
-        iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
-          last iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
-        { solve_ndisj. }
-        iMod "HcloseM" as "_".
-        simpl. iMod ("Hclose" with "[Hγblocks HP]") as "_".
-        { eauto with iFrame. }
-        iModIntro.
-        iFrame.
-        rewrite /Palloc.
-        rewrite alloc_used_insert -Heq.
-        iFrame.
-    }
-    iSplit.
-    { iIntros "_".
-      iFromCache. }
-    iNext.
-    iIntros (ok) "HQ".
-    iApply "HΦ"; auto.
+    iFrame "Hb Hinode Halloc".
+    iSplit; [ | iSplit; [ | iSplit ] ]; try iModIntro.
+    - iApply reserve_fupd_Palloc.
+    - iApply free_fupd_Palloc.
+    - crash_case. auto.
+    - iSplit.
+      { (* Failure case. *) iApply "HΦ". done. }
+      iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
+      iEval (rewrite /Palloc) in "HPalloc"; iNamed.
+      iNamed "HPinode".
+      iDestruct (ghost_var_agree with "Hused2 Hused1") as %Heq;
+        rewrite -Heq.
+      iInv "Hinv" as ([σ0]) "[>Hinner HP]" "Hclose".
+      iMod (ghost_var_update _ (union {[addr']} σ.(inode.addrs))
+              with "Hused2 Hused1") as
+          "[Hused Hγused]".
+      iDestruct (ghost_var_agree with "Hinner Hownblocks") as %?; simplify_eq/=.
+      iMod (ghost_var_update _ ((σ.(inode.blocks) ++ [b0]) : listLO Block)
+              with "Hinner Hownblocks") as "[Hγblocks Hownblocks]".
+      iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+        last iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
+      { solve_ndisj. }
+      iMod "HcloseM" as "_".
+      simpl. iMod ("Hclose" with "[Hγblocks HP]") as "_".
+      { eauto with iFrame. }
+      iModIntro.
+      iFrame.
+      rewrite /Palloc.
+      rewrite alloc_used_insert -Heq.
+      iFrame.
+      iSplit; first by crash_case.
+      iApply "HΦ". done.
   Qed.
 
 End goose.
