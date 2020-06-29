@@ -630,13 +630,30 @@ Section goose.
     rewrite alloc_free_reserved //.
   Qed.
 
-  Lemma alloc_insert_dom idx (new_addrs old_addrs inode_addrs: gset u64) (allocs: gmap nat (gset u64)) :
+  Lemma alloc_insert_dom idx (new_addrs old_addrs inode_addrs: gset u64)
+        (allocs: gmap nat (gset u64)) :
     old_addrs = ⋃ (snd <$> map_to_list allocs) →
     allocs !! idx = Some inode_addrs →
     new_addrs ∪ old_addrs =
     ⋃ (snd <$> map_to_list (<[idx:=new_addrs ∪ inode_addrs]> allocs)).
   Proof.
-  Admitted.
+    intros -> Hidx.
+    revert idx Hidx; induction allocs using map_ind; intros idx Hidx.
+    { exfalso. rewrite lookup_empty in Hidx. done. }
+    destruct (decide (idx = i)) as [->|Hne].
+    - (* Induction reached the updated idx. We bottom out. *)
+      rewrite insert_insert. rewrite !map_to_list_insert //.
+      rewrite !fmap_cons !union_list_cons /=.
+      rewrite lookup_insert in Hidx. simplify_eq/=. set_solver+.
+    - (* The updated element is a different one. Recurse. *)
+      rewrite insert_commute //. rewrite map_to_list_insert //.
+      rewrite map_to_list_insert; last first.
+      { rewrite lookup_insert_ne //. }
+      rewrite !fmap_cons !union_list_cons /=.
+      rewrite -IHallocs; last first.
+      { rewrite -Hidx lookup_insert_ne //. }
+      set_solver+.
+  Qed.
 
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
     (2 + k < k')%nat →
