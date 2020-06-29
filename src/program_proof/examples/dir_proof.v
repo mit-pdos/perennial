@@ -3,6 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.goose_lang.lib Require Import slice.crash_slice.
 From Perennial.Helpers Require Import ipm.
 From Perennial.program_proof.examples Require Import
      alloc_addrset alloc_crash_proof inode_proof.
@@ -427,20 +428,18 @@ Section goose.
     iApply is_addrset_from_empty in "Hused_set".
     iNamed 1.
     wpc_pures.
-    (* TODO: use wpc_forSlice *)
-    (*
-    wp_apply (wpc_forSlice (V:=loc)
+    wpc_apply (wpc_forSlice (V:=loc)
                 (λ n, "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                                   pre_inode inode_ref i s_inode) ∗
                "Hused_set" ∷ is_addrset addrs_ref
                   (⋃ (take (int.nat n) (inode.addrs <$> s_inodes))))%I
-             with "[] [$Hinode_s $Hpre_inodes]").
+             with "[] [] [$Hinode_s $Hpre_inodes]").
     (* wp_apply (wp_forSlicePrefix (V:=loc) (λ inode_refs_done inode_refs_todo,
                "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                                   pre_inode inode_ref i s_inode) ∗
                "Hused_set" ∷ is_addrset addrs_ref
                   (⋃ (take (length inode_refs_done) (inode.addrs <$> s_inodes)))
-             )%I with "[] [Hinode_s Hpre_inodes]"). *)
+             )%I with "[] [Hinode_s Hpre_inodes]").
     { iIntros (i inode_ref) "!>".
       iIntros (Φ') "(Hpre&%Hbound&%Hlookup) HΦ"; iNamed "Hpre".
       wp_pures.

@@ -355,6 +355,7 @@ Proof.
   iSplitL; auto.
 Qed.
 
+(* TODO: use crash_slice and switch to typed slices *)
 Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s t q vs (body: val) :
   (∀ (i: u64) (x: val),
       {{{ I i ∗ ⌜int.val i < int.val s.(Slice.sz)⌝ ∗
