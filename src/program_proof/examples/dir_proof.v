@@ -9,6 +9,98 @@ From Perennial.program_proof.examples Require Import
      alloc_addrset alloc_crash_proof inode_proof.
 From Perennial.goose_lang.lib Require Import typed_slice. (* shadows things, should be last *)
 
+(* extra big_sepL2 lemmas *)
+(* TODO: move to big_op.v *)
+Section bi.
+  Context {PROP: bi}.
+
+  Lemma wlog_assume_pure (φ: Prop) (P Q: PROP) :
+    (P -∗ ⌜φ⌝) →
+    (Q -∗ ⌜φ⌝) →
+    (φ → P ⊣⊢ Q) →
+    P ⊣⊢ Q.
+  Proof.
+    intros HP HQ HPQ.
+    iSplit.
+    - iIntros "H".
+      iDestruct (HP with "H") as %H.
+      rewrite HPQ //.
+    - iIntros "H".
+      iDestruct (HQ with "H") as %H.
+      rewrite HPQ //.
+  Qed.
+
+  Context {A B: Type}.
+  Implicit Types (Φ: nat → A → B → PROP).
+
+  Lemma big_sepL2_app_equiv Φ l1 l2 l1' l2' :
+    length l1 = length l1' →
+    ([∗ list] k↦y1;y2 ∈ l1; l1', Φ k y1 y2) ∗
+    ([∗ list] k↦y1;y2 ∈ l2; l2', Φ (length l1 + k) y1 y2) ⊣⊢
+    ([∗ list] k↦y1;y2 ∈ l1 ++ l2; l1' ++ l2', Φ k y1 y2).
+  Proof.
+    intros.
+    iSplit.
+    - iIntros "[H1 H2]".
+      iApply (big_sepL2_app with "H1 H2").
+    - iIntros "H".
+      iDestruct (big_sepL2_app_inv with "H") as "[$ $]"; auto.
+  Qed.
+
+  Lemma big_sepL2_delete Φ l1 l2 i x1 x2 :
+    l1 !! i = Some x1 →
+    l2 !! i = Some x2 →
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ⊣⊢
+    Φ i x1 x2 ∗ ([∗ list] k↦y1;y2 ∈ l1;l2, if decide (k = i) then emp else Φ k y1 y2).
+  Proof.
+    intros.
+    apply (wlog_assume_pure (length l1 = length l2)).
+    { rewrite big_sepL2_length; auto. }
+    { rewrite big_sepL2_length.
+      iIntros "[_ $]". }
+    intros.
+    rewrite -(take_drop_middle l1 i x1) // -(take_drop_middle l2 i x2) //.
+    rewrite -!big_sepL2_app_equiv /=; cycle 1.
+    { rewrite !take_length; congruence. }
+    { rewrite !take_length; congruence. }
+    rewrite Nat.add_0_r.
+    rewrite take_length_le; last eauto using lookup_lt_Some, Nat.lt_le_incl.
+    rewrite decide_True // left_id.
+    rewrite assoc -!(comm _ (Φ _ _ _)) -assoc. do 2 f_equiv.
+    - apply big_sepL2_proper=> k y1 y2 Hk. apply lookup_lt_Some in Hk.
+      rewrite take_length in Hk. by rewrite decide_False; last lia.
+    - apply big_sepL2_proper=> k y1 y2 _. by rewrite decide_False; last lia.
+  Qed.
+
+  (* this is a general theorem but we use Φ and Φc to suggest that Φc is the
+  weaker crash condition for each element in the big_sepL2 *)
+  Theorem big_sepL2_lookup_acc_and Φ Φc l1 l2 i x1 x2 :
+    (* this is a pure assumption (instead of a persistent implication) because
+    that's how big_sepL2_mono is written *)
+    (∀ k y1 y2, l1 !! k = Some y1 → l2 !! k = Some y2 → Φ k y1 y2 -∗ Φc k y1 y2) →
+    l1 !! i = Some x1 →
+    l2 !! i = Some x2 →
+    big_sepL2 Φ l1 l2 -∗
+    Φ i x1 x2 ∗ ((Φ i x1 x2 -∗ big_sepL2 Φ l1 l2) ∧ (Φc i x1 x2 -∗ big_sepL2 Φc l1 l2)).
+  Proof.
+    iIntros (Himpl Hx1 Hx2) "H".
+    iDestruct (big_sepL2_delete with "H") as "[HΦ H]"; eauto.
+    iFrame.
+    iSplit.
+    - iIntros "HΦ".
+      iApply (big_sepL2_delete with "[HΦ H]"); eauto.
+      iFrame.
+    - iIntros "HΦ".
+      iDestruct (big_sepL2_delete with "[HΦ H]") as "H"; eauto.
+      iFrame.
+      iApply (big_sepL2_mono with "H").
+      intros; simpl.
+      iIntros "H".
+      destruct (decide (k = i)); eauto.
+      iApply (Himpl with "H"); eauto.
+  Qed.
+End bi.
+
 Module dir.
   Record t :=
     mk { inodes: gmap nat (list Block); }.
@@ -433,7 +525,24 @@ Section goose.
                                   pre_inode inode_ref i s_inode) ∗
                "Hused_set" ∷ is_addrset addrs_ref
                   (⋃ (take (int.nat n) (inode.addrs <$> s_inodes))))%I
+                ([∗ list] i↦s_inode ∈ s_inodes, inode_cinv i s_inode)%I
              with "[] [] [$Hinode_s $Hpre_inodes]").
+    { iIntros "!>" (x) "Hpre"; iNamed "Hpre".
+      iApply (pre_inodes_to_cinv with "Hpre_inodes"). }
+    { iIntros (i inode_ref) "!>".
+      iIntros (Φ' Φc') "(Hpre&%Hbound&%Hlookup) HΦ"; iNamed "Hpre".
+      wpc_pures.
+      { iApply (pre_inodes_to_cinv with "Hpre_inodes"). }
+      iDestruct (big_sepL2_lookup_1_some with "Hpre_inodes") as "%Hs_inode_lookup"; eauto.
+      destruct Hs_inode_lookup as [s_inode Hs_inode_lookup].
+      (* TODO: use new lookup_acc_and theorem *)
+      iDestruct (big_sepL2_lookup_acc with "Hpre_inodes") as "(Hinode&Hpre_inodes)"; eauto.
+      wpc_apply (wpc_Inode__UsedBlocks with "Hinode").
+      iSplit.
+      { iIntros "Hinode".
+        crash_case.
+        admit.
+      }
     (* wp_apply (wp_forSlicePrefix (V:=loc) (λ inode_refs_done inode_refs_todo,
                "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                                   pre_inode inode_ref i s_inode) ∗

@@ -50,7 +50,7 @@ Qed.
 Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s t q (vs: list V) (body: val) :
   □ (∀ x, I x -∗ Φc') -∗
   (∀ (i: u64) (x: V),
-      {{{ I i ∗ ⌜int.val i < int.val s.(Slice.sz)⌝ ∗
+      {{{ I i ∗ ⌜(int.nat i < length vs)%nat⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
         body #i (to_val x) @ stk; k; E1; E2
       {{{ RET #(); I (word.add i (U64 1)) }}}

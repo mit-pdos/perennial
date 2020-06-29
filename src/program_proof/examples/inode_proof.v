@@ -301,6 +301,36 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Theorem wpc_Inode__UsedBlocks {k E2} {l σ addr} :
+  {{{ pre_inode l addr σ  }}}
+    Inode__UsedBlocks #l @ NotStuck; k; ⊤; E2
+  {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
+      is_slice s uint64T 1 addrs ∗
+      ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
+      (is_slice s uint64T 1 addrs -∗ pre_inode l addr σ) ∧ inode_cinv addr σ }}}
+  {{{ inode_cinv addr σ }}}.
+Proof.
+  iIntros (Φ Φc) "Hinode HΦ"; iNamed "Hinode".
+  (* TODO: wpc_call is broken here (maybe because the only redex is an App) *)
+  rewrite /Inode__UsedBlocks.
+  wpc_pures.
+  { iApply inode_linv_to_cinv; eauto. }
+  iNamed "Hlockinv".
+  wpc_frame "HΦ Hdurable".
+  { crash_case.
+    iExists _; iFrame. }
+  wp_loadField.
+  iNamed 1.
+  iApply "HΦ".
+  iFrame "Haddrs".
+  iDestruct (is_inode_durable_addrs with "Hdurable") as "%Haddr_set".
+  iSplitR; first auto.
+  iSplit.
+  - iIntros "Haddrs".
+    iExists _, _; iFrame.
+    iExists _, _; iFrame "∗ %".
+  - iExists _; eauto.
+Qed.
 
 Theorem wpc_Inode__Read {k E2} {l k' P addr} {off: u64} :
   (S k < k')%nat →
