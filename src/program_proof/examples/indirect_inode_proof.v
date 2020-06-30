@@ -102,9 +102,11 @@ Definition is_inode_durable_with σ (addr: u64) (hdr: Block)
                                        ++ (foldl (λ acc ls, acc ++ ls) [] indBlkAddrsList))
     = σ.(inode.addrs)⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (length σ.(inode.blocks))]
-                        ++ (EncUInt64 <$> dirAddrs)
-                        ++ (EncUInt64 <$> indAddrs)
-                        ++ [EncUInt64 (numInd)])⌝ ∗
+                                                           ++ (EncUInt64 <$> (take (length σ.(inode.blocks)) dirAddrs))
+                                                           ++ (EncUInt64 <$> (replicate (int.nat (maxDirect) - (min (length σ.(inode.blocks)) (int.nat maxDirect))) (U64 0)))
+                                                           ++ (EncUInt64 <$> (take (numInd)) indAddrs)
+                                                           ++ (EncUInt64 <$> (replicate (int.nat (maxIndirect) - numInd) (U64 0)))
+                                                           ++ [EncUInt64 numInd])⌝ ∗
     "%Hlen" ∷ (⌜
       maxDirect = length(dirAddrs) ∧
       maxIndirect = length(indAddrs) ∧

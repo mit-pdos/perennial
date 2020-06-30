@@ -51,13 +51,68 @@ Theorem wp_appendDirect {l σ addr} (a: u64) b:
   }}}
   Inode__appendDirect #l #a
   {{{ (ok: bool), RET #ok; if ok then
-      (∀ σ σ', ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
+      (∀ σ', ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
                          "%Hsize" ∷ ⌜length σ.(inode.blocks) < maxDirect⌝
                          ∗ "Ha" ∷ int.val a d↦ b
                          ∗ "Hinv" ∷ inode_linv l σ' addr)
       else ⌜ length σ.(inode.blocks) >= maxDirect ⌝
   }}}.
 Proof.
+  iIntros (Φ) "Hpre". iNamed "Hpre". iNamed "Hinv".
+  iNamed "Hdurable".
+  unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+  iIntros "HΦ".
+  wp_call.
+  wp_loadField.
+  wp_if_destruct.
+  (* Fits within maxDirect *)
+  {
+    iDestruct (is_slice_sz with "Hdirect") as %HlenDir.
+    replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0 by word.
+    wp_loadField.
+    wp_apply (wp_SliceAppend (V:=u64) with "[$Hdirect]").
+    {
+      iPureIntro.
+      rewrite /list.untype fmap_take /fmap_length in HlenDir.
+      rewrite take_length Min.min_l in HlenDir; try word.
+      rewrite fmap_length. word.
+    }
+    iIntros (direct_s') "Hdirect".
+    Transparent slice.T.
+    wp_storeField.
+    wp_loadField.
+    wp_storeField.
+    wp_apply (wp_Inode__mkHdr l
+                            (length σ.(inode.blocks) + 1)
+                            _
+                              (take (length σ.(inode.blocks)) dirAddrs ++ [a])
+                              _
+                              direct_s' indirect_s _ with "[direct indirect size Hdirect Hindirect]").
+    {
+      iFrame.
+      replace (word.add (U64 (Z.of_nat (length σ.(inode.blocks)))) (U64 1))
+      with (U64 (Z.of_nat (length σ.(inode.blocks)) + 1)); auto; word.
+    }
+    iIntros (s b') "(Hb & %Hencoded' &?&?&?&?&?)"; iNamed.
+    wp_let.
+    wp_loadField.
+    wp_apply (wp_Write with "[Hhdr Hb]").
+    { iExists hdr; iFrame. }
+
+    iIntros "[Hhdr Hb]".
+    wp_pures.
+    iApply "HΦ".
+    iIntros.
+    iFrame.
+    iSplitR; auto.
+    rewrite a0; simpl.
+    iExists hdr, direct_s', indirect_s,
+    numInd, (take (length σ.(inode.blocks)) dirAddrs ++ [a] ++ (drop (int.nat maxDirect - length σ'.(inode.blocks)) dirAddrs)), indAddrs, indBlkAddrsList, indBlocks.
+    iFrame.
+  }
+  {
+
+  }
 Admitted.
 
 Theorem wp_writeIndirect {l σ addr} (indA a: u64) (indBlk b: Block) (addrs : list u64) addr_s:
@@ -71,7 +126,7 @@ Theorem wp_writeIndirect {l σ addr} (indA a: u64) (indBlk b: Block) (addrs : li
   }}}
   Inode__writeIndirect #l #a (slice_val addr_s)
   {{{ RET #();
-      ∀ σ σ',
+      ∀ σ',
         ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
                   ("Hinv" ∷ inode_linv l σ' addr
                           ∗ "Ha" ∷ int.val a d↦ b
@@ -89,7 +144,7 @@ Theorem wp_appendIndirect {l σ addr} (a: u64) b:
   Inode__appendDirect #l #a
   {{{ (ok: bool), RET #ok;
       if ok then
-      (∀ σ σ',
+      (∀ σ',
           ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
                   "Hinv" ∷ inode_linv l σ' addr ∗ "Ha" ∷ int.val a d↦ b ∗
                   "Hsize" ∷ ∃ indirect_s,
