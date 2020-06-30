@@ -873,7 +873,12 @@ Proof.
         rewrite Hlen.
         rewrite Hoffset.
         unfold maxDirect, indirectNumBlocks in *.
-
+        assert ((512 * int.val index) + int.val offset = int.val off - 500).
+        {
+          rewrite Hindex Hoffset.
+          rewrite -Z.div_mod; word.
+        }
+        assert (int.val offset = (int.val off - 500) - (512 * int.val index)) as HoffsetVal by word.
         destruct (dec_ge (length σ.(inode.blocks)) ((500 + int.nat index * 512) + 512)) as [HlenGe | HlenNotGe].
         (* Subslice fully contained in blocks *)
         {
@@ -888,16 +893,6 @@ Proof.
           rewrite subslice_to_end; [ | word ].
           rewrite skipn_length.
           word_cleanup.
-          assert (int.val index * 512 < length σ.(inode.blocks) -500) as HlenLBound.
-          {
-            apply (Z.le_lt_trans (int.val index * 512) (int.val off - 500) (length σ.(inode.blocks) - 500));
-            word.
-          }
-          replace (Z.of_nat (length σ.(inode.blocks) - Z.to_nat (500 + int.val index * 512))) with ((Z.of_nat (length σ.(inode.blocks)) - 500 - (int.val index * 512))) by word.
-          rewrite Hindex.
-          rewrite -Z.lt_add_lt_sub_l.
-          rewrite HMulComm.
-          rewrite -Z.div_mod; word.
         }
       }
       destruct (list_lookup_lt _ (ind_blocks_at_index σ (int.nat index)) (int.nat offset)) as [inodeblkaddr HlookupInodeBlk].
