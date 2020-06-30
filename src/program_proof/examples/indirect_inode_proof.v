@@ -101,11 +101,11 @@ Definition is_inode_durable_with σ (addr: u64) (hdr: Block)
                                        ++ (take numInd indAddrs)
                                        ++ (foldl (λ acc ls, acc ++ ls) [] indBlkAddrsList))
     = σ.(inode.addrs)⌝ ∗
+    "HdirAddrs" ∷ ⌜ ∃ daddrs, dirAddrs = daddrs ++ (replicate (int.nat (maxDirect) - (min (length σ.(inode.blocks)) (int.nat maxDirect))) (U64 0))⌝ ∗
+    "HindAddrs" ∷ ⌜ ∃ indaddrs, indAddrs = indaddrs ++ (replicate (int.nat (maxIndirect) - numInd) (U64 0))⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (length σ.(inode.blocks))]
-                                                           ++ (EncUInt64 <$> (take (length σ.(inode.blocks)) dirAddrs))
-                                                           ++ (EncUInt64 <$> (replicate (int.nat (maxDirect) - (min (length σ.(inode.blocks)) (int.nat maxDirect))) (U64 0)))
-                                                           ++ (EncUInt64 <$> (take (numInd)) indAddrs)
-                                                           ++ (EncUInt64 <$> (replicate (int.nat (maxIndirect) - numInd) (U64 0)))
+                                                           ++ (EncUInt64 <$> dirAddrs)
+                                                           ++ (EncUInt64 <$> indAddrs)
                                                            ++ [EncUInt64 numInd])⌝ ∗
     "%Hlen" ∷ (⌜
       maxDirect = length(dirAddrs) ∧
@@ -194,7 +194,7 @@ Proof.
   iIntros "Hhdr".
   iExists block0, 0%nat, (replicate (Z.to_nat maxDirect) (U64 0)), (replicate (Z.to_nat maxIndirect) (U64 0)), [], [].
   unfold is_inode_durable_with.
-  repeat iSplit; auto.
+  repeat iSplit; auto; iExists []; auto.
 Qed.
 
 Theorem wp_Open k {d:loc} {addr σ P} :
@@ -212,23 +212,25 @@ Proof.
   wp_pures.
   iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
   rewrite Hencoded.
-
-  assert (encode ([EncUInt64 (length σ.(inode.blocks))] ++ (EncUInt64 <$> dirAddrs) ++ (EncUInt64 <$> indAddrs)++ [EncUInt64 (numInd)] ) =
-          encode ([EncUInt64 (length σ.(inode.blocks))] ++ (EncUInt64 <$> dirAddrs) ++ (EncUInt64 <$> indAddrs)++ [EncUInt64 (numInd)] ) ++ [])
-  as HappNil.
-  { rewrite app_nil_r; auto. }
-  rewrite HappNil.
-  wp_apply (wp_NewDec _ _ s ([EncUInt64 (U64 (length σ.(inode.blocks)))] ++ (EncUInt64 <$> dirAddrs)++ (EncUInt64 <$> indAddrs) ++ [EncUInt64 (numInd)] ) []
-                      with "Hs").
+  iEval (rewrite -(app_nil_r
+      (encode
+              ([EncUInt64 (length σ.(inode.blocks))] ++
+               (EncUInt64 <$> dirAddrs) ++
+               (EncUInt64 <$> indAddrs) ++
+               [EncUInt64 numInd])))
+        ) in "Hs".
+  wp_apply (wp_NewDec _ _ s _ []
+with "Hs").
   iIntros (dec) "[Hdec %Hsz]".
 
   wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
   wp_pures.
-  wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ((EncUInt64 <$> indAddrs) ++ [EncUInt64 (numInd)]) with "[Hdec]").
+  wp_apply (wp_Dec__GetInts _ _ _ dirAddrs _ ((EncUInt64 <$> indAddrs) ++ [EncUInt64 numInd])
+               with "[Hdec]").
   { iFrame.
     iPureIntro.
     unfold maxDirect in *.
-    word.
+    len.
   }
   iIntros (diraddr_s) "[Hdec Hdiraddrs]".
   wp_pures.
@@ -237,7 +239,7 @@ Proof.
   { iFrame.
     iPureIntro.
     unfold maxIndirect in *.
-    word.
+    len.
   }
   iIntros (indaddr_s) "[Hdec Hindaddrs]".
   wp_pures.
@@ -251,7 +253,7 @@ Proof.
   assert (length dirAddrs = int.nat diraddr_s.(Slice.sz) ∧
          length indAddrs = int.nat indaddr_s.(Slice.sz)) as [Hdirs_len Hinds_len].
   {
-    split; [rewrite -Hdirs_len' | rewrite -Hinds_len']; rewrite fmap_length; auto.
+    split; [rewrite -Hdirs_len' | rewrite -Hinds_len']; rewrite fmap_length; len.
   }
   iAssert (slice.is_slice diraddr_s uint64T 1 (u64val <$> dirAddrs)) with "[HdirPtsto Hdirs_cap]" as "Hdiraddrs".
   {
