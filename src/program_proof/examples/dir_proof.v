@@ -520,13 +520,15 @@ Section goose.
     iApply is_addrset_from_empty in "Hused_set".
     iNamed 1.
     wpc_pures.
+    iDestruct (is_slice_small_sz with "Hinode_s") as %Hinode_ref_len.
+    rewrite /list.untype fmap_length in Hinode_ref_len.
     wpc_apply (wpc_forSlice (V:=loc)
                 (λ n, "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                                   pre_inode inode_ref i s_inode) ∗
                "Hused_set" ∷ is_addrset addrs_ref
                   (⋃ (take (int.nat n) (inode.addrs <$> s_inodes))))%I
                 ([∗ list] i↦s_inode ∈ s_inodes, inode_cinv i s_inode)%I
-             with "[] [] [$Hinode_s $Hpre_inodes]").
+             with "[] [] [$Hinode_s $Hpre_inodes $Hused_set]").
     { iIntros "!>" (x) "Hpre"; iNamed "Hpre".
       iApply (pre_inodes_to_cinv with "Hpre_inodes"). }
     { iIntros (i inode_ref) "!>".
@@ -535,30 +537,58 @@ Section goose.
       { iApply (pre_inodes_to_cinv with "Hpre_inodes"). }
       iDestruct (big_sepL2_lookup_1_some with "Hpre_inodes") as "%Hs_inode_lookup"; eauto.
       destruct Hs_inode_lookup as [s_inode Hs_inode_lookup].
-      (* TODO: use new lookup_acc_and theorem *)
-      iDestruct (big_sepL2_lookup_acc with "Hpre_inodes") as "(Hinode&Hpre_inodes)"; eauto.
+      iDestruct (big_sepL2_lookup_acc_and _ (λ i inode_ref s_inode, inode_cinv i s_inode) with "Hpre_inodes") as "(Hinode&Hpre_inodes)"; eauto.
+      { clear.
+        iIntros (k inode_ref s_inode ??) "Hpre".
+        iApply pre_inode_to_cinv; eauto. }
       wpc_apply (wpc_Inode__UsedBlocks with "Hinode").
       iSplit.
       { iIntros "Hinode".
+        iRight in "Hpre_inodes".
+        iSpecialize ("Hpre_inodes" with "Hinode").
         crash_case.
-        admit.
-      }
-    (* wp_apply (wp_forSlicePrefix (V:=loc) (λ inode_refs_done inode_refs_todo,
-               "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
-                                  pre_inode inode_ref i s_inode) ∗
-               "Hused_set" ∷ is_addrset addrs_ref
-                  (⋃ (take (length inode_refs_done) (inode.addrs <$> s_inodes)))
-             )%I with "[] [Hinode_s Hpre_inodes]").
-    { iIntros (i inode_ref) "!>".
-      iIntros (Φ') "(Hpre&%Hbound&%Hlookup) HΦ"; iNamed "Hpre".
-      wp_pures.
-      iDestruct (big_sepL2_lookup_1_some with "Hpre_inodes") as "%Hs_inode_lookup"; eauto.
-      destruct Hs_inode_lookup as [s_inode Hs_inode_lookup].
-      iDestruct (big_sepL2_lookup_acc with "Hpre_inodes") as "(Hinode&Hpre_inodes)"; eauto.
-      wp_apply (wp_Inode__UsedBlocks with "[Hinode]").
-    }
-*)
-  Abort.
+        iApply big_sepL2_to_sepL_2 in "Hpre_inodes".
+        iApply (big_sepL_mono with "Hpre_inodes").
+        iIntros (???) "Hcinv".
+        iDestruct "Hcinv" as (?) "(_&$)". }
+      iIntros "!>" (addrs_s addrs) "(Hused_addrs&%Haddrset&Hpre_inode)".
+      wpc_frame "HΦ Hpre_inodes Hpre_inode".
+      { crash_case.
+        iRight in "Hpre_inodes".
+        iRight in "Hpre_inode".
+        iSpecialize ("Hpre_inodes" with "Hpre_inode").
+        iFrame.
+        iApply big_sepL2_to_sepL_2 in "Hpre_inodes".
+        iApply (big_sepL_mono with "Hpre_inodes").
+        iIntros (???) "Hcinv".
+        iDestruct "Hcinv" as (?) "(_&$)". }
+      iDestruct (is_slice_small_acc with "Hused_addrs") as "(Hused_addrs&Hused_cap)".
+      wp_apply (wp_SetAdd with "[$Hused_set $Hused_addrs]").
+      iIntros "(Hused_set&Hused_addrs)".
+      iDestruct ("Hused_cap" with "Hused_addrs") as "Hused_addrs".
+      iNamed 1.
+      iApply "HΦ".
+      iSplitR "Hused_set".
+      { iLeft in "Hpre_inodes".
+        iApply ("Hpre_inodes" with "(Hpre_inode Hused_addrs)"). }
+      rewrite Haddrset.
+      iExactEq "Hused_set".
+      rewrite /named.
+      f_equal.
+      replace (int.nat (word.add i 1%Z)) with (S (int.nat i)) by word.
+      erewrite take_S_r; last first.
+      { rewrite list_lookup_fmap.
+        rewrite Hs_inode_lookup //. }
+      rewrite union_list_app_L /= right_id_L //. }
+    iSplit.
+    { iIntros "Hinode_cinv".
+      crash_case; auto. }
+    iIntros "!> (Hinv&Hinode_s)"; iNamed "Hinv".
+    wpc_pures.
+    iDestruct (big_sepL2_length with "Hpre_inodes") as %Hlens.
+    iApply "HΦ"; iFrame.
+    rewrite -> take_ge by len; eauto.
+  Qed.
 
   Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
     {{{ dir_cinv (int.val sz) σ0 true }}}
