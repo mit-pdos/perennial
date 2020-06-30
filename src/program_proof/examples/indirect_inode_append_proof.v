@@ -75,26 +75,23 @@ Proof.
               .(inode.blocks)) with (σ.(inode.blocks) ++ [b]) in *.
   destruct HdirAddrs as [daddrs HdirAddrs].
   destruct HindAddrs as [iaddrs HindAddrs].
+  assert (numInd <= 10) as HnumIndMax.
+  {
+    destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
+    + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
+    + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
+      rewrite (HnumInd1 H).
+      assert (((length σ.(inode.blocks) - 500) `div` 512) < 10).
+      {
+        apply (Zdiv_lt_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
+      }
+      word.
+  }
   assert (numInd = length iaddrs) as HiaddrsLen.
   {
     rewrite HindAddrs in HindirLen.
     rewrite app_length replicate_length in HindirLen.
-    Set Printing Coercions.
     replace (Z.of_nat (length iaddrs + (int.nat (U64 10) - numInd))) with (length iaddrs + (10 - numInd)) in HindirLen; try word.
-    change (int.nat (U64 10)) with (10%nat).
-    assert (numInd <= 10).
-    {
-      destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
-      + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
-      + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
-        rewrite (HnumInd1 H).
-        assert (((length σ.(inode.blocks) - 500) `div` 512) < 10).
-        {
-          apply (Zdiv_lt_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
-        }
-        word.
-    }
-    word.
   }
   assert (iaddrs = take (numInd) indAddrs) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
@@ -363,9 +360,10 @@ Theorem wp_writeIndirect {l σ addr} (indA a: u64) (b: Block) (indAddrs indBlkAd
 Proof.
 Admitted.
 
-Theorem wp_appendIndirect {l σ addr} (a: u64) b:
+Theorem wp_appendIndirect {l σ addr d lref} (a: u64) b:
   {{{
     "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect⌝ ∗
+    "Hro_state" ∷ inode_state l d lref ∗
     "Hinv" ∷ inode_linv l σ addr ∗
     "Ha" ∷ int.val a d↦ b
   }}}
@@ -392,11 +390,13 @@ Theorem wp_appendIndirect {l σ addr} (a: u64) b:
             ⌜ (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1) >= int.val indirect_s.(Slice.sz) ⌝
   }}}.
 Proof.
-  iIntros (Φ) "Hpre". iNamed "Hpre". iNamed "Hinv".
-  iNamed "Hdurable".
+  iIntros (Φ) "Hpre". iNamed "Hpre".
   iIntros "HΦ".
 
   (* A bunch of facts and prep stuff *)
+  iNamed "Hinv".
+  iNamed "Hro_state".
+  iNamed "Hdurable".
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
   destruct Hlen as [HdirLen [HindirLen [HszMax [HnumInd1 [HnumInd2 HnumIndBlocks]]]]].
   iDestruct (is_slice_sz with "Hindirect") as %HlenInd.
@@ -407,26 +407,23 @@ Proof.
               .(inode.blocks)) with (σ.(inode.blocks) ++ [b]) in *.
   destruct HdirAddrs as [daddrs HdirAddrs].
   destruct HindAddrs as [iaddrs HindAddrs].
+  assert (numInd <= 10) as HnumIndMax.
+  {
+    destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
+    + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
+    + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
+      rewrite (HnumInd1 H).
+      assert (((length σ.(inode.blocks) - 500) `div` 512) < 10).
+      {
+        apply (Zdiv_lt_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
+      }
+      word.
+  }
   assert (numInd = length iaddrs) as HiaddrsLen.
   {
     rewrite HindAddrs in HindirLen.
     rewrite app_length replicate_length in HindirLen.
-    Set Printing Coercions.
     replace (Z.of_nat (length iaddrs + (int.nat (U64 10) - numInd))) with (length iaddrs + (10 - numInd)) in HindirLen; try word.
-    change (int.nat (U64 10)) with (10%nat).
-    assert (numInd <= 10).
-    {
-      destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
-      + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
-      + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
-        rewrite (HnumInd1 H).
-        assert (((length σ.(inode.blocks) - 500) `div` 512) < 10).
-        {
-          apply (Zdiv_lt_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
-        }
-        word.
-    }
-    word.
   }
   assert (iaddrs = take (numInd) indAddrs) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
@@ -437,11 +434,160 @@ Proof.
   wp_loadField.
   wp_apply (wp_indNum); [ iPureIntro; word | ].
 
-  iIntros (indNum) "HindNum".
+  iIntros (indNum) "%HindNum".
+  unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
   wp_if_destruct.
   (* Does not fit in allocated indBlocks *)
   {
-    admit.
+    iApply "HΦ".
+    iFrame.
+    iSplitL; auto.
+    {
+      iExists hdr, direct_s, indirect_s, numInd, dirAddrs, indAddrs, indBlkAddrsList, indBlocks.
+      unfold is_inode_durable_with. iFrame.
+      repeat (iSplitL; iPureIntro; repeat (split; auto); auto);
+        [exists daddrs | exists iaddrs]; eauto.
+    }
+    iExists indirect_s.
+    iIntros "Hindirect_sz".
+    iPureIntro.
+    rewrite HindNum in Heqb0.
+    replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0; word.
+  }
+
+  (*Fits! Don't need to allocate another block, phew*)
+  {
+    wp_loadField.
+    wp_apply (wp_indNum); [word|].
+    iIntros (index) "%Hindex".
+
+    (* Here are a bunch of facts *)
+    (* TODO these are replicated from READ *)
+    assert (int.val index < numInd) as HindexMax. {
+      rewrite /list.untype fmap_length take_length Min.min_l in HlenInd; word.
+    }
+    destruct (list_lookup_lt _ (take (numInd) indAddrs) (int.nat index)) as [indA Hlookup].
+    {
+      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      rewrite firstn_length Hindex.
+      rewrite Min.min_l; word.
+    }
+    destruct (list_lookup_lt _ indBlocks (int.nat index)) as [indBlk HlookupBlk].
+    {
+      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      word.
+    }
+
+    wp_loadField.
+    iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
+    wp_apply (wp_SliceGet _ _ _ _ 1 (take (numInd) indAddrs) _ indA with "[Hindirect_small]"); iFrame; auto.
+
+    iIntros "Hindirect_small".
+    iDestruct (is_slice_split with "[$Hindirect_small $Hindirect]") as "Hindirect".
+    iDestruct (big_sepL2_lookup_acc _ (take (numInd) indAddrs) _ (int.nat index) indA with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
+
+    wp_pures.
+    wp_loadField.
+    iDestruct "Hb" as (indBlkAddrs padding) "[%HaddrLookup HaddrIndirect]".
+    wp_apply (wp_readIndirect indirect_s numInd indAddrs indBlk
+                              indBlkAddrs indBlocks (int.nat index) d indA padding
+                with "[indirect Hindirect HaddrIndirect]").
+    {
+      iFrame. iSplit; eauto.
+    }
+    iIntros (indBlkAddrs_s) "H". iNamed "H". iNamed "HindBlkIndirect".
+    wp_let.
+    wp_loadField.
+    wp_apply wp_indOff.
+    { iPureIntro; unfold maxDirect; auto. word. }
+    iIntros (offset) "%Hoffset".
+
+    iDestruct (is_slice_split with "HindBlkAddrs") as "[HindBlkAddrs_small HindBlkAddrs]".
+    rewrite /list.untype.
+    wp_apply (wp_SliceSet with "[$HindBlkAddrs_small]").
+    {
+      iSplit; auto.
+      iPureIntro.
+
+    (* More facts about offset *)
+    (* XXX also copied, fix this! *)
+      assert (int.val offset < length indBlkAddrs) as HoffsetInBounds.
+      {
+        unfold ind_blocks_at_index in Hlen.
+        rewrite Hlen.
+        unfold maxDirect, indirectNumBlocks in *.
+
+        assert ((512 * int.val index) + int.val offset = length σ.(inode.blocks) - 500).
+        {
+          rewrite Hindex Hoffset.
+          rewrite -Z.div_mod; word.
+        }
+        assert (int.val offset = (length σ.(inode.blocks) - 500) - (512 * int.val index)) as HoffsetVal by word.
+        destruct (dec_ge (length σ.(inode.blocks)) ((500 + int.nat index * 512) + 512)) as [HlenGe | HlenNotGe].
+        (* Subslice fully contained in blocks *)
+        {
+          rewrite subslice_length.
+          - rewrite minus_plus. rewrite Hoffset.
+            apply Z_mod_lt; word.
+          - unfold maxIndirect in *. word.
+        }
+        (* Subslice goes to end of blocks *)
+        {
+          rewrite HoffsetVal.
+          rewrite Hindex.
+          replace (int.val (length σ.(inode.blocks))) with (Z.of_nat (length σ.(inode.blocks))) by word.
+
+          pose (not_ge _ _ HlenNotGe) as HlenUBound.
+          rewrite subslice_to_end; [ | word ].
+          rewrite skipn_length.
+          repeat word_cleanup.
+          Set Printing Coercions.
+          replace (Z.of_nat (length σ.(inode.blocks) - Z.to_nat (500 + (Z.of_nat (length σ.(inode.blocks)) - 500) `div` 512 * 512)))
+            with
+              (Z.of_nat (length σ.(inode.blocks)) - 500 - ((Z.of_nat (length σ.(inode.blocks)) - 500) `div` 512 * 512)).
+          2: {
+            replace (Z.to_nat (500 + _)) with (500 + Z.of_nat )
+            word.
+          }
+          change (Z.to_nat (500 + (length σ.(inode.blocks) - 500) `div` 512 * 512)) with
+              (Z.to_nat (500 + (length σ.(inode.blocks) - 500) `div` 512 * 512)) with
+
+          assert (int.val index * 512 < length σ.(inode.blocks) - 500) as HlenLBound.
+          {
+            apply (Z.le_lt_trans (int.val index * 512) (int.val offset - 500) (length σ.(inode.blocks) - 500)).
+          }
+          replace (Z.of_nat (length σ.(inode.blocks) - Z.to_nat (500 + int.val index * 512))) with ((Z.of_nat (length σ.(inode.blocks)) - 500 - (int.val index * 512))) by word.
+          rewrite Hindex.
+          rewrite -Z.lt_add_lt_sub_l.
+          rewrite HMulComm.
+          rewrite -Z.div_mod; word.
+        }
+      }
+      destruct (list_lookup_lt _ (ind_blocks_at_index σ (int.nat index)) (int.nat offset)) as [inodeblkaddr HlookupInodeBlk].
+      { rewrite -Hlen. word. }
+      destruct (list_lookup_lt _ (indBlkAddrs) (int.nat offset)) as [blkaddr HlookupBlkInd]; try word.
+      assert ((σ.(inode.blocks)) !! (int.nat off) = Some inodeblkaddr) as HlookupInodeBlk'.
+      {
+        rewrite /ind_blocks_at_index Hoffset in HlookupInodeBlk.
+        unfold subslice in *.
+        rewrite lookup_drop in HlookupInodeBlk.
+        unfold maxDirect, indirectNumBlocks in *.
+        rewrite Hindex in HlookupInodeBlk.
+        replace
+          (int.nat
+             (U64
+             (Z.of_nat (int.nat (U64 500)) +
+             Z.of_nat (Z.to_nat ((int.val off - 500) `div` 512)) * Z.of_nat (int.nat (U64 512)))) +
+             Z.to_nat ((int.val off - 500) `mod` 512))%nat
+          with
+            (Z.to_nat (500 + (512 * (int.val off - 500) `div` 512) + (int.val off - 500) `mod` 512))
+          in HlookupInodeBlk
+          by word.
+        rewrite -Z.add_assoc -(Z.div_mod (int.val off - 500) 512) in HlookupInodeBlk; [ | word ].
+        replace (500 + (int.val off - 500)) with (int.val off) in HlookupInodeBlk by word.
+        rewrite lookup_take in HlookupInodeBlk; auto.
+        word.
+      }
   }
 Admitted.
 

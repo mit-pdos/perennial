@@ -83,6 +83,7 @@ Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
 Definition is_indirect (a: u64) (indBlkAddrs: list u64) (indBlock : Block)
            (specBlocks : list Block) (padding : list u64): iProp Σ :=
   "diskAddr" ∷ int.val a d↦ indBlock ∗
+  "%HindBlockLen" ∷ ⌜length (indBlkAddrs ++ padding) = Z.to_nat indirectNumBlocks⌝ ∗
   "%Hencoded" ∷ ⌜Block_to_vals indBlock = b2val <$> encode ((EncUInt64 <$> indBlkAddrs) ++ (EncUInt64 <$> padding))⌝ ∗
   "%Hlen" ∷ ⌜length(indBlkAddrs) = length(specBlocks)⌝ ∗
   "Hdata" ∷ ([∗ list] a;b ∈ indBlkAddrs;specBlocks, int.val a d↦ b)
