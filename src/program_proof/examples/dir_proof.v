@@ -366,19 +366,27 @@ Section goose.
     ▷ P σ -∗
     pre_dir l sz σ ={⊤}=∗
     is_dir l sz k ∗
-    |C={⊤,E2}_(LVL (Z.to_nat sz + 2 * S (S k)))=> ∃ σ', dir_cinv sz σ' false.
+    |C={⊤,E2}_(LVL (num_inodes + 2 * S (S k)))=> ∃ σ', dir_cinv sz σ' false.
   Proof.
     iIntros (???) "HP"; iNamed 1.
     iNamed "Hinodes".
     iNamed "Halloc".
     iMod (is_allocator_alloc with "Hunused HPalloc Halloc_mem") as (γalloc) "[Halloc Halloc_crash]".
 
+    iDestruct (big_sepL2_length with "Hinodes") as %Hs_inodes_len.
     iDestruct (big_sepL2_mono with "Hinodes") as "inode_fupds".
     { iIntros (?????) "[Hpre HP]".
       iApply (is_inode_alloc inodeN (k:=k) with "HP Hpre"). }
     cbv beta.
     iMod (big_sepL2_fupd with "inode_fupds") as "Hinodes".
     iApply big_sepL2_to_sepL_1 in "Hinodes".
+    iDestruct (big_sepL_mono with "Hinodes") as "Hinodes".
+    { iIntros (???) "Hpre".
+      iDestruct "Hpre" as (s_inode) "(%&Hinode&Hcfupd)".
+      iAccu. }
+    iDestruct (big_sepL_sep with "Hinodes") as "[His_inodes Hcfupds]".
+    iApply cfupd_big_sepL in "Hcfupds".
+    rewrite Hlen.
 
     (* single inode proof follows *)
     (* iMod (inv_alloc s_inodeN _ (∃ σ, s_inode_inv γblocks σ ∗ P σ)%I
