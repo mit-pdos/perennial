@@ -730,30 +730,49 @@ Section list2.
   Qed.
 
   Local Lemma big_sepL2_to_sepL_aux Φ n l1 l2 :
-    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ (n+k) y1 y2) -∗
-    ([∗ list] k↦y1 ∈ l1, ∃ y2, ⌜l2 !! k = Some y2⌝ ∗ Φ (n+k) y1 y2).
+    length l1 = length l2 →
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ (n+k) y1 y2) ⊣⊢
+    ([∗ list] k↦y1 ∈ l1, ∃ y2, ⌜l2 !! k = Some y2⌝ ∧ Φ (n+k) y1 y2).
   Proof.
-    iIntros "H".
-    (iInduction l1 as [|y1 l1] "IH" forall (n l2)).
-    - iDestruct (big_sepL2_length with "H") as %Hlen.
-      assert (l2 = []).
+    intros Hlen.
+    (iInduction l1 as [|y1 l1] "IH" forall (n l2 Hlen)).
+    - assert (l2 = []); subst; simpl.
       { apply length_zero_iff_nil; auto. }
-      subst; simpl.
       auto.
-    - iDestruct (big_sepL2_cons_inv_l with "H") as (y2 l2' ->) "(HΦ & H)".
-      simpl.
-      iSplitL "HΦ".
-      { eauto with iFrame. }
-      assert (forall k, n + S k = S n + k) as Harith by lia.
+    - destruct l2 as [|y2 l2].
+      { simpl in Hlen; congruence. }
+      inversion Hlen; subst; clear Hlen.
+      iSpecialize ("IH" $! (S n) l2 with "[% //]").
+      rewrite big_sepL2_cons big_sepL_cons /=.
+      assert (forall k, n + S k = S (n + k)) as Harith by lia.
       setoid_rewrite Harith.
-      iApply ("IH" with "H").
+      iSplit.
+      + iIntros "[HΦ Hl]".
+        iSplitL "HΦ"; first by eauto with iFrame.
+        iApply ("IH" with "Hl").
+      + iIntros "[HΦ Hl]".
+        iDestruct "HΦ" as (y) "[%Heq HΦ]".
+        inversion Heq; subst; iFrame.
+        iApply ("IH" with "Hl").
   Qed.
 
   Lemma big_sepL2_to_sepL_1 Φ l1 l2 :
     ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) -∗
-    ([∗ list] k↦y1 ∈ l1, ∃ y2, ⌜l2 !! k = Some y2⌝ ∗ Φ k y1 y2).
+    ([∗ list] k↦y1 ∈ l1, ∃ y2, ⌜l2 !! k = Some y2⌝ ∧ Φ k y1 y2).
   Proof.
-    iApply (big_sepL2_to_sepL_aux Φ O).
+    iIntros "H".
+    iDestruct (big_sepL2_length with "H") as %Hlen.
+    iApply (big_sepL2_to_sepL_aux Φ 0 with "H"); auto.
+  Qed.
+
+  (* expressed as an equivalence, but needs a separate length assumption (to
+  strengthen the right-hand side) *)
+  Lemma big_sepL2_to_sepL_1' Φ l1 l2 :
+    length l1 = length l2 →
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ⊣⊢
+    ([∗ list] k↦y1 ∈ l1, ∃ y2, ⌜l2 !! k = Some y2⌝ ∧ Φ k y1 y2).
+  Proof.
+    apply (big_sepL2_to_sepL_aux Φ 0).
   Qed.
 
   Lemma big_sepL2_mono_with_pers (P: PROP) `{!BiAffine PROP} `{Persistent PROP P} (Φ Ψ: nat → A → B → PROP) l1 l2:
@@ -841,12 +860,14 @@ End list2.
 parameters *)
 Lemma big_sepL2_to_sepL_2 {A B} (Φ: nat → A → B → PROP) l1 l2 :
   ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) -∗
-  ([∗ list] k↦y2 ∈ l2, ∃ y1, ⌜l1 !! k = Some y1⌝ ∗ Φ k y1 y2).
-Proof.
-  iIntros "H".
-  iApply big_sepL2_to_sepL_1.
-  iApply big_sepL2_flip; auto.
-Qed.
+  ([∗ list] k↦y2 ∈ l2, ∃ y1, ⌜l1 !! k = Some y1⌝ ∧ Φ k y1 y2).
+Proof. rewrite big_sepL2_flip big_sepL2_to_sepL_1 //. Qed.
+
+Lemma big_sepL2_to_sepL_2' {A B} (Φ: nat → A → B → PROP) l1 l2 :
+  length l1 = length l2 →
+  ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ⊣⊢
+  ([∗ list] k↦y2 ∈ l2, ∃ y1, ⌜l1 !! k = Some y1⌝ ∧ Φ k y1 y2).
+Proof. intros. rewrite big_sepL2_flip big_sepL2_to_sepL_1' //. Qed.
 
 Section maplist.
   Context `{Countable K} {V LV : Type}.

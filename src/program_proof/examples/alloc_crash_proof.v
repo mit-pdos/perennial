@@ -211,6 +211,13 @@ Definition is_allocator_mem_pre (l: loc) σ : iProp Σ :=
     "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
     "Hfree_lock" ∷ is_free_lock lref.
 
+
+Theorem is_allocator_pre_post_crash l σ :
+  is_allocator_mem_pre l σ -∗ ⌜alloc_post_crash σ⌝.
+Proof.
+  iNamed 1; eauto.
+Qed.
+
 (* TODO: prove something useful for initializing from zero blocks *)
 
 Lemma alloc_post_crash_free_used σ :
