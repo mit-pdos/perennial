@@ -325,21 +325,20 @@ Proof.
   }
 Qed.
 
-Theorem wp_writeIndirect {l σ addr} (indA a: u64) (indBlk b: Block) (addrs : list u64) addr_s:
+Theorem wp_writeIndirect {l σ addr} (indA a: u64) (b: Block) (indAddrs indBlkAddrs : list u64) addr_s:
   {{{
        "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect⌝ ∗
-       "%Haddrs" ∷ ⌜∃ ls, addrs = ls ++ [a]⌝ ∗
-       "Haddr_s" ∷ is_slice addr_s uint64T 1 addrs ∗
+       "%Haddrs" ∷ ⌜∃ ls, indBlkAddrs = ls ++ [a]⌝ ∗
+       "Haddr_s" ∷ is_slice addr_s uint64T 1 indBlkAddrs∗
        "Ha" ∷ int.val a d↦ b ∗
-       "HindA" ∷ int.val indA d↦ indBlk ∗
+       "%HindA" ∷ ⌜∃ i, indAddrs !! i = Some indA⌝ ∗
        "Hinv" ∷ inode_linv l σ addr
   }}}
-  Inode__writeIndirect #l #a (slice_val addr_s)
+  Inode__writeIndirect #l #indA (slice_val addr_s)
   {{{ RET #();
       ∀ σ',
         ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
-                  ("Hinv" ∷ inode_linv l σ' addr
-                          ∗ "HIndA" ∷ int.val indA d↦ indBlk)
+                  "Hinv" ∷ inode_linv l σ' addr
   }}}.
 Proof.
 Admitted.
