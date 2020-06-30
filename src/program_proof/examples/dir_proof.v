@@ -54,22 +54,23 @@ Section bi.
     Φ i x1 x2 ∗ ([∗ list] k↦y1;y2 ∈ l1;l2, if decide (k = i) then emp else Φ k y1 y2).
   Proof.
     intros.
+
     apply (wlog_assume_pure (length l1 = length l2)).
     { rewrite big_sepL2_length; auto. }
     { rewrite big_sepL2_length.
       iIntros "[_ $]". }
-    intros.
-    rewrite -(take_drop_middle l1 i x1) // -(take_drop_middle l2 i x2) //.
-    rewrite -!big_sepL2_app_equiv /=; cycle 1.
-    { rewrite !take_length; congruence. }
-    { rewrite !take_length; congruence. }
-    rewrite Nat.add_0_r.
-    rewrite take_length_le; last eauto using lookup_lt_Some, Nat.lt_le_incl.
-    rewrite decide_True // left_id.
-    rewrite assoc -!(comm _ (Φ _ _ _)) -assoc. do 2 f_equiv.
-    - apply big_sepL2_proper=> k y1 y2 Hk. apply lookup_lt_Some in Hk.
-      rewrite take_length in Hk. by rewrite decide_False; last lia.
-    - apply big_sepL2_proper=> k y1 y2 _. by rewrite decide_False; last lia.
+
+    intros Hlen.
+    rewrite !big_sepL2_to_sepL_1' //.
+    rewrite big_sepL_delete; eauto.
+    f_equiv.
+    - iSplit; iIntros "H"; eauto with iFrame.
+      iDestruct "H" as (?) "(%&H)".
+      iExactEq "H"; congruence.
+    - f_equiv.
+      intros k y1.
+      destruct (decide (k = i)); subst; eauto.
+      iSplit; auto.
   Qed.
 
   (* this is a general theorem but we use Φ and Φc to suggest that Φc is the
@@ -84,20 +85,16 @@ Section bi.
     Φ i x1 x2 ∗ ((Φ i x1 x2 -∗ big_sepL2 Φ l1 l2) ∧ (Φc i x1 x2 -∗ big_sepL2 Φc l1 l2)).
   Proof.
     iIntros (Himpl Hx1 Hx2) "H".
-    iDestruct (big_sepL2_delete with "H") as "[HΦ H]"; eauto.
-    iFrame.
+    rewrite big_sepL2_delete; eauto.
+    iDestruct "H" as "[HΦ Hl]"; iFrame.
     iSplit.
+    - iIntros "$"; iFrame.
     - iIntros "HΦ".
-      iApply (big_sepL2_delete with "[HΦ H]"); eauto.
+      iDestruct (big_sepL2_delete with "[HΦ Hl]") as "H"; eauto.
       iFrame.
-    - iIntros "HΦ".
-      iDestruct (big_sepL2_delete with "[HΦ H]") as "H"; eauto.
-      iFrame.
-      iApply (big_sepL2_mono with "H").
+      iApply (big_sepL2_mono with "Hl").
       intros; simpl.
-      iIntros "H".
       destruct (decide (k = i)); eauto.
-      iApply (Himpl with "H"); eauto.
   Qed.
 
   Context `{BiFUpd PROP}.
