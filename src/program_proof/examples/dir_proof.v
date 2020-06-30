@@ -591,12 +591,13 @@ Section goose.
   Qed.
 
   Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
+    (5 ≤ int.val sz)%Z →
     {{{ dir_cinv (int.val sz) σ0 true }}}
       Open #d #sz @ NotStuck; LVL k; ⊤; E2
     {{{ l, RET #l; pre_dir l (int.val sz) σ0 }}}
     {{{ dir_cinv (int.val sz) σ0 false }}}.
   Proof.
-    iIntros (Φ Φc) "Hcinv HΦ".
+    iIntros (? Φ Φc) "Hcinv HΦ".
     wpc_call.
     { iApply dir_cinv_post_crash; auto. }
     iNamed "Hcinv".
@@ -628,12 +629,66 @@ Section goose.
       iDestruct "Hpre" as (?) "(?&Hpre)".
       iApply pre_inode_to_cinv; eauto. }
     wpc_pures.
-
-    (* do this after calling inodeUsedBlocks, to prove that union of s_inodes
-    used sets is equal to allocator used set *)
-    (* (* TODO: iNamed does something weird with the pure facts here... *)
-    iDestruct "Halloc" as (s_alloc) "Halloc"; iNamed "Halloc". *)
-  Abort.
+    wpc_apply (wpc_inodeUsedBlocks with "[$Hinode_s $Hpre_inodes]").
+    iSplit.
+    { iIntros "Hinode_cinvs".
+      crash_case.
+      iApply dir_cinv_post_crash.
+      iExists _, _; iFrame.
+      iExists _; iFrame "%".
+      iApply big_sepL_sep; iFrame. }
+    iIntros "!>" (addrs_ref used); iNamed 1.
+    (* TODO: some unification is needed to reconstruct exactly s_alloc, using
+    Palloc and the Pinodes *)
+    iDestruct "Halloc" as (s_alloc) "Halloc"; iNamed "Halloc".
+    wpc_frame "HΦ Hpre_inodes HPinodes HPalloc Hunused Hs_inode".
+    { crash_case.
+      iApply dir_cinv_post_crash.
+      iExists _, _; iFrame.
+      iSplitL "Hpre_inodes HPinodes".
+      - iExists s_inodes; iFrame "∗ %".
+        iApply big_sepL_sep; iFrame.
+        iDestruct (big_sepL2_to_sepL_2 with "Hpre_inodes") as "Hpre_inodes".
+        iApply (big_sepL_mono with "Hpre_inodes").
+        iIntros (???) "Hpre".
+        iDestruct "Hpre" as (?) "(_&Hpre)".
+        iApply pre_inode_to_cinv; eauto.
+      - iExists _; iFrame "∗ %". }
+    rewrite -wp_fupd.
+    wp_apply (wp_newAllocator s_alloc with "Hused_set").
+    { word. }
+    { word_cleanup.
+      rewrite /alloc.domain.
+      rewrite σ1.
+      f_equal; lia. }
+    { admit. (* this is what requires unification *) }
+    { auto. }
+    iIntros (alloc_ref) "Halloc_mem".
+    Transparent struct.t.
+    wp_apply wp_allocStruct; first val_ty.
+    Opaque struct.t.
+    iIntros (inode_ref) "Hinode_fields".
+    iDestruct (struct_fields_split with "Hinode_fields") as "(d&allocator&inodes&_)".
+    iMod (readonly_alloc_1 with "d") as "#d".
+    iMod (readonly_alloc_1 with "allocator") as "#allocator".
+    iMod (readonly_alloc_1 with "inodes") as "#inodes".
+    iMod (readonly_alloc_1 with "Hinode_s") as "#inode_s".
+    iModIntro.
+    iNamed 1.
+    iApply "HΦ".
+    iDestruct (big_sepL2_length with "Hpre_inodes") as %Hlens.
+    iExists alloc_ref, inode_refs, _, _; iFrame.
+    iSplit.
+    { iPureIntro; lia. }
+    iSplitR.
+    { iExists _, _; iFrame "#". }
+    iSplitL "Hpre_inodes HPinodes".
+    { iExists s_inodes; iFrame.
+      rewrite big_sepL2_sep; iFrame.
+      admit. (* inverse of big_sepL2_to_sepL *) }
+    iExists _; iFrame "∗ %".
+    Fail idtac.
+  Admitted.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
     (S k < k')%nat →
