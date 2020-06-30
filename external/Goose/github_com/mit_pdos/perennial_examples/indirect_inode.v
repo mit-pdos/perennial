@@ -142,15 +142,11 @@ Definition Inode__checkTotalSize: val :=
     then #false
     else #true).
 
-(* appendDirect adds address a (and whatever data is stored there) to the inode
+(* appendDirect attempts to append the block stored at a without allocating new metadata blocks.
 
    Requires the lock to be held.
 
-   In this simple design with only direct blocks, appending never requires
-   internal allocation, so we don't take an allocator.
-
-   This method can only fail due to running out of space in the inode. In this
-   case, append returns ownership of the allocated block. *)
+   Fails when the inode does not have direct block space. *)
 Definition Inode__appendDirect: val :=
   rec: "Inode__appendDirect" "i" "a" :=
     (if: struct.loadF Inode.S "size" "i" < maxDirect
@@ -163,7 +159,7 @@ Definition Inode__appendDirect: val :=
     else #false).
 
 (* writeIndirect preps the block of addrs and
-   adds writes the new indirect block to disk
+   adds the new indirect block to the inode on disk
 
    Requires the lock to be held. *)
 Definition Inode__writeIndirect: val :=
@@ -174,15 +170,13 @@ Definition Inode__writeIndirect: val :=
     let: "hdr" := Inode__mkHdr "i" in
     disk.Write (struct.loadF Inode.S "addr" "i") "hdr".
 
-(* appendIndirect adds address a (and whatever data is stored there) to the inode
+(* appendIndirect adds address a (and whatever data is stored there) to the
+   inode using space in an existing indirect block, without allocation
 
    Requires the lock to be held.
 
-   In this simple design with only direct blocks, appending never requires
-   internal allocation, so we don't take an allocator.
-
-   This method can only fail due to running out of space in the inode. In this
-   case, append returns ownership of the allocated block. *)
+   Assumes there is no direct block space left, but can fail if the last
+   indirect block is full. *)
 Definition Inode__appendIndirect: val :=
   rec: "Inode__appendIndirect" "i" "a" :=
     (if: indNum (struct.loadF Inode.S "size" "i") ≥ slice.len (struct.loadF Inode.S "indirect" "i")
@@ -195,8 +189,6 @@ Definition Inode__appendIndirect: val :=
       #true).
 
 (* Append adds a block to the inode.
-
-   Takes ownership of the disk at a on success.
 
    Returns false on failure (if the allocator or inode are out of space) *)
 Definition Inode__Append: val :=
@@ -238,21 +230,3 @@ Definition Inode__Append: val :=
               Inode__writeIndirect "i" "indAddr" (SliceSingleton "a");;
               lock.release (struct.loadF Inode.S "m" "i");;
               #true))))).
-
-(* Give a block to the inode for metadata purposes.
-   Precondition: Block at addr a should be zeroed
-
-   Returns true if the block was consumed. *)
-Definition Inode__Alloc: val :=
-  rec: "Inode__Alloc" "i" "a" :=
-    lock.acquire (struct.loadF Inode.S "m" "i");;
-    (if: slice.len (struct.loadF Inode.S "indirect" "i") ≥ maxIndirect
-    then
-      lock.release (struct.loadF Inode.S "m" "i");;
-      #false
-    else
-      struct.storeF Inode.S "indirect" "i" (SliceAppend uint64T (struct.loadF Inode.S "indirect" "i") "a");;
-      let: "hdr" := Inode__mkHdr "i" in
-      disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
-      lock.release (struct.loadF Inode.S "m" "i");;
-      #true).
