@@ -132,6 +132,9 @@ Definition is_inode_durable σ addr : iProp Σ  :=
 .
 
 Definition inode_linv (l:loc) σ addr : iProp Σ :=
+  (* in order to write intermediate specs like [wp_appendIndirect] that talk
+  about this low-level state, it would be helpful to first group it into a
+  record, similar to the inode.t record *)
   ∃ (hdr: Block) (direct_s indirect_s: Slice.t) (numInd: nat) (dirAddrs indAddrs: list u64) indBlkAddrsList indBlocks,
     "Hdurable" ∷ is_inode_durable_with σ addr hdr numInd dirAddrs indAddrs indBlkAddrsList indBlocks∗
     "addr" ∷ l ↦[Inode.S :: "addr"] #addr ∗

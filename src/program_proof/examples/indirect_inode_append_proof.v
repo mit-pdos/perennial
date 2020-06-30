@@ -375,12 +375,18 @@ Theorem wp_appendIndirect {l σ addr} (a: u64) b:
       (∀ σ',
           ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
                   "Hinv" ∷ inode_linv l σ' addr  ∗
+                  (* NOTE(tej): in the success case, this shouldn't be necessary
+                  since the caller only needs to know [inode_linv] with the
+                  correct new σ' *)
                   "Hsize" ∷ ∃ indirect_s,
                       l ↦[Inode.S :: "indirect"] (slice_val indirect_s) -∗
                         ⌜ (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1) < int.val indirect_s.(Slice.sz) ⌝)
       else
         "Hinv" ∷ inode_linv l σ addr ∗
         "Ha" ∷ int.val a d↦ b ∗
+        (* TODO: in order to talk about the indirect blocks, need to
+        have a lower-level predicate than inode_linv that exposes some
+        of the internal state (like the number of indirect blocks) *)
         "Hsize" ∷  ∃ indirect_s,
           l ↦[Inode.S :: "indirect"] (slice_val indirect_s) -∗
             ⌜ (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1) >= int.val indirect_s.(Slice.sz) ⌝
