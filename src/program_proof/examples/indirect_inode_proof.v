@@ -101,8 +101,8 @@ Definition is_inode_durable_with σ (addr: u64) (hdr: Block)
                                        ++ (take numInd indAddrs)
                                        ++ (foldl (λ acc ls, acc ++ ls) [] indBlkAddrsList))
     = σ.(inode.addrs)⌝ ∗
-    "HdirAddrs" ∷ ⌜ ∃ daddrs, dirAddrs = daddrs ++ (replicate (int.nat (maxDirect) - (min (length σ.(inode.blocks)) (int.nat maxDirect))) (U64 0))⌝ ∗
-    "HindAddrs" ∷ ⌜ ∃ indaddrs, indAddrs = indaddrs ++ (replicate (int.nat (maxIndirect) - numInd) (U64 0))⌝ ∗
+    "%HdirAddrs" ∷ ⌜ ∃ daddrs, dirAddrs = daddrs ++ (replicate (int.nat (maxDirect) - (min (length σ.(inode.blocks)) (int.nat maxDirect))) (U64 0))⌝ ∗
+    "%HindAddrs" ∷ ⌜ ∃ indaddrs, indAddrs = indaddrs ++ (replicate (int.nat (maxIndirect) - numInd) (U64 0))⌝ ∗
     "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (length σ.(inode.blocks))]
                                                            ++ (EncUInt64 <$> dirAddrs)
                                                            ++ (EncUInt64 <$> indAddrs)
