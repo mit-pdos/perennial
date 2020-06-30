@@ -88,7 +88,6 @@ Proof.
     wp_storeField.
     wp_loadField.
     wp_storeField.
-    Check wp_Inode__mkHdr.
     wp_apply (wp_Inode__mkHdr l
       (length σ.(inode.blocks) + 1)
       numInd
