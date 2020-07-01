@@ -46,7 +46,7 @@ before_install:
 
 install: |
   # Prepare the COQ container
-  docker run -d -i --init --name=COQ -v ${TRAVIS_BUILD_DIR}:/home/coq/demo -w /home/coq/demo "coqorg/coq:${COQ_VERSION}-ocaml-4.09.1+flambda"
+  docker run -d -i --init --name=COQ -v ${TRAVIS_BUILD_DIR}:/home/coq/demo -w /home/coq/demo "coqorg/coq:${COQ_VERSION}-ocaml-4.09.1-flambda"
   docker exec COQ /bin/bash --login -c "
     # This bash script is double-quoted to interpolate Travis CI env vars:
     echo \"Build triggered by ${TRAVIS_EVENT_TYPE}\"
