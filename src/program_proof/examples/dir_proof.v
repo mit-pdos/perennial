@@ -352,6 +352,24 @@ Section goose.
                      "HPalloc" ∷ Palloc γused s_alloc)
   .
 
+  Theorem init_dir {E} (sz: Z) :
+    (5 ≤ sz < 2^64)%Z →
+    ([∗ list] i ∈ seq 0 (Z.to_nat sz), (Z.of_nat i) d↦ block0) ={E}=∗
+    let σ0 := dir.mk $ gset_to_gmap [] $ list_to_set $ seq 0 (Z.to_nat sz) in
+    dir_cinv sz σ0 true.
+  Proof.
+    (* TODO: rough plan is to:
+
+       - split disk blocks into first 5 and [5,sz-5)
+       - create inode_cinv using init_inode for each of the first 5
+       - create allocator free blocks from remainder, prove something about
+         remainder's domain being same as [rangeSet num_inodes (sz -
+         num_inodes)]
+       - allocate ghost variables for each Pinode and Palloc
+     *)
+    iIntros (Hbound) "Hd".
+  Abort.
+
   Lemma pre_inodes_to_cinv inode_refs s_inodes :
     ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
         pre_inode inode_ref i s_inode) -∗
