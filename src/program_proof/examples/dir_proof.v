@@ -352,10 +352,27 @@ Section goose.
                      "HPalloc" ∷ Palloc γused s_alloc)
   .
 
+  Theorem big_sepM_const_seq {PROP:bi} {A} start sz (def: A) (Φ: nat → A → PROP) :
+    ([∗ map] i↦x ∈ gset_to_gmap def (set_seq start sz), Φ i x) -∗
+    ([∗ list] i ∈ seq start sz, Φ i def).
+  Proof.
+    (iInduction sz as [|sz] "IH" forall (start)).
+    - rewrite gset_to_gmap_empty big_sepM_empty /=.
+      auto.
+    - simpl.
+      rewrite gset_to_gmap_union_singleton.
+      rewrite big_sepM_insert; last first.
+      { apply lookup_gset_to_gmap_None.
+        rewrite elem_of_set_seq.
+        lia. }
+      iIntros "[$ Hm]".
+      iApply ("IH" with "Hm").
+  Qed.
+
   Theorem init_dir {E} (sz: Z) :
     (5 ≤ sz < 2^64)%Z →
     ([∗ list] i ∈ seq 0 (Z.to_nat sz), (Z.of_nat i) d↦ block0) ={E}=∗
-    let σ0 := dir.mk $ gset_to_gmap [] $ list_to_set $ seq 0 (Z.to_nat sz) in
+    let σ0 := dir.mk $ gset_to_gmap [] $ set_seq 0 5 in
     dir_cinv sz σ0 true.
   Proof.
     (* TODO: rough plan is to:
@@ -368,6 +385,13 @@ Section goose.
        - allocate ghost variables for each Pinode and Palloc
      *)
     iIntros (Hbound) "Hd".
+    replace (Z.to_nat sz) with (5 + (Z.to_nat (sz - 5))) by lia.
+    rewrite seq_app big_sepL_app.
+    iDestruct "Hd" as "[Hinodes Hfree]".
+    iMod (inode_used_alloc _ (gset_to_gmap ∅ $ set_seq 0 5)) as (γused) "[Hinode_used Hallused]".
+    iMod (inode_blocks_alloc _ (gset_to_gmap [] $ set_seq 0 5)) as (γblocks) "[Hinode_blocks Hallblocks]".
+    iApply big_sepM_const_seq in "Hinode_used".
+    iApply big_sepM_const_seq in "Hinode_blocks".
   Abort.
 
   Lemma pre_inodes_to_cinv inode_refs s_inodes :
