@@ -72,7 +72,8 @@ SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/program_proof/wal/circ_proof.v\
 	src/program_proof/wal/flush_proof.v\
 	src/program_proof/wal/logger_proof.v\
-	src/program_proof/wal/sliding_proof.v
+	src/program_proof/wal/sliding_proof.v\
+	src/program_proof/examples/inode_proof.v
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
