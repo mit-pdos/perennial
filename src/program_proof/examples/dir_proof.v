@@ -285,6 +285,7 @@ Section goose.
   (** Protocol invariant for alloc library *)
   Local Definition Palloc γused (s: alloc.t): iProp Σ :=
     ∃ allocs: gmap nat (gset u64), (* per-inode used blocks *)
+      "%Halloc_size" ∷ ⌜size allocs = num_inodes⌝ ∗
       "%Hused_global" ∷ ⌜alloc.used s = ⋃ (snd <$> map_to_list allocs)⌝ ∗
       "Hused2" ∷ inode_allused γused allocs.
 
@@ -780,18 +781,28 @@ Section goose.
     rewrite -IH /=; last by lia. done.
   Qed.
 
+  Lemma length_gmap_to_list `{Countable K} `(m: gmap K A) :
+    length (map_to_list m) = size m.
+  Proof.
+    induction m using map_ind.
+    - rewrite map_to_list_empty //.
+    - rewrite map_to_list_insert /= //.
+      rewrite map_size_insert /= //.
+  Qed.
+
   Lemma unify_alloc_inodes_used γused γblocks s_alloc s_inodes :
+    length s_inodes = num_inodes →
     ([∗ list] i↦s_inode ∈ s_inodes, Pinode γblocks γused i s_inode) -∗
     Palloc γused s_alloc -∗
     ⌜alloc.used s_alloc = ⋃ (inode.addrs <$> s_inodes)⌝.
   Proof.
     rewrite /Palloc.
-    iIntros "Hinodes". iNamed 1. rewrite Hused_global.
-    iDestruct (unify_alloc_inodes_used_helper _ _ _ _ 0 with "[Hinodes] Hused2") as "%Hhelper".
-    { simpl. iFrame. }
+    iIntros (Hlen) "Hinodes". iNamed 1. rewrite Hused_global.
+    iDestruct (unify_alloc_inodes_used_helper _ _ _ _ 0 with "Hinodes Hused2") as "%Hhelper".
     iPureIntro. rewrite -Hhelper /=; eauto.
-    admit.
-  Admitted.
+    rewrite length_gmap_to_list.
+    congruence.
+  Qed.
 
   Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
     (5 ≤ int.val sz)%Z →
@@ -841,10 +852,8 @@ Section goose.
       iExists _; iFrame "%".
       iApply big_sepL_sep; iFrame. }
     iIntros "!>" (addrs_ref used); iNamed 1.
-    (* TODO: some unification is needed to reconstruct exactly s_alloc, using
-    Palloc and the Pinodes *)
     iDestruct "Halloc" as (s_alloc) "Halloc"; iNamed "Halloc".
-    iDestruct (unify_alloc_inodes_used with "HPinodes HPalloc") as %Hused.
+    iDestruct (unify_alloc_inodes_used with "HPinodes HPalloc") as %Hused; auto.
     wpc_frame "HΦ Hpre_inodes HPinodes HPalloc Hunused Hs_inode".
     { crash_case.
       iApply dir_cinv_post_crash.
@@ -1051,6 +1060,26 @@ Section goose.
       set_solver+.
   Qed.
 
+  (* TODO: move to helper file / upstream *)
+  Lemma map_size_insert_overwrite `{Countable K} {A} (m: gmap K A) k x :
+    is_Some (m !! k) →
+    size (<[k := x]> m) = size m.
+  Proof.
+    induction m using map_ind; intros [x' Hlookup].
+    - apply lookup_empty_Some in Hlookup; contradiction.
+    - destruct (decide (k = i)); subst.
+      + rewrite insert_insert.
+        rewrite lookup_insert in Hlookup; inversion Hlookup; subst.
+        rewrite !map_size_insert //.
+      + rewrite lookup_insert_ne // in Hlookup.
+        rewrite insert_commute //.
+        rewrite [size (insert i _ m)]map_size_insert //.
+        rewrite [size (insert i _ _)]map_size_insert; last first.
+        { rewrite lookup_insert_ne //. }
+        rewrite IHm //.
+        eauto.
+  Qed.
+
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
     (2 + k < k')%nat →
     nroot.@"readonly" ## N →
@@ -1122,8 +1151,11 @@ Section goose.
       iSplitR "HΦ HQ".
       { iNext. iExists _. iFrame "Hused".
         (* Show that the domain bookeeping worked out. *)
-        iPureIntro. rewrite alloc_used_insert.
-        apply alloc_insert_dom; auto.
+        iPureIntro. split.
+        - rewrite map_size_insert_overwrite //.
+          eauto.
+        - rewrite alloc_used_insert.
+          apply alloc_insert_dom; auto.
       }
       iSplit; by iApply "HΦ".
   Qed.
