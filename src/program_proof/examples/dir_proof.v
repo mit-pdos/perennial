@@ -729,6 +729,13 @@ Section goose.
     rewrite -> take_ge by len; eauto.
   Qed.
 
+  Lemma unify_alloc_inodes_used γused γblocks s_alloc s_inodes :
+    ([∗ list] i↦s_inode ∈ s_inodes, Pinode γblocks γused i s_inode) -∗
+    Palloc γused s_alloc -∗
+    ⌜alloc.used s_alloc = ⋃ (inode.addrs <$> s_inodes)⌝.
+  Proof.
+  Admitted.
+
   Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
     (5 ≤ int.val sz)%Z →
     {{{ dir_cinv (int.val sz) σ0 true }}}
@@ -780,6 +787,7 @@ Section goose.
     (* TODO: some unification is needed to reconstruct exactly s_alloc, using
     Palloc and the Pinodes *)
     iDestruct "Halloc" as (s_alloc) "Halloc"; iNamed "Halloc".
+    iDestruct (unify_alloc_inodes_used with "HPinodes HPalloc") as %Hused.
     wpc_frame "HΦ Hpre_inodes HPinodes HPalloc Hunused Hs_inode".
     { crash_case.
       iApply dir_cinv_post_crash.
@@ -800,7 +808,7 @@ Section goose.
       rewrite /alloc.domain.
       rewrite σ1.
       f_equal; lia. }
-    { admit. (* this is what requires unification *) }
+    { congruence. }
     { auto. }
     iIntros (alloc_ref) "Halloc_mem".
     Transparent struct.t.
@@ -824,7 +832,9 @@ Section goose.
     iSplitL "Hpre_inodes HPinodes".
     { iExists s_inodes; iFrame.
       rewrite big_sepL2_sep; iFrame.
-      admit. (* inverse of big_sepL2_to_sepL *) }
+      (* TODO: can prove a big_sepL2 from a big_sepL directly when there's no
+      dependence on one of the lists *)
+      admit. }
     iExists _; iFrame "∗ %".
     Fail idtac.
   Admitted.
