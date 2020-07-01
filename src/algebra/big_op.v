@@ -908,8 +908,7 @@ Section maplist.
     iIntros.
     rewrite big_sepML_eq.
     iExists ∅.
-    iSplit; eauto.
-    iApply big_sepM2_empty. done.
+    eauto.
   Qed.
 
   Theorem big_sepML_insert Φ m l k v lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
