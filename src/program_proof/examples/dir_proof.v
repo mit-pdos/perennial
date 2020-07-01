@@ -729,11 +729,68 @@ Section goose.
     rewrite -> take_ge by len; eauto.
   Qed.
 
+  Fixpoint delete_below `(m : gmap nat T) (off : nat) :=
+    match off with
+    | O => m
+    | S off' => delete off' (delete_below m off')
+    end.
+
+  Lemma delete_below_insert : forall (off : nat) (pos : nat) `(m : gmap nat T) v,
+    off <= pos ->
+    delete_below (<[pos:=v]> m) off = <[pos:=v]> (delete_below m off).
+  Proof.
+    induction off; intros; simpl; eauto.
+    rewrite IHoff; last by lia.
+    rewrite delete_insert_ne //. lia.
+  Qed.
+
+  Lemma delete_below_delete : forall (off : nat) (pos : nat) `(m : gmap nat T),
+    off <= pos ->
+    delete_below (delete pos m) off = delete pos (delete_below m off).
+  Proof.
+    induction off; intros; simpl; eauto.
+    rewrite IHoff; last by lia.
+    rewrite delete_commute //.
+  Qed.
+
+  Lemma unify_alloc_inodes_used_helper γused γblocks allocs s_inodes off :
+    ([∗ list] i↦s_inode ∈ s_inodes, Pinode γblocks γused (off + i) s_inode) -∗
+    inode_allused γused allocs -∗
+    ⌜length s_inodes = length (map_to_list (delete_below allocs off)) ->
+     ⋃ (map_to_list (delete_below allocs off)).*2 = ⋃ (inode.addrs <$> s_inodes)⌝.
+  Proof.
+    rewrite /Pinode.
+    iIntros "Hinodes Hall".
+    iInduction s_inodes as [|] "IH" forall (off).
+    { iPureIntro. intros.
+      generalize dependent (map_to_list (delete_below allocs off)). intros.
+      destruct l; simpl in *; congruence. }
+    iDestruct "Hinodes" as "[Ha Hinodes]". iNamed "Ha".
+    iDestruct (inode_used_lookup with "Hused1 Hall") as "%".
+    replace (allocs) with (<[off := a.(inode.addrs)]> (delete off allocs)) at 2 3.
+    2: { rewrite insert_delete insert_id //. replace (off) with (off + 0) by lia. done. }
+    rewrite delete_below_insert; last by lia.
+    rewrite map_to_list_insert.
+    2: { rewrite delete_below_delete; last by lia. rewrite lookup_delete //. }
+    rewrite ?fmap_cons ?union_list_cons /=.
+    iDestruct ("IH" $! (S off) with "[Hinodes] Hall") as "%IH".
+    { setoid_rewrite plus_n_Sm. iFrame. }
+    rewrite delete_below_delete; last by lia.
+    iPureIntro. intros.
+    rewrite -IH /=; last by lia. done.
+  Qed.
+
   Lemma unify_alloc_inodes_used γused γblocks s_alloc s_inodes :
     ([∗ list] i↦s_inode ∈ s_inodes, Pinode γblocks γused i s_inode) -∗
     Palloc γused s_alloc -∗
     ⌜alloc.used s_alloc = ⋃ (inode.addrs <$> s_inodes)⌝.
   Proof.
+    rewrite /Palloc.
+    iIntros "Hinodes". iNamed 1. rewrite Hused_global.
+    iDestruct (unify_alloc_inodes_used_helper _ _ _ _ 0 with "[Hinodes] Hused2") as "%Hhelper".
+    { simpl. iFrame. }
+    iPureIntro. rewrite -Hhelper /=; eauto.
+    admit.
   Admitted.
 
   Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
