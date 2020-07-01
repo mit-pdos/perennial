@@ -373,13 +373,7 @@ Theorem wp_appendIndirect {l σ addr d lref} (a: u64) b:
       if ok then
       (∀ σ',
           ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
-                  "Hinv" ∷ inode_linv l σ' addr  ∗
-                  (* NOTE(tej): in the success case, this shouldn't be necessary
-                  since the caller only needs to know [inode_linv] with the
-                  correct new σ' *)
-                  "Hsize" ∷ ∃ indirect_s,
-                      l ↦[Inode.S :: "indirect"] (slice_val indirect_s) -∗
-                        ⌜ (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1) < int.val indirect_s.(Slice.sz) ⌝)
+                  "Hinv" ∷ inode_linv l σ' addr)
       else
         "Hinv" ∷ inode_linv l σ addr ∗
         "Ha" ∷ int.val a d↦ b ∗
@@ -520,7 +514,6 @@ Proof.
     iIntros "HindBlkAddrs_small".
     wp_pures.
     iDestruct (is_slice_split with "[$HindBlkAddrs_small $HindBlkAddrs_cap]") as "HindBlkAddrs".
-    Check wp_writeIndirect.
     wp_apply (wp_writeIndirect indA a b indAddrs
                                (<[int.nat offset:=#a]> (indBlkAddrs ++ padding0))
                                indBlkAddrs_s _ with "[-]").
