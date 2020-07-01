@@ -242,7 +242,7 @@ Section goose.
     is_single_inode l sz k ∗
     (* TODO: this might be a high enough level, or a higher one might be more
     convenient *)
-    |C={⊤,E2}_(LVL (Z.to_nat sz + 2 * S (S k)))=> ∃ σ', s_inode_cinv sz σ' false.
+    |C={⊤,E2}_(LVL (Z.to_nat sz + 2 * S (S k)))=> ∃ σ', s_inode_cinv sz σ' false ∗ P σ'.
   Proof.
     iIntros (???) "HP"; iNamed 1.
     iNamed "Hinode".
@@ -273,7 +273,9 @@ Section goose.
     iModIntro. iNext.
     iIntros "Hs_inode Hinode Halloc".
     iDestruct "Hs_inode" as (σ') "[Hs_inv HP]".
-    iExists _, _, _; iFrame.
+    iExists _; iFrame.
+    iExists _, _; iFrame.
+    Fail idtac.
   Admitted.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :

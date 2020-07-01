@@ -30,6 +30,34 @@ Section bi.
       rewrite HPQ //.
   Qed.
 
+  Local Lemma big_sepL_exists_list_aux {A T} n (Φ: nat → A → T → PROP) l :
+    ([∗ list] i↦a ∈ l, ∃ (x:T), Φ (n+i) a x) -∗
+    ∃ (xs: list T), ⌜length xs = length l⌝ ∧
+                    ([∗ list] i ↦ a ∈ l, ∃ (x: T), ⌜xs !! i = Some x⌝ ∧ Φ (n+i) a x).
+  Proof.
+    iInduction l as [|a l] "IH" forall (n).
+    - simpl.
+      iIntros "H".
+      iExists [].
+      eauto.
+    - simpl.
+      iIntros "[HΦ Hl]".
+      iDestruct "HΦ" as (x) "HΦ".
+      assert (∀ k, n + S k = S n + k) as Harith by lia.
+      setoid_rewrite Harith.
+      iDestruct ("IH" with "Hl") as (xs) "Hl".
+      iDestruct "Hl" as "[%Hlen Hl]".
+      iExists (x::xs); simpl; eauto 10 with iFrame.
+  Qed.
+
+  Lemma big_sepL_exists_list {A T} (Φ: nat → A → T → PROP) l :
+    ([∗ list] i↦a ∈ l, ∃ (x:T), Φ i a x) -∗
+    ∃ (xs: list T), ⌜length xs = length l⌝ ∧
+                    ([∗ list] i ↦ a ∈ l, ∃ (x: T), ⌜xs !! i = Some x⌝ ∧ Φ i a x).
+  Proof.
+    apply (big_sepL_exists_list_aux 0 Φ).
+  Qed.
+
   Context {A B: Type}.
   Implicit Types (Φ: nat → A → B → PROP).
 
@@ -360,61 +388,79 @@ Section goose.
   Qed.
 
   Theorem is_dir_alloc {E2} k l (sz: Z) σ :
-    (1 ≤ sz < 2^64)%Z →
+    (5 ≤ sz < 2^64)%Z →
     ↑allocN ⊆ E2 →
     ↑dirN ⊆ E2 →
     ▷ P σ -∗
     pre_dir l sz σ ={⊤}=∗
     is_dir l sz k ∗
-    |C={⊤,E2}_(LVL (num_inodes + 2 * S (S k)))=> ∃ σ', dir_cinv sz σ' false.
+    |C={⊤,E2}_(LVL (Z.to_nat sz + num_inodes + 2 * S (S k)))=>
+      ∃ σ', dir_cinv sz σ' false ∗ P σ'.
   Proof.
     iIntros (???) "HP"; iNamed 1.
     iNamed "Hinodes".
     iNamed "Halloc".
     iMod (is_allocator_alloc with "Hunused HPalloc Halloc_mem") as (γalloc) "[Halloc Halloc_crash]".
 
+    (* allocate all the inodes into a list of is_inodes and a cfupd for all the
+    crash obligations *)
     iDestruct (big_sepL2_length with "Hinodes") as %Hs_inodes_len.
     iDestruct (big_sepL2_mono with "Hinodes") as "inode_fupds".
     { iIntros (?????) "[Hpre HP]".
       iApply (is_inode_alloc inodeN (k:=k) with "HP Hpre"). }
     cbv beta.
     iMod (big_sepL2_fupd with "inode_fupds") as "Hinodes".
-    iApply big_sepL2_to_sepL_1 in "Hinodes".
-    iDestruct (big_sepL_mono with "Hinodes") as "Hinodes".
+    iDestruct (big_sepL2_sep with "Hinodes") as "[His_inodes Hcfupds]".
+    iApply big_sepL2_to_sepL_1 in "His_inodes".
+    iApply big_sepL2_to_sepL_2 in "Hcfupds".
+    iDestruct (big_sepL_mono with "Hcfupds") as "Hinodes_crash".
     { iIntros (???) "Hpre".
-      iDestruct "Hpre" as (s_inode) "(%&Hinode&Hcfupd)".
+      iDestruct "Hpre" as (s_inode) "(_&Hcfupd)".
       iAccu. }
-    iDestruct (big_sepL_sep with "Hinodes") as "[His_inodes Hcfupds]".
-    iApply cfupd_big_sepL in "Hcfupds".
-    rewrite Hlen.
+    iApply cfupd_big_sepL in "Hinodes_crash".
+    replace (length s_inodes) with num_inodes by lia.
 
-    (* single inode proof follows *)
-    (* iMod (inv_alloc s_inodeN _ (∃ σ, s_inode_inv γblocks σ ∗ P σ)%I
-            with "[Hs_inv HP]") as "#Hinv".
+    iMod (inv_alloc dirN _ (∃ σ, dir_inv γblocks σ ∗ P σ)
+         with "[Hd_inv HP]") as "#Hinv".
     { iNext.
       iExists _; iFrame. }
     iDestruct (inv_cfupd1 _ ⊤ with "Hinv") as "Hinv_crash"; auto.
     rewrite Halloc_dom.
     iModIntro.
-    iSplitL "Halloc Hinode".
-    { iExists _, _, _, _, _.
-      iFrame "# ∗". }
+    iSplitL "Hro_state Halloc His_inodes".
+    { iExists _, _, _, _, _; iFrame "# ∗".
+      iSplit; first (iPureIntro; congruence).
+      iApply (big_sepL_mono with "His_inodes").
+      iIntros (???) "H".
+      iDestruct "H" as (?) "[_ $]". }
     iMod "Halloc_crash" as "_".
-    { rewrite rangeSet_size; try lia.
+    { rewrite rangeSet_size; try word.
       apply LVL_le.
       lia. }
-    iMod "Hinode_crash" as "_".
+    iMod "Hinodes_crash" as "_".
     { admit. }
     iMod "Hinv_crash" as "_".
     { admit. }
     { rewrite difference_empty_L.
       solve_ndisj. }
     iModIntro. iNext.
-    iIntros "Hs_inode Hinode Halloc".
-    iDestruct "Hs_inode" as (σ') "[Hs_inv HP]".
-    iExists _, _, _; iFrame.
-  Admitted. *)
-  Abort.
+    iIntros "Hdir Hinodes Halloc".
+    iDestruct "Hdir" as (σ') "(Hdir_inv&HP)".
+    iExists _; iFrame.
+    iExists _, _; iFrame.
+
+    (* here's a bit of gymnastics to maneuver big_sepL: *)
+    iDestruct (big_sepL_exists_list with "Hinodes") as (s_inodes') "[%Hlen' Hinodes]".
+    iApply big_sepL2_to_sepL_1' in "Hinodes"; auto.
+    iApply big_sepL2_to_sepL_2 in "Hinodes".
+    iExists s_inodes'.
+
+    iSplit; first (iPureIntro; congruence).
+    iApply (big_sepL_mono with "Hinodes").
+    iIntros (???) "H".
+    iDestruct "H" as (s_inode) "(_&$&$)".
+    Fail idtac.
+  Admitted.
 
   Opaque struct.t.
 
