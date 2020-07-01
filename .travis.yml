@@ -22,12 +22,12 @@ services:
 
 jobs:
   include:
-    - env: COQ_VERSION="dev"
-    - env: COQ_VERSION="dev" UPDATE_DEPS=true
-    - env: COQ_VERSION="8.11"
+    - env: COQ_VERSION="dev-ocaml-4.09.1-flambda"
+    - env: COQ_VERSION="dev-ocaml-4.09.1-flambda" UPDATE_DEPS=true
+    - env: COQ_VERSION="8.11.2-ocaml-4.09.1-flambda"
   allow_failures:
-    - env: COQ_VERSION="8.11"
-    - env: COQ_VERSION="dev" UPDATE_DEPS=true
+    - env: COQ_VERSION="8.11.2-ocaml-4.09.1-flambda"
+    - env: COQ_VERSION="dev-ocaml-4.09.1-flambda" UPDATE_DEPS=true
   fast_finish: true
 
 # On Travis cloning the gitlab dependencies fails due to a certificate error. In
@@ -55,7 +55,7 @@ install: |
     sudo apt-get install -y python3 python3-pip sqlite3
     pip3 install -r etc/requirements.txt -r etc/requirements-test.txt
     #opam update -y
-    opam switch \${COMPILER_EDGE}; eval \$(opam env)
+    eval \$(opam env)
     opam config list
     opam repo list
     opam list
