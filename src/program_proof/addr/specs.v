@@ -95,6 +95,15 @@ Section flatid2addr.
       congruence.
   Qed.
 
+  Theorem flatid_addr_lookup_valid fm am a :
+    flatid_addr_map fm am ->
+    is_Some (am !! a) ->
+    valid_addr a.
+  Proof.
+    unfold flatid_addr_map; intros.
+    destruct H0. apply H in H0. intuition eauto.
+  Qed.
+
   Theorem flatid_addr_insert fm am a v :
     flatid_addr_map fm am ->
     valid_addr a ->

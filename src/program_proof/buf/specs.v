@@ -392,60 +392,124 @@ Opaque struct.t.
   iDestruct (big_sepM2_sepM_1 with "Hmap") as "Hmap".
   iDestruct (big_sepM_flatid_addr_map_1 with "Hmap") as "Hmap"; eauto.
 
-(*
   wp_apply (wp_MapIter_3 _ _ _ _
-    (λ (mtodo mdone : gmap u64 loc),
-      ∃ (bufptrslice : Slice.t) (bufptrlist : list loc) (bufdone : gmap addr buf),
+    (λ (bmtodo bmdone : gmap u64 loc),
+      ∃ (bufptrslice : Slice.t) (bufptrlist : list loc) (mtodo mdone : gmap addr buf) (amtodo : gmap addr loc),
+        "%Hpm" ∷ ⌜m = mtodo ∪ mdone ∧ dom (gset addr) mtodo ## dom (gset addr) mdone⌝ ∗
+        "%Hamtodo" ∷ ⌜flatid_addr_map bmtodo amtodo ∧ dom (gset addr) amtodo = dom (gset addr) mtodo⌝ ∗
+        "Htodo" ∷ ( [∗ map] fa↦b ∈ bmtodo, ∃ a, ⌜fa = addr2flat a⌝ ∗
+                                           (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) ) ∗
         "Hbufs" ∷ bufs ↦[slice.T (refT (struct.t Buf.S))] (slice_val bufptrslice) ∗
         "Hbufptrslice" ∷ is_slice bufptrslice (refT (struct.t Buf.S)) 1 bufptrlist ∗
-        "Hdone" ∷ ( [∗ maplist] a↦b;bufptr ∈ filter (λ x, (x.2).(bufDirty) = true) bufdone;bufptrlist, is_buf bufptr a b ) ∗
-        "Hdoneptr" ∷ ⌜ bufptrlist ⊆ snd <$> map_to_list mdone ⌝ ∗
-        
+        "Hresult" ∷ ( [∗ maplist] a↦b;bufptr ∈ filter (λ x, (x.2).(bufDirty) = true) mdone;bufptrlist,
+                                is_buf bufptr a b )
     )%I
-    with "Hismap [Hbufs] [Hmap]").
+    with "Hismap [Hmap Hbufs]").
   {
-    iExists _, nil.
-    iSplitL.
-    2: { iApply is_slice_zero. }
-    iFrame.
+    iExists Slice.nil, nil, m, ∅, am.
+    iSplitR.
+    { iPureIntro. split. { rewrite right_id; eauto. } set_solver. }
+    iSplitR.
+    { iPureIntro. eauto. }
+    iFrame "Hmap". iFrame "Hbufs".
+    iSplitR.
+    { iApply is_slice_zero. }
+    rewrite map_filter_empty. iApply big_sepML_empty.
   }
   {
-    iIntros (k v Φi).
+    iIntros (k v bmtodo bmdone Φi).
     iModIntro.
-    iIntros "[Hi Hp] HΦ".
-    iDestruct "Hp" as (a) "[-> Hp]".
-    iDestruct "Hp" as (b) "[% Hp]".
-    iDestruct "Hp" as (bl) "[-> Hp]".
-    iDestruct "Hi" as (s bufptrlist) "[Hbufs Hbufptrlist]".
+    iIntros "[Hi %Hp] HΦ".
+    iNamed "Hi".
     wp_pures.
-    wp_apply (wp_buf_loadField_dirty with "Hp"); iIntros "Hp".
+    iDestruct (big_sepM_delete with "Htodo") as "[Hv Htodo]"; intuition eauto.
+    iDestruct "Hv" as (a) "[-> Hv]".
+    iDestruct "Hv" as (vbuf) "[% Hbuf]".
+    wp_apply (wp_buf_loadField_dirty with "Hbuf"); iIntros "Hbuf".
     wp_if_destruct.
     { wp_load.
-      wp_apply (wp_SliceAppend with "[$Hbufptrlist]"); first eauto.
-      { iSplitL; eauto. admit. }
-      iIntros (s') "Hbufptrlist".
+      (* XXX why is it necessary to instantiate t := (refT ...) below? *)
+      wp_apply ((wp_SliceAppend _ _ _ (refT (struct.t Buf.S))) with "[$Hbufptrslice]").
+      { admit. }
+      iIntros (s') "Hbufptrslice".
       wp_store.
       iApply "HΦ".
-      iSplitL "Hbufs Hbufptrlist".
-      { iExists _, _. iFrame. }
-      admit.
+      iExists _, _, (delete a mtodo), (<[a:=vbuf]> mdone), (delete a amtodo).
+      iSplitR.
+      { iPureIntro. split.
+        { rewrite Map.delete_insert_union; eauto. }
+        set_solver. }
+      iSplitR.
+      { iPureIntro. split.
+        { apply flatid_addr_delete; eauto.
+          eapply flatid_addr_lookup_valid. { apply H4. }
+          apply elem_of_dom. rewrite H5. apply elem_of_dom. eauto. }
+        rewrite ?dom_delete_L. congruence. }
+      iSplitL "Htodo".
+      { iApply (big_sepM_mono with "Htodo"). iIntros (k x Hkx) "H".
+        iDestruct "H" as (a0) "[-> H]". iDestruct "H" as (y2) "[% H]".
+        iExists a0. iSplitR; first eauto.
+        iExists y2. iFrame.
+        destruct (decide (a = a0)); subst.
+        { rewrite lookup_delete in Hkx. congruence. }
+        rewrite lookup_delete_ne; eauto.
+      }
+      iFrame "Hbufs". iFrame "Hbufptrslice".
+      rewrite map_filter_insert; last by eauto.
+      iApply big_sepML_insert_app.
+      { rewrite map_filter_lookup_None. left.
+        apply not_elem_of_dom.
+        assert (is_Some (mtodo !! a)) as Hsome by eauto.
+        apply elem_of_dom in Hsome. set_solver. }
+      iFrame.
     }
     { iApply "HΦ".
-      iSplitL "Hbufs Hbufptrlist".
-      { iExists _, _. iFrame. }
-      admit.
+      iExists _, _, (delete a mtodo), (<[a:=vbuf]> mdone), (delete a amtodo).
+      iSplitR.
+      { iPureIntro. split.
+        { rewrite Map.delete_insert_union; eauto. }
+        set_solver. }
+      iSplitR.
+      { iPureIntro. split.
+        { apply flatid_addr_delete; eauto.
+          eapply flatid_addr_lookup_valid. { apply H4. }
+          apply elem_of_dom. rewrite H5. apply elem_of_dom. eauto. }
+        rewrite ?dom_delete_L. congruence. }
+      iSplitL "Htodo".
+      { iApply (big_sepM_mono with "Htodo"). iIntros (k x Hkx) "H".
+        iDestruct "H" as (a0) "[-> H]". iDestruct "H" as (y2) "[% H]".
+        iExists a0. iSplitR; first eauto.
+        iExists y2. iFrame.
+        destruct (decide (a = a0)); subst.
+        { rewrite lookup_delete in Hkx. congruence. }
+        rewrite lookup_delete_ne; eauto.
+      }
+      iFrame "Hbufs". iFrame "Hbufptrslice".
+      rewrite map_filter_insert_not_strong.
+      2: { simpl. congruence. }
+      rewrite delete_notin.
+      { iFrame. }
+      apply not_elem_of_dom.
+      assert (is_Some (mtodo !! a)) as Hsome by eauto.
+      apply elem_of_dom in Hsome. set_solver.
     }
   }
 
-  iIntros "(Hmap & Hi & Hq)".
-  iDestruct "Hi" as (s bufptrlist) "[Hbufs Hbufptrlist]".
+  iIntros "(Hmap & Hi)". iNamed "Hi".
   wp_pures.
   wp_load.
-  iApply "HΦ".
-  iFrame.
-  admit.
-*)
-Transparent struct.t.
+  iApply "HΦ". iFrame.
+  intuition subst.
+  rewrite (dom_empty_inv_L mtodo).
+  { rewrite left_id. iFrame. }
+
+  rewrite -H3.
+  apply flatid_addr_empty_1 in H2; subst.
+  set_solver.
+
+  (* XXX why is a [ty] leftover here? *)
+  Unshelve.
+  exact u8T.
 Admitted.
 
 Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : list val :=
