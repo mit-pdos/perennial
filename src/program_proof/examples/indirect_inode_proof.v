@@ -1157,3 +1157,6 @@ Proof.
       rewrite H; reflexivity.
 Qed.
 End goose.
+
+(* to preserve backwards-compatibility *)
+Ltac Zify.zify_post_hook ::= idtac.
