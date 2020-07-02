@@ -428,7 +428,7 @@ Opaque struct.t.
     wp_apply (wp_buf_loadField_dirty with "Hbuf"); iIntros "Hbuf".
     wp_if_destruct.
     { wp_load.
-      wp_apply (wp_SliceAppend (V := loc) with "Hbufptrslice").
+      wp_apply (wp_SliceAppend with "Hbufptrslice").
       iIntros (s') "Hbufptrslice".
       wp_store.
       iApply "HΦ".
@@ -504,10 +504,6 @@ Opaque struct.t.
   rewrite -H3.
   apply flatid_addr_empty_1 in H2; subst.
   set_solver.
-
-  (* XXX why is a [ty] leftover here? *)
-  Unshelve.
-  exact u8T.
 Qed.
 
 Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : list val :=
