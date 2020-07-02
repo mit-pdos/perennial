@@ -15,12 +15,14 @@ Definition maxIndirect: Z := 10.
 Definition indirectNumBlocks: Z := 512.
 Definition MaxBlocks: Z := maxDirect + maxIndirect*indirectNumBlocks.
 
+Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Lemma indirect_blocks_maxBlocks:
   (MaxBlocks - maxDirect) `div` indirectNumBlocks = maxIndirect.
 Proof.
   rewrite /MaxBlocks /maxDirect /indirectNumBlocks /maxIndirect.
   change (500 + 10 * 512 - 500) with (10*512).
-  rewrite Z.div_mul; auto.
+  lia.
 Qed.
 
 Lemma indirect_blocks_upperbound_off sz:
@@ -345,9 +347,8 @@ with "Hs").
     {
       rewrite HnumInd.
       assert (((Z.of_nat (length σ.(inode.blocks))) - maxDirect) `div` indirectNumBlocks + 1 < maxIndirect + 1) as HmaxCmp. {
-        rewrite Z.lt_add_lt_sub_r.
-        change (maxIndirect + 1 - 1) with (maxIndirect).
-        apply indirect_blocks_upperbound. auto.
+        pose proof (indirect_blocks_upperbound (Z.of_nat (length σ.(inode.blocks)))).
+        lia.
       }
       unfold maxIndirect in *.
       replace (int.val indaddr_s.(Slice.sz)) with 10 by word.
@@ -811,27 +812,13 @@ Proof.
       iIntros (offset) "%Hoffset".
 
       (* More facts about offset *)
-      assert ((int.val off - 500) `div` 512 * 512 = (512 * (int.val off - 500) `div` 512)) as HMulComm.
-      { replace ((int.val off - 500) `div` 512 * 512) with (512 * ((int.val off - 500) `div` 512)); word. }
+      assert ((int.val off - 500) `div` 512 * 512 = (512 * (int.val off - 500) `div` 512)) as HMulComm by lia.
 
-      assert ((int.val off - 500) `div` 512 * 512  <= ((512 * (int.val off - 500)) `div` 512)) as HdivMulLe.
-      { rewrite HMulComm. apply Z.div_mul_le; word. }
+      assert ((int.val off - 500) `div` 512 * 512  <= ((512 * (int.val off - 500)) `div` 512)) as HdivMulLe by lia.
 
       assert (int.val index * indirectNumBlocks <= int.val off -maxDirect ∧
               int.val off -maxDirect < (int.val index * indirectNumBlocks) + indirectNumBlocks)
-        as [HoffLBound HoffUBound].
-      {
-        split; unfold maxDirect, indirectNumBlocks in *; rewrite Hindex; auto.
-        + rewrite HMulComm.
-          apply Z.mul_div_le; word.
-        + rewrite HMulComm.
-          replace (int.val off - 500 < 512 * (int.val off - 500) `div` 512 + 512) with
-              (512 * (int.val off - 500) `div` 512 + (int.val off - 500) `mod` 512 < 512 * (int.val off - 500) `div` 512 + 512)
-            by (rewrite -(Z.div_mod (int.val off - 500) 512); auto).
-          rewrite -Z.add_lt_mono_l.
-          apply (Z_mod_lt (int.val off - 500) 512).
-          word.
-      }
+        as [HoffLBound HoffUBound] by word.
 
       assert (int.val offset < length indBlkAddrs) as HoffsetInBounds.
       {
@@ -839,26 +826,21 @@ Proof.
         rewrite Hlen.
         rewrite Hoffset.
         unfold maxDirect, indirectNumBlocks in *.
-        assert ((512 * int.val index) + int.val offset = int.val off - 500).
-        {
-          rewrite Hindex Hoffset.
-          rewrite -Z.div_mod; word.
-        }
+        assert ((512 * int.val index) + int.val offset = int.val off - 500) by word.
         assert (int.val offset = (int.val off - 500) - (512 * int.val index)) as HoffsetVal by word.
         destruct (dec_ge (length σ.(inode.blocks)) ((500 + int.nat index * 512) + 512)) as [HlenGe | HlenNotGe].
         (* Subslice fully contained in blocks *)
         {
           rewrite subslice_length.
-          - rewrite minus_plus.
-            apply Z_mod_lt; word.
-          - unfold maxIndirect in *. word.
+          - word.
+          - word.
         }
         (* Subslice goes to end of blocks *)
         {
           pose (not_ge _ _ HlenNotGe) as HlenUBound.
           rewrite subslice_to_end; [ | word ].
           rewrite skipn_length.
-          word_cleanup.
+          word.
         }
       }
       destruct (list_lookup_lt _ (ind_blocks_at_index σ (int.nat index)) (int.nat offset)) as [inodeblkaddr HlookupInodeBlk].
@@ -871,21 +853,9 @@ Proof.
         rewrite lookup_drop in HlookupInodeBlk.
         unfold maxDirect, indirectNumBlocks in *.
         rewrite Hindex in HlookupInodeBlk.
-        replace
-          (int.nat
-             (U64
-             (Z.of_nat (int.nat (U64 500)) +
-             Z.of_nat (Z.to_nat ((int.val off - 500) `div` 512)) * Z.of_nat (int.nat (U64 512)))) +
-             Z.to_nat ((int.val off - 500) `mod` 512))%nat
-          with
-            (Z.to_nat (500 + (512 * (int.val off - 500) `div` 512) + (int.val off - 500) `mod` 512))
-          in HlookupInodeBlk
-          by word.
-        rewrite -Z.add_assoc -(Z.div_mod (int.val off - 500) 512) in HlookupInodeBlk; [ | word ].
-        replace (500 + (int.val off - 500)) with (int.val off) in HlookupInodeBlk by word.
-        rewrite lookup_take in HlookupInodeBlk; auto.
-        word.
-      }
+        rewrite -HlookupInodeBlk.
+        rewrite -> lookup_take by word.
+        f_equal; word. }
 
       (* Continue through the program *)
       iDestruct (is_slice_split with "HindBlkAddrs") as "[HindBlkAddrs_small HindBlkAddrs]".
@@ -1017,14 +987,18 @@ Proof.
       rewrite replicate_S_end.
       rewrite fmap_app; simpl.
       rewrite app_assoc.
-      replace (off - 8 * int.val (word.add i0 (U64 1))) with (off - 8 * int.val i0 - 8); auto.
-      word.
+      iExactEq "Henc".
+      rewrite /named.
+      f_equal; word.
   }
   {
     iSplitL "Henc"; iFrame; auto.
     iSplitR "Henc".
     - iPureIntro. word.
-    - rewrite replicate_0 fmap_nil app_nil_r. rewrite Z.mul_0_r Z.sub_0_r. auto.
+    - rewrite replicate_0 fmap_nil app_nil_r.
+      iExactEq "Henc".
+      rewrite /named.
+      f_equal; word.
   }
 
   iModIntro.
@@ -1117,8 +1091,8 @@ Proof.
 
   iIntros "Henc".
   replace  (int.val (U64 4096) - 8 - 8 * Z.of_nat (length allocedDirAddrs) -
-              8 * int.val (U64 (500 - int.val direct_s.(Slice.sz)))) with 88.
-  2: rewrite HDirlen; rewrite HDirlen /maxDirect in HallocedDirAddrsLen; word.
+              8 * int.val (U64 (500 - int.val direct_s.(Slice.sz))))
+    with 88 by word.
 
   wp_pures.
   wp_loadField.

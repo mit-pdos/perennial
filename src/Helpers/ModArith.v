@@ -7,6 +7,8 @@ Open Scope Z_scope.
 Set Default Goal Selector "!".
 Set Default Proof Using "Type".
 
+Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Lemma mod_add_modulus a k :
   k ≠ 0 ->
   a `mod` k = (a + k) `mod` k.
@@ -38,12 +40,9 @@ Proof.
   - revert H; word_cleanup; intros.
     rewrite /word.wrap in H1.
     destruct (decide (int.val x + int.val y >= 2^64)); [ auto | exfalso ].
-    rewrite -> Zmod_small in H1 by lia.
     lia.
   - word_cleanup.
     rewrite /word.wrap.
-    rewrite -> mod_sub_modulus by lia.
-    rewrite -> Zmod_small by lia.
     lia.
 Qed.
 
@@ -55,7 +54,9 @@ Proof.
   rewrite word.unsigned_add.
   change (int.val (U64 1)) with 1%Z.
   rewrite /word.wrap.
-  rewrite -> mod_sub_modulus by lia.
-  rewrite -> Zmod_small by word.
   lia.
 Qed.
+
+(* avoid leaving it at div_mod_to_equations since it causes some backwards
+incompatibility *)
+Ltac Zify.zify_post_hook ::= idtac.
