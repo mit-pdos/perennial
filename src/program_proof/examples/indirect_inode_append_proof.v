@@ -75,7 +75,7 @@ Proof.
               .(inode.blocks)) with (σ.(inode.blocks) ++ [b]) in *.
   destruct HdirAddrs as [daddrs HdirAddrs].
   destruct HindAddrs as [iaddrs HindAddrs].
-  assert (numInd <= 10) as HnumIndMax.
+  assert (ds.(impl_s.numInd) <= 10) as HnumIndMax.
   {
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
     + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
@@ -87,13 +87,13 @@ Proof.
       }
       word.
   }
-  assert (numInd = length iaddrs) as HiaddrsLen.
+  assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
   {
     rewrite HindAddrs in HindirLen.
     rewrite app_length replicate_length in HindirLen.
-    replace (Z.of_nat (length iaddrs + (int.nat (U64 10) - numInd))) with (length iaddrs + (10 - numInd)) in HindirLen; try word.
+    replace (Z.of_nat (length iaddrs + (int.nat (U64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
   }
-  assert (iaddrs = take (numInd) indAddrs) as Hiaddrs.
+  assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
 
   wp_call.
@@ -120,9 +120,11 @@ Proof.
     wp_storeField.
     wp_apply (wp_Inode__mkHdr l
       (length σ.(inode.blocks) + 1)
-      numInd
-      (take (length σ.(inode.blocks)) dirAddrs ++ [a])
-      (take numInd indAddrs)
+      ds.(impl_s.numInd)
+      (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
+      (take
+        ds.(impl_s.numInd)
+        ds.(impl_s.indAddrs))
       direct_s' indirect_s with "[direct indirect size Hdirect Hindirect]").
     {
       repeat (split; len; simpl; try word).
@@ -136,7 +138,7 @@ Proof.
     wp_let.
     wp_loadField.
     wp_apply (wp_Write with "[Hhdr Hb]").
-    { iExists hdr; iFrame. }
+    { iExists ds.(impl_s.hdr); iFrame. }
 
     iIntros "[Hhdr Hb]".
     wp_pures.
@@ -145,31 +147,37 @@ Proof.
     iFrame.
     iSplitR; auto.
     rewrite a0; simpl.
-    iExists b', direct_s', indirect_s,
-    numInd, (take (length σ.(inode.blocks)) dirAddrs ++ [a] ++ (drop (length σ'.(inode.blocks)) dirAddrs)),
-    indAddrs, indBlkAddrsList, indBlocks.
-
+    iExists direct_s', indirect_s,
+    (impl_s.mk
+       b'
+       ds.(impl_s.numInd)
+       (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)
+                                            ++ [a]
+                                            ++ (drop (length σ'.(inode.blocks)) ds.(impl_s.dirAddrs)))
+       ds.(impl_s.indAddrs)
+       ds.(impl_s.indBlkAddrsList)
+       ds.(impl_s.indBlocks)).
     unfold is_inode_durable_with.
-    rewrite a0.
+    rewrite a0; simpl.
     rewrite Min.min_l in HdirAddrs; [ | word].
 
     assert ((length daddrs) = (length σ.(inode.blocks))%nat) as HdaddrsLen.
     {
-      assert (length dirAddrs = length (daddrs ++ replicate (500 - length σ.(inode.blocks)) (U64 0))).
+      assert (length ds.(impl_s.dirAddrs) = length (daddrs ++ replicate (500 - length σ.(inode.blocks)) (U64 0))).
       {
         rewrite HdirAddrs. auto.
       }
-      rewrite app_length replicate_length in H. assert (length dirAddrs = 500%nat) by word. rewrite H0 in H.
+      rewrite app_length replicate_length in H. assert (length ds.(impl_s.dirAddrs) = 500%nat) by word. rewrite H0 in H.
       word.
     }
 
-    assert (daddrs = take (length σ.(inode.blocks)) dirAddrs) as Hdaddrs.
+    assert (daddrs = take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) as Hdaddrs.
     {
       rewrite HdirAddrs. rewrite -HdaddrsLen.
       rewrite take_app. auto.
     }
 
-    assert (drop (length σ.(inode.blocks) + 1) dirAddrs = replicate (500%nat - (length σ.(inode.blocks) + 1)) (U64 0)) as HdirAddrsEnd.
+    assert (drop (length σ.(inode.blocks) + 1) ds.(impl_s.dirAddrs) = replicate (500%nat - (length σ.(inode.blocks) + 1)) (U64 0)) as HdirAddrsEnd.
     {
       change (int.nat (U64 500)) with 500%nat in *.
       rewrite HdirAddrs.
@@ -202,23 +210,23 @@ Proof.
         rewrite app_length; simpl.
         rewrite cons_middle.
         replace (take (length σ.(inode.blocks) + 1)
-                      (take (length σ.(inode.blocks)) dirAddrs ++ [a]
-                            ++ drop ((length σ.(inode.blocks) + 1)) dirAddrs))
-          with (take (length σ.(inode.blocks)) dirAddrs ++ [a]).
+                      (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]
+                            ++ drop ((length σ.(inode.blocks) + 1)) ds.(impl_s.dirAddrs)))
+          with (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]).
         2: {
           rewrite app_assoc.
-          assert ((length σ.(inode.blocks) + 1)%nat = length ((take (length σ.(inode.blocks)) dirAddrs ++ [a]))) as H.
+          assert ((length σ.(inode.blocks) + 1)%nat = length ((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]))) as H.
           { rewrite app_length. rewrite take_length Min.min_l; simpl; word. }
           rewrite H.
-          rewrite (take_app (take (length σ.(inode.blocks)) dirAddrs ++ [a])); auto.
+          rewrite (take_app (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])); auto.
         }
-        assert (((take (length σ.(inode.blocks)) dirAddrs ++ [a])
-                   ++ take numInd indAddrs
-                   ++ foldl (λ acc ls : list u64, acc ++ ls) [] indBlkAddrsList)
+        assert (((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
+                   ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
+                   ++ foldl (λ acc ls : list u64, acc ++ ls) [] ds.(impl_s.indBlkAddrsList))
                   ≡ₚ
-                  a :: (take (length σ.(inode.blocks)) dirAddrs
-                   ++ take numInd indAddrs
-                   ++ foldl (λ acc ls : list u64, acc ++ ls) [] indBlkAddrsList))
+                  a :: (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)
+                   ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
+                   ++ foldl (λ acc ls : list u64, acc ++ ls) [] ds.(impl_s.indBlkAddrsList)))
           as Hperm.
         { by rewrite -app_assoc -cons_middle -Permutation_middle. }
         rewrite Hperm.
@@ -261,22 +269,23 @@ Proof.
         repeat rewrite app_length.
         change (length [_]) with 1%nat.
         rewrite HdirAddrsEnd -Hiaddrs /maxIndirect -HiaddrsLen.
-        replace (int.nat (U64 (10 - Z.of_nat numInd))) with ((int.nat (U64 10) - numInd)%nat) by word.
+        replace (int.nat (U64 (10 - Z.of_nat ds.(impl_s.numInd))))
+          with ((int.nat (U64 10) - ds.(impl_s.numInd))%nat) by word.
         rewrite HindAddrs.
         replace
-          (int.nat (U64 (500 - Z.of_nat (length (take (length σ.(inode.blocks)) dirAddrs) + 1)))%nat)
+          (int.nat (U64 (500 - Z.of_nat (length (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) + 1)))%nat)
           with ((500 - (length σ.(inode.blocks) + 1))%nat); auto.
         2: {
           rewrite take_length. rewrite Min.min_l; word.
         }
         replace
-          (EncUInt64 <$> iaddrs ++ replicate (int.nat (U64 10) - numInd) (U64 0))
-          with ((EncUInt64 <$> iaddrs) ++ (EncUInt64 <$> replicate (int.nat (U64 10) - numInd) (U64 0)));
+          (EncUInt64 <$> iaddrs ++ replicate (int.nat (U64 10) - ds.(impl_s.numInd)) (U64 0))
+          with ((EncUInt64 <$> iaddrs) ++ (EncUInt64 <$> replicate (int.nat (U64 10) - ds.(impl_s.numInd)) (U64 0)));
         [ | by rewrite fmap_app].
         replace
-        (EncUInt64 <$> (take (length σ.(inode.blocks)) dirAddrs ++ [a] ++
+        (EncUInt64 <$> (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a] ++
                              (replicate (500 - (length σ.(inode.blocks) + 1)) (U64 0))))
-          with ((EncUInt64 <$> take (length σ.(inode.blocks)) dirAddrs ++ [a])
+          with ((EncUInt64 <$> take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
                      ++ (EncUInt64 <$> replicate (500 - (length σ.(inode.blocks) + 1)) (U64 0))).
         2: { rewrite app_assoc -fmap_app. auto. }
         repeat rewrite app_assoc.
@@ -289,22 +298,29 @@ Proof.
       iSplitR.
       { iPureIntro.
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-        repeat (split; auto); len; simpl; rewrite app_length; simpl; word.
+        rewrite HdirLen.
+        repeat (split; auto); len; simpl; try word.
+        rewrite Min.min_l; [len | word].
       }
 
       (* Hdirect *)
       iSplitL "HdataDirect Ha".
       {
-        rewrite app_assoc /maxDirect.
+        rewrite /maxDirect -Hdaddrs.
         assert ((int.nat (U64 500) `min` length σ.(inode.blocks))%nat =
                 (length σ.(inode.blocks))) by word.
         assert ((int.nat (U64 500) `min` length (σ.(inode.blocks) ++ [b]))%nat =
                  (length (σ.(inode.blocks) ++ [b]))%nat) by (len; simpl; word).
         rewrite H0.
         assert (length (daddrs ++ [a]) = length (σ.(inode.blocks) ++ [b])) by (len; simpl; word).
-        rewrite H HdirAddrs -HdaddrsLen take_app firstn_all -H1 take_app.
+        replace (daddrs ++ a :: drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs)) with
+            ((daddrs ++ [a]) ++ drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs))
+        by (rewrite -app_assoc -cons_middle; auto).
+        rewrite -H1 take_app. rewrite H1 firstn_all.
         iApply (big_sepL2_app with "[HdataDirect]"); simpl; auto.
-        { rewrite HdaddrsLen. rewrite firstn_all. auto. }
+        { rewrite Min.min_r; [ | word].
+          rewrite -HdaddrsLen HdirAddrs take_app. rewrite HdaddrsLen firstn_all. auto.
+        }
       }
 
       (* Hindirect *)
@@ -326,8 +342,11 @@ Proof.
         rewrite H.
         auto.
       (* Hdirect *)
-      + rewrite app_assoc.
-        assert (length (take (length σ.(inode.blocks)) dirAddrs ++ [a]) = length (σ.(inode.blocks) ++ [b])) by (len; simpl; word).
+      + rewrite -Hdaddrs.
+        assert (length (daddrs ++ [a]) = length (σ.(inode.blocks) ++ [b])) by (len; simpl; word).
+        replace (daddrs ++ a :: drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs)) with
+            ((daddrs ++ [a]) ++ drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs))
+        by (rewrite -app_assoc -cons_middle; auto).
         rewrite -H take_app; auto.
     }
   }
@@ -342,14 +361,14 @@ Proof.
   }
 Qed.
 
-Theorem wp_writeIndirect {l σ addr} (indA a: u64) (b: Block) (indAddrs indBlkAddrs : list u64) addr_s:
+Theorem wp_writeIndirect {l σ addr} ds (indA a: u64) (b: Block) (indAddrs indBlkAddrs : list u64) addr_s:
   {{{
        "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect⌝ ∗
                                                       (*TODO
        "%Haddrs" ∷ ⌜∃ ls1 ls2, indBlkAddrs = ls1 ++ [a] ++ ls2 ∧ σ.(inode.blocks⌝ ∗*)
-       "Haddr_s" ∷ is_slice addr_s uint64T 1 indBlkAddrs∗
+       "Haddr_s" ∷ is_slice addr_s uint64T 1 indBlkAddrs ∗
        "Ha" ∷ int.val a d↦ b ∗
-       "%HindA" ∷ ⌜∃ i, indAddrs !! i = Some indA⌝ ∗
+       "%HindA" ∷ ⌜∃ i, ds.(impl_s.indAddrs) !! i = Some indA⌝ ∗
        "Hinv" ∷ inode_linv l σ addr
   }}}
   Inode__writeIndirect #l #indA (slice_val addr_s)
@@ -402,7 +421,7 @@ Proof.
               .(inode.blocks)) with (σ.(inode.blocks) ++ [b]) in *.
   destruct HdirAddrs as [daddrs HdirAddrs].
   destruct HindAddrs as [iaddrs HindAddrs].
-  assert (numInd <= 10) as HnumIndMax.
+  assert (ds.(impl_s.numInd) <= 10) as HnumIndMax.
   {
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
     + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
@@ -414,13 +433,14 @@ Proof.
       }
       word.
   }
-  assert (numInd = length iaddrs) as HiaddrsLen.
+  assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
   {
     rewrite HindAddrs in HindirLen.
     rewrite app_length replicate_length in HindirLen.
-    replace (Z.of_nat (length iaddrs + (int.nat (U64 10) - numInd))) with (length iaddrs + (10 - numInd)) in HindirLen; try word.
+    replace (Z.of_nat (length iaddrs + (int.nat (U64 10) - ds.(impl_s.numInd))))
+      with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
   }
-  assert (iaddrs = take (numInd) indAddrs) as Hiaddrs.
+  assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
 
   wp_call.
@@ -438,7 +458,7 @@ Proof.
     iFrame.
     iSplitL; auto.
     {
-      iExists hdr, direct_s, indirect_s, numInd, dirAddrs, indAddrs, indBlkAddrsList, indBlocks.
+      iExists direct_s, indirect_s, ds.
       unfold is_inode_durable_with. iFrame.
       repeat (iSplitL; iPureIntro; repeat (split; auto); auto);
         [exists daddrs | exists iaddrs]; eauto.
@@ -458,16 +478,16 @@ Proof.
 
     (* Here are a bunch of facts *)
     (* TODO these are replicated from READ *)
-    assert (int.val index < numInd) as HindexMax. {
+    assert (int.val index < ds.(impl_s.numInd)) as HindexMax. {
       rewrite /list.untype fmap_length take_length Min.min_l in HlenInd; word.
     }
-    destruct (list_lookup_lt _ (take (numInd) indAddrs) (int.nat index)) as [indA Hlookup].
+    destruct (list_lookup_lt _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (int.nat index)) as [indA Hlookup].
     {
       unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
       rewrite firstn_length Hindex.
       rewrite Min.min_l; word.
     }
-    destruct (list_lookup_lt _ indBlocks (int.nat index)) as [indBlk HlookupBlk].
+    destruct (list_lookup_lt _ ds.(impl_s.indBlocks) (int.nat index)) as [indBlk HlookupBlk].
     {
       unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
       word.
@@ -475,17 +495,16 @@ Proof.
 
     wp_loadField.
     iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
-    wp_apply (wp_SliceGet _ _ _ _ 1 (take (numInd) indAddrs) _ indA with "[Hindirect_small]"); iFrame; auto.
+    wp_apply (wp_SliceGet _ _ _ _ 1 (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) _ indA with "[Hindirect_small]"); iFrame; auto.
 
     iIntros "Hindirect_small".
     iDestruct (is_slice_split with "[$Hindirect_small $Hindirect]") as "Hindirect".
-    iDestruct (big_sepL2_lookup_acc _ (take (numInd) indAddrs) _ (int.nat index) indA with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
+    iDestruct (big_sepL2_lookup_acc _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) _ (int.nat index) indA with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
 
     wp_pures.
     wp_loadField.
     iDestruct "Hb" as (indBlkAddrs padding) "[%HaddrLookup HaddrIndirect]".
-    wp_apply (wp_readIndirect indirect_s numInd indAddrs indBlk
-                              indBlkAddrs indBlocks (int.nat index) d indA padding
+    wp_apply (wp_readIndirect ds indirect_s indBlk indBlkAddrs (int.nat index) d indA padding
                 with "[indirect Hindirect HaddrIndirect]").
     {
       iFrame. iSplit; eauto.
@@ -514,7 +533,7 @@ Proof.
     iIntros "HindBlkAddrs_small".
     wp_pures.
     iDestruct (is_slice_split with "[$HindBlkAddrs_small $HindBlkAddrs_cap]") as "HindBlkAddrs".
-    wp_apply (wp_writeIndirect indA a b indAddrs
+    wp_apply (wp_writeIndirect ds indA a b ds.(impl_s.indAddrs)
                                (<[int.nat offset:=#a]> (indBlkAddrs ++ padding0))
                                indBlkAddrs_s _ with "[-]").
     {
