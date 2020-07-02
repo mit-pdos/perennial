@@ -380,7 +380,6 @@ Theorem wp_BufMap__DirtyBufs l m :
       is_buf bufptr a b
   }}}.
 Proof using.
-Opaque struct.t.
   iIntros (Φ) "Hisbufmap HΦ".
   iDestruct "Hisbufmap" as (addrs bm am) "(Haddrs & Hismap & % & Hmap)".
   wp_call.
