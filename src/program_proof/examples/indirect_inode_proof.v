@@ -15,34 +15,6 @@ Definition maxIndirect: Z := 10.
 Definition indirectNumBlocks: Z := 512.
 Definition MaxBlocks: Z := maxDirect + maxIndirect*indirectNumBlocks.
 
-Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
-
-Lemma indirect_blocks_maxBlocks:
-  (MaxBlocks - maxDirect) `div` indirectNumBlocks = maxIndirect.
-Proof.
-  rewrite /MaxBlocks /maxDirect /indirectNumBlocks /maxIndirect.
-  change (500 + 10 * 512 - 500) with (10*512).
-  lia.
-Qed.
-
-Lemma indirect_blocks_upperbound_off sz:
-  sz < maxIndirect * indirectNumBlocks ->
-  sz `div` indirectNumBlocks < maxIndirect.
-Proof.
-  intros.
-  apply Zdiv_lt_upper_bound; eauto.
-  rewrite /indirectNumBlocks //.
-Qed.
-
-Lemma indirect_blocks_upperbound sz:
-  sz < MaxBlocks ->
-  (sz - maxDirect) `div` indirectNumBlocks < maxIndirect.
-Proof.
-  rewrite /MaxBlocks.
-  intros.
-  eapply indirect_blocks_upperbound_off. lia.
-Qed.
-
 Module inode.
   Record t :=
     mk { (* addresses consumed by this inode *)
@@ -111,11 +83,17 @@ Definition is_inode_durable_with σ (addr: u64) (ds: impl_s.t)
     "%Hlen" ∷ (⌜
       maxDirect = length(ds.(impl_s.dirAddrs)) ∧
       maxIndirect = length(ds.(impl_s.indAddrs)) ∧
-      (Z.of_nat (length σ.(inode.blocks))) < MaxBlocks ∧
-      ((Z.of_nat (length σ.(inode.blocks))) > maxDirect ->
-       (Z.of_nat (ds.(impl_s.numInd)) = (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1))) ∧
-      ((length σ.(inode.blocks)) <= maxDirect -> (ds.(impl_s.numInd) = 0%nat)) ∧
+      (Z.of_nat (length σ.(inode.blocks))) <= MaxBlocks ∧
       ds.(impl_s.numInd) = length(ds.(impl_s.indBlocks))⌝) ∗
+    "%HnumInd" :: ⌜
+      ((length σ.(inode.blocks) <= maxDirect) -> (ds.(impl_s.numInd) = 0%nat)) ∧
+      ((Z.of_nat (length σ.(inode.blocks)) > maxDirect) ->
+       (
+         (((Z.of_nat (length σ.(inode.blocks))) - maxDirect) `mod` indirectNumBlocks = 0 ->
+          (Z.of_nat (ds.(impl_s.numInd)) = (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks))) ∧
+         (((Z.of_nat (length σ.(inode.blocks))) - maxDirect) `mod` indirectNumBlocks > 0 ->
+          (Z.of_nat (ds.(impl_s.numInd)) = (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1)))
+      ))⌝ ∗
     "Hhdr" ∷ (int.val addr d↦ ds.(impl_s.hdr)) ∗
     (* direct addresses correspond to data blocks in inode spec *)
     "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
@@ -346,11 +324,8 @@ with "Hs").
     wp_apply (wp_SliceTake uint64T (ds.(impl_s.numInd))).
     {
       rewrite HnumInd.
-      assert (((Z.of_nat (length σ.(inode.blocks))) - maxDirect) `div` indirectNumBlocks + 1 < maxIndirect + 1) as HmaxCmp. {
-        pose proof (indirect_blocks_upperbound (Z.of_nat (length σ.(inode.blocks)))).
-        lia.
       }
-      unfold maxIndirect in *.
+      unfold maxIndirect, maxDirect, indirectNumBlocks in *.
       replace (int.val indaddr_s.(Slice.sz)) with 10 by word.
       word.
     }
