@@ -106,13 +106,7 @@ Proof.
     pose (HnumInd2 Hsz) as HnumInd.
 
     wp_loadField.
-    wp_apply (wp_SliceAppend (V:=u64) with "[$Hdirect]").
-    {
-      iPureIntro.
-      rewrite /list.untype fmap_take /fmap_length in HlenDir.
-      rewrite take_length Min.min_l in HlenDir; try word.
-      rewrite fmap_length. word.
-    }
+    wp_apply (wp_SliceAppend (V:=u64) with "Hdirect").
     iIntros (direct_s') "Hdirect".
     Transparent slice.T.
     wp_storeField.

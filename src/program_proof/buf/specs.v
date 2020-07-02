@@ -428,9 +428,7 @@ Opaque struct.t.
     wp_apply (wp_buf_loadField_dirty with "Hbuf"); iIntros "Hbuf".
     wp_if_destruct.
     { wp_load.
-      (* XXX why is it necessary to instantiate t := (refT ...) below? *)
-      wp_apply ((wp_SliceAppend _ _ _ (refT (struct.t Buf.S))) with "[$Hbufptrslice]").
-      { admit. }
+      wp_apply (wp_SliceAppend (V := loc) with "Hbufptrslice").
       iIntros (s') "Hbufptrslice".
       wp_store.
       iApply "HΦ".
@@ -510,7 +508,7 @@ Opaque struct.t.
   (* XXX why is a [ty] leftover here? *)
   Unshelve.
   exact u8T.
-Admitted.
+Qed.
 
 Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : list val :=
   drop (n * elemsize) (take ((S n) * elemsize) (Block_to_vals b)).

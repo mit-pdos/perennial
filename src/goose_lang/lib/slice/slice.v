@@ -1073,11 +1073,11 @@ Qed.
 
 Lemma wp_SliceAppend stk E s t vs x :
   has_zero t ->
-  {{{ is_slice s t 1 vs ∗ ⌜int.val s.(Slice.sz) + 1 < 2^64⌝ ∗ ⌜val_ty x t⌝ }}}
+  {{{ is_slice s t 1 vs ∗ ⌜val_ty x t⌝ }}}
     SliceAppend t s x @ stk; E
   {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
 Proof.
-  iIntros (Hzero Φ) "(Hs&%&%) HΦ".
+  iIntros (Hzero Φ) "(Hs&%) HΦ".
   wp_apply (wp_SliceAppend' with "[$Hs]"); auto.
 Qed.
 

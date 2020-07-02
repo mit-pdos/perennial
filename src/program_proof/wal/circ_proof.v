@@ -1311,7 +1311,7 @@ Proof.
     iNamed 1.
 
     wpc_frame.
-    wp_apply (wp_SliceAppend_updates (uv:=(a, b_s)) with "[$Hupds Hb_s]"); first by len.
+    wp_apply (wp_SliceAppend_updates (uv:=(a, b_s)) with "[$Hupds Hb_s]").
     { iApply is_slice_to_small. iFrame. }
     iIntros (bufSlice') "Hupds'".
     wp_store.

@@ -274,19 +274,16 @@ Qed.
 Hint Resolve has_zero_update : core.
 
 Theorem wp_SliceAppend_updates {stk E bk_s bs} {uv: u64 * Slice.t} {b} :
-  length bs + 1 < 2^64 ->
   {{{ updates_slice bk_s bs ∗ is_block uv.2 1 b }}}
     SliceAppend (struct.t Update.S) (slice_val bk_s) (update_val uv) @ stk; E
   {{{ bk_s', RET slice_val bk_s';
       updates_slice bk_s' (bs ++ [update.mk uv.1 b])
   }}}.
 Proof.
-  iIntros (Hlen_overflow Φ) "[Hupds Hub] HΦ".
+  iIntros (Φ) "[Hupds Hub] HΦ".
   iDestruct (updates_slice_len with "Hupds") as %Hlen.
   iDestruct "Hupds" as (bks) "[Hbks Hupds]".
   wp_apply (wp_SliceAppend with "[$Hbks]"); auto.
-  { iPureIntro.
-    split; auto. word. }
   iIntros (s') "Hs".
   iApply "HΦ".
   change ([update_val uv]) with (update_val <$> [uv]).
