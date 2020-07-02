@@ -798,7 +798,7 @@ Qed.
 
 Lemma wpc_step_fupd' s k E1 E2 e Φ Φc :
   to_val e = None →
-  (|={E1,∅}▷=> WPC e @ s; (LVL k); E1 ; E2 {{ Φ }} {{ Φc }}) -∗
+  (|={E1}[∅]▷=> WPC e @ s; (LVL k); E1 ; E2 {{ Φ }} {{ Φc }}) -∗
   WPC e @ s; (LVL (S k)); E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (?) "Hwp".

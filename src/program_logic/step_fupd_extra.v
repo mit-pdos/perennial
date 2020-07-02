@@ -5,13 +5,13 @@ Import uPred.
 
 
 Notation "|={ E1 , E2 }_ k => P" :=
-    (|={E1, ∅}=> |={∅, ∅}▷=>^k |={∅, E2}=> P)%I
+    (|={E1, ∅}=> |={∅}[∅]▷=>^k |={∅, E2}=> P)%I
       (at level 99, E1, E2 at level 50, k at level 9, P at level 200,
        format "|={ E1 , E2 }_ k =>  P").
 
 
 Notation "|={ E }_ k =>^ n P" :=
-    (Nat.iter n (λ Q, (|={E%I, ∅}=> |={∅, ∅}▷=>^k |={∅, E}=> Q)) P)%I
+    (Nat.iter n (λ Q, (|={E%I, ∅}=> |={∅}[∅]▷=>^k |={∅, E}=> Q)) P)%I
       (at level 99, E at level 50, k, n at level 9, P at level 200,
        format "|={ E }_ k =>^ n  P").
 
@@ -37,14 +37,14 @@ Qed.
 
 Lemma step_fupdN_le {E1 E2 : coPset} (n1 n2 : nat) (P: PROP):
   E2 ⊆ E1 →
-  n1 ≤ n2 → (|={E1,E2}▷=>^n1 P) -∗ |={E1,E2}▷=>^n2 P.
+  n1 ≤ n2 → (|={E1}[E2]▷=>^n1 P) -∗ |={E1}[E2]▷=>^n2 P.
 Proof.
   intros ?. induction 1 => //=.
   iIntros. iApply step_fupd_intro; auto. iNext. by iApply IHle.
 Qed.
 
 Lemma step_fupdN_fupd_swap {E : coPset} (P: PROP) (n: nat):
-  (|={E,E}▷=>^n |={E}=> P) -∗ |={E}=> |={E, E}▷=>^n P.
+  (|={E}▷=>^n |={E}=> P) -∗ |={E}=> |={E}▷=>^n P.
 Proof.
   induction n => //=.
   iIntros "H". iMod "H". iModIntro. iModIntro. iNext. iMod "H".
@@ -53,7 +53,7 @@ Qed.
 
 Lemma step_fupdN_later E1 E2 k (P: PROP):
   E2 ⊆ E1 →
-  ▷^k P -∗ |={E1,E2}▷=>^k P.
+  ▷^k P -∗ |={E1}[E2]▷=>^k P.
 Proof using HAff.
   iIntros (Hle).
   iInduction k as [| k] "IH".
@@ -64,7 +64,7 @@ Proof using HAff.
 Qed.
 
 Lemma step_fupdN_inner_later' E1 E2 k (P: PROP):
-  (▷^k |={E1, E2}=> P)%I -∗ |={E1,∅}=> |={∅,∅}▷=>^k |={∅,E2}=> P.
+  (▷^k |={E1, E2}=> P)%I -∗ |={E1,∅}=> |={∅}▷=>^k |={∅,E2}=> P.
 Proof using HAff.
   iInduction k as [| k] "IH".
   - rewrite //=. iIntros "HP".
@@ -78,7 +78,7 @@ Qed.
 
 Lemma step_fupdN_inner_later E1 E2 k (P: PROP):
   E2 ⊆ E1 →
-  ▷^k P -∗ |={E1,∅}=> |={∅,∅}▷=>^k |={∅,E2}=> P.
+  ▷^k P -∗ |={E1,∅}=> |={∅}▷=>^k |={∅,E2}=> P.
 Proof using HAff.
   iIntros (Hle) "H".
   iApply step_fupdN_inner_later'.
@@ -86,8 +86,8 @@ Proof using HAff.
 Qed.
 
 Lemma step_fupdN_inner_fupd E1 E2 k (P: PROP):
-  (|={E1,∅}=> |={∅,∅}▷=>^k |={∅,E2}=> |={E2}=> P) -∗
-  |={E1,∅}=> |={∅,∅}▷=>^k |={∅,E2}=> P.
+  (|={E1,∅}=> |={∅}▷=>^k |={∅,E2}=> |={E2}=> P) -∗
+  |={E1,∅}=> |={∅}▷=>^k |={∅,E2}=> P.
 Proof.
   iIntros "H". iMod "H". iApply (step_fupdN_wand with "H").
   iModIntro. iIntros "H". by iMod "H".
@@ -96,7 +96,7 @@ Qed.
 Lemma step_fupdN_inner_plain `{BP: BiPlainly PROP} `{@BiFUpdPlainly PROP H BP}
       (k: nat) (P: PROP) :
   Plain P →
-  ⊢ (|={⊤, ∅}=> |={∅, ∅}▷=>^k |={∅, ∅}=> P) -∗
+  ⊢ (|={⊤, ∅}=> |={∅}▷=>^k |={∅}=> P) -∗
   |={⊤}=> ▷^(S k) P.
 Proof.
   iIntros (HPlain).
@@ -114,9 +114,9 @@ Qed.
 Lemma step_fupdN_inner_wand E1 E2 k1 k2 (P Q: PROP):
   E2 ⊆ E1 →
   k2 ≤ k1 →
-  (|={E2,∅}=> |={∅,∅}▷=>^k2 |={∅,E2}=> P) -∗
+  (|={E2,∅}=> |={∅}▷=>^k2 |={∅,E2}=> P) -∗
   (P -∗ Q) -∗
-  |={E1,∅}=> |={∅,∅}▷=>^k1 |={∅,E1}=> Q.
+  |={E1,∅}=> |={∅}▷=>^k1 |={∅,E1}=> Q.
 Proof.
   iIntros (??) "HP HPQ".
   iMod (fupd_intro_mask' _ E2) as "Hclo"; auto.
@@ -167,9 +167,9 @@ Lemma step_fupdN_inner_wand' E1 E1' E2 E2' k1 k2 (P Q: PROP):
   E2 ⊆ E1 →
   E1' ⊆ E2' →
   k2 ≤ k1 →
-  (|={E2,∅}=> |={∅,∅}▷=>^k2 |={∅,E2'}=> P) -∗
+  (|={E2,∅}=> |={∅}▷=>^k2 |={∅,E2'}=> P) -∗
   (P -∗ Q) -∗
-  |={E1,∅}=> |={∅,∅}▷=>^k1 |={∅,E1'}=> Q.
+  |={E1,∅}=> |={∅}▷=>^k1 |={∅,E1'}=> Q.
 Proof using HAff.
   iIntros (???) "HP HPQ".
   iMod (fupd_intro_mask' _ E2) as "Hclo"; auto.
@@ -201,8 +201,8 @@ Proof using HAff.
 Qed.
 
 Lemma step_fupdN_inner_plus E1 E2 k1 k2 (P: PROP):
-  (|={E1,∅}=> |={∅,∅}▷=>^k1 |={∅, E1}=> |={E1,∅}=> |={∅,∅}▷=>^k2 |={∅,E2}=> P)
-  ⊢ |={E1,∅}=> |={∅,∅}▷=>^(k1 + k2) |={∅,E2}=> P.
+  (|={E1,∅}=> |={∅}▷=>^k1 |={∅, E1}=> |={E1,∅}=> |={∅}▷=>^k2 |={∅,E2}=> P)
+  ⊢ |={E1,∅}=> |={∅}▷=>^(k1 + k2) |={∅,E2}=> P.
 Proof using HAff.
   rewrite Nat_iter_add.
   iIntros "H". iMod "H". iModIntro.
@@ -225,7 +225,7 @@ Proof using HAff.
 Qed.
 
 Lemma step_fupdN_ne E1 E2 n:
-  NonExpansive (λ (P: PROP), |={E1, E2}▷=>^n P)%I.
+  NonExpansive (λ (P: PROP), |={E1}[E2]▷=>^n P)%I.
 Proof.
   induction n => //=.
   - apply _.

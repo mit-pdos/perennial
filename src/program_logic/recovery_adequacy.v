@@ -78,7 +78,7 @@ Proof.
 Qed.
 
 Lemma step_fupdN_fresh_pattern_plain {H: invG Σ} n (Q: iProp Σ) `{!Plain Q}:
-  (|={⊤, ∅}▷=>^(S n) |={⊤, ∅}=> ▷ Q) -∗
+  (|={⊤}[∅]▷=>^(S n) |={⊤, ∅}=> ▷ Q) -∗
   (|={⊤}=> ▷^(S (S n)) Q).
 Proof.
   iIntros "H".

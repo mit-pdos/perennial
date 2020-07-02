@@ -14,7 +14,7 @@ Section cfupd.
   Implicit Types (P: iProp Σ).
 
   Definition cfupd (k: nat) E1 E2 :=
-    λ P, (C -∗ |={E1,E1}_(k)=> |={E2, ∅}=> |={∅, ∅}▷=>^(k) |={∅, ∅}=> P)%I.
+    λ P, (C -∗ |={E1,E1}_(k)=> |={E2, ∅}=> |={∅}▷=>^(k) |={∅}=> P)%I.
 
   Lemma cfupd_wand  (E1 E1' E2 E2' : coPset) (k1 k2 : nat) P Q:
     E2' ⊆ E2 →
@@ -146,9 +146,9 @@ Section cfupd.
 
   Theorem elim_modal_step_fupdN_subtract E1 E2 k1 k2 P Q :
     (k1 ≤ k2)%nat →
-    (|={E1,E2}▷=>^k1 P) -∗
-    (P -∗ |={E1,E2}▷=>^(k2-k1) Q) -∗
-    |={E1,E2}▷=>^k2 Q.
+    (|={E1}[E2]▷=>^k1 P) -∗
+    (P -∗ |={E1}[E2]▷=>^(k2-k1) Q) -∗
+    |={E1}[E2]▷=>^k2 Q.
   Proof.
     iIntros (?) "HP HQ".
     destruct (ineq_to_diff _ _ H0) as (k&kd&->&?&?); subst.
@@ -161,9 +161,9 @@ Section cfupd.
   Qed.
 
   Theorem elim_modal_step_fupdN_mono E1 E2 k P Q :
-    (|={E1,E2}▷=>^k P) -∗
+    (|={E1}[E2]▷=>^k P) -∗
     (P -∗ Q) -∗
-    |={E1,E2}▷=>^k Q.
+    |={E1}[E2]▷=>^k Q.
   Proof.
     iIntros "HP HQ".
     iApply (elim_modal_step_fupdN_subtract with "HP"); auto.
@@ -192,7 +192,7 @@ Section cfupd.
 
   Lemma step_fupdN_fupd E1 E2 k P :
     E1 ⊆ E2 →
-    (|={E1,E1}▷=>^k |={E1,E2}=> P) ⊣⊢ (|={E1}=> |={E1,E1}▷=>^k |={E1,E2}=> P).
+    (|={E1}▷=>^k |={E1,E2}=> P) ⊣⊢ (|={E1}=> |={E1}▷=>^k |={E1,E2}=> P).
   Proof.
     intros Hsub.
     destruct k; simpl.
@@ -206,7 +206,7 @@ Section cfupd.
   Qed.
 
   Lemma step_fupdN_fupd_empty E2 k P :
-    (|={∅,∅}▷=>^k |={∅,E2}=> P) ⊣⊢ (|={∅}=> |={∅,∅}▷=>^k |={∅,E2}=> P).
+    (|={∅}▷=>^k |={∅,E2}=> P) ⊣⊢ (|={∅}=> |={∅}▷=>^k |={∅,E2}=> P).
   Proof.
     apply step_fupdN_fupd; set_solver.
   Qed.
@@ -420,9 +420,9 @@ Definition wpc_pre `{!irisG Λ Σ} `{crashG Σ} (s : stuckness) (k: nat)
   (match to_val e1 with
    | Some v => NC ={E1}=∗ Φ v ∗ NC
    | None => ∀ σ1 κ κs n,
-      state_interp σ1 (κ ++ κs) n -∗ NC ={E1,∅}=∗ (|={∅, ∅}▷=>^(S k)
+      state_interp σ1 (κ ++ κs) n -∗ NC ={E1,∅}=∗ (|={∅}▷=>^(S k)
         ((|={∅}=> ⌜if s is NotStuck then reducible e1 σ1 else True⌝ ∗
-        ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ -∗ |={∅,∅}_(S k)=> |={∅,∅,E1}▷=> |={E1, E1}_(S k)=>
+        ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ -∗ |={∅,∅}_(S k)=> |={∅}=> ▷ |={∅,E1}=> |={E1, E1}_(S k)=>
           (state_interp σ2 κs (length efs + n) ∗
           wpc E1 E2 e2 Φ Φc ∗
           ([∗ list] i ↦ ef ∈ efs, wpc ⊤ E2 ef fork_post True) ∗
@@ -931,7 +931,7 @@ Qed.
 
 Lemma wpc_step_fupd s k E1 E2 e Φ Φc :
   to_val e = None →
-  (|={E1,∅}▷=> WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}) -∗
+  (|={E1}[∅]▷=> WPC e @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}) -∗
   WPC e @ s; (S k); E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hval) "Hwp".
@@ -966,7 +966,7 @@ Proof.
 Qed.
 
 Lemma wpc_step_fupd_crash s k E1 E2 e Φ Φc :
-  (WPC e @ s; k; E1 ; E2 {{ Φ }} {{ |={∅,∅}▷=> Φc }}) -∗
+  (WPC e @ s; k; E1 ; E2 {{ Φ }} {{ |={∅}▷=> Φc }}) -∗
   WPC e @ s; (S k); E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "Hwp".
@@ -1451,7 +1451,7 @@ Lemma wpc_lift_step_fupd s k E E' Φ Φc e1 :
   to_val e1 = None →
   ((∀ σ1 κ κs n, state_interp σ1 (κ ++ κs) n ={E,∅}=∗
     (⌜if s is NotStuck then reducible e1 σ1 else True⌝ ∗
-    ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ ={∅,∅,E}▷=∗
+    ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ ={∅}=∗ ▷ |={∅,E}=>
       (state_interp σ2 κs (length efs + n) ∗
        WPC e2 @ s; k; E; E' {{ Φ }} {{ Φc }} ∗
        [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; E' {{ fork_post }} {{ True }})))
@@ -1500,7 +1500,7 @@ Qed.
 Lemma wpc_lift_pure_step_no_fork `{!Inhabited (state Λ)} s k E1 E1' E2 Φ Φc e1 :
   (∀ σ1, if s is NotStuck then reducible e1 σ1 else to_val e1 = None) →
   (∀ κ σ1 e2 σ2 efs, prim_step e1 σ1 κ e2 σ2 efs → κ = [] ∧ σ2 = σ1 ∧ efs = []) →
-  (|={E1,E1'}▷=> ∀ κ e2 efs σ, ⌜prim_step e1 σ κ e2 σ efs⌝ → WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ ▷ Φc
+  (|={E1}[E1']▷=> ∀ κ e2 efs σ, ⌜prim_step e1 σ κ e2 σ efs⌝ → WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ ▷ Φc
   ⊢ WPC e1 @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hsafe Hstep) "H". iApply wpc_lift_step.
@@ -1520,7 +1520,7 @@ Lemma wpc_lift_pure_det_step_no_fork `{!Inhabited (state Λ)} {s k E1 E1' E2 Φ 
   (∀ σ1, if s is NotStuck then reducible e1 σ1 else to_val e1 = None) →
   (∀ σ1 κ e2' σ2 efs', prim_step e1 σ1 κ e2' σ2 efs' →
     κ = [] ∧ σ2 = σ1 ∧ e2' = e2 ∧ efs' = []) →
-  (|={E1,E1'}▷=> WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ ▷ Φc
+  (|={E1}[E1']▷=> WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ ▷ Φc
   ⊢ WPC e1 @ s; k; E1 ; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (? Hpuredet) "H". iApply (wpc_lift_pure_step_no_fork s k E1 E1' E2); try done.
@@ -1535,7 +1535,7 @@ Qed.
 Lemma wpc_pure_step_fupd `{!Inhabited (state Λ)} s k E1 E2 e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
-  (|={E1,E1}▷=>^1 WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ ▷ Φc
+  (|={E1}▷=>^1 WPC e2 @ s; k; E1; E2 {{ Φ }} {{ Φc }}) ∧ ▷ Φc
   ⊢ WPC e1 @ s; k; E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hexec Hφ) "Hwp". specialize (Hexec Hφ).
@@ -1848,7 +1848,7 @@ Lemma wpc_lift_head_step_fupd s k E E' Φ Φc e1 :
   to_val e1 = None →
   ((∀ σ1 κ κs n, state_interp σ1 (κ ++ κs) n ={E,∅}=∗
     (⌜head_reducible e1 σ1⌝ ∗
-    ∀ e2 σ2 efs, ⌜head_step e1 σ1 κ e2 σ2 efs⌝ ={∅,∅,E}▷=∗
+    ∀ e2 σ2 efs, ⌜head_step e1 σ1 κ e2 σ2 efs⌝ ={∅}=∗ ▷ |={∅,E}=>
       (state_interp σ2 κs (length efs + n) ∗
        WPC e2 @ s; k; E; E' {{ Φ }} {{ Φc }} ∗
        [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤; E' {{ fork_post }} {{ True }})))
