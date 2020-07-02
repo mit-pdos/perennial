@@ -680,17 +680,7 @@ Proof using.
           rewrite /valid_addr /block_bytes /= in H0.
           intuition idtac.
           word_cleanup. intuition idtac.
-
-          pose proof (Z_div_mod_eq (int.val (addrOff a)) (Z.to_nat 4096 * 8)) as Hz.
-          rewrite Hoff in Hz.
-
-          revert H5. revert H. rewrite -> Hz by lia.
-          generalize (int.val (addrOff a) `div` (Z.to_nat 4096 * 8)); intro z; intros.
-          destruct (decide (z = 0)).
-          { lia. }
-          destruct (decide (z < 0)).
-          { exfalso. lia. }
-          lia.
+          pose proof (Z_div_mod_eq (int.val (addrOff a)) (Z.to_nat 4096 * 8)) as Hz. lia.
         }
 
         rewrite Hoff0. vm_compute. intros; congruence.
@@ -845,16 +835,7 @@ Opaque PeanoNat.Nat.div.
       intuition idtac.
       word_cleanup. intuition idtac.
 
-      pose proof (Z_div_mod_eq (int.val (addrOff a)) (Z.to_nat 4096 * 8)) as Hz.
-      rewrite Hoff in Hz.
-
-      revert H8. revert H2. rewrite -> Hz by lia.
-      generalize (int.val (addrOff a) `div` (Z.to_nat 4096 * 8)); intro z; intros.
-      destruct (decide (z = 0)).
-      { lia. }
-      destruct (decide (z < 0)).
-      { exfalso. lia. }
-      lia.
+      pose proof (Z_div_mod_eq (int.val (addrOff a)) (Z.to_nat 4096 * 8)) as Hz. lia.
     }
     rewrite Hoff0.
     unfold block_bytes in *.
