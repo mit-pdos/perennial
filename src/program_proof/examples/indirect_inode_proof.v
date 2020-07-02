@@ -128,11 +128,7 @@ Definition is_inode_durable_with σ (addr: u64) (ds: impl_s.t)
 Definition is_inode_durable σ addr : iProp Σ  :=
   ∃ (ds: impl_s.t), is_inode_durable_with σ addr ds.
 
-Definition inode_linv (l:loc) σ addr : iProp Σ :=
-  (* in order to write intermediate specs like [wp_appendIndirect] that talk
-  about this low-level state, it would be helpful to first group it into a
-  record, similar to the inode.t record *)
-  ∃ (direct_s indirect_s: Slice.t) (ds: impl_s.t),
+Definition inode_linv_with (l:loc) σ addr direct_s indirect_s ds : iProp Σ :=
     "Hdurable" ∷ is_inode_durable_with σ addr ds ∗
     "addr" ∷ l ↦[Inode.S :: "addr"] #addr ∗
     "size" ∷ l ↦[Inode.S :: "size"] #(length σ.(inode.blocks)) ∗
@@ -140,6 +136,10 @@ Definition inode_linv (l:loc) σ addr : iProp Σ :=
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hdirect" ∷ is_slice direct_s uint64T 1 (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)).
+
+Definition inode_linv (l:loc) σ addr : iProp Σ :=
+  ∃ (direct_s indirect_s: Slice.t) (ds: impl_s.t),
+    inode_linv_with l σ addr direct_s indirect_s ds.
 
 Definition inode_cinv σ addr: iProp Σ :=
   is_inode_durable σ addr.

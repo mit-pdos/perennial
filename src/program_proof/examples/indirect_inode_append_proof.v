@@ -361,17 +361,18 @@ Proof.
   }
 Qed.
 
-Theorem wp_writeIndirect {l σ addr} ds (indA a: u64) (b: Block) (indAddrs indBlkAddrs : list u64) addr_s:
+Theorem wp_writeIndirect {l σ addr} ds direct_s indirect_s
+        (indA: u64) (indBlkAddrs padding: list u64)
+        (index offset : nat) (a: u64) (b: Block) indblkaddrs_s :
   {{{
        "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect⌝ ∗
-                                                      (*TODO
-       "%Haddrs" ∷ ⌜∃ ls1 ls2, indBlkAddrs = ls1 ++ [a] ++ ls2 ∧ σ.(inode.blocks⌝ ∗*)
-       "Haddr_s" ∷ is_slice addr_s uint64T 1 indBlkAddrs ∗
+       "%Hlookup" ∷ ⌜ds.(impl_s.indAddrs) !! index = Some indA
+                  ∧ ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs ⌝ ∗
        "Ha" ∷ int.val a d↦ b ∗
-       "%HindA" ∷ ⌜∃ i, ds.(impl_s.indAddrs) !! i = Some indA⌝ ∗
-       "Hinv" ∷ inode_linv l σ addr
+       "Haddr_s" ∷ is_slice indblkaddrs_s uint64T 1 (<[offset:=a]> (indBlkAddrs ++ padding)) ∗
+       "Hinv" ∷ inode_linv_with l σ addr direct_s indirect_s ds
   }}}
-  Inode__writeIndirect #l #indA (slice_val addr_s)
+  Inode__writeIndirect #l #indA (slice_val indblkaddrs_s)
   {{{ RET #();
       ∀ σ',
         ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
@@ -509,7 +510,7 @@ Proof.
     {
       iFrame. iSplit; eauto.
     }
-    iIntros (indBlkAddrs_s) "H". iNamed "H". iNamed "HindBlkIndirect".
+    iIntros (indblkaddrs_s) "H". iNamed "H". iNamed "HindBlkIndirect".
     wp_let.
     wp_loadField.
     wp_apply wp_indOff.
@@ -533,15 +534,41 @@ Proof.
     iIntros "HindBlkAddrs_small".
     wp_pures.
     iDestruct (is_slice_split with "[$HindBlkAddrs_small $HindBlkAddrs_cap]") as "HindBlkAddrs".
-    wp_apply (wp_writeIndirect ds indA a b ds.(impl_s.indAddrs)
-                               (<[int.nat offset:=#a]> (indBlkAddrs ++ padding0))
-                               indBlkAddrs_s _ with "[-]").
+                    (*(set impl_s.indBlkAddrsList
+                     (λ ls, <[int.nat index:=(<[int.nat offset:=a]> (indBlkAddrs ++ padding0))]> ls) ds)*)
+    wp_apply (wp_writeIndirect ds direct_s indirect_s indA indBlkAddrs padding0
+                (int.nat index) (int.nat offset) a b indblkaddrs_s
+              with "[-HΦ]").
     {
       iFrame; eauto.
       iSplitR; [iPureIntro; eauto|].
-      admit.
+      iSplitR; [iPureIntro; split; simpl; eauto|].
+      {
+        rewrite -Hlookup.
+        rewrite lookup_take; auto. word.
+      }
+      iSplitL "HindBlkAddrs"; auto.
+      {
+        rewrite /is_slice /list.untype.
+        rewrite -list_fmap_insert.
+        auto.
+      }
+      iSplitR; [iPureIntro; eauto|].
+      iSplitR; [iPureIntro; simpl; eauto|].
+      iSplitR; [iPureIntro; simpl; eauto|].
+      iSplitR; [iPureIntro; simpl; eauto|].
+      iSplitR; [iPureIntro; simpl; eauto|].
+      iSplitR; [iPureIntro; repeat (split; eauto)|].
+
+      (* HdataIndirect *)
+      {
+        admit.
+      }
     }
-    admit.
+
+    iIntros "Hσ'".
+    wp_pures.
+    iApply "HΦ"; eauto.
   }
 Admitted.
 
