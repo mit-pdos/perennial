@@ -290,7 +290,10 @@ Theorem wp_MapIter_3 stk E mref m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (bod
       {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
   ((is_map mref m ∗ I ∅ m) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ v, Φ v }}.
-Proof using t ext_ty IntoValForType0.
+Proof using.
+  (* XXX why is this needed? *)
+  clear IntoValForType0 t.
+
   iIntros "Hismap HI #Hbody HΦ".
   wp_apply (wp_MapIter_2 _ _ _ _
     (λ mtodo mdone,

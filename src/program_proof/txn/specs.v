@@ -838,7 +838,6 @@ Proof.
     wp_apply (wp_MkBlockData with "[$]"). iIntros "_".
     wp_load.
     wp_apply (wp_SliceAppend_updates with "[Hblks Hisblock]").
-    { admit. }
     { iFrame. }
     iIntros (blks') "Hblks'".
     wp_store.
@@ -866,7 +865,7 @@ Proof.
   rewrite left_id in H. subst.
   iApply "HΦ".
   iFrame.
-Admitted.
+Qed.
 
 (*
 Theorem memappend_mapsto_update E mData gData bufamap mx updlist_olds lwh walHeap :

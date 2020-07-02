@@ -569,19 +569,7 @@ Proof.
     iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
     wp_pures.
     wp_load.
-    wp_apply (wp_SliceAppend (V:=u64) with "[HusedSlice]").
-    {
-      iDestruct (is_slice_sz with "HusedSlice") as %HlenUsed.
-      iSplit; eauto. iPureIntro.
-      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      rewrite /list.untype fmap_length in HlenUsed.
-      assert (length (usedBlksList ++ a :: todo) = length (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs))).
-      {
-        rewrite -H0 H; auto.
-      }
-      rewrite take_length app_length in H1.
-      word.
-    }
+    wp_apply (wp_SliceAppend (V:=u64) with "HusedSlice").
 
     iIntros (direct_s') "Hdirect".
     wp_store.
@@ -618,20 +606,7 @@ Proof.
     wp_pures.
     wp_load.
 
-    wp_apply (wp_SliceAppend (V:=u64) with "[HusedSlice]").
-    {
-      iDestruct (is_slice_sz with "HusedSlice") as %HlenUsed.
-      iSplit; eauto. iPureIntro.
-      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      rewrite /list.untype fmap_length in HlenUsed.
-      assert (length (done ++ a :: todo) = length (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs))).
-      {
-        rewrite -H1; auto.
-      }
-      rewrite take_length app_length H2 in H3.
-      rewrite app_length -H0 take_length in HlenUsed.
-      word.
-    }
+    wp_apply (wp_SliceAppend (V:=u64) with "HusedSlice").
 
     iIntros (indirect_s') "Hindirect".
     wp_store.

@@ -591,7 +591,7 @@ Proof.
     iDestruct (is_slice_sz with "Hs") as %Hsz.
     autorewrite with len in Hsz.
     wp_apply (wp_SliceAppend with "[$Hs]"); first by auto.
-    { iPureIntro; split; [ word | auto ]. }
+    { iPureIntro; auto. }
     iIntros (s') "Hs".
     wp_apply (wp_StoreAt with "Hl"); [ val_ty | iIntros "Hl" ].
     wp_pures.
