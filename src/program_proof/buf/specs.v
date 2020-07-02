@@ -569,6 +569,8 @@ Proof using.
   iPureIntro. congruence.
 Qed.
 
+Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) :
   {{{
     slice.is_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
@@ -593,38 +595,10 @@ Proof using.
     unfold block_bytes in *.
     iPureIntro; intuition.
     { destruct K.
-      { simpl. repeat word_cleanup.
-        replace (int.val (addrOff a) + 1%nat - 1) with (int.val (addrOff a)) by lia.
-        rewrite wrap_small; try lia.
-        split.
-        { intuition idtac. apply (Z_div_pos _ 8) in H9; lia. }
-        { rewrite Z.mul_comm in H.
-          eapply Z.div_lt_upper_bound in H; try lia.
-        }
-      }
-      { simpl. repeat word_cleanup.
-        assert (int.val (addrOff a) `div` 8 ≤ (int.val (addrOff a) + 1023) `div` 8) as Hq.
-        { eapply Z_div_le; lia. }
-        assert (int.val (addrOff a) + 1023 < 8 * (Z.to_nat 4096 + 128)) as Hqq.
-        { lia. }
-        replace (int.val (addrOff a) + 1024%nat - 1) with (int.val (addrOff a) + 1023) by lia.
-        rewrite wrap_small; try lia.
-        split.
-        { intuition idtac. apply (Z_div_pos _ 8) in H9; lia. }
-        { eapply Z.div_lt_upper_bound in Hqq; try lia. }
-      }
+      { simpl. repeat word_cleanup. }
+      { simpl. repeat word_cleanup. }
       { replace (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat by reflexivity.
-        repeat word_cleanup.
-        assert (int.val (addrOff a) `div` 8 ≤ (int.val (addrOff a) + (Z.to_nat 4096 * 8 - 1)%nat) `div` 8) as Hq.
-        { eapply Z_div_le; lia. }
-        assert (int.val (addrOff a) + (Z.to_nat 4096 * 8 - 1)%nat < 8 * (Z.to_nat 4096 + 4096)) as Hqq.
-        { lia. }
-        replace (int.val (addrOff a) + (Z.to_nat 4096 * 8)%nat - 1) with (int.val (addrOff a) + (Z.to_nat 4096 * 8 - 1)%nat) by lia.
-        rewrite wrap_small; try lia.
-        split.
-        { intuition idtac. apply (Z_div_pos _ 8) in H9; lia. }
-        { eapply Z.div_lt_upper_bound in Hqq; try lia. }
-      }
+        repeat word_cleanup. }
     }
     {
       replace (int.val s.(Slice.sz)) with (length (Block_to_vals blk) : Z).
@@ -632,55 +606,12 @@ Proof using.
       rewrite length_Block_to_vals. unfold block_bytes.
       repeat word_cleanup.
       destruct K.
-      { simpl. repeat word_cleanup.
-        replace (int.val (addrOff a) + 1%nat - 1) with (int.val (addrOff a)) by lia.
-        rewrite wrap_small; try lia.
-        { rewrite Z.mul_comm in H.
-          eapply Z.div_lt_upper_bound in H; try lia.
-        }
-        split.
-        { intuition idtac. apply (Z_div_pos _ 8) in H5; lia. }
-        { rewrite Z.mul_comm in H.
-          eapply Z.div_lt_upper_bound in H; try lia.
-        }
-      }
-      { simpl. simpl in Hoff. repeat word_cleanup.
-        eapply Z.div_exact in Hoff; try lia.
-        assert (int.val (addrOff a) `mod` 8 = 0).
-        {
-          rewrite Hoff.
-          replace (1024%nat * int.val (addrOff a) `div` 1024%nat) with (int.val (addrOff a) `div` 1024%nat * 128%nat * 8%nat) by lia.
-          rewrite Z_mod_mult. lia.
-        }
-        replace (int.val (addrOff a) + 1024%nat) with ((int.val (addrOff a) `div` 8 + 128) * 8).
-        2: {
-          rewrite Z.mul_add_distr_r.
-          rewrite Z.mul_comm.
-          erewrite <- (Z_div_exact_full_2 _ 8); try lia.
-        }
-        rewrite roundup_multiple; try lia.
-        rewrite wrap_small; try lia.
-        { destruct (decide (int.val (addrOff a) `div` 8 + 128 > 4096)); eauto.
-          exfalso. eapply (Zmult_gt_compat_r _ _ 8) in g; try lia.
-          rewrite Z.mul_add_distr_r in g.
-          rewrite Z.mul_comm in g. erewrite <- (Z_div_exact_full_2 _ 8) in g; try lia.
-        }
-        split.
-        { intuition idtac. apply (Z_div_pos _ 8) in H5; lia. }
-        { destruct (decide (int.val (addrOff a) `div` 8 + 128 > 4096)); try lia.
-          exfalso. eapply (Zmult_gt_compat_r _ _ 8) in g; try lia.
-          rewrite Z.mul_add_distr_r in g.
-          rewrite Z.mul_comm in g. erewrite <- (Z_div_exact_full_2 _ 8) in g; try lia.
-        }
-      }
+      { simpl. repeat word_cleanup. }
+      { simpl. simpl in Hoff. repeat word_cleanup. }
       {
         assert (a.(addrOff) = 0) as Hoff0.
-        { replace (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat in Hoff.
-          2: { reflexivity. }
-          rewrite /valid_addr /block_bytes /= in H0.
-          intuition idtac.
-          word_cleanup. intuition idtac.
-          pose proof (Z_div_mod_eq (int.val (addrOff a)) (Z.to_nat 4096 * 8)) as Hz. lia.
+        { replace (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat in Hoff by reflexivity.
+          word.
         }
 
         rewrite Hoff0. vm_compute. intros; congruence.
@@ -718,14 +649,6 @@ Opaque PeanoNat.Nat.div.
     rewrite word.unsigned_add.
     word_cleanup.
     replace (int.val a.(addrOff) + Z.of_nat 1 - 1) with (int.val a.(addrOff)) by lia.
-    rewrite wrap_small.
-    2: {
-      split.
-      - assert (0 ≤ int.val a.(addrOff) `div` 8); try lia.
-        apply Z_div_pos; lia.
-      - assert (int.val a.(addrOff) `div` 8 ≤ int.val a.(addrOff)); try lia.
-        apply Zdiv_le_upper_bound; lia.
-    }
 
     rewrite -H3 /extract_nth.
     replace (int.nat a.(addrOff) `div` 8 * 1)%nat with (int.nat a.(addrOff) `div` 8)%nat by lia.
@@ -736,7 +659,6 @@ Opaque PeanoNat.Nat.div.
       eauto. }
     f_equal.
     { rewrite Z2Nat.inj_add; try word.
-      2: { eapply Z_div_pos; word. }
       rewrite Z2Nat_inj_div; try word.
       replace (Z.to_nat 1) with (1)%nat by reflexivity.
       replace (Z.to_nat 8) with (8)%nat by reflexivity.
@@ -753,14 +675,6 @@ Opaque PeanoNat.Nat.div.
     rewrite word.unsigned_add.
     word_cleanup.
     replace (int.val a.(addrOff) + Z.of_nat (Z.to_nat 128 * 8) - 1) with (int.val a.(addrOff) + (128*8-1)) by lia.
-    rewrite wrap_small.
-    2: {
-      split.
-      - assert (0 ≤ (int.val a.(addrOff) + (128*8-1)) `div` 8); try lia.
-        apply Z_div_pos; lia.
-      - assert ((int.val a.(addrOff) + (128*8-1)) `div` 8 ≤ int.val a.(addrOff) + (128*8-1)); try lia.
-        apply Zdiv_le_upper_bound; lia.
-    }
 
     rewrite -Hatoff /extract_nth.
     f_equal.
@@ -772,8 +686,7 @@ Opaque PeanoNat.Nat.div.
       rewrite -Nat.div_div; try word.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
-        replace (int.val (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff.
-        2: { word. }
+        replace (int.val (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -mod_Zmod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
@@ -785,7 +698,6 @@ Opaque PeanoNat.Nat.div.
     {
       simpl bufSz in *.
       rewrite Z2Nat.inj_add; try word.
-      2: { eapply Z_div_pos; word. }
       rewrite Z2Nat_inj_div; try word.
       replace (Z.to_nat 1) with (1)%nat by reflexivity.
       replace (Z.to_nat 8) with (8)%nat by reflexivity.
@@ -797,8 +709,7 @@ Opaque PeanoNat.Nat.div.
       rewrite -Nat.div_div; try word.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
-        replace (int.val (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff.
-        2: { word. }
+        replace (int.val (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -mod_Zmod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
@@ -829,13 +740,10 @@ Opaque PeanoNat.Nat.div.
     iExactEq "Hs".
 
     assert (a.(addrOff) = 0) as Hoff0.
-    { replace (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat in Hoff.
-      2: { reflexivity. }
+    { replace (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat in Hoff by reflexivity.
       rewrite /valid_addr /block_bytes /= in H0.
       intuition idtac.
-      word_cleanup. intuition idtac.
-
-      pose proof (Z_div_mod_eq (int.val (addrOff a)) (Z.to_nat 4096 * 8)) as Hz. lia.
+      word_cleanup.
     }
     rewrite Hoff0.
     unfold block_bytes in *.
