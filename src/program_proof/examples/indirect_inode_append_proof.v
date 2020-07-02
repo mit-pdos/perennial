@@ -374,35 +374,35 @@ Theorem wp_writeIndirect {l σ addr} ds direct_s indirect_s
   }}}
   Inode__writeIndirect #l #indA (slice_val indblkaddrs_s)
   {{{ RET #();
-      ∀ σ',
-        ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
-                  "Hinv" ∷ inode_linv l σ' addr
+      ∀ σ' ds',
+        ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)
+        ∧ ∃ indBlkAddrs padding, (ds' = set impl_s.indBlkAddrsList (λ ls, <[int.nat index:=(<[int.nat offset:=a]> (indBlkAddrs ++ padding))]> ls) ds)⌝ -∗
+                  "Hinv" ∷ inode_linv_with l σ' addr direct_s indirect_s ds'
   }}}.
 Proof.
 Admitted.
 
-Theorem wp_appendIndirect {l σ addr d lref} (a: u64) b:
+Theorem wp_appendIndirect {l σ addr d lref direct_s indirect_s ds} (a: u64) b:
   {{{
     "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect⌝ ∗
     "Hro_state" ∷ inode_state l d lref ∗
-    "Hinv" ∷ inode_linv l σ addr ∗
+    "Hinv" ∷ inode_linv_with l σ addr direct_s indirect_s ds ∗
     "Ha" ∷ int.val a d↦ b
   }}}
   Inode__appendIndirect #l #a
   {{{ (ok: bool), RET #ok;
       if ok then
-      (∀ σ',
-          ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
-                  "Hinv" ∷ inode_linv l σ' addr)
+      (∀ σ' ds' index offset,
+          ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ) ∧
+          index = (length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks ∧
+          offset = (length σ.(inode.blocks) - maxDirect) `mod` indirectNumBlocks ∧
+          ∃ indBlkAddrs padding,
+            (ds' = set impl_s.indBlkAddrsList (λ ls, <[int.nat index:=(<[int.nat offset:=a]> (indBlkAddrs ++ padding))]> ls) ds)⌝
+        -∗ "Hinv" ∷ inode_linv_with l σ' addr direct_s indirect_s ds')
       else
-        "Hinv" ∷ inode_linv l σ addr ∗
+        "Hinv" ∷ inode_linv_with l σ addr direct_s indirect_s ds ∗
         "Ha" ∷ int.val a d↦ b ∗
-        (* TODO: in order to talk about the indirect blocks, need to
-        have a lower-level predicate than inode_linv that exposes some
-        of the internal state (like the number of indirect blocks) *)
-        "Hsize" ∷  ∃ indirect_s,
-          l ↦[Inode.S :: "indirect"] (slice_val indirect_s) -∗
-            ⌜ (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1) >= int.val indirect_s.(Slice.sz) ⌝
+        "Hsize" ∷ ⌜ (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1) >= int.val indirect_s.(Slice.sz) ⌝
   }}}.
 Proof.
   iIntros (Φ) "Hpre". iNamed "Hpre".
@@ -444,6 +444,15 @@ Proof.
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
 
+  assert (((Z.of_nat (length σ.(inode.blocks)) = 500) ∧ (Z.of_nat ds.(impl_s.numInd) = 0))
+          ∨ ((Z.of_nat (length σ.(inode.blocks)) > 500) ∧ (Z.of_nat ds.(impl_s.numInd) = (Z.of_nat (length σ.(inode.blocks)) - 500) `div` 512 + 1)))
+  as HnumInd.
+  {
+    destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
+    + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
+    + apply bool_decide_eq_false in H. apply Znot_le_gt in H. rewrite (HnumInd1 H). word.
+  }
+
   wp_call.
   wp_loadField.
   wp_apply wp_slice_len.
@@ -457,18 +466,12 @@ Proof.
   {
     iApply "HΦ".
     iFrame.
-    iSplitL; auto.
-    {
-      iExists direct_s, indirect_s, ds.
-      unfold is_inode_durable_with. iFrame.
-      repeat (iSplitL; iPureIntro; repeat (split; auto); auto);
-        [exists daddrs | exists iaddrs]; eauto.
-    }
-    iExists indirect_s.
-    iIntros "Hindirect_sz".
-    iPureIntro.
-    rewrite HindNum in Heqb0.
-    replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0; word.
+    repeat (iSplitR; iPureIntro; [repeat (split; eauto)|]).
+    rewrite /list.untype fmap_length -Hiaddrs in HlenInd.
+    assert (Z.of_nat (length iaddrs) = int.val indirect_s.(Slice.sz)) by word.
+    rewrite -H -HiaddrsLen.
+    destruct HnumInd as [[Hlen HnumInd] | [Hlen HnumInd]]; rewrite HnumInd; try word.
+    rewrite Hlen. change (500 - 500) with 0. rewrite Zdiv_0_l. word.
   }
 
   (*Fits! Don't need to allocate another block, phew*)
@@ -534,8 +537,7 @@ Proof.
     iIntros "HindBlkAddrs_small".
     wp_pures.
     iDestruct (is_slice_split with "[$HindBlkAddrs_small $HindBlkAddrs_cap]") as "HindBlkAddrs".
-                    (*(set impl_s.indBlkAddrsList
-                     (λ ls, <[int.nat index:=(<[int.nat offset:=a]> (indBlkAddrs ++ padding0))]> ls) ds)*)
+
     wp_apply (wp_writeIndirect ds direct_s indirect_s indA indBlkAddrs padding0
                 (int.nat index) (int.nat offset) a b indblkaddrs_s
               with "[-HΦ]").
@@ -553,24 +555,48 @@ Proof.
         rewrite -list_fmap_insert.
         auto.
       }
-      iSplitR; [iPureIntro; eauto|].
-      iSplitR; [iPureIntro; simpl; eauto|].
-      iSplitR; [iPureIntro; simpl; eauto|].
-      iSplitR; [iPureIntro; simpl; eauto|].
-      iSplitR; [iPureIntro; simpl; eauto|].
-      iSplitR; [iPureIntro; repeat (split; eauto)|].
+      repeat (iSplitR; [iPureIntro; simpl; eauto|]).
+
+      (* Hlen *)
+      { repeat (split; eauto). }
 
       (* HdataIndirect *)
       {
-        admit.
+        iAssert (∃ indBlkAddrs padding,
+                  ⌜ds.(impl_s.indBlkAddrsList) !! int.nat index = Some indBlkAddrs⌝ ∗
+                  is_indirect indA indBlkAddrs indBlk (ind_blocks_at_index σ (int.nat index)) padding)%I
+        with "[diskAddr Hdata]" as "HaddrIndirect".
+        {
+          iExists indBlkAddrs, padding0.
+          unfold is_indirect.
+          iFrame. iSplit; auto.
+        }
+        by iSpecialize ("HdataIndirect" with "HaddrIndirect").
       }
     }
 
     iIntros "Hσ'".
     wp_pures.
     iApply "HΦ"; eauto.
+    iIntros (σ' ds' index0 offset0 [Hσ' [Hindex0 [Hoffset0 HindBlkAddrsList]]]).
+    iApply ("Hσ'" $! σ' ds').
+    iPureIntro; split; eauto.
+    rewrite /maxDirect /indirectNumBlocks in Hindex, Hoffset.
+    assert (int.nat index = int.nat index0).
+    {
+      replace ((int.val (length σ.(inode.blocks)) - 500) `div` 512) with ((length σ.(inode.blocks) - 500) `div` 512) in Hindex by word.
+      rewrite -Hindex in Hindex0. word.
+    }
+    assert (int.nat offset = int.nat offset0).
+    {
+      replace ((int.val (length σ.(inode.blocks)) - 500) `mod` 512) with ((length σ.(inode.blocks) - 500) `mod` 512) in Hoffset by word.
+      rewrite -Hoffset in Hoffset0; word.
+    }
+    replace (int.nat (U64 (Z.of_nat (int.nat index)))) with (int.nat index) by word.
+    replace (int.nat (U64 (Z.of_nat (int.nat offset)))) with (int.nat offset) by word.
+    rewrite H H0. auto.
   }
-Admitted.
+Qed.
 
 Theorem wpc_Inode__Append {k E2}
         {l k' P addr}
