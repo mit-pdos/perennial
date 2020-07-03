@@ -24,6 +24,7 @@ test: $(TEST_VO)
 vos: src/ShouldBuild.vos
 vok: $(QUICK_CHECK_FILES:.v=.vok)
 interpreter: src/goose_lang/interpreter/generated_test.vos
+assumptions: src/program_proof/examples/assumptions.vo
 
 _CoqProject: _CoqProject.in
 	@echo "COQPROJECT"
@@ -81,7 +82,7 @@ skip-qed:
 unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
-ci: skip-qed src/ShouldBuild.vo src/program_proof/examples/assumptions.vo $(TEST_VO)
+ci: skip-qed src/ShouldBuild.vo $(TEST_VO)
 	$(Q)if [ ${TIMED} = "true" ]; then \
 		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
 		fi
