@@ -212,8 +212,6 @@ Proof.
       iApply "HΦ"; iFrame.
     - iApply "HΦ".
       iFrame "Hlocked".
-      apply negb_false_iff in Heqb.
-      apply bool_decide_eq_true in Heqb.
       iNamed "HdiskEnd_circ".
       iSplitL.
       { iExists _; iFrame "# ∗".

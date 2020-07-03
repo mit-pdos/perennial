@@ -405,13 +405,13 @@ Proof.
       { iFrame "# ∗". }
       iIntros (progress) "(Hlkinv&Hlk_held&Hlogger)".
       wp_pures.
-      destruct (negb progress); [ wp_if_true | wp_if_false ]; wp_pures.
+      wp_if_destruct.
       + wp_loadField.
         wp_apply (wp_condWait with "[$cond_logger $lk $Hlkinv $Hlk_held]").
         iIntros "(Hlk_held&Hlkinv)".
         wp_pures.
         iApply ("HΦ" with "[$]").
-      + iApply ("HΦ" with "[$]").
+      + wp_pures. iApply ("HΦ" with "[$]").
     - iApply ("HΦ" with "[$]").
   }
   iIntros "(Hlkinv&Hlk_held&Hlogger)".
