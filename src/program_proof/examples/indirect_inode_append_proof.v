@@ -13,6 +13,8 @@ From Perennial.program_proof Require Import marshal_proof disk_lib.
 Hint Unfold inode.wf MaxBlocks indirectNumBlocks maxDirect maxIndirect: word.
 Hint Unfold inode.wf MaxBlocks indirectNumBlocks maxDirect maxIndirect: auto.
 
+Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Section goose.
 Context `{!heapG Σ}.
 Context `{!crashG Σ}.
@@ -66,7 +68,8 @@ Proof.
 
   (* A bunch of facts and prep stuff *)
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-  destruct Hlen as [HdirLen [HindirLen [HszMax [HnumInd1 [HnumInd2 HnumIndBlocks]]]]].
+  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct HnumInd as [HnumInd1 HnumInd2].
   iDestruct (is_slice_sz with "Hdirect") as %HlenDir.
 
   change ((set inode.blocks
@@ -78,14 +81,15 @@ Proof.
   assert (ds.(impl_s.numInd) <= 10) as HnumIndMax.
   {
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
-    + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
+    + apply bool_decide_eq_true in H. rewrite (HnumInd1 H); word.
     + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
-      rewrite (HnumInd1 H).
-      assert (((length σ.(inode.blocks) - 500) `div` 512) < 10).
+      rewrite (HnumInd2 H).
+      assert (((length σ.(inode.blocks) - 500) `div` 512) <= 10).
       {
-        apply (Zdiv_lt_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
+        apply (Zdiv_le_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
       }
-      word.
+      unfold MaxBlocks, roundUpDiv, indirectNumBlocks, maxDirect, indirectNumBlocks, maxIndirect in *.
+      lia.
   }
   assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
   {
@@ -103,10 +107,10 @@ Proof.
   {
     replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0 by word.
     assert (length (σ.(inode.blocks)) <= 500) as Hsz by word.
-    pose (HnumInd2 Hsz) as HnumInd.
+    pose (HnumInd1 Hsz) as HnumInd.
 
     wp_loadField.
-    wp_apply (wp_SliceAppend (V:=u64) with "Hdirect").
+    wp_apply (wp_SliceAppend (V:=u64) with "[$Hdirect]").
     iIntros (direct_s') "Hdirect".
     Transparent slice.T.
     wp_storeField.
@@ -232,7 +236,7 @@ Proof.
       iSplitR.
       {
         iPureIntro. eauto.
-        rewrite (HnumInd2 Hsz) in Hencoded'.
+        rewrite (HnumInd1 Hsz) in Hencoded'.
         rewrite take_0 nil_length in Hencoded'.
         unfold MaxBlocks, indirectNumBlocks, maxDirect, maxIndirect in *.
         change (10 - 0%nat) with 10 in *.
@@ -297,6 +301,14 @@ Proof.
         rewrite Min.min_l; [len | word].
       }
 
+      (* HnumInd *)
+      iSplitR.
+      {
+        iPureIntro; unfold maxDirect, indirectNumBlocks in *; split; auto.
+        intros.
+        admit. (*XXX TODO might need too add more information?*)
+      }
+
       (* Hdirect *)
       iSplitL "HdataDirect Ha".
       {
@@ -353,7 +365,7 @@ Proof.
     apply Znot_lt_ge in Heqb0.
     replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0; word.
   }
-Qed.
+Admitted.
 
 Theorem wp_writeIndirect {l σ addr d lref} ds direct_s indirect_s
         (indA: u64) (indBlkAddrs padding: list u64)
@@ -385,7 +397,8 @@ Proof.
   iNamed "Hro_state".
   iNamed "Hdurable".
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-  destruct Hlen0 as [HdirLen [HindirLen [HszMax [HnumInd1 [HnumInd2 HnumIndBlocks]]]]].
+  destruct Hlen0 as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct HnumInd as [HnumInd1 HnumInd2].
   destruct Hlookup as [HlookupIndA [HlookupIndBlkAddrs [indBlock HlookupIndBlk]]].
   iDestruct (is_slice_sz with "Hindirect") as %HlenInd.
 
@@ -398,14 +411,15 @@ Proof.
   assert (ds.(impl_s.numInd) <= 10) as HnumIndMax.
   {
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
-    + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
+    + apply bool_decide_eq_true in H. rewrite (HnumInd1 H); word.
     + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
-      rewrite (HnumInd1 H).
-      assert (((length σ.(inode.blocks) - 500) `div` 512) < 10).
+      rewrite (HnumInd2 H).
+      assert (((length σ.(inode.blocks) - 500) `div` 512) <= 10).
       {
-        apply (Zdiv_lt_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
+        apply (Zdiv_le_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
       }
-      word.
+      unfold MaxBlocks, roundUpDiv, indirectNumBlocks, maxDirect, indirectNumBlocks, maxIndirect in *.
+      lia.
   }
   assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
   {
@@ -418,12 +432,14 @@ Proof.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
 
   assert (((Z.of_nat (length σ.(inode.blocks)) = 500) ∧ (Z.of_nat ds.(impl_s.numInd) = 0))
-          ∨ ((Z.of_nat (length σ.(inode.blocks)) > 500) ∧ (Z.of_nat ds.(impl_s.numInd) = (Z.of_nat (length σ.(inode.blocks)) - 500) `div` 512 + 1)))
+          ∨ ((Z.of_nat (length σ.(inode.blocks)) > 500)
+             ∧ (Z.of_nat ds.(impl_s.numInd) = roundUpDiv (Z.of_nat (length σ.(inode.blocks)) - 500) 512)))
   as HnumInd.
   {
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
-    + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
-    + apply bool_decide_eq_false in H. apply Znot_le_gt in H. rewrite (HnumInd1 H). word.
+    + apply bool_decide_eq_true in H. rewrite (HnumInd1 H); word.
+    + apply bool_decide_eq_false in H. apply Znot_le_gt in H. rewrite (HnumInd2 H).
+      right. split; auto.
   }
 
   wp_call.
@@ -478,15 +494,13 @@ Proof.
       direct_s indirect_s with "[direct indirect size Hdirect Hindirect]").
     {
       repeat (split; len; simpl; try word).
-      unfold /MaxBlocks
-    }
-
-
+      - unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+        admit.
+    (*
 
     iApply "HΦ".
     iFrame.
-    autorewrite with len in H0.
-
+    autorewrite with len in H0.*)
 Admitted.
 
 Theorem wp_appendIndirect {l σ addr d lref direct_s indirect_s ds} (a: u64) b:
@@ -509,7 +523,7 @@ Theorem wp_appendIndirect {l σ addr d lref direct_s indirect_s ds} (a: u64) b:
       else
         "Hinv" ∷ inode_linv_with l σ addr direct_s indirect_s ds ∗
         "Ha" ∷ int.val a d↦ b ∗
-        "Hsize" ∷ ⌜ (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1) >= int.val indirect_s.(Slice.sz) ⌝
+        "Hsize" ∷ ⌜ (roundUpDiv ((length σ.(inode.blocks)) - maxDirect) indirectNumBlocks >= int.val indirect_s.(Slice.sz)) ⌝
   }}}.
 Proof.
   iIntros (Φ) "Hpre". iNamed "Hpre".
@@ -520,7 +534,8 @@ Proof.
   iNamed "Hro_state".
   iNamed "Hdurable".
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-  destruct Hlen as [HdirLen [HindirLen [HszMax [HnumInd1 [HnumInd2 HnumIndBlocks]]]]].
+  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct HnumInd as [HnumInd1 HnumInd2].
   iDestruct (is_slice_sz with "Hindirect") as %HlenInd.
 
   change ((set inode.blocks
@@ -532,14 +547,14 @@ Proof.
   assert (ds.(impl_s.numInd) <= 10) as HnumIndMax.
   {
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
-    + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
+    + apply bool_decide_eq_true in H. rewrite (HnumInd1 H); word.
     + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
-      rewrite (HnumInd1 H).
-      assert (((length σ.(inode.blocks) - 500) `div` 512) < 10).
+      rewrite (HnumInd2 H).
+      assert (((length σ.(inode.blocks) - 500) `div` 512) <= 10).
       {
-        apply (Zdiv_lt_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
+        apply (Zdiv_le_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
       }
-      word.
+      unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. lia.
   }
   assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
   {
@@ -552,12 +567,14 @@ Proof.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
 
   assert (((Z.of_nat (length σ.(inode.blocks)) = 500) ∧ (Z.of_nat ds.(impl_s.numInd) = 0))
-          ∨ ((Z.of_nat (length σ.(inode.blocks)) > 500) ∧ (Z.of_nat ds.(impl_s.numInd) = (Z.of_nat (length σ.(inode.blocks)) - 500) `div` 512 + 1)))
+          ∨ ((Z.of_nat (length σ.(inode.blocks)) > 500)
+             ∧ (Z.of_nat ds.(impl_s.numInd) = roundUpDiv (Z.of_nat (length σ.(inode.blocks)) - 500) 512)))
   as HnumInd.
   {
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H.
-    + apply bool_decide_eq_true in H. rewrite (HnumInd2 H); word.
-    + apply bool_decide_eq_false in H. apply Znot_le_gt in H. rewrite (HnumInd1 H). word.
+    + apply bool_decide_eq_true in H. rewrite (HnumInd1 H); word.
+    + apply bool_decide_eq_false in H. apply Znot_le_gt in H. rewrite (HnumInd2 H).
+      unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. lia.
   }
 
   wp_call.
@@ -578,7 +595,7 @@ Proof.
     assert (Z.of_nat (length iaddrs) = int.val indirect_s.(Slice.sz)) by word.
     rewrite -H -HiaddrsLen.
     destruct HnumInd as [[Hlen HnumInd] | [Hlen HnumInd]]; rewrite HnumInd; try word.
-    rewrite Hlen. change (500 - 500) with 0. rewrite Zdiv_0_l. word.
+    rewrite Hlen. change (500 - 500) with 0. rewrite /roundUpDiv. word.
   }
 
   (*Fits! Don't need to allocate another block, phew*)
@@ -595,7 +612,7 @@ Proof.
     destruct (list_lookup_lt _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (int.nat index)) as [indA Hlookup].
     {
       unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      rewrite firstn_length Hindex.
+      rewrite firstn_length.
       rewrite Min.min_l; word.
     }
     destruct (list_lookup_lt _ ds.(impl_s.indBlocks) (int.nat index)) as [indBlk HlookupBlk].
@@ -652,20 +669,15 @@ Proof.
       iFrame; eauto.
       iSplitR; [iPureIntro; eauto|].
       iSplitR; [iPureIntro; split; simpl; eauto|].
-      {
-        rewrite -Hlookup.
-        rewrite lookup_take; auto. word.
-      }
+      iSplitR; [iPureIntro; eauto|].
       iSplitL "HindBlkAddrs"; auto.
       {
         rewrite /is_slice /list.untype.
         rewrite -list_fmap_insert.
         auto.
       }
+      iSplitR; unfold inode_state; eauto.
       repeat (iSplitR; [iPureIntro; simpl; eauto|]).
-
-      (* Hlen *)
-      { repeat (split; eauto). }
 
       (* HdataIndirect *)
       {
@@ -705,7 +717,7 @@ Proof.
   }
 Qed.
 
-Theorem wpc_Inode__Append {k E2}
+Theorem wpc_Inode__Append {k E2}  (*  *)
         {l k' P addr}
         (* allocator stuff *)
         {Palloc γalloc domain n}
@@ -735,3 +747,6 @@ Proof.
   iNamed "Hinode". iNamed "Hro_state".
 Admitted.
 End goose.
+
+(* to preserve backwards-compatibility *)
+Ltac Zify.zify_post_hook ::= idtac.

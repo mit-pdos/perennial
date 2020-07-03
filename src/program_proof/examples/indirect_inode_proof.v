@@ -14,6 +14,9 @@ Definition maxDirect: Z := 500.
 Definition maxIndirect: Z := 10.
 Definition indirectNumBlocks: Z := 512.
 Definition MaxBlocks: Z := maxDirect + maxIndirect*indirectNumBlocks.
+Definition roundUpDiv (x k: Z) := (x + (k-1)) / k.
+
+Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Module inode.
   Record t :=
@@ -85,15 +88,11 @@ Definition is_inode_durable_with σ (addr: u64) (ds: impl_s.t)
       maxIndirect = length(ds.(impl_s.indAddrs)) ∧
       (Z.of_nat (length σ.(inode.blocks))) <= MaxBlocks ∧
       ds.(impl_s.numInd) = length(ds.(impl_s.indBlocks))⌝) ∗
-    "%HnumInd" :: ⌜
+    "%HnumInd" ∷ ⌜
       ((length σ.(inode.blocks) <= maxDirect) -> (ds.(impl_s.numInd) = 0%nat)) ∧
       ((Z.of_nat (length σ.(inode.blocks)) > maxDirect) ->
-       (
-         (((Z.of_nat (length σ.(inode.blocks))) - maxDirect) `mod` indirectNumBlocks = 0 ->
-          (Z.of_nat (ds.(impl_s.numInd)) = (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks))) ∧
-         (((Z.of_nat (length σ.(inode.blocks))) - maxDirect) `mod` indirectNumBlocks > 0 ->
-          (Z.of_nat (ds.(impl_s.numInd)) = (Z.add (((length σ.(inode.blocks)) - maxDirect) `div` indirectNumBlocks) 1)))
-      ))⌝ ∗
+       (Z.of_nat (ds.(impl_s.numInd)) = roundUpDiv ((length σ.(inode.blocks)) - maxDirect) indirectNumBlocks))
+    ⌝ ∗
     "Hhdr" ∷ (int.val addr d↦ ds.(impl_s.hdr)) ∗
     (* direct addresses correspond to data blocks in inode spec *)
     "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
@@ -181,10 +180,12 @@ Qed.
 Theorem wp_Open k {d:loc} {addr σ P} :
   {{{ inode_cinv σ addr ∗ P σ }}}
     indirect_inode.Open #d #addr
-  {{{ l, RET #l; is_inode l k P addr}}}. Proof.
+    {{{ l, RET #l; is_inode l k P addr}}}.
+Proof.
   iIntros (Φ) "(Hinode&HP) HΦ"; unfold inode_cinv; iNamed "Hinode".
   iDestruct (big_sepL2_length with "HdataDirect") as %Hblocklen.
-  destruct Hlen as [HdirLen [HindirLen [HszMax [HnumInd1 [HnumInd2 HnumIndBlocks]]]]].
+  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct HnumInd as [HnumInd1 HnumInd2].
 
   wp_call.
   wp_apply (wp_Read with "Hhdr").
@@ -262,7 +263,7 @@ with "Hs").
       { unfold maxDirect in *. word. }
       replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in H; word.
     }
-    pose (HnumInd2 HszBound) as HnumInd.
+    pose (HnumInd1 HszBound) as HnumInd.
     wp_apply (wp_SliceTake uint64T (ds.(impl_s.numInd))).
     {
       rewrite HnumInd.
@@ -312,7 +313,13 @@ with "Hs").
       - unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in H; word.
     }
-    pose proof (HnumInd1 HszBound) as HnumInd.
+    pose proof (HnumInd2 HszBound) as HnumInd.
+    assert ((roundUpDiv ((Z.of_nat (length σ.(inode.blocks))) - maxDirect) indirectNumBlocks) < maxIndirect + 1)
+      as HmaxCmp. {
+      unfold MaxBlocks, roundUpDiv, indirectNumBlocks, maxDirect, indirectNumBlocks, maxIndirect in *.
+      apply Zdiv_lt_upper_bound; eauto; lia.
+    }
+
     wp_apply (wp_SliceTake uint64T maxDirect).
     {
       assert (maxDirect = int.val (diraddr_s.(Slice.sz))).
@@ -324,7 +331,6 @@ with "Hs").
     wp_apply (wp_SliceTake uint64T (ds.(impl_s.numInd))).
     {
       rewrite HnumInd.
-      }
       unfold maxIndirect, maxDirect, indirectNumBlocks in *.
       replace (int.val indaddr_s.(Slice.sz)) with 10 by word.
       word.
@@ -338,7 +344,7 @@ with "Hs").
                     (∃ σ addr, "Hlockinv" ∷ inode_linv l σ addr∗ "HP" ∷ P σ)%I
             with "[$Hlock] [-HΦ]") as "#Hlock".
     { iExists _, _; iFrame.
-      iExists _, _, ds. (*(slice_take diraddr_s uint64T 500), (slice_take indaddr_s uint64T (ds.(impl_s.numInd))),*)
+      iExists _, _, ds.
       iFrame.
       iSplit; iFrame.
       - iFrame "∗ %".
@@ -354,10 +360,10 @@ with "Hs").
           rewrite fmap_length; word.
         }
         {
-          pose (indirect_blocks_upperbound (length σ.(inode.blocks))) as Hbound.
-          iPoseProof (is_slice_take_cap indaddr_s uint64T (u64val <$> ds.(impl_s.indAddrs)) (ds.(impl_s.numInd)) with "Hindaddrs") as "H".
-          { rewrite fmap_length -HindirLen /maxIndirect HnumInd; unfold maxIndirect in Hbound; word. }
-          by replace (int.nat (U64 (Z.of_nat (ds.(impl_s.numInd))))) with (ds.(impl_s.numInd)) by word.
+          iPoseProof (is_slice_take_cap indaddr_s uint64T (u64val <$> ds.(impl_s.indAddrs)) (ds.(impl_s.numInd)) with "Hindaddrs")
+            as "H".
+          { rewrite fmap_length -HindirLen HnumInd. word. }
+          by replace (int.nat (U64 (Z.of_nat ds.(impl_s.numInd)))) with (ds.(impl_s.numInd)) by word.
         }
     }
     iAssert (is_crash_lock inodeN inodeN k #lref (∃ σ, inode_linv l σ addr ∗ P σ) True) as "#Hcrash_lock".
@@ -529,7 +535,8 @@ Proof.
   iDestruct (is_slice_split with "Hdirect") as "[Hdirect_small Hdirect]".
   iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
   iNamed "Hdurable".
-  destruct Hlen as [HdirLen [HindirLen [HszMax [HnumInd1 [HnumInd2 HnumIndBlocks]]]]].
+  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct HnumInd as [HnumInd1 HnumInd2].
 
   wp_apply (wp_forSlicePrefix
               (fun done todo =>
@@ -545,7 +552,8 @@ Proof.
     iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
     wp_pures.
     wp_load.
-    wp_apply (wp_SliceAppend (V:=u64) with "HusedSlice").
+    iDestruct (is_slice_sz with "HusedSlice") as %HusedSlicelen.
+    wp_apply (wp_SliceAppend (V:=u64) with "[$HusedSlice]").
 
     iIntros (direct_s') "Hdirect".
     wp_store.
@@ -582,7 +590,8 @@ Proof.
     wp_pures.
     wp_load.
 
-    wp_apply (wp_SliceAppend (V:=u64) with "HusedSlice").
+    iDestruct (is_slice_sz with "HusedSlice") as %HusedSlicelen.
+    wp_apply (wp_SliceAppend (V:=u64) with "[$HusedSlice]").
 
     iIntros (indirect_s') "Hindirect".
     wp_store.
@@ -656,7 +665,8 @@ Proof.
   iAssert ((∃ σ , inode_linv l σ addr ∗ P σ)%I) as (σ) "(-#Hlockinv & -#HP)". { admit. }
   iNamed "Hlockinv".
   iNamed "Hdurable".
-  destruct Hlen as [HdirLen [HindirLen [HszMax [HnumInd1 [HnumInd2 HnumIndBlocks]]]]].
+  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct HnumInd as [HnumInd1 HnumInd2].
   wp_loadField.
   wp_op.
   wp_if_destruct;
@@ -736,20 +746,17 @@ Proof.
       assert (length σ.(inode.blocks) > 500) as Hsz by word.
       assert (ds.(impl_s.numInd) <= maxIndirect) as HnumIndMax.
       {
-         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-         assert (((length σ.(inode.blocks) - 500) `div` 512) < 10) as H.
-          {
-            apply (Zdiv_lt_upper_bound (length σ.(inode.blocks) - 500) 512 10); lia.
-          }
-          rewrite (HnumInd1 Hsz).
-          lia.
+        rewrite (HnumInd2 Hsz).
+        unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. lia.
       }
       assert (((int.val off - 500) `div` 512) <= ((length σ.(inode.blocks) - 500) `div` 512)) as Hoff. {
         apply Z_div_le; lia.
       }
 
       assert (int.val index < ds.(impl_s.numInd)) as HindexMax. {
-        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. word.
+        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+        rewrite (HnumInd2 Hsz).
+        unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. lia.
       }
       destruct (list_lookup_lt _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (int.nat index)) as [a Hlookup].
       {
@@ -986,8 +993,8 @@ Qed.
 Theorem wp_Inode__mkHdr {Stk E} l (sz numInd : Z) allocedDirAddrs allocedIndAddrs direct_s indirect_s:
   (length(allocedDirAddrs) <= int.nat maxDirect ∧
    (Z.of_nat (length(allocedIndAddrs))) = numInd ∧
-    sz < MaxBlocks ∧
-    (sz > maxDirect -> numInd = Z.add ((sz - maxDirect) `div` indirectNumBlocks) 1) ∧
+    sz <= MaxBlocks ∧
+    (sz > maxDirect -> numInd = roundUpDiv (sz - maxDirect) indirectNumBlocks) ∧
     (sz <= maxDirect -> numInd = 0)) ->
   {{{
     "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
@@ -1027,9 +1034,8 @@ Proof.
     destruct (bool_decide (sz > maxDirect)) eqn:Heqsz.
     - apply bool_decide_eq_true in Heqsz.
       rewrite (HnumInd1 Heqsz).
-      pose (indirect_blocks_upperbound (sz) Hszmax).
-      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      word.
+      unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      lia.
     - apply bool_decide_eq_false in Heqsz.
       rewrite (HnumInd2 Heqsz).
       rewrite /maxIndirect; word.
