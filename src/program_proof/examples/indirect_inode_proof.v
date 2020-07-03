@@ -990,7 +990,7 @@ Theorem wp_Inode__mkHdr {Stk E} l (sz numInd : Z) allocedDirAddrs allocedIndAddr
   (length(allocedDirAddrs) <= int.nat maxDirect ∧
    (Z.of_nat (length(allocedIndAddrs))) = numInd ∧
    sz <= MaxBlocks ∧
-   (numInd = roundUpDiv (Z.of_nat ((Z.to_nat maxDirect) `max` Z.to_nat sz)%nat - maxDirect) indirectNumBlocks))
+   numInd <= maxIndirect)
   ->
   {{{
     "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
@@ -1024,17 +1024,6 @@ Proof.
   autorewrite with len in HDirlen.
   autorewrite with len in HIndlen.
   destruct Hbound as [HallocedDirAddrsLen [HallocedIndAddrsLen [Hszmax HnumInd]]].
-
-  assert (numInd <= maxIndirect) as HnumIndMax.
-  {
-    rewrite HnumInd.
-    destruct (bool_decide (sz > maxDirect)) eqn:Heqsz.
-    - apply bool_decide_eq_true in Heqsz.
-      unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      lia.
-    - apply bool_decide_eq_false in Heqsz.
-      rewrite Max.max_l; [|word]. rewrite /roundUpDiv /maxDirect /indirectNumBlocks /maxIndirect; word.
-  }
 
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
@@ -1075,9 +1064,7 @@ Proof.
 
   iDestruct (is_slice_split with "Hindirect") as "[Hindirect Hcapind]".
   wp_apply (wp_Enc__PutInts with "[$Henc $Hindirect]").
-  { rewrite HallocedIndAddrsLen. rewrite /maxIndirect in HnumInd.
-    word.
-  }
+  { rewrite HallocedIndAddrsLen. word. }
   iIntros "[Henc Hindirect]".
   wp_loadField.
   wp_apply wp_slice_len; wp_pures.
