@@ -104,8 +104,9 @@ Proof.
   apply elem_of_dom in Hufree as [status Hufree].
   apply map_filter_lookup_Some in Hufree as [Hufree ?];
     simpl in *; subst.
-  rewrite map_filter_insert_not_strong //=.
-Admitted.
+  rewrite map_filter_insert_not' //= => status.
+  rewrite Hufree=>[= <-] //.
+Qed.
 
 Lemma alloc_free_reserved s a :
   s !! a = Some block_reserved →
@@ -114,8 +115,9 @@ Lemma alloc_free_reserved s a :
 Proof.
   rewrite /alloc.used.
   intros Hareserved.
-  rewrite map_filter_insert_not_strong //=.
-Admitted.
+  rewrite map_filter_insert_not' //= => status.
+  rewrite Hareserved=>[= <-] //.
+Qed.
 
 Lemma alloc_used_insert s a :
   alloc.used (<[a := block_used]> s) = {[a]} ∪ alloc.used s.
