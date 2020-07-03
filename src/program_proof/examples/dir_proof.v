@@ -577,12 +577,20 @@ Section goose.
       { crash_case.
         iLeft.
         iFrame.
-        admit. (* TODO: re-use earlier proof *) }
+        iDestruct (big_sepL2_to_sepL_2 with "Hpre_inodes") as "Hpre_inodes".
+        iApply (big_sepL_mono with "Hpre_inodes").
+        iIntros (? ? ?) "Hpre".
+        iDestruct "Hpre" as (? ?) "Hpre".
+        eauto. }
       iCache with "HΦ Hpre_inodes Hinode_cinvs".
       { crash_case.
         iLeft.
         iFrame.
-        admit. (* TODO: re-use earlier proof *) }
+        iDestruct (big_sepL2_to_sepL_2 with "Hpre_inodes") as "Hpre_inodes".
+        iApply (big_sepL_mono with "Hpre_inodes").
+        iIntros (? ? ?) "Hpre".
+        iDestruct "Hpre" as (? ?) "Hpre".
+        eauto. }
       wpc_bind (load_ty _ _). wpc_frame. wp_load. iNamed 1.
       wpc_bind (inode.Open _ _).
       change (int.val (U64 5)) with (Z.of_nat num_inodes) in Hbound.
@@ -604,7 +612,11 @@ Section goose.
         iLeft.
         iFrame.
         iSplitL "Hpre_inodes".
-        { admit. (* TODO: re-use earlier proof *) }
+        { iDestruct (big_sepL2_to_sepL_2 with "Hpre_inodes") as "Hpre_inodes".
+          iApply (big_sepL_mono with "Hpre_inodes").
+          iIntros (? ? ?) "Hpre".
+          iDestruct "Hpre" as (? ?) "Hpre".
+          eauto. }
         iApply pre_inode_to_cinv.
         iExactEq "Hpre_inode".
         f_equal; word.
@@ -671,8 +683,7 @@ Section goose.
     iRight in "HΦ"; iApply "HΦ".
     iFrame.
     iApply (is_slice_to_small with "Hinode_slice").
-    Fail idtac.
-  Admitted.
+  Qed.
 
   Theorem wpc_inodeUsedBlocks {k E2} inode_s inode_refs s_inodes :
     {{{ "Hinode_s" ∷ is_slice_small inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
