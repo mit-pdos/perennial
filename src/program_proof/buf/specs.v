@@ -788,8 +788,13 @@ Proof.
     wp_loadField.
     wp_call.
 
-    wp_apply (slice.wp_SliceGet with "[$Hblk]").
-    { admit. }
+    assert (∃ (b : u8), Block_to_vals blk !! int.nat (word.divu (addrOff a) 8) = Some #b) as Hsome.
+    { rewrite block_byte_index; try word; intros.
+      { unfold valid_addr, block_bytes in *. intuition idtac. word. }
+      eauto. }
+    destruct Hsome as [vb Hsome].
+
+    wp_apply (slice.wp_SliceGet with "[$Hblk]"); eauto.
     iIntros "[Hblk %]".
 
     iDestruct "Hbufdata" as (x) "[Hbufdata <-]".
@@ -797,18 +802,40 @@ Proof.
     iIntros "[Hbufdata %]".
 
     wp_call.
-    admit.
+    wp_apply wp_ref_to; eauto. iIntros (l) "Hvblk".
+    wp_pures.
+    wp_if_destruct.
+    + wp_if_destruct.
+      * wp_load. wp_store. wp_load.
+        wp_apply (wp_SliceSet with "[$Hblk]"); eauto.
+        iIntros "Hblk".
+        wp_apply util_proof.wp_DPrintf.
+        iApply "HΦ".
+        admit.
+
+      * wp_load. wp_store. wp_load.
+        wp_apply (wp_SliceSet with "[$Hblk]"); eauto.
+        iIntros "Hblk".
+        wp_apply util_proof.wp_DPrintf.
+        iApply "HΦ".
+        admit.
+
+    + wp_load.
+      wp_apply (wp_SliceSet with "[$Hblk]"); eauto.
+      iIntros "Hblk".
+      wp_apply util_proof.wp_DPrintf.
+      iApply "HΦ".
+      admit.
 
   - wp_pures.
     wp_loadField.
     wp_pures.
     wp_loadField.
     wp_pures.
-
-    destruct (bool_decide (#(word.modu a.(addrOff) 8 : u64) = #0)) eqn:Hd;
-      wp_pures.
+    wp_if_destruct.
     2: {
-      (* contradiction with [valid_off] in H2. *)
+      exfalso. apply Heqb; clear Heqb.
+      unfold valid_off in *. (* XXX there is no [int.val] here.. *)
       admit.
     }
 
@@ -817,19 +844,22 @@ Proof.
     wp_loadField.
     wp_call.
 
-    (* XXX need WP for SliceCopy, and more specialized WPs for
-      SliceSkip and SliceTake in terms of is_slice_small *)
+    wp_apply (wp_SliceTake' with "Hbufdata").
+    { rewrite /inode_to_vals fmap_length vec_to_list_length /inode_bytes. word. }
+    iIntros "Hbufdata".
+
+    (* XXX need WP for SliceCopy, and more specialized WP for
+      SliceSkip in terms of is_slice_small *)
     admit.
 
   - wp_pures.
     wp_loadField.
     wp_loadField.
     wp_pures.
-
-    destruct (bool_decide (#(word.modu a.(addrOff) 8 : u64) = #0)) eqn:Hd;
-      wp_pures.
+    wp_if_destruct.
     2: {
-      (* contradiction with [valid_off] in H. *)
+      exfalso. apply Heqb0; clear Heqb0.
+      unfold valid_off in *. (* XXX there is no [int.val] here.. *)
       admit.
     }
 
