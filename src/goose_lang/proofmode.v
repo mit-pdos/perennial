@@ -171,32 +171,10 @@ Proof.
   inversion 1; auto.
 Qed.
 
+(* TODO: why are these notations instead of Ltac? *)
 Tactic Notation "wp_if" := wp_pure (If _ _ _).
 Tactic Notation "wp_if_true" := wp_pure (If (LitV (LitBool true)) _ _).
 Tactic Notation "wp_if_false" := wp_pure (If (LitV (LitBool false)) _ _).
-(* TODO: why are these notations instead of Ltac? *)
-Tactic Notation "wp_if_destruct" :=
-  wp_pures;
-  lazymatch goal with
-  | |- envs_entails _ (wp _ _ (if: Val $ LitV $ LitBool ?cond then _ else _) _) =>
-    destruct cond eqn:?;
-    repeat match goal with
-           | [ H: (?x <? ?y)%Z = true |- _ ] => apply Z.ltb_lt in H
-           | [ H: (?x <? ?y)%Z = false |- _ ] => apply Z.ltb_ge in H
-           | [ H: (?x <=? ?y)%Z = true |- _ ] => apply Z.leb_le in H
-           | [ H: (?x <=? ?y)%Z = false |- _ ] => apply Z.leb_gt in H
-           | [ H: bool_decide _ = true |- _ ] => apply bool_decide_eq_true_1 in H
-           | [ H: bool_decide _ = false |- _ ] => apply bool_decide_eq_false_1 in H
-           | [ H: negb _ = true |- _ ] => apply negb_true_iff in H; subst
-           | [ H: negb _ = false |- _ ] => apply negb_false_iff in H; subst
-           | [ H: LitV _ = LitV _ |- _ ] => apply inv_litv in H
-           | [ H: @eq base_lit _ _ |- _ ] => inversion H; subst; clear H
-           end;
-    [ wp_if_true | wp_if_false ]
-  | |- envs_entails _ (wp _ _ ?e _) =>
-    fail "goal is for" e "which is not an if expression"
-  | _ => fail "goal is not a wp"
-  end.
 Tactic Notation "wp_unop" := wp_pure (UnOp _ _).
 Tactic Notation "wp_binop" := wp_pure (BinOp _ _ _).
 Tactic Notation "wp_op" := wp_unop || wp_binop.
@@ -232,6 +210,33 @@ Tactic Notation "wp_bind" open_constr(efoc) :=
     reshape_expr e ltac:(fun K e' => unify e' efoc; wp_bind_core K)
     || fail "wp_bind: cannot find" efoc "in" e
   | _ => fail "wp_bind: not a 'wp'"
+  end.
+
+Tactic Notation "wp_if_destruct" :=
+  wp_pures;
+  (try wp_bind (If _ _ _));
+  lazymatch goal with
+  | |- envs_entails _ (wp _ _ (if: Val $ LitV $ LitBool ?cond then _ else _) _) =>
+    destruct cond eqn:?;
+    repeat match goal with
+           | [ H: (?x <? ?y)%Z = true |- _ ] => apply Z.ltb_lt in H
+           | [ H: (?x <? ?y)%Z = false |- _ ] => apply Z.ltb_ge in H
+           | [ H: (?x <=? ?y)%Z = true |- _ ] => apply Z.leb_le in H
+           | [ H: (?x <=? ?y)%Z = false |- _ ] => apply Z.leb_gt in H
+           | [ H: bool_decide _ = true |- _ ] => apply bool_decide_eq_true_1 in H
+           | [ H: bool_decide _ = false |- _ ] => apply bool_decide_eq_false_1 in H
+           | [ H: negb _ = true |- _ ] => apply negb_true_iff in H; subst
+           | [ H: negb _ = false |- _ ] => apply negb_false_iff in H; subst
+           (* Why does Iris need its own [negb]? *)
+           | [ H: Datatypes.negb _ = true |- _ ] => apply negb_true_iff in H; subst
+           | [ H: Datatypes.negb _ = false |- _ ] => apply negb_false_iff in H; subst
+           | [ H: LitV _ = LitV _ |- _ ] => apply inv_litv in H
+           | [ H: @eq base_lit _ _ |- _ ] => inversion H; subst; clear H
+           end;
+    [ wp_if_true | wp_if_false ]
+  | |- envs_entails _ (wp _ _ ?e _) =>
+    fail "goal is for" e "which is not an if expression"
+  | _ => fail "goal is not a wp"
   end.
 
 (** Heap tactics *)
