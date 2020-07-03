@@ -162,7 +162,6 @@ Proof.
     + iApply "HΦ".
       iSplitL; auto.
       iExists _, _; iFrame.
-      apply negb_false_iff in Heqb; subst.
       auto.
   - iIntros "(His_map&HI&_HQ)"; iNamed "HI".
     wp_pures.
@@ -200,9 +199,7 @@ Proof.
     wp_pures.
     wp_load.
     wp_pures.
-    wp_if_destruct;
-      (* TODO: automate this in wp_if_destruct *)
-      [ apply negb_true_iff in Heqb | apply negb_false_iff in Heqb ]; subst.
+    wp_if_destruct.
     + wp_store. wp_store.
       iApply "HΦ".
       iExists _, _; iFrame.
