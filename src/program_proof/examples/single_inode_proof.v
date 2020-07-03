@@ -265,9 +265,24 @@ Section goose.
       apply LVL_le.
       lia. }
     iMod "Hinode_crash" as "_".
-    { admit. }
+    { rewrite -> rangeSet_size by lia.
+      replace (Z.to_nat sz + 2 * S (S k)) with (S (S (S k)) + (Z.to_nat (sz - 1) + S (S k))) by lia.
+      etransitivity.
+      2: apply LVL_scale_weaken.
+      assert (LVL (S k) ≤ LVL (Z.to_nat (sz - 1) + S (S k))); try lia.
+      eapply LVL_le; lia. }
     iMod "Hinv_crash" as "_".
-    { admit. }
+    { rewrite -> rangeSet_size by lia.
+      replace (Z.to_nat sz + 2 * S (S k)) with (S (S (S k)) + (Z.to_nat (sz - 1) + S (S k))) by lia.
+      pose proof (LVL_scale_weaken (S (S (S k))) (Z.to_nat (sz - 1) + S (S k))).
+      generalize dependent (LVL (S (S (S k)) + (Z.to_nat (sz - 1) + S (S k))) - LVL (Z.to_nat (sz - 1) + S (S k))); intro x; intros.
+      assert (LVL (S k) ≤ LVL (Z.to_nat (sz - 1) + S (S k))).
+      { eapply LVL_le; lia. }
+      generalize dependent (LVL (Z.to_nat (sz - 1) + S (S k))); intro y; intros.
+      assert (1 ≤ LVL (S k)).
+      { etransitivity. 2: eapply LVL_gt. lia. }
+      assert (x ≥ 2 * y) by lia. lia.
+    }
     { rewrite difference_empty_L.
       solve_ndisj. }
     iModIntro. iNext.
@@ -275,8 +290,7 @@ Section goose.
     iDestruct "Hs_inode" as (σ') "[Hs_inv HP]".
     iExists _; iFrame.
     iExists _, _; iFrame.
-    Fail idtac.
-  Admitted.
+  Qed.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
     (S k < k')%nat →
