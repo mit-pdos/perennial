@@ -334,6 +334,16 @@ Proof.
   rewrite wrap_small; auto.
 Qed.
 
+Theorem val_u64 z :
+  0 <= z < 2 ^ 64 ->
+  int.val (U64 z) = z.
+Proof.
+  intros.
+  unfold U64.
+  rewrite word.unsigned_of_Z.
+  rewrite wrap_small; auto.
+Qed.
+
 Ltac eval_term t :=
   let t' := (eval cbv in t) in change t with t'.
 
@@ -341,6 +351,12 @@ Ltac eval_u32 :=
   match goal with
   | |- context[int.val (U32 ?z)] =>
     rewrite  (val_u32 z ltac:(lia))
+  end.
+
+Ltac eval_u64 :=
+  match goal with
+  | |- context[int.val (U64 ?z)] =>
+    rewrite  (val_u64 z ltac:(lia))
   end.
 
 Theorem u8_to_from_u32 x :
@@ -361,6 +377,149 @@ Proof.
   rewrite word.unsigned_of_Z.
   pose proof (word.unsigned_range x).
   rewrite wrap_small; lia.
+Qed.
+
+Lemma val_u8_to_u64 x :
+  int.val (u8_to_u64 x) = int.val x.
+Proof.
+  unfold u8_to_u64, U64.
+  rewrite word.unsigned_of_Z.
+  pose proof (word.unsigned_range x).
+  rewrite wrap_small; lia.
+Qed.
+
+Lemma word_wrap_8_nonneg (x : Z) : 0 ≤ x -> 0 ≤ word.wrap (width:=8) x.
+Proof. rewrite /word.wrap. lia. Qed.
+
+Lemma word_wrap_32_nonneg (x : Z) : 0 ≤ x -> 0 ≤ word.wrap (width:=32) x.
+Proof. rewrite /word.wrap. lia. Qed.
+
+Lemma word_wrap_64_nonneg (x : Z) : 0 ≤ x -> 0 ≤ word.wrap (width:=64) x.
+Proof. rewrite /word.wrap. lia. Qed.
+
+Lemma unsigned_8_nonneg (x : u8) : 0 ≤ int.val x.
+Proof. pose proof (word.unsigned_range x). lia. Qed.
+
+Lemma unsigned_32_nonneg (x : u32) : 0 ≤ int.val x.
+Proof. pose proof (word.unsigned_range x). lia. Qed.
+
+Lemma unsigned_64_nonneg (x : u64) : 0 ≤ int.val x.
+Proof. pose proof (word.unsigned_range x). lia. Qed.
+
+Lemma word_wrap_lt_8 (x : Z) n :
+  8 ≤ n ->
+  word.wrap (width:=8) x < 2^n.
+Proof.
+  rewrite /word.wrap; intros.
+  assert (x `mod` 2^8 < 2^8) by (apply Z_mod_lt; lia).
+  assert (2 ^ 8 ≤ 2 ^ n); try lia.
+  eapply Z.pow_le_mono_r; lia.
+Qed.
+
+Lemma word_wrap_lt_32 (x : Z) n :
+  0 ≤ x < 2^n ->
+  word.wrap (width:=32) x < 2^n.
+Proof.
+  rewrite /word.wrap; intros.
+  assert (x `mod` 2^32 ≤ x); lia.
+Qed.
+
+Lemma word_wrap_lt_64 (x : Z) n :
+  0 ≤ x < 2^n ->
+  word.wrap (width:=64) x < 2^n.
+Proof.
+  rewrite /word.wrap; intros.
+  assert (x `mod` 2^64 ≤ x); lia.
+Qed.
+
+Lemma Zlor_lt width (x y : Z) :
+  x < 2^width ->
+  y < 2^width ->
+  Z.lor x y < 2^width.
+Proof.
+Admitted.
+
+Lemma Zlor_nonneg a b :
+  0 ≤ a ->
+  0 ≤ b ->
+  0 ≤ Z.lor a b.
+Proof.
+  intros; apply Z.lor_nonneg; eauto.
+Qed.
+
+Lemma Zshiftl_lt width (x : Z) :
+  8 ≤ width ->
+  x < 2^(width-8) ->
+  Z.shiftl x 8 < 2^width.
+Proof.
+  rewrite Z.shiftl_mul_pow2; try lia.
+  intros.
+  rewrite Z.pow_sub_r in H0; try lia.
+Qed.
+
+Lemma Zshiftl_nonneg a b : 0 ≤ a -> 0 ≤ Z.shiftl a b.
+Proof. intros. apply Z.shiftl_nonneg. eauto. Qed.
+
+Lemma Zshiftr_nonneg a b : 0 ≤ a -> 0 ≤ Z.shiftr a b.
+Proof. intros. apply Z.shiftr_nonneg. eauto. Qed.
+
+Ltac bit_bound_nonneg :=
+  eapply unsigned_8_nonneg ||
+  eapply unsigned_32_nonneg ||
+  eapply unsigned_64_nonneg ||
+  eapply word_wrap_8_nonneg ||
+  eapply word_wrap_32_nonneg ||
+  eapply word_wrap_64_nonneg ||
+  eapply Zlor_nonneg ||
+  eapply Zshiftl_nonneg ||
+  eapply Zshiftr_nonneg.
+
+Ltac bit_bound_lt :=
+  eapply word_wrap_lt_8 ||
+  eapply word_wrap_lt_32 ||
+  eapply word_wrap_lt_64 ||
+  eapply Zlor_lt ||
+  eapply Zshiftl_lt.
+
+Ltac bit_bound :=
+  repeat ( split || bit_bound_nonneg || bit_bound_lt || eauto || lia ).
+
+Lemma word_wrap_32_Zlor (x y : Z) :
+  0 ≤ x < 2^32 ->
+  0 ≤ y < 2^32 ->
+  word.wrap (width:=32) (Z.lor x y) = Z.lor x y.
+Proof.
+  intros.
+  rewrite wrap_small; eauto.
+  intuition bit_bound.
+Qed.
+
+Lemma word_wrap_32_Zshiftl (x : Z) :
+  0 ≤ x < 2^24 ->
+  word.wrap (width:=32) (Z.shiftl x 8) = Z.shiftl x 8.
+Proof.
+  intros.
+  rewrite wrap_small; eauto.
+  intuition bit_bound.
+Qed.
+
+Lemma word_wrap_64_Zlor (x y : Z) :
+  0 ≤ x < 2^64 ->
+  0 ≤ y < 2^64 ->
+  word.wrap (width:=64) (Z.lor x y) = Z.lor x y.
+Proof.
+  intros.
+  rewrite wrap_small; eauto.
+  intuition bit_bound.
+Qed.
+
+Lemma word_wrap_64_Zshiftl (x : Z) :
+  0 ≤ x < 2^56 ->
+  word.wrap (width:=64) (Z.shiftl x 8) = Z.shiftl x 8.
+Proof.
+  intros.
+  rewrite wrap_small; eauto.
+  intuition bit_bound.
 Qed.
 
 Theorem decode_encode x :
@@ -385,9 +544,62 @@ Proof.
   rewrite word.unsigned_or_nowrap.
   rewrite word.unsigned_slu; eval_u32; try lia.
   rewrite ?val_u8_to_u32.
-  rewrite <- H at 5.
+  rewrite <- H at 5; clear H.
   rewrite ?word.unsigned_of_Z.
-Admitted.
+  repeat (( rewrite -> word_wrap_32_Zlor by intuition bit_bound ) ||
+          ( rewrite -> word_wrap_32_Zshiftl by intuition bit_bound )).
+  reflexivity.
+Qed.
+
+Theorem decode_encode64 x :
+  word.or (u8_to_u64 (word.of_Z (int.val x)))
+        (word.slu
+           (word.or (u8_to_u64 (word.of_Z (int.val x ≫ 8)))
+              (word.slu
+                 (word.or (u8_to_u64 (word.of_Z ((int.val x ≫ 8) ≫ 8)))
+                    (word.slu
+                       (word.or (u8_to_u64 (word.of_Z (((int.val x ≫ 8) ≫ 8) ≫ 8)))
+                          (word.slu
+                             (word.or (u8_to_u64 (word.of_Z ((((int.val x ≫ 8) ≫ 8) ≫ 8) ≫ 8)))
+                                (word.slu
+                                   (word.or (u8_to_u64 (word.of_Z (((((int.val x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8)))
+                                      (word.slu
+                                         (word.or (u8_to_u64 (word.of_Z ((((((int.val x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8)))
+                                            (word.slu (u8_to_u64 (word.of_Z (((((((int.val x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8))) (U64 8)))
+                                         (U64 8)))
+                                    (U64 8)))
+                              (U64 8)))
+                        (U64 8)))
+                  (U64 8)))
+            (U64 8)) = x.
+Proof.
+  apply word.unsigned_inj.
+  pose proof (u64_le_to_word x).
+  cbv [le_to_u64 u64_le map LittleEndian.combine LittleEndian.split length Datatypes.HList.tuple.to_list Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2] in H.
+  rewrite Z.shiftl_0_l in H.
+  rewrite Z.lor_0_r in H.
+  rewrite ?word.unsigned_of_Z in H.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u64; try lia.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u64; try lia.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u64; try lia.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u64; try lia.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u64; try lia.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u64; try lia.
+  rewrite word.unsigned_or_nowrap.
+  rewrite word.unsigned_slu; eval_u64; try lia.
+  rewrite ?val_u8_to_u64.
+  rewrite <- H at 9; clear H.
+  rewrite ?word.unsigned_of_Z.
+  repeat (( rewrite -> word_wrap_64_Zlor by intuition bit_bound ) ||
+          ( rewrite -> word_wrap_64_Zshiftl by intuition bit_bound )).
+  reflexivity.
+Qed.
 
 Theorem wp_DecodeUInt32 (l: loc) q (x: u32) s E :
   {{{ ▷ l ↦∗[byteT]{q} (b2val <$> u32_le x) }}}
@@ -423,6 +635,7 @@ Proof.
   iDestruct "Hl" as "(Hl0&Hl1&Hl2&Hl3&Hl4&Hl5&Hl6&Hl7&Hemp)".
   rewrite /DecodeUInt64.
   remember u8T.
+  wp_pures.
   wp_apply (wp_LoadAt with "[Hl0]"); [ subst; iFrame | iIntros "Hl0" ].
   wp_apply (wp_LoadAt with "[Hl1]"); [ subst; iFrame | iIntros "Hl1" ].
   wp_apply (wp_LoadAt with "[Hl2]"); [ subst; iFrame | iIntros "Hl2" ].
@@ -432,9 +645,11 @@ Proof.
   wp_apply (wp_LoadAt with "[Hl6]"); [ subst; iFrame | iIntros "Hl6" ].
   wp_apply (wp_LoadAt with "[Hl7]"); [ subst; iFrame | iIntros "Hl7" ].
   wp_pures.
-  cbv [ty_size].
-  rewrite ?Z.mul_1_l.
-Admitted.
+  rewrite decode_encode64.
+  iApply "HΦ".
+  subst; simpl.
+  iFrame.
+Qed.
 
 Theorem wp_UInt64Get stk E s q (x: u64) vs :
   {{{ is_slice_small s byteT q vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
