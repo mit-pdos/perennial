@@ -432,19 +432,34 @@ Proof.
   assert (x `mod` 2^64 ≤ x); lia.
 Qed.
 
-Lemma Zlor_lt width (x y : Z) :
-  x < 2^width ->
-  y < 2^width ->
-  Z.lor x y < 2^width.
-Proof.
-Admitted.
-
 Lemma Zlor_nonneg a b :
   0 ≤ a ->
   0 ≤ b ->
   0 ≤ Z.lor a b.
 Proof.
   intros; apply Z.lor_nonneg; eauto.
+Qed.
+
+Lemma Zlor_lt width (x y : Z) :
+  0 ≤ x < 2^width ->
+  0 ≤ y < 2^width ->
+  Z.lor x y < 2^width.
+Proof.
+  intuition idtac.
+  destruct (decide (x = 0)).
+  { subst. rewrite Z.lor_0_l. lia. }
+  destruct (decide (y = 0)).
+  { subst. rewrite Z.lor_0_r. lia. }
+  destruct (decide (Z.lor x y = 0)).
+  { lia. }
+  edestruct (Z.log2_spec (Z.lor x y)).
+  { assert (0 ≤ Z.lor x y) by (eapply Zlor_nonneg; lia). lia. }
+  rewrite Z.log2_lor in H4; try lia.
+  eapply Z.log2_lt_pow2 in H2; try lia.
+  eapply Z.log2_lt_pow2 in H3; try lia.
+  assert (Z.succ (Z.log2 x `max` Z.log2 y) ≤ width) by lia.
+  assert (2 ^ Z.succ (Z.log2 x `max` Z.log2 y) ≤ 2 ^ width); try lia.
+  eapply Z.pow_le_mono_r; lia.
 Qed.
 
 Lemma Zshiftl_lt width (x : Z) :
