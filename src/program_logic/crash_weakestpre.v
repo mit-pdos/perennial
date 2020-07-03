@@ -267,6 +267,20 @@ Section cfupd.
     iApply step_fupd_iter_intro; auto.
   Qed.
 
+  Theorem cfupd_later_S E1 E2 k P:
+    cfupd k E1 E2 (▷ P) -∗ cfupd (S k) E1 E2 P.
+  Proof.
+    rewrite /cfupd.
+    iIntros "H C".
+    iSpecialize ("H" with "C").
+    iApply (step_fupdN_inner_wand E1 E1 with "H"); auto.
+    iIntros "H".
+    replace (S k) with (k + 1) by lia.
+    iApply step_fupdN_inner_plus'.
+    iApply (step_fupdN_inner_wand' with "H"); auto. iIntros.
+    repeat iModIntro. eauto.
+  Qed.
+
   (* these instances are local to avoid breaking the proofs in this file *)
 
   Local Instance elim_modal_step_fupd p k1 k2 E P Q :
@@ -1154,9 +1168,9 @@ Lemma inv_cfupd1 (N: namespace) E1 P :
   cfupd 1 E1 (↑N) P.
 Proof.
   iIntros (?) "Hinv".
+  iApply cfupd_later_S.
   iDestruct (inv_cfupd with "Hinv") as "Hcfupd"; eauto.
-  (* TODO: figure out what generic theorem to use for this *)
-Admitted.
+Qed.
 
 Lemma wp_wpc_inv (N: namespace) s E e Φ Φc :
   inv N Φc ∗ WP e @ s ; E {{ Φ }} ⊢ WPC e @ s ; 0 ; E ; ↑N {{ Φ }} {{ ▷ Φc }}.
