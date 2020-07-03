@@ -11,6 +11,8 @@ From Perennial.goose_lang.lib Require Export encoding.impl.
 
 Set Default Proof Using "Type".
 
+Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Section heap.
 Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
@@ -66,7 +68,12 @@ Proof.
   pose proof (@word.width_pos width2 _ _).
   pose proof (Z.pow_pos_nonneg 2 width1 ltac:(lia) ltac:(lia)).
   pose proof (Z.pow_pos_nonneg 2 width2 ltac:(lia) ltac:(lia)).
-Admitted.
+  rewrite (Zmod_small _ (2 ^ width1)); first done.
+  split; try lia.
+  assert (z `mod` 2 ^ width2 < 2 ^ width2); try lia.
+  assert (2 ^ width2 ≤ 2 ^ width1); try lia.
+  eapply Z.pow_le_mono_r; lia.
+Qed.
 
 Hint Rewrite word.unsigned_of_Z : word.
 Hint Rewrite word.unsigned_sru : word.
@@ -81,6 +88,23 @@ Proof.
   autorewrite with word.
   rewrite word.unsigned_sru;
     rewrite unsigned_U32.
+  { rewrite word_wrap_wrap; last lia.
+    rewrite [word.wrap (k * _)]wrap_small; last lia.
+    reflexivity.
+  }
+  rewrite wrap_small; lia.
+Qed.
+
+Theorem word64_byte_extract (x:u64) k :
+  0 <= k < 8 ->
+  word.of_Z (int.val x ≫ (k*8)) = u8_from_u64 (word.sru x (U64 (k*8))).
+Proof.
+  intros.
+  apply word.unsigned_inj.
+  unfold u8_from_u64, U8.
+  autorewrite with word.
+  rewrite word.unsigned_sru;
+    rewrite unsigned_U64.
   { rewrite word_wrap_wrap; last lia.
     rewrite [word.wrap (k * _)]wrap_small; last lia.
     reflexivity.
@@ -167,7 +191,77 @@ Theorem wp_EncodeUInt64 (l: loc) (x: u64) vs stk E :
     EncodeUInt64 #x #l @ stk ; E
   {{{ RET #(); l ↦∗[byteT] (b2val <$> u64_le x) }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(>Hl & %) HΦ".
+  unfold EncodeUInt64.
+  repeat (destruct vs; simpl in H; [ congruence | ]).
+  destruct vs; [ | simpl in H; congruence ]; clear H.
+  remember u8T.
+  simpl.
+  cbv [array].
+  iDestruct "Hl" as "(Hv&Hv0&Hv1&Hv2&Hv3&Hv4&Hv5&Hv6&_)".
+  wp_pures.
+  rewrite ?Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv0]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv0".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv1]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv1".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv2]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv2".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv3]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv3".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv4]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv4".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv5]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv5".
+
+  wp_pures.
+  rewrite Z.mul_1_l.
+  wp_apply (wp_StoreAt with "[Hv6]").
+  { subst; repeat constructor. }
+  { subst; iFrame. }
+  iIntros "Hv6".
+
+  iApply "HΦ".
+  change (U64 8) with (U64 (1 * 8)).
+  rewrite -?word64_byte_extract; try lia.
+  subst.
+  simpl.
+  iFrame.
+Qed.
 
 Theorem wp_UInt64Put stk E s x vs :
   {{{ is_slice_small s byteT 1%Qp vs ∗ ⌜length vs >= u64_bytes⌝ }}}
@@ -397,3 +491,5 @@ End heap.
 
 Hint Rewrite @u64_le_bytes_length : len.
 Hint Rewrite @u32_le_bytes_length : len.
+
+Ltac Zify.zify_post_hook ::= idtac.
