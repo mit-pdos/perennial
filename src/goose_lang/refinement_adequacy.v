@@ -71,7 +71,7 @@ Proof using Hrpre Hcpre.
   iExists HrhG.
   rewrite /spec_ctx'. iFrame.
   iMod (inv_alloc (spec_stateN) _
-                  (∃ σ0 : language.state heap_lang, (source_state σ0 ∗ spec_assert.spec_interp σ0))
+                  (∃ σ0 : language.state goose_lang, (source_state σ0 ∗ spec_assert.spec_interp σ0))
        with "[-Htr' Hor' Htr Hor]")%I as "$".
   { iNext. iExists _. iFrame. iPureIntro; eauto. }
   rewrite /trace_ctx.
@@ -120,7 +120,7 @@ Proof using Hrpre Hcpre.
   iExists HrhG.
   rewrite /spec_ctx'. iFrame.
   iMod (inv_alloc (spec_stateN) _
-                  (∃ σ0 : language.state heap_lang, (source_state σ0 ∗ spec_assert.spec_interp σ0))
+                  (∃ σ0 : language.state goose_lang, (source_state σ0 ∗ spec_assert.spec_interp σ0))
        with "[-Htr' Hor' Htr Hor]")%I as "$".
   { iNext. iExists σ_post_crash. iFrame.
     inversion Hcrash. subst. simpl. iPureIntro => ?. rewrite lookup_empty //. }
@@ -178,7 +178,7 @@ Theorem heap_recv_refinement_adequacy `{crashPreG Σ} k es e rs r σs σ φ φr 
   trace_refines e r σ es rs σs.
 Proof using Hrpre Hhpre Hcpre.
   intros ????? Hwp Hsafe.
-  cut (recv_adequate (CS := heap_crash_lang) NotStuck e r σ (λ v _, φ v) (λ v _, φr v)
+  cut (recv_adequate (CS := goose_crash_lang) NotStuck e r σ (λ v _, φ v) (λ v _, φr v)
                      (λ σ2,
                       ∃ t2s σ2s stats,
                         erased_rsteps (CS:= spec_crash_lang) rs ([es], σs) (t2s, σ2s) stats ∧
@@ -319,7 +319,7 @@ Qed.
 
 Lemma trace_equiv_preserve_crash σ σ' σs σs':
   trace σs = trace σ →
-  crash_prim_step heap_crash_lang σ σ' →
+  crash_prim_step goose_crash_lang σ σ' →
   crash_prim_step spec_crash_lang σs σs' →
   trace σs' = trace σ'.
 Proof.
@@ -331,7 +331,7 @@ Qed.
 
 Lemma oracle_equiv_preserve_crash σ σ' σs σs':
   oracle σs = oracle σ →
-  crash_prim_step heap_crash_lang σ σ' →
+  crash_prim_step goose_crash_lang σ σ' →
   crash_prim_step spec_crash_lang σs σs' →
   oracle σs' = oracle σ'.
 Proof.

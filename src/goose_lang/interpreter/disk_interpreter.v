@@ -223,7 +223,7 @@ Definition disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr
 
 Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state) (ws ws': btval),
     (runStateT (disk_interpret_step eop arg) (σ, ws) = Works _ (result, (σ', ws'))) ->
-    exists m l, @language.nsteps heap_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ').
+    exists m l, @language.nsteps goose_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ').
 Proof.
   intros eop arg result σ σ' ws ws' H.
   destruct eop; [| inversion H | inversion H].

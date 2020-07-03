@@ -206,9 +206,9 @@ Ltac runStateT_bind :=
 Section interpreter.
   Context {ext: ext_op} {ffi: ffi_model}
           {ffi_semantics: ext_semantics ext ffi}.
-  Canonical Structure heap_ectxi_lang := (EctxiLanguage (heap_lang.heap_lang_mixin ffi_semantics)).
-  Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
-  Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
+  Canonical Structure goose_ectxi_lang := (EctxiLanguage (goose_lang.goose_lang_mixin ffi_semantics)).
+  Canonical Structure goose_ectx_lang := (EctxLanguageOfEctxi goose_ectxi_lang).
+  Canonical Structure goose_lang := (LanguageOfEctx goose_ectx_lang).
 
   Definition btval := list string.
   Definition btstate := prod state btval.
@@ -221,7 +221,7 @@ Section interpreter.
       ext_interpret_step : external -> val -> StateT btstate Error expr;
       ext_interpret_ok : forall (eop : external) (arg : val) (result : expr) (σ σ': state) (ws ws':btval),
           (runStateT (ext_interpret_step eop arg) (σ,ws) = Works _ (result, (σ',ws'))) ->
-          exists m l, @language.nsteps heap_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ');
+          exists m l, @language.nsteps goose_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ');
     }.
 
   Context {ext_interpretable : ext_interpretable}.
@@ -610,7 +610,7 @@ Ltac runStateT_inv :=
   function that steps e to v. *)
   Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state) (ws ws':btval),
       (((runStateT (interpret n e) (σ, ws)) = Works _ (v, (σ', ws'))) ->
-       exists m l, @language.nsteps heap_lang m ([e], σ) l ([Val v], σ')).
+       exists m l, @language.nsteps goose_lang m ([e], σ) l ([Val v], σ')).
   Proof using Type.
     intros n. induction n.
     { by intros []. }

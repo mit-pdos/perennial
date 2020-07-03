@@ -504,7 +504,7 @@ Theorem OpenRead_adequate σ dref addr :
   (* We assume the addresses we replicate are in the disk domain *)
   int.val addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.val (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
-  recv_adequate (CS := heap_crash_lang) NotStuck (OpenRead dref addr) (OpenRead dref addr)
+  recv_adequate (CS := goose_crash_lang) NotStuck (OpenRead dref addr) (OpenRead dref addr)
                 σ (λ v _, True) (λ v _, True) (λ _, True).
 Proof.
   rewrite ?elem_of_dom.

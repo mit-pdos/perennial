@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Export lang.
 Set Default Proof Using "Type".
-Import heap_lang.
+Import goose_lang.
 
 (** The tactic [reshape_expr e tac] decomposes the expression [e] into an
 evaluation context [K] and a subexpression [e']. It calls the tactic [tac K e']

@@ -2,7 +2,7 @@ From stdpp Require Import gmap.
 From Perennial.goose_lang Require Export lang.
 Require Import Program.
 
-(* This file contains some metatheory about the heap_lang language,
+(* This file contains some metatheory about GooseLang,
   which is not needed for verifying programs. *)
 
 Section goose_lang.

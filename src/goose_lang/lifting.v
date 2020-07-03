@@ -288,7 +288,7 @@ Definition tls (na: naMode) : lock_state :=
 Global Existing Instances heapG_na_heapG.
 
 Global Instance heapG_irisG `{!heapG Σ}:
-  irisG heap_lang Σ := {
+  irisG goose_lang Σ := {
   iris_invG := heapG_invG;
   state_interp σ κs _ :=
     (na_heap_ctx tls σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)

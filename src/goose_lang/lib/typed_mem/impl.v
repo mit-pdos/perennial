@@ -159,7 +159,7 @@ Notation "![ t ] e" := (load_ty t e%E) : expr_scope.
    similar notation in the value-scope (even though this is an expression and
    not a value)
 
-   See the heap_lang documentation in Iris for par, which has a similar
+   See the HeapLang documentation in Iris for par, which has a similar
    trick. *)
 Notation "e1 <-[ t ] e2" := (store_ty t (Pair e1%E e2%E)) : expr_scope.
 Notation "v1 <-[ t ] v2" := (store_ty t (PairV v1%V v2%V)) : val_scope.

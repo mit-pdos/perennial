@@ -16,7 +16,7 @@ Context `{!ffi_interp ffi}.
 
 Canonical Structure heap_namesO := leibnizO heap_names.
 
-Global Instance heapG_perennialG `{!heapG Σ} : perennialG heap_lang heap_crash_lang heap_namesO Σ :=
+Global Instance heapG_perennialG `{!heapG Σ} : perennialG goose_lang goose_crash_lang heap_namesO Σ :=
 {
   perennial_irisG := λ Hinv hnames, @heapG_irisG _ _ _ _ _ (heap_update _ _ Hinv (@pbundleT _ _ hnames));
   perennial_invG := λ _ _, eq_refl
@@ -60,7 +60,7 @@ Qed.
 Lemma idempotence_wpr `{!ffi_interp_adequacy} s k E1 E2 e rec Φx Φinv Φrx Φcx:
   E2 ⊆ E1 →
   ⊢ WPC e @ s ; k ; E1 ; E2 {{ Φx }} {{ Φcx hG }} -∗
-   (□ ∀ (hG: heapG Σ) (HC: crashG Σ) σ σ' (HC: crash_prim_step (heap_crash_lang) σ σ'),
+   (□ ∀ (hG: heapG Σ) (HC: crashG Σ) σ σ' (HC: crash_prim_step (goose_crash_lang) σ σ'),
         Φcx hG -∗ ▷ post_crash(λ hG', ∀ (hC': crashG Σ), ffi_restart (heapG_ffiG) σ'.(world) -∗
         (Φinv hG' ∧ WPC rec @ s ; k; E1 ; E2 {{ Φrx hG' }} {{ Φcx hG' }}))) -∗
     wpr s k E1 e rec Φx Φinv Φrx.

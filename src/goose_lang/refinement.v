@@ -22,14 +22,14 @@ Section go_refinement.
   Notation istate := (@state impl_op impl_ffi).
 
   Canonical Structure spec_lang : language :=
-    @heap_lang (spec_op) (spec_ffi) (spec_semantics).
+    @goose_lang (spec_op) (spec_ffi) (spec_semantics).
   Canonical Structure spec_crash_lang : crash_semantics spec_lang :=
-    @heap_crash_lang (spec_op) (spec_ffi) (spec_semantics).
+    @goose_crash_lang (spec_op) (spec_ffi) (spec_semantics).
 
   Canonical Structure impl_lang : language :=
-    @heap_lang (impl_op) (impl_ffi) (impl_semantics).
+    @goose_lang (impl_op) (impl_ffi) (impl_semantics).
   Canonical Structure impl_crash_lang : crash_semantics impl_lang :=
-    @heap_crash_lang (impl_op) (impl_ffi) (impl_semantics).
+    @goose_crash_lang (impl_op) (impl_ffi) (impl_semantics).
 
   Definition trace_refines (e r: iexpr) (σ: istate) (e' r': sexpr) (σ': sstate) :=
     @crash_safe spec_lang spec_crash_lang r' ([e'], σ') →

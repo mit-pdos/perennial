@@ -11,56 +11,21 @@ From Perennial.goose_lang Require Export locations.
 From Perennial Require Export Helpers.Integers.
 Set Default Proof Using "Type".
 
-(** heap_lang.  A fairly simple language used for common Iris examples.
+(** GooseLang, an adaptation of HeapLang with extensions to model Go, including
+support for a customizable "FFI" (foreign-function interface) for new primitive
+operations and crash semantics for foreign operations. See goose_lang/ffi/disk.v
+for our main FFI example.
 
-- This is a right-to-left evaluated language, like CakeML and OCaml.  The reason
-  for this is that it makes curried functions usable: Given a WP for [f a b], we
-  know that any effects [f] might have to not matter until after *both* [a] and
-  [b] are evaluated.  With left-to-right evaluation, that triple is basically
-  useless unless the user let-expands [b].
+- Unlike HeapLang, we keep a left-to-right evaluation order to match Go and
+  because curried functions no longer arise.
+- Some support for prophecy variables is retained in case we need it later, but we have no way of inserting these from the source code using Goose and haven't developed reasoning principles
 
-- For prophecy variables, we annotate the reduction steps with an "observation"
-  and tweak adequacy such that WP knows all future observations. There is
-  another possible choice: Use non-deterministic choice when creating a prophecy
-  variable ([NewProph]), and when resolving it ([Resolve]) make the
-  program diverge unless the variable matches. That, however, requires an
-  erasure proof that this endless loop does not make specifications useless.
-
-The expression [Resolve e p v] attaches a prophecy resolution (for prophecy
-variable [p] to value [v]) to the top-level head-reduction step of [e]. The
-prophecy resolution happens simultaneously with the head-step being taken.
-Furthermore, it is required that the head-step produces a value (otherwise
-the [Resolve] is stuck), and this value is also attached to the resolution.
-A prophecy variable is thus resolved to a pair containing (1) the result
-value of the wrapped expression (called [e] above), and (2) the value that
-was attached by the [Resolve] (called [v] above). This allows, for example,
-to distinguish a resolution originating from a successful [CmpXchg] from one
-originating from a failing [CmpXchg]. For example:
- - [Resolve (CmpXchg #l #n #(n+1)) #p v] will behave as [CmpXchg #l #n #(n+1)],
-   which means step to a value-boole pair [(n', b)] while updating the heap, but
-   in the meantime the prophecy variable [p] will be resolved to [(n', b), v)].
- - [Resolve (! #l) #p v] will behave as [! #l], that is return the value
-   [w] pointed to by [l] on the heap (assuming it was allocated properly),
-   but it will additionally resolve [p] to the pair [(w,v)].
-
-Note that the sub-expressions of [Resolve e p v] (i.e., [e], [p] and [v])
-are reduced as usual, from right to left. However, the evaluation of [e]
-is restricted so that the head-step to which the resolution is attached
-cannot be taken by the context. For example:
- - [Resolve (CmpXchg #l #n (#n + #1)) #p v] will first be reduced (with by a
-   context-step) to [Resolve (CmpXchg #l #n #(n+1) #p v], and then behave as
-   described above.
- - However, [Resolve ((λ: "n", CmpXchg #l "n" ("n" + #1)) #n) #p v] is stuck.
-   Indeed, it can only be evaluated using a head-step (it is a β-redex),
-   but the process does not yield a value.
-
-The mechanism described above supports nesting [Resolve] expressions to
-attach several prophecy resolutions to a head-redex. *)
+*)
 
 Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
-Module heap_lang.
+Module goose_lang.
 
 (** Expressions and vals. *)
 Definition proph_id := positive.
@@ -229,14 +194,14 @@ Global Instance eta_state : Settable _ := settable! Build_state <heap; used_prop
 
 (* Note that ext_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
-the syntax of heap_lang. Similarly, it "returns" an expression, the result of
+the syntax of GooseLang. Similarly, it "returns" an expression, the result of
 evaluating the external operation.
 
 It also takes an entire state record, which is also parameterized by ffi_state,
 since external operations can read and modify the heap.
 
 (this makes sense because the FFI semantics has to pull out arguments from a
-heap_lang val, and it must produce a return value in expr)
+GooseLangh val, and it must produce a return value in expr)
 
 we produce a val to make external operations atomic
  *)
@@ -247,11 +212,11 @@ Class ext_semantics :=
   }.
 Context {ffi_semantics: ext_semantics}.
 
-Inductive heap_crash : state -> state -> Prop :=
-  | HeapCrash σ w w' :
+Inductive goose_crash : state -> state -> Prop :=
+  | GooseCrash σ w w' :
      w = σ.(world) ->
      ext_crash w w' ->
-     heap_crash σ (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ)))
+     goose_crash σ (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ)))
 .
 
 
@@ -1239,31 +1204,31 @@ Proof. intro p.
        monad_simpl.
 Qed.
 
-Lemma heap_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step.
+Lemma goose_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step.
 Proof.
   split; apply _ || eauto using to_of_val, of_to_val, val_head_stuck,
     fill_item_val, fill_item_no_val_inj, head_ctx_step_val.
 Qed.
 
 End external.
-End heap_lang.
+End goose_lang.
 
 (** Language *)
 
-(* Prefer heap_lang names over ectx_language names. *)
-Export heap_lang.
+(* Prefer goose_lang names over ectx_language names. *)
+Export goose_lang.
 
 Arguments ext_semantics ext ffi : clear implicits.
-Arguments heap_lang.heap_lang_mixin {ext} {ffi} ffi_semantics.
+Arguments goose_lang.goose_lang_mixin {ext} {ffi} ffi_semantics.
 
-Section goose_lang.
+Section goose.
   Context {ext: ext_op} {ffi: ffi_model}
           {ffi_semantics: ext_semantics ext ffi}.
-  Canonical Structure heap_ectxi_lang := (EctxiLanguage (heap_lang.heap_lang_mixin ffi_semantics)).
-  Canonical Structure heap_ectx_lang := (EctxLanguageOfEctxi heap_ectxi_lang).
-  Canonical Structure heap_lang := (LanguageOfEctx heap_ectx_lang).
-  Canonical Structure heap_crash_lang : crash_semantics heap_lang :=
-    {| crash_prim_step := heap_crash |}.
+  Canonical Structure goose_ectxi_lang := (EctxiLanguage (goose_lang.goose_lang_mixin ffi_semantics)).
+  Canonical Structure goose_ectx_lang := (EctxLanguageOfEctxi goose_ectxi_lang).
+  Canonical Structure goose_lang := (LanguageOfEctx goose_ectx_lang).
+  Canonical Structure goose_crash_lang : crash_semantics goose_lang :=
+    {| crash_prim_step := goose_crash |}.
 
 (* The following lemma is not provable using the axioms of [ectxi_language].
 The proof requires a case analysis over context items ([destruct i] on the
@@ -1313,7 +1278,7 @@ Proof.
 Qed.
 
 Definition trace_observable e r σ tr :=
-  ∃ σ2 t2 stat, erased_rsteps (CS:=heap_crash_lang) r ([e], σ) (t2, σ2) stat ∧ σ2.(trace) = tr.
+  ∃ σ2 t2 stat, erased_rsteps (CS:=goose_crash_lang) r ([e], σ) (t2, σ2) stat ∧ σ2.(trace) = tr.
 
 Definition trace_prefix (tr: Trace) (tr': Trace) : Prop :=
   prefix tr tr'.
@@ -1402,7 +1367,7 @@ Proof.
     intros Heq. subst. specialize (Hn off). destruct Hsome as (?&?); congruence.
 Qed.
 
-End goose_lang.
+End goose.
 
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.

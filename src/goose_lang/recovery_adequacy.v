@@ -16,7 +16,7 @@ Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_ad
        □ (∀ hG, Φinv hG -∗
                        □ ∀ σ κ n, state_interp σ κ n ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
         wpr s k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝))) →
-  recv_adequate (CS := heap_crash_lang) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
+  recv_adequate (CS := goose_crash_lang) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
 Proof.
   intros Hwp.
   eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ (λ Hi names, Φinv (heap_update_pre _ _ Hi (@pbundleT _ _ names)))).
