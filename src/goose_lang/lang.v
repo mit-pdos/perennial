@@ -838,6 +838,11 @@ Definition bin_op_eval_word (op : bin_op) {width} {word: Interface.word width} (
   | _ => None
   end.
 
+Definition bin_op_eval_shift (op : bin_op) {width} {word: Interface.word width} (n1 n2 : word) : option word :=
+  if decide (op = ShiftLOp ∨ op = ShiftROp) then
+    bin_op_eval_word op n1 n2
+  else None.
+
 Definition bin_op_eval_compare (op : bin_op) {width} {word: Interface.word width} (n1 n2 : word) : option bool :=
   match op with
   | LeOp => Some $ bool_decide (word.unsigned n1 <= word.unsigned n2)
@@ -878,6 +883,21 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | LitV (LitByte n1), LitV (LitByte n2) =>
       LitV <$> ((LitByte <$> bin_op_eval_word op n1 n2)
                   ∪ (LitBool <$> bin_op_eval_compare op n1 n2))
+
+    (* Shifts do not require matching bit width *)
+    | LitV (LitByte n1), LitV (LitInt n2) =>
+      LitV <$> (LitByte <$> bin_op_eval_shift op n1 (u8_from_u64 n2))
+    | LitV (LitByte n1), LitV (LitInt32 n2) =>
+      LitV <$> (LitByte <$> bin_op_eval_shift op n1 (u8_from_u32 n2))
+    | LitV (LitInt32 n1), LitV (LitInt n2) =>
+      LitV <$> (LitInt32 <$> bin_op_eval_shift op n1 (u32_from_u64 n2))
+    | LitV (LitInt32 n1), LitV (LitByte n2) =>
+      LitV <$> (LitInt32 <$> bin_op_eval_shift op n1 (u8_to_u32 n2))
+    | LitV (LitInt n1), LitV (LitByte n2) =>
+      LitV <$> (LitInt <$> bin_op_eval_shift op n1 (u8_to_u64 n2))
+    | LitV (LitInt n1), LitV (LitInt32 n2) =>
+      LitV <$> (LitInt <$> bin_op_eval_shift op n1 (u32_to_u64 n2))
+
     | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
     | LitV (LitLoc l), LitV (LitInt off) => match op with
