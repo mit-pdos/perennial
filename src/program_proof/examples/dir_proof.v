@@ -852,7 +852,7 @@ Section goose.
       Open #d #sz @ NotStuck; LVL k; ⊤; E2
     {{{ l, RET #l; pre_dir l (int.val sz) σ0 }}}
     {{{ dir_cinv (int.val sz) σ0 false }}}.
-  Proof.
+  Proof using allocG0 crashG0 heapG0 inG0 inG1 Σ.
     iIntros (? Φ Φc) "Hcinv HΦ".
     wpc_call.
     { iApply dir_cinv_post_crash; auto. }
@@ -940,12 +940,14 @@ Section goose.
     iSplitL "Hpre_inodes HPinodes".
     { iExists s_inodes; iFrame.
       rewrite big_sepL2_sep; iFrame.
-      (* TODO: can prove a big_sepL2 from a big_sepL directly when there's no
-      dependence on one of the lists *)
-      admit. }
+      iAssert ([∗ list] k↦v ∈ inode_refs, emp)%I as "Hinode_refs".
+      { iApply big_sepL_emp. done. }
+      iDestruct (big_sepL_merge_big_sepL2 with "Hinode_refs HPinodes") as "Hmerge"; eauto.
+      iApply (big_sepL2_mono with "Hmerge").
+      iIntros (?????) "[_ H]". iFrame.
+    }
     iExists _; iFrame "∗ %".
-    Fail idtac.
-  Admitted.
+  Qed.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
     (S k < k')%nat →
