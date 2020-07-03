@@ -89,18 +89,20 @@ Lemma rangeSet_size (start sz: Z) :
 Proof.
   rewrite /size /set_size.
   rewrite /rangeSet.
-  rewrite /seqZ.
   intros Hnonneg1 Hnonneg2 Hoverflow.
-  assert (Z.to_nat start + Z.to_nat sz < Z.to_nat (2^64))%nat as Hoverflow' by lia.
-  clear Hoverflow.
-  generalize dependent (Z.to_nat sz); intros sz'.
-  clear.
-  rewrite -list_fmap_compose.
+  replace start with (Z.of_nat (Z.to_nat start)) in * by lia.
+  replace sz with (Z.of_nat (Z.to_nat sz)) in * by lia.
+  generalize dependent (Z.to_nat sz); intros sz'. clear sz.
+  generalize dependent (Z.to_nat start); intros start'. clear start.
+  rewrite ?Nat2Z.id.
+  generalize dependent start'.
   induction sz'; intros; simpl.
   - reflexivity.
-  - rewrite elements_union_singleton.
-  (* TODO: this seems hard; perhaps it would be fruitful to try a more
-  extensional strategy that uses the lookup theorem above to characterize
-  elements ∘ list_to_set (as a permutation of the underlying list, if NoDup) and
-  then look at the length of that list *)
-Admitted.
+  - rewrite -> seqZ_cons by lia. simpl.
+    rewrite elements_union_singleton.
+    + rewrite <- (IHsz' (S start')) at 2 by lia.
+      simpl. repeat f_equal; lia.
+    + intro H.
+      eapply rangeSet_lookup in H; try lia.
+      intuition idtac. revert H0. word_cleanup.
+Qed.
