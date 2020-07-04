@@ -392,7 +392,7 @@ Section goose.
     iMod (inode_blocks_alloc _ (gset_to_gmap [] $ set_seq 0 5)) as (γblocks) "[Hinode_blocks Hallblocks]".
     iApply big_sepM_const_seq in "Hinode_used".
     iApply big_sepM_const_seq in "Hinode_blocks".
-  Abort.
+  Admitted.
 
   Lemma pre_inodes_to_cinv inode_refs s_inodes :
     ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,

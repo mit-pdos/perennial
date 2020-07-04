@@ -103,6 +103,32 @@ Section goose.
     Timeless (s_inode_inv γblocks blocks).
   Proof. apply _. Qed.
 
+  Theorem init_single_inode {E} (sz: Z) :
+    (1 ≤ sz < 2^64)%Z →
+    ([∗ list] i ∈ seq 0 (Z.to_nat sz), (Z.of_nat i) d↦ block0) ={E}=∗
+    let σ0 := s_inode.mk [] in
+    s_inode_cinv sz σ0 true.
+  Proof.
+    iIntros (Hbound) "Hd".
+    replace (Z.to_nat sz) with (1 + (Z.to_nat (sz - 1))) by lia.
+    rewrite seq_app big_sepL_app.
+    iDestruct "Hd" as "[Hinodes Hfree]".
+    iDestruct "Hinodes" as "[Hzero _]".
+    change (Z.of_nat 0) with (int.val (U64 0)).
+    iDestruct (init_inode with "Hzero") as "Hinode".
+    simpl.
+    iMod (ghost_var_alloc (nil : listLO Block)) as
+        (γblocks) "[Hγblocks Hownblocks]".
+    iMod (ghost_var_alloc (∅ : gset u64)) as
+        (γused) "[Hγused Hownused]".
+    iModIntro.
+    iExists γblocks, γused; iFrame.
+    iSplitL "Hinode Hownblocks Hownused".
+    - iExists (inode.mk ∅ []).
+      iFrame.
+    - (* TODO: use the stuff to construct a new allocator state *)
+  Admitted.
+
   Theorem unify_used_set γblocks γused s_alloc s_inode :
     Palloc γused s_alloc -∗
     Pinode γblocks γused s_inode -∗

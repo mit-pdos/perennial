@@ -11,11 +11,12 @@ Print Assumptions replicated_block_proof.OpenRead_adequate.
 (* FIXME: also prove and check zero_init lemma. *)
 Print Assumptions single_inode_proof.wpc_Open.
 Print Assumptions single_inode_proof.is_single_inode_alloc.
+Print Assumptions single_inode_proof.init_single_inode.
 Print Assumptions single_inode_proof.wpc_Read.
 Print Assumptions single_inode_proof.wpc_Append.
 
-(* FIXME: also prove and check zero_init lemma. *)
 Print Assumptions dir_proof.wpc_Open.
 Print Assumptions dir_proof.is_dir_alloc.
+Print Assumptions dir_proof.init_dir.
 Print Assumptions dir_proof.wpc_Read.
 Print Assumptions dir_proof.wpc_Append.
