@@ -481,9 +481,36 @@ Section goose.
       apply LVL_le.
       lia. }
     iMod "Hinodes_crash" as "_".
-    { admit. }
+    { rewrite -> rangeSet_size by ( rewrite /num_inodes; lia ).
+      rewrite plus_comm LVL_sum_split.
+      replace (2 * S (S k)) with (S (S k) + S (S k)) by lia. rewrite plus_assoc plus_comm.
+      rewrite LVL_sum_split.
+      rewrite plus_comm LVL_sum_split.
+      rewrite (plus_comm _ (S (S k))). rewrite (LVL_sum_split (S (S k))).
+      assert (LVL num_inodes ≤ LVL (Z.to_nat sz + num_inodes)).
+      { eapply LVL_le; lia. }
+      assert (LVL (Z.to_nat sz + num_inodes) ≥ LVL (Z.to_nat (sz - num_inodes))).
+      { eapply LVL_le. lia. }
+      assert (4 ^ S k > 0).
+      { eapply Nat.Private_NZPow.pow_pos_nonneg; lia. }
+      replace (4 ^ S (S k)) with (4 ^ S k + 3 * (4 ^ S k)) by (simpl; lia).
+      rewrite Nat.mul_add_distr_r.
+      assert (3 * 4 ^ S k * (4 ^ S k + 3 * 4 ^ S k) ≥ (4 ^ S k + 3 * 4 ^ S k)) by nia.
+      nia. }
     iMod "Hinv_crash" as "_".
-    { admit. }
+    { rewrite -> rangeSet_size by ( rewrite /num_inodes; lia ).
+      replace (Z.to_nat sz + num_inodes + 2 * S (S k)) with (S (S k) + (Z.to_nat sz + num_inodes + S (S k))) by lia.
+      rewrite LVL_sum_split. replace (4 ^ S (S k)) with (4 * 4 ^ S k) by reflexivity.
+      assert (4 ^ S k > 0).
+      { eapply Nat.Private_NZPow.pow_pos_nonneg; lia. }
+      assert (1 ≤ LVL (Z.to_nat sz + num_inodes + S (S k))).
+      { rewrite plus_comm. simpl. etransitivity; [| apply base_le_LVL_S ]. lia. }
+      assert (LVL (Z.to_nat (sz - num_inodes) + S (S k)) ≤ LVL (Z.to_nat sz + num_inodes + S (S k))).
+      { eapply LVL_le. lia. }
+      assert (LVL (num_inodes + S k) ≤ LVL (Z.to_nat sz + num_inodes + S (S k))).
+      { eapply LVL_le; lia. }
+      nia.
+    }
     { rewrite difference_empty_L.
       solve_ndisj. }
     iModIntro. iNext.
@@ -502,8 +529,7 @@ Section goose.
     iApply (big_sepL_mono with "Hinodes").
     iIntros (???) "H".
     iDestruct "H" as (s_inode) "(_&$&$)".
-    Fail idtac.
-  Admitted.
+  Qed.
 
   Opaque struct.t.
 
