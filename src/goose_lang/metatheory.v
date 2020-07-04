@@ -5,6 +5,8 @@ Require Import Program.
 (* This file contains some metatheory about GooseLang,
   which is not needed for verifying programs. *)
 
+Set Default Proof Using "Type".
+
 Section goose_lang.
   Context `{ffi_semantics: ext_semantics}.
 (* Closed expressions and values. *)
@@ -35,28 +37,13 @@ with is_closed_val (v : val) : bool :=
 Lemma is_closed_expr_prim1_iff X op e:
   is_closed_expr X (Primitive1 op e) <-> is_closed_expr X e.
 Proof.
-  refine (match op as op' in prim_op arg
-                return forall pf : arg = args1 ,
-              eq_rect arg prim_op op' args1 pf = op ->
-              (is_closed_expr X (Primitive1 (eq_rect arg prim_op op' args1 pf) e) <-> is_closed_expr X e) with
-          | PanicOp _ => _
-          |  _ => _
-          end eq_refl eq_refl) => //=;
-    (intros pf; assert (pf = eq_refl) as ->; [ eapply Eqdep_dec.UIP_dec; decide equality |]; eauto).
+  destruct op; eauto.
 Qed.
 
 Lemma is_closed_expr_prim2_iff X op e1 e2:
   is_closed_expr X (Primitive2 op e1 e2) <-> is_closed_expr X e1 && is_closed_expr X e2.
 Proof.
-  refine (match op as op' in prim_op arg
-                return forall pf : arg = args2 ,
-              eq_rect arg prim_op op' args2 pf = op ->
-              (is_closed_expr X (Primitive2 (eq_rect arg prim_op op' args2 pf) e1 e2) <->
-               is_closed_expr X e1 && is_closed_expr X e2) with
-          | PanicOp _ => _
-          |  _ => _
-          end eq_refl eq_refl) => //=;
-    (intros pf; assert (pf = eq_refl) as ->; [ eapply Eqdep_dec.UIP_dec; decide equality |]; eauto).
+  destruct op; eauto.
 Qed.
 
 Lemma is_closed_weaken X Y e : is_closed_expr X e → X ⊆ Y → is_closed_expr Y e.
@@ -73,7 +60,7 @@ Lemma is_closed_subst X e x v :
   is_closed_val v → is_closed_expr (x :: X) e → is_closed_expr X (subst x v e).
 Proof.
   intros Hv. revert X.
-  induction e=> X /= ?; try (dependent destruction op); destruct_and?; split_and?; simplify_option_eq;
+  induction e=> X /= ?; try destruct op; destruct_and?; split_and?; simplify_option_eq;
     try match goal with
     | H : ¬(_ ∧ _) |- _ => apply not_and_l in H as [?%dec_stable|?%dec_stable]
     end; eauto using is_closed_weaken with set_solver.
@@ -85,7 +72,7 @@ Proof. destruct x; eauto using is_closed_subst. Qed.
 (* Substitution *)
 Lemma subst_is_closed X e x es : is_closed_expr X e → x ∉ X → subst x es e = e.
 Proof.
-  revert X. induction e=> X /=; try (dependent destruction op); rewrite ?bool_decide_spec ?andb_True=> ??;
+  revert X. induction e=> X /=; try (destruct op); rewrite ?bool_decide_spec ?andb_True=> ??;
     repeat case_decide; simplify_eq/=; f_equal; intuition eauto with set_solver.
 Qed.
 

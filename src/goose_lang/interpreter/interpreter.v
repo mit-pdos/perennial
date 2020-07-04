@@ -374,13 +374,13 @@ Section interpreter.
       | Fork e => mfail_bt "Fork operation not supported"
 
       | Primitive0 p =>
-        match p in (prim_op args0) return StateT btstate Error val with
+        match p return StateT btstate Error val with
         | PanicOp s => mfail_bt ("Interpret panic: " ++ s)
         | ArbitraryIntOp => mret (LitV (LitInt (U64 1)))
         end
 
       | Primitive1 p e =>
-        match p in (prim_op args1) return StateT btstate Error val with
+        match p return StateT btstate Error val with
         | PrepareWriteOp =>
           addrv <- interpret n e;
             match addrv with
@@ -768,9 +768,7 @@ Ltac runStateT_inv :=
 
     (* Primitive0 *)
     {
-      (* TODO: Remove dependent destruction using
-       https://jamesrwilcox.com/dep-destruct.html technique *)
-      dependent destruction op.
+      destruct op.
       - (* Panic *)
         inversion H0.
       - (* ArbitraryInt *)
@@ -783,7 +781,7 @@ Ltac runStateT_inv :=
 
     (* Primitive1 *)
     {
-      dependent destruction op.
+      destruct op.
       { (* PrepareWrite *)
         run_next_interpret IHn.
         runStateT_inv.
@@ -838,7 +836,7 @@ Ltac runStateT_inv :=
     { do 2 run_next_interpret IHn.
       runStateT_inv.
       pose proof (Transitions.relation.interpret_sound _ _ _ Heqo).
-      dependent destruction op.
+      destruct op.
       { runStateT_inv.
         destruct v2 eqn:?; simpl in H; try by inversion H.
         destruct l2 eqn:?; simpl in H; try by inversion H.

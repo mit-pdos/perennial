@@ -69,24 +69,37 @@ Inductive bin_op : Set :=
   | OffsetOp (k:Z) (* Pointer offset *)
 .
 
-Inductive arity : Set := args0 | args1 | args2.
-
-Inductive prim_op : arity -> Set :=
+Inductive prim_op0 :=
   (* a stuck expression, to represent undefined behavior *)
-  | PanicOp (s: string) : prim_op args0
+| PanicOp (s: string)
   (* non-deterministically pick an integer *)
-  | ArbitraryIntOp : prim_op args0
-  | AllocNOp : prim_op args2 (* array length (positive number), initial value *)
-  | PrepareWriteOp : prim_op args1 (* loc *)
-  | FinishStoreOp : prim_op args2 (* pointer, value *)
-  (* non-atomic loads (which conflict with stores) *)
-  | StartReadOp : prim_op args1 (* loc *)
-  | FinishReadOp : prim_op args1 (* loc *)
-  (* atomic loads (which still conflict with non-atomic stores) *)
-  | LoadOp : prim_op args1
-  | InputOp : prim_op args1
-  | OutputOp : prim_op args1
+| ArbitraryIntOp
 .
+
+Inductive prim_op1 :=
+  | PrepareWriteOp (* loc *)
+  (* non-atomic loads (which conflict with stores) *)
+  | StartReadOp (* loc *)
+  | FinishReadOp (* loc *)
+  (* atomic loads (which still conflict with non-atomic stores) *)
+  | LoadOp
+  | InputOp
+  | OutputOp
+.
+
+
+Inductive prim_op2 :=
+ | AllocNOp (* array length (positive number), initial value *)
+ | FinishStoreOp (* pointer, value *)
+.
+
+Inductive arity : Set := args0 | args1 | args2.
+Definition prim_op (ar:arity) : Set :=
+  match ar with
+  | args0 => prim_op0
+  | args1 => prim_op1
+  | args2 => prim_op2
+  end.
 
 Inductive expr :=
   (* Values *)
@@ -319,15 +332,14 @@ Global Instance bin_op_eq_dec : EqDecision bin_op.
 Proof. solve_decision. Defined.
 Global Instance arity_eq_dec : EqDecision arity.
 Proof. solve_decision. Defined.
+Global Instance prim_op0_eq_dec : EqDecision prim_op0.
+Proof. solve_decision. Defined.
+Global Instance prim_op1_eq_dec : EqDecision prim_op1.
+Proof. solve_decision. Defined.
+Global Instance prim_op2_eq_dec : EqDecision prim_op2.
+Proof. solve_decision. Defined.
 Global Instance prim_op_eq_dec ar : EqDecision (prim_op ar).
-Proof.
-  hnf; intros; hnf.
-  (* TODO: there's probably a very simple proof directly using a dependent
-  pattern match *)
-  destruct x; dependent destruction y; eauto.
-  destruct (decide (s = s0));
-    [ subst; left | right; inversion 1]; done.
-Defined.
+Proof. destruct ar; simpl; apply _. Defined.
 Global Instance expr_eq_dec : EqDecision expr.
 Proof using ext.
   clear ffi_semantics ffi.
@@ -474,54 +486,30 @@ Proof.
                                end) _); by intros [].
 Qed.
 
-Inductive prim_op' := | a_prim_op {ar} (op: prim_op ar).
-Instance prim_op_prim_op'_iso ar : Inj eq eq (@a_prim_op ar).
+Instance prim_op0_countable : Countable prim_op0.
 Proof.
-  hnf; intros.
-  inversion H.
-  apply Eqdep_dec.inj_pair2_eq_dec; auto.
-  intros x0 y0; destruct (decide (x0 = y0)); auto.
-Qed.
-Instance prim_op'_eq_dec : EqDecision prim_op'.
-hnf; intros; hnf.
-destruct x as [ar op], y as [ar' op'].
-destruct (decide (ar = ar')); subst.
-- destruct (decide (op = op')); subst; auto.
-  right; intro.
-  apply prim_op_prim_op'_iso in H; auto.
-- right.
-  inversion 1; auto.
+  refine (inj_countable' (fun op => match op with
+                                    | PanicOp s => Some s
+                                    | ArbitraryIntOp => None
+                                    end)
+         (fun v => match v with
+                   | Some s => PanicOp s
+                   | None => ArbitraryIntOp
+                   end) _); by intros [].
 Qed.
 
-Global Instance prim_op'_countable : Countable prim_op'.
-Proof.
-  refine (inj_countable' (λ op, let 'a_prim_op op := op in
-                                match op with
-                                | PanicOp s => inl s
-                                | ArbitraryIntOp => inr 8
-                                | AllocNOp => inr 0
-                                | PrepareWriteOp => inr 1
-                                | FinishStoreOp => inr 2
-                                | StartReadOp => inr 3
-                                | FinishReadOp => inr 4
-                                | LoadOp => inr 5
-                                | InputOp => inr 6
-                                | OutputOp => inr 7
-                                end)
-                         (λ v, match v with
-                               | inl s => a_prim_op _
-                               | inr 0 => a_prim_op _
-                               | inr 1 => a_prim_op _
-                               | inr 2 => a_prim_op _
-                               | inr 3 => a_prim_op _
-                               | inr 4 => a_prim_op _
-                               | inr 5 => a_prim_op _
-                               | inr 6 => a_prim_op _
-                               | inr 7 => a_prim_op _
-                               | inr 8 => a_prim_op _
-                               | _ => a_prim_op (PanicOp "")
-                               end) _); intros [_ []]; trivial.
-Qed.
+Instance prim_op1_countable : Countable prim_op1.
+Proof. solve_countable prim_op1_rec 7%nat. Qed.
+
+Instance prim_op2_countable : Countable prim_op2.
+Proof. solve_countable prim_op2_rec 4%nat. Qed.
+
+Definition prim_op' : Set := prim_op0 + prim_op1 + prim_op2.
+
+Definition a_prim_op {ar} (op: prim_op ar) : prim_op'.
+  rewrite /prim_op'.
+  destruct ar; simpl in op; eauto.
+Defined.
 
 Inductive basic_type :=
   | stringVal (s:string)
@@ -562,13 +550,15 @@ Qed.
 
 Definition to_prim_op : {f: forall ar (op: prim_op'), prim_op ar |
                          forall ar op, f ar (a_prim_op op) = op}.
-  unshelve refine (exist _
-                         (fun (ar: arity) '(a_prim_op op) =>
-                            ltac:(destruct ar, op)) _);
-    (* solve equality cases by unification *)
-    [..|destruct op; eauto];
+  unshelve refine (exist _ (fun ar op => _) _);
+    [ (* partially construct f as a match statement *)
+      destruct ar; destruct op as [[|]|] |
+      (* solve equality cases by unification *)
+      destruct ar, op; simpl; eauto
+    ];
     (* solve default cases with an arbitrary value *)
-    solve [ constructor; auto using "" ].
+    solve [ constructor; auto using "" ]
+  .
 (* intentionally opaque since the type signature gives the only needed
 correctness condition *)
 Qed.
