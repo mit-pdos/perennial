@@ -400,7 +400,7 @@ Qed.
 
 Theorem reserved_block_weaken γ n k R R' :
   □(R -∗ R') -∗
-  ▷ □(R' -∗ block_cinv γ k) -∗
+  □(R' -∗ block_cinv γ k) -∗
   reserved_block γ n k R -∗
   reserved_block γ n k R'.
 Proof.
@@ -438,14 +438,14 @@ Proof.
     iMod (na_crash_inv_alloc Ncrash _ _ (block_cinv γ k) (Ψ k) with "[$] []") as
         "(Hbund&Hpend)".
     { auto. }
-    { iIntros "!> !> H". iLeft. eauto. }
+    { iIntros "!> H". iLeft. eauto. }
     iModIntro. iFrame.
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
     iMod (na_crash_inv_alloc Ncrash _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as
         "(Hbund&Hpend)".
     { auto. }
-    { iIntros "!> !> H". iRight. eauto. }
+    { iIntros "!> H". iRight. eauto. }
     iModIntro. iFrame.
 Qed.
 

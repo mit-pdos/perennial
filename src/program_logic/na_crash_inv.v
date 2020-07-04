@@ -21,7 +21,7 @@ Implicit Types e : expr Λ.
 
 Definition na_crash_inv_def N k Q P :=
   (∃ Γ Qr bset, staged_inv Γ N k (⊤ ∖ ↑N) (⊤ ∖ ↑N) ∗ staged_bundle Γ Q Qr false bset ∗
-                staged_crash Γ P bset ∗ ▷ □ (Q -∗ P))%I.
+                staged_crash Γ P bset ∗ □ (Q -∗ P))%I.
 Definition na_crash_inv_aux : seal (@na_crash_inv_def). by eexists. Qed.
 Definition na_crash_inv := (na_crash_inv_aux).(unseal).
 Definition na_crash_inv_eq := (na_crash_inv_aux).(seal_eq).
@@ -33,7 +33,7 @@ Ltac crash_unseal :=
 
 Lemma na_crash_inv_alloc N k E P Q:
   ↑N ⊆ E →
-  ▷ Q -∗ ▷ □ (Q -∗ P) ={E}=∗ na_crash_inv N (LVL k) Q P ∗ |C={⊤, ∅}_(LVL (S k))=> P.
+  ▷ Q -∗ □ (Q -∗ P) ={E}=∗ na_crash_inv N (LVL k) Q P ∗ |C={⊤, ∅}_(LVL (S k))=> P.
 Proof.
   crash_unseal.
   iIntros (?) "HQ #HQP".
@@ -50,12 +50,12 @@ Qed.
 
 Lemma na_crash_inv_status_wand N k Q P:
   na_crash_inv N k Q P -∗
-  ▷ □ (Q -∗ P).
+  □ (Q -∗ P).
 Proof. crash_unseal. iDestruct 1 as (???) "(?&?&?&$)". Qed.
 
 Lemma na_crash_inv_weaken N k Q Q' P :
   □(Q -∗ Q') -∗
-  ▷ □(Q' -∗ P) -∗
+  □(Q' -∗ P) -∗
   na_crash_inv N k Q P -∗
   na_crash_inv N k Q' P.
 Proof.
@@ -65,7 +65,7 @@ Proof.
   iExists _, Qr, _. iFrame.
   iSplitL "Hbundle".
   iApply (staged_bundle_weaken_1 with "HQ' Hbundle").
-  iNext. iAlways. iIntros. by iApply "HQ'P".
+  iAlways. iIntros. by iApply "HQ'P".
 Qed.
 
 Lemma wpc_na_crash_inv_open_modify Qnew s k k' E1 E2 e Φ Φc Q P N :
@@ -74,7 +74,7 @@ Lemma wpc_na_crash_inv_open_modify Qnew s k k' E1 E2 e Φ Φc Q P N :
   to_val e = None →
   na_crash_inv N (LVL k') Q P -∗
   (Φc ∧ (Q -∗ WPC e @ NotStuck; (LVL k); (E1 ∖ ↑N); ∅
-                    {{λ v, ▷ Qnew v ∗ ▷ □ (Qnew v -∗ P)  ∗ (na_crash_inv N (LVL k') (Qnew v) P -∗ (Φc ∧ Φ v))}}
+                    {{λ v, ▷ Qnew v ∗ □ (Qnew v -∗ P)  ∗ (na_crash_inv N (LVL k') (Qnew v) P -∗ (Φc ∧ Φ v))}}
                     {{ Φc ∗ ▷ P }})) -∗
   WPC e @ s; LVL (S k); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.

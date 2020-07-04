@@ -89,7 +89,7 @@ Proof.
   - iMod (na_crash_inv_alloc N2 kinv ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[$] []") as
      "(Hfull&Hpending)".
     { set_solver +. }
-    { iIntros "!> !> H". iExists _. iFrame. }
+    { iIntros "!> H". iExists _. iFrame. }
     iMod (ghost_var_alloc (UnInit : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
     { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. }
@@ -111,7 +111,7 @@ Proof.
     iMod (na_crash_inv_alloc N2 kinv ⊤ (log_crash_cond) (log_crash_cond' (Closed vs))  with "[$] []") as
      "(Hfull&Hpending)".
     { set_solver +. }
-    { iIntros "!> !> H". iExists _. iFrame. }
+    { iIntros "!> H". iExists _. iFrame. }
     iMod (ghost_var_alloc (Closed vs : log_stateO)) as (γ2) "(Hauth&Hfrag)".
     iMod (inv_alloc N _ (log_inv_inner _ γ2) with "[Hfull Hauth Hfrag]") as "#?".
     { iIntros "!>". rewrite /log_inv_inner. iExists _; repeat iFrame. }
@@ -324,7 +324,7 @@ Proof using PStartedOpening_Timeless.
       { iExists _. iFrame. eauto. }
       iModIntro.
       iSplitR; first eauto.
-      { iIntros "!> !> H". iDestruct "H" as (bs) "(?&?)". iExists _. iFrame.
+      { iIntros "!> H". iDestruct "H" as (bs) "(?&?)". iExists _. iFrame.
         simpl. by iApply ptsto_log_crashed. }
       iIntros "Hfull". iSplit.
       ** iApply "HΦ". by iApply Hwand.
@@ -442,7 +442,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
       { iExists _. iFrame. eauto. }
       iModIntro.
       iSplitR; first eauto.
-      { iIntros "!> !> H". iDestruct "H" as (bs) "(?&?)". iExists _. iFrame.
+      { iIntros "!> H". iDestruct "H" as (bs) "(?&?)". iExists _. iFrame.
         simpl. by iApply ptsto_log_crashed. }
       iIntros "Hfull". iSplit.
       ** iApply "HΦ". by iApply Hwand.

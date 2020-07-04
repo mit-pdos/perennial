@@ -755,7 +755,7 @@ Proof.
       { iSplitL "Hreserved".
         { iApply (reserved_block_weaken with "[] [] Hreserved").
           { rewrite /Ψ. eauto. }
-          { rewrite /Ψ/block_cinv. iNext. eauto. }
+          { rewrite /Ψ/block_cinv. eauto. }
         }
         iIntros (σ' Hreserved) "HP".
         iMod ("Hfree_fupd" with "[//] HP") as "$".
