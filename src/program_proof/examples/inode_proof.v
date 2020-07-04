@@ -668,14 +668,13 @@ Proof.
   { iLeft in "Hfupd"; auto. }
   iCache with "Hfupd".
   { iLeft in "Hfupd"; auto. }
-  wpc_apply (wpc_Reserve _ _ _ (λ ma, emp)%I emp with "[$Halloc]"); auto.
+  wpc_frame_seq.
+  wp_apply (wp_Reserve _ _ _ (λ ma, emp)%I with "[$Halloc]"); auto.
   { (* Reserve fupd *)
-    iSplit; auto.
     iIntros (σ σ' ma Htrans) "HP".
     iMod ("Halloc_fupd" with "[] HP"); eauto. }
-  iSplit.
-  { iIntros "_"; iFromCache. }
-  iIntros "!>" (a ok) "Hblock".
+  iIntros (a ok) "Hblock".
+  iNamed 1.
   wpc_pures.
   wpc_if_destruct.
   - wpc_pures.
