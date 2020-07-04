@@ -519,18 +519,8 @@ Proof.
       {
         iPureIntro; simpl.
         rewrite app_length; simpl.
-        (*assert (((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
-                   ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
-                   ++ foldl (λ acc ls : list u64, acc ++ ls) [] ds.(impl_s.indBlkAddrsList))
-                  ≡ₚ
-                  a :: (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)
-                   ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
-                   ++ foldl (λ acc ls : list u64, acc ++ ls) [] ds.(impl_s.indBlkAddrsList)))
-          as Hperm.
-        { by rewrite -app_assoc -cons_middle -Permutation_middle. }
-        rewrite Hperm.
-        rewrite list_to_set_cons.
-        rewrite Haddrs_set. auto.*)
+        (*Need to show that list within a list contains element and is a permutation... *)
+        (*this is going to be very annoying*)
         admit.
       }
 
@@ -553,7 +543,42 @@ Proof.
       iSplitR.
       {
         iPureIntro.
-         admit.
+        change ((set impl_s.indBlkAddrsList
+                     (λ ls : list (list u64), <[int.nat index:=<[int.nat offset:=a]> (indBlkAddrs' ++ padding')]> ls)
+                     (set impl_s.hdr (λ _ : Block, hdr) ds)).(impl_s.hdr)) with
+            hdr.
+        change ((set impl_s.indBlkAddrsList
+                     (λ ls : list (list u64), <[int.nat index:=<[int.nat offset:=a]> (indBlkAddrs' ++ padding')]> ls)
+                     (set impl_s.hdr (λ _ : Block, hdr) ds)).(impl_s.dirAddrs)) with
+            ds.(impl_s.dirAddrs).
+        change ((set impl_s.indBlkAddrsList
+                     (λ ls : list (list u64), <[int.nat index:=<[int.nat offset:=a]> (indBlkAddrs' ++ padding')]> ls)
+                     (set impl_s.hdr (λ _ : Block, hdr) ds)).(impl_s.numInd)) with
+            ds.(impl_s.numInd).
+        change ((set impl_s.indBlkAddrsList
+                     (λ ls : list (list u64), <[int.nat index:=<[int.nat offset:=a]> (indBlkAddrs' ++ padding')]> ls)
+                     (set impl_s.hdr (λ _ : Block, hdr) ds)).(impl_s.indAddrs)) with
+            ds.(impl_s.indAddrs).
+        change ((set inode.blocks (λ bs : list Block, bs ++ [b]) (set inode.addrs (union {[a]}) σ)).(inode.blocks))
+          with (σ.(inode.blocks) ++ [b]).
+        rewrite app_length. change (length [_]) with 1%nat.
+        rewrite Hencoded0.
+        rewrite take_length; rewrite min_r; [|word].
+        rewrite /maxDirect -HdirLen replicate_0 fmap_nil app_nil_l.
+        replace (EncUInt64 <$> ds.(impl_s.indAddrs)) with
+            ((EncUInt64 <$> take ds.(impl_s.numInd) ds.(impl_s.indAddrs))
+               ++ (EncUInt64 <$> replicate (int.nat (maxIndirect - length (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))) (U64 0))).
+        2: {
+          rewrite -Hiaddrs /maxIndirect HindAddrs HiaddrsLen fmap_app.
+          replace
+            (int.nat (U64 (10 - Z.of_nat (length iaddrs))))
+            with ((int.nat (U64 10) - length iaddrs)%nat) by word.
+          auto.
+        }
+        replace (U64 (Z.of_nat (length σ.(inode.blocks) + 1))) with
+            (U64 (Z.of_nat (length σ.(inode.blocks)) + 1)) by word.
+        repeat rewrite -app_assoc.
+        rewrite take_ge; auto; word.
       }
 
       (* Hlen *)
