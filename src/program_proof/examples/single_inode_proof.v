@@ -339,9 +339,7 @@ Section goose.
     iCache with "HΦ Hfupd".
     { crash_case; auto. }
     iNamed "Hinode". iNamed "Hro_state".
-    wpc_bind (struct.loadF _ _ _); wpc_frame.
-    wp_loadField.
-    iNamed 1.
+    wpc_loadField.
     wpc_apply (wpc_Inode__Read inodeN (k':=k')).
     { lia. }
     iFrame "Hinode". iSplit; first iFromCache. clear.
@@ -405,12 +403,7 @@ Section goose.
     iCache with "HΦ".
     { crash_case; auto. }
     iNamed "Hinode". iNamed "Hro_state".
-    wpc_bind (struct.loadF _ _ _); wpc_frame.
-    wp_loadField.
-    iNamed 1.
-    wpc_bind (struct.loadF _ _ _); wpc_frame.
-    wp_loadField.
-    iNamed 1.
+    wpc_loadField. wpc_loadField.
     wpc_apply (wpc_Inode__Append inodeN allocN (n:=k') (k':=k'));
       [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].
     iFrame "Hb Hinode Halloc".

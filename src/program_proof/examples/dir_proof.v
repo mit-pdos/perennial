@@ -1190,8 +1190,7 @@ Section goose.
     wp_apply (wp_SliceGet _ _ _ _ _ inode_refs with "[$inodes_s //]").
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
-    wpc_bind (struct.loadF _ _ _). wpc_frame. wp_loadField.
-    iIntros "Hthings". iNamed "Hthings".
+    wpc_loadField.
     (* Now we get to the actual append operation. *)
     iApply (wpc_Inode__Append (n:=k') (k':=k') inodeN allocN);
       [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].

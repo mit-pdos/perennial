@@ -783,10 +783,7 @@ Proof.
       iIntros (s b' extra') "(Hb&%Hencoded'&?&?)"; iNamed.
       iNamed 1.
       wpc_pures.
-      wpc_bind (struct.loadF _ _ _).
-      wpc_frame.
-      wp_loadField.
-      iNamed 1.
+      wpc_loadField.
 
       iApply (prepare_reserved_block with "Hreserved"); auto; try lia.
       { solve_ndisj. }

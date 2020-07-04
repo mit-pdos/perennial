@@ -311,10 +311,7 @@ Section goose.
 
     (* call to (lower-case) write, doing the actual writes *)
     wpc_call.
-    wpc_bind (struct.loadF _ _ _).
-    wpc_frame.
-    wp_loadField.
-    iNamed 1.
+    wpc_loadField.
     (* first write *)
     (* This is an interesting example illustrating crash safety - notice that we
     produce [Q] atomically during this Write. This is the only valid simulation
@@ -339,10 +336,7 @@ Section goose.
     { iSplitL "HΦ"; first iFromCache. eauto 10 with iFrame. }
     iCache with "HΦ Hprimary Hbackup HP".
     { iSplitL "HΦ"; first iFromCache. eauto 10 with iFrame. }
-    wpc_bind (struct.loadF _ _ _).
-    wpc_frame.
-    wp_loadField.
-    iNamed 1.
+    wpc_loadField.
     wpc_pures.
     (* second write *)
     wpc_apply (wpc_Write' with "[$Hb Hbackup]").

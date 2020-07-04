@@ -3,6 +3,7 @@ From iris.proofmode Require Export tactics.
 From iris.program_logic Require Export weakestpre.
 From iris.program_logic Require Import atomic.
 From Perennial.goose_lang Require Import lifting.
+From Perennial.goose_lang.lib Require Import struct.struct.
 From Perennial.program_logic Require Export crash_weakestpre staged_invariant.
 From Perennial.Helpers Require Export NamedProps ProofCaching.
 Set Default Proof Using "Type".
@@ -274,16 +275,19 @@ Tactic Notation "wpc_frame" :=
   | _ => fail 1 "wpc_frame: not a wpc"
   end.
 
-Ltac wpc_frame_go d pat :=
-  let js := (eval cbv in (INamed <$> words pat)) in
+Ltac wpc_frame_go d js :=
   apply (tac_wpc_wp_frame _ d js);
   [ reduction.pm_reduce; split; [ try iFromCache (* crash condition from framed hyps *)
                                 | (* remaining wp *)
                                 cached_reduce
   ] ].
 
-Tactic Notation "wpc_frame" constr(pat) := wpc_frame_go base.Left pat.
-Tactic Notation "wpc_frame_compl" constr(pat) := wpc_frame_go base.Right pat.
+Ltac wpc_frame_pat d pat :=
+  let js := (eval cbv in (INamed <$> words pat)) in
+  wpc_frame_go d js.
+
+Tactic Notation "wpc_frame" constr(pat) := wpc_frame_pat base.Left pat.
+Tactic Notation "wpc_frame_compl" constr(pat) := wpc_frame_pat base.Right pat.
 
 Tactic Notation "wpc_rec" simple_intropattern(H) :=
   let HAsRecV := fresh in
@@ -373,3 +377,24 @@ Tactic Notation "iLeft" "in" constr(H) := let pat := constr:(intro_patterns.ILis
                                           iDestruct H as pat.
 Tactic Notation "iRight" "in" constr(H) := let pat := constr:(intro_patterns.IList [[intro_patterns.IDrop; intro_patterns.IIdent H]]) in
                                            iDestruct H as pat.
+
+Tactic Notation "wpc_loadField" :=
+  lazymatch goal with
+  | |- envs_entails _ (wpc _ _ _ _ _ _ _) =>
+    try wpc_bind (struct.loadF _ _ _);
+    lazymatch goal with
+    | |- envs_entails ?env (wpc _ _ _ _
+                                (App (Val (struct.loadF ?d ?fname))
+                                     (Val (LitV (LitLoc ?l)))) _ _) =>
+      match env with
+      | _ => wpc_frame_go base.Right (@nil ident); [idtac]
+      | context[Esnoc _ ?i (l ↦[d :: fname] _)%I] =>
+        wpc_frame_go base.Right [i]; [idtac]
+      | _ => fail 1 "wpc_loadField: could not frame automatically"
+      end;
+      wp_loadField;
+      iNamed 1
+    | _ => fail 1 "wpc_loadField: could not bind a struct.loadF"
+    end
+  | _ => fail 1 "wpc_loadField: not a wpc"
+  end.
