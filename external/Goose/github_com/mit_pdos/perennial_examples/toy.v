@@ -2,6 +2,16 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+Definition consumeEvenBlock: val :=
+  rec: "consumeEvenBlock" "d" "a" :=
+    let: "b4" := NewSlice byteT disk.BlockSize in
+    SliceSet byteT "b4" #0 (#(U8 4));;
+    disk.Write "a" "b4";;
+    let: "b" := disk.Read "a" in
+    (if: SliceGet byteT "b" #0 ≠ #(U8 4)
+    then Panic ("unexpected value on disk")
+    else #()).
+
 (* TransferEvenBlock assumes it is given ownership of a and that a initially has
    an even block (defined as the first byte being even).
 
@@ -9,10 +19,4 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
    crashes) and is safe (that is, the panic does not get triggered) *)
 Definition TransferEvenBlock: val :=
   rec: "TransferEvenBlock" "d" "a" :=
-    Fork (let: "b4" := NewSlice byteT disk.BlockSize in
-          SliceSet byteT "b4" #0 (#(U8 4));;
-          disk.Write "a" "b4";;
-          let: "b" := disk.Read "a" in
-          (if: SliceGet byteT "b" #0 ≠ #(U8 4)
-          then Panic ("unexpected value on disk")
-          else #())).
+    Fork (consumeEvenBlock "d" "a").
