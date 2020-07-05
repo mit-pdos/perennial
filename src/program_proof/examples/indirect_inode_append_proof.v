@@ -369,11 +369,9 @@ Theorem wp_writeIndirect {l σ addr d lref} ds direct_s indirect_s
         (indA: u64) (indBlkAddrs: list u64)
         (index offset : nat) (a: u64) (b: Block) indblkaddrs_s :
   {{{
-       "%Hsize" ∷ ⌜(length σ.(inode.blocks) >= maxDirect) ∧
-       (length σ.(inode.blocks) >= maxDirect ∧ length σ.(inode.blocks) < MaxBlocks) ∧
-       (*(ds.(impl_s.numInd) <= int.val indirect_s.(Slice.sz)) ∧*)
-       (*Assert that there is still room in the last indirect block*)
-       ((length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks < int.val indirect_s.(Slice.sz))
+       "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect ∧ length σ.(inode.blocks) < MaxBlocks ∧
+        (*Assert that there is still room in the last indirect block*)
+        ((length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks < int.val indirect_s.(Slice.sz))
        ⌝ ∗
        "%Hlookup" ∷ ⌜(take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) !! index = Some indA
                   ∧ ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs
@@ -526,6 +524,8 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
         rewrite app_length; simpl.
         (*Need to show that list within a list contains element and is a permutation... *)
         (*this is going to be very annoying*)
+        rewrite app_assoc.
+        Check list_to_set_app.
         admit.
       }
 
