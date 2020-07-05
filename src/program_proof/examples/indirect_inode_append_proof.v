@@ -525,7 +525,7 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
         (*Need to show that list within a list contains element and is a permutation... *)
         (*this is going to be very annoying*)
         rewrite app_assoc.
-        Check list_to_set_app.
+        (*Check list_to_set_app.*)
         admit.
       }
 
@@ -897,3 +897,4 @@ End goose.
 
 (* to preserve backwards-compatibility *)
 Ltac Zify.zify_post_hook ::= idtac.
+
