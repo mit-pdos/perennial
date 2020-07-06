@@ -15,7 +15,7 @@ idtac "single inode initialization:".
 Print Assumptions single_inode_proof.wpc_Open.
 Print Assumptions single_inode_proof.is_single_inode_alloc.
 Print Assumptions single_inode_proof.init_single_inode.
-idtac "single inode operations".
+idtac "single inode operations:".
 Print Assumptions single_inode_proof.wpc_Read.
 Print Assumptions single_inode_proof.wpc_Append.
 
