@@ -55,19 +55,32 @@ done <"$src"/deps.txt
 # TODO: clone tchajed/marshal and mit-pdos/perennial-examples (with anonymized
 # directory name) into the supplement code
 
-# TODO: anonymize
-for file in "$out"/**; do
-    if test -f "$file"; then
-        $SED -i -e 's/perennial/peony/g' -e 's/Perennial/Peony/g' "$file"
-    fi
-done
-
-# TODO: will need to anonymize directories in such a way that at least the Coq
-# code compiles (we can give up on getting the Go to compile as well)
+# TODO: anonymize more
+# TODO: should not anonymize in external/iris, external/stdpp,
+# external/string-ident (only external/Goose)
+find "$out" -type f |\
+    while read -r file; do
+        $SED -E -i \
+            -e 's/perennial/peony/g' \
+            -e 's/Perennial/Peony/g' \
+            -e 's/(tchajed|ralf)/anonymous/gi' \
+            "$file"
+    done
+find "$out" -type d |\
+    while read -r dir; do
+        anonymous="$dir"
+        anonymous=${anonymous//perennial/peony}
+        anonymous=${anonymous//tchajed/anonymous}
+        if [[ "$anonymous" != "$dir" ]]; then
+            mv "$dir" "$anonymous"
+        fi
+    done
 
 cd "$out"
 tar -czf "$supplement_dir.tar.gz" "$supplement_dir"
 mv "$supplement_dir.tar.gz" "$PERENNIAL/"
+
+rm -rf "$src"
 
 # for debugging
 echo "$dst"
