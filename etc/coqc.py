@@ -183,24 +183,10 @@ class CoqcFilter:
         self.db.close()
 
 
-def read_coqproject(fname):
-    args = []
-    with open(fname) as f:
-        for line in f:
-            if line.startswith("#"):
-                continue
-            args.extend(line.rstrip().split(" "))
-    return [arg for arg in args if arg != "-arg"]
-
-
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--proj", default=None, help="path to __CoqProject to use for options",
-    )
 
     parser.add_argument(
         "--no-timing", action="store_true", help="disable all timing tracking"
@@ -212,12 +198,6 @@ if __name__ == "__main__":
 
     args, coq_args = parser.parse_known_args()
 
-    coqproject_file = args.proj
-    if coqproject_file is not None and path.exists(coqproject_file):
-        proj_args = read_coqproject(coqproject_file)
-    else:
-        proj_args = []
-
     if args.no_timing:
         db = NullDb()
     elif args.timing_db:
@@ -226,7 +206,6 @@ if __name__ == "__main__":
         db = StdoutDb()
 
     args = ["coqc"]
-    args.extend(proj_args)
     args.append("-time")
     args.extend(coq_args)
 

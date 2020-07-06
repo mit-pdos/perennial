@@ -26,3 +26,23 @@ Ltac solve_countable rec num :=
   let dec := match_n num in
   unshelve (refine (inj_countable' inj dec _); intros []; reflexivity);
   constructor.
+
+Module tests.
+  Inductive Three :=
+    one | two | three.
+
+  Instance Three_eq_dec : EqDecision Three.
+  Proof.
+    solve_decision.
+  Qed.
+
+  Instance Three_countable : Countable Three.
+  Proof.
+    solve_countable Three_rec 3.
+  Qed.
+
+  Definition Three_countable' : Countable Three.
+  Proof.
+    solve_countable Three_rec 5.
+  Qed.
+End tests.
