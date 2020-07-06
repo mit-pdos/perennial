@@ -12,6 +12,7 @@ cd "$src"
 git clean -fxd --quiet
 git submodule --quiet foreach git clean -fxd --quiet
 rm -rf .git
+cd "$PERENNIAL"
 
 # Set up the contents of the supplement at $out/$supplement_dir. We'll
 # eventually tar this directory from $out, producing a tar file that contains a
@@ -21,7 +22,7 @@ rm -rf .git
 # the perennial tree (in peony) as well as the source for tchajed/marshal (in
 # marshal) and mit-pdos/perennial-examples (in examples). There's also a
 # README.md (the one at etc/popl21-supplement) to explain all of this.
-out=$(mktemp -d -t "peony-code.XXX")
+out=$(mktemp -d -t "peony-code.XXXXXX")
 supplement_dir="peony-code"
 dst="$out/$supplement_dir"
 
