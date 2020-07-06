@@ -21,7 +21,7 @@ rm -rf .git
 # the perennial tree (in peony) as well as the source for tchajed/marshal (in
 # marshal) and mit-pdos/perennial-examples (in examples). There's also a
 # README.md (the one at etc/popl21-supplement) to explain all of this.
-out=$(mktemp -d -t "peony-code.XXXXXX")
+out=$(mktemp -d -t "peony-code.XXX")
 supplement_dir="peony-code"
 dst="$out/$supplement_dir"
 
@@ -68,20 +68,30 @@ done <"$src"/deps.txt
 rm -rf "$src"
 # done with Perennial source
 
-# TODO: clone tchajed/marshal and mit-pdos/perennial-examples into the
-# supplement code
+# clone tchajed/marshal and mit-pdos/perennial-examples (with anonymized directory name) into the supplement code
+mkdir -p "$dst/marshal"
+git clone git@github.com:tchajed/marshal.git "$dst/marshal"
+rm -rf "$dst/marshal/.git"
+mkdir -p "$dst/peony-examples"
+git clone git@github.com:mit-pdos/perennial-examples.git "$dst/peony-examples"
+rm -rf "$dst/peony-examples/.git"
 
 ## Anonymize
-
 # TODO: anonymize more
-
-# anonymize contents of files
 find "$out" -type f |\
     while read -r file; do
+        # do not anonymize in external/iris, external/stdpp,
+        # external/string-ident (only external/Goose)
+        ([[ $file = *"external/iris"* ]] &&\
+        [[ $file = *"external/stdpp"* ]] &&\
+        [[ $file = *"external/string-ident"* ]]) ||\
         $SED -E -i \
             -e 's/perennial/peony/g' \
             -e 's/Perennial/Peony/g' \
-            -e 's/tchajed/anonymous/gi' \
+            -e 's/(tchajed|ralf)/anonymous/gi' \
+            -e 's/(mit-pdos)/anonymous/gi' \
+            -e 's/(pdos)/anonymous/gi' \
+            -e 's/(mit)/anonymous/gi' \
             "$file"
     done
 
@@ -93,6 +103,7 @@ find "$out" -type d |\
         anonymous="$dir"
         anonymous=${anonymous//perennial/peony}
         anonymous=${anonymous//tchajed/anonymous}
+        anonymous=${anonymous//mit-pdos/anonymous}
         if [[ "$anonymous" != "$dir" ]]; then
             mv "$dir" "$anonymous"
         fi
