@@ -29,7 +29,7 @@ _CoqProject: _CoqProject.in
 	@echo "COQDEP $@"
 	$(Q)coqdep -vos -f _CoqProject $(ALL_VFILES) > $@
 
-ifeq ($(filter $(MAKECMDGOALS),clean),)
+ifeq ($(filter clean _CoqProject,$(MAKECMDGOALS)),)
 -include .coqdeps.d
 endif
 
