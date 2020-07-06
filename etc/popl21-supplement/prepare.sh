@@ -9,22 +9,21 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PERENNIAL="$SCRIPT_DIR/../.."
 
 GREP="grep"
-if which ggrep 2>/dev/null; then
+if which ggrep >/dev/null 2>&1; then
     GREP="ggrep"
 fi
 
 SED="sed"
-if which gsed 2>/dev/null; then
+if which gsed >/dev/null 2>&1; then
     SED="gsed"
 fi
 
+# copy a Perennial source file into the archive
 copy() {
-    top_dir="$1"
-    shift
     for file in "$@"; do
         dir=$(dirname "$file")
-        mkdir -p "$dst/$top_dir/$dir"
-        cp -r "$src/$file" "$dst/$top_dir/$dir/"
+        mkdir -p "$dst/peony/$dir"
+        cp -r "$src/$file" "$dst/peony/$dir/"
     done
 }
 
@@ -36,12 +35,13 @@ rm -rf .git
 mkdir -p "$dst/peony"
 cp "$src"/etc/popl21-supplement/README.md "$dst"/
 cp "$src"/etc/popl21-supplement/Makefile "$dst"/peony/
-copy peony _CoqProject.in
-copy peony .gitignore
+copy _CoqProject.in
+copy .gitignore
+copy LICENSE
 libs="coq-tactical coqutil record-update"
 libs+=" iris stdpp string-ident string-ident-v8.11"
 for lib in $libs; do
-    copy peony "external/$lib"
+    copy "external/$lib"
 done
 rm -rf "$dst"/peony/external/*/vendor
 make --dry-run src/program_proof/examples/print_assumptions.vo |\
@@ -49,7 +49,7 @@ make --dry-run src/program_proof/examples/print_assumptions.vo |\
     sort > "$src/deps.txt"
 # see https://github.com/koalaman/shellcheck/wiki/SC2013
 while read -r file; do
-    copy peony "$file"
+    copy "$file"
 done <"$src"/deps.txt
 
 # TODO: clone tchajed/marshal and mit-pdos/perennial-examples (with anonymized
@@ -82,5 +82,5 @@ mv "$supplement_dir.tar.gz" "$PERENNIAL/"
 
 rm -rf "$src"
 
-# for debugging
+# for debugging leave directory around
 echo "$dst"
