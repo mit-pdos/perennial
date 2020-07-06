@@ -13,7 +13,6 @@ COQC := coqc
 
 all: $(VFILES:.v=.vo)
 vos: $(VFILES:.v=.vos)
-interpreter: src/goose_lang/interpreter/generated_test.vos
 check-assumptions: src/program_proof/examples/print_assumptions.vo
 
 _CoqProject: _CoqProject.in
