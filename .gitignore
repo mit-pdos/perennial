@@ -30,3 +30,6 @@ _CoqProject
 __pycache__
 .mypy_cache
 *.pyc
+
+# Compiled code supplement
+/peony-code.tar.gz
