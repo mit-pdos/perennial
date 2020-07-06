@@ -34,8 +34,8 @@ git clean -fxd 1>/dev/null
 rm -rf .git
 
 mkdir -p "$dst/peony"
+cp "$src"/etc/popl21-supplement/README.md "$dst"/
 cp "$src"/etc/popl21-supplement/Makefile "$dst"/peony/
-cp "$src"/etc/popl21-supplement/README.md "$dst"/peony/
 copy peony _CoqProject.in
 copy peony .gitignore
 libs="coq-tactical coqutil record-update"
