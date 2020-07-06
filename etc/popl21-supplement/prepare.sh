@@ -1,13 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-supplement_dir="peony-code"
-out=$(mktemp -d -t "peony-code.XXXXXX")
-src=$(mktemp -d -t "perennial-clean.XXXXXX")
-dst="$out/$supplement_dir"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PERENNIAL="$SCRIPT_DIR/../.."
 
+# Set up a copy of the Perennial source tree at $src, using only git-tracked
+# files. This ensures that copying from this tree only copies source files and not build outputs.
+src=$(mktemp -d -t "perennial-clean.XXXXXX")
+cp -r "$PERENNIAL/" "$src"
+cd "$src"
+git clean -fxd --quiet
+git submodule --quiet foreach git clean -fxd --quiet
+rm -rf .git
+
+# Set up the contents of the supplement at $out/$supplement_dir. We'll
+# eventually tar this directory from $out, producing a tar file that contains a
+# single directory peony-code, and everything will be in that directory.
+#
+# There's an extra level of hierarchy since the supplement contains a subset of
+# the perennial tree (in peony) as well as the source for tchajed/marshal (in
+# marshal) and mit-pdos/perennial-examples (in examples). There's also a
+# README.md (the one at etc/popl21-supplement) to explain all of this.
+out=$(mktemp -d -t "peony-code.XXXXXX")
+supplement_dir="peony-code"
+dst="$out/$supplement_dir"
+
+# use gnu variants on macOS
 GREP="grep"
 if which ggrep >/dev/null 2>&1; then
     GREP="ggrep"
@@ -18,7 +36,7 @@ if which gsed >/dev/null 2>&1; then
     SED="gsed"
 fi
 
-# copy a Perennial source file into the archive
+# copy a Perennial source file into the archive under peony/
 copy() {
     for file in "$@"; do
         dir=$(dirname "$file")
@@ -27,11 +45,7 @@ copy() {
     done
 }
 
-cp -r "$PERENNIAL/" "$src"
-cd "$src"
-git clean -fxd 1>/dev/null
-rm -rf .git
-
+# copy everything for perennial
 mkdir -p "$dst/peony"
 cp "$src"/etc/popl21-supplement/README.md "$dst"/
 cp "$src"/etc/popl21-supplement/Makefile "$dst"/peony/
@@ -51,21 +65,29 @@ make --dry-run src/program_proof/examples/print_assumptions.vo |\
 while read -r file; do
     copy "$file"
 done <"$src"/deps.txt
+rm -rf "$src"
+# done with Perennial source
 
-# TODO: clone tchajed/marshal and mit-pdos/perennial-examples (with anonymized
-# directory name) into the supplement code
+# TODO: clone tchajed/marshal and mit-pdos/perennial-examples into the
+# supplement code
+
+## Anonymize
 
 # TODO: anonymize more
-# TODO: should not anonymize in external/iris, external/stdpp,
-# external/string-ident (only external/Goose)
+
+# anonymize contents of files
 find "$out" -type f |\
     while read -r file; do
         $SED -E -i \
             -e 's/perennial/peony/g' \
             -e 's/Perennial/Peony/g' \
-            -e 's/(tchajed|ralf)/anonymous/gi' \
+            -e 's/tchajed/anonymous/gi' \
             "$file"
     done
+
+# anonymize directories
+# NOTE: this probably doesn't work if a path needs two renames, no idea how to
+# do this recursively and safely
 find "$out" -type d |\
     while read -r dir; do
         anonymous="$dir"
@@ -76,11 +98,8 @@ find "$out" -type d |\
         fi
     done
 
-cd "$out"
-tar -czf "$supplement_dir.tar.gz" "$supplement_dir"
-mv "$supplement_dir.tar.gz" "$PERENNIAL/"
-
-rm -rf "$src"
+# tar the result
+tar -czf "$PERENNIAL/$supplement_dir.tar.gz" -C "$out" "$supplement_dir"
 
 # for debugging leave directory around
 echo "$dst"
