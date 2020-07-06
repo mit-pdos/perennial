@@ -2,19 +2,19 @@
 set -euo pipefail
 
 supplement_dir="peony-code"
-out=$(mktemp -d -t peony-code)
-src=$(mktemp -d -t perennial-clean)
+out=$(mktemp -d -t "peony-code.XXXXXX")
+src=$(mktemp -d -t "perennial-clean.XXXXXX")
 dst="$out/$supplement_dir"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PERENNIAL="$SCRIPT_DIR/../.."
 
 GREP="grep"
-if which ggrep 1>/dev/null; then
+if which ggrep 2>/dev/null; then
     GREP="ggrep"
 fi
 
 SED="sed"
-if which gsed 1>/dev/null; then
+if which gsed 2>/dev/null; then
     SED="gsed"
 fi
 
