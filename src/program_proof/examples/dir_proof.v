@@ -369,6 +369,15 @@ Section goose.
       iApply ("IH" with "Hm").
   Qed.
 
+  (* for compatibility with Coq v8.11 *)
+  Lemma seq_S : forall len start, seq start (S len) = seq start len ++ [start + len].
+  Proof.
+    intros len start.
+    change [start + len] with (seq (start + len) 1).
+    rewrite <- seq_app.
+    rewrite <- plus_n_Sm, <- plus_n_O; reflexivity.
+  Qed.
+
   Theorem init_dir {E} (sz: Z) :
     (num_inodes ≤ sz < 2^64)%Z →
     ([∗ list] i ∈ seqZ 0 sz, i d↦ block0) ={E}=∗
@@ -402,11 +411,11 @@ Section goose.
       iInduction num_inodes as [|n Sn] "IH".
       + iExists []; auto.
       + iAssert (⌜(n <= sz)%Z ∧ (sz < 2^64)%Z⌝)%I as "IHbound"; [iPureIntro; word|].
-        repeat rewrite seq_S.
+        rewrite !seq_S.
         rewrite seqZ_S.
         repeat change (0+n) with n.
         change (0+n)%Z with (Z.of_nat n).
-        repeat rewrite big_sepL_app.
+        rewrite !big_sepL_app.
         iDestruct "Hinodes" as "[Hrest Hinode]".
         iDestruct "Hinode_blocks" as "[Hrest_blocks Hinode_block]".
         iDestruct "Hinode_used" as "[Hrest_used Hinode_used]".
