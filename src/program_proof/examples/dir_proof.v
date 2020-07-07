@@ -371,7 +371,7 @@ Section goose.
 
   Theorem init_dir {E} (sz: Z) :
     (5 ≤ sz < 2^64)%Z →
-    ([∗ list] i ∈ seq 0 (Z.to_nat sz), (Z.of_nat i) d↦ block0) ={E}=∗
+    ([∗ list] i ∈ seqZ 0 sz, i d↦ block0) ={E}=∗
     let σ0 := dir.mk $ gset_to_gmap [] $ set_seq 0 5 in
     dir_cinv sz σ0 true.
   Proof.
@@ -385,13 +385,78 @@ Section goose.
        - allocate ghost variables for each Pinode and Palloc
      *)
     iIntros (Hbound) "Hd".
-    replace (Z.to_nat sz) with (5 + (Z.to_nat (sz - 5))) by lia.
-    rewrite seq_app big_sepL_app.
+    replace (sz) with (5 + ((sz - 5)))%Z by lia.
+    rewrite -> seqZ_app by lia.
+    change (0 + 5)%Z with 5%Z.
+    rewrite big_sepL_app.
     iDestruct "Hd" as "[Hinodes Hfree]".
+
     iMod (inode_used_alloc _ (gset_to_gmap ∅ $ set_seq 0 5)) as (γused) "[Hinode_used Hallused]".
     iMod (inode_blocks_alloc _ (gset_to_gmap [] $ set_seq 0 5)) as (γblocks) "[Hinode_blocks Hallblocks]".
+    iModIntro.
     iApply big_sepM_const_seq in "Hinode_used".
     iApply big_sepM_const_seq in "Hinode_blocks".
+
+    iExists γblocks, γused; iFrame.
+    iSplitL "Hinodes Hinode_blocks Hinode_used".
+    { iExists (replicate 5 (inode.mk ∅ [])).
+      iSplitR.
+      + iPureIntro. rewrite replicate_length /num_inodes; auto.
+      + simpl.
+        iDestruct "Hinodes" as "[Hinode0 [Hinode1 [Hinode2 [Hinode3 [Hinode4 _]]]]]".
+        iDestruct "Hinode_blocks" as "[Hblks0 [Hblks1 [Hblks2 [Hblks3 [Hblks4 _]]]]]".
+        iDestruct "Hinode_used" as "[Hused0 [Hused1 [Hused2 [Hused3 [Hused4 _]]]]]".
+        change ((0%nat + 0)%Z) with (int.val (U64 0)).
+        change ((1%nat + 0)%Z) with (int.val (U64 1)).
+        change ((2%nat + 0)%Z) with (int.val (U64 2)).
+        change ((3%nat + 0)%Z) with (int.val (U64 3)).
+        change ((4%nat + 0)%Z) with (int.val (U64 4)).
+        iDestruct (init_inode with "Hinode0") as "Hinode0".
+        iDestruct (init_inode with "Hinode1") as "Hinode1".
+        iDestruct (init_inode with "Hinode2") as "Hinode2".
+        iDestruct (init_inode with "Hinode3") as "Hinode3".
+        iDestruct (init_inode with "Hinode4") as "Hinode4".
+        iFrame.
+    }
+    iSplitL "Hfree Hallused".
+    { pose proof (new_alloc_state_properties 5 (sz-5) ∅ ltac:(set_solver))
+        as (Hdom&Hpost_crash&Hused&Hunused).
+      iExists (new_alloc_state 5 (sz-5) ∅).
+      iSplitR; first eauto.
+      iSplitR.
+      { replace ((5 + (sz - 5) - Z.of_nat num_inodes)%Z) with ((sz - 5)%Z) by word.
+        rewrite /alloc.domain in Hdom; eauto.
+      }
+      rewrite /Palloc Hused.
+      iSplitL "Hallused".
+      + iExists (gset_to_gmap ∅ (set_seq 0 5)).
+        iFrame "Hallused".
+        iSplit; iPureIntro.
+        {
+          admit. (*XXX there should be some easy way to prove this?*)
+        }
+        admit. (* XXX Not sure what *2 means *)
+      + rewrite Hunused difference_empty_L.
+        rewrite /rangeSet.
+        rewrite big_sepS_list; last first.
+        { admit. (*XXX fix after pulling! apply seq_U64_NoDup; word.*) }
+        rewrite big_sepL_fmap.
+        unfold allocΨ.
+        iApply (big_sepL_mono with "Hfree").
+        iIntros (???) "H".
+        iExists _.
+        iExactEq "H".
+        f_equiv.
+        apply lookup_seqZ in H.
+        word.
+    }
+
+    iPureIntro.
+    intros idx Hidx.
+    exists [].
+    rewrite /num_inodes in Hidx.
+    apply lookup_gset_to_gmap_Some; split; auto.
+    set_unfold. lia.
   Admitted.
 
   Lemma pre_inodes_to_cinv inode_refs s_inodes :
