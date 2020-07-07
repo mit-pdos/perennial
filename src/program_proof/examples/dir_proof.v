@@ -375,8 +375,7 @@ Section goose.
     let σ0 := dir.mk $ gset_to_gmap [] $ set_seq 0 5 in
     dir_cinv sz σ0 true.
   Proof.
-    (* TODO: rough plan is to:
-
+    (* Proof outline:
        - split disk blocks into first 5 and [5,sz-5)
        - create inode_cinv using init_inode for each of the first 5
        - create allocator free blocks from remainder, prove something about
