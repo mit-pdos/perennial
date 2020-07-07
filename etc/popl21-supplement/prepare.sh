@@ -12,7 +12,6 @@ cd "$src"
 git clean -fxd --quiet
 git submodule --quiet foreach git clean -fxd --quiet
 rm -rf .git
-cd "$PERENNIAL"
 
 # Set up the contents of the supplement at $out/$supplement_dir. We'll
 # eventually tar this directory from $out, producing a tar file that contains a
@@ -66,20 +65,31 @@ make --dry-run src/program_proof/examples/print_assumptions.vo |\
 while read -r file; do
     copy "$file"
 done <"$src"/deps.txt
+cd "$dst"
 rm -rf "$src"
 # done with Perennial source
 
-# clone tchajed/marshal and mit-pdos/perennial-examples (with anonymized directory name) into the supplement code
-mkdir -p "$dst/marshal"
-git clone git@github.com:tchajed/marshal.git "$dst/marshal"
-rm -rf "$dst/marshal/.git*"
-mkdir -p "$dst/peony-examples"
-git clone git@github.com:mit-pdos/perennial-examples.git "$dst/peony-examples"
-rm -rf "$dst/peony-examples/.git*"
+github_download() {
+    org="$1"
+    repo="$2"
+    url="https://github.com/$org/$repo/archive/master.zip"
+    curl --progress-bar --output "$dst/master.zip" -L "$url"
+    unzip -q "$dst/master.zip"
+    rm "$dst/master.zip"
+    mv "$dst/$repo-master" "$dst/$repo"
+    rm -rf "$dst/$repo/.github"
+}
 
-## Anonymize
+# clone tchajed/marshal and mit-pdos/perennial-examples (with anonymized directory name) into the supplement code
+github_download "tchajed" "marshal"
+github_download "mit-pdos" "perennial-examples"
+mv "$dst/perennial-examples" "$dst/peony-examples"
+
 # TODO: anonymize more
-find "$out" -type f |\
+cd "$out"
+# for debugging the anonymization track the diff in git
+git init; git add .; git commit --quiet --no-verify -m "initial commit"
+find "$dst" -type f |\
     while read -r file; do
         # do not anonymize in external/iris, external/stdpp,
         # external/string-ident (only external/Goose)
@@ -92,7 +102,7 @@ find "$out" -type f |\
         $SED -E -i \
             -e 's/perennial/peony/g' \
             -e 's/Perennial/Peony/g' \
-            -e 's/(nickolai|kaashoek|tchajed|ralf)/anonymous/gi' \
+            -e 's/(nickolai|kaashoek|ralf)/anonymous/gi' \
             -e 's/(mit-pdos)/anonymous/gi' \
             -e 's/(mit_pdos)/anonymous/gi' \
             -e 's/(pdos)/anonymous/gi' \
@@ -102,7 +112,7 @@ find "$out" -type f |\
 # anonymize directories
 # NOTE: this probably doesn't work if a path needs two renames, no idea how to
 # do this recursively and safely
-find "$out" -type d |\
+find -d "$dst" -type d |\
     while read -r dir; do
         anonymous="$dir"
         anonymous=${anonymous//perennial/peony}
@@ -113,9 +123,11 @@ find "$out" -type d |\
             mv "$dir" "$anonymous"
         fi
     done
+git diff > "$out/anonymize.diff"
+rm -rf .git
 
 # tar the result
 tar -czf "$PERENNIAL/$supplement_dir.tar.gz" -C "$out" "$supplement_dir"
 
 # for debugging leave directory around
-echo "$dst"
+echo "$out"

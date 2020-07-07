@@ -15,6 +15,10 @@ The main Coq development is in the supplement under `peony/`. Documentation for
 this code is still sparse (if the paper is accepted, our artifact will be better
 documented).
 
+We provide the original source code for the examples in the top-level
+directories `marshal` (a serialization library written in Goose that we
+verified) and `peony-examples`. The Goose-translated output is also provided within `peony/external/Goose/` so that the Coq development is self-contained.
+
 The framework mainly consists of the following directories and specific files:
 
 - `peony/src/program_logic/` develops the Peony program logic in a
@@ -35,11 +39,7 @@ The framework mainly consists of the following directories and specific files:
   `ProofCaching.v`, which implements caching support (the implementation does
   not depend on crash reasoning).
 
-The examples are verified in `peony/src/program_proof`. The code for the
-examples is provided in two forms: `peony/external/Goose/` has the generated
-GooseLang code that the proofs actually concern. We also provide copies of the
-Go source in two top-level directories `marshal` (for a small integer
-serialization library) and `examples`.
+The program proofs corresponding to examples in the paper are the following:
 
 - `peony/src/program_proof/marshal_proof.v` verifies a library for encoding
   integers into disk blocks (this is purely in memory; the code in the paper
