@@ -324,26 +324,6 @@ Qed.
 Hint Rewrite word.unsigned_or_nowrap : word.
 Hint Rewrite word.unsigned_slu : word.
 
-Theorem val_u32 z :
-  0 <= z < 2 ^ 32 ->
-  int.val (U32 z) = z.
-Proof.
-  intros.
-  unfold U32.
-  rewrite word.unsigned_of_Z.
-  rewrite wrap_small; auto.
-Qed.
-
-Theorem val_u64 z :
-  0 <= z < 2 ^ 64 ->
-  int.val (U64 z) = z.
-Proof.
-  intros.
-  unfold U64.
-  rewrite word.unsigned_of_Z.
-  rewrite wrap_small; auto.
-Qed.
-
 Ltac eval_term t :=
   let t' := (eval cbv in t) in change t with t'.
 

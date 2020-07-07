@@ -85,6 +85,7 @@ Section map.
 End map.
 
 (** turn a list into a gmap from its indices to values *)
+(* TODO: upstream this? *)
 Definition list_to_imap {A} (l: list A) : gmap nat A :=
   list_to_map (imap (λ i x, (i, x)) l).
 

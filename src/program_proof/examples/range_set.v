@@ -5,26 +5,7 @@ From Perennial.Helpers Require Import Integers.
 Definition rangeSet (start sz: Z): gset u64 :=
   list_to_set (U64 <$> seqZ start sz).
 
-Lemma elem_of_seq start sz :
-  ∀ i, i ∈ seq start sz ↔ (start ≤ i < start + sz)%nat.
-Proof.
-  intros i.
-  rewrite elem_of_list_In in_seq.
-  auto.
-Qed.
-
-Lemma elem_of_seqZ start sz :
-  ∀ i, i ∈ seqZ start sz ↔ start ≤ i < start + sz.
-Proof.
-  intros i.
-  rewrite /seqZ.
-  rewrite elem_of_list_fmap.
-  setoid_rewrite elem_of_seq.
-  split; intros.
-  - destruct H as [y [-> Hin]]; lia.
-  - exists (Z.to_nat (i - start)); lia.
-Qed.
-
+(* TODO: upstream this *)
 Lemma seqZ_app (len1 len2 start: Z) :
   0 ≤ len1 →
   0 ≤ len2 →

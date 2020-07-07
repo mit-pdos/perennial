@@ -507,3 +507,75 @@ Ltac word_cleanup :=
   try lia.
 
 Ltac word := solve [ word_cleanup ].
+
+(* FIXME: move upstream to std++ *)
+Lemma elem_of_seq start sz :
+  ∀ i, i ∈ seq start sz ↔ (start ≤ i < start + sz)%nat.
+Proof.
+  intros i.
+  rewrite elem_of_list_In, in_seq.
+  auto.
+Qed.
+
+(* FIXME: move upstream to std++ *)
+Lemma elem_of_seqZ start sz :
+  ∀ i, i ∈ seqZ start sz ↔ start ≤ i < start + sz.
+Proof.
+  intros i.
+  unfold seqZ.
+  rewrite elem_of_list_fmap.
+  setoid_rewrite elem_of_seq.
+  split; intros.
+  - destruct H as [y [-> Hin]]; lia.
+  - exists (Z.to_nat (i - start)); lia.
+Qed.
+
+(* FIXME: move upstream to std++ *)
+Lemma NoDup_fmap_2_strong {A B} (f : A → B) (l : list A) :
+  (∀ x y, x ∈ l → y ∈ l → f x = f y → x = y) →
+  NoDup l →
+  NoDup (f <$> l).
+Proof.
+  intros Hinj.
+  induction 1; simpl; constructor; cycle 1.
+  { apply IHNoDup. intros ????. apply Hinj; apply elem_of_list_further; done. }
+  rewrite elem_of_list_fmap. intros [y [Hxy ?]].
+  apply Hinj in Hxy; [by subst|..].
+  - apply elem_of_list_here.
+  - apply elem_of_list_further. done.
+Qed.
+
+Theorem val_u32 z :
+  0 <= z < 2 ^ 32 ->
+  int.val (U32 z) = z.
+Proof.
+  intros.
+  unfold U32.
+  rewrite word.unsigned_of_Z.
+  rewrite wrap_small; auto.
+Qed.
+
+Theorem val_u64 z :
+  0 <= z < 2 ^ 64 ->
+  int.val (U64 z) = z.
+Proof.
+  intros.
+  unfold U64.
+  rewrite word.unsigned_of_Z.
+  rewrite wrap_small; auto.
+Qed.
+
+Lemma seq_U64_NoDup (m len : Z) :
+  (0 ≤ m)%Z →
+  (m+len < 2^64)%Z →
+  NoDup (U64 <$> seqZ m len).
+Proof.
+  intros Hlb Hub. apply NoDup_fmap_2_strong; cycle 1.
+  { apply NoDup_seqZ. }
+  Set Printing Coercions. (* This is impossible to work on otherwise... *)
+  clear- Hlb Hub. intros x y Hx%elem_of_seqZ Hy%elem_of_seqZ Heq.
+  rewrite <-(val_u64 x), <-(val_u64 y).
+  - by rewrite Heq.
+  - word.
+  - word.
+Qed.

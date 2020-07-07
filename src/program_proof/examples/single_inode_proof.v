@@ -103,37 +103,6 @@ Section goose.
     Timeless (s_inode_inv γblocks blocks).
   Proof. apply _. Qed.
 
-  (* FIXME: move upstream to std++ *)
-  Lemma NoDup_fmap_2_strong {A B} (f : A → B) (l : list A) :
-    (∀ x y, x ∈ l → y ∈ l → f x = f y → x = y) →
-    NoDup l →
-    NoDup (f <$> l).
-  Proof.
-    intros Hinj.
-    induction 1; simpl; constructor; last first.
-    { apply IHNoDup. intros ????. apply Hinj; apply elem_of_list_further; done. }
-    rewrite elem_of_list_fmap. intros [y [Hxy ?]].
-    apply Hinj in Hxy; first by subst.
-    - apply elem_of_list_here.
-    - apply elem_of_list_further. done.
-  Qed.
-
-  Lemma seq_U64_NoDup (m len : Z) :
-    (0 ≤ m)%Z →
-    (m+len < 2^64)%Z →
-    NoDup (U64 <$> seqZ m len).
-  Proof.
-    intros Hlb Hub. apply NoDup_fmap_2_strong.
-    - Set Printing Coercions. (* This is impossible to work on otherwise... *)
-      clear- Hlb Hub. intros x y Hx%elem_of_seqZ Hy%elem_of_seqZ Heq.
-      rewrite -(encoding.val_u64 x); first rewrite -(encoding.val_u64 y).
-      + by rewrite Heq.
-      + word.
-      + word.
-      Unset Printing Coercions.
-    - apply NoDup_seqZ.
-  Qed.
-
   Theorem init_single_inode {E} (sz: Z) :
     (1 ≤ sz < 2^64)%Z →
     ([∗ list] i ∈ seqZ 0 sz, i d↦ block0) ={E}=∗
