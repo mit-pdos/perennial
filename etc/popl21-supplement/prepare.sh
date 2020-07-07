@@ -36,6 +36,11 @@ if which gsed >/dev/null 2>&1; then
     SED="gsed"
 fi
 
+FIND="find"
+if which gfind >/dev/null 2>&1; then
+    FIND="gfind"
+fi
+
 # copy a Perennial source file into the archive under peony/
 copy() {
     for file in "$@"; do
@@ -89,7 +94,7 @@ mv "$dst/perennial-examples" "$dst/peony-examples"
 cd "$out"
 # for debugging the anonymization track the diff in git
 git init; git add .; git commit --quiet --no-verify -m "initial commit"
-find "$dst" -type f |\
+$FIND "$dst" -type f |\
     while read -r file; do
         # do not anonymize in external/iris, external/stdpp,
         # external/string-ident (only external/Goose)
@@ -111,28 +116,16 @@ find "$dst" -type f |\
     done
 
 # anonymize directories
-# NOTE: this probably doesn't work if a path needs two renames, no idea how to
-# do this recursively and safely
-find -d "$dst" -type d |\
-    # XXX Hack: replace github usernames, then repos
+$FIND "$dst" -depth -type d |\
     while read -r dir; do
         if [[ $dir != *"/perennial"* ]]; then
             anonymous="$dir"
+            anonymous=${anonymous//perennial/peony}
             anonymous=${anonymous//tchajed/anonymous}
             anonymous=${anonymous//mit_pdos/anonymous}
             if [[ "$anonymous" != "$dir" ]]; then
                 mv "$dir" "$anonymous"
             fi
-        fi
-    done
-
-find "$out" -type d |\
-    while read -r dir; do
-        anonymous="$dir"
-        anonymous=${anonymous//tchajed/anonymous}
-        anonymous=${anonymous//perennial/peony}
-        if [[ "$anonymous" != "$dir" ]]; then
-            mv "$dir" "$anonymous"
         fi
     done
 git diff > "$out/anonymize.diff"
