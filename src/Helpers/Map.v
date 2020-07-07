@@ -1,6 +1,7 @@
 From stdpp Require Import gmap.
 From Coq Require Import ssreflect.
 
+(* FIXME: Move upstream to std++ *)
 Lemma list_filter_iff (A : Type) (P1 P2 : A → Prop)
     `{!∀ x : A, Decision (P1 x), !∀ x : A, Decision (P2 x)} (l : list A) :
   (∀ x, P1 x ↔ P2 x) →
@@ -36,6 +37,7 @@ Section map.
     eauto.
   Qed.
 
+  (* FIXME: Move upstream to std++ *)
   Lemma map_filter_lookup_None_2 (P : K * V → Prop) `{!∀ x, Decision (P x)} m i :
     m !! i = None ∨ (∀ x : V, m !! i = Some x → ¬ P (i, x)) →
     filter P m !! i = None.
@@ -43,6 +45,7 @@ Section map.
     intros ?. apply map_filter_lookup_None. done.
   Qed.
 
+  (* FIXME: Move upstream to std++ *)
   Lemma map_filter_lookup_Some_2 (P : K * V → Prop) `{!∀ x, Decision (P x)} m i x :
     m !! i = Some x ∧ P (i, x) →
     filter P m !! i = Some x.
@@ -50,6 +53,7 @@ Section map.
     intros ?. apply map_filter_lookup_Some. done.
   Qed.
 
+  (* FIXME: Move upstream to std++ *)
   Lemma map_filter_fmap (P : K * V → Prop) `{!∀ x, Decision (P x)} (f : V → V) m :
     filter P (f <$> m) = f <$> filter (λ '(k, v), P (k, (f v))) m.
   Proof.
@@ -69,6 +73,7 @@ Section map.
       + intros v'. rewrite Hmi /= => [=<-]. done.
   Qed.
 
+  (* FIXME: Move upstream to std++ *)
   Lemma map_filter_iff (P1 P2 : K * V → Prop) `{!∀ x, Decision (P1 x)} `{!∀ x, Decision (P2 x)} m :
     (∀ x, P1 x ↔ P2 x) →
     filter P1 m = filter P2 m.

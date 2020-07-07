@@ -411,7 +411,13 @@ Lemma alloc_post_crash_revert_reserved σ:
   alloc_post_crash (revert_reserved σ).
 Proof.
   clear.
-Admitted.
+  rewrite /alloc_post_crash /revert_reserved /alloc.free /alloc.unused.
+  rewrite !map_filter_fmap /= !dom_fmap_L.
+  f_equal. apply map_filter_iff. intros [i x]. simpl. destruct x.
+  - rewrite decide_False //; auto.
+  - rewrite decide_True //; discriminate.
+  - rewrite decide_False //; auto.
+Qed.
 
 Lemma unused_revert_reserved σ:
   alloc.unused (revert_reserved σ) = alloc.unused σ.
