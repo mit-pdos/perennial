@@ -1,4 +1,4 @@
-From stdpp Require Import decidable countable .
+From stdpp Require Import decidable countable.
 From coqutil Require Import Datatypes.HList.
 From coqutil.Z Require Import BitOps.
 From coqutil.Word Require Naive.
