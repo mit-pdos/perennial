@@ -93,32 +93,44 @@ find "$dst" -type f |\
     while read -r file; do
         # do not anonymize in external/iris, external/stdpp,
         # external/string-ident (only external/Goose)
-        ([[ $file = *"external/iris"* ]] &&\
-        [[ $file = *"external/stdpp"* ]] &&\
-        [[ $file = *"external/coqutil"* ]] &&\
-        [[ $file = *"external/coq-tactical"* ]] &&\
-        [[ $file = *"external/record-update"* ]] &&\
-        [[ $file = *"external/string-ident"* ]]) ||\
-        $SED -E -i \
-            -e 's/perennial/peony/g' \
-            -e 's/Perennial/Peony/g' \
-            -e 's/(nickolai|kaashoek|ralf)/anonymous/gi' \
-            -e 's/(mit-pdos)/anonymous/gi' \
-            -e 's/(mit_pdos)/anonymous/gi' \
-            -e 's/(pdos)/anonymous/gi' \
-            "$file"
+        if [[ $file != *"external/iris"* ]] && \
+            [[ $file != *"external/stdpp"* ]] &&\
+            [[ $file != *"external/coqutil"* ]] &&\
+            [[ $file != *"external/coq-tactical"* ]] &&\
+            [[ $file != *"external/record-update"* ]] &&\
+            [[ $file != *"external/string-ident"* ]]; then
+            $SED -E -i \
+                -e 's/perennial/peony/g' \
+                -e 's/Perennial/Peony/g' \
+                -e 's/(nickolai|kaashoek|tchajed|ralf)/anonymous/gi' \
+                -e 's/(mit-pdos)/anonymous/gi' \
+                -e 's/(mit_pdos)/anonymous/gi' \
+                -e 's/(pdos)/anonymous/gi' \
+                "$file"
+        fi
     done
 
 # anonymize directories
 # NOTE: this probably doesn't work if a path needs two renames, no idea how to
 # do this recursively and safely
 find -d "$dst" -type d |\
+    # XXX Hack: replace github usernames, then repos
+    while read -r dir; do
+        if [[ $dir != *"/perennial"* ]]; then
+            anonymous="$dir"
+            anonymous=${anonymous//tchajed/anonymous}
+            anonymous=${anonymous//mit_pdos/anonymous}
+            if [[ "$anonymous" != "$dir" ]]; then
+                mv "$dir" "$anonymous"
+            fi
+        fi
+    done
+
+find "$out" -type d |\
     while read -r dir; do
         anonymous="$dir"
-        anonymous=${anonymous//perennial/peony}
         anonymous=${anonymous//tchajed/anonymous}
-        anonymous=${anonymous//mit-pdos/anonymous}
-        anonymous=${anonymous//mit_pdos/anonymous}
+        anonymous=${anonymous//perennial/peony}
         if [[ "$anonymous" != "$dir" ]]; then
             mv "$dir" "$anonymous"
         fi
