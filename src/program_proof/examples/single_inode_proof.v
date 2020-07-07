@@ -124,9 +124,15 @@ Section goose.
     NoDup (U64 <$> seqZ m len).
   Proof.
     intros Hlb Hub. apply NoDup_fmap_2_strong.
-    - admit.
+    - Set Printing Coercions. (* This is impossible to work on otherwise... *)
+      clear- Hlb Hub. intros x y Hx%elem_of_seqZ Hy%elem_of_seqZ Heq.
+      rewrite -(encoding.val_u64 x); first rewrite -(encoding.val_u64 y).
+      + by rewrite Heq.
+      + word.
+      + word.
+      Unset Printing Coercions.
     - apply NoDup_seqZ.
-  Admitted.
+  Qed.
 
   Theorem init_single_inode {E} (sz: Z) :
     (1 ≤ sz < 2^64)%Z →
