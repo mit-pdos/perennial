@@ -404,6 +404,47 @@ Proof.
   iExists _; iFrame "% ∗".
 Qed.
 
+Definition revert_reserved (σ : alloc.t) : alloc.t :=
+  (λ x, if decide (x = block_reserved) then block_free else x) <$> (σ: gmap u64 block_status).
+
+Lemma alloc_post_crash_revert_reserved σ:
+  alloc_post_crash (revert_reserved σ).
+Proof.
+  clear.
+Admitted.
+
+Lemma unused_revert_reserved σ:
+  alloc.unused (revert_reserved σ) = alloc.unused σ.
+Proof.
+  clear.
+Admitted.
+
+Lemma dom_revert_reserved σ:
+ dom (gset u64) (revert_reserved σ) = dom (gset u64) σ.
+Proof.
+  clear.
+Admitted.
+
+Lemma used_revert_reserved (σ0: alloc.t):
+  alloc.used (revert_reserved σ0) = alloc.used σ0.
+Proof.
+  clear.
+Admitted.
+
+Lemma alloc_crash_cond_crash_true d E :
+  (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
+  alloc_crash_cond d false ={E}=∗ alloc_crash_cond d true.
+Proof.
+  clear.
+  iIntros "H".
+  iNamed 1.
+  iMod ("H" with "HPalloc"). iModIntro. iExists _. iFrame.
+  rewrite unused_revert_reserved. iFrame.
+  iPureIntro; split.
+  - apply alloc_post_crash_revert_reserved.
+  - rewrite dom_revert_reserved. auto.
+Qed.
+
 Theorem reserved_block_weaken γ n k R R' :
   □(R -∗ R') -∗
   ▷ □(R' -∗ block_cinv γ k) -∗
@@ -932,6 +973,27 @@ Proof.
     rewrite Heq. iFrame.
   }
   iApply ("HΦ" with "[$]").
+Qed.
+
+End goose.
+
+Section goose.
+Context `{!heapG Σ}.
+Context `{!allocG Σ}.
+Context `{!crashG Σ}.
+
+Context (P: heapG Σ → alloc.t → iProp Σ).
+Context (Ψ: heapG Σ → u64 → iProp Σ).
+
+Instance allocator_crash_cond_stable d b :
+  (∀ x, IntoCrash (P _ x) (λ hG, P hG x)) →
+  (∀ x, IntoCrash (Ψ _ x) (λ hG, Ψ hG x)) →
+  IntoCrash (alloc_crash_cond (P _) (Ψ _) d b) (λ hG, alloc_crash_cond (P hG) (Ψ hG) d b).
+Proof.
+  intros.
+  hnf; iNamed 1.
+  iCrash.
+  iExists _. iFrame. eauto.
 Qed.
 
 End goose.

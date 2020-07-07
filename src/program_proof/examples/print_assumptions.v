@@ -27,4 +27,6 @@ Print Assumptions dir_proof.init_dir.
 idtac "directory operations:".
 Print Assumptions dir_proof.wpc_Read.
 Print Assumptions dir_proof.wpc_Append.
+idtac "directory wpr:".
+Print Assumptions dir_proof.wpr_Open.
 Abort.

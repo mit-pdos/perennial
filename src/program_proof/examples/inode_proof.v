@@ -926,3 +926,25 @@ Proof.
   iApply "HΦ". done.
 Qed.
 End goose.
+
+Section goose.
+Context `{!heapG Σ}.
+Context `{!allocG Σ}.
+Context `{!crashG Σ}.
+
+Context (P: inode.t → iProp Σ).
+
+Instance inode_cinv_stable addr σ :
+  IntoCrash (inode_cinv addr σ) (λ _, inode_cinv addr σ).
+Proof.
+  intros.
+  hnf; iNamed 1.
+  rewrite ?big_sepL2_alt.
+  iDestruct "Hdata" as "(%Heq&Hl)".
+  iCrash.
+  iExists _, _, _. iFrame.
+  rewrite ?big_sepL2_alt.
+  iFrame. eauto.
+Qed.
+
+End goose.

@@ -1115,6 +1115,18 @@ Section goose.
     rewrite /Palloc /named.
     rewrite alloc_free_reserved //.
   Qed.
+  
+  Lemma dir_cinv_crash_true E sz σ :
+    dir_cinv sz σ false ={E}=∗ dir_cinv sz σ true.
+  Proof.
+    iNamed 1. rewrite /dir_cinv.
+    iMod (alloc_crash_cond_crash_true with "[] Halloc").
+    {
+      iIntros (σ0). rewrite /Palloc/named. rewrite used_revert_reserved.
+      iIntros "H". eauto.
+    }
+    iModIntro. iExists _, _. iFrame.
+  Qed.
 
   Lemma alloc_insert_dom idx (new_addrs old_addrs inode_addrs: gset u64)
         (allocs: gmap nat (gset u64)) :
@@ -1241,3 +1253,85 @@ Section goose.
   Qed.
 
 End goose.
+
+From Perennial.goose_lang Require Import crash_modality wpr_lifting.
+
+Section crash_stable.
+  Context `{!heapG Σ}.
+  Context `{!crashG Σ}.
+  Context `{!stagedG Σ}.
+  Context `{!inG Σ blocksR}.
+  Context `{!inG Σ allocsR}.
+
+  Instance allocΨ_crash_stable k:
+    IntoCrash (allocΨ k) (λ _, allocΨ k).
+  Proof.
+    rewrite /IntoCrash. iNamed 1.
+    iCrash. iExists _; eauto.
+  Qed.
+
+  Instance Palloc_crash_stable γ σ:
+    IntoCrash (Palloc γ σ) (λ _, Palloc γ σ).
+  Proof. rewrite /IntoCrash. iApply post_crash_nodep. Qed.
+
+  Instance Pinode_crash_stable γblocks γused i s_inode:
+    IntoCrash (Pinode γblocks γused i s_inode) (λ _, Pinode γblocks γused i s_inode).
+  Proof. rewrite /IntoCrash. iApply post_crash_nodep. Qed.
+
+  Existing Instance inode_cinv_stable.
+
+  Global Instance dir_cinv_crash sz σ0 :
+    IntoCrash (dir_cinv sz σ0 false) (λ _, dir_cinv sz σ0 false).
+  Proof.
+    rewrite /IntoCrash /dir_cinv.
+    iNamed 1.
+    iNamed "Hinodes".
+    rewrite (allocator_crash_cond_stable (λ _, Palloc γused)).
+    rewrite /dir_inv.
+    iNamed "Hs_inode".
+    rewrite /inode_allblocks.
+    iPoseProof (post_crash_nodep with "Hγblocks") as "Hγblocks".
+    iCrash.
+    iExists _, _. iFrame. iFrame "%".
+    iExists _. iFrame. eauto.
+  Qed.
+
+End crash_stable.
+
+Section recov.
+  Context `{!heapG Σ}.
+  Context `{!allocG Σ}.
+  Context `{!crashG Σ}.
+  Context `{!stagedG Σ}.
+  Context `{!inG Σ blocksR}.
+  Context `{!inG Σ allocsR}.
+
+  Notation K := 100%nat.
+  Set Nested Proofs Allowed.
+
+  (* Just a simple example of using idempotence *)
+  Theorem wpr_Open (d: loc) (sz: u64) σ0:
+    (5 ≤ int.val sz)%Z →
+    dir_cinv (int.val sz) σ0 true -∗
+    wpr NotStuck (LVL K) ⊤
+        (Open #d #sz)
+        (Open #d #sz)
+        (λ _, True%I)
+        (λ _, True%I)
+        (λ _ _, True%I).
+  Proof using allocG0.
+    iIntros (Hsz) "Hstart".
+    iApply (idempotence_wpr _ (LVL K) ⊤ ⊤ _ _ _ _ _ (λ _, ∃ σ', dir_cinv (int.val sz) σ' false)%I with "[Hstart]").
+    { auto. }
+    { wpc_apply (wpc_Open with "Hstart"); auto. }
+    iAlways. iIntros (?????) "H".
+    iDestruct "H" as (σ') "Hstart".
+    iNext. iCrash.
+    iIntros.
+    iSplit; first done.
+    iMod (dir_cinv_crash_true with "Hstart") as "Hstart".
+    wpc_apply (wpc_Open with "Hstart").
+    { eauto. }
+    iSplit; eauto.
+  Qed.
+End recov.

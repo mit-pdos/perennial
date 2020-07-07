@@ -37,6 +37,11 @@ Implicit Types v : val.
 
 Existing Instances ffi_crash_rel_pers.
 
+Lemma post_crash_intro Q:
+  (⊢ Q) →
+  (⊢ post_crash (λ _, Q)).
+Proof. iIntros (Hmono). iIntros (???) "#Hrel". iApply Hmono. Qed.
+
 Lemma post_crash_mono P Q:
   (∀ hG, P hG -∗ Q hG) →
   post_crash P -∗ post_crash Q.
@@ -231,7 +236,34 @@ Section IntoCrash.
     (∀ (k : K) (x : A), IntoCrash (Φ k x) (λ hG, Ψ hG k x)) →
     IntoCrash ([∗ map] k↦x ∈ m, Φ k x)%I (λ hG, [∗ map] k↦x ∈ m, Ψ hG k x)%I.
   Proof.
-  Admitted.
+    intros. induction m using map_ind.
+    - eapply (into_crash_proper True%I _ (λ _, True%I)).
+      { apply _. }
+      * rewrite big_sepM_empty; eauto.
+      * intros. rewrite big_sepM_empty; eauto.
+    - eapply (into_crash_proper (Φ i x ∗ [∗ map] k↦x0 ∈ m, Φ k x0) _
+                                (λ _, (Ψ _ i x ∗ [∗ map] k↦x0 ∈ m, Ψ _ k x0)%I)).
+      { apply _. }
+      * rewrite big_sepM_insert //=.
+      * intros. rewrite big_sepM_insert //=.
+  Qed.
+
+  Global Instance big_sepS_into_crash `{Countable K} :
+    ∀ Φ (Ψ : heapG Σ → K → iProp Σ) (m : gset K),
+    (∀ (k : K), IntoCrash (Φ k) (λ hG, Ψ hG k)) →
+    IntoCrash ([∗ set] k ∈ m, Φ k)%I (λ hG, [∗ set] k ∈ m, Ψ hG k)%I.
+  Proof.
+    intros. induction m as [|i m ? IH] using set_ind_L => //=.
+    - eapply (into_crash_proper True%I _ (λ _, True%I)).
+      { apply _. }
+      * rewrite big_sepS_empty; eauto.
+      * intros. rewrite big_sepS_empty; eauto.
+    - eapply (into_crash_proper (Φ i ∗ [∗ set] k ∈ m, Φ k) _
+                                (λ _, (Ψ _ i ∗ [∗ set] k ∈ m, Ψ _ k)%I)).
+      { apply _. }
+      * rewrite big_sepS_insert //=.
+      * intros. rewrite big_sepS_insert //=.
+  Qed.
 
   Lemma into_crash_post_crash_frame_l P P' `{!IntoCrash P P'} Q:
     P -∗ post_crash Q -∗ post_crash (λ hG', P' hG' ∗ Q hG').
