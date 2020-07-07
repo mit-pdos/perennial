@@ -431,15 +431,11 @@ Section goose.
       iSplitL "Hallused".
       + iExists (gset_to_gmap ∅ (set_seq 0 5)).
         iFrame "Hallused".
-        iSplit; iPureIntro.
-        {
-          admit. (*XXX there should be some easy way to prove this?*)
-        }
-        admit. (* XXX Not sure what *2 means *)
+        iSplit; iPureIntro; set_unfold; lia.
       + rewrite Hunused difference_empty_L.
         rewrite /rangeSet.
         rewrite big_sepS_list; last first.
-        { admit. (*XXX fix after pulling! apply seq_U64_NoDup; word.*) }
+        { apply seq_U64_NoDup; word. }
         rewrite big_sepL_fmap.
         unfold allocΨ.
         iApply (big_sepL_mono with "Hfree").
@@ -457,7 +453,7 @@ Section goose.
     rewrite /num_inodes in Hidx.
     apply lookup_gset_to_gmap_Some; split; auto.
     set_unfold. lia.
-  Admitted.
+  Qed.
 
   Lemma pre_inodes_to_cinv inode_refs s_inodes :
     ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
