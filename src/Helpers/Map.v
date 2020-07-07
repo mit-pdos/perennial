@@ -1,6 +1,21 @@
 From stdpp Require Import gmap.
 From Coq Require Import ssreflect.
 
+Lemma list_filter_iff (A : Type) (P1 P2 : A → Prop)
+    `{!∀ x : A, Decision (P1 x), !∀ x : A, Decision (P2 x)} (l : list A) :
+  (∀ x, P1 x ↔ P2 x) →
+  filter P1 l = filter P2 l.
+Proof.
+  intros HPiff. induction l; first done.
+  destruct (decide (P1 a)) as [HP1|HnP1].
+  - rewrite !filter_cons_True; first done.
+    + by apply HPiff.
+    + by rewrite IHl.
+  - rewrite !filter_cons_False; first done.
+    + by rewrite -HPiff.
+    + by rewrite IHl.
+Qed.
+
 Section map.
 
   Context (K V:Type).
@@ -19,6 +34,47 @@ Section map.
     rewrite <- (insert_delete (m1 ∪ m2)).
     rewrite delete_union.
     eauto.
+  Qed.
+
+  Lemma map_filter_lookup_None_2 (P : K * V → Prop) `{!∀ x, Decision (P x)} m i :
+    m !! i = None ∨ (∀ x : V, m !! i = Some x → ¬ P (i, x)) →
+    filter P m !! i = None.
+  Proof.
+    intros ?. apply map_filter_lookup_None. done.
+  Qed.
+
+  Lemma map_filter_lookup_Some_2 (P : K * V → Prop) `{!∀ x, Decision (P x)} m i x :
+    m !! i = Some x ∧ P (i, x) →
+    filter P m !! i = Some x.
+  Proof.
+    intros ?. apply map_filter_lookup_Some. done.
+  Qed.
+
+  Lemma map_filter_fmap (P : K * V → Prop) `{!∀ x, Decision (P x)} (f : V → V) m :
+    filter P (f <$> m) = f <$> filter (λ '(k, v), P (k, (f v))) m.
+  Proof.
+    apply map_eq=>i.
+    rewrite lookup_fmap.
+    destruct (m !! i) as [v|] eqn:Hmi; last first.
+    { rewrite !map_filter_lookup_None_2 //; left.
+      - rewrite lookup_fmap Hmi //.
+      - done. }
+    destruct (decide (P (i,f v))) as [HP|HnP].
+    - erewrite !map_filter_lookup_Some_2; last first.
+      + rewrite lookup_fmap Hmi //.
+      + rewrite Hmi //.
+      + done.
+    - rewrite !map_filter_lookup_None_2 //; right.
+      + intros v'. rewrite lookup_fmap Hmi /= => [=<-]. done.
+      + intros v'. rewrite Hmi /= => [=<-]. done.
+  Qed.
+
+  Lemma map_filter_iff (P1 P2 : K * V → Prop) `{!∀ x, Decision (P1 x)} `{!∀ x, Decision (P2 x)} m :
+    (∀ x, P1 x ↔ P2 x) →
+    filter P1 m = filter P2 m.
+  Proof.
+    intros HPiff. rewrite !map_filter_alt.
+    f_equal. apply list_filter_iff. done.
   Qed.
 
 End map.

@@ -417,19 +417,32 @@ Lemma unused_revert_reserved σ:
   alloc.unused (revert_reserved σ) = alloc.unused σ.
 Proof.
   clear.
-Admitted.
+  rewrite /alloc.unused /revert_reserved.
+  rewrite map_filter_fmap /= dom_fmap_L.
+  f_equal. apply map_filter_iff. intros [i x]. simpl. destruct x.
+  - rewrite decide_False //; auto.
+  - rewrite decide_True //; discriminate.
+  - rewrite decide_False //; auto.
+Qed.
 
 Lemma dom_revert_reserved σ:
  dom (gset u64) (revert_reserved σ) = dom (gset u64) σ.
 Proof.
   clear.
-Admitted.
+  rewrite /revert_reserved dom_fmap_L //.
+Qed.
 
 Lemma used_revert_reserved (σ0: alloc.t):
   alloc.used (revert_reserved σ0) = alloc.used σ0.
 Proof.
   clear.
-Admitted.
+  rewrite /alloc.used /revert_reserved.
+  rewrite map_filter_fmap /= dom_fmap_L.
+  f_equal. apply map_filter_iff. intros [i x]. simpl. destruct x.
+  - rewrite decide_False //; auto.
+  - rewrite decide_True //; discriminate.
+  - rewrite decide_False //; auto.
+Qed.
 
 Lemma alloc_crash_cond_crash_true d E :
   (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
@@ -578,7 +591,7 @@ Proof.
   clear.
   rewrite /alloc.free /=.
   rewrite map_filter_insert_not_strong //=.
-  rewrite map_filter_delete (dom_delete_L) //.
+  rewrite map_filter_delete dom_delete_L //.
 Qed.
 
 Theorem alloc_free_free σ new :
