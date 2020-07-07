@@ -13,18 +13,18 @@ Print Assumptions replicated_block_proof.OpenRead_adequate.
 
 idtac "".
 idtac "single inode initialization:".
+Print Assumptions single_inode_proof.init_single_inode.
 Print Assumptions single_inode_proof.wpc_Open.
 Print Assumptions single_inode_proof.is_single_inode_alloc.
-Print Assumptions single_inode_proof.init_single_inode.
 idtac "single inode operations:".
 Print Assumptions single_inode_proof.wpc_Read.
 Print Assumptions single_inode_proof.wpc_Append.
 
 idtac "".
 idtac "directory initialization:".
+Print Assumptions dir_proof.init_dir.
 Print Assumptions dir_proof.wpc_Open.
 Print Assumptions dir_proof.is_dir_alloc.
-Print Assumptions dir_proof.init_dir.
 idtac "directory operations:".
 Print Assumptions dir_proof.wpc_Read.
 Print Assumptions dir_proof.wpc_Size.
