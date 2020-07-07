@@ -103,6 +103,31 @@ Section goose.
     Timeless (s_inode_inv γblocks blocks).
   Proof. apply _. Qed.
 
+  (* FIXME: move upstream to std++ *)
+  Lemma NoDup_fmap_2_strong {A B} (f : A → B) (l : list A) :
+    (∀ x y, x ∈ l → y ∈ l → f x = f y → x = y) →
+    NoDup l →
+    NoDup (f <$> l).
+  Proof.
+    intros Hinj.
+    induction 1; simpl; constructor; last first.
+    { apply IHNoDup. intros ????. apply Hinj; apply elem_of_list_further; done. }
+    rewrite elem_of_list_fmap. intros [y [Hxy ?]].
+    apply Hinj in Hxy; first by subst.
+    - apply elem_of_list_here.
+    - apply elem_of_list_further. done.
+  Qed.
+
+  Lemma seq_U64_NoDup (m len : Z) :
+    (0 ≤ m)%Z →
+    (m+len < 2^64)%Z →
+    NoDup (U64 <$> seqZ m len).
+  Proof.
+    intros Hlb Hub. apply NoDup_fmap_2_strong.
+    - admit.
+    - apply NoDup_seqZ.
+  Admitted.
+
   Theorem init_single_inode {E} (sz: Z) :
     (1 ≤ sz < 2^64)%Z →
     ([∗ list] i ∈ seqZ 0 sz, i d↦ block0) ={E}=∗
@@ -139,8 +164,7 @@ Section goose.
       rewrite Hunused difference_empty_L.
       rewrite /rangeSet.
       rewrite big_sepS_list; last first.
-      { admit. (* TODO: quite annoying; seqZ has no duplicates but U64 won't
-      cause duplicates when the input is bounded *) }
+      { apply seq_U64_NoDup; word. }
       rewrite big_sepL_fmap.
       iApply (big_sepL_mono with "Hfree").
       iIntros (???) "H".
@@ -149,8 +173,7 @@ Section goose.
       f_equiv.
       apply lookup_seqZ in H.
       word.
-      Fail idtac.
-  Admitted.
+  Qed.
 
   Theorem unify_used_set γblocks γused s_alloc s_inode :
     Palloc γused s_alloc -∗
