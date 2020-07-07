@@ -6,6 +6,7 @@ From Perennial.program_proof.examples Require Import
      replicated_block_proof single_inode_proof dir_proof.
 
 Goal True.
+
 idtac "replicated block:".
 Print Assumptions replicated_block_proof.init_zero_cinv. (* not used by [OpenRead] *)
 Print Assumptions replicated_block_proof.OpenRead_adequate.
@@ -26,7 +27,9 @@ Print Assumptions dir_proof.is_dir_alloc.
 Print Assumptions dir_proof.init_dir.
 idtac "directory operations:".
 Print Assumptions dir_proof.wpc_Read.
+Print Assumptions dir_proof.wpc_Size.
 Print Assumptions dir_proof.wpc_Append.
 idtac "directory wpr:".
 Print Assumptions dir_proof.wpr_Open.
-Abort.
+
+Abort. (* leave [Goal] *)
