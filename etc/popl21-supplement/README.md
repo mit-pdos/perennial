@@ -5,9 +5,16 @@ supplement to POPL 2021 submission #47.
 
 ## Compiling
 
-To compile, just run `make -j4` with `coqc` on your $PATH. You'll need Coq
-v8.11, v8.12 beta, or a recent Coq master. Compiling takes about 25 CPU-minutes,
-or 10 minutes with a parallel build.
+To compile the Coq development, **in the `peony/` directory** run `make -j4`
+with `coqc` on your $PATH. You'll need Coq v8.11, v8.12 beta, or a recent Coq
+master. Compiling takes about 25 CPU-minutes, or 10 minutes with a parallel
+build.
+
+You can run `make check-assumptions` to compile
+`src/program_proof/examples/print_assumptions.vo`, which will print `Closed
+under the global context` indicating that the top-level theorems for the
+examples are fully proven. Note this is extremely slow and will take a minute or
+two.
 
 ## Code organization
 
