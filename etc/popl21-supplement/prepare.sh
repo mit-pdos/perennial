@@ -116,19 +116,30 @@ $FIND "$dst" -type f |\
     done
 
 # anonymize directories
+# NOTE: this probably doesn't work if a path needs two renames, no idea how to
+# do this recursively and safely
 $FIND "$dst" -depth -type d |\
+    # XXX Hack: replace github usernames, then repos
     while read -r dir; do
         if [[ $dir != *"/perennial"* ]]; then
             anonymous="$dir"
-            anonymous=${anonymous//perennial/peony}
-            anonymous=${anonymous//tchajed/anonymous}
             anonymous=${anonymous//mit_pdos/anonymous}
             if [[ "$anonymous" != "$dir" ]]; then
                 mv "$dir" "$anonymous"
             fi
         fi
     done
+
+$FIND "$dst" -type d |\
+    while read -r dir; do
+        anonymous="$dir"
+        anonymous=${anonymous//perennial/peony}
+        if [[ "$anonymous" != "$dir" ]]; then
+            mv "$dir" "$anonymous"
+        fi
+    done
 git diff > "$out/anonymize.diff"
+git status > "$out/anonymize.status"
 rm -rf .git
 
 # tar the result
