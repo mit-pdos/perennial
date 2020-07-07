@@ -1,4 +1,4 @@
-From stdpp Require Import decidable countable.
+From stdpp Require Import decidable countable .
 From coqutil Require Import Datatypes.HList.
 From coqutil.Z Require Import BitOps.
 From coqutil.Word Require Naive.
@@ -578,6 +578,24 @@ Proof.
   - by rewrite Heq.
   - word.
   - word.
+Qed.
+
+Lemma seqZ_app (len1 len2 start: Z) :
+  0 ≤ len1 →
+  0 ≤ len2 →
+  seqZ start (len1 + len2) = seqZ start len1 ++ seqZ (start + len1) len2.
+Proof.
+  intros.
+  unfold seqZ.
+  replace (Z.to_nat (len1 + len2)) with (Z.to_nat len1 + Z.to_nat len2)%nat
+    by lia.
+  rewrite seq_app, fmap_app.
+  f_equal.
+  replace (0 + Z.to_nat len1)%nat with (Z.to_nat len1 + 0)%nat by lia.
+  rewrite <- fmap_add_seq.
+  rewrite <- list_fmap_compose.
+  apply list_fmap_ext; auto.
+  intros. simpl. lia.
 Qed.
 
 Lemma seqZ_S : ∀ (n: nat) (j: Z), seqZ j (Z.of_nat (S n)) = seqZ j n ++ [(j+ n)%Z].
