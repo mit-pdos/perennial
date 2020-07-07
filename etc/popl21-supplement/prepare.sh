@@ -102,7 +102,7 @@ find "$dst" -type f |\
             $SED -E -i \
                 -e 's/perennial/peony/g' \
                 -e 's/Perennial/Peony/g' \
-                -e 's/(nickolai|kaashoek|tchajed|ralf)/anonymous/gi' \
+                -e 's/(nickolai|kaashoek|ralf)/anonymous/gi' \
                 -e 's/(mit-pdos)/anonymous/gi' \
                 -e 's/(mit_pdos)/anonymous/gi' \
                 -e 's/(pdos)/anonymous/gi' \
