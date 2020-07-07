@@ -579,3 +579,12 @@ Proof.
   - word.
   - word.
 Qed.
+
+Lemma seqZ_S : ∀ (n: nat) (j: Z), seqZ j (Z.of_nat (S n)) = seqZ j n ++ [(j+ n)%Z].
+Proof.
+  intros.
+  replace (Z.of_nat (S n)) with (Z.of_nat n + 1)%Z by word.
+  rewrite seqZ_app; try word.
+  unfold seqZ; simpl.
+  replace (0%nat + (j+n))%Z with (j + n)%Z by word; auto.
+Qed.
