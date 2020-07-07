@@ -103,41 +103,6 @@ Section goose.
     Timeless (s_inode_inv γblocks blocks).
   Proof. apply _. Qed.
 
-  Lemma big_sepS_list {PROP:bi} `{Countable A} (Φ: A → PROP) (l: list A) :
-    NoDup l →
-    big_opL bi_sep (λ _, Φ) l ⊣⊢ big_opS bi_sep Φ (list_to_set l).
-  Proof.
-    induction l as [|x l]; intros Hnodup.
-    - simpl.
-      rewrite big_sepS_empty //.
-    - inversion Hnodup; subst; clear Hnodup.
-      rewrite /= big_sepS_union; last first.
-      { rewrite disjoint_singleton_l.
-        rewrite elem_of_list_to_set //. }
-      rewrite big_sepS_singleton.
-      f_equiv.
-      apply IHl; auto.
-  Qed.
-
-  Lemma seqZ_app (len1 len2 start: Z) :
-    (0 ≤ len1)%Z →
-    (0 ≤ len2)%Z →
-    seqZ start (len1 + len2)%Z = seqZ start len1 ++ seqZ (start + len1)%Z len2.
-  Proof.
-    clear.
-    intros.
-    rewrite /seqZ //.
-    replace (Z.to_nat (len1 + len2)) with (Z.to_nat len1 + Z.to_nat len2)%nat
-      by lia.
-    rewrite seq_app fmap_app.
-    f_equal.
-    replace (0 + Z.to_nat len1) with (Z.to_nat len1 + 0) by lia.
-    rewrite -fmap_add_seq.
-    rewrite -list_fmap_compose.
-    apply list_fmap_ext; auto.
-    move=> x /=; lia.
-  Qed.
-
   Theorem init_single_inode {E} (sz: Z) :
     (1 ≤ sz < 2^64)%Z →
     ([∗ list] i ∈ seqZ 0 sz, i d↦ block0) ={E}=∗
@@ -173,7 +138,7 @@ Section goose.
       iFrame "Hγused".
       rewrite Hunused difference_empty_L.
       rewrite /rangeSet.
-      rewrite -big_sepS_list; last first.
+      rewrite big_sepS_list; last first.
       { admit. (* TODO: quite annoying; seqZ has no duplicates but U64 won't
       cause duplicates when the input is bounded *) }
       rewrite big_sepL_fmap.

@@ -229,6 +229,23 @@ Section list.
   Qed.
 End list.
 
+Section set.
+  Lemma big_sepS_list `{Countable A} (Φ: A → PROP) (l: list A) :
+    NoDup l →
+    big_opS bi_sep Φ (list_to_set l) ⊣⊢ big_opL bi_sep (λ _ x, Φ x) l.
+  Proof.
+    induction l as [|x l]; intros Hnodup.
+    - simpl.
+      rewrite big_sepS_empty //.
+    - inversion Hnodup; subst; clear Hnodup.
+      rewrite /= big_sepS_union; last first.
+      { rewrite disjoint_singleton_l.
+        rewrite elem_of_list_to_set //. }
+      rewrite big_sepS_singleton.
+      f_equiv.
+      apply IHl; auto.
+  Qed.
+End set.
 
 Section filter.
   Context `{Countable K}.

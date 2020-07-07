@@ -25,6 +25,24 @@ Proof.
   - exists (Z.to_nat (i - start)); lia.
 Qed.
 
+Lemma seqZ_app (len1 len2 start: Z) :
+  0 ≤ len1 →
+  0 ≤ len2 →
+  seqZ start (len1 + len2) = seqZ start len1 ++ seqZ (start + len1) len2.
+Proof.
+  intros.
+  rewrite /seqZ //.
+  replace (Z.to_nat (len1 + len2)) with (Z.to_nat len1 + Z.to_nat len2)%nat
+    by lia.
+  rewrite seq_app fmap_app.
+  f_equal.
+  replace (0 + Z.to_nat len1)%nat with (Z.to_nat len1 + 0)%nat by lia.
+  rewrite -fmap_add_seq.
+  rewrite -list_fmap_compose.
+  apply list_fmap_ext; auto.
+  move=> x /=; lia.
+Qed.
+
 Theorem rangeSet_lookup (start sz: Z) (i: u64) :
   0 ≤ start →
   start + sz < 2^64 →
