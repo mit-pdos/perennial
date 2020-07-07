@@ -103,18 +103,55 @@ Section goose.
     Timeless (s_inode_inv γblocks blocks).
   Proof. apply _. Qed.
 
+  Lemma big_sepS_list {PROP:bi} `{Countable A} (Φ: A → PROP) (l: list A) :
+    NoDup l →
+    big_opL bi_sep (λ _, Φ) l ⊣⊢ big_opS bi_sep Φ (list_to_set l).
+  Proof.
+    induction l as [|x l]; intros Hnodup.
+    - simpl.
+      rewrite big_sepS_empty //.
+    - inversion Hnodup; subst; clear Hnodup.
+      rewrite /= big_sepS_union; last first.
+      { rewrite disjoint_singleton_l.
+        rewrite elem_of_list_to_set //. }
+      rewrite big_sepS_singleton.
+      f_equiv.
+      apply IHl; auto.
+  Qed.
+
+  Lemma seqZ_app (len1 len2 start: Z) :
+    (0 ≤ len1)%Z →
+    (0 ≤ len2)%Z →
+    seqZ start (len1 + len2)%Z = seqZ start len1 ++ seqZ (start + len1)%Z len2.
+  Proof.
+    clear.
+    intros.
+    rewrite /seqZ //.
+    replace (Z.to_nat (len1 + len2)) with (Z.to_nat len1 + Z.to_nat len2)%nat
+      by lia.
+    rewrite seq_app fmap_app.
+    f_equal.
+    replace (0 + Z.to_nat len1) with (Z.to_nat len1 + 0) by lia.
+    rewrite -fmap_add_seq.
+    rewrite -list_fmap_compose.
+    apply list_fmap_ext; auto.
+    move=> x /=; lia.
+  Qed.
+
   Theorem init_single_inode {E} (sz: Z) :
     (1 ≤ sz < 2^64)%Z →
-    ([∗ list] i ∈ seq 0 (Z.to_nat sz), (Z.of_nat i) d↦ block0) ={E}=∗
+    ([∗ list] i ∈ seqZ 0 sz, i d↦ block0) ={E}=∗
     let σ0 := s_inode.mk [] in
     s_inode_cinv sz σ0 true.
   Proof.
     iIntros (Hbound) "Hd".
-    replace (Z.to_nat sz) with (1 + (Z.to_nat (sz - 1))) by lia.
-    rewrite seq_app big_sepL_app.
+    replace sz with (1 + (sz - 1))%Z at 1 by lia.
+    rewrite -> seqZ_app by lia.
+    change (0 + 1)%Z with 1%Z.
+    rewrite big_sepL_app.
     iDestruct "Hd" as "[Hinodes Hfree]".
     iDestruct "Hinodes" as "[Hzero _]".
-    change (Z.of_nat 0) with (int.val (U64 0)).
+    change (0%nat + 0)%Z with (int.val (U64 0)).
     iDestruct (init_inode with "Hzero") as "Hinode".
     simpl.
     iMod (ghost_var_alloc (nil : listLO Block)) as
@@ -126,7 +163,28 @@ Section goose.
     iSplitL "Hinode Hownblocks Hownused".
     - iExists (inode.mk ∅ []).
       iFrame.
-    - (* TODO: use the stuff to construct a new allocator state *)
+    - pose proof (new_alloc_state_properties 1 (sz-1) ∅ ltac:(set_solver))
+        as (Hdom&Hpost_crash&Hused&Hunused).
+      iExists (new_alloc_state 1 (sz-1) ∅).
+      iSplitR; first eauto.
+      iSplitR.
+      { rewrite /alloc.domain in Hdom; eauto. }
+      rewrite /Palloc Hused.
+      iFrame "Hγused".
+      rewrite Hunused difference_empty_L.
+      rewrite /rangeSet.
+      rewrite -big_sepS_list; last first.
+      { admit. (* TODO: quite annoying; seqZ has no duplicates but U64 won't
+      cause duplicates when the input is bounded *) }
+      rewrite big_sepL_fmap.
+      iApply (big_sepL_mono with "Hfree").
+      iIntros (???) "H".
+      iExists _.
+      iExactEq "H".
+      f_equiv.
+      apply lookup_seqZ in H.
+      word.
+      Fail idtac.
   Admitted.
 
   Theorem unify_used_set γblocks γused s_alloc s_inode :

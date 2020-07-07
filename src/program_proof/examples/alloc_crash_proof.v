@@ -280,11 +280,11 @@ Qed.
 allocator state from nothing (say for initialization) since it's a bit
 complicated. *)
 Section new_alloc_state.
-Local Definition new_alloc_state (start sz: Z) (used: gset u64): alloc.t :=
+Definition new_alloc_state (start sz: Z) (used: gset u64): alloc.t :=
   gset_to_gmap block_used used ∪
   gset_to_gmap block_free (rangeSet start sz).
 
-Local Lemma new_alloc_state_no_reserved start sz used :
+Lemma new_alloc_state_no_reserved start sz used :
   dom (gset u64) (filter (λ '(_, s), s = block_reserved)
                           (new_alloc_state start sz used)) = ∅.
 Proof.
@@ -299,16 +299,17 @@ Proof.
     intuition congruence.
 Qed.
 
-Local Theorem new_alloc_state_properties start sz used :
+Theorem new_alloc_state_properties start sz used :
   used ⊆ rangeSet start sz →
   let σ := new_alloc_state start sz used in
   alloc.domain σ = rangeSet start sz ∧
-  alloc.free σ = alloc.domain σ ∖ used ∧
-  alloc.used σ = used.
+  alloc_post_crash σ ∧
+  alloc.used σ = used ∧
+  alloc.unused σ = rangeSet start sz ∖ used.
 Proof.
   clear.
   intros.
-  rewrite /alloc.domain.
+  rewrite /alloc.domain /alloc_post_crash.
   assert (alloc.used σ = used).
   { subst σ; rewrite /new_alloc_state /alloc.used.
     apply gset_eq; intros.
@@ -322,15 +323,20 @@ Proof.
     - intros.
       exists block_used; intuition eauto.
   }
-  rewrite -H0.
-  split_and!; auto.
-  - rewrite /new_alloc_state.
+  assert (alloc.domain σ = rangeSet start sz).
+  { rewrite /alloc.domain /σ.
+    rewrite /new_alloc_state.
     rewrite dom_union_L.
     rewrite !dom_gset_to_gmap.
-    set_solver.
-  - apply alloc_post_crash_free_used.
-    apply alloc_post_crash_no_reserved.
+    set_solver. }
+  rewrite -H0.
+  split_and!; auto.
+  - apply alloc_post_crash_no_reserved.
     apply new_alloc_state_no_reserved.
+  - pose proof (alloc.unused_used_disjoint σ).
+    pose proof (alloc.unused_used_domain σ).
+    rewrite -H1.
+    set_solver.
 Qed.
 End new_alloc_state.
 
