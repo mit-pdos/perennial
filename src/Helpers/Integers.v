@@ -580,6 +580,7 @@ Proof.
   - word.
 Qed.
 
+(*TODO upstream these two lemmas*)
 Lemma seqZ_app (len1 len2 start: Z) :
   0 ≤ len1 →
   0 ≤ len2 →
