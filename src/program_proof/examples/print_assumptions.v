@@ -1,4 +1,4 @@
-(** Test which admits are needed by some top-level theorems *)
+(** Print any assumptions made by top-level theorems *)
 (* importing the prelude ensures notations are in scope for these lemma
 statements *)
 From Perennial.program_proof Require Import proof_prelude.
