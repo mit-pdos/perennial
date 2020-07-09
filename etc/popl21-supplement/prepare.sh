@@ -143,8 +143,11 @@ git diff > "$out/anonymize.diff"
 git status > "$out/anonymize.status"
 rm -rf .git
 
-# tar the result
-tar -czf "$PERENNIAL/$supplement_dir.tgz" -C "$out" "$supplement_dir"
+# zip the result (HotCRP downloads .tar.gz files as .gz, which will confuse
+# almost everyone)
+cd "$out"
+rm -f "$PERENNIAL/$supplement_dir.zip"
+zip -r "$PERENNIAL/$supplement_dir.zip" "$supplement_dir"
 
 # for debugging leave directory around
 echo "$out"
