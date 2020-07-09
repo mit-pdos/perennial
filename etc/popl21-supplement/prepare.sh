@@ -111,6 +111,7 @@ $FIND "$dst" -type f |\
                 -e 's/(mit-pdos)/anonymous/gi' \
                 -e 's/(mit_pdos)/anonymous/gi' \
                 -e 's/(pdos)/anonymous/gi' \
+                -e 's/6\.826/course/g' \
                 "$file"
         fi
     done

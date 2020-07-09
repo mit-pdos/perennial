@@ -24,7 +24,8 @@ documented).
 
 We provide the original source code for the examples in the top-level
 directories `marshal` (a serialization library written in Goose that we
-verified) and `peony-examples`. The Goose-translated output is also provided within `peony/external/Goose/` so that the Coq development is self-contained.
+verified) and `peony-examples`. The Goose-translated output is also provided
+within `peony/external/Goose/` so that the Coq development is self-contained.
 
 The framework mainly consists of the following directories and specific files:
 
