@@ -144,7 +144,7 @@ git status > "$out/anonymize.status"
 rm -rf .git
 
 # tar the result
-tar -czf "$PERENNIAL/$supplement_dir.tar.gz" -C "$out" "$supplement_dir"
+tar -czf "$PERENNIAL/$supplement_dir.tgz" -C "$out" "$supplement_dir"
 
 # for debugging leave directory around
 echo "$out"
