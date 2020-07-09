@@ -98,7 +98,53 @@ Section goose.
     { iPureIntro. rewrite //=. }
     iNext. iIntros "(H1&%Hval)".
     wp_pures.
-    iNamed 1. 
+    iNamed 1.
     iApply "HΦ". iExists _, _. iFrame. eauto.
   Qed.
+
+  Theorem wpc_consumeEvenBlock {k k' E2} (d_ref: loc) (addr: u64) N :
+    (S k < k')%nat →
+    {{{ na_crash_inv N (LVL k') (EBlk addr) (EBlk addr) }}}
+      consumeEvenBlock #d_ref #addr @ NotStuck;LVL (S k); ⊤;E2
+    {{{ RET #() ; True }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (? Φ Φc) "Hcrash_inv HΦ".
+    iApply (wpc_na_crash_inv_open with "Hcrash_inv"); auto.
+    iSplit; first by crash_case.
+    iIntros "Hblk".
+    wpc_apply (wpc_consumeEvenBlock_seq with "[$]").
+    iSplit.
+    { iIntros "$". by crash_case. }
+    iNext. iIntros "$ _".
+    iSplit; first by crash_case.
+    by iApply "HΦ".
+  Qed.
+
+  Definition EblkN := nroot.@"Eblk".
+
+  Theorem wpc_TransferEvenBlock {E2} (d_ref: loc) (addr: u64) :
+    {{{ EBlk addr }}}
+      TransferEvenBlock #d_ref #addr @ NotStuck;LVL 100; ⊤;E2
+    {{{ RET #() ; True }}}
+    {{{ EBlk addr }}}.
+  Proof using stagedG0.
+    iIntros (Φ Φc) "HEblk HΦ".
+    iMod (na_crash_inv_alloc EblkN 50 _ (EBlk addr) (EBlk addr) with "HEblk []") as "(Hcrash&Hcfupd)".
+    { auto. }
+    { auto. }
+    (* Weaken the levels. *)
+    iMod "Hcfupd".
+    { lia. }
+    iApply (wpc_idx_mono _ (LVL 25)).
+    { apply LVL_le. lia. }
+    wpc_call.
+    { iIntros. crash_case. eauto. }
+    iApply (wpc_fork with "[Hcrash]").
+    { iNext. iApply (wpc_consumeEvenBlock with "Hcrash"); eauto. lia. }
+    iSplit.
+    { iNext. iIntros. crash_case. eauto. }
+    { iNext; by iApply "HΦ". }
+  Qed.
+
 End goose.

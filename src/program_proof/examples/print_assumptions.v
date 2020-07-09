@@ -3,7 +3,10 @@
 statements *)
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.examples Require
-     replicated_block_proof single_inode_proof dir_proof.
+     replicated_block_proof single_inode_proof dir_proof toy_proof.
+
+Definition toy_theorems :=
+  @toy_proof.wpc_TransferEvenBlock.
 
 Definition replicated_block_theorems :=
   (@replicated_block_proof.init_zero_cinv,  (* not used by [OpenRead] *)
@@ -27,6 +30,10 @@ Definition dir_theorems :=
 
 Goal True.
 
+idtac "toy even block:".
+Print Assumptions toy_theorems.
+
+idtac "".
 idtac "replicated block:".
 Print Assumptions replicated_block_theorems.
 
