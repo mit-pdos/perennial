@@ -10,11 +10,9 @@ with `coqc` on your $PATH. You'll need Coq v8.11, v8.12 beta, or a recent Coq
 master. Compiling takes about 25 CPU-minutes, or 10 minutes with a parallel
 build.
 
-You can run `make check-assumptions` to compile
-`src/program_proof/examples/print_assumptions.vo`, which will print `Closed
-under the global context` indicating that the top-level theorems for the
-examples are fully proven. Note this is extremely slow and will take a minute or
-two.
+At the end of the build, `src/program_proof/examples/print_assumptions.v` is
+compiled, which prints `Closed under the global context` a few times. This
+indicates that the top-level theorems for the examples are fully proven.
 
 ## Code organization
 
