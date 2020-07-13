@@ -13,6 +13,8 @@ From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.Helpers Require Import NamedProps Map.
 
+Remove Hints fractional.into_sep_fractional : typeclass_instances.
+
 Class txnG (Σ: gFunctors) :=
   {
     txn_boolG :> inG Σ (ghostR $ boolO);

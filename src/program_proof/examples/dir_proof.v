@@ -9,6 +9,8 @@ From Perennial.program_proof.examples Require Import
      alloc_addrset alloc_crash_proof inode_proof.
 From Perennial.goose_lang.lib Require Import typed_slice. (* shadows things, should be last *)
 
+Remove Hints fractional.into_sep_fractional : typeclass_instances.
+
 (* extra big_sepL2 lemmas *)
 (* TODO: move to big_op.v *)
 Section bi.

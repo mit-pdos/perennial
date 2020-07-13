@@ -208,9 +208,12 @@ Proof.
   by rewrite word.of_Z_unsigned.
 Qed.
 
-Instance u64_countable : Countable u64 := _.
-Instance u32_countable : Countable u32 := _.
-Instance u8_countable : Countable byte := _.
+Instance u64_countable : Countable u64.
+Proof. apply _. Qed.
+Instance u32_countable : Countable u32.
+Proof. apply _. Qed.
+Instance u8_countable : Countable byte.
+Proof. apply _. Qed.
 
 (* int and the u64_through* theorems are for backwards compatibility *)
 

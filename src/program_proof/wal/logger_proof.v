@@ -3,6 +3,8 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 
+Remove Hints fractional.into_sep_fractional : typeclass_instances.
+
 Section goose_lang.
 Context `{!heapG Σ}.
 Context `{!walG Σ}.

@@ -17,6 +17,7 @@ Definition MaxBlocks: Z := maxDirect + maxIndirect*indirectNumBlocks.
 Definition roundUpDiv (x k: Z) := (x + (k-1)) / k.
 
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
 Module inode.
   Record t :=

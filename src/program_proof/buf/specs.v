@@ -11,6 +11,8 @@ From Perennial.program_proof.wal Require Import abstraction.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
+Remove Hints fractional.into_sep_fractional : typeclass_instances.
+
 Section heap.
 Context `{!heapG Σ}.
 
