@@ -7,19 +7,6 @@ Set Default Proof Using "Type*".
 From iris.bi Require Import derived_laws plainly big_op.
 Import interface.bi derived_laws.bi.
 
-Lemma elem_of_map_list {A B} (l : list A) (f : A -> B) a :
-  a ∈ map f l ->
-  ∃ b, b ∈ l ∧ f b = a.
-Proof.
-  induction l; simpl; intros.
-  - inversion H.
-  - inversion H; subst; intuition.
-    + exists a0; intuition. apply elem_of_list_here.
-    + destruct H0 as [b H0].
-      exists b. intuition.
-      apply elem_of_list_further; eauto.
-Qed.
-
 Section bi_big_op.
 Context {PROP : bi}.
 Implicit Types P Q : PROP.
@@ -659,9 +646,9 @@ Section maplist.
     iDestruct "Hml" as (lm) "[% Hml]".
     assert (lv ∈ lv :: l) by apply elem_of_list_here.
     setoid_rewrite H1 in H2.
-    apply elem_of_map_list in H2. destruct H2 as [[k lv0] H2].
+    apply elem_of_list_fmap_2 in H2 as [[k lv0] H2].
     simpl in H2; intuition subst.
-    apply elem_of_map_to_list in H3.
+    apply elem_of_map_to_list in H4.
     iDestruct (big_sepM2_lookup_2_some with "Hml") as %[v Hmk]; eauto.
     iExists _, _.
     iSplitR; eauto.
@@ -670,7 +657,7 @@ Section maplist.
     iExists _.
     iSplitR; last iFrame.
     iPureIntro.
-    replace lm with (<[k := lv]> (delete k lm)) in H1.
+    replace lm with (<[k := lv0]> (delete k lm)) in H1.
     2: {
       rewrite insert_delete.
       rewrite insert_id; eauto.
