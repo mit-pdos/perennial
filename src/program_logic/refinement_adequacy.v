@@ -1,4 +1,5 @@
-From iris.proofmode Require Import tactics.
+From Perennial.Helpers Require Import ipm.
+
 From iris.algebra Require Import gmap auth agree gset coPset.
 From iris.base_logic.lib Require Import wsat.
 From iris.program_logic Require Export weakestpre.

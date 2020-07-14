@@ -1,5 +1,5 @@
-From iris.proofmode Require Import tactics monpred.
-From Perennial.Helpers Require Import NamedProps.
+From iris.proofmode Require Import monpred.
+From Perennial.Helpers Require Import ipm NamedProps.
 From iris.proofmode Require Import base intro_patterns spec_patterns
                                    sel_patterns coq_tactics reduction.
 

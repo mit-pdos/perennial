@@ -5,7 +5,7 @@ From iris.program_logic Require Import atomic.
 From Perennial.goose_lang Require Import lifting.
 From Perennial.goose_lang.lib Require Import struct.struct.
 From Perennial.program_logic Require Export crash_weakestpre staged_invariant.
-From Perennial.Helpers Require Export NamedProps ProofCaching.
+From Perennial.Helpers Require Export ipm NamedProps ProofCaching.
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -371,12 +371,6 @@ Tactic Notation "wpc_if_destruct" :=
                     | [ H: Datatypes.negb _ = false |- _ ] => apply negb_false_iff in H; subst
                     end
   end.
-
-(* TODO: this works, but maybe we can do better *)
-Tactic Notation "iLeft" "in" constr(H) := let pat := constr:(intro_patterns.IList [[intro_patterns.IIdent H; intro_patterns.IDrop]]) in
-                                          iDestruct H as pat.
-Tactic Notation "iRight" "in" constr(H) := let pat := constr:(intro_patterns.IList [[intro_patterns.IDrop; intro_patterns.IIdent H]]) in
-                                           iDestruct H as pat.
 
 Tactic Notation "wpc_loadField" :=
   lazymatch goal with

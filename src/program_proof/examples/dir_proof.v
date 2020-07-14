@@ -1,10 +1,10 @@
 From RecordUpdate Require Import RecordSet.
+From Perennial.Helpers Require Import ipm.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import slice.crash_slice.
-From Perennial.Helpers Require Import ipm.
 From Perennial.program_proof.examples Require Import
      alloc_addrset alloc_crash_proof inode_proof.
 From Perennial.goose_lang.lib Require Import typed_slice. (* shadows things, should be last *)
