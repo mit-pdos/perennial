@@ -78,7 +78,7 @@ Proof.
   iApply (wpc_inv'); try eassumption. iFrame "Hinv".
   iSplitL "HWP".
   { by iApply "HWP". }
-  iAlways. iIntros "H HΦc !> !>".
+  iModIntro. iIntros "H HΦc !> !>".
   iApply ("Hcrash1" with "[$] [$]").
 Qed.
 

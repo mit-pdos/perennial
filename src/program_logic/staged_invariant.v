@@ -239,7 +239,7 @@ Proof.
     - iExists γprop, γprop'. iFrame. iFrame "#".
   }
   iNext. iExists γprop, γprop', Q, Qr. iFrame. iFrame "#".
-  iAlways. iIntros. iApply step_fupdN_inner_later; auto; iNext.
+  iModIntro. iIntros. iApply step_fupdN_inner_later; auto; iNext.
   iApply "HQP"; by iFrame.
 Qed.
 *)
@@ -297,7 +297,7 @@ Proof.
       { iExists _, _, _, _. iFrame.
         rewrite ?decide_True //.
         iFrame "#".
-        iAlways. iIntros.
+        iModIntro. iIntros.
         rewrite big_opS_singleton.
         rewrite decide_True //.
         by iApply "HQP".
@@ -307,7 +307,7 @@ Proof.
         iDestruct "H" as (? b ??) "(?&?&?&?&#Hwand)".
         iExists _, _, _, _. iFrame.
         destruct (decide (k' = bid)); first by congruence.
-        iFrame; iAlways. iIntros "? ?". iSpecialize ("Hwand" with "[$] [$]").
+        iFrame; iModIntro. iIntros "? ?". iSpecialize ("Hwand" with "[$] [$]").
         destruct b.
         * iApply (step_fupdN_inner_wand with "Hwand"); auto.
          iApply sep_mono_l.
@@ -356,7 +356,7 @@ Proof.
   { iExists _. rewrite ?big_sepS_singleton. iFrame "#".
     iSplitL "".
     - iExists _. iFrame "#".
-    - iAlways; eauto.
+    - iModIntro; eauto.
   }
   iFrame "Hi_pts".
   iSplitL.
@@ -628,7 +628,7 @@ Proof.
       rewrite /Qs'/Qsr'.
       destruct (decide (bid2 = bid1)) => //=.
       rewrite ?decide_True //. iFrame "#".
-      iNext. iAlways. iIntros "#HC _".
+      iNext. iModIntro. iIntros "#HC _".
       rewrite big_sepS_empty //=.
     }
     iFrame "Hwand2".
@@ -650,7 +650,7 @@ Proof.
       rewrite /Qs'/Qsr'.
       rewrite ?decide_True //. iFrame "#".
       destruct (decide (bid2 = bid1)) => //=.
-      iNext. iAlways. iIntros "#HC (HQ1&HQ2)". rewrite big_sepS_union //.
+      iNext. iModIntro. iIntros "#HC (HQ1&HQ2)". rewrite big_sepS_union //.
       iDestruct ("Hwand1" with "HC [$]") as "($&$)".
       iDestruct ("Hwand2" with "HC [$]") as "($&$)".
     }
@@ -809,7 +809,7 @@ Proof.
           rewrite /bunch_wf_later. iModIntro. iExists _, _, _, _. iFrame.
           rewrite /Qs'/Qsr'.
           rewrite ?decide_True //. iFrame "#".
-          iNext. iAlways. iIntros "#HC HQ'".
+          iNext. iModIntro. iIntros "#HC HQ'".
           iSpecialize ("Hwand'" with "[$] [$]").
           destruct b'.
           * iApply (step_fupdN_inner_wand' with "Hwand'"); auto.
@@ -868,7 +868,7 @@ Proof.
           rewrite /bunch_wf_later. iModIntro. iExists _, _, _, _. iFrame.
           rewrite /Qs'/Qsr'.
           rewrite ?decide_True //. iFrame "#".
-          iNext. iAlways. iIntros "#HC' HQ'".
+          iNext. iModIntro. iIntros "#HC' HQ'".
           iSpecialize ("Hwand_old" with "[$] [$]").
           destruct b.
           * iApply (step_fupdN_inner_wand' with "Hwand_old"); auto.

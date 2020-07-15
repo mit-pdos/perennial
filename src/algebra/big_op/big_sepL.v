@@ -1,6 +1,5 @@
 From iris.algebra Require Export big_op.
-From iris.proofmode Require Import tactics.
-From iris_string_ident Require Import ltac2_string_ident.
+From Perennial.Helpers Require Import ipm.
 
 Set Default Proof Using "Type".
 
@@ -120,7 +119,7 @@ Section list2.
     setoid_rewrite <-Nat.add_succ_r.
     unshelve (iSpecialize ("IH" $! l1 l2 _ _ (S n))); eauto.
     iApply "IH"; eauto.
-    iAlways. iIntros (???? ???) "HΦ".
+    iModIntro. iIntros (???? ???) "HΦ".
     setoid_rewrite Nat.add_succ_r.
     setoid_rewrite <-Nat.add_succ_l.
     iApply ("Halways" with "[] [] [] [$]"); eauto.

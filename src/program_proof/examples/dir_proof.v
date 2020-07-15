@@ -1268,7 +1268,7 @@ Section recov.
     iApply (idempotence_wpr _ (LVL K) ⊤ ⊤ _ _ _ _ _ (λ _, ∃ σ', dir_cinv (int.val sz) σ' false)%I with "[Hstart]").
     { auto. }
     { wpc_apply (wpc_Open with "Hstart"); auto. }
-    iAlways. iIntros (?????) "H".
+    iModIntro. iIntros (?????) "H".
     iDestruct "H" as (σ') "Hstart".
     iNext. iCrash.
     iIntros.

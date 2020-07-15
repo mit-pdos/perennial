@@ -831,7 +831,7 @@ Proof using spec_trans.
     iExists _; iFrame.
     iExists _, _, _, _, _, _; iSplit; first eauto.
     iLöb as "IH".
-    iAlways. iIntros (v vs) "Hval".
+    iModIntro. iIntros (v vs) "Hval".
     clear j K Hctx.
     iIntros (j K Hctx) "Hj".
     wpc_pures; first auto.
@@ -1377,7 +1377,7 @@ Proof using spec_trans.
       iApply big_sepL_fupd.
       iApply (big_sepL2_elim_big_sepL with "[] Hmtoks").
       { rewrite map_length //=. }
-      { iAlways. iIntros (i vi vsi vty Hlookup1 Hlookup2 Hlookup3) "((Hpts&Hm)&(Hspts&Hsm))".
+      { iModIntro. iIntros (i vi vsi vty Hlookup1 Hlookup2 Hlookup3) "((Hpts&Hm)&(Hspts&Hsm))".
         rewrite list_lookup_fmap in Hlookup3.
         apply fmap_Some_1 in Hlookup3 as (sty&Hlookup3&Heq). subst.
         iDestruct (flatten_well_typed with "Hval") as "Hvali"; eauto.
@@ -1931,7 +1931,7 @@ Proof using spec_trans.
     iSplitR ""; first by eauto. iApply (IHHtyping with "[$] [$] [$]").
   - iLöb as "IH".
     iExists _, _, _, _, _, _.
-    iSplitL ""; first by eauto. iAlways.
+    iSplitL ""; first by eauto. iModIntro.
     iIntros (varg vsarg) "Hvarg".
     iIntros (j K Hctx) "Hj". simpl.
     wpc_pures; first auto.

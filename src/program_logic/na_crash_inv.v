@@ -40,7 +40,7 @@ Proof.
   iMod (staged_inv_init) as (Γ) "#H".
   iMod (staged_inv_alloc Γ N (LVL k) E (⊤ ∖ ↑N) P Q True%I with "[HQ]") as (i') "(Hbundle&#Hval&Hpend)".
   { auto. }
-  { iFrame "#". iFrame. iAlways; iIntros; eauto. iSplitL; last done.
+  { iFrame "#". iFrame. iModIntro; iIntros; eauto. iSplitL; last done.
     iApply "HQP"; eauto. }
   iModIntro.
   iSplitL "Hbundle".
@@ -65,7 +65,7 @@ Proof.
   iExists _, Qr, _. iFrame.
   iSplitL "Hbundle".
   iApply (staged_bundle_weaken_1 with "HQ' Hbundle").
-  iNext. iAlways. iIntros. by iApply "HQ'P".
+  iNext. iModIntro. iIntros. by iApply "HQ'P".
 Qed.
 
 Lemma wpc_na_crash_inv_open_modify Qnew s k k' E1 E2 e Φ Φc Q P N :
@@ -137,7 +137,7 @@ Proof.
   iApply ("Hwp" with "[HQ]").
   iDestruct "HQ" as "[(HQ&Hclo)|(?&HC&Hclo)]".
   - iLeft. iFrame. iIntros (Q') "(HQ'&#Hwand')". iMod ("Hclo" $! Q' True%I false with "[HQ']") as "H".
-    { iFrame. iAlways. iIntros. iSplitL; last done. by iApply "Hwand'". }
+    { iFrame. iModIntro. iIntros. iSplitL; last done. by iApply "Hwand'". }
     iModIntro. iExists _, _, _. iFrame "# ∗".
   - iRight. iFrame. iMod "Hclo". iModIntro. iExists _, _, _. iFrame "# ∗".
 Qed.

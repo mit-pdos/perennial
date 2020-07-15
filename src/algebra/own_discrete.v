@@ -1,7 +1,7 @@
 From iris.bi Require Export bi.
 From iris.base_logic Require upred.
 From iris.base_logic Require Export base_logic own.
-From iris.proofmode Require Import tactics.
+From Perennial.Helpers Require Import ipm.
 Set Default Proof Using "Type".
 
 (* TODO: upstream *)
@@ -156,7 +156,7 @@ Proof.
   iAssert (□ (uPred_ownM a -∗ Q))%I with "[-]" as "#H".
   { iDestruct "HP" as "(_&(_&$))". }
   iDestruct (entailment_ownM_split (P ∧ uPred_ownM a)%I with "[] [HP]") as (P') "Hrest".
-  { iAlways. iIntros "(_&$)". }
+  { iModIntro. iIntros "(_&$)". }
   { iSplit.
     { iDestruct "HP" as "($&_)". }
     { iDestruct "HP" as "(_&($&_))". }
@@ -165,8 +165,8 @@ Proof.
   iDestruct "Hrest" as "((HP'&Hown)&#Hwand)".
   iFrame.
   iSplit.
-  * iAlways. iIntros "Hown". iMod "Hown". iModIntro. by iApply "H".
-  * iAlways. iIntros "(HP'&>Hown)". iModIntro. iDestruct ("Hwand" with "[$]") as "HP".
+  * iModIntro. iIntros "Hown". iMod "Hown". iModIntro. by iApply "H".
+  * iModIntro. iIntros "(HP'&>Hown)". iModIntro. iDestruct ("Hwand" with "[$]") as "HP".
     iSplit.
     ** iDestruct "HP" as "($&_)".
     ** iExists _, HD. iFrame "H".
@@ -185,7 +185,7 @@ Proof.
   iDestruct (cmra_op_discrete_internal with "Hval") as %Hdiscr.
   iExists (a1 ⋅ a2), Hdiscr.
   iFrame.
-  iAlways. iIntros "(H1&H2)".
+  iModIntro. iIntros "(H1&H2)".
   iSplitL "H1".
   { by iApply "Hwand1". }
   { by iApply "Hwand2". }
@@ -202,7 +202,7 @@ Lemma own_discrete_wand Q1 Q2:
   □ (Q1 -∗ Q2) -∗ (own_discrete Q1 -∗ own_discrete Q2).
 Proof.
   iIntros "#Hwand HQ1". iDestruct "HQ1" as (a1 HD) "(Ha1&#Hwand')".
-  iExists a1, HD. iFrame. iAlways. iIntros. iApply "Hwand". by iApply "Hwand'".
+  iExists a1, HD. iFrame. iModIntro. iIntros. iApply "Hwand". by iApply "Hwand'".
 Qed.
 
 Global Instance own_discrete_ne : NonExpansive own_discrete.
@@ -246,7 +246,7 @@ Section instances.
     iDestruct "HΦ" as (x) "Hx".
     iPoseProof (HΦ with "[$]") as "Hx".
     iApply (own_discrete_wand with "[] Hx").
-    iAlways. eauto.
+    iModIntro. eauto.
   Qed.
 End instances.
 
@@ -261,7 +261,7 @@ Section instances_iProp.
     iIntros (Hpers) "#HP".
     iDestruct (own_discrete_pure True) as "Htrue"; auto.
     iApply (own_discrete_wand with "[] Htrue").
-    iAlways. eauto.
+    iModIntro. eauto.
   Qed.
 
 End instances_iProp.

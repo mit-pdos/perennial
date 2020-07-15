@@ -1,7 +1,5 @@
-From iris.proofmode Require Import monpred.
+From iris.proofmode Require Import reduction monpred.
 From Perennial.Helpers Require Import ipm NamedProps.
-From iris.proofmode Require Import base intro_patterns spec_patterns
-                                   sel_patterns coq_tactics reduction.
 
 From Perennial.goose_lang Require Import lifting.
 
@@ -55,7 +53,7 @@ Lemma post_crash_pers P Q:
   □ P -∗ post_crash (λ hG, □ Q hG).
 Proof.
   iIntros (Hmono) "#HP". iIntros (???) "#Hrel".
-  iAlways. iApply Hmono; eauto.
+  iModIntro. iApply Hmono; eauto.
 Qed.
 
 Lemma post_crash_sep P Q:

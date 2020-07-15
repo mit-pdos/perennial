@@ -546,7 +546,7 @@ Proof.
   }
 
   iMod (big_sepM_mono_fupd _ (fun a v => mapsto_txn γUnified a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ⌝)%I _ emp%I with "[] [$Ha]") as "[_ Ha]".
-  { iAlways. iIntros (???) "[_ H]".
+  { iModIntro. iIntros (???) "[_ H]".
     iNamed "Histxn".
     iMod (mapsto_txn_valid with "Histxna [H Histxna]") as "[H %Havalid]"; eauto.
     iModIntro. iFrame. intuition eauto. }

@@ -54,7 +54,7 @@ Proof.
   iModIntro.
   iExists _, _, _, _. iFrame.
   iSplit.
-  - iAlways. iIntros.
+  - iModIntro. iIntros.
     rewrite /source_ctx'.
     iInv "Hsource" as "H" "_".
     iDestruct "H" as (???) ">(Hauth&Hsteps)".
@@ -65,10 +65,10 @@ Proof.
     iDestruct (source_state_reconcile with "[$] [$]") as %Heq.
     iModIntro. iExists _, _, _. iPureIntro. split; eauto. rewrite <-Heq. eauto.
   - (* XXX: redundancy here *)
-    iAlways. iIntros (Hi' t').
+    iModIntro. iIntros (Hi' t').
     iClear "Hsource". iClear "HP". iIntros "Hinv".
     iDestruct ("Hinv'_next" $! Hi' t' with "[$]") as "(#Hsource&#HP)".
-    iAlways. rewrite /source_ctx'.
+    iModIntro. rewrite /source_ctx'.
     iIntros.
     iInv "Hsource" as "H" "_".
     iDestruct "H" as (???) ">(Hauth&Hsteps)".

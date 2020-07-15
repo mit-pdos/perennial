@@ -39,14 +39,14 @@ Proof.
   iMod (Hwp hG Hc with "[$] [$] [$]") as "(#H1&#H2&Hwp)".
   iModIntro.
   iSplitR.
-  { iAlways. iIntros (??) "H". rewrite heap_update_pre_update.
+  { iModIntro. iIntros (??) "H". rewrite heap_update_pre_update.
     by iApply "H1".
   }
   iSplitR.
   {
-    iAlways. iIntros (Hinv' names') "H". rewrite ?heap_update_pre_update.
+    iModIntro. iIntros (Hinv' names') "H". rewrite ?heap_update_pre_update.
     iDestruct ("H2" with "H") as "#H3".
-    iAlways. iIntros (??) "H". iMod ("H3" with "H").
+    iModIntro. iIntros (??) "H". iMod ("H3" with "H").
     eauto.
   }
   iFrame. rewrite /hG//=.

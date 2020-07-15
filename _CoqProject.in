@@ -1,5 +1,6 @@
 -Q src Perennial
 -arg -w -arg -ssr-search-moved
+-arg -w -arg +deprecated-tactic-notation
 # Iris-disabled warnings
 -arg -w -arg -notation-overridden,-redundant-canonical-projection,-convert_concl_no_check,-undeclared-scope
 -Q external/iris/theories iris

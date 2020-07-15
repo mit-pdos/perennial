@@ -200,11 +200,11 @@ Proof using Hrpre Hhpre Hcpre.
   iDestruct (source_pool_singleton with "Hpool") as "Hpool".
   iSpecialize ("Hwp" with "[$] [$] [$]"). iFrame.
   iModIntro. iSplit.
-  - iAlways. iIntros (???) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
+  - iModIntro. iIntros (???) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
     iApply (trace_inv_open with "[$] [$] [$] [$]").
-  - iAlways. iIntros (?) "H".
+  - iModIntro. iIntros (?) "H".
     iDestruct ("H1" with "H") as (?) "(#Hspec_ctx&#Htrace_ctx)".
-    iClear "H1". iAlways.
+    iClear "H1". iModIntro.
     iIntros (???) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
     iApply (@trace_inv_open with "[$] [$] [$] [$]").
 Qed.
@@ -371,7 +371,7 @@ Proof using Hrpre Hhpre Hcpre.
   iIntros (Hheap Hc Href).
   iModIntro. iIntros "#Hspec #Htrace".
   iSplit.
-  { iAlways. iIntros (?) "H". iApply "H". }
+  { iModIntro. iIntros (?) "H". iApply "H". }
   iIntros "Hstart Hstart_spec Hj".
   iApply (recovery_weakestpre.idempotence_wpr _ _ ⊤ ⊤ _ _ (λ _ _, _) _ _ (λ Hi0 t,
    ∃ Hi hC hRef, let hG := heap_update Σ Hheap Hi pbundleT in
@@ -390,7 +390,7 @@ Proof using Hrpre Hhpre Hcpre.
     rewrite /perennial_irisG. simpl.
     rewrite heap_get_update'.
     iApply (wpc_trace_inv_open with "Hspec Htrace H").
-  - iAlways. iClear "Hspec Htrace".
+  - iModIntro. iClear "Hspec Htrace".
     iIntros (Hi ?? σ_pre_crash σ_post_crash Hcrash κs ?).
     iIntros "H". iDestruct "H" as (Hi_old ?? es' σs' stat Hexec Hsafe)
                                     "(Hspec_ffi&Htrace_frag&Horacle_frag&HΦc)".

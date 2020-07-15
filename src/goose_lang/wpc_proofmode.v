@@ -206,7 +206,7 @@ Proof.
   iIntros "[HΦc' Hwp]".
   iApply (wp_wpc_frame' _ _ _ _ _ _ (of_envs Δ1)); iFrame.
   iSplitR.
-  { iAlways; iApply HΦc. }
+  { iModIntro; iApply HΦc. }
   iApply (wp_mono with "Hwp"); cbv beta.
   iIntros (v) "Hwand HΔ".
   iApply "Hwand".

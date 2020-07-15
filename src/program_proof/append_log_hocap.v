@@ -290,7 +290,7 @@ Proof using PStartedOpening_Timeless.
     iMod ("Hclose" $! (log_state_to_crash (Opening s) ∗ P (Opening s))%I with "[HP Hlog_state]") as "Hfull".
     { iSplitL "HP Hlog_state".
       - iNext. iFrame.
-      - iAlways. iIntros. iExists _; eauto. }
+      - iModIntro. iIntros. iExists _; eauto. }
     iMod (ghost_var_update _ (Opening s : log_stateO) with "[$] [$]") as "(Hauth_state&Hfrag_state)".
     iMod ("Hclo" with "[Hopening Hauth_state]").
     { iNext. iExists _; iFrame; eauto. }
@@ -396,7 +396,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
     iMod ("Hclose" $! (log_state_to_crash (Initing) ∗ P (Initing))%I with "[HP Hlog_state]") as "Hfull".
     { iSplitL "HP Hlog_state".
       - iNext. iFrame.
-      - iAlways. iIntros. iExists _; eauto. }
+      - iModIntro. iIntros. iExists _; eauto. }
     iMod (ghost_var_update _ (Initing : log_stateO) with "[$] [$]") as "(Hauth_state&Hfrag_state)".
     iMod ("Hclo" with "[Hopening Hauth_state]").
     { iNext. iExists _; iFrame; eauto. }

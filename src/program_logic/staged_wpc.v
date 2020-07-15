@@ -1,4 +1,5 @@
 From iris.proofmode Require Import base tactics classes.
+From Perennial.Helpers Require Import ipm.
 From iris.algebra Require Import excl numbers.
 From iris.base_logic Require Export invariants.
 From iris.program_logic Require Export weakestpre.
@@ -125,7 +126,7 @@ Proof.
   iSpecialize ("Hclo'" $! _ Φc true with "[H]").
   { iSplitL "H".
     - iNext. iApply "H".
-    - iAlways. iIntros "HC H".
+    - iModIntro. iIntros "HC H".
     iPoseProof (wpc_crash with "H") as "H".
     iSpecialize ("H" with "[$]").
     iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hclo".
@@ -194,7 +195,7 @@ Proof.
   iDestruct "H" as "(Hσ&H&Hefs&HNC)".
   iSpecialize ("Hclo'" $! _ Φc true with "[H]").
   { iSplitL "H". iApply "H".
-    iAlways.
+    iModIntro.
     iIntros "HC H".
     iPoseProof (wpc_crash with "H") as "H".
     iSpecialize ("H" with "[$]").
@@ -258,7 +259,7 @@ Proof.
     iMod "H" as "(?&HP)".
     iMod "Hclo''" as "_".
     iMod ("Hclo'" $! P True%I false with "[HP]").
-    { iFrame. iAlways.
+    { iFrame. iModIntro.
       iIntros. eauto.
     }
     iApply step_fupdN_inner_later; auto.
@@ -345,7 +346,7 @@ Proof.
                Φc true with "[H]").
   { iSplitL "H".
     - iNext. iFrame.
-    - iAlways. iIntros "HC H".
+    - iModIntro. iIntros "HC H".
     iPoseProof (wpc_crash with "H") as "H".
     iSpecialize ("H" with "[$]").
     iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hclo".

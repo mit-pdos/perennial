@@ -450,7 +450,7 @@ Section recov.
     { wpc_apply (wpc_Open with "Hstart").
       iSplit; eauto.
     }
-    iAlways. iIntros (?????) "H".
+    iModIntro. iIntros (?????) "H".
     iDestruct "H" as (σ') "Hstart".
     iNext. iCrash.
     iIntros.
@@ -477,7 +477,7 @@ Section recov.
     { wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart]").
       iSplit; eauto.
     }
-    iAlways. iIntros (?????) "H".
+    iModIntro. iIntros (?????) "H".
     iDestruct "H" as (σ') "(Hstart&_)".
     iNext. iCrash.
     (* XXX: iCrash should not have unfolded rblock_inv *)
@@ -508,9 +508,9 @@ Proof.
   iIntros (??) "Hstart _ _".
   iModIntro.
   iSplitL "".
-  { iAlways; iIntros. iMod (fupd_intro_mask' _ ∅); eauto. }
+  { iModIntro; iIntros. iMod (fupd_intro_mask' _ ∅); eauto. }
   iSplitL "".
-  { iAlways; iIntros. iAlways. iMod (fupd_intro_mask' _ ∅); eauto. }
+  { iModIntro; iIntros. iModIntro. iMod (fupd_intro_mask' _ ∅); eauto. }
   iApply wpr_OpenRead.
   rewrite /ffi_start//=.
   rewrite /rblock_cinv.

@@ -42,7 +42,7 @@ Section proof.
     iIntros (?) "(#HRcrash&HR&HΦc&Hwp)".
     iMod (na_crash_inv_alloc Ncrash (LVL k') ⊤ ⊤ Rcrash R with "[HR]") as
         (γ1) "(Hfull&Hpending)".
-    { iFrame "HR". iAlways. by iApply "HRcrash". }
+    { iFrame "HR". iModIntro. by iApply "HRcrash". }
     iApply (wpc_ci_inv _ k k' Ncrash ⊤ E with "[-]"); try assumption.
     { set_solver +. }
     iFrame. iFrame "Hstaged_inv".

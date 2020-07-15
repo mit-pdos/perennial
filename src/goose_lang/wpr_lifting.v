@@ -70,7 +70,7 @@ Proof.
                           (λ Hi names, Φcx (heap_update _ _ Hi (@pbundleT _ _ names)))
                                                     with "[Hwpc] [Hidemp]"); first auto.
   { rewrite //= heap_get_update' //=. }
-  { iAlways. iIntros (??? σ_pre_crash σ_post_crash Hcrash κs ?) "H".
+  { iModIntro. iIntros (??? σ_pre_crash σ_post_crash Hcrash κs ?) "H".
     iSpecialize ("Hidemp" $! (heap_update _ _ _ _) with "[//] H").
     {
       rewrite /state_interp.

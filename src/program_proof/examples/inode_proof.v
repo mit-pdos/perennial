@@ -709,7 +709,7 @@ Proof.
     iSplitR "Hda"; last first.
     { instantiate (1:=λ _, _); simpl.
       iSplitL; [ iAccu | ].
-      iAlways.
+      iModIntro.
       iIntros "Hda".
       iApply block_cinv_free_pred. iExists _; iFrame. }
     iIntros "Hreserved".

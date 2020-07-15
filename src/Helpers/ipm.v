@@ -13,7 +13,3 @@ Tactic Notation "iLeft" "in" constr(H) :=
 Tactic Notation "iRight" "in" constr(H) :=
   let pat := constr:(IList [[IDrop; IIdent H]]) in
   iDestruct H as pat.
-
-(* shadow Iris iAlways (a deprecated alias for iModIntro) with a tactic that
-enforces the goal is a persistently modality *)
-Tactic Notation "iAlways" := (iModIntro (□ _)%I).
