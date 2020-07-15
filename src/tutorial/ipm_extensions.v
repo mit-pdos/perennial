@@ -114,7 +114,7 @@ Section bi.
   Proof.
     iIntros "H".
     iDestruct (restore_intro with "H") as "H".
-    iDestruct "H" as "(?&?&H)"; iNamed.
+    iDestruct "H" as "(?&?&H)"; iNamed. (* should be iNamed "H" *)
     iDestruct (restore_elim with "H") as "#His_foo"; iClear "H".
     iFrame.
     iIntros "HP".
