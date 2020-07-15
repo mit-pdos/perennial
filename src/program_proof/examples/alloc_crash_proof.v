@@ -596,7 +596,7 @@ Theorem alloc_free_reserve σ new :
 Proof.
   clear.
   rewrite /alloc.free /=.
-  rewrite map_filter_insert_not_strong //=.
+  rewrite map_filter_insert_not_delete //=.
   rewrite map_filter_delete dom_delete_L //.
 Qed.
 

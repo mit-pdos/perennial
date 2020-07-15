@@ -484,7 +484,7 @@ Proof using.
         rewrite lookup_delete_ne; eauto.
       }
       iFrame "Hbufs". iFrame "Hbufptrslice".
-      rewrite map_filter_insert_not_strong.
+      rewrite map_filter_insert_not_delete.
       2: { simpl. congruence. }
       rewrite delete_notin.
       { iFrame. }
