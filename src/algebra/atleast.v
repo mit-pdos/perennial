@@ -139,35 +139,15 @@ Proof. intros ???; rewrite /AbsolutelyTimeless atleast_and laterN_and; auto. Qed
 Global Instance or_abs_timeless P Q : AbsolutelyTimeless P → AbsolutelyTimeless Q → AbsolutelyTimeless (P ∨ Q).
 Proof. intros ???; rewrite /AbsolutelyTimeless atleast_or laterN_or; auto. Qed.
 
-(*
-Global Instance impl_abs_timeless `{!BiLöb PROP} P Q : AbsolutelyTimeless Q → AbsolutelyTimeless (P → Q).
-Proof.
-  rewrite /AbsolutelyTimeless=> HQ k. rewrite later_false_em.
-  apply or_mono, impl_intro_l; first done.
-  rewrite -{2}(löb Q). apply impl_intro_l.
-  rewrite HQ /bi_except_0 !and_or_r. apply or_elim; last auto.
-  by rewrite assoc (comm _ _ P) -assoc !impl_elim_r.
-Qed.
-*)
 Global Instance sep_abs_timeless P Q: AbsolutelyTimeless P → AbsolutelyTimeless Q → AbsolutelyTimeless (P ∗ Q).
 Proof.
   intros ???; rewrite /AbsolutelyTimeless atleast_sep laterN_sep; auto using sep_mono.
 Qed.
 
-(*
-Global Instance wand_abs_timeless `{!BiLöb PROP} P Q : AbsolutelyTimeless Q → AbsolutelyTimeless (P -∗ Q).
-Proof.
-  rewrite /AbsolutelyTimeless=> HQ. rewrite later_false_em.
-  apply or_mono, wand_intro_l; first done.
-  rewrite -{2}(löb Q); apply impl_intro_l.
-  rewrite HQ /bi_except_0 !and_or_r. apply or_elim; last auto.
-  by rewrite (comm _ P) persistent_and_sep_assoc impl_elim_r wand_elim_l.
-Qed.
-*)
 Global Instance persistently_abs_timeless P : AbsolutelyTimeless P → AbsolutelyTimeless (<pers> P).
 Proof.
   intros ??. rewrite /AbsolutelyTimeless /bi_atleast laterN_persistently.
-  by rewrite (abs_timeless P) /bi_except_0 persistently_or {1}persistently_elim.
+  by rewrite (abs_timeless P) persistently_or {1}persistently_elim.
 Qed.
 
 Global Instance affinely_abs_timeless P :
@@ -291,20 +271,56 @@ Global Instance eq_abs_timeless {A : ofeT} (a b : A) :
   Discrete a → AbsolutelyTimeless (PROP:=uPredI M) (a ≡ b).
 Proof. intros. rewrite /Discrete !discrete_eq => k. apply (abs_timeless _). Qed.
 
-(** Absolutely Timeless instances *)
-Import bi.bi base_logic.bi.uPred.
+(* These next two instances hold for Timeless, but they appear to not be true for AbsolutelyTimeless.
+
+   However, a quick test suggests that the corresponding Timeless versions are un-used in Perennial,
+   so losing them for AbsolutelyTimeless is not a problem. *)
+
+(*
+Global Instance impl_abs_timeless `{!BiLöb PROP} P Q : AbsolutelyTimeless Q → AbsolutelyTimeless (P → Q).
+Proof.
+  rewrite /AbsolutelyTimeless=> HQ k.
+  split => n x Hval HPQ.
+  destruct (decide (n < k)).
+  - rewrite /bi_atleast//=. uPred.unseal. left. apply laterN_small; eauto.
+  - move: HQ HPQ. rewrite /bi_atleast//=. uPred.unseal. right.
+    intros n' x' Hincl Hle Hval' HP.
+    assert (HPQ_later: (uPred_impl_def P Q) (n - k) x).
+    assert (HP_later: P (n' - k) x).
+Abort.
+*)
+
+(*
+Global Instance wand_abs_timeless `{!BiLöb PROP} P Q : AbsolutelyTimeless Q → AbsolutelyTimeless (P -∗ Q).
+Proof.
+Abort.
+*)
+
+Import base_logic.bi.uPred.
 Global Instance valid_abs_timeless {A : cmraT} `{!CmraDiscrete A} (a : A) :
   AbsolutelyTimeless (✓ a : uPred M)%I.
 Proof. rewrite /AbsolutelyTimeless => k. rewrite !discrete_valid. apply (abs_timeless _). Qed.
+
+Lemma laterN_ownM (a: M) k: ▷^k uPred_ownM a -∗ ∃ b, uPred_ownM b ∧ ▷^k (a ≡ b).
+Proof.
+  revert a. induction k as [| k IH] => a; iIntros "H".
+  - eauto.
+  - iAssert (▷^k ∃ b, uPred_ownM b ∧ ▷ (a ≡ b))%I with "[H]" as "H".
+    { iNext. by iApply later_ownM. }
+    assert (Inhabited M) by (eexists; eauto).
+    iDestruct "H" as (b) "(Hown&#Hequiv)".
+    iPoseProof (IH with "Hown") as (b') "(Hown&#Hequiv')".
+    iExists b'. iFrame. rewrite -later_laterN laterN_later. iNext.
+    iNext. iRewrite "Hequiv". eauto.
+Qed.
+
 Global Instance ownM_abs_timeless (a : M) : Discrete a → AbsolutelyTimeless (uPred_ownM a).
 Proof.
-  intros ? k.
-  trans (∃ b, uPred_ownM b ∧ ▷^k (a ≡ b))%I.
-  { admit. }
+  intros ? k. rewrite laterN_ownM.
   apply exist_elim=> b.
   rewrite (abs_timeless (a≡b)) (atleast_intro k (uPred_ownM b)) -atleast_and.
   apply atleast_mono. rewrite internal_eq_sym.
   apply (internal_eq_rewrite' b a (uPred_ownM) _);
     auto using and_elim_l, and_elim_r.
-Abort.
+Qed.
 End uPred_laws.
