@@ -78,12 +78,14 @@ class Classify:
         + r"""(?P<ident>\w(\w|')*)"""
     )
     OBLIGATION_RE = re.compile(r"""Next Obligation\.""")
+    GOAL_RE = re.compile(r"""\s*Goal\s+""")
     TIME_RE = re.compile(
         r"""Chars (?P<start>\d*) - (?P<end>\d*) \[.*\] """
         + r"""(?P<time>[0-9.]*) secs .*"""
     )
-    QED_RE = re.compile(r"""(Time\s*)?Qed\.""")
+    QED_RE = re.compile(r"""(?:Time\s*)?Qed\.""")
     obligation_count = 0
+    goal_count = 0
 
     @classmethod
     def is_qed(cls, s):
@@ -98,6 +100,10 @@ class Classify:
         if m is not None:
             cls.obligation_count += 1
             return "<obligation {}>".format(cls.obligation_count)
+        m = cls.GOAL_RE.match(s)
+        if m is not None:
+            cls.goal_count += 1
+            return "<goal {}>".format(cls.goal_count)
         return None
 
     @classmethod
