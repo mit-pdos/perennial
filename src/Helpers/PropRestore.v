@@ -184,12 +184,14 @@ Section tests.
     iIntros "H".
     iDestruct (restore_intro with "H") as "H".
     iNamed "H".
-    (* TODO: it would be awesome if this was part of [iNamed], but we would need
-    to remember the original name in order to give it to the Restore at the
-    end *)
-    iDestruct (restore_elim with "[$]") as "#H".
+    (* need this renaming because restore_elim doesn't consume i (should do this
+    with a tactic that unconditionally consumes it) *)
+    let i := iFresh in
+    iRename "H" into i;
+    iDestruct (restore_elim with i) as "#H";
+    iClear i.
+    iFrame "HP3".
     iSplitL ""; [ iFrame "#" | ].
-    iSplitL "HP3"; [ iFrame | ].
     iIntros "HP3".
     iApply "H"; iFrame.
   Qed.

@@ -234,15 +234,22 @@ Local Ltac iNameHyp_go_rx H iNamed_go :=
   and then attempts to name the new anonymous hypotheses, but it would be better
   to parametrize the splitting and naming into a typeclass. *)
 Ltac iNamedDestruct_go_rx H iNameHyp :=
-  let rec go H :=
+  (* we track the original name H0 here so that at the very end we can name the
+  last conjunct if it isn't named (this is what PropRestore runs into - it can
+  be destructed until a final Restore hypothesis) *)
+  let rec go H0 H :=
       first [iNameHyp H
             | let Htmp1 := iFresh in
               let Htmp2 := iFresh in
               let pat := constr:(IList [[IIdent Htmp1; IIdent Htmp2]]) in
               iDestruct H as pat;
-              iNameHyp Htmp1; go Htmp2
-            | idtac ] in
-  go H.
+              iNameHyp Htmp1; go H0 Htmp2
+            | (* reaching here means the last conjunct could not be named with
+              iNameHyp; rather than leave it anonymous, restore the original
+              name (note this could fail if that name was used by one of the
+              inner names, which we don't handle here) *)
+              iRename H into H0 ] in
+  go H H.
 
 (* this declaration defines iNamed by tying together all the mutual recursion *)
 Local Ltac iNamed_go H :=
@@ -499,6 +506,7 @@ Module tests.
       named "#H" (□P) ∗ named "#HQ" (□ Q) -∗ □P ∗ Q.
     Proof.
       iIntros "H".
+      iDestruct "H" as "[Htmp1 H]".
       iNamed "H".
       auto.
     Qed.
@@ -517,6 +525,14 @@ Module tests.
       iIntros "H".
       iNamed "H".
       auto.
+    Qed.
+
+    Example test_named_last_not_named P Q :
+      named "HP" P ∗ Q -∗ P ∗ Q.
+    Proof.
+      iIntros "HQ".
+      iNamed "HQ".
+      iSplitR "HQ"; iAssumption.
     Qed.
 
     Example test_named_from_pure φ Q :
