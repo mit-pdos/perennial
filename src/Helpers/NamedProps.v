@@ -136,17 +136,17 @@ Ltac iDeex :=
            iDeex_go i x i
          end.
 
-Lemma tac_named_replace {PROP:bi} (i i': ident) Δ p (P: PROP) Q name :
+Lemma tac_name_replace {PROP:bi} (i: ident) Δ p (P: PROP) Q name :
   envs_lookup i Δ = Some (p, named name P) →
-  match envs_simple_replace i p (Esnoc Enil i' P) Δ with
+  match envs_simple_replace i p (Esnoc Enil (INamed name) P) Δ with
   | Some Δ' => envs_entails Δ' Q
   | None => False
   end →
   envs_entails Δ Q.
 Proof. rewrite /named. apply coq_tactics.tac_rename. Qed.
 
-Local Ltac iNameReplace i i' :=
-  eapply (tac_named_replace i i' _ _ _ _ _);
+Local Ltac iNameReplace i name :=
+  eapply (tac_name_replace i _ _ _ _ name);
   [ first [ reduction.pm_reflexivity
           | fail 1 "iNamed: could not find" i ]
   | reduction.pm_reduce;
@@ -156,7 +156,7 @@ Local Ltac iNameReplace i i' :=
     end
   ].
 
-Lemma tac_named_intuitionistic {PROP:bi} Δ i i' p (P P' Q: PROP) name :
+Lemma tac_name_intuitionistic {PROP:bi} Δ i i' p (P P' Q: PROP) name :
   envs_lookup i Δ = Some (p, named name P) →
   IntoPersistent p P P' →
   (if p then TCTrue else TCOr (Affine P) (Absorbing Q)) →
@@ -180,6 +180,14 @@ Proof.
     iApply "HQ"; iFrame "#".
 Qed.
 
+Local Ltac iNameIntuitionistic i i' :=
+  eapply (tac_name_intuitionistic _ i i' _ _ _ _ _);
+  [ reduction.pm_reflexivity
+  | iSolveTC
+  | simpl; iSolveTC
+  | reduction.pm_reduce
+  ].
+
 Local Ltac iNamePure i name :=
   let id := string_to_ident name in
   let id := fresh id in
@@ -192,16 +200,11 @@ Local Ltac iNameHyp_go H :=
     (* we check for some simple special-cases: *)
     let pat := intro_pat.parse_one name in
     lazymatch pat with
-    | IIdent ?name =>
+    | IIdent (INamed ?name) =>
       (* just rename one hypothesis *)
       iNameReplace i name
-    | IIntuitionistic (IIdent ?name) =>
-      eapply (tac_named_intuitionistic _ i name _ _ _ _ _);
-      [ reduction.pm_reflexivity
-      | iSolveTC
-      | simpl; iSolveTC
-      | reduction.pm_reduce
-      ]
+    | IIntuitionistic (IIdent ?i') =>
+      iNameIntuitionistic i i'
     (* pure intros need to be freshened (otherwise they block using iNamed) *)
     | IPure (IGallinaNamed ?name) =>
       iNamePure i name
