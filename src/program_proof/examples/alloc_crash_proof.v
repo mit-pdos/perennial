@@ -942,7 +942,8 @@ Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   {{{ RET #(); Q }}}.
 Proof.
   clear Hitemcrash.
-  iIntros (Hsub1 Hsub3 Φ) "(Halloc&Hreserved&Hfupd) HΦ"; iNamed "Halloc".
+  iIntros (Hsub1 Hsub3 Φ) "(Halloc&Hreserved&Hfupd) HΦ".
+  iNamed "Halloc".
   assert (↑Nlock ⊆ E) as Hsub2 by solve_ndisj.
   iMod (readonly_load with "m") as (?) "m'".
   { assumption. }
@@ -963,7 +964,9 @@ Proof.
   iInv "Halloc_inv" as "H" "Hclo".
   wp_pure _.
   iNamed "H".
-  iNamed "Hreserved".
+  (* TODO: iNamed doesn't work because reserved_block re-uses the name
+  Halloc_inv from is_allocator *)
+  iDestruct "Hreserved" as "(Hcrashinv&Hmapsto&Halloc_inv_block)".
   iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
   iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
   iMod (gen_heap_update _ a _ block_free with "[$] [$]") as "(Hctx&Hmapsto)".
@@ -972,7 +975,7 @@ Proof.
   iMod (fupd_intro_mask' _ (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
   iMod ("Hfupd" $! σ with "[%//] HP") as "[HP HQ]".
   iMod "Hrestore_mask" as "_".
-  iMod ("Hclo" with "[HP Hctx Hfreeset_auth]").
+  iMod ("Hclo" with "[HP Hctx Hfreeset_auth]") as "_".
   { iNext. iExists _. iFrame. erewrite dom_update_status; eauto. }
   iModIntro. wp_pures.
   iAssert (is_addrset mref (alloc.free (<[a := block_free]>σ))) with "[Hfreemap]" as "Hfreemap".

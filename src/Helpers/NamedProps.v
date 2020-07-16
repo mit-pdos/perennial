@@ -133,34 +133,90 @@ Ltac iDeexHyp H :=
 Ltac iDeex :=
   repeat match goal with
          | |- context[Esnoc _ ?i (bi_exist (fun x => _))] =>
-           iDeex_go
+           iDeex_go i x i
          end.
+
+Lemma tac_named_replace {PROP:bi} (i i': ident) Δ p (P: PROP) Q name :
+  envs_lookup i Δ = Some (p, named name P) →
+  match envs_simple_replace i p (Esnoc Enil i' P) Δ with
+  | Some Δ' => envs_entails Δ' Q
+  | None => False
+  end →
+  envs_entails Δ Q.
+Proof. rewrite /named. apply coq_tactics.tac_rename. Qed.
+
+Local Ltac iNameReplace i i' :=
+  eapply (tac_named_replace i i' _ _ _ _ _);
+  [ first [ reduction.pm_reflexivity
+          | fail 1 "iNamed: could not find" i ]
+  | reduction.pm_reduce;
+    lazymatch goal with
+    | |- False => fail 1 "iNamed: name in not fresh" i
+    | _ => idtac
+    end
+  ].
+
+Lemma tac_named_intuitionistic {PROP:bi} Δ i i' p (P P' Q: PROP) name :
+  envs_lookup i Δ = Some (p, named name P) →
+  IntoPersistent p P P' →
+  (if p then TCTrue else TCOr (Affine P) (Absorbing Q)) →
+  match envs_replace i p true (Esnoc Enil i' P') Δ with
+  | Some Δ' => envs_entails Δ' Q
+  | None => False
+  end →
+  envs_entails Δ Q.
+Proof.
+  rewrite /named.
+  rewrite envs_entails_eq => ? HP' HPQ HQ.
+  destruct (envs_replace _ _ _ _ _) as [Δ'|] eqn:Hrep; last done.
+  rewrite envs_replace_singleton_sound //.
+  rewrite HQ.
+
+  destruct p; simpl.
+  - iIntros "[#HP HQ]".
+    iApply "HQ".
+    iApply "HP".
+  - iIntros "[#HP HQ]".
+    iApply "HQ"; iFrame "#".
+Qed.
+
+Local Ltac iNamePure i name :=
+  let id := string_to_ident name in
+  let id := fresh id in
+  iPure i as id.
 
 Local Ltac iNameHyp_go H :=
   let i := to_pm_ident H in
   lazymatch goal with
   | |- context[Esnoc _ i (named ?name ?P)] =>
-    let Htmp := iFresh in
-    iRename i into Htmp;
-    (* we treat a couple patterns specially: *)
+    (* we check for some simple special-cases: *)
     let pat := intro_pat.parse_one name in
     lazymatch pat with
-    (* pure intros are freshened (otherwise they block using iNamed) *)
+    | IIdent ?name =>
+      (* just rename one hypothesis *)
+      iNameReplace i name
+    | IIntuitionistic (IIdent ?name) =>
+      eapply (tac_named_intuitionistic _ i name _ _ _ _ _);
+      [ reduction.pm_reflexivity
+      | iSolveTC
+      | simpl; iSolveTC
+      | reduction.pm_reduce
+      ]
+    (* pure intros need to be freshened (otherwise they block using iNamed) *)
     | IPure (IGallinaNamed ?name) =>
-      let id := string_to_ident name in
-      let id := fresh id in
-      iPure Htmp as id
+      iNamePure i name
     (* the token "*" causes iNamed to recurse *)
-    | IForall => iNamed_go Htmp
-    | _ => iDestruct (from_named with Htmp) as pat
-    end;
-    (* TODO: we do this renaming so we can clear the original hypothesis, but
-    this only happens when it isn't consumed (when P is persistent); ideally we
-    would do this whole manipulation with something lower-level that always
-    replaced the hypothesis, but also supported an intro pattern for the result.
-    Otherwise this may have significant performance cost with large
-    environments. *)
-    try iClear Htmp
+    | IForall => iNamed_go i
+    | _ =>
+       (* we now do this only for backwards compatibility, which is a completely
+       safe but inefficient sequence that handles persistent/non-persistent
+       things correctly (most likely few patterns not covered above should even
+       be supported) *)
+       let Htmp := iFresh in
+       iRename i into Htmp;
+       iDestruct (from_named with Htmp) as pat;
+       try iClear Htmp
+    end
   | |- context[Esnoc _ i _] =>
     fail "iNameHyp: hypothesis" H "is not a named"
   | _ => fail 1 "iNameHyp: hypothesis" H "not found"
@@ -405,6 +461,48 @@ Module tests.
       iFrame.
     Qed.
 
+    Example test_named_persistent P :
+      named "#H" (□P) -∗ □P.
+    Proof.
+      iIntros "HP".
+      iNamed "HP".
+      iModIntro.
+      iExact "H".
+    Qed.
+
+    Example test_named_persistent_same_name P :
+      named "#H" (□P) -∗ □P.
+    Proof.
+      iIntros "H".
+      iNamed "H".
+      iModIntro.
+      iExact "H".
+    Qed.
+
+    Example test_named_persistent_conjuncts P Q :
+      named "#H" (□P) ∗ named "#HQ" (□ Q) -∗ □P ∗ Q.
+    Proof.
+      iIntros "H".
+      iNamed "H".
+      auto.
+    Qed.
+
+    Example test_named_persistent_context P Q :
+      named "#H" (□P) ∗ named "#HQ" (□ Q) -∗ □P ∗ Q.
+    Proof.
+      iIntros "#HQ".
+      iNamed "HQ".
+      auto.
+    Qed.
+
+    Example test_named_already_persistent `{!Persistent P} Q :
+      named "#H" P ∗ named "#HQ" (□ Q) -∗ □P ∗ Q.
+    Proof.
+      iIntros "H".
+      iNamed "H".
+      auto.
+    Qed.
+
     Example test_named_from_pure φ Q :
       φ ->
       Q -∗ Q ∗ named "N" ⌜φ⌝.
@@ -463,7 +561,8 @@ Module tests.
       "#H1" ∷ □ P1 ∗ "H2" ∷ P2 -∗
       "#H1" ∷ □ P1 ∗ "H2" ∷ P2.
     Proof.
-      iIntros "I". iNamed "I".
+      iIntros "I".
+      iNamed "I".
       iFrameNamed.
     Qed.
 
