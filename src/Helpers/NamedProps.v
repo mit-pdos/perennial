@@ -193,7 +193,11 @@ Local Ltac iNamePure i name :=
   let id := fresh id in
   iPure i as id.
 
-Local Ltac iNameHyp_go H :=
+(* iNameHyp implements naming a hypothesis of the form [H: name ∷ P].
+
+   The complete tactic is mutually recursive with iNamed_go for * patterns; this
+   self-contained version takes iNamed_go as a parameter *)
+Local Ltac iNameHyp_go_rx H iNamed_go :=
   let i := to_pm_ident H in
   lazymatch goal with
   | |- context[Esnoc _ i (named ?name ?P)] =>
@@ -223,34 +227,40 @@ Local Ltac iNameHyp_go H :=
   | |- context[Esnoc _ i _] =>
     fail "iNameHyp: hypothesis" H "is not a named"
   | _ => fail 1 "iNameHyp: hypothesis" H "not found"
-  end with
-  (* The core of iNamed is destructing and recursing over the resulting
-   conjuncts; the implementation currently just calls iDestruct and then
-   attempts to name the new anonymous hypotheses, but a better implementation
-   would probably use the IntoSep typeclass and look for names right then. We
-   might also want a dedicated typeclass that can provide names, in case they
-   need to come from elsewhere (the main test case for this is PropRestore). *)
-  (* Ltac *) iNamedDestruct H :=
+  end.
+
+(* The core of iNamed is destructing a spine of separating conjuncts and naming
+  each conjunct with iNameHyp; the implementation currently just calls iDestruct
+  and then attempts to name the new anonymous hypotheses, but it would be better
+  to parametrize the splitting and naming into a typeclass. *)
+Ltac iNamedDestruct_go_rx H iNameHyp :=
   let rec go H :=
-      first [iNameHyp_go H
+      first [iNameHyp H
             | let Htmp1 := iFresh in
               let Htmp2 := iFresh in
               let pat := constr:(IList [[IIdent Htmp1; IIdent Htmp2]]) in
               iDestruct H as pat;
-              iNameHyp_go Htmp1; go Htmp2
-            | idtac ]
-  in go H with
-  (* this is the top-level iNamed H tactic. *)
-  (* Ltac *) iNamed_go H :=
+              iNameHyp Htmp1; go Htmp2
+            | idtac ] in
+  go H.
+
+(* this declaration defines iNamed by tying together all the mutual recursion *)
+Local Ltac iNamed_go H :=
   lazymatch H with
   | 1%Z => let i := iFresh in iIntros i; iNamed_go i
   | 1%nat => let i := iFresh in iIntros i; iNamed_go i
-  | _ => (* first destruct the existentials, then split the conjuncts (but only
-    these two levels, since the user might destruct only a few levels deep) *)
+  | _ =>
+    (* first destruct the existentials, then split the conjuncts (but
+    importantly only these two levels; the user must explicitly opt-in to
+    destructing more existentials for conjuncts) *)
     try iDeexHyp H;
-    iNamedDestruct H
-  end.
+    iNamedDestruct_go H
+  end with
+  (* Ltac *) iNameHyp_go H :=
+  iNameHyp_go_rx H iNamed_go with
+  (* Ltac *) iNamedDestruct_go H := iNamedDestruct_go_rx H iNameHyp_go.
 
+Tactic Notation "iNamedDestruct" constr(H) := iNamedDestruct_go H.
 Tactic Notation "iNamed" constr(H) := iNamed_go H.
 
 (* iNamed names any hypotheses that are anonymous but have a name. This is
@@ -273,9 +283,12 @@ useful on its own) *)
 Ltac iNameHyp H := iNameHyp_go H.
 
 Tactic Notation "iNamedAccu" :=
-  iStartProof; eapply tac_named_accu; [
-    first [ cbv [ env_to_named_prop env_to_named_prop_go ];
-            reduction.pm_reflexivity | fail 1 "iNamedAccu: not an evar" ]
+  iStartProof; eapply tac_named_accu; [ (* only one goal should spawn *)
+    first [
+        cbv [ env_to_named_prop env_to_named_prop_go ];
+        reduction.pm_reflexivity
+      | fail 1 "iNamedAccu: not an evar"
+      ]
   ].
 
 Ltac iRed :=
@@ -542,6 +555,17 @@ Module tests.
       iDeexHyp "HP2".
       iExists x0; iFrame.
     Qed.
+
+    Definition simple_rep P := "HP" ∷ P.
+
+    (* TODO: this is a bug *)
+    Example test_destruct_singleton_under_definition P :
+      simple_rep P -∗ P.
+    Proof.
+      iIntros "H".
+      iNamed "H".
+      Fail iExact "HP".
+    Abort.
 
     Example test_nested_destruct Ψ :
       ⊢ ("%wf" ∷ ⌜True⌝ ∗
