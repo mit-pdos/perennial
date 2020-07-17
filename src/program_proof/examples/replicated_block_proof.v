@@ -5,6 +5,7 @@ From Perennial.goose_lang Require Import crash_modality wpr_lifting.
 From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import replicated_block.
+From Perennial.algebra Require Import own_discrete.
 From Perennial.goose_lang.lib Require Import lock.crash_lock.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
@@ -42,6 +43,14 @@ Section goose.
      "Hbackup" ∷ ∃ b0, int.val (word.add addr 1) d↦ b0)%I.
   (* Let eauto unfold this *)
   Local Hint Extern 1 (environments.envs_entails _ (rblock_cinv _ _)) => unfold rblock_cinv : core.
+
+  Instance rblock_linv_discretizable addr σ:
+    Discretizable (rblock_linv addr σ).
+  Proof. apply _. Qed.
+
+  Instance rblock_cinv_discretizable addr σ:
+    Discretizable (rblock_cinv addr σ).
+  Proof. apply _. Qed.
 
   Theorem rblock_linv_to_cinv addr σ :
     rblock_linv addr σ -∗ rblock_cinv addr σ.

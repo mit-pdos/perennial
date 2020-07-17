@@ -6,6 +6,7 @@ From Goose.github_com.mit_pdos.perennial_examples Require Import inode.
 
 (* TODO: alloc_crash_proof must be imported early since otherwise it messes up a
 bunch of things, like Z_scope, encode, and val *)
+From Perennial.algebra Require Import own_discrete.
 From Perennial.program_proof.examples Require Import alloc_crash_proof.
 From Perennial.goose_lang.lib Require Import lock.crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
@@ -86,6 +87,11 @@ Local Hint Extern 1 (environments.envs_entails _ (inode_linv _ _ _)) => unfold i
 Definition inode_cinv addr σ: iProp Σ :=
   ∃ addrs, is_inode_durable addr σ addrs.
 Local Hint Extern 1 (environments.envs_entails _ (inode_cinv _ _)) => unfold inode_cinv : core.
+
+Existing Instance persistent_discretizable.
+Instance inode_cinv_discretizable addr σ:
+  Discretizable (inode_cinv addr σ).
+Proof. apply _. Qed.
 
 Definition inode_state l (d_ref: loc) (lref: loc) addr : iProp Σ :=
   "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d_ref) ∗

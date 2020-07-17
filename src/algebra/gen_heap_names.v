@@ -3,6 +3,7 @@ From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap.
 From iris.base_logic.lib Require Export gen_heap.
+From Perennial.algebra Require Export own_discrete.
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -101,5 +102,9 @@ Section gen_heap_defs.
     iModIntro. iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
     iExists ∅; simpl. iFrame "Hh Hm". by rewrite dom_empty_L.
   Qed.
+
+  Global Instance mapsto_discretizable {Σ} (hG: gen_heapG L V Σ) l q v:
+    Discretizable (mapsto l q v).
+  Proof. rewrite mapsto_eq. apply _. Qed.
 
 End gen_heap_defs.

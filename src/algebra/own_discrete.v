@@ -198,6 +198,7 @@ Proof.
   rewrite ?uPred.ownM_unit' ?left_id. eauto.
 Qed.
 
+
 Lemma own_discrete_wand Q1 Q2:
   □ (Q1 -∗ Q2) -∗ (own_discrete Q1 -∗ own_discrete Q2).
 Proof.
@@ -214,6 +215,13 @@ Global Instance own_discrete_flip_mono' :
   Proper (flip (⊢) ==> flip (⊢)) own_discrete.
 Proof. solve_proper. Qed.
 
+Lemma own_discrete_ownM (a: M0):
+  Discrete a →
+  uPred_ownM a -∗ own_discrete (uPred_ownM a).
+Proof.
+  rewrite /own_discrete. iIntros (HD) "H". iExists a, HD. iFrame; eauto.
+Qed.
+
 End modal.
 
 Class Discretizable {M} {P : uPred M} := discretizable :
@@ -225,6 +233,9 @@ Hint Mode Discretizable + ! : typeclass_instances.
 Section instances.
   Context {M: ucmraT}.
   Implicit Types P : uPred M.
+
+  Global Instance Discretizable_proper : Proper ((≡) ==> iff) (@Discretizable M).
+  Proof. solve_proper. Qed.
 
   Global Instance sep_discretizable P Q:
     Discretizable P →
@@ -248,13 +259,19 @@ Section instances.
     iApply (own_discrete_wand with "[] Hx").
     iModIntro. eauto.
   Qed.
+
+  Global Instance ownM_discretizable (a: M):
+    Discrete a →
+    Discretizable (uPred_ownM a).
+  Proof. intros ?. by apply own_discrete_ownM. Qed.
+
 End instances.
 
 Section instances_iProp.
 
   Context {Σ: gFunctors}.
 
-  Lemma persistent_discretizable (P: iProp Σ):
+  Global Instance persistent_discretizable (P: iProp Σ):
     Persistent P → Discretizable P.
   Proof.
     rewrite /Discretizable.
@@ -263,5 +280,39 @@ Section instances_iProp.
     iApply (own_discrete_wand with "[] Htrue").
     iModIntro. eauto.
   Qed.
+
+  Global Instance and_persistent_discretizable (P Q: iProp Σ):
+    Persistent P →
+    Discretizable Q →
+    Discretizable (P ∧ Q).
+  Proof.
+    intros. rewrite bi.persistent_and_affinely_sep_l. apply _.
+  Qed.
+
+  Global Instance emp_discretizable :
+    Discretizable (emp%I : iProp Σ).
+  Proof. apply persistent_discretizable. apply _. Qed.
+
+  Global Instance big_sepL_discretizable {A} (Φ: nat → A → iProp Σ) l :
+    (∀ k x, Discretizable (Φ k x)) →  Discretizable ([∗ list] k↦x ∈ l, Φ k x).
+  Proof. revert Φ. induction l as [|x l IH]=> Φ ? /=; apply _. Qed.
+
+  Global Instance big_sepS_discretizable `{Countable A} (Φ: A → iProp Σ) X :
+    (∀ x, Discretizable (Φ x)) → Discretizable ([∗ set] x ∈ X, Φ x).
+  Proof. rewrite big_opS_eq /big_opS_def. apply _. Qed.
+
+  Global Instance big_sepM_discretizable `{Countable K} {A: Type} (Φ: K → A → iProp Σ) m :
+    (∀ k x, Discretizable (Φ k x)) → Discretizable ([∗ map] k↦x ∈ m, Φ k x).
+  Proof. rewrite big_opM_eq. intros. apply big_sepL_discretizable=> _ [??]; apply _. Qed.
+
+  Global Instance big_sepL2_discretizable {A B} (Φ: nat → A → B → iProp Σ) l1 l2 :
+    (∀ k x1 x2, Discretizable (Φ k x1 x2)) →
+    Discretizable ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2).
+  Proof. rewrite big_sepL2_alt. apply _. Qed.
+
+  Global Instance own_discretizable {A: cmraT} `{inG Σ A} γ (a: A):
+    Discrete a →
+    Discretizable (own γ a).
+  Proof. intros ?. rewrite own_eq /own_def. apply _. Qed.
 
 End instances_iProp.
