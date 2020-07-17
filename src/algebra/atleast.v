@@ -1,4 +1,5 @@
-From iris.proofmode Require Import base tactics classes.
+From stdpp Require Import nat_cancel.
+From iris.proofmode Require Import base tactics modality_instances classes.
 From iris.bi Require Export derived_laws derived_connectives.
 From iris.algebra Require Import monoid cmra.
 From iris.base_logic Require Import upred bi.
@@ -132,6 +133,11 @@ Proof.
   * rewrite Heq; eauto.
 Qed.
 
+Lemma atleast_bupd `{!BiBUpd PROP} P : ◇_k (|==> P) ⊢ (|==> ◇_k P).
+Proof.
+  rewrite /bi_atleast. apply or_elim; eauto using bupd_mono, or_intro_r.
+Qed.
+
 End laws.
 
 Global Instance and_abs_timeless P Q : AbsolutelyTimeless P → AbsolutelyTimeless Q → AbsolutelyTimeless (P ∧ Q).
@@ -177,6 +183,30 @@ Implicit Types A : Type.
 
 Notation "P ⊢ Q" := (P ⊢@{uPredI M} Q).
 Notation "P ⊣⊢ Q" := (P ⊣⊢@{uPredI M} Q).
+
+Lemma laterN_hold_minus n a x P: ✓{n} x →  a ≤ n → (▷^a P : uPred M)%I n x → P (n - a) x.
+Proof.
+  revert x n.
+  induction a.
+  - repeat (rewrite //= || uPred.unseal).
+    intros. replace (n - 0) with n by lia. auto.
+  - intros x n Hval Hle. destruct n; first by lia.
+    replace (S n - S a) with (n - a) by lia.
+    intros. eapply IHa; eauto using cmra_validN_S.
+    { lia. }
+    move: H. uPred.unseal => //=.
+Qed.
+
+Lemma laterN_soundness P k: (⊢ ▷^k P) → ⊢ P.
+Proof.
+  intros HP. split => n x Hx _.
+  apply uPred_mono with n ε; eauto using ucmra_unit_leastN.
+  replace n with ((n + k) - k) by lia.
+  apply laterN_hold_minus; eauto using ucmra_unit_validN.
+  - lia.
+  - apply HP; eauto using ucmra_unit_validN.
+    uPred.unseal => //=.
+Qed.
 
 Lemma laterN_big n a x φ: ✓{n} x →  a ≤ n → (▷^a ⌜φ⌝ : uPred M)%I n x → φ.
 Proof.
@@ -324,3 +354,151 @@ Proof.
     auto using and_elim_l, and_elim_r.
 Qed.
 End uPred_laws.
+
+Class IntoAtLeast {PROP : bi} k (P Q : PROP) := into_atleast : P ⊢ ◇_k Q.
+Arguments IntoAtLeast {_} _ _%I _%I : simpl never.
+Arguments into_atleast {_} _ _%I _%I {_}.
+Hint Mode IntoAtLeast + - ! - : typeclass_instances.
+Hint Mode IntoAtLeast + - - ! : typeclass_instances.
+
+Class IsAtLeast {PROP : bi} k (Q : PROP) := is_atleast : ◇_k Q ⊢ Q.
+Arguments IsAtLeast {_} _ _%I : simpl never.
+Arguments is_atleast {_} _ _%I {_}.
+Hint Mode IsAtLeast + + ! : typeclass_instances.
+
+Class MakeAtLeast {PROP : bi} k (P Q : PROP) :=
+  make_atleast : ◇_k P ⊣⊢ Q.
+Arguments MakeAtLeast {_} _ _%I _%I.
+Hint Mode MakeAtLeast + - - - : typeclass_instances.
+Class KnownMakeAtLeast {PROP : bi} k (P Q : PROP) :=
+  known_make_except_0 :> MakeAtLeast k P Q.
+Arguments KnownMakeAtLeast {_} _ _%I _%I.
+Hint Mode KnownMakeAtLeast + + ! - : typeclass_instances.
+
+Section class_instances_atleast.
+Context {M: ucmraT}.
+Context (k: nat).
+Implicit Types P Q R : uPred M.
+
+Global Instance from_assumption_atleast p P Q :
+  FromAssumption p P Q → KnownRFromAssumption p P (◇_k Q)%I.
+Proof. rewrite /KnownRFromAssumption /FromAssumption=>->. apply atleast_intro. Qed.
+
+Global Instance from_pure_atleast a P φ : FromPure a P φ → FromPure a (◇_k P) φ.
+Proof. rewrite /FromPure=> ->. apply atleast_intro. Qed.
+
+Global Instance from_and_atleast P Q1 Q2 :
+  FromAnd P Q1 Q2 → FromAnd (◇_k P) (◇_k Q1) (◇_k Q2).
+Proof. rewrite /FromAnd=><-. by rewrite atleast_and. Qed.
+
+Global Instance from_sep_atleast P Q1 Q2 :
+  FromSep P Q1 Q2 → FromSep (◇_k P) (◇_k Q1) (◇_k Q2).
+Proof. rewrite /FromSep=><-. by rewrite atleast_sep. Qed.
+
+Global Instance into_and_atleast p P Q1 Q2 :
+  IntoAnd p P Q1 Q2 → IntoAnd p (◇_k P) (◇_k Q1) (◇_k Q2).
+Proof.
+  rewrite /IntoAnd=> HP. apply intuitionistically_if_intro'.
+  by rewrite atleast_intuitionistically_if_2 HP
+             intuitionistically_if_elim atleast_and.
+Qed.
+
+Global Instance into_sep_atleast P Q1 Q2 :
+  IntoSep P Q1 Q2 → IntoSep (◇_k P) (◇_k Q1) (◇_k Q2).
+Proof. rewrite /IntoSep=> ->. by rewrite atleast_sep. Qed.
+
+Global Instance from_or_atleast P Q1 Q2 :
+  FromOr P Q1 Q2 → FromOr (◇_k P) (◇_k Q1) (◇_k Q2).
+Proof. rewrite /FromOr=><-. by rewrite atleast_or. Qed.
+
+Global Instance into_or_atleast P Q1 Q2 :
+  IntoOr P Q1 Q2 → IntoOr (◇_k P) (◇_k Q1) (◇_k Q2).
+Proof. rewrite /IntoOr=>->. by rewrite atleast_or. Qed.
+
+Global Instance from_exist_atleast {A} P (Φ : A → uPred M) :
+  FromExist P Φ → FromExist (◇_k P) (λ a, ◇_k (Φ a))%I.
+Proof. rewrite /FromExist=> <-. by rewrite atleast_exist_2. Qed.
+
+Global Instance into_exist_atleast {A} P (Φ : A → uPred M) :
+  IntoExist P Φ → Inhabited A → IntoExist (◇_k P) (λ a, ◇_k (Φ a))%I.
+Proof. rewrite /IntoExist=> HP ?. by rewrite HP atleast_exist. Qed.
+
+Global Instance into_forall_atleast {A} P (Φ : A → uPred M) :
+  IntoForall P Φ → IntoForall (◇_k P) (λ a, ◇_k (Φ a))%I.
+Proof. rewrite /IntoForall=> HP. by rewrite HP atleast_forall. Qed.
+
+Global Instance from_forall_atleast {A} P (Φ : A → uPred M) :
+  FromForall P Φ → FromForall (◇_k P)%I (λ a, ◇_k (Φ a))%I.
+Proof. rewrite /FromForall=> <-. by rewrite atleast_forall. Qed.
+
+Global Instance from_modal_atleast P : FromModal modality_id (◇_k P) (◇_k P) P.
+Proof. by rewrite /FromModal /= -atleast_intro. Qed.
+
+(** IsAtLeast *)
+Global Instance is_atleast_atleast P : IsAtLeast k (◇_k P).
+Proof. by rewrite /IsAtLeast atleast_idemp. Qed.
+Global Instance is_atleast_later P : IsAtLeast k (▷^k P).
+Proof. by rewrite /IsAtLeast atleast_laterN. Qed.
+
+(** IntoAtLeast *)
+Global Instance into_atleast_atleast P : IntoAtLeast k (◇_k P) P.
+Proof. by rewrite /IntoAtLeast. Qed.
+Global Instance into_atleast_later P : AbsolutelyTimeless P → IntoAtLeast k (▷^k P) P.
+Proof. by rewrite /IntoAtLeast. Qed.
+(* XXX should this be added?
+Global Instance into_atleast_later P : Timeless P → IntoAtLeast 1 (▷ P) P.
+Proof. by rewrite /IntoAtLeast. Qed.
+Global Instance into_atleast_later_if p P : Timeless P → IntoAtLeast (▷?p P) P.
+Proof. rewrite /IntoAtLeast. destruct p; auto using atleast_intro. Qed.
+*)
+
+Global Instance into_atleast_affinely P Q :
+  IntoAtLeast k P Q → IntoAtLeast k (<affine> P) (<affine> Q).
+Proof. rewrite /IntoAtLeast=> ->. by rewrite atleast_affinely_2. Qed.
+Global Instance into_atleast_intuitionistically P Q :
+  IntoAtLeast k P Q → IntoAtLeast k (□ P) (□ Q).
+Proof. rewrite /IntoAtLeast=> ->. by rewrite atleast_intuitionistically_2. Qed.
+Global Instance into_atleast_absorbingly P Q :
+  IntoAtLeast k P Q → IntoAtLeast k (<absorb> P) (<absorb> Q).
+Proof. rewrite /IntoAtLeast=> ->. by rewrite atleast_absorbingly. Qed.
+Global Instance into_atleast_persistently P Q :
+  IntoAtLeast k P Q → IntoAtLeast k (<pers> P) (<pers> Q).
+Proof. rewrite /IntoAtLeast=> ->. by rewrite atleast_persistently. Qed.
+
+Global Instance elim_modal_abstimeless p P Q :
+  IntoAtLeast k P P' → IsAtLeast k Q → ElimModal True p p P P' Q Q.
+Proof.
+  intros. rewrite /ElimModal (atleast_intro k (_ -∗ _)%I) (into_atleast k P).
+  by rewrite atleast_intuitionistically_if_2 -atleast_sep wand_elim_r.
+Qed.
+
+Global Instance add_modal_atleast P Q : AddModal (◇_k P) P (◇_k Q) | 1.
+Proof.
+  intros. rewrite /AddModal (atleast_intro k (_ -∗ _)%I).
+  by rewrite -atleast_sep wand_elim_r atleast_idemp.
+Qed.
+Global Instance add_modal_atleast_later P Q : AddModal (◇_k P) P (▷^k Q) | 1.
+Proof.
+  intros. rewrite /AddModal (atleast_intro k (_ -∗ _)%I).
+  by rewrite -atleast_sep wand_elim_r atleast_laterN.
+Qed.
+
+Global Instance make_atleast_True : @KnownMakeAtLeast (uPredI M) k True True.
+Proof. by rewrite /KnownMakeAtLeast /MakeAtLeast atleast_True. Qed.
+Global Instance make_atleast_default P : MakeAtLeast k P (◇_k P) | 100.
+Proof. by rewrite /MakeAtLeast. Qed.
+
+Global Instance frame_atleast p R P Q Q' :
+  Frame p R P Q → MakeAtLeast k Q Q' → Frame p R (◇_k P) Q'.
+Proof.
+  rewrite /Frame /MakeAtLeast=><- <-.
+  by rewrite atleast_sep -(atleast_intro k (□?p R)%I).
+Qed.
+
+Global Instance is_atleast_bupd P : IsAtLeast k P → IsAtLeast k (|==> P).
+Proof.
+  rewrite /IsAtLeast=> HP.
+  by rewrite -{2}HP -(atleast_idemp k P) -atleast_bupd -(atleast_intro k P).
+Qed.
+
+End class_instances_atleast.
