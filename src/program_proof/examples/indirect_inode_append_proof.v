@@ -392,7 +392,7 @@ Theorem wp_writeIndirect {l σ addr d lref} ds direct_s indirect_s
                   (set inode.addrs ({[a]} ∪.) σ)⌝
          ∗ (∀ hdr,
                (int.val addr d↦ hdr) -∗
-          ⌜∃ indBlkAddrs, ds' = set impl_s.indBlkAddrsList
+          ⌜ds' = set impl_s.indBlkAddrsList
             (λ ls, <[int.nat index:= (indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length (indBlkAddrs) + 1)) (U64 0))]> ls)
                       (set impl_s.hdr (λ _, hdr) ds)⌝))
       -∗ "Hinv" ∷ inode_linv_with l σ' addr direct_s indirect_s ds'
@@ -510,7 +510,6 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
     iFrame.
     iIntros (σ' ds') "[%Hσ' Hds']".
     iPoseProof ("Hds'" $! hdr with "Hhdr") as "%Hds'".
-    destruct Hds' as [indBlkAddrs' Hds'].
 
     (*Prove postcondition holds*)
     rewrite Hσ' Hds'; simpl.
@@ -526,8 +525,18 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
         rewrite app_length; simpl.
         (*Need to show that list within a list contains element and is a permutation... *)
         (*this is going to be very annoying*)
+        rewrite -Haddrs_set.
         rewrite app_assoc.
-        (*Check list_to_set_app.*)
+        Set Printing Implicit.
+        Check list_to_set_app.
+        rewrite (@list_to_set_app u64
+                                  (@gset u64 u64_eq_dec u64_countable)
+                                  (@gset_elm_of u64 u64_eq_dec u64_countable)
+                                  (@gset_empty u64 u64_eq_dec u64_countable)
+                                  (@gset_singleton u64 u64_eq_dec u64_countable)
+                                  (@gset_union u64 u64_eq_dec u64_countable)
+                                  (@gset_simple_set u64 u64_eq_dec u64_countable)).
+        Search indBlkAddrs.
         admit.
       }
 
@@ -641,7 +650,7 @@ Theorem wp_appendIndirect {l σ addr d lref direct_s indirect_s ds} (a: u64) b:
             (⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ) ∧
             index = (length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks ∧
             offset = (length σ.(inode.blocks) - maxDirect) `mod` indirectNumBlocks⌝ ∗
-           (∀ hdr, int.val addr d↦ hdr -∗
+            (∀ hdr, int.val addr d↦ hdr -∗
             ⌜∃ indBlkAddrs, ds' = set impl_s.indBlkAddrsList
             (λ ls, <[int.nat index:= (indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length (indBlkAddrs) + 1)) (U64 0))]> ls)
                       (set impl_s.hdr (λ _, hdr) ds)⌝))
