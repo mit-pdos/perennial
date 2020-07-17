@@ -39,6 +39,11 @@ Goal True.
   idtac f. (* second function, but with foo *)
 Abort.
 
+(*! PLAN 1 (mostly worked out here): new typeclass with name *)
+(** The first plan is to add a new argument to [IntoExist] (here we use a fresh
+typeclass) which is a [unit → unit], which is how you track a binder name in
+Coq. The advantage is that it's pretty simple to construct such a name by simply
+pattern matching and then a simple Ltac above [copy_binder] *)
 Class IntoExistBinder {PROP : bi} {A} (P : PROP) (Φ : A → PROP) (name : unit → unit) :=
   into_exist_binder : P ⊢ ∃ x, Φ x.
 Arguments IntoExistBinder {_ _} _%I _%I _ : simpl never.
@@ -48,13 +53,6 @@ Hint Mode IntoExistBinder + - ! - - : typeclass_instances.
 Lemma IntoExistBinder_elim {PROP: bi} {A} P (Φ: A → PROP) name :
   IntoExistBinder P Φ name = IntoExist P Φ.
 Proof. reflexivity. Qed.
-
-Ltac into_exist :=
-  lazymatch goal with
-  | |- IntoExist (bi_exist (fun x => @?Φ x)) ?Φ' =>
-    unify Φ Φ'; simple apply class_instances.into_exist_exist
-    (* notypeclasses refine (class_instances.into_exist_exist Φ) *)
-  end.
 
 (* This is the advantage of having an additional argument: this is a regular
 instance because it just forwards a name, rather than copying the name in Φ over
@@ -96,12 +94,23 @@ Ltac into_exist_binder :=
     solve_IntoExistBinder
   end.
 
+(*! PLAN 2: carefully preserve the correct binder name in [IntoExist]'s second argument *)
 (* this is an alternate implementation that requires every implementation of
 IntoExist to carefully preserve names; in general, this is difficult because it
 requires copying a binder from one IntoExist into some newly-constructed
 function (using [copy_binder_to], for example) *)
+Ltac into_exist :=
+  lazymatch goal with
+  | |- IntoExist (bi_exist (fun x => @?Φ x)) ?Φ' =>
+    unify Φ Φ'; simple apply class_instances.into_exist_exist
+    (* notypeclasses refine (class_instances.into_exist_exist Φ) *)
+  end.
+
 Remove Hints class_instances.into_exist_exist : typeclass_instances.
 Hint Extern 1 (IntoExist (bi_exist _) _) => into_exist : typeclass_instances.
+(* to handle [class_instances.into_persistent_intuitionistically] we will need
+  to resolve the recursive IntoExist, then copy the binder to the newly
+  constructed function (as in [copy_binder_to]) *)
 
 (* Hint Extern 1 (IntoExistBinder (bi_exist _) _ _) => into_exist_binder : typeclass_instances. *)
 (* for these two forms, we resolve name using the underlying binder in the
@@ -113,6 +122,9 @@ Hint Extern 2 (IntoExistBinder _ _ _) => eapply into_exist_pure_exists_unify; [ 
 
 Inductive dummy {A} (x:A) : Prop := mkDummy.
 Hint Resolve mkDummy : core.
+
+(* these tactic lemmas need to forward some information from resolution in the
+earlier goals to the last one, which we do with this [dummy] thing *)
 
 Lemma tac_exist_destruct' {PROP: bi} {A} Δ i p j P (Φ : A → PROP) Q :
   envs_lookup i Δ = Some (p, P) → IntoExist P Φ →
@@ -142,8 +154,12 @@ Proof.
   apply H1; auto.
 Qed.
 
-(* this uses the old Coq lemma, but this makes it hard to extract the Φ resolved
-in the earlier hypothesis *)
+(* this uses the old Coq lemma without using [dummy], but that makes it hard to
+extract the Φ resolved in the earlier hypothesis
+
+  more importantly, it only uses [IntoExist P Φ], relying on the binder in Φ for
+  the name
+ *)
 Tactic Notation "iExistDestructAuto" constr(H)
     "as" constr(Hx) :=
   eapply coq_tactics.tac_exist_destruct with H _ Hx _ _; (* (i:=H) (j:=Hx) *)
@@ -174,6 +190,7 @@ Tactic Notation "iExistDestructAuto'" constr(H) :=
     |iSolveTC ||
      let P := match goal with |- IntoExistBinder ?P _ _ => P end in
      fail "iExistDestruct: cannot destruct" P|];
+    (* the dummy conveniently places the binder name where we want it *)
     let x := lazymatch goal with
              | |- dummy (λ x, _) -> _ => x
              end in
@@ -187,51 +204,71 @@ Tactic Notation "iExistDestructAuto'" constr(H) :=
     | _ => revert y; intros x (* subgoal *)
     end.
 
-Theorem test_regular_bi_exists {PROP: bi} (Φ: nat → PROP) :
-  (∃ y, Φ y) -∗ ∃ (n:nat), True.
-Proof.
-  iIntros "H".
-  iExistDestructAuto' "H".
-  iExists y; eauto.
-Qed.
+Module tests.
+  Section bi.
+  Context {PROP: bi}.
+  Implicit Types (P: PROP) (Φ: nat → PROP).
 
-Definition is_exists {PROP: bi} (P: PROP) :=
-  (∃ (n:nat), P ∗ ⌜n = n⌝)%I.
+  Set Default Proof Using "Type".
 
-Theorem test_bi_exists_under_def {PROP: bi} (P: PROP) :
-  is_exists P -∗ ∃ (n:nat), ⌜n = n⌝.
-Proof.
-  iIntros "H".
-  iExistDestructAuto' "H".
-  iExists n; eauto.
-Qed.
+  Theorem test_regular_bi_exists Φ :
+    (∃ y, Φ y) -∗ ∃ (n:nat), True.
+  Proof.
+    iIntros "H".
+    iExistDestructAuto' "H".
+    iExists y; eauto.
+  Qed.
 
-Theorem test_persistent_exists {PROP: bi} (Φ: nat → PROP) :
-  □ (∃ y, Φ y) -∗ ∃ (n:nat), True.
-Proof.
-  iIntros "H".
-  iExistDestructAuto' "H".
-  iExists y; eauto.
-Qed.
+  (* just to show plan 2 really is possible *)
+  Theorem test_regular_bi_exists_plan_2 Φ :
+    (∃ y, Φ y) -∗ ∃ (n:nat), True.
+  Proof.
+    iIntros "H".
+    iExistDestructAuto "H" as "H".
+    iExists y; eauto.
+  Qed.
 
-Definition is_exists_persistent {PROP: bi} (Φ: nat → PROP) :=
-  (□ ∃ (y:nat), Φ y)%I.
+  (* plan 1 is really quite robust: *)
 
-Theorem test_persistent_exists_under_def {PROP: bi} (Φ: nat → PROP) :
-  is_exists_persistent Φ -∗ ∃ (n:nat), True.
-Proof.
-  iIntros "H".
-  iExistDestructAuto' "H".
-  iExists y; eauto.
-Qed.
+  Definition is_exists P :=
+    (∃ (n:nat), P ∗ ⌜n = n⌝)%I.
 
-Definition is_exists_pure {PROP: bi} : PROP :=
-  ⌜∃ (y:nat), y = y⌝%I.
+  Theorem test_bi_exists_under_def P :
+    is_exists P -∗ ∃ (n:nat), ⌜n = n⌝.
+  Proof.
+    iIntros "H".
+    iExistDestructAuto' "H".
+    iExists n; eauto.
+  Qed.
 
-Theorem test_pure_exists {PROP: bi} :
-  is_exists_pure ⊢@{PROP} ∃ (n:nat), ⌜n = n⌝.
-Proof.
-  iIntros "H".
-  iExistDestructAuto' "H".
-  iExists y; iAssumption.
-Qed.
+  Theorem test_persistent_exists Φ :
+    □ (∃ y, Φ y) -∗ ∃ (n:nat), True.
+  Proof.
+    iIntros "H".
+    iExistDestructAuto' "H".
+    iExists y; eauto.
+  Qed.
+
+  Definition is_exists_persistent Φ :=
+    (□ ∃ (y:nat), Φ y)%I.
+
+  Theorem test_persistent_exists_under_def Φ :
+    is_exists_persistent Φ -∗ ∃ (n:nat), True.
+  Proof.
+    iIntros "H".
+    iExistDestructAuto' "H".
+    iExists y; eauto.
+  Qed.
+
+  Definition is_exists_pure : PROP :=
+    ⌜∃ (y:nat), y = y⌝%I.
+
+  Theorem test_pure_exists :
+    is_exists_pure ⊢@{PROP} ∃ (n:nat), ⌜n = n⌝.
+  Proof.
+    iIntros "H".
+    iExistDestructAuto' "H".
+    iExists y; iAssumption.
+  Qed.
+  End bi.
+End tests.
