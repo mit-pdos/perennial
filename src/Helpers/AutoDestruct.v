@@ -74,6 +74,20 @@ Ltac into_exist_name Φ name :=
   unify name name';
   solve_IntoExistBinder.
 
+Theorem into_exist_bi_exists_unify {PROP: bi} {A}
+      P (Φ Φ': A → PROP) name :
+  P = bi_exist Φ →
+  IntoExistBinder (bi_exist Φ) Φ' name →
+  IntoExistBinder P Φ' name.
+Proof. by intros ->. Qed.
+
+Theorem into_exist_pure_exists_unify {PROP: bi} {A}
+      P (Φ: A → Prop) (Φ': A → PROP) name :
+  P = ⌜ex Φ⌝%I →
+  IntoExistBinder ⌜ex Φ⌝ Φ' name →
+  IntoExistBinder P Φ' name.
+Proof. by intros ->. Qed.
+
 Ltac into_exist_binder :=
   lazymatch goal with
   | |- IntoExistBinder (bi_exist ?Φ) _ ?name =>
@@ -93,7 +107,9 @@ Hint Extern 1 (IntoExist (bi_exist _) _) => into_exist : typeclass_instances.
 (* for these two forms, we resolve name using the underlying binder in the
 function *)
 Hint Extern 1 (IntoExistBinder (bi_exist ?Φ) _ ?name) => into_exist_name Φ name : typeclass_instances.
+Hint Extern 2 (IntoExistBinder _ _ _) => eapply into_exist_bi_exists_unify; [ reflexivity | ] : typeclass_instances.
 Hint Extern 1 (IntoExistBinder (⌜ex ?Φ⌝)%I _ ?name) => into_exist_name Φ name : typeclass_instances.
+Hint Extern 2 (IntoExistBinder _ _ _) => eapply into_exist_pure_exists_unify; [ reflexivity | ] : typeclass_instances.
 
 Inductive dummy {A} (x:A) : Prop := mkDummy.
 Hint Resolve mkDummy : core.
@@ -150,9 +166,8 @@ Tactic Notation "iExistDestructAuto" constr(H)
     | _ => revert y; intros x (* subgoal *)
     end.
 
-Tactic Notation "iExistDestructAuto'" constr(H)
-    "as" constr(Hx) :=
-  eapply tac_exist_binder_destruct' with H _ Hx _ _ _; (* (i:=H) (j:=Hx) *)
+Tactic Notation "iExistDestructAuto'" constr(H) :=
+  eapply tac_exist_binder_destruct' with H _ H _ _ _; (* (i:=H) (j:=Hx) *)
     [reduction.pm_reflexivity ||
      let H := pretty_ident H in
      fail "iExistDestruct:" H "not found"
@@ -167,8 +182,8 @@ Tactic Notation "iExistDestructAuto'" constr(H)
     intros y; reduction.pm_reduce;
     match goal with
     | |- False =>
-      let Hx := pretty_ident Hx in
-      fail "iExistDestruct:" Hx "not fresh"
+      let H := pretty_ident H in
+      fail "iExistDestruct:" H "not fresh"
     | _ => revert y; intros x (* subgoal *)
     end.
 
@@ -176,22 +191,47 @@ Theorem test_regular_bi_exists {PROP: bi} (Φ: nat → PROP) :
   (∃ y, Φ y) -∗ ∃ (n:nat), True.
 Proof.
   iIntros "H".
-  iExistDestructAuto' "H" as "H".
+  iExistDestructAuto' "H".
   iExists y; eauto.
+Qed.
+
+Definition is_exists {PROP: bi} (P: PROP) :=
+  (∃ (n:nat), P ∗ ⌜n = n⌝)%I.
+
+Theorem test_bi_exists_under_def {PROP: bi} (P: PROP) :
+  is_exists P -∗ ∃ (n:nat), ⌜n = n⌝.
+Proof.
+  iIntros "H".
+  iExistDestructAuto' "H".
+  iExists n; eauto.
 Qed.
 
 Theorem test_persistent_exists {PROP: bi} (Φ: nat → PROP) :
   □ (∃ y, Φ y) -∗ ∃ (n:nat), True.
 Proof.
   iIntros "H".
-  iExistDestructAuto' "H" as "H".
+  iExistDestructAuto' "H".
   iExists y; eauto.
 Qed.
 
-Theorem test_pure_exists {PROP: bi} (Φ: nat → Prop) :
-  ⌜∃ y, Φ y⌝ ⊢@{PROP} ∃ (n:nat), True.
+Definition is_exists_persistent {PROP: bi} (Φ: nat → PROP) :=
+  (□ ∃ (y:nat), Φ y)%I.
+
+Theorem test_persistent_exists_under_def {PROP: bi} (Φ: nat → PROP) :
+  is_exists_persistent Φ -∗ ∃ (n:nat), True.
 Proof.
   iIntros "H".
-  iExistDestructAuto' "H" as "H".
+  iExistDestructAuto' "H".
   iExists y; eauto.
+Qed.
+
+Definition is_exists_pure {PROP: bi} : PROP :=
+  ⌜∃ (y:nat), y = y⌝%I.
+
+Theorem test_pure_exists {PROP: bi} :
+  is_exists_pure ⊢@{PROP} ∃ (n:nat), ⌜n = n⌝.
+Proof.
+  iIntros "H".
+  iExistDestructAuto' "H".
+  iExists y; iAssumption.
 Qed.
