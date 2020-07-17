@@ -621,7 +621,7 @@ Qed.
 
 Theorem alloc_free_subset σ :
   alloc.free σ ⊆ dom _ σ.
-Proof. by apply dom_map_filter_subseteq. Qed.
+Proof. by apply dom_filter_subseteq. Qed.
 
 (*
 Theorem alloc_free_use σ new :
