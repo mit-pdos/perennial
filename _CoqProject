@@ -3,8 +3,9 @@
 -arg -w -arg +deprecated-tactic-notation
 # Iris-disabled warnings
 -arg -w -arg -notation-overridden,-redundant-canonical-projection,-convert_concl_no_check,-undeclared-scope
--Q external/iris/theories iris
 -Q external/stdpp/theories stdpp
+-Q external/iris/theories iris
+-Q external/string-ident/theories iris_string_ident
 -Q external/coqutil/src/coqutil coqutil
 -Q external/Goose Goose
 -Q external/record-update/src RecordUpdate

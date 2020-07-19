@@ -10,10 +10,6 @@
 [submodule "external/record-update"]
 	path = external/record-update
 	url = https://github.com/tchajed/coq-record-update
-[submodule "external/string-ident-v8.11"]
-	path = external/string-ident-v8.11
-	url = https://gitlab.mpi-sws.org/iris/string-ident.git
-	branch = v8.11
 [submodule "external/iris"]
 	path = external/iris
 	url = https://gitlab.mpi-sws.org/iris/iris.git

@@ -27,22 +27,12 @@ vok: $(QUICK_CHECK_FILES:.v=.vok)
 interpreter: src/goose_lang/interpreter/generated_test.vos
 check-assumptions: src/program_proof/examples/print_assumptions.vo
 
-_CoqProject: _CoqProject.in
-	@echo "COQPROJECT"
-	@echo "# auto-generated - DO NOT EDIT (see _CoqProject.in)" > $@
-	@cat $< >> $@
-	@if coqc --version | grep -q -F 'version 8.11' ; then \
-		echo "-Q external/string-ident-v8.11/theories iris_string_ident"; \
-		else \
-		echo "-Q external/string-ident/theories iris_string_ident"; \
-		fi >> $@
-
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
 	$(Q)coqdep -vos -f _CoqProject $(ALL_VFILES) > $@
 
 # do not try to build dependencies if cleaning or just building _CoqProject
-ifeq ($(filter clean _CoqProject,$(MAKECMDGOALS)),)
+ifeq ($(filter clean,$(MAKECMDGOALS)),)
 -include .coqdeps.d
 endif
 
@@ -92,7 +82,7 @@ clean:
 	$(Q)find $(SRC_DIRS) \( -name "*.vo" -o -name "*.vo[sk]" \
 		-o -name ".*.aux" -o -name ".*.cache" -name "*.glob" \) -delete
 	$(Q)rm -f $(TIMING_DB)
-	rm -f _CoqProject .coqdeps.d
+	rm -f .coqdeps.d
 
 .PHONY: default
 .DELETE_ON_ERROR:

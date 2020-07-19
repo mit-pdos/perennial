@@ -22,7 +22,6 @@
 *.v.d
 *.glob
 .coqdeps.d
-_CoqProject
 
 /.timing.sqlite3
 
