@@ -104,7 +104,7 @@ Section gen_heap_defs.
   Qed.
 
   Global Instance mapsto_discretizable {Σ} (hG: gen_heapG L V Σ) l q v:
-    Discretizable (mapsto l q v).
+    Discretizable (mapsto (hG:=hG) l q v).
   Proof. rewrite mapsto_eq. apply _. Qed.
 
 End gen_heap_defs.
