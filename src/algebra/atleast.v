@@ -361,6 +361,16 @@ Global Instance into_atleast_atleast P : IntoAtLeast k (◇_k P) P.
 Proof. by rewrite /IntoAtLeast. Qed.
 Global Instance into_atleast_later P : AbsolutelyTimeless P → IntoAtLeast k (▷^k P) P.
 Proof. by rewrite /IntoAtLeast. Qed.
+
+(* Special instances of above for k=1 and k=2. This could be done more generically, but it seems like
+   we will only use k=1 and k=2 in practice anyway, so for now we just add directly the instances needed. *)
+Global Instance into_atleast_later1 P : AbsolutelyTimeless P → IntoAtLeast 1 (▷ P) P.
+Proof. rewrite /IntoAtLeast. by replace (▷ P)%I with (▷^1 P)%I by auto. Qed.
+Global Instance into_atleast_later2 P : AbsolutelyTimeless P → IntoAtLeast 2 (▷▷ P) P.
+Proof. rewrite /IntoAtLeast. by replace (▷▷ P)%I with (▷^2 P)%I by auto. Qed.
+Global Instance into_atleast_later2' P : AbsolutelyTimeless P → IntoAtLeast 2 (▷ P) P.
+Proof. rewrite /IntoAtLeast => ?. transitivity (▷▷ P)%I; first eauto. by apply into_atleast_later2. Qed.
+
 (* XXX should this be added?
 Global Instance into_atleast_later P : Timeless P → IntoAtLeast 1 (▷ P) P.
 Proof. by rewrite /IntoAtLeast. Qed.

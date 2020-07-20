@@ -276,3 +276,40 @@ Proof.
 Qed.
  *)
 End fupd_atleast.
+
+
+Section test.
+Context `{!invG Σ}.
+Context `{HT: AbsolutelyTimeless (iPropI Σ) P}.
+
+Goal ◇_2 P -∗ ◇_2 P.
+Proof using HT.
+  iIntros "HP". iMod "HP". iModIntro. auto.
+Qed.
+
+Goal ▷^2 P -∗ ◇_2 P.
+Proof using HT.
+  iIntros "HP". by iMod "HP".
+Qed.
+
+Goal ∀ E, ▷^2 P -∗ |2={E}=> P.
+Proof using HT.
+  iIntros (?) "HP". by iMod "HP".
+Qed.
+
+Goal ∀ E, ▷▷ P -∗ |2={E}=> P.
+Proof using HT.
+  iIntros (?) "HP". by iMod "HP".
+Qed.
+
+Goal ∀ E, ▷ P -∗ |2={E}=> P.
+Proof using HT.
+  iIntros (?) "HP". by iMod "HP".
+Qed.
+
+Goal ∀ E, ▷ P -∗ |1={E}=> P.
+Proof using HT.
+  iIntros (?) "HP". by iMod "HP".
+Qed.
+
+End test.
