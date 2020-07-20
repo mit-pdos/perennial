@@ -52,10 +52,19 @@ Lemma atleast_intro P : P ⊢ ◇_k P.
 Proof. rewrite /bi_atleast; auto. Qed.
 Lemma atleast_mono P Q : (P ⊢ Q) → ◇_k P ⊢ ◇_k Q.
 Proof. by intros ->. Qed.
+Lemma atleast_le k1 k2 P : k1 ≤ k2 → ◇_k1 P ⊢ ◇_k2 P.
+Proof.
+  rewrite /bi_atleast. iIntros (?) "[Hf|HP]".
+  - iLeft. iApply laterN_le; eauto.
+  - iRight. eauto.
+Qed.
 Lemma atleast_idemp P : ◇_k ◇_k P ⊣⊢ ◇_k P.
 Proof.
   apply (anti_symm _); rewrite /bi_atleast; auto.
 Qed.
+
+Lemma except_0_atleast P : ◇ P ⊣⊢ ◇_1 P.
+Proof. rewrite /bi_atleast/bi_except_0//=. Qed.
 
 Lemma atleast_True : ◇_k True ⊣⊢ True.
 Proof. rewrite /bi_atleast. apply (anti_symm _); auto. Qed.

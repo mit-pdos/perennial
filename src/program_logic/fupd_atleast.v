@@ -2,7 +2,7 @@ From stdpp Require Export coPset.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import gmap auth agree gset coPset.
 From iris.base_logic.lib Require Export own.
-From iris.base_logic.lib Require Import wsat.
+From iris.base_logic.lib Require Import wsat fancy_updates.
 From Perennial.algebra Require Import atleast.
 Set Default Proof Using "Type".
 Export invG.
@@ -57,6 +57,25 @@ Qed.
 Lemma fupd_atleast_mono E1 E2 k P Q : (P ⊢ Q) → (|k={E1,E2}=> P) ⊢ |k={E1,E2}=> Q.
 Proof.
   rewrite uPred_fupd_atleast_eq. iIntros (HPQ) "HP HwE". rewrite -HPQ. by iApply "HP".
+Qed.
+
+Lemma fupd_atleast_le E1 E2 k1 k2 P : k1 ≤ k2 → (|k1={E1,E2}=> P) ⊢ |k2={E1,E2}=> P.
+Proof.
+  rewrite ?uPred_fupd_atleast_eq /uPred_fupd_atleast_def.
+  iIntros (Hle) "HP HwE". iMod ("HP" with "[$]"). iModIntro.
+  by iApply (atleast_le).
+Qed.
+
+Lemma fupd_fupd_atleast1 E1 E2 P : (|={E1,E2}=> P) ⊣⊢ |1={E1,E2}=> P.
+Proof.
+  rewrite ?uPred_fupd_atleast_eq /uPred_fupd_atleast_def.
+  rewrite ?uPred_fupd_eq /uPred_fupd_def.
+  by rewrite except_0_atleast.
+Qed.
+
+Lemma fupd_fupd_atleast E1 E2 k P : (|={E1,E2}=> P) ⊢ |(S k)={E1,E2}=> P.
+Proof.
+  rewrite fupd_fupd_atleast1. apply fupd_atleast_le. lia.
 Qed.
 
 Lemma fupd_atleast_trans E1 E2 E3 k P : (|k={E1,E2}=> |k={E2,E3}=> P) ⊢ |k={E1,E3}=> P.
@@ -208,11 +227,17 @@ Proof.
    by rewrite /ElimModal intuitionistically_if_elim
     (bupd_fupd_atleast E1 k) fupd_atleast_frame_r wand_elim_r fupd_atleast_trans.
 Qed.
-Global Instance elim_modal_fupd_fupd_atleast p E1 E2 E3 k P Q :
+Global Instance elim_modal_fupd_atleast_fupd_atleast p E1 E2 E3 k P Q :
   ElimModal True p false (|k={E1,E2}=> P) P (|k={E1,E3}=> Q) (|k={E2,E3}=> Q).
 Proof.
   by rewrite /ElimModal intuitionistically_if_elim
     fupd_atleast_frame_r wand_elim_r fupd_atleast_trans.
+Qed.
+Global Instance elim_modal_fupd_fupd_atleast p E1 E2 k P Q :
+  ElimModal True p false (|={E1,E2}=> P) P (|(S k)={E1,E3}=> Q) (|(S k)={E2,E3}=> Q).
+Proof.
+  rewrite /ElimModal => ??. rewrite (fupd_fupd_atleast _ _ k) intuitionistically_if_elim
+    fupd_atleast_frame_r wand_elim_r fupd_atleast_trans //=.
 Qed.
 
 Global Instance elim_acc_fupd_atleast {X} E1 E2 E k α β mγ Q :
@@ -281,6 +306,26 @@ End fupd_atleast.
 Section test.
 Context `{!invG Σ}.
 Context `{HT: AbsolutelyTimeless (iPropI Σ) P}.
+
+Goal ∀ E, (|2={E}=> P) ⊢ |2={E}=> P.
+Proof using HT.
+  iIntros (?) "HP". by iMod "HP".
+Qed.
+
+Goal ∀ E, (|={E}=> P) ⊢ |1={E}=> P.
+Proof using HT.
+  iIntros (?) "HP". by iMod "HP".
+Qed.
+
+Goal ∀ E, (|={E}=> P) ⊢ |2={E}=> P.
+Proof using HT.
+  iIntros (?) "HP". by iMod "HP".
+Qed.
+
+Goal ∀ E1 E2 E3, (|={E1, E2}=> P) ∗ (|2={E2,E3}=> True) ⊢ |2={E1, E3}=> P.
+Proof using HT.
+  iIntros (???) "(HP&HT)". iMod "HP". iMod "HT". eauto.
+Qed.
 
 Goal ◇_2 P -∗ ◇_2 P.
 Proof using HT.
