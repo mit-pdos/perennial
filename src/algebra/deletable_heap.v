@@ -3,6 +3,7 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap frac agree.
 From iris.base_logic.lib Require Import own.
 From iris.base_logic.lib Require gen_heap.
+From Perennial.algebra Require Export own_discrete.
 
 Set Default Proof Using "Type".
 Import uPred.
@@ -124,6 +125,9 @@ Section gen_heap.
   Implicit Types v : V.
 
   (** General properties of mapsto *)
+  Global Instance mapsto_discretizable q v:
+    Discretizable (l ↦{q} v).
+  Proof. rewrite mapsto_eq. apply _. Qed.
   Global Instance mapsto_timeless l q v : Timeless (l ↦{q} v).
   Proof. rewrite mapsto_eq /mapsto_def. apply _. Qed.
   Global Instance mapsto_fractional l v : Fractional (λ q, l ↦{q} v)%I.

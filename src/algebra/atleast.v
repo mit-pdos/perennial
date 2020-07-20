@@ -2,7 +2,7 @@ From stdpp Require Import nat_cancel.
 From iris.proofmode Require Import base tactics modality_instances classes.
 From iris.bi Require Export derived_laws derived_connectives.
 From iris.algebra Require Import monoid cmra.
-From iris.base_logic Require Import upred bi.
+From iris.base_logic Require Import upred bi own.
 From Perennial.algebra Require Export laterN.
 Import interface.bi.
 Import derived_laws.bi.
@@ -344,16 +344,16 @@ Global Instance from_exist_atleast {A} P (Φ : A → uPred M) :
   FromExist P Φ → FromExist (◇_k P) (λ a, ◇_k (Φ a))%I.
 Proof. rewrite /FromExist=> <-. by rewrite atleast_exist_2. Qed.
 
-Global Instance into_exist_atleast {A} P (Φ : A → uPred M) :
-  IntoExist P Φ → Inhabited A → IntoExist (◇_k P) (λ a, ◇_k (Φ a))%I.
+Global Instance into_exist_atleast {A} P (Φ : A → uPred M) i :
+  IntoExist P Φ i → Inhabited A → IntoExist (◇_k P) (λ a, ◇_k (Φ a))%I i.
 Proof. rewrite /IntoExist=> HP ?. by rewrite HP atleast_exist. Qed.
 
 Global Instance into_forall_atleast {A} P (Φ : A → uPred M) :
   IntoForall P Φ → IntoForall (◇_k P) (λ a, ◇_k (Φ a))%I.
 Proof. rewrite /IntoForall=> HP. by rewrite HP atleast_forall. Qed.
 
-Global Instance from_forall_atleast {A} P (Φ : A → uPred M) :
-  FromForall P Φ → FromForall (◇_k P)%I (λ a, ◇_k (Φ a))%I.
+Global Instance from_forall_atleast {A} P (Φ : A → uPred M) i :
+  FromForall P Φ i → FromForall (◇_k P)%I (λ a, ◇_k (Φ a))%I i.
 Proof. rewrite /FromForall=> <-. by rewrite atleast_forall. Qed.
 
 Global Instance from_modal_atleast P : FromModal modality_id (◇_k P) (◇_k P) P.
@@ -437,3 +437,12 @@ Proof.
 Qed.
 
 End class_instances_atleast.
+
+Section iprop_instances.
+
+  Global Instance own_abs_timeless {A: cmraT} `{inG Σ A} γ (a: A):
+    Discrete a →
+    AbsolutelyTimeless (own γ a).
+  Proof. intros ?. rewrite own_eq /own_def. apply _. Qed.
+
+End iprop_instances.

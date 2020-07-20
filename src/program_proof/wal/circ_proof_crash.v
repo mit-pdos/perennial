@@ -68,18 +68,18 @@ Lemma circ_buf_crash_obligation e (Φ: val → iProp Σ) Φc Φc' E2 E2' k σ γ
   is_circular_state γ σ  -∗
   P σ -∗
   □ ((∃ σ', is_circular_state γ σ' ∗ P σ') -∗ Φc -∗ Φc') -∗
-  (is_circular N P γ -∗ (WPC e @ NotStuck; LVL k; ⊤; E2 {{ Φ }} {{ Φc }})) -∗
-  |={⊤}=> is_circular N P γ ∗ WPC e @ NotStuck; (LVL (S k)); ⊤; E2' {{ Φ }} {{ Φc' }}%I.
+  (is_circular N P γ -∗ (WPC e @ NotStuck; k; ⊤; E2 {{ Φ }} {{ Φc }})) -∗
+  |={⊤}=> is_circular N P γ ∗ WPC e @ NotStuck; k; ⊤; E2' {{ Φ }} {{ Φc' }}%I.
 Proof.
   iIntros (??) "Hstate HP #Hcrash1 HWP". rewrite /is_circular.
   iMod (inv_alloc N _ (∃ σ, is_circular_state γ σ ∗ P σ)%I with "[Hstate HP]") as "#Hinv".
   { iNext. iExists _. iFrame. }
   iFrame "Hinv".
-  iModIntro. iApply wpc_later_crash'.
+  iModIntro.
   iApply (wpc_inv'); try eassumption. iFrame "Hinv".
   iSplitL "HWP".
   { by iApply "HWP". }
-  iModIntro. iIntros "H HΦc !> !>".
+  iModIntro. iIntros "H HΦc".
   iApply ("Hcrash1" with "[$] [$]").
 Qed.
 
@@ -87,9 +87,9 @@ Qed.
 Lemma circ_buf_crash_obligation_simple e (Φ: val → iProp Σ) k σ γ:
   is_circular_state γ σ  -∗
   P σ -∗
-  (is_circular N P γ -∗ (WPC e @ NotStuck; LVL k; ⊤; ∅ {{ Φ }} {{ True }})) -∗
+  (is_circular N P γ -∗ (WPC e @ NotStuck; k; ⊤; ∅ {{ Φ }} {{ True }})) -∗
   |={⊤}=> is_circular N P γ ∗
-          WPC e @ NotStuck; (LVL (S k)); ⊤; ↑N {{ Φ }} {{ ∃ σ', is_circular_state γ σ' ∗ P σ' }}%I.
+          WPC e @ NotStuck; k; ⊤; ↑N {{ Φ }} {{ ∃ σ', is_circular_state γ σ' ∗ P σ' }}%I.
 Proof.
   iIntros "Hstate HP HWP".
   iApply (circ_buf_crash_obligation with "[$] [$] [] [$]"); auto; set_solver+.

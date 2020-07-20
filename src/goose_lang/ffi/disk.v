@@ -457,11 +457,11 @@ lemmas. *)
     auto.
   Qed.
 
-  Lemma disk_array_acc (l: Z) bs (z: Z) b q :
+  Lemma disk_array_acc_disc (l: Z) bs (z: Z) b q :
     0 <= z ->
     bs !! Z.to_nat z = Some b →
     disk_array l q bs -∗ ((l + z) d↦{q} b ∗
-                          ∀ b', (l + z) d↦{q} b' -∗
+                          <bdisc> ∀ b', (l + z) d↦{q} b' -∗
                                                 disk_array l q (<[Z.to_nat z:=b']>bs))%I.
   Proof.
     iIntros (Hpos Hlookup) "Hl".
@@ -471,7 +471,7 @@ lemmas. *)
     assert (Z.to_nat z < length bs)%nat as H by (apply lookup_lt_is_Some; by eexists).
     rewrite take_length min_l; last by lia.
     rewrite Z2Nat.id; auto. iFrame "Hl2".
-    iIntros (w) "Hl2".
+    iModIntro. iIntros (w) "Hl2".
     clear Hlookup. assert (<[Z.to_nat z:=w]> bs !! Z.to_nat z = Some w) as Hlookup.
     { apply list_lookup_insert. lia. }
     rewrite -[in (disk_array l q (<[Z.to_nat z:=w]> bs))](take_drop_middle (<[Z.to_nat z:=w]> bs) (Z.to_nat z) w Hlookup).
@@ -479,6 +479,17 @@ lemmas. *)
     iApply disk_array_cons. rewrite take_length min_l; last by lia. iFrame.
     rewrite drop_insert_gt; last by lia.
     rewrite Z2Nat.id; auto. iFrame.
+  Qed.
+
+  Lemma disk_array_acc (l: Z) bs (z: Z) b q :
+    0 <= z ->
+    bs !! Z.to_nat z = Some b →
+    disk_array l q bs -∗ ((l + z) d↦{q} b ∗
+                          ∀ b', (l + z) d↦{q} b' -∗
+                                                disk_array l q (<[Z.to_nat z:=b']>bs))%I.
+  Proof.
+    iIntros (Hpos Hlookup) "Hl".
+    iDestruct (disk_array_acc_disc with "[$]") as "($&?)"; eauto.  rewrite own_discrete_elim; eauto.
   Qed.
 
   Lemma init_disk_sz_lookup_ge sz z:

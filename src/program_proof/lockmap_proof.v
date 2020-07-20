@@ -364,7 +364,7 @@ Proof.
   wp_loadField.
   wp_pures.
 
-  destruct (bool_decide (int.val 0 < int.val waiters)).
+  destruct (bool_decide (int.val 0 < int.val waiters))%Z.
 
   {
     wp_pures.

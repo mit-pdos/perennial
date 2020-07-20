@@ -3,7 +3,7 @@ From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap.
 From iris.base_logic.lib Require Export gen_heap.
-From Perennial.algebra Require Export own_discrete.
+From Perennial.algebra Require Export own_discrete atleast.
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -106,5 +106,13 @@ Section gen_heap_defs.
   Global Instance mapsto_discretizable {Σ} (hG: gen_heapG L V Σ) l q v:
     Discretizable (mapsto (hG:=hG) l q v).
   Proof. rewrite mapsto_eq. apply _. Qed.
+
+  Global Instance mapsto_abs_timless {Σ} (hG: gen_heapG L V Σ) l q v:
+    AbsolutelyTimeless (mapsto (hG:=hG) l q v).
+  Proof. rewrite mapsto_eq. apply _. Qed.
+
+  Global Instance gen_heap_ctx_abs_timeless {Σ} (hG: gen_heapG L V Σ) σ:
+    AbsolutelyTimeless (gen_heap_ctx (hG:=hG) σ).
+  Proof. apply _. Qed.
 
 End gen_heap_defs.

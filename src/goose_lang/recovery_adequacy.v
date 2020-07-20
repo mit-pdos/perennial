@@ -54,6 +54,6 @@ Proof.
   rewrite /wpr. rewrite /hG//=.
   rewrite heap_update_pre_get.
   iApply (recovery_weakestpre.wpr_strong_mono with "Hwp").
-  repeat iSplit; eauto.
+  repeat iSplit; [| iModIntro; iSplit]; eauto.
   - iIntros. rewrite heap_update_pre_update. eauto.
 Qed.

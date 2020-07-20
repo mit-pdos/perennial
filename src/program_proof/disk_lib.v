@@ -252,8 +252,10 @@ Proof.
   iIntros (Φ Φc) "_ HΦ".
   rewrite /Barrier.
   wpc_pures; auto.
-  iRight in "HΦ".
-  iApply ("HΦ" with "[//]").
+  - by crash_case.
+  - iRight in "HΦ".
+    iApply ("HΦ" with "[//]").
+  - by crash_case.
 Qed.
 
 Lemma wpc_Read stk k E1 E2 (a: u64) q b :
@@ -266,14 +268,18 @@ Lemma wpc_Read stk k E1 E2 (a: u64) q b :
 Proof.
   iIntros (Φ Φc) "Hda HΦ".
   rewrite /Read.
-  wpc_pures; first done.
+  wpc_pures.
+  { by crash_case. }
   wpc_bind (ExternalOp _ _).
   wpc_atomic; iFrame.
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
   iDestruct (block_array_to_slice _ _ _ 4096 with "Hl") as "Hs".
-  iSplit; first (by iApply "HΦ").
-  iModIntro. wpc_pures; first done.
+  iSplit.
+  { iDestruct "HΦ" as "(HΦ&_)".
+    iModIntro.
+    iDestruct ("HΦ" with "[$]") as "H". repeat iModIntro; auto. }
+  iModIntro. wpc_pures; first by crash_case.
   wpc_frame "Hda HΦ".
   { by crash_case. }
   wp_apply (wp_raw_slice with "Hs").
@@ -285,8 +291,8 @@ Qed.
 Theorem wpc_Write_fupd {stk k E1 E2} E1' (a: u64) s q b :
   ∀ Φ Φc,
     is_block s q b -∗
-    (Φc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗
-          Φc ∧ (is_block s q b -∗ Φ #()))) -∗
+    (<disc> ▷ Φc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗
+          <disc> ▷ Φc ∧ (is_block s q b -∗ Φ #()))) -∗
     WPC Write #a (slice_val s) @ stk;k; E1;E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Φ Φc) "Hs Hfupd".
@@ -305,9 +311,9 @@ Proof.
   iIntros "[Hda Hmapsto]".
   iMod ("HQ" with "Hda") as "HQ".
   iModIntro.
-  iSplit; iModIntro.
-  - by iLeft in "HQ".
-  - iRight in "HQ". iApply "HQ".
+  iSplit.
+  - iDestruct "HQ" as "(HQ&_)". iModIntro. by repeat iModIntro.
+  - iModIntro. iRight in "HQ". iApply "HQ".
     iFrame.
     destruct s; simpl in Hsz.
     replace sz with (U64 4096).
@@ -319,19 +325,19 @@ Qed.
 
 Theorem wpc_Write_fupd_triple {stk k E1 E2} E1' (Q Qc: iProp Σ) (a: u64) s q b :
   {{{ is_block s q b ∗
-      (Qc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ Q)) }}}
+      (<disc> ▷ Qc ∧ |={E1,E1'}=> ∃ b0, int.val a d↦ b0 ∗ ▷ (int.val a d↦ b ={E1',E1}=∗ <disc> Qc ∧ Q)) }}}
     Write #a (slice_val s) @ stk;k; E1;E2
-  {{{ RET #(); is_block s q b ∗ Q }}}
-  {{{ Qc ∨ Q }}}.
+  {{{ RET #(); is_block s q b ∗ <disc> Qc ∧ Q }}}
+  {{{ Qc }}}.
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as "[Hs Hfupd]".
   iApply (wpc_Write_fupd with "Hs"). iSplit.
-  { iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". iFrame. }
+  { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. iApply "HΦ". iFrame. }
   iRight in "Hfupd". iMod "Hfupd" as (b0) "[Hv Hclose]". iModIntro.
   iExists b0. iFrame. iIntros "!> Hv". iMod ("Hclose" with "Hv") as "HQ".
   iModIntro. iSplit.
-  { iLeft in "HΦ". iApply "HΦ". iFrame. }
+  { iLeft in "HΦ". iLeft in "HQ". iModIntro. iApply "HΦ". iFrame. }
   iRight in "HΦ". iIntros "Hblock". iApply "HΦ". iFrame.
 Qed.
 
@@ -367,7 +373,7 @@ Proof.
   iDestruct "Hpre" as (b0) "[Hda Hs]".
   wpc_apply (wpc_Write' with "[$Hda $Hs]").
   iSplit.
-  { iIntros "[Hda|Hda]"; crash_case; eauto. }
+  { iLeft in "HΦ". iModIntro. iNext. iIntros "[Hda|Hda]"; iApply "HΦ"; eauto. }
   iIntros "!> [Hda Hb]".
   iRight in "HΦ".
   iApply "HΦ"; iFrame.

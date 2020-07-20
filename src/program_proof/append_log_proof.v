@@ -78,6 +78,50 @@ Proof.
   simpl in Hsz.
   apply (inj int.val); word.
 Qed.
+(*
+Theorem wpc_Log__reset_fupd stk k E1 E1' E2 l bs :
+  ∀ Φ Φc,
+    ptsto_log l bs -∗
+    (<disc> ▷ Φc ∧ ▷ (ptsto_log l [] ={E1',E1}=∗ <disc> ▷ Φc ∧ Φ #())) -∗
+    WPC Log__reset #l @ stk;k; E1;E2 {{ Φ }} {{ Φc }}.
+Proof.
+*)
+
+Theorem wpc_write_hdr_fupd stk k E1 E2 lptr (sz0 disk_sz0 sz disk_sz:u64) :
+  ∀ Φ Φc,
+    log_fields lptr sz disk_sz -∗
+    (<disc> ▷ Φc ∧ is_hdr sz0 disk_sz0 ∗ ▷ (is_hdr sz disk_sz ∗ log_fields lptr sz disk_sz ={E1}=∗ <disc> ▷ Φc ∧ Φ #())) -∗
+    WPC Log__writeHdr #lptr @ stk; k; E1; E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (Φ Φc) "Hlog HΦ".
+  (*
+  iIntros (Φ Φc) "Hhdr Hlog HΦ".
+   *)
+  rewrite /Log__writeHdr.
+  wpc_pures; eauto.
+  { by iLeft in "HΦ". }
+  wpc_bind (Log__mkHdr _).
+  wpc_frame "HΦ".
+  { by iLeft in "HΦ". }
+  wp_apply (wp_mkHdr with "[$]").
+  iIntros (l cap b) "(Hb&%&Hfields) HΦ".
+  iNamed "HΦ".
+  wpc_apply (wpc_Write_fupd E1 with "[Hb]").
+  { iFrame.
+    iApply (block_array_to_slice with "Hb"). }
+  iSplit.
+  - iLeft in "HΦ". eauto.
+  - iDestruct "HΦ" as "(_&(Hhdr&HΦ))".
+    iDestruct "Hhdr" as (b0) "(Hd0&%)".
+    iNamed "HΦ".
+    iModIntro. iExists _. iFrame "Hd0".
+    iNext. iIntros "Hd0".
+    iMod ("HΦ" with "[Hd0 $Hfields]") as "H".
+    { iExists _. iFrame. eauto. }
+    iModIntro. iSplit.
+    * iLeft in "H". iApply "H".
+    * iIntros. iRight in "H". iApply "H".
+Qed.
 
 Theorem wpc_write_hdr stk k E1 E2 lptr (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 ∗
@@ -86,34 +130,13 @@ Theorem wpc_write_hdr stk k E1 E2 lptr (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ RET #(); is_hdr sz disk_sz ∗ log_fields lptr sz disk_sz }}}
   {{{ is_hdr sz0 disk_sz0 ∨ is_hdr sz disk_sz }}}.
 Proof.
-  iIntros (Φ Φc) "[Hhdr Hlog] HΦ".
-  rewrite /Log__writeHdr.
-  wpc_pures; eauto.
-  wpc_bind (Log__mkHdr _).
-  wpc_frame "Hhdr HΦ".
-  { crash_case; iFrame. }
-  wp_apply (wp_mkHdr with "[$]").
-  iIntros (l cap b) "(Hb&%&Hfields) (Hhdr&HΦ)".
-  iDestruct "Hhdr" as (b0) "(Hd0&%)".
-  wpc_apply (wpc_Write' with "[Hd0 Hb]").
-  { iFrame.
-    iApply (block_array_to_slice with "Hb"). }
+  iIntros (Φ Φc) "(Hhdr&Hlog) HΦ".
+  iApply (wpc_write_hdr_fupd with "Hlog [Hhdr HΦ]").
   iSplit.
-  - iIntros "Hcrash".
-    iDestruct "Hcrash" as "[Hd0 | Hd0]".
-    + iApply "HΦ".
-      iLeft.
-      iExists _; by iFrame.
-    + iApply "HΦ".
-      iRight.
-      rewrite /is_hdr.
-      iExists _; iFrame.
-      eauto.
-  - iIntros "!> [Hd0 _]".
-    iApply "HΦ".
-    iFrame.
-    rewrite /is_hdr.
-    iExists _; iFrame; eauto.
+  * iLeft in "HΦ". iModIntro. iNext. iApply "HΦ". eauto.
+  * iFrame "Hhdr". iNext. iIntros "(Hhdr&Hlog)". iModIntro. iSplit.
+    ** iLeft in "HΦ". iModIntro. iNext. iApply "HΦ". iFrame.
+    ** iRight in "HΦ". iApply "HΦ". iFrame.
 Qed.
 
 Theorem wp_write_hdr stk E lptr (sz0 disk_sz0 sz disk_sz:u64) :
@@ -327,7 +350,7 @@ Qed.
 
 (* TODO: move to basic_triples *)
 Lemma wpc_slice_len k stk E1 E2 s Φ Φc :
-  Φc ∧ Φ #(Slice.sz s) -∗
+  <disc> ▷ Φc ∧ Φ #(Slice.sz s) -∗
   WPC slice.len (slice_val s) @ stk; k; E1; E2 {{ v, Φ v }} {{ Φc }}.
 Proof.
   iIntros "HΦ".
@@ -345,7 +368,7 @@ Lemma wpc_SliceGet {stk k E1 E2} `{!into_val.IntoVal V} s t q (vs: list V) (i: u
 Proof.
   iIntros (Φ Φc) "[Hs %] HΦ".
   rewrite /SliceGet.
-  wpc_pures; first auto.
+  wpc_pures; first by crash_case.
   wpc_frame "HΦ".
   { by crash_case. }
   wp_apply (wp_SliceGet_body with "[$Hs]").
@@ -366,19 +389,21 @@ Proof.
   iIntros (Φ Φc) "(Hda&Hs&%&%) HΦ".
   destruct (list_lookup_lt _ bs (Z.to_nat (int.val off - l))) as [b0 Hlookup].
   { word. }
-  iDestruct (disk_array_acc _ _ (int.val off - l) with "[$Hda]") as "[Hoff Hda_rest]"; eauto.
+  iDestruct (disk_array_acc_disc _ _ (int.val off - l) with "[$Hda]") as "[Hoff Hda_rest]"; eauto.
   replace (l + (int.val off - l)) with (int.val off) by lia.
   iApply (wpc_Write with "[Hoff Hs] [Hda_rest HΦ]").
   - iExists _; iFrame.
   - iSplit.
-    + iIntros "Hcrash"; crash_case.
+    + iLeft in "HΦ". iIntros "!> !> Hcrash"; crash_case.
       iDestruct "Hcrash" as (b') "Hoff".
       iSpecialize ("Hda_rest" with "Hoff").
+      iApply "HΦ".
       iExists _; iFrame.
       iPureIntro.
       len.
     + iIntros "!> (Hoff&Hs)".
       iApply "HΦ".
+      iDestruct (own_discrete_elim with "Hda_rest") as "Hda_rest".
       iSpecialize ("Hda_rest" with "Hoff").
       iFrame.
 Qed.
@@ -394,10 +419,12 @@ Proof.
   iIntros (Φ Φc) "(Hbs&Hd&%&%) HΦ".
   rewrite /writeAll.
   wpc_pures.
-  { iExists bs0; iFrame. auto. }
+  { crash_case. iExists bs0; iFrame. auto. }
   iDestruct (blocks_slice_length with "Hbs") as %Hbs_len.
   iDestruct (blocks_slice_length' with "Hbs") as %Hbk_s_sz.
   iDestruct "Hbs" as "[Hbk_s Hbks]".
+  wpc_pures.
+  { crash_case. iExists bs0; iFrame. auto. }
 
   iApply (wpc_forSlice (fun i =>
                          (([∗ list] b_s;b ∈ bks;bs, is_block b_s 1 b) ∗
@@ -412,12 +439,13 @@ Proof.
       iIntros "!> (Hbk_s&Hbks)".
       iApply "HΦ"; iFrame.
   - iModIntro. iIntros (x) "(Hbk_s&bks)".
+    iModIntro.
     iExists _; iFrame.
     iPureIntro; len.
   - iIntros (i bk_z_val).
     iIntros (Φ' Φc') "!> ((Hbks&Hd)&%&%) HΦ'".
     wpc_pures.
-    { iExists _; iFrame.
+    { crash_case. iExists _; iFrame.
       iPureIntro.
       rewrite app_length take_length drop_length; lia. }
     destruct (list_lookup_Z_lt bs0 (int.val i)) as [b0_z Hlookup_b0]; first word.
@@ -425,15 +453,19 @@ Proof.
     iDestruct (big_sepL2_lookup_acc _ _ _ (int.nat i) with "Hbks")
       as "[Hbsz Hbs_rest]"; eauto.
     word_cleanup.
+    wpc_pures.
+    { crash_case. iExists _; iFrame.
+      iPureIntro.
+      rewrite app_length take_length drop_length; lia. }
 
     wpc_apply (wpc_WriteArray with "[$Hd $Hbsz] [Hbs_rest HΦ']").
     + iPureIntro.
       len.
     + iSplit.
-      * len.
-        iIntros "Hcrash".
+      * len. iLeft in "HΦ'".
+        iIntros "!> !> Hcrash".
         iDestruct "Hcrash" as (bs') "(Hd&%)".
-        crash_case.
+        iApply "HΦ'".
         iExists _; iFrame.
         iPureIntro.
         lia.
@@ -518,10 +550,13 @@ Theorem wpc_init (sz: u64) k E1 E2 vs:
 Proof.
   iIntros (Φ Φc) "[Hdisk %] HΦ".
   rewrite /Init.
-  wpc_pures; first by eauto.
-  wpc_if_destruct; wpc_pures; try by eauto.
+  wpc_pures.
+  { crash_case. eauto. }
+  wpc_pures.
+  { crash_case. eauto. }
+  wpc_if_destruct; wpc_pures; try by (crash_case; eauto).
   - wpc_frame "Hdisk HΦ".
-    { iApply "HΦ". eauto. }
+    { crash_case. eauto. }
     wp_apply wp_new_free_lock; iIntros (ml) "_".
     wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     wp_pures.
@@ -532,18 +567,18 @@ Proof.
       word. }
     wpc_bind (struct.alloc _ _).
     wpc_frame "Hdisk HΦ".
-    { iApply "HΦ". eauto. }
+    { crash_case; eauto. }
     wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
     wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
     wp_pures.
     iIntros "H". iNamed "H".
-    wpc_pures; first by eauto.
+    wpc_pures; first by (crash_case; eauto).
     iDestruct (disk_array_cons with "Hdisk") as "[Hd0 Hdrest]".
     iDestruct (block_to_is_hdr with "Hd0") as (sz0 disk_sz0) "Hhdr".
     wpc_apply (wpc_write_hdr with "[$Hhdr $Hfields]").
     iSplit.
-    { iIntros "Hcase". iApply "HΦ".
+    { iLeft in "HΦ". iIntros "!> !> Hcase". iApply "HΦ".
       iRight.
       iDestruct "Hcase" as "[H|H]".
       - rewrite /is_hdr. iDestruct "H" as (?) "(?&?)".
@@ -553,7 +588,7 @@ Proof.
     }
     iNext. iIntros "(Hhdr&Hlog)".
     wpc_pures.
-    { iRight.
+    { crash_case. iRight.
       rewrite /is_hdr. iDestruct "Hhdr" as (?) "(?&?)".
       iExists _, _, _. iSplitR; first done. iApply disk_array_cons. by iFrame.
     }
@@ -595,7 +630,9 @@ Proof.
   rewrite /Log__append.
 
   wpc_pures.
-  { iApply (is_log_crash_l with "Hlog"). }
+  { crash_case. iApply (is_log_crash_l with "Hlog"). }
+  wpc_pures.
+  { crash_case. iApply (is_log_crash_l with "Hlog"). }
   wpc_bind (struct.loadF _ _ _).
   wpc_frame "Hlog HΦ".
   { crash_case.
@@ -604,7 +641,7 @@ Proof.
   iIntros "H"; iNamed "H".
 
   wpc_pures.
-  { iApply (is_log_crash_l with "Hlog"). }
+  { crash_case. iApply (is_log_crash_l with "Hlog"). }
   wpc_bind (struct.loadF _ _ _).
   wpc_frame "Hlog HΦ".
   { crash_case.
@@ -613,24 +650,24 @@ Proof.
   iIntros "H"; iNamed "H".
 
   wpc_pures.
-  { iApply (is_log_crash_l with "Hlog"). }
+  { crash_case. iApply (is_log_crash_l with "Hlog"). }
 
   wpc_apply wpc_slice_len.
   iSplit; crash_case.
   { iApply (is_log_crash_l with "Hlog"). }
 
   wpc_pures.
-  { iApply (is_log_crash_l with "Hlog"). }
+  { crash_case. iApply (is_log_crash_l with "Hlog"). }
 
   wpc_if_destruct.
   - wpc_pures.
-    { iApply (is_log_crash_l with "Hlog"). }
+    { crash_case. iApply (is_log_crash_l with "Hlog"). }
     iApply "HΦ".
     iFrame.
     rewrite /ptsto_log.
     iExists _, _; iFrame.
   - wpc_pures.
-    { iApply (is_log_crash_l with "Hlog"). }
+    { crash_case. iApply (is_log_crash_l with "Hlog"). }
     iDestruct "Hlog" as "(Hhdr & Hlog & % & Hfree)".
     iDestruct "Hfree" as (free) "[Hfree %]".
     iDestruct (blocks_slice_length with "Hbs") as %Hlenbks.
@@ -650,9 +687,10 @@ Proof.
     + iSplit.
       * len; word_cleanup.
         rewrite Nat.min_l; last lia.
-        iIntros "Hcrash".
+        iLeft in "HΦ".
+        iIntros "!> !> Hcrash".
         iDestruct "Hcrash" as (bs') "(Hfree0&%)".
-        crash_case.
+        iApply "HΦ".
         iApply (is_log_crash_l with "[$Hhdr $Hlog Hfree Hfree0]").
         iSplitR.
         { iPureIntro.
@@ -668,10 +706,9 @@ Proof.
       * word_cleanup.
         iIntros "!> [Hbs Hnew]".
         wpc_pures.
-        { iApply is_log_crash_l.
+        { crash_case. iApply is_log_crash_l.
           iApply (is_log_split with "[$] [$] Hnew Hfree [%]"); len. }
 
-        (* TODO: finish proof *)
         wpc_bind (struct.storeF _ _ _ _).
         wpc_frame "Hhdr Hlog Hnew Hfree HΦ".
         { crash_case.
@@ -685,13 +722,13 @@ Proof.
         iIntros "H". iNamed "H".
 
         wpc_pures.
-        { iApply is_log_crash_l.
+        { crash_case. iApply is_log_crash_l.
           iApply (is_log_split with "[$] [$] Hnew Hfree [%]"); len. }
 
         wpc_apply (wpc_write_hdr with "[$Hhdr $Hsz $Hdisk_sz]").
         iSplit.
-        { iIntros "Hhdr".
-          iDestruct "Hhdr" as "[Hhdr | Hhdr]"; crash_case.
+        { iLeft in "HΦ". iIntros "!> !> Hhdr".
+          iDestruct "Hhdr" as "[Hhdr | Hhdr]"; iApply "HΦ".
           - iLeft.
             iExists sz, disk_sz.
             iApply (is_log_split with "[$] [$] Hnew Hfree [%]"); len.
@@ -700,7 +737,7 @@ Proof.
             iApply (is_log'_append with "[$] [$] [$] [$] [%]"); [len]. }
         iIntros "!> [Hhdr [Hsz Hdisk_sz]]".
         wpc_pures.
-        { iRight.
+        { crash_case. iRight.
           iExists _, _.
           iApply (is_log'_append with "[$] [$] [$] [$] [%]"); [len]. }
 
@@ -729,6 +766,40 @@ Proof.
   len.
 Qed.
 
+Theorem wpc_Log__reset_fupd stk k E1 E2 l bs :
+  ∀ Φ Φc,
+    ptsto_log l bs -∗
+    (<disc> (crashed_log bs -∗ ▷ Φc) ∧ ▷ (ptsto_log l [] ={E1}=∗ <disc> ▷ Φc ∧ Φ #())) -∗
+    WPC Log__reset #l @ stk;k; E1;E2 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (Φ Φc) "Hlog HΦ".
+  iDestruct "Hlog" as (sz disk_sz) "((Hsz&Hdisk_sz)&Hlog)".
+  rewrite /Log__reset.
+  wpc_pures.
+  { iLeft in "HΦ"; eauto. iModIntro. iApply "HΦ".
+    iExists _, _. eauto. }
+  wpc_bind (struct.storeF _ _ _ _).
+  wpc_frame "Hlog HΦ".
+  { iLeft in "HΦ"; eauto. iModIntro. iApply "HΦ".
+    iExists _, _. eauto. }
+  wp_storeField.
+  iIntros "H"; iNamed "H".
+  wpc_pures.
+  { iLeft in "HΦ"; eauto. iModIntro. iApply "HΦ".
+    iExists _, _. eauto. }
+  iDestruct "Hlog" as "(Hhdr&Hlog&%&Hfree)".
+  iDestruct "Hfree" as (free) "[Hfree %]".
+  wpc_apply (wpc_write_hdr_fupd with "[$Hsz $Hdisk_sz] [-]").
+  iSplit.
+  - iLeft in "HΦ"; eauto. iModIntro. iApply "HΦ".
+    iExists _, _. rewrite /is_log'. iFrame. iSplitR; [ auto | ].
+    iExists _; by iFrame.
+  - iFrame "Hhdr". iRight in "HΦ". iNext.  iIntros "(Hhdr&Hlog')".
+    iMod ("HΦ" with "[-]") as "$"; last done.
+    rewrite /ptsto_log.
+    iExists _, _. iFrame "Hlog'". by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
+Qed.
+
 Theorem wpc_Log__reset stk k E1 E2 l bs :
   {{{ ptsto_log l bs }}}
     Log__reset #l @ stk; k; E1; E2
@@ -736,35 +807,15 @@ Theorem wpc_Log__reset stk k E1 E2 l bs :
   {{{ crashed_log bs ∨ crashed_log [] }}}.
 Proof.
   iIntros (Φ Φc) "Hlog HΦ".
-  iDestruct "Hlog" as (sz disk_sz) "((Hsz&Hdisk_sz)&Hlog)".
-  rewrite /Log__reset.
-  wpc_pures.
-  { iApply (is_log_crash_l with "[$]"). }
-  wpc_bind (struct.storeF _ _ _ _).
-  wpc_frame "Hlog HΦ".
-  { crash_case. iApply (is_log_crash_l with "[$]"). }
-  wp_storeField.
-  iIntros "H"; iNamed "H".
-  wpc_pures.
-  { iApply (is_log_crash_l with "[$]"). }
-  iDestruct "Hlog" as "(Hhdr&Hlog&%&Hfree)".
-  iDestruct "Hfree" as (free) "[Hfree %]".
-  wpc_apply (wpc_write_hdr with "[$Hhdr $Hsz $Hdisk_sz]").
+  iApply (wpc_Log__reset_fupd with "Hlog").
   iSplit.
-  - iIntros "[Hhdr | Hhdr]"; crash_case.
-    + iApply is_log_crash_l.
-      rewrite /is_log'.
-      iFrame.
-      iSplitR; [ auto | ].
-      iExists _; by iFrame.
-    + iRight.
-      iExists _, _.
-      by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
-  - iIntros "!> [Hhdr [Hsz Hdisk_sz]]".
-    iApply "HΦ".
-    rewrite /ptsto_log.
-    iExists _, _; iFrame "Hsz Hdisk_sz".
-    by iApply (is_log_reset with "Hhdr Hlog Hfree [%]").
+  - iLeft in "HΦ". iModIntro. iIntros. iNext. iApply "HΦ". by iLeft.
+  - iNext. iIntros "HP". iModIntro.
+    iSplit.
+    * iLeft in "HΦ".
+      iDestruct "HP" as (??) "(H1&H2)".
+      iModIntro. iNext. iApply "HΦ". iRight. iExists _, _. eauto.
+    * iRight in "HΦ". by iApply "HΦ".
 Qed.
 
 Theorem wpc_Open k E1 E2 vs :
@@ -775,18 +826,18 @@ Theorem wpc_Open k E1 E2 vs :
 Proof.
   iIntros (Φ Φc) "Hlog HΦ".
   rewrite /Open.
-  wpc_pures; first done.
+  wpc_pures; first (crash_case; eauto).
   iDestruct "Hlog" as (sz disk_sz) "[Hhdr Hlog_rest]".
   iDestruct "Hhdr" as (b) "[Hd0 Hhdr]".
   wpc_apply (wpc_Read with "[Hd0]").
   { iFrame. }
   iSplit.
-  { iIntros. iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame. }
+  { iIntros. iLeft in "HΦ". iIntros "!> !> ?". iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame. }
   iNext.
   iIntros (s) "[Hd0 Hs]".
   iDestruct "Hhdr" as %Hhdr.
   wpc_frame "Hd0 HΦ Hlog_rest".
-  { iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame; eauto. }
+  { iIntros. iLeft in "HΦ". iIntros "!> !>". iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame. eauto. }
   wp_steps.
   iDestruct (slice.is_slice_sz with "Hs") as %Hsz.
   rewrite length_Block_to_vals in Hsz.

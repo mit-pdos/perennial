@@ -259,13 +259,21 @@ Lemma txns_ctx_gname_eq γ γ' txns :
   txns_ctx γ txns = txns_ctx γ' txns.
 Proof. rewrite /txns_ctx/gen_heap_ctx/txn_val => -> //=. Qed.
 
-Ltac show_crash1 := eauto.
+Ltac show_crash1 := crash_case; eauto.
 
 Ltac show_crash2 :=
   try (crash_case); iExists _;
   iSplitL ""; first auto;
   iSplitL ""; first auto;
   iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
+
+Global Instance is_wal_inner_durable_disc γ σ:
+  Discretizable (is_wal_inner_durable γ σ).
+Proof. apply _. Qed.
+
+Global Instance disk_inv_durable_disc γ σ cs:
+  Discretizable (disk_inv_durable γ σ cs).
+Proof. apply _. Qed.
 
 Theorem wpc_mkLog_recover k E2 d γ σ :
   {{{ is_wal_inner_durable γ σ }}}
@@ -282,13 +290,14 @@ Proof.
 
 
   wpc_pures; first by show_crash1.
+
   iNamed "Hcs".
   iNamed "Hdisk".
   wpc_bind (recoverCircular _).
 
   wpc_apply (wpc_recoverCircular with "[$]").
   iSplit.
-  { iIntros "Hcirc". show_crash2. }
+  { iLeft in "HΦ". iModIntro. iNext. iIntros "Hcirc". iApply "HΦ". show_crash2. }
 
 
   iNext. iIntros (γcirc' c diskStart diskEnd bufSlice upds).

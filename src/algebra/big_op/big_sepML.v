@@ -236,7 +236,7 @@ Section maplist.
     iExists _, _.
     iSplitR; first by done.
     iFrame.
-    iIntros (??) "Hx".
+    iIntros (v' lv') "Hx".
     iSpecialize ("Hml" with "Hx").
     iExists (<[x:=lv']> lm). iFrame.
     iPureIntro.
@@ -280,7 +280,7 @@ Section maplist.
     iExists _, _.
     iSplitR; first by done.
     iFrame.
-    iIntros (??) "Hx".
+    iIntros (v' lv') "Hx".
     iSpecialize ("Hml" with "Hx").
     iExists (<[k := lv']> lm). iFrame.
     iPureIntro.

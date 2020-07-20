@@ -118,7 +118,7 @@ iExists _; iFrame; iPureIntro; word : core.
 
 Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 E2 (start max:u64) (l:loc) (body: val) :
   int.val start <= int.val max ->
-  (∀ (i:u64), ⌜int.val start ≤ int.val i ≤ int.val max⌝ -∗ I i -∗ I' i) →
+  (∀ (i:u64), ⌜int.val start ≤ int.val i ≤ int.val max⌝ -∗ I i -∗ <disc> I' i) →
   (∀ (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.val i < int.val max⌝ }}}
         body #() @ stk; k; E1; E2
@@ -134,13 +134,27 @@ Proof.
   iIntros (Φ Φc) "!> (H0 & Hl) HΦ".
   rewrite /For /Continue.
   wpc_rec Hcrash.
-  { crash_case.
+  {
     iDestruct (Himpl with "[%] H0") as "H0".
     { lia. }
+    crash_case.
+    iNext.
     iExists _; iFrame.
-    auto. }
-  wpc_let Hcrash.
-  wpc_let Hcrash.
+    auto.
+  }
+  clear Hcrash.
+  wpc_pure _ Hcrash; auto.
+  {
+    iDestruct (Himpl with "[%] H0") as "H0".
+    { lia. }
+    crash_case.
+    iNext.
+    iExists _; iFrame.
+    auto.
+  }
+  wpc_pure _ _; auto.
+  wpc_pure _ _; auto.
+  wpc_pure _ _; auto.
   wpc_pure (Rec _ _ _) Hcrash.
   match goal with
   | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
@@ -152,9 +166,14 @@ Proof.
   clear Hcrash.
   (iLöb as "IH" forall (x Himpl Hbounds)).
   iCache with "HΦ HIx".
-  { crash_case.
+  {
     iDestruct (Himpl with "[] [$]") as "?"; eauto.
-    iPureIntro; lia. }
+    { iPureIntro; lia. }
+    crash_case.
+    iNext; iExists _; iFrame.
+    iPureIntro. lia.
+  }
+  wpc_pures.
   wpc_pures.
   wpc_bind (load_ty _ _).
   wpc_frame.
@@ -166,12 +185,15 @@ Proof.
   - wpc_apply ("Hbody" with "[$HIx $Hl]").
     { iPureIntro; lia. }
     iSplit.
-    { iIntros "[IH1 | IH2]"; crash_case; auto. }
+    { iDestruct "HΦ" as "(HΦ&_)". iModIntro. iNext. iIntros "[IH1 | IH2]"; iApply "HΦ"; auto. }
     iIntros "!> [HIx Hl]".
     iCache with "HΦ HIx".
-    { crash_case.
+    {
       iDestruct (Himpl with "[] [$]") as "?"; eauto.
-      iPureIntro; word. }
+      {iPureIntro; word. }
+      crash_case.
+      eauto.
+    }
     wpc_pures.
     wpc_frame_seq.
     wp_load.
@@ -186,9 +208,10 @@ Proof.
       revert Hbound; word. }
     { iPureIntro; word. }
     iSplit.
-    + iIntros "HIx".
+    + iLeft in "HΦ". iModIntro. iNext.
+      iIntros "HIx".
+      iApply "HΦ".
       iDestruct "HIx" as (x') "[HI %]".
-      crash_case; auto.
       iExists _; iFrame.
       iPureIntro; revert H; word.
     + iRight in "HΦ".

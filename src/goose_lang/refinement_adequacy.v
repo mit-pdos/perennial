@@ -287,13 +287,14 @@ Lemma wpc_trace_inv_open k es σs e Hheap Hc Href Φ Φc:
                               ∗ oracle_frag (oracle σs')
                                 ∗ Φc (heap_update Σ Hheap Hi (heap_get_names Σ Hheap)) hC hRef}}.
 Proof.
-  iIntros "Hspec Htrace H".
+  iIntros "#Hspec #Htrace H".
   iApply (@wpc_strong_mono with "H"); eauto.
   iSplit; first eauto.
   iIntros.
   replace (k-k)%nat with O by lia. rewrite //=.
   rewrite difference_difference_remainder_L; last by set_solver.
   iDestruct "Hspec" as "(Hsource&Hstate)".
+  iModIntro.
   iInv "Hsource" as ">H" "_".
   iDestruct "H" as (? es' σs') "(H1&H2)".
   iDestruct "H2" as %(Hexec&Hsafe).
@@ -306,8 +307,8 @@ Proof.
   iDestruct (trace_agree with "Hspec_trace_auth [$]") as %Heq1'.
   iDestruct (oracle_agree with "Hspec_oracle_auth [$]") as %Heq2'.
   simpl in Hsafe.
-  subst.
-  iMod (fupd_intro_mask' _ ∅) as "_".
+  subst. iIntros.
+  iMod (fupd_level_intro_mask' _ ∅) as "_".
   { set_solver. }
   do 2 iModIntro.
   iExists _, _, _, _, _, _.

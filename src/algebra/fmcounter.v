@@ -2,7 +2,7 @@ From iris.algebra Require Import auth numbers.
 From iris.proofmode Require Import base tactics classes.
 From iris.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
-From Perennial.algebra Require Import auth_frac.
+From Perennial.algebra Require Import auth_frac own_discrete.
 Set Default Proof Using "Type".
 
 (* Algebras to help with circular buffer proof *)
@@ -114,6 +114,12 @@ Proof. split; first by done. apply _. Qed.
 
 Global Instance fmcounter_into_sep γ n :
   IntoSep (fmcounter γ 1 n) (fmcounter γ (1/2) n) (fmcounter γ (1/2) n).
+Proof. apply _. Qed.
+
+Global Instance fmcounter_discretizable γ q n: Discretizable (fmcounter γ q n).
+Proof. apply _. Qed.
+
+Global Instance fmcounter_lb_discretizable γ n: Discretizable (fmcounter_lb γ n).
 Proof. apply _. Qed.
 
 End fmc_props.

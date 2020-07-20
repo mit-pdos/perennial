@@ -246,7 +246,7 @@ Definition sty_init_obligation2 (sty_initP: istate → sstate → Prop) :=
 
 Definition sty_crash_obligation :=
   forall Σ `(hG: !heapG Σ) `(hC: !crashG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
-      ⊢ sty_inv hS -∗ sty_crash_cond hS ={styN, ∅}=∗ ▷ ∀ (hG': heapG Σ), |={⊤}=>
+      ⊢ sty_inv hS -∗ ▷ sty_crash_cond hS -∗ |sty_lvl_init={styN, ∅}=> ▷ ∀ (hG': heapG Σ), |={⊤}=>
       ∀ (hC': crashG Σ) σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
       ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗

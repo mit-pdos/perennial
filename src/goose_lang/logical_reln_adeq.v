@@ -98,21 +98,21 @@ Proof.
       iSplit.
       - eauto.
       - eauto. rewrite difference_diag_L.
-        simpl. replace (sty_lvl_ops - sty_lvl_ops)%nat with O by lia. eauto.
+        simpl. iModIntro; eauto.
     }
   }
   iApply (wpc_strong_mono with "[$]"); eauto.
   { solve_ndisj. }
   iSplit.
   - eauto.
-  - iIntros.
-    simpl. replace (sty_lvl_init - sty_lvl_init)%nat with O by lia. simpl.
+  - iModIntro.
+    iIntros.
     replace (⊤ ∖ ↑sN ∖ (⊤ ∖ ↑sN ∖ styN)) with (styN); last first.
     {
       rewrite difference_difference_remainder_L; auto.
       clear. generalize (styN_disjoint). solve_ndisj.
     }
-    iMod (Hsty_crash with "[$] [$]").
+    iMod (Hsty_crash with "[$] [$]") as "H".
     iModIntro. iModIntro. iExists _. iFrame.
 Qed.
 End pre_assumptions.

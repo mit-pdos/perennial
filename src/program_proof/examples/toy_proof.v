@@ -54,9 +54,11 @@ Section goose.
     iIntros (Φ Φc) "HE HΦ"; iNamed "HE".
     wpc_call.
     { iExists _, _; eauto. }
+    { iExists _, _; eauto. }
     rewrite /BlockSize.
-    iCache Φc with "HΦ Ha".
+    iCache (<disc> ▷ Φc)%I with "HΦ Ha".
     { crash_case. iExists _, _; eauto. }
+    wpc_pures.
     wpc_frame_seq.
     wp_apply (wp_new_slice).
     { apply to_val_has_zero. }
@@ -78,7 +80,7 @@ Section goose.
     iExists _. iFrame. iNext.
     iIntros "Hwritten".
     iModIntro.
-    iCache Φc with "Hwritten HΦ".
+    iCache (<disc> ▷ Φc)%I with "Hwritten HΦ".
     { crash_case. iExists _, 4. iFrame. iPureIntro. rewrite //=. }
     iSplit; first iFromCache.
     iIntros "Hblock".
@@ -87,7 +89,8 @@ Section goose.
     wpc_bind (Read _).
     iApply (wpc_Read with "Hwritten").
     iSplit.
-    { iIntros "Hwritten". iFromCache. }
+    { iLeft in "HΦ". iModIntro. iNext. iIntros "Hwritten". iApply "HΦ".
+      iExists _, 4. iFrame. iPureIntro. rewrite //=. }
     iNext. iIntros (s') "(Hwritten&Hslice)".
     wpc_pures.
 
@@ -102,48 +105,48 @@ Section goose.
     iApply "HΦ". iExists _, _. iFrame. eauto.
   Qed.
 
-  Theorem wpc_consumeEvenBlock {k k' E2} (d_ref: loc) (addr: u64) N :
-    (S k < k')%nat →
-    {{{ na_crash_inv N (LVL k') (EBlk addr) (EBlk addr) }}}
-      consumeEvenBlock #d_ref #addr @ NotStuck;LVL (S k); ⊤;E2
+  Theorem wpc_consumeEvenBlock {k k' E2} (d_ref: loc) (addr: u64):
+    (S k ≤ k')%nat →
+    {{{ na_crash_inv (S k') (EBlk addr) (EBlk addr) }}}
+      consumeEvenBlock #d_ref #addr @ NotStuck; (S k); ⊤;E2
     {{{ RET #() ; True }}}
     {{{ True }}}.
   Proof.
     iIntros (? Φ Φc) "Hcrash_inv HΦ".
-    iApply (wpc_na_crash_inv_open with "Hcrash_inv"); auto.
+    iApply (wpc_na_crash_inv_open with "Hcrash_inv"); try eassumption.
+    { lia. }
     iSplit; first by crash_case.
-    iIntros "Hblk".
+    iIntros ">Hblk".
     wpc_apply (wpc_consumeEvenBlock_seq with "[$]").
     iSplit.
-    { iIntros "$". by crash_case. }
+    { iLeft in "HΦ". iModIntro. iNext. iIntros; iFrame. by iApply "HΦ". }
     iNext. iIntros "$ _".
     iSplit; first by crash_case.
     by iApply "HΦ".
   Qed.
 
-  Definition EblkN := nroot.@"Eblk".
-
   Theorem wpc_TransferEvenBlock {E2} (d_ref: loc) (addr: u64) :
     {{{ EBlk addr }}}
-      TransferEvenBlock #d_ref #addr @ NotStuck;LVL 100; ⊤;E2
+      TransferEvenBlock #d_ref #addr @ NotStuck; 2; ⊤;E2
     {{{ RET #() ; True }}}
     {{{ EBlk addr }}}.
   Proof using stagedG0.
     iIntros (Φ Φc) "HEblk HΦ".
-    iMod (na_crash_inv_alloc EblkN 50 _ (EBlk addr) (EBlk addr) with "HEblk []") as "(Hcrash&Hcfupd)".
-    { auto. }
+    iMod (na_crash_inv_alloc 1 _ (EBlk addr) (EBlk addr) with "HEblk []") as "(Hcrash&Hcfupd)".
     { auto. }
     (* Weaken the levels. *)
-    iMod "Hcfupd".
-    { lia. }
-    iApply (wpc_idx_mono _ (LVL 25)).
-    { apply LVL_le. lia. }
+    iMod "Hcfupd" as "_".
+    (*  { apply LVL_le. lia. } *)
     wpc_call.
-    { iIntros. crash_case. eauto. }
+    { by iLeft in "HΦ". }
+    { by iLeft in "HΦ". }
+    wpc_pures.
+    { by iLeft in "HΦ". }
+    iApply (wpc_idx_mono 1); first by lia.
     iApply (wpc_fork with "[Hcrash]").
-    { iNext. iApply (wpc_consumeEvenBlock with "Hcrash"); eauto. lia. }
+    { iNext. iApply (wpc_consumeEvenBlock with "Hcrash"); eauto. iSplit; try iModIntro; eauto. }
     iSplit.
-    { iNext. iIntros. crash_case. eauto. }
+    { by iLeft in "HΦ". }
     { iNext; by iApply "HΦ". }
   Qed.
 

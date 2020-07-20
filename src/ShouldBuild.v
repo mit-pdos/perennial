@@ -11,7 +11,7 @@ From Perennial.goose_lang Require
 From Perennial.program_proof Require
      wal.circ_proof_crash
      append_log_proof
-     append_log_refinement
+     (* append_log_refinement *)
      lockmap_proof
      wal.proof
      wal.specs
@@ -21,8 +21,8 @@ From Perennial.program_proof.examples Require
      dir_proof
      single_inode_proof
      alloc_crash_proof
-     indirect_inode_proof
-     indirect_inode_append_proof
+     (* indirect_inode_proof
+     indirect_inode_append_proof *)
      replicated_block_proof
      toy_proof.
 From Perennial.goose_lang Require

@@ -768,6 +768,11 @@ Qed.
 
 Existing Instances sty_inv_persistent.
 
+(*
+Local Hint Extern 1 (envs_entails _ (<disc> ▷ True)) => by iModIntro : core.
+*)
+Local Hint Extern 1 (envs_entails _ (<disc> _)) => by iModIntro : core.
+
 Lemma sty_fundamental_lemma:
   sty_rules_obligation spec_trans →
   ∀ Γ es e τ, expr_transTy _ _ _ spec_trans Γ es e τ →
@@ -794,7 +799,7 @@ Proof using spec_trans.
     rewrite /= ?lookup_fmap H //=.
     iIntros (j K Hctx) "Hj". iApply wpc_value; iSplit.
     * iModIntro. iExists _; iFrame "H"; iFrame.
-    * iModIntro. iApply fupd_mask_weaken; first by set_solver+. eauto.
+    * iModIntro. by iModIntro.
   (* Function app. *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -802,17 +807,17 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) x2).
     spec_bind (subst_map ((subst_sval <$> Γsubst)) x1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     wpc_bind (subst_map _ f2).
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppLCtx (vs2)] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[Hv2] [] H"); last done.
+    iApply (wpc_mono' with "[Hv2] [] H"); last by iModIntro.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
-    iApply ("Hinterp" with "[$]").
-    { iFrame. }
+    iSpecialize ("Hinterp" $! _ _ with "Hv2").
+    iApply ("Hinterp" with "Hj").
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iApply wp_wpc. iApply wp_value. iExists _. iFrame.
@@ -834,7 +839,7 @@ Proof using spec_trans.
     iModIntro. iIntros (v vs) "Hval".
     clear j K Hctx.
     iIntros (j K Hctx) "Hj".
-    wpc_pures; first auto.
+    wpc_pures; first by iModIntro.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)".
       (* TODO: make spec_ctx auto frame source_ctx *)
@@ -870,6 +875,7 @@ Proof using spec_trans.
       iSpecialize ("H" $! j' (λ x, x) with "[] [$]"); first by (iPureIntro; apply language_ctx_id).
       iApply (wpc_mono with "H"); eauto.
     }
+
     iSplit; first eauto. iNext. iExists _; iFrame; eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -878,13 +884,13 @@ Proof using spec_trans.
     spec_bind (_ _ cond) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
     clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last auto.
 
     iIntros (vcond) "H". iDestruct "H" as (vscond) "(Hj&Hvcond)".
     (* split on the value of the bool *)
     iDestruct "Hvcond" as %(b&->&->).
     destruct b.
-    * wpc_pures; first done. simpl.
+    * wpc_pures; first by auto. simpl.
       iMod (ghost_step_lifting_puredet _ _ K with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
@@ -892,7 +898,7 @@ Proof using spec_trans.
         apply head_prim_step. econstructor; eauto.
       }
       iApply (IHHtyping2 with "[//] [$] [$] [$] [$]"). eauto.
-    * wpc_pures; first done. simpl.
+    * wpc_pures; first by auto. simpl.
       iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
@@ -925,7 +931,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [UnOpCtx _] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     iAssert (∃ (vres: u64), ⌜ un_op_eval ToUInt64Op v1 = Some #vres ∧
                             un_op_eval ToUInt64Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
@@ -952,7 +958,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     iAssert (∃ (vres: u32), ⌜ un_op_eval ToUInt32Op v1 = Some #vres ∧
                             un_op_eval ToUInt32Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
@@ -979,7 +985,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     iAssert (∃ (vres: u8), ⌜ un_op_eval ToUInt8Op v1 = Some #vres ∧
                             un_op_eval ToUInt8Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
@@ -1006,7 +1012,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     iAssert (∃ (vres: string), ⌜ un_op_eval ToStringOp v1 = Some #(LitString vres) ∧
                             un_op_eval ToStringOp vs1 = Some #(LitString vres) ⌝)%I with "[Hv1]" as %Hres.
@@ -1033,7 +1039,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     iDestruct "Hv1" as (?) "(%&%)"; subst.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
@@ -1050,13 +1056,13 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
     spec_bind (_ _ e1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     wpc_bind (subst_map _ e2').
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
     simpl. spec_bind (_ _ e2) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
@@ -1077,7 +1083,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     simpl.
 
@@ -1085,7 +1091,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e2) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     simpl.
 
@@ -1104,7 +1110,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     simpl.
 
@@ -1112,7 +1118,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e2) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     simpl.
 
@@ -1130,7 +1136,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     simpl.
 
@@ -1138,7 +1144,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (_ _ e2) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     simpl.
 
@@ -1156,7 +1162,7 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
     spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     clear Hctx'.
     simpl.
@@ -1165,7 +1171,7 @@ Proof using spec_trans.
     spec_bind (subst_map ((subst_sval <$> Γsubst)) e2) as Hctx'.
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
     iSpecialize ("H" $! j _ Hctx'  with "Hj").
-    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     simpl.
     clear Hctx'.
@@ -1185,7 +1191,7 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').
     spec_bind (subst_map ((subst_sval <$> Γsubst)) e) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v) "H". iDestruct "H" as (vs) "(Hj&Hv)".
     clear Hctx'.
     simpl.
@@ -1204,7 +1210,7 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').
     spec_bind (subst_map ((subst_sval <$> Γsubst)) e) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v) "H". iDestruct "H" as (vs) "(Hj&Hv)".
     clear Hctx'.
     simpl.
@@ -1223,7 +1229,7 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').
     spec_bind (subst_map ((subst_sval <$> Γsubst)) e) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     clear Hctx'.
     simpl.
@@ -1243,7 +1249,7 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').
     spec_bind (subst_map ((subst_sval <$> Γsubst)) e) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     clear Hctx'.
     simpl.
@@ -1263,7 +1269,7 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) cond').
     spec_bind (subst_map ((subst_sval <$> Γsubst)) cond) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     clear Hctx'.
     simpl.
@@ -1282,12 +1288,12 @@ Proof using spec_trans.
       iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
       spec_bind (subst_map _ e1) as Hctx'.
       iSpecialize ("H" $! j _ Hctx' with "Hj").
-      iApply (wpc_mono' with "[Hv] [] H"); last done.
+      iApply (wpc_mono' with "[Hv] [] H"); last by auto.
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
       iSpecialize ("Hinterp" with "[$]").
       iSpecialize ("Hinterp" $! j _ Hctx with "Hj").
-      iApply (wpc_mono' with "[] [] Hinterp"); last done.
+      iApply (wpc_mono' with "[] [] Hinterp"); last by auto.
       iIntros (v'') "H". iDestruct "H" as (vs'') "(Hj&Hv')".
       iExists _. iFrame.
     }
@@ -1304,12 +1310,12 @@ Proof using spec_trans.
       iPoseProof (IHHtyping3 with "[//] [$] [$] [$] [$]") as "H"; eauto.
       spec_bind (subst_map _ e2) as Hctx'.
       iSpecialize ("H" $! j _ Hctx' with "Hj").
-      iApply (wpc_mono' with "[Hv] [] H"); last done.
+      iApply (wpc_mono' with "[Hv] [] H"); last by auto.
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
       iSpecialize ("Hinterp" with "[$]").
       iSpecialize ("Hinterp" $! j _ Hctx with "Hj").
-      iApply (wpc_mono' with "[] [] Hinterp"); last done.
+      iApply (wpc_mono' with "[] [] Hinterp"); last by auto.
       iIntros (v'') "H". iDestruct "H" as (vs'') "(Hj&Hv')".
       iExists _. iFrame.
     }
@@ -1319,15 +1325,15 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) n').
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [Primitive2LCtx _ _] x)) with "[] Hj").
-    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[] [] H"); last done.
+    { iPureIntro. apply comp_ctx; last by auto. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
 
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) v').
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [Primitive2RCtx _ _] x)) with "[] Hj").
-    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    { iPureIntro. apply comp_ctx; last by auto. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iApply wp_wpc.
     iApply wp_fupd.
@@ -1390,15 +1396,15 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [BinOpLCtx _ _] x)) with "[] Hj").
-    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[] [] H"); last done.
+    { iPureIntro. apply comp_ctx; last by auto. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
 
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e2').
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [BinOpRCtx _ _] x)) with "[] Hj").
-    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[Hv1] [] H"); last done.
+    { iPureIntro. apply comp_ctx; last by auto. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iApply wp_wpc.
     iApply wp_fupd.
@@ -1439,7 +1445,7 @@ Proof using spec_trans.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     iSpecialize ("H" $! j K with "[] Hj"); first auto.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
     iExists _. iFrame "Hj". iApply arrayT_structRefT_promote. eauto.
   - subst.
@@ -1447,8 +1453,8 @@ Proof using spec_trans.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [BinOpLCtx _ _] x)) with "[] Hj").
-    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[] [] H"); last done.
+    { iPureIntro. apply comp_ctx; last by auto. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
 
     iApply wp_wpc.
@@ -1507,7 +1513,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [Primitive1Ctx _] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
 
     iApply wp_wpc.
@@ -1569,14 +1575,14 @@ Proof using spec_trans.
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (subst_map _ v) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (varg) "H". iDestruct "H" as (vsarg) "(Hj&Hvarg)".
 
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) l').
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
     simpl. spec_bind (subst_map _ l) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[Hvarg] [] H"); last done.
+    iApply (wpc_mono' with "[Hvarg] [] H"); last by auto.
     iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
 
     iApply wp_wpc.
@@ -1662,7 +1668,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     simpl. spec_bind (subst_map _ l) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
 
     iApply wp_wpc.
@@ -1749,7 +1755,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (subst_map _ l) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
     clear Hctx'.
     simpl.
@@ -1758,7 +1764,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (subst_map _ v1) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[Hvl] [] H"); last done.
+    iApply (wpc_mono' with "[Hvl] [] H"); last by auto.
     iIntros (v1_done) "H". iDestruct "H" as (vs1_done) "(Hj&Hv1)".
     clear Hctx'.
     simpl.
@@ -1767,7 +1773,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping3 with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (subst_map _ v2) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[Hvl Hv1] [] H"); last done.
+    iApply (wpc_mono' with "[Hvl Hv1] [] H"); last by auto.
     iIntros (v2_done) "H". iDestruct "H" as (vs2_done) "(Hj&Hvs2_done)".
     clear Hctx'.
     simpl.
@@ -1865,7 +1871,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (subst_map _ sel) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
     clear Hctx'.
     simpl.
@@ -1890,7 +1896,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H".
     spec_bind (subst_map _ v) as Hctx'.
     iSpecialize ("H" $! j _ Hctx' with "Hj").
-    iApply (wpc_mono' with "[] [] H"); last done.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
     clear Hctx'.
     simpl.
@@ -1914,8 +1920,8 @@ Proof using spec_trans.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) _).
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppRCtx _] x)) with "[] Hj").
-    { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[] [] H"); last done.
+    { iPureIntro. apply comp_ctx; last by auto. apply ectx_lang_ctx. }
+    iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iPoseProof (Hrules with "[$] [$] [$] [] Hj") as "H"; eauto.
   (* Values *)

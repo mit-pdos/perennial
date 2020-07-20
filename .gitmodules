@@ -12,7 +12,7 @@
 	url = https://github.com/tchajed/coq-record-update
 [submodule "external/iris"]
 	path = external/iris
-	url = https://gitlab.mpi-sws.org/iris/iris.git
+	url = https://github.com/jtassarotti/iris-inv-hierarchy
 [submodule "external/coq-tactical"]
 	path = external/coq-tactical
 	url = https://github.com/tchajed/coq-tactical

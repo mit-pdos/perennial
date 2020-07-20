@@ -148,7 +148,6 @@ Context (N: namespace).
 Implicit Types (l:loc) (γ:alloc_names) (σ: alloc.t).
 
 Definition Nlock := N.@"allocator".
-Definition Ncrash := N.@"crash".
 Definition Ninv := N.@"inv".
 
 Definition allocator_inv γ (d: gset u64) : iProp Σ :=
@@ -163,14 +162,14 @@ Definition block_cinv γ addr : iProp Σ :=
   Ψ addr ∨ mapsto (hG := alloc_status_name γ) addr 1 block_used.
 
 Definition free_block γ n k : iProp Σ :=
-  "Hcrashinv" ∷ (na_crash_inv Ncrash (LVL n) (Ψ k) (block_cinv γ k)) ∗
+  "Hcrashinv" ∷ (na_crash_inv (S n) (Ψ k) (block_cinv γ k)) ∗
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_free).
 
 Definition free_block_pending γ n k : iProp Σ :=
-  (|C={⊤, ∅}_(LVL (S n))=> block_cinv γ k).
+  (|C={⊤, ∅}_((S n))=> block_cinv γ k).
 
 Definition reserved_block γ n k P : iProp Σ :=
-  "Hcrashinv" ∷ (na_crash_inv Ncrash (LVL n) P (block_cinv γ k)) ∗
+  "Hcrashinv" ∷ (na_crash_inv n P (block_cinv γ k)) ∗
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
   "Halloc_inv" ∷ ∃ d, inv Ninv (allocator_inv γ d).
 
@@ -375,14 +374,6 @@ Proof using allocG0.
 Qed.
 
 Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
-(*
-Instance allocator_post_crash γ mref σ :
-  IntoCrash (allocator_linv γ mref σ) (λ _, allocator_durable σ).
-Proof.
-  hnf; iNamed 1.
-  by iFrame.
-Qed.
-*)
 
 Global Instance is_allocator_Persistent l γ d n:
   Persistent (is_allocator l d γ n).
@@ -485,14 +476,13 @@ Proof.
 Qed.
 
 Lemma free_block_init γ n σ E:
-  ↑Ncrash ⊆ E →
   alloc_post_crash σ →
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
   ([∗ map] k↦v ∈ σ, mapsto (hG := alloc_status_name γ) k 1 v) -∗
-  |={E}=> ([∗ set] k ∈ dom (gset _) σ, free_block_pending γ n k) ∗
+  |={E}=> ([∗ set] k ∈ dom (gset _) σ, <disc> free_block_pending γ n k) ∗
           ([∗ set] k ∈ alloc.free σ, free_block γ n k).
 Proof.
-  iIntros (Hin Hcrashed) "Hfree Hpts".
+  iIntros (Hcrashed) "Hfree Hpts".
   rewrite -?Hcrashed.
   rewrite ?free_big_sepS_to_all.
   iCombine "Hpts Hfree" as "H".
@@ -500,17 +490,14 @@ Proof.
   iApply big_sepM_fupd. iApply (big_sepM_mono with "H").
   iIntros (k x Hlookup) "(Hmaps&HΨ)".
   destruct x.
-  - (* TODO: should they all be in the same na_crash_inv? *)
-    iMod (na_crash_inv_alloc Ncrash _ _ (block_cinv γ k) (Ψ k) with "[$] []") as
+  - iMod (na_crash_inv_alloc _ E (block_cinv γ k) (Ψ k) with "[$] []") as
         "(Hbund&Hpend)".
-    { auto. }
     { iIntros "!> !> H". iLeft. eauto. }
     iModIntro. iFrame.
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
-    iMod (na_crash_inv_alloc Ncrash _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as
+    iMod (na_crash_inv_alloc _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as
         "(Hbund&Hpend)".
-    { auto. }
     { iIntros "!> !> H". iRight. eauto. }
     iModIntro. iFrame.
 Qed.
@@ -521,7 +508,7 @@ Theorem is_allocator_alloc n l σ :
   is_allocator_mem_pre l σ
   ={⊤}=∗
   ∃ γ, is_allocator l (alloc.domain σ) γ n ∗
-  |C={⊤, ↑N}_(LVL (size (alloc.domain σ) + S (S n)))=> alloc_crash_cond (alloc.domain σ) false.
+  <disc> |C={⊤, ↑N}_(S n)=> alloc_crash_cond (alloc.domain σ) false.
 Proof.
   clear Hitemcrash.
   iIntros "Hunused HP". iNamed 1.
@@ -535,29 +522,22 @@ Proof.
 
   iMod (free_block_init γ n with "[$] [$]") as "(Hpending&Hblock)".
   { set_solver. }
-  { eauto. }
 
-  iDestruct (cfupd_big_sepS with "Hpending") as "Hpending".
+  iDestruct (big_sepS_own_disc_fupd with "Hpending") as "Hpending".
+  rewrite cfupd_big_sepS.
 
   iMod (alloc_lock Nlock ⊤ _ (allocator_linv γ n mref)%I
           with "[$Hfree_lock] [Hfreemap Hblock Hfree_frag]") as "#Hlock".
   { iExists _; iFrame. }
 
-  iDestruct (inv_cfupd1 _ ⊤ with "Hinv") as "-#Hallocinv".
+  iDestruct (inv_cfupd _ ⊤ with "Hinv") as "#Hallocinv".
   { set_solver. }
 
   iModIntro.
   iExists γ.
   iSplitR.
   { iExists _, _; iFrame "#". }
-  iMod "Hallocinv" as "_".
-  { pose proof (LVL_gt (size (alloc.domain σ) + S (S n))); lia. }
-  iMod "Hpending" as "_".
-  { change (size (dom _ σ)) with (size (alloc.domain σ)).
-    replace (size (alloc.domain σ) + S (S n))%nat
-            with (S (size (alloc.domain σ) + S n))%nat by lia.
-    rewrite LVL_Sk.
-    lia. }
+  iModIntro.  iMod "Hallocinv". iMod "Hpending".
   iModIntro. iNext.
 
   iIntros "Hset Hinner".
@@ -647,7 +627,7 @@ Theorem wp_Reserve (Q: option u64 → iProp Σ) l dset γ n' E1:
   }}}
     Allocator__Reserve #l  @ NotStuck; E1
   {{{ a (ok: bool), RET (#a, #ok);
-      if ok then Q (Some a) ∗ reserved_block γ n' a (Ψ a)
+      if ok then Q (Some a) ∗ reserved_block γ (S n') a (Ψ a)
       else Q None }}}.
 Proof.
   clear.
@@ -726,6 +706,8 @@ Proof.
     }
     wp_pures.
     iApply "HΦ"; iFrame.
+
+    iFrame.
     { iExists _. eauto. }
   - iNamed "H".
     iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
@@ -786,23 +768,23 @@ Proof.
 Qed.
 
 Lemma prepare_reserved_block_reuse R' E R n n' γ e a Φ Φc:
-  (S n < n')%nat →
+  (S n ≤ n')%nat →
   language.to_val e = None →
-  reserved_block γ n' a R -∗
-  Φc ∧
-  (R -∗
-   reserved_block_in_prep γ n' a -∗
-   WPC e @ LVL n; (⊤ ∖ ↑Ncrash); ∅ {{ λ v, (reserved_block γ n' a (R' v) -∗ Φc ∧ Φ v) ∗
+  reserved_block γ (S n') a R -∗
+  <disc> ▷ Φc ∧
+  (▷ R -∗
+   reserved_block_in_prep γ (S n') a -∗
+   WPC e @ (S n); ⊤; ∅ {{ λ v, (reserved_block γ (S n') a (R' v) -∗ <disc> ▷ Φc ∧ Φ v) ∗
                                            (R' v) ∗
-                                           reserved_block_in_prep γ n' a ∗
+                                           reserved_block_in_prep γ (S n') a ∗
                                            □ (R' v -∗ block_cinv γ a) }}
-                                   {{ Φc ∗ ▷ block_cinv γ a }}) -∗
-  WPC e @  (LVL (S n)); ⊤; E {{ Φ }} {{ Φc }}.
+                                   {{ Φc ∗ block_cinv γ a }}) -∗
+  WPC e @  (S n); ⊤; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??) "Hreserved H".
   iNamed "Hreserved".
   iDestruct "Halloc_inv" as (?) "#Hinv".
-  iApply (wpc_na_crash_inv_open_modify (λ v, R' v) with "[$] [H Hmapsto]"); try iFrame; auto.
+  iApply (wpc_na_crash_inv_open_modify (λ v, R' v) _ n _ (S n) with "Hcrashinv [H Hmapsto]"); try iFrame; auto.
   iSplit.
   - iDestruct "H" as "($&_)".
   - iIntros "HR". iDestruct "H" as "(_&H)".
@@ -814,25 +796,24 @@ Proof.
       iIntros. iApply "Hclose". iSplitR "Hprep".
       ** by iFrame.
       ** iIntros. eauto.
-    * iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto.
+    * iIntros. rewrite difference_diag_L. iIntros "!> (?&?) !> !>"; iFrame.
 Qed.
 
 Lemma prepare_reserved_block E1 E2 R n n' γ e a Φ Φc:
-  ↑Ncrash ⊆ E1 →
-  (S n < n')%nat →
+  (S n ≤ n')%nat →
   language.to_val e = None →
-  reserved_block γ n' a R -∗
-  Φc ∧
-  (R -∗
+  reserved_block γ (S n') a R -∗
+  <disc> ▷ Φc ∧
+  (▷ R -∗
    reserved_block_in_prep γ n' a -∗
-   WPC e @ LVL n; (E1 ∖ ↑Ncrash); ∅ {{ λ v, (Φc ∧ Φ v) ∗ block_cinv γ a }}
-                                   {{ Φc ∗ ▷ block_cinv γ a }}) -∗
-  WPC e @  (LVL (S n)); E1; E2 {{ Φ }} {{ Φc }}.
+   WPC e @ (S n); E1; ∅ {{ λ v, (<disc> ▷ Φc ∧ Φ v) ∗ block_cinv γ a }}
+                                   {{ Φc ∗ block_cinv γ a }}) -∗
+  WPC e @  (S n); E1; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (???) "Hreserved H".
+  iIntros (??) "Hreserved H".
   iNamed "Hreserved".
   iDestruct "Halloc_inv" as (?) "#Hinv".
-  iApply (wpc_na_crash_inv_open_modify (λ v, block_cinv γ a) with "[$] [H Hmapsto]"); try iFrame; auto.
+  iApply (wpc_na_crash_inv_open_modify (λ v, block_cinv γ a) _ n _ (S n) with "[$] [H Hmapsto]"); try iFrame; auto.
   iSplit.
   - iDestruct "H" as "($&_)".
   - iIntros "HR". iDestruct "H" as "(_&H)".
@@ -844,7 +825,7 @@ Proof.
       iSplitL "".
       ** eauto.
       ** eauto.
-    * iIntros. rewrite difference_diag_L. iApply step_fupdN_inner_later; eauto.
+    * iIntros. rewrite difference_diag_L. iIntros "!> (?&?) !> !>"; iFrame.
 Qed.
 
 Lemma free_mark_used_non_free σ a:
@@ -935,7 +916,7 @@ Qed.
 Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   ↑N ⊆ E →
   ↑nroot.@"readonly" ⊆ E →
-  {{{ is_allocator l d γ n' ∗ reserved_block γ n' a (Ψ a) ∗
+  {{{ is_allocator l d γ n' ∗ reserved_block γ (S n') a (Ψ a) ∗
      (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ ▷ P σ ={E ∖↑N}=∗ ▷ P (<[ a := block_free ]> σ) ∗ Q)
   }}}
     Allocator__Free #l #a @ E

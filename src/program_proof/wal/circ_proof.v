@@ -240,6 +240,10 @@ Qed.
 Global Instance is_circular_state_timeless γ σ :
   Timeless (is_circular_state γ σ) := _.
 
+Global Instance is_circular_state_discretizable γ σ:
+  Discretizable (is_circular_state γ σ).
+Proof. apply _. Qed.
+
 Theorem is_circular_state_pos_acc γ σ :
   is_circular_state γ σ -∗
     circ_positions γ σ  ∗
@@ -1162,6 +1166,7 @@ Proof.
   Opaque struct.t.
   rewrite /recoverCircular.
   wpc_pures; first iFrame.
+  { crash_case; eauto. }
 
   iDestruct "Hcs" as (Hwf) "[Hpos Hcs]".
   iDestruct "Hcs" as (addrs0 blocks0 Hupds) "(Hown & Hlow)".
@@ -1176,14 +1181,20 @@ Proof.
 
   wpc_apply (wpc_Read with "[Hd0]"); first by iFrame.
   iSplit.
-  { iIntros "Hd0"; iFromCache. }
+  { iLeft in "HΦ". iModIntro. iNext. iIntros "Hd0". iApply "HΦ".
+    iFrame "% ∗".
+    iExists _, _; iFrame "∗ %".
+    iExists _, _; iFrame "∗ %". }
 
   iIntros (s0) "!> [Hd0 Hs0]".
   wpc_pures.
 
   wpc_apply (wpc_Read with "[Hd1]"); first iFrame.
   iSplit.
-  { iIntros "Hd1"; iFromCache. }
+  { iLeft in "HΦ". iModIntro. iNext. iIntros "Hd1". iApply "HΦ".
+    iFrame "% ∗".
+    iExists _, _; iFrame "∗ %".
+    iExists _, _; iFrame "∗ %". }
 
   iIntros (s1) "!> [Hd1 Hs1]".
   wpc_pures.
@@ -1227,14 +1238,15 @@ Proof.
     destruct Hwf.
     rewrite /circΣ.diskEnd.
     word.
-  - iIntros (??) "(H&?&?&$)".
+  - iIntros (??) "(H&?&?&?)".
+    iModIntro; eauto.
   - iIntros (i Φₗ Φcₗ) "!> (HI&Hposl&%) HΦ".
     iDestruct "HI" as (Hstart_bound) "(Hbufs&Hdiskaddrs&Hd2)".
     iDestruct "Hbufs" as (bufSlice) "[Hbufsloc Hupds]".
     iDestruct (updates_slice_len with "Hupds") as %Hupdslen.
 
     wpc_pures.
-    { iLeft; iAssumption. }
+    { crash_case; eauto. }
     iCache with "HΦ Hd2".
     { crash_case; iLeft; iFrame. }
 
@@ -1263,20 +1275,21 @@ Proof.
     destruct (list_lookup_lt _ blocks0 (Z.to_nat (int.val i `mod` LogSz))) as [b Hblookup].
     { destruct Hlow_wf.
       mod_bound; word. }
-    iDestruct (disk_array_acc _ blocks0 (int.val i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.
+    iDestruct (disk_array_acc_disc _ blocks0 (int.val i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.
     { mod_bound; word. }
     wpc_apply (wpc_Read with "[Hdi]").
     { iExactEq "Hdi".
       f_equal.
       mod_bound; word. }
     iSplit.
-    { iIntros "Hdi".
-      crash_case. iSpecialize ("Hd2'" with "[Hdi]").
+    { iLeft in "HΦ". iModIntro. iNext. iIntros "Hdi".
+      iSpecialize ("Hd2'" with "[Hdi]").
       { iExactEq "Hdi". f_equal. mod_bound. word. }
-        rewrite list_insert_id; eauto. }
+      rewrite list_insert_id; eauto. iApply "HΦ"; eauto. }
 
     iNext.
     iIntros (b_s) "[Hdi Hb_s]".
+    iDestruct (own_discrete_elim with "Hd2'") as "Hd2'".
 
     iDestruct ("Hd2'" with "[Hdi]") as "Hd2".
     { iExactEq "Hdi".
@@ -1336,7 +1349,11 @@ Proof.
     auto.
 
   - iSplit.
-    { iDestruct 1 as (i) "(Hd2&%)"; iFromCache. }
+    { iLeft in "HΦ". iModIntro. iNext. iDestruct 1 as (i) "(Hd2&%)".
+      iApply "HΦ".
+      iFrame "% ∗".
+      iExists _, _; iFrame "∗ %".
+      iExists _, _; iFrame "∗ %". }
 
     iIntros "!> [(_ & HI & Hdiskaddrs & Hd2) Hposl]".
     iDestruct "HI" as (bufSlice) "[Hbufsloc Hupds]".
