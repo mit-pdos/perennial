@@ -536,32 +536,29 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
         repeat rewrite list_to_set_app_L.
         repeat rewrite -union_assoc_L.
         repeat f_equiv.
-        induction ds.(impl_s.indBlkAddrsList) eqn:HindBlkAddrsList.
-        - discriminate.
-        - assert (index < 10) as HindexMax.
-          {
-            pose proof (lookup_lt_Some (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) index indA HlookupIndA) as tmp.
-            rewrite take_length in tmp.
-            word.
-          }
-          destruct (bool_decide (index = 0%nat)) eqn:Hindex; change (a0 :: l0) with ([a0] ++ l0).
-          + apply bool_decide_eq_true in Hindex. rewrite Hindex. rewrite Hindex in HlookupIndBlkAddrs.
-            inversion HlookupIndBlkAddrs; subst.
-            rewrite insert_app_l; simpl; try word.
-            replace (<[int.nat 0:=indBlkAddrs ++ a :: replicate (int.nat 512 - (length indBlkAddrs + 1)) (U64 0)]> [indBlkAddrs])
-              with ([indBlkAddrs ++ a :: replicate (int.nat 512 - (length indBlkAddrs + 1)) (U64 0)]) by auto.
-            simpl.
-
-            admit.
-          + apply bool_decide_eq_false in Hindex.
-            assert (index = (length [a0]) + (index - 1))%nat as HindexLen by (simpl; word).
-            rewrite HindexLen.
-            replace (int.nat (length [a0] + (index - 1))%nat) with (length [a0] + (index-1))%nat by (simpl; word).
-            rewrite insert_app_r.
-            simpl.
-            rewrite
-          foldl.
-        admit.
+        assert (index < 10) as HindexMax.
+        {
+          pose proof (lookup_lt_Some (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) index indA HlookupIndA) as tmp.
+          rewrite take_length in tmp.
+          word.
+        }
+        assert (index < length (ds.(impl_s.indBlkAddrsList))) as HindexExists.
+        {
+          pose proof (lookup_lt_Some ds.(impl_s.indBlkAddrsList) index _ HlookupIndBlkAddrs).
+          word.
+        }
+        
+        rewrite -[a in _ = list_to_set (concat a) ∪ _](list_insert_id _ (index) indBlkAddrs); auto.
+        replace (intro
+nt.nat index) with (index) by word.
+        rewrite concat_insert_app; [|word].
+        rewrite [a in _ = list_to_set a ∪ _]concat_insert_app; [|word].
+        repeat rewrite list_to_set_app_L.
+        repeat rewrite -union_assoc_L.
+        f_equiv.
+        f_equiv.
+        rewrite union_empty_l_L union_comm_L.
+        f_equiv.
       }
 
       (* HdirAddrs *)
