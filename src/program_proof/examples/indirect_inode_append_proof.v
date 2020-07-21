@@ -220,11 +220,11 @@ Proof.
         }
         assert (((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
                    ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
-                   ++ foldl (λ acc ls : list u64, acc ++ ls) [] ds.(impl_s.indBlkAddrsList))
+                   ++ concat ds.(impl_s.indBlkAddrsList)
                   ≡ₚ
                   a :: (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)
                    ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
-                   ++ foldl (λ acc ls : list u64, acc ++ ls) [] ds.(impl_s.indBlkAddrsList)))
+                   ++ concat ds.(impl_s.indBlkAddrsList))))
           as Hperm.
         { by rewrite -app_assoc -cons_middle -Permutation_middle. }
         rewrite Hperm.
@@ -393,7 +393,7 @@ Theorem wp_writeIndirect {l σ addr d lref} ds direct_s indirect_s
          ∗ (∀ hdr,
                (int.val addr d↦ hdr) -∗
           ⌜ds' = set impl_s.indBlkAddrsList
-            (λ ls, <[int.nat index:= (indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length (indBlkAddrs) + 1)) (U64 0))]> ls)
+            (λ ls, <[int.nat index:= (indBlkAddrs ++ [a])]> ls)
                       (set impl_s.hdr (λ _, hdr) ds)⌝))
       -∗ "Hinv" ∷ inode_linv_with l σ' addr direct_s indirect_s ds'
   }}}.
@@ -526,17 +526,41 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
         (*Need to show that list within a list contains element and is a permutation... *)
         (*this is going to be very annoying*)
         rewrite -Haddrs_set.
-        rewrite app_assoc.
-        Set Printing Implicit.
-        Check list_to_set_app.
-        rewrite (@list_to_set_app u64
-                                  (@gset u64 u64_eq_dec u64_countable)
-                                  (@gset_elm_of u64 u64_eq_dec u64_countable)
-                                  (@gset_empty u64 u64_eq_dec u64_countable)
-                                  (@gset_singleton u64 u64_eq_dec u64_countable)
-                                  (@gset_union u64 u64_eq_dec u64_countable)
-                                  (@gset_simple_set u64 u64_eq_dec u64_countable)).
-        Search indBlkAddrs.
+        assert ((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) = ds.(impl_s.dirAddrs)
+                ∧ (take (length σ.(inode.blocks) + 1) ds.(impl_s.dirAddrs)) = ds.(impl_s.dirAddrs)) as [Htake HtakeP1].
+        {
+          repeat rewrite take_ge ; auto; lia.
+        }
+        rewrite Htake HtakeP1.
+        rewrite [a in _ = a]union_comm_L.
+        repeat rewrite list_to_set_app_L.
+        repeat rewrite -union_assoc_L.
+        repeat f_equiv.
+        induction ds.(impl_s.indBlkAddrsList) eqn:HindBlkAddrsList.
+        - discriminate.
+        - assert (index < 10) as HindexMax.
+          {
+            pose proof (lookup_lt_Some (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) index indA HlookupIndA) as tmp.
+            rewrite take_length in tmp.
+            word.
+          }
+          destruct (bool_decide (index = 0%nat)) eqn:Hindex; change (a0 :: l0) with ([a0] ++ l0).
+          + apply bool_decide_eq_true in Hindex. rewrite Hindex. rewrite Hindex in HlookupIndBlkAddrs.
+            inversion HlookupIndBlkAddrs; subst.
+            rewrite insert_app_l; simpl; try word.
+            replace (<[int.nat 0:=indBlkAddrs ++ a :: replicate (int.nat 512 - (length indBlkAddrs + 1)) (U64 0)]> [indBlkAddrs])
+              with ([indBlkAddrs ++ a :: replicate (int.nat 512 - (length indBlkAddrs + 1)) (U64 0)]) by auto.
+            simpl.
+
+            admit.
+          + apply bool_decide_eq_false in Hindex.
+            assert (index = (length [a0]) + (index - 1))%nat as HindexLen by (simpl; word).
+            rewrite HindexLen.
+            replace (int.nat (length [a0] + (index - 1))%nat) with (length [a0] + (index-1))%nat by (simpl; word).
+            rewrite insert_app_r.
+            simpl.
+            rewrite
+          foldl.
         admit.
       }
 

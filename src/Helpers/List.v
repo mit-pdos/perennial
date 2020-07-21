@@ -90,6 +90,16 @@ Section list.
     right; destruct (IHl y) as (_,H2); apply H2.
     exists x; auto.
   Qed.
+
+  Lemma concat_insert_app {A} : forall (index: nat) (l: list (list A)) (x: list A),
+    index < length l ->
+    concat (<[index := x]> l) = (concat (take index l)) ++ x ++ (concat (drop (index+1) l)).
+  Proof.
+    induction l; simpl; intros.
+    lia.
+    (* XXX *)
+  Admitted.
+
 End list.
 
 (* copied from Coq 8.12+alpha for 8.11 compatibility *)
