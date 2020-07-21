@@ -144,7 +144,7 @@ Proof.
     iIntros.
     iFrame.
     iSplitR; auto.
-    rewrite a0; simpl.
+    rewrite H; simpl.
     iExists direct_s', indirect_s,
     (impl_s.mk
        b'
@@ -156,7 +156,7 @@ Proof.
        ds.(impl_s.indBlkAddrsList)
        ds.(impl_s.indBlocks)).
     unfold is_inode_durable_with.
-    rewrite a0; simpl.
+    rewrite H; simpl.
     rewrite Min.min_l in HdirAddrs; [ | word].
 
     assert ((length daddrs) = (length σ.(inode.blocks))%nat) as HdaddrsLen.
