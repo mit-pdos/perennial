@@ -895,7 +895,7 @@ Section goose.
     { word. }
     { word_cleanup.
       rewrite /alloc.domain.
-      rewrite σ1.
+      rewrite Halloc_dom.
       f_equal; lia. }
     { congruence. }
     { auto. }

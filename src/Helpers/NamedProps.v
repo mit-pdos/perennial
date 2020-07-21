@@ -108,33 +108,36 @@ Ltac string_to_ident s :=
   | λ (x:_), _ => x
   end.
 
-Local Ltac iDeex_go i x H :=
+Local Ltac iDeex_as i x :=
   let x' := fresh x in
-  iDestructHyp i as (x') H.
-
-(* iDeexHyp is like [iDestruct "H" as (?) "H"] except that it preserves the name
-of the binder and repeats while the goal is an existential *)
-Ltac iDeexHyp H :=
-  let i := to_pm_ident H in
-  let rec go _ := lazymatch goal with
-                  (* check this separately because red on bi_exist produces an unseal *)
-                  | |- context[Esnoc _ i (bi_exist (fun x => _))] =>
-                    first [ iDeex_go i x H | fail "iDeexHyp: could not deex" H ]
-                  | |- context[Esnoc _ i ?P] =>
-                    let P := (eval red in P) in
-                    lazymatch P with
-                    | bi_exist (fun x => _) =>
-                      first [ iDeex_go i x H | fail "iDeexHyp: could not deex" H ]
-                    | _ => fail "iDeexHyp:" H "is not an ∃"
-                    end
-                  end in
-  go tt; repeat go tt.
+  iDestructHyp i as (x') i.
 
 Ltac iDeex :=
   repeat match goal with
          | |- context[Esnoc _ ?i (bi_exist (fun x => _))] =>
-           iDeex_go i x i
+           iDeex_as i x
          end.
+
+Class IsExistential {PROP:bi} (P: PROP) := is_existential {}.
+Arguments is_existential {PROP P} : assert.
+Instance is_existential_exist {PROP:bi} {A} (Φ: A → PROP) :
+  IsExistential (bi_exist Φ).
+Proof. Qed.
+
+Ltac iDeex_one H :=
+  lazymatch iTypeOf H with
+  | Some (_, ?P) => lazymatch P with
+                    | named _ _ => idtac
+                    | _ => let _ := constr:(ltac:(iSolveTC) : IsExistential P) in
+                           iDestruct H as (?) H
+                    end
+  | None => fail 1 "iDeexHyp:" H "not found"
+  end.
+
+(* iDeexHyp is like [iDestruct "H" as (?) "H"] except that it preserves the name
+of the binder and repeats while the goal is an existential *)
+Ltac iDeexHyp H :=
+  iDeex_one H; repeat iDeex_one H.
 
 Lemma tac_name_replace {PROP:bi} (i: ident) Δ p (P: PROP) Q name :
   envs_lookup i Δ = Some (p, named name P) →
@@ -213,7 +216,7 @@ Local Ltac iNameHyp_go_rx H iNamed_go :=
     | IPure (IGallinaNamed ?name) =>
       iNamePure i name
     (* the token "*" causes iNamed to recurse *)
-    | IForall => iNamed_go i
+    | IForall => change (Esnoc ?Δ i (named name P)) with (Esnoc Δ i P); iNamed_go i
     | _ =>
        (* we now do this only for backwards compatibility, which is a completely
        safe but inefficient sequence that handles persistent/non-persistent
@@ -238,7 +241,7 @@ Ltac iNamedDestruct_go_rx H iNameHyp :=
   last conjunct if it isn't named (this is what PropRestore runs into - it can
   be destructed until a final Restore hypothesis) *)
   let rec go H0 H :=
-      first [iNameHyp H
+      first [ iNameHyp H
             | let Htmp1 := iFresh in
               let Htmp2 := iFresh in
               let pat := constr:(IList [[IIdent Htmp1; IIdent Htmp2]]) in
@@ -585,11 +588,30 @@ Module tests.
 
     Example test_nested_destruct Ψ :
       ⊢ ("%wf" ∷ ⌜True⌝ ∗
-      "*" ∷ ∃ x, "psi" ∷ Ψ x) -∗
+      "*" ∷ ∃ y, "psi" ∷ Ψ y) -∗
       ∃ x, Ψ x.
     Proof.
-      iIntros "H"; iNamed "H".
-      iExists _; iExact "psi".
+      iNamed 1.
+      iExists y; iExact "psi".
+    Qed.
+
+    Example test_nested_destruct_conjuncts Ψ :
+      ("%wf" ∷ ⌜True⌝ ∗
+      "*" ∷ ∃ y, "psi" ∷ Ψ y ∗ "psi2" ∷ Ψ (2+y)) -∗
+      ∃ x, Ψ x.
+    Proof.
+      iNamed 1.
+      iExists (2+y); iExact "psi2".
+    Qed.
+
+    Example test_nested_destruct_middle P Ψ :
+      ("HP1" ∷ P ∗
+       "*" ∷ (∃ y, "psi" ∷ Ψ y ∗ "psi2" ∷ Ψ (2+y)) ∗
+       "HP2" ∷ P) -∗
+      ∃ x, Ψ x ∗ P.
+    Proof.
+      iNamed 1.
+      iExists (2+y); iFrame "psi2 HP2".
     Qed.
 
     Example test_frame_named_spatial P1 P2 :

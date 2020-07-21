@@ -1,4 +1,5 @@
 From iris.proofmode Require Import tactics.
+From Perennial Require Import NamedProps.
 
 (** Experimental library to destruct a proposition while retaining how to
 restore it. *)
@@ -102,6 +103,11 @@ Section bi.
     iApply HΦ_ex; eauto.
   Qed.
 
+  Global Instance restore_is_exists R P Q :
+    IsExistential P →
+    IsExistential (Restore R P Q).
+  Proof. Qed.
+
   Global Instance restore_finish_Persistent R P Q `{!Persistent P} `{BiAffine PROP} :
     IntoSep (Restore R P Q) P (Restore R emp Q).
   Proof.
@@ -198,16 +204,16 @@ Section tests.
 
   Definition absr' P1 P2 (Φ: nat → PROP): PROP :=
     ("#HP1" ∷ □P1 ∗
-    "Hrest" ∷ ∃ n, "Hn1" ∷ Φ (n+1) ∗ "HP2" ∷ P2)%I.
+     "Hrest" ∷ ∃ n, "Hn1" ∷ Φ (n+1) ∗ "HP2" ∷ P2)%I.
 
   Theorem example3 P1 P2 Φ :
     absr' P1 P2 Φ -∗ P2 ∗ (P2 -∗ absr' P1 P2 Φ).
   Proof.
     iIntros "H".
     iDestruct (restore_intro with "H") as "H".
-    iDestruct "H" as "(?&H)"; iNamed.
-    iDestruct "H" as (n) "(?&?&H)"; iNamed.
-    iDestruct (restore_elim with "H") as "#Habsr"; iClear "H".
+    iDestruct "H" as "(?&Hrest)"; iNamed.
+    iNamed "Hrest".
+    iDestruct (restore_elim with "Hrest") as "#Habsr"; iClear "Hrest".
     iSplitL "HP2"; [ iFrame | ].
     iIntros "HP2".
     (* this is the real benefit: no need to iFrame/iExist carefully *)

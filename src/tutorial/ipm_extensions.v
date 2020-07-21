@@ -114,7 +114,7 @@ Section bi.
   Proof.
     iIntros "H".
     iDestruct (restore_intro with "H") as "H".
-    iDestruct "H" as "(?&?&H)"; iNamed. (* should be iNamed "H" *)
+    iNamed "H".
     iDestruct (restore_elim with "H") as "#His_foo"; iClear "H".
     iFrame.
     iIntros "HP".
@@ -123,7 +123,9 @@ Section bi.
   Qed.
 
   (* The issue with the current implementation is that [iNamed "H"] where "H" is
-     a Restore doesn't do the right thing. I think NamedProps needs some
-     typeclass-based extension mechanism that PropRestore can implement. *)
+     a Restore doesn't quite handle existentials correctly. We need some more
+     control on how a hypothesis is split into conjuncts to be named for this to
+     work, rather than effectively using [iDestruct "H" as "[? H]"]
+     repeatedly. *)
 
 End bi.
