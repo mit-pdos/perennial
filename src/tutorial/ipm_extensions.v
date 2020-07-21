@@ -112,20 +112,12 @@ Section bi.
   Theorem bar_acc_R :
     is_bar -∗ R ∗ (R -∗ is_bar).
   Proof.
-    iIntros "H".
-    iDestruct (restore_intro with "H") as "H".
-    iNamed "H".
-    iDestruct (restore_elim with "H") as "#His_foo"; iClear "H".
+    iIntros "Hbar".
+    iNamedRestorable "Hbar".
     iFrame.
     iIntros "HP".
     (* this is entirely independent of the persistent facts in is_bar *)
-    iApply "His_foo"; iFrame.
+    iApply "Hbar"; iFrame.
   Qed.
-
-  (* The issue with the current implementation is that [iNamed "H"] where "H" is
-     a Restore doesn't quite handle existentials correctly. We need some more
-     control on how a hypothesis is split into conjuncts to be named for this to
-     work, rather than effectively using [iDestruct "H" as "[? H]"]
-     repeatedly. *)
 
 End bi.

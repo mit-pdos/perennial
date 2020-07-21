@@ -118,17 +118,35 @@ Ltac iDeex :=
            iDeex_as i x
          end.
 
+(** [IsExistential] identifies propositions that should be destructed as
+existentials by [iDeex]. *)
 Class IsExistential {PROP:bi} (P: PROP) := is_existential {}.
 Arguments is_existential {PROP P} : assert.
 Instance is_existential_exist {PROP:bi} {A} (Φ: A → PROP) :
   IsExistential (bi_exist Φ).
 Proof. Qed.
 
+(** [IsSplittable] identifies separating conjunction-like propositions that
+should be split by [iNamed] as it traverses a proposition for named conjuncts.
+*)
+Class IsSplittable {PROP:bi} (P: PROP) := is_splittable {}.
+Arguments IsSplittable {_} _%I : assert.
+Arguments is_splittable {PROP P} : assert.
+Instance is_splittable_sep {PROP:bi} (P Q: PROP) :
+  IsSplittable (P ∗ Q).
+Proof. Qed.
+
+(** tc_is_inhabited succeeds if P is an inhabited typeclass and fails otherwise.
+*)
+Ltac tc_is_inhabited P :=
+  first [ let _ := constr:(ltac:(iSolveTC) : P) in idtac
+        | fail 1 "could not satisfy" P ].
+
 Ltac iDeex_one H :=
   lazymatch iTypeOf H with
   | Some (_, ?P) => lazymatch P with
                     | named _ _ => idtac
-                    | _ => let _ := constr:(ltac:(iSolveTC) : IsExistential P) in
+                    | _ => tc_is_inhabited (IsExistential P);
                            iDestruct H as (?) H
                     end
   | None => fail 1 "iDeexHyp:" H "not found"
@@ -242,7 +260,11 @@ Ltac iNamedDestruct_go_rx H iNameHyp :=
   be destructed until a final Restore hypothesis) *)
   let rec go H0 H :=
       first [ iNameHyp H
-            | let Htmp1 := iFresh in
+            | lazymatch iTypeOf H with
+              | Some (_, ?P) => tc_is_inhabited (IsSplittable P)
+              | None => fail 1 "iNamed: hypothesis" H "not found"
+              end;
+              let Htmp1 := iFresh in
               let Htmp2 := iFresh in
               let pat := constr:(IList [[IIdent Htmp1; IIdent Htmp2]]) in
               iDestruct H as pat;

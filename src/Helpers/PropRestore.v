@@ -57,6 +57,15 @@ Section bi.
     - iApply HQ_join.
   Qed.
 
+  Global Instance restore_is_splittable R P Q :
+    IsSplittable P →
+    IsSplittable (Restore R P Q).
+  Proof. Qed.
+
+  Global Instance restore_last_named_is_splittable R P name Q :
+    IsSplittable (Restore R (named name P) Q).
+  Proof. Qed.
+
   (* if we have emp, don't star onto it, just replace it *)
   Global Instance restore_IntoSep_emp R P P1 P2 :
     IntoSep P P1 P2 →
@@ -159,7 +168,18 @@ Section bi.
 
 End bi.
 
-From Perennial Require Import Helpers.NamedProps.
+Ltac iNamedRestorable i :=
+  let j := iFresh in
+  iDestruct (restore_intro with i) as j;
+  iNamed j;
+  (* we could do this last part with a tac_ theorem that always deleted j,
+  combining these two steps (and also avoiding the need for a fresh name at
+  all) *)
+  let pat := constr:(intro_patterns.IIntuitionistic (intro_patterns.IIdent i)) in
+  iDestruct (restore_elim with j) as pat; iClear j.
+
+(* TODO: could use a tactic to reconstruct a Restorable using either hypotheses
+or other Restorables *)
 
 Section tests.
   Context {PROP:bi}.
@@ -167,18 +187,16 @@ Section tests.
   Implicit Types (P Q R:PROP).
 
   Definition all3 P1 P2 P3: PROP :=
-    (P1 ∗ P2 ∗ P3)%I.
+    ("HP1" ∷ P1 ∗ "HP2" ∷ P2 ∗ "HP3" ∷ P3)%I.
 
   Theorem example1 P1 P2 P3 :
     all3 P1 P2 P3 -∗ P2 ∗ (P2 -∗ all3 P1 P2 P3).
   Proof.
     iIntros "H".
-    iDestruct (restore_intro with "H") as "H".
-    iDestruct "H" as "(HP1&HP2&HP3&H)".
-    iDestruct (restore_elim with "H") as "#Hall3"; iClear "H".
+    iNamedRestorable "H".
     iFrame "HP2".
     iIntros "HP2".
-    iApply "Hall3"; iFrame.
+    iApply "H"; iFrame.
   Qed.
 
   Definition absr P1 P2 P3 :=
@@ -188,14 +206,7 @@ Section tests.
     absr P1 P2 P3 -∗ P2 ∗ P3 ∗ (P3 -∗ absr P1 P2 P3).
   Proof.
     iIntros "H".
-    iDestruct (restore_intro with "H") as "H".
-    iNamed "H".
-    (* need this renaming because restore_elim doesn't consume i (should do this
-    with a tactic that unconditionally consumes it) *)
-    let i := iFresh in
-    iRename "H" into i;
-    iDestruct (restore_elim with i) as "#H";
-    iClear i.
+    iNamedRestorable "H".
     iFrame "HP3".
     iSplitL ""; [ iFrame "#" | ].
     iIntros "HP3".
@@ -204,20 +215,20 @@ Section tests.
 
   Definition absr' P1 P2 (Φ: nat → PROP): PROP :=
     ("#HP1" ∷ □P1 ∗
-     "Hrest" ∷ ∃ n, "Hn1" ∷ Φ (n+1) ∗ "HP2" ∷ P2)%I.
+     "Hn" ∷ ∃ n, "Hn1" ∷ Φ (n+1) ∗ "HP2" ∷ P2)%I.
 
   Theorem example3 P1 P2 Φ :
     absr' P1 P2 Φ -∗ P2 ∗ (P2 -∗ absr' P1 P2 Φ).
   Proof.
     iIntros "H".
-    iDestruct (restore_intro with "H") as "H".
-    iDestruct "H" as "(?&Hrest)"; iNamed.
-    iNamed "Hrest".
-    iDestruct (restore_elim with "Hrest") as "#Habsr"; iClear "Hrest".
+    iNamedRestorable "H".
+    iNamedRestorable "Hn".
     iSplitL "HP2"; [ iFrame | ].
     iIntros "HP2".
-    (* this is the real benefit: no need to iFrame/iExist carefully *)
-    iApply ("Habsr" with "[$]").
+    (* TODO: slightly awkward because we have to restore up the hierarchy, using
+       [iApply] again for composites *)
+    iApply "H".
+    iApply "Hn"; iFrame.
   Qed.
 
 End tests.
