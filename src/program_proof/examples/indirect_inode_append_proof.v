@@ -621,6 +621,7 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
         len. simpl. word.
       }
 
+
       (* HnumInd *)
       iSplitR.
       {
@@ -666,13 +667,14 @@ Theorem wp_appendIndirect {l σ addr d lref direct_s indirect_s ds} (a: u64) b:
   Inode__appendIndirect #l #a
   {{{ (ok: bool), RET #ok;
       if ok then
-        (∀ σ' ds' index offset,
+        (∀ σ' ds' index offset indBlkAddrs,
             (⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ) ∧
             index = (length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks ∧
-            offset = (length σ.(inode.blocks) - maxDirect) `mod` indirectNumBlocks⌝ ∗
+            offset = (length σ.(inode.blocks) - maxDirect) `mod` indirectNumBlocks ∧
+            ds.(impl_s.indBlkAddrsList) !! (int.nat index) = Some indBlkAddrs⌝ ∗
             (∀ hdr, int.val addr d↦ hdr -∗
-            ⌜∃ indBlkAddrs, ds' = set impl_s.indBlkAddrsList
-            (λ ls, <[int.nat index:= (indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length (indBlkAddrs) + 1)) (U64 0))]> ls)
+            ⌜ds' = set impl_s.indBlkAddrsList
+            (λ ls, <[int.nat index:= (indBlkAddrs ++ [a])]> ls)
                       (set impl_s.hdr (λ _, hdr) ds)⌝))
         -∗ "Hinv" ∷ inode_linv_with l σ' addr direct_s indirect_s ds')
       else
@@ -875,23 +877,28 @@ Proof.
     iIntros "H".
     wp_pures.
     iApply "HΦ"; eauto.
-    iIntros (σ' ds' index0 offset0) "[%H Hds']".
-    destruct H as [Hσ' [Hindex0 Hoffset0]].
+    iIntros (σ' ds' index0 offset0 indBlkAddrs0) "[%H Hds']".
+    destruct H as [Hσ' [Hindex0 [Hoffset0 HindBlkAddrs0]]].
     iApply ("H" $! σ' ds').
     iSplit; [iPureIntro; eauto|].
     rewrite /maxDirect /indirectNumBlocks in Hindex, Hoffset.
-    assert (int.nat index = int.nat index0).
+    assert (int.nat index = int.nat index0) as tmp1.
     {
       replace ((int.val (length σ.(inode.blocks)) - 500) `div` 512) with ((length σ.(inode.blocks) - 500) `div` 512) in Hindex by word.
       rewrite -Hindex in Hindex0. word.
     }
-    assert (int.nat offset = int.nat offset0).
+    assert (int.nat offset = int.nat offset0) as tmp2.
     {
       replace ((int.val (length σ.(inode.blocks)) - 500) `mod` 512) with ((length σ.(inode.blocks) - 500) `mod` 512) in Hoffset by word.
       rewrite -Hoffset in Hoffset0; word.
     }
+    assert (indBlkAddrs0 = indBlkAddrs) as tmp3.
+    {
+      rewrite -tmp1 in HindBlkAddrs0. rewrite HaddrLookup in HindBlkAddrs0.
+      inversion HindBlkAddrs0; auto.
+    }
     replace (int.nat (U64 (Z.of_nat (int.nat index)))) with (int.nat index) by word.
-    rewrite H. auto.
+    rewrite tmp1 tmp3. auto.
   }
 Qed.
 
