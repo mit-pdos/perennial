@@ -77,7 +77,7 @@ Definition is_inode_durable_with σ (addr: u64) (ds: impl_s.t)
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Haddrs_set" ∷ ⌜list_to_set (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)
                                        ++ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs))
-                                       ++ (foldl (λ acc ls, acc ++ ls) [] ds.(impl_s.indBlkAddrsList)))
+                                       ++ concat ds.(impl_s.indBlkAddrsList))
     = σ.(inode.addrs)⌝ ∗
     "%HdirAddrs" ∷ ⌜ ∃ daddrs, ds.(impl_s.dirAddrs) = daddrs ++ (replicate (int.nat (maxDirect) - (min (length σ.(inode.blocks)) (int.nat maxDirect))) (U64 0))⌝ ∗
     "%HindAddrs" ∷ ⌜ ∃ indaddrs, ds.(impl_s.indAddrs) = indaddrs ++ (replicate (int.nat (maxIndirect) - ds.(impl_s.numInd)) (U64 0))⌝ ∗
@@ -391,7 +391,7 @@ Definition is_alloced_blocks_slice σ s (direct_s indirect_s indblks_s : Slice.t
            numInd (dirAddrs indAddrs : list u64) (indBlkAddrsList: list (list u64)) : iProp Σ :=
       is_slice direct_s uint64T 1 (take (length σ.(inode.blocks)) dirAddrs) ∗
       is_slice indirect_s uint64T 1 (take (numInd) indAddrs) ∗
-      is_slice indblks_s uint64T 1 (foldl (λ acc ls, acc ++ ls) [] indBlkAddrsList) ∗
+      is_slice indblks_s uint64T 1 (concat indBlkAddrsList) ∗
       ⌜slice_subslice uint64T 0 (direct_s.(Slice.sz)) s = direct_s ∧
       slice_subslice uint64T (direct_s.(Slice.sz)) ((int.nat direct_s.(Slice.sz)) + (int.nat indirect_s.(Slice.sz)))%nat s = indirect_s ∧
       slice_subslice uint64T ((int.nat direct_s.(Slice.sz)) + (int.nat indirect_s.(Slice.sz)))%nat s.(Slice.sz) s = indblks_s⌝.
@@ -498,7 +498,7 @@ Theorem wp_Inode__UsedBlocks {l γ P addr σ} :
         RET (slice_val s);
         ⌜list_to_set (take (length σ.(inode.blocks)) dirAddrs
                    ++ (take (numInd) indAddrs)
-                   ++ (foldl (λ acc ls, acc ++ ls) [] indBlkAddrsList))
+                   ++ (concat indBlkAddrsList))
         = σ.(inode.addrs)⌝ ∗
       is_alloced_blocks_slice σ s direct_s indirect_s indblks_s numInd dirAddrs indAddrs indBlkAddrsList ∗
       (is_alloced_blocks_slice σ s direct_s indirect_s indblks_s numInd dirAddrs indAddrs indBlkAddrsList -∗
@@ -604,7 +604,7 @@ Proof.
                ∃ s indBlkAddrsList,
                  "%" ∷ ⌜ done ++ todo = (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) ⌝ ∗
                  "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
-                 "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ done ++ (foldl (λ acc x, acc ++ x) [] indBlkAddrsList)) ∗
+                 "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ done ++ (concat indBlkAddrsList)) ∗
                  "HindBlks" ∷ [∗ list] i↦a ∈ done,
                                             (∃ indBlkAddrs,
                                                 ⌜ indBlkAddrsList !! i = Some indBlkAddrs ⌝ ∗
