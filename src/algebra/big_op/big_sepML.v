@@ -238,7 +238,7 @@ Section maplist.
     iFrame.
     iIntros (??) "Hx".
     iSpecialize ("Hml" with "Hx").
-    iExists (<[x := a0]> lm). iFrame.
+    iExists (<[x:=lv']> lm). iFrame.
     iPureIntro.
     eapply map_to_list_insert_overwrite; eauto.
   Qed.
@@ -282,7 +282,7 @@ Section maplist.
     iFrame.
     iIntros (??) "Hx".
     iSpecialize ("Hml" with "Hx").
-    iExists (<[k := a0]> lm). iFrame.
+    iExists (<[k := lv']> lm). iFrame.
     iPureIntro.
     eapply map_to_list_insert_overwrite; eauto.
   Qed.
@@ -537,17 +537,17 @@ Section maplist2.
       iDestruct (big_sepML_empty_m with "Hml") as "->".
       iSplit; last by iApply big_sepML_empty.
       repeat rewrite dom_empty_L; eauto.
-    - iDestruct (big_sepML_delete_cons with "Hml") as (k v) "(% & Hk & Hml)".
+    - iDestruct (big_sepML_delete_cons with "Hml") as (k v) "(%Hdelete_lookup & Hk & Hml)".
       iDestruct "HR" as "#HR".
       iSpecialize ("Hi" with "Hml [HR]").
       { iModIntro.
         iIntros. iApply "HR"; last by iFrame.
-        apply lookup_delete_Some in a0; intuition eauto. }
-      iDestruct "Hi" as (mw) "[% Hi]".
+        apply lookup_delete_Some in H2; intuition eauto. }
+      iDestruct "Hi" as (mw) "[%Hdel Hi]".
       iDestruct ("HR" with "[] Hk") as (w) "%HR"; eauto.
       iExists (<[k := w]> mw).
       iSplitR.
-      { iPureIntro. rewrite dom_insert_L H3 dom_delete_L.
+      { iPureIntro. rewrite dom_insert_L Hdel dom_delete_L.
         assert (k ∈ dom (gset K) mv).
         { apply elem_of_dom; eauto. }
         rewrite -union_difference_L; eauto.
@@ -556,7 +556,7 @@ Section maplist2.
       iDestruct (big_sepML_insert with "[$Hi Hk]") as "Hml".
       2: { iExists _. iFrame. done. }
       2: iFrame.
-      apply (not_elem_of_dom (D:=gset K)). rewrite H3. set_solver.
+      apply (not_elem_of_dom (D:=gset K)). rewrite Hdel. set_solver.
   Qed.
 
   Theorem big_sepML_map_val_exists Φ mv l (R : K -> V -> W -> Prop)

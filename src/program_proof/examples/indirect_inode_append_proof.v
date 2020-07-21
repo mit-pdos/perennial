@@ -144,7 +144,7 @@ Proof.
     iIntros.
     iFrame.
     iSplitR; auto.
-    rewrite a0; simpl.
+    rewrite H; simpl.
     iExists direct_s', indirect_s,
     (impl_s.mk
        b'
@@ -156,16 +156,16 @@ Proof.
        ds.(impl_s.indBlkAddrsList)
        ds.(impl_s.indBlocks)).
     unfold is_inode_durable_with.
-    rewrite a0; simpl.
+    rewrite H; simpl.
     rewrite Min.min_l in HdirAddrs; [ | word].
 
     assert ((length daddrs) = (length σ.(inode.blocks))%nat) as HdaddrsLen.
     {
-      assert (length ds.(impl_s.dirAddrs) = length (daddrs ++ replicate (500 - length σ.(inode.blocks)) (U64 0))).
+      assert (length ds.(impl_s.dirAddrs) = length (daddrs ++ replicate (500 - length σ.(inode.blocks)) (U64 0))) as Hleneq.
       {
         rewrite HdirAddrs. auto.
       }
-      rewrite app_length replicate_length in H. assert (length ds.(impl_s.dirAddrs) = 500%nat) by word. rewrite H0 in H.
+      rewrite app_length replicate_length in Hleneq. assert (length ds.(impl_s.dirAddrs) = 500%nat) by word.
       word.
     }
 
@@ -186,9 +186,9 @@ Proof.
       }
       rewrite cons_middle app_assoc.
       rewrite -HdaddrsLen.
-      assert (length (daddrs ++ [(U64 0)]) = (length daddrs + 1)%nat).
+      replace (length daddrs + 1)%nat with (length (daddrs ++ [(U64 0)])); last first.
       { len. simpl. auto. }
-      by rewrite -H drop_app.
+      by rewrite drop_app.
     }
 
     (* prove the postcondition holds *)
@@ -213,9 +213,9 @@ Proof.
           with (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]).
         2: {
           rewrite app_assoc.
-          assert ((length σ.(inode.blocks) + 1)%nat = length ((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]))) as H.
+          assert ((length σ.(inode.blocks) + 1)%nat = length ((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]))) as Hlen.
           { rewrite app_length. rewrite take_length Min.min_l; simpl; word. }
-          rewrite H.
+          rewrite Hlen.
           rewrite (take_app (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])); auto.
         }
         assert (((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
@@ -236,7 +236,7 @@ Proof.
       iSplitR.
       {
         iPureIntro. eauto.
-        assert (ds.(impl_s.numInd) = 0%nat) by word; rewrite HnumInd0 H in Hencoded'.
+        assert (ds.(impl_s.numInd) = 0%nat) by word; rewrite HnumInd0 H0 in Hencoded'.
         rewrite take_0 nil_length in Hencoded'.
         unfold MaxBlocks, indirectNumBlocks, maxDirect, maxIndirect in *.
         change (10 - 0%nat) with 10 in *.
@@ -317,12 +317,12 @@ Proof.
                 (length σ.(inode.blocks))) by word.
         assert ((int.nat (U64 500) `min` length (σ.(inode.blocks) ++ [b]))%nat =
                  (length (σ.(inode.blocks) ++ [b]))%nat) by (len; simpl; word).
-        rewrite H0.
+        rewrite H1.
         assert (length (daddrs ++ [a]) = length (σ.(inode.blocks) ++ [b])) by (len; simpl; word).
         replace (daddrs ++ a :: drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs)) with
             ((daddrs ++ [a]) ++ drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs))
         by (rewrite -app_assoc -cons_middle; auto).
-        rewrite -H1 take_app. rewrite H1 firstn_all.
+        rewrite -H2 take_app. rewrite H2 firstn_all.
         iApply (big_sepL2_app with "[HdataDirect]"); simpl; auto.
         { rewrite Min.min_r; [ | word].
           rewrite -HdaddrsLen HdirAddrs take_app. rewrite HdaddrsLen firstn_all. auto.
@@ -331,10 +331,10 @@ Proof.
 
       (* Hindirect *)
       {
-        assert (ds.(impl_s.numInd) = 0%nat) by word; rewrite H.
+        assert (ds.(impl_s.numInd) = 0%nat) by word; rewrite H0.
         rewrite take_0.
         symmetry in HnumIndBlocks.
-        rewrite H in HnumIndBlocks.
+        rewrite H0 in HnumIndBlocks.
         rewrite (nil_length_inv _ HnumIndBlocks).
         repeat rewrite big_sepL2_nil; auto.
       }
@@ -345,7 +345,7 @@ Proof.
       (* size *)
       + len. simpl.
         assert ((Z.of_nat (length σ.(inode.blocks)) + 1) = Z.of_nat (length σ.(inode.blocks) + 1)) by word.
-        rewrite H.
+        rewrite H0.
         auto.
       (* Hdirect *)
       + rewrite -Hdaddrs.
@@ -353,7 +353,7 @@ Proof.
         replace (daddrs ++ a :: drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs)) with
             ((daddrs ++ [a]) ++ drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs))
         by (rewrite -app_assoc -cons_middle; auto).
-        rewrite -H take_app; auto.
+        rewrite -H0 take_app; auto.
     }
   }
   (* cannot fit in direct blocks, return false *)

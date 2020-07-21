@@ -334,7 +334,7 @@ Section list2.
     f_equiv.
     - iSplit; iIntros "H"; eauto with iFrame.
       iDestruct "H" as (?) "(%&H)".
-      replace x2 with H1 by congruence.
+      replace y2 with x2 by congruence.
       iExact "H".
     - f_equiv.
       intros k y1.

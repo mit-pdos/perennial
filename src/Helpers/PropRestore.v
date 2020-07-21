@@ -87,10 +87,10 @@ Section bi.
     iApply (HP_join with "[$]").
   Qed.
 
-  Global Instance restore_IntoExist R Q {A} P (Φ: A → PROP) :
-    IntoExist P Φ →
+  Global Instance restore_IntoExist R Q {A} P (Φ: A → PROP) name :
+    IntoExist P Φ name →
     FromExist P Φ →
-    IntoExist (Restore R P Q) (λ x, Restore R (Φ x) Q).
+    IntoExist (Restore R P Q) (λ x, Restore R (Φ x) Q) name.
   Proof.
     unseal.
     rewrite /IntoExist /FromExist.

@@ -985,9 +985,9 @@ Proof.
   destruct x; eauto.
   intuition.
   simpl in *.
-  destruct H3.
-  exists x.
-  intuition.
+  destruct H4 as [txn_id ?].
+  exists txn_id.
+  intuition idtac.
   lia.
 Qed.
 
@@ -1018,20 +1018,20 @@ Proof.
   iDestruct (gen_heap_valid with "Hctx Ha") as "%".
   iDestruct (big_sepM_lookup with "Hgh") as "%"; eauto.
 
-  destruct H0.
-  destruct H1.
-  intuition.
+  destruct H2 as [? Htxn_id].
+  destruct Htxn_id as [txn_id ?].
+  intuition idtac.
 
   simpl in *; monad_inv.
-  destruct x0.
+  destruct x.
   - simpl in *; monad_inv.
     simpl in *; monad_inv.
 
-    erewrite updates_since_to_last_disk in a1; eauto; try lia.
+    erewrite updates_since_to_last_disk in H0 by eauto.
     simpl in *; monad_inv.
 
     iDestruct ("Hfupd" $! (Some (latest_update installed
-                                    (updates_since x a σ))) with "[Ha]") as "Hfupd".
+                                    (updates_since txn_id a σ))) with "[Ha]") as "Hfupd".
     { rewrite /readmem_q. iFrame. done. }
     iMod "Hfupd".
 
@@ -1049,7 +1049,7 @@ Proof.
     iMod (max_nat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
     { lia. }
 
-    iMod (gen_heap_update _ _ _ (HB (latest_update installed (updates_since x a σ)) nil) with "Hctx Ha") as "[Hctx Ha]".
+    iMod (gen_heap_update _ _ _ (HB (latest_update installed (updates_since txn_id a σ)) nil) with "Hctx Ha") as "[Hctx Ha]".
     iDestruct ("Hfupd" $! None with "[Ha]") as "Hfupd".
     {
       rewrite /readmem_q.
@@ -1064,11 +1064,11 @@ Proof.
     { rewrite /set /=; lia. }
     iDestruct (wal_update_installed gh (set log_state.durable_lb (λ _ : nat, new_durable) σ) new_installed with "Hgh") as "Hgh"; eauto.
     iDestruct (big_sepM_insert_acc with "Hgh") as "[_ Hgh]"; eauto.
-    iDestruct ("Hgh" $! (HB (latest_update installed (updates_since x a σ)) nil) with "[]") as "Hx".
+    iDestruct ("Hgh" $! (HB (latest_update installed (updates_since txn_id a σ)) nil) with "[]") as "Hx".
     {
       rewrite /wal_heap_inv_addr /=.
       iPureIntro; intros.
-      simpl in H6.
+      simpl in *.
       split; auto.
       exists new_installed. intuition try lia.
       {
@@ -1131,7 +1131,7 @@ Proof using walheapG0 Σ.
   { rewrite /readinstalled_q. iFrame.
     iPureIntro.
     intuition.
-    destruct H4; intuition. subst.
+    destruct H5 as [txn_id' ?]; intuition idtac. subst.
     eapply updates_since_apply_upds.
     3: eauto.
     3: eauto.
@@ -1140,7 +1140,7 @@ Proof using walheapG0 Σ.
   iMod "Hfupd".
   iModIntro.
   iFrame.
-  destruct H0.
+  destruct H1.
   intuition.
 
   iExists _, _. iFrame. done.
@@ -1450,10 +1450,10 @@ Proof using walheapG0.
       apply Forall_lookup; intros i u.
       specialize (Hbs_in_gh u i).
       intuition eauto.
-      destruct H3; eauto.
-      specialize (Hgh (u.(update.addr)) (HB x.1 x.2)).
+      destruct H4 as [old ?]; eauto.
+      specialize (Hgh (u.(update.addr)) (HB old.1 old.2)).
       intuition; auto. }
-    intros. apply H in H0. lia.
+    intros. apply H1 in H0. lia.
   }
   2: {
     rewrite /possible app_length /= in Hcrashes_complete.
@@ -1494,13 +1494,11 @@ Proof using walheapG0.
 
   destruct (decide (k ∈ fmap update.addr bs)).
   - eapply elem_of_list_fmap in e as ex.
-    destruct ex.
-    destruct H1.
-    subst; destruct H0.
-    apply elem_of_list_lookup in H1; destruct H1.
+    destruct ex as [y [-> ?]].
+    apply elem_of_list_lookup in H0; destruct H0.
     edestruct Hbs_in_gh; eauto.
-    destruct H3. subst.
-    specialize (Hgh _ H4). simpl in *.
+    destruct H4.
+    specialize (Hgh _ H5). simpl in *.
     destruct Hgh as [addr_wf Hgh].
     destruct Hgh as [txn_id' Hgh].
     intuition; auto.
@@ -1513,7 +1511,7 @@ Proof using walheapG0.
 
     {
       rewrite -disk_at_txn_id_append; eauto.
-      unfold wal_wf in a; intuition.
+      unfold wal_wf in Hwf; intuition.
       lia.
     }
 
@@ -1535,12 +1533,12 @@ Proof using walheapG0.
 
     {
       rewrite -disk_at_txn_id_append; eauto.
-      unfold wal_wf in a; intuition.
+      unfold wal_wf in Hwf; intuition.
       lia.
     }
 
     {
-      rewrite -H5.
+      rewrite -H6.
       etransitivity; first apply updates_since_updates; auto.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.

@@ -35,9 +35,6 @@ From Perennial.tutorial Require
 From Perennial.goose_lang.lib Require
      slice.pred_slice.
 
-(* a random Iris demo *)
-From Perennial.Helpers Require AutoDestruct.
-
 (* goose output *)
 From Perennial.goose_lang.examples Require
      goose_unittest simpledb logging2 rfc1813.

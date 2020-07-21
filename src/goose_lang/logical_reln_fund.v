@@ -1288,7 +1288,7 @@ Proof using spec_trans.
       iSpecialize ("Hinterp" with "[$]").
       iSpecialize ("Hinterp" $! j _ Hctx with "Hj").
       iApply (wpc_mono' with "[] [] Hinterp"); last done.
-      iIntros (v') "H". iDestruct "H" as (vs') "(Hj&Hv')".
+      iIntros (v'') "H". iDestruct "H" as (vs'') "(Hj&Hv')".
       iExists _. iFrame.
     }
     {
@@ -1310,7 +1310,7 @@ Proof using spec_trans.
       iSpecialize ("Hinterp" with "[$]").
       iSpecialize ("Hinterp" $! j _ Hctx with "Hj").
       iApply (wpc_mono' with "[] [] Hinterp"); last done.
-      iIntros (v') "H". iDestruct "H" as (vs') "(Hj&Hv')".
+      iIntros (v'') "H". iDestruct "H" as (vs'') "(Hj&Hv')".
       iExists _. iFrame.
     }
   (* pointers *)

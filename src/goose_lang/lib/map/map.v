@@ -325,7 +325,7 @@ Proof.
     }
     iApply "IH".
 Unshelve.
-  apply map_val_split in a; destruct m'; intuition idtac.
+  apply map_val_split in H0; destruct m'; intuition idtac.
 Qed.
 
 Lemma union_with_Some_l {A} (x:A) my :
@@ -464,8 +464,8 @@ Proof.
     wp_lam.
     wp_apply (wp_MapDelete'); eauto.
     iIntros (mv'') "%".
-    apply map_val_split in a. destruct m'.
-    iSpecialize ("IH" $! mv'' _ _ a _ _ with "HP HΦ Hm0 Hm1").
+    apply map_val_split in H0. destruct m'.
+    iSpecialize ("IH" $! mv'' _ _ H0 _ _ with "HP HΦ Hm0 Hm1").
     iApply "IH".
 Unshelve.
   { simpl. apply union_delete_insert. }

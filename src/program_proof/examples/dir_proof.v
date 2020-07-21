@@ -367,7 +367,7 @@ Section goose.
       iApply big_sepL2_flip in "Hpre_inodes".
       iApply (big_sepL2_elim_big_sepL with "[] Hpre_inodes"); first auto.
       iIntros "!>" (???????) "[Hpre HP]".
-      assert (a0 = a2) by congruence; subst.
+      assert (x = z) by congruence; subst.
       iFrame.
       iApply pre_inode_to_cinv; eauto.
     - iDestruct (is_allocator_pre_post_crash with "Halloc_mem") as %?.
@@ -1269,7 +1269,7 @@ Section recov.
     { auto. }
     { wpc_apply (wpc_Open with "Hstart"); auto. }
     iModIntro. iIntros (?????) "H".
-    iDestruct "H" as (σ') "Hstart".
+    iDestruct "H" as (σ'') "Hstart".
     iNext. iCrash.
     iIntros.
     iSplit; first done.

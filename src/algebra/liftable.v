@@ -141,7 +141,7 @@ Section liftable.
       {
         iApply big_sepL_mono; iFrame.
         iIntros (? ? ?) "H".
-        replace (off + S a0)%nat with (S off + a0)%nat by lia.
+        replace (off + S x)%nat with (S off + x)%nat by lia.
         iFrame.
       }
 
@@ -157,7 +157,7 @@ Section liftable.
       iFrame.
       iApply big_sepL_mono; iFrame.
       iIntros (? ? ?) "H".
-      replace (off + S a0)%nat with (S off + a0)%nat by lia.
+      replace (off + S x)%nat with (S off + x)%nat by lia.
       iFrame.
   Unshelve.
     all: eauto.

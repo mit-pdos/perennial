@@ -314,9 +314,7 @@ Proof.
       destruct (decide (addr = x)); subst.
       { rewrite lookup_delete in Hx. congruence. }
 
-      iIntros "%".
-      rewrite lookup_insert_ne in a0; eauto.
-      iApply "H". done.
+      rewrite lookup_insert_ne //.
   }
 
   iIntros "(Hinner & Hlocked & Hp & Haddrlocked)".
@@ -435,9 +433,7 @@ Proof.
       destruct (decide (addr = x)); subst.
       { rewrite lookup_delete in Hx. congruence. }
 
-      iIntros "%".
-      rewrite lookup_delete_ne in a0; eauto.
-      iApply "H". done.
+      rewrite lookup_delete_ne //.
     }
 
     iApply "HΦ".

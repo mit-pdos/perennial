@@ -460,7 +460,7 @@ Section recov.
       iSplit; eauto.
     }
     iModIntro. iIntros (?????) "H".
-    iDestruct "H" as (σ') "Hstart".
+    iDestruct "H" as (σ'') "Hstart".
     iNext. iCrash.
     iIntros.
     iSplit; first done.
@@ -487,7 +487,7 @@ Section recov.
       iSplit; eauto.
     }
     iModIntro. iIntros (?????) "H".
-    iDestruct "H" as (σ') "(Hstart&_)".
+    iDestruct "H" as (σ'') "(Hstart&_)".
     iNext. iCrash.
     (* XXX: iCrash should not have unfolded rblock_inv *)
     iIntros (??).
