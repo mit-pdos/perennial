@@ -373,7 +373,7 @@ Theorem wp_writeIndirect {l σ addr d lref} ds direct_s indirect_s
   {{{
        "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect ∧ length σ.(inode.blocks) < MaxBlocks ∧
         (*Assert that there is still room in the last indirect block*)
-        ((length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks < int.val indirect_s.(Slice.sz))
+        ((length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks < ds.(impl_s.numInd))
        ⌝ ∗
        "%Hlookup" ∷ ⌜(take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) !! index = Some indA
                   ∧ ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs
@@ -407,7 +407,6 @@ Proof.
   iNamed "Hdurable".
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
   destruct Hlen0 as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
-  (*destruct Hsize as [HsizeMin HsizeMax HnumIndSize HmodPos].*)
   destruct Hsize as [HsizeMin [HsizeMax HmodPos]].
   destruct Hlookup as [HlookupIndA [HlookupIndBlkAddrs [indBlock HlookupIndBlk]]].
   iDestruct (is_slice_sz with "Hindirect") as %HlenInd.
@@ -621,7 +620,6 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
         len. simpl. word.
       }
 
-
       (* HnumInd *)
       iSplitR.
       {
@@ -629,7 +627,6 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
         unfold roundUpDiv, maxDirect, indirectNumBlocks in *.
         rewrite app_length; simpl.
         repeat rewrite max_r; try word.
-        admit.
       }
 
       (* Hdirect *)
@@ -649,9 +646,9 @@ assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
         simpl. admit.
       }
     }
-  rewrite app_length. simpl. iSplitL "size".
+    rewrite app_length. simpl. iSplitL "size".
   + by replace (U64 (Z.of_nat (length σ.(inode.blocks)) + 1)) with
-          (U64 (Z.of_nat (length σ.(inode.blocks) + 1))) by word.
+        (U64 (Z.of_nat (length σ.(inode.blocks) + 1))) by word.
   + repeat rewrite take_ge; auto;
       replace (length ds.(impl_s.dirAddrs)) with 500%nat; word.
 
