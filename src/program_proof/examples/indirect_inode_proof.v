@@ -107,27 +107,31 @@ Definition is_inode_durable_facts σ (addr: u64) (ds: impl_s.t)
                   = roundUpDiv (Z.of_nat (((Z.to_nat maxDirect) `max` length σ.(inode.blocks))%nat) - maxDirect) indirectNumBlocks⌝
 .
 
-Definition is_inode_durable σ addr : iProp Σ  :=
-  ∃ (ds: impl_s.t),
+Definition is_inode_durable_with σ addr ds : iProp Σ  :=
     "Hfacts" ∷ is_inode_durable_facts σ addr ds ∗
     "Hhdr" ∷ is_inode_durable_hdr σ addr ds ∗
-    "Hdata" ∷ is_inode_durable_data σ ds.
+    "Hdata" ∷ is_inode_durable_data σ ds
+.
 
-Definition inode_linv_with (l:loc) σ addr direct_s indirect_s ds : iProp Σ :=
-    "Hdurable" ∷ is_inode_durable_with σ addr ds ∗
+Definition is_inode_volatile_with l σ addr direct_s indirect_s ds : iProp Σ :=
     "addr" ∷ l ↦[Inode.S :: "addr"] #addr ∗
     "size" ∷ l ↦[Inode.S :: "size"] #(length σ.(inode.blocks)) ∗
     "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
     "Hdirect" ∷ is_slice direct_s uint64T 1 (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) ∗
-    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)).
+    "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs))
+.
+
+Definition inode_linv_with (l:loc) σ addr direct_s indirect_s ds : iProp Σ :=
+    "Hdurable" ∷ is_inode_durable_with σ addr ds ∗
+    "Hvolatile" ∷ is_inode_volatile_with l σ addr direct_s indirect_s ds.
 
 Definition inode_linv (l:loc) σ addr : iProp Σ :=
   ∃ (direct_s indirect_s: Slice.t) (ds: impl_s.t),
     inode_linv_with l σ addr direct_s indirect_s ds.
 
 Definition inode_cinv σ addr: iProp Σ :=
-  is_inode_durable σ addr.
+  ∃ ds, is_inode_durable_with σ addr ds.
 
 Definition inode_state l (d_ref: loc) (lref: loc) : iProp Σ :=
   "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d_ref) ∗
@@ -149,9 +153,9 @@ Global Instance is_inode_Persistent l k P addr:
 Proof. apply _. Qed.
 
 Global Instance is_inode_crash l σ addr:
-  IntoCrash (inode_linv l σ addr) (λ _, is_inode_durable σ addr)%I.
+  IntoCrash (inode_linv l σ addr) (λ _, ∃ ds, is_inode_durable_with σ addr ds)%I.
 Proof.
-  hnf; iIntros "Hinv".
+  hnf. iIntros "Hinv".
   iNamed "Hinv".
   iNamed "Hdurable".
   iExists ds.
@@ -188,7 +192,8 @@ Theorem wp_Open k {d:loc} {addr σ P} :
     indirect_inode.Open #d #addr
     {{{ l, RET #l; is_inode l k P addr}}}.
 Proof.
-  iIntros (Φ) "(Hinode&HP) HΦ"; unfold inode_cinv; iNamed "Hinode".
+  iIntros (Φ) "(Hinode&HP) HΦ"; unfold inode_cinv;
+    iNamed "Hinode"; iNamed "Hdata"; iNamed "Hfacts"; iNamed "Hhdr".
   iDestruct (big_sepL2_length with "HdataDirect") as %Hblocklen.
   destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
 
@@ -383,11 +388,12 @@ Proof.
   }
 Admitted.
 
-Theorem is_inode_durable_size σ addr (dirAddrs : list u64) (indBlkAddrsList: list (list u64)):
-  is_inode_durable σ addr -∗ ⌜((length dirAddrs) + (foldl (λ n x, n + (length x)) 0 indBlkAddrsList)
+Theorem is_inode_durable_size σ addr (dirAddrs : list u64) (indBlkAddrsList: list (list u64)) ds :
+  is_inode_durable_with σ addr ds -∗ ⌜((length dirAddrs) + (foldl (λ n x, n + (length x)) 0 indBlkAddrsList)
                          = length σ.(inode.blocks))%nat⌝.
 Proof.
   iNamed 1.
+  iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
   iDestruct (big_sepL2_length with "HdataDirect") as "%H1".
   iDestruct (big_sepL2_length with "HdataIndirect") as "%H2".
 Admitted.
@@ -514,6 +520,7 @@ Proof.
   iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
   wp_call.
   iNamed "Hlockinv".
+  iNamed "Hvolatile"; iNamed "Hdurable"; iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
   wp_apply wp_ref_of_zero; auto.
   iIntros (l0) "Hl0".
   wp_let.
@@ -525,7 +532,6 @@ Proof.
 
   iDestruct (is_slice_split with "Hdirect") as "[Hdirect_small Hdirect]".
   iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
-  iNamed "Hdurable".
   destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
 
   wp_apply (wp_forSlicePrefix
@@ -654,7 +660,7 @@ Proof.
 
   iAssert ((∃ σ , inode_linv l σ addr ∗ P σ)%I) as (σ) "(-#Hlockinv & -#HP)". { admit. }
   iNamed "Hlockinv".
-  iNamed "Hdurable".
+  iNamed "Hvolatile"; iNamed "Hdurable"; iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
   destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
   wp_loadField.
   wp_op.
@@ -895,7 +901,7 @@ Proof.
 
   iAssert ((∃ σ, inode_linv l σ addr ∗ P σ)%I) as (σ) "(-#Hlockinv & -#HP)". { admit. }
   iNamed "Hlockinv".
-  iNamed "Hdurable".
+  iNamed "Hvolatile"; iNamed "Hdurable"; iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
   wp_loadField.
   wp_let.
   wp_loadField.
