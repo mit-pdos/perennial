@@ -72,7 +72,24 @@ Definition ind_blocks_at_index σ index : list Block :=
   let begin := int.nat (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) in
   List.subslice begin (begin + (int.nat indirectNumBlocks)) σ.(inode.blocks).
 
-Definition is_inode_durable_with σ (addr: u64) (ds: impl_s.t)
+Definition is_inode_durable_data σ (ds: impl_s.t) : iProp Σ :=
+    (* direct addresses correspond to data blocks in inode spec *)
+    "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
+                     [∗ list] a;b ∈ take len ds.(impl_s.dirAddrs);take len σ.(inode.blocks), int.val a d↦ b) ∗
+    (* indirect addresses correspond to a block's worth of data blocks in inode spec *)
+    "HdataIndirect" ∷
+    ([∗ list] index↦a;indBlock ∈ take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs);ds.(impl_s.indBlocks),
+    ∃ indBlkAddrs, ⌜ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs⌝ ∗
+                    is_indirect a indBlkAddrs indBlock (ind_blocks_at_index σ index)).
+
+Definition is_inode_durable_hdr σ (addr: u64) (ds: impl_s.t) : iProp Σ :=
+  "%Hencoded" ∷ ⌜Block_to_vals ds.(impl_s.hdr) = b2val <$> encode ([EncUInt64 (length σ.(inode.blocks))]
+                                                           ++ (EncUInt64 <$> ds.(impl_s.dirAddrs))
+                                                           ++ (EncUInt64 <$> ds.(impl_s.indAddrs))
+                                                           ++ [EncUInt64 ds.(impl_s.numInd)])⌝ ∗
+  "Hhdr" ∷ (int.val addr d↦ ds.(impl_s.hdr)).
+
+Definition is_inode_durable_facts σ (addr: u64) (ds: impl_s.t)
   : iProp Σ  :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Haddrs_set" ∷ ⌜list_to_set (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)
@@ -81,30 +98,20 @@ Definition is_inode_durable_with σ (addr: u64) (ds: impl_s.t)
     = σ.(inode.addrs)⌝ ∗
     "%HdirAddrs" ∷ ⌜ ∃ daddrs, ds.(impl_s.dirAddrs) = daddrs ++ (replicate (int.nat (maxDirect) - (min (length σ.(inode.blocks)) (int.nat maxDirect))) (U64 0))⌝ ∗
     "%HindAddrs" ∷ ⌜ ∃ indaddrs, ds.(impl_s.indAddrs) = indaddrs ++ (replicate (int.nat (maxIndirect) - ds.(impl_s.numInd)) (U64 0))⌝ ∗
-    "%Hencoded" ∷ ⌜Block_to_vals ds.(impl_s.hdr) = b2val <$> encode ([EncUInt64 (length σ.(inode.blocks))]
-                                                           ++ (EncUInt64 <$> ds.(impl_s.dirAddrs))
-                                                           ++ (EncUInt64 <$> ds.(impl_s.indAddrs))
-                                                           ++ [EncUInt64 ds.(impl_s.numInd)])⌝ ∗
     "%Hlen" ∷ (⌜
       maxDirect = length(ds.(impl_s.dirAddrs)) ∧
       maxIndirect = length(ds.(impl_s.indAddrs)) ∧
       (Z.of_nat (length σ.(inode.blocks))) <= MaxBlocks ∧
       ds.(impl_s.numInd) = length(ds.(impl_s.indBlocks))⌝) ∗
     "%HnumInd" ∷ ⌜Z.of_nat ds.(impl_s.numInd)
-                  = roundUpDiv (Z.of_nat (((Z.to_nat maxDirect) `max` length σ.(inode.blocks))%nat) - maxDirect) indirectNumBlocks⌝ ∗
-    "Hhdr" ∷ (int.val addr d↦ ds.(impl_s.hdr)) ∗
-    (* direct addresses correspond to data blocks in inode spec *)
-    "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
-                     [∗ list] a;b ∈ take len ds.(impl_s.dirAddrs);take len σ.(inode.blocks), int.val a d↦ b) ∗
-    (* indirect addresses correspond to a block's worth of data blocks in inode spec *)
-    "HdataIndirect" ∷
-    ([∗ list] index↦a;indBlock ∈ take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs);ds.(impl_s.indBlocks),
-    ∃ indBlkAddrs, ⌜ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs⌝ ∗
-                            is_indirect a indBlkAddrs indBlock (ind_blocks_at_index σ index))
+                  = roundUpDiv (Z.of_nat (((Z.to_nat maxDirect) `max` length σ.(inode.blocks))%nat) - maxDirect) indirectNumBlocks⌝
 .
 
 Definition is_inode_durable σ addr : iProp Σ  :=
-  ∃ (ds: impl_s.t), is_inode_durable_with σ addr ds.
+  ∃ (ds: impl_s.t),
+    "Hfacts" ∷ is_inode_durable_facts σ addr ds ∗
+    "Hhdr" ∷ is_inode_durable_hdr σ addr ds ∗
+    "Hdata" ∷ is_inode_durable_data σ ds.
 
 Definition inode_linv_with (l:loc) σ addr direct_s indirect_s ds : iProp Σ :=
     "Hdurable" ∷ is_inode_durable_with σ addr ds ∗
