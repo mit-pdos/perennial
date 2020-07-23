@@ -65,7 +65,7 @@ Theorem wp_appendDirect {l σ addr} (a: u64) b:
   }}}.
 Proof.
   iIntros (Φ) "Hpre". iNamed "Hpre". iNamed "Hinv".
-  iNamed "Hdurable".
+  iNamed "Hvolatile"; iNamed "Hdurable"; iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
   iIntros "HΦ".
 
   (* A bunch of facts and prep stuff *)
@@ -193,70 +193,94 @@ Proof.
 
     (* prove the postcondition holds *)
     iFrame.
+    unfold is_inode_durable_data.
 
     (* Handle "Hdurable" first *)
     iSplitR "Hdirect size".
     {
-      (* Hwf *)
-      iSplitR.
-      { iPureIntro. unfold inode.wf. simpl. rewrite app_length; simpl. word. }
-
-      (* Haddrs_set *)
+      (* Hfacts *)
       iSplitR.
       {
-        iPureIntro; simpl.
-        rewrite app_length; simpl.
-        rewrite cons_middle.
-        replace (take (length σ.(inode.blocks) + 1)
-                      (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]
-                            ++ drop ((length σ.(inode.blocks) + 1)) ds.(impl_s.dirAddrs)))
-          with (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]).
-        2: {
-          rewrite app_assoc.
-          assert ((length σ.(inode.blocks) + 1)%nat = length ((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]))) as Hlen.
-          { rewrite app_length. rewrite take_length Min.min_l; simpl; word. }
-          rewrite Hlen.
-          rewrite (take_app (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])); auto.
-        }
-        assert (((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
-                   ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
-                   ++ concat ds.(impl_s.indBlkAddrsList)
-                  ≡ₚ
-                  a :: (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)
-                   ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
+        unfold is_inode_durable_facts.
+
+        (* Hwf *)
+        iSplitR.
+        { iPureIntro. unfold inode.wf. simpl. rewrite app_length; simpl. word. }
+
+        (* Haddrs_set *)
+        iSplitR.
+        {
+          iPureIntro; simpl.
+          rewrite app_length; simpl.
+          rewrite cons_middle.
+          replace (take (length σ.(inode.blocks) + 1)
+                        (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]
+                              ++ drop ((length σ.(inode.blocks) + 1)) ds.(impl_s.dirAddrs)))
+            with (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]).
+          2: {
+            rewrite app_assoc.
+            assert ((length σ.(inode.blocks) + 1)%nat = length ((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]))) as Hlen.
+            { rewrite app_length. rewrite take_length Min.min_l; simpl; word. }
+            rewrite Hlen.
+            rewrite (take_app (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])); auto.
+          }
+          assert (((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
+                    ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
+                    ++ concat ds.(impl_s.indBlkAddrsList)
+                    ≡ₚ
+                    a :: (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)
+                    ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
                    ++ concat ds.(impl_s.indBlkAddrsList))))
           as Hperm.
-        { by rewrite -app_assoc -cons_middle -Permutation_middle. }
-        rewrite Hperm.
-        rewrite list_to_set_cons.
-        rewrite Haddrs_set. auto.
-      }
+          { by rewrite -app_assoc -cons_middle -Permutation_middle. }
+          rewrite Hperm.
+          rewrite list_to_set_cons.
+          rewrite Haddrs_set. auto.
+        }
 
-      (* HdirAddrs *)
-      iSplitR.
-      {
-        iPureIntro. eauto.
-        assert (ds.(impl_s.numInd) = 0%nat) as H0 by word; rewrite HnumInd0 H0 in Hencoded'.
-        rewrite take_0 nil_length in Hencoded'.
-        unfold MaxBlocks, indirectNumBlocks, maxDirect, maxIndirect in *.
-        change (10 - 0%nat) with 10 in *.
-        rewrite fmap_nil app_nil_l in Hencoded'.
-        change ((set inode.blocks
-              (λ bs : list Block, bs ++ [b])
-              (set inode.addrs (union {[a]}) σ))
-                .(inode.blocks)) with (σ.(inode.blocks) ++ [b]).
-        exists (daddrs ++ [a]).
-        rewrite app_length; simpl.
-        rewrite HdirAddrsEnd.
-        rewrite cons_middle app_assoc.
-        rewrite HdirAddrs.
-        rewrite -HdaddrsLen take_app.
-        rewrite Min.min_l; auto; word.
-      }
+        (* HdirAddrs *)
+        iSplitR.
+        {
+          iPureIntro. eauto.
+          assert (ds.(impl_s.numInd) = 0%nat) as H0 by word; rewrite HnumInd0 H0 in Hencoded'.
+          rewrite take_0 nil_length in Hencoded'.
+          unfold MaxBlocks, indirectNumBlocks, maxDirect, maxIndirect in *.
+          change (10 - 0%nat) with 10 in *.
+          rewrite fmap_nil app_nil_l in Hencoded'.
+          change ((set inode.blocks
+                (λ bs : list Block, bs ++ [b])
+                (set inode.addrs (union {[a]}) σ))
+                  .(inode.blocks)) with (σ.(inode.blocks) ++ [b]).
+          exists (daddrs ++ [a]).
+          rewrite app_length; simpl.
+          rewrite HdirAddrsEnd.
+          rewrite cons_middle app_assoc.
+          rewrite HdirAddrs.
+          rewrite -HdaddrsLen take_app.
+          rewrite Min.min_l; auto; word.
+        }
 
-      (* HindAddrs *)
-      iSplitR.
-      { iPureIntro. exists iaddrs. auto. }
+        (* HindAddrs *)
+        iSplitR.
+        { iPureIntro. exists iaddrs. auto. }
+
+        (* Hlen *)
+        iSplitR.
+        { iPureIntro.
+          unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+          rewrite HdirLen.
+          repeat (split; auto); len; simpl; [ | rewrite app_length; simpl; word].
+          rewrite -Hdaddrs HdirAddrs.
+          len. simpl. len.
+        }
+
+        (* HnumInd *)
+        {
+          iPureIntro. rewrite HnumInd.
+          unfold maxDirect, indirectNumBlocks in *.
+          rewrite app_length; simpl. repeat rewrite max_l; word.
+        }
+      }
 
       (* Hencoded *)
       iSplitR.
@@ -292,42 +316,25 @@ Proof.
         reflexivity.
       }
 
-      (* Hlen *)
-      iSplitR.
-      { iPureIntro.
-        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-        rewrite HdirLen.
-        repeat (split; auto); len; simpl; try word.
-        rewrite Min.min_l; [len | word].
-      }
-
-      (* HnumInd *)
-      iSplitR.
-      {
-        iPureIntro. rewrite HnumInd.
-        unfold maxDirect, indirectNumBlocks in *.
-        rewrite app_length; simpl. repeat rewrite max_l; word.
-      }
-
-      (* Hdirect *)
-      iSplitL "HdataDirect Ha".
-      {
-        rewrite /maxDirect -Hdaddrs.
-        assert ((int.nat (U64 500) `min` length σ.(inode.blocks))%nat =
-                (length σ.(inode.blocks))) by word.
-        assert ((int.nat (U64 500) `min` length (σ.(inode.blocks) ++ [b]))%nat =
-                 (length (σ.(inode.blocks) ++ [b]))%nat) as tmp by (len; simpl; word).
-        rewrite tmp.
-        assert (length (daddrs ++ [a]) = length (σ.(inode.blocks) ++ [b])) as tmp2 by (len; simpl; word).
-        replace (daddrs ++ a :: drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs)) with
-            ((daddrs ++ [a]) ++ drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs))
-        by (rewrite -app_assoc -cons_middle; auto).
-        rewrite -tmp2 take_app. rewrite tmp2 firstn_all.
-        iApply (big_sepL2_app with "[HdataDirect]"); simpl; auto.
-        { rewrite Min.min_r; [ | word].
-          rewrite -HdaddrsLen HdirAddrs take_app. rewrite HdaddrsLen firstn_all. auto.
+        (* Hdirect *)
+        iSplitL "HdataDirect Ha".
+        {
+          rewrite /maxDirect -Hdaddrs.
+          assert ((int.nat (U64 500) `min` length σ.(inode.blocks))%nat =
+                  (length σ.(inode.blocks))) by word.
+          assert ((int.nat (U64 500) `min` length (σ.(inode.blocks) ++ [b]))%nat =
+                  (length (σ.(inode.blocks) ++ [b]))%nat) as tmp by (len; simpl; word).
+          rewrite tmp.
+          assert (length (daddrs ++ [a]) = length (σ.(inode.blocks) ++ [b])) as tmp2 by (len; simpl; word).
+          replace (daddrs ++ a :: drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs)) with
+              ((daddrs ++ [a]) ++ drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs))
+          by (rewrite -app_assoc -cons_middle; auto).
+          rewrite -tmp2 take_app. rewrite tmp2 firstn_all.
+          iApply (big_sepL2_app with "[HdataDirect]"); simpl; auto.
+          { rewrite Min.min_r; [ | word].
+            rewrite -HdaddrsLen HdirAddrs take_app. rewrite HdaddrsLen firstn_all. auto.
+          }
         }
-      }
 
       (* Hindirect *)
       {
