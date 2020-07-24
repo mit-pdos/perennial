@@ -25,7 +25,7 @@ Local Definition encode1 (e:encodable) : list u8 :=
 
 Local Definition encode (es:Rec): list u8 := concat (encode1 <$> es).
 
-Local Definition encoded_length (r:Rec): nat := length $ encode r.
+Notation encoded_length r := (length (encode r)).
 
 Theorem encode_app es1 es2 :
   encode (es1 ++ es2) = encode es1 ++ encode es2.
@@ -45,29 +45,21 @@ Qed.
 Theorem encode_cons x xs :
   encode (x::xs) = encode1 x ++ encode xs.
 Proof.
-  change (x::xs) with ([x] ++ xs).
+  change (?x::?xs) with ([x] ++ xs).
   rewrite encode_app encode_singleton //.
 Qed.
 
 Theorem encoded_length_singleton x :
   encoded_length [x] = length (encode1 x).
-Proof. rewrite /encoded_length encode_singleton //. Qed.
+Proof. rewrite encode_singleton //. Qed.
 
 Theorem encoded_length_app (r1 r2:Rec) :
   encoded_length (r1 ++ r2) = (encoded_length r1 + encoded_length r2)%nat.
-Proof.
-  rewrite /encoded_length.
-  rewrite encode_app /=.
-  len.
-Qed.
+Proof. rewrite encode_app; len. Qed.
 
 Theorem encoded_length_app1 (r:Rec) (x:encodable) :
   encoded_length (r ++ [x]) = (encoded_length r + length (encode1 x))%nat.
-Proof.
-  rewrite encoded_length_app.
-  f_equal.
-  rewrite /encoded_length encode_singleton //.
-Qed.
+Proof. rewrite encoded_length_app encoded_length_singleton //. Qed.
 
 Section goose_lang.
 Context `{!heapG Σ}.
@@ -107,11 +99,8 @@ Proof.
   iExists _, _, _; iFrame.
   iPureIntro.
   split_and!; auto; len.
-  - rewrite /encoded_length /=; lia.
-  - rewrite /encoded_length //=.
+  rewrite /has_encoding //.
 Qed.
-
-Hint Unfold encoded_length : word.
 
 Lemma has_encoding_app data r data' r' :
   has_encoding data r →
@@ -338,12 +327,7 @@ Hint Rewrite encoded_length_singleton : len.
 
 Lemma encoded_length_cons x r :
   encoded_length (x::r) = (length (encode1 x) + encoded_length r)%nat.
-Proof.
-  rewrite /encoded_length /=.
-  change (x::r) with ([x] ++ r); rewrite encode_app /=.
-  len.
-  rewrite encode_singleton //.
-Qed.
+Proof. rewrite encode_cons; len. Qed.
 
 Theorem wp_Dec__GetInt stk E dec_v (x: u64) r :
   {{{ is_dec dec_v (EncUInt64 x :: r) }}}
