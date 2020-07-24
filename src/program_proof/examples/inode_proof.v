@@ -12,7 +12,7 @@ From Perennial.goose_lang.lib Require Import lock.crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import into_val typed_slice.
 
-From Perennial.program_proof Require Import marshal_proof disk_lib.
+From Perennial.program_proof Require Import marshal_block disk_lib.
 
 Definition InodeMaxBlocks: Z := 511.
 
@@ -45,9 +45,9 @@ Implicit Types (σ: inode.t) (addr: u64).
 Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
 
 Definition is_inode_durable addr σ (addrs: list u64) : iProp Σ :=
-  ∃ (extra: list u8) (hdr: Block),
+  ∃ (hdr: Block),
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
-    "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
+    "%Hencoded" ∷ ⌜block_encodes hdr ([EncUInt64 (length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
     "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
     "Hhdr" ∷ int.val addr d↦ hdr ∗
     (* TODO: this does not support reading lock-free; we could make it [∃ q,
@@ -59,9 +59,9 @@ Local Hint Extern 1 (environments.envs_entails _ (is_inode_durable _ _ _)) => un
 
 Theorem is_inode_durable_read addr σ addrs :
   is_inode_durable addr σ addrs -∗
-    ∃ extra hdr,
+    ∃ hdr,
       "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
-      "%Hencoded" ∷ ⌜Block_to_vals hdr = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
+      "%Hencoded" ∷ ⌜block_encodes hdr ([EncUInt64 (length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
       "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
       "Hhdr" ∷ int.val addr d↦ hdr ∗
       "Hdata" ∷ ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b) ∗
@@ -70,9 +70,9 @@ Theorem is_inode_durable_read addr σ addrs :
                    is_inode_durable addr σ addrs).
 Proof.
   iNamed 1.
-  iExists _, _; iFrame "∗ %".
+  iExists _; iFrame "∗ %".
   iIntros "!> Hhdr Hdata".
-  iExists _, _; iFrame "∗ %".
+  iExists _; iFrame "∗ %".
 Qed.
 
 Definition inode_linv (l:loc) (addr:u64) σ : iProp Σ :=
@@ -161,7 +161,7 @@ Theorem init_inode addr :
   int.val addr d↦ block0 -∗ inode_cinv addr (inode.mk ∅ []).
 Proof.
   iIntros "Hhdr".
-  iExists [], (replicate (int.nat (4096-8)) (U8 0)), block0.
+  iExists [], block0.
   cbv [inode.blocks big_sepL2].
   iFrame "Hhdr".
   iPureIntro.
@@ -217,16 +217,13 @@ Proof.
   wpc_frame.
   wp_pures.
   iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
-  rewrite Hencoded.
-  wp_apply (wp_NewDec with "Hs").
-  iIntros (dec) "[Hdec %Hsz]".
+  wp_apply (wp_new_dec with "Hs"); first eauto.
+  iIntros (dec) "Hdec".
   wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
   wp_pures.
-  wp_apply (wp_Dec__GetInts _ _ _ addrs _ nil with "[Hdec]").
-  { rewrite app_nil_r; iFrame.
-    iPureIntro.
-    rewrite Hblocklen.
-    word. }
+  wp_apply (wp_Dec__GetInts _ _ _ addrs [] with "[Hdec]").
+  { rewrite Hblocklen. word. }
+  { rewrite app_nil_r; iFrame. }
   iIntros (addr_s) "[_ Haddrs]".
   wp_pures.
   rewrite -wp_fupd.
@@ -245,7 +242,7 @@ Proof.
   iSplitR.
   { iFrame "#". }
   iExists _, _; iFrame "% ∗".
-  iExists _, _; iFrame "% ∗".
+  iExists _; iFrame "% ∗".
 Qed.
 
 Theorem is_inode_durable_addrs addr σ addrs :
@@ -560,20 +557,19 @@ Theorem wp_Inode__mkHdr {stk E} l addr_s addrs :
       "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
   }}}
     Inode__mkHdr #l @ stk; E
-  {{{ s b extra, RET (slice_val s);
+  {{{ s b, RET (slice_val s);
       is_block s 1 b ∗
-      ⌜Block_to_vals b = b2val <$> encode ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs)) ++ extra⌝ ∗
+      ⌜block_encodes b ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
       "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
       "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
   }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ"; iNamed "Hpre".
   wp_call.
-  wp_apply wp_new_enc; iIntros (enc) "[Henc %]".
+  wp_apply wp_new_enc; iIntros (enc) "Henc".
   wp_pures.
   wp_loadField.
   iDestruct (is_slice_sz with "Haddrs") as %Hlen.
-  autorewrite with len in Hlen.
   wp_apply wp_slice_len.
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
@@ -585,22 +581,14 @@ Proof.
   iIntros "[Henc Haddrs]".
   iDestruct (is_slice_split with "[$Haddrs $Hcap]") as "Haddrs".
   wp_apply (wp_Enc__Finish with "Henc").
-  iIntros (s) "[Hs %]".
+  iIntros (??) "(%Henc&Hs)".
   wp_pures.
   iApply "HΦ".
   iFrame.
-  autorewrite with len in H0.
-  iSplitL "Hs".
-  - rewrite -list_to_block_to_vals; len.
-    + iFrame.
-    + rewrite H0.
-      rewrite H; reflexivity.
-  - iPureIntro.
-    rewrite list_to_block_to_vals; len.
-    + rewrite app_nil_l.
-      repeat (f_equal; try word).
-    + rewrite H0.
-      rewrite H; reflexivity.
+  iPureIntro.
+  eapply block_encodes_eq; eauto.
+  rewrite app_nil_l.
+  repeat (f_equal; try word).
 Qed.
 
 Theorem wlog_assume_l {PROP:bi} (φ: Prop) (P: PROP) :
@@ -788,7 +776,7 @@ Proof.
       wp_apply (wp_Inode__mkHdr with "[$addrs $Haddrs]").
       { autorewrite with len; simpl.
         word. }
-      iIntros (s b' extra') "(Hb&%Hencoded'&?&?)"; iNamed.
+      iIntros (s b') "(Hb&%Hencoded'&?&?)"; iNamed.
       iNamed 1.
       wpc_pures.
       wpc_loadField.
@@ -834,7 +822,7 @@ Proof.
                       (set inode.addrs (union {[a]}) σ))
                  (addrs ++ [a]))
               with "[Hhdr Hdata Hda]" as "Hdurable".
-      { iExists _, _; iFrame "∗ %".
+      { iExists _; iFrame "∗ %".
         iSplitR.
         { iPureIntro.
           rewrite /inode.wf /=.
@@ -950,7 +938,7 @@ Proof.
   rewrite ?big_sepL2_alt.
   iDestruct "Hdata" as "(%Heq&Hl)".
   iCrash.
-  iExists _, _, _. iFrame.
+  iExists _, _. iFrame.
   rewrite ?big_sepL2_alt.
   iFrame. eauto.
 Qed.

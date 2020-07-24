@@ -9,7 +9,6 @@ From Perennial.goose_lang Require
      crash_lock
      logical_reln_adeq.
 From Perennial.program_proof Require
-     marshal_proof_new marshal_block (* replacement for marshal_proof *)
      wal.circ_proof_crash
      append_log_proof
      append_log_refinement
