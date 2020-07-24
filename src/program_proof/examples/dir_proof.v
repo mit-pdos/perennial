@@ -478,14 +478,16 @@ Section goose.
   Opaque struct.t.
 
   (* TODO: use this to replace list_lookup_lt (it's much easier to remember) *)
-  Local Ltac list_elem_as l i x :=
+  Local Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x) :=
     let H := fresh "H" x "_lookup" in
+    let i := lazymatch type of i with
+            | nat => i
+            | Z => constr:(Z.to_nat i)
+            | u64 => constr:(int.nat i)
+            end in
     destruct (list_lookup_lt _ l i) as [x H];
     [ try solve [ len ]
     | ].
-
-  Tactic Notation "list_elem" constr(l) constr(i) "as" ident(x) :=
-    list_elem_as l i x.
 
   Lemma wpc_openInodes {k E2} (d: loc) s_inodes :
     length s_inodes = num_inodes →
@@ -564,7 +566,7 @@ Section goose.
       wpc_bind (load_ty _ _). wpc_frame. wp_load. iNamed 1.
       wpc_bind (inode.Open _ _).
       change (int.val (U64 5)) with (Z.of_nat num_inodes) in Hbound.
-      list_elem s_inodes (int.nat n) as s_inode.
+      list_elem s_inodes n as s_inode.
       rewrite [drop (int.nat n) s_inodes](drop_S _ s_inode); last by auto.
       iDestruct (big_sepL_cons with "Hinode_cinvs") as "[Hs_inode Hinode_cinvs]".
       wpc_apply (inode_proof.wpc_Open with "[Hs_inode]").

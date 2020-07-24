@@ -321,4 +321,70 @@ Proof.
   rewrite drop_app_ge //.
 Qed.
 
+(* TODO: use this to replace list_lookup_lt (it's much easier to remember) *)
+Local Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x) :=
+  let H := fresh "H" x "_lookup" in
+  let i := lazymatch type of i with
+           | nat => i
+           | Z => constr:(Z.to_nat i)
+           | u64 => constr:(int.nat i)
+           end in
+  destruct (list_lookup_lt _ l i) as [x H];
+  [ try solve [ len ]
+  | ].
+
+(* TODO: upstream to stdpp (which has drop_) *)
+Lemma take_0 {A} (l: list A) : take 0%nat l = [].
+Proof. reflexivity. Qed.
+
+Theorem wp_Dec__GetInts stk E dec_v (xs: list u64) r (n: u64) :
+  length xs = int.nat n →
+  {{{ is_dec dec_v ((EncUInt64 <$> xs) ++ r) }}}
+    Dec__GetInts dec_v #n @ stk; E
+  {{{ (s:Slice.t), RET slice_val s; is_dec dec_v r ∗ is_slice s uint64T 1 xs }}}.
+Proof.
+  iIntros (Hlen Φ) "Hdec HΦ".
+  wp_rec; wp_pures.
+  wp_apply (typed_mem.wp_AllocAt (slice.T uint64T)).
+  { apply zero_val_ty', has_zero_slice_T. }
+  iIntros (s_l) "Hsptr".
+  wp_pures.
+  wp_apply wp_ref_to; auto.
+  iIntros (i_l) "Hi".
+  wp_pures.
+  wp_apply (wp_forUpto (λ i,
+                        let done := take (int.nat i) xs in
+                        let todo := drop (int.nat i) xs in
+                        "Hdec" ∷ is_dec dec_v ((EncUInt64 <$> todo) ++ r) ∗
+                        "*" ∷ ∃ s, "Hsptr" ∷ s_l ↦[slice.T uint64T] (slice_val s) ∗
+                                   "Hdone" ∷ is_slice s uint64T 1 done
+           )%I with "[] [$Hi Hsptr Hdec]").
+  - word.
+  - clear Φ.
+    iIntros (?) "!>".
+    iIntros (Φ) "(HI&Hi&%Hlt) HΦ"; iNamed "HI".
+    wp_pures.
+    list_elem xs i as x.
+    rewrite (drop_S _ _ _ Hx_lookup) /=.
+    wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
+    wp_load.
+    wp_apply (wp_SliceAppend' with "Hdone"); iIntros (s') "Hdone".
+    wp_store.
+    iApply "HΦ"; iFrame.
+    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+    iFrame "Hdec".
+    iExists _; iFrame.
+    erewrite take_S_r; eauto.
+  - rewrite drop_0; iFrame "Hdec".
+    iExists Slice.nil.
+    iFrame.
+    rewrite take_0.
+    iApply is_slice_nil; auto.
+  - iIntros "(HI&Hi)"; iNamed "HI".
+    wp_load.
+    iApply "HΦ"; iFrame.
+    rewrite -> take_ge, drop_ge by len.
+    iFrame.
+Qed.
+
 End goose_lang.
