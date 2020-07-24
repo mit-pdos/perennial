@@ -56,15 +56,22 @@ Proof.
   auto.
 Qed.
 
-Definition list_to_block_to_vals l :
+Theorem list_to_block_to_list l :
   length l = Z.to_nat 4096 ->
-  Block_to_vals (list_to_block l) = b2val <$> l.
+  vec_to_list (list_to_block l) = l.
 Proof.
   intros H.
   rewrite /list_to_block /Block_to_vals.
   rewrite decide_left.
-  f_equal.
   rewrite vec_to_list_to_vec_eq_rect; auto.
+Qed.
+
+Theorem list_to_block_to_vals l :
+  length l = Z.to_nat 4096 ->
+  Block_to_vals (list_to_block l) = b2val <$> l.
+Proof.
+  intros H.
+  rewrite /Block_to_vals list_to_block_to_list //.
 Qed.
 
 Lemma array_to_block l q (bs: list byte) :
