@@ -271,7 +271,7 @@ Proof.
                               with "[] [Hused $Haddrs]").
 
   - clear Φ.
-    iIntros (i a done _) "!>".
+    iIntros (? a ? ? _) "!>".
     iIntros (Φ) "Hused HΦ".
     wp_pures.
     iDestruct "Hused" as (m) "[Hused %Hdom]".

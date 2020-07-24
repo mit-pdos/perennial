@@ -530,7 +530,7 @@ Opaque struct.t.
     iApply big_sepM_empty. done.
   }
   {
-    iIntros (i b done todo).
+    iIntros (i b ? ? Hdonetodo).
     iIntros (Φ') "!> HP HΦ'".
     iNamed "HP".
 

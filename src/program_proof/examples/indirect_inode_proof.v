@@ -543,7 +543,7 @@ Proof.
                  "HusedSlice" ∷ is_slice s uint64T 1 usedBlksList
       )%I
   with "[] [Hl0 Hdirect_small Hs]").
-  { iIntros (i a done todo).
+  { iIntros (i a done todo _).
     iModIntro.
     iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
     wp_pures.
@@ -580,7 +580,7 @@ Proof.
                  "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ usedIndBlks)
       )%I
   with "[] [Hl0 Hindirect_small indirect HusedSlice]").
-  { iIntros (i a done todo).
+  { iIntros (i a done todo _).
     iModIntro.
     iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
     wp_pures.
@@ -624,7 +624,7 @@ Proof.
                                                 ∃ indBlk padding, is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ i))
       )%I
   with "[] [Hl0 Hindirect_small HusedSlice Hindirect]").
-  { iIntros (i a done todo).
+  { iIntros (i a done todo _).
     iModIntro.
     iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
     wp_pures.

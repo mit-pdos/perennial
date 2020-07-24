@@ -197,10 +197,11 @@ Proof.
 Qed.
 
 Theorem wp_forSlicePrefix (P: list V -> list V -> iProp Σ) stk E s t q vs (body: val) :
-  (∀ (i: u64) (x: V) (vs: list V) (vs': list V),
-      {{{ P vs (x :: vs') }}}
+  (∀ (i: u64) (x: V) (done: list V) (todo: list V),
+      ⌜done ++ x::todo = vs⌝ →
+      {{{ P done (x :: todo) }}}
         body #i (to_val x) @ stk; E
-      {{{ RET #(); P (vs ++ [x]) vs' }}}) -∗
+      {{{ RET #(); P (done ++ [x]) todo }}}) -∗
     {{{ is_slice_small s t q vs ∗ P nil vs }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); is_slice_small s t q vs ∗ P vs nil }}}.
@@ -212,8 +213,12 @@ Proof.
   {
     iIntros (i x). iModIntro.
     iIntros (Φ0) "(HP & % & %) HΦ0".
-    wp_apply ("Hind" with "[HP]").
-    { eapply drop_S in H0. rewrite H0. iFrame. }
+    assert (drop (int.nat i) vs = x::drop (S (int.nat i)) vs) as Hdrop_S.
+    { eapply drop_S in H0; eauto. }
+    wp_apply ("Hind" with "[%] [HP]").
+    { rewrite -[vs in _ = vs](take_drop (int.nat i)).
+      rewrite Hdrop_S //. }
+    { rewrite Hdrop_S; iFrame. }
     iIntros "HP".
     iApply "HΦ0".
     iExactEq "HP". f_equal.

@@ -215,29 +215,24 @@ Proof.
   wp_rec; wp_pures.
   wp_apply (wp_forSlicePrefix
               (λ done todo,
-                "%Hlen" ∷ ⌜length done + length todo ≤ length xs⌝ ∗
                 "Henc" ∷ is_enc enc_v sz
                         (r ++ (EncUInt64 <$> done))
                         (remaining - 8*(Z.of_nat $ length done)))%I
            with "[] [$Hxs Henc]").
   - clear Φ.
-    iIntros (????) "!>".
+    iIntros (???? Hdonetodo) "!>".
     iIntros (Φ) "HI HΦ"; iNamed "HI".
     wp_pures.
     wp_apply (wp_Enc__PutInt with "Henc").
-    { move: Hlen; rewrite /=; len. }
+    { apply (f_equal length) in Hdonetodo; move: Hdonetodo; len. }
     iIntros "Henc".
     iApply "HΦ".
-    iSplit.
-    { iPureIntro.
-      move: Hlen; len. }
     iExactEq "Henc".
     rewrite /named; f_equal; len.
     rewrite fmap_app.
     rewrite -!app_assoc.
     reflexivity.
-  - iSplit; first by len.
-    iExactEq "Henc".
+  - iExactEq "Henc".
     rewrite /named; f_equal; len.
     rewrite app_nil_r //.
   - iIntros "(Hs&HI)"; iNamed "HI".
