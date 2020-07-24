@@ -1476,12 +1476,13 @@ Proof.
 
     iDestruct (is_slice_sz with "Hbufs") as %Hbuflistlen.
     assert (int.val bufs.(Slice.sz) = 0) by (revert n; word).
-    assert (length (list.untype buflist) = 0%nat) by word.
+    assert (length (list.untype buflist) = 0%nat) by len.
     rewrite fmap_length in H0.
     apply length_zero_iff_nil in H0; subst.
 
     iSplit; last by iApply big_sepM_empty.
     iIntros. congruence.
+    Fail idtac.
 Admitted.
 
 Theorem wp_Txn__GetTransId l γ :

@@ -159,3 +159,18 @@ Proof.
   rewrite /subslice.
   rewrite take_ge; auto.
 Qed.
+
+Theorem subslice_zero_length {A} n (l: list A) :
+  subslice n n l = [].
+Proof.
+  rewrite /subslice.
+  rewrite drop_ge //.
+  rewrite take_length; lia.
+Qed.
+
+Theorem subslice_nil {A} n m :
+  subslice n m (@nil A) = [].
+Proof.
+  rewrite /subslice.
+  rewrite take_nil drop_nil //.
+Qed.

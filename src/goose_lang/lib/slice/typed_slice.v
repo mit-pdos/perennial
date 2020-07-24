@@ -57,6 +57,13 @@ Proof.
   rewrite /list.untype fmap_replicate //.
 Qed.
 
+Lemma is_slice_small_sz s t q vs :
+  is_slice_small s t q vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+Proof.
+  iIntros "(_&%) !%".
+  rewrite fmap_length // in H.
+Qed.
+
 Lemma is_slice_to_small s t q vs :
   is_slice s t q vs -∗ is_slice_small s t q vs.
 Proof.
@@ -64,6 +71,12 @@ Proof.
   iIntros "Hs".
   iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
   done.
+Qed.
+
+Lemma is_slice_sz s t q vs :
+  is_slice s t q vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+Proof.
+  rewrite is_slice_to_small is_slice_small_sz //.
 Qed.
 
 Theorem is_slice_zero t q :
@@ -211,9 +224,7 @@ Proof.
   iModIntro. iIntros "[HP Hs]".
   iDestruct (is_slice_small_sz with "Hs") as %<-.
   iApply "HΦ". iFrame.
-  rewrite /list.untype fmap_length.
-  rewrite firstn_all.
-  rewrite drop_all. done.
+  rewrite firstn_all drop_all //.
 Qed.
 
 End heap.

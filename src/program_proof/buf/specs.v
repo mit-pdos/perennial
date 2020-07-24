@@ -588,7 +588,7 @@ Proof using.
   iIntros (Φ) "(Hs & % & %) HΦ".
   wp_call.
 
-  iDestruct (is_slice_small_sz with "Hs") as "%".
+  iDestruct (slice.is_slice_small_sz with "Hs") as "%".
   destruct H as [Hoff Hatoff].
 
   wp_apply (wp_SliceSubslice_small with "[$Hs]").

@@ -684,7 +684,6 @@ Section goose.
     iNamed 1.
     wpc_pures.
     iDestruct (is_slice_small_sz with "Hinode_s") as %Hinode_ref_len.
-    rewrite /list.untype fmap_length in Hinode_ref_len.
     wpc_apply (wpc_forSlice (V:=loc)
                 (λ n, "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                                   pre_inode inode_ref i s_inode) ∗

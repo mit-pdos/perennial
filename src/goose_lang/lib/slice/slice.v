@@ -481,6 +481,35 @@ Proof.
   rewrite is_slice_small_take_drop; auto.
 Qed.
 
+Theorem is_slice_combine s t q n vs1 vs2 :
+  (int.nat n ≤ int.nat s.(Slice.sz))%nat →
+  is_slice_small (slice_take s t n) t q vs1 -∗
+  is_slice_small (slice_skip s t n) t q vs2 -∗
+  is_slice_small s t q (vs1 ++ vs2).
+Proof.
+  iIntros (Hbound) "Hs1 Hs2".
+  assert (vs1 = take (length vs1) (vs1 ++ vs2)) as Hvs1.
+  { rewrite take_app_le //.
+    rewrite take_ge //. }
+  assert (vs2 = drop (length vs1) (vs1 ++ vs2)) as Hvs2.
+  { rewrite drop_app_ge //.
+    rewrite Nat.sub_diag //. }
+  iDestruct (is_slice_small_sz with "Hs1") as %Hsz1.
+  iDestruct (is_slice_small_sz with "Hs2") as %Hsz2.
+  simpl in Hsz1, Hsz2.
+  iApply (is_slice_small_take_drop _ _ _ (U64 (length vs1))).
+  { word. }
+  replace (int.nat (U64 (length vs1))) with (length vs1) by word.
+  rewrite -> take_app_le by word.
+  rewrite -> drop_app_ge, Nat.sub_diag by word.
+  rewrite Hsz1.
+  rewrite drop_0.
+  rewrite -> take_ge by word.
+  replace (U64 (int.nat n)) with n; first by iFrame.
+  apply (inj int.val).
+  word.
+Qed.
+
 Theorem slice_skip_skip (n m: u64) s t :
   int.val m ≤ int.val n ≤ int.val s.(Slice.sz) ->
   int.val s.(Slice.sz) ≤ int.val s.(Slice.cap) ->

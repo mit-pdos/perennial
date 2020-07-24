@@ -187,7 +187,7 @@ Proof.
       rewrite cons_middle app_assoc.
       rewrite -HdaddrsLen.
       replace (length daddrs + 1)%nat with (length (daddrs ++ [(U64 0)])); last first.
-      { len. simpl. auto. }
+      { len. }
       by rewrite drop_app.
     }
 
@@ -271,7 +271,7 @@ Proof.
           rewrite HdirLen.
           repeat (split; auto); len; simpl; [ | rewrite app_length; simpl; word].
           rewrite -Hdaddrs HdirAddrs.
-          len. simpl. len.
+          len.
         }
 
         (* HnumInd *)
@@ -596,8 +596,7 @@ Proof.
       rewrite list_to_block_to_vals.
       + rewrite app_length -app_assoc; simpl; auto.
       + rewrite (length_encode_fmap_uniform 8); len.
-        - rewrite cons_length. rewrite replicate_length. simpl; word.
-        - intros. by rewrite -encode_singleton encode_singleton_length.
+        intros. by rewrite -encode_singleton encode_singleton_length.
     }
     (*Hlen indBlk*)
     iSplitR; [iPureIntro; len; simpl; auto|].
@@ -613,13 +612,13 @@ Proof.
         replace (int.nat (U64 (500 + Z.of_nat ds.(impl_s.numInd) * 512)))
           with (500 + ds.(impl_s.numInd) * 512)%nat by word.
         word.
-      + len. simpl. word.
+      + len.
     }
     {
       unfold ind_blocks_at_index; simpl.
       repeat rewrite subslice_to_end; unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
       + admit.
-      + len; simpl. word.
+      + len.
       + word.
     }
 Admitted.
@@ -700,7 +699,7 @@ Proof.
     iApply "HΦ".
     iFrame.
     repeat (iSplitR; iPureIntro; [repeat (split; eauto)|]).
-    rewrite /list.untype fmap_length -Hiaddrs in HlenInd.
+    rewrite -Hiaddrs in HlenInd.
     assert (Z.of_nat (length iaddrs) = int.val indirect_s.(Slice.sz)) by word.
     rewrite -H -HiaddrsLen.
     rewrite HnumInd /roundUpDiv; word.
@@ -715,7 +714,7 @@ Proof.
     (* Here are a bunch of facts *)
     (* TODO these are replicated from READ *)
     assert (int.val index < ds.(impl_s.numInd)) as HindexMax. {
-      rewrite /list.untype fmap_length take_length Min.min_l in HlenInd; word.
+      rewrite take_length Min.min_l in HlenInd; word.
     }
     destruct (list_lookup_lt _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (int.nat index)) as [indA Hlookup].
     {
@@ -961,7 +960,7 @@ Proof.
       { iPureIntro.
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         repeat (split; auto); len; simpl; try word.
-        len. simpl. word.
+        len.
       }
 
       (* HnumInd *)
