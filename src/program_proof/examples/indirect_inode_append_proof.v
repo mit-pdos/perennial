@@ -376,7 +376,7 @@ Qed.
 
 Theorem wp_writeIndirect {l σ d lref} (addr: u64) ds direct_s indirect_s
         (indA: u64) (indBlkAddrs: list u64) (indBlock: Block)
-        (index offset : nat) (a: u64) (b: Block) indblkaddrs_s :
+        (index: nat) (offset : nat) (a: u64) (b: Block) indblkaddrs_s :
   {{{
        (* parts of necessary inode_linv *)
        "Hvolatile" ∷ is_inode_volatile_with l σ addr direct_s indirect_s ds ∗
@@ -388,8 +388,12 @@ Theorem wp_writeIndirect {l σ d lref} (addr: u64) ds direct_s indirect_s
 
        (* Specific to writeIndirect *)
        "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect ∧ length σ.(inode.blocks) < MaxBlocks ∧
-        (*Assert that there is still room in the last indirect block*)
-        ((length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks < ds.(impl_s.numInd))
+        (*there is still room in the last indirect block*)
+       (length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks < ds.(impl_s.numInd)⌝ ∗
+       "%Hindex" ∷ ⌜
+        Z.of_nat index = (length σ.(inode.blocks) - maxDirect) `div` indirectNumBlocks ∧
+        (*index is the last existing block*)
+        ind_blocks_at_index σ index = (drop (int.nat maxDirect + index * int.nat indirectNumBlocks) σ.(inode.blocks))
        ⌝ ∗
        "%Hlookup" ∷ ⌜(take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) !! index = Some indA
                   ∧ ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs
@@ -406,7 +410,7 @@ Theorem wp_writeIndirect {l σ d lref} (addr: u64) ds direct_s indirect_s
          ((⌜σ' = set inode.blocks (λ bs, bs ++ [b])
                   (set inode.addrs ({[a]} ∪.) σ) ∧
            ds' = set impl_s.indBlkAddrsList
-            (λ ls, <[int.nat index:= (indBlkAddrs ++ [a])]> ls)
+            (λ ls, <[index := (indBlkAddrs ++ [a])]> ls)
                       (set impl_s.hdr (λ _, hdr) ds)⌝)
         -∗ (
        "Hvolatile" ∷ is_inode_volatile_with l σ' addr direct_s indirect_s ds' ∗
@@ -423,7 +427,8 @@ Proof.
 
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
   destruct Hlen0 as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
-  destruct Hsize as [HsizeMin [HsizeMax HmodPos]].
+  destruct Hsize as [HsizeMin [HsizeMax HstillRoom]].
+  destruct Hindex as [Hindex HindexLastBlock].
   destruct Hlookup as [HlookupIndA [HlookupIndBlkAddrs HlookupIndBlk]].
   iDestruct (is_slice_sz with "Hindirect") as %HlenInd.
   change ((set inode.blocks
@@ -476,12 +481,12 @@ Proof.
     iIntros (s) "[Hs %]".
     wp_pures.
     rewrite Hrem0 replicate_0 app_nil_r.
+    iNamed "HindirectData".
     wp_apply (wp_Write _ _ indA s 1
             (list_to_block (encode (EncUInt64 <$>
             indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length indBlkAddrs + 1)) (U64 0))))
-            _ with "[Hs HindirectData]").
+            _ with "[Hs diskAddr]").
     {
-      iNamed "HindirectData".
       iExists indBlock; iFrame.
       rewrite list_to_block_to_vals; auto.
       rewrite (length_encode_fmap_uniform 8).
@@ -554,7 +559,7 @@ Proof.
             ds.(impl_s.indAddrs).
         change ((set inode.blocks (λ bs : list Block, bs ++ [b]) (set inode.addrs (union {[a]}) σ)).(inode.blocks))
           with (σ.(inode.blocks) ++ [b]).
-        rewrite Hencoded0.
+        rewrite Hencoded1.
         rewrite app_length.
         change (length [b]) with 1%nat.
         rewrite take_length; rewrite min_r; [|word].
@@ -580,9 +585,42 @@ Proof.
     (* HindirectData *)
     iExists (list_to_block (encode (EncUInt64 <$> indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length indBlkAddrs + 1)) (U64 0)))).
     iFrame; auto.
-    iSplitL; iFrame; auto.
+    iSplitR; iFrame; auto.
     {
-      admit.
+      iPureIntro.
+      len; simpl; word.
+    }
+    (*Hencoded indBlk*)
+    iSplitR; [iPureIntro; simpl; auto|].
+    {
+      rewrite list_to_block_to_vals.
+      + rewrite app_length -app_assoc; simpl; auto.
+      + rewrite (length_encode_fmap_uniform 8); len.
+        - rewrite cons_length. rewrite replicate_length. simpl; word.
+        - intros. by rewrite -encode_singleton encode_singleton_length.
+    }
+    (*Hlen indBlk*)
+    iSplitR; [iPureIntro; len; simpl; auto|].
+    {
+      unfold ind_blocks_at_index in *. len.
+      simpl.
+      rewrite subslice_to_end in Hlen0; [|unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *; word].
+      rewrite drop_length in Hlen0.
+      rewrite subslice_to_end; unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      + len. simpl. rewrite Hlen0.
+        replace (Z.of_nat (int.nat (U64 500))) with 500 by word.
+        replace (Z.of_nat (int.nat (U64 512))) with 512 by word.
+        replace (int.nat (U64 (500 + Z.of_nat ds.(impl_s.numInd) * 512)))
+          with (500 + ds.(impl_s.numInd) * 512)%nat by word.
+        word.
+      + len. simpl. word.
+    }
+    {
+      unfold ind_blocks_at_index; simpl.
+      repeat rewrite subslice_to_end; unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      + admit.
+      + len; simpl. word.
+      + word.
     }
 Admitted.
 
@@ -592,6 +630,7 @@ Theorem wp_appendIndirect {l σ addr d lref direct_s indirect_s ds} (a: u64) b:
     "Hro_state" ∷ inode_state l d lref ∗
     "Hinv" ∷ inode_linv_with l σ addr direct_s indirect_s ds ∗
     "Ha" ∷ int.val a d↦ b
+
   }}}
   Inode__appendIndirect #l #a
   {{{ (ok: bool), RET #ok;
@@ -680,13 +719,18 @@ Proof.
     }
     destruct (list_lookup_lt _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (int.nat index)) as [indA Hlookup].
     {
-      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      rewrite firstn_length.
+      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. rewrite firstn_length.
       rewrite Min.min_l; word.
     }
     destruct (list_lookup_lt _ ds.(impl_s.indBlocks) (int.nat index)) as [indBlk HlookupBlk].
     {
       unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+      word.
+    }
+    assert (int.nat index < 10) as HindexMax10.
+    {
+      pose proof (lookup_lt_Some (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) _ indA Hlookup) as tmp.
+      rewrite take_length in tmp.
       word.
     }
 
@@ -741,7 +785,15 @@ Proof.
       replace (int.val (length σ.(inode.blocks))) with (Z.of_nat (length σ.(inode.blocks))) in * by word.
       word.
     }
-
+    assert (ind_blocks_at_index σ (int.nat index) = drop (int.nat maxDirect + int.nat index * int.nat indirectNumBlocks) σ.(inode.blocks))
+      as HindBlksAtIndex.
+    {
+        unfold ind_blocks_at_index; rewrite subslice_to_end;
+        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+        + by replace (int.nat (U64 500) + int.nat index * int.nat (U64 512))%nat
+            with (int.nat (U64 (500 + Z.of_nat (int.nat index) * 512))) by word.
+        + rewrite Hindex. word.
+    }
     wp_apply (wp_writeIndirect addr ds direct_s indirect_s indA indBlkAddrs indBlk
                 (int.nat index) (int.nat offset) a b indblkaddrs_s
               with "[-HΦ HdataDirect HdataIndirect]").
@@ -753,14 +805,28 @@ Proof.
       iSplitR; [iPureIntro; repeat split; eauto|].
       iSplitR; [iPureIntro; repeat split; eauto|].
       iSplitR; [iPureIntro; repeat split; eauto|].
-      (* Show that there is still room in this indirect block *)
-      iSplitR; [iPureIntro; eauto|].
+      (* Index facts *)
       {
-        rewrite Hlen /ind_blocks_at_index subslice_to_end;
-        rewrite Hindex; unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-        + rewrite drop_length; word.
-        + word.
+        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+        replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks)))) - 500)
+          with (Z.of_nat (length σ.(inode.blocks)) - 500) in Hindex by word.
+        word.
       }
+
+      iSplitR; eauto.
+      (* Hlen *)
+      iSplitR.
+      { iPureIntro.
+        rewrite Hlen HindBlksAtIndex drop_length.
+        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
+        replace (int.nat (U64 500) + int.nat index * int.nat (U64 512))%nat
+          with (Z.to_nat (500 + int.val index * 512)) by word.
+        replace (Z.of_nat (int.nat (U64 512))) with 512 by word.
+        rewrite Hindex.
+        replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
+        word.
+      }
+
       iSplitR; eauto.
 
       (* is_slice indBlkAddrs *)
@@ -819,7 +885,7 @@ Proof.
     assert (σ' = set inode.blocks (λ bs : list Block, bs ++ [b]) (set inode.addrs (union {[a]}) σ)
            ∧ ds' =
              set impl_s.indBlkAddrsList
-               (λ ls : list (list u64), <[int.nat (int.nat index):=indBlkAddrs ++ [a]]> ls)
+               (λ ls : list (list u64), <[(int.nat index):=indBlkAddrs ++ [a]]> ls)
                (set impl_s.hdr (λ _ : Block, hdr) ds)) as Harg.
     {
       split; auto.
@@ -858,12 +924,6 @@ Proof.
         repeat rewrite list_to_set_app_L.
         repeat rewrite -union_assoc_L.
         repeat f_equiv.
-        assert (int.nat index < 10) as HindexMax10.
-        {
-          pose proof (lookup_lt_Some (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) _ indA Hlookup) as tmp.
-          rewrite take_length in tmp.
-          word.
-        }
         assert (int.val index < length (ds.(impl_s.indBlkAddrsList))) as HindexExists.
         {
           pose proof (lookup_lt_Some ds.(impl_s.indBlkAddrsList) (int.nat index) _ HaddrLookup).

@@ -69,7 +69,7 @@ Definition is_indirect (a: u64) (indBlkAddrs: list u64) (indBlock : Block)
 .
 
 Definition ind_blocks_at_index σ index : list Block :=
-  let begin := int.nat (int.nat maxDirect + (index * (int.nat indirectNumBlocks))) in
+  let begin := int.nat (maxDirect + (index * indirectNumBlocks)) in
   List.subslice begin (begin + (int.nat indirectNumBlocks)) σ.(inode.blocks).
 
 Definition is_inode_durable_data σ (ds: impl_s.t) : iProp Σ :=
