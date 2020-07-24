@@ -9,7 +9,8 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.program_proof Require Import wal.lib.
-From Perennial.program_proof Require Import marshal_proof util_proof.
+From Perennial.program_proof Require Import marshal_block util_proof.
+From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Existing Instance r_mbind.
 
@@ -73,9 +74,9 @@ Definition diskEnd_is γ (q:Qp) (endpos: Z): iProp Σ :=
   ⌜0 <= endpos < 2^64⌝ ∗ fmcounter γ.(diskEnd_name) q (Z.to_nat endpos).
 
 Definition is_low_state (startpos endpos : u64) (addrs: list u64) (blocks : list Block) : iProp Σ :=
-  ∃ hdr1 hdr2 hdr2extra,
-    ⌜Block_to_vals hdr1 = b2val <$> encode ([EncUInt64 endpos] ++ (map EncUInt64 addrs))⌝ ∗
-    ⌜Block_to_vals hdr2 = b2val <$> encode [EncUInt64 startpos] ++ hdr2extra⌝ ∗
+  ∃ hdr1 hdr2,
+    ⌜block_encodes hdr1 ([EncUInt64 endpos] ++ (map EncUInt64 addrs))⌝ ∗
+    ⌜block_encodes hdr2 [EncUInt64 startpos]⌝ ∗
     0 d↦ hdr1 ∗
     1 d↦ hdr2 ∗
     2 d↦∗ blocks.
@@ -208,7 +209,7 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
     own γ.(addrs_name) (◯ (Excl' addrs)) ∗
     own γ.(blocks_name) (◯ (Excl' blocks)) ∗
     circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
-    is_slice_small s uint64T 1 (u64val <$> addrs).
+    is_slice_small s uint64T 1 addrs.
 
 Lemma is_circular_state_wf γ σ :
   is_circular_state γ σ -∗ ⌜ circ_wf σ ⌝.
@@ -283,45 +284,37 @@ Theorem wp_hdr2 (newStart: u64) :
   {{{ True }}}
     hdr2 #newStart
   {{{ s b, RET slice_val s; is_block s 1 b ∗
-                            ∃ extra,
-                              ⌜Block_to_vals b = b2val <$> encode [EncUInt64 newStart] ++ extra⌝ }}}.
+                            ⌜block_encodes b [EncUInt64 newStart]⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
   wp_apply wp_new_enc.
-  iIntros (enc) "[Henc %Hencsz]".
+  iIntros (enc) "Henc".
   wp_pures.
   wp_apply (wp_Enc__PutInt with "Henc"); first by word.
   iIntros "Henc".
   wp_apply (wp_Enc__Finish with "Henc").
-  iIntros (s) "[Hs %Henclen]".
+  iIntros (s b) "[%Henc Hs]".
   iApply "HΦ".
   iFrame.
-  rewrite Hencsz in Henclen.
-  autorewrite with len in *.
-  replace (int.nat 4096) with (Z.to_nat 4096) in Henclen.
-  rewrite -list_to_block_to_vals; len.
-  iFrame.
-  iExists _; iPureIntro.
-  rewrite list_to_block_to_vals; len.
   eauto.
 Qed.
 
-Theorem wp_hdr1 (circ: loc) (newStart: u64) s addrs :
+Theorem wp_hdr1 (circ: loc) (newStart: u64) s (addrs: list u64) :
   length addrs = Z.to_nat LogSz ->
   {{{ circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
-       is_slice_small s uint64T 1 (u64val <$> addrs) }}}
+       is_slice_small s uint64T 1 addrs }}}
     circularAppender__hdr1 #circ #newStart
   {{{ b_s b, RET slice_val b_s;
       circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
-      is_slice_small s uint64T 1 (u64val <$> addrs) ∗
+      is_slice_small s uint64T 1 addrs ∗
       is_block b_s 1 b ∗
-      ⌜Block_to_vals b = b2val <$> encode ([EncUInt64 newStart] ++ (EncUInt64 <$> addrs))⌝ }}}.
+      ⌜block_encodes b ([EncUInt64 newStart] ++ (EncUInt64 <$> addrs))⌝ }}}.
 Proof.
   iIntros (Haddrlen Φ) "[HdiskAddrs Hs] HΦ".
   wp_call.
   wp_apply wp_new_enc.
-  iIntros (enc) "[Henc %]".
+  iIntros (enc) "Henc".
   wp_pures.
   wp_apply (wp_Enc__PutInt with "Henc"); first by word.
   iIntros "Henc".
@@ -329,19 +322,10 @@ Proof.
   wp_apply (wp_Enc__PutInts with "[$Henc $Hs]"); first by word.
   iIntros "[Henc Hs]".
   wp_apply (wp_Enc__Finish with "Henc").
-  iIntros (s') "[Hs' %]".
+  iIntros (s' b) "[%Henc Hs']".
   iApply "HΦ".
   iFrame.
-  rewrite H in H0.
-  autorewrite with len in *.
-  change (int.nat 4096) with (Z.to_nat 4096) in H0.
-  rewrite -list_to_block_to_vals; len.
-  iFrame.
-  iPureIntro.
-  rewrite list_to_block_to_vals; len.
-  replace (Z.to_nat (int.val 4096 - 8 - 8 * length addrs)) with 0%nat by word.
-  rewrite replicate_0.
-  rewrite -app_assoc app_nil_r //.
+  eauto.
 Qed.
 
 Lemma circ_wf_advance:
@@ -428,8 +412,7 @@ Proof.
   iIntros (Φ) "(#Hcirc&Hstart&#Hend&%&Hfupd) HΦ".
   rename H into Hpre.
   wp_call.
-  wp_apply wp_hdr2; iIntros (s hdr2) "[Hb Hextra]".
-  iDestruct "Hextra" as (extra) "%".
+  wp_apply wp_hdr2; iIntros (s hdr2) "[Hb %Henchdr2]".
   wp_apply (wp_Write_fupd (⊤ ∖ ↑N) with "Hb").
   rewrite /is_circular.
   iInv "Hcirc" as "Hcirc_inv" "Hclose".
@@ -440,7 +423,7 @@ Proof.
   iDestruct (diskEnd_at_least_to_le with "[$] Hend") as %HdiskEnd_lb.
   iDestruct (circ_state_wf with "Hown") as %Hlow_wf.
   iDestruct (circ_state_wf with "Hown") as %(Hlen1&Hlen2).
-  iDestruct "Hlow" as (hdr1 hdr2_0 hdr2extra Hhdr1 Hhdr2) "(Hhdr1&Hhdr2&Hblocks)".
+  iDestruct "Hlow" as (hdr1 hdr2_0 Hhdr1 Hhdr2) "(Hhdr1&Hhdr2&Hblocks)".
   iExists hdr2_0; iFrame "Hhdr2".
   iIntros "!> !> Hhdr2".
   iDestruct ("Hfupd" with "[$HP]") as "Hfupd"; first by eauto.
@@ -463,9 +446,8 @@ Proof.
     - iExists _, _; iFrame "Hown".
       iSplitR; [ iPureIntro | ].
       { eapply has_circ_updates_advance; eauto; word. }
-      iExists _, _, _; iFrame.
+      iExists _, _; iFrame.
       iSplitR; auto.
-      rewrite Hhdr1.
       iPureIntro.
       rewrite -> diskEnd_advance_unchanged by word.
       auto. } (* done restoring invariant *)
@@ -653,7 +635,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       start_at_least γ startpos_lb ∗
       diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
-      is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs) ∗
+      is_slice_small diskaddrslice uint64T 1 addrs ∗
       updates_slice_frag bufs q upds
   }}}
     circularAppender__logBlocks #c d #endpos (slice_val bufs)
@@ -663,7 +645,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       own γ.(blocks_name) (◯ Excl' blocks') ∗
       diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
-      is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
+      is_slice_small diskaddrslice uint64T 1 addrs' ∗
       updates_slice_frag bufs q upds
   }}}.
 Proof.
@@ -672,16 +654,16 @@ Proof.
   iDestruct (updates_slice_frag_len with "Hupdslice") as %Hupdlen.
   iDestruct "Hupdslice" as (bks) "[Hupdslice Hbks]".
 
-  iDestruct (is_slice_small_sz with "Hupdslice") as %Hslen.
+  iDestruct (slice.is_slice_small_sz with "Hupdslice") as %Hslen.
   rewrite fmap_length in Hslen.
   iDestruct (big_sepL2_length with "Hbks") as %Hslen2.
 
-  wp_apply (wp_forSlice (fun i =>
+  wp_apply (slice.wp_forSlice (fun i =>
     let addrs' := update_addrs addrs (int.val endpos) (take (int.nat i) upds) in
     let blocks' := update_blocks blocks (int.val endpos) (take (int.nat i) upds) in
     own γ.(blocks_name) (◯ Excl' blocks') ∗
     c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
-    is_slice_small diskaddrslice uint64T 1 (u64val <$> addrs') ∗
+    is_slice_small diskaddrslice uint64T 1 addrs' ∗
     diskEnd_is γ (1/2) (int.val endpos) ∗
     ( [∗ list] b_upd;upd ∈ bks;upds, is_update b_upd q upd)
     )%I (* XXX why is %I needed? *)
@@ -725,7 +707,7 @@ Proof.
   iDestruct (circ_state_wf with "Hown") as %[Hlen1 Hlen2].
   iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd.
   iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
-  iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0&Hd1&Hd2)".
+  iDestruct "Hlow" as (hdr1 hdr2 Hhdr1 Hhdr2) "(Hd0&Hd1&Hd2)".
   pose proof (Z.mod_bound_pos (int.val endpos + int.val i) LogSz); intuition (try word).
   destruct (list_lookup_lt _ blocks'' (Z.to_nat $ (int.val endpos + int.val i) `mod` LogSz)) as [b ?]; first by word.
   iDestruct (disk_array_acc _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]"; eauto.
@@ -760,7 +742,7 @@ Proof.
     { iPureIntro.
       eapply circ_low_wf_blocks; eauto.
     }
-    iExists hdr1, hdr2, hdr2extra.
+    iExists hdr1, hdr2.
       by iFrame.
   }
   iIntros "!> Hs".
@@ -785,9 +767,9 @@ Proof.
   iSplitL "Haddrs".
   { replace (Z.to_nat (int.val i + 1)) with (S (int.nat i)) by lia.
     erewrite update_addrs_take_S; eauto.
-    rewrite list_fmap_insert.
     replace (int.val (word.add endpos i)) with (int.val endpos + int.val i) by word.
-    iFrame.
+    rewrite /is_slice_small /list.untype.
+    rewrite list_fmap_insert //.
   }
   iApply "Hbks".
   iFrame. eauto.
@@ -910,8 +892,11 @@ Proof.
   iDestruct "Hend" as "[% Hend]".
   iMod (fmcounter_update _ with "Hend") as "[[Hend1 $] _]"; first by len.
   iModIntro.
-  iSplit; first by word.
-  iSplit; first by word.
+  iSplit.
+  { iPureIntro.
+    split; word. }
+  iSplit.
+  { iPureIntro; word. }
   iExactEq "Hend1".
   f_equal; word.
 Qed.
@@ -948,7 +933,7 @@ Proof.
   iIntros (b_s b) "(HdiskAddrs&Hs&Hb&%)".
   wp_pures.
 
-  iDestruct (is_slice_small_sz with "Hb") as %Hslen.
+  iDestruct (slice.is_slice_small_sz with "Hb") as %Hslen.
   wp_apply (wp_Write_fupd with "Hb").  (*   *)
   rewrite fmap_length in Hslen.
 
@@ -959,7 +944,7 @@ Proof.
   iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
   iDestruct "Hcs" as (addrs0 blocks0 Hupds) "[Hown Hlow]".
   iDestruct "Hown" as (Hlow_wf') "[Haddrs Hblocks]".
-  iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
+  iDestruct "Hlow" as (hdr1 hdr2 Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
   iExists _. iFrame "Hd0".
   iIntros "!> !> Hd0".
 
@@ -997,15 +982,14 @@ Proof.
       apply has_circ_updates_app; auto; len.
     }
     iSplitR; first by eauto.
-    iExists _, _, _. iFrame.
+    iExists _, _. iFrame.
     iPureIntro; intuition.
-    { rewrite H. f_equal. f_equal. f_equal.
-      f_equal. f_equal.
+    { eapply block_encodes_eq; eauto.
+      f_equal. f_equal. f_equal.
       rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
       autorewrite with len in HdiskEnd'.
       cbn [circ_proof.start circ_proof.upds] in *.
       len. }
-    rewrite Hhdr2. eauto.
   }
   iIntros "!> Hb_s".
   wp_apply wp_Barrier.
@@ -1014,45 +998,41 @@ Proof.
 Qed.
 
 Theorem wp_decodeHdr1 stk E s (hdr1: Block) (endpos: u64) (addrs: list u64) :
-  Block_to_vals hdr1 = b2val <$> encode ([EncUInt64 endpos] ++ (map EncUInt64 addrs)) ->
+  block_encodes hdr1 ([EncUInt64 endpos] ++ (EncUInt64 <$> addrs)) →
   length addrs = Z.to_nat LogSz ->
-  {{{ is_slice s byteT 1 (Block_to_vals hdr1) }}}
+  {{{ is_block s 1 hdr1 }}}
     decodeHdr1 (slice_val s) @ stk; E
   {{{ (a_s:Slice.t), RET (#endpos, slice_val a_s);
-      is_slice a_s uint64T 1 (u64val <$> addrs) }}}.
+      is_slice a_s uint64T 1 addrs }}}.
 Proof.
   iIntros (Hhdr1 Haddrlen Φ) "Hb HΦ".
   wp_call.
 
-  wp_apply (wp_NewDec _ _ _ _ nil with "[Hb]").
-  { iApply is_slice_to_small.
-    rewrite Hhdr1. rewrite app_nil_r. iFrame. }
-  iIntros (dec0) "[Hdec0 %]".
+  wp_apply (wp_new_dec with "Hb"); first by eauto.
+  iIntros (dec0) "Hdec0".
   wp_pures.
   wp_apply (wp_Dec__GetInt with "Hdec0"); iIntros "Hdec0".
   wp_pures.
-  wp_apply (wp_Dec__GetInts _ _ _ _ _ nil with "[Hdec0]").
-  { rewrite app_nil_r. iFrame.
-    change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
-    iPureIntro; word. }
+  rewrite -(app_nil_r (EncUInt64 <$> addrs)).
+  wp_apply (wp_Dec__GetInts with "Hdec0").
+  { change (word.divu _ _) with (U64 LogSz).
+    word. }
   iIntros (a_s) "[_ Hdiskaddrs]".
   wp_pures.
   iApply ("HΦ" with "[$]").
 Qed.
 
-Theorem wp_decodeHdr2 stk E s (hdr2: Block) hdr2extra (startpos: u64) :
-  Block_to_vals hdr2 = b2val <$> encode [EncUInt64 startpos] ++ hdr2extra ->
-  {{{ is_slice s byteT 1 (Block_to_vals hdr2) }}}
+Theorem wp_decodeHdr2 stk E s (hdr2: Block) (startpos: u64) :
+  block_encodes hdr2 [EncUInt64 startpos] ->
+  {{{ is_block s 1 hdr2 }}}
     decodeHdr2 (slice_val s) @ stk; E
   {{{ RET #startpos; True }}}.
 Proof.
   iIntros (Hhdr2 Φ) "Hb HΦ".
 
   wp_call.
-  wp_apply (wp_NewDec with "[Hb]").
-  { iApply is_slice_to_small.
-    rewrite Hhdr2. iFrame. }
-  iIntros (dec1) "[Hdec1 %]".
+  wp_apply (wp_new_dec with "Hb"); first eauto.
+  iIntros (dec1) "Hdec1".
   wp_pures.
   wp_apply (wp_Dec__GetInt with "Hdec1").
   iIntros "_".
@@ -1108,7 +1088,7 @@ Proof.
   wp_call.
   wp_apply wp_new_slice; first by auto.
   iIntros (zero_s) "Hzero".
-  iDestruct (is_slice_to_small with "Hzero") as "Hzero".
+  iDestruct (slice.is_slice_to_small with "Hzero") as "Hzero".
   wp_pures.
   rewrite replicate_zero_to_block0.
   wp_apply (wp_Write with "[Hd0 $Hzero]").
@@ -1140,7 +1120,7 @@ Proof.
       apply circ_low_wf_empty; word. }
     change (int.val 0) with 0.
     change (int.val 1) with 1.
-    iExists block0, block0, _.
+    iExists block0, block0.
     iFrame.
     iPureIntro.
     { split.
@@ -1155,8 +1135,7 @@ Proof.
     simpl in Hbkslen.
     apply circ_low_wf_empty; word. }
   iDestruct (struct_fields_split with "Hs") as "($&_)".
-  iDestruct (is_slice_to_small with "Hupd") as "Hupd".
-  change (zero_val uint64T) with (u64val (U64 0)).
+  iDestruct (slice.is_slice_to_small with "Hupd") as "Hupd".
   rewrite -fmap_replicate.
   iFrame "Hupd".
 Qed.
@@ -1187,13 +1166,13 @@ Proof.
   iDestruct "Hcs" as (Hwf) "[Hpos Hcs]".
   iDestruct "Hcs" as (addrs0 blocks0 Hupds) "(Hown & Hlow)".
   iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
-  iDestruct "Hlow" as (hdr1 hdr2 hdr2extra Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
+  iDestruct "Hlow" as (hdr1 hdr2 Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
 
   iCache with "HΦ Hpos Haddrs Hblocks Hd0 Hd1 Hd2".
   { crash_case.
     iFrame "% ∗".
     iExists _, _; iFrame "∗ %".
-    iExists _, _, _; iFrame "∗ %". }
+    iExists _, _; iFrame "∗ %". }
 
   wpc_apply (wpc_Read with "[Hd0]"); first by iFrame.
   iSplit.
@@ -1211,12 +1190,14 @@ Proof.
 
   wpc_bind (decodeHdr1 _).
   wpc_frame.
+  iApply slice.is_slice_to_small in "Hs0".
   wp_apply (wp_decodeHdr1 with "Hs0"); [ eauto | word | ].
   iIntros (addrs) "Hdiskaddrs H". iNamed "H".
   wpc_pures.
 
   wpc_bind (decodeHdr2 _).
   wpc_frame.
+  iApply slice.is_slice_to_small in "Hs1".
   wp_apply (wp_decodeHdr2 with "Hs1"); [ eauto | ].
   iNamed 1.
 
@@ -1238,7 +1219,7 @@ Proof.
     (∃ bufSlice,
       bufsloc ↦[slice.T (struct.t Update.S)] (slice_val bufSlice) ∗
       updates_slice bufSlice (take (int.nat i - int.nat σ.(start)) σ.(upds))) ∗
-      is_slice_small addrs uint64T 1 (u64val <$> addrs0) ∗
+      is_slice_small addrs uint64T 1 addrs0 ∗
       2 d↦∗ blocks0
     )%I
     (fun i => 2 d↦∗ blocks0)%I with "[] [Hbufsloc $Hposl $Hd2 Hdiskaddrs]").
@@ -1262,14 +1243,13 @@ Proof.
     destruct (list_lookup_lt _ addrs0 (Z.to_nat $ (int.val i `mod` LogSz))) as [a Halookup].
     { destruct Hlow_wf.
       mod_bound; word. }
-    wp_apply (wp_SliceGet with "[$Hdiskaddrs]"); eauto.
+    wp_apply (wp_SliceGet _ _ _ _ 1 addrs0 with "[$Hdiskaddrs]"); eauto.
     { iPureIntro.
       change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
-      rewrite list_lookup_fmap.
       word_cleanup.
       rewrite Halookup.
       eauto. }
-    iIntros "[Hdiskaddrs _]".
+    iIntros "Hdiskaddrs".
     iNamed 1.
     wpc_pures.
 
@@ -1312,7 +1292,7 @@ Proof.
 
     wpc_frame.
     wp_apply (wp_SliceAppend_updates (uv:=(a, b_s)) with "[$Hupds Hb_s]").
-    { iApply is_slice_to_small. iFrame. }
+    { iApply slice.is_slice_to_small in "Hb_s". iFrame. }
     iIntros (bufSlice') "Hupds'".
     wp_store.
 
@@ -1320,8 +1300,8 @@ Proof.
 
     iApply "HΦ".
     iFrame.
-    iSplit; first by word.
-    iExists _. iFrame.
+    iSplit; first by iPureIntro; word.
+    iExists _; iFrame.
     iExactEq "Hupds'".
     f_equal.
     destruct Hwf.
@@ -1345,7 +1325,7 @@ Proof.
   - iDestruct (is_slice_to_small with "Hdiskaddrs") as "Hdiskaddrs".
     iFrame.
     rewrite zero_slice_val.
-    iSplit; first by word.
+    iSplit; first by iPureIntro; word.
     iExists _. iFrame.
     iExists nil; simpl.
     iSplitL.
@@ -1396,7 +1376,7 @@ Proof.
       iSplitL "Haddrs' Hblocks'".
       { iFrame "Haddrs' Hblocks'".
         iPureIntro; eauto. }
-      iExists _, _, _.
+      iExists _, _.
       iFrame.
       iPureIntro; eauto.
     }

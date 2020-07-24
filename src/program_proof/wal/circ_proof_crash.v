@@ -11,8 +11,9 @@ From Perennial.goose_lang Require Import crash_modality fmcounter.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.program_proof Require Import wal.lib.
-From Perennial.program_proof Require Import marshal_proof util_proof.
+From Perennial.program_proof Require Import marshal_block util_proof.
 From Perennial.program_proof Require Import circ_proof.
+From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 
 Section heap.
