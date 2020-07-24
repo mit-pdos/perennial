@@ -42,6 +42,17 @@ Proof.
   rewrite app_nil_r //.
 Qed.
 
+Theorem encode_cons x xs :
+  encode (x::xs) = encode1 x ++ encode xs.
+Proof.
+  change (x::xs) with ([x] ++ xs).
+  rewrite encode_app encode_singleton //.
+Qed.
+
+Theorem encoded_length_singleton x :
+  encoded_length [x] = length (encode1 x).
+Proof. rewrite /encoded_length encode_singleton //. Qed.
+
 Theorem encoded_length_app (r1 r2:Rec) :
   encoded_length (r1 ++ r2) = (encoded_length r1 + encoded_length r2)%nat.
 Proof.
@@ -138,6 +149,10 @@ Proof.
   rewrite take_ge //.
 Qed.
 
+Lemma has_encoding_app_exact data r :
+  has_encoding (encode r ++ data) r.
+Proof. by apply has_encoding_app_prefix, has_encoding_exact. Qed.
+
 Theorem wp_Enc__PutInt stk E enc_v sz r (x:u64) remaining :
   8 ≤ remaining →
   {{{ is_enc enc_v sz r remaining }}}
@@ -228,7 +243,7 @@ Proof.
     iApply "HΦ"; iFrame.
 Qed.
 
-Theorem wp_enc_finish stk E enc_v r sz remaining :
+Theorem wp_Enc__Finish stk E enc_v r sz remaining :
   {{{ is_enc enc_v sz r remaining }}}
     Enc__Finish enc_v @ stk; E
   {{{ s data, RET slice_val s; is_slice s byteT 1 data ∗ ⌜has_encoding data r⌝ }}}.
@@ -238,7 +253,139 @@ Proof.
   iApply "HΦ"; iFrame "∗ %".
 Qed.
 
-Definition is_dec (dec_v:val) (r:Rec) (data:list u8) : iProp Σ.
-Admitted.
+Definition is_dec (dec_v:val) (r:Rec) : iProp Σ :=
+  ∃ (s:Slice.t) (off_l:loc) (off: u64) (q:Qp) (data: list u8),
+    "->" ∷ ⌜dec_v = (slice_val s, (#off_l, #()))%V⌝ ∗
+    "Hoff" ∷ off_l ↦[uint64T] #off ∗
+    "%Hoff" ∷ ⌜int.nat off ≤ length data⌝ ∗
+    "Hs" ∷ is_slice_small s byteT q data ∗
+    "%Henc" ∷ ⌜has_encoding (drop (int.nat off) data) r⌝.
+
+Theorem wp_new_dec stk E s q data r :
+  has_encoding data r →
+  {{{ is_slice_small s byteT q data }}}
+    NewDec (slice_val s) @ stk; E
+  {{{ dec_v, RET dec_v; is_dec dec_v r }}}.
+Proof.
+  iIntros (Henc Φ) "Hs HΦ".
+  wp_call.
+  wp_apply (typed_mem.wp_AllocAt uint64T); eauto.
+  iIntros (off_l) "Hoff".
+  wp_pures.
+  iApply "HΦ".
+  iExists _, _, _, _, _; iFrame.
+  iPureIntro.
+  split_and!; auto; len.
+Qed.
+
+Lemma has_encoding_app_inv data1 data2 r :
+  (encoded_length r ≤ length data1)%nat →
+  has_encoding (data1 ++ data2) r →
+  has_encoding data1 r.
+Proof.
+  rewrite /has_encoding; intros.
+  rewrite take_app_le // in H0.
+Qed.
+
+Lemma has_encoding_exact_inv data r :
+  encoded_length r = length data →
+  has_encoding data r →
+  data = encode r.
+Proof.
+  intros.
+  rewrite /has_encoding in H0.
+  rewrite take_ge // in H0.
+  lia.
+Qed.
+
+Lemma has_encoding_app_r_inv data r1 r2 :
+  (encoded_length r1 ≤ length data)%nat →
+  has_encoding data (r1 ++ r2) →
+  has_encoding (take (encoded_length r1) data) r1.
+Proof.
+  intros Hbound.
+  rewrite /has_encoding.
+  rewrite encoded_length_app encode_app; intros.
+  rewrite -> take_ge by len.
+  rewrite -take_take_drop in H.
+  apply app_inj_1 in H; try len; intuition.
+Qed.
+
+Lemma has_encoding_length {data r} :
+  has_encoding data r →
+  (encoded_length r ≤ length data)%nat.
+Proof.
+  intros H%(f_equal length).
+  move: H; len.
+Qed.
+
+Lemma has_encoding_inv data r :
+  has_encoding data r →
+  ∃ extra, data = encode r ++ extra ∧
+           (encoded_length r + length extra = length data)%nat.
+Proof.
+  intros.
+  pose proof (has_encoding_length H).
+  rewrite /has_encoding in H.
+  assert (data = take (encoded_length r) data ++ drop (encoded_length r) data) as Hdatasplit.
+  { rewrite take_drop //. }
+  rewrite H in Hdatasplit.
+  eexists; intuition eauto.
+  len.
+Qed.
+
+Hint Rewrite encoded_length_singleton : len.
+
+Lemma encoded_length_cons x r :
+  encoded_length (x::r) = (length (encode1 x) + encoded_length r)%nat.
+Proof.
+  rewrite /encoded_length /=.
+  change (x::r) with ([x] ++ r); rewrite encode_app /=.
+  len.
+  rewrite encode_singleton //.
+Qed.
+
+Theorem wp_Dec__GetInt stk E dec_v (x: u64) r :
+  {{{ is_dec dec_v (EncUInt64 x :: r) }}}
+    Dec__GetInt dec_v @ stk; E
+  {{{ RET #x; is_dec dec_v r }}}.
+Proof.
+  iIntros (Φ) "Hdec HΦ"; iNamed "Hdec".
+  wp_call.
+  wp_load; wp_pures.
+  wp_load; wp_store.
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  wp_apply wp_SliceSkip'.
+  { iPureIntro; word. }
+  iDestruct (slice_small_split _ off with "Hs") as "[Hs1 Hs2]".
+  { len. }
+  wp_apply (wp_UInt64Get_unchanged with "Hs2").
+  { eapply has_encoding_inv in Henc as [extra [Henc ?]].
+    rewrite -fmap_drop -fmap_take.
+    rewrite Henc.
+    reflexivity. }
+  iIntros "Hs2".
+  iDestruct (is_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
+  iApply "HΦ".
+  iExists _, _, _, _, data; iFrame.
+  iSplitR; first by auto.
+  pose proof (has_encoding_length Henc).
+  autorewrite with len in H.
+  rewrite encoded_length_cons in H.
+  change (length (encode1 _)) with 8%nat in H.
+  iSplitR; first iPureIntro.
+  { word. }
+  iPureIntro.
+  replace (int.nat (word.add off 8)) with (int.nat off + 8)%nat by word.
+  rewrite -drop_drop.
+  apply has_encoding_inv in Henc as [extra [Henc ?]].
+  rewrite Henc.
+  rewrite encode_cons.
+  rewrite -app_assoc.
+  rewrite drop_app_ge //.
+  change (length (encode1 _)) with 8%nat.
+  rewrite Nat.sub_diag drop_0.
+  apply has_encoding_app_exact.
+Qed.
 
 End goose_lang.

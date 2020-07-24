@@ -673,6 +673,33 @@ Proof.
   lia.
 Qed.
 
+Theorem wp_UInt64Get_unchanged stk E s q (x: u64) vs :
+  take 8 vs = u64_le_bytes x →
+  {{{ is_slice_small s byteT q vs }}}
+    UInt64Get (slice_val s) @ stk; E
+  {{{ RET #x; is_slice_small s byteT q vs }}}.
+Proof.
+  iIntros (Htake8 Φ) "Hs HΦ".
+  rewrite -(take_drop 8 vs).
+  wp_apply (wp_UInt64Get with "[$Hs]").
+  { iPureIntro.
+    rewrite Htake8.
+    rewrite take_app_le; len; eauto. }
+  iIntros "Hs".
+  rewrite -Htake8.
+  iApply "HΦ".
+  iExactEq "Hs".
+  f_equal.
+  f_equal.
+  rewrite drop_app_le.
+  { rewrite [drop _ (take _ _)]drop_ge //; len. }
+  len.
+  apply (f_equal length) in Htake8.
+  autorewrite with len in Htake8.
+  rewrite Htake8.
+  auto.
+Qed.
+
 Theorem wp_UInt64Get' stk E s q (x: u64) :
   {{{ s.(Slice.ptr) ↦∗[byteT]{q} u64_le_bytes x ∗ ⌜int.val s.(Slice.sz) >= 8⌝ }}}
     UInt64Get (slice_val s) @ stk; E
