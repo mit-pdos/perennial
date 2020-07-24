@@ -69,6 +69,46 @@ Implicit Types (v:val).
 Definition has_encoding (data: list u8) (r:Rec) :=
   take (encoded_length r) data = encode r.
 
+Lemma has_encoding_length {data r} :
+  has_encoding data r →
+  (encoded_length r ≤ length data)%nat.
+Proof.
+  intros H%(f_equal length).
+  move: H; len.
+Qed.
+
+Lemma has_encoding_app_characterization data r :
+  has_encoding data r ↔
+  ∃ extra, data = encode r ++ extra.
+Proof.
+  split; intros.
+  - rewrite /has_encoding in H.
+    exists (drop (encoded_length r) data).
+    rewrite -[data in data = _](take_drop (encoded_length r)) H //.
+  - destruct H as [extra ->].
+    rewrite /has_encoding.
+    rewrite take_app_le //.
+    rewrite take_ge //.
+Qed.
+
+Lemma has_encoding_inv data r :
+  has_encoding data r →
+  ∃ extra, data = encode r ++ extra ∧
+           (encoded_length r + length extra = length data)%nat.
+Proof.
+  intros [extra ->]%has_encoding_app_characterization.
+  exists extra; intuition.
+  len.
+Qed.
+
+Lemma has_encoding_from_app data extra r :
+  data = encode r ++ extra →
+  has_encoding data r.
+Proof.
+  intros ->.
+  apply has_encoding_app_characterization; eauto.
+Qed.
+
 Definition is_enc (enc_v:val) (sz:Z) (r: Rec) (remaining: Z) : iProp Σ :=
   ∃ (s: Slice.t) (off_l: loc) (data: list u8),
     let off := encoded_length r in
@@ -108,39 +148,13 @@ Lemma has_encoding_app data r data' r' :
   has_encoding (take (encoded_length r) data ++ data')
                 (r ++ r').
 Proof.
-  rewrite /has_encoding; intros.
-  rewrite encoded_length_app.
-  rewrite encode_app.
+  intros.
   rewrite H.
-  rewrite -> take_app_ge by word.
-  f_equal.
-  replace (encoded_length r + encoded_length r' - length (encode r))%nat
-    with (encoded_length r') by word.
-  auto.
+  apply has_encoding_inv in H0 as [extra' [-> _]].
+  rewrite app_assoc.
+  eapply has_encoding_from_app.
+  rewrite encode_app -!app_assoc //.
 Qed.
-
-Lemma has_encoding_app_prefix data1 data2 r :
-  has_encoding data1 r →
-  has_encoding (data1 ++ data2) r.
-Proof.
-  rewrite /has_encoding; intros.
-  rewrite take_app_le //.
-  apply (f_equal length) in H.
-  move: H; len.
-Qed.
-
-Lemma has_encoding_exact data r :
-  encode r = data →
-  has_encoding data r.
-Proof.
-  intros <-.
-  rewrite /has_encoding.
-  rewrite take_ge //.
-Qed.
-
-Lemma has_encoding_app_exact data r :
-  has_encoding (encode r ++ data) r.
-Proof. by apply has_encoding_app_prefix, has_encoding_exact. Qed.
 
 Theorem wp_Enc__PutInt stk E enc_v sz r (x:u64) remaining :
   8 ≤ remaining →
@@ -187,9 +201,7 @@ Proof.
   - len.
   - subst off.
     apply has_encoding_app; auto.
-    apply has_encoding_app_prefix.
-    apply has_encoding_exact.
-    reflexivity.
+    eapply has_encoding_from_app; eauto.
 Qed.
 
 Theorem wp_Enc__PutInts stk E enc_v sz r (x_s: Slice.t) q (xs:list u64) remaining :
@@ -267,62 +279,6 @@ Proof.
   split_and!; auto; len.
 Qed.
 
-Lemma has_encoding_app_inv data1 data2 r :
-  (encoded_length r ≤ length data1)%nat →
-  has_encoding (data1 ++ data2) r →
-  has_encoding data1 r.
-Proof.
-  rewrite /has_encoding; intros.
-  rewrite take_app_le // in H0.
-Qed.
-
-Lemma has_encoding_exact_inv data r :
-  encoded_length r = length data →
-  has_encoding data r →
-  data = encode r.
-Proof.
-  intros.
-  rewrite /has_encoding in H0.
-  rewrite take_ge // in H0.
-  lia.
-Qed.
-
-Lemma has_encoding_app_r_inv data r1 r2 :
-  (encoded_length r1 ≤ length data)%nat →
-  has_encoding data (r1 ++ r2) →
-  has_encoding (take (encoded_length r1) data) r1.
-Proof.
-  intros Hbound.
-  rewrite /has_encoding.
-  rewrite encoded_length_app encode_app; intros.
-  rewrite -> take_ge by len.
-  rewrite -take_take_drop in H.
-  apply app_inj_1 in H; try len; intuition.
-Qed.
-
-Lemma has_encoding_length {data r} :
-  has_encoding data r →
-  (encoded_length r ≤ length data)%nat.
-Proof.
-  intros H%(f_equal length).
-  move: H; len.
-Qed.
-
-Lemma has_encoding_inv data r :
-  has_encoding data r →
-  ∃ extra, data = encode r ++ extra ∧
-           (encoded_length r + length extra = length data)%nat.
-Proof.
-  intros.
-  pose proof (has_encoding_length H).
-  rewrite /has_encoding in H.
-  assert (data = take (encoded_length r) data ++ drop (encoded_length r) data) as Hdatasplit.
-  { rewrite take_drop //. }
-  rewrite H in Hdatasplit.
-  eexists; intuition eauto.
-  len.
-Qed.
-
 Hint Rewrite encoded_length_singleton : len.
 
 Lemma encoded_length_cons x r :
@@ -365,11 +321,9 @@ Proof.
   apply has_encoding_inv in Henc as [extra [Henc ?]].
   rewrite Henc.
   rewrite encode_cons.
+  eapply has_encoding_from_app.
   rewrite -app_assoc.
   rewrite drop_app_ge //.
-  change (length (encode1 _)) with 8%nat.
-  rewrite Nat.sub_diag drop_0.
-  apply has_encoding_app_exact.
 Qed.
 
 End goose_lang.
