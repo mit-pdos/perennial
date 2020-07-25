@@ -95,6 +95,42 @@ Proof.
   iApply slice.is_slice_small_nil; auto.
 Qed.
 
+Lemma slice_small_split s (n: u64) t q vs :
+  int.val n <= length vs →
+  is_slice_small s t q vs -∗ is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ∗
+           is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs).
+Proof.
+  iIntros (Hbounds) "Hs".
+  rewrite /is_slice_small.
+  iDestruct (slice.slice_small_split with "Hs") as "[Hs1 Hs2]".
+  { rewrite fmap_length //. }
+  rewrite -fmap_take -fmap_drop.
+  iFrame.
+Qed.
+
+Theorem is_slice_small_take_drop s t q n vs :
+  (int.nat n <= int.nat s.(Slice.sz))%nat ->
+  is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
+  is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ⊣⊢
+  is_slice_small s t q vs.
+Proof.
+  intros Hbound.
+  rewrite /is_slice_small.
+  rewrite /list.untype fmap_drop fmap_take.
+  rewrite slice.is_slice_small_take_drop //.
+Qed.
+
+Theorem is_slice_combine s t q n vs1 vs2 :
+  (int.nat n ≤ int.nat s.(Slice.sz))%nat →
+  is_slice_small (slice_take s t n) t q vs1 -∗
+  is_slice_small (slice_skip s t n) t q vs2 -∗
+  is_slice_small s t q (vs1 ++ vs2).
+Proof.
+  iIntros (Hbound).
+  rewrite /is_slice_small /list.untype fmap_app.
+  rewrite slice.is_slice_combine //.
+Qed.
+
 Global Instance is_slice_small_Fractional s q t vs :
   fractional.AsFractional (is_slice_small s t q vs) (λ q, is_slice_small s t q vs) q.
 Proof.
@@ -199,6 +235,57 @@ Proof.
   subst vs'; rewrite take_length.
   word.
 Qed.
+
+Transparent SliceCopy.
+Lemma wp_SliceCopy stk E sl t q vs dst vs' :
+  (length vs' ≥ length vs) →
+  {{{ is_slice_small sl t q vs ∗ is_slice_small dst t 1 vs' }}}
+    SliceCopy t (slice_val dst) (slice_val sl) @ stk; E
+  {{{ RET #(U64 (length vs)); is_slice_small sl t q vs ∗ is_slice_small dst t 1 (vs ++ drop (length vs) vs') }}}.
+Proof.
+  iIntros (Hbound Φ) "(Hsrc&Hdst) HΦ".
+  wp_call.
+  iDestruct "Hsrc" as "[Hsrc %Hsrclen]".
+  iDestruct "Hdst" as "[Hdst %Hdstlen]".
+  autorewrite with len in Hsrclen, Hdstlen.
+  wp_apply wp_slice_len.
+  wp_apply wp_slice_len.
+  wp_bind (If _ _ _).
+  wp_pures.
+  wp_if_destruct; first by iExFalso; word.
+  wp_apply wp_slice_len.
+  wp_pures.
+  rewrite /slice.ptr; wp_pures.
+  iEval (rewrite -(take_drop (length vs) (list.untype vs'))) in "Hdst".
+  iDestruct (array.array_app with "Hdst") as "[Hdst1 Hdst2]".
+  wp_apply (wp_MemCpy_rec with "[$Hsrc $Hdst1]").
+  { iPureIntro.
+    rewrite take_length !fmap_length.
+    word. }
+  iIntros "[Hdst1 Hsrc]".
+  iDestruct (array.array_app with "[$Hdst1 Hdst2]") as "Hdst".
+  { iExactEq "Hdst2".
+    rewrite !take_length !fmap_length.
+    repeat (f_equal; try lia). }
+  wp_pures.
+  replace (Slice.sz sl) with (U64 (length vs)) by word.
+  iApply "HΦ".
+  iFrame.
+  iSplit.
+  { iPureIntro.
+    rewrite fmap_length; word. }
+  rewrite /is_slice_small.
+  rewrite /list.untype fmap_app fmap_drop.
+  iSplitL.
+  { iExactEq "Hdst".
+    f_equal.
+    rewrite take_ge //.
+    rewrite fmap_length; word. }
+  iPureIntro.
+  rewrite !app_length !drop_length !fmap_length.
+  word.
+Qed.
+Opaque SliceCopy.
 
 Lemma wp_SliceAppend_to_zero stk E t `{!IntoValForType IntoVal0 t} v (x: val) :
   x = to_val v ->

@@ -181,13 +181,12 @@ Proof.
   { iPureIntro.
     len. }
   iIntros "Hs2".
-  iDestruct (is_slice_combine with "Hs1 Hs2") as "Hs"; first len.
+  iDestruct (slice.is_slice_combine with "Hs1 Hs2") as "Hs"; first len.
   wp_pures.
   wp_load; wp_store.
-  rewrite drop_drop.
+  rewrite -fmap_drop drop_drop.
   iApply "HΦ".
   iExists _, _, _; iFrame.
-  rewrite -fmap_take -fmap_drop.
   change (u64_le_bytes x) with (into_val.to_val (V:=u8) <$> u64_le x).
   rewrite -!fmap_app.
   iSplitR; first eauto.
@@ -229,13 +228,12 @@ Proof.
   { iPureIntro.
     len. }
   iIntros "Hs2".
-  iDestruct (is_slice_combine with "Hs1 Hs2") as "Hs"; first len.
+  iDestruct (slice.is_slice_combine with "Hs1 Hs2") as "Hs"; first len.
   wp_pures.
   wp_load; wp_store.
-  rewrite drop_drop.
+  rewrite -fmap_drop drop_drop.
   iApply "HΦ".
   iExists _, _, _; iFrame.
-  rewrite -fmap_take -fmap_drop.
   change (u32_le_bytes x) with (into_val.to_val <$> u32_le x).
   rewrite -!fmap_app.
   iSplitR; first eauto.
@@ -289,6 +287,54 @@ Proof.
   - iIntros "(Hs&HI)"; iNamed "HI".
     iApply "HΦ"; iFrame.
 Qed.
+
+Hint Rewrite encoded_length_app1 : len.
+
+Theorem wp_Enc__PutBytes stk E enc_v r sz remaining b_s q bs :
+  Z.of_nat (length bs) ≤ remaining →
+  {{{ is_enc enc_v sz r remaining ∗ is_slice_small b_s byteT q bs }}}
+    Enc__PutBytes enc_v (slice_val b_s) @ stk; E
+  {{{ RET #(); is_enc enc_v sz (r ++ [EncBytes bs]) (remaining - Z.of_nat (length bs)) ∗
+               is_slice_small b_s byteT q bs }}}.
+Proof.
+  iIntros (Hbound Φ) "[Henc Hbs] HΦ"; iNamed "Henc".
+  wp_call.
+  wp_load; wp_pures.
+  iDestruct (is_slice_small_sz with "Hs") as %Hs_sz.
+  wp_apply wp_SliceSkip'.
+  { iPureIntro; len. }
+  iDestruct (slice_small_split _ (U64 (encoded_length r)) with "Hs") as "[Hs1 Hs2]"; first by len.
+  wp_apply (wp_SliceCopy (V:=byte) with "[$Hbs $Hs2]"); first by len.
+  iIntros "[Hbs Hs2]".
+  iDestruct (is_slice_combine with "Hs1 Hs2") as "Hs"; first by len.
+  wp_pures.
+  wp_load; wp_store.
+  iApply "HΦ".
+  iFrame.
+  iExists _, _, _; iFrame.
+  iSplitR; first by eauto.
+  iSplitR.
+  { iPureIntro; len. }
+  iSplitR.
+  { iPureIntro; len. simpl; len. }
+  iSplitL "Hoff".
+  { iExactEq "Hoff".
+    rewrite /named.
+    f_equal.
+    f_equal.
+    len.
+    simpl.
+    admit. (* TODO: some overflow constraint is missing? *) }
+  iPureIntro.
+  split_and.
+  - len.
+    simpl; len.
+  - replace (int.nat (U64 (encoded_length r))) with (encoded_length r) by word.
+    rewrite Hencoded.
+    rewrite app_assoc.
+    eapply has_encoding_from_app.
+    rewrite encode_app encode_singleton //=.
+Admitted.
 
 Theorem wp_Enc__Finish stk E enc_v r sz remaining :
   {{{ is_enc enc_v sz r remaining }}}
@@ -345,7 +391,7 @@ Proof.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   wp_apply wp_SliceSkip'.
   { iPureIntro; word. }
-  iDestruct (slice_small_split _ off with "Hs") as "[Hs1 Hs2]".
+  iDestruct (slice.slice_small_split _ off with "Hs") as "[Hs1 Hs2]".
   { len. }
   wp_apply (wp_UInt64Get_unchanged with "Hs2").
   { eapply has_encoding_inv in Henc as [extra [Henc ?]].
@@ -353,7 +399,7 @@ Proof.
     rewrite Henc.
     reflexivity. }
   iIntros "Hs2".
-  iDestruct (is_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
+  iDestruct (slice.is_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
   iApply "HΦ".
   iExists _, _, _, _, data; iFrame.
   iSplitR; first by auto.
@@ -386,7 +432,7 @@ Proof.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   wp_apply wp_SliceSkip'.
   { iPureIntro; word. }
-  iDestruct (slice_small_split _ off with "Hs") as "[Hs1 Hs2]".
+  iDestruct (slice.slice_small_split _ off with "Hs") as "[Hs1 Hs2]".
   { len. }
   wp_apply (wp_UInt32Get_unchanged with "Hs2").
   { eapply has_encoding_inv in Henc as [extra [Henc ?]].
@@ -394,7 +440,7 @@ Proof.
     rewrite Henc.
     reflexivity. }
   iIntros "Hs2".
-  iDestruct (is_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
+  iDestruct (slice.is_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
   iApply "HΦ".
   iExists _, _, _, _, data; iFrame.
   iSplitR; first by auto.
