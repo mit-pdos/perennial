@@ -2,7 +2,7 @@ From Goose.github_com.tchajed Require Import marshal.
 
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Export marshal_proof_new.
+From Perennial.program_proof Require Export marshal_proof.
 From Perennial.goose_lang.lib Require Export slice.typed_slice.
 
 Definition block_encodes (b:Block) r :=
@@ -31,7 +31,7 @@ Theorem wp_Enc__Finish stk E enc_v r remaining :
   {{{ s b, RET slice_val s; ⌜block_encodes b r⌝ ∗ is_block s 1 b }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  wp_apply (marshal_proof_new.wp_Enc__Finish with "Hpre").
+  wp_apply (marshal_proof.wp_Enc__Finish with "Hpre").
   iIntros (??) "(%Henc&%Hdatalen&Hs)".
   iApply ("HΦ" $! _ (list_to_block data)).
   iSplitR.
@@ -51,7 +51,7 @@ Theorem wp_new_dec stk E s q b r :
   {{{ dec_v, RET dec_v; is_dec dec_v r }}}.
 Proof.
   iIntros (Henc Φ) "Hpre HΦ".
-  wp_apply (marshal_proof_new.wp_new_dec with "Hpre"); eauto.
+  wp_apply (marshal_proof.wp_new_dec with "Hpre"); eauto.
 Qed.
 
 End goose_lang.

@@ -144,7 +144,7 @@ Proof.
   rewrite /is_hdr_block /block_encodes.
   eapply (has_encoding_from_app _ (drop 16 $ (vector.vec_to_list b))).
   rewrite !encode_cons app_nil_r.
-  cbn [marshal_proof_new.encode1].
+  cbn [marshal_proof.encode1].
   rewrite !le_to_u64_le; len.
   - rewrite -[b in b = _](take_drop 8 b) -app_assoc.
     f_equal.
