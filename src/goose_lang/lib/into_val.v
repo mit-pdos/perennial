@@ -59,6 +59,7 @@ Qed.
 (** instances for IntoVal *)
 Section instances.
   Context {ext: ext_op} {ext_ty: ext_types ext}.
+  Definition u64val (x:u64) : val := #x.
   Global Instance u64_IntoVal : IntoVal u64.
   Proof.
     refine {| to_val := λ (x: u64), #x;

@@ -19,11 +19,11 @@ Lemma block_encodes_eq b r r' :
   block_encodes b r'.
 Proof. by intros ? ->. Qed.
 
-Section goose_lang.
-Context `{!heapG Σ}.
-
 Notation is_benc enc_v r remaining :=
   (is_enc enc_v 4096 r remaining).
+
+Section goose_lang.
+Context `{!heapG Σ}.
 
 Theorem wp_Enc__Finish stk E enc_v r remaining :
   {{{ is_benc enc_v r remaining }}}

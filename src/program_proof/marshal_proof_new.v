@@ -394,6 +394,20 @@ Proof.
     iFrame.
 Qed.
 
+(* special case where GetInts is the last thing and there are no more remaining
+items to decode *)
+Theorem wp_Dec__GetInts_complete stk E dec_v (xs: list u64) (n: u64) :
+  length xs = int.nat n →
+  {{{ is_dec dec_v (EncUInt64 <$> xs) }}}
+    Dec__GetInts dec_v #n @ stk; E
+  {{{ (s:Slice.t), RET slice_val s; is_dec dec_v [] ∗ is_slice s uint64T 1 xs }}}.
+Proof.
+  iIntros (? Φ) "Hpre HΦ".
+  wp_apply (wp_Dec__GetInts _ _ _ _ [] with "[Hpre]"); first by eauto.
+  - rewrite app_nil_r //.
+  - auto.
+Qed.
+
 End goose_lang.
 
 Typeclasses Opaque has_encoding.

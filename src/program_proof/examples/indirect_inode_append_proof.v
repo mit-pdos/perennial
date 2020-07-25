@@ -8,7 +8,7 @@ From Perennial.goose_lang.lib Require Import lock.crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import typed_slice.
 From Perennial.Helpers Require Import List.
-From Perennial.program_proof Require Import marshal_proof disk_lib.
+From Perennial.program_proof Require Import marshal_block disk_lib.
 
 Hint Unfold inode.wf MaxBlocks indirectNumBlocks maxDirect maxIndirect: word.
 Hint Unfold inode.wf MaxBlocks indirectNumBlocks maxDirect maxIndirect: auto.
@@ -286,11 +286,11 @@ Proof.
       iSplitR.
       {
         iPureIntro.
-        rewrite Hencoded'.
+        eapply block_encodes_eq; eauto.
         unfold maxDirect in *.
-        repeat rewrite app_length.
+        rewrite !app_length.
         change (length [_]) with 1%nat.
-        rewrite HdirAddrsEnd -Hiaddrs /maxIndirect -HiaddrsLen.
+        rewrite HdirAddrsEnd /maxIndirect.
         replace (int.nat (U64 (10 - Z.of_nat ds.(impl_s.numInd))))
           with ((int.nat (U64 10) - ds.(impl_s.numInd))%nat) by word.
         rewrite HindAddrs.
@@ -310,10 +310,13 @@ Proof.
           with ((EncUInt64 <$> take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
                      ++ (EncUInt64 <$> replicate (500 - (length σ.(inode.blocks) + 1)) (U64 0))).
         2: { rewrite app_assoc -fmap_app. auto. }
-        repeat rewrite app_assoc.
+        rewrite -!app_assoc.
         replace (U64 (Z.of_nat (length σ.(inode.blocks)) + 1)) with
             (U64 (Z.of_nat (length σ.(inode.blocks) + 1%nat))) by word.
-        reflexivity.
+        repeat f_equal.
+        - rewrite take_app_le //; len.
+          rewrite take_ge //; len.
+        - len.
       }
 
         (* Hdirect *)
@@ -464,35 +467,24 @@ Proof.
   (*PrepIndirect*)
   wp_call.
   wp_apply wp_new_enc.
-  iIntros (enc) "[Henc %HencSz]".
+  iIntros (enc) "Henc".
   wp_let.
   iDestruct (is_slice_split with "Haddr_s") as "[Haddr_s_small Haddr_s]".
-  wp_apply (wp_Enc__PutInts _ _ enc _ indblkaddrs_s 1
-       (indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length (indBlkAddrs) + 1)) (U64 0)) 4096
-              with "[Henc Haddr_s_small]").
-    { repeat rewrite app_length /indirectNumBlocks. rewrite replicate_length. simpl. word. }
-    { iSplitL "Henc"; iFrame; auto. }
+  wp_apply (wp_Enc__PutInts with "[$Henc $Haddr_s_small]").
+    { len. }
     rewrite app_nil_l.
 
     iIntros "[Henc Haddr_s_small]".
     iDestruct (is_slice_split with "[$Haddr_s_small $Haddr_s]") as "Haddr_s".
     wp_pures.
     wp_apply (wp_Enc__Finish with "Henc").
-    iIntros (s) "[Hs %]".
+    iIntros (s b') "[%Hencoded' Hs]".
     wp_pures.
-    rewrite Hrem0 replicate_0 app_nil_r.
     iNamed "HindirectData".
     wp_apply (wp_Write _ _ indA s 1
-            (list_to_block (encode (EncUInt64 <$>
-            indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length indBlkAddrs + 1)) (U64 0))))
             _ with "[Hs diskAddr]").
     {
-      iExists indBlock; iFrame.
-      rewrite list_to_block_to_vals; auto.
-      rewrite (length_encode_fmap_uniform 8).
-      + repeat rewrite app_length. rewrite replicate_length. simpl; word.
-      + intros. by rewrite -encode_singleton encode_singleton_length.
-    }
+      iExists indBlock; iFrame. }
 
     iIntros "[HindA Hs]".
     wp_pures.
@@ -545,6 +537,7 @@ Proof.
       (*Hencoded*)
       {
         iPureIntro.
+        eapply block_encodes_eq; eauto.
         change ((set impl_s.indBlkAddrsList _
                       (set impl_s.hdr (λ _ : Block, hdr) ds)).(impl_s.hdr)) with
             hdr.
@@ -559,7 +552,6 @@ Proof.
             ds.(impl_s.indAddrs).
         change ((set inode.blocks (λ bs : list Block, bs ++ [b]) (set inode.addrs (union {[a]}) σ)).(inode.blocks))
           with (σ.(inode.blocks) ++ [b]).
-        rewrite Hencoded1.
         rewrite app_length.
         change (length [b]) with 1%nat.
         rewrite take_length; rewrite min_r; [|word].
@@ -583,7 +575,7 @@ Proof.
     }
 
     (* HindirectData *)
-    iExists (list_to_block (encode (EncUInt64 <$> indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length indBlkAddrs + 1)) (U64 0)))).
+    iExists _.
     iFrame; auto.
     iSplitR; iFrame; auto.
     {
@@ -593,10 +585,12 @@ Proof.
     (*Hencoded indBlk*)
     iSplitR; [iPureIntro; simpl; auto|].
     {
-      rewrite list_to_block_to_vals.
-      + rewrite app_length -app_assoc; simpl; auto.
-      + rewrite (length_encode_fmap_uniform 8); len.
-        intros. by rewrite -encode_singleton encode_singleton_length.
+      eapply block_encodes_eq; eauto.
+      rewrite !fmap_app.
+      f_equal.
+      replace (int.nat (U64 512) - (length indBlkAddrs + 1))%nat with 0%nat.
+      { rewrite replicate_0 //. }
+      admit.
     }
     (*Hlen indBlk*)
     iSplitR; [iPureIntro; len; simpl; auto|].
@@ -708,7 +702,7 @@ Proof.
   (*Fits! Don't need to allocate another block, phew*)
   {
     wp_loadField.
-    wp_apply (wp_indNum); [word|].
+    wp_apply (wp_indNum); [iPureIntro; by len|].
     iIntros (index) "%Hindex".
 
     (* Here are a bunch of facts *)
@@ -747,7 +741,7 @@ Proof.
     wp_apply (wp_readIndirect ds indirect_s indBlk indBlkAddrs (int.nat index) d indA
                 with "[indirect Hindirect HaddrIndirect]").
     {
-      iFrame. repeat iSplit; eauto. word.
+      iFrame. repeat iSplit; eauto. iPureIntro; len.
     }
     iIntros (indblkaddrs_s) "H". iNamed "H". iNamed "HindBlkIndirect".
     destruct HindBlockLen as [HindBlockLen HindBlkAddrsLen].
