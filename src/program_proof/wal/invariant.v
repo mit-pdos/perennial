@@ -1,7 +1,7 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Export wal.
 From RecordUpdate Require Import RecordSet.
 
-From Perennial.Helpers Require Export Transitions List NamedProps Map.
+From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Map.
 
 From Perennial.algebra Require Export deletable_heap.
 From Perennial.program_proof Require Export proof_prelude.
@@ -359,7 +359,7 @@ Theorem is_installed_weaken_read γ d txns installed_lb diskEnd_txn_id :
 Proof.
   rewrite /is_installed /is_installed_read.
   iIntros "I".
-  iNamed "I".
+  iNamedRestorable "I".
   iSplitL "Hdata".
   { iApply (big_sepM_mono with "Hdata").
     iIntros (a b0 Hlookup) "HI".
@@ -367,14 +367,13 @@ Proof.
     iExists b'; iFrame.
     iPureIntro.
     split; auto.
-    (*
-    destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_txn_id ].
-    - split; auto.
-      split; try lia.
-    - split; auto; lia. }
+    destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_lb ];
+      split_and!; auto; try lia. }
   iIntros "Hmap".
-  admit.
-*)
+  iApply "I".
+  iFrame.
+  admit. (* oops, this is not literally true; need some other strategy (perhaps
+            we just weaken the body of the map in [is_installed_read] as needed) *)
 Admitted.
 
 Theorem is_installed_to_read γ d txns installed_lb diskEnd_txn_id E :
