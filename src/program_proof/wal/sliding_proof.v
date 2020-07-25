@@ -707,7 +707,15 @@ Proof.
   rewrite -fmap_drop.
   iFrame "Hs2".
   rewrite -{1}(take_drop (int.nat (word.sub start σ.(slidingM.start))) bks).
-  admit. (* need to do some annoying list split *)
+  iDestruct (big_sepL2_app_inv_l with "Hblocks") as (bks1 bks2 Hbks12) "[Hblocks1 Hblocks2]".
+  iExactEq "Hblocks2".
+  f_equal.
+  rewrite subslice_take_drop.
+  replace (slidingM.logIndex σ σ.(slidingM.mutable)) with
+      (int.nat (slidingM.numMutable σ)) by word.
+  rewrite Hbks12.
+  (* TODO: [big_sepL2_app_inv_l] forgets that [length l2' = length l1'] *)
+  admit.
 Admitted.
 
 Theorem wp_SliceTake_updates s (n: u64) q (upds: list update.t) :
