@@ -1,7 +1,7 @@
+From Perennial.Helpers Require Import List.
 From Perennial.goose_lang Require Import notation proofmode typing.
-From Perennial.goose_lang.lib Require Import typed_mem.
-From Perennial.goose_lang.lib Require Import slice.impl.
-From Perennial.goose_lang.lib Require Import slice.slice.
+From Perennial.goose_lang.lib Require Import typed_mem persistent_readonly.
+From Perennial.goose_lang.lib Require Import slice.impl slice.slice.
 From Perennial.goose_lang.lib Require Import into_val.
 
 From iris_string_ident Require Import ltac2_string_ident.
@@ -95,6 +95,22 @@ Proof.
   iApply slice.is_slice_small_nil; auto.
 Qed.
 
+Global Instance is_slice_small_Fractional s q t vs :
+  fractional.AsFractional (is_slice_small s t q vs) (λ q, is_slice_small s t q vs) q.
+Proof.
+  split; auto; apply _.
+  Unshelve.
+  exact 1%Qp.
+Qed.
+
+Global Instance is_slice_small_as_mapsto s t vs :
+  AsMapsTo (is_slice_small s t 1 vs) (λ q, is_slice_small s t q vs).
+Proof.
+  constructor; auto; intros; apply _.
+  Unshelve.
+  exact 1%Qp.
+Qed.
+
 Lemma wp_NewSlice stk E t `{!IntoValForType IntoVal0 t} (sz: u64) :
   {{{ True }}}
     NewSlice t #sz @ stk; E
@@ -148,6 +164,40 @@ Lemma wp_SliceAppend stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
 Proof.
   iIntros (Φ) "Hs HΦ".
   wp_apply (wp_SliceAppend' with "Hs"); auto.
+Qed.
+
+(** subslice and produce a new [is_slice_small], dropping the other elements of
+the slice. Most useful in read-only contexts. *)
+(* TODO: these subslicing theorems are still really messy as far as preserving
+the rest of the slice *)
+Lemma wp_SliceSubslice_drop_rest {stk E} s t q `{!IntoVal V} (vs: list V) (n m: u64) :
+  (int.nat n ≤ int.nat m ≤ length vs)%nat →
+  {{{ is_slice_small s t q vs }}}
+    SliceSubslice t (slice_val s) #n #m @ stk; E
+  {{{ s', RET slice_val s'; is_slice_small s' t q (subslice (int.nat n) (int.nat m) vs) }}}.
+Proof.
+  iIntros (Hbound Φ) "Hs HΦ".
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  wp_apply wp_SliceSubslice.
+  { iPureIntro; word. }
+  iApply "HΦ".
+  rewrite /is_slice_small /slice.is_slice_small /=.
+  iDestruct "Hs" as "[Ha _]".
+  rewrite /list.untype.
+  rewrite fmap_length.
+  rewrite -> subslice_length by lia.
+  iSplit; last by iPureIntro; word.
+  rewrite -{1}(take_drop (int.nat m) vs) fmap_app.
+  rewrite /subslice.
+  iDestruct (array.array_app with "Ha") as "[Ha1 _]".
+  set (vs':=take (int.nat m) vs).
+  rewrite -{1}(take_drop (int.nat n) vs') fmap_app.
+  iDestruct (array.array_app with "Ha1") as "[_ Ha2]".
+  rewrite fmap_length take_length.
+  iExactEq "Ha2".
+  repeat f_equal.
+  subst vs'; rewrite take_length.
+  word.
 Qed.
 
 Lemma wp_SliceAppend_to_zero stk E t `{!IntoValForType IntoVal0 t} v (x: val) :

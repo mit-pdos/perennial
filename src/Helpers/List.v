@@ -142,6 +142,23 @@ Proof.
   lia.
 Qed.
 
+Theorem subslice_take_drop {A} n m (l: list A) :
+  subslice n m l =
+  drop n (take m l).
+Proof. reflexivity. Qed.
+
+Theorem subslice_drop_take {A} n m (l: list A) :
+  n ≤ m →
+  subslice n m l =
+  take (m-n) (drop n l).
+Proof.
+  intros ?.
+  rewrite /subslice.
+  rewrite take_drop_commute.
+  f_equal. f_equal.
+  lia.
+Qed.
+
 Theorem subslice_app_1 {A} n m (l1 l2: list A) :
   (m ≤ length l1)%nat →
   subslice n m (l1 ++ l2) = subslice n m l1.

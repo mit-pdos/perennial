@@ -415,6 +415,48 @@ Proof.
   rewrite drop_app_ge //.
 Qed.
 
+Theorem wp_Dec__GetBytes stk E dec_v bs (n: u64) r :
+  length bs = int.nat n →
+  {{{ is_dec dec_v (EncBytes bs :: r) }}}
+    Dec__GetBytes dec_v #n @ stk; E
+  {{{ q s, RET slice_val s; is_slice_small s byteT q bs ∗ is_dec dec_v r }}}.
+Proof.
+  iIntros (Hbound Φ) "Hdec HΦ"; iNamed "Hdec".
+  pose proof (has_encoding_length Henc).
+  autorewrite with len in H.
+  rewrite encoded_length_cons /= in H.
+  wp_call.
+  wp_load.
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  (* we split the decoder state into one half used to serve the client and one
+     half to reconstruct the decoder (now with half the fraction) *)
+  iDestruct (fractional.fractional_half with "Hs") as "[Hs1 Hs2]".
+  wp_pures.
+  wp_apply (wp_SliceSubslice_drop_rest with "Hs1"); first by word.
+  iIntros (s') "Hbs".
+  wp_pures.
+  wp_load; wp_store.
+  iApply "HΦ".
+  apply has_encoding_inv in Henc as [extra [Hdataeq _]].
+  rewrite encode_cons /= -app_assoc in Hdataeq.
+  iSplitL "Hbs".
+  { iExactEq "Hbs".
+    f_equal.
+    rewrite -> subslice_drop_take by word.
+    replace (int.nat (word.add off n) - int.nat off)%nat with (int.nat n) by word.
+    rewrite Hdataeq.
+    rewrite take_app_alt //; lia.
+  }
+  iExists _, _, _, _, _; iFrame.
+  iPureIntro.
+  split_and!; auto; try len.
+  replace (int.nat (word.add off n)) with (int.nat off + int.nat n)%nat by word.
+  rewrite -drop_drop.
+  eapply has_encoding_from_app.
+  rewrite Hdataeq.
+  rewrite drop_app_alt //; lia.
+Qed.
+
 (* TODO: use this to replace list_lookup_lt (it's much easier to remember) *)
 Local Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x) :=
   let H := fresh "H" x "_lookup" in
