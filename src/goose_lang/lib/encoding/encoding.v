@@ -724,6 +724,30 @@ Proof.
   iApply "HΦ".
 Qed.
 
+Theorem wp_UInt32Get_unchanged stk E s q (x: u32) vs :
+  take 4 vs = u32_le_bytes x →
+  {{{ is_slice_small s byteT q vs }}}
+    UInt32Get (slice_val s) @ stk; E
+  {{{ RET #x; is_slice_small s byteT q vs }}}.
+Proof.
+  iIntros (Htake Φ) "Hs HΦ".
+  iDestruct "Hs" as "[Hptr %]".
+  rewrite -(take_drop 4 vs).
+  iDestruct (array_app with "Hptr") as "[Hptr1 Hptr2]".
+  wp_apply (wp_UInt32Get' with "[Hptr1]").
+  { rewrite Htake; iFrame.
+    iPureIntro.
+    apply (f_equal length) in Htake.
+    move: Htake.
+    rewrite u32_le_bytes_length; len. }
+  iIntros "Hptr1".
+  rewrite -Htake.
+  iDestruct (array_app with "[$Hptr1 $Hptr2]") as "Hptr".
+  rewrite take_drop.
+  iApply "HΦ".
+  iFrame "∗ %".
+Qed.
+
 End heap.
 
 Hint Rewrite @u64_le_bytes_length : len.

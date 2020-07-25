@@ -17,5 +17,6 @@ Hint Rewrite app_length @drop_length @take_length @fmap_length
 Hint Rewrite @vec_to_list_length : len.
 Hint Rewrite @insert_length : len.
 Hint Rewrite u64_le_length : len.
+Hint Rewrite u32_le_length : len.
 
 Ltac len := autorewrite with len; try word.
