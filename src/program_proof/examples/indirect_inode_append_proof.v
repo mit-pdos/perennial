@@ -611,11 +611,14 @@ Proof.
     {
       unfold ind_blocks_at_index; simpl.
       repeat rewrite subslice_to_end; unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      + admit.
+      + replace (drop (int.nat (500 + index * 512)) (σ.(inode.blocks) ++ [b])) with
+            ((drop (int.nat (500 + index * 512)) σ.(inode.blocks)) ++ [b]).
+        -- iApply (big_sepL2_app with "Hdata"). simpl. eauto.
+        -- rewrite drop_app_le; [auto|word].
       + len.
       + word.
     }
-Admitted.
+Qed.
 
 Theorem wp_appendIndirect {l σ addr d lref direct_s indirect_s ds} (a: u64) b:
   {{{
