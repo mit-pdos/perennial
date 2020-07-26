@@ -190,6 +190,9 @@ Theorem wp_installBlocks γ d bufs_s (bufs: list update.t)
 Proof.
 Admitted.
 
+(* TODO: why do we need this here again? *)
+Opaque is_sliding.
+
 Theorem wp_Walog__logInstall γ l σₛ :
   {{{ "#st" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
@@ -207,8 +210,8 @@ Theorem wp_Walog__logInstall γ l σₛ :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre". (* TODO: would be nice to do this anonymously *)
-  iNamed "Hlkinv".
-  iNamed "Hfields".
+  iNamedRestorable "Hlkinv".
+  iNamedRestorable "Hfields".
   iNamed "Hfield_ptsto".
   wp_call.
   wp_loadField.
@@ -222,9 +225,21 @@ Proof.
   wp_if_destruct; wp_pures.
   { iApply "HΦ".
     iFrame "His_locked".
-    iExists _; iFrame "# ∗".
-    iExists _; by iFrame "# ∗". }
+    iApply "Hlkinv"; iFrameNamed.
+    iApply "Hfields"; iFrameNamed. }
   (* note that we get to keep Htxn_slice *)
+  (* TODO: need to checkout some persistent fact that keeps these transactions
+  tied to the abstract state, so that installBlocks can install them *)
+  wp_loadField.
+  wp_apply (release_spec with "[$lk $His_locked HdiskEnd_circ Hstart_circ HmemLog_linv
+His_memLog HmemLog HdiskEnd Hshutdown Hnthread]").
+  { iNext.
+    iApply "Hlkinv"; iFrameNamed.
+    iApply "Hfields"; iFrameNamed. }
+  wp_pures.
+  wp_apply util_proof.wp_DPrintf.
+  wp_pures.
+  admit. (* TODO: need reasonably correct spec for installBlocks *)
 Admitted.
 
 Theorem wp_Walog__installer γ l :

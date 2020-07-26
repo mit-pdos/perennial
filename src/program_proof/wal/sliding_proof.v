@@ -1161,3 +1161,5 @@ Proof.
 Qed.
 
 End goose_lang.
+
+Opaque is_sliding.
