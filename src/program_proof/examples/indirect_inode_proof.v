@@ -63,7 +63,7 @@ Definition is_indirect (a: u64) (indBlkAddrs: list u64) (indBlock : Block)
   "diskAddr" ∷ int.val a d↦ indBlock ∗
   "%HindBlockLen" ∷ ⌜length (indBlkAddrs ++ replicate (int.nat indirectNumBlocks - (length indBlkAddrs)) (U64 0)) = Z.to_nat indirectNumBlocks
   ∧ length indBlkAddrs <= 512⌝ ∗
-  "%Hencoded" ∷ ⌜block_encodes indBlock (EncUInt64 <$> (indBlkAddrs))⌝ ∗
+  "%Hencoded" ∷ ⌜block_encodes indBlock (EncUInt64 <$> (indBlkAddrs) ++ replicate (int.nat indirectNumBlocks - (length indBlkAddrs)) (U64 0))⌝ ∗
   "%Hlen" ∷ ⌜length(indBlkAddrs) = length(specBlocks)⌝ ∗
   "Hdata" ∷ ([∗ list] a;b ∈ indBlkAddrs;specBlocks, int.val a d↦ b)
 .
@@ -468,14 +468,12 @@ Proof.
     (* rewrite app_length replicate_length /indirectNumBlocks. *)
     unfold ind_blocks_at_index, MaxBlocks, maxIndirect, maxDirect, indirectNumBlocks in *.
     destruct HindBlockLen as [HindBlockLen HindBlkAddrsLen].
-    rewrite Hlen0.
-    rewrite subslice_length; len.
-    admit.
+    auto.
   }
   iIntros (indBlkAddrsPadding_s) "[_ HindBlks]".
 
   iApply "Hϕ"; iFrame; auto.
-  rewrite app_length replicate_length /indirectNumBlocks.
+  (*rewrite app_length replicate_length /indirectNumBlocks.
   unfold ind_blocks_at_index, MaxBlocks, maxIndirect, maxDirect, indirectNumBlocks in *.
   destruct HindBlockLen as [HindBlockLen HindBlkAddrsLen].
   iSplit.
@@ -486,8 +484,8 @@ Proof.
   replace (512 - length indBlkAddrs)%nat with 0%nat.
   { rewrite replicate_0 app_nil_r //. }
   rewrite Hlen0.
-  rewrite subslice_length; len.
-Admitted.
+  rewrite subslice_length; len.*)
+Qed.
 
 Theorem wp_Inode__UsedBlocks {l γ P addr σ} :
   {{{ pre_inode l P σ addr }}}
