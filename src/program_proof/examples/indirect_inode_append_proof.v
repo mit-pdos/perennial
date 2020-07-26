@@ -575,7 +575,7 @@ Proof.
     }
 
     (* HindirectData *)
-    iExists _.
+    iExists b'.
     iFrame; auto.
     iSplitR; iFrame; auto.
     {
@@ -586,11 +586,8 @@ Proof.
     iSplitR; [iPureIntro; simpl; auto|].
     {
       eapply block_encodes_eq; eauto.
-      rewrite !fmap_app.
+      rewrite !fmap_app app_assoc /indirectNumBlocks app_length; simpl.
       f_equal.
-      replace (int.nat (U64 512) - (length indBlkAddrs + 1))%nat with 0%nat.
-      { rewrite replicate_0 //. }
-      admit.
     }
     (*Hlen indBlk*)
     iSplitR; [iPureIntro; len; simpl; auto|].

@@ -473,18 +473,6 @@ Proof.
   iIntros (indBlkAddrsPadding_s) "[_ HindBlks]".
 
   iApply "Hϕ"; iFrame; auto.
-  (*rewrite app_length replicate_length /indirectNumBlocks.
-  unfold ind_blocks_at_index, MaxBlocks, maxIndirect, maxDirect, indirectNumBlocks in *.
-  destruct HindBlockLen as [HindBlockLen HindBlkAddrsLen].
-  iSplit.
-  { iPureIntro.
-    split_and!; eauto.
-    len. }
-  change (int.nat (U64 512)) with 512%nat.
-  replace (512 - length indBlkAddrs)%nat with 0%nat.
-  { rewrite replicate_0 app_nil_r //. }
-  rewrite Hlen0.
-  rewrite subslice_length; len.*)
 Qed.
 
 Theorem wp_Inode__UsedBlocks {l γ P addr σ} :
