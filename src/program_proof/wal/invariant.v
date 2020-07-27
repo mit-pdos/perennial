@@ -1,5 +1,6 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Export wal.
 From RecordUpdate Require Import RecordSet.
+From iris.algebra Require Import gset.
 
 From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Map.
 
@@ -22,7 +23,8 @@ Class walG Σ :=
     wal_list_update  :> inG Σ (ghostR $ listO updateO);
     wal_txns         :> inG Σ (ghostR $ listO $ prodO u64O (listO updateO));
     wal_nat          :> inG Σ (ghostR $ natO);
-    wal_addr_set     :> inG Σ (ghostR $ gmapO ZO unitO);
+    wal_addr_set     :> inG Σ (ghostR $ gmapO ZO unitO); (* TODO: probably unused *)
+    wal_addr_set_gset :> inG Σ (ghostR $ gsetO Z);
     wal_thread_owned :> thread_ownG Σ;
   }.
 
@@ -243,7 +245,7 @@ Global Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
 Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) : iProp Σ :=
-  ∃ (new_installed_txn_id: nat) (being_installed: gmap Z unit),
+  ∃ (new_installed_txn_id: nat) (being_installed: gset Z),
     (* TODO: the other half of these are owned by the installer, giving it full
      knowledge of in-progress installations and exclusive update rights; need to
      write down what it maintains as part of its loop invariant *)
@@ -254,7 +256,7 @@ Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) 
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
         exactly, but some blocks may be in the process of being installed) *)
-       ⌜let txn_id' := (if being_installed !! a
+       ⌜let txn_id' := (if decide (a ∈ being_installed)
                         then new_installed_txn_id
                         else installed_txn_id) in
         let txns := take (S txn_id') txns in
@@ -367,7 +369,7 @@ Proof.
     iExists b'; iFrame.
     iPureIntro.
     split; auto.
-    destruct (being_installed !! a); [ exists new_installed_txn_id | exists installed_lb ];
+    destruct (decide _); [ exists new_installed_txn_id | exists installed_lb ];
       split_and!; auto; try lia. }
   iIntros "Hmap".
   iApply "I".
