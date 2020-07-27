@@ -39,9 +39,8 @@ Module impl_s.
         dirAddrs: list u64;
         indAddrs: list u64;
         indBlkAddrsList: list (list u64);
-        indBlocks: list Block;
       }.
-  Global Instance _eta: Settable _ := settable! mk <hdr; numInd; dirAddrs; indAddrs; indBlkAddrsList; indBlocks>.
+  Global Instance _eta: Settable _ := settable! mk <hdr; numInd; dirAddrs; indAddrs; indBlkAddrsList>.
   Global Instance _witness: Inhabited t := populate!.
 End impl_s.
 
@@ -77,8 +76,9 @@ Definition is_inode_durable_data σ (ds: impl_s.t) : iProp Σ :=
     "HdataDirect" ∷ (let len := Nat.min (int.nat maxDirect) (length σ.(inode.blocks)) in
                      [∗ list] a;b ∈ take len ds.(impl_s.dirAddrs);take len σ.(inode.blocks), int.val a d↦ b) ∗
     (* indirect addresses correspond to a block's worth of data blocks in inode spec *)
-    "HdataIndirect" ∷
-    ([∗ list] index↦a;indBlock ∈ take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs);ds.(impl_s.indBlocks),
+    "HdataIndirect" ∷ ∃ indBlocks,
+    ⌜length indBlocks = length (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs))⌝ ∗
+    ([∗ list] index↦a;indBlock ∈ take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs);indBlocks,
     ∃ indBlkAddrs, ⌜ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs⌝ ∗
                     is_indirect a indBlkAddrs indBlock (ind_blocks_at_index σ index)).
 
@@ -101,8 +101,7 @@ Definition is_inode_durable_facts σ (addr: u64) (ds: impl_s.t)
     "%Hlen" ∷ (⌜
       maxDirect = length(ds.(impl_s.dirAddrs)) ∧
       maxIndirect = length(ds.(impl_s.indAddrs)) ∧
-      (Z.of_nat (length σ.(inode.blocks))) <= MaxBlocks ∧
-      ds.(impl_s.numInd) = length(ds.(impl_s.indBlocks))⌝) ∗
+      (Z.of_nat (length σ.(inode.blocks))) <= MaxBlocks⌝) ∗
     "%HnumInd" ∷ ⌜Z.of_nat ds.(impl_s.numInd)
                   = roundUpDiv (Z.of_nat (((Z.to_nat maxDirect) `max` length σ.(inode.blocks))%nat) - maxDirect) indirectNumBlocks⌝
 .
@@ -182,9 +181,15 @@ Theorem init_inode addr :
 Proof.
   iIntros "Hhdr".
   unfold inode_cinv.
-  iExists (impl_s.mk block0 0%nat (replicate (Z.to_nat maxDirect) (U64 0)) (replicate (Z.to_nat maxIndirect) (U64 0)) [] []).
+  iExists (impl_s.mk block0 0%nat (replicate (Z.to_nat maxDirect) (U64 0)) (replicate (Z.to_nat maxIndirect) (U64 0)) []).
   unfold is_inode_durable_with.
-  repeat iSplit; auto; iExists []; auto.
+  repeat iSplit; auto.
+  + iExists []; auto.
+  + iExists []; auto.
+  + iSplitL "Hhdr".
+    -- unfold is_inode_durable_hdr. repeat iSplit; auto.
+    -- unfold is_inode_durable_data. repeat iSplit; auto.
+       iExists []. auto.
 Qed.
 
 Theorem wp_Open k {d:loc} {addr σ P} :
@@ -195,7 +200,7 @@ Proof.
   iIntros (Φ) "(Hinode&HP) HΦ"; unfold inode_cinv;
     iNamed "Hinode"; iNamed "Hdata"; iNamed "Hfacts"; iNamed "Hhdr".
   iDestruct (big_sepL2_length with "HdataDirect") as %Hblocklen.
-  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct Hlen as [HdirLen [HindirLen HszMax]].
 
   wp_call.
   wp_apply (wp_Read with "Hhdr").
@@ -375,7 +380,6 @@ Proof.
   iNamed 1.
   iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
   iDestruct (big_sepL2_length with "HdataDirect") as "%H1".
-  iDestruct (big_sepL2_length with "HdataIndirect") as "%H2".
 Admitted.
 
 Definition slice_subslice A n m s := slice_skip (slice_take s A m) A n.
@@ -502,7 +506,7 @@ Proof.
 
   iDestruct (is_slice_split with "Hdirect") as "[Hdirect_small Hdirect]".
   iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
-  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct Hlen as [HdirLen [HindirLen HszMax]].
 
   wp_apply (wp_forSlicePrefix
               (fun done todo =>
@@ -631,7 +635,7 @@ Proof.
   iAssert ((∃ σ , inode_linv l σ addr ∗ P σ)%I) as (σ) "(-#Hlockinv & -#HP)". { admit. }
   iNamed "Hlockinv".
   iNamed "Hvolatile"; iNamed "Hdurable"; iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
-  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct Hlen as [HdirLen [HindirLen HszMax]].
   wp_loadField.
   wp_op.
   wp_if_destruct;
@@ -727,20 +731,23 @@ Proof.
         rewrite firstn_length Hindex.
         rewrite Min.min_l; word.
       }
-      destruct (list_lookup_lt _ ds.(impl_s.indBlocks) (int.nat index)) as [indBlk HlookupBlk].
-      {
-        unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-        word.
-      }
 
-      (* Now we actually step through the program *)
+      (* Now we actually step through program the *)
       wp_loadField.
       iDestruct (is_slice_split with "Hindirect") as "[Hindirect_small Hindirect]".
       wp_apply (wp_SliceGet _ _ _ _ 1 (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) _ a with "[Hindirect_small]"); iFrame; auto.
 
       iIntros "Hindirect_small".
       iDestruct (is_slice_split with "[$Hindirect_small $Hindirect]") as "Hindirect".
-      iDestruct (big_sepL2_lookup_acc _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) _ (int.nat index) a with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
+      iDestruct "HdataIndirect" as (indBlocks) "[%HindBlocksLen HdataIndirect]".
+      assert (∃ indBlock, indBlocks !! int.nat index = Some indBlock) as [indBlk HlookupIndBlock].
+      {
+        apply lookup_lt_is_Some_2.
+        rewrite HindBlocksLen.
+        apply (lookup_lt_Some _ _ _ Hlookup).
+      }
+      iDestruct (big_sepL2_lookup_acc _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) _ (int.nat index) a with "HdataIndirect")
+        as "[Hb HdataIndirect]"; eauto.
 
       wp_loadField.
       iDestruct "Hb" as (indBlkAddrs) "[%HaddrLookup HaddrIndirect]".
