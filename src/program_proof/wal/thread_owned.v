@@ -1,4 +1,3 @@
-From iris.algebra Require Import auth excl.
 From iris.proofmode Require Import tactics.
 From iris.bi.lib Require Import fractional.
 From iris.base_logic.lib Require Import iprop own.
@@ -20,10 +19,10 @@ Implicit Types (γ:gname) (P:iProp Σ).
 
 Definition thread_own_ctx γ P: iProp Σ :=
   ∃ (available: bool),
-    own γ (◯ Excl' available) ∗ if available then P else emp.
+    own γ (◯E available) ∗ if available then P else emp.
 
 Definition thread_own γ (s:OwnStatus) : iProp Σ :=
-  own γ (● Excl' (if s then true else false)).
+  own γ (●E (if s then true else false)).
 
 Theorem thread_own_alloc P :
   P -∗ |==> ∃ γ, thread_own_ctx γ P ∗ thread_own γ Available.

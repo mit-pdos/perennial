@@ -238,9 +238,9 @@ Definition log_uninit_auth {Σ} {lG :logG Σ} :=
   own (logG_open_name) (Cinl ((1/2)%Qp, to_agree (UnInit' : leibnizO log_unopen_status))).
 
 Definition log_auth {Σ} {lG :logG Σ} (vs: list (disk.Block)) :=
-  own (logG_state_name) (● Excl' (vs: leibnizO (list disk.Block))).
+  own (logG_state_name) (●E (vs: leibnizO (list disk.Block))).
 Definition log_frag {Σ} {lG :logG Σ} (vs: list (disk.Block)) :=
-  own (logG_state_name) (◯ Excl' (vs: leibnizO (list disk.Block))).
+  own (logG_state_name) (◯E (vs: leibnizO (list disk.Block))).
 
 Section log_interp.
   Existing Instances log_op log_model log_val_ty.

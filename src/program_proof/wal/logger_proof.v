@@ -1,4 +1,5 @@
 From RecordUpdate Require Import RecordSet.
+From iris.algebra Require Import auth.
 
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
@@ -273,7 +274,7 @@ Proof.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   wp_apply (wp_circular__Append _ _
                               ("γdiskEnd_txn_id1" ∷ own γ.(diskEnd_txn_id_name) (●{1/2} Excl' nextDiskEnd_txn_id) ∗
-                               "Hown_diskEnd_txn_id" ∷ own γ.(diskEnd_txn_id_name) (◯ Excl' nextDiskEnd_txn_id))
+                               "Hown_diskEnd_txn_id" ∷ own γ.(diskEnd_txn_id_name) (◯E nextDiskEnd_txn_id))
               with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least Hown_diskEnd_txn_id γdiskEnd_txn_id1]").
   { rewrite subslice_length; word. }
   { rewrite subslice_length; word. }
@@ -301,8 +302,7 @@ Proof.
     iCombine "γdiskEnd_txn_id1 γdiskEnd_txn_id2" as "γdiskEnd_txn_id".
     iDestruct (ghost_var_agree with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as %?; subst.
     iMod (ghost_var_update _ with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as
-        "[[γdiskEnd_txn_id1 $] $]".
-
+        "[[γdiskEnd_txn_id $] $]".
     iModIntro.
     iSplitL; [ | done ].
     iNext.

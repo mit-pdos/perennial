@@ -55,7 +55,7 @@ Definition crash_prop_wf (σdom: gmap nat unit) Qc :=
 
 Definition bunch_wf k E E' (Ps Pr Qc: nat → iProp Σ) i bunch :=
   (∃ (γ: gname) (b: bool) γprop_stored γprop_remainder, meta (hG := sphG) i bN γ ∗
-     own γ (● Excl' (b, (γprop_stored, γprop_remainder))) ∗
+     own γ (●E (b, (γprop_stored, γprop_remainder))) ∗
      saved_prop_own γprop_stored (Ps i) ∗
      saved_prop_own γprop_remainder (Pr i) ∗
      □ (C -∗ Ps i -∗ if b then |={E, E'}_k=> ([∗ set] j∈bunch, ▷ Qc j) ∗ (▷ Pr i)
@@ -92,7 +92,7 @@ Definition staged_inv (N: namespace) (k: nat) (E E': coPset) : iProp Σ :=
 Definition staged_inv `{!invG Σ, !crashG Σ, !stagedG Σ} (N: namespace)(L: Type) `{Countable L}
            k E E' (γ γ': gname) (Qc: L → iProp Σ) : iProp Σ :=
   (inv N (∃ γprop_stored γprop_remainder Ps Pr,
-             own γ (● Excl' (γprop_stored, γprop_remainder)) ∗
+             own γ (●E (γprop_stored, γprop_remainder)) ∗
              saved_prop_own γprop_stored Ps ∗
              saved_prop_own γprop_remainder Pr ∗
              □ (C -∗ Ps -∗ |={E, E'}_k=> Qc ∗ Pr) ∗
@@ -103,7 +103,7 @@ Definition staged_bundle (Q Q': iProp Σ) b (bundle: gset nat) : iProp Σ :=
   (∃ i γ γprop γprop' Qalt Qalt',
       mapsto (hG := sphG) i 1 bundle ∗
       meta (hG := sphG) i bN γ ∗
-      own γ (◯ Excl' (b, (γprop, γprop'))) ∗
+      own γ (◯E (b, (γprop, γprop'))) ∗
       ▷ (□ (▷ Qalt -∗ ▷ Q)) ∗ ▷ (□ (▷ Qalt' -∗ ▷ Q')) ∗
       saved_prop_own γprop Qalt ∗
       saved_prop_own γprop' Qalt').
@@ -124,7 +124,7 @@ Definition staged_crash_pending (P: iProp Σ) i : iProp Σ :=
 
 Definition bunch_wf_later k E E' (Ps Pr Qc: nat → iProp Σ) i bunch :=
   (∃ (γ: gname) (b: bool) γprop_stored γprop_remainder, meta (hG := sphG) i bN γ ∗
-     own γ (● Excl' (b, (γprop_stored, γprop_remainder))) ∗
+     own γ (●E (b, (γprop_stored, γprop_remainder))) ∗
      ▷ saved_prop_own γprop_stored (Ps i) ∗
      ▷ saved_prop_own γprop_remainder (Pr i) ∗
      ▷ □ (C -∗ Ps i -∗ if b then |={E, E'}_k=> ([∗ set] j∈bunch, ▷ Qc j) ∗ (▷ Pr i)
@@ -150,7 +150,7 @@ Qed.
 Lemma bunches_wf_pers_lookup k E E' σ Ps Pr Qc i s γ (b: bool) γprop_stored γprop_remainder:
   σ !! i = Some s →
   meta (hG := sphG) i bN γ -∗
-  own γ (◯ Excl' (b, (γprop_stored, γprop_remainder))) -∗
+  own γ (◯E (b, (γprop_stored, γprop_remainder))) -∗
   bunches_wf k E E' σ Ps Pr Qc -∗
      saved_prop_own γprop_stored (Ps i) ∗
      saved_prop_own γprop_remainder (Pr i) ∗
@@ -169,7 +169,7 @@ Qed.
 Lemma bunches_wf_later_pers_lookup k E E' σ Ps Pr Qc i s γ (b: bool) γprop_stored γprop_remainder:
   σ !! i = Some s →
   meta (hG := sphG) i bN γ -∗
-  own γ (◯ Excl' (b, (γprop_stored, γprop_remainder))) -∗
+  own γ (◯E (b, (γprop_stored, γprop_remainder))) -∗
   ▷ bunches_wf k E E' σ Ps Pr Qc -∗
      ▷ (saved_prop_own γprop_stored (Ps i) ∗
         saved_prop_own γprop_remainder (Pr i) ∗
@@ -257,8 +257,8 @@ Proof.
   iMod (partition_alloc with "Hpart") as (bid i Hnotin1 Hnotin2) "(Hpart&Hbundle&Hbundle_meta)".
   iMod (saved_prop_alloc Q) as (γprop) "#Hsaved".
   iMod (saved_prop_alloc Qr) as (γprop') "#Hsaved_rem".
-  iMod (own_alloc (● (Excl' (false, (γprop, γprop'))) ⋅ ◯ (Excl' (false, (γprop, γprop'))))) as (γ) "[H1 H2]".
-  { apply auth_both_valid_2; [econstructor | reflexivity]. }
+  iMod (own_alloc (●E (false, (γprop, γprop')) ⋅ ◯E (false, (γprop, γprop')))) as (γ) "[H1 H2]".
+  { apply excl_auth_valid. }
   iMod (meta_set ⊤ bid γ bN with "Hbundle_meta") as "#HbidN"; first by set_solver.
   rewrite -Hdom in Hnotin2.
   assert (σdom !! i = None) as Hin3.
@@ -606,8 +606,8 @@ Proof.
                 ▷ saved_prop_own γprop1' (Qsr bid1) ∗
                 ▷ saved_prop_own γprop2 (Qs bid2) ∗
                 ▷ saved_prop_own γprop2' (Qsr bid2) ∗
-                own γ1 (◯ Excl' (false, (γprop1_new, γprop1'_new))) ∗
-                own γ2 (◯ Excl' (false, (γprop2_new, γprop2'_new))) ∗
+                own γ1 (◯E (false, (γprop1_new, γprop1'_new))) ∗
+                own γ2 (◯E (false, (γprop2_new, γprop2'_new))) ∗
                 ▷ □ (C -∗ Qs bid1 -∗ ([∗ set] j ∈ s1, ▷ Pc j) ∗ ▷ Qsr bid1) ∗
                 ▷ □ (C -∗ Qs bid2 -∗ ([∗ set] j ∈ s2, ▷ Pc j) ∗ ▷ Qsr bid2))%I with "[Hbunch_wf Hown1 Hown2]"
          as ">(Hbunches&#Hsaved1'&#Hsavedr1'&#Hsaved2'&#Hsavedr2'&Hown1&Hown2&#Hwand1&#Hwand2)".
@@ -616,7 +616,7 @@ Proof.
     iAssert (|==> bunch_wf_later k E' E' Qs' Qsr' Pc bid2 ∅ ∗
                   ▷ saved_prop_own γprop2 (Qs bid2) ∗
                   ▷ saved_prop_own γprop2' (Qsr bid2) ∗
-                  own γ2 (◯ Excl' (false, (γprop2_new, γprop2'_new))) ∗
+                  own γ2 (◯E (false, (γprop2_new, γprop2'_new))) ∗
                   ▷ □ (C -∗ Qs bid2 -∗ ([∗ set] j ∈ s2, ▷ Pc j) ∗ ▷ Qsr bid2))%I
       with "[Hbid2_bunch Hown2]" as ">($&$&$&$&#Hwand2)".
     {
@@ -638,7 +638,7 @@ Proof.
     iAssert (|==> bunch_wf_later k E' E' Qs' Qsr' Pc bid1 (s1 ∪ s2) ∗
                   ▷ saved_prop_own γprop1 (Qs bid1) ∗
                   ▷ saved_prop_own γprop1' (Qsr bid1) ∗
-                  own γ1 (◯ Excl' (false ,(γprop1_new, γprop1'_new))) ∗
+                  own γ1 (◯E (false ,(γprop1_new, γprop1'_new))) ∗
                   ▷ □ (C -∗ Qs bid1 -∗ ([∗ set] j ∈ s1, ▷ Pc j) ∗ ▷ Qsr bid1))%I
       with "[Hbid1_bunch Hown1]" as ">(?&$&$&$&Hwand1)".
     {
@@ -794,7 +794,7 @@ Proof.
     iAssert (|==> bunches_wf_later k E1 E2 σ Qs' Qsr' Pc ∗
                   ▷ saved_prop_own γprop (Qs bid) ∗
                   ▷ saved_prop_own γprop' (Qsr bid) ∗
-                  own γ (◯ Excl' (b', (γprop_new, γprop'_new))))%I with "[Hbunch_wf Hown]"
+                  own γ (◯E (b', (γprop_new, γprop'_new))))%I with "[Hbunch_wf Hown]"
            as ">(Hbunches&#Hsaved1'&#Hsavedr1'&Hown)".
     { rewrite /bunches_wf_later.
       iDestruct (big_sepM_delete with "Hbunch_wf") as "(Hb&Hbunch_wf)"; first eauto.
@@ -853,7 +853,7 @@ Proof.
     iAssert (|==> bunches_wf_later k E1 E2 σ Qs' Qsr' Pc ∗
                   ▷ saved_prop_own γprop (Qs bid) ∗
                   ▷ saved_prop_own γprop' (Qsr bid) ∗
-                  own γ (◯ Excl' (b, (γprop, γprop'_new))))%I with "[Hbunch_wf Hown]"
+                  own γ (◯E (b, (γprop, γprop'_new))))%I with "[Hbunch_wf Hown]"
            as ">(Hbunches&#Hsaved1'&#Hsavedr1'&Hown)".
     { rewrite /bunches_wf_later.
       iDestruct (big_sepM_delete with "Hbunch_wf") as "(Hb&Hbunch_wf)"; first eauto.

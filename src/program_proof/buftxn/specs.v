@@ -612,10 +612,10 @@ Theorem wp_BufTxn__CommitWait buftx mt γUnified (wait : bool) E (Q : nat -> iPr
   {{{
     is_buftxn buftx mt γUnified ∗
     ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
-        "Hcrashstates_frag" ∷ own γUnified.(txn_crashstates) (◯ (Excl' σl)) ∗
+        "Hcrashstates_frag" ∷ own γUnified.(txn_crashstates) (◯E σl) ∗
         "Hcrashstates_fupd" ∷ (
           let σ := mt ∪ latest σl in
-          own γUnified.(txn_crashstates) (◯ (Excl' (async_put σ σl)))
+          own γUnified.(txn_crashstates) (◯E (async_put σ σl))
           ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ))
   }}}
     BufTxn__CommitWait #buftx #wait

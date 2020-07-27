@@ -101,8 +101,8 @@ Definition circ_low_wf (addrs: list u64) (blocks: list Block) :=
 
 Definition circ_own γ (addrs: list u64) (blocks: list Block): iProp Σ :=
   ⌜circ_low_wf addrs blocks⌝ ∗
-  own γ.(addrs_name) (● (Excl' addrs)) ∗
-  own γ.(blocks_name) (● (Excl' blocks)).
+  own γ.(addrs_name) (●E addrs) ∗
+  own γ.(blocks_name) (●E blocks).
 
 Theorem circ_state_wf γ addrs blocks :
   circ_own γ addrs blocks -∗ ⌜circ_low_wf addrs blocks⌝.
@@ -206,8 +206,8 @@ Definition is_circular γ : iProp Σ :=
 Definition is_circular_appender γ (circ: loc) : iProp Σ :=
   ∃ s (addrs : list u64) (blocks: list Block),
     ⌜circ_low_wf addrs blocks⌝ ∗
-    own γ.(addrs_name) (◯ (Excl' addrs)) ∗
-    own γ.(blocks_name) (◯ (Excl' blocks)) ∗
+    own γ.(addrs_name) (◯E addrs) ∗
+    own γ.(blocks_name) (◯E blocks) ∗
     circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
     is_slice_small s uint64T 1 addrs.
 
@@ -251,8 +251,8 @@ Proof.
 Qed.
 
 Theorem is_circular_inner_wf γ addrs blocks σ :
-  own γ.(addrs_name) (◯ Excl' addrs) ∗
-  own γ.(blocks_name) (◯ Excl' blocks) -∗
+  own γ.(addrs_name) (◯E addrs) ∗
+  own γ.(blocks_name) (◯E blocks) -∗
   is_circular_state γ σ -∗
   ⌜circ_low_wf addrs blocks⌝.
 Proof.
@@ -267,8 +267,8 @@ Qed.
 
 Theorem is_circular_appender_wf γ addrs blocks :
   is_circular γ -∗
-  own γ.(addrs_name) (◯ Excl' addrs) ∗
-  own γ.(blocks_name) (◯ Excl' blocks) -∗
+  own γ.(addrs_name) (◯E addrs) ∗
+  own γ.(blocks_name) (◯E blocks) -∗
   |={⊤}=> ⌜circ_low_wf addrs blocks⌝.
 Proof.
   iIntros "#Hcirc [Hγaddrs Hγblocks]".
@@ -631,7 +631,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
   int.val endpos + Z.of_nat (length upds) < 2^64 ->
   (int.val endpos - int.val startpos_lb) + length upds ≤ LogSz ->
   {{{ is_circular γ ∗
-      own γ.(blocks_name) (◯ Excl' blocks) ∗
+      own γ.(blocks_name) (◯E blocks) ∗
       start_at_least γ startpos_lb ∗
       diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
@@ -642,7 +642,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
   {{{ RET #();
       let addrs' := update_addrs addrs (int.val endpos) upds in
       let blocks' := update_blocks blocks (int.val endpos) upds in
-      own γ.(blocks_name) (◯ Excl' blocks') ∗
+      own γ.(blocks_name) (◯E blocks') ∗
       diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 addrs' ∗
@@ -661,7 +661,7 @@ Proof.
   wp_apply (slice.wp_forSlice (fun i =>
     let addrs' := update_addrs addrs (int.val endpos) (take (int.nat i) upds) in
     let blocks' := update_blocks blocks (int.val endpos) (take (int.nat i) upds) in
-    own γ.(blocks_name) (◯ Excl' blocks') ∗
+    own γ.(blocks_name) (◯E blocks') ∗
     c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
     is_slice_small diskaddrslice uint64T 1 addrs' ∗
     diskEnd_is γ (1/2) (int.val endpos) ∗

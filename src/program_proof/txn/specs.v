@@ -46,7 +46,7 @@ Definition mapsto_txn (γ : txn_names) (l : addr) (v : {K & bufDataT K}) : iProp
   ∃ γm,
     "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) l v ∗
     "Hmapsto_meta" ∷ mapsto (hG := γ.(txn_metaheap)) l 1 γm ∗
-    "Hmod_frag" ∷ own γm (◯ (Excl' true)).
+    "Hmod_frag" ∷ own γm (◯E true).
 
 Theorem mapsto_txn_2 {K1 K2} a v0 v1 :
   @mapsto_txn K1 a v0 -∗
@@ -80,7 +80,7 @@ Definition bufDataTs_in_block (installed : Block) (bs : list Block) (blkno : u64
   ( [∗ map] off ↦ bufData;γm ∈ offmap;metamap,
       ∃ (modifiedSinceInstall : bool),
       "%Hoff_in_block" ∷ ⌜ bufDataT_in_block (latest_update installed bs) blockK blkno off bufData ⌝ ∗
-      "Hoff_own" ∷ own γm (● (Excl' modifiedSinceInstall)) ∗
+      "Hoff_own" ∷ own γm (●E modifiedSinceInstall) ∗
       "%Hoff_prefix_in_block" ∷ ⌜ if modifiedSinceInstall then True else
         ∀ prefix,
           bufDataT_in_block (latest_update installed (take prefix bs)) blockK blkno off bufData ⌝
@@ -102,14 +102,14 @@ Definition is_txn_always (γ : txn_names) : iProp Σ :=
       (metam : gmap addr gname)
       (crash_heaps : async (gmap u64 Block)),
       "Hlogheapctx" ∷ log_heap_ctx (hG := γ.(txn_logheap)) logm ∗
-      "Hcrashstates" ∷ own γ.(txn_crashstates) (● (Excl' logm)) ∗
+      "Hcrashstates" ∷ own γ.(txn_crashstates) (●E logm) ∗
       "Hmetactx" ∷ gen_heap_ctx (hG := γ.(txn_metaheap)) metam ∗
       "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
         ∃ installed bs blockK,
           "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
           "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
           "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
-      "Hcrashheaps" ∷ own γ.(txn_walnames).(wal_heap_crash_heaps) (◯ (Excl' crash_heaps)) ∗
+      "Hcrashheaps" ∷ own γ.(txn_walnames).(wal_heap_crash_heaps) (◯E crash_heaps) ∗
       "Hcrashheapsmatch" ∷ ( [∗ list] logmap;walheap ∈ possible logm;possible crash_heaps,
         [∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
           ∃ blockK,
@@ -212,10 +212,10 @@ Proof using txnG0 Σ.
     "Hmapsto_meta" ∷ mapsto a 1 γm ∗
     match mb with
     | Some b =>
-      "Hmod_frag" ∷ own γm (◯ Excl' true) ∗
+      "Hmod_frag" ∷ own γm (◯E true) ∗
       "%Hv" ∷ ⌜ is_bufData_at_off b a.(addrOff) (projT2 v) ∧ valid_addr a ⌝
     | None =>
-      "Hmod_frag" ∷ own γm (◯ Excl' false)
+      "Hmod_frag" ∷ own γm (◯E false)
     end)%I with "[$Hiswal Hmapsto_log Hmapsto_meta Hmod_frag]").
   {
     iApply (wal_heap_readmem (⊤ ∖ ↑walN ∖ ↑invN) with "[Hmapsto_log Hmapsto_meta Hmod_frag]").
@@ -325,7 +325,7 @@ Proof using txnG0 Σ.
       "Hmapsto_log" ∷ mapsto_cur a v ∗
       "Hmapsto_meta" ∷ mapsto a 1 γm ∗
       "%Hv" ∷ ⌜ is_bufData_at_off b a.(addrOff) (projT2 v) ∧ valid_addr a ⌝ ∗
-      "Hmod_frag" ∷ own γm (◯ Excl' true)
+      "Hmod_frag" ∷ own γm (◯E true)
     )%I
     with "[$Hiswal Hmapsto_log Hmapsto_meta Hmod_frag]").
   {
@@ -951,16 +951,16 @@ Lemma txn_crash_heap_alloc γcrash txn_crash_heaps wal_crash_new
                            (crash_blocks : gmap u64 Block)
                            (crash_bufs : gmap addr {K & @bufDataT K})
                            npos :
-  ⊢ own γcrash (● Excl' txn_crash_heaps) ∗
-    own γcrash (◯ Excl' txn_crash_heaps) ∗
+  ⊢ own γcrash (●E txn_crash_heaps) ∗
+    own γcrash (◯E txn_crash_heaps) ∗
     ( [∗ map] a↦b ∈ crash_bufs, ⌜valid_addr a ∧ valid_off (projT1 b) a.(addrOff)⌝ ) ∗
     ( [∗ map] a↦b;offmap ∈ crash_blocks;gmap_addr_by_block crash_bufs,
         mapsto (hG := GenHeapG_Pre _ _ _ crashPreG wal_crash_new) a 1 b ∗
         txn_crash_heap_off_match b offmap )
     ==∗
       ∃ txn_crash_new,
-        own γcrash (● Excl' (async_put (npos, txn_crash_new) txn_crash_heaps)) ∗
-        own γcrash (◯ Excl' (async_put (npos, txn_crash_new) txn_crash_heaps)) ∗
+        own γcrash (●E (async_put (npos, txn_crash_new) txn_crash_heaps)) ∗
+        own γcrash (◯E (async_put (npos, txn_crash_new) txn_crash_heaps)) ∗
         txn_crash_heap_match wal_crash_new txn_crash_new ∗
         ( [∗ map] a↦b ∈ crash_bufs, mapsto_txn_crash txn_crash_new a b ).
 Proof.
@@ -1063,10 +1063,10 @@ Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
-          "Hcrashstates_frag" ∷ own γ.(txn_crashstates) (◯ (Excl' σl)) ∗
+          "Hcrashstates_frag" ∷ own γ.(txn_crashstates) (◯E σl) ∗
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
-            own γ.(txn_crashstates) (◯ (Excl' (async_put σ σl)))
+            own γ.(txn_crashstates) (◯E (async_put σ σl))
             ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ) )
   }}}
     Txn__doCommit #l (slice_val bufs)
@@ -1390,11 +1390,11 @@ Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) (id : u64) E
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
-          "Hcrashstates_frag" ∷ own γ.(txn_crashstates) (◯ (Excl' σl)) ∗
+          "Hcrashstates_frag" ∷ own γ.(txn_crashstates) (◯E σl) ∗
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
             ⌜bufamap ≠ ∅⌝ ∗
-            own γ.(txn_crashstates) (◯ (Excl' (async_put σ σl)))
+            own γ.(txn_crashstates) (◯E (async_put σ σl))
             ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl))  ))
   }}}
     Txn__CommitWait #l (slice_val bufs) #wait #id

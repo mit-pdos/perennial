@@ -75,10 +75,10 @@ Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (gh : gmap u64 heap_block) (crash_heaps : async (gmap u64 Block)),
     "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
-    "Htxns" ∷ own γ.(wal_heap_txns) (● (Excl' (ls.(log_state.d), ls.(log_state.txns)))) ∗
+    "Htxns" ∷ own γ.(wal_heap_txns) (●E (ls.(log_state.d), ls.(log_state.txns))) ∗
     "Hinstalled" ∷ own γ.(wal_heap_installed) (● (MaxNat ls.(log_state.installed_lb))) ∗
     "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
-    "Hcrash_heaps_own" ∷ own γ.(wal_heap_crash_heaps) (● (Excl' crash_heaps)) ∗
+    "Hcrash_heaps_own" ∷ own γ.(wal_heap_crash_heaps) (●E crash_heaps) ∗
     "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls ∗
     "Hcrash_heaps_lb" ∷ own γ.(wal_heap_durable_lb) (● (MaxNat ls.(log_state.durable_lb))).
 
@@ -94,7 +94,7 @@ Record locked_walheap := {
 }.
 
 Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
-  own γ.(wal_heap_txns) (◯ (Excl' (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)))).
+  own γ.(wal_heap_txns) (◯E (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns))).
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
   apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
@@ -1363,12 +1363,12 @@ Proof.
 Qed.
 
 Definition memappend_crash_pre γh (bs: list update.t) crash_heaps : iProp Σ :=
-  "Hcrashheapsfrag" ∷ own γh.(wal_heap_crash_heaps) (◯ Excl' crash_heaps).
+  "Hcrashheapsfrag" ∷ own γh.(wal_heap_crash_heaps) (◯E crash_heaps).
 
 Definition memappend_crash γh (bs: list update.t) (crash_heaps : async (gmap u64 Block)) lwh' : iProp Σ :=
   let new_crash_heap := apply_upds_u64 (latest crash_heaps) bs in
   is_locked_walheap γh lwh' ∗
-  own γh.(wal_heap_crash_heaps) (◯ Excl' (async_put (new_crash_heap) crash_heaps)).
+  own γh.(wal_heap_crash_heaps) (◯E (async_put (new_crash_heap) crash_heaps)).
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑walN, E}=>
@@ -1581,14 +1581,14 @@ Proof using walheapG0.
   wp_apply (wp_Walog__ReadMem _
     (λ mb,
       match mb with
-      | Some b' => own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗ ⌜ b' = b ⌝
+      | Some b' => own γ.(wal_heap_txns) (◯E (σd, σtxns)) ∗ ⌜ b' = b ⌝
       | None =>
         ∀ (σ σ' : log_state.t) (b0 : Block),
           ⌜wal_wf σ⌝
           -∗ ⌜relation.denote (log_read_installed blkno) σ σ' b0⌝
              -∗ wal_heap_inv γ σ
                 ={⊤ ∖ ↑walN}=∗ wal_heap_inv γ σ'
-                            ∗ own γ.(wal_heap_txns) (◯ Excl' (σd, σtxns)) ∗ ⌜b0 = b⌝
+                            ∗ own γ.(wal_heap_txns) (◯E (σd, σtxns)) ∗ ⌜b0 = b⌝
       end
     )%I with "[$Hwal Htxnsfrag]").
   { iIntros (σ σ' mb) "%Hwal_wf %Hrelation Hwalinv".
@@ -1683,7 +1683,7 @@ Proof using walheapG0.
   {
     wp_pures.
     wp_apply (wp_Walog__ReadInstalled _
-      (λ b', own γ.(wal_heap_txns) (◯ (Excl' (σd, σtxns))) ∗ ⌜ b' = b ⌝)%I
+      (λ b', own γ.(wal_heap_txns) (◯E (σd, σtxns)) ∗ ⌜ b' = b ⌝)%I
       with "[$Hwal $Hbl]").
     { admit. }
     iIntros (bli) "Hbli".

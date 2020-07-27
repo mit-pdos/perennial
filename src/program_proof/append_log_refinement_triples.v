@@ -30,9 +30,9 @@ Notation sval := (@val (@spec_ext_op_field log_spec_ext)).
 Definition Nlog := nroot.@"log".
 
 Definition thread_tok_frag γ j K :=
-  own γ (◯ Excl' ((j, K) : leibnizO (nat * (sexpr → sexpr)))).
+  own γ (◯E ((j, K) : leibnizO (nat * (sexpr → sexpr)))).
 Definition thread_tok_auth γ j K :=
-  own γ (● Excl' ((j, K) : leibnizO (nat * (sexpr → sexpr)))).
+  own γ (●E ((j, K) : leibnizO (nat * (sexpr → sexpr)))).
 Definition thread_tok_full γ j K :=
  (thread_tok_auth γ j K ∗ thread_tok_frag γ j K)%I.
 

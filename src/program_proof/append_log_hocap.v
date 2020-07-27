@@ -67,15 +67,15 @@ Definition log_crash_cond : iProp Σ :=
 
 Definition log_state_to_inv (s: log_state) k γ2 :=
   match s with
-  | UnInit => na_crash_inv N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | UnInit => na_crash_inv N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯E s)
   | Initing => PStartedIniting
-  | Closed vs => na_crash_inv N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯ (Excl' s))
+  | Closed vs => na_crash_inv N2 k (log_crash_cond' s) (log_crash_cond) ∗ own γ2 (◯E s)
   | Opening vs => PStartedOpening
   | Opened vs l => POpened
   end%I.
 
 Definition log_inv_inner k γ2 : iProp Σ :=
-  (∃ s, log_state_to_inv s k γ2 ∗ own γ2 (● (Excl' s)))%I.
+  (∃ s, log_state_to_inv s k γ2 ∗ own γ2 (●E s))%I.
 
 Definition log_inv k :=
   (∃ γ2, inv N (log_inv_inner (LVL k) γ2))%I.
@@ -87,6 +87,7 @@ Lemma append_log_na_crash_inv_obligation e (Φ: val → iProp Σ) Φc E kinit ki
   (log_inv kinv -∗ (WPC e @ NotStuck; LVL kpost; ⊤; E {{ Φ }} {{ Φc }})) -∗
   |={⊤}=> log_inv kinv ∗ WPC e @ NotStuck; (LVL kinit); ⊤; E {{ Φ }} {{ Φc ∗ log_crash_cond }}%I.
 Proof.
+  clear SIZE_nonzero.
   iIntros (??) "Hinit Hwp".
   iDestruct "Hinit" as "[(HP&Hinit)|Hinit]".
   - iMod (na_crash_inv_alloc N2 kinv ⊤ (log_crash_cond) (log_crash_cond' (UnInit))  with "[$] []") as

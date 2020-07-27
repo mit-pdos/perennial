@@ -219,7 +219,7 @@ Admitted.
 Lemma append_crash_inv_obligation:
   @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ appendTy_model.
 Proof using SIZE.
-  clear SIZE_bounds.
+  clear SIZE_bounds SIZE_nonzero.
   rewrite /sty_crash_inv_obligation//=.
   iIntros (? hG hC hRG hAppend e Φ) "Hinit Hspec Hwand".
   rewrite /append_inv/append_init/log_inv.

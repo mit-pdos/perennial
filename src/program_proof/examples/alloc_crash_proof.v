@@ -155,7 +155,7 @@ Definition allocator_inv γ (d: gset u64) : iProp Σ :=
   ∃ σ,
     "%Hdom" ∷ ⌜ dom _ σ = d ⌝ ∗
     "Hstatus" ∷ gen_heap_ctx (hG:=γ.(alloc_status_name)) σ ∗
-    "Hfreeset_auth" ∷ own (γ.(alloc_free_name)) (● (Excl' (alloc.free σ))) ∗
+    "Hfreeset_auth" ∷ own (γ.(alloc_free_name)) (●E (alloc.free σ)) ∗
     "HP" ∷ P σ
 .
 
@@ -194,7 +194,7 @@ Definition allocator_linv γ n (mref: loc) : iProp Σ :=
  ∃ (freeset: gset u64),
   "Hfreemap" ∷ is_addrset mref (freeset) ∗
   "Hblocks" ∷ ([∗ set] k ∈ freeset, free_block γ n k) ∗
-  "Hfreeset_frag" ∷ own (γ.(alloc_free_name)) (◯ (Excl' freeset))
+  "Hfreeset_frag" ∷ own (γ.(alloc_free_name)) (◯E freeset)
 .
 
 Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=

@@ -45,16 +45,16 @@ Section goose.
 
   (** Protocol invariant for inode library *)
   Local Definition Pinode γblocks γused (s: inode.t): iProp Σ :=
-    "Hownblocks" ∷ own γblocks (◯ Excl' (s.(inode.blocks): listLO Block)) ∗
-    "Hused1" ∷ own γused (◯ Excl' s.(inode.addrs)).
+    "Hownblocks" ∷ own γblocks (◯E (s.(inode.blocks): listLO Block)) ∗
+    "Hused1" ∷ own γused (◯E s.(inode.addrs)).
 
   (** Protocol invariant for alloc library *)
   Local Definition Palloc γused (s: alloc.t): iProp Σ :=
-    "Hused2" ∷ own γused (● Excl' (alloc.used s)).
+    "Hused2" ∷ own γused (●E (alloc.used s)).
 
   (** Our own invariant (added to this is [P blocks]) *)
   Definition s_inode_inv γblocks (blocks: s_inode.t): iProp Σ :=
-    "Hγblocks" ∷ own γblocks (● Excl' (blocks.(s_inode.blocks) : listLO Block)).
+    "Hγblocks" ∷ own γblocks (●E (blocks.(s_inode.blocks) : listLO Block)).
 
   (** In-memory state of the inode (persistent) *)
   Definition s_inode_state l (inode_ref alloc_ref: loc) : iProp Σ :=
