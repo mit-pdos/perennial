@@ -409,16 +409,18 @@ Theorem wp_writeIndirect {l σ d lref} (addr: u64) ds direct_s indirect_s
   }}}
   Inode__writeIndirect #l #indA (slice_val indblkaddrs_s)
   {{{ RET #();
-      ∃ hdr, ∀ σ' ds',
+      ∃ hdr indBlock', ∀ σ' ds',
          ((⌜σ' = set inode.blocks (λ bs, bs ++ [b])
                   (set inode.addrs ({[a]} ∪.) σ) ∧
            ds' = set impl_s.indBlkAddrsList
             (λ ls, <[index := (indBlkAddrs ++ [a])]> ls)
-                      (set impl_s.hdr (λ _, hdr) ds)⌝)
+                      (set impl_s.hdr (λ _, hdr)
+                           (set impl_s.indBlocks (λ ls, <[index := indBlock']> ls) ds))⌝)
         -∗ (
        "Hvolatile" ∷ is_inode_volatile_with l σ' addr direct_s indirect_s ds' ∗
        "Hhdr" ∷ is_inode_durable_hdr σ' addr ds') ∗
-       "HindirectData" ∷ ∃ indBlock', is_indirect indA (indBlkAddrs ++ [a]) indBlock' (ind_blocks_at_index σ' index)
+       "HindirectData" ∷ ⌜ds.(impl_s.indBlocks) !! index = Some indBlock'⌝
+              ∗ is_indirect indA (indBlkAddrs ++ [a]) indBlock' (ind_blocks_at_index σ' index)
     )
   }}}.
 Proof.
@@ -484,7 +486,8 @@ Proof.
     wp_apply (wp_Write _ _ indA s 1
             _ with "[Hs diskAddr]").
     {
-      iExists indBlock; iFrame. }
+      iExists indBlock; iFrame.
+    }
 
     iIntros "[HindA Hs]".
     wp_pures.
@@ -518,6 +521,7 @@ Proof.
     iApply "HΦ".
     iFrame.
     iExists hdr.
+    iExists b'.
     iIntros (σ' ds').
 
     (*Prove postcondition holds*)
@@ -575,7 +579,6 @@ Proof.
     }
 
     (* HindirectData *)
-    iExists b'.
     iFrame; auto.
     iSplitR; iFrame; auto.
     {
@@ -733,7 +736,34 @@ Proof.
 
     iIntros "Hindirect_small".
     iDestruct (is_slice_split with "[$Hindirect_small $Hindirect]") as "Hindirect".
-    iDestruct (big_sepL2_lookup_acc _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) _ (int.nat index) indA with "HdataIndirect") as "[Hb HdataIndirect]"; eauto.
+    assert (take ds.(impl_s.numInd) ds.(impl_s.indAddrs) =
+                ((take (int.nat index) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))
+                                     ++ indA ::
+                                     (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))))
+           as HsplitIndA by (rewrite take_drop_middle; auto).
+    assert (ds.(impl_s.indBlocks) =
+                ((take (int.nat index) (ds.(impl_s.indBlocks)))
+                   ++ indBlk :: (drop (S (int.nat index)) ds.(impl_s.indBlocks))))
+           as HsplitIndBlk by (rewrite take_drop_middle; auto).
+    iEval (rewrite HsplitIndA HsplitIndBlk) in "HdataIndirect".
+    iApply big_sepL2_app_inv in "HdataIndirect".
+    {
+      repeat rewrite take_length.
+      rewrite HnumIndBlocks min_l; word.
+    }
+    change (indA :: (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs))))
+      with ([indA] ++ (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))).
+    change (indBlk :: (drop (S (int.nat index)) ds.(impl_s.indBlocks))) with ([indBlk] ++ (drop (S (int.nat index)) ds.(impl_s.indBlocks))).
+    iDestruct "HdataIndirect" as "[HdataIndirectFront HdataIndirectBack]".
+    iApply big_sepL2_app_inv in "HdataIndirectBack"; simpl; auto.
+    iDestruct "HdataIndirectBack" as "[[Hb _] HdataIndirectBack]".
+    replace (take (int.nat index) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))
+      with (take (int.nat index) ds.(impl_s.indAddrs)) by (rewrite take_take min_l; [auto|word]).
+    iEval (rewrite -plus_n_O) in "Hb".
+    replace (length (take (int.nat index) ds.(impl_s.indAddrs))) with (int.nat index).
+    2: {
+      rewrite take_length min_l; auto; word.
+    }
 
     wp_pures.
     wp_loadField.
@@ -787,9 +817,10 @@ Proof.
             with (int.nat (U64 (500 + Z.of_nat (int.nat index) * 512))) by word.
         + rewrite Hindex. word.
     }
+
     wp_apply (wp_writeIndirect addr ds direct_s indirect_s indA indBlkAddrs indBlk
                 (int.nat index) (int.nat offset) a b indblkaddrs_s
-              with "[-HΦ HdataDirect HdataIndirect]").
+              with "[-HΦ HdataDirect HdataIndirectFront HdataIndirectBack]").
     {
       unfold inode_state.
       iFrame; eauto.
@@ -1003,6 +1034,18 @@ Proof.
     (* Hindirect *)
     {
       simpl.
+      iDestruct "HindirectData" as (indBlk') "HindirectData".
+      iNamed "HindirectData".
+      rewrite HsplitIndA.
+      iEval (rewrite -HsplitIndA) in "HdataIndirectBack".
+      assert (ds.(impl_s.indBlocks) =
+                ((take (int.nat index) (ds.(impl_s.indBlocks)))
+                   ++ indBlk' :: (drop (S (int.nat index)) ds.(impl_s.indBlocks))))
+        as HsplitIndBlk'.
+      {
+        rewrite take_drop_middle; auto.
+
+
       admit.
     }
   }
