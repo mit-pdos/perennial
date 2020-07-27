@@ -23,12 +23,12 @@ services:
 jobs:
   include:
     - env: COQ_VERSION="dev"
-    - env: COQ_VERSION="8.12-beta1"
+    - env: COQ_VERSION="8.12"
     - env: COQ_VERSION="dev" UPDATE_DEPS=true
-    - env: COQ_VERSION="8.11.2"
+    - env: COQ_VERSION="8.11"
   allow_failures:
     - env: COQ_VERSION="dev" UPDATE_DEPS=true
-    - env: COQ_VERSION="8.11.2"
+    - env: COQ_VERSION="8.11"
   fast_finish: true
 
 # On Travis cloning the gitlab dependencies fails due to a certificate error. In
@@ -46,7 +46,7 @@ before_install:
 
 install: |
   # Prepare the COQ container
-  docker run -d -i --init --name=COQ -v ${TRAVIS_BUILD_DIR}:/home/coq/demo -w /home/coq/demo "coqorg/coq:${COQ_VERSION}-ocaml-4.09.1-flambda"
+  docker run -d -i --init --name=COQ -v ${TRAVIS_BUILD_DIR}:/home/coq/demo -w /home/coq/demo "coqorg/coq:${COQ_VERSION}-ocaml-4.09-flambda"
   docker exec COQ /bin/bash --login -c "
     # This bash script is double-quoted to interpolate Travis CI env vars:
     echo \"Build triggered by ${TRAVIS_EVENT_TYPE}\"
