@@ -281,6 +281,15 @@ Proof.
     + iApply array_nil; auto.
 Qed.
 
+Lemma is_slice_cap_nil t :
+  ⊢ is_slice_cap Slice.nil t.
+Proof.
+  iExists []; simpl.
+  rewrite array_nil right_id.
+  iPureIntro.
+  word.
+Qed.
+
 Theorem zero_slice_val t :
   zero_val (slice.T t) = slice_val Slice.nil.
 Proof.

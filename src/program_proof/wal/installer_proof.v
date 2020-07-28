@@ -90,6 +90,70 @@ Proof.
   iFrame.
 Qed.
 
+Ltac wp_start :=
+  iIntros (Φ) "Hpre HΦ";
+  lazymatch goal with
+  | |- context[Esnoc _ (INamed "HΦ") (▷ ?Q)%I] =>
+    set (post:=Q)
+  end;
+  lazymatch iTypeOf "Hpre" with
+  | Some (_, named _ _ ∗ _)%I => iNamed "Hpre"
+  | Some (_, named _ _)%I => iNamed "Hpre"
+  | _ => idtac
+  end.
+
+Lemma sliding_set_mutable_start f (σ: slidingM.t) :
+  slidingM.start (set slidingM.mutable f σ) = slidingM.start σ.
+Proof. by destruct σ. Qed.
+
+Theorem wp_absorbBufs b_s (bufs: list update.t) :
+  {{{ updates_slice_frag b_s 1 bufs }}}
+    absorbBufs (slice_val b_s)
+  {{{ b_s' q bufs', RET slice_val b_s';
+      "Habsorbed" ∷ updates_slice_frag b_s' q bufs' ∗
+      "%Hsame_upds" ∷ ⌜apply_upds bufs' ∅ = apply_upds bufs ∅⌝ ∗
+      "%Hnodup" ∷ ⌜NoDup (update.addr <$> bufs')⌝
+  }}}.
+Proof.
+  wp_start.
+  wp_call.
+  change slice.nil with (slice_val Slice.nil).
+  wp_apply (wp_mkSliding _ []).
+  { simpl; word. }
+  { iSplitL.
+    - iExists []; simpl.
+      rewrite right_id.
+      by iApply is_slice_small_nil.
+    - iApply is_slice_cap_nil. }
+  iIntros (l) "Hsliding".
+  wp_apply (wp_sliding__memWrite with "[$Hsliding $Hpre]").
+  iIntros "Hsliding".
+  wp_apply (wp_sliding__clearMutable with "Hsliding"); iIntros "Hsliding".
+  wp_apply (wp_sliding__end with "Hsliding"); iIntros "Hsliding".
+  simpl.
+  set (bufs':=(memWrite
+                 {|
+                   slidingM.log := [];
+                   slidingM.start := 0;
+                   slidingM.mutable := int.val 0 + 0%nat |} bufs)).
+  iDestruct (is_sliding_wf with "Hsliding") as %Hwf.
+  wp_apply (wp_sliding__takeTill with "Hsliding").
+  { rewrite sliding_set_mutable_start /=.
+    rewrite slidingM_endPos_val //=.
+    word. }
+  iIntros (q b_s') "[Hsliding Hbufs']".
+  simpl.
+  rewrite take_ge.
+  { iApply "HΦ"; iFrame "Hbufs'".
+    iPureIntro; split.
+    - rewrite memWrite_apply_upds //.
+    - admit. (* memWrite doesn't leave duplicates *) }
+  rewrite /slidingM.logIndex /=.
+  rewrite slidingM_endPos_val //=.
+  replace bufs'.(slidingM.start) with (U64 0) by rewrite memWrite_same_start //.
+  word.
+Admitted.
+
 Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
   is_durable_txn γ cs txns diskEnd_txn_id durable_lb -∗
   ⌜(diskEnd_txn_id < length txns)%nat⌝.

@@ -327,6 +327,7 @@ Definition absorbBufs: val :=
   rec: "absorbBufs" "bufs" :=
     let: "s" := mkSliding slice.nil #0 in
     sliding__memWrite "s" "bufs";;
+    sliding__clearMutable "s";;
     sliding__takeTill "s" (sliding__end "s").
 
 (* installBlocks installs the updates in bufs to the data region
