@@ -194,3 +194,10 @@ Proof.
   rewrite /subslice.
   rewrite take_nil drop_nil //.
 Qed.
+
+Theorem subslice_before_app_eq {A} n m (l l': list A):
+  m <= length l -> subslice n m l = subslice n m (l ++ l').
+Proof.
+  intros.
+  by rewrite /subslice take_app_le.
+Qed.

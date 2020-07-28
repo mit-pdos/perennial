@@ -1042,7 +1042,42 @@ Proof.
       + rewrite HindBlocksLen; repeat rewrite min_l; try word.
         -- rewrite take_length. rewrite min_l; auto. word.
       + iApply (big_sepL2_app with "[HdataIndirectFront]").
-        -- admit.
+        -- rewrite -tmp1.
+           rewrite take_take min_l; [|word].
+           unfold ind_blocks_at_index; simpl.
+           iApply (big_sepL2_mono with "HdataIndirectFront").
+           iIntros (k y1 y2 HlookupY1 HlookupY2) "H".
+           assert (k < int.nat index)%nat as HkBound.
+           {
+             replace (int.nat index) with (length (take (int.nat index) indBlocks)).
+             + eapply (lookup_lt_Some (take (int.nat index) indBlocks) _ y2 HlookupY2).
+             + rewrite take_length min_l; auto. word.
+           }
+           iDestruct "H" as (indBlkAddrs') "[%HlookupIndBlkAddrs' H]".
+           iExists indBlkAddrs'.
+           iSplitR; [iPureIntro; auto|].
+           ++ assert ((take (int.nat index) ds.(impl_s.indBlkAddrsList)) !! k = Some indBlkAddrs') as H by
+                   (rewrite lookup_take; auto).
+              rewrite -(lookup_take (<[int.nat index := indBlkAddrs0 ++ [a]]> ds.(impl_s.indBlkAddrsList)) (int.nat index) k); [|word].
+              rewrite take_insert; auto.
+           ++ replace (subslice (int.nat (maxDirect + k * indirectNumBlocks))
+                               (int.nat (maxDirect + k * indirectNumBlocks) + int.nat indirectNumBlocks)
+                               (σ.(inode.blocks) ++ [b]))
+                     with (subslice (int.nat (maxDirect + k * indirectNumBlocks))
+                               (int.nat (maxDirect + k * indirectNumBlocks) + int.nat indirectNumBlocks)
+                               (σ.(inode.blocks))); auto.
+              eapply subslice_before_app_eq.
+              unfold maxDirect, indirectNumBlocks.
+              replace (int.nat (U64 (500 + Z.of_nat k * 512)) + int.nat (U64 512))%nat with
+                  (500 + k * 512 + 512)%nat by word.
+              assert (500 + Z.of_nat k * 512 + 512 ≤ Z.of_nat (length σ.(inode.blocks))) as tmp.
+              {
+                eapply (Z.le_trans (500 + k * 512 + 512) (500 + (int.val index -1) * 512 + 512) (length σ.(inode.blocks))); [word|].
+                rewrite Hindex.
+                replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
+                lia.
+              }
+              word.
         -- change (indA :: (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs))))
                with ([indA] ++ (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))).
            change (indBlk' :: (drop (S (int.nat index)) indBlocks)) with ([indBlk'] ++ (drop (S (int.nat index)) indBlocks)).
@@ -1079,7 +1114,7 @@ Proof.
            { rewrite take_length min_l; lia. }
     }
   }
-Admitted.
+Qed.
 
 Theorem wpc_Inode__Append {k E2}  (*  *)
         {l k' P addr}
