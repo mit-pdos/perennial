@@ -321,13 +321,26 @@ Definition WalogState__cutMemLog: val :=
   rec: "WalogState__cutMemLog" "st" "installEnd" :=
     sliding__deleteFrom (struct.loadF WalogState.S "memLog" "st") "installEnd".
 
+(* absorbBufs returns bufs' such that applyUpds(d, bufs') = applyUpds(d,
+   bufs) and bufs' has unique addresses *)
+Definition absorbBufs: val :=
+  rec: "absorbBufs" "bufs" :=
+    let: "s" := mkSliding slice.nil #0 in
+    sliding__memWrite "s" "bufs";;
+    sliding__takeTill "s" (sliding__end "s").
+
 (* installBlocks installs the updates in bufs to the data region
 
-   Does not hold the memLock, but expects exclusive ownership of the data
-   region. *)
+   Does not hold the memLock. De-duplicates writes in bufs such that:
+   (1) after installBlocks,
+   the equivalent of applying bufs in order is accomplished
+   (2) at all intermediate points,
+   the data region either has the value from the old transaction or the new
+   transaction (with all of bufs applied). *)
 Definition installBlocks: val :=
   rec: "installBlocks" "d" "bufs" :=
-    ForSlice (struct.t Update.S) "i" "buf" "bufs"
+    let: "absorbed" := absorbBufs "bufs" in
+    ForSlice (struct.t Update.S) "i" "buf" "absorbed"
       (let: "blkno" := struct.get Update.S "Addr" "buf" in
       let: "blk" := struct.get Update.S "Block" "buf" in
       util.DPrintf #5 (#(str"installBlocks: write log block %d to %d
