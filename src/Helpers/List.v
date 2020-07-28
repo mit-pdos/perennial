@@ -95,10 +95,13 @@ Section list.
     index < length l ->
     concat (<[index := x]> l) = (concat (take index l)) ++ x ++ (concat (drop (index+1) l)).
   Proof.
-    induction l; simpl; intros.
-    lia.
-    (* XXX *)
-  Admitted.
+    intros.
+    rewrite -(take_drop_middle (<[index := x]> l) index x); auto.
+    rewrite list_lookup_insert; auto.
+    rewrite concat_app concat_cons take_insert; auto.
+    rewrite drop_insert_gt; auto.
+    by replace (index + 1) with (S index) by lia.
+  Qed.
 
 End list.
 
