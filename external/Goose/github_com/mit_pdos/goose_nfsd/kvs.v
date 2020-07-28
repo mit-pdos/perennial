@@ -5,7 +5,6 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.super.
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 
@@ -27,8 +26,7 @@ End KVPair.
 
 Definition MkKVS: val :=
   rec: "MkKVS" "d" "sz" :=
-    let: "super" := super.MkFsSuper "d" in
-    let: "txn" := txn.MkTxn "super" in
+    let: "txn" := txn.MkTxn "d" in
     let: "kvs" := struct.new KVS.S [
       "sz" ::= "sz";
       "txn" ::= "txn"
