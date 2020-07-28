@@ -20,15 +20,37 @@ Definition roundUpDiv (x k: Z) := (x + (k-1)) / k.
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
-Lemma roundUpDiv_lt_succ (x k: Z) : k > 0 -> (x / k) < roundUpDiv x k -> (x / k) + 1 = roundUpDiv x k.
+Lemma roundUpDiv_lt_succ (x k: Z) : x >= 0 -> k > 0 -> (x / k) < roundUpDiv x k -> (x / k) + 1 = roundUpDiv x k.
 Proof.
   intros. unfold roundUpDiv in *.
-  destruct (bool_decide (x = 0)) eqn:Hx.
-  + apply bool_decide_eq_true in Hx. rewrite Hx Z.div_0_l in H0; [|lia].
-    rewrite Z.add_0_l Zdiv_small in H0; lia.
+  destruct (bool_decide (x `mod` k = 0)) eqn:Hx.
+  + apply bool_decide_eq_true in Hx.
+    rewrite (Z.div_mod x k) in H1; [|lia].
+    rewrite Hx Z.add_0_r Z.mul_comm in H1.
+    rewrite (Z.div_mul (x `div` k) k) in H1; [|lia].
+    rewrite (Z.div_add_l (x `div` k) k (k-1)) in H1; [|lia].
+    rewrite (Z.div_small (k-1) k) in H1; [|split; lia].
+    lia.
   + apply bool_decide_eq_false in Hx.
-    admit.
-Admitted.
+    rewrite (Z.div_mod x k); [|lia].
+    rewrite Z.mul_comm.
+    rewrite (Z.div_add_l (x `div` k) k (x `mod` k)); [|lia].
+    rewrite (Z.div_small (x `mod` k) k); [|lia].
+    rewrite Z.add_0_r.
+    rewrite -Z.add_assoc.
+    rewrite (Z.div_add_l (x `div` k) k (x `mod` k + (k-1))); [|lia].
+    assert ((x `mod` k + (k-1)) `div` k = 1) as Hone.
+    {
+      pose proof (Z_mod_lt x k H0) as [Hpos Hlt].
+      assert (1*k <= x `mod` k + (k-1)) as Hlb by lia.
+      assert (x `mod` k + (k-1) < 2*k) as Hub by lia.
+      assert (0 < k) as Hk by lia.
+      pose (Zdiv_lt_upper_bound _ _ _ Hk Hub).
+      pose (Zdiv_le_lower_bound _ _ _ Hk Hlb).
+      lia.
+    }
+    by rewrite Hone.
+Qed.
 
 Module inode.
   Record t :=
