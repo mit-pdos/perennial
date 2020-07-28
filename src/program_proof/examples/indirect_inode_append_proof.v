@@ -70,7 +70,7 @@ Proof.
 
   (* A bunch of facts and prep stuff *)
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct Hlen as [HdirLen [HindirLen HszMax]].
   iDestruct (is_slice_sz with "Hdirect") as %HlenDir.
 
   change ((set inode.blocks
@@ -153,8 +153,7 @@ Proof.
                                             ++ [a]
                                             ++ (drop (length σ'.(inode.blocks)) ds.(impl_s.dirAddrs)))
        ds.(impl_s.indAddrs)
-       ds.(impl_s.indBlkAddrsList)
-       ds.(impl_s.indBlocks)).
+       ds.(impl_s.indBlkAddrsList)).
     unfold is_inode_durable_with.
     rewrite H; simpl.
     rewrite Min.min_l in HdirAddrs; [ | word].
@@ -343,9 +342,6 @@ Proof.
       {
         assert (ds.(impl_s.numInd) = 0%nat) as tmp by word; rewrite tmp.
         rewrite take_0.
-        symmetry in HnumIndBlocks.
-        rewrite tmp in HnumIndBlocks.
-        rewrite (nil_length_inv _ HnumIndBlocks).
         repeat rewrite big_sepL2_nil; auto.
       }
     }
@@ -399,8 +395,7 @@ Theorem wp_writeIndirect {l σ d lref} (addr: u64) ds direct_s indirect_s
         ind_blocks_at_index σ index = (drop (int.nat maxDirect + index * int.nat indirectNumBlocks) σ.(inode.blocks))
        ⌝ ∗
        "%Hlookup" ∷ ⌜(take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) !! index = Some indA
-                  ∧ ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs
-                  ∧ ds.(impl_s.indBlocks) !! index = Some indBlock⌝ ∗
+                  ∧ ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs⌝ ∗
        "%Hlen" ∷ ⌜length indBlkAddrs < int.nat indirectNumBlocks⌝ ∗
        "Hro_state" ∷ inode_state l d lref ∗
        "Ha" ∷ int.val a d↦ b ∗
@@ -409,18 +404,16 @@ Theorem wp_writeIndirect {l σ d lref} (addr: u64) ds direct_s indirect_s
   }}}
   Inode__writeIndirect #l #indA (slice_val indblkaddrs_s)
   {{{ RET #();
-      ∃ hdr indBlock', ∀ σ' ds',
+      ∃ hdr, ∀ σ' ds',
          ((⌜σ' = set inode.blocks (λ bs, bs ++ [b])
                   (set inode.addrs ({[a]} ∪.) σ) ∧
            ds' = set impl_s.indBlkAddrsList
             (λ ls, <[index := (indBlkAddrs ++ [a])]> ls)
-                      (set impl_s.hdr (λ _, hdr)
-                           (set impl_s.indBlocks (λ ls, <[index := indBlock']> ls) ds))⌝)
+                      (set impl_s.hdr (λ _, hdr) ds)⌝)
         -∗ (
        "Hvolatile" ∷ is_inode_volatile_with l σ' addr direct_s indirect_s ds' ∗
        "Hhdr" ∷ is_inode_durable_hdr σ' addr ds') ∗
-       "HindirectData" ∷ ⌜ds.(impl_s.indBlocks) !! index = Some indBlock'⌝
-              ∗ is_indirect indA (indBlkAddrs ++ [a]) indBlock' (ind_blocks_at_index σ' index)
+       "HindirectData" ∷ ∃ indBlock', is_indirect indA (indBlkAddrs ++ [a]) indBlock' (ind_blocks_at_index σ' index)
     )
   }}}.
 Proof.
@@ -431,10 +424,10 @@ Proof.
   iNamed "Hro_state"; iNamed "Hvolatile"; iNamed "Hfacts"; iNamed "Hhdr".
 
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-  destruct Hlen0 as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct Hlen0 as [HdirLen [HindirLen HnumIndBlocks]].
   destruct Hsize as [HsizeMin [HsizeMax HstillRoom]].
   destruct Hindex as [Hindex HindexLastBlock].
-  destruct Hlookup as [HlookupIndA [HlookupIndBlkAddrs HlookupIndBlk]].
+  destruct Hlookup as [HlookupIndA HlookupIndBlkAddrs].
   iDestruct (is_slice_sz with "Hindirect") as %HlenInd.
   change ((set inode.blocks
             (λ bs : list Block, bs ++ [b])
@@ -521,7 +514,6 @@ Proof.
     iApply "HΦ".
     iFrame.
     iExists hdr.
-    iExists b'.
     iIntros (σ' ds').
 
     (*Prove postcondition holds*)
@@ -579,6 +571,7 @@ Proof.
     }
 
     (* HindirectData *)
+    iExists b'.
     iFrame; auto.
     iSplitR; iFrame; auto.
     {
@@ -655,7 +648,7 @@ Proof.
   iNamed "Hro_state".
   iNamed "Hdurable"; iNamed "Hvolatile"; iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-  destruct Hlen as [HdirLen [HindirLen [HszMax HnumIndBlocks]]].
+  destruct Hlen as [HdirLen [HindirLen HszMax]].
   destruct Hsize as [HszMin HszMaxAppend].
   iDestruct (is_slice_sz with "Hindirect") as %HlenInd.
 
@@ -718,11 +711,6 @@ Proof.
       unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. rewrite firstn_length.
       rewrite Min.min_l; word.
     }
-    destruct (list_lookup_lt _ ds.(impl_s.indBlocks) (int.nat index)) as [indBlk HlookupBlk].
-    {
-      unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-      word.
-    }
     assert (int.nat index < 10) as HindexMax10.
     {
       pose proof (lookup_lt_Some (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)) _ indA Hlookup) as tmp.
@@ -740,20 +728,28 @@ Proof.
                 ((take (int.nat index) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))
                                      ++ indA ::
                                      (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))))
-           as HsplitIndA by (rewrite take_drop_middle; auto).
-    assert (ds.(impl_s.indBlocks) =
-                ((take (int.nat index) (ds.(impl_s.indBlocks)))
-                   ++ indBlk :: (drop (S (int.nat index)) ds.(impl_s.indBlocks))))
+      as HsplitIndA by (rewrite take_drop_middle; auto).
+    iDestruct "HdataIndirect" as (indBlocks) "[%HindBlocksLen HdataIndirect]".
+    assert (∃ indBlock, indBlocks !! int.nat index = Some indBlock) as [indBlk HlookupIndBlock].
+    {
+      apply lookup_lt_is_Some_2.
+      rewrite HindBlocksLen.
+      apply (lookup_lt_Some _ _ _ Hlookup).
+    }
+    assert (indBlocks =
+                ((take (int.nat index) indBlocks)
+                   ++ indBlk :: (drop (S (int.nat index)) indBlocks)))
            as HsplitIndBlk by (rewrite take_drop_middle; auto).
-    iEval (rewrite HsplitIndA HsplitIndBlk) in "HdataIndirect".
+    iEval (rewrite HsplitIndA) in "HdataIndirect".
+    rewrite HsplitIndBlk.
     iApply big_sepL2_app_inv in "HdataIndirect".
     {
       repeat rewrite take_length.
-      rewrite HnumIndBlocks min_l; word.
+      rewrite min_l; len.
     }
     change (indA :: (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs))))
       with ([indA] ++ (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))).
-    change (indBlk :: (drop (S (int.nat index)) ds.(impl_s.indBlocks))) with ([indBlk] ++ (drop (S (int.nat index)) ds.(impl_s.indBlocks))).
+    change (indBlk :: (drop (S (int.nat index)) indBlocks)) with ([indBlk] ++ (drop (S (int.nat index)) indBlocks)).
     iDestruct "HdataIndirect" as "[HdataIndirectFront HdataIndirectBack]".
     iApply big_sepL2_app_inv in "HdataIndirectBack"; simpl; auto.
     iDestruct "HdataIndirectBack" as "[[Hb _] HdataIndirectBack]".
@@ -1038,14 +1034,7 @@ Proof.
       iNamed "HindirectData".
       rewrite HsplitIndA.
       iEval (rewrite -HsplitIndA) in "HdataIndirectBack".
-      assert (ds.(impl_s.indBlocks) =
-                ((take (int.nat index) (ds.(impl_s.indBlocks)))
-                   ++ indBlk' :: (drop (S (int.nat index)) ds.(impl_s.indBlocks))))
-        as HsplitIndBlk'.
-      {
-        rewrite take_drop_middle; auto.
-
-
+      iExists ((take (int.nat index) indBlocks) ++ indBlk' :: (drop (S (int.nat index)) indBlocks)).
       admit.
     }
   }
