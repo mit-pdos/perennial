@@ -62,26 +62,32 @@ Proof. Admitted.
 (* this is more or less big_sepM_lookup_acc, but with is_installed_read unfolded *)
 Theorem is_installed_read_lookup {γ d txns installed_lb durable_txn_id} {a: u64} :
   is_Some (d !! int.val a) ->
-  is_installed_read γ d txns installed_lb durable_txn_id -∗
+  is_installed γ d txns installed_lb durable_txn_id -∗
   ∃ txn_id b,
     ⌜(installed_lb ≤ txn_id ≤ durable_txn_id)%nat ∧
       apply_upds (txn_upds (take (S txn_id) txns)) d !! int.val a = Some b⌝ ∗
-    int.val a d↦ b ∗ (int.val a d↦ b -∗ is_installed_read γ d txns installed_lb durable_txn_id).
+    int.val a d↦ b ∗ (int.val a d↦ b -∗ is_installed γ d txns installed_lb durable_txn_id).
 Proof.
   rewrite /is_installed_read.
   iIntros (Hlookup) "Hbs".
   destruct Hlookup as [b0 Hlookup].
-  iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Hbs") as "[Hb Hbs]".
-  iDestruct "Hb" as (b) "(%Hbvalue&Hb&%Ha_bound)".
-  destruct Hbvalue as [txn_id (Htxn_id_bound&Htxns_val)].
-  iExists txn_id, b.
+  iNamedRestorable "Hbs".
+  iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Hdata") as "[Hb Hdata]".
+  iApply restore_intro in "Hb".
+  iDestruct "Hb" as (b) "(%Hbvalue&Hb&%Ha_bound&Hb')".
+  iDestruct (restore_elim with "Hb'") as "#Hb_restore"; iClear "Hb'".
+  iExists (if decide (int.val a ∈ being_installed)
+           then new_installed_txn_id
+           else installed_lb), b.
   iFrame "Hb".
   iSplit.
-  { iPureIntro. split; auto; lia. }
+  { iPureIntro. split; auto.
+    destruct (decide _); lia. }
   iIntros "Hb".
-  iApply ("Hbs" with "[Hb]").
-  { iExists _; iFrame.
-    iPureIntro; eauto. }
+  iApply "Hbs"; iFrame.
+  iApply "Hdata".
+  iApply "Hb_restore".
+  iFrame.
 Qed.
 
 Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
@@ -114,16 +120,14 @@ Proof.
   iNamed "Hdisk".
   iNamed "Hdisk".
 
-  iDestruct (is_installed_to_read with "Hinstalled") as "[>Hinstalled_read Hinstalled]".
   iDestruct (in_bounds_valid _ σ with "Ha_valid") as %Hlookup.
-  iDestruct (is_installed_read_lookup Hlookup with "Hinstalled_read") as
-      (txn_id b [Htxn_id Hbval]) "(Hb&Hinstalled_read)".
+  iDestruct (is_installed_read_lookup Hlookup with "Hinstalled") as
+      (txn_id b [Htxn_id Hbval]) "(Hb&Hinstalled)".
   iModIntro.
   iExists b; iFrame "Hb".
   iNext.
   iIntros "Hb".
-  iSpecialize ("Hinstalled_read" with "Hb").
-  iSpecialize ("Hinstalled" with "Hinstalled_read").
+  iSpecialize ("Hinstalled" with "Hb").
   iNamed "circ.start".
   fold innerN.
   iMod (fupd_intro_mask' _ (⊤∖↑N)) as "HinnerN".
@@ -152,24 +156,6 @@ Proof.
   iApply "HΦ".
   iExists _; iFrame.
   iDestruct (is_slice_to_small with "Hs") as "$".
-Qed.
-
-Fixpoint list_to_gmap_set {A} `{!EqDecision A} `{!Countable A} (l: list A): gmap A unit :=
-  match l with
-  | [] => ∅
-  | x::l => <[x := tt]> (list_to_gmap_set l)
-  end.
-
-Theorem list_to_gmap_set_lookup {A} `{!EqDecision A} `{!Countable A} (l: list A) (x: A) :
-  In x l <-> list_to_gmap_set l !! x = Some tt.
-Proof.
-  induction l; simpl.
-  - rewrite lookup_empty; split; [ intros [] | congruence ].
-  - destruct (decide (a = x)); subst.
-    + rewrite lookup_insert.
-      split; intuition idtac.
-    + rewrite -> lookup_insert_ne by auto.
-      split; intuition idtac.
 Qed.
 
 Theorem wp_installBlocks γ d bufs_s (bufs: list update.t)

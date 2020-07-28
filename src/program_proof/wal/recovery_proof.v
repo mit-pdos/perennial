@@ -199,7 +199,7 @@ Proof.
   iPersist "Hdurable".
   unify_ghost.
   clear cs; rename cs0 into cs.
-  iDestruct (is_installed_weaken_read with "Hinstalled") as "[Hinstalled _]".
+  iDestruct (is_installed_weaken_read with "Hinstalled") as "Hinstalled".
   set (σ':= log_crash_to σ diskEnd_txn_id).
   iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
   specialize (Hcrash _ Htrans).

@@ -354,42 +354,25 @@ Definition installer_inv γ: iProp Σ :=
 Global Instance is_installed_read_Timeless {γ d txns installed_lb diskEnd_txn_id} :
   Timeless (is_installed_read γ d txns installed_lb diskEnd_txn_id) := _.
 
+(* this illustrates what reads rely on and is used by the crash proof, since
+after a crash we only rely on this property to restore the stronger
+invariant. *)
 Theorem is_installed_weaken_read γ d txns installed_lb diskEnd_txn_id :
   is_installed γ d txns installed_lb diskEnd_txn_id -∗
-  is_installed_read γ d txns installed_lb diskEnd_txn_id ∗ (is_installed_read γ d txns installed_lb diskEnd_txn_id -∗
-                                            is_installed γ d txns installed_lb diskEnd_txn_id).
+  is_installed_read γ d txns installed_lb diskEnd_txn_id.
 Proof.
   rewrite /is_installed /is_installed_read.
   iIntros "I".
-  iNamedRestorable "I".
-  iSplitL "Hdata".
-  { iApply (big_sepM_mono with "Hdata").
-    iIntros (a b0 Hlookup) "HI".
-    iDestruct "HI" as (b') "(%&Hb&%)".
-    iExists b'; iFrame.
-    iPureIntro.
-    split; auto.
-    destruct (decide _); [ exists new_installed_txn_id | exists installed_lb ];
-      split_and!; auto; try lia. }
-  iIntros "Hmap".
-  iApply "I".
-  iFrame.
-  admit. (* oops, this is not literally true; need some other strategy (perhaps
-            we just weaken the body of the map in [is_installed_read] as needed) *)
-Admitted.
-
-Theorem is_installed_to_read γ d txns installed_lb diskEnd_txn_id E :
-  ▷ is_installed γ d txns installed_lb diskEnd_txn_id -∗
-    (|={E}=> is_installed_read γ d txns installed_lb diskEnd_txn_id) ∗
-    ▷ (is_installed_read γ d txns installed_lb diskEnd_txn_id -∗
-       is_installed γ d txns installed_lb diskEnd_txn_id).
-Proof.
-  iIntros "Hfull".
-  iDestruct (is_installed_weaken_read with "Hfull") as "[Hread $]".
-  iDestruct "Hread" as ">$".
-  auto.
+  iNamed "I".
+  iApply (big_sepM_mono with "Hdata").
+  iIntros (a b0 Hlookup) "HI".
+  iDestruct "HI" as (b') "(%&Hb&%)".
+  iExists b'; iFrame.
+  iPureIntro.
+  split; auto.
+  destruct (decide _); [ exists new_installed_txn_id | exists installed_lb ];
+    split_and!; auto; try lia.
 Qed.
-
 
 Theorem is_wal_read_mem l γ : is_wal l γ -∗ |={⊤}=> ▷ is_wal_mem l γ.
 Proof.
