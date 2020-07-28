@@ -701,6 +701,8 @@ Proof.
     wp_apply (wp_indNum); [iPureIntro; by len|].
     iIntros (index) "%Hindex".
 
+    assert (indNum = index) as HindNumIndex by word.
+
     (* Here are a bunch of facts *)
     (* TODO these are replicated from READ *)
     assert (int.val index < ds.(impl_s.numInd)) as HindexMax. {
@@ -1035,7 +1037,46 @@ Proof.
       rewrite HsplitIndA.
       iEval (rewrite -HsplitIndA) in "HdataIndirectBack".
       iExists ((take (int.nat index) indBlocks) ++ indBlk' :: (drop (S (int.nat index)) indBlocks)).
-      admit.
+
+      iSplitR; [iPureIntro; len|].
+      + rewrite HindBlocksLen; repeat rewrite min_l; try word.
+        -- rewrite take_length. rewrite min_l; auto. word.
+      + iApply (big_sepL2_app with "[HdataIndirectFront]").
+        -- admit.
+        -- change (indA :: (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs))))
+               with ([indA] ++ (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))).
+           change (indBlk' :: (drop (S (int.nat index)) indBlocks)) with ([indBlk'] ++ (drop (S (int.nat index)) indBlocks)).
+
+           iApply (big_sepL2_app with "[diskAddr Hdata]");
+           replace (length (take (int.nat index) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs))))
+             with (int.nat index) by
+               (rewrite take_length;
+                rewrite min_l; [auto|word]).
+           {
+             rewrite big_sepL2_singleton.
+             iExists (indBlkAddrs ++ [a]).
+             iSplitR; simpl.
+             + iPureIntro. rewrite -plus_n_O. rewrite -tmp1 tmp3.
+               apply (list_lookup_insert (ds.(impl_s.indBlkAddrsList)) (int.nat index) (indBlkAddrs ++ [a])).
+               apply lookup_lt_is_Some. eauto.
+             + iFrame.
+               rewrite -plus_n_O; auto.
+           }
+           (* Hdata *)
+           rewrite -tmp1; simpl.
+           rewrite -HindNumIndex.
+           assert (int.val indNum + 1 = ds.(impl_s.numInd)) as HindNumSucc.
+           {
+             rewrite HindNum. rewrite HnumInd.
+             rewrite max_r; [|word].
+             rewrite -roundUpDiv_lt_succ; try word.
+             unfold indirectNumBlocks, maxIndirect, maxDirect, roundUpDiv in *.
+             lia.
+           }
+           repeat rewrite drop_ge.
+           { by iApply big_sepL2_nil. }
+           { rewrite HindBlocksLen take_length min_l; lia. }
+           { rewrite take_length min_l; lia. }
     }
   }
 Admitted.

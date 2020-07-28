@@ -16,8 +16,19 @@ Definition indirectNumBlocks: Z := 512.
 Definition MaxBlocks: Z := maxDirect + maxIndirect*indirectNumBlocks.
 Definition roundUpDiv (x k: Z) := (x + (k-1)) / k.
 
+
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
+
+Lemma roundUpDiv_lt_succ (x k: Z) : k > 0 -> (x / k) < roundUpDiv x k -> (x / k) + 1 = roundUpDiv x k.
+Proof.
+  intros. unfold roundUpDiv in *.
+  destruct (bool_decide (x = 0)) eqn:Hx.
+  + apply bool_decide_eq_true in Hx. rewrite Hx Z.div_0_l in H0; [|lia].
+    rewrite Z.add_0_l Zdiv_small in H0; lia.
+  + apply bool_decide_eq_false in Hx.
+    admit.
+Admitted.
 
 Module inode.
   Record t :=
@@ -688,13 +699,6 @@ Proof.
       iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
       { iPureIntro; eauto. }
       wp_apply (crash_lock.release_spec with "His_locked"); auto.
-      (*wp_apply (release_spec with "[$Hlock $His_locked HP Hhdr addr
-             size direct indirect Hdirect Hindirect HdataDirect HdataIndirect]").
-      { iExists _; iFrame.
-        iExists addrs.
-        iExists direct_s, indirect_s, ds.(impl_s.dirAddrs), ds.(impl_s.indAddrs), sz, ds.(impl_s.numInd), ds.(impl_s.hdr). iFrame "∗ %".
-        iPureIntro; repeat (split; auto).
-      }*)
       wp_pures.
       iApply "HΦ"; iFrame.
       rewrite lookup_take in Hlookup2; [ | word ].
