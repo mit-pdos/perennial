@@ -106,6 +106,45 @@ Lemma sliding_set_mutable_start f (σ: slidingM.t) :
   slidingM.start (set slidingM.mutable f σ) = slidingM.start σ.
 Proof. by destruct σ. Qed.
 
+(* TODO: move memWrite proofs to sliding.v *)
+Lemma memWrite_one_NoDup σ u :
+  NoDup (update.addr <$> σ.(slidingM.log)) →
+  int.val σ.(slidingM.mutable) - int.val σ.(slidingM.start) = 0 →
+  NoDup (update.addr <$> (memWrite_one σ u).(slidingM.log)).
+Proof.
+  intros Hnodup Hro_len.
+  rewrite /memWrite_one.
+  destruct (find_highest_index _) as [i|] eqn:Hlookup; simpl.
+  - rewrite Hro_len.
+    rewrite -> decide_True by word.
+    simpl.
+    rewrite list_fmap_insert.
+    rewrite list_insert_id //.
+    apply find_highest_index_ok' in Hlookup as [Hlookup _].
+    auto.
+  - rewrite fmap_app.
+    apply NoDup_app.
+    split_and!; auto.
+    + simpl.
+      intros x Hx ->%elem_of_list_singleton.
+      apply elem_of_list_lookup in Hx as [txn_id Hx].
+      eapply find_highest_index_none in Hlookup; eauto.
+    + simpl.
+      apply NoDup_singleton.
+Qed.
+
+Lemma memWrite_all_NoDup σ bufs:
+  NoDup (update.addr <$> σ.(slidingM.log)) →
+  int.val σ.(slidingM.mutable) - int.val σ.(slidingM.start) = 0 →
+  NoDup (update.addr <$> (memWrite σ bufs).(slidingM.log)).
+Proof.
+  generalize dependent σ.
+  induction bufs as [|u bufs]; simpl; intuition.
+  apply IHbufs.
+  - apply memWrite_one_NoDup; auto.
+  - rewrite memWrite_one_same_start memWrite_one_same_mutable //.
+Qed.
+
 Theorem wp_absorbBufs b_s (bufs: list update.t) :
   {{{ updates_slice_frag b_s 1 bufs }}}
     absorbBufs (slice_val b_s)
@@ -147,12 +186,15 @@ Proof.
   { iApply "HΦ"; iFrame "Hbufs'".
     iPureIntro; split.
     - rewrite memWrite_apply_upds //.
-    - admit. (* memWrite doesn't leave duplicates *) }
+    - subst bufs'.
+      apply memWrite_all_NoDup; simpl.
+      + constructor.
+      + word. }
   rewrite /slidingM.logIndex /=.
   rewrite slidingM_endPos_val //=.
   replace bufs'.(slidingM.start) with (U64 0) by rewrite memWrite_same_start //.
   word.
-Admitted.
+Qed.
 
 Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
   is_durable_txn γ cs txns diskEnd_txn_id durable_lb -∗
