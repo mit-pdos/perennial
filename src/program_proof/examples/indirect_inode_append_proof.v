@@ -767,7 +767,7 @@ Proof.
     wp_loadField.
     iDestruct "Hb" as (indBlkAddrs) "[%HaddrLookup HaddrIndirect]".
     wp_apply (wp_readIndirect ds indirect_s indBlk indBlkAddrs (int.nat index) d indA
-                with "[indirect Hindirect HaddrIndirect]").
+                with "[indirect HaddrIndirect]").
     {
       iFrame. repeat iSplit; eauto. iPureIntro; len.
     }
@@ -782,7 +782,6 @@ Proof.
     iDestruct (is_slice_split with "HindBlkAddrs") as "[HindBlkAddrs_small HindBlkAddrs_cap]".
     wp_apply (wp_SliceSet with "[$HindBlkAddrs_small]").
     {
-
       iSplit; auto.
       iPureIntro.
       apply lookup_lt_is_Some_2.
