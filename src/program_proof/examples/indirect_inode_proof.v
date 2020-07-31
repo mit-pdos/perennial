@@ -717,21 +717,12 @@ Proof.
     iSplitR; auto.
     iSplitL "HusedSlice"; [by rewrite app_nil_r|].
 
-    iApply (big_sepL_forall with "[HdataIndirect]").
-    {
-      unfold Persistent.
-      iIntros (k x) "Hk".
-      admit.
-    }
-    iIntros (k x) "%HlookupK".
-    assert (∃ indBlk, indBlocks !! k = Some indBlk) as [indBlk HindBlk].
-    {
-      apply (lookup_lt_is_Some indBlocks k).
-      apply lookup_lt_Some in HlookupK.
-      by rewrite HindBlocksLen.
-    }
-    iPoseProof (big_sepL2_lookup with "HdataIndirect") as "Hk"; eauto.
-    iDestruct "Hk" as (indBlkAddrs) "Hk".
+    iApply big_sepL2_to_sepL_1 in "HdataIndirect".
+    iApply (big_sepL_mono with "HdataIndirect").
+    iIntros (k indAddr) "%HlookupK".
+    iIntros "H".
+    iDestruct "H" as (indBlk) "[%HlookupIndBlk H']".
+    iDestruct "H'" as (indBlkAddrs) "H'".
     iExists indBlkAddrs, indBlk; eauto.
   }
   iIntros "[Hindirect_small H]".
