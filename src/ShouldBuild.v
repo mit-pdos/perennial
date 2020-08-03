@@ -35,6 +35,10 @@ From Perennial.tutorial Require
 From Perennial.goose_lang.lib Require
      slice.pred_slice.
 
+(* WIP map algebra *)
+From Perennial.algebra Require
+     auth_map.
+
 (* goose output *)
 From Perennial.goose_lang.examples Require
      goose_unittest simpledb logging2 rfc1813.
