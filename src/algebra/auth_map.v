@@ -45,26 +45,35 @@ Section auth_map.
       ⌜m = fmap fst ro_m⌝ ∗
       own γ (● to_mapUR ro_m).
 
-  Definition ptsto γ k q v :=
+  Definition ptsto_def γ k q v :=
     own γ (◯ {[ k := Cinl (q, to_agree (v : leibnizO V)) ]}).
+  Definition ptsto_aux : seal (@ptsto_def). Proof. by eexists. Qed.
+  Definition ptsto := ptsto_aux.(unseal).
+  Definition ptsto_eq : @ptsto = @ptsto_def := ptsto_aux.(seal_eq).
 
-  Definition ptsto_ro γ k v :=
+  Definition ptsto_ro_def γ k v :=
     own γ (◯ {[ k := Cinr (to_agree (v : leibnizO V)) ]}).
+  Definition ptsto_ro_aux : seal (@ptsto_ro_def). Proof. by eexists. Qed.
+  Definition ptsto_ro := ptsto_ro_aux.(unseal).
+  Definition ptsto_ro_eq : @ptsto_ro = @ptsto_ro_def := ptsto_ro_aux.(seal_eq).
+
+  Ltac unseal :=
+    rewrite ?ptsto_eq ?ptsto_ro_eq.
 
   Global Instance ptsto_timeless : Timeless (ptsto γ k q v).
-  Proof. apply _. Qed.
+  Proof. unseal; apply _. Qed.
 
   Global Instance ptsto_Fractional γ k v : Fractional (λ q, ptsto γ k q v).
   Proof.
-    intros p q. by rewrite -own_op -auth_frag_op
+    unseal. intros p q. by rewrite -own_op -auth_frag_op
       singleton_op -Cinl_op -pair_op agree_idemp.
   Qed.
 
   Global Instance ptsto_ro_timeless : Timeless (ptsto_ro γ k v).
-  Proof. apply _. Qed.
+  Proof. unseal; apply _. Qed.
 
   Global Instance ptsto_ro_persistent : Persistent (ptsto_ro γ k v).
-  Proof. apply _. Qed.
+  Proof. unseal; apply _. Qed.
 
   Theorem map_init m :
     ⊢ |==> ∃ γ, map_ctx γ m.
@@ -82,6 +91,7 @@ Section auth_map.
     m !! k = None →
     map_ctx γ m ==∗ map_ctx γ (<[k:=v]> m) ∗ ptsto γ k 1 v.
   Proof.
+    unseal.
     iIntros (Hlookup) "Hm".
     iDestruct "Hm" as (m_ro ->) "Hm".
     iMod (own_update with "Hm") as "[Hm Hk]".
@@ -97,14 +107,6 @@ Section auth_map.
     iPureIntro.
     rewrite fmap_insert //=.
   Qed.
-
-  Lemma map_update {γ m} k v1 v2 :
-    map_ctx γ m -∗ ptsto γ k 1 v1 ==∗ map_ctx γ (<[k:=v2]>m) ∗ ptsto γ k 1 v2.
-  Proof.
-    iDestruct 1 as (m_ro ->) "Hm".
-    iIntros "Hk".
-    (* TODO: do this proof *)
-  Admitted.
 
   Lemma Cinl_included_inv (A B: cmraT) (x:A) (y:csumR A B) :
     Cinl x ≼ y →
@@ -133,18 +135,29 @@ Section auth_map.
   Lemma Some_Cinl_included (A B: cmraT) (x:A) (y: csumR A B) :
     Some (Cinl x) ≼ Some y → y = CsumBot ∨ (∃ x', y = Cinl x' ∧ (x ≡ x' ∨ x ≼ x')).
   Proof.
-    rewrite option_included.
-    intros [|]; [ congruence | ].
-    destruct H as [x' [y' ?]]; intuition idtac.
-    - inversion H0; inversion H; subst.
+    intros H%Some_included_inv.
+    intuition idtac.
+    - inversion H0; subst; eauto.
+    - apply Cinl_included_inv in H0.
+      intuition eauto.
       right.
-      inversion H1; subst; eauto.
-    - inversion H0; inversion H; subst.
-      apply csum_included in H1; intuition eauto.
-      + destruct H1 as [x' [x'' ?]]; intuition subst.
-        inversion H2; subst; eauto.
-      + destruct H1 as [x' [x'' ?]]; intuition subst.
-        inversion H2; subst; eauto.
+      destruct H as [? (?&?)]; eauto.
+  Qed.
+
+  (* TODO: somehow this isn't upstream *)
+  Lemma to_agree_equiv (A:ofeT) (x y:A) :
+    to_agree x ≡ to_agree y →
+    x ≡ y.
+  Proof.
+    intros H.
+    apply equiv_dist => n.
+    (* I apologize for this *)
+    compute [equiv ofe_equiv agree_ofe_mixin agreeO agree_equiv to_agree] in H.
+    destruct (H n) as [H' _].
+    specialize (H' x ltac:(constructor)).
+    destruct H' as (y'&Hin&Hyequiv).
+    compute [elem_of] in Hin.
+    apply elem_of_list_singleton in Hin; subst; auto.
   Qed.
 
   Lemma map_ptsto_included k q v (m: gmap K (V*bool)) :
@@ -166,28 +179,44 @@ Section auth_map.
     rewrite -> H1 in Hequiv_incl.
     destruct Hequiv_incl as [Hequiv|Hincl].
     - inversion Hequiv; subst; simpl in *.
-      admit.
+      apply to_agree_equiv, leibniz_equiv_iff in H0; auto.
     - apply pair_included in Hincl as [_ Hincl]; simpl in Hincl.
       apply to_agree_included, leibniz_equiv in Hincl; auto.
-  Admitted.
+  Qed.
 
-  Theorem map_freeze γ m k v :
-    map_ctx γ m -∗
-    ptsto γ k 1 v ==∗
-    map_ctx γ m ∗
-    ptsto_ro γ k v.
+  Lemma map_update {γ m} k v1 v2 :
+    map_ctx γ m -∗ ptsto γ k 1 v1 ==∗ map_ctx γ (<[k:=v2]>m) ∗ ptsto γ k 1 v2.
   Proof.
-    rewrite /ptsto.
+    unseal.
     iDestruct 1 as (m_ro ->) "Hm".
     iIntros "Hk".
     iDestruct (own_valid_2 with "Hm Hk") as
         %[Hlookup%map_ptsto_included _]%auth_both_valid.
-    iMod (own_update_2 with "Hm Hk") as "[Hm Hro_k]".
+    iMod (own_update_2 with "Hm Hk") as "[Hm $]".
+    { eapply auth_update, singleton_local_update,
+        (exclusive_local_update _ (Cinl (1%Qp, to_agree (v2: leibnizO V))))=> //.
+      rewrite lookup_fmap Hlookup //=. }
+    iModIntro.
+    rewrite -to_mapUR_insert_inl.
+    iExists _; iFrame.
+    iPureIntro.
+    rewrite fmap_insert //.
+  Qed.
+
+  Theorem map_freeze γ m k v :
+    map_ctx γ m -∗
+    ptsto γ k 1 v ==∗ map_ctx γ m ∗ ptsto_ro γ k v.
+  Proof.
+    unseal.
+    iDestruct 1 as (m_ro ->) "Hm".
+    iIntros "Hk".
+    iDestruct (own_valid_2 with "Hm Hk") as
+        %[Hlookup%map_ptsto_included _]%auth_both_valid.
+    iMod (own_update_2 with "Hm Hk") as "[Hm $]".
     { eapply auth_update, singleton_local_update,
         (exclusive_local_update _ (Cinr (to_agree (v: leibnizO V))))=> //.
       rewrite lookup_fmap Hlookup //=. }
     iModIntro.
-    iFrame.
     rewrite -to_mapUR_insert_inr.
     iExists _; iFrame.
     iPureIntro.
