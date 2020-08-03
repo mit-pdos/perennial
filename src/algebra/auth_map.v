@@ -57,6 +57,13 @@ Section auth_map.
   Definition ptsto_ro := ptsto_ro_aux.(unseal).
   Definition ptsto_ro_eq : @ptsto_ro = @ptsto_ro_def := ptsto_ro_aux.(seal_eq).
 
+  Notation "k [[ γ ]]↦{ q } v" := (ptsto γ k q%Qp v)
+    (at level 20, q at level 50, format "k  [[ γ ]]↦{ q }  v") : bi_scope.
+  Notation "k [[ γ ]]↦ v" := (k [[γ]]↦{1} v)%I
+    (at level 20, format "k  [[ γ ]]↦  v") : bi_scope.
+  Notation "k [[ γ ]]↦ro v" := (ptsto_ro γ k v)
+    (at level 20, format "k  [[ γ ]]↦ro  v") : bi_scope.
+
   Ltac unseal :=
     rewrite ?ptsto_eq ?ptsto_ro_eq.
 
@@ -120,6 +127,18 @@ Section auth_map.
       inversion H0.
   Qed.
 
+  Lemma Cinr_included_inv (A B: cmraT) (x:B) (y:csumR A B) :
+    Cinr x ≼ y →
+    y = CsumBot ∨ ∃ x', y = Cinr x' ∧ x ≼ x'.
+  Proof.
+    rewrite csum_included; intros [|[|]]; eauto; right.
+    - destruct H as [x' [x'' ?]]; intuition subst.
+      inversion H0.
+    - destruct H as [x' [x'' ?]]; intuition subst.
+      inversion H0; subst; clear H0.
+      eauto.
+  Qed.
+
   Lemma Some_included_inv (A: cmraT) (x y:A) :
     Some x ≼ Some y → x ≡ y ∨ x ≼ y.
   Proof.
@@ -139,6 +158,18 @@ Section auth_map.
     intuition idtac.
     - inversion H0; subst; eauto.
     - apply Cinl_included_inv in H0.
+      intuition eauto.
+      right.
+      destruct H as [? (?&?)]; eauto.
+  Qed.
+
+  Lemma Some_Cinr_included (A B: cmraT) (x:B) (y: csumR A B) :
+    Some (Cinr x) ≼ Some y → y = CsumBot ∨ (∃ x', y = Cinr x' ∧ (x ≡ x' ∨ x ≼ x')).
+  Proof.
+    intros H%Some_included_inv.
+    intuition idtac.
+    - inversion H0; subst; eauto.
+    - apply Cinr_included_inv in H0.
       intuition eauto.
       right.
       destruct H as [? (?&?)]; eauto.
@@ -182,6 +213,51 @@ Section auth_map.
       apply to_agree_equiv, leibniz_equiv_iff in H0; auto.
     - apply pair_included in Hincl as [_ Hincl]; simpl in Hincl.
       apply to_agree_included, leibniz_equiv in Hincl; auto.
+  Qed.
+
+  Lemma map_ptsto_ro_included k v (m: gmap K (V*bool)) :
+    {[k := Cinr (to_agree v)]} ≼ to_mapUR m → m !! k = Some (v, true).
+  Proof.
+    (* this proof is also a mess *)
+    rewrite singleton_included_l lookup_fmap.
+    intros [y [Hequiv Hincl]].
+    apply fmap_Some_equiv in Hequiv as [[v' ro] [Hlookup Hy_equiv]].
+    rewrite Hlookup.
+    f_equiv.
+    apply Some_Cinr_included in Hincl as [-> | Hincl].
+    { destruct ro; inversion Hy_equiv. }
+    destruct Hincl as [ [q' v''] [-> Hequiv_incl ]].
+    destruct ro; [ | by inversion Hy_equiv ].
+    f_equiv.
+    inversion Hy_equiv; subst; clear Hy_equiv.
+    rewrite -> H1 in Hequiv_incl.
+    destruct Hequiv_incl as [Hequiv|Hincl].
+    - apply to_agree_equiv, leibniz_equiv_iff in Hequiv; auto.
+    - apply to_agree_included, leibniz_equiv in Hincl; auto.
+  Qed.
+
+  Theorem map_valid {γ m} k q v :
+    map_ctx γ m -∗ ptsto γ k q v -∗ ⌜m !! k = Some v⌝.
+  Proof.
+    unseal.
+    iDestruct 1 as (m_ro ->) "Hm".
+    iIntros "Hk".
+    iDestruct (own_valid_2 with "Hm Hk") as
+        %[Hlookup%map_ptsto_included _]%auth_both_valid.
+    iPureIntro.
+    rewrite lookup_fmap Hlookup //.
+  Qed.
+
+  Theorem map_ro_valid {γ m} k q v :
+    map_ctx γ m -∗ ptsto_ro γ k v -∗ ⌜m !! k = Some v⌝.
+  Proof.
+    unseal.
+    iDestruct 1 as (m_ro ->) "Hm".
+    iIntros "Hk".
+    iDestruct (own_valid_2 with "Hm Hk") as
+        %[Hlookup%map_ptsto_ro_included _]%auth_both_valid.
+    iPureIntro.
+    rewrite lookup_fmap Hlookup //.
   Qed.
 
   Lemma map_update {γ m} k v1 v2 :
@@ -237,3 +313,10 @@ Section auth_map.
   Qed.
 
 End auth_map.
+
+Notation "k [[ γ ]]↦{ q } v" := (ptsto γ k q%Qp v)
+  (at level 20, q at level 50, format "k  [[ γ ]]↦{ q }  v") : bi_scope.
+Notation "k [[ γ ]]↦ v" := (k [[γ]]↦{1} v)%I
+  (at level 20, format "k  [[ γ ]]↦  v") : bi_scope.
+Notation "k [[ γ ]]↦ro v" := (ptsto_ro γ k v)
+  (at level 20, format "k  [[ γ ]]↦ro  v") : bi_scope.
