@@ -130,6 +130,23 @@ Section auth_map.
       eauto.
   Qed.
 
+  Lemma Some_Cinl_included (A B: cmraT) (x:A) (y: csumR A B) :
+    Some (Cinl x) ≼ Some y → y = CsumBot ∨ (∃ x', y = Cinl x' ∧ (x ≡ x' ∨ x ≼ x')).
+  Proof.
+    rewrite option_included.
+    intros [|]; [ congruence | ].
+    destruct H as [x' [y' ?]]; intuition idtac.
+    - inversion H0; inversion H; subst.
+      right.
+      inversion H1; subst; eauto.
+    - inversion H0; inversion H; subst.
+      apply csum_included in H1; intuition eauto.
+      + destruct H1 as [x' [x'' ?]]; intuition subst.
+        inversion H2; subst; eauto.
+      + destruct H1 as [x' [x'' ?]]; intuition subst.
+        inversion H2; subst; eauto.
+  Qed.
+
   Lemma map_ptsto_included k q v (m: gmap K (V*bool)) :
     {[k := Cinl (q, to_agree v)]} ≼ to_mapUR m → m !! k = Some (v, false).
   Proof.
@@ -138,18 +155,20 @@ Section auth_map.
     rewrite singleton_included_l lookup_fmap.
     intros [y [Hequiv Hincl]].
     apply fmap_Some_equiv in Hequiv as [[v' ro] [Hlookup Hy_equiv]].
-    apply Some_included_inv in Hincl as [Hequiv | Hincl].
-    - rewrite -> Hy_equiv in Hequiv.
-      destruct ro.
-      + inversion Hequiv.
-      + inversion Hequiv; subst.
-        apply pair_equiv_inj in H1 as [? Hv_equiv].
-        admit.
-    - apply Cinl_included_inv in Hincl as [-> | Hincl].
-      + destruct ro; inversion Hy_equiv.
-      + destruct Hincl as [[q' v''] [-> Hincl]].
-        apply pair_included in Hincl as [? Hincl]; simpl in Hincl.
-        admit.
+    rewrite Hlookup.
+    f_equiv.
+    apply Some_Cinl_included in Hincl as [-> | Hincl].
+    { destruct ro; inversion Hy_equiv. }
+    destruct Hincl as [ [q' v''] [-> Hequiv_incl ]].
+    destruct ro; [ inversion Hy_equiv | ].
+    f_equiv.
+    inversion Hy_equiv; subst; clear Hy_equiv.
+    rewrite -> H1 in Hequiv_incl.
+    destruct Hequiv_incl as [Hequiv|Hincl].
+    - inversion Hequiv; subst; simpl in *.
+      admit.
+    - apply pair_included in Hincl as [_ Hincl]; simpl in Hincl.
+      apply to_agree_included, leibniz_equiv in Hincl; auto.
   Admitted.
 
   Theorem map_freeze γ m k v :
