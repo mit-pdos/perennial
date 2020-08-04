@@ -75,12 +75,87 @@ Section auth_map.
     unseal. intros p q. by rewrite -own_op -auth_frag_op
       singleton_op -Cinl_op -pair_op agree_idemp.
   Qed.
+  Global Instance ptsto_AsFractional γ k q v : AsFractional (ptsto γ k q v) (λ q, ptsto γ k q v) q.
+  Proof. split; auto; apply _. Qed.
 
   Global Instance ptsto_ro_timeless : Timeless (ptsto_ro γ k v).
   Proof. unseal; apply _. Qed.
 
   Global Instance ptsto_ro_persistent : Persistent (ptsto_ro γ k v).
   Proof. unseal; apply _. Qed.
+
+  Lemma Cinl_valid (A B:cmraT) (x:A) :
+    ✓ @Cinl A B x → ✓ x.
+  Proof. auto. Qed.
+
+  Lemma Cinr_valid (A B:cmraT) (x:B) :
+    ✓ @Cinr A B x → ✓ x.
+  Proof. auto. Qed.
+
+  Lemma ptsto_agree_frac_value γ k q1 q2 v1 v2 :
+    ptsto γ k q1 v1 -∗ ptsto γ k q2 v2 -∗ ⌜v1 = v2 ∧ ✓(q1+q2)%Qp⌝.
+  Proof.
+    unseal; rewrite /ptsto_def.
+    iIntros "H1 H2". iCombine "H1 H2" as "H".
+    rewrite -Cinl_op -pair_op frac_op'.
+    iDestruct (own_valid with "H") as %Hvalid.
+    iPureIntro.
+    (* unification doesn't work with apply *)
+    apply (iffLR (auth_frag_valid _)) in Hvalid as Hvalid%singleton_valid%Cinl_valid.
+    apply pair_valid in Hvalid as [? ?%agree_op_inv'%leibniz_equiv_iff].
+    simpl in *.
+    auto.
+  Qed.
+
+  Theorem ptsto_agree γ k q1 q2 v1 v2 :
+    ptsto γ k q1 v1 -∗ ptsto γ k q2 v2 -∗ ⌜v1 = v2⌝.
+  Proof.
+    iIntros "H1 H2".
+    iDestruct (ptsto_agree_frac_value with "H1 H2") as %[? ?].
+    auto.
+  Qed.
+
+  Theorem ptsto_valid γ k q v :
+    ptsto γ k q v -∗ ✓ q.
+  Proof.
+    unseal; rewrite /ptsto_def.
+    rewrite own_valid.
+    iIntros (Hvalid) "!%".
+    apply (iffLR (auth_frag_valid _)) in Hvalid as
+        Hvalid%singleton_valid%Cinl_valid.
+    apply (iffLR (pair_valid _ _)) in Hvalid; intuition.
+  Qed.
+  Theorem ptsto_valid_2 γ k q1 q2 v1 v2 :
+    ptsto γ k q1 v1 -∗ ptsto γ k q2 v2 -∗ ✓ (q1 + q2)%Qp.
+  Proof.
+    iIntros "H1 H2".
+    iDestruct (ptsto_agree_frac_value with "H1 H2") as %[? ?].
+    auto.
+  Qed.
+
+  (* corollary of above lemmas for a useful special case *)
+  Theorem ptsto_conflict γ k v1 v2 :
+    ptsto γ k 1 v1 -∗ ptsto γ k 1 v2 -∗ False.
+  Proof.
+    iIntros "H1 H2".
+    iDestruct (ptsto_valid_2 with "H1 H2") as %?.
+    apply (iffLR (frac_valid' _)) in H.
+    contradiction H.
+    auto.
+  Qed.
+
+  Lemma ptsto_ro_agree γ k v1 v2 :
+    ptsto_ro γ k v1 -∗ ptsto_ro γ k v2 -∗ ⌜v1 = v2⌝.
+  Proof.
+    unseal; rewrite /ptsto_ro_def.
+    iIntros "H1 H2". iCombine "H1 H2" as "H".
+    rewrite -Cinr_op.
+    iDestruct (own_valid with "H") as %Hvalid.
+    iPureIntro.
+    (* unification doesn't work with apply *)
+    pose proof (iffLR (auth_frag_valid _) Hvalid) as H%singleton_valid%Cinr_valid.
+    apply agree_op_inv', leibniz_equiv_iff in H; auto.
+  Qed.
 
   Theorem map_init m :
     ⊢ |==> ∃ γ, map_ctx γ m.
@@ -198,7 +273,7 @@ Section auth_map.
     there *)
     rewrite singleton_included_l lookup_fmap.
     intros [y [Hequiv Hincl]].
-    apply fmap_Some_equiv in Hequiv as [[v' ro] [Hlookup Hy_equiv]].
+    apply fmap_Some_equiv in Hequiv as [ [v' ro] [Hlookup Hy_equiv] ].
     rewrite Hlookup.
     f_equiv.
     apply Some_Cinl_included in Hincl as [-> | Hincl].
@@ -221,7 +296,7 @@ Section auth_map.
     (* this proof is also a mess *)
     rewrite singleton_included_l lookup_fmap.
     intros [y [Hequiv Hincl]].
-    apply fmap_Some_equiv in Hequiv as [[v' ro] [Hlookup Hy_equiv]].
+    apply fmap_Some_equiv in Hequiv as [ [v' ro] [Hlookup Hy_equiv] ].
     rewrite Hlookup.
     f_equiv.
     apply Some_Cinr_included in Hincl as [-> | Hincl].
@@ -313,6 +388,10 @@ Section auth_map.
   Qed.
 
 End auth_map.
+
+(* TODO: this notation is cumbersome and also breaks [[ in Ltac, but that first
+token needs to disambiguate the notation which makes it hard to use something
+simple. *)
 
 Notation "k [[ γ ]]↦{ q } v" := (ptsto γ k q%Qp v)
   (at level 20, q at level 50, format "k  [[ γ ]]↦{ q }  v") : bi_scope.
