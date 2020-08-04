@@ -988,7 +988,7 @@ Proof.
         iPureIntro. rewrite HnumInd.
         unfold roundUpDiv, maxDirect, indirectNumBlocks in *.
         rewrite app_length; simpl.
-        repeat rewrite max_r; try word.
+        split; [repeat rewrite max_r; try word | len].
       }
     }
 
