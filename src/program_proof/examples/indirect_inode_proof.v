@@ -438,9 +438,9 @@ Definition slice_subslice A n m s := slice_skip (slice_take s A m) A n.
 
 Definition is_alloced_blocks_slice σ s (direct_s indirect_s : Slice.t)
            numInd (dirAddrs indAddrs : list u64) (indBlkAddrsList: list (list u64)) : iProp Σ :=
-      is_slice direct_s uint64T 1 (take (length σ.(inode.blocks)) dirAddrs) ∗
-      is_slice indirect_s uint64T 1 (take (numInd) indAddrs) ∗
-      is_slice (slice_subslice uint64T
+      "direct" ∷ is_slice direct_s uint64T 1 (take (length σ.(inode.blocks)) dirAddrs) ∗
+      "indirect" ∷ is_slice indirect_s uint64T 1 (take (numInd) indAddrs) ∗
+      "indblocks" ∷ is_slice (slice_subslice uint64T
                                ((int.nat direct_s.(Slice.sz)) + (int.nat indirect_s.(Slice.sz)))%nat
                                s.(Slice.sz) s)
       uint64T 1 (concat indBlkAddrsList ++
@@ -666,7 +666,7 @@ Proof.
                               ++ (replicate (lastBlockFiller (Z.to_nat indirectNumBlocks)
                                                             (take (length done) ds.(impl_s.indBlkAddrsList)))
                                                             (U64 0))) ∗
-                 "HindBlks" ∷ [∗ list] i↦a ∈ done ++ todo, ∃ indBlkAddrs indBlk,
+                 "HindBlks" ∷ [∗ list] i↦a;indBlk ∈ done ++ todo;indBlocks, ∃ indBlkAddrs,
                                                 ⌜ ds.(impl_s.indBlkAddrsList) !! i = Some indBlkAddrs ⌝ ∗
                                                 is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ i)
       )%I
@@ -676,12 +676,27 @@ Proof.
     iIntros (lϕ) "Hinv HΦ"; iNamed "Hinv".
     wp_pures.
     wp_loadField.
-    iApply big_sepL_app in "HindBlks".
+    replace (indBlocks) with ((take (length done) indBlocks) ++ (drop (length done) indBlocks))
+      by (rewrite take_drop; auto).
+    iApply (big_sepL2_app_inv _ done (a :: todo) (take (length done) indBlocks) (drop (length done) indBlocks)) in "HindBlks"; auto.
+    {
+      rewrite take_length HindBlocksLen -H3. len.
+    }
     iDestruct "HindBlks" as "[HindBlksDone HindBlksTodo]".
-    iDestruct (big_sepL_cons with "HindBlksTodo") as "[Ha HindBlksTodo]".
+    assert (∃ indblk, indblk :: (drop (length done + 1)) indBlocks = (drop (length done)) indBlocks)
+      as [indblk Hindblk].
+    {
+      assert (∃ indblk, indBlocks !! length done = Some indblk) as [indblk Htmp].
+      + apply lookup_lt_is_Some. rewrite HindBlocksLen -H3. len.
+      + exists indblk.
+        replace (length done + 1)%nat with (S (length done))%nat by word.
+        rewrite -drop_S; auto.
+    }
+    rewrite -Hindblk.
+    iDestruct (big_sepL2_cons with "HindBlksTodo") as "[Ha HindBlksTodo]".
     iEval (rewrite -plus_n_O) in "Ha".
-    iDestruct "Ha" as (indBlkAddrs indBlk) "[%HindBlkAddrsLookup Ha]".
-    wp_apply (wp_readIndirect ds indirect_s indBlk indBlkAddrs (length done) d a with "[Ha indirect]").
+    iDestruct "Ha" as (indBlkAddrs) "[%HindBlkAddrsLookup Ha]".
+    wp_apply (wp_readIndirect ds indirect_s indblk indBlkAddrs (length done) d a with "[Ha indirect]").
     {
       iFrame.
       repeat (iSplitR; [iPureIntro; eauto|]).
@@ -744,17 +759,17 @@ Proof.
         by rewrite app_nil_r.
       }
     }
+    rewrite -app_assoc.
+    iApply (big_sepL2_app with "[HindBlksDone]"); [by simpl|].
+    simpl.
+
     iSplitL "diskAddr Hdata"; simpl; auto.
     {
-      iSplitL; auto.
-      iExists indBlkAddrs, indBlk.
+      iExists indBlkAddrs.
       rewrite -plus_n_O.
       iFrame.
       repeat (iSplitR; iPureIntro; auto).
     }
-    iApply (big_sepL_mono with "HindBlksTodo").
-    iIntros (k y Lookup) "H".
-    by rewrite -Nat.add_assoc Nat.add_1_l.
   }
   {
     rewrite app_nil_l.
@@ -762,19 +777,7 @@ Proof.
     iExists s1.
     iFrame.
     iSplitR; auto.
-    iSplitL "HusedSlice".
-    {
-      simpl.
-        by rewrite app_nil_r.
-    }
-
-    iApply big_sepL2_to_sepL_1 in "HdataIndirect".
-    iApply (big_sepL_mono with "HdataIndirect").
-    iIntros (k indAddr) "%HlookupK".
-    iIntros "H".
-    iDestruct "H" as (indBlk) "[%HlookupIndBlk H']".
-    iDestruct "H'" as (indBlkAddrs) "H'".
-    iExists indBlkAddrs, indBlk; eauto.
+    simpl; rewrite app_nil_r; auto.
   }
   iIntros "[Hindirect_small H]".
   iNamed "H".
@@ -830,7 +833,20 @@ Proof.
             (U64 0))) = int.val s2.(Slice.sz)) as HrewriteMe2 by word.
     rewrite -HrewriteMe2.
     len.
-  + admit.
+  + iIntros "Halloced".
+    iExists d, lref.
+    unfold inode_state; iSplitR; [iSplit; auto|].
+    iFrame.
+    iExists direct_s, indirect_s, ds.
+    iFrame.
+    iNamed "Halloced".
+    iFrame.
+    iSplitR; [iPureIntro; repeat split; auto|].
+    iSplitR; [iPureIntro; auto|].
+    iExists indBlocks.
+    iSplitR; [iPureIntro; auto|].
+    rewrite app_nil_r.
+    iFrame.
 Admitted.
 
 Theorem wp_Inode__Read {l P k addr} {off: u64} Q :
