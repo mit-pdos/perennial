@@ -1,5 +1,6 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
+From Perennial.Helpers Require Import List.
 From Perennial.program_proof Require Export wal.abstraction.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.program_proof Require util_proof.
@@ -323,7 +324,7 @@ Proof.
     destruct H as [Hbound Hlookup].
     rewrite list_lookup_fmap in Hlookup.
     apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
-    destruct (list_lookup_lt _ us (int.nat i) ltac:(word)) as [u Hlookup'].
+    list_elem us i as u.
     iDestruct (big_sepL2_lookup_acc with "Hbs") as "[[% Hb] Hbs]"; eauto.
     wp_apply ("Hwp" with "[$HI $Hb]").
     - iPureIntro.
@@ -368,7 +369,7 @@ Proof.
     destruct H as [Hbound Hlookup].
     rewrite list_lookup_fmap in Hlookup.
     apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
-    destruct (list_lookup_lt _ us (int.nat i) ltac:(word)) as [u Hlookup'].
+    list_elem us i as u.
     erewrite (drop_S bks); eauto.
     erewrite (drop_S us); eauto.
     simpl.

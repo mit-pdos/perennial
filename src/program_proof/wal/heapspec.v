@@ -57,7 +57,7 @@ Record wal_heap_gnames := {
   wal_heap_durable_lb : gname;
   wal_heap_txns : gname;
   wal_heap_installed : gname;
-  wal_heap_walnames : @wal_names Σ
+  wal_heap_walnames : wal_names;
 }.
 
 Definition wal_heap_inv_crash (crashheap : gmap u64 Block)

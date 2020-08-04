@@ -10,13 +10,13 @@ Definition mapUR (K V: Type) `{Countable K}: ucmraT :=
   gmapUR K (csumR (prodR fracR (agreeR (leibnizO V)))
                   (agreeR (leibnizO V))).
 
-Class mapG K V `{Countable K} Σ :=
+Class mapG Σ K V `{Countable K} :=
   { map_inG :> inG Σ (authUR (mapUR K V)); }.
 
 Section auth_map.
   Context {K V: Type}  `{Countable0: Countable K}.
   Implicit Types (γ:gname) (k:K) (q:Qp) (v:V) (m: gmap K V).
-  Context `{!mapG K V Σ}.
+  Context `{!mapG Σ K V}.
 
   Definition to_mapUR : gmap K (V*bool) → mapUR K V :=
     fmap (λ '(v, ro), if (ro:bool) then Cinr (to_agree (v : leibnizO V))
@@ -250,22 +250,6 @@ Section auth_map.
       destruct H as [? (?&?)]; eauto.
   Qed.
 
-  (* TODO: somehow this isn't upstream *)
-  Lemma to_agree_equiv (A:ofeT) (x y:A) :
-    to_agree x ≡ to_agree y →
-    x ≡ y.
-  Proof.
-    intros H.
-    apply equiv_dist => n.
-    (* I apologize for this *)
-    compute [equiv ofe_equiv agree_ofe_mixin agreeO agree_equiv to_agree] in H.
-    destruct (H n) as [H' _].
-    specialize (H' x ltac:(constructor)).
-    destruct H' as (y'&Hin&Hyequiv).
-    compute [elem_of] in Hin.
-    apply elem_of_list_singleton in Hin; subst; auto.
-  Qed.
-
   Lemma map_ptsto_included k q v (m: gmap K (V*bool)) :
     {[k := Cinl (q, to_agree v)]} ≼ to_mapUR m → m !! k = Some (v, false).
   Proof.
@@ -285,7 +269,7 @@ Section auth_map.
     rewrite -> H1 in Hequiv_incl.
     destruct Hequiv_incl as [Hequiv|Hincl].
     - inversion Hequiv; subst; simpl in *.
-      apply to_agree_equiv, leibniz_equiv_iff in H0; auto.
+      apply (inj to_agree), leibniz_equiv_iff in H0; auto.
     - apply pair_included in Hincl as [_ Hincl]; simpl in Hincl.
       apply to_agree_included, leibniz_equiv in Hincl; auto.
   Qed.
@@ -307,7 +291,7 @@ Section auth_map.
     inversion Hy_equiv; subst; clear Hy_equiv.
     rewrite -> H1 in Hequiv_incl.
     destruct Hequiv_incl as [Hequiv|Hincl].
-    - apply to_agree_equiv, leibniz_equiv_iff in Hequiv; auto.
+    - apply (inj to_agree), leibniz_equiv_iff in Hequiv; auto.
     - apply to_agree_included, leibniz_equiv in Hincl; auto.
   Qed.
 

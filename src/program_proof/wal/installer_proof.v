@@ -40,7 +40,7 @@ Context `{!heapG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
-Implicit Types (γ: wal_names (Σ:=Σ)).
+Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: list update.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
 
@@ -197,7 +197,7 @@ Proof.
 Qed.
 
 Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
-  is_durable_txn γ cs txns diskEnd_txn_id durable_lb -∗
+  is_durable_txn (Σ:=Σ) γ cs txns diskEnd_txn_id durable_lb -∗
   ⌜(diskEnd_txn_id < length txns)%nat⌝.
 Proof.
   iNamed 1.

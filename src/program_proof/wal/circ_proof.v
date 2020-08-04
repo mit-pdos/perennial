@@ -6,7 +6,7 @@ From RecordUpdate Require Import RecordSet.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
-From Perennial.Helpers Require Import Transitions.
+From Perennial.Helpers Require Import List Transitions.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.program_proof Require Import wal.lib.
 From Perennial.program_proof Require Import marshal_block util_proof.
@@ -684,9 +684,9 @@ Proof.
   rewrite list_lookup_fmap in H0.
   apply fmap_Some in H0.
   destruct H0 as [[addr bk_s] [Hbkseq ->]].
-  destruct (list_lookup_lt _ upds (int.nat i)); first by word.
+  list_elem upds i as u.
   iDestruct (big_sepL2_lookup_acc with "Hbks") as "[Hi Hbks]"; eauto.
-  destruct x as [addr_i b_i]; simpl.
+  destruct u as [addr_i b_i]; simpl.
   iDestruct "Hi" as "[%Heq Hi]".
   simpl in Heq; subst.
 
@@ -709,7 +709,7 @@ Proof.
   iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
   iDestruct "Hlow" as (hdr1 hdr2 Hhdr1 Hhdr2) "(Hd0&Hd1&Hd2)".
   pose proof (Z.mod_bound_pos (int.val endpos + int.val i) LogSz); intuition (try word).
-  destruct (list_lookup_lt _ blocks'' (Z.to_nat $ (int.val endpos + int.val i) `mod` LogSz)) as [b ?]; first by word.
+  list_elem blocks'' ((int.val endpos + int.val i) `mod` LogSz) as b.
   iDestruct (disk_array_acc _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]"; eauto.
   { word. }
   iExists b.
@@ -1240,14 +1240,14 @@ Proof.
 
     wpc_frame_seq.
     wp_load.
-    destruct (list_lookup_lt _ addrs0 (Z.to_nat $ (int.val i `mod` LogSz))) as [a Halookup].
+    list_elem addrs0 (int.val i `mod` LogSz) as a.
     { destruct Hlow_wf.
       mod_bound; word. }
     wp_apply (wp_SliceGet _ _ _ _ 1 addrs0 with "[$Hdiskaddrs]"); eauto.
     { iPureIntro.
-      change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
+      change (word.divu _ _) with (U64 LogSz).
       word_cleanup.
-      rewrite Halookup.
+      rewrite Ha_lookup.
       eauto. }
     iIntros "Hdiskaddrs".
     iNamed 1.
@@ -1259,7 +1259,7 @@ Proof.
     iNamed 1.
 
     wpc_pures.
-    change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
+    change (word.divu _ _) with (U64 LogSz).
     destruct (list_lookup_lt _ blocks0 (Z.to_nat (int.val i `mod` LogSz))) as [b Hblookup].
     { destruct Hlow_wf.
       mod_bound; word. }

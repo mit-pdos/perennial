@@ -8,7 +8,7 @@ Context `{!heapG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
-Implicit Types (γ: wal_names (Σ:=Σ)).
+Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: list update.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
 

@@ -10,7 +10,7 @@ Context `{!heapG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
-Implicit Types (γ: wal_names (Σ:=Σ)).
+Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
 
@@ -334,7 +334,7 @@ Qed.
 Lemma is_durable_append γ cs txns txns' installed_txn_id diskEnd_txn_id :
   (diskEnd_txn_id < length txns)%nat ->
   is_durable γ cs txns installed_txn_id diskEnd_txn_id -∗
-  is_durable γ cs (txns ++ txns') installed_txn_id diskEnd_txn_id.
+  is_durable (Σ:=Σ) γ cs (txns ++ txns') installed_txn_id diskEnd_txn_id.
 Proof.
   intros Hbound.
   rewrite /is_durable; iNamed 1.

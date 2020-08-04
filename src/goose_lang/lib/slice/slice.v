@@ -1,4 +1,5 @@
 From RecordUpdate Require Import RecordSet.
+From Perennial.Helpers Require Import List.
 From Perennial.goose_lang Require Import proofmode array.
 From Perennial.goose_lang.lib Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Export slice.impl typed_mem.
@@ -748,17 +749,6 @@ Proof.
   repeat wp_step.
   wp_apply (wp_SliceGet_body with "[Hsl]"); last done.
   { iFrame. eauto. }
-Qed.
-
-Lemma list_lookup_lt A (l: list A) (i: nat) :
-  (i < length l)%nat ->
-  exists x, l !! i = Some x.
-Proof.
-  intros.
-  destruct_with_eqn (l !! i); eauto.
-  exfalso.
-  apply lookup_ge_None in Heqo.
-  lia.
 Qed.
 
 Lemma list_lookup_Z_lt {A} (l: list A) (i: Z) :

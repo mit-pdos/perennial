@@ -4,7 +4,7 @@ From iris.algebra Require Import gset.
 
 From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Map.
 
-From Perennial.algebra Require Export deletable_heap.
+From Perennial.algebra Require Export deletable_heap append_list.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
 From Perennial.program_proof Require Export wal.circ_proof wal.sliding_proof.
@@ -26,6 +26,7 @@ Class walG Σ :=
     wal_addr_set     :> inG Σ (ghostR $ gmapO ZO unitO); (* TODO: probably unused *)
     wal_addr_set_gset :> inG Σ (ghostR $ gsetO Z);
     wal_thread_owned :> thread_ownG Σ;
+    wal_txns_alist   :> alistG Σ (u64 * list update.t);
   }.
 
 Section goose_lang.
@@ -43,7 +44,7 @@ Let circN := walN .@ "circ".
 Record wal_names := mkWalNames
   { circ_name: circ_names;
     cs_name : gname;
-    txns_ctx_name : gen_heapG nat (u64 * list update.t) Σ;
+    txns_ctx_name : gname;
     txns_name : gname;
     new_installed_name : gname;
     being_installed_name : gname;
@@ -94,15 +95,12 @@ txn_id is referenced by pos, log < pos contains updates through and including up
 *)
 
 Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
-  readonly (mapsto (hG:=γ.(txns_ctx_name)) txn_id 1 txn).
+  list_el γ.(txns_ctx_name) txn_id txn.
 
 Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
   ∃ upds, txn_val γ txn_id (pos, upds).
 
-Definition txns_ctx γ txns : iProp Σ :=
-  gen_heap_ctx (hG:=γ.(txns_ctx_name)) (list_to_imap txns) ∗
-  ([∗ map] txn_id↦txn ∈ list_to_imap txns,
-      txn_val γ txn_id txn).
+Definition txns_ctx γ txns : iProp Σ := list_ctx γ.(txns_ctx_name) txns.
 
 Theorem txn_val_to_pos γ txn_id pos upds :
   txn_val γ txn_id (pos, upds) -∗ txn_pos γ txn_id pos.
@@ -462,8 +460,6 @@ Global Instance circ_names_inhabited : Inhabited circ_names := populate!.
 
 Definition wal_names_dummy {hG:gen_heapPreG nat (u64 * list update.t) Σ} : wal_names.
   constructor; try exact inhabitant.
-  constructor; try exact inhabitant.
-  apply _.
 Defined.
 
 Theorem alloc_txns_ctx E txns :
@@ -471,58 +467,34 @@ Theorem alloc_txns_ctx E txns :
   ⊢ |={E}=> ∃ γtxns, txns_ctx (set txns_ctx_name (λ _, γtxns) wal_names_dummy) txns.
 Proof.
   iIntros (Hsub).
-  iMod (gen_heap_strong_init (list_to_imap txns)) as (γtxns _) "(Hctx & Hmapsto)".
+  iMod (alist_alloc txns) as (γtxns) "Hctx".
   iExists γtxns.
-  iFrame "Hctx".
-  iApply big_sepM_fupd.
-  iApply (big_sepM_mono with "Hmapsto").
-  intros i txn **; simpl.
-  iIntros "Hmapsto".
-  iMod (readonly_alloc_1 with "Hmapsto") as "Hreadonly".
-  rewrite /txn_val; iFrame.
-  auto.
+  rewrite /txns_ctx //=.
 Qed.
 
 Theorem alloc_txn_pos pos upds γ txns E :
   txns_ctx γ txns ={E}=∗
   txns_ctx γ (txns ++ [(pos, upds)]) ∗ txn_val γ (length txns) (pos, upds).
 Proof.
-  iIntros "[Hctx Htxns]".
-  rewrite /txns_ctx.
-  rewrite list_to_imap_app1.
-  assert (list_to_imap txns !! length txns = None) as Hempty.
-  { rewrite lookup_list_to_imap.
-    apply lookup_ge_None_2; lia. }
-  iMod (gen_heap_alloc _ (length txns) (pos, upds) with "Hctx") as "[$ Hmapsto]"; first by auto.
-  rewrite -> big_sepM_insert by auto.
-  iFrame.
-  iMod (readonly_alloc_1 with "Hmapsto") as "#Htxn_pos".
-  iModIntro.
-  iFrame "#".
+  iIntros "Hctx".
+  iMod (alist_app1 (pos,upds) with "Hctx") as "[Hctx Hval]".
+  by iFrame.
 Qed.
 
 Theorem txns_ctx_complete γ txns txn_id txn :
   txns !! txn_id = Some txn ->
   txns_ctx γ txns -∗ txn_val γ txn_id txn.
 Proof.
-  rewrite /is_txn.
-  rewrite -lookup_list_to_imap.
-  intros Hlookup.
-  iIntros "[Hctx #Htxns]".
-  iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htxns") as "[$ _]".
+  iIntros (Hlookup) "Hctx".
+  iDestruct (alist_lookup_el with "Hctx") as "Hel"; eauto.
 Qed.
 
 Theorem txns_ctx_complete' γ txns txn_id txn :
   txns !! txn_id = Some txn ->
   ▷ txns_ctx γ txns -∗ ▷ txn_val γ txn_id txn ∗ ▷ txns_ctx γ txns.
 Proof.
-  rewrite /is_txn.
-  rewrite -lookup_list_to_imap.
-  intros Hlookup.
-  iIntros "[Hctx #Htxns]".
-  iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htxns") as "[$ _]".
-  iNext.
-  iFrame "∗ #".
+  iIntros (Hlookup) "Hctx".
+  iDestruct (txns_ctx_complete with "Hctx") as "#Hel"; eauto.
 Qed.
 
 Theorem txns_ctx_txn_pos γ txns txn_id pos :
@@ -536,20 +508,36 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Theorem txn_val_valid_general γ txns txn_id txn :
+  txns_ctx γ txns -∗
+  txn_val γ txn_id txn -∗
+  ⌜txns !! txn_id = Some txn⌝.
+Proof.
+  iIntros "Hctx Htxn".
+  iDestruct (alist_lookup with "Hctx Htxn") as %Hlookup.
+  eauto.
+Qed.
+
+Theorem txn_pos_valid_general γ txns txn_id pos :
+  txns_ctx γ txns -∗
+  txn_pos γ txn_id pos -∗
+  ⌜is_txn txns txn_id pos⌝.
+Proof.
+  iIntros "Hctx Htxn".
+  iDestruct "Htxn" as (upds) "Hval".
+  iDestruct (alist_lookup with "Hctx Hval") as %Hlookup.
+  iPureIntro.
+  rewrite /is_txn Hlookup //.
+Qed.
+
 Theorem txn_pos_valid' γ txns E txn_id pos :
   ↑nroot.@"readonly" ⊆ E ->
   ▷ txns_ctx γ txns -∗
   txn_pos γ txn_id pos -∗
   |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ ▷ txns_ctx γ txns.
 Proof.
-  rewrite /txns_ctx /txn_pos.
-  iIntros (Hsub) "[>Hctx Htxns] Htxn".
-  iDestruct "Htxn" as (upds) "Hval".
-  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
-  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
-  apply txn_map_to_is_txn in Hlookup.
-  iIntros "!>".
-  iSplit; eauto.
+  iIntros (Hsub) ">Hctx Htxn".
+  iDestruct (txn_pos_valid_general with "Hctx Htxn") as %?; eauto.
 Qed.
 
 (* XXX: I have an explosion of these variants that differ in laters, because I only need the timeless part of txn_ctx;
@@ -560,13 +548,9 @@ Theorem txn_val_valid' γ txns E txn_id txn :
   txn_val γ txn_id txn -∗
   |={E}=> ⌜txns !! txn_id = Some txn⌝ ∗ ▷ txns_ctx γ txns.
 Proof.
-  rewrite /txns_ctx /txn_val.
-  iIntros (Hsub) "[>Hctx Htxns] Hval".
-  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
-  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
-  rewrite lookup_list_to_imap in Hlookup.
-  iIntros "!>".
-  iSplit; eauto.
+  iIntros (Hsub) ">Hctx Hval".
+  iDestruct (txn_val_valid_general with "Hctx Hval") as %Hlookup.
+  eauto with iFrame.
 Qed.
 
 Theorem txn_val_valid γ txns E txn_id txn :
@@ -575,13 +559,9 @@ Theorem txn_val_valid γ txns E txn_id txn :
   txn_val γ txn_id txn -∗
   |={E}=> ⌜txns !! txn_id = Some txn⌝ ∗ txns_ctx γ txns.
 Proof.
-  rewrite /txns_ctx /txn_val.
-  iIntros (Hsub) "[Hctx Htxns] Hval".
-  iMod (readonly_load with "Hval") as (q) "Htxn_id"; first by set_solver.
-  iDestruct (gen_heap_valid with "Hctx Htxn_id") as %Hlookup.
-  rewrite lookup_list_to_imap in Hlookup.
-  iIntros "!>".
-  iSplit; eauto.
+  iIntros (Hsub) "Hctx Hval".
+  iDestruct (txn_val_valid_general with "Hctx Hval") as %?.
+  eauto.
 Qed.
 
 Theorem txn_pos_valid γ txns E txn_id pos :
@@ -590,13 +570,8 @@ Theorem txn_pos_valid γ txns E txn_id pos :
   txn_pos γ txn_id pos -∗
   |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ txns_ctx γ txns.
 Proof.
-  rewrite /txn_pos.
   iIntros (Hsub) "Hctx Htxn".
-  iDestruct "Htxn" as (upds) "Hval".
-  iMod (txn_val_valid with "Hctx Hval") as "(%&$)"; auto.
-  iPureIntro.
-  rewrite /is_txn.
-  rewrite H //.
+  iDestruct (txn_pos_valid_general with "Hctx Htxn") as %?; eauto.
 Qed.
 
 Theorem is_wal_txns_lookup l γ σ :
@@ -630,23 +605,11 @@ Proof.
   auto.
 Qed.
 
-Definition txns_are γ (start: nat) txns_sub: iProp Σ :=
-  [∗ list] i↦txn ∈ txns_sub, txn_val γ (start + i)%nat txn.
+Definition txns_are γ (start: nat) (txns_sub: list (u64*list update.t)) : iProp Σ :=
+  list_subseq γ.(txns_ctx_name) start txns_sub.
 
-Lemma txns_are_cons γ start txn txns_sub :
-  txns_are γ start (txn::txns_sub) ⊣⊢
-  txn_val γ start txn ∗ txns_are γ (S start) txns_sub.
-Proof.
-  rewrite /txns_are /=.
-  replace (start + 0)%nat with start by lia.
-  f_equiv.
-  f_equiv.
-  intros n txn'.
-  f_equiv.
-  lia.
-Qed.
-
-Global Instance txns_are_Persistent γ start txns_sub : Persistent (txns_are γ start txns_sub) := _.
+Global Instance txns_are_Persistent γ start txns_sub : Persistent (txns_are γ start txns_sub).
+Proof. apply _. Qed.
 
 Lemma subslice_none {A} n m (l: list A) :
   (m ≤ n)%nat →
@@ -659,51 +622,13 @@ Proof.
   lia.
 Qed.
 
-Theorem txns_are_sound γ E txns start txns_sub :
-  ↑nroot.@"readonly" ⊆ E →
-  ▷ txns_ctx γ txns -∗
+Theorem txns_are_sound γ txns start txns_sub :
+  txns_ctx γ txns -∗
   txns_are γ start txns_sub -∗
-  |={E}=> ⌜subslice start (start + length txns_sub)%nat txns = txns_sub⌝ ∗ ▷ txns_ctx γ txns.
+  ⌜subslice start (start + length txns_sub)%nat txns = txns_sub⌝.
 Proof.
-  iIntros (Hsub) "Hctx Htxns_are".
-  iInduction txns_sub as [|txn txns_sub] "IH" forall (start).
-  - simpl.
-    iFrame.
-    iPureIntro.
-    rewrite subslice_none; auto.
-    lia.
-  - simpl.
-    iDestruct (txns_are_cons with "Htxns_are") as "[Htxn_start Htxns_are]".
-    iMod (txn_val_valid' with "Hctx Htxn_start") as "(%Hstart&Hctx)"; auto.
-    iMod ("IH" with "Hctx Htxns_are") as "(%&Hctx)".
-    iFrame.
-    iPureIntro.
-    rewrite /subslice in H |- *.
-    rewrite Nat.add_succ_r.
-    simpl in H.
-    erewrite drop_S; eauto.
-    + rewrite H; eauto.
-    + rewrite lookup_take; eauto.
-      lia.
-Qed.
-
-Theorem subslice_cons {A} (n m: nat) (l: list A) x :
-  l !! n = Some x →
-  (n < m)%nat →
-  subslice n m l =
-  x :: subslice (S n) m l.
-Proof.
-  intros Hlookup Hbound.
-  apply elem_of_list_split_length in Hlookup as (l1 & l2 & [? ?]); subst.
-  rewrite /subslice.
-  rewrite !skipn_firstn_comm.
-  repeat rewrite -> drop_app_ge by lia.
-  replace (length l1 - length l1)%nat with 0%nat by lia.
-  replace (S (length l1) - length l1)%nat with 1%nat by lia; simpl.
-  rewrite drop_0.
-  replace (m - length l1)%nat with (S (m - S (length l1)))%nat by lia.
-  simpl.
-  auto.
+  iIntros "Hctx Htxns_are".
+  iDestruct (alist_subseq_lookup with "Hctx Htxns_are") as "$".
 Qed.
 
 Theorem get_txns_are l γ txns start till txns_sub :
@@ -711,37 +636,21 @@ Theorem get_txns_are l γ txns start till txns_sub :
   (start ≤ till < length txns)%nat →
   own γ.(txns_name) (◯E txns) -∗
   is_wal l γ -∗
-  |={⊤}=> ▷ txns_are γ start txns_sub ∗ own γ.(txns_name) (◯E txns).
+  |={⊤}=> txns_are γ start txns_sub ∗ own γ.(txns_name) (◯E txns).
 Proof.
-  intros.
-  iIntros "Hown #Hwal".
-  iInduction txns_sub as [|txn txns_sub] "IH" forall (start till H H0).
-  - rewrite /txns_are /=.
-    by iFrame.
-  - assert (start ≠ till).
-    { intros ->.
-      rewrite subslice_none in H; try lia.
-      inversion H. }
-    rewrite txns_are_cons.
-    iDestruct "Hwal" as "[Hwal _]".
-    iInv "Hwal" as (σ) "[Hinner HP]".
-    iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(Htxns_ctx & >γtxns & Hinner)".
-    destruct (list_lookup_lt _ txns start) as [txn' Hlookup]; len.
-    iDestruct (ghost_var_agree with "γtxns Hown") as %Heq; subst.
-    iDestruct (txns_ctx_complete' _ _ _ _ Hlookup with "Htxns_ctx") as "(Htxn & Htxns_ctx)".
-    erewrite subslice_cons in H; eauto; simpl; len.
-    inversion H; subst; clear H.
-    iModIntro.
-    iSplitL "Hinner Htxns_ctx HP γtxns".
-    { iNext.
-      iExists _; iFrame.
-      iApply "Hinner"; iFrame. }
-    iMod ("IH" $! (S start) with "[] [] Hown") as "(Htxns_are & Hown)".
-    { iPureIntro.
-      f_equal. }
-    { iPureIntro; lia. }
-    iModIntro.
-    iFrame.
+  iIntros (??) "Hown #Hwal".
+  iDestruct "Hwal" as "[Hwal _]".
+  iInv "Hwal" as (σ) "[Hinner HP]".
+  iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(>Htxns_ctx & >γtxns & Hinner)".
+  list_elem txns start as txn'.
+  iDestruct (ghost_var_agree with "γtxns Hown") as %Heq; subst.
+  iDestruct (alist_lookup_subseq _ start till with "Htxns_ctx") as "#$".
+  { lia. }
+  iModIntro.
+  iSplitR "Hown"; [ | by iFrame ].
+  iNext.
+  iExists _; iFrame "HP".
+  iApply "Hinner"; iFrame.
 Qed.
 
 (** * accessors for fields whose values don't matter for correctness *)

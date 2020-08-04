@@ -7,7 +7,7 @@ Section goose_lang.
 Context `{!heapG Σ}.
 Context `{!walG Σ}.
 
-Implicit Types (γ: wal_names (Σ:=Σ)).
+Implicit Types (γ: wal_names).
 
 Context (P: log_state.t -> iProp Σ).
 

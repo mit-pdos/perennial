@@ -11,7 +11,7 @@ Context `{!walG Σ}.
 Context `{!crashG Σ}.
 
 Implicit Types (v:val) (z:Z).
-Implicit Types (γ: wal_names (Σ:=Σ)).
+Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
 
@@ -47,7 +47,7 @@ Definition log_crash_to σ diskEnd_txn_id :=
       (set log_state.txns (take (S diskEnd_txn_id)) σ).
 
 Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id :
-  is_durable_txn γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
+  is_durable_txn (Σ:=Σ) γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
   is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
   ⌜relation.denote log_crash σ (log_crash_to σ diskEnd_txn_id) tt⌝.
 Proof.
@@ -134,7 +134,7 @@ Qed.
 (* XXX: I think this suggests that we're going to have to require the initial state
    to have a non empty list of txns. *)
 Lemma is_installed_txn_implies_non_empty_txns γ cs txns installed_txn_id lb:
-  is_installed_txn γ cs txns installed_txn_id lb -∗
+  is_installed_txn (Σ:=Σ) γ cs txns installed_txn_id lb -∗
   ⌜ txns ≠ [] ⌝.
 Proof. iNamed 1. iPureIntro; by eapply is_highest_txn_implies_non_empty_txns. Qed.
 

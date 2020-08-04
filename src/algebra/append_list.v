@@ -1,4 +1,5 @@
-From Perennial.Helpers Require Import List Map.
+From stdpp Require Import list.
+From Perennial.Helpers Require Import List ListLen Map.
 From Perennial.Helpers Require Import NamedProps.
 
 From iris.proofmode Require Import tactics.
@@ -8,12 +9,12 @@ From Perennial.algebra Require Import auth_map.
 Set Default Goal Selector "!".
 Set Default Proof Using "Type".
 
-Class alistG A Σ :=
-  { alist_inG :> mapG nat A Σ; }.
+Class alistG Σ A :=
+  { alist_inG :> mapG Σ nat A; }.
 
 Section list.
 Context {A:Type}.
-Context `{!alistG A Σ}.
+Context `{!alistG Σ A}.
 Implicit Types (γ:gname) (l:list A) (i:nat) (x:A).
 
 Definition list_el γ i x := ptsto_ro γ i x.
@@ -62,12 +63,38 @@ Proof.
     iFrame.
 Qed.
 
-Theorem alist_lookup_el {γ} l i x :
+Theorem alist_lookup_el {γ l} i x :
   l !! i = Some x →
   list_ctx γ l -∗ list_el γ i x.
 Proof.
   iIntros (Hlookup) "Hctx"; iNamed "Hctx".
   iDestruct (big_sepL_lookup with "Hels") as "Hx"; eauto.
+Qed.
+
+Theorem alist_lookup_subseq {γ} l (n m: nat) :
+  n ≤ m ≤ length l →
+  list_ctx γ l -∗
+  list_subseq γ n (subslice n m l).
+Proof.
+  iIntros (Hbound) "Hctx".
+  replace m with (n + (m - n)) by lia.
+  remember (m-n) as k.
+  assert (n + k ≤ length l) by lia.
+  clear dependent m.
+  generalize dependent k; intros k ?.
+  (iInduction k as [|k] "IH" forall (n H)).
+  - rewrite Nat.add_0_r.
+    rewrite subslice_zero_length /list_subseq //=.
+  - list_elem l n as x.
+    iDestruct (alist_lookup_el n with "Hctx") as "#Hx"; eauto.
+    replace (n + S k) with (S n + k) by lia.
+    erewrite subslice_S; eauto; try lia.
+    rewrite /list_subseq /=.
+    iDestruct ("IH" $! (S n) with "[%] Hctx") as "Hels".
+    { lia. }
+    rewrite Nat.add_0_r.
+    setoid_rewrite <- Nat.add_succ_comm.
+    iFrame "# ∗".
 Qed.
 
 Theorem alist_lookup {γ} l i x :

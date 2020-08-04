@@ -11,7 +11,7 @@ Context `{!heapG Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
-Implicit Types (γ: wal_names (Σ:=Σ)).
+Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
 
@@ -286,16 +286,12 @@ Proof.
     simpl in Htrans; monad_inv.
     iInv "Hwal" as (σs) "[Hinner HP]".
 
-    iDestruct "Hinner" as "(>%Hwf&Hmem&Htxns_ctx&>?&>?)".
-    iNamed.
+    iDestruct "Hinner" as "(>%Hwf&Hmem&>?&>?&>?)"; iNamed.
     iNamed "Hdisk".
     iDestruct (ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
-    iMod (txns_are_sound with "Htxns_ctx Htxns_are")
-      as "(%Htxns_are & Htxns_ctx)"; first by solve_ndisj.
-    iMod (txn_pos_valid' with "Htxns_ctx HmemStart_txn")
-      as "(%HmemStart'&Htxns_ctx)"; first by solve_ndisj.
-    iMod (txn_pos_valid' with "Htxns_ctx HnextDiskEnd_txn")
-      as "(%HnextDiskEnd'&Htxns_ctx)"; first by solve_ndisj.
+    iDestruct (txns_are_sound with "Htxns_ctx Htxns_are") as %Htxns_are.
+    iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart'.
+    iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd'.
     iMod (ghost_var_update _ with "Hcirc_ctx Howncs") as "[$ Howncs]".
     iNamed "Hdisk".
     iDestruct (ghost_var_frac_frac_agree with "γdiskEnd_txn_id1 γdiskEnd_txn_id2") as %?; subst.

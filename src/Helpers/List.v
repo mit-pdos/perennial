@@ -15,6 +15,17 @@ Section list.
   Lemma drop_lt (l : list) (n : nat): (n < length l)%nat → drop n l ≠ [].
   Proof.  intros. eapply length_nonzero_neq_nil. rewrite drop_length. lia. Qed.
 
+  Lemma list_lookup_lt (l: list) (i: nat) :
+    (i < length l)%nat ->
+    exists x, l !! i = Some x.
+  Proof.
+    intros.
+    destruct_with_eqn (l !! i); eauto.
+    exfalso.
+    apply lookup_ge_None in Heqo.
+    lia.
+  Qed.
+
   Lemma list_fmap_map {B} (f: A → B) (l: list):
     f <$> l = map f l.
   Proof. induction l => //=. Qed.
