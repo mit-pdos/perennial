@@ -323,7 +323,7 @@ Section auth_map.
     rewrite lookup_fmap Hlookup //.
   Qed.
 
-  Theorem map_ro_valid {γ m} k q v :
+  Theorem map_ro_valid {γ m} k v :
     map_ctx γ m -∗ ptsto_ro γ k v -∗ ⌜m !! k = Some v⌝.
   Proof.
     unseal.

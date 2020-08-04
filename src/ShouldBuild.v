@@ -35,9 +35,9 @@ From Perennial.tutorial Require
 From Perennial.goose_lang.lib Require
      slice.pred_slice.
 
-(* WIP map algebra *)
+(* WIP list algebra *)
 From Perennial.algebra Require
-     auth_map.
+     append_list.
 
 (* goose output *)
 From Perennial.goose_lang.examples Require

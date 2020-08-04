@@ -195,6 +195,18 @@ Proof.
   rewrite take_nil drop_nil //.
 Qed.
 
+Theorem subslice_S {A} n m x (l: list A) :
+  n < m →
+  l !! n = Some x →
+  subslice n m l = x :: subslice (S n) m l.
+Proof.
+  intros ? Hlookup.
+  rewrite -> !subslice_drop_take by lia.
+  erewrite drop_S; eauto.
+  replace (m - n) with (S (m - S n)) by lia.
+  rewrite //=.
+Qed.
+
 Theorem subslice_before_app_eq {A} n m (l l': list A):
   m <= length l -> subslice n m l = subslice n m (l ++ l').
 Proof.
