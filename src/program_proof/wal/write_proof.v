@@ -501,8 +501,8 @@ Proof.
         iNamed "Hinner".
         (* XXX: unify_ghost doesn't rewrite everywhere *)
         iDestruct (ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
-        iMod (txn_pos_valid with "Htxns_ctx HmemStart_txn") as (HmemStart_txn) "Htxns_ctx"; first by solve_ndisj.
-        iMod (txn_pos_valid with "Htxns_ctx HnextDiskEnd_txn") as (HnextDiskEnd_txn) "Htxns_ctx"; first by solve_ndisj.
+        iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
+        iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd_txn.
         iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
         iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σs)
                 with "[% //] [%] [$HP]") as "[HP HQ]".

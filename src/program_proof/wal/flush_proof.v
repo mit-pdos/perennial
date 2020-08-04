@@ -89,7 +89,7 @@ Proof.
   iNamed "Hdisk".
   iNamed "circ.end".
   iMod (is_circular_diskEnd_lb_agree with "Hlb Hcirc Howncs") as "(%Hlb&Howncs)"; first by solve_ndisj.
-  iMod (txn_pos_valid with "Htxns_ctx Hpos_txn") as (His_txn) "Htxns_ctx"; first by solve_ndisj.
+  iDestruct (txn_pos_valid_general with "Htxns_ctx Hpos_txn") as %His_txn.
   pose proof (is_txn_bound _ _ _ His_txn).
   pose proof (is_highest_txn_bound Hend_txn).
   pose proof (wal_wf_txns_mono_pos Hwf His_txn (is_highest_weaken Hend_txn)).

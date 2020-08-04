@@ -530,50 +530,6 @@ Proof.
   rewrite /is_txn Hlookup //.
 Qed.
 
-Theorem txn_pos_valid' γ txns E txn_id pos :
-  ↑nroot.@"readonly" ⊆ E ->
-  ▷ txns_ctx γ txns -∗
-  txn_pos γ txn_id pos -∗
-  |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ ▷ txns_ctx γ txns.
-Proof.
-  iIntros (Hsub) ">Hctx Htxn".
-  iDestruct (txn_pos_valid_general with "Hctx Htxn") as %?; eauto.
-Qed.
-
-(* XXX: I have an explosion of these variants that differ in laters, because I only need the timeless part of txn_ctx;
- should I be using ▷^n txns_ctx? or doing something else ? *)
-Theorem txn_val_valid' γ txns E txn_id txn :
-  ↑nroot.@"readonly" ⊆ E ->
-  ▷ txns_ctx γ txns -∗
-  txn_val γ txn_id txn -∗
-  |={E}=> ⌜txns !! txn_id = Some txn⌝ ∗ ▷ txns_ctx γ txns.
-Proof.
-  iIntros (Hsub) ">Hctx Hval".
-  iDestruct (txn_val_valid_general with "Hctx Hval") as %Hlookup.
-  eauto with iFrame.
-Qed.
-
-Theorem txn_val_valid γ txns E txn_id txn :
-  ↑nroot.@"readonly" ⊆ E ->
-  txns_ctx γ txns -∗
-  txn_val γ txn_id txn -∗
-  |={E}=> ⌜txns !! txn_id = Some txn⌝ ∗ txns_ctx γ txns.
-Proof.
-  iIntros (Hsub) "Hctx Hval".
-  iDestruct (txn_val_valid_general with "Hctx Hval") as %?.
-  eauto.
-Qed.
-
-Theorem txn_pos_valid γ txns E txn_id pos :
-  ↑nroot.@"readonly" ⊆ E ->
-  txns_ctx γ txns -∗
-  txn_pos γ txn_id pos -∗
-  |={E}=> ⌜is_txn txns txn_id pos⌝ ∗ txns_ctx γ txns.
-Proof.
-  iIntros (Hsub) "Hctx Htxn".
-  iDestruct (txn_pos_valid_general with "Hctx Htxn") as %?; eauto.
-Qed.
-
 Theorem is_wal_txns_lookup l γ σ :
   is_wal_inner l γ σ -∗
   (∃ txns, txns_ctx γ txns ∗ own γ.(txns_name) (●E txns) ∗
@@ -593,10 +549,10 @@ Theorem txn_pos_valid_locked l γ txns txn_id pos :
 Proof.
   iIntros "[#? _] #Hpos Howntxns".
   iInv innerN as (σ) "[Hinner HP]".
-  iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(Htxns_ctx & >γtxns & Hinner)".
+  iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(>Htxns_ctx & >γtxns & Hinner)".
   iDestruct (ghost_var_agree with "γtxns Howntxns") as %Hagree; subst.
   iFrame "Howntxns".
-  iMod (txn_pos_valid' _ _ (⊤ ∖ ↑innerN) with "Htxns_ctx [$Hpos]") as "(%His_txn & Hctx)"; first by solve_ndisj.
+  iDestruct (txn_pos_valid_general with "Htxns_ctx Hpos") as %His_txn.
   iModIntro.
   iSplitL.
   { iNext.
