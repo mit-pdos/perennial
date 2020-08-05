@@ -15,8 +15,8 @@ Definition maxIndirect: Z := 10.
 Definition indirectNumBlocks: Z := 512.
 Definition MaxBlocks: Z := maxDirect + maxIndirect*indirectNumBlocks.
 Definition roundUpDiv (x k: Z) := (x + (k-1)) / k.
-Definition lastBlockFiller (blkLen : nat) (x : list (list u64)) : nat :=
-   ((blkLen - length (concat x)%nat `mod` blkLen)%nat `mod` blkLen)%nat.
+Definition lastBlockFiller (blkLen : Z) (x : list (list u64)) : nat :=
+   Z.to_nat ((blkLen - (length (concat x) `mod` blkLen)) `mod` blkLen).
 
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
@@ -52,6 +52,13 @@ Proof.
     }
     by rewrite Hone.
 Qed.
+
+Lemma roundUpDiv_gt_0 (x k : Z) :
+  k > 0 -> roundUpDiv x k > 0 -> x > 0.
+Proof.
+  intros.
+  unfold roundUpDiv in *.
+Admitted.
 
 Lemma roundUpDiv_mul_le (x k z: Z) :
   x >= 0 -> k > 0 -> z < roundUpDiv x k -> k * z <= x.
@@ -109,8 +116,9 @@ Definition is_indirect (a: u64) (indBlkAddrs: list u64) (indBlock : Block)
            (specBlocks : list Block) : iProp Σ :=
   "diskAddr" ∷ int.val a d↦ indBlock ∗
   "%HindBlockLen" ∷ ⌜length (indBlkAddrs ++ replicate (Z.to_nat indirectNumBlocks - (length indBlkAddrs)) (U64 0)) = Z.to_nat indirectNumBlocks
-  ∧ length indBlkAddrs <= 512⌝ ∗
-  "%Hencoded" ∷ ⌜block_encodes indBlock (EncUInt64 <$> (indBlkAddrs) ++ replicate (Z.to_nat indirectNumBlocks - (length indBlkAddrs)) (U64 0))⌝ ∗
+  ∧ length indBlkAddrs <= 512
+  ∧ length indBlkAddrs > 0⌝ ∗
+  "%Hencoded" ∷ ⌜block_encodes indBlock (EncUInt64 <$> (indBlkAddrs) ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs)) `mod` indirectNumBlocks)) (U64 0))⌝ ∗
   "%Hlen" ∷ ⌜length(indBlkAddrs) = length(specBlocks)⌝ ∗
   "Hdata" ∷ ([∗ list] a;b ∈ indBlkAddrs;specBlocks, int.val a d↦ b)
 .
@@ -238,7 +246,7 @@ Lemma indBlkAddrsList_blocks_middle_full σ (i:nat) indAddrs indBlkAddrsList ind
   ∃ indBlkAddrs,
     ⌜indBlkAddrsList !! index = Some indBlkAddrs⌝
     ∗ is_indirect a indBlkAddrs indBlock (ind_blocks_at_index σ index)) -∗
-  ⌜length (concat (take i indBlkAddrsList)) `mod` indirectNumBlocks = 0⌝.
+  ⌜(length (concat (take i indBlkAddrsList)) `mod` indirectNumBlocks) = 0⌝.
 Admitted.
 
 Theorem init_inode addr :
@@ -468,7 +476,7 @@ Definition is_alloced_blocks_slice σ s (direct_s indirect_s : Slice.t)
                                ((int.nat direct_s.(Slice.sz)) + (int.nat indirect_s.(Slice.sz)))%nat
                                s.(Slice.sz) s)
       uint64T 1 (concat indBlkAddrsList ++
-                        replicate (lastBlockFiller (Z.to_nat indirectNumBlocks) indBlkAddrsList) (U64 0)).
+                        replicate (lastBlockFiller indirectNumBlocks indBlkAddrsList) (U64 0)).
 
 Theorem wp_indNum {off: u64} :
   {{{
@@ -512,7 +520,8 @@ Theorem wp_readIndirect {l σ}
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hsize" ∷ ⌜length σ.(inode.blocks) <= MaxBlocks⌝ ∗
     "%HindexMax" ∷ ⌜(index < ds.(impl_s.numInd))⌝ ∗
-    "%Hlen" ∷ ⌜Z.of_nat (length(ds.(impl_s.indAddrs))) = int.val maxIndirect ∧ ds.(impl_s.numInd) <= maxIndirect⌝ ∗
+    "%Hlen" ∷ ⌜Z.of_nat (length(ds.(impl_s.indAddrs))) = int.val maxIndirect
+    ∧ ds.(impl_s.numInd) <= maxIndirect⌝ ∗
     "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
     "%Haddr" ∷ ⌜Some a = (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) !! index⌝ ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
@@ -522,7 +531,7 @@ Theorem wp_readIndirect {l σ}
   {{{ indBlkAddrs_s, RET slice_val indBlkAddrs_s;
     "HindBlkIndirect" ∷ is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ index) ∗
     "HindBlkAddrs" ∷ is_slice indBlkAddrs_s uint64T 1
-                      (indBlkAddrs ++ replicate (Z.to_nat indirectNumBlocks - (length indBlkAddrs)) (U64 0)) ∗
+                      (indBlkAddrs ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs)) `mod` indirectNumBlocks)) (U64 0)) ∗
     "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s)
   }}}.
 Proof.
@@ -544,8 +553,10 @@ Proof.
   {
     (* rewrite app_length replicate_length /indirectNumBlocks. *)
     unfold ind_blocks_at_index, MaxBlocks, maxIndirect, maxDirect, indirectNumBlocks in *.
-    destruct HindBlockLen as [HindBlockLen HindBlkAddrsLen].
-    auto.
+    destruct HindBlockLen as [HindBlockLen [HindBlkAddrsLenUB HLB]].
+    rewrite Zmod_small; try word.
+    by replace (Z.to_nat (512 - Z.of_nat (length indBlkAddrs)))
+      with (Z.to_nat 512 - length indBlkAddrs)%nat by word.
   }
   iIntros (indBlkAddrsPadding_s) "[_ HindBlks]".
 
@@ -687,7 +698,7 @@ Proof.
                            (usedBlksList
                               ++ usedIndBlks
                               ++ concat (take (length done) ds.(impl_s.indBlkAddrsList))
-                              ++ (replicate (lastBlockFiller (Z.to_nat indirectNumBlocks)
+                              ++ (replicate (lastBlockFiller indirectNumBlocks
                                                             (take (length done) ds.(impl_s.indBlkAddrsList)))
                                                             (U64 0))) ∗
                  "HindBlks" ∷ [∗ list] i↦a;indBlk ∈ done ++ todo;indBlocks, ∃ indBlkAddrs,
@@ -743,17 +754,26 @@ Proof.
     iFrame.
     iSplitR; [iPureIntro; rewrite -app_assoc; simpl; eauto|].
     rewrite app_length.
-    iAssert (∀ i, ⌜(i <= length done)%nat⌝ -∗ ⌜length (concat (take i ds.(impl_s.indBlkAddrsList))) `mod` indirectNumBlocks = 0⌝)%I with "[HindBlksDone]" as "%Hfull".
+    iAssert (∀ i, ⌜(i <= length done)%nat⌝ -∗
+                   ⌜(length (concat (take i ds.(impl_s.indBlkAddrsList))) `mod` indirectNumBlocks) = 0⌝)%I
+      with "[HindBlksDone]" as "%Hfull".
     {
       iIntros.
       destruct (bool_decide (ds.(impl_s.numInd) > 0)) eqn:Hloop0.
       { apply bool_decide_eq_true in Hloop0.
-        assert (length done <= length indBlocks) as HdoneLen by (rewrite HindBlocksLen -H3; len).
+        assert (length done < length indBlocks) as HdoneLen by (rewrite HindBlocksLen -H3; len).
         iApply (indBlkAddrsList_blocks_middle_full σ i0 ds.(impl_s.indAddrs) ds.(impl_s.indBlkAddrsList) indBlocks);
           [iPureIntro; lia | iPureIntro |]; auto.
         {
-          pose (roundUpDiv_mul_le (length σ.(inode.blocks) - maxDirect) indirectNumBlocks i0) as Hmid.
-          admit.
+          apply (Z.le_trans _ (length σ.(inode.blocks) - maxDirect) _); try word.
+          assert (((Z.to_nat maxDirect `max` length σ.(inode.blocks))%nat - maxDirect) > 0)
+              by (apply (roundUpDiv_gt_0 ((Z.to_nat maxDirect `max` length σ.(inode.blocks))%nat - maxDirect) indirectNumBlocks); word).
+          apply (roundUpDiv_mul_le (length σ.(inode.blocks) - maxDirect) indirectNumBlocks i0); try word.
+          rewrite max_r in HnumInd.
+          - rewrite -HnumInd.
+            rewrite HindBlocksLen take_length in HdoneLen.
+            rewrite min_l in HdoneLen; word.
+          - destruct (bool_decide (Z.to_nat maxDirect > length σ.(inode.blocks))) eqn:Hgt; word.
         }
         rewrite -(take_drop i0 (take (length done) indBlocks)).
         rewrite -(take_drop i0 done).
@@ -775,52 +795,44 @@ Proof.
         assert (ds.(impl_s.numInd) = 0%nat) as His0 by word.
         rewrite His0 in HindBlkAddrsListLen.
         replace (ds.(impl_s.indBlkAddrsList)) with (@nil (list u64)).
-        + rewrite take_nil. simpl. by rewrite Z.mod_0_l.
+        + rewrite take_nil. simpl. auto.
         + by apply nil_length_inv in HindBlkAddrsListLen.
       }
     }
     iSplitL "Hs'".
     {
-      replace (concat (take (length done + length [a]) ds.(impl_s.indBlkAddrsList)))
-        with (concat (take (length done) ds.(impl_s.indBlkAddrsList)) ++ indBlkAddrs).
-      {
-        replace (replicate
-                (Z.to_nat indirectNumBlocks -
-                 length (concat (take (length done) ds.(impl_s.indBlkAddrsList)))
-                        `mod` Z.to_nat indirectNumBlocks) (U64 0)) with (@nil u64).
-        2: {
-          change (length (concat (take (length done) ds.(impl_s.indBlkAddrsList))) `mod` Z.to_nat indirectNumBlocks)
-                 with
-                   (length (concat (take (length done) ds.(impl_s.indBlkAddrsList))) `mod` indirectNumBlocks)%nat.
-          admit.
-        }
-        repeat rewrite app_assoc.
-        replace (lastBlockFiller (Z.to_nat indirectNumBlocks)
-                                  (take (length done) ds.(impl_s.indBlkAddrsList)))
-          with 0%nat.
-        2: {
-          admit.
-        }
-        rewrite replicate_0 app_nil_r.
-        replace
-          (lastBlockFiller (Z.to_nat indirectNumBlocks)
-                            (take (length done + length [a]) ds.(impl_s.indBlkAddrsList)))
-          with ((Z.to_nat indirectNumBlocks - length indBlkAddrs)%nat); auto.
-        simpl.
-        unfold lastBlockFiller.
-        admit.
-      }
-      {
-        simpl.
+      assert ((take (length done + length [a]) ds.(impl_s.indBlkAddrsList))
+        = (take (length done) ds.(impl_s.indBlkAddrsList)) ++ [indBlkAddrs]) as Ha.
+      { simpl.
         replace (take (length done+1) ds.(impl_s.indBlkAddrsList))
           with ((take (length done) ds.(impl_s.indBlkAddrsList)) ++ [indBlkAddrs]).
         2: {
           replace (length done + 1)%nat with (S (length done)%nat) by word.
           rewrite -take_S_r; auto.
         }
-        rewrite concat_app; simpl.
-        by rewrite app_nil_r.
+        auto.
       }
+      rewrite Ha.
+      rewrite concat_app.
+      assert (concat [indBlkAddrs] = indBlkAddrs) as HconcatSingleton by (simpl; rewrite app_nil_r; auto).
+      replace ((lastBlockFiller indirectNumBlocks (take (length done) ds.(impl_s.indBlkAddrsList)))) with (0%nat).
+      2: {
+        rewrite /lastBlockFiller Hfull; simpl; auto.
+      }
+      repeat rewrite app_assoc.
+      rewrite replicate_0 app_nil_r.
+      rewrite app_nil_r.
+      unfold lastBlockFiller.
+      rewrite concat_app HconcatSingleton.
+      len.
+      replace (Z.of_nat (length (concat (take (length done) ds.(impl_s.indBlkAddrsList))) + length indBlkAddrs) `mod` indirectNumBlocks)
+        with ((Z.of_nat (length (concat (take (length done) ds.(impl_s.indBlkAddrsList)))) + (Z.of_nat (length indBlkAddrs))) `mod` indirectNumBlocks) by word.
+      rewrite Z.add_mod; [|simpl; auto].
+      rewrite Hfull; auto.
+      rewrite Z.add_0_l.
+      repeat rewrite Zminus_mod_idemp_r.
+      rewrite Z.mod_small; try word.
+      auto.
     }
     rewrite -app_assoc.
     iApply (big_sepL2_app with "[HindBlksDone]"); [by simpl|].
@@ -910,7 +922,7 @@ Proof.
     iSplitR; [iPureIntro; auto|].
     rewrite app_nil_r.
     iFrame.
-Admitted.
+Qed.
 
 Theorem wp_Inode__Read {l P k addr} {off: u64} Q :
   {{{ "Hinode" ∷ is_inode l k P addr ∗
