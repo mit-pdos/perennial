@@ -706,17 +706,31 @@ Proof.
   iExists _.
   rewrite -fmap_drop.
   iFrame "Hs2".
-  rewrite -{1}(take_drop (int.nat (word.sub start σ.(slidingM.start))) bks).
+  set (numMutable := int.nat (slidingM.numMutable σ)) in *.
+  assert (numMutable ≤ length σ.(slidingM.log))%nat by (rewrite /numMutable; word).
+  replace (numMutable `min` length σ.(slidingM.log))%nat with numMutable in * by word.
+  assert (int.nat (word.sub start σ.(slidingM.start)) = int.nat start - int.nat σ.(slidingM.start))%nat
+    as Hstart_off by word.
+  rewrite Hstart_off.
+  rewrite -{1}(take_drop (int.nat start - int.nat σ.(slidingM.start)) bks).
   iDestruct (big_sepL2_app_inv_l with "Hblocks") as (bks1 bks2 Hbks12) "[Hblocks1 Hblocks2]".
+  iDestruct (big_sepL2_length with "Hblocks1") as %Hlen1.
+  iDestruct (big_sepL2_length with "Hblocks2") as %Hlen2.
+  autorewrite with len in Hlen1, Hlen2.
   iExactEq "Hblocks2".
   f_equal.
   rewrite subslice_take_drop.
   replace (slidingM.logIndex σ σ.(slidingM.mutable)) with
       (int.nat (slidingM.numMutable σ)) by word.
+  rewrite -/numMutable.
   rewrite Hbks12.
-  (* TODO: [big_sepL2_app_inv_l] forgets that [length l2' = length l1'] *)
-  admit.
-Admitted.
+  assert (length bks1 = slidingM.logIndex σ start).
+  { rewrite -Hlen1.
+    rewrite Hbks_len /numMutable.
+    word. }
+  rewrite -> drop_app_ge by lia.
+  replace (slidingM.logIndex σ start - length bks1)%nat with 0%nat by lia; auto.
+Qed.
 
 Theorem wp_SliceTake_updates s (n: u64) q (upds: list update.t) :
   int.val n ≤ length upds →
