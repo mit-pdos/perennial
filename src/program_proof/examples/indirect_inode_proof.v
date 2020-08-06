@@ -115,7 +115,7 @@ Implicit Types (l:loc) (γ:gname) (P: inode.t → iProp Σ).
 Definition is_indirect (a: u64) (indBlkAddrs: list u64) (indBlock : Block)
            (specBlocks : list Block) : iProp Σ :=
   "diskAddr" ∷ int.val a d↦ indBlock ∗
-  "%HindBlockLen" ∷ ⌜length (indBlkAddrs ++ replicate (Z.to_nat indirectNumBlocks - (length indBlkAddrs)) (U64 0)) = Z.to_nat indirectNumBlocks
+  "%HindBlockLen" ∷ ⌜length (indBlkAddrs ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs)) `mod` indirectNumBlocks)) (U64 0)) = Z.to_nat indirectNumBlocks
   ∧ length indBlkAddrs <= 512
   ∧ length indBlkAddrs > 0⌝ ∗
   "%Hencoded" ∷ ⌜block_encodes indBlock (EncUInt64 <$> (indBlkAddrs) ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs)) `mod` indirectNumBlocks)) (U64 0))⌝ ∗
@@ -556,7 +556,7 @@ Proof.
     destruct HindBlockLen as [HindBlockLen [HindBlkAddrsLenUB HLB]].
     rewrite Zmod_small; try word.
     by replace (Z.to_nat (512 - Z.of_nat (length indBlkAddrs)))
-      with (Z.to_nat 512 - length indBlkAddrs)%nat by word.
+      with (Z.to_nat ((512 - Z.of_nat (length indBlkAddrs)) `mod` 512)) by word.
   }
   iIntros (indBlkAddrsPadding_s) "[_ HindBlks]".
 
@@ -1114,9 +1114,9 @@ Proof.
       (* Continue through the program *)
       iDestruct (is_slice_split with "HindBlkAddrs") as "[HindBlkAddrs_small HindBlkAddrs]".
 
-      assert ((indBlkAddrs ++ replicate (Z.to_nat indirectNumBlocks - length indBlkAddrs) (U64 0)) !! int.nat offset = Some blkaddr) as HlookupBlkIndPadded. {
+      assert ((indBlkAddrs ++ replicate (Z.to_nat ((indirectNumBlocks - length indBlkAddrs) `mod` indirectNumBlocks)) (U64 0)) !! int.nat offset = Some blkaddr) as HlookupBlkIndPadded. {
         rewrite -(lookup_app_l indBlkAddrs
-                               (replicate (Z.to_nat indirectNumBlocks - length indBlkAddrs) (U64 0)))
+                               (replicate (Z.to_nat ((indirectNumBlocks - length indBlkAddrs) `mod` indirectNumBlocks)) (U64 0)))
        in HlookupBlkInd; auto; try word.
       }
       wp_apply (wp_SliceGet _ _ _ _ 1 (indBlkAddrs++_) _ blkaddr with "[HindBlkAddrs_small]"); iFrame; auto.

@@ -407,7 +407,7 @@ Theorem wp_writeIndirect {l σ d lref} (addr: u64) ds direct_s indirect_s
        "Hro_state" ∷ inode_state l d lref ∗
        "Ha" ∷ int.val a d↦ b ∗
        "Haddr_s" ∷ is_slice indblkaddrs_s uint64T 1
-       (indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length (indBlkAddrs) + 1)) (U64 0))
+       (indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length (indBlkAddrs) + 1)) `mod` indirectNumBlocks)) (U64 0))
   }}}
   Inode__writeIndirect #l #indA (slice_val indblkaddrs_s)
   {{{ RET #();
@@ -459,7 +459,7 @@ Proof.
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
 
-  assert (Z.to_nat (4096 - 8 * length (indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length indBlkAddrs + 1)) (U64 0)))
+  assert (Z.to_nat (4096 - 8 * length (indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (U64 0)))
           = 0%nat) as Hrem0.
   {
     repeat rewrite app_length /indirectNumBlocks. rewrite replicate_length. simpl. word.
@@ -590,7 +590,8 @@ Proof.
     {
       eapply block_encodes_eq; eauto.
       rewrite !fmap_app app_assoc /indirectNumBlocks app_length; simpl.
-      f_equal.
+      repeat f_equal.
+      word.
     }
     (*Hlen indBlk*)
     iSplitR; [iPureIntro; len; simpl; auto|].
@@ -770,7 +771,7 @@ Proof.
       iFrame. repeat iSplit; eauto. iPureIntro; len.
     }
     iIntros (indblkaddrs_s) "H". iNamed "H". iNamed "HindBlkIndirect".
-    destruct HindBlockLen as [HindBlockLen HindBlkAddrsLen].
+    destruct HindBlockLen as [HindBlockLen [HindBlkAddrsLen HindBlkAddrsLB]].
     wp_let.
     wp_loadField.
     wp_apply wp_indOff.
@@ -853,8 +854,8 @@ Proof.
         rewrite /is_slice /list.untype.
         rewrite -list_fmap_insert.
         assert (<[int.nat offset:=a]>
-                (indBlkAddrs ++ replicate (int.nat indirectNumBlocks - length indBlkAddrs) (U64 0))
-                =  indBlkAddrs ++ [a] ++ replicate (int.nat indirectNumBlocks - (length indBlkAddrs + 1)) (U64 0)).
+                (indBlkAddrs ++ replicate (Z.to_nat ((indirectNumBlocks - length indBlkAddrs) `mod` indirectNumBlocks)) (U64 0))
+                =  indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1) `mod` indirectNumBlocks)) (U64 0)).
         {
           assert ((length indBlkAddrs + 0)%nat = int.nat offset).
           {
@@ -863,18 +864,17 @@ Proof.
           }
           rewrite -H.
           rewrite insert_app_r.
-          replace (replicate (int.nat indirectNumBlocks - length indBlkAddrs) (U64 0))
-                 with
-                   ([U64 0] ++ replicate (int.nat indirectNumBlocks - (length indBlkAddrs + 1)) (U64 0)).
+          replace (replicate (Z.to_nat ((indirectNumBlocks - length indBlkAddrs) `mod` indirectNumBlocks)) (U64 0))
+            with ([U64 0] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (U64 0)).
           2: {
-            simpl. rewrite -replicate_S.
-            replace (S (int.nat (U64 indirectNumBlocks) - (length indBlkAddrs + 1)))  with
-                 (int.nat (U64 indirectNumBlocks) - length indBlkAddrs)%nat by word; auto.
+            simpl.
+            rewrite -replicate_S.
+            replace (S (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)))
+              with (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs)) `mod` indirectNumBlocks)) by word; auto.
           }
-          rewrite insert_app_l; auto.
+          rewrite insert_app_l; simpl; auto.
         }
-        rewrite H.
-        auto.
+        by rewrite H.
       }
     }
 
