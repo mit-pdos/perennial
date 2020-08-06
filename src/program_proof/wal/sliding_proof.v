@@ -535,16 +535,69 @@ Proof.
       erewrite addrPosMap_absorb_eq; eauto.
 Qed.
 
-(* TODO: should require that we aren't absorbing (uv.1 shouldn't appear in the
-mutable region) *)
+Lemma wp_SliceAppend_log s σ uv u :
+  {{{ readonly_log s σ ∗ mutable_log s σ ∗ is_update uv 1 u }}}
+    SliceAppend (struct.t Update.S) (slice_val s) (update_val uv)
+  {{{ s', RET slice_val s';
+      let σ' := set slidingM.log (λ log, log ++ [u]) σ in
+      readonly_log s' σ' ∗ mutable_log s' σ' ∗
+      (* non-overflow comes from doing a slice append *)
+      ⌜slidingM.wf σ'⌝ }}}.
+Proof.
+Admitted.
+
+Lemma addrPosMap_insert_fresh:
+  ∀ σ (uv : u64 * Slice.t) (u : update.t) (logSlice : Slice.t),
+    uv.1 = update.addr u
+    → int.nat logSlice.(Slice.sz) = length σ.(slidingM.log)
+    → slidingM.wf (set slidingM.log (λ log : list update.t, log ++ [u]) σ)
+    → slidingM.addrPosMap
+          (set slidingM.log (λ log : list update.t, log ++ [u]) σ) =
+        map_insert (slidingM.addrPosMap σ) uv.1
+                    (word.add σ.(slidingM.start) logSlice.(Slice.sz)).
+Proof.
+  intros σ uv u logSlice Haddr HlogLen Hwf'.
+  rewrite -> Haddr in *.
+  destruct Hwf' as (?&?&?); simpl in *.
+  autorewrite with len in H0, H1.
+  rewrite /slidingM.addrPosMap /=.
+  rewrite (memLogMap_append _ _ _ logSlice.(Slice.sz)) //; word.
+Qed.
+
 Theorem wp_sliding_append l σ uv u :
   {{{ is_sliding l σ ∗ is_update uv 1 u }}}
     sliding__append #l (update_val uv)
   {{{ RET #(); is_sliding l (set slidingM.log (λ log, log ++ [u]) σ) }}}.
 Proof.
   iIntros (Φ) "[Hsliding Hu] HΦ".
+  iDestruct (is_update_addr with "Hu") as %Haddr.
   iNamed "Hsliding"; iNamed "Hinv".
-Admitted.
+  wp_call.
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_loadField.
+  iDestruct (memLog_sz with "log_mutable") as %Hlogsize.
+  wp_apply (wp_SliceAppend_log with "[$log_readonly $log_mutable $Hu]").
+  iIntros (logSlice') "(#log_readonly'&log_mutable&%Hwf')".
+  wp_apply (wp_storeField with "log").
+  { rewrite /field_ty //=.
+    val_ty. }
+  iIntros "log".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_MapInsert_to_val with "is_addrPos").
+  iIntros "is_addrPos".
+  iApply "HΦ".
+  iSplitR.
+  { eauto. }
+  iExists _, _; iFrame "# ∗".
+  iExactEq "is_addrPos".
+  rewrite /named.
+  f_equal.
+  erewrite addrPosMap_insert_fresh; eauto.
+Qed.
 
 Theorem wp_if_mutable l memLog (ok: bool) (pos: u64) :
   {{{ is_sliding l memLog }}}
