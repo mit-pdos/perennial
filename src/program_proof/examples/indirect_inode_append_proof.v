@@ -1072,7 +1072,7 @@ Proof.
                 eapply (Z.le_trans (500 + k * 512 + 512) (500 + (int.val index -1) * 512 + 512) (length σ.(inode.blocks))); [word|].
                 rewrite Hindex.
                 replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
-                lia.
+                word.
               }
               word.
         -- change (indA :: (drop (S (int.nat index)) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs))))
@@ -1107,8 +1107,8 @@ Proof.
            }
            repeat rewrite drop_ge.
            { by iApply big_sepL2_nil. }
-           { rewrite HindBlocksLen take_length min_l; lia. }
-           { rewrite take_length min_l; lia. }
+           { rewrite HindBlocksLen take_length min_l; word. }
+           { rewrite take_length min_l; word. }
     }
   }
 Qed.
