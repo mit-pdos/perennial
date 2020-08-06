@@ -854,8 +854,8 @@ Proof.
         rewrite /is_slice /list.untype.
         rewrite -list_fmap_insert.
         assert (<[int.nat offset:=a]>
-                (indBlkAddrs ++ replicate (Z.to_nat ((indirectNumBlocks - length indBlkAddrs) `mod` indirectNumBlocks)) (U64 0))
-                =  indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1) `mod` indirectNumBlocks)) (U64 0)).
+                (indBlkAddrs ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs)) `mod` indirectNumBlocks)) (U64 0))
+                =  indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (U64 0)).
         {
           assert ((length indBlkAddrs + 0)%nat = int.nat offset).
           {
