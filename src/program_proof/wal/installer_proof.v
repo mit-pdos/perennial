@@ -286,11 +286,50 @@ Admitted.
 (* TODO: why do we need this here again? *)
 Opaque is_sliding.
 
+
+Lemma snapshot_memLog_txns_are γ l log diskEnd_pos diskEnd_txn_id :
+  is_wal P l γ -∗
+  memLog_linv γ log diskEnd_pos diskEnd_txn_id -∗
+  (* TODO: shouldn't memStart_txn_id be the same as installed_txn_id? and
+  shouldn't the logger have a lock on that? *)
+  |={⊤}=> ∃ memStart_txn_id subtxns,
+    ⌜length subtxns = (diskEnd_txn_id - memStart_txn_id)%nat⌝ ∗
+    ⌜has_updates
+      (take (slidingM.logIndex log diskEnd_pos) log.(slidingM.log))
+      subtxns⌝ ∗
+    txns_are γ memStart_txn_id subtxns ∗
+    memLog_linv γ log diskEnd_pos diskEnd_txn_id.
+Proof.
+  iIntros "#Hwal HmemLog".
+  iDestruct (restore_intro with "HmemLog") as "H".
+  iNamed "H".
+  iDestruct "H" as "[Hpure H]"; iNamed "Hpure". (* iNamedRestorable doesn't do
+  this (due to something unexpected in iNamed) *)
+  iDestruct (restore_elim with "H") as "#HmemLog"; iClear "H".
+  destruct His_memLog.
+  iMod (txn_pos_valid_locked with "[$] HnextDiskEnd_txn Howntxns") as (HnextDiskEnd_txn%is_txn_bound) "Howntxns".
+  iMod (get_txns_are _ _ _ _ memStart_txn_id diskEnd_txn_id with "Howntxns Hwal") as "[Htxns Howntxns]".
+  { eauto. }
+  { lia. }
+  iModIntro.
+  iExists memStart_txn_id, _; iFrame "Htxns".
+  iSplitR.
+  { iPureIntro.
+    rewrite subslice_length; len. }
+  iSplitR.
+  { iPureIntro.
+    admit. (* TODO: this seems false, we don't have anything about this specific
+    range in the invariant... *)
+  }
+  iApply "HmemLog"; iFrame.
+Admitted.
+
 Theorem wp_Walog__logInstall γ l σₛ :
   {{{ "#st" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
       "#memLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#condInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+      "#Hwal" ∷ is_wal P l γ ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
       "His_locked" ∷ locked #σₛ.(memLock) ∗
       "#lk" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
@@ -302,7 +341,7 @@ Theorem wp_Walog__logInstall γ l σₛ :
       "His_locked" ∷ locked #σₛ.(memLock)
   }}}.
 Proof.
-  iIntros (Φ) "Hpre HΦ"; iNamed "Hpre". (* TODO: would be nice to do this anonymously *)
+  wp_start.
   iNamedRestorable "Hlkinv".
   iNamedRestorable "Hfields".
   iNamed "Hfield_ptsto".
@@ -323,6 +362,11 @@ Proof.
   (* note that we get to keep Htxn_slice *)
   (* TODO: need to checkout some persistent fact that keeps these transactions
   tied to the abstract state, so that installBlocks can install them *)
+
+  (* TODO: get a start position out of memLog_linv, combine with is_wal
+  ([get_txns_are]) to extract exists subtxns corresponding to the updates in
+  Htxn_slice *)
+
   wp_loadField.
   wp_apply (release_spec with "[$lk $His_locked HdiskEnd_circ Hstart_circ HmemLog_linv
 His_memLog HmemLog HdiskEnd Hshutdown Hnthread]").
@@ -359,7 +403,7 @@ Proof.
     wp_pures.
     wp_if_destruct.
     - wp_pures.
-      wp_apply (wp_Walog__logInstall with "[$st $d $lk $memlock $condInstall $cond_install $Hlocked $Hlockinv]").
+      wp_apply (wp_Walog__logInstall with "[$Hwal $st $d $lk $memlock $condInstall $cond_install $Hlocked $Hlockinv]").
       iIntros (blkCount installEnd) "post"; iNamed "post".
       wp_pures.
       wp_bind (If _ _ _).

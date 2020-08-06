@@ -199,6 +199,17 @@ Proof.
   rewrite take_length; lia.
 Qed.
 
+Lemma subslice_none {A} n m (l: list A) :
+  (m ≤ n)%nat →
+  subslice n m l = [].
+Proof.
+  intros.
+  rewrite /subslice.
+  rewrite -length_zero_iff_nil.
+  rewrite drop_length take_length.
+  lia.
+Qed.
+
 Theorem subslice_nil {A} n m :
   subslice n m (@nil A) = [].
 Proof.

@@ -567,17 +567,6 @@ Definition txns_are γ (start: nat) (txns_sub: list (u64*list update.t)) : iProp
 Global Instance txns_are_Persistent γ start txns_sub : Persistent (txns_are γ start txns_sub).
 Proof. apply _. Qed.
 
-Lemma subslice_none {A} n m (l: list A) :
-  (m ≤ n)%nat →
-  subslice n m l = [].
-Proof.
-  intros.
-  rewrite /subslice.
-  rewrite -length_zero_iff_nil.
-  rewrite drop_length take_length.
-  lia.
-Qed.
-
 Theorem txns_are_sound γ txns start txns_sub :
   txns_ctx γ txns -∗
   txns_are γ start txns_sub -∗
