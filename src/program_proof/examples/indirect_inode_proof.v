@@ -575,7 +575,7 @@ Theorem wp_Inode__UsedBlocks {l γ P addr σ} :
       is_alloced_blocks_slice σ s direct_s indirect_s ds.(impl_s.numInd) ds.(impl_s.dirAddrs) ds.(impl_s.indAddrs) ds.(impl_s.indBlkAddrsList) ∗
       (is_alloced_blocks_slice σ s direct_s indirect_s ds.(impl_s.numInd) ds.(impl_s.dirAddrs) ds.(impl_s.indAddrs) ds.(impl_s.indBlkAddrsList) -∗
                                pre_inode l P σ addr) }}}.
-Proof.
+Proof using allocG0 allocN crashG0 heapG0 inodeN stagedG0 Σ.
   iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
   wp_call.
   iNamed "Hlockinv".
