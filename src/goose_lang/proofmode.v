@@ -414,12 +414,3 @@ Tactic Notation "wp_cmpxchg_suc" :=
     |wp_finish]
   | _ => fail "wp_cmpxchg_suc: not a 'wp'"
   end.
-
-Tactic Notation "iExactEq" constr(H) :=
-  match goal with
-  | |- context[Esnoc _ (INamed H) ?P] =>
-    match goal with
-    | |- envs_entails _ ?P' =>
-      replace P with P'; [ iExact H | ]
-    end
-  end.
