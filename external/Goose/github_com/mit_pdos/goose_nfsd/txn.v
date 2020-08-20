@@ -24,7 +24,7 @@ Definition MkTxn: val :=
     let: "txn" := struct.new Txn.S [
       "mu" ::= lock.new #();
       "log" ::= wal.MkLog "d";
-      "nextId" ::= #0;
+      "nextId" ::= #1;
       "pos" ::= #0
     ] in
     "txn".
@@ -33,16 +33,10 @@ Definition MkTxn: val :=
 Definition Txn__GetTransId: val :=
   rec: "Txn__GetTransId" "txn" :=
     lock.acquire (struct.loadF Txn.S "mu" "txn");;
-    let: "id" := ref_to uint64T (struct.loadF Txn.S "nextId" "txn") in
-    (if: (![uint64T] "id" = #0)
-    then
-      struct.storeF Txn.S "nextId" "txn" (struct.loadF Txn.S "nextId" "txn" + #1);;
-      "id" <-[uint64T] #1;;
-      #()
-    else #());;
+    let: "id" := struct.loadF Txn.S "nextId" "txn" in
     struct.storeF Txn.S "nextId" "txn" (struct.loadF Txn.S "nextId" "txn" + #1);;
     lock.release (struct.loadF Txn.S "mu" "txn");;
-    ![uint64T] "id".
+    "id".
 
 (* Read a disk object into buf *)
 Definition Txn__Load: val :=

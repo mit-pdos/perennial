@@ -1488,7 +1488,7 @@ Admitted.
 Theorem wp_Txn__GetTransId l γ :
   {{{ is_txn l γ }}}
     txn.Txn__GetTransId #l
-  {{{ (i : u64), RET #i; emp }}}.
+  {{{ (i : u64), RET #i; True }}}.
 Proof.
   iIntros (Φ) "#Htxn HΦ".
   iNamed "Htxn".
@@ -1498,33 +1498,14 @@ Proof.
   iIntros "[Hlocked Htxnlocked]".
   iNamed "Htxnlocked".
   wp_loadField.
-  wp_apply wp_ref_to; eauto.
-  iIntros (id) "Hid".
+  wp_loadField.
+  wp_storeField.
+  wp_loadField.
+  wp_apply (release_spec with "[$Histxn_lock $Hlocked Hwal_latest Histxn_nextid Histxn_pos]").
+  { iModIntro.
+    iExists _, _, _. iFrame. }
   wp_pures.
-  wp_load.
-  wp_pures.
-  destruct (bool_decide (#nextId = #0)); wp_pures.
-  - wp_loadField.
-    wp_storeField.
-    wp_store.
-    wp_loadField.
-    wp_storeField.
-    wp_loadField.
-    wp_apply (release_spec with "[$Histxn_lock $Hlocked Hwal_latest Histxn_nextid Histxn_pos]").
-    {
-      iExists _, _, _. iFrame.
-    }
-    wp_load.
-    iApply "HΦ". done.
-  - wp_loadField.
-    wp_storeField.
-    wp_loadField.
-    wp_apply (release_spec with "[$Histxn_lock $Hlocked Hwal_latest Histxn_nextid Histxn_pos]").
-    {
-      iExists _, _, _. iFrame.
-    }
-    wp_load.
-    iApply "HΦ". done.
+  iApply "HΦ". done.
 Qed.
 
 
