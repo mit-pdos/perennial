@@ -1118,13 +1118,12 @@ Theorem wpc_Inode__Append {k E2}  (*  *)
         (* allocator stuff *)
         {Palloc γalloc domain n}
         (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
-  (S (S k) < n)%nat →
-  (S (S k) < k')%nat →
+  (k < k')%nat →
   nroot.@"readonly" ## allocN →
   nroot.@"readonly" ## inodeN →
   inodeN ## allocN →
   ∀ Φ Φc,
-      "Hinode" ∷ is_inode inodeN l (LVL k') P addr ∗ (* XXX why did I need to put inodeN here? *)
+      "Hinode" ∷ is_inode inodeN l k' P addr ∗ (* XXX why did I need to put inodeN here? *)
       "Hbdata" ∷ is_block b_s q b0 ∗
       "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
       "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
@@ -1137,9 +1136,9 @@ Theorem wpc_Inode__Append {k E2}  (*  *)
         ⌜s !! addr' = Some block_reserved⌝ -∗
          ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (Φc ∧ Φ #true))) -∗
-  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; LVL (S (S k)); ⊤; E2 {{ Φ }} {{ Φc }}.
+  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; k; ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (????? Φ Φc) "Hpre"; iNamed "Hpre".
+  iIntros (???? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
 Admitted.
 End goose.

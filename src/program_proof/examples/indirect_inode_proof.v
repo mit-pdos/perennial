@@ -196,7 +196,7 @@ Definition inode_state l (d_ref: loc) (lref: loc) : iProp Σ :=
 Definition is_inode l k P addr : iProp Σ :=
   ∃ (d lref: loc),
     "Hro_state" ∷ inode_state l d lref ∗
-    "#Hlock" ∷ is_crash_lock inodeN inodeN k #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ addr ∗ "HP" ∷ P σ) True.
+    "#Hlock" ∷ is_crash_lock inodeN k #lref (∃ σ, "Hlockinv" ∷ inode_linv l σ addr ∗ "HP" ∷ P σ) True.
 
 Definition pre_inode l P σ addr: iProp Σ :=
   ∃ (d lref: loc),
@@ -366,7 +366,7 @@ Proof.
           iApply (is_slice_take_cap indaddr_s uint64T (u64val <$> ds.(impl_s.indAddrs)) (0) with "Hindaddrs"); word.
         }
     }
-    iAssert (is_crash_lock inodeN inodeN k #lref (∃ σ, inode_linv l σ addr ∗ P σ) True) as "#Hcrash_lock".
+    iAssert (is_crash_lock inodeN k #lref (∃ σ, inode_linv l σ addr ∗ P σ) True) as "#Hcrash_lock".
     { admit. }
     iModIntro.
     iApply "HΦ".
@@ -438,7 +438,7 @@ Proof.
           by replace (int.nat (U64 (Z.of_nat ds.(impl_s.numInd)))) with (ds.(impl_s.numInd)) by word.
         }
     }
-    iAssert (is_crash_lock inodeN inodeN k #lref (∃ σ, inode_linv l σ addr ∗ P σ) True) as "#Hcrash_lock".
+    iAssert (is_crash_lock inodeN k #lref (∃ σ, inode_linv l σ addr ∗ P σ) True) as "#Hcrash_lock".
     { admit. }
     iModIntro.
     iApply "HΦ".
@@ -1154,7 +1154,7 @@ Proof.
 Admitted.
 
 Theorem wp_Inode__Size {l k' P addr} (Q: u64 -> iProp Σ) :
-  {{{ "Hinode" ∷ is_inode l (LVL k') P addr ∗
+  {{{ "Hinode" ∷ is_inode l k' P addr ∗
       "Hfupd" ∷ (∀ σ σ' sz,
           ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
           ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q sz)
