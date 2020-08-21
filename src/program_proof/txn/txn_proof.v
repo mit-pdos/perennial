@@ -9,7 +9,7 @@ From Perennial.algebra Require Import deletable_heap log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
-From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.specs buf.defs buf.specs disk_lib.
+From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.Helpers Require Import NamedProps Map.
 
@@ -1155,7 +1155,7 @@ olds
 
     iDestruct (big_sepM_mono_wand _
       (λ blkno offmap, (
-        [∗ map] off↦v ∈ offmap, 
+        [∗ map] off↦v ∈ offmap,
              ∃ (data : bufDataT v.(bufKind)) (first : nat),
                mapsto_txn γ first {| addrBlock := blkno; addrOff := off |}
                  (existT v.(bufKind) data)) ∗
@@ -1284,12 +1284,12 @@ Check big_sepML_map_val_exists.
     }
 
     iSplitR; first by eauto.
-    
+
     iIntros (txn_id lwh' new_crash_heap) "(Hcrash & Hq)".
     rewrite /memappend_crash /memappend_q.
     iDestruct "Hcrash" as "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hpos)".
     rewrite (big_sepL2_alt _ updlist_olds.*1).
-    
+
     iDestruct "Hq" as "[_ Hq]".
     rewrite zip_fst_snd.
 

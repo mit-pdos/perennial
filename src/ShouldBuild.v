@@ -15,8 +15,8 @@ From Perennial.program_proof Require
      lockmap_proof
      wal.proof
      wal.specs
-     txn.specs
-     buftxn.specs.
+     txn.txn_proof
+     buftxn.buftxn_proof.
 From Perennial.program_proof.examples Require
      dir_proof
      single_inode_proof

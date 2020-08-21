@@ -5,9 +5,8 @@ Import RecordSetNotations.
 From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buf.
 From Perennial.program_proof Require Import util_proof disk_lib.
-From Perennial.program_proof.buf Require Import defs.
-From Perennial.program_proof.addr Require Import specs.
-From Perennial.program_proof.wal Require Import abstraction.
+From Perennial.program_proof Require Export buf.defs.
+From Perennial.program_proof Require Import addr.addr_proof wal.abstraction.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 

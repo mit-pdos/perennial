@@ -7,7 +7,7 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
-From Perennial.program_proof Require Import wal.specs wal.heapspec txn.specs buf.defs buf.specs addr.specs.
+From Perennial.program_proof Require Import wal.specs wal.heapspec txn.txn_proof buf.buf_proof addr.addr_proof.
 
 Class buftxnG Σ :=
   { buftxn_txn   :> txnG Σ;
@@ -19,6 +19,7 @@ Context `{!buftxnG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
+Implicit Types (mT : gmap addr {K & bufDataT K}).
 
 Definition is_buftxn (buftx : loc)
                      (mT : gmap addr {K & bufDataT K})
@@ -105,7 +106,7 @@ Proof.
     (* bufmapelem now a pure fact:
 
     iDestruct (big_sepM_lookup with "Hbufmapelem") as %HmT_a; eauto.
-    
+
     rewrite Ha in HmT_a.
     inversion HmT_a; clear HmT_a; subst.
     destruct b; rewrite /=.

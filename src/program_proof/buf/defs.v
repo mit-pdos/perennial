@@ -3,7 +3,6 @@ Import RecordSetNotations.
 
 
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.program_proof.addr Require Import specs.
 
 Definition inode_bytes := Z.to_nat 128.
 Definition inode_buf := vec u8 inode_bytes.
