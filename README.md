@@ -26,7 +26,7 @@ To compile just run `make` with Coq on your `$PATH`.
 
 ## Compilation times
 
-Perennial takes about 50-60 CPU minutes to compile. Compiling in parallel with `make -j4` is significantly faster, and can cut the time down to 12-15 minutes.
+Perennial takes about 60-70 CPU minutes to compile. Compiling in parallel with `make -j4` is significantly faster, and can cut the time down to 15-20 minutes.
 
 Incremental builds are better, after Iris and some core libraries are compiled.
 
