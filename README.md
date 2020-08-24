@@ -12,7 +12,7 @@ of programs written in (a subset of) Go.
 
 ## Compiling
 
-We develop Perennial using Coq master and maintain compatibility with Coq 8.11.1.
+We develop Perennial using Coq master and maintain compatibility with Coq 8.12.
 
 This project uses git submodules to include several dependencies. You should run `git submodule update --init --recursive` to set that up.
 

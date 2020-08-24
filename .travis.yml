@@ -25,10 +25,8 @@ jobs:
     - env: COQ_VERSION="dev"
     - env: COQ_VERSION="8.12"
     - env: COQ_VERSION="dev" UPDATE_DEPS=true
-    - env: COQ_VERSION="8.11"
   allow_failures:
     - env: COQ_VERSION="dev" UPDATE_DEPS=true
-    - env: COQ_VERSION="8.11"
   fast_finish: true
 
 # On Travis cloning the gitlab dependencies fails due to a certificate error. In
