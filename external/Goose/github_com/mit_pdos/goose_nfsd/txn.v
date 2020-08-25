@@ -8,35 +8,26 @@ From Goose Require github_com.mit_pdos.goose_nfsd.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 From Goose Require github_com.mit_pdos.goose_nfsd.wal.
 
-Definition TransId: ty := uint64T.
+(* Txn mediates access to the transaction system.
 
+   There is only one Txn object. *)
 Module Txn.
   Definition S := struct.decl [
     "mu" :: lockRefT;
     "log" :: struct.ptrT wal.Walog.S;
-    "nextId" :: TransId;
     "pos" :: wal.LogPosition
   ].
 End Txn.
 
+(* MkTxn recovers the txn system (or initializes from an all-zero disk). *)
 Definition MkTxn: val :=
   rec: "MkTxn" "d" :=
     let: "txn" := struct.new Txn.S [
       "mu" ::= lock.new #();
       "log" ::= wal.MkLog "d";
-      "nextId" ::= #1;
       "pos" ::= #0
     ] in
     "txn".
-
-(* Return a unique Id for a transaction *)
-Definition Txn__GetTransId: val :=
-  rec: "Txn__GetTransId" "txn" :=
-    lock.acquire (struct.loadF Txn.S "mu" "txn");;
-    let: "id" := struct.loadF Txn.S "nextId" "txn" in
-    struct.storeF Txn.S "nextId" "txn" (struct.loadF Txn.S "nextId" "txn" + #1);;
-    lock.release (struct.loadF Txn.S "mu" "txn");;
-    "id".
 
 (* Read a disk object into buf *)
 Definition Txn__Load: val :=
@@ -88,7 +79,7 @@ Definition Txn__doCommit: val :=
 
 (* Commit dirty bufs of the transaction into the log, and perhaps wait. *)
 Definition Txn__CommitWait: val :=
-  rec: "Txn__CommitWait" "txn" "bufs" "wait" "id" :=
+  rec: "Txn__CommitWait" "txn" "bufs" "wait" :=
     let: "commit" := ref_to boolT #true in
     (if: slice.len "bufs" > #0
     then
@@ -116,6 +107,7 @@ Definition Txn__Flush: val :=
     wal.Walog__Flush (struct.loadF Txn.S "log" "txn") "pos";;
     #true.
 
+(* LogSz returns 511 (the size of the wal log) *)
 Definition Txn__LogSz: val :=
   rec: "Txn__LogSz" "txn" :=
     wal.LOGSZ.

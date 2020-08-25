@@ -41,9 +41,13 @@ Example testsUseLocks_ok : testsUseLocks #() ~~> #true := t.
 Example testStandardForLoop_ok : testStandardForLoop #() ~~> #true := t.
 Example testForLoopWait_ok : testForLoopWait #() ~~> #true := t.
 Example testBreakFromLoopWithContinue_ok : testBreakFromLoopWithContinue #() ~~> #true := t.
-Fail Example testBreakFromLoopNoContinue_ok : failing_testBreakFromLoopNoContinue #() ~~> #true := t.
+Example testBreakFromLoopNoContinue_ok : testBreakFromLoopNoContinue #() ~~> #true := t.
+Fail Example testBreakFromLoopNoContinueDouble_ok : failing_testBreakFromLoopNoContinueDouble #() ~~> #true := t.
+Example testBreakFromLoopForOnly_ok : testBreakFromLoopForOnly #() ~~> #true := t.
+Example testBreakFromLoopAssignAndContinue_ok : testBreakFromLoopAssignAndContinue #() ~~> #true := t.
 Example testNestedLoops_ok : testNestedLoops #() ~~> #true := t.
 Example testNestedGoStyleLoops_ok : testNestedGoStyleLoops #() ~~> #true := t.
+Example testNestedGoStyleLoopsNoComparison_ok : testNestedGoStyleLoopsNoComparison #() ~~> #true := t.
 
 (* maps.go *)
 Example testIterateMap_ok : testIterateMap #() ~~> #true := t.

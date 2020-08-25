@@ -3,6 +3,8 @@ From Perennial.algebra Require Import deletable_heap.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
 From Perennial.goose_lang.lib Require Import wp_store.
 
+From Perennial.Helpers Require Import NamedProps.
+
 Local Transparent load_ty store_ty.
 
 Ltac word := try lazymatch goal with
@@ -26,14 +28,13 @@ Definition locked (hm : gen_heapG u64 bool Σ) (addr : u64) : iProp Σ :=
 
 Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
            (lockStatePtr : loc) (covered : gmap u64 unit) (P : u64 -> iProp Σ) :=
-  ( ∃ owner (cond : loc) (nwaiters : u64),
-      lockStatePtr ↦[lockState.S :: "owner"] owner ∗
-      lockStatePtr ↦[lockState.S :: "held"] #gheld ∗
-      lockStatePtr ↦[lockState.S :: "cond"] #cond ∗
-      lockStatePtr ↦[lockState.S :: "waiters"] #nwaiters ∗
-      lock.is_cond cond #shardlock ∗
-      ⌜ covered !! addr ≠ None ⌝ ∗
-      ( ⌜ gheld = true ⌝ ∨
+  ( ∃ (cond : loc) (nwaiters : u64),
+      "held" ∷ lockStatePtr ↦[lockState.S :: "held"] #gheld ∗
+      "cond" ∷ lockStatePtr ↦[lockState.S :: "cond"] #cond ∗
+      "waiters" ∷ lockStatePtr ↦[lockState.S :: "waiters"] #nwaiters ∗
+      "#Hcond" ∷ lock.is_cond cond #shardlock ∗
+      "%Hcovered" ∷ ⌜ covered !! addr ≠ None ⌝ ∗
+      "Hwaiters" ∷ ( ⌜ gheld = true ⌝ ∨
         ( ⌜ gheld = false ⌝ ∗ mapsto (hG := gh) addr 1 false ∗ P addr ) )
   )%I.
 
@@ -50,9 +51,9 @@ Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
 
 Definition is_lockShard (ls : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (shardlock mptr : loc),
-      readonly (ls ↦[lockShard.S :: "mu"] #shardlock) ∗
-      readonly (ls ↦[lockShard.S :: "state"] #mptr) ∗
-      is_lock lockN #shardlock (is_lockShard_inner mptr shardlock ghostHeap covered P)
+      "#Hls_mu" ∷ readonly (ls ↦[lockShard.S :: "mu"] #shardlock) ∗
+      "#Hls_state" ∷ readonly (ls ↦[lockShard.S :: "state"] #mptr) ∗
+      "#Hlock" ∷ is_lock lockN #shardlock (is_lockShard_inner mptr shardlock ghostHeap covered P)
   )%I.
 
 Global Instance is_lockShard_persistent ls gh (P : u64 -> iProp Σ) c : Persistent (is_lockShard ls gh c P).
@@ -109,14 +110,14 @@ Proof using gen_heapPreG0 heapG0 Σ.
   iFrame.
 Qed.
 
-Theorem wp_lockShard__acquire ls gh covered (addr : u64) (id : u64) (P : u64 -> iProp Σ) :
+Theorem wp_lockShard__acquire ls gh covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_lockShard ls gh covered P ∗
       ⌜covered !! addr ≠ None⌝ }}}
-    lockShard__acquire #ls #addr #id
+    lockShard__acquire #ls #addr
   {{{ RET #(); P addr ∗ locked gh addr }}}.
 Proof.
   iIntros (Φ) "[Hls %] HΦ".
-  iDestruct "Hls" as (shardlock mptr) "(#Hls_mu&#Hls_state&#Hlock)".
+  iNamed "Hls".
 
   wp_call.
   wp_loadField.
@@ -154,7 +155,7 @@ Proof.
       apply map_get_true in H0.
       iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
       iDestruct (big_sepM2_insert_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
-      iDestruct "Haddr" as (owner cond nwaiters) "(? & ? & ? & ? & #Hcond & % & Hwaiters)".
+      iNamed "Haddr".
       wp_loadField.
       destruct gheld; wp_pures.
       + wp_untyped_load.
@@ -175,7 +176,7 @@ Proof.
           iExists _, _.
           iFrame.
           iApply "Haddrs".
-          iExists _, _, _.
+          iExists _, _.
           iFrame "∗ Hcond".
           done.
         }
@@ -188,10 +189,10 @@ Proof.
         destruct ok.
         * wp_pures.
 
-          apply map_get_true in H3.
+          apply map_get_true in H2.
           iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
           iDestruct (big_sepM2_lookup_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
-          iDestruct "Haddr" as (owner2 cond2 nwaiters2) "(? & ? & ? & ? & Hcond2 & % & Hwaiters2)".
+          iDestruct "Haddr" as (cond2 nwaiters2) "(? & ? & ? & Hcond2 & % & Hwaiters2)".
 
           wp_loadField.
           wp_storeField.
@@ -205,7 +206,7 @@ Proof.
           iFrame.
           iExists _, _. iFrame.
           iApply "Haddrs".
-          iExists _, _, _. iFrame. done.
+          iExists _, _. iFrame. done.
 
         * iEval (rewrite struct_mapsto_eq) in "Hacquired".
           iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
@@ -217,8 +218,7 @@ Proof.
 
       + wp_untyped_load.
         wp_storeField.
-        wp_untyped_load.
-        wp_storeField.
+        wp_pures.
 
         iDestruct "Hwaiters" as "[% | [_ [Haddr Hp]]]"; try congruence.
         iMod (gen_heap_update _ _ _ true with "Hghctx Haddr") as "[Hghctx Haddr]".
@@ -231,12 +231,12 @@ Proof.
 
         wp_pures.
         iApply "HΦloop".
-        iFrame.
+        iFrame "Hlocked Hp Haddr".
         iExists _, _. iFrame.
 
         erewrite <- (insert_id m) at 1; eauto.
         iApply "Haddrs".
-        iExists _, _, _. iFrame "∗ Hcond".
+        iExists _, _. iFrame "∗ Hcond".
         iSplit; try done.
         iLeft; done.
 
@@ -255,14 +255,12 @@ Proof.
       wp_apply wp_ref_of_zero; first by auto.
       iIntros (acquired) "Hacquired".
 
-      iDestruct (struct_fields_split with "Hlst") as "(?&?&?&?&_)".
+      iDestruct (struct_fields_split with "Hlst") as "(?&?&?&_)".
 
       wp_pures.
       wp_untyped_load.
       wp_loadField.
       wp_pures.
-      wp_untyped_load.
-      wp_storeField.
       wp_untyped_load.
       wp_storeField.
 
@@ -291,7 +289,7 @@ Proof.
       {
         iApply (big_sepM2_insert); [auto | auto | ].
         iFrame.
-        iExists  _, _, _.
+        iExists  _, _.
         iFrame "∗ Hcond".
         iFrame.
         iSplitL; [ iPureIntro; congruence | ].
@@ -355,7 +353,7 @@ Proof.
 
   iDestruct (big_sepM2_delete with "Haddrs") as "[Haddr Haddrs]"; eauto.
 
-  iDestruct "Haddr" as (owner cond waiters) "(? & ? & ? & ? & #Hcond & [% Hxx])".
+  iNamed "Haddr".
 
   rewrite /map_get H0 /= in H.
   inversion H; clear H; subst.
@@ -364,7 +362,7 @@ Proof.
   wp_loadField.
   wp_pures.
 
-  destruct (bool_decide (int.val 0 < int.val waiters))%Z.
+  destruct (bool_decide (int.val 0 < int.val nwaiters))%Z.
 
   {
     wp_pures.
@@ -384,7 +382,7 @@ Proof.
         with "[-Haddrs] Haddrs") as "Haddrs".
       {
         rewrite /setField_f /=.
-        iExists _, _, _.
+        iExists _, _.
         iFrame "∗ Hcond".
         iSplitR; auto.
         iRight.

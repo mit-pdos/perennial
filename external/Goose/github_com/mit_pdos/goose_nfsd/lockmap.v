@@ -4,7 +4,6 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 Module lockState.
   Definition S := struct.decl [
-    "owner" :: uint64T;
     "held" :: boolT;
     "cond" :: condvarRefT;
     "waiters" :: uint64T
@@ -29,7 +28,7 @@ Definition mkLockShard: val :=
     "a".
 
 Definition lockShard__acquire: val :=
-  rec: "lockShard__acquire" "lmap" "addr" "id" :=
+  rec: "lockShard__acquire" "lmap" "addr" :=
     lock.acquire (struct.loadF lockShard.S "mu" "lmap");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -39,7 +38,6 @@ Definition lockShard__acquire: val :=
       then "state" <-[refT (struct.t lockState.S)] "state1"
       else
         "state" <-[refT (struct.t lockState.S)] struct.new lockState.S [
-          "owner" ::= "id";
           "held" ::= #false;
           "cond" ::= lock.newCond (struct.loadF lockShard.S "mu" "lmap");
           "waiters" ::= #0
@@ -49,7 +47,6 @@ Definition lockShard__acquire: val :=
       (if: ~ (struct.loadF lockState.S "held" (![refT (struct.t lockState.S)] "state"))
       then
         struct.storeF lockState.S "held" (![refT (struct.t lockState.S)] "state") #true;;
-        struct.storeF lockState.S "owner" (![refT (struct.t lockState.S)] "state") "id";;
         "acquired" <-[boolT] #true
       else
         struct.storeF lockState.S "waiters" (![refT (struct.t lockState.S)] "state") (struct.loadF lockState.S "waiters" (![refT (struct.t lockState.S)] "state") + #1);;
@@ -94,11 +91,11 @@ Definition MkLockMap: val :=
     "a".
 
 Definition LockMap__Acquire: val :=
-  rec: "LockMap__Acquire" "lmap" "flataddr" "id" :=
+  rec: "LockMap__Acquire" "lmap" "flataddr" :=
     let: "shard" := SliceGet (refT (struct.t lockShard.S)) (struct.loadF LockMap.S "shards" "lmap") ("flataddr" `rem` NSHARD) in
-    lockShard__acquire "shard" "flataddr" "id".
+    lockShard__acquire "shard" "flataddr".
 
 Definition LockMap__Release: val :=
-  rec: "LockMap__Release" "lmap" "flataddr" "id" :=
+  rec: "LockMap__Release" "lmap" "flataddr" :=
     let: "shard" := SliceGet (refT (struct.t lockShard.S)) (struct.loadF LockMap.S "shards" "lmap") ("flataddr" `rem` NSHARD) in
     lockShard__release "shard" "flataddr".

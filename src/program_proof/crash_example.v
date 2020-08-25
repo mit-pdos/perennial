@@ -5,10 +5,10 @@ From Perennial.algebra Require Import deletable_heap liftable log_heap.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.specs wal.heapspec.
-From Perennial.program_proof Require Import addr.specs.
-From Perennial.program_proof Require Import buf.specs buf.defs.
-From Perennial.program_proof Require Import txn.specs.
-From Perennial.program_proof Require Import buftxn.specs.
+From Perennial.program_proof Require Import addr.addr_proof.
+From Perennial.program_proof Require Import buf.buf_proof.
+From Perennial.program_proof Require Import txn.txn_proof.
+From Perennial.program_proof Require Import buftxn.buftxn_proof.
 From Perennial.goose_lang Require Import spec_assert.
 From iris_string_ident Require Import ltac2_string_ident.
 

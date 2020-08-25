@@ -4,7 +4,11 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
 
-(* Address of disk object and its size *)
+(* Addr identifies the start of a disk object.
+
+   Blkno is the block number containing the object, and Off is the location of
+   the object within the block (expressed as a bit offset). The size of the
+   object is determined by the context in which Addr is used. *)
 Module Addr.
   Definition S := struct.decl [
     "Blkno" :: uint64T;

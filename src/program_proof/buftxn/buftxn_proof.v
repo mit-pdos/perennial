@@ -28,7 +28,6 @@ Definition is_buftxn (buftx : loc)
     ∃ (l : loc) (bufmap : loc) (gBufmap : gmap addr buf) (txid : u64),
       "Hbuftx.l" ∷ buftx ↦[BufTxn.S :: "txn"] #l ∗
       "Hbuftx.map" ∷ buftx ↦[BufTxn.S :: "bufs"] #bufmap ∗
-      "Hbuftx.id" ∷ buftx ↦[BufTxn.S :: "Id"] #txid ∗
       "#Histxn" ∷ is_txn l γUnified ∗
       "Hbufmap" ∷ is_bufmap bufmap gBufmap ∗
       "%Hbufmapelem" ∷ ⌜ (λ b, existT _ (bufData b)) <$> gBufmap ⊆ mT ⌝ ∗
@@ -59,20 +58,19 @@ Proof.
   wp_call.
   wp_apply (wp_MkBufMap with "[$]").
   iIntros (bufmap) "Hbufmap".
-  wp_apply (wp_Txn__GetTransId with "Htxn").
-  iIntros (tid) "Htid".
   wp_apply wp_allocStruct; eauto.
   iIntros (buftx) "Hbuftx".
-  iDestruct (struct_fields_split with "Hbuftx") as "(Hbuftx.txn & Hbuftx.bufs & Hbuftx.id & %)".
+  iDestruct (struct_fields_split with "Hbuftx") as "(Hbuftx.txn & Hbuftx.bufs & %)".
   wp_apply util_proof.wp_DPrintf.
   wp_pures.
   iApply "HΦ".
   iExists _, _, _, _.
   iFrame.
   rewrite big_sepM_empty. iFrame "Htxn ∗".
-  iSplit. 2: { iApply big_sepM_empty. done. }
-  rewrite fmap_empty. done.
-  (* Unshelve. all: eauto. (* XXX, bug in Coq v8.11*) *)
+  iSplit; first by done.
+  rewrite left_id.
+  rewrite big_sepM_empty //.
+  Unshelve. all: exact (U64 0).
 Qed.
 
 Theorem wp_BufTxn__ReadBuf buftx mT γUnified a sz v :
@@ -637,7 +635,6 @@ Proof.
   wp_call.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
-  wp_loadField.
   wp_apply (wp_BufMap__DirtyBufs with "Hbufmap").
   iIntros (dirtyslice bufptrlist) "(Hdirtyslice & Hdirtylist)".
   wp_loadField.
@@ -678,7 +675,7 @@ Proof.
   iPoseProof big_sepM_fmap as "[#Hfmap0 #Hfmap1]".
   iDestruct ("Hfmap0" with "Hctxelem0") as "Hctxelem0".
 
-  wp_apply (wp_txn_CommitWait _ _ _ _ _ _ _ _ _
+  wp_apply (wp_txn_CommitWait _ _ _ _ _ _ _ _
     (λ txnid,
       ( [∗ map] k↦x ∈ filter (λ v, bufDirty <$> gBufmap !! v.1 ≠ Some true) mt, mapsto_txn γUnified k x ) ∗
       Q txnid)%I

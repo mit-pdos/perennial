@@ -21,6 +21,16 @@ Definition doSubtleThings: val :=
   rec: "doSubtleThings" <> :=
     #().
 
+(* This comment starts a Coq comment ( * *)
+Definition hasStartComment: val :=
+  rec: "hasStartComment" <> :=
+    #().
+
+(* This comment * ) ends a Coq comment *)
+Definition hasEndComment: val :=
+  rec: "hasEndComment" <> :=
+    #().
+
 (* condvar.go *)
 
 Definition condvarWrapping: val :=

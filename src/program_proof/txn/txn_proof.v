@@ -124,7 +124,6 @@ Definition is_txn_locked l γ : iProp Σ :=
   (
     ∃ (nextId : u64) (pos : u64) lwh,
       "Hwal_latest" ∷ is_locked_walheap γ lwh ∗
-      "Histxn_nextid" ∷ l ↦[Txn.S :: "nextId"] #nextId ∗
       "Histxn_pos" ∷ l ↦[Txn.S :: "pos"] #pos
  )%I.
 
@@ -1385,7 +1384,7 @@ Check big_sepML_map_val_exists.
 *)
 Admitted.
 
-Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) (id : u64) E (Q : nat -> iProp Σ) :
+Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) E (Q : nat -> iProp Σ) :
   {{{ is_txn l γ ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
@@ -1397,7 +1396,7 @@ Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) (id : u64) E
             own γ.(txn_crashstates) (◯E (async_put σ σl))
             ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl))  ))
   }}}
-    Txn__CommitWait #l (slice_val bufs) #wait #id
+    Txn__CommitWait #l (slice_val bufs) #wait
   {{{ (ok : bool), RET #ok;
       if ok then
         ( ⌜bufamap ≠ ∅⌝ -∗ ∃ (txn_id : nat),
@@ -1484,30 +1483,6 @@ Proof.
     iIntros. congruence.
     Fail idtac.
 Admitted.
-
-Theorem wp_Txn__GetTransId l γ :
-  {{{ is_txn l γ }}}
-    txn.Txn__GetTransId #l
-  {{{ (i : u64), RET #i; True }}}.
-Proof.
-  iIntros (Φ) "#Htxn HΦ".
-  iNamed "Htxn".
-  wp_call.
-  wp_loadField.
-  wp_apply acquire_spec; eauto.
-  iIntros "[Hlocked Htxnlocked]".
-  iNamed "Htxnlocked".
-  wp_loadField.
-  wp_loadField.
-  wp_storeField.
-  wp_loadField.
-  wp_apply (release_spec with "[$Histxn_lock $Hlocked Hwal_latest Histxn_nextid Histxn_pos]").
-  { iModIntro.
-    iExists _, _, _. iFrame. }
-  wp_pures.
-  iApply "HΦ". done.
-Qed.
-
 
 
 End heap.

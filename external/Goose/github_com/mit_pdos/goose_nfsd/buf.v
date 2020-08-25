@@ -9,7 +9,9 @@ From Goose Require github_com.tchajed.marshal.
 
 (* buf.go *)
 
-(* A buf holds a disk object (inode, a bitmap bit, or disk block) *)
+(* buf manages sub-block disk objects, to be packed into disk blocks *)
+
+(* A Buf is a write to a disk object (inode, a bitmap bit, or disk block) *)
 Module Buf.
   Definition S := struct.decl [
     "Addr" :: struct.t addr.Addr.S;
