@@ -160,7 +160,9 @@ def main():
             "alloc",
             "inode",
             "indirect_inode",
+            "async_inode",
             "dir",
+            "dynamic_dir",
             "single_inode",
             "toy",
         ]

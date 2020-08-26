@@ -52,6 +52,11 @@ From Goose.github_com.mit_pdos Require
      goose_nfsd.buftxn
      goose_nfsd.kvs.
 
+(* examples goose output *)
+From Goose.github_com.mit_pdos Require
+     async_inode
+     dynamic_dir.
+
 (* interpreter semantics tests *)
 From Perennial.goose_lang.interpreter Require
      interpreter

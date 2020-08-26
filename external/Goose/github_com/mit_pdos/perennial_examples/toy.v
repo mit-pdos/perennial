@@ -2,6 +2,9 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+(* assumes a crash invariant with a guarantee that says a has an even block (the
+   initial status doesn't matter); this should be sufficient to prove that this
+   function does not panic *)
 Definition consumeEvenBlock: val :=
   rec: "consumeEvenBlock" "d" "a" :=
     let: "b4" := NewSlice byteT disk.BlockSize in
