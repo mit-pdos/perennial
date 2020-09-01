@@ -124,7 +124,11 @@ Proof.
   by iFrame.
 Qed.
 
-Theorem is_slice_small_Fractional s q t vs :
+Theorem is_slice_small_fractional s t vs :
+  fractional.Fractional (λ q, is_slice_small s t q vs).
+Proof. rewrite /is_slice_small. apply _. Unshelve. exact 1%Qp. Qed.
+
+Theorem is_slice_small_as_fractional s q t vs :
   fractional.AsFractional (is_slice_small s t q vs) (λ q, is_slice_small s t q vs) q.
 Proof.
   split; auto; apply _.

@@ -102,7 +102,7 @@ Proof.
   auto.
 Qed.
 
-Existing Instance is_slice_small_Fractional.
+Existing Instance is_slice_small_as_fractional.
 
 Global Instance fractional_big_sepL2:
   ∀ (PROP : bi) (A B : Type) (l1 : list A) (l2: list B) (Ψ : nat → A → B -> Qp → PROP),
@@ -124,8 +124,6 @@ Instance is_blocks_AsFractional bks q v :
 Proof.
   constructor; auto.
   apply _.
-  Unshelve.
-  exact 1%Qp.
 Qed.
 
 Instance update_val_inj : Inj eq eq update_val.

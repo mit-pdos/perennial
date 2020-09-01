@@ -28,6 +28,10 @@ Definition is_block_full (s:Slice.t) (b:Block) :=
 Global Instance is_block_timeless s q b :
   Timeless (is_block s q b) := _.
 
+Global Instance is_block_fractional s b :
+  fractional.Fractional (λ q, is_block s q b).
+Proof. unshelve (apply _); apply 1%Qp. Qed.
+
 Theorem is_block_not_nil s q b :
   is_block s q b -∗
   ⌜ s ≠ Slice.nil ⌝.

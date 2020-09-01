@@ -28,8 +28,8 @@ Module inode.
   Global Instance _eta: Settable _ := settable! mk <addrs; durable_blocks; buffered_blocks>.
   Global Instance _witness: Inhabited t := populate!.
 
-  Definition wf σ := length σ.(durable_blocks) + length σ.(buffered_blocks) ≤ InodeMaxBlocks.
-  Definition size σ := length σ.(durable_blocks) + length σ.(buffered_blocks).
+  Definition wf σ := (length σ.(durable_blocks) + length σ.(buffered_blocks))%nat ≤ InodeMaxBlocks.
+  Definition size σ : nat := (length σ.(durable_blocks) + length σ.(buffered_blocks))%nat.
 End inode.
 
 Hint Unfold inode.wf InodeMaxBlocks : word.
@@ -76,13 +76,13 @@ Qed.
 
 (* XXX: from append_log_example but maybe this just needs to be defined in some kind of disk.v prelude *)
 Definition blocks_slice (bk_s: Slice.t) (bks: list Slice.t) (bs: list Block): iProp Σ :=
-  is_slice_small bk_s (slice.T byteT) 1 bks ∗
-   [∗ list] _ ↦ b_s;b ∈ bks;bs , is_block b_s 1 b.
+  ∃ q, is_slice_small bk_s (slice.T byteT) 1 bks ∗
+   [∗ list] _ ↦ b_s;b ∈ bks;bs , is_block b_s q b.
 
 Lemma blocks_slice_length bk_s bks bs :
   blocks_slice bk_s bks bs -∗ ⌜length bks = length bs⌝.
 Proof.
-  iIntros "(_&Hslices)".
+  iDestruct 1 as (?) "(_&Hslices)".
   iDestruct (big_sepL2_length with "Hslices") as "%".
   auto.
 Qed.
@@ -90,7 +90,7 @@ Qed.
 Lemma blocks_slice_length' bk_s bks bs :
   blocks_slice bk_s bks bs -∗ ⌜length bks = int.nat bk_s.(Slice.sz)⌝.
 Proof.
-  iIntros "(Hs&_)".
+  iDestruct 1 as (?) "(Hs&_)".
   iDestruct (is_slice_small_sz with "Hs") as "%".
   eauto.
 Qed.
@@ -283,10 +283,10 @@ Proof.
   iExists _, (Slice.nil), [], addrs. iFrame "% ∗".
   iSplitL "".
   { eauto. }
-  rewrite /blocks_slice.
-  rewrite big_sepL2_nil.
   iSplitR ""; last first.
-  { rewrite right_id. by iApply is_slice_small_nil. }
+  { rewrite /blocks_slice.
+    iExists 1%Qp. rewrite big_sepL2_nil. rewrite right_id.
+    by iApply is_slice_small_nil. }
   iExists _. iFrame "% ∗".
   iPureIntro; eauto.
 Qed.
@@ -390,7 +390,7 @@ Theorem wpc_Inode__Read {k E2} {l k' P addr} {off: u64} :
       "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ ∀ σ mb,
         ⌜mb = (σ.(inode.durable_blocks) ++ σ.(inode.buffered_blocks)) !! int.nat off⌝ ∗
         ▷ P σ ={⊤}=∗ ▷ P σ ∗ (<disc> ▷ Φc ∧ ∀ s,
-          match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end -∗ Φ (slice_val s))) -∗
+          match mb with Some b => (∃ q, is_block s q b) | None => ⌜s = Slice.nil⌝ end -∗ Φ (slice_val s))) -∗
     WPC Inode__Read #l #off @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
@@ -430,7 +430,7 @@ Proof.
   wp_apply wp_slice_len.
   iDestruct (blocks_slice_length with "Hbuffered") as %Hlen3.
   iDestruct (blocks_slice_length' with "Hbuffered") as %Hlen4.
-  iDestruct "Hbuffered" as "(Hbuffered&His_blocks)".
+  iDestruct "Hbuffered" as (q) "(Hbuffered&His_blocks)".
   wp_loadField.
   iDestruct (is_slice_small_sz with "Hbuffered") as %Hlen5.
   autorewrite with len in Hlen3.
@@ -526,7 +526,7 @@ Proof.
       rewrite lookup_app_l; last word.
       rewrite Hlookup2.
       iDestruct (slice.is_slice_to_small with "Hb") as "Hb".
-      iFrame.
+      iExists _. iFrame.
     * wpc_pures.
       iRight in "Hfupd".
       iMod (own_disc_fupd_elim with "HP") as "HP".
@@ -543,6 +543,10 @@ Proof.
       wp_apply wp_slice_len.
       wp_pures.
       wp_loadField.
+      rewrite -(Qp_div_2 q).
+      iEval (setoid_rewrite is_block_fractional) in "His_blocks".
+      iEval (rewrite big_sepL2_sep) in "His_blocks".
+      iDestruct "His_blocks" as "(His_blocks1&His_blocks2)".
       destruct (list_lookup_lt _ bks (int.nat (word.sub off addr_s.(Slice.sz)))) as [blk Hlookup].
       {
         assert (word.sub off (addr_s.(Slice.sz)) =
@@ -552,7 +556,7 @@ Proof.
       }
       wp_apply (wp_SliceGet _ _ _ _ _ _ _ blk with "[$Hbuffered //]").
       iIntros "Hbuffered"; iNamed 1.
-      iSplitR "Hdurable addrs Haddrs Haddrs_small buffered Hbuffered His_blocks HP"; last first.
+      iSplitR "Hdurable addrs Haddrs Haddrs_small buffered Hbuffered His_blocks1 HP"; last first.
       { iMod (own_disc_fupd_elim with "HP"). iModIntro. iNext. iExists _. iFrame.
         iExists _, _, _, _. iFrame. eauto. }
       iModIntro.
@@ -566,23 +570,26 @@ Proof.
       iNamed 1.
       iApply "HQ".
       rewrite lookup_app_r; last word.
-      rewrite Hlookup.
-      (* XXX: need to do the word arithmetic to rewrite here, and should
-         have saved a fraction from the big_sepL of is_blocks; spec needs to only give
-         is_block for some q. *)
-Qed.
+      iDestruct (big_sepL2_lookup_1_some with "[$]") as %Hlookup2; eauto.
+      destruct Hlookup2 as (?&Hlookup2).
+      iDestruct (big_sepL2_lookup with "[$]") as "Hlookup"; eauto.
+      assert (int.nat off - length σ.(inode.durable_blocks) =
+              int.nat (word.sub off addr_s.(Slice.sz)))%nat as Heq_word.
+      { word. }
+      rewrite Heq_word Hlookup2. eauto.
+Admitted.
 
 Theorem wpc_Inode__Read_triple {k E2} {l k' P addr} {off: u64} Q :
   (S k < k')%nat →
   {{{ "Hinode" ∷ is_inode l (S k') P addr ∗
       "Hfupd" ∷ (∀ σ σ' mb,
-        ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
+        ⌜σ' = σ ∧ mb = (σ.(inode.durable_blocks) ++ σ.(inode.buffered_blocks)) !! int.nat off⌝ ∗
         ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q mb)
   }}}
     Inode__Read #l #off @ NotStuck; (S k); ⊤; E2
   {{{ s mb, RET slice_val s;
       (match mb with
-       | Some b => is_block s 1 b
+       | Some b => ∃ q, is_block s q b
        | None => ⌜s = Slice.nil⌝
        end) ∗ Q mb }}}
   {{{ True }}}.
@@ -626,24 +633,34 @@ Proof.
   iNamed "Hlockinv".
   iDestruct (is_slice_sz with "Haddrs") as %Haddrs_sz.
   iDestruct (is_inode_durable_size with "Hdurable") as %Hblocks_length.
+  iDestruct "Hbuffered" as (q) "(Hbuffered&His_blocks)".
+  iDestruct (is_slice_small_sz with "Hbuffered") as %Hbuf_sz.
 
   iRight in "Hfupd".
-  iMod ("Hfupd" $! σ addr_s.(Slice.sz) with "[$HP]") as "[HP HQ]".
+  iMod ("Hfupd" $! σ (word.add addr_s.(Slice.sz) buffered_s.(Slice.sz)) with "[$HP]") as "[HP HQ]".
   { iPureIntro.
     rewrite /inode.size.
     autorewrite with len in Haddrs_sz.
-    rewrite -Haddrs_sz //. }
+    autorewrite with len in Hbuf_sz.
+    rewrite word.unsigned_add. admit.
+    (* rewrite -Haddrs_sz //. *)
+  }
 
   iMod (fupd_later_to_disc with "HP") as "HP".
   iCache with "HQ Hdurable HP".
-  { iLeft in "HQ". iModIntro. eauto 10 with iFrame. }
+  { iLeft in "HQ". iModIntro. iNext. iFrame. iExists _. iFrame.
+    iExists _. eauto. }
   iApply wpc_fupd.
   wpc_frame.
   wp_loadField.
   wp_apply wp_slice_len.
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_pures.
   iNamed 1.
-  iSplitR "HP addrs Haddrs Hdurable"; last first.
-  { iMod (own_disc_fupd_elim with "HP") as "HP". iModIntro. eauto 10 with iFrame.  }
+  iSplitR "HP addrs Haddrs Hdurable buffered Hbuffered His_blocks"; last first.
+  { iMod (own_disc_fupd_elim with "HP") as "HP". iModIntro. iNext.
+    iExists _; iFrame. iExists _, _, _, _. iFrame. eauto. }
   iIntros "!> His_locked".
   iSplit; first by iLeft in "HQ".
   iCache with "HQ"; first by iLeft in "HQ".
@@ -654,7 +671,7 @@ Proof.
   wp_pures.
   iNamed 1.
   by iRight in "HQ".
-Qed.
+Admitted.
 
 Theorem wpc_Inode__Size_triple {k E2} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
   (S k < k')%nat →
@@ -759,6 +776,19 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
       ▷ Palloc σ ={E}=∗ ▷ Palloc (<[a:=block_used]> σ)).
 
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
+
+Theorem wpc_Inode__Append {k E2} {l k' P addr} q (b_s: Slice.t) (b0: Block) :
+  (S k < k')%nat →
+  ∀ Φ Φc,
+      "Hinode" ∷ is_inode l (S k') P addr ∗
+      "Hbdata" ∷ is_block b_s q b0 ∗
+      "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ (Φ #false ∧ ∀ σ σ',
+        ⌜σ' = set inode.buffered_blocks (λ bs, bs ++ [b0]) σ⌝ -∗
+        ⌜inode.wf σ⌝ -∗
+         ▷ P σ ={⊤}=∗ ▷ P σ' ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
+  WPC Inode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+Proof. Abort.
+
 
 Theorem wpc_Inode__Append {k E2}
         {l k' P addr}
