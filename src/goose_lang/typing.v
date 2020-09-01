@@ -15,6 +15,7 @@ Section val_types.
   | byteBT
   | boolBT
   | unitBT
+  | funcBT
   | stringBT.
 
   Inductive ty :=
@@ -33,6 +34,7 @@ Section val_types.
   Definition byteT   := baseT byteBT.
   Definition boolT   := baseT boolBT.
   Definition unitT   := baseT unitBT.
+  Definition funcT   := baseT funcBT.
   Definition stringT := baseT stringBT.
   Definition u8T := byteT.
 
@@ -94,6 +96,7 @@ Section goose_lang.
     | baseT byteBT => #(U8 0)
     | baseT boolBT => #false
     | baseT unitBT => #()
+    | baseT funcBT => #()
     | baseT stringT => #(str"")
     | mapValT vt => MapNilV (zero_val vt)
     | prodT t1 t2 => (zero_val t1, zero_val t2)
