@@ -76,7 +76,7 @@ Qed.
 
 (* XXX: from append_log_example but maybe this just needs to be defined in some kind of disk.v prelude *)
 Definition blocks_slice (bk_s: Slice.t) (bks: list Slice.t) (bs: list Block): iProp Σ :=
-  ∃ q, is_slice_small bk_s (slice.T byteT) 1 bks ∗
+  ∃ q, is_slice bk_s (slice.T byteT) 1 bks ∗
    [∗ list] _ ↦ b_s;b ∈ bks;bs , is_block b_s q b.
 
 Lemma blocks_slice_length bk_s bks bs :
@@ -91,7 +91,7 @@ Lemma blocks_slice_length' bk_s bks bs :
   blocks_slice bk_s bks bs -∗ ⌜length bks = int.nat bk_s.(Slice.sz)⌝.
 Proof.
   iDestruct 1 as (?) "(Hs&_)".
-  iDestruct (is_slice_small_sz with "Hs") as "%".
+  iDestruct (is_slice_sz with "Hs") as "%".
   eauto.
 Qed.
 
@@ -286,7 +286,7 @@ Proof.
   iSplitR ""; last first.
   { rewrite /blocks_slice.
     iExists 1%Qp. rewrite big_sepL2_nil. rewrite right_id.
-    by iApply is_slice_small_nil. }
+    by iApply is_slice_nil. }
   iExists _. iFrame "% ∗".
   iPureIntro; eauto.
 Qed.
@@ -432,7 +432,7 @@ Proof.
   iDestruct (blocks_slice_length' with "Hbuffered") as %Hlen4.
   iDestruct "Hbuffered" as (q) "(Hbuffered&His_blocks)".
   wp_loadField.
-  iDestruct (is_slice_small_sz with "Hbuffered") as %Hlen5.
+  iDestruct (is_slice_sz with "Hbuffered") as %Hlen5.
   autorewrite with len in Hlen3.
   wp_apply wp_slice_len.
   wp_pures.
@@ -554,8 +554,10 @@ Proof.
         { admit. }
         admit.
       }
-      wp_apply (wp_SliceGet _ _ _ _ _ _ _ blk with "[$Hbuffered //]").
+      iDestruct (is_slice_small_read with "Hbuffered") as "(Hbuffered_small&Hbuffered_wand)".
+      wp_apply (wp_SliceGet _ _ _ _ _ _ _ blk with "[$Hbuffered_small //]").
       iIntros "Hbuffered"; iNamed 1.
+      iDestruct ("Hbuffered_wand" with "[$]") as "Hbuffered".
       iSplitR "Hdurable addrs Haddrs Haddrs_small buffered Hbuffered His_blocks1 HP"; last first.
       { iMod (own_disc_fupd_elim with "HP"). iModIntro. iNext. iExists _. iFrame.
         iExists _, _, _, _. iFrame. eauto. }
@@ -634,7 +636,7 @@ Proof.
   iDestruct (is_slice_sz with "Haddrs") as %Haddrs_sz.
   iDestruct (is_inode_durable_size with "Hdurable") as %Hblocks_length.
   iDestruct "Hbuffered" as (q) "(Hbuffered&His_blocks)".
-  iDestruct (is_slice_small_sz with "Hbuffered") as %Hbuf_sz.
+  iDestruct (is_slice_sz with "Hbuffered") as %Hbuf_sz.
 
   iRight in "Hfupd".
   iMod ("Hfupd" $! σ (word.add addr_s.(Slice.sz) buffered_s.(Slice.sz)) with "[$HP]") as "[HP HQ]".
@@ -775,6 +777,17 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
       ⌜σ !! a = Some block_reserved⌝ -∗
       ▷ Palloc σ ={E}=∗ ▷ Palloc (<[a:=block_used]> σ)).
 
+Lemma is_inode_durable_append addr addrs b0 σ :
+  (inode.wf (set inode.buffered_blocks (λ bs : list Block, bs ++ [b0]) σ)) →
+  is_inode_durable addr (set inode.buffered_blocks (λ bs : list Block, bs ++ [b0]) σ) addrs ≡
+  is_inode_durable addr σ addrs.
+Proof.
+  rewrite /is_inode_durable //=. iIntros (Hwf).
+  f_equiv => ?. f_equiv. rewrite /inode.wf.
+  iSplit; iIntros (Hle); try eauto.
+  iPureIntro. rewrite /= app_length in Hle. lia.
+Qed.
+
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
 
 Theorem wpc_Inode__Append {k E2} {l k' P addr} q (b_s: Slice.t) (b0: Block) :
@@ -787,9 +800,99 @@ Theorem wpc_Inode__Append {k E2} {l k' P addr} q (b_s: Slice.t) (b0: Block) :
         ⌜inode.wf σ⌝ -∗
          ▷ P σ ={⊤}=∗ ▷ P σ' ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
   WPC Inode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
-Proof. Abort.
+Proof.
+  iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
+  iNamed "Hinode". iNamed "Hro_state".
+  rewrite /Inode__Append.
+  wpc_pures; first by iLeft in "Hfupd".
+  wpc_pures; first by iLeft in "Hfupd".
+  iCache with "Hfupd"; first by iLeft in "Hfupd".
+  wpc_frame_seq.
+  wp_loadField.
+  wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
+  iIntros "His_locked".
+  iNamed 1.
+  wpc_pures.
+  wpc_bind_seq.
+  crash_lock_open "His_locked".
+  iDestruct 1 as (σ) "(>Hlockinv&HP)".
+  iEval (rewrite /named) in "HP".
+  iNamed "Hlockinv".
+  iNamed "Hlockinv".
+  iMod (fupd_later_to_disc with "HP") as "HP".
+  iApply wpc_fupd.
+  iCache with "Hfupd HP Hdurable".
+  { iLeft in "Hfupd". iModIntro. iNext. iFrame. iExists _; iFrame. iExists _. iFrame. }
+  wpc_frame.
 
+  iDestruct (is_slice_sz with "Haddrs") as %Haddrs_sz.
+  iDestruct (blocks_slice_length with "Hbuffered") as %Hlen3.
+  iDestruct (blocks_slice_length' with "Hbuffered") as %Hlen4.
+  iDestruct "Hbuffered" as (q') "(Hbuffered&His_blocks)".
+  iDestruct (is_slice_sz with "Hbuffered") as %Hbuf_sz.
+  rewrite /Inode__append.
+  wp_pures.
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_if_destruct.
+  - iNamed 1.
+    iMod (own_disc_fupd_elim with "HP") as "HP".
+    iModIntro.
+    iSplitR "HP addrs Haddrs Hdurable buffered His_blocks Hbuffered"; last first.
+    { iNext. iExists _; iFrame "HP". iExists _, _, _, _. iFrame. eauto. }
+    iIntros "His_locked". iSplit; first by iLeft in "Hfupd".
+    wpc_pures.
+    wpc_frame.
+    wp_loadField.
+    wp_apply (crash_lock.release_spec with "His_locked"); auto.
+    wp_pures.
+    iNamed 1. iRight in "Hfupd". by iLeft in "Hfupd".
+  - wp_loadField.
+    wp_apply (@wp_SliceAppend with "Hbuffered").
+    iIntros (buffered_s').
+    iIntros "Hbuffered".
+    wp_apply (wp_storeField with "buffered").
+    { rewrite /field_ty/Inode.S //=. apply slice_val_ty. (* XXX: why doesn't automation find this? *) }
+    iIntros "buffered". wp_pures.
+    iNamed 1.
+    iRight in "Hfupd". iRight in "Hfupd".
+    iMod (own_disc_fupd_elim with "HP") as "HP".
+    iMod ("Hfupd" $! _ _ with "[//] [//] HP") as "(HP&HΦ)".
+    iModIntro.
+    iSplitR "HP addrs Haddrs Hdurable buffered His_blocks Hbuffered Hbdata"; last first.
+    { iNext. iExists _; iFrame "HP". iExists _, _, _, _. iFrame.
+      iApply wlog_assume_l.
+      { rewrite /inode.wf /=.
+        autorewrite with len; simpl.
+        rewrite /InodeMaxBlocks.
+        admit.
+      }
+      iIntros (Hwf').
+      rewrite is_inode_durable_append //. iFrame.
+      assert (∃ qmin qrest qrest', q = qmin + qrest ∧ q' = qmin + qrest')%Qp as (qmin&qrest&qrest'&Hqrest&Hqrest').
+      { admit. }
+      rewrite Hqrest Hqrest'. iExists qmin.
+      rewrite big_sepL2_snoc. iSplitR "Hbdata"; last first.
+      { rewrite is_block_fractional. iDestruct "Hbdata" as "($&_)". }
+      iApply (big_sepL2_mono with "His_blocks").
+      iIntros (?????) "H".
+      { rewrite is_block_fractional. iDestruct "H" as "($&_)". }
+    }
+    iIntros "His_locked". iSplit; first by iLeft in "HΦ".
+    iCache with "HΦ"; first by iLeft in "HΦ".
+    wpc_frame.
+    wp_pures.
+    wp_loadField.
+    wp_apply (crash_lock.release_spec with "His_locked"); auto.
+    wp_pures.
+    iNamed 1.
+    by iRight in "HΦ".
+Admitted.
 
+(* this is the old sync append spec, now closer to what flush spec is going to look like *)
 Theorem wpc_Inode__Append {k E2}
         {l k' P addr}
         (* allocator stuff *)

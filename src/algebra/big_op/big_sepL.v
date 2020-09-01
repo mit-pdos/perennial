@@ -165,6 +165,28 @@ Section list2.
         iApply ("IH" with "Hl").
   Qed.
 
+  Lemma big_sepL2_snoc Φ x1 x2 l1 l2 :
+    ([∗ list] k↦y1;y2 ∈ (l1 ++ [x1]);(l2 ++ [x2]), Φ k y1 y2) ⊣⊢
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ∗ Φ (length l1) x1 x2.
+  Proof.
+    revert Φ l2.
+    induction l1 => Φ l2 //=.
+    - destruct l2 => //=.
+      * rewrite left_id right_id //=.
+      * iSplit.
+        ** iIntros "(_&Hfalse)".
+           iExFalso. iDestruct (big_sepL2_length with "Hfalse") as %Hlen.
+           rewrite app_length /= in Hlen. lia.
+        ** iIntros "([]&?)".
+    - destruct l2 => //=.
+      * iSplit.
+        ** iIntros "(_&Hfalse)".
+           iExFalso. iDestruct (big_sepL2_length with "Hfalse") as %Hlen.
+           rewrite app_length /= in Hlen. lia.
+        ** iIntros "([]&?)".
+      * rewrite -assoc. f_equiv. eapply (IHl1 (λ k y1 y2, Φ (S k) y1 y2)).
+  Qed.
+
   Lemma big_sepL2_to_sepL_1 Φ l1 l2 :
     ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) -∗
     ([∗ list] k↦y1 ∈ l1, ∃ y2, ⌜l2 !! k = Some y2⌝ ∧ Φ k y1 y2).
