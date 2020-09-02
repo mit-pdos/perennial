@@ -1,4 +1,5 @@
 From Perennial.algebra Require Import auth_map.
+From Perennial.algebra Require Import liftable.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof.
@@ -68,6 +69,36 @@ Section goose_lang.
     (* TODO: allocate into buftxn_ctx, consume stable_maps_to into
     buftxn_maps_to *)
   Admitted.
+
+  Lemma stable_maps_to_conflicting γtxn :
+    Conflicting (stable_maps_to γtxn) (stable_maps_to γtxn).
+  Proof.
+  Admitted.
+
+  Theorem lift_liftable_into_txn `{!Liftable P}
+          γtxn γ bufs :
+    buftxn_ctx γ bufs -∗
+    P (stable_maps_to γtxn) ==∗
+    P (buftxn_maps_to γtxn γ) ∗ buftxn_ctx γ bufs.
+  Proof.
+    iIntros "Hctx HP".
+    iDestruct (liftable (P:=P) with "HP") as (m) "[Hm HP]".
+    { apply stable_maps_to_conflicting. }
+    iSpecialize ("HP" $! (buftxn_maps_to γtxn γ)).
+    iInduction m as [|i x m] "IH" using map_ind.
+    - iModIntro.
+      setoid_rewrite big_sepM_empty.
+      iSplitL "HP"; [ | iFrame ].
+      by iApply "HP".
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; auto.
+      iMod (lift_into_txn with "Hctx Hi") as "[Hi Hctx]".
+      iMod ("IH" with "Hctx Hm [Hi HP]") as "[$ $]".
+      + iIntros "Hm".
+        iApply "HP".
+        rewrite big_sepM_insert //.
+        iFrame.
+      + auto.
+  Qed.
 
   Definition is_object l a obj: iProp Σ :=
     ∃ dirty, is_buf l a
