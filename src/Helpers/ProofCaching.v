@@ -121,7 +121,7 @@ Declare Reduction cached_eval :=
 Ltac cached_eval t :=
   eval cached_eval in t.
 Ltac cached_reduce :=
-  match goal with |- ?u => let v := cached_eval u in convert_concl_no_check v end.
+  match goal with |- ?u => let v := cached_eval u in change_no_check v end.
 
 Ltac iCache_go P Hs pat :=
   let Hs := words Hs in
