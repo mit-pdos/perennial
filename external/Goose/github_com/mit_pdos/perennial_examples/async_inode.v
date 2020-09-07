@@ -71,42 +71,43 @@ Definition Inode__mkHdr: val :=
     let: "hdr" := marshal.Enc__Finish "enc" in
     "hdr".
 
-Definition reserveMany: val :=
-  rec: "reserveMany" "allocator" "n" :=
-    let: "failed" := ref_to boolT #false in
-    let: "allocated" := ref (zero_val (slice.T uint64T)) in
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < "n"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: ("a", "ok") := alloc.Allocator__Reserve "allocator" in
-      (if: ~ "ok"
-      then
-        "failed" <-[boolT] #true;;
-        Break
-      else "allocated" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "allocated") "a"));;
-    (if: ![boolT] "failed"
-    then
-      ForSlice uint64T <> "a" (![slice.T uint64T] "allocated")
-        (alloc.Allocator__Free "allocator" "a");;
-      (slice.nil, #false)
-    else (![slice.T uint64T] "allocated", #true)).
+(* appendOne durably extends the inode with the data in some address *)
+Definition Inode__appendOne: val :=
+  rec: "Inode__appendOne" "i" "a" :=
+    struct.storeF Inode.S "addrs" "i" (SliceAppend uint64T (struct.loadF Inode.S "addrs" "i") "a");;
+    let: "hdr" := Inode__mkHdr "i" in
+    disk.Write (struct.loadF Inode.S "addr" "i") "hdr".
+
+(* flushOne extends the on-disk inode with the next buffered write
+
+   assumes lock is held and that there is at least one buffered write *)
+Definition Inode__flushOne: val :=
+  rec: "Inode__flushOne" "i" "allocator" :=
+    let: ("a", "ok") := alloc.Allocator__Reserve "allocator" in
+    (if: ~ "ok"
+    then #false
+    else
+      let: "b" := SliceGet (slice.T byteT) (struct.loadF Inode.S "buffered" "i") #0 in
+      struct.storeF Inode.S "buffered" "i" (SliceSkip (slice.T byteT) (struct.loadF Inode.S "buffered" "i") #1);;
+      disk.Write "a" "b";;
+      Inode__appendOne "i" "a";;
+      #true).
 
 (* critical section for Flush
 
    assumes lock is held *)
 Definition Inode__flush: val :=
   rec: "Inode__flush" "i" "allocator" :=
-    let: ("addresses", "ok") := reserveMany "allocator" (slice.len (struct.loadF Inode.S "buffered" "i")) in
-    (if: ~ "ok"
+    Skip;;
+    (for: (λ: <>, slice.len (struct.loadF Inode.S "buffered" "i") > #0); (λ: <>, Skip) := λ: <>,
+      let: "ok" := Inode__flushOne "i" "allocator" in
+      (if: ~ "ok"
+      then Break
+      else #());;
+      Continue);;
+    (if: slice.len (struct.loadF Inode.S "buffered" "i") > #0
     then #false
-    else
-      ForSlice (slice.T byteT) "j" "buf" (struct.loadF Inode.S "buffered" "i")
-        (let: "a" := SliceGet uint64T "addresses" "j" in
-        disk.Write "a" "buf";;
-        struct.storeF Inode.S "addrs" "i" (SliceAppend uint64T (struct.loadF Inode.S "addrs" "i") "a"));;
-      let: "hdr" := Inode__mkHdr "i" in
-      disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
-      struct.storeF Inode.S "buffered" "i" slice.nil;;
-      #true).
+    else #true).
 
 (* Flush persists all allocated data atomically
 
