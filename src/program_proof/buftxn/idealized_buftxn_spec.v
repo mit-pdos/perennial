@@ -54,20 +54,19 @@ Section goose_lang.
       "bufs" ∷ readonly (l ↦[BufTxn.S :: "bufs"] #bufs_l) ∗
       "Htxn" ∷ is_txn txn_l γtxn ∗
       "Hbufs" ∷ is_bufmap bufs_l bufs ∗
-      "Hctx" ∷ buftxn_ctx γ bufs.
+      "Hctx" ∷ buftxn_ctx γ bufs ∗
+      "Hold_stable" ∷ ([∗ map] a↦_ ∈ bufs, ∃ obj0, stable_maps_to γtxn a obj0).
 
-  Definition buftxn_maps_to γtxn γ (a: addr) obj : iProp Σ :=
-    (∃ q, ptsto γ a q obj) ∗
-    ∃ obj0, stable_maps_to γtxn a obj0 ∗
-             ptsto γ a 1 obj.
+  Definition buftxn_maps_to γ (a: addr) obj : iProp Σ :=
+    ∃ q, ptsto γ a q obj.
 
   Theorem lift_into_txn γtxn γ bufs a obj :
     buftxn_ctx γ bufs -∗
     stable_maps_to γtxn a obj ==∗
-    buftxn_maps_to γtxn γ a obj ∗ buftxn_ctx γ bufs.
+    buftxn_maps_to γ a obj ∗ buftxn_ctx γ bufs.
   Proof.
     (* TODO: allocate into buftxn_ctx, consume stable_maps_to into
-    buftxn_maps_to *)
+    buftxn_ctx *)
   Admitted.
 
   Lemma stable_maps_to_conflicting γtxn :
@@ -79,12 +78,12 @@ Section goose_lang.
           γtxn γ bufs :
     buftxn_ctx γ bufs -∗
     P (stable_maps_to γtxn) ==∗
-    P (buftxn_maps_to γtxn γ) ∗ buftxn_ctx γ bufs.
+    P (buftxn_maps_to γ) ∗ buftxn_ctx γ bufs.
   Proof.
     iIntros "Hctx HP".
     iDestruct (liftable (P:=P) with "HP") as (m) "[Hm HP]".
     { apply stable_maps_to_conflicting. }
-    iSpecialize ("HP" $! (buftxn_maps_to γtxn γ)).
+    iSpecialize ("HP" $! (buftxn_maps_to γ)).
     iInduction m as [|i x m] "IH" using map_ind.
     - iModIntro.
       setoid_rewrite big_sepM_empty.
@@ -108,7 +107,7 @@ Section goose_lang.
 
   Theorem wp_BufTxn__ReadBuf l γtxn γ (a: addr) (sz: u64) obj :
     bufSz (objKind obj) = int.nat sz →
-    {{{ is_buftxn l γtxn γ ∗ buftxn_maps_to γtxn γ a obj }}}
+    {{{ is_buftxn l γtxn γ ∗ buftxn_maps_to γ a obj }}}
       BufTxn__ReadBuf #l (addr2val a) #sz
     {{{ (l:loc), RET #l; is_object l a obj }}}.
   Proof.
@@ -127,9 +126,9 @@ Section goose_lang.
           (data_s: Slice.t) q (data: list byte) obj0 obj :
     bufSz (objKind obj) = int.nat sz →
     data_has_obj data obj →
-    {{{ is_buftxn l γtxn γ ∗ buftxn_maps_to γtxn γ a obj0 ∗ is_slice data_s byteT q data }}}
+    {{{ is_buftxn l γtxn γ ∗ buftxn_maps_to γ a obj0 ∗ is_slice data_s byteT q data }}}
       BufTxn__OverWrite #l (addr2val a) (slice_val data_s)
-    {{{ RET #(); buftxn_maps_to γtxn γ a obj }}}.
+    {{{ RET #(); buftxn_maps_to γ a obj }}}.
   Proof.
   Admitted.
 
