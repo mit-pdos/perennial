@@ -892,34 +892,36 @@ Proof.
     by iRight in "HΦ".
 Admitted.
 
-(* this is the old sync append spec, now closer to what flush spec is going to look like *)
-Theorem wpc_Inode__Append {k E2}
+Theorem wpc_Inode__flushOne {k E2}
         {l k' P addr}
         (* allocator stuff *)
         {Palloc γalloc domain n}
-        (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
+        (alloc_ref: loc) (b_s: Slice.t) σ (b0: Block) bs :
+  σ.(inode.buffered_blocks) = b0 :: bs →
   (S k < n)%nat →
   (S k < k')%nat →
   nroot.@"readonly" ## allocN →
   nroot.@"readonly" ## inodeN →
   inodeN ## allocN →
   ∀ Φ Φc,
+      "Hlockinv" ∷ inode_linv l addr σ ∗
+      "HP" ∷ P σ ∗
       "Hinode" ∷ is_inode l (S k') P addr ∗
-      "Hbdata" ∷ is_block b_s q b0 ∗
       "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
       "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
       "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗
-      "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ (Φ #false ∧ ∀ σ σ' addr',
-        ⌜σ' = set inode.blocks (λ bs, bs ++ [b0])
-                              (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
+      "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ (Φ #false ∧ ∀ addr',
+        let σ' :=
+          set inode.buffered_blocks (λ _, bs)
+               (set inode.durable_blocks (λ bs, bs ++ [b0]) (set inode.addrs ({[addr']} ∪.) σ)) in
         ⌜inode.wf σ⌝ -∗
         ∀ s,
         ⌜s !! addr' = Some block_reserved⌝ -∗
          ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN}=∗
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
-  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+  WPC Inode__flushOne #l #alloc_ref @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (????? Φ Φc) "Hpre"; iNamed "Hpre".
+  iIntros (Hbuf_list ????? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call.
   { iLeft in "Hfupd"; auto. }
@@ -930,7 +932,7 @@ Proof.
   wpc_frame_seq.
   wp_apply (wp_Reserve _ _ _ (λ ma, emp)%I with "[$Halloc]"); auto.
   { (* Reserve fupd *)
-    iIntros (σ σ' ma Htrans) "HP".
+    iIntros (σa σa' ma Htrans) "HP".
     iMod ("Halloc_fupd" with "[] HP"); eauto. }
   iIntros (a ok) "Hblock".
   iNamed 1.
@@ -940,7 +942,41 @@ Proof.
     iRight in "Hfupd".
     by iLeft in "Hfupd".
   - iDestruct "Hblock" as "[_ Hb]".
+    iNamed "Hlockinv".
     wpc_pures.
+    wpc_bind_seq.
+    wpc_frame.
+
+    wp_loadField.
+
+    iDestruct (is_inode_durable_size with "Hdurable") as %Hlendurable.
+    iDestruct (blocks_slice_length with "Hbuffered") as %Hlen.
+    iDestruct (blocks_slice_length' with "Hbuffered") as %Hlen'.
+    iDestruct "Hbuffered" as (q') "(Hbuffered&His_blocks)".
+    iDestruct (is_slice_small_read with "Hbuffered") as "(Hbuffered_small&Hbuffered_wand)".
+    iDestruct (big_sepL2_lookup_2_some _ _ _ O with "His_blocks") as "%Hblock_lookup"; eauto.
+    { rewrite Hbuf_list //. }
+    destruct Hblock_lookup as (blk&Hblock_lookup).
+    wp_apply (wp_SliceGet _ _ _ _ 1%Qp bks _ _ with "[$Hbuffered_small]").
+    { iPureIntro; eauto. }
+    iIntros "Hbuffered_small".
+    iNamed 1.
+    wpc_pures.
+
+    wpc_bind_seq.
+    wpc_frame.
+    wp_loadField.
+    wp_apply (wp_SliceSkip').
+    { iPureIntro.
+      cut (1 ≤ int.nat buffered_s.(Slice.sz)); first by word.
+      rewrite -Hlen' Hlen Hbuf_list /=. lia.
+    }
+    wp_apply (wp_storeField with "buffered").
+    { rewrite /field_ty/Inode.S //=. apply slice_val_ty. (* XXX: why doesn't automation find this? *) }
+    iIntros "buffered".
+    iNamed 1.
+    wpc_pures.
+
     wpc_bind_seq.
     iApply (prepare_reserved_block_reuse with "Hb"); auto.
     { lia. }
@@ -955,8 +991,13 @@ Proof.
       iApply block_cinv_free_pred.
       iExists _; iFrame. }
 
+
     iCache with "Hfupd Hb".
     {  iLeft in "Hfupd". iModIntro. iApply "Hbc". by iFrame. }
+
+    iDestruct (big_sepL2_lookup_acc with "His_blocks") as "[Hbdata His_blocks_wand]"; eauto.
+    { rewrite Hbuf_list /=; eauto. }
+
     wpc_apply (wpc_Write' with "[$Hb $Hbdata]").
     iSplit.
     { iLeft in "Hfupd". iModIntro. iNext. iIntros "[Hb|Hb]"; try iFromCache.
@@ -974,172 +1015,105 @@ Proof.
     iIntros "Hreserved".
     iSplit; first iFromCache.
     wpc_pures.
+    wpc_call.
+
+    wpc_bind_seq.
     wpc_frame_seq.
     wp_loadField.
-    wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
-    iIntros "His_locked". iNamed 1.
-    wpc_pures.
-    wpc_bind_seq.
-    crash_lock_open "His_locked".
-    iDestruct 1 as (σ) "(>Hlockinv&HP)".
-    iApply wpc_fupd.
-    iEval (rewrite /named) in "HP".
-    iMod (fupd_later_to_disc with "HP") as "HP".
-    do 2 iNamed "Hlockinv".
-    iCache with "Hfupd HP Hdurable".
-    { iLeft in "Hfupd". iModIntro. iNext. iFrame.
-      iExists _; iFrame.
-      iExists _; iFrame. }
-    iDestruct (is_slice_sz with "Haddrs") as %Hlen1.
-    autorewrite with len in Hlen1.
-    iDestruct (is_inode_durable_size with "Hdurable") as %Hlen2.
-    wpc_call.
-    wpc_bind (slice.len _ ≥ _)%E.
-    wpc_frame.
-    wp_loadField.
-    wp_apply wp_slice_len; wp_pures.
+    wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
+    iIntros (addr_s') "Haddrs".
+    Transparent slice.T.
+    wp_storeField.
+    Opaque slice.T.
     iNamed 1.
-    wpc_if_destruct.
-    + iApply wpc_fupd. wpc_pures.
-      iSplitR "HP Hdurable addrs Haddrs"; last first.
-      { iExists _; iFrame.
-        iMod (own_disc_fupd_elim with "HP"). do 2 iModIntro. iNext.
-        iFrame. iExists _, _; iFrame "∗ %". }
-      do 2 iModIntro.
-      iIntros "His_locked".
-      iSplit; first iFromCache.
-      wpc_pures.
-      wpc_frame_seq.
-      wp_loadField.
-      wp_apply (crash_lock.release_spec with "His_locked"); auto.
-      iNamed 1.
-      wpc_pures.
-      wpc_frame_seq.
-      wp_apply (wp_Free _ _ _ emp with "[$Halloc Hreserved]").
-      { auto. }
-      { auto. }
-      { iSplitL "Hreserved".
-        { iApply (reserved_block_weaken with "[] [] Hreserved").
-          { rewrite /Ψ. eauto. }
-          { rewrite /Ψ/block_cinv. iNext. eauto. }
-        }
-        iIntros (σ' Hreserved) "HP".
-        iMod ("Hfree_fupd" with "[//] HP") as "$".
-        auto. }
-      iIntros "_".
-      wp_pures.
-      iNamed 1.
-      wpc_pures.
-      iRight in "Hfupd".
-      by iLeft in "Hfupd".
-    + wpc_pures.
-      wpc_frame_seq.
-      wp_loadField.
-      wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
-      iIntros (addr_s') "Haddrs".
-      Transparent slice.T.
-      wp_storeField.
-      Opaque slice.T.
-      iNamed 1.
-      wpc_pures.
-      wpc_frame_seq.
-      wp_apply (wp_Inode__mkHdr with "[$addrs $Haddrs]").
-      { autorewrite with len; simpl.
-        word. }
-      iIntros (s b') "(Hb&%Hencoded'&?&?)"; iNamed.
-      iNamed 1.
-      wpc_pures.
-      wpc_loadField.
+    wpc_pures.
+    wpc_frame_seq.
+    wp_apply (wp_Inode__mkHdr with "[$addrs $Haddrs]").
+    { autorewrite with len; simpl.
+      rewrite /inode.wf in Hwf.
+      rewrite Hbuf_list /= in Hwf.
+      lia. }
+    iIntros (s b') "(Hb&%Hencoded'&?&?)"; iNamed.
+    iNamed 1.
+    wpc_pures.
+    wpc_loadField.
 
-      iApply (prepare_reserved_block with "Hreserved"); auto; try lia.
-      iSplit; first iFromCache.
-      iIntros ">Hda Hreserved".
-      wpc_bind (Write _ _).
-      (* hide this horrible postcondition for now *)
-      match goal with
-      | |- envs_entails _ (wpc _ _ _ _ _ ?Φ0 _) => set (Φ':=Φ0)
-      end.
-      wpc_apply (wpc_Write_fupd with "[$Hb]").
-      iSplit.
-      { iLeft in "Hfupd". iModIntro. iNext. iSplitR "Hda".
-        * iFrame. iExists _; iFrame. iExists _; iFrame.
-        * iApply block_cinv_free_pred. iExists _; iFrame. }
-      iNamed "Hdurable".
-      iRight in "Hfupd".
-      set (σ':=set inode.blocks (λ bs : list Block, bs ++ [b0])
-                   (set inode.addrs (union {[a]}) σ)).
-      iRight in "Hfupd".
-      iSpecialize ("Hfupd" $! σ σ' a with "[% //] [% //]").
+    iApply (prepare_reserved_block with "Hreserved"); auto; try lia.
+    iSplit; first iFromCache.
+    iIntros ">Hda Hreserved".
+    (* hide this horrible postcondition for now *)
+    match goal with
+    | |- envs_entails _ (wpc _ _ _ _ _ ?Φ0 _) => set (Φ':=Φ0)
+    end.
+    wpc_apply (wpc_Write_fupd with "[$Hb]").
+    iSplit.
+    { iLeft in "Hfupd". iModIntro. iNext. iSplitR "Hda".
+      * iFrame.
+      * iApply block_cinv_free_pred. iExists _; iFrame. }
+    iNamed "Hdurable".
+    iRight in "Hfupd".
+    iRight in "Hfupd".
+    set (σ' := (set inode.buffered_blocks (λ _ : list Block, bs)
+                                              (set inode.durable_blocks (λ bs0 : list Block, bs0 ++ [b0])
+                                                 (set inode.addrs (union {[a]}) σ)))).
+    iSpecialize ("Hfupd" $! a with "[% //]").
 
-      iMod (mark_used _ _ _ _ _ _ (▷ P σ' ∗ (<disc> ▷ Φc ∧ Φ #true))%I with "Hreserved [HP Hfupd]") as "Hget_used".
-      { solve_ndisj. }
-      { clear.
-        iIntros (s Hreserved) "HPalloc".
-        iMod (own_disc_fupd_elim with "HP") as "HP".
-        iMod ("Hfupd" with "[% //] [$HP $HPalloc]") as "(HP&HPalloc&HQ)".
-        iFrame. eauto. }
+    iMod (mark_used _ _ _ _ _ _ (▷ P σ' ∗ (<disc> ▷ Φc ∧ Φ #true))%I with "Hreserved [HP Hfupd]") as "Hget_used".
+    { solve_ndisj. }
+    { clear.
+      iIntros (s Hreserved) "HPalloc".
+      iMod ("Hfupd" with "[% //] [$HP $HPalloc]") as "(HP&HPalloc&HQ)".
+      iFrame. eauto. }
 
-      iModIntro.
-      iExists _; iFrame.
-      iNext.
-      iIntros "Hhdr".
-      iMod "Hget_used" as "[ (HP&HQ) Hused]".
-      iAssert (is_inode_durable addr
-                 (set inode.blocks (λ bs : list Block, bs ++ [b0])
-                      (set inode.addrs (union {[a]}) σ))
-                 (addrs ++ [a]))
-              with "[Hhdr Hdata Hda]" as "Hdurable".
-      { iExists _; iFrame "∗ %".
-        iSplitR.
-        { iPureIntro.
-          rewrite /inode.wf /=.
-          autorewrite with len; simpl.
-          word. }
-        iSplitR.
-        { iPureIntro.
-          simpl.
-          rewrite list_to_set_app_L.
-          simpl.
-          set_solver. }
-        simpl; auto. }
-      iDestruct (is_inode_durable_wf with "Hdurable") as %Hwf'.
-      iCache (<disc> ▷ Φc)%I with "HQ".
-      { by iLeft in "HQ". }
-      iMod (fupd_later_to_disc with "HP") as "HP".
-      iModIntro.
-      match goal with
-      | |- envs_entails _ (<disc> (▷ (?P ∗ _)) ∧ _) =>
-        iCache (<disc> ▷ P)%I with "HQ HP Hdurable"
-      end.
-      { iLeft in "HQ". iModIntro. iNext. iFrame. iExists _; iFrame.
-        iExists _; iFrame. }
-      iCache (block_cinv Ψ γalloc a) with "Hused".
-      { iApply block_cinv_from_used; iFrame. }
-      iSplit.
-      { iLeft in "HQ". iModIntro. iNext. iFrame. iExists _. iFrame. iExists _; iFrame. }
-      iIntros "Hb".
-      subst Φ'; cbv beta.
-      (* done applying wpc_Write_fupd *)
+    iModIntro.
+    iExists _; iFrame.
+    iNext.
+    iIntros "Hhdr".
+    iMod "Hget_used" as "[ (HP&HQ) Hused]".
+    iAssert (is_inode_durable addr
+              (set inode.buffered_blocks (λ _ : list Block, bs)
+               (set inode.durable_blocks (λ bs : list Block, bs ++ [b0])
+                    (set inode.addrs (union {[a]}) σ)))
+               (addrs ++ [a]))
+            with "[Hhdr Hdata Hda]" as "Hdurable".
+    { iExists _; iFrame "∗ %".
+      iSplitR.
+      { iPureIntro.
+        rewrite /inode.wf /= in Hwf *.
+        rewrite Hbuf_list /= in Hwf *.
+        autorewrite with len; simpl.
+        lia. }
+      iSplitR.
+      { iPureIntro.
+        simpl.
+        rewrite list_to_set_app_L.
+        simpl.
+        set_solver. }
+      simpl; auto. }
+    iDestruct (is_inode_durable_wf with "Hdurable") as %Hwf'.
+    iCache (<disc> ▷ Φc)%I with "HQ".
+    { by iLeft in "HQ". }
+    iMod (fupd_later_to_disc with "HP") as "HP".
+    iModIntro.
+    match goal with
+    | |- envs_entails _ (<disc> (▷ (?P ∗ _)) ∧ _) =>
+      iCache (<disc> ▷ P)%I with "HQ HP Hdurable"
+    end.
+    { iLeft in "HQ". iModIntro. iNext. iFrame. }
+    iCache (block_cinv Ψ γalloc a) with "Hused".
+    { iApply block_cinv_from_used; iFrame. }
+    iSplit.
+    { iLeft in "HQ". iModIntro. iNext. iFrame. }
+    iIntros "Hb".
+    subst Φ'; cbv beta.
+    (* done applying wpc_Write_fupd *)
+    iSplitR "Hused"; last (iFromCache).
 
-      wpc_pures.
-      { iLeft in "HQ". iModIntro. iNext. iFrame. iExists _. iFrame. iExists _; iFrame. }
-      iSplitR "Hused"; last (iFromCache).
-      iSplit.
-      { iLeft in "HQ". iModIntro. iNext. iFrame. iExists _. iFrame. iExists _; iFrame. }
-      iSplitR "HP Haddrs addrs Hdurable"; last first.
-      { iMod (own_disc_fupd_elim with "HP") as "HP". iExists _; iFrame. iModIntro. iNext.
-        iExists _, _; iFrame "∗ %". }
-      iModIntro.
-      iIntros "His_locked".
-      iSplit; first iFromCache.
-      wpc_pures.
-      wpc_frame_seq.
-      wp_loadField.
-      wp_apply (crash_lock.release_spec with "His_locked"); auto.
-      iNamed 1.
-      wpc_pures.
-      (* RALF: we are throwing away an [is_block] here. *)
-      by iRight in "HQ".
+    iSplit.
+    { iLeft in "HQ". iModIntro. iNext. iFrame. }
+
+    wpc_pures.
+    { by iRight in "HQ". }
 Qed.
 
 Theorem wpc_Inode__Append_triple {k E2}
