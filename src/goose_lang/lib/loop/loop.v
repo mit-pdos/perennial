@@ -116,6 +116,52 @@ Qed.
 Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
 iExists _; iFrame; iPureIntro; word : core.
 
+Theorem wpc_forBreak_cond (I: bool -> iProp Σ) Ic stk k E1 E2 (cond body: val) :
+  (∀ b, I b -∗ <disc> Ic) →
+  {{{ I true }}}
+    if: cond #() then body #() else #false @ stk; k; E1; E2
+  {{{ r, RET #r; I r }}}
+  {{{ Ic }}} -∗
+  {{{ I true }}}
+    (for: cond; (λ: <>, (λ: <>, #())%V #())%V :=
+       body) @ stk; k; E1; E2
+  {{{ RET #(); I false }}}
+  {{{ Ic }}}.
+Proof.
+  iIntros (Hcrash) "#Hbody".
+  iIntros (Φ Φc) "!> I HΦ".
+  rewrite /For.
+  wpc_pures.
+  { iLeft in "HΦ". iDestruct (Hcrash with "[$]") as "H". iModIntro. iNext.
+    by iApply "HΦ". }
+  iCache with "I HΦ".
+  { iLeft in "HΦ". iDestruct (Hcrash with "[$]") as "H". iModIntro. iNext.
+    by iApply "HΦ". }
+  do 5 (wpc_pure _ _; first by iFromCache).
+  iLöb as "IH".
+  wpc_pures.
+  wpc_bind_seq.
+  iDestruct ("Hbody" with "I") as "Hbody1".
+  wpc_apply "Hbody1".
+  iSplit.
+  { by iLeft in "HΦ". }
+  iNext.
+  iIntros (r) "Hr".
+  destruct r.
+  - iCache with "HΦ Hr".
+    { iLeft in "HΦ". iDestruct (Hcrash with "[$]") as "H". iModIntro. iNext.
+        by iApply "HΦ". }
+    do 7 (wpc_pure _ _; first by iFromCache).
+    iDestruct ("IH" with "Hr HΦ") as "IH1".
+    iApply "IH1".
+  - iCache with "HΦ Hr".
+    { iLeft in "HΦ". iDestruct (Hcrash with "[$]") as "H". iModIntro. iNext.
+        by iApply "HΦ". }
+    wpc_pures.
+    iApply "HΦ".
+    iApply "Hr".
+Qed.
+
 Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 E2 (start max:u64) (l:loc) (body: val) :
   int.val start <= int.val max ->
   (∀ (i:u64), ⌜int.val start ≤ int.val i ≤ int.val max⌝ -∗ I i -∗ <disc> I' i) →
