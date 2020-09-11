@@ -51,7 +51,8 @@ From Goose.github_com.mit_pdos Require
      goose_nfsd.txn
      goose_nfsd.alloc
      goose_nfsd.buftxn
-     goose_nfsd.kvs.
+     goose_nfsd.kvs
+     goose_nfsd.simple.
 
 (* examples goose output *)
 From Goose.github_com.mit_pdos Require
