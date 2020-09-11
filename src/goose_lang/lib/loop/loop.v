@@ -116,8 +116,48 @@ Qed.
 Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
 iExists _; iFrame; iPureIntro; word : core.
 
+Theorem wpc_forBreak_cond' (I: bool -> iProp Σ) Ic Φ Φc stk k E1 E2 (cond body: val) :
+  (∀ b, I b -∗ <disc> ▷ Ic) -∗
+  <disc> ▷ (Ic -∗ Φc) ∧ ▷ (I false -∗ Φ #()) -∗
+  □ (I true -∗
+     WPC if: cond #() then body #() else #false @ stk; k; E1; E2
+     {{ v, ∃ b : bool, ⌜ v = #b ⌝ ∧ I b }}
+     {{ Ic }}) -∗
+  I true -∗
+  WPC (for: cond; (λ: <>, (λ: <>, #())%V #())%V := body) @ stk; k; E1; E2
+  {{ Φ }}
+  {{ Φc }}.
+Proof.
+  iIntros "HIc HΦ #Hbody I".
+  rewrite /For.
+  iCache with "HIc I HΦ".
+  { iLeft in "HΦ". iDestruct ("HIc" with "[$]") as "HI". iModIntro. by iApply "HΦ". }
+  wpc_pures.
+  wpc_pures.
+  { iLeft in "HΦ". iDestruct ("HIc" with "[$]") as "HI". iModIntro. by iApply "HΦ". }
+  iLöb as "IH".
+  wpc_bind_seq.
+  iDestruct ("Hbody" with "I") as "Hbody1".
+  iApply (wpc_strong_mono with "Hbody1"); try auto.
+  iSplit; last first.
+  { iLeft in "HΦ". iModIntro. iIntros "H". rewrite difference_diag_L. iModIntro.
+    by iApply "HΦ". }
+  iIntros (v) "H".
+  iModIntro.
+  iDestruct "H" as (b Heq) "I".
+  iCache with "HIc I HΦ".
+  { iLeft in "HΦ". iDestruct ("HIc" with "[$]") as "HI". iModIntro. by iApply "HΦ". }
+  wpc_pures. wpc_pures.
+  subst.
+  destruct b.
+  - wpc_pures.
+    iApply ("IH" with "[$] [$] [$]").
+  - wpc_pures.
+    { iRight in "HΦ". by iApply "HΦ". }
+Qed.
+
 Theorem wpc_forBreak_cond (I: bool -> iProp Σ) Ic stk k E1 E2 (cond body: val) :
-  (∀ b, I b -∗ <disc> Ic) →
+  (∀ b, I b -∗ <disc> ▷ Ic) →
   {{{ I true }}}
     if: cond #() then body #() else #false @ stk; k; E1; E2
   {{{ r, RET #r; I r }}}
@@ -130,36 +170,12 @@ Theorem wpc_forBreak_cond (I: bool -> iProp Σ) Ic stk k E1 E2 (cond body: val) 
 Proof.
   iIntros (Hcrash) "#Hbody".
   iIntros (Φ Φc) "!> I HΦ".
-  rewrite /For.
-  wpc_pures.
-  { iLeft in "HΦ". iDestruct (Hcrash with "[$]") as "H". iModIntro. iNext.
-    by iApply "HΦ". }
-  iCache with "I HΦ".
-  { iLeft in "HΦ". iDestruct (Hcrash with "[$]") as "H". iModIntro. iNext.
-    by iApply "HΦ". }
-  do 5 (wpc_pure _ _; first by iFromCache).
-  iLöb as "IH".
-  wpc_pures.
-  wpc_bind_seq.
-  iDestruct ("Hbody" with "I") as "Hbody1".
-  wpc_apply "Hbody1".
-  iSplit.
-  { by iLeft in "HΦ". }
-  iNext.
-  iIntros (r) "Hr".
-  destruct r.
-  - iCache with "HΦ Hr".
-    { iLeft in "HΦ". iDestruct (Hcrash with "[$]") as "H". iModIntro. iNext.
-        by iApply "HΦ". }
-    do 7 (wpc_pure _ _; first by iFromCache).
-    iDestruct ("IH" with "Hr HΦ") as "IH1".
-    iApply "IH1".
-  - iCache with "HΦ Hr".
-    { iLeft in "HΦ". iDestruct (Hcrash with "[$]") as "H". iModIntro. iNext.
-        by iApply "HΦ". }
-    wpc_pures.
-    iApply "HΦ".
-    iApply "Hr".
+  iApply (wpc_forBreak_cond' I Ic with "[] [$] [] [$]").
+  { iIntros. by iApply Hcrash. }
+  iModIntro. iIntros "HI".
+  iApply ("Hbody" with "[$]").
+  eauto.
+  iSplit; iModIntro; eauto.
 Qed.
 
 Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 E2 (start max:u64) (l:loc) (body: val) :
