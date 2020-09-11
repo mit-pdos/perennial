@@ -2,6 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import deletable_heap.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
 From Perennial.goose_lang.lib Require Import wp_store.
+From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 From Perennial.Helpers Require Import NamedProps.
 
@@ -438,5 +439,104 @@ Proof.
     auto.
   }
 Qed.
+
+
+Definition NSHARD : nat := 43.
+
+Definition covered_by_shard (shardnum : nat) (covered: gmap u64 unit) : gmap u64 unit :=
+  filter (λ x, (int.nat x.1) `mod` NSHARD = shardnum) covered.
+
+Lemma covered_by_shard_mod addr covered :
+  covered_by_shard (int.nat (word.modu addr NSHARD)) covered !! addr ≠ None.
+Proof.
+  admit.
+Admitted.
+
+Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gmap u64 unit) (P: u64 -> iProp Σ) : iProp Σ :=
+  ∃ (shards: list loc) (shardslice: Slice.t),
+    "#Href" ∷ readonly (l ↦[LockMap.S :: "shards"] (slice_val shardslice)) ∗
+    "#Hslice" ∷ readonly (is_slice_small shardslice (refT (struct.t lockShard.S)) 1 shards) ∗
+    "%Hlen" ∷ ⌜ length shards = NSHARD ⌝ ∗
+    "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
+      is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P.
+
+Definition Locked (ghs : list (gen_heapG u64 bool Σ)) (addr : u64) : iProp Σ :=
+  ∃ gh,
+    ⌜ ghs !! ((int.nat addr) `mod` NSHARD) = Some gh ⌝ ∗
+    locked gh addr.
+
+
+Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
+  {{{ [∗ map] a ↦ _ ∈ covered, P a }}}
+    MkLockMap #()
+  {{{ l ghs, RET #l; is_lockMap l ghs covered P }}}.
+Proof.
+Admitted.
+
+Theorem wp_LockMap__Acquire l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
+  {{{ is_lockMap l ghs covered P ∗
+      ⌜covered !! addr ≠ None⌝ }}}
+    LockMap__Acquire #l #addr
+  {{{ RET #(); P addr ∗ Locked ghs addr }}}.
+Proof.
+  iIntros (Φ) "[Hlm %] HΦ".
+  iNamed "Hlm".
+
+  wp_call.
+  wp_loadField.
+
+  iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
+  { solve_ndisj. }
+
+  edestruct (list_lookup_lt _ shards (int.nat (word.modu addr 43%Z))).
+  { word_cleanup. unfold NSHARD in *. admit. }
+
+  edestruct (list_lookup_lt _ ghs (int.nat (word.modu addr 43%Z))).
+  { word_cleanup. unfold NSHARD in *. admit. }
+
+  wp_apply (wp_SliceGet _ _ _ _ _ shards with "[$Hslice_copy]").
+  { eauto. }
+  iIntros "Hslice_copy".
+
+  iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
+  wp_apply (wp_lockShard__acquire with "[$Hshard]").
+  { iPureIntro. apply covered_by_shard_mod. }
+
+  iIntros "[HP Hlocked]".
+  iApply "HΦ".
+  iFrame "HP".
+
+  iExists _. iFrame. unfold NSHARD. admit.
+Admitted.
+
+Theorem wp_LockMap__Release l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
+  {{{ is_lockMap l ghs covered P ∗ P addr ∗ Locked ghs addr }}}
+    LockMap__Release #l #addr
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "[Hlm [HP Hlocked]] HΦ".
+  iNamed "Hlm".
+
+  wp_call.
+  wp_loadField.
+
+  iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
+  { solve_ndisj. }
+
+  edestruct (list_lookup_lt _ shards (int.nat (word.modu addr 43%Z))).
+  { word_cleanup. unfold NSHARD in *. admit. }
+
+  iDestruct "Hlocked" as (gh) "[% Hlocked]".
+
+  wp_apply (wp_SliceGet _ _ _ _ _ shards with "[$Hslice_copy]").
+  { eauto. }
+  iIntros "Hslice_copy".
+
+  iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
+  { (* H0 ... *) admit. }
+
+  wp_apply (wp_lockShard__release with "[$Hshard $HP $Hlocked]").
+  iApply "HΦ". done.
+Admitted.
 
 End heap.
