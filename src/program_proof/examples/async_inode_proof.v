@@ -1404,52 +1404,6 @@ Proof.
     Unshelve. exact addr_s.
 Admitted.
 
-
-
-Theorem wpc_Inode__Append_triple {k E2}
-        {l k' P addr}
-        (* allocator stuff *)
-        {Palloc γalloc domain n}
-        (Q: iProp Σ) (Qc: iProp Σ)
-        (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
-  (S k < n)%nat →
-  (S k < k')%nat →
-  nroot.@"readonly" ## allocN →
-  nroot.@"readonly" ## inodeN →
-  inodeN ## allocN →
-  {{{ "Hinode" ∷ is_inode l (S k') P addr ∗
-      "Hbdata" ∷ is_block b_s q b0 ∗
-      "HQc" ∷ (Q -∗ <disc> ▷ Qc) ∗
-      "#Halloc" ∷ is_allocator Palloc Ψ allocN alloc_ref domain γalloc n ∗
-      "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
-      "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗
-      "Hfupd" ∷ (<disc> ▷ Qc ∧ (∀ σ σ' addr',
-        ⌜σ' = set inode.blocks (λ bs, bs ++ [b0])
-                              (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
-        ⌜inode.wf σ⌝ -∗
-        ∀ s,
-        ⌜s !! addr' = Some block_reserved⌝ -∗
-         ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN}=∗
-         ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ Q))
-  }}}
-    Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤; E2
-  {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
-  {{{ Qc }}}.
-Proof.
-  iIntros (????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-  iApply (wpc_Inode__Append (n:=n) (k':=k')); try assumption.
-  iFrame "Hinode Hbdata Halloc_fupd Hfree_fupd Halloc".
-  iSplit.
-  { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. iNext. by iApply "HΦ". }
-  iSplit.
-  { iRight in "HΦ". iNext. by iApply "HΦ". }
-  iIntros "!>" (σ σ' addr' Hσ' Hσ s Hs) "HPs".
-  iRight in "Hfupd".
-  iMod ("Hfupd" $! _ _ _ Hσ' Hσ _ Hs with "HPs") as "($ & $ & HQ)".
-  iIntros "!>". iSplit.
-  { iDestruct ("HQc" with "[$]") as "H". iLeft in "HΦ". iModIntro. iNext. by iApply "HΦ". }
-  iApply "HΦ". done.
-Qed.
 End goose.
 
 Section goose.
