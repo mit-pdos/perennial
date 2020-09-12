@@ -164,6 +164,7 @@ def main():
             "dir",
             "dynamic_dir",
             "single_inode",
+            "single_async_inode",
             "toy",
         ]
         for pkg in pkgs:
