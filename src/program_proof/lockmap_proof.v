@@ -544,9 +544,10 @@ Proof.
       rewrite /NSHARD.
       word_cleanup.
 
-      admit.
-Admitted.
-
+      intros.
+      apply int_val_inj; first by apply u64_instance.u64_word_ok.
+      rewrite -Heq. word.
+Qed.
 
 Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
