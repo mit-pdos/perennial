@@ -227,7 +227,7 @@ Proof.
         iEval (rewrite struct_mapsto_eq) in "Hacquired".
         iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
         wp_pures.
-        wp_store.
+        wp_untyped_store.
         wp_untyped_load.
 
         wp_pures.
@@ -247,7 +247,7 @@ Proof.
       iIntros (c) "#Hcond".
       wp_apply (wp_allocStruct); first by val_ty.
       iIntros (lst) "Hlst".
-      wp_store.
+      wp_untyped_store.
       wp_untyped_load.
       wp_loadField.
       wp_apply (wp_MapInsert with "[$Hmptr]"); first by reflexivity.
@@ -272,7 +272,7 @@ Proof.
 
       iEval (rewrite struct_mapsto_eq) in "Hacquired".
       iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
-      wp_store.
+      wp_untyped_store.
       wp_untyped_load.
 
       wp_pures.
@@ -461,7 +461,7 @@ Qed.
 Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap.S :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (is_slice_small shardslice (refT (struct.t lockShard.S)) 1 shards) ∗
+    "#Hslice" ∷ readonly (is_slice_small shardslice (struct.ptrT lockShard.S) 1 shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P.
@@ -474,6 +474,7 @@ Definition Locked (ghs : list (gen_heapG u64 bool Σ)) (addr : u64) : iProp Σ :
 
 (* XXX why is this needed here? *)
 Opaque load_ty.
+Opaque lockShard.S.
 
 Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
   {{{ [∗ set] a ∈ covered, P a }}}
@@ -482,43 +483,71 @@ Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
 Proof.
   iIntros (Φ) "Hcovered HΦ".
   wp_call.
-  wp_apply (wp_NewSlice (V:=loc)).
-  iIntros (shardslice) "Hslice".
+  wp_apply wp_ref_of_zero; eauto.
+  iIntros (shards) "Hvar".
+  rewrite zero_slice_val.
   wp_pures.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (iv) "Hi".
   wp_pures.
   wp_apply (wp_forUpto (λ i,
-                          emp%I)
-            with "[] [$Hi]").
+                          ∃ s shardlocs ghs,
+                            "Hvar" ∷ shards ↦[slice.T (refT (struct.t lockShard.S))] (slice_val s) ∗
+                            "Hslice" ∷ is_slice s (struct.ptrT lockShard.S) 1 shardlocs ∗
+                            "%Hlen" ∷ ⌜ length shardlocs = int.nat i ⌝ ∗
+                            "Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shardlocs; ghs,
+                              is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P)%I
+            with "[] [$Hi Hvar]").
   { word. }
   { clear Φ.
     iIntros (i).
-    iIntros "!>" (Φ) "(HI & Hi & Hibound) HΦ".
+    iIntros "!>" (Φ) "(HI & Hi & %Hibound) HΦ".
+    iNamed "HI".
     wp_pures.
     wp_apply wp_mkLockShard.
     { admit. }
     iIntros (ls gh) "Hls".
     wp_load.
-    wp_apply (wp_SliceSet (V:=loc)).
-    { admit. }
-    iIntros "Hslice".
-    wp_pures.
+    wp_apply (wp_SliceAppend (V:=loc) with "Hslice").
+    iIntros (s') "Hslice".
+    wp_store.
     iApply "HΦ".
-    iFrame.
+    iFrame "Hi".
+    iExists _, _, _.
+    iFrame "Hvar Hslice".
+    iSplitR.
+    { rewrite app_length Hlen /=. word. }
+    iApply (big_sepL2_app with "Hshards").
+    iApply big_sepL2_singleton.
+    iApply "Hls".
+  }
+  {
+    iExists _, nil, nil.
+    iFrame "Hvar".
+    iSplit.
+    { iApply is_slice_zero. }
+    iSplit.
+    { done. }
+    iApply big_sepL2_nil. done.
   }
   iIntros "[HI Hi]".
+  iNamed "HI".
   wp_pures.
+  wp_load.
   wp_apply wp_allocStruct; first by val_ty.
   iIntros (lm) "Hlm".
   iDestruct (struct_fields_split with "Hlm") as "(Hlm&_)".
   iMod (readonly_alloc_1 with "Hlm") as "Hlm".
+  iDestruct (is_slice_to_small with "Hslice") as "Hslice".
   iMod (readonly_alloc_1 with "Hslice") as "Hslice".
   wp_pures.
   iApply "HΦ".
   iExists _, _.
   iFrame "Hlm".
-  admit.
+  iFrame "Hslice".
+  iSplitR.
+  { iPureIntro. rewrite Hlen. reflexivity. }
+  iApply "Hshards".
 Admitted.
 
 Theorem wp_LockMap__Acquire l ghs covered (addr : u64) (P : u64 -> iProp Σ) :

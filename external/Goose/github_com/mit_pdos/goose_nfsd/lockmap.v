@@ -80,13 +80,13 @@ End LockMap.
 
 Definition MkLockMap: val :=
   rec: "MkLockMap" <> :=
-    let: "shards" := NewSlice (struct.ptrT lockShard.S) NSHARD in
+    let: "shards" := ref (zero_val (slice.T (refT (struct.t lockShard.S)))) in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      SliceSet (refT (struct.t lockShard.S)) "shards" (![uint64T] "i") (mkLockShard #());;
+      "shards" <-[slice.T (refT (struct.t lockShard.S))] SliceAppend (refT (struct.t lockShard.S)) (![slice.T (refT (struct.t lockShard.S))] "shards") (mkLockShard #());;
       Continue);;
     let: "a" := struct.new LockMap.S [
-      "shards" ::= "shards"
+      "shards" ::= ![slice.T (refT (struct.t lockShard.S))] "shards"
     ] in
     "a".
 
