@@ -28,29 +28,29 @@ Definition locked (hm : gen_heapG u64 bool Σ) (addr : u64) : iProp Σ :=
   ( mapsto (hG := hm) addr 1 true )%I.
 
 Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
-           (lockStatePtr : loc) (covered : gmap u64 unit) (P : u64 -> iProp Σ) :=
+           (lockStatePtr : loc) (covered : gset u64) (P : u64 -> iProp Σ) :=
   ( ∃ (cond : loc) (nwaiters : u64),
       "held" ∷ lockStatePtr ↦[lockState.S :: "held"] #gheld ∗
       "cond" ∷ lockStatePtr ↦[lockState.S :: "cond"] #cond ∗
       "waiters" ∷ lockStatePtr ↦[lockState.S :: "waiters"] #nwaiters ∗
       "#Hcond" ∷ lock.is_cond cond #shardlock ∗
-      "%Hcovered" ∷ ⌜ covered !! addr ≠ None ⌝ ∗
+      "%Hcovered" ∷ ⌜ addr ∈ covered ⌝ ∗
       "Hwaiters" ∷ ( ⌜ gheld = true ⌝ ∨
         ( ⌜ gheld = false ⌝ ∗ mapsto (hG := gh) addr 1 false ∗ P addr ) )
   )%I.
 
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
-           (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) : iProp Σ :=
+           (ghostHeap : gen_heapG u64 bool Σ) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (m: Map.t loc) ghostMap,
       is_map mptr m ∗
       gen_heap_ctx (hG := ghostHeap) ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap shardlock addr gheld lockStatePtrV covered P ) ∗
-      ( [∗ map] addr ↦ _ ∈ covered,
+      ( [∗ set] addr ∈ covered,
           ⌜m !! addr = None⌝ → P addr )
   )%I.
 
-Definition is_lockShard (ls : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gmap u64 unit) (P : u64 -> iProp Σ) : iProp Σ :=
+Definition is_lockShard (ls : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (shardlock mptr : loc),
       "#Hls_mu" ∷ readonly (ls ↦[lockShard.S :: "mu"] #shardlock) ∗
       "#Hls_state" ∷ readonly (ls ↦[lockShard.S :: "state"] #mptr) ∗
@@ -63,7 +63,7 @@ Proof. apply _. Qed.
 Opaque zero_val.
 
 Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
-  {{{ [∗ map] a ↦ _ ∈ covered, P a }}}
+  {{{ [∗ set] a ∈ covered, P a }}}
     mkLockShard #()
   {{{ ls gh, RET #ls; is_lockShard ls gh covered P }}}.
 Proof using gen_heapPreG0 heapG0 Σ.
@@ -96,7 +96,7 @@ Proof using gen_heapPreG0 heapG0 Σ.
 
     iSplitR; eauto.
 
-    iApply big_sepM_mono; last iFrame.
+    iApply big_sepS_mono; last iFrame.
     iIntros; iFrame.
   }
 
@@ -113,7 +113,7 @@ Qed.
 
 Theorem wp_lockShard__acquire ls gh covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_lockShard ls gh covered P ∗
-      ⌜covered !! addr ≠ None⌝ }}}
+      ⌜addr ∈ covered⌝ }}}
     lockShard__acquire #ls #addr
   {{{ RET #(); P addr ∗ locked gh addr }}}.
 Proof.
@@ -279,8 +279,7 @@ Proof.
       iApply "HΦloop".
       iFrame.
 
-      destruct (covered !! addr) eqn:Hcoveredaddr; try congruence.
-      iDestruct (big_sepM_delete with "Hcovered") as "[Hp Hcovered]"; eauto.
+      iDestruct (big_sepS_delete with "Hcovered") as "[Hp Hcovered]"; eauto.
       iSplitR "Hp".
       2: { iApply "Hp"; done. }
 
@@ -297,21 +296,21 @@ Proof.
         iLeft; done.
       }
 
-      replace (covered) with (<[addr := tt]> (delete addr covered)) at 3.
+      replace (covered) with ({[ addr ]} ∪ (covered ∖ {[ addr ]})) at 3.
       2: {
-        rewrite insert_delete.
-        rewrite insert_id; destruct u; eauto.
+        rewrite -union_difference_L; auto.
+        set_solver.
       }
 
-      iApply (big_sepM_insert).
-      { rewrite lookup_delete; auto. }
+      iApply (big_sepS_insert).
+      { set_solver. }
 
       iSplitR. { rewrite lookup_insert; iIntros (Hx). congruence. }
 
-      iApply big_sepM_mono; iFrame.
-      iIntros (x ? Hx) "H".
+      iApply big_sepS_mono; iFrame.
+      iIntros (x Hx) "H".
       destruct (decide (addr = x)); subst.
-      { rewrite lookup_delete in Hx. congruence. }
+      { set_solver. }
 
       rewrite lookup_insert_ne //.
   }
@@ -414,23 +413,22 @@ Proof.
       iExists _, (delete addr gm).
       iFrame.
 
-      destruct (covered !! addr) eqn:Hca; try congruence.
-      iDestruct (big_sepM_delete with "Hcovered") as "[Hcaddr Hcovered]"; eauto.
-      replace (covered) with (<[addr := tt]> (delete addr covered)) at 3.
+      iDestruct (big_sepS_delete with "Hcovered") as "[Hcaddr Hcovered]"; eauto.
+      replace (covered) with ({[ addr ]} ∪ (covered ∖ {[ addr ]})) at 3.
       2: {
-        rewrite insert_delete.
-        rewrite insert_id; destruct u; eauto.
+        rewrite -union_difference_L; auto.
+        set_solver.
       }
 
-      iApply (big_sepM_insert).
-      { rewrite lookup_delete; auto. }
+      iApply (big_sepS_insert).
+      { set_solver. }
 
       iSplitL "Hp". { iFrame. done. }
 
-      iApply big_sepM_mono; iFrame.
-      iIntros (x ? Hx) "H".
+      iApply big_sepS_mono; iFrame.
+      iIntros (x Hx) "H".
       destruct (decide (addr = x)); subst.
-      { rewrite lookup_delete in Hx. congruence. }
+      { set_solver. }
 
       rewrite lookup_delete_ne //.
     }
@@ -441,41 +439,91 @@ Proof.
 Qed.
 
 
-Definition NSHARD : nat := 43.
+Definition NSHARD : Z := 43.
 
-Definition covered_by_shard (shardnum : nat) (covered: gmap u64 unit) : gmap u64 unit :=
-  filter (λ x, (int.nat x.1) `mod` NSHARD = shardnum) covered.
+Definition covered_by_shard (shardnum : Z) (covered: gset u64) : gset u64 :=
+  filter (λ x, Z.modulo (int.val x) NSHARD = shardnum) covered.
 
 Lemma covered_by_shard_mod addr covered :
-  covered_by_shard (int.nat (word.modu addr NSHARD)) covered !! addr ≠ None.
+  addr ∈ covered ->
+  addr ∈ covered_by_shard (int.nat (word.modu addr NSHARD)) covered.
 Proof.
-  admit.
-Admitted.
+  intros.
+  rewrite /covered_by_shard.
+  apply elem_of_filter; intuition.
+  rewrite /NSHARD.
+  word_cleanup.
+  rewrite Z2Nat.id.
+  - word.
+  - apply Z_mod_pos. lia.
+Qed.
 
-Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gmap u64 unit) (P: u64 -> iProp Σ) : iProp Σ :=
+Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap.S :: "shards"] (slice_val shardslice)) ∗
     "#Hslice" ∷ readonly (is_slice_small shardslice (refT (struct.t lockShard.S)) 1 shards) ∗
-    "%Hlen" ∷ ⌜ length shards = NSHARD ⌝ ∗
+    "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P.
 
 Definition Locked (ghs : list (gen_heapG u64 bool Σ)) (addr : u64) : iProp Σ :=
   ∃ gh,
-    ⌜ ghs !! ((int.nat addr) `mod` NSHARD) = Some gh ⌝ ∗
+    ⌜ ghs !! (Z.to_nat (Z.modulo (int.val addr) NSHARD)) = Some gh ⌝ ∗
     locked gh addr.
 
 
+(* XXX why is this needed here? *)
+Opaque load_ty.
+
 Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
-  {{{ [∗ map] a ↦ _ ∈ covered, P a }}}
+  {{{ [∗ set] a ∈ covered, P a }}}
     MkLockMap #()
   {{{ l ghs, RET #l; is_lockMap l ghs covered P }}}.
 Proof.
+  iIntros (Φ) "Hcovered HΦ".
+  wp_call.
+  wp_apply (wp_NewSlice (V:=loc)).
+  iIntros (shardslice) "Hslice".
+  wp_pures.
+  wp_apply wp_ref_to; first by val_ty.
+  iIntros (iv) "Hi".
+  wp_pures.
+  wp_apply (wp_forUpto (λ i,
+                          emp%I)
+            with "[] [$Hi]").
+  { word. }
+  { clear Φ.
+    iIntros (i).
+    iIntros "!>" (Φ) "(HI & Hi & Hibound) HΦ".
+    wp_pures.
+    wp_apply wp_mkLockShard.
+    { admit. }
+    iIntros (ls gh) "Hls".
+    wp_load.
+    wp_apply (wp_SliceSet (V:=loc)).
+    { admit. }
+    iIntros "Hslice".
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+  }
+  iIntros "[HI Hi]".
+  wp_pures.
+  wp_apply wp_allocStruct; first by val_ty.
+  iIntros (lm) "Hlm".
+  iDestruct (struct_fields_split with "Hlm") as "(Hlm&_)".
+  iMod (readonly_alloc_1 with "Hlm") as "Hlm".
+  iMod (readonly_alloc_1 with "Hslice") as "Hslice".
+  wp_pures.
+  iApply "HΦ".
+  iExists _, _.
+  iFrame "Hlm".
+  admit.
 Admitted.
 
 Theorem wp_LockMap__Acquire l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_lockMap l ghs covered P ∗
-      ⌜covered !! addr ≠ None⌝ }}}
+      ⌜addr ∈ covered⌝ }}}
     LockMap__Acquire #l #addr
   {{{ RET #(); P addr ∗ Locked ghs addr }}}.
 Proof.
@@ -488,11 +536,21 @@ Proof.
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
   { solve_ndisj. }
 
-  edestruct (list_lookup_lt _ shards (int.nat (word.modu addr 43%Z))).
-  { word_cleanup. unfold NSHARD in *. admit. }
+  iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
 
-  edestruct (list_lookup_lt _ ghs (int.nat (word.modu addr 43%Z))).
-  { word_cleanup. unfold NSHARD in *. admit. }
+  edestruct (list_lookup_lt _ shards (int.nat (word.modu addr NSHARD))).
+  { rewrite Hlen /NSHARD. word_cleanup.
+    apply Z2Nat.inj_lt; word_cleanup.
+    { apply Z_mod_pos. lia. }
+    { apply Z_mod_lt. lia. }
+  }
+
+  edestruct (list_lookup_lt _ ghs (int.nat (word.modu addr NSHARD))).
+  { rewrite -Hlen2 Hlen /NSHARD. word_cleanup.
+    apply Z2Nat.inj_lt; word_cleanup.
+    { apply Z_mod_pos. lia. }
+    { apply Z_mod_lt. lia. }
+  }
 
   wp_apply (wp_SliceGet _ _ _ _ _ shards with "[$Hslice_copy]").
   { eauto. }
@@ -500,14 +558,17 @@ Proof.
 
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
   wp_apply (wp_lockShard__acquire with "[$Hshard]").
-  { iPureIntro. apply covered_by_shard_mod. }
+  { iPureIntro. apply covered_by_shard_mod. auto. }
 
   iIntros "[HP Hlocked]".
   iApply "HΦ".
   iFrame "HP".
 
-  iExists _. iFrame. unfold NSHARD. admit.
-Admitted.
+  iExists _. iFrame.
+  iPureIntro.
+  rewrite -H1 /NSHARD. f_equal.
+  word.
+Qed.
 
 Theorem wp_LockMap__Release l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_lockMap l ghs covered P ∗ P addr ∗ Locked ghs addr }}}
@@ -523,8 +584,12 @@ Proof.
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
   { solve_ndisj. }
 
-  edestruct (list_lookup_lt _ shards (int.nat (word.modu addr 43%Z))).
-  { word_cleanup. unfold NSHARD in *. admit. }
+  edestruct (list_lookup_lt _ shards (int.nat (word.modu addr NSHARD))).
+  { rewrite Hlen /NSHARD. word_cleanup.
+    apply Z2Nat.inj_lt; word_cleanup.
+    { apply Z_mod_pos. lia. }
+    { apply Z_mod_lt. lia. }
+  }
 
   iDestruct "Hlocked" as (gh) "[% Hlocked]".
 
@@ -533,10 +598,10 @@ Proof.
   iIntros "Hslice_copy".
 
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
-  { (* H0 ... *) admit. }
+  { erewrite <- H0. rewrite /NSHARD. f_equal. word. }
 
   wp_apply (wp_lockShard__release with "[$Hshard $HP $Hlocked]").
   iApply "HΦ". done.
-Admitted.
+Qed.
 
 End heap.

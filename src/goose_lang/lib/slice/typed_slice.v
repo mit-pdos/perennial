@@ -177,6 +177,23 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
+Lemma wp_SliceSet stk E s t `{!IntoValForType IntoVal0 t} vs (i: u64) v :
+  {{{ is_slice_small s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
+    SliceSet t (slice_val s) #i (to_val v) @ stk; E
+  {{{ RET #(); is_slice_small s t 1 (<[int.nat i:=v]> vs) }}}.
+Proof.
+  iIntros (Φ) "[Hs %] HΦ".
+  iApply (slice.wp_SliceSet with "[$Hs]").
+  { iPureIntro; intuition.
+    { destruct H. rewrite /is_Some /list.untype list_lookup_fmap.
+      rewrite H. eauto. }
+    apply to_val_ty.
+  }
+  iIntros "!> Hs".
+  iApply "HΦ".
+  rewrite /is_slice_small /list.untype list_fmap_insert. iFrame.
+Qed.
+
 Lemma wp_SliceAppend' stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
   {{{ is_slice s t 1 vs }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
