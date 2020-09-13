@@ -86,3 +86,39 @@ Proof.
       eapply rangeSet_lookup in H; try lia.
       intuition idtac. revert H0. word_cleanup.
 Qed.
+
+Lemma rangeSet_append_one:
+  ∀ start sz : u64,
+    int.val start + int.val sz < 2 ^ 64
+    → ∀ i : u64,
+      int.val i < int.val (word.add start sz)
+      → int.val start ≤ int.val i
+      → {[i]} ∪ rangeSet (int.val start) (int.val i - int.val start) =
+        rangeSet (int.val start) (int.val i - int.val start + 1).
+Proof.
+  intros start sz Hbound i Hibound Hilower_bound.
+  replace (int.val (word.add start sz)) with (int.val start + int.val sz) in Hibound by word.
+  apply gset_eq; intros.
+  rewrite elem_of_union.
+  rewrite elem_of_singleton.
+  rewrite !rangeSet_lookup; try word.
+  destruct (decide (x = i)); subst.
+  - split; intros; eauto.
+    word.
+  - intuition; try word.
+    right.
+    assert (int.val x ≠ int.val i) by (apply not_inj; auto).
+    word.
+Qed.
+
+Lemma rangeSet_first:
+  ∀ start sz,
+    sz > 0 ->
+    rangeSet start sz = {[U64 start]} ∪ rangeSet (start+1) (sz-1).
+Proof.
+  rewrite /rangeSet.
+  intros.
+  rewrite seqZ_cons; first by lia.
+  simpl.
+  reflexivity.
+Qed.

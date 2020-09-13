@@ -810,21 +810,21 @@ Proof.
     wp_if_destruct.
     + wp_if_destruct.
       * wp_load. wp_store. wp_load.
-        wp_apply (wp_SliceSet with "[$Hblk]"); eauto.
+        wp_apply (slice.wp_SliceSet with "[$Hblk]"); eauto.
         iIntros "Hblk".
         wp_apply util_proof.wp_DPrintf.
         iApply "HΦ".
         admit.
 
       * wp_load. wp_store. wp_load.
-        wp_apply (wp_SliceSet with "[$Hblk]"); eauto.
+        wp_apply (slice.wp_SliceSet with "[$Hblk]"); eauto.
         iIntros "Hblk".
         wp_apply util_proof.wp_DPrintf.
         iApply "HΦ".
         admit.
 
     + wp_load.
-      wp_apply (wp_SliceSet with "[$Hblk]"); eauto.
+      wp_apply (slice.wp_SliceSet with "[$Hblk]"); eauto.
       iIntros "Hblk".
       wp_apply util_proof.wp_DPrintf.
       iApply "HΦ".

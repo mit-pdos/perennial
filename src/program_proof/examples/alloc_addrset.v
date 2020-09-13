@@ -1,7 +1,7 @@
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Export typed_slice into_val.
-From Perennial.program_proof.examples Require Export range_set.
+From Perennial.Helpers Require Export range_set.
 
 Instance unit_IntoVal : IntoVal ().
 Proof.
@@ -31,30 +31,6 @@ Proof.
   iExists _; iFrame.
   iPureIntro.
   set_solver.
-Qed.
-
-Lemma rangeSet_append_one:
-  ∀ start sz : u64,
-    int.val start + int.val sz < 2 ^ 64
-    → ∀ i : u64,
-      int.val i < int.val (word.add start sz)
-      → int.val start ≤ int.val i
-      → {[i]} ∪ rangeSet (int.val start) (int.val i - int.val start) =
-        rangeSet (int.val start) (int.val i - int.val start + 1).
-Proof.
-  intros start sz Hbound i Hibound Hilower_bound.
-  replace (int.val (word.add start sz)) with (int.val start + int.val sz) in Hibound by word.
-  apply gset_eq; intros.
-  rewrite elem_of_union.
-  rewrite elem_of_singleton.
-  rewrite !rangeSet_lookup; try word.
-  destruct (decide (x = i)); subst.
-  - split; intros; eauto.
-    word.
-  - intuition; try word.
-    right.
-    assert (int.val x ≠ int.val i) by (apply not_inj; auto).
-    word.
 Qed.
 
 Theorem wp_freeRange (start sz: u64) E :

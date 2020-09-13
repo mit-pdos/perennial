@@ -4,7 +4,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
 From Perennial.goose_lang.lib Require Import wp_store.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
-From Perennial.Helpers Require Import NamedProps.
+From Perennial.Helpers Require Import NamedProps range_set.
 
 Local Transparent load_ty store_ty.
 
@@ -445,18 +445,108 @@ Definition covered_by_shard (shardnum : Z) (covered: gset u64) : gset u64 :=
   filter (λ x, Z.modulo (int.val x) NSHARD = shardnum) covered.
 
 Lemma covered_by_shard_mod addr covered :
-  addr ∈ covered ->
+  addr ∈ covered <->
   addr ∈ covered_by_shard (int.nat (word.modu addr NSHARD)) covered.
 Proof.
   intros.
   rewrite /covered_by_shard.
-  apply elem_of_filter; intuition.
-  rewrite /NSHARD.
-  word_cleanup.
-  rewrite Z2Nat.id.
-  - word.
-  - apply Z_mod_pos. lia.
+  split; intros.
+  + apply elem_of_filter; intuition.
+    rewrite /NSHARD.
+    word_cleanup.
+    rewrite Z2Nat.id.
+    - word.
+    - apply Z_mod_pos. lia.
+  + apply elem_of_filter in H; intuition.
 Qed.
+
+Lemma covered_by_shard_empty x :
+  covered_by_shard x ∅ = ∅.
+Proof.
+  rewrite /covered_by_shard filter_empty_L //.
+Qed.
+
+Lemma covered_by_shard_insert x X :
+  covered_by_shard (int.val (word.modu x (U64 NSHARD))) ({[x]} ∪ X) =
+  {[x]} ∪ covered_by_shard (int.val (word.modu x (U64 NSHARD))) X.
+Proof.
+  rewrite /covered_by_shard filter_union_L filter_singleton_L //.
+  rewrite /NSHARD.
+  word.
+Qed.
+
+Lemma covered_by_shard_insert_ne (x x' : u64) X :
+  (int.val x `mod` NSHARD)%Z ≠ int.val x' ->
+  covered_by_shard (int.val x') ({[x]} ∪ X) =
+    covered_by_shard (int.val x') X.
+Proof.
+  intros.
+  rewrite /covered_by_shard filter_union_L filter_singleton_not_L.
+  { set_solver. }
+  auto.
+Qed.
+
+Lemma rangeSet_lookup_mod (x : u64) (n : Z) :
+  (0 < n < 2^64)%Z ->
+  word.modu x (U64 n) ∈ rangeSet 0 n.
+Proof.
+  intros.
+  apply rangeSet_lookup; try word.
+  word_cleanup.
+  2: word.
+  split.
+  { apply Z_mod_pos. lia. }
+  { apply Z_mod_lt. lia. }
+Qed.
+
+Lemma covered_by_shard_split (P : u64 -> iProp Σ) covered :
+  ( [∗ set] a ∈ covered, P a ) -∗
+  [∗ set] shardnum ∈ rangeSet 0 NSHARD,
+    [∗ set] a ∈ covered_by_shard (int.val shardnum) covered, P a.
+Proof.
+  induction covered using set_ind_L.
+  - iIntros "H".
+    setoid_rewrite covered_by_shard_empty.
+    setoid_rewrite big_sepS_empty.
+    iApply big_sepS_forall. done.
+  - iIntros "H".
+    iDestruct (big_sepS_insert with "H") as "[HP H]"; try assumption.
+    iDestruct (IHcovered with "H") as "H".
+    replace (rangeSet 0 NSHARD) with ({[ word.modu x NSHARD ]} ∪
+                                      rangeSet 0 NSHARD ∖ {[ word.modu x NSHARD ]}).
+    2: {
+      rewrite -union_difference_L; auto.
+      pose proof (rangeSet_lookup_mod x NSHARD).
+      set_solver.
+    }
+
+    iDestruct (big_sepS_insert with "H") as "[Hthis Hother]"; first by set_solver.
+    iApply big_sepS_insert; first by set_solver.
+
+    iSplitL "HP Hthis".
+    + rewrite covered_by_shard_insert.
+      iApply big_sepS_insert.
+      { intro Hx. apply H. apply covered_by_shard_mod.
+        rewrite Z2Nat.id; eauto.
+        rewrite /NSHARD. word_cleanup. apply Z_mod_pos. lia. }
+      iFrame.
+    + iApply (big_sepS_mono with "Hother").
+      iIntros (x' Hx') "H".
+      rewrite covered_by_shard_insert_ne.
+      { iFrame. }
+
+      intro Heq.
+      apply elem_of_difference in Hx'.
+      destruct Hx'.
+      apply H1.
+      apply elem_of_singleton.
+      revert Heq.
+      rewrite /NSHARD.
+      word_cleanup.
+
+      admit.
+Admitted.
+
 
 Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
@@ -480,7 +570,7 @@ Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
   {{{ [∗ set] a ∈ covered, P a }}}
     MkLockMap #()
   {{{ l ghs, RET #l; is_lockMap l ghs covered P }}}.
-Proof.
+Proof using gen_heapPreG0.
   iIntros (Φ) "Hcovered HΦ".
   wp_call.
   wp_apply wp_ref_of_zero; eauto.
@@ -490,22 +580,29 @@ Proof.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (iv) "Hi".
   wp_pures.
-  wp_apply (wp_forUpto (λ i,
+  wp_apply (wp_forUpto (λ (i : u64),
                           ∃ s shardlocs ghs,
                             "Hvar" ∷ shards ↦[slice.T (refT (struct.t lockShard.S))] (slice_val s) ∗
                             "Hslice" ∷ is_slice s (struct.ptrT lockShard.S) 1 shardlocs ∗
                             "%Hlen" ∷ ⌜ length shardlocs = int.nat i ⌝ ∗
+                            "Hpp" ∷ ( [∗ set] shardnum ∈ rangeSet (int.val i) (NSHARD-int.val i),
+                              [∗ set] a ∈ covered_by_shard (int.val shardnum) covered, P a ) ∗
                             "Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shardlocs; ghs,
                               is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P)%I
-            with "[] [$Hi Hvar]").
+            with "[] [$Hi Hvar Hcovered]").
   { word. }
   { clear Φ.
     iIntros (i).
     iIntros "!>" (Φ) "(HI & Hi & %Hibound) HΦ".
     iNamed "HI".
     wp_pures.
-    wp_apply wp_mkLockShard.
-    { admit. }
+    rewrite rangeSet_first.
+    2: { rewrite /NSHARD. word. }
+    iDestruct (big_sepS_insert with "Hpp") as "[Hp Hpp]".
+    { rewrite /NSHARD. intro Hx.
+      apply rangeSet_lookup in Hx; try word.
+      intuition. revert H. word. }
+    wp_apply (wp_mkLockShard with "Hp").
     iIntros (ls gh) "Hls".
     wp_load.
     wp_apply (wp_SliceAppend (V:=loc) with "Hslice").
@@ -517,17 +614,28 @@ Proof.
     iFrame "Hvar Hslice".
     iSplitR.
     { rewrite app_length Hlen /=. word. }
+    iSplitL "Hpp".
+    { replace (int.val (word.add i 1))%Z with (int.val i + 1)%Z by word.
+      replace (NSHARD - (int.val i + 1))%Z with (NSHARD - int.val i - 1)%Z by word.
+      iFrame. }
     iApply (big_sepL2_app with "Hshards").
     iApply big_sepL2_singleton.
-    iApply "Hls".
+    rewrite Hlen.
+    replace (Z.of_nat (int.nat i + 0)) with (int.val (U64 (int.val i))) by word.
+    iFrame.
   }
   {
     iExists _, nil, nil.
     iFrame "Hvar".
-    iSplit.
+    iSplitR.
     { iApply is_slice_zero. }
-    iSplit.
+    iSplitR.
     { done. }
+    iSplitL "Hcovered".
+    { iDestruct (covered_by_shard_split with "Hcovered") as "Hsplit".
+      replace (int.val 0%Z) with 0%Z by word.
+      replace (NSHARD - 0)%Z with NSHARD by word.
+      iFrame. }
     iApply big_sepL2_nil. done.
   }
   iIntros "[HI Hi]".
@@ -548,7 +656,7 @@ Proof.
   iSplitR.
   { iPureIntro. rewrite Hlen. reflexivity. }
   iApply "Hshards".
-Admitted.
+Qed.
 
 Theorem wp_LockMap__Acquire l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_lockMap l ghs covered P ∗
@@ -587,7 +695,7 @@ Proof.
 
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
   wp_apply (wp_lockShard__acquire with "[$Hshard]").
-  { iPureIntro. apply covered_by_shard_mod. auto. }
+  { iPureIntro. rewrite -covered_by_shard_mod. auto. }
 
   iIntros "[HP Hlocked]".
   iApply "HΦ".

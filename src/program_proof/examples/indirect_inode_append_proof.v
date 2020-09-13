@@ -779,7 +779,7 @@ Proof.
     iIntros (offset) "%Hoffset".
 
     iDestruct (is_slice_split with "HindBlkAddrs") as "[HindBlkAddrs_small HindBlkAddrs_cap]".
-    wp_apply (wp_SliceSet with "[$HindBlkAddrs_small]").
+    wp_apply (slice.wp_SliceSet with "[$HindBlkAddrs_small]").
     {
       iSplit; auto.
       iPureIntro.
