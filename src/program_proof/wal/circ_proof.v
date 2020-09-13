@@ -751,7 +751,7 @@ Proof.
   }
   iIntros "!> Hs".
   wp_loadField.
-  wp_apply (wp_SliceSet with "[$Haddrs]").
+  wp_apply (slice.wp_SliceSet with "[$Haddrs]").
   { iPureIntro.
     split; auto.
     rewrite list_lookup_fmap.
