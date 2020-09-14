@@ -17,7 +17,8 @@ From Perennial.program_proof Require
      wal.specs
      txn.txn_proof
      buftxn.buftxn_proof
-     buftxn.idealized_buftxn_spec.
+     buftxn.idealized_buftxn_spec
+     simple.simple.
 From Perennial.program_proof.examples Require
      dir_proof
      single_inode_proof

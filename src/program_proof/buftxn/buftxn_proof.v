@@ -73,7 +73,7 @@ Proof.
   Unshelve. all: exact (U64 0).
 Qed.
 
-Theorem wp_BufTxn__ReadBuf buftx mT γUnified a sz v :
+Theorem wp_BufTxn__ReadBuf buftx mT γUnified a (sz : u64) v :
   {{{
     is_buftxn buftx mT γUnified ∗
     ⌜ mT !! a = Some v ⌝ ∗

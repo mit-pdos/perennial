@@ -69,8 +69,9 @@ Definition Inode__Read: val :=
       ")) #();;
       let: "data" := ref_to (slice.T byteT) (NewSlice byteT #0) in
       let: "buf" := buftxn.BufTxn__ReadBuf "btxn" (block2addr (struct.loadF Inode.S "Data" "ip")) common.NBITBLOCK in
+      let: "countCopy" := ![uint64T] "count" in
       let: "b" := ref_to uint64T #0 in
-      (for: (λ: <>, ![uint64T] "b" < ![uint64T] "count"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
+      (for: (λ: <>, ![uint64T] "b" < "countCopy"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
         "data" <-[slice.T byteT] SliceAppend byteT (![slice.T byteT] "data") (SliceGet byteT (struct.loadF buf.Buf.S "Data" "buf") ("offset" + ![uint64T] "b"));;
         Continue);;
       util.DPrintf #10 (#(str"Read: off %d cnt %d -> %v

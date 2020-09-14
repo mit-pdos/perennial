@@ -11,6 +11,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
 From Perennial.program_logic Require Import spec_assert.
+From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 
 Module simple.
   Definition ino := list u8.
@@ -44,20 +45,21 @@ Definition is_inode_enc γ (inum: nat) (len: u64) (blk: u64) : iProp Σ :=
     ⌜ encodes_inode len blk (vec_to_list ibuf) ⌝ ∗
     mapsto_txn γ.(simple_txn) (inum2addr inum) (existT _ (defs.bufInode ibuf)).
 
-Definition is_inode_data γ (blk: u64) (contents: list u8) : iProp Σ :=
+Definition is_inode_data γ (len : u64) (blk: u64) (contents: list u8) : iProp Σ :=
   ∃ (bbuf : Block),
     ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
+    ⌜ len = length contents ⌝ ∗
     mapsto_txn γ.(simple_txn) (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
 
 Definition is_inode_disk γ (inum: nat) (state: simple.ino) : iProp Σ :=
   ∃ (blk: u64),
     is_inode_enc γ inum (length state) blk ∗
-    is_inode_data γ blk state.
+    is_inode_data γ (length state) blk state.
 
 Definition is_inode_mem (l: loc) (inum: nat) (len: u64) (blk: u64) : iProp Σ :=
-  l ↦[Inode.S :: "Inum"] #inum ∗
-  l ↦[Inode.S :: "Size"] #len ∗
-  l ↦[Inode.S :: "Data"] #blk.
+  "Hinum" ∷ l ↦[Inode.S :: "Inum"] #inum ∗
+  "Hisize" ∷ l ↦[Inode.S :: "Size"] #len ∗
+  "Hidata" ∷ l ↦[Inode.S :: "Data"] #blk.
 
 Theorem wp_inum2Addr inum :
   {{{ ⌜ inum < NumInodes ⌝ }}}
@@ -80,6 +82,17 @@ Proof.
   word_cleanup.
   admit.
 Admitted.
+
+Theorem wp_block2addr bn :
+  {{{ True }}}
+    block2addr #bn
+  {{{ RET (addr2val (blk2addr bn)); True }}}.
+Proof.
+  iIntros (Φ) "% HΦ".
+  wp_call.
+  wp_call.
+  iApply "HΦ". done.
+Qed.
 
 Theorem wp_ReadInode γ inum len blk (btxn : loc) bufm :
   {{{ is_buftxn btxn bufm γ.(simple_txn) ∗
@@ -125,5 +138,82 @@ Definition is_fs γ (nfs: loc) : iProp Σ :=
     readonly (nfs ↦[Nfs.S :: "l"] #lm) ∗
     is_txn txn γ.(simple_txn) ∗
     is_lockMap lm γ.(simple_lockmapghs) covered_inodes (is_inode_stable γ).
+
+Theorem wp_Inode__Read γ ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) bufm contents :
+  {{{ is_buftxn btxn bufm γ.(simple_txn) ∗
+      is_inode_mem ip inum len blk ∗
+      is_inode_data γ len blk contents }}}
+    Inode__Read #ip #btxn #offset #bytesToRead
+  {{{ resSlice (eof : bool) (vs : list u8), RET (slice_val resSlice, #eof);
+      is_slice resSlice u8T 1 vs ∗
+      is_buftxn btxn bufm γ.(simple_txn) ∗
+      is_inode_mem ip inum len blk ∗
+      is_inode_data γ len blk contents ∗
+      ⌜ firstn (length vs) contents = vs ⌝ ∗
+      ⌜ eof = true <-> (int.nat offset + length vs ≥ int.nat len)%nat ⌝ }}}.
+Proof.
+  iIntros (Φ) "(Hbuftxn & Hmem & Hdata) HΦ".
+  wp_call.
+  iNamed "Hmem".
+  wp_loadField.
+  wp_if_destruct.
+  { wp_pures.
+    replace (slice.nil) with (slice_val (Slice.nil)); auto.
+    iApply "HΦ".
+    iSplitR.
+    { iApply (is_slice_zero (V:=u8)). }
+    iFrame.
+    iPureIntro; intuition.
+    simpl. lia.
+  }
+
+  wp_apply wp_ref_to; first by val_ty.
+  iIntros (count) "Hcount".
+  wp_pures.
+  wp_loadField. wp_load.
+  wp_if_destruct.
+  - wp_loadField. wp_store. wp_pures.
+    wp_apply util_proof.wp_DPrintf.
+    wp_pures.
+    wp_apply (wp_NewSlice (V:=u8)).
+    iIntros (dataslice) "Hdataslice".
+    wp_apply wp_ref_to; first by val_ty.
+    iIntros (datavar) "Hdatavar".
+    wp_pures.
+    wp_loadField.
+    wp_apply wp_block2addr.
+    wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn]").
+    { (* XXX need to get this out of "Hdata" *)
+      admit.
+    }
+
+    iIntros (bufptr dirty) "[Hbuf Hbufupd]".
+    wp_pures.
+    wp_load.
+    wp_pures.
+    wp_apply wp_ref_to; first by val_ty.
+    iIntros (b) "Hb".
+    wp_pures.
+
+    wp_apply (wp_forUpto (λ i, True)%I with "[] [$Hb]").
+    { word. }
+    {
+      iIntros (b').
+      iIntros (Φ') "!>".
+      iIntros "(HI & Hb & %Hbound) HΦ'".
+      wp_pures.
+      admit.
+      (* wp_apply (wp_SliceAppend (V:=u8)). *)
+    }
+
+    iIntros "(HI & Hb)".
+    wp_pures.
+    wp_apply util_proof.wp_DPrintf.
+    wp_pures.
+    wp_load.
+    admit.
+
+  - admit.
+Admitted.
 
 End heap.
