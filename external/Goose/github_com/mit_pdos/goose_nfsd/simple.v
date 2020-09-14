@@ -147,6 +147,15 @@ Definition Inode__MkFattr: val :=
       ]
     ].
 
+Definition inodeInit: val :=
+  rec: "inodeInit" "btxn" :=
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, ![uint64T] "i" < nInode #()); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      let: "ip" := ReadInode "btxn" (![uint64T] "i") in
+      struct.storeF Inode.S "Data" "ip" (common.LOGSIZE + #1 + ![uint64T] "i");;
+      Inode__WriteInode "ip" "btxn";;
+      Continue).
+
 (* mount.go *)
 
 Definition Nfs__MOUNTPROC3_NULL: val :=
@@ -269,11 +278,44 @@ Definition Nfs__NFSPROC3_GETATTR: val :=
 
 Definition Nfs__NFSPROC3_SETATTR: val :=
   rec: "Nfs__NFSPROC3_SETATTR" "nfs" "args" :=
+    let: "reply" := ref (zero_val (struct.t nfstypes.SETATTR3res.S)) in
     util.DPrintf #1 (#(str"NFS SetAttr %v
     ")) #();;
-    let: "reply" := ref (zero_val (struct.t nfstypes.SETATTR3res.S)) in
-    struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
-    ![struct.t nfstypes.SETATTR3res.S] "reply".
+    let: "txn" := buftxn.Begin (struct.loadF Nfs.S "t" "nfs") in
+    let: "inum" := fh2ino (struct.get nfstypes.SETATTR3args.S "Object" "args") in
+    util.DPrintf #1 (#(str"inum %d %d
+    ")) #();;
+    (if: ("inum" = common.ROOTINUM) || ("inum" ≥ nInode #())
+    then
+      struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_INVAL;;
+      ![struct.t nfstypes.SETATTR3res.S] "reply"
+    else
+      lockmap.LockMap__Acquire (struct.loadF Nfs.S "l" "nfs") "inum";;
+      let: "ip" := ReadInode "txn" "inum" in
+      (if: struct.get nfstypes.Set_size3.S "Set_it" (struct.get nfstypes.Sattr3.S "Size" (struct.get nfstypes.SETATTR3args.S "New_attributes" "args"))
+      then
+        let: "newsize" := struct.get nfstypes.Set_size3.S "Size" (struct.get nfstypes.Sattr3.S "Size" (struct.get nfstypes.SETATTR3args.S "New_attributes" "args")) in
+        (if: struct.loadF Inode.S "Size" "ip" < "newsize"
+        then
+          let: "data" := NewSlice byteT ("newsize" - struct.loadF Inode.S "Size" "ip") in
+          let: ("count", "writeok") := Inode__Write "ip" "txn" (struct.loadF Inode.S "Size" "ip") ("newsize" - struct.loadF Inode.S "Size" "ip") "data" in
+          (if: (~ "writeok") || ("count" ≠ "newsize" - struct.loadF Inode.S "Size" "ip")
+          then
+            struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_NOSPC;;
+            lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
+            ![struct.t nfstypes.SETATTR3res.S] "reply"
+          else #())
+        else
+          struct.storeF Inode.S "Size" "ip" "newsize";;
+          Inode__WriteInode "ip" "txn");;
+        #()
+      else #());;
+      let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+      (if: "ok"
+      then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
+      else struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT);;
+      lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
+      ![struct.t nfstypes.SETATTR3res.S] "reply").
 
 (* Lookup must lock child inode to find gen number *)
 Definition Nfs__NFSPROC3_LOOKUP: val :=
@@ -527,9 +569,15 @@ Definition Nfs__NFSPROC3_COMMIT: val :=
 Definition MakeNfs: val :=
   rec: "MakeNfs" "d" :=
     let: "txn" := txn.MkTxn "d" in
-    let: "lockmap" := lockmap.MkLockMap #() in
-    let: "nfs" := struct.new Nfs.S [
-      "t" ::= "txn";
-      "l" ::= "lockmap"
-    ] in
-    "nfs".
+    let: "btxn" := buftxn.Begin "txn" in
+    inodeInit "btxn";;
+    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
+    (if: ~ "ok"
+    then slice.nil
+    else
+      let: "lockmap" := lockmap.MkLockMap #() in
+      let: "nfs" := struct.new Nfs.S [
+        "t" ::= "txn";
+        "l" ::= "lockmap"
+      ] in
+      "nfs").
