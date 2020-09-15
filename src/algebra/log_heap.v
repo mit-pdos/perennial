@@ -7,6 +7,10 @@ From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".
 Import uPred.
 
+(* TODO: switch to https://gitlab.mpi-sws.org/iris/iris/-/merge_requests/486
+when it's merged, rather than using gen_heapUR (this is probably necessary for
+async usage so that we can persistently own maps-to facts in a particular
+version) *)
 Definition log_heapUR (L V : Type) `{Countable L}: ucmraT :=
   discrete_funUR (λ (n : nat), gen_heapUR L V).
 
