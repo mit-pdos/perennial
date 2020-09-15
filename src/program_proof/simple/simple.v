@@ -6,7 +6,7 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
-From Perennial.program_proof Require Import txn.txn_proof buftxn.buftxn_proof marshal_proof addr_proof lockmap_proof addr.addr_proof.
+From Perennial.program_proof Require Import txn.txn_proof buftxn.buftxn_proof marshal_proof addr_proof lockmap_proof addr.addr_proof buf.buf_proof.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
@@ -47,9 +47,9 @@ Definition is_inode_enc γ (inum: nat) (len: u64) (blk: u64) : iProp Σ :=
 
 Definition is_inode_data γ (len : u64) (blk: u64) (contents: list u8) : iProp Σ :=
   ∃ (bbuf : Block),
-    ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
-    ⌜ len = length contents ⌝ ∗
-    mapsto_txn γ.(simple_txn) (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
+    "%Hdiskdata" ∷ ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
+    "%Hdisklen" ∷ ⌜ len = length contents ⌝ ∗
+    "Hdiskblk" ∷ mapsto_txn γ.(simple_txn) (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
 
 Definition is_inode_disk γ (inum: nat) (state: simple.ino) : iProp Σ :=
   ∃ (blk: u64),
@@ -149,7 +149,7 @@ Theorem wp_Inode__Read γ ip inum len blk (btxn : loc) (offset : u64) (bytesToRe
       is_buftxn btxn bufm γ.(simple_txn) ∗
       is_inode_mem ip inum len blk ∗
       is_inode_data γ len blk contents ∗
-      ⌜ firstn (length vs) contents = vs ⌝ ∗
+      ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
       ⌜ eof = true <-> (int.nat offset + length vs ≥ int.nat len)%nat ⌝ }}}.
 Proof.
   iIntros (Φ) "(Hbuftxn & Hmem & Hdata) HΦ".
@@ -182,8 +182,10 @@ Proof.
     wp_pures.
     wp_loadField.
     wp_apply wp_block2addr.
-    wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn]").
-    { (* XXX need to get this out of "Hdata" *)
+    iNamed "Hdata".
+    wp_apply (wp_BufTxn__ReadBuf _ _ _ _ _ (existT _ (bufBlock bbuf)) with "[$Hbuftxn]").
+    { iPureIntro; intuition.
+      (* XXX need to get this out of "Hdiskblk" *)
       admit.
     }
 
@@ -195,23 +197,75 @@ Proof.
     iIntros (b) "Hb".
     wp_pures.
 
-    wp_apply (wp_forUpto (λ i, True)%I with "[] [$Hb]").
+    replace (replicate (int.nat 0%Z) IntoVal_def) with (@nil u8) by reflexivity.
+
+    wp_apply (wp_forUpto (λ i,
+      ∃ dataslice vs,
+        "Hdatavar" ∷ datavar ↦[slice.T byteT] (slice_val dataslice) ∗
+        "Hdataslice" ∷ is_slice dataslice byteT 1 vs ∗
+        "%Hcontent" ∷ ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
+        "Hbuf" ∷ is_buf bufptr (blk2addr blk) {|
+           bufKind := projT1 (existT KindBlock (bufBlock bbuf));
+           bufData := projT2 (existT KindBlock (bufBlock bbuf));
+           bufDirty := dirty |}
+      )%I with "[] [$Hb Hdatavar Hdataslice Hbuf]").
     { word. }
     {
       iIntros (b').
       iIntros (Φ') "!>".
       iIntros "(HI & Hb & %Hbound) HΦ'".
+      iNamed "HI".
       wp_pures.
-      admit.
-      (* wp_apply (wp_SliceAppend (V:=u8)). *)
+      wp_load.
+      wp_apply (wp_buf_loadField_data with "Hbuf").
+      iIntros (vslice) "[Hbufdata Hbufnodata]".
+      wp_apply (wp_SliceGet (V:=u8) with "[$Hbufdata]").
+      { admit. }
+      iIntros "Hbufdata".
+      wp_load.
+      wp_apply (wp_SliceAppend (V:=u8) with "Hdataslice").
+      iIntros (dataslice') "Hdataslice".
+      wp_store.
+      iApply "HΦ'".
+      iFrame "Hb".
+      iExists _, _.
+      iFrame "Hdatavar".
+      iFrame "Hdataslice".
+      iSplitR.
+      { rewrite app_length /=.
+        admit.
+      }
+      iApply is_buf_return_data. iFrame.
+    }
+    {
+      iExists _, _.
+      iFrame.
+      rewrite /= //.
     }
 
     iIntros "(HI & Hb)".
+    iNamed "HI".
+
+    iMod ("Hbufupd" with "[$Hbuf]") as "Hbuftxn".
+    { intuition. }
+
+    rewrite insert_id.
+    2: { admit. }
+
     wp_pures.
     wp_apply util_proof.wp_DPrintf.
     wp_pures.
     wp_load.
-    admit.
+    wp_pures.
+    iApply "HΦ".
+    iFrame "Hdataslice Hbuftxn".
+    iFrame.
+    iSplitL "Hdiskblk".
+    { iExists _. iFrame. done. }
+
+    iPureIntro. intuition.
+    { admit. }
+    { admit. }
 
   - admit.
 Admitted.
