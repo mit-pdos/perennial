@@ -1,6 +1,5 @@
-From Perennial.algebra Require Import auth_map.
-From Perennial.algebra Require Import liftable.
-From Perennial.algebra Require Import log_heap.
+From iris.algebra Require Import numbers.
+From Perennial.algebra Require Import auth_map liftable log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof txn.txn_proof.
@@ -90,7 +89,9 @@ Class buftxnG Σ :=
   }.
 
 Record buftxn_names {Σ} :=
-  { buftxn_txn_names : @txn_names Σ; }.
+  { buftxn_txn_names : @txn_names Σ;
+    buftxn_stable_name : gname;
+  }.
 
 Arguments buftxn_names Σ : assert, clear implicits.
 
@@ -103,10 +104,21 @@ Section goose_lang.
   Implicit Types (l: loc) (γ: buftxn_names Σ) (γtxn: gname).
   Implicit Types (obj: object).
 
+  Definition txn_durable γ txn_id :=
+    (* oof, this leaks all the abstractions *)
+    own γ.(buftxn_txn_names).(txn_walnames).(heapspec.wal_heap_durable_lb) (◯ (MaxNat txn_id)).
+
   Definition txn_system_inv γ: iProp Σ :=
     ∃ (σs: async (gmap addr object)),
-      "H◯async" ∷ own γ.(buftxn_txn_names).(txn_crashstates) (◯E (σs: leibnizO (async (gmap addr object))))
-  (* TODO: here we can put the authoritative log_heap resource *)
+      "H◯async" ∷ own γ.(buftxn_txn_names).(txn_crashstates) (◯E (σs: leibnizO (async (gmap addr object)))) ∗
+      "H●latest" ∷ map_ctx γ.(buftxn_stable_name) (latest σs) ∗
+      (* TODO(tej): don't think this does anything so far, because we don't have
+      a spec for how the async heap gets updated on crash. Joe and I thought we
+      might have a more complicated structure with generations and then
+      versioned heaps, so that on crash no state gets lost, we just move to a
+      new generation and invalidate some transactions from the old one. None of
+      this has been worked out, though. *)
+      "H◯durable" ∷ txn_durable γ (length $ possible σs)
   .
 
   (* this is for the entire txn manager, and relates it to some ghost state *)
@@ -117,15 +129,14 @@ Section goose_lang.
   (* TODO: eventually need a proper name for this; I think of it as "the right
   to use address [a] in a transaction", together with the fact that the current
   disk value is obj *)
-  (* this is probably just [mspec.mapsto_txn] *)
-  Definition modify_token γ (a: addr) obj: iProp Σ.
-  Admitted.
+  Definition modify_token γ (a: addr) obj: iProp Σ :=
+    txn_proof.mapsto_txn γ.(buftxn_txn_names) a obj.
 
   (* TODO: I think this just connects to γUnified.(crash_states), which is the
   name of an auth log_heap; when maintaining synchrony the ownership is really
   simple since we only fully own the latest and forward value *)
-  Definition stable_maps_to γ (a:addr) obj: iProp Σ.
-  Admitted.
+  Definition stable_maps_to γ (a:addr) obj: iProp Σ :=
+    ptsto_ro γ.(buftxn_stable_name) a obj.
 
   (* TODO: name this better *)
   Definition buftxn_ctx γtxn (bufs: gmap addr buf) : iProp Σ :=
