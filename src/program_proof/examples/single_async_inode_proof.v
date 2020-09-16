@@ -82,7 +82,7 @@ Section goose.
   (** State of unallocated blocks *)
   Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
 
-  Definition pre_s_inode l (sz: Z) σ : iProp Σ :=
+  Definition pre_s_inode γdur γbuf l (sz: Z) σ : iProp Σ :=
     ∃ inode_ref alloc_ref δused δdur δbuf,
     "#Hstate" ∷ s_inode_state l inode_ref alloc_ref ∗
     "Hs_inv" ∷ s_inode_inv δdur δbuf σ ∗
@@ -91,7 +91,8 @@ Section goose.
     "Halloc" ∷ (∃ s_alloc, "Halloc_mem" ∷ is_allocator_mem_pre alloc_ref s_alloc ∗
                 "%Halloc_dom" ∷ ⌜alloc.domain s_alloc = rangeSet 1 (sz-1)⌝ ∗
                 "Hunused" ∷ ([∗ set] k ∈ alloc.unused s_alloc, allocΨ k) ∗
-                "HPalloc" ∷ Palloc δused s_alloc).
+                "HPalloc" ∷ Palloc δused s_alloc) ∗
+    "HP" ∷ P γdur γbuf σ.
 
   Definition is_single_inode γdur γbuf l (sz: Z) k' : iProp Σ :=
     ∃ (inode_ref alloc_ref: loc) δalloc δused δdur δbuf,
@@ -217,7 +218,9 @@ Section goose.
     (0 < int.val sz)%Z →
     {{{ "Hcinv" ∷ s_inode_cinv γdur γbuf (int.val sz) σ0 true }}}
       Open #d_ref #sz @ NotStuck; S k; ⊤; E2
-    {{{ l, RET #l; pre_s_inode l (int.val sz) (set s_inode.buffered_blocks (λ _, []) σ0) }}}
+    {{{ l, RET #l;
+       ∃ γbuf', pre_s_inode γdur γbuf' l (int.val sz) (set s_inode.buffered_blocks (λ _, []) σ0) ∗
+                inode_mapsto γbuf' (s_inode.durable_blocks σ0) }}}
     {{{ s_inode_cinv γdur γbuf (int.val sz) σ0 true }}}.
   Proof.
     iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
@@ -305,9 +308,13 @@ Section goose.
     iMod (readonly_alloc_1 with "alloc") as "#alloc".
     iMod (ghost_var_alloc (nil : listLO Block)) as
         (δbuf) "[Hδbuf Hownbuf]".
+    iMod (fmlist_alloc (σ0.(s_inode.durable_blocks))) as
+        (γbuf') "(Hγbuf1&Hγbuf2)".
     iModIntro.
     iNamed 1.
     iApply "HΦ".
+    iExists γbuf'.
+    iFrame "Hγbuf1".
     iExists inode_ref, alloc_ref, _, _, _.
     rewrite /s_inode_inv.
     iFrame "Hδdurable_blocks".
@@ -319,7 +326,9 @@ Section goose.
     { iExists _; iFrame. rewrite /Pinode.
       iNamed "HPinode".
       iFrame "Hownbuf". iFrame. }
-    iExists _; iFrame "∗ %".
+    iSplitR "HP Hγbuf2".
+    { iExists _. iFrame "∗ %". }
+    iNamed "HP". iFrame. simpl. rewrite app_nil_r. iFrame.
   Qed.
 
   Lemma is_allocator_pre_post_crash alloc_ref s_alloc :
@@ -329,9 +338,9 @@ Section goose.
     iFrame "%".
   Qed.
 
-  Theorem pre_s_inode_to_cinv l sz σ :
-    pre_s_inode l sz σ -∗
-    s_inode_cinv sz σ true.
+  Theorem pre_s_inode_to_cinv γdur γbuf l sz σ :
+    pre_s_inode γdur γbuf l sz σ -∗
+    s_inode_cinv γdur γbuf sz σ true.
   Proof.
     iNamed 1.
     iExists _, _; iFrame.
@@ -340,27 +349,32 @@ Section goose.
     iDestruct (is_allocator_pre_post_crash with "Halloc_mem") as %Hpost_crash.
     iSplitL "Hpre_inode HPinode".
     { iExists _; iFrame.
-      iNamed "Hpre_inode".
-      iApply inode_linv_to_cinv; auto. }
-    iExists _; iFrame "∗ %".
+      iSplitL "Hpre_inode".
+      { iNamed "Hpre_inode".
+        iApply inode_linv_to_cinv; auto. }
+      iNamed "HPinode". iFrame.
+    }
+    iFrame "∗ %".
+    iSplitL "Halloc_mem HPalloc Hunused".
+    { iExists _. iFrame "∗ %". }
+    iNamed "Hs_inv". iFrame.
   Qed.
 
-  Theorem is_single_inode_alloc {E2} k l (sz: Z) σ :
+  Theorem is_single_inode_alloc {E2} k γdur γbuf l (sz: Z) σ :
     (1 ≤ sz < 2^64)%Z →
     ↑allocN ⊆ E2 →
     ↑s_inodeN ⊆ E2 →
-    ▷ P σ -∗
-    pre_s_inode l sz σ ={⊤}=∗
-    is_single_inode l sz k ∗
-    <disc> |C={⊤,E2}_(S k)=> ∃ σ', s_inode_cinv sz σ' false ∗ P σ'.
+    pre_s_inode γdur γbuf l sz σ ={⊤}=∗
+    is_single_inode γdur γbuf l sz k ∗
+    <disc> |C={⊤,E2}_(S k)=> ∃ σ', s_inode_cinv γdur γbuf sz σ' false.
   Proof.
-    iIntros (???) "HP"; iNamed 1.
+    iIntros (???); iNamed 1.
     iNamed "Hinode".
     iNamed "Halloc".
     iMod (is_allocator_alloc _ _ _ k with "Hunused HPalloc Halloc_mem") as (γalloc) "[Halloc Halloc_crash]".
     iMod (is_inode_alloc inodeN (k:=k) with "HPinode Hpre_inode") as "[Hinode Hinode_crash]".
     (* TODO: allocate s_inode_inv invariant *)
-    iMod (inv_alloc s_inodeN _ (∃ σ, s_inode_inv γblocks σ ∗ P σ)%I
+    iMod (inv_alloc s_inodeN _ (∃ σ, s_inode_inv δdur δbuf σ ∗ P γdur γbuf σ)%I
             with "[Hs_inv HP]") as "#Hinv".
     { iNext.
       iExists _; iFrame. }
@@ -368,7 +382,7 @@ Section goose.
     rewrite Halloc_dom.
     iModIntro.
     iSplitL "Halloc Hinode".
-    { iExists _, _, _, _, _. iFrame "Hinode". iFrame "Halloc".
+    { iExists _, _, _, _, _, _. iFrame "Hinode". iFrame "Halloc".
       iFrame "# ∗". }
     iModIntro.
     iMod "Halloc_crash" as "_".
@@ -381,6 +395,10 @@ Section goose.
     iDestruct "Hs_inode" as (σ') "[Hs_inv HP]".
     iExists _; iFrame.
     iExists _, _; iFrame.
+    iSplitL "Hinode".
+    { iDestruct "Hinode" as (?) "(?&H)". iExists _. iFrame. iNamed "H".
+      iFrame. }
+    { iNamed "Hs_inv". iFrame. }
   Qed.
 
   Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
