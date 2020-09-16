@@ -25,7 +25,7 @@ Definition staged_done `{stagedG Σ} (γ: gname) : iProp Σ :=
 
 (* Schema:
    Fixed: O => C, 1 => P
-   Mutable: O => Qs, 1 => Qr *)
+   Mutable: O => Qs *)
 
 Definition bi_sch_cfupd E E' P :=
   bi_sch_wand (bi_sch_var_fixed O) (bi_sch_fupd E E (bi_sch_fupd E' ∅ P)).
@@ -33,48 +33,92 @@ Definition bi_sch_cfupd E E' P :=
 Definition bi_sch_staged_fupd (E: coPset) :=
   bi_sch_persistently
     (bi_sch_wand (bi_sch_var_mut O)
-                 (bi_sch_cfupd E ∅ (bi_sch_sep (bi_sch_var_fixed 1) (bi_sch_var_mut 1)))).
+                 (bi_sch_wand (bi_sch_var_fixed 2)
+                    (bi_sch_cfupd E ∅ (bi_sch_sep (bi_sch_var_fixed 1) (bi_sch_var_mut O))))).
 
 Definition bi_sch_staged_cases :=
   bi_sch_or (bi_sch_var_mut O)
             (bi_sch_sep (bi_sch_var_mut 1) (bi_sch_sep (bi_sch_var_fixed O) (bi_sch_var_fixed 1))).
 
 Definition bi_sch_staged E :=
-  bi_sch_sep (bi_sch_staged_fupd E) (bi_sch_staged_cases).
+  bi_sch_and (bi_sch_var_mut O) (bi_sch_staged_fupd E).
 
+(* XXX: unfortunately this lemma swaps the ▷ C and the staged_pending 1%Qp γ from the way
+   the schema is structured, but to not break other proofs, we swap the order here *)
 Lemma bi_sch_staged_interp `{!invG Σ, !crashG Σ, !stagedG Σ} E k Qs P γ :
   bi_schema_interp (S k) (bi_later <$> [C; P; staged_pending 1%Qp γ])
                    (bi_later <$> [Qs]) (bi_sch_staged E)
   ⊣⊢ ((▷ Qs ∧ □ (▷ Qs -∗ ▷ C -∗ staged_pending 1%Qp γ -∗ |k,Some O={E}=> |k, Some O={∅, ∅}=> ▷ P ∗ ▷ Qs)))%I.
-Proof. Admitted.
-
-(*
-Lemma bi_sch_staged_interp `{!invG Σ, !crashG Σ, !stagedG Σ} E k Qs Qr P :
-  bi_schema_interp (S k) (bi_later <$> [C; P]) (bi_later <$> [Qs; Qr]) (bi_sch_staged E)
-  ⊣⊢ ((▷ Qs ∧ (▷ C -∗ |k,Some O={E}=> |k, Some O={∅, ∅}=> ▷ P ∗ ▷ Qr)) ∨ (▷ Qr ∗ ▷ C ∗ ▷ P))%I.
-Proof. Admitted.
-  remember (S k) as k' eqn:Hlvl.
-  repeat (rewrite ?bi_schema_interp_unfold //=).
-  rewrite /cfupd ?uPred_fupd_level_eq /uPred_fupd_level_def.
-  rewrite Hlvl /bi_except_0 intuitionistically_into_persistently.
-  done.
+Proof.
+  rewrite bi_schema_interp_unfold.
+  rewrite /bi_sch_staged.
+  rewrite bi_schema_interp_unfold.
+  rewrite /bi_sch_staged_fupd.
+  rewrite bi_schema_interp_unfold.
+  rewrite bi_schema_interp_unfold.
+  rewrite list_lookup_fmap. simpl ([Qs] !! 0).
+  rewrite bi_schema_interp_unfold.
+  rewrite /bi_sch_cfupd.
+  rewrite bi_schema_interp_unfold.
+  rewrite bi_schema_interp_unfold.
+  rewrite bi_schema_interp_unfold.
+  erewrite bi_sch_fupd_interp; last first.
+  { erewrite bi_sch_fupd_interp; last first.
+    { rewrite //=. }
+    reflexivity. }
+  rewrite //=.
+  f_equiv.
+  rewrite intuitionistically_into_persistently.
+  f_equiv. f_equiv.
+  rewrite wand_curry.
+  rewrite wand_curry.
+  rewrite sep_comm.
+  rewrite -wand_curry.
+  rewrite -wand_curry.
+  f_equiv.
+  iSplit.
+   - iIntros "H1 H2". iApply "H1". eauto.
+   - iIntros "H1 >H2". iApply "H1". eauto.
 Qed.
- *)
 
 Lemma bi_sch_staged_interp_weak `{!invG Σ, !crashG Σ, !stagedG Σ} E k Qs_mut P γ :
   bi_schema_interp (S k) (bi_later <$> [C; P; staged_pending 1%Qp γ]) (bi_later <$> Qs_mut) (bi_sch_staged E)
                    ⊣⊢ let Qs := default emp%I (bi_later <$> (Qs_mut !! O)) in
                       (((Qs ∧ □ (Qs -∗ ▷ C -∗ staged_pending 1%Qp γ -∗ |k,Some O={E}=> |k, Some O={∅, ∅}=> ▷ P ∗ Qs))))%I.
-Proof. Admitted.
-(*
-  remember (S k) as k' eqn:Hlvl.
-  repeat (rewrite ?bi_schema_interp_unfold //=).
-  rewrite /cfupd ?uPred_fupd_level_eq /uPred_fupd_level_def.
-  rewrite Hlvl /bi_except_0 intuitionistically_into_persistently.
-  rewrite /default. rewrite ?list_lookup_fmap.
-  destruct (Qs_mut !! O); destruct (Qs_mut !! 1); auto.
+Proof.
+  rewrite bi_schema_interp_unfold.
+  rewrite /bi_sch_staged.
+  rewrite bi_schema_interp_unfold.
+  rewrite /bi_sch_staged_fupd.
+  rewrite bi_schema_interp_unfold.
+  rewrite bi_schema_interp_unfold.
+  rewrite bi_schema_interp_unfold.
+  rewrite /bi_sch_cfupd.
+  rewrite bi_schema_interp_unfold.
+  rewrite bi_schema_interp_unfold.
+  rewrite bi_schema_interp_unfold.
+  erewrite bi_sch_fupd_interp; last first.
+  { erewrite bi_sch_fupd_interp; last first.
+    { rewrite //=. }
+    reflexivity. }
+  rewrite //=.
+  f_equiv.
+  { rewrite ?list_lookup_fmap. destruct (Qs_mut !! 0) => //=. }
+  rewrite intuitionistically_into_persistently.
+  f_equiv. f_equiv.
+  { rewrite ?list_lookup_fmap. destruct (Qs_mut !! 0) => //=. }
+  rewrite wand_curry.
+  rewrite wand_curry.
+  rewrite sep_comm.
+  rewrite -wand_curry.
+  rewrite -wand_curry.
+  f_equiv.
+  iSplit.
+  - iIntros "H1 H2".
+    rewrite ?list_lookup_fmap. destruct (Qs_mut !! 0) => //=; iApply "H1"; eauto.
+  - iIntros "H1 >H2".
+    rewrite ?list_lookup_fmap. destruct (Qs_mut !! 0) => //=; iApply "H1"; eauto.
 Qed.
-*)
 
 Section staged_inv_defns.
 
