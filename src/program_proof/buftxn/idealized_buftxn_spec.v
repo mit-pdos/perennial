@@ -1,5 +1,6 @@
 From Perennial.algebra Require Import auth_map.
 From Perennial.algebra Require Import liftable.
+From Perennial.algebra Require Import log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof txn.txn_proof.
@@ -22,21 +23,34 @@ Definition objKind (obj: object): bufDataKind := projT1 obj.
 Definition objData (obj: object): bufDataT (objKind obj) := projT2 obj.
 
 Class buftxnG Σ :=
-  { buftxn_buffer_inG :> mapG Σ addr object; }.
+  { buftxn_buffer_inG :> mapG Σ addr object;
+    buftxn_txn_inG :> txnG Σ;
+  }.
 
-Record buftxn_names Σ :=
+Record buftxn_names {Σ} :=
   { buftxn_txn_names : @txn_names Σ; }.
+
+Arguments buftxn_names Σ : assert, clear implicits.
 
 Section goose_lang.
   Context `{!heapG Σ}.
   Context `{!buftxnG Σ}.
 
+  Context (N:namespace).
+
   Implicit Types (l: loc) (γ: buftxn_names Σ) (γtxn: gname).
   Implicit Types (obj: object).
 
+  Definition txn_system_inv γ: iProp Σ :=
+    ∃ (σs: async (gmap addr object)),
+      "H◯async" ∷ own γ.(buftxn_txn_names).(txn_crashstates) (◯E (σs: leibnizO (async (gmap addr object))))
+  (* TODO: here we can put the authoritative log_heap resource *)
+  .
+
   (* this is for the entire txn manager, and relates it to some ghost state *)
-  Definition is_txn l γ : iProp Σ.
-  Admitted.
+  Definition is_txn_system l γ : iProp Σ :=
+    "His_txn" ∷ txn_proof.is_txn l γ.(buftxn_txn_names) ∗
+    inv N (txn_system_inv γ).
 
   (* TODO: eventually need a proper name for this; I think of it as "the right
   to use address [a] in a transaction", together with the fact that the current
@@ -69,7 +83,7 @@ Section goose_lang.
     ∃ (txn_l: loc) (bufs_l: loc) (bufs: gmap addr buf),
       "txn" ∷ readonly (l ↦[BufTxn.S :: "txn"] #txn_l) ∗
       "bufs" ∷ readonly (l ↦[BufTxn.S :: "bufs"] #bufs_l) ∗
-      "Htxn" ∷ is_txn txn_l γ ∗
+      "Htxn" ∷ is_txn_system txn_l γ ∗
       "Hbufs" ∷ is_bufmap bufs_l bufs ∗
       "Hctx" ∷ buftxn_ctx γtxn bufs ∗
       "Hold_stable" ∷ ([∗ map] a↦_ ∈ bufs, ∃ obj0, modify_token γ a obj0).
