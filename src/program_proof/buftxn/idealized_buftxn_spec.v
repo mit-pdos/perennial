@@ -9,9 +9,71 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import disk_prelude.
 
+(** * A more separation logic-friendly spec for buftxn
+
+    An attempt to sketch out a synchronous spec for buftxn that has no maps,
+    only separation logic resources.
+
+    The overall flow of using the transaction system is to represent an on-disk
+    resource (think of it as a disk maps-to for now) as a stable points-to fact
+    and an ephemeral, exclusive "modification token", a right to modify that
+    address by using a transaction. The stable fact survives a crash by going
+    into an invariant, while the modification token is locked.
+
+    Threads can acquire a number of locks to modification tokens, then "lift"
+    those tokens into a transaction. These transactions are like mini-disks,
+    whose domain includes all the read and written addresses. A transaction is
+    represented by *buftxn.BufTxn in the code, which actually contains the
+    addresses that have been read/written.
+
+    The calling thread updates a bunch of modification tokens to construct some
+    new state for the locked object. Then they commit the entire transaction (by
+    calling buftxn.CommitWait). This spec is synchronous, so it only covers
+    CommitWait with sync=true, which greatly simplifies the invariant and crash
+    behavior. Committing exchanges takes a stable points-to and modification
+    token (which might have a new value) for an address and gives back both, but
+    with the stable points-to now at the old value. Of course crucially
+    CommitWait does this exchange for all of the addresses in the transaction
+    simultaneously, in one fancy update, guaranteeing crash atomicity.
+
+    To make this specification more usable we have a notion of "lifting"
+    developed in algebra/liftable that defines liftable predicates as those that
+    are parameterized by a points-to fact and can be "lifted" from one points-to
+    to another. This allows the spec to be used on entire lifted predicates
+    rather than explicit sets of points-to facts. For example, we might define
+    [inode_rep mapsto addrs metadata] to define how an inode lays out its
+    metadata (attributes like length and type) and a set of data addresses on
+    disk, using mapsto. Now we can easily specify an inode in its stable or
+    modification token form.
+
+    One complication handled pretty simply here is that the transaction system
+    doesn't manage disk blocks but variable-sized objects. This is largely
+    explained in the a header comment in the buftxn package Go code; essentially
+    each disk block has a statically-assigned "kind" and has only objects of
+    that kind's size. Following this discpline will be enforced at write time so
+    it can be maintained as an invariant by the txn_proof.
+ *)
+
 (* mspec is a shorthand for referring to the old "map-based" spec, since we will
 want to use similar names in this spec *)
 Module mspec := buftxn.buftxn_proof.
+
+(** There are three main ideas to work out here relative to buftxn_proof:
+
+  (1) mspec transactions are indexed by an explicit map, while here we want an
+  auth_map and points-to facts, so we can lift a predicate into the transaction
+  map.
+  (2) The authoritative state in mspec is the entire list of gmaps for the
+  entire disk, which we want to talk about using maps-to, per-address resources.
+  The asynchronous buftxn spec needs to be more sophisticated to talk about an
+  address in a particular version, which uses the log_heap resource, but here
+  due to synchrony we can collapse the whole thing to one gmap and everything is
+  simple.
+  (3) All parts of the spec should work with lifted predicates, especially
+  CommitWait. This is what will give us pleasant reasoning akin to
+  coarse-grained locking, even though the code also achieves crash atomicity.
+*)
+
 
 (* an object is the data for a sub-block object, a dynamic bundle of a kind and
 data of the appropriate size *)
