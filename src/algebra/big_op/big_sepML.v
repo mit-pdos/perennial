@@ -1,3 +1,4 @@
+From Perennial.iris_lib Require Export conflicting.
 From Perennial.algebra.big_op Require Import big_sepM.
 From iris.proofmode Require Import tactics.
 From iris_string_ident Require Import ltac2_string_ident.
@@ -610,29 +611,6 @@ Proof.
   intros Himpl.
   apply big_opL_gen_proper; auto.
   typeclasses eauto.
-Qed.
-
-Definition Conflicting {L V} (P0 P1 : L -> V -> PROP) :=
-  ∀ a0 v0 a1 v1,
-    P0 a0 v0 -∗ P1 a1 v1 -∗ ⌜ a0 ≠ a1 ⌝.
-
-Lemma big_sepM_disjoint_pred {L V} {P0 P1 : L -> V -> PROP} `{!EqDecision L} `{!Countable L}
-  `{!∀ l v, Absorbing (P0 l v)}
-  `{!∀ l v, Absorbing (P1 l v)}
-  `(Conflicting P0 P1)
-  (m0 m1 : gmap L V) :
-  ( ( [∗ map] a↦v ∈ m0, P0 a v ) -∗
-    ( [∗ map] a↦v ∈ m1, P1 a v ) -∗
-    ⌜ m0 ##ₘ m1 ⌝ ).
-Proof.
-  iIntros "H0 H1".
-  iIntros (i).
-  unfold option_relation.
-  destruct (m0 !! i) eqn:He; destruct (m1 !! i) eqn:H1; try solve [ iPureIntro; auto ].
-  iDestruct (big_sepM_lookup with "H0") as "H0"; eauto.
-  iDestruct (big_sepM_lookup with "H1") as "H1"; eauto.
-  iDestruct (Conflicting0 with "H0 H1") as %Hcc.
-  congruence.
 Qed.
 
 End bi.

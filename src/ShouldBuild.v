@@ -19,6 +19,8 @@ From Perennial.program_proof Require
      buftxn.buftxn_proof
      buftxn.idealized_buftxn_spec
      simple.simple.
+(* new version for buftxn *)
+From Perennial.algebra Require Import liftable2.
 From Perennial.program_proof.examples Require
      dir_proof
      single_inode_proof

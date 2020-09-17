@@ -1,5 +1,6 @@
 From Coq Require Import ssreflect.
 From stdpp Require Import gmap fin_sets.
+From Perennial.Helpers Require Import gset.
 From Perennial.Helpers Require Import Integers.
 
 Definition rangeSet (start sz: Z): gset u64 :=
@@ -19,36 +20,6 @@ Proof.
   - exists (int.val i).
     split; [ word | ].
     apply elem_of_seqZ; word.
-Qed.
-
-(* TODO: upstream this *)
-Lemma gset_eq `{Countable A} (c1 c2: gset A) :
-  (forall (x:A), x ∈ c1 ↔ x ∈ c2) → c1 = c2.
-Proof.
-  intros Hexteq.
-  destruct c1 as [c1], c2 as [c2].
-  f_equal.
-  apply map_eq.
-  rewrite /elem_of /gset_elem_of/mapset.mapset_elem_of /= in Hexteq.
-  intros.
-  destruct (c1 !! i) eqn:Hc1;
-    destruct (c2 !! i) eqn:Hc2; auto.
-  - destruct u, u0; auto.
-  - destruct u; apply Hexteq in Hc1.
-    congruence.
-  - destruct u; apply Hexteq in Hc2.
-    congruence.
-Qed.
-
-Lemma gset_elem_is_empty `{Countable A} (c:gset A) :
-  (forall x, x ∉ c) →
-  c = ∅.
-Proof.
-  intros Hnoelem.
-  apply gset_eq; intros.
-  split; intros Helem.
-  - contradiction (Hnoelem x).
-  - contradiction (not_elem_of_empty (C:=gset A) x).
 Qed.
 
 Lemma rangeSet_diag (start sz: Z) :

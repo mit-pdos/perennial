@@ -1,5 +1,5 @@
 From RecordUpdate Require Import RecordSet.
-From Perennial.Helpers Require Import Map.
+From Perennial.Helpers Require Import Map gset.
 
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.algebra Require Import deletable_heap.

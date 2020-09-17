@@ -516,6 +516,20 @@ Proof.
 *)
 Admitted.
 
+Instance mapsto_txn_conflicting γUnified : Conflicting (mapsto_txn γUnified).
+Proof.
+  rewrite /Conflicting /ConflictsWith.
+  iIntros (a0 v0 a1 v1).
+  iIntros "Hm1 Hm2".
+  destruct (decide (a0 = a1)); eauto; subst.
+  iDestruct (mapsto_txn_2 with "Hm1 Hm2") as %[].
+Qed.
+
+Instance mapsto_txn_conflicts_with γUnified : ConflictsWith (mapsto_txn γUnified) (mapsto_txn γUnified).
+Proof.
+  apply mapsto_txn_conflicting.
+Qed.
+
 Theorem BufTxn_lift buftx mt γUnified (m : gmap addr {K & _}) E :
   ↑invN ⊆ E ->
   (
@@ -531,18 +545,6 @@ Proof.
   iNamed "Htxn".
 
   iDestruct (big_sepM_disjoint_pred with "Hctxelem Ha") as %Hd.
-  {
-    unfold Conflicting; intros.
-    iIntros "Hm1 Hm2".
-    destruct (decide (a0 = a1)); eauto; subst.
-    destruct (gBufmap !! a1).
-    { destruct (b.(bufDirty)).
-      { iDestruct "Hm1" as (?) "Hm1".
-        iDestruct (mapsto_txn_2 with "Hm1 Hm2") as %[]. }
-      { iDestruct (mapsto_txn_2 with "Hm1 Hm2") as %[]. }
-    }
-    { iDestruct (mapsto_txn_2 with "Hm1 Hm2") as %[]. }
-  }
 
   iMod (big_sepM_mono_fupd _ (fun a v => mapsto_txn γUnified a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ⌝)%I _ emp%I with "[] [$Ha]") as "[_ Ha]".
   { iModIntro. iIntros (???) "[_ H]".

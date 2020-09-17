@@ -14,7 +14,7 @@ Section liftable.
   Class Liftable (P : (L -> V -> iProp Σ) -> iProp Σ) := liftable :
     ∀ mapsto1,
       (∀ l v, Absorbing (mapsto1 l v)) ->
-      Conflicting mapsto1 mapsto1 ->
+      Conflicting mapsto1 ->
       P mapsto1 -∗
       ∃ (m : gmap L V),
         ([∗ map] a ↦ v ∈ m, mapsto1 a v) ∗

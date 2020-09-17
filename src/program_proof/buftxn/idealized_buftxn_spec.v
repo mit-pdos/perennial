@@ -173,8 +173,8 @@ Section goose_lang.
     buftxn_ctx *)
   Admitted.
 
-  Lemma modify_token_conflicting γ :
-    Conflicting (modify_token γ) (modify_token γ).
+  Instance modify_token_conflicting γ :
+    Conflicting (modify_token γ).
   Proof.
   Admitted.
 
@@ -186,7 +186,6 @@ Section goose_lang.
   Proof.
     iIntros "Hctx HP".
     iDestruct (liftable (P:=P) with "HP") as (m) "[Hm HP]".
-    { apply modify_token_conflicting. }
     iSpecialize ("HP" $! (buftxn_maps_to γtxn)).
     iInduction m as [|i x m] "IH" using map_ind.
     - iModIntro.
