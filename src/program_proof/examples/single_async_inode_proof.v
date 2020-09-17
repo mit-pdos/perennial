@@ -137,11 +137,22 @@ Section goose.
     fmlist_lb γdur blocks ∗
     fmlist_lb γbuf blocks.
 
+  Lemma inode_mapsto_agree γbuf blocks blocks' :
+    inode_mapsto γbuf blocks -∗ inode_mapsto γbuf blocks' -∗ ⌜ blocks = blocks' ⌝.
+  Proof.
+    iApply fmlist_agree_1.
+  Qed.
+
   (* inode_current_lb is persistent, and states that the specified list is a
      prefix of the combination of durable + buffered blocks. It can be promoted
      to inode_durable_lb durable fact with a flush *)
   Definition inode_current_lb γbuf blocks : iProp Σ :=
     fmlist_lb γbuf blocks.
+
+  Lemma inode_mapsto_lb_agree γbuf blocks blocks' :
+    inode_mapsto γbuf blocks -∗ inode_current_lb γbuf blocks' -∗ ⌜ blocks' `prefix_of` blocks ⌝.
+  Proof. iApply fmlist_agree_2. Qed.
+
 
   Theorem init_single_inode {E} (sz: Z) :
     (1 ≤ sz < 2^64)%Z →
@@ -212,6 +223,19 @@ Section goose.
     Discretizable (s_inode_cinv γdur γbuf sz σ b).
   Proof. apply _. Qed.
 
+  Lemma P_get_lbs γdur γbuf σ:
+    P γdur γbuf σ ==∗
+    P γdur γbuf σ ∗
+    inode_durable_lb γdur γbuf (s_inode.durable_blocks σ) ∗
+    inode_current_lb γbuf (s_inode.durable_blocks σ ++ s_inode.buffered_blocks σ).
+  Proof.
+    iNamed 1.
+    iMod (fmlist_get_lb with "Hfm_dur_blocks") as "($&$)".
+    iMod (fmlist_get_lb with "Hfm_all_blocks") as "(Hfm_all_blocks&$)".
+    iMod (fmlist_get_lb with "Hfm_all_blocks") as "($&Hlb)".
+    iModIntro. iApply (fmlist_lb_mono with "Hlb"). eexists; eauto.
+  Qed.
+
   Theorem wpc_Open {k E2} γdur γbuf (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
     ↑allocN ⊆ E2 →
@@ -220,7 +244,13 @@ Section goose.
       Open #d_ref #sz @ NotStuck; S k; ⊤; E2
     {{{ l, RET #l;
        ∃ γbuf', pre_s_inode γdur γbuf' l (int.val sz) (set s_inode.buffered_blocks (λ _, []) σ0) ∗
-                inode_mapsto γbuf' (s_inode.durable_blocks σ0) }}}
+                (* New buf points to fact *)
+                inode_mapsto γbuf' (s_inode.durable_blocks σ0) ∗
+                (* Durable lb for current state *)
+                inode_durable_lb γdur γbuf' (s_inode.durable_blocks σ0) ∗
+                (* Old buf points to fact *)
+                inode_mapsto γbuf (s_inode.durable_blocks σ0 ++ s_inode.buffered_blocks σ0)
+    }}}
     {{{ s_inode_cinv γdur γbuf (int.val sz) σ0 true }}}.
   Proof.
     iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
@@ -284,6 +314,7 @@ Section goose.
     iDestruct "Halloc" as (s_alloc) "Halloc"; iNamed "Halloc".
     iDestruct (unify_used_set with "HPalloc HPinode") as %Hused_inode.
 
+    iMod (P_get_lbs with "HP") as "(HP&Hdurable_lb&Hcurr_lb)".
     iCache with "HΦ Hδdurable_blocks Hpre_inode HPinode HPalloc Hunused HP".
     { iAssert (alloc_crash_cond (Palloc δused) allocΨ (rangeSet 1 (int.val sz - 1)) true)
             with "[HPalloc Hunused]" as "Halloc".
@@ -310,11 +341,17 @@ Section goose.
         (δbuf) "[Hδbuf Hownbuf]".
     iMod (fmlist_alloc (σ0.(s_inode.durable_blocks))) as
         (γbuf') "(Hγbuf1&Hγbuf2)".
+    iMod (fmlist_get_lb with "Hγbuf1") as "(Hγbuf1&Hbuf_lb)".
     iModIntro.
     iNamed 1.
     iApply "HΦ".
     iExists γbuf'.
     iFrame "Hγbuf1".
+    iNamed "HP".
+    iFrame "Hfm_all_blocks".
+    iDestruct "Hdurable_lb" as "($&_)".
+    iFrame "Hbuf_lb".
+
     iExists inode_ref, alloc_ref, _, _, _.
     rewrite /s_inode_inv.
     iFrame "Hδdurable_blocks".
@@ -326,9 +363,9 @@ Section goose.
     { iExists _; iFrame. rewrite /Pinode.
       iNamed "HPinode".
       iFrame "Hownbuf". iFrame. }
-    iSplitR "HP Hγbuf2".
+    iSplitR "Hfm_dur_blocks Hγbuf2".
     { iExists _. iFrame "∗ %". }
-    iNamed "HP". iFrame. simpl. rewrite app_nil_r. iFrame.
+    iFrame. simpl. rewrite app_nil_r. iFrame.
   Qed.
 
   Lemma is_allocator_pre_post_crash alloc_ref s_alloc :
@@ -401,18 +438,16 @@ Section goose.
     { iNamed "Hs_inv". iFrame. }
   Qed.
 
-  Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
+  Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
-    {{{ "#Hinode" ∷ is_single_inode l sz k' ∗
-        "Hfupd" ∷ (∀ σ mb,
-                      ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ -∗
-                      ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
+    {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
+        "Hfupd" ∷ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗ inode_mapsto γbuf blks ∗ Q (blks !! int.nat i)
     }}}
       SingleInode__Read #l #i @ NotStuck; (S k); ⊤;E2
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
-        | Some b => is_block s 1 b
+        | Some b => (∃ q, is_block s q b)
         end ∗ Q mb }}}
     {{{ True }}}.
   Proof.
@@ -430,21 +465,84 @@ Section goose.
     iFrame "Hinode". iSplit; first iFromCache. clear.
     iIntros "!>" (σ mb) "[ -> >HPinode]".
     iInv "Hinv" as "Hinner".
-    iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
-    iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
-      last iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
+    iDestruct "Hinner" as ([durable_blocks buffered_blocks]) "[>Hsinv >HP]".
+    iNamed "HP".
+    simpl.
+    iMod fupd_intro_mask' as "HcloseM"; last
+      iMod ("Hfupd" with "Hfm_all_blocks") as "(Hcurr&HQ)".
     { solve_ndisj. }
     rewrite {2}/s_inode_inv. iNamed "Hsinv".
     iNamed "HPinode". simpl.
-    iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
+    iDestruct (ghost_var_agree with "Hδdurable_blocks Hown_dur_blocks") as %->.
+    iDestruct (ghost_var_agree with "Hδbuffered_blocks Hown_buf_blocks") as %->.
     iMod "HcloseM" as "_".
     iModIntro.
     iFrame.
-    iSplitR "HΦ HQ"; first by eauto with iFrame.
+    iSplitR "HΦ HQ".
+    { iNext. iExists {| s_inode.durable_blocks := inode.durable_blocks σ;
+                        s_inode.buffered_blocks := inode.buffered_blocks σ; |}.
+      iFrame. }
     iModIntro. iSplit.
     - crash_case; auto.
     - iIntros (s) "Hb".
-      iApply "HΦ"; iFrame. done.
+      iApply "HΦ"; iFrame.  done.
+  Qed.
+
+  (* If you have the full inode_mapsto (or rather, can get it by a view-shift, then
+     you know the exact results of your read, compare with wp_Read_fupd_triple for disk *)
+
+  Theorem wpc_Read1 {k E2} (Q: option Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
+    (S k < k')%nat →
+    {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
+        "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
+                                (inode_mapsto γbuf blks -∗ |={E, ⊤∖↑N}=> Q (blks !! int.nat i))
+    }}}
+      SingleInode__Read #l #i @ NotStuck; (S k); ⊤;E2
+    {{{ (s:Slice.t) mb, RET (slice_val s);
+        match mb with
+        | None => ⌜s = Slice.nil⌝
+        | Some b => (∃ q, is_block s q b)
+        end ∗ Q mb }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    wpc_apply (wpc_Read Q with "[$Hinode Hfupd]"); try eassumption.
+    { iIntros (blks) "Hpts". iMod "Hfupd" as (blks') "(Hpts'&Hclo)".
+      iDestruct (inode_mapsto_agree with "[$] [$]") as %->.
+      iMod ("Hclo" with "[$]"). iFrame. eauto.
+    }
+    eauto.
+  Qed.
+
+  (* If you have only a lower bound inode_mapsto (or rather, can get it by a view-shift), then
+     you know the exact results of your read. One can prove a corresponding thing for if the read
+     is out of bounds, saying that you can get either nothing or something (and then a new lb *)
+
+  Theorem wpc_Read2 {k E2} (Q: Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
+    (S k < k')%nat →
+    {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
+        "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks b, ⌜ blks !! int.nat i = Some b ⌝ ∧ inode_current_lb γbuf blks
+                                 ∗ |={E, ⊤∖↑N}=> Q b
+    }}}
+      SingleInode__Read #l #i @ NotStuck; (S k); ⊤;E2
+    {{{ (s:Slice.t) b, RET (slice_val s); (∃ q, is_block s q b) ∗ Q b }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    wpc_apply (wpc_Read (λ mb, match mb with None => False | Some b => Q b end)%I
+                 with "[$Hinode Hfupd]"); try eassumption.
+    { iIntros (blks) "Hpts". iMod "Hfupd" as (blks' b Hlookup') "(Hpts'&Hclo)".
+      iDestruct (inode_mapsto_lb_agree with "[$] [$]") as %Hprefix.
+      iMod ("Hclo"). iFrame. iModIntro.
+      eapply prefix_lookup in Hlookup'; last eassumption.
+      rewrite Hlookup'. iFrame.
+    }
+    iSplit.
+    - by iLeft in "HΦ".
+    - iNext. iRight in "HΦ".
+      iIntros (? []).
+      * iApply "HΦ".
+      * iIntros "(?&[])".
   Qed.
 
   (* these two fupds are easy to prove universally because the change they make
