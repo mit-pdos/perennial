@@ -6,7 +6,6 @@ From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.buf.
 From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.fh.
 From Goose Require github_com.mit_pdos.goose_nfsd.lockmap.
 From Goose Require github_com.mit_pdos.goose_nfsd.nfstypes.
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
@@ -26,6 +25,39 @@ Definition nInode: val :=
 Definition inum2Addr: val :=
   rec: "inum2Addr" "inum" :=
     addr.MkAddr common.LOGSIZE ("inum" * common.INODESZ * #8).
+
+(* fh.go *)
+
+Module Fh.
+  Definition S := struct.decl [
+    "Ino" :: uint64T
+  ].
+End Fh.
+
+Definition MakeFh: val :=
+  rec: "MakeFh" "fh3" :=
+    let: "dec" := marshal.NewDec (struct.get nfstypes.Nfs_fh3.S "Data" "fh3") in
+    let: "i" := marshal.Dec__GetInt "dec" in
+    struct.mk Fh.S [
+      "Ino" ::= "i"
+    ].
+
+Definition Fh__MakeFh3: val :=
+  rec: "Fh__MakeFh3" "fh" :=
+    let: "enc" := marshal.NewEnc #16 in
+    marshal.Enc__PutInt "enc" (struct.get Fh.S "Ino" "fh");;
+    let: "fh3" := struct.mk nfstypes.Nfs_fh3.S [
+      "Data" ::= marshal.Enc__Finish "enc"
+    ] in
+    "fh3".
+
+Definition MkRootFh3: val :=
+  rec: "MkRootFh3" <> :=
+    let: "enc" := marshal.NewEnc #16 in
+    marshal.Enc__PutInt "enc" common.ROOTINUM;;
+    struct.mk nfstypes.Nfs_fh3.S [
+      "Data" ::= marshal.Enc__Finish "enc"
+    ].
 
 (* inode.go *)
 
@@ -168,7 +200,7 @@ Definition Nfs__MOUNTPROC3_MNT: val :=
     let: "reply" := struct.alloc nfstypes.Mountres3.S (zero_val (struct.t nfstypes.Mountres3.S)) in
     (* log.Printf("Mount %v\n", args) *)
     struct.storeF nfstypes.Mountres3.S "Fhs_status" "reply" nfstypes.MNT3_OK;;
-    struct.storeF nfstypes.Mountres3_ok.S "Fhandle" (struct.fieldRef nfstypes.Mountres3.S "Mountinfo" "reply") (struct.get nfstypes.Nfs_fh3.S "Data" (fh.MkRootFh3 #()));;
+    struct.storeF nfstypes.Mountres3_ok.S "Fhandle" (struct.fieldRef nfstypes.Mountres3.S "Mountinfo" "reply") (struct.get nfstypes.Nfs_fh3.S "Data" (MkRootFh3 #()));;
     struct.load nfstypes.Mountres3.S "reply".
 
 Definition Nfs__MOUNTPROC3_UMNT: val :=
@@ -211,8 +243,8 @@ End Nfs.
 
 Definition fh2ino: val :=
   rec: "fh2ino" "fh3" :=
-    let: "fh" := fh.MakeFh "fh3" in
-    struct.get fh.Fh.S "Ino" "fh".
+    let: "fh" := MakeFh "fh3" in
+    struct.get Fh.S "Ino" "fh".
 
 Definition rootFattr: val :=
   rec: "rootFattr" <> :=
@@ -249,6 +281,18 @@ Definition Nfs__NFSPROC3_NULL: val :=
     util.DPrintf #0 (#(str"NFS Null
     ")) #().
 
+Definition validInum: val :=
+  rec: "validInum" "inum" :=
+    (if: ("inum" = #0)
+    then #false
+    else
+      (if: ("inum" = common.ROOTINUM)
+      then #false
+      else
+        (if: "inum" ≥ nInode #()
+        then #false
+        else #true))).
+
 Definition Nfs__NFSPROC3_GETATTR: val :=
   rec: "Nfs__NFSPROC3_GETATTR" "nfs" "args" :=
     let: "reply" := ref (zero_val (struct.t nfstypes.GETATTR3res.S)) in
@@ -262,7 +306,7 @@ Definition Nfs__NFSPROC3_GETATTR: val :=
       struct.storeF nfstypes.GETATTR3resok.S "Obj_attributes" (struct.fieldRef nfstypes.GETATTR3res.S "Resok" "reply") (rootFattr #());;
       ![struct.t nfstypes.GETATTR3res.S] "reply"
     else
-      (if: "inum" ≥ nInode #()
+      (if: ~ (validInum "inum")
       then
         struct.storeF nfstypes.GETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_INVAL;;
         ![struct.t nfstypes.GETATTR3res.S] "reply"
@@ -286,7 +330,7 @@ Definition Nfs__NFSPROC3_SETATTR: val :=
     let: "inum" := fh2ino (struct.get nfstypes.SETATTR3args.S "Object" "args") in
     util.DPrintf #1 (#(str"inum %d %d
     ")) #();;
-    (if: ("inum" = common.ROOTINUM) || ("inum" ≥ nInode #())
+    (if: ~ (validInum "inum")
     then
       struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_INVAL;;
       ![struct.t nfstypes.SETATTR3res.S] "reply"
@@ -336,16 +380,15 @@ Definition Nfs__NFSPROC3_LOOKUP: val :=
       "inum" <-[uint64T] #3;;
       #()
     else #());;
-    (if: (![uint64T] "inum" = #0) || (![uint64T] "inum" = common.ROOTINUM) || (![uint64T] "inum" ≥ nInode #())
+    (if: ~ (validInum (![uint64T] "inum"))
     then
       struct.storeF nfstypes.LOOKUP3res.S "Status" "reply" nfstypes.NFS3ERR_NOENT;;
       ![struct.t nfstypes.LOOKUP3res.S] "reply"
     else
-      let: "fh" := struct.mk fh.Fh.S [
-        "Ino" ::= ![uint64T] "inum";
-        "Gen" ::= #0
+      let: "fh" := struct.mk Fh.S [
+        "Ino" ::= ![uint64T] "inum"
       ] in
-      struct.storeF nfstypes.LOOKUP3resok.S "Object" (struct.fieldRef nfstypes.LOOKUP3res.S "Resok" "reply") (fh.Fh__MakeFh3 "fh");;
+      struct.storeF nfstypes.LOOKUP3resok.S "Object" (struct.fieldRef nfstypes.LOOKUP3res.S "Resok" "reply") (Fh__MakeFh3 "fh");;
       struct.storeF nfstypes.LOOKUP3res.S "Status" "reply" nfstypes.NFS3_OK;;
       ![struct.t nfstypes.LOOKUP3res.S] "reply").
 
@@ -365,7 +408,7 @@ Definition Nfs__NFSPROC3_READ: val :=
     ")) #();;
     let: "txn" := buftxn.Begin (struct.loadF Nfs.S "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.READ3args.S "File" "args") in
-    (if: ("inum" = common.ROOTINUM) || ("inum" ≥ nInode #())
+    (if: ~ (validInum "inum")
     then
       struct.storeF nfstypes.READ3res.S "Status" "reply" nfstypes.NFS3ERR_INVAL;;
       ![struct.t nfstypes.READ3res.S] "reply"
@@ -384,6 +427,16 @@ Definition Nfs__NFSPROC3_READ: val :=
       lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
       ![struct.t nfstypes.READ3res.S] "reply").
 
+Definition Nfs__foo: val :=
+  rec: "Nfs__foo" "nfs" :=
+    Nfs__NFSPROC3_READ "nfs" (struct.mk nfstypes.READ3args.S [
+      "File" ::= struct.mk nfstypes.Nfs_fh3.S [
+        "Data" ::= slice.nil
+      ];
+      "Offset" ::= #0;
+      "Count" ::= #(U32 0)
+    ]).
+
 Definition Nfs__NFSPROC3_WRITE: val :=
   rec: "Nfs__NFSPROC3_WRITE" "nfs" "args" :=
     let: "reply" := ref (zero_val (struct.t nfstypes.WRITE3res.S)) in
@@ -393,7 +446,7 @@ Definition Nfs__NFSPROC3_WRITE: val :=
     let: "inum" := fh2ino (struct.get nfstypes.WRITE3args.S "File" "args") in
     util.DPrintf #1 (#(str"inum %d %d
     ")) #();;
-    (if: ("inum" = common.ROOTINUM) || ("inum" ≥ nInode #())
+    (if: ~ (validInum "inum")
     then
       struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3ERR_INVAL;;
       ![struct.t nfstypes.WRITE3res.S] "reply"
@@ -559,11 +612,19 @@ Definition Nfs__NFSPROC3_COMMIT: val :=
     ")) #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.COMMIT3res.S)) in
     let: "txn" := buftxn.Begin (struct.loadF Nfs.S "t" "nfs") in
-    let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
-    (if: "ok"
-    then struct.storeF nfstypes.COMMIT3res.S "Status" "reply" nfstypes.NFS3_OK
-    else struct.storeF nfstypes.COMMIT3res.S "Status" "reply" nfstypes.NFS3ERR_IO);;
-    ![struct.t nfstypes.COMMIT3res.S] "reply".
+    let: "inum" := fh2ino (struct.get nfstypes.COMMIT3args.S "File" "args") in
+    (if: ~ (validInum "inum")
+    then
+      struct.storeF nfstypes.COMMIT3res.S "Status" "reply" nfstypes.NFS3ERR_INVAL;;
+      ![struct.t nfstypes.COMMIT3res.S] "reply"
+    else
+      lockmap.LockMap__Acquire (struct.loadF Nfs.S "l" "nfs") "inum";;
+      let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+      (if: "ok"
+      then struct.storeF nfstypes.COMMIT3res.S "Status" "reply" nfstypes.NFS3_OK
+      else struct.storeF nfstypes.COMMIT3res.S "Status" "reply" nfstypes.NFS3ERR_IO);;
+      lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
+      ![struct.t nfstypes.COMMIT3res.S] "reply").
 
 (* start.go *)
 

@@ -2,14 +2,14 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-Definition NBITBLOCK : expr := disk.BlockSize * #8.
-
-Definition INODEBLK : expr := disk.BlockSize `quot` "INODESZ".
-
-Definition NINODEBITMAP : expr := #1.
-
 (* on-disk size *)
 Definition INODESZ : expr := #128.
+
+Definition NBITBLOCK : expr := disk.BlockSize * #8.
+
+Definition INODEBLK : expr := disk.BlockSize `quot` INODESZ.
+
+Definition NINODEBITMAP : expr := #1.
 
 (* space for the end position *)
 Definition HDRMETA : expr := #8.
