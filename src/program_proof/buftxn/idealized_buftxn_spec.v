@@ -231,9 +231,9 @@ Section goose_lang.
   predicates; TODO: won't it be difficult to establish that the footprint of P
   hasn't changed in the invariant? it hasn't because we've had it locked, but we
   don't have ownership over it... *)
-  Theorem wp_BufTxn__CommitWait l γ γtxn d E `{!Liftable P0, !Liftable P} Q :
+  Theorem wp_BufTxn__CommitWait l γ γtxn d E `{!Liftable P} Q :
     {{{ is_buftxn l γ γtxn d ∗ P (buftxn_maps_to γtxn) ∗
-        |={⊤,E}=> (P0 (stable_maps_to γ) ∗ (P (stable_maps_to γ) ={E,⊤}=∗ Q))  }}}
+        |={⊤,E}=> ∃ P0, ⌜Liftable P0⌝ ∗ (P0 (stable_maps_to γ) ∗ (P (stable_maps_to γ) ={E,⊤}=∗ Q))  }}}
       BufTxn__CommitWait #l #true
     {{{ (n:u64), RET #n; Q }}}.
   Proof.
