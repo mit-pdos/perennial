@@ -5,6 +5,9 @@ Set Default Proof Using "Type".
 Section bi.
 Context {PROP:bi}.
 
+(* TODO: logically equivalent to say P0 a v0 -∗ P1 a v1 -∗ False (with decidable
+equality on A) *)
+
 Class ConflictsWith {L V} (P0 P1 : L -> V -> PROP) := conflicts_with :
   ∀ a0 v0 a1 v1,
     P0 a0 v0 -∗ P1 a1 v1 -∗ ⌜ a0 ≠ a1 ⌝.

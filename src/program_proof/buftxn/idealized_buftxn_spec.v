@@ -85,7 +85,7 @@ Definition objData (obj: object): bufDataT (objKind obj) := projT2 obj.
 
 Class buftxnG Σ :=
   { buftxn_buffer_inG :> mapG Σ addr object;
-    buftxn_txn_inG :> txnG Σ;
+    buftxn_mspec_buftxnG :> mspec.buftxnG Σ;
   }.
 
 Record buftxn_names {Σ} :=
@@ -138,51 +138,39 @@ Section goose_lang.
   Definition stable_maps_to γ (a:addr) obj: iProp Σ :=
     ptsto_ro γ.(buftxn_stable_name) a obj.
 
-  (* TODO: name this better *)
-  Definition buftxn_ctx γtxn (bufs: gmap addr buf) : iProp Σ :=
-    ∃ (owned_bufs: gmap addr object),
-      (* NOTE: this data is a superset of what's actually in the buftxn; can do
-      an update to move ownership of an address into the transaction, which
-      makes it available for reading (actually materializing the value) and
-      writing (including overwrites without reading) *)
-      "%Hown_super" ∷ ⌜(λ bf, existT bf.(bufKind) bf.(bufData)) <$> bufs ⊆ owned_bufs⌝ ∗
-      "Howned●" ∷ map_ctx γtxn owned_bufs.
-
   (* this is for a single buftxn (transaction) - not persistent, buftxn's are
   not shareable *)
-  (* TODO: this is re-deriving mspec.is_buftxn; build directly on top, but
-  replace mT argument with a ghost name *)
-  Definition is_buftxn l γ γtxn : iProp Σ :=
-    ∃ (txn_l: loc) (bufs_l: loc) (bufs: gmap addr buf),
-      "txn" ∷ readonly (l ↦[BufTxn.S :: "txn"] #txn_l) ∗
-      "bufs" ∷ readonly (l ↦[BufTxn.S :: "bufs"] #bufs_l) ∗
-      "Htxn" ∷ is_txn_system txn_l γ ∗
-      "Hbufs" ∷ is_bufmap bufs_l bufs ∗
-      "Hctx" ∷ buftxn_ctx γtxn bufs ∗
-      "Hold_stable" ∷ ([∗ map] a↦_ ∈ bufs, ∃ obj0, modify_token γ a obj0).
+  Definition is_buftxn l γ γtxn d : iProp Σ :=
+    ∃ (mT: gmap addr object),
+      ⌜dom (gset _) mT = d⌝ ∗
+      mspec.is_buftxn l mT γ.(buftxn_txn_names) ∗
+      map_ctx γtxn mT
+  .
 
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=
     ∃ q, ptsto γtxn a q obj.
 
-  Theorem lift_into_txn γ γtxn bufs a obj :
-    buftxn_ctx γtxn bufs -∗
-    modify_token γ a obj ==∗
-    buftxn_maps_to γtxn a obj ∗ buftxn_ctx γtxn bufs.
+  Theorem lift_into_txn E l γ γtxn d a obj :
+    is_buftxn l γ γtxn d -∗
+    modify_token γ a obj ={E}=∗
+    buftxn_maps_to γtxn a obj ∗ is_buftxn l γ γtxn d.
   Proof.
-    (* TODO: allocate into buftxn_ctx, consume modify_token into
-    buftxn_ctx *)
+    (* use mspec.lift_into_txn *)
   Admitted.
 
-  Instance modify_token_conflicting γ :
-    Conflicting (modify_token γ).
+  Instance modify_token_conflicting γ : Conflicting (modify_token γ).
   Proof.
-  Admitted.
+    rewrite /modify_token.
+    iIntros (????) "H1 H2".
+    destruct (decide (a0 = a1)); subst; auto.
+    iDestruct (mapsto_txn_2 with "H1 H2") as %[].
+  Qed.
 
-  Theorem lift_liftable_into_txn `{!Liftable P}
-          γ γtxn bufs :
-    buftxn_ctx γtxn bufs -∗
-    P (modify_token γ) ==∗
-    P (buftxn_maps_to γtxn) ∗ buftxn_ctx γtxn bufs.
+  Theorem lift_liftable_into_txn E `{!Liftable P}
+          l γ γtxn d :
+    is_buftxn l γ γtxn d -∗
+    P (modify_token γ) ={E}=∗
+    P (buftxn_maps_to γtxn) ∗ is_buftxn l γ γtxn d.
   Proof.
     iIntros "Hctx HP".
     iDestruct (liftable (P:=P) with "HP") as (m) "[Hm HP]".
@@ -208,9 +196,9 @@ Section goose_lang.
                        bufData := objData obj;
                        bufDirty := dirty |}.
 
-  Theorem wp_BufTxn__ReadBuf l γ γtxn (a: addr) (sz: u64) obj :
+  Theorem wp_BufTxn__ReadBuf l γ γtxn d (a: addr) (sz: u64) obj :
     bufSz (objKind obj) = int.nat sz →
-    {{{ is_buftxn l γ γtxn ∗ buftxn_maps_to γtxn a obj }}}
+    {{{ is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj }}}
       BufTxn__ReadBuf #l (addr2val a) #sz
     {{{ (l:loc), RET #l; is_object l a obj }}}.
   Proof.
@@ -225,11 +213,11 @@ Section goose_lang.
     | bufBlock b => vec_to_list b = data
     end.
 
-  Theorem wp_BufTxn__OverWrite l γ γtxn (a: addr) (sz: u64)
+  Theorem wp_BufTxn__OverWrite l γ γtxn d (a: addr) (sz: u64)
           (data_s: Slice.t) q (data: list byte) obj0 obj :
     bufSz (objKind obj) = int.nat sz →
     data_has_obj data obj →
-    {{{ is_buftxn l γ γtxn ∗ buftxn_maps_to γtxn a obj0 ∗ is_slice data_s byteT q data }}}
+    {{{ is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj0 ∗ is_slice data_s byteT q data }}}
       BufTxn__OverWrite #l (addr2val a) (slice_val data_s)
     {{{ RET #(); buftxn_maps_to γtxn a obj }}}.
   Proof.
@@ -243,8 +231,8 @@ Section goose_lang.
   predicates; TODO: won't it be difficult to establish that the footprint of P
   hasn't changed in the invariant? it hasn't because we've had it locked, but we
   don't have ownership over it... *)
-  Theorem wp_BufTxn__CommitWait l γ γtxn E `{!Liftable P0, !Liftable P} Q :
-    {{{ is_buftxn l γ γtxn ∗ P (buftxn_maps_to γtxn) ∗
+  Theorem wp_BufTxn__CommitWait l γ γtxn d E `{!Liftable P0, !Liftable P} Q :
+    {{{ is_buftxn l γ γtxn d ∗ P (buftxn_maps_to γtxn) ∗
         |={⊤,E}=> (P0 (stable_maps_to γ) ∗ (P (stable_maps_to γ) ={E,⊤}=∗ Q))  }}}
       BufTxn__CommitWait #l #true
     {{{ (n:u64), RET #n; Q }}}.
