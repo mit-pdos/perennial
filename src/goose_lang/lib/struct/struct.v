@@ -3,6 +3,7 @@ From iris.base_logic.lib Require Import invariants.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang.lib Require Export
      typed_mem persistent_readonly struct.impl.
+From Perennial.Helpers Require Import NamedProps.
 
 Close Scope struct_scope.
 
@@ -209,7 +210,7 @@ Local Fixpoint struct_big_fields_rec l q (d: descriptor) (fs:descriptor) (v:val)
   | [] => ⌜v = #()⌝
   | (f,t)::fs =>
     match v with
-    | PairV v1 v2 => struct_field_mapsto l q d f v1 ∗
+    | PairV v1 v2 => f ∷ struct_field_mapsto l q d f v1 ∗
                     struct_big_fields_rec l q d fs v2
     | _ => False
     end
