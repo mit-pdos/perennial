@@ -92,6 +92,25 @@ Definition buildStruct d (fvs: list (string*expr)) : expr :=
   | None => LitV LitUnit
   end.
 
+Fixpoint build_struct_f d (field_vals: list (string*expr)): option val :=
+  let lookup_f := assocl_lookup field_vals in
+  match d with
+  | [] => Some (#())
+  | (f,_)::fs => match lookup_f f with
+           | Some (Val e) => match build_struct_f fs field_vals with
+                      | Some e' => Some (e, e')%V
+                      | None => None
+                      end
+           | _ => None
+           end
+  end.
+
+Definition buildStruct_f d (fvs: list (string*expr)) : val :=
+  match build_struct_f d fvs with
+  | Some v => v
+  | None => LitV LitUnit
+  end.
+
 Fixpoint structTy d : ty :=
   match d with
   | [] => unitT
@@ -172,6 +191,7 @@ Module struct.
   Notation ptrT := structRefTy.
 
   Notation mk := buildStruct.
+  Notation mk_f := buildStruct_f.
   Notation new := allocStructLit.
   Notation alloc := allocStruct.
   Notation get := getField.

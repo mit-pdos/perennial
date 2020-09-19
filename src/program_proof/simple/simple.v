@@ -345,16 +345,14 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
         ⌜relation.denote (SimpleNFS.wrapper fh (SimpleNFS.read fh offset count)) σ σ' r⌝ -∗
         ( P σ ={E}=∗ P σ' ∗ Q r )
   }}}
-    Nfs__NFSPROC3_READ #nfs (slice_val fhslice, #(), (#offset, (#count, #())))%V
-(*
-      (struct.mk nfstypes.READ3args.S [
-        "File" ::= struct.mk nfstypes.Nfs_fh3.S [
+    Nfs__NFSPROC3_READ #nfs
+      (struct.mk_f nfstypes.READ3args.S [
+        "File" ::= struct.mk_f nfstypes.Nfs_fh3.S [
           "Data" ::= slice_val fhslice
         ];
         "Offset" ::= #offset;
         "Count" ::= #count
       ])
-*)
   {{{ (ok : bool) v,
       RET v;
       if ok then
