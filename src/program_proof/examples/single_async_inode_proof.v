@@ -153,6 +153,15 @@ Section goose.
     inode_mapsto γbuf blocks -∗ inode_current_lb γbuf blocks' -∗ ⌜ blocks' `prefix_of` blocks ⌝.
   Proof. iApply fmlist_agree_2. Qed.
 
+  Lemma inode_mapsto_append γbuf blocks blocks' :
+    inode_mapsto γbuf blocks -∗ inode_mapsto γbuf blocks ==∗
+    inode_mapsto γbuf (blocks ++ blocks') ∗ inode_mapsto γbuf (blocks ++ blocks').
+  Proof.
+    iIntros "H1 H2".
+    iCombine "H1 H2" as "H".
+    iMod (fmlist_update with "H") as "(($&$)&?)"; eauto.
+    econstructor; eauto.
+  Qed.
 
   Theorem init_single_inode {E} (sz: Z) :
     (1 ≤ sz < 2^64)%Z →
@@ -565,6 +574,85 @@ Section goose.
     iModIntro.
     rewrite /Palloc /named.
     rewrite alloc_free_reserved //.
+  Qed.
+
+  Theorem wpc_Append {k E2} (Q Qc: iProp Σ) γdur γbuf q l sz b_s b0 k' :
+    (S k < k')%nat →
+    nroot.@"readonly" ## N →
+    {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
+        "Hb" ∷ is_block b_s q b0 ∗
+        "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗
+                                inode_mapsto γbuf (blks ++ [b0]) ∗ (<disc> ▷ Qc ∧ Q))
+    }}}
+      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤; E2
+    {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
+    {{{ Qc }}}.
+  Proof.
+    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iCache with "HΦ Hfupd".
+    { iLeft in "HΦ". iLeft in "Hfupd". iModIntro. iNext. by iApply "HΦ". }
+    rewrite /SingleInode__Append. wpc_pures.
+    iCache with "HΦ Hfupd".
+    { iLeft in "HΦ". iLeft in "Hfupd". iModIntro. iNext. by iApply "HΦ". }
+    wpc_pures.
+    iNamed "Hinode". iNamed "Hro_state".
+    wpc_loadField.
+    wpc_apply (wpc_Inode__Append inodeN q (k' := k'));
+      [lia|].
+    iFrame "Hb Hinode".
+    iSplit.
+    - iLeft in "HΦ". iLeft in "Hfupd". iModIntro. by iApply "HΦ".
+    - iSplit.
+      { (* Failure case. *) iApply "HΦ". done. }
+      iNext.
+      iIntros (σ σ' Heq1 Heq2) ">HPinode".
+      iNamed "HPinode".
+      iInv "Hinv" as ([σ0]) "[>Hinner >HP]" "Hclose".
+      iNamed "Hinner".
+      iDestruct (ghost_var_agree with "Hδdurable_blocks Hown_dur_blocks") as %?; simplify_eq/=.
+      iDestruct (ghost_var_agree with "Hδbuffered_blocks Hown_buf_blocks") as %?; simplify_eq/=.
+      iMod (ghost_var_update _ ((σ.(inode.buffered_blocks) ++ [b0]) : listLO Block)
+              with "Hδbuffered_blocks Hown_buf_blocks") as "[Hδbuffered_blocks Hown_buf_blocks]".
+      iNamed "HP".
+      iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+        last iMod ("Hfupd" with "[$Hfm_all_blocks]") as "[Hfm_all_blocks HQ]".
+      { solve_ndisj. }
+      iMod "HcloseM" as "_".
+      simpl. iMod ("Hclose" with "[Hδdurable_blocks Hδbuffered_blocks Hfm_all_blocks Hfm_dur_blocks]") as "_".
+      { iNext. iExists {| s_inode.durable_blocks := inode.durable_blocks σ;
+                          s_inode.buffered_blocks := inode.buffered_blocks σ ++ [b0]; |}.
+        iFrame. rewrite /= assoc. iFrame. }
+      iModIntro.
+      iFrame.
+      rewrite /Palloc.
+      iSplit.
+      * iLeft in "HΦ". iLeft in "HQ". iModIntro. by iApply "HΦ".
+      * iApply "HΦ". by iRight in "HQ".
+  Qed.
+
+  Theorem wpc_Append1 {k E2} (Q Qc: iProp Σ) E γdur γbuf q l sz b_s b0 k' :
+    (S k < k')%nat →
+    nroot.@"readonly" ## N →
+    {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
+        "Hb" ∷ is_block b_s q b0 ∗
+        "Hfupd" ∷ (<disc> ▷ Qc ∧ |={⊤ ∖ ↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
+                                  (inode_mapsto γbuf (blks ++ [b0]) ={E, ⊤ ∖ ↑N}=∗ <disc> ▷ Qc ∧ Q))
+    }}}
+      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤; E2
+    {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
+    {{{ Qc }}}.
+  Proof.
+    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    wpc_apply (wpc_Append Q Qc with "[$Hinode Hfupd $Hb]"); try eassumption.
+    { iSplit.
+      { by iLeft in "Hfupd". }
+      iRight in "Hfupd".
+      iIntros (blks) "Hpts". iMod "Hfupd" as (blks') "(Hpts'&Hclo)".
+      iDestruct (inode_mapsto_agree with "[$] [$]") as %->.
+      iMod (inode_mapsto_append with "Hpts' Hpts") as "($&?)".
+      iMod ("Hclo" with "[$]"). iModIntro; eauto.
+    }
+    eauto.
   Qed.
 
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
