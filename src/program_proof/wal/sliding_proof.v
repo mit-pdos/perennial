@@ -544,6 +544,52 @@ Lemma wp_SliceAppend_log s σ uv u :
       (* non-overflow comes from doing a slice append *)
       ⌜slidingM.wf σ'⌝ }}}.
 Proof.
+  iIntros (Φ) "(#Hrolog & Hmutlog & Hupdate) HΦ".
+  iMod (readonly_load with "Hrolog") as (q) "Hrolog'"; first by solve_ndisj.
+  iNamed "Hmutlog".
+  iDestruct "Hupdate" as "[% Hupdate]".
+  wp_apply (wp_SliceAppend_updates with "[Hrolog' log_mutable $Hupdate]").
+  { rewrite /updates_slice /updates_slice_frag.
+    iDestruct "Hrolog'" as (bks0) "[Hrolog' Hbks0]".
+    iDestruct "log_mutable" as (bks1) "[Hmutable Hbks1]".
+    iExists (bks0 ++ bks1).
+    iSplitL "Hrolog' Hmutable".
+    { iDestruct "Hmutable" as "[Hmutable_sm Hcap]".
+      iDestruct (is_slice_combine with "Hrolog' [Hmutable_sm]") as "Hsm".
+      {
+        (* XXX need sliding.wf somewhere? *)
+        admit.
+      }
+
+      {
+        (* XXX need to reduce 1%Qp to q *)
+        admit.
+      }
+
+      iSplitR "Hcap".
+      {
+        (* XXX SliceAppend is too strong: it requires 1%Qp ownership of is_slice_small.. *)
+        admit.
+      }
+
+      (* XXX need the opposite of is_slice_cap_skip *)
+      admit.
+    }
+
+    iApply (big_sepL2_app with "[Hbks0] [Hbks1]").
+    { iApply (big_sepL2_mono with "Hbks0"). iIntros (k y1 y2 Hy1 Hy2).
+      iIntros "H". iDestruct "H" as "[% H]".
+      destruct y2; simpl in *.
+      (* XXX this wants 1%Qp ownership but we only have q *)
+      admit.
+    }
+
+    { iFrame. }
+  }
+
+  iIntros (s') "Hlog".
+  iApply "HΦ".
+  admit.
 Admitted.
 
 Lemma addrPosMap_insert_fresh:
