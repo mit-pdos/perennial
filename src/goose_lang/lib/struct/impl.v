@@ -202,6 +202,7 @@ Module struct.
   Notation storeF := storeField.
 End struct.
 
+Declare Scope struct_scope.
 Notation "f :: t" := (@pair string ty f%string t%ht) : struct_scope.
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
