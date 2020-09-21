@@ -316,7 +316,8 @@ Proof.
     { iDestruct "Hdurable" as %Hmatches.
       iPureIntro.
       eapply circ_matches_extend; eauto; try lia.
-      { split; try lia. admit. }
+      { split; try lia.
+        destruct Hmatches. done. }
       { apply is_txn_bound in HnextDiskEnd'; auto. }
       pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
       rewrite -> subslice_length in Htxns_are by lia.
