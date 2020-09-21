@@ -5,15 +5,13 @@ From Perennial.algebra Require Import big_op.
 
 Section liftable.
 
-  Context `{Σ : gFunctors}.
-  Context `{L : Type}.
-  Context `{V : Type}.
-  Context `{!EqDecision L}.
-  Context `{!Countable L}.
+  Context `{PROP:bi} `{!BiAffine PROP}.
+  Context {L V: Type} `{!EqDecision L} `{!Countable L}.
 
-  Class Liftable (P : (L -> V -> iProp Σ) -> iProp Σ) := liftable :
+  Set Default Proof Using "BiAffine0".
+
+  Class Liftable (P : (L -> V -> PROP) -> PROP) := liftable :
     ∀ mapsto1,
-      (∀ l v, Absorbing (mapsto1 l v)) ->
       Conflicting mapsto1 ->
       P mapsto1 -∗
       ∃ (m : gmap L V),
@@ -23,7 +21,7 @@ Section liftable.
   Global Instance star_liftable `{Liftable P} `{Liftable Q} : Liftable (fun h => P h ∗ Q h)%I.
   Proof.
     unfold Liftable in *.
-    iIntros (???) "[Hp Hq]".
+    iIntros (??) "[Hp Hq]".
     iDestruct (H with "Hp") as (mp) "[Hpm Hpi]"; eauto.
     iDestruct (H0 with "Hq") as (mq) "[Hqm Hqi]"; eauto.
     iExists (mp ∪ mq).
@@ -43,7 +41,7 @@ Section liftable.
   Global Instance pure_liftable P : Liftable (fun h => ⌜ P ⌝)%I.
   Proof.
     unfold Liftable in *.
-    iIntros (???) "%".
+    iIntros (??) "%".
     iExists ∅.
     rewrite big_sepM_empty.
     iSplit; try done.
@@ -56,7 +54,7 @@ Section liftable.
     Liftable (fun h => ∃ (x : T), P x h)%I.
   Proof.
     unfold Liftable in *.
-    iIntros (H h ??) "H".
+    iIntros (H h ?) "H".
     iDestruct "H" as (x) "H".
     iDestruct (H with "H") as (m) "(Hm & Hx)"; eauto.
     iExists _. iFrame.
@@ -71,7 +69,7 @@ Section liftable.
   Proof.
     intros.
     unfold Liftable.
-    iIntros (???) "Hm".
+    iIntros (??) "Hm".
     iInduction m as [|i x m] "IH" using map_ind.
     - iExists ∅.
       repeat rewrite big_sepM_empty.
@@ -103,7 +101,7 @@ Section liftable.
     Liftable (fun mapsto => mapsto a v)%I.
   Proof.
     intros; unfold Liftable.
-    iIntros (mapsto1 ??) "Ha".
+    iIntros (mapsto1 ?) "Ha".
     iExists (<[a:=v]> ∅).
     rewrite big_sepM_insert; try apply lookup_empty.
     iFrame.
@@ -119,7 +117,7 @@ Section liftable.
   Global Instance emp_liftable : Liftable (fun h => emp)%I.
   Proof.
     intros; unfold Liftable.
-    iIntros (mapsto1 ??) "H".
+    iIntros (mapsto1 ?) "H".
     iExists ∅.
     rewrite big_sepM_empty; iFrame.
     iIntros (h2) "Hm".
@@ -135,7 +133,8 @@ Section liftable.
     induction l; intros.
     - apply emp_liftable.
     - unfold Liftable in *.
-      iIntros (mapsto1 ??) "[Ha Hl]".
+      simpl.
+      iIntros (mapsto1 ?) "[Ha Hl]".
       iDestruct (H with "Ha") as (ma0) "[Ha Hm0]"; eauto.
       iDestruct (IHl with "[Hl]") as (ml) "[Hl Hml]"; eauto.
       {

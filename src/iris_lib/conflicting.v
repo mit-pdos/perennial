@@ -12,9 +12,7 @@ Class ConflictsWith {L V} (P0 P1 : L -> V -> PROP) := conflicts_with :
   ∀ a0 v0 a1 v1,
     P0 a0 v0 -∗ P1 a1 v1 -∗ ⌜ a0 ≠ a1 ⌝.
 
-Lemma big_sepM_disjoint_pred {L V} {P0 P1 : L -> V -> PROP} `{!EqDecision L} `{!Countable L}
-  `{!∀ l v, Absorbing (P0 l v)}
-  `{!∀ l v, Absorbing (P1 l v)}
+Lemma big_sepM_disjoint_pred {L V} {P0 P1 : L -> V -> PROP} `{!EqDecision L} `{!Countable L} `{!BiAffine PROP}
   `{!ConflictsWith P0 P1}
   (m0 m1 : gmap L V) :
   ( ( [∗ map] a↦v ∈ m0, P0 a v ) -∗
