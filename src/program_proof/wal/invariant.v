@@ -123,7 +123,7 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_
   (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat),
       "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
       "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
-      "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
+      "%HdiskEnd_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
       "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
       "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       (* Here we establish what the memLog contains, which is necessary for reads
@@ -153,7 +153,7 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
   (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
       "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
       "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
-      "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
+      "%HdiskEnd_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
       "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
       "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       "Howntxns" ∷ own γ.(txns_name) (◯E txns) ∗
