@@ -259,7 +259,7 @@ Proof.
   iDestruct "HnextDiskEnd_txn" as "#HnextDiskEnd_txn".
   iMod (txn_pos_valid_locked with "Hwal HmemStart_txn Howntxns") as "(%HmemStart_txn&Howntxns)".
   iMod (txn_pos_valid_locked with "Hwal HnextDiskEnd_txn Howntxns") as "(%HnextDiskEnd_txn&Howntxns)".
-  iMod (get_txns_are _ _ _ _ memStart_txn_id nextDiskEnd_txn_id with "Howntxns Hwal") as "[Htxns_are Howntxns]"; eauto.
+  iMod (get_txns_are _ _ _ _ memStart_txn_id (S nextDiskEnd_txn_id) with "Howntxns Hwal") as "[Htxns_are Howntxns]"; eauto.
   { pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
     lia. }
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
@@ -323,9 +323,10 @@ Proof.
       rewrite -> subslice_length in Htxns_are by lia.
       replace (memStart_txn_id + (S nextDiskEnd_txn_id - memStart_txn_id))%nat
               with (S nextDiskEnd_txn_id) in Htxns_are by lia.
-      (* this is basically [His_nextDiskEnd], except that we have to use
-      [Htxns_are] to prove the relevant transactions haven't changed *)
-      admit. }
+      apply (subslice_suffix_eq _ _ _ (S σ.(locked_diskEnd_txn_id))) in Htxns_are.
+      { rewrite Htxns_are. eauto. }
+      lia.
+    }
     rewrite /is_durable_txn.
     iExists σ.(memLog).(slidingM.mutable).
     iSplit.

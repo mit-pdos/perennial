@@ -235,3 +235,10 @@ Proof.
   intros.
   by rewrite /subslice take_app_le.
 Qed.
+
+Theorem subslice_suffix_eq {A} (l l': list A) n n' m:
+  n ≤ n' ->
+  subslice n m l = subslice n m l' ->
+  subslice n' m l = subslice n' m l'.
+Proof.
+Admitted.

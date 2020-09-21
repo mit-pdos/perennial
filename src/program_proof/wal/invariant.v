@@ -173,7 +173,7 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
           (subslice (slidingM.logIndex σ diskEnd)
                     (slidingM.logIndex σ σ.(slidingM.mutable))
                     σ.(slidingM.log))
-          (subslice diskEnd_txn_id (S nextDiskEnd_txn_id) txns)⌝
+          (subslice (S diskEnd_txn_id) (S nextDiskEnd_txn_id) txns)⌝
   ).
 
 Definition wal_linv_fields st σ: iProp Σ :=
@@ -578,7 +578,7 @@ Qed.
 
 Theorem get_txns_are l γ txns start till txns_sub :
   txns_sub = subslice start till txns →
-  (start ≤ till < length txns)%nat →
+  (start ≤ till ≤ length txns)%nat →
   own γ.(txns_name) (◯E txns) -∗
   is_wal l γ -∗
   |={⊤}=> txns_are γ start txns_sub ∗ own γ.(txns_name) (◯E txns).
@@ -587,7 +587,6 @@ Proof.
   iDestruct "Hwal" as "[Hwal _]".
   iInv "Hwal" as (σ) "[Hinner HP]".
   iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(>Htxns_ctx & >γtxns & Hinner)".
-  list_elem txns start as txn'.
   iDestruct (ghost_var_agree with "γtxns Hown") as %Heq; subst.
   iDestruct (alist_lookup_subseq _ start till with "Htxns_ctx") as "#$".
   { lia. }
