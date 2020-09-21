@@ -352,7 +352,7 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
         ];
         "Offset" ::= #offset;
         "Count" ::= #count
-      ])
+      ])%V
   {{{ (ok : bool) v,
       RET v;
       if ok then

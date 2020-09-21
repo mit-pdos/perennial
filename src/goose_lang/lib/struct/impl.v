@@ -92,12 +92,13 @@ Definition buildStruct d (fvs: list (string*expr)) : expr :=
   | None => LitV LitUnit
   end.
 
-Fixpoint build_struct_f d (field_vals: list (string*expr)): option val :=
+(* TODO: support zero values for missing fields *)
+Fixpoint build_struct_f d (field_vals: list (string*val)): option val :=
   let lookup_f := assocl_lookup field_vals in
   match d with
   | [] => Some (#())
   | (f,_)::fs => match lookup_f f with
-           | Some (Val e) => match build_struct_f fs field_vals with
+           | Some e => match build_struct_f fs field_vals with
                       | Some e' => Some (e, e')%V
                       | None => None
                       end
@@ -105,7 +106,7 @@ Fixpoint build_struct_f d (field_vals: list (string*expr)): option val :=
            end
   end.
 
-Definition buildStruct_f d (fvs: list (string*expr)) : val :=
+Definition buildStruct_f d (fvs: list (string*val)) : val :=
   match build_struct_f d fvs with
   | Some v => v
   | None => LitV LitUnit
@@ -204,6 +205,7 @@ End struct.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string ty f%string t%ht) : struct_scope.
+Notation "f ::= v" := (@pair string val f%string v%V) (at level 60) : val_scope.
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
 Arguments mkStruct {ext ext_ty} _%struct_scope.
