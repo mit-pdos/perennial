@@ -1159,7 +1159,8 @@ Admitted.
 Fixpoint flush_fupd P Palloc (σ: inode.t) Φ (Φc: iProp Σ) (buflist: list Block) : iProp Σ :=
   (<disc> ▷ Φc) ∧
   match buflist with
-  | [] => ▷ Φ #false ∧ ▷ Φ #true
+  | [] => ▷ Φ #false ∧
+     (▷ P σ ={⊤}=∗ ▷ P σ ∗ (<disc> ▷ Φc ∧ Φ #true))
   | b0 :: bs => ▷(Φ #false ∧
     ∀ addr',
       let σ' :=
@@ -1362,12 +1363,12 @@ Proof.
     wpc_pures.
     iCache with "Hfupd".
     { by iLeft in "Hfupd". }
-    wpc_pures.
     wpc_frame.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$]"); auto.
     wp_pures. iNamed 1.
-    by iRight in "Hfupd".
+    iRight in "Hfupd".
+    eauto.
   - iNamed 1. iMod (own_disc_fupd_elim with "HP") as "HP".
     (* TODO: argue that buffered_blocks must be = [] *)
     iDestruct (is_slice_sz with "Hbuffered") as "%".
@@ -1376,17 +1377,16 @@ Proof.
     { admit. }
     assert (Hemptybuf: σ0.(inode.buffered_blocks) = []).
     { apply nil_length_inv. lia. }
+    rewrite Hemptybuf.
+    iRight in "Hfupd". iRight in "Hfupd".
+    iMod ("Hfupd" with "HP") as "(HP&Hfupd)".
     iSplitR "HP Hwf buffered Hbuffered His_blocks addrs Haddrs Hdurable"; last first.
     { iModIntro. iNext. iExists _. iFrame.
       iExists _, _, _, _. iFrame. iExists _. iFrame.
+      rewrite Hemptybuf. iFrame.
     }
     iModIntro. iIntros.
-    rewrite Hemptybuf. iEval (simpl) in "Hfupd".
-    iAssert (<disc> ▷ Φc ∧ ▷ Φ #true)%I with "[Hfupd]" as "Hfupd".
-    { iSplit.
-      * by iLeft in "Hfupd".
-      * by do 2 iRight in "Hfupd".
-    }
+    iEval (simpl) in "Hfupd".
     iSplit.
     { by iLeft in "Hfupd". }
     iCache with "Hfupd".
@@ -1394,7 +1394,6 @@ Proof.
     wpc_pures.
     iCache with "Hfupd".
     { by iLeft in "Hfupd". }
-    wpc_pures.
     wpc_frame.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$]"); auto.

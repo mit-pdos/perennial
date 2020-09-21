@@ -655,63 +655,127 @@ Section goose.
     eauto.
   Qed.
 
-  Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
+  Theorem wpc_Flush {k E2} (Q Qc: iProp Σ) γdur γbuf l sz k' :
     (S k < k')%nat →
     nroot.@"readonly" ## N →
-    {{{ "Hinode" ∷ is_single_inode l sz k' ∗
-        "Hb" ∷ is_block b_s 1 b0 ∗
-        "Hfupd" ∷ ((∀ σ σ',
-          ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
-         ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ Q))
+    {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
+        "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ={⊤ ∖ ↑N}=∗
+                                inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ∗ (<disc> ▷ Qc ∧ Q))
     }}}
-      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤; E2
+      SingleInode__Flush #l @ NotStuck; (S k); ⊤; E2
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
-    {{{ True }}}.
+    {{{ Qc }}}.
   Proof.
     iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    wpc_call.
-    { crash_case; auto. }
-    { crash_case; auto. }
-    iCache with "HΦ".
-    { crash_case; auto. }
-    wpc_pures.
+    iCache with "HΦ Hfupd".
+    { iLeft in "HΦ". iLeft in "Hfupd". iModIntro. iNext. by iApply "HΦ". }
+    rewrite /SingleInode__Flush. wpc_pures.
+    iCache with "HΦ Hfupd".
+    { iLeft in "HΦ". iLeft in "Hfupd". iModIntro. iNext. by iApply "HΦ". }
     iNamed "Hinode". iNamed "Hro_state".
     wpc_loadField. wpc_loadField.
-    wpc_apply (wpc_Inode__Append inodeN allocN (n:=k') (k':=k'));
+    wpc_apply (wpc_Inode__Flush inodeN allocN (n:=k') (k':=k'));
       [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].
-    iFrame "Hb Hinode Halloc".
+    iFrame "Hinode Halloc".
     iSplit; [ | iSplit; [ | iSplit ] ].
     - iApply reserve_fupd_Palloc.
     - iApply free_fupd_Palloc.
-    - iLeft in "HΦ". iModIntro. by iApply "HΦ".
-    - iSplit.
-      { (* Failure case. *) iApply "HΦ". done. }
+    - iLeft in "Hfupd". iLeft in "HΦ". iModIntro. by iApply "HΦ".
+    - iIntros (σ).
+      remember σ.(inode.buffered_blocks) as blks eqn:Heqblocks.
+      iInduction blks as [| b blks] "IH" forall (σ Heqblocks).
+      { iSplit.
+        * iLeft in "Hfupd". iLeft in "HΦ". iModIntro. iNext. by iApply "HΦ".
+        * iRight in "Hfupd".
+          iSplit.
+          ** by iApply "HΦ".
+          ** iIntros ">HPinode". iNamed "HPinode".
+             iInv "Hinv" as ([durable_blks buffered_blks]) "[>Hinner >HP]" "Hclose".
+             iNamed "Hinner".
+             simpl.
+             rewrite -Heqblocks.
+             iDestruct (ghost_var_agree with "Hδdurable_blocks Hown_dur_blocks") as %->.
+             iDestruct (ghost_var_agree with "Hδbuffered_blocks Hown_buf_blocks") as %->.
+             iNamed "HP". simpl. rewrite app_nil_r.
+             iMod fupd_intro_mask' as "HcloseM";
+               last iMod ("Hfupd" with "[$]") as "(Hfm_all_blocks&Hfm_dur_blocks&Hfupd)".
+             { solve_ndisj. }
+             iMod "HcloseM" as "_".
+             iMod ("Hclose" with "[Hδdurable_blocks Hδbuffered_blocks Hfm_all_blocks Hfm_dur_blocks]").
+             { iNext. iExists {| s_inode.buffered_blocks := [];
+                                 s_inode.durable_blocks := σ.(inode.durable_blocks)
+                              |}. iFrame. simpl. rewrite app_nil_r. iFrame.
+             }
+             iModIntro.
+             iSplitL "Hused1 Hown_dur_blocks Hown_buf_blocks".
+             { iNext. rewrite /Pinode. rewrite Heqblocks. iFrame. }
+             iSplit.
+             { iLeft in "Hfupd".
+               iLeft in "HΦ". iModIntro. iNext. by iApply "HΦ".
+             }
+             iRight in "HΦ". iRight in "Hfupd". by iApply "HΦ".
+      }
+      simpl.
+      iSplit.
+      { iLeft in "Hfupd".
+        iLeft in "HΦ". iModIntro. iNext. by iApply "HΦ". }
       iNext.
-      iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
-      iEval (rewrite /Palloc) in "HPalloc"; iNamed.
+      iSplit.
+      { iRight in "HΦ". by iApply "HΦ". }
+      iIntros (addr' Hwf s Hlookup) "(>HPinode&>HPalloc)".
       iNamed "HPinode".
-      iDestruct (ghost_var_agree with "Hused2 Hused1") as %Heq;
-        rewrite -Heq.
-      iInv "Hinv" as ([σ0]) "[>Hinner HP]" "Hclose".
-      iMod (ghost_var_update _ (union {[addr']} σ.(inode.addrs))
-              with "Hused2 Hused1") as
-          "[Hused Hγused]".
-      iDestruct (ghost_var_agree with "Hinner Hownblocks") as %?; simplify_eq/=.
-      iMod (ghost_var_update _ ((σ.(inode.blocks) ++ [b0]) : listLO Block)
-              with "Hinner Hownblocks") as "[Hγblocks Hownblocks]".
-      iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
-        last iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
-      { solve_ndisj. }
-      iMod "HcloseM" as "_".
-      simpl. iMod ("Hclose" with "[Hγblocks HP]") as "_".
-      { eauto with iFrame. }
-      iModIntro.
-      iFrame.
-      rewrite /Palloc.
-      rewrite alloc_used_insert -Heq.
-      iFrame.
-      iSplit; first by crash_case.
-      iApply "HΦ". done.
+      rewrite -Heqblocks.
+      iInv "Hinv" as ([durable_blks buffered_blks]) "[>Hinner >HP]" "Hclose".
+      iNamed "Hinner".
+      iNamed "HP". simpl.
+      iDestruct (ghost_var_agree with "Hδdurable_blocks Hown_dur_blocks") as %->.
+      iDestruct (ghost_var_agree with "Hδbuffered_blocks Hown_buf_blocks") as %->.
+      iDestruct (ghost_var_agree with "HPalloc Hused1") as %Heq_alloc.
+      iMod (ghost_var_update _ ((σ.(inode.durable_blocks) ++ [b]) : listLO Block)
+              with "Hδdurable_blocks Hown_dur_blocks") as "[Hδdurable_blocks Hown_dur_blocks]".
+      iMod (ghost_var_update _ (blks : listLO Block)
+              with "Hδbuffered_blocks Hown_buf_blocks") as "[Hδbuffered_blocks Hown_buf_blocks]".
+      iMod (fmlist_update (σ.(inode.durable_blocks) ++ [b]) with "Hfm_dur_blocks") as "(Hfm_dur_blocks&?)"; eauto.
+      { econstructor; eauto. }
+      rewrite /Pinode.
+      simpl.
+      iMod (ghost_var_update _ ({[addr']} ∪ (alloc.used s))
+              with "HPalloc Hused1") as "[HPalloc Hused1]".
+      iMod ("Hclose" with "[Hδdurable_blocks Hδbuffered_blocks Hfm_all_blocks Hfm_dur_blocks]") as "_".
+      { iNext. iExists {| s_inode.buffered_blocks := blks;
+                          s_inode.durable_blocks := σ.(inode.durable_blocks) ++ [b]
+                       |}. iFrame. simpl. rewrite -app_assoc /=. iFrame.
+      }
+      iModIntro. iFrame. rewrite /Palloc.
+      rewrite alloc_used_insert. rewrite Heq_alloc. iFrame.
+      iApply ("IH" with "[] Hfupd HΦ").
+      { eauto. }
+  Qed.
+
+  Theorem wpc_Flush1 {k E2} (Q: iProp Σ) γdur γbuf blks l sz k' :
+    (S k < k')%nat →
+    nroot.@"readonly" ## N →
+    {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
+        "Hlb" ∷ inode_current_lb γbuf blks
+    }}}
+      SingleInode__Flush #l @ NotStuck; (S k); ⊤; E2
+    {{{ (ok: bool), RET #ok; if ok then inode_durable_lb γdur γbuf blks else emp }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iDestruct "Hlb" as "#Hlb".
+    wpc_apply (wpc_Flush (inode_durable_lb γdur γbuf blks) True with "[$Hinode Hlb]"); try eassumption.
+    { iSplit.
+      * iModIntro; eauto.
+      * iIntros (blks') "(Hcurr&Hdur)".
+        iDestruct (inode_mapsto_lb_agree with "[$] [$]") as %Hpre.
+        iFrame "Hcurr".
+        iMod (fmlist_get_lb with "Hdur") as "($&Hlb')".
+        iDestruct (fmlist_lb_mono _ _ _ Hpre with "Hlb'") as "Hlb''".
+        iModIntro. iSplit; first by iModIntro.
+        iFrame. iApply "Hlb".
+    }
+    eauto.
   Qed.
 
 End goose.
