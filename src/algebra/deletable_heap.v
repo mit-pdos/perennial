@@ -144,7 +144,7 @@ Section gen_heap.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def -own_op -auth_frag_op own_valid discrete_valid.
     f_equiv. rewrite auth_frag_valid singleton_op singleton_valid -pair_op.
-    by intros [_ ?%agree_op_invL'].
+    by intros [_ ?%to_agree_op_inv_L].
   Qed.
 
   Lemma mapsto_combine l q1 q2 v1 v2 :

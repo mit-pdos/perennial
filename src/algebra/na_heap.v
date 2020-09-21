@@ -247,7 +247,7 @@ Section na_heap.
   Proof.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
     eapply pure_elim; [done|]=> /auth_frag_valid /=.
-    rewrite singleton_op -pair_op singleton_valid=> -[? /agree_op_invL'->]; eauto.
+    rewrite singleton_op -pair_op singleton_valid=> -[? /to_agree_op_inv_L->]; eauto.
   Qed.
 
   Lemma na_heap_mapsto_st_WSt_agree l st q1 q2 v1 v2 :
@@ -324,7 +324,7 @@ Section na_heap.
     iAssert ⌜ γm1 = γm2 ⌝%I as %->.
     { iDestruct (own_valid_2 with "Hγm1 Hγm2") as %Hγ; iPureIntro.
       move: Hγ. rewrite -auth_frag_op singleton_op=> /auth_frag_valid /=.
-      rewrite singleton_valid. apply: agree_op_invL'. }
+      rewrite singleton_valid. apply: to_agree_op_inv_L. }
     iDestruct (own_valid_2 with "Hm1 Hm2") as %?%namespace_map_token_valid_op.
     iExists γm2. iFrame "Hγm2". rewrite namespace_map_token_union //. by iSplitL "Hm1".
   Qed.
@@ -350,10 +350,10 @@ Section na_heap.
     iAssert ⌜ γm1 = γm2 ⌝%I as %->.
     { iDestruct (own_valid_2 with "Hγm1 Hγm2") as %Hγ; iPureIntro.
       move: Hγ. rewrite -auth_frag_op singleton_op=> /auth_frag_valid /=.
-      rewrite singleton_valid. apply: agree_op_invL'. }
+      rewrite singleton_valid. apply: to_agree_op_inv_L. }
     iDestruct (own_valid_2 with "Hm1 Hm2") as %Hγ; iPureIntro.
     move: Hγ. rewrite -namespace_map_data_op namespace_map_data_valid.
-    move=> /agree_op_invL'. naive_solver.
+    move=> /to_agree_op_inv_L. naive_solver.
   Qed.
   Lemma meta_set `{Countable A} E l (x : A) N :
     ↑ N ⊆ E → meta_token l E ==∗ meta l N x.

@@ -102,7 +102,7 @@ Section auth_map.
     iPureIntro.
     (* unification doesn't work with apply *)
     apply (iffLR (auth_frag_valid _)) in Hvalid as Hvalid%singleton_valid%Cinl_valid.
-    apply pair_valid in Hvalid as [? ?%agree_op_inv'%leibniz_equiv_iff].
+    apply pair_valid in Hvalid as [? ?%to_agree_op_inv%leibniz_equiv_iff].
     simpl in *.
     auto.
   Qed.
@@ -154,7 +154,7 @@ Section auth_map.
     iPureIntro.
     (* unification doesn't work with apply *)
     pose proof (iffLR (auth_frag_valid _) Hvalid) as H%singleton_valid%Cinr_valid.
-    apply agree_op_inv', leibniz_equiv_iff in H; auto.
+    apply to_agree_op_inv, leibniz_equiv_iff in H; auto.
   Qed.
 
   Theorem map_init m :

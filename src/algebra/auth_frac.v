@@ -41,7 +41,7 @@ Proof.
     * intros ? Hin. inversion Hin; subst.
       ** exists a0; split; auto. repeat econstructor.
       ** inversion H4.
-    * rewrite -Heqa H1.
+    * rewrite -Heqa H1. simpl.
       rewrite left_id assoc. econstructor; eauto.
   + split; [done|]. apply to_agree_injN in Eq.
     move: Ha; rewrite !left_id -assoc => Ha.

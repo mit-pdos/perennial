@@ -405,7 +405,7 @@ Section kvs_lemmas.
   Proof.
     iIntros "Hauth Huninit_frag".
     iDestruct (own_valid_2 with "Hauth Huninit_frag") as %Hval.
-    inversion Hval as [? Heq%agree_op_inv'].
+    inversion Hval as [? Heq%to_agree_op_inv].
     inversion Heq.
   Qed.
 
@@ -414,7 +414,7 @@ Section kvs_lemmas.
   Proof.
     iIntros "Hauth Huninit_frag".
     iDestruct (own_valid_2 with "Hauth Huninit_frag") as %Hval.
-    inversion Hval as [? Heq%agree_op_inv'].
+    inversion Hval as [? Heq%to_agree_op_inv].
     inversion Heq.
   Qed.
 
@@ -482,7 +482,7 @@ Section kvs_lemmas.
     iDestruct (own_valid_2 with "H1 H2") as %Hval.
     rewrite /Kvs_Opened -Cinr_op in Hval.
     assert (l ≡ l') as Heq.
-    { eapply agree_op_inv'. eauto. }
+    { eapply to_agree_op_inv. eauto. }
     inversion Heq. by subst.
   Qed.
 
@@ -492,7 +492,7 @@ Section kvs_lemmas.
     destruct kvs; try eauto; iIntros "Huninit_frag Hctx".
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (own_valid_2 with "Huninit_auth Huninit_frag") as %Hval.
-      inversion Hval as [? Heq%agree_op_inv'].
+      inversion Hval as [? Heq%to_agree_op_inv].
       inversion Heq.
     - iDestruct "Hctx" as "(Hauth&Hstate_auth)".
       iDestruct (own_valid_2 with "Hauth Huninit_frag") as %Hval.
