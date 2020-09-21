@@ -142,7 +142,7 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_
           (subslice (slidingM.logIndex σ diskEnd)
                     (slidingM.logIndex σ σ.(slidingM.mutable))
                     σ.(slidingM.log))
-          (subslice diskEnd_txn_id (S nextDiskEnd_txn_id) txns)⌝
+          (subslice (S diskEnd_txn_id) (S nextDiskEnd_txn_id) txns)⌝
   ).
 
 Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id txns:
