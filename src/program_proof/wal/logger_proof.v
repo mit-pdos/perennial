@@ -1,9 +1,9 @@
 From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import auth.
 
+From Perennial.program_logic Require Import ghost_var_old.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
-From Perennial.program_logic Require Import ghost_var_old.
 
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
@@ -293,12 +293,12 @@ Proof.
     iDestruct (txns_are_sound with "Htxns_ctx Htxns_are") as %Htxns_are.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart'.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd'.
-    iMod (ghost_var_update _ with "Hcirc_ctx Howncs") as "[$ Howncs]".
+    iMod (ghost_var_old.ghost_var_update _ with "Hcirc_ctx Howncs") as "[$ Howncs]".
     iNamed "Hdisk".
     iDestruct (ghost_var_frac_frac_agree with "γdiskEnd_txn_id1 γdiskEnd_txn_id2") as %?; subst.
     iCombine "γdiskEnd_txn_id1 γdiskEnd_txn_id2" as "γdiskEnd_txn_id".
     iDestruct (ghost_var_agree with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as %?; subst.
-    iMod (ghost_var_update _ with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as
+    iMod (ghost_var_old.ghost_var_update _ with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as
         "[[γdiskEnd_txn_id $] $]".
     iModIntro.
     iSplitL; [ | done ].

@@ -2,9 +2,9 @@ From RecordUpdate Require Import RecordSet.
 
 From Tactical Require Import SimplMatch.
 
+From Perennial.program_logic Require Import ghost_var_old.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant wal.common_proof.
-From Perennial.program_logic Require Import ghost_var_old.
 Open Scope Z.
 
 Section goose_lang.
@@ -515,7 +515,7 @@ Proof.
           rewrite slidingM.memEnd_ok; eauto.
           eapply is_mem_memLog_endpos_highest; eauto. }
         iMod "HinnerN" as "_".
-        iMod (ghost_var_update _ (σs.(log_state.txns) ++ [(slidingM.endPos memLog', bs)])
+        iMod (ghost_var_old.ghost_var_update _ (σs.(log_state.txns) ++ [(slidingM.endPos memLog', bs)])
                 with "γtxns Howntxns") as "[γtxns Howntxns]".
         iMod (alloc_txn_pos (slidingM.endPos memLog') bs with "Htxns_ctx") as "[Htxns_ctx #Hnew_txn]".
         iDestruct (txn_val_to_pos with "Hnew_txn") as "Hnew_txn_pos".
