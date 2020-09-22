@@ -22,11 +22,9 @@ Proof.
   try (abstract (right; congruence)).
 Qed.
 
-Canonical Structure gset64O := leibnizO (gset u64).
-
 Class allocG Σ :=
   { alloc_used_preG :> gen_heapPreG u64 block_status Σ;
-    alloc_freeset :> inG Σ (ghostR gset64O);
+    alloc_freeset :> ghost_varG Σ (gset u64);
  }.
 
 (* state representation types (defined here since modules can't be in sections) *)
@@ -154,7 +152,7 @@ Definition allocator_inv γ (d: gset u64) : iProp Σ :=
   ∃ σ,
     "%Hdom" ∷ ⌜ dom _ σ = d ⌝ ∗
     "Hstatus" ∷ gen_heap_ctx (hG:=γ.(alloc_status_name)) σ ∗
-    "Hfreeset_auth" ∷ own (γ.(alloc_free_name)) (●E (alloc.free σ)) ∗
+    "Hfreeset_auth" ∷ ghost_var (γ.(alloc_free_name)) (1/2) (alloc.free σ) ∗
     "HP" ∷ P σ
 .
 
@@ -193,7 +191,7 @@ Definition allocator_linv γ n (mref: loc) : iProp Σ :=
  ∃ (freeset: gset u64),
   "Hfreemap" ∷ is_addrset mref (freeset) ∗
   "Hblocks" ∷ ([∗ set] k ∈ freeset, free_block γ n k) ∗
-  "Hfreeset_frag" ∷ own (γ.(alloc_free_name)) (◯E freeset)
+  "Hfreeset_frag" ∷ ghost_var (γ.(alloc_free_name)) (1/2) (freeset)
 .
 
 Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
@@ -679,30 +677,30 @@ Proof.
   - (* extract block *)
 
     iNamed "H".
-    iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
+    iDestruct (ghost_var_op_valid with "Hfreeset_auth [$]") as %[_ <-].
     iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iMod ("Hfupd" $! σ _ (Some k) with "[] [$]") as "(HP&HQ)".
-    { iPureIntro; split; last by reflexivity. rewrite Heq. eauto. }
+    { iPureIntro; split; last by reflexivity. eauto. }
     iMod "Hrestore_mask" as "_".
 
     iDestruct (big_sepS_delete with "Hblocks") as "[Hbk Hblocks]"; eauto.
     iNamed "Hbk".
 
     iMod (gen_heap_update _ k _ block_reserved with "[$] [$]") as "(Hctx&Hmapsto)".
-    iMod (ghost_var_update _ (alloc.free (<[k := block_reserved]>σ)) with "Hfreeset_auth [$]")
+    iMod (ghost_var_update (alloc.free (<[k := block_reserved]>σ)) with "[$]")
          as "(Hfreeset_auth&Hfreeset_frag)".
 
     iModIntro. iSplitL "HP Hfreeset_auth Hctx".
     { iNext. iExists _. iFrame. iPureIntro.
       rewrite dom_insert_L.
       assert (k ∈ dom (gset u64) σ).
-      { rewrite -Heq in Hk. by apply alloc_free_subset. }
+      { by apply alloc_free_subset. }
       set_solver.
     }
     wp_loadField.
     wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hfreemap $His_locked $His_lock]"); first assumption.
     { iExists _; iFrame.
-      rewrite alloc_free_reserve. rewrite Heq. eauto.
+      rewrite alloc_free_reserve. eauto.
     }
     wp_pures.
     iApply "HΦ"; iFrame.
@@ -710,7 +708,7 @@ Proof.
     iFrame.
     { iExists _. eauto. }
   - iNamed "H".
-    iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
+    iDestruct (ghost_var_op_valid with "Hfreeset_auth [$]") as %[_ <-].
     iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iMod ("Hfupd" $! σ _ None with "[] [$]") as "(HP&HQ)".
     { iPureIntro; split; first by reflexivity. congruence. }
@@ -948,10 +946,10 @@ Proof.
   (* TODO: iNamed doesn't work because reserved_block re-uses the name
   Halloc_inv from is_allocator *)
   iDestruct "Hreserved" as "(Hcrashinv&Hmapsto&Halloc_inv_block)".
-  iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %Heq.
+  iDestruct (ghost_var_op_valid with "Hfreeset_auth [$]") as %[_ <-].
   iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
   iMod (gen_heap_update _ a _ block_free with "[$] [$]") as "(Hctx&Hmapsto)".
-  iMod (ghost_var_update _ (alloc.free (<[a := block_free]>σ)) with "Hfreeset_auth [$]")
+  iMod (ghost_var_update (alloc.free (<[a := block_free]>σ)) with "[$]")
     as "(Hfreeset_auth&Hfreeset_frag)".
   iMod (fupd_intro_mask' _ (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
   iMod ("Hfupd" $! σ with "[%//] HP") as "[HP HQ]".
@@ -973,7 +971,7 @@ Proof.
     rewrite big_sepS_union; last first.
     { apply disjoint_singleton_r; auto. by apply reserved_not_in_alloc_free. }
     rewrite big_opS_singleton.
-    rewrite Heq. iFrame.
+    iFrame.
   }
   iApply ("HΦ" with "[$]").
 Qed.

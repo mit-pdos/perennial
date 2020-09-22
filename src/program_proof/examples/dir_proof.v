@@ -19,6 +19,7 @@ Module dir.
 End dir.
 
 Canonical Structure listLO A := leibnizO (list A).
+Canonical Structure gset64O := leibnizO (gset u64).
 
 Local Definition blocksR := authR $ gmapUR nat (exclR $ listLO Block).
 Local Definition allocsR := authR $ gmapUR nat (exclR $ gset64O).

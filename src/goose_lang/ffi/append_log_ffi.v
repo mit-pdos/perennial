@@ -190,17 +190,17 @@ Definition Log_Opened (l: loc) : openR := Cinr (to_agree l).
 Class logG Σ :=
   { logG_open_inG :> inG Σ openR;
     logG_open_name : gname;
-    logG_state_inG:> inG Σ (authR (optionUR (exclR (leibnizO (list disk.Block)))));
+    logG_state_inG:> ghost_varG Σ (list disk.Block);
     logG_state_name: gname;
   }.
 
 Class log_preG Σ :=
   { logG_preG_open_inG :> inG Σ openR;
-    logG_preG_state_inG:> inG Σ (authR (optionUR (exclR (leibnizO (list disk.Block)))));
+    logG_preG_state_inG:> ghost_varG Σ (list disk.Block);
   }.
 
 Definition logΣ : gFunctors :=
-  #[GFunctor openR; GFunctor (authR (optionUR (exclR (leibnizO (list disk.Block)))))].
+  #[GFunctor openR; ghost_varΣ (list disk.Block)].
 
 Instance subG_logG Σ: subG logΣ Σ → log_preG Σ.
 Proof. solve_inG. Qed.
@@ -238,9 +238,9 @@ Definition log_uninit_auth {Σ} {lG :logG Σ} :=
   own (logG_open_name) (Cinl ((1/2)%Qp, to_agree (UnInit' : leibnizO log_unopen_status))).
 
 Definition log_auth {Σ} {lG :logG Σ} (vs: list (disk.Block)) :=
-  own (logG_state_name) (●E (vs: leibnizO (list disk.Block))).
+  ghost_var (logG_state_name) (1/2) vs.
 Definition log_frag {Σ} {lG :logG Σ} (vs: list (disk.Block)) :=
-  own (logG_state_name) (◯E (vs: leibnizO (list disk.Block))).
+  ghost_var (logG_state_name) (1/2) vs.
 
 Section log_interp.
   Existing Instances log_op log_model log_val_ty.
@@ -345,7 +345,8 @@ Section log_lemmas.
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (log_closed_auth_uninit_frag with "[$] [$]") as %[].
     - iDestruct "Hctx" as "(Hclosed_auth&Hstate_auth)".
-      rewrite /log_frag/log_auth. by unify_ghost.
+      rewrite /log_frag/log_auth.
+      iDestruct (ghost_var_op_valid with "Hstate_frag Hstate_auth") as %[_ ->]. done.
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (own_valid_2 with "Huninit_auth Hclosed_frag") as %Hval.
       inversion Hval.
@@ -354,7 +355,8 @@ Section log_lemmas.
   Lemma log_auth_frag_unif vs vs':
     log_auth vs -∗ log_frag vs' -∗ ⌜ vs = vs' ⌝.
   Proof.
-    rewrite /log_auth/log_frag. iIntros "H1 H2". by unify_ghost.
+    rewrite /log_auth/log_frag. iIntros "H1 H2".
+    iDestruct (ghost_var_op_valid with "H1 H2") as %[_ ->]. done.
   Qed.
 
   Lemma log_open_unif l l':
@@ -445,7 +447,7 @@ Section log_lemmas.
 
   Lemma log_state_update vsnew vs1 vs2:
     log_auth vs1 -∗ log_frag vs2 ==∗ log_auth vsnew ∗ log_frag vsnew.
-  Proof. apply ghost_var_update. Qed.
+  Proof. iIntros "H1 H2". iApply ghost_var_update_halves. iFrame. Qed.
 
 End log_lemmas.
 
