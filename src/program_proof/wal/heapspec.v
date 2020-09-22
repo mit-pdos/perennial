@@ -10,6 +10,7 @@ From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.sp
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.algebra Require Import deletable_heap log_heap.
 From Perennial.Helpers Require Import NamedProps.
+From Perennial.program_logic Require Import ghost_var_old.
 
 Inductive heap_block :=
 | HB (installed_block : Block) (blocks_since_install : list Block)

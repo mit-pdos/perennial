@@ -14,6 +14,7 @@ From Perennial.algebra Require Import log_heap.
 From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof Require Import simple.spec.
+From Perennial.program_logic Require Import ghost_var_old.
 
 (* XXX lift somewhere higher up *)
 Canonical Structure u64O := leibnizO u64.

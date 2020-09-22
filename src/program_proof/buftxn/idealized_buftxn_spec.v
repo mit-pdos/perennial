@@ -7,6 +7,7 @@ From Perennial.program_proof Require buftxn.buftxn_proof.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import disk_prelude.
+From Perennial.program_logic Require Import ghost_var_old.
 
 (** * A more separation logic-friendly spec for buftxn
 
