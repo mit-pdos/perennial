@@ -339,7 +339,9 @@ Proof.
       rewrite -> subslice_length by word.
       rewrite -> logIndex_diff by word.
       word. }
-    { iPureIntro. auto. }
+    { iPureIntro.
+      admit. (* this is tricky - it's a txn pos, but that it's highest is due to
+      some bounds *) }
   }
   rewrite -> subslice_length by word.
   iIntros "(Hpost&Hupds&Hcirc_appender&HdiskEnd_is)"; iNamed "Hpost".
@@ -363,29 +365,11 @@ Proof.
   iApply "HΦ".
   iFrame "His_locked".
   iSplitR "Hcirc_appender HnotLogging Hown_diskEnd_txn_id".
-  - iExists (set diskEnd (λ _, int.val σ.(diskEnd) + int.val s.(Slice.sz))
-             (set locked_diskEnd_txn_id (λ _, nextDiskEnd_txn_id) σ0)).
-    (* XXX maybe this should be just [iExists σ0]?  can we prove σ0 already
-       has the right diskEnd and locked_diskEnd_txn_id? *)
-    iDestruct (updates_slice_frag_len with "Hupds") as "%Hupds_len".
+  - (* TODO: come up with a simpler expression for new diskEnd *)
+    iExists (set diskEnd (λ _, int.val σ.(diskEnd) + int.val s.(Slice.sz)) σ).
     simpl.
     iFrame.
-    iSplitL "HmemLog Hshutdown Hnthread His_memLog".
-    { iExists _. iFrame.
-      iPureIntro.
-      rewrite subslice_length in Hupds_len.
-      2: { word. }
-      rewrite logIndex_diff in Hupds_len.
-      2: { word. }
-      rewrite Hupds_len.
-      unfold locked_wf in *. simpl.
-      intuition try lia.
-      { (* XXX u64 wraparound *) admit. }
-      { (* XXX u64 wraparound *) admit. }
-    }
-    iSplitR "HmemLog_linv".
-    { admit. }
-    { admit. }
+    admit.
   - iFrame.
     iExists _; iFrame.
 Admitted.
