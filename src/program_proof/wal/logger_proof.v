@@ -3,6 +3,7 @@ From iris.algebra Require Import auth.
 
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
+From Perennial.program_logic Require Import ghost_var_old.
 
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
 

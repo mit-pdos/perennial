@@ -4,6 +4,8 @@ From Tactical Require Import SimplMatch.
 
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant wal.common_proof.
+From Perennial.program_logic Require Import ghost_var_old.
+Open Scope Z.
 
 Section goose_lang.
 Context `{!heapG Σ}.

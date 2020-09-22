@@ -4,6 +4,8 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 From Perennial.program_proof Require Import wal.circ_proof_crash.
 From Perennial.goose_lang Require Import crash_modality.
+From Perennial.program_logic Require Import ghost_var_old.
+Open Scope Z.
 
 Section goose_lang.
 Context `{!heapG Σ}.
