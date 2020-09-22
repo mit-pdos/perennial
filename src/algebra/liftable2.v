@@ -19,14 +19,11 @@ Section bi.
   Implicit Types (m: gmap L V) (d: gset L).
 
   Definition HoldsAt P mapsto1 d : PROP :=
-    (* TODO: should this really be built-in to HoldsAt? *)
-    ("%Hconflicting1" ∷ <affine> ⌜Conflicting mapsto1⌝ ∗
-    ∃ m,
+    (∃ m,
       "%Hdom" ∷ <affine> ⌜dom _ m = d⌝ ∗
       "Hm" ∷ ([∗ map] a↦v ∈ m, mapsto1 a v) ∗
       "Hmapsto2" ∷
-      ∀ mapsto2, <affine> ⌜Conflicting mapsto2⌝ -∗
-                  (([∗ map] a↦v ∈ m, mapsto2 a v) -∗ P mapsto2))%I.
+      ∀ mapsto2, (([∗ map] a↦v ∈ m, mapsto2 a v) -∗ P mapsto2))%I.
 
   Theorem liftable_holds_elim P `{!Liftable P} mapsto1 `{!Conflicting mapsto1} :
     P mapsto1 -∗ ∃ d, HoldsAt P mapsto1 d.
@@ -34,34 +31,28 @@ Section bi.
     iIntros "HP".
     iDestruct (liftable with "HP") as (m) "[Hm HP]".
     iExists (dom _ m).
-    iSplit; first by auto.
     iExists m. iSplit; first by auto.
     iFrame.
-    iIntros (??) "Hm".
-    iApply "HP"; iFrame.
   Qed.
 
-  Theorem star_holds_at_combine `{!BiAffine PROP} P Q mapsto1 d1 d2 :
+  Theorem sep_holds_at_combine `{!BiAffine PROP} P Q mapsto1 `{!Conflicting mapsto1} d1 d2 :
     HoldsAt P mapsto1 d1 ∗ HoldsAt Q mapsto1 d2 -∗
     HoldsAt (fun mapsto => P mapsto ∗ Q mapsto)%I mapsto1 (d1 ∪ d2) ∗ ⌜d1 ## d2⌝.
   Proof.
     iIntros "[HP HQ]".
-    iDestruct "HP" as "[%Hconflicting1 HP]".
     iDestruct "HP" as (m1) "(<-&Hm1&Hmapsto1)".
-    iDestruct "HQ" as "[%Hconflicting2 HQ]".
     iDestruct "HQ" as (m2) "(<-&Hm2&Hmapsto2)".
     iDestruct (big_sepM_disjoint_pred with "Hm1 Hm2") as %Hdisjoint.
     iSplit; last first.
     { iPureIntro.
       apply map_disjoint_dom; auto. }
-    iSplit; first by auto.
     iExists (m1 ∪ m2).
     iSplit.
     { rewrite dom_union_L.
       auto. }
     rewrite big_sepM_union //.
     iFrame "Hm1 Hm2".
-    iIntros (??) "Hm".
+    iIntros (?) "Hm".
     iDestruct (big_sepM_union with "Hm") as "[Hm1 Hm2]"; auto.
     iSplitL "Hmapsto1 Hm1".
     - iApply "Hmapsto1"; iFrame "%∗".
@@ -70,16 +61,24 @@ Section bi.
     assumption.
   Qed.
 
-  Theorem independent_holds_empty (P:PROP) mapsto1 `{!Conflicting mapsto1} :
+  Theorem holds_at_empty P mapsto1 `{!Conflicting mapsto1} :
+    HoldsAt P mapsto1 ∅ -∗ P mapsto1.
+  Proof.
+    iIntros "H"; iNamed "H".
+    apply dom_empty_inv_L in Hdom; subst.
+    setoid_rewrite big_sepM_empty.
+    iApply "Hmapsto2"; auto.
+  Qed.
+
+  Theorem independent_holds_empty (P:PROP) mapsto1 :
     P -∗ HoldsAt (λ _, P) mapsto1 ∅.
   Proof.
     iIntros "HP".
-    iSplit; first by auto.
     iExists ∅.
     rewrite dom_empty_L.
     iSplit; first by auto.
     rewrite big_sepM_empty left_id.
-    iIntros (??).
+    iIntros (?).
     rewrite big_sepM_empty; iIntros "_".
     iFrame.
   Qed.
@@ -88,27 +87,25 @@ Section bi.
     HoldsAt (Φ x) mapsto1 d -∗
     HoldsAt (fun mapsto => ∃ x, Φ x mapsto)%I mapsto1 d.
   Proof.
-    iIntros "H"; iNamed "H"; iNamed "H".
-    iSplit; first by auto.
+    iIntros "H"; iNamed "H".
     iExists m.
     iSplit; first by auto.
     iFrame.
-    iIntros (??) "Hm".
+    iIntros (?) "Hm".
     iExists (x).
     iApply "Hmapsto2"; auto.
   Qed.
 
-  Theorem singleton_holds_at `{!Conflicting mapsto} a v :
+  Theorem singleton_holds_at mapsto a v :
     mapsto a v -∗ HoldsAt (fun mapsto => mapsto a v) mapsto {[a]}.
   Proof.
     iIntros "Ha".
-    iSplit; first by auto.
     iExists {[a := v]}.
     rewrite dom_singleton_L.
     iSplit; first by auto.
     setoid_rewrite big_sepM_singleton.
     iFrame "Ha".
-    iIntros (??) "$".
+    iIntros (?) "$".
   Qed.
 
   Lemma dom_map_to_list m :
@@ -149,21 +146,20 @@ Section bi.
     exists v; auto.
   Admitted.
 
-  Theorem map_singleton_holds_at m Φ `{!Conflicting mapsto1} :
+  Theorem map_singleton_holds_at m Φ mapsto1 :
     ([∗ map] a↦v∈m, HoldsAt (Φ a v) mapsto1 {[a]}) -∗
     HoldsAt (fun mapsto => [∗ map] a ↦ v ∈ m, (Φ a v mapsto))%I mapsto1 (dom _ m).
   Proof.
     iIntros "Hm".
-    iSplit; first by auto.
     iInduction m as [|l v m] "IH" using map_ind.
     - iExists ∅.
       iSplit; first by auto.
       rewrite !big_sepM_empty left_id.
       setoid_rewrite big_sepM_empty.
-      by iIntros (??) "_".
+      by iIntros (?) "_".
     - setoid_rewrite big_sepM_insert; auto.
       iDestruct "Hm" as "[Hl Hm']".
-      iNamed "Hl". iNamed "Hl".
+      iNamed "Hl".
       apply dom_singleton_inv in Hdom as [v' ->].
       setoid_rewrite big_sepM_singleton.
       iDestruct ("IH" with "Hm'") as (m') "(%Hdom'&Hm'&Hmapsto2')".
@@ -175,10 +171,10 @@ Section bi.
         auto. }
       rewrite big_sepM_insert //.
       iFrame.
-      iIntros (??) "Hm".
+      iIntros (?) "Hm".
       rewrite !big_sepM_insert //.
       iDestruct "Hm" as "[Hl Hm']".
-      iDestruct ("Hmapsto2" with "[% //] Hl") as "$".
+      iDestruct ("Hmapsto2" with "Hl") as "$".
       iApply "Hmapsto2'"; auto.
   Qed.
 
