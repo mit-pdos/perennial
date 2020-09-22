@@ -152,11 +152,16 @@ Section goose_lang.
     ∃ q, ptsto γtxn a q obj.
 
   Theorem lift_into_txn E l γ γtxn d a obj :
+    ↑invN ⊆ E →
     is_buftxn l γ γtxn d -∗
     modify_token γ a obj ={E}=∗
-    buftxn_maps_to γtxn a obj ∗ is_buftxn l γ γtxn d.
+    (buftxn_maps_to γtxn a obj ∗ is_buftxn l γ γtxn d).
   Proof.
-    (* use mspec.lift_into_txn *)
+    iIntros (?) "Hctx Ha".
+    iDestruct "Hctx" as (mT) "(%Hd & Hbuftxn & Htxnmap)".
+    iDestruct (mspec.BufTxn_lift_one _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hupd"; auto.
+    (* TODO: why doesn't this work? *)
+    Fail iMod "Hupd".
   Admitted.
 
   Instance modify_token_conflicting γ : Conflicting (modify_token γ).
@@ -169,11 +174,12 @@ Section goose_lang.
 
   Theorem lift_liftable_into_txn E `{!Liftable P}
           l γ γtxn d :
+    ↑invN ⊆ E →
     is_buftxn l γ γtxn d -∗
     P (modify_token γ) ={E}=∗
     P (buftxn_maps_to γtxn) ∗ is_buftxn l γ γtxn d.
   Proof.
-    iIntros "Hctx HP".
+    iIntros (?) "Hctx HP".
     iDestruct (liftable (P:=P) with "HP") as (m) "[Hm HP]".
     iSpecialize ("HP" $! (buftxn_maps_to γtxn)).
     iInduction m as [|i x m] "IH" using map_ind.
@@ -182,7 +188,7 @@ Section goose_lang.
       iSplitL "HP"; [ | iFrame ].
       by iApply "HP".
     - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; auto.
-      iMod (lift_into_txn with "Hctx Hi") as "[Hi Hctx]".
+      iMod (lift_into_txn with "Hctx Hi") as "[Hi Hctx]"; auto.
       iMod ("IH" with "Hctx Hm [Hi HP]") as "[$ $]".
       + iIntros "Hm".
         iApply "HP".
