@@ -1,5 +1,5 @@
 From iris.algebra Require Import numbers.
-From Perennial.algebra Require Import auth_map liftable log_heap.
+From Perennial.algebra Require Import auth_map liftable liftable2 log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof txn.txn_proof.
@@ -231,9 +231,9 @@ Section goose_lang.
   predicates; TODO: won't it be difficult to establish that the footprint of P
   hasn't changed in the invariant? it hasn't because we've had it locked, but we
   don't have ownership over it... *)
-  Theorem wp_BufTxn__CommitWait l γ γtxn d E `{!Liftable P} Q PreQ :
-    {{{ is_buftxn l γ γtxn d ∗ P (buftxn_maps_to γtxn) ∗
-        PreQ ∧ (|={⊤,E}=> ∃ P0, ⌜Liftable P0⌝ ∗ P0 (stable_maps_to γ)
+  Theorem wp_BufTxn__CommitWait {l γ γtxn} E P Q d PreQ :
+    {{{ is_buftxn l γ γtxn d ∗ HoldsAt P (buftxn_maps_to γtxn) d ∗
+        PreQ ∧ (|={⊤,E}=> ∃ P0, HoldsAt P0 (stable_maps_to γ) d
                     ∗ (P (stable_maps_to γ) ={E,⊤}=∗ Q))  }}}
       BufTxn__CommitWait #l #true
     {{{ (n:u64), RET #n; Q }}}.
