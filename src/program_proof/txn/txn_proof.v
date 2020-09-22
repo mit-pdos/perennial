@@ -260,7 +260,7 @@ Proof using txnG0 Σ.
     {
       iDestruct (big_sepM2_delete with "Htxn_in_hb") as "[Hoff Htxn_in_hb]"; eauto.
       iNamed "Hoff".
-      iMod (ghost_var_update _ false with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
+      iMod (ghost_var_old.ghost_var_update _ false with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
 
       iDestruct ("Hinv_closer" with "[-Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hinv_closer".
       {
@@ -355,7 +355,7 @@ Proof using txnG0 Σ.
     iDestruct (big_sepM2_lookup_acc with "Htxn_in_hb") as "[Hoff Htxn_in_hb]"; eauto.
     iNamed "Hoff".
     iDestruct (ghost_var_agree with "Hoff_own Hmod_frag") as %->.
-    iMod (ghost_var_update _ true with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
+    iMod (ghost_var_old.ghost_var_update _ true with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
     iDestruct ("Htxn_in_hb" with "[Hoff_own]") as "Htxn_in_hb"; eauto.
     iDestruct ("Hheapmatch" with "[Hriq Htxn_in_hb]") as "Hheapmatch".
     { iExists _, _, _. iFrame. done. }

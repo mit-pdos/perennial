@@ -1411,7 +1411,7 @@ Proof using walheapG0.
   iDestruct (ghost_var_agree with "Htxns Hlockedheap") as "%Hagree".
   inversion Hagree; clear Hagree. subst.
 
-  iMod (ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Hlockedheap") as "[Htxns Hlockedheap]".
+  iMod (ghost_var_old.ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Hlockedheap") as "[Htxns Hlockedheap]".
 
   iNamed "Hcrash_heaps".
   rewrite /memappend_crash_pre. iNamed "Hprecrash".
@@ -1423,7 +1423,7 @@ Proof using walheapG0.
   rewrite /wal_heap_inv_crash.
   iNamed "Hlatest".
 
-  iMod (ghost_var_update _ (async_put (apply_upds_u64 (latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
+  iMod (ghost_var_old.ghost_var_update _ (async_put (apply_upds_u64 (latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
 
   iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _)).
 
