@@ -270,15 +270,15 @@ Theorem wp_installBlocks γ d bufs_s (bufs: list update.t)
       (* these aren't enough assumptions - we need bufs to actually match the
       new transactions being installed (which will come from snapshotting the
       memLog invariant) *)
-      own γ.(being_installed_name) (◯ Excl' (∅: gset Z)) ∗
-      own γ.(new_installed_name) (◯ Excl' installed_txn_id)
+      ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) ∗
+      ghost_var γ.(new_installed_name) (1/2) installed_txn_id
    }}}
     installBlocks #d (slice_val bufs_s)
   {{{ RET #(); updates_slice bufs_s bufs ∗
       (* probably not enough in the postcondition, but it can only be ghost
       variables so maybe this is it *)
-      own γ.(being_installed_name) (◯ Excl' (list_to_set (C:=gset Z) ((λ u, int.val (update.addr u)) <$> bufs))) ∗
-      own γ.(new_installed_name) (◯ Excl' installed_txn_id)
+      ghost_var γ.(being_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.val (update.addr u)) <$> bufs)) ∗
+      ghost_var γ.(new_installed_name) (1/2) installed_txn_id
   }}}.
 Proof.
 Admitted.

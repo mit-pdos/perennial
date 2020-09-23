@@ -2,7 +2,6 @@ From RecordUpdate Require Import RecordSet.
 
 From Tactical Require Import SimplMatch.
 
-From Perennial.program_logic Require Import ghost_var_old.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 Open Scope Z.
@@ -502,7 +501,7 @@ Proof.
         iDestruct "HnextDiskEnd_txn" as "#HnextDiskEnd_txn".
         iNamed "Hinner".
         (* XXX: unify_ghost doesn't rewrite everywhere *)
-        iDestruct (ghost_var_old.ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
+        iDestruct (ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd_txn.
         iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
@@ -515,7 +514,7 @@ Proof.
           rewrite slidingM.memEnd_ok; eauto.
           eapply is_mem_memLog_endpos_highest; eauto. }
         iMod "HinnerN" as "_".
-        iMod (ghost_var_old.ghost_var_update _ (σs.(log_state.txns) ++ [(slidingM.endPos memLog', bs)])
+        iMod (ghost_var_update_halves (σs.(log_state.txns) ++ [(slidingM.endPos memLog', bs)])
                 with "γtxns Howntxns") as "[γtxns Howntxns]".
         iMod (alloc_txn_pos (slidingM.endPos memLog') bs with "Htxns_ctx") as "[Htxns_ctx #Hnew_txn]".
         iDestruct (txn_val_to_pos with "Hnew_txn") as "Hnew_txn_pos".

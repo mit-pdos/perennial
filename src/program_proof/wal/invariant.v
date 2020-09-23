@@ -5,13 +5,10 @@ From iris.algebra Require Import gset.
 From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Map.
 
 From Perennial.algebra Require Export deletable_heap append_list.
-From Perennial.program_logic Require Import ghost_var_old.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
 From Perennial.program_proof Require Export wal.circ_proof wal.sliding_proof.
 From Perennial.program_proof Require Export wal.transitions.
-
-Canonical Structure circO := leibnizO circΣ.t.
 
 Transparent slice.T.
 Typeclasses Opaque struct_field_mapsto.
@@ -19,13 +16,13 @@ Typeclasses Opaque struct_field_mapsto.
 Class walG Σ :=
   { wal_circ         :> circG Σ;
     wal_txns_map     :> gen_heapPreG nat (u64 * list update.t) Σ;
-    wal_circ_state   :> inG Σ (ghostR $ circO);
-    wal_txn_id       :> inG Σ (ghostR $ prodO u64O natO);
-    wal_list_update  :> inG Σ (ghostR $ listO updateO);
-    wal_txns         :> inG Σ (ghostR $ listO $ prodO u64O (listO updateO));
-    wal_nat          :> inG Σ (ghostR $ natO);
-    wal_addr_set     :> inG Σ (ghostR $ gmapO ZO unitO); (* TODO: probably unused *)
-    wal_addr_set_gset :> inG Σ (ghostR $ gsetO Z);
+    wal_circ_state   :> ghost_varG Σ circΣ.t;
+    wal_txn_id       :> ghost_varG Σ (u64 * nat);
+    wal_list_update  :> ghost_varG Σ (list update.t);
+    wal_txns         :> ghost_varG Σ (list (u64 * (list update.t)));
+    wal_nat          :> ghost_varG Σ nat;
+    wal_addr_set     :> ghost_varG Σ (gmap Z unit); (* TODO: probably unused *)
+    wal_addr_set_gset :> ghost_varG Σ (gset Z);
     wal_thread_owned :> thread_ownG Σ;
     wal_txns_alist   :> alistG Σ (u64 * list update.t);
   }.
@@ -157,7 +154,7 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
       "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
       "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
       "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
-      "Howntxns" ∷ own γ.(txns_name) (◯E txns) ∗
+      "Howntxns" ∷ ghost_var γ.(txns_name) (1/2) txns ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
@@ -192,7 +189,7 @@ Definition diskEnd_linv γ (diskEnd: u64) diskEnd_txn_id: iProp Σ :=
   "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.val diskEnd) ∗
   "HdiskEnd_exactly" ∷ thread_own_ctx γ.(diskEnd_avail_name)
                          ("HdiskEnd_is" ∷ diskEnd_is γ.(circ_name) (1/2) (int.val diskEnd) ∗
-                          "γdiskEnd_txn_id1" ∷ own γ.(diskEnd_txn_id_name) (●{1/2} Excl' diskEnd_txn_id)).
+                          "γdiskEnd_txn_id1" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/4) diskEnd_txn_id).
 
 Definition diskStart_linv γ (start: u64): iProp Σ :=
   "#Hstart_at_least" ∷ start_at_least γ.(circ_name) start ∗
@@ -248,8 +245,8 @@ Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) 
     (* TODO: the other half of these are owned by the installer, giving it full
      knowledge of in-progress installations and exclusive update rights; need to
      write down what it maintains as part of its loop invariant *)
-    "Howninstalled" ∷ (own γ.(new_installed_name) (●E new_installed_txn_id) ∗
-     own γ.(being_installed_name) (●E being_installed)) ∗
+    "Howninstalled" ∷ (ghost_var γ.(new_installed_name) (1/2) new_installed_txn_id ∗
+     ghost_var γ.(being_installed_name) (1/2) being_installed) ∗
     "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ new_installed_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
     "Hdata" ∷ ([∗ map] a ↦ _ ∈ d,
      ∃ (b: Block),
@@ -274,7 +271,7 @@ Definition is_installed_read γ d txns installed_lb diskEnd_txn_id : iProp Σ :=
       a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
 
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
-  own γ.(cs_name) (●E cs).
+  ghost_var γ.(cs_name) (1/2) cs.
 
 Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id diskEnd_txn_id :=
   has_updates cs.(circΣ.upds) (subslice installed_txn_id (S diskEnd_txn_id) txns) ∧
@@ -297,7 +294,7 @@ Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
 
 Definition disk_inv γ s (cs: circΣ.t) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
-      "γdiskEnd_txn_id2" ∷ own γ.(diskEnd_txn_id_name) (●{1/2} Excl' diskEnd_txn_id) ∗
+      "γdiskEnd_txn_id2" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/4) diskEnd_txn_id ∗
       "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
@@ -316,8 +313,8 @@ Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "Hmem" ∷ is_wal_mem l γ ∗
     "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
-    "γtxns"  ∷ own γ.(txns_name) (●E s.(log_state.txns)) ∗
-    "Hdisk" ∷ ∃ cs, "Howncs" ∷ own γ.(cs_name) (◯E cs) ∗ "Hdisk" ∷ disk_inv γ s cs
+    "γtxns"  ∷ ghost_var γ.(txns_name) (1/2) s.(log_state.txns) ∗
+    "Hdisk" ∷ ∃ cs, "Howncs" ∷ ghost_var γ.(cs_name) (1/2) cs ∗ "Hdisk" ∷ disk_inv γ s cs
 .
 
 (* holds for log states which are possible after a crash (essentially these have
@@ -343,7 +340,7 @@ Definition is_wal (l : loc) γ : iProp Σ :=
 (** logger_inv is the resources exclusively owned by the logger thread *)
 Definition logger_inv γ circ_l: iProp Σ :=
   "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
-  "*" ∷ (∃ diskEnd_txn_id, "Hown_diskEnd_txn_id" ∷ own γ.(diskEnd_txn_id_name) (◯E diskEnd_txn_id)) ∗
+  "*" ∷ (∃ diskEnd_txn_id, "Hown_diskEnd_txn_id" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/2) diskEnd_txn_id) ∗
   "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
 
 (* TODO: also needs authoritative ownership of some other variables *)
@@ -406,14 +403,14 @@ Theorem is_circular_diskEnd_lb_agree E γ lb cs :
   ↑circN ⊆ E ->
   diskEnd_at_least γ.(circ_name) lb -∗
   is_circular circN (circular_pred γ) γ.(circ_name) -∗
-  own γ.(cs_name) (◯E cs) -∗
-  |={E}=> ⌜lb ≤ circΣ.diskEnd cs⌝ ∗ own γ.(cs_name) (◯E cs).
+  ghost_var γ.(cs_name) (1/2) cs -∗
+  |={E}=> ⌜lb ≤ circΣ.diskEnd cs⌝ ∗ ghost_var γ.(cs_name) (1/2) cs.
 Proof.
   rewrite /circular_pred.
   iIntros (Hsub) "#HdiskEnd_lb #Hcirc Hown".
   iInv "Hcirc" as ">Hinner" "Hclose".
   iDestruct "Hinner" as (σ) "(Hstate&Hγ)".
-  unify_ghost.
+  unify_ghost_var γ.(cs_name).
   iFrame "Hown".
   iDestruct (is_circular_state_pos_acc with "Hstate") as "([HdiskStart HdiskEnd]&Hstate)".
   iDestruct (diskEnd_is_agree_2 with "HdiskEnd HdiskEnd_lb") as %Hlb.
@@ -428,16 +425,16 @@ Theorem is_circular_diskEnd_is_agree E q γ diskEnd cs :
   ↑circN ⊆ E ->
   diskEnd_is γ.(circ_name) q diskEnd -∗
   is_circular circN (circular_pred γ) γ.(circ_name) -∗
-  own γ.(cs_name) (◯E cs) -∗
+  ghost_var γ.(cs_name) (1/2) cs -∗
   |={E}=> ⌜diskEnd = circΣ.diskEnd cs⌝ ∗
           diskEnd_is γ.(circ_name) q diskEnd ∗
-          own γ.(cs_name) (◯E cs).
+          ghost_var γ.(cs_name) (1/2) cs.
 Proof.
   rewrite /circular_pred.
   iIntros (Hsub) "HdiskEnd_is #Hcirc Hown".
   iInv "Hcirc" as ">Hinner" "Hclose".
   iDestruct "Hinner" as (σ) "(Hstate&Hγ)".
-  unify_ghost.
+  unify_ghost_var γ.(cs_name).
   iFrame "Hown".
   iDestruct (is_circular_state_pos_acc with "Hstate") as "([HdiskStart HdiskEnd]&Hstate)".
   iDestruct (diskEnd_is_agree with "HdiskEnd HdiskEnd_is") as %Heq; subst; iFrame.
@@ -533,8 +530,8 @@ Qed.
 
 Theorem is_wal_txns_lookup l γ σ :
   is_wal_inner l γ σ -∗
-  (∃ txns, txns_ctx γ txns ∗ own γ.(txns_name) (●E txns) ∗
-             (txns_ctx γ txns ∗ own γ.(txns_name) (●E txns) -∗
+  (∃ txns, txns_ctx γ txns ∗ ghost_var γ.(txns_name) (1/2) txns ∗
+             (txns_ctx γ txns ∗ ghost_var γ.(txns_name) (1/2) txns -∗
               is_wal_inner l γ σ)).
 Proof.
   iNamed 1.
@@ -545,13 +542,13 @@ Qed.
 Theorem txn_pos_valid_locked l γ txns txn_id pos :
   is_wal l γ -∗
   txn_pos γ txn_id pos -∗
-  own γ.(txns_name) (◯E txns) -∗
-  |={⊤}=> ⌜is_txn txns txn_id pos⌝ ∗ own γ.(txns_name) (◯E txns).
+  ghost_var γ.(txns_name) (1/2) txns -∗
+  |={⊤}=> ⌜is_txn txns txn_id pos⌝ ∗ ghost_var γ.(txns_name) (1/2) txns.
 Proof.
   iIntros "[#? _] #Hpos Howntxns".
   iInv innerN as (σ) "[Hinner HP]".
   iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(>Htxns_ctx & >γtxns & Hinner)".
-  iDestruct (ghost_var_old.ghost_var_agree with "γtxns Howntxns") as %Hagree; subst.
+  iDestruct (ghost_var_agree with "γtxns Howntxns") as %Hagree; subst.
   iFrame "Howntxns".
   iDestruct (txn_pos_valid_general with "Htxns_ctx Hpos") as %His_txn.
   iModIntro.
@@ -580,15 +577,15 @@ Qed.
 Theorem get_txns_are l γ txns start till txns_sub :
   txns_sub = subslice start till txns →
   (start ≤ till ≤ length txns)%nat →
-  own γ.(txns_name) (◯E txns) -∗
+  ghost_var γ.(txns_name) (1/2) txns -∗
   is_wal l γ -∗
-  |={⊤}=> txns_are γ start txns_sub ∗ own γ.(txns_name) (◯E txns).
+  |={⊤}=> txns_are γ start txns_sub ∗ ghost_var γ.(txns_name) (1/2) txns.
 Proof.
   iIntros (??) "Hown #Hwal".
   iDestruct "Hwal" as "[Hwal _]".
   iInv "Hwal" as (σ) "[Hinner HP]".
   iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(>Htxns_ctx & >γtxns & Hinner)".
-  iDestruct (ghost_var_old.ghost_var_agree with "γtxns Hown") as %Heq; subst.
+  iDestruct (ghost_var_agree with "γtxns Hown") as %Heq; subst.
   iDestruct (alist_lookup_subseq _ start till with "Htxns_ctx") as "#$".
   { lia. }
   iModIntro.
@@ -666,7 +663,7 @@ Qed.
 
 Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id txns:
   (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id txns) -∗
-  (own γ.(txns_name) (◯E txns)) -∗
+  (ghost_var γ.(txns_name) (1/2) txns) -∗
   memLog_linv γ σ diskEnd diskEnd_txn_id.
 Proof.
   iNamed 1. iIntros "H". iExists _, _, _. iFrame. iFrame "%".

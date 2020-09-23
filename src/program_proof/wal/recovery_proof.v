@@ -4,7 +4,6 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 From Perennial.program_proof Require Import wal.circ_proof_crash.
 From Perennial.goose_lang Require Import crash_modality.
-From Perennial.program_logic Require Import ghost_var_old.
 Open Scope Z.
 
 Section goose_lang.
@@ -199,7 +198,7 @@ Proof.
   iNamed "Hdisk".
 
   iPersist "Hdurable".
-  unify_ghost.
+  unify_ghost_var γ.(cs_name).
   clear cs; rename cs0 into cs.
   iDestruct (is_installed_weaken_read with "Hinstalled") as "Hinstalled".
   set (σ':= log_crash_to σ diskEnd_txn_id).

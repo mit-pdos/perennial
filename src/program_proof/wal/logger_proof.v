@@ -1,7 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import auth.
 
-From Perennial.program_logic Require Import ghost_var_old.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 
@@ -274,8 +273,8 @@ Proof.
   wp_loadField.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   wp_apply (wp_circular__Append _ _
-                              ("γdiskEnd_txn_id1" ∷ own γ.(diskEnd_txn_id_name) (●{1/2} Excl' nextDiskEnd_txn_id) ∗
-                               "Hown_diskEnd_txn_id" ∷ own γ.(diskEnd_txn_id_name) (◯E nextDiskEnd_txn_id))
+                              ("γdiskEnd_txn_id1" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/4) nextDiskEnd_txn_id ∗
+                               "Hown_diskEnd_txn_id" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/2) nextDiskEnd_txn_id)
               with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least Hown_diskEnd_txn_id γdiskEnd_txn_id1]").
   { rewrite subslice_length; word. }
   { rewrite subslice_length; word. }
@@ -289,17 +288,27 @@ Proof.
 
     iDestruct "Hinner" as "(>%Hwf&Hmem&>?&>?&>?)"; iNamed.
     iNamed "Hdisk".
-    iDestruct (ghost_var_old.ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
+    iDestruct (ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
     iDestruct (txns_are_sound with "Htxns_ctx Htxns_are") as %Htxns_are.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart'.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd'.
-    iMod (ghost_var_old.ghost_var_update _ with "Hcirc_ctx Howncs") as "[$ Howncs]".
+    iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[$ Howncs]".
     iNamed "Hdisk".
-    iDestruct (ghost_var_old.ghost_var_frac_frac_agree with "γdiskEnd_txn_id1 γdiskEnd_txn_id2") as %?; subst.
+    iDestruct (ghost_var_agree with "γdiskEnd_txn_id1 γdiskEnd_txn_id2") as %?; subst.
     iCombine "γdiskEnd_txn_id1 γdiskEnd_txn_id2" as "γdiskEnd_txn_id".
-    iDestruct (ghost_var_old.ghost_var_agree with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as %?; subst.
-    iMod (ghost_var_old.ghost_var_update _ with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as
-        "[[γdiskEnd_txn_id $] $]".
+    (* If we used "1/2/2" instead of "1/4" (and fixed some Perennial-induced typeclass oddities),
+       we could avoid this. *)
+    assert (1/4 + 1/4 = 1/2)%Qp as ->.
+    { apply (bool_decide_unpack _); by compute. }
+    iDestruct (ghost_var_agree with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as %?; subst.
+
+    iMod (ghost_var_update_halves with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as
+        "[γdiskEnd_txn_id $]".
+    (* FIXME: due to Perennial removing some TC hints, this pattern cannot be inlined into the above. *)
+    iDestruct "γdiskEnd_txn_id" as "[γdiskEnd_txn_id out_txn_id]".
+    assert (1/2/2 = 1/4)%Qp as ->.
+    { apply (bool_decide_unpack _); by compute. }
+    iFrame "out_txn_id".
     iModIntro.
     iSplitL; [ | done ].
     iNext.
