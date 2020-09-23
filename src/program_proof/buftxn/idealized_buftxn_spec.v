@@ -267,14 +267,33 @@ Section goose_lang.
   predicates; TODO: won't it be difficult to establish that the footprint of P
   hasn't changed in the invariant? it hasn't because we've had it locked, but we
   don't have ownership over it... *)
-  Theorem wp_BufTxn__CommitWait {l γ γtxn} E P Q d PreQ :
-    {{{ is_buftxn l γ γtxn d ∗ HoldsAt P (buftxn_maps_to γtxn) d ∗
-        PreQ ∧ (|={⊤,E}=> ∃ P0, HoldsAt P0 (stable_maps_to γ) d
+  Theorem wp_BufTxn__CommitWait {l γ γtxn} E P Q d :
+    ↑N ⊆ E →
+    {{{ "Hbuftxn" ∷ is_buftxn l γ γtxn d ∗
+        "HP" ∷ HoldsAt P (buftxn_maps_to γtxn) d ∗
+        "Hfupd" ∷ (|={⊤ ∖ ↑invariant.walN ∖ ↑invN,E}=> ∃ P0, HoldsAt P0 (stable_maps_to γ) d
                     ∗ (P (stable_maps_to γ) ={E,⊤}=∗ Q))  }}}
       BufTxn__CommitWait #l #true
-    {{{ (n:u64), RET #n; Q }}}.
-  (* TODO: provide PreQ on crash *)
+    {{{ (n:u64), RET #n; Q ∗ P (modify_token γ) }}}.
+  (* TODO: has a wpc might need a PreQ ∧ on the fupd *)
   Proof.
+    iIntros (? Φ) "Hpre HΦ"; iNamed "Hpre".
+    iNamed "Hbuftxn".
+    wp_apply (mspec.wp_BufTxn__CommitWait with "[$Hbuftxn HP Hfupd]").
+    { iMod "Hfupd" as (P0) "[HP0 HQ]".
+      iNamed "Htxn_system".
+      iInv "Htxn_inv" as ">Hinner" "Hclo".
+      iModIntro.
+      iNamed "Hinner".
+      iExists σs.
+      iFrame "H◯async".
+      iIntros "Hown◯async'".
+      iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
+      (* TODO: need to allocate a whole predicate P into map_ctx, transforming
+      the old resources in Hstable into stable_maps_to over mT; then we can use
+      HP to restore P using stable_maps_to *)
+      (* TODO: this is probably the time to also construct P (modify_token γ)
+      somehow from HP... *)
   Admitted.
 
 End goose_lang.
