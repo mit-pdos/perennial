@@ -61,6 +61,15 @@ Section bi.
     assumption.
   Qed.
 
+  Theorem sep_holds_at_split `{!BiAffine PROP} P Q mapsto1 d `{!Conflicting mapsto1} `{!Liftable P, !Liftable Q}  :
+    HoldsAt (fun mapsto => P mapsto ∗ Q mapsto)%I mapsto1 d -∗
+    ∃ d1 d2, ⌜d1 ## d2 ∧ d = d1 ∪ d2⌝ ∗ HoldsAt P mapsto1 d1 ∗ HoldsAt Q mapsto1 d2.
+  Proof.
+    iNamed 1.
+    (* XXX: we can't prove this, we need to swap an exists domain with the
+    forall mapsto *)
+  Abort.
+
   Theorem holds_at_empty P mapsto1 `{!Conflicting mapsto1} :
     HoldsAt P mapsto1 ∅ -∗ P mapsto1.
   Proof.
