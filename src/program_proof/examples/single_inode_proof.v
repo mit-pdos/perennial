@@ -157,7 +157,7 @@ Section goose.
     rewrite /Palloc; iNamed 1. (* TODO: shouldn't need to unfold, this is a bug
     in iNamed *)
     iNamed 1.
-    iDestruct (ghost_var_op_valid with "Hused2 Hused1") as %[_ ->].
+    iDestruct (ghost_var_agree with "Hused2 Hused1") as %->.
     auto.
   Qed.
 
@@ -354,7 +354,7 @@ Section goose.
     { solve_ndisj. }
     rewrite {2}/s_inode_inv. iNamed "Hsinv".
     iNamed "HPinode". simpl.
-    iDestruct (ghost_var_op_valid with "Hγblocks Hownblocks") as %[_ ->].
+    iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
     iMod "HcloseM" as "_".
     iModIntro.
     iFrame.
@@ -422,13 +422,13 @@ Section goose.
       iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
       iEval (rewrite /Palloc) in "HPalloc"; iNamed.
       iNamed "HPinode".
-      iDestruct (ghost_var_op_valid with "Hused2 Hused1") as %[_ Heq].
+      iDestruct (ghost_var_agree with "Hused2 Hused1") as %Heq.
       rewrite <-Heq.
       iInv "Hinv" as ([σ0]) "[>Hinner HP]" "Hclose".
       iMod (ghost_var_update (union {[addr']} σ.(inode.addrs))
               with "[$Hused2 $Hused1 //]") as
           "[Hused Hγused]".
-      iDestruct (ghost_var_op_valid with "Hinner Hownblocks") as %[_ ?]; simplify_eq/=.
+      iDestruct (ghost_var_agree with "Hinner Hownblocks") as %?; simplify_eq/=.
       iMod (ghost_var_update ((σ.(inode.blocks) ++ [b0]))
               with "[$Hinner $Hownblocks //]") as "[Hγblocks Hownblocks]".
       iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)

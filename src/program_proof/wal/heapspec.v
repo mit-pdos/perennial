@@ -1408,14 +1408,14 @@ Proof using walheapG0.
 
   iMod (wal_heap_memappend_pre_to_q with "[$Hctx $Hpre]") as "[Hctx Hq]".
 
-  iDestruct (ghost_var_agree with "Htxns Hlockedheap") as "%Hagree".
+  iDestruct (ghost_var_old.ghost_var_agree with "Htxns Hlockedheap") as "%Hagree".
   inversion Hagree; clear Hagree. subst.
 
   iMod (ghost_var_old.ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Hlockedheap") as "[Htxns Hlockedheap]".
 
   iNamed "Hcrash_heaps".
   rewrite /memappend_crash_pre. iNamed "Hprecrash".
-  iDestruct (ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as %<-.
+  iDestruct (ghost_var_old.ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as %<-.
   iDestruct "Hpossible_heaps" as "#Hpossible_heaps".
   iDestruct (big_sepL_app with "Hpossible_heaps") as "[_ Hlatest]".
   simpl.
@@ -1594,7 +1594,7 @@ Proof using walheapG0.
     )%I with "[$Hwal Htxnsfrag]").
   { iIntros (σ σ' mb) "%Hwal_wf %Hrelation Hwalinv".
     iNamed "Hwalinv".
-    iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+    iDestruct (ghost_var_old.ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
     inversion Hagree; clear Hagree; subst.
 
     simpl in *; monad_inv.
@@ -1646,7 +1646,7 @@ Proof using walheapG0.
       simpl in *; monad_inv.
 
       iNamed "Hwalinv".
-      iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+      iDestruct (ghost_var_old.ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
       inversion Hagree; clear Hagree; subst.
       rewrite <- H5 in Hb.
       rewrite <- H6 in Hb.
@@ -1701,7 +1701,7 @@ Theorem wal_heap_mapsto_latest_helper γ lwh (a : u64) (v : heap_block) σ :
 Proof.
   iIntros "(Hheap & Htxnsfrag & Hmapsto)".
   iNamed "Hheap".
-  iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+  iDestruct (ghost_var_old.ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
   inversion Hagree; clear Hagree; subst.
   iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
   iDestruct (big_sepM_lookup with "Hgh") as "%Hvalid_gh"; eauto.

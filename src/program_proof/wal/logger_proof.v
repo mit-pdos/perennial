@@ -289,15 +289,15 @@ Proof.
 
     iDestruct "Hinner" as "(>%Hwf&Hmem&>?&>?&>?)"; iNamed.
     iNamed "Hdisk".
-    iDestruct (ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
+    iDestruct (ghost_var_old.ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
     iDestruct (txns_are_sound with "Htxns_ctx Htxns_are") as %Htxns_are.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart'.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd'.
     iMod (ghost_var_old.ghost_var_update _ with "Hcirc_ctx Howncs") as "[$ Howncs]".
     iNamed "Hdisk".
-    iDestruct (ghost_var_frac_frac_agree with "γdiskEnd_txn_id1 γdiskEnd_txn_id2") as %?; subst.
+    iDestruct (ghost_var_old.ghost_var_frac_frac_agree with "γdiskEnd_txn_id1 γdiskEnd_txn_id2") as %?; subst.
     iCombine "γdiskEnd_txn_id1 γdiskEnd_txn_id2" as "γdiskEnd_txn_id".
-    iDestruct (ghost_var_agree with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as %?; subst.
+    iDestruct (ghost_var_old.ghost_var_agree with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as %?; subst.
     iMod (ghost_var_old.ghost_var_update _ with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as
         "[[γdiskEnd_txn_id $] $]".
     iModIntro.

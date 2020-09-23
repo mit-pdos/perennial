@@ -1,14 +1,14 @@
 From iris.proofmode Require Import tactics.
 From iris.bi.lib Require Import fractional.
 From iris.base_logic.lib Require Import iprop own.
-From Perennial.program_logic Require Import ghost_var_old.
+From Perennial.program_logic Require Import ghost_var.
 Set Default Proof Using "Type".
 
 (** resources for locking a resource but then retrieving it temporarily from a
 single thread that is allowed to access it *)
 
 Class thread_ownG Σ :=
-  { thread_own_ghost_bool :> inG Σ (ghostR boolO); }.
+  { thread_own_ghost_bool :> ghost_varG Σ bool; }.
 
 Inductive OwnStatus := Available | Used.
 
@@ -19,10 +19,10 @@ Implicit Types (γ:gname) (P:iProp Σ).
 
 Definition thread_own_ctx γ P: iProp Σ :=
   ∃ (available: bool),
-    own γ (◯E available) ∗ if available then P else emp.
+    ghost_var γ (1/2) available ∗ if available then P else emp.
 
 Definition thread_own γ (s:OwnStatus) : iProp Σ :=
-  own γ (●E (if s then true else false)).
+  ghost_var γ (1/2) (if s then true else false).
 
 Theorem thread_own_alloc P :
   P -∗ |==> ∃ γ, thread_own_ctx γ P ∗ thread_own γ Available.
@@ -44,8 +44,8 @@ Proof.
   rewrite /thread_own.
   iIntros "Hctx Hγ".
   iDestruct "Hctx" as (available) "(Hown&HP)".
-  unify_ghost; iFrame.
-  iMod (ghost_var_update γ false with "Hγ Hown") as "($&Hown)".
+  unify_ghost_var γ. iFrame.
+  iMod (ghost_var_update_halves false with "Hγ Hown") as "($&Hown)".
   iModIntro.
   iExists false; iFrame.
 Qed.
@@ -58,7 +58,7 @@ Proof.
   rewrite /thread_own.
   iIntros "Hctx Hγ HP'".
   iDestruct "Hctx" as (available) "(Hown&_)".
-  iMod (ghost_var_update γ true with "Hγ Hown") as "($&Hown)".
+  iMod (ghost_var_update_halves true with "Hγ Hown") as "($&Hown)".
   iModIntro.
   iExists true; iFrame.
 Qed.

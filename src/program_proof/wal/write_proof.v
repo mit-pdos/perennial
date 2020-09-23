@@ -502,7 +502,7 @@ Proof.
         iDestruct "HnextDiskEnd_txn" as "#HnextDiskEnd_txn".
         iNamed "Hinner".
         (* XXX: unify_ghost doesn't rewrite everywhere *)
-        iDestruct (ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
+        iDestruct (ghost_var_old.ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd_txn.
         iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.

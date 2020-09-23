@@ -9,6 +9,7 @@ From Perennial.algebra Require Import deletable_heap log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From Perennial.program_logic Require Import ghost_var_old.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.Helpers Require Import NamedProps Map.
@@ -354,7 +355,7 @@ Proof using txnG0 Σ.
 
     iDestruct (big_sepM2_lookup_acc with "Htxn_in_hb") as "[Hoff Htxn_in_hb]"; eauto.
     iNamed "Hoff".
-    iDestruct (ghost_var_agree with "Hoff_own Hmod_frag") as %->.
+    iDestruct (ghost_var_old.ghost_var_agree with "Hoff_own Hmod_frag") as %->.
     iMod (ghost_var_old.ghost_var_update _ true with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
     iDestruct ("Htxn_in_hb" with "[Hoff_own]") as "Htxn_in_hb"; eauto.
     iDestruct ("Hheapmatch" with "[Hriq Htxn_in_hb]") as "Hheapmatch".
@@ -1117,7 +1118,7 @@ Proof using txnG0 Σ.
     rewrite /memappend_pre.
     rewrite /memappend_crash_pre.
 
-    iDestruct (ghost_var_agree with "Hcrashstates Hcrashstates_frag") as %->.
+    iDestruct (ghost_var_old.ghost_var_agree with "Hcrashstates Hcrashstates_frag") as %->.
 
     iDestruct (gmap_addr_by_block_big_sepM with "Hmapstos") as "Hmapstos".
     iDestruct (big_sepM2_filter _ (λ k, is_Some (gmap_addr_by_block bufamap !! k)) with "Hheapmatch") as "[Hheapmatch_in Hheapmatch_out]".

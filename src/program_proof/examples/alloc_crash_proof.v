@@ -677,7 +677,7 @@ Proof.
   - (* extract block *)
 
     iNamed "H".
-    iDestruct (ghost_var_op_valid with "Hfreeset_auth [$]") as %[_ <-].
+    iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %<-.
     iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iMod ("Hfupd" $! σ _ (Some k) with "[] [$]") as "(HP&HQ)".
     { iPureIntro; split; last by reflexivity. eauto. }
@@ -708,7 +708,7 @@ Proof.
     iFrame.
     { iExists _. eauto. }
   - iNamed "H".
-    iDestruct (ghost_var_op_valid with "Hfreeset_auth [$]") as %[_ <-].
+    iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %<-.
     iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iMod ("Hfupd" $! σ _ None with "[] [$]") as "(HP&HQ)".
     { iPureIntro; split; first by reflexivity. congruence. }
@@ -946,7 +946,7 @@ Proof.
   (* TODO: iNamed doesn't work because reserved_block re-uses the name
   Halloc_inv from is_allocator *)
   iDestruct "Hreserved" as "(Hcrashinv&Hmapsto&Halloc_inv_block)".
-  iDestruct (ghost_var_op_valid with "Hfreeset_auth [$]") as %[_ <-].
+  iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %<-.
   iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
   iMod (gen_heap_update _ a _ block_free with "[$] [$]") as "(Hctx&Hmapsto)".
   iMod (ghost_var_update (alloc.free (<[a := block_free]>σ)) with "[$]")

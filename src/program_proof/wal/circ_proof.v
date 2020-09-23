@@ -8,7 +8,6 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.Helpers Require Import List Transitions.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
-From Perennial.program_logic Require Export ghost_var_old.
 From Perennial.program_proof Require Import wal.lib.
 From Perennial.program_proof Require Import marshal_block util_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
@@ -42,8 +41,8 @@ Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t 
   modify (set circΣ.upds (fun u => u ++ l)).
 
 Class circG Σ :=
-  { circ_list_u64 :> inG Σ (ghostR (listO u64O));
-    circ_list_block :> inG Σ (ghostR (listO blockO));
+  { circ_list_u64 :> ghost_varG Σ (list u64);
+    circ_list_block :> ghost_varG Σ (list Block);
     circ_fmcounter :> fmcounterG Σ;
   }.
 
@@ -103,8 +102,8 @@ Definition circ_low_wf (addrs: list u64) (blocks: list Block) :=
 
 Definition circ_own γ (addrs: list u64) (blocks: list Block): iProp Σ :=
   ⌜circ_low_wf addrs blocks⌝ ∗
-  own γ.(addrs_name) (●E addrs) ∗
-  own γ.(blocks_name) (●E blocks).
+  ghost_var γ.(addrs_name) (1/2) addrs ∗
+  ghost_var γ.(blocks_name) (1/2) blocks.
 
 Theorem circ_state_wf γ addrs blocks :
   circ_own γ addrs blocks -∗ ⌜circ_low_wf addrs blocks⌝.
@@ -208,8 +207,8 @@ Definition is_circular γ : iProp Σ :=
 Definition is_circular_appender γ (circ: loc) : iProp Σ :=
   ∃ s (addrs : list u64) (blocks: list Block),
     ⌜circ_low_wf addrs blocks⌝ ∗
-    own γ.(addrs_name) (◯E addrs) ∗
-    own γ.(blocks_name) (◯E blocks) ∗
+    ghost_var γ.(addrs_name) (1/2) addrs ∗
+    ghost_var γ.(blocks_name) (1/2) blocks ∗
     circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
     is_slice_small s uint64T 1 addrs.
 
@@ -257,8 +256,8 @@ Proof.
 Qed.
 
 Theorem is_circular_inner_wf γ addrs blocks σ :
-  own γ.(addrs_name) (◯E addrs) ∗
-  own γ.(blocks_name) (◯E blocks) -∗
+  ghost_var γ.(addrs_name) (1/2) addrs ∗
+  ghost_var γ.(blocks_name) (1/2) blocks -∗
   is_circular_state γ σ -∗
   ⌜circ_low_wf addrs blocks⌝.
 Proof.
@@ -266,6 +265,7 @@ Proof.
   iDestruct "His_circ" as "(_&His_circ)".
   iDestruct "His_circ" as (addrs' blocks') "(_&Hown&_)".
   iDestruct "Hown" as "(%Hlow_wf&Haddrs&Hblocks)".
+  (* FIXME: use unify_ghost_var does not handle [var1 = var2] well. *)
   iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.
   iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
   auto.
@@ -273,8 +273,8 @@ Qed.
 
 Theorem is_circular_appender_wf γ addrs blocks :
   is_circular γ -∗
-  own γ.(addrs_name) (◯E addrs) ∗
-  own γ.(blocks_name) (◯E blocks) -∗
+  ghost_var γ.(addrs_name) (1/2) addrs ∗
+  ghost_var γ.(blocks_name) (1/2) blocks -∗
   |={⊤}=> ⌜circ_low_wf addrs blocks⌝.
 Proof.
   iIntros "#Hcirc [Hγaddrs Hγblocks]".
@@ -637,7 +637,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
   int.val endpos + Z.of_nat (length upds) < 2^64 ->
   (int.val endpos - int.val startpos_lb) + length upds ≤ LogSz ->
   {{{ is_circular γ ∗
-      own γ.(blocks_name) (◯E blocks) ∗
+      ghost_var γ.(blocks_name) (1/2) blocks ∗
       start_at_least γ startpos_lb ∗
       diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
@@ -648,7 +648,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
   {{{ RET #();
       let addrs' := update_addrs addrs (int.val endpos) upds in
       let blocks' := update_blocks blocks (int.val endpos) upds in
-      own γ.(blocks_name) (◯E blocks') ∗
+      ghost_var γ.(blocks_name) (1/2) blocks' ∗
       diskEnd_is γ (1/2) (int.val endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 addrs' ∗
@@ -667,7 +667,7 @@ Proof.
   wp_apply (slice.wp_forSlice (fun i =>
     let addrs' := update_addrs addrs (int.val endpos) (take (int.nat i) upds) in
     let blocks' := update_blocks blocks (int.val endpos) (take (int.nat i) upds) in
-    own γ.(blocks_name) (◯E blocks') ∗
+    ghost_var γ.(blocks_name) (1/2) blocks' ∗
     c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
     is_slice_small diskaddrslice uint64T 1 addrs' ∗
     diskEnd_is γ (1/2) (int.val endpos) ∗
@@ -728,7 +728,7 @@ Proof.
   iSpecialize ("Hd2" with "Hdi").
   iDestruct "Hown" as (_) "[Haddrs_auth Hblocks_auth]".
   iDestruct (ghost_var_agree γ.(blocks_name) with "Hblocks_auth Hγblocks") as %->.
-  iMod (ghost_var_update γ.(blocks_name) _
+  iMod (ghost_var_update_halves _
           with "Hblocks_auth Hγblocks") as "[Hblocks_auth Hγblocks]".
   iMod ("Hclose" with "[-Hγblocks Hend HΦ HdiskAddrs Haddrs Hbks]") as "_".
   { iModIntro.
@@ -956,7 +956,7 @@ Proof.
 
   iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
   iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.
-  iMod (ghost_var_update γ.(addrs_name) (update_addrs addrs (int.val endpos) upds) with "Haddrs Hγaddrs") as "[Haddrs Hγaddrs]".
+  iMod (ghost_var_update_halves (update_addrs addrs (int.val endpos) upds) with "Haddrs Hγaddrs") as "[Haddrs Hγaddrs]".
   iMod (circ_positions_append upds with "[$] Hstart [$]") as "[Hpos Hend]"; [ done | done | ].
   iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd'.
   iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb'.

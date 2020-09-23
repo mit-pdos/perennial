@@ -345,8 +345,7 @@ Section log_lemmas.
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (log_closed_auth_uninit_frag with "[$] [$]") as %[].
     - iDestruct "Hctx" as "(Hclosed_auth&Hstate_auth)".
-      rewrite /log_frag/log_auth.
-      iDestruct (ghost_var_op_valid with "Hstate_frag Hstate_auth") as %[_ ->]. done.
+      rewrite /log_frag/log_auth. unify_ghost_var logG_state_name. done.
     - iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
       iDestruct (own_valid_2 with "Huninit_auth Hclosed_frag") as %Hval.
       inversion Hval.
@@ -355,8 +354,7 @@ Section log_lemmas.
   Lemma log_auth_frag_unif vs vs':
     log_auth vs -∗ log_frag vs' -∗ ⌜ vs = vs' ⌝.
   Proof.
-    rewrite /log_auth/log_frag. iIntros "H1 H2".
-    iDestruct (ghost_var_op_valid with "H1 H2") as %[_ ->]. done.
+    rewrite /log_auth/log_frag. iIntros "H1 H2". by unify_ghost_var logG_state_name.
   Qed.
 
   Lemma log_open_unif l l':
@@ -447,7 +445,7 @@ Section log_lemmas.
 
   Lemma log_state_update vsnew vs1 vs2:
     log_auth vs1 -∗ log_frag vs2 ==∗ log_auth vsnew ∗ log_frag vsnew.
-  Proof. iIntros "H1 H2". iApply ghost_var_update_halves. iFrame. Qed.
+  Proof. apply ghost_var_update_halves. Qed.
 
 End log_lemmas.
 

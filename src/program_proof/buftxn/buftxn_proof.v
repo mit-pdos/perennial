@@ -5,6 +5,7 @@ From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import deletable_heap log_heap liftable.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_logic Require Import ghost_var_old.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
 From Perennial.program_proof Require Import wal.specs wal.heapspec txn.txn_proof buf.buf_proof addr.addr_proof.

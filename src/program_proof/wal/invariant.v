@@ -5,6 +5,7 @@ From iris.algebra Require Import gset.
 From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Map.
 
 From Perennial.algebra Require Export deletable_heap append_list.
+From Perennial.program_logic Require Import ghost_var_old.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
 From Perennial.program_proof Require Export wal.circ_proof wal.sliding_proof.
@@ -550,7 +551,7 @@ Proof.
   iIntros "[#? _] #Hpos Howntxns".
   iInv innerN as (σ) "[Hinner HP]".
   iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(>Htxns_ctx & >γtxns & Hinner)".
-  iDestruct (ghost_var_agree with "γtxns Howntxns") as %Hagree; subst.
+  iDestruct (ghost_var_old.ghost_var_agree with "γtxns Howntxns") as %Hagree; subst.
   iFrame "Howntxns".
   iDestruct (txn_pos_valid_general with "Htxns_ctx Hpos") as %His_txn.
   iModIntro.
@@ -587,7 +588,7 @@ Proof.
   iDestruct "Hwal" as "[Hwal _]".
   iInv "Hwal" as (σ) "[Hinner HP]".
   iDestruct (is_wal_txns_lookup with "Hinner") as (txns') "(>Htxns_ctx & >γtxns & Hinner)".
-  iDestruct (ghost_var_agree with "γtxns Hown") as %Heq; subst.
+  iDestruct (ghost_var_old.ghost_var_agree with "γtxns Hown") as %Heq; subst.
   iDestruct (alist_lookup_subseq _ start till with "Htxns_ctx") as "#$".
   { lia. }
   iModIntro.
