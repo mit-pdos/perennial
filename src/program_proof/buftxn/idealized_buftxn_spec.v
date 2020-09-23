@@ -97,7 +97,6 @@ Record buftxn_names {Σ} :=
 Arguments buftxn_names Σ : assert, clear implicits.
 
 Section goose_lang.
-  Context `{!heapG Σ}.
   Context `{!buftxnG Σ}.
 
   Context (N:namespace).
@@ -125,7 +124,7 @@ Section goose_lang.
   (* this is for the entire txn manager, and relates it to some ghost state *)
   Definition is_txn_system l γ : iProp Σ :=
     "His_txn" ∷ txn_proof.is_txn l γ.(buftxn_txn_names) ∗
-    inv N (txn_system_inv γ).
+    "Htxn_inv" ∷ inv N (txn_system_inv γ).
 
   (* TODO: eventually need a proper name for this; I think of it as "the right
   to use address [a] in a transaction", together with the fact that the current
@@ -143,25 +142,24 @@ Section goose_lang.
   not shareable *)
   Definition is_buftxn l γ γtxn d : iProp Σ :=
     ∃ (mT: gmap addr object),
-      ⌜dom (gset _) mT = d⌝ ∗
-      mspec.is_buftxn l mT γ.(buftxn_txn_names) ∗
-      map_ctx γtxn mT
+      "%Hdom" ∷ ⌜dom (gset _) mT = d⌝ ∗
+      "#Htxn_system" ∷ is_txn_system l γ ∗
+      "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) ∗
+      "Htxn_ctx" ∷ map_ctx γtxn mT
   .
 
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=
-    ∃ q, ptsto γtxn a q obj.
+     ptsto_ro γtxn a obj.
 
   Theorem lift_into_txn E l γ γtxn d a obj :
     ↑invN ⊆ E →
     is_buftxn l γ γtxn d -∗
     modify_token γ a obj ={E}=∗
-    (buftxn_maps_to γtxn a obj ∗ is_buftxn l γ γtxn d).
+    (buftxn_maps_to γtxn a obj ∗ is_buftxn l γ γtxn ({[a]} ∪ d)).
   Proof.
     iIntros (?) "Hctx Ha".
-    iDestruct "Hctx" as (mT) "(%Hd & Hbuftxn & Htxnmap)".
-    iDestruct (mspec.BufTxn_lift_one _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hupd"; auto.
-    (* TODO: why doesn't this work? *)
-    Fail iMod "Hupd".
+    iNamed "Hctx".
+    iMod (mspec.BufTxn_lift_one _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hupd"; auto.
   Admitted.
 
   Instance modify_token_conflicting γ : Conflicting (modify_token γ).
@@ -172,6 +170,8 @@ Section goose_lang.
     iDestruct (mapsto_txn_2 with "H1 H2") as %[].
   Qed.
 
+  (* TODO: can only lift HoldsAt P d', and new buftxn has domain d ∪ d' *)
+  (*
   Theorem lift_liftable_into_txn E `{!Liftable P}
           l γ γtxn d :
     ↑invN ⊆ E →
@@ -196,6 +196,7 @@ Section goose_lang.
         iFrame.
       + auto.
   Qed.
+*)
 
   Definition is_object l a obj: iProp Σ :=
     ∃ dirty, is_buf l a
@@ -207,9 +208,37 @@ Section goose_lang.
     bufSz (objKind obj) = int.nat sz →
     {{{ is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj }}}
       BufTxn__ReadBuf #l (addr2val a) #sz
-    {{{ (l:loc), RET #l; is_object l a obj }}}.
+    {{{ (bufptr:loc), RET #bufptr;
+    (* TODO: this spec needs to return a pair of the bufptr and a fupd that
+    incorporates the buf back into is_buftxn; the caller can manipulate the buf
+    and then return it to the buftxn system *)
+        is_buftxn l γ γtxn d }}}.
   Proof.
-  Admitted.
+    iIntros (? Φ) "Hpre HΦ".
+    iDestruct "Hpre" as "[Hbuftxn #Ha]".
+    iNamed "Hbuftxn".
+    iDestruct (map_ro_valid with "Htxn_ctx Ha") as %Hmt_lookup.
+    iApply wp_fupd.
+    wp_apply (mspec.wp_BufTxn__ReadBuf with "[$Hbuftxn]").
+    { iPureIntro.
+      split; first by eauto.
+      rewrite H.
+      word. }
+    iIntros (??) "[Hbuf Hbuf_upd]".
+    iMod ("Hbuf_upd" $! (projT2 obj) dirty with "[$Hbuf]") as "Hbuftxn".
+    { auto. }
+    iModIntro.
+    iApply "HΦ".
+    iExists mT.
+    iSplit; first by auto.
+    iFrame "#Htxn_ctx".
+    iExactEq "Hbuftxn".
+    f_equal.
+    rewrite insert_id //.
+    rewrite Hmt_lookup.
+    f_equal.
+    destruct obj; auto.
+  Qed.
 
   (* TODO: state that [data] (a slice of bytes in the implementation) encodes
   the dynamically-typed object [obj], as *)
