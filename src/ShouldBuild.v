@@ -18,7 +18,8 @@ From Perennial.program_proof Require
      txn.txn_proof
      buftxn.buftxn_proof
      buftxn.idealized_buftxn_spec
-     simple.simple.
+     simple.simple
+     wp_to_wpc.
 (* new version for buftxn *)
 From Perennial.algebra Require Import liftable2.
 From Perennial.program_proof.examples Require
