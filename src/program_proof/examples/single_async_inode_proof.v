@@ -24,16 +24,13 @@ Module s_inode.
   Global Instance _witness : Inhabited t := populate!.
 End s_inode.
 
-(* discrete ofe over lists *)
-Canonical Structure listLO A := leibnizO (list A).
-
 Section goose.
   Context `{!heapG Σ}.
   Context `{!crashG Σ}.
   Context `{!allocG Σ}.
   Context `{!stagedG Σ}.
   Context `{fmlistG Block Σ}.
-  Context `{!inG Σ (ghostR (listLO Block))}.
+  Context `{!ghost_varG Σ (list Block)}.
 
   Implicit Types (l:loc) (σ: s_inode.t) (γ: gname).
 
@@ -57,22 +54,22 @@ Section goose.
 
   (** Protocol invariant for inode library *)
   Local Definition Pinode δdur δbuf δused (s: inode.t): iProp Σ :=
-    "Hown_dur_blocks" ∷ own δdur (◯E (s.(inode.durable_blocks): listLO Block)) ∗
-    "Hown_buf_blocks" ∷ own δbuf (◯E (s.(inode.buffered_blocks): listLO Block)) ∗
-    "Hused1" ∷ own δused (◯E s.(inode.addrs)).
+    "Hown_dur_blocks" ∷ ghost_var δdur (1/2) s.(inode.durable_blocks) ∗
+    "Hown_buf_blocks" ∷ ghost_var δbuf (1/2) s.(inode.buffered_blocks) ∗
+    "Hused1" ∷ ghost_var δused (1/2) s.(inode.addrs).
 
   Local Definition Pinode_cinv δdur δused (s: inode.t): iProp Σ :=
-    "Hown_dur_blocks" ∷ own δdur (◯E (s.(inode.durable_blocks): listLO Block)) ∗
-    "Hused1" ∷ own δused (◯E s.(inode.addrs)).
+    "Hown_dur_blocks" ∷ ghost_var δdur (1/2) s.(inode.durable_blocks) ∗
+    "Hused1" ∷ ghost_var δused (1/2) s.(inode.addrs).
 
   (** Protocol invariant for alloc library *)
   Local Definition Palloc δused (s: alloc.t): iProp Σ :=
-    "Hused2" ∷ own δused (●E (alloc.used s)).
+    "Hused2" ∷ ghost_var δused (1/2) (alloc.used s).
 
   (** Our own invariant (added to this is [P blocks]) *)
   Definition s_inode_inv δdur δbuf (σ: s_inode.t): iProp Σ :=
-    "Hδdurable_blocks" ∷ own δdur (●E (σ.(s_inode.durable_blocks) : listLO Block)) ∗
-    "Hδbuffered_blocks" ∷ own δbuf (●E (σ.(s_inode.buffered_blocks) : listLO Block)).
+    "Hδdurable_blocks" ∷ ghost_var δdur (1/2) σ.(s_inode.durable_blocks) ∗
+    "Hδbuffered_blocks" ∷ ghost_var δbuf (1/2) σ.(s_inode.buffered_blocks).
 
   (** In-memory state of the inode (persistent) *)
   Definition s_inode_state l (inode_ref alloc_ref: loc) : iProp Σ :=
@@ -110,7 +107,7 @@ Section goose.
     "Hinode" ∷ (∃ s_inode, "Hinode_cinv" ∷ inode_cinv (U64 0) s_inode ∗
                            "HPinode" ∷ Pinode_cinv δdur δused s_inode) ∗
     "Halloc" ∷ alloc_crash_cond (Palloc δused) allocΨ (rangeSet 1 (sz-1)) post_crash ∗
-    "Hδdurable_blocks" ∷ own δdur (●E (σ.(s_inode.durable_blocks) : listLO Block)) ∗
+    "Hδdurable_blocks" ∷ ghost_var δdur (1/2) σ.(s_inode.durable_blocks) ∗
     "HP" ∷ P γdur γbuf σ
   .
   Local Hint Extern 1 (environments.envs_entails _ (s_inode_cinv _ _ _ _ _)) => unfold s_inode_cinv : core.
@@ -180,7 +177,7 @@ Section goose.
     change (0%nat + 0)%Z with (int.val (U64 0)).
     iDestruct (init_inode with "Hzero") as "Hinode".
     simpl.
-    iMod (ghost_var_alloc (nil : listLO Block)) as
+    iMod (ghost_var_alloc (nil : list Block)) as
         (δdur) "[Hδdur Howndur]".
     iMod (ghost_var_alloc (∅ : gset u64)) as
         (δused) "[Hδused Hownused]".
@@ -190,7 +187,7 @@ Section goose.
         (γbuf) "(Hγbuf1&Hγbuf2)".
     iModIntro.
     iExists γdur, γbuf; iSplitR "Hγbuf2"; last by iFrame.
-    iExists δdur, δused; iFrame.
+    iExists δdur, δused; iFrame "Hδdur Hγdur Hγbuf1".
     iSplitL "Hinode Howndur Hownused".
     - iExists (inode.mk ∅ [] []).
       iFrame.
@@ -346,7 +343,7 @@ Section goose.
     iDestruct (struct_fields_split with "Hstruct") as "(i&alloc&_)".
     iMod (readonly_alloc_1 with "i") as "#i".
     iMod (readonly_alloc_1 with "alloc") as "#alloc".
-    iMod (ghost_var_alloc (nil : listLO Block)) as
+    iMod (ghost_var_alloc (nil : list Block)) as
         (δbuf) "[Hδbuf Hownbuf]".
     iMod (fmlist_alloc (σ0.(s_inode.durable_blocks))) as
         (γbuf') "(Hγbuf1&Hγbuf2)".
@@ -611,7 +608,7 @@ Section goose.
       iNamed "Hinner".
       iDestruct (ghost_var_agree with "Hδdurable_blocks Hown_dur_blocks") as %?; simplify_eq/=.
       iDestruct (ghost_var_agree with "Hδbuffered_blocks Hown_buf_blocks") as %?; simplify_eq/=.
-      iMod (ghost_var_update _ ((σ.(inode.buffered_blocks) ++ [b0]) : listLO Block)
+      iMod (ghost_var_update_halves (σ.(inode.buffered_blocks) ++ [b0])
               with "Hδbuffered_blocks Hown_buf_blocks") as "[Hδbuffered_blocks Hown_buf_blocks]".
       iNamed "HP".
       iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
@@ -731,15 +728,15 @@ Section goose.
       iDestruct (ghost_var_agree with "Hδdurable_blocks Hown_dur_blocks") as %->.
       iDestruct (ghost_var_agree with "Hδbuffered_blocks Hown_buf_blocks") as %->.
       iDestruct (ghost_var_agree with "HPalloc Hused1") as %Heq_alloc.
-      iMod (ghost_var_update _ ((σ.(inode.durable_blocks) ++ [b]) : listLO Block)
+      iMod (ghost_var_update_halves (σ.(inode.durable_blocks) ++ [b])
               with "Hδdurable_blocks Hown_dur_blocks") as "[Hδdurable_blocks Hown_dur_blocks]".
-      iMod (ghost_var_update _ (blks : listLO Block)
+      iMod (ghost_var_update_halves blks
               with "Hδbuffered_blocks Hown_buf_blocks") as "[Hδbuffered_blocks Hown_buf_blocks]".
       iMod (fmlist_update (σ.(inode.durable_blocks) ++ [b]) with "Hfm_dur_blocks") as "(Hfm_dur_blocks&?)"; eauto.
       { econstructor; eauto. }
       rewrite /Pinode.
       simpl.
-      iMod (ghost_var_update _ ({[addr']} ∪ (alloc.used s))
+      iMod (ghost_var_update_halves ({[addr']} ∪ (alloc.used s))
               with "HPalloc Hused1") as "[HPalloc Hused1]".
       iMod ("Hclose" with "[Hδdurable_blocks Hδbuffered_blocks Hfm_all_blocks Hfm_dur_blocks]") as "_".
       { iNext. iExists {| s_inode.buffered_blocks := blks;

@@ -1370,8 +1370,8 @@ Proof.
 
     wp_load.
 
-    iMod (ghost_var_alloc (addrs0 : listO u64O)) as (addrs_name') "[Haddrs' Hγaddrs]".
-    iMod (ghost_var_alloc (blocks0 : listO blockO)) as (blocks_name') "[Hblocks' Hγblocks]".
+    iMod (ghost_var_alloc addrs0) as (addrs_name') "[Haddrs' Hγaddrs]".
+    iMod (ghost_var_alloc blocks0) as (blocks_name') "[Hblocks' Hγblocks]".
     iMod (fmcounter_alloc (int.nat σ.(start))) as (start_name') "[Hstart1 Hstart2]".
     iMod (fmcounter_alloc (Z.to_nat (circΣ.diskEnd σ))) as (diskEnd_name') "[HdiskEnd1 HdiskEnd2]".
     set (γ' := {| addrs_name := addrs_name';
