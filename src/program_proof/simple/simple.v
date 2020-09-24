@@ -14,7 +14,6 @@ From Perennial.algebra Require Import log_heap.
 From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof Require Import simple.spec.
-From Perennial.program_logic Require Import ghost_var_old.
 
 (* XXX lift somewhere higher up *)
 Canonical Structure u64O := leibnizO u64.
@@ -24,7 +23,7 @@ Canonical Structure asyncO T := leibnizO (async T).
 Section heap.
 Context `{!crashG Σ}.
 Context `{!buftxnG Σ}.
-Context `{!inG Σ (ghostR $ gmapO u64O $ asyncO $ list u8)}.
+Context `{!ghost_varG Σ (gmap u64 (async (list u8)))}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Record simple_names := {
@@ -39,7 +38,7 @@ Context `{!forall σ, Timeless (P σ)}.
 
 Definition is_source γ : iProp Σ :=
   ∃ (src: SimpleNFS.State),
-    own γ.(simple_state) (● Excl' src) ∗
+    ghost_var γ.(simple_state) (1/2) src ∗
     (* If we were doing a refinement proof, the top-level source_state would
      * own the ◯ of this ghost variable.. *)
     gen_heap_ctx (hG := γ.(simple_src)) src ∗
