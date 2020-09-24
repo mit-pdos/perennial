@@ -120,6 +120,14 @@ Section bi.
     iApply "Hmapsto2"; auto.
   Qed.
 
+  Theorem holds_at_elim P mapsto1 d :
+    HoldsAt P mapsto1 d -∗ P mapsto1.
+  Proof.
+    iNamed 1.
+    iApply "Hmapsto2".
+    iFrame.
+  Qed.
+
   Theorem independent_holds_empty (P:PROP) mapsto1 :
     P -∗ HoldsAt (λ _, P) mapsto1 ∅.
   Proof.

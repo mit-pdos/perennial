@@ -144,13 +144,12 @@ Qed.
 
 Theorem map_update_predicate `{!EqDecision L, !Countable L} {V} `{!mapG Σ L V}
         (P0 P: (L → V → iProp Σ) → iProp Σ) (γ: gname) mapsto2 d m :
-  dom (gset _) m = d →
   map_ctx γ m -∗
   HoldsAt P0 (λ a v, ptsto γ a 1 v) d -∗
   HoldsAt P mapsto2 d -∗
   |==> ∃ m', map_ctx γ m' ∗ HoldsAt P (λ a v, ptsto γ a 1 v ∗ mapsto2 a v) d.
 Proof.
-  iIntros (<-) "Hctx HP0 HP".
+  iIntros "Hctx HP0 HP".
   iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
   iDestruct "HP" as (m') "(%Hdom & HPm & HP)"; rewrite /named.
   iMod (map_update_map m' with "Hctx Hstable") as "[Hctx Hstable]".
@@ -347,7 +346,6 @@ Section goose_lang.
   Proof.
   Admitted.
 
-  (* TODO: almost certainly wrong in some fundamental way *)
   (* the idea is that the caller gets to open an invariant and extract an old
   version of whatever they've modified, then substitute it for a newly-prepared
   transaction *)
@@ -360,7 +358,8 @@ Section goose_lang.
     {{{ "Hbuftxn" ∷ is_buftxn l γ γtxn d ∗
         "HP" ∷ HoldsAt P (buftxn_maps_to γtxn) d ∗
         "Hfupd" ∷ (|={⊤ ∖ ↑invariant.walN ∖ ↑invN,E}=> ∃ P0, HoldsAt P0 (stable_maps_to γ) d
-                    ∗ (P (stable_maps_to γ) ={E,⊤}=∗ Q))  }}}
+                    ∗ (P (λ a v, stable_maps_to γ a v ∗ modify_token γ a v) -∗
+                       |={E,⊤ ∖ ↑invariant.walN ∖ ↑invN}=> Q))  }}}
       BufTxn__CommitWait #l #true
     {{{ (n:u64), RET #n; Q ∗ P (modify_token γ) }}}.
   (* TODO: has a wpc might need a PreQ ∧ on the fupd *)
@@ -375,14 +374,23 @@ Section goose_lang.
       iNamed "Hinner".
       iExists σs.
       iFrame "H◯async".
-      iIntros "Hown◯async'".
-      iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
-
-      (* TODO: need to allocate a whole predicate P into map_ctx, transforming
-      the old resources in Hstable into stable_maps_to over mT; then we can use
-      HP to restore P using stable_maps_to *)
-      (* TODO: this is probably the time to also construct P (modify_token γ)
-      somehow from HP... *)
+      iIntros "H◯async".
+      (* iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]". *)
+      iMod (map_update_predicate with "H●latest HP0 HP") as (m') "[H●latest HP]".
+      iMod ("Hclo" with "[H◯async H●latest H◯durable]") as "_".
+      { iNext.
+        iExists _.
+        iFrame "H◯async".
+        admit. (* oops, we need m' to be precise, which we can get because we
+        have a predicate holding over a domain which matches a map_ctx - this
+        guarantees that it actually holds in exactly the map specified by the
+        ctx *) }
+      iMod ("HQ" with "[HP]") as "HQ".
+      { rewrite /stable_maps_to /modify_token.
+        (* XXX: something is wrong, having produced thew modify_tokens yet *)
+        admit. }
+      iModIntro.
+      iAccu. }
   Admitted.
 
 End goose_lang.
