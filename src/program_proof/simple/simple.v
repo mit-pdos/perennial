@@ -15,11 +15,6 @@ From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof Require Import simple.spec.
 
-(* XXX lift somewhere higher up *)
-Canonical Structure u64O := leibnizO u64.
-Canonical Structure u8O := leibnizO u8.
-Canonical Structure asyncO T := leibnizO (async T).
-
 Section heap.
 Context `{!crashG Σ}.
 Context `{!buftxnG Σ}.

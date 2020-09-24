@@ -15,11 +15,6 @@ Module update.
   Global Instance _witness: Inhabited t := populate!.
 End update.
 
-Canonical Structure updateO := leibnizO update.t.
-Canonical Structure blockO := leibnizO Block.
-(* TODO: this one is super general, can it go somewhere else? *)
-Canonical Structure u64O := leibnizO u64.
-
 Definition LogSz: Z := 511.
 Hint Unfold LogSz : word.
 

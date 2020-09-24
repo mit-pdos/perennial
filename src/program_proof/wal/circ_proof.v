@@ -1087,8 +1087,8 @@ Proof.
   iDestruct (disk_array_cons with "Hd") as "[Hd1 Hd2]".
   change (0 + 1) with 1.
   change (1 + 1) with 2.
-  iMod (ghost_var_alloc ((replicate (Z.to_nat LogSz) (U64 0)) : listO u64O)) as (addrs_name') "[Haddrs' Hγaddrs]".
-  iMod (ghost_var_alloc (logblocks : listO blockO)) as (blocks_name') "[Hblocks' Hγblocks]".
+  iMod (ghost_var_alloc (replicate (Z.to_nat LogSz) (U64 0))) as (addrs_name') "[Haddrs' Hγaddrs]".
+  iMod (ghost_var_alloc logblocks) as (blocks_name') "[Hblocks' Hγblocks]".
   iMod (fmcounter_alloc 0%nat) as (start_name') "[Hstart1 Hstart2]".
   iMod (fmcounter_alloc 0%nat) as (diskEnd_name') "[HdiskEnd1 HdiskEnd2]".
   wp_call.

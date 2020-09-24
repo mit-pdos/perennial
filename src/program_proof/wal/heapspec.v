@@ -15,9 +15,6 @@ Inductive heap_block :=
 | HB (installed_block : Block) (blocks_since_install : list Block)
 .
 
-Canonical Structure asyncO T := leibnizO (async T).
-
-
 Class walheapG (Σ: gFunctors) :=
   { walheap_u64_heap_block :> gen_heapPreG u64 heap_block Σ;
     walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
