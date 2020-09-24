@@ -76,9 +76,9 @@ Module mspec := buftxn.buftxn_proof.
 
 (* TODO: move these general theorems (which don't reference lifting at all) to
 auth_map.v *)
-Theorem map_valid_subset `{Countable L} `{!mapG Σ L V} γ (m0 m: gmap L V) :
+Theorem map_valid_subset `{Countable L} `{!mapG Σ L V} γ (m0 m: gmap L V) q :
   map_ctx γ m -∗
-  ([∗ map] a↦v ∈ m0, ptsto γ a 1 v) -∗
+  ([∗ map] a↦v ∈ m0, ptsto γ a q v) -∗
   ⌜m0 ⊆ m⌝.
 Proof.
   iIntros "Hctx Hm0".
@@ -140,6 +140,40 @@ Proof.
     rewrite assoc.
     f_equal.
     rewrite map_union_comm //.
+Qed.
+
+Lemma map_subset_dom_eq `{Countable0: Countable L} {V} (m m': gmap L V) :
+  dom (gset L) m = dom (gset L) m' →
+  m' ⊆ m →
+  m = m'.
+Proof.
+  intros Hdom Hsub.
+  apply map_eq => l.
+  apply option_eq => v.
+  split.
+  - intros.
+    assert (l ∈ dom (gset _) m') as [v' ?]%elem_of_dom.
+    { rewrite -Hdom.
+      apply elem_of_dom; eauto. }
+    rewrite H0.
+    eapply map_subseteq_spec in H0; eauto.
+    congruence.
+  - apply map_subseteq_spec; auto.
+Qed.
+
+Theorem holds_at_map_ctx `{Countable0: Countable L} {V} `{!mapG Σ L V} (P: (L → V → iProp Σ) → iProp Σ)
+        γ q d m :
+  dom _ m = d →
+  map_ctx γ m -∗
+  HoldsAt P (λ a v, ptsto γ a q v) d -∗
+  map_ctx γ m ∗ ([∗ map] a↦v ∈ m, ptsto γ a q v) ∗
+                (∀ mapsto2, ([∗ map] a↦v ∈ m, mapsto2 a v) -∗ P mapsto2).
+Proof.
+  iIntros (<-) "Hctx HP".
+  iDestruct "HP" as (m') "(%Hdom & Hm & Hmapsto2)"; rewrite /named.
+  iDestruct (map_valid_subset with "Hctx Hm") as %Hsubset.
+  assert (m = m') by eauto using map_subset_dom_eq; subst m'.
+  iFrame.
 Qed.
 
 Theorem map_update_predicate `{!EqDecision L, !Countable L} {V} `{!mapG Σ L V}
@@ -358,7 +392,7 @@ Section goose_lang.
     {{{ "Hbuftxn" ∷ is_buftxn l γ γtxn d ∗
         "HP" ∷ HoldsAt P (buftxn_maps_to γtxn) d ∗
         "Hfupd" ∷ (|={⊤ ∖ ↑invariant.walN ∖ ↑invN,E}=> ∃ P0, HoldsAt P0 (stable_maps_to γ) d
-                    ∗ (P (λ a v, stable_maps_to γ a v ∗ modify_token γ a v) -∗
+                    ∗ (P (λ a v, stable_maps_to γ a v) -∗
                        |={E,⊤ ∖ ↑invariant.walN ∖ ↑invN}=> Q))  }}}
       BufTxn__CommitWait #l #true
     {{{ (n:u64), RET #n; Q ∗ P (modify_token γ) }}}.
@@ -387,7 +421,7 @@ Section goose_lang.
         ctx *) }
       iMod ("HQ" with "[HP]") as "HQ".
       { rewrite /stable_maps_to /modify_token.
-        (* XXX: something is wrong, having produced thew modify_tokens yet *)
+        (* XXX: something is wrong, haven't produced the modify_tokens yet *)
         admit. }
       iModIntro.
       iAccu. }
