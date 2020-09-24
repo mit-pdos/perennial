@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import Map.
 From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import auth_map liftable liftable2 log_heap.
 
@@ -73,6 +74,103 @@ Module mspec := buftxn.buftxn_proof.
   coarse-grained locking, even though the code also achieves crash atomicity.
 *)
 
+Theorem map_alloc_predicate `{!EqDecision L, !Countable L} {V} `{!mapG Σ L V}
+        (P0 P: (L → V → iProp Σ) → iProp Σ) (γ: gname) mapsto2 d m :
+  dom (gset _) m = d →
+  map_ctx γ m -∗
+  HoldsAt P0 (λ a v, ptsto γ a 1 v) d -∗
+  (* TODO: what do we want to do with the old mapsto2 facts? *)
+  HoldsAt P mapsto2 d -∗
+  |==> ∃ m', map_ctx γ m' ∗ HoldsAt P (λ a v, ptsto γ a 1 v ∗ mapsto2 a v) d.
+Proof.
+  iIntros (<-) "Hctx HP0 HP".
+  iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
+  iInduction m as [|l a m] "IH" using map_ind.
+  - rewrite dom_empty_L.
+    iModIntro. iExists ∅.
+    iFrame. iExists ∅.
+    rewrite dom_empty_L. iSplit; first by auto.
+    rewrite big_sepM_empty left_id.
+    iIntros (?) "_".
+    iApply (holds_at_empty_elim with "HP").
+  - rewrite dom_insert_L in Hdom_m0.
+    apply gset.dom_union_inv in Hdom_m0 as (m1&m2&?&?&?&?); last first.
+    { apply disjoint_singleton_l, not_elem_of_dom; auto. }
+    apply dom_singleton_inv in H2 as [v ->].
+    rewrite H1.
+    rewrite big_sepM_union //.
+    rewrite big_sepM_singleton.
+    iDestruct "Hstable" as "[Hl Hm2]".
+    (* this is getting really messy... *)
+Abort.
+
+(* TODO: move these general theorems (which don't reference lifting at all) to
+auth_map.v *)
+Theorem map_valid_subset `{Countable L, V} `{!mapG Σ L V} γ (m0 m: gmap L V) :
+  map_ctx γ m -∗
+  ([∗ map] a↦v ∈ m0, ptsto γ a 1 v) -∗
+  ⌜m0 ⊆ m⌝.
+Proof.
+  iIntros "Hctx Hm0".
+  iInduction m0 as [|l v m0] "IH" using map_ind.
+  - iPureIntro.
+    apply map_empty_subseteq.
+  - rewrite big_sepM_insert //.
+    iDestruct "Hm0" as "[Hl Hm0]".
+    iDestruct ("IH" with "Hctx Hm0") as %Hsubseteq.
+    iDestruct (map_valid with "Hctx Hl") as %Hlookup.
+    iPureIntro.
+    apply map_subseteq_spec => l' v'.
+    intros [(-> & ->) | (? & ?)]%lookup_insert_Some; auto.
+    eapply map_subseteq_spec; eauto.
+Qed.
+
+Theorem map_union_unchanged_domain `{Countable L, V} (m m': gmap L V) :
+  dom (gset _) m' ⊆ dom _ m →
+  dom (gset _) (m' ∪ m) = dom _ m.
+Proof. set_solver. Qed.
+
+(* like an update from l↦v0 to l↦v, except that we update an entire subset m0 ⊆
+m to m' *)
+Theorem map_update_map `{Countable L, V} `{!mapG Σ L V} γ (m0 m' m: gmap L V) :
+  dom (gset _) m' = dom _ m0 →
+  map_ctx γ m -∗
+  ([∗ map] a↦v ∈ m0, ptsto γ a 1 v) -∗
+  |==> map_ctx γ (m' ∪ m) ∗
+       [∗ map] a↦v ∈ m', ptsto γ a 1 v.
+Proof.
+  iIntros (Hdom) "Hctx Hm0".
+  iInduction m0 as [|l v m0] "IH" using map_ind forall (m m' Hdom).
+  - rewrite dom_empty_L in Hdom; apply dom_empty_inv_L in Hdom as ->.
+    rewrite left_id_L big_sepM_empty.
+    by iFrame.
+  - rewrite big_sepM_insert //.
+    iDestruct "Hm0" as "[Hl Hm0]".
+    rewrite dom_insert_L in Hdom.
+    assert (l ∈ dom (gset L) m') by set_solver.
+    apply elem_of_dom in H2 as [v' Hlookup].
+    iMod (map_update _ _ v' with "Hctx Hl") as "[Hctx Hl]".
+    iSpecialize ("IH" $! (<[l:=v']> m)).
+    apply gset.dom_union_inv in Hdom as (m1&m2 & ? & -> & ? & ?); last first.
+    { apply disjoint_singleton_l, not_elem_of_dom; auto. }
+    iMod ("IH" $! m2 with "[%] Hctx Hm0") as "[Hctx Hm0]"; auto.
+    iModIntro.
+    assert (m1 = {[l := v']}).
+    { apply dom_singleton_inv in H3 as [v'' ->].
+      f_equal.
+      erewrite lookup_union_Some_l in Hlookup; last first.
+      { rewrite lookup_singleton_Some //. }
+      congruence. }
+    subst.
+    rewrite big_sepM_union // big_sepM_singleton.
+    iFrame.
+    iExactEq "Hctx".
+    f_equal.
+    rewrite -union_singleton_l_insert.
+    rewrite assoc.
+    f_equal.
+    rewrite map_union_comm //.
+Qed.
 
 (* an object is the data for a sub-block object, a dynamic bundle of a kind and
 data of the appropriate size *)
@@ -135,7 +233,7 @@ Section goose_lang.
   name of an auth log_heap; when maintaining synchrony the ownership is really
   simple since we only fully own the latest and forward value *)
   Definition stable_maps_to γ (a:addr) obj: iProp Σ :=
-    ptsto_ro γ.(buftxn_stable_name) a obj.
+    ptsto γ.(buftxn_stable_name) a 1 obj.
 
   (* this is for a single buftxn (transaction) - not persistent, buftxn's are
   not shareable *)
@@ -288,6 +386,7 @@ Section goose_lang.
       iFrame "H◯async".
       iIntros "Hown◯async'".
       iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
+
       (* TODO: need to allocate a whole predicate P into map_ctx, transforming
       the old resources in Hstable into stable_maps_to over mT; then we can use
       HP to restore P using stable_maps_to *)

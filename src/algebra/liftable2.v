@@ -35,6 +35,12 @@ Section bi.
     iFrame.
   Qed.
 
+  Global Instance HoldsAt_equiv_proper : Proper (pointwise_relation _ (⊣⊢) ==> pointwise_relation _ (pointwise_relation _ (⊣⊢)) ==> eq ==> (≡)) HoldsAt.
+  Proof.
+    intros P1 P2 H mapsto1 mapsto1' H' d d' <-.
+    rewrite /HoldsAt. setoid_rewrite H; setoid_rewrite H'. done.
+  Qed.
+
   Theorem HoldsAt_weaken_wand P Q mapsto1 d :
     (∀ mapsto, P mapsto -∗ Q mapsto) -∗
     HoldsAt P mapsto1 d -∗ HoldsAt Q mapsto1 d.
@@ -105,8 +111,8 @@ Section bi.
     forall mapsto *)
   Abort.
 
-  Theorem holds_at_empty P mapsto1 `{!Conflicting mapsto1} :
-    HoldsAt P mapsto1 ∅ -∗ P mapsto1.
+  Theorem holds_at_empty_elim mapsto2 P mapsto1 :
+    HoldsAt P mapsto1 ∅ -∗ P mapsto2.
   Proof.
     iIntros "H"; iNamed "H".
     apply dom_empty_inv_L in Hdom; subst.

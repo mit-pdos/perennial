@@ -1,6 +1,9 @@
 From stdpp Require Import gmap.
 From Coq Require Import ssreflect.
 
+Set Default Proof Using "Type".
+Set Default Goal Selector "!".
+
 Section map.
 
   Context (K V:Type).
@@ -19,6 +22,26 @@ Section map.
     rewrite <- (insert_delete (m1 ∪ m2)).
     rewrite delete_union.
     eauto.
+  Qed.
+
+  Theorem map_empty_subseteq m : ∅ ⊆ m.
+  Proof.
+    rewrite map_subseteq_spec => k v.
+    intros []%lookup_empty_Some.
+  Qed.
+
+  Lemma union_singleton_l_insert k v m :
+    {[k := v]} ∪ m = <[k := v]> m.
+  Proof.
+    apply map_eq => k'.
+    apply option_eq => v'.
+    destruct (decide (k = k')); subst.
+    - rewrite lookup_insert.
+      erewrite lookup_union_Some_l; eauto.
+      rewrite lookup_singleton_Some //.
+    - rewrite lookup_insert_ne //.
+      erewrite lookup_union_r; eauto.
+      rewrite lookup_singleton_None //.
   Qed.
 
 End map.
