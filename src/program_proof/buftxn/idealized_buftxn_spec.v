@@ -7,7 +7,6 @@ From Perennial.program_proof Require buftxn.buftxn_proof.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import disk_prelude.
-From Perennial.program_logic Require Import ghost_var_old.
 
 (** * A more separation logic-friendly spec for buftxn
 
@@ -110,7 +109,7 @@ Section goose_lang.
 
   Definition txn_system_inv γ: iProp Σ :=
     ∃ (σs: async (gmap addr object)),
-      "H◯async" ∷ own γ.(buftxn_txn_names).(txn_crashstates) (◯E (σs: leibnizO (async (gmap addr object)))) ∗
+      "H◯async" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (1/2) σs ∗
       "H●latest" ∷ map_ctx γ.(buftxn_stable_name) (latest σs) ∗
       (* TODO(tej): don't think this does anything so far, because we don't have
       a spec for how the async heap gets updated on crash. Joe and I thought we

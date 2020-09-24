@@ -5,7 +5,6 @@ From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import deletable_heap log_heap liftable.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.program_logic Require Import ghost_var_old.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
 From Perennial.program_proof Require Import wal.specs wal.heapspec txn.txn_proof buf.buf_proof addr.addr_proof.
@@ -614,10 +613,10 @@ Theorem wp_BufTxn__CommitWait buftx mt γUnified (wait : bool) E (Q : nat -> iPr
   {{{
     is_buftxn buftx mt γUnified ∗
     ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
-        "Hcrashstates_frag" ∷ own γUnified.(txn_crashstates) (◯E σl) ∗
+        "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (1/2) σl ∗
         "Hcrashstates_fupd" ∷ (
           let σ := mt ∪ latest σl in
-          own γUnified.(txn_crashstates) (◯E (async_put σ σl))
+          ghost_var γUnified.(txn_crashstates) (1/2) (async_put σ σl)
           ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ))
   }}}
     BufTxn__CommitWait #buftx #wait

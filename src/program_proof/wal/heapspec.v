@@ -10,7 +10,6 @@ From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.sp
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.algebra Require Import deletable_heap log_heap.
 From Perennial.Helpers Require Import NamedProps.
-From Perennial.program_logic Require Import ghost_var_old.
 
 Inductive heap_block :=
 | HB (installed_block : Block) (blocks_since_install : list Block)
@@ -21,9 +20,9 @@ Canonical Structure asyncO T := leibnizO (async T).
 
 Class walheapG (Σ: gFunctors) :=
   { walheap_u64_heap_block :> gen_heapPreG u64 heap_block Σ;
-    walheap_disk_txns :> inG Σ (ghostR $ prodO (gmapO Z blockO) (listO (prodO u64O (listO updateO))));
+    walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
     walheap_max_nat :> inG Σ (authR max_natUR);
-    walheap_asyncCrashHeap :> inG Σ (ghostR $ asyncO (gmap u64 Block));
+    walheap_asyncCrashHeap :> ghost_varG Σ (async (gmap u64 Block));
     walheap_heap :> heapG Σ;
     walheap_wal :> walG Σ
   }.
@@ -76,10 +75,10 @@ Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (gh : gmap u64 heap_block) (crash_heaps : async (gmap u64 Block)),
     "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
-    "Htxns" ∷ own γ.(wal_heap_txns) (●E (ls.(log_state.d), ls.(log_state.txns))) ∗
+    "Htxns" ∷ ghost_var γ.(wal_heap_txns) (1/2) (ls.(log_state.d), ls.(log_state.txns)) ∗
     "Hinstalled" ∷ own γ.(wal_heap_installed) (● (MaxNat ls.(log_state.installed_lb))) ∗
     "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
-    "Hcrash_heaps_own" ∷ own γ.(wal_heap_crash_heaps) (●E crash_heaps) ∗
+    "Hcrash_heaps_own" ∷ ghost_var γ.(wal_heap_crash_heaps) (1/2) crash_heaps ∗
     "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls ∗
     "Hcrash_heaps_lb" ∷ own γ.(wal_heap_durable_lb) (● (MaxNat ls.(log_state.durable_lb))).
 
@@ -95,7 +94,7 @@ Record locked_walheap := {
 }.
 
 Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
-  own γ.(wal_heap_txns) (◯E (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns))).
+  ghost_var γ.(wal_heap_txns) (1/2) (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)).
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
   apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
@@ -1364,12 +1363,12 @@ Proof.
 Qed.
 
 Definition memappend_crash_pre γh (bs: list update.t) crash_heaps : iProp Σ :=
-  "Hcrashheapsfrag" ∷ own γh.(wal_heap_crash_heaps) (◯E crash_heaps).
+  "Hcrashheapsfrag" ∷ ghost_var γh.(wal_heap_crash_heaps) (1/2) crash_heaps.
 
 Definition memappend_crash γh (bs: list update.t) (crash_heaps : async (gmap u64 Block)) lwh' : iProp Σ :=
   let new_crash_heap := apply_upds_u64 (latest crash_heaps) bs in
   is_locked_walheap γh lwh' ∗
-  own γh.(wal_heap_crash_heaps) (◯E (async_put (new_crash_heap) crash_heaps)).
+  ghost_var γh.(wal_heap_crash_heaps) (1/2) (async_put (new_crash_heap) crash_heaps).
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑walN, E}=>
@@ -1408,14 +1407,14 @@ Proof using walheapG0.
 
   iMod (wal_heap_memappend_pre_to_q with "[$Hctx $Hpre]") as "[Hctx Hq]".
 
-  iDestruct (ghost_var_old.ghost_var_agree with "Htxns Hlockedheap") as "%Hagree".
+  iDestruct (ghost_var_agree with "Htxns Hlockedheap") as "%Hagree".
   inversion Hagree; clear Hagree. subst.
 
-  iMod (ghost_var_old.ghost_var_update _ (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Hlockedheap") as "[Htxns Hlockedheap]".
+  iMod (ghost_var_update_halves (σ.(log_state.d), σ.(log_state.txns) ++ [(pos', bs)]) with "Htxns Hlockedheap") as "[Htxns Hlockedheap]".
 
   iNamed "Hcrash_heaps".
   rewrite /memappend_crash_pre. iNamed "Hprecrash".
-  iDestruct (ghost_var_old.ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as %<-.
+  iDestruct (ghost_var_agree with "Hcrash_heaps_own Hcrashheapsfrag") as %<-.
   iDestruct "Hpossible_heaps" as "#Hpossible_heaps".
   iDestruct (big_sepL_app with "Hpossible_heaps") as "[_ Hlatest]".
   simpl.
@@ -1423,7 +1422,7 @@ Proof using walheapG0.
   rewrite /wal_heap_inv_crash.
   iNamed "Hlatest".
 
-  iMod (ghost_var_old.ghost_var_update _ (async_put (apply_upds_u64 (latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
+  iMod (ghost_var_update_halves (async_put (apply_upds_u64 (latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
 
   iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _)).
 
@@ -1582,19 +1581,19 @@ Proof using walheapG0.
   wp_apply (wp_Walog__ReadMem _
     (λ mb,
       match mb with
-      | Some b' => own γ.(wal_heap_txns) (◯E (σd, σtxns)) ∗ ⌜ b' = b ⌝
+      | Some b' => ghost_var γ.(wal_heap_txns) (1/2) (σd, σtxns) ∗ ⌜ b' = b ⌝
       | None =>
         ∀ (σ σ' : log_state.t) (b0 : Block),
           ⌜wal_wf σ⌝
           -∗ ⌜relation.denote (log_read_installed blkno) σ σ' b0⌝
              -∗ wal_heap_inv γ σ
                 ={⊤ ∖ ↑walN}=∗ wal_heap_inv γ σ'
-                            ∗ own γ.(wal_heap_txns) (◯E (σd, σtxns)) ∗ ⌜b0 = b⌝
+                            ∗ ghost_var γ.(wal_heap_txns) (1/2) (σd, σtxns) ∗ ⌜b0 = b⌝
       end
     )%I with "[$Hwal Htxnsfrag]").
   { iIntros (σ σ' mb) "%Hwal_wf %Hrelation Hwalinv".
     iNamed "Hwalinv".
-    iDestruct (ghost_var_old.ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+    iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
     inversion Hagree; clear Hagree; subst.
 
     simpl in *; monad_inv.
@@ -1646,7 +1645,7 @@ Proof using walheapG0.
       simpl in *; monad_inv.
 
       iNamed "Hwalinv".
-      iDestruct (ghost_var_old.ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+      iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
       inversion Hagree; clear Hagree; subst.
       rewrite <- H5 in Hb.
       rewrite <- H6 in Hb.
@@ -1684,7 +1683,7 @@ Proof using walheapG0.
   {
     wp_pures.
     wp_apply (wp_Walog__ReadInstalled _
-      (λ b', own γ.(wal_heap_txns) (◯E (σd, σtxns)) ∗ ⌜ b' = b ⌝)%I
+      (λ b', ghost_var γ.(wal_heap_txns) (1/2) (σd, σtxns) ∗ ⌜ b' = b ⌝)%I
       with "[$Hwal $Hbl]").
     { admit. }
     iIntros (bli) "Hbli".
@@ -1701,7 +1700,7 @@ Theorem wal_heap_mapsto_latest_helper γ lwh (a : u64) (v : heap_block) σ :
 Proof.
   iIntros "(Hheap & Htxnsfrag & Hmapsto)".
   iNamed "Hheap".
-  iDestruct (ghost_var_old.ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
+  iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
   inversion Hagree; clear Hagree; subst.
   iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
   iDestruct (big_sepM_lookup with "Hgh") as "%Hvalid_gh"; eauto.

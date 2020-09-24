@@ -9,7 +9,6 @@ From Perennial.algebra Require Import deletable_heap log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
-From Perennial.program_logic Require Import ghost_var_old.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.Helpers Require Import NamedProps Map.
@@ -18,11 +17,11 @@ Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
 Class txnG (Σ: gFunctors) :=
   {
-    txn_boolG :> inG Σ (ghostR $ boolO);
+    txn_boolG :> ghost_varG Σ bool;
     txn_walheapG :> walheapG Σ;
     txn_logheapG :> log_heapPreG addr {K & bufDataT K} Σ;
     txn_metaheapG :> gen_heapPreG addr gname Σ;
-    txn_crashstatesG :> inG Σ (ghostR $ asyncO (gmap addr {K & bufDataT K}));
+    txn_crashstatesG :> ghost_varG Σ (async (gmap addr {K & bufDataT K}));
   }.
 
 Section heap.
@@ -47,7 +46,7 @@ Definition mapsto_txn (γ : txn_names) (l : addr) (v : {K & bufDataT K}) : iProp
   ∃ γm,
     "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) l v ∗
     "Hmapsto_meta" ∷ mapsto (hG := γ.(txn_metaheap)) l 1 γm ∗
-    "Hmod_frag" ∷ own γm (◯E true).
+    "Hmod_frag" ∷ ghost_var γm (1/2) true.
 
 Theorem mapsto_txn_2 {K1 K2} a v0 v1 :
   @mapsto_txn K1 a v0 -∗
@@ -81,7 +80,7 @@ Definition bufDataTs_in_block (installed : Block) (bs : list Block) (blkno : u64
   ( [∗ map] off ↦ bufData;γm ∈ offmap;metamap,
       ∃ (modifiedSinceInstall : bool),
       "%Hoff_in_block" ∷ ⌜ bufDataT_in_block (latest_update installed bs) blockK blkno off bufData ⌝ ∗
-      "Hoff_own" ∷ own γm (●E modifiedSinceInstall) ∗
+      "Hoff_own" ∷ ghost_var γm (1/2) modifiedSinceInstall ∗
       "%Hoff_prefix_in_block" ∷ ⌜ if modifiedSinceInstall then True else
         ∀ prefix,
           bufDataT_in_block (latest_update installed (take prefix bs)) blockK blkno off bufData ⌝
@@ -103,14 +102,14 @@ Definition is_txn_always (γ : txn_names) : iProp Σ :=
       (metam : gmap addr gname)
       (crash_heaps : async (gmap u64 Block)),
       "Hlogheapctx" ∷ log_heap_ctx (hG := γ.(txn_logheap)) logm ∗
-      "Hcrashstates" ∷ own γ.(txn_crashstates) (●E logm) ∗
+      "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (1/2) logm ∗
       "Hmetactx" ∷ gen_heap_ctx (hG := γ.(txn_metaheap)) metam ∗
       "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
         ∃ installed bs blockK,
           "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
           "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
           "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
-      "Hcrashheaps" ∷ own γ.(txn_walnames).(wal_heap_crash_heaps) (◯E crash_heaps) ∗
+      "Hcrashheaps" ∷ ghost_var γ.(txn_walnames).(wal_heap_crash_heaps) (1/2) crash_heaps ∗
       "Hcrashheapsmatch" ∷ ( [∗ list] logmap;walheap ∈ possible logm;possible crash_heaps,
         [∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
           ∃ blockK,
@@ -212,10 +211,10 @@ Proof using txnG0 Σ.
     "Hmapsto_meta" ∷ mapsto a 1 γm ∗
     match mb with
     | Some b =>
-      "Hmod_frag" ∷ own γm (◯E true) ∗
+      "Hmod_frag" ∷ ghost_var γm (1/2) true ∗
       "%Hv" ∷ ⌜ is_bufData_at_off b a.(addrOff) (projT2 v) ∧ valid_addr a ⌝
     | None =>
-      "Hmod_frag" ∷ own γm (◯E false)
+      "Hmod_frag" ∷ ghost_var γm (1/2) false
     end)%I with "[$Hiswal Hmapsto_log Hmapsto_meta Hmod_frag]").
   {
     iApply (wal_heap_readmem (⊤ ∖ ↑walN ∖ ↑invN) with "[Hmapsto_log Hmapsto_meta Hmod_frag]").
@@ -261,7 +260,7 @@ Proof using txnG0 Σ.
     {
       iDestruct (big_sepM2_delete with "Htxn_in_hb") as "[Hoff Htxn_in_hb]"; eauto.
       iNamed "Hoff".
-      iMod (ghost_var_old.ghost_var_update _ false with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
+      iMod (ghost_var_update_halves false with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
 
       iDestruct ("Hinv_closer" with "[-Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hinv_closer".
       {
@@ -325,7 +324,7 @@ Proof using txnG0 Σ.
       "Hmapsto_log" ∷ mapsto_cur a v ∗
       "Hmapsto_meta" ∷ mapsto a 1 γm ∗
       "%Hv" ∷ ⌜ is_bufData_at_off b a.(addrOff) (projT2 v) ∧ valid_addr a ⌝ ∗
-      "Hmod_frag" ∷ own γm (◯E true)
+      "Hmod_frag" ∷ ghost_var γm (1/2) true
     )%I
     with "[$Hiswal Hmapsto_log Hmapsto_meta Hmod_frag]").
   {
@@ -355,8 +354,8 @@ Proof using txnG0 Σ.
 
     iDestruct (big_sepM2_lookup_acc with "Htxn_in_hb") as "[Hoff Htxn_in_hb]"; eauto.
     iNamed "Hoff".
-    iDestruct (ghost_var_old.ghost_var_agree with "Hoff_own Hmod_frag") as %->.
-    iMod (ghost_var_old.ghost_var_update _ true with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
+    iDestruct (ghost_var_agree with "Hoff_own Hmod_frag") as %->.
+    iMod (ghost_var_update_halves true with "Hoff_own Hmod_frag") as "[Hoff_own Hmod_frag]".
     iDestruct ("Htxn_in_hb" with "[Hoff_own]") as "Htxn_in_hb"; eauto.
     iDestruct ("Hheapmatch" with "[Hriq Htxn_in_hb]") as "Hheapmatch".
     { iExists _, _, _. iFrame. done. }
@@ -1063,10 +1062,10 @@ Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
-          "Hcrashstates_frag" ∷ own γ.(txn_crashstates) (◯E σl) ∗
+          "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (1/2) σl ∗
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
-            own γ.(txn_crashstates) (◯E (async_put σ σl))
+            ghost_var γ.(txn_crashstates) (1/2) (async_put σ σl)
             ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ) )
   }}}
     Txn__doCommit #l (slice_val bufs)
@@ -1118,7 +1117,7 @@ Proof using txnG0 Σ.
     rewrite /memappend_pre.
     rewrite /memappend_crash_pre.
 
-    iDestruct (ghost_var_old.ghost_var_agree with "Hcrashstates Hcrashstates_frag") as %->.
+    iDestruct (ghost_var_agree with "Hcrashstates Hcrashstates_frag") as %->.
 
     iDestruct (gmap_addr_by_block_big_sepM with "Hmapstos") as "Hmapstos".
     iDestruct (big_sepM2_filter _ (λ k, is_Some (gmap_addr_by_block bufamap !! k)) with "Hheapmatch") as "[Hheapmatch_in Hheapmatch_out]".
@@ -1390,11 +1389,11 @@ Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) E (Q : nat -
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
-          "Hcrashstates_frag" ∷ own γ.(txn_crashstates) (◯E σl) ∗
+          "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (1/2) σl ∗
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
             ⌜bufamap ≠ ∅⌝ ∗
-            own γ.(txn_crashstates) (◯E (async_put σ σl))
+            ghost_var γ.(txn_crashstates) (1/2) (async_put σ σl)
             ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl))  ))
   }}}
     Txn__CommitWait #l (slice_val bufs) #wait
