@@ -72,7 +72,8 @@ Definition diskEnd_at_least γ (endpos: Z) :=
   fmcounter_lb γ.(diskEnd_name) (Z.to_nat endpos).
 
 Definition diskEnd_is γ (q:Qp) (endpos: Z): iProp Σ :=
-  ⌜0 <= endpos < 2^64⌝ ∗ fmcounter γ.(diskEnd_name) q (Z.to_nat endpos).
+  ⌜0 <= endpos < 2^64⌝ ∗ fmcounter γ.(diskEnd_name) q (Z.to_nat endpos) ∗
+  diskEnd_at_least γ endpos.
 
 Definition is_low_state (startpos endpos : u64) (addrs: list u64) (blocks : list Block) : iProp Σ :=
   ∃ hdr1 hdr2,
@@ -141,12 +142,12 @@ Instance diskEnd_fractional γ endpos : Fractional (λ q, diskEnd_is γ q endpos
 Proof.
   intros p q.
   iSplit.
-  - iIntros "[% Hend]".
+  - iIntros "[% [Hend #Hatleast]]".
     iDestruct "Hend" as "[Hend1 Hend2]".
-    iFrame.
-    iPureIntro; auto.
-  - iIntros "[[% Hend1] [% Hend2]]".
+    iFrame "# % Hend1 Hend2".
+  - iIntros "[[% [Hend1 #Hatleast]] [% [Hend2 #Hatleast2]]]".
     iCombine "Hend1 Hend2" as "$".
+    iFrame "Hatleast".
     iPureIntro; auto.
 Qed.
 
@@ -160,8 +161,8 @@ Theorem diskEnd_is_to_eq γ σ q endpos :
   ⌜circΣ.diskEnd σ = endpos⌝.
 Proof.
   iIntros "[_ Hend1] Hend2".
-  iDestruct "Hend1" as "[_ Hend1]".
-  iDestruct "Hend2" as "[% Hend2]".
+  iDestruct "Hend1" as "[_ [Hend1 _]]".
+  iDestruct "Hend2" as "[% [Hend2 _]]".
   iDestruct (fmcounter_agree_1 with "Hend1 Hend2") as %Heq.
   iPureIntro.
   rewrite /circΣ.diskEnd in H, Heq |- *.
@@ -179,13 +180,21 @@ Proof.
   word.
 Qed.
 
+Theorem diskEnd_is_to_at_least (γ: circ_names) (x: Z) q :
+  diskEnd_is γ q x -∗
+  diskEnd_at_least γ x.
+Proof.
+  rewrite /diskEnd_is.
+  iIntros "[% [_ H]]". iFrame.
+Qed.
+
 Theorem diskEnd_at_least_to_le γ σ endpos_lb :
   circ_positions γ σ -∗
   diskEnd_at_least γ endpos_lb -∗
   ⌜endpos_lb ≤ circΣ.diskEnd σ ⌝.
 Proof.
   iIntros "[_ Hend1] Hend_lb".
-  iDestruct "Hend1" as "[% Hend1]".
+  iDestruct "Hend1" as "[% [Hend1 _]]".
   rewrite /diskEnd_is /diskEnd_at_least.
   iDestruct (fmcounter_agree_2 with "Hend1 Hend_lb") as %Hlt.
   iPureIntro.
@@ -221,7 +230,7 @@ Lemma diskEnd_is_agree γ q1 q2 endpos1 endpos2 :
   diskEnd_is γ q2 endpos2 -∗
   ⌜endpos1 = endpos2⌝.
 Proof.
-  iIntros "[% Hend1] [% Hend2]".
+  iIntros "[% [Hend1 _]] [% [Hend2 _]]".
   iDestruct (fmcounter_agree_1 with "Hend1 Hend2") as %Heq.
   iPureIntro.
   word.
@@ -232,7 +241,7 @@ Lemma diskEnd_is_agree_2 γ q endpos lb :
   diskEnd_at_least γ lb -∗
   ⌜lb ≤ endpos ⌝.
 Proof.
-  iIntros "[% Hend] Hlb".
+  iIntros "[% [Hend _]] Hlb".
   iDestruct (fmcounter_agree_2 with "Hend Hlb") as %Hlb.
   iPureIntro.
   word.
@@ -895,16 +904,25 @@ Proof.
   rewrite /circΣ.diskEnd /=; autorewrite with len.
   iDestruct (diskEnd_is_agree with "Hend1 Hend2") as %Heq; rewrite Heq.
   iCombine "Hend1 Hend2" as "Hend".
-  iDestruct "Hend" as "[% Hend]".
-  iMod (fmcounter_update _ with "Hend") as "[[Hend1 $] _]"; first by len.
+  iDestruct "Hend" as "[% [Hend _]]".
+  iMod (fmcounter_update (int.nat endpos + length upds)%nat with "Hend") as "[[Hend1 Hend2] #Hatleast]"; first by len.
   iModIntro.
-  iSplit.
-  { iPureIntro.
-    split; word. }
-  iSplit.
-  { iPureIntro; word. }
-  iExactEq "Hend1".
-  f_equal; word.
+  iSplitR "Hend2".
+  2: {
+    rewrite /diskEnd_is /diskEnd_at_least.
+    replace (Z.to_nat (int.val endpos + length upds))
+      with (int.nat endpos + length upds)%nat by lia. iFrame "Hatleast".
+    iSplitR. { iPureIntro. split; word. }
+    iFrame.
+  }
+
+  rewrite /diskEnd_is /diskEnd_at_least.
+  replace (Z.to_nat
+         (int.val (start σ) + (length (circ_proof.upds σ) + length upds)%nat))
+    with (int.nat endpos + length upds)%nat by lia.
+  iFrame "Hatleast".
+  iSplitR. { iPureIntro. split; word. }
+  iFrame.
 Qed.
 
 Theorem wp_circular__Append (Q: iProp Σ) γ (d: val) q (startpos endpos : u64) (bufs : Slice.t) (upds : list update.t) c :
@@ -1091,6 +1109,7 @@ Proof.
   iMod (ghost_var_alloc logblocks) as (blocks_name') "[Hblocks' Hγblocks]".
   iMod (fmcounter_alloc 0%nat) as (start_name') "[Hstart1 Hstart2]".
   iMod (fmcounter_alloc 0%nat) as (diskEnd_name') "[HdiskEnd1 HdiskEnd2]".
+  iMod (fmcounter_get_lb with "HdiskEnd2") as "[HdiskEnd2 #HdiskEndLb]".
   wp_call.
   wp_apply wp_new_slice; first by auto.
   iIntros (zero_s) "Hzero".
@@ -1115,7 +1134,7 @@ Proof.
   iSplit; first by eauto.
   iSplit; first by eauto.
   iSplitL "Hstart1 HdiskEnd1 Haddrs' Hblocks' Hd0 Hd1 Hd2".
-  { iFrame "Hstart1 HdiskEnd1".
+  { iFrame "Hstart1 HdiskEnd1 HdiskEndLb".
     iSplit; first by eauto.
     iSplit; first by eauto.
     iExists _, _; iFrame "Haddrs' Hblocks'".
@@ -1379,12 +1398,14 @@ Proof.
                   start_name := start_name';
                   diskEnd_name := diskEnd_name'; |}).
 
+    iMod (fmcounter_get_lb with "HdiskEnd2") as "[HdiskEnd2 #HdiskEndLb]".
+
     wp_pures.
     iNamed 1.
     iDestruct "HΦ" as "(_&HΦ)".
     iApply ("HΦ" $! γ').
     iFrame "Hupds".
-    iFrame "Hstart1 HdiskEnd1".
+    iFrame "Hstart1 HdiskEnd1 HdiskEndLb".
     iSplitR "Hca Hdiskaddrs Hγaddrs Hγblocks Hstart2 HdiskEnd2".
     { iSplit; first by eauto.
       iSplit.
@@ -1408,9 +1429,15 @@ Proof.
     iSplitL.
     { iSplit.
       { iPureIntro; destruct Hwf; len. }
-      iExactEq "HdiskEnd2".
+      iSplitL "HdiskEnd2".
+      { iExactEq "HdiskEnd2".
+        f_equal.
+        destruct Hwf; len. }
+      iExactEq "HdiskEndLb".
+      rewrite /diskEnd_at_least. subst γ'. simpl.
       f_equal.
-      destruct Hwf; len. }
+      destruct Hwf; len.
+    }
     iPureIntro; intuition eauto.
     * rewrite take_ge; auto.
       destruct Hwf; word.
