@@ -164,6 +164,17 @@ Proof.
   rewrite /apply_upds fold_left_app //.
 Qed.
 
+Lemma txn_upds_nils nils :
+  Forall (λ x, snd x = nil) nils ->
+  txn_upds nils = nil.
+Proof.
+  rewrite /txn_upds.
+  induction nils; simpl in *; intros.
+  - done.
+  - inversion H; clear H; simpl in *; subst.
+    rewrite H2. simpl. eauto.
+Qed.
+
 Theorem has_updates_app log1 txns1 log2 txns2 :
   has_updates log1 txns1 ->
   has_updates log2 txns2 ->
@@ -172,4 +183,15 @@ Proof.
   rewrite /has_updates; intros.
   rewrite txn_upds_app !apply_upds_app.
   rewrite H H0 //.
+Qed.
+
+Lemma has_updates_app_nils log txns nils :
+  Forall (λ x, snd x = nil) nils ->
+  has_updates log txns ->
+  has_updates log (txns ++ nils).
+Proof.
+  rewrite /has_updates; intros.
+  rewrite txn_upds_app.
+  rewrite apply_upds_app.
+  rewrite txn_upds_nils; eauto.
 Qed.

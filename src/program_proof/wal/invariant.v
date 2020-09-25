@@ -4,7 +4,7 @@ From iris.algebra Require Import gset.
 
 From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Map.
 
-From Perennial.algebra Require Export deletable_heap append_list.
+From Perennial.algebra Require Export deletable_heap append_list auth_map.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
 From Perennial.program_proof Require Export wal.circ_proof wal.sliding_proof.
@@ -25,6 +25,8 @@ Class walG Σ :=
     wal_addr_set_gset :> ghost_varG Σ (gset Z);
     wal_thread_owned :> thread_ownG Σ;
     wal_txns_alist   :> alistG Σ (u64 * list update.t);
+    wal_stable_map   :> ghost_varG Σ (gmap nat unit);
+    wal_stable_mapG  :> mapG Σ nat unit;
   }.
 
 Section goose_lang.
@@ -49,12 +51,15 @@ Record wal_names := mkWalNames
     diskEnd_avail_name : gname;
     diskEnd_txn_id_name : gname;
     start_avail_name : gname;
+    stable_txn_ids_heap : gname;
+    stable_txn_ids_name : gname;
   }.
 
 Global Instance _eta_wal_names : Settable _ :=
   settable! mkWalNames <circ_name; cs_name; txns_ctx_name; txns_name;
                         new_installed_name; being_installed_name;
-                        diskEnd_avail_name; diskEnd_txn_id_name; start_avail_name>.
+                        diskEnd_avail_name; diskEnd_txn_id_name; start_avail_name;
+                        stable_txn_ids_heap; stable_txn_ids_name>.
 
 Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
@@ -117,13 +122,13 @@ Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
   has_updates memLog.(slidingM.log) (drop memStart_txn_id txns) ∧
   (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
 
-Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id (txns: list (u64 * list update.t)) : iProp Σ :=
-  (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat),
+Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id nextDiskEnd_txn_id (txns: list (u64 * list update.t)) : iProp Σ :=
+  (∃ (memStart_txn_id: nat),
       "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
-      "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
+      "#HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
       "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
-      "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
-      "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
+      "#HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
+      "#HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
@@ -143,18 +148,23 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_
           (subslice (S diskEnd_txn_id) (S nextDiskEnd_txn_id) txns)⌝
   ).
 
-Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id txns:
-  Persistent (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id txns).
+Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns:
+  Persistent (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns).
 Proof. apply _. Qed.
 
 Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp Σ :=
-  (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat) (txns: list (u64 * list update.t)),
+  (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat)
+     (txns: list (u64 * list update.t)) (stable_txns: gmap nat unit),
       "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
-      "HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
+      "#HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
       "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
-      "HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
-      "HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
+      "#HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
+      "#HnextDiskEnd_stable" ∷ nextDiskEnd_txn_id [[γ.(stable_txn_ids_heap)]]↦ro tt ∗
+      "#HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       "Howntxns" ∷ ghost_var γ.(txns_name) (1/2) txns ∗
+      "HownStableSet" ∷ ghost_var γ.(stable_txn_ids_name) (1/2) stable_txns ∗
+      "%HnextDiskEnd_max_stable" ∷
+        ⌜∀ txn_id, txn_id > nextDiskEnd_txn_id -> stable_txns !! txn_id = None⌝ ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
@@ -308,12 +318,27 @@ Definition disk_inv_durable γ s (cs: circΣ.t) : iProp Σ :=
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
 
+Definition nextDiskEnd_inv γ (txns : list (u64 * list update.t)) : iProp Σ :=
+  ∃ (stable_txns : gmap nat unit),
+    "HownStableSet2" ∷ ghost_var γ.(stable_txn_ids_name) (1/2) stable_txns ∗
+    "Hstablectx" ∷ map_ctx γ.(stable_txn_ids_heap) stable_txns ∗
+    (* any transactions that appeared after nextDiskEnd, and that share the
+    same pos, must be empty. *)
+    "%HafterNextDiskEnd" ∷
+      ⌜∀ nextDiskEnd_txn_id txn_id pos,
+        txn_id > nextDiskEnd_txn_id ->
+        stable_txns !! nextDiskEnd_txn_id = Some tt ->
+        is_txn txns nextDiskEnd_txn_id pos ->
+        is_txn txns txn_id pos ->
+        snd <$> txns !! txn_id = Some nil⌝.
+
 (** the complete wal invariant *)
 Definition is_wal_inner (l : loc) γ s : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "Hmem" ∷ is_wal_mem l γ ∗
     "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
     "γtxns"  ∷ ghost_var γ.(txns_name) (1/2) s.(log_state.txns) ∗
+    "HnextDiskEnd_inv" ∷ nextDiskEnd_inv γ s.(log_state.txns) ∗
     "Hdisk" ∷ ∃ cs, "Howncs" ∷ ghost_var γ.(cs_name) (1/2) cs ∗ "Hdisk" ∷ disk_inv γ s cs
 .
 
@@ -346,6 +371,9 @@ Definition logger_inv γ circ_l: iProp Σ :=
 (* TODO: also needs authoritative ownership of some other variables *)
 Definition installer_inv γ: iProp Σ :=
   "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available.
+  (* XXX definitely missing stuff *)
+  (* being_installed = ∅ *)
+  (* need ownership of ghost var half for stating this.. *)
 
 Global Instance is_installed_read_Timeless {γ d txns installed_lb diskEnd_txn_id} :
   Timeless (is_installed_read γ d txns installed_lb diskEnd_txn_id) := _.
@@ -559,12 +587,15 @@ Proof.
   auto.
 Qed.
 
+(** XXX THIS SEEMS IMPORTANT: *)
 Definition txns_are γ (start: nat) (txns_sub: list (u64*list update.t)) : iProp Σ :=
   list_subseq γ.(txns_ctx_name) start txns_sub.
 
+(** XXX THIS SEEMS IMPORTANT: *)
 Global Instance txns_are_Persistent γ start txns_sub : Persistent (txns_are γ start txns_sub).
 Proof. apply _. Qed.
 
+(** XXX THIS SEEMS IMPORTANT: *)
 Theorem txns_are_sound γ txns start txns_sub :
   txns_ctx γ txns -∗
   txns_are γ start txns_sub -∗
@@ -661,12 +692,17 @@ Proof.
       lia.
 Qed.
 
-Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id txns:
-  (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id txns) -∗
+Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns:
+  (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns) -∗
   (ghost_var γ.(txns_name) (1/2) txns) -∗
+  (ghost_var γ.(stable_txn_ids_name) (1 / 2) (<[nextDiskEnd_txn_id := tt]> ∅)) -∗
+  (nextDiskEnd_txn_id [[γ.(stable_txn_ids_heap)]]↦ro ()) -∗
   memLog_linv γ σ diskEnd diskEnd_txn_id.
 Proof.
-  iNamed 1. iIntros "H". iExists _, _, _. iFrame. iFrame "%".
+  iNamed 1. iIntros "H Hm Hs". iExists _, _, _, _. iFrame. iFrame "#". iFrame "%".
+  iPureIntro. intros.
+  rewrite lookup_insert_ne; last by lia.
+  rewrite lookup_empty. done.
 Qed.
 
 (** * WPs for field operations in terms of lock invariant *)
