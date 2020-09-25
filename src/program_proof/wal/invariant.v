@@ -98,7 +98,7 @@ Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
 Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
   ∃ upds, txn_val γ txn_id (pos, upds).
 
-Definition txns_ctx γ txns : iProp Σ := list_ctx γ.(txns_ctx_name) txns.
+Definition txns_ctx γ txns : iProp Σ := list_ctx γ.(txns_ctx_name) 1 txns.
 
 Theorem txn_val_to_pos γ txn_id pos upds :
   txn_val γ txn_id (pos, upds) -∗ txn_pos γ txn_id pos.

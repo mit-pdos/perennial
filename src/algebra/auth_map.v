@@ -40,10 +40,55 @@ Section auth_map.
     to_mapUR (<[k:=(v,true)]> m) = <[k:=Cinr (to_agree (v:leibnizO V))]> (to_mapUR m).
   Proof. rewrite /to_mapUR fmap_insert //. Qed.
 
-  Definition map_ctx γ m : iProp Σ :=
+  Definition map_ctx γ q m : iProp Σ :=
     ∃ ro_m,
       ⌜m = fmap fst ro_m⌝ ∗
-      own γ (● to_mapUR ro_m).
+      own γ (●{q} to_mapUR ro_m).
+
+  Global Instance map_ctx_fractional γ m : Fractional (λ q, map_ctx γ q m).
+  Proof.
+    iIntros (q1 q2).
+    rewrite /map_ctx.
+    setoid_rewrite auth_auth_frac_op.
+    setoid_rewrite own_op.
+    iSplit.
+    - iIntros "H".
+      iDestruct "H" as (ro_m) "[-> [H1 H2]]".
+      iSplitL "H1"; eauto.
+    - iIntros "[H1 H2]".
+      iDestruct "H1" as (ro_m1) "[-> H1]".
+      iDestruct "H2" as (ro_m2) "[-> H2]".
+      iDestruct (own_valid_2 with "H1 H2") as %Hvalid%auth_auth_frac_op_inv.
+      rewrite Hvalid.
+      iExists _; by iFrame.
+  Qed.
+
+  Global Instance map_ctx_AsFractional γ q m :
+    AsFractional (map_ctx γ q m) (λ q, map_ctx γ q m) q.
+  Proof.
+    split; (apply _ || auto).
+  Qed.
+
+  Theorem map_ctx_agree γ q1 q2 m1 m2 :
+    map_ctx γ q1 m1 -∗ map_ctx γ q2 m2 -∗ ⌜m1 = m2⌝.
+  Proof.
+    iDestruct 1 as (ro_m1) "[-> H1]".
+    iDestruct 1 as (ro_m2) "[-> H2]".
+    iDestruct (own_valid_2 with "H1 H2") as %Hvalid%auth_auth_frac_op_inv.
+    rewrite Hvalid.
+    iCombine "H1 H2" as "H".
+    iPureIntro.
+    apply map_eq => k.
+    apply option_eq => v.
+    rewrite !lookup_fmap.
+    rewrite !fmap_Some.
+
+    assert (to_mapUR ro_m1 !! k ≡ to_mapUR ro_m2 !! k).
+    { apply Hvalid. }
+    inversion H; subst; clear H.
+    (* TODO(tej): there's a lot of annoying inversion of to_mapUR, not sure if
+    there's a better way *)
+  Admitted.
 
   Definition ptsto_def γ k mq v :=
     own γ (◯ {[ k := match mq with
@@ -185,7 +230,7 @@ Section auth_map.
   Qed.
 
   Theorem map_init m :
-    ⊢ |==> ∃ γ, map_ctx γ m.
+    ⊢ |==> ∃ γ, map_ctx γ 1 m.
   Proof.
     iMod (own_alloc (● to_mapUR ((., false) <$> m))) as (γ) "Hmap".
     { rewrite auth_auth_valid.
@@ -198,7 +243,7 @@ Section auth_map.
 
   Theorem map_alloc {γ m} k v :
     m !! k = None →
-    map_ctx γ m ==∗ map_ctx γ (<[k:=v]> m) ∗ ptsto_mut γ k 1 v.
+    map_ctx γ 1 m ==∗ map_ctx γ 1 (<[k:=v]> m) ∗ ptsto_mut γ k 1 v.
   Proof.
     unseal.
     iIntros (Hlookup) "Hm".
@@ -322,8 +367,8 @@ Section auth_map.
     - apply to_agree_included, leibniz_equiv in Hincl; auto.
   Qed.
 
-  Theorem map_valid {γ m} k mq v :
-    map_ctx γ m -∗ ptsto γ k mq v -∗ ⌜m !! k = Some v⌝.
+  Theorem map_valid {γ m} k q mq v :
+    map_ctx γ q m -∗ ptsto γ k mq v -∗ ⌜m !! k = Some v⌝.
   Proof.
     unseal; rewrite /ptsto_def.
     iDestruct 1 as (m_ro ->) "Hm".
@@ -331,21 +376,21 @@ Section auth_map.
     rewrite lookup_fmap.
     destruct mq.
     - iDestruct (own_valid_2 with "Hm Hk") as
-          %[Hlookup%map_ptsto_included _]%auth_both_valid.
+          %(_ & Hlookup%map_ptsto_included & _)%auth_both_frac_valid.
       iPureIntro.
       rewrite Hlookup //.
     - iDestruct (own_valid_2 with "Hm Hk") as
-          %[Hlookup%map_ptsto_ro_included _]%auth_both_valid.
+          %(_ & Hlookup%map_ptsto_ro_included & _)%auth_both_frac_valid.
       iPureIntro.
       rewrite Hlookup //.
   Qed.
 
-  Theorem map_ro_valid {γ m} k v :
-    map_ctx γ m -∗ ptsto_ro γ k v -∗ ⌜m !! k = Some v⌝.
+  Theorem map_ro_valid {γ m} k q v :
+    map_ctx γ q m -∗ ptsto_ro γ k v -∗ ⌜m !! k = Some v⌝.
   Proof. apply map_valid. Qed.
 
   Lemma map_update {γ m} k v1 v2 :
-    map_ctx γ m -∗ ptsto_mut γ k 1 v1 ==∗ map_ctx γ (<[k:=v2]>m) ∗ ptsto_mut γ k 1 v2.
+    map_ctx γ 1 m -∗ ptsto_mut γ k 1 v1 ==∗ map_ctx γ 1 (<[k:=v2]>m) ∗ ptsto_mut γ k 1 v2.
   Proof.
     unseal.
     iDestruct 1 as (m_ro ->) "Hm".
@@ -364,8 +409,8 @@ Section auth_map.
   Qed.
 
   Theorem map_freeze γ m k v :
-    map_ctx γ m -∗
-    ptsto_mut γ k 1 v ==∗ map_ctx γ m ∗ ptsto_ro γ k v.
+    map_ctx γ 1 m -∗
+    ptsto_mut γ k 1 v ==∗ map_ctx γ 1 m ∗ ptsto_ro γ k v.
   Proof.
     unseal.
     iDestruct 1 as (m_ro ->) "Hm".
@@ -388,7 +433,7 @@ Section auth_map.
 
   Theorem map_alloc_ro {γ m} k v :
     m !! k = None →
-    map_ctx γ m ==∗ map_ctx γ (<[k:=v]> m) ∗ ptsto_ro γ k v.
+    map_ctx γ 1 m ==∗ map_ctx γ 1 (<[k:=v]> m) ∗ ptsto_ro γ k v.
   Proof.
     iIntros (?) "Hm".
     iMod (map_alloc k v with "Hm") as "[Hm Hk]"; auto.

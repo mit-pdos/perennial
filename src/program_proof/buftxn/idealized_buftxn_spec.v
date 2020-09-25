@@ -76,8 +76,8 @@ Module mspec := buftxn.buftxn_proof.
 
 (* TODO: move these general theorems (which don't reference lifting at all) to
 auth_map.v *)
-Theorem map_valid_subset `{Countable L} `{!mapG Σ L V} γ (m0 m: gmap L V) mq :
-  map_ctx γ m -∗
+Theorem map_valid_subset `{Countable L} `{!mapG Σ L V} γ q (m0 m: gmap L V) mq :
+  map_ctx γ q m -∗
   ([∗ map] a↦v ∈ m0, ptsto γ a mq v) -∗
   ⌜m0 ⊆ m⌝.
 Proof.
@@ -104,9 +104,9 @@ Proof. set_solver. Qed.
 m to m' *)
 Theorem map_update_map `{Countable0: Countable L} `{!mapG Σ L V} {γ} (m' m0 m: gmap L V) :
   dom (gset _) m' = dom _ m0 →
-  map_ctx γ m -∗
+  map_ctx γ 1 m -∗
   ([∗ map] a↦v ∈ m0, ptsto_mut γ a 1 v) -∗
-  |==> map_ctx γ (m' ∪ m) ∗
+  |==> map_ctx γ 1 (m' ∪ m) ∗
        [∗ map] a↦v ∈ m', ptsto_mut γ a 1 v.
 Proof.
   iIntros (Hdom) "Hctx Hm0".
@@ -162,11 +162,11 @@ Proof.
 Qed.
 
 Theorem holds_at_map_ctx `{Countable0: Countable L} {V} `{!mapG Σ L V} (P: (L → V → iProp Σ) → iProp Σ)
-        γ mq d m :
+        γ q mq d m :
   dom _ m = d →
-  map_ctx γ m -∗
+  map_ctx γ q m -∗
   HoldsAt P (λ a v, ptsto γ a mq v) d -∗
-  map_ctx γ m ∗ ([∗ map] a↦v ∈ m, ptsto γ a mq v) ∗
+  map_ctx γ q m ∗ ([∗ map] a↦v ∈ m, ptsto γ a mq v) ∗
                 PredRestore P m.
 Proof.
   iIntros (<-) "Hctx HP".
@@ -178,10 +178,10 @@ Qed.
 
 Theorem map_update_predicate `{!EqDecision L, !Countable L} {V} `{!mapG Σ L V}
         (P0 P: (L → V → iProp Σ) → iProp Σ) (γ: gname) mapsto2 d m :
-  map_ctx γ m -∗
+  map_ctx γ 1 m -∗
   HoldsAt P0 (λ a v, ptsto_mut γ a 1 v) d -∗
   HoldsAt P mapsto2 d -∗
-  |==> ∃ m', map_ctx γ m' ∗ HoldsAt P (λ a v, ptsto_mut γ a 1 v ∗ mapsto2 a v) d.
+  |==> ∃ m', map_ctx γ 1 m' ∗ HoldsAt P (λ a v, ptsto_mut γ a 1 v ∗ mapsto2 a v) d.
 Proof.
   iIntros "Hctx HP0 HP".
   iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
@@ -232,7 +232,7 @@ Section goose_lang.
   Definition txn_system_inv γ: iProp Σ :=
     ∃ (σs: async (gmap addr object)),
       "H◯async" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (1/2) σs ∗
-      "H●latest" ∷ map_ctx γ.(buftxn_stable_name) (latest σs) ∗
+      "H●latest" ∷ map_ctx γ.(buftxn_stable_name) 1 (latest σs) ∗
       (* TODO(tej): don't think this does anything so far, because we don't have
       a spec for how the async heap gets updated on crash. Joe and I thought we
       might have a more complicated structure with generations and then
@@ -266,7 +266,7 @@ Section goose_lang.
       "%Hdom" ∷ ⌜dom (gset _) mT = d⌝ ∗
       "#Htxn_system" ∷ is_txn_system l γ ∗
       "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) ∗
-      "Htxn_ctx" ∷ map_ctx γtxn mT
+      "Htxn_ctx" ∷ map_ctx γtxn 1 mT
   .
 
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=
