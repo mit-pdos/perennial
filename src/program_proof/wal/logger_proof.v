@@ -258,7 +258,7 @@ Lemma nextDiskEnd_nils γ σs (nextDiskEnd_txn_id nextDiskEnd_txn_id' : nat) m :
   is_txn σs.(log_state.txns) nextDiskEnd_txn_id m ->
   is_txn σs.(log_state.txns) nextDiskEnd_txn_id' m ->
   ( nextDiskEnd_inv γ σs.(log_state.txns) ∗
-    nextDiskEnd_txn_id [[γ.(stable_txn_ids_heap)]]↦ro () ) -∗
+    nextDiskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro () ) -∗
   ⌜Forall (λ x, snd x = nil)
     (subslice (S nextDiskEnd_txn_id) (S nextDiskEnd_txn_id') σs.(log_state.txns))⌝.
 Proof.
