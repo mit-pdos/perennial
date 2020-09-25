@@ -45,19 +45,19 @@ Section auth_map.
       ⌜m = fmap fst ro_m⌝ ∗
       own γ (● to_mapUR ro_m).
 
-  Definition ptsto_def γ k q v :=
-    own γ (◯ {[ k := Cinl (q, to_agree (v : leibnizO V)) ]}).
+  Definition ptsto_def γ k mq v :=
+    own γ (◯ {[ k := match mq with
+                     | Some q => Cinl (q, to_agree (v : leibnizO V))
+                     | None => Cinr (to_agree (v : leibnizO V))
+                     end ]}).
   Definition ptsto_aux : seal (@ptsto_def). Proof. by eexists. Qed.
   Definition ptsto := ptsto_aux.(unseal).
   Definition ptsto_eq : @ptsto = @ptsto_def := ptsto_aux.(seal_eq).
 
-  Definition ptsto_ro_def γ k v :=
-    own γ (◯ {[ k := Cinr (to_agree (v : leibnizO V)) ]}).
-  Definition ptsto_ro_aux : seal (@ptsto_ro_def). Proof. by eexists. Qed.
-  Definition ptsto_ro := ptsto_ro_aux.(unseal).
-  Definition ptsto_ro_eq : @ptsto_ro = @ptsto_ro_def := ptsto_ro_aux.(seal_eq).
+  Definition ptsto_mut γ k q v := ptsto γ k (Some q) v.
+  Definition ptsto_ro γ k v := ptsto γ k None v.
 
-  Notation "k [[ γ ]]↦{ q } v" := (ptsto γ k q%Qp v)
+  Notation "k [[ γ ]]↦{ q } v" := (ptsto_mut γ k q%Qp v)
     (at level 20, q at level 50, format "k  [[ γ ]]↦{ q }  v") : bi_scope.
   Notation "k [[ γ ]]↦ v" := (k [[γ]]↦{1} v)%I
     (at level 20, format "k  [[ γ ]]↦  v") : bi_scope.
@@ -65,17 +65,17 @@ Section auth_map.
     (at level 20, format "k  [[ γ ]]↦ro  v") : bi_scope.
 
   Ltac unseal :=
-    rewrite ?ptsto_eq ?ptsto_ro_eq.
+    rewrite /ptsto_mut /ptsto_ro ?ptsto_eq.
 
-  Global Instance ptsto_timeless : Timeless (ptsto γ k q v).
+  Global Instance ptsto_timeless : Timeless (ptsto γ k mq v).
   Proof. unseal; apply _. Qed.
 
-  Global Instance ptsto_Fractional γ k v : Fractional (λ q, ptsto γ k q v).
+  Global Instance ptsto_Fractional γ k v : Fractional (λ q, ptsto_mut γ k q v).
   Proof.
     unseal. intros p q. by rewrite -own_op -auth_frag_op
       singleton_op -Cinl_op -pair_op agree_idemp.
   Qed.
-  Global Instance ptsto_AsFractional γ k q v : AsFractional (ptsto γ k q v) (λ q, ptsto γ k q v) q.
+  Global Instance ptsto_AsFractional γ k q v : AsFractional (ptsto_mut γ k q v) (λ q, ptsto_mut γ k q v) q.
   Proof. split; auto; apply _. Qed.
 
   Global Instance ptsto_ro_timeless : Timeless (ptsto_ro γ k v).
@@ -92,31 +92,64 @@ Section auth_map.
     ✓ @Cinr A B x → ✓ x.
   Proof. auto. Qed.
 
-  Lemma ptsto_agree_frac_value γ k q1 q2 v1 v2 :
-    ptsto γ k q1 v1 -∗ ptsto γ k q2 v2 -∗ ⌜v1 = v2 ∧ ✓(q1+q2)%Qp⌝.
+  Lemma Cinl_Cinr_op (A B:cmraT) x y :
+    @Cinl A B x ⋅ @Cinr A B y = CsumBot.
+  Proof. reflexivity. Qed.
+
+  Lemma Cinr_Cinl_op (A B:cmraT) x y :
+    @Cinr A B y ⋅ @Cinl A B x = CsumBot.
+  Proof. reflexivity. Qed.
+
+  Lemma ptsto_agree_frac_value γ k mq1 mq2 v1 v2 :
+    ptsto γ k mq1 v1 -∗ ptsto γ k mq2 v2 -∗
+      ⌜v1 = v2 ∧ match mq1, mq2 with
+                 | Some q1, Some q2 => ✓(q1+q2)%Qp
+                 | None, None => True
+                 | _, _ => False
+                 end⌝.
   Proof.
     unseal; rewrite /ptsto_def.
     iIntros "H1 H2". iCombine "H1 H2" as "H".
-    rewrite -Cinl_op -pair_op frac_op'.
-    iDestruct (own_valid with "H") as %Hvalid.
-    iPureIntro.
-    (* unification doesn't work with apply *)
-    apply (iffLR (auth_frag_valid _)) in Hvalid as Hvalid%singleton_valid%Cinl_valid.
-    apply pair_valid in Hvalid as [? ?%to_agree_op_inv%leibniz_equiv_iff].
-    simpl in *.
-    auto.
+    destruct mq1, mq2.
+    - rewrite -Cinl_op -pair_op frac_op'.
+      iDestruct (own_valid with "H") as %Hvalid.
+      iPureIntro.
+      (* unification doesn't work with apply *)
+      apply auth_frag_valid in Hvalid as Hvalid%singleton_valid%Cinl_valid.
+      apply pair_valid in Hvalid as [? ?%to_agree_op_inv%leibniz_equiv_iff].
+      simpl in *.
+      auto.
+    - rewrite Cinl_Cinr_op.
+      iDestruct (own_valid with "H") as %Hvalid.
+      apply auth_frag_valid in Hvalid as []%singleton_valid.
+    - rewrite Cinr_Cinl_op.
+      iDestruct (own_valid with "H") as %Hvalid.
+      apply auth_frag_valid in Hvalid as []%singleton_valid.
+    - rewrite -Cinr_op.
+      iDestruct (own_valid with "H") as %Hvalid.
+      iPureIntro.
+      (* unification doesn't work with apply *)
+      apply auth_frag_valid in Hvalid as Hvalid%singleton_valid%Cinr_valid.
+      apply to_agree_op_inv, leibniz_equiv_iff in Hvalid; auto.
   Qed.
 
-  Theorem ptsto_agree γ k q1 q2 v1 v2 :
-    ptsto γ k q1 v1 -∗ ptsto γ k q2 v2 -∗ ⌜v1 = v2⌝.
+  Lemma ptsto_mut_agree_frac_value γ k q1 q2 v1 v2 :
+    ptsto_mut γ k q1 v1 -∗ ptsto_mut γ k q2 v2 -∗ ⌜v1 = v2 ∧ ✓(q1+q2)%Qp⌝.
+  Proof.
+    iIntros "H1 H2".
+    iDestruct (ptsto_agree_frac_value with "H1 H2") as %?; auto.
+  Qed.
+
+  Theorem ptsto_agree γ k mq1 mq2 v1 v2 :
+    ptsto γ k mq1 v1 -∗ ptsto γ k mq2 v2 -∗ ⌜v1 = v2⌝.
   Proof.
     iIntros "H1 H2".
     iDestruct (ptsto_agree_frac_value with "H1 H2") as %[? ?].
     auto.
   Qed.
 
-  Theorem ptsto_valid γ k q v :
-    ptsto γ k q v -∗ ✓ q.
+  Theorem ptsto_mut_valid γ k q v :
+    ptsto_mut γ k q v -∗ ✓ q.
   Proof.
     unseal; rewrite /ptsto_def.
     rewrite own_valid.
@@ -126,16 +159,16 @@ Section auth_map.
     apply (iffLR (pair_valid _ _)) in Hvalid; intuition.
   Qed.
   Theorem ptsto_valid_2 γ k q1 q2 v1 v2 :
-    ptsto γ k q1 v1 -∗ ptsto γ k q2 v2 -∗ ✓ (q1 + q2)%Qp.
+    ptsto_mut γ k q1 v1 -∗ ptsto_mut γ k q2 v2 -∗ ✓ (q1 + q2)%Qp.
   Proof.
     iIntros "H1 H2".
-    iDestruct (ptsto_agree_frac_value with "H1 H2") as %[? ?].
+    iDestruct (ptsto_mut_agree_frac_value with "H1 H2") as %[? ?].
     auto.
   Qed.
 
   (* corollary of above lemmas for a useful special case *)
   Theorem ptsto_conflict γ k v1 v2 :
-    ptsto γ k 1 v1 -∗ ptsto γ k 1 v2 -∗ False.
+    ptsto_mut γ k 1 v1 -∗ ptsto_mut γ k 1 v2 -∗ False.
   Proof.
     iIntros "H1 H2".
     iDestruct (ptsto_valid_2 with "H1 H2") as %?.
@@ -147,14 +180,8 @@ Section auth_map.
   Lemma ptsto_ro_agree γ k v1 v2 :
     ptsto_ro γ k v1 -∗ ptsto_ro γ k v2 -∗ ⌜v1 = v2⌝.
   Proof.
-    unseal; rewrite /ptsto_ro_def.
-    iIntros "H1 H2". iCombine "H1 H2" as "H".
-    rewrite -Cinr_op.
-    iDestruct (own_valid with "H") as %Hvalid.
-    iPureIntro.
-    (* unification doesn't work with apply *)
-    pose proof (iffLR (auth_frag_valid _) Hvalid) as H%singleton_valid%Cinr_valid.
-    apply to_agree_op_inv, leibniz_equiv_iff in H; auto.
+    iIntros "H1 H2".
+    iDestruct (ptsto_agree_frac_value with "H1 H2") as %[? ?]; auto.
   Qed.
 
   Theorem map_init m :
@@ -171,7 +198,7 @@ Section auth_map.
 
   Theorem map_alloc {γ m} k v :
     m !! k = None →
-    map_ctx γ m ==∗ map_ctx γ (<[k:=v]> m) ∗ ptsto γ k 1 v.
+    map_ctx γ m ==∗ map_ctx γ (<[k:=v]> m) ∗ ptsto_mut γ k 1 v.
   Proof.
     unseal.
     iIntros (Hlookup) "Hm".
@@ -295,32 +322,30 @@ Section auth_map.
     - apply to_agree_included, leibniz_equiv in Hincl; auto.
   Qed.
 
-  Theorem map_valid {γ m} k q v :
-    map_ctx γ m -∗ ptsto γ k q v -∗ ⌜m !! k = Some v⌝.
+  Theorem map_valid {γ m} k mq v :
+    map_ctx γ m -∗ ptsto γ k mq v -∗ ⌜m !! k = Some v⌝.
   Proof.
-    unseal.
+    unseal; rewrite /ptsto_def.
     iDestruct 1 as (m_ro ->) "Hm".
     iIntros "Hk".
-    iDestruct (own_valid_2 with "Hm Hk") as
-        %[Hlookup%map_ptsto_included _]%auth_both_valid.
-    iPureIntro.
-    rewrite lookup_fmap Hlookup //.
+    rewrite lookup_fmap.
+    destruct mq.
+    - iDestruct (own_valid_2 with "Hm Hk") as
+          %[Hlookup%map_ptsto_included _]%auth_both_valid.
+      iPureIntro.
+      rewrite Hlookup //.
+    - iDestruct (own_valid_2 with "Hm Hk") as
+          %[Hlookup%map_ptsto_ro_included _]%auth_both_valid.
+      iPureIntro.
+      rewrite Hlookup //.
   Qed.
 
   Theorem map_ro_valid {γ m} k v :
     map_ctx γ m -∗ ptsto_ro γ k v -∗ ⌜m !! k = Some v⌝.
-  Proof.
-    unseal.
-    iDestruct 1 as (m_ro ->) "Hm".
-    iIntros "Hk".
-    iDestruct (own_valid_2 with "Hm Hk") as
-        %[Hlookup%map_ptsto_ro_included _]%auth_both_valid.
-    iPureIntro.
-    rewrite lookup_fmap Hlookup //.
-  Qed.
+  Proof. apply map_valid. Qed.
 
   Lemma map_update {γ m} k v1 v2 :
-    map_ctx γ m -∗ ptsto γ k 1 v1 ==∗ map_ctx γ (<[k:=v2]>m) ∗ ptsto γ k 1 v2.
+    map_ctx γ m -∗ ptsto_mut γ k 1 v1 ==∗ map_ctx γ (<[k:=v2]>m) ∗ ptsto_mut γ k 1 v2.
   Proof.
     unseal.
     iDestruct 1 as (m_ro ->) "Hm".
@@ -340,7 +365,7 @@ Section auth_map.
 
   Theorem map_freeze γ m k v :
     map_ctx γ m -∗
-    ptsto γ k 1 v ==∗ map_ctx γ m ∗ ptsto_ro γ k v.
+    ptsto_mut γ k 1 v ==∗ map_ctx γ m ∗ ptsto_ro γ k v.
   Proof.
     unseal.
     iDestruct 1 as (m_ro ->) "Hm".
@@ -377,7 +402,7 @@ End auth_map.
 token needs to disambiguate the notation which makes it hard to use something
 simple. *)
 
-Notation "k [[ γ ]]↦{ q } v" := (ptsto γ k q%Qp v)
+Notation "k [[ γ ]]↦{ q } v" := (ptsto_mut γ k q%Qp v)
   (at level 20, q at level 50, format "k  [[ γ ]]↦{ q }  v") : bi_scope.
 Notation "k [[ γ ]]↦ v" := (k [[γ]]↦{1} v)%I
   (at level 20, format "k  [[ γ ]]↦  v") : bi_scope.

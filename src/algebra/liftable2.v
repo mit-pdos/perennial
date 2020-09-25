@@ -18,12 +18,18 @@ Section bi.
   Implicit Types (P: (L → V → PROP) → PROP).
   Implicit Types (m: gmap L V) (d: gset L).
 
+  (** The resources needed to restore predicate P over map m; has no ownership
+  of maps-to facts itself *)
+  Definition PredRestore P m : PROP :=
+    (∀ mapsto2, ([∗ map] a↦v ∈ m, mapsto2 a v) -∗ P mapsto2)%I.
+
+  (** Ownership over [mapsto1] facts covering the domain [d] that are sufficient
+      to restore the predicate [P] using some other [mapsto2]. *)
   Definition HoldsAt P mapsto1 d : PROP :=
     (∃ m,
       "%Hdom" ∷ <affine> ⌜dom _ m = d⌝ ∗
       "Hm" ∷ ([∗ map] a↦v ∈ m, mapsto1 a v) ∗
-      "Hmapsto2" ∷
-      ∀ mapsto2, (([∗ map] a↦v ∈ m, mapsto2 a v) -∗ P mapsto2))%I.
+      "Hmapsto2" ∷ PredRestore P m)%I.
 
   Theorem liftable_holds_elim P `{!Liftable P} mapsto1 `{!Conflicting mapsto1} :
     P mapsto1 -∗ ∃ d, HoldsAt P mapsto1 d.
@@ -33,6 +39,13 @@ Section bi.
     iExists (dom _ m).
     iExists m. iSplit; first by auto.
     iFrame.
+  Qed.
+
+  Global Instance PredRestore_equiv_proper : Proper (pointwise_relation _ (⊣⊢) ==> eq ==> (≡)) PredRestore.
+  Proof.
+    intros P1 P2 H m m' <-.
+    rewrite /PredRestore.
+    setoid_rewrite H. done.
   Qed.
 
   Global Instance HoldsAt_equiv_proper : Proper (pointwise_relation _ (⊣⊢) ==> pointwise_relation _ (pointwise_relation _ (⊣⊢)) ==> eq ==> (≡)) HoldsAt.
@@ -128,6 +141,14 @@ Section bi.
     iFrame.
   Qed.
 
+  Theorem independent_restorable_empty (P:PROP) :
+    P -∗ PredRestore (λ _, P) ∅.
+  Proof.
+    iIntros "HP" (?).
+    rewrite big_sepM_empty; iIntros "_".
+    iFrame.
+  Qed.
+
   Theorem independent_holds_empty (P:PROP) mapsto1 :
     P -∗ HoldsAt (λ _, P) mapsto1 ∅.
   Proof.
@@ -136,9 +157,7 @@ Section bi.
     rewrite dom_empty_L.
     iSplit; first by auto.
     rewrite big_sepM_empty left_id.
-    iIntros (?).
-    rewrite big_sepM_empty; iIntros "_".
-    iFrame.
+    iApply (independent_restorable_empty with "HP").
   Qed.
 
   Theorem exists_holds_at T Φ mapsto1 (x:T) d :
@@ -154,6 +173,20 @@ Section bi.
     iApply "Hmapsto2"; auto.
   Qed.
 
+  Theorem pred_map_restore m :
+    ⊢ PredRestore (fun mapsto => [∗ map] a↦v ∈ m , mapsto a v) m.
+  Proof.
+    iIntros (?) "Hm".
+    iFrame.
+  Qed.
+
+  Theorem pred_singleton_restore a v :
+    ⊢ PredRestore (fun mapsto => mapsto a v) {[a:=v]}.
+  Proof.
+    iIntros (?) "Hm".
+    rewrite big_sepM_singleton //.
+  Qed.
+
   Theorem singleton_holds_at mapsto a v :
     mapsto a v -∗ HoldsAt (fun mapsto => mapsto a v) mapsto {[a]}.
   Proof.
@@ -163,7 +196,7 @@ Section bi.
     iSplit; first by auto.
     setoid_rewrite big_sepM_singleton.
     iFrame "Ha".
-    iIntros (?) "$".
+    iApply pred_singleton_restore.
   Qed.
 
   Lemma dom_map_to_list m :
@@ -219,6 +252,7 @@ Section bi.
       iDestruct "Hm" as "[Hl Hm']".
       iNamed "Hl".
       apply dom_singleton_inv in Hdom as [v' ->].
+      rewrite /PredRestore.
       setoid_rewrite big_sepM_singleton.
       iDestruct ("IH" with "Hm'") as (m') "(%Hdom'&Hm'&Hmapsto2')".
       iExists (<[l:=v']> m').

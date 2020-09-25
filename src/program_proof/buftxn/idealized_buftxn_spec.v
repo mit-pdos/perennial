@@ -76,9 +76,9 @@ Module mspec := buftxn.buftxn_proof.
 
 (* TODO: move these general theorems (which don't reference lifting at all) to
 auth_map.v *)
-Theorem map_valid_subset `{Countable L} `{!mapG Σ L V} γ (m0 m: gmap L V) q :
+Theorem map_valid_subset `{Countable L} `{!mapG Σ L V} γ (m0 m: gmap L V) mq :
   map_ctx γ m -∗
-  ([∗ map] a↦v ∈ m0, ptsto γ a q v) -∗
+  ([∗ map] a↦v ∈ m0, ptsto γ a mq v) -∗
   ⌜m0 ⊆ m⌝.
 Proof.
   iIntros "Hctx Hm0".
@@ -105,9 +105,9 @@ m to m' *)
 Theorem map_update_map `{Countable0: Countable L} `{!mapG Σ L V} {γ} (m' m0 m: gmap L V) :
   dom (gset _) m' = dom _ m0 →
   map_ctx γ m -∗
-  ([∗ map] a↦v ∈ m0, ptsto γ a 1 v) -∗
+  ([∗ map] a↦v ∈ m0, ptsto_mut γ a 1 v) -∗
   |==> map_ctx γ (m' ∪ m) ∗
-       [∗ map] a↦v ∈ m', ptsto γ a 1 v.
+       [∗ map] a↦v ∈ m', ptsto_mut γ a 1 v.
 Proof.
   iIntros (Hdom) "Hctx Hm0".
   iInduction m0 as [|l v m0] "IH" using map_ind forall (m m' Hdom).
@@ -162,12 +162,12 @@ Proof.
 Qed.
 
 Theorem holds_at_map_ctx `{Countable0: Countable L} {V} `{!mapG Σ L V} (P: (L → V → iProp Σ) → iProp Σ)
-        γ q d m :
+        γ mq d m :
   dom _ m = d →
   map_ctx γ m -∗
-  HoldsAt P (λ a v, ptsto γ a q v) d -∗
-  map_ctx γ m ∗ ([∗ map] a↦v ∈ m, ptsto γ a q v) ∗
-                (∀ mapsto2, ([∗ map] a↦v ∈ m, mapsto2 a v) -∗ P mapsto2).
+  HoldsAt P (λ a v, ptsto γ a mq v) d -∗
+  map_ctx γ m ∗ ([∗ map] a↦v ∈ m, ptsto γ a mq v) ∗
+                PredRestore P m.
 Proof.
   iIntros (<-) "Hctx HP".
   iDestruct "HP" as (m') "(%Hdom & Hm & Hmapsto2)"; rewrite /named.
@@ -179,9 +179,9 @@ Qed.
 Theorem map_update_predicate `{!EqDecision L, !Countable L} {V} `{!mapG Σ L V}
         (P0 P: (L → V → iProp Σ) → iProp Σ) (γ: gname) mapsto2 d m :
   map_ctx γ m -∗
-  HoldsAt P0 (λ a v, ptsto γ a 1 v) d -∗
+  HoldsAt P0 (λ a v, ptsto_mut γ a 1 v) d -∗
   HoldsAt P mapsto2 d -∗
-  |==> ∃ m', map_ctx γ m' ∗ HoldsAt P (λ a v, ptsto γ a 1 v ∗ mapsto2 a v) d.
+  |==> ∃ m', map_ctx γ m' ∗ HoldsAt P (λ a v, ptsto_mut γ a 1 v ∗ mapsto2 a v) d.
 Proof.
   iIntros "Hctx HP0 HP".
   iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
@@ -257,11 +257,11 @@ Section goose_lang.
   name of an auth log_heap; when maintaining synchrony the ownership is really
   simple since we only fully own the latest and forward value *)
   Definition stable_maps_to γ (a:addr) obj: iProp Σ :=
-    ptsto γ.(buftxn_stable_name) a 1 obj.
+    ptsto_mut γ.(buftxn_stable_name) a 1 obj.
 
   (* this is for a single buftxn (transaction) - not persistent, buftxn's are
   not shareable *)
-  Definition is_buftxn l γ γtxn d : iProp Σ :=
+  Definition is_buftxn l γ γtxn (d: gset addr) : iProp Σ :=
     ∃ (mT: gmap addr object),
       "%Hdom" ∷ ⌜dom (gset _) mT = d⌝ ∗
       "#Htxn_system" ∷ is_txn_system l γ ∗
@@ -400,6 +400,7 @@ Section goose_lang.
   Proof.
     iIntros (? Φ) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hbuftxn".
+    iDestruct (holds_at_map_ctx with "Htxn_ctx HP") as "(Htxn_ctx & Htxn_m & HP)"; first by auto.
     wp_apply (mspec.wp_BufTxn__CommitWait with "[$Hbuftxn HP Hfupd]").
     { iMod "Hfupd" as (P0) "[HP0 HQ]".
       iNamed "Htxn_system".
@@ -409,22 +410,36 @@ Section goose_lang.
       iExists σs.
       iFrame "H◯async".
       iIntros "H◯async".
-      (* iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]". *)
-      iMod (map_update_predicate with "H●latest HP0 HP") as (m') "[H●latest HP]".
+
+      iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
+      rewrite /stable_maps_to.
+      iMod (map_update_map mT with "H●latest Hstable") as "[H●latest Hstable]".
+      { congruence. }
+      iDestruct ("HP" with "Hstable") as "HP".
+
+      (* NOTE: we don't use this theorem and instead inline its proof (to some
+      extent) since we really need to know what the new map is, to restore
+      txn_system_inv. *)
+      (* iMod (map_update_predicate with "H●latest HP0 HP") as (m') "[H●latest HP]". *)
+
       iMod ("Hclo" with "[H◯async H●latest H◯durable]") as "_".
       { iNext.
         iExists _.
         iFrame "H◯async".
-        admit. (* oops, we need m' to be precise, which we can get because we
-        have a predicate holding over a domain which matches a map_ctx - this
-        guarantees that it actually holds in exactly the map specified by the
-        ctx *) }
-      iMod ("HQ" with "[HP]") as "HQ".
-      { rewrite /stable_maps_to /modify_token.
-        (* XXX: something is wrong, haven't produced the modify_tokens yet *)
-        admit. }
+        simpl.
+        iFrame.
+        admit. (* can't return txn_durable yet, only get it at the end of
+        CommitWait (why that is I don't understand, I think
+        mspec.wp_BufTxn__CommitWait should be doing the ⌜wait=true⌝ -∗ own lb
+        stuff within the fupd) *) }
+      iMod ("HQ" with "HP") as "HQ".
       iModIntro.
       iAccu. }
+    (* XXX: we can't give back P (modify_token γ) because that requires two P's:
+    once for stable_maps_to and once for modify_token, and nowhere have we
+    assumed that P (mapsto1 ∗ mapsto2) ⊢ P mapsto1 ∗ P mapsto2 (in fact P is
+    used linearly). This splitting basically amounts to wrapping the PredRestore
+    in Liftable/HoldsAt in a persistently □ modality. *)
   Admitted.
 
 End goose_lang.
