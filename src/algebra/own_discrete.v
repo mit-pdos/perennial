@@ -128,7 +128,15 @@ Implicit Types M : PROP → PROP.
    into a laterable proposition that proves Q and some remainder.
 
    This splitting is "lossless" in the sense that by combining the laterable
-   proposition with the remainder, we can reconstruct a proof of `P`. *)
+   proposition with the remainder, we can reconstruct a proof of `P`.
+
+   Moreover, the "resourceful" part of the split ([uPred_ownM a] below) is not
+   just laterable (i.e., can be put into invariants without any loss), it is
+   also precise. This is crucial to obtain the splitting lemma below
+   ([own_discrete_elim_conj]). The price we pay for this is that [▷ P] is
+   not discretizable because it is not precise. We recover this via
+   [own_discrete_fupd] below.
+*)
 
 Definition own_discrete_def (P: PROP) :=
   (∃ (a: M0) (HD: Discrete a), uPred_ownM a ∗ □ (uPred_ownM a -∗ P))%I.
