@@ -416,7 +416,8 @@ Proof.
   iIntros (condShut) "cond_shut".
   wp_apply wp_allocStruct.
   { repeat econstructor. (* How to do val_ty for Disk? *) admit. }
-Abort.
+Admitted. (* BUG: the theorem statement isn't complete yet, but if we abort
+this, then the proof runs in -vos mode... *)
 
 Theorem wpc_MkLog_recover stk k E1 E2 d γ σ :
   {{{ is_wal_inner_durable γ σ }}}
