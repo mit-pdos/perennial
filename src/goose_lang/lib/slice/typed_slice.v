@@ -194,10 +194,10 @@ Proof.
   rewrite /is_slice_small /list.untype list_fmap_insert. iFrame.
 Qed.
 
-Lemma wp_SliceAppend' stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
-  {{{ is_slice s t 1 vs }}}
+Lemma wp_SliceAppend' stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) q :
+  {{{ is_slice s t q vs }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
+  {{{ s', RET slice_val s'; is_slice s' t q (vs ++ [x]) }}}.
 Proof.
   iIntros (Φ) "Hs HΦ".
   wp_apply (slice.wp_SliceAppend' with "Hs").
@@ -210,10 +210,10 @@ Proof.
   iApply ("HΦ" with "Hs").
 Qed.
 
-Lemma wp_SliceAppend stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
-  {{{ is_slice s t 1 vs }}}
+Lemma wp_SliceAppend stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) q :
+  {{{ is_slice s t q vs }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
+  {{{ s', RET slice_val s'; is_slice s' t q (vs ++ [x]) }}}.
 Proof.
   iIntros (Φ) "Hs HΦ".
   wp_apply (wp_SliceAppend' with "Hs"); auto.

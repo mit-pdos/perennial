@@ -1,5 +1,5 @@
 From RecordUpdate Require Import RecordSet.
-From Perennial.Helpers Require Import List.
+From Perennial.Helpers Require Import List Fractional.
 From Perennial.goose_lang Require Import proofmode array.
 From Perennial.goose_lang.lib Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Export slice.impl typed_mem.
@@ -1006,12 +1006,12 @@ Proof.
   auto.
 Qed.
 
-Lemma wp_SliceAppend' stk E s t vs x :
+Lemma wp_SliceAppend' stk E s t vs x q :
   has_zero t ->
   val_ty x t ->
-  {{{ is_slice s t 1 vs }}}
+  {{{ is_slice s t q vs }}}
     SliceAppend t s x @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
+  {{{ s', RET slice_val s'; is_slice s' t q (vs ++ [x]) }}}.
 Proof.
   iIntros (Hzero Hty Φ) "Hs HΦ".
   wp_call.
@@ -1041,6 +1041,8 @@ Proof.
     rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice /=.
     iDestruct (array_app _ _ _ vs [x] with "[$Hptr Hnew]") as "Hptr".
     { rewrite array_singleton.
+      (* XXX why does struct_mapsto_fractional need to be so explicit? *)
+      iDestruct (@fractional_weaken q _ _ (struct_mapsto_fractional _ _ _) with "Hnew") as "Hnew".
       iExactEq "Hnew"; f_equal.
       f_equal.
       f_equal.
@@ -1088,6 +1090,8 @@ Proof.
     iSplitL "Hvs Hlast".
     + iSplitL.
       * rewrite array_app array_singleton.
+        iDestruct (@fractional_weaken q _ _ (@fractional.as_fractional_fractional _ _ _ q (array_fractional _ _ _ _)) with "Hvs") as "Hvs".
+        iDestruct (@fractional_weaken q _ _ (struct_mapsto_fractional _ _ _) with "Hlast") as "Hlast".
         iFrame.
         iExactEq "Hlast"; word_eq.
       * iPureIntro.
@@ -1103,11 +1107,11 @@ Proof.
       iExactEq "HnewFree"; word_eq.
 Qed.
 
-Lemma wp_SliceAppend stk E s t vs x :
+Lemma wp_SliceAppend stk E s t vs x q :
   has_zero t ->
-  {{{ is_slice s t 1 vs ∗ ⌜val_ty x t⌝ }}}
+  {{{ is_slice s t q vs ∗ ⌜val_ty x t⌝ }}}
     SliceAppend t s x @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
+  {{{ s', RET slice_val s'; is_slice s' t q (vs ++ [x]) }}}.
 Proof.
   iIntros (Hzero Φ) "(Hs&%) HΦ".
   wp_apply (wp_SliceAppend' with "[$Hs]"); auto.
