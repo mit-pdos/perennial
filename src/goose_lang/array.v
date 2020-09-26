@@ -139,6 +139,18 @@ Proof.
   iDestruct ("IH" $! _ vs2 with "[] Ha1 Ha2") as %->; auto.
 Qed.
 
+Lemma array_frac_valid l t q vs :
+  0 < ty_size t →
+  0 < length vs →
+  array l q t vs -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
+Proof.
+  iIntros (??) "Ha".
+  destruct vs; [simpl in H0; lia|].
+  rewrite /array /=.
+  iDestruct "Ha" as "[Hl _]".
+  by iApply (struct_mapsto_frac_valid with "Hl").
+Qed.
+
 (* this lemma is just used to prove the update version (with q=1) and read
 version (with arbitrary q but no update) below *)
 Local Lemma update_array_gen {l vs off t q v} :

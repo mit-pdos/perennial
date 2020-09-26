@@ -104,6 +104,25 @@ Proof.
   iIntros "((_&%)&_) !% //".
 Qed.
 
+Lemma is_slice_small_frac_valid s t q vs :
+  0 < ty_size t →
+  0 < length vs →
+  is_slice_small s t q vs -∗ ⌜(q ≤ 1)%Qc⌝.
+Proof.
+  iIntros (??) "[Ha _]".
+  by iApply (array_frac_valid with "Ha").
+Qed.
+
+Lemma is_slice_frac_valid s t q vs :
+  0 < ty_size t →
+  0 < length vs →
+  is_slice s t q vs -∗ ⌜(q ≤ 1)%Qc⌝.
+Proof.
+  iIntros (??) "Hs".
+  iDestruct (is_slice_to_small with "Hs") as "Hs".
+  by iApply (is_slice_small_frac_valid with "Hs").
+Qed.
+
 Lemma replicate_0 A (x:A) : replicate 0 x = [].
 Proof. reflexivity. Qed.
 

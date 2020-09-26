@@ -5,6 +5,7 @@ From iris.program_logic Require Import weakestpre total_weakestpre.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang.lib Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Export typed_mem.impl.
+From iris_string_ident Require Import ltac2_string_ident.
 
 Set Default Proof Using "Type".
 
@@ -32,7 +33,7 @@ Section goose_lang.
     lia.
   Qed.
 
-  Definition struct_mapsto_def l q (t:ty) (v: val): iProp Σ :=
+  Definition struct_mapsto_def l (q:Qp) (t:ty) (v: val): iProp Σ :=
     (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{q} vj) ∗ ⌜val_ty v t⌝)%I.
   Definition struct_mapsto_aux : seal (@struct_mapsto_def). Proof. by eexists. Qed.
   Definition struct_mapsto := struct_mapsto_aux.(unseal).
@@ -68,6 +69,20 @@ Section goose_lang.
     l ↦[t]{q} v -∗ ⌜val_ty v t⌝.
   Proof.
     unseal. iIntros "[_ %] !%//".
+  Qed.
+
+  Theorem struct_mapsto_frac_valid l q t v :
+    0 < ty_size t →
+    l ↦[t]{q} v -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
+  Proof.
+    unseal.
+    iIntros (?) "[Hvals %Hval_ty]".
+    apply val_ty_len in Hval_ty.
+    destruct (flatten_struct v); simpl in *.
+    - lia.
+    - iDestruct "Hvals" as "[Hl _]".
+      iDestruct (heap_mapsto_frac_valid with "Hl") as %Hq.
+      auto.
   Qed.
 
   Local Lemma struct_mapsto_agree_flatten l t q1 v1 q2 v2 :
