@@ -27,6 +27,7 @@ Class walG Σ :=
     wal_txns_alist   :> alistG Σ (u64 * list update.t);
     wal_stable_map   :> ghost_varG Σ (gmap nat unit);
     wal_stable_mapG  :> mapG Σ nat unit;
+    wal_logger_pos   :> ghost_varG Σ u64;
   }.
 
 Section goose_lang.
@@ -52,13 +53,14 @@ Record wal_names := mkWalNames
     diskEnd_txn_id_name : gname;
     start_avail_name : gname;
     stable_txn_ids_name : gname;
+    logger_pos_name : gname;
   }.
 
 Global Instance _eta_wal_names : Settable _ :=
   settable! mkWalNames <circ_name; cs_name; txns_ctx_name; txns_name;
                         new_installed_name; being_installed_name;
                         diskEnd_avail_name; diskEnd_txn_id_name; start_avail_name;
-                        stable_txn_ids_name>.
+                        stable_txn_ids_name; logger_pos_name>.
 
 Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
@@ -153,7 +155,8 @@ Proof. apply _. Qed.
 
 Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp Σ :=
   (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat)
-     (txns: list (u64 * list update.t)) (stable_txns: gmap nat unit),
+     (txns: list (u64 * list update.t)) (stable_txns: gmap nat unit)
+     (logger_pos: u64),
       "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
       "#HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
       "%HdiskEnd_txn" ∷ ⌜is_highest_txn txns diskEnd_txn_id diskEnd⌝ ∗
@@ -164,6 +167,8 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
       "HownStableSet" ∷ map_ctx γ.(stable_txn_ids_name) (1/2) stable_txns ∗
       "%HnextDiskEnd_max_stable" ∷
         ⌜∀ txn_id, txn_id > nextDiskEnd_txn_id -> stable_txns !! txn_id = None⌝ ∗
+      "HownLoggerPos_linv" ∷ ghost_var γ.(logger_pos_name) (1/2) logger_pos ∗
+      "%HloggerPosOK" ∷ ⌜int.val diskEnd ≤ int.val logger_pos ≤ int.val σ.(slidingM.mutable)⌝ ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
@@ -364,6 +369,7 @@ Definition is_wal (l : loc) γ : iProp Σ :=
 Definition logger_inv γ circ_l: iProp Σ :=
   "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
   "*" ∷ (∃ diskEnd_txn_id, "Hown_diskEnd_txn_id" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/2) diskEnd_txn_id) ∗
+  "HownLoggerPos_logger" ∷ (∃ logger_pos, ghost_var γ.(logger_pos_name) (1/2) logger_pos) ∗
   "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
 
 (* TODO: also needs authoritative ownership of some other variables *)

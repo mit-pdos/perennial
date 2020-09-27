@@ -324,7 +324,7 @@ Proof.
   wp_if_destruct; wp_pures.
   { iApply "HΦ".
     iFrame "Hlocked".
-    iSplitR "HnotLogging Hown_diskEnd_txn_id Happender".
+    iSplitR "HnotLogging Hown_diskEnd_txn_id Happender HownLoggerPos_logger".
     - iExists _; iFrame.
       iExists _; iFrame "% ∗".
     - iFrame.
@@ -343,20 +343,31 @@ Proof.
   iMod (get_txns_are _ _ _ _ memStart_txn_id (S nextDiskEnd_txn_id) with "Howntxns Hwal") as "[Htxns_are Howntxns]"; eauto.
   { pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
     lia. }
+
+  (* snapshot the position we're about to write to circular log *)
+  iNamed "HownLoggerPos_logger".
+  iMod (ghost_var_update_halves σ.(memLog).(slidingM.mutable) with "HownLoggerPos_logger HownLoggerPos_linv") as
+        "[HownLoggerPos_logger HownLoggerPos_linv]".
+
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
   wp_apply (wp_loadField_ro with "HmemLock"); first by auto.
   iDestruct "Htxns_are" as "#Htxns_are".
-  wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs Hown_diskEnd_txn_id γdiskEnd_txn_id1 $His_lock $Hlocked]").
+  wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs Hown_diskEnd_txn_id γdiskEnd_txn_id1 $His_lock $Hlocked HownLoggerPos_logger]").
   { iExists _; iFrame "# ∗".
-    iSplitR "Howntxns HmemEnd_txn HownStableSet".
+    iSplitR "Howntxns HmemEnd_txn HownStableSet HownLoggerPos_linv".
     - iExists _; iFrame "% ∗".
-    - iExists _, _, _, _. iFrame "# % ∗". }
+    - iExists _, _, _, _, _.
+      iFrame "HownLoggerPos_linv".
+      iFrame "# % ∗".
+      iPureIntro. unfold locked_wf in *. intuition lia.
+  }
   wp_loadField.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   wp_apply (wp_circular__Append _ _
                               (∃ (nextDiskEnd_txn_id' : nat),
                                "γdiskEnd_txn_id1" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/4) nextDiskEnd_txn_id' ∗
                                "Hown_diskEnd_txn_id" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/2) nextDiskEnd_txn_id' ∗
+                               "#HnextDiskEnd_txn_pos" ∷ txn_pos γ nextDiskEnd_txn_id' σ.(memLog).(slidingM.mutable) ∗
                                "%HnextDiskEnd_txn_id'" ∷ ⌜nextDiskEnd_txn_id ≤ nextDiskEnd_txn_id'⌝)
               with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least Hown_diskEnd_txn_id γdiskEnd_txn_id1]").
   { rewrite subslice_length; word. }
@@ -386,6 +397,8 @@ Proof.
     iDestruct (ghost_var_agree with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as %?; subst.
 
     edestruct (is_txn_round_up σs.(log_state.txns) nextDiskEnd_txn_id) as [nextDiskEnd_txn_id' Hhighest]; first by eauto.
+    iDestruct (txns_ctx_txn_pos _ _ nextDiskEnd_txn_id' with "Htxns_ctx") as "#HnextDiskEnd_txn_pos".
+    { eapply is_highest_weaken; eauto. }
 
     iMod (ghost_var_update_halves nextDiskEnd_txn_id' with "γdiskEnd_txn_id Hown_diskEnd_txn_id") as
         "[γdiskEnd_txn_id Hown_diskEnd_txn_id]".
@@ -397,7 +410,8 @@ Proof.
     eapply is_highest_weaken in Hhighest as HnextDiskEnd'_txn.
     iSplitR "Hown_diskEnd_txn_id out_txn_id".
     2: {
-      iExists _. iFrame. iPureIntro. lia.
+      iExists _. iFrame. iFrame "HnextDiskEnd_txn_pos".
+      iPureIntro. lia.
     }
 
     iDestruct (nextDiskEnd_nils with "[$HnextDiskEnd_inv $HnextDiskEnd_stable]") as "%Hnils".
@@ -457,6 +471,15 @@ Proof.
   iNamed "Hlockinv".
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
+
+  (* Open up memlog lock invariant to prove we still have the same logger pos *)
+  iRename "HmemStart_txn" into "HmemStart_txn_old".
+  iRename "HnextDiskEnd_txn" into "HnextDiskEnd_txn_old".
+  iRename "HnextDiskEnd_stable" into "HnextDiskEnd_stable_old".
+  iRename "HmemEnd_txn" into "HmemEnd_txn_old".
+  iNamed "HmemLog_linv".
+  iDestruct (ghost_var_agree with "HownLoggerPos_logger HownLoggerPos_linv") as %Heqloggerpos; subst.
+
   iRename "HdiskEnd_at_least" into "HdiskEnd_at_least_old".
   iDestruct (diskEnd_is_to_at_least with "HdiskEnd_is") as "#HdiskEnd_at_least_new".
   iNamed "HdiskEnd_circ".
@@ -471,7 +494,7 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iFrame "His_locked".
-  iSplitR "Hcirc_appender HnotLogging Hown_diskEnd_txn_id".
+  iSplitR "Hcirc_appender HnotLogging Hown_diskEnd_txn_id HownLoggerPos_logger".
   - iExists (set diskEnd (λ _, int.val σ.(diskEnd) + int.val s.(Slice.sz))
             (set locked_diskEnd_txn_id (λ _, nextDiskEnd_txn_id') σ0)).
     iDestruct (updates_slice_frag_len with "Hupds") as "%Hupds_len".
@@ -485,12 +508,10 @@ Proof.
       rewrite Hupds_len.
       unfold locked_wf in *. simpl.
       intuition try lia.
-      (* XXX need to know that σ.(memLog).(slidingM.mutable) is still in-bounds
-        with respect to the new σ0.(memLog). *)
-      { admit. }
-      { admit. }
+      { word. }
+      { word. }
     }
-    iSplitR "HmemLog_linv".
+    iSplitR "Howntxns HownStableSet HownLoggerPos_linv".
     {
       repeat rewrite logIndex_diff; last by word.
       iSplitR "HdiskEnd_exactly".
@@ -515,31 +536,34 @@ Proof.
       iFrame "HdiskEnd_at_least_new".
     }
 
-    iRename "HmemStart_txn" into "HmemStart_txn_old".
-    iRename "HnextDiskEnd_txn" into "HnextDiskEnd_txn_old".
-    iRename "HnextDiskEnd_stable" into "HnextDiskEnd_stable_old".
-    iRename "HmemEnd_txn" into "HmemEnd_txn_old".
-    iNamed "HmemLog_linv".
-
-    iExists _, (max nextDiskEnd_txn_id' nextDiskEnd_txn_id0), _, _.
+    iExists _, _, _, _, _.
     iFrame.
     iFrame "HmemStart_txn HmemEnd_txn".
-
-    (* XXX how do we know nextDiskEnd didn't go backwards? *)
-    (*
     iFrame "HnextDiskEnd_txn HnextDiskEnd_stable".
-    *)
 
-    (*
     iPureIntro.
     intuition idtac.
+    all: try word.
     + admit.
-    + 
-    *)
-    admit.
+    + admit.
+      (* We probably need to explicitly consider the case that our
+         nextDiskEnd_txn_id' is higher than nextDiskEnd_txn_id0.
+         In this case, while we are still in a WP proof, we should
+         allocate a stability fact for nextDiskEnd_txn_id' (and prove
+         a lemma that says higher txn IDs for the same pos as a stable
+         txn ID are also stable). *)
+    + rewrite Hupds_len.
+      admit.
+      (* Even trickier: actually we should have done another round
+         of [is_txn_round_up] when we re-acquired the lock!  So, this
+         means we should get a nextDiskEnd_txn_id'' that is highest
+         as of the time we re-acquired the lock.. *)
+    + admit.
 
   - iFrame.
-    iExists _; iFrame.
+    iSplitR "HownLoggerPos_logger".
+    + iExists _; iFrame.
+    + iExists _; iFrame.
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :
