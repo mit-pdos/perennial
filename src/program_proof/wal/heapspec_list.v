@@ -78,16 +78,18 @@ Definition heap_durable γ disks : iProp Σ :=
 Definition heap_durable_lb γ disks : iProp Σ :=
   fmlist_lb (wal_heap_durable_list γ) disks.
 
+(* TODO: I'm using async for conveinence of having a distinguished latest, but
+   "pending" is not the right way to describe the other disks in this mode of use *)
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
-  ∃ (gh : gmap u64 heap_block) (crash_heaps : list (gmap u64 Block)),
-    "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
+  ∃ (crash_heaps : async (gmap u64 Block)),
+    "%Hlast" ∷ ⌜ ∀ (a: u64), last_disk ls !! (int.val a) = latest crash_heaps !! a ⌝ ∗
     "Htxns" ∷ ghost_var γ.(wal_heap_txns) (1/2) (ls.(log_state.d), ls.(log_state.txns)) ∗
     "Hinstalled" ∷ own γ.(wal_heap_installed) (● (MaxNat ls.(log_state.installed_lb))) ∗
     "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
-    "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls ∗
+    "Hcrash_heaps" ∷ wal_heap_inv_crashes (possible crash_heaps) ls ∗
     "Hcrash_heaps_lb" ∷ own γ.(wal_heap_durable_lb) (● (MaxNat ls.(log_state.durable_lb))) ∗
-    "Hcrash_all_auth" ∷ heap_all γ crash_heaps ∗
-    "Hcrash_durable_auth" ∷ heap_durable γ (take ls.(log_state.durable_lb) crash_heaps).
+    "Hcrash_all_auth" ∷ heap_all γ (possible crash_heaps) ∗
+    "Hcrash_durable_auth" ∷ heap_durable γ (take ls.(log_state.durable_lb) (possible crash_heaps)).
 
 Definition no_updates (l: list update.t) a : Prop :=
   forall u, u ∈ l -> u.(update.addr) ≠ a.
@@ -193,7 +195,7 @@ Proof.
       exists x.
       split; auto.
       apply in_cons; auto.
-Qed.  
+Qed.
 
 Theorem incl_concat {A: Type} (l1 l2: list (list A)):
   incl l1 l2 ->
@@ -241,7 +243,7 @@ Proof.
   rewrite drop_drop.
   replace ((n0 + (n1 - n0))%nat) with (n1) by lia; auto.
 Qed.
-  
+
 (* Helper lemmas *)
 
 Theorem is_update_cons_eq: forall l a0,
@@ -355,7 +357,7 @@ Proof.
   f_equal.
   rewrite filter_app //.
 Qed.
-  
+
 Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
   wal_wf σ ->
   disk_at_txn_id txn_id σ !! int.val a = Some installed ->
@@ -403,6 +405,14 @@ Proof.
   reflexivity.
 Qed.
 
+Theorem last_disk_durable_lb σ pos :
+  last_disk (@set _ _  log_state.durable_lb
+      (fun (_ : forall _ : nat, nat) (x2 : log_state.t) => x2) (λ _ : nat, pos) σ) =
+  last_disk σ.
+Proof.
+  reflexivity.
+Qed.
+
 Theorem apply_upds_txn_upds_app l0 l1 d:
   apply_upds (txn_upds (l0 ++ l1)) d = apply_upds (txn_upds l1) (apply_upds (txn_upds l0) d).
 Proof.
@@ -412,7 +422,7 @@ Proof.
   rewrite concat_app.
   rewrite apply_upds_app; auto.
 Qed.
-  
+
 Theorem apply_update_ne:
   forall u1 u2 d,
   u1.(update.addr) ≠ u2.(update.addr) ->
@@ -584,7 +594,7 @@ Proof.
     rewrite lookup_insert_ne in H0; eauto.
     simpl in *.
     intro Hx.
-    apply H. word.  
+    apply H. word.
   - intros.
     rewrite apply_upds_cons in H0.
     rewrite apply_upds_cons.
@@ -731,7 +741,7 @@ Proof.
     intuition.
     right.
     apply is_update_cons; auto.
-Qed.  
+Qed.
 
 Theorem txn_ups_take_elem_of u l:
   forall (txn_id txn_id': nat),
@@ -785,7 +795,7 @@ Proof using walheapG0 Σ.
   rewrite apply_upds_txn_upds_app in H2.
   apply lookup_apply_upds in H2 as H2'; eauto.
   intuition.
-  1: destruct (decide (b = b1)); congruence. 
+  1: destruct (decide (b = b1)); congruence.
   destruct H4 as [u H4].
   exists u.
   intuition.
@@ -1000,6 +1010,7 @@ Proof.
   lia.
 Qed.
 
+
 Lemma take_prefix_le {A: Type} (l: list A) (n1 n2: nat) :
   n1 ≤ n2 → take n1 l `prefix_of` take n2 l.
 Proof.
@@ -1009,6 +1020,221 @@ Proof.
     rewrite take_more; eauto. econstructor; eauto.
   - rewrite ?firstn_all2 //=; lia.
 Qed.
+
+Lemma wal_heap_inv_crashes_list_at_ids (σ : log_state.t) (heaps: list (gmap u64 Block)):
+  wal_heap_inv_crashes heaps σ -∗
+  ⌜ ∀ (i : nat) (d: gmap u64 Block), heaps !! i = Some d →
+           (∀ a : u64, (disk_at_txn_id i σ !! int.val a) = d !! a)⌝.
+Proof.
+  iIntros "H". iIntros (i d Hlookup a).
+  iNamed "H". rewrite /wal_heap_inv_crash.
+  iDestruct (big_sepL_lookup with "Hpossible_heaps") as "%"; eauto.
+Qed.
+
+Lemma drop_le_app {A} n1 n2 (l: list A):
+  n1 ≤ n2 →
+  ∃ l0, drop n1 l = l0 ++ drop n2 l.
+Proof.
+   intros Hle. replace n2 with (n1 + (n2 - n1)) by lia.
+   rewrite -drop_drop.
+   generalize (drop n1 l) as l0.
+   generalize (n2 - n1) as k.
+   clear. intros.
+   rewrite -{1}(take_drop k l0); eauto.
+Qed.
+
+Lemma no_updates_since_mono σ blkno i1 i2:
+  i1 <= i2 →
+  no_updates_since σ blkno i1 →
+  no_updates_since σ blkno i2.
+Proof.
+  rewrite /no_updates_since.
+  intros Hle1 Hn1.
+  edestruct (drop_le_app (S i1) (S i2) σ.(log_state.txns)) as (l0&Heq); first lia.
+  rewrite Heq in Hn1.
+  rewrite txn_upds_app in Hn1.
+  apply Forall_app in Hn1 as (?&?); eauto.
+Qed.
+
+(* Double HOCAP spec: the idea is at the first lin. pt. for the first fupd,
+   we can get a fresh LB on the list of disks. *)
+
+(* XXX: it's not clear how to get an in_bounds yet I guess *)
+Theorem wp_Walog__Read l (blkno : u64) γ wn Q :
+  {{{ "#Hwal" ∷ is_wal (wal_heap_inv γ) l wn ∗
+      "Hin_bounds" ∷ in_bounds (wal_heap_inv γ) wn blkno ∗
+      "Hfupd" ∷ (∀ disks1 curr, heap_all γ (disks1 ++ [curr]) ={⊤ ∖ ↑walN}=∗ heap_all γ (disks1 ++ [curr]) ∗
+                 (∀ disks2 i (σ: gmap u64 Block), ⌜ (curr :: disks2) !! i = Some σ ⌝  ∗
+                                heap_all γ ((disks1 ++ [curr]) ++ disks2) ={⊤ ∖ ↑walN}=∗
+                                 ∃ (b: Block), ⌜ σ !! blkno = Some b ⌝ ∗
+                                heap_all γ ((disks1 ++ [curr]) ++ disks2) ∗
+                                Q b))
+  }}}
+    wal.Walog__Read #l #blkno
+  {{{ bl b, RET (slice_val bl);
+      is_block bl 1 b ∗
+      Q b
+  }}}.
+Proof using walheapG0.
+  iIntros (Φ) "H HΦ". iNamed "H".
+  wp_call.
+  wp_apply (wp_Walog__ReadMem _
+    (λ mb,
+      match mb with
+      | Some b' => Q b'
+      | None => ∃ disks1 curr inst_lb,
+                 heap_all_lb γ (disks1 ++ [curr]) ∗
+                 own γ.(wal_heap_installed) (◯ (MaxNat inst_lb)) ∗
+                 ⌜ ∀ σ i, inst_lb ≤ i →
+                        i < length (disks1 ++ [curr]) →
+                        (disks1 ++ [curr]) !! i = Some σ →
+                        σ !! blkno = curr !! blkno ⌝ ∗
+                 (∀ disks2 i (σ: gmap u64 Block), ⌜ (curr :: disks2) !! i = Some σ ⌝  ∗
+                                heap_all γ ((disks1 ++ [curr]) ++ disks2) ={⊤ ∖ ↑walN}=∗
+                                 ∃ (b: Block), ⌜ σ !! blkno = Some b ⌝ ∗
+                                heap_all γ ((disks1 ++ [curr]) ++ disks2) ∗
+                                Q b)
+    (*
+        ∀ (σ σ' : log_state.t) (b0 : Block),
+          ⌜wal_wf σ⌝
+          -∗ ⌜relation.denote (log_read_installed blkno) σ σ' b0⌝
+             -∗ wal_heap_inv γ σ
+                ={⊤ ∖ ↑walN}=∗ wal_heap_inv γ σ'
+     *)
+      end
+    )%I with "[Hfupd $Hwal]").
+  { iIntros (σ σ' mb) "%Hwal_wf %Hrelation Hwalinv".
+    iNamed "Hwalinv".
+    iDestruct (wal_heap_inv_crashes_list_at_ids with "Hcrash_heaps") as %Hdisk_at.
+    iNamed "Hcrash_heaps".
+    iMod ("Hfupd" $! (pending crash_heaps) (latest crash_heaps) with "[$]") as "(Hcrash_all_auth&Hfupd)".
+
+    simpl in *; monad_inv.
+    destruct x.
+    {
+      simpl in *; monad_inv.
+      simpl in *; monad_inv.
+      destruct (last_disk σ !! int.val blkno) as [b|] eqn:Heq; last by monad_inv.
+      iSpecialize ("Hfupd" $! [] 0 (latest crash_heaps)).
+      rewrite -app_assoc /=.
+      iMod ("Hfupd" with "[$Hcrash_all_auth]")
+        as (b' Hlookup) "(Hcrash_all_auth&HQ)".
+      { rewrite //=. }
+
+      iModIntro. simpl in *. monad_inv.
+      assert (b = b') as -> by congruence.
+      iFrame. iExists crash_heaps. iFrame.
+      eauto.
+    }
+    {
+      (* Take a snapshot of all, we will use it to ensure at the next linearization point,
+         that only additional stuff got added *)
+      iMod (fmlist_get_lb with "Hcrash_all_auth") as "(Hcrash_all_auth&Hcrash_all_lb)".
+      simpl in *; monad_inv.
+      simpl in *; monad_inv.
+
+      iMod (max_nat_advance _ _ new_installed with "Hinstalled") as "Hinstalled".
+      { intuition idtac. }
+      iMod (max_nat_snapshot with "Hinstalled") as "[Hinstalled #Hinstalledfrag]".
+      iMod (max_nat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+      { lia. }
+      iMod (fmlist_update (take new_durable (possible crash_heaps)) with "Hcrash_durable_auth")
+        as "(Hcrash_durable_auth&_)"; eauto.
+      { apply take_prefix_le. lia. }
+      iModIntro.
+      iSplitL "Htxns Hinstalled Hcrash_all_auth Hcrash_durable_auth Hpossible_heaps Hcrash_heaps_lb".
+      {
+        iExists _. iFrame. simpl.
+        iSplitL "".
+        {
+          (* rewriting by last_disk_durable_lb etc. causes set to simplify in a bad way *)
+          iPureIntro. intros.
+          rewrite -Hlast. f_equal.
+        }
+        iSplitL "".
+        {
+          iPureIntro.
+          eapply wal_wf_advance_installed_lb; last by (intuition; simpl; lia).
+          eapply wal_wf_advance_durable_lb; eauto.
+        }
+        iFrame "%".
+      }
+      iExists _, _, _. iFrame.
+      iFrame "Hinstalledfrag".
+      iPureIntro.
+      intros σ' i Hr1 Hr2 Hlookup.
+      rewrite -Hlast.
+      rewrite -(Hdisk_at i σ'); last eauto.
+      eapply no_updates_since_last_disk; eauto.
+      eapply (no_updates_since_mono σ blkno new_installed); eauto.
+      }
+    }
+
+  iIntros (ok bl) "Hbl".
+  destruct ok.
+  {
+    iDestruct "Hbl" as (b') "(Hbl & HQ)".
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+  }
+  wp_pures.
+  iNamed "Hbl".
+  iDestruct "Hbl" as "(Hall_lb&Hfupd)".
+  wp_apply (wp_Walog__ReadInstalled _
+     (λ b', Q b')
+     with "[$Hwal $Hin_bounds Hfupd Hall_lb]").
+   {
+      iIntros (σ0 σ1 b0) "%Hwf' %Hrelation Hwalinv".
+      simpl in *; monad_inv.
+      simpl in *; monad_inv.
+      match goal with
+      | H : context[unwrap ?x] |- _ => destruct x eqn:?
+      end.
+      2: simpl in *; monad_inv.
+      simpl in *; monad_inv.
+      iNamed "Hwalinv".
+      iDestruct "Hfupd" as "(Hownlb&Hnoupd&Hfupd)".
+      iDestruct "Hnoupd" as %Hnoupd.
+      iDestruct (fmlist_agree_2 with "Hcrash_all_auth Hall_lb") as %Hprefix.
+      destruct Hprefix as (disks2&Hprefix). rewrite Hprefix.
+      iDestruct (wal_heap_inv_crashes_list_at_ids with "Hcrash_heaps") as %Hdisk_at.
+      iDestruct (own_valid_2 with "Hinstalled Hownlb") as %Hval.
+        apply auth_both_frac_valid in Hval as (_&Hle%max_nat_included&_).
+        simpl in Hle.
+      destruct (decide (txn_id < length (disks1 ++ [curr]))).
+      * iMod ("Hfupd" $! disks2 0 curr with "[$Hcrash_all_auth]") as (b' Hlookup) "(Hcrash_all_auth&HQ)".
+        { eauto. }
+        assert (curr !! blkno = Some b).
+        {
+          etransitivity; last eapply Heqo.
+          edestruct (lookup_lt_is_Some_2 ((disks1 ++ [curr]) ++ disks2) txn_id) as (σ&Hget_σ).
+          { rewrite app_length. lia. }
+          symmetry. etransitivity; last eapply (Hnoupd σ txn_id); try lia.
+          { eapply Hdisk_at; eassumption. }
+          { rewrite lookup_app_l in Hget_σ; eauto. }
+        }
+        assert (b = b') as -> by congruence.
+        iFrame "HQ". iModIntro. iExists _. rewrite -Hprefix. iFrame. iFrame "%".
+      * iNamed "Hcrash_heaps".
+        edestruct (lookup_lt_is_Some_2 ((disks1 ++ [curr]) ++ disks2) txn_id) as (σ&Hget_σ).
+        { lia. }
+        iMod ("Hfupd" $! disks2 (S (txn_id - (length (disks1 ++ [curr]))))
+                      σ with "[$Hcrash_all_auth]") as (b' Hlookup) "(Hcrash_all_auth&HQ)".
+        { iPureIntro. rewrite lookup_app_r in Hget_σ; last lia. simpl. eauto. }
+        assert (σ !! blkno = Some b).
+        {
+          etransitivity; last eapply Heqo.
+          symmetry.
+          eapply Hdisk_at; eauto.
+        }
+        assert (b = b') as -> by congruence.
+        iFrame "HQ". iModIntro. iExists _. rewrite -Hprefix. iFrame. iFrame "%".
+        iPureIntro. congruence.
+   }
+   iIntros (?) "H". iDestruct "H" as (b) "(?&?)". iApply "HΦ". by iFrame.
+Qed.
+
 
 Theorem wp_Walog__Flush_heap l γ (txn_id : nat) (pos : u64) Q :
   {{{ is_wal (wal_heap_inv γ) l (wal_heap_walnames γ) ∗
@@ -1035,16 +1261,17 @@ Proof using walheapG0.
   iMod (max_nat_snapshot_le _ txn_id with "Hcrash_heaps_lb") as "[Hcrash_heaps_lb Hpost]".
   { lia. }
   iNamed "Hcrash_heaps".
-  iMod (fmlist_update (take new_durable crash_heaps) with "Hcrash_durable_auth")
+  iMod (fmlist_update (take new_durable (possible crash_heaps)) with "Hcrash_durable_auth")
     as "(Hcrash_durable_auth&_)"; eauto.
   { apply take_prefix_le. lia. }
-  iMod ("Hfupd" $! crash_heaps (take new_durable crash_heaps)
+  iMod ("Hfupd" $! (possible crash_heaps) (take new_durable (possible crash_heaps))
           with "[$Hcrash_all_auth $Hcrash_durable_auth]") as "(?&?&$)".
   { iPureIntro. rewrite take_length_le; lia. }
   iModIntro.
-  iExists _, _. iFrame.
+  iExists _. iFrame.
   iPureIntro.
-  split.
+  split_and!.
+  - eauto.
   - eapply wal_wf_advance_durable_lb; eauto. lia.
   - eauto.
 Qed.
