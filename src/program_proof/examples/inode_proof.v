@@ -664,8 +664,6 @@ Theorem wpc_Inode__Append {k E2}
         (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
   (S k < n)%nat →
   (S k < k')%nat →
-  nroot.@"readonly" ## allocN →
-  nroot.@"readonly" ## inodeN →
   inodeN ## allocN →
   ∀ Φ Φc,
       "Hinode" ∷ is_inode l (S k') P addr ∗
@@ -683,7 +681,7 @@ Theorem wpc_Inode__Append {k E2}
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
   WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (????? Φ Φc) "Hpre"; iNamed "Hpre".
+  iIntros (??? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call.
   { iLeft in "Hfupd"; auto. }
@@ -780,7 +778,6 @@ Proof.
       wpc_pures.
       wpc_frame_seq.
       wp_apply (wp_Free _ _ _ emp with "[$Halloc Hreserved]").
-      { auto. }
       { auto. }
       { iSplitL "Hreserved".
         { iApply (reserved_block_weaken with "[] [] Hreserved").
@@ -914,8 +911,6 @@ Theorem wpc_Inode__Append_triple {k E2}
         (alloc_ref: loc) q (b_s: Slice.t) (b0: Block) :
   (S k < n)%nat →
   (S k < k')%nat →
-  nroot.@"readonly" ## allocN →
-  nroot.@"readonly" ## inodeN →
   inodeN ## allocN →
   {{{ "Hinode" ∷ is_inode l (S k') P addr ∗
       "Hbdata" ∷ is_block b_s q b0 ∗
@@ -936,7 +931,7 @@ Theorem wpc_Inode__Append_triple {k E2}
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
   {{{ Qc }}}.
 Proof.
-  iIntros (????? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+  iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iApply (wpc_Inode__Append (n:=n) (k':=k')); try assumption.
   iFrame "Hinode Hbdata Halloc_fupd Hfree_fupd Halloc".
   iSplit.

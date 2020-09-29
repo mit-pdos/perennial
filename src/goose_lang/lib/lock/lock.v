@@ -237,7 +237,7 @@ Section proof.
     iIntros (Φ) "(#Hcond&#Hlock&Hlocked&HR) HΦ".
     wp_call.
     rewrite /is_cond.
-    iMod (readonly_load with "Hcond") as (q) "Hc"; first by set_solver.
+    iMod (readonly_load with "Hcond") as (q) "Hc".
     wp_untyped_load.
     wp_apply (release_spec with "[$Hlock $Hlocked $HR]").
     wp_pures.

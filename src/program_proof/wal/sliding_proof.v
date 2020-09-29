@@ -265,7 +265,7 @@ Proof.
   rewrite /mutable_log.
   iIntros (Hwf) "Hread Hmut".
   iDestruct "Hmut" as "(%logSlice_wf&Hmut)"; rewrite /named.
-  iMod (readonly_load_lt with "Hread") as (q) "[%Hqlt HreadLog]"; first by auto.
+  iMod (readonly_load_lt with "Hread") as (q) "[%Hqlt HreadLog]".
   iModIntro.
   destruct (Qextra.Qp_split_1 _ Hqlt) as [q' Hqq'].
   iDestruct (updates_slice_frag_acc with "Hmut") as "[Hmut Hmut_full]".
@@ -545,7 +545,7 @@ Lemma wp_SliceAppend_log s σ uv u :
       ⌜slidingM.wf σ'⌝ }}}.
 Proof.
   iIntros (Φ) "(#Hrolog & Hmutlog & Hupdate) HΦ".
-  iMod (readonly_load with "Hrolog") as (q) "Hrolog'"; first by solve_ndisj.
+  iMod (readonly_load with "Hrolog") as (q) "Hrolog'".
   iNamed "Hmutlog".
   iDestruct "Hupdate" as "[% Hupdate]".
   wp_apply (wp_SliceAppend_updates with "[Hrolog' log_mutable $Hupdate]").
@@ -783,7 +783,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   iDestruct (memLog_sz with "log_mutable") as %Hs.
-  iMod (readonly_load with "log_readonly") as (q) "Hlog"; first by set_solver.
+  iMod (readonly_load with "log_readonly") as (q) "Hlog".
   iDestruct "Hlog" as (bks) "[Hs Hblocks]".
   wp_apply (wp_SliceTake (uint64T * (blockT * unitT))%ht); first by word.
   wp_apply wp_SliceSkip'.
@@ -859,7 +859,7 @@ Proof.
   wp_call.
   repeat wp_loadField.
   iDestruct (memLog_sz with "log_mutable") as %Hsz.
-  iMod (readonly_load with "log_readonly") as (q) "Hlog"; first by set_solver.
+  iMod (readonly_load with "log_readonly") as (q) "Hlog".
   wp_apply wp_SliceTake.
   { word. }
   wp_apply (wp_SliceTake_updates with "Hlog"); first by len.
@@ -985,7 +985,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_loadField.
-  iMod (readonly_load with "log_readonly") as (q) "Hlog"; first by set_solver.
+  iMod (readonly_load with "log_readonly") as (q) "Hlog".
   wp_apply (wp_SliceTake (uint64T * (blockT * unitT)%ht)); first by word.
   wp_apply (wp_SliceTake_updates with "Hlog"); first by len.
   iIntros "Hupds".
@@ -1153,7 +1153,7 @@ Proof.
     - rewrite firstn_skipn_comm.
       repeat (f_equal; try word).
   }
-  iPoseProof (readonly_weaken with "Hlog_implies log_readonly") as "> Hlog_frag"; first by eauto.
+  iPoseProof (readonly_weaken with "Hlog_implies log_readonly") as "> Hlog_frag".
   iClear "Hlog_implies".
 
   wp_storeField.
@@ -1223,7 +1223,7 @@ Proof.
     (* XXX: why is this necessary to trigger typeclass resolution? *)
     [ | apply _ | ].
   rewrite /readonly_log.
-  iDestruct (readonly_extend with "log_readonly readonly_new") as "log_readonly'".
+  iMod (readonly_extend with "log_readonly readonly_new") as "log_readonly'".
   iClear "log_readonly".
   iModIntro.
   iApply "HΦ".

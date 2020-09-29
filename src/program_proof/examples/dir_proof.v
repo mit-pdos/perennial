@@ -907,7 +907,7 @@ Section goose.
     wpc_pures.
     wpc_frame_seq.
     wp_loadField.
-    iMod (readonly_load with "inodes_s") as (qinodes) "{inodes_s} inodes_s"; first done.
+    iMod (readonly_load with "inodes_s") as (qinodes) "{inodes_s} inodes_s".
     wp_apply (wp_SliceGet _ _ _ _ _ inode_refs with "[$inodes_s //]").
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
@@ -962,7 +962,7 @@ Section goose.
     iDestruct (big_sepL_lookup _ _ _ _ Hinode_ref with "Hinodes") as "Hinode {Hinodes}".
     wpc_frame_seq.
     wp_loadField.
-    iMod (readonly_load with "inodes_s") as (qinodes) "{inodes_s} inodes_s"; first done.
+    iMod (readonly_load with "inodes_s") as (qinodes) "{inodes_s} inodes_s".
     wp_apply (wp_SliceGet _ _ _ _ _ inode_refs with "[$inodes_s //]").
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
@@ -1072,7 +1072,6 @@ Section goose.
 
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
     (2 + k < k')%nat →
-    nroot.@"readonly" ## N →
     int.nat idx < num_inodes →
     {{{ "#Hdir" ∷ is_dir l sz k' ∗
         "Hb" ∷ is_block b_s 1 b0 ∗
@@ -1084,7 +1083,7 @@ Section goose.
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ True }}}.
   Proof.
-    iIntros (?? Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (? Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { crash_case; auto. }
     { crash_case; auto. }
@@ -1097,14 +1096,14 @@ Section goose.
     iDestruct (big_sepL_lookup _ _ _ _ Hinode_ref with "Hinodes") as "Hinode {Hinodes}".
     wpc_frame_seq.
     wp_loadField.
-    iMod (readonly_load with "inodes_s") as (qinodes) "{inodes_s} inodes_s"; first done.
+    iMod (readonly_load with "inodes_s") as (qinodes) "{inodes_s} inodes_s".
     wp_apply (wp_SliceGet _ _ _ _ _ inode_refs with "[$inodes_s //]").
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
     wpc_loadField.
     (* Now we get to the actual append operation. *)
     iApply (wpc_Inode__Append (n:=k') (k':=k') inodeN allocN);
-      [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].
+      [lia|lia|solve_ndisj|..].
     iFrame "Hinode Hb Halloc".
     iSplit; [ | iSplit; [ | iSplit ] ].
     - iApply reserve_fupd_Palloc.

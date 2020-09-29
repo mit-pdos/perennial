@@ -575,7 +575,6 @@ Section goose.
 
   Theorem wpc_Append {k E2} (Q Qc: iProp Σ) γdur γbuf q l sz b_s b0 k' :
     (S k < k')%nat →
-    nroot.@"readonly" ## N →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hb" ∷ is_block b_s q b0 ∗
         "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗
@@ -585,7 +584,7 @@ Section goose.
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ Qc }}}.
   Proof.
-    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iCache with "HΦ Hfupd".
     { iLeft in "HΦ". iLeft in "Hfupd". iModIntro. iNext. by iApply "HΦ". }
     rewrite /SingleInode__Append. wpc_pures.
@@ -629,7 +628,6 @@ Section goose.
 
   Theorem wpc_Append1 {k E2} (Q Qc: iProp Σ) E γdur γbuf q l sz b_s b0 k' :
     (S k < k')%nat →
-    nroot.@"readonly" ## N →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hb" ∷ is_block b_s q b0 ∗
         "Hfupd" ∷ (<disc> ▷ Qc ∧ |={⊤ ∖ ↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
@@ -639,7 +637,7 @@ Section goose.
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ Qc }}}.
   Proof.
-    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_apply (wpc_Append Q Qc with "[$Hinode Hfupd $Hb]"); try eassumption.
     { iSplit.
       { by iLeft in "Hfupd". }
@@ -654,7 +652,6 @@ Section goose.
 
   Theorem wpc_Flush {k E2} (Q Qc: iProp Σ) γdur γbuf l sz k' :
     (S k < k')%nat →
-    nroot.@"readonly" ## N →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ={⊤ ∖ ↑N}=∗
                                 inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ∗ (<disc> ▷ Qc ∧ Q))
@@ -663,7 +660,7 @@ Section goose.
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ Qc }}}.
   Proof.
-    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iCache with "HΦ Hfupd".
     { iLeft in "HΦ". iLeft in "Hfupd". iModIntro. iNext. by iApply "HΦ". }
     rewrite /SingleInode__Flush. wpc_pures.
@@ -672,7 +669,7 @@ Section goose.
     iNamed "Hinode". iNamed "Hro_state".
     wpc_loadField. wpc_loadField.
     wpc_apply (wpc_Inode__Flush inodeN allocN (n:=k') (k':=k'));
-      [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].
+      [lia|lia|solve_ndisj|..].
     iFrame "Hinode Halloc".
     iSplit; [ | iSplit; [ | iSplit ] ].
     - iApply reserve_fupd_Palloc.
@@ -751,7 +748,6 @@ Section goose.
 
   Theorem wpc_Flush1 {k E2} (Q: iProp Σ) γdur γbuf blks l sz k' :
     (S k < k')%nat →
-    nroot.@"readonly" ## N →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hlb" ∷ inode_current_lb γbuf blks
     }}}
@@ -759,7 +755,7 @@ Section goose.
     {{{ (ok: bool), RET #ok; if ok then inode_durable_lb γdur γbuf blks else emp }}}
     {{{ True }}}.
   Proof.
-    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iDestruct "Hlb" as "#Hlb".
     wpc_apply (wpc_Flush (inode_durable_lb γdur γbuf blks) True with "[$Hinode Hlb]"); try eassumption.
     { iSplit.

@@ -900,8 +900,6 @@ Theorem wpc_Inode__flushOne {k E2}
   σ.(inode.buffered_blocks) = b0 :: bs →
   (S k < n)%nat →
   (S k < k')%nat →
-  nroot.@"readonly" ## allocN →
-  nroot.@"readonly" ## inodeN →
   inodeN ## allocN →
   ∀ Φ Φc,
       "Hlockinv" ∷ inode_linv l addr σ ∗
@@ -931,7 +929,7 @@ Theorem wpc_Inode__flushOne {k E2}
   WPC Inode__flushOne #l #alloc_ref @ NotStuck; (S k); ⊤; E2 {{ Φ }}
     {{ Φc ∗  (∃ σ0, "Hlockcinv" ∷ inode_cinv addr σ0 ∗ "HP" ∷ P σ0)  }}.
 Proof.
-  iIntros (Hbuf_list ????? Φ Φc) "Hpre"; iNamed "Hpre".
+  iIntros (Hbuf_list ??? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   iMod (fupd_later_to_disc with "HP") as "HP".
   wpc_call.
@@ -1197,8 +1195,6 @@ Theorem wpc_Inode__Flush {k E2}
         (alloc_ref: loc) :
   (S k < n)%nat →
   (S k < k')%nat →
-  nroot.@"readonly" ## allocN →
-  nroot.@"readonly" ## inodeN →
   inodeN ## allocN →
   ∀ Φ Φc,
       "Hinode" ∷ is_inode l (S k') P addr ∗
@@ -1208,7 +1204,7 @@ Theorem wpc_Inode__Flush {k E2}
       "Hfupd" ∷ (<disc> ▷ Φc ∧ (∀ σ, flush_fupd P Palloc σ Φ Φc σ.(inode.buffered_blocks))) -∗
   WPC Inode__Flush #l #alloc_ref @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (????? Φ Φc) "Hpre"; iNamed "Hpre".
+  iIntros (??? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   rewrite /Inode__Flush.
   wpc_pures; first by iLeft in "Hfupd".
@@ -1281,8 +1277,6 @@ Proof.
       }
       wpc_apply (@wpc_Inode__flushOne k ∅ l k' P addr Palloc γalloc domain n alloc_ref _ σ0 with "[-]").
       { eapply Heq_buf. }
-      { eassumption. }
-      { eassumption. }
       { eassumption. }
       { eassumption. }
       { eassumption. }

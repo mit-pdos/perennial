@@ -493,10 +493,8 @@ Definition wal_names_dummy {hG:gen_heapPreG nat (u64 * list update.t) Σ} : wal_
 Defined.
 
 Theorem alloc_txns_ctx E txns :
-  ↑nroot.@"readonly" ⊆ E →
   ⊢ |={E}=> ∃ γtxns, txns_ctx (set txns_ctx_name (λ _, γtxns) wal_names_dummy) txns.
 Proof.
-  iIntros (Hsub).
   iMod (alist_alloc txns) as (γtxns) "Hctx".
   iExists γtxns.
   rewrite /txns_ctx //=.

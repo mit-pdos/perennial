@@ -672,7 +672,6 @@ Proof.
   wp_loadField.
 
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
-  { solve_ndisj. }
 
   iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
 
@@ -720,7 +719,6 @@ Proof.
   wp_loadField.
 
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
-  { solve_ndisj. }
 
   edestruct (list_lookup_lt _ shards (int.nat (word.modu addr NSHARD))).
   { rewrite Hlen /NSHARD. word_cleanup.

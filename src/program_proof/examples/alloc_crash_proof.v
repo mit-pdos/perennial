@@ -614,7 +614,6 @@ Qed.
 
 Theorem wp_Reserve (Q: option u64 → iProp Σ) l dset γ n' E1:
   ↑N ⊆ E1 →
-  ↑nroot.@"readonly" ⊆ E1 →
   {{{ is_allocator l dset γ n' ∗
      (∀ σ σ' ma,
           ⌜match ma with
@@ -629,16 +628,14 @@ Theorem wp_Reserve (Q: option u64 → iProp Σ) l dset γ n' E1:
       else Q None }}}.
 Proof.
   clear.
-  iIntros (Hsub0 Hsub2 Φ) "(Hinv&Hfupd) HΦ". iNamed "Hinv".
+  iIntros (Hsub0 Φ) "(Hinv&Hfupd) HΦ". iNamed "Hinv".
   assert ((↑Nlock : coPset) ⊆ E1) as Hsub1.
   { solve_ndisj. }
   rewrite /Allocator__Reserve.
 
   wp_pures.
   iMod (readonly_load with "m") as (?) "m'".
-  { assumption. }
   iMod (readonly_load with "free") as (?) "free'".
-  { assumption. }
 
 
 
@@ -729,7 +726,6 @@ above). This spec supports using durable resources for the fupd, preserving them
 on crash. We don't need this feature for our examples, though. *)
 Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E1 E2:
   ↑N ⊆ E1 →
-  ↑nroot.@"readonly" ⊆ E1 →
   □ (∀ o, Q o -∗ Qc) -∗
   {{{ is_allocator l dset γ n' ∗
      (∀ σ σ' ma,
@@ -746,7 +742,7 @@ Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E
       else Q None }}}
   {{{ Qc }}}.
 Proof.
-  iIntros (??) "#HQc".
+  iIntros (?) "#HQc".
   iIntros "!>" (Φ Φc) "[Halloc Hfupd] HΦ".
 Abort.
 
@@ -913,7 +909,6 @@ Qed.
 (** XXX: should probably make this a WPC in case the fupd requires a durable resource *)
 Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   ↑N ⊆ E →
-  ↑nroot.@"readonly" ⊆ E →
   {{{ is_allocator l d γ n' ∗ reserved_block γ (S n') a (Ψ a) ∗
      (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ ▷ P σ ={E ∖↑N}=∗ ▷ P (<[ a := block_free ]> σ) ∗ Q)
   }}}
@@ -921,13 +916,11 @@ Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   {{{ RET #(); Q }}}.
 Proof.
   clear Hitemcrash.
-  iIntros (Hsub1 Hsub3 Φ) "(Halloc&Hreserved&Hfupd) HΦ".
+  iIntros (Hsub1 Φ) "(Halloc&Hreserved&Hfupd) HΦ".
   iNamed "Halloc".
   assert (↑Nlock ⊆ E) as Hsub2 by solve_ndisj.
   iMod (readonly_load with "m") as (?) "m'".
-  { assumption. }
   iMod (readonly_load with "free") as (?) "free'".
-  { assumption. }
   wp_call.
   wp_loadField.
   wp_apply (acquire_spec' with "His_lock").

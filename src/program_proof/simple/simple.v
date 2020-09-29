@@ -294,7 +294,7 @@ Theorem wp_fh2ino s i :
 Proof.
   iIntros (Φ) "Hfh HΦ".
   iNamed "Hfh".
-  iMod (readonly_load with "Hfh_slice") as (q) "Hslice"; first by solve_ndisj.
+  iMod (readonly_load with "Hfh_slice") as (q) "Hslice".
   wp_call.
   wp_call.
   wp_apply (wp_new_dec with "Hslice"); first by eauto.

@@ -7,6 +7,8 @@ From Perennial.Helpers Require Import NamedProps.
 
 Close Scope struct_scope.
 
+Set Default Proof Using "Type".
+
 Reserved Notation "l ↦[ d :: f ]{ q } v"
     (at level 20, q at level 50, d at level 50, f at level 50,
     format "l  ↦[ d  ::  f ]{ q }  v").
@@ -532,30 +534,27 @@ Theorem wp_load_ro l t v :
   {{{ RET v; True }}}.
 Proof.
   iIntros (Φ) "#Hro HΦ".
-  iMod (readonly_load with "Hro") as (q) "Hl"; first by set_solver.
+  iMod (readonly_load with "Hro") as (q) "Hl".
   wp_apply (wp_LoadAt with "Hl"); iIntros "_".
   iApply ("HΦ" with "[//]").
 Qed.
 
 Theorem wp_loadField_ro {stk E} l d f fv :
-  ↑nroot.@"readonly" ⊆ E →
   {{{ readonly (struct_field_mapsto l 1%Qp d f fv) }}}
     struct.loadF d f #l @ stk; E
   {{{ RET fv; True }}}.
 Proof.
-  iIntros (? Φ) "#Hro HΦ".
-  iMod (readonly_load with "Hro") as (q) "Hl"; first by solve_ndisj.
+  iIntros (Φ) "#Hro HΦ".
+  iMod (readonly_load with "Hro") as (q) "Hl".
   wp_apply (wp_loadField with "Hl"); iIntros "_".
   iApply ("HΦ" with "[//]").
 Qed.
 
 Lemma tac_wp_loadField_ro {E} Δ s i K l d f v Φ :
-  ↑nroot.@"readonly" ⊆ E →
   envs_lookup i Δ = Some (true, readonly (struct_field_mapsto l 1%Qp d f v))%I →
   envs_entails Δ (WP fill K (Val v) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
-  intros ?.
   rewrite envs_entails_eq=> ? HΦ.
   rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_loadField_ro.
   rewrite envs_lookup_split //; simpl.
@@ -666,8 +665,7 @@ Tactic Notation "wp_loadField" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_loadField_ro _ _ _ K))
       |fail 1 "wp_loadField: cannot find 'struct.loadF' in" e];
-    [try solve_ndisj
-    |iAssumptionCore
+    [iAssumptionCore
     |wp_finish]
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first

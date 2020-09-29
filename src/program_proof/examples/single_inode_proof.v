@@ -389,7 +389,6 @@ Section goose.
 
   Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
     (S k < k')%nat →
-    nroot.@"readonly" ## N →
     {{{ "Hinode" ∷ is_single_inode l sz k' ∗
         "Hb" ∷ is_block b_s 1 b0 ∗
         "Hfupd" ∷ ((∀ σ σ',
@@ -400,7 +399,7 @@ Section goose.
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ True }}}.
   Proof.
-    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { crash_case; auto. }
     { crash_case; auto. }
@@ -410,7 +409,7 @@ Section goose.
     iNamed "Hinode". iNamed "Hro_state".
     wpc_loadField. wpc_loadField.
     wpc_apply (wpc_Inode__Append inodeN allocN (n:=k') (k':=k'));
-      [lia|lia|solve_ndisj|solve_ndisj|solve_ndisj|..].
+      [lia|lia|solve_ndisj|..].
     iFrame "Hb Hinode Halloc".
     iSplit; [ | iSplit; [ | iSplit ] ].
     - iApply reserve_fupd_Palloc.
