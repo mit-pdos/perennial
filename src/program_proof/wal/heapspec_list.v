@@ -20,7 +20,6 @@ Class walheapG (Σ: gFunctors) :=
   { walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
     (* walheap_max_nat :> inG Σ (authR max_natUR); *)
     walheap_list_disks :> fmlistG (gmap u64 Block) Σ;
-    walheap_heap :> heapG Σ;
     walheap_wal :> walG Σ
   }.
 
@@ -47,15 +46,14 @@ Definition hb_latest_update (hb : heap_block) :=
   | HB installed bs => latest_update installed bs
   end.
 
-Record wal_heap_gnames := {
-  wal_heap_crash_heaps : gname;
-    (* possible crashes; latest has the same contents as current heap *)
+Record wh_durable_gnames := {
   wal_heap_durable_list : gname;
+}.
+
+Record wh_ephem_gnames := {
   wal_heap_all_list : gname;
   wal_heap_durable_lb : gname;
-  wal_heap_txns : gname;
   wal_heap_installed : gname;
-  wal_heap_walnames : wal_names;
 }.
 
 Definition wal_heap_inv_crash (crashheap : gmap u64 Block)
@@ -80,35 +78,21 @@ Definition heap_durable_lb γ disks : iProp Σ :=
 
 (* TODO: I'm using async for conveinence of having a distinguished latest, but
    "pending" is not the right way to describe the other disks in this mode of use *)
-Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
+Definition wal_heap_inv (γdur : wh_durable_gnames) (γeph : wh_ephem_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (crash_heaps : async (gmap u64 Block)),
     "%Hlast" ∷ ⌜ ∀ (a: u64), last_disk ls !! (int.val a) = latest crash_heaps !! a ⌝ ∗
-    "Hinstalled" ∷ own γ.(wal_heap_installed) (● (MaxNat ls.(log_state.installed_lb))) ∗
+    "Hinstalled" ∷ own γeph.(wal_heap_installed) (● (MaxNat ls.(log_state.installed_lb))) ∗
     "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
     "Hcrash_heaps" ∷ wal_heap_inv_crashes (possible crash_heaps) ls ∗
-    "Hcrash_heaps_lb" ∷ own γ.(wal_heap_durable_lb) (● (MaxNat ls.(log_state.durable_lb))) ∗
-    "Hcrash_all_auth" ∷ heap_all γ (possible crash_heaps) ∗
-    "Hcrash_durable_auth" ∷ heap_durable γ (take ls.(log_state.durable_lb) (possible crash_heaps)).
+    "Hcrash_heaps_lb" ∷ own γeph.(wal_heap_durable_lb) (● (MaxNat ls.(log_state.durable_lb))) ∗
+    "Hcrash_all_auth" ∷ heap_all γeph (possible crash_heaps) ∗
+    "Hcrash_durable_auth" ∷ heap_durable γdur (take ls.(log_state.durable_lb) (possible crash_heaps)).
 
 Definition no_updates (l: list update.t) a : Prop :=
   forall u, u ∈ l -> u.(update.addr) ≠ a.
 
 Definition is_update (l: list update.t) a b : Prop :=
   ∃ u, u ∈ l /\ u.(update.addr) = a /\ u.(update.b) = b.
-
-(*
-Record locked_walheap := {
-  locked_wh_σd : disk;
-  locked_wh_σtxns : list (u64 * list update.t);
-}.
-
-Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
-  ghost_var γ.(wal_heap_txns) (1/2) (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)).
-
-Definition locked_wh_disk (lwh : locked_walheap) : disk :=
-  apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
-
-*)
 
 Global Instance max_nat_frag_persistent γ (m : max_nat) : Persistent (own γ (◯ m)).
 Proof. apply _. Qed.
@@ -1080,12 +1064,12 @@ Proof.
 Qed.
 
 (* This is done except we need some assumptions about addr_wf for bs *)
-Theorem wp_Walog__Append PreQ Q l bufs bs γ wn:
-  {{{ "#Hwal" ∷ is_wal (wal_heap_inv γ) l wn ∗
+Theorem wp_Walog__Append PreQ Q l bufs bs γd γe wn:
+  {{{ "#Hwal" ∷ is_wal (wal_heap_inv γd γe) l wn ∗
       "Hupds" ∷ updates_slice bufs bs ∗
       "Hfupd" ∷ (PreQ ∧ (∀ disks1 curr pos,
-                           heap_all γ (disks1 ++ [curr]) ={⊤ ∖ ↑walN}=∗
-                           heap_all γ ((disks1 ++ [curr]) ++ [(apply_upds_u64 bs curr)]) ∗
+                           heap_all γe (disks1 ++ [curr]) ={⊤ ∖ ↑walN}=∗
+                           heap_all γe ((disks1 ++ [curr]) ++ [(apply_upds_u64 bs curr)]) ∗
                                        (txn_pos wn (length (disks1 ++ [curr])) pos -∗ Q pos)))
   }}}
     wal.Walog__MemAppend #l (slice_val bufs)
@@ -1164,14 +1148,14 @@ Admitted.
    we can get a fresh LB on the list of disks. *)
 
 (* XXX: it's not clear how to get an in_bounds yet I guess *)
-Theorem wp_Walog__Read l (blkno : u64) γ wn Q :
-  {{{ "#Hwal" ∷ is_wal (wal_heap_inv γ) l wn ∗
-      "Hin_bounds" ∷ in_bounds (wal_heap_inv γ) wn blkno ∗
-      "Hfupd" ∷ (∀ disks1 curr, heap_all γ (disks1 ++ [curr]) ={⊤ ∖ ↑walN}=∗ heap_all γ (disks1 ++ [curr]) ∗
+Theorem wp_Walog__Read l (blkno : u64) γd γe wn Q :
+  {{{ "#Hwal" ∷ is_wal (wal_heap_inv γd γe) l wn ∗
+      "Hin_bounds" ∷ in_bounds (wal_heap_inv γd γe) wn blkno ∗
+      "Hfupd" ∷ (∀ disks1 curr, heap_all γe (disks1 ++ [curr]) ={⊤ ∖ ↑walN}=∗ heap_all γe (disks1 ++ [curr]) ∗
                  (∀ disks2 i (σ: gmap u64 Block), ⌜ (curr :: disks2) !! i = Some σ ⌝  ∗
-                                heap_all γ ((disks1 ++ [curr]) ++ disks2) ={⊤ ∖ ↑walN}=∗
+                                heap_all γe ((disks1 ++ [curr]) ++ disks2) ={⊤ ∖ ↑walN}=∗
                                  ∃ (b: Block), ⌜ σ !! blkno = Some b ⌝ ∗
-                                heap_all γ ((disks1 ++ [curr]) ++ disks2) ∗
+                                heap_all γe ((disks1 ++ [curr]) ++ disks2) ∗
                                 Q b))
   }}}
     wal.Walog__Read #l #blkno
@@ -1187,16 +1171,16 @@ Proof using walheapG0.
       match mb with
       | Some b' => Q b'
       | None => ∃ disks1 curr inst_lb,
-                 heap_all_lb γ (disks1 ++ [curr]) ∗
-                 own γ.(wal_heap_installed) (◯ (MaxNat inst_lb)) ∗
+                 heap_all_lb γe (disks1 ++ [curr]) ∗
+                 own γe.(wal_heap_installed) (◯ (MaxNat inst_lb)) ∗
                  ⌜ ∀ σ i, inst_lb ≤ i →
                         i < length (disks1 ++ [curr]) →
                         (disks1 ++ [curr]) !! i = Some σ →
                         σ !! blkno = curr !! blkno ⌝ ∗
                  (∀ disks2 i (σ: gmap u64 Block), ⌜ (curr :: disks2) !! i = Some σ ⌝  ∗
-                                heap_all γ ((disks1 ++ [curr]) ++ disks2) ={⊤ ∖ ↑walN}=∗
+                                heap_all γe ((disks1 ++ [curr]) ++ disks2) ={⊤ ∖ ↑walN}=∗
                                  ∃ (b: Block), ⌜ σ !! blkno = Some b ⌝ ∗
-                                heap_all γ ((disks1 ++ [curr]) ++ disks2) ∗
+                                heap_all γe ((disks1 ++ [curr]) ++ disks2) ∗
                                 Q b)
       end
     )%I with "[Hfupd $Hwal]").
@@ -1333,13 +1317,13 @@ Proof using walheapG0.
 Qed.
 
 
-Theorem wp_Walog__Flush_heap l γ (txn_id : nat) (pos : u64) Q :
-  {{{ is_wal (wal_heap_inv γ) l (wal_heap_walnames γ) ∗
-      txn_pos (wal_heap_walnames γ) txn_id pos ∗
+Theorem wp_Walog__Flush_heap l γd γe wn (txn_id : nat) (pos : u64) Q :
+  {{{ is_wal (wal_heap_inv γd γe) l wn ∗
+      txn_pos wn txn_id pos ∗
       (∀ disks_all disks_durable,
           ⌜ txn_id ≤ length disks_durable ⌝ ∗
-            heap_all γ disks_all ∗ heap_durable γ disks_durable ={⊤ ∖ ↑walN}=∗
-            heap_all γ disks_all ∗ heap_durable γ disks_durable ∗ Q)
+            heap_all γe disks_all ∗ heap_durable γd disks_durable ={⊤ ∖ ↑walN}=∗
+            heap_all γe disks_all ∗ heap_durable γd disks_durable ∗ Q)
   }}}
     wal.Walog__Flush #l #pos
   {{{ RET #(); Q }}}.
