@@ -83,7 +83,6 @@ Definition heap_durable_lb γ disks : iProp Σ :=
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (crash_heaps : async (gmap u64 Block)),
     "%Hlast" ∷ ⌜ ∀ (a: u64), last_disk ls !! (int.val a) = latest crash_heaps !! a ⌝ ∗
-    "Htxns" ∷ ghost_var γ.(wal_heap_txns) (1/2) (ls.(log_state.d), ls.(log_state.txns)) ∗
     "Hinstalled" ∷ own γ.(wal_heap_installed) (● (MaxNat ls.(log_state.installed_lb))) ∗
     "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
     "Hcrash_heaps" ∷ wal_heap_inv_crashes (possible crash_heaps) ls ∗
@@ -1010,7 +1009,6 @@ Proof.
   lia.
 Qed.
 
-
 Lemma take_prefix_le {A: Type} (l: list A) (n1 n2: nat) :
   n1 ≤ n2 → take n1 l `prefix_of` take n2 l.
 Proof.
@@ -1056,6 +1054,112 @@ Proof.
   apply Forall_app in Hn1 as (?&?); eauto.
 Qed.
 
+Lemma take_prefix_app {A} (l1 l2: list A) n :
+  take n l1 `prefix_of` take n (l1 ++ l2).
+Proof. rewrite firstn_app. econstructor; eauto. Qed.
+
+Definition apply_upds_u64 :=
+  λ (upds : list update.t) (d : gmap u64 Block),
+  fold_left (λ (d0 : gmap u64 Block) '{| update.addr := a; update.b := b |}, <[a:=b]> d0) upds d.
+
+Lemma apply_upds_apply_upds_u64 bs d σ a :
+  d !! int.val a = σ !! a →
+  apply_upds bs d !! int.val a = apply_upds_u64 bs σ !! a.
+Proof.
+  intros Heq. rewrite /apply_upds/apply_upds_u64.
+  revert d σ Heq.
+  induction bs as [| upd bs IHbs] => d σ Heq.
+  - rewrite /=. eauto.
+  - rewrite /=. eapply IHbs.
+    destruct upd as (addr&?).
+    destruct (decide (addr = a)).
+    * subst. rewrite ?lookup_insert //=.
+    * rewrite ?lookup_insert_ne //=.
+      intros Heq2%int_val_inj; first congruence.
+      apply _.
+Qed.
+
+(* This is done except we need some assumptions about addr_wf for bs *)
+Theorem wp_Walog__Append PreQ Q l bufs bs γ wn:
+  {{{ "#Hwal" ∷ is_wal (wal_heap_inv γ) l wn ∗
+      "Hupds" ∷ updates_slice bufs bs ∗
+      "Hfupd" ∷ (PreQ ∧ (∀ disks1 curr pos,
+                           heap_all γ (disks1 ++ [curr]) ={⊤ ∖ ↑walN}=∗
+                           heap_all γ ((disks1 ++ [curr]) ++ [(apply_upds_u64 bs curr)]) ∗
+                                       (txn_pos wn (length (disks1 ++ [curr])) pos -∗ Q pos)))
+  }}}
+    wal.Walog__MemAppend #l (slice_val bufs)
+  {{{ pos (ok: bool), RET (#pos, #ok);
+      if ok then Q pos ∗ ∃ txn_id, txn_pos wn txn_id pos else PreQ }}}.
+Proof using walheapG0.
+  iIntros (Φ) "H HΦ". iNamed "H".
+  wp_apply (wp_Walog__MemAppend _ PreQ Q l wn bufs bs with "[$Hwal $Hupds Hfupd] HΦ").
+  iSplit; last by (iLeft in "Hfupd").
+  iIntros (σ σ' pos) "%Hwal_wf %Hrelation Hwalinv".
+  iRight in "Hfupd".
+  iNamed "Hwalinv".
+  iDestruct (wal_heap_inv_crashes_list_at_ids with "Hcrash_heaps") as %Hdisk_at.
+  iNamed "Hcrash_heaps".
+  simpl in *; monad_inv.
+  iMod ("Hfupd" $! (pending crash_heaps) (latest crash_heaps) pos' with "[$]") as "(Hcrash_all_auth&Hfupd)".
+
+  (* This is a little silly, in some sense one could argue that old durable could not have stretched
+     past this thing we're about to append, but maintaining that invariant seems pointless. *)
+  iMod (fmlist_update (take σ.(log_state.durable_lb)
+                            (possible crash_heaps ++ _)) with "Hcrash_durable_auth") as
+           "(Hcrash_durable_auth&_)".
+  { apply take_prefix_app. }
+  iModIntro.
+  iSplitR "Hfupd"; last first.
+  { rewrite Hcrashes_complete. eauto. }
+  iExists {| latest := apply_upds_u64 bs (latest crash_heaps);
+             pending := pending crash_heaps ++ [latest crash_heaps] |}.
+  iFrame. iSplitL "".
+  { iPureIntro. rewrite /=/last_disk.
+    intros a.
+    rewrite /disk_at_txn_id.
+    simpl. rewrite firstn_all2; last by lia.
+    rewrite txn_upds_app. rewrite apply_upds_app /=.
+    rewrite /txn_upds/= app_nil_r.
+    eapply apply_upds_apply_upds_u64.
+    etransitivity; last eapply Hlast.
+    rewrite /last_disk/disk_at_txn_id //=.
+    simpl. rewrite firstn_all2; last by lia. rewrite /txn_upds //=.
+  }
+  iSplitR "Hpossible_heaps"; last first.
+  { rewrite /wal_heap_inv_crashes /=.
+    iEval (rewrite /possible).
+    rewrite /possible/= in Hcrashes_complete. rewrite app_length Hcrashes_complete /= app_length.
+    iSplitL ""; first by eauto.
+    rewrite big_sepL_app big_sepL_cons /=.
+    iEval (rewrite /possible/=) in "Hpossible_heaps". iFrame.
+    iSplitL "Hpossible_heaps".
+    { iApply (big_sepL_mono with "Hpossible_heaps").
+      iIntros (k d Hlookup) => /=.
+      iIntros "H". iExactEq "H". f_equal.
+      symmetry; apply take_app_le.
+      apply lookup_lt_Some in Hlookup.
+      lia.
+    }
+    iPureIntro. split; last done.
+    intros a.
+    symmetry.
+    simpl. rewrite firstn_all2; last first.
+    { rewrite app_length /=. lia. }
+    rewrite txn_upds_app. rewrite apply_upds_app /=.
+    rewrite /txn_upds/= app_nil_r.
+    eapply apply_upds_apply_upds_u64.
+    etransitivity; last eapply Hlast.
+    rewrite /last_disk/disk_at_txn_id //=.
+    simpl. rewrite firstn_all2; last by lia. rewrite /txn_upds //=.
+  }
+  iPureIntro. eapply wal_wf_append_txns; eauto.
+  { admit. }
+  intros. rewrite /ge.
+  cut (int.val pos ≤ int.val pos')%Z; first lia.
+  eauto.
+Admitted.
+
 (* Double HOCAP spec: the idea is at the first lin. pt. for the first fupd,
    we can get a fresh LB on the list of disks. *)
 
@@ -1094,13 +1198,6 @@ Proof using walheapG0.
                                  ∃ (b: Block), ⌜ σ !! blkno = Some b ⌝ ∗
                                 heap_all γ ((disks1 ++ [curr]) ++ disks2) ∗
                                 Q b)
-    (*
-        ∀ (σ σ' : log_state.t) (b0 : Block),
-          ⌜wal_wf σ⌝
-          -∗ ⌜relation.denote (log_read_installed blkno) σ σ' b0⌝
-             -∗ wal_heap_inv γ σ
-                ={⊤ ∖ ↑walN}=∗ wal_heap_inv γ σ'
-     *)
       end
     )%I with "[Hfupd $Hwal]").
   { iIntros (σ σ' mb) "%Hwal_wf %Hrelation Hwalinv".
@@ -1142,7 +1239,7 @@ Proof using walheapG0.
         as "(Hcrash_durable_auth&_)"; eauto.
       { apply take_prefix_le. lia. }
       iModIntro.
-      iSplitL "Htxns Hinstalled Hcrash_all_auth Hcrash_durable_auth Hpossible_heaps Hcrash_heaps_lb".
+      iSplitL "Hinstalled Hcrash_all_auth Hcrash_durable_auth Hpossible_heaps Hcrash_heaps_lb".
       {
         iExists _. iFrame. simpl.
         iSplitL "".
