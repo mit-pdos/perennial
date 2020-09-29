@@ -20,19 +20,18 @@ Context (P: log_state.t -> iProp Σ).
 Let N := walN.
 Let circN := walN .@ "circ".
 
-Theorem wp_MkLog_init d (bs: list Block) :
-  {{{ 0 d↦∗ repeat block0 513 ∗
-      513 d↦∗ bs ∗
-      P (log_state.mk (list_to_map (imap (λ i x, (513 + Z.of_nat i, x)) bs)) [(U64 0, [])] 0 0)  }}}
-    MkLog #d
-  {{{ γ l, RET #l; is_wal P l γ }}}.
-Proof.
+Lemma is_wal_inner_durable_init (bs: list Block) :
+  0 d↦∗ repeat block0 513 ∗
+  513 d↦∗ bs ={⊤}=∗
+  let s := (log_state.mk (list_to_map (imap (λ i x, (513 + Z.of_nat i, x)) bs)) [(U64 0, [])] 0 0) in
+  ∃ γ, is_wal_inner_durable γ s.
 Admitted.
 
 Lemma diskEnd_is_get_at_least (γ: circ_names) q (z: Z):
   diskEnd_is γ q z ==∗ diskEnd_is γ q z ∗ diskEnd_at_least γ z.
 Proof.
-  iIntros "(%&Hfm)". by iMod (fmcounter.fmcounter_get_lb with "[$]") as "($&$)".
+  iIntros "(%&Hfm&Hend)". iMod (fmcounter.fmcounter_get_lb with "[$]") as "($&$)".
+  eauto.
 Qed.
 
 Lemma start_is_get_at_least (γ: circ_names) q (z: u64):
@@ -327,6 +326,7 @@ Proof.
                  slidingM.mutable := int.val diskStart + length upds |}).
 
   iNamed "Hdiskinv".
+(*
   iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id σ.(log_state.txns)) with "[-]" as "#H".
   {
     rewrite /memLog_linv_pers_core.
@@ -416,6 +416,7 @@ Proof.
   iIntros (condShut) "cond_shut".
   wp_apply wp_allocStruct.
   { repeat econstructor. (* How to do val_ty for Disk? *) admit. }
+*)
 Admitted. (* BUG: the theorem statement isn't complete yet, but if we abort
 this, then the proof runs in -vos mode... *)
 
@@ -427,6 +428,15 @@ Theorem wpc_MkLog_recover stk k E1 E2 d γ σ :
        is_wal_inv_pre l γ' σ' }}}
   {{{ ∃ γ', is_wal_inner_durable γ' σ }}}.
 Proof.
-Abort.
+Admitted.
+
+(* XXX: this is not quite correctly stated, there is some condition on E *)
+Theorem is_wal_inv_alloc {k : nat} E l γ σ :
+  ▷ P σ -∗
+  is_wal_inv_pre l γ σ ={⊤}=∗
+  is_wal P l γ ∗
+  <disc> |C={⊤,E}_(S k)=> (∃ σ', is_wal_inner_durable γ σ' ∗ P σ').
+Proof.
+Admitted.
 
 End goose_lang.
