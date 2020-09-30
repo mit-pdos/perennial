@@ -165,7 +165,10 @@ Proof.
       by iApply is_slice_small_nil.
     - iApply is_slice_cap_nil. }
   iIntros (l) "Hsliding".
+  iDestruct (updates_slice_frag_len with "Hpre") as "%Hbufslen".
   wp_apply (wp_sliding__memWrite with "[$Hsliding $Hpre]").
+  { iPureIntro.
+    rewrite /slidingM.memEnd /=. word. }
   iIntros "Hsliding".
   wp_apply (wp_sliding__clearMutable with "Hsliding"); iIntros "Hsliding".
   wp_apply (wp_sliding__end with "Hsliding"); iIntros "Hsliding".
