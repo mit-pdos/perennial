@@ -225,7 +225,36 @@ Lemma is_txn_mid σ (a b c : nat) pos :
   a ≤ b ≤ c ->
   is_txn σ.(log_state.txns) b pos.
 Proof.
-Admitted.
+  rewrite /is_txn /wal_wf; intros Hwf Ha Hc Hle.
+  destruct Hwf as [_ [Hwf _]].
+  destruct (decide (a < b)).
+  2: { assert (a = b) by lia; subst; eauto. }
+  destruct (decide (b < c)).
+  2: { assert (b = c) by lia; subst; eauto. }
+  assert (is_Some (σ.(log_state.txns) !! b)).
+  { eapply lookup_lt_is_Some_2. etransitivity.
+    2: {
+      eapply lookup_lt_is_Some_1.
+      eapply fmap_is_Some. eauto.
+    }
+    lia.
+  }
+
+  destruct H as [tb Hb'].
+  assert (fst <$> σ.(log_state.txns) !! b = Some (fst tb)) as Hb.
+  { rewrite Hb'. reflexivity. }
+
+  rewrite -list_lookup_fmap in Ha.
+  rewrite -list_lookup_fmap in Hb.
+  rewrite -list_lookup_fmap in Hc.
+  rewrite -list_lookup_fmap.
+
+  eapply Hwf in Ha as Hab'.
+  1: eapply Hab' in Hb as Hab. 2: lia.
+  eapply Hwf in Hb as Hbc'.
+  1: eapply Hbc' in Hc as Hbc. 2: lia.
+  rewrite Hb. f_equal. word.
+Qed.
 
 Lemma nextDiskEnd_nils γ σs (nextDiskEnd_txn_id nextDiskEnd_txn_id' : nat) m :
   wal_wf σs ->
