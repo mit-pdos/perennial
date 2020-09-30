@@ -1035,7 +1035,8 @@ Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) n :
     SliceAppend t s x @ stk; E
   {{{ s', RET slice_val s';
       is_slice_small (slice_take s' t n) t q vs1 ∗
-      is_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) }}}.
+      is_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) ∗
+      ⌜int.val (Slice.sz s') ≤ int.val (Slice.cap s')⌝}}}.
 Proof.
   iIntros (Hzero Hty Hn Hq Φ) "[Hprefix Hs] HΦ".
   wp_call.
@@ -1084,6 +1085,8 @@ Proof.
     iFrame.
     iSplitR.
     { rewrite H1 /=. done. }
+    iSplitL.
+    2: { iPureIntro. word. }
     iSplitR.
     { rewrite app_length H0 /=.
       iPureIntro.
@@ -1155,6 +1158,9 @@ Proof.
     iFrame "Hprefix".
     iSplitR.
     { iPureIntro. done. }
+
+    iSplitL.
+    2: { iPureIntro. word. }
 
     iSplitL "Hvs Hlast".
     { iSplitL.

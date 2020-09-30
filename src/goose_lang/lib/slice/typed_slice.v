@@ -194,6 +194,30 @@ Proof.
   rewrite /is_slice_small /list.untype list_fmap_insert. iFrame.
 Qed.
 
+Lemma wp_SliceAppend'' stk E s t `{!IntoValForType IntoVal0 t} vs1 vs2 (x: V) (q : Qp) n :
+  0 ≤ n ≤ int.val (Slice.sz s) ≤ int.val (Slice.cap s) ->
+  (Qcanon.Qclt q 1)%Qc ->
+  {{{ is_slice_small (slice_take s t n) t q vs1 ∗
+      is_slice (slice_skip s t n) t 1 vs2 }}}
+    SliceAppend t (slice_val s) (to_val x) @ stk; E
+  {{{ s', RET slice_val s';
+      is_slice_small (slice_take s' t n) t q vs1 ∗
+      is_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) ∗
+      ⌜int.val (Slice.sz s') ≤ int.val (Slice.cap s')⌝}}}.
+Proof.
+  iIntros (Hn Hq Φ) "[Hsm Hs] HΦ".
+  wp_apply (slice.wp_SliceAppend'' with "[$Hsm $Hs]").
+  { apply to_val_has_zero. }
+  { apply to_val_ty. }
+  { eassumption. }
+  { eassumption. }
+  iIntros (s') "[Hsm Hs]".
+  rewrite /list.untype.
+  change [to_val x] with (to_val <$> [x]).
+  rewrite -fmap_app.
+  iApply ("HΦ" with "[$Hsm $Hs]").
+Qed.
+
 Lemma wp_SliceAppend' stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
   {{{ is_slice s t 1 vs }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
