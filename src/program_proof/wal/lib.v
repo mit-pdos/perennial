@@ -294,6 +294,46 @@ Proof.
   simpl. auto.
 Qed.
 
+Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : nat) (q : Qp) :
+  0 ≤ n ≤ int.val (Slice.sz bk_s) ≤ int.val (Slice.cap bk_s) ->
+  (Qcanon.Qclt q 1)%Qc ->
+  {{{ updates_slice_frag (slice_take bk_s (struct.t Update.S) n) q (take n bs) ∗
+      updates_slice (slice_skip bk_s (struct.t Update.S) n) (drop n bs) ∗
+      is_block uv.2 1 b }}}
+    SliceAppend (struct.t Update.S) (slice_val bk_s) (update_val uv) @ stk; E
+  {{{ bk_s', RET slice_val bk_s';
+      updates_slice_frag (slice_take bk_s' (struct.t Update.S) n) q (take n (bs ++ [update.mk uv.1 b])) ∗
+      updates_slice (slice_skip bk_s' (struct.t Update.S) n) (drop n (bs ++ [update.mk uv.1 b])) ∗
+      ⌜int.val (Slice.sz bk_s') ≤ int.val (Slice.cap bk_s')⌝
+  }}}.
+Proof.
+  iIntros (Hn Hq Φ) "(Hfrag & Hupds & Hub) HΦ".
+  iDestruct (updates_slice_frag_len with "Hfrag") as %Hfraglen.
+  iDestruct (updates_slice_len with "Hupds") as %Hlen.
+  iDestruct "Hfrag" as (bks1) "[Hbks1 Hfrag]".
+  iDestruct "Hupds" as (bks2) "[Hbks2 Hupds]".
+  wp_apply (wp_SliceAppend'' with "[$Hbks1 $Hbks2]"); auto.
+  iIntros (s') "(Hbks1 & Hbks2 & %Hn')".
+  iApply "HΦ".
+  change ([update_val uv]) with (update_val <$> [uv]).
+  rewrite -fmap_app.
+  rewrite /updates_slice /updates_slice_frag.
+  iSplitL "Hbks1 Hfrag".
+  {
+    iExists (bks1).
+    iFrame "Hbks1".
+    rewrite take_app_le; first by iFrame.
+    revert Hfraglen.
+    rewrite /slice_take /= take_length. word. }
+  iSplitL; last by eauto.
+  iExists (bks2 ++ [uv]).
+  iFrame "Hbks2".
+  rewrite drop_app_le.
+  2: { revert Hfraglen. rewrite /slice_take /= take_length. word. }
+  iApply (big_sepL2_app with "Hupds").
+  simpl. auto.
+Qed.
+
 Theorem wp_forSlice_updates (I: u64 -> iProp Σ) stk E s q us (body: val) :
   (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t),
       {{{ I i ∗ ⌜(int.nat i < length us)%nat⌝ ∗
