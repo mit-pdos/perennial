@@ -1,5 +1,5 @@
 From RecordUpdate Require Import RecordSet.
-From Perennial.Helpers Require Import List.
+From Perennial.Helpers Require Import List Fractional.
 From Perennial.goose_lang Require Import proofmode array.
 From Perennial.goose_lang.lib Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Export slice.impl typed_mem.
@@ -1025,14 +1025,19 @@ Proof.
   auto.
 Qed.
 
-Lemma wp_SliceAppend' stk E s t vs x :
+Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) n :
   has_zero t ->
   val_ty x t ->
-  {{{ is_slice s t 1 vs }}}
+  0 ≤ n ≤ int.val (Slice.sz s) ≤ int.val (Slice.cap s) ->
+  (Qcanon.Qclt q 1)%Qc ->
+  {{{ is_slice_small (slice_take s t n) t q vs1 ∗
+      is_slice (slice_skip s t n) t 1 vs2 }}}
     SliceAppend t s x @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
+  {{{ s', RET slice_val s';
+      is_slice_small (slice_take s' t n) t q vs1 ∗
+      is_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) }}}.
 Proof.
-  iIntros (Hzero Hty Φ) "Hs HΦ".
+  iIntros (Hzero Hty Hn Hq Φ) "[Hprefix Hs] HΦ".
   wp_call.
   wp_apply wp_slice_len.
   wp_apply wp_Assume.
@@ -1045,35 +1050,55 @@ Proof.
   wp_lam; wp_pures.
   wp_apply wp_slice_len; wp_pures.
   iDestruct "Hs" as "((Hptr&%)&Hfree)".
+  iDestruct "Hprefix" as "(Hprefix&%)".
+  iDestruct (is_slice_cap_wf with "Hfree") as "%Hfreelen".
   iDestruct "Hfree" as (extra Hextralen) "Hfree".
   wp_if_destruct.
   - wp_call.
     rewrite word.unsigned_sub in Heqb.
-    rewrite -> wrap_small in Heqb by word.
-    iDestruct (array_split_1n with "Hfree") as (x0 extra') "(Hnew&Hfree&->)"; [ word | ].
+    unfold slice_skip, slice_take in *; simpl in *.
+    rewrite -> wrap_small in Heqb.
+    2: { word. }
+    iDestruct (array_split_1n with "Hfree") as (x0 extra') "(Hnew&Hfree&->)".
+    { revert Hextralen. word. }
     simpl in Hextralen.
     wp_call.
     wp_pures.
+    rewrite loc_add_assoc.
+    rewrite -Z.mul_add_distr_l.
+    replace (int.val n + int.val (word.sub (Slice.sz s) n))
+      with (int.val (Slice.sz s)) by word.
     wp_apply (wp_StoreAt with "Hnew"); [ auto | iIntros "Hnew" ].
     wp_pures.
     wp_call.
     rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice /=.
-    iDestruct (array_app _ _ _ vs [x] with "[$Hptr Hnew]") as "Hptr".
+    iDestruct (array_app _ _ _ vs2 [x] with "[$Hptr Hnew]") as "Hptr".
     { rewrite array_singleton.
+      rewrite H0.
+      rewrite loc_add_assoc.
+      rewrite -Z.mul_add_distr_l.
+      replace (int.val n + int.nat (word.sub (Slice.sz s) n))
+        with (int.val (Slice.sz s)) by word.
       iExactEq "Hnew"; f_equal.
-      f_equal.
-      f_equal.
-      word. }
+    }
     iFrame.
     iSplitR.
-    { rewrite app_length /=.
+    { rewrite H1 /=. done. }
+    iSplitR.
+    { rewrite app_length H0 /=.
       iPureIntro.
-      word. }
+      (* XXX why twice? *)
+      repeat word_cleanup.
+    }
     iExists extra'.
     simpl.
-    iSplitR; first by iPureIntro; word.
-    rewrite loc_add_assoc.
-    iExactEq "Hfree"; word_eq.
+    iSplitR.
+    { iPureIntro.
+      revert Hextralen. repeat word_cleanup.
+    }
+    rewrite ?loc_add_assoc.
+    iExactEq "Hfree". f_equal. f_equal.
+    repeat word_cleanup.
 
   - wp_apply wp_make_cap.
     iIntros (cap Hcapgt).
@@ -1090,12 +1115,30 @@ Proof.
     wp_pures.
     wp_call.
     wp_call.
+
+    iDestruct (as_fractional_weaken q with "Hptr") as "Hptr".
+    { eapply Qcanon.Qclt_le_weak. eauto. }
+
+    iDestruct (array_app with "[Hprefix Hptr]") as "Hptr".
+    { rewrite /slice_take /slice_skip /=.
+      iFrame "Hprefix".
+      rewrite H1 /=.
+      iExactEq "Hptr". f_equal. f_equal. f_equal. word.
+    }
+
     wp_apply (wp_MemCpy_rec with "[$Halloc_sz $Hptr]").
     { iPureIntro.
       rewrite replicate_length.
-      word. }
+      intuition try word.
+      rewrite app_length H0 H1.
+      rewrite /slice_take /slice_skip /=. word.
+    }
     iIntros "[Hvs Hsrc]".
-    rewrite firstn_all2; last lia.
+    rewrite firstn_all2.
+    2: {
+      rewrite app_length H0 H1.
+      rewrite /slice_take /slice_skip /=. word.
+    }
 
     wp_pures.
     wp_call.
@@ -1104,22 +1147,83 @@ Proof.
     wp_pures.
 
     rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice /is_slice_small /=.
+    rewrite array_app.
+    iDestruct "Hvs" as "[Hprefix Hvs]".
+    iDestruct (as_fractional_weaken q with "Hprefix") as "Hprefix".
+    { eapply Qcanon.Qclt_le_weak. eauto. }
+
+    iFrame "Hprefix".
+    iSplitR.
+    { iPureIntro. done. }
+
     iSplitL "Hvs Hlast".
-    + iSplitL.
+    { iSplitL.
       * rewrite array_app array_singleton.
+        replace (length vs1) with (int.nat n) by done.
+        replace (int.nat n : Z) with (int.val n) by word.
         iFrame.
+        rewrite loc_add_assoc.
         iExactEq "Hlast"; word_eq.
+        replace (int.val n) with (int.nat n : Z) by word.
+        replace (int.nat n) with (length vs1) by done.
+        rewrite H0 H1.
+        rewrite /slice_take /slice_skip /=. word.
       * iPureIntro.
         rewrite app_length /=.
-        word.
-    + iExists (replicate (int.nat cap - int.nat s.(Slice.sz) - 1) (zero_val t)).
-      iSplitR.
-      { rewrite replicate_length.
-        iPureIntro.
-        simpl.
-        word. }
+        rewrite H0 /slice_skip /=.
+        word_cleanup. word_cleanup.
+    }
+
+    iExists (replicate (int.nat cap - int.nat s.(Slice.sz) - 1) (zero_val t)).
+    iSplitR.
+    { rewrite replicate_length.
+      iPureIntro.
       simpl.
-      iExactEq "HnewFree"; word_eq.
+      word_cleanup. word_cleanup. }
+    simpl.
+    iExactEq "HnewFree".
+    rewrite loc_add_assoc.
+    word_eq.
+    replace (int.val n) with (int.nat n : Z) by word.
+    replace (int.nat n) with (length vs1) by done.
+    rewrite H1.
+    rewrite /slice_take /=.
+    word_cleanup. word_cleanup.
+    replace (ty_size t * n + ty_size t * (int.val (Slice.sz s) + 1 - n)) with (ty_size t * ( n + ( (int.val (Slice.sz s) + 1 - n) ) ) ) by lia.
+    word_eq.
+Qed.
+
+Lemma wp_SliceAppend' stk E s t vs x :
+   has_zero t ->
+   val_ty x t ->
+  {{{ is_slice s t 1 vs }}}
+     SliceAppend t s x @ stk; E
+  {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
+Proof.
+  iIntros (Hzero Hty Φ) "Hs HΦ".
+  iDestruct (is_slice_cap_wf with "[Hs]") as "%Hcap".
+  { rewrite /is_slice. iDestruct "Hs" as "[_ $]". }
+  wp_apply (wp_SliceAppend'' _ _ _ _ nil _ _ (1/2)%Qp 0 with "[Hs]"); try eassumption.
+  3: {
+    rewrite /slice_take /slice_skip.
+    replace (word.sub (Slice.sz s) 0) with (Slice.sz s) by word.
+    replace (word.sub (Slice.cap s) 0) with (Slice.cap s) by word.
+    iSplitR "Hs".
+    2: { iExactEq "Hs". f_equal. destruct s; simpl; f_equal. replace (ty_size t * int.val 0) with 0 by word.
+      rewrite loc_add_0. done. }
+    rewrite /is_slice_small /=.
+    rewrite array_nil. done.
+  }
+  { word. }
+  { eapply (Qextra.Qp_div_2_lt 1). }
+  iIntros (s') "[_ Hs]".
+  rewrite /slice_skip.
+  replace (word.sub (Slice.sz s') 0) with (Slice.sz s') by word.
+  replace (word.sub (Slice.cap s') 0) with (Slice.cap s') by word.
+  iApply "HΦ".
+  iExactEq "Hs". f_equal. destruct s'; simpl; f_equal.
+  replace (ty_size t * int.val 0) with 0 by word.
+  rewrite loc_add_0. done.
 Qed.
 
 Lemma wp_SliceAppend stk E s t vs x :
