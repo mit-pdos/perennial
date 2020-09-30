@@ -120,31 +120,6 @@ Lemma subslice_take_drop {A} (n k: nat) (l: list A) :
   take k (drop n l) = subslice n (n + k) l.
 Proof. rewrite /subslice firstn_skipn_comm //. Qed.
 
-Lemma apply_upds_lookup_Some (txns: list update.t) (d: disk) (a: u64) (i: nat) :
-  find_highest_index (update.addr <$> txns) a = Some i →
-  ∃ u, txns !! i = Some u ∧ a = u.(update.addr) ∧
-       apply_upds txns d !! (int.val a) = Some u.(update.b).
-Proof.
-Admitted.
-
-Lemma apply_upds_lookup_None (txns: list update.t) (d: disk) (a: u64) :
-  find_highest_index (update.addr <$> txns) a = None →
-  apply_upds txns d !! (int.val a) = d !! (int.val a).
-Proof.
-Admitted.
-
-Lemma apply_upds_lookup_overflow (txns: list update.t) (d: disk) z :
-  2^64 ≤ z →
-  apply_upds txns d !! z = d !! z.
-Proof.
-Admitted.
-
-Lemma apply_upds_eq_nil (txns1 txns2: list update.t) :
-  apply_upds txns1 ∅ = apply_upds txns2 ∅ →
-  (forall d, apply_upds txns1 d = apply_upds txns2 d).
-Proof.
-Admitted.
-
 Theorem subslice_split_r {A} n m m' (l: list A) :
   (n ≤ m ≤ m')%nat →
   (m ≤ length l)%nat →
