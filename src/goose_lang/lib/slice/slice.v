@@ -1025,10 +1025,10 @@ Proof.
   auto.
 Qed.
 
-Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) n :
+Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) (n : u64) :
   has_zero t ->
   val_ty x t ->
-  0 ≤ n ≤ int.val (Slice.sz s) ≤ int.val (Slice.cap s) ->
+  0 ≤ int.val n ≤ int.val (Slice.sz s) ≤ int.val (Slice.cap s) ->
   (Qcanon.Qclt q 1)%Qc ->
   {{{ is_slice_small (slice_take s t n) t q vs1 ∗
       is_slice (slice_skip s t n) t 1 vs2 }}}
@@ -1036,7 +1036,8 @@ Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) n :
   {{{ s', RET slice_val s';
       is_slice_small (slice_take s' t n) t q vs1 ∗
       is_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) ∗
-      ⌜int.val (Slice.sz s') ≤ int.val (Slice.cap s')⌝}}}.
+      ⌜int.val (Slice.sz s') ≤ int.val (Slice.cap s') ∧
+       int.val (Slice.sz s') = (int.val (Slice.sz s) + 1)%Z ⌝}}}.
 Proof.
   iIntros (Hzero Hty Hn Hq Φ) "[Hprefix Hs] HΦ".
   wp_call.
@@ -1195,7 +1196,8 @@ Proof.
     rewrite H1.
     rewrite /slice_take /=.
     word_cleanup. word_cleanup.
-    replace (ty_size t * n + ty_size t * (int.val (Slice.sz s) + 1 - n)) with (ty_size t * ( n + ( (int.val (Slice.sz s) + 1 - n) ) ) ) by lia.
+    replace (ty_size t * int.val n + ty_size t * (int.val (Slice.sz s) + 1 - int.val n))
+       with (ty_size t * ( int.val n + ( (int.val (Slice.sz s) + 1 - int.val n) ) ) ) by lia.
     word_eq.
 Qed.
 
@@ -1222,7 +1224,7 @@ Proof.
   }
   { word. }
   { eapply (Qextra.Qp_div_2_lt 1). }
-  iIntros (s') "[_ Hs]".
+  iIntros (s') "(_ & Hs & _)".
   rewrite /slice_skip.
   replace (word.sub (Slice.sz s') 0) with (Slice.sz s') by word.
   replace (word.sub (Slice.cap s') 0) with (Slice.cap s') by word.

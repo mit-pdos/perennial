@@ -17,6 +17,14 @@ Definition readonly_log logSlice σ : iProp Σ :=
                   (slice_take logSlice (struct.t Update.S) (slidingM.numMutable σ)) 1
                   (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
+Definition readonly_log_inner' logSlice σ (q : Qp) : iProp Σ :=
+               (updates_slice_frag
+                  (slice_take logSlice (struct.t Update.S) (slidingM.numMutable σ)) q
+                  (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
+
+Definition readonly_log_inner logSlice σ : iProp Σ :=
+   ∃ (q : Qp), ⌜Qcanon.Qclt q 1⌝ ∗ readonly_log_inner' logSlice σ q.
+
 Definition mutable_log logSlice σ : iProp Σ :=
   "%logSlice_wf" ∷ ⌜int.nat logSlice.(Slice.sz) = length σ.(slidingM.log) ∧ int.val logSlice.(Slice.sz) ≤ int.val logSlice.(Slice.cap)⌝ ∗
   "log_mutable" ∷ updates_slice
@@ -536,61 +544,44 @@ Proof.
 Qed.
 
 Lemma wp_SliceAppend_log s σ uv u :
-  {{{ readonly_log s σ ∗ mutable_log s σ ∗ is_update uv 1 u }}}
+  {{{ readonly_log s σ ∗ mutable_log s σ ∗ is_update uv 1 u ∗
+      ⌜slidingM.wf σ⌝ ∗
+      ⌜slidingM.memEnd σ + 1 < 2^64⌝ }}}
     SliceAppend (struct.t Update.S) (slice_val s) (update_val uv)
   {{{ s', RET slice_val s';
       let σ' := set slidingM.log (λ log, log ++ [u]) σ in
-      readonly_log s' σ' ∗ mutable_log s' σ' ∗
-      (* non-overflow comes from doing a slice append *)
+      readonly_log_inner s' σ' ∗ mutable_log s' σ' ∗
       ⌜slidingM.wf σ'⌝ }}}.
 Proof.
-  iIntros (Φ) "(#Hrolog & Hmutlog & Hupdate) HΦ".
-  iMod (readonly_load with "Hrolog") as (q) "Hrolog'".
+  iIntros (Φ) "(#Hrolog & Hmutlog & Hupdate & %Hwf & %Hoverflow) HΦ".
+  iMod (readonly_load_lt with "Hrolog") as (q) "[%Hq Hrolog']".
   iNamed "Hmutlog".
   iDestruct "Hupdate" as "[% Hupdate]".
-  wp_apply (wp_SliceAppend_updates with "[Hrolog' log_mutable $Hupdate]").
-  { rewrite /updates_slice /updates_slice_frag.
-    iDestruct "Hrolog'" as (bks0) "[Hrolog' Hbks0]".
-    iDestruct "log_mutable" as (bks1) "[Hmutable Hbks1]".
-    iExists (bks0 ++ bks1).
-    iSplitL "Hrolog' Hmutable".
-    { iDestruct "Hmutable" as "[Hmutable_sm Hcap]".
-      iDestruct (is_slice_combine with "Hrolog' [Hmutable_sm]") as "Hsm".
-      {
-        (* XXX need sliding.wf somewhere? *)
-        admit.
-      }
+  wp_apply (wp_SliceAppend_updates_frag with "[$Hrolog' $log_mutable $Hupdate]"); try eassumption.
+  { word. }
 
-      {
-        (* XXX need to reduce 1%Qp to q *)
-        admit.
-      }
-
-      iSplitR "Hcap".
-      {
-        (* XXX SliceAppend is too strong: it requires 1%Qp ownership of is_slice_small.. *)
-        admit.
-      }
-
-      (* XXX need the opposite of is_slice_cap_skip *)
-      admit.
-    }
-
-    iApply (big_sepL2_app with "[Hbks0] [Hbks1]").
-    { iApply (big_sepL2_mono with "Hbks0"). iIntros (k y1 y2 Hy1 Hy2).
-      iIntros "H". iDestruct "H" as "[% H]".
-      destruct y2; simpl in *.
-      (* XXX this wants 1%Qp ownership but we only have q *)
-      admit.
-    }
-
-    { iFrame. }
-  }
-
-  iIntros (s') "Hlog".
+  iIntros (s') "(Hfrag & Hs & %Hwf')".
   iApply "HΦ".
-  admit.
-Admitted.
+  iSplitL "Hfrag".
+  { rewrite /readonly_log_inner /readonly_log_inner' numMutable_set_log.
+    iExists q.
+    simpl slidingM.log.
+    destruct u. rewrite H /=. iFrame. done. }
+  iSplitL "Hs".
+  { iSplitR.
+    { iPureIntro. rewrite app_length /=. intuition word. }
+    rewrite numMutable_set_log.
+    simpl slidingM.log.
+    destruct u. rewrite H /=. iFrame.
+  }
+  iPureIntro.
+  revert Hwf.
+  rewrite /slidingM.wf /set app_length /=.
+  intuition try word.
+  revert Hoverflow.
+  rewrite /slidingM.memEnd.
+  word.
+Qed.
 
 Lemma addrPosMap_insert_fresh:
   ∀ σ (uv : u64 * Slice.t) (u : update.t) (logSlice : Slice.t),
@@ -611,11 +602,12 @@ Proof.
 Qed.
 
 Theorem wp_sliding_append l σ uv u :
-  {{{ is_sliding l σ ∗ is_update uv 1 u }}}
+  {{{ is_sliding l σ ∗ is_update uv 1 u ∗
+      ⌜slidingM.memEnd σ + 1 < 2^64⌝}}}
     sliding__append #l (update_val uv)
   {{{ RET #(); is_sliding l (set slidingM.log (λ log, log ++ [u]) σ) }}}.
 Proof.
-  iIntros (Φ) "[Hsliding Hu] HΦ".
+  iIntros (Φ) "(Hsliding & Hu & %Hoverflow) HΦ".
   iDestruct (is_update_addr with "Hu") as %Haddr.
   iNamed "Hsliding"; iNamed "Hinv".
   wp_call.
@@ -626,7 +618,10 @@ Proof.
   wp_loadField.
   iDestruct (memLog_sz with "log_mutable") as %Hlogsize.
   wp_apply (wp_SliceAppend_log with "[$log_readonly $log_mutable $Hu]").
-  iIntros (logSlice') "(#log_readonly'&log_mutable&%Hwf')".
+  { iPureIntro. intuition eauto. }
+  iIntros (logSlice') "(log_readonly_inner&log_mutable&%Hwf')".
+  iDestruct "log_readonly_inner" as (q) "[%Hq log_readonly_inner]".
+  iMod (readonly_alloc (readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) 1) (Φ := λ q, readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) q) with "log_readonly_inner") as "#log_readonly'"; first by eauto.
   wp_apply (wp_storeField with "log").
   { rewrite /field_ty //=.
     val_ty. }
@@ -668,11 +663,12 @@ Proof.
 Qed.
 
 Theorem wp_sliding__memWrite l memLog bufs upds :
-  {{{ is_sliding l memLog ∗ updates_slice_frag bufs 1 upds }}}
+  {{{ is_sliding l memLog ∗ updates_slice_frag bufs 1 upds ∗
+      ⌜slidingM.memEnd memLog + length upds < 2^64⌝}}}
     sliding__memWrite #l (slice_val bufs)
   {{{ RET #(); is_sliding l (memWrite memLog upds) }}}.
 Proof.
-  iIntros (Φ) "(Hs&Hupds) HΦ".
+  iIntros (Φ) "(Hs&Hupds&%Hoverflow) HΦ".
   wp_call.
   wp_apply (wp_sliding__end with "Hs"); iIntros "Hs".
   wp_apply wp_ref_to; [ val_ty | iIntros (pos_l) "pos" ].
@@ -735,7 +731,10 @@ Proof.
           iApply "Hwp"; auto.
       }
       iIntros "_"; wp_pures.
-      wp_apply (wp_sliding_append with "[$Hs $Hupd]"); iIntros "Hs".
+      wp_apply (wp_sliding_append with "[$Hs $Hupd]").
+      { iPureIntro.
+        pose proof (memWrite_end memLog done). word. }
+      iIntros "Hs".
       wp_pures.
       wp_load.
       wp_store.

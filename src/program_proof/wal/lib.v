@@ -294,17 +294,18 @@ Proof.
   simpl. auto.
 Qed.
 
-Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : nat) (q : Qp) :
-  0 ≤ n ≤ int.val (Slice.sz bk_s) ≤ int.val (Slice.cap bk_s) ->
+Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : u64) (q : Qp) :
+  0 ≤ int.val n ≤ int.val (Slice.sz bk_s) ≤ int.val (Slice.cap bk_s) ->
   (Qcanon.Qclt q 1)%Qc ->
-  {{{ updates_slice_frag (slice_take bk_s (struct.t Update.S) n) q (take n bs) ∗
-      updates_slice (slice_skip bk_s (struct.t Update.S) n) (drop n bs) ∗
+  {{{ updates_slice_frag (slice_take bk_s (struct.t Update.S) n) q (take (int.nat n) bs) ∗
+      updates_slice (slice_skip bk_s (struct.t Update.S) n) (drop (int.nat n) bs) ∗
       is_block uv.2 1 b }}}
     SliceAppend (struct.t Update.S) (slice_val bk_s) (update_val uv) @ stk; E
   {{{ bk_s', RET slice_val bk_s';
-      updates_slice_frag (slice_take bk_s' (struct.t Update.S) n) q (take n (bs ++ [update.mk uv.1 b])) ∗
-      updates_slice (slice_skip bk_s' (struct.t Update.S) n) (drop n (bs ++ [update.mk uv.1 b])) ∗
-      ⌜int.val (Slice.sz bk_s') ≤ int.val (Slice.cap bk_s')⌝
+      updates_slice_frag (slice_take bk_s' (struct.t Update.S) n) q (take (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
+      updates_slice (slice_skip bk_s' (struct.t Update.S) n) (drop (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
+      ⌜int.val (Slice.sz bk_s') ≤ int.val (Slice.cap bk_s') ∧
+       int.val (Slice.sz bk_s') = (int.val (Slice.sz bk_s) + 1)%Z⌝
   }}}.
 Proof.
   iIntros (Hn Hq Φ) "(Hfrag & Hupds & Hub) HΦ".

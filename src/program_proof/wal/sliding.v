@@ -99,6 +99,20 @@ Proof.
   apply memWrite_same_mutable_and_start.
 Qed.
 
+Lemma memWrite_end memLog upds :
+  slidingM.memEnd (memWrite memLog upds) ≤ slidingM.memEnd memLog + length upds.
+Proof.
+  revert memLog.
+  induction upds; simpl; auto; intros.
+  - lia.
+  - etransitivity; [ apply IHupds | ].
+    rewrite /memWrite_one.
+    destruct (find_highest_index (update.addr <$> memLog.(slidingM.log)) a.(update.addr)).
+    1: destruct (decide (int.val memLog.(slidingM.mutable) - int.val memLog.(slidingM.start) ≤ n)).
+    all: rewrite /slidingM.memEnd ?app_length ?insert_length /=.
+    all: try lia.
+Qed.
+
 Lemma memWrite_app1 memLog upds u :
   memWrite memLog (upds ++ [u]) = memWrite_one (memWrite memLog upds) u.
 Proof.
