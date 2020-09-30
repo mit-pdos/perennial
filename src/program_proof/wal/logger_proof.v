@@ -288,6 +288,69 @@ Proof.
   lia.
 Qed.
 
+Lemma disk_inv_advance_txn_id_nop γ σ cs txn_id txn_id' pos :
+  wal_wf σ ->
+  is_txn σ.(log_state.txns) txn_id pos ->
+  is_highest_txn σ.(log_state.txns) txn_id' pos ->
+  ( disk_inv γ σ cs ∗
+    txns_ctx γ σ.(log_state.txns) ∗
+    ghost_var γ.(diskEnd_txn_id_name) (1 / 4) txn_id ∗
+    ghost_var γ.(diskEnd_txn_id_name) (1 / 2) txn_id ∗
+    nextDiskEnd_inv γ σ.(log_state.txns) ∗
+    txn_id [[γ.(stable_txn_ids_name)]]↦ro () )
+  ==∗
+  ( disk_inv γ σ cs ∗
+    txns_ctx γ σ.(log_state.txns) ∗
+    ghost_var γ.(diskEnd_txn_id_name) (1 / 4) txn_id' ∗
+    ghost_var γ.(diskEnd_txn_id_name) (1 / 2) txn_id' ∗
+    nextDiskEnd_inv γ σ.(log_state.txns) ).
+Proof.
+  iIntros (Hwf Htxn Hhighest) "(Hdisk & Htxns_ctx & H0 & H1 & Hinv & #Hstable)".
+  iNamed "Hdisk".
+
+  iDestruct (ghost_var_agree with "γdiskEnd_txn_id2 H0") as %?; subst.
+  iCombine "γdiskEnd_txn_id2 H0" as "γdiskEnd_txn_id".
+  (* If we used "1/2/2" instead of "1/4" (and fixed some Perennial-induced typeclass oddities),
+     we could avoid this. *)
+  assert (1/4 + 1/4 = 1/2)%Qp as ->.
+  { apply (bool_decide_unpack _); by compute. }
+
+  iMod (ghost_var_update_halves txn_id' with "γdiskEnd_txn_id H1") as
+      "[γdiskEnd_txn_id H1]".
+  (* FIXME: due to Perennial removing some TC hints, this pattern cannot be inlined into the above. *)
+  iDestruct "γdiskEnd_txn_id" as "[γdiskEnd_txn_id out_txn_id]".
+  assert (1/2/2 = 1/4)%Qp as ->.
+  { apply (bool_decide_unpack _); by compute. }
+
+  apply is_highest_weaken in Hhighest as Htxn'.
+  apply is_txn_bound in Htxn' as Hbound'.
+
+  assert (txn_id ≤ txn_id').
+  { destruct Hhighest as [_ Hhighest].
+    apply Hhighest in Htxn. lia. }
+
+  iDestruct (nextDiskEnd_nils with "[$Hinv $Hstable]") as "%Hnils"; try eassumption.
+
+  iModIntro. iFrame.
+  iExists _, _. iFrame "γdiskEnd_txn_id".
+
+  iSplitL "Hinstalled".
+  { iNamed "Hinstalled". iExists _, _.
+    iFrame "Howninstalled Hdata". iPureIntro. lia. }
+
+  iSplitL "Hdurable".
+  { iDestruct "Hdurable" as "%Hdurable". iPureIntro.
+    unfold circ_matches_txns in *.
+    intuition try lia.
+    rewrite -> (subslice_split_r _ (S txn_id) _ σ.(log_state.txns)) by lia.
+    eapply has_updates_app_nils; eauto. }
+
+  iFrame "circ.start".
+  iNamed "circ.end".
+  (* XXX seems like if we log an empty transaction, we need to open up the
+    [is_durable_txn] for [circ.end] to update the txn_id!! *)
+Abort.
+
 Theorem wp_Walog__logAppend l circ_l γ σₛ :
   {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
@@ -354,7 +417,7 @@ Proof.
         "[HownLoggerPos_logger HownLoggerPos_linv]".
 
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
-  wp_apply (wp_loadField_ro with "HmemLock"); first by auto.
+  wp_apply (wp_loadField_ro with "HmemLock").
   iDestruct "Htxns_are" as "#Htxns_are".
   wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs Hown_diskEnd_txn_id γdiskEnd_txn_id1 $His_lock $Hlocked HownLoggerPos_logger]").
   { iExists _; iFrame "# ∗".
@@ -484,6 +547,51 @@ Proof.
   iNamed "HmemLog_linv".
   iDestruct (ghost_var_agree with "HownLoggerPos_logger HownLoggerPos_linv") as %Heqloggerpos; subst.
 
+  iMod (txn_pos_valid_locked with "[] HnextDiskEnd_txn_pos Howntxns") as "[%HnextDiskEnd_txn_id'_is_txn Howntxns]".
+  { iSplit; iFrame "#". }
+  iApply fupd_wp.
+  iInv "Hwal" as (σx) "[Hwalinner HwalP]" "Hclose".
+  iDestruct "Hwalinner" as "(>Hwalinner0 & Hwalinner1 & >Htxns_ctx & >Hwalinner3 & >Hwalinner4 & >Hwalinner5)".
+  iDestruct (ghost_var_agree with "Howntxns Hwalinner3") as %Heq; subst txns0.
+
+  edestruct (is_txn_round_up σx.(log_state.txns) nextDiskEnd_txn_id') as [diskEnd_txn_id' Hhighest']; first by eauto.
+  iDestruct (txns_ctx_txn_pos _ _ diskEnd_txn_id' with "Htxns_ctx") as "#HdiskEnd_txn_pos'".
+  { eapply is_highest_weaken; eauto. }
+
+  (*
+  iNamed "Hwalinner5". iNamed "Hdisk".
+  *)
+
+  (* XXX maybe try using disk_inv_advance_txn_id_nop here.
+    Except that there's bigger problems: circ.end must known highest txn id for diskEnd at all times!
+    This is the same problem that [disk_inv_append] talks about. *)
+
+  iAssert (
+    ∃ nextDiskEnd_txn_id'',
+      txns_ctx γ σx.(log_state.txns) ∗
+      txn_pos γ nextDiskEnd_txn_id'' σ0.(memLog).(slidingM.mutable) ∗
+      nextDiskEnd_txn_id'' [[γ.(stable_txn_ids_name)]]↦ro () ∗
+      ⌜nextDiskEnd_txn_id0 ≤ nextDiskEnd_txn_id''⌝
+    )%I
+    with "[Htxns_ctx]"
+    as (nextDiskEnd_txn_id'') "(Htxns_ctx & #HnextDiskEnd_txn_pos'' & #HnextDiskEnd_stable'' & %HnextDiskEnd''ge)".
+  {
+    destruct (decide (σ.(memLog).(slidingM.mutable) = σ0.(memLog).(slidingM.mutable))) as [Heqm | Heqm].
+    2: {
+      iExists nextDiskEnd_txn_id0.
+      iFrame. iFrame "HnextDiskEnd_txn HnextDiskEnd_stable". done.
+    }
+
+    rewrite -Heqm.
+    iExists diskEnd_txn_id'; iFrame.
+    iFrame "HdiskEnd_txn_pos'".
+    admit.
+  }
+
+  iMod ("Hclose" with "[Hwalinner0 Hwalinner1 Htxns_ctx Hwalinner3 Hwalinner4 Hwalinner5 HwalP]") as "_".
+  { iExists _. iFrame. }
+  iModIntro.
+
   iRename "HdiskEnd_at_least" into "HdiskEnd_at_least_old".
   iDestruct (diskEnd_is_to_at_least with "HdiskEnd_is") as "#HdiskEnd_at_least_new".
   iNamed "HdiskEnd_circ".
@@ -500,7 +608,7 @@ Proof.
   iFrame "His_locked".
   iSplitR "Hcirc_appender HnotLogging Hown_diskEnd_txn_id HownLoggerPos_logger".
   - iExists (set diskEnd (λ _, int.val σ.(diskEnd) + int.val s.(Slice.sz))
-            (set locked_diskEnd_txn_id (λ _, nextDiskEnd_txn_id') σ0)).
+            (set locked_diskEnd_txn_id (λ _, diskEnd_txn_id') σ0)).
     iDestruct (updates_slice_frag_len with "Hupds") as "%Hupds_len".
     rewrite subslice_length in Hupds_len; last by word.
     rewrite logIndex_diff in Hupds_len; last by word.
@@ -527,7 +635,8 @@ Proof.
           (int.val σ.(diskEnd) +
                            (int.nat σ.(memLog).(slidingM.mutable) -
                             int.nat σ.(diskEnd))%nat).
-        { iFrame. }
+        { iFrame.
+          (* should have been updated by something like disk_inv_advance_txn_id_nop *) admit. }
         word.
       }
       rewrite Hupds_len.
@@ -540,28 +649,22 @@ Proof.
       iFrame "HdiskEnd_at_least_new".
     }
 
-    iExists _, _, _, _, _.
+    iExists _, nextDiskEnd_txn_id'', _, _, _.
     iFrame.
     iFrame "HmemStart_txn HmemEnd_txn".
-    iFrame "HnextDiskEnd_txn HnextDiskEnd_stable".
+    iFrame "HnextDiskEnd_txn_pos'' HnextDiskEnd_stable''".
 
     iPureIntro.
     intuition idtac.
     all: try word.
     + admit.
     + admit.
-      (* We probably need to explicitly consider the case that our
-         nextDiskEnd_txn_id' is higher than nextDiskEnd_txn_id0.
-         In this case, while we are still in a WP proof, we should
-         allocate a stability fact for nextDiskEnd_txn_id' (and prove
-         a lemma that says higher txn IDs for the same pos as a stable
-         txn ID are also stable). *)
     + rewrite Hupds_len.
-      admit.
-      (* Even trickier: actually we should have done another round
-         of [is_txn_round_up] when we re-acquired the lock!  So, this
-         means we should get a nextDiskEnd_txn_id'' that is highest
-         as of the time we re-acquired the lock.. *)
+      replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
+        with (σ.(memLog).(slidingM.mutable)); eauto.
+      word.
+    + eapply HnextDiskEnd_max_stable0. lia.
+    + admit.
     + admit.
 
   - iFrame.
