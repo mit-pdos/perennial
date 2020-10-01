@@ -76,7 +76,7 @@ skip-qed:
 unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
-ci: skip-qed src/ShouldBuild.vo vok-checks
+ci: skip-qed src/ShouldBuild.vo
 	$(Q)if [ ${TIMED} = "true" ]; then \
 		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
 		fi
