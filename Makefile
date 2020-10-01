@@ -19,13 +19,17 @@ else
 COQC := coqc
 endif
 
-default: src/ShouldBuild.vo
+default: src/ShouldBuild.vo vok-checks
 
 all: $(VFILES:.v=.vo)
 vos: src/ShouldBuild.vos
 vok: $(QUICK_CHECK_FILES:.v=.vok)
 interpreter: src/goose_lang/interpreter/generated_test.vos
 check-assumptions: src/program_proof/examples/print_assumptions.vo
+
+# TODO: remove when wal builds
+# temporary extra checks that use the wal only via a vos build
+vok-checks: src/program_proof/buftxn/idealized_buftxn_spec.vok
 
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
@@ -72,7 +76,7 @@ skip-qed:
 unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
-ci: skip-qed src/ShouldBuild.vo
+ci: skip-qed src/ShouldBuild.vo vok-checks
 	$(Q)if [ ${TIMED} = "true" ]; then \
 		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
 		fi

@@ -13,25 +13,21 @@ From Perennial.program_proof Require
      append_log_proof
      (* append_log_refinement *)
      lockmap_proof
-     wal.proof
+     (* wal.proof
      wal.specs
      txn.txn_proof
      buftxn.buftxn_proof
      buftxn.idealized_buftxn_spec
-     simple.simple
+     simple.simple *)
      wp_to_wpc.
-(* new version for buftxn *)
-From Perennial.algebra Require Import liftable2.
+(* working parts of the wal proof *)
+From Perennial.program_proof.wal Require
+     abstraction
+     invariant
+     read_proof
+     logger_proof.
 From Perennial.program_proof.examples Require
-     dir_proof
-     single_inode_proof
-     async_inode_proof
-     single_async_inode_proof
-     alloc_crash_proof
-     indirect_inode_proof
-     indirect_inode_append_proof
-     replicated_block_proof
-     toy_proof.
+     all_examples.
 From Perennial.goose_lang Require
      ffi.append_log_ffi
      ffi.kvs_ffi.
@@ -52,17 +48,11 @@ From Perennial.goose_lang.examples Require
 
 (* goose-nfsd *)
 From Goose.github_com.mit_pdos Require
-     goose_nfsd.lockmap
-     goose_nfsd.buf
-     goose_nfsd.txn
-     goose_nfsd.alloc
-     goose_nfsd.buftxn
      goose_nfsd.kvs
      goose_nfsd.simple.
 
 (* examples goose output *)
 From Goose.github_com.mit_pdos Require
-     async_inode
      dynamic_dir.
 
 (* interpreter semantics tests *)
