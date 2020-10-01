@@ -27,6 +27,7 @@ Proof.
   auto.
 Qed.
 
+(* FIXME: Use min operation from std++ instead *)
 Definition Qcmin (q1 q2: Qc) : Qc.
   refine {| this := Qmin q1 q2; canon := _|}.
   abstract (rewrite /Qmin; destruct Qlt_le_dec; apply canon).

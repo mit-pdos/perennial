@@ -621,7 +621,7 @@ Proof.
   { iPureIntro. intuition eauto. }
   iIntros (logSlice') "(log_readonly_inner&log_mutable&%Hwf')".
   iDestruct "log_readonly_inner" as (q) "[%Hq log_readonly_inner]".
-  iMod (readonly_alloc (readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) 1) (Φ := λ q, readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) q) with "log_readonly_inner") as "#log_readonly'"; first by eauto.
+  iMod (readonly_alloc (readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) 1) (Φ := λ q, readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) q) with "log_readonly_inner") as "#log_readonly'".
   wp_apply (wp_storeField with "log").
   { rewrite /field_ty //=.
     val_ty. }
@@ -1218,11 +1218,10 @@ Proof.
   wp_storeField.
   iNamed "log_mutable".
   iDestruct (updates_slice_cap_acc with "log_mutable") as "[log_mutable log_mutable_cap]".
-  unshelve iMod (readonly_alloc_1 with "log_mutable") as "readonly_new";
-    (* XXX: why is this necessary to trigger typeclass resolution? *)
-    [ | apply _ | ].
+  (* XXX: _ needed to trigger TC search *)
+  iMod (readonly_alloc_1 _ _ with "log_mutable") as "readonly_new".
   rewrite /readonly_log.
-  iMod (readonly_extend with "log_readonly readonly_new") as "log_readonly'".
+  iDestruct (readonly_extend with "log_readonly readonly_new") as "log_readonly'".
   iClear "log_readonly".
   iModIntro.
   iApply "HΦ".
