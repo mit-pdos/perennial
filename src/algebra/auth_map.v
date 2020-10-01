@@ -376,11 +376,11 @@ Section auth_map.
     rewrite lookup_fmap.
     destruct mq.
     - iDestruct (own_valid_2 with "Hm Hk") as
-          %(_ & Hlookup%map_ptsto_included & _)%auth_both_frac_valid.
+          %(_ & Hlookup%map_ptsto_included & _)%auth_both_frac_valid_discrete.
       iPureIntro.
       rewrite Hlookup //.
     - iDestruct (own_valid_2 with "Hm Hk") as
-          %(_ & Hlookup%map_ptsto_ro_included & _)%auth_both_frac_valid.
+          %(_ & Hlookup%map_ptsto_ro_included & _)%auth_both_frac_valid_discrete.
       iPureIntro.
       rewrite Hlookup //.
   Qed.
@@ -396,7 +396,7 @@ Section auth_map.
     iDestruct 1 as (m_ro ->) "Hm".
     iIntros "Hk".
     iDestruct (own_valid_2 with "Hm Hk") as
-        %[Hlookup%map_ptsto_included _]%auth_both_valid.
+        %[Hlookup%map_ptsto_included _]%auth_both_valid_discrete.
     iMod (own_update_2 with "Hm Hk") as "[Hm $]".
     { eapply auth_update, singleton_local_update,
         (exclusive_local_update _ (Cinl (1%Qp, to_agree (v2: leibnizO V))))=> //.
@@ -416,7 +416,7 @@ Section auth_map.
     iDestruct 1 as (m_ro ->) "Hm".
     iIntros "Hk".
     iDestruct (own_valid_2 with "Hm Hk") as
-        %[Hlookup%map_ptsto_included _]%auth_both_valid.
+        %[Hlookup%map_ptsto_included _]%auth_both_valid_discrete.
     iMod (own_update_2 with "Hm Hk") as "[Hm $]".
     { eapply auth_update, singleton_local_update,
         (exclusive_local_update _ (Cinr (to_agree (v: leibnizO V))))=> //.

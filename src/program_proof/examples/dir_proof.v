@@ -66,7 +66,7 @@ Section goose.
   Proof.
     iIntros "Hblocks Hallblocks".
     iDestruct (own_valid_2 with "Hallblocks Hblocks") as
-        %[Hincl _]%auth_both_valid.
+        %[Hincl _]%auth_both_valid_discrete.
     iPureIntro.
     move: Hincl. rewrite singleton_included_l=> -[oblocks []].
     rewrite lookup_fmap fmap_Some_equiv=> -[blocks' [-> ->]].
@@ -92,7 +92,7 @@ Section goose.
   Proof.
     set allblocksR: gmapUR nat (exclR $ listLO Block) := Excl <$> allblocks.
     iMod (own_alloc (● allblocksR ⋅ ◯ allblocksR)) as (γ) "[Ha Hf]".
-    { rewrite auth_both_valid. split; first done.
+    { rewrite auth_both_valid_discrete. split; first done.
       intros i. rewrite /allblocksR lookup_fmap. by destruct (allblocks !! i). }
     iModIntro. iExists γ. iFrame "Ha".
     iInduction allblocks as [|i x m Hnew] "IH" using map_ind.
@@ -111,7 +111,7 @@ Section goose.
   Proof.
     iIntros "Hused Hallused".
     iDestruct (own_valid_2 with "Hallused Hused") as
-        %[Hincl _]%auth_both_valid.
+        %[Hincl _]%auth_both_valid_discrete.
     iPureIntro.
     move: Hincl. rewrite singleton_included_l=> -[oused []].
     rewrite lookup_fmap fmap_Some_equiv=> -[used' [-> ->]].
@@ -137,7 +137,7 @@ Section goose.
   Proof.
     set allusedR: gmapUR nat (exclR $ gset64O) := Excl <$> allused.
     iMod (own_alloc (● allusedR ⋅ ◯ allusedR)) as (γ) "[Ha Hf]".
-    { rewrite auth_both_valid. split; first done.
+    { rewrite auth_both_valid_discrete. split; first done.
       intros i. rewrite /allusedR lookup_fmap. by destruct (allused !! i). }
     iModIntro. iExists γ. iFrame "Ha".
     iInduction allused as [|i x m Hnew] "IH" using map_ind.

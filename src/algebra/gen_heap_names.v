@@ -77,7 +77,7 @@ Section gen_heap_defs.
            [∗ map] i↦v ∈ σ, i ↦ v .
   Proof.
     iMod (own_alloc (● to_gen_heap σ ⋅ ◯ to_gen_heap σ)) as (γh) "(?&Hfrag)".
-    { apply auth_both_valid; split; auto. exact: to_gen_heap_valid. }
+    { apply auth_both_valid_discrete; split; auto. exact: to_gen_heap_valid. }
     iMod (own_alloc (● to_gen_meta ∅)) as (γm) "Hm".
     { rewrite auth_auth_valid. exact: to_gen_meta_valid. }
     iModIntro. iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.

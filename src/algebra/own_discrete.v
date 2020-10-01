@@ -80,10 +80,11 @@ Proof.
         rewrite -Heqa.
         apply cmra_includedN_r.
       }
-      eapply (uPred_mono _ _ n'' _); try eassumption.
-      { eapply uPred_mono; try eassumption. }
-      etransitivity; last eapply cmra_includedN_r; eauto.
-      reflexivity.
+      eapply (uPred_mono _ _ n' _); try eassumption.
+      trans (a ⋅ a0).
+      { eapply cmra_includedN_le; eauto. }
+      trans w; [eauto|].
+      eapply cmra_includedN_r; eauto.
     }
   }
   rewrite Heqz.

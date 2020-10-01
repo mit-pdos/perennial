@@ -102,7 +102,7 @@ Lemma gen_heap_strong_init `{Countable L, !gen_heapPreG L V Σ} σ :
     gen_heap_ctx σ ∗ [∗ map] i↦v ∈ σ, i ↦ v).
 Proof.
   iMod (own_alloc (● gen_heap.to_gen_heap σ ⋅ ◯ gen_heap.to_gen_heap σ)) as (γ) "(?&H)".
-  { apply auth_both_valid; split; auto. exact: gen_heap.to_gen_heap_valid. }
+  { apply auth_both_valid_discrete; split; auto. exact: gen_heap.to_gen_heap_valid. }
   iModIntro. iExists (GenHeapG L V Σ _ _ _ γ), eq_refl.
   iFrame. by iApply (heap_init_to_bigOp (hG := GenHeapG L V Σ _ _ _ γ) γ with "[$]").
 Qed.
@@ -210,7 +210,7 @@ Section gen_heap.
     iIntros "Hσ Hl".
     rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_heap.gen_heap_singleton_included _]%auth_both_valid; auto.
+      as %[Hl%gen_heap.gen_heap_singleton_included _]%auth_both_valid_discrete; auto.
   Qed.
 
   Lemma gen_heap_valid_gen σ m : gen_heap_ctx σ -∗ ([∗ map] l ↦ v ∈ m, ∃ q, mapsto (hG:=gen_heapG0) l q v) -∗
@@ -227,7 +227,7 @@ Section gen_heap.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_heap_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_heap.gen_heap_singleton_included _]%auth_both_valid.
+      as %[Hl%gen_heap.gen_heap_singleton_included _]%auth_both_valid_discrete.
     iMod (own_update_2 with "Hσ Hl") as "[Hσ Hl]".
     { eapply auth_update, singleton_local_update,
         (exclusive_local_update _ (1%Qp, to_agree (v2:leibnizO _)))=> //.

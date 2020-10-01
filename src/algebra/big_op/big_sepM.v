@@ -589,7 +589,7 @@ Section map2.
     ⊢
     ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) ∗-∗
     ( ( [∗ map] k↦y1;y2 ∈ filter (λ x, P x.1) m1;filter (λ x, P x.1) m2, Φ k y1 y2 ) ∗
-      ( [∗ map] k↦y1;y2 ∈ filter (λ x, ¬P x.1) m1;filter (λ x, ¬P x.1) m2, Φ k y1 y2 ) ).
+      ( [∗ map] k↦y1;y2 ∈ filter (λ x, ~P x.1) m1;filter (λ x, ~P x.1) m2, Φ k y1 y2 ) ).
   Proof.
     rewrite big_sepM2_eq /big_sepM2_def.
     iSplit.

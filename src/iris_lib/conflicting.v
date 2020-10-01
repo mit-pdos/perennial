@@ -3,7 +3,7 @@ From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".
 
 Section bi.
-Context {PROP:bi}.
+Context {PROP:bi} `{!BiPureForall PROP}.
 
 (* TODO: logically equivalent to say P0 a v0 -∗ P1 a v1 -∗ False (with decidable
 equality on A) *)
@@ -18,7 +18,7 @@ Lemma big_sepM_disjoint_pred {L V} {P0 P1 : L -> V -> PROP} `{!EqDecision L} `{!
   ( ( [∗ map] a↦v ∈ m0, P0 a v ) -∗
     ( [∗ map] a↦v ∈ m1, P1 a v ) -∗
     ⌜ m0 ##ₘ m1 ⌝ ).
-Proof.
+Proof using BiPureForall0.
   iIntros "H0 H1".
   iIntros (i).
   unfold option_relation.

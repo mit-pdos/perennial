@@ -68,7 +68,7 @@ Section frac_count.
     ⌜ q = q' ⌝.
   Proof.
     iIntros "H● H◯".
-    iDestruct (own_valid_2 with "H● H◯") as %[Hincl ?]%auth_both_valid.
+    iDestruct (own_valid_2 with "H● H◯") as %[Hincl ?]%auth_both_valid_discrete.
     iPureIntro. apply option_included in Hincl as [|(q1&q2&Heq1&Heq2&Hcase)]; first by congruence.
     apply (inj Some) in Heq1. apply (inj Some) in Heq2. subst.
     destruct Hcase as [Hcase1|Hcase2].
@@ -81,7 +81,7 @@ Section frac_count.
     ⌜ ∃ q0, q = (q0 + q')%Qp ⌝.
   Proof.
     iIntros "H● H◯".
-    iDestruct (own_valid_2 with "H● H◯") as %[Hincl ?]%auth_both_valid.
+    iDestruct (own_valid_2 with "H● H◯") as %[Hincl ?]%auth_both_valid_discrete.
     iPureIntro. apply option_included in Hincl as [|(q1&q2&Heq1&Heq2&Hcase)]; first by congruence.
     apply (inj Some) in Heq1. apply (inj Some) in Heq2. subst.
     destruct Hcase as [Hcase1|Hcase2].

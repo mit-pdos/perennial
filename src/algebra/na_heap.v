@@ -641,7 +641,7 @@ Section na_heap.
                           end⌝.
   Proof.
     iIntros "H● H◯".
-    iDestruct (own_valid_2 with "H● H◯") as %[Hl?]%auth_both_valid.
+    iDestruct (own_valid_2 with "H● H◯") as %[Hl?]%auth_both_valid_discrete.
     iPureIntro. move: Hl=> /singleton_included_l [[[q' ls'] dv]].
     rewrite /to_na_heap lookup_fmap fmap_Some_equiv.
     move=> [[[ls'' v'] [?[[/=??]->]]]]; simplify_eq.
@@ -661,7 +661,7 @@ Section na_heap.
     ⌜∃ ls', σ !! l = Some (ls', v) ∧ tls ls' = lk⌝.
   Proof.
     iIntros "H● H◯".
-    iDestruct (own_valid_2 with "H● H◯") as %[Hl?]%auth_both_valid.
+    iDestruct (own_valid_2 with "H● H◯") as %[Hl?]%auth_both_valid_discrete.
     iPureIntro. move: Hl=> /singleton_included_l [[[q' ls'] dv]].
     rewrite /to_na_heap lookup_fmap fmap_Some_equiv.
     move=> [[[ls'' v'] [?[[/=??]->]]] Hincl]; simplify_eq.
@@ -694,7 +694,7 @@ Section na_heap.
     iIntros "Hσ". iIntros "Hmt".
     iDestruct "Hσ" as (m sz Hσm) "[Hσ [? [Hsize Hwf]]]".
     rewrite na_block_size_eq /na_block_size_def.
-    iDestruct (own_valid_2 with "Hsize Hmt") as %[Hl?]%auth_both_valid.
+    iDestruct (own_valid_2 with "Hsize Hmt") as %[Hl?]%auth_both_valid_discrete.
     iDestruct "Hwf" as %Hwf.
     iPureIntro. move: Hl=> /singleton_included_l [H' [Hlook Hincl]].
     move: Hlook. rewrite /to_na_heap lookup_fmap fmap_Some_equiv.

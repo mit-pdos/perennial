@@ -239,7 +239,7 @@ Section ghost_step.
     intros Herased Hno_err.
     iMod (own_alloc (● (tpool_to_res tp, Some (Excl σ))
                        ⋅ ◯ (tpool_to_res tp, Some (Excl σ)))) as (γ) "(Hauth&Hfrag)".
-    { apply @auth_both_valid; first by apply _. split; [| split].
+    { apply @auth_both_valid_discrete; first by apply _. split; [| split].
       { reflexivity. }
       - rewrite //=. intros i.
         destruct (tpool_to_res_lookup_case tp i) as [Heq_none|(e&Heq_some)].
@@ -283,7 +283,7 @@ Section ghost_step.
   Proof.
     iIntros "Hj Hauth".
     iDestruct (own_valid_2 with "Hauth Hj") as %Hval_pool.
-    apply auth_both_valid in Hval_pool as ((Hpool&_)%prod_included&Hval').
+    apply auth_both_valid_discrete in Hval_pool as ((Hpool&_)%prod_included&Hval').
     apply tpool_singleton_included1 in Hpool.
     iMod (own_update_2 with "Hauth Hj") as "[Hauth Hj]".
     {
@@ -325,7 +325,7 @@ Section ghost_step.
   Proof.
     iIntros "Hstate Hauth".
     iDestruct (own_valid_2 with "Hauth Hstate") as %Hval_state.
-    apply auth_both_valid in Hval_state as ((_&Hstate)%prod_included&Hval').
+    apply auth_both_valid_discrete in Hval_state as ((_&Hstate)%prod_included&Hval').
     apply Excl_included in Hstate; setoid_subst.
     iMod (own_update_2 with "Hauth Hstate") as "[Hauth Hstate]".
     {
@@ -340,7 +340,7 @@ Section ghost_step.
   Proof.
     iIntros "Hj Hauth".
     iDestruct (own_valid_2 with "Hauth Hj") as %Hval_pool.
-    apply auth_both_valid in Hval_pool as ((Hpool&_)%prod_included&Hval').
+    apply auth_both_valid_discrete in Hval_pool as ((Hpool&_)%prod_included&Hval').
     apply tpool_singleton_included1, tpool_to_res_lookup in Hpool; eauto.
   Qed.
 
@@ -350,7 +350,7 @@ Section ghost_step.
   Proof.
     iIntros "Hj Hauth".
     iDestruct (own_valid_2 with "Hauth Hj") as %Hval_pool.
-    apply auth_both_valid in Hval_pool as ((Hpool&_)%prod_included&Hval').
+    apply auth_both_valid_discrete in Hval_pool as ((Hpool&_)%prod_included&Hval').
     iPureIntro. eapply tpool_map_included1; eauto.
   Qed.
 
@@ -359,7 +359,7 @@ Section ghost_step.
   Proof.
     iIntros "Hstate Hauth".
     iDestruct (own_valid_2 with "Hauth Hstate") as %Hval_state.
-    apply auth_both_valid in Hval_state as ((_&Hstate)%prod_included&_).
+    apply auth_both_valid_discrete in Hval_state as ((_&Hstate)%prod_included&_).
     apply Excl_included in Hstate; setoid_subst; auto.
   Qed.
 

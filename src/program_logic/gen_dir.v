@@ -117,7 +117,7 @@ Lemma gen_dir_strong_init `{gen_dirPreG L1 L2 V Σ} σ :
     own (gen_dir_name H0) (◯ (to_gen_dir σ)).
 Proof.
   iMod (own_alloc (● to_gen_dir σ ⋅ ◯ to_gen_dir σ)) as (γ) "(?&?)".
-  { apply auth_both_valid; split; auto. exact: to_gen_dir_valid. }
+  { apply auth_both_valid_discrete; split; auto. exact: to_gen_dir_valid. }
   iModIntro. unshelve (iExists (GenDirG L1 L2 V Σ _ _ _ _ _ γ), _); auto. iFrame.
 Qed.
 
@@ -223,7 +223,7 @@ Section gen_dir.
   Proof.
     iIntros "Hσ Hl". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_dir_singleton_included _]%auth_both_valid; auto.
+      as %[Hl%gen_dir_singleton_included _]%auth_both_valid_discrete; auto.
   Qed.
 
   Lemma gen_dir_update σ σd d f v1 v2 :
@@ -232,7 +232,7 @@ Section gen_dir.
   Proof.
     iIntros (?) "Hσ Hl". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
-      as %[Hl%gen_dir_singleton_included _]%auth_both_valid.
+      as %[Hl%gen_dir_singleton_included _]%auth_both_valid_discrete.
     destruct Hl as (σd'&Hlookup&Hdf). assert (σd = σd') as <- by congruence.
     iMod (own_update_2 with "Hσ Hl") as "[Hσ Hl]".
     { eapply auth_update, singleton_local_update.

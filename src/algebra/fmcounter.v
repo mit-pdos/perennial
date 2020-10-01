@@ -38,7 +38,7 @@ Lemma fmcounter_agree_2 γ q1 (n1 n2: nat) :
   fmcounter γ q1 n1 -∗ fmcounter_lb γ n2 -∗ ⌜ n2 ≤ n1 ⌝.
 Proof.
   iIntros "Hγ1 Hγ2". iDestruct (own_valid_2 with "Hγ1 Hγ2") as %Hval.
-  by apply auth_both_frac_valid in Hval as (?&Hle%max_nat_included&?).
+  by apply auth_both_frac_valid_discrete in Hval as (?&Hle%max_nat_included&?).
 Qed.
 
 Lemma fmcounter_lb_mono γ n1 n2:

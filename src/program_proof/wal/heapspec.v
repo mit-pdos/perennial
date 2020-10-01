@@ -1648,7 +1648,7 @@ Proof using walheapG0.
       rewrite <- H6 in Hb.
 
       iDestruct (own_valid_2 with "Hinstalled Hinstalledfrag")
-        as %[?%max_nat_included _]%auth_both_valid.
+        as %[?%max_nat_included _]%auth_both_valid_discrete.
 
       rewrite no_updates_since_last_disk in Heqo; eauto.
       2: {

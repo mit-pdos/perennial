@@ -173,9 +173,9 @@ Lemma trace_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
   ⊢ |==> ∃ H : traceG Σ, trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o .
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
-  { apply auth_both_valid; split; eauto. econstructor. }
+  { apply auth_both_valid_discrete; split; eauto. econstructor. }
   iMod (own_alloc (● (Excl' (o: OracleO)) ⋅ ◯ (Excl' (o: OracleO)))) as (γ') "[H1' H2']".
-  { apply auth_both_valid; split; eauto. econstructor. }
+  { apply auth_both_valid_discrete; split; eauto. econstructor. }
   iModIntro. iExists {| trace_tr_names := {| trace_name := γ; oracle_name := γ' |} |}. iFrame.
 Qed.
 
@@ -184,9 +184,9 @@ Lemma trace_name_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
                            trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o.
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
-  { apply auth_both_valid; split; eauto. econstructor. }
+  { apply auth_both_valid_discrete; split; eauto. econstructor. }
   iMod (own_alloc (● (Excl' (o: OracleO)) ⋅ ◯ (Excl' (o: OracleO)))) as (γ') "[H1' H2']".
-  { apply auth_both_valid; split; eauto. econstructor. }
+  { apply auth_both_valid_discrete; split; eauto. econstructor. }
   iModIntro. iExists {| trace_name := γ; oracle_name := γ' |}. iFrame.
 Qed.
 
@@ -195,9 +195,9 @@ Lemma trace_reinit `(hT: traceG Σ) (l: list event) (o: Oracle):
      trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o.
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
-  { apply auth_both_valid; split; eauto. econstructor. }
+  { apply auth_both_valid_discrete; split; eauto. econstructor. }
   iMod (own_alloc (● (Excl' (o: OracleO)) ⋅ ◯ (Excl' (o: OracleO)))) as (γ') "[H1' H2']".
-  { apply auth_both_valid; split; eauto. econstructor. }
+  { apply auth_both_valid_discrete; split; eauto. econstructor. }
   iModIntro. iExists {| trace_name := γ; oracle_name := γ' |}. iFrame.
 Qed.
 
@@ -215,7 +215,7 @@ Lemma trace_agree `{hT: traceG Σ} (l l': list event):
 Proof.
   iIntros "Hγ1 Hγ2".
   iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
-  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid.
+  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid_discrete.
   done.
 Qed.
 
@@ -224,7 +224,7 @@ Lemma oracle_agree `{hT: traceG Σ} (o o': Oracle):
 Proof.
   iIntros "Hγ1 Hγ2".
   iDestruct (own_valid_2 with "Hγ1 Hγ2") as "H".
-  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid.
+  iDestruct "H" as %[<-%Excl_included%leibniz_equiv _]%auth_both_valid_discrete.
   done.
 Qed.
 
