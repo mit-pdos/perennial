@@ -19,7 +19,7 @@ else
 COQC := coqc
 endif
 
-default: src/ShouldBuild.vo vok-checks
+default: src/ShouldBuild.vo
 
 all: $(VFILES:.v=.vo)
 vos: src/ShouldBuild.vos
