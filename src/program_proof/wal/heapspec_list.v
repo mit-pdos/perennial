@@ -51,6 +51,7 @@ Record wh_durable_gnames := {
 }.
 
 Record wh_ephem_gnames := {
+  wal_heap_walnames : wal_names;
   wal_heap_all_list : gname;
   wal_heap_durable_lb : gname;
   wal_heap_installed : gname;
@@ -1063,21 +1064,28 @@ Proof.
       apply _.
 Qed.
 
+Definition is_walheap γd γe l :=
+  is_wal (wal_heap_inv γd γe) l (wal_heap_walnames γe).
+
+Definition txn_pos γe x p := txn_pos (wal_heap_walnames γe) x p.
+
+Definition in_bounds γd γe blkno := in_bounds (wal_heap_inv γd γe) (wal_heap_walnames γe) blkno.
+
 (* This is done except we need some assumptions about addr_wf for bs *)
-Theorem wp_Walog__Append PreQ Q l bufs bs γd γe wn:
-  {{{ "#Hwal" ∷ is_wal (wal_heap_inv γd γe) l wn ∗
+Theorem wp_Walog__Append PreQ Q l bufs bs γd γe:
+  {{{ "#Hwal" ∷ is_walheap γd γe l ∗
       "Hupds" ∷ updates_slice bufs bs ∗
       "Hfupd" ∷ (PreQ ∧ (∀ disks1 curr pos,
                            heap_all γe (disks1 ++ [curr]) ={⊤ ∖ ↑walN}=∗
                            heap_all γe ((disks1 ++ [curr]) ++ [(apply_upds_u64 bs curr)]) ∗
-                                       (txn_pos wn (length (disks1 ++ [curr])) pos -∗ Q pos)))
+                                       (txn_pos γe (length (disks1 ++ [curr])) pos -∗ Q pos)))
   }}}
     wal.Walog__MemAppend #l (slice_val bufs)
   {{{ pos (ok: bool), RET (#pos, #ok);
-      if ok then Q pos ∗ ∃ txn_id, txn_pos wn txn_id pos else PreQ }}}.
+      if ok then Q pos ∗ ∃ txn_id, txn_pos γe txn_id pos else PreQ }}}.
 Proof using walheapG0.
   iIntros (Φ) "H HΦ". iNamed "H".
-  wp_apply (wp_Walog__MemAppend _ PreQ Q l wn bufs bs with "[$Hwal $Hupds Hfupd] HΦ").
+  wp_apply (wp_Walog__MemAppend _ PreQ Q l (wal_heap_walnames γe) bufs bs with "[$Hwal $Hupds Hfupd] HΦ").
   iSplit; last by (iLeft in "Hfupd").
   iIntros (σ σ' pos) "%Hwal_wf %Hrelation Hwalinv".
   iRight in "Hfupd".
@@ -1148,9 +1156,9 @@ Admitted.
    we can get a fresh LB on the list of disks. *)
 
 (* XXX: it's not clear how to get an in_bounds yet I guess *)
-Theorem wp_Walog__Read l (blkno : u64) γd γe wn Q :
-  {{{ "#Hwal" ∷ is_wal (wal_heap_inv γd γe) l wn ∗
-      "Hin_bounds" ∷ in_bounds (wal_heap_inv γd γe) wn blkno ∗
+Theorem wp_Walog__Read l (blkno : u64) γd γe Q :
+  {{{ "#Hwal" ∷ is_walheap γd γe l ∗
+      "Hin_bounds" ∷ in_bounds γd γe blkno ∗
       "Hfupd" ∷ (∀ disks1 curr, heap_all γe (disks1 ++ [curr]) ={⊤ ∖ ↑walN}=∗ heap_all γe (disks1 ++ [curr]) ∗
                  (∀ disks2 i (σ: gmap u64 Block), ⌜ (curr :: disks2) !! i = Some σ ⌝  ∗
                                 heap_all γe ((disks1 ++ [curr]) ++ disks2) ={⊤ ∖ ↑walN}=∗
@@ -1317,9 +1325,9 @@ Proof using walheapG0.
 Qed.
 
 
-Theorem wp_Walog__Flush_heap l γd γe wn (txn_id : nat) (pos : u64) Q :
-  {{{ is_wal (wal_heap_inv γd γe) l wn ∗
-      txn_pos wn txn_id pos ∗
+Theorem wp_Walog__Flush_heap l γd γe (txn_id : nat) (pos : u64) Q :
+  {{{ is_walheap γd γe l ∗
+      txn_pos γe txn_id pos ∗
       (∀ disks_all disks_durable,
           ⌜ txn_id ≤ length disks_durable ⌝ ∗
             heap_all γe disks_all ∗ heap_durable γd disks_durable ={⊤ ∖ ↑walN}=∗
@@ -1356,5 +1364,39 @@ Proof using walheapG0.
   - eapply wal_wf_advance_durable_lb; eauto. lia.
   - eauto.
 Qed.
+
+Definition walheap_cinv γd γe σ : iProp Σ :=
+  is_wal_inner_durable (wal_heap_walnames γe) σ ∗ wal_heap_inv γd γe σ.
+
+Definition is_walheap_pre γd γe l σ : iProp Σ :=
+  is_wal_inv_pre l (wal_heap_walnames γe) σ ∗ wal_heap_inv γd γe σ.
+
+Global Instance wal_heap_inv_discrete γd γe σ :
+  Discretizable (wal_heap_inv γd γe σ).
+Proof. apply _. Qed.
+
+Context `{!crashG Σ}.
+Theorem wpc_MkLog_recover stk k E1 E2 d γd γe σ :
+  {{{ walheap_cinv γd γe σ }}}
+    MkLog #d @ stk; k; E1; E2
+  {{{ σ' γe' l, RET #l;
+      ⌜relation.denote (log_crash) σ σ' tt⌝ ∗
+       ∃ ld,
+       is_walheap_pre γd γe' l σ' ∗
+       heap_all γe' ld ∗
+       heap_durable_lb γd ld ∗
+       heap_all γe ld
+  }}}
+  {{{ walheap_cinv γd γe σ }}}.
+Proof.
+  iIntros (Φ Φc) "(Hdur&Hinv) HΦ".
+  wpc_apply (wpc_MkLog_recover with "[$]").
+  iSplit.
+  - iLeft in "HΦ". iModIntro. iNext. iIntros.
+    iApply "HΦ". iFrame.
+  - iRight in "HΦ". iNext. iIntros (σ' γ' l) "H".
+    iDestruct "H" as "(Hpure&H)". iApply "HΦ". iFrame "Hpure".
+    rewrite /is_walheap_pre.
+Abort.
 
 End heap.

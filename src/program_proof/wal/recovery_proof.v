@@ -262,7 +262,7 @@ Proof. rewrite /txns_ctx/gen_heap_ctx/txn_val => -> //=. Qed.
 Ltac show_crash1 := crash_case; eauto.
 
 Ltac show_crash2 :=
-  try (crash_case); iExists _;
+  try (crash_case);
   iSplitL ""; first auto;
   iSplitL ""; first auto;
   iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
@@ -282,7 +282,7 @@ Theorem wpc_mkLog_recover k E2 d γ σ :
        is_wal_inv_pre l γ' σ ∗
        (* XXX whatever it is that background threads needs *)
        True}}}
-  {{{ ∃ γ', is_wal_inner_durable γ' σ }}}.
+  {{{ is_wal_inner_durable γ σ }}}.
 Proof.
   clear P.
   iIntros (Φ Φc) "Hcs HΦ".
@@ -425,7 +425,7 @@ Theorem wpc_MkLog_recover stk k E1 E2 d γ σ :
   {{{ σ' γ' l, RET #l;
       ⌜relation.denote (log_crash) σ σ' tt⌝ ∗
        is_wal_inv_pre l γ' σ' }}}
-  {{{ ∃ γ', is_wal_inner_durable γ' σ }}}.
+  {{{ is_wal_inner_durable γ σ }}}.
 Proof.
 Admitted.
 
