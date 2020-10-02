@@ -375,7 +375,7 @@ Proof.
   }
 
   wpc_frame_compl "Htxns_ctx Howntxns Htxns γtxns Hupd_slice HdiskEnd_exactly Hstart_exactly".
-  { crash_case. iExists γ0.
+  { crash_case.
     rewrite /is_wal_inner_durable. simpl. rewrite /is_durable_txn/is_installed_txn/is_durable//=.
     simpl.
     iSplitL ""; first auto. rewrite /txns_ctx.
