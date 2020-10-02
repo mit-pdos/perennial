@@ -205,7 +205,6 @@ Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
 Proof.
   iNamed 1.
   iPureIntro.
-  apply is_highest_weaken in Hend_txn.
   apply is_txn_bound in Hend_txn; lia.
 Qed.
 
@@ -308,6 +307,7 @@ Proof.
   iNamed "H".
   iDestruct "H" as "[Hpure H]"; iNamed "Hpure". (* iNamedRestorable doesn't do
   this (due to something unexpected in iNamed) *)
+  iNamed "HnextDiskEnd".
   iDestruct (restore_elim with "H") as "#HmemLog"; iClear "H".
   destruct His_memLog.
   iMod (txn_pos_valid_locked with "[$] HnextDiskEnd_txn Howntxns") as (HnextDiskEnd_txn%is_txn_bound) "Howntxns".
@@ -325,6 +325,7 @@ Proof.
     range in the invariant... *)
   }
   iApply "HmemLog"; iFrame.
+  iExists _. iFrame. iFrame "#". iFrame "%".
 Admitted.
 
 Theorem wp_Walog__logInstall γ l σₛ :
