@@ -43,7 +43,7 @@ Proof. rewrite /Qcanon.Qcle //= ?Qreduction.Qred_correct. Qed.
 
 Lemma Qp_plus_1_nle_1 (q: Qp): (1%Qp + q <= 1%Qp)%Qc -> False.
 Proof.
-  apply Qp_not_plus_q_ge_1.
+  apply Qp_not_plus_ge.
 Qed.
 
 Local Lemma Qp_split_lt_helper (q: Qp) (c: Qp):

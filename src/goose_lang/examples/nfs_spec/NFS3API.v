@@ -530,7 +530,7 @@ Section SymbolicStep.
     t <- call_reads (clock);
     t' <- symTime;
     _ <- symAssert (time_ge t t');
-    _ <- call_puts (set clock (constructor t'));
+    _ <- call_puts (set clock (const t'));
     ret t'.
 
   Definition checkpt_ctr : transition State Z :=
@@ -584,7 +584,7 @@ Section SymbolicStep.
           ret (Err a ERR_NOSPC)
         else
           ret (OK a (i <| inode_state_type := Ifile (resize_buf len buf) cverf |>
-                <| inode_state_meta ::= set inode_meta_mtime (constructor now) |>))
+                <| inode_state_meta ::= set inode_meta_mtime (const now) |>))
       | _ =>
         ret (Err a ERR_INVAL)
       end
@@ -708,7 +708,7 @@ Section SymbolicStep.
       let buf' := write_buf buf off data in
       _ <~- check_space wcc_before buf buf';
       let i' := i <| inode_state_type := Ifile buf' cverf |>
-                  <| inode_state_meta ::= set inode_meta_mtime (constructor t) |> in
+                  <| inode_state_meta ::= set inode_meta_mtime (const t) |> in
       let wcc := Build_wcc_data (Some (inode_wcc i)) (Some (inode_wcc i')) in
       let wok := Build_write_ok (u32_from_u64 (len_buf data)) s wverf in
       match s with
@@ -772,7 +772,7 @@ Section SymbolicStep.
                   match i.(inode_state_type) with
                   | Ifile buf cverf =>
                     i <| inode_state_type := Ifile (resize_buf len buf) cverf |>
-                      <| inode_state_meta ::= set inode_meta_mtime (constructor now) |>
+                      <| inode_state_meta ::= set inode_meta_mtime (const now) |>
                   | _ => i
                   end
                 end in

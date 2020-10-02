@@ -57,6 +57,7 @@ Section val_types.
    *)
 End val_types.
 
+Declare Scope heap_type.
 Infix "*" := prodT : heap_type.
 Infix "->" := arrowT : heap_type.
 
@@ -530,6 +531,7 @@ Section goose_lang.
 
 End goose_lang.
 
+Declare Scope heap_types.
 Delimit Scope heap_types with T.
 Delimit Scope heap_type with ht.
 Bind Scope heap_type with ty.
