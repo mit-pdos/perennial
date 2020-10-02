@@ -230,6 +230,7 @@ Qed.
 
 Class heapG Σ := HeapG {
   heapG_invG : invG Σ;
+  heapG_crashG : crashG Σ;
   heapG_ffiG : ffiG Σ;
   heapG_na_heapG :> na_heapG loc val Σ;
   heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ;
@@ -247,6 +248,7 @@ Record heap_names := {
 
 Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
   {| heapG_invG := heapG_invG;
+     heapG_crashG := heapG_crashG;
      heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
      heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
      heapG_proph_mapG :=
@@ -255,8 +257,9 @@ Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
      heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
  |}.
 
-Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (names: heap_names) :=
+Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (Hcrash : crashG Σ) (names: heap_names) :=
   {| heapG_invG := Hinv;
+     heapG_crashG := Hcrash;
      heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
      heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
      heapG_proph_mapG :=
@@ -276,7 +279,7 @@ Lemma heap_get_update Σ hG :
   heap_update_names Σ hG (heap_get_names _ hG) = hG.
 Proof.
   rewrite /heap_update_names/heap_get_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
-  destruct hG as [?? [] [] []]; eauto.
+  destruct hG as [??? [] [] []]; eauto.
 Qed.
 
 Definition tls (na: naMode) : lock_state :=
@@ -290,6 +293,7 @@ Global Existing Instances heapG_na_heapG.
 Global Instance heapG_irisG `{!heapG Σ}:
   irisG goose_lang Σ := {
   iris_invG := heapG_invG;
+  iris_crashG := heapG_crashG;
   state_interp σ κs _ :=
     (na_heap_ctx tls σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)
       ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
@@ -297,10 +301,10 @@ Global Instance heapG_irisG `{!heapG Σ}:
 }.
 
 Lemma heap_get_update' Σ hG :
-  heap_update Σ hG (iris_invG) (heap_get_names _ hG) = hG.
+  heap_update Σ hG (iris_invG) (iris_crashG) (heap_get_names _ hG) = hG.
 Proof.
   rewrite /heap_update/heap_get_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
-  destruct hG as [?? [] [] []]; eauto.
+  destruct hG as [??? [] [] []]; eauto.
 Qed.
 
 (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
@@ -1045,8 +1049,8 @@ Proof.
   (* TODO we should try to use a generic lifting lemma (and avoid [wp_unfold])
      here, since this breaks the WP abstraction. *)
   iIntros (A He) "Hp WPe". rewrite !wp_unfold /wp_pre /= He. simpl in *.
-  iIntros (σ1 κ κs n) "(Hσ&Hκ&Hw)". destruct κ as [|[p' [w' v']] κ' _] using rev_ind.
-  - iMod ("WPe" $! σ1 [] κs n with "[$Hσ $Hκ $Hw]") as "[Hs WPe]". iModIntro. iSplit.
+  iIntros (q σ1 κ κs n) "(Hσ&Hκ&Hw) HNC". destruct κ as [|[p' [w' v']] κ' _] using rev_ind.
+  - iMod ("WPe" $! q σ1 [] κs n with "[$Hσ $Hκ $Hw] [$]") as "[Hs WPe]". iModIntro. iSplit.
     { iDestruct "Hs" as "%". iPureIntro. destruct s; [ by apply resolve_reducible | done]. }
     iIntros (e2 σ2 efs step). exfalso. apply step_resolve in step; last done.
     rewrite /head_step /= in step.
@@ -1055,7 +1059,7 @@ Proof.
     simpl in H0; monad_inv.
     match goal with H: [] = ?κs ++ [_] |- _ => by destruct κs end.
   - rewrite -app_assoc.
-    iMod ("WPe" $! σ1 _ _ n with "[$Hσ $Hκ $Hw]") as "[Hs WPe]". iModIntro. iSplit.
+    iMod ("WPe" $! q σ1 _ _ n with "[$Hσ $Hκ $Hw] [$]") as "[Hs WPe]". iModIntro. iSplit.
     { iDestruct "Hs" as %?. iPureIntro. destruct s; [ by apply resolve_reducible | done]. }
     iIntros (e2 σ2 efs step). apply step_resolve in step; last done.
     rewrite /head_step /= in step.
@@ -1069,8 +1073,8 @@ Proof.
     iModIntro. iNext. iMod "WPe" as "[[$ (Hκ&Hw)] WPe]".
     iMod (proph_map_resolve_proph p (w',v) κs with "[$Hκ $Hp]") as (vs' ->) "[$ HPost]".
     iModIntro. rewrite !wp_unfold /wp_pre /=. iDestruct "WPe" as "[HΦ $]".
-    iFrame.
-    iMod "HΦ". iModIntro. by iApply "HΦ".
+    iFrame. iIntros.
+    iMod ("HΦ" with "[$]") as "(HΦ&?)". iModIntro. iFrame. by iApply "HΦ".
 Qed.
 
 (** Lemmas for some particular expression inside the [Resolve]. *)

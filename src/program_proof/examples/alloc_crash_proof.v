@@ -128,7 +128,6 @@ Qed.
 Section goose.
 Context `{!heapG Σ}.
 Context `{!allocG Σ}.
-Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 
 Record alloc_names :=

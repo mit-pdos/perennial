@@ -20,7 +20,6 @@ Module kvpair.
 End kvpair.
 
 Section heap.
-Context `{!crashG Σ}.
 Context `{!lockG Σ}.
 Context `{!buftxnG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).

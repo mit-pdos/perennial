@@ -26,7 +26,6 @@ End state.
 
 Section heap.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Context `{!txnG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
@@ -157,7 +156,7 @@ Example write_0_async j (v : {K & bufDataT K}) l γ :
           let σ := mt ∪ latest σl in
           own γ.(txn_crashstates) (◯ (Excl' (async_put σ σl)))
           ={⊤ ∖ ↑walN ∖ ↑invN ∖ ↑kvN, ⊤ ∖ ↑walN ∖ ↑invN}=∗ done_op j v )).
-Proof using crashG0.
+Proof.
   iIntros (mt) "#Hs Hop".
   iNamed "Hs".
   iInv kvN as ">Hkv" "Hkvclose"; eauto.

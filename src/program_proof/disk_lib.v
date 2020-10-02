@@ -2,7 +2,6 @@ From Perennial.program_proof Require Import proof_prelude.
 
 Section goose.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Implicit Types v : val.
 Implicit Types z : Z.
 Implicit Types s : Slice.t.

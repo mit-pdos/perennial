@@ -11,7 +11,6 @@ From Perennial.program_proof Require Import marshal_block.
 
 Section heap.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Implicit Types v : val.
 Implicit Types z : Z.
 Implicit Types s : Slice.t.

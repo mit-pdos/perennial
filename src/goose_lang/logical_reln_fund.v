@@ -38,7 +38,7 @@ Notation ival := (@val ext).
 Notation sty := (@ty (@val_tys _ spec_ty)).
 
 Context `{hsT_model: !specTy_model spec_ty} (spec_trans: sval → ival → Prop).
-Context `{hG: !heapG Σ} `{hC: !crashG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}.
+Context `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}.
 Lemma loc_paired_eq_iff ls l ls' l':
   loc_paired ls l -∗
   loc_paired ls' l' -∗
@@ -304,7 +304,7 @@ Proof.
 Qed.
 
 Arguments sty_val_interp {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec_interp _ specTy_model Σ
-  heapG0 refinement_heapG0 H}.
+  heapG0 refinement_heapG0}.
 
 Lemma sty_val_size:
       forall  τ vs v,

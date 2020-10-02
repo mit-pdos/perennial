@@ -10,7 +10,6 @@ Import uPred.
 Section staged_inv_wpc.
 Context `{!irisG Λ Σ}.
 Context `{!stagedG Σ}.
-Context `{!crashG Σ}.
 Context `{inG Σ (exclR unitO)}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.
@@ -81,13 +80,13 @@ Definition wpc_no_fupd s k mj E1 E2 e1 Φ Φc :=
   ((match to_val e1 with
    | Some v => ∀ q, NC q -∗ |={E1}=> Φ v ∗ NC q
    | None => ∀ q σ1 κ κs n,
-      state_interp σ1 (κ ++ κs) n -∗ NC q -∗ |={E1,∅}=> (
+      state_interp σ1 (κ ++ κs) n -∗ NC q -∗ |={E1,∅}=> 
         (⌜if s is NotStuck then reducible e1 σ1 else True⌝ ∗
         ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ -∗ |={∅,∅}=> ▷ |={∅,E1}=>
           (state_interp σ2 κs (length efs + n) ∗
           wpc0 s k mj E1 E2 e2 Φ Φc ∗
           ([∗ list] i ↦ ef ∈ efs, wpc0 s k mj ⊤ E2 ef fork_post True) ∗
-          NC q)))
+          NC q))
    end ∧
    (<disc> (C -∗ |k,(Some mj)={E1}=> |k,(Some mj)={E2,∅}=> ▷ Φc))))%I.
 

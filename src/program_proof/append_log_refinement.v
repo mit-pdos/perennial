@@ -12,7 +12,6 @@ Existing Instances log_spec_ext log_spec_ffi_model log_spec_ext_semantics log_sp
 
 Section refinement.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Context `{!refinement_heapG Σ}.
 Context `{stagedG Σ}.
 

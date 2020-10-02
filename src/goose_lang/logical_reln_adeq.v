@@ -53,9 +53,9 @@ Context `{Hcrashpre: crashPreG Σ}.
 Context `{Hstypre: !sty_preG (hsT_model := hsT_model) (specTy_update := upd) Σ}.
 
 Definition sty_derived_crash_condition :=
-    (λ (hG: heapG Σ) (hC: crashG Σ) (hRG: refinement_heapG Σ), ∃ hS,
+    (λ (hG: heapG Σ) (hRG: refinement_heapG Σ), ∃ hS,
       ▷ ∀ (hG': heapG Σ), |={⊤}=>
-      ∀ (hC': crashG Σ) σs,
+      ∀ σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
       ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
       ffi_ctx (refinement_spec_ffiG) σs.(world) -∗
@@ -67,7 +67,7 @@ Definition sty_derived_crash_condition :=
       ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new))%I.
 
-Lemma sty_inv_to_wpc hG hC hRG hS es e τ j:
+Lemma sty_inv_to_wpc hG hRG hS es e τ j:
   expr_transTy _ _ _ spec_trans ∅ es e τ →
   sty_crash_inv_obligation →
   sty_crash_obligation →
@@ -76,7 +76,7 @@ Lemma sty_inv_to_wpc hG hC hRG hS es e τ j:
   trace_ctx -∗
   sty_init hS -∗
   j ⤇ es -∗
-  WPC e @ sty_lvl_init; ⊤;⊤ ∖ ↑sN {{ _, True }}{{sty_derived_crash_condition hG hC hRG}}.
+  WPC e @ sty_lvl_init; ⊤;⊤ ∖ ↑sN {{ _, True }}{{sty_derived_crash_condition hG hRG}}.
 Proof.
   iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules) "#Hspec #Htrace Hinit Hj".
     rewrite /sty_crash_obligation in Hsty_crash.
@@ -134,13 +134,13 @@ Lemma sty_adequacy es σs e σ τ initP:
 Proof.
   intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Htype Htrace Horacle Hinit.
   eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
-           (Φ := λ _ _ _ _, True%I) (Φc := sty_derived_crash_condition)
+           (Φ := λ _ _ _, True%I) (Φc := sty_derived_crash_condition)
            (k := sty_lvl_init) (initP := initP); eauto.
   { apply _. }
   { apply _. }
   { apply _. }
   { apply _. }
-  { clear dependent σ σs. rewrite /wpc_init. iIntros (hG hC hRG σ σs Hinit) "Hffi Hffi_spec".
+  { clear dependent σ σs. rewrite /wpc_init. iIntros (hG hRG σ σs Hinit) "Hffi Hffi_spec".
     rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.
     iIntros "Hj #Hspec #Htrace".
@@ -153,7 +153,7 @@ Proof.
   }
   { clear dependent σ σs.
     rewrite /wpc_post_crash.
-    iIntros (???) "H". iDestruct "H" as (hS') "H". iNext.
+    iIntros (??) "H". iDestruct "H" as (hS') "H". iNext.
     iIntros (hG'). iMod ("H" $! hG') as "H". iModIntro.
     iIntros. iSpecialize ("H" with "[$] [$]").
     iDestruct "H" as (σs' Hcrash) "(Hctx&Hrest)".
@@ -165,7 +165,7 @@ Proof.
     iApply (fupd_mask_mono styN); first by set_solver+.
     iMod "Hrest" as (names) "Hinv".
     iModIntro.
-    iApply (sty_inv_to_wpc _ _ _ (sty_update logical_relnΣ hS' names) with "[$] [$] [$]"); eauto.
+    iApply (sty_inv_to_wpc _ _ (sty_update logical_relnΣ hS' names) with "[$] [$] [$]"); eauto.
   }
   (* BUG: Coq v8.11 requires Grab Existential Variables and not Unshelve to get
   this obligation *)

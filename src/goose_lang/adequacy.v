@@ -36,14 +36,16 @@ Class heapPreG `{ext: ext_op} `{EXT_SEM: !ext_semantics ext ffi}
       `{INTERP: !ffi_interp ffi} {ADEQ: ffi_interp_adequacy} Σ
   := HeapPreG {
   heap_preG_iris :> invPreG Σ;
+  heap_preG_crash :> crashPreG Σ;
   heap_preG_heap :> na_heapPreG loc val Σ;
   heap_preG_proph :> proph_mapPreG proph_id (val * val) Σ;
   heap_preG_ffi : ffi_preG Σ;
   heap_preG_trace :> trace_preG Σ;
 }.
 
-Definition heap_update_pre Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (names: heap_names) :=
+Definition heap_update_pre Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (Hcrash: crashG Σ) (names: heap_names) :=
   {| heapG_invG := Hinv;
+     heapG_crashG := Hcrash;
      heapG_ffiG := ffi_update_pre Σ (heap_preG_ffi) (heap_ffi_names names);
      heapG_na_heapG := na_heapG_update_pre (heap_preG_heap) (heap_heap_names names);
      heapG_proph_mapG :=
@@ -52,15 +54,17 @@ Definition heap_update_pre Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (names: hea
      heapG_traceG := traceG_update_pre Σ (heap_preG_trace) (heap_trace_names names)
  |}.
 
-Lemma heap_update_pre_get Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (names: heap_names) :
-  heap_get_names _ (heap_update_pre Σ hpreG Hinv names) = names.
+Lemma heap_update_pre_get Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (Hcrash: crashG Σ) (names: heap_names) :
+  heap_get_names _ (heap_update_pre Σ hpreG Hinv Hcrash names) = names.
 Proof.
   rewrite /heap_get_names/heap_update_pre ffi_update_pre_get na_heapG_update_pre_get //=.
   destruct names => //=.
 Qed.
 
-Lemma heap_update_pre_update Σ `(hpreG : heapPreG Σ) (Hinv1 Hinv2: invG Σ) (names1 names2: heap_names) :
-  heap_update _ (heap_update_pre Σ hpreG Hinv1 names1) Hinv2 names2 = (heap_update_pre Σ hpreG Hinv2 names2).
+Lemma heap_update_pre_update Σ `(hpreG : heapPreG Σ) (Hinv1 Hinv2: invG Σ) (Hcrash1 Hcrash2: crashG Σ)
+      (names1 names2: heap_names) :
+  heap_update _ (heap_update_pre Σ hpreG Hinv1 Hcrash1 names1) Hinv2 Hcrash2 names2 =
+  (heap_update_pre Σ hpreG Hinv2 Hcrash2 names2).
 Proof.
   rewrite /heap_update ffi_update_pre_update/traceG_update/gen_heapG_update//=.
 Qed.
@@ -84,7 +88,7 @@ Ltac solve_inG_deep :=
                            | H:subG _ _ |- _ => move : H; apply subG_inG in H || clear H
                            end; intros; try done; split; assumption || by apply _.
 
-Definition heapΣ `{ext: ext_op} `{ffi_interp_adequacy} : gFunctors := #[invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ].
+Definition heapΣ `{ext: ext_op} `{ffi_interp_adequacy} : gFunctors := #[invΣ; crashΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ].
 Instance subG_heapPreG `{ext: ext_op} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} : subG heapΣ Σ → heapPreG Σ.
 Proof.
   solve_inG_deep.
@@ -96,7 +100,7 @@ Definition heap_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adeq
                   WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
   adequate s e σ (λ v _, φ v).
 Proof.
-  intros Hwp; eapply (wp_adequacy _ _); iIntros (??) "".
+  intros Hwp; eapply (wp_adequacy _ _); iIntros (???) "".
   unshelve (iMod (na_heap_init (LK := naMode) tls σ.(heap)) as (?) "Hh").
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
   iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)"; first auto.
@@ -104,5 +108,5 @@ Proof.
   iModIntro. iExists
     (λ σ κs, (na_heap_ctx tls σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx (ffi_update_pre _ _ HffiG) σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
     (λ _, True%I).
-  iFrame. by iApply (Hwp (HeapG _ _ _ _ _ HtraceG) with "[$] [$] [$]").
+  iFrame. by iApply (Hwp (HeapG _ _ _ _ _ _ HtraceG) with "[$] [$] [$]").
 Qed.

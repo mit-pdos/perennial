@@ -9,17 +9,16 @@ From Perennial.goose_lang Require Export wpr_lifting.
 From Perennial.goose_lang Require Import typing adequacy lang.
 Set Default Proof Using "Type".
 
-Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} `{crashPreG Σ} s k e r σ φ φr φinv Φinv (HINIT: ffi_initP σ.(world)) :
-  (∀ `{Hheap : !heapG Σ} `{Hc: !crashG Σ},
+Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} s k e r σ φ φr φinv Φinv (HINIT: ffi_initP σ.(world)) :
+  (∀ `{Hheap : !heapG Σ},
      ⊢ (ffi_start (heapG_ffiG) σ.(world) -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) ={⊤}=∗
        □ (∀ n σ κ, state_interp σ κ n ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
-       □ (∀ hG, Φinv hG -∗
-                       □ ∀ σ κ n, state_interp σ κ n ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
+       □ (∀ hG, Φinv hG -∗ □ ∀ σ κ n, state_interp σ κ n ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
         wpr s k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝))) →
   recv_adequate (CS := goose_crash_lang) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
 Proof.
   intros Hwp.
-  eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ (λ Hi names, Φinv (heap_update_pre _ _ Hi (@pbundleT _ _ names)))).
+  eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ (λ Hi Hc names, Φinv (heap_update_pre _ _ Hi Hc (@pbundleT _ _ names)))).
   iIntros (???) "".
   iMod (na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
   iMod (proph_map_name_init _ κs σ.(used_proph_id)) as (name_proph_map) "Hp".
@@ -29,14 +28,15 @@ Proof.
                       heap_proph_name := name_proph_map;
                       heap_ffi_names := ffi_names;
                       heap_trace_names := name_trace |}).
-  set (hG := heap_update_pre _ _ Hinv hnames).
+  set (hG := heap_update_pre _ _ Hinv Hc hnames).
   iExists ({| pbundleT := hnames |}).
   iExists
-    (λ Hi t σ κs, let _ := heap_update Σ hG Hi (@pbundleT _ _ t) in
+    (λ Hi t σ κs, let _ := heap_update Σ hG Hi Hc (@pbundleT _ _ t) in
                state_interp σ κs O)%I,
     (λ t _, True%I).
-  iExists (λ _ _, eq_refl).
-  iMod (Hwp hG Hc with "[$] [$] [$]") as "(#H1&#H2&Hwp)".
+  iExists (λ _ _ _, eq_refl).
+  iExists (λ _ _ _, eq_refl).
+  iMod (Hwp hG with "[$] [$] [$]") as "(#H1&#H2&Hwp)".
   iModIntro.
   iSplitR.
   { iModIntro. iIntros (??) "H". rewrite heap_update_pre_update.
@@ -44,7 +44,7 @@ Proof.
   }
   iSplitR.
   {
-    iModIntro. iIntros (Hinv' names') "H". rewrite ?heap_update_pre_update.
+    iModIntro. iIntros (Hinv' Hc' names') "H". rewrite ?heap_update_pre_update.
     iDestruct ("H2" with "H") as "#H3".
     iModIntro. iIntros (??) "H". iMod ("H3" with "H").
     eauto.
@@ -56,4 +56,7 @@ Proof.
   iApply (recovery_weakestpre.wpr_strong_mono with "Hwp").
   repeat iSplit; [| iModIntro; iSplit]; eauto.
   - iIntros. rewrite heap_update_pre_update. eauto.
+    Unshelve.
+    (* TODO: where is this ocming from? *)
+    exact O.
 Qed.

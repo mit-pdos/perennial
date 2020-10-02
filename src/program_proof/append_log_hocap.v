@@ -15,7 +15,6 @@ Canonical Structure log_stateO := leibnizO log_state.
 
 Section hocap.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
 
@@ -459,7 +458,6 @@ End hocap.
 
 Section hocap_crash.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
 

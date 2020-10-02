@@ -26,7 +26,6 @@ End rblock.
 
 Section goose.
   Context `{!heapG Σ}.
-  Context `{!crashG Σ}.
   Context `{!stagedG Σ}.
 
   Implicit Types (l:loc) (addr: u64) (σ: rblock.t) (γ: gname).
@@ -453,7 +452,6 @@ Qed.
 
 Section recov.
   Context `{!heapG Σ}.
-  Context `{!crashG Σ}.
   Context `{!stagedG Σ}.
 
   (* This has to be in a separate section from the wpc lemmas because we will
@@ -475,7 +473,7 @@ Section recov.
     { wpc_apply (wpc_Open with "Hstart").
       iSplit; eauto. iModIntro. eauto.
     }
-    iModIntro. iIntros (?????) "H".
+    iModIntro. iIntros (????) "H".
     iDestruct "H" as (σ'') "Hstart".
     iNext. iCrash.
     iIntros.
@@ -499,10 +497,10 @@ Section recov.
     { wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart]").
       iSplit; try iModIntro; eauto.
     }
-    iModIntro. iIntros (?????) "H".
+    iModIntro. iIntros (????) "H".
     iDestruct "H" as (σ'') "(Hstart&_)".
     iNext. iCrash.
-    iIntros (??).
+    iIntros (?).
     iSplit; first done.
     wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart] []").
     iSplit; try iModIntro; eauto.
@@ -526,7 +524,7 @@ Proof.
   intros (d1&Hin1) (d2&Hin2).
   apply (heap_recv_adequacy (repΣ) _ 2 _ _ _ _ _ _ (λ _, True)%I).
   { simpl. auto. }
-  iIntros (??) "Hstart _ _".
+  iIntros (?) "Hstart _ _".
   iModIntro.
   iSplitL "".
   { iModIntro; iIntros. iMod (fupd_intro_mask' _ ∅); eauto. }

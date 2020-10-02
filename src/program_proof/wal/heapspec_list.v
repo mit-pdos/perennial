@@ -1375,7 +1375,6 @@ Global Instance wal_heap_inv_discrete γd γe σ :
   Discretizable (wal_heap_inv γd γe σ).
 Proof. apply _. Qed.
 
-Context `{!crashG Σ}.
 Theorem wpc_MkLog_recover stk k E1 E2 d γd γe σ :
   {{{ walheap_cinv γd γe σ }}}
     MkLog #d @ stk; k; E1; E2

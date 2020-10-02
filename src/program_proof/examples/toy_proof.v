@@ -11,7 +11,6 @@ From Perennial.program_proof Require Import proof_prelude.
 
 Section goose.
   Context `{!heapG Σ}.
-  Context `{!crashG Σ}.
   Context `{!stagedG Σ}.
 
   (* TODO: these are copied from the circ proof *)
@@ -134,9 +133,7 @@ Section goose.
     iIntros (Φ Φc) "HEblk HΦ".
     iMod (na_crash_inv_alloc 1 _ (EBlk addr) (EBlk addr) with "HEblk []") as "(Hcrash&Hcfupd)".
     { auto. }
-    (* Weaken the levels. *)
     iMod "Hcfupd" as "_".
-    (*  { apply LVL_le. lia. } *)
     wpc_call.
     { by iLeft in "HΦ". }
     { by iLeft in "HΦ". }

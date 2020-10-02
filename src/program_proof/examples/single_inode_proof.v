@@ -23,7 +23,6 @@ End s_inode.
 
 Section goose.
   Context `{!heapG Σ}.
-  Context `{!crashG Σ}.
   Context `{!allocG Σ}.
   Context `{!stagedG Σ}.
   Context `{!ghost_varG Σ (list Block)}.

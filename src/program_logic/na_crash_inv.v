@@ -10,7 +10,6 @@ Import uPred.
 Section ci.
 Context `{!irisG Λ Σ}.
 Context `{STAGED: !stagedG Σ}.
-Context `{!crashG Σ}.
 Context `{inG Σ (exclR unitO)}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.

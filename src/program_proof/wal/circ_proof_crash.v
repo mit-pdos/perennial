@@ -18,7 +18,6 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section heap.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Context `{!circG Σ}.
 
 Context (N: namespace).

@@ -2,14 +2,14 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import gmap auth agree gset coPset.
 From iris.base_logic.lib Require Import wsat.
 From iris.program_logic Require Export weakestpre.
-From Perennial.program_logic Require Export step_fupd_extra crash_token crash_lang crash_weakestpre.
+From Perennial.program_logic Require Export step_fupd_extra crash_lang crash_weakestpre.
 Import uPred.
 Import language.
 
 Set Default Proof Using "Type".
 
 Section crash_adequacy.
-Context `{!irisG Λ Σ, crashG Σ}.
+Context `{!irisG Λ Σ}.
 Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types e : expr Λ.
@@ -171,7 +171,7 @@ Qed.
 End crash_adequacy.
 
 Section crash_adequacy.
-Context `{!irisG Λ Σ, crashG Σ}.
+Context `{!irisG Λ Σ}.
 Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types e : expr Λ.

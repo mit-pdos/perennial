@@ -36,7 +36,6 @@ Hint Unfold inode.wf InodeMaxBlocks : word.
 
 Section goose.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 Context `{!allocG Σ}.
 

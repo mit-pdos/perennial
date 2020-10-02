@@ -9,7 +9,7 @@ From iris_string_ident Require Import ltac2_string_ident.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} `{!crashG Σ}.
+Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
 
 Context `{!IntoVal V}.
