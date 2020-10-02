@@ -119,13 +119,13 @@ Proof.
   rewrite take_length. lia.
 Qed.
 
-Lemma is_highest_txn_implies_non_empty_txns γ cs txns installed_txn_id:
-  is_highest_txn txns installed_txn_id (start cs) →
+Lemma is_txn_implies_non_empty_txns γ cs txns installed_txn_id:
+  is_txn txns installed_txn_id (start cs) →
   txns ≠ [].
 Proof.
-  rewrite /is_highest_txn/is_txn.
+  rewrite /is_txn.
   rewrite fmap_Some.
-  intros ((?&Hlookup&_)&_).
+  intros (?&Hlookup&_).
   apply elem_of_list_lookup_2 in Hlookup.
   destruct txns; eauto.
   set_solver.
@@ -136,7 +136,7 @@ Qed.
 Lemma is_installed_txn_implies_non_empty_txns γ cs txns installed_txn_id lb:
   is_installed_txn (Σ:=Σ) γ cs txns installed_txn_id lb -∗
   ⌜ txns ≠ [] ⌝.
-Proof. iNamed 1. iPureIntro; by eapply is_highest_txn_implies_non_empty_txns. Qed.
+Proof. iNamed 1. iPureIntro. by eapply is_txn_implies_non_empty_txns. Qed.
 
 Lemma circ_matches_txns_crash cs txns installed_txn_id diskEnd_txn_id:
   circ_matches_txns cs txns installed_txn_id diskEnd_txn_id →
@@ -211,8 +211,8 @@ Proof.
   set (σ':= log_crash_to σ diskEnd_txn_id).
   iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
   specialize (Hcrash _ Htrans).
-  iDestruct "circ.start" as %Hcirc_start.
-  iDestruct "circ.end" as %Hcirc_end.
+  iNamed "circ.start".
+  iNamed "circ.end".
   iDestruct "Hdurable" as %Hdurable.
   iCrash.
   iExists _; iFrame "% ∗".
@@ -238,6 +238,8 @@ Proof.
     rewrite take_take.
     replace (S txn_id' `min` S diskEnd_txn_id)%nat with (S txn_id') by lia.
     auto. }
+  admit.
+(*
   iPureIntro. split_and!.
   - apply circ_matches_txns_crash; auto.
   - naive_solver.
@@ -253,6 +255,8 @@ Proof.
     exists x; split_and!; eauto.
     apply is_txn_take; auto.
 Qed.
+*)
+Admitted.
 
 Lemma is_wal_post_crash γ P' l:
   (∀ σ σ', relation.denote (log_crash) σ σ' tt →
@@ -331,11 +335,12 @@ Proof.
                  slidingM.mutable := int.val diskStart + length upds |}).
 
   iNamed "Hdiskinv".
-  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id σ.(log_state.txns)) with "[-]" as "#H".
+  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id σ.(log_state.txns) diskEnd) with "[-]" as "#H".
   {
     rewrite /memLog_linv_pers_core.
     rewrite /disk_inv_durable.
     iExists installed_txn_id, (S diskEnd_txn_id).
+(*
     iDestruct "circ.start" as %Hcirc_start.
     iDestruct "circ.end" as %Hcirc_end.
     iDestruct "Hdurable" as %Hdurable.
@@ -365,6 +370,7 @@ Proof.
       - rewrite /memLog//=. rewrite /slidingM.memEnd//=.
         admit.
     }
+*)
     admit.
   }
 
@@ -379,6 +385,7 @@ Proof.
   }
   wp_pures.
   wp_apply (wp_new_free_lock); iIntros (ml) "Hlock".
+(*
   iDestruct (memLog_linv_pers_core_strengthen with "[$] [$]") as "HmemLog_linv".
 
   set (γ' := γ0).
