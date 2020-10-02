@@ -5,7 +5,7 @@ From Perennial.algebra Require Import big_op.
 
 Section liftable.
 
-  Context `{PROP:bi} `{!BiAffine PROP}.
+  Context `{PROP:bi} `{!BiAffine PROP} `{!BiPureForall PROP}.
   Context {L V: Type} `{!EqDecision L} `{!Countable L}.
 
   Set Default Proof Using "BiAffine0".
@@ -19,7 +19,7 @@ Section liftable.
            ∀ mapsto2, ([∗ map] a ↦ v ∈ m, mapsto2 a v) -∗ P mapsto2.
 
   Global Instance star_liftable `{Liftable P} `{Liftable Q} : Liftable (fun h => P h ∗ Q h)%I.
-  Proof.
+  Proof using BiAffine0 BiPureForall0.
     unfold Liftable in *.
     iIntros (??) "[Hp Hq]".
     iDestruct (H with "Hp") as (mp) "[Hpm Hpi]"; eauto.
@@ -66,7 +66,7 @@ Section liftable.
   Global Instance map_liftable `{EqDecision LM} `{Countable LM} `(m : gmap LM VM) P :
     (forall a v, Liftable (P a v)) ->
     Liftable (fun h => [∗ map] a ↦ v ∈ m, (P a v h))%I.
-  Proof.
+  Proof using BiAffine0 BiPureForall0.
     intros.
     unfold Liftable.
     iIntros (??) "Hm".
@@ -127,7 +127,7 @@ Section liftable.
   Lemma list_liftable' `(l : list V) (off : nat) P :
     (forall a v, Liftable (P a v)) ->
     Liftable (fun h => [∗ list] a ↦ v ∈ l, (P (off + a)%nat v h))%I.
-  Proof.
+  Proof using BiAffine0 BiPureForall0.
     intros.
     generalize dependent off.
     induction l; intros.
@@ -165,7 +165,7 @@ Section liftable.
   Global Instance list_liftable `(l : list V) P :
     (forall a v, Liftable (P a v)) ->
     Liftable (fun h => [∗ list] a ↦ v ∈ l, (P a v h))%I.
-  Proof.
+  Proof using BiAffine0 BiPureForall0.
     intros.
     apply (list_liftable' l 0 P) in H.
     simpl in H.

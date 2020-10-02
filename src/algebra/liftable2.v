@@ -89,7 +89,7 @@ Section bi.
     iExists m. iSplit; first by auto. iFrame.
   Qed.
 
-  Theorem sep_holds_at_combine `{!BiAffine PROP} P Q mapsto1 `{!Conflicting mapsto1} d1 d2 :
+  Theorem sep_holds_at_combine `{!BiAffine PROP} `{!BiPureForall PROP} P Q mapsto1 `{!Conflicting mapsto1} d1 d2 :
     HoldsAt P mapsto1 d1 ∗ HoldsAt Q mapsto1 d2 -∗
     HoldsAt (fun mapsto => P mapsto ∗ Q mapsto)%I mapsto1 (d1 ∪ d2) ∗ ⌜d1 ## d2⌝.
   Proof.
@@ -112,7 +112,7 @@ Section bi.
     - iApply "Hmapsto1"; iFrame "%∗".
     - iApply "Hmapsto2"; iFrame "%∗".
     Grab Existential Variables.
-    assumption.
+    all: assumption.
   Qed.
 
   Theorem sep_holds_at_split `{!BiAffine PROP} P Q mapsto1 d `{!Conflicting mapsto1} `{!Liftable P, !Liftable Q}  :

@@ -13,19 +13,13 @@ From Perennial.program_proof Require
      append_log_proof
      (* append_log_refinement *)
      lockmap_proof
-     (* wal.proof
+     wal.proof
      wal.specs
      txn.txn_proof
      buftxn.buftxn_proof
      buftxn.idealized_buftxn_spec
-     simple.simple *)
+     simple.simple
      wp_to_wpc.
-(* working parts of the wal proof *)
-From Perennial.program_proof.wal Require
-     abstraction
-     invariant
-     read_proof
-     logger_proof.
 From Perennial.program_proof.examples Require
      all_examples.
 From Perennial.goose_lang Require

@@ -520,7 +520,7 @@ Proof.
         iDestruct (txn_val_to_pos with "Hnew_txn") as "Hnew_txn_pos".
         iSpecialize ("HQ" with "Hnew_txn_pos").
         iModIntro.
-        iSplitL "Hdisk Hmem HP γtxns Htxns_ctx".
+        iSplitL "HnextDiskEnd_inv Hdisk Hmem HP γtxns Htxns_ctx".
 
         (* re-prove invariant *)
         {
@@ -533,6 +533,8 @@ Proof.
             - rewrite slidingM.memEnd_ok; eauto.
               eapply is_mem_memLog_endpos_highest; eauto. }
           simpl.
+          iSplitL "HnextDiskEnd_inv".
+          { admit. }
           iDestruct "Hdisk" as (cs) "Hdisk".
           iNamed "Hdisk".
           iExists cs; iFrame.
@@ -551,11 +553,11 @@ Proof.
         iExists (set memLog (λ _, memLog') σ); simpl.
         rewrite memWrite_same_start.
         iFrame.
-        iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns".
+        iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet HownLoggerPos_linv".
         { iExists _; iFrame.
           iPureIntro.
           eapply locked_wf_memWrite; eauto. }
-        iExists memStart_txn_id, nextDiskEnd_txn_id, _; iFrame.
+        iExists memStart_txn_id, nextDiskEnd_txn_id, _, _, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
         autorewrite with len.
         iFrame "%".

@@ -47,7 +47,7 @@ Proof.
                        (set slidingM.mutable (λ _ : u64, slidingM.endPos σ.(memLog)) σ.(memLog))) σ).
   simpl.
   iFrame "# ∗".
-  iSplitR "Howntxns".
+  iSplitR "Howntxns HownLoggerPos_linv HownStableSet".
   { iExists _; iFrame.
     iPureIntro.
     split_and!; simpl; auto; try word.
@@ -55,9 +55,10 @@ Proof.
     unfold locked_wf, slidingM.wf in Hlocked_wf.
     word.
   }
-  iExists memStart_txn_id, (length txns - 1)%nat, txns; simpl.
+  iExists memStart_txn_id, (length txns - 1)%nat, txns, _, _; simpl.
   iFrame "% # ∗".
   destruct_and! His_memLog.
+(*
   iPureIntro; split_and!; auto; try lia.
   - pose proof (is_highest_txn_bound HdiskEnd_txn); lia.
   - pose proof (is_txn_bound _ _ _ HmemEnd_is_txn).
@@ -66,6 +67,7 @@ Proof.
     admit. (* TODO: invariant needs to say mem_log after mutable has appropriate
     updates (before we got this from the has_updates for the entire memLog, but
     now we need to build it from the pieces) *)
+*)
 Admitted.
 
 End goose_lang.

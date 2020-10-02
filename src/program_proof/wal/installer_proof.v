@@ -225,7 +225,7 @@ Proof.
   wp_apply (wp_Read_fupd _ _ 1 (* q=1 *)).
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
-  iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
+  iDestruct "Hinner" as "(>? & ? & ? & >? & >? & >Hdisk)"; iNamed.
   iNamed "Hdisk".
   iNamed "Hdisk".
 

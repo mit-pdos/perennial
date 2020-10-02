@@ -311,7 +311,6 @@ Proof.
   iMod (thread_own_alloc with "Hstart") as (γstart_avail_name) "(Hstart_exactly&Hthread_start)".
   iMod (ghost_var_alloc σ.(log_state.txns)) as (γtxns_name) "(γtxns & Howntxns)".
   iMod (alloc_txns_ctx _ σ.(log_state.txns)) as (γtxns_ctx_name) "(Htxns_ctx&Htxns)".
-  { solve_ndisj. }
 
   set (γ0 :=
          ((set txns_name (λ _, γtxns_name)
