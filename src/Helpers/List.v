@@ -242,3 +242,89 @@ Theorem subslice_suffix_eq {A} (l l': list A) n n' m:
   subslice n' m l = subslice n' m l'.
 Proof.
 Admitted.
+
+Lemma take_more {A} (n m: nat) (l: list A) :
+  (n ≤ length l)%nat →
+  take (n + m) l = take n l ++ take m (drop n l).
+Proof.
+  intros Hbound.
+  rewrite -{1}(take_drop n l).
+  rewrite -> take_app_ge.
+  - f_equal.
+    f_equal.
+    rewrite take_length_le; lia.
+  - rewrite take_length_le; lia.
+Qed.
+
+Lemma subslice_def {A} (n m: nat) (l: list A) :
+  subslice n m l = drop n (take m l).
+Proof. reflexivity. Qed.
+
+Lemma subslice_comm {A} (n m: nat) (l: list A) :
+  subslice n m l = take (m - n)%nat (drop n l).
+Proof. rewrite /subslice skipn_firstn_comm //. Qed.
+
+(** this is a way to re-fold subslice after commuting it, a useful inverse to
+[subslice_comm] *)
+Lemma subslice_take_drop' {A} (n k: nat) (l: list A) :
+  take k (drop n l) = subslice n (n + k) l.
+Proof. rewrite /subslice firstn_skipn_comm //. Qed.
+
+Theorem subslice_split_r {A} n m m' (l: list A) :
+  (n ≤ m ≤ m')%nat →
+  (m ≤ length l)%nat →
+  subslice n m' l = subslice n m l ++ subslice m m' l.
+Proof.
+  intros Hbound1 Hbound2.
+  rewrite /subslice.
+  replace m' with (m + (m' - m))%nat by lia.
+  rewrite -> take_more by lia.
+  rewrite -> drop_app_le.
+  2: { rewrite take_length_le; lia. }
+  f_equal.
+  rewrite -> drop_app_le.
+  2: { rewrite take_length_le; lia. }
+  rewrite -> (drop_ge (take m l)).
+  2: { rewrite take_length_le; lia. }
+  auto.
+Qed.
+
+Lemma subslice_lookup A (n m i : nat) (l : list A) :
+  (n + i < m)%nat ->
+  subslice n m l !! i = l !! (n + i)%nat.
+Proof.
+  intros.
+  unfold subslice.
+  rewrite lookup_drop.
+  rewrite lookup_take; auto.
+Qed.
+
+Lemma subslice_lookup_bound A (n m i : nat) (l : list A) :
+  is_Some (subslice n m l !! i) ->
+  (n + i < m)%nat.
+Proof.
+  unfold subslice.
+  intros.
+  apply lookup_lt_is_Some_1 in H.
+  rewrite drop_length in H.
+  pose proof (firstn_le_length m l).
+  lia.
+Qed.
+
+Lemma subslice_lookup_bound' A (n m i : nat) (l : list A) a :
+  subslice n m l !! i = Some a ->
+  (n + i < m)%nat.
+Proof.
+  intros.
+  eapply subslice_lookup_bound; eauto.
+Qed.
+
+Lemma subslice_lookup_some A (n m i : nat) (l : list A) (a : A) :
+  subslice n m l !! i = Some a ->
+  l !! (n + i)%nat = Some a.
+Proof.
+  intros.
+  pose proof H as H'.
+  rewrite subslice_lookup in H'; eauto.
+  eapply subslice_lookup_bound. eauto.
+Qed.

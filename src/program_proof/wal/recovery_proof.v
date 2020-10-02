@@ -59,7 +59,7 @@ Proof.
   eexists _ diskEnd_txn_id; simpl; monad_simpl.
   constructor.
   split; try lia.
-  eapply is_highest_txn_bound; eauto.
+  eapply is_txn_bound; eauto.
 Qed.
 
 Ltac iPersist H :=
@@ -170,6 +170,14 @@ Proof.
   rewrite lookup_take_ge in His_Some; auto; congruence.
 Qed.
 
+Lemma is_txn_take txns txn_id pos :
+  is_txn txns txn_id pos →
+  is_txn (take (S txn_id) txns) txn_id pos.
+Proof.
+  rewrite /is_txn. intro Hlook.
+  rewrite -> lookup_take by lia; auto.
+Qed.
+
 Lemma is_highest_txn_take txns txn_id pos :
   is_highest_txn txns txn_id pos →
   is_highest_txn (take (S txn_id) txns) txn_id pos.
@@ -243,7 +251,7 @@ Proof.
       eapply is_txn_from_take_is_txn; eauto.
   - destruct Hcirc_end as (x&?&?&?).
     exists x; split_and!; eauto.
-    apply is_highest_txn_take; auto.
+    apply is_txn_take; auto.
 Qed.
 
 Lemma is_wal_post_crash γ P' l:
@@ -288,7 +296,6 @@ Proof.
   iIntros (Φ Φc) "Hcs HΦ".
   rewrite /mkLog.
 
-
   wpc_pures; first by show_crash1.
 
   iNamed "Hcs".
@@ -298,7 +305,6 @@ Proof.
   wpc_apply (wpc_recoverCircular with "[$]").
   iSplit.
   { iLeft in "HΦ". iModIntro. iNext. iIntros "Hcirc". iApply "HΦ". show_crash2. }
-
 
   iNext. iIntros (γcirc' c diskStart diskEnd bufSlice upds).
   iIntros "(Hupd_slice&Hcirc&Happender&Hstart&Hdisk&%&%&%)".
@@ -325,7 +331,6 @@ Proof.
                  slidingM.mutable := int.val diskStart + length upds |}).
 
   iNamed "Hdiskinv".
-(*
   iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id σ.(log_state.txns)) with "[-]" as "#H".
   {
     rewrite /memLog_linv_pers_core.
