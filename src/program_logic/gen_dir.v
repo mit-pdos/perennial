@@ -148,8 +148,8 @@ Section gen_dir.
     apply wand_intro_r.
     rewrite mapsto_eq /mapsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    f_equiv=> /auth_frag_proj_valid /=. rewrite ?singleton_op ?singleton_valid -pair_op.
-    by intros [_ ?%to_agree_op_inv_L].
+    rewrite auth_frag_valid. rewrite ?singleton_op ?singleton_valid -pair_op.
+    f_equiv. by intros [_ ?%to_agree_op_inv_L].
   Qed.
 
   Global Instance ex_mapsto_fractional d f : Fractional (λ q, d/f ↦{q} -)%I.
