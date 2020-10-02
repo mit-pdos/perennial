@@ -486,8 +486,7 @@ Proof.
         iDestruct (is_wal_wf with "Hinner") as %Hwal_wf.
         iDestruct "Hsim" as "[Hsim _]".
         iNamed "HmemLog_linv".
-        iDestruct "HmemStart_txn" as "#HmemStart_txn".
-        iDestruct "HnextDiskEnd_txn" as "#HnextDiskEnd_txn".
+        iNamed "HnextDiskEnd".
         iNamed "Hinner".
         (* XXX: unify_ghost doesn't rewrite everywhere *)
         iDestruct (ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
@@ -546,7 +545,7 @@ Proof.
         { iExists _; iFrame.
           iPureIntro.
           eapply locked_wf_memWrite; eauto. }
-        iExists memStart_txn_id, nextDiskEnd_txn_id, _, _, _; iFrame.
+        iExists memStart_txn_id, nextDiskEnd_txn_id, _, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
         autorewrite with len.
         iFrame "%".
@@ -560,6 +559,8 @@ Proof.
         { autorewrite with len.
           rewrite Nat.add_sub.
           iFrame "#". }
+        iSplit.
+        { iExists _. iFrame. iFrame "%". }
         { iPureIntro.
           pose proof (is_txn_bound _ _ _ HmemStart_txn).
           pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
