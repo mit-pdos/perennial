@@ -380,6 +380,27 @@ Section goose_lang.
   Proof.
   Admitted.
 
+  (*
+  lift: modify_token ∗ stable_maps_to ==∗ buftxn_maps_to
+
+  is_crash_lock (P (modify_token ∗ stable_maps_to)) (P stable_maps_to)
+
+  durable_lb i
+  -∗ exact_txn_id i' (≥ i)
+
+  ephemeral_maps_to (≥i+1) a v ∗ stable_maps_to i a v0 ∗ durable_lb i
+  -∗ (ephemeral_maps_to i' a v ∗ stable_maps_to i' a v) ∨
+
+
+  P (ephemeral_maps_to (≥i+1)) ∗ P0 (stable_maps_to i) ∗ durable_lb i
+  -∗
+
+  {P buftxn_maps_to ∧ P0 stable_maps_to}
+    CommitWait
+  {P (modify_token ∗ stable_maps_to)}
+  {P0 stable_maps_to ∨ P stable_maps_to}
+*)
+
   (* the idea is that the caller gets to open an invariant and extract an old
   version of whatever they've modified, then substitute it for a newly-prepared
   transaction *)
