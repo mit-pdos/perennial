@@ -215,27 +215,19 @@ Section bi.
     ∃ v, m = {[a := v]}.
   Proof.
     intros.
-    assert (∃ v, map_to_list m = [(a, v)]).
-    { rewrite dom_map_to_list in H.
-      generalize dependent (map_to_list m); intros es.
-      destruct es; simpl.
-      - intros H%(f_equal elements).
-        rewrite elements_empty elements_singleton in H; congruence.
-      - intros.
-        destruct es.
-        + simpl in H.
-          rewrite right_id_L in H.
-          destruct p; simpl in *.
-          apply (f_equal elements) in H.
-          rewrite !elements_singleton in H.
-          inversion H; eauto.
-        + (* this destruct is the wrong strategy; list_to_set could in principle have many duplicates *)
-          admit.
+    destruct (m !! a) eqn:He.
+    2: {
+      assert (a ∈ dom (gset L) m) by set_solver.
+      apply elem_of_dom in H0. rewrite He in H0. inversion H0. congruence.
     }
-    rewrite -(list_to_map_to_list m).
-    destruct H0 as [v ->].
-    exists v; auto.
-  Admitted.
+    exists v. rewrite -insert_empty.
+    apply map_eq; intros.
+    destruct (decide (i = a)); subst.
+    - rewrite lookup_insert; eauto.
+    - rewrite lookup_insert_ne; eauto.
+      rewrite lookup_empty.
+      apply not_elem_of_dom. set_solver.
+  Qed.
 
   Theorem map_singleton_holds_at m Φ mapsto1 :
     ([∗ map] a↦v∈m, HoldsAt (Φ a v) mapsto1 {[a]}) -∗

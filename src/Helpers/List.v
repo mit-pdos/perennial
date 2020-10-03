@@ -241,7 +241,11 @@ Theorem subslice_suffix_eq {A} (l l': list A) n n' m:
   subslice n m l = subslice n m l' ->
   subslice n' m l = subslice n' m l'.
 Proof.
-Admitted.
+  rewrite /subslice. intros.
+  replace n' with (n + (n'-n)) by lia.
+  rewrite -?drop_drop.
+  rewrite H0. reflexivity.
+Qed.
 
 Lemma take_more {A} (n m: nat) (l: list A) :
   (n ≤ length l)%nat →
