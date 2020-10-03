@@ -20,6 +20,54 @@ Proof.
   rewrite /slidingM.logIndex //=.
 Qed.
 
+Lemma stable_alloc_end γ txns mutable nextDiskEnd_txn_id endpos :
+  ( memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id ∗
+    nextDiskEnd_inv γ txns ∗
+    txns_ctx γ txns ∗
+    txn_pos γ (length txns - 1) endpos
+  )
+  ==∗
+  (
+    memLog_linv_nextDiskEnd_txn_id γ endpos (length txns - 1) ∗
+    nextDiskEnd_inv γ txns ∗
+    txns_ctx γ txns ∗
+    (length txns - 1)%nat [[γ.(stable_txn_ids_name)]]↦ro tt
+  ).
+Proof.
+  iIntros "(H0 & H1 & Htxns_ctx & #Hend)".
+  iNamed "H1".
+  iNamed "H0".
+  iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as "%HnextDiskEnd_txn".
+  eapply is_txn_bound in HnextDiskEnd_txn as HnextDiskEnd_bound.
+  iDestruct (map_ctx_agree with "HownStableSet Hstablectx") as %->.
+  iCombine "HownStableSet Hstablectx" as "Hstablectx".
+  destruct (stable_txns !! (length txns - 1)%nat) eqn:He.
+  {
+    iDestruct (big_sepM_lookup with "Hstablero") as "#Hstable"; eauto.
+    iModIntro.
+    iDestruct "Hstablectx" as "[Hstablectx HownStableSet]".
+    iFrame "Htxns_ctx Hstable".
+    iSplitL "HownStableSet".
+    { iExists _. iFrame. iFrame "# %".
+      iPureIntro. intros. eapply HnextDiskEnd_max_stable. lia. }
+    iExists _. iFrame. iFrame "%".
+  }
+
+  iMod (map_alloc_ro with "Hstablectx") as "[Hstablectx #Hstable]"; eauto.
+  iDestruct (big_sepM_insert with "[$Hstablero $Hstable]") as "Hstablero"; eauto.
+  iModIntro.
+  iDestruct "Hstablectx" as "[Hstablectx HownStableSet]".
+  iFrame "Htxns_ctx Hstable".
+  iSplitL "HownStableSet".
+  { iExists _. iFrame. iFrame "# %".
+    iPureIntro. intros. rewrite lookup_insert_ne; try lia. eapply HnextDiskEnd_max_stable. lia. }
+  iExists _. iFrame.
+  iPureIntro. rewrite /stable_sound. intros.
+  destruct (decide (txn_id = (length txns - 1)%nat)); subst.
+  { eapply is_txn_bound in H2. lia. }
+  rewrite lookup_insert_ne in H0; eauto.
+Qed.
+
 Theorem wp_endGroupTxn l st γ :
   {{{ is_wal P l γ ∗ wal_linv st γ }}}
     WalogState__endGroupTxn #st
@@ -33,13 +81,30 @@ Proof.
   iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf.
   wp_call.
   rewrite /WalogState__memEnd.
-  wp_loadField. wp_apply (wp_sliding__clearMutable with "His_memLog"); iIntros "His_memLog".
+  wp_loadField.
+  wp_apply (wp_sliding__clearMutable with "His_memLog").
+  iIntros "His_memLog".
 
   iApply "HΦ".
   iNamed "HmemLog_linv".
   iDestruct "HmemStart_txn" as "#HmemStart_txn".
   iDestruct "HmemEnd_txn" as "#HmemEnd_txn".
   iMod (txn_pos_valid_locked with "Hwal HmemEnd_txn Howntxns") as "(%HmemEnd_is_txn & Howntxns)".
+
+  iAssert (txn_pos γ nextDiskEnd_txn_id σ.(memLog).(slidingM.mutable)) as "#HnextDiskEnd_txn0".
+  { iNamed "HnextDiskEnd". iFrame "#". }
+  iMod (txn_pos_valid_locked with "Hwal HnextDiskEnd_txn0 Howntxns") as "(%HnextDiskEnd_is_txn0 & Howntxns)".
+
+  iDestruct "Hwal" as "[Hinv Hcirc]".
+  iInv "Hinv" as (σs) "[Hinner Hp]" "Hclose".
+  iDestruct "Hinner" as "(>%Hwf & Hmem & >Htxns_ctx & >γtxns & >HnextDiskEnd_inv & >Hdisk)".
+  iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
+  iMod (stable_alloc_end with "[$HnextDiskEnd $HnextDiskEnd_inv $Htxns_ctx $HmemEnd_txn]") as "H".
+  iDestruct "H" as "(HnextDiskEnd & HnextDiskEnd_inv & Htxns_ctx & #Hstable)".
+  iMod ("Hclose" with "[γtxns Hmem HnextDiskEnd_inv Hdisk Htxns_ctx Hp]").
+  { iModIntro.
+    iExists _. iFrame. done. }
+
   iModIntro.
   iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf'.
   iExists (set memLog (λ _,
@@ -54,20 +119,53 @@ Proof.
     unfold locked_wf, slidingM.wf in Hlocked_wf.
     word.
   }
-  iExists memStart_txn_id, (length txns - 1)%nat, txns, _; simpl.
-  iFrame "% # ∗".
-  destruct_and! His_memLog.
-(*
-  iPureIntro; split_and!; auto; try lia.
-  - pose proof (is_highest_txn_bound HdiskEnd_txn); lia.
-  - pose proof (is_txn_bound _ _ _ HmemEnd_is_txn).
-    replace (S (length txns - 1)) with (length txns) by lia.
-    rewrite !logIndex_set_mutable.
-    admit. (* TODO: invariant needs to say mem_log after mutable has appropriate
-    updates (before we got this from the has_updates for the entire memLog, but
-    now we need to build it from the pieces) *)
-*)
-Admitted.
+  eapply is_txn_bound in HdiskEnd_txn as HdiskEnd_txn_bound.
+  eapply is_txn_bound in HnextDiskEnd_is_txn0 as HnextDiskEnd_txn0_bound.
+  destruct (decide (int.val σ.(memLog).(slidingM.mutable) ≤ int.val (slidingM.endPos σ.(memLog)))).
+  2: {
+    epose proof (wal_wf_txns_mono_pos Hwf HmemEnd_is_txn HnextDiskEnd_is_txn0). lia.
+  }
+
+  iExists memStart_txn_id, (length σs.(log_state.txns) - 1)%nat, σs.(log_state.txns), _; simpl.
+  iFrame "Howntxns HownLoggerPos_linv".
+  iFrame "HmemStart_txn HmemEnd_txn".
+  iFrame "%".
+  iSplit.
+  { iPureIntro. lia. }
+  iSplitL "HnextDiskEnd".
+  { iNamed "HnextDiskEnd". iExists _. iFrame. iFrame "#". iFrame "%". }
+  iSplit.
+  { iPureIntro. rewrite /slidingM.wf /= in Hsliding_wf'. lia. }
+  iSplit.
+  { rewrite logIndex_set_mutable.
+    replace (S (length σs.(log_state.txns) - 1)) with (length σs.(log_state.txns)) by lia.
+    rewrite drop_all.
+    rewrite /slidingM.logIndex /slidingM.endPos.
+    word_cleanup.
+    replace (Z.to_nat (int.val σ.(memLog).(slidingM.start) + length σ.(memLog).(slidingM.log)) -
+         int.nat σ.(memLog).(slidingM.start))%nat with (length σ.(memLog).(slidingM.log)) by lia.
+    rewrite drop_all. eauto. }
+  rewrite (subslice_split_r _ (S nextDiskEnd_txn_id) _ σs.(log_state.txns)); try lia.
+  erewrite <- (subslice_to_end _ _ σs.(log_state.txns)) in His_nextTxn by reflexivity.
+  replace (S (length σs.(log_state.txns) - 1)) with (length σs.(log_state.txns)) by lia.
+  rewrite ?logIndex_set_mutable.
+  rewrite (subslice_split_r _ (slidingM.logIndex σ.(memLog) σ.(memLog).(slidingM.mutable)) _ σ.(memLog).(slidingM.log)).
+  {
+    erewrite <- (subslice_to_end _ (slidingM.logIndex σ.(memLog) (slidingM.endPos σ.(memLog))) σ.(memLog).(slidingM.log)) in His_nextTxn.
+    { iPureIntro. eapply has_updates_app; eauto. }
+    rewrite /slidingM.logIndex /slidingM.endPos. word.
+  }
+  {
+    rewrite /slidingM.logIndex /slidingM.endPos.
+    rewrite /slidingM.wf /slidingM.endPos /= in Hsliding_wf'.
+    word.
+  }
+  {
+    rewrite /slidingM.logIndex.
+    rewrite /slidingM.wf /slidingM.endPos /= in Hsliding_wf'.
+    word.
+  }
+Qed.
 
 Lemma is_txn_mid σ (a b c : nat) pos :
   wal_wf σ ->
