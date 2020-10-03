@@ -82,13 +82,24 @@ Qed.
 essentially the same spec as sliding.memWrite *)
 Theorem wp_WalogState__doMemAppend l memLog bufs upds :
   {{{ "His_memLog" ∷ is_sliding l memLog ∗
-      "Hupds" ∷ updates_slice_frag bufs 1 upds
+      "Hupds" ∷ updates_slice_frag bufs 1 upds ∗
+      "%Hoverflow" ∷ ⌜slidingM.memEnd memLog + length upds < 2 ^ 64⌝
   }}}
     doMemAppend #l (slice_val bufs)
   {{{ RET #(slidingM.endPos (memWrite memLog upds));
       "His_memLog" ∷ is_sliding l (memWrite memLog upds) }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "H HΦ".
+  iNamed "H".
+  wp_call.
+  wp_apply (wp_sliding__memWrite with "[$His_memLog $Hupds]"); eauto.
+  iIntros "His_memLog".
+  wp_apply (wp_sliding__end with "[$His_memLog]").
+  iIntros "His_memLog".
+  wp_pures.
+  iApply "HΦ".
+  done.
+Qed.
 
 Lemma is_wal_wf l γ σ :
   is_wal_inner l γ σ -∗ ⌜wal_wf σ⌝.
@@ -344,6 +355,17 @@ Proof.
   rewrite -> subslice_app_1 by lia; auto.
 Qed.
 
+Lemma is_txn_app txns extra txn_id pos :
+  is_txn txns txn_id pos ->
+  is_txn (txns ++ extra) txn_id pos.
+Proof.
+  rewrite /is_txn; intros.
+  destruct (txns !! txn_id) eqn:He.
+  2: { simpl in H. congruence. }
+  eapply (lookup_app_l_Some _ extra) in He.
+  rewrite He. eauto.
+Qed.
+
 Theorem disk_inv_append γ σs cs pos upds :
   disk_inv γ σs cs -∗
   disk_inv γ (set log_state.txns (λ txns, txns ++ [(pos, upds)]) σs) cs.
@@ -358,9 +380,9 @@ Proof.
   { iApply (is_durable_append with "[$]").
     eapply is_txn_bound; eauto. }
   iSplit.
-  { iFrame "#". iFrame "%". admit. }
-  { iExists _. iFrame "#". iFrame "%". admit. }
-Admitted.
+  { iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
+  { iExists _. iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
+Qed.
 
 Lemma memWrite_preserves_logIndex σ upds pos :
   slidingM.logIndex (memWrite σ upds) pos =
@@ -470,6 +492,7 @@ Proof.
       - iNamed "Hfields". iNamed "Hfield_ptsto".
         wp_loadField.
         wp_apply (wp_WalogState__doMemAppend with "[$His_memLog $Hbufs]").
+        { rewrite -Hbufs_sz. iPureIntro. word. }
         assert (slidingM.wf σ.(memLog)).
         { destruct Hlocked_wf; auto. }
         set (memLog' := memWrite σ.(memLog) bs).
@@ -550,11 +573,7 @@ Proof.
         autorewrite with len.
         iFrame "%".
         iSplit.
-        { iPureIntro.
-          admit. (* TODO: need to somehow separate diskEnd from endPos (probably
-          even after aborption for non-empty writes, must advance by at least
-          one block) *)
-        }
+        { iPureIntro. eapply is_txn_app. eauto. }
         iSplit.
         { autorewrite with len.
           rewrite Nat.add_sub.
