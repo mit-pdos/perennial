@@ -7,6 +7,8 @@ From Perennial.program_proof Require Import proof_prelude.
 From stdpp Require Import gmap.
 From RecordUpdate Require Import RecordUpdate.
 From Perennial.algebra Require Import auth_map.
+From Perennial.goose_lang.lib Require Import lock.
+From Perennial.Helpers Require Import NamedProps.
 
 Section lockservice_proof.
 Context `{!heapG Σ}.
@@ -21,11 +23,17 @@ Axiom nondet_spec:
 
 Record LockArgsC :=
   mkLockArgsC{
-  Lockname:nat;
-  CID:nat;
-  Seq:nat
+  Lockname:u64;
+  CID:u64;
+  Seq:u64
   }.
 Instance: Settable LockArgsC := settable! mkLockArgsC <Lockname; CID; Seq>.
+
+Record LockReplyC :=
+  mkLockReplyC {
+  OK:bool
+  }.
+Instance: Settable LockReplyC := settable! mkLockReplyC <OK>.
 
 (*
 
@@ -63,50 +71,150 @@ Ghost state for server:
 (ck_cid [[rc_γ]]↦ (ls_seq, last_reply) 
 *)
 
-  Context `{!mapG Σ nat (nat * bool)}.
+  Context `{!mapG Σ u64 (u64 * bool)}.
   Context `{!inG Σ (exclR unitO)}.
 
 Definition own_clerk (ck:val) (srv:val) (γ:gname) (rc_γ:gname) : iProp Σ
   :=
-  ∃ (ck_l:loc) (cid seq ls_seq :nat) (last_reply:bool),
+  ∃ (ck_l:loc) (cid seq ls_seq :u64) (last_reply:bool),
     ⌜ck = #ck_l⌝
-    ∗⌜seq > ls_seq⌝
+    ∗⌜int.val seq > int.val ls_seq⌝
     ∗ck_l ↦[Clerk.S :: "cid"] #cid
     ∗ck_l ↦[Clerk.S :: "cid"] #seq
     ∗ck_l ↦[Clerk.S :: "primary"] srv
     ∗ (cid [[rc_γ]]↦ (ls_seq, last_reply))
        (*∗own γ (seq) *)
-      .
-
-Definition CallTryLock_inv (cid:nat) rc_γ P Pγ N : iProp Σ :=
-  ∃ (ls_seq:nat) (seq:nat) (last_reply:bool),
-    (cid [[rc_γ]]↦ (ls_seq, last_reply))
-      ∗ (⌜seq > ls_seq⌝
-         ∨ ⌜seq = ls_seq ∧ last_reply = false⌝
-         ∨ (inv N (P ∨ own Pγ (Excl ()))))
 .
 
-(* TODO: use gmap, or gset + total map? *)
-Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) rc_γ (Ps: u64 -> (iProp Σ)) P Pγ N M:
+Definition CallTryLock_inv (cid:u64) rc_γ (P:iProp Σ) (Pγ:gname) (N:namespace) : iProp Σ :=
+  ∃ (ls_seq:u64) (seq:u64) (last_reply:bool),
+    (">Hrc_ptsto" ∷ cid [[rc_γ]]↦ (ls_seq, last_reply))
+      ∗ "HTryLockCases" ∷ (
+         ">Hcase" ∷ ⌜int.val seq > int.val ls_seq⌝
+         ∨ ">Hcase" ∷  ⌜seq = ls_seq ∧ last_reply = false⌝
+         ∨ "Hcase" ∷  (inv N (P ∨ own Pγ (Excl ()))))
+.
+
+Print into_val.IntoVal.
+Global Instance ToVal_bool : into_val.IntoVal bool.
+Proof.
+  refine {| into_val.to_val := λ (x: bool), #x;
+            IntoVal_def := false; |}; congruence.
+Defined.
+
+Check (to_val #true).
+Definition own_lockserver (srv:loc) (rc_γ:gname) (Ps: u64 -> (iProp Σ)) : iProp Σ:=
+  ∃ (lastSeq_ptr lastReply_ptr locks_ptr:loc) (lastSeqM:gmap u64 u64)
+    (lastReplyM locksM:gmap u64 bool),
+    (
+      "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
+    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
+    ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
+    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ "HlocksOwn" ∷ srv ↦[LockServer.S :: "locks"] #locks_ptr
+    ∗ "HlocksMap" ∷ is_map (locks_ptr) locksM
+    ∗ "Hmapctx" ∷ map_ctx rc_γ 1 (map_zip lastSeqM lastReplyM)
+    )%I
+.
+
+(* Should make this readonly so it can be read by the RPC background thread *)
+Definition own_lock_args (args_ptr:loc) (lockArgs:LockArgsC): iProp Σ :=
+  "HLockArgsOwnLockname" ∷ args_ptr ↦[LockArgs.S :: "Lockname"] #lockArgs.(Lockname)
+  ∗ "HLockArgsOwnCID" ∷ args_ptr ↦[LockArgs.S :: "CID"] #lockArgs.(CID)
+  ∗ "HLockArgsOwnSeq" ∷ args_ptr ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq)
+.
+
+Definition own_lock_reply (args_ptr:loc) (lockReply:LockReplyC): iProp Σ :=
+  args_ptr ↦[LockReply.S :: "OK"] #lockReply.(OK)
+.
+
+Definition is_lockserver srv rc_γ Ps lockN: iProp Σ :=
+  ∃ (mu_ptr:loc),
+    readonly (srv ↦[LockServer.S :: "mu"] #mu_ptr)
+             ∗(is_lock lockN #mu_ptr (own_lockserver srv rc_γ Ps))
+.
+
+Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) rc_γ (Ps: u64 -> (iProp Σ)) P Pγ N M lockN:
   Ps lockArgs.(Lockname) = P →
-  {{{ inv M (CallTryLock_inv lockArgs.(CID) rc_γ P Pγ N) }}}
+  {{{ is_lockserver srv rc_γ Ps lockN∗inv M (CallTryLock_inv (int.nat lockArgs.(CID)) rc_γ P Pγ N) ∗own_lock_args args lockArgs
+  ∗ own_lock_reply reply lockReply }}}
     LockServer__TryLock #srv #args #reply
   {{{ RET #false; ∃ ok, (⌜ok = true⌝∗(inv N (P ∨ own Pγ (Excl()))) ∨ ⌜ok = false⌝) ∗ reply ↦[LockReply.S :: "OK"] #ok }}}.
 Proof.
   intros HPs.
-  iIntros (Φ) "HinvM HPost".
+  iIntros (Φ) "(#Hls & #HinvM & Hargs & Hreply) HPost".
   wp_lam.
   wp_pures.
+  iDestruct "Hls" as (mu_ptr) "(Hls & Hmu)".
+  wp_loadField.
+  wp_apply (acquire_spec lockN #mu_ptr _ with "Hmu").
+  iIntros "(Hlocked & Hlsown)".
+  wp_seq.
+  iNamed "Hargs".
+  wp_loadField.
+  iNamed "Hlsown".
+  wp_loadField.
+  wp_apply (wp_MapGet with "HlastSeqMap").
+  iIntros (v ok) "(HSeqMapGet&HlastSeqMap)"; iDestruct "HSeqMapGet" as %HSeqMapGet.
+  wp_pures.
+  destruct ok.
+  - (* Case cid in lastSeqM *) admit.
+  - (* Case cid not in lastSeqM, so don't look at cache *)
+    wp_pures.
+    wp_loadField.
+    wp_loadField.
+    wp_loadField.
+    Check wp_MapInsert.
+    wp_apply (wp_MapInsert _ _ lastSeqM _ lockArgs.(Seq) (#lockArgs.(Seq)) with "HlastSeqMap"); try eauto.
+    iIntros "HlastSeqMap".
+    wp_pures.
+    wp_loadField.
+    wp_loadField.
+    wp_apply (wp_MapGet with "HlocksMap").
+    iIntros (lock_v ok) "(HLocksMapGet&HlocksMap)"; iDestruct "HLocksMapGet" as %HLocksMapGet.
+    wp_pures.
+    destruct lock_v.
+    + (* Lock already held by someone *)
+      wp_pures.
+      wp_storeField.
+      repeat wp_loadField.
+      wp_bind (MapInsert _ _ _)%I.
+      iApply fupd_wp.
+      iInv "HinvM" as "HM" "HCloseM".
+      iDestruct "HM" as (ls_seq seq last_reply) "[HM #HMM]".
+      iDestruct "HMM" as "[HMM|[HMM|HMM]]".
+      -- iMod "HM"; iMod "HMM". admit.
+      -- iMod "HM"; iMod "HMM". admit.
+      -- iMod "HM".
+         iMod ("HCloseM" with "[HM]"). { iModIntro. admit. }
+         simpl.
+         iModIntro. 
+        
+         wp_apply (wp_MapInsert _ _ lastReplyM _ false #false with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
+      wp_seq.
+      wp_loadField.
+      wp_apply (release_spec lockN #mu_ptr _ with "[-Hreply HPost]"); try iFrame "Hmu Hlocked".
+      {
+        iModIntro.
+        admit.
+      }
+      wp_seq. iApply "HPost".
+      iExists false. iFrame. by iRight.
+    + (* Lock not held by anyone *)
 Admitted.
 
-Lemma CallTryLock_spec (srv reply args:loc) (lockArgs:LockArgsC) (used:gset nat) rc_γ (Ps:u64 -> iProp Σ) P Pγ N M:
+Lemma CallTryLock_spec (srv reply args:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (used:gset u64) rc_γ (Ps:u64 -> iProp Σ) P Pγ N M:
   lockArgs.(Lockname) ∈ used → Ps lockArgs.(Lockname) = P →
-  {{{ inv M (CallTryLock_inv lockArgs.(CID) rc_γ P Pγ N) }}}
+  {{{ "#HinvM" ∷ inv M (CallTryLock_inv lockArgs.(CID) rc_γ P Pγ N)
+          ∗ "Hargs" ∷ own_lock_args args lockArgs
+          ∗ "Hreply" ∷ own_lock_reply reply lockReply
+  }}}
     CallTryLock #srv #args #reply
   {{{ v, RET v; ⌜v = #true⌝ ∨ ⌜v = #false⌝ ∗∃ ok, (⌜ok = false⌝ ∨ ⌜ok = true⌝∗(inv N (P ∨ own Pγ (Excl()))) ) ∗ reply ↦[LockReply.S :: "OK"] #ok }}}.
 Proof.
   intros Hused Hp.
-  iIntros (Φ) "#HinvM HPost".
+  iIntros (Φ).
+  iNamed 1. iIntros "HPost".
   wp_lam.
   wp_pures.
   wp_apply wp_fork.
@@ -124,7 +232,8 @@ Proof.
       iModIntro.
       iIntros "HPost".
       wp_pures.
-      wp_apply (TryLock_spec); try iFrame "HinvM"; try apply Hp.
+      (*
+      wp_apply (TryLock_spec with "[Hreply Hargs]"); try iFrame "HinvM Hreply Hargs".
       iIntros "HTryLockPost".
       wp_seq. by iApply "HPost".
     }
@@ -150,7 +259,8 @@ Proof.
     wp_pures.
     iApply "HPost". by iLeft.
   }
-Qed.
+*)
+Admitted.
 
 (*
 Lemma Lock_spec ck γ (ln:u64) (Ps: gmap u64 (iProp Σ)) (P: iProp Σ) :
