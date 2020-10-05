@@ -15,6 +15,7 @@ Section lockservice_proof.
 Context `{!heapG Σ}.
 Context `{!mapG Σ u64 bool}.
 Context `{!mapG Σ u64 unit}.
+Context `{!ghost_varG Σ bool}.
 
 Definition Nclient := nroot .@ "client".
 Definition Nserver := nroot .@ "server".
@@ -31,9 +32,11 @@ Definition server_inner γi γp γc : iProp Σ :=
     "Hprocro" ∷ ([∗ map] reqid ↦ proc ∈ processed, reqid [[γp]]↦ false ∨ reqid [[γp]]↦ro true) ∗
     "Havail" ∷ (⌜locked=true⌝ ∨ P).
 
-Definition client_req_inner γi γc reqid : iProp Σ :=
+Definition client_req_inner γi γc returned reqid : iProp Σ :=
   "#Hissue" ∷ reqid [[γi]]↦ro () ∗
-  "Hreply" ∷ ( reqid [[γc]]↦ false ∨ (P ∗ reqid [[γc]]↦ro true) ).
+  "Hreply" ∷ ( ghost_var returned (1/2) false ∗ reqid [[γc]]↦ false ∨
+               ghost_var returned (1/2) false ∗ reqid [[γc]]↦ro true ∗ P ∨
+               ghost_var returned (1/2) true ∗ reqid [[γc]]↦ro true ).
 
 Definition request_token γi reqid : iProp Σ :=
   "Hreq_tok" ∷ reqid [[γi]]↦ro ().
@@ -44,7 +47,9 @@ Definition response_token γp reqid acquired : iProp Σ :=
 Theorem client_allocates_reqid γi γp γc reqid :
   inv Nserver (server_inner γi γp γc)
   ={⊤}=∗
-  inv Nclient (client_req_inner γi γc reqid).
+  ∃ returned,
+    inv Nclient (client_req_inner γi γc returned reqid) ∗
+    ghost_var returned (1/2) false.
 Proof.
   iIntros "#H".
   iInv "H" as ">Hinner" "Hclose".
@@ -65,17 +70,20 @@ Proof.
   iDestruct (big_sepM2_insert _ _ _ _ false false with "[$Hprocessed]") as "Hprocessed"; eauto.
   iDestruct (big_sepM_insert with "[$Hprocro $Hproc]") as "Hprocro"; eauto.
 
-  iMod ("Hclose" with "[-Hclaim]") as "_".
+  iMod (ghost_var_alloc false) as (returned) "[Hret1 Hret2]".
+
+  iMod ("Hclose" with "[-Hclaim Hret1 Hret2]") as "_".
   { iExists _, _, _, _. iFrame. }
 
-  iMod (inv_alloc with "[Hclaim]") as "Hc".
-  2: { iModIntro. iExact "Hc". }
+  iMod (inv_alloc with "[Hclaim Hret1]") as "Hc".
+  2: { iModIntro. iExists returned. iFrame. }
 
-  iFrame. iFrame "#".
+  iFrame "#".
+  iLeft. iFrame.
 Admitted.
 
-Theorem client_generates_request γi γc reqid :
-  inv Nclient (client_req_inner γi γc reqid)
+Theorem client_generates_request γi γc returned reqid :
+  inv Nclient (client_req_inner γi γc returned reqid)
   ={⊤}=∗
   request_token γi reqid.
 Proof.
@@ -129,22 +137,28 @@ Proof.
       iLeft. done.
 Qed.
 
-Theorem client_accepts_reply γi γp γc reqid :
+Theorem client_accepts_reply γi γp γc returned reqid :
+  ghost_var returned (1/2) false -∗
   inv Nserver (server_inner γi γp γc) -∗
-  inv Nclient (client_req_inner γi γc reqid) -∗
+  inv Nclient (client_req_inner γi γc returned reqid) -∗
   response_token γp reqid true
   ={⊤}=∗
-  True.
+  P.
 Proof.
-  iIntros "#Hs #Hc #Htok".
+  iIntros "Hret #Hs #Hc #Htok".
   iInv "Hc" as ">Hinner_c" "Hclose_c".
   iNamed "Hinner_c".
   iDestruct "Hreply" as "[Hnotclaimed|Hclaimed]".
   2: {
-    (* Duplicate response, we already have P. *)
-    iApply "Hclose_c".
-    iFrame. iFrame "#".
+    iDestruct "Hclaimed" as "[(Hret2 & Hclaim & HP)|(Hret2 & HP)]".
+    2: { iDestruct (ghost_var_agree with "Hret Hret2") as %Heq. congruence. }
+    iCombine "Hret Hret2" as "Hret".
+    iMod (ghost_var_update true with "Hret") as "[Hret1 Hret2]".
+    iFrame.
+    iApply "Hclose_c". iFrame "#". iRight. iRight. iFrame.
   }
+
+  iDestruct "Hnotclaimed" as "[Hret2 Hnotclaimed]".
 
   iInv "Hs" as ">Hinner_s" "Hclose_s".
   iNamed "Hinner_s".
@@ -162,10 +176,14 @@ Proof.
   iDestruct (big_sepM2_insert_delete _ _ _ _ true true with "[$Hprocessed]") as "Hprocessed".
   { iLeft. iRight. done. }
 
-  iMod ("Hclose_s" with "[-Hclose_c Hproc]") as "_".
+  iCombine "Hret Hret2" as "Hret".
+  iMod (ghost_var_update true with "Hret") as "[Hret Hret2]".
+
+  iMod ("Hclose_s" with "[-Hclose_c Hproc Hret Hret2]") as "_".
   { iExists _, _, _, _. iFrame.
     rewrite insert_id; eauto. iFrame. }
 
+  iFrame.
   iMod ("Hclose_c" with "[-]") as "_".
   { iFrame "#". iFrame. }
 
