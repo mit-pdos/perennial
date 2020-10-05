@@ -184,7 +184,7 @@ Theorem is_inode_alloc {k} l P addr σ :
   ▷ P σ -∗
   pre_inode l addr σ ={⊤}=∗
   is_inode l (S k) P addr ∗
-  <disc> |C={⊤,∅}_(S k)=> (∃ σ', inode_cinv addr σ' ∗ P σ').
+  <disc> |C={⊤}_(S k)=> (∃ σ', inode_cinv addr σ' ∗ P σ').
    (* Crash condition has [P] without extra ▷ because [alloc_crash_lock] strips that later for us. *)
 Proof.
   iIntros "HP Hinode"; iNamed "Hinode".
@@ -201,9 +201,9 @@ Proof.
   iExists _, _; iFrame.
 Qed.
 
-Theorem wpc_Open k E2 {d:loc} {addr σ} :
+Theorem wpc_Open k {d:loc} {addr σ} :
   {{{ inode_cinv addr σ }}}
-    inode.Open #d #addr @ NotStuck; k; ⊤; E2
+    inode.Open #d #addr @ NotStuck; k; ⊤
   {{{ l, RET #l; pre_inode l addr σ }}}
   {{{ inode_cinv addr σ }}}.
 Proof.
@@ -315,9 +315,9 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Theorem wpc_Inode__UsedBlocks {k E2} {l σ addr} :
+Theorem wpc_Inode__UsedBlocks {k } {l σ addr} :
   {{{ pre_inode l addr σ  }}}
-    Inode__UsedBlocks #l @ NotStuck; k; ⊤; E2
+    Inode__UsedBlocks #l @ NotStuck; k; ⊤
   {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
       is_slice s uint64T 1 addrs ∗
       ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
@@ -346,11 +346,11 @@ Proof.
   - iExists _; eauto.
 Qed.
 
-Theorem wpc_Inode__Read {k E2} {l k' P addr} {off: u64} :
+Theorem wpc_Inode__Read {k} {l k' P addr} {off: u64} :
   (S k < k')%nat →
   ⊢ {{{ "Hinode" ∷ is_inode l (S k') P addr }}}
     <<{ ∀∀ σ mb, ⌜mb = σ.(inode.blocks) !! int.nat off⌝ ∗ ▷ P σ }>>
-      Inode__Read #l #off @ NotStuck; (S k); ⊤; E2
+      Inode__Read #l #off @ NotStuck; (S k); ⊤
     <<{ ▷ P σ }>>
     {{{ s, RET (slice_val s); match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end }}}.
 Proof.
@@ -392,14 +392,19 @@ Proof.
   wp_pures.
   iNamed 1.
   wpc_if_destruct.
-  - iRight in "Hfupd".
+  - 
+    iApply ncfupd_wpc.
+    iSplit.
+    { iLeft in "Hfupd". iModIntro. iModIntro. iNext. iFrame. iExists _; iFrame. iExists _. iFrame. }
+    iRight in "Hfupd".
     iMod (own_disc_fupd_elim with "HP") as "HP".
+
     iMod ("Hfupd" $! σ None with "[$HP]") as "[HP HQ]".
     { iPureIntro.
       rewrite lookup_ge_None_2 //.
       lia. }
     iMod (fupd_later_to_disc with "HP") as "HP".
-    iApply wpc_fupd.
+    iApply wpc_fupd. iModIntro.
     wpc_pures.
     { iLeft in "HQ". iModIntro. iFrame "HQ". eauto 10 with iFrame. }
     iMod (own_disc_fupd_elim with "HP") as "HP".
@@ -428,6 +433,9 @@ Proof.
     wp_apply (wp_SliceGet _ _ _ _ _ addrs with "[$Haddrs_small //]").
     iIntros "Haddrs_small"; iNamed 1.
     wpc_pures.
+    iApply ncfupd_wpc.
+    iSplit.
+    { iLeft in "Hfupd". iModIntro. iModIntro. iNext. iFrame. iExists _; iFrame. iExists _. iFrame. }
     iDestruct (is_inode_durable_read with "Hdurable") as "H"; iNamed "H".
     iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
     destruct Hblock_lookup as [b0 Hlookup2].
@@ -438,7 +446,7 @@ Proof.
     iMod ("Hfupd" $! σ with "[$HP]") as "[HP HQ]".
     { iPureIntro; eauto. }
     iMod (fupd_later_to_disc with "HP") as "HP".
-    iApply wpc_fupd.
+    iApply wpc_fupd. iModIntro.
     wpc_apply (wpc_Read with "Hb").
     iSplit.
     { iLeft in "HQ". iModIntro. iNext. iIntros "Hda".
@@ -467,14 +475,14 @@ Proof.
     iFrame.
 Qed.
 
-Theorem wpc_Inode__Read_triple {k E2} {l k' P addr} {off: u64} Q :
+Theorem wpc_Inode__Read_triple {k} {l k' P addr} {off: u64} Q :
   (S k < k')%nat →
   {{{ "Hinode" ∷ is_inode l (S k') P addr ∗
       "Hfupd" ∷ (∀ σ σ' mb,
         ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
         ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q mb)
   }}}
-    Inode__Read #l #off @ NotStuck; (S k); ⊤; E2
+    Inode__Read #l #off @ NotStuck; (S k); ⊤
   {{{ s mb, RET slice_val s;
       (match mb with
        | Some b => is_block s 1 b
@@ -492,11 +500,11 @@ Proof.
   iIntros (s) "Hblock". iApply "HΦ". iFrame. done.
 Qed.
 
-Theorem wpc_Inode__Size {k E2} {l k' P addr}:
+Theorem wpc_Inode__Size {k} {l k' P addr}:
   (S k < k')%nat →
   ⊢ {{{ "Hinode" ∷ is_inode l (S k') P addr }}}
     <<{ ∀∀ σ (sz: u64), ⌜int.nat sz = inode.size σ⌝ ∗ ▷ P σ }>>
-      Inode__Size #l @ NotStuck; (S k); ⊤; E2
+      Inode__Size #l @ NotStuck; (S k); ⊤
     <<{ ▷ P σ }>>
     {{{ RET #sz; True }}}.
 Proof.
@@ -514,6 +522,10 @@ Proof.
   wpc_bind_seq.
   crash_lock_open "His_locked".
   iDestruct 1 as (σ) "(>Hlockinv&HP)".
+  iMod (fupd_later_to_disc with "HP") as "HP".
+  iApply ncfupd_wpc.
+  iSplit.
+  { iLeft in "Hfupd". do 2 iModIntro. iNext. eauto 10 with iFrame. }
   iEval (rewrite /named) in "HP".
   iNamed "Hlockinv".
   iNamed "Hlockinv".
@@ -521,6 +533,7 @@ Proof.
   iDestruct (is_inode_durable_size with "Hdurable") as %Hblocks_length.
 
   iRight in "Hfupd".
+  iMod (own_disc_fupd_elim with "HP") as "HP".
   iMod ("Hfupd" $! σ addr_s.(Slice.sz) with "[$HP]") as "[HP HQ]".
   { iPureIntro.
     rewrite /inode.size.
@@ -528,6 +541,7 @@ Proof.
     rewrite -Haddrs_sz //. }
 
   iMod (fupd_later_to_disc with "HP") as "HP".
+  iModIntro.
   iCache with "HQ Hdurable HP".
   { iLeft in "HQ". iModIntro. eauto 10 with iFrame. }
   iApply wpc_fupd.
@@ -549,7 +563,7 @@ Proof.
   iRight in "HQ". by iApply "HQ".
 Qed.
 
-Theorem wpc_Inode__Size_triple {k E2} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
+Theorem wpc_Inode__Size_triple {k} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
   (S k < k')%nat →
   {{{ "Hinode" ∷ is_inode l (S k') P addr ∗
       "HQc" ∷ (∀ a, Q a -∗ <disc> ▷ Qc) ∗
@@ -557,7 +571,7 @@ Theorem wpc_Inode__Size_triple {k E2} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iP
           ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
           ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q sz))
   }}}
-    Inode__Size #l @ NotStuck; (S k); ⊤; E2
+    Inode__Size #l @ NotStuck; (S k); ⊤
   {{{ sz, RET #sz; Q sz }}}
   {{{ Qc }}}.
 Proof.
@@ -571,12 +585,12 @@ Proof.
   iIntros "_". iApply "HΦ". done.
 Qed.
 
-Theorem wp_Inode__mkHdr {stk E} l addr_s addrs :
+Theorem wp_Inode__mkHdr {stk} l addr_s addrs :
   length addrs ≤ InodeMaxBlocks ->
   {{{ "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
       "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
   }}}
-    Inode__mkHdr #l @ stk; E
+    Inode__mkHdr #l @ stk
   {{{ s b, RET (slice_val s);
       is_block s 1 b ∗
       ⌜block_encodes b ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
@@ -656,7 +670,7 @@ Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
 return [#false] without actually performing the commit.
 It should be possible to phrase it as a "commit that does not change
 anything". *)
-Theorem wpc_Inode__Append {k E2}
+Theorem wpc_Inode__Append {k}
         {l k' P addr}
         (* allocator stuff *)
         {Palloc γalloc domain n}
@@ -676,9 +690,9 @@ Theorem wpc_Inode__Append {k E2}
         ⌜inode.wf σ⌝ -∗
         ∀ s,
         ⌜s !! addr' = Some block_reserved⌝ -∗
-         ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN}=∗
+         ▷ P σ ∗ ▷ Palloc s -∗ |NC={⊤ ∖ ↑allocN}=>
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
-  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
@@ -817,9 +831,9 @@ Proof.
       wpc_bind (Write _ _).
       (* hide this horrible postcondition for now *)
       match goal with
-      | |- envs_entails _ (wpc _ _ _ _ _ ?Φ0 _) => set (Φ':=Φ0)
+      | |- envs_entails _ (wpc _ _ _ _ ?Φ0 _) => set (Φ':=Φ0)
       end.
-      wpc_apply (wpc_Write_fupd with "[$Hb]").
+      wpc_apply (wpc_Write_ncfupd with "[$Hb]").
       iSplit.
       { iLeft in "Hfupd". iModIntro. iNext. iSplitR "Hda".
         * iFrame. iExists _; iFrame. iExists _; iFrame.
@@ -904,7 +918,7 @@ Qed.
 
 (* Note that this spec is a lot weaker than the one above because in case of
 failure, the resources put into "Hfupd" are lost! *)
-Theorem wpc_Inode__Append_triple {k E2}
+Theorem wpc_Inode__Append_triple {k}
         {l k' P addr}
         (* allocator stuff *)
         {Palloc γalloc domain n}
@@ -928,7 +942,7 @@ Theorem wpc_Inode__Append_triple {k E2}
          ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN}=∗
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ Q))
   }}}
-    Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤; E2
+    Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
   {{{ Qc }}}.
 Proof.
@@ -952,7 +966,6 @@ End goose.
 Section goose.
 Context `{!heapG Σ}.
 Context `{!allocG Σ}.
-Context `{!crashG Σ}.
 
 Context (P: inode.t → iProp Σ).
 

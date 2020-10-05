@@ -78,7 +78,7 @@ Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semanti
 
 Definition has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) (K: sexpr → sexpr) (CTX: LanguageCtx K),
-      j ⤇ K es -∗ WPC e @ NotStuck; sty_lvl_ops; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ v, ∃ vs, j ⤇ K (of_val vs)
+      j ⤇ K es -∗ WPC e @ NotStuck; sty_lvl_ops; ⊤ {{ v, ∃ vs, j ⤇ K (of_val vs)
                                                                     ∗ vty vs v }}
                                                       {{ True }})%I.
 
@@ -231,6 +231,7 @@ Context `{hsT_model: !specTy_model} (spec_trans: sval → ival → Prop).
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 
+
 Context (upd: specTy_update hsT_model).
 
 Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
@@ -245,7 +246,7 @@ Definition sty_init_obligation2 (sty_initP: istate → sstate → Prop) :=
 
 Definition sty_crash_obligation :=
   forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
-      ⊢ sty_inv hS -∗ ▷ sty_crash_cond hS -∗ |sty_lvl_init={styN, ∅}=> ▷ ∀ (hG': heapG Σ), |={⊤}=>
+      ⊢ sty_inv hS -∗ ▷ sty_crash_cond hS -∗ |sty_lvl_init={styN}=> ▷ ∀ (hG': heapG Σ), |={⊤}=>
       ∀ σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
       ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
@@ -262,26 +263,26 @@ Definition sty_rules_obligation :=
   ∀ (es: sval) (vs: sval) e v t1 t2,
     get_ext_tys es (t1, t2) →
     spec_trans es e →
-    forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+    forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ) ,
     sty_inv hS -∗
     spec_ctx -∗
     val_interp (hS := hS) t1 vs v -∗
     has_semTy (es vs) (e v) (val_interp (hS := hS) t2).
 
 Definition sty_crash_inv_obligation :=
-  (forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
+  (forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ) 
      e (Φ: ival → iProp Σ),
     ⊢ sty_init hS -∗
     spec_ctx -∗
-    (sty_inv hS -∗ (WPC e @ NotStuck; sty_lvl_ops; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ True%I }})) -∗
+    (sty_inv hS -∗ (WPC e @ NotStuck; sty_lvl_ops; ⊤ {{ Φ }} {{ True%I }})) -∗
     |={⊤}=> sty_inv hS ∗
-    WPC e @ NotStuck; sty_lvl_init; ⊤; (⊤ ∖ ↑sN ∖ styN) {{ Φ }} {{ sty_crash_cond hS }}).
+    WPC e @ NotStuck; sty_lvl_init; ⊤ {{ Φ }} {{ sty_crash_cond hS }}).
 
 Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
 Definition subst_ctx := gmap string subst_tuple.
 
-Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
+Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} 
            (Γ: Ctx) es e τ : iProp Σ :=
   ∀ Γsubst (HPROJ: subst_ty <$> Γsubst = Γ),
   sty_inv hS -∗

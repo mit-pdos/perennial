@@ -523,6 +523,7 @@ Instance log_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := log_sp
   {| spec_ffi_interp_adequacy_field := log_interp_adequacy |}.
 
 Context `{invG Σ}.
+Context `{crashG Σ}.
 Context `{!refinement_heapG Σ}.
 
 Existing Instance spec_ffi_interp_field.
@@ -553,7 +554,7 @@ Lemma ghost_step_init_stuck E j K {HCTX: LanguageCtx K} σ:
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ -∗
-  |={E}=> False.
+  |NC={E}=> False.
 Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
@@ -572,7 +573,7 @@ Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ -∗
-  |={E}=> False.
+  |NC={E}=> False.
 Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
@@ -581,7 +582,7 @@ Proof.
     repeat (inv_head_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)); try congruence;
     repeat (inv_head_step; simpl in *; repeat monad_inv); eauto.
-    eapply H1; eauto.
+    eapply H2; eauto.
   }
   { solve_ndisj. }
 Qed.
@@ -591,7 +592,7 @@ Lemma log_closed_init_false vs E j K {HCTX: LanguageCtx K}:
   spec_ctx -∗
   log_closed_frag -∗
   log_frag vs -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) ={E}=∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hentries Hj".
@@ -607,7 +608,7 @@ Lemma log_opened_init_false l E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   log_open l -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) ={E}=∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
@@ -624,7 +625,7 @@ Lemma log_init_init_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx 
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) ={E}=∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -657,7 +658,7 @@ Lemma log_init_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx 
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) ={E}=∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -667,7 +668,7 @@ Proof.
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
     { eapply stuck_ExternalOp; first (by eauto).
-      intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
+      intros ?????. by repeat (inv_head_step; simpl in H3; repeat monad_inv).
     }
     { solve_ndisj. }
   - iMod (ghost_step_init_stuck with "Hj [$] [$]") as "[]".
@@ -684,7 +685,7 @@ Lemma ghost_step_log_init E j K {HCTX: LanguageCtx K}:
   log_uninit_frag -∗
   log_frag [] -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) InitOp #())
-  ={E}=∗
+  -∗ |NC={E}=>
   ∃ (l: loc), j ⤇ K (#l, #true)%V ∗ log_open l ∗ log_frag [].
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hvals Hj".
@@ -719,7 +720,7 @@ Lemma log_uninit_open_false vs E j K {HCTX: LanguageCtx K}:
   spec_ctx -∗
   log_uninit_frag -∗
   log_frag vs -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) ={E}=∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hentries Hj".
@@ -735,7 +736,7 @@ Lemma log_opened_open_false l E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   log_open l -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) ={E}=∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
@@ -752,7 +753,7 @@ Lemma log_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx 
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) ={E}=∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -787,7 +788,7 @@ Lemma ghost_step_log_open E j K {HCTX: LanguageCtx K} vs:
   log_closed_frag -∗
   log_frag vs -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) OpenOp #())
-  ={E}=∗
+  -∗ |NC={E}=>
   ∃ (l: loc), j ⤇ K #l%V ∗ log_open l ∗ log_frag vs.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hvals Hj".
@@ -823,7 +824,7 @@ Lemma ghost_step_log_reset E j K {HCTX: LanguageCtx K} l vs:
   log_open l -∗
   log_frag vs -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field log_spec_ext) ResetOp #l)
-  ={E}=∗
+  -∗ |NC={E}=>
   j ⤇ K #()%V ∗log_frag [].
 Proof.
   iIntros (?) "(#Hctx&#Hstate) #Hopen Hvals Hj".

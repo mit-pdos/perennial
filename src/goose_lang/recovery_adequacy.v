@@ -12,8 +12,8 @@ Set Default Proof Using "Type".
 Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} s k e r σ φ φr φinv Φinv (HINIT: ffi_initP σ.(world)) :
   (∀ `{Hheap : !heapG Σ},
      ⊢ (ffi_start (heapG_ffiG) σ.(world) -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) ={⊤}=∗
-       □ (∀ n σ κ, state_interp σ κ n ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
-       □ (∀ hG, Φinv hG -∗ □ ∀ σ κ n, state_interp σ κ n ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
+       □ (∀ n σ κ, state_interp σ κ n -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
+       □ (∀ hG, Φinv hG -∗ □ ∀ σ κ n, state_interp σ κ n -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
         wpr s k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝))) →
   recv_adequate (CS := goose_crash_lang) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
 Proof.
@@ -57,6 +57,6 @@ Proof.
   repeat iSplit; [| iModIntro; iSplit]; eauto.
   - iIntros. rewrite heap_update_pre_update. eauto.
     Unshelve.
-    (* TODO: where is this ocming from? *)
+    (* TODO: where is this coming from? *)
     exact O.
 Qed.

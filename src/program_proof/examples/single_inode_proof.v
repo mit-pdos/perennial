@@ -77,7 +77,7 @@ Section goose.
       "#Hinode" ∷ is_inode inodeN inode_ref (S k') (Pinode γblocks γused) (U64 0) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) γalloc k' ∗
-      "#Hinv" ∷ inv s_inodeN (∃ σ, s_inode_inv γblocks σ ∗ P σ)
+      "#Hinv" ∷ ncinv s_inodeN (∃ σ, s_inode_inv γblocks σ ∗ P σ)
   .
 
   Definition s_inode_cinv sz σ (post_crash: bool) : iProp Σ :=
@@ -160,16 +160,15 @@ Section goose.
     auto.
   Qed.
 
-  Theorem wpc_Open {k E2} (d_ref: loc) (sz: u64) k' σ0 :
+  Theorem wpc_Open {k} (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
-    ↑allocN ⊆ E2 →
     (0 < int.val sz)%Z →
     {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 true }}}
-      Open #d_ref #sz @ NotStuck; S k; ⊤; E2
+      Open #d_ref #sz @ NotStuck; S k; ⊤
     {{{ l, RET #l; pre_s_inode l (int.val sz) σ0 }}}
     {{{ s_inode_cinv (int.val sz) σ0 true }}}.
   Proof.
-    iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { iFrame. }
     { iFrame. }
@@ -280,52 +279,47 @@ Section goose.
     iExists _; iFrame "∗ %".
   Qed.
 
-  Theorem is_single_inode_alloc {E2} k l (sz: Z) σ :
+  Theorem is_single_inode_alloc  k l (sz: Z) σ :
     (1 ≤ sz < 2^64)%Z →
-    ↑allocN ⊆ E2 →
-    ↑s_inodeN ⊆ E2 →
     ▷ P σ -∗
     pre_s_inode l sz σ ={⊤}=∗
     is_single_inode l sz k ∗
-    <disc> |C={⊤,E2}_(S k)=> ∃ σ', s_inode_cinv sz σ' false ∗ P σ'.
+    <disc> |C={⊤}_(S k)=> ∃ σ', s_inode_cinv sz σ' false ∗ P σ'.
   Proof.
-    iIntros (???) "HP"; iNamed 1.
+    iIntros (?) "HP"; iNamed 1.
     iNamed "Hinode".
     iNamed "Halloc".
     iMod (is_allocator_alloc _ _ _ k with "Hunused HPalloc Halloc_mem") as (γalloc) "[Halloc Halloc_crash]".
     iMod (is_inode_alloc inodeN (k:=k) with "HPinode Hpre_inode") as "[Hinode Hinode_crash]".
     (* TODO: allocate s_inode_inv invariant *)
-    iMod (inv_alloc s_inodeN _ (∃ σ, s_inode_inv γblocks σ ∗ P σ)%I
-            with "[Hs_inv HP]") as "#Hinv".
+    iMod (ncinv_alloc s_inodeN _ (∃ σ, s_inode_inv γblocks σ ∗ P σ)%I
+            with "[Hs_inv HP]") as "(#Hinv&Hinv_crash)".
     { iNext.
       iExists _; iFrame. }
-    iDestruct (inv_cfupd _ ⊤ with "Hinv") as "Hinv_crash"; auto.
     rewrite Halloc_dom.
     iModIntro.
     iSplitL "Halloc Hinode".
     { iExists _, _, _, _, _. iFrame "Hinode". iFrame "Halloc".
       iFrame "# ∗". }
     iModIntro.
-    iMod "Halloc_crash" as "_".
-    iMod "Hinode_crash" as "_".
-    iMod "Hinv_crash" as "_".
-    { rewrite difference_empty_L.
-      solve_ndisj. }
+    iMod "Halloc_crash" as "Halloc".
+    iMod "Hinode_crash" as "Hinode".
+    iMod (cfupd_weaken_all with "Hinv_crash") as "Hs_inode"; first lia.
+    { solve_ndisj. }
     iModIntro. iNext.
-    iIntros "Hs_inode Hinode Halloc".
     iDestruct "Hs_inode" as (σ') "[Hs_inv HP]".
     iExists _; iFrame.
     iExists _, _; iFrame.
   Qed.
 
-  Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (i: u64) :
+  Theorem wpc_Read {k} (Q: option Block → iProp Σ) l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode l sz k' ∗
         "Hfupd" ∷ (∀ σ mb,
                       ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
-      SingleInode__Read #l #i @ NotStuck; (S k); ⊤;E2
+      SingleInode__Read #l #i @ NotStuck; (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -385,7 +379,7 @@ Section goose.
     rewrite alloc_free_reserved //.
   Qed.
 
-  Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' :
+  Theorem wpc_Append {k} (Q: iProp Σ) l sz b_s b0 k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode l sz k' ∗
         "Hb" ∷ is_block b_s 1 b0 ∗
@@ -393,7 +387,7 @@ Section goose.
           ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
          ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ Q))
     }}}
-      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤; E2
+      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ True }}}.
   Proof.

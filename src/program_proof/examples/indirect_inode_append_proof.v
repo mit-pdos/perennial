@@ -1113,7 +1113,7 @@ Proof.
   }
 Qed.
 
-Theorem wpc_Inode__Append {k E2}  (*  *)
+Theorem wpc_Inode__Append {k}  (*  *)
         {l k' P addr}
         (* allocator stuff *)
         {Palloc γalloc domain n}
@@ -1136,7 +1136,7 @@ Theorem wpc_Inode__Append {k E2}  (*  *)
         ⌜s !! addr' = Some block_reserved⌝ -∗
          ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (Φc ∧ Φ #true))) -∗
-  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; k; ⊤; E2 {{ Φ }} {{ Φc }}.
+  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; k; ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (???? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".

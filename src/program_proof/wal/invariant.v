@@ -457,7 +457,7 @@ Theorem is_circular_diskEnd_lb_agree E γ lb cs :
   diskEnd_at_least γ.(circ_name) lb -∗
   is_circular circN (circular_pred γ) γ.(circ_name) -∗
   ghost_var γ.(cs_name) (1/2) cs -∗
-  |={E}=> ⌜lb ≤ circΣ.diskEnd cs⌝ ∗ ghost_var γ.(cs_name) (1/2) cs.
+  |NC={E}=> ⌜lb ≤ circΣ.diskEnd cs⌝ ∗ ghost_var γ.(cs_name) (1/2) cs.
 Proof.
   rewrite /circular_pred.
   iIntros (Hsub) "#HdiskEnd_lb #Hcirc Hown".
@@ -479,7 +479,7 @@ Theorem is_circular_diskEnd_is_agree E q γ diskEnd cs :
   diskEnd_is γ.(circ_name) q diskEnd -∗
   is_circular circN (circular_pred γ) γ.(circ_name) -∗
   ghost_var γ.(cs_name) (1/2) cs -∗
-  |={E}=> ⌜diskEnd = circΣ.diskEnd cs⌝ ∗
+  |NC={E}=> ⌜diskEnd = circΣ.diskEnd cs⌝ ∗
           diskEnd_is γ.(circ_name) q diskEnd ∗
           ghost_var γ.(cs_name) (1/2) cs.
 Proof.

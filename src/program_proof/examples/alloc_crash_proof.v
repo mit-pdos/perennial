@@ -5,7 +5,7 @@ From Perennial.goose_lang Require Import crash_modality.
 From Perennial.algebra Require Import deletable_heap.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
-From Perennial.program_logic Require Export na_crash_inv.
+From Perennial.program_logic Require Export na_crash_inv ncinv.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.examples Require Import alloc_addrset.
 
@@ -163,16 +163,16 @@ Definition free_block γ n k : iProp Σ :=
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_free).
 
 Definition free_block_pending γ n k : iProp Σ :=
-  (|C={⊤, ∅}_((S n))=> block_cinv γ k).
+  (|C={⊤}_((S n))=> block_cinv γ k).
 
 Definition reserved_block γ n k P : iProp Σ :=
   "Hcrashinv" ∷ (na_crash_inv n P (block_cinv γ k)) ∗
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
-  "Halloc_inv" ∷ ∃ d, inv Ninv (allocator_inv γ d).
+  "Halloc_inv" ∷ ∃ d, ncinv Ninv (allocator_inv γ d).
 
 Definition reserved_block_in_prep γ (n: nat) k : iProp Σ :=
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
-  "Halloc_inv" ∷ ∃ d, inv Ninv (allocator_inv γ d).
+  "Halloc_inv" ∷ ∃ d, ncinv Ninv (allocator_inv γ d).
 
 Definition used_block γ k : iProp Σ :=
   "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_used).
@@ -198,7 +198,7 @@ Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
     "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
     "#His_lock" ∷ is_lock Nlock #lref (allocator_linv γ n mref) ∗
-    "#Halloc_inv" ∷ inv Ninv (allocator_inv γ d)
+    "#Halloc_inv" ∷ ncinv Ninv (allocator_inv γ d)
 .
 
 Definition is_allocator_mem_pre (l: loc) σ : iProp Σ :=
@@ -505,7 +505,7 @@ Theorem is_allocator_alloc n l σ :
   is_allocator_mem_pre l σ
   ={⊤}=∗
   ∃ γ, is_allocator l (alloc.domain σ) γ n ∗
-  <disc> |C={⊤, ↑N}_(S n)=> alloc_crash_cond (alloc.domain σ) false.
+  <disc> |C={⊤}_(S n)=> alloc_crash_cond (alloc.domain σ) false.
 Proof.
   clear Hitemcrash.
   iIntros "Hunused HP". iNamed 1.
@@ -514,7 +514,7 @@ Proof.
   set (γ := {| alloc_status_name := γheap;
                alloc_free_name := γfree |}).
 
-  iMod (inv_alloc Ninv _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx Hfree]") as "#Hinv".
+  iMod (ncinv_alloc Ninv _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx Hfree]") as "(#Hinv&Hallocinv)".
   { iNext. iExists _. iFrame. eauto. }
 
   iMod (free_block_init γ n with "[$] [$]") as "(Hpending&Hblock)".
@@ -527,18 +527,18 @@ Proof.
           with "[$Hfree_lock] [Hfreemap Hblock Hfree_frag]") as "#Hlock".
   { iExists _; iFrame. }
 
-  iDestruct (inv_cfupd _ ⊤ with "Hinv") as "#Hallocinv".
-  { set_solver. }
-
   iModIntro.
   iExists γ.
   iSplitR.
   { iExists _, _; iFrame "#". }
-  iModIntro.  iMod "Hallocinv". iMod "Hpending".
+  iModIntro.
+  iMod "Hpending" as "Hset".
+  iMod (cfupd_weaken_all with "Hallocinv") as "Hallocinner"; auto.
+  { lia. }
   iModIntro. iNext.
+  rewrite /alloc_crash_cond.
 
-  iIntros "Hset Hinner".
-  iNamed "Hinner".
+  iNamed "Hallocinner".
   iExists _. iFrame.
   fold (alloc.domain σ).
   rewrite /alloc.unused.
@@ -723,7 +723,7 @@ Qed.
 (* NOTE: we used to have a proof of this (with nearly the same proof script as
 above). This spec supports using durable resources for the fupd, preserving them
 on crash. We don't need this feature for our examples, though. *)
-Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E1 E2:
+Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E1 :
   ↑N ⊆ E1 →
   □ (∀ o, Q o -∗ Qc) -∗
   {{{ is_allocator l dset γ n' ∗
@@ -735,7 +735,7 @@ Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E
           ▷ P σ ={E1 ∖ ↑N}=∗ ▷ P σ' ∗ Q ma) ∧
       Qc
   }}}
-    Allocator__Reserve #l  @ NotStuck; n; E1; E2
+    Allocator__Reserve #l  @ NotStuck; n; E1
   {{{ a (ok: bool), RET (#a, #ok);
       if ok then Q (Some a) ∗ reserved_block γ n' a (Ψ a)
       else Q None }}}
@@ -760,19 +760,19 @@ Proof.
   iRight; auto.
 Qed.
 
-Lemma prepare_reserved_block_reuse R' E R n n' γ e a Φ Φc:
+Lemma prepare_reserved_block_reuse R' R n n' γ e a Φ Φc:
   (S n ≤ n')%nat →
   language.to_val e = None →
   reserved_block γ (S n') a R -∗
   <disc> ▷ Φc ∧
   (▷ R -∗
    reserved_block_in_prep γ (S n') a -∗
-   WPC e @ (S n); ⊤; ∅ {{ λ v, (reserved_block γ (S n') a (R' v) -∗ <disc> ▷ Φc ∧ Φ v) ∗
+   WPC e @ (S n); ⊤ {{ λ v, (reserved_block γ (S n') a (R' v) -∗ <disc> ▷ Φc ∧ Φ v) ∗
                                            (R' v) ∗
                                            reserved_block_in_prep γ (S n') a ∗
                                            □ (R' v -∗ block_cinv γ a) }}
                                    {{ Φc ∗ block_cinv γ a }}) -∗
-  WPC e @  (S n); ⊤; E {{ Φ }} {{ Φc }}.
+  WPC e @  (S n); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??) "Hreserved H".
   iNamed "Hreserved".
@@ -789,19 +789,19 @@ Proof.
       iIntros. iApply "Hclose". iSplitR "Hprep".
       ** by iFrame.
       ** iIntros. eauto.
-    * iIntros. rewrite difference_diag_L. iIntros "!> (?&?) !> !>"; iFrame.
+    * iIntros. iIntros "!> (?&?) !> !>"; iFrame.
 Qed.
 
-Lemma prepare_reserved_block E1 E2 R n n' γ e a Φ Φc:
+Lemma prepare_reserved_block E1 R n n' γ e a Φ Φc:
   (S n ≤ n')%nat →
   language.to_val e = None →
   reserved_block γ (S n') a R -∗
   <disc> ▷ Φc ∧
   (▷ R -∗
    reserved_block_in_prep γ n' a -∗
-   WPC e @ (S n); E1; ∅ {{ λ v, (<disc> ▷ Φc ∧ Φ v) ∗ block_cinv γ a }}
+   WPC e @ (S n); E1 {{ λ v, (<disc> ▷ Φc ∧ Φ v) ∗ block_cinv γ a }}
                                    {{ Φc ∗ block_cinv γ a }}) -∗
-  WPC e @  (S n); E1; E2 {{ Φ }} {{ Φc }}.
+  WPC e @  (S n); E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??) "Hreserved H".
   iNamed "Hreserved".
@@ -818,7 +818,7 @@ Proof.
       iSplitL "".
       ** eauto.
       ** eauto.
-    * iIntros. rewrite difference_diag_L. iIntros "!> (?&?) !> !>"; iFrame.
+    * iIntros. iIntros "!> (?&?) !> !>"; iFrame.
 Qed.
 
 Lemma free_mark_used_non_free σ a:
@@ -844,8 +844,8 @@ Lemma mark_used E γ n' a Q:
   ↑Ninv ⊆ E →
    reserved_block_in_prep γ n' a -∗
    (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗
-         P σ ={E ∖ ↑ N}=∗ ▷ P (<[a := block_used]> σ) ∗ Q)
-   ={E}[E ∖ ↑Ninv]▷=∗ Q ∗ used_block γ a.
+         P σ -∗ |NC={E ∖ ↑ N}=> ▷ P (<[a := block_used]> σ) ∗ Q)
+   -∗ |NC={E, E ∖ ↑Ninv}=> ▷ |NC={E ∖ ↑Ninv, E}=> Q ∗ used_block γ a.
 Proof.
   iIntros (?) "Hprep Hfupd".
   iNamed "Hprep".
@@ -853,7 +853,7 @@ Proof.
   iInv "Hinv" as "H" "Hclo".
   iModIntro. iNext. iNamed "H".
   iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
-  iMod (fupd_intro_mask' _ (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
+  iMod (ncfupd_intro_mask' _ (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
   iMod ("Hfupd" with "[//] [$]") as "(HP&HQ)".
   iMod "Hrestore_mask" as "_".
   iMod (gen_heap_update _ a _ block_used with "[$] [$]") as "(Hctx&Hmapsto)".
@@ -909,7 +909,7 @@ Qed.
 Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
   ↑N ⊆ E →
   {{{ is_allocator l d γ n' ∗ reserved_block γ (S n') a (Ψ a) ∗
-     (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ ▷ P σ ={E ∖↑N}=∗ ▷ P (<[ a := block_free ]> σ) ∗ Q)
+     (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ ▷ P σ -∗ |NC={E ∖↑N}=> ▷ P (<[ a := block_free ]> σ) ∗ Q)
   }}}
     Allocator__Free #l #a @ E
   {{{ RET #(); Q }}}.
@@ -973,7 +973,6 @@ End goose.
 Section goose.
 Context `{!heapG Σ}.
 Context `{!allocG Σ}.
-Context `{!crashG Σ}.
 
 Context (P: heapG Σ → alloc.t → iProp Σ).
 Context (Ψ: heapG Σ → u64 → iProp Σ).

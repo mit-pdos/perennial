@@ -471,15 +471,17 @@ Proof.
       iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
       {
         iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
+        iApply wp_ncfupd.
         rewrite ?loc_add_0.
         iApply (wp_prepare_write with "[$]"). iIntros "!> Hpts".
-        iMod (@ghost_prepare_write _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hptsclo&Hj)".
+        iMod (@ghost_prepare_write _ _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hptsclo&Hj)".
         { solve_ndisj. }
         iDestruct "Hspts" as "(Hspts1&Hspts2)".
         iMod (fc_auth_first_tok with "Hfc") as "(Hfc&Htok)".
         iMod ("Hclo" with "[Hspts1 Hfc Hval]").
         { iNext. iExists mem_vs, mem_v. iRight. iRight. iFrame. }
-        iApply "HΦ". iModIntro. iExists _, _, _, _, _. iFrame "Hlocinv". iFrame.
+        iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+        iExists _, _, _, _, _. iFrame "Hlocinv". iFrame.
         eauto.
       }
       {
@@ -547,6 +549,7 @@ Proof.
     { iFrame. }
     subst.
     iCombine "Hspts Hspts'" as "Hspts".
+    iApply wp_ncfupd.
     wp_apply (wp_finish_store with "[$]").
     iIntros "Hl".
     iMod (ghost_finish_store with "Hctx Hspts Hspts_clo Hj") as "(?&Hj)".
@@ -554,7 +557,8 @@ Proof.
     iMod (fc_auth_drop_last with "[$]") as "Hfc".
     iMod ("Hclo" with "[-Hj HΦ]").
     { iNext. iExists _, _. iLeft. iFrame. }
-    iApply "HΦ"; eauto.
+    iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+    eauto.
   }
 Qed.
 
@@ -587,10 +591,11 @@ Proof.
       {
         iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
         rewrite ?loc_add_0.
+        iApply wp_ncfupd.
         iApply (wp_start_read with "[$]"). iIntros "!> (Hpts&Hpts_clo)".
         iDestruct (heap_mapsto_na_acc with "Hspts") as "(Hspts&Hspts_clo)".
         rewrite na_heap_mapsto_eq.
-        iMod (@ghost_start_read _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hj)".
+        iMod (@ghost_start_read _ _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hj)".
         { solve_ndisj. }
         replace (RSt 1) with (RSt (1 + O)%nat) by eauto.
         iMod (fc_auth_first_tok with "Hfc") as "(Hfc&Htok)".
@@ -611,16 +616,17 @@ Proof.
           { apply addr_base_non_null; eauto. }
           { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
         }
-        iApply "HΦ".
-        iModIntro. iExists _, _, _, _, _. iFrame. iFrame "Hlocinv Hval". iPureIntro; split_and!; eauto;
+        iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+        iExists _, _, _, _, _. iFrame. iFrame "Hlocinv Hval". iPureIntro; split_and!; eauto;
         eapply addr_base_non_null; eauto.
       }
       {
         iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&Hspts_clo&>Hpts&#Hval)".
         rewrite ?loc_add_0.
+        iApply (wp_ncfupd).
         iApply (wp_start_read with "[$]"). iIntros "!> (Hpts&Hpts_clo)".
         rewrite na_heap_mapsto_eq.
-        iMod (@ghost_start_read _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hj)".
+        iMod (@ghost_start_read _ _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hj)".
         { solve_ndisj. }
         replace (S (Pos.to_nat n')) with (S (Pos.to_nat n') + 0)%nat by lia.
         iMod (fc_auth_new_tok _ q q' with "Hfc") as "(Hfc&Htok)"; eauto.
@@ -643,8 +649,8 @@ Proof.
           { apply addr_base_non_null; eauto. }
           { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
         }
-        iApply "HΦ".
-        iModIntro. iExists _, _, _, _, _. iFrame. iFrame "#".
+        iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+        iExists _, _, _, _, _. iFrame. iFrame "#".
         iSplitL "".
         { iPureIntro; split_and!; eauto; eapply addr_base_non_null; eauto. }
         { rewrite -na_heap_mapsto_eq. iIntros (?) "H". iApply (na_mapsto_to_heap with "H").
@@ -699,6 +705,7 @@ Proof.
     iDestruct "Hreaders" as (q1 q2 n') "(>Hq_sum&>Hfc&>Hspts'&Hspts'_clo&>Hpts'&Hvty)".
     iDestruct "Hq_sum" as %Hq_sum.
     iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
+    iApply wp_ncfupd.
     wp_apply (wp_finish_read with "[Hpts]").
     { iFrame. iIntros (?). iApply na_mapsto_to_heap; eauto. }
     iIntros "Hpts".
@@ -730,7 +737,8 @@ Proof.
         iEval (rewrite comm Hq_sum) in "Hspts".
         eauto.
       }
-      iApply "HΦ". eauto.
+      iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+      eauto.
     - destruct Hmore as (n''&->).
       iDestruct (fc_auth_non_last_agree with "[$] [$]") as %(q'&Hq).
       iDestruct (na_heap_mapsto_st_agree with "[Hpts Hpts']") as %Heq.
@@ -756,7 +764,8 @@ Proof.
         iApply na_mapsto_to_heap; auto.
         rewrite na_heap_mapsto_eq. iFrame.
       }
-      iApply "HΦ". eauto.
+      iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+      eauto.
   }
   {
     iDestruct "Hwriter" as "(>Hfc&>Hspts')".
@@ -824,6 +833,7 @@ Proof using spec_trans.
     iApply (IHHtyping with "[$] [$] [$]").
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
@@ -832,7 +842,7 @@ Proof using spec_trans.
       { simpl. econstructor; eauto. }
       { econstructor; eauto. }
     }
-    wpc_pures; eauto.
+    wp_pures; eauto.
     iExists _; iFrame.
     iExists _, _, _, _, _, _; iSplit; first eauto.
     iLöb as "IH".
@@ -840,6 +850,7 @@ Proof using spec_trans.
     clear j K Hctx.
     iIntros (j K Hctx) "Hj".
     wpc_pures; first by iModIntro.
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)".
       (* TODO: make spec_ctx auto frame source_ctx *)
@@ -857,10 +868,11 @@ Proof using spec_trans.
     { do 2 (rewrite -subst_map_binder_insert' subst_map_binder_insert).
       iEval (rewrite (binder_delete_commute f x)). iFrame. }
     { do 2 (rewrite -subst_map_binder_insert' subst_map_binder_insert).
-      iEval (rewrite {2}binder_delete_commute). iFrame. }
+      iEval (rewrite {2}binder_delete_commute). iApply wpc_wp. iFrame. }
   (* Fork *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)".
     }
@@ -870,6 +882,7 @@ Proof using spec_trans.
     }
     iEval (simpl; rewrite right_id) in "Hchild".
     iDestruct "Hchild" as (j') "Hj'".
+    iApply wpc_wp.
     iApply (wpc_fork with "[Hj']").
     { iNext. iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
       iSpecialize ("H" $! j' (λ x, x) with "[] [$]"); first by (iPureIntro; apply language_ctx_id).
@@ -891,23 +904,28 @@ Proof using spec_trans.
     iDestruct "Hvcond" as %(b&->&->).
     destruct b.
     * wpc_pures; first by auto. simpl.
+      iApply wp_wpc.
       iMod (ghost_step_lifting_puredet _ _ K with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
         apply head_prim_step. econstructor; eauto.
       }
+      iApply wpc_wp.
       iApply (IHHtyping2 with "[//] [$] [$] [$] [$]"). eauto.
     * wpc_pures; first by auto. simpl.
+      iApply wp_wpc.
       iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
         apply head_prim_step. econstructor; eauto.
       }
+      iApply wpc_wp.
       iApply (IHHtyping3 with "[//] [$] [$] [$] [$]"). eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
+    iApply wp_wpc.
     iMod (ghost_step_stuck_det with "Hj []") as %[]; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
@@ -915,7 +933,7 @@ Proof using spec_trans.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iApply wp_wpc.
-    iApply wp_fupd.
+    iApply wp_ncfupd.
     iApply wp_ArbitraryInt; auto.
     iNext.
     iIntros. iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
@@ -943,6 +961,7 @@ Proof using spec_trans.
       iPureIntro; eexists; eauto.
     }
     destruct Hres as (x&Heq1&Heq2).
+    iApply wp_wpc.
       iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
@@ -950,7 +969,7 @@ Proof using spec_trans.
         apply head_prim_step. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
-      wpc_pures; eauto.
+      wp_pures; eauto.
       iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -970,6 +989,7 @@ Proof using spec_trans.
       iPureIntro; eexists; eauto.
     }
     destruct Hres as (x&Heq1&Heq2).
+    iApply wp_wpc.
       iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
@@ -977,7 +997,7 @@ Proof using spec_trans.
         apply head_prim_step. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
-      wpc_pures; eauto.
+      wp_pures; eauto.
       iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -997,6 +1017,7 @@ Proof using spec_trans.
       iPureIntro; eexists; eauto.
     }
     destruct Hres as (x&Heq1&Heq2).
+    iApply wp_wpc.
       iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
@@ -1004,7 +1025,7 @@ Proof using spec_trans.
         apply head_prim_step. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
-      wpc_pures; eauto.
+      wp_pures; eauto.
       iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1024,6 +1045,7 @@ Proof using spec_trans.
       iPureIntro; eexists; eauto.
     }
     destruct Hres as (x&Heq1&Heq2).
+    iApply wp_wpc.
       iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
@@ -1031,7 +1053,7 @@ Proof using spec_trans.
         apply head_prim_step. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
-      wpc_pures; eauto.
+      wp_pures; eauto.
       iExists _. iFrame. eauto.
   - destruct op; try inversion e; subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1042,13 +1064,14 @@ Proof using spec_trans.
     iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     iDestruct "Hv1" as (?) "(%&%)"; subst.
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
       apply head_prim_step. repeat econstructor; eauto.
     }
-    wpc_pures; eauto.
+    wp_pures; eauto.
     iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1064,6 +1087,7 @@ Proof using spec_trans.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
     iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
@@ -1071,7 +1095,7 @@ Proof using spec_trans.
       apply head_prim_step. repeat econstructor; eauto.
     }
 
-    wpc_pures; auto.
+    wp_pures; auto.
     iExists _. iFrame. iExists (bool_decide (vs1 = vs2)); eauto.
     iDestruct (comparableTy_val_eq with "Hv1 Hv2") as %Heq; auto.
     iPureIntro. split; first auto. do 2 f_equal.
@@ -1097,12 +1121,13 @@ Proof using spec_trans.
 
     iDestruct "Hspec" as "(#Hsrc&#Hstate)".
     (* Be patient, this is handling a bunch of cases. *)
+    iApply wp_wpc.
     destruct op; inversion e; subst;
       iDestruct "Hv1" as (?) "(%&%)"; subst;
       iDestruct "Hv2" as (?) "(%&%)"; subst;
       (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
        [ intros; eexists; apply head_prim_step; repeat econstructor; eauto
-        | set_solver+ | wpc_pures; eauto; iExists _; iFrame; eauto]).
+        | set_solver+ | wp_pures; eauto; iExists _; iFrame; eauto]).
 
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1124,12 +1149,13 @@ Proof using spec_trans.
 
     iDestruct "Hspec" as "(#Hsrc&#Hstate)".
     (* Be patient this is handling a bunch of cases. *)
+    iApply wp_wpc.
     destruct op; inversion e; subst;
       iDestruct "Hv1" as (?) "(%&%)"; subst;
       iDestruct "Hv2" as (?) "(%&%)"; subst;
       (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
        [ intros; eexists; apply head_prim_step; repeat econstructor; eauto
-        | set_solver+ | wpc_pures; eauto; iExists _; iFrame; eauto]).
+        | set_solver+ | wp_pures; eauto; iExists _; iFrame; eauto]).
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map _ e1').
@@ -1149,11 +1175,12 @@ Proof using spec_trans.
     simpl.
 
     iDestruct "Hspec" as "(#Hsrc&#Hstate)".
+    iApply wp_wpc.
     iDestruct "Hv1" as (?) "(%&%)"; subst;
     iDestruct "Hv2" as (?) "(%&%)"; subst;
     (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
      [ intros; eexists; apply head_prim_step; repeat econstructor; eauto
-      | set_solver+ | wpc_pures; eauto; iExists _; iFrame; eauto]).
+      | set_solver+ | wp_pures; eauto; iExists _; iFrame; eauto]).
 
   (* data *)
   - subst.
@@ -1177,13 +1204,14 @@ Proof using spec_trans.
     clear Hctx'.
 
     spec_bind (_ ,_)%E as Hctx'.
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
       apply head_prim_step. repeat econstructor; eauto.
     }
-    wpc_pures; auto.
+    wp_pures; auto.
     iExists _. iFrame. iExists _, _, _, _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1197,13 +1225,14 @@ Proof using spec_trans.
     simpl.
     iDestruct "Hv" as (???? (->&->)) "(?&?)".
 
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
       apply head_prim_step. repeat econstructor; eauto.
     }
-    iApply wp_wpc; wp_pures; eauto.
+    wp_pures; eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
@@ -1216,13 +1245,14 @@ Proof using spec_trans.
     simpl.
     iDestruct "Hv" as (???? (->&->)) "(?&?)".
 
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
       apply head_prim_step. repeat econstructor; eauto.
     }
-    iApply wp_wpc; wp_pures; eauto.
+    wp_pures; eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
@@ -1235,13 +1265,14 @@ Proof using spec_trans.
     simpl.
 
     simpl.
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
       apply head_prim_step. repeat econstructor; eauto.
     }
-    wpc_pures; auto.
+    wp_pures; auto.
     iExists _. iFrame. iLeft. iExists _, _; iFrame; eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1255,13 +1286,14 @@ Proof using spec_trans.
     simpl.
 
     simpl.
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
       apply head_prim_step. repeat econstructor; eauto.
     }
-    wpc_pures; auto.
+    wp_pures; auto.
     iExists _. iFrame. iRight. iExists _, _; iFrame; eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1278,39 +1310,46 @@ Proof using spec_trans.
     {
       iDestruct "Hleft" as (?? (->&->)) "Hv".
       wpc_pures; first auto.
+      iApply wp_wpc.
       iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
         apply head_prim_step. repeat econstructor; eauto.
       }
+      iApply wpc_wp.
       wpc_bind (subst_map _ e1').
       iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
       spec_bind (subst_map _ e1) as Hctx'.
       iSpecialize ("H" $! j _ Hctx' with "Hj").
-      iApply (wpc_mono' with "[Hv] [] H"); last by auto.
+      iApply (wpc_mono' with "[Hv] [] H"); last first.
+      { iModIntro. iIntros "H". iExact "H". }
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
       iSpecialize ("Hinterp" with "[$]").
       iSpecialize ("Hinterp" $! j _ Hctx with "Hj").
-      iApply (wpc_mono' with "[] [] Hinterp"); last by auto.
-      iIntros (v'') "H". iDestruct "H" as (vs'') "(Hj&Hv')".
-      iExists _. iFrame.
+      iApply (wpc_mono' with "[] [] Hinterp"); last first.
+      { iModIntro. iIntros "H". iExact "H". }
+      { iIntros (v'') "H". iDestruct "H" as (vs'') "(Hj&Hv')".
+        iExists _. iFrame. }
     }
     {
       iDestruct "Hright" as (?? (->&->)) "Hv".
       wpc_pures; first auto.
+      iApply wp_wpc.
       iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
         apply head_prim_step. repeat econstructor; eauto.
       }
+      iApply (wpc_wp _ (sty_lvl_ops)).
       wpc_bind (subst_map _ e2').
       iPoseProof (IHHtyping3 with "[//] [$] [$] [$] [$]") as "H"; eauto.
       spec_bind (subst_map _ e2) as Hctx'.
       iSpecialize ("H" $! j _ Hctx' with "Hj").
-      iApply (wpc_mono' with "[Hv] [] H"); last by auto.
+      iApply (wpc_mono' with "[Hv] [] H"); last first.
+      { iModIntro. iIntros "H". iExact "H". }
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
       iSpecialize ("Hinterp" with "[$]").
@@ -1345,6 +1384,7 @@ Proof using spec_trans.
       { solve_ndisj. }
     }
     iDestruct (length_flatten_well_typed with "Hv2") as %(Hspecsize&Hsize).
+    iApply wp_ncfupd.
     iApply wp_allocN_seq_sized_meta.
     { rewrite -Hsize. destruct (flatten_ty t) as [|]; try congruence; simpl; try lia. }
     { auto. }
@@ -1407,7 +1447,7 @@ Proof using spec_trans.
     iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iApply wp_wpc.
-    iApply wp_fupd.
+    iApply wp_ncfupd.
     iDestruct "Hv2" as (off) "H". iDestruct "H" as %[Heq1 Heq2]. subst.
     iDestruct "Hv1" as "[Hv1|Hnull]"; last first.
     { iDestruct "Hnull" as %(off'&Heq1'&Heq2'). subst.
@@ -1458,7 +1498,7 @@ Proof using spec_trans.
     iIntros (vn1) "H". iDestruct "H" as (vsn1) "(Hj&Hv1)".
 
     iApply wp_wpc.
-    iApply wp_fupd.
+    iApply wp_ncfupd.
     iDestruct "Hv1" as "[Hv1|Hnull]"; last first.
     { iDestruct "Hnull" as %(off'&Heq1'&Heq2'). subst.
       wp_pures.
@@ -1534,23 +1574,27 @@ Proof using spec_trans.
           iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
           rewrite ?loc_add_0.
           wp_step.
+          iApply wp_ncfupd.
           iApply (wp_load with "[$]"). iIntros "!> Hpts".
           iMod (ghost_load with "[$] Hspts Hj") as "(Hspts&Hj)".
           { solve_ndisj. }
           iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
           { iNext. iExists _, _. iLeft. iFrame. iFrame "Hval". }
-          iIntros "!> !>". iExists _. iFrame. iFrame "Hval".
+          iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+          iIntros " !>". iExists _. iFrame. iFrame "Hval".
         }
         {
           iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&Hspts_clo&>Hpts&#Hval)".
           rewrite ?loc_add_0.
           wp_step.
+          iApply wp_ncfupd.
           iApply (wp_load with "[$]"). iIntros "!> Hpts".
           iMod (ghost_load_rd with "[$] Hspts Hj") as "(Hspts&Hj)".
           { solve_ndisj. }
           iMod ("Hclo" with "[Hpts Hspts Hspts_clo Hfc Hval]").
           { iNext. iExists _, _. iRight. iLeft. iExists _, _, _. iFrame. iFrame "Hval". eauto. }
-          iIntros "!> !>". iExists _. iFrame. iFrame "Hval".
+          iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+          iIntros " !>". iExists _. iFrame. iFrame "Hval".
         }
         {
           iDestruct "Hwriter" as "(>Hfc&>Hspts)".
@@ -1586,7 +1630,7 @@ Proof using spec_trans.
     iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvl)".
 
     iApply wp_wpc.
-    iApply wp_fupd.
+    iApply wp_ncfupd.
     rewrite /Store. wp_pures.
     wp_bind (PrepareWrite _).
 
@@ -1802,7 +1846,8 @@ Proof using spec_trans.
           { apply unboxedTy_comparable. eauto. }
           iDestruct "Heq" as %Heq_iff.
           destruct (decide (mem_v = v1_done)).
-          * wp_apply (wp_cmpxchg_suc with "Hpts"); first eauto.
+          * iApply wp_ncfupd.
+            wp_apply (wp_cmpxchg_suc with "Hpts"); first eauto.
             { right. eauto. }
             iIntros "Hpts".
             iMod (ghost_cmpxchg_suc with "[$] Hspts Hj") as "(Hspts&Hj)".
@@ -1811,9 +1856,11 @@ Proof using spec_trans.
             { solve_ndisj. }
             iMod ("Hclo" with "[Hpts Hspts Hfc Hval Hvs2_done]").
             { iNext. iExists _, _. iLeft. iFrame. }
-            iIntros "!> !>". iExists _. iFrame. iExists _, _, _, _. iFrame. iSplitL ""; first eauto.
+            iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+            iIntros "!>". iExists _. iFrame. iExists _, _, _, _. iFrame. iSplitL ""; first eauto.
             iFrame "Hval". eauto.
-          * wp_apply (wp_cmpxchg_fail with "Hpts"); first eauto.
+          * iApply wp_ncfupd.
+            wp_apply (wp_cmpxchg_fail with "Hpts"); first eauto.
             { right. eauto. }
             iIntros "Hpts".
             iMod (ghost_cmpxchg_fail with "[$] Hspts Hj") as "(Hspts&Hj)".
@@ -1822,7 +1869,8 @@ Proof using spec_trans.
             { solve_ndisj. }
             iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
             { iNext. iExists _, _. iLeft. iFrame. eauto. }
-            iIntros "!> !>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _.
+            iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+            iIntros "!>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _. 
             iFrame. iSplitL ""; first eauto. iFrame "Hval". eauto.
         }
         {
@@ -1836,7 +1884,7 @@ Proof using spec_trans.
             { symmetry. eapply Heq_iff; eauto. }
             { lia. }
             { solve_ndisj. }
-          * wp_apply (wp_cmpxchg_fail with "Hpts"); first eauto.
+          * iApply wp_ncfupd. wp_apply (wp_cmpxchg_fail with "Hpts"); first eauto.
             { right. eauto. }
             iIntros "Hpts".
             iMod (ghost_cmpxchg_fail_rd with "[$] Hspts Hj") as "(Hspts&Hj)".
@@ -1845,7 +1893,8 @@ Proof using spec_trans.
             { solve_ndisj. }
             iMod ("Hclo" with "[Hpts Hspts Hfc Hval Hspts_clo]").
             { iNext. iExists _, _. iRight. iLeft. iExists _, _, _. iFrame. iFrame "%". eauto. }
-            iIntros "!> !>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _.
+            iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+            iIntros "!>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _.
             iFrame. iSplitL ""; first eauto. iFrame "Hval". eauto.
         }
         {
@@ -1902,7 +1951,7 @@ Proof using spec_trans.
     simpl.
 
     iApply wp_wpc.
-    iApply wp_fupd.
+    iApply wp_ncfupd.
     iInv "Htrace" as (????) ">(He1&He2&Htr1&Htr2&Hor1&Hor2)" "Hclo".
     iDestruct "He1" as %->.
     iDestruct "He2" as %->.
@@ -1941,6 +1990,7 @@ Proof using spec_trans.
     iIntros (varg vsarg) "Hvarg".
     iIntros (j K Hctx) "Hj". simpl.
     wpc_pures; first auto.
+    iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)".
     }
@@ -1958,7 +2008,7 @@ Proof using spec_trans.
     { iPureIntro. apply: fmap_empty. }
     { iApply big_sepM_empty. eauto. }
     { rewrite fmap_empty subst_map_empty. iFrame. }
-    rewrite fmap_empty subst_map_empty. eauto.
+    rewrite fmap_empty subst_map_empty. iApply wpc_wp. eauto.
 Qed.
 End pfs.
 

@@ -183,7 +183,7 @@ Section goose.
         is_inode inodeN inode_ref (S k') (Pinode γblocks γused i) (U64 (Z.of_nat i))) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet num_inodes (sz-num_inodes)) γalloc k' ∗
-      "#Hinv" ∷ inv dirN (∃ σ, dir_inv γblocks σ ∗ P σ)
+      "#Hinv" ∷ ncinv dirN (∃ σ, dir_inv γblocks σ ∗ P σ)
   .
 
   Definition dir_cinv sz σ (post_crash: bool) : iProp Σ :=
@@ -382,16 +382,14 @@ Section goose.
       iExists _; iFrame "∗ %".
   Qed.
 
-  Theorem is_dir_alloc {E2} k l (sz: Z) σ :
+  Theorem is_dir_alloc k l (sz: Z) σ :
     (5 ≤ sz < 2^64)%Z →
-    ↑allocN ⊆ E2 →
-    ↑dirN ⊆ E2 →
     ▷ P σ -∗
     pre_dir l sz σ ={⊤}=∗
     is_dir l sz k ∗
-    <disc> |C={⊤,E2}_(S k)=> ∃ σ', dir_cinv sz σ' false ∗ P σ'.
+    <disc> |C={⊤}_(S k)=> ∃ σ', dir_cinv sz σ' false ∗ P σ'.
   Proof.
-    iIntros (???) "HP"; iNamed 1.
+    iIntros (?) "HP"; iNamed 1.
     iNamed "Hinodes".
     iNamed "Halloc".
     iMod (is_allocator_alloc with "Hunused HPalloc Halloc_mem") as (γalloc) "[Halloc Halloc_crash]".
@@ -415,11 +413,10 @@ Section goose.
     rewrite cfupd_big_sepL.
     replace (length s_inodes) with num_inodes by lia.
 
-    iMod (inv_alloc dirN _ (∃ σ, dir_inv γblocks σ ∗ P σ)
-         with "[Hd_inv HP]") as "#Hinv".
+    iMod (ncinv_alloc dirN _ (∃ σ, dir_inv γblocks σ ∗ P σ)
+         with "[Hd_inv HP]") as "(#Hinv&Hinv_crash)".
     { iNext.
       iExists _; iFrame. }
-    iDestruct (inv_cfupd _ ⊤ with "Hinv") as "Hinv_crash"; auto.
     rewrite Halloc_dom.
     iModIntro.
     iSplitL "Hro_state Halloc His_inodes".
@@ -429,13 +426,11 @@ Section goose.
       iIntros (???) "H".
       iDestruct "H" as (?) "[_ $]". }
     iModIntro.
-    iMod "Halloc_crash" as "_".
-    iMod "Hinodes_crash" as "_".
-    iMod "Hinv_crash" as "_".
-    { rewrite difference_empty_L.
-      solve_ndisj. }
+    iMod "Halloc_crash" as "Halloc".
+    iMod "Hinodes_crash" as "Hinodes".
+    iMod (cfupd_weaken_all with "Hinv_crash") as "Hdir"; auto.
+    { lia. }
     iModIntro. iNext.
-    iIntros "Hdir Hinodes Halloc".
     iDestruct "Hdir" as (σ') "(Hdir_inv&HP)".
     iExists _; iFrame.
     iExists _, _; iFrame.
@@ -466,12 +461,12 @@ Section goose.
     [ try solve [ len ]
     | ].
 
-  Lemma wpc_openInodes {k E2} (d: loc) s_inodes :
+  Lemma wpc_openInodes {k} (d: loc) s_inodes :
     length s_inodes = num_inodes →
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
           inode_cinv (U64 (Z.of_nat i)) s_inode)
       }}}
-      openInodes #d @ NotStuck; k; ⊤; E2
+      openInodes #d @ NotStuck; k; ⊤
     {{{ inode_s inode_refs, RET (slice_val inode_s);
         is_slice_small inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
         [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
@@ -604,11 +599,11 @@ Section goose.
     iApply (is_slice_to_small with "Hinode_slice").
   Qed.
 
-  Theorem wpc_inodeUsedBlocks {k E2} inode_s inode_refs s_inodes :
+  Theorem wpc_inodeUsedBlocks {k} inode_s inode_refs s_inodes :
     {{{ "Hinode_s" ∷ is_slice_small inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                     pre_inode inode_ref i s_inode }}}
-      inodeUsedBlocks (slice_val inode_s) @ NotStuck; k; ⊤; E2
+      inodeUsedBlocks (slice_val inode_s) @ NotStuck; k; ⊤
     {{{ (addrs_ref:loc) used, RET #addrs_ref;
         "Hused_set" ∷ is_addrset addrs_ref used ∗
         "%Hused_eq" ∷ ⌜used = ⋃ (inode.addrs <$> s_inodes)⌝ ∗
@@ -643,7 +638,7 @@ Section goose.
     { iIntros (i inode_ref) "!>".
       iIntros (Φ' Φc') "(Hpre&%Hbound&%Hlookup) HΦ"; iNamed "Hpre".
       wpc_pures.
-      { by crash_case. } 
+      { by crash_case. }
       iDestruct (big_sepL2_lookup_1_some with "Hpre_inodes") as "%Hs_inode_lookup"; eauto.
       destruct Hs_inode_lookup as [s_inode Hs_inode_lookup].
       iDestruct (big_sepL2_lookup_acc_and_disc _ (λ i inode_ref s_inode, inode_cinv i s_inode) with "Hpre_inodes") as "(Hinode&Hpre_inodes)"; eauto.
@@ -779,10 +774,10 @@ Section goose.
     congruence.
   Qed.
 
-  Theorem wpc_Open {k E2} (d: loc) (sz: u64) σ0 :
+  Theorem wpc_Open {k} (d: loc) (sz: u64) σ0 :
     (5 ≤ int.val sz)%Z →
     {{{ dir_cinv (int.val sz) σ0 true }}}
-      Open #d #sz @ NotStuck; (S k); ⊤; E2
+      Open #d #sz @ NotStuck; (S k); ⊤
     {{{ l, RET #l; pre_dir l (int.val sz) σ0 }}}
     {{{ dir_cinv (int.val sz) σ0 false }}}.
   Proof using allocG0 heapG0 inG0 inG1 Σ.
@@ -874,7 +869,7 @@ Section goose.
     iExists _; iFrame "∗ %".
   Qed.
 
-  Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
+  Theorem wpc_Read {k} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
     (S k < k')%nat →
     int.nat idx < num_inodes →
     {{{ "#Hdir" ∷ is_dir l sz k' ∗
@@ -883,7 +878,7 @@ Section goose.
                        mb = blocks !! int.nat i⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
-      Dir__Read #l #idx #i @ NotStuck; (S k); ⊤;E2
+      Dir__Read #l #idx #i @ NotStuck; (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -933,7 +928,7 @@ Section goose.
     iFrame. done.
   Qed.
 
-  Theorem wpc_Size {k E2} (Q: u64 → iProp Σ) l sz k' (idx: u64):
+  Theorem wpc_Size {k} (Q: u64 → iProp Σ) l sz k' (idx: u64):
     (S k < k')%nat →
     int.nat idx < num_inodes →
     {{{ "#Hdir" ∷ is_dir l sz k' ∗
@@ -942,7 +937,7 @@ Section goose.
                        int.nat sz = length blocks⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q sz)
     }}}
-      Dir__Size #l #idx @ NotStuck; (S k); ⊤;E2
+      Dir__Size #l #idx @ NotStuck; (S k); ⊤
     {{{ sz, RET #sz; Q sz }}}
     {{{ True }}}.
   Proof.
@@ -1067,7 +1062,7 @@ Section goose.
         eauto.
   Qed.
 
-  Theorem wpc_Append {k E2} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
+  Theorem wpc_Append {k} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
     (2 + k < k')%nat →
     int.nat idx < num_inodes →
     {{{ "#Hdir" ∷ is_dir l sz k' ∗
@@ -1076,7 +1071,7 @@ Section goose.
                       ⌜σ.(dir.inodes) !! int.nat idx = Some blocks⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P (dir.mk $ <[ int.nat idx := blocks ++ [b0] ]> σ.(dir.inodes)) ∗ Q)
     }}}
-      Dir__Append #l #idx (slice_val b_s) @ NotStuck; (S k); ⊤; E2
+      Dir__Append #l #idx (slice_val b_s) @ NotStuck; (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ True }}}.
   Proof.
@@ -1213,8 +1208,7 @@ Section recov.
         (λ _ _, True%I).
   Proof using allocG0.
     iIntros (Hsz) "Hstart".
-    iApply (idempotence_wpr NotStuck 2 ⊤ ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I (λ _, ∃ σ', dir_cinv (int.val sz) σ' false)%I with "[Hstart] []").
-    { auto. }
+    iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I (λ _, ∃ σ', dir_cinv (int.val sz) σ' false)%I with "[Hstart] []").
     { wpc_apply (wpc_Open with "Hstart"); auto. iSplit.
       * iModIntro. eauto.
       * eauto.

@@ -16,9 +16,9 @@ Context `{!IntoVal V}.
 
 Implicit Types (v:V) (vs: list V).
 
-Lemma wpc_slice_len k stk E1 E2 s Φ Φc :
+Lemma wpc_slice_len k stk E1 s Φ Φc :
   <disc> ▷ Φc ∧ Φ #(Slice.sz s) -∗
-  WPC slice.len (slice_val s) @ stk; k; E1; E2 {{ v, Φ v }} {{ Φc }}.
+  WPC slice.len (slice_val s) @ stk; k; E1 {{ v, Φ v }} {{ Φc }}.
 Proof.
   iIntros "HΦ".
   rewrite /slice.len.
@@ -27,9 +27,9 @@ Proof.
   { iDestruct "HΦ" as "[_ $]". }
 Qed.
 
-Lemma wpc_SliceGet stk k E1 E2 s t q vs (i: u64) v0 :
+Lemma wpc_SliceGet stk k E1 s t q vs (i: u64) v0 :
   {{{ is_slice_small s t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
-    SliceGet t (slice_val s) #i @ stk; k; E1; E2
+    SliceGet t (slice_val s) #i @ stk; k; E1
   {{{ RET (to_val v0); is_slice_small s t q vs }}}
   {{{ True }}}.
 Proof.
@@ -50,16 +50,16 @@ Proof.
   auto.
 Qed.
 
-Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 E2 s t q (vs: list V) (body: val) :
+Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 s t q (vs: list V) (body: val) :
   □ (∀ x, I x -∗ <disc> Φc') -∗
   (∀ (i: u64) (x: V),
       {{{ I i ∗ ⌜(int.nat i < length vs)%nat⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
-        body #i (to_val x) @ stk; k; E1; E2
+        body #i (to_val x) @ stk; k; E1
       {{{ RET #(); I (word.add i (U64 1)) }}}
       {{{ Φc' }}}) -∗
     {{{ I (U64 0) ∗ is_slice_small s t q vs }}}
-      forSlice t body (slice_val s) @ stk; k; E1; E2
+      forSlice t body (slice_val s) @ stk; k; E1
     {{{ RET #(); I s.(Slice.sz) ∗ is_slice_small s t q vs }}}
     {{{ Φc' }}}.
 Proof.

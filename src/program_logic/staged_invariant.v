@@ -27,14 +27,14 @@ Definition staged_done `{stagedG Σ} (γ: gname) : iProp Σ :=
    Fixed: O => C, 1 => P
    Mutable: O => Qs *)
 
-Definition bi_sch_cfupd E E' P :=
-  bi_sch_wand (bi_sch_var_fixed O) (bi_sch_fupd E E (bi_sch_fupd E' ∅ P)).
+Definition bi_sch_cfupd E P :=
+  bi_sch_wand (bi_sch_var_fixed O) (bi_sch_fupd E E P).
 
 Definition bi_sch_staged_fupd (E: coPset) :=
   bi_sch_persistently
     (bi_sch_wand (bi_sch_var_mut O)
                  (bi_sch_wand (bi_sch_var_fixed 2)
-                    (bi_sch_cfupd E ∅ (bi_sch_sep (bi_sch_var_fixed 1) (bi_sch_var_mut O))))).
+                    (bi_sch_cfupd E (bi_sch_sep (bi_sch_var_fixed 1) (bi_sch_var_mut O))))).
 
 Definition bi_sch_staged_cases :=
   bi_sch_or (bi_sch_var_mut O)
@@ -48,7 +48,7 @@ Definition bi_sch_staged E :=
 Lemma bi_sch_staged_interp `{!invG Σ, !crashG Σ, !stagedG Σ} E k Qs P γ :
   bi_schema_interp (S k) (bi_later <$> [C; P; staged_pending 1%Qp γ])
                    (bi_later <$> [Qs]) (bi_sch_staged E)
-  ⊣⊢ ((▷ Qs ∧ □ (▷ Qs -∗ ▷ C -∗ staged_pending 1%Qp γ -∗ |k,Some O={E}=> |k, Some O={∅, ∅}=> ▷ P ∗ ▷ Qs)))%I.
+  ⊣⊢ ((▷ Qs ∧ □ (▷ Qs -∗ ▷ C -∗ staged_pending 1%Qp γ -∗ |k,Some O={E}=> ▷ P ∗ ▷ Qs)))%I.
 Proof.
   rewrite bi_schema_interp_unfold.
   rewrite /bi_sch_staged.
@@ -63,9 +63,7 @@ Proof.
   rewrite bi_schema_interp_unfold.
   rewrite bi_schema_interp_unfold.
   erewrite bi_sch_fupd_interp; last first.
-  { erewrite bi_sch_fupd_interp; last first.
-    { rewrite //=. }
-    reflexivity. }
+  { reflexivity. }
   rewrite //=.
   f_equiv.
   rewrite intuitionistically_into_persistently.
@@ -84,7 +82,7 @@ Qed.
 Lemma bi_sch_staged_interp_weak `{!invG Σ, !crashG Σ, !stagedG Σ} E k Qs_mut P γ :
   bi_schema_interp (S k) (bi_later <$> [C; P; staged_pending 1%Qp γ]) (bi_later <$> Qs_mut) (bi_sch_staged E)
                    ⊣⊢ let Qs := default emp%I (bi_later <$> (Qs_mut !! O)) in
-                      (((Qs ∧ □ (Qs -∗ ▷ C -∗ staged_pending 1%Qp γ -∗ |k,Some O={E}=> |k, Some O={∅, ∅}=> ▷ P ∗ Qs))))%I.
+                      (((Qs ∧ □ (Qs -∗ ▷ C -∗ staged_pending 1%Qp γ -∗ |k,Some O={E}=> ▷ P ∗ Qs))))%I.
 Proof.
   rewrite bi_schema_interp_unfold.
   rewrite /bi_sch_staged.
@@ -98,9 +96,7 @@ Proof.
   rewrite bi_schema_interp_unfold.
   rewrite bi_schema_interp_unfold.
   erewrite bi_sch_fupd_interp; last first.
-  { erewrite bi_sch_fupd_interp; last first.
-    { rewrite //=. }
-    reflexivity. }
+  { reflexivity. }
   rewrite //=.
   f_equiv.
   { rewrite ?list_lookup_fmap. destruct (Qs_mut !! 0) => //=. }
@@ -148,22 +144,6 @@ Implicit Types i : positive.
 Implicit Types N : namespace.
 Implicit Types P Q R : iProp Σ.
 
-(*
-Global Instance staged_contractive k N E E' γ : Contractive (staged_inv k N E E' γ).
-Proof.
-  rewrite /staged_inv=> n ?? ?.
-  repeat (apply step_fupdN_ne || f_contractive || f_equiv); eauto.
-Qed.
-
-Global Instance staged_ne N E E' γ γ': NonExpansive (staged_inv N E E' γ γ').
-Proof.
-  rewrite /staged_inv=> n ?? ?.
-  repeat (apply step_fupdN_ne || f_contractive || f_equiv); eauto using dist_le.
-Qed.
-
-Global Instance staged_proper N E E' γ γ' : Proper ((⊣⊢) ==> (⊣⊢)) (staged_inv N E E' γ γ').
-Proof. apply ne_proper, _. Qed.
-*)
 
 Global Instance staged_persistent k E γ P : Persistent (staged_inv k E γ P).
 Proof. rewrite /staged_inv. apply _. Qed.
@@ -194,9 +174,25 @@ Lemma pending_split γ:
   staged_pending 1 γ ⊢ staged_pending (1/2)%Qp γ ∗ staged_pending (1/2)%Qp γ.
 Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op' Qp_div_2. Qed.
 
+Lemma pending_split34 γ:
+  staged_pending 1 γ ⊢ staged_pending (3/4)%Qp γ ∗ staged_pending (1/4)%Qp γ.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op' Qp_three_quarter_quarter. Qed.
+
 Lemma pending_join γ:
  staged_pending (1/2)%Qp γ ∗ staged_pending (1/2)%Qp γ ⊢  staged_pending 1 γ.
 Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op' Qp_div_2. Qed.
+
+Lemma pending_join34 γ:
+ staged_pending (3/4)%Qp γ ∗ staged_pending (1/4)%Qp γ ⊢  staged_pending 1 γ.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op' Qp_three_quarter_quarter. Qed.
+
+Lemma pending34_pending34 γ:
+ staged_pending (3/4)%Qp γ -∗ staged_pending (3/4)%Qp γ -∗ False.
+Proof.
+  rewrite /staged_pending.
+  iIntros "H H'".
+  { by iDestruct (own_valid_2 with "H H'") as %?. }
+Qed.
 
 Lemma staged_inv_alloc k E E' P Q Qr:
   ▷ Q ∗ □ (C -∗ ▷ Q -∗ ▷ P ∗ ▷ Qr) -∗ |(S k)={E}=>
@@ -247,7 +243,7 @@ Lemma staged_inv_open_modify_ae E k k2 k2' j j' E1 γ P Q Qr Q' Qr' R:
   k2 ≤ k →
   k2' ≤ k →
   staged_value (S k) k2 j E1 γ Q Qr P -∗
-  (▷ Q -∗ |k,Some O={E}=> □ (▷ Q' -∗ C -∗ |k2',Some (S j')={E1}=> |k2',Some (S j')={∅, ∅}=> ▷ P ∗ ▷ Qr') ∗  ▷ Q' ∗ R) -∗
+  (▷ Q -∗ |k,Some O={E}=> □ (▷ Q' -∗ C -∗ |k2',Some (S j')={E1}=> ▷ P ∗ ▷ Qr') ∗  ▷ Q' ∗ R) -∗
   |(S k)={E}=> (R ∗ staged_value (S k) k2' j' E1 γ Q' Qr' P) ∨
                (▷ Qr ∗ C).
 Proof.
@@ -306,11 +302,8 @@ Proof.
       iDestruct "HQ" as "[HQ|>Hfalse]"; last first.
       { iDestruct (pending_done with "Hc1 Hfalse") as %[]. }
       iDestruct "HQ" as "[HQ|HQ]".
-      * iMod ("Hwand" with "[$] [$]") as "H".
-        iMod (fupd_split_level_intro_mask' _ ∅) as "Hclo''"; first by set_solver+.
-        iMod ("H") as "(HP&HQr')".
+      * iMod ("Hwand" with "[$] [$]") as "(HP&HQr')".
         iMod (pending_upd_done with "Hpend").
-        iMod "Hclo''" as "_".
         iModIntro. iFrame "Hc1 HP". iNext. iFrame "HC". iLeft.
         iRight. iFrame.
       * iDestruct "HQ" as "(HQr&_&[HP|>Hfalse])"; last first.
@@ -320,7 +313,7 @@ Proof.
         iRight. iFrame.
     }
     iMod (fupd_split_level_le with "H") as "(?&?)"; first (naive_solver lia).
-    do 2 iModIntro; eauto. iFrame.
+    iModIntro; eauto. iFrame.
   - iDestruct "HQ" as "([HQr|>Hfalse]&#>HC&HP)"; last first.
     { iDestruct (pending_done with "Hγr Hfalse") as %[]. }
     iMod (pending_upd_done with "Hγr") as "#Hγr".
@@ -348,7 +341,7 @@ Proof.
       iFrame.
     }
     iMod (fupd_split_level_le with "H") as "(?&?)"; first (naive_solver lia).
-    do 2 iModIntro; by iFrame.
+    iModIntro; by iFrame.
 Qed.
 
 Lemma staged_value_into_disc k k2 mj2 E γ P Q Qr :
@@ -360,7 +353,7 @@ Proof.
 Qed.
 
 Lemma staged_inv_disc_open_crash k mj E γ P Q Qr:
-  □ (▷ Q -∗ ▷ C -∗ |k, Some (S mj)={E}=> |k, Some (S mj)={∅, ∅}=> ▷ P ∗ ▷ Qr) -∗
+  □ (▷ Q -∗ ▷ C -∗ |k, Some (S mj)={E}=> ▷ P ∗ ▷ Qr) -∗
   staged_value_disc k mj γ Q Qr P -∗ C -∗ |k, Some mj={E}=> ▷ Qr.
 Proof.
   iIntros "#Hwand".
@@ -372,10 +365,7 @@ Proof.
   iDestruct "HQ" as "[HQ|>Hfalse]"; last first.
   { iDestruct (pending_done with "[$] [$]") as %[]. }
   iDestruct "HQ" as "[HQ|HQ]".
-  - iMod ("Hwand" with "[$] [$]") as "H".
-    iMod (fupd_split_level_intro_mask' _ ∅) as "Hclo''"; first by set_solver+.
-    iMod ("H") as "(HP&HQr)".
-    iMod "Hclo''" as "_".
+  - iMod ("Hwand" with "[$] [$]") as "(HP&HQr)".
     iMod (pending_upd_done with "Hqr") as "#Hdone".
     iModIntro. iFrame "HQr". iLeft. iRight. iFrame "# ∗".
   - iDestruct "HQ" as "([HQr|>Hfalse]&_&HP)"; last first.
@@ -400,11 +390,8 @@ Proof.
   iDestruct "H" as "(Hc&#Hwand)".
   iMod (fupd_split_level_intro_mask' _ E1) as "Hclo''"; auto.
   iDestruct ("Hwand" with "[$] [$] [$]") as "Hwand0".
-  iMod (fupd_split_level_le with "Hwand0") as "Hwand0"; first (naive_solver lia).
-  iMod (fupd_split_level_intro_mask' _ ∅) as "Hclo'''"; first by set_solver.
-  iMod (fupd_split_level_le with "Hwand0") as "(HP&HQr)"; first (naive_solver lia).
-  iMod "Hclo'''" as "_".
-  iMod "Hclo''" as "_".
+  iMod (fupd_split_level_le with "Hwand0") as "(HP&HQ)"; first (naive_solver lia).
+  iMod "Hclo''".
   iModIntro. iSplitR "HP"; last done.
   iApply bi_sch_staged_interp_weak. iFrame "# ∗".
 Qed.

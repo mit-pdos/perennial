@@ -76,11 +76,11 @@ Lemma sty_inv_to_wpc hG hRG hS es e τ j:
   trace_ctx -∗
   sty_init hS -∗
   j ⤇ es -∗
-  WPC e @ sty_lvl_init; ⊤;⊤ ∖ ↑sN {{ _, True }}{{sty_derived_crash_condition hG hRG}}.
+  WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_derived_crash_condition hG hRG}}.
 Proof.
   iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules) "#Hspec #Htrace Hinit Hj".
     rewrite /sty_crash_obligation in Hsty_crash.
-  iAssert (|={⊤}=> sty_inv hS ∗ WPC e @ sty_lvl_init; ⊤;⊤ ∖ ↑sN ∖ styN {{ _, True }}{{sty_crash_cond hS}})%I with "[-]" as ">(#Hinv&H)".
+  iAssert (|={⊤}=> sty_inv hS ∗ WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_crash_cond hS}})%I with "[-]" as ">(#Hinv&H)".
   {
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
     iApply (Hsty_crash_inv with "[$] [$] [Hj]").
@@ -94,25 +94,21 @@ Proof.
       { iPureIntro. apply _. }
       { simpl. by rewrite fmap_empty subst_map_empty. }
       rewrite fmap_empty subst_map_empty.
-      iApply (wpc_strong_mono _ _ _ _ _ _ _ _ _ _ (λ _, True%I) with "[$]"); eauto.
+      iApply (wpc_strong_mono _ _ _ _ _ _ _ _ (λ _, True%I) with "[$]"); eauto.
       iSplit.
       - eauto.
-      - eauto. rewrite difference_diag_L.
-        simpl. iModIntro; eauto.
+      - simpl. iModIntro; eauto. by iIntros "_ !>".
     }
   }
   iApply (wpc_strong_mono with "[$]"); eauto.
-  { solve_ndisj. }
   iSplit.
   - eauto.
   - iModIntro.
     iIntros.
-    replace (⊤ ∖ ↑sN ∖ (⊤ ∖ ↑sN ∖ styN)) with (styN); last first.
-    {
-      rewrite difference_difference_remainder_L; auto.
-      clear. generalize (styN_disjoint). solve_ndisj.
-    }
+    iIntros "Hc".
+    iMod (fupd_level_intro_mask' _ (styN)) as "Hclo"; eauto.
     iMod (Hsty_crash with "[$] [$]") as "H".
+    iMod "Hclo".
     iModIntro. iModIntro. iExists _. iFrame.
 Qed.
 End pre_assumptions.

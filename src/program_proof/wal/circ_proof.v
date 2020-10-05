@@ -6,6 +6,7 @@ From RecordUpdate Require Import RecordSet.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
+From Perennial.program_logic Require Export ncinv.
 From Perennial.Helpers Require Import List Transitions.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.program_proof Require Import wal.lib.
@@ -44,6 +45,7 @@ Class circG Σ :=
   { circ_list_u64 :> ghost_varG Σ (list u64);
     circ_list_block :> ghost_varG Σ (list Block);
     circ_fmcounter :> fmcounterG Σ;
+    circ_stagedG :> stagedG Σ;
   }.
 
 Section heap.
@@ -210,7 +212,7 @@ Definition is_circular_state γ (σ : circΣ.t) : iProp Σ :=
     is_low_state σ.(start) (circΣ.diskEnd σ) addrs blocks.
 
 Definition is_circular γ : iProp Σ :=
-  inv N (∃ σ, is_circular_state γ σ ∗ P σ).
+  ncinv N (∃ σ, is_circular_state γ σ ∗ P σ).
 
 Definition is_circular_appender γ (circ: loc) : iProp Σ :=
   ∃ s (addrs : list u64) (blocks: list Block),
@@ -283,10 +285,10 @@ Theorem is_circular_appender_wf γ addrs blocks :
   is_circular γ -∗
   ghost_var γ.(addrs_name) (1/2) addrs ∗
   ghost_var γ.(blocks_name) (1/2) blocks -∗
-  |={⊤}=> ⌜circ_low_wf addrs blocks⌝.
+  |NC={⊤}=> ⌜circ_low_wf addrs blocks⌝.
 Proof.
   iIntros "#Hcirc [Hγaddrs Hγblocks]".
-  iMod (inv_dup_acc ⌜circ_low_wf addrs blocks⌝ with "Hcirc [Hγaddrs Hγblocks]") as ">%Hwf"; auto.
+  iMod (ncinv_dup_acc ⌜circ_low_wf addrs blocks⌝ with "Hcirc [Hγaddrs Hγblocks]") as ">%Hwf"; auto.
   iIntros "Hinv".
   iDestruct "Hinv" as (σ) "[Hstate HP]".
   iDestruct (is_circular_inner_wf with "[$Hγaddrs $Hγblocks] Hstate") as %Hwf.
@@ -427,7 +429,7 @@ Proof.
   rename H into Hpre.
   wp_call.
   wp_apply wp_hdr2; iIntros (s hdr2) "[Hb %Henchdr2]".
-  wp_apply (wp_Write_fupd (⊤ ∖ ↑N) with "Hb").
+  wp_apply (wp_Write_ncfupd (⊤ ∖ ↑N) with "Hb").
   rewrite /is_circular.
   iInv "Hcirc" as "Hcirc_inv" "Hclose".
   iDestruct "Hcirc_inv" as (σ) "[>Hcirc_state HP]".
@@ -708,7 +710,7 @@ Proof.
   wp_apply wp_DPrintf.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
-  wp_apply (wp_Write_fupd (⊤ ∖ ↑N) with "Hi").
+  wp_apply (wp_Write_ncfupd (⊤ ∖ ↑N) with "Hi").
   word_cleanup.
   rewrite wrap_small_log_addr.
   word_cleanup.
@@ -957,7 +959,7 @@ Proof.
   wp_pures.
 
   iDestruct (slice.is_slice_small_sz with "Hb") as %Hslen.
-  wp_apply (wp_Write_fupd with "Hb").  (*   *)
+  wp_apply (wp_Write_ncfupd with "Hb").  (*   *)
   rewrite fmap_length in Hslen.
 
   iInv N as "Hcircopen" "Hclose".
@@ -1164,9 +1166,9 @@ Proof.
   iFrame "Hupd".
 Qed.
 
-Theorem wpc_recoverCircular stk k E1 E2 d σ γ :
+Theorem wpc_recoverCircular stk k E1 d σ γ :
   {{{ is_circular_state γ σ }}}
-    recoverCircular #d @ stk; k; E1; E2
+    recoverCircular #d @ stk; k; E1
   {{{ γ' (c:loc) (diskStart diskEnd: u64) (bufSlice:Slice.t) (upds: list update.t),
       RET (#c, #diskStart, #diskEnd, slice_val bufSlice);
       updates_slice bufSlice upds ∗

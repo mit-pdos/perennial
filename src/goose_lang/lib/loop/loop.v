@@ -116,15 +116,15 @@ Qed.
 Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
 iExists _; iFrame; iPureIntro; word : core.
 
-Theorem wpc_forBreak_cond' (I: bool -> iProp Σ) Ic Φ Φc stk k E1 E2 (cond body: val) :
+Theorem wpc_forBreak_cond' (I: bool -> iProp Σ) Ic Φ Φc stk k E1 (cond body: val) :
   (∀ b, I b -∗ <disc> ▷ Ic) -∗
   <disc> ▷ (Ic -∗ Φc) ∧ ▷ (I false -∗ Φ #()) -∗
   □ (I true -∗
-     WPC if: cond #() then body #() else #false @ stk; k; E1; E2
+     WPC if: cond #() then body #() else #false @ stk; k; E1
      {{ v, ∃ b : bool, ⌜ v = #b ⌝ ∧ I b }}
      {{ Ic }}) -∗
   I true -∗
-  WPC (for: cond; (λ: <>, (λ: <>, #())%V #())%V := body) @ stk; k; E1; E2
+  WPC (for: cond; (λ: <>, (λ: <>, #())%V #())%V := body) @ stk; k; E1
   {{ Φ }}
   {{ Φc }}.
 Proof.
@@ -140,7 +140,7 @@ Proof.
   iDestruct ("Hbody" with "I") as "Hbody1".
   iApply (wpc_strong_mono with "Hbody1"); try auto.
   iSplit; last first.
-  { iLeft in "HΦ". iModIntro. iIntros "H". rewrite difference_diag_L. iModIntro.
+  { iLeft in "HΦ". iModIntro. iIntros "H". iModIntro.
     by iApply "HΦ". }
   iIntros (v) "H".
   iModIntro.
@@ -156,15 +156,15 @@ Proof.
     { iRight in "HΦ". by iApply "HΦ". }
 Qed.
 
-Theorem wpc_forBreak_cond (I: bool -> iProp Σ) Ic stk k E1 E2 (cond body: val) :
+Theorem wpc_forBreak_cond (I: bool -> iProp Σ) Ic stk k E1 (cond body: val) :
   (∀ b, I b -∗ <disc> ▷ Ic) →
   {{{ I true }}}
-    if: cond #() then body #() else #false @ stk; k; E1; E2
+    if: cond #() then body #() else #false @ stk; k; E1
   {{{ r, RET #r; I r }}}
   {{{ Ic }}} -∗
   {{{ I true }}}
     (for: cond; (λ: <>, (λ: <>, #())%V #())%V :=
-       body) @ stk; k; E1; E2
+       body) @ stk; k; E1
   {{{ RET #(); I false }}}
   {{{ Ic }}}.
 Proof.
@@ -178,17 +178,17 @@ Proof.
   iSplit; iModIntro; eauto.
 Qed.
 
-Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 E2 (start max:u64) (l:loc) (body: val) :
+Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 (start max:u64) (l:loc) (body: val) :
   int.val start <= int.val max ->
   (∀ (i:u64), ⌜int.val start ≤ int.val i ≤ int.val max⌝ -∗ I i -∗ <disc> I' i) →
   (∀ (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.val i < int.val max⌝ }}}
-        body #() @ stk; k; E1; E2
+        body #() @ stk; k; E1
       {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦[uint64T] #i }}}
       {{{ I' i ∨ I' (word.add i (U64 1)) }}}) -∗
   {{{ I start ∗ l ↦[uint64T] #start }}}
     (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
-       body) @ stk; k; E1; E2
+       body) @ stk; k; E1
   {{{ RET #(); I max ∗ l ↦[uint64T] #max }}}
   {{{ ∃ (i:u64), I' i ∗ ⌜int.val start <= int.val i <= int.val max⌝ }}}.
 Proof.

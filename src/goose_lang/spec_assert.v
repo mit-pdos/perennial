@@ -54,6 +54,7 @@ Section go_spec_definitions.
 Context {Σ: gFunctors}.
 Context {hR: refinement_heapG Σ}.
 Context `{invG Σ}.
+Context `{crashG Σ}.
 
 Definition spec_interp σ : iProp Σ :=
     (na_heap_ctx tls σ.(heap) ∗ (* proph_map_ctx κs σ.(used_proph_id) ∗ *) ffi_ctx refinement_spec_ffiG σ.(world)
@@ -63,9 +64,9 @@ Definition spec_stateN := nroot .@ "source".@  "state".
 
 (* TODO: these names are terrible *)
 Definition spec_ctx : iProp Σ :=
-  source_ctx (CS := spec_crash_lang) ∗ inv spec_stateN (∃ σ, source_state σ ∗ spec_interp σ)%I.
+  source_ctx (CS := spec_crash_lang) ∗ ncinv spec_stateN (∃ σ, source_state σ ∗ spec_interp σ)%I.
 Definition spec_ctx' r ρ : iProp Σ :=
-  source_ctx' (CS := spec_crash_lang) r ρ ∗ inv spec_stateN (∃ σ, source_state σ ∗ spec_interp σ)%I.
+  source_ctx' (CS := spec_crash_lang) r ρ ∗ ncinv spec_stateN (∃ σ, source_state σ ∗ spec_interp σ)%I.
 
 Global Instance spec_ctx_persistent : Persistent (spec_ctx).
 Proof. apply _. Qed.
@@ -112,7 +113,7 @@ Lemma ghost_output j K `{LanguageCtx _ K} E tr lit :
   nclose sN_inv ⊆ E →
   spec_ctx -∗
   trace_frag tr -∗
-  j ⤇ K (Output (LitV lit)) ={E}=∗
+  j ⤇ K (Output (LitV lit)) -∗ |NC={E}=>
   j ⤇ K (LitV LitUnit) ∗ trace_frag (add_event (Out_ev lit) tr).
 Proof.
   iIntros (??) "(#Hctx&#Hstate) Htr_frag Hj".
@@ -137,7 +138,7 @@ Lemma ghost_input j K `{LanguageCtx _ K} E tr (sel: u64) Or :
   spec_ctx -∗
   trace_frag tr -∗
   oracle_frag Or -∗
-  j ⤇ K (Input (LitV (LitInt sel))) ={E}=∗
+  j ⤇ K (Input (LitV (LitInt sel))) -∗ |NC={E}=>
   j ⤇ K (LitV (LitInt (Or tr sel))) ∗ trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr) ∗
   oracle_frag Or.
 Proof.
@@ -163,7 +164,7 @@ Lemma ghost_load_block_oob_stuck j K `{LanguageCtx _ K} E l n
   nclose sN ⊆ E →
   spec_ctx -∗
   na_block_size (addr_base l) n →
-  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -190,7 +191,7 @@ Lemma ghost_load_write_stuck j K `{LanguageCtx _ K} E l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (WSt) l q v -∗
-  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -213,7 +214,7 @@ Lemma ghost_load_null_stuck j K `{LanguageCtx _ K} E l:
   addr_base l = null →
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (Hnull ?) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -240,7 +241,7 @@ Lemma ghost_load_rd j K `{LanguageCtx _ K} E n l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (RSt n) l q v -∗
-  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
   na_heap_mapsto_st (RSt n) l q v ∗ j ⤇ K v.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
@@ -262,7 +263,7 @@ Lemma ghost_load j K `{LanguageCtx _ K} E l q v:
   nclose sN ⊆ E →
   spec_ctx -∗
   l s↦{q} v -∗
-  j ⤇ K (Load (Val $ LitV $ LitLoc l)) ={E}=∗
+  j ⤇ K (Load (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
   l s↦{q} v ∗ j ⤇ K v.
 Proof.
   iIntros (?) "Hspec Hl0 Hj".
@@ -278,7 +279,7 @@ Lemma ghost_cmpxchg_fail_rd j K `{LanguageCtx _ K} E l q n v' v1 v2:
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (RSt n) l q v' -∗
-  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) ={E}=∗
+  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=>
   na_heap_mapsto_st (RSt n) l q v' ∗ j ⤇ K (PairV v' (LitV $ LitBool false)).
 Proof.
   iIntros (???) "(#Hctx&#Hstate) Hl Hj".
@@ -302,7 +303,7 @@ Lemma ghost_cmpxchg_fail j K `{LanguageCtx _ K} E l q v' v1 v2:
   nclose sN ⊆ E →
   spec_ctx -∗
   l s↦{q} v' -∗
-  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) ={E}=∗
+  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=>
   l s↦{q} v' ∗ j ⤇ K (PairV v' (LitV $ LitBool false)).
 Proof.
   iIntros (???) "Hspec Hl0 Hj".
@@ -317,7 +318,7 @@ Lemma ghost_cmpxchg_suc j K `{LanguageCtx _ K} E l v' v1 v2:
   nclose sN ⊆ E →
   spec_ctx -∗
   l s↦ v' -∗
-  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) ={E}=∗
+  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=>
   l s↦ v2 ∗ j ⤇ K (PairV v' (LitV $ LitBool true)).
 Proof.
   iIntros (???) "(#Hctx&#Hstate) Hl0 Hj".
@@ -344,7 +345,7 @@ Lemma ghost_cmpxchg_block_oob_stuck j K `{LanguageCtx _ K} E l (v1 v2: val) n
   nclose sN ⊆ E →
   spec_ctx -∗
   na_block_size (addr_base l) n →
-  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) ={E}=∗ False.
+  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -371,7 +372,7 @@ Lemma ghost_cmpxchg_null_stuck j K `{LanguageCtx _ K} E l (v1 v2: val):
   addr_base l = null →
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) ={E}=∗ False.
+  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=> False.
 Proof.
   iIntros (??) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -400,7 +401,7 @@ Lemma ghost_cmpxchg_suc_read_stuck j K `{LanguageCtx _ K} E l v v1 v2 n q:
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (RSt n) l q v -∗
-  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) ={E}=∗ False.
+  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=> False.
 Proof.
   iIntros (???) "(#Hctx&#Hstate) Hlread Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
@@ -426,7 +427,7 @@ Lemma ghost_cmpxchg_write_stuck j K `{LanguageCtx _ K} E l v v1 v2 q:
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (WSt) l q v -∗
-  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) ={E}=∗ False.
+  j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
@@ -450,7 +451,7 @@ Lemma ghost_finish_store j K `{LanguageCtx _ K} E l (v' v: val) :
   spec_ctx -∗
   na_heap_mapsto_st WSt l 1 v' -∗
   (∀ v', na_heap_mapsto (hG := refinement_na_heapG) l 1 v' -∗ l s↦ v') -∗
-  j ⤇ K (FinishStore (Val $ LitV $ LitLoc l) v) ={E}=∗
+  j ⤇ K (FinishStore (Val $ LitV $ LitLoc l) v) -∗ |NC={E}=>
   l s↦ v ∗ j ⤇ K #().
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hlclo Hj".
@@ -478,7 +479,7 @@ Lemma ghost_prepare_write j K `{LanguageCtx _ K} E l v :
   nclose sN ⊆ E →
   spec_ctx -∗
   l s↦ v -∗
-  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) ={E}=∗
+  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
   na_heap_mapsto_st WSt l 1 v ∗ (∀ v', na_heap_mapsto l 1 v' -∗ l s↦ v') ∗ j ⤇ K #().
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
@@ -503,7 +504,7 @@ Lemma ghost_prepare_write_read_stuck j K `{LanguageCtx _ K} E l v n q:
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (RSt n) l q v -∗
-  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (??) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
@@ -527,7 +528,7 @@ Lemma ghost_prepare_write_block_oob_stuck j K `{LanguageCtx _ K} E l n
   nclose sN ⊆ E →
   spec_ctx -∗
   na_block_size (addr_base l) n →
-  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -554,7 +555,7 @@ Lemma ghost_prepare_write_write_stuck j K `{LanguageCtx _ K} E l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (WSt) l q v -∗
-  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -577,7 +578,7 @@ Lemma ghost_prepare_write_null_stuck j K `{LanguageCtx _ K} E l:
   addr_base l = null →
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (Hnull ?) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -604,7 +605,7 @@ Lemma ghost_finish_read j K `{LanguageCtx _ K} E l n q (v: val) :
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (RSt (S n)) l q v -∗
-  j ⤇ K (FinishRead (Val $ LitV $ LitLoc l)) ={E}=∗
+  j ⤇ K (FinishRead (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
   na_heap_mapsto_st (RSt n) l q v ∗ j ⤇ K #().
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
@@ -631,7 +632,7 @@ Lemma ghost_start_read j K `{LanguageCtx _ K} E l n q (v: val) :
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (RSt n) l q v -∗
-  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) ={E}=∗
+  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
   na_heap_mapsto_st (RSt (S n)) l q v ∗ j ⤇ K v.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
@@ -659,7 +660,7 @@ Lemma ghost_start_read_block_oob_stuck j K `{LanguageCtx _ K} E l n
   nclose sN ⊆ E →
   spec_ctx -∗
   na_block_size (addr_base l) n →
-  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -686,7 +687,7 @@ Lemma ghost_start_read_write_stuck j K `{LanguageCtx _ K} E l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
   na_heap_mapsto_st (WSt) l q v -∗
-  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -709,7 +710,7 @@ Lemma ghost_start_read_null_stuck j K `{LanguageCtx _ K} E l:
   addr_base l = null →
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) ={E}=∗ False.
+  j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (Hnull ?) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -736,7 +737,7 @@ Lemma ghost_allocN_non_pos_stuck j K `{LanguageCtx _ K} E v (n: u64) :
   ¬ (0 < int.val n)%Z →
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) ={E}=∗ False.
+  j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) -∗ |NC={E}=> False.
 Proof.
   iIntros (Hnonpos ?) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (?) "(>H&Hinterp)" "Hclo".
@@ -762,7 +763,7 @@ Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
   (0 < int.val n)%Z →
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) ={E}=∗
+  j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) -∗ |NC={E}=>
   ∃ l : loc, j ⤇ K (#l) ∗
              ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
              na_block_size (hG := refinement_na_heapG) l (int.nat n * length (flatten_struct v))%nat ∗
@@ -855,6 +856,7 @@ Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
 Context {Σ: gFunctors}.
 Context {hG: heapG Σ}.
+Context {hS: stagedG Σ}.
 Context {hR: refinement_heapG Σ}.
 
 Definition trace_inv : iProp Σ :=
@@ -868,7 +870,7 @@ Definition trace_inv : iProp Σ :=
 Definition spec_traceN := sN .@ "trace".
 
 Definition trace_ctx : iProp Σ :=
-  inv spec_traceN trace_inv.
+  ncinv spec_traceN trace_inv.
 
 End trace_inv.
 
@@ -883,6 +885,7 @@ Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
 Context {Σ: gFunctors}.
 Context {hG: heapG Σ}.
+Context {hS: stagedG Σ}.
 Context {hR: refinement_heapG Σ}.
 Set Printing Implicit.
 

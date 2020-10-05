@@ -96,7 +96,7 @@ Section goose.
       "#Hinode" ∷ is_inode inodeN inode_ref (S k') (Pinode δdur δbuf δused) (U64 0) ∗
       "#Halloc" ∷ is_allocator (Palloc δused)
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) δalloc k' ∗
-      "#Hinv" ∷ inv s_inodeN (∃ σ, s_inode_inv δdur δbuf σ ∗ P γdur γbuf σ)
+      "#Hinv" ∷ ncinv s_inodeN (∃ σ, s_inode_inv δdur δbuf σ ∗ P γdur γbuf σ)
   .
 
   (* P is internal here, so we include it as part of s_inode_cinv, unlike the synch inode *)
@@ -241,12 +241,11 @@ Section goose.
     iModIntro. iApply (fmlist_lb_mono with "Hlb"). eexists; eauto.
   Qed.
 
-  Theorem wpc_Open {k E2} γdur γbuf (d_ref: loc) (sz: u64) k' σ0 :
+  Theorem wpc_Open {k} γdur γbuf (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
-    ↑allocN ⊆ E2 →
     (0 < int.val sz)%Z →
     {{{ "Hcinv" ∷ s_inode_cinv γdur γbuf (int.val sz) σ0 true }}}
-      Open #d_ref #sz @ NotStuck; S k; ⊤; E2
+      Open #d_ref #sz @ NotStuck; S k; ⊤
     {{{ l, RET #l;
        ∃ γbuf', pre_s_inode γdur γbuf' l (int.val sz) (set s_inode.buffered_blocks (λ _, []) σ0) ∗
                 (* New buf points to fact *)
@@ -258,7 +257,7 @@ Section goose.
     }}}
     {{{ s_inode_cinv γdur γbuf (int.val sz) σ0 true }}}.
   Proof.
-    iIntros (??? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { iFrame. }
     { iFrame. }
@@ -402,38 +401,33 @@ Section goose.
     iNamed "Hs_inv". iFrame.
   Qed.
 
-  Theorem is_single_inode_alloc {E2} k γdur γbuf l (sz: Z) σ :
+  Theorem is_single_inode_alloc k γdur γbuf l (sz: Z) σ :
     (1 ≤ sz < 2^64)%Z →
-    ↑allocN ⊆ E2 →
-    ↑s_inodeN ⊆ E2 →
     pre_s_inode γdur γbuf l sz σ ={⊤}=∗
     is_single_inode γdur γbuf l sz k ∗
-    <disc> |C={⊤,E2}_(S k)=> ∃ σ', s_inode_cinv γdur γbuf sz σ' false.
+    <disc> |C={⊤}_(S k)=> ∃ σ', s_inode_cinv γdur γbuf sz σ' false.
   Proof.
-    iIntros (???); iNamed 1.
+    iIntros (?); iNamed 1.
     iNamed "Hinode".
     iNamed "Halloc".
     iMod (is_allocator_alloc _ _ _ k with "Hunused HPalloc Halloc_mem") as (γalloc) "[Halloc Halloc_crash]".
     iMod (is_inode_alloc inodeN (k:=k) with "HPinode Hpre_inode") as "[Hinode Hinode_crash]".
     (* TODO: allocate s_inode_inv invariant *)
-    iMod (inv_alloc s_inodeN _ (∃ σ, s_inode_inv δdur δbuf σ ∗ P γdur γbuf σ)%I
-            with "[Hs_inv HP]") as "#Hinv".
+    iMod (ncinv_alloc s_inodeN _ (∃ σ, s_inode_inv δdur δbuf σ ∗ P γdur γbuf σ)%I
+            with "[Hs_inv HP]") as "(#Hinv&Hinv_crash)".
     { iNext.
       iExists _; iFrame. }
-    iDestruct (inv_cfupd _ ⊤ with "Hinv") as "Hinv_crash"; auto.
     rewrite Halloc_dom.
     iModIntro.
     iSplitL "Halloc Hinode".
     { iExists _, _, _, _, _, _. iFrame "Hinode". iFrame "Halloc".
       iFrame "# ∗". }
     iModIntro.
-    iMod "Halloc_crash" as "_".
-    iMod "Hinode_crash" as "_".
-    iMod "Hinv_crash" as "_".
-    { rewrite difference_empty_L.
-      solve_ndisj. }
+    iMod "Halloc_crash" as "Halloc".
+    iMod "Hinode_crash" as "Hinode".
+    iMod (cfupd_weaken_all with "Hinv_crash") as "Hs_inode"; first lia.
+    { solve_ndisj. }
     iModIntro. iNext.
-    iIntros "Hs_inode Hinode Halloc".
     iDestruct "Hs_inode" as (σ') "[Hs_inv HP]".
     iExists _; iFrame.
     iExists _, _; iFrame.
@@ -443,12 +437,12 @@ Section goose.
     { iNamed "Hs_inv". iFrame. }
   Qed.
 
-  Theorem wpc_Read {k E2} (Q: option Block → iProp Σ) γdur γbuf l sz k' (i: u64) :
+  Theorem wpc_Read {k} (Q: option Block → iProp Σ) γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗ inode_mapsto γbuf blks ∗ Q (blks !! int.nat i)
     }}}
-      SingleInode__Read #l #i @ NotStuck; (S k); ⊤;E2
+      SingleInode__Read #l #i @ NotStuck; (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -496,13 +490,13 @@ Section goose.
   (* If you have the full inode_mapsto (or rather, can get it by a view-shift, then
      you know the exact results of your read, compare with wp_Read_fupd_triple for disk *)
 
-  Theorem wpc_Read1 {k E2} (Q: option Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
+  Theorem wpc_Read1 {k} (Q: option Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
                                 (inode_mapsto γbuf blks -∗ |={E, ⊤∖↑N}=> Q (blks !! int.nat i))
     }}}
-      SingleInode__Read #l #i @ NotStuck; (S k); ⊤;E2
+      SingleInode__Read #l #i @ NotStuck; (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -523,13 +517,13 @@ Section goose.
      you know the exact results of your read. One can prove a corresponding thing for if the read
      is out of bounds, saying that you can get either nothing or something (and then a new lb *)
 
-  Theorem wpc_Read2 {k E2} (Q: Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
+  Theorem wpc_Read2 {k} (Q: Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks b, ⌜ blks !! int.nat i = Some b ⌝ ∧ inode_current_lb γbuf blks
                                  ∗ |={E, ⊤∖↑N}=> Q b
     }}}
-      SingleInode__Read #l #i @ NotStuck; (S k); ⊤;E2
+      SingleInode__Read #l #i @ NotStuck; (S k); ⊤
     {{{ (s:Slice.t) b, RET (slice_val s); (∃ q, is_block s q b) ∗ Q b }}}
     {{{ True }}}.
   Proof.
@@ -572,14 +566,14 @@ Section goose.
     rewrite alloc_free_reserved //.
   Qed.
 
-  Theorem wpc_Append {k E2} (Q Qc: iProp Σ) γdur γbuf q l sz b_s b0 k' :
+  Theorem wpc_Append {k} (Q Qc: iProp Σ) γdur γbuf q l sz b_s b0 k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hb" ∷ is_block b_s q b0 ∗
         "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗
                                 inode_mapsto γbuf (blks ++ [b0]) ∗ (<disc> ▷ Qc ∧ Q))
     }}}
-      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤; E2
+      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ Qc }}}.
   Proof.
@@ -625,14 +619,14 @@ Section goose.
       * iApply "HΦ". by iRight in "HQ".
   Qed.
 
-  Theorem wpc_Append1 {k E2} (Q Qc: iProp Σ) E γdur γbuf q l sz b_s b0 k' :
+  Theorem wpc_Append1 {k} (Q Qc: iProp Σ) E γdur γbuf q l sz b_s b0 k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hb" ∷ is_block b_s q b0 ∗
         "Hfupd" ∷ (<disc> ▷ Qc ∧ |={⊤ ∖ ↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
                                   (inode_mapsto γbuf (blks ++ [b0]) ={E, ⊤ ∖ ↑N}=∗ <disc> ▷ Qc ∧ Q))
     }}}
-      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤; E2
+      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ Qc }}}.
   Proof.
@@ -649,13 +643,13 @@ Section goose.
     eauto.
   Qed.
 
-  Theorem wpc_Flush {k E2} (Q Qc: iProp Σ) γdur γbuf l sz k' :
+  Theorem wpc_Flush {k} (Q Qc: iProp Σ) γdur γbuf l sz k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ={⊤ ∖ ↑N}=∗
                                 inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ∗ (<disc> ▷ Qc ∧ Q))
     }}}
-      SingleInode__Flush #l @ NotStuck; (S k); ⊤; E2
+      SingleInode__Flush #l @ NotStuck; (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ Qc }}}.
   Proof.
@@ -745,12 +739,12 @@ Section goose.
       { eauto. }
   Qed.
 
-  Theorem wpc_Flush1 {k E2} (Q: iProp Σ) γdur γbuf blks l sz k' :
+  Theorem wpc_Flush1 {k} (Q: iProp Σ) γdur γbuf blks l sz k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hlb" ∷ inode_current_lb γbuf blks
     }}}
-      SingleInode__Flush #l @ NotStuck; (S k); ⊤; E2
+      SingleInode__Flush #l @ NotStuck; (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then inode_durable_lb γdur γbuf blks else emp }}}
     {{{ True }}}.
   Proof.

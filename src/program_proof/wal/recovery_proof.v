@@ -287,9 +287,9 @@ Global Instance disk_inv_durable_disc γ σ cs:
   Discretizable (disk_inv_durable γ σ cs).
 Proof. apply _. Qed.
 
-Theorem wpc_mkLog_recover k E2 d γ σ :
+Theorem wpc_mkLog_recover k d γ σ :
   {{{ is_wal_inner_durable γ σ }}}
-    mkLog #d @ NotStuck; k; ⊤; E2
+    mkLog #d @ NotStuck; k; ⊤
   {{{ γ' l, RET #l;
        is_wal_inv_pre l γ' σ ∗
        (* XXX whatever it is that background threads needs *)
@@ -431,9 +431,9 @@ Proof.
 Admitted. (* BUG: the theorem statement isn't complete yet, but if we abort
 this, then the proof runs in -vos mode... *)
 
-Theorem wpc_MkLog_recover stk k E1 E2 d γ σ :
+Theorem wpc_MkLog_recover stk k E1 d γ σ :
   {{{ is_wal_inner_durable γ σ }}}
-    MkLog #d @ stk; k; E1; E2
+    MkLog #d @ stk; k; E1
   {{{ σ' γ' l, RET #l;
       ⌜relation.denote (log_crash) σ σ' tt⌝ ∗
        is_wal_inv_pre l γ' σ' }}}
@@ -442,11 +442,11 @@ Proof.
 Admitted.
 
 (* XXX: this is not quite correctly stated, there is some condition on E *)
-Theorem is_wal_inv_alloc {k : nat} E l γ σ :
+Theorem is_wal_inv_alloc {k : nat} l γ σ :
   ▷ P σ -∗
   is_wal_inv_pre l γ σ ={⊤}=∗
   is_wal P l γ ∗
-  <disc> |C={⊤,E}_(S k)=> (∃ σ', is_wal_inner_durable γ σ' ∗ P σ').
+  <disc> |C={⊤}_(S k)=> (∃ σ', is_wal_inner_durable γ σ' ∗ P σ').
 Proof.
 Admitted.
 

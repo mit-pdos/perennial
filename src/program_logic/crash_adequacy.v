@@ -20,21 +20,21 @@ Implicit Types Φs : list (val Λ → iProp Σ).
 Context (mj: nat).
 (* The IH of the theorems here requires working with some fixed choice of mj in the wpc0 form,
    instead of wpc. So, we introduce here a notation to insert the mj explicitly to porting these proofs easier *)
-Local Notation "'WPC' e @ k ; E1 ; E2 {{ Φ } } {{ Φc } }" := (wpc0 NotStuck k%nat mj E1 E2 e%E Φ Φc)
+Local Notation "'WPC' e @ k ; E1 {{ Φ } } {{ Φc } }" := (wpc0 NotStuck k%nat mj E1 e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
-Local Notation "'WPC' e @ s ; k ; E1 ; E2 {{ Φ } } {{ Φc } }" := (wpc0 s k%nat mj E1 E2 e%E Φ Φc)
+Local Notation "'WPC' e @ s ; k ; E1 {{ Φ } } {{ Φc } }" := (wpc0 s k%nat mj E1 e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
-Local Notation "'WPC' e @ s ; k ; E1 ; E2 {{ Φ } } {{ Φc } }" := (wpc0 s k%nat mj E1 E2 e%E Φ Φc)
+Local Notation "'WPC' e @ s ; k ; E1 {{ Φ } } {{ Φc } }" := (wpc0 s k%nat mj E1 e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : stdpp_scope.
 
-Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤; ⊤ {{ fork_post }} {{ True }})%I.
+Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})%I.
 
 Lemma wpc_step s k e1 σ1 κ κs e2 σ2 efs m Φ Φc :
   prim_step e1 σ1 κ e2 σ2 efs →
-  state_interp σ1 (κ ++ κs) m -∗ WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗ NC 1 -∗
+  state_interp σ1 (κ ++ κs) m -∗ WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗ NC 1 -∗
   |={⊤}[∅]▷=>
   state_interp σ2 κs (length efs + m) ∗
-  WPC e2 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} ∗
+  WPC e2 @ s; k; ⊤ {{ Φ }} {{ Φc }} ∗
   wptp s k efs ∗
   NC 1.
 Proof.
@@ -48,9 +48,9 @@ Qed.
 
 Lemma wptp_step s k e1 t1 t2 κ κs σ1 σ2 Φ Φc :
   step (e1 :: t1,σ1) κ (t2, σ2) →
-  state_interp σ1 (κ ++ κs) (length t1) -∗ WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }}-∗ wptp s k t1 -∗ NC 1 ==∗
+  state_interp σ1 (κ ++ κs) (length t1) -∗ WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }}-∗ wptp s k t1 -∗ NC 1 ==∗
   ∃ e2 t2', ⌜t2 = e2 :: t2'⌝ ∗
-  |={⊤}[∅]▷=> state_interp σ2 κs (pred (length t2)) ∗ WPC e2 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc}} ∗ wptp s k t2' ∗ NC 1.
+  |={⊤}[∅]▷=> state_interp σ2 κs (pred (length t2)) ∗ WPC e2 @ s; k; ⊤ {{ Φ }} {{ Φc}} ∗ wptp s k t2' ∗ NC 1.
 Proof.
   iIntros (Hstep) "Hσ He Ht HNC".
   destruct Hstep as [e1' σ1' e2' σ2' efs [|? t1'] t2' ?? Hstep]; simplify_eq/=.
@@ -69,11 +69,11 @@ Qed.
 
 Lemma wptp_steps s k n e1 t1 κs κs' t2 σ1 σ2 Φ Φc :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
-  state_interp σ1 (κs ++ κs') (length t1) -∗ WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗ wptp s k t1 -∗ NC 1 -∗
+  state_interp σ1 (κs ++ κs') (length t1) -∗ WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗ wptp s k t1 -∗ NC 1 -∗
   |={⊤}[∅]▷=>^n (∃ e2 t2',
     ⌜t2 = e2 :: t2'⌝ ∗
     state_interp σ2 κs' (pred (length t2)) ∗
-    WPC e2 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} ∗ wptp s k t2' ∗
+    WPC e2 @ s; k; ⊤ {{ Φ }} {{ Φc }} ∗ wptp s k t2' ∗
     NC 1).
 Proof.
   revert e1 t1 κs κs' t2 σ1 σ2; simpl.
@@ -86,9 +86,9 @@ Proof.
   by iApply (IH with "Hσ He Ht HNC").
 Qed.
 
-Lemma wpc_safe E k κs m e σ Φ Φc :
+Lemma wpc_safe k κs m e σ Φ Φc :
   state_interp σ κs m -∗
-  WPC e @ k ; ⊤ ; E {{ Φ }} {{ Φc }} -∗ NC 1 ={⊤}=∗
+  WPC e @ k ; ⊤  {{ Φ }} {{ Φc }} -∗ NC 1 ={⊤}=∗
   ⌜is_Some (to_val e) ∨ reducible e σ⌝.
 Proof.
   rewrite wpc0_unfold /wpc_pre. iIntros "Hσ H HNC". iDestruct "H" as ">(H&_)".
@@ -100,7 +100,7 @@ Qed.
 Lemma wptp0_strong_adequacy Φ Φc k κs' s n e1 t1 κs t2 σ1 σ2 :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
   state_interp σ1 (κs ++ κs') (length t1) -∗
-  WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗
+  WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
   |={⊤}[∅]▷=>^(S n) (∃ e2 t2',
@@ -118,7 +118,7 @@ Proof.
   iMod (fupd_plain_keep_l ⊤
     (⌜ ∀ e2, s = NotStuck → e2 ∈ (e2' :: t2') → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝)%I
     (state_interp σ2 κs' (length t2') ∗
-     wpc0 s k mj ⊤ ⊤ e2' Φ Φc ∗ wptp s k t2' ∗ NC 1)%I
+     wpc0 s k mj ⊤ e2' Φ Φc ∗ wptp s k t2' ∗ NC 1)%I
     with "[$Hσ $Hwp $Ht $HNC]") as "(Hsafe&Hσ&Hwp&Hvs&HNC)".
   { iIntros "(Hσ & Hwp & Ht & HNC)" (e' -> He').
     apply elem_of_cons in He' as [<-|(t1''&t2''&->)%elem_of_list_split].
@@ -137,7 +137,7 @@ Qed.
 Lemma wptp0_strong_crash_adequacy Φ Φc κs' s k n e1 t1 κs t2 σ1 σ2 :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
   state_interp σ1 (κs ++ κs') (length t1) -∗
-  WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗
+  WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
   |={⊤}[∅]▷=>^(S n) |={⊤,∅}=> ▷ (∃ e2 t2',
@@ -151,7 +151,7 @@ Proof.
   iMod (fupd_plain_keep_l ⊤
     (⌜ ∀ e2, s = NotStuck → e2 ∈ (e2' :: t2') → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝)%I
     (state_interp σ2 κs' (length t2') ∗
-     wpc0 s k mj ⊤ ⊤ e2' Φ Φc ∗ wptp s k t2' ∗ NC 1)%I
+     wpc0 s k mj ⊤ e2' Φ Φc ∗ wptp s k t2' ∗ NC 1)%I
     with "[$Hσ $Hwp $Ht $HNC]") as "(Hsafe&Hσ&Hwp&Hvs&HNC)".
   { iIntros "(Hσ & Hwp & Ht & HNC)" (e' -> He').
     apply elem_of_cons in He' as [<-|(t1''&t2''&->)%elem_of_list_split].
@@ -164,7 +164,7 @@ Proof.
   iModIntro.
   iSpecialize ("H" with "[$]").
   iMod (fupd_split_level_fupd with "H") as "H".
-  iMod (fupd_split_level_fupd with "H") as "H". iModIntro.
+  iApply fupd_mask_weaken; first by set_solver.
   iNext.
   iExists _, _. iSplitL ""; first done. iFrame "# ∗".
 Qed.
@@ -181,11 +181,11 @@ Implicit Types Φs : list (val Λ → iProp Σ).
 
 (* Now we prove a version where we use normal wpc instead of wpc0. *)
 
-Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤; ⊤ {{ fork_post }} {{ True }})%I.
+Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})%I.
 Lemma wptp_strong_adequacy Φ Φc k κs' s n e1 t1 κs t2 σ1 σ2 :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
   state_interp σ1 (κs ++ κs') (length t1) -∗
-  WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗
+  WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
   |={⊤}[∅]▷=>^(S n) (∃ e2 t2',
@@ -207,7 +207,7 @@ Qed.
 Lemma wptp_strong_crash_adequacy Φ Φc κs' s k n e1 t1 κs t2 σ1 σ2 :
   nsteps n (e1 :: t1, σ1) κs (t2, σ2) →
   state_interp σ1 (κs ++ κs') (length t1) -∗
-  WPC e1 @ s; k; ⊤; ⊤ {{ Φ }} {{ Φc }} -∗
+  WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
   |={⊤}[∅]▷=>^(S n) |={⊤,∅}=> ▷ (∃ e2 t2',

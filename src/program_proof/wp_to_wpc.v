@@ -28,7 +28,6 @@ From iris.base_logic.lib Require Import wsat.
 
 Section goose.
 Context `{!heapG Σ}.
-Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 
 Axiom (state : Type).
@@ -44,7 +43,7 @@ Context (N: namespace).
 (* Assume this is the wp_spec that we want to promote *)
 Lemma wp_spec P Φ γ :
   is_foo1 N P γ ∗
-  (∀ σ, ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P (transition σ) ∗ Φ #()) -∗
+  (∀ σ, ▷ P σ -∗ |NC={⊤ ∖ ↑N}=> ▷ P (transition σ) ∗ Φ #()) -∗
   WP e {{ Φ }}.
 Proof. Admitted.
 
@@ -58,25 +57,28 @@ Definition N2 := N.@"2".
 
 Definition mysch : bi_schema :=
   (bi_sch_or (bi_sch_and (bi_sch_var_mut 0) (bi_sch_except_0 (bi_sch_fupd ∅ ∅ (bi_sch_var_fixed 0))))
-             (bi_sch_var_fixed 1)).
+             (bi_sch_or (bi_sch_sep (bi_sch_var_fixed 2) (bi_sch_var_fixed 3))
+                        (bi_sch_var_fixed 1))).
 Lemma mysch_interp_weak k P Qs_mut γ :
-  bi_schema_interp (S k) (bi_later <$> [P; staged_done γ]) (bi_later <$> Qs_mut) mysch ⊣⊢
+  bi_schema_interp (S k) (bi_later <$> [P; staged_done γ; C; staged_pending (3/4)%Qp γ])
+                   (bi_later <$> Qs_mut) mysch ⊣⊢
                    let Qs := default emp%I (bi_later <$> (Qs_mut !! O)) in
-                      (((Qs ∧ ◇ |k,Some O={∅}=> ▷ P) ∨ (▷ staged_done γ)))%I.
+                      (((Qs ∧ ◇ |k,Some O={∅}=> ▷ P) ∨ ((▷ C ∗ ▷ staged_pending (3/4)%Qp γ)
+                       ∨ (▷ staged_done γ))))%I.
 Proof.
   remember (S k) as n eqn:Heq.
   do 2 (rewrite ?bi_schema_interp_unfold /= //=).
   rewrite Heq.
   erewrite (bi_sch_fupd_interp); last first.
   { rewrite ?bi_schema_interp_unfold /= //=. }
-  rewrite /bi_sch_staged_fupd.
-  do 2 (rewrite ?bi_schema_interp_unfold /= //=).
-  rewrite list_lookup_fmap. destruct (Qs_mut !! 0) => //=.
+  rewrite list_lookup_fmap. f_equiv.
 Qed.
 
 Lemma mysch_interp_strong k P Q γ :
-  bi_schema_interp (S k) (bi_later <$> [P; staged_done γ]) (bi_later <$> [Q]) mysch ⊣⊢
-                      (((▷ Q ∧ ◇ |k,Some O={∅}=> ▷ P) ∨ (▷ staged_done γ)))%I.
+  bi_schema_interp (S k) (bi_later <$> [P; staged_done γ; C; staged_pending (3/4)%Qp γ])
+                   (bi_later <$> [Q]) mysch ⊣⊢
+                      (((▷ Q ∧ ◇ |k,Some O={∅}=> ▷ P) ∨ ((▷ C ∗ ▷ staged_pending (3/4)%Qp γ)
+                       ∨ (▷ staged_done γ))))%I.
 Proof.
   remember (S k) as n eqn:Heq.
   do 2 (rewrite ?bi_schema_interp_unfold /= //=).
@@ -87,56 +89,85 @@ Proof.
   do 2 (rewrite ?bi_schema_interp_unfold /= //=).
 Qed.
 
-Lemma wpc_spec P Φ Φc γ k E2:
-  ↑N2 ⊆ E2 →
+Lemma wpc_spec P Φ Φc γ k :
   is_foo1 N1 P γ ∗
-  (<disc> ▷ Φc ∧ (∀ σ, ▷ P σ ={⊤ ∖ ↑ N}=∗ ▷ P (transition σ) ∗ (<disc> ▷ Φc ∧ Φ (#())))) -∗
-  WPC e @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+  (<disc> ▷ Φc ∧ (∀ σ, ▷ P σ -∗ |NC={⊤ ∖ ↑ N}=> ▷ P (transition σ) ∗ (<disc> ▷ Φc ∧ Φ (#())))) -∗
+  WPC e @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof using stagedG0.
-  iIntros (Hsub) "(His_foo&Hfupd)".
+  iIntros "(His_foo&Hfupd)".
   rewrite and_comm.
   rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
   iDestruct (own_discrete_elim_conj with "Hfupd") as (Q_keep Q_inv) "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
   iMod (pending_alloc) as (γpending) "Hpending".
-  iMod (inv_mut_alloc (S k) N2 _ mysch ([ Φc; staged_done γpending])%I [Q_inv] with "[HQ_inv]") as "(#Hinv&Hfull)".
+  iMod (inv_mut_alloc (S k) N2 _ mysch ([ Φc; staged_done γpending; C; staged_pending (3/4)%Qp γpending])%I [Q_inv] with "[HQ_inv]") as "(#Hinv&Hfull)".
   { rewrite mysch_interp_strong. iLeft. iSplit; first auto.
     iMod ("Hwand1" with "[$]") as "H".
     iModIntro. iMod (fupd_level_split_level with "H") as "$".
     { lia. }
     eauto.
   }
-  iDestruct (pending_split with "Hpending") as "(Hpend1&Hpend2)".
-  iAssert (WPC e @ S k; ⊤;∅ {{ v, staged_pending (1 / 2) γpending -∗ |={⊤}=> Φ v }} {{ True }})%I with "[His_foo HQ_keep Hpend1 Hfull]" as "Hwpc"; last first.
+  iDestruct (pending_split34 with "Hpending") as "(Hpend34&Hpend14)".
+  (*
+  iAssert (<disc> |C={⊤}_(S k)=> Φc)%I with "[Hpend34]" as "Hcfupd".
   {
-    iDestruct (wpc_frame_l with "[Hpend2 $Hwpc]") as "Hwpc".
-    { iModIntro. iApply "Hpend2". }
-    iApply (wpc_strong_mono_empty_crash' with "Hwpc"); auto.
-    iSplit; first auto.
-    { iIntros (?) "(H&Hwand)". by iMod ("Hwand" with "[$]"). }
-    iModIntro. iIntros ">(Hpending&_) HC". iModIntro.
+    iModIntro. iIntros "HC".
     iMod (inv_mut_acc with "Hinv") as (Qs) "(H&Hclo)"; first auto.
     rewrite mysch_interp_weak /=.
-    iDestruct "H" as "[(_&>H)|>Hfalse]".
-    *
-      iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def).
+    iDestruct "H" as "[(_&>H)|[Hfalse1|Hfalse2]]".
+    * iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def).
       iMod (fupd_split_level_intro_mask' _ ∅) as "Hclo''"; first by set_solver+.
       iMod (fupd_split_level_le with "H") as "H"; first lia.
       iMod "Hclo''".
-      iApply fupd_split_level_mask_weaken; first set_solver+. eauto.
-    * iDestruct (pending_done with "[$] [$]") as "[]".
+      iSpecialize ("Hclo" with "[HC Hpend34]").
+      { iRight. iLeft. iFrame. }
+      iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def) in "Hclo".
+      iMod "Hclo". eauto.
+    * iDestruct "Hfalse1" as "(>_&>?)". iDestruct (pending34_pending34 with "[$] [$]") as "[]".
+    * iDestruct "Hfalse2" as ">?". iDestruct (pending_done with "[$] [$]") as "[]".
+  }
+  iMod "Hcfupd".
+   *)
+  iAssert (WPC e @ S k; ⊤ {{ v, staged_pending (3 / 4)%Qp γpending -∗ |NC={⊤}=> Φ v }} {{ True }})%I with "[His_foo HQ_keep Hpend14 Hfull]" as "Hwpc";
+    last first.
+  {
+    iApply wpc_ncfupd.
+    iApply (wpc_strong_mono with "Hwpc"); auto.
+    iSplit.
+    * iIntros (?) "Hwand". iModIntro. iApply "Hwand". by iFrame.
+    * iIntros "!> _". iIntros "HC".
+      {
+        iMod (inv_mut_acc with "Hinv") as (Qs) "(H&Hclo)"; first auto.
+        rewrite mysch_interp_weak /=.
+        iDestruct "H" as "[(_&>H)|[Hfalse1|Hfalse2]]".
+        * iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def).
+          iMod (fupd_split_level_intro_mask' _ ∅) as "Hclo''"; first by set_solver+.
+          iMod (fupd_split_level_le with "H") as "H"; first lia.
+          iMod "Hclo''".
+          iSpecialize ("Hclo" with "[HC Hpend34]").
+          { iRight. iLeft. iFrame. }
+          iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def) in "Hclo".
+          iMod "Hclo". eauto.
+        * iDestruct "Hfalse1" as "(>_&>?)". iDestruct (pending34_pending34 with "[$] [$]") as "[]".
+        * iDestruct "Hfalse2" as ">?". iDestruct (pending_done with "[$] [$]") as "[]".
+      }
   }
   iApply (wp_wpc).
-  iApply wp_fupd.
+  iApply wp_ncfupd.
   wp_apply (wp_spec). iFrame "His_foo".
   iIntros (σ) "HP".
+  rewrite ncfupd_eq /ncfupd_def. iIntros (q) "HNC".
   iMod (inv_mut_full_acc with "Hfull") as "(H&Hclo)"; first auto.
   { solve_ndisj. }
   rewrite ?mysch_interp_strong.
-  iDestruct "H" as "[HQ|>Hfalse]"; last first.
-  { iDestruct (pending_done with "[$] [$]") as "[]". }
+  iDestruct "H" as "[HQ|Hfalse]"; last first.
+  { iDestruct "Hfalse" as "[(>Hfalse&_)|>Hfalse]".
+    * iDestruct (NC_C with "[$] [$]") as "[]".
+    * iDestruct (pending_done with "[$] [$]") as "[]".
+  }
   iDestruct "HQ" as "(HQ&_)".
   iMod ("Hwand2" with "[$]") as "Hfupd".
-  iMod fupd_intro_mask' as "HcloseM"; last iMod ("Hfupd" with "[$]") as "(HP&HΦ)"; first by solve_ndisj.
+  iLeft in "Hfupd".
+  iMod fupd_intro_mask' as "HcloseM"; last iMod ("Hfupd" with "[$] [$]") as "((HP&HΦ)&HNC)"; first by solve_ndisj.
   iMod "HcloseM".
   iEval (rewrite and_comm) in "HΦ".
   iClear "Hwand1 Hwand2".
@@ -148,19 +179,23 @@ Proof using stagedG0.
     { lia. }
     eauto.
   }
-  iModIntro.
-  iFrame "HP". iModIntro. iIntros "Hpending".
-  iDestruct (pending_join with "[$Hpending $Hpend1]") as "Hpend".
+  iModIntro. iFrame "HP". iFrame.
+  iIntros (q0) "HNC". iModIntro. iFrame.
+  iIntros "Hpend34" (q1) "HNC".
   iMod (inv_mut_full_acc with "Hfull") as "(H&Hclo)"; first auto.
   rewrite ?mysch_interp_strong.
-  iDestruct "H" as "[HQ|>Hfalse]"; last first.
-  { iDestruct (pending_done with "[$] [$]") as "[]". }
+  iDestruct "H" as "[HQ|Hfalse]"; last first.
+  { iDestruct "Hfalse" as "[(>Hfalse&_)|>Hfalse]".
+    * iDestruct (NC_C with "[$] [$]") as "[]".
+    * iDestruct (pending_done with "[$] [$]") as "[]".
+  }
   iDestruct "HQ" as "(HQ&_)".
   iMod ("Hwand2" with "[$]") as "(HΦ&_)".
+  iDestruct (pending_join34 with "[$]") as "Hpend".
   iMod (pending_upd_done with "Hpend") as "Hdone".
   iMod ("Hclo" $! [True]%I with "[Hdone]").
-  { rewrite ?mysch_interp_strong. by iRight. }
-  eauto.
+  { rewrite ?mysch_interp_strong. iRight. by iRight. }
+  iFrame. eauto.
 Qed.
 
 End wpc_spec.

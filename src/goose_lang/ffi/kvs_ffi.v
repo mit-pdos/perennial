@@ -662,6 +662,7 @@ Instance kvs_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := kvs_sp
   {| spec_ffi_interp_adequacy_field := kvs_interp_adequacy |}.
 
 Context `{invG Σ}.
+Context `{crashG Σ}.
 Context `{!refinement_heapG Σ}.
 
 Existing Instance spec_ffi_interp_field.
@@ -692,7 +693,7 @@ Lemma ghost_step_init_stuck E j K {HCTX: LanguageCtx K} σ:
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ -∗
-  |={E}=> False.
+  |NC={E}=> False.
 Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
@@ -711,7 +712,7 @@ Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ -∗
-  |={E}=> False.
+  |NC={E}=> False.
 Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
@@ -720,7 +721,7 @@ Proof.
     repeat (inv_head_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)); try congruence;
     repeat (inv_head_step; simpl in *; repeat monad_inv); eauto.
-    eapply H1; eauto.
+    eapply H2; eauto.
   }
   { solve_ndisj. }
 Qed.
@@ -729,7 +730,7 @@ Lemma kvs_closed_init_false E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_closed_frag -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) ={E}=∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hj".
@@ -745,7 +746,7 @@ Lemma kvs_opened_init_false l E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_open l -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) ={E}=∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
@@ -761,7 +762,7 @@ Lemma kvs_init_init_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx 
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) ={E}=∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -775,7 +776,7 @@ Proof.
         ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
         ** econstructor.
-        ** simpl. rewrite Heq. repeat econstructor. 
+        ** simpl. rewrite Heq. repeat econstructor.
       * repeat econstructor.
     }
     { solve_ndisj. }
@@ -794,7 +795,7 @@ Lemma kvs_init_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx 
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) ={E}=∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -804,7 +805,7 @@ Proof.
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
     { eapply stuck_ExternalOp; first (by eauto).
-      intros ?????. by repeat (inv_head_step; simpl in H2; repeat monad_inv).
+      intros ?????. by repeat (inv_head_step; simpl in H3; repeat monad_inv).
     }
     { solve_ndisj. }
   - iMod (ghost_step_init_stuck with "Hj [$] [$]") as "[]".
@@ -820,7 +821,7 @@ Lemma ghost_step_kvs_init E j K {HCTX: LanguageCtx K}:
   spec_ctx -∗
   kvs_uninit_frag -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #())
-  ={E}=∗
+  -∗ |NC={E}=>
   ∃ (l: loc), j ⤇ K (#l)%V ∗ kvs_open l.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hvals Hj".
@@ -859,7 +860,7 @@ Lemma kvs_uninit_open_false E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_uninit_frag -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) ={E}=∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hj".
@@ -875,7 +876,7 @@ Lemma kvs_opened_open_false l E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_open l -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) ={E}=∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
@@ -892,7 +893,7 @@ Lemma kvs_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx 
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) ={E}=∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -926,7 +927,7 @@ Lemma ghost_step_kvs_open E j K {HCTX: LanguageCtx K}:
   spec_ctx -∗
   kvs_closed_frag -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #())
-  ={E}=∗
+  -∗ |NC={E}=>
   ∃ (l: loc), j ⤇ K #l%V ∗ kvs_open l.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hj".

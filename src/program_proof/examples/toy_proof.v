@@ -44,9 +44,9 @@ Section goose.
     rewrite /Block_to_vals /written_block //=.
   Qed.
 
-  Theorem wpc_consumeEvenBlock_seq {k E1 E2} (d_ref: loc) (addr: u64) :
+  Theorem wpc_consumeEvenBlock_seq {k E1} (d_ref: loc) (addr: u64) :
     {{{ EBlk addr }}}
-      consumeEvenBlock #d_ref #addr @ NotStuck;k; E1;E2
+      consumeEvenBlock #d_ref #addr @ NotStuck;k; E1
     {{{ RET #(); EBlk addr }}}
     {{{ EBlk addr }}}.
   Proof.
@@ -104,15 +104,15 @@ Section goose.
     iApply "HΦ". iExists _, _. iFrame. eauto.
   Qed.
 
-  Theorem wpc_consumeEvenBlock {k k' E2} (d_ref: loc) (addr: u64):
+  Theorem wpc_consumeEvenBlock {k k'} (d_ref: loc) (addr: u64):
     (S k ≤ k')%nat →
     {{{ na_crash_inv (S k') (EBlk addr) (EBlk addr) }}}
-      consumeEvenBlock #d_ref #addr @ NotStuck; (S k); ⊤;E2
+      consumeEvenBlock #d_ref #addr @ NotStuck; (S k); ⊤
     {{{ RET #() ; True }}}
     {{{ True }}}.
   Proof.
-    iIntros (? Φ Φc) "Hcrash_inv HΦ".
-    iApply (wpc_na_crash_inv_open with "Hcrash_inv"); try eassumption.
+    iIntros (? Φ Φc) "Hncinv HΦ".
+    iApply (wpc_na_crash_inv_open with "Hncinv"); try eassumption.
     { lia. }
     iSplit; first by crash_case.
     iIntros ">Hblk".
@@ -124,9 +124,9 @@ Section goose.
     by iApply "HΦ".
   Qed.
 
-  Theorem wpc_TransferEvenBlock {E2} (d_ref: loc) (addr: u64) :
+  Theorem wpc_TransferEvenBlock (d_ref: loc) (addr: u64) :
     {{{ EBlk addr }}}
-      TransferEvenBlock #d_ref #addr @ NotStuck; 2; ⊤;E2
+      TransferEvenBlock #d_ref #addr @ NotStuck; 2; ⊤
     {{{ RET #() ; True }}}
     {{{ EBlk addr }}}.
   Proof using stagedG0.

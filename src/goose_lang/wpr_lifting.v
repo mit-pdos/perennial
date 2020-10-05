@@ -59,16 +59,15 @@ Proof.
     * iIntros. by iApply "H".
 Qed.
 
-Lemma idempotence_wpr `{!ffi_interp_adequacy} s k E1 E2 e rec Φx Φinv Φrx Φcx:
-  E2 ⊆ E1 →
-  ⊢ WPC e @ s ; k ; E1 ; E2 {{ Φx }} {{ Φcx hG }} -∗
+Lemma idempotence_wpr `{!ffi_interp_adequacy} s k E1 e rec Φx Φinv Φrx Φcx:
+  ⊢ WPC e @ s ; k ; E1 {{ Φx }} {{ Φcx hG }} -∗
    (□ ∀ (hG: heapG Σ) σ σ' (HC: crash_prim_step (goose_crash_lang) σ σ'),
         Φcx hG -∗ ▷ post_crash(λ hG', ffi_restart (heapG_ffiG) σ'.(world) -∗
-        (Φinv hG' ∧ WPC rec @ s ; k; E1 ; E2 {{ Φrx hG' }} {{ Φcx hG' }}))) -∗
+        (Φinv hG' ∧ WPC rec @ s ; k; E1 {{ Φrx hG' }} {{ Φcx hG' }}))) -∗
     wpr s k E1 e rec Φx Φinv Φrx.
 Proof.
-  iIntros (?) "Hwpc #Hidemp".
-  iApply (idempotence_wpr s k E1 E2 e rec _ _ _
+  iIntros "Hwpc #Hidemp".
+  iApply (idempotence_wpr s k E1 e rec _ _ _
                           (λ Hi Hc names, Φcx (heap_update _ _ Hi Hc (@pbundleT _ _ names)))
                                                     with "[Hwpc] [Hidemp]"); first auto.
   { rewrite //= heap_get_update' //=. }

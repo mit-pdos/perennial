@@ -19,7 +19,7 @@ Implicit Types Φc : invG Σ → crashG Σ → pbundleG T Σ → val Λ → iPro
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤; ⊤ {{ fork_post }} {{ True }})%I.
+Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})%I.
 
 Fixpoint step_fupdN_fresh (ns: list nat) Hi0 (Hc0: crashG Σ) t0
          (P: invG Σ → crashG Σ → pbundleG T Σ → iProp Σ) {struct ns} :=
@@ -285,7 +285,7 @@ Lemma wptp_recv_strong_adequacy Φ Φinv Φinv' Φr κs' s k Hi Hc t ns n r1 e1 
     ⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → (is_Some (to_val e2) ∨ reducible e2 σ2) ⌝ ∗
     state_interp σ2 κs' (length t2') ∗
     (match stat with
-     | Normal => ⌜ Hi' = Hi ∧ t' = t ⌝ ∗ from_option Φ True (to_val e2)
+     | Normal => ⌜ Hi' = Hi ∧ Hc' = Hc ∧ t' = t ⌝ ∗ from_option Φ True (to_val e2)
      | Crashed => from_option (Φr Hi' Hc' t') True (to_val e2) ∗ □ Φinv' Hi' Hc' t'
      end)  ∗
     ([∗ list] v ∈ omap to_val t2', fork_post v) ∗
@@ -356,8 +356,8 @@ Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofeT) `{!invPreG Σ} `{!crashPreG Σ
                IrisG Λ Σ Hi Hc (λ σ κs _, stateI Hi t σ κs)
                     (fork_post t)) Hpf1 Hpf2
                in
-       □ (∀ σ κ, stateI Hinv t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
-       □ (∀ Hi Hc t, Φinv Hi Hc t -∗ □ ∀ σ κ, stateI Hi t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝) ∗
+       □ (∀ σ κ, stateI Hinv t σ κ -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
+       □ (∀ Hi Hc t, Φinv Hi Hc t -∗ □ ∀ σ κ, stateI Hi t σ κ -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
        stateI Hinv t σ κs ∗ wpr s k Hinv Hc t ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ _ _ v, ⌜φr v⌝)) →
   recv_adequate (CS := CS) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
 Proof.
@@ -374,24 +374,28 @@ Proof.
           PerennialG _ _ T Σ
             (λ Hi Hc t,
              IrisG Λ Σ Hi Hc (λ σ κs _, stateI Hi t σ κs)
-                  (Hfork_post t)) Hpf1 Hpf2) _ _ (λ Hi Hc t, (∀ σ κ, stateI Hi t σ κ ={⊤, ∅}=∗ ⌜ φinv σ ⌝))%I
+                  (Hfork_post t)) Hpf1 Hpf2) _ _ (λ Hi Hc t, (∀ σ κ, stateI Hi t σ κ -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝))%I
                _ [] with "[Hw] [H] [] [] HNC") as "H"; eauto.
   { rewrite app_nil_r. eauto. }
   iApply (step_fupdN_fresh_wand with "H").
   iIntros (???) "H".
   iApply (step_fupdN_wand with "H"); auto.
   iIntros "H".
-  iDestruct "H" as (v2 ???) "(Hw&Hv&Hnstuck)".
+  iDestruct "H" as (v2 ???) "(Hw&Hv&Hnstuck&HNC)".
   destruct stat.
   - iDestruct "Hv" as "(Hv&#Hinv)".
-    iMod ("Hinv" with "[$]") as %?.
+    rewrite ?ncfupd_eq /ncfupd_def.
+    iMod ("Hinv" with "[$] [$]") as "(Hp&HNC)".
+    iDestruct "Hp" as %?.
     do 8 iModIntro.
     iSplit; [| iSplit]; eauto.
     iIntros (v2' ? Heq). subst. inversion Heq; subst.
     rewrite to_of_val. naive_solver.
   - iDestruct "Hv" as "(Heq1&Hv)".
-    iDestruct "Heq1" as %(?&?); subst.
-    iMod ("Hinv1" with "[$]") as %?.
+    iDestruct "Heq1" as %(?&?&?); subst.
+    rewrite ?ncfupd_eq /ncfupd_def.
+    iMod ("Hinv1" with "[$] [$]") as "(Hp&HNC)".
+    iDestruct "Hp" as %?.
     do 8 iModIntro.
     iSplit; [| iSplit]; eauto.
     iIntros (v2' ? Heq). subst. inversion Heq; subst.

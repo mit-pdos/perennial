@@ -45,6 +45,7 @@ Lemma is_circular_state_post_crash σ γ P':
   is_circular_state γ σ ∗ P σ -∗ post_crash (λ hG, is_circular_state γ σ ∗ P' σ hG).
 Proof. iIntros (?) "His". rewrite /is_circular. iCrash. eauto. Qed.
 
+(*
 Lemma is_circular_post_crash γ P' :
   (∀ s, IntoCrash (P s) (P' s)) →
   is_circular N P γ ={↑N, ∅}=∗ ▷ post_crash (λ hG, ∃ σ, is_circular_state γ σ ∗ P' σ hG).
@@ -57,6 +58,7 @@ Proof.
   iModIntro. iNext. iPoseProof (is_circular_state_post_crash with "[$]") as "H".
   iCrash. eauto.
 Qed.
+*)
 
 (* Once the circular buffer is initialized or recovered, the is_circular
    invariant can be allocated. By allocating that invariant, we no longer need
@@ -66,34 +68,33 @@ Qed.
    This lemma encodes this principle.
  *)
 
-Lemma circ_buf_crash_obligation e (Φ: val → iProp Σ) Φc Φc' E2 E2' k σ γ:
-  E2 ⊆ E2' →
-  ↑N ⊆ E2' ∖ E2 →
+Lemma circ_buf_crash_obligation e Φ Φc Φc' k σ γ:
   is_circular_state γ σ  -∗
   P σ -∗
   □ ((∃ σ', is_circular_state γ σ' ∗ P σ') -∗ Φc -∗ Φc') -∗
-  (is_circular N P γ -∗ (WPC e @ NotStuck; k; ⊤; E2 {{ Φ }} {{ Φc }})) -∗
-  |={⊤}=> is_circular N P γ ∗ WPC e @ NotStuck; k; ⊤; E2' {{ Φ }} {{ Φc' }}%I.
+  (is_circular N P γ -∗ (WPC e @ NotStuck; k; ⊤ {{ Φ }} {{ Φc }})) -∗
+  |={⊤}=> is_circular N P γ ∗ WPC e @ NotStuck; k; ⊤ {{ Φ }} {{ Φc' }}%I.
 Proof.
-  iIntros (??) "Hstate HP #Hcrash1 HWP". rewrite /is_circular.
-  iMod (inv_alloc N _ (∃ σ, is_circular_state γ σ ∗ P σ)%I with "[Hstate HP]") as "#Hinv".
+  iIntros "Hstate HP #Hcrash1 HWP". rewrite /is_circular.
+  iMod (ncinv_alloc N _ (∃ σ, is_circular_state γ σ ∗ P σ)%I with "[Hstate HP]") as "(#Hinv&Hcfupd)".
   { iNext. iExists _. iFrame. }
   iFrame "Hinv".
   iModIntro.
-  iApply (wpc_inv'); try eassumption. iFrame "Hinv".
-  iSplitL "HWP".
-  { by iApply "HWP". }
-  iModIntro. iIntros "H HΦc".
+  iMod "Hcfupd".
+  iSpecialize ("HWP" with "[$]").
+  iApply (wpc_strong_mono with "HWP"); auto.
+  iSplit; first eauto.
+  iModIntro. iIntros "H1 !> !> H2".
   iApply ("Hcrash1" with "[$] [$]").
 Qed.
 
 (* Note: the version above is more usable, but this helps understand what it achieves *)
-Lemma circ_buf_crash_obligation_simple e (Φ: val → iProp Σ) k σ γ:
+Lemma circ_buf_crash_obligation_simple e Φ k σ γ:
   is_circular_state γ σ  -∗
   P σ -∗
-  (is_circular N P γ -∗ (WPC e @ NotStuck; k; ⊤; ∅ {{ Φ }} {{ True }})) -∗
+  (is_circular N P γ -∗ (WPC e @ NotStuck; k; ⊤ {{ Φ }} {{ True }})) -∗
   |={⊤}=> is_circular N P γ ∗
-          WPC e @ NotStuck; k; ⊤; ↑N {{ Φ }} {{ ∃ σ', is_circular_state γ σ' ∗ P σ' }}%I.
+          WPC e @ NotStuck; k; ⊤ {{ Φ }} {{ ∃ σ', is_circular_state γ σ' ∗ P σ' }}%I.
 Proof.
   iIntros "Hstate HP HWP".
   iApply (circ_buf_crash_obligation with "[$] [$] [] [$]"); auto; set_solver+.

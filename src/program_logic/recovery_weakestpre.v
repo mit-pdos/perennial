@@ -24,7 +24,7 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
   (invG Σ -d> crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
   (invG Σ -d> crashG Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ :=
   λ H1 H2 t E e rec Φ Φinv Φr,
-  (WPC e @ s ; k; E ; E
+  (WPC e @ s ; k; E 
      {{ Φ }}
      {{ ∀ σ σ' (HC: crash_prim_step CS σ σ') κs n,
         state_interp σ κs n ={∅}=∗  ▷ ∀ H1 H2 q, NC q ={⊤}=∗ ∃ t, state_interp σ' κs 0 ∗ (Φinv H1 H2 t ∧ wpr H1 H2 t E rec rec (λ v, Φr H1 H2 t v) Φinv Φr) ∗ NC q}})%I.
@@ -73,7 +73,6 @@ Proof.
   iDestruct "HΦ" as "(_&HΦ)".
   rewrite own_discrete_idemp.
   iIntros "!> H".
-  rewrite difference_diag_L.
   do 2 iModIntro. iIntros (?????) "Hinterp". iMod ("H" with "[//] Hinterp") as "H".
   iModIntro. iNext. iIntros (Hi' Hc' ?) "HNC". iMod ("H" $! Hi' Hc' with "[$]") as (?) "(?&H&HNC)".
   iModIntro. iExists _. iFrame.
@@ -87,18 +86,17 @@ Qed.
 
 (* To prove a recovery wp for e with rec, it suffices to prove a crash wp for e,
    where the crash condition implies the precondition for a crash wp for rec *)
-Lemma idempotence_wpr s k E1 E2 e rec Φx Φinv Φrx (Φcx: invG Σ → crashG Σ → _ → iProp Σ) Hi Hc t:
-  E2 ⊆ E1 →
-  ⊢ WPC e @ s ; k ; E1 ; E2 {{ Φx t }} {{ Φcx Hi _ t }} -∗
+Lemma idempotence_wpr s k E1 e rec Φx Φinv Φrx (Φcx: invG Σ → crashG Σ → _ → iProp Σ) Hi Hc t:
+  ⊢ WPC e @ s ; k ; E1 {{ Φx t }} {{ Φcx Hi _ t }} -∗
    (□ ∀ (H: invG Σ) (Hc: crashG Σ) (t: pbundleG T Σ) σ σ' (HC: crash_prim_step CS σ σ') κs n,
         Φcx H Hc t -∗ state_interp σ κs n ={∅}=∗
-        ▷ ∀ H' (Hc': crashG Σ) q, NC q ={⊤}=∗ ∃ t', state_interp σ' κs 0 ∗ (Φinv H' Hc' t' ∧ WPC rec @ s ; k; E1 ; E2 {{ Φrx H' Hc' t' }} {{ Φcx H' Hc' t' }}) ∗ NC q) -∗
+        ▷ ∀ H' (Hc': crashG Σ) q, NC q ={⊤}=∗ ∃ t', state_interp σ' κs 0 ∗ (Φinv H' Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx H' Hc' t' }} {{ Φcx H' Hc' t' }}) ∗ NC q) -∗
     wpr s k Hi Hc t E1 e rec (Φx t) Φinv Φrx.
 Proof.
-  iLöb as "IH" forall (E1 E2 e Hi Hc t Φx).
-  iIntros (?) "He #Hidemp".
+  iLöb as "IH" forall (E1 e Hi Hc t Φx).
+  iIntros  "He #Hidemp".
   rewrite wpr_unfold. rewrite /wpr_pre.
-  iApply (wpc_strong_mono' with "He"); [ auto | auto | auto | set_solver | ].
+  iApply (wpc_strong_mono' with "He"); [ auto | auto | auto | ].
   iSplit; first auto. iIntros "!> Hcx".
   iApply @fupd_level_mask_weaken.
   { set_solver +. }
@@ -109,8 +107,8 @@ Proof.
   iSplit.
   { iDestruct "Hc" as "($&_)". }
   iDestruct "Hc" as "(_&Hc)".
-  iApply ("IH" $! E1 E2 rec Hi' Hc' t' (λ t v, Φrx Hi' Hc' t v)%I with "[//] [Hc]").
-  { iApply (wpc_strong_mono' with "Hc"); rewrite ?difference_diag_L; auto. iClear "# ∗".
+  iApply ("IH" $! E1 rec Hi' Hc' t' (λ t v, Φrx Hi' Hc' t v)%I with " [Hc]").
+  { iApply (wpc_strong_mono' with "Hc"); auto. iClear "# ∗".
     iSplit; auto. iModIntro. auto.
   }
   eauto.

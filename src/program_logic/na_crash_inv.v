@@ -30,7 +30,7 @@ Ltac crash_unseal :=
   rewrite /na_crash_inv_def.
 
 Lemma na_crash_inv_alloc k E P Q:
-  ▷ Q -∗ ▷ □ (Q -∗ P) -∗ |(S k)={E}=> na_crash_inv (S k) Q P ∗ <disc> |C={⊤, ∅}_(S k)=> P.
+  ▷ Q -∗ ▷ □ (Q -∗ P) -∗ |(S k)={E}=> na_crash_inv (S k) Q P ∗ <disc> |C={⊤}_(S k)=> P.
 Proof.
   crash_unseal.
   iIntros "HQ #HQP".
@@ -62,21 +62,21 @@ Proof.
   iFrame "#". iIntros. iApply "HQ'". by iApply "Hwand0".
 Qed.
 
-Lemma wpc_na_crash_inv_open_modify Qnew s k k' k'' E1 E2 e Φ Φc Q P :
+Lemma wpc_na_crash_inv_open_modify Qnew s k k' k'' E1 e Φ Φc Q P :
   k'' ≤ k' →
   k'' ≤ (S k) →
   S k ≤ k' →
   na_crash_inv (S k') Q P -∗
-  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ NotStuck; k''; E1; ∅
+  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ NotStuck; k''; E1
                     {{λ v, ▷ Qnew v ∗
                            ▷ □ (Qnew v -∗ P)  ∗ (na_crash_inv (S k') (Qnew v) P -∗ (<disc> ▷ Φc ∧ Φ v))}}
                     {{ Φc ∗ P }})) -∗
-  WPC e @ s; (S k); E1; E2 {{ Φ }} {{ Φc }}.
+  WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}.
 Proof.
   crash_unseal.
   iIntros (???) "Hbundle Hwp".
   iDestruct "Hbundle" as (???) "(Hval&HQ0&HQP)".
-  iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ Qnew _ with "[-]"); try iFrame "Hval"; eauto.
+  iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ Qnew _ with "[-]"); try iFrame "Hval"; eauto.
   { lia. }
   iSplit.
   { iDestruct "Hwp" as "($&_)". }
@@ -88,20 +88,20 @@ Proof.
   - iIntros (?) "(HQ&#Hwand'&HQrest)".
     iModIntro. iFrame "HQ Hwand'". iIntros "Hval'".
     iApply "HQrest". iFrame. iExists _, _, _. iFrame "∗ #". eauto.
-  - iIntros. rewrite difference_diag_L. iModIntro; eauto.
+  - by iIntros "!> H !>".
 Qed.
 
 (* TODO: in theory this can implement ElimAcc for iInv support; see
 [elim_acc_wp_nonatomic] *)
-Lemma wpc_na_crash_inv_open s k k' k'' E1 E2 e Φ Φc Q P:
+Lemma wpc_na_crash_inv_open s k k' k'' E1 e Φ Φc Q P:
   k'' ≤ k' →
   k'' ≤ (S k) →
   S k ≤ k' →
   na_crash_inv (S k') Q P -∗
-  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ NotStuck; k''; E1; ∅
+  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ NotStuck; k''; E1
                     {{λ v, ▷ Q ∗ (na_crash_inv (S k') Q P -∗ (<disc> ▷ Φc ∧ Φ v))}}
                     {{ Φc ∗ P }})) -∗
-  WPC e @ s; (S k); E1; E2 {{ Φ }} {{ Φc }}.
+  WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (???) "H1 Hwp".
   iDestruct (na_crash_inv_status_wand with "H1") as "#Hwand".

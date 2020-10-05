@@ -81,7 +81,7 @@ Theorem simulate_flush l γ Q σ pos txn_id nextDiskEnd_txn_id mutable :
   (∀ (σ σ' : log_state.t) (b : ()),
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_flush pos txn_id) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
-  |={⊤ ∖ ↑innerN}=>
+  |NC={⊤ ∖ ↑innerN}=>
       ∃ σ' nextDiskEnd_txn_id',
         is_wal_inner l γ σ' ∗ P σ' ∗ Q ∗
         memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id' ∗
@@ -305,6 +305,7 @@ Proof.
   wp_bind Skip.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as "Hinv".
+  iApply wp_ncfupd.
   wp_call.
   iDestruct "Hinv" as (σ) "[Hinner HP]".
   iNamed "Hlkinv".
@@ -320,6 +321,7 @@ Proof.
 
   iMod (simulate_flush with "Hcirc [$Hinner $HP] HdiskEnd_lb Hpos_txn HnextDiskEnd Hfupd") as "H".
   iDestruct "H" as (σ' nextDiskEnd_txn_id') "(Hinner & HP & HQ & HnextDiskEnd & %Hle & %Hnils)".
+  iApply fupd_ncfupd. iApply fupd_intro.
   iModIntro.
 
   iSplitL "Hinner HP".
