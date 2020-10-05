@@ -1,6 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.goose_lang Require Import crash_modality.
+From Perennial.program_logic Require Import atomic.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import inode.
 
@@ -347,15 +348,13 @@ Qed.
 
 Theorem wpc_Inode__Read {k E2} {l k' P addr} {off: u64} :
   (S k < k')%nat →
-  ∀ Φ Φc,
-      "Hinode" ∷ is_inode l (S k') P addr ∗
-      "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ ∀ σ mb,
-        ⌜mb = σ.(inode.blocks) !! int.nat off⌝ ∗
-        ▷ P σ ={⊤}=∗ ▷ P σ ∗ (<disc> ▷ Φc ∧ ∀ s,
-          match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end -∗ Φ (slice_val s))) -∗
-    WPC Inode__Read #l #off @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+  ⊢ {{{ "Hinode" ∷ is_inode l (S k') P addr }}}
+    <<{ ∀∀ σ mb, ⌜mb = σ.(inode.blocks) !! int.nat off⌝ ∗ ▷ P σ }>>
+      Inode__Read #l #off @ NotStuck; (S k); ⊤; E2
+    <<{ ▷ P σ }>>
+    {{{ s, RET (slice_val s); match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end }}}.
 Proof.
-  iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
+  iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call.
   { by iLeft in "Hfupd". }
@@ -484,8 +483,7 @@ Theorem wpc_Inode__Read_triple {k E2} {l k' P addr} {off: u64} Q :
   {{{ True }}}.
 Proof.
   iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-  iApply wpc_Inode__Read; first done.
-  iFrame "Hinode".
+  iApply (wpc_Inode__Read with "Hinode"); first done.
   iSplit.
   { iLeft in "HΦ". iModIntro. iApply "HΦ". done. }
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
@@ -496,14 +494,13 @@ Qed.
 
 Theorem wpc_Inode__Size {k E2} {l k' P addr}:
   (S k < k')%nat →
-  ∀ Φ Φc,
-      "Hinode" ∷ is_inode l (S k') P addr ∗
-      "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ (∀ σ (sz: u64),
-          ⌜int.nat sz = inode.size σ⌝ ∗
-          ▷ P σ ={⊤}=∗ ▷ P σ ∗ (<disc> ▷ Φc ∧ Φ (#sz: val)))) -∗
-    WPC Inode__Size #l @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+  ⊢ {{{ "Hinode" ∷ is_inode l (S k') P addr }}}
+    <<{ ∀∀ σ (sz: u64), ⌜int.nat sz = inode.size σ⌝ ∗ ▷ P σ }>>
+      Inode__Size #l @ NotStuck; (S k); ⊤; E2
+    <<{ ▷ P σ }>>
+    {{{ RET #sz; True }}}.
 Proof.
-  iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
+  iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   rewrite /Inode__Size.
   wpc_pures; first by iLeft in "Hfupd".
@@ -549,7 +546,7 @@ Proof.
   wp_apply (crash_lock.release_spec with "His_locked"); auto.
   wp_pures.
   iNamed 1.
-  by iRight in "HQ".
+  iRight in "HQ". by iApply "HQ".
 Qed.
 
 Theorem wpc_Inode__Size_triple {k E2} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iProp Σ) :
@@ -565,14 +562,13 @@ Theorem wpc_Inode__Size_triple {k E2} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iP
   {{{ Qc }}}.
 Proof.
   iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-  iApply wpc_Inode__Size; first done.
-  iFrame "Hinode".
+  iApply (wpc_Inode__Size with "Hinode"); first done.
   iSplit.
   { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. by iApply "HΦ". }
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
   { iSpecialize ("HQc" with "[$]"). iLeft in "HΦ". iModIntro. by iApply "HΦ". }
-  iApply "HΦ". done.
+  iIntros "_". iApply "HΦ". done.
 Qed.
 
 Theorem wp_Inode__mkHdr {stk E} l addr_s addrs :
@@ -656,6 +652,10 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
 
 Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
 
+(* This does not fit the "atomic triple" pattern because of the possibility to
+return [#false] without actually performing the commit.
+It should be possible to phrase it as a "commit that does not change
+anything". *)
 Theorem wpc_Inode__Append {k E2}
         {l k' P addr}
         (* allocator stuff *)
@@ -902,6 +902,8 @@ Proof.
       by iRight in "HQ".
 Qed.
 
+(* Note that this spec is a lot weaker than the one above because in case of
+failure, the resources put into "Hfupd" are lost! *)
 Theorem wpc_Inode__Append_triple {k E2}
         {l k' P addr}
         (* allocator stuff *)
@@ -936,7 +938,8 @@ Proof.
   iSplit.
   { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. iNext. by iApply "HΦ". }
   iSplit.
-  { iRight in "HΦ". iNext. by iApply "HΦ". }
+  { iClear "Hfupd". (* This is where resources are lost. *)
+    iRight in "HΦ". iNext. by iApply "HΦ". }
   iIntros "!>" (σ σ' addr' Hσ' Hσ s Hs) "HPs".
   iRight in "Hfupd".
   iMod ("Hfupd" $! _ _ _ Hσ' Hσ _ Hs with "HPs") as "($ & $ & HQ)".

@@ -3,6 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import ModArith.
 From Perennial.goose_lang Require Import crash_modality wpr_lifting.
 From Perennial.algebra Require Import deletable_heap.
+From Perennial.program_logic Require Import atomic.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import replicated_block.
 From Perennial.algebra Require Import own_discrete.
@@ -203,14 +204,13 @@ Section goose.
 
   Lemma wpc_RepBlock__Read {k E2} {k' l} addr (primary: bool) :
     (S k ≤ k')%nat →
-    ∀ Φ Φc,
-        "Hrb" ∷ is_rblock (S k') l addr ∗
-        "Hfupd" ∷ (<disc> ▷ Φc (* crash condition before lin.point *) ∧
-                   ▷ (∀ σ, ▷ P σ ={⊤}=∗ ▷ P σ ∗ (<disc> ▷ Φc (* crash condition after lin.point *) ∧
-                                                 (∀ s, is_block s 1 σ -∗ Φ (slice_val s))))) -∗
-      WPC RepBlock__Read #l #primary @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+    ⊢ {{{ "Hrb" ∷ is_rblock (S k') l addr }}}
+      <<{ ∀∀ σ, ▷ P σ }>>
+        RepBlock__Read #l #primary @ NotStuck; (S k); ⊤; E2
+      <<{ ▷ P σ }>>
+      {{{ s, RET (slice_val s); is_block s 1 σ }}}.
   Proof.
-    iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
+    iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
     iNamed "Hrb".
     iNamed "Hro_state".
     wpc_call.
@@ -282,8 +282,7 @@ Section goose.
     {{{ Qc }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    iApply wpc_RepBlock__Read; first done.
-    iFrame "Hrb".
+    iApply (wpc_RepBlock__Read with "Hrb"); first done.
     iSplit.
     { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. iApply "HΦ". done. }
     iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
@@ -294,13 +293,14 @@ Section goose.
 
   Lemma wpc_RepBlock__Write {k E2} l k' addr (s: Slice.t) q (b: Block) :
     (S k ≤ k')%nat →
-    ∀ Φ Φc,
-        "Hrb" ∷ is_rblock (S k') l addr ∗
-        "Hb" ∷ is_block s q b ∗
-        "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ (∀ σ, ▷ P σ ={⊤}=∗ ▷ P b ∗ (<disc> ▷ Φc ∧ (is_block s q b -∗ Φ #())))) -∗
-    WPC  RepBlock__Write #l (slice_val s) @ NotStuck; (S k); ⊤; E2 {{ Φ }} {{ Φc }}.
+    ⊢ {{{ "Hrb" ∷ is_rblock (S k') l addr ∗
+          "Hb" ∷ is_block s q b }}}
+      <<{ ∀∀ σ, ▷ P σ }>>
+        RepBlock__Write #l (slice_val s) @ NotStuck; (S k); ⊤; E2
+      <<{ ▷ P b }>>
+      {{{ RET #(); is_block s q b }}}.
   Proof.
-    iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
+    iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
     iNamed "Hrb".
     iNamed "Hro_state".
     wpc_call.
@@ -390,7 +390,7 @@ Section goose.
     {{{ Qc }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    iApply wpc_RepBlock__Write; first done.
+    iApply (wpc_RepBlock__Write with "[$Hrb $Hb //]"); first done.
     iFrame. iSplit.
     { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. iApply "HΦ". done. }
     iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
@@ -429,10 +429,9 @@ Section goose.
     wpc_pures.
     (* Weaken the levels. *)
     iApply (wpc_idx_mono 1); first lia.
-    wpc_apply (wpc_RepBlock__Read with "[HΦ $Hrblock]").
+    wpc_apply (wpc_RepBlock__Read with "Hrblock").
     { lia. }
-    iSplit; first iFromCache.
-    iNext. iIntros. iModIntro. iFrame "# ∗".
+    iIntros. iModIntro. iFrame "# ∗".
     iSplit; first iFromCache.
     iIntros. iRight in "HΦ". iApply "HΦ".
     eauto.

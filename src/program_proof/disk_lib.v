@@ -291,6 +291,7 @@ Proof.
   iFrame.
 Qed.
 
+(* This is a TaDA-syle logically atomic spec, so the HoCAP-style sugar does not work. *)
 Theorem wpc_Write_fupd {stk k E1 E2} E1' (a: u64) s q b :
   ∀ Φ Φc,
     is_block s q b -∗

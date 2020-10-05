@@ -342,10 +342,9 @@ Section goose.
     iNamed "Hinode". iNamed "Hro_state".
     wpc_pures.
     wpc_loadField.
-    wpc_apply (wpc_Inode__Read inodeN (k':=k')).
+    wpc_apply (wpc_Inode__Read inodeN (k':=k') with "Hinode").
     { lia. }
-    iFrame "Hinode". iSplit; first iFromCache. clear.
-    iIntros "!>" (σ mb) "[ -> >HPinode]".
+    iIntros (σ mb) "[ -> >HPinode]".
     iInv "Hinv" as "Hinner".
     iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
     iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)

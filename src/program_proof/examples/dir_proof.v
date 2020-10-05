@@ -911,8 +911,8 @@ Section goose.
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
     (* Now we get to the actual read operation. *)
-    iApply wpc_Inode__Read; first done.
-    iFrame "Hinode". iSplit.
+    iApply (wpc_Inode__Read with "Hinode"); first done.
+    iSplit.
     { by crash_case. }
     iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
@@ -966,8 +966,8 @@ Section goose.
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
     (* Now we get to the actual size operation. *)
-    iApply wpc_Inode__Size; first done.
-    iFrame "Hinode". iSplit.
+    iApply (wpc_Inode__Size with "Hinode"); first done.
+    iSplit.
     { by crash_case. }
     iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
@@ -986,7 +986,7 @@ Section goose.
     { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }
     iSplit.
     - by crash_case.
-    - by iApply "HΦ".
+    - iIntros "_". by iApply "HΦ".
   Qed.
 
 
