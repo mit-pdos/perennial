@@ -6,9 +6,10 @@ From Perennial.goose_lang Require Import notation.
 From Perennial.program_proof Require Import proof_prelude.
 From stdpp Require Import gmap.
 From RecordUpdate Require Import RecordUpdate.
-From Perennial.algebra Require Import auth_map.
+From Perennial.algebra Require Import auth_map fmcounter.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.Helpers Require Import NamedProps.
+From iris.algebra Require Import numbers.
 
 Section lockservice_proof.
 Context `{!heapG Σ}.
@@ -71,30 +72,6 @@ Ghost state for server:
 (ck_cid [[rc_γ]]↦ (ls_seq, last_reply) 
 *)
 
-  Context `{!mapG Σ u64 (u64 * bool)}.
-  Context `{!inG Σ (exclR unitO)}.
-
-Definition own_clerk (ck:val) (srv:val) (γ:gname) (rc_γ:gname) : iProp Σ
-  :=
-  ∃ (ck_l:loc) (cid seq ls_seq :u64) (last_reply:bool),
-    ⌜ck = #ck_l⌝
-    ∗⌜int.val seq > int.val ls_seq⌝
-    ∗ck_l ↦[Clerk.S :: "cid"] #cid
-    ∗ck_l ↦[Clerk.S :: "cid"] #seq
-    ∗ck_l ↦[Clerk.S :: "primary"] srv
-    ∗ (cid [[rc_γ]]↦ (ls_seq, last_reply))
-       (*∗own γ (seq) *)
-.
-
-Definition CallTryLock_inv (cid:u64) rc_γ (P:iProp Σ) (Pγ:gname) (N:namespace) : iProp Σ :=
-  ∃ (ls_seq:u64) (seq:u64) (last_reply:bool),
-    (">Hrc_ptsto" ∷ cid [[rc_γ]]↦ (ls_seq, last_reply))
-      ∗ "HTryLockCases" ∷ (
-         ">Hcase" ∷ ⌜int.val seq > int.val ls_seq⌝
-         ∨ ">Hcase" ∷  ⌜seq = ls_seq ∧ last_reply = false⌝
-         ∨ "Hcase" ∷  (inv N (P ∨ own Pγ (Excl ()))))
-.
-
 Print into_val.IntoVal.
 Global Instance ToVal_bool : into_val.IntoVal bool.
 Proof.
@@ -102,7 +79,41 @@ Proof.
             IntoVal_def := false; |}; congruence.
 Defined.
 
-Check (to_val #true).
+Definition locknameN (lockname : u64) := nroot .@ "lock" .@ lockname.
+
+
+  Context `{!mapG Σ u64 (u64 * bool)}.
+  Context `{!inG Σ (exclR unitO)}.
+  Context `{!inG Σ (gmapUR u64 fmcounterUR)}.
+
+Definition own_clerk (ck:val) (srv:val) (γ:gname) (rc_γ:gname) : iProp Σ
+  :=
+  ∃ (ck_l:loc) (cid seq ls_seq : u64) (last_reply:bool),
+    ⌜ck = #ck_l⌝
+    ∗⌜int.val seq > int.val ls_seq⌝%Z
+    ∗ck_l ↦[Clerk.S :: "cid"] #cid
+    ∗ck_l ↦[Clerk.S :: "cid"] #seq
+    ∗ck_l ↦[Clerk.S :: "primary"] srv
+    ∗ (cid [[rc_γ]]↦ (ls_seq, last_reply))
+       (*∗own γ (seq) *)
+.
+
+Definition CallTryLock_inv (seq cid:u64) rc_ptsto_in_inv_γ lastSeq_γ rc_γ (P:iProp Σ) (Pγ:gname) (N:namespace) : iProp Σ :=
+  (  "Hrc_ptsto_in_inv" ∷ own rc_ptsto_in_inv_γ (Excl ())
+   ∗ "HseqTooSmall" ∷ own lastSeq_γ {[ cid := (◯MaxNat (int.nat seq)) ]})
+   ∨ 
+  (∃ (ls_seq:u64) (last_reply:bool),
+    (">Hrc_ptsto" ∷ cid [[rc_γ]]↦ (ls_seq, last_reply))
+      ∗ "HTryLockCases" ∷ (
+         ">Hcase" ∷ ⌜int.nat seq > int.nat ls_seq⌝
+         ∨ (">Hcase" ∷  ⌜seq = ls_seq ∧ last_reply = false⌝
+            ∗ own lastSeq_γ {[ cid := (◯MaxNat (int.nat seq)) ]})
+         ∨ ("Hcase" ∷  (inv N (P ∨ own Pγ (Excl ())))
+            ∗ own lastSeq_γ {[ cid := (◯MaxNat (int.nat seq)) ]})
+      )
+      )
+.
+
 Definition own_lockserver (srv:loc) (rc_γ:gname) (Ps: u64 -> (iProp Σ)) : iProp Σ:=
   ∃ (lastSeq_ptr lastReply_ptr locks_ptr:loc) (lastSeqM:gmap u64 u64)
     (lastReplyM locksM:gmap u64 bool),
@@ -114,12 +125,13 @@ Definition own_lockserver (srv:loc) (rc_γ:gname) (Ps: u64 -> (iProp Σ)) : iPro
     ∗ "HlocksOwn" ∷ srv ↦[LockServer.S :: "locks"] #locks_ptr
     ∗ "HlocksMap" ∷ is_map (locks_ptr) locksM
     ∗ "Hmapctx" ∷ map_ctx rc_γ 1 (map_zip lastSeqM lastReplyM)
-    ∗ "HPs" ∷ [∗ map] cid ↦ held ∈ locksM, (⌜held=true⌝ ∨ (Ps cid))
+    (* ∗ "HlastSeq_γ" ∷ own , *)
+    ∗ "HPs" ∷ [∗ map] ln ↦ held ∈ locksM, (⌜held=true⌝ ∨ (Ps ln))
     )%I
 .
 
 (* Should make this readonly so it can be read by the RPC background thread *)
-Definition own_lock_args (args_ptr:loc) (lockArgs:LockArgsC): iProp Σ :=
+Definition read_lock_args (args_ptr:loc) (lockArgs:LockArgsC): iProp Σ :=
   "#HLockArgsOwnLockname" ∷ readonly (args_ptr ↦[LockArgs.S :: "Lockname"] #lockArgs.(Lockname))
   ∗ "#HLockArgsOwnCID" ∷ readonly (args_ptr ↦[LockArgs.S :: "CID"] #lockArgs.(CID))
   ∗ "#HLockArgsOwnSeq" ∷ readonly (args_ptr ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
@@ -137,7 +149,7 @@ Definition is_lockserver srv rc_γ Ps lockN: iProp Σ :=
 
 Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) rc_γ (Ps: u64 -> (iProp Σ)) P Pγ N M lockN:
   Ps lockArgs.(Lockname) = P →
-  {{{ is_lockserver srv rc_γ Ps lockN∗inv M (CallTryLock_inv lockArgs.(CID) rc_γ P Pγ N) ∗own_lock_args args lockArgs
+  {{{ is_lockserver srv rc_γ Ps lockN∗inv M (CallTryLock_inv lockArgs.(Seq) lockArgs.(CID) rc_γ P Pγ N) ∗read_lock_args args lockArgs
   ∗ own_lock_reply reply lockReply }}}
     LockServer__TryLock #srv #args #reply
   {{{ RET #false; ∃ ok, (⌜ok = true⌝∗(inv N (P ∨ own Pγ (Excl()))) ∨ ⌜ok = false⌝) ∗ reply ↦[LockReply.S :: "OK"] #ok }}}.
@@ -235,7 +247,7 @@ Admitted.
 Lemma CallTryLock_spec (srv reply args:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (used:gset u64) rc_γ (Ps:u64 -> iProp Σ) P Pγ N M:
   lockArgs.(Lockname) ∈ used → Ps lockArgs.(Lockname) = P →
   {{{ "#HinvM" ∷ inv M (CallTryLock_inv lockArgs.(CID) rc_γ P Pγ N)
-          ∗ "Hargs" ∷ own_lock_args args lockArgs
+          ∗ "Hargs" ∷ read_lock_args args lockArgs
           ∗ "Hreply" ∷ own_lock_reply reply lockReply
   }}}
     CallTryLock #srv #args #reply
