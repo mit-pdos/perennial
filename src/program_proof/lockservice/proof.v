@@ -114,14 +114,15 @@ Definition own_lockserver (srv:loc) (rc_γ:gname) (Ps: u64 -> (iProp Σ)) : iPro
     ∗ "HlocksOwn" ∷ srv ↦[LockServer.S :: "locks"] #locks_ptr
     ∗ "HlocksMap" ∷ is_map (locks_ptr) locksM
     ∗ "Hmapctx" ∷ map_ctx rc_γ 1 (map_zip lastSeqM lastReplyM)
+    ∗ "HPs" ∷ [∗ map] cid ↦ held ∈ locksM, (⌜held=true⌝ ∨ (Ps cid))
     )%I
 .
 
 (* Should make this readonly so it can be read by the RPC background thread *)
 Definition own_lock_args (args_ptr:loc) (lockArgs:LockArgsC): iProp Σ :=
-  "HLockArgsOwnLockname" ∷ args_ptr ↦[LockArgs.S :: "Lockname"] #lockArgs.(Lockname)
-  ∗ "HLockArgsOwnCID" ∷ args_ptr ↦[LockArgs.S :: "CID"] #lockArgs.(CID)
-  ∗ "HLockArgsOwnSeq" ∷ args_ptr ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq)
+  "#HLockArgsOwnLockname" ∷ readonly (args_ptr ↦[LockArgs.S :: "Lockname"] #lockArgs.(Lockname))
+  ∗ "#HLockArgsOwnCID" ∷ readonly (args_ptr ↦[LockArgs.S :: "CID"] #lockArgs.(CID))
+  ∗ "#HLockArgsOwnSeq" ∷ readonly (args_ptr ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
 .
 
 Definition own_lock_reply (args_ptr:loc) (lockReply:LockReplyC): iProp Σ :=
@@ -136,7 +137,7 @@ Definition is_lockserver srv rc_γ Ps lockN: iProp Σ :=
 
 Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) rc_γ (Ps: u64 -> (iProp Σ)) P Pγ N M lockN:
   Ps lockArgs.(Lockname) = P →
-  {{{ is_lockserver srv rc_γ Ps lockN∗inv M (CallTryLock_inv (int.nat lockArgs.(CID)) rc_γ P Pγ N) ∗own_lock_args args lockArgs
+  {{{ is_lockserver srv rc_γ Ps lockN∗inv M (CallTryLock_inv lockArgs.(CID) rc_γ P Pγ N) ∗own_lock_args args lockArgs
   ∗ own_lock_reply reply lockReply }}}
     LockServer__TryLock #srv #args #reply
   {{{ RET #false; ∃ ok, (⌜ok = true⌝∗(inv N (P ∨ own Pγ (Excl()))) ∨ ⌜ok = false⌝) ∗ reply ↦[LockReply.S :: "OK"] #ok }}}.
@@ -178,29 +179,57 @@ Proof.
       wp_pures.
       wp_storeField.
       repeat wp_loadField.
-      wp_bind (MapInsert _ _ _)%I.
+      wp_apply (wp_MapInsert _ _ lastReplyM _ false #false with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
       iApply fupd_wp.
       iInv "HinvM" as "HM" "HCloseM".
-      iDestruct "HM" as (ls_seq seq last_reply) "[HM #HMM]".
-      iDestruct "HMM" as "[HMM|[HMM|HMM]]".
-      -- iMod "HM"; iMod "HMM". admit.
-      -- iMod "HM"; iMod "HMM". admit.
-      -- iMod "HM".
-         iMod ("HCloseM" with "[HM]"). { iModIntro. admit. }
-         simpl.
-         iModIntro. 
-        
-         wp_apply (wp_MapInsert _ _ lastReplyM _ false #false with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
+      iDestruct "HM" as (ls_seq seq last_reply) "[Hptsto #HMM]".
+      iMod "Hptsto".
+      iMod (map_update lockArgs.(CID) (ls_seq, last_reply) (lockArgs.(Seq), false) with "Hmapctx Hptsto") as "(Hmapctx & Hptsto)".
+      rewrite (map_insert_zip_with pair _ _ lockArgs.(CID) _ _).
+      iMod ("HCloseM" with "[Hptsto]") as "_".
+      { iModIntro.
+        unfold CallTryLock_inv.
+        iExists lockArgs.(Seq).
+        admit. }
+      iModIntro.
       wp_seq.
       wp_loadField.
       wp_apply (release_spec lockN #mu_ptr _ with "[-Hreply HPost]"); try iFrame "Hmu Hlocked".
-      {
-        iModIntro.
-        admit.
+      { (* Estanlish own_lockserver *)
+        iNext. iFrame.
+        iExists _, _, _, _, _, _; iFrame.
       }
-      wp_seq. iApply "HPost".
+      wp_seq. iApply ("HPost").
       iExists false. iFrame. by iRight.
     + (* Lock not held by anyone *)
+      wp_pures. wp_storeField. repeat wp_loadField.
+      wp_apply (wp_MapInsert _ _ locksM _ true #true with "HlocksMap"); first eauto; iIntros "HlocksMap".
+      wp_seq. repeat wp_loadField.
+      wp_apply (wp_MapInsert _ _ lastReplyM _ true #true with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
+      wp_seq.
+      iDestruct (big_sepM_delete _ locksM lockArgs.(Lockname) false with "HPs") as "(HP & HPs)".
+      { assert (ok=true); first admit. rewrite H in HLocksMapGet. admit. }
+      iDestruct (big_sepM_insert _ (_) lockArgs.(Lockname) true with "[HPs]") as "HPs"; try iFrame.
+      { admit. }
+      { by iLeft. }
+      rewrite (insert_delete).
+      wp_loadField.
+      wp_apply (release_spec lockN #mu_ptr _ with "[-Hreply HPost HP]").
+      { (* Establish own_lockserver *)
+        iFrame "Hmu Hlocked". iNext.
+        iExists _, _, _, _, _, _; try iFrame.
+        (* TODO: Update rc_γ *)
+        admit.
+      }
+      iMod (inv_alloc N _ (P ∨ own Pγ (Excl ())) with "[HP]") as "Hescrow".
+      {
+        iNext. iDestruct "HP" as "[%|HP]"; first done.
+        rewrite HPs. by iLeft.
+      }
+      wp_seq.
+      iApply "HPost".
+      iExists true. iFrame.
+      iLeft. iSplit; try done.
 Admitted.
 
 Lemma CallTryLock_spec (srv reply args:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (used:gset u64) rc_γ (Ps:u64 -> iProp Σ) P Pγ N M:
