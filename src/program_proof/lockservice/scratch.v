@@ -41,6 +41,39 @@ Definition request_token γi reqid : iProp Σ :=
 Definition response_token γp reqid acquired : iProp Σ :=
   "Hresp_tok" ∷ ⌜acquired=false⌝ ∨ reqid [[γp]]↦ro true.
 
+Theorem client_allocates_reqid γi γp γc reqid :
+  inv Nserver (server_inner γi γp γc)
+  ={⊤}=∗
+  inv Nclient (client_req_inner γi γc reqid).
+Proof.
+  iIntros "#H".
+  iInv "H" as ">Hinner" "Hclose".
+  iNamed "Hinner".
+  destruct (issued !! reqid) eqn:Hissue.
+  { (* Need some kind of assumption that this reqid has not been used yet. *)
+    admit.
+  }
+
+  iDestruct (big_sepM2_lookup_1_none with "Hissued") as %Hproc; eauto.
+  iDestruct (big_sepM2_lookup_1_none with "Hprocessed") as %Hclaim; eauto.
+
+  iMod (map_alloc_ro _ tt with "Hctxi") as "[Hctxi #Hissue]"; eauto.
+  iMod (map_alloc _ false with "Hctxp") as "[Hctxp Hproc]"; eauto.
+  iMod (map_alloc _ false with "Hctxc") as "[Hctxc Hclaim]"; eauto.
+
+  iDestruct (big_sepM2_insert _ _ _ _ tt false with "[$Hissued]") as "Hissued"; eauto.
+  iDestruct (big_sepM2_insert _ _ _ _ false false with "[$Hprocessed]") as "Hprocessed"; eauto.
+  iDestruct (big_sepM_insert with "[$Hprocro $Hproc]") as "Hprocro"; eauto.
+
+  iMod ("Hclose" with "[-Hclaim]") as "_".
+  { iExists _, _, _, _. iFrame. }
+
+  iMod (inv_alloc with "[Hclaim]") as "Hc".
+  2: { iModIntro. iExact "Hc". }
+
+  iFrame. iFrame "#".
+Admitted.
+
 Theorem client_generates_request γi γc reqid :
   inv Nclient (client_req_inner γi γc reqid)
   ={⊤}=∗
