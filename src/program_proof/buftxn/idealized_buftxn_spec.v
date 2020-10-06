@@ -212,10 +212,55 @@ Class buftxnG Σ :=
 
 Record buftxn_names {Σ} :=
   { buftxn_txn_names : @txn_names Σ;
-    buftxn_stable_name : gname;
+    buftxn_async_name : gname;
   }.
 
 Arguments buftxn_names Σ : assert, clear implicits.
+
+Section async.
+Context {Σ: gFunctors} {K V: Type} `{Countable0: Countable K}.
+
+Implicit Types (γ:gname).
+
+(* this idea is for this to have two resources:
+    - stable values: a gmap from (txn_id,K) pairs to agree V, which gives persistent knowledge
+      of persistent values in old transactions
+    - ephemeral ownership: a discrete_funUR from txn_id to gmap K V where
+      values are exclusive and typical ownership is over transactions ≥i
+  *)
+Definition async_ctx γ (σs: async (gmap K V)) : iProp Σ.
+Admitted.
+
+Global Instance async_ctx_timeless γ σs : Timeless (async_ctx γ σs).
+Admitted.
+
+Definition durable_txn_val γ (i:nat) (k: K) (v: V) : iProp Σ.
+Admitted.
+
+Global Instance durable_persistent γ i (k:K) (v:V) : Persistent (durable_txn_val γ i k v).
+Admitted.
+
+(* ephemeral_txn_val owns ephemeral transactions from i onward (including
+future transactions); this is what makes it possible to use ephemeral
+maps-to facts to append a new gmap with those addresses updated (see
+[map_update_predicate] for the kind of thing we should be able to do) *)
+Definition ephemeral_txn_val γ (i:nat) (k: K) (v: V) : iProp Σ.
+Admitted.
+
+Theorem async_update_map m' γ σs m0 txn_id :
+  dom (gset _) m' = dom (gset _) m0 →
+  async_ctx γ σs -∗
+  ([∗ map] a↦v ∈ m0, ephemeral_txn_val γ txn_id a v) -∗
+  |==> async_ctx γ (async_put (m' ∪ latest σs) σs) ∗
+       ([∗ map] a↦v ∈ m', ephemeral_txn_val γ txn_id a v).
+Proof.
+  (* this can probably be proven by adding a copy of latest σs to the end and
+  then updating each address in-place (normally it's not possible to change an
+  old txn_id, but perhaps that's fine at the logical level? after all,
+  ephemeral_txn_val txn_id a v is more-or-less mutable if txn_id is lost) *)
+Admitted.
+
+End async.
 
 Section goose_lang.
   Context `{!buftxnG Σ}.
@@ -229,17 +274,11 @@ Section goose_lang.
     (* oof, this leaks all the abstractions *)
     own γ.(buftxn_txn_names).(txn_walnames).(heapspec.wal_heap_durable_lb) (◯ (MaxNat txn_id)).
 
+
   Definition txn_system_inv γ: iProp Σ :=
     ∃ (σs: async (gmap addr object)),
       "H◯async" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (1/2) σs ∗
-      "H●latest" ∷ map_ctx γ.(buftxn_stable_name) 1 (latest σs) ∗
-      (* TODO(tej): don't think this does anything so far, because we don't have
-      a spec for how the async heap gets updated on crash. Joe and I thought we
-      might have a more complicated structure with generations and then
-      versioned heaps, so that on crash no state gets lost, we just move to a
-      new generation and invalidate some transactions from the old one. None of
-      this has been worked out, though. *)
-      "H◯durable" ∷ txn_durable γ (length $ possible σs)
+      "H●latest" ∷ async_ctx γ.(buftxn_async_name) σs
   .
 
   (* this is for the entire txn manager, and relates it to some ghost state *)
@@ -252,12 +291,6 @@ Section goose_lang.
   disk value is obj *)
   Definition modify_token γ (a: addr) obj: iProp Σ :=
     txn_proof.mapsto_txn γ.(buftxn_txn_names) a obj.
-
-  (* TODO: I think this just connects to γUnified.(crash_states), which is the
-  name of an auth log_heap; when maintaining synchrony the ownership is really
-  simple since we only fully own the latest and forward value *)
-  Definition stable_maps_to γ (a:addr) obj: iProp Σ :=
-    ptsto_mut γ.(buftxn_stable_name) a 1 obj.
 
   (* this is for a single buftxn (transaction) - not persistent, buftxn's are
   not shareable *)
@@ -408,23 +441,30 @@ Section goose_lang.
   predicates; TODO: won't it be difficult to establish that the footprint of P
   hasn't changed in the invariant? it hasn't because we've had it locked, but we
   don't have ownership over it... *)
-  Theorem wp_BufTxn__CommitWait {l γ γtxn} E P Q d :
-    ↑N ⊆ E →
+  Theorem wp_BufTxn__CommitWait {l γ γtxn} P0 P d txn_id0 :
+    N ## invariant.walN →
+    N ## invN →
     {{{ "Hbuftxn" ∷ is_buftxn l γ γtxn d ∗
-        "HP" ∷ HoldsAt P (buftxn_maps_to γtxn) d ∗
-        "Hfupd" ∷ (|={⊤ ∖ ↑invariant.walN ∖ ↑invN,E}=> ∃ P0, HoldsAt P0 (stable_maps_to γ) d
-                    ∗ (P (λ a v, stable_maps_to γ a v) -∗
-                       |={E,⊤ ∖ ↑invariant.walN ∖ ↑invN}=> Q))  }}}
+        "HP0" ∷ HoldsAt P0 (ephemeral_txn_val (V:=object) γ.(buftxn_async_name) txn_id0) d ∗
+        "HP" ∷ HoldsAt P (buftxn_maps_to γtxn) d
+    }}}
       BufTxn__CommitWait #l #true
-    {{{ (n:u64), RET #n; Q ∗ P (modify_token γ) }}}.
-  (* TODO: has a wpc might need a PreQ ∧ on the fupd *)
+    {{{ (txn_id':nat) (ok:bool), RET #ok; if ok then P (λ a v, modify_token γ a v ∗ ephemeral_txn_val γ.(buftxn_async_name) txn_id' a v)
+                                          else P0 (modify_token γ)}}}.
+  (* crash condition will be [∃ txn_id', P0 (ephemeral_txn_val
+     γ.(buftxn_async_name) txn_id') ∨ P (ephemeral_txn_val γ.(buftxn_async_name)
+     txn_id') ]
+
+     where txn_id' is either the original and we get P0 or we commit and advance
+     to produce new [ephemeral_txn_val]'s *)
   Proof.
-    iIntros (? Φ) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (?? Φ) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hbuftxn".
     iDestruct (holds_at_map_ctx with "Htxn_ctx HP") as "(Htxn_ctx & Htxn_m & HP)"; first by auto.
-    wp_apply (mspec.wp_BufTxn__CommitWait with "[$Hbuftxn HP Hfupd]").
-    { iMod "Hfupd" as (P0) "[HP0 HQ]".
-      iNamed "Htxn_system".
+    iDestruct (HoldsAt_unfold with "HP0") as (m0) "(%Hdom_m0&Hstable&HP0)".
+    wp_apply (mspec.wp_BufTxn__CommitWait _ _ _ _ _
+              (λ txn_id', emp)%I with "[$Hbuftxn Hstable]").
+    { iNamed "Htxn_system".
       iInv "Htxn_inv" as ">Hinner" "Hclo".
       iModIntro.
       iNamed "Hinner".
@@ -432,35 +472,32 @@ Section goose_lang.
       iFrame "H◯async".
       iIntros "H◯async".
 
-      iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
-      rewrite /stable_maps_to.
-      iMod (map_update_map mT with "H●latest Hstable") as "[H●latest Hstable]".
+      iMod (async_update_map mT with "H●latest Hstable") as "[H●latest Hstable]".
       { congruence. }
-      iDestruct ("HP" with "Hstable") as "HP".
 
       (* NOTE: we don't use this theorem and instead inline its proof (to some
       extent) since we really need to know what the new map is, to restore
       txn_system_inv. *)
       (* iMod (map_update_predicate with "H●latest HP0 HP") as (m') "[H●latest HP]". *)
 
-      iMod ("Hclo" with "[H◯async H●latest H◯durable]") as "_".
+      iMod ("Hclo" with "[H◯async H●latest]") as "_".
       { iNext.
         iExists _.
-        iFrame "H◯async".
-        simpl.
-        iFrame.
-        admit. (* can't return txn_durable yet, only get it at the end of
-        CommitWait (why that is I don't understand, I think
-        mspec.wp_BufTxn__CommitWait should be doing the ⌜wait=true⌝ -∗ own lb
-        stuff within the fupd) *) }
-      iMod ("HQ" with "HP") as "HQ".
+        iFrame. }
       iModIntro.
-      iAccu. }
-    (* XXX: we can't give back P (modify_token γ) because that requires two P's:
-    once for stable_maps_to and once for modify_token, and nowhere have we
-    assumed that P (mapsto1 ∗ mapsto2) ⊢ P mapsto1 ∗ P mapsto2 (in fact P is
-    used linearly). This splitting basically amounts to wrapping the PredRestore
-    in Liftable/HoldsAt in a persistently □ modality. *)
+      auto. }
+    iIntros (ok) "Hpost".
+    destruct ok.
+    - iDestruct "Hpost" as (txn_id) "(HQ&Hlower_bound&Hmod_tokens)".
+      iApply ("HΦ" $! txn_id).
+      iApply "HP".
+      iApply big_sepM_sep; iFrame.
+      (* TODO: add these maps-to facts to the buftxn CommitWait Q so we can preserve them *)
+      admit.
+    - iApply "HΦ".
+      iApply "HP0".
+      (* TODO: oops, buftxn spec promises _some_ modification tokens on failure,
+      should promise the same ones as we started with *)
   Admitted.
 
 End goose_lang.

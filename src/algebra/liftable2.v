@@ -79,6 +79,16 @@ Section bi.
     iApply Himpl.
   Qed.
 
+  Theorem HoldsAt_unfold `{!BiAffine PROP} P mapsto1 d :
+    HoldsAt P mapsto1 d -∗
+    ∃ m, ⌜dom _ m = d⌝ ∗ ([∗ map] a↦v ∈ m, mapsto1 a v) ∗
+         PredRestore P m.
+  Proof.
+    rewrite /HoldsAt /named.
+    iIntros "H". iDestruct "H" as (m) "(?&?&?)".
+    eauto 10 with iFrame.
+  Qed.
+
   (* if we don't care about the predicate, we can extract just the mapsto part
   of a HoldsAt (and since this drops P we assume the bi is affine) *)
   Theorem HoldsAt_elim_big_sepM `{!BiAffine PROP} P mapsto1 d :
