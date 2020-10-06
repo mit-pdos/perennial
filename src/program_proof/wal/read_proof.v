@@ -148,6 +148,28 @@ Theorem simulate_read_cache_hit {l γ Q σ memLog diskEnd diskEnd_txn_id b a} :
               "HQ" ∷ Q (Some b) ∗
               "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
 Proof.
+  iIntros (Happly) "[Hinner HP] Hlinv Hfupd".
+  iNamed "Hinner".
+
+  iNamed "Hlinv".
+  iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
+
+  iMod ("Hfupd" $! σ σ with "[] [] HP") as "[HP HQ]"; first by eauto.
+  {
+    iPureIntro.
+    econstructor; simpl.
+    { eapply (relation.suchThat_runs _ _ true). eauto. }
+    simpl. monad_simpl. simpl.
+    rewrite /last_disk /disk_at_txn_id take_ge; last by lia.
+    (* need to connect σ with memLog to show this is [b] *)
+    admit.
+  }
+
+  iModIntro.
+  iFrame "HP HQ".
+  iFrame.
+  iSplit; first by done.
+  iExists _, _, _, _. iFrame. iFrame "#". iFrame "%".
 Admitted.
 
 (* TODO: this is hard, should prove it at some point *)
@@ -162,6 +184,23 @@ Theorem simulate_read_cache_miss {l γ Q σ memLog diskEnd diskEnd_txn_id a} :
               "HQ" ∷ Q None ∗
               "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
 Proof.
+  iIntros (Happly) "[Hinner HP] Hlinv Hfupd".
+  iNamed "Hinner".
+
+  iNamed "Hlinv".
+  iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
+
+  iMod ("Hfupd" with "[] [] HP") as "[HP HQ]"; first by eauto.
+  {
+    iPureIntro.
+    econstructor; simpl.
+    { eapply (relation.suchThat_runs _ _ false). eauto. }
+    simpl. monad_simpl.
+    admit.
+  }
+
+  iModIntro. iFrame "HQ".
+  admit.
 Admitted.
 
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
