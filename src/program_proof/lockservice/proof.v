@@ -299,6 +299,75 @@ Proof.
         iApply "HPost".
         iExists false. iFrame. iFrame "#".
       + (* Lock not held by anyone *)
+        wp_pures.
+        wp_storeField.
+        repeat wp_loadField.
+        wp_apply (wp_MapInsert _ _ locksM _ true #true with "HlocksMap"); first eauto; iIntros "HlocksMap".
+        wp_seq.
+        repeat wp_loadField.
+        wp_apply (wp_MapInsert _ _ lastReplyM _ true #true with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
+        wp_seq. wp_loadField.
+        iApply fupd_wp.
+        iInv M as "HMinner" "HMClose".
+        iDestruct "HMinner" as "[HMinner|Hbad]"; last admit.
+        iDestruct "HMinner" as (real_lseq) "[#>Hle [>Hlseq_own Hcases]]".
+        assert (v = real_lseq) as Htemp; first admit. (* TODO: make this a lemma *)
+        iAssert ⌜replyHistory !! (lockArgs.(CID), lockArgs.(Seq)) = None⌝%I as %HtempMap.
+        {
+          admit.
+        }
+        iMod (map_alloc_ro (lockArgs.(CID), lockArgs.(Seq)) (Some true) with "Hrcctx") as "[Hrcctx #Hrc_ptsto]"; first done.
+        iDestruct (big_sepM_delete _ _ lockArgs.(CID) v with "Hownlseqγ") as "(Hlseq_frombigSep & Hlseqγauth)"; first done.
+        destruct Htemp.
+        iCombine "Hlseq_frombigSep Hlseq_own" as "Hcombined".
+        iMod (own_update with "Hcombined") as "Hcombined".
+        {
+          eapply singleton_update.
+          eapply auth_update_alloc.
+          eapply (max_nat_local_update _ _ (MaxNat (int.nat lockArgs.(Seq)))). simpl. lia.
+        }
+        iDestruct "Hcombined" as "[[Hlseq_frombigSep Hlseq_own] Hfrag]".
+        iDestruct (big_sepM_insert_delete with "[$Hlseqγauth $Hlseq_frombigSep]") as "Hlseqγauth".
+        Check big_sepM_insert.
+        iDestruct (big_sepM_insert _ _ (lockArgs.(CID), lockArgs.(Seq)) _ with "[$Hrc_lseqbound $Hfrag]") as "#Hrc_lseqbound2"; first done.
+        iDestruct (big_sepM_insert _ _ (lockArgs.(CID), lockArgs.(Seq)) _ with "[$Htbd $Hrc_ptsto]") as "#Htbd2"; first done.
+        
+        iMod ("HMClose" with "[Hrc_ptsto Hcases Hlseq_own]") as "_".
+        { iNext. iLeft. iExists _; iFrame. iFrame "#".
+          iSplitL ""; first done. iRight. iExists true. iFrame "#".
+          iSplitL ""; first done. iRight. iLeft.
+          (* TODO: Get (Ps ln) here; need to know that lockname was in the locks map, or
+             get (Ps ln) from somewhere else...*)
+          admit.
+        }
+        iModIntro.
+        wp_apply (release_spec lockN #mu_ptr _ with "[-Hreply HPost]"); try iFrame "Hmu Hlocked".
+        { (* Re-establish own_lockserver *)
+          iNext. iExists _, _, _, _, _, _, _; try iFrame; try iFrame "#"; try iFrame "%".
+          (* TODO: Go back and update the locked big_sepM *)
+          iPureIntro.
+          split.
+          {
+            intros.
+            admit.
+          }
+          {
+            intros.
+            admit.
+          }
+        }
+        wp_seq.
+        iApply "HPost".
+        iExists false. iFrame. iFrame "#".
+
+
+
+
+
+
+
+
+        
 
 (*
         iApply fupd_wp.
