@@ -62,6 +62,13 @@ Proof.
   reflexivity.
 Qed.
 
+Lemma length_possible_async_put {T} (v:T) a :
+  length (possible (async_put v a)) = S (length (possible a)).
+Proof.
+  rewrite /possible /async_put /=.
+  rewrite !app_length /=.
+  lia.
+Qed.
 
 Section definitions.
   Context `{hG : log_heapG L V Σ}.
