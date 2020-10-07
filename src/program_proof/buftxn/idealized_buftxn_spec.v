@@ -303,7 +303,7 @@ Section goose_lang.
   .
 
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=
-     ptsto_ro γtxn a obj.
+     ptsto_mut γtxn a 1 obj.
 
   Theorem lift_into_txn E l γ γtxn d a obj :
     ↑invN ⊆ E →
@@ -362,36 +362,55 @@ Section goose_lang.
     bufSz (objKind obj) = int.nat sz →
     {{{ is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj }}}
       BufTxn__ReadBuf #l (addr2val a) #sz
-    {{{ (bufptr:loc), RET #bufptr;
-    (* TODO: this spec needs to return a pair of the bufptr and a fupd that
-    incorporates the buf back into is_buftxn; the caller can manipulate the buf
-    and then return it to the buftxn system *)
-        is_buftxn l γ γtxn d }}}.
+    {{{ dirty (bufptr:loc), RET #bufptr;
+        is_buf bufptr a (Build_buf _ (objData obj) dirty) ∗
+        (∀ (obj': bufDataT (objKind obj)) dirty',
+            ⌜dirty' = true ∨ (dirty' = dirty ∧ obj' = objData obj)⌝ ∗
+            is_buf bufptr a (Build_buf _ obj' dirty') ==∗
+            is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a (existT (objKind obj) obj')) }}}.
   Proof.
     iIntros (? Φ) "Hpre HΦ".
-    iDestruct "Hpre" as "[Hbuftxn #Ha]".
+    iDestruct "Hpre" as "[Hbuftxn Ha]".
     iNamed "Hbuftxn".
-    iDestruct (map_ro_valid with "Htxn_ctx Ha") as %Hmt_lookup.
-    iApply wp_fupd.
+    iDestruct (map_valid with "Htxn_ctx Ha") as %Hmt_lookup.
     wp_apply (mspec.wp_BufTxn__ReadBuf with "[$Hbuftxn]").
     { iPureIntro.
       split; first by eauto.
       rewrite H.
       word. }
     iIntros (??) "[Hbuf Hbuf_upd]".
-    iMod ("Hbuf_upd" $! (projT2 obj) dirty with "[$Hbuf]") as "Hbuftxn".
-    { auto. }
-    iModIntro.
     iApply "HΦ".
-    iExists mT.
-    iSplit; first by auto.
-    iFrame "#Htxn_ctx".
-    iExactEq "Hbuftxn".
-    f_equal.
-    rewrite insert_id //.
-    rewrite Hmt_lookup.
-    f_equal.
-    destruct obj; auto.
+    iFrame "Hbuf".
+    iIntros (obj' dirty') "[%Hdirty' Hbuf]".
+    iMod ("Hbuf_upd" with "[$Hbuf]") as "Hbuftxn".
+    { iPureIntro; intuition auto. }
+    intuition subst.
+    - (* user inserted a new value into the read buffer; need to do the updates
+      to incorporate that write *)
+      iMod (map_update with "Htxn_ctx Ha") as
+          "[Htxn_ctx $]".
+      iModIntro.
+      iExists (<[a:=existT _ obj']> mT).
+      iSplitR.
+      { iPureIntro.
+        apply elem_of_dom_2 in Hmt_lookup.
+        set_solver. }
+      iFrame "∗#".
+    - (* user did not change buf, so no basic updates are needed *)
+      iModIntro.
+      change (projT1 obj) with (objKind obj).
+      assert (existT (objKind obj) (objData obj) = obj)
+        as Hobjeq by (destruct obj; auto).
+      rewrite Hobjeq.
+      iSplitR "Ha".
+      + iExists mT.
+        iSplit; first by auto.
+        iFrame "Htxn_system Htxn_ctx".
+        iExactEq "Hbuftxn".
+        rewrite /named.
+        f_equal.
+        rewrite insert_id //.
+      + iExact "Ha".
   Qed.
 
   (* TODO: state that [data] (a slice of bytes in the implementation) encodes
