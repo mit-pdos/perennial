@@ -628,6 +628,8 @@ Theorem wp_BufTxn__CommitWait buftx mt γUnified (wait : bool) E (Q : nat -> iPr
       (⌜wait = true⌝ -∗ own γUnified.(txn_walnames).(wal_heap_durable_lb) (◯ (MaxNat txnid))) ∗
       [∗ map] a ↦ v ∈ mt, mapsto_txn γUnified a v
     else
+      (* TODO: this isn't enough to reconstruct the lock invariant, because it
+      forgets that in this case the data is unchanged *)
       [∗ map] a ↦ v ∈ mt, ∃ data, mapsto_txn γUnified a (existT (projT1 v) data)
   }}}.
 Proof.

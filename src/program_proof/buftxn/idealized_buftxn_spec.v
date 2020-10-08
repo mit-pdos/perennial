@@ -275,7 +275,7 @@ Theorem ephemeral_val_from_in_bounds γ σs i a v :
   async_ctx γ σs -∗
   ephemeral_val_from γ i a v -∗
   (* if equal, only owns the new transactions and no current ones *)
-  ⌜i ≤ length (possible σs)⌝%nat.
+  ⌜i < length (possible σs)⌝%nat.
 Proof.
 Admitted.
 
@@ -302,23 +302,25 @@ Proof.
   ephemeral_val_from txn_id a v is more-or-less mutable if txn_id is lost) *)
 Admitted.
 
+(* this splits off an [ephemeral_val_from] at exactly the last transaction *)
 Theorem async_ctx_ephemeral_val_from_split γ σs i a v :
   async_ctx γ σs -∗
   ephemeral_val_from γ i a v -∗
-  async_ctx γ σs ∗ ephemeral_txn_val_range γ i (length (possible σs)) a v ∗
-  ephemeral_val_from γ (length (possible σs)) a v.
+  async_ctx γ σs ∗ ephemeral_txn_val_range γ i (length (possible σs) - 1) a v ∗
+  ephemeral_val_from γ (length (possible σs) - 1) a v.
 Proof.
   iIntros "Hctx Hi+".
   iDestruct (ephemeral_val_from_in_bounds with "Hctx Hi+") as %Hinbounds.
-  iDestruct (ephemeral_val_from_split (length (possible σs)) with "Hi+") as "[Hold H+]"; auto.
+  iDestruct (ephemeral_val_from_split (length (possible σs) - 1) with "Hi+") as "[Hold H+]"; eauto.
+  { lia. }
   iFrame.
 Qed.
 
 Theorem async_ctx_ephemeral_val_from_map_split γ σs i m :
   async_ctx γ σs -∗
   big_opM bi_sep (ephemeral_val_from γ i) m -∗
-  async_ctx γ σs ∗ big_opM bi_sep (ephemeral_txn_val_range γ i (length (possible σs))) m ∗
-  big_opM bi_sep (ephemeral_val_from γ (length (possible σs))) m.
+  async_ctx γ σs ∗ big_opM bi_sep (ephemeral_txn_val_range γ i (length (possible σs) - 1)) m ∗
+  big_opM bi_sep (ephemeral_val_from γ (length (possible σs) - 1)) m.
 Proof.
   iIntros "Hctx Hm".
   iInduction m as [|a v m] "IH" using map_ind.
@@ -535,6 +537,10 @@ Section goose_lang.
     N ## invariant.walN →
     N ## invN →
     {{{ "Hbuftxn" ∷ is_buftxn l γ γtxn d ∗
+        (* TODO: in order to get these two to coexist, we really need to ∧ them together:
+           [big_sepM ephemeral_val_from m0 ∗ big_sepM buftxn_maps_to m ∗
+           (PredRestore P0 m0 ∧ PredRestore P m)]
+         *)
         "HP0" ∷ HoldsAt P0 (ephemeral_val_from (V:=object) γ.(buftxn_async_name) txn_id0) d ∗
         "HP" ∷ HoldsAt P (buftxn_maps_to γtxn) d
     }}}
@@ -556,7 +562,7 @@ Section goose_lang.
     iDestruct (holds_at_map_ctx with "Htxn_ctx HP") as "(Htxn_ctx & Htxn_m & HP)"; first by auto.
     iDestruct (HoldsAt_unfold with "HP0") as (m0) "(%Hdom_m0&Hstable&HP0)".
     wp_apply (mspec.wp_BufTxn__CommitWait _ _ _ _ _
-              (λ txn_id', ([∗ map] a↦v∈mT, ephemeral_val_from γ.(buftxn_async_name) (S txn_id') a v))%I
+              (λ txn_id', ([∗ map] a↦v∈mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
                 with "[$Hbuftxn Hstable]").
     { iNamed "Htxn_system".
       iInv "Htxn_inv" as ">Hinner" "Hclo".
@@ -582,19 +588,17 @@ Section goose_lang.
         iFrame. }
       iModIntro.
       rewrite length_possible_async_put.
-      iFrame. }
+      iExactEq "Hnew".
+      auto with f_equal lia. }
     iIntros (ok) "Hpost".
     destruct ok.
     - iDestruct "Hpost" as (txn_id) "(HQ&Hlower_bound&Hmod_tokens)".
-      iApply ("HΦ" $! (S txn_id)).
+      iApply ("HΦ" $! txn_id).
       iSplitR "Hlower_bound".
       + iApply "HP".
         iApply big_sepM_sep; iFrame.
-      + (* TODO: oops, close but not quite: need to split ephemeral_txn_from to
-           include the last transaction, so we can use txn_id and not (S
-           txn_id). *)
-        iSpecialize ("Hlower_bound" with "[% //]").
-        admit.
+      + iSpecialize ("Hlower_bound" with "[% //]").
+        iAssumption.
     - iApply "HΦ".
       iApply "HP0".
       (* TODO: oops, buftxn spec promises _some_ modification tokens on failure,
