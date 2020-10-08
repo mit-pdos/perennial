@@ -486,24 +486,80 @@ Section goose_lang.
       + iExact "Ha".
   Qed.
 
-  (* TODO: state that [data] (a slice of bytes in the implementation) encodes
-  the dynamically-typed object [obj], as *)
-  Definition data_has_obj (data: list byte) obj : Prop :=
+  Definition data_has_obj (data: list byte) (a:addr) obj : Prop :=
     match objData obj with
-    | bufBit _ => False (* TODO *)
-    | bufInode _ => False (* TODO *)
+    | bufBit b =>
+      ∃ b0, data = [b0] ∧
+            get_bit b0 (word.modu (addrOff a) 8) = b
+    | bufInode i => vec_to_list i = data
     | bufBlock b => vec_to_list b = data
     end.
 
-  Theorem wp_BufTxn__OverWrite l γ γtxn d (a: addr) (sz: u64)
-          (data_s: Slice.t) q (data: list byte) obj0 obj :
-    bufSz (objKind obj) = int.nat sz →
-    data_has_obj data obj →
-    {{{ is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj0 ∗ is_slice data_s byteT q data }}}
-      BufTxn__OverWrite #l (addr2val a) (slice_val data_s)
-    {{{ RET #(); buftxn_maps_to γtxn a obj }}}.
+  Theorem data_has_obj_to_buf_data s a obj data :
+    data_has_obj data a obj →
+    is_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
   Proof.
-  Admitted.
+    rewrite /data_has_obj /is_buf_data.
+    iIntros (?) "Hs".
+    destruct (objData obj); subst.
+    - destruct H as (b' & -> & <-).
+      iExists b'; iFrame.
+      auto.
+    - iFrame.
+    - iFrame.
+  Qed.
+
+  Theorem is_buf_data_has_obj s a obj :
+    is_buf_data s (objData obj) a ⊣⊢ ∃ data, is_slice_small s u8T 1 data ∗ ⌜data_has_obj data a obj⌝.
+  Proof.
+    iSplit; intros.
+    - rewrite /data_has_obj /is_buf_data.
+      destruct (objData obj); subst; eauto.
+      iDestruct 1 as (b') "[Hs %]".
+      iExists [b']; iFrame.
+      eauto.
+    - iDestruct 1 as (data) "[Hs %]".
+      iApply (data_has_obj_to_buf_data with "Hs"); auto.
+  Qed.
+
+  Theorem wp_BufTxn__OverWrite l γ γtxn d (a: addr) (sz: u64)
+          (data_s: Slice.t) (data: list byte) obj0 obj :
+    bufSz (objKind obj) = int.nat sz →
+    data_has_obj data a obj →
+    (* TODO: can we get this for free by showing they both equal the kind set
+    out in the schema for a? *)
+    objKind obj = objKind obj0 →
+    {{{ is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj0 ∗
+        (* NOTE(tej): this has to be a 1 fraction, because the slice is
+        incorporated into the buftxn, is handed out in ReadBuf, and should then
+        be mutable. *)
+        is_slice_small data_s byteT 1 data }}}
+      BufTxn__OverWrite #l (addr2val a) #sz (slice_val data_s)
+    {{{ RET #(); is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj }}}.
+  Proof.
+    iIntros (??? Φ) "Hpre HΦ".
+    iDestruct "Hpre" as "(Hbuftxn & Ha & Hdata)".
+    iNamed "Hbuftxn".
+    iApply wp_fupd.
+    iDestruct (map_valid with "Htxn_ctx Ha") as %Hlookup.
+    wp_apply (mspec.wp_BufTxn__OverWrite with "[$Hbuftxn Hdata]").
+    { iSplit; eauto.
+      iSplitL.
+      - iApply (data_has_obj_to_buf_data with "Hdata"); eauto.
+      - iPureIntro.
+        split; auto.
+        rewrite H.
+        word. }
+    iIntros "Hbuftxn".
+    iMod (map_update _ _ obj with "Htxn_ctx Ha") as "[Htxn_ctx Ha]".
+    iModIntro.
+    iApply "HΦ".
+    iFrame "Ha".
+    iExists _; iFrame "#∗".
+    iPureIntro.
+    apply elem_of_dom_2 in Hlookup.
+    set_solver.
+  Qed.
 
   (*
   lift: modify_token ∗ stable_maps_to ==∗ buftxn_maps_to
