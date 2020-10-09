@@ -564,11 +564,11 @@ Proof.
         iExists (set memLog (λ _, memLog') σ); simpl.
         rewrite memWrite_same_start.
         iFrame.
-        iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet HownLoggerPos_linv".
+        iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet HownLoggerPos_linv HownLoggerTxn_linv".
         { iExists _; iFrame.
           iPureIntro.
           eapply locked_wf_memWrite; eauto. }
-        iExists memStart_txn_id, nextDiskEnd_txn_id, _, _; iFrame.
+        iExists memStart_txn_id, nextDiskEnd_txn_id, _, _, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
         autorewrite with len.
         iFrame "%".

@@ -335,7 +335,7 @@ Proof.
                  slidingM.mutable := int.val diskStart + length upds |}).
 
   iNamed "Hdiskinv".
-  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id σ.(log_state.txns) diskEnd) with "[-]" as "#H".
+  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id σ.(log_state.txns) diskEnd diskEnd_txn_id) with "[-]" as "#H".
   {
     rewrite /memLog_linv_pers_core.
     rewrite /disk_inv_durable.
