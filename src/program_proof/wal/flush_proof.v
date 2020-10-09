@@ -329,7 +329,7 @@ Proof.
   wp_apply (release_spec with "[-HQ HΦ]").
   { iFrame "lk". iFrame "Hlocked". iNext. iExists _.
     iFrame.
-    iExists _, _, _, _.
+    iExists _, _, _, _, _.
     iFrame. iFrame "#". iFrame "%".
     iPureIntro. intuition try lia.
     - rewrite <- (subslice_to_end _ (length σ.(log_state.txns)) σ.(log_state.txns)) by lia.

@@ -111,7 +111,7 @@ Proof.
                        (set slidingM.mutable (λ _ : u64, slidingM.endPos σ.(memLog)) σ.(memLog))) σ).
   simpl.
   iFrame "# ∗".
-  iSplitR "Howntxns HownLoggerPos_linv HnextDiskEnd".
+  iSplitR "Howntxns HownLoggerPos_linv HownLoggerTxn_linv HnextDiskEnd".
   { iExists _; iFrame.
     iPureIntro.
     split_and!; simpl; auto; try word.
@@ -126,8 +126,8 @@ Proof.
     epose proof (wal_wf_txns_mono_pos Hwf HmemEnd_is_txn HnextDiskEnd_is_txn0). lia.
   }
 
-  iExists memStart_txn_id, (length σs.(log_state.txns) - 1)%nat, σs.(log_state.txns), _; simpl.
-  iFrame "Howntxns HownLoggerPos_linv".
+  iExists memStart_txn_id, (length σs.(log_state.txns) - 1)%nat, σs.(log_state.txns), _, _; simpl.
+  iFrame "Howntxns HownLoggerPos_linv HownLoggerTxn_linv".
   iFrame "HmemStart_txn HmemEnd_txn".
   iFrame "%".
   iSplit.
