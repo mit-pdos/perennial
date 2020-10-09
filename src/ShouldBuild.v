@@ -18,6 +18,7 @@ From Perennial.program_proof Require
      txn.txn_proof
      buftxn.buftxn_proof
      buftxn.idealized_buftxn_spec
+     buftxn_replication.buftxn_replication_proof
      simple.simple
      wp_to_wpc.
 From Perennial.program_proof.examples Require
