@@ -387,6 +387,20 @@ Proof.
   iNamed "HmemLog_linv".
   iDestruct (ghost_var_agree with "HownLoggerPos_logger HownLoggerPos_linv") as %Heqloggerpos; subst.
 
+  iAssert (ghost_var γ.(txns_name) (1 / 2) txns0 ={⊤}=∗
+           ghost_var γ.(txns_name) (1 / 2) txns0 ∗
+           ⌜is_txn txns0 nextDiskEnd_txn_id σ.(memLog).(slidingM.mutable)⌝)%I as "Htxns0_helper".
+  {
+    iIntros "Howntxns".
+    iInv "Hwal" as (σs) "[Hinner HP]".
+    iDestruct "Hinner" as "(>%Hwf&Hmem&>?&>?&>?&>?)"; iNamed.
+    iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
+    iFrame "Howntxns".
+    iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn_old") as %H.
+    iModIntro. iSplitL; last by done. iModIntro. iExists _. iFrame. iFrame "%".
+  }
+  iMod ("Htxns0_helper" with "Howntxns") as "[Howntxns %HnextDiskEnd_txns0]".
+
 (*
   iMod (txn_pos_valid_locked with "[] HnextDiskEnd_txn_pos Howntxns") as "[%HnextDiskEnd_txn_id'_is_txn Howntxns]".
   { iSplit; iFrame "#". }
@@ -503,7 +517,7 @@ Proof.
     { rewrite Hupds_len.
       replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
         with (σ.(memLog).(slidingM.mutable)) by word.
-      admit.
+      done.
     }
     iSplit.
     { rewrite Hupds_len.
