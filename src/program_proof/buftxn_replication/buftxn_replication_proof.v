@@ -1,4 +1,4 @@
-From Perennial.algebra Require Import liftable liftable2.
+From Perennial.algebra Require Import liftable liftable2 async.
 
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn buftxn_replication.
