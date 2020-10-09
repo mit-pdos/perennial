@@ -289,34 +289,40 @@ Proof.
   - pose proof (memWrite_one_length_bound memLog a); lia.
 Qed.
 
-Lemma memWrite_preserves_mutable memLog upds :
+Lemma memWrite_preserves_mutable memLog upds (n : nat) :
   slidingM.wf memLog ->
+  n ≤ numMutableN memLog ->
   int.val memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
   take
-    (numMutableN memLog)
+    n
     (memWrite memLog upds).(slidingM.log) =
   take
-    (numMutableN memLog)
+    n
     memLog.(slidingM.log).
 Proof.
-  intros Hwf Hoverflow.
-  pose proof (memWrite_preserves_mutable' memLog upds) as Hwf'.
-  rewrite memWrite_same_numMutableN in Hwf'; eauto.
+  intros Hwf Hn Hoverflow.
+  pose proof (memWrite_preserves_mutable' memLog upds Hwf Hoverflow) as Hwf'.
+  rewrite memWrite_same_numMutableN in Hwf'.
+  replace n with (n `min` numMutableN memLog)%nat by lia.
+  repeat rewrite <- firstn_firstn.
+  rewrite Hwf'. eauto.
 Qed.
 
-Lemma memWrite_preserves_mutable_suffix memLog upds diskEnd :
+Lemma memWrite_preserves_mutable_suffix memLog upds diskEnd (mutableEnd : u64) :
   slidingM.wf memLog ->
+  int.val mutableEnd ≤ int.val memLog.(slidingM.mutable) ->
   int.val memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
   subslice (slidingM.logIndex memLog diskEnd)
-           (slidingM.logIndex memLog memLog.(slidingM.mutable))
+           (slidingM.logIndex memLog mutableEnd)
            (memWrite memLog upds).(slidingM.log) =
   subslice (slidingM.logIndex memLog diskEnd)
-           (slidingM.logIndex memLog memLog.(slidingM.mutable))
+           (slidingM.logIndex memLog mutableEnd)
            memLog.(slidingM.log).
 Proof.
-  intros Hwf Hoverflow.
+  intros Hwf Hn Hoverflow.
   rewrite /subslice.
   rewrite memWrite_preserves_mutable; auto.
+  rewrite /numMutableN /slidingM.logIndex. word.
 Qed.
 
 Lemma numMutableN_ok memLog :
@@ -382,6 +388,14 @@ Proof.
   iSplit.
   { iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
   { iExists _. iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
+Qed.
+
+Lemma memWrite_one_preserves_logIndex σ upd pos :
+  slidingM.logIndex (memWrite_one σ upd) pos =
+  slidingM.logIndex σ pos.
+Proof.
+  rewrite /slidingM.logIndex.
+  rewrite memWrite_one_same_start //.
 Qed.
 
 Lemma memWrite_preserves_logIndex σ upds pos :
@@ -531,6 +545,149 @@ Proof.
   1: eauto.
   1: eauto.
   lia.
+Qed.
+
+Lemma memWrite_one_eq ml addr b d :
+  slidingM.wf ml ->
+  apply_upds
+    (drop (slidingM.logIndex ml ml.(slidingM.mutable))
+      (memWrite_one ml {| update.addr := addr; update.b := b |}).(slidingM.log)) d !! int.val addr = Some b.
+Proof.
+  rewrite /slidingM.wf; intros.
+  rewrite /memWrite_one /=.
+  destruct (find_highest_index (update.addr <$> ml.(slidingM.log)) addr) eqn:Hidx; rewrite Hidx /=.
+  - destruct (decide (int.val ml.(slidingM.mutable) - int.val ml.(slidingM.start) ≤ n)); simpl.
+    + eapply find_highest_index_Some_split in Hidx.
+      destruct Hidx as [l1 [l2 Hidx]].
+      destruct Hidx as [Happ [Hhighest Hlen]].
+      eapply fmap_app_inv in Happ.
+      destruct Happ as [x1 [x2 Happ]].
+      destruct Happ as [Hx1 [Hx2 Happ]].
+      rewrite Happ.
+      symmetry in Hx2.
+      eapply fmap_cons_inv in Hx2.
+      destruct Hx2 as [x [x3 Hx3]].
+      destruct Hx3 as [Haddr [Hl2 Hx2]]. subst.
+      rewrite -> fmap_length in *. replace (length x1) with (length x1 + 0)%nat by lia.
+      rewrite insert_app_r.
+      simpl.
+      rewrite drop_app_le.
+      2: { rewrite /slidingM.logIndex. lia. }
+      rewrite apply_upds_app /=.
+      rewrite apply_upds_lookup_insert_highest; eauto.
+    + rewrite drop_app_le.
+      2: { rewrite /slidingM.logIndex. word. }
+      rewrite apply_upds_app /=.
+      rewrite lookup_insert; done.
+  - rewrite drop_app_le.
+    2: { rewrite /slidingM.logIndex. word. }
+    rewrite apply_upds_app /=.
+    rewrite lookup_insert; done.
+Qed.
+
+Lemma apply_upds_lookup_eq : ∀ upds d0 d1 a,
+  d0 !! a = d1 !! a ->
+  apply_upds upds d0 !! a = apply_upds upds d1 !! a.
+Proof.
+  induction upds; simpl; intros; eauto.
+  destruct a.
+  destruct (decide (a0 = int.val addr)); subst.
+  - eapply IHupds. rewrite !lookup_insert. eauto.
+  - eapply IHupds. rewrite lookup_insert_ne; eauto. rewrite lookup_insert_ne; eauto.
+Qed.
+
+Lemma memWrite_one_ne ml addr a' b d :
+  slidingM.wf ml ->
+  a' ≠ int.val addr ->
+  apply_upds
+    (drop (slidingM.logIndex ml ml.(slidingM.mutable))
+      (memWrite_one ml {| update.addr := addr; update.b := b |}).(slidingM.log)) d !! a' =
+  apply_upds
+    (drop (slidingM.logIndex ml ml.(slidingM.mutable))
+      ml.(slidingM.log)) d !! a'.
+Proof.
+  rewrite /slidingM.wf; intros.
+  rewrite /memWrite_one /=.
+  destruct (find_highest_index (update.addr <$> ml.(slidingM.log)) addr) eqn:Hidx; rewrite Hidx /=.
+  - destruct (decide (int.val ml.(slidingM.mutable) - int.val ml.(slidingM.start) ≤ n)); simpl.
+    + eapply find_highest_index_Some_split in Hidx.
+      destruct Hidx as [l1 [l2 Hidx]].
+      destruct Hidx as [Happ [Hhighest Hlen]].
+      eapply fmap_app_inv in Happ.
+      destruct Happ as [x1 [x2 Happ]].
+      destruct Happ as [Hx1 [Hx2 Happ]].
+      rewrite Happ.
+      symmetry in Hx2.
+      eapply fmap_cons_inv in Hx2.
+      destruct Hx2 as [x [x3 Hx3]].
+      destruct Hx3 as [Haddr [Hl2 Hx2]]. subst.
+      rewrite -> fmap_length in *. replace (length x1) with (length x1 + 0)%nat by lia.
+      rewrite insert_app_r. destruct x.
+      simpl.
+      rewrite !drop_app_le.
+      2: { rewrite /slidingM.logIndex. lia. }
+      2: { rewrite /slidingM.logIndex. lia. }
+      rewrite !apply_upds_app /=.
+      eapply apply_upds_lookup_eq.
+      rewrite lookup_insert_ne.
+      2: { simpl in H0. congruence. }
+      rewrite lookup_insert_ne.
+      2: { simpl in H0. congruence. }
+      done.
+    + rewrite drop_app_le.
+      2: { rewrite /slidingM.logIndex. word. }
+      rewrite apply_upds_app /=.
+      rewrite lookup_insert_ne; done.
+  - rewrite drop_app_le.
+    2: { rewrite /slidingM.logIndex. word. }
+    rewrite apply_upds_app /=.
+    rewrite lookup_insert_ne; done.
+Qed.
+
+Lemma memWrite_has_updates ml txns bs :
+  slidingM.wf ml ->
+  slidingM.memEnd ml + length bs < 2 ^ 64 ->
+  has_updates (drop (slidingM.logIndex ml ml.(slidingM.mutable)) ml.(slidingM.log))
+              (txns) ->
+  has_updates (drop (slidingM.logIndex (memWrite ml bs) (memWrite ml bs).(slidingM.mutable)) (memWrite ml bs).(slidingM.log))
+              (txns ++ [(slidingM.endPos (memWrite ml bs), bs)]).
+Proof.
+  rewrite /has_updates.
+  intros Hwf Hoverflow Hp d.
+  rewrite txn_upds_app.
+  rewrite apply_upds_app /=.
+  rewrite -Hp; clear Hp.
+  rewrite /txn_upds /=. rewrite app_nil_r.
+
+  generalize dependent ml.
+  induction bs; simpl; intros; eauto.
+
+  rewrite IHbs; clear IHbs.
+  2: {
+    eapply memWrite_one_wf; eauto.
+    rewrite /slidingM.memEnd in Hoverflow. lia.
+  }
+  2: {
+    pose proof (memWrite_one_length_bound ml a).
+    rewrite /slidingM.memEnd.
+    rewrite memWrite_one_same_start.
+    word.
+  }
+
+  f_equal.
+  rewrite memWrite_one_preserves_logIndex.
+  rewrite memWrite_one_same_mutable.
+  destruct a.
+  eapply map_eq; intros.
+  destruct (decide (i = int.val addr)); subst.
+  {
+    rewrite lookup_insert.
+    rewrite memWrite_one_eq; eauto.
+  }
+  {
+    rewrite lookup_insert_ne; eauto.
+    rewrite memWrite_one_ne; eauto.
+  }
 Qed.
 
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
@@ -723,14 +880,19 @@ Proof.
             lia.
           - rewrite -> drop_app_le by lia.
             rewrite !memWrite_preserves_logIndex.
-            (* TODO: stronger property then used for [is_mem_memLog_append] -
-            need to decompose memWrite so that it extends has_updates starting
-            at mutable *)
-            admit.
+            eapply memWrite_has_updates in His_nextTxn; [ | eauto | ].
+            { rewrite memWrite_preserves_logIndex in His_nextTxn.
+              rewrite memWrite_same_mutable in His_nextTxn. done. }
+            lia.
           - rewrite -> subslice_app_1 by lia.
             rewrite !memWrite_preserves_logIndex.
-            rewrite memWrite_preserves_mutable_suffix; [ | word | word ].
-            auto. }
+            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
+            auto.
+          - rewrite -> subslice_app_1 by lia.
+            rewrite !memWrite_preserves_logIndex.
+            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
+            auto.
+        }
       - wp_apply util_proof.wp_DPrintf.
         iAssert (wal_linv σₛ.(wal_st) γ) with "[Hfields HmemLog_linv HdiskEnd_circ Hstart_circ]" as "Hlockinv".
         { iExists _; iFrame. }
@@ -752,6 +914,6 @@ Proof.
     wp_pures.
     iApply "HΦ".
     destruct ok; iFrame.
-Admitted.
+Qed.
 
 End goose_lang.
