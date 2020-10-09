@@ -18,12 +18,13 @@ Section liftable.
         ([∗ map] a ↦ v ∈ m, mapsto1 a v) ∗
            ∀ mapsto2, ([∗ map] a ↦ v ∈ m, mapsto2 a v) -∗ P mapsto2.
 
-  Global Instance star_liftable `{Liftable P} `{Liftable Q} : Liftable (fun h => P h ∗ Q h)%I.
+  Theorem liftable_sep P Q : Liftable P → Liftable Q → Liftable (fun h => P h ∗ Q h)%I.
   Proof using BiAffine0 BiPureForall0.
     unfold Liftable in *.
+    intros LiftableP LiftableQ.
     iIntros (??) "[Hp Hq]".
-    iDestruct (H with "Hp") as (mp) "[Hpm Hpi]"; eauto.
-    iDestruct (H0 with "Hq") as (mq) "[Hqm Hqi]"; eauto.
+    iDestruct (LiftableP with "Hp") as (mp) "[Hpm Hpi]"; eauto.
+    iDestruct (LiftableQ with "Hq") as (mq) "[Hqm Hqi]"; eauto.
     iExists (mp ∪ mq).
     iDestruct (big_sepM_disjoint_pred with "[$Hpm] [$Hqm]") as %?; eauto.
     iDestruct (big_sepM_union with "[$Hpm $Hqm]") as "Hm"; eauto.
@@ -36,6 +37,11 @@ Section liftable.
     iFrame.
   Unshelve.
     all: eauto.
+  Qed.
+
+  Global Instance star_liftable `{Liftable P} `{Liftable Q} : Liftable (fun h => P h ∗ Q h)%I.
+  Proof using BiAffine0 BiPureForall0.
+    apply liftable_sep; auto.
   Qed.
 
   Global Instance pure_liftable P : Liftable (fun h => ⌜ P ⌝)%I.
@@ -114,7 +120,7 @@ Section liftable.
     iFrame.
   Qed.
 
-  Global Instance emp_liftable : Liftable (fun h => emp)%I.
+  Global Instance independent_liftable P : Liftable (fun h => P)%I.
   Proof.
     intros; unfold Liftable.
     iIntros (mapsto1 ?) "H".
@@ -122,6 +128,7 @@ Section liftable.
     rewrite big_sepM_empty; iFrame.
     iIntros (h2) "Hm".
     rewrite big_sepM_empty; iFrame.
+    auto.
   Qed.
 
   Lemma list_liftable' `(l : list V) (off : nat) P :
