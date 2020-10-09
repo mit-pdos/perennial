@@ -405,6 +405,134 @@ Proof.
   rewrite take_ge; auto.
 Qed.
 
+Lemma memWrite_one_endPos σ u :
+  slidingM.wf σ ->
+  slidingM.memEnd σ + 1 < 2 ^ 64 ->
+  int.val σ.(slidingM.mutable) < int.val (slidingM.endPos (memWrite_one σ u)).
+Proof.
+  rewrite /slidingM.wf /slidingM.memEnd; intros.
+  rewrite /memWrite_one.
+  destruct (find_highest_index (update.addr <$> σ.(slidingM.log)) u.(update.addr)) eqn:He.
+  - destruct (decide (int.val σ.(slidingM.mutable) - int.val σ.(slidingM.start) ≤ n)).
+    + rewrite /slidingM.endPos /set insert_length /=.
+      assert (int.val σ.(slidingM.mutable) ≤ int.val σ.(slidingM.start) + length σ.(slidingM.log)) by word.
+      assert (int.val σ.(slidingM.mutable) ≤ int.val σ.(slidingM.start) + n) by word.
+      assert (n < length σ.(slidingM.log)).
+      2: { word. }
+      eapply find_highest_index_ok' in He. intuition idtac.
+      eapply lookup_lt_Some in H.
+      rewrite fmap_length in H. lia.
+    + rewrite /slidingM.endPos /set app_length /=. word.
+  - rewrite /slidingM.endPos /set app_length /=. word.
+Qed.
+
+Lemma memWrite_endPos :
+  ∀ bs σ,
+    slidingM.wf σ ->
+    slidingM.memEnd σ + length bs < 2 ^ 64 ->
+    int.val (slidingM.endPos σ) ≤ int.val (slidingM.endPos (memWrite σ bs)).
+Proof.
+  rewrite /slidingM.memEnd.
+  induction bs.
+  - simpl. lia.
+  - simpl. intros.
+    etransitivity.
+    2: { eapply IHbs; eauto.
+      { eapply memWrite_one_wf; eauto. word. }
+      pose proof (memWrite_one_length_bound σ a).
+      rewrite memWrite_one_same_start. word.
+    }
+
+    rewrite /slidingM.endPos.
+    pose proof (memWrite_one_length_bound σ a).
+    rewrite memWrite_one_same_start. word.
+Qed.
+
+Lemma memWrite_endPos_lt bs σ :
+  slidingM.wf σ ->
+  slidingM.memEnd σ + length bs < 2 ^ 64 ->
+  0 < length bs ->
+  int.val σ.(slidingM.mutable) < int.val (slidingM.endPos (memWrite σ bs)).
+Proof.
+  destruct bs; simpl; intros; try lia.
+  eapply Z.lt_le_trans.
+  2: {
+    eapply memWrite_endPos.
+    { eapply memWrite_one_wf; eauto. word. }
+    unfold slidingM.memEnd in *.
+    pose proof (memWrite_one_length_bound σ t).
+    rewrite memWrite_one_same_start. word.
+  }
+
+  eapply memWrite_one_endPos; eauto.
+  lia.
+Qed.
+
+Lemma stable_sound_app σ (stable_txns : gmap nat ()) bs memStart_txn_id nextDiskEnd_txn_id ml :
+  wal_wf σ ->
+  slidingM.wf ml ->
+  slidingM.memEnd ml + length bs < 2 ^ 64 ->
+  is_mem_memLog ml σ.(log_state.txns) memStart_txn_id ->
+  is_txn σ.(log_state.txns) nextDiskEnd_txn_id ml.(slidingM.mutable) ->
+  ( ∀ (txn_id : nat), txn_id > nextDiskEnd_txn_id → stable_txns !! txn_id = None ) ->
+  stable_sound σ.(log_state.txns) stable_txns ->
+  stable_sound (σ.(log_state.txns) ++ [(slidingM.endPos (memWrite ml bs), bs)]) stable_txns.
+Proof.
+  rewrite /stable_sound.
+  intros Hwalwf Hwf Hbound HismemLog Histxn Hmaxstable Hsound.
+  intros.
+
+  destruct (decide (txn_id < length σ.(log_state.txns))).
+  2: {
+    rewrite Hmaxstable in H0; first by congruence.
+    pose proof (is_txn_bound _ _ _ Histxn). lia.
+  }
+
+  destruct (decide (txn_id' < length σ.(log_state.txns))).
+  {
+    rewrite -> lookup_app_l by lia.
+    rewrite /is_txn lookup_app_l in H1; last by lia.
+    rewrite /is_txn lookup_app_l in H2; last by lia.
+    eapply Hsound; eauto.
+  }
+
+  destruct (decide (txn_id' = length σ.(log_state.txns))); subst.
+  2: {
+    rewrite /is_txn in H2.
+    rewrite lookup_ge_None_2 in H2.
+    { simpl in *; congruence. }
+    rewrite app_length /=. lia.
+  }
+
+  rewrite lookup_app_r; last by lia.
+  replace (length σ.(log_state.txns) - length σ.(log_state.txns))%nat with 0%nat by lia.
+  simpl.
+
+  rewrite /is_txn lookup_app_r in H2; last by lia.
+  replace (length σ.(log_state.txns) - length σ.(log_state.txns))%nat with 0%nat in H2 by lia.
+  simpl in H2. inversion H2; clear H2; subst.
+
+  rewrite /is_txn lookup_app_l in H1; last by lia.
+
+  destruct (decide (length bs = 0)%nat).
+  { destruct bs; eauto; simpl in *; lia. }
+
+  assert (int.val ml.(slidingM.mutable) < int.val (slidingM.endPos (memWrite ml bs))).
+  { eapply memWrite_endPos_lt; eauto. lia. }
+
+  destruct (decide (txn_id > nextDiskEnd_txn_id)).
+  { rewrite Hmaxstable in H0; first by congruence. lia. }
+
+  assert (int.val (slidingM.endPos (memWrite ml bs)) ≤ int.val ml.(slidingM.mutable)).
+  2: lia.
+
+  eapply wal_wf_txns_mono_pos'.
+  1: eauto.
+  1: eauto.
+  1: eauto.
+  lia.
+Qed.
+
 Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
   {{{ is_wal P l γ ∗
        updates_slice bufs bs ∗
@@ -412,7 +540,7 @@ Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs 
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
          let txn_id := length σ.(log_state.txns) in
-         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ (txn_pos γ txn_id pos -∗ Q pos))) ∧ PreQ
+         (P σ ={⊤ ∖↑ N}=∗ ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ P σ' ∗ (txn_pos γ txn_id pos -∗ Q pos))) ∧ PreQ
    }}}
     Walog__MemAppend #l (slice_val bufs)
   {{{ pos (ok : bool), RET (#pos, #ok); if ok then Q pos ∗ ∃ txn_id, txn_pos γ txn_id pos else PreQ }}}.
@@ -450,7 +578,7 @@ Proof.
                                 ⌜wal_wf σ⌝
                                 -∗ ⌜relation.denote (log_mem_append bs) σ σ' pos⌝
                                 -∗ P σ
-                                ={⊤ ∖ ↑N}=∗ P σ'
+                                ={⊤ ∖ ↑N}=∗ ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ P σ'
                                 ∗ (txn_pos γ (length σ.(log_state.txns)) pos
                                 -∗ Q pos)) ∧ PreQ else
                                (if ok then Q txn ∗ ∃ txn_id, txn_pos γ txn_id txn else PreQ)) ∗
@@ -517,7 +645,7 @@ Proof.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd_txn.
         iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
         iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σs)
-                with "[% //] [%] [$HP]") as "[HP HQ]".
+                with "[% //] [%] [$HP]") as "(%Haddrs & HP & HQ)".
         { simpl; monad_simpl.
           eexists _ (slidingM.endPos memLog'); simpl; monad_simpl.
           econstructor; eauto.
@@ -530,8 +658,12 @@ Proof.
         iMod (alloc_txn_pos (slidingM.endPos memLog') bs with "Htxns_ctx") as "[Htxns_ctx #Hnew_txn]".
         iDestruct (txn_val_to_pos with "Hnew_txn") as "Hnew_txn_pos".
         iSpecialize ("HQ" with "Hnew_txn_pos").
+
+        iNamed "HnextDiskEnd_inv".
+        iDestruct (map_ctx_agree with "Hstablectx HownStableSet") as %->.
+
         iModIntro.
-        iSplitL "HnextDiskEnd_inv Hdisk Hmem HP γtxns Htxns_ctx".
+        iSplitL "Hstablectx Hstablero Hdisk Hmem HP γtxns Htxns_ctx".
 
         (* re-prove invariant *)
         {
@@ -540,12 +672,15 @@ Proof.
           iFrame.
           iSplit; [ iPureIntro | ].
           { eapply mem_append_preserves_wf; eauto.
-            - admit. (* new writes should be in-bounds *)
-            - rewrite slidingM.memEnd_ok; eauto.
-              eapply is_mem_memLog_endpos_highest; eauto. }
+            rewrite slidingM.memEnd_ok; eauto.
+            eapply is_mem_memLog_endpos_highest; eauto. }
           simpl.
-          iSplitL "HnextDiskEnd_inv".
-          { admit. }
+          iSplitL "Hstablectx Hstablero".
+          {
+            iExists _. iFrame "Hstablectx". iFrame "Hstablero".
+            iPureIntro.
+            eapply stable_sound_app; eauto. word.
+          }
           iDestruct "Hdisk" as (cs) "Hdisk".
           iNamed "Hdisk".
           iExists cs; iFrame.
