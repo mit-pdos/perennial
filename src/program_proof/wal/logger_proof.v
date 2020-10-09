@@ -2,7 +2,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import auth.
 
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import wal.invariant.
+From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
@@ -136,71 +136,6 @@ Proof.
   lia.
 Qed.
 
-(*
-Lemma disk_inv_advance_txn_id_nop γ σ cs txn_id txn_id' pos :
-  wal_wf σ ->
-  is_txn σ.(log_state.txns) txn_id pos ->
-  is_highest_txn σ.(log_state.txns) txn_id' pos ->
-  ( disk_inv γ σ cs ∗
-    txns_ctx γ σ.(log_state.txns) ∗
-    ghost_var γ.(diskEnd_txn_id_name) (1 / 4) txn_id ∗
-    ghost_var γ.(diskEnd_txn_id_name) (1 / 2) txn_id ∗
-    nextDiskEnd_inv γ σ.(log_state.txns) ∗
-    txn_id [[γ.(stable_txn_ids_name)]]↦ro () )
-  ==∗
-  ( disk_inv γ σ cs ∗
-    txns_ctx γ σ.(log_state.txns) ∗
-    ghost_var γ.(diskEnd_txn_id_name) (1 / 4) txn_id' ∗
-    ghost_var γ.(diskEnd_txn_id_name) (1 / 2) txn_id' ∗
-    nextDiskEnd_inv γ σ.(log_state.txns) ).
-Proof.
-  iIntros (Hwf Htxn Hhighest) "(Hdisk & Htxns_ctx & H0 & H1 & Hinv & #Hstable)".
-  iNamed "Hdisk".
-
-  iDestruct (ghost_var_agree with "γdiskEnd_txn_id2 H0") as %?; subst.
-  iCombine "γdiskEnd_txn_id2 H0" as "γdiskEnd_txn_id".
-  (* If we used "1/2/2" instead of "1/4" (and fixed some Perennial-induced typeclass oddities),
-     we could avoid this. *)
-  assert (1/4 + 1/4 = 1/2)%Qp as ->.
-  { apply (bool_decide_unpack _); by compute. }
-
-  iMod (ghost_var_update_halves txn_id' with "γdiskEnd_txn_id H1") as
-      "[γdiskEnd_txn_id H1]".
-  (* FIXME: due to Perennial removing some TC hints, this pattern cannot be inlined into the above. *)
-  iDestruct "γdiskEnd_txn_id" as "[γdiskEnd_txn_id out_txn_id]".
-  assert (1/2/2 = 1/4)%Qp as ->.
-  { apply (bool_decide_unpack _); by compute. }
-
-  apply is_highest_weaken in Hhighest as Htxn'.
-  apply is_txn_bound in Htxn' as Hbound'.
-
-  assert (txn_id ≤ txn_id').
-  { destruct Hhighest as [_ Hhighest].
-    apply Hhighest in Htxn. lia. }
-
-  iDestruct (nextDiskEnd_nils with "[$Hinv $Hstable]") as "%Hnils"; try eassumption.
-
-  iModIntro. iFrame.
-  iExists _, _. iFrame "γdiskEnd_txn_id".
-
-  iSplitL "Hinstalled".
-  { iNamed "Hinstalled". iExists _, _.
-    iFrame "Howninstalled Hdata". iPureIntro. lia. }
-
-  iSplitL "Hdurable".
-  { iDestruct "Hdurable" as "%Hdurable". iPureIntro.
-    unfold circ_matches_txns in *.
-    intuition try lia.
-    rewrite -> (subslice_split_r _ (S txn_id) _ σ.(log_state.txns)) by lia.
-    eapply has_updates_app_nils; eauto. }
-
-  iFrame "circ.start".
-  iNamed "circ.end".
-  (* XXX seems like if we log an empty transaction, we need to open up the
-    [is_durable_txn] for [circ.end] to update the txn_id!! *)
-Abort.
-*)
-
 Theorem wp_Walog__logAppend l circ_l γ σₛ :
   {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
@@ -264,6 +199,22 @@ Proof.
   iMod (ghost_var_update_halves σ.(memLog).(slidingM.mutable) with "HownLoggerPos_logger HownLoggerPos_linv") as
         "[HownLoggerPos_logger HownLoggerPos_linv]".
 
+  iAssert (ghost_var γ.(txns_name) (1 / 2) txns ={⊤}=∗ ghost_var γ.(txns_name) (1 / 2) txns ∗ txn_pos γ σ.(locked_diskEnd_txn_id) σ.(diskEnd))%I as "HdiskEnd_pos_helper".
+  {
+    iIntros "Howntxns".
+    iDestruct "Hwal" as "[Hwal Hcirc]".
+    iInv "Hwal" as (σs) "[Hinner HP]".
+    iDestruct "Hinner" as "(>%Hwf&Hmem&>?&>?&>?&>?)"; iNamed.
+    iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
+    iDestruct (txns_ctx_txn_pos with "Htxns_ctx") as "#HdiskEnd_pos".
+    1: apply HdiskEnd_txn.
+    iModIntro.
+    iFrame "HdiskEnd_pos Howntxns".
+    iSplitL; try done.
+    iModIntro. iExists _. iFrame. iFrame "%".
+  }
+  iMod ("HdiskEnd_pos_helper" with "Howntxns") as "[Howntxns #HdiskEnd_pos]".
+
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
   wp_apply (wp_loadField_ro with "HmemLock").
   iDestruct "Htxns_are" as "#Htxns_are".
@@ -280,6 +231,7 @@ Proof.
   }
   wp_loadField.
   iDestruct "Hwal" as "[Hwal Hcirc]".
+
   wp_apply (wp_circular__Append _ _
                               (True)
               with "[$Hbufs $HdiskEnd_is $Happender $Hcirc $Hstart_at_least]").
@@ -295,12 +247,12 @@ Proof.
 
     iDestruct "Hinner" as "(>%Hwf&Hmem&>?&>?&>?&>?)"; iNamed.
     iNamed "Hdisk".
+    iNamed "Hdisk".
     iDestruct (ghost_var_agree with "Hcirc_ctx Howncs") as %Heq; subst cs0.
     iDestruct (txns_are_sound with "Htxns_ctx Htxns_are") as %Htxns_are.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart'.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd'.
     iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[$ Howncs]".
-    iNamed "Hdisk".
 
 (*
     iDestruct (ghost_var_agree with "γdiskEnd_txn_id1 γdiskEnd_txn_id2") as %?; subst.
@@ -336,13 +288,22 @@ Proof.
     { lia. }
 *)
 
+    iDestruct (txn_pos_valid_general with "Htxns_ctx HdiskEnd_pos") as %HdiskEnd_pos.
+    iNamed "circ.end".
+
+    rewrite HdiskEnd_eq in HdiskEnd_val.
+    assert (diskEnd = σ.(invariant.diskEnd)) by word; subst.
+    iDestruct (subslice_stable_nils2 with "[$HnextDiskEnd_inv $HdiskEnd_stable]") as "%HdiskEnd_nils_1";
+      [ eauto | apply HdiskEnd_pos | apply Hend_txn | ].
+    iDestruct (subslice_stable_nils2 with "[$HnextDiskEnd_inv $Hend_txn_stable]") as "%HdiskEnd_nils_2";
+      [ eauto | apply Hend_txn | apply HdiskEnd_pos | ].
+
     iModIntro.
     iSplitL; eauto.
     iNext.
     iExists _; iFrame.
     iSplitR; auto.
     iExists _; iFrame.
-    iNamed "circ.end".
     iExists installed_txn_id, (Nat.max diskEnd_txn_id nextDiskEnd_txn_id).
     iFrame "# ∗".
     iSplitL "Hinstalled".
@@ -364,11 +325,27 @@ Proof.
       apply (subslice_suffix_eq _ _ _ (S σ.(locked_diskEnd_txn_id))) in Htxns_are; last by lia.
       rewrite -Htxns_are in His_nextDiskEnd.
       pose proof (is_txn_bound _ _ _ HnextDiskEnd').
-(*
-      rewrite -> (subslice_split_r _ (S nextDiskEnd_txn_id) _ σs.(log_state.txns)) by lia.
-      eapply has_updates_app_nils; eauto.
-*)
-      admit.
+
+      destruct (decide (diskEnd_txn_id ≤ nextDiskEnd_txn_id)).
+      { rewrite max_r; last by lia.
+        destruct (decide (σ.(locked_diskEnd_txn_id) ≤ diskEnd_txn_id)).
+        {
+          eapply has_updates_prepend_nils; first by apply HdiskEnd_nils_1.
+          rewrite <- subslice_split_r; eauto; intuition lia.
+        }
+        {
+          erewrite -> (subslice_split_r (S diskEnd_txn_id) (S σ.(locked_diskEnd_txn_id))) by lia.
+          eapply has_updates_prepend_nils_2; first by apply HdiskEnd_nils_2.
+          eauto.
+        }
+      }
+      rewrite max_l; last by lia.
+
+      assert (int.val σ.(memLog).(slidingM.mutable) ≤ int.val σ.(diskEnd)) as HdiskEnd_le_mutable.
+      { eapply wal_wf_txns_mono_pos'; eauto. lia. }
+      assert (σ.(memLog).(slidingM.mutable) = σ.(diskEnd)) as HdiskEnd_eq_mutable by word.
+      rewrite HdiskEnd_eq_mutable.
+      rewrite ?subslice_zero_length. done.
     }
     rewrite /is_durable_txn.
     iExists σ.(memLog).(slidingM.mutable).
@@ -382,10 +359,15 @@ Proof.
       rewrite -> subslice_length by word.
       rewrite -> logIndex_diff by word.
       word. }
-    admit.
-(*
-    { iPureIntro. done. }
-*)
+
+    destruct (decide (diskEnd_txn_id ≤ nextDiskEnd_txn_id)).
+    { rewrite max_r; last by lia. iFrame "#". iPureIntro; eauto. }
+    rewrite max_l; last by lia. iFrame "#".
+    assert (int.val σ.(memLog).(slidingM.mutable) ≤ int.val σ.(diskEnd)) as HdiskEnd_le_mutable.
+    { eapply wal_wf_txns_mono_pos'; eauto. lia. }
+    assert (σ.(memLog).(slidingM.mutable) = σ.(diskEnd)) as HdiskEnd_eq_mutable by word.
+    rewrite HdiskEnd_eq_mutable.
+    iPureIntro. eauto.
   }
   rewrite -> subslice_length by word.
   iIntros "(Hpost&Hupds&Hcirc_appender&HdiskEnd_is)"; iNamed "Hpost".
@@ -398,6 +380,7 @@ Proof.
 
   (* Open up memlog lock invariant to prove we still have the same logger pos *)
   iRename "HmemStart_txn" into "HmemStart_txn_old".
+  iRename "HdiskEnd_stable" into "HdiskEnd_stable_old".
   iRename "HnextDiskEnd_txn" into "HnextDiskEnd_txn_old".
   iRename "HnextDiskEnd_stable" into "HnextDiskEnd_stable_old".
   iRename "HmemEnd_txn" into "HmemEnd_txn_old".
@@ -509,30 +492,35 @@ Proof.
       iFrame "HdiskEnd_at_least_new".
     }
 
-    iExists _, nextDiskEnd_txn_id, _, _.
+    iExists _, nextDiskEnd_txn_id0, _, _.
     iFrame.
     iFrame "HmemStart_txn HmemEnd_txn".
-(*
-    iFrame "HnextDiskEnd_txn_pos HnextDiskEnd_stable''".
+    iFrame "HnextDiskEnd_stable_old".
 
-    iPureIntro.
-    intuition idtac.
-    all: try word.
-    + admit.
-    + admit.
-    + rewrite Hupds_len.
+    iSplit.
+    { iPureIntro. admit. }
+    iSplit.
+    { rewrite Hupds_len.
       replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
-        with (σ.(memLog).(slidingM.mutable)); eauto.
-      word.
-    + eapply HnextDiskEnd_max_stable0. lia.
-    + admit.
-    + admit.
-
-  - iFrame.
-    iSplitR "HownLoggerPos_logger".
-    + iExists _; iFrame.
-    + iExists _; iFrame.
-*)
+        with (σ.(memLog).(slidingM.mutable)) by word.
+      admit.
+    }
+    iSplit.
+    { rewrite Hupds_len.
+      replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
+        with (σ.(memLog).(slidingM.mutable)) by word.
+      iPureIntro. word.
+    }
+    iSplit.
+    { done. }
+    iSplit.
+    { done. }
+    rewrite Hupds_len.
+    replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
+      with (σ.(memLog).(slidingM.mutable)) by word.
+    iPureIntro.
+    admit.
+  - iFrame. iExists _. iFrame.
 Admitted.
 
 Theorem wp_Walog__logger l circ_l γ :

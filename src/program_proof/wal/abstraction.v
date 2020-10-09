@@ -207,3 +207,15 @@ Proof.
   rewrite apply_upds_app in H0.
   rewrite (txn_upds_nils nils) /= in H0; eauto.
 Qed.
+
+Lemma has_updates_prepend_nils_2 log txns nils :
+  Forall (λ x, snd x = nil) nils ->
+  has_updates log txns ->
+  has_updates log (nils ++ txns).
+Proof.
+  rewrite /has_updates; intros.
+  specialize (H0 d).
+  rewrite txn_upds_app.
+  rewrite apply_upds_app.
+  rewrite (txn_upds_nils nils) /=; eauto.
+Qed.

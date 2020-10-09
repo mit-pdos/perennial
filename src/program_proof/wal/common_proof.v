@@ -236,6 +236,26 @@ Proof.
   lia.
 Qed.
 
+Lemma subslice_stable_nils2 γ σ (txn_id txn_id' : nat) pos :
+  wal_wf σ ->
+  is_txn σ.(log_state.txns) txn_id pos ->
+  is_txn σ.(log_state.txns) txn_id' pos ->
+  ( nextDiskEnd_inv γ σ.(log_state.txns) ∗
+    txn_id [[γ.(stable_txn_ids_name)]]↦ro () ) -∗
+  ⌜Forall (λ x, snd x = nil) (subslice (S txn_id) (S txn_id') σ.(log_state.txns))⌝.
+Proof.
+  intros.
+  iIntros "[Hinv Hstable]".
+  destruct (decide (txn_id ≤ txn_id')).
+  { iApply subslice_stable_nils; eauto. }
+
+  iPureIntro.
+  rewrite /subslice.
+  rewrite drop_ge; eauto.
+  etransitivity; first by apply firstn_le_length.
+  lia.
+Qed.
+
 Lemma stable_sound_alloc txns stable_txns (txn_id txn_id' : nat) (pos : u64) :
   stable_txns !! txn_id = Some () ->
   txn_id ≤ txn_id' ->

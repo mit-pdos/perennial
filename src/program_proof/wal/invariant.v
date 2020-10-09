@@ -127,6 +127,7 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_
       "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
       "#HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
       "%HdiskEnd_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
+      "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt ∗
       "#HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
       "#HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       "%HloggerPosOK" ∷ ⌜int.val diskEnd ≤ int.val logger_pos ≤ int.val σ.(slidingM.mutable)⌝ ∗
@@ -168,6 +169,7 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
       "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
       "#HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
       "%HdiskEnd_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
+      "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt ∗
       "#HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
       "Howntxns" ∷ ghost_var γ.(txns_name) (1/2) txns ∗
       "HnextDiskEnd" ∷ memLog_linv_nextDiskEnd_txn_id γ σ.(slidingM.mutable) nextDiskEnd_txn_id ∗
@@ -689,6 +691,22 @@ Proof.
   rewrite -list_lookup_fmap in H0.
   eapply (Hmono _ _) in Hord; eauto.
   word. (* contradiction from [pos1 = pos2] *)
+Qed.
+
+Lemma wal_wf_txns_mono_pos' {σ txn_id1 pos1 txn_id2 pos2} :
+  wal_wf σ ->
+  is_txn σ.(log_state.txns) txn_id1 pos1 ->
+  is_txn σ.(log_state.txns) txn_id2 pos2 ->
+  (txn_id1 ≤ txn_id2)%nat ->
+  int.val pos1 ≤ int.val pos2.
+Proof.
+  clear P.
+  rewrite /wal_wf /is_txn; intuition.
+  destruct (decide (txn_id1 = txn_id2)); subst.
+  { rewrite H0 in H1. replace pos1 with pos2 by congruence. lia. }
+  eapply (H txn_id1 txn_id2); first by lia.
+  { rewrite list_lookup_fmap; eauto. }
+  { rewrite list_lookup_fmap; eauto. }
 Qed.
 
 Lemma wal_wf_txns_mono_highest {σ txn_id1 pos1 txn_id2 pos2} :
