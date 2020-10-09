@@ -18,6 +18,14 @@ Section liftable.
         ([∗ map] a ↦ v ∈ m, mapsto1 a v) ∗
            ∀ mapsto2, ([∗ map] a ↦ v ∈ m, mapsto2 a v) -∗ P mapsto2.
 
+  Global Instance liftable_proper : Proper (pointwise_relation _ (⊣⊢) ==> iff) Liftable.
+  Proof.
+    intros P1 P2 Hequiv.
+    rewrite /Liftable.
+    setoid_rewrite Hequiv.
+    auto.
+  Qed.
+
   Theorem liftable_sep P Q : Liftable P → Liftable Q → Liftable (fun h => P h ∗ Q h)%I.
   Proof using BiAffine0 BiPureForall0.
     unfold Liftable in *.
@@ -69,41 +77,18 @@ Section liftable.
     iExists _. iFrame.
   Qed.
 
-  Global Instance map_liftable `{EqDecision LM} `{Countable LM} `(m : gmap LM VM) P :
-    (forall a v, Liftable (P a v)) ->
-    Liftable (fun h => [∗ map] a ↦ v ∈ m, (P a v h))%I.
-  Proof using BiAffine0 BiPureForall0.
-    intros.
-    unfold Liftable.
-    iIntros (??) "Hm".
-    iInduction m as [|i x m] "IH" using map_ind.
-    - iExists ∅.
-      repeat rewrite big_sepM_empty.
-      iFrame.
-      iIntros.
-      repeat rewrite big_sepM_empty.
-      done.
-    - iDestruct (big_sepM_insert with "Hm") as "[Hx Hm]"; auto.
-      iDestruct ("IH" with "Hm") as (m0) "[Hm0 Hr0]".
-      specialize (H0 i x).
-      unfold Liftable in H0.
-      iPoseProof H0 as "Hlift"; eauto.
-      iDestruct ("Hlift" with "Hx") as (m1) "[Hm1 Hr1]".
-      iExists (m0 ∪ m1).
-      iDestruct (big_sepM_disjoint_pred with "[$Hm0] [$Hm1]") as %?; eauto.
-      rewrite big_sepM_union; auto. iFrame.
-      iIntros (h2) "Hh2".
-      rewrite big_sepM_union; auto.
-      iDestruct ("Hh2") as "[Hm0 Hm1]".
-      iDestruct ("Hr0" with "Hm0") as "Hr0".
-      iDestruct ("Hr1" with "Hm1") as "Hr1".
-      rewrite big_sepM_insert; auto.
-      iFrame.
-  Unshelve.
-    all: eauto.
+  Global Instance independent_liftable P : Liftable (fun h => P)%I.
+  Proof.
+    intros; unfold Liftable.
+    iIntros (mapsto1 ?) "H".
+    iExists ∅.
+    rewrite big_sepM_empty; iFrame.
+    iIntros (h2) "Hm".
+    rewrite big_sepM_empty; iFrame.
+    auto.
   Qed.
 
-  Global Instance conflicting_liftable :
+  Global Instance singleton_liftable :
     Liftable (fun mapsto => mapsto a v)%I.
   Proof.
     intros; unfold Liftable.
@@ -120,15 +105,16 @@ Section liftable.
     iFrame.
   Qed.
 
-  Global Instance independent_liftable P : Liftable (fun h => P)%I.
-  Proof.
-    intros; unfold Liftable.
-    iIntros (mapsto1 ?) "H".
-    iExists ∅.
-    rewrite big_sepM_empty; iFrame.
-    iIntros (h2) "Hm".
-    rewrite big_sepM_empty; iFrame.
-    auto.
+  Global Instance map_liftable `{EqDecision LM} `{Countable LM} `(m : gmap LM VM) P :
+    (forall a v, Liftable (P a v)) →
+    Liftable (fun h => [∗ map] a ↦ v ∈ m, (P a v h))%I.
+  Proof using BiAffine0 BiPureForall0.
+    intros.
+    induction m as [|i x m] using map_ind.
+    - setoid_rewrite big_sepM_empty.
+      apply _.
+    - setoid_rewrite (big_sepM_insert _ _ _ _ H1).
+      apply _.
   Qed.
 
   Lemma list_liftable' `(l : list V) (off : nat) P :
@@ -136,37 +122,12 @@ Section liftable.
     Liftable (fun h => [∗ list] a ↦ v ∈ l, (P (off + a)%nat v h))%I.
   Proof using BiAffine0 BiPureForall0.
     intros.
-    generalize dependent off.
-    induction l; intros.
-    - apply emp_liftable.
-    - unfold Liftable in *.
-      simpl.
-      iIntros (mapsto1 ?) "[Ha Hl]".
-      iDestruct (H with "Ha") as (ma0) "[Ha Hm0]"; eauto.
-      iDestruct (IHl with "[Hl]") as (ml) "[Hl Hml]"; eauto.
-      {
-        iApply big_sepL_mono; iFrame.
-        iIntros (? ? ?) "H".
-        replace (off + S x)%nat with (S off + x)%nat by lia.
-        iFrame.
-      }
-
-      iExists (ma0 ∪ ml).
-      iDestruct (big_sepM_disjoint_pred with "[$Ha] [$Hl]") as %?; eauto.
-      rewrite big_sepM_union; auto; iFrame.
-      iIntros (h2) "Hh2".
-      rewrite big_sepM_union; auto.
-      iDestruct "Hh2" as "[Ha Hl]".
-      iDestruct ("Hm0" with "Ha") as "Ha".
-      iDestruct ("Hml" with "Hl") as "Hl".
-      simpl.
-      iFrame.
-      iApply big_sepL_mono; iFrame.
-      iIntros (? ? ?) "H".
-      replace (off + S x)%nat with (S off + x)%nat by lia.
-      iFrame.
-  Unshelve.
-    all: eauto.
+    revert off.
+    induction l as [|x l]; simpl; intros.
+    - apply _.
+    - apply liftable_sep; auto.
+      setoid_rewrite <- Nat.add_succ_comm.
+      auto.
   Qed.
 
   Global Instance list_liftable `(l : list V) P :
