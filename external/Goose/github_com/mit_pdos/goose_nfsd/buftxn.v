@@ -29,9 +29,10 @@ From Goose Require github_com.mit_pdos.goose_nfsd.util.
    and all sizes used fit an integer number of objects in a block. This schema
    guarantees that objects never overlap, as long as operations involving an
    addr.Addr use the correct size for that block number.
-   The file system realizes this schema fairly simply,
-   since statically-allocated blocks are used for bitmap allocators (
-   objects are bits), inodes *)
+
+   The file system realizes this schema fairly simply, since the disk is simply
+   partitioned into inodes, data blocks, and bitmap allocators for each (sized
+   appropriately), all allocated statically. *)
 
 Module BufTxn.
   Definition S := struct.decl [
