@@ -723,7 +723,7 @@ Opaque PeanoNat.Nat.div.
       rewrite -Hx.
 
       edestruct (Nat.div_exact (int.nat (addrOff a)) 8) as [_ Hz]; first by lia.
-      rewrite -> Hz at 2.
+      rewrite -> Hz at 1.
       2: {
         replace (int.val (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -mod_Zmod in Hoff; try word.
@@ -732,11 +732,9 @@ Opaque PeanoNat.Nat.div.
         rewrite Nat.mod_mul_r in Hy; try word.
       }
 
-      admit.
-      (* TODO: don't really know how this proof got broken... *)
-      (* rewrite mult_comm. rewrite -> Nat.div_add_l by lia.
+      rewrite mult_comm. rewrite -> Nat.div_add_l by lia.
       replace ((8 * 128 - 1) `div` 8)%nat with (127)%nat by reflexivity.
-      lia. *)
+      lia.
     }
 
   - intuition subst.
@@ -758,7 +756,7 @@ Opaque PeanoNat.Nat.div.
     rewrite firstn_all2.
     2: { rewrite length_Block_to_vals /block_bytes. word. }
     rewrite skipn_O //.
-Admitted.
+Qed.
 
 Theorem wp_Buf__Install bufptr a b blk_s blk :
   {{{
