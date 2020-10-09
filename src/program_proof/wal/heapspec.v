@@ -1367,6 +1367,26 @@ Definition memappend_crash γh (bs: list update.t) (crash_heaps : async (gmap u6
   is_locked_walheap γh lwh' ∗
   ghost_var γh.(wal_heap_crash_heaps) (1/2) (async_put (new_crash_heap) crash_heaps).
 
+Lemma memappend_pre_addrs_wf γ bs olds gh σ :
+  memappend_pre γ bs olds -∗
+  gen_heap_ctx (hG := γ) gh -∗
+  ([∗ map] a↦b ∈ gh, wal_heap_inv_addr σ a b) -∗
+  ⌜addrs_wf bs σ.(log_state.d)⌝.
+Proof.
+  iIntros "Hpre Hctx Hinv".
+  rewrite /addrs_wf.
+  setoid_rewrite Forall_forall.
+  iIntros (x Hx).
+  eapply elem_of_list_lookup_1 in Hx.
+  destruct Hx as [i Hx].
+  rewrite /memappend_pre.
+  iDestruct (big_sepL2_lookup_1_some with "Hpre") as (o) "%Holds"; eauto.
+  iDestruct (big_sepL2_lookup with "Hpre") as "Hp"; eauto.
+  iDestruct (gen_heap_valid with "Hctx Hp") as "%Hv".
+  iDestruct (big_sepM_lookup with "Hinv") as "%Hinv"; eauto.
+  intuition eauto.
+Qed.
+
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
   ( |={⊤ ∖ ↑walN, E}=>
       ∃ olds crash_heaps,
@@ -1382,7 +1402,7 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
         let txn_num := length σ.(log_state.txns) in
       ( (wal_heap_inv γh) σ
-          ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ (txn_pos γh.(wal_heap_walnames) txn_num txn_id -∗ Q txn_id)) ) ∧
+          ={⊤ ∖↑ walN}=∗ ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ (wal_heap_inv γh) σ' ∗ (txn_pos γh.(wal_heap_walnames) txn_num txn_id -∗ Q txn_id)) ) ∧
     "Hlockedheap" ∷ is_locked_walheap γh lwh ).
 Proof using walheapG0.
   iIntros "Hpre Hlockedheap".
@@ -1396,6 +1416,8 @@ Proof using walheapG0.
 
   iMod "Hpre" as (olds crash_heaps0) "(Hpre & Hprecrash & Hfupd)".
   iNamed "Hprecrash".
+
+  iDestruct (memappend_pre_addrs_wf with "Hpre Hctx Hgh") as %Haddrswf.
 
   iDestruct (memappend_pre_nodup with "Hpre") as %Hnodup.
 
@@ -1427,6 +1449,8 @@ Proof using walheapG0.
   iMod "Hfupd".
 
   iModIntro.
+  iSplitR; first by done.
+  clear Haddrswf.
   iSplitR "Hfupd".
   2: {
     iIntros "Hpos".
