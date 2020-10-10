@@ -758,6 +758,13 @@ Opaque PeanoNat.Nat.div.
     rewrite skipn_O //.
 Qed.
 
+Lemma insert_Block_to_vals blk i (v : u8) (Hlt : (i < block_bytes)%nat) :
+  <[i := #v]> (Block_to_vals blk) = Block_to_vals (vinsert (Fin.of_nat_lt Hlt) v blk).
+Proof.
+  rewrite /Block_to_vals /b2val vec_to_list_insert.
+  rewrite list_fmap_insert fin_to_nat_to_fin //.
+Qed.
+
 Theorem wp_Buf__Install bufptr a b blk_s blk :
   {{{
     is_buf bufptr a b ∗
@@ -811,7 +818,29 @@ Proof.
         wp_apply (slice.wp_SliceSet with "[$Hblk]"); eauto.
         iIntros "Hblk".
         wp_apply util_proof.wp_DPrintf.
+
+        rewrite insert_Block_to_vals; intros.
+        { revert H. rewrite /valid_addr /valid_off /block_bytes /=. word. }
+
         iApply "HΦ".
+
+        iSplitR "Hblk".
+        {
+          iExists _. iFrame.
+          iSplitL "Hsz".
+          { iExists _. iFrame. done. }
+          iExists _. iFrame. done.
+        }
+
+        iSplitL.
+        { iFrame. }
+
+        iPureIntro; intros.
+        destruct (decide (off = addrOff a)); subst.
+        { rewrite /is_bufData_at_off. intuition eauto.
+          eexists. admit.
+        }
+
         admit.
 
       * wp_load. wp_store. wp_load.
@@ -849,8 +878,20 @@ Proof.
     { rewrite /inode_to_vals fmap_length vec_to_list_length /inode_bytes. word. }
     iIntros "Hbufdata".
 
-    (* XXX need WP for SliceCopy, and more specialized WP for
-      SliceSkip in terms of is_slice_small *)
+    iDestruct (slice.is_slice_small_sz with "Hblk") as "%Hlen".
+    rewrite length_Block_to_vals /block_bytes in Hlen.
+    wp_apply wp_SliceSkip'.
+    { replace (int.val blk_s.(Slice.sz)) with 4096 by lia. iPureIntro.
+      word_cleanup. eapply Z.div_le_upper_bound; try lia.
+      rewrite /valid_addr /block_bytes in H. word. }
+
+    wp_apply (wp_SliceCopy with "[Hblk Hbufdata]").
+    { admit. }
+    { admit. }
+
+    iIntros "[Hbufdata Hblk]".
+    wp_apply util_proof.wp_DPrintf.
+    iApply "HΦ".
     admit.
 
   - wp_pures.
