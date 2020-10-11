@@ -86,7 +86,6 @@ Definition LockReq_inner (lockArgs:LockArgsC) γrc cseqγ (Ps:u64 -> iProp Σ) (
   ∗ ("Hreply" ∷ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ None ∨
       (∃ (last_reply:bool), (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro Some last_reply
         ∗ (⌜last_reply = false⌝ ∨ (Ps lockArgs.(Lockname)) ∨ own Pγ (Excl ()))
-        ∗ (lockArgs.(CID), lockArgs.(Seq)) [[γp]]↦ro ()
       )
     )
 .
@@ -99,7 +98,7 @@ Definition LockServer_inner (γrc γi cseqγ:gname) (Ps: u64 -> (iProp Σ)) : iP
 
 Definition own_lockserver (srv:loc) (γrc γi cseqγ:gname) (Ps: u64 -> (iProp Σ)) : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr locks_ptr:loc) (lastSeqM:gmap u64 u64)
-    (lastReplyM locksM:gmap u64 bool) (processed:gmap u64 unit),
+    (lastReplyM locksM:gmap u64 bool),
       "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
     ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
     ∗ "HlocksOwn" ∷ srv ↦[LockServer.S :: "locks"] #locks_ptr
@@ -108,7 +107,6 @@ Definition own_lockserver (srv:loc) (γrc γi cseqγ:gname) (Ps: u64 -> (iProp �
     ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
     ∗ "HlocksMap" ∷ is_map (locks_ptr) locksM
     
-    ∗ ("" ∷ map_ctx γp 1 processed)
     ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) [[γrc]]↦ro Some r)
     ∗ ("Hlockeds" ∷ [∗ map] ln ↦ locked ; _ ∈ locksM ; validLocknames, (⌜locked=true⌝ ∨ (Ps ln)))
 .
