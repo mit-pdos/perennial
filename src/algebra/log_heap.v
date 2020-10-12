@@ -11,6 +11,8 @@ Import uPred.
 when it's merged, rather than using gen_heapUR (this is probably necessary for
 async usage so that we can persistently own maps-to facts in a particular
 version) *)
+Local Definition gen_heapUR (L V : Type) `{Countable L} : ucmraT :=
+  gmapUR L (prodR fracR (agreeR (leibnizO V))).
 Definition log_heapUR (L V : Type) `{Countable L}: ucmraT :=
   discrete_funUR (λ (n : nat), gen_heapUR L V).
 
@@ -18,6 +20,9 @@ Class log_heapG (L V: Type) (Σ : gFunctors) `{Countable L} := LogHeapG {
   log_heap_inG :> inG Σ (authR (log_heapUR L V));
   log_heap_name : gname
 }.
+
+Local Definition to_gen_heap {L V} `{Countable L} : gmap L V → gen_heapUR L V :=
+  fmap (λ v, (1%Qp, to_agree (v : leibnizO V))).
 
 Definition to_log_heap {L V} `{Countable L} (s: nat -> gmap L V) : log_heapUR L V :=
   λ n, to_gen_heap (s n).

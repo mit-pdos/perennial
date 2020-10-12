@@ -1,7 +1,7 @@
 From stdpp Require Import gmap.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
-From iris.algebra Require Import auth gmap.
+From iris.algebra Require Import auth gmap lib.gmap_view.
 From iris.base_logic.lib Require Export gen_heap.
 From Perennial.algebra Require Export own_discrete atleast.
 Set Default Proof Using "Type".
@@ -50,8 +50,12 @@ Section gen_heap_defs.
 
   Local Notation "l ↦ v" := (mapsto l 1 v) (at level 20) : bi_scope.
 
+  (* FIXME: this breaks through *two* layers of abstraction *)
+  Local Definition to_gen_heap (σ : gmap L V) : gmap_viewR L (leibnizO V) :=
+    ◯V ((λ v, (DfracOwn 1, to_agree v)) <$> σ).
+
   Lemma heap_init_to_bigOp {Σ} {hG: gen_heapPreG L V Σ} n σ:
-    own (gen_heap_name (gen_heapG_update_pre _ n)) (◯ (to_gen_heap σ)) -∗
+    own (gen_heap_name (gen_heapG_update_pre _ n)) (to_gen_heap σ) -∗
         let _ := gen_heapG_update_pre _ n in
         [∗ map] i↦v ∈ σ, i ↦ v .
   Proof.
@@ -60,13 +64,16 @@ Section gen_heap_defs.
     - iIntros "Hown".
       rewrite big_opM_insert //.
       iAssert (own (gen_heap_name _)
-                   (◯ to_gen_heap m) ∗
+                   (to_gen_heap m) ∗
                    (i ↦ x))%I
         with "[Hown]" as "[Hrest $]".
       {
         rewrite mapsto_eq /mapsto_def //.
-        rewrite to_gen_heap_insert insert_singleton_op; last by apply lookup_to_gen_heap_None.
-        rewrite auth_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
+        rewrite /to_gen_heap fmap_insert.
+        rewrite insert_singleton_op; last first.
+        { rewrite lookup_fmap. have: (m !! i = None). done. move=>-> //. }
+        rewrite view_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
+        rewrite /gmap_view_frag. done.
       }
       by iApply IHσ.
   Qed.
@@ -76,13 +83,15 @@ Section gen_heap_defs.
            let _ := gen_heapG_update_pre _ names in
            [∗ map] i↦v ∈ σ, i ↦ v .
   Proof.
-    iMod (own_alloc (● to_gen_heap σ ⋅ ◯ to_gen_heap σ)) as (γh) "(?&Hfrag)".
-    { apply auth_both_valid_discrete; split; auto. exact: to_gen_heap_valid. }
-    iMod (own_alloc (● to_gen_meta ∅)) as (γm) "Hm".
-    { rewrite auth_auth_valid. exact: to_gen_meta_valid. }
+    iMod (own_alloc (gmap_view_auth (V:=leibnizO V) σ ⋅ to_gen_heap σ)) as (γh) "(?&Hfrag)".
+    { apply view_both_valid=>n k [df va]. rewrite lookup_fmap.
+      destruct (σ !! k) as [v|] eqn:Hk; rewrite Hk; last done.
+      simpl. intros [= <- <-]. eexists. done. }
+    iMod (own_alloc (gmap_view_auth (V:=gnameO) ∅)) as (γm) "Hm".
+    { apply gmap_view_auth_valid. }
     iModIntro. iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
     iFrame. iSplitR "Hfrag".
-    - iExists ∅; simpl. iFrame "Hm". by rewrite dom_empty_L.
+    - iExists ∅; simpl. iFrame. by rewrite dom_empty_L.
     - by iApply heap_init_to_bigOp.
   Qed.
 
@@ -95,10 +104,10 @@ Section gen_heap_defs.
   Lemma gen_heap_reinit {Σ} (hG: gen_heapG L V Σ) σ :
     ⊢ |==> ∃ names : gen_heap_names, gen_heap_ctx (hG := gen_heapG_update hG names) σ.
   Proof.
-    iMod (own_alloc (● to_gen_heap σ)) as (γh) "Hh".
-    { rewrite auth_auth_valid. exact: to_gen_heap_valid. }
-    iMod (own_alloc (● to_gen_meta ∅)) as (γm) "Hm".
-    { rewrite auth_auth_valid. exact: to_gen_meta_valid. }
+    iMod (own_alloc (gmap_view_auth (V:=leibnizO V) σ)) as (γh) "Hh".
+    { apply gmap_view_auth_valid. }
+    iMod (own_alloc (gmap_view_auth (V:=gnameO) ∅)) as (γm) "Hm".
+    { apply gmap_view_auth_valid. }
     iModIntro. iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
     iExists ∅; simpl. iFrame "Hh Hm". by rewrite dom_empty_L.
   Qed.
