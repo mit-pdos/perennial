@@ -49,7 +49,7 @@ Section goose_lang.
     "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_l) ∗
     (* TODO: make this a crash lock with cinv *)
     "#His_lock" ∷ is_lock lockN #m_l (rb_linv l γ) ∗
-    "#Htxn" ∷ is_txn_system txnN txn_l γ.
+    "#Htxn" ∷ is_txn_system txnN γ.
 
   Theorem wp_RepBlock__Read l Q :
     {{{ "#Hrb" ∷ is_rep_block l ∗

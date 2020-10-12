@@ -237,8 +237,7 @@ Section goose_lang.
   .
 
   (* this is for the entire txn manager, and relates it to some ghost state *)
-  Definition is_txn_system l γ : iProp Σ :=
-    "His_txn" ∷ txn_proof.is_txn l γ.(buftxn_txn_names) ∗
+  Definition is_txn_system γ : iProp Σ :=
     "Htxn_inv" ∷ inv N (txn_system_inv γ).
 
   (* TODO: eventually need a proper name for this; I think of it as "the right
@@ -252,7 +251,7 @@ Section goose_lang.
   Definition is_buftxn l γ γtxn (d: gset addr) : iProp Σ :=
     ∃ (mT: gmap addr object),
       "%Hdom" ∷ ⌜dom (gset _) mT = d⌝ ∗
-      "#Htxn_system" ∷ is_txn_system l γ ∗
+      "#Htxn_system" ∷ is_txn_system γ ∗
       "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) ∗
       "Htxn_ctx" ∷ map_ctx γtxn 1 mT
   .
@@ -306,6 +305,26 @@ Section goose_lang.
       + auto.
   Qed.
 *)
+
+  (* TODO: update lemma to initialize [is_txn_system] *)
+
+  Theorem wp_BufTxn__Begin (l_txn: loc) γ :
+    {{{ is_txn l_txn γ.(buftxn_txn_names) ∗ is_txn_system γ }}}
+      Begin #l_txn
+    {{{ γtxn l, RET #l; is_buftxn l γ γtxn ∅ }}}.
+  Proof.
+    iIntros (Φ) "Hpre HΦ".
+    iDestruct "Hpre" as "[#His_txn #Htxn_inv]".
+    iApply wp_fupd.
+    wp_apply (mspec.wp_buftxn_Begin with "His_txn").
+    iIntros (l) "Hbuftxn".
+    iMod (map_init ∅) as (γtxn) "Hctx".
+    iModIntro.
+    iApply "HΦ".
+    iExists ∅.
+    iSplit; first by (iPureIntro; set_solver).
+    iFrame "∗#".
+  Qed.
 
   Definition is_object l a obj: iProp Σ :=
     ∃ dirty, is_buf l a
@@ -502,8 +521,7 @@ Section goose_lang.
     wp_apply (mspec.wp_BufTxn__CommitWait _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
                 with "[$Hbuftxn Hstable]").
-    { iNamed "Htxn_system".
-      iInv "Htxn_inv" as ">Hinner" "Hclo".
+    { iInv "Htxn_system" as ">Hinner" "Hclo".
       iModIntro.
       iNamed "Hinner".
       iExists σs.
