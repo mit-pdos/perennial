@@ -10,22 +10,18 @@ Context {Σ: gFunctors} {K V: Type} `{Countable0: Countable K}.
 
 Implicit Types (γ:gname).
 
-(* this idea is for this to have two resources:
-    - stable values: a gmap from (txn_id,K) pairs to agree V, which gives persistent knowledge
-      of persistent values in old transactions
-    - ephemeral ownership: a discrete_funUR from txn_id to gmap K V where
-      values are exclusive and typical ownership is over transactions ≥i
-  *)
+(* this idea is for this to basically be a discrete_funUR from txn_id to gmap K
+V. However, we want to be able to own the right to extend the async, which is
+part of ephemeral_val_from, and to talk about a particular old transaction
+persistently, which is ephemeral_txn_val.
+
+ Durability is orthogonal to this library: separately from the async we know
+ that some index is durable, which guarantees that facts about that index and
+ below can be carried across a crash. *)
 Definition async_ctx γ (σs: async (gmap K V)) : iProp Σ.
 Admitted.
 
 Global Instance async_ctx_timeless γ σs : Timeless (async_ctx γ σs).
-Admitted.
-
-Definition durable_txn_val γ (i:nat) (k: K) (v: V) : iProp Σ.
-Admitted.
-
-Global Instance durable_persistent γ i (k:K) (v:V) : Persistent (durable_txn_val γ i k v).
 Admitted.
 
 (* ephemeral_val_from owns ephemeral transactions from i onward (including
