@@ -433,8 +433,17 @@ Proof.
   rewrite /valid_addr /valid_off /bufSz /addr2flat_z; intuition idtac.
   simpl addrOff in *.
   simpl addrBlock in *.
-  admit.
-Admitted.
+  eapply int_val_inj; first by apply u64_instance.u64_word_ok.
+  epose proof (Z_div_exact_2 _ _ _ H0).
+  rewrite H3. rewrite H3 in H1.
+  assert (0 ≤ int.val off `div` Z.of_nat (block_bytes * 8)).
+  { epose proof (Z_div_ge0 (int.val off) (Z.of_nat (block_bytes * 8)) _ _). lia. }
+  assert (int.val off `div` Z.of_nat (block_bytes * 8) = 0).
+  { revert H5. revert H1. generalize (int.val off `div` Z.of_nat (block_bytes * 8)). rewrite /block_bytes. lia. }
+  word.
+Unshelve.
+  all: rewrite /block_bytes; try lia; word.
+Qed.
 
 Theorem mapsto_txn_locked (γ : txn_names) l lwh a data E :
   ↑invN ⊆ E ->
@@ -451,24 +460,24 @@ Proof.
   iIntros (H0 H1) "(#Hiswal & #Hinv & Hlockedheap & Hmapsto)".
   iInv "Hinv" as ">Htxnalways".
   iNamed "Htxnalways".
-(*
-  iDestruct "Hmapsto" as (??) "(% & % & Hmapsto & Hown)".
-  iDestruct (big_sepM2_lookup_2_some with "Hgmdata") as (x1) "%Hmdata"; eauto.
-  iDestruct (big_sepM_lookup_acc with "Hmdata_m") as "[Ha Hmdata_m]"; eauto.
-  iDestruct "Ha" as (installed bs) "[Ha Hb]".
-  iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Ha]") as "(Hlockedheap & Ha & %)"; eauto.
+  iNamed "Hmapsto".
+  iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as %Hvalid.
+  eapply gmap_addr_by_block_lookup in Hvalid.
+  destruct Hvalid as [offmap [Hmetam Hoffmap]].
+  iDestruct (big_sepM2_lookup_2_some with "Hheapmatch") as (x) "%Hlm"; eauto.
+  iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hx Hheapmatch]"; eauto.
+  iNamed "Hx".
+  iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Htxn_hb]") as "(Hlockedheap & Htxn_hb & %)"; eauto.
   iModIntro.
-  iSplitL "Hgmdata Hmdata_m Hcrashheaps Ha Hb Htxncrashheaps Hcrashheapsmatch".
+  iSplitR "Hlockedheap Hmapsto_log Hmapsto_meta Hmod_frag".
   { iNext. iExists _, _, _. iFrame.
-    iApply "Hmdata_m". iExists _, _. iFrame. }
+    iApply "Hheapmatch". iExists _, _, _. iFrame. iFrame "%". }
   iModIntro.
   iFrame.
   iSplitL.
-  { iExists _, _. iFrame. done. }
+  { iExists _. iFrame. }
   iExists _. done.
 Qed.
-*)
-Admitted.
 
 
 Theorem wp_txn__installBufsMap l q walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
@@ -547,6 +556,7 @@ Opaque struct.t.
     destruct (decide (buf.(bufKind) = KindBlock)).
 
     - replace (bufSz buf.(bufKind)) with (bufSz KindBlock) by congruence.
+      Opaque BlockSize. Opaque bufSz.
       wp_pures.
 
       iMod (mapsto_txn_valid with "Hinv Hmapto") as "[Hmapto %Hvalid]".
@@ -749,7 +759,7 @@ Opaque struct.t.
   iDestruct (big_sepML_empty_m with "Hbufamap_todo") as "%Hbufamap_todo_empty"; subst.
   rewrite map_difference_empty.
   iApply "HΦ". iFrame.
-Admitted.
+Qed.
 
 Theorem wp_MkBlockData blkno dataslice :
   {{{
