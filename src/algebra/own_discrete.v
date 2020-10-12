@@ -101,7 +101,7 @@ Context {Σ: gFunctors}.
 Lemma entailment_own_split {A: cmraT} `{inG Σ A} γ (a: A) P:
   □ (P -∗ own γ a) -∗ P -∗ ∃ P', (P' ∗ own γ a) ∧ □ ((P' ∗ own γ a) -∗ P).
 Proof.
-  rewrite own_eq. iApply entailment_ownM_split.
+  rewrite own.own_eq. iApply entailment_ownM_split.
 Qed.
 
 (* An easy consequence of the above is that we get a generic accessor for any
@@ -362,7 +362,10 @@ Section instances_iProp.
   Global Instance own_discretizable {A: cmraT} `{inG Σ A} γ (a: A):
     Discrete a →
     Discretizable (own γ a).
-  Proof. intros ?. rewrite own_eq /own_def. apply _. Qed.
+  Proof.
+    intros ?. rewrite own.own_eq /own.own_def.
+    apply ownM_discretizable, iRes_singleton_discrete. done.
+  Qed.
 
   Lemma modality_own_discrete_mixin :
     modality_mixin (@own_discrete (iResUR Σ))

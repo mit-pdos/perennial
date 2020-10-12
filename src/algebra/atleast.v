@@ -443,6 +443,9 @@ Section iprop_instances.
   Global Instance own_abs_timeless {A: cmraT} `{inG Σ A} γ (a: A):
     Discrete a →
     AbsolutelyTimeless (own γ a).
-  Proof. intros ?. rewrite own_eq /own_def. apply _. Qed.
+  Proof.
+    intros ?. rewrite own.own_eq /own.own_def.
+    apply ownM_abs_timeless, iRes_singleton_discrete. done.
+  Qed.
 
 End iprop_instances.
