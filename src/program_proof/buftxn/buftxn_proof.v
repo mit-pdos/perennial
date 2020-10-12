@@ -25,7 +25,7 @@ Definition is_buftxn (buftx : loc)
                      (mT : gmap addr {K & bufDataT K})
                      γUnified : iProp Σ :=
   (
-    ∃ (l : loc) (bufmap : loc) (gBufmap : gmap addr buf) (txid : u64),
+    ∃ (l : loc) (bufmap : loc) (gBufmap : gmap addr buf),
       "Hbuftx.l" ∷ buftx ↦[BufTxn.S :: "txn"] #l ∗
       "Hbuftx.map" ∷ buftx ↦[BufTxn.S :: "bufs"] #bufmap ∗
       "#Histxn" ∷ is_txn l γUnified ∗
@@ -64,13 +64,12 @@ Proof.
   wp_apply util_proof.wp_DPrintf.
   wp_pures.
   iApply "HΦ".
-  iExists _, _, _, _.
+  iExists _, _, _.
   iFrame.
   rewrite big_sepM_empty. iFrame "Htxn ∗".
   iSplit; first by done.
   rewrite left_id.
   rewrite big_sepM_empty //.
-  Unshelve. all: exact (U64 0).
 Qed.
 
 Theorem wp_BufTxn__ReadBuf buftx mT γUnified a (sz : u64) v :
@@ -97,93 +96,14 @@ Proof.
   wp_apply (wp_BufMap__Lookup with "[$Hbufmap]"); first intuition.
   iIntros (bufptr) "Hbufptr".
   wp_pures.
-  destruct (gBufmap !! a) eqn:Hbufmap_a.
-  - iDestruct "Hbufptr" as "[Hbufptr Hisbufmap]".
-    iDestruct (is_buf_not_null with "Hbufptr") as %Hbufptr_not_null.
+  wp_if_destruct.
+  - destruct (gBufmap !! a) eqn:Hbufmap_a.
+    {
+      iDestruct "Hbufptr" as "[Hbufptr Hisbufmap]".
+      iDestruct (is_buf_not_null with "Hbufptr") as %Hbufptr_not_null. congruence.
+    }
 
-    (* bufmapelem now a pure fact:
-
-    iDestruct (big_sepM_lookup with "Hbufmapelem") as %HmT_a; eauto.
-
-    rewrite Ha in HmT_a.
-    inversion HmT_a; clear HmT_a; subst.
-    destruct b; rewrite /=.
-
-    wp_if_destruct; try congruence.
-    iApply "HΦ".
-    iFrame "Hbufptr".
-
-    iIntros (v' dirty') "[% Hbufptr]".
-    iDestruct ("Hisbufmap" with "Hbufptr") as "Hisbufmap".
-    intuition idtac.
-    + subst.
-      iModIntro.
-      iExists _, _, _, _.
-      iFrame "# ∗".
-      iDestruct (big_sepM_lookup with "Hbufmapelem") as %HmT_a; eauto.
-      iSplitL "Hbufmapelem".
-      {
-        iDestruct (big_sepM_forall with "Hbufmapelem") as "Hbufmapelem".
-        iApply big_sepM_forall.
-        iIntros (k x).
-        destruct (decide (a = k)).
-        { subst. repeat rewrite lookup_insert.
-          iPureIntro; intros. inversion H; subst; clear H.
-          simpl; eauto. }
-        { repeat rewrite -> lookup_insert_ne by eauto.
-          eauto. }
-      }
-
-      iSplitL "Hctxvalid".
-      {
-        iDestruct (big_sepM_insert_acc with "Hctxvalid") as "[Ha Hctxvalid2]"; eauto.
-        iApply "Hctxvalid2"; eauto.
-      }
-
-      iDestruct (big_sepM_delete with "Hctxelem") as "[Hma Hctxelem]"; eauto.
-      iApply big_sepM_insert_delete.
-      iSplitL "Hma".
-      { rewrite lookup_insert. rewrite Hbufmap_a /=.
-        destruct bufDirty; eauto. }
-      iApply (big_sepM_mono with "Hctxelem").
-      iIntros (k x Hkx) "Hk".
-      destruct (decide (a = k)).
-      { subst. rewrite lookup_delete in Hkx. congruence. }
-      rewrite -> lookup_insert_ne by eauto.
-      destruct (gBufmap !! k); eauto.
-
-    + subst.
-      iModIntro.
-      iExists _, _, _, _.
-      iFrame "# ∗".
-      iDestruct (big_sepM_lookup with "Hbufmapelem") as %HmT_a; eauto.
-      iSplitL "Hbufmapelem".
-      {
-        iDestruct (big_sepM_forall with "Hbufmapelem") as "Hbufmapelem".
-        iApply big_sepM_forall.
-        iIntros (k x).
-        destruct (decide (a = k)).
-        { subst. repeat rewrite lookup_insert.
-          iPureIntro; intros. inversion H; subst; clear H.
-          simpl; eauto. }
-        { repeat rewrite -> lookup_insert_ne by eauto.
-          eauto. }
-      }
-
-      iSplitR "Hctxelem".
-      { iDestruct (big_sepM_delete with "Hctxvalid") as "[%Hca Hctxvalid']"; eauto.
-        iApply big_sepM_insert_delete; iFrame "Hctxvalid'".
-        eauto. }
-
-      iDestruct (big_sepM_delete with "Hctxelem") as "[Hca Hctxelem]"; eauto.
-      simpl in *.
-      iApply big_sepM_insert_delete.
-      rewrite lookup_insert /=.
-      admit.
-
-  - iDestruct "Hbufptr" as "[-> Hbufptr]".
-    wp_if_destruct.
-    2: congruence.
+    iDestruct "Hbufptr" as "[_ Hbufptr]".
 
     wp_loadField.
     iDestruct (big_sepM_lookup_acc with "Hctxelem") as "[Hma Hctxelem]"; eauto.
@@ -217,71 +137,114 @@ Proof.
 
     iIntros (v' dirty') "[% Hbufptr]".
     iDestruct ("Hisbufmap" with "Hbufptr") as "Hisbufmap".
-    intuition idtac.
-    + subst.
-      iMod (gen_heap_update with "Hctx Ha") as "[Hctx Ha]".
-      iFrame "Ha".
-      iModIntro.
-      iExists _, _, _, _, _.
-      iFrame "Hctx".
-      iFrame "# ∗".
 
-      rewrite insert_insert.
-      iSplitL "Hbufmapelem".
-      {
-        iApply (big_sepM_insert); eauto.
-        iSplitR.
-        { rewrite lookup_insert. eauto. }
-        iApply (big_sepM_mono with "Hbufmapelem").
-        iIntros (k x0) "% %". iPureIntro.
-        destruct (decide (a = k)).
-        { subst; congruence. }
-        repeat rewrite -> lookup_insert_ne by eauto.
-        eauto.
+    rewrite insert_insert.
+    iDestruct (big_sepM_delete with "Hctxvalid") as "[Ha Hctxvalid2]"; eauto.
+    iDestruct (big_sepM_delete with "Hctxelem") as "[He Hctxelem]"; eauto. rewrite Hbufmap_a.
+
+    intuition idtac; subst.
+    + iModIntro.
+      iExists _, _, _.
+      iFrame. iFrame "#".
+      iSplit.
+      { iPureIntro.
+        rewrite fmap_insert /=.
+        eapply insert_mono; eauto.
       }
-
-      iSplitL "Hctxvalid".
-      {
-        iDestruct (big_sepM_insert_acc with "Hctxvalid") as "[Ha Hctxvalid']"; eauto.
-        iApply "Hctxvalid'"; eauto.
-      }
-
-      iDestruct (big_sepM_delete with "Hctxelem") as "[Hma Hctxelem]"; eauto.
+      iSplit.
+      { iApply big_sepM_insert_delete; iFrame "#". }
       iApply big_sepM_insert_delete.
-      iSplitL "Hma".
-      { rewrite lookup_insert. rewrite Hbufmap_a /=.
-        iExists _; iFrame. }
-      iApply (big_sepM_mono with "Hctxelem").
-      iIntros (k x0 Hkx0) "Hk".
-      destruct (decide (a = k)).
-      { subst. rewrite lookup_delete in Hkx0. congruence. }
-      rewrite -> lookup_insert_ne by eauto.
-      destruct (gBufmap !! k); eauto.
+      rewrite lookup_insert /=.
+      iSplitL "He". { iExists _; iFrame. }
+      iApply big_sepM_mono; try iFrame.
+      iIntros (xa xb Hb) "H".
+      destruct (decide (a = xa)); subst.
+      { rewrite lookup_delete in Hb. congruence. }
+      rewrite lookup_insert_ne; eauto.
 
-    + subst.
-      iFrame "Ha".
-      iModIntro.
-      iExists _, _, _, _, _.
-      iFrame "Hctx".
+    + iModIntro.
+      iExists _, _, _.
+      iFrame. iFrame "#".
+
+      iSplit.
+      { iPureIntro.
+        rewrite fmap_insert /=.
+        eapply insert_mono; eauto.
+      }
+      iSplit.
+      { iApply big_sepM_insert_delete; iFrame "#". }
+      iApply big_sepM_insert_delete.
+      rewrite lookup_insert /=.
+      iSplitL "He". { iFrame. }
+      iApply big_sepM_mono; try iFrame.
+      iIntros (xa xb Hb) "H".
+      destruct (decide (a = xa)); subst.
+      { rewrite lookup_delete in Hb. congruence. }
+      rewrite lookup_insert_ne; eauto.
+
+  - destruct (gBufmap !! a) eqn:Hbufmap_a.
+    2: {
+      iDestruct "Hbufptr" as "[% _]". congruence.
+    }
+
+    eapply map_subseteq_spec in Hbufmapelem as Ha'.
+    2: {
+      rewrite lookup_fmap. erewrite Hbufmap_a. rewrite /=. reflexivity.
+    }
+    rewrite Ha in Ha'. inversion Ha'; clear Ha'; subst.
+    destruct b; simpl in *.
+
+    iDestruct "Hbufptr" as "[Hbufptr Hisbufmap]".
+    iApply "HΦ".
+    iFrame "Hbufptr".
+
+    iIntros (v' dirty') "[% Hbufptr]".
+    iDestruct ("Hisbufmap" with "Hbufptr") as "Hisbufmap".
+
+    iDestruct (big_sepM_delete with "Hctxvalid") as "[Ha Hctxvalid2]"; eauto.
+    iDestruct (big_sepM_delete with "Hctxelem") as "[He Hctxelem]"; eauto. rewrite Hbufmap_a /=.
+
+    intuition idtac; subst.
+    + iModIntro.
+      iExists _, _, _.
       iFrame "# ∗".
 
-      rewrite insert_insert.
-      iSplitL "Hbufmapelem".
-      {
-        iApply (big_sepM_insert); eauto.
+      iSplit.
+      { iPureIntro.
+        rewrite fmap_insert /=.
+        eapply insert_mono; eauto.
       }
+      iSplit.
+      { iApply big_sepM_insert_delete; iFrame "#". }
+      iApply big_sepM_insert_delete.
+      rewrite lookup_insert /=.
+      iSplitL "He". { destruct bufDirty; iFrame. iExists _; iFrame. }
+      iApply big_sepM_mono; try iFrame.
+      iIntros (xa xb Hb) "H".
+      destruct (decide (a = xa)); subst.
+      { rewrite lookup_delete in Hb. congruence. }
+      rewrite lookup_insert_ne; eauto.
 
-      iApply (big_sepM_mono with "Hctxelem").
-      iIntros (k x0 Hkx0) "Hk".
-      destruct (decide (a = k)).
-      { subst. rewrite lookup_insert. rewrite Hbufmap_a.
-        simpl. eauto. }
-      rewrite -> lookup_insert_ne by eauto.
-      destruct (gBufmap !! k); eauto.
-      Unshelve.
-      all: eauto.
-     *)
-Admitted.
+    + iModIntro.
+      iExists _, _, _.
+      iFrame "# ∗".
+
+      iSplit.
+      { iPureIntro.
+        rewrite fmap_insert /=.
+        eapply insert_mono; eauto.
+      }
+      iSplit.
+      { iApply big_sepM_insert_delete; iFrame "#". }
+      iApply big_sepM_insert_delete.
+      rewrite lookup_insert /=.
+      iSplitL "He". { iFrame. }
+      iApply big_sepM_mono; try iFrame.
+      iIntros (xa xb Hb) "H".
+      destruct (decide (a = xa)); subst.
+      { rewrite lookup_delete in Hb. congruence. }
+      rewrite lookup_insert_ne; eauto.
+Qed.
 
 Theorem wp_BufTxn__OverWrite buftx mt γUnified a v0 v (sz : u64) (vslice : Slice.t) :
   {{{
@@ -297,13 +260,10 @@ Theorem wp_BufTxn__OverWrite buftx mt γUnified a v0 v (sz : u64) (vslice : Slic
     is_buftxn buftx (<[a := v]> mt) γUnified
   }}}.
 Proof using.
-  iIntros (Φ) "(Htxn & Ha & Hvslice & -> & %) HΦ".
+  iIntros (Φ) "(Htxn & %Ha & Hvslice & -> & %) HΦ".
 Opaque struct.t.
   wp_call.
   iNamed "Htxn".
-
-  (*
-  iDestruct (gen_heap_valid with "Hctx Ha") as %HmT_a2.
   iDestruct (big_sepM_lookup with "Hctxvalid") as "%"; eauto.
 
   wp_loadField.
@@ -325,18 +285,21 @@ Opaque struct.t.
     replace (bufSz (projT1 v)) with (bufSz (projT1 v0)) by congruence.
     wp_load.
     wp_apply (wp_buf_loadField_sz with "Hisbuf"); iIntros "Hisbuf".
-    iDestruct (big_sepM_lookup with "Hbufmapelem") as %HmT_a; eauto.
-    rewrite HmT_a2 in HmT_a; inversion HmT_a; subst.
-    rewrite /=.
+
+    eapply map_subseteq_spec in Hbufmapelem as Ha'.
+    2: {
+      rewrite lookup_fmap. erewrite Hbufmap_a. rewrite /=. reflexivity.
+    }
+    rewrite Ha in Ha'. inversion Ha'; clear Ha'; subst.
+    destruct b0; simpl in *.
+
     wp_pures.
-    destruct (bool_decide (#(bufSz b0.(bufKind)) = #(bufSz b0.(bufKind)))) eqn:He.
+    destruct (bool_decide (#(bufSz bufKind) = #(bufSz bufKind))) eqn:He.
     2: { apply bool_decide_eq_false_1 in He; congruence. }
     wp_pures.
     wp_load.
     wp_apply (wp_buf_storeField_data with "[$Hisbuf $Hvslice]"); eauto.
     iIntros "Hisbuf".
-
-    iMod (gen_heap_update with "Hctx Ha") as "[Hctx Ha]".
 
     wp_pures.
     wp_load.
@@ -346,49 +309,29 @@ Opaque struct.t.
 
     iDestruct ("Hisbufmap" with "Hisbuf") as "Hisbufmap".
 
-    iExists _, _, _, _, _.
-    iFrame "Hctx Histxn".
-    iFrame "Hisbufmap".
-    iFrame.
-    rewrite /=.
+    iDestruct (big_sepM_delete with "Hctxvalid") as "[%Ha2 Hctxvalid2]"; eauto.
+    iDestruct (big_sepM_delete with "Hctxelem") as "[He Hctxelem]"; eauto. rewrite Hbufmap_a.
 
-    iSplitL "Hbufmapelem".
-    {
-      iApply (big_sepM_insert_delete).
-      iSplitR.
-      { rewrite lookup_insert. destruct v. auto. }
-      iDestruct (big_sepM_delete with "Hbufmapelem") as "[_ Hbufmapelem]"; eauto.
-      iApply (big_sepM_mono with "Hbufmapelem").
-      iIntros (k x0) "% %". iPureIntro.
-      destruct (decide (a = k)).
-      { subst. rewrite lookup_delete in H3. congruence. }
-      repeat rewrite -> lookup_insert_ne by eauto.
-      eauto.
+    iExists _, _, _.
+    simpl.
+    iFrame. iFrame "#".
+
+    iSplit.
+    { iPureIntro. destruct v.
+      rewrite fmap_insert /=.
+      eapply insert_mono; eauto.
     }
-
-    iSplitL "Hctxvalid".
-    {
-      iDestruct (big_sepM_insert_acc with "Hctxvalid") as "[Ha Hctxvalid']"; eauto.
-      iApply "Hctxvalid'".
-      rewrite H. done.
-    }
-
-    iDestruct (big_sepM_delete with "Hctxelem") as "[Hma Hctxelem]"; eauto.
+    iSplit.
+    { iApply big_sepM_insert_delete; iFrame "#".
+      iPureIntro; intuition. rewrite H. done. }
     iApply big_sepM_insert_delete.
-    iSplitL "Hma".
-    { rewrite lookup_insert. rewrite Hbufmap_a /=.
-      destruct v; simpl in *; subst.
-      destruct (b0.(bufDirty)).
-      { iDestruct "Hma" as (v0) "Hma".
-        iExists _; iFrame. }
-      iExists _; iFrame.
-    }
-    iApply (big_sepM_mono with "Hctxelem").
-    iIntros (k x0 Hkx0) "Hk".
-    destruct (decide (a = k)).
-    { subst. rewrite lookup_delete in Hkx0. congruence. }
-    rewrite -> lookup_insert_ne by eauto.
-    destruct (gBufmap !! k); eauto.
+    rewrite lookup_insert /=.
+    iSplitL "He". { rewrite H. destruct bufDirty; iFrame. iExists _; iFrame. }
+    iApply big_sepM_mono; try iFrame.
+    iIntros (xa xb Hb) "H".
+    destruct (decide (a = xa)); subst.
+    { rewrite lookup_delete in Hb. congruence. }
+    rewrite lookup_insert_ne; eauto.
 
   - iDestruct "Hbufmapptr" as "[-> Hisbufmap]".
     wp_load.
@@ -404,53 +347,34 @@ Opaque struct.t.
     wp_load.
     wp_loadField.
 
-    iMod (gen_heap_update with "Hctx Ha") as "[Hctx Ha]".
-
     wp_apply (wp_BufMap__Insert with "[$Hisbufmap $Hisbuf]").
     iIntros "Hisbufmap".
     iApply "HΦ".
-    iFrame "Ha".
 
-    iExists _, _, _, _, _.
-    iFrame "Hctx Histxn".
-    iFrame.
-    rewrite /=.
+    iDestruct (big_sepM_delete with "Hctxvalid") as "[%Ha2 Hctxvalid2]"; eauto.
+    iDestruct (big_sepM_delete with "Hctxelem") as "[He Hctxelem]"; eauto. rewrite Hbufmap_a.
 
-    iSplitL "Hbufmapelem".
-    {
-      iApply (big_sepM_insert); eauto.
-      iSplitR.
-      { rewrite lookup_insert. destruct v. auto. }
-      iApply (big_sepM_mono with "Hbufmapelem").
-      iIntros (k x0) "% %". iPureIntro.
-      destruct (decide (a = k)).
-      { subst. congruence. }
-      repeat rewrite -> lookup_insert_ne by eauto.
-      eauto.
+    iExists _, _, _.
+    simpl.
+    iFrame. iFrame "#".
+
+    iSplit.
+    { iPureIntro. destruct v.
+      rewrite fmap_insert /=.
+      eapply insert_mono; eauto.
     }
-
-    iSplitL "Hctxvalid".
-    {
-      iDestruct (big_sepM_insert_acc with "Hctxvalid") as "[Ha Hctxvalid']"; eauto.
-      iApply "Hctxvalid'".
-      rewrite H. done.
-    }
-
-    iDestruct (big_sepM_delete with "Hctxelem") as "[Hma Hctxelem]"; eauto.
+    iSplit.
+    { iApply big_sepM_insert_delete; iFrame "#".
+      iPureIntro; intuition. rewrite H. done. }
     iApply big_sepM_insert_delete.
-    iSplitL "Hma".
-    { rewrite lookup_insert. rewrite Hbufmap_a /=.
-      destruct v, v0; simpl in *; subst.
-      iExists _. iFrame.
-    }
-    iApply (big_sepM_mono with "Hctxelem").
-    iIntros (k x0 Hkx0) "Hk".
-    destruct (decide (a = k)).
-    { subst. rewrite lookup_delete in Hkx0. congruence. }
-    rewrite -> lookup_insert_ne by eauto.
-    destruct (gBufmap !! k); eauto.
-*)
-Admitted.
+    rewrite lookup_insert /=.
+    iSplitL "He". { rewrite H. destruct v0. iExists _; iFrame. }
+    iApply big_sepM_mono; try iFrame.
+    iIntros (xa xb Hb) "H".
+    destruct (decide (a = xa)); subst.
+    { rewrite lookup_delete in Hb. congruence. }
+    rewrite lookup_insert_ne; eauto.
+Qed.
 
 Theorem BufTxn_lift_one buftx mt γUnified a v E :
   ↑invN ⊆ E ->
