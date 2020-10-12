@@ -322,9 +322,11 @@ Proof.
     rewrite /named.
     f_equal.
     f_equal.
+    f_equal.
     len.
     simpl.
-    admit. (* TODO: some overflow constraint is missing? *) }
+    word.
+  }
   iPureIntro.
   split_and.
   - len.
@@ -334,7 +336,7 @@ Proof.
     rewrite app_assoc.
     eapply has_encoding_from_app.
     rewrite encode_app encode_singleton //=.
-Admitted.
+Qed.
 
 Theorem wp_Enc__Finish stk E enc_v r sz remaining :
   {{{ is_enc enc_v sz r remaining }}}
