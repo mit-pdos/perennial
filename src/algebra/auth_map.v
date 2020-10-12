@@ -40,6 +40,10 @@ Section auth_map.
     to_mapUR (<[k:=(v,true)]> m) = <[k:=Cinr (to_agree (v:leibnizO V))]> (to_mapUR m).
   Proof. rewrite /to_mapUR fmap_insert //. Qed.
 
+  Lemma to_mapUR_delete k (m: gmap K (V*bool)) :
+    to_mapUR (delete k m) = delete k (to_mapUR m).
+  Proof. rewrite /to_mapUR fmap_delete //. Qed.
+
   Definition map_ctx γ q m : iProp Σ :=
     ∃ ro_m,
       ⌜m = fmap fst ro_m⌝ ∗
@@ -260,6 +264,27 @@ Section auth_map.
     iExists _; iFrame.
     iPureIntro.
     rewrite fmap_insert //=.
+  Qed.
+
+  Theorem map_delete {γ m} k v :
+    ptsto_mut γ k 1 v -∗ map_ctx γ 1 m ==∗ map_ctx γ 1 (delete k m).
+  Proof.
+    unseal. rewrite /ptsto_def /map_ctx.
+    iIntros "Hk Hm".
+    iDestruct "Hm" as (m_ro ->) "Hm".
+    iExists (delete k m_ro).
+    iSplitR.
+    2: {
+      iMod (own_update with "[Hk Hm]") as "Hm".
+      2: iApply own_op; iFrame.
+      { eapply auth_update_dealloc.
+        eapply delete_singleton_local_update.
+        apply Cinl_exclusive.
+        apply pair_exclusive_l.
+        apply frac_full_exclusive. }
+      rewrite to_mapUR_delete. done.
+    }
+    rewrite fmap_delete; done.
   Qed.
 
   Lemma Cinl_included_inv (A B: cmraT) (x:A) (y:csumR A B) :
