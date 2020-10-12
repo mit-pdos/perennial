@@ -12,7 +12,8 @@ Import uPred.
     so that we can support deletion. *)
 
 (* FIXME: this is a copy of the old gen_heap.
-port to gmap_view, once that supports deletion *)
+Port to gmap_view, once that supports deletion.
+Or better yet, port all users to [auth_map]. *)
 Module gen_heap.
 
 Definition gen_heapUR (L V : Type) `{Countable L} : ucmraT :=

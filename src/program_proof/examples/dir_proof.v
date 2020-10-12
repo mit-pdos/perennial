@@ -18,9 +18,7 @@ Module dir.
   Global Instance _witness : Inhabited t := populate!.
 End dir.
 
-(* FIXME: these can probably be removed once we ported to a logic-level
-Type-based [gmap] library.  If not, we should move them somewhere more
-canonical. *)
+(* FIXME: port to [auth_map]; then these instances likely also can disappear. *)
 Canonical Structure listLO A := leibnizO (list A).
 Canonical Structure gset64O := leibnizO (gset u64).
 

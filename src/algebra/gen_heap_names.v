@@ -50,7 +50,8 @@ Section gen_heap_defs.
 
   Local Notation "l ↦ v" := (mapsto l 1 v) (at level 20) : bi_scope.
 
-  (* FIXME: this breaks through *two* layers of abstraction *)
+  (* FIXME: this breaks through *two* layers of abstraction.
+   TODO: Equip upstream with support for "big-op" initialization, and then use that instead. *)
   Local Definition to_gen_heap (σ : gmap L V) : gmap_viewR L (leibnizO V) :=
     ◯V ((λ v, (DfracOwn 1, to_agree v)) <$> σ).
 
@@ -101,7 +102,8 @@ Section gen_heap_defs.
     iMod (gen_heap_name_strong_init σ) as (n) "(H&_)". iExists n. eauto.
   Qed.
 
-  Lemma gen_heap_reinit {Σ} (hG: gen_heapG L V Σ) σ :
+  (* Cannot reuse original [gen_heap_init] because we have to make sure that the same [inG] instance remains in use. *)
+  Lemma gen_heap_name_reinit {Σ} (hG: gen_heapG L V Σ) σ :
     ⊢ |==> ∃ names : gen_heap_names, gen_heap_ctx (hG := gen_heapG_update hG names) σ.
   Proof.
     iMod (own_alloc (gmap_view_auth (V:=leibnizO V) σ)) as (γh) "Hh".
