@@ -390,10 +390,9 @@ Proof.
   iIntros (HNE) "[Htxn Ha]".
   iNamed "Htxn".
 
-  (*
-  iAssert (⌜ mT !! a = None ⌝)%I as %Hnone.
+  iAssert (⌜ mt !! a = None ⌝)%I as %Hnone.
   {
-    destruct (mT !! a) eqn:He; eauto.
+    destruct (mt !! a) eqn:He; eauto.
     iDestruct (big_sepM_lookup with "Hctxelem") as "Ha2"; eauto.
     destruct (gBufmap !! a); rewrite /=.
     { destruct b.(bufDirty).
@@ -407,38 +406,29 @@ Proof.
   iAssert (⌜ gBufmap !! a = None ⌝)%I as %Hgnone.
   {
     destruct (gBufmap !! a) eqn:He; eauto.
-    iDestruct (big_sepM_lookup with "Hbufmapelem") as %Ha2; eauto.
-    rewrite Ha2 in Hnone; congruence.
+    eapply map_subseteq_spec in Hbufmapelem as Ha'.
+    { erewrite Hnone in Ha'; congruence. }
+    rewrite lookup_fmap. erewrite He. rewrite /=. reflexivity.
   }
 
   iPoseProof "Histxn" as "Histxn0".
   iNamed "Histxn".
   iMod (mapsto_txn_valid with "Histxna [Ha Histxna]") as "[Ha %Havalid]"; eauto.
 
-  iMod ((gen_heap_alloc _ _ v) with "Hctx") as "[Hctx Haa]"; eauto.
   iModIntro.
-  iSplitR "Haa"; [|iFrame].
+  iExists _, _, _.
+  iFrame. iFrame "#".
 
-  iExists _, _, _, _, _.
-  iFrame "Hctx Histxn0".
-  iFrame.
-  iSplitL "Hbufmapelem".
-  { iApply big_sepM_mono; iFrame.
-    iPureIntro; simpl; intros.
-    destruct (decide (a = x)); subst.
-    { rewrite Hnone in H. congruence. }
-    rewrite -> lookup_insert_ne by eauto. eauto.
+  iSplit.
+  { iPureIntro. destruct v.
+    etransitivity. 2: apply insert_subseteq; eauto.
+    eauto.
   }
-
-  iSplitL "Hctxvalid".
-  { iApply big_sepM_insert; eauto.
-    iFrame "Hctxvalid". iPureIntro; intuition eauto. }
-
-  iApply (big_sepM_insert); eauto.
-  iFrame.
+  iSplit.
+  { iApply big_sepM_insert; eauto. iFrame "#". intuition. }
+  iApply big_sepM_insert; eauto. iFrame.
   rewrite Hgnone. iFrame.
-*)
-Admitted.
+Qed.
 
 Instance mapsto_txn_conflicting γUnified : Conflicting (mapsto_txn γUnified).
 Proof.
@@ -477,61 +467,35 @@ Proof.
     iModIntro. iFrame. intuition eauto. }
   iDestruct (big_sepM_sep with "Ha") as "[Ha Havalid]".
 
-  (*
-  iMod (gen_heap_alloc_gen with "Hctx") as "[Hctx Haa]"; eauto.
   iModIntro.
-  iSplitR "Haa"; last iFrame.
+  iExists _, _, _.
+  iFrame. iFrame "#".
 
-  iExists _, _, _, _, _.
-  iFrame "Hctx Histxn".
-  iFrame.
-
-  iSplitL "Hbufmapelem".
-  { iApply big_sepM_mono; iFrame.
-    iPureIntro; simpl; intros.
-    erewrite lookup_union_Some_r; eauto.
-  }
-
-  iSplitL "Hctxvalid Havalid".
+  iSplit.
+  { iPureIntro.
+    etransitivity. 1: eauto.
+    eapply map_union_subseteq_r. set_solver. }
+  iSplit.
   { iApply big_sepM_union; eauto. }
-
-  iApply big_sepM_union; eauto.
-  iFrame.
-  iApply big_sepM_mono; last iFrame.
-  iIntros (???) "H".
-
+  iApply big_sepM_union; eauto. iFrame.
+  iApply big_sepM_mono; last iFrame "Ha".
+  iIntros (???) "Hm".
   destruct (gBufmap !! k); last by iFrame.
   destruct b.(bufDirty); iFrame.
   destruct x.
   iExists _; iFrame.
-*)
-Admitted.
 
-(*
-Theorem BufTxn_lift_pred `{!Liftable P} buftx γt γUnified E :
-  ↑invN ⊆ E ->
-  (
-    is_buftxn buftx γt γUnified ∗
-    P (fun a v => mapsto_txn γUnified a v)
-  )
-    ={E}=∗
-  (
-    is_buftxn buftx γt γUnified ∗
-    P (fun a v => mapsto (hG := γt) a 1 v)
-  ).
-Proof.
-  iIntros (HNE) "(Htxn & Hp)".
-  unfold Liftable in Liftable0.
-  iDestruct (Liftable0 with "Hp") as (m) "[Hm Hp]".
-  { iIntros (a0 v0 a1 v1) "Ha0 Ha1".
-    destruct (decide (a0 = a1)); subst; eauto.
-    iDestruct (mapsto_txn_2 with "Ha0 Ha1") as %[]. }
-  iMod (BufTxn_lift with "[$Htxn $Hm]") as "[Htxn Hm]"; eauto.
-  iFrame.
-  iApply "Hp".
-  by iFrame.
+Unshelve.
+  rewrite /ConflictsWith.
+  intros.
+  iIntros "H1 H2".
+  destruct (gBufmap !! a0).
+  2: { iApply (mapsto_txn_conflicts_with with "H1 H2"). }
+  destruct b.(bufDirty).
+  2: { iApply (mapsto_txn_conflicts_with with "H1 H2"). }
+  iDestruct "H1" as (v2) "H1".
+  iApply (mapsto_txn_conflicts_with with "H1 H2").
 Qed.
-*)
 
 Theorem wp_BufTxn__CommitWait buftx mt γUnified (wait : bool) E (Q : nat -> iProp Σ) :
   {{{
