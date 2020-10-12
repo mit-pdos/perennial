@@ -629,35 +629,4 @@ Proof.
     (* TODO: need PreQ in txn__CommitWait *)
 Admitted.
 
-(*
-Theorem wp_BufTxn__CommitWait_pred `{!Liftable P} buftx γt γUnified :
-  {{{
-    is_buftxn buftx γt γUnified ∗
-    P (fun a v => mapsto (hG := γt) a 1 v)
-  }}}
-    BufTxn__CommitWait #buftx #true
-  {{{
-    (ok: bool), RET #ok;
-    if ok then
-      P (fun a v => mapsto_txn γUnified a v)
-    else
-      (* XXX??? *) emp
-  }}}.
-Proof.
-  iIntros (Φ) "(Htxn & Hp) HΦ".
-  unfold Liftable in Liftable0.
-  iDestruct (Liftable0 with "Hp") as (m) "[Hm Hp]".
-  { iIntros (a0 v0 a1 v1) "Ha0 Ha1".
-    destruct (decide (a0 = a1)); subst; eauto.
-    iDestruct (mapsto_valid_2 with "Ha0 Ha1") as %Hf; eauto. }
-  wp_apply (wp_BufTxn__CommitWait with "[$Htxn $Hm]").
-  iIntros (ok) "Hm".
-  iApply "HΦ".
-  destruct ok.
-  - iApply "Hp".
-    iFrame.
-  - done.
-Qed.
-*)
-
 End heap.
