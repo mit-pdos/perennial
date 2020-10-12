@@ -306,7 +306,21 @@ Section goose_lang.
   Qed.
 *)
 
-  (* TODO: update lemma to initialize [is_txn_system] *)
+  Lemma init_txn_system {E} l_txn γUnified σs :
+    is_txn l_txn γUnified ∗ ghost_var γUnified.(txn_crashstates) (1/2) σs ={E}=∗
+    ∃ γ, ⌜γ.(buftxn_txn_names) = γUnified⌝ ∗
+         is_txn_system γ.
+  Proof.
+    iIntros "[#Htxn Hasync]".
+    iMod (async_ctx_init σs) as (γasync) "H●async".
+    set (γ:={|buftxn_txn_names := γUnified; buftxn_async_name := γasync; |}).
+    iExists γ.
+    iMod (inv_alloc N E (txn_system_inv γ) with "[-]") as "$".
+    { iNext.
+      iExists _; iFrame. }
+    iModIntro.
+    auto.
+  Qed.
 
   Theorem wp_BufTxn__Begin (l_txn: loc) γ :
     {{{ is_txn l_txn γ.(buftxn_txn_names) ∗ is_txn_system γ }}}

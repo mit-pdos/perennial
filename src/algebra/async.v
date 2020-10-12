@@ -73,6 +73,14 @@ Theorem ephemeral_val_from_split i' γ i k v :
 Proof.
 Admitted.
 
+(* TODO: we really need a strong init that also creates ephemeral_val_from for
+every address in the domain; this is where it's useful to know that the async
+has maps with the same domain *)
+Theorem async_ctx_init σs:
+  ⊢ |==> ∃ γ, async_ctx γ σs.
+Proof.
+Admitted.
+
 Theorem async_update_map m' γ σs m0 txn_id :
   dom (gset _) m' = dom (gset _) m0 →
   async_ctx γ σs -∗
