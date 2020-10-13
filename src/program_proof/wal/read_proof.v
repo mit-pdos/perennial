@@ -230,7 +230,37 @@ Proof.
   iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
 Qed.
 
-(* TODO: this is hard, should prove it at some point *)
+Lemma apply_upds_in_not_None : ∀ upds a d,
+  a ∈ update.addr <$> upds ->
+  apply_upds upds d !! int.val a ≠ None.
+Proof.
+  induction upds; simpl; intros.
+  { inversion H. }
+  destruct a; simpl in *.
+  inversion H; clear H; subst; eauto.
+  destruct (decide (addr ∈ update.addr <$> upds)); eauto.
+  rewrite apply_upds_insert_commute; eauto.
+  rewrite lookup_insert; eauto.
+Qed.
+
+Lemma apply_upds_no_updates_since memStart (a : u64) installed txns :
+  (memStart ≤ installed)%nat ->
+  apply_upds (txn_upds (drop memStart txns)) ∅ !! int.val a = None ->
+  Forall (λ u, u.(update.addr) ≠ a) (txn_upds (drop installed txns)).
+Proof.
+  intros.
+  replace installed with (memStart + (installed-memStart))%nat by lia.
+  rewrite -drop_drop.
+  generalize dependent (drop memStart txns); intros txns'; intros.
+  edestruct txn_upds_drop. erewrite H1.
+  generalize dependent (txn_upds txns'); intros upds; intros.
+  eapply Forall_drop.
+  apply Forall_forall; intros.
+  intro; subst.
+  eapply apply_upds_in_not_None; eauto.
+  set_solver.
+Qed.
+
 Theorem simulate_read_cache_miss {l γ Q σ memLog diskEnd diskEnd_txn_id a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = None ->
   (is_wal_inner l γ σ ∗ P σ) -∗
@@ -248,17 +278,55 @@ Proof.
   iNamed "Hlinv".
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
 
+  iNamed "Hdisk".
+  iNamed "Hdisk".
+  iNamed "circ.end".
+  iNamed "circ.start".
+  iNamed "Hinstalled".
+
   iMod ("Hfupd" with "[] [] HP") as "[HP HQ]"; first by eauto.
   {
     iPureIntro.
     econstructor; simpl.
     { eapply (relation.suchThat_runs _ _ false). eauto. }
     simpl. monad_simpl.
-    admit.
+    econstructor; simpl.
+    { eapply (relation.suchThat_runs _ _ (Nat.max σ.(log_state.durable_lb) installed_txn_id)).
+      pose proof (is_txn_bound _ _ _ Hend_txn). lia. }
+    monad_simpl.
+    econstructor; simpl.
+    { eapply (relation.suchThat_runs _ _ installed_txn_id).
+      simpl. lia. }
+    monad_simpl.
+    econstructor; simpl.
+    { eapply (relation.suchThat_runs _ _ tt).
+      simpl.
+      destruct His_memLog as [His_memLog Hmemlog_pos].
+      rewrite His_memLog in Happly.
+      rewrite /no_updates_since /set /=.
+      eapply apply_upds_no_updates_since; last by apply Happly.
+      (* missing memStart_txn_id < installed_txn_id from invariant?? *)
+      admit. }
+    monad_simpl.
   }
 
   iModIntro. iFrame "HQ".
-  admit.
+  iSplitR "HnextDiskEnd HownLoggerPos_linv HownLoggerTxn_linv Howntxns".
+  { iExists _. iFrame "HP".
+    iSplit.
+    { rewrite /wal_wf in Hwf. rewrite /wal_wf. iPureIntro. simpl.
+      intuition eauto; lia. }
+    iFrame.
+    iExists _. iFrame.
+    iExists installed_txn_id, _ . simpl.
+    iSplit. 2: iSplit. 3: iSplit.
+    4: { iExists diskEnd0. iFrame "%". iFrame "#". iPureIntro. lia. }
+    3: { iFrame "# %". iPureIntro. lia. }
+    2: { iFrame "# %". }
+    iExists _, _. iFrame. iFrame "%".
+  }
+
+  iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
 Admitted.
 
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
