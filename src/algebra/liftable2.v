@@ -79,14 +79,23 @@ Section bi.
     iApply Himpl.
   Qed.
 
-  Theorem HoldsAt_unfold `{!BiAffine PROP} P mapsto1 d :
-    HoldsAt P mapsto1 d -∗
+  Theorem HoldsAt_eq `{!BiAffine PROP} P mapsto1 d :
+    HoldsAt P mapsto1 d ⊣⊢
     ∃ m, ⌜dom _ m = d⌝ ∗ ([∗ map] a↦v ∈ m, mapsto1 a v) ∗
          PredRestore P m.
   Proof.
     rewrite /HoldsAt /named.
-    iIntros "H". iDestruct "H" as (m) "(?&?&?)".
-    eauto 10 with iFrame.
+    iSplit.
+    - iDestruct 1 as (m) "(?&?&?)"; eauto with iFrame.
+    - iDestruct 1 as (m) "(?&?&?)"; eauto with iFrame.
+  Qed.
+
+  Theorem HoldsAt_elim_PredRestore `{!BiAffine PROP} P mapsto1 d :
+    HoldsAt P mapsto1 d -∗
+    ∃ m, ⌜dom _ m = d⌝ ∗ ([∗ map] a↦v ∈ m, mapsto1 a v) ∗
+         PredRestore P m.
+  Proof.
+    rewrite HoldsAt_eq //.
   Qed.
 
   (* if we don't care about the predicate, we can extract just the mapsto part

@@ -4,9 +4,9 @@ From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn buftxn_replication.
 From Perennial.program_proof Require Import buftxn.buftxn_proof buftxn.idealized_buftxn_spec.
 
+From Perennial.goose_lang.lib Require Import crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.goose_lang.lib Require Import slice.typed_slice crash_lock.
-From Perennial.goose_lang.ffi Require Import disk_prelude.
+From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section goose_lang.
   Context `{!buftxnG Σ}.
@@ -26,6 +26,27 @@ Section goose_lang.
     persistent (actually empty) if we didn't put this in the predicate but
     instead factored it out (and repeated it in the linv and cinv) *)
     "HP" ∷ P σ.
+
+  (* stronger lifting theorem that actually extracts the non-map part of rb_rep
+  rather than leaving it a wand; this makes it possible to actually update
+  rb_rep to a new σ' (by running a fupd) *)
+  Lemma rb_rep_lift a0 a1 σ mapsto `{!Conflicting mapsto} :
+    rb_rep a0 a1 σ mapsto -∗ ∃ m, "%Hdom" ∷ ⌜dom (gset _) m = {[a0; a1]}⌝ ∗
+                                  "rb_rep_m" ∷ ([∗ map] a↦v ∈ m, mapsto a v) ∗
+                                  "HP" ∷ P σ.
+  Proof.
+    iNamed 1.
+    iExists (<[a0:=existT _ (bufBlock σ)]> (<[a1:=existT _ (bufBlock σ)]> ∅)).
+    iDestruct (conflicting with "Ha0 Ha1") as %Hneq.
+    iSplit.
+    - iPureIntro.
+      set_solver.
+    - rewrite !big_sepM_insert.
+      + rewrite big_sepM_empty.
+        iFrame.
+      + set_solver.
+      + rewrite lookup_insert_ne //.
+  Qed.
 
   Global Instance rb_rep_liftable a0 a1 σ : Liftable (rb_rep a0 a1 σ).
   Proof. apply _. Qed.
@@ -74,6 +95,9 @@ Section goose_lang.
     wp_pures.
     wp_loadField.
     change (word.mul 8 4096) with (U64 32768).
+    iDestruct (rb_rep_lift with "rb_rep") as (m) "H"; iNamed "H".
+    iDestruct (big_sepM_sep with "rb_rep_m") as "[Hmod Heph]".
+    iMod (lift_map_into_txn with "Htxn Hmod") as "[Htxnmap Htxn]".
 
   Abort.
 

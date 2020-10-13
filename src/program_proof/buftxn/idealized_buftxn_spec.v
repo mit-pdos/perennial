@@ -259,7 +259,7 @@ Section goose_lang.
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=
      ptsto_mut γtxn a 1 obj.
 
-  Instance modify_token_conflicting γ : Conflicting (modify_token γ).
+  Global Instance modify_token_conflicting γ : Conflicting (modify_token γ).
   Proof.
     rewrite /modify_token.
     iIntros (????) "H1 H2".
@@ -559,7 +559,7 @@ Section goose_lang.
     iIntros (?? Φ) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hbuftxn".
     iDestruct (holds_at_map_ctx with "Htxn_ctx HP") as "(Htxn_ctx & Htxn_m & HP)"; first by auto.
-    iDestruct (HoldsAt_unfold with "HP0") as (m0) "(%Hdom_m0&Hstable&HP0)".
+    iDestruct (HoldsAt_eq with "HP0") as (m0) "(%Hdom_m0&Hstable&HP0)".
     wp_apply (mspec.wp_BufTxn__CommitWait _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
                 with "[$Hbuftxn Hstable]").

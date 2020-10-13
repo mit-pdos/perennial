@@ -2,7 +2,7 @@ From iris.bi Require Export bi.
 From iris.base_logic Require upred.
 From iris.base_logic Require Export base_logic own fupd_level.
 From Perennial.Helpers Require Import ipm.
-From Perennial.algebra Require Import atleast big_op.
+From Perennial.algebra Require Import atleast big_sepL.
 Set Default Proof Using "Type".
 
 (* TODO: upstream *)
