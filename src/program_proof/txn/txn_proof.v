@@ -48,25 +48,18 @@ Definition mapsto_txn (γ : txn_names) (l : addr) (v : {K & bufDataT K}) : iProp
     "Hmapsto_meta" ∷ mapsto (hG := γ.(txn_metaheap)) l 1 γm ∗
     "Hmod_frag" ∷ ghost_var γm (1/2) true.
 
-Theorem mapsto_txn_2 {K1 K2} a v0 v1 :
-  @mapsto_txn K1 a v0 -∗
-  @mapsto_txn K2 a v1 -∗
+Theorem mapsto_txn_2 γ a v0 v1 :
+  mapsto_txn γ a v0 -∗
+  mapsto_txn γ a v1 -∗
   False.
 Proof.
   rewrite /mapsto_txn.
   iIntros "H0 H1".
   iDestruct "H0" as (g0) "(H0log & H0m & H0own)".
   iDestruct "H1" as (g1) "(H1log & H1m & H1own)".
-(*
-  rewrite H0 in H2; inversion H2.
-  subst.
-  apply eq_sigT_eq_dep in H5.
-  apply Eqdep_dec.eq_dep_eq_dec in H5; subst.
-  2: apply bufDataKind_eq_dec.
-  iDestruct (mapsto_valid_2 with "H0m H1m") as %x.
-  exfalso; eauto.
-*)
-Admitted.
+  iDestruct (mapsto_disjoint with "H0m H1m") as %Hnoteq.
+  eauto.
+Qed.
 
 Definition bufDataT_in_block (walblock : Block) blockK (blkno off : u64) (bufData : {K & bufDataT K}) : Prop :=
   is_bufData_at_off walblock off (projT2 bufData) ∧
@@ -175,14 +168,6 @@ Proof.
   iPureIntro.
   unfold bufDataT_in_block in *.
   intuition eauto; congruence.
-Qed.
-
-Theorem is_txn_dup l γ :
-  is_txn l γ -∗
-  is_txn l γ ∗
-  is_txn l γ.
-Proof.
-  iIntros "#$".
 Qed.
 
 Theorem wp_txn_Load l γ a v :
