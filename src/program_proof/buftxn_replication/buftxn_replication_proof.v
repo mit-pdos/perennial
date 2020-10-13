@@ -49,7 +49,8 @@ Section goose_lang.
     "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_l) ∗
     (* TODO: make this a crash lock with cinv *)
     "#His_lock" ∷ is_lock lockN #m_l (rb_linv l γ) ∗
-    "#Htxn" ∷ is_txn_system txnN γ.
+    "#His_txn" ∷ txn_proof.is_txn txn_l γ.(buftxn_txn_names) ∗
+    "#Htxns" ∷ is_txn_system txnN γ.
 
   Theorem wp_RepBlock__Read l Q :
     {{{ "#Hrb" ∷ is_rep_block l ∗
@@ -67,7 +68,13 @@ Section goose_lang.
     iNamed "Hinv".
     wp_pures.
     wp_loadField.
-    (* TODO: oops, forgot to prove a wp for Begin *)
+    wp_apply (wp_BufTxn__Begin with "[]").
+    { iFrame "#". }
+    iIntros (γtxn l_txn) "Htxn".
+    wp_pures.
+    wp_loadField.
+    change (word.mul 8 4096) with (U64 32768).
+
   Abort.
 
 End goose_lang.

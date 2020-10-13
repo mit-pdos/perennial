@@ -45,6 +45,32 @@ Definition is_buftxn (buftx : loc)
           mapsto_txn γUnified a v )
   )%I.
 
+Local Lemma is_buftxn_to_get_mapsto_txn buftx mT γUnified :
+  is_buftxn buftx mT γUnified -∗
+  [∗ map] a ↦ _ ∈ mT, ∃ v, mapsto_txn γUnified a v.
+Proof.
+  iNamed 1.
+  iApply (big_sepM_mono with "Hctxelem").
+  iIntros (a obj Hlookup) "Ha".
+  destruct (gBufmap !! a); eauto.
+  destruct b.(bufDirty); eauto.
+  iDestruct "Ha" as (?) "?".
+  eauto.
+Qed.
+
+Lemma is_buftxn_not_in_map buftx mT γUnified a v0 :
+  is_buftxn buftx mT γUnified -∗
+  mapsto_txn γUnified a v0 -∗
+  ⌜mT !! a = None⌝.
+Proof.
+  rewrite is_buftxn_to_get_mapsto_txn.
+  iIntros "Hm Ha".
+  destruct (mT !! a) eqn:Helem; eauto.
+  iExFalso.
+  iDestruct (big_sepM_lookup_dom with "Hm") as (v') "Ha2"; eauto.
+  iDestruct (mapsto_txn_2 with "Ha Ha2") as %[].
+Qed.
+
 Theorem wp_buftxn_Begin l γUnified:
   {{{ is_txn l γUnified
   }}}

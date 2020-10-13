@@ -259,6 +259,14 @@ Section goose_lang.
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=
      ptsto_mut γtxn a 1 obj.
 
+  Instance modify_token_conflicting γ : Conflicting (modify_token γ).
+  Proof.
+    rewrite /modify_token.
+    iIntros (????) "H1 H2".
+    destruct (decide (a0 = a1)); subst; auto.
+    iDestruct (mapsto_txn_2 with "H1 H2") as %[].
+  Qed.
+
   Theorem lift_into_txn E l γ γtxn d a obj :
     ↑invN ⊆ E →
     is_buftxn l γ γtxn d -∗
@@ -267,15 +275,35 @@ Section goose_lang.
   Proof.
     iIntros (?) "Hctx Ha".
     iNamed "Hctx".
-    iMod (mspec.BufTxn_lift_one _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hupd"; auto.
-  Admitted.
+    iDestruct (mspec.is_buftxn_not_in_map with "Hbuftxn Ha") as %Hnotin.
+    iMod (mspec.BufTxn_lift_one _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hbuftxn"; auto.
+    iMod (map_alloc a obj with "Htxn_ctx") as "[Htxn_ctx Ha]"; eauto.
+    iModIntro.
+    iFrame "Ha".
+    iExists _; iFrame "#∗".
+    iPureIntro; set_solver.
+  Qed.
 
-  Instance modify_token_conflicting γ : Conflicting (modify_token γ).
+  Theorem lift_map_into_txn E l γ γtxn d m :
+    ↑invN ⊆ E →
+    is_buftxn l γ γtxn d -∗
+    ([∗ map] a↦v ∈ m, modify_token γ a v) ={E}=∗
+    ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗ is_buftxn l γ γtxn (dom (gset _) m ∪ d).
   Proof.
-    rewrite /modify_token.
-    iIntros (????) "H1 H2".
-    destruct (decide (a0 = a1)); subst; auto.
-    iDestruct (mapsto_txn_2 with "H1 H2") as %[].
+    iIntros (?) "Hctx Hm".
+    iInduction m as [|i x m] "IH" using map_ind forall (d).
+    - setoid_rewrite big_sepM_empty.
+      rewrite dom_empty_L left_id_L.
+      by iFrame.
+    - rewrite !big_sepM_insert //.
+      iDestruct "Hm" as "[Ha Hm]".
+      iMod (lift_into_txn with "Hctx Ha") as "[Ha Hctx]"; first by auto.
+      iMod ("IH" with "Hctx Hm") as "[Hm Hctx]".
+      iModIntro.
+      iFrame.
+      iExactEq "Hctx".
+      f_equal.
+      set_solver.
   Qed.
 
   (* TODO: can only lift HoldsAt P d', and new buftxn has domain d ∪ d' *)
