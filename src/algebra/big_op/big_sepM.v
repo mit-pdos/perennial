@@ -214,6 +214,34 @@ Section map.
     iFrame.
   Qed.
 
+  Lemma big_sepM_lookup_acc_mono Φ Ψ m k x :
+    m !! k = Some x →
+    (∀ k' x', m !! k' = Some x' → k' ≠ k → Φ k' x' ⊢ Ψ k' x') →
+    ([∗ map] k' ↦ x' ∈ m, Φ k' x') ⊢ Φ k x ∗ (Ψ k x -∗ ([∗ map] k' ↦ x' ∈ m, Ψ k' x')).
+  Proof.
+    iIntros (Hk Hmono) "Hm".
+    iPoseProof (big_sepM_delete _ _ _ _ Hk with "Hm") as "(HΦk&Hm)".
+    iPoseProof (big_sepM_mono Φ Ψ with "Hm") as "Hm".
+    {
+      intros k' x' Hk'.
+      apply lookup_delete_Some in Hk'.
+      specialize (Hmono k' x').
+      intuition.
+    }
+    iFrame.
+    iIntros "HΨk".
+    iPoseProof (big_sepM_insert with "[Hm HΨk]") as "Hm".
+    2: {
+      iFrame.
+      iFrame.
+    }
+    {
+      apply lookup_delete_None.
+      eauto.
+    }
+    rewrite insert_delete insert_id //.
+  Qed.
+
   Lemma big_sepM_filter Φ (R: K * A → Prop) {Hdec: ∀ k, Decision (R k)} m :
     ([∗ map] k ↦ x ∈ filter R m, Φ k x) ⊣⊢
     ([∗ map] k ↦ x ∈ m, if decide (R (k, x)) then Φ k x else emp).
