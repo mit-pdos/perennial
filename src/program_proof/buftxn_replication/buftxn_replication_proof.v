@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import PropRestore.
 From Perennial.algebra Require Import liftable liftable2 async.
 
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof.
@@ -97,7 +98,7 @@ Section goose_lang.
     change (word.mul 8 4096) with (U64 32768).
     iMod (lift_liftable_into_txn with "Htxn rb_rep") as "[rb_rep Htxn]".
     { solve_ndisj. }
-    iNamed "rb_rep".
+    iNamedRestorable "rb_rep".
     wp_apply (wp_BufTxn__ReadBuf with "[$Htxn $Ha0]").
     { reflexivity. }
     iIntros (dirty bufptr) "[Hbuf Htxn_restore]".
@@ -113,8 +114,17 @@ Section goose_lang.
     iMod ("Htxn_restore" with "Hbuf [%]") as "[Htxn Ha0]".
     { eauto. }
     wp_pures.
-    (* TODO: now we get to call CommitWait! first need to re-assemble rb_rep,
-    though *)
+    let i := iFresh in
+    iDestruct ("rb_rep" with "[$HP $Ha1 $Ha0]") as i;
+      iClear "rb_rep"; iRename i into "rb_rep".
+    wp_apply (wp_BufTxn__CommitWait _ _ (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
+    { unfold txnN, invariant.walN.
+      admit. (* disjointness *) }
+    { admit. (* disjointness *) }
+    iIntros (txn_id' ok) "Hpost".
+    wp_pures.
+    wp_loadField.
+    (* because this is a read, could have simulated almost anywhere earlier *)
   Abort.
 
 End goose_lang.
