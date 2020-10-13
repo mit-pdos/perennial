@@ -512,25 +512,22 @@ Ltac word_cleanup :=
 Ltac word := solve [ word_cleanup ].
 
 (* FIXME: move upstream to std++ *)
-Lemma elem_of_seq start sz :
-  ∀ i, i ∈ seq start sz ↔ (start ≤ i < start + sz)%nat.
+Lemma elem_of_seq start sz x :
+  x ∈ seq start sz ↔ (start ≤ x < start + sz)%nat.
 Proof.
-  intros i.
   rewrite elem_of_list_In, in_seq.
   auto.
 Qed.
 
 (* FIXME: move upstream to std++ *)
-Lemma elem_of_seqZ start sz :
-  ∀ i, i ∈ seqZ start sz ↔ start ≤ i < start + sz.
+Lemma elem_of_seqZ start sz x :
+  x ∈ seqZ start sz ↔ start ≤ x < start + sz.
 Proof.
-  intros i.
-  unfold seqZ.
-  rewrite elem_of_list_fmap.
-  setoid_rewrite elem_of_seq.
+  rewrite elem_of_list_lookup.
+  setoid_rewrite lookup_seqZ.
   split; intros.
-  - destruct H as [y [-> Hin]]; lia.
-  - exists (Z.to_nat (i - start)); lia.
+  - destruct H as [i ?]. lia.
+  - exists (Z.to_nat (x - start)). lia.
 Qed.
 
 (* FIXME: move upstream to std++ *)
