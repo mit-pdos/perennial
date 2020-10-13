@@ -137,6 +137,61 @@ Proof.
     iExists _; by iFrame.
 Qed.
 
+Lemma txn_upds_drop : ∀ off txns, ∃ uoff,
+  txn_upds (drop off txns) = drop uoff (txn_upds txns).
+Proof.
+  rewrite /txn_upds.
+  induction off; simpl; intros.
+  - exists 0%nat. rewrite ?drop_0. done.
+  - destruct txns.
+    + exists 0%nat. done.
+    + simpl. destruct (IHoff txns). rewrite H.
+      exists (length (snd p) + x)%nat.
+      rewrite drop_plus_app; eauto.
+Qed.
+
+Lemma apply_upds_in : ∀ upds a d0 d1,
+  a ∈ (update.addr <$> upds) ->
+  apply_upds upds d0 !! int.val a = apply_upds upds d1 !! int.val a.
+Proof.
+  induction upds; simpl; intros.
+  - inversion H.
+  - destruct a. simpl in *.
+    inversion H; clear H; subst; eauto.
+    destruct (decide (addr ∈ update.addr <$> upds)); eauto.
+    rewrite ?apply_upds_insert_commute; eauto.
+    rewrite ?lookup_insert; done.
+Qed.
+
+Lemma apply_upds_drop' : ∀ off upds d (a : u64) b,
+  ( ∀ d0, apply_upds (drop off upds) d0 !! int.val a = Some b ) ->
+  apply_upds upds d !! int.val a = Some b.
+Proof.
+  induction off; simpl; intros.
+  - rewrite drop_0 in H. done.
+  - destruct upds; simpl in *; eauto.
+Qed.
+
+Lemma apply_upds_drop : ∀ off upds d (a : u64) b,
+  apply_upds (drop off upds) ∅ !! int.val a = Some b ->
+  apply_upds upds d !! int.val a = Some b.
+Proof.
+  intros.
+  destruct (decide (a ∈ (update.addr <$> drop off upds))).
+  2: { eapply apply_upds_not_in in n; congruence. }
+  eapply apply_upds_drop'; intros.
+  rewrite (apply_upds_in _ _ _ d0) in H; eauto.
+Qed.
+
+Lemma apply_upds_drop_txn : ∀ off txns d (a : u64) b,
+  apply_upds (txn_upds (drop off txns)) ∅ !! int.val a = Some b ->
+  apply_upds (txn_upds txns) d !! int.val a = Some b.
+Proof.
+  intros.
+  destruct (txn_upds_drop off txns). rewrite H0 in H.
+  eapply apply_upds_drop; eauto.
+Qed.
+
 Theorem simulate_read_cache_hit {l γ Q σ memLog diskEnd diskEnd_txn_id b a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = Some b ->
   (is_wal_inner l γ σ ∗ P σ) -∗
@@ -161,16 +216,19 @@ Proof.
     { eapply (relation.suchThat_runs _ _ true). eauto. }
     simpl. monad_simpl. simpl.
     rewrite /last_disk /disk_at_txn_id take_ge; last by lia.
-    (* need to connect σ with memLog to show this is [b] *)
-    admit.
+    rewrite /is_mem_memLog in His_memLog.
+    destruct His_memLog as [Hall_updates Hall_pos].
+    rewrite Hall_updates in Happly.
+    erewrite apply_upds_drop_txn; eauto.
+    constructor. reflexivity.
   }
 
   iModIntro.
   iFrame "HP HQ".
   iFrame.
   iSplit; first by done.
-  iExists _, _, _, _. iFrame. iFrame "#". iFrame "%".
-Admitted.
+  iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
+Qed.
 
 (* TODO: this is hard, should prove it at some point *)
 Theorem simulate_read_cache_miss {l γ Q σ memLog diskEnd diskEnd_txn_id a} :
