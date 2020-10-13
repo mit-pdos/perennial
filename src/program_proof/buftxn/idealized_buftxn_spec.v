@@ -396,8 +396,8 @@ Section goose_lang.
     {{{ dirty (bufptr:loc), RET #bufptr;
         is_buf bufptr a (Build_buf _ (objData obj) dirty) ∗
         (∀ (obj': bufDataT (objKind obj)) dirty',
-            ⌜dirty' = true ∨ (dirty' = dirty ∧ obj' = objData obj)⌝ ∗
-            is_buf bufptr a (Build_buf _ obj' dirty') ==∗
+            is_buf bufptr a (Build_buf _ obj' dirty') -∗
+            ⌜dirty' = true ∨ (dirty' = dirty ∧ obj' = objData obj)⌝ ==∗
             is_buftxn_at_txn l γ γtxn i ∗ buftxn_maps_to γtxn a (existT (objKind obj) obj')) }}}.
   Proof.
     iIntros (? Φ) "Hpre HΦ".
@@ -412,7 +412,7 @@ Section goose_lang.
     iIntros (??) "[Hbuf Hbuf_upd]".
     iApply "HΦ".
     iFrame "Hbuf".
-    iIntros (obj' dirty') "[%Hdirty' Hbuf]".
+    iIntros (obj' dirty') "Hbuf". iIntros (Hdirty).
     iMod ("Hbuf_upd" with "[$Hbuf]") as "Hbuftxn".
     { iPureIntro; intuition auto. }
     intuition subst.

@@ -102,7 +102,19 @@ Section goose_lang.
     { reflexivity. }
     iIntros (dirty bufptr) "[Hbuf Htxn_restore]".
     wp_pures.
-    (* TODO: need to clone the Data field of is_buf *)
+    wp_apply (wp_buf_loadField_data with "Hbuf").
+    simpl.
+    iIntros (data_s) "[Hdata Hbuf]".
+    wp_apply (util_proof.wp_CloneByteSlice with "Hdata").
+    iIntros (data_s') "[Hdata Hdata_copy]".
+    iDestruct (is_buf_return_data _ _ {| bufKind := KindBlock |} _ (bufBlock _) with "[Hdata $Hbuf]") as "Hbuf".
+    { simpl; iFrame. }
+    simpl.
+    iMod ("Htxn_restore" with "Hbuf [%]") as "[Htxn Ha0]".
+    { eauto. }
+    wp_pures.
+    (* TODO: now we get to call CommitWait! first need to re-assemble rb_rep,
+    though *)
   Abort.
 
 End goose_lang.
