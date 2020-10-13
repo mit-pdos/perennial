@@ -95,10 +95,14 @@ Section goose_lang.
     wp_pures.
     wp_loadField.
     change (word.mul 8 4096) with (U64 32768).
-    iDestruct (rb_rep_lift with "rb_rep") as (m) "H"; iNamed "H".
-    iDestruct (big_sepM_sep with "rb_rep_m") as "[Hmod Heph]".
-    iMod (lift_map_into_txn with "Htxn Hmod") as "[Htxnmap Htxn]".
-
+    iMod (lift_liftable_into_txn with "Htxn rb_rep") as "[rb_rep Htxn]".
+    { solve_ndisj. }
+    iNamed "rb_rep".
+    wp_apply (wp_BufTxn__ReadBuf with "[$Htxn $Ha0]").
+    { reflexivity. }
+    iIntros (dirty bufptr) "[Hbuf Htxn_restore]".
+    wp_pures.
+    (* TODO: need to clone the Data field of is_buf *)
   Abort.
 
 End goose_lang.

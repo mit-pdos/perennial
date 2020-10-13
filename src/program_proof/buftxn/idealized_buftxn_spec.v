@@ -246,15 +246,19 @@ Section goose_lang.
   Definition modify_token γ (a: addr) obj: iProp Σ :=
     txn_proof.mapsto_txn γ.(buftxn_txn_names) a obj.
 
-  (* this is for a single buftxn (transaction) - not persistent, buftxn's are
-  not shareable *)
-  Definition is_buftxn l γ γtxn (d: gset addr) : iProp Σ :=
-    ∃ (mT: gmap addr object),
-      "%Hdom" ∷ ⌜dom (gset _) mT = d⌝ ∗
+  Definition is_buftxn_at_txn l γ γtxn i : iProp Σ :=
+    ∃ (mT0 mT: gmap addr object),
+      "%Hdom" ∷ ⌜dom (gset _) mT0 = dom (gset _) mT⌝ ∗
       "#Htxn_system" ∷ is_txn_system γ ∗
+      "Hold_vals" ∷ ([∗ map] a↦v ∈ mT0, ephemeral_val_from γ.(buftxn_async_name) i a v) ∗
       "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) ∗
       "Htxn_ctx" ∷ map_ctx γtxn 1 mT
   .
+
+  (* this is for a single buftxn (transaction) - not persistent, buftxn's are
+  not shareable *)
+  Definition is_buftxn l γ γtxn: iProp Σ :=
+    ∃ i, is_buftxn_at_txn l γ γtxn i.
 
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=
      ptsto_mut γtxn a 1 obj.
@@ -267,72 +271,79 @@ Section goose_lang.
     iDestruct (mapsto_txn_2 with "H1 H2") as %[].
   Qed.
 
-  Theorem lift_into_txn E l γ γtxn d a obj :
-    ↑invN ⊆ E →
-    is_buftxn l γ γtxn d -∗
-    modify_token γ a obj ={E}=∗
-    (buftxn_maps_to γtxn a obj ∗ is_buftxn l γ γtxn ({[a]} ∪ d)).
+  (* TODO: prove this instance for ptsto_mut 1 *)
+  Global Instance buftxn_maps_to_conflicting γtxn :
+    Conflicting (buftxn_maps_to γtxn).
   Proof.
-    iIntros (?) "Hctx Ha".
+    rewrite /buftxn_maps_to.
+    iIntros (????) "Ha1 Ha2".
+    destruct (decide (a0 = a1)); subst; auto.
+    iDestruct (ptsto_conflict with "Ha1 Ha2") as %[].
+  Qed.
+
+  Theorem lift_into_txn E l γ γtxn i a obj :
+    ↑invN ⊆ E →
+    is_buftxn_at_txn l γ γtxn i -∗
+    modify_token γ a obj -∗
+    ephemeral_val_from γ.(buftxn_async_name) i a obj
+    ={E}=∗
+    (buftxn_maps_to γtxn a obj ∗ is_buftxn_at_txn l γ γtxn i).
+  Proof.
+    iIntros (?) "Hctx Ha Ha_i".
     iNamed "Hctx".
     iDestruct (mspec.is_buftxn_not_in_map with "Hbuftxn Ha") as %Hnotin.
+    assert (mT0 !! a = None) as Hnotin0.
+    { apply not_elem_of_dom.
+      rewrite Hdom.
+      apply not_elem_of_dom; auto. }
     iMod (mspec.BufTxn_lift_one _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hbuftxn"; auto.
     iMod (map_alloc a obj with "Htxn_ctx") as "[Htxn_ctx Ha]"; eauto.
     iModIntro.
     iFrame "Ha".
-    iExists _; iFrame "#∗".
-    iPureIntro; set_solver.
+    iExists (<[a:=obj]> mT0), _; iFrame "#∗".
+    iSplit.
+    - iPureIntro.
+      rewrite !dom_insert_L; congruence.
+    - rewrite big_sepM_insert //.
+      iFrame.
   Qed.
 
-  Theorem lift_map_into_txn E l γ γtxn d m :
+  Theorem lift_map_into_txn E l γ γtxn i m :
     ↑invN ⊆ E →
-    is_buftxn l γ γtxn d -∗
-    ([∗ map] a↦v ∈ m, modify_token γ a v) ={E}=∗
-    ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗ is_buftxn l γ γtxn (dom (gset _) m ∪ d).
+    is_buftxn_at_txn l γ γtxn i -∗
+    ([∗ map] a↦v ∈ m, modify_token γ a v ∗
+                      ephemeral_val_from γ.(buftxn_async_name) i a v) ={E}=∗
+    ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗ is_buftxn_at_txn l γ γtxn i.
   Proof.
     iIntros (?) "Hctx Hm".
-    iInduction m as [|i x m] "IH" using map_ind forall (d).
+    iInduction m as [|a v m] "IH" using map_ind.
     - setoid_rewrite big_sepM_empty.
-      rewrite dom_empty_L left_id_L.
       by iFrame.
     - rewrite !big_sepM_insert //.
-      iDestruct "Hm" as "[Ha Hm]".
-      iMod (lift_into_txn with "Hctx Ha") as "[Ha Hctx]"; first by auto.
+      iDestruct "Hm" as "[[Ha_mod Ha_eph] Hm]".
+      iMod (lift_into_txn with "Hctx Ha_mod Ha_eph") as "[Ha Hctx]"; first by auto.
       iMod ("IH" with "Hctx Hm") as "[Hm Hctx]".
       iModIntro.
       iFrame.
-      iExactEq "Hctx".
-      f_equal.
-      set_solver.
   Qed.
 
-  (* TODO: can only lift HoldsAt P d', and new buftxn has domain d ∪ d' *)
-  (*
   Theorem lift_liftable_into_txn E `{!Liftable P}
-          l γ γtxn d :
+          l γ γtxn i :
     ↑invN ⊆ E →
-    is_buftxn l γ γtxn d -∗
-    P (modify_token γ) ={E}=∗
-    P (buftxn_maps_to γtxn) ∗ is_buftxn l γ γtxn d.
+    is_buftxn_at_txn l γ γtxn i -∗
+    P (λ a v, modify_token γ a v ∗
+              ephemeral_val_from γ.(buftxn_async_name) i a v)
+    ={E}=∗
+    P (buftxn_maps_to γtxn) ∗ is_buftxn_at_txn l γ γtxn i.
   Proof.
     iIntros (?) "Hctx HP".
-    iDestruct (liftable (P:=P) with "HP") as (m) "[Hm HP]".
-    iSpecialize ("HP" $! (buftxn_maps_to γtxn)).
-    iInduction m as [|i x m] "IH" using map_ind.
-    - iModIntro.
-      setoid_rewrite big_sepM_empty.
-      iSplitL "HP"; [ | iFrame ].
-      by iApply "HP".
-    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; auto.
-      iMod (lift_into_txn with "Hctx Hi") as "[Hi Hctx]"; auto.
-      iMod ("IH" with "Hctx Hm [Hi HP]") as "[$ $]".
-      + iIntros "Hm".
-        iApply "HP".
-        rewrite big_sepM_insert //.
-        iFrame.
-      + auto.
+    iDestruct (liftable_restore_elim with "HP") as (m) "[Hm HP]".
+    iMod (lift_map_into_txn with "Hctx Hm") as "[Hm Hctx]".
+    { solve_ndisj. }
+    iModIntro.
+    iFrame.
+    iApply "HP"; iFrame.
   Qed.
-*)
 
   Lemma init_txn_system {E} l_txn γUnified σs :
     is_txn l_txn γUnified ∗ ghost_var γUnified.(txn_crashstates) (1/2) σs ={E}=∗
@@ -350,10 +361,12 @@ Section goose_lang.
     auto.
   Qed.
 
+  (* NOTE(tej): this is kind of weird in that it returns something for any
+  transaction ID; the caller will fix this as soon as they lift something in *)
   Theorem wp_BufTxn__Begin (l_txn: loc) γ :
     {{{ is_txn l_txn γ.(buftxn_txn_names) ∗ is_txn_system γ }}}
       Begin #l_txn
-    {{{ γtxn l, RET #l; is_buftxn l γ γtxn ∅ }}}.
+    {{{ γtxn l, RET #l; ∀ i, is_buftxn_at_txn l γ γtxn i }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ".
     iDestruct "Hpre" as "[#His_txn #Htxn_inv]".
@@ -363,9 +376,11 @@ Section goose_lang.
     iMod (map_init ∅) as (γtxn) "Hctx".
     iModIntro.
     iApply "HΦ".
-    iExists ∅.
+    iIntros (i).
+    iExists ∅, ∅.
     iSplit; first by (iPureIntro; set_solver).
     iFrame "∗#".
+    rewrite big_sepM_empty //.
   Qed.
 
   Definition is_object l a obj: iProp Σ :=
@@ -374,16 +389,16 @@ Section goose_lang.
                        bufData := objData obj;
                        bufDirty := dirty |}.
 
-  Theorem wp_BufTxn__ReadBuf l γ γtxn d (a: addr) (sz: u64) obj :
+  Theorem wp_BufTxn__ReadBuf l γ γtxn i (a: addr) (sz: u64) obj :
     bufSz (objKind obj) = int.nat sz →
-    {{{ is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj }}}
+    {{{ is_buftxn_at_txn l γ γtxn i ∗ buftxn_maps_to γtxn a obj }}}
       BufTxn__ReadBuf #l (addr2val a) #sz
     {{{ dirty (bufptr:loc), RET #bufptr;
         is_buf bufptr a (Build_buf _ (objData obj) dirty) ∗
         (∀ (obj': bufDataT (objKind obj)) dirty',
             ⌜dirty' = true ∨ (dirty' = dirty ∧ obj' = objData obj)⌝ ∗
             is_buf bufptr a (Build_buf _ obj' dirty') ==∗
-            is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a (existT (objKind obj) obj')) }}}.
+            is_buftxn_at_txn l γ γtxn i ∗ buftxn_maps_to γtxn a (existT (objKind obj) obj')) }}}.
   Proof.
     iIntros (? Φ) "Hpre HΦ".
     iDestruct "Hpre" as "[Hbuftxn Ha]".
@@ -406,10 +421,12 @@ Section goose_lang.
       iMod (map_update with "Htxn_ctx Ha") as
           "[Htxn_ctx $]".
       iModIntro.
-      iExists (<[a:=existT _ obj']> mT).
+      iExists mT0, (<[a:=existT _ obj']> mT).
       iSplitR.
       { iPureIntro.
         apply elem_of_dom_2 in Hmt_lookup.
+        rewrite dom_insert_L.
+        rewrite Hdom.
         set_solver. }
       iFrame "∗#".
     - (* user did not change buf, so no basic updates are needed *)
@@ -419,9 +436,9 @@ Section goose_lang.
         as Hobjeq by (destruct obj; auto).
       rewrite Hobjeq.
       iSplitR "Ha".
-      + iExists mT.
+      + iExists mT0, mT.
         iSplit; first by auto.
-        iFrame "Htxn_system Htxn_ctx".
+        iFrame "Htxn_system Htxn_ctx Hold_vals".
         iExactEq "Hbuftxn".
         rewrite /named.
         f_equal.
@@ -465,20 +482,20 @@ Section goose_lang.
       iApply (data_has_obj_to_buf_data with "Hs"); auto.
   Qed.
 
-  Theorem wp_BufTxn__OverWrite l γ γtxn d (a: addr) (sz: u64)
+  Theorem wp_BufTxn__OverWrite l γ γtxn i (a: addr) (sz: u64)
           (data_s: Slice.t) (data: list byte) obj0 obj :
     bufSz (objKind obj) = int.nat sz →
     data_has_obj data a obj →
     (* TODO: can we get this for free by showing they both equal the kind set
     out in the schema for a? *)
     objKind obj = objKind obj0 →
-    {{{ is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj0 ∗
+    {{{ is_buftxn_at_txn l γ γtxn i ∗ buftxn_maps_to γtxn a obj0 ∗
         (* NOTE(tej): this has to be a 1 fraction, because the slice is
         incorporated into the buftxn, is handed out in ReadBuf, and should then
         be mutable. *)
         is_slice_small data_s byteT 1 data }}}
       BufTxn__OverWrite #l (addr2val a) #sz (slice_val data_s)
-    {{{ RET #(); is_buftxn l γ γtxn d ∗ buftxn_maps_to γtxn a obj }}}.
+    {{{ RET #(); is_buftxn_at_txn l γ γtxn i ∗ buftxn_maps_to γtxn a obj }}}.
   Proof.
     iIntros (??? Φ) "Hpre HΦ".
     iDestruct "Hpre" as "(Hbuftxn & Ha & Hdata)".
@@ -498,9 +515,10 @@ Section goose_lang.
     iModIntro.
     iApply "HΦ".
     iFrame "Ha".
-    iExists _; iFrame "#∗".
+    iExists _, _; iFrame "#∗".
     iPureIntro.
     apply elem_of_dom_2 in Hlookup.
+    rewrite Hdom.
     set_solver.
   Qed.
 
@@ -532,16 +550,13 @@ Section goose_lang.
   predicates; TODO: won't it be difficult to establish that the footprint of P
   hasn't changed in the invariant? it hasn't because we've had it locked, but we
   don't have ownership over it... *)
-  Theorem wp_BufTxn__CommitWait {l γ γtxn} P0 P d txn_id0 :
+  Theorem wp_BufTxn__CommitWait {l γ γtxn} P0 P `{!Liftable P} txn_id0 :
     N ## invariant.walN →
     N ## invN →
-    {{{ "Hbuftxn" ∷ is_buftxn l γ γtxn d ∗
-        (* TODO: in order to get these two to coexist, we really need to ∧ them together:
-           [big_sepM ephemeral_val_from m0 ∗ big_sepM buftxn_maps_to m ∗
-           (PredRestore P0 m0 ∧ PredRestore P m)]
-         *)
-        "HP0" ∷ HoldsAt P0 (ephemeral_val_from (V:=object) γ.(buftxn_async_name) txn_id0) d ∗
-        "HP" ∷ HoldsAt P (buftxn_maps_to γtxn) d
+    {{{ "Hbuftxn" ∷ is_buftxn_at_txn l γ γtxn txn_id0 ∗
+        "HP" ∷ P (buftxn_maps_to γtxn)
+        (* TODO: need to connect P0 to old values in buftxn, should be exposed
+        somehow *)
     }}}
       BufTxn__CommitWait #l #true
     {{{ (txn_id':nat) (ok:bool), RET #ok;
@@ -558,11 +573,11 @@ Section goose_lang.
   Proof.
     iIntros (?? Φ) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hbuftxn".
-    iDestruct (holds_at_map_ctx with "Htxn_ctx HP") as "(Htxn_ctx & Htxn_m & HP)"; first by auto.
-    iDestruct (HoldsAt_eq with "HP0") as (m0) "(%Hdom_m0&Hstable&HP0)".
+    iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
+    iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
     wp_apply (mspec.wp_BufTxn__CommitWait _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
-                with "[$Hbuftxn Hstable]").
+                with "[$Hbuftxn Hold_vals]").
     { iInv "Htxn_system" as ">Hinner" "Hclo".
       iModIntro.
       iNamed "Hinner".
@@ -570,15 +585,15 @@ Section goose_lang.
       iFrame "H◯async".
       iIntros "H◯async".
 
-      iMod (async_update_map mT with "H●latest Hstable") as "[H●latest Hstable]".
+      iMod (async_update_map mT with "H●latest Hold_vals") as "[H●latest Hold_vals]".
       { congruence. }
 
       (* NOTE: we don't use this theorem and instead inline its proof (to some
       extent) since we really need to know what the new map is, to restore
       txn_system_inv. *)
       (* iMod (map_update_predicate with "H●latest HP0 HP") as (m') "[H●latest HP]". *)
-      iDestruct (async_ctx_ephemeral_val_from_map_split with "H●latest Hstable")
-        as "(H●latest & Hstable_old & Hnew)".
+      iDestruct (async_ctx_ephemeral_val_from_map_split with "H●latest Hold_vals")
+        as "(H●latest & Hold_vals & Hnew)".
 
       iMod ("Hclo" with "[H◯async H●latest]") as "_".
       { iNext.
@@ -593,12 +608,12 @@ Section goose_lang.
     - iDestruct "Hpost" as (txn_id) "(HQ&Hlower_bound&Hmod_tokens)".
       iApply ("HΦ" $! txn_id).
       iSplitR "Hlower_bound".
-      + iApply "HP".
+      + iApply "HPrestore".
+        iApply big_sepM_subseteq; eauto.
         iApply big_sepM_sep; iFrame.
       + iSpecialize ("Hlower_bound" with "[% //]").
         iAssumption.
     - iApply "HΦ".
-      iApply "HP0".
       (* TODO: oops, buftxn spec promises _some_ modification tokens on failure,
       should promise the same ones as we started with *)
   Admitted.

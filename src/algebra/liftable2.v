@@ -41,6 +41,14 @@ Section bi.
     iFrame.
   Qed.
 
+  Theorem liftable_restore_elim P `{!Liftable P} mapsto1 `{!Conflicting mapsto1} :
+    P mapsto1 -∗ ∃ m, ([∗ map] a↦v ∈ m, mapsto1 a v) ∗ PredRestore P m.
+  Proof.
+    iIntros "HP".
+    iDestruct (liftable with "HP") as (m) "[Hm HP]".
+    iExists _; iFrame.
+  Qed.
+
   Global Instance PredRestore_equiv_proper : Proper (pointwise_relation _ (⊣⊢) ==> eq ==> (≡)) PredRestore.
   Proof.
     intros P1 P2 H m m' <-.
