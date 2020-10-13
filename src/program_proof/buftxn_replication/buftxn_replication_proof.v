@@ -79,7 +79,7 @@ Section goose_lang.
         "Hfupd" ∷ (∀ σ, P σ ={⊤}=∗ P σ ∗ Q σ)
     }}}
       RepBlock__Read #l
-    {{{ s σ, RET slice_val s; is_slice s u8T 1 σ ∗ Q σ }}}.
+    {{{ s σ (ok:bool), RET (slice_val s, #ok); is_slice s u8T 1 σ ∗ Q σ }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hrb".
@@ -99,6 +99,7 @@ Section goose_lang.
     iMod (lift_liftable_into_txn with "Htxn rb_rep") as "[rb_rep Htxn]".
     { solve_ndisj. }
     iNamedRestorable "rb_rep".
+    iMod ("Hfupd" with "HP") as "[HP HQ]".
     wp_apply (wp_BufTxn__ReadBuf with "[$Htxn $Ha0]").
     { reflexivity. }
     iIntros (dirty bufptr) "[Hbuf Htxn_restore]".
@@ -117,14 +118,23 @@ Section goose_lang.
     let i := iFresh in
     iDestruct ("rb_rep" with "[$HP $Ha1 $Ha0]") as i;
       iClear "rb_rep"; iRename i into "rb_rep".
-    wp_apply (wp_BufTxn__CommitWait _ _ (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
+    wp_apply (wp_BufTxn__CommitWait _ (rb_rep a0 a1 σ) (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
     { unfold txnN, invariant.walN.
       admit. (* disjointness *) }
     { admit. (* disjointness *) }
     iIntros (txn_id' ok) "Hpost".
     wp_pures.
     wp_loadField.
-    (* because this is a read, could have simulated almost anywhere earlier *)
-  Abort.
+    destruct ok.
+    - iDestruct "Hpost" as "[rb_rep #Hdurable]".
+      wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1]").
+      { iNext.
+        iExists _, _, _, _.
+        iFrame "∗#". }
+      wp_pures.
+      iApply "HΦ".
+      iFrame.
+    - admit. (* XXX: can't release lock, CommitWait doesn't handle this properly *)
+  Admitted.
 
 End goose_lang.
