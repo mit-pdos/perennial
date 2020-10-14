@@ -295,174 +295,69 @@ Proof.
           iExFalso; iPureIntro. (* TODO: Have contradictory hypotheses Hlseq_lb_ineq and Hineq *)
           admit.
         }
-
-
-
-        
-        iDestruct "HMinner" as (real_lseq) "[#>Hle [>Hlseq_own Hcases]]".
-        assert (v = real_lseq) as Htemp; first admit. (* TODO: make this a lemma *)
-        iAssert ⌜replyHistory !! (lockArgs.(CID), lockArgs.(Seq)) = None⌝%I as %HtempMap.
-        {
-          admit.
-        }
-        iMod (map_alloc_ro (lockArgs.(CID), lockArgs.(Seq)) (Some false) with "Hrcctx") as "[Hrcctx #Hrc_ptsto]"; first done.
-        iDestruct (big_sepM_delete _ _ lockArgs.(CID) v with "Hownγlseq") as "(Hlseq_frombigSep & Hγlseqauth)"; first done.
-        destruct Htemp.
-        iCombine "Hlseq_frombigSep Hlseq_own" as "Hcombined".
-        iMod (own_update with "Hcombined") as "Hcombined".
-        {
-          eapply singleton_update.
-          eapply auth_update_alloc.
-          eapply (max_nat_local_update _ _ (MaxNat (int.nat lockArgs.(Seq)))). simpl. lia.
-        }
-        iDestruct "Hcombined" as "[[Hlseq_frombigSep Hlseq_own] Hfrag]".
-        iDestruct (big_sepM_insert_delete with "[$Hγlseqauth $Hlseq_frombigSep]") as "Hγlseqauth".
-        iDestruct (big_sepM_insert _ _ (lockArgs.(CID), lockArgs.(Seq)) _ with "[$Hrc_lseqbound $Hfrag]") as "#Hrc_lseqbound2"; first done.
-        iDestruct (big_sepM_insert _ _ (lockArgs.(CID), lockArgs.(Seq)) _ with "[$Htbd $Hrc_ptsto]") as "#Htbd2"; first done.
-        
-        iMod ("HMClose" with "[Hrc_ptsto Hcases Hlseq_own]") as "_".
-        { iNext. iLeft. iExists _; iFrame. iFrame "#".
-          iSplitL ""; first done. iRight. iExists false. iFrame "#".
-          iSplitL ""; first done. by iLeft.
-        }
-        iModIntro.
-        wp_apply (release_spec lockN #mu_ptr _ with "[-Hreply HPost]"); try iFrame "Hmu Hlocked".
-        { (* Re-establish LockServer_mutex_inv *)
-          iNext. iExists _, _, _, _, _, _, _; try iFrame; try iFrame "#"; try iFrame "%".
-          iPureIntro.
-          split.
-          {
-            intros.
-            admit.
-          }
-          {
-            intros.
-            admit.
-          }
-        }
-        wp_seq.
-        iApply "HPost".
-        iExists false. iFrame. iFrame "#".
-      + (* Lock not held by anyone *)
-        wp_pures.
+      + wp_pures.
         wp_storeField.
         repeat wp_loadField.
-        wp_apply (wp_MapInsert _ _ locksM _ true #true with "HlocksMap"); first eauto; iIntros "HlocksMap".
-        wp_seq.
-        repeat wp_loadField.
-        wp_apply (wp_MapInsert _ _ lastReplyM _ true #true with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
+        wp_apply (wp_MapInsert with "HlocksMap"); first eauto; iIntros "HlocksMap".
+        wp_seq. repeat wp_loadField.
+        wp_apply (wp_MapInsert with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
         wp_seq. wp_loadField.
         iApply fupd_wp.
-        iInv M as "HMinner" "HMClose".
-        iDestruct "HMinner" as "[HMinner|Hbad]"; last admit.
-        iDestruct "HMinner" as (real_lseq) "[#>Hle [>Hlseq_own Hcases]]".
-        assert (v = real_lseq) as Htemp; first admit. (* TODO: make this a lemma *)
-        iAssert ⌜replyHistory !! (lockArgs.(CID), lockArgs.(Seq)) = None⌝%I as %HtempMap.
+        iInv M as "[#>Hargseq_lb Hcases]" "HMClose".
+        iDestruct "Hcases" as "[>Hunproc|Hproc]".
         {
+          iInv lockserverinvN as ">HNinner" "HNClose"; first admit.
+          (* Give unique namespaces to invariants *)
+          iNamed "HNinner".
+          iDestruct (map_update _ _ (Some true) with "Hrcctx Hunproc") as ">[Hrcctx Hrcptsto]".
+          iDestruct (map_freeze with "Hrcctx Hrcptsto") as ">[Hrcctx #Hrcptsoro]".
+          iDestruct (big_sepM_insert_2 _ _ (lockArgs.(CID), lockArgs.(Seq)) (Some true) with "[Hargseq_lb] Hseq_lb") as "Hseq_lb"; eauto.
+          iMod ("HNClose" with "[Hrcctx Hseq_lb]") as "_".
+          { iNext. iExists _; iFrame. }
+
+          iDestruct (big_sepM_delete _ _ (lockArgs.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first done.
+          iMod (fmcounter_map_update _ _ _ (int.nat lockArgs.(Seq)) with "Hlseq_one") as "Hlseq_one"; first lia.
+          iMod (fmcounter_map_get_lb with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
+          iDestruct (big_sepM_insert_delete with "[$Hlseq_own $Hlseq_one]") as "Hlseq_own".
+          iDestruct "HLocknameValid" as %HLocknameValid.
+          iDestruct (big_sepM2_dom with "Hlockeds") as %HlocksDom.
+          iDestruct (big_sepM2_delete _ _ _ lockArgs.(Lockname) false with "Hlockeds") as "[HP Hlockeds]".
+          {
+            rewrite /map_get in HLocksMapGet.
+            assert (is_Some (locksM !! lockArgs.(Lockname))) as HLocknameInLocks.
+            { apply elem_of_dom. apply elem_of_dom in HLocknameValid. rewrite HlocksDom. done. }
+            destruct HLocknameInLocks as [ x  HLocknameInLocks].
+            rewrite HLocknameInLocks in HLocksMapGet.
+            by injection HLocksMapGet as ->.
+            (* TODO: Probably a better proof for this *)
+          }
+          { admit. }
+          iDestruct "HP" as "[% | HP]"; first discriminate.
+          iMod ("HMClose" with "[HP]") as "_".
+          { iNext. iFrame "#". iRight. iFrame. iExists _; iFrame "#". }
+          iModIntro.
+
+          Check big_sepM2_insert_delete.
+          iDestruct (big_sepM2_insert_delete _ _ _ lockArgs.(Lockname) true () with "[$Hlockeds]") as "Hlockeds"; eauto.
+          iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM lockArgs.(CID) lockArgs.(Seq) true with "[Hargseq_lb] Hrcagree") as "Hrcagree2"; eauto.
+          wp_apply (release_spec lockN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
+          {
+            iNext. iExists _, _, _, _, _, _; iFrame; iFrame "#".
+            (* Related to validLocknames *)
+            admit. 
+          }
+          wp_seq. iApply "HPost". iExists {| OK:=_; Stale:= _|}; iFrame.
+          iRight. iFrame "#".
+        }
+        { (* One-shot update of γrc already happened; this is impossible *)
+          iDestruct "Hproc" as "[#>Hlseq_lb _]".
+          iDestruct (big_sepM_delete _ _ (lockArgs.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first done.
+          iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
+          iExFalso; iPureIntro. (* TODO: Have contradictory hypotheses Hlseq_lb_ineq and Hineq *)
           admit.
         }
-        iMod (map_alloc_ro (lockArgs.(CID), lockArgs.(Seq)) (Some true) with "Hrcctx") as "[Hrcctx #Hrc_ptsto]"; first done.
-        iDestruct (big_sepM_delete _ _ lockArgs.(CID) v with "Hownγlseq") as "(Hlseq_frombigSep & Hγlseqauth)"; first done.
-        destruct Htemp.
-        iCombine "Hlseq_frombigSep Hlseq_own" as "Hcombined".
-        iMod (own_update with "Hcombined") as "Hcombined".
-        {
-          eapply singleton_update.
-          eapply auth_update_alloc.
-          eapply (max_nat_local_update _ _ (MaxNat (int.nat lockArgs.(Seq)))). simpl. lia.
-        }
-        iDestruct "Hcombined" as "[[Hlseq_frombigSep Hlseq_own] Hfrag]".
-        iDestruct (big_sepM_insert_delete with "[$Hγlseqauth $Hlseq_frombigSep]") as "Hγlseqauth".
-        iDestruct (big_sepM_insert _ _ (lockArgs.(CID), lockArgs.(Seq)) _ with "[$Hrc_lseqbound $Hfrag]") as "#Hrc_lseqbound2"; first done.
-        iDestruct (big_sepM_insert _ _ (lockArgs.(CID), lockArgs.(Seq)) _ with "[$Htbd $Hrc_ptsto]") as "#Htbd2"; first done.
-        
-        iMod ("HMClose" with "[Hrc_ptsto Hcases Hlseq_own]") as "_".
-        { iNext. iLeft. iExists _; iFrame. iFrame "#".
-          iSplitL ""; first done. iRight. iExists true. iFrame "#".
-          iSplitL ""; first done. iRight. iLeft.
-          (* TODO: Get (Ps ln) here; need to know that lockname was in the locks map, or
-             get (Ps ln) from somewhere else...*)
-          admit.
-        }
-        iModIntro.
-        wp_apply (release_spec lockN #mu_ptr _ with "[-Hreply HPost]"); try iFrame "Hmu Hlocked".
-        { (* Re-establish LockServer_mutex_inv *)
-          iNext. iExists _, _, _, _, _, _, _; try iFrame; try iFrame "#"; try iFrame "%".
-          (* TODO: Go back and update the locked big_sepM *)
-          iPureIntro.
-          split.
-          {
-            intros.
-            admit.
-          }
-          {
-            intros.
-            admit.
-          }
-        }
-        wp_seq.
-        iApply "HPost".
-        iExists false. iFrame. iFrame "#".
-
-
-
-
-
-
-
-
-        
-
-(*
-        iApply fupd_wp.
-        iInv M as "HMinner" "HCloseM".
-        iDestruct "HMinner" as (lseq_fi _) "HMinner".
-        iMod (map_update lockArgs.(CID) (lseq_fi, last_reply) (lockArgs.(Seq), false) with "Hmapctx Hptsto") as "(Hmapctx & Hptsto)".
-        rewrite (map_insert_zip_with pair _ _ lockArgs.(CID) _ _).
-        iMod ("HCloseM" with "[Hptsto]") as "_".
-        { iModIntro.
-          unfold CallTryLock_inv.
-          iExists lockArgs.(Seq).
-          admit. }
-        iModIntro.
-        wp_seq.
-        wp_loadField.
-        wp_apply (release_spec lockN #mu_ptr _ with "[-Hreply HPost]"); try iFrame "Hmu Hlocked".
-        { (* Estanlish LockServer_mutex_inv *)
-          iNext. iFrame.
-          iExists _, _, _, _, _, _; iFrame.
-        }
-        wp_seq. iApply ("HPost").
-        iExists false. iFrame. by iRight.
-      + (* Lock not held by anyone *)
-        wp_pures. wp_storeField. repeat wp_loadField.
-      wp_apply (wp_MapInsert _ _ locksM _ true #true with "HlocksMap"); first eauto; iIntros "HlocksMap".
-      wp_seq. repeat wp_loadField.
-      wp_apply (wp_MapInsert _ _ lastReplyM _ true #true with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
-      wp_seq.
-      iDestruct (big_sepM_delete _ locksM lockArgs.(Lockname) false with "HPs") as "(HP & HPs)".
-      { assert (ok=true); first admit. rewrite H in HLocksMapGet. admit. }
-      iDestruct (big_sepM_insert _ (_) lockArgs.(Lockname) true with "[HPs]") as "HPs"; try iFrame.
-      { admit. }
-      { by iLeft. }
-      rewrite (insert_delete).
-      wp_loadField.
-      wp_apply (release_spec lockN #mu_ptr _ with "[-Hreply HPost HP]").
-      { (* Establish LockServer_mutex_inv *)
-        iFrame "Hmu Hlocked". iNext.
-        iExists _, _, _, _, _, _; try iFrame.
-        (* TODO: Update rc_γ *)
-        admit.
-      }
-      iMod (inv_alloc N _ (P ∨ own γP (Excl ())) with "[HP]") as "Hescrow".
-      {
-        iNext. iDestruct "HP" as "[%|HP]"; first done.
-        rewrite HPs. by iLeft.
-      }
-      wp_seq.
-      iApply "HPost".
-      iExists true. iFrame.
-      iLeft. iSplit; try done.
+  - (* Case when CID not in lastSeq *)
+    admit.
 Admitted.
 
 Lemma CallTryLock_spec (srv reply args:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (used:gset u64) rc_γ (Ps:u64 -> iProp Σ) P γP N M:
