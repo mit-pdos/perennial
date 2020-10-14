@@ -81,6 +81,23 @@ Notation "k fm[[ γ ]]≥ n " := (fmcounter_map_lb γ k n)
 Notation "k fm[[ γ ]]> n " := (fmcounter_map_lb γ k (n + 1))
 (at level 20, format "k fm[[ γ ]]> n") : bi_scope.
 
+Lemma fmcounter_map_get_lb γ k q n :
+      k fm[[γ]]↦{q} n ==∗ k fm[[γ]]↦{q} n ∗ k fm[[γ]]≥ n.
+Admitted.
+
+Lemma fmcounter_map_update γ k n n':
+  n ≤ n' ->
+      k fm[[γ]]↦ n ==∗ k fm[[γ]]↦ n'.
+Admitted.
+
+Lemma fmcounter_map_agree_lb γ k q n1 n2 :
+  k fm[[γ]]↦{q} n1 -∗ k fm[[γ]]≥ n2 -∗ ⌜n1 ≥ n2⌝.
+Admitted.
+
+Lemma fmcounter_map_agree_strict_lb γ k q n1 n2 :
+  k fm[[γ]]↦{q} n1 -∗ k fm[[γ]]> n2 -∗ ⌜n1 > n2⌝.
+Admitted.
+
 Definition LockRequest_inv (lockArgs:LockArgsC) γrc γlseq γcseq (Ps:u64 -> iProp Σ) (γP:gname) : iProp Σ :=
    "#Hlseq_bound" ∷ lockArgs.(CID) fm[[γcseq]]> int.nat lockArgs.(Seq)
   ∗ ("Hreply" ∷ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ None ∨
@@ -255,8 +272,12 @@ Proof.
           iMod ("HNClose" with "[Hrcctx Hseq_lb]") as "_".
           { iNext. iExists _; iFrame. }
 
+          iDestruct (big_sepM_delete _ _ (lockArgs.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first done.
+          iMod (fmcounter_map_update _ _ _ (int.nat lockArgs.(Seq)) with "Hlseq_one") as "Hlseq_one"; first lia.
+          iMod (fmcounter_map_get_lb with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
+          iDestruct (big_sepM_insert_delete with "[$Hlseq_own $Hlseq_one]") as "Hlseq_own".
           iMod ("HMClose" with "[]") as "_".
-          { iNext. iFrame "#". iRight. iExists _; iFrame "#". by iLeft. }
+          { iNext. iFrame "#". iRight. iFrame. iExists _; iFrame "#". by iLeft. }
           iModIntro.
 
           iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM lockArgs.(CID) lockArgs.(Seq) false with "[Hargseq_lb] Hrcagree") as "Hrcagree2"; eauto.
@@ -267,10 +288,12 @@ Proof.
           wp_seq. iApply "HPost". iExists {| OK:=_; Stale:= _|}; iFrame.
           iRight. iFrame "#".
         }
-        {
-          iDestruct "Hproc" as (last_reply) "[#>Hrcptstoro Hcases]".
-          iInv lockserverinvN as ">HNinner" "HNClose"; first admit.
-          iNamed "HNinner".
+        { (* One-shot update of γrc already happened; this is impossible *)
+          iDestruct "Hproc" as "[#>Hlseq_lb _]".
+          iDestruct (big_sepM_delete _ _ (lockArgs.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first done.
+          iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
+          iExFalso; iPureIntro. (* TODO: Have contradictory hypotheses Hlseq_lb_ineq and Hineq *)
+          admit.
         }
 
 
