@@ -194,9 +194,9 @@ Definition Clerk__Lock: val :=
             "CID" ::= struct.loadF Clerk.S "cid" "ck";
             "Seq" ::= struct.loadF Clerk.S "seq" "ck"
           ];;
-          struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1))
-      else #());;
-      Continue);;
+          struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
+          Continue)
+      else Continue));;
     struct.loadF LockReply.S "OK" "reply".
 
 Definition Clerk__Unlock: val :=
@@ -214,7 +214,5 @@ Definition Clerk__Unlock: val :=
       "errb" <-[boolT] CallUnlock (struct.loadF Clerk.S "primary" "ck") "args" "reply";;
       (if: (![boolT] "errb" = #false)
       then Break
-      else #());;
-      Continue);;
+      else Continue));;
     struct.loadF UnlockReply.S "OK" "reply".
-
