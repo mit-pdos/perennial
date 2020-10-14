@@ -433,10 +433,13 @@ Proof.
   wp_let.
   repeat wp_loadField.
   wp_apply (wp_allocStruct); first eauto.
-  iIntros (args) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "(?&?&?&_)".
+  iIntros (args0) "Hargs0".
+  iDestruct (struct_fields_split with "Hargs0") as "(HCID&HSeq&HLockname&_)".
+  iMod (readonly_alloc_1 with "HCID") as "HCID".
+  iMod (readonly_alloc_1 with "HSeq") as "HSeq".
+  iMod (readonly_alloc_1 with "HLockname") as "HLockname".
   wp_apply wp_ref_to; first eauto.
-  iIntros (args_ptrs) "Hargs_ptr".
+  iIntros (args_ptrs) "Hargs0_ptr".
   wp_let.
   wp_loadField.
   wp_binop.
@@ -467,34 +470,39 @@ Proof.
   Check big_sepM_insert.
   iMod (fmcounter_map_get_lb with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
   iDestruct (big_sepM_insert _ _ (cid, seq) None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
-  iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv".
+  iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:=ln |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv_init".
   {
     iNext. iFrame; iFrame "#".
   }
   iMod ("HNclose" with "[Hrcctx]") as "_".
   { iNext. iExists _. iFrame; iFrame "#". }
   iModIntro.
+  Print read_lock_args.
   wp_apply (wp_forBreak
               (fun b => (⌜b = true⌝ ∨ ⌜b = false⌝∗ (Ps ln))
+∗ (∃ curr_seq args, 
+    let lockArgs := {| CID:=cid; Seq:=curr_seq; Lockname:= ln |} in
+     "%" ∷ ⌜lockArgs.(Lockname) = ln⌝
+  ∗ "#Hargs" ∷ read_lock_args args lockArgs
+  ∗ "#Hargsinv" ∷ (inv (lockRequestInvN lockArgs.(CID) lockArgs.(Seq))
+                   (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP))
   ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
-  ∗ "Hseq" ∷ (ck_l ↦[Clerk.S :: "seq"] #(LitInt (word.add seq 1)))
+  ∗ "Hseq" ∷ (ck_l ↦[Clerk.S :: "seq"] #(LitInt (word.add lockArgs.(Seq) 1)))
   ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] #srv
-  ∗ "HLockname" ∷ args ↦[LockArgs.S :: "Lockname"] #ln
-  ∗ "HCID" ∷ args ↦[LockArgs.S :: "CID"] #cid
-  ∗ "HSeq" ∷ args ↦[LockArgs.S :: "Seq"] #seq
   ∗ "Hargs_ptr" ∷ args_ptrs ↦[refT (uint64T * (uint64T * (uint64T * unitT))%ht)] #args
   ∗ "Herrb_ptr" ∷ (∃ (err:bool), errb_ptr ↦[boolT] #err)
   ∗ "Hreply" ∷ (∃ lockReply, own_lockreply reply lockReply ∗ (⌜b = true⌝ ∨ ⌜b = false ∧ lockReply.(OK)=true⌝) )
-  ∗ "HγP" ∷ own γP (Excl ())
-  ∗ "Hcseq_own" ∷ cid fm[[γcseq]]↦(int.nat seq + 1)
-  ∗ "Hpost" ∷ (own_clerk #ck_l srv γcseq ∗ Ps ln -∗ Φ #true)
-              )%I with "[] [-]"); eauto.
+  ∗ "HγP" ∷ (⌜b = false⌝ ∨ own γP (Excl ()))
+  ∗ ("Hcseq_own" ∷ cid fm[[γcseq]]↦(int.nat lockArgs.(Seq) + 1))
+  ∗ "HΦpost" ∷ (own_clerk #ck_l srv γcseq ∗ Ps ln -∗ Φ #true)
+              ))%I with "[] [-]"); eauto.
   {
     iIntros (Ψ).
     iModIntro.
-    iIntros "Hpre Hpost".
+    iIntros "Hpre HΨpost".
     wp_lam.
     iDestruct "Hpre" as "[_ Hpre]".
+    iDestruct "Hpre" as (curr_seq args) "Hpre".
     iNamed "Hpre".
     iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
     wp_load.
@@ -507,39 +515,70 @@ Proof.
       { iExists _. iFrame "#". }
       iFrame.
       iFrame "#".
-      admit. (* Need to make the LockArgs struct readonly *)
+      iDestruct "Hreply" as "[Hreply rest]".
+      iFrame.
     }
 
     iIntros (err) "HCallTryLockPost".
     wp_pures.
     iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [% | [% HCallPost]]]".
-    {
-      rewrite H0.
+    { (* No reply from CallTryLock *)
+      rewrite H1.
       wp_store.
       wp_load.
       wp_pures.
-      iApply "Hpost".
+      iApply "HΨpost".
       iFrame. iSplitL ""; first by iLeft.
+      iExists _, _; iFrame; iFrame "#".
+      iSplitL ""; first done.
       iSplitL "Herrb_ptr"; eauto.
     }
-    {
-      rewrite H0.
+    { (* Got a reply from CallTryLock *)
+      rewrite H1.
       wp_store.
       wp_load.
       wp_pures.
       iNamed "Hreply".
       wp_loadField.
       destruct (lockReply'.(OK)) eqn:Hok.
-      {
+      { (* Reply granted lock *)
+        wp_if.
         wp_pures.
-        iApply "Hpost".
-        iFrame. iSplitL ""; first by iLeft.
+        iApply "HΨpost".
+        iSplitL "HγP".
+        { iRight. iSplitR "HγP"; first done. simpl.
+          admit. (* TODO: open req invariant and exchange γP for P *)
+        }
+        iExists _, _; iFrame; iFrame "#".
+        iSplitL ""; first done.
         iSplitL "Herrb_ptr"; eauto.
-        iExists _; iFrame. rewrite Hok. iFrame. by iLeft.
+        iSplitR ""; last by iLeft.
+        iExists _; iFrame. rewrite Hok. iFrame. by iRight.
       }
-      { (* Allocate new LockArgs and increase seqno *)
+      { (* Reply indicated lock was already held; allocate new LockArgs and increase seqno to retry *)
         wp_pures.
-        admit.
+        repeat wp_loadField.
+        wp_apply (wp_allocStruct); eauto.
+        iIntros (args') "Hargs'".
+        iDestruct (struct_fields_split with "Hargs'") as "(HCID&HSeq&HLockname&_)".
+        iMod (readonly_alloc_1 with "HCID") as "#HCID".
+        iMod (readonly_alloc_1 with "HSeq") as "#HSeq".
+        iMod (readonly_alloc_1 with "HLockname") as "#HLockname".
+        wp_store.
+        wp_loadField.
+        wp_binop.
+        wp_storeField.
+        iApply "Hpost".
+        iSplitL ""; first by iLeft.
+        iExists {| CID:= lockArgs.(CID); Seq := word.add lockArgs.(Seq) 1; Lockname := ln|}, _; iFrame "#"; iFrame.
+        simpl.
+        iNamed "Hargs".
+        iFrame "#".
+        iFrame.
+        iSplitL "".
+        { unfold read_lock_args.
+        iSplitL "Herrb_ptr"; eauto.
+        iExists _; iFrame. rewrite Hok. iFrame. by iRight.
       }
     }
   }
@@ -567,4 +606,5 @@ Proof.
 Admitted.
 
 
+Print readonly_def.
 End lockservice_proof.
