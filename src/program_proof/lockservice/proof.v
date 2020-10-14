@@ -56,19 +56,6 @@ Definition locknameN (lockname : u64) := nroot .@ "lock" .@ lockname.
 
   Parameter validLocknames : gmap u64 unit.
 
-(* TODO: out of date, needs to be re-written *)
-Definition own_clerk (ck:val) (srv:val) (γ:gname) (γrc:gname) : iProp Σ
-  :=
-  ∃ (ck_l:loc) (cid seq ls_seq : u64) (last_reply:bool),
-    ⌜ck = #ck_l⌝
-    ∗⌜int.val seq > int.val ls_seq⌝%Z
-    ∗ck_l ↦[Clerk.S :: "cid"] #cid
-    ∗ck_l ↦[Clerk.S :: "cid"] #seq
-    ∗ck_l ↦[Clerk.S :: "primary"] srv
-    ∗ (cid [[γrc]]↦ (ls_seq, last_reply))
-       (*∗own γ (seq) *)
-.
-
 Definition fmcounter_map_own γ (k:u64) q n := own γ {[ k := (●{q}MaxNat n)]}.
 Definition fmcounter_map_lb γ (k:u64) n := own γ {[ k := (◯MaxNat n)]}.
 
@@ -98,6 +85,18 @@ Lemma fmcounter_map_agree_strict_lb γ k q n1 n2 :
   k fm[[γ]]↦{q} n1 -∗ k fm[[γ]]> n2 -∗ ⌜n1 > n2⌝.
 Admitted.
 
+
+(* TODO: out of date, needs to be re-written *)
+Definition own_clerk (ck:val) (srv:val) (γcseq:gname) : iProp Σ
+  :=
+  ∃ (ck_l:loc) (cid seq : u64) (last_reply:bool),
+    "%" ∷ ⌜ck = #ck_l⌝
+    ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
+    ∗ "Hseq" ∷ ck_l ↦[Clerk.S :: "seq"] #seq
+    ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] srv
+    ∗ "Hcseq_own" ∷ (cid fm[[γcseq]]↦ int.nat seq)
+.
+
 Definition LockRequest_inv (lockArgs:LockArgsC) γrc γlseq γcseq (Ps:u64 -> iProp Σ) (γP:gname) : iProp Σ :=
    "#Hlseq_bound" ∷ lockArgs.(CID) fm[[γcseq]]> int.nat lockArgs.(Seq)
   ∗ ("Hreply" ∷ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ None ∨
@@ -108,13 +107,13 @@ Definition LockRequest_inv (lockArgs:LockArgsC) γrc γlseq γcseq (Ps:u64 -> iP
     )
 .
 
-Definition ReplyCache_inv (γrc γi γcseq:gname) (Ps: u64 -> (iProp Σ)) : iProp Σ :=
+Definition ReplyCache_inv (γrc γcseq:gname) (Ps: u64 -> (iProp Σ)) : iProp Σ :=
   ∃ replyHistory:gmap (u64 * u64) (option bool),
       ("Hrcctx" ∷ map_ctx γrc 1 replyHistory)
-    ∗ ("Hseq_lb" ∷ [∗ map] cid_seq ↦ _ ∈ replyHistory, cid_seq.1 fm[[γcseq]]> int.nat cid_seq.2)
+    ∗ ("#Hcseq_lb" ∷ [∗ map] cid_seq ↦ _ ∈ replyHistory, cid_seq.1 fm[[γcseq]]> int.nat cid_seq.2)
 .
 
-Definition LockServer_mutex_inv (srv:loc) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) : iProp Σ :=
+Definition LockServer_mutex_inv (srv:loc) (γrc γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr locks_ptr:loc) (lastSeqM:gmap u64 u64)
     (lastReplyM locksM:gmap u64 bool),
       "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
@@ -143,21 +142,77 @@ Definition own_lockreply (args_ptr:loc) (lockReply:LockReplyC): iProp Σ :=
   ∗ "HreplyStale" ∷ args_ptr ↦[LockReply.S :: "Stale"] #lockReply.(Stale)
 .
 
-Definition lockserverinvN : namespace := nroot .@ "lockserverinv".
+Definition replycacheinvN : namespace := nroot .@ "replycacheinvN".
+Definition mutexN : namespace := nroot .@ "lockservermutex".
+Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
 
-Definition is_lockserver srv γrc γi γlseq γcseq Ps lockN: iProp Σ :=
-  ∃ (mu_ptr:loc),
-    "Hmuptr" ∷ readonly (srv ↦[LockServer.S :: "mu"] #mu_ptr)
-    ∗ ( "Hlinv" ∷ inv lockserverinvN (ReplyCache_inv γrc γi γcseq Ps ) )
-    ∗ ( "Hmu" ∷ is_lock lockN #mu_ptr (LockServer_mutex_inv srv γrc γi γlseq γcseq Ps))
+Definition is_lockserver srv γrc γlseq γcseq Ps: iProp Σ :=
+  ∃ (mu_ptr srv_ptr:loc),
+    "%" ∷ ⌜srv = #srv_ptr⌝
+    ∗ "Hmuptr" ∷ readonly (srv_ptr ↦[LockServer.S :: "mu"] #mu_ptr)
+    ∗ ( "Hlinv" ∷ inv replycacheinvN (ReplyCache_inv γrc γcseq Ps ) )
+    ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (LockServer_mutex_inv srv_ptr γrc γlseq γcseq Ps))
 .
 
-Instance inj_MaxNat_equiv : Inj eq equiv MaxNat.
+Lemma Lock_spec ck srv (ln:u64) (γrc γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) :
+  {{{ own_clerk ck srv γcseq
+                ∗ is_lockserver srv γrc γlseq γcseq Ps
+  }}}
+    Clerk__Lock ck #ln
+  {{{ RET #(); own_clerk ck srv γcseq ∗ (Ps ln) }}}.
 Proof.
-  intros n1 n2.
-  intros ?%leibniz_equiv.
-  inversion H0; auto.
-Qed.
+  iIntros (Φ) "[Hclerk #Hsrv] Hpost".
+  iNamed "Hclerk".
+  rewrite H.
+  wp_lam.
+  wp_let.
+  repeat wp_loadField.
+  wp_apply (wp_allocStruct); first eauto.
+  iIntros (args) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "(?&?&?&_)".
+  wp_apply wp_ref_to; first eauto.
+  iIntros (args_ptrs) "Hargs_ptr".
+  wp_let.
+  wp_loadField.
+  wp_binop.
+  wp_storeField.
+  wp_apply wp_ref_to; first eauto.
+  iIntros (errb_ptr) "Herrb_ptr".
+  wp_let.
+  wp_apply (wp_allocStruct); first eauto.
+  iIntros (reply_ptr) "Hreply_ptr".
+  wp_pures.
+  iDestruct "Hsrv" as (mu_ptr srv_ptr) "Hsrv". iNamed "Hsrv".
+  iApply fupd_wp.
+  iInv replycacheinvN as ">Hrcinv" "HNclose".
+  iNamed "Hrcinv".
+  destruct (replyHistory !! (cid, seq)) eqn:Hrh.
+  {
+    iExFalso.
+    iDestruct (big_sepM_delete _ _ (cid, seq) with "Hcseq_lb") as "[Hbad _]"; first eauto.
+    iDestruct (fmcounter_map_agree_strict_lb with "Hcseq_own Hbad") as %Hbad.
+    iPureIntro. simpl in Hbad.
+    lia.
+  }
+  iMod (map_alloc (cid, seq) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
+  iMod (own_alloc (Excl ())) as "HγP"; first done.
+  iDestruct "HγP" as (γP) "HγP".
+  iMod (fmcounter_map_update γcseq cid _ (int.nat seq + 1) with "Hcseq_own") as "Hcseq_own".
+  { simpl. lia. }
+  Check big_sepM_insert.
+  iMod (fmcounter_map_get_lb with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
+  iDestruct (big_sepM_insert _ _ (cid, seq) None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
+  iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv".
+  {
+    iNext. iFrame; iFrame "#".
+  }
+  iMod ("HNclose" with "[Hrcctx]") as "_".
+  { iNext. iExists _. iFrame; iFrame "#". }
+  iModIntro.
+  
+  (* TODO: Will have to deal with overflow issue when re-establishing own_clerk *)
+Admitted.
+
 
 Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) P γP M lockN :
   Ps lockArgs.(Lockname) = P →
@@ -423,15 +478,6 @@ Proof.
   }
 Qed.
 
-
-(*
-Lemma Lock_spec ck γ (ln:u64) (Ps: gmap u64 (iProp Σ)) (P: iProp Σ) :
-  Ps !! ln = Some P →
-  {{{ own_clerk ck γ }}}
-    Clerk__Lock ck #ln
-  {{{ RET #(); own_clerk ck γ ∗ P }}}.
-Proof.
-Admitted.
 
 Lemma Unlock_spec ck γ (ln:u64) (Ps: gmap u64 (iProp Σ)) (P: iProp Σ) :
   Ps !! ln = Some P →
