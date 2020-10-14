@@ -87,13 +87,13 @@ Admitted.
 
 
 (* TODO: out of date, needs to be re-written *)
-Definition own_clerk (ck:val) (srv:val) (γcseq:gname) : iProp Σ
+Definition own_clerk (ck:val) (srv:loc) (γcseq:gname) : iProp Σ
   :=
   ∃ (ck_l:loc) (cid seq : u64) (last_reply:bool),
     "%" ∷ ⌜ck = #ck_l⌝
     ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
     ∗ "Hseq" ∷ ck_l ↦[Clerk.S :: "seq"] #seq
-    ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] srv
+    ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] #srv
     ∗ "Hcseq_own" ∷ (cid fm[[γcseq]]↦ int.nat seq)
 .
 
@@ -146,77 +146,15 @@ Definition replycacheinvN : namespace := nroot .@ "replycacheinvN".
 Definition mutexN : namespace := nroot .@ "lockservermutex".
 Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
 
-Definition is_lockserver srv γrc γlseq γcseq Ps: iProp Σ :=
-  ∃ (mu_ptr srv_ptr:loc),
-    "%" ∷ ⌜srv = #srv_ptr⌝
-    ∗ "Hmuptr" ∷ readonly (srv_ptr ↦[LockServer.S :: "mu"] #mu_ptr)
+Definition is_lockserver (srv_ptr:loc) γrc γlseq γcseq Ps: iProp Σ :=
+  ∃ mu_ptr,
+      "Hmuptr" ∷ readonly (srv_ptr ↦[LockServer.S :: "mu"] #mu_ptr)
     ∗ ( "Hlinv" ∷ inv replycacheinvN (ReplyCache_inv γrc γcseq Ps ) )
     ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (LockServer_mutex_inv srv_ptr γrc γlseq γcseq Ps))
 .
 
-Lemma Lock_spec ck srv (ln:u64) (γrc γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) :
-  {{{ own_clerk ck srv γcseq
-                ∗ is_lockserver srv γrc γlseq γcseq Ps
-  }}}
-    Clerk__Lock ck #ln
-  {{{ RET #(); own_clerk ck srv γcseq ∗ (Ps ln) }}}.
-Proof.
-  iIntros (Φ) "[Hclerk #Hsrv] Hpost".
-  iNamed "Hclerk".
-  rewrite H.
-  wp_lam.
-  wp_let.
-  repeat wp_loadField.
-  wp_apply (wp_allocStruct); first eauto.
-  iIntros (args) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "(?&?&?&_)".
-  wp_apply wp_ref_to; first eauto.
-  iIntros (args_ptrs) "Hargs_ptr".
-  wp_let.
-  wp_loadField.
-  wp_binop.
-  wp_storeField.
-  wp_apply wp_ref_to; first eauto.
-  iIntros (errb_ptr) "Herrb_ptr".
-  wp_let.
-  wp_apply (wp_allocStruct); first eauto.
-  iIntros (reply_ptr) "Hreply_ptr".
-  wp_pures.
-  iDestruct "Hsrv" as (mu_ptr srv_ptr) "Hsrv". iNamed "Hsrv".
-  iApply fupd_wp.
-  iInv replycacheinvN as ">Hrcinv" "HNclose".
-  iNamed "Hrcinv".
-  destruct (replyHistory !! (cid, seq)) eqn:Hrh.
-  {
-    iExFalso.
-    iDestruct (big_sepM_delete _ _ (cid, seq) with "Hcseq_lb") as "[Hbad _]"; first eauto.
-    iDestruct (fmcounter_map_agree_strict_lb with "Hcseq_own Hbad") as %Hbad.
-    iPureIntro. simpl in Hbad.
-    lia.
-  }
-  iMod (map_alloc (cid, seq) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
-  iMod (own_alloc (Excl ())) as "HγP"; first done.
-  iDestruct "HγP" as (γP) "HγP".
-  iMod (fmcounter_map_update γcseq cid _ (int.nat seq + 1) with "Hcseq_own") as "Hcseq_own".
-  { simpl. lia. }
-  Check big_sepM_insert.
-  iMod (fmcounter_map_get_lb with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
-  iDestruct (big_sepM_insert _ _ (cid, seq) None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
-  iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv".
-  {
-    iNext. iFrame; iFrame "#".
-  }
-  iMod ("HNclose" with "[Hrcctx]") as "_".
-  { iNext. iExists _. iFrame; iFrame "#". }
-  iModIntro.
-  
-  (* TODO: Will have to deal with overflow issue when re-establishing own_clerk *)
-Admitted.
-
-
-Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) P γP M lockN :
-  Ps lockArgs.(Lockname) = P →
-  {{{ "#Hls" ∷ is_lockserver srv γrc γi γlseq γcseq Ps lockN
+Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP M :
+  {{{ "#Hls" ∷ is_lockserver srv γrc γlseq γcseq Ps
       ∗ "#HargsInv" ∷ inv M (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
       ∗ "#Hargs" ∷ read_lock_args args lockArgs
       ∗ "Hreply" ∷ own_lockreply reply lockReply
@@ -226,7 +164,6 @@ LockServer__TryLock #srv #args #reply
             ∗ (⌜lockReply'.(Stale) = true⌝ ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))
 }}}.
 Proof.
-  intros HPs.
   iIntros (Φ) "Hpre HPost".
   iNamed "Hpre".
   iNamed "Hargs"; iNamed "Hreply".
@@ -234,7 +171,7 @@ Proof.
   wp_pures.
   iNamed "Hls".
   wp_loadField.
-  wp_apply (acquire_spec lockN #mu_ptr _ with "Hmu").
+  wp_apply (acquire_spec mutexN #mu_ptr _ with "Hmu").
   iIntros "(Hlocked & Hlsown)".
   iNamed "Hlsown".
   wp_seq.
@@ -255,7 +192,7 @@ Proof.
       destruct bool_decide eqn:Hineqstrict.
       { (* Stale case *)
         wp_pures. wp_storeField. wp_loadField.
-        wp_apply (release_spec lockN #mu_ptr _ with "[-HPost HreplyOK HreplyStale]"); iFrame; iFrame "#".
+        wp_apply (release_spec mutexN #mu_ptr _ with "[-HPost HreplyOK HreplyStale]"); iFrame; iFrame "#".
         { (* Re-establish LockServer_mutex_inv *)
           iNext. iExists _, _, _, _,_,_. iFrame "#". iFrame.
         }
@@ -285,7 +222,7 @@ Proof.
       apply map_get_true in HlastReplyMapGet.
       iDestruct (big_sepM2_delete with "Hrcagree") as "[#Hrcptsto _]"; eauto.
       wp_loadField.
-      wp_apply (release_spec lockN #mu_ptr _ with "[-HPost HreplyOK HreplyStale]"); iFrame; iFrame "#".
+      wp_apply (release_spec mutexN #mu_ptr _ with "[-HPost HreplyOK HreplyStale]"); iFrame; iFrame "#".
       {
         iNext. iExists _,_,_,_,_,_; iFrame "#"; iFrame.
       }
@@ -318,14 +255,14 @@ Proof.
         iInv M as "[#>Hargseq_lb Hcases]" "HMClose".
         iDestruct "Hcases" as "[>Hunproc|Hproc]".
         {
-          iInv lockserverinvN as ">HNinner" "HNClose"; first admit.
+          iInv replycacheinvN as ">HNinner" "HNClose"; first admit.
           (* Give unique namespaces to invariants *)
           iNamed "HNinner".
           iDestruct (map_update _ _ (Some false) with "Hrcctx Hunproc") as ">[Hrcctx Hrcptsto]".
           iDestruct (map_freeze with "Hrcctx Hrcptsto") as ">[Hrcctx #Hrcptsoro]".
-          iDestruct (big_sepM_insert_2 _ _ (lockArgs.(CID), lockArgs.(Seq)) (Some false) with "[Hargseq_lb] Hseq_lb") as "Hseq_lb"; eauto.
-          iMod ("HNClose" with "[Hrcctx Hseq_lb]") as "_".
-          { iNext. iExists _; iFrame. }
+          iDestruct (big_sepM_insert_2 _ _ (lockArgs.(CID), lockArgs.(Seq)) (Some false) with "[Hargseq_lb] Hcseq_lb") as "Hcseq_lb2"; eauto.
+          iMod ("HNClose" with "[Hrcctx Hcseq_lb2]") as "_".
+          { iNext. iExists _; iFrame; iFrame "#". }
 
           iDestruct (big_sepM_delete _ _ (lockArgs.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first done.
           iMod (fmcounter_map_update _ _ _ (int.nat lockArgs.(Seq)) with "Hlseq_one") as "Hlseq_one"; first lia.
@@ -336,7 +273,7 @@ Proof.
           iModIntro.
 
           iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM lockArgs.(CID) lockArgs.(Seq) false with "[Hargseq_lb] Hrcagree") as "Hrcagree2"; eauto.
-          wp_apply (release_spec lockN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
+          wp_apply (release_spec mutexN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
           {
             iNext. iExists _, _, _, _, _, _; iFrame; iFrame "#".
           }
@@ -361,14 +298,14 @@ Proof.
         iInv M as "[#>Hargseq_lb Hcases]" "HMClose".
         iDestruct "Hcases" as "[>Hunproc|Hproc]".
         {
-          iInv lockserverinvN as ">HNinner" "HNClose"; first admit.
+          iInv replycacheinvN as ">HNinner" "HNClose"; first admit.
           (* Give unique namespaces to invariants *)
           iNamed "HNinner".
           iDestruct (map_update _ _ (Some true) with "Hrcctx Hunproc") as ">[Hrcctx Hrcptsto]".
           iDestruct (map_freeze with "Hrcctx Hrcptsto") as ">[Hrcctx #Hrcptsoro]".
-          iDestruct (big_sepM_insert_2 _ _ (lockArgs.(CID), lockArgs.(Seq)) (Some true) with "[Hargseq_lb] Hseq_lb") as "Hseq_lb"; eauto.
-          iMod ("HNClose" with "[Hrcctx Hseq_lb]") as "_".
-          { iNext. iExists _; iFrame. }
+          iDestruct (big_sepM_insert_2 _ _ (lockArgs.(CID), lockArgs.(Seq)) (Some true) with "[Hargseq_lb] Hcseq_lb") as "Hcseq_lb2"; eauto.
+          iMod ("HNClose" with "[Hrcctx Hcseq_lb2]") as "_".
+          { iNext. iExists _; iFrame; iFrame "#". }
 
           iDestruct (big_sepM_delete _ _ (lockArgs.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first done.
           iMod (fmcounter_map_update _ _ _ (int.nat lockArgs.(Seq)) with "Hlseq_one") as "Hlseq_one"; first lia.
@@ -395,7 +332,7 @@ Proof.
           Check big_sepM2_insert_delete.
           iDestruct (big_sepM2_insert_delete _ _ _ lockArgs.(Lockname) true () with "[$Hlockeds]") as "Hlockeds"; eauto.
           iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM lockArgs.(CID) lockArgs.(Seq) true with "[Hargseq_lb] Hrcagree") as "Hrcagree2"; eauto.
-          wp_apply (release_spec lockN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
+          wp_apply (release_spec mutexN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
           {
             iNext. iExists _, _, _, _, _, _; iFrame; iFrame "#".
             (* Related to validLocknames *)
@@ -415,15 +352,16 @@ Proof.
     admit.
 Admitted.
 
-Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP M lockN :
-  {{{ "#Hls" ∷ is_lockserver srv γrc γi γlseq γcseq Ps lockN
+Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP M:
+  {{{ "#Hls" ∷ is_lockserver srv γrc γlseq γcseq Ps
       ∗ "#HargsInv" ∷ inv M (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
       ∗ "#Hargs" ∷ read_lock_args args lockArgs
       ∗ "Hreply" ∷ own_lockreply reply lockReply
   }}}
 CallTryLock #srv #args #reply
-{{{ v, RET v; ⌜v = #true⌝ ∨ ⌜v = #false⌝ ∗ ∃ lockReply', own_lockreply reply lockReply'
-            ∗ (⌜lockReply'.(Stale) = true⌝ ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))
+{{{ e, RET e;
+    (∃ lockReply', own_lockreply reply lockReply'
+    ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ (⌜lockReply'.(Stale) = true⌝ ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))))
 }}}.
 Proof.
   iIntros (Φ) "Hpre Hpost".
@@ -439,7 +377,6 @@ Proof.
     iNamed "HOK".
     iNamed "HStale".
     wp_let. wp_pures.
-    Check wp_forBreak.
     wp_apply (wp_forBreak
                 (fun b => ⌜b = true⌝∗
                                    ∃ lockReply, (own_lockreply l lockReply)
@@ -466,27 +403,168 @@ Proof.
   {
     wp_pures.
     wp_apply (TryLock_spec with "[$Hreply]"); eauto; try iFrame "#".
-    iIntros "TryLockPost".
+    iDestruct 1 as (lockReply') "[Hreply TryLockPost]".
     iApply "Hpost".
-    iRight. iSplitL ""; first done.
+    iFrame.
+    iExists _; iFrame.
+    iRight.
+    iSplitL ""; first done.
     iFrame.
   }
   {
     wp_pures.
     iApply "Hpost".
+    iExists _; iFrame "Hreply".
     by iLeft.
   }
 Qed.
 
-
-Lemma Unlock_spec ck γ (ln:u64) (Ps: gmap u64 (iProp Σ)) (P: iProp Σ) :
-  Ps !! ln = Some P →
-  {{{ P ∗ own_clerk ck γ }}}
-    Clerk__Unlock ck #ln
-  {{{ RET #(); own_clerk ck γ }}}
-.
+Lemma Lock_spec ck (srv:loc) (ln:u64) (γrc γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) :
+  {{{ own_clerk ck srv γcseq
+                ∗ is_lockserver srv γrc γlseq γcseq Ps
+  }}}
+    Clerk__Lock ck #ln
+  {{{ RET #true; own_clerk ck srv γcseq ∗ (Ps ln) }}}.
 Proof.
+  iIntros (Φ) "[Hclerk #Hsrv] Hpost".
+  iNamed "Hclerk".
+  rewrite H.
+  wp_lam.
+  wp_let.
+  repeat wp_loadField.
+  wp_apply (wp_allocStruct); first eauto.
+  iIntros (args) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "(?&?&?&_)".
+  wp_apply wp_ref_to; first eauto.
+  iIntros (args_ptrs) "Hargs_ptr".
+  wp_let.
+  wp_loadField.
+  wp_binop.
+  wp_storeField.
+  wp_apply wp_ref_to; first eauto.
+  iIntros (errb_ptr) "Herrb_ptr".
+  wp_let.
+  wp_apply (wp_allocStruct); first eauto.
+  iIntros (reply) "Hreply".
+  wp_pures.
+  iDestruct "Hsrv" as (mu_ptr) "Hsrv". iNamed "Hsrv".
+  iApply fupd_wp.
+  iInv replycacheinvN as ">Hrcinv" "HNclose".
+  iNamed "Hrcinv".
+  destruct (replyHistory !! (cid, seq)) eqn:Hrh.
+  {
+    iExFalso.
+    iDestruct (big_sepM_delete _ _ (cid, seq) with "Hcseq_lb") as "[Hbad _]"; first eauto.
+    iDestruct (fmcounter_map_agree_strict_lb with "Hcseq_own Hbad") as %Hbad.
+    iPureIntro. simpl in Hbad.
+    lia.
+  }
+  iMod (map_alloc (cid, seq) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
+  iMod (own_alloc (Excl ())) as "HγP"; first done.
+  iDestruct "HγP" as (γP) "HγP".
+  iMod (fmcounter_map_update γcseq cid _ (int.nat seq + 1) with "Hcseq_own") as "Hcseq_own".
+  { simpl. lia. }
+  Check big_sepM_insert.
+  iMod (fmcounter_map_get_lb with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
+  iDestruct (big_sepM_insert _ _ (cid, seq) None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
+  iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv".
+  {
+    iNext. iFrame; iFrame "#".
+  }
+  iMod ("HNclose" with "[Hrcctx]") as "_".
+  { iNext. iExists _. iFrame; iFrame "#". }
+  iModIntro.
+  wp_apply (wp_forBreak
+              (fun b => (⌜b = true⌝ ∨ ⌜b = false⌝∗ (Ps ln))
+  ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
+  ∗ "Hseq" ∷ (ck_l ↦[Clerk.S :: "seq"] #(LitInt (word.add seq 1)))
+  ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] #srv
+  ∗ "HLockname" ∷ args ↦[LockArgs.S :: "Lockname"] #ln
+  ∗ "HCID" ∷ args ↦[LockArgs.S :: "CID"] #cid
+  ∗ "HSeq" ∷ args ↦[LockArgs.S :: "Seq"] #seq
+  ∗ "Hargs_ptr" ∷ args_ptrs ↦[refT (uint64T * (uint64T * (uint64T * unitT))%ht)] #args
+  ∗ "Herrb_ptr" ∷ (∃ (err:bool), errb_ptr ↦[boolT] #err)
+  ∗ "Hreply" ∷ (∃ lockReply, own_lockreply reply lockReply ∗ (⌜b = true⌝ ∨ ⌜b = false ∧ lockReply.(OK)=true⌝) )
+  ∗ "HγP" ∷ own γP (Excl ())
+  ∗ "Hcseq_own" ∷ cid fm[[γcseq]]↦(int.nat seq + 1)
+  ∗ "Hpost" ∷ (own_clerk #ck_l srv γcseq ∗ Ps ln -∗ Φ #true)
+              )%I with "[] [-]"); eauto.
+  {
+    iIntros (Ψ).
+    iModIntro.
+    iIntros "Hpre Hpost".
+    wp_lam.
+    iDestruct "Hpre" as "[_ Hpre]".
+    iNamed "Hpre".
+    iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
+    wp_load.
+    wp_loadField.
+    iDestruct "Hreply" as (lockReply) "Hreply".
+    (* TODO: Why does this destruct not work when inside the proof for CalTryLock's pre? *)
+    wp_apply (CallTryLock_spec with "[Hreply]"); eauto.
+    {
+      iSplitL "".
+      { iExists _. iFrame "#". }
+      iFrame.
+      iFrame "#".
+      admit. (* Need to make the LockArgs struct readonly *)
+    }
+
+    iIntros (err) "HCallTryLockPost".
+    wp_pures.
+    iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [% | [% HCallPost]]]".
+    {
+      rewrite H0.
+      wp_store.
+      wp_load.
+      wp_pures.
+      iApply "Hpost".
+      iFrame. iSplitL ""; first by iLeft.
+      iSplitL "Herrb_ptr"; eauto.
+    }
+    {
+      rewrite H0.
+      wp_store.
+      wp_load.
+      wp_pures.
+      iNamed "Hreply".
+      wp_loadField.
+      destruct (lockReply'.(OK)) eqn:Hok.
+      {
+        wp_pures.
+        iApply "Hpost".
+        iFrame. iSplitL ""; first by iLeft.
+        iSplitL "Herrb_ptr"; eauto.
+        iExists _; iFrame. rewrite Hok. iFrame. by iLeft.
+      }
+      { (* Allocate new LockArgs and increase seqno *)
+        wp_pures.
+        admit.
+      }
+    }
+  }
+  {
+    iSplitL ""; first by iLeft.
+    iFrame. iSplitL "Herrb_ptr"; eauto.
+    iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
+    iExists {| OK:= false; Stale:= false |}; iFrame. by iLeft.
+  }
+
+  iIntros "LoopPost".
+  wp_seq.
+  iDestruct "LoopPost" as "(HP & LoopPost)". iNamed "LoopPost".
+  iDestruct "Hreply" as (lockReply) "[Hreply %]". iNamed "Hreply".
+  wp_loadField.
+  destruct H0; first discriminate.
+  destruct H0 as [_ ->].
+  iApply "Hpost".
+  iDestruct "HP" as "[%| [_ HP]]"; first by discriminate.
+  iFrame "HP".
+  iExists _, _, (word.add seq 1), _; iFrame; iFrame "#".
+  iSplitL ""; first done.
+  (* TODO: deal with overflow *)
+  admit.
 Admitted.
- *)
+
 
 End lockservice_proof.
