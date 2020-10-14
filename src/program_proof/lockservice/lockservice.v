@@ -129,7 +129,7 @@ Definition MakeServer: val :=
 (* Returns true iff error *)
 Definition CallTryLock: val :=
   rec: "CallTryLock" "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := ref (zero_val (struct.t LockReply.S)) in
+    Fork (let: "dummy_reply" := struct.alloc LockReply.S (zero_val (struct.t LockReply.S)) in
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             LockServer__TryLock "srv" "args" "dummy_reply";;
@@ -141,7 +141,7 @@ Definition CallTryLock: val :=
 (* Returns true iff error *)
 Definition CallUnlock: val :=
   rec: "CallUnlock" "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := ref (zero_val (struct.t UnlockReply.S)) in
+    Fork (let: "dummy_reply" := struct.alloc UnlockReply.S (zero_val (struct.t UnlockReply.S)) in
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             LockServer__Unlock "srv" "args" "dummy_reply";;
@@ -149,7 +149,6 @@ Definition CallUnlock: val :=
     (if: nondet #()
     then LockServer__Unlock "srv" "args" "reply"
     else #true).
-
 
 (* client.go *)
 
@@ -180,14 +179,14 @@ Definition Clerk__Lock: val :=
       "Seq" ::= struct.loadF Clerk.S "seq" "ck"
     ]) in
     struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
-    let: "reply" := ref (zero_val (struct.t LockReply.S)) in
     let: "errb" := ref_to boolT #false in
+    let: "reply" := struct.alloc LockReply.S (zero_val (struct.t LockReply.S)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       "errb" <-[boolT] CallTryLock (struct.loadF Clerk.S "primary" "ck") (![refT (struct.t LockArgs.S)] "args") "reply";;
       (if: (![boolT] "errb" = #false)
       then
-        (if: struct.get LockReply.S "OK" (![struct.t LockReply.S] "reply")
+        (if: struct.loadF LockReply.S "OK" "reply"
         then Break
         else
           "args" <-[refT (struct.t LockArgs.S)] struct.new LockArgs.S [
@@ -198,7 +197,7 @@ Definition Clerk__Lock: val :=
           struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1))
       else #());;
       Continue);;
-    struct.get LockReply.S "OK" (![struct.t LockReply.S] "reply").
+    struct.loadF LockReply.S "OK" "reply".
 
 Definition Clerk__Unlock: val :=
   rec: "Clerk__Unlock" "ck" "lockname" :=
@@ -208,8 +207,8 @@ Definition Clerk__Unlock: val :=
       "Seq" ::= struct.loadF Clerk.S "seq" "ck"
     ] in
     struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
-    let: "reply" := ref (zero_val (struct.t UnlockReply.S)) in
     let: "errb" := ref (zero_val boolT) in
+    let: "reply" := struct.alloc UnlockReply.S (zero_val (struct.t UnlockReply.S)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       "errb" <-[boolT] CallUnlock (struct.loadF Clerk.S "primary" "ck") "args" "reply";;
@@ -217,5 +216,5 @@ Definition Clerk__Unlock: val :=
       then Break
       else #());;
       Continue);;
-    struct.get UnlockReply.S "OK" (![struct.t UnlockReply.S] "reply").
+    struct.loadF UnlockReply.S "OK" "reply".
 

@@ -360,64 +360,69 @@ Proof.
     admit.
 Admitted.
 
-Lemma CallTryLock_spec (srv reply args:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (used:gset u64) rc_γ (Ps:u64 -> iProp Σ) P γP N M:
-  lockArgs.(Lockname) ∈ used → Ps lockArgs.(Lockname) = P →
-  {{{ "#HinvM" ∷ inv M (CallTryLock_inv lockArgs.(CID) rc_γ P γP N)
-          ∗ "Hargs" ∷ read_lock_args args lockArgs
-          ∗ "Hreply" ∷ own_lock_reply reply lockReply
+Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP M lockN :
+  {{{ "#Hls" ∷ is_lockserver srv γrc γi γlseq γcseq Ps lockN
+      ∗ "#HargsInv" ∷ inv M (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
+      ∗ "#Hargs" ∷ read_lock_args args lockArgs
+      ∗ "Hreply" ∷ own_lockreply reply lockReply
   }}}
-    CallTryLock #srv #args #reply
-  {{{ v, RET v; ⌜v = #true⌝ ∨ ⌜v = #false⌝ ∗∃ ok, (⌜ok = false⌝ ∨ ⌜ok = true⌝∗(inv N (P ∨ own γP (Excl()))) ) ∗ reply ↦[LockReply.S :: "OK"] #ok }}}.
+CallTryLock #srv #args #reply
+{{{ v, RET v; ⌜v = #true⌝ ∨ ⌜v = #false⌝ ∗ ∃ lockReply', own_lockreply reply lockReply'
+            ∗ (⌜lockReply'.(Stale) = true⌝ ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))
+}}}.
 Proof.
-  intros Hused Hp.
-  iIntros (Φ).
-  iNamed 1. iIntros "HPost".
+  iIntros (Φ) "Hpre Hpost".
+  iNamed "Hpre".
   wp_lam.
-  wp_pures.
+  wp_let.
+  wp_let.
   wp_apply wp_fork.
-  { (* Background invocations of TryLock *)
-    wp_bind (Alloc (_))%E.
-    wp_apply wp_alloc_untyped; first by eauto.
+  {
+    wp_apply (wp_allocStruct); first eauto.
     iIntros (l) "Hl".
-    wp_pures.
-    Search "wp_forBreak".
+    iDestruct (struct_fields_split with "Hl") as "(HOK&HStale&_)".
+    iNamed "HOK".
+    iNamed "HStale".
+    wp_let. wp_pures.
+    Check wp_forBreak.
     wp_apply (wp_forBreak
-                (fun b => ⌜b = true⌝%I)
-             ); try eauto.
-    {
-      iIntros (Ψ) "_".
-      iModIntro.
-      iIntros "HPost".
-      wp_pures.
-      (*
-      wp_apply (TryLock_spec with "[Hreply Hargs]"); try iFrame "HinvM Hreply Hargs".
-      iIntros "HTryLockPost".
-      wp_seq. by iApply "HPost".
-    }
-  }
+                (fun b => ⌜b = true⌝∗
+                                   ∃ lockReply, (own_lockreply l lockReply)
+                )%I with "[] [OK Stale]");
+             try eauto.
+    2: { iSplitL ""; first done. iExists {| OK:=false; Stale:=false|}. iFrame. }
 
-  wp_pures.
+    iIntros (Ψ).
+    iModIntro.
+    iIntros "[_ Hpre] Hpost".
+    iDestruct "Hpre" as (lockReply') "Hown_reply".
+    wp_apply (TryLock_spec with "[$Hown_reply]"); eauto; try iFrame "#".
+
+    iIntros "TryLockPost".
+    wp_seq.
+    iApply "Hpost".
+    iSplitL ""; first done.
+    iDestruct "TryLockPost" as (lockReply'') "[Hown_lockreply TryLockPost]".
+    iExists _. iFrame.
+  }
+  wp_seq.
   wp_apply (nondet_spec).
   iIntros (choice) "[Hv|Hv]"; iDestruct "Hv" as %->.
-  { (* Actually return the reply from running TryLock *)
-    wp_pures. 
-    wp_apply (TryLock_spec); try iFrame "HinvM"; try apply Hp.
-    iIntros "HTryLockPost".
-    iDestruct "HTryLockPost" as (ok) "[[[Htrue Hescrow]|Hfalse] Hrc]".
-    - (* TryLock succeeded *)
-      iApply "HPost". iRight.
-      iSplit; try done. iExists true. iDestruct "Htrue" as %->.
-      iFrame. iRight. by iFrame.
-    - (* TryLock failed *)
-      iApply "HPost". iRight. iSplitL ""; try done. iDestruct "Hfalse" as %->.
-      iExists false. iFrame. by iLeft.
-  }
-  { (* Don't return any reply from TryLock *)
+  {
     wp_pures.
-    iApply "HPost". by iLeft.
+    wp_apply (TryLock_spec with "[$Hreply]"); eauto; try iFrame "#".
+    iIntros "TryLockPost".
+    iApply "Hpost".
+    iRight. iSplitL ""; first done.
+    iFrame.
   }
-*)*)
-Admitted.
+  {
+    wp_pures.
+    iApply "Hpost".
+    by iLeft.
+  }
+Qed.
+
 
 (*
 Lemma Lock_spec ck γ (ln:u64) (Ps: gmap u64 (iProp Σ)) (P: iProp Σ) :
