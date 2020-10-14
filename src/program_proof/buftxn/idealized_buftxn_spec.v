@@ -264,12 +264,7 @@ Section goose_lang.
      ptsto_mut γtxn a 1 obj.
 
   Global Instance modify_token_conflicting γ : Conflicting (modify_token γ).
-  Proof.
-    rewrite /modify_token.
-    iIntros (????) "H1 H2".
-    destruct (decide (a0 = a1)); subst; auto.
-    iDestruct (mapsto_txn_2 with "H1 H2") as %[].
-  Qed.
+  Proof. apply _. Qed.
 
   (* TODO: prove this instance for ptsto_mut 1 *)
   Global Instance buftxn_maps_to_conflicting γtxn :

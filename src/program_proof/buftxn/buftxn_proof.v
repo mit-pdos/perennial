@@ -456,7 +456,7 @@ Proof.
   rewrite Hgnone. iFrame.
 Qed.
 
-Instance mapsto_txn_conflicting γUnified : Conflicting (mapsto_txn γUnified).
+Global Instance mapsto_txn_conflicting γUnified : Conflicting (mapsto_txn γUnified).
 Proof.
   rewrite /Conflicting /ConflictsWith.
   iIntros (a0 v0 a1 v1).
@@ -465,7 +465,7 @@ Proof.
   iDestruct (mapsto_txn_2 with "Hm1 Hm2") as %[].
 Qed.
 
-Instance mapsto_txn_conflicts_with γUnified : ConflictsWith (mapsto_txn γUnified) (mapsto_txn γUnified).
+Global Instance mapsto_txn_conflicts_with γUnified : ConflictsWith (mapsto_txn γUnified) (mapsto_txn γUnified).
 Proof.
   apply mapsto_txn_conflicting.
 Qed.
