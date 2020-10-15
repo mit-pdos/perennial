@@ -356,7 +356,7 @@ Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:Lock
 CallTryLock #srv #args #reply
 {{{ e, RET e;
     (∃ lockReply', own_lockreply reply lockReply'
-    ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ (⌜lockReply'.(Stale) = true⌝ ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))))
+    ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ (⌜lockReply'.(Stale) = true⌝ ∗ (lockArgs.(CID) fm[[γcseq]]> (int.nat lockArgs.(Seq) + 1)) ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))))
 }}}.
 Proof.
   iIntros (Φ) "Hpre Hpost".
@@ -405,6 +405,7 @@ Proof.
     iRight.
     iSplitL ""; first done.
     iFrame.
+    admit. (* TODO: update TryLock_spec *)
   }
   {
     wp_pures.
@@ -412,7 +413,7 @@ Proof.
     iExists _; iFrame "Hreply".
     by iLeft.
   }
-Qed.
+Admitted.
 
 
 Lemma alloc_γrc (cid seq ln:u64) γrc γlseq γcseq Ps:
@@ -422,7 +423,7 @@ Lemma alloc_γrc (cid seq ln:u64) γrc γlseq γcseq Ps:
       cid fm[[γcseq]]↦ (int.nat seq + 1)
       ∗ (∃ γP, inv (lockRequestInvN cid seq) (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:= ln |} γrc γlseq γcseq Ps γP) ∗ (own γP (Excl ()))).
 Proof using mapG1.
-  (* TODO: Why is the above necessary? *)
+  (* WHY: Why is the above necessary? *)
   intros.
   iIntros "[Hinv Hcseq_own]".
   iInv replycacheinvN as ">Hrcinv" "HNclose".
@@ -451,6 +452,30 @@ Proof using mapG1.
   { iNext. iExists _. iFrame; iFrame "#". }
   iModIntro.
   iFrame. iExists _; iFrame; iFrame "#".
+Qed.
+
+Print LockRequest_inv.
+Lemma getP_RequestInv_γrc (lockArgs:LockArgsC) γrc γlseq γcseq Ps γP M:
+  (inv M (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP))
+    -∗ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro Some true
+    -∗ (own γP (Excl ()))
+    ={⊤}=∗ ▷ Ps lockArgs.(Lockname).
+Proof.
+  iIntros "#Hinv #Hptstoro HγP".
+  iInv M as "HMinner" "HMClose".
+  iDestruct "HMinner" as "[#>Hlseqbound [Hbad | HMinner]]".
+  { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">%". destruct H; discriminate. }
+  iDestruct "HMinner" as "[#Hlseq_lb Hrest]".
+  iDestruct "Hrest" as (last_reply) "[Hptstoro_some [#>Hre | HP]]".
+  { iDestruct "Hre" as %->.
+    iDestruct (ptsto_agree_frac_value with "Hptstoro_some [$Hptstoro]") as ">%". destruct H; discriminate. }
+  iDestruct "HP" as "[HP|>Hbad]".
+  {
+    iMod ("HMClose" with "[HγP]").
+    { iNext. iFrame "#". iRight. iExists true. iFrame "#". iRight; iRight. done. }
+    done.
+  }
+  { by iDestruct (own_valid_2 with "HγP Hbad") as %Hbad. }
 Qed.
 
 Lemma Lock_spec ck (srv:loc) (ln:u64) (γrc γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) :
@@ -551,13 +576,17 @@ Proof.
       wp_loadField.
       destruct (lockReply'.(OK)) eqn:Hok.
       { (* Reply granted lock *)
-        wp_if.
+        iDestruct "HCallPost" as "[Hbad | #Hrcptstoro]"; simpl.
+        { iDestruct "Hbad" as "[_ Hbad]".
+          iDestruct (fmcounter_map_agree_strict_lb with "Hcseq_own Hbad") as %bad.
+          lia.
+        }
+        iDestruct "HγP" as "[%|HγP]"; first discriminate.
+        iMod (getP_RequestInv_γrc with "Hargsinv Hrcptstoro HγP") as "HP /=".
         wp_pures.
         iApply "HΨpost".
-        iSplitL "HγP".
-        { iRight. iSplitR "HγP"; first done. simpl.
-          admit. (* TODO: open req invariant and exchange γP for P *)
-        }
+        iSplitL "HP".
+        { iRight. by iFrame. }
         iExists _, _, _; iFrame; iFrame "#".
         iSplitL "Herrb_ptr"; eauto.
         iSplitR ""; last by iLeft.
@@ -622,6 +651,4 @@ Proof.
   admit.
 Admitted.
 
-
-Print readonly_def.
 End lockservice_proof.
