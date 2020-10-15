@@ -34,10 +34,12 @@ a certain key, which ensures that the key stayed unchanged since then.
  below can be carried across a crash. *)
 Definition is_last σs k i : Prop :=
   ∃ v, lookup_async σs i k = Some v ∧ 
-    ∀ i', i < i' → lookup_async σs i' k = Some v.
+    ∀ i', i ≤ i' → lookup_async σs i' k = Some v.
 Definition async_ctx γ σs : iProp Σ :=
-  fmlist γ.(async_list) 1 (possible σs) ∗
-  ∃ last, ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth last).
+  ∃ last, ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth last) ∗
+    (* We also have the [lb] in here to avoid some update modalities below. *)
+    fmlist γ.(async_list) 1 (possible σs) ∗ fmlist_lb γ.(async_list) (possible σs).
+
 
 Global Instance async_ctx_timeless γ σs : Timeless (async_ctx γ σs).
 Proof. apply _. Qed.
@@ -73,20 +75,72 @@ Proof.
   iDestruct (big_sepL_lookup with "Hrange") as "$"; eauto.
 Qed.
 
-Theorem ephemeral_val_from_in_bounds γ σs i a v :
+Theorem ephemeral_val_from_in_bounds γ σs i k v :
   async_ctx γ σs -∗
-  ephemeral_val_from γ i a v -∗
+  ephemeral_val_from γ i k v -∗
   (* if equal, only owns the new transactions and no current ones *)
   ⌜i < length (possible σs)⌝%nat.
 Proof.
-Admitted.
+  iIntros "Hauth [Hval Hlast]".
+  iDestruct "Hauth" as (last Hlast) "(Hmap & Halist & _)".
+  iDestruct "Hval" as (σ Hσ) "Hflist".
+  iDestruct (fmlist_idx_agree_2 with "Halist Hflist") as %Hi.
+  iPureIntro.
+  apply lookup_lt_is_Some. rewrite Hi. eauto.
+Qed.
 
-(* TODO: [ephemeral_val_from i] should probably imply that transaction i is
-within bounds, otherwise it doesn't give the right to extend; this rule is then
-only valid when i' is also in-bounds *)
-Theorem ephemeral_val_from_split i' γ i k v :
+Theorem ephemeral_txn_val_lookup γ σs i k v :
+  async_ctx γ σs -∗
+  ephemeral_txn_val γ i k v -∗
+  ⌜lookup_async σs i k = Some v⌝.
+Proof.
+  iIntros "Hauth Hval".
+  iDestruct "Hauth" as (last Hlast) "(Hmap & Halist & _)".
+  iDestruct "Hval" as (σ Hσ) "Hflist".
+  iDestruct (fmlist_idx_agree_2 with "Halist Hflist") as %Hi.
+  rewrite /lookup_async Hi /=. done.
+Qed.
+
+Theorem ephemeral_lookup_txn_val γ σs i k v :
+  lookup_async σs i k = Some v →
+  async_ctx γ σs -∗
+  ephemeral_txn_val γ i k v.
+Proof.
+  rewrite /lookup_async /ephemeral_txn_val.
+  iIntros (Hlookup) "Hauth".
+  iDestruct "Hauth" as (last _) "(_ & _ & Hflist)". clear last.
+  destruct (possible σs !! i) as [σ|] eqn:Hσ; last done.
+  simpl in Hlookup.
+  iExists _. iSplit; first done.
+  iApply fmlist_lb_to_idx; done.
+Qed.
+
+(** All transactions since [i] have the value given by [ephemeral_val_from γ i]. *)
+Theorem ephemeral_val_from_val γ σs i i' k v :
+  (i ≤ i') →
+  (i' < length (possible σs))%nat →
+  async_ctx γ σs -∗
+  ephemeral_val_from γ i k v -∗
+  ephemeral_txn_val γ i' k v.
+Proof.
+  iIntros (??) "Hauth [Hval Hlast]".
+  iDestruct (ephemeral_txn_val_lookup with "Hauth Hval") as %Hlookup.
+  iClear "Hval".
+  iDestruct "Hauth" as (last Hlast) "(Hmap & Halist & Hflist)".
+  iDestruct (own_valid_2 with "Hmap Hlast") as %[_ Hmap]%gmap_view_both_valid_L.
+  destruct (Hlast _ _ Hmap) as (v' & Hlookup' & Htail).
+  rewrite Hlookup in Hlookup'. injection Hlookup' as [=<-].
+  iApply ephemeral_lookup_txn_val; last first.
+  - iExists last. iFrame. done.
+  - apply Htail. done.
+Qed.
+
+(** Move the "from" resource from i to i', and obtain a
+[ephemeral_txn_val_range] for the skipped range. *)
+Theorem ephemeral_val_from_split i' γ i k v v' :
   (i ≤ i')%nat →
   ephemeral_val_from γ i k v -∗
+  ephemeral_txn_val γ i' k v' -∗ (* witnesses that i' is in-bounds *)
   ephemeral_txn_val_range γ i i' k v ∗ ephemeral_val_from γ i' k v.
 Proof.
 Admitted.
@@ -113,15 +167,17 @@ Proof.
 Admitted.
 
 (* this splits off an [ephemeral_val_from] at exactly the last transaction *)
-Theorem async_ctx_ephemeral_val_from_split γ σs i a v :
+Theorem async_ctx_ephemeral_val_from_split γ σs i k v :
   async_ctx γ σs -∗
-  ephemeral_val_from γ i a v -∗
-  async_ctx γ σs ∗ ephemeral_txn_val_range γ i (length (possible σs) - 1) a v ∗
-  ephemeral_val_from γ (length (possible σs) - 1) a v.
+  ephemeral_val_from γ i k v -∗
+  async_ctx γ σs ∗ ephemeral_txn_val_range γ i (length (possible σs) - 1) k v ∗
+    ephemeral_val_from γ (length (possible σs) - 1) k v.
 Proof.
   iIntros "Hctx Hi+".
   iDestruct (ephemeral_val_from_in_bounds with "Hctx Hi+") as %Hinbounds.
-  iDestruct (ephemeral_val_from_split (length (possible σs) - 1) with "Hi+") as "[Hold H+]"; eauto.
+  iAssert (ephemeral_txn_val γ (length (possible σs) - 1) k v) as "#Hval".
+  { iApply (ephemeral_val_from_val with "Hctx"); last done; lia. }
+  iDestruct (ephemeral_val_from_split (length (possible σs) - 1) with "Hi+ []") as "[Hold H+]"; eauto.
   { lia. }
   iFrame.
 Qed.
