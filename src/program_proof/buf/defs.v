@@ -30,13 +30,25 @@ Inductive bufDataT : bufDataKind -> Type :=
 Global Instance bufDataT_eq_dec K : EqDecision (bufDataT K).
 Proof.
   intros d1 d2. rewrite /Decision.
-  dependent destruction d1; dependent destruction d2.
-  - destruct (decide (b = b0)); subst; eauto.
-    right; by inversion 1.
-  - destruct (decide (i = i0)); subst; eauto.
-    right; by inversion 1.
-  - destruct (decide (b = b0)); subst; eauto.
-    right; by inversion 1.
+  destruct d1.
+  - refine (match d2 as d in (bufDataT K) return
+              (match K as K' return bufDataT K' → Type
+               with KindBit => λ d', {bufBit b = d'} + {bufBit b ≠ d'} | _ => λ d, True end) d
+            with bufBit b2 => _ | bufInode i2 => _ | bufBlock b2 => _ end); try done.
+    destruct (decide (b = b2)) as [<-|Hne]; first by left.
+    right. by inversion 1.
+  - refine (match d2 as d in (bufDataT K) return
+              (match K as K' return bufDataT K' → Type
+               with KindInode => λ d', {bufInode i = d'} + {bufInode i ≠ d'} | _ => λ d, True end) d
+            with bufBit b2 => _ | bufInode i2 => _ | bufBlock b2 => _ end); try done.
+    destruct (decide (i = i2)) as [<-|Hne]; first by left.
+    right. by inversion 1.
+  - refine (match d2 as d in (bufDataT K) return
+              (match K as K' return bufDataT K' → Type
+               with KindBlock => λ d', {bufBlock b = d'} + {bufBlock b ≠ d'} | _ => λ d, True end) d
+            with bufBit b2 => _ | bufInode i2 => _ | bufBlock b2 => _ end); try done.
+    destruct (decide (b = b2)) as [<-|Hne]; first by left.
+    right. by inversion 1.
 Qed.
 
 Arguments bufDataT K.
