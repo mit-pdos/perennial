@@ -58,7 +58,6 @@ SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/goose_lang/interpreter/interpreter.v\
 	src/goose_lang/logical_reln_fund.v\
 	src/program_logic/crash_adequacy.v\
-	src/program_logic/crash_inv.v\
 	src/program_logic/crash_weakestpre.v\
 	src/program_logic/recovery_adequacy.v\
 	src/program_logic/staged_invariant.v\
