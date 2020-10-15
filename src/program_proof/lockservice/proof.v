@@ -81,6 +81,11 @@ Lemma fmcounter_map_agree_strict_lb γ k q n1 n2 :
   k fm[[γ]]↦{q} n1 -∗ k fm[[γ]]> n2 -∗ ⌜n1 > n2⌝.
 Admitted.
 
+Lemma fmcounter_map_mono_lb n1 n2 γ k :
+  n1 ≤ n2 ->
+  k fm[[γ]]≥ n2 -∗ k fm[[γ]]≥ n1.
+Admitted.
+
 
 (* TODO: out of date, needs to be re-written *)
 Definition own_clerk (ck:val) (srv:loc) (γcseq:gname) : iProp Σ
@@ -149,6 +154,39 @@ Definition is_lockserver (srv_ptr:loc) γrc γlseq γcseq Ps: iProp Σ :=
     ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (LockServer_mutex_inv srv_ptr γrc γlseq γcseq Ps))
 .
 
+Lemma smaller_seqno_stale_fact (seq lseq cid :u64) γrc γcseq Ps lastSeqM lastReplyM:
+  lastSeqM !! cid = Some lseq ->
+  (int.val seq < int.val lseq)%Z ->
+  inv replycacheinvN (ReplyCache_inv γrc γcseq Ps) -∗
+  ([∗ map] cid↦seq;r ∈ lastSeqM;lastReplyM, (cid, seq) [[γrc]]↦ro Some r)
+    ={⊤}=∗
+  cid fm[[γcseq]]>(int.nat seq + 1).
+Proof using inG0 mapG1.
+  intros.
+  iIntros "#Hinv #Hsepm".
+  iInv replycacheinvN as ">HNinner" "HNclose".
+  iNamed "HNinner".
+  iDestruct (big_sepM2_dom with "Hsepm") as %Hdomeq.
+  assert (is_Some (lastReplyM !! cid)) as HlastReplyIn.
+  { apply elem_of_dom. assert (is_Some (lastSeqM !! cid)) by eauto. apply elem_of_dom in H1.
+    rewrite <- Hdomeq. done. }
+  Check big_sepM_delete.
+  destruct HlastReplyIn as [r HlastReplyIn].
+  iDestruct (big_sepM2_delete _ _ _ cid lseq r with "Hsepm") as "[Hptstoro _]"; eauto.
+  iDestruct (map_ro_valid with "Hrcctx Hptstoro") as %HinReplyHistory.
+  iDestruct (big_sepM_delete _ _ (cid, lseq) with "Hcseq_lb") as "[Hcseq_lb_one _] /="; eauto.
+  iDestruct (fmcounter_map_mono_lb (int.nat seq + 2) with "Hcseq_lb_one") as "#HStaleFact".
+  { replace (int.val seq) with (Z.of_nat (int.nat seq)) in H0; last by apply u64_Z_through_nat.
+    replace (int.val lseq) with (Z.of_nat (int.nat lseq)) in H0; last by apply u64_Z_through_nat.
+    lia.
+  }
+  iMod ("HNclose" with "[Hrcctx]") as "_".
+  {
+    iNext. iExists _; iFrame; iFrame "#".
+  }
+  iModIntro. by replace (int.nat seq + 2) with (int.nat seq + 1 + 1) by lia.
+Qed.
+
 Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP M :
   {{{ "#Hls" ∷ is_lockserver srv γrc γlseq γcseq Ps
       ∗ "#HargsInv" ∷ inv M (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
@@ -157,7 +195,8 @@ Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockRepl
   }}}
 LockServer__TryLock #srv #args #reply
 {{{ RET #false; ∃ lockReply', own_lockreply reply lockReply'
-            ∗ (⌜lockReply'.(Stale) = true⌝ ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))
+    ∗ (⌜lockReply'.(Stale) = true⌝ ∗ (lockArgs.(CID) fm[[γcseq]]> ((int.nat lockArgs.(Seq)) + 1))
+  ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))
 }}}.
 Proof.
   iIntros (Φ) "Hpre HPost".
@@ -192,8 +231,11 @@ Proof.
         { (* Re-establish LockServer_mutex_inv *)
           iNext. iExists _, _, _, _,_,_. iFrame "#". iFrame.
         }
+        apply bool_decide_eq_true in Hineqstrict.
+        iMod (smaller_seqno_stale_fact with "[] Hrcagree") as "#Hstale"; eauto.
         wp_seq. iApply "HPost". iExists ({| OK := _; Stale := true |}); iFrame.
-        iLeft. done.
+        iLeft.
+        by iFrame "Hstale".
       }
       (* Not stale *)
       assert (v = lockArgs.(Seq)) as ->. {
@@ -454,7 +496,6 @@ Proof using mapG1.
   iFrame. iExists _; iFrame; iFrame "#".
 Qed.
 
-Print LockRequest_inv.
 Lemma getP_RequestInv_γrc (lockArgs:LockArgsC) γrc γlseq γcseq Ps γP M:
   (inv M (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP))
     -∗ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro Some true
@@ -543,7 +584,7 @@ Proof.
     wp_load.
     wp_loadField.
     iDestruct "Hreply" as (lockReply) "Hreply".
-    (* TODO: Why does this destruct not work when inside the proof for CalTryLock's pre? *)
+    (* WHY: Why does this destruct not work when inside the proof for CalTryLock's pre? *)
     wp_apply (CallTryLock_spec with "[Hreply]"); eauto.
     {
       iSplitL "".
