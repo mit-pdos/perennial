@@ -87,7 +87,6 @@ Lemma fmcounter_map_mono_lb n1 n2 γ k :
 Admitted.
 
 
-(* TODO: out of date, needs to be re-written *)
 Definition own_clerk (ck:val) (srv:loc) (γcseq:gname) : iProp Σ
   :=
   ∃ (ck_l:loc) (cid seq : u64) (last_reply:bool),
@@ -187,9 +186,9 @@ Proof using inG0 mapG1.
   iModIntro. by replace (int.nat seq + 2) with (int.nat seq + 1 + 1) by lia.
 Qed.
 
-Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP M :
+Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP :
   {{{ "#Hls" ∷ is_lockserver srv γrc γlseq γcseq Ps
-      ∗ "#HargsInv" ∷ inv M (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
+      ∗ "#HargsInv" ∷ inv (lockRequestInvN lockArgs.(CID) lockArgs.(Seq)) (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
       ∗ "#Hargs" ∷ read_lock_args args lockArgs
       ∗ "Hreply" ∷ own_lockreply reply lockReply
   }}}
@@ -241,8 +240,7 @@ Proof.
       assert (v = lockArgs.(Seq)) as ->. {
         (* not strict + non-strict ineq ==> eq *)
         apply bool_decide_eq_false in Hineqstrict.
-        assert (int.val lockArgs.(Seq) = int.val v) by lia.
-        by word.
+        assert (int.val lockArgs.(Seq) = int.val v) by lia; word.
       }
       wp_pures.
       repeat wp_loadField.
@@ -290,10 +288,10 @@ Proof.
         wp_apply (wp_MapInsert _ _ lastReplyM _ false #false with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
         wp_seq. wp_loadField.
         iApply fupd_wp.
-        iInv M as "[#>Hargseq_lb Hcases]" "HMClose".
+        iInv "HargsInv" as "[#>Hargseq_lb Hcases]" "HMClose".
         iDestruct "Hcases" as "[>Hunproc|Hproc]".
         {
-          iInv replycacheinvN as ">HNinner" "HNClose"; first admit.
+          iInv replycacheinvN as ">HNinner" "HNClose".
           (* Give unique namespaces to invariants *)
           iNamed "HNinner".
           iDestruct (map_update _ _ (Some false) with "Hrcctx Hunproc") as ">[Hrcctx Hrcptsto]".
@@ -322,10 +320,13 @@ Proof.
           iDestruct "Hproc" as "[#>Hlseq_lb _]".
           iDestruct (big_sepM_delete _ _ (lockArgs.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first done.
           iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
-          iExFalso; iPureIntro. (* TODO: Have contradictory hypotheses Hlseq_lb_ineq and Hineq *)
-          admit.
+          iExFalso; iPureIntro.
+          replace (int.val v) with (Z.of_nat (int.nat v)) in HnegatedIneq; last by apply u64_Z_through_nat.
+          replace (int.val lockArgs.(Seq)) with (Z.of_nat (int.nat lockArgs.(Seq))) in HnegatedIneq; last by apply u64_Z_through_nat.
+          lia.
         }
-      + wp_pures.
+      + (* Lock not previously held by anyone *)
+        wp_pures.
         wp_storeField.
         repeat wp_loadField.
         wp_apply (wp_MapInsert with "HlocksMap"); first eauto; iIntros "HlocksMap".
@@ -333,11 +334,10 @@ Proof.
         wp_apply (wp_MapInsert with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
         wp_seq. wp_loadField.
         iApply fupd_wp.
-        iInv M as "[#>Hargseq_lb Hcases]" "HMClose".
+        iInv "HargsInv" as "[#>Hargseq_lb Hcases]" "HMClose".
         iDestruct "Hcases" as "[>Hunproc|Hproc]".
         {
-          iInv replycacheinvN as ">HNinner" "HNClose"; first admit.
-          (* Give unique namespaces to invariants *)
+          iInv replycacheinvN as ">HNinner" "HNClose".
           iNamed "HNinner".
           iDestruct (map_update _ _ (Some true) with "Hrcctx Hunproc") as ">[Hrcctx Hrcptsto]".
           iDestruct (map_freeze with "Hrcctx Hrcptsto") as ">[Hrcctx #Hrcptsoro]".
@@ -351,7 +351,7 @@ Proof.
           iDestruct (big_sepM_insert_delete with "[$Hlseq_own $Hlseq_one]") as "Hlseq_own".
           iDestruct "HLocknameValid" as %HLocknameValid.
           iDestruct (big_sepM2_dom with "Hlockeds") as %HlocksDom.
-          iDestruct (big_sepM2_delete _ _ _ lockArgs.(Lockname) false with "Hlockeds") as "[HP Hlockeds]".
+          iDestruct (big_sepM2_delete _ _ _ lockArgs.(Lockname) false () with "Hlockeds") as "[HP Hlockeds]".
           {
             rewrite /map_get in HLocksMapGet.
             assert (is_Some (locksM !! lockArgs.(Lockname))) as HLocknameInLocks.
@@ -361,7 +361,7 @@ Proof.
             by injection HLocksMapGet as ->.
             (* TODO: Probably a better proof for this *)
           }
-          { admit. }
+          { destruct HLocknameValid as [x HLocknameValid]. by destruct x. }
           iDestruct "HP" as "[% | HP]"; first discriminate.
           iMod ("HMClose" with "[HP]") as "_".
           { iNext. iFrame "#". iRight. iFrame. iExists _; iFrame "#". }
@@ -372,8 +372,12 @@ Proof.
           wp_apply (release_spec mutexN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
           {
             iNext. iExists _, _, _, _, _, _; iFrame; iFrame "#".
-            (* Related to validLocknames *)
-            admit. 
+            Locate "<[".
+            replace (<[lockArgs.(Lockname):=()]> validLocknames) with (validLocknames).
+            2:{
+              rewrite insert_id; eauto. destruct HLocknameValid as [x HLocknameValid]. by destruct x.
+            }
+            iFrame.
           }
           wp_seq. iApply "HPost". iExists {| OK:=_; Stale:= _|}; iFrame.
           iRight. iFrame "#".
@@ -383,7 +387,8 @@ Proof.
           iDestruct (big_sepM_delete _ _ (lockArgs.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first done.
           iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
           iExFalso; iPureIntro. (* TODO: Have contradictory hypotheses Hlseq_lb_ineq and Hineq *)
-          admit.
+          replace (int.val : (u64_instance.u64 -> Z)) with (λ x:u64, Z.of_nat (int.nat x)) in HnegatedIneq; first by lia.
+          by word.
         }
   - (* Case when CID not in lastSeq *)
     admit.
