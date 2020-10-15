@@ -1,3 +1,4 @@
+Require Import Coq.Program.Equality.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
@@ -25,6 +26,18 @@ Inductive bufDataT : bufDataKind -> Type :=
 | bufInode (i : inode_buf) : bufDataT KindInode
 | bufBlock (b : Block) : bufDataT KindBlock
 .
+
+Global Instance bufDataT_eq_dec K : EqDecision (bufDataT K).
+Proof.
+  intros d1 d2. rewrite /Decision.
+  dependent destruction d1; dependent destruction d2.
+  - destruct (decide (b = b0)); subst; eauto.
+    right; by inversion 1.
+  - destruct (decide (i = i0)); subst; eauto.
+    right; by inversion 1.
+  - destruct (decide (b = b0)); subst; eauto.
+    right; by inversion 1.
+Qed.
 
 Arguments bufDataT K.
 

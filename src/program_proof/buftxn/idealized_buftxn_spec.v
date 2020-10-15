@@ -204,21 +204,6 @@ data of the appropriate size *)
 meaningless *)
 Notation object := {K & bufDataT K}.
 
-Global Instance bufDataT_eq_dec K (d1 d2: bufDataT K) : Decision (d1 = d2).
-Proof.
-  rewrite /Decision.
-  dependent destruction d1; dependent destruction d2.
-  - destruct (decide (b = b0)); subst; eauto.
-    right; by inversion 1.
-  - destruct (decide (i = i0)); subst; eauto.
-    right; by inversion 1.
-  - destruct (decide (b = b0)); subst; eauto.
-    right; by inversion 1.
-Qed.
-
-Global Instance bufDataKind_eq_dec : EqDecision bufDataKind.
-Proof. apply _. Qed.
-
 Global Instance object_eq_dec : EqDecision object.
 Proof.
   intros o1 o2.
@@ -242,11 +227,12 @@ Definition objData (obj: object): bufDataT (objKind obj) := projT2 obj.
 Class buftxnG Σ :=
   { buftxn_buffer_inG :> mapG Σ addr object;
     buftxn_mspec_buftxnG :> mspec.buftxnG Σ;
+    buftxn_asyncG :> asyncG Σ addr object;
   }.
 
 Record buftxn_names {Σ} :=
   { buftxn_txn_names : @txn_names Σ;
-    buftxn_async_name : gname;
+    buftxn_async_name : async_gname;
   }.
 
 Arguments buftxn_names Σ : assert, clear implicits.
