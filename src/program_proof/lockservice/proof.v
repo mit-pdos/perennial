@@ -45,14 +45,10 @@ Defined.
 
 Definition locknameN (lockname : u64) := nroot .@ "lock" .@ lockname.
 
-  Context `{!mapG Σ u64 (u64 * bool)}.
-  Context `{!mapG Σ u64 bool}.
-  Context `{!mapG Σ u64 u64}.
   Context `{!mapG Σ (u64*u64) (option bool)}.
   Context `{!mapG Σ (u64*u64) unit}.
   Context `{!inG Σ (exclR unitO)}.
   Context `{!inG Σ (gmapUR u64 fmcounterUR)}.
-  Context `{!inG Σ (gmapUR u64 (lebnizO boolO))}.
 
   Parameter validLocknames : gmap u64 unit.
 
@@ -329,7 +325,6 @@ Proof.
           { iNext. iFrame "#". iRight. iFrame. iExists _; iFrame "#". }
           iModIntro.
 
-          Check big_sepM2_insert_delete.
           iDestruct (big_sepM2_insert_delete _ _ _ lockArgs.(Lockname) true () with "[$Hlockeds]") as "Hlockeds"; eauto.
           iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM lockArgs.(CID) lockArgs.(Seq) true with "[Hargseq_lb] Hrcagree") as "Hrcagree2"; eauto.
           wp_apply (release_spec mutexN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
@@ -419,6 +414,45 @@ Proof.
   }
 Qed.
 
+
+Lemma alloc_γrc (cid seq ln:u64) γrc γlseq γcseq Ps:
+  inv replycacheinvN (ReplyCache_inv γrc γcseq Ps)
+      ∗ cid fm[[γcseq]]↦ int.nat seq
+  ={⊤}=∗
+      cid fm[[γcseq]]↦ (int.nat seq + 1)
+      ∗ (∃ γP, inv (lockRequestInvN cid seq) (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:= ln |} γrc γlseq γcseq Ps γP)).
+Proof using mapG1.
+  (* TODO: Why is the above necessary? *)
+  intros.
+  iIntros "[Hinv Hcseq_own]".
+  iInv replycacheinvN as ">Hrcinv" "HNclose".
+  iNamed "Hrcinv".
+  destruct (replyHistory !! (cid, seq)) eqn:Hrh.
+  {
+    iExFalso.
+    iDestruct (big_sepM_delete _ _ (cid, seq) with "Hcseq_lb") as "[Hbad _]"; first eauto.
+    simpl.
+    iDestruct (fmcounter_map_agree_strict_lb with "Hcseq_own Hbad") as %Hbad.
+    iPureIntro. simpl in Hbad.
+    lia.
+  }
+  iMod (map_alloc (cid, seq) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
+  iMod (own_alloc (Excl ())) as "HγP"; first done.
+  iDestruct "HγP" as (γP) "HγP".
+  iMod (fmcounter_map_update γcseq cid _ (int.nat seq + 1) with "Hcseq_own") as "Hcseq_own".
+  { simpl. lia. }
+  iMod (fmcounter_map_get_lb with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
+  iDestruct (big_sepM_insert _ _ (cid, seq) None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
+  iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:=ln |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv_init".
+  {
+    iNext. iFrame; iFrame "#".
+  }
+  iMod ("HNclose" with "[Hrcctx]") as "_".
+  { iNext. iExists _. iFrame; iFrame "#". }
+  iModIntro.
+  iFrame. iExists _. iFrame "#".
+Qed.
+
 Lemma Lock_spec ck (srv:loc) (ln:u64) (γrc γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) :
   {{{ own_clerk ck srv γcseq
                 ∗ is_lockserver srv γrc γlseq γcseq Ps
@@ -467,7 +501,6 @@ Proof.
   iDestruct "HγP" as (γP) "HγP".
   iMod (fmcounter_map_update γcseq cid _ (int.nat seq + 1) with "Hcseq_own") as "Hcseq_own".
   { simpl. lia. }
-  Check big_sepM_insert.
   iMod (fmcounter_map_get_lb with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
   iDestruct (big_sepM_insert _ _ (cid, seq) None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
   iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:=ln |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv_init".
@@ -568,14 +601,20 @@ Proof.
         wp_loadField.
         wp_binop.
         wp_storeField.
-        iApply "Hpost".
+        iApply "HΨpost".
         iSplitL ""; first by iLeft.
-        iExists {| CID:= lockArgs.(CID); Seq := word.add lockArgs.(Seq) 1; Lockname := ln|}, _; iFrame "#"; iFrame.
-        simpl.
+        iExists (word.add curr_seq 1); iFrame "#"; iFrame.
         iNamed "Hargs".
+        simpl.
+        iExists args'.
         iFrame "#".
         iFrame.
-        iSplitL "".
+        iSplitL ""; eauto.
+        
+        iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:=ln |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv_init".
+  {
+    iNext. iFrame; iFrame "#".
+  }
         { unfold read_lock_args.
         iSplitL "Herrb_ptr"; eauto.
         iExists _; iFrame. rewrite Hok. iFrame. by iRight.
