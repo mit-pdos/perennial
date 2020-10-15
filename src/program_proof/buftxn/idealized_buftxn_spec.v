@@ -1,3 +1,5 @@
+From Coq Require Import Program.Equality.
+
 From Perennial.Helpers Require Import Map.
 From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import auth_map liftable liftable2 log_heap async.
@@ -201,6 +203,38 @@ data of the appropriate size *)
 (* NOTE(tej): not necessarily the best name, because it's so general as to be
 meaningless *)
 Notation object := {K & bufDataT K}.
+
+Global Instance bufDataT_eq_dec K (d1 d2: bufDataT K) : Decision (d1 = d2).
+Proof.
+  rewrite /Decision.
+  dependent destruction d1; dependent destruction d2.
+  - destruct (decide (b = b0)); subst; eauto.
+    right; by inversion 1.
+  - destruct (decide (i = i0)); subst; eauto.
+    right; by inversion 1.
+  - destruct (decide (b = b0)); subst; eauto.
+    right; by inversion 1.
+Qed.
+
+Global Instance bufDataKind_eq_dec : EqDecision bufDataKind.
+Proof. apply _. Qed.
+
+Global Instance object_eq_dec : EqDecision object.
+Proof.
+  intros o1 o2.
+  destruct o1, o2.
+  destruct (decide (x = x0)).
+  - destruct e.
+    destruct (decide (b = b0)); subst.
+    + left; auto.
+    + right.
+      intro H.
+      apply Eqdep_dec.inj_pair2_eq_dec in H; auto.
+      intros.
+      apply bufDataKind_eq_dec.
+  - right; intros H%eq_sigT_fst.
+    auto.
+Qed.
 
 Definition objKind (obj: object): bufDataKind := projT1 obj.
 Definition objData (obj: object): bufDataT (objKind obj) := projT2 obj.
