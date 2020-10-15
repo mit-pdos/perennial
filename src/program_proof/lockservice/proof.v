@@ -420,7 +420,7 @@ Lemma alloc_γrc (cid seq ln:u64) γrc γlseq γcseq Ps:
       ∗ cid fm[[γcseq]]↦ int.nat seq
   ={⊤}=∗
       cid fm[[γcseq]]↦ (int.nat seq + 1)
-      ∗ (∃ γP, inv (lockRequestInvN cid seq) (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:= ln |} γrc γlseq γcseq Ps γP)).
+      ∗ (∃ γP, inv (lockRequestInvN cid seq) (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:= ln |} γrc γlseq γcseq Ps γP) ∗ (own γP (Excl ()))).
 Proof using mapG1.
   (* TODO: Why is the above necessary? *)
   intros.
@@ -450,19 +450,21 @@ Proof using mapG1.
   iMod ("HNclose" with "[Hrcctx]") as "_".
   { iNext. iExists _. iFrame; iFrame "#". }
   iModIntro.
-  iFrame. iExists _. iFrame "#".
+  iFrame. iExists _; iFrame; iFrame "#".
 Qed.
 
 Lemma Lock_spec ck (srv:loc) (ln:u64) (γrc γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) :
-  {{{ own_clerk ck srv γcseq
-                ∗ is_lockserver srv γrc γlseq γcseq Ps
+  {{{
+       ⌜is_Some (validLocknames !! ln)⌝
+      ∗ own_clerk ck srv γcseq
+      ∗ is_lockserver srv γrc γlseq γcseq Ps
   }}}
     Clerk__Lock ck #ln
   {{{ RET #true; own_clerk ck srv γcseq ∗ (Ps ln) }}}.
 Proof.
-  iIntros (Φ) "[Hclerk #Hsrv] Hpost".
+  iIntros (Φ) "[% [Hclerk #Hsrv]] Hpost".
   iNamed "Hclerk".
-  rewrite H.
+  rewrite H0.
   wp_lam.
   wp_let.
   repeat wp_loadField.
@@ -485,38 +487,13 @@ Proof.
   iIntros (reply) "Hreply".
   wp_pures.
   iDestruct "Hsrv" as (mu_ptr) "Hsrv". iNamed "Hsrv".
-  iApply fupd_wp.
-  iInv replycacheinvN as ">Hrcinv" "HNclose".
-  iNamed "Hrcinv".
-  destruct (replyHistory !! (cid, seq)) eqn:Hrh.
-  {
-    iExFalso.
-    iDestruct (big_sepM_delete _ _ (cid, seq) with "Hcseq_lb") as "[Hbad _]"; first eauto.
-    iDestruct (fmcounter_map_agree_strict_lb with "Hcseq_own Hbad") as %Hbad.
-    iPureIntro. simpl in Hbad.
-    lia.
-  }
-  iMod (map_alloc (cid, seq) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
-  iMod (own_alloc (Excl ())) as "HγP"; first done.
-  iDestruct "HγP" as (γP) "HγP".
-  iMod (fmcounter_map_update γcseq cid _ (int.nat seq + 1) with "Hcseq_own") as "Hcseq_own".
-  { simpl. lia. }
-  iMod (fmcounter_map_get_lb with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
-  iDestruct (big_sepM_insert _ _ (cid, seq) None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
-  iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:=ln |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv_init".
-  {
-    iNext. iFrame; iFrame "#".
-  }
-  iMod ("HNclose" with "[Hrcctx]") as "_".
-  { iNext. iExists _. iFrame; iFrame "#". }
-  iModIntro.
-  Print read_lock_args.
+  iMod (alloc_γrc with "[$Hcseq_own $Hlinv]") as "[Hcseq_own HallocPost]".
+  iDestruct "HallocPost" as (γP0) "[#Hreqinv_init HγP0]".
   wp_apply (wp_forBreak
               (fun b => (⌜b = true⌝ ∨ ⌜b = false⌝∗ (Ps ln))
-∗ (∃ curr_seq args, 
+∗ (∃ curr_seq args γP, 
     let lockArgs := {| CID:=cid; Seq:=curr_seq; Lockname:= ln |} in
-     "%" ∷ ⌜lockArgs.(Lockname) = ln⌝
-  ∗ "#Hargs" ∷ read_lock_args args lockArgs
+    "#Hargs" ∷ read_lock_args args lockArgs
   ∗ "#Hargsinv" ∷ (inv (lockRequestInvN lockArgs.(CID) lockArgs.(Seq))
                    (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP))
   ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
@@ -554,20 +531,19 @@ Proof.
 
     iIntros (err) "HCallTryLockPost".
     wp_pures.
-    iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [% | [% HCallPost]]]".
+    iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [#Hre | [#Hre HCallPost]]]".
     { (* No reply from CallTryLock *)
-      rewrite H1.
+      iDestruct "Hre" as %->.
       wp_store.
       wp_load.
       wp_pures.
       iApply "HΨpost".
       iFrame. iSplitL ""; first by iLeft.
-      iExists _, _; iFrame; iFrame "#".
-      iSplitL ""; first done.
+      iExists _, _, _; iFrame; iFrame "#".
       iSplitL "Herrb_ptr"; eauto.
     }
     { (* Got a reply from CallTryLock *)
-      rewrite H1.
+      iDestruct "Hre" as %->.
       wp_store.
       wp_load.
       wp_pures.
@@ -582,8 +558,7 @@ Proof.
         { iRight. iSplitR "HγP"; first done. simpl.
           admit. (* TODO: open req invariant and exchange γP for P *)
         }
-        iExists _, _; iFrame; iFrame "#".
-        iSplitL ""; first done.
+        iExists _, _, _; iFrame; iFrame "#".
         iSplitL "Herrb_ptr"; eauto.
         iSplitR ""; last by iLeft.
         iExists _; iFrame. rewrite Hok. iFrame. by iRight.
@@ -600,32 +575,35 @@ Proof.
         wp_store.
         wp_loadField.
         wp_binop.
+
+        simpl.
+        replace (int.nat curr_seq + 1) with (int.nat (word.add curr_seq 1)).
+        2: {
+         admit. (* Deal with overflow *)
+        }
+        iMod (alloc_γrc cid with "[$Hlinv $Hcseq_own]") as "[Hcseq_own HallocPost]".
+        iDestruct "HallocPost" as (γP') "[#Hreqinv_new HγP']".
         wp_storeField.
         iApply "HΨpost".
         iSplitL ""; first by iLeft.
         iExists (word.add curr_seq 1); iFrame "#"; iFrame.
         iNamed "Hargs".
         simpl.
-        iExists args'.
+        iExists args', γP'.
         iFrame "#".
         iFrame.
-        iSplitL ""; eauto.
-        
-        iMod (inv_alloc (lockRequestInvN cid seq) _ (LockRequest_inv {| CID:=cid; Seq:=seq; Lockname:=ln |} γrc γlseq γcseq Ps γP) with "[Hrcptsto]") as "#Hreqinv_init".
-  {
-    iNext. iFrame; iFrame "#".
-  }
-        { unfold read_lock_args.
         iSplitL "Herrb_ptr"; eauto.
-        iExists _; iFrame. rewrite Hok. iFrame. by iRight.
+        iExists _; iFrame. rewrite Hok. iFrame. by iLeft.
       }
     }
   }
   {
     iSplitL ""; first by iLeft.
-    iFrame. iSplitL "Herrb_ptr"; eauto.
+    iExists _, _, _; iFrame; iFrame "#".
+    iSplitL ""; first done.
+    iSplitL "Herrb_ptr"; eauto.
     iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
-    iExists {| OK:= false; Stale:= false |}; iFrame. by iLeft.
+    iExists {| OK:=false; Stale:=false |}; iFrame. by iLeft.
   }
 
   iIntros "LoopPost".
@@ -633,9 +611,9 @@ Proof.
   iDestruct "LoopPost" as "(HP & LoopPost)". iNamed "LoopPost".
   iDestruct "Hreply" as (lockReply) "[Hreply %]". iNamed "Hreply".
   wp_loadField.
-  destruct H0; first discriminate.
-  destruct H0 as [_ ->].
-  iApply "Hpost".
+  destruct H1; first discriminate.
+  destruct H1 as [_ ->].
+  iApply "HΦpost".
   iDestruct "HP" as "[%| [_ HP]]"; first by discriminate.
   iFrame "HP".
   iExists _, _, (word.add seq 1), _; iFrame; iFrame "#".
