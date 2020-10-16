@@ -1115,8 +1115,39 @@ Proof using txnG0 Σ.
     iDestruct (ghost_var_agree with "Hcrashstates Hcrashstates_frag") as %->.
 
     iDestruct (gmap_addr_by_block_big_sepM with "Hmapstos") as "Hmapstos".
+
+    iAssert (⌜ ∀ a, a ∈ dom (gset _) (gmap_addr_by_block bufamap) -> a ∈ dom (gset _) (gmap_addr_by_block σl.(latest)) ⌝)%I as "%Hsubset".
+    {
+      iIntros (a Ha).
+      apply lookup_lookup_total_dom in Ha.
+      remember (gmap_addr_by_block bufamap !!! a) as x.
+      iDestruct (big_sepM_lookup with "Hmapstos") as "Ha"; eauto.
+      eapply gmap_addr_by_block_off_not_empty in Ha as Hx.
+      assert (x = (list_to_map (map_to_list x) : gmap u64 buf)) as Hlm. { rewrite list_to_map_to_list; eauto. }
+      rewrite -> Hlm in *.
+      destruct (map_to_list x) eqn:Hxl.
+      { simpl in Hx. congruence. }
+      simpl.
+      iDestruct (big_sepM_lookup_acc with "Ha") as "[H Ha]".
+      { apply lookup_insert. }
+      iNamed "H".
+      iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as %Hvalid.
+      eapply gmap_addr_by_block_lookup in Hvalid as Hvalidblock; destruct Hvalidblock; intuition idtac.
+      iPureIntro.
+      apply elem_of_dom. rewrite H0. eauto.
+    }
+    apply elem_of_subseteq in Hsubset.
+
+    iDestruct (big_sepML_sep with "Hupdmap") as "[Hupdmap_addr Hupdmap_kind]".
+
+(*
+    iDestruct (big_sepML_sepM with "[$Hupdmap $Hmapstos]") as "Hmapstos".
+
+
+
     iDestruct (big_sepM2_filter _ (λ k, is_Some (gmap_addr_by_block bufamap !! k)) with "Hheapmatch") as "[Hheapmatch_in Hheapmatch_out]".
     iDestruct (big_sepM2_sepM_1 with "Hheapmatch_in") as "Hheapmatch_in".
+*)
 
 (*
 
@@ -1144,41 +1175,13 @@ olds
 (*
 
 
-
     iDestruct (big_sepML_sepM2_shift with "[Hupdmap] []") as "Hupdmap2".
 
-    iDestruct (big_sepM_mono_wand _
-      (λ blkno offmap, (
-        [∗ map] off↦v ∈ offmap,
-             ∃ (data : bufDataT v.(bufKind)) (first : nat),
-               mapsto_txn γ first {| addrBlock := blkno; addrOff := off |}
-                 (existT v.(bufKind) data)) ∗
-        ⌜ is_Some (gmap_addr_by_block logm.(latest) !! blkno) ⌝)%I _ (log_heap_ctx logm)
-      with "[] [$Hmapstos $Hlogheapctx]") as "[Hlogheapctx Hmapstos]".
-    {
-      iIntros (k x Hkx) "[Hlogheapctx Hx]".
-      eapply gmap_addr_by_block_off_not_empty in Hkx as Hx.
-      assert (x = (list_to_map (map_to_list x) : gmap u64 buf)) as Hlm. { rewrite list_to_map_to_list; eauto. }
-      rewrite -> Hlm in *.
-      destruct (map_to_list x) eqn:Hxl.
-      { simpl in Hx. congruence. }
-      simpl.
-      iDestruct (big_sepM_lookup_acc with "Hx") as "[H Hx]".
-      { apply lookup_insert. }
-      iNamed "H".
-      iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as %Hvalid.
-      eapply gmap_addr_by_block_lookup in Hvalid as Hvalidblock; destruct Hvalidblock; intuition idtac.
-      iDestruct ("Hx" with "[Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hx".
-      { iExists _, _, _. iFrame. }
-      iFrame "Hlogheapctx". iFrame. eauto.
-    }
-    iDestruct (big_sepM_sep with "Hmapstos") as "[Hmapstos #Hmapsto_latest]".
 
 
 Search _ gmap insert.
 Search _ gmap ∅.
 
-    iDestruct (big_sepML_sepM with "[$Hupdmap $Hmapstos]") as "Hmapstos".
 
     rewrite -(map_union_filter
                 (λ x, is_Some (gmap_addr_by_block bufamap !! fst x))
