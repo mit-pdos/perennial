@@ -1316,7 +1316,7 @@ Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) E (Q : nat -
       ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
           "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (1/2) σl ∗
           "Hcrashstates_fupd" ∷ (
-            let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
+            let σ := ((λ b, existT _ b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
             ⌜bufamap ≠ ∅⌝ ∗
             ghost_var γ.(txn_crashstates) (1/2) (async_put σ σl)
             ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl))  ))
@@ -1328,10 +1328,10 @@ Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) E (Q : nat -
           Q txn_id ∗
           ( ⌜wait=true⌝ -∗ own γ.(txn_walnames).(wal_heap_durable_lb) (◯ (MaxNat txn_id)) ) ) ∗
         [∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn γ a (existT _ buf.(bufData))
+          mapsto_txn γ a (existT _ buf.(buf_).(bufData))
       else
         [∗ map] a ↦ buf ∈ bufamap,
-          ∃ data, mapsto_txn γ a (existT buf.(bufKind) data)
+          mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_))
   }}}.
 Proof.
   iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
@@ -1347,7 +1347,12 @@ Proof.
   - wp_pures.
 
     iAssert (⌜ bufamap ≠ ∅ ⌝)%I as "%Hnotempty".
-    { admit. }
+    {
+      iIntros (H); subst.
+      iDestruct (big_sepML_empty_l with "Hbufpre") as %->.
+      iDestruct (is_slice_sz with "Hbufs") as "%Hlen".
+      simpl in *; word.
+    }
 
     wp_apply (wp_txn__doCommit with "[$Htxn $Hbufs $Hbufpre Hfupd]").
     {
@@ -1393,7 +1398,11 @@ Proof.
   - wp_apply util_proof.wp_DPrintf.
 
     iAssert (⌜ bufamap = ∅ ⌝)%I as "%Hempty".
-    { admit. }
+    { destruct buflist.
+      { iDestruct (big_sepML_empty_m with "Hbufpre") as %->. done. }
+      iDestruct (is_slice_sz with "Hbufs") as "%Hlen". simpl in *.
+      replace (int.val 0) with 0 in n by word. word.
+    }
 
     wp_load.
     iApply "HΦ".
@@ -1406,8 +1415,7 @@ Proof.
 
     iSplit; last by iApply big_sepM_empty.
     iIntros. congruence.
-    Fail idtac.
-Admitted.
+Qed.
 
 
 End heap.
