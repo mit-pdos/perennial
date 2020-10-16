@@ -481,6 +481,17 @@ Section gmap_addr_by_block.
 End gmap_addr_by_block.
 
 
+Theorem gmap_addr_by_block_fmap {A B} (m : gmap addr A) (f : A -> B) :
+  gmap_addr_by_block (f <$> m) =
+    (λ (bm : gmap _ _), f <$> bm) <$> (gmap_addr_by_block m).
+Proof.
+  rewrite /gmap_addr_by_block.
+  apply map_eq; intros.
+  rewrite lookup_fmap.
+  admit.
+Admitted.
+
+
 Section heap.
 Context `{!heapG Σ}.
 

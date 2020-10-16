@@ -381,9 +381,14 @@ Proof using txnG0 Σ.
   iExists _. iFrame.
 Admitted.
 
-Definition is_txn_buf_pre γ (bufptr:loc) (a : addr) (buf : buf) : iProp Σ :=
-  "Hisbuf" ∷ is_buf bufptr a buf ∗
-  "Hmapto" ∷ ∃ data, mapsto_txn γ a (existT buf.(bufKind) data).
+Record buf_and_prev_data := {
+  buf_ : buf;
+  data_ : bufDataT buf_.(bufKind);
+}.
+
+Definition is_txn_buf_pre γ (bufptr:loc) (a : addr) (buf : buf_and_prev_data) : iProp Σ :=
+  "Hisbuf" ∷ is_buf bufptr a buf.(buf_) ∗
+  "Hmapto" ∷ mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)).
 
 Definition is_txn_buf_blkno (bufptr : loc) (a : addr) (buf : buf) blkno :=
   ( "Hisbuf" ∷ is_buf bufptr a buf ∗
@@ -465,7 +470,13 @@ Proof.
 Qed.
 
 
-Theorem wp_txn__installBufsMap l q walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
+Lemma default_fmap `{Countable K} `{EqDecision K} {A B} (m : option (gmap K A)) (f : A -> B) :
+  (default ∅ (fmap (fun bm => f <$> bm) m)) =
+  f <$> (default ∅ m).
+Proof.
+Admitted.
+
+Theorem wp_txn__installBufsMap l q walptr γ lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
   {{{ inv invN (is_txn_always γ) ∗
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
@@ -479,11 +490,11 @@ Theorem wp_txn__installBufsMap l q walptr γ lwh bufs buflist (bufamap : gmap ad
       is_locked_walheap γ.(txn_walnames) lwh ∗
       is_map blkmapref blkmap ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
-        ∃ data, mapsto_txn γ a (existT buf.(bufKind) data) ) ∗
+        mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
       [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap,
         ∃ b,
           is_block blkslice 1 b ∗
-          ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) offmap ⌝
+          ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝
   }}}.
 Proof using txnG0 txnG0 Σ.
   iIntros (Φ) "(#Hinv & #Hiswal & #log & Hlockedheap & Hbufs & Hbufpre) HΦ".
@@ -505,8 +516,8 @@ Opaque struct.t.
         "Hbufamap_done" ∷ ( [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap_done,
           ∃ b,
             is_block blkslice 1 b ∗
-            ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) offmap ⌝ ) ∗
-        "Hbufamap_done_mapsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done, ∃ data, mapsto_txn γ a (existT buf.(bufKind) data) ) ∗
+            ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝ ) ∗
+        "Hbufamap_done_mapsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done, mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
         "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh
       )%I
       with "[] [$Hbufs Hbufpre Hblks Hlockedheap]").
@@ -529,7 +540,6 @@ Opaque struct.t.
 
     iDestruct (big_sepML_delete_cons with "Hbufamap_todo") as (a buf) "(%Hb & Htxnbuf & Hbufamap_todo)".
     iNamed "Htxnbuf".
-    iDestruct "Hmapto" as (data) "Hmapto".
 
     iMod (mapsto_txn_locked with "[$Hiswal $Hinv $Hmapto $Hlockedheap]") as "(Hlockedheap & Hmapto & %Hlockedsome)".
     1: solve_ndisj.
@@ -538,17 +548,15 @@ Opaque struct.t.
 
     wp_pures.
     wp_apply (wp_buf_loadField_sz with "Hisbuf"). iIntros "Hisbuf".
-    destruct (decide (buf.(bufKind) = KindBlock)).
+    destruct (decide (buf.(buf_).(bufKind) = KindBlock)).
 
-    - replace (bufSz buf.(bufKind)) with (bufSz KindBlock) by congruence.
+    - replace (bufSz buf.(buf_).(bufKind)) with (bufSz KindBlock) by congruence.
       Opaque BlockSize. Opaque bufSz.
       wp_pures.
 
       iMod (mapsto_txn_valid with "Hinv Hmapto") as "[Hmapto %Hvalid]".
       { solve_ndisj. }
 
-      generalize dependent data.
-      rewrite e.
       intros.
 
       wp_apply (wp_buf_loadField_data with "Hisbuf"). iIntros (bufdata) "[Hbufdata Hisbuf_wd]".
@@ -575,9 +583,6 @@ Opaque struct.t.
       2: {
         iApply (big_sepM_insert_2 with "[Hmapto] Hbufamap_done_mapsto").
         intuition.
-        rewrite e.
-        iExists _.
-        iFrame.
       }
       rewrite /map_insert.
       rewrite gmap_addr_by_block_insert.
@@ -586,7 +591,7 @@ Opaque struct.t.
       simpl.
       rewrite /is_buf_data /is_block.
 
-      destruct buf; simpl in *.
+      destruct buf. destruct buf_0. simpl in *.
       destruct bufData; try congruence.
 
       iExists _. iFrame. iPureIntro.
@@ -598,6 +603,7 @@ Opaque struct.t.
       eapply valid_off_block in H2; eauto.
       eapply valid_off_block in H5; eauto.
       rewrite H2. rewrite H5.
+      rewrite lookup_fmap.
       rewrite lookup_insert.
       simpl. done.
 
@@ -605,7 +611,7 @@ Opaque struct.t.
       wp_if_destruct.
       {
         exfalso.
-        destruct buf; simpl in *.
+        destruct buf; destruct buf_0; simpl in *.
         destruct bufKind; cbn in *; try congruence.
         { inversion H1. }
         { inversion H1. }
@@ -630,12 +636,12 @@ Opaque struct.t.
                   ∃ b0 : Block,
                     is_block blkslice 1 b0
                     ∗ ⌜updBlockKindOK blkno b0 γ
-                         (locked_wh_disk lwh) offmap⌝ ) ∗
-            "Hisbuf" ∷ is_buf b a buf ∗
+                         (locked_wh_disk lwh) (buf_ <$> offmap)⌝ ) ∗
+            "Hisbuf" ∷ is_buf b a buf.(buf_) ∗
             "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh ∗
             "Hblks" ∷ is_map blks blkmap' ∗
             "%" ∷ ⌜ blkmap' !! a.(addrBlock) = Some blkslice ⌝ ∗
-            "%" ∷ ⌜ updBlockOK a.(addrBlock) blk buf.(bufKind) (locked_wh_disk lwh) (default ∅ ((gmap_addr_by_block (bufamap ∖ bufamap_todo)) !! a.(addrBlock))) ⌝
+            "%" ∷ ⌜ updBlockOK a.(addrBlock) blk buf.(buf_).(bufKind) (locked_wh_disk lwh) (default ∅ ((gmap_addr_by_block (buf_ <$> (bufamap ∖ bufamap_todo))) !! a.(addrBlock))) ⌝
         )%I
         with "[Hbufamap_done Hisbuf Hblkvar Hlockedheap Hblks]"); first iSplit.
       {
@@ -649,7 +655,9 @@ Opaque struct.t.
         iExists _, _, _. iFrame.
         iSplit; first by done.
         iPureIntro.
-        rewrite Hx.
+        rewrite gmap_addr_by_block_fmap.
+        rewrite lookup_fmap.
+        rewrite Hx. simpl.
         destruct H1. destruct H1. intuition idtac.
         rewrite H1 in H6. inversion H6; clear H6; subst. eauto.
       }
@@ -677,6 +685,8 @@ Opaque struct.t.
         iFrame "Hbufamap_done".
         iSplit; first by done.
         iPureIntro.
+        rewrite gmap_addr_by_block_fmap.
+        rewrite lookup_fmap.
 
         rewrite Hnone.
         intro diskLatest; intros.
@@ -705,7 +715,7 @@ Opaque struct.t.
       iSplitR "Hbufamap_done_mapsto Hmapto".
       2: {
         iApply (big_sepM_insert_2 with "[Hmapto] [$Hbufamap_done_mapsto]").
-        iExists _. iFrame. }
+        iFrame. }
       rewrite gmap_addr_by_block_insert.
       2: { eapply lookup_difference_None; eauto. }
       replace (blkmap') with (<[a.(addrBlock) := blkslice]> blkmap') at 2.
@@ -720,21 +730,27 @@ Opaque struct.t.
       specialize (H2 diskLatest H4 off oldBufData H7 H8 H9).
       destruct (decide (a.(addrOff) = off)).
       + subst.
-        rewrite lookup_insert.
+        rewrite lookup_fmap.
+        rewrite lookup_insert. simpl.
         specialize (Hinstall_ok a.(addrOff)).
         destruct (decide (a.(addrOff) = a.(addrOff))); try congruence.
-        destruct (default ∅ ((gmap_addr_by_block (bufamap ∖ bufamap_todo)) !!
+        destruct (default ∅ ((gmap_addr_by_block (buf_ <$> bufamap ∖ bufamap_todo)) !!
                     a.(addrBlock)) !! a.(addrOff)); eauto.
         intuition eauto.
         destruct b0; simpl in *.
         subst. eauto.
 
-      + rewrite lookup_insert_ne; eauto.
+      + rewrite lookup_fmap. rewrite lookup_insert_ne; eauto.
         specialize (Hinstall_ok off).
         destruct (decide (off = a.(addrOff))); try congruence.
+        rewrite gmap_addr_by_block_fmap in H2.
+        rewrite lookup_fmap in H2.
+        rewrite default_fmap in H2.
+        rewrite lookup_fmap in H2.
+
         destruct (default ∅ ((gmap_addr_by_block (bufamap ∖ bufamap_todo)) !!
-                    a.(addrBlock)) !! off); eauto.
-        destruct b0; simpl in *. intuition subst.
+                    a.(addrBlock)) !! off); simpl in *; eauto.
+        destruct b0. destruct buf_0. simpl in *. intuition subst.
         eauto.
   }
 
@@ -763,7 +779,7 @@ Proof.
   done.
 Qed.
 
-Theorem wp_txn__installBufs l q walptr γ lwh bufs buflist (bufamap : gmap addr buf) :
+Theorem wp_txn__installBufs l q walptr γ lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
   {{{ inv invN (is_txn_always γ) ∗
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
@@ -777,10 +793,10 @@ Theorem wp_txn__installBufs l q walptr γ lwh bufs buflist (bufamap : gmap addr 
       is_locked_walheap γ.(txn_walnames) lwh ∗
       updates_slice blkslice upds ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
-        ∃ data, mapsto_txn γ a (existT buf.(bufKind) data) ) ∗
+        mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
       [∗ maplist] blkno ↦ offmap; upd ∈ gmap_addr_by_block bufamap; upds,
         ⌜ upd.(update.addr) = blkno ⌝ ∗
-        ⌜ updBlockKindOK blkno upd.(update.b) γ (locked_wh_disk lwh) offmap ⌝
+        ⌜ updBlockKindOK blkno upd.(update.b) γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝
   }}}.
 Proof.
   iIntros (Φ) "(#Hinv & #Hiswal & #Hlog & Hlockedheap & Hbufs & Hbufpre) HΦ".
@@ -801,10 +817,10 @@ Proof.
         "%" ∷ ⌜ dom (gset u64) offmaps_todo ## dom (gset u64) offmaps_done ⌝ ∗
         "Hmtodo" ∷ ( [∗ map] blkno↦blkslice;offmap ∈ mtodo;offmaps_todo, ∃ b : Block,
                                           is_block blkslice 1 b ∗
-                                          ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) offmap ⌝ ) ∗
+                                          ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝ ) ∗
         "Hmdone" ∷ ( [∗ maplist] blkno↦offmap;upd ∈ offmaps_done;upds,
                                           ⌜ upd.(update.addr) = blkno ⌝ ∗
-                                          ⌜ updBlockKindOK blkno upd.(update.b) γ (locked_wh_disk lwh) offmap ⌝ )
+                                          ⌜ updBlockKindOK blkno upd.(update.b) γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝ )
     )%I with "Hblkmapref [Hblks_var Hblkmap]").
   {
     rewrite zero_slice_val.
@@ -1059,7 +1075,7 @@ Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
       ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
           "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (1/2) σl ∗
           "Hcrashstates_fupd" ∷ (
-            let σ := ((λ b, existT _ b.(bufData)) <$> bufamap) ∪ latest σl in
+            let σ := ((λ b, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
             ghost_var γ.(txn_crashstates) (1/2) (async_put σ σl)
             ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ) )
   }}}
@@ -1069,10 +1085,10 @@ Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
         ∃ txn_id,
         txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id commitpos ∗ Q txn_id ∗
         [∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn γ a (existT _ buf.(bufData))
+          mapsto_txn γ a (existT _ buf.(buf_).(bufData))
       else
         [∗ map] a ↦ buf ∈ bufamap,
-          ∃ data, mapsto_txn γ a (existT buf.(bufKind) data)
+          mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_))
   }}}.
 Proof using txnG0 Σ.
   iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
