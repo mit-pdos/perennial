@@ -600,9 +600,6 @@ Section goose_lang.
       iFrame "H◯async".
       iIntros "H◯async".
 
-      iMod (async_update_map mT with "H●latest Hold_vals") as "[H●latest Hold_vals]".
-      { congruence. }
-
       (* NOTE: we don't use this theorem and instead inline its proof (to some
       extent) since we really need to know what the new map is, to restore
       txn_system_inv. *)
@@ -610,14 +607,18 @@ Section goose_lang.
       iMod (async_ctx_ephemeral_val_from_map_split with "H●latest Hold_vals")
         as "(H●latest & Hold_vals & Hnew)".
 
+      iMod (async_update_map mT with "H●latest Hnew") as "[H●latest Hnew]".
+      { congruence. }
+
       iMod ("Hclo" with "[H◯async H●latest]") as "_".
       { iNext.
         iExists _.
         iFrame. }
       iModIntro.
+      (* RJ: commented out. This expects [val_from] for a non-existing txn ID.
       rewrite length_possible_async_put.
       iExactEq "Hnew".
-      auto with f_equal lia. }
+      auto with f_equal lia. *) admit. }
     iIntros (ok) "Hpost".
     destruct ok.
     - iDestruct "Hpost" as (txn_id) "(HQ&Hlower_bound&Hmod_tokens)".
