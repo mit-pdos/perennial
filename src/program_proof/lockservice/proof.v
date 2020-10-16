@@ -22,20 +22,20 @@ Axiom nondet_spec:
     nondet #()
   {{{ v, RET v; ⌜v = #true⌝ ∨ ⌜v = #false⌝}}}.
 
-Record LockArgsC :=
-  mkLockArgsC{
+Record TryLockArgsC :=
+  mkTryLockArgsC{
   Lockname:u64;
   CID:u64;
   Seq:u64
   }.
-Instance: Settable LockArgsC := settable! mkLockArgsC <Lockname; CID; Seq>.
+Instance: Settable TryLockArgsC := settable! mkTryLockArgsC <Lockname; CID; Seq>.
 
-Record LockReplyC :=
-  mkLockReplyC {
+Record TryLockReplyC :=
+  mkTryLockReplyC {
   OK:bool ;
   Stale:bool
   }.
-Instance: Settable LockReplyC := settable! mkLockReplyC <OK; Stale>.
+Instance: Settable TryLockReplyC := settable! mkTryLockReplyC <OK; Stale>.
 
 Global Instance ToVal_bool : into_val.IntoVal bool.
 Proof.
@@ -103,7 +103,7 @@ Definition own_clerk (ck:val) (srv:loc) (γcseq:gname) : iProp Σ
     ∗ "Hcseq_own" ∷ (cid fm[[γcseq]]↦ int.nat seq)
 .
 
-Definition LockRequest_inv (lockArgs:LockArgsC) γrc γlseq γcseq (Ps:u64 -> iProp Σ) (γP:gname) : iProp Σ :=
+Definition LockRequest_inv (lockArgs:TryLockArgsC) γrc γlseq γcseq (Ps:u64 -> iProp Σ) (γP:gname) : iProp Σ :=
    "#Hlseq_bound" ∷ lockArgs.(CID) fm[[γcseq]]> int.nat lockArgs.(Seq)
   ∗ ("Hreply" ∷ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ None ∨
       lockArgs.(CID) fm[[γlseq]]≥ int.nat lockArgs.(Seq)
@@ -136,17 +136,17 @@ Definition LockServer_mutex_inv (srv:loc) (γrc γlseq γcseq:gname) (Ps: u64 ->
 .
 
 (* Should make this readonly so it can be read by the RPC background thread *)
-Definition read_lock_args (args_ptr:loc) (lockArgs:LockArgsC): iProp Σ :=
+Definition read_lock_args (args_ptr:loc) (lockArgs:TryLockArgsC): iProp Σ :=
   "#HLocknameValid" ∷ ⌜is_Some (validLocknames !! lockArgs.(Lockname))⌝
   ∗ "#HSeqPositive" ∷ ⌜int.nat lockArgs.(Seq) > 0⌝
-  ∗ "#HLockArgsOwnLockname" ∷ readonly (args_ptr ↦[LockArgs.S :: "Lockname"] #lockArgs.(Lockname))
-  ∗ "#HLockArgsOwnCID" ∷ readonly (args_ptr ↦[LockArgs.S :: "CID"] #lockArgs.(CID))
-  ∗ "#HLockArgsOwnSeq" ∷ readonly (args_ptr ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
+  ∗ "#HTryLockArgsOwnLockname" ∷ readonly (args_ptr ↦[TryLockArgs.S :: "Lockname"] #lockArgs.(Lockname))
+  ∗ "#HTryLockArgsOwnCID" ∷ readonly (args_ptr ↦[TryLockArgs.S :: "CID"] #lockArgs.(CID))
+  ∗ "#HTryLockArgsOwnSeq" ∷ readonly (args_ptr ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
 .
 
-Definition own_lockreply (args_ptr:loc) (lockReply:LockReplyC): iProp Σ :=
-  "HreplyOK" ∷ args_ptr ↦[LockReply.S :: "OK"] #lockReply.(OK)
-  ∗ "HreplyStale" ∷ args_ptr ↦[LockReply.S :: "Stale"] #lockReply.(Stale)
+Definition own_lockreply (args_ptr:loc) (lockReply:TryLockReplyC): iProp Σ :=
+  "HreplyOK" ∷ args_ptr ↦[TryLockReply.S :: "OK"] #lockReply.(OK)
+  ∗ "HreplyStale" ∷ args_ptr ↦[TryLockReply.S :: "Stale"] #lockReply.(Stale)
 .
 
 Definition replycacheinvN : namespace := nroot .@ "replycacheinvN".
@@ -160,7 +160,7 @@ Definition is_lockserver (srv_ptr:loc) γrc γlseq γcseq Ps: iProp Σ :=
     ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (LockServer_mutex_inv srv_ptr γrc γlseq γcseq Ps))
 .
 
-Lemma server_processes_request (lockArgs:LockArgsC) (old_seq:u64) (γrc γcseq γlseq:gname) (r:bool) (Ps: u64 -> (iProp Σ))
+Lemma server_processes_request (lockArgs:TryLockArgsC) (old_seq:u64) (γrc γcseq γlseq:gname) (r:bool) (Ps: u64 -> (iProp Σ))
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 bool) γP :
      (int.val lockArgs.(Seq) > int.val old_seq)%Z
   -> (inv replycacheinvN (ReplyCache_inv γrc γcseq Ps ))
@@ -248,7 +248,7 @@ Proof using inG0 mapG1.
   iModIntro. by replace (int.nat seq + 2) with (int.nat seq + 1 + 1) by lia.
 Qed.
 
-Lemma TryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP :
+Lemma TryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP :
   {{{ "#Hls" ∷ is_lockserver srv γrc γlseq γcseq Ps
       ∗ "#HargsInv" ∷ inv (lockRequestInvN lockArgs.(CID) lockArgs.(Seq)) (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
       ∗ "#Hargs" ∷ read_lock_args args lockArgs
@@ -280,11 +280,11 @@ Proof using Type*.
   iAssert
     (
 {{{
-readonly (args ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
+readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
 ∗ ⌜int.nat lockArgs.(Seq) > 0⌝
          ∗ ([∗ map] cid↦seq ∈ lastSeqM, cid fm[[γlseq]]↦int.nat seq)
 }}}
-  if: #ok then #v ≥ struct.loadF LockArgs.S "Seq" #args
+  if: #ok then #v ≥ struct.loadF TryLockArgs.S "Seq" #args
          else #false
 {{{ ifr, RET ifr; ∃b:bool, ⌜ifr = #b⌝
   ∗ ((⌜b = false⌝ ∗ ⌜int.nat v < int.nat lockArgs.(Seq)⌝
@@ -450,7 +450,7 @@ readonly (args ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
         iRight. iFrame "#".
 Qed.
 
-Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP :
+Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP :
   {{{ "#Hls" ∷ is_lockserver srv γrc γlseq γcseq Ps
       ∗ "#HargsInv" ∷ inv (lockRequestInvN lockArgs.(CID) lockArgs.(Seq)) (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
       ∗ "#Hargs" ∷ read_lock_args args lockArgs
@@ -556,7 +556,7 @@ Proof using mapG1.
   iFrame. iExists _; iFrame; iFrame "#".
 Qed.
 
-Lemma getP_RequestInv_γrc (lockArgs:LockArgsC) γrc γlseq γcseq Ps γP M:
+Lemma getP_RequestInv_γrc (lockArgs:TryLockArgsC) γrc γlseq γcseq Ps γP M:
   (inv M (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP))
     -∗ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro Some true
     -∗ (own γP (Excl ()))
@@ -585,7 +585,7 @@ Lemma Lock_spec ck (srv:loc) (ln:u64) (γrc γlseq γcseq:gname) (Ps: u64 -> (iP
       ∗ own_clerk ck srv γcseq
       ∗ is_lockserver srv γrc γlseq γcseq Ps
   }}}
-    Clerk__Lock ck #ln
+    Clerk__TryLock ck #ln
   {{{ RET #true; own_clerk ck srv γcseq ∗ (Ps ln) }}}.
 Proof.
   iIntros (Φ) "[% [Hclerk #Hsrv]] Hpost".
@@ -693,7 +693,7 @@ Proof.
         iSplitR ""; last by iLeft.
         iExists _; iFrame. rewrite Hok. iFrame. by iRight.
       }
-      { (* Reply indicated lock was already held; allocate new LockArgs and increase seqno to retry *)
+      { (* Reply indicated lock was already held; allocate new TryLockArgs and increase seqno to retry *)
         wp_pures.
         repeat wp_loadField.
         wp_apply (wp_allocStruct); eauto.

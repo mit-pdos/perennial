@@ -6,20 +6,20 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 (* Lock(lockname) returns OK=true if the lock is not held.
    If it is held, it returns OK=false immediately. *)
-Module LockArgs.
+Module TryLockArgs.
   Definition S := struct.decl [
     "Lockname" :: uint64T;
     "CID" :: uint64T;
     "Seq" :: uint64T
   ].
-End LockArgs.
+End TryLockArgs.
 
-Module LockReply.
+Module TryLockReply.
   Definition S := struct.decl [
     "OK" :: boolT;
     "Stale" :: boolT
   ].
-End LockReply.
+End TryLockReply.
 
 (* Unlock(lockname) returns OK=true if the lock was held.
    It returns OK=false if the lock was not held. *)
@@ -60,28 +60,28 @@ End LockServer.
 Definition LockServer__TryLock: val :=
   rec: "LockServer__TryLock" "ls" "args" "reply" :=
     lock.acquire (struct.loadF LockServer.S "mu" "ls");;
-    let: ("last", "ok") := MapGet (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF LockArgs.S "CID" "args") in
-    struct.storeF LockReply.S "Stale" "reply" #false;;
-    (if: "ok" && (struct.loadF LockArgs.S "Seq" "args" ≤ "last")
+    let: ("last", "ok") := MapGet (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF TryLockArgs.S "CID" "args") in
+    struct.storeF TryLockReply.S "Stale" "reply" #false;;
+    (if: "ok" && (struct.loadF TryLockArgs.S "Seq" "args" ≤ "last")
     then
-      (if: struct.loadF LockArgs.S "Seq" "args" < "last"
+      (if: struct.loadF TryLockArgs.S "Seq" "args" < "last"
       then
-        struct.storeF LockReply.S "Stale" "reply" #true;;
+        struct.storeF TryLockReply.S "Stale" "reply" #true;;
         lock.release (struct.loadF LockServer.S "mu" "ls");;
         #false
       else
-        struct.storeF LockReply.S "OK" "reply" (Fst (MapGet (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF LockArgs.S "CID" "args")));;
+        struct.storeF TryLockReply.S "OK" "reply" (Fst (MapGet (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF TryLockArgs.S "CID" "args")));;
         lock.release (struct.loadF LockServer.S "mu" "ls");;
         #false)
     else
-      MapInsert (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF LockArgs.S "CID" "args") (struct.loadF LockArgs.S "Seq" "args");;
-      let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") (struct.loadF LockArgs.S "Lockname" "args") in
+      MapInsert (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF TryLockArgs.S "CID" "args") (struct.loadF TryLockArgs.S "Seq" "args");;
+      let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") (struct.loadF TryLockArgs.S "Lockname" "args") in
       (if: "locked"
-      then struct.storeF LockReply.S "OK" "reply" #false
+      then struct.storeF TryLockReply.S "OK" "reply" #false
       else
-        struct.storeF LockReply.S "OK" "reply" #true;;
-        MapInsert (struct.loadF LockServer.S "locks" "ls") (struct.loadF LockArgs.S "Lockname" "args") #true);;
-      MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF LockArgs.S "CID" "args") (struct.loadF LockReply.S "OK" "reply");;
+        struct.storeF TryLockReply.S "OK" "reply" #true;;
+        MapInsert (struct.loadF LockServer.S "locks" "ls") (struct.loadF TryLockArgs.S "Lockname" "args") #true);;
+      MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF TryLockArgs.S "CID" "args") (struct.loadF TryLockReply.S "OK" "reply");;
       lock.release (struct.loadF LockServer.S "mu" "ls");;
       #false).
 
@@ -126,10 +126,10 @@ Definition MakeServer: val :=
 
 (* rpc.go *)
 
-(* Returns true iff error *)
+(* Returns true iff server reported error or request "timed out" *)
 Definition CallTryLock: val :=
   rec: "CallTryLock" "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := struct.alloc LockReply.S (zero_val (struct.t LockReply.S)) in
+    Fork (let: "dummy_reply" := struct.alloc TryLockReply.S (zero_val (struct.t TryLockReply.S)) in
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             LockServer__TryLock "srv" "args" "dummy_reply";;
@@ -138,7 +138,7 @@ Definition CallTryLock: val :=
     then LockServer__TryLock "srv" "args" "reply"
     else #true).
 
-(* Returns true iff error *)
+(* Returns true iff server reported error or request "timed out" *)
 Definition CallUnlock: val :=
   rec: "CallUnlock" "srv" "args" "reply" :=
     Fork (let: "dummy_reply" := struct.alloc UnlockReply.S (zero_val (struct.t UnlockReply.S)) in
@@ -170,37 +170,35 @@ Definition MakeClerk: val :=
     struct.storeF Clerk.S "seq" "ck" #1;;
     "ck".
 
-(* waits until the lock service grants us the lock *)
-Definition Clerk__Lock: val :=
-  rec: "Clerk__Lock" "ck" "lockname" :=
-    let: "args" := ref_to (refT (struct.t LockArgs.S)) (struct.new LockArgs.S [
+Definition Clerk__TryLock: val :=
+  rec: "Clerk__TryLock" "ck" "lockname" :=
+    Skip;;
+    (for: (λ: <>, struct.loadF Clerk.S "seq" "ck" + #1 < struct.loadF Clerk.S "seq" "ck"); (λ: <>, Skip) := λ: <>,
+      Continue);;
+    let: "args" := ref_to (refT (struct.t TryLockArgs.S)) (struct.new TryLockArgs.S [
       "Lockname" ::= "lockname";
       "CID" ::= struct.loadF Clerk.S "cid" "ck";
       "Seq" ::= struct.loadF Clerk.S "seq" "ck"
     ]) in
     struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
     let: "errb" := ref_to boolT #false in
-    let: "reply" := struct.alloc LockReply.S (zero_val (struct.t LockReply.S)) in
+    let: "reply" := struct.alloc TryLockReply.S (zero_val (struct.t TryLockReply.S)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] CallTryLock (struct.loadF Clerk.S "primary" "ck") (![refT (struct.t LockArgs.S)] "args") "reply";;
+      "errb" <-[boolT] CallTryLock (struct.loadF Clerk.S "primary" "ck") (![refT (struct.t TryLockArgs.S)] "args") "reply";;
       (if: (![boolT] "errb" = #false)
-      then
-        (if: struct.loadF LockReply.S "OK" "reply"
-        then Break
-        else
-          "args" <-[refT (struct.t LockArgs.S)] struct.new LockArgs.S [
-            "Lockname" ::= "lockname";
-            "CID" ::= struct.loadF Clerk.S "cid" "ck";
-            "Seq" ::= struct.loadF Clerk.S "seq" "ck"
-          ];;
-          struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
-          Continue)
+      then Break
       else Continue));;
-    struct.loadF LockReply.S "OK" "reply".
+    struct.loadF TryLockReply.S "OK" "reply".
 
+(* ask the lock service to unlock a lock.
+   returns true if the lock was previously held,
+   false otherwise. *)
 Definition Clerk__Unlock: val :=
   rec: "Clerk__Unlock" "ck" "lockname" :=
+    Skip;;
+    (for: (λ: <>, struct.loadF Clerk.S "seq" "ck" + #1 < struct.loadF Clerk.S "seq" "ck"); (λ: <>, Skip) := λ: <>,
+      Continue);;
     let: "args" := struct.new UnlockArgs.S [
       "Lockname" ::= "lockname";
       "CID" ::= struct.loadF Clerk.S "cid" "ck";
@@ -216,3 +214,14 @@ Definition Clerk__Unlock: val :=
       then Break
       else Continue));;
     struct.loadF UnlockReply.S "OK" "reply".
+
+(* Spins until we have the lock *)
+Definition Clerk__Lock: val :=
+  rec: "Clerk__Lock" "ck" "lockname" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: Clerk__TryLock "ck" "lockname"
+      then Break
+      else #());;
+      Continue);;
+    #true.
