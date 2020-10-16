@@ -372,7 +372,6 @@ readonly (args ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
         repeat wp_loadField.
         wp_apply (wp_MapInsert _ _ lastReplyM _ false #false with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
         wp_seq. wp_loadField.
-        Check server_processes_request.
         iMod (server_processes_request _ _ _ _ _ false with "Hlinv HargsInv [] Hlseq_own Hrcagree") as "(#Hrcptsoro & Hlseq_own & #Hrcagree2)"; eauto.
         wp_apply (release_spec mutexN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
         {
@@ -404,6 +403,7 @@ readonly (args ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
         { destruct HLocknameValid as [x HLocknameValid]. by destruct x. }
         iDestruct (big_sepM2_insert_delete _ _ _ lockArgs.(Lockname) true () with "[$Hlockeds]") as "Hlockeds"; eauto.
         iDestruct "HP" as "[%|HP]"; first discriminate.
+
         iMod (server_processes_request _ _ _ _ _ true with "Hlinv HargsInv [HP] Hlseq_own Hrcagree") as "(#Hrcptsoro & Hlseq_own & #Hrcagree2)"; eauto.
         replace (<[lockArgs.(Lockname):=()]> validLocknames) with (validLocknames).
         2:{
@@ -416,74 +416,7 @@ readonly (args ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
         }
         wp_seq. iApply "HPost". iExists {| OK:=_; Stale:= _|}; iFrame.
         iRight. iFrame "#".
-  - (* Case when CID not in lastSeq *)
-    wp_storeField.
-    wp_pures.
-    repeat wp_loadField.
-    wp_apply (wp_MapInsert _ _ lastSeqM _ lockArgs.(Seq) (#lockArgs.(Seq)) with "HlastSeqMap"); try eauto.
-    iIntros "HlastSeqMap".
-    wp_pures.
-    wp_loadField.
-    wp_loadField.
-    wp_apply (wp_MapGet with "HlocksMap").
-    iIntros (lock_v ok) "(HLocksMapGet&HlocksMap)"; iDestruct "HLocksMapGet" as %HLocksMapGet.
-    wp_pures.
-    destruct lock_v.
-      + (* Lock already held by someone *)
-        wp_pures.
-        wp_storeField.
-        repeat wp_loadField.
-        wp_apply (wp_MapInsert _ _ lastReplyM _ false #false with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
-        wp_seq. wp_loadField.
-        apply map_get_false in HSeqMapGet as [HSeqMapGet _].
-        (* Need to allocate new cseqγ counter *)
-        iDestruct (fmcounter_map_alloc n cseqγ lockArgs.(CID)).
-        iMod (server_processes_request _ _ _ _ _ false with "Hlinv HargsInv [] Hlseq_own Hrcagree") as "(#Hrcptsoro & Hlseq_own & #Hrcagree2)"; eauto.
-        wp_apply (release_spec mutexN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
-        {
-          iNext. iExists _, _, _, _, _, _; iFrame; iFrame "#".
-        }
-        wp_seq. iApply "HPost". iExists {| OK:=_; Stale:= _|}; iFrame.
-        iRight. iFrame "#".
-      + (* Lock not previously held by anyone *)
-        wp_pures.
-        wp_storeField.
-        repeat wp_loadField.
-        wp_apply (wp_MapInsert with "HlocksMap"); first eauto; iIntros "HlocksMap".
-        wp_seq. repeat wp_loadField.
-        wp_apply (wp_MapInsert with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
-        wp_seq. wp_loadField.
-
-        iDestruct "HLocknameValid" as %HLocknameValid.
-        iDestruct (big_sepM2_dom with "Hlockeds") as %HlocksDom.
-        iDestruct (big_sepM2_delete _ _ _ lockArgs.(Lockname) false () with "Hlockeds") as "[HP Hlockeds]".
-        {
-          rewrite /map_get in HLocksMapGet.
-          assert (is_Some (locksM !! lockArgs.(Lockname))) as HLocknameInLocks.
-          { apply elem_of_dom. apply elem_of_dom in HLocknameValid. rewrite HlocksDom. done. }
-          destruct HLocknameInLocks as [ x  HLocknameInLocks].
-          rewrite HLocknameInLocks in HLocksMapGet.
-            by injection HLocksMapGet as ->.
-            (* TODO: Probably a better proof for this *)
-        }
-        { destruct HLocknameValid as [x HLocknameValid]. by destruct x. }
-        iDestruct (big_sepM2_insert_delete _ _ _ lockArgs.(Lockname) true () with "[$Hlockeds]") as "Hlockeds"; eauto.
-        iDestruct "HP" as "[%|HP]"; first discriminate.
-        iMod (server_processes_request _ _ _ _ _ true with "Hlinv HargsInv [HP] Hlseq_own Hrcagree") as "(#Hrcptsoro & Hlseq_own & #Hrcagree2)"; eauto.
-        replace (<[lockArgs.(Lockname):=()]> validLocknames) with (validLocknames).
-        2:{
-          rewrite insert_id; eauto. destruct HLocknameValid as [x HLocknameValid]. by destruct x.
-        }
-
-        wp_apply (release_spec mutexN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
-        {
-          iNext. iExists _, _, _, _, _, _; iFrame; iFrame "#".
-        }
-        wp_seq. iApply "HPost". iExists {| OK:=_; Stale:= _|}; iFrame.
-        iRight. iFrame "#".
-
-    admit.
-Admitted.
+Qed.
 
 Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP M:
   {{{ "#Hls" ∷ is_lockserver srv γrc γlseq γcseq Ps
