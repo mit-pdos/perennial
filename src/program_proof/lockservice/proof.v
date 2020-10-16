@@ -450,9 +450,9 @@ readonly (args ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
         iRight. iFrame "#".
 Qed.
 
-Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP M:
+Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:LockArgsC) (lockReply:LockReplyC) (γrc γi γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) γP :
   {{{ "#Hls" ∷ is_lockserver srv γrc γlseq γcseq Ps
-      ∗ "#HargsInv" ∷ inv M (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
+      ∗ "#HargsInv" ∷ inv (lockRequestInvN lockArgs.(CID) lockArgs.(Seq)) (LockRequest_inv lockArgs γrc γlseq γcseq Ps γP)
       ∗ "#Hargs" ∷ read_lock_args args lockArgs
       ∗ "Hreply" ∷ own_lockreply reply lockReply
   }}}
@@ -461,7 +461,7 @@ CallTryLock #srv #args #reply
     (∃ lockReply', own_lockreply reply lockReply'
     ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ (⌜lockReply'.(Stale) = true⌝ ∗ (lockArgs.(CID) fm[[γcseq]]> (int.nat lockArgs.(Seq) + 1)) ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))))
 }}}.
-Proof.
+Proof using Type*.
   iIntros (Φ) "Hpre Hpost".
   iNamed "Hpre".
   wp_lam.
@@ -508,7 +508,6 @@ Proof.
     iRight.
     iSplitL ""; first done.
     iFrame.
-    admit. (* TODO: update TryLock_spec *)
   }
   {
     wp_pures.
@@ -516,7 +515,7 @@ Proof.
     iExists _; iFrame "Hreply".
     by iLeft.
   }
-Admitted.
+Qed.
 
 
 Lemma alloc_γrc (cid seq ln:u64) γrc γlseq γcseq Ps:
