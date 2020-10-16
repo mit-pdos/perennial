@@ -80,7 +80,7 @@ Section gen_heap_defs.
   Qed.
 
   Lemma gen_heap_name_strong_init `{!gen_heapPreG L V Σ} σ :
-    ⊢ |==> ∃ names : gen_heap_names, gen_heap_ctx (hG := gen_heapG_update_pre _ names) σ ∗
+    ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update_pre _ names) σ ∗
            let _ := gen_heapG_update_pre _ names in
            [∗ map] i↦v ∈ σ, i ↦ v .
   Proof.
@@ -97,14 +97,14 @@ Section gen_heap_defs.
   Qed.
 
   Lemma gen_heap_name_init `{!gen_heapPreG L V Σ} σ :
-    ⊢ |==> ∃ names : gen_heap_names, gen_heap_ctx (hG := gen_heapG_update_pre _ names) σ.
+    ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update_pre _ names) σ.
   Proof.
     iMod (gen_heap_name_strong_init σ) as (n) "(H&_)". iExists n. eauto.
   Qed.
 
   (* Cannot reuse original [gen_heap_init] because we have to make sure that the same [inG] instance remains in use. *)
   Lemma gen_heap_name_reinit {Σ} (hG: gen_heapG L V Σ) σ :
-    ⊢ |==> ∃ names : gen_heap_names, gen_heap_ctx (hG := gen_heapG_update hG names) σ.
+    ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update hG names) σ.
   Proof.
     iMod (own_alloc (gmap_view_auth (V:=leibnizO V) σ)) as (γh) "Hh".
     { apply gmap_view_auth_valid. }
@@ -122,8 +122,8 @@ Section gen_heap_defs.
     AbsolutelyTimeless (mapsto (hG:=hG) l q v).
   Proof. rewrite mapsto_eq. apply _. Qed.
 
-  Global Instance gen_heap_ctx_abs_timeless {Σ} (hG: gen_heapG L V Σ) σ:
-    AbsolutelyTimeless (gen_heap_ctx (hG:=hG) σ).
+  Global Instance gen_heap_interp_abs_timeless {Σ} (hG: gen_heapG L V Σ) σ:
+    AbsolutelyTimeless (gen_heap_interp (hG:=hG) σ).
   Proof. apply _. Qed.
 
 End gen_heap_defs.

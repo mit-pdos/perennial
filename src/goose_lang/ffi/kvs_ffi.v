@@ -302,7 +302,7 @@ Definition kvs_uninit_auth {Σ} {kvsG :kvsG Σ} :=
 (* what blocks are in the kvs *)
 (* kvs: more fine-grained lock? or lock entire map? (more/less useful for clients?) *)
 (* precondition in spec --> assert have points-to facts (no state RA), gen_heap *)
-Definition kvs_auth {Σ} {kvs :kvsG Σ} (s: gmap u64 disk.Block) := gen_heap.gen_heap_ctx s.
+Definition kvs_auth {Σ} {kvs :kvsG Σ} (s: gmap u64 disk.Block) := gen_heap.gen_heap_interp s.
 Definition kvs_frag {Σ} {kvsG :kvsG Σ} (k : u64) (v : disk.Block) : iProp Σ :=
    (gen_heap.mapsto (L:=u64) (V:=disk.Block) k 1 v)%I.
 

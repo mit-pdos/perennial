@@ -106,7 +106,7 @@ Proof.
   iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&?&Hor&?)".
   iModIntro. iExists
-    (λ σ κs, (na_heap_ctx tls σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx (ffi_update_pre _ _ HffiG) σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
+    (λ σ κs, (na_heap_ctx tls σ.(heap) ∗ proph_map_interp κs σ.(used_proph_id) ∗ ffi_ctx (ffi_update_pre _ _ HffiG) σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
     (λ _, True%I).
   iFrame. by iApply (Hwp (HeapG _ _ _ _ _ _ HtraceG) with "[$] [$] [$]").
 Qed.

@@ -295,7 +295,7 @@ Global Instance heapG_irisG `{!heapG Σ}:
   iris_invG := heapG_invG;
   iris_crashG := heapG_crashG;
   state_interp σ κs _ :=
-    (na_heap_ctx tls σ.(heap) ∗ proph_map_ctx κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)
+    (na_heap_ctx tls σ.(heap) ∗ proph_map_interp κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)
       ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
   fork_post _ := True%I;
 }.

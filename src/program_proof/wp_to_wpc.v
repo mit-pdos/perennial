@@ -95,7 +95,7 @@ Lemma wpc_spec P Φ Φc γ k :
   WPC e @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof using stagedG0.
   iIntros "(His_foo&Hfupd)".
-  rewrite and_comm.
+  rewrite bi.and_comm.
   rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
   iDestruct (own_discrete_elim_conj with "Hfupd") as (Q_keep Q_inv) "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
   iMod (pending_alloc) as (γpending) "Hpending".
@@ -169,7 +169,7 @@ Proof using stagedG0.
   iLeft in "Hfupd".
   iMod fupd_intro_mask' as "HcloseM"; last iMod ("Hfupd" with "[$] [$]") as "((HP&HΦ)&HNC)"; first by solve_ndisj.
   iMod "HcloseM".
-  iEval (rewrite and_comm) in "HΦ".
+  iEval (rewrite bi.and_comm) in "HΦ".
   iClear "Hwand1 Hwand2".
   iDestruct (own_discrete_elim_conj with "HΦ") as (Q_keep' Q_inv') "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
   iMod ("Hclo" $! [Q_inv'] with "[HQ_inv]") as "Hfull".

@@ -5,7 +5,7 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Lemma proph_map_name_init `{Countable P} `(pG: proph_mapPreG P V PVS) pvs ps :
-  ⊢ |==> ∃ γ : gname, proph_map_ctx (pG := {| proph_map_inG := _; proph_map_name := γ|}) pvs ps.
+  ⊢ |==> ∃ γ : gname, proph_map_interp (pG := {| proph_map_inG := _; proph_map_name := γ|}) pvs ps.
 Proof.
   iMod (own_alloc (gmap_view_auth ∅)) as (γ) "Hh".
   { apply gmap_view_auth_valid. }
@@ -14,7 +14,7 @@ Proof.
 Qed.
 
 Lemma proph_map_reinit `{Countable P} `(pG: proph_mapG P V PVS) pvs ps :
-  ⊢ |==> ∃ γ : gname, proph_map_ctx (pG := {| proph_map_inG := _; proph_map_name := γ|}) pvs ps.
+  ⊢ |==> ∃ γ : gname, proph_map_interp (pG := {| proph_map_inG := _; proph_map_name := γ|}) pvs ps.
 Proof.
   iMod (own_alloc (gmap_view_auth ∅)) as (γ) "Hh".
   { apply gmap_view_auth_valid. }
