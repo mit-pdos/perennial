@@ -135,15 +135,55 @@ Proof.
   - apply Htail. done.
 Qed.
 
+Local Lemma update_last σs last k i i' :
+  (i ≤ i')%nat →
+  map_Forall (is_last σs) last →
+  last !! k = Some i →
+  map_Forall (is_last σs) (<[k:=i']> last).
+Proof.
+  intros Hle Hlast Hk k' j.
+  destruct (decide (k=k')) as [->|Hne].
+  - rewrite lookup_insert=>[=<-]. destruct (Hlast _ _ Hk) as (v & Hv & Htail).
+    exists v. split.
+    + apply Htail. lia.
+    + intros i'' Hi''. apply Htail. lia.
+  - rewrite lookup_insert_ne // => Hk'.
+    destruct (Hlast _ _ Hk') as (v & Hv & Htail).
+    exists v. done.
+Qed.
+
 (** Move the "from" resource from i to i', and obtain a
 [ephemeral_txn_val_range] for the skipped range. *)
-Theorem ephemeral_val_from_split i' γ i k v v' :
+Theorem ephemeral_val_from_split i' γ i k v σs :
   (i ≤ i')%nat →
-  ephemeral_val_from γ i k v -∗
-  ephemeral_txn_val γ i' k v' -∗ (* witnesses that i' is in-bounds *)
-  ephemeral_txn_val_range γ i i' k v ∗ ephemeral_val_from γ i' k v.
+  (i' < length (possible σs))%nat →
+  async_ctx γ σs -∗
+  ephemeral_val_from γ i k v ==∗
+  async_ctx γ σs ∗ ephemeral_txn_val_range γ i i' k v ∗ ephemeral_val_from γ i' k v.
 Proof.
-Admitted.
+  iIntros (Hle Hi') "Hauth Hfromi".
+
+  (* Get some things from [async_ctx] before we take it apart. *)
+  iAssert (ephemeral_txn_val_range γ i i' k v) with "[Hauth Hfromi]" as "#$".
+  { rewrite /ephemeral_txn_val_range. iInduction Hle as [|i' Hle] "IH".
+    - assert (i-i = 0) as -> by lia. done.
+    - assert (S i' - i = S (i'-i)) as -> by lia. rewrite seq_S_end_app.
+      rewrite big_sepL_app. iSplit.
+      { iApply ("IH" with "[] Hauth Hfromi"). iPureIntro. lia. }
+      rewrite big_sepL_singleton.
+      iApply (ephemeral_val_from_val with "Hauth Hfromi"); lia. }
+  iAssert (ephemeral_txn_val γ i' k v) with "[Hauth Hfromi]" as "#Hvali'".
+  { iApply (ephemeral_val_from_val with "Hauth Hfromi"); lia. }
+
+  iDestruct "Hauth" as (last Hlast) "(Hmap & Halist & Hflist)".
+  iDestruct "Hfromi" as "[#Hvali Hlast]".
+  iDestruct (own_valid_2 with "Hmap Hlast") as %[_ Hk]%gmap_view_both_valid_L.
+  iMod (own_update_2 with "Hmap Hlast") as "[Hmap Hlast]".
+  { apply (gmap_view_update _ k i i'). }
+  iModIntro. iSplitR "Hlast".
+  - iExists _. iFrame. iPureIntro. eapply update_last; done.
+  - rewrite /ephemeral_val_from. iFrame "∗#".
+Qed.
 
 (* TODO: we really need a strong init that also creates ephemeral_val_from for
 every address in the domain; this is where it's useful to know that the async
@@ -169,7 +209,7 @@ Admitted.
 (* this splits off an [ephemeral_val_from] at exactly the last transaction *)
 Theorem async_ctx_ephemeral_val_from_split γ σs i k v :
   async_ctx γ σs -∗
-  ephemeral_val_from γ i k v -∗
+  ephemeral_val_from γ i k v ==∗
   async_ctx γ σs ∗ ephemeral_txn_val_range γ i (length (possible σs) - 1) k v ∗
     ephemeral_val_from γ (length (possible σs) - 1) k v.
 Proof.
@@ -177,26 +217,27 @@ Proof.
   iDestruct (ephemeral_val_from_in_bounds with "Hctx Hi+") as %Hinbounds.
   iAssert (ephemeral_txn_val γ (length (possible σs) - 1) k v) as "#Hval".
   { iApply (ephemeral_val_from_val with "Hctx"); last done; lia. }
-  iDestruct (ephemeral_val_from_split (length (possible σs) - 1) with "Hi+ []") as "[Hold H+]"; eauto.
-  { lia. }
-  iFrame.
+  iMod (ephemeral_val_from_split (length (possible σs) - 1) with "Hctx Hi+")
+    as "(Hctx & Hold & H+)"; [lia..|].
+  by iFrame.
 Qed.
 
+(* this splits off several [ephemeral_val_from] all at the last transaction *)
 Theorem async_ctx_ephemeral_val_from_map_split γ σs i m :
   async_ctx γ σs -∗
-  big_opM bi_sep (ephemeral_val_from γ i) m -∗
+  big_opM bi_sep (ephemeral_val_from γ i) m ==∗
   async_ctx γ σs ∗ big_opM bi_sep (ephemeral_txn_val_range γ i (length (possible σs) - 1)) m ∗
   big_opM bi_sep (ephemeral_val_from γ (length (possible σs) - 1)) m.
 Proof.
   iIntros "Hctx Hm".
   iInduction m as [|a v m] "IH" using map_ind.
   - rewrite !big_sepM_empty.
-    iFrame.
+    by iFrame.
   - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; auto.
-    iDestruct (async_ctx_ephemeral_val_from_split with "Hctx Hi") as "(Hctx&Hrange&H+)".
-    iDestruct ("IH" with "Hctx Hm") as "(Hctx&Hmrange&Hm+)".
+    iMod (async_ctx_ephemeral_val_from_split with "Hctx Hi") as "(Hctx&Hrange&H+)".
+    iMod ("IH" with "Hctx Hm") as "(Hctx&Hmrange&Hm+)".
     iFrame.
-    rewrite !big_sepM_insert //; iFrame.
+    rewrite !big_sepM_insert //; by iFrame.
 Qed.
 
 End async.

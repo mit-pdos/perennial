@@ -607,7 +607,7 @@ Section goose_lang.
       extent) since we really need to know what the new map is, to restore
       txn_system_inv. *)
       (* iMod (map_update_predicate with "H●latest HP0 HP") as (m') "[H●latest HP]". *)
-      iDestruct (async_ctx_ephemeral_val_from_map_split with "H●latest Hold_vals")
+      iMod (async_ctx_ephemeral_val_from_map_split with "H●latest Hold_vals")
         as "(H●latest & Hold_vals & Hnew)".
 
       iMod ("Hclo" with "[H◯async H●latest]") as "_".
