@@ -1166,7 +1166,6 @@ Proof using txnG0 Σ.
     iDestruct (big_sepM_subseteq with "Hheapmatch") as "Hheapmatch".
     { admit. }
 
-    Search _ big_sepML big_opM.
     iDestruct (bi_iff_2 with "[Hupdmap_addr_2 Hheapmatch]") as "Hheapmatch".
     1: eapply big_sepML_sepM.
     2: iFrame "Hupdmap_addr_2 Hheapmatch".
