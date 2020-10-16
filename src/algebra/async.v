@@ -34,7 +34,7 @@ a certain key, which ensures that the key stayed unchanged since then.
  below can be carried across a crash. *)
 Definition is_last σs k i : Prop :=
   ∃ v, lookup_async σs i k = Some v ∧ 
-    ∀ i', i ≤ i' → lookup_async σs i' k = Some v.
+    ∀ i', i ≤ i' → i' < length (possible σs) → lookup_async σs i' k = Some v.
 Definition async_ctx γ σs : iProp Σ :=
   ∃ last, ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth last) ∗
     (* We also have the [lb] in here to avoid some update modalities below. *)
@@ -132,20 +132,21 @@ Proof.
   rewrite Hlookup in Hlookup'. injection Hlookup' as [=<-].
   iApply ephemeral_lookup_txn_val; last first.
   - iExists last. iFrame. done.
-  - apply Htail. done.
+  - apply Htail; done.
 Qed.
 
 Local Lemma update_last σs last k i i' :
   (i ≤ i')%nat →
+  (i' < length (possible σs))%nat →
   map_Forall (is_last σs) last →
   last !! k = Some i →
   map_Forall (is_last σs) (<[k:=i']> last).
 Proof.
-  intros Hle Hlast Hk k' j.
+  intros Hle Hlen Hlast Hk k' j.
   destruct (decide (k=k')) as [->|Hne].
   - rewrite lookup_insert=>[=<-]. destruct (Hlast _ _ Hk) as (v & Hv & Htail).
     exists v. split.
-    + apply Htail. lia.
+    + apply Htail; lia.
     + intros i'' Hi''. apply Htail. lia.
   - rewrite lookup_insert_ne // => Hk'.
     destruct (Hlast _ _ Hk') as (v & Hv & Htail).
@@ -191,7 +192,21 @@ has maps with the same domain *)
 Theorem async_ctx_init σs:
   ⊢ |==> ∃ γ, async_ctx γ σs.
 Proof.
-Admitted.
+  iMod (fmlist_alloc (possible σs)) as (γlist) "Hlist".
+  iMod (fmlist_get_lb with "Hlist") as "[Halist Hflist]".
+  set (last := (λ _, length (pending σs)) <$> (latest σs)).
+  iMod (own_alloc (gmap_view_auth last)) as (γmap) "Hmap".
+  { apply gmap_view_auth_valid. }
+  iModIntro. iExists (Build_async_gname γlist γmap).
+  rewrite /async_ctx /=. iExists last. iFrame.
+  iPureIntro. subst last. intros k i.
+  rewrite lookup_fmap. destruct (latest σs !! k) as [v|] eqn:Hlatest; last done.
+  simpl=>[=<-]. exists v. split.
+  - rewrite /lookup_async lookup_possible_latest /=. done.
+  - intros i'. rewrite length_possible_pending=>??.
+    assert (i' = length (pending σs)) as -> by lia.
+    rewrite /lookup_async lookup_possible_latest /=. done.
+Qed.
 
 Theorem async_update_map m' γ σs m0 txn_id :
   dom (gset _) m' = dom (gset _) m0 →
