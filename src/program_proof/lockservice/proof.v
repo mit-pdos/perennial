@@ -579,6 +579,59 @@ Proof.
   { by iDestruct (own_valid_2 with "HγP Hbad") as %Hbad. }
 Qed.
 
+Lemma overflowg_guard_spec (cseq:u64) ck_l :
+{{{
+    "Hseq" ∷ ck_l ↦[Clerk.S :: "seq"] #cseq
+}}}
+    (for: (λ: <>, struct.loadF Clerk.S "seq" #ck_l + #1 < struct.loadF Clerk.S "seq" #ck_l); (λ: <>, Skip) := λ: <>,
+      Continue)
+{{{
+     RET #(); ⌜((int.val cseq) + 1 = int.val (word.add cseq 1))%Z⌝
+}}}.
+Proof.
+  iIntros (Φ) "Hpre Hpost".
+  Search "wp_for".
+  wp_apply (wp_forBreak_cond
+              (fun b => ((⌜b = true⌝ ∨ ⌜((int.val cseq) + 1 = int.val (word.add cseq 1))%Z⌝)
+                                       ∗ "Hseq" ∷ ck_l ↦[Clerk.S :: "seq"] #cseq
+)) with "[] [$Hpre]")%I; eauto.
+  {
+    iIntros (Ψ). iModIntro.
+    iIntros "[_ Hpre] HΨpost".
+    repeat wp_loadField.
+    wp_binop.
+    destruct bool_decide eqn:Hineq.
+    {
+      apply bool_decide_eq_true in Hineq.
+      wp_pures.
+      iApply "HΨpost".
+      iFrame; by iLeft.
+    }
+    {
+      apply bool_decide_eq_false in Hineq.
+      wp_pures.
+      iApply "HΨpost". iFrame; iRight.
+      iPureIntro.
+      assert (int.val (word.add cseq 1) >= int.val cseq)%Z by lia.
+      From Perennial.Helpers Require Import ModArith.
+      destruct (bool_decide ((int.val cseq) + 1 < 2 ^ 64 )) eqn:Hnov.
+      {
+        apply bool_decide_eq_true in Hnov.
+        word.
+      }
+      apply bool_decide_eq_false in Hnov.
+      assert (int.val cseq + (int.val 1) >= 2 ^ 64).
+      { replace (int.val 1) with (1) by word. lia. }
+      apply sum_overflow_check in H0.
+      contradiction.
+    }
+  }
+  {
+    iIntros "[[ %| HloopPost] Hseq]"; first discriminate.
+    by iApply "Hpost".
+  }
+Qed.
+
 Lemma Lock_spec ck (srv:loc) (ln:u64) (γrc γlseq γcseq:gname) (Ps: u64 -> (iProp Σ)) :
   {{{
        ⌜is_Some (validLocknames !! ln)⌝
@@ -592,7 +645,7 @@ Proof.
   iNamed "Hclerk".
   rewrite H0.
   wp_lam.
-  wp_let.
+  wp_pures.
   repeat wp_loadField.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (args0) "Hargs0".
