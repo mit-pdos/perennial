@@ -137,8 +137,9 @@ Definition LockServer_mutex_inv (srv:loc) (γrc γlseq γcseq:gname) (Ps: u64 ->
 
 (* Should make this readonly so it can be read by the RPC background thread *)
 Definition read_lock_args (args_ptr:loc) (lockArgs:LockArgsC): iProp Σ :=
-  "#HLockArgsOwnLockname" ∷ readonly (args_ptr ↦[LockArgs.S :: "Lockname"] #lockArgs.(Lockname))
-  ∗ "#HLocknameValid" ∷ ⌜is_Some (validLocknames !! lockArgs.(Lockname))⌝
+  "#HLocknameValid" ∷ ⌜is_Some (validLocknames !! lockArgs.(Lockname))⌝
+  ∗ "#HSeqPositive" ∷ ⌜int.nat lockArgs.(Seq) > 0⌝
+  ∗ "#HLockArgsOwnLockname" ∷ readonly (args_ptr ↦[LockArgs.S :: "Lockname"] #lockArgs.(Lockname))
   ∗ "#HLockArgsOwnCID" ∷ readonly (args_ptr ↦[LockArgs.S :: "CID"] #lockArgs.(CID))
   ∗ "#HLockArgsOwnSeq" ∷ readonly (args_ptr ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
 .
@@ -258,7 +259,7 @@ LockServer__TryLock #srv #args #reply
     ∗ (⌜lockReply'.(Stale) = true⌝ ∗ (lockArgs.(CID) fm[[γcseq]]> ((int.nat lockArgs.(Seq)) + 1))
   ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrc]]↦ro (Some lockReply'.(OK)))
 }}}.
-Proof.
+Proof using Type*.
   iIntros (Φ) "Hpre HPost".
   iNamed "Hpre".
   iNamed "Hargs"; iNamed "Hreply".
@@ -278,9 +279,10 @@ Proof.
 
   iAssert
     (
+{{{
 readonly (args ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
-         -∗ ([∗ map] cid↦seq ∈ lastSeqM, cid fm[[γlseq]]↦int.nat seq)
--∗ {{{ True
+∗ ⌜int.nat lockArgs.(Seq) > 0⌝
+         ∗ ([∗ map] cid↦seq ∈ lastSeqM, cid fm[[γlseq]]↦int.nat seq)
 }}}
   if: #ok then #v ≥ struct.loadF LockArgs.S "Seq" #args
          else #false
@@ -295,9 +297,39 @@ readonly (args ↦[LockArgs.S :: "Seq"] #lockArgs.(Seq))
 }}}
     )%I as "Htemp".
   {
-    admit.
+    iIntros (Ψ). iModIntro.
+    iIntros "HΨpre HΨpost".
+    iDestruct "HΨpre" as "[#Hseq [% Hlseq_own]]".
+    destruct ok.
+    { wp_pures. wp_loadField. wp_binop.
+      destruct bool_decide eqn:Hineq.
+      - apply bool_decide_eq_true in Hineq.
+        iApply "HΨpost". iExists true.
+        iSplitL ""; first done.
+        iRight. iFrame. by iPureIntro.
+      - apply bool_decide_eq_false in Hineq.
+        iApply "HΨpost". iExists false.
+        iSplitL ""; first done.
+        iLeft. iFrame. iSplitL ""; eauto.
+        iSplitL ""; first (iPureIntro; word).
+        apply map_get_true in  HSeqMapGet.
+        rewrite insert_id; eauto.
+    }
+    {
+      iMod (fmcounter_map_alloc 0 γlseq lockArgs.(CID) with "[$]") as "Hlseq_own_new".
+      wp_pures.
+      apply map_get_false in HSeqMapGet as [Hnone Hv]. rewrite Hv.
+      iApply "HΨpost". iExists false.
+      iSplitL ""; first done.
+      iLeft. iFrame. iSplitL ""; eauto.
+      iSplitL ""; first (iPureIntro;simpl; word).
+      simpl.
+      Check big_sepM_insert.
+      iDestruct (big_sepM_insert _ _ lockArgs.(CID) with "[$Hlseq_own Hlseq_own_new]") as "Hlseq_own"; eauto.
+      by replace (int.nat 0%Z) with (0) by word.
+    }
   }
-  wp_apply ("Htemp" with "[] Hlseq_own"); eauto.
+  wp_apply ("Htemp" with "[$Hlseq_own]"); eauto.
   iIntros (ifr) "Hifr".
   iDestruct "Hifr" as (b ->) "Hifr".
   destruct b.
