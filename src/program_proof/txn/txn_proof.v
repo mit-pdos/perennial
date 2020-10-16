@@ -1114,7 +1114,7 @@ Proof using txnG0 Σ.
     (λ npos,
       ∃ lwh' txn_id,
         "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh' ∗
-        "Hmapstos" ∷ ( [∗ map] k↦x ∈ bufamap, mapsto_txn γ k (existT _ x.(bufData)) ) ∗
+        "Hmapstos" ∷ ( [∗ map] k↦x ∈ bufamap, mapsto_txn γ k (existT _ x.(buf_).(bufData)) ) ∗
         "Hpos" ∷ txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id npos
     )%I
     with "[$Hiswal $Hblks Hmapstos Hwal_latest Hfupd]").
@@ -1139,7 +1139,7 @@ Proof using txnG0 Σ.
       remember (gmap_addr_by_block bufamap !!! a) as x.
       iDestruct (big_sepM_lookup with "Hmapstos") as "Ha"; eauto.
       eapply gmap_addr_by_block_off_not_empty in Ha as Hx.
-      assert (x = (list_to_map (map_to_list x) : gmap u64 buf)) as Hlm. { rewrite list_to_map_to_list; eauto. }
+      assert (x = (list_to_map (map_to_list x) : gmap u64 _)) as Hlm. { rewrite list_to_map_to_list; eauto. }
       rewrite -> Hlm in *.
       destruct (map_to_list x) eqn:Hxl.
       { simpl in Hx. congruence. }
@@ -1156,137 +1156,43 @@ Proof using txnG0 Σ.
 
     iDestruct (big_sepML_sep with "Hupdmap") as "[Hupdmap_addr Hupdmap_kind]".
 
-(*
-    iDestruct (big_sepML_sepM with "[$Hupdmap $Hmapstos]") as "Hmapstos".
+    iDestruct (big_sepML_change_m _ (filter (λ k, k ∈ dom (gset _) (gmap_addr_by_block bufamap)) (gmap_addr_by_block σl.(latest)))
+      with "Hupdmap_addr") as "Hupdmap_addr_2".
+    { admit. }
 
+    (* XXX this is too destructive: we will need to recover all of [Hheapmatch] later..
+      fix this after we understand what we need. *)
+    iDestruct (big_sepM2_sepM_1 with "Hheapmatch") as "Hheapmatch".
+    iDestruct (big_sepM_subseteq with "Hheapmatch") as "Hheapmatch".
+    { admit. }
 
+    Search _ big_sepML big_opM.
+    iDestruct (bi_iff_2 with "[Hupdmap_addr_2 Hheapmatch]") as "Hheapmatch".
+    1: eapply big_sepML_sepM.
+    2: iFrame "Hupdmap_addr_2 Hheapmatch".
+    1: admit.
 
-    iDestruct (big_sepM2_filter _ (λ k, is_Some (gmap_addr_by_block bufamap !! k)) with "Hheapmatch") as "[Hheapmatch_in Hheapmatch_out]".
-    iDestruct (big_sepM2_sepM_1 with "Hheapmatch_in") as "Hheapmatch_in".
-*)
-
-(*
-
-action items:
-
-- big_sepM2 from two big_sepM's that agree on keys
-- big_sepML factored into L-to-M existential correspondence
-- big_sepMmany
-
-*)
-
-(*
-
-updlist ->
-[Hupdmap]
-bufamap ->
-[Hmapstos]
-logm.(latest) ->
-[Hheapmatch]
-olds
-
-*)
-
-
-(*
-
-
-    iDestruct (big_sepML_sepM2_shift with "[Hupdmap] []") as "Hupdmap2".
-
-
-
-Search _ gmap insert.
-Search _ gmap ∅.
-
-
-    rewrite -(map_union_filter
-                (λ x, is_Some (gmap_addr_by_block bufamap !! fst x))
-                (gmap_addr_by_block logm.(latest))).
-
-    iDestruct (big_sepM_union with "Hmatch") as "[Hmatch0 Hmatch1]".
-    { eapply map_disjoint_filter. }
-
-
-
-Check big_sepML_map_val_exists.
-
-*)
-
-(*
-    iDestruct (big_sepM_mono _
-       (λ a buf,
-         ∃ first, mapsto_txn γ first a (existT buf.(bufKind) buf.(bufData))
-      )%I with "Hmapstos") as "Hmapstos".
-    {
-      iIntros (k x Hkx) "H".
-      iDestruct "H" as (data first) "Hmapsto".
-      iExists _. done.
-    }
-
-    (* XXX up to here *)
-
-    iDestruct (big_sepM_sep with "Hmapstos") as "[Hmapstos #Hbufamap_gdata]".
-
-    iDestruct (big_sepM2_mono _ (λ k gm gh, gmDataP gm gh ∗ emp)%I with "Hgmdata") as "Hgmdata".
-    { iIntros; iFrame. }
-    iDestruct (big_sepM2_sep with "Hgmdata") as "[Hgmdata #Hmdata_gmdata]".
-
-    iDestruct (big_sepML_map_val_exists with "Hupdmap []") as (mx) "Hx".
-    {
-      iIntros (k v lv Hkv Hp).
-      destruct Hp as [Hk Hp].
-      destruct Hp as [K [GH [Hgdata Hp]]].
-
-      iDestruct (big_sepM2_lookup_2_some with "Hmdata_gmdata") as (mv) "%Hmdata"; eauto.
-
-      iExists mv.
-      iPureIntro.
-      apply Hmdata.
-    }
-
-    iAssert (⌜ ∀ k v, mx !! k = Some v -> mData !! k = Some v ⌝)%I as "%Hsubset".
-    { iIntros (k v Hkv).
-      iDestruct (big_sepML_lookup_m_acc with "Hx") as (i lv) "(% & Hx2 & _)"; eauto.
-      iDestruct "Hx2" as (v0) "(% & % & %)". done.
-    }
-
-    rewrite <- (map_difference_union mx mData) at 2.
-    2: { apply map_subseteq_spec. eauto. }
-
-    iDestruct (big_sepM_union with "Hmdata_m") as "[Hmx Hmdata_m]".
-    { apply map_disjoint_difference_r. apply map_subseteq_spec; eauto. }
-
-    iDestruct (big_sepML_sepM with "[$Hx $Hmx]") as "Hx_mx".
     iDestruct (big_sepML_mono _
-      (λ k (v : {K : bufDataKind & gmap u64 (updatable_buf (bufDataT K))}) lv,
-        (∃ (installed_bs : Block * list Block),
-          ( ( ⌜mData !! k = Some v⌝ ∗
-              ⌜lv.(update.addr) = k⌝ ∗
-              txn_bufDataT_in_block (fst installed_bs) (snd installed_bs) (projT2 v)) ) ∗
-            mapsto lv.(update.addr) 1 (HB (fst installed_bs) (snd installed_bs)) )
-      )%I with "Hx_mx []") as "Hx_mx".
+      (λ k (v : gmap u64 {K & bufDataT K}) lv,
+        ∃ (installed_bs : Block * list Block),
+          ( ⌜lv.(update.addr) = k⌝ ∗
+            (* XXX what else?? *) emp ) ∗
+          mapsto lv.(update.addr) 1 (HB (fst installed_bs) (snd installed_bs))
+      )%I with "Hheapmatch []") as "Hheapmatch".
     {
       iIntros (k v lv). iPureIntro.
-      iIntros "[H0 H1]".
-      iDestruct "H0" as (v0) "(% & <- & %)".
-      iDestruct "H1" as (installed bs) "[H10 H11]".
+      iIntros "(<- & H)".
+      iDestruct "H" as (v0) "(% & H)".
+      iDestruct "H" as (installed bs blockK) "(% & H0 & H1)".
       iExists (installed, bs). iFrame. done. }
 
-    iDestruct (big_sepML_exists with "Hx_mx") as (updlist_olds) "[-> Hx_mx]".
+    iDestruct (big_sepML_exists with "Hheapmatch") as (updlist_olds) "[-> Hheapmatch]".
     iExists (snd <$> updlist_olds).
+    iExists crash_heaps.
 
-    iDestruct (big_sepL2_length with "Hcrashheapsmatch") as "%Hcrashlen".
-    rewrite /possible ?app_length /= in Hcrashlen.
-    iDestruct (big_sepL2_app_inv with "Hcrashheapsmatch") as "[Hcrashheapsmatch [[% Hcrashheapmatch_latest] _]]".
-    { lia. }
+    iFrame "Hcrashheaps".
 
-    iDestruct (crash_txn_bufs_to_wal_blocks with "Htxn_unmod Hcrashheapmatch_latest")
-      as (wal_unmodified_blocks) "(Hwal_blocks_old & %Hwal_unmod_disjoint & Hwal_unmod & Hcrashheapmatch_latest)".
-    iExists wal_unmodified_blocks.
-    iExists _.
-
-    iFrame "Hwal_unmod Hcrashheaps".
-    iDestruct (big_sepML_sepL_split with "Hx_mx") as "[Hx_mx Hupdlist_olds]".
+    iDestruct (big_sepML_sepL_split with "Hheapmatch") as "[Hheapmatch Hupdlist_olds]".
 
     iSplitL "Hupdlist_olds".
     {
@@ -1296,16 +1202,15 @@ Check big_sepML_map_val_exists.
       rewrite zip_fst_snd. iFrame.
     }
 
-    iSplitR; first by eauto.
-
-    iIntros (txn_id lwh' new_crash_heap) "(Hcrash & Hq)".
+    iIntros (pos' lwh') "(Hcrash & Hq)".
     rewrite /memappend_crash /memappend_q.
-    iDestruct "Hcrash" as "(Hlockedheap & Hcrashheaps & Hunmod & Hunmod_new & Hmod_new & Hpos)".
-    rewrite (big_sepL2_alt _ updlist_olds.*1).
 
+    iDestruct "Hcrash" as "(Hlockedheap & Hcrashheaps)".
+    rewrite (big_sepL2_alt _ updlist_olds.*1).
     iDestruct "Hq" as "[_ Hq]".
     rewrite zip_fst_snd.
 
+(*
     iDestruct (big_sepML_sepL_combine with "[$Hx_mx $Hq]") as "Hmx".
     iDestruct (big_sepML_sepL_exists with "Hupdmap") as "Hupdmap_list".
     iDestruct (big_sepML_sepL_combine with "[$Hmx Hupdmap_list]") as "Hmx".
@@ -1355,25 +1260,31 @@ Check big_sepML_map_val_exists.
       iFrame.
       iApply big_sepM_fmap. iFrame.
     }
+*)
 
-    iMod ("Hinner_close" with "[-Hpos]") as "Hinner_close".
+    iCombine ("Hcrashstates_frag Hcrashstates") as "Hcrashstates".
+    iMod (ghost_var_update (async_put
+                           (((λ b : buf_and_prev_data, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap)
+                            ∪ σl.(latest)) σl) with "Hcrashstates") as "[Hcrashstates Hcrashstates_frag]".
+    iMod (log_heap_append _ (((λ b : buf_and_prev_data, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap)) with "Hlogheapctx []") as "[Hlogheapctx Hnewmapsto]".
+    { admit. }
+
+    iMod ("Hcrashstates_fupd" with "Hcrashstates_frag") as "HQ".
+
+    iMod ("Hinner_close" with "[-HQ Hlockedheap]") as "Hinner_close".
     { iNext.
       iExists _, _, _. iFrame.
-      iSplitL "Hcrashheapmatch_latest".
-      { iSplitL; last by done.
-        iFrame. done. }
-      iSplitL; last by done.
-      iSplitR; first by eauto.
-      rewrite /=. iFrame.
+      admit.
     }
 
-    iModIntro. iExists _. iFrame.
+    iModIntro. iIntros "#Hpos". iExists _, _. iFrame. iFrame "#". admit.
   }
 
   iIntros (npos ok) "Hnpos".
   wp_pures.
   wp_storeField.
   wp_loadField.
+(*
   destruct ok.
   {
     iDestruct "Hnpos" as "[Hnpos Htxn_pos]".

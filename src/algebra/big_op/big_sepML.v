@@ -6,7 +6,7 @@ From iris_string_ident Require Import ltac2_string_ident.
 Set Default Proof Using "Type*".
 
 Section bi.
-Context {PROP:bi}.
+Context {PROP:bi} `{!BiAffine PROP}.
 Implicit Types (P Q: PROP).
 
 Section maplist.
@@ -36,7 +36,6 @@ Section maplist.
     iDestruct "Hml" as (lm) "[Hlm Hml]".
     rewrite Hl.
     iExists lm; iFrame.
-    iSplitR; first done.
     iApply big_sepM2_mono; iFrame.
     iIntros (k v lv ? ?) "H".
     iApply HP; iFrame.
@@ -355,7 +354,6 @@ Section maplist.
     { iExists _. iFrame. done. }
   Qed.
 
-  Context `{BiAffine PROP}.
   Theorem big_sepML_sepM Φ (P : K -> V -> PROP) m l `{!∀ k v, Absorbing (P k v)}:
     big_sepML (λ k v lv, Φ k v lv ∗ P k v) m l ⊣⊢
     big_sepML Φ m l ∗ big_opM _ P m.
@@ -381,7 +379,7 @@ Section maplist.
         { apply (elem_of_dom (D:=gset K)). rewrite -Hmlm. apply elem_of_dom. eauto. }
         { apply (elem_of_dom (D:=gset K)). rewrite Hmlm. apply elem_of_dom. eauto. }
       }
-      clear H2.
+      clear H1.
       iInduction m as [|i x m] "IH" using map_ind forall (lm Hmlm).
       { rewrite dom_empty_L in Hmlm. rewrite (dom_empty_inv_L (D:=gset K) lm); eauto.
         rewrite map_zip_empty_l. iApply big_sepM_empty. done. }
@@ -414,7 +412,7 @@ Section maplist.
     iSplitL "Hlm0".
     + iExists _. iFrame. done.
     + iDestruct (big_sepM2_sepM_2 with "Hlm1") as "Hlm1".
-      rewrite big_opM_eq /big_opM_def H2 big_sepL_fmap.
+      rewrite big_opM_eq /big_opM_def H1 big_sepL_fmap.
       iApply big_sepL_mono; last by iFrame.
       iIntros (???) "H".
       destruct y.
@@ -433,17 +431,17 @@ Section maplist.
     rewrite big_sepM2_eq /big_sepM2_def.
     iDestruct "Hlm" as "[% Hlm]".
     iSplit; eauto.
-    rewrite H2.
+    rewrite H1.
     iApply big_sepM_sep; iFrame.
 
-    clear H2.
-    iInduction lm as [|i x lm] "IH" using map_ind forall (m H3).
+    clear H1.
+    iInduction lm as [|i x lm] "IH" using map_ind forall (m H2).
     { rewrite map_zip_empty_r. iApply big_sepM_empty. done. }
     rewrite map_to_list_insert; eauto.
     rewrite fmap_cons /=.
     iDestruct "Hl" as "[Hx Hl]".
     assert (is_Some (m !! i)) as Hmi.
-    { apply H3. rewrite lookup_insert. eauto. }
+    { apply H2. rewrite lookup_insert. eauto. }
     destruct Hmi.
     replace m with (<[i:=x0]> (delete i m)).
     2: { rewrite insert_delete insert_id; eauto. }
@@ -456,13 +454,13 @@ Section maplist.
     iPureIntro.
     split; intros.
     - destruct (decide (i = k)); subst.
-      + rewrite lookup_delete in H5. inversion H5. congruence.
-      + rewrite lookup_delete_ne in H5; eauto.
-        apply H3 in H5. rewrite lookup_insert_ne in H5; eauto.
+      + rewrite lookup_delete in H4. inversion H4. congruence.
+      + rewrite lookup_delete_ne in H4; eauto.
+        apply H2 in H4. rewrite lookup_insert_ne in H4; eauto.
     - destruct (decide (i = k)); subst.
-      + inversion H5. congruence.
+      + inversion H4. congruence.
       + rewrite lookup_delete_ne; eauto.
-        eapply H3. rewrite lookup_insert_ne; eauto.
+        eapply H2. rewrite lookup_insert_ne; eauto.
   Qed.
 
   Theorem big_sepML_sepL Φ (P : LV -> PROP) m l `{!∀ lv, Absorbing (P lv)}:
@@ -602,6 +600,18 @@ Section maplist2.
   Qed.
 
 End maplist2.
+
+Theorem big_sepML_change_m {K V0 V1 LV} `{EqDecision K} `{Countable K} (m0 : gmap K V0) (m1 : gmap K V1) (l : list LV) Φ :
+  dom (gset _) m0 = dom (gset _) m1 ->
+  big_sepML (λ k _ lv, Φ k lv) m0 l -∗
+  big_sepML (λ k _ lv, Φ k lv) m1 l.
+Proof.
+  rewrite ?big_sepML_eq /big_sepML_def.
+  iIntros (Hdom) "H".
+  iDestruct "H" as (lm) "[%Hlm H]".
+  iExists lm; iFrame "%".
+  admit.
+Admitted.
 
 Theorem big_sepL_impl A (f g: nat -> A -> PROP) (l: list A) :
   (forall i x, f i x -∗ g i x) ->
