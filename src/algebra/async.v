@@ -66,6 +66,18 @@ Definition ephemeral_txn_val_range γ (lo hi:nat) (k: K) (v: V): iProp Σ :=
 Global Instance async_ctx_timeless γ σs : Timeless (async_ctx γ σs).
 Proof. apply _. Qed.
 
+Local Lemma lookup_async_insert_ne k k' v' m σs j :
+  k ≠ k' →
+  lookup_async (async_put (<[k:=v']> m) σs) j k' = lookup_async (async_put m σs) j k'.
+Proof.
+  intros Hne. rewrite /lookup_async /possible /=.
+  destruct (lt_eq_lt_dec j (length (possible σs))) as [[Hlt | ->]|Hlt].
+  - rewrite lookup_app_l //. rewrite lookup_app_l //.
+  - rewrite !list_lookup_middle //=.
+    rewrite lookup_insert_ne //.
+  - rewrite !lookup_ge_None_2 // app_length /=; lia.
+Qed.
+
 (* Just shift the "last" transaction i without changing the value. *)
 Local Lemma own_last_shift γ σs k i i' :
   (i ≤ i')%nat →
@@ -122,7 +134,28 @@ Local Lemma own_last_update γ σs k v' m i :
   own_last_frag γ k i ==∗
   own_last_auth γ (async_put (<[k:=v']> m) σs) ∗
     own_last_frag γ k (S (length (possible σs)) - 1).
-Proof. Admitted.
+Proof.
+  iIntros "Halast Hflast". iDestruct "Halast" as (last Hlast) "Hmap".
+  assert ((S (length (possible σs)) - 1) = length (possible σs)) as -> by lia.
+  iMod (own_update_2 with "Hmap Hflast") as "[Hmap $]".
+  { apply (gmap_view_update _ k _ (length (possible σs))). }
+  iExists _. iFrame "Hmap". iPureIntro.
+  intros k' j. destruct (decide (k = k')) as [<-|Hne].
+  - rewrite lookup_insert=>[=<-]. exists v'.
+    assert (lookup_async (async_put (<[k:=v']> m) σs) (length (possible σs)) k = Some v').
+    { rewrite /lookup_async possible_async_put.
+      rewrite list_lookup_middle //=. rewrite lookup_insert. done. }
+    split; first done.
+    intros i'. rewrite length_possible_async_put=>??.
+    assert (i' = length (possible σs)) as -> by lia. done.
+  - rewrite lookup_insert_ne // => Hk'.
+    destruct (Hlast _ _ Hk') as (v & Hv & Htail).
+    exists v. split.
+    + rewrite lookup_async_insert_ne //.
+    + intros j' Hle Hlen . rewrite lookup_async_insert_ne //.
+      apply Htail; first lia.
+      move:Hlen. rewrite /possible /= !app_length /=. lia.
+Qed.
 
 Theorem ephemeral_txn_val_range_acc γ lo hi k v i :
   (lo ≤ i < hi)%nat →
