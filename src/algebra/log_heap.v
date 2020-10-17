@@ -61,6 +61,9 @@ Definition async_put {T} (v : T) (a : async T) :=
 Lemma length_possible_pending {T} (a : async T) :
   length (possible a) = S (length (pending a)).
 Proof. rewrite /possible last_length //. Qed.
+Lemma length_possible_pending' {T} (a : async T) :
+  length (possible a) - 1 = length (pending a).
+Proof. rewrite /possible last_length. lia. Qed.
 
 Lemma lookup_possible_latest {T} (a : async T) :
   possible a !! length (pending a) = Some (latest a).
@@ -70,14 +73,17 @@ Proof.
   replace (length (pending a) - length (pending a)) with 0 by lia.
   reflexivity.
 Qed.
+Lemma lookup_possible_latest' {T} (a : async T) :
+  possible a !! (length (possible a) - 1) = Some (latest a).
+Proof. rewrite length_possible_pending'. apply lookup_possible_latest. Qed.
+
+Lemma possible_async_put {T} (v:T) a :
+  possible (async_put v a) = possible a ++ [v].
+Proof. rewrite /async_put /possible //. Qed.
 
 Lemma length_possible_async_put {T} (v:T) a :
   length (possible (async_put v a)) = S (length (possible a)).
-Proof.
-  rewrite /possible /async_put /=.
-  rewrite !app_length /=.
-  lia.
-Qed.
+Proof. rewrite possible_async_put !app_length /=. lia. Qed.
 
 Section definitions.
   Context `{hG : log_heapG L V Σ}.
