@@ -38,6 +38,12 @@ Module UnlockReply.
   ].
 End UnlockReply.
 
+Definition overflow_guard_incr: val :=
+  rec: "overflow_guard_incr" "v" :=
+    Skip;;
+    (for: (λ: <>, "v" + #1 < "v"); (λ: <>, Skip) := λ: <>,
+      Continue).
+
 (* nondet.go *)
 
 Definition nondet: val :=
@@ -172,9 +178,7 @@ Definition MakeClerk: val :=
 
 Definition Clerk__TryLock: val :=
   rec: "Clerk__TryLock" "ck" "lockname" :=
-    Skip;;
-    (for: (λ: <>, struct.loadF Clerk.S "seq" "ck" + #1 < struct.loadF Clerk.S "seq" "ck"); (λ: <>, Skip) := λ: <>,
-      Continue);;
+    overflow_guard_incr (struct.loadF Clerk.S "seq" "ck");;
     let: "args" := ref_to (refT (struct.t TryLockArgs.S)) (struct.new TryLockArgs.S [
       "Lockname" ::= "lockname";
       "CID" ::= struct.loadF Clerk.S "cid" "ck";
@@ -196,9 +200,7 @@ Definition Clerk__TryLock: val :=
    false otherwise. *)
 Definition Clerk__Unlock: val :=
   rec: "Clerk__Unlock" "ck" "lockname" :=
-    Skip;;
-    (for: (λ: <>, struct.loadF Clerk.S "seq" "ck" + #1 < struct.loadF Clerk.S "seq" "ck"); (λ: <>, Skip) := λ: <>,
-      Continue);;
+    overflow_guard_incr (struct.loadF Clerk.S "seq" "ck");;
     let: "args" := struct.new UnlockArgs.S [
       "Lockname" ::= "lockname";
       "CID" ::= struct.loadF Clerk.S "cid" "ck";
