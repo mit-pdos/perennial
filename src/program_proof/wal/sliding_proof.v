@@ -202,8 +202,7 @@ Proof.
   { clear Φ.
     iIntros (i us).
     iIntros "!>" (Φ) "(HI&%Hlt&%Hlookup) HΦ"; iNamed "HI".
-    rewrite list_lookup_fmap in Hlookup.
-    apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
+    fmap_Some in Hlookup as uv.
     wp_pures.
     wp_apply (wp_MapInsert with "Hm"); auto.
     iIntros "Hm".
@@ -397,9 +396,9 @@ Proof.
     iExists _, _; iFrame "# ∗". }
   iPureIntro.
   destruct ok.
-  - apply map_get_true in Hmapget.
-    rewrite addrPosMap_lookup_inv in Hmapget.
-    apply fmap_Some_1 in Hmapget as [i [Hindex ->]]; simpl.
+  - apply map_get_true in Hmapget as Hindex.
+    rewrite addrPosMap_lookup_inv in Hindex.
+    fmap_Some in Hindex as i; simpl.
     pose proof (find_highest_index_ok' _ _ _ Hindex) as [Hlookup _].
     apply lookup_lt_Some in Hlookup.
     rewrite /slidingM.memEnd.
@@ -500,7 +499,7 @@ Theorem wp_sliding__update l σ (pos: u64) uv u :
   }}}.
 Proof.
   iIntros (Hlookup Hmutable_bound Φ) "[Hsliding Hu] HΦ".
-  apply fmap_Some_1 in Hlookup as [u0 [Hlookup Haddreq]].
+  fmap_Some in Hlookup.
   iNamed "Hsliding"; iNamed "Hinv".
   iDestruct (memLog_sz with "log_mutable") as %Hsz.
   wp_call.
@@ -1012,8 +1011,7 @@ Proof.
     iNamed "HI".
     rewrite /slice_take /= in Hlt.
     replace (int.val (word.sub newStart σ.(slidingM.start))) with ((int.val newStart) - (int.val σ.(slidingM.start))) in Hlt by word.
-    rewrite list_lookup_fmap in Hlookup.
-    apply fmap_Some_1 in Hlookup as [uv [Hlookup ->]].
+    fmap_Some in Hlookup as uv.
     wp_pures.
     wp_loadField.
     wp_apply (wp_MapGet with "HaddrPos").
@@ -1042,9 +1040,9 @@ Proof.
       replace (slidingM.logIndex σ (word.add σ.(slidingM.start) i)) with (int.nat i) in Hmapget by word.
       rewrite Hupd //= in Hmapget.
     }
-    apply map_get_true in Hmapget.
-    rewrite addrPosMap_lookup_inv /= in Hmapget.
-    apply fmap_Some_1 in Hmapget as [oldPos [Hindex ->]]; simpl.
+    apply map_get_true in Hmapget as Hindex.
+    rewrite addrPosMap_lookup_inv /= in Hindex.
+    fmap_Some in Hindex as oldPos.
     rewrite Huaddr in Hindex.
     pose proof (find_highest_index_ok' _ _ _ Hindex) as [Hlookup_oldPos _].
     apply lookup_lt_Some in Hlookup_oldPos.
@@ -1084,8 +1082,8 @@ Proof.
       - iFrame.
       - rewrite Heqσtrunc /slidingM.wf drop_length /=.
         word.
-      - rewrite Heqσtrunc /set /= lookup_drop Nat.add_0_r Hupd //.
-      - rewrite Heqσtrunc /set /= Hindex //.
+      - rewrite Heqσtrunc /= lookup_drop Nat.add_0_r Hupd //.
+      - rewrite Heqσtrunc /= Hindex //.
       - word.
     }
 
@@ -1104,8 +1102,8 @@ Proof.
     - iFrame.
     - rewrite Heqσtrunc /slidingM.wf drop_length /=.
       word.
-    - rewrite Heqσtrunc /set /= lookup_drop Nat.add_0_r Hupd //.
-    - rewrite Heqσtrunc /set /= Hindex //.
+    - rewrite Heqσtrunc /= lookup_drop Nat.add_0_r Hupd //.
+    - rewrite Heqσtrunc /= Hindex //.
   }
   iIntros "[HI HlogSlice]".
   iNamed "HI".

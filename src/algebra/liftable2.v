@@ -18,18 +18,13 @@ Section bi.
   Implicit Types (P: (L → V → PROP) → PROP).
   Implicit Types (m: gmap L V) (d: gset L).
 
-  (** The resources needed to restore predicate P over map m; has no ownership
-  of maps-to facts itself *)
-  Definition PredRestore P m : PROP :=
-    (∀ mapsto2, ([∗ map] a↦v ∈ m, mapsto2 a v) -∗ P mapsto2)%I.
-
   (** Ownership over [mapsto1] facts covering the domain [d] that are sufficient
       to restore the predicate [P] using some other [mapsto2]. *)
   Definition HoldsAt P mapsto1 d : PROP :=
     (∃ m,
       "%Hdom" ∷ <affine> ⌜dom _ m = d⌝ ∗
       "Hm" ∷ ([∗ map] a↦v ∈ m, mapsto1 a v) ∗
-      "Hmapsto2" ∷ PredRestore P m)%I.
+      "#Hmapsto2" ∷ □ PredRestore P m)%I.
 
   Theorem liftable_holds_elim P `{!Liftable P} mapsto1 `{!Conflicting mapsto1} :
     P mapsto1 -∗ ∃ d, HoldsAt P mapsto1 d.
@@ -42,34 +37,27 @@ Section bi.
   Qed.
 
   Theorem liftable_restore_elim P `{!Liftable P} mapsto1 `{!Conflicting mapsto1} :
-    P mapsto1 -∗ ∃ m, ([∗ map] a↦v ∈ m, mapsto1 a v) ∗ PredRestore P m.
+    P mapsto1 -∗ ∃ m, ([∗ map] a↦v ∈ m, mapsto1 a v) ∗ □PredRestore P m.
   Proof.
     iIntros "HP".
     iDestruct (liftable with "HP") as (m) "[Hm HP]".
     iExists _; iFrame.
   Qed.
 
-  Global Instance PredRestore_equiv_proper : Proper (pointwise_relation _ (⊣⊢) ==> eq ==> (≡)) PredRestore.
-  Proof.
-    intros P1 P2 H m m' <-.
-    rewrite /PredRestore.
-    setoid_rewrite H. done.
-  Qed.
-
   Global Instance HoldsAt_equiv_proper : Proper (pointwise_relation _ (⊣⊢) ==> pointwise_relation _ (pointwise_relation _ (⊣⊢)) ==> eq ==> (≡)) HoldsAt.
   Proof.
     intros P1 P2 H mapsto1 mapsto1' H' d d' <-.
-    rewrite /HoldsAt. setoid_rewrite H; setoid_rewrite H'. done.
+    rewrite /HoldsAt /PredRestore. setoid_rewrite H; setoid_rewrite H'. done.
   Qed.
 
   Theorem HoldsAt_weaken_wand P Q mapsto1 d :
-    (∀ mapsto, P mapsto -∗ Q mapsto) -∗
+    □(∀ mapsto, P mapsto -∗ Q mapsto) -∗
     HoldsAt P mapsto1 d -∗ HoldsAt Q mapsto1 d.
   Proof.
-    iIntros "Himpl HP".
+    iIntros "#Himpl HP".
     iNamed "HP".
     iExists m. iSplit; first by auto. iFrame.
-    iIntros (mapsto2) "Hm".
+    iIntros "!>" (mapsto2) "Hm".
     iApply "Himpl".
     iApply "Hmapsto2".
     iFrame.
@@ -83,14 +71,14 @@ Section bi.
   Proof.
     iIntros (Himpl) "HP".
     iApply (HoldsAt_weaken_wand with "[] HP").
-    iIntros (?).
+    iIntros "!>" (?).
     iApply Himpl.
   Qed.
 
   Theorem HoldsAt_eq `{!BiAffine PROP} P mapsto1 d :
     HoldsAt P mapsto1 d ⊣⊢
     ∃ m, ⌜dom _ m = d⌝ ∗ ([∗ map] a↦v ∈ m, mapsto1 a v) ∗
-         PredRestore P m.
+         □PredRestore P m.
   Proof.
     rewrite /HoldsAt /named.
     iSplit.
@@ -101,7 +89,7 @@ Section bi.
   Theorem HoldsAt_elim_PredRestore `{!BiAffine PROP} P mapsto1 d :
     HoldsAt P mapsto1 d -∗
     ∃ m, ⌜dom _ m = d⌝ ∗ ([∗ map] a↦v ∈ m, mapsto1 a v) ∗
-         PredRestore P m.
+         □PredRestore P m.
   Proof.
     rewrite HoldsAt_eq //.
   Qed.
@@ -121,8 +109,8 @@ Section bi.
     HoldsAt (fun mapsto => P mapsto ∗ Q mapsto)%I mapsto1 (d1 ∪ d2) ∗ ⌜d1 ## d2⌝.
   Proof.
     iIntros "[HP HQ]".
-    iDestruct "HP" as (m1) "(<-&Hm1&Hmapsto1)".
-    iDestruct "HQ" as (m2) "(<-&Hm2&Hmapsto2)".
+    iDestruct "HP" as (m1) "(<-&Hm1&#Hmapsto1)".
+    iDestruct "HQ" as (m2) "(<-&Hm2&#Hmapsto2)".
     iDestruct (big_sepM_disjoint_pred with "Hm1 Hm2") as %Hdisjoint.
     iSplit; last first.
     { iPureIntro.
@@ -133,7 +121,7 @@ Section bi.
       auto. }
     rewrite big_sepM_union //.
     iFrame "Hm1 Hm2".
-    iIntros (?) "Hm".
+    iIntros "!>" (?) "Hm".
     iDestruct (big_sepM_union with "Hm") as "[Hm1 Hm2]"; auto.
     iSplitL "Hmapsto1 Hm1".
     - iApply "Hmapsto1"; iFrame "%∗".
@@ -169,17 +157,18 @@ Section bi.
   Qed.
 
   Theorem independent_restorable_empty (P:PROP) :
-    P -∗ PredRestore (λ _, P) ∅.
+    P -∗ PredRestore (λ _, P) (∅: gmap L V).
   Proof.
+    rewrite /PredRestore.
     iIntros "HP" (?).
     rewrite big_sepM_empty; iIntros "_".
-    iFrame.
+    iFrame "HP".
   Qed.
 
-  Theorem independent_holds_empty (P:PROP) mapsto1 :
+  Theorem persistent_holds_empty (P:PROP) mapsto1 `{!Persistent P, !Affine P} :
     P -∗ HoldsAt (λ _, P) mapsto1 ∅.
   Proof.
-    iIntros "HP".
+    iIntros "#HP".
     iExists ∅.
     rewrite dom_empty_L.
     iSplit; first by auto.
@@ -195,7 +184,7 @@ Section bi.
     iExists m.
     iSplit; first by auto.
     iFrame.
-    iIntros (?) "Hm".
+    iIntros "!>" (?) "Hm".
     iExists (x).
     iApply "Hmapsto2"; auto.
   Qed.
@@ -265,7 +254,8 @@ Section bi.
     - iExists ∅.
       iSplit; first by auto.
       rewrite !big_sepM_empty left_id.
-      setoid_rewrite big_sepM_empty.
+      iClear "Hm".
+      iIntros "!>".
       by iIntros (?) "_".
     - setoid_rewrite big_sepM_insert; auto.
       iDestruct "Hm" as "[Hl Hm']".
@@ -273,7 +263,7 @@ Section bi.
       apply dom_singleton_inv in Hdom as [v' ->].
       rewrite /PredRestore.
       setoid_rewrite big_sepM_singleton.
-      iDestruct ("IH" with "Hm'") as (m') "(%Hdom'&Hm'&Hmapsto2')".
+      iDestruct ("IH" with "Hm'") as (m') "(%Hdom'&Hm'&#Hmapsto2')".
       iExists (<[l:=v']> m').
       iSplitR; [ iPureIntro | ].
       { rewrite !dom_insert_L; congruence. }
@@ -282,7 +272,7 @@ Section bi.
         auto. }
       rewrite big_sepM_insert //.
       iFrame.
-      iIntros (?) "Hm".
+      iIntros "!>" (?) "Hm".
       rewrite !big_sepM_insert //.
       iDestruct "Hm" as "[Hl Hm']".
       iDestruct ("Hmapsto2" with "Hl") as "$".

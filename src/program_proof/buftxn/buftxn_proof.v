@@ -9,9 +9,60 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
 From Perennial.program_proof Require Import wal.specs wal.heapspec txn.txn_proof buf.buf_proof addr.addr_proof.
 
+(* an object is the data for a sub-block object, a dynamic bundle of a kind and
+data of the appropriate size *)
+(* NOTE(tej): not necessarily the best name, because it's so general as to be
+meaningless *)
+(* TODO(tej): it would be nice if both of these were records *)
+Notation object := ({K & bufDataT K}).
+Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
+Definition mkVersioned {K:bufDataKind} (c m: bufDataT K) : versioned_object :=
+  existT K (c, m).
+
+Instance object_eq_dec : EqDecision object.
+Proof.
+  intros o1 o2.
+  destruct o1 as [K1 x1], o2 as [K2 x2].
+  destruct (decide (K1 = K2)).
+  - destruct e.
+    destruct (decide (x1 = x2)); subst.
+    + left; auto.
+    + right.
+      intro H.
+      apply Eqdep_dec.inj_pair2_eq_dec in H; auto.
+      intros. apply bufDataKind_eq_dec.
+  - right; intros H%eq_sigT_fst; auto.
+Qed.
+
+Instance versioned_object_eq_dec : EqDecision versioned_object.
+Proof.
+  intros o1 o2.
+  destruct o1 as [K1 cm1], o2 as [K2 cm2].
+  destruct (decide (K1 = K2)); subst.
+  - destruct (decide (cm1 = cm2)); subst.
+    + left; auto.
+    + right.
+      intro H.
+      apply Eqdep_dec.inj_pair2_eq_dec in H; auto.
+      intros. apply bufDataKind_eq_dec.
+  - right; intros H%eq_sigT_fst; auto.
+Qed.
+
+Definition committed (v : versioned_object) : object :=
+  existT _ (fst (projT2 v)).
+
+Definition modified (v : versioned_object) : object :=
+  existT _ (snd (projT2 v)).
+
+Lemma committed_mkVersioned {K} c m : committed (@mkVersioned K c m) = existT K c.
+Proof. reflexivity. Qed.
+
+Lemma modified_mkVersioned {K} c m : modified (@mkVersioned K c m) = existT K m.
+Proof. reflexivity. Qed.
+
 Class buftxnG Σ :=
   { buftxn_txn   :> txnG Σ;
-    buftxn_bufs  :> gen_heapPreG addr {K & bufDataT K} Σ;
+    buftxn_bufs  :> gen_heapPreG addr object Σ;
   }.
 
 Section heap.
@@ -19,13 +70,7 @@ Context `{!buftxnG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
-Implicit Types (mT : gmap addr {K & (bufDataT K * bufDataT K)%type}).
-
-Definition committed (v : {K & (bufDataT K * bufDataT K)%type}) : {K & bufDataT K} :=
-  existT _ (fst (projT2 v)).
-
-Definition modified (v : {K & (bufDataT K * bufDataT K)%type}) : {K & bufDataT K} :=
-  existT _ (snd (projT2 v)).
+Implicit Types (mT : gmap addr versioned_object).
 
 Definition is_buftxn (buftx : loc)
                      mT

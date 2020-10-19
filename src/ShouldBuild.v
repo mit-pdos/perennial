@@ -19,7 +19,8 @@ From Perennial.program_proof Require
      buftxn.buftxn_proof
      buftxn.idealized_buftxn_spec
      buftxn_replication.buftxn_replication_proof
-     simple.simple
+     (* TODO: adapt to new buftxn spec *)
+     (* simple.simple *)
      wp_to_wpc.
 From Perennial.program_proof.examples Require
      all_examples.

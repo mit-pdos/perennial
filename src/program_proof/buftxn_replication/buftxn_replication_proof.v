@@ -22,20 +22,16 @@ Section goose_lang.
 
   Definition rb_rep a0 a1 σ (mapsto: addr → object → iProp Σ) : iProp Σ :=
     "Ha0" ∷ mapsto a0 (existT _ (bufBlock σ)) ∗
-    "Ha1" ∷ mapsto a1 (existT _ (bufBlock σ)) ∗
-    (* NOTE(tej): it would be easy enough to make rb_rep's non-map part
-    persistent (actually empty) if we didn't put this in the predicate but
-    instead factored it out (and repeated it in the linv and cinv) *)
-    "HP" ∷ P σ.
+    "Ha1" ∷ mapsto a1 (existT _ (bufBlock σ)).
 
   (* stronger lifting theorem that actually extracts the non-map part of rb_rep
   rather than leaving it a wand; this makes it possible to actually update
   rb_rep to a new σ' (by running a fupd) *)
   Lemma rb_rep_lift a0 a1 σ mapsto `{!Conflicting mapsto} :
     rb_rep a0 a1 σ mapsto -∗ ∃ m, "%Hdom" ∷ ⌜dom (gset _) m = {[a0; a1]}⌝ ∗
-                                  "rb_rep_m" ∷ ([∗ map] a↦v ∈ m, mapsto a v) ∗
-                                  "HP" ∷ P σ.
+                                  "rb_rep_m" ∷ ([∗ map] a↦v ∈ m, mapsto a v).
   Proof.
+    clear P.
     iNamed 1.
     iExists (<[a0:=existT _ (bufBlock σ)]> (<[a1:=existT _ (bufBlock σ)]> ∅)).
     iDestruct (conflicting with "Ha0 Ha1") as %Hneq.
@@ -59,10 +55,12 @@ Section goose_lang.
       "#rb_durable" ∷ txn_durable γ i ∗
       "rb_rep" ∷ rb_rep a0 a1 σ
                    (λ a v, modify_token γ a v ∗
-                           ephemeral_val_from γ.(buftxn_async_name) i a v).
+                           ephemeral_val_from γ.(buftxn_async_name) i a v) ∗
+      "HP" ∷ P σ.
 
   Definition rb_cinv a0 a1 l γ: iProp Σ :=
     ∃ σ i, rb_rep a0 a1 σ (ephemeral_val_from γ.(buftxn_async_name) i) ∗
+           P σ ∗
            txn_durable γ i.
 
   Definition is_rep_block l: iProp Σ :=
@@ -98,7 +96,7 @@ Section goose_lang.
     change (word.mul 8 4096) with (U64 32768).
     iMod (lift_liftable_into_txn with "Htxn rb_rep") as "[rb_rep Htxn]".
     { solve_ndisj. }
-    iNamedRestorable "rb_rep".
+    iNamed "rb_rep".
     iMod ("Hfupd" with "HP") as "[HP HQ]".
     wp_apply (wp_BufTxn__ReadBuf with "[$Htxn $Ha0]").
     { reflexivity. }
@@ -115,10 +113,9 @@ Section goose_lang.
     iMod ("Htxn_restore" with "Hbuf [%]") as "[Htxn Ha0]".
     { eauto. }
     wp_pures.
-    let i := iFresh in
-    iDestruct ("rb_rep" with "[$HP $Ha1 $Ha0]") as i;
-      iClear "rb_rep"; iRename i into "rb_rep".
-    wp_apply (wp_BufTxn__CommitWait _ (rb_rep a0 a1 σ) (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
+    iAssert (rb_rep a0 a1 σ (buftxn_maps_to γtxn)) with "[Ha0 Ha1]" as "rb_rep".
+    { iFrame. }
+    wp_apply (wp_BufTxn__CommitWait _ _ (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
     { unfold txnN, invariant.walN.
       admit. (* disjointness *) }
     { admit. (* disjointness *) }
@@ -127,14 +124,14 @@ Section goose_lang.
     wp_loadField.
     destruct ok.
     - iDestruct "Hpost" as "[rb_rep #Hdurable]".
-      wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1]").
+      wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
       { iNext.
         iExists _, _, _, _.
         iFrame "∗#". }
       wp_pures.
       iApply "HΦ".
       iFrame.
-    - admit. (* XXX: can't release lock, CommitWait doesn't handle this properly *)
+    - admit. (* TODO(tej): might be doable with new buftxn spec that preserves old values *)
   Admitted.
 
 End goose_lang.
