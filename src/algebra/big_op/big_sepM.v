@@ -484,6 +484,23 @@ Section map.
       done.
   Qed.
 
+  Lemma big_sepM_mono_dom {B} (Φ : K->A->PROP) (Ψ : K->B->PROP) (m1 : gmap K A) (m2 : gmap K B) :
+    dom (gset K) m1 = dom (gset K) m2 ->
+    □ ( ∀ k x1,
+        ⌜ m1 !! k = Some x1 ⌝ -∗
+        Φ k x1 -∗
+        ∃ x2,
+        ⌜ m2 !! k = Some x2 ⌝ ∗
+        Ψ k x2 ) -∗
+    ([∗ map] k↦x ∈ m1, Φ k x) -∗
+    ([∗ map] k↦x ∈ m2, Ψ k x).
+  Proof using BiAffine0.
+    iIntros (Hnone).
+    iApply big_sepM_mono_gen.
+    iPureIntro. intros k Hk.
+    apply not_elem_of_dom in Hk. rewrite Hnone in Hk. apply not_elem_of_dom in Hk. done.
+  Qed.
+
 End map.
 
 Section map2.

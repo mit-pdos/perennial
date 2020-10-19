@@ -1086,6 +1086,38 @@ Proof.
 Qed.
 *)
 
+Theorem mapsto_txn_cur γ (a : addr) (v : {K & bufDataT K}) :
+  mapsto_txn γ a v -∗
+  mapsto_cur (hG := γ.(txn_logheap)) a v ∗
+  (∀ v', mapsto_cur (hG := γ.(txn_logheap)) a v' -∗ mapsto_txn γ a v').
+Proof.
+  rewrite /mapsto_txn.
+  iIntros "H". iNamed "H".
+  iFrame.
+  iIntros (v') "H". iExists _. iFrame.
+Qed.
+
+Theorem mapsto_txn_cur_map {A} γ (m : gmap addr A) (f : A -> {K & bufDataT K}) (xform : A -> A):
+  ( [∗ map] a↦v ∈ m, mapsto_txn γ a (f v) ) -∗
+  ( [∗ map] a↦v ∈ m, mapsto_cur (hG := γ.(txn_logheap)) a (f v)) ∗
+  ( ([∗ map] a↦v ∈ xform <$> m, mapsto_cur (hG := γ.(txn_logheap)) a (f v)) -∗
+    [∗ map] a↦v ∈ xform <$> m, mapsto_txn γ a (f v) ).
+Proof.
+  iIntros "Hm".
+  iDestruct (big_sepM_mono _ (λ a v, mapsto_cur (hG := γ.(txn_logheap)) a (f v) ∗
+                                    (mapsto_cur (hG := γ.(txn_logheap)) a (f (xform v)) -∗ mapsto_txn γ a (f (xform v))))%I with "Hm") as "Hm".
+  2: iDestruct (big_sepM_sep with "Hm") as "[$ Hm1]".
+  { iIntros (k x Hkx) "H". iDestruct (mapsto_txn_cur with "H") as "[$ H]".
+    iIntros "H'". iApply "H". iFrame. }
+  iIntros "Hm0".
+  iDestruct (bi_iff_2 with "[Hm1]") as "Hm1".
+  1: iApply (big_sepM_fmap _ (λ k x, mapsto_cur k (f x) -∗ mapsto_txn γ k (f x))%I).
+  2: iDestruct (big_sepM_sep with "[$Hm0 $Hm1]") as "Hm".
+  1: iFrame.
+  iApply (big_sepM_mono with "Hm").
+  iIntros (k x Hkx) "[H0 H1]". iApply "H1". iFrame.
+Qed.
+
 
 Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
   {{{ is_txn l γ ∗
@@ -1252,10 +1284,9 @@ Proof using txnG0 Σ.
 
     iDestruct (big_sepML_sepL_combine with "[$Hheapmatch $Hq]") as "Hheapmatch".
     iDestruct (big_sepML_sepM_ex with "Hheapmatch") as "Hheapmatch".
-    iDestruct (big_sepM_mono_gen with "[] [] Hheapmatch") as "Hheapmatch".
+    iDestruct (big_sepM_mono_dom with "[] Hheapmatch") as "Hheapmatch".
     3: iDestruct (big_sepM_filter_split with "[$Hheapmatch $Hheapmatch_rebuild]") as "Hheapmatch".
-    { simpl. iModIntro. iIntros (k Hnone). iPureIntro.
-      admit. }
+    { admit. }
     { simpl. iModIntro. iIntros (k offmap Hoffmap) "H".
       iDestruct "H" as (lv) "[H Hmapsto]".
       iDestruct "H" as (blockK meta) "(% & % & % & Hinblock)".
@@ -1312,14 +1343,26 @@ Proof using txnG0 Σ.
     }
 *)
 
+    iDestruct (gmap_addr_by_block_big_sepM' _
+      (λ a v, mapsto_txn γ a (existT v.(buf_).(bufKind) v.(data_)))
+      with "Hmapstos") as "Hmapstos".
+
     iDestruct (big_sepL2_length with "Hcrashheapsmatch") as "%Hcrash_heaps_len".
 
     iCombine ("Hcrashstates_frag Hcrashstates") as "Hcrashstates".
-    iMod (ghost_var_update (async_put
-                           (((λ b : buf_and_prev_data, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap)
-                            ∪ σl.(latest)) σl) with "Hcrashstates") as "[Hcrashstates Hcrashstates_frag]".
-    iMod (log_heap_append _ (((λ b : buf_and_prev_data, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap)) with "Hlogheapctx []") as "[Hlogheapctx Hnewmapsto]".
-    { admit. }
+    iMod (ghost_var_update (async_put σl'latest σl) with "Hcrashstates") as "[Hcrashstates Hcrashstates_frag]".
+
+    iDestruct (mapsto_txn_cur_map _ _ _
+      (λ b, Build_buf_and_prev_data (b.(buf_)) (b.(buf_).(bufData)))
+      with "Hmapstos") as "[Hmapsto_cur Hmapstos]".
+    iMod (log_heap_append _ (((λ b : buf_and_prev_data, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap)) with "Hlogheapctx [Hmapsto_cur]") as "[Hlogheapctx Hnewmapsto]".
+    { iApply (big_sepM_mono_dom with "[] Hmapsto_cur").
+      { rewrite dom_fmap_L. done. }
+      iModIntro. iIntros (k x Hkx) "Hmapsto_cur".
+      iExists _. rewrite lookup_fmap Hkx /=. iSplit; first by done.
+      iExists _. iFrame. }
+    iDestruct ("Hmapstos" with "[Hnewmapsto]") as "Hmapstos".
+    { rewrite ?big_sepM_fmap /=. iFrame. }
 
     iMod ("Hcrashstates_fupd" with "Hcrashstates_frag") as "HQ".
 
@@ -1332,11 +1375,8 @@ Proof using txnG0 Σ.
     rewrite Hcrash_heaps_len.
     iModIntro.
 
-    iDestruct (gmap_addr_by_block_big_sepM' _
-      (λ a v, mapsto_txn γ a (existT v.(buf_).(bufKind) v.(data_)))
-      with "Hmapstos") as "Hmapstos".
     iIntros "#Hpos". iExists _, _. iFrame. iFrame "#".
-    admit.
+    rewrite big_sepM_fmap /=. iFrame.
   }
 
   iIntros (npos ok) "Hnpos".
