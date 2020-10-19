@@ -48,7 +48,7 @@ Instance TryLockArgs_rpc : RPCRequest TryLockArgsC := {getCID x := x.(CID); getS
 
 (* Returns true iff server reported error or request "timed out" *)
 Definition CallFunction (f:val) (fname:string) (rty_desc:descriptor) : val :=
-  rec: fname "srv" "args" "reply" :=
+  rec: "CallFunction" "srv" "args" "reply" :=
     Fork (let: "dummy_reply" := struct.alloc rty_desc (zero_val (struct.t rty_desc)) in
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,

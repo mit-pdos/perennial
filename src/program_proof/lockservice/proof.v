@@ -321,7 +321,12 @@ Definition LocServer__Function (f:val) (fname:string) : val :=
       lock.release (struct.loadF LockServer.S "mu" "ls");;
       #false).
 
+
+
 Lemma CallFunction_custom_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) (f:val) (fname:string) (rty_desc:descriptor) fPre fPost γrpc γPost:
+has_zero (struct.t rty_desc)
+-> (∀ srv' args' lockArgs' γrpc' γPost', Persistent (fPre srv' args' lockArgs' γrpc' γPost'))
+->
 (∀ (srv' args' reply' : loc) (lockArgs' : TryLockArgsC) 
    (lockReply' : TryLockReplyC) (γrpc' : RPC_GS) (γPost' : gname),
 {{{ fPre srv' args' lockArgs' γrpc' γPost'
@@ -334,15 +339,69 @@ Lemma CallFunction_custom_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (loc
 }}}
 )
       ->
-{{{ fPre srv args lockArgs γrpc γPost ∗ own_lockreply reply lockReply }}}
-  (CallFunction f fname rty_desc) #srv #args #reply
+{{{ "#HfPre" ∷ fPre srv args lockArgs γrpc γPost ∗ "Hreply" ∷ own_lockreply reply lockReply }}}
+  (CallFunction f fname TryLockReply.S) #srv #args #reply
 {{{ e, RET e;
     (∃ lockReply',
     own_lockreply reply lockReply'
         ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ fPost lockArgs lockReply' γrpc))
 }}}.
 Proof.
-Admitted.
+  intros Hhas_zero Hpers Hspec.
+  iIntros (Φ) "Hpre Hpost".
+  iNamed "Hpre".
+  wp_lam.
+  wp_let.
+  wp_let.
+  wp_apply wp_fork.
+  {
+    wp_apply (wp_allocStruct); first eauto.
+    iIntros (l) "Hl".
+    iDestruct (struct_fields_split with "Hl") as "(HOK&HStale&_)".
+    iNamed "HOK".
+    iNamed "HStale".
+    wp_let. wp_pures.
+    wp_apply (wp_forBreak
+                (fun b => ⌜b = true⌝∗
+                                   ∃ lockReply, (own_lockreply l lockReply)
+                )%I with "[] [OK Stale]");
+             try eauto.
+    2: { iSplitL ""; first done. iExists {| OK:=false; Stale:=false|}. iFrame. }
+
+    iIntros (Ψ).
+    iModIntro.
+    iIntros "[_ Hpre] Hpost".
+    iDestruct "Hpre" as (lockReply') "Hown_reply".
+    wp_apply (Hspec with "[$Hown_reply]"); eauto; try iFrame "#".
+
+    iIntros "TryLockPost".
+    wp_seq.
+    iApply "Hpost".
+    iSplitL ""; first done.
+    iDestruct "TryLockPost" as (lockReply'') "[Hown_lockreply TryLockPost]".
+    iExists _. iFrame.
+  }
+  wp_seq.
+  wp_apply (nondet_spec).
+  iIntros (choice) "[Hv|Hv]"; iDestruct "Hv" as %->.
+  {
+    wp_pures.
+    wp_apply (Hspec with "[$Hreply]"); eauto; try iFrame "#".
+    iDestruct 1 as (lockReply') "[Hreply TryLockPost]".
+    iApply "Hpost".
+    iFrame.
+    iExists _; iFrame.
+    iRight.
+    iSplitL ""; first done.
+    iFrame.
+  }
+  {
+    wp_pures.
+    iApply "Hpost".
+    iExists _; iFrame "Hreply".
+    by iLeft.
+  }
+Qed.
 
 Definition TryLock_spec_pre (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost : iProp Σ
   :=
