@@ -41,7 +41,7 @@ Section maplist.
     iApply HP; iFrame.
   Qed.
 
-  Theorem big_sepML_empty Φ `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_empty Φ :
     ⊢ big_sepML Φ ∅ nil.
   Proof.
     iIntros.
@@ -50,7 +50,7 @@ Section maplist.
     eauto.
   Qed.
 
-  Theorem big_sepML_insert Φ m l k v lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_insert Φ m l k v lv :
     m !! k = None ->
     Φ k v lv ∗ big_sepML Φ m l -∗
     big_sepML Φ (<[k := v]> m) (lv :: l).
@@ -64,13 +64,13 @@ Section maplist.
     - iPureIntro.
       rewrite map_to_list_insert; eauto.
       rewrite /=.
-      rewrite H2.
+      rewrite H1.
       reflexivity.
     - iApply big_sepM2_insert; eauto.
       iFrame.
   Qed.
 
-  Theorem big_sepML_insert_app Φ m l k v lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_insert_app Φ m l k v lv :
     m !! k = None ->
     Φ k v lv ∗ big_sepML Φ m l -∗
     big_sepML Φ (<[k := v]> m) (l ++ [lv]).
@@ -80,7 +80,7 @@ Section maplist.
     iApply big_sepML_insert; eauto; iFrame.
   Qed.
 
-  Theorem big_sepML_delete_cons Φ m l lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_delete_cons Φ m l lv :
     big_sepML Φ m (lv :: l) -∗
     ∃ k v,
       ⌜ m !! k = Some v ⌝ ∗
@@ -91,10 +91,10 @@ Section maplist.
     rewrite big_sepML_eq.
     iDestruct "Hml" as (lm) "[% Hml]".
     assert (lv ∈ lv :: l) by apply elem_of_list_here.
-    setoid_rewrite H1 in H2.
-    apply elem_of_list_fmap_2 in H2 as [[k lv0] H2].
-    simpl in H2; intuition subst.
-    apply elem_of_map_to_list in H4.
+    setoid_rewrite H0 in H1.
+    apply elem_of_list_fmap_2 in H1 as [[k lv0] H1].
+    simpl in H1; intuition subst.
+    apply elem_of_map_to_list in H3.
     iDestruct (big_sepM2_lookup_2_some with "Hml") as %[v Hmk]; eauto.
     iExists _, _.
     iSplitR; eauto.
@@ -103,15 +103,15 @@ Section maplist.
     iExists _.
     iSplitR; last iFrame.
     iPureIntro.
-    replace lm with (<[k := lv0]> (delete k lm)) in H1.
+    replace lm with (<[k := lv0]> (delete k lm)) in H0.
     2: {
       rewrite insert_delete.
       rewrite insert_id; eauto.
     }
-    setoid_rewrite map_to_list_insert in H1.
+    setoid_rewrite map_to_list_insert in H0.
     2: apply lookup_delete.
-    simpl in H1.
-    apply Permutation.Permutation_cons_inv in H1.
+    simpl in H0.
+    apply Permutation.Permutation_cons_inv in H0.
     done.
   Qed.
 
@@ -161,7 +161,7 @@ Section maplist.
     eauto.
   Qed.
 
-  Theorem big_sepML_delete_m Φ m l k v `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_delete_m Φ m l k v :
     m !! k = Some v ->
     big_sepML Φ m l -∗
     ∃ i lv,
@@ -175,11 +175,11 @@ Section maplist.
     iDestruct (big_sepM2_lookup_1_some with "Hml") as (x2) "%"; eauto.
     iDestruct (big_sepM2_delete with "Hml") as "[Hk Hml]"; eauto.
 
-    apply elem_of_map_to_list in H2 as H2'.
-    eapply (elem_of_list_fmap_1 snd) in H2'.
-    rewrite <- H1 in H2'.
-    eapply elem_of_list_lookup_1 in H2'.
-    destruct H2'.
+    apply elem_of_map_to_list in H1 as H1'.
+    eapply (elem_of_list_fmap_1 snd) in H1'.
+    rewrite <- H0 in H1'.
+    eapply elem_of_list_lookup_1 in H1'.
+    destruct H1'.
 
     iExists _, _; iFrame.
     iSplitR; eauto.
@@ -219,7 +219,7 @@ Section maplist.
     eauto.
   Qed.
 
-  Theorem big_sepML_lookup_l_acc Φ m l i lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_lookup_l_acc Φ m l i lv :
     l !! i = Some lv ->
     big_sepML Φ m l -∗
     ∃ k v, ⌜ m !! k = Some v ⌝ ∗ Φ k v lv ∗
@@ -243,7 +243,7 @@ Section maplist.
     eapply map_to_list_insert_overwrite; eauto.
   Qed.
 
-  Theorem big_sepML_lookup_l_app_acc Φ m lv l0 l1 `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_lookup_l_app_acc Φ m lv l0 l1 :
     big_sepML Φ m (l0 ++ lv :: l1) -∗
     ∃ k v, ⌜ m !! k = Some v ⌝ ∗ Φ k v lv ∗
     ∀ v' lv',
@@ -263,7 +263,7 @@ Section maplist.
     rewrite insert_app_r. simpl. iFrame.
   Qed.
 
-  Theorem big_sepML_lookup_m_acc Φ m l k v `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_lookup_m_acc Φ m l k v :
     m !! k = Some v ->
     big_sepML Φ m l -∗
     ∃ i lv, ⌜ l !! i = Some lv ⌝ ∗ Φ k v lv ∗
@@ -276,7 +276,7 @@ Section maplist.
     iDestruct "Hml" as (lm) "[% Hml]".
     iDestruct (big_sepM2_lookup_1_some with "Hml") as (xm) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Hml") as "[Hx Hml]"; eauto.
-    eapply map_to_list_some_list in H2 as H2'; eauto. destruct H2'.
+    eapply map_to_list_some_list in H1 as H1'; eauto. destruct H1'.
     iExists _, _.
     iSplitR; first by done.
     iFrame.
@@ -287,7 +287,7 @@ Section maplist.
     eapply map_to_list_insert_overwrite; eauto.
   Qed.
 
-  Theorem big_sepML_mono Φ Ψ m l `{!∀ k v lv, Absorbing (Φ k v lv)} `{!∀ k v lv, Absorbing (Ψ k v lv)} :
+  Theorem big_sepML_mono Φ Ψ m l :
     big_sepML Φ m l -∗
     ⌜ ∀ k v lv, Φ k v lv -∗ Ψ k v lv ⌝ -∗
     big_sepML Ψ m l.
@@ -298,7 +298,7 @@ Section maplist.
     iApply big_sepM2_mono; eauto.
   Qed.
 
-  Theorem big_sepML_lookup_l_Some Φ m l i lv `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_lookup_l_Some Φ m l i lv :
     l !! i = Some lv ->
     big_sepML Φ m l -∗
     ⌜ ∃ k v, m !! k = Some v ⌝.
@@ -307,7 +307,7 @@ Section maplist.
     iDestruct (big_sepML_lookup_l_acc with "Hml") as (k v) "[% Hml]"; eauto.
   Qed.
 
-  Theorem big_sepML_lookup_m_Some Φ m l k v `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_lookup_m_Some Φ m l k v :
     m !! k = Some v ->
     big_sepML Φ m l -∗
     ⌜ ∃ i lv, l !! i = Some lv ⌝.
@@ -316,7 +316,7 @@ Section maplist.
     iDestruct (big_sepML_lookup_m_acc with "Hml") as (i lv) "[% Hml]"; eauto.
   Qed.
 
-  Theorem big_sepML_empty_m Φ m `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_empty_m Φ m :
     big_sepML Φ m [] -∗
     ⌜ m = ∅ ⌝.
   Proof.
@@ -326,10 +326,10 @@ Section maplist.
     destruct (map_to_list lm) eqn:Heq.
     - apply map_to_list_empty_inv in Heq; subst.
       iDestruct (big_sepM2_empty_l with "Hml") as %He. done.
-    - simpl in *. apply Permutation_nil_cons in H1. eauto.
+    - simpl in *. apply Permutation_nil_cons in H0. eauto.
   Qed.
 
-  Theorem big_sepML_empty_l Φ l `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_empty_l Φ l :
     big_sepML Φ ∅ l -∗
     ⌜ l = [] ⌝.
   Proof.
@@ -337,7 +337,7 @@ Section maplist.
     iIntros "Hml".
     iDestruct "Hml" as (lm) "[% Hml]".
     iDestruct (big_sepM2_empty_r with "Hml") as %He; subst.
-    rewrite map_to_list_empty /= in H1.
+    rewrite map_to_list_empty /= in H0.
     iPureIntro. eapply Permutation.Permutation_nil. done.
   Qed.
 
@@ -354,7 +354,7 @@ Section maplist.
     { iExists _. iFrame. done. }
   Qed.
 
-  Theorem big_sepML_sepM Φ (P : K -> V -> PROP) m l `{!∀ k v, Absorbing (P k v)}:
+  Theorem big_sepML_sepM Φ (P : K -> V -> PROP) m l :
     big_sepML (λ k v lv, Φ k v lv ∗ P k v) m l ⊣⊢
     big_sepML Φ m l ∗ big_opM _ P m.
   Proof.
@@ -379,7 +379,7 @@ Section maplist.
         { apply (elem_of_dom (D:=gset K)). rewrite -Hmlm. apply elem_of_dom. eauto. }
         { apply (elem_of_dom (D:=gset K)). rewrite Hmlm. apply elem_of_dom. eauto. }
       }
-      clear H1.
+      clear H0.
       iInduction m as [|i x m] "IH" using map_ind forall (lm Hmlm).
       { rewrite dom_empty_L in Hmlm. rewrite (dom_empty_inv_L (D:=gset K) lm); eauto.
         rewrite map_zip_empty_l. iApply big_sepM_empty. done. }
@@ -401,7 +401,20 @@ Section maplist.
       set_solver.
   Qed.
 
-  Theorem big_sepML_sepL_split Φ (P : LV -> PROP) m l `{!∀ lv, Absorbing (P lv)}:
+  Theorem big_sepML_sepM_ex Φ m l :
+    big_sepML Φ m l -∗
+    big_opM _ (λ k v, ∃ lv, Φ k v lv) m.
+  Proof.
+    rewrite big_sepML_eq /big_sepML_def; iIntros "Hlm".
+    iDestruct "Hlm" as (lm) "[% Hlm]".
+    iDestruct (big_sepM2_sepM_1 with "Hlm") as "Hlm".
+    iApply (big_sepM_mono with "Hlm").
+    iIntros (k x Hkx) "H".
+    iDestruct "H" as (lv) "[% H]".
+    iExists _. iFrame.
+  Qed.
+
+  Theorem big_sepML_sepL_split Φ (P : LV -> PROP) m l :
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l -∗
     big_sepML Φ m l ∗ big_opL _ (λ i, P) l.
   Proof.
@@ -412,14 +425,14 @@ Section maplist.
     iSplitL "Hlm0".
     + iExists _. iFrame. done.
     + iDestruct (big_sepM2_sepM_2 with "Hlm1") as "Hlm1".
-      rewrite big_opM_eq /big_opM_def H1 big_sepL_fmap.
+      rewrite big_opM_eq /big_opM_def H0 big_sepL_fmap.
       iApply big_sepL_mono; last by iFrame.
       iIntros (???) "H".
       destruct y.
       iDestruct "H" as (?) "[% H]". iFrame.
   Qed.
 
-  Theorem big_sepML_sepL_combine Φ (P : LV -> PROP) m l `{!∀ lv, Absorbing (P lv)}:
+  Theorem big_sepML_sepL_combine Φ (P : LV -> PROP) m l :
     big_sepML Φ m l ∗ big_opL _ (λ i, P) l -∗
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l.
   Proof.
@@ -431,17 +444,17 @@ Section maplist.
     rewrite big_sepM2_eq /big_sepM2_def.
     iDestruct "Hlm" as "[% Hlm]".
     iSplit; eauto.
-    rewrite H1.
+    rewrite H0.
     iApply big_sepM_sep; iFrame.
 
-    clear H1.
-    iInduction lm as [|i x lm] "IH" using map_ind forall (m H2).
+    clear H0.
+    iInduction lm as [|i x lm] "IH" using map_ind forall (m H1).
     { rewrite map_zip_empty_r. iApply big_sepM_empty. done. }
     rewrite map_to_list_insert; eauto.
     rewrite fmap_cons /=.
     iDestruct "Hl" as "[Hx Hl]".
     assert (is_Some (m !! i)) as Hmi.
-    { apply H2. rewrite lookup_insert. eauto. }
+    { apply H1. rewrite lookup_insert. eauto. }
     destruct Hmi.
     replace m with (<[i:=x0]> (delete i m)).
     2: { rewrite insert_delete insert_id; eauto. }
@@ -454,16 +467,16 @@ Section maplist.
     iPureIntro.
     split; intros.
     - destruct (decide (i = k)); subst.
-      + rewrite lookup_delete in H4. inversion H4. congruence.
-      + rewrite lookup_delete_ne in H4; eauto.
-        apply H2 in H4. rewrite lookup_insert_ne in H4; eauto.
+      + rewrite lookup_delete in H3. inversion H3. congruence.
+      + rewrite lookup_delete_ne in H3; eauto.
+        apply H1 in H3. rewrite lookup_insert_ne in H3; eauto.
     - destruct (decide (i = k)); subst.
-      + inversion H4. congruence.
+      + inversion H3. congruence.
       + rewrite lookup_delete_ne; eauto.
-        eapply H2. rewrite lookup_insert_ne; eauto.
+        eapply H1. rewrite lookup_insert_ne; eauto.
   Qed.
 
-  Theorem big_sepML_sepL Φ (P : LV -> PROP) m l `{!∀ lv, Absorbing (P lv)}:
+  Theorem big_sepML_sepL Φ (P : LV -> PROP) m l :
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l ⊣⊢
     big_sepML Φ m l ∗ big_opL _ (λ i, P) l.
   Proof.
@@ -472,7 +485,7 @@ Section maplist.
     - iApply big_sepML_sepL_combine.
   Qed.
 
-  Theorem big_sepML_sepL_exists Φ m l `{!∀ k v lv, Absorbing (Φ k v lv)}:
+  Theorem big_sepML_sepL_exists Φ m l :
     big_sepML Φ m l -∗
     big_opL _ (λ _ lv, ∃ k v, ⌜ m !! k = Some v ⌝ ∗ Φ k v lv) l.
   Proof.
@@ -519,8 +532,7 @@ Section maplist2.
 
   Context `{BiAffine PROP}.
 
-  Theorem big_sepML_map_val_exists_helper Φ mv l (R : K -> V -> W -> Prop)
-      `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_map_val_exists_helper Φ mv l (R : K -> V -> W -> Prop) :
     big_sepML Φ mv l -∗
     □ ( ∀ k v lv,
       ⌜ mv !! k = Some v ⌝ -∗
@@ -541,7 +553,7 @@ Section maplist2.
       iSpecialize ("Hi" with "Hml [HR]").
       { iModIntro.
         iIntros. iApply "HR"; last by iFrame.
-        apply lookup_delete_Some in H2; intuition eauto. }
+        apply lookup_delete_Some in H1; intuition eauto. }
       iDestruct "Hi" as (mw) "[%Hdel Hi]".
       iDestruct ("HR" with "[] Hk") as (w) "%HR"; eauto.
       iExists (<[k := w]> mw).
@@ -558,8 +570,7 @@ Section maplist2.
       apply (not_elem_of_dom (D:=gset K)). rewrite Hdel. set_solver.
   Qed.
 
-  Theorem big_sepML_map_val_exists Φ mv l (R : K -> V -> W -> Prop)
-      `{!∀ k v lv, Absorbing (Φ k v lv)} :
+  Theorem big_sepML_map_val_exists Φ mv l (R : K -> V -> W -> Prop) :
     big_sepML Φ mv l -∗
     □ ( ∀ k v lv,
       ⌜ mv !! k = Some v ⌝ -∗
@@ -573,8 +584,7 @@ Section maplist2.
     iExists _; iFrame.
   Qed.
 
-  Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l
-      `{!∀ k v lv w, Absorbing (Φw k v lv w)} :
+  Theorem big_sepML_exists (Φw : K -> V -> LV -> W -> PROP) m l :
     big_sepML (λ k v lv, ∃ w, Φw k v lv w) m l -∗
     ∃ lw,
       ⌜ l = fst <$> lw ⌝ ∗

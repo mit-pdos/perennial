@@ -958,6 +958,22 @@ Proof.
   intros ->; auto.
 Qed.
 
+Lemma filter_union_ignored {K A} `{EqDecision K} `{Countable K} (m m' : gmap K A) (P : K->Prop)
+                         `{! ∀ k, Decision (P k)} :
+  ( ∀ k a, m' !! k = Some a -> ¬ P k ) ->
+  filter (λ v, P (fst v)) m = filter (λ v, P (fst v)) (m' ∪ m).
+Proof.
+  intros.
+Admitted.
+
+Lemma filter_union_gmap_addr_by_block_ignored {A} (m m' : gmap addr A) (P : u64->Prop)
+                         `{! ∀ k, Decision (P k)} :
+  ( ∀ k a, m' !! k = Some a -> ¬ P (fst k) ) ->
+  filter (λ v, P (fst v)) (gmap_addr_by_block m) = filter (λ v, P (fst v)) (gmap_addr_by_block (m' ∪ m)).
+Proof.
+  intros.
+Admitted.
+
 (*
 Lemma txn_crash_heap_alloc γcrash txn_crash_heaps wal_crash_new
                            (crash_blocks : gmap u64 Block)
@@ -1070,6 +1086,7 @@ Proof.
 Qed.
 *)
 
+
 Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
   {{{ is_txn l γ ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
@@ -1161,26 +1178,31 @@ Proof using txnG0 Σ.
 
     iDestruct (big_sepML_sep with "Hupdmap") as "[Hupdmap_addr Hupdmap_kind]".
 
-    iDestruct (big_sepML_change_m _ (filter (λ k, k ∈ dom (gset _) (gmap_addr_by_block bufamap)) (gmap_addr_by_block σl.(latest)))
+    iDestruct (big_sepML_change_m _
+      (filter (λ (k : u64 * _), fst k ∈ dom (gset u64) (gmap_addr_by_block bufamap)) (gmap_addr_by_block σl.(latest)))
       with "Hupdmap_addr") as "Hupdmap_addr_2".
-    { admit. }
+    { symmetry. apply dom_filter_L. intros i; split.
+      { intros H. apply Hsubset in H as H'.
+        apply elem_of_dom in H'. destruct H'. eexists; split; eauto. }
+      { intros H. destruct H as [x H]. intuition. }
+    }
 
-    (* XXX this is too destructive: we will need to recover all of [Hheapmatch] later..
-      fix this after we understand what we need. *)
+    iDestruct (big_sepM2_dom with "Hheapmatch") as "%Hheapmatch_dom".
     iDestruct (big_sepM2_sepM_1 with "Hheapmatch") as "Hheapmatch".
-    iDestruct (big_sepM_subseteq with "Hheapmatch") as "Hheapmatch".
-    { admit. }
+    iDestruct (big_sepM_filter_split with "Hheapmatch") as "[Hheapmatch Hheapmatch_rebuild]".
 
     iDestruct (bi_iff_2 with "[Hupdmap_addr_2 Hheapmatch]") as "Hheapmatch".
     1: eapply big_sepML_sepM.
-    2: iFrame "Hupdmap_addr_2 Hheapmatch".
-    1: admit.
+    1: iFrame "Hupdmap_addr_2 Hheapmatch".
 
     iDestruct (big_sepML_mono _
       (λ k (v : gmap u64 {K & bufDataT K}) lv,
         ∃ (installed_bs : Block * list Block),
-          ( ⌜lv.(update.addr) = k⌝ ∗
-            (* XXX what else?? *) emp ) ∗
+          ( ∃ blockK v0,
+            ⌜lv.(update.addr) = k⌝ ∗
+            ⌜gmap_addr_by_block metam !! lv.(update.addr) = Some v0⌝ ∗
+            ⌜γ.(txn_kinds) !! lv.(update.addr) = Some blockK⌝ ∗
+            bufDataTs_in_block (fst installed_bs) (snd installed_bs) lv.(update.addr) blockK v v0 ) ∗
           mapsto lv.(update.addr) 1 (HB (fst installed_bs) (snd installed_bs))
       )%I with "Hheapmatch []") as "Hheapmatch".
     {
@@ -1188,7 +1210,8 @@ Proof using txnG0 Σ.
       iIntros "(<- & H)".
       iDestruct "H" as (v0) "(% & H)".
       iDestruct "H" as (installed bs blockK) "(% & H0 & H1)".
-      iExists (installed, bs). iFrame. done. }
+      iExists (installed, bs). iFrame.
+      iExists _, _. iFrame. done. }
 
     iDestruct (big_sepML_exists with "Hheapmatch") as (updlist_olds) "[-> Hheapmatch]".
     iExists (snd <$> updlist_olds).
@@ -1214,8 +1237,31 @@ Proof using txnG0 Σ.
     iDestruct "Hq" as "[_ Hq]".
     rewrite zip_fst_snd.
 
+    remember (((λ b, existT _ b.(buf_).(bufData)) <$> bufamap) ∪ σl.(latest)) as σl'latest.
+
+    pose proof (filter_union_gmap_addr_by_block_ignored σl.(latest)
+                  ((λ b, existT _ b.(buf_).(bufData)) <$> bufamap)
+                  (λ x, x ∉ dom (gset u64) (gmap_addr_by_block bufamap))) as Hy.
+    rewrite Hy.
+    2: {
+      intros k a Hka.
+      rewrite lookup_fmap in Hka. apply fmap_Some_1 in Hka. destruct Hka. intuition. apply H0; clear H0.
+      eapply gmap_addr_by_block_lookup in H1. destruct H1. intuition.
+      apply elem_of_dom. eauto.
+    }
+
+    iDestruct (big_sepML_sepL_combine with "[$Hheapmatch $Hq]") as "Hheapmatch".
+    iDestruct (big_sepML_sepM_ex with "Hheapmatch") as "Hheapmatch".
+    iDestruct (big_sepM_mono_gen with "[] [] Hheapmatch") as "Hheapmatch".
+    3: iDestruct (big_sepM_filter_split with "[$Hheapmatch $Hheapmatch_rebuild]") as "Hheapmatch".
+    { simpl. iModIntro. iIntros (k Hnone). iPureIntro.
+      admit. }
+    { simpl. iModIntro. iIntros (k offmap Hoffmap) "H".
+      iDestruct "H" as (lv) "[H Hmapsto]".
+      iDestruct "H" as (blockK meta) "(% & % & % & Hinblock)".
+      admit. }
+
 (*
-    iDestruct (big_sepML_sepL_combine with "[$Hx_mx $Hq]") as "Hmx".
     iDestruct (big_sepML_sepL_exists with "Hupdmap") as "Hupdmap_list".
     iDestruct (big_sepML_sepL_combine with "[$Hmx Hupdmap_list]") as "Hmx".
     2: {
