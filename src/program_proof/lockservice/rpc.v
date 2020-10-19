@@ -21,7 +21,8 @@ Class RPCRequest (A:Type) :=
   }.
 
 Context `{rpca : RPCRequest A ,
-          rpcr : R
+          rpcr : R,
+          rpcr_inhabited : Inhabited R
          }.
 
 Context `{!heapG Σ}.
@@ -153,7 +154,7 @@ Lemma alloc_γrc (args:A) γrpc PreCond PostCond:
       -∗ PreCond args
   ={⊤}=∗
       args.(getCID) fm[[γrpc.(cseq)]]↦ (int.nat args.(getSeq) + 1)
-      ∗ (∃ γP, inv rpcRequestInvN (RPCRequest_inv PreCond PostCond args γrpc γP) ∗ (own γP (Excl ()))).
+      ∗ (∃ γPost, inv rpcRequestInvN (RPCRequest_inv PreCond PostCond args γrpc γPost) ∗ (own γPost (Excl ()))).
 Proof using Type*.
   intros.
   iIntros "Hinv Hcseq_own HPreCond".
@@ -170,12 +171,12 @@ Proof using Type*.
   }
   iMod (map_alloc (args.(getCID), args.(getSeq)) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
   iMod (own_alloc (Excl ())) as "HγP"; first done.
-  iDestruct "HγP" as (γP) "HγP".
+  iDestruct "HγP" as (γPost) "HγP".
   iMod (fmcounter_map_update γrpc.(cseq) _ _ (int.nat args.(getSeq) + 1) with "Hcseq_own") as "Hcseq_own".
   { simpl. lia. }
   iMod (fmcounter_map_get_lb with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
   iDestruct (big_sepM_insert _ _ _ None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
-  iMod (inv_alloc rpcRequestInvN _ (RPCRequest_inv PreCond PostCond args γrpc γP) with "[Hrcptsto HPreCond]") as "#Hreqinv_init".
+  iMod (inv_alloc rpcRequestInvN _ (RPCRequest_inv PreCond PostCond args γrpc γPost) with "[Hrcptsto HPreCond]") as "#Hreqinv_init".
   {
     iNext. iFrame; iFrame "#". iLeft. iFrame.
   }
@@ -184,5 +185,28 @@ Proof using Type*.
   iModIntro.
   iFrame. iExists _; iFrame; iFrame "#".
 Qed.
+
+Lemma get_request_post (args:A) (r:R) γrpc γPost PreCond PostCond :
+  (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond args γrpc γPost))
+    -∗ (args.(getCID), args.(getSeq)) [[γrpc.(rc)]]↦ro Some r
+    -∗ (own γPost (Excl ()))
+    ={⊤}=∗ ▷ (PostCond args r).
+Proof using Type*.
+  iIntros "#Hinv #Hptstoro HγP".
+  iInv rpcRequestInvN as "HMinner" "HMClose".
+  iDestruct "HMinner" as "[#>Hlseqbound [[Hbad _] | HMinner]]".
+  { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">%". destruct H0; discriminate. }
+  iDestruct "HMinner" as "[#Hlseq_lb Hrest]".
+  Check @later_exist.
+  iDestruct (later_exist with "Hrest") as "Hrest".
+  iDestruct "Hrest" as (last_reply) "[Hptstoro_some [>Hbad | HP]]".
+  { by iDestruct (own_valid_2 with "HγP Hbad") as %Hbad. }
+  iMod ("HMClose" with "[HγP]") as "_".
+  { iNext. iFrame "#". iRight. iExists r. iFrame "#". iLeft. done. }
+  iModIntro. iModIntro.
+  iDestruct (ptsto_ro_agree with "Hptstoro_some Hptstoro") as %Heq.
+  by injection Heq as ->.
+Qed.
+
 
 End rpc.
