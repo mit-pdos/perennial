@@ -1,4 +1,4 @@
-From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof.
+From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof nondet.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
@@ -17,11 +17,6 @@ Context `{!heapG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
-
-Axiom nondet_spec:
-  {{{ True }}}
-    nondet #()
-  {{{ v, RET v; ⌜v = #true⌝ ∨ ⌜v = #false⌝}}}.
 
 Record TryLockArgsC :=
   mkTryLockArgsC{
@@ -63,13 +58,12 @@ Definition own_clerk (ck:val) (srv:loc) (γrpc:RPC_GS) : iProp Σ
     ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
     ∗ "Hseq" ∷ ck_l ↦[Clerk.S :: "seq"] #cseqno
     ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] #srv
-    ∗ "Hcrpc" ∷ RPCClient_own cseq cseqno γrpc
+    ∗ "Hcrpc" ∷ RPCClient_own cid cseqno γrpc
 .
 
 Definition TryLock_Post : TryLockArgsC -> bool -> iProp Σ := λ args reply, (⌜reply = false⌝ ∨ (Ps args.(Lockname)))%I.
 Definition TryLock_Pre : TryLockArgsC -> iProp Σ := λ _, True%I.
 Definition TryLockRequest_inv := RPCRequest_inv TryLock_Pre TryLock_Post.
-Check TryLockRequest_inv.
 
 Definition LockServer_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr locks_ptr:loc) (lastSeqM:gmap u64 u64)
@@ -119,8 +113,8 @@ Lemma TryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLo
 }}}
   LockServer__TryLock #srv #args #reply
 {{{ RET #false; ∃ lockReply', own_lockreply reply lockReply'
-    ∗ (⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale args γrpc)
-  ∨ RPCReplyReceipt args lockReply'.(OK) γrpc
+    ∗ (⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale lockArgs γrpc)
+  ∨ RPCReplyReceipt lockArgs lockReply'.(OK) γrpc
 }}}.
 Proof using Type*.
   iIntros (Φ) "Hpre HPost".
@@ -145,24 +139,20 @@ Proof using Type*.
 {{{
 readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
 ∗ ⌜int.nat lockArgs.(Seq) > 0⌝
-         ∗ ([∗ map] cid↦seq ∈ lastSeqM, cid fm[[γrpc.(lseq)]]↦int.nat seq)
 }}}
   if: #ok then #v ≥ struct.loadF TryLockArgs.S "Seq" #args
          else #false
 {{{ ifr, RET ifr; ∃b:bool, ⌜ifr = #b⌝
-  ∗ ((⌜b = false⌝ ∗ ⌜int.nat v < int.nat lockArgs.(Seq)⌝
-     ∗ ([∗ map] cid↦seq ∈ <[lockArgs.(CID):=v]> lastSeqM, cid fm[[γrpc.(lseq)]]↦int.nat seq)) ∨
-
-     (⌜b = true⌝ ∗  ⌜(int.val lockArgs.(Seq) ≤ int.val v ∧ ok=true)%Z⌝
-     ∗ ([∗ map] cid↦seq ∈ lastSeqM, cid fm[[γrpc.(lseq)]]↦int.nat seq)
-     )
+  ∗ ((⌜b = false⌝ ∗ ⌜int.nat v < int.nat lockArgs.(Seq)⌝)
+      ∨
+     (⌜b = true⌝ ∗  ⌜(int.val lockArgs.(Seq) ≤ int.val v ∧ ok=true)%Z⌝)
     )
 }}}
     )%I as "Htemp".
   {
     iIntros (Ψ). iModIntro.
     iIntros "HΨpre HΨpost".
-    iDestruct "HΨpre" as "[#Hseq [% Hlseq_own]]".
+    iDestruct "HΨpre" as "[#Hseq %]".
     destruct ok.
     { wp_pures. wp_loadField. wp_binop.
       destruct bool_decide eqn:Hineq.
@@ -174,9 +164,7 @@ readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
         iApply "HΨpost". iExists false.
         iSplitL ""; first done.
         iLeft. iFrame. iSplitL ""; eauto.
-        iSplitL ""; first (iPureIntro; word).
-        apply map_get_true in  HSeqMapGet.
-        rewrite insert_id; eauto.
+        iPureIntro. lia.
     }
     {
       iMod (fmcounter_map_alloc 0 _ lockArgs.(CID) with "[$]") as "Hlseq_own_new".
@@ -184,20 +172,15 @@ readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
       apply map_get_false in HSeqMapGet as [Hnone Hv]. rewrite Hv.
       iApply "HΨpost". iExists false.
       iSplitL ""; first done.
-      iLeft. iFrame. iSplitL ""; eauto.
-      iSplitL ""; first (iPureIntro;simpl; word).
-      simpl.
-      Check big_sepM_insert.
-      iDestruct (big_sepM_insert _ _ lockArgs.(CID) with "[$Hlseq_own Hlseq_own_new]") as "Hlseq_own"; eauto.
-      by replace (int.nat 0%Z) with (0) by word.
+      iLeft. iSplitL ""; eauto.
     }
   }
-  wp_apply ("Htemp" with "[$Hlseq_own]"); eauto.
+  wp_apply ("Htemp" with "[]"); eauto.
   iIntros (ifr) "Hifr".
   iDestruct "Hifr" as (b ->) "Hifr".
   destruct b.
   - (* cache hit *)
-    iDestruct "Hifr" as "[[% _]|[_ [Hineq Hlseq_own]]]"; first discriminate.
+    iDestruct "Hifr" as "[[% _]|[_ Hineq ]]"; first discriminate.
     iDestruct "Hineq" as %[Hineq Hok].
     rewrite ->Hok in *.
     apply map_get_true in HSeqMapGet.
@@ -205,15 +188,15 @@ readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
     destruct bool_decide eqn:Hineqstrict.
       { (* Stale case *)
         wp_pures. wp_storeField. wp_loadField.
+        apply bool_decide_eq_true in Hineqstrict.
+        iMod (smaller_seqno_stale_fact with "[] Hsrpc") as "[Hsrpc #Hstale]"; eauto.
         wp_apply (release_spec mutexN #mu_ptr _ with "[-HPost HreplyOK HreplyStale]"); iFrame; iFrame "#".
         { (* Re-establish LockServer_mutex_inv *)
           iNext. iExists _, _, _, _,_,_. iFrame "#". iFrame.
         }
-        apply bool_decide_eq_true in Hineqstrict.
-        iMod (smaller_seqno_stale_fact with "[] Hrcagree") as "#Hstale"; eauto.
-        wp_seq. iApply "HPost". iExists ({| OK := _; Stale := true |}); iFrame.
+        wp_seq. iApply "HPost". iExists ({| OK := lockReply.(OK); Stale := true |}); iFrame.
         iLeft.
-        by iFrame "Hstale".
+        iFrame "Hstale". by iFrame.
       }
       (* Not stale *)
       assert (v = lockArgs.(Seq)) as ->. {

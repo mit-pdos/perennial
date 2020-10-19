@@ -2,6 +2,8 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+From Perennial.program_proof.lockservice Require Import nondet.
+
 (* common.go *)
 
 (* Lock(lockname) returns OK=true if the lock is not held.
@@ -43,12 +45,6 @@ Definition overflow_guard_incr: val :=
     Skip;;
     (for: (λ: <>, "v" + #1 < "v"); (λ: <>, Skip) := λ: <>,
       Continue).
-
-(* nondet.go *)
-
-Definition nondet: val :=
-  rec: "nondet" <> :=
-    #true.
 
 (* server.go *)
 

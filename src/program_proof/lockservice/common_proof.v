@@ -1,4 +1,4 @@
-From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc.
+From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map nondet.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.

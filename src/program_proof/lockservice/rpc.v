@@ -1,4 +1,4 @@
-From Perennial.program_proof.lockservice Require Import fmcounter_map lockservice.
+From Perennial.program_proof.lockservice Require Import fmcounter_map nondet.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
@@ -47,7 +47,6 @@ Record RPC_GS :=
 Instance TryLockArgs_rpc : RPCRequest TryLockArgsC := {getCID x := x.(CID); getSeq x := x.(CID)}.
 
 (* Returns true iff server reported error or request "timed out" *)
-Print TryLockReply.S.
 Definition CallFunction (f:val) (fname:string) (rty_desc:descriptor) : val :=
   rec: fname "srv" "args" "reply" :=
     Fork (let: "dummy_reply" := struct.alloc rty_desc (zero_val (struct.t rty_desc)) in
@@ -58,11 +57,6 @@ Definition CallFunction (f:val) (fname:string) (rty_desc:descriptor) : val :=
     (if: nondet #()
     then f "srv" "args" "reply"
     else #true).
-
-Lemma CalllFunction_instantiate_test :
-  CallFunction LockServer__TryLock "CallTryLock" TryLockReply.S = CallTryLock.
-Proof. eauto. Qed.
-Check struct_fields_split.
 
 Definition RPCClient_own (cid cseqno:u64) (γrpc:RPC_GS) : iProp Σ :=
   "Hcseq_own" ∷ (cid fm[[γrpc.(cseq)]]↦ int.nat cseqno)
@@ -192,10 +186,11 @@ Lemma smaller_seqno_stale_fact (args:A) (lseq:u64) (γrpc:RPC_GS) lastSeqM lastR
   inv replyCacheInvN (ReplyCache_inv γrpc) -∗
   RPCServer_own lastSeqM lastReplyM γrpc
     ={⊤}=∗
-        RPCRequestStale args γrpc.
+    RPCServer_own lastSeqM lastReplyM γrpc
+    ∗ RPCRequestStale args γrpc.
 Proof.
   intros.
-  iIntros "#Hinv [ _#Hsepm]".
+  iIntros "#Hinv [Hlseq_own #Hsepm]".
   iInv replyCacheInvN as ">HNinner" "HNclose".
   iNamed "HNinner".
   iDestruct (big_sepM2_dom with "Hsepm") as %Hdomeq.
@@ -216,10 +211,10 @@ Proof.
   {
     iNext. iExists _; iFrame; iFrame "#".
   }
-  iModIntro. by replace (int.nat args.(getSeq) + 2) with (int.nat args.(getSeq) + 1 + 1) by lia.
+  iModIntro. replace (int.nat args.(getSeq) + 2) with (int.nat args.(getSeq) + 1 + 1) by lia.
+  iFrame; iFrame "#".
 Qed.
 
-Print RPCClient_own.
 Lemma alloc_γrc (args:A) γrpc PreCond PostCond:
   (int.nat args.(getSeq)) + 1 = int.nat (word.add args.(getSeq) 1)
   -> inv replyCacheInvN (ReplyCache_inv γrpc )
@@ -278,6 +273,35 @@ Proof using Type*.
   iModIntro. iModIntro.
   iDestruct (ptsto_ro_agree with "Hptstoro_some Hptstoro") as %Heq.
   by injection Heq as ->.
+Qed.
+
+Context `{ rpcr_into_val : into_val.IntoVal R}.
+Lemma server_replies_to_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (args:A) (old_seq:u64) (γrpc:RPC_GS) (reply:R)
+      (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
+     (lastSeqM !! args.(getCID) = Some args.(getSeq))
+  -> (∃ ok, map_get lastReplyM args.(getCID) = (reply, ok))
+  -> (inv replyCacheInvN (ReplyCache_inv γrpc ))
+  -∗ (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond args γrpc γP))
+  -∗ PostCond args reply
+  -∗ RPCServer_own lastSeqM lastReplyM γrpc
+  ={⊤}=∗
+      RPCReplyReceipt args reply γrpc
+  ∗ RPCServer_own (lastSeqM) (lastReplyM) γrpc.
+Proof.
+  intros Hsome [ok Hreplymapget].
+  iIntros "Hlinv HargsInv Hpost Hsown"; iNamed "Hsown".
+  iAssert ⌜ok = true⌝%I as %->.
+  { iDestruct (big_sepM2_lookup_1 _ _ _ args.(getCID) with "Hrcagree") as "HH"; eauto.
+    iDestruct "HH" as (x B) "H".
+    simpl. iPureIntro. unfold map_get in Hreplymapget.
+    revert Hreplymapget.
+    rewrite B. simpl. intros. injection Hreplymapget. done.
+    (* TODO: get a better proof of this... *)
+  }
+  apply map_get_true in Hreplymapget.
+  iDestruct (big_sepM2_delete with "Hrcagree") as "[#Hrcptsto _]"; eauto.
+  iModIntro.
+  iFrame "#"; iFrame.
 Qed.
 
 End rpc.
