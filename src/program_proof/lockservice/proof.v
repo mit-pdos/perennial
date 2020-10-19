@@ -1,4 +1,4 @@
-From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc.
+From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
@@ -63,7 +63,7 @@ Definition own_clerk (ck:val) (srv:loc) (γrpc:RPC_GS) : iProp Σ
     ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
     ∗ "Hseq" ∷ ck_l ↦[Clerk.S :: "seq"] #cseqno
     ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] #srv
-    ∗ "Hcseq_own" ∷ (cid fm[[γrpc.(cseq)]]↦ int.nat cseqno)
+    ∗ "Hcrpc" ∷ RPCClient_own cseq cseqno γrpc
 .
 
 Definition TryLock_Post : TryLockArgsC -> bool -> iProp Σ := λ args reply, (⌜reply = false⌝ ∨ (Ps args.(Lockname)))%I.
@@ -83,8 +83,7 @@ Definition LockServer_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
     ∗ "HlocksMap" ∷ is_map (locks_ptr) locksM
     ∗ ("Hlockeds" ∷ [∗ map] ln ↦ locked ; _ ∈ locksM ; validLocknames, (⌜locked=true⌝ ∨ (Ps ln)))
     
-    ∗ ("Hlseq_own" ∷ [∗ map] cid ↦ seq ∈ lastSeqM, cid fm[[γrpc.(lseq)]]↦ int.nat seq)
-    ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) [[γrpc.(rc)]]↦ro Some r)
+    ∗ ("Hsrpc" ∷ RPCServer_own lastSeqM lastReplyM γrpc)
 .
 
 (* Should make this readonly so it can be read by the RPC background thread *)
@@ -113,15 +112,15 @@ Definition is_lockserver (srv_ptr:loc) γrpc: iProp Σ :=
 .
 
 Lemma TryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
-  {{{ "#Hls" ∷ is_lockserver srv γrpc 
-      ∗ "#HargsInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γPost)
-      ∗ "#Hargs" ∷ read_lock_args args lockArgs
-      ∗ "Hreply" ∷ own_lockreply reply lockReply
-  }}}
-LockServer__TryLock #srv #args #reply
+{{{ "#Hls" ∷ is_lockserver srv γrpc 
+    ∗ "#HargsInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γPost)
+    ∗ "#Hargs" ∷ read_lock_args args lockArgs
+    ∗ "Hreply" ∷ own_lockreply reply lockReply
+}}}
+  LockServer__TryLock #srv #args #reply
 {{{ RET #false; ∃ lockReply', own_lockreply reply lockReply'
-    ∗ (⌜lockReply'.(Stale) = true⌝ ∗ (lockArgs.(CID) fm[[γrpc.(cseq)]]> ((int.nat lockArgs.(Seq)) + 1))
-  ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrpc.(rc)]]↦ro (Some lockReply'.(OK)))
+    ∗ (⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale args γrpc)
+  ∨ RPCReplyReceipt args lockReply'.(OK) γrpc
 }}}.
 Proof using Type*.
   iIntros (Φ) "Hpre HPost".
@@ -325,7 +324,10 @@ Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:T
 CallTryLock #srv #args #reply
 {{{ e, RET e;
     (∃ lockReply', own_lockreply reply lockReply'
-    ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ (⌜lockReply'.(Stale) = true⌝ ∗ (lockArgs.(CID) fm[[γrpc.(cseq)]]> (int.nat lockArgs.(Seq) + 1)) ∨ (lockArgs.(CID), lockArgs.(Seq)) [[γrpc.(rc)]]↦ro (Some lockReply'.(OK)))))
+        ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗
+             (⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale args γrpc
+               ∨ RPCReplyReceipt args lockReply'.(OK)
+             )))
 }}}.
 Proof using Type*.
   iIntros (Φ) "Hpre Hpost".
@@ -383,52 +385,6 @@ Proof using Type*.
   }
 Qed.
 
-Lemma overflow_guard_incr_spec stk E (v:u64) : 
-{{{ True }}}
-  overflow_guard_incr #v @ stk ; E
-{{{
-     RET #(); ⌜((int.val v) + 1 = int.val (word.add v 1))%Z⌝
-}}}.
-Proof.
-  iIntros (Φ) "Hpre Hpost".
-  wp_lam. wp_pures.
-  wp_apply (wp_forBreak_cond
-              (fun b => ((⌜b = true⌝ ∨ ⌜((int.val v) + 1 = int.val (word.add v 1))%Z⌝)
-)) with "[] []")%I; eauto.
-  {
-    iIntros (Ψ). iModIntro.
-    iIntros "_ HΨpost".
-    wp_pures.
-    destruct bool_decide eqn:Hineq.
-    {
-      apply bool_decide_eq_true in Hineq.
-      wp_pures.
-      iApply "HΨpost".
-      iFrame; by iLeft.
-    }
-    {
-      apply bool_decide_eq_false in Hineq.
-      wp_pures.
-      iApply "HΨpost". iFrame; iRight.
-      iPureIntro.
-      assert (int.val (word.add v 1) >= int.val v)%Z by lia.
-      destruct (bool_decide ((int.val v) + 1 < 2 ^ 64 ))%Z eqn:Hnov.
-      {
-        apply bool_decide_eq_true in Hnov.
-        word.
-      }
-      apply bool_decide_eq_false in Hnov.
-      assert (int.val v + (int.val 1) >= 2 ^ 64)%Z.
-      { replace (int.val 1)%Z with (1)%Z by word. lia. }
-      apply sum_overflow_check in H0.
-      contradiction.
-    }
-  }
-  {
-    iIntros "[ %| %]"; first discriminate.
-    by iApply "Hpost".
-  }
-Qed.
 
 Lemma Clerk__TryLock_spec ck (srv:loc) (ln:u64) γrpc :
   {{{
@@ -610,6 +566,5 @@ Proof using Type*.
   iApply "Hpost".
   iFrame.
 Qed.
-
 
 End lockservice_proof.
