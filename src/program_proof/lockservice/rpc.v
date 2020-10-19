@@ -197,7 +197,6 @@ Proof using Type*.
   iDestruct "HMinner" as "[#>Hlseqbound [[Hbad _] | HMinner]]".
   { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">%". destruct H0; discriminate. }
   iDestruct "HMinner" as "[#Hlseq_lb Hrest]".
-  Check @later_exist.
   iDestruct (later_exist with "Hrest") as "Hrest".
   iDestruct "Hrest" as (last_reply) "[Hptstoro_some [>Hbad | HP]]".
   { by iDestruct (own_valid_2 with "HγP Hbad") as %Hbad. }
