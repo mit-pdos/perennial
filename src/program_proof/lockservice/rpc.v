@@ -14,18 +14,25 @@ From iris.algebra Require Import numbers.
 From Coq.Structures Require Import OrdersTac.
 
 Section rpc.
+Context `{!heapG Σ}.
 
 Class RPCRequest (A:Type) :=
   { getCID : A -> u64 ;
     getSeq : A -> u64
   }.
 
+Class RPCReply R rty_desc := 
+  {
+  own_reply : loc -> R -> iProp Σ ;
+  alloc_reply (rloc:loc) : (rloc ↦[struct.t rty_desc] zero_val (struct.t rty_desc)) -∗ (∃r, own_reply rloc r)
+  }.
+
+
 Context `{rpca : RPCRequest A ,
           rpcr : R,
           rpcr_inhabited : Inhabited R
          }.
 
-Context `{!heapG Σ}.
 Context `{fmcounter_mapG Σ}.
 Context `{!inG Σ (exclR unitO)}.
 Context `{!mapG Σ (u64*u64) (option R)}.
@@ -45,18 +52,6 @@ Record RPC_GS :=
     }.
 
 Instance TryLockArgs_rpc : RPCRequest TryLockArgsC := {getCID x := x.(CID); getSeq x := x.(CID)}.
-
-(* Returns true iff server reported error or request "timed out" *)
-Definition CallFunction (f:val) (fname:string) (rty_desc:descriptor) : val :=
-  rec: "CallFunction" "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := struct.alloc rty_desc (zero_val (struct.t rty_desc)) in
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            f "srv" "args" "dummy_reply";;
-            Continue));;
-    (if: nondet #()
-    then f "srv" "args" "reply"
-    else #true).
 
 Definition RPCClient_own (cid cseqno:u64) (γrpc:RPC_GS) : iProp Σ :=
   "Hcseq_own" ∷ (cid fm[[γrpc.(cseq)]]↦ int.nat cseqno)
@@ -92,24 +87,6 @@ Definition ReplyCache_inv (γrpc:RPC_GS) : iProp Σ :=
 
 Definition replyCacheInvN : namespace := nroot .@ "replyCacheInvN".
 Definition rpcRequestInvN := nroot .@ "rpcRequestInvN".
-
-Lemma CallFunction_spec (srv args reply:loc) (a:A) (r:R) (f:val) (fname:string) (rty_desc:descriptor) γrpc γPost fPre fPost PreCond PostCond :
-(∀ (someReply:loc),
-{{{ fPre srv args
-    ∗ inv rpcRequestInvN (RPCRequest_inv PreCond PostCond a γrpc γPost)
-    ∗ (∃ x, someReply ↦[struct.t rty_desc] x)
-}}}
-  f #srv #args #someReply
-{{{ v, RET v; fPost args reply }}}
-)
-      ->
-{{{ fPre srv args ∗ (∃ x, reply ↦[struct.t rty_desc] x) }}}
-  (CallFunction f fname rty_desc) #srv #args #reply
-{{{ e, RET e;
-    ⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ fPost args reply
-}}}.
-Proof.
-Admitted.
 
 Lemma server_processes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (args:A) (old_seq:u64) (γrpc:RPC_GS) (reply:R)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
