@@ -478,6 +478,13 @@ Section gmap_addr_by_block.
         iApply big_sepM_empty. done.
   Qed.
 
+  Theorem gmap_addr_by_block_big_sepM' (m : gmap addr T) (Φ : addr -> T -> PROP) :
+    ( [∗ map] blkno ↦ offmap ∈ gmap_addr_by_block m,
+        [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ) -∗
+    ( [∗ map] a ↦ v ∈ m, Φ a v ).
+  Proof.
+  Admitted.
+
 End gmap_addr_by_block.
 
 

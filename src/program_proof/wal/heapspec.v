@@ -1387,8 +1387,8 @@ Proof.
   intuition eauto.
 Qed.
 
-Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
-  ( |={⊤ ∖ ↑walN, E}=>
+Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) (PreQ : iProp Σ) lwh :
+  ( PreQ ={⊤ ∖ ↑walN, E}=∗
       ∃ olds crash_heaps,
         memappend_pre γh.(wal_heap_h) bs olds ∗
         memappend_crash_pre γh bs crash_heaps ∗
@@ -1397,15 +1397,16 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) lwh :
             memappend_q γh.(wal_heap_h) bs olds
           ={E, ⊤ ∖ ↑walN}=∗ txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos -∗ Q pos ) ) -∗
   is_locked_walheap γh lwh -∗
+  PreQ -∗
   ( ( ∀ σ σ' txn_id,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
         let txn_num := length σ.(log_state.txns) in
       ( (wal_heap_inv γh) σ
           ={⊤ ∖↑ walN}=∗ ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ (wal_heap_inv γh) σ' ∗ (txn_pos γh.(wal_heap_walnames) txn_num txn_id -∗ Q txn_id)) ) ∧
-    "Hlockedheap" ∷ is_locked_walheap γh lwh ).
+    ( "Hlockedheap" ∷ is_locked_walheap γh lwh ∗ PreQ )).
 Proof using walheapG0.
-  iIntros "Hpre Hlockedheap".
+  iIntros "Hpre Hlockedheap HpreQ".
   iSplit; last by iFrame.
 
   iIntros (σ σ' pos) "% % Hinv".
@@ -1413,6 +1414,8 @@ Proof using walheapG0.
 
   simpl in *; monad_inv.
   simpl in *.
+
+  iDestruct ("Hpre" with "HpreQ") as "Hpre".
 
   iMod "Hpre" as (olds crash_heaps0) "(Hpre & Hprecrash & Hfupd)".
   iNamed "Hprecrash".

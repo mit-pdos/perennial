@@ -1112,15 +1112,18 @@ Proof using txnG0 Σ.
   wp_loadField.
 
   wp_apply (wp_Walog__MemAppend _
-    ("Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh)
+    ("Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh ∗
+     "Hmapstos" ∷ [∗ map] a↦buf ∈ bufamap, mapsto_txn γ a (existT _ buf.(data_)))
     (λ npos,
       ∃ lwh' txn_id,
         "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh' ∗
         "Hmapstos" ∷ ( [∗ map] k↦x ∈ bufamap, mapsto_txn γ k (existT _ x.(buf_).(bufData)) ) ∗
-        "Hpos" ∷ txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id npos
+        "Hpos" ∷ txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id npos ∗
+        "HQ" ∷ Q txn_id
     )%I
     with "[$Hiswal $Hblks Hmapstos Hwal_latest Hfupd]").
-  { iApply (wal_heap_memappend E with "[Hmapstos Hfupd] Hwal_latest").
+  { iApply (wal_heap_memappend E with "[Hfupd] Hwal_latest Hmapstos").
+    iIntros "Hmapstos".
     iInv invN as ">Hinner" "Hinner_close".
     iMod "Hfupd".
     iModIntro.
@@ -1263,6 +1266,8 @@ Proof using txnG0 Σ.
     }
 *)
 
+    iDestruct (big_sepL2_length with "Hcrashheapsmatch") as "%Hcrash_heaps_len".
+
     iCombine ("Hcrashstates_frag Hcrashstates") as "Hcrashstates".
     iMod (ghost_var_update (async_put
                            (((λ b : buf_and_prev_data, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap)
@@ -1272,42 +1277,47 @@ Proof using txnG0 Σ.
 
     iMod ("Hcrashstates_fupd" with "Hcrashstates_frag") as "HQ".
 
-    iMod ("Hinner_close" with "[-HQ Hlockedheap]") as "Hinner_close".
+    iMod ("Hinner_close" with "[-HQ Hlockedheap Hmapstos]") as "Hinner_close".
     { iNext.
       iExists _, _, _. iFrame.
       admit.
     }
 
-    iModIntro. iIntros "#Hpos". iExists _, _. iFrame. iFrame "#". admit.
+    rewrite Hcrash_heaps_len.
+    iModIntro.
+
+    iDestruct (gmap_addr_by_block_big_sepM' _
+      (λ a v, mapsto_txn γ a (existT v.(buf_).(bufKind) v.(data_)))
+      with "Hmapstos") as "Hmapstos".
+    iIntros "#Hpos". iExists _, _. iFrame. iFrame "#".
+    admit.
   }
 
   iIntros (npos ok) "Hnpos".
   wp_pures.
   wp_storeField.
   wp_loadField.
-(*
   destruct ok.
   {
     iDestruct "Hnpos" as "[Hnpos Htxn_pos]".
     iNamed "Hnpos".
     iDestruct "Htxn_pos" as (txn_num) "#Htxn_pos".
-    wp_apply (release_spec with "[$Histxn_lock $Hlocked Histxn_nextid Hlockedheap Histxn_pos]").
+    wp_apply (release_spec with "[$Histxn_lock $Hlocked Hlockedheap Histxn_pos]").
     { iExists _, _, _. iFrame. }
 
     wp_pures.
     iApply "HΦ".
     iFrame.
-    iExists _, _; iFrame "#".
+    iExists txn_id. iFrame.
   }
   {
-    wp_apply (release_spec with "[$Histxn_lock $Hlocked Histxn_nextid Hnpos Histxn_pos]").
+    iNamed "Hnpos".
+    wp_apply (release_spec with "[$Histxn_lock $Hlocked Hlockedheap Histxn_pos]").
     { iExists _, _, _. iFrame. }
 
     wp_pures.
-    iApply "HΦ".
-    admit.
+    iApply "HΦ". iFrame.
   }
-*)
 Admitted.
 
 Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) E (Q : nat -> iProp Σ) :
