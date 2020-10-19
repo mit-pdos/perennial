@@ -293,7 +293,76 @@ readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
         1-5: done.
 Qed.
 
-Lemma CallTryLock_spec_using_generic (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
+Definition LocServer__Function (f:val) (fname:string) : val :=
+  rec: fname "ls" "args" "reply" :=
+    lock.acquire (struct.loadF LockServer.S "mu" "ls");;
+    let: ("last", "ok") := MapGet (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF TryLockArgs.S "CID" "args") in
+    struct.storeF TryLockReply.S "Stale" "reply" #false;;
+    (if: "ok" && (struct.loadF TryLockArgs.S "Seq" "args" ≤ "last")
+    then
+      (if: struct.loadF TryLockArgs.S "Seq" "args" < "last"
+      then
+        struct.storeF TryLockReply.S "Stale" "reply" #true;;
+        lock.release (struct.loadF LockServer.S "mu" "ls");;
+        #false
+      else
+        struct.storeF TryLockReply.S "OK" "reply" (Fst (MapGet (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF TryLockArgs.S "CID" "args")));;
+        lock.release (struct.loadF LockServer.S "mu" "ls");;
+        #false)
+    else
+      MapInsert (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF TryLockArgs.S "CID" "args") (struct.loadF TryLockArgs.S "Seq" "args");;
+      let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") (struct.loadF TryLockArgs.S "Lockname" "args") in
+      (if: "locked"
+      then struct.storeF TryLockReply.S "OK" "reply" #false
+      else
+        struct.storeF TryLockReply.S "OK" "reply" #true;;
+        MapInsert (struct.loadF LockServer.S "locks" "ls") (struct.loadF TryLockArgs.S "Lockname" "args") #true);;
+      MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF TryLockArgs.S "CID" "args") (struct.loadF TryLockReply.S "OK" "reply");;
+      lock.release (struct.loadF LockServer.S "mu" "ls");;
+      #false).
+
+Lemma CallFunction_custom_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) (f:val) (fname:string) (rty_desc:descriptor) fPre fPost γrpc γPost:
+(∀ (srv' args' reply' : loc) (lockArgs' : TryLockArgsC) 
+   (lockReply' : TryLockReplyC) (γrpc' : RPC_GS) (γPost' : gname),
+{{{ fPre srv' args' lockArgs' γrpc' γPost'
+    ∗ own_lockreply reply' lockReply'
+}}}
+  f #srv' #args' #reply'
+{{{ RET #false; ∃ lockReply',
+    own_lockreply reply' lockReply'
+    ∗ fPost lockArgs' lockReply' γrpc'
+}}}
+)
+      ->
+{{{ fPre srv args lockArgs γrpc γPost ∗ own_lockreply reply lockReply }}}
+  (CallFunction f fname rty_desc) #srv #args #reply
+{{{ e, RET e;
+    (∃ lockReply',
+    own_lockreply reply lockReply'
+        ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ fPost lockArgs lockReply' γrpc))
+}}}.
+Proof.
+Admitted.
+
+Definition TryLock_spec_pre (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost : iProp Σ
+  :=
+    "#Hls" ∷ is_lockserver srv γrpc 
+           ∗ "#HargsInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γPost)
+           ∗ "#Hargs" ∷ read_lock_args args lockArgs.
+
+Lemma TryLock_spec_custom (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
+{{{ TryLock_spec_pre srv args reply lockArgs lockReply γrpc γPost
+    ∗ "Hreply" ∷ own_lockreply reply lockReply
+}}}
+  LockServer__TryLock #srv #args #reply
+{{{ RET #false; ∃ lockReply', own_lockreply reply lockReply'
+    ∗ ((⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale lockArgs γrpc)
+  ∨ RPCReplyReceipt lockArgs lockReply'.(OK) γrpc)
+}}}.
+Proof.
+Admitted.
+
+Lemma CallTryLock_spec_from_TryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
   {{{ "#Hls" ∷ is_lockserver srv γrpc
       ∗ "#HargsInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γPost)
       ∗ "#Hargs" ∷ read_lock_args args lockArgs
@@ -302,14 +371,19 @@ Lemma CallTryLock_spec_using_generic (srv args reply:loc) (lockArgs:TryLockArgsC
 CallTryLock #srv #args #reply
 {{{ e, RET e;
     (∃ lockReply', own_lockreply reply lockReply'
-        ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗
-             (⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale lockArgs γrpc
+    ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝
+        ∗ (⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale lockArgs γrpc
                ∨ RPCReplyReceipt lockArgs lockReply'.(OK) γrpc
              )))
 }}}.
 Proof.
   replace (CallTryLock) with (CallFunction LockServer__TryLock "CallTryLock" TryLockReply.S); eauto.
-Admitted.
+  iIntros (Φ) "Hpre Hpost".
+  iApply (CallFunction_custom_spec with "[Hpre]"); eauto.
+  { refine TryLock_spec_custom. }
+  {  iNamed "Hpre". iFrame "#"; iFrame. }
+  simpl. done.
+Qed.
 
 Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
   {{{ "#Hls" ∷ is_lockserver srv γrpc
