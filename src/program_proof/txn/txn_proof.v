@@ -1286,7 +1286,7 @@ Proof using txnG0 Σ.
     iDestruct (big_sepML_sepM_ex with "Hheapmatch") as "Hheapmatch".
     iDestruct (big_sepM_mono_dom with "[] Hheapmatch") as "Hheapmatch".
     3: iDestruct (big_sepM_filter_split with "[$Hheapmatch $Hheapmatch_rebuild]") as "Hheapmatch".
-    { admit. }
+    { simpl. admit. }
     { simpl. iModIntro. iIntros (k offmap Hoffmap) "H".
       iDestruct "H" as (lv) "[H Hmapsto]".
       iDestruct "H" as (blockK meta) "(% & % & % & Hinblock)".
@@ -1369,6 +1369,13 @@ Proof using txnG0 Σ.
     iMod ("Hinner_close" with "[-HQ Hlockedheap Hmapstos]") as "Hinner_close".
     { iNext.
       iExists _, _, _. iFrame.
+      iSplitL "Hcrashstates". { subst. iFrame. }
+      simpl.
+      iSplitL "Hheapmatch".
+      { iApply (big_sepM_sepM2_merge_ex with "Hheapmatch").
+        rewrite -Hheapmatch_dom.
+        admit.
+      }
       admit.
     }
 
