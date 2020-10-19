@@ -620,8 +620,36 @@ Proof.
   iIntros (Hdom) "H".
   iDestruct "H" as (lm) "[%Hlm H]".
   iExists lm; iFrame "%".
-  admit.
-Admitted.
+  rewrite big_sepM2_eq /big_sepM2_def.
+  iDestruct "H" as "[% H]".
+  iSplit.
+  { iPureIntro. intros k. specialize (H0 k).
+    repeat rewrite <- elem_of_dom in H0.
+    repeat rewrite <- elem_of_dom.
+    congruence. }
+  iApply (big_sepM_mono_gen with "[] [] H").
+  { iPureIntro. intros k Hk.
+    specialize (H0 k).
+    repeat rewrite <- elem_of_dom in H0.
+    rewrite map_zip_lookup_none_1; eauto.
+    rewrite -not_elem_of_dom. rewrite -Hdom. intro.
+    apply elem_of_dom in H1 as H1'; destruct H1'.
+    apply H0 in H1.
+    apply elem_of_dom in H1 as H1'; destruct H1'.
+    erewrite map_zip_lookup_some in Hk; eauto. congruence.
+  }
+  { iModIntro. iIntros (k x Hkx) "H".
+    destruct (m0 !! k) eqn:Hem0.
+    2: { rewrite map_zip_lookup_none_1 in Hkx; congruence. }
+    destruct (lm !! k) eqn:Helm.
+    2: { rewrite map_zip_lookup_none_2 in Hkx; congruence. }
+    erewrite map_zip_lookup_some in Hkx; eauto. destruct x; inversion Hkx; clear Hkx; subst.
+    destruct (m1 !! k) eqn:Hem1.
+    2: { apply not_elem_of_dom in Hem1. rewrite -Hdom in Hem1.
+         apply not_elem_of_dom in Hem1. congruence. }
+    erewrite map_zip_lookup_some; eauto.
+  }
+Qed.
 
 Theorem big_sepL_impl A (f g: nat -> A -> PROP) (l: list A) :
   (forall i x, f i x -∗ g i x) ->

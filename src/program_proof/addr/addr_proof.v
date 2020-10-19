@@ -483,7 +483,26 @@ Section gmap_addr_by_block.
         [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ) -∗
     ( [∗ map] a ↦ v ∈ m, Φ a v ).
   Proof.
-  Admitted.
+    iIntros "Hm".
+    rewrite /gmap_addr_by_block.
+    iInduction m as [|i x m] "IH" using map_ind.
+    - iApply big_sepM_empty. done.
+    - destruct i as [i0 i1].
+      rewrite gmap_uncurry_insert; eauto; simpl.
+      destruct (gmap_uncurry m !! i0) eqn:He.
+      + iDestruct (big_sepM_insert_delete with "Hm") as "[Hi0 Hm]"; simpl.
+        iDestruct (big_sepM_insert with "Hi0") as "[Hi1 Hi0]".
+        { rewrite -lookup_gmap_uncurry in H. rewrite He /= in H. done. }
+        iApply big_sepM_insert; eauto. iFrame.
+        iDestruct (big_sepM_insert_delete with "[$Hm $Hi0]") as "Hm".
+        rewrite insert_id; eauto.
+        iApply "IH"; iFrame.
+      + iDestruct (big_sepM_insert with "Hm") as "[Hi0 Hm]"; eauto; simpl.
+        iDestruct (big_sepM_insert with "Hi0") as "[Hi1 _]".
+        { rewrite lookup_empty; eauto. }
+        iApply big_sepM_insert; eauto. iFrame.
+        iApply "IH". iFrame.
+  Qed.
 
 End gmap_addr_by_block.
 
@@ -495,8 +514,32 @@ Proof.
   rewrite /gmap_addr_by_block.
   apply map_eq; intros.
   rewrite lookup_fmap.
-  admit.
-Admitted.
+  destruct (gmap_uncurry m !! i) eqn:He; simpl.
+  - destruct (gmap_uncurry (f <$> m) !! i) eqn:Hee.
+    2: {
+      eapply gmap_uncurry_non_empty in He as He'.
+      apply map_choose in He'. destruct He' as [j' [x' He']].
+      erewrite lookup_gmap_uncurry_None in Hee.
+      specialize (Hee j'). rewrite lookup_fmap in Hee.
+      rewrite -lookup_gmap_uncurry He /= He' /= in Hee.
+      congruence.
+    }
+    rewrite Hee.
+    f_equal.
+    apply map_eq; intros.
+
+    replace (g0 !! i0) with ((f <$> m) !! (i, i0)).
+    2: { rewrite -lookup_gmap_uncurry Hee /=. done. }
+
+    rewrite ?lookup_fmap.
+    replace (g !! i0) with (m !! (i, i0)).
+    2: { rewrite -lookup_gmap_uncurry He /=. done. }
+    done.
+
+  - erewrite lookup_gmap_uncurry_None in He.
+    erewrite lookup_gmap_uncurry_None. intros j. specialize (He j).
+    rewrite lookup_fmap. rewrite He. done.
+Qed.
 
 
 Section heap.

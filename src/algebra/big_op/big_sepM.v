@@ -395,7 +395,13 @@ Section map.
     ([∗ map] k↦x ∈ m2, Φ k x) ∗
     ([∗ map] k↦x ∈ m1 ∖ m2, Φ k x).
   Proof.
-  Admitted.
+    iIntros (Hsubset) "Hm".
+    replace (m1) with (m2 ∪ m1 ∖ m2) at 1.
+    2: { rewrite map_difference_union; eauto. }
+    iDestruct (big_sepM_union with "Hm") as "[Hm1 Hm2]".
+    { apply map_disjoint_difference_r; eauto. }
+    iFrame.
+  Qed.
 
   Lemma big_sepM_subseteq_acc `{!BiAffine PROP} Φ m1 m2 :
     m2 ⊆ m1 ->
@@ -432,8 +438,8 @@ Section map.
       rewrite map_union_filter. iFrame.
   Qed.
 
-  Lemma big_sepM_mono_gen Φ Ψ m1 m2 :
-    □ ( ∀ k, ⌜ m1 !! k = None ⌝ -∗ ⌜ m2 !! k = None ⌝ ) -∗
+  Lemma big_sepM_mono_gen {B} (Φ : K->A->PROP) (Ψ : K->B->PROP) (m1 : gmap K A) (m2 : gmap K B) :
+    ⌜ ∀ k, m1 !! k = None -> m2 !! k = None ⌝ -∗
     □ ( ∀ k x1,
         ⌜ m1 !! k = Some x1 ⌝ -∗
         Φ k x1 -∗
@@ -442,13 +448,41 @@ Section map.
         Ψ k x2 ) -∗
     ([∗ map] k↦x ∈ m1, Φ k x) -∗
     ([∗ map] k↦x ∈ m2, Ψ k x).
-  Proof.
+  Proof using BiAffine0.
     iIntros "#Hnone #Hsome Hm".
-    iInduction m1 as [|i x m] "IH" using map_ind.
-    - admit.
-    - admit.
-  Admitted.
-
+    iInduction m1 as [|i x m] "IH" using map_ind forall (m2).
+    - iAssert (⌜m2 = ∅⌝)%I as "->".
+      2: iApply big_sepM_empty; done.
+      iDestruct "Hnone" as "%Hnone".
+      iPureIntro. apply map_eq; intros i. rewrite lookup_empty. eauto.
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      iDestruct ("Hsome" with "[] Hi") as (x2) "[% Hi]".
+      { rewrite lookup_insert; done. }
+      replace m2 with (<[i := x2]> (delete i m2)).
+      2: { rewrite insert_delete insert_id; eauto. }
+      iApply big_sepM_insert.
+      { rewrite lookup_delete; eauto. }
+      iFrame.
+      iApply ("IH" with "[] [] Hm").
+      { iDestruct "Hnone" as "%Hnone".
+        iPureIntro. intros k Hk. destruct (decide (i = k)); subst.
+        { rewrite lookup_delete; done. }
+        specialize (Hnone k). repeat rewrite -> lookup_insert_ne in Hnone by eauto.
+        eauto.
+      }
+      iModIntro. iIntros (k kx Hkx) "H".
+      iDestruct ("Hsome" with "[] H") as (x0) "[% H]".
+      { destruct (decide (i = k)); subst.
+        { rewrite lookup_insert; iPureIntro; congruence. }
+        rewrite lookup_insert_ne; eauto.
+      }
+      iExists _. iFrame.
+      destruct (decide (i = k)); subst; try congruence.
+      rewrite lookup_delete_ne; eauto.
+      rewrite -> lookup_insert_ne in H2 by eauto.
+      rewrite -> lookup_delete_ne in H2 by eauto.
+      done.
+  Qed.
 
 End map.
 
