@@ -566,4 +566,50 @@ Proof using Type*.
   { refine true. }
 Qed.
 
+Lemma Clerk__Lock_spec ck (srv:loc) (ln:u64) γrpc :
+  {{{
+       ⌜is_Some (validLocknames !! ln)⌝
+      ∗ own_clerk ck srv γrpc
+      ∗ is_lockserver srv γrpc
+  }}}
+    Clerk__Lock ck #ln
+  {{{ RET #true; own_clerk ck srv γrpc ∗ Ps ln }}}.
+Proof using Type*.
+  iIntros (Φ) "[% [Hclerk_own #Hinv]] Hpost".
+  wp_lam.
+  wp_pures.
+  wp_apply (wp_forBreak
+              (fun c =>
+                 (own_clerk ck srv γrpc ∗ Ps ln -∗ Φ #true)
+                 ∗ own_clerk ck srv γrpc
+                 ∗ (⌜c = true⌝ ∨ ⌜c = false⌝∗ Ps ln)
+              )%I
+           with "[] [$Hclerk_own $Hpost]"); eauto.
+  {
+    iIntros (Ψ).
+    iModIntro. iIntros "[HΦpost [Hclerk_own _]] Hpost".
+    wp_apply (Clerk__TryLock_spec with "[$Hclerk_own]"); eauto.
+    iIntros (tl_r) "TryLockPost".
+    iDestruct "TryLockPost" as (acquired ->) "[Hown_clerk TryLockPost]".
+    destruct acquired.
+    {
+      wp_pures.
+      iApply "Hpost".
+      iFrame. iRight.
+      iDestruct "TryLockPost" as "[% | HP]"; first discriminate.
+      eauto.
+    }
+    {
+      wp_pures.
+      iApply "Hpost".
+      iFrame. by iLeft.
+    }
+  }
+  iIntros "(Hpost & Hown_clerk & [% | (_ & HP)])"; first discriminate.
+  wp_seq.
+  iApply "Hpost".
+  iFrame.
+Qed.
+
+
 End lockservice_proof.

@@ -224,6 +224,5 @@ Definition Clerk__Lock: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: Clerk__TryLock "ck" "lockname"
       then Break
-      else #());;
-      Continue);;
+      else Continue));;
     #true.
