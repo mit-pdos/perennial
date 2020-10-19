@@ -190,12 +190,12 @@ Lemma smaller_seqno_stale_fact (args:A) (lseq:u64) (γrpc:RPC_GS) lastSeqM lastR
   lastSeqM !! args.(getCID) = Some lseq ->
   (int.val args.(getSeq) < int.val lseq)%Z ->
   inv replyCacheInvN (ReplyCache_inv γrpc) -∗
-  ([∗ map] cid↦seq;r ∈ lastSeqM;lastReplyM, (cid, seq) [[γrpc.(rc)]]↦ro Some r)
+  RPCServer_own lastSeqM lastReplyM γrpc
     ={⊤}=∗
-  args.(getCID) fm[[γrpc.(cseq)]]>(int.nat args.(getSeq) + 1).
+        RPCRequestStale args γrpc.
 Proof.
   intros.
-  iIntros "#Hinv #Hsepm".
+  iIntros "#Hinv [ _#Hsepm]".
   iInv replyCacheInvN as ">HNinner" "HNclose".
   iNamed "HNinner".
   iDestruct (big_sepM2_dom with "Hsepm") as %Hdomeq.
@@ -219,12 +219,14 @@ Proof.
   iModIntro. by replace (int.nat args.(getSeq) + 2) with (int.nat args.(getSeq) + 1 + 1) by lia.
 Qed.
 
+Print RPCClient_own.
 Lemma alloc_γrc (args:A) γrpc PreCond PostCond:
-  inv replyCacheInvN (ReplyCache_inv γrpc )
-      -∗ args.(getCID) fm[[γrpc.(cseq)]]↦ int.nat args.(getSeq)
-      -∗ PreCond args
+  (int.nat args.(getSeq)) + 1 = int.nat (word.add args.(getSeq) 1)
+  -> inv replyCacheInvN (ReplyCache_inv γrpc )
+  -∗ RPCClient_own args.(getCID) args.(getSeq) γrpc
+  -∗ PreCond args
   ={⊤}=∗
-      args.(getCID) fm[[γrpc.(cseq)]]↦ (int.nat args.(getSeq) + 1)
+      RPCClient_own args.(getCID) (word.add args.(getSeq) 1) γrpc
       ∗ (∃ γPost, inv rpcRequestInvN (RPCRequest_inv PreCond PostCond args γrpc γPost) ∗ (own γPost (Excl ()))).
 Proof using Type*.
   intros.
@@ -254,12 +256,12 @@ Proof using Type*.
   iMod ("HNclose" with "[Hrcctx]") as "_".
   { iNext. iExists _. iFrame; iFrame "#". }
   iModIntro.
-  iFrame. iExists _; iFrame; iFrame "#".
+  rewrite H0. iFrame. iExists _; iFrame; iFrame "#".
 Qed.
 
 Lemma get_request_post (args:A) (r:R) γrpc γPost PreCond PostCond :
   (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond args γrpc γPost))
-    -∗ (args.(getCID), args.(getSeq)) [[γrpc.(rc)]]↦ro Some r
+    -∗ RPCReplyReceipt args r γrpc
     -∗ (own γPost (Excl ()))
     ={⊤}=∗ ▷ (PostCond args r).
 Proof using Type*.
@@ -277,6 +279,5 @@ Proof using Type*.
   iDestruct (ptsto_ro_agree with "Hptstoro_some Hptstoro") as %Heq.
   by injection Heq as ->.
 Qed.
-
 
 End rpc.
