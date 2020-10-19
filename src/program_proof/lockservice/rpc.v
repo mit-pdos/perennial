@@ -276,13 +276,11 @@ Proof using Type*.
 Qed.
 
 Context `{ rpcr_into_val : into_val.IntoVal R}.
-Lemma server_replies_to_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (args:A) (old_seq:u64) (γrpc:RPC_GS) (reply:R)
+Lemma server_replies_to_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (args:A) (γrpc:RPC_GS) (reply:R)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
      (lastSeqM !! args.(getCID) = Some args.(getSeq))
-  -> (∃ ok, map_get lastReplyM args.(getCID) = (reply, ok))
   -> (inv replyCacheInvN (ReplyCache_inv γrpc ))
   -∗ (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond args γrpc γP))
-  -∗ PostCond args reply
   -∗ RPCServer_own lastSeqM lastReplyM γrpc
   ={⊤}=∗
       RPCReplyReceipt args reply γrpc

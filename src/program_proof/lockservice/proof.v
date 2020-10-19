@@ -209,16 +209,7 @@ readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
       wp_apply (wp_MapGet with "HlastReplyMap").
       iIntros (reply_v reply_get_ok) "(HlastReplyMapGet & HlastReplyMap)"; iDestruct "HlastReplyMapGet" as %HlastReplyMapGet.
       wp_storeField.
-      iAssert ⌜reply_get_ok = true⌝%I as %->.
-      { iDestruct (big_sepM2_lookup_1 _ _ _ lockArgs.(CID) with "Hrcagree") as "HH"; eauto.
-        iDestruct "HH" as (x B) "H".
-        simpl. iPureIntro. unfold map_get in HlastReplyMapGet.
-        revert HlastReplyMapGet.
-        rewrite B. simpl. intros. injection HlastReplyMapGet. done.
-        (* TODO: get a better proof of this... *)
-      }
-      apply map_get_true in HlastReplyMapGet.
-      iDestruct (big_sepM2_delete with "Hrcagree") as "[#Hrcptsto _]"; eauto.
+      iMod (server_replies_to_request with "[Hlinv] [HargsInv] [Hsrpc]") as "[#Hreceipt Hsrpc]"; eauto.
       wp_loadField.
       wp_apply (release_spec mutexN #mu_ptr _ with "[-HPost HreplyOK HreplyStale]"); iFrame; iFrame "#".
       {
@@ -227,7 +218,7 @@ readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
       wp_seq. iApply "HPost". iExists {| OK:=_; Stale:=_ |}; iFrame.
       iRight. simpl. iFrame "#".
     - (* cache miss *)
-      iDestruct "Hifr" as "[[_ [Hineq Hlseq_own]]|[% _]]"; last discriminate.
+      iDestruct "Hifr" as "[[_ Hineq ]|[% _]]"; last discriminate.
       iDestruct "Hineq" as %Hineq.
       rename Hineq into HnegatedIneq.
       assert (int.val lockArgs.(Seq) > int.val v)%Z as Hineq; first lia.
@@ -250,7 +241,8 @@ readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
         repeat wp_loadField.
         wp_apply (wp_MapInsert _ _ lastReplyM _ false #false with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
         wp_seq. wp_loadField.
-        iMod (server_processes_request _ _ _ _ _ false with "[Hlinv] [HargsInv] [] [Hlseq_own] [Hrcagree]") as "(#Hrcptsoro & Hlseq_own & #Hrcagree2)"; eauto.
+        iMod (server_processes_request _ _ _ _ _ false with "[Hlinv] [HargsInv] [] [Hsrpc]") as "(#Hrcptsoro & Hsrpc)"; eauto.
+        { simpl. injection HSeqMapGet. intros. rewrite H0. eauto. }
         { by iLeft. }
         wp_apply (release_spec mutexN #mu_ptr _ with "[-HreplyOK HreplyStale HPost]"); try iFrame "Hmu Hlocked".
         {
@@ -283,7 +275,8 @@ readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
         iDestruct (big_sepM2_insert_delete _ _ _ lockArgs.(Lockname) true () with "[$Hlockeds]") as "Hlockeds"; eauto.
         iDestruct "HP" as "[%|HP]"; first discriminate.
 
-        iMod (server_processes_request _ _ _ _ _ true with "Hlinv HargsInv [HP] Hlseq_own Hrcagree") as "(#Hrcptsoro & Hlseq_own & #Hrcagree2)"; eauto.
+        iMod (server_processes_request _ _ _ _ _ true with "Hlinv HargsInv [HP] Hsrpc") as "(#Hrcptsoro & Hlseq_own & #Hrcagree2)"; eauto.
+        { simpl. apply pair_equal_spec in HSeqMapGet as [Hv _]. rewrite Hv. lia. }
         { by iRight. }
         replace (<[lockArgs.(Lockname):=()]> validLocknames) with (validLocknames).
         2:{
@@ -296,7 +289,27 @@ readonly (args ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
         }
         wp_seq. iApply "HPost". iExists {| OK:=_; Stale:= _|}; iFrame.
         iRight. iFrame "#".
+        Grab Existential Variables.
+        1-5: done.
 Qed.
+
+Lemma CallTryLock_spec_using_generic (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
+  {{{ "#Hls" ∷ is_lockserver srv γrpc
+      ∗ "#HargsInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γPost)
+      ∗ "#Hargs" ∷ read_lock_args args lockArgs
+      ∗ "Hreply" ∷ own_lockreply reply lockReply
+  }}}
+CallTryLock #srv #args #reply
+{{{ e, RET e;
+    (∃ lockReply', own_lockreply reply lockReply'
+        ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗
+             (⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale lockArgs γrpc
+               ∨ RPCReplyReceipt lockArgs lockReply'.(OK) γrpc
+             )))
+}}}.
+Proof.
+  replace (CallTryLock) with (CallFunction LockServer__TryLock "CallTryLock" TryLockReply.S); eauto.
+Admitted.
 
 Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
   {{{ "#Hls" ∷ is_lockserver srv γrpc
