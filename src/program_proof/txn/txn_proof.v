@@ -474,7 +474,9 @@ Lemma default_fmap `{Countable K} `{EqDecision K} {A B} (m : option (gmap K A)) 
   (default ∅ (fmap (fun bm => f <$> bm) m)) =
   f <$> (default ∅ m).
 Proof.
-Admitted.
+  destruct m; simpl; eauto.
+  rewrite fmap_empty; eauto.
+Qed.
 
 Theorem wp_txn__installBufsMap l q walptr γ lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
   {{{ inv invN (is_txn_always γ) ∗
