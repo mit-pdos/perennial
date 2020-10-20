@@ -94,11 +94,12 @@ Definition is_buftxn (buftx : loc)
         ⌜dirty=true ∨ committed v = modified v⌝ )
   )%I.
 
-Local Lemma is_buftxn_to_get_mapsto_txn buftx mT γUnified dinit :
+Lemma is_buftxn_to_committed_mapsto_txn buftx mT γUnified dinit :
   is_buftxn buftx mT γUnified dinit -∗
-  [∗ map] a ↦ v ∈ mT, mapsto_txn γUnified a (committed v).
+  [∗ map] a ↦ v ∈ committed <$> mT, mapsto_txn γUnified a v.
 Proof.
   iNamed 1.
+  rewrite big_sepM_fmap.
   iApply (big_sepM_mono with "Hctxelem").
   iIntros (a obj Hlookup) "[Ha _]". iFrame.
 Qed.
@@ -108,11 +109,12 @@ Lemma is_buftxn_not_in_map buftx mT γUnified dinit a v0 :
   mapsto_txn γUnified a v0 -∗
   ⌜mT !! a = None⌝.
 Proof.
-  rewrite is_buftxn_to_get_mapsto_txn.
+  rewrite is_buftxn_to_committed_mapsto_txn.
   iIntros "Hm Ha".
   destruct (mT !! a) eqn:Helem; eauto.
   iExFalso.
-  iDestruct (big_sepM_lookup with "Hm") as "Ha2"; eauto.
+  iDestruct (big_sepM_lookup _ _ a with "Hm") as "Ha2".
+  { rewrite lookup_fmap Helem //. }
   iDestruct (mapsto_txn_2 with "Ha Ha2") as %[].
 Qed.
 

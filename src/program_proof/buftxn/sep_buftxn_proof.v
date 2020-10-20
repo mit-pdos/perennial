@@ -165,8 +165,12 @@ Section goose_lang.
   Definition is_buftxn_at_txn l γ dinit γtxn P0 i : iProp Σ :=
     ∃ (mT: gmap addr versioned_object),
       "#Htxn_system" ∷ is_txn_system γ ∗
-      "Hold_vals" ∷ ([∗ map] a↦v ∈ mspec.committed <$> mT, ephemeral_val_from γ.(buftxn_async_name) i a v) ∗
-      "#HrestoreP0" ∷ □ (([∗ map] a↦v ∈ mspec.committed <$> mT, ephemeral_val_from γ.(buftxn_async_name) i a v) -∗ P0) ∗
+      "Hold_vals" ∷ ([∗ map] a↦v ∈ mspec.committed <$> mT,
+                     ephemeral_val_from γ.(buftxn_async_name) i a v) ∗
+      "#HrestoreP0" ∷ □ (([∗ map] a↦v ∈ mspec.committed <$> mT,
+                          ephemeral_val_from γ.(buftxn_async_name) i a v ∗
+                          modify_token γ a v) -∗
+                         P0) ∗
       "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) dinit ∗
       "Htxn_ctx" ∷ map_ctx γtxn 1 (mspec.modified <$> mT)
   .
@@ -205,7 +209,9 @@ Section goose_lang.
     is_buftxn_at_txn l γ dinit γtxn P0 i -∗ P0.
   Proof.
     iNamed 1.
-    iApply ("HrestoreP0" with "[$]").
+    iDestruct (mspec.is_buftxn_to_committed_mapsto_txn with "Hbuftxn") as "Hmod_tokens".
+    iApply "HrestoreP0".
+    rewrite big_sepM_sep; iFrame.
   Qed.
 
   (* this is for a single buftxn (transaction) - not persistent, buftxn's are
@@ -246,7 +252,11 @@ Section goose_lang.
     modify_token γ a obj -∗
     ephemeral_val_from γ.(buftxn_async_name) i a obj
     ={E}=∗
-    (buftxn_maps_to γtxn a obj ∗ is_buftxn_at_txn l γ dinit γtxn (ephemeral_val_from γ.(buftxn_async_name) i a obj ∗ P0) i).
+    buftxn_maps_to γtxn a obj ∗
+     is_buftxn_at_txn l γ dinit γtxn
+       (ephemeral_val_from γ.(buftxn_async_name) i a obj ∗
+        modify_token γ a obj ∗
+        P0) i.
   Proof.
     iIntros (?) "Hctx Ha Ha_i".
     iNamed "Hctx".
@@ -255,15 +265,15 @@ Section goose_lang.
     { rewrite lookup_fmap Hnotin //. }
     assert ((mspec.committed <$> mT) !! a = None).
     { rewrite lookup_fmap Hnotin //. }
-    iMod (mspec.BufTxn_lift_one _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hbuftxn"; auto.
+    iMod (mspec.BufTxn_lift_one _ _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hbuftxn"; auto.
     iMod (map_alloc a obj with "Htxn_ctx") as "[Htxn_ctx Ha]"; eauto.
     iModIntro.
     iFrame "Ha".
     iExists (<[a:=object_to_versioned obj]> mT); iFrame "#∗".
     rewrite !fmap_insert committed_to_versioned modified_to_versioned.
-    rewrite big_sepM_insert //.
+    rewrite !big_sepM_insert //.
     iFrame.
-    iIntros "!> [$ Hstable]".
+    iIntros "!> [[$ $] Hstable]".
     iApply "HrestoreP0"; iFrame.
   Qed.
 
@@ -274,7 +284,9 @@ Section goose_lang.
                       ephemeral_val_from γ.(buftxn_async_name) i a v) ={E}=∗
     ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
                       is_buftxn_at_txn l γ dinit γtxn
-                        (([∗ map] a↦v ∈ m, ephemeral_val_from γ.(buftxn_async_name) i a v) ∗ P0) i.
+                        (([∗ map] a↦v ∈ m, ephemeral_val_from γ.(buftxn_async_name) i a v ∗
+                                           modify_token γ a v) ∗
+                         P0) i.
   Proof.
     iIntros (?) "Hctx Hm".
     iInduction m as [|a v m] "IH" using map_ind forall (P0).
@@ -302,7 +314,10 @@ Section goose_lang.
         rather than bury it in is_buftxn_at_txn, so that we can reconstruct it
         if we supply the old [ephemeral_val_from] facts saved here *)
     P (buftxn_maps_to γtxn) ∗
-    is_buftxn_at_txn l γ dinit γtxn (P (ephemeral_val_from γ.(buftxn_async_name) i) ∗ P0) i.
+    is_buftxn_at_txn l γ dinit γtxn
+      (P (λ a v, ephemeral_val_from γ.(buftxn_async_name) i a v ∗
+                 modify_token γ a v)
+       ∗ P0) i.
   Proof.
     iIntros (?) "Hctx HP".
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hm #HP]".
@@ -467,7 +482,7 @@ Section goose_lang.
     iApply wp_fupd.
     iDestruct (map_valid with "Htxn_ctx Ha") as %Hlookup.
     fmap_Some in Hlookup as vo0.
-    wp_apply (mspec.wp_BufTxn__OverWrite _ _ _ _ _ (mspec.mkVersioned (objData (mspec.committed vo0)) (rew H1 in objData obj)) with "[$Hbuftxn Hdata]").
+    wp_apply (mspec.wp_BufTxn__OverWrite _ _ _ _ _ _ (mspec.mkVersioned (objData (mspec.committed vo0)) (rew H1 in objData obj)) with "[$Hbuftxn Hdata]").
     { iSplit; eauto.
       iSplitL.
       - iApply data_has_obj_to_buf_data in "Hdata"; eauto.
@@ -540,7 +555,7 @@ Section goose_lang.
     iNamed "Hbuftxn".
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
-    wp_apply (mspec.wp_BufTxn__CommitWait _ _ _ _ _
+    wp_apply (mspec.wp_BufTxn__CommitWait _ _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
                 with "[$Hbuftxn Hold_vals]").
     { iInv "Htxn_system" as ">Hinner" "Hclo".
@@ -579,8 +594,11 @@ Section goose_lang.
       + iSpecialize ("Hlower_bound" with "[% //]").
         iAssumption.
     - iApply "HΦ".
-      (* TODO: oops, buftxn spec promises _some_ modification tokens on failure,
-      should promise the same ones as we started with *)
+      iApply "HrestoreP0".
+      rewrite big_sepM_sep.
+      iFrame.
+      (* TODO: on failure [mspec.BufTxn__CommitWait] loses any resources in the
+      fupd, should give those back (the usual [PreQ] business) *)
   Admitted.
 
 End goose_lang.
