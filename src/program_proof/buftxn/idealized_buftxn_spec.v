@@ -652,10 +652,9 @@ Section goose_lang.
         iExists _.
         iFrame. }
       iModIntro.
-      (* RJ: commented out. This expects [val_from] for a non-existing txn ID.
       rewrite length_possible_async_put.
       iExactEq "Hnew".
-      auto with f_equal lia. *) admit. }
+      auto with f_equal lia. }
     iIntros (ok) "Hpost".
     destruct ok.
     - iDestruct "Hpost" as (txn_id) "(HQ&Hlower_bound&Hmod_tokens)".
