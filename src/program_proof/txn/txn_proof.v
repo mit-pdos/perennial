@@ -922,7 +922,40 @@ Proof.
   2: { rewrite ?map_filter_lookup_key_notin; eauto. }
   rewrite map_filter_lookup_key_in; eauto.
   rewrite map_filter_lookup_key_in; eauto.
-Admitted.
+  rewrite /gmap_addr_by_block.
+  destruct (gmap_uncurry m !! i) eqn:He.
+  2: {
+    symmetry.
+    erewrite lookup_gmap_uncurry_None in He.
+    erewrite lookup_gmap_uncurry_None. intros j. specialize (He j).
+    specialize (H0 (i, j)). simpl in *.
+    rewrite lookup_union_r; eauto.
+    destruct (m' !! (i, j)) eqn:Hee; eauto. exfalso. eapply H0; eauto.
+  }
+
+  destruct (gmap_uncurry (m' ∪ m) !! i) eqn:He2.
+  2: {
+    exfalso.
+    erewrite lookup_gmap_uncurry_None in He2.
+    apply gmap_uncurry_non_empty in He as He'. apply map_choose in He'. destruct He' as [j [x He']].
+    specialize (He2 j). rewrite lookup_union_r in He2.
+    2: { destruct (m' !! (i, j)) eqn:Hee; eauto. exfalso. eapply H0; eauto. }
+    rewrite -lookup_gmap_uncurry in He2. rewrite He /= in He2. congruence.
+  }
+
+  f_equal.
+  apply map_eq.
+  intros j.
+
+  replace (g !! j) with (m !! (i, j)).
+  2: { rewrite -lookup_gmap_uncurry. rewrite He. done. }
+
+  replace (g0 !! j) with ((m' ∪ m) !! (i, j)).
+  2: { rewrite -lookup_gmap_uncurry. rewrite He2. done. }
+
+  rewrite lookup_union_r; eauto.
+  destruct (m' !! (i, j)) eqn:Hee; eauto. exfalso. eapply H0; eauto.
+Qed.
 
 Theorem mapsto_txn_cur γ (a : addr) (v : {K & bufDataT K}) :
   mapsto_txn γ a v -∗
@@ -1124,11 +1157,26 @@ Proof using txnG0 Σ.
     iDestruct (big_sepML_sepM_ex with "Hheapmatch") as "Hheapmatch".
     iDestruct (big_sepM_mono_dom with "[] Hheapmatch") as "Hheapmatch".
     3: iDestruct (big_sepM_filter_split with "[$Hheapmatch $Hheapmatch_rebuild]") as "Hheapmatch".
-    { simpl. admit. }
+    { simpl. epose proof (dom_filter_eq (gmap_addr_by_block σl.(latest)) _ (λ x, x ∈ dom (gset u64) (gmap_addr_by_block bufamap))) as He.
+      rewrite He. 1: reflexivity.
+      rewrite gmap_addr_by_block_dom_union.
+      rewrite gmap_addr_by_block_fmap. rewrite dom_fmap_L. set_solver. }
     { simpl. iModIntro. iIntros (k offmap Hoffmap) "H".
       iDestruct "H" as (lv) "[H Hmapsto]".
       iDestruct "H" as (blockK meta) "(% & % & % & Hinblock)".
-      admit. }
+      eapply map_filter_lookup_Some_12 in Hoffmap as Hbufamap_in.
+      eapply elem_of_dom in Hbufamap_in. destruct Hbufamap_in as [offmap' Hbufamap_in].
+      iExists (((λ b, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> offmap') ∪ offmap).
+      iSplit.
+      { iPureIntro. eapply map_filter_lookup_Some_2.
+        2: { simpl. eapply elem_of_dom. eauto. }
+        admit. }
+      subst.
+      iExists _. iSplit; eauto.
+      iExists _, _, _. iSplit; eauto.
+      iFrame "Hmapsto".
+      admit.
+    }
 
     iDestruct (gmap_addr_by_block_big_sepM' _
       (λ a v, mapsto_txn γ a (existT v.(buf_).(bufKind) v.(data_)))

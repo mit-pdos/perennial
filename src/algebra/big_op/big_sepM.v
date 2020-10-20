@@ -97,6 +97,18 @@ Proof.
     + intros; eapply H1; eauto.
 Qed.
 
+Lemma dom_filter_eq `{Countable K} `(m1 : gmap K A) `(m2 : gmap K B) (P : K -> Prop)
+                    `{Hdk : ∀ k, Decision (P k)} :
+  dom (gset K) m1 = dom (gset K) m2 ->
+  dom (gset K) (filter (λ x, P x.1) m1) = dom (gset K) (filter (λ x, P x.1) m2).
+Proof.
+  intros.
+  apply elem_of_equiv_L.
+  setoid_rewrite elem_of_dom.
+  eapply filter_same_keys_0.
+  setoid_rewrite <- elem_of_dom. rewrite H0. eauto.
+Qed.
+
 (*! map_zip *)
 Section map_zip.
   Context `{Countable K}.
