@@ -278,6 +278,27 @@ Section auth_map.
     rewrite fmap_insert //=.
   Qed.
 
+  Theorem map_alloc_many {γ m} m0 :
+    ( ∀ k, is_Some (m0 !! k) -> m !! k = None ) ->
+    map_ctx γ 1 m ==∗ map_ctx γ 1 (m0 ∪ m) ∗ [∗ map] a↦v ∈ m0, ptsto_mut γ a 1 v.
+  Proof.
+    iIntros (Hnone) "Hm".
+    iInduction m0 as [|l v m0'] "IH" using map_ind forall (m Hnone).
+    { rewrite left_id. iFrame. iModIntro. iApply big_sepM_empty. done. }
+    iMod ("IH" with "[] Hm") as "[Hm Hmany]".
+    { iPureIntro. intros k Hk. eapply Hnone.
+      destruct (decide (l = k)); subst.
+      { rewrite lookup_insert. eauto. }
+      rewrite lookup_insert_ne; eauto.
+    }
+    iMod (map_alloc l v with "Hm") as "[Hm Hl]".
+    { rewrite lookup_union_None; intuition.
+      eapply Hnone. rewrite lookup_insert. eauto. }
+    iModIntro.
+    rewrite insert_union_l; iFrame "Hm".
+    iApply big_sepM_insert; eauto. iFrame.
+  Qed.
+
   Theorem map_delete {γ m} k v :
     ptsto_mut γ k 1 v -∗ map_ctx γ 1 m ==∗ map_ctx γ 1 (delete k m).
   Proof.

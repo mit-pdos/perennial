@@ -87,8 +87,14 @@ Lemma seq_heap_init `{log_heapPreG L V Σ} σl:
   ⊢ |==> ∃ _ : log_heapG L V Σ, log_heap_ctx σl ∗
     [∗ map] l↦v ∈ latest σl, mapsto_cur l v.
 Proof.
-Admitted.
-
+  iMod (map_init ∅) as (γ) "Hm".
+  iMod (map_alloc_many σl.(latest) with "Hm") as "[Hm Hlatest]".
+  { intros. apply lookup_empty. }
+  iModIntro.
+  iExists (LogHeapG _ _ _ _ _ _ γ).
+  rewrite right_id.
+  iFrame.
+Qed.
 
 Section log_heap.
   Context `{log_heapG L V Σ}.
