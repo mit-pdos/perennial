@@ -70,7 +70,7 @@ Qed.
 
 (* Returns true iff server reported error or request "timed out" *)
 Definition CallFunction (f:val) (fname:string) (rty_desc:descriptor) : val :=
-  rec: "" "srv" "args" "reply" :=
+  rec: fname "srv" "args" "reply" :=
     Fork (let: "dummy_reply" := struct.alloc rty_desc (zero_val (struct.t rty_desc)) in
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -82,6 +82,7 @@ Definition CallFunction (f:val) (fname:string) (rty_desc:descriptor) : val :=
 
 Lemma CallFunction_spec {A:Type} {R:Type} {a_req:RPCRequest A} (srv args reply:loc) (lockArgs:A) (lockReply:R) (f:val) (fname:string) (rty_desc:descriptor) fPre fPost γrpc γPost {r_rpc: RPCReply R rty_desc} :
 has_zero (struct.t rty_desc)
+-> ¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
 -> (∀ srv' args' lockArgs' γrpc' γPost', Persistent (fPre srv' args' lockArgs' γrpc' γPost'))
 -> (∀ (srv' args' reply' : loc) (lockArgs':A) 
    (lockReply' : R) (γrpc' : RPC_GS) (γPost' : gname),
@@ -103,10 +104,21 @@ has_zero (struct.t rty_desc)
         ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ fPost lockArgs lockReply' γrpc))
 }}}.
 Proof.
-  intros Hhas_zero Hpers Hspec.
+  intros Hhas_zero Hpers Hne1 Hne2 Hne3 Hne4 Hspec.
   iIntros (Φ) "Hpre Hpost".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
+  rewrite (@decide_False _ (fname = "srv")); last done.
+  rewrite (@decide_False _ (fname = "reply")); last done.
+  rewrite (@decide_False _ (fname = "dummy_reply")); last done.
+  rewrite (@decide_False _ (fname = "args")); last done.
+  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "args"))); eauto.
+  2:{ split; eauto. injection. eauto. }
+  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "reply"))); eauto.
+  2:{ split; eauto. injection. eauto. }
+  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "dummy_reply"))); eauto.
+  2:{ split; eauto. injection. eauto. }
+  simpl.
   wp_let.
   wp_let.
   wp_apply wp_fork.
@@ -155,5 +167,25 @@ Proof.
     by iLeft.
   }
 Qed.
+
+Definition ClientStub (f:val) (fname:string) : val :=
+  rec: "" "ck" "lockname" :=
+    overflow_guard_incr (struct.loadF Clerk.S "seq" "ck");;
+    let: "args" := struct.new UnlockArgs.S [
+      "Lockname" ::= "lockname";
+      "CID" ::= struct.loadF Clerk.S "cid" "ck";
+      "Seq" ::= struct.loadF Clerk.S "seq" "ck"
+    ] in
+    struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
+    let: "errb" := ref (zero_val boolT) in
+    let: "reply" := struct.alloc UnlockReply.S (zero_val (struct.t UnlockReply.S)) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      "errb" <-[boolT] f (struct.loadF Clerk.S "primary" "ck") "args" "reply";;
+      (if: (![boolT] "errb" = #false)
+      then Break
+      else Continue));;
+    struct.loadF UnlockReply.S "OK" "reply".
+
 
 End lockservice_common_proof.
