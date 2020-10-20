@@ -12,8 +12,8 @@ From Perennial.goose_lang.ffi Require Import disk_prelude.
 
 (** * A more separation logic-friendly spec for buftxn
 
-    An attempt to sketch out a synchronous spec for buftxn that has no maps,
-    only separation logic resources.
+    A layer on top of buftxn_proof that hands out separation logic resources for
+    stable, committed but ephemeral, and in-transaction logical disk values.
 
     The overall flow of using the transaction system is to represent an on-disk
     resource (think of it as a disk maps-to for now) as a stable points-to fact

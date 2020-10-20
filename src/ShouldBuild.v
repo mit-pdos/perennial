@@ -17,7 +17,7 @@ From Perennial.program_proof Require
      wal.specs
      txn.txn_proof
      buftxn.buftxn_proof
-     buftxn.idealized_buftxn_spec
+     buftxn.sep_buftxn_proof
      buftxn_replication.buftxn_replication_proof
      (* TODO: adapt to new buftxn spec *)
      (* simple.simple *)
