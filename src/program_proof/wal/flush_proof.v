@@ -189,8 +189,7 @@ Proof.
   iExists _; iFrame.
   iExists installed_txn_id, (Nat.max diskEnd_txn_id txn_id). iFrame "# ∗".
   iSplitL "Hinstalled".
-  { iNamed "Hinstalled". iExists _, _. iFrame. iPureIntro. intuition try lia.
-    eapply Nat.max_lub_lt; eauto. }
+  { iNamed "Hinstalled". iExists _, _. iFrame. iPureIntro. auto with lia. }
   iSplit.
   - iDestruct "Hdurable" as %Hcirc_matches. iPureIntro. simpl.
     unfold circ_matches_txns in *. intuition try lia.
@@ -332,14 +331,15 @@ Proof.
   { iFrame "lk". iFrame "Hlocked". iNext. iExists _.
     iFrame.
     iExists _, _, _, _, _.
-    iFrame. iFrame "#". iFrame "%".
-    iPureIntro. intuition try lia.
+    iFrame "∗#%".
+    iNamed "Htxns".
+    iPureIntro. intuition (eauto; try lia).
+    - rewrite -> (subslice_split_r _ (S nextDiskEnd_txn_id) _ σ.(log_state.txns)); try lia.
+      eapply has_updates_app_nils; eauto.
     - rewrite <- (subslice_to_end _ (length σ.(log_state.txns)) σ.(log_state.txns)) by lia.
       rewrite <- (subslice_to_end _ (length σ.(log_state.txns)) σ.(log_state.txns)) in His_nextTxn by lia.
       rewrite -> (subslice_split_r _ (S nextDiskEnd_txn_id') _ σ.(log_state.txns)) in His_nextTxn by lia.
       eapply has_updates_prepend_nils in His_nextTxn; eauto.
-    - rewrite -> (subslice_split_r _ (S nextDiskEnd_txn_id) _ σ.(log_state.txns)); try lia.
-      eapply has_updates_app_nils; eauto.
   }
   iApply ("HΦ" with "HQ").
 Qed.

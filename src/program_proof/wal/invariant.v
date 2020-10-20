@@ -159,7 +159,7 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
-      "Htxns" ∷ memLog_linv_txns σ diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
+      "#Htxns" ∷ memLog_linv_txns σ diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
       "%Htxnpos_bound" ∷
         ⌜(Forall (λ pos, int.val pos ≤ slidingM.memEnd σ) txns.*1)⌝
   ).
@@ -193,7 +193,7 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
-      "Htxns" ∷ memLog_linv_txns σ diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
+      "#Htxns" ∷ memLog_linv_txns σ diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
       "%Htxnpos_bound" ∷
         ⌜(Forall (λ pos, int.val pos ≤ slidingM.memEnd σ) txns.*1)⌝
   ).

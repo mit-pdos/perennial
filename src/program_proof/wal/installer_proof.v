@@ -208,7 +208,6 @@ Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
 Proof.
   iNamed 1.
   iPureIntro.
-  apply is_highest_weaken in Hend_txn.
   apply is_txn_bound in Hend_txn; lia.
 Qed.
 
@@ -810,6 +809,8 @@ Proof.
     wp_if_destruct.
     - wp_pures.
       wp_apply (wp_Walog__logInstall with "[$Hwal $st $d $lk $memlock $condInstall $cond_install $Hlocked $Hlockinv]").
+      { admit. (* XXX: need being_installed, installed_txn, and
+      being_installed_txns ghost variables *) }
       iIntros (blkCount installEnd) "post"; iNamed "post".
       wp_pures.
       wp_bind (If _ _ _).
@@ -830,6 +831,6 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[$lk $Hlocked $Hlockinv]").
   iApply ("HΦ" with "[$]").
-Qed.
+Admitted.
 
 End goose_lang.
