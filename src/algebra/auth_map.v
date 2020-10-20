@@ -1,3 +1,5 @@
+From Perennial.Helpers Require Import Map gset ipm.
+
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl agree auth gmap csum.
 From iris.bi.lib Require Import fractional.
@@ -12,6 +14,13 @@ Definition mapUR (K V: Type) `{Countable K}: ucmraT :=
 
 Class mapG Σ K V `{Countable K} :=
   { map_inG :> inG Σ (authUR (mapUR K V)); }.
+
+Definition mapΣ K V `{Countable K} :=
+  #[GFunctor (authR (mapUR K V))].
+
+Instance subG_mapG K V `{Countable K} :
+  subG (mapΣ K V) Σ → mapG Σ K V.
+Proof. solve_inG. Qed.
 
 Section auth_map.
   Context {K V: Type}  `{Countable0: Countable K}.
@@ -245,6 +254,9 @@ Section auth_map.
     rewrite -map_fmap_compose map_fmap_id //.
   Qed.
 
+  (* TODO: prove a map_strong_init lemma that allocates a map_ctx with all the
+  ptsto_mut fragments *)
+
   Theorem map_alloc {γ m} k v :
     m !! k = None →
     map_ctx γ 1 m ==∗ map_ctx γ 1 (<[k:=v]> m) ∗ ptsto_mut γ k 1 v.
@@ -414,6 +426,25 @@ Section auth_map.
     map_ctx γ q m -∗ ptsto_ro γ k v -∗ ⌜m !! k = Some v⌝.
   Proof. apply map_valid. Qed.
 
+  Theorem map_valid_subset γ q (m0 m: gmap K V) mq :
+    map_ctx γ q m -∗
+    ([∗ map] a↦v ∈ m0, ptsto γ a mq v) -∗
+    ⌜m0 ⊆ m⌝.
+  Proof.
+    iIntros "Hctx Hm0".
+    iInduction m0 as [|l v m0] "IH" using map_ind.
+    - iPureIntro.
+      apply map_empty_subseteq.
+    - rewrite big_sepM_insert //.
+      iDestruct "Hm0" as "[Hl Hm0]".
+      iDestruct ("IH" with "Hctx Hm0") as %Hsubseteq.
+      iDestruct (map_valid with "Hctx Hl") as %Hlookup.
+      iPureIntro.
+      apply map_subseteq_spec => l' v'.
+      intros [(-> & ->) | (? & ?)]%lookup_insert_Some; auto.
+      eapply map_subseteq_spec; eauto.
+  Qed.
+
   Lemma map_update {γ m} k v1 v2 :
     map_ctx γ 1 m -∗ ptsto_mut γ k 1 v1 ==∗ map_ctx γ 1 (<[k:=v2]>m) ∗ ptsto_mut γ k 1 v2.
   Proof.
@@ -431,6 +462,48 @@ Section auth_map.
     iExists _; iFrame.
     iPureIntro.
     rewrite fmap_insert //.
+  Qed.
+
+  (* like an update from l↦v0 to l↦v, except that we update an entire subset m0 ⊆
+  m to m' *)
+  Theorem map_update_map {γ} m' m0 m :
+    dom (gset _) m' = dom _ m0 →
+    map_ctx γ 1 m -∗
+    ([∗ map] a↦v ∈ m0, ptsto_mut γ a 1 v) -∗
+    |==> map_ctx γ 1 (m' ∪ m) ∗
+        [∗ map] a↦v ∈ m', ptsto_mut γ a 1 v.
+  Proof.
+    iIntros (Hdom) "Hctx Hm0".
+    iInduction m0 as [|l v m0] "IH" using map_ind forall (m m' Hdom).
+    - rewrite dom_empty_L in Hdom; apply dom_empty_inv_L in Hdom as ->.
+      rewrite left_id_L big_sepM_empty.
+      by iFrame.
+    - rewrite big_sepM_insert //.
+      iDestruct "Hm0" as "[Hl Hm0]".
+      rewrite dom_insert_L in Hdom.
+      assert (l ∈ dom (gset K) m') by set_solver.
+      apply elem_of_dom in H0 as [v' Hlookup].
+      iMod (map_update _ _ v' with "Hctx Hl") as "[Hctx Hl]".
+      iSpecialize ("IH" $! (<[l:=v']> m)).
+      apply dom_union_inv in Hdom as (m1&m2 & ? & -> & ? & ?); last first.
+      { apply disjoint_singleton_l, not_elem_of_dom; auto. }
+      iMod ("IH" $! m2 with "[%] Hctx Hm0") as "[Hctx Hm0]"; auto.
+      iModIntro.
+      assert (m1 = {[l := v']}).
+      { apply dom_singleton_inv in H1 as [v'' ->].
+        f_equal.
+        erewrite lookup_union_Some_l in Hlookup; last first.
+        { rewrite lookup_singleton_Some //. }
+        congruence. }
+      subst.
+      rewrite big_sepM_union // big_sepM_singleton.
+      iFrame.
+      iExactEq "Hctx".
+      f_equal.
+      rewrite -union_singleton_l_insert.
+      rewrite assoc.
+      f_equal.
+      rewrite map_union_comm //.
   Qed.
 
   Theorem map_freeze γ m k v :

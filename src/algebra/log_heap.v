@@ -4,41 +4,28 @@ From iris.bi.lib Require Import fractional.
 From iris.base_logic.lib Require Export own invariants.
 From iris.base_logic.lib Require Import gen_heap.
 From iris.proofmode Require Import tactics.
+
+From Perennial.algebra Require Import auth_map.
+
 Set Default Proof Using "Type".
 Import uPred.
 
-(* TODO: switch to https://gitlab.mpi-sws.org/iris/iris/-/merge_requests/486
-when it's merged, rather than using gen_heapUR (this is probably necessary for
-async usage so that we can persistently own maps-to facts in a particular
-version) *)
-Local Definition gen_heapUR (L V : Type) `{Countable L} : ucmraT :=
-  gmapUR L (prodR fracR (agreeR (leibnizO V))).
-Definition log_heapUR (L V : Type) `{Countable L}: ucmraT :=
-  discrete_funUR (λ (n : nat), gen_heapUR L V).
-
 Class log_heapG (L V: Type) (Σ : gFunctors) `{Countable L} := LogHeapG {
-  log_heap_inG :> inG Σ (authR (log_heapUR L V));
+  log_heap_inG :> mapG Σ L V;
   log_heap_name : gname
 }.
-
-Local Definition to_gen_heap {L V} `{Countable L} : gmap L V → gen_heapUR L V :=
-  fmap (λ v, (1%Qp, to_agree (v : leibnizO V))).
-
-Definition to_log_heap {L V} `{Countable L} (s: nat -> gmap L V) : log_heapUR L V :=
-  λ n, to_gen_heap (s n).
 
 Arguments log_heap_name {_ _ _ _ _} _ : assert.
 
 Class log_heapPreG (L V : Type) (Σ : gFunctors) `{Countable L} :=
-  { log_heap_preG_inG :> inG Σ (authR (log_heapUR L V)) }.
+  { log_heap_preG_inG :> mapG Σ L V }.
 
 Definition log_heapΣ (L V : Type) `{Countable L} : gFunctors :=
-  #[GFunctor (authR (log_heapUR L V))].
+  mapΣ L V.
 
 Instance subG_log_heapPreG {Σ L V} `{Countable L} :
   subG (log_heapΣ L V) Σ → log_heapPreG L V Σ.
 Proof. solve_inG. Qed.
-
 
 Record async T := {
   latest : T;
@@ -89,19 +76,12 @@ Section definitions.
   Context `{hG : log_heapG L V Σ}.
 
   Definition log_heap_ctx (σl : async (gmap L V)) : iProp Σ :=
-    let σfun := λ n, match possible σl !! n with
-                     | Some σ => σ
-                     | None => latest σl
-                     end in
-    own (log_heap_name hG) (● (to_log_heap σfun)).
+    map_ctx (log_heap_name hG) 1 (latest σl).
 
-  Definition mapsto_cur (l: L) (v: V) : iProp Σ.
-  Proof using hG.
-    (* l ↦ v in latest σ *)
-  Admitted.
+  Definition mapsto_cur (l: L) (v: V) : iProp Σ :=
+    ptsto_mut hG.(log_heap_name) l 1 v.
 
 End definitions.
-
 
 Lemma seq_heap_init `{log_heapPreG L V Σ} σl:
   ⊢ |==> ∃ _ : log_heapG L V Σ, log_heap_ctx σl ∗
@@ -116,7 +96,6 @@ Section log_heap.
   Implicit Types Φ : V → iProp Σ.
   Implicit Types σ : gmap L V.
   Implicit Types σl : async (gmap L V).
-  Implicit Types h g : log_heapUR L V.
   Implicit Types l : L.
   Implicit Types v : V.
 
@@ -125,7 +104,34 @@ Section log_heap.
       mapsto_cur l v -∗
       ⌜latest σl !! l = Some v⌝.
   Proof.
-  Admitted.
+    rewrite /log_heap_ctx /mapsto_cur.
+    iIntros "Hctx Hl".
+    iDestruct (map_valid with "Hctx Hl") as %Hlookup; done.
+  Qed.
+
+  Lemma map_ptsto_to_exists_map (m: gmap L V) :
+    ([∗ map] l↦_ ∈ m, ∃ v', mapsto_cur l v') -∗
+    ∃ (m0: gmap L V), ⌜dom (gset _) m0 = dom (gset _) m⌝ ∗
+          [∗ map] l↦v ∈ m0, mapsto_cur l v.
+  Proof.
+    induction m as [|l v m] using map_ind.
+    - rewrite big_sepM_empty.
+      iIntros "_". iExists ∅.
+      iSplit; first done.
+      rewrite big_sepM_empty; done.
+    - rewrite big_sepM_insert //.
+      iIntros "[Hl Hm]".
+      iDestruct "Hl" as (v') "Hl".
+      iDestruct (IHm with "Hm") as (m0 Hdom) "Hm".
+      iExists (<[l:=v']> m0).
+      iSplit.
+      + iPureIntro.
+        rewrite !dom_insert_L. congruence.
+      + rewrite big_sepM_insert; [ by iFrame | ].
+        apply not_elem_of_dom.
+        apply not_elem_of_dom in H1.
+        congruence.
+  Qed.
 
   Lemma log_heap_append σl σmod :
     log_heap_ctx σl -∗
@@ -134,6 +140,10 @@ Section log_heap.
       log_heap_ctx (async_put σ σl) ∗
       ( [∗ map] l↦v ∈ σmod, mapsto_cur l v ).
   Proof.
-  Admitted.
+    iIntros "Hctx Hm0".
+    iDestruct (map_ptsto_to_exists_map with "Hm0") as (m0 Hdom) "Hm0".
+    rewrite /log_heap_ctx /=.
+    iMod (map_update_map with "Hctx Hm0") as "[$ Hm]"; auto.
+  Qed.
 
 End log_heap.

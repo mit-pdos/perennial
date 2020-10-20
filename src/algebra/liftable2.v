@@ -1,6 +1,6 @@
 From iris.algebra Require Import gmap.
 From iris.proofmode Require Import tactics.
-From Perennial.Helpers Require Import NamedProps ipm gset.
+From Perennial.Helpers Require Import NamedProps ipm gset Map.
 From Perennial.algebra Require Import big_op liftable.
 
 Set Default Proof Using "Type".
@@ -213,36 +213,6 @@ Section bi.
     setoid_rewrite big_sepM_singleton.
     iFrame "Ha".
     iApply pred_singleton_restore.
-  Qed.
-
-  Lemma dom_map_to_list m :
-    dom (gset L) m = list_to_set (map_to_list m).*1.
-  Proof.
-    induction m as [|l v m] using map_ind.
-    - rewrite dom_empty_L map_to_list_empty //.
-    - rewrite map_to_list_insert //.
-      rewrite dom_insert_L.
-      rewrite fmap_cons /=.
-      rewrite -IHm //.
-  Qed.
-
-  Lemma dom_singleton_inv m a :
-    dom (gset _) m = {[a]} →
-    ∃ v, m = {[a := v]}.
-  Proof.
-    intros.
-    destruct (m !! a) eqn:He.
-    2: {
-      assert (a ∈ dom (gset L) m) by set_solver.
-      apply elem_of_dom in H0. rewrite He in H0. inversion H0. congruence.
-    }
-    exists v. rewrite -insert_empty.
-    apply map_eq; intros.
-    destruct (decide (i = a)); subst.
-    - rewrite lookup_insert; eauto.
-    - rewrite lookup_insert_ne; eauto.
-      rewrite lookup_empty.
-      apply not_elem_of_dom. set_solver.
   Qed.
 
   Theorem map_singleton_holds_at m Φ mapsto1 :
