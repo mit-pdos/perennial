@@ -182,6 +182,16 @@ Proof.
   rewrite take_app_le; auto.
 Qed.
 
+Theorem subslice_app_contig {A} n1 n2 n3 (l: list A) :
+  n1 ≤ n2 ≤ n3 →
+  subslice n1 n2 l ++ subslice n2 n3 l = subslice n1 n3 l.
+Proof.
+  intros Hbound; intuition.
+  rewrite /subslice.
+  rewrite -(drop_take_drop (take n3 l) n1 n2) //.
+  rewrite take_take Nat.min_l //.
+Qed.
+
 Lemma subslice_to_end {A} n m (l: list A) :
   (length l ≤ m)%nat →
   subslice n m l = drop n l.
@@ -189,6 +199,12 @@ Proof.
   intros Hbound.
   rewrite /subslice.
   rewrite take_ge; auto.
+Qed.
+
+Lemma subslice_from_start {A} n (l: list A) :
+  subslice 0 n l = take n l.
+Proof.
+  eauto.
 Qed.
 
 Theorem subslice_zero_length {A} n (l: list A) :

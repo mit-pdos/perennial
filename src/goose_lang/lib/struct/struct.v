@@ -419,6 +419,18 @@ Proof.
   - iSplit; iIntros; iPureIntro; intuition.
 Qed.
 
+Theorem struct_field_mapsto_agree l d f q1 v1 q2 v2 :
+  struct_field_mapsto l q1 d f v1 -∗
+  struct_field_mapsto l q2 d f v2 -∗
+  ⌜v1 = v2⌝.
+Proof.
+  unseal.
+  destruct (field_offset d f).
+  - destruct p.
+    apply struct_mapsto_agree.
+  - iIntros; iPureIntro; subst; intuition.
+Qed.
+
 Global Instance struct_field_mapsto_as_mapsto d f l v :
   AsMapsTo (struct_field_mapsto l 1 d f v)
            (fun q => struct_field_mapsto l q d f v).
