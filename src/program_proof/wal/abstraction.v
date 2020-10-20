@@ -175,6 +175,16 @@ Proof.
     rewrite H2. simpl. eauto.
 Qed.
 
+Theorem has_updates_nil :
+  has_updates [] [].
+Proof. rewrite /has_updates //. Qed.
+
+Theorem has_updates_eq_nil log txns :
+  log = [] →
+  txns = [] →
+  has_updates log txns.
+Proof. intros -> ->. rewrite /has_updates //. Qed.
+
 Theorem has_updates_app log1 txns1 log2 txns2 :
   has_updates log1 txns1 ->
   has_updates log2 txns2 ->

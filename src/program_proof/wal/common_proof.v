@@ -138,14 +138,16 @@ Proof.
   iSplit.
   { iPureIntro. rewrite /slidingM.wf /= in Hsliding_wf'. lia. }
   iSplit.
-  2: { rewrite logIndex_set_mutable.
+  2: { rewrite logIndex_set_mutable /=.
     replace (S (length σs.(log_state.txns) - 1)) with (length σs.(log_state.txns)) by lia.
-    rewrite drop_all.
-    rewrite /slidingM.logIndex /slidingM.endPos.
+    rewrite !drop_all.
+    iPureIntro.
+    apply has_updates_eq_nil; auto.
+    rewrite /slidingM.logIndex /slidingM.endPos /=.
     word_cleanup.
     replace (Z.to_nat (int.val σ.(memLog).(slidingM.start) + length σ.(memLog).(slidingM.log)) -
          int.nat σ.(memLog).(slidingM.start))%nat with (length σ.(memLog).(slidingM.log)) by lia.
-    rewrite drop_all. eauto. }
+    rewrite drop_all //. }
   rewrite (subslice_split_r _ (S nextDiskEnd_txn_id) _ σs.(log_state.txns)); try lia.
   erewrite <- (subslice_to_end _ _ σs.(log_state.txns)) in His_nextTxn by reflexivity.
   replace (S (length σs.(log_state.txns) - 1)) with (length σs.(log_state.txns)) by lia.
@@ -157,12 +159,12 @@ Proof.
     rewrite /slidingM.logIndex /slidingM.endPos. word.
   }
   {
-    rewrite /slidingM.logIndex /slidingM.endPos.
+    rewrite /slidingM.logIndex /slidingM.endPos /=.
     rewrite /slidingM.wf /slidingM.endPos /= in Hsliding_wf'.
     word.
   }
   {
-    rewrite /slidingM.logIndex.
+    rewrite /slidingM.logIndex /=.
     rewrite /slidingM.wf /slidingM.endPos /= in Hsliding_wf'.
     word.
   }
@@ -224,16 +226,10 @@ Proof.
   apply subslice_lookup_some in H3 as H3'.
   assert (snd <$> σ.(log_state.txns) !! (S txn_id + i)%nat = Some x.2).
   { rewrite H3'. eauto. }
-  erewrite HafterNextDiskEnd in H4.
-  { congruence. }
-  2: eassumption.
+  erewrite HafterNextDiskEnd in H4; simplify_eq/=; eauto.
   { lia. }
-  1: eassumption.
-  eapply is_txn_mid.
-  1: eassumption.
-  1: apply H1.
-  1: apply H2.
-  eapply subslice_lookup_bound' in H3 as Hbound.
+  eapply is_txn_mid; [ done | apply H1 | apply H2 |].
+  apply subslice_lookup_bound' in H3.
   lia.
 Qed.
 
@@ -292,15 +288,9 @@ Proof.
   apply subslice_lookup_some in H4 as H4'.
   assert (snd <$> σ.(log_state.txns) !! (S txn_id + i)%nat = Some x.2).
   { rewrite H4'. eauto. }
-  erewrite H3 in H5.
-  { congruence. }
-  2: eassumption.
+  erewrite H3 in H5; simplify_eq/=; eauto.
   { lia. }
-  1: eassumption.
-  eapply is_txn_mid.
-  1: eassumption.
-  1: apply H1.
-  1: apply H2.
+  eapply is_txn_mid; [ done | apply H1 | apply H2 | ].
   eapply subslice_lookup_bound' in H4 as Hbound.
   lia.
 Qed.
