@@ -14,8 +14,13 @@ Arguments ncinv {Σ _ _} N P%bi_scope.
 Definition ncinv_eq : @ncinv = @ncinv_def := ncinv_aux.(seal_eq).
 Instance: Params (@ncinv) 4 := {}.
 
-(* TODO: rename to ncinv, derive properties with semantic characterization, just use stagedG version
-   as one model *)
+Definition crash_inv_def `{!invG Σ, !crashG Σ} N P : iProp Σ :=
+  □ ∀ E, ⌜↑N ⊆ E⌝ → C -∗ |0={E,E ∖ ↑N}=> ▷ P ∗ (▷ P -∗ |0={E ∖ ↑N,E}=> True).
+Definition crash_inv_aux : seal (@crash_inv_def). Proof. by eexists. Qed.
+Definition crash_inv := crash_inv_aux.(unseal).
+Arguments crash_inv {Σ _ _} N P%bi_scope.
+Definition crash_inv_eq : @crash_inv = @crash_inv_def := crash_inv_aux.(seal_eq).
+Instance: Params (@crash_inv) 4 := {}.
 
 Section ci.
 Context `{!crashG Σ}.
@@ -215,6 +220,83 @@ Implicit Types P : iProp Σ.
       * iDestruct (pending_done with "[$] [$]") as %[].
   Qed.
 
+  (* Another model of an ncinv that generates two cfupds, one that is persistent
+     and one that is not. Essentially we can think of the persistent one as an
+     invariant that holds at crash time, and the non-persistent one is what
+     recovery gets after. *)
+
+  Definition own_ncinv_cinv N P Pcrash Prec :=
+    (∃ γ1 γ2, inv N ((P ∗ staged_pending 1 γ1) ∨ (C ∗ Pcrash ∗ (Prec ∨ staged_done γ2) ∗ staged_done γ1)))%I.
+
+  Lemma ncinv_cinv_alloc N E1 E2 P Pcrash Prec :
+    ↑N ⊆ E2 →
+    □ (▷ P -∗ |0={E2 ∖ ↑N}=> ▷ Pcrash ∗ ▷ Prec) -∗
+    ▷ P ={E1}=∗ ncinv N P ∗ (<disc> |C={E2}_0=> Prec) ∗ □ |C={E2}_0=> inv N Pcrash.
+  Proof using stagedG0.
+    iIntros (?) "#Hwand HP".
+    rewrite ncinv_eq /ncinv_def.
+    iMod (pending_alloc) as (γ1) "Hpending1".
+    iMod (pending_alloc) as (γ2) "Hpending2".
+    iMod (inv_alloc N _ ((P ∗ staged_pending 1 γ1) ∨
+                         (C ∗ Pcrash ∗ (Prec ∨ staged_done γ2) ∗ staged_done γ1))
+            with "[HP Hpending1]") as "#Hinv".
+    { iLeft. iFrame. }
+    iSplitL ""; [| iSplitL "Hpending2"].
+    - iIntros "!> !>" (E' Hsub).
+      iInv "Hinv" as "[(HP&Hpend)|(>Hfalse&_)]" "Hclo".
+      * iModIntro. iFrame. iIntros "HP". iMod ("Hclo" with "[HP Hpend]"); eauto.
+        iLeft. iFrame.
+      * rewrite ncfupd_eq /ncfupd_def. iIntros (?) "HNC".
+        iDestruct (NC_C with "[$] [$]") as %[].
+    - do 2 iModIntro.
+      iIntros "HC". iInv "Hinv" as "H" "Hclo".
+      iDestruct "H" as "[(HP&>Hpending1)|(C&Hcrash&Hcase&Hdone1)]".
+      { iMod ("Hwand" with "[$]") as "(Hcrash&Hrec)".
+        iMod (pending_upd_done with "Hpending1") as "Hdone1".
+        iMod (pending_upd_done with "Hpending2") as "Hdone2".
+        iMod ("Hclo" with "[Hcrash Hdone1 Hdone2 HC]").
+        { iRight. iFrame. }
+        eauto. }
+      { iDestruct "Hcase" as "[Hrec | >Hfalse]".
+        * iMod (pending_upd_done with "Hpending2") as "Hdone2".
+          iMod ("Hclo" with "[Hcrash Hdone1 Hdone2 HC]").
+          { iRight. iFrame. }
+          by iFrame.
+        * iDestruct (pending_done with "[$] [$]") as %[].
+      }
+    - do 2 iModIntro.
+      iIntros "#HC". iInv "Hinv" as "H" "Hclo".
+      iDestruct "H" as "[(HP&>Hpending1)|(C&Hcrash&Hcase&>#Hdone1)]".
+      { iMod ("Hwand" with "[$]") as "(Hcrash&Hrec)".
+        iMod (pending_upd_done with "Hpending1") as "#Hdone1".
+        iMod ("Hclo" with "[Hcrash Hrec]").
+        { iRight. iFrame "∗ #". }
+        iModIntro. iNext.
+        iEval (rewrite inv_eq /inv_def).
+        iModIntro. iIntros (E Hsub).
+        iInv "Hinv" as "H" "Hclo".
+        iDestruct "H" as "[(HP&>Hpending1)|(C&Hcrash&Hcase&_)]".
+        { iDestruct (pending_done with "[$] [$]") as %[]. }
+        iModIntro. iFrame "Hcrash". iIntros "Hcrash".
+        iMod ("Hclo" with "[Hcrash Hcase]").
+        { iRight. iFrame "∗ #". }
+        eauto.
+      }
+      {
+        iMod ("Hclo" with "[Hcrash Hcase]").
+        { iRight. iFrame "∗ #". }
+        iModIntro. iNext.
+        iEval (rewrite inv_eq /inv_def).
+        iModIntro. iIntros (E Hsub).
+        iInv "Hinv" as "H" "Hclo".
+        iDestruct "H" as "[(HP&>Hpending1)|(C&Hcrash&Hcase&_)]".
+        { iDestruct (pending_done with "[$] [$]") as %[]. }
+        iModIntro. iFrame "Hcrash". iIntros "Hcrash".
+        iMod ("Hclo" with "[Hcrash Hcase]").
+        { iRight. iFrame "∗ #". }
+        eauto.
+      }
+  Qed.
 End ci.
 
 (*
