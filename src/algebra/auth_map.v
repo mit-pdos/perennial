@@ -88,20 +88,23 @@ Section auth_map.
     iDestruct 1 as (ro_m1) "[-> H1]".
     iDestruct 1 as (ro_m2) "[-> H2]".
     iDestruct (own_valid_2 with "H1 H2") as %Hvalid%auth_auth_frac_op_inv.
-    rewrite Hvalid.
-    iCombine "H1 H2" as "H".
     iPureIntro.
     apply map_eq => k.
-    apply option_eq => v.
     rewrite !lookup_fmap.
-    rewrite !fmap_Some.
 
-    assert (to_mapUR ro_m1 !! k ≡ to_mapUR ro_m2 !! k).
+    assert (to_mapUR ro_m1 !! k ≡ to_mapUR ro_m2 !! k) as Hvalidk.
     { apply Hvalid. }
-    inversion H; subst; clear H.
-    (* TODO(tej): there's a lot of annoying inversion of to_mapUR, not sure if
-    there's a better way *)
-  Admitted.
+    rewrite /to_mapUR !lookup_fmap in Hvalidk.
+
+    destruct (ro_m1 !! k) eqn:He1; rewrite He1 /= in Hvalidk;
+      destruct (ro_m2 !! k) eqn:He2; rewrite He2 /= in Hvalidk;
+      inversion Hvalidk; clear Hvalidk; subst; eauto.
+    simpl; f_equal.
+    destruct p, p0, b, b0; simpl in *; inversion H1; clear H1; subst.
+    { apply to_agree_inj in H2. done. }
+    { inversion H2; clear H2; simpl in *; subst.
+      apply to_agree_inj in H0. done. }
+  Qed.
 
   Definition ptsto_def γ k mq v :=
     own γ (◯ {[ k := match mq with
