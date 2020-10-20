@@ -227,23 +227,25 @@ Section map.
     iFrame.
   Qed.
 
-  Lemma big_sepM_lookup_acc_mono Φ Ψ m k x :
+  Lemma big_sepM_lookup_acc_impl Φ Ψ m k x :
     m !! k = Some x →
-    (∀ k' x', m !! k' = Some x' → k' ≠ k → Φ k' x' ⊢ Ψ k' x') →
-    ([∗ map] k' ↦ x' ∈ m, Φ k' x') ⊢ Φ k x ∗ (Ψ k x -∗ ([∗ map] k' ↦ x' ∈ m, Ψ k' x')).
+    ([∗ map] k' ↦ x' ∈ m, Φ k' x') -∗
+    □ (∀ k' x', ⌜m !! k' = Some x'⌝ -∗ ⌜k' ≠ k⌝ -∗ Φ k' x' -∗ Ψ k' x') -∗
+    Φ k x ∗ (Ψ k x -∗ ([∗ map] k' ↦ x' ∈ m, Ψ k' x')).
   Proof using BiAffine0.
-    iIntros (Hk Hmono) "Hm".
-    iPoseProof (big_sepM_delete _ _ _ _ Hk with "Hm") as "(HΦk&Hm)".
-    iPoseProof (big_sepM_mono Φ Ψ with "Hm") as "Hm".
+    iIntros (Hk) "Hm #Hmono".
+    iDestruct (big_sepM_delete _ _ _ _ Hk with "Hm") as "(HΦk&Hm)".
+    iDestruct (big_sepM_impl Φ Ψ with "Hm") as "Hm".
+    iSpecialize ("Hm" with "[Hmono]").
     {
-      intros k' x' Hk'.
+      iModIntro.
+      iIntros (k' x' Hk').
       apply lookup_delete_Some in Hk'.
-      specialize (Hmono k' x').
-      intuition.
+      iApply "Hmono"; intuition.
     }
     iFrame.
     iIntros "HΨk".
-    iPoseProof (big_sepM_insert with "[Hm HΨk]") as "Hm".
+    iDestruct (big_sepM_insert with "[Hm HΨk]") as "Hm".
     2: {
       iFrame.
       iFrame.
