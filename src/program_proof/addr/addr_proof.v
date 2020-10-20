@@ -504,6 +504,45 @@ Section gmap_addr_by_block.
         iApply "IH". iFrame.
   Qed.
 
+  Theorem gmap_addr_by_block_dom_union (m0 m1 : gmap addr T) :
+    dom (gset u64) (gmap_addr_by_block (m0 ∪ m1)) =
+    dom (gset u64) (gmap_addr_by_block m0) ∪
+    dom (gset u64) (gmap_addr_by_block m1).
+  Proof.
+    rewrite /gmap_addr_by_block.
+    eapply elem_of_equiv_L; split; intros.
+    - destruct (decide (x ∈ dom (gset u64) (gmap_uncurry m0))); try set_solver.
+      destruct (decide (x ∈ dom (gset u64) (gmap_uncurry m1))); try set_solver.
+      exfalso.
+      assert (x ∉ dom (gset u64) (gmap_uncurry (m0 ∪ m1))); try set_solver.
+
+      apply not_elem_of_dom in n.
+      apply not_elem_of_dom in n0.
+      apply not_elem_of_dom.
+
+      erewrite lookup_gmap_uncurry_None in n.
+      erewrite lookup_gmap_uncurry_None in n0.
+      erewrite lookup_gmap_uncurry_None; intros j.
+      specialize (n j). specialize (n0 j).
+      eapply lookup_union_None; eauto.
+
+    - destruct (decide (x ∈ dom (gset u64) (gmap_uncurry (m0 ∪ m1)))); try set_solver.
+      exfalso.
+      assert (x ∉ dom (gset u64) (gmap_uncurry m0) ∪ dom (gset u64) (gmap_uncurry m1)); try set_solver.
+      apply not_elem_of_dom in n.
+      apply not_elem_of_union; split; apply not_elem_of_dom.
+
+      + erewrite lookup_gmap_uncurry_None; intros j.
+        erewrite lookup_gmap_uncurry_None in n.
+        specialize (n j).
+        eapply lookup_union_None in n. intuition. 
+
+      + erewrite lookup_gmap_uncurry_None; intros j.
+        erewrite lookup_gmap_uncurry_None in n.
+        specialize (n j).
+        eapply lookup_union_None in n. intuition.
+  Qed.
+
 End gmap_addr_by_block.
 
 
