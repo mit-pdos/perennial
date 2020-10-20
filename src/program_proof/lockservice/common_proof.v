@@ -191,12 +191,10 @@ Definition LockServer_Function (f:val) (fname:string) (rty_desc:descriptor) (arg
       lock.release (struct.loadF LockServer.S "mu" "ls");;
       #false).
 
-Context `{Ps : u64 -> iProp Σ}.
   Context `{!mapG Σ (u64*u64) (option bool)}.
   Context `{!mapG Σ (u64*u64) unit}.
   Context `{!inG Σ (exclR unitO)}.
   Context `{!fmcounter_mapG Σ}.
-Parameter validLocknames : gmap u64 unit.
 
 Record TryLockArgsC :=
   mkTryLockArgsC{
@@ -214,8 +212,7 @@ Record TryLockReplyC :=
 Instance: Settable TryLockReplyC := settable! mkTryLockReplyC <OK; Stale>.
 
 Definition read_trylock_args (args_ptr:loc) (lockArgs:TryLockArgsC): iProp Σ :=
-  "#HLocknameValid" ∷ ⌜is_Some (validLocknames !! lockArgs.(Lockname))⌝
-  ∗ "#HSeqPositive" ∷ ⌜int.nat lockArgs.(Seq) > 0⌝
+    "#HSeqPositive" ∷ ⌜int.nat lockArgs.(Seq) > 0⌝
   ∗ "#HTryLockArgsOwnLockname" ∷ readonly (args_ptr ↦[TryLockArgs.S :: "Lockname"] #lockArgs.(Lockname))
   ∗ "#HTryLockArgsOwnCID" ∷ readonly (args_ptr ↦[TryLockArgs.S :: "CID"] #lockArgs.(CID))
   ∗ "#HTryLockArgsOwnSeq" ∷ readonly (args_ptr ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
@@ -243,13 +240,9 @@ Proof.
             IntoVal_def := false; |}; congruence.
 Defined.
 
-Definition LockServer_own_core (srv:loc) : iProp Σ :=
-  ∃ (locks_ptr:loc) (locksM:gmap u64 bool),
-  "HlocksOwn" ∷ srv ↦[LockServer.S :: "locks"] #locks_ptr
-∗ ("Hlockeds" ∷ [∗ map] ln ↦ locked ; _ ∈ locksM ; validLocknames, (⌜locked=true⌝ ∨ (Ps ln)))
-              .
+Context `{Server_own_core: loc -> iProp Σ}.
 
-Definition LockServer_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
+Definition Server_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64)
     (lastReplyM locksM:gmap u64 bool),
       "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
@@ -257,34 +250,34 @@ Definition LockServer_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
     ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
     ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
     ∗ ("Hsrpc" ∷ RPCServer_own lastSeqM lastReplyM γrpc)
-    ∗ LockServer_own_core srv
+    ∗ Server_own_core srv
 .
 
 Definition replycacheinvN : namespace := nroot .@ "replyCacheInvN".
 Definition mutexN : namespace := nroot .@ "lockservermutexN".
 Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
 
-Definition is_lockserver (srv_ptr:loc) γrpc: iProp Σ :=
+Definition is_server (srv_ptr:loc) γrpc: iProp Σ :=
   ∃ mu_ptr,
       "Hmuptr" ∷ readonly (srv_ptr ↦[LockServer.S :: "mu"] #mu_ptr)
     ∗ ( "Hlinv" ∷ inv replycacheinvN (ReplyCache_inv γrpc ) )
-    ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (LockServer_mutex_inv srv_ptr γrpc))
+    ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (Server_mutex_inv srv_ptr γrpc))
 .
 
 Lemma LockServer_Function_spec {A:Type} {R:Type} {a_req:RPCRequest A} (srv args reply:loc) (a:A) (r:R) (f:val) (fname:string) (rty_desc:descriptor) (arg_desc:descriptor) fPre fPost {r_rpc: RPCReply R rty_desc} γrpc γPost :
 has_zero (struct.t rty_desc)
 -> ¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
 -> (∀ (srv' args' : loc) (a':A),
-{{{ LockServer_own_core srv'
+{{{ Server_own_core srv'
       ∗ fPre a'
 }}}
   f #srv' #args'
-{{{ v, RET v; LockServer_own_core srv'
+{{{ v, RET v; Server_own_core srv'
       ∗ ∃(b:bool), ⌜v = #b⌝ ∗ fPost a' b
 }}}
 )
 ->
-{{{ "#Hls" ∷ is_lockserver srv γrpc 
+{{{ "#Hls" ∷ is_server srv γrpc 
     ∗ "#HargsInv" ∷ inv rpcRequestInvN (RPCRequest_inv fPre fPost a γrpc γPost)
     ∗ "#Hargs" ∷ read_args args a
     ∗ "Hreply" ∷ own_reply reply r
@@ -296,6 +289,5 @@ has_zero (struct.t rty_desc)
 }}}.
 Proof.
 Admitted.
-
 
 End lockservice_common_proof.

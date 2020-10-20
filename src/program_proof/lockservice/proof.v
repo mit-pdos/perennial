@@ -43,19 +43,27 @@ Definition TryLock_Post : TryLockArgsC -> bool -> iProp Σ := λ args reply, (�
 Definition TryLock_Pre : TryLockArgsC -> iProp Σ := λ _, True%I.
 Definition TryLockRequest_inv := RPCRequest_inv TryLock_Pre TryLock_Post.
 
+Definition LockServer_own_core (srv:loc) : iProp Σ :=
+  ∃ (locks_ptr:loc) (locksM:gmap u64 bool),
+  "HlocksOwn" ∷ srv ↦[LockServer.S :: "locks"] #locks_ptr
+∗ ("Hlockeds" ∷ [∗ map] ln ↦ locked ; _ ∈ locksM ; validLocknames, (⌜locked=true⌝ ∨ (Ps ln)))
+.
+
+Definition is_lockserver := is_server (Server_own_core:=LockServer_own_core).
+
 Definition TryLock_spec_pre (srv args reply:loc) (lockArgs:TryLockArgsC) γrpc γPost : iProp Σ
   :=
-     "#Hls" ∷ is_lockserver srv γrpc (Ps:=Ps)
+     "#Hls" ∷ is_lockserver srv γrpc
            ∗ "#HargsInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γPost)
            ∗ "#Hargs" ∷ read_args args lockArgs.
 
 Lemma tryLock_core_spec (srv args:loc) (lockArgs:TryLockArgsC) :
 {{{ 
-     LockServer_own_core srv (Ps:=Ps) ∗ TryLock_Pre lockArgs
+     LockServer_own_core srv ∗ TryLock_Pre lockArgs
 }}}
   LockServer__tryLock_core #srv #args
 {{{
-   v, RET v; LockServer_own_core srv (Ps:=Ps)
+   v, RET v; LockServer_own_core srv
       ∗ (∃b:bool, ⌜v = #b⌝ ∗ TryLock_Post lockArgs b)
 }}}.
 Proof.
@@ -80,7 +88,7 @@ Proof.
 Qed.
 
 Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
-{{{ "#Hls" ∷ is_lockserver srv γrpc (Ps:=Ps)
+{{{ "#Hls" ∷ is_lockserver srv γrpc
     ∗ "#HargsInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γPost)
     ∗ "#Hargs" ∷ read_args args lockArgs
     ∗ "Hreply" ∷ own_reply reply lockReply
@@ -105,7 +113,7 @@ Lemma Clerk__TryLock_spec ck (srv:loc) (ln:u64) γrpc :
   {{{
        ⌜is_Some (validLocknames !! ln)⌝
       ∗ own_clerk ck srv γrpc
-      ∗ is_lockserver srv γrpc (Ps:=Ps)
+      ∗ is_lockserver srv γrpc 
   }}}
     Clerk__TryLock ck #ln
   {{{ v, RET v; ∃(b:bool), ⌜v = #b⌝ ∗ own_clerk ck srv γrpc ∗ (⌜b = false⌝ ∨ Ps ln) }}}.
@@ -140,7 +148,7 @@ Proof using Type*.
   wp_pures.
   iDestruct "Hsrv" as (mu_ptr) "Hsrv". iNamed "Hsrv".
   iMod (alloc_γrc (mkTryLockArgsC ln cid cseqno) _ TryLock_Pre TryLock_Post with "[Hlinv] [Hcrpc] []") as "[Hcseq_own HallocPost]"; eauto.
-  { simpl. admit. }
+  { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
   Print TryLockArgsC.
   wp_apply (wp_forBreak
@@ -155,7 +163,7 @@ Proof using Type*.
   ∗ "Herrb_ptr" ∷ (∃ (err:bool), errb_ptr ↦[boolT] #err)
   ∗ "Hreply" ∷ (∃ lockReply, own_reply reply lockReply ∗ (⌜b = true⌝ ∨ (⌜lockReply.(OK) = false⌝ ∨ Ps ln)))
   ∗ "HγP" ∷ (⌜b = false⌝ ∨ own γP (Excl ()))
-  ∗ ("Hcseq_own" ∷ cid fm[[γrpc.(cseq)]]↦(int.nat lockArgs.(getSeq) + 1))
+  ∗ ("Hcseq_own" ∷ cid fm[[γrpc.(cseq)]]↦(int.nat (word.add lockArgs.(getSeq) 1)))
   ∗ ("HΦpost" ∷ ∀ v : val, (∃ rb : bool, ⌜v = #rb⌝ ∗ own_clerk #ck_l srv γrpc ∗ (⌜rb = false⌝ ∨ Ps ln)) -∗ Φ v)
               ))%I with "[] [-]"); eauto.
   {
@@ -196,7 +204,7 @@ Proof using Type*.
       wp_load.
       iDestruct "HγP" as "[%|HγP]"; first discriminate.
       iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
-      { iDestruct (fmcounter_map_agree_strict_lb with "Hcseq_own Hbad") as %bad. simpl in bad. lia. }
+      { iDestruct (fmcounter_map_agree_strict_lb with "Hcseq_own Hbad") as %bad. simpl in bad. replace (int.nat (word.add cseqno 1)) with (int.nat cseqno + 1) in bad by word. lia. }
       iMod (get_request_post with "Hargsinv Hrcptstoro HγP") as "HP".
       wp_pures.
       iNamed "Hreply".
@@ -208,11 +216,15 @@ Proof using Type*.
     }
   }
   {
+    iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
+    simpl.
     iFrame; iFrame "#".
     iSplitL ""; eauto.
     iSplitL "Herrb_ptr"; eauto.
-    iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
-    iExists {| OK:=false; Stale:=false |}. iFrame. by iLeft.
+    replace (int.nat cseqno + 1) with (int.nat (word.add cseqno 1)) by word.
+    iFrame.
+    Transparent own_reply.
+    iExists {| OK:=false; Stale:=false |}.  iFrame. by iLeft.
   }
 
   iIntros "LoopPost".
@@ -229,10 +241,7 @@ Proof using Type*.
   simpl.
   iSplitL ""; first done.
   assert (int.nat cseqno + 1 = int.nat (word.add cseqno 1))%nat as <-; first by word.
-  iSplit.
-  { iPureIntro. lia. }
-  Show Existentials.
-  iFrame.
+  iPureIntro. lia.
   (* TODO: where are these from? *)
   Grab Existential Variables.
   { refine true. }
