@@ -2,8 +2,6 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-From Perennial.program_proof.lockservice Require Import nondet.
-
 (* common.go *)
 
 (* Lock(lockname) returns OK=true if the lock is not held.
@@ -46,6 +44,12 @@ Definition overflow_guard_incr: val :=
     (for: (λ: <>, "v" + #1 < "v"); (λ: <>, Skip) := λ: <>,
       Continue).
 
+(* nondet.go *)
+
+Definition nondet: val :=
+  rec: "nondet" <> :=
+    #true.
+
 (* server.go *)
 
 Module LockServer.
@@ -56,6 +60,24 @@ Module LockServer.
     "lastReply" :: mapT boolT
   ].
 End LockServer.
+
+Definition LockServer__tryLock_core: val :=
+  rec: "LockServer__tryLock_core" "ls" "args" :=
+    let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") (struct.loadF TryLockArgs.S "Lockname" "args") in
+    (if: "locked"
+    then #false
+    else
+      MapInsert (struct.loadF LockServer.S "locks" "ls") (struct.loadF TryLockArgs.S "Lockname" "args") #true;;
+      #true).
+
+Definition LockServer__unlock_core: val :=
+  rec: "LockServer__unlock_core" "ls" "args" :=
+    let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") (struct.loadF UnlockArgs.S "Lockname" "args") in
+    (if: "locked"
+    then
+      MapInsert (struct.loadF LockServer.S "locks" "ls") (struct.loadF UnlockArgs.S "Lockname" "args") #false;;
+      #true
+    else #false).
 
 (* server Lock RPC handler.
    returns true iff error *)
@@ -77,12 +99,7 @@ Definition LockServer__TryLock: val :=
         #false)
     else
       MapInsert (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF TryLockArgs.S "CID" "args") (struct.loadF TryLockArgs.S "Seq" "args");;
-      let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") (struct.loadF TryLockArgs.S "Lockname" "args") in
-      (if: "locked"
-      then struct.storeF TryLockReply.S "OK" "reply" #false
-      else
-        struct.storeF TryLockReply.S "OK" "reply" #true;;
-        MapInsert (struct.loadF LockServer.S "locks" "ls") (struct.loadF TryLockArgs.S "Lockname" "args") #true);;
+      struct.storeF TryLockReply.S "OK" "reply" (LockServer__tryLock_core "ls" "args");;
       MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF TryLockArgs.S "CID" "args") (struct.loadF TryLockReply.S "OK" "reply");;
       lock.release (struct.loadF LockServer.S "mu" "ls");;
       #false).
@@ -107,12 +124,7 @@ Definition LockServer__Unlock: val :=
         #false)
     else
       MapInsert (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF UnlockArgs.S "CID" "args") (struct.loadF UnlockArgs.S "Seq" "args");;
-      let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") (struct.loadF UnlockArgs.S "Lockname" "args") in
-      (if: "locked"
-      then
-        MapInsert (struct.loadF LockServer.S "locks" "ls") (struct.loadF UnlockArgs.S "Lockname" "args") #false;;
-        struct.storeF UnlockReply.S "OK" "reply" #true
-      else struct.storeF UnlockReply.S "OK" "reply" #false);;
+      struct.storeF UnlockReply.S "OK" "reply" (LockServer__unlock_core "ls" "args");;
       MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF UnlockArgs.S "CID" "args") (struct.loadF UnlockReply.S "OK" "reply");;
       lock.release (struct.loadF LockServer.S "mu" "ls");;
       #false).

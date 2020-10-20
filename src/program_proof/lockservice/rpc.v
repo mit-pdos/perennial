@@ -18,11 +18,14 @@ Context `{!heapG Σ}.
 
 Class RPCRequest (A:Type) :=
   { getCID : A -> u64 ;
-    getSeq : A -> u64
+    getSeq : A -> u64 ;
+    read_args : loc -> A -> iProp Σ
   }.
 
 Class RPCReply R rty_desc := 
   {
+  getRet : R -> bool ;
+  getStale : R -> bool ;
   own_reply : loc -> R -> iProp Σ ;
   alloc_reply (rloc:loc) : (rloc ↦[struct.t rty_desc] zero_val (struct.t rty_desc)) -∗ (∃r, own_reply rloc r)
   }.
@@ -50,8 +53,6 @@ Record RPC_GS :=
       lseq:gname;
       cseq:gname
     }.
-
-Instance TryLockArgs_rpc : RPCRequest TryLockArgsC := {getCID x := x.(CID); getSeq x := x.(CID)}.
 
 Definition RPCClient_own (cid cseqno:u64) (γrpc:RPC_GS) : iProp Σ :=
   "Hcseq_own" ∷ (cid fm[[γrpc.(cseq)]]↦ int.nat cseqno)

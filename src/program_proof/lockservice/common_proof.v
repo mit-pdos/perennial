@@ -80,7 +80,7 @@ Definition CallFunction (f:val) (fname:string) (rty_desc:descriptor) : val :=
     then f "srv" "args" "reply"
     else #true).
 
-Lemma CallFunction_spec {A:Type} {R:Type} {a_req:RPCRequest A} (srv args reply:loc) (lockArgs:A) (lockReply:R) (f:val) (fname:string) (rty_desc:descriptor) fPre fPost γrpc γPost {r_rpc: RPCReply R rty_desc} :
+Lemma CallFunction_spec {A:Type} {R:Type} {a_req:@RPCRequest Σ A} (srv args reply:loc) (lockArgs:A) (lockReply:R) (f:val) (fname:string) (rty_desc:descriptor) fPre fPost γrpc γPost {r_rpc: RPCReply R rty_desc} :
 has_zero (struct.t rty_desc)
 -> ¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
 -> (∀ srv' args' lockArgs' γrpc' γPost', Persistent (fPre srv' args' lockArgs' γrpc' γPost'))
@@ -168,24 +168,134 @@ Proof.
   }
 Qed.
 
-Definition ClientStub (f:val) (fname:string) : val :=
-  rec: "" "ck" "lockname" :=
-    overflow_guard_incr (struct.loadF Clerk.S "seq" "ck");;
-    let: "args" := struct.new UnlockArgs.S [
-      "Lockname" ::= "lockname";
-      "CID" ::= struct.loadF Clerk.S "cid" "ck";
-      "Seq" ::= struct.loadF Clerk.S "seq" "ck"
-    ] in
-    struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
-    let: "errb" := ref (zero_val boolT) in
-    let: "reply" := struct.alloc UnlockReply.S (zero_val (struct.t UnlockReply.S)) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] f (struct.loadF Clerk.S "primary" "ck") "args" "reply";;
-      (if: (![boolT] "errb" = #false)
-      then Break
-      else Continue));;
-    struct.loadF UnlockReply.S "OK" "reply".
+Definition LockServer_Function (f:val) (fname:string) (rty_desc:descriptor) (arg_desc:descriptor) : val :=
+  rec: "LockServer__TryLock" "ls" "args" "reply" :=
+    lock.acquire (struct.loadF LockServer.S "mu" "ls");;
+    let: ("last", "ok") := MapGet (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF arg_desc "CID" "args") in
+    struct.storeF rty_desc "Stale" "reply" #false;;
+    (if: "ok" && (struct.loadF arg_desc "Seq" "args" ≤ "last")
+    then
+      (if: struct.loadF arg_desc "Seq" "args" < "last"
+      then
+        struct.storeF rty_desc "Stale" "reply" #true;;
+        lock.release (struct.loadF LockServer.S "mu" "ls");;
+        #false
+      else
+        struct.storeF rty_desc "OK" "reply" (Fst (MapGet (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF arg_desc "CID" "args")));;
+        lock.release (struct.loadF LockServer.S "mu" "ls");;
+        #false)
+    else
+      MapInsert (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF arg_desc "CID" "args") (struct.loadF arg_desc "Seq" "args");;
+      struct.storeF rty_desc "OK" "reply" (f "ls" "args");;
+      MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF arg_desc "CID" "args") (struct.loadF rty_desc "OK" "reply");;
+      lock.release (struct.loadF LockServer.S "mu" "ls");;
+      #false).
+
+Context `{Ps : u64 -> iProp Σ}.
+  Context `{!mapG Σ (u64*u64) (option bool)}.
+  Context `{!mapG Σ (u64*u64) unit}.
+  Context `{!inG Σ (exclR unitO)}.
+  Context `{!fmcounter_mapG Σ}.
+Parameter validLocknames : gmap u64 unit.
+
+Record TryLockArgsC :=
+  mkTryLockArgsC{
+  Lockname:u64;
+  CID:u64;
+  Seq:u64
+  }.
+Instance: Settable TryLockArgsC := settable! mkTryLockArgsC <Lockname; CID; Seq>.
+
+Record TryLockReplyC :=
+  mkTryLockReplyC {
+  OK:bool ;
+  Stale:bool
+  }.
+Instance: Settable TryLockReplyC := settable! mkTryLockReplyC <OK; Stale>.
+
+Definition read_trylock_args (args_ptr:loc) (lockArgs:TryLockArgsC): iProp Σ :=
+  "#HLocknameValid" ∷ ⌜is_Some (validLocknames !! lockArgs.(Lockname))⌝
+  ∗ "#HSeqPositive" ∷ ⌜int.nat lockArgs.(Seq) > 0⌝
+  ∗ "#HTryLockArgsOwnLockname" ∷ readonly (args_ptr ↦[TryLockArgs.S :: "Lockname"] #lockArgs.(Lockname))
+  ∗ "#HTryLockArgsOwnCID" ∷ readonly (args_ptr ↦[TryLockArgs.S :: "CID"] #lockArgs.(CID))
+  ∗ "#HTryLockArgsOwnSeq" ∷ readonly (args_ptr ↦[TryLockArgs.S :: "Seq"] #lockArgs.(Seq))
+.
+
+Global Instance TryLockArgs_rpc : RPCRequest TryLockArgsC := { getCID x := x.(CID); getSeq x := x.(Seq) ; read_args := read_trylock_args }.
+
+Definition own_lockreply (args_ptr:loc) (lockReply:TryLockReplyC): iProp Σ :=
+  "HreplyOK" ∷ args_ptr ↦[TryLockReply.S :: "OK"] #lockReply.(OK)
+  ∗ "HreplyStale" ∷ args_ptr ↦[TryLockReply.S :: "Stale"] #lockReply.(Stale)
+.
+
+#[refine] Global Instance TryLockReply_rpc : RPCReply TryLockReplyC TryLockReply.S := { own_reply := own_lockreply }.
+Proof.
+  { refine (λ r, r.(OK)). }
+  { refine (λ r, r.(Stale)). }
+  iIntros (rloc) "Halloc".
+  iDestruct (struct_fields_split with "Halloc") as "(HOK&HStale&_) /=".
+  iExists {| OK:=_ ; Stale:=_ |}; iFrame.
+Defined.
+
+Global Instance ToVal_bool : into_val.IntoVal bool.
+Proof.
+  refine {| into_val.to_val := λ (x: bool), #x;
+            IntoVal_def := false; |}; congruence.
+Defined.
+
+Definition LockServer_own_core (srv:loc) : iProp Σ :=
+  ∃ (locks_ptr:loc) (locksM:gmap u64 bool),
+  "HlocksOwn" ∷ srv ↦[LockServer.S :: "locks"] #locks_ptr
+∗ ("Hlockeds" ∷ [∗ map] ln ↦ locked ; _ ∈ locksM ; validLocknames, (⌜locked=true⌝ ∨ (Ps ln)))
+              .
+
+Definition LockServer_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
+  ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64)
+    (lastReplyM locksM:gmap u64 bool),
+      "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
+    ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
+    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
+    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ ("Hsrpc" ∷ RPCServer_own lastSeqM lastReplyM γrpc)
+    ∗ LockServer_own_core srv
+.
+
+Definition replycacheinvN : namespace := nroot .@ "replyCacheInvN".
+Definition mutexN : namespace := nroot .@ "lockservermutexN".
+Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
+
+Definition is_lockserver (srv_ptr:loc) γrpc: iProp Σ :=
+  ∃ mu_ptr,
+      "Hmuptr" ∷ readonly (srv_ptr ↦[LockServer.S :: "mu"] #mu_ptr)
+    ∗ ( "Hlinv" ∷ inv replycacheinvN (ReplyCache_inv γrpc ) )
+    ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (LockServer_mutex_inv srv_ptr γrpc))
+.
+
+Lemma LockServer_Function_spec {A:Type} {R:Type} {a_req:RPCRequest A} (srv args reply:loc) (a:A) (r:R) (f:val) (fname:string) (rty_desc:descriptor) (arg_desc:descriptor) fPre fPost {r_rpc: RPCReply R rty_desc} γrpc γPost :
+has_zero (struct.t rty_desc)
+-> ¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
+-> (∀ (srv' args' : loc) (a':A),
+{{{ LockServer_own_core srv'
+      ∗ fPre a'
+}}}
+  f #srv' #args'
+{{{ v, RET v; LockServer_own_core srv'
+      ∗ ∃(b:bool), ⌜v = #b⌝ ∗ fPost a' b
+}}}
+)
+->
+{{{ "#Hls" ∷ is_lockserver srv γrpc 
+    ∗ "#HargsInv" ∷ inv rpcRequestInvN (RPCRequest_inv fPre fPost a γrpc γPost)
+    ∗ "#Hargs" ∷ read_args args a
+    ∗ "Hreply" ∷ own_reply reply r
+}}}
+  (LockServer_Function f fname rty_desc arg_desc) #srv #args #reply
+{{{ RET #false; ∃ r', own_reply reply r'
+    ∗ ((⌜r'.(getStale) = true⌝ ∗ RPCRequestStale a γrpc)
+  ∨ RPCReplyReceipt a r'.(getRet) γrpc)
+}}}.
+Proof.
+Admitted.
 
 
 End lockservice_common_proof.
