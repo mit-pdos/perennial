@@ -363,7 +363,8 @@ Definition Walog__logInstall: val :=
   rec: "Walog__logInstall" "l" :=
     let: "installEnd" := struct.loadF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") in
     let: "bufs" := sliding__takeTill (struct.loadF WalogState.S "memLog" (struct.loadF Walog.S "st" "l")) "installEnd" in
-    (if: (slice.len "bufs" = #0)
+    let: "numBufs" := slice.len "bufs" in
+    (if: ("numBufs" = #0)
     then (#0, "installEnd")
     else
       lock.release (struct.loadF Walog.S "memLock" "l");;
@@ -374,7 +375,7 @@ Definition Walog__logInstall: val :=
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
       WalogState__cutMemLog (struct.loadF Walog.S "st" "l") "installEnd";;
       lock.condBroadcast (struct.loadF Walog.S "condInstall" "l");;
-      (slice.len "bufs", "installEnd")).
+      ("numBufs", "installEnd")).
 
 (* installer installs blocks from the on-disk log to their home location. *)
 Definition Walog__installer: val :=
