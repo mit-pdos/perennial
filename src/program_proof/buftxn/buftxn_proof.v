@@ -533,6 +533,16 @@ Proof.
   apply mapsto_txn_conflicting.
 Qed.
 
+Lemma gmap_union_fmap {L} `{Countable L} V1 V2 (m1 m2: gmap L V1) (f: V1 → V2) :
+  (f <$> m1) ∪ (f <$> m2) = f <$> (m1 ∪ m2).
+Proof.
+  induction m1 as [|l v m] using map_ind.
+  - rewrite fmap_empty.
+    rewrite !map_empty_union //.
+  - rewrite fmap_insert -insert_union_l IHm1.
+    rewrite -insert_union_l fmap_insert //.
+Qed.
+
 Theorem BufTxn_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E :
   ↑invN ⊆ E ->
   (
@@ -569,10 +579,9 @@ Proof.
 
   iSplit.
   { iPureIntro.
-    etransitivity. 1: eauto.
-    (* XXX where is [union_fmap]?? *)
-    (*
-    eapply map_union_subseteq_r. set_solver. *)
+    etrans; [eauto|].
+    rewrite -gmap_union_fmap.
+    rewrite -map_fmap_compose.
     admit.
   }
   iSplit.
