@@ -74,12 +74,13 @@ Implicit Types (mT : gmap addr versioned_object).
 
 Definition is_buftxn (buftx : loc)
                      mT
-                     γUnified : iProp Σ :=
+                     γUnified
+                     dinit : iProp Σ :=
   (
     ∃ (l : loc) (bufmap : loc) (gBufmap : gmap addr buf),
       "Hbuftx.l" ∷ buftx ↦[BufTxn.S :: "txn"] #l ∗
       "Hbuftx.map" ∷ buftx ↦[BufTxn.S :: "bufs"] #bufmap ∗
-      "#Histxn" ∷ is_txn l γUnified ∗
+      "#Histxn" ∷ is_txn l γUnified dinit ∗
       "Hbufmap" ∷ is_bufmap bufmap gBufmap ∗
       "%Hbufmapelem" ∷ ⌜ (λ b, existT _ (bufData b)) <$> gBufmap ⊆ modified <$> mT ⌝ ∗
       "#Hctxvalid" ∷ ( [∗ map] a ↦ v ∈ mT,
@@ -93,8 +94,8 @@ Definition is_buftxn (buftx : loc)
         ⌜dirty=true ∨ committed v = modified v⌝ )
   )%I.
 
-Local Lemma is_buftxn_to_get_mapsto_txn buftx mT γUnified :
-  is_buftxn buftx mT γUnified -∗
+Local Lemma is_buftxn_to_get_mapsto_txn buftx mT γUnified dinit :
+  is_buftxn buftx mT γUnified dinit -∗
   [∗ map] a ↦ v ∈ mT, mapsto_txn γUnified a (committed v).
 Proof.
   iNamed 1.
@@ -102,8 +103,8 @@ Proof.
   iIntros (a obj Hlookup) "[Ha _]". iFrame.
 Qed.
 
-Lemma is_buftxn_not_in_map buftx mT γUnified a v0 :
-  is_buftxn buftx mT γUnified -∗
+Lemma is_buftxn_not_in_map buftx mT γUnified dinit a v0 :
+  is_buftxn buftx mT γUnified dinit -∗
   mapsto_txn γUnified a v0 -∗
   ⌜mT !! a = None⌝.
 Proof.
@@ -115,12 +116,12 @@ Proof.
   iDestruct (mapsto_txn_2 with "Ha Ha2") as %[].
 Qed.
 
-Theorem wp_buftxn_Begin l γUnified:
-  {{{ is_txn l γUnified
+Theorem wp_buftxn_Begin l γUnified dinit:
+  {{{ is_txn l γUnified dinit
   }}}
     Begin #l
   {{{ (buftx : loc), RET #buftx;
-      is_buftxn buftx ∅ γUnified
+      is_buftxn buftx ∅ γUnified dinit
   }}}.
 Proof.
   iIntros (Φ) "#Htxn HΦ".
@@ -142,9 +143,9 @@ Proof.
   rewrite big_sepM_empty //.
 Qed.
 
-Theorem wp_BufTxn__ReadBuf buftx mT γUnified a (sz : u64) v :
+Theorem wp_BufTxn__ReadBuf buftx mT γUnified dinit a (sz : u64) v :
   {{{
-    is_buftxn buftx mT γUnified ∗
+    is_buftxn buftx mT γUnified dinit ∗
     ⌜ mT !! a = Some v ⌝ ∗
     ⌜ sz = bufSz (projT1 v) ⌝
   }}}
@@ -155,7 +156,7 @@ Theorem wp_BufTxn__ReadBuf buftx mT γUnified a (sz : u64) v :
     ( ∀ v' dirty',
       ( ⌜ dirty' = true ∨ (dirty' = dirty ∧ snd (projT2 v) = v') ⌝ ∗
         is_buf bufptr a (Build_buf (projT1 v) v' dirty') ) ==∗
-      ( is_buftxn buftx (<[a := existT _ (fst (projT2 v), v')]> mT) γUnified ) )
+      ( is_buftxn buftx (<[a := existT _ (fst (projT2 v), v')]> mT) γUnified dinit ) )
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %Ha & ->) HΦ".
@@ -329,9 +330,9 @@ Proof.
       rewrite lookup_insert_ne; eauto.
 Qed.
 
-Theorem wp_BufTxn__OverWrite buftx mt γUnified a v0 (v : {K & (bufDataT K * bufDataT K)%type}) (sz : u64) (vslice : Slice.t) :
+Theorem wp_BufTxn__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K * bufDataT K)%type}) (sz : u64) (vslice : Slice.t) :
   {{{
-    is_buftxn buftx mt γUnified ∗
+    is_buftxn buftx mt γUnified dinit ∗
     ⌜ mt !! a = Some v0 ⌝ ∗
     is_buf_data vslice (snd (projT2 v)) a ∗
     ⌜ sz = bufSz (projT1 v) ⌝ ∗
@@ -340,7 +341,7 @@ Theorem wp_BufTxn__OverWrite buftx mt γUnified a v0 (v : {K & (bufDataT K * buf
     BufTxn__OverWrite #buftx (addr2val a) #sz (slice_val vslice)
   {{{
     RET #();
-    is_buftxn buftx (<[a := v]> mt) γUnified
+    is_buftxn buftx (<[a := v]> mt) γUnified dinit
   }}}.
 Proof using.
   iIntros (Φ) "(Htxn & %Ha & Hvslice & -> & %) HΦ".
@@ -465,15 +466,15 @@ Opaque struct.t.
     rewrite lookup_insert_ne; eauto.
 Qed.
 
-Theorem BufTxn_lift_one buftx mt γUnified a v E :
+Theorem BufTxn_lift_one buftx mt γUnified dinit a v E :
   ↑invN ⊆ E ->
   (
-    is_buftxn buftx mt γUnified ∗
+    is_buftxn buftx mt γUnified dinit ∗
     mapsto_txn γUnified a v
   )
     ={E}=∗
   (
-    is_buftxn buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified
+    is_buftxn buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified dinit
   ).
 Proof.
   iIntros (HNE) "[Htxn Ha]".
@@ -530,15 +531,15 @@ Proof.
   apply mapsto_txn_conflicting.
 Qed.
 
-Theorem BufTxn_lift buftx mt γUnified (m : gmap addr {K & _}) E :
+Theorem BufTxn_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E :
   ↑invN ⊆ E ->
   (
-    is_buftxn buftx mt γUnified ∗
+    is_buftxn buftx mt γUnified dinit ∗
     [∗ map] a ↦ v ∈ m, mapsto_txn γUnified a v
   )
     ={E}=∗
   (
-    is_buftxn buftx (((λ v, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ mt) γUnified
+    is_buftxn buftx (((λ v, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ mt) γUnified dinit
   ).
 Proof.
   iIntros (HNE) "[Htxn Ha]".
@@ -593,9 +594,9 @@ Unshelve.
   iApply (mapsto_txn_conflicts_with with "H1 H2").
 Admitted.
 
-Theorem wp_BufTxn__CommitWait buftx mt γUnified (wait : bool) E (Q : nat -> iProp Σ) :
+Theorem wp_BufTxn__CommitWait buftx mt γUnified dinit (wait : bool) E (Q : nat -> iProp Σ) :
   {{{
-    is_buftxn buftx mt γUnified ∗
+    is_buftxn buftx mt γUnified dinit ∗
     ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
         "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (1/2) σl ∗
         "Hcrashstates_fupd" ∷ (

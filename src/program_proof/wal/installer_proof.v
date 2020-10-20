@@ -150,8 +150,9 @@ Theorem wp_absorbBufs b_s (bufs: list update.t) :
     absorbBufs (slice_val b_s)
   {{{ b_s' q bufs', RET slice_val b_s';
       "Habsorbed" ∷ updates_slice_frag b_s' q bufs' ∗
-      "%Hsame_upds" ∷ ⌜apply_upds bufs' ∅ = apply_upds bufs ∅⌝ ∗
-      "%Hnodup" ∷ ⌜NoDup (update.addr <$> bufs')⌝
+      "%Hsame_upds" ∷ ⌜∀ d, apply_upds bufs' d = apply_upds bufs d⌝ ∗
+      "%Hnodup" ∷ ⌜NoDup (update.addr <$> bufs')⌝ ∗
+      "%Hsubset" ∷ ⌜bufs' ⊆ bufs⌝ (* this is implied by Hsame_upds but would be hard to prove from there *)
   }}}.
 Proof.
   wp_start.
@@ -187,17 +188,19 @@ Proof.
   simpl.
   rewrite take_ge.
   { iApply "HΦ"; iFrame "Hbufs'".
-    iPureIntro; split.
-    - rewrite memWrite_apply_upds //.
+    iPureIntro; intuition.
+    - intros; rewrite memWrite_apply_upds //.
     - subst bufs'.
       apply memWrite_all_NoDup; simpl.
       + constructor.
-      + word. }
+      + word.
+    - admit.
+  }
   rewrite /slidingM.logIndex /=.
   rewrite slidingM_endPos_val //=.
   replace bufs'.(slidingM.start) with (U64 0) by rewrite memWrite_same_start //.
   word.
-Qed.
+Admitted.
 
 Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
   is_durable_txn (Σ:=Σ) γ cs txns diskEnd_txn_id durable_lb -∗
@@ -205,11 +208,12 @@ Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
 Proof.
   iNamed 1.
   iPureIntro.
+  apply is_highest_weaken in Hend_txn.
   apply is_txn_bound in Hend_txn; lia.
 Qed.
 
-Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ a :
-  {{{ is_wal P l γ ∗
+Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ dinit a :
+  {{{ is_wal P l γ dinit ∗
       in_bounds γ a ∗
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗
@@ -224,7 +228,8 @@ Proof.
   wp_apply (wp_Read_fupd _ _ 1 (* q=1 *)).
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
-  iDestruct "Hinner" as "(>? & ? & ? & >? & >? & >Hdisk)"; iNamed.
+  iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
+  iNamed "Hdisk".
   iNamed "Hdisk".
   iNamed "Hdisk".
 
@@ -266,30 +271,297 @@ Proof.
   iDestruct (is_slice_to_small with "Hs") as "$".
 Qed.
 
-Theorem wp_installBlocks γ d bufs_s (bufs: list update.t)
-        (installed_txn_id new_installed_txn_id: nat) :
-  {{{ readonly (updates_slice_frag bufs_s 1 bufs) ∗
-      (* these aren't enough assumptions - we need bufs to actually match the
-      new transactions being installed (which will come from snapshotting the
-      memLog invariant) *)
-      ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) ∗
-      ghost_var γ.(new_installed_name) (1/2) installed_txn_id
-   }}}
+Lemma apply_upds_equiv_implies_has_updates_equiv upds1 upds2 txns :
+  (∀ d : disk, apply_upds upds2 d = apply_upds upds1 d) →
+  has_updates upds1 txns →
+  has_updates upds2 txns.
+Proof.
+  intros Hequiv Hupds1 d.
+  rewrite (Hequiv d) //.
+Qed.
+
+Lemma Forall_subset {A} f (l1: list A) (l2: list A) :
+  l1 ⊆ l2 →
+  Forall f l2 →
+  Forall f l1.
+Proof.
+  intros Hsubset Hl2.
+  apply List.Forall_forall.
+  intros x Hin_l1.
+  apply elem_of_list_In in Hin_l1.
+  destruct (elem_of_subseteq l1 l2) as (Hsubset_elem_of&_).
+  apply Hsubset_elem_of with (x := x) in Hsubset; intuition.
+  destruct (List.Forall_forall f l2) as (Hl2_impl&_).
+  apply elem_of_list_In in Hsubset.
+  apply (Hl2_impl Hl2 x) in Hsubset.
+  done.
+Qed.
+
+Lemma apply_upds_notin d upds (a: u64) :
+  a ∉ (update.addr <$> upds) →
+  apply_upds upds d !! int.val a = d !! int.val a.
+Proof.
+  rewrite -(reverse_involutive upds).
+  remember (reverse upds) as upds_r.
+  clear Hequpds_r upds.
+  induction upds_r.
+  1: eauto.
+  intros Hnotin.
+  rewrite fmap_reverse fmap_cons reverse_cons -fmap_reverse in Hnotin.
+  apply not_elem_of_app in Hnotin.
+  destruct Hnotin as (Hnotin&Hneq).
+  apply IHupds_r in Hnotin.
+  rewrite reverse_cons apply_upds_app.
+  destruct a0.
+  simpl.
+  rewrite lookup_insert_ne.
+  2: {
+    simpl in Hneq.
+    apply not_elem_of_cons in Hneq.
+    destruct (decide (int.val addr = int.val a)).
+    2: intuition.
+    assert (addr = a) by word.
+    intuition.
+  }
+  intuition.
+Qed.
+
+Lemma apply_upds_NoDup_lookup d upds i a b :
+  NoDup (update.addr <$> upds) →
+  upds !! i = Some {| update.addr := a; update.b := b |} →
+  (apply_upds upds d) !! int.val a = Some b.
+Proof.
+  intros Hnodup Hlookup.
+  rewrite -(take_drop (S i) upds).
+  rewrite -(take_drop (S i) upds) fmap_app in Hnodup.
+  apply NoDup_app in Hnodup.
+  destruct Hnodup as (Hnodup&Heither&_).
+  rewrite apply_upds_app apply_upds_notin.
+  2: {
+    apply Heither.
+    rewrite -(lookup_take _ (S i)) in Hlookup.
+    2: lia.
+    apply (elem_of_list_lookup_2 _ i).
+    rewrite list_lookup_fmap Hlookup //.
+  }
+  rewrite (take_S_r _ _ _ Hlookup) apply_upds_app /=.
+  apply lookup_insert.
+Qed.
+
+Theorem wp_installBlocks γ l dinit d bufs_s (bufs: list update.t)
+        (installed_txn_id: nat) subtxns :
+  (* {{{ "#Hbufs_s" ∷ readonly (updates_slice_frag bufs_s 1 bufs) ∗ *)
+  {{{ "Hbufs_s" ∷ updates_slice_frag bufs_s 1 bufs ∗
+      "#Hwal" ∷ is_wal P l γ dinit ∗
+      "%Hbufs" ∷ ⌜has_updates bufs subtxns⌝ ∗
+      "%Hbufs_addrs" ∷ ⌜Forall (λ u : update.t, ∃ (b: Block), dinit !! int.val u.(update.addr) = Some b) bufs⌝ ∗
+      "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) ∗
+      "Hinstalled_txn_installer" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
+      "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
+  }}}
     installBlocks #d (slice_val bufs_s)
-  {{{ RET #(); updates_slice bufs_s bufs ∗
-      (* probably not enough in the postcondition, but it can only be ghost
-      variables so maybe this is it *)
-      ghost_var γ.(being_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.val (update.addr u)) <$> bufs)) ∗
-      ghost_var γ.(new_installed_name) (1/2) installed_txn_id
+  {{{ RET #();
+      "#Hwal" ∷ is_wal P l γ dinit ∗
+      "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.val (update.addr u)) <$> bufs)) ∗
+      "Hinstalled_txn_installer" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
+      "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
   }}}.
 Proof.
+  wp_start.
+  wp_call.
+  wp_apply (wp_absorbBufs with "Hbufs_s").
+  iIntros (bks_s q upds) "Hpost".
+  iNamed "Hpost".
+  apply (apply_upds_equiv_implies_has_updates_equiv _ _ _ Hsame_upds) in Hbufs.
+  apply (Forall_subset _ _ _ Hsubset) in Hbufs_addrs.
+
+  wp_pures.
+  iDestruct "Habsorbed" as (bks) "(Hbks_s&Hupds)".
+
+  iDestruct (slice.is_slice_small_sz with "Hbks_s") as %Hslen.
+  rewrite fmap_length in Hslen.
+  iDestruct (big_sepL2_length with "Hupds") as %Hslen2.
+
+  wp_apply (slice.wp_forSlice (fun i =>
+    ("Hupds" ∷ [∗ list] uv;upd ∈ bks;upds, is_update uv q upd) ∗
+    "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (list_to_set (C:=gset Z) (take (int.nat i) ((λ u, int.val (update.addr u)) <$> upds))) ∗
+    "Hinstalled_txn_installer" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
+    "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
+    )%I with "[] [$Hbks_s $Hupds $Hbeing_installed_installer $Hinstalled_txn_installer $Hbeing_installed_txns_installer]").
+  {
+    iIntros (i buf Φₗ) "!> [HI [% %]] HΦ".
+    iNamed "HI".
+
+    rewrite list_lookup_fmap in H0.
+    apply fmap_Some in H0.
+    destruct H0 as [ [addr bk_s] [Hbkseq ->] ].
+    list_elem upds i as u.
+    iDestruct (big_sepL2_lookup_acc with "Hupds") as "[Hi Hupds]"; eauto.
+    destruct u as [addr_i b_i]; simpl.
+    iDestruct "Hi" as "[%Heq Hi]".
+    simpl in Heq; subst.
+
+    wp_pures.
+    wp_apply util_proof.wp_DPrintf.
+    wp_pures.
+    wp_apply (wp_Write_fupd (⊤ ∖ ↑walN.@"wal") with "Hi").
+    destruct (Forall_lookup_1 _ _ _ _ Hbufs_addrs Hu_lookup) as (binit, Hbinit).
+    simpl in Hbinit.
+
+    iDestruct "Hwal" as "[Hwal Hcircular]".
+    iInv "Hwal" as (σs) "[Hinner HP]" "Hclose".
+    iDestruct "Hinner" as "(>%Hwf&Hmem&>?&>?&>?&>?)"; iNamed.
+    iNamed "Hdisk".
+    iNamed "Hdisk".
+    iNamed "Hinstalled".
+    iNamed "Howninstalled".
+
+    iDestruct (ghost_var_agree with "Hbeing_installed_installer Hbeing_installed") as %<-.
+    iDestruct (ghost_var_agree with "Hinstalled_txn_installer Hinstalled_txn") as %<-.
+    iDestruct (ghost_var_agree with "Hbeing_installed_txns_installer Hbeing_installed_txns") as %->.
+    iMod (ghost_var_update_halves (list_to_set (C:=gset Z) (take (S (int.nat i)) ((λ u, int.val (update.addr u)) <$> upds)))
+      with "Hbeing_installed_installer Hbeing_installed") as
+          "[Hbeing_installed_installer Hbeing_installed]".
+
+    apply mk_is_Some in Hbinit.
+    apply Hdaddrs_init in Hbinit.
+    destruct Hbinit as (b&Hbsome).
+
+    iDestruct (big_sepM_lookup_acc_impl _ _ _ _ _ Hbsome with "Hdata") as "Hdata".
+    iDestruct ("Hdata" with "[]") as "(Hdata_acc&Hdata)".
+    {
+      iModIntro.
+      iIntros (addr' b' Hb' Hneq) "Hdata".
+      iDestruct "Hdata" as (b_old) "(%Happly_upds&Hmapsto&%Haddr_bound)".
+      Existential 2 := (λ a b, (∃ (b: Block),
+        ⌜let txn_id' := (if decide (a ∈ (take (S (int.nat i)) ((λ u, int.val (update.addr u)) <$> upds)))
+                        then new_installed_txn_id
+                        else installed_txn_id) in
+        let txns := take (S txn_id') σs.(log_state.txns) in
+        apply_upds (txn_upds txns) σs.(log_state.d) !! a = Some b⌝ ∗
+        a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I)%I.
+      rewrite /=.
+      iExists _.
+      iFrame (Haddr_bound) "∗".
+      iPureIntro.
+      destruct (decide (addr' = int.val addr_i)); first intuition.
+      destruct (decide (addr' ∈ take (S (int.nat i)) ((λ u : update.t, int.val u.(update.addr)) <$> upds))).
+      - rewrite (take_S_r _ _ (int.val addr_i)) in e.
+        2: rewrite list_lookup_fmap Hu_lookup //=.
+        apply elem_of_app in e.
+        destruct e as [He | He].
+        2: apply elem_of_list_singleton in He; contradiction.
+        rewrite decide_True // in Happly_upds.
+        apply elem_of_list_to_set.
+        assumption.
+      - rewrite (take_S_r _ _ (int.val addr_i)) in n0.
+        2: rewrite list_lookup_fmap Hu_lookup //=.
+        apply not_elem_of_app in n0.
+        destruct n0 as (Hn&_).
+        rewrite decide_False // in Happly_upds.
+        apply not_elem_of_list_to_set.
+        assumption.
+    }
+
+    iDestruct "Hdata_acc" as (b_disk) "(%Hb_disk&Haddr_i_mapsto&%Haddr_LogSz_bound)".
+    iExists _.
+    iFrame "Haddr_i_mapsto".
+    iIntros "!> !> /= Haddr_i_mapsto".
+
+    iMod ("Hclose" with "[Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hinstalled_txn Hbeing_installed Hbeing_installed_txns HP Hdata Haddr_i_mapsto]") as "_".
+    {
+      iIntros "!>".
+      iExists _.
+      iFrame "∗".
+      iFrame (Hwf).
+      iExists _.
+      iFrame.
+      iExists _, _.
+      iFrame "# ∗".
+      iFrame (Hdaddrs_init).
+      iExists _, _.
+      iFrame (Hinstalled_bounds) "∗".
+      iSpecialize ("Hdata" with "[Haddr_i_mapsto]").
+      {
+        iExists _.
+        iFrame (Haddr_LogSz_bound) "∗".
+        iPureIntro.
+        rewrite decide_True.
+        2: {
+          apply (elem_of_list_lookup_2 _ (int.nat i)).
+          rewrite lookup_take.
+          2: lia.
+          rewrite list_lookup_fmap Hu_lookup //=.
+        }
+        rewrite -subslice_from_start -(subslice_app_contig _ (S installed_txn_id)).
+        2: lia.
+        rewrite txn_upds_app apply_upds_app -Hbufs.
+        apply (apply_upds_NoDup_lookup _ _ (int.nat i)); intuition.
+      }
+      iApply big_sepM_mono.
+      2: iFrame.
+      iIntros (addr' b' Hb') "Hsep".
+      iDestruct "Hsep" as (b_sep) "(%Hsep&Hd&%Haddr_bound)".
+      iExists _.
+      iFrame (Haddr_bound) "∗".
+      iPureIntro.
+      destruct (decide (addr' = int.val addr_i)).
+      2: {
+        destruct (decide (addr' ∈ take (S (int.nat i)) ((λ u : update.t, int.val u.(update.addr)) <$> upds))).
+        - rewrite decide_True //.
+          apply elem_of_list_to_set.
+          assumption.
+        - rewrite decide_False //.
+          apply not_elem_of_list_to_set.
+          assumption.
+      }
+      subst.
+      rewrite decide_True.
+      2: {
+        apply elem_of_list_to_set.
+        apply (elem_of_list_lookup_2 _ (int.nat i)).
+        rewrite lookup_take.
+        2: lia.
+        rewrite list_lookup_fmap Hu_lookup //=.
+      }
+      rewrite decide_True in Hsep.
+      2: {
+        apply (elem_of_list_lookup_2 _ (int.nat i)).
+        rewrite lookup_take.
+        2: lia.
+        rewrite list_lookup_fmap Hu_lookup //=.
+      }
+      assumption.
+    }
+    iIntros "!> Hb_i".
+    iApply "HΦ".
+    iFrame.
+    replace (int.nat (word.add i 1)) with (S (int.nat i)).
+    2: {
+      assert (int.val bks_s.(Slice.sz) ≤ 2^64 - 1) by word.
+      word.
+    }
+    iFrame.
+    iApply "Hupds".
+    rewrite /is_update /=.
+    eauto.
+  }
+  iIntros "[(?&?&?&?) Hbks_s]".
+  iNamed.
+  iApply "HΦ".
+  iFrame "∗ #".
+  rewrite take_ge.
+  2: {
+    rewrite fmap_length.
+    lia.
+  }
 Admitted.
 
 (* TODO: why do we need this here again? *)
 Opaque is_sliding.
 
 
-Lemma snapshot_memLog_txns_are γ l log diskEnd_pos diskEnd_txn_id :
+(* Lemma snapshot_memLog_txns_are γ l log diskEnd_pos diskEnd_txn_id :
   is_wal P l γ -∗
   memLog_linv γ log diskEnd_pos diskEnd_txn_id -∗
   (* TODO: shouldn't memStart_txn_id be the same as installed_txn_id? and
@@ -307,9 +579,8 @@ Proof.
   iNamed "H".
   iDestruct "H" as "[Hpure H]"; iNamed "Hpure". (* iNamedRestorable doesn't do
   this (due to something unexpected in iNamed) *)
-  iNamed "HnextDiskEnd".
   iDestruct (restore_elim with "H") as "#HmemLog"; iClear "H".
-  destruct His_memLog.
+  iNamed "Htxns".
   iMod (txn_pos_valid_locked with "[$] HnextDiskEnd_txn Howntxns") as (HnextDiskEnd_txn%is_txn_bound) "Howntxns".
   iMod (get_txns_are _ _ _ _ memStart_txn_id diskEnd_txn_id with "Howntxns Hwal") as "[Htxns Howntxns]".
   { eauto. }
@@ -325,19 +596,83 @@ Proof.
     range in the invariant... *)
   }
   iApply "HmemLog"; iFrame.
-  iExists _. iFrame. iFrame "#". iFrame "%".
-Admitted.
+Admitted. *)
 
-Theorem wp_Walog__logInstall γ l σₛ :
+(* Lemma ghost_var_update_new_installed_emp γ l (installed_txn_id: nat) (new_installed_txn_id: nat) (txns: list (u64 * list update.t)):
+  "#Hwal" ∷ is_wal P l γ -∗
+  (* "%Hnew_installed_txn_id_bound" ∷ ⌜installed_txn_id ≤ new_installed_txn_id ≤ diskEnd_txn_id⌝ -∗ *)
+  "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1 / 2) (∅: gset Z) -∗
+  "Hnew_installed_installer" ∷ ghost_var γ.(new_installed_name) (1 / 2) installed_txn_id -∗
+  "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1 / 2) txns -∗
+  |={⊤}=> ∃ (new_txns: list (u64 * list update.t)),
+    is_wal P l γ ∗
+    ghost_var γ.(being_installed_name) (1 / 2) (∅: gset Z) ∗
+    ghost_var γ.(new_installed_name) (1 / 2) new_installed_txn_id ∗
+    ghost_var γ.(being_installed_txns_name) (1 / 2) new_txns.
+Proof.
+  iIntros "? ? ? ? ?".
+  iNamed.
+
+  iDestruct "Hwal" as "[Hwal Hcircular]".
+  iInv "Hwal" as (σs) "[Hinner HP]" "Hclose".
+  iDestruct "Hinner" as "(>%Hwf&Hmem&>?&>?&>?&>?)"; iNamed.
+  iNamed "Hdisk".
+  iNamed "Hdisk".
+  iNamed "Hinstalled".
+  iNamed "Howninstalled".
+
+  iMod (ghost_var_update_halves new_installed_txn_id with "Hnew_installed_installer Hnew_installed") as
+        "[Hnew_installed_installer Hnew_installed]".
+  iMod (ghost_var_update_halves (subslice (S installed_txn_id0) (S new_installed_txn_id) σs.(log_state.txns))
+    with "Hbeing_installed_txns_installer Hbeing_installed_txns") as
+        "[Hbeing_installed_txns_installer Hbeing_installed_txns]".
+  iMod ("Hclose" with "[Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs γdiskEnd_txn_id2 Hdurable Hnew_installed Hbeing_installed Hbeing_installed_txns Hdata HP]").
+  {
+    iExists _.
+    iFrame "% ∗".
+    iExists _.
+    iFrame.
+    iExists _, _.
+    iFrame "# ∗".
+    iExists new_installed_txn_id, _.
+    iFrame "Hnew_installed".
+    iFrame "Hbeing_installed".
+    iFrame "Hbeing_installed_txns".
+    iSplitR.
+    {
+      iPureIntro.
+      intuition lia.
+    iFrame "Hdata".
+  iExists _.
+  iFrame "# % ∗".
+  iNamed "Hmem".
+Admitted. *)
+
+Lemma readonly_struct_field_mapsto_agree E l d f v1 v2 :
+  readonly (l ↦[d :: f] v1) -∗
+  readonly (l ↦[d :: f] v2) -∗
+  |={E}=> ⌜v1 = v2⌝.
+Proof.
+  iIntros "#H1 #H2".
+  iMod (readonly_load with "H1") as (q1) "Hv1".
+  iMod (readonly_load with "H2") as (q2) "Hv2".
+  iDestruct (struct_field_mapsto_agree with "Hv1 Hv2") as "%Hv".
+  done.
+Qed.
+
+Theorem wp_Walog__logInstall γ l dinit (installed_txn_id: nat) (subtxns: list (u64 * list update.t)) σₛ :
   {{{ "#st" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
       "#memLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#condInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
-      "#Hwal" ∷ is_wal P l γ ∗
+      "#Hwal" ∷ is_wal P l γ dinit ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
       "His_locked" ∷ locked #σₛ.(memLock) ∗
       "#lk" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
-      "#cond_install" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock)
+      "#cond_install" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
+      "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) ∗
+      "Hinstalled_txn_installer" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
+      "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
   }}}
     Walog__logInstall #l
   {{{ (blkCount installEnd:u64), RET (#blkCount, #installEnd);
@@ -349,20 +684,76 @@ Proof.
   iNamedRestorable "Hlkinv".
   iNamedRestorable "Hfields".
   iNamed "Hfield_ptsto".
+
+  iMod (is_wal_read_mem with "Hwal") as "#Hmem".
   wp_call.
+  iNamed "Hmem".
+  iClear "Hmem".
+  iDestruct "Hstfields" as "(memLock'&d'&circ'&st'&Hstfields)".
+  iMod (readonly_struct_field_mapsto_agree with "st st'") as "<-".
+  iMod (readonly_struct_field_mapsto_agree with "memLock memLock'") as "<-".
+
   wp_loadField.
   wp_loadField.
   wp_loadField.
   wp_loadField.
+
   wp_apply (wp_sliding__takeTill with "His_memLog"); first by word.
   iIntros (q s) "(His_memLog&Htxn_slice)".
+
+  iNamed "HmemLog_linv".
+
+  iDestruct "Hwal" as "[Hwal Hcircular]".
+  rewrite -fupd_wp.
+  iInv "Hwal" as (σs) "[Hinner HP]" "Hclose".
+  iDestruct "Hinner" as "(>%Hwf&#Hmem&>Htxns_ctx&>γtxns&>HnextDiskEnd_inv&>Hdisk)".
+  iDestruct "Hdisk" as (cs) "(Howncs&Hdisk)".
+  iDestruct "Hdisk" as (? ?) "(Hinstalled&Hdisk)".
+  iDestruct "Hinstalled" as (? ?) "(Howninstalled&Hinstalled)".
+  iNamed "Howninstalled".
+  iNamed "Howninstalled".
+  iDestruct (ghost_var_agree with "Hbeing_installed_installer Hbeing_installed") as %<-.
+  iMod (ghost_var_update_halves (subslice (S installed_txn_id0) (S diskEnd_txn_id) σs.(log_state.txns))
+    with "Hbeing_installed_txns_installer Hbeing_installed_txns") as
+        "[Hbeing_installed_txns_installer Hbeing_installed_txns]".
+  iMod ("Hclose" with "[Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hinstalled_txn Hbeing_installed Hbeing_installed_txns Hdisk Hinstalled HP]") as "_".
+  {
+    iExists _.
+    iFrame "∗ # %".
+    iExists _.
+    iFrame "∗ #".
+    iExists _, _.
+    iFrame "∗ #".
+    iExists diskEnd_txn_id, _.
+    iFrame.
+    iNamed "Hinstalled".
+    iSplitR.
+    {
+      iPureIntro.
+      intuition lia.
+    }
+    iApply (big_sepM_mono with "Hdata").
+    iIntros (addr blk Haddr_bound) "Hdata".
+    iDestruct "Hdata" as (b) "(Hb&Haddr_d&Haddr_bound)".
+    iExists _.
+    iFrame "∗ %".
+  }
+
+  iModIntro.
   wp_pures.
   wp_apply wp_slice_len; wp_pures.
   wp_if_destruct; wp_pures.
-  { iApply "HΦ".
+  {
+    iApply "HΦ".
     iFrame "His_locked".
     iApply "Hlkinv"; iFrameNamed.
-    iApply "Hfields"; iFrameNamed. }
+    iSplitR "His_memLog HmemLog HdiskEnd Hshutdown Hnthread".
+    {
+      iExists _, _, _, _, _.
+      iFrame "∗ # %".
+    }
+    iApply "Hfields"; iFrameNamed.
+  }
   (* note that we get to keep Htxn_slice *)
   (* TODO: need to checkout some persistent fact that keeps these transactions
   tied to the abstract state, so that installBlocks can install them *)
@@ -372,19 +763,30 @@ Proof.
   Htxn_slice *)
 
   wp_loadField.
-  wp_apply (release_spec with "[$lk $His_locked HdiskEnd_circ Hstart_circ HmemLog_linv
-His_memLog HmemLog HdiskEnd Hshutdown Hnthread]").
-  { iNext.
+  wp_apply (release_spec with "[$lk $His_locked HdiskEnd_circ Hstart_circ
+    Howntxns HnextDiskEnd HownLoggerPos_linv HownLoggerTxn_linv Htxns
+    His_memLog HmemLog HdiskEnd Hshutdown Hnthread]").
+  {
+    iNext.
     iApply "Hlkinv"; iFrameNamed.
-    iApply "Hfields"; iFrameNamed. }
+    iSplitR "His_memLog HmemLog HdiskEnd Hshutdown Hnthread".
+    {
+      iExists _, _, _, _, _.
+      iFrame "∗ # %".
+    }
+    iApply "Hfields"; iFrameNamed.
+  }
   wp_pures.
   wp_apply util_proof.wp_DPrintf.
   wp_pures.
+
+  (* wp_apply wp_installBlocks. *)
+
   admit. (* TODO: need reasonably correct spec for installBlocks *)
 Admitted.
 
-Theorem wp_Walog__installer γ l :
-  {{{ is_wal P l γ }}}
+Theorem wp_Walog__installer γ l dinit :
+  {{{ is_wal P l γ dinit }}}
     Walog__installer #l
   {{{ RET #(); True }}}.
 Proof.

@@ -249,17 +249,17 @@ Section goose_lang.
   Definition modify_token γ (a: addr) obj: iProp Σ :=
     txn_proof.mapsto_txn γ.(buftxn_txn_names) a obj.
 
-  Definition is_buftxn_at_txn l γ γtxn P0 i : iProp Σ :=
+  Definition is_buftxn_at_txn l γ dinit γtxn P0 i : iProp Σ :=
     ∃ (mT: gmap addr versioned_object),
       "#Htxn_system" ∷ is_txn_system γ ∗
       "Hold_vals" ∷ ([∗ map] a↦v ∈ mspec.committed <$> mT, ephemeral_val_from γ.(buftxn_async_name) i a v) ∗
       "#HrestoreP0" ∷ □ (([∗ map] a↦v ∈ mspec.committed <$> mT, ephemeral_val_from γ.(buftxn_async_name) i a v) -∗ P0) ∗
-      "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) ∗
+      "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) dinit ∗
       "Htxn_ctx" ∷ map_ctx γtxn 1 (mspec.modified <$> mT)
   .
 
-  Instance is_buftxn_at_txn_proper l γ γtxn :
-    Proper ((⊣⊢) ==> eq ==> (⊣⊢)) (is_buftxn_at_txn l γ γtxn).
+  Instance is_buftxn_at_txn_proper l γ dinit γtxn :
+    Proper ((⊣⊢) ==> eq ==> (⊣⊢)) (is_buftxn_at_txn l γ dinit γtxn).
   Proof.
     intros P1 P2 Hequiv i i' <-.
     rewrite /is_buftxn_at_txn.
@@ -267,10 +267,10 @@ Section goose_lang.
     auto.
   Qed.
 
-  Theorem is_buftxn_at_txn_wand l γ γtxn i P1 P2 :
-    is_buftxn_at_txn l γ γtxn P1 i -∗
+  Theorem is_buftxn_at_txn_wand l γ dinit γtxn i P1 P2 :
+    is_buftxn_at_txn l γ dinit γtxn P1 i -∗
     □(P1 -∗ P2) -∗
-    is_buftxn_at_txn l γ γtxn P2 i.
+    is_buftxn_at_txn l γ dinit γtxn P2 i.
   Proof.
     iIntros "Htxn #Hwand".
     iNamed "Htxn".
@@ -279,8 +279,8 @@ Section goose_lang.
     iApply "Hwand". iApply "HrestoreP0". iFrame.
   Qed.
 
-  Instance is_buftxn_at_txn_mono l γ γtxn :
-    Proper ((⊢) ==> eq ==> (⊢)) (is_buftxn_at_txn l γ γtxn).
+  Instance is_buftxn_at_txn_mono l γ dinit γtxn :
+    Proper ((⊢) ==> eq ==> (⊢)) (is_buftxn_at_txn l γ dinit γtxn).
   Proof.
     intros P1 P2 Hequiv i i' <-.
     rewrite /is_buftxn_at_txn.
@@ -288,8 +288,8 @@ Section goose_lang.
     reflexivity.
   Qed.
 
-  Theorem is_buftxn_at_txn_to_old_pred l γ γtxn P0 i :
-    is_buftxn_at_txn l γ γtxn P0 i -∗ P0.
+  Theorem is_buftxn_at_txn_to_old_pred l γ dinit γtxn P0 i :
+    is_buftxn_at_txn l γ dinit γtxn P0 i -∗ P0.
   Proof.
     iNamed 1.
     iApply ("HrestoreP0" with "[$]").
@@ -297,8 +297,8 @@ Section goose_lang.
 
   (* this is for a single buftxn (transaction) - not persistent, buftxn's are
   not shareable *)
-  Definition is_buftxn l γ γtxn P0: iProp Σ :=
-    ∃ i, is_buftxn_at_txn l γ γtxn P0 i.
+  Definition is_buftxn l γ dinit γtxn P0: iProp Σ :=
+    ∃ i, is_buftxn_at_txn l γ dinit γtxn P0 i.
 
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=
      ptsto_mut γtxn a 1 obj.
@@ -327,13 +327,13 @@ Section goose_lang.
     mspec.modified (object_to_versioned obj) = obj.
   Proof. destruct obj; reflexivity. Qed.
 
-  Theorem lift_into_txn E l γ γtxn P0 i a obj :
+  Theorem lift_into_txn E l γ dinit γtxn P0 i a obj :
     ↑invN ⊆ E →
-    is_buftxn_at_txn l γ γtxn P0 i -∗
+    is_buftxn_at_txn l γ dinit γtxn P0 i -∗
     modify_token γ a obj -∗
     ephemeral_val_from γ.(buftxn_async_name) i a obj
     ={E}=∗
-    (buftxn_maps_to γtxn a obj ∗ is_buftxn_at_txn l γ γtxn (ephemeral_val_from γ.(buftxn_async_name) i a obj ∗ P0) i).
+    (buftxn_maps_to γtxn a obj ∗ is_buftxn_at_txn l γ dinit γtxn (ephemeral_val_from γ.(buftxn_async_name) i a obj ∗ P0) i).
   Proof.
     iIntros (?) "Hctx Ha Ha_i".
     iNamed "Hctx".
@@ -354,13 +354,13 @@ Section goose_lang.
     iApply "HrestoreP0"; iFrame.
   Qed.
 
-  Theorem lift_map_into_txn E l γ γtxn P0 i m :
+  Theorem lift_map_into_txn E l γ dinit γtxn P0 i m :
     ↑invN ⊆ E →
-    is_buftxn_at_txn l γ γtxn P0 i -∗
+    is_buftxn_at_txn l γ dinit γtxn P0 i -∗
     ([∗ map] a↦v ∈ m, modify_token γ a v ∗
                       ephemeral_val_from γ.(buftxn_async_name) i a v) ={E}=∗
     ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
-                      is_buftxn_at_txn l γ γtxn
+                      is_buftxn_at_txn l γ dinit γtxn
                         (([∗ map] a↦v ∈ m, ephemeral_val_from γ.(buftxn_async_name) i a v) ∗ P0) i.
   Proof.
     iIntros (?) "Hctx Hm".
@@ -379,9 +379,9 @@ Section goose_lang.
   Qed.
 
   Theorem lift_liftable_into_txn E `{!Liftable P}
-          l γ γtxn P0 i :
+          l γ dinit γtxn P0 i :
     ↑invN ⊆ E →
-    is_buftxn_at_txn l γ γtxn P0 i -∗
+    is_buftxn_at_txn l γ dinit γtxn P0 i -∗
     P (λ a v, modify_token γ a v ∗
               ephemeral_val_from γ.(buftxn_async_name) i a v)
     ={E}=∗
@@ -389,7 +389,7 @@ Section goose_lang.
         rather than bury it in is_buftxn_at_txn, so that we can reconstruct it
         if we supply the old [ephemeral_val_from] facts saved here *)
     P (buftxn_maps_to γtxn) ∗
-    is_buftxn_at_txn l γ γtxn (P (ephemeral_val_from γ.(buftxn_async_name) i) ∗ P0) i.
+    is_buftxn_at_txn l γ dinit γtxn (P (ephemeral_val_from γ.(buftxn_async_name) i) ∗ P0) i.
   Proof.
     iIntros (?) "Hctx HP".
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hm #HP]".
@@ -404,8 +404,8 @@ Section goose_lang.
       iApply "HP"; auto.
   Qed.
 
-  Lemma init_txn_system {E} l_txn γUnified σs :
-    is_txn l_txn γUnified ∗ ghost_var γUnified.(txn_crashstates) (1/2) σs ={E}=∗
+  Lemma init_txn_system {E} l_txn γUnified dinit σs :
+    is_txn l_txn γUnified dinit ∗ ghost_var γUnified.(txn_crashstates) (1/2) σs ={E}=∗
     ∃ γ, ⌜γ.(buftxn_txn_names) = γUnified⌝ ∗
          is_txn_system γ.
   Proof.
@@ -422,10 +422,10 @@ Section goose_lang.
 
   (* NOTE(tej): this is kind of weird in that it returns something for any
   transaction ID; the caller will fix this as soon as they lift something in *)
-  Theorem wp_BufTxn__Begin (l_txn: loc) γ :
-    {{{ is_txn l_txn γ.(buftxn_txn_names) ∗ is_txn_system γ }}}
+  Theorem wp_BufTxn__Begin (l_txn: loc) γ dinit :
+    {{{ is_txn l_txn γ.(buftxn_txn_names) dinit ∗ is_txn_system γ }}}
       Begin #l_txn
-    {{{ γtxn l, RET #l; ∀ i, is_buftxn_at_txn l γ γtxn emp i }}}.
+    {{{ γtxn l, RET #l; ∀ i, is_buftxn_at_txn l γ dinit γtxn emp i }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ".
     iDestruct "Hpre" as "[#His_txn #Htxn_inv]".
@@ -448,16 +448,16 @@ Section goose_lang.
                        bufData := objData obj;
                        bufDirty := dirty |}.
 
-  Theorem wp_BufTxn__ReadBuf l γ γtxn P0 i (a: addr) (sz: u64) obj :
+  Theorem wp_BufTxn__ReadBuf l γ dinit γtxn P0 i (a: addr) (sz: u64) obj :
     bufSz (objKind obj) = int.nat sz →
-    {{{ is_buftxn_at_txn l γ γtxn P0 i ∗ buftxn_maps_to γtxn a obj }}}
+    {{{ is_buftxn_at_txn l γ dinit γtxn P0 i ∗ buftxn_maps_to γtxn a obj }}}
       BufTxn__ReadBuf #l (addr2val a) #sz
     {{{ dirty (bufptr:loc), RET #bufptr;
         is_buf bufptr a (Build_buf _ (objData obj) dirty) ∗
         (∀ (obj': bufDataT (objKind obj)) dirty',
             is_buf bufptr a (Build_buf _ obj' dirty') -∗
             ⌜dirty' = true ∨ (dirty' = dirty ∧ obj' = objData obj)⌝ ==∗
-            is_buftxn_at_txn l γ γtxn P0 i ∗ buftxn_maps_to γtxn a (existT (objKind obj) obj')) }}}.
+            is_buftxn_at_txn l γ dinit γtxn P0 i ∗ buftxn_maps_to γtxn a (existT (objKind obj) obj')) }}}.
   Proof.
     iIntros (? Φ) "Hpre HΦ".
     iDestruct "Hpre" as "[Hbuftxn Ha]".
@@ -535,18 +535,18 @@ Section goose_lang.
       iApply (data_has_obj_to_buf_data with "Hs"); auto.
   Qed.
 
-  Theorem wp_BufTxn__OverWrite l γ γtxn P0 i (a: addr) (sz: u64)
+  Theorem wp_BufTxn__OverWrite l γ dinit γtxn P0 i (a: addr) (sz: u64)
           (data_s: Slice.t) (data: list byte) obj0 obj :
     bufSz (objKind obj) = int.nat sz →
     data_has_obj data a obj →
     objKind obj = objKind obj0 →
-    {{{ is_buftxn_at_txn l γ γtxn P0 i ∗ buftxn_maps_to γtxn a obj0 ∗
+    {{{ is_buftxn_at_txn l γ dinit γtxn P0 i ∗ buftxn_maps_to γtxn a obj0 ∗
         (* NOTE(tej): this has to be a 1 fraction, because the slice is
         incorporated into the buftxn, is handed out in ReadBuf, and should then
         be mutable. *)
         is_slice_small data_s byteT 1 data }}}
       BufTxn__OverWrite #l (addr2val a) #sz (slice_val data_s)
-    {{{ RET #(); is_buftxn_at_txn l γ γtxn P0 i ∗ buftxn_maps_to γtxn a obj }}}.
+    {{{ RET #(); is_buftxn_at_txn l γ dinit γtxn P0 i ∗ buftxn_maps_to γtxn a obj }}}.
   Proof.
     iIntros (??? Φ) "Hpre HΦ".
     iDestruct "Hpre" as "(Hbuftxn & Ha & Hdata)".
@@ -602,10 +602,10 @@ Section goose_lang.
   {P0 stable_maps_to ∨ P stable_maps_to}
 *)
 
-  Theorem wp_BufTxn__CommitWait {l γ γtxn} P0 P `{!Liftable P} txn_id0 :
+  Theorem wp_BufTxn__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} txn_id0 :
     N ## invariant.walN →
     N ## invN →
-    {{{ "Hbuftxn" ∷ is_buftxn_at_txn l γ γtxn P0 txn_id0 ∗
+    {{{ "Hbuftxn" ∷ is_buftxn_at_txn l γ dinit γtxn P0 txn_id0 ∗
         "HP" ∷ P (buftxn_maps_to γtxn)
         (* TODO: need to connect P0 to old values in buftxn, should be exposed
         somehow *)

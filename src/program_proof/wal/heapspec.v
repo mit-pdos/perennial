@@ -1586,8 +1586,8 @@ Proof.
   eapply in_drop_ge; [ | eauto ]; lia.
 Qed.
 
-Theorem wp_Walog__Read l (blkno : u64) γ lwh b wn :
-  {{{ is_wal (wal_heap_inv γ) l wn ∗
+Theorem wp_Walog__Read l (blkno : u64) γ lwh b wn dinit :
+  {{{ is_wal (wal_heap_inv γ) l wn dinit ∗
       is_locked_walheap γ lwh ∗
       ⌜ locked_wh_disk lwh !! int.val blkno = Some b ⌝
   }}}
@@ -1737,9 +1737,9 @@ Proof.
   rewrite /locked_wh_disk. rewrite -H0 -H1 /=. congruence.
 Qed.
 
-Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn :
+Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit :
   ↑walN ⊆ E ->
-  is_wal (wal_heap_inv γ) l wn ∗
+  is_wal (wal_heap_inv γ) l wn dinit ∗
   is_locked_walheap γ lwh ∗
   mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
     is_locked_walheap γ lwh ∗
@@ -1754,8 +1754,8 @@ Proof.
   iFrame. done.
 Qed.
 
-Theorem wp_Walog__Flush_heap l γ (txn_id : nat) (pos : u64) :
-  {{{ is_wal (wal_heap_inv γ) l (wal_heap_walnames γ) ∗
+Theorem wp_Walog__Flush_heap l γ dinit (txn_id : nat) (pos : u64) :
+  {{{ is_wal (wal_heap_inv γ) l (wal_heap_walnames γ) dinit ∗
       txn_pos (wal_heap_walnames γ) txn_id pos
   }}}
     wal.Walog__Flush #l #pos

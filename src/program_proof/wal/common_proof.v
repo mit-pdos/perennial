@@ -68,8 +68,8 @@ Proof.
   rewrite lookup_insert_ne in H0; eauto.
 Qed.
 
-Theorem wp_endGroupTxn l st γ :
-  {{{ is_wal P l γ ∗ wal_linv st γ }}}
+Theorem wp_endGroupTxn l st γ dinit :
+  {{{ is_wal P l γ dinit ∗ wal_linv st γ }}}
     WalogState__endGroupTxn #st
   {{{ RET #(); wal_linv st γ }}}.
 Proof.
@@ -87,6 +87,7 @@ Proof.
 
   iApply "HΦ".
   iNamed "HmemLog_linv".
+  iNamed "Htxns".
   iDestruct "HmemStart_txn" as "#HmemStart_txn".
   iDestruct "HmemEnd_txn" as "#HmemEnd_txn".
   iMod (txn_pos_valid_locked with "Hwal HmemEnd_txn Howntxns") as "(%HmemEnd_is_txn & Howntxns)".
@@ -137,7 +138,7 @@ Proof.
   iSplit.
   { iPureIntro. rewrite /slidingM.wf /= in Hsliding_wf'. lia. }
   iSplit.
-  { rewrite logIndex_set_mutable.
+  2: { rewrite logIndex_set_mutable.
     replace (S (length σs.(log_state.txns) - 1)) with (length σs.(log_state.txns)) by lia.
     rewrite drop_all.
     rewrite /slidingM.logIndex /slidingM.endPos.

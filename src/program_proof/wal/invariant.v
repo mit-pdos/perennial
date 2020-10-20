@@ -21,8 +21,7 @@ Class walG Σ :=
     wal_list_update  :> ghost_varG Σ (list update.t);
     wal_txns         :> ghost_varG Σ (list (u64 * (list update.t)));
     wal_nat          :> ghost_varG Σ nat;
-    wal_addr_set     :> ghost_varG Σ (gmap Z unit); (* TODO: probably unused *)
-    wal_addr_set_gset :> ghost_varG Σ (gset Z);
+    wal_addr_set     :> ghost_varG Σ (gset Z);
     wal_thread_owned :> thread_ownG Σ;
     wal_txns_alist   :> alistG Σ (u64 * list update.t);
     wal_stable_map   :> ghost_varG Σ (gmap nat unit);
@@ -47,8 +46,9 @@ Record wal_names := mkWalNames
     cs_name : gname;
     txns_ctx_name : gname;
     txns_name : gname;
-    new_installed_name : gname;
+    installed_txn_name : gname;
     being_installed_name : gname;
+    being_installed_txns_name : gname;
     diskEnd_avail_name : gname;
     start_avail_name : gname;
     stable_txn_ids_name : gname;
@@ -58,7 +58,7 @@ Record wal_names := mkWalNames
 
 Global Instance _eta_wal_names : Settable _ :=
   settable! mkWalNames <circ_name; cs_name; txns_ctx_name; txns_name;
-                        new_installed_name; being_installed_name;
+                        installed_txn_name; being_installed_name; being_installed_txns_name;
                         diskEnd_avail_name; start_avail_name;
                         stable_txn_ids_name; logger_pos_name; logger_txn_id_name>.
 
@@ -117,10 +117,34 @@ Qed.
 Global Instance txn_pos_persistent γ txn_id pos :
   Persistent (txn_pos γ txn_id pos) := _.
 
+Definition memLog_linv_txns (σ: slidingM.t) (diskEnd logger_pos: u64) txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id : iProp Σ :=
+  "%His_memStart" ∷
+    ⌜has_updates
+      (take (slidingM.logIndex σ diskEnd)
+            σ.(slidingM.log))
+      (subslice (S memStart_txn_id) (S diskEnd_txn_id) txns)⌝ ∗
+  "%His_loggerEnd" ∷
+    ⌜has_updates
+      (subslice (slidingM.logIndex σ diskEnd)
+                (slidingM.logIndex σ logger_pos)
+                σ.(slidingM.log))
+      (subslice (S diskEnd_txn_id) (S logger_txn_id) txns)⌝ ∗
+  "%His_nextDiskEnd" ∷
+    ⌜has_updates
+      (subslice (slidingM.logIndex σ logger_pos)
+                (slidingM.logIndex σ σ.(slidingM.mutable))
+                σ.(slidingM.log))
+      (subslice (S logger_txn_id) (S nextDiskEnd_txn_id) txns)⌝ ∗
+  "%His_nextTxn" ∷
+    ⌜has_updates
+      (drop (slidingM.logIndex σ σ.(slidingM.mutable))
+            σ.(slidingM.log))
+      (drop (S nextDiskEnd_txn_id) txns)⌝.
+
 (** the simple role of the memLog is to contain all the transactions in the
 abstract state starting at the memStart_txn_id *)
 Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
-  has_updates memLog.(slidingM.log) (drop memStart_txn_id txns) ∧
+  has_updates memLog.(slidingM.log) (drop (S memStart_txn_id) txns) ∧
   (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
 
 Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id (txns: list (u64 * list update.t)) (logger_pos : u64) (logger_txn_id : nat) : iProp Σ :=
@@ -135,26 +159,9 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
-      "%His_memLog" ∷ ⌜is_mem_memLog σ txns memStart_txn_id⌝ ∗
-      "%His_nextTxn" ∷
-        ⌜has_updates
-          (drop (slidingM.logIndex σ σ.(slidingM.mutable))
-                σ.(slidingM.log))
-          (drop (S nextDiskEnd_txn_id) txns)⌝ ∗
-      (* when nextDiskEnd gets set, we track that it has the right updates to
-      use for [is_durable] when the new transaction is logged *)
-      "%His_nextDiskEnd" ∷
-        ⌜has_updates
-          (subslice (slidingM.logIndex σ logger_pos)
-                    (slidingM.logIndex σ σ.(slidingM.mutable))
-                    σ.(slidingM.log))
-          (subslice (S logger_txn_id) (S nextDiskEnd_txn_id) txns)⌝ ∗
-      "%His_loggerEnd" ∷
-        ⌜has_updates
-          (subslice (slidingM.logIndex σ diskEnd)
-                    (slidingM.logIndex σ logger_pos)
-                    σ.(slidingM.log))
-          (subslice (S diskEnd_txn_id) (S logger_txn_id) txns)⌝
+      "Htxns" ∷ memLog_linv_txns σ diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
+      "%Htxnpos_bound" ∷
+        ⌜(Forall (λ pos, int.val pos ≤ slidingM.memEnd σ) txns.*1)⌝
   ).
 
 Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id txns logger_pos logger_txn_id :
@@ -186,27 +193,41 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
-      "%His_memLog" ∷ ⌜is_mem_memLog σ txns memStart_txn_id⌝ ∗
-      "%His_nextTxn" ∷
-        ⌜has_updates
-          (drop (slidingM.logIndex σ σ.(slidingM.mutable))
-                σ.(slidingM.log))
-          (drop (S nextDiskEnd_txn_id) txns)⌝ ∗
-      (* when nextDiskEnd gets set, we track that it has the right updates to
-      use for [is_durable] when the new transaction is logged *)
-      "%His_nextDiskEnd" ∷
-        ⌜has_updates
-          (subslice (slidingM.logIndex σ logger_pos)
-                    (slidingM.logIndex σ σ.(slidingM.mutable))
-                    σ.(slidingM.log))
-          (subslice (S logger_txn_id) (S nextDiskEnd_txn_id) txns)⌝ ∗
-      "%His_loggerEnd" ∷
-        ⌜has_updates
-          (subslice (slidingM.logIndex σ diskEnd)
-                    (slidingM.logIndex σ logger_pos)
-                    σ.(slidingM.log))
-          (subslice (S diskEnd_txn_id) (S logger_txn_id) txns)⌝
+      "Htxns" ∷ memLog_linv_txns σ diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
+      "%Htxnpos_bound" ∷
+        ⌜(Forall (λ pos, int.val pos ≤ slidingM.memEnd σ) txns.*1)⌝
   ).
+
+Theorem memLog_linv_implies_is_mem_memLog γ (σ: locked_state) diskEnd_txn_id :
+  memLog_linv γ σ.(memLog) σ.(diskEnd) diskEnd_txn_id -∗
+  memLog_linv γ σ.(memLog) σ.(diskEnd) diskEnd_txn_id ∗
+  ⌜∃ (memStart_txn_id: nat) (txns: list (u64 * list update.t)),
+    is_mem_memLog σ.(memLog) txns memStart_txn_id⌝.
+Proof.
+  iIntros "HmemLog".
+  iNamed "HmemLog".
+  iNamed "Htxns".
+  epose proof (has_updates_app _ _ _ _ His_memStart His_loggerEnd) as Hhas_updates_mid.
+  rewrite -subslice_from_start subslice_app_contig in Hhas_updates_mid.
+  2: rewrite /slidingM.logIndex; lia.
+  rewrite subslice_from_start subslice_app_contig in Hhas_updates_mid.
+  2: rewrite /slidingM.logIndex; lia.
+  epose proof (has_updates_app _ _ _ _ Hhas_updates_mid His_nextDiskEnd) as Hhas_updates_mid'.
+  rewrite -subslice_from_start subslice_app_contig in Hhas_updates_mid'.
+  2: rewrite /slidingM.logIndex; lia.
+  rewrite subslice_from_start subslice_app_contig in Hhas_updates_mid'.
+  2: rewrite /slidingM.logIndex; lia.
+  epose proof (has_updates_app _ _ _ _ Hhas_updates_mid' His_nextTxn) as Hhas_updates.
+  rewrite take_drop /subslice drop_take_drop in Hhas_updates; try lia.
+  iSplitL.
+  2: {
+    iExists memStart_txn_id, txns.
+    iPureIntro.
+    rewrite /is_mem_memLog //.
+  }
+  iExists memStart_txn_id, nextDiskEnd_txn_id, _, _, logger_txn_id.
+  iFrame "# ∗ %".
+Qed.
 
 Definition wal_linv_fields st σ: iProp Σ :=
   (∃ σₗ,
@@ -278,8 +299,11 @@ Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) 
     (* TODO: the other half of these are owned by the installer, giving it full
      knowledge of in-progress installations and exclusive update rights; need to
      write down what it maintains as part of its loop invariant *)
-    "Howninstalled" ∷ (ghost_var γ.(new_installed_name) (1/2) new_installed_txn_id ∗
-     ghost_var γ.(being_installed_name) (1/2) being_installed) ∗
+    "Howninstalled" ∷ (
+      "Hinstalled_txn" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
+      "Hbeing_installed" ∷ ghost_var γ.(being_installed_name) (1/2) being_installed ∗
+      "Hbeing_installed_txns" ∷ ghost_var γ.(being_installed_txns_name) (1/2)
+        (subslice (S installed_txn_id) (S new_installed_txn_id) txns)) ∗
     "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ new_installed_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
     "Hdata" ∷ ([∗ map] a ↦ _ ∈ d,
      ∃ (b: Block),
@@ -327,12 +351,13 @@ Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
     "%Hend_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
     "#Hend_txn_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt.
 
-Definition disk_inv γ s (cs: circΣ.t) : iProp Σ :=
+Definition disk_inv γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
   ∃ installed_txn_id diskEnd_txn_id,
       "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
-      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb) ∗
+      "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝.
 
 Definition disk_inv_durable γ s (cs: circΣ.t) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
@@ -357,13 +382,13 @@ Definition nextDiskEnd_inv γ (txns : list (u64 * list update.t)) : iProp Σ :=
     "%HafterNextDiskEnd" ∷ ⌜stable_sound txns stable_txns⌝.
 
 (** the complete wal invariant *)
-Definition is_wal_inner (l : loc) γ s : iProp Σ :=
+Definition is_wal_inner (l : loc) γ s (dinit : disk) : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "Hmem" ∷ is_wal_mem l γ ∗
     "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
     "γtxns"  ∷ ghost_var γ.(txns_name) (1/2) s.(log_state.txns) ∗
     "HnextDiskEnd_inv" ∷ nextDiskEnd_inv γ s.(log_state.txns) ∗
-    "Hdisk" ∷ ∃ cs, "Howncs" ∷ ghost_var γ.(cs_name) (1/2) cs ∗ "Hdisk" ∷ disk_inv γ s cs
+    "Hdisk" ∷ ∃ cs, "Howncs" ∷ ghost_var γ.(cs_name) (1/2) cs ∗ "Hdisk" ∷ disk_inv γ s cs dinit
 .
 
 (* holds for log states which are possible after a crash (essentially these have
@@ -379,11 +404,11 @@ Definition is_wal_inner_durable γ s : iProp Σ :=
 .
 
 (* This is produced by recovery as a post condition, can be used to get is_wal *)
-Definition is_wal_inv_pre (l: loc) γ s : iProp Σ :=
-  is_wal_inner l γ s ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
+Definition is_wal_inv_pre (l: loc) γ s (dinit : disk) : iProp Σ :=
+  is_wal_inner l γ s dinit ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
 
-Definition is_wal (l : loc) γ : iProp Σ :=
-  inv innerN (∃ σ, is_wal_inner l γ σ ∗ P σ) ∗
+Definition is_wal (l : loc) γ (dinit : disk) : iProp Σ :=
+  inv innerN (∃ σ, is_wal_inner l γ σ dinit ∗ P σ) ∗
   is_circular circN (circular_pred γ) γ.(circ_name).
 
 (** logger_inv is the resources exclusively owned by the logger thread *)
@@ -423,7 +448,7 @@ Proof.
     split_and!; auto; try lia.
 Qed.
 
-Theorem is_wal_read_mem l γ : is_wal l γ -∗ |={⊤}=> ▷ is_wal_mem l γ.
+Theorem is_wal_read_mem l γ dinit : is_wal l γ dinit -∗ |={⊤}=> ▷ is_wal_mem l γ.
 Proof.
   iIntros "#Hwal".
   iDestruct "Hwal" as "[Hinv _]".
@@ -436,9 +461,9 @@ Proof.
   by iFrame "∗ Hmem".
 Qed.
 
-Theorem is_wal_open l wn E :
+Theorem is_wal_open l wn dinit E :
   ↑innerN ⊆ E ->
-  is_wal l wn
+  is_wal l wn dinit
   ={E, E ∖ ↑innerN}=∗
     ∃ σ, ▷ P σ ∗
     ( ▷ P σ ={E ∖ ↑innerN, E}=∗ emp ).
@@ -579,19 +604,19 @@ Proof.
   rewrite /is_txn Hlookup //.
 Qed.
 
-Theorem is_wal_txns_lookup l γ σ :
-  is_wal_inner l γ σ -∗
+Theorem is_wal_txns_lookup l γ σ dinit :
+  is_wal_inner l γ σ dinit -∗
   (∃ txns, txns_ctx γ txns ∗ ghost_var γ.(txns_name) (1/2) txns ∗
              (txns_ctx γ txns ∗ ghost_var γ.(txns_name) (1/2) txns -∗
-              is_wal_inner l γ σ)).
+              is_wal_inner l γ σ dinit)).
 Proof.
   iNamed 1.
   iExists _; iFrame.
   by iIntros "($ & $)".
 Qed.
 
-Theorem txn_pos_valid_locked l γ txns txn_id pos :
-  is_wal l γ -∗
+Theorem txn_pos_valid_locked l γ dinit txns txn_id pos :
+  is_wal l γ dinit -∗
   txn_pos γ txn_id pos -∗
   ghost_var γ.(txns_name) (1/2) txns -∗
   |={⊤}=> ⌜is_txn txns txn_id pos⌝ ∗ ghost_var γ.(txns_name) (1/2) txns.
@@ -628,11 +653,11 @@ Proof.
   iDestruct (alist_subseq_lookup with "Hctx Htxns_are") as "$".
 Qed.
 
-Theorem get_txns_are l γ txns start till txns_sub :
+Theorem get_txns_are l γ dinit txns start till txns_sub :
   txns_sub = subslice start till txns →
   (start ≤ till ≤ length txns)%nat →
   ghost_var γ.(txns_name) (1/2) txns -∗
-  is_wal l γ -∗
+  is_wal l γ dinit -∗
   |={⊤}=> txns_are γ start txns_sub ∗ ghost_var γ.(txns_name) (1/2) txns.
 Proof.
   iIntros (??) "Hown #Hwal".

@@ -101,8 +101,8 @@ Proof.
   done.
 Qed.
 
-Lemma is_wal_wf l γ σ :
-  is_wal_inner l γ σ -∗ ⌜wal_wf σ⌝.
+Lemma is_wal_wf l γ σ dinit :
+  is_wal_inner l γ σ dinit -∗ ⌜wal_wf σ⌝.
 Proof.
   by iNamed 1.
 Qed.
@@ -372,9 +372,9 @@ Proof.
   rewrite He. eauto.
 Qed.
 
-Theorem disk_inv_append γ σs cs pos upds :
-  disk_inv γ σs cs -∗
-  disk_inv γ (set log_state.txns (λ txns, txns ++ [(pos, upds)]) σs) cs.
+Theorem disk_inv_append γ σs cs dinit pos upds :
+  disk_inv γ σs cs dinit -∗
+  disk_inv γ (set log_state.txns (λ txns, txns ++ [(pos, upds)]) σs) cs dinit.
 Proof.
   rewrite /disk_inv; iNamed 1; simpl.
   iExists installed_txn_id, diskEnd_txn_id; iFrame.
@@ -690,8 +690,8 @@ Proof.
   }
 Qed.
 
-Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ bufs bs :
-  {{{ is_wal P l γ ∗
+Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ dinit bufs bs :
+  {{{ is_wal P l γ dinit ∗
        updates_slice bufs bs ∗
        (∀ σ σ' pos,
          ⌜wal_wf σ⌝ -∗

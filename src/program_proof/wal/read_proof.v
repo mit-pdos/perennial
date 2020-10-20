@@ -192,19 +192,20 @@ Proof.
   eapply apply_upds_drop; eauto.
 Qed.
 
-Theorem simulate_read_cache_hit {l γ Q σ memLog diskEnd diskEnd_txn_id b a} :
+Theorem simulate_read_cache_hit {l γ Q σ dinit memLog diskEnd diskEnd_txn_id b a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = Some b ->
-  (is_wal_inner l γ σ ∗ P σ) -∗
+  (is_wal_inner l γ σ dinit ∗ P σ) -∗
   memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
-  |={⊤ ∖ ↑N}=> (is_wal_inner l γ σ ∗ P σ) ∗
+  |={⊤ ∖ ↑N}=> (is_wal_inner l γ σ dinit ∗ P σ) ∗
               "HQ" ∷ Q (Some b) ∗
               "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
 Proof.
   iIntros (Happly) "[Hinner HP] Hlinv Hfupd".
   iNamed "Hinner".
+  iDestruct (memLog_linv_implies_is_mem_memLog with "Hlinv") as "Hlinv".
 
   iNamed "Hlinv".
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
@@ -261,14 +262,14 @@ Proof.
   set_solver.
 Qed.
 
-Theorem simulate_read_cache_miss {l γ Q σ memLog diskEnd diskEnd_txn_id a} :
+Theorem simulate_read_cache_miss {l γ Q σ dinit memLog diskEnd diskEnd_txn_id a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.val a = None ->
-  (is_wal_inner l γ σ ∗ P σ) -∗
+  (is_wal_inner l γ σ dinit ∗ P σ) -∗
   memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
-  |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' ∗ P σ') ∗
+  |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' dinit ∗ P σ') ∗
               "HQ" ∷ Q None ∗
               "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
 Proof.
@@ -329,8 +330,8 @@ Proof.
   iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
 Admitted.
 
-Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ a :
-  {{{ is_wal P l γ ∗
+Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ dinit a :
+  {{{ is_wal P l γ dinit ∗
        (∀ σₛ σₛ' mb,
          ⌜wal_wf σₛ⌝ -∗
          ⌜relation.denote (log_read_cache a) σₛ σₛ' mb⌝ -∗

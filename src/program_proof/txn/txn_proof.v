@@ -120,17 +120,17 @@ Definition is_txn_locked l γ : iProp Σ :=
       "Histxn_pos" ∷ l ↦[Txn.S :: "pos"] #pos
  )%I.
 
-Definition is_txn (l : loc) (γ : txn_names) : iProp Σ :=
+Definition is_txn (l : loc) (γ : txn_names) dinit : iProp Σ :=
   (
     ∃ (mu : loc) (walptr : loc),
       "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
       "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
-      "Hiswal" ∷ is_wal (wal_heap_inv (txn_walnames γ)) walptr (wal_heap_walnames (txn_walnames γ)) ∗
+      "Hiswal" ∷ is_wal (wal_heap_inv (txn_walnames γ)) walptr (wal_heap_walnames (txn_walnames γ)) dinit ∗
       "Histxna" ∷ inv invN (is_txn_always γ) ∗
       "Histxn_lock" ∷ is_lock lockN #mu (is_txn_locked l (txn_walnames γ))
   )%I.
 
-Global Instance is_txn_persistent l γ : Persistent (is_txn l γ) := _.
+Global Instance is_txn_persistent l γ dinit : Persistent (is_txn l γ dinit) := _.
 
 Theorem mapsto_txn_valid γ a v E :
   ↑invN ⊆ E ->
@@ -170,8 +170,8 @@ Proof.
   intuition eauto; congruence.
 Qed.
 
-Theorem wp_txn_Load l γ a v :
-  {{{ is_txn l γ ∗
+Theorem wp_txn_Load l γ dinit a v :
+  {{{ is_txn l γ dinit ∗
       mapsto_txn γ a v
   }}}
     Txn__Load #l (addr2val a) #(bufSz (projT1 v))
@@ -435,10 +435,10 @@ Unshelve.
   all: rewrite /block_bytes; try lia; word.
 Qed.
 
-Theorem mapsto_txn_locked (γ : txn_names) l lwh a data E :
+Theorem mapsto_txn_locked (γ : txn_names) l dinit lwh a data E :
   ↑invN ⊆ E ->
   ↑walN ⊆ E ∖ ↑invN ->
-  is_wal (wal_heap_inv γ.(txn_walnames)) l (wal_heap_walnames γ.(txn_walnames)) ∗
+  is_wal (wal_heap_inv γ.(txn_walnames)) l (wal_heap_walnames γ.(txn_walnames)) dinit ∗
   inv invN (is_txn_always γ) ∗
   is_locked_walheap γ.(txn_walnames) lwh ∗
   mapsto_txn γ a data
@@ -478,9 +478,9 @@ Proof.
   rewrite fmap_empty; eauto.
 Qed.
 
-Theorem wp_txn__installBufsMap l q walptr γ lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
+Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
   {{{ inv invN (is_txn_always γ) ∗
-      is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) ∗
+      is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
@@ -781,9 +781,9 @@ Proof.
   done.
 Qed.
 
-Theorem wp_txn__installBufs l q walptr γ lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
+Theorem wp_txn__installBufs l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
   {{{ inv invN (is_txn_always γ) ∗
-      is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) ∗
+      is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
@@ -990,8 +990,8 @@ Proof.
 Qed.
 
 
-Theorem wp_txn__doCommit l q γ bufs buflist bufamap E (Q : nat -> iProp Σ) :
-  {{{ is_txn l γ ∗
+Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (Q : nat -> iProp Σ) :
+  {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
@@ -1248,8 +1248,8 @@ Proof using txnG0 Σ.
   }
 Admitted.
 
-Theorem wp_txn_CommitWait l q γ bufs buflist bufamap (wait : bool) E (Q : nat -> iProp Σ) :
-  {{{ is_txn l γ ∗
+Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (Q : nat -> iProp Σ) :
+  {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),

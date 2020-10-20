@@ -136,7 +136,7 @@ Proof.
   lia.
 Qed.
 
-Theorem wp_Walog__logAppend l circ_l γ σₛ :
+Theorem wp_Walog__logAppend l circ_l γ dinit σₛ :
   {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
       "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
       "#HcondInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
@@ -146,7 +146,7 @@ Theorem wp_Walog__logAppend l circ_l γ σₛ :
       "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
       "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       "#His_lock" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
-      "#Hwal" ∷ is_wal P l γ ∗
+      "#Hwal" ∷ is_wal P l γ dinit ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
       "Hlocked" ∷ locked #σₛ.(memLock) ∗
       "Hlogger" ∷ logger_inv γ circ_l
@@ -488,8 +488,8 @@ Proof.
     + iExists _; iFrame.
 Qed.
 
-Theorem wp_Walog__logger l circ_l γ :
-  {{{ "#Hwal" ∷ is_wal P l γ ∗
+Theorem wp_Walog__logger l circ_l γ dinit :
+  {{{ "#Hwal" ∷ is_wal P l γ dinit ∗
       "Hlogger" ∷ logger_inv γ circ_l
   }}}
     Walog__logger #l #circ_l

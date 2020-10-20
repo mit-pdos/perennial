@@ -64,12 +64,12 @@ Section goose_lang.
            txn_durable γ i.
 
   Definition is_rep_block l: iProp Σ :=
-    ∃ γ (txn_l m_l: loc),
+    ∃ γ dinit (txn_l m_l: loc),
     "#txn" ∷ readonly (l ↦[RepBlock.S :: "txn"] #txn_l) ∗
     "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_l) ∗
     (* TODO: make this a crash lock with cinv *)
     "#His_lock" ∷ is_lock lockN #m_l (rb_linv l γ) ∗
-    "#His_txn" ∷ txn_proof.is_txn txn_l γ.(buftxn_txn_names) ∗
+    "#His_txn" ∷ txn_proof.is_txn txn_l γ.(buftxn_txn_names) dinit ∗
     "#Htxns" ∷ is_txn_system txnN γ.
 
   Theorem wp_RepBlock__Read l Q :

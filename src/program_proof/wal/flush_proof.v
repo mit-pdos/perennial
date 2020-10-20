@@ -28,8 +28,8 @@ Proof.
 Qed.
 
 (* just an example, to work out the Flush proof without all the complications *)
-Theorem wp_updateDurable (Q: iProp Σ) l γ :
-  {{{ is_wal P l γ ∗
+Theorem wp_updateDurable (Q: iProp Σ) l γ dinit :
+  {{{ is_wal P l γ dinit ∗
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (update_durable) σ σ' b⌝ -∗
@@ -68,13 +68,13 @@ Proof.
   - simpl.
     iFrame.
     iExists _; iFrame.
-    iExists installed_txn_id, _. simpl. iFrame "# ∗".
+    iExists installed_txn_id, _. simpl. iFrame "# ∗ %".
     iExists _. iFrame "%". iPureIntro. lia.
 Qed.
 
-Theorem simulate_flush l γ Q σ pos txn_id nextDiskEnd_txn_id mutable :
+Theorem simulate_flush l γ Q σ dinit pos txn_id nextDiskEnd_txn_id mutable :
   is_circular circN (circular_pred γ) γ.(circ_name) -∗
-  (is_wal_inner l γ σ ∗ P σ) -∗
+  (is_wal_inner l γ σ dinit ∗ P σ) -∗
   diskEnd_at_least γ.(circ_name) (int.val pos) -∗
   txn_pos γ txn_id pos -∗
   memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id -∗
@@ -83,7 +83,7 @@ Theorem simulate_flush l γ Q σ pos txn_id nextDiskEnd_txn_id mutable :
         -∗ ⌜relation.denote (log_flush pos txn_id) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
   |NC={⊤ ∖ ↑innerN}=>
       ∃ σ' nextDiskEnd_txn_id',
-        is_wal_inner l γ σ' ∗ P σ' ∗ Q ∗
+        is_wal_inner l γ σ' dinit ∗ P σ' ∗ Q ∗
         memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id' ∗
         ⌜nextDiskEnd_txn_id ≤ nextDiskEnd_txn_id' < length σ.(log_state.txns)⌝ ∗
         ⌜Forall (λ x, x.2 = []) (subslice (S nextDiskEnd_txn_id) (S nextDiskEnd_txn_id') σ.(log_state.txns))⌝.
@@ -235,8 +235,8 @@ Proof.
   iExists _, _; iFrame "# ∗".
 Qed.
 
-Theorem wp_Walog__Flush (Q: iProp Σ) l γ txn_id pos :
-  {{{ is_wal P l γ ∗
+Theorem wp_Walog__Flush (Q: iProp Σ) l γ dinit txn_id pos :
+  {{{ is_wal P l γ dinit ∗
       txn_pos γ txn_id pos ∗
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗

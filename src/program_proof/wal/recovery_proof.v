@@ -189,9 +189,9 @@ Proof.
     eapply lookup_take_Some in Hlookup; lia.
 Qed.
 
-Lemma is_wal_inner_durable_post_crash l γ σ cs P':
+Lemma is_wal_inner_durable_post_crash l γ σ dinit cs P':
   (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
-  "Hinner" ∷ is_wal_inner l γ σ ∗ "HP" ∷ P σ ∗
+  "Hinner" ∷ is_wal_inner l γ σ dinit ∗ "HP" ∷ P σ ∗
   "Hcirc" ∷ is_circular_state γ.(circ_name) cs ∗ "γcs" ∷ circular_pred γ cs  -∗
   post_crash (λ hG, ∃ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗
                             is_wal_inner_durable γ σ' ∗
@@ -258,10 +258,10 @@ Qed.
 *)
 Admitted.
 
-Lemma is_wal_post_crash γ P' l:
+Lemma is_wal_post_crash γ P' l dinit:
   (∀ σ σ', relation.denote (log_crash) σ σ' tt →
            IntoCrash (P σ) (P' σ')) →
-  is_wal P l γ ={↑walN, ∅}=∗ ▷
+  is_wal P l γ dinit ={↑walN, ∅}=∗ ▷
   post_crash (λ hG, ∃ σ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗ is_wal_inner_durable γ σ' ∗ P' σ' hG).
 Proof.
 Abort.
@@ -287,11 +287,11 @@ Global Instance disk_inv_durable_disc γ σ cs:
   Discretizable (disk_inv_durable γ σ cs).
 Proof. apply _. Qed.
 
-Theorem wpc_mkLog_recover k d γ σ :
+Theorem wpc_mkLog_recover k d γ σ dinit :
   {{{ is_wal_inner_durable γ σ }}}
     mkLog #d @ NotStuck; k; ⊤
   {{{ γ' l, RET #l;
-       is_wal_inv_pre l γ' σ ∗
+       is_wal_inv_pre l γ' σ dinit ∗
        (* XXX whatever it is that background threads needs *)
        True}}}
   {{{ is_wal_inner_durable γ σ }}}.
@@ -431,21 +431,21 @@ Proof.
 Admitted. (* BUG: the theorem statement isn't complete yet, but if we abort
 this, then the proof runs in -vos mode... *)
 
-Theorem wpc_MkLog_recover stk k E1 d γ σ :
+Theorem wpc_MkLog_recover stk k E1 d γ σ dinit :
   {{{ is_wal_inner_durable γ σ }}}
     MkLog #d @ stk; k; E1
   {{{ σ' γ' l, RET #l;
       ⌜relation.denote (log_crash) σ σ' tt⌝ ∗
-       is_wal_inv_pre l γ' σ' }}}
+       is_wal_inv_pre l γ' σ' dinit }}}
   {{{ is_wal_inner_durable γ σ }}}.
 Proof.
 Admitted.
 
 (* XXX: this is not quite correctly stated, there is some condition on E *)
-Theorem is_wal_inv_alloc {k : nat} l γ σ :
+Theorem is_wal_inv_alloc {k : nat} l γ σ dinit :
   ▷ P σ -∗
-  is_wal_inv_pre l γ σ ={⊤}=∗
-  is_wal P l γ ∗
+  is_wal_inv_pre l γ σ dinit ={⊤}=∗
+  is_wal P l γ dinit ∗
   <disc> |C={⊤}_(S k)=> (∃ σ', is_wal_inner_durable γ σ' ∗ P σ').
 Proof.
 Admitted.
