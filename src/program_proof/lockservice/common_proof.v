@@ -12,9 +12,57 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From iris.algebra Require Import numbers.
 From Coq.Structures Require Import OrdersTac.
+Section rpc_types.
+Context `{!heapG Σ}.
+
+Class RPCArgs (A:Type) :=
+  {
+  RPCArgs_IntoVal:> into_val.IntoVal A ;
+  a_ty : ty;
+  }.
+
+Class RPCReturn (R:Type) :=
+  {
+  RPCReturn_Inhabited:> Inhabited R ;
+  RPCReturn_IntoVal:> into_val.IntoVal R ;
+  r_ty : ty ;
+  r_has_zero:has_zero r_ty ;
+  r_default: R;
+  r_default_is_zero: (into_val.to_val r_default) = zero_val r_ty;
+  }.
+
+Context {A:Type}.
+Context {A_RPCArgs:RPCArgs A}.
+Context {R:Type}.
+Context {R_RPCReturn:RPCReturn R}.
+
+Definition retty_to_rdesc :=
+  [("Stale", boolT) ; ("Ret", r_ty) ].
+
+Definition argty_to_adesc :=
+  [("CID", uint64T) ; ("Seq", uint64T) ; ("Args", a_ty) ].
+
+Definition read_request (args_ptr:loc) (a : RPCRequest) : iProp Σ :=
+  let req_desc := argty_to_adesc in
+    "#HSeqPositive" ∷ ⌜int.nat a.(rpc.Seq) > 0⌝
+  ∗ "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[req_desc :: "Args"] (into_val.to_val a.(Args)))
+  ∗ "#HArgsOwnCID" ∷ readonly (args_ptr ↦[req_desc :: "CID"] #a.(CID))
+  ∗ "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[req_desc :: "Seq"] #a.(rpc.Seq))
+.
+
+Definition own_reply (reply_ptr:loc) (r : RPCReply) : iProp Σ :=
+  let reply_desc := retty_to_rdesc in
+    "HReplyOwnStale" ∷ reply_ptr ↦[reply_desc :: "Stale"] #r.(Stale)
+  ∗ "#HReplyOwnRet" ∷ reply_ptr ↦[reply_desc :: "Ret"] (into_val.to_val r.(Ret))
+.
+
+End rpc_types.
+
 Section lockservice_common_proof.
 
 Context `{!heapG Σ}.
+Implicit Types s : Slice.t.
+Implicit Types (stk:stuckness) (E: coPset).
 
 Axiom nondet_spec:
   {{{ True }}}
@@ -79,14 +127,15 @@ Definition CallFunction {R} {r_rpcret:RPCReturn R} (f:val) (fname:string) : val 
     (if: nondet #()
     then f "srv" "args" "reply"
     else #true).
+Check own_reply.
 
-Lemma CallFunction_spec {A:Type} {R:Type} {r_rpcret:RPCReturn R} {a_rpcargs:RPCArgs A} (srv args reply:loc) (req:@RPCRequest A) (lockReply:@RPCReply R) (f:val) (fname:string) fPre fPost γrpc γPost :
+Lemma CallFunction_spec {A:Type} {R:Type} {r_rpcret:RPCReturn R} {a_rpcargs:RPCArgs A} (srv req_ptr reply_ptr:loc) (req:@RPCRequest A) (reply:@RPCReply R) (f:val) (fname:string) fPre fPost γrpc γPost :
 ¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
 -> (∀ srv' args' lockArgs' γrpc' γPost', Persistent (fPre srv' args' lockArgs' γrpc' γPost'))
 -> (∀ (srv' req_ptr' reply_ptr' : loc) (req':RPCRequest) 
-   (reply' : RPCReply) (γrpc' : RPC_GS) (γPost' : gname),
+   (reply' : @RPCReply R) (γrpc' : RPC_GS) (γPost' : gname),
 {{{ fPre srv' req_ptr' req' γrpc' γPost'
-    ∗ own_reply reply_ptr' reply'
+    ∗ @own_reply Σ _ R r_rpcret reply_ptr' reply'
 }}}
   f #srv' #req_ptr' #reply_ptr'
 {{{ RET #false; ∃ reply'',
@@ -95,8 +144,8 @@ Lemma CallFunction_spec {A:Type} {R:Type} {r_rpcret:RPCReturn R} {a_rpcargs:RPCA
 }}}
 )
       ->
-{{{ "#HfPre" ∷ fPre srv args req γrpc γPost ∗ "Hreply" ∷ own_reply reply lockReply}}}
-  (CallFunction f fname) #srv #args #reply
+{{{ "#HfPre" ∷ fPre srv req_ptr req γrpc γPost ∗ "Hreply" ∷ own_reply (R:=R) reply_ptr reply }}}
+  (CallFunction f fname) #srv #req_ptr #reply_ptr
 {{{ e, RET e;
     (∃ lockReply',
     own_reply reply lockReply' 
@@ -238,7 +287,7 @@ Definition is_server (srv_ptr:loc) γrpc: iProp Σ :=
     ∗ ( "Hlinv" ∷ inv replycacheinvN (ReplyCache_inv γrpc ) )
     ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (Server_mutex_inv srv_ptr γrpc))
 .
-
+(*
 Lemma LockServer_Function_spec {A:Type} {R:Type} {a_args:RPCArgs A} {r_ret:RPCReturn R} (srv args reply:loc) (a:RPCRequest) (r:RPCReply) (f:val) (fname:string) (rty_desc:descriptor) (arg_desc:descriptor) fPre fPost γrpc γPost :
 has_zero (struct.t rty_desc)
 -> ¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
@@ -439,6 +488,6 @@ readonly (args ↦[argty_to_adesc :: "Seq"] #lockArgs.(Seq))
         Grab Existential Variables.
         1: done.
 Admitted.
-Admitted.
+*)
 
 End lockservice_common_proof.

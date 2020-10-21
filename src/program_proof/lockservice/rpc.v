@@ -16,14 +16,7 @@ From Coq.Structures Require Import OrdersTac.
 Section rpc.
 Context `{!heapG Σ}.
 
-Class RPCArgs (A:Type) :=
-  {
-  RPCArgs_IntoVal:> into_val.IntoVal A ;
-  a_ty : ty;
-  }.
-
 Context {A:Type}.
-Context {A_RPCArgs:RPCArgs A}.
 
 Record RPCRequest :=
 {
@@ -32,44 +25,13 @@ Record RPCRequest :=
   Args : A ;
 }.
 
-Class RPCReturn (R:Type) :=
-  {
-  RPCReturn_Inhabited:> Inhabited R ;
-  RPCReturn_IntoVal:> into_val.IntoVal R ;
-  r_ty : ty ;
-  r_has_zero:has_zero r_ty ;
-  r_default: R;
-  r_default_is_zero: (into_val.to_val r_default) = zero_val r_ty;
-  }.
-
 Context {R:Type}.
-Context {R_RPCReturn:RPCReturn R}.
 
 Record RPCReply :=
 {
   Stale : bool ;
   Ret : R ;
 }.
-
-Definition retty_to_rdesc :=
-  [("Stale", boolT) ; ("Ret", r_ty) ].
-
-Definition argty_to_adesc :=
-  [("CID", uint64T) ; ("Seq", uint64T) ; ("Args", a_ty) ].
-
-Definition read_request (args_ptr:loc) (a : RPCRequest) : iProp Σ :=
-  let req_desc := argty_to_adesc in
-    "#HSeqPositive" ∷ ⌜int.nat a.(Seq) > 0⌝
-  ∗ "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[req_desc :: "Args"] (into_val.to_val a.(Args)))
-  ∗ "#HArgsOwnCID" ∷ readonly (args_ptr ↦[req_desc :: "CID"] #a.(CID))
-  ∗ "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[req_desc :: "Seq"] #a.(Seq))
-.
-
-Definition own_reply (reply_ptr:loc) (r : RPCReply) : iProp Σ :=
-  let reply_desc := retty_to_rdesc in
-    "HReplyOwnStale" ∷ reply_ptr ↦[reply_desc :: "Stale"] #r.(Stale)
-  ∗ "#HReplyOwnRet" ∷ reply_ptr ↦[reply_desc :: "Ret"] (into_val.to_val r.(Ret))
-.
 
 Context `{fmcounter_mapG Σ}.
 Context `{!inG Σ (exclR unitO)}.
@@ -91,17 +53,31 @@ Definition RPCServer_own (lastSeqM:gmap u64 u64) lastReplyM γrpc : iProp Σ :=
   ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) [[γrpc.(rc)]]↦ro Some r)
 .
 
-Definition RPCReplyReceipt (args:RPCRequest) (r:R) γrpc : iProp Σ :=
-  (args.(CID), args.(Seq)) [[γrpc.(rc)]]↦ro Some r
+Definition RPCReplyReceipt (req:RPCRequest) (r:R) γrpc : iProp Σ :=
+  (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦ro Some r
 .
 
-Definition RPCRequestStale (args:RPCRequest) γrpc : iProp Σ :=
-  (args.(CID) fm[[γrpc.(cseq)]]> ((int.nat args.(Seq)) + 1))
+Definition RPCRequestProcessing (req:RPCRequest) γrpc lastSeqM lastReplyM : iProp Σ :=
+  (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦{1/2} None
+  ∗ ("Hlseq_own" ∷ [∗ map] cid ↦ seq ∈ <[req.(CID):=req.(Seq)]> lastSeqM, cid fm[[γrpc.(lseq)]]↦ int.nat seq)
+  ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) [[γrpc.(rc)]]↦ro Some r)
+.
+
+Definition RPCRequestStale (req:RPCRequest) γrpc : iProp Σ :=
+  (req.(CID) fm[[γrpc.(cseq)]]> ((int.nat req.(Seq)) + 1))
 .
 
 Definition RPCRequest_inv (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:RPC_GS) (γPost:gname) : iProp Σ :=
    "#Hlseq_bound" ∷ req.(CID) fm[[γrpc.(cseq)]]> int.nat req.(Seq)
-  ∗ ("Hreply" ∷ (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦ None ∗ PreCond req.(Args) ∨
+    ∗ ( (* Initialized, but server has not started processing *)
+      "Hreply" ∷ (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦ None ∗ PreCond req.(Args) ∨ 
+
+      (* Server has started processing, but not finished *)
+       req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq)
+      ∗ "Hreply" ∷ (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦{1/2} None
+      ∨
+
+      (* Server has finished processing; two sub-states for wether client has taken PostCond out *)
       req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq)
       ∗ (∃ (last_reply:R), (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦ro Some last_reply
         ∗ (own γPost (Excl ()) ∨ PostCond req.(Args) last_reply)
@@ -117,14 +93,81 @@ Definition ReplyCache_inv (γrpc:RPC_GS) : iProp Σ :=
 Definition replyCacheInvN : namespace := nroot .@ "replyCacheInvN".
 Definition rpcRequestInvN := nroot .@ "rpcRequestInvN".
 
-Lemma server_processes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (old_seq:u64) (γrpc:RPC_GS) (reply:R)
+Lemma server_takes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (old_seq:u64) (γrpc:RPC_GS)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
      ((map_get lastSeqM req.(CID)).1 = old_seq)
   -> (int.val req.(Seq) > int.val old_seq)%Z
   -> (inv replyCacheInvN (ReplyCache_inv γrpc ))
   -∗ (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γP))
-  -∗ PostCond req.(Args) reply
   -∗ RPCServer_own lastSeqM lastReplyM γrpc
+  ={⊤}=∗
+      ▷ PreCond req.(Args)
+      ∗ RPCRequestProcessing req γrpc lastSeqM lastReplyM.
+Proof.
+  intros.
+  iIntros "Hlinv HreqInv Hsown"; iNamed "Hsown".
+  iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
+  iAssert ((|==> [∗ map] cid↦seq ∈ <[req.(CID):=old_seq]> lastSeqM, cid fm[[γrpc.(lseq)]]↦int.nat seq)%I) with "[Hlseq_own]" as ">Hlseq_own".
+  {
+    destruct (map_get lastSeqM req.(CID)).2 eqn:Hok.
+    {
+      assert (map_get lastSeqM req.(CID) = (old_seq, true)) as Hmapget.
+      { by apply pair_equal_spec. }
+      apply map_get_true in Hmapget.
+      rewrite insert_id; eauto.
+    }
+    {
+      assert (map_get lastSeqM req.(CID) = (old_seq, false)) as Hmapget; first by apply pair_equal_spec.
+      iMod (fmcounter_map_alloc 0 γrpc.(lseq) req.(CID) with "[$]") as "Hlseq_own_new".
+      apply map_get_false in Hmapget as [Hnone Hdef].
+      simpl in Hdef. rewrite Hdef.
+      iDestruct (big_sepM_insert _ _ req.(CID) with "[$Hlseq_own Hlseq_own_new]") as "Hlseq_own"; eauto.
+      replace ((int.nat 0)%Z) with 0 by word.
+      done.
+    }
+  }
+  iDestruct "Hcases" as "[[>Hunproc Hpre]|[Hproc|Hproc]]".
+  {
+    iDestruct "Hunproc" as "[Hunproc_inv Hunproc]".
+    iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
+    iMod (fmcounter_map_update _ _ _ (int.nat req.(Seq)) with "Hlseq_one") as "Hlseq_one"; first lia.
+    iMod (fmcounter_map_get_lb with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
+    iDestruct (big_sepM_insert_delete with "[$Hlseq_own $Hlseq_one]") as "Hlseq_own".
+    rewrite ->insert_insert in *.
+    iMod ("HMClose" with "[Hunproc_inv]") as "_"; eauto.
+    {
+      iNext. iFrame "#". iRight. iLeft. iFrame.
+    }
+    iModIntro.
+    iFrame; iFrame "#".
+  }
+  {
+    iDestruct "Hproc" as "[#>Hlseq_lb _]".
+    iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
+    iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
+    iExFalso; iPureIntro.
+    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in H1; last by apply u64_Z_through_nat.
+    replace (int.val req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    lia.
+  }
+  {
+    iDestruct "Hproc" as "[#>Hlseq_lb _]".
+    iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
+    iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
+    iExFalso; iPureIntro.
+    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in H1; last by apply u64_Z_through_nat.
+    replace (int.val req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    lia.
+  }
+Qed.
+
+
+Lemma server_completes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:RPC_GS) (reply:R)
+      (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
+  (inv replyCacheInvN (ReplyCache_inv γrpc ))
+  -∗ (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γP))
+  -∗ RPCRequestProcessing req γrpc lastSeqM lastReplyM
+  -∗ PostCond req.(Args) reply
   ={⊤}=∗
       RPCReplyReceipt req reply γrpc
   ∗ RPCServer_own (<[req.(CID):=req.(Seq)]> lastSeqM) (<[req.(CID):=reply]> lastReplyM) γrpc.
