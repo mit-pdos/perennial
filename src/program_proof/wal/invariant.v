@@ -203,6 +203,9 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
         ⌜(Forall (λ pos, int.val pos ≤ slidingM.memEnd σ) txns.*1)⌝
   ).
 
+(* this is what witnesses the basic role of the memLog, which is to contain all
+the updates (expressed in memLog_linv_txns in a finer-grained way for all the
+subsets, which are needed by the logger/installer but not for reads) *)
 Lemma memLog_linv_txns_combined_updates memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id :
     ∀ (Htxn_id_ordering: (memStart_txn_id ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat)
       (HloggerPosOK: int.val diskEnd ≤ int.val logger_pos ≤ int.val memLog.(slidingM.mutable)),
