@@ -42,7 +42,7 @@ Definition retty_to_rdesc :=
 Definition argty_to_adesc :=
   [("CID", uint64T) ; ("Seq", uint64T) ; ("Args", a_ty) ].
 
-Definition read_request (args_ptr:loc) (a : RPCRequest) : iProp Σ :=
+Definition read_request (args_ptr:loc) (a : @RPCRequest A) : iProp Σ :=
   let req_desc := argty_to_adesc in
     "#HSeqPositive" ∷ ⌜int.nat a.(rpc.Seq) > 0⌝
   ∗ "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[req_desc :: "Args"] (into_val.to_val a.(Args)))
@@ -50,10 +50,10 @@ Definition read_request (args_ptr:loc) (a : RPCRequest) : iProp Σ :=
   ∗ "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[req_desc :: "Seq"] #a.(rpc.Seq))
 .
 
-Definition own_reply (reply_ptr:loc) (r : RPCReply) : iProp Σ :=
+Definition own_reply (reply_ptr:loc) (r : @RPCReply R) : iProp Σ :=
   let reply_desc := retty_to_rdesc in
     "HReplyOwnStale" ∷ reply_ptr ↦[reply_desc :: "Stale"] #r.(Stale)
-  ∗ "#HReplyOwnRet" ∷ reply_ptr ↦[reply_desc :: "Ret"] (into_val.to_val r.(Ret))
+  ∗ "HReplyOwnRet" ∷ reply_ptr ↦[reply_desc :: "Ret"] (into_val.to_val r.(Ret))
 .
 
 End rpc_types.
@@ -61,8 +61,6 @@ End rpc_types.
 Section lockservice_common_proof.
 
 Context `{!heapG Σ}.
-Implicit Types s : Slice.t.
-Implicit Types (stk:stuckness) (E: coPset).
 
 Axiom nondet_spec:
   {{{ True }}}
@@ -116,6 +114,83 @@ Proof.
   }
 Qed.
 
+Global Instance u64_RPCArgs : RPCArgs u64 := { a_ty := uint64T }.
+
+Global Instance ToVal_bool : into_val.IntoVal bool.
+Proof.
+  refine {| into_val.to_val := λ (x: bool), #x;
+            IntoVal_def := false; |}; congruence.
+Defined.
+
+Print RPCReturn.
+#[refine] Global Instance bool_RPCReply : RPCReturn bool := {r_ty := boolT; r_default := false }.
+{ eauto. }
+{ eauto. }
+Defined.
+
+Context `{R}.
+Context `{rpc_args:RPCArgs A}.
+Context {R_RPCReturn:RPCReturn R}.
+Context `{fmcounter_mapG Σ}.
+Context `{!inG Σ (exclR unitO)}.
+Context `{!mapG Σ (u64*u64) (option R)}.
+Context `{Server_own_core: loc -> iProp Σ}.
+
+Definition Server_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
+  ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64)
+    (lastReplyM:gmap u64 R),
+      "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
+    ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
+    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
+    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ ("Hsrpc" ∷ RPCServer_own lastSeqM lastReplyM γrpc)
+    ∗ Server_own_core srv
+.
+
+Definition replycacheinvN : namespace := nroot .@ "replyCacheInvN".
+Definition mutexN : namespace := nroot .@ "lockservermutexN".
+Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
+
+Definition is_server (srv_ptr:loc) γrpc: iProp Σ :=
+  ∃ mu_ptr,
+      "Hmuptr" ∷ readonly (srv_ptr ↦[LockServer.S :: "mu"] #mu_ptr)
+    ∗ ( "Hlinv" ∷ inv replycacheinvN (ReplyCache_inv γrpc ) )
+    ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (Server_mutex_inv srv_ptr γrpc))
+.
+
+Lemma LockServer__checkReplyCache_spec (srv reply_ptr:loc) (req:@RPCRequest A) (reply:RPCReply) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
+{{{
+      "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
+    ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
+    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
+    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ ("Hsrpc" ∷ RPCServer_own lastSeqM lastReplyM γrpc)
+    ∗ ("Hreply" ∷ own_reply reply_ptr reply)
+}}}
+LockServer__checkReplyCache #srv #req.(CID) #req.(rpc.Seq) #reply_ptr
+{{{
+     v, RET v; ∃(b:bool) (reply':RPCReply), "Hre" ∷ ⌜v = #b⌝
+    ∗ "Hreply" ∷ own_reply reply_ptr reply'
+    ∗ "Hcases" ∷ ("%" ∷ ⌜b = false⌝
+         ∗ "%" ∷ ⌜(int.val req.(rpc.Seq) > int.val (map_get lastSeqM req.(CID)).1)%Z⌝
+         ∗ "%" ∷ ⌜reply'.(Stale) = false⌝
+         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(CID):=req.(rpc.Seq)]>lastSeqM)
+         ∨ 
+         "%" ∷ ⌜b = true⌝
+         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
+         ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale req γrpc)
+          ∨ RPCReplyReceipt req reply'.(Ret) γrpc))
+
+    ∗ "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
+    ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
+    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ ("Hsrpc" ∷ RPCServer_own lastSeqM lastReplyM γrpc)
+}}}
+.
+Proof.
+Admitted.
+
+
 (* Returns true iff server reported error or request "timed out" *)
 Definition CallFunction {R} {r_rpcret:RPCReturn R} (f:val) (fname:string) : val :=
   rec: fname "srv" "args" "reply" :=
@@ -127,15 +202,14 @@ Definition CallFunction {R} {r_rpcret:RPCReturn R} (f:val) (fname:string) : val 
     (if: nondet #()
     then f "srv" "args" "reply"
     else #true).
-Check own_reply.
 
-Lemma CallFunction_spec {A:Type} {R:Type} {r_rpcret:RPCReturn R} {a_rpcargs:RPCArgs A} (srv req_ptr reply_ptr:loc) (req:@RPCRequest A) (reply:@RPCReply R) (f:val) (fname:string) fPre fPost γrpc γPost :
+Lemma CallFunction_spec (srv req_ptr reply_ptr:loc) (req:@RPCRequest A) (reply:@RPCReply R) (f:val) (fname:string) fPre fPost γrpc γPost :
 ¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
 -> (∀ srv' args' lockArgs' γrpc' γPost', Persistent (fPre srv' args' lockArgs' γrpc' γPost'))
 -> (∀ (srv' req_ptr' reply_ptr' : loc) (req':RPCRequest) 
    (reply' : @RPCReply R) (γrpc' : RPC_GS) (γPost' : gname),
 {{{ fPre srv' req_ptr' req' γrpc' γPost'
-    ∗ @own_reply Σ _ R r_rpcret reply_ptr' reply'
+    ∗ own_reply reply_ptr' reply'
 }}}
   f #srv' #req_ptr' #reply_ptr'
 {{{ RET #false; ∃ reply'',
@@ -147,9 +221,9 @@ Lemma CallFunction_spec {A:Type} {R:Type} {r_rpcret:RPCReturn R} {a_rpcargs:RPCA
 {{{ "#HfPre" ∷ fPre srv req_ptr req γrpc γPost ∗ "Hreply" ∷ own_reply (R:=R) reply_ptr reply }}}
   (CallFunction f fname) #srv #req_ptr #reply_ptr
 {{{ e, RET e;
-    (∃ lockReply',
-    own_reply reply lockReply' 
-        ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ fPost req lockReply' γrpc))
+    (∃ reply',
+    own_reply reply_ptr reply' 
+        ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝ ∗ fPost req reply' γrpc))
 }}}.
 Proof.
   intros Hpers Hne1 Hne2 Hne3 Hne4 Hspec.
@@ -248,45 +322,6 @@ Definition LockServer_Function {A:Type} {R:Type} {r_rpcret:RPCReturn R} {a_rpcar
       lock.release (struct.loadF LockServer.S "mu" "ls");;
       #false).
 
-  Context `{!mapG Σ (u64*u64) (option bool)}.
-  Context `{!mapG Σ (u64*u64) unit}.
-  Context `{!inG Σ (exclR unitO)}.
-  Context `{!fmcounter_mapG Σ}.
-
-Definition TryLockReplyC : Type := @RPCReply bool.
-
-Global Instance ToVal_bool : into_val.IntoVal bool.
-Proof.
-  refine {| into_val.to_val := λ (x: bool), #x;
-            IntoVal_def := false; |}; congruence.
-Defined.
-
-Global Instance bool_RPCReturn : RPCReturn bool.
-Admitted.
-
-Context `{Server_own_core: loc -> iProp Σ}.
-
-Definition Server_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
-  ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64)
-    (lastReplyM locksM:gmap u64 bool),
-      "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
-    ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
-    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
-    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
-    ∗ ("Hsrpc" ∷ RPCServer_own lastSeqM lastReplyM γrpc)
-    ∗ Server_own_core srv
-.
-
-Definition replycacheinvN : namespace := nroot .@ "replyCacheInvN".
-Definition mutexN : namespace := nroot .@ "lockservermutexN".
-Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
-
-Definition is_server (srv_ptr:loc) γrpc: iProp Σ :=
-  ∃ mu_ptr,
-      "Hmuptr" ∷ readonly (srv_ptr ↦[LockServer.S :: "mu"] #mu_ptr)
-    ∗ ( "Hlinv" ∷ inv replycacheinvN (ReplyCache_inv γrpc ) )
-    ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (Server_mutex_inv srv_ptr γrpc))
-.
 (*
 Lemma LockServer_Function_spec {A:Type} {R:Type} {a_args:RPCArgs A} {r_ret:RPCReturn R} (srv args reply:loc) (a:RPCRequest) (r:RPCReply) (f:val) (fname:string) (rty_desc:descriptor) (arg_desc:descriptor) fPre fPost γrpc γPost :
 has_zero (struct.t rty_desc)

@@ -39,8 +39,8 @@ Definition own_clerk (ck:val) (srv:loc) (γrpc:RPC_GS) : iProp Σ
     ∗ "Hcrpc" ∷ RPCClient_own cid cseqno γrpc
 .
 
-Definition TryLock_Post : TryLockArgsC -> bool -> iProp Σ := λ args reply, (⌜reply = false⌝ ∨ (Ps args.(Lockname)))%I.
-Definition TryLock_Pre : TryLockArgsC -> iProp Σ := λ _, True%I.
+Definition TryLock_Post : u64 -> bool -> iProp Σ := λ args reply, (⌜reply = false⌝ ∨ (Ps args))%I.
+Definition TryLock_Pre : u64 -> iProp Σ := λ args, ⌜is_Some (validLocknames !! args)⌝%I.
 Definition TryLockRequest_inv := RPCRequest_inv TryLock_Pre TryLock_Post.
 
 Definition LockServer_own_core (srv:loc) : iProp Σ :=
@@ -51,23 +51,92 @@ Definition LockServer_own_core (srv:loc) : iProp Σ :=
 
 Definition is_lockserver := is_server (Server_own_core:=LockServer_own_core).
 
-Definition TryLock_spec_pre (srv args reply:loc) (lockArgs:TryLockArgsC) γrpc γPost : iProp Σ
+Definition TryLock_spec_pre (srv args reply:loc) (lockReq:@RPCRequest u64) γrpc γPost : iProp Σ
   :=
      "#Hls" ∷ is_lockserver srv γrpc
-           ∗ "#HargsInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γPost)
-           ∗ "#Hargs" ∷ read_args args lockArgs.
+           ∗ "#HreqInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockReq γrpc γPost)
+           ∗ "#Hreq" ∷ read_request args lockReq.
 
-Lemma tryLock_core_spec (srv args:loc) (lockArgs:TryLockArgsC) :
+Lemma tryLock_core_spec (srv:loc) (tryLockArgs:u64) :
 {{{ 
-     LockServer_own_core srv ∗ TryLock_Pre lockArgs
+     LockServer_own_core srv ∗ TryLock_Pre tryLockArgs
 }}}
-  LockServer__tryLock_core #srv #args
+  LockServer__tryLock_core #srv #tryLockArgs
 {{{
    v, RET v; LockServer_own_core srv
-      ∗ (∃b:bool, ⌜v = #b⌝ ∗ TryLock_Post lockArgs b)
+      ∗ (∃b:bool, ⌜v = #b⌝ ∗ TryLock_Post tryLockArgs b)
 }}}.
 Proof.
 Admitted.
+
+Definition TryLockRequestC := @RPCRequest u64.
+Definition TryLockReplyC := @RPCReply bool.
+
+Lemma TryLock_spec_using_helper (srv req_ptr reply_ptr:loc) (req:TryLockRequestC) (reply:TryLockReplyC) γrpc γPost :
+{{{ TryLock_spec_pre srv req_ptr reply_ptr req γrpc γPost
+    ∗ "Hreply" ∷ own_reply reply_ptr reply
+}}}
+  LockServer__TryLock #srv #req_ptr #reply_ptr
+{{{ RET #false; ∃ reply', own_reply reply_ptr reply'
+    ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale req γrpc)
+  ∨ RPCReplyReceipt req reply'.(Ret) γrpc)
+}}}.
+Proof.
+  iIntros (Φ) "[Hpre Hreply] Hpost".
+  iNamed "Hpre".
+  wp_lam.
+  wp_pures.
+  iNamed "Hls".
+  wp_loadField.
+  wp_apply (acquire_spec mutexN #mu_ptr _ with "Hmu").
+  iIntros "(Hlocked & Hlsown)".
+  iNamed "Hlsown".
+  iNamed "Hreq"; iNamed "Hreply".
+  wp_seq.
+  repeat wp_loadField.
+  wp_apply (LockServer__checkReplyCache_spec with "[-Hpost Hlocked Hlsown]"); first iFrame.
+  iIntros (runCore) "HcheckCachePost".
+  iDestruct "HcheckCachePost" as (b reply' ->) "HcachePost".
+  iNamed "HcachePost".
+  destruct b.
+  {
+    wp_pures.
+    wp_loadField.
+    iDestruct "Hcases" as "[[% _]|Hcases]"; first done.
+    iNamed "Hcases".
+    wp_apply (release_spec mutexN #mu_ptr _ with "[-Hreply Hpost Hcases]"); try iFrame "Hmu Hlocked"; eauto.
+    { iNext.  iFrame. iExists _, _, _, _. iFrame. }
+    wp_seq.
+    iApply "Hpost".
+    iExists reply'.
+    iFrame.
+  }
+  {
+    wp_pures.
+    iDestruct "Hcases" as "[Hcases | [% _]]"; last discriminate.
+    iNamed "Hcases".
+    repeat wp_loadField.
+    iMod (server_takes_request with "[] [] [Hsrpc]") as "[HcorePre Hprocessing]"; eauto.
+    iMod "HcorePre".
+    wp_apply (tryLock_core_spec with "[$Hlsown $HcorePre]"); eauto.
+    iIntros (retval) "[Hsrv HcorePost]".
+    iNamed "Hreply".
+    iDestruct "HcorePost" as (r ->) "HcorePost".
+    wp_storeField.
+    wp_loadField.
+    wp_loadField.
+    wp_loadField.
+    wp_apply (wp_MapInsert _ _ lastReplyM _ r #r with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
+    iMod (server_completes_request with "[] [] HcorePost Hprocessing") as "[#Hreceipt Hsrpc] /="; eauto.
+    wp_seq.
+    wp_loadField.
+    wp_apply (release_spec mutexN #mu_ptr _ with "[-HReplyOwnStale HReplyOwnRet Hpost]"); try iFrame "Hmu Hlocked".
+    { iNext. iFrame. iExists _, _, _, _. iFrame. }
+    wp_seq.
+    iApply "Hpost".
+    iExists {|Stale:=false; Ret:=r |}. rewrite H1. iFrame; iFrame "#".
+  }
+Qed.
 
 Lemma TryLock_spec_using_generic (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
 {{{ TryLock_spec_pre srv args reply lockArgs γrpc γPost
