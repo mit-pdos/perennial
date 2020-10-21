@@ -138,28 +138,10 @@ Proof.
   }
 Qed.
 
-Lemma TryLock_spec_using_generic (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
-{{{ TryLock_spec_pre srv args reply lockArgs γrpc γPost
-    ∗ own_reply reply lockReply
-}}}
-  LockServer__TryLock #srv #args #reply
-{{{ RET #false; ∃ lockReply', own_reply reply lockReply'
-    ∗ ((⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale lockArgs γrpc)
-  ∨ RPCReplyReceipt lockArgs lockReply'.(OK) γrpc)
-}}}.
-Proof.
-  replace (LockServer__TryLock) with (LockServer_Function LockServer__tryLock_core "LockServer_TryLock" TryLockReply.S TryLockArgs.S); eauto.
-  iIntros (Φ) "Hpre Hpost".
-  iApply (LockServer_Function_spec with "[Hpre]"); eauto.
-  { refine tryLock_core_spec. }
-  iDestruct "Hpre" as  "[Hpre Hreply]".
-  iFrame.
-Qed.
-
-Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:TryLockReplyC) γrpc γPost :
+Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockRequestC) (lockReply:TryLockReplyC) γrpc γPost :
 {{{ "#Hls" ∷ is_lockserver srv γrpc
     ∗ "#HargsInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γPost)
-    ∗ "#Hargs" ∷ read_args args lockArgs
+    ∗ "#Hargs" ∷ read_request args lockArgs
     ∗ "Hreply" ∷ own_reply reply lockReply
 }}}
   CallTryLock #srv #args #reply
@@ -167,13 +149,13 @@ Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockArgsC) (lockReply:T
     (∃ lockReply', own_reply reply lockReply'
     ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝
         ∗ (⌜lockReply'.(Stale) = true⌝ ∗ RPCRequestStale lockArgs γrpc
-               ∨ RPCReplyReceipt lockArgs lockReply'.(OK) γrpc
+               ∨ RPCReplyReceipt lockArgs lockReply'.(Ret) γrpc
              )))
 }}}.
 Proof using Type*.
-  replace (CallTryLock) with (CallFunction LockServer__TryLock "CallTryLock" TryLockReply.S); eauto.
+  replace (CallTryLock) with (CallFunction LockServer__TryLock "CallTryLock"); eauto.
   iIntros (Φ) "Hpre Hpost".
-  iApply (CallFunction_spec with "[Hpre]"); eauto; try refine TryLock_spec_using_generic; eauto.
+  iApply (CallFunction_spec with "[Hpre]"); eauto; try refine TryLock_spec_using_helper; eauto.
   { by rewrite /Persistent; eauto. }
   { Opaque own_reply. simpl. iNamed "Hpre". iFrame "#";iFrame. }
 Qed.
@@ -216,23 +198,22 @@ Proof using Type*.
   iIntros (reply) "Hreply".
   wp_pures.
   iDestruct "Hsrv" as (mu_ptr) "Hsrv". iNamed "Hsrv".
-  iMod (alloc_γrc (mkTryLockArgsC ln cid cseqno) _ TryLock_Pre TryLock_Post with "[Hlinv] [Hcrpc] []") as "[Hcseq_own HallocPost]"; eauto.
+  iMod (alloc_γrc {| Args:=ln; CID:=cid; rpc.Seq:=cseqno|} _ TryLock_Pre TryLock_Post with "[Hlinv] [Hcrpc] []") as "[Hcseq_own HallocPost]"; eauto.
   { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
-  Print TryLockArgsC.
   wp_apply (wp_forBreak
               (fun b =>
- (let lockArgs := (mkTryLockArgsC ln cid cseqno) in
-    "#Hargs" ∷ read_args args lockArgs
+ (let lockArgs := ({| Args := ln; CID:= cid; rpc.Seq := cseqno|}) in
+    "#Hargs" ∷ read_request args lockArgs
   ∗ "#Hargsinv" ∷ (inv rpcRequestInvN (TryLockRequest_inv lockArgs γrpc γP))
   ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
-  ∗ "Hseq" ∷ (ck_l ↦[Clerk.S :: "seq"] #(LitInt (word.add lockArgs.(getSeq) 1)))
+  ∗ "Hseq" ∷ (ck_l ↦[Clerk.S :: "seq"] #(LitInt (word.add lockArgs.(rpc.Seq) 1)))
   ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] #srv
   ∗ "Hargs_ptr" ∷ args_ptrs ↦[refT (uint64T * (uint64T * (uint64T * unitT))%ht)] #args
   ∗ "Herrb_ptr" ∷ (∃ (err:bool), errb_ptr ↦[boolT] #err)
-  ∗ "Hreply" ∷ (∃ lockReply, own_reply reply lockReply ∗ (⌜b = true⌝ ∨ (⌜lockReply.(OK) = false⌝ ∨ Ps ln)))
+  ∗ "Hreply" ∷ (∃ lockReply, own_reply reply lockReply ∗ (⌜b = true⌝ ∨ (⌜lockReply.(Ret) = false⌝ ∨ Ps ln)))
   ∗ "HγP" ∷ (⌜b = false⌝ ∨ own γP (Excl ()))
-  ∗ ("Hcseq_own" ∷ cid fm[[γrpc.(cseq)]]↦(int.nat (word.add lockArgs.(getSeq) 1)))
+  ∗ ("Hcseq_own" ∷ cid fm[[γrpc.(cseq)]]↦(int.nat (word.add lockArgs.(rpc.Seq) 1)))
   ∗ ("HΦpost" ∷ ∀ v : val, (∃ rb : bool, ⌜v = #rb⌝ ∗ own_clerk #ck_l srv γrpc ∗ (⌜rb = false⌝ ∨ Ps ln)) -∗ Φ v)
               ))%I with "[] [-]"); eauto.
   {
@@ -293,7 +274,7 @@ Proof using Type*.
     replace (int.nat cseqno + 1) with (int.nat (word.add cseqno 1)) by word.
     iFrame.
     Transparent own_reply.
-    iExists {| OK:=false; Stale:=false |}.  iFrame. by iLeft.
+    iExists {| Ret:=false; Stale:=false |}.  iFrame. by iLeft.
   }
 
   iIntros "LoopPost".
@@ -303,7 +284,7 @@ Proof using Type*.
   iDestruct "HP" as "[%|HP]"; first discriminate.
   wp_loadField.
   iApply "HΦpost".
-  iExists lockReply.(OK); iFrame; iFrame "#".
+  iExists lockReply.(Ret); iFrame; iFrame "#".
   iSplitL ""; first done.
   unfold own_clerk.
   iExists _, _, (word.add cseqno 1)%nat; iFrame.
@@ -311,10 +292,6 @@ Proof using Type*.
   iSplitL ""; first done.
   assert (int.nat cseqno + 1 = int.nat (word.add cseqno 1))%nat as <-; first by word.
   iPureIntro. lia.
-  (* TODO: where are these from? *)
-  Grab Existential Variables.
-  { refine true. }
-  { refine true. }
 Qed.
 
 Lemma Clerk__Lock_spec ck (srv:loc) (ln:u64) γrpc :
