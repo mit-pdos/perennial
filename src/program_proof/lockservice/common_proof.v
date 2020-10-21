@@ -190,6 +190,103 @@ LockServer__checkReplyCache #srv #req.(CID) #req.(rpc.Seq) #reply_ptr
 Proof.
 Admitted.
 
+Definition LockServer_Function {A:Type} {R:Type} {r_rpcret:RPCReturn R} {a_rpcargs:RPCArgs A} (coreFunction:val) (fname:string) : val :=
+  rec: "LockServer__TryLock" "ls" "req" "reply" :=
+    lock.acquire (struct.loadF LockServer.S "mu" "ls");;
+    (if: LockServer__checkReplyCache "ls" (struct.loadF argty_to_adesc "CID" "req") (struct.loadF argty_to_adesc "Seq" "req") "reply"
+    then
+      lock.release (struct.loadF LockServer.S "mu" "ls");;
+      #false
+    else
+      struct.storeF retty_to_rdesc "Ret" "reply" (coreFunction "ls" (struct.loadF argty_to_adesc "Args" "req"));;
+      MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF argty_to_adesc "CID" "req") (struct.loadF retty_to_rdesc "Ret" "reply");;
+      lock.release (struct.loadF LockServer.S "mu" "ls");;
+      #false).
+
+Lemma LockServer_Function_spec_using_helper (coreFunction:val) (fname:string) (srv req_ptr reply_ptr:loc) (req:RPCRequest) (reply:RPCReply) γrpc γPost PreCond PostCond :
+(
+∀ (srv':loc) (args':A),
+{{{ 
+     Server_own_core srv' ∗ ▷ PreCond args'
+}}}
+  coreFunction #srv' (into_val.to_val args')
+{{{
+   v, RET v; Server_own_core srv'
+      ∗ (∃r:R, ⌜v = into_val.to_val r⌝ ∗ PostCond args' r)
+}}}
+)
+
+->
+
+{{{
+  "#Hls" ∷ is_server srv γrpc
+  ∗ "#HreqInv" ∷ inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γPost)
+  ∗ "#Hreq" ∷ read_request req_ptr req
+  ∗ "Hreply" ∷ own_reply reply_ptr reply
+}}}
+  (LockServer_Function coreFunction fname) #srv #req_ptr #reply_ptr
+{{{ RET #false; ∃ reply', own_reply reply_ptr reply'
+    ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale req γrpc)
+  ∨ RPCReplyReceipt req reply'.(Ret) γrpc)
+}}}.
+Proof.
+  intros HfCoreSpec.
+  iIntros (Φ) "Hpre Hpost".
+  iNamed "Hpre".
+  wp_lam.
+  wp_pures.
+  iNamed "Hls".
+  wp_loadField.
+  wp_apply (acquire_spec mutexN #mu_ptr _ with "Hmu").
+  iIntros "(Hlocked & Hlsown)".
+  iNamed "Hreq"; iNamed "Hreply".
+  wp_seq.
+  repeat wp_loadField.
+  iNamed "Hlsown".
+  wp_apply (LockServer__checkReplyCache_spec with "[-Hpost Hlocked Hlsown]"); first iFrame.
+  iIntros (runCore) "HcheckCachePost".
+  iDestruct "HcheckCachePost" as (b reply' ->) "HcachePost".
+  iNamed "HcachePost".
+  destruct b.
+  {
+    wp_pures.
+    wp_loadField.
+    iDestruct "Hcases" as "[[% _]|Hcases]"; first done.
+    iNamed "Hcases".
+    wp_apply (release_spec mutexN #mu_ptr _ with "[-Hreply Hpost Hcases]"); try iFrame "Hmu Hlocked"; eauto.
+    { iNext.  iFrame. iExists _, _, _, _. iFrame. }
+    wp_seq.
+    iApply "Hpost".
+    iExists reply'.
+    iFrame.
+  }
+  {
+    wp_pures.
+    iDestruct "Hcases" as "[Hcases | [% _]]"; last discriminate.
+    iNamed "Hcases".
+    repeat wp_loadField.
+    iMod (server_takes_request with "[] [] [Hsrpc]") as "[HcorePre Hprocessing]"; eauto.
+    wp_apply (HfCoreSpec with "[$Hlsown $HcorePre]"); eauto.
+    iIntros (retval) "[Hsrv HcorePost]".
+    iNamed "Hreply".
+    iDestruct "HcorePost" as (r ->) "HcorePost".
+    assert (val_ty (into_val.to_val r) r_ty).
+    { admit. }
+    wp_storeField.
+    wp_loadField.
+    wp_loadField.
+    wp_loadField.
+    wp_apply (wp_MapInsert _ _ lastReplyM _ r (into_val.to_val r) with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
+    iMod (server_completes_request with "[] [] HcorePost Hprocessing") as "[#Hreceipt Hsrpc] /="; eauto.
+    wp_seq.
+    wp_loadField.
+    wp_apply (release_spec mutexN #mu_ptr _ with "[-HReplyOwnStale HReplyOwnRet Hpost]"); try iFrame "Hmu Hlocked".
+    { iNext. iFrame. iExists _, _, _, _. iFrame. }
+    wp_seq.
+    iApply "Hpost".
+    iExists {|Stale:=false; Ret:=r |}. rewrite H3. iFrame; iFrame "#".
+  }
+Qed.
 
 (* Returns true iff server reported error or request "timed out" *)
 Definition CallFunction {R} {r_rpcret:RPCReturn R} (f:val) (fname:string) : val :=
@@ -298,29 +395,6 @@ Proof.
     by iLeft.
   }
 Qed.
-
-Definition LockServer_Function {A:Type} {R:Type} {r_rpcret:RPCReturn R} {a_rpcargs:RPCArgs A} (f:val) (fname:string) : val :=
-  rec: "LockServer__TryLock" "ls" "args" "reply" :=
-    lock.acquire (struct.loadF LockServer.S "mu" "ls");;
-    let: ("last", "ok") := MapGet (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF argty_to_adesc "CID" "args") in
-    struct.storeF retty_to_rdesc "Stale" "reply" #false;;
-    (if: "ok" && (struct.loadF argty_to_adesc "Seq" "args" ≤ "last")
-    then
-      (if: struct.loadF argty_to_adesc "Seq" "args" < "last"
-      then
-        struct.storeF retty_to_rdesc "Stale" "reply" #true;;
-        lock.release (struct.loadF LockServer.S "mu" "ls");;
-        #false
-      else
-        struct.storeF retty_to_rdesc "OK" "reply" (Fst (MapGet (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF argty_to_adesc "CID" "args")));;
-        lock.release (struct.loadF LockServer.S "mu" "ls");;
-        #false)
-    else
-      MapInsert (struct.loadF LockServer.S "lastSeq" "ls") (struct.loadF argty_to_adesc "CID" "args") (struct.loadF argty_to_adesc "Seq" "args");;
-      struct.storeF retty_to_rdesc "OK" "reply" (f "ls" "args");;
-      MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF argty_to_adesc "CID" "args") (struct.loadF retty_to_rdesc "OK" "reply");;
-      lock.release (struct.loadF LockServer.S "mu" "ls");;
-      #false).
 
 (*
 Lemma LockServer_Function_spec {A:Type} {R:Type} {a_args:RPCArgs A} {r_ret:RPCReturn R} (srv args reply:loc) (a:RPCRequest) (r:RPCReply) (f:val) (fname:string) (rty_desc:descriptor) (arg_desc:descriptor) fPre fPost γrpc γPost :
