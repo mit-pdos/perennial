@@ -147,8 +147,8 @@ Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
   has_updates memLog.(slidingM.log) (drop (S memStart_txn_id) txns) ∧
   (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
 
-Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id (txns: list (u64 * list update.t)) (logger_pos : u64) (logger_txn_id : nat) : iProp Σ :=
-  (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat),
+Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id nextDiskEnd_txn_id (txns: list (u64 * list update.t)) (logger_pos : u64) (logger_txn_id : nat) : iProp Σ :=
+  (∃ (memStart_txn_id: nat),
       "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
       "#HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
       "%HdiskEnd_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
@@ -164,8 +164,8 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_
         ⌜(Forall (λ pos, int.val pos ≤ slidingM.memEnd σ) txns.*1)⌝
   ).
 
-Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id txns logger_pos logger_txn_id :
-  Persistent (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id txns logger_pos logger_txn_id).
+Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id :
+  Persistent (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id).
 Proof. apply _. Qed.
 
 Definition memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id : iProp Σ :=
@@ -376,13 +376,14 @@ Definition disk_inv γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb) ∗
       "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝.
 
-Definition disk_inv_durable γ s (cs: circΣ.t) : iProp Σ :=
+Definition disk_inv_durable γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
       (* TODO: what to do with diskEnd_txn_id_name ghost variable? *)
       "Hinstalled" ∷ is_installed_read γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) diskEnd_txn_id ∗
       "#Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
-      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb).
+      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb) ∗
+      "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝.
 
 Definition stable_sound (txns : list (u64 * list update.t)) (stable_txns : gmap nat unit) :=
   ∀ (txn_id txn_id' : nat) (pos : u64),
@@ -413,10 +414,10 @@ no mutable state) *)
 Definition wal_post_crash σ: Prop :=
   S (σ.(log_state.durable_lb)) = length σ.(log_state.txns).
 
-Definition is_wal_inner_durable γ s : iProp Σ :=
+Definition is_wal_inner_durable γ s dinit : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "%Hpostcrash" ∷ ⌜wal_post_crash s⌝ ∗
-    "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv_durable γ s cs ∗
+    "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv_durable γ s cs dinit ∗
                     "Hcirc" ∷ is_circular_state γ.(circ_name) cs
 .
 
@@ -786,15 +787,17 @@ Proof.
       lia.
 Qed.
 
-Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id txns (logger_pos : u64) (logger_txn_id : nat):
-  (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id txns logger_pos logger_txn_id) -∗
+Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id
+      txns (logger_pos : u64) (logger_txn_id : nat):
+  (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id) -∗
   (ghost_var γ.(txns_name) (1/2) txns) -∗
   (ghost_var γ.(logger_pos_name) (1 / 2) logger_pos) -∗
   (ghost_var γ.(logger_txn_id_name) (1 / 2) logger_txn_id) -∗
+  memLog_linv_nextDiskEnd_txn_id γ σ.(slidingM.mutable) nextDiskEnd_txn_id -∗
   memLog_linv γ σ diskEnd diskEnd_txn_id.
 Proof.
-  iNamed 1. iIntros "Ht Hlp Hlt". iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
-Abort.
+  iNamed 1. iIntros "Ht Hlp Hlt Hnext". iExists _, _, _, _, _. iFrame "∗ # %".
+Qed.
 
 (** * WPs for field operations in terms of lock invariant *)
 

@@ -16,6 +16,7 @@ Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
 Implicit Types (pos: u64) (txn_id: nat).
 
+Context (dinit: disk).
 Context (P: log_state.t -> iProp Σ).
 Let N := walN.
 Let circN := walN .@ "circ".
@@ -24,7 +25,7 @@ Lemma is_wal_inner_durable_init (bs: list Block) :
   0 d↦∗ repeat block0 513 ∗
   513 d↦∗ bs ={⊤}=∗
   let s := (log_state.mk (list_to_map (imap (λ i x, (513 + Z.of_nat i, x)) bs)) [(U64 0, [])] 0 0) in
-  ∃ γ, is_wal_inner_durable γ s.
+  ∃ γ, is_wal_inner_durable γ s dinit.
 Admitted.
 
 Lemma diskEnd_is_get_at_least (γ: circ_names) q (z: Z):
@@ -189,12 +190,12 @@ Proof.
     eapply lookup_take_Some in Hlookup; lia.
 Qed.
 
-Lemma is_wal_inner_durable_post_crash l γ σ dinit cs P':
+Lemma is_wal_inner_durable_post_crash l γ σ cs P':
   (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
   "Hinner" ∷ is_wal_inner l γ σ dinit ∗ "HP" ∷ P σ ∗
   "Hcirc" ∷ is_circular_state γ.(circ_name) cs ∗ "γcs" ∷ circular_pred γ cs  -∗
   post_crash (λ hG, ∃ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗
-                            is_wal_inner_durable γ σ' ∗
+                            is_wal_inner_durable γ σ' dinit ∗
                             P' σ' hG).
 Proof.
   rewrite /circular_pred.
@@ -258,11 +259,11 @@ Qed.
 *)
 Admitted.
 
-Lemma is_wal_post_crash γ P' l dinit:
+Lemma is_wal_post_crash γ P' l:
   (∀ σ σ', relation.denote (log_crash) σ σ' tt →
            IntoCrash (P σ) (P' σ')) →
   is_wal P l γ dinit ={↑walN, ∅}=∗ ▷
-  post_crash (λ hG, ∃ σ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗ is_wal_inner_durable γ σ' ∗ P' σ' hG).
+  post_crash (λ hG, ∃ σ σ', ⌜ relation.denote (log_crash) σ σ' tt ⌝ ∗ is_wal_inner_durable γ σ' dinit ∗ P' σ' hG).
 Proof.
 Abort.
 
@@ -280,21 +281,21 @@ Ltac show_crash2 :=
   iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
 
 Global Instance is_wal_inner_durable_disc γ σ:
-  Discretizable (is_wal_inner_durable γ σ).
+  Discretizable (is_wal_inner_durable γ σ dinit).
 Proof. apply _. Qed.
 
 Global Instance disk_inv_durable_disc γ σ cs:
-  Discretizable (disk_inv_durable γ σ cs).
+  Discretizable (disk_inv_durable γ σ cs dinit).
 Proof. apply _. Qed.
 
-Theorem wpc_mkLog_recover k d γ σ dinit :
-  {{{ is_wal_inner_durable γ σ }}}
+Theorem wpc_mkLog_recover k (d : loc) γ σ :
+  {{{ is_wal_inner_durable γ σ dinit }}}
     mkLog #d @ NotStuck; k; ⊤
   {{{ γ' l, RET #l;
        is_wal_inv_pre l γ' σ dinit ∗
        (* XXX whatever it is that background threads needs *)
        True}}}
-  {{{ is_wal_inner_durable γ σ }}}.
+  {{{ ∃ γ', is_wal_inner_durable γ' σ dinit }}}.
 Proof.
   clear P.
   iIntros (Φ Φc) "Hcs HΦ".
@@ -308,39 +309,54 @@ Proof.
 
   wpc_apply (wpc_recoverCircular with "[$]").
   iSplit.
-  { iLeft in "HΦ". iModIntro. iNext. iIntros "Hcirc". iApply "HΦ". show_crash2. }
+  { iLeft in "HΦ". iModIntro. iNext. iIntros "Hcirc". iApply "HΦ".
+    iExists _.
+    iSplit; first auto;
+    iSplit; first auto;
+    iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
+  }
 
   iNext. iIntros (γcirc' c diskStart diskEnd bufSlice upds).
   iIntros "(Hupd_slice&Hcirc&Happender&Hstart&Hdisk&%&%&%)".
 
   iDestruct (is_circular_state_wf with "Hcirc") as %Hwf_circ.
+  iNamed "Hdiskinv".
   iMod (diskEnd_is_get_at_least with "[$]") as "(Hdisk&#Hdisk_atLeast)".
   (* TODO: also allocate diskEnd_txn_id ghost var and put in this thread_own_alloc *)
   iMod (thread_own_alloc with "Hdisk") as (γdiskEnd_avail_name) "(HdiskEnd_exactly&Hthread_end)".
   iMod (start_is_get_at_least with "[$]") as "(Hstart&#Hstart_atLeast)".
   iMod (thread_own_alloc with "Hstart") as (γstart_avail_name) "(Hstart_exactly&Hthread_start)".
   iMod (ghost_var_alloc σ.(log_state.txns)) as (γtxns_name) "(γtxns & Howntxns)".
+  iMod (ghost_var_alloc diskEnd) as (γlogger_pos_name) "(γlogger_pos & Hown_logger_pos)".
+  iMod (ghost_var_alloc diskEnd_txn_id) as (γlogger_txn_id) "(γlogger_txn_id & Hown_logger_txn_id)".
+  iMod (ghost_var_alloc cs) as (γcs_name) "(γcs_name & Hown_cs)".
   iMod (alloc_txns_ctx _ σ.(log_state.txns)) as (γtxns_ctx_name) "(Htxns_ctx&Htxns)".
 
   set (γ0 :=
          ((set txns_name (λ _, γtxns_name)
-         (set txns_ctx_name (λ _, γtxns_ctx_name)
+          (set logger_pos_name (λ _, γlogger_pos_name)
+          (set logger_txn_id_name (λ _, γlogger_txn_id)
+          (set cs_name (λ _, γcs_name)
+          (set txns_ctx_name (λ _, γtxns_ctx_name)
                    (set start_avail_name (λ _, γstart_avail_name)
                         (set diskEnd_avail_name (λ _, γdiskEnd_avail_name)
-                             (set circ_name (λ _, γcirc') γ))))))).
+                             (set circ_name (λ _, γcirc') γ)))))))))).
 
   set (memLog := {|
                  slidingM.log := upds;
                  slidingM.start := diskStart;
                  slidingM.mutable := int.val diskStart + length upds |}).
 
-  iNamed "Hdiskinv".
-  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id σ.(log_state.txns) diskEnd diskEnd_txn_id) with "[-]" as "#H".
+  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id diskEnd_txn_id σ.(log_state.txns) diskEnd diskEnd_txn_id) with "[-]" as "#H".
   {
+    admit.
+  }
+  (*
     rewrite /memLog_linv_pers_core.
     rewrite /disk_inv_durable.
     iExists installed_txn_id, (S diskEnd_txn_id).
-(*
+    rewrite /is_installed_txn.
+    iNamed "circ.start".
     iDestruct "circ.start" as %Hcirc_start.
     iDestruct "circ.end" as %Hcirc_end.
     iDestruct "Hdurable" as %Hdurable.
@@ -371,35 +387,38 @@ Proof.
         admit.
     }
 *)
-    admit.
-  }
 
-  wpc_frame_compl "Htxns_ctx Howntxns Htxns γtxns Hupd_slice HdiskEnd_exactly Hstart_exactly".
+  wpc_frame_compl "Htxns_ctx Howntxns Htxns γtxns γlogger_pos γlogger_txn_id Hupd_slice HdiskEnd_exactly Hstart_exactly".
   { crash_case.
-    rewrite /is_wal_inner_durable. simpl. rewrite /is_durable_txn/is_installed_txn/is_durable//=.
-    simpl.
-    iSplitL ""; first auto. rewrite /txns_ctx.
-    iSplitL ""; first auto.
-    iFrame. iExists _; iFrame.
-    admit.
+    rewrite /is_wal_inner_durable. iExists γ0.
+    iSplit; first auto.
+    iSplit; first auto.
+    iNext. iExists cs.
+    iFrame. rewrite /disk_inv_durable.
+    iExists _, _. iFrame "Hinstalled". iFrame "# %".
   }
   wp_pures.
   wp_apply (wp_new_free_lock); iIntros (ml) "Hlock".
-(*
-  iDestruct (memLog_linv_pers_core_strengthen with "[$] [$]") as "HmemLog_linv".
-
-  set (γ' := γ0).
-
   wp_pures.
   iDestruct (updates_slice_cap_acc with "Hupd_slice") as "[Hupd_slice Hupds_cap]".
   wp_apply (wp_mkSliding with "[$]").
   { destruct Hwf_circ as (?&?). subst; lia. }
+
+  wp_pures.
   iIntros (lslide) "Hsliding".
   iDestruct (is_sliding_wf with "[$]") as %Hsliding_wf.
   wp_apply wp_allocStruct; first by auto.
   iIntros (st) "Hwal_state".
   wp_pures.
-  iMod (alloc_lock walN _ _ (wal_linv st γ')
+
+
+  iDestruct (memLog_linv_pers_core_strengthen with "H γtxns γlogger_pos [$] []") as "HmemLog_linv".
+  {
+    (* allocate map of stable txn id earlier ? *)
+    admit.
+  }
+
+  iMod (alloc_lock walN _ _ (wal_linv st γ0)
           with "[$] [HmemLog_linv Hsliding Hwal_state Hstart_exactly HdiskEnd_exactly]") as "#lk".
   { rewrite /wal_linv.
     assert (int.val diskStart + length upds = int.val diskEnd) as Heq_plus.
@@ -416,37 +435,66 @@ Proof.
     }
     rewrite //= /diskEnd_linv/diskStart_linv -Heq_plus.
     iFrame. iFrame "Hdisk_atLeast Hstart_atLeast".
-    admit. (* need to include diskEnd_txn_id_name in thread_own_ctx *)
   }
   wp_pures.
   wp_apply (wp_newCond with "[$]").
-  iIntros (condLogger) "cond_logger".
+  iIntros (condLogger) "#cond_logger".
   wp_apply (wp_newCond with "[$]").
-  iIntros (condInstall) "cond_install".
+  iIntros (condInstall) "#cond_install".
   wp_apply (wp_newCond with "[$]").
-  iIntros (condShut) "cond_shut".
+  iIntros (condShut) "#cond_shut".
   wp_apply wp_allocStruct.
-  { repeat econstructor. (* How to do val_ty for Disk? *) admit. }
-*)
+  { repeat econstructor. }
+  iIntros (l) "Hl". wp_pures. wp_apply (util_proof.wp_DPrintf).
+  wp_pures.
+  iNamed 1. iRight in "HΦ".
+  iApply ("HΦ" $! γ0). iSplitR ""; last auto.
+  rewrite /is_wal_inv_pre.
+  rewrite /circular_pred.
+  iSplitR "Hcirc γcs_name"; last first.
+  { iExists _. iFrame. }
+  rewrite /is_wal_inner. iFrame (Hwf). iFrame.
+  rewrite /is_wal_mem.
+  iSplitL "Hl".
+  {
+    iExists (Build_wal_state _ _ _ _ _ _ _). simpl. iFrame "#".
+    admit.
+  }
+  iSplitL "".
+  {
+    (* other 1/2 of stable map ctx that should be allocated up above *)
+    admit.
+  }
+  iExists _. iFrame "Hown_cs". rewrite /disk_inv. iFrame (Hdaddrs_init).
+  (* When allocating stable ctx, must allocate membership facts saying that installed/diskend txn id
+     are stable, then have lemma about about promoting is_installed_txn and is_durable_txn
+
+     Lemma for promoting is_installed_read to is_installed when being_installed
+     is empty, need to fix defn of latter so that the branch on if in
+     being_installed is weaker in the not in case (could be either the new txn id or old, it's
+     the new one only if we crashed mid install *)
+
+  iExists _, _. iFrame "Hdurable".
+
 Admitted. (* BUG: the theorem statement isn't complete yet, but if we abort
 this, then the proof runs in -vos mode... *)
 
-Theorem wpc_MkLog_recover stk k E1 d γ σ dinit :
-  {{{ is_wal_inner_durable γ σ }}}
+Theorem wpc_MkLog_recover stk k E1 d γ σ:
+  {{{ is_wal_inner_durable γ σ dinit }}}
     MkLog #d @ stk; k; E1
   {{{ σ' γ' l, RET #l;
       ⌜relation.denote (log_crash) σ σ' tt⌝ ∗
        is_wal_inv_pre l γ' σ' dinit }}}
-  {{{ is_wal_inner_durable γ σ }}}.
+  {{{ ∃ γ', is_wal_inner_durable γ' σ dinit }}}.
 Proof.
 Admitted.
 
 (* XXX: this is not quite correctly stated, there is some condition on E *)
-Theorem is_wal_inv_alloc {k : nat} l γ σ dinit :
+Theorem is_wal_inv_alloc {k : nat} l γ σ :
   ▷ P σ -∗
   is_wal_inv_pre l γ σ dinit ={⊤}=∗
   is_wal P l γ dinit ∗
-  <disc> |C={⊤}_(S k)=> (∃ σ', is_wal_inner_durable γ σ' ∗ P σ').
+  <disc> |C={⊤}_(S k)=> (∃ σ', is_wal_inner_durable γ σ' dinit ∗ P σ').
 Proof.
 Admitted.
 
