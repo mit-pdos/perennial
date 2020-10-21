@@ -175,7 +175,7 @@ Section goose_lang.
       "Htxn_ctx" ∷ map_ctx γtxn 1 (mspec.modified <$> mT)
   .
 
-  Instance is_buftxn_at_txn_proper l γ dinit γtxn :
+  Global Instance is_buftxn_at_txn_proper l γ dinit γtxn :
     Proper ((⊣⊢) ==> eq ==> (⊣⊢)) (is_buftxn_at_txn l γ dinit γtxn).
   Proof.
     intros P1 P2 Hequiv i i' <-.
@@ -196,7 +196,7 @@ Section goose_lang.
     iApply "Hwand". iApply "HrestoreP0". iFrame.
   Qed.
 
-  Instance is_buftxn_at_txn_mono l γ dinit γtxn :
+  Global Instance is_buftxn_at_txn_mono l γ dinit γtxn :
     Proper ((⊢) ==> eq ==> (⊢)) (is_buftxn_at_txn l γ dinit γtxn).
   Proof.
     intros P1 P2 Hequiv i i' <-.

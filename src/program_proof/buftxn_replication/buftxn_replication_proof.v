@@ -96,6 +96,7 @@ Section goose_lang.
     change (word.mul 8 4096) with (U64 32768).
     iMod (lift_liftable_into_txn with "Htxn rb_rep") as "[rb_rep Htxn]".
     { solve_ndisj. }
+    rewrite (right_id emp%I).
     iNamed "rb_rep".
     iMod ("Hfupd" with "HP") as "[HP HQ]".
     wp_apply (wp_BufTxn__ReadBuf with "[$Htxn $Ha0]").
@@ -131,7 +132,18 @@ Section goose_lang.
       wp_pures.
       iApply "HΦ".
       iFrame.
-    - admit. (* TODO(tej): might be doable with new buftxn spec that preserves old values *)
+    - iRename "Hpost" into "rb_rep".
+      wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
+      { iNext.
+        iExists _, _, _, _.
+        iFrame "∗#".
+        (* TODO(tej): well shoot, I guess we should've done modify_token and
+        then ephemeral_val_from... *)
+        admit.
+      }
+      wp_pures.
+      iApply "HΦ".
+      iFrame.
   Admitted.
 
 End goose_lang.
