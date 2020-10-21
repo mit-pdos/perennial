@@ -543,6 +543,30 @@ Proof.
     rewrite -insert_union_l fmap_insert //.
 Qed.
 
+Lemma gmap_union_disjoint {L} `{Countable L} V (m1 m2 : gmap L V) :
+  m1 ##ₘ m2 ->
+  m1 ∪ m2 = m2 ∪ m1.
+Proof.
+  induction m1 as [|l v m] using map_ind; intros.
+  - rewrite left_id right_id. eauto.
+  - apply map_disjoint_insert_l in H1; intuition.
+    rewrite -insert_union_l -insert_union_r; eauto.
+    rewrite H1; eauto.
+Qed.
+
+Lemma gmap_fmap_disjoint {L} `{Countable L} V1 V2 (m1 m2 : gmap L V1) (f: V1 -> V2) :
+  m1 ##ₘ m2 ->
+  f <$> m1 ##ₘ f <$> m2.
+Proof.
+  induction m1 as [|l v m] using map_ind; intros.
+  - rewrite fmap_empty. eapply map_disjoint_empty_l.
+  - apply map_disjoint_insert_l in H1; intuition.
+    rewrite fmap_insert.
+    eapply map_disjoint_insert_l_2.
+    { rewrite lookup_fmap H2. done. }
+    eauto.
+Qed.
+
 Theorem BufTxn_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E :
   ↑invN ⊆ E ->
   (
@@ -582,7 +606,13 @@ Proof.
     etrans; [eauto|].
     rewrite -gmap_union_fmap.
     rewrite -map_fmap_compose.
-    admit.
+    replace ((modified ∘ (λ v : object, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ (modified <$> mt))
+      with ((modified <$> mt) ∪ (modified ∘ (λ v : object, existT (projT1 v) (projT2 v, projT2 v)) <$> m)).
+    1: apply map_union_subseteq_l.
+    apply gmap_union_disjoint.
+    rewrite map_fmap_compose.
+    eapply gmap_fmap_disjoint.
+    eauto.
   }
   iSplit.
   { iApply big_sepM_union; eauto. }
@@ -603,7 +633,7 @@ Unshelve.
   destruct b.(bufDirty).
   2: { iApply (mapsto_txn_conflicts_with with "H1 H2"). }
   iApply (mapsto_txn_conflicts_with with "H1 H2").
-Admitted.
+Qed.
 
 Theorem wp_BufTxn__CommitWait buftx mt γUnified dinit (wait : bool) E (Q : nat -> iProp Σ) :
   {{{
