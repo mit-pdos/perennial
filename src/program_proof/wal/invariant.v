@@ -53,6 +53,7 @@ Record wal_names := mkWalNames
     start_avail_name : gname;
     stable_txn_ids_name : gname;
     logger_pos_name : gname;
+    (* TODO: this is the logger's next transaction id? *)
     logger_txn_id_name : gname;
   }.
 
@@ -113,6 +114,9 @@ Proof.
   iIntros "Hval".
   iExists _; iFrame.
 Qed.
+
+Global Instance txn_pos_timeless γ txn_id pos :
+  Timeless (txn_pos γ txn_id pos) := _.
 
 Global Instance txn_pos_persistent γ txn_id pos :
   Persistent (txn_pos γ txn_id pos) := _.
@@ -176,6 +180,7 @@ Definition memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id : iProp 
       "%HnextDiskEnd_max_stable" ∷
         ⌜∀ txn_id, txn_id > nextDiskEnd_txn_id -> stable_txns !! txn_id = None⌝.
 
+(* TODO: inline memLog_linv_pers_core *)
 Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp Σ :=
   (∃ (memStart_txn_id: nat) (nextDiskEnd_txn_id: nat)
      (txns: list (u64 * list update.t))
@@ -326,6 +331,8 @@ Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) 
      ∃ (b: Block),
        (* every disk block has at least through installed_txn_id (most have
         exactly, but some blocks may be in the process of being installed) *)
+       (* TODO: too strict for crashes, should be [a ∈ being_installed → txn_id'
+       = new_installed_txn_id], else could be either *)
        ⌜let txn_id' := (if decide (a ∈ being_installed)
                         then new_installed_txn_id
                         else installed_txn_id) in
@@ -337,7 +344,7 @@ Global Instance is_installed_Timeless γ d txns installed_txn_id diskEnd_txn_id 
   Timeless (is_installed γ d txns installed_txn_id diskEnd_txn_id) := _.
 
 (* weakening of [is_installed] for the sake of reading *)
-Definition is_installed_read γ d txns installed_lb diskEnd_txn_id : iProp Σ :=
+Definition is_installed_read d txns installed_lb diskEnd_txn_id : iProp Σ :=
   ([∗ map] a ↦ _ ∈ d,
     ∃ (b: Block),
       ⌜∃ txn_id', (installed_lb ≤ txn_id' ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat ∧
@@ -353,7 +360,7 @@ Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id diskEnd_txn_id 
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)
-Definition is_durable γ cs txns installed_txn_id diskEnd_txn_id : iProp Σ :=
+Definition is_durable cs txns installed_txn_id diskEnd_txn_id : iProp Σ :=
     "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns installed_txn_id diskEnd_txn_id⌝.
 
 Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :=
@@ -371,7 +378,7 @@ Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
 Definition disk_inv γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
   ∃ installed_txn_id diskEnd_txn_id,
       "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
-      "#Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "#Hdurable"   ∷ is_durable cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb) ∗
       "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝.
@@ -379,8 +386,8 @@ Definition disk_inv γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
 Definition disk_inv_durable γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
       (* TODO: what to do with diskEnd_txn_id_name ghost variable? *)
-      "Hinstalled" ∷ is_installed_read γ s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) diskEnd_txn_id ∗
-      "#Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+      "Hinstalled" ∷ is_installed_read s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) diskEnd_txn_id ∗
+      "#Hdurable"   ∷ is_durable cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb) ∗
       "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝.
@@ -444,15 +451,15 @@ Definition installer_inv γ: iProp Σ :=
   (* being_installed = ∅ *)
   (* need ownership of ghost var half for stating this.. *)
 
-Global Instance is_installed_read_Timeless {γ d txns installed_lb diskEnd_txn_id} :
-  Timeless (is_installed_read γ d txns installed_lb diskEnd_txn_id) := _.
+Global Instance is_installed_read_Timeless {d txns installed_lb diskEnd_txn_id} :
+  Timeless (is_installed_read d txns installed_lb diskEnd_txn_id) := _.
 
 (* this illustrates what reads rely on and is used by the crash proof, since
 after a crash we only rely on this property to restore the stronger
 invariant. *)
 Theorem is_installed_weaken_read γ d txns installed_lb diskEnd_txn_id :
   is_installed γ d txns installed_lb diskEnd_txn_id -∗
-  is_installed_read γ d txns installed_lb diskEnd_txn_id.
+  is_installed_read d txns installed_lb diskEnd_txn_id.
 Proof.
   rewrite /is_installed /is_installed_read.
   iIntros "I".

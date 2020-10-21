@@ -269,16 +269,21 @@ Tactic Notation "wpc_frame" :=
   | _ => fail 1 "wpc_frame: not a wpc"
   end.
 
-Ltac wpc_frame_go d js :=
+(** [pat] is the original pattern, for error messages *)
+Ltac wpc_frame_go pat d js :=
   apply (tac_wpc_wp_frame _ d js);
-  [ reduction.pm_reduce; split; [ try iFromCache (* crash condition from framed hyps *)
-                                | (* remaining wp *)
-                                cached_reduce
-  ] ].
+  [ reduction.pm_reduce;
+    lazymatch goal with
+    | |- False => fail "wpc_frame:" pat "not found"
+    | _ =>
+      split; [ try iFromCache (* crash condition from framed hyps *)
+             | cached_reduce (* remaining wp *) ]
+    end
+  ].
 
 Ltac wpc_frame_pat d pat :=
   let js := (eval cbv in (INamed <$> words pat)) in
-  wpc_frame_go d js.
+  wpc_frame_go pat d js.
 
 Tactic Notation "wpc_frame" constr(pat) := wpc_frame_pat base.Left pat.
 Tactic Notation "wpc_frame_compl" constr(pat) := wpc_frame_pat base.Right pat.

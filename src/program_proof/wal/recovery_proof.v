@@ -1,4 +1,4 @@
-From RecordUpdate Require Import RecordSet.
+From RecordUpdate Require Import RecordUpdate.
 
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
@@ -49,7 +49,7 @@ Definition log_crash_to σ diskEnd_txn_id :=
 
 Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id :
   is_durable_txn (Σ:=Σ) γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
-  is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
+  is_durable cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
   ⌜relation.denote log_crash σ (log_crash_to σ diskEnd_txn_id) tt⌝.
 Proof.
   iNamed 1.
@@ -67,9 +67,9 @@ Ltac iPersist H :=
   let H' := (eval cbn in (String.append "#" H)) in
   iDestruct H as H'.
 
-Instance is_installed_Durable γ d txns txn_id diskEnd_txn_id :
-  IntoCrash (is_installed_read γ d txns txn_id diskEnd_txn_id)
-            (λ _, is_installed_read γ d txns txn_id diskEnd_txn_id).
+Instance is_installed_Durable txns txn_id diskEnd_txn_id :
+  IntoCrash (is_installed_read dinit txns txn_id diskEnd_txn_id)
+            (λ _, is_installed_read dinit txns txn_id diskEnd_txn_id).
 Proof. apply _. Qed.
 
 Lemma concat_mono {A: Type} (l1 l2: list (list A)):
@@ -330,7 +330,7 @@ Proof.
   iMod (ghost_var_alloc diskEnd) as (γlogger_pos_name) "(γlogger_pos & Hown_logger_pos)".
   iMod (ghost_var_alloc diskEnd_txn_id) as (γlogger_txn_id) "(γlogger_txn_id & Hown_logger_txn_id)".
   iMod (ghost_var_alloc cs) as (γcs_name) "(γcs_name & Hown_cs)".
-  iMod (alloc_txns_ctx _ σ.(log_state.txns)) as (γtxns_ctx_name) "(Htxns_ctx&Htxns)".
+  iMod (alloc_txns_ctx _ σ.(log_state.txns)) as (γtxns_ctx_name) "Htxns_ctx".
 
   set (γ0 :=
          ((set txns_name (λ _, γtxns_name)
@@ -388,7 +388,7 @@ Proof.
     }
 *)
 
-  wpc_frame_compl "Htxns_ctx Howntxns Htxns γtxns γlogger_pos γlogger_txn_id Hupd_slice HdiskEnd_exactly Hstart_exactly".
+  wpc_frame_compl "Htxns_ctx Howntxns γtxns γlogger_pos γlogger_txn_id Hupd_slice HdiskEnd_exactly Hstart_exactly".
   { crash_case.
     rewrite /is_wal_inner_durable. iExists γ0.
     iSplit; first auto.

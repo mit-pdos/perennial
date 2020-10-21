@@ -167,3 +167,5 @@ Proof.
 Qed.
 
 End list.
+
+Typeclasses Opaque list_ctx.
