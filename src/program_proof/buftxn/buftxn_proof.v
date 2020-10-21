@@ -533,28 +533,11 @@ Proof.
   apply mapsto_txn_conflicting.
 Qed.
 
-Lemma gmap_union_disjoint {L} `{Countable L} V (m1 m2 : gmap L V) :
-  m1 ##ₘ m2 ->
-  m1 ∪ m2 = m2 ∪ m1.
-Proof.
-  induction m1 as [|l v m] using map_ind; intros.
-  - rewrite left_id right_id. eauto.
-  - apply map_disjoint_insert_l in H1; intuition.
-    rewrite -insert_union_l -insert_union_r; eauto.
-    rewrite H1; eauto.
-Qed.
-
 Lemma gmap_fmap_disjoint {L} `{Countable L} V1 V2 (m1 m2 : gmap L V1) (f: V1 -> V2) :
   m1 ##ₘ m2 ->
   f <$> m1 ##ₘ f <$> m2.
 Proof.
-  induction m1 as [|l v m] using map_ind; intros.
-  - rewrite fmap_empty. eapply map_disjoint_empty_l.
-  - apply map_disjoint_insert_l in H1; intuition.
-    rewrite fmap_insert.
-    eapply map_disjoint_insert_l_2.
-    { rewrite lookup_fmap H2. done. }
-    eauto.
+  rewrite !map_disjoint_dom !dom_fmap_L //.
 Qed.
 
 Theorem BufTxn_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E :
@@ -599,7 +582,7 @@ Proof.
     replace ((modified ∘ (λ v : object, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ (modified <$> mt))
       with ((modified <$> mt) ∪ (modified ∘ (λ v : object, existT (projT1 v) (projT2 v, projT2 v)) <$> m)).
     1: apply map_union_subseteq_l.
-    apply gmap_union_disjoint.
+    rewrite map_union_comm //.
     rewrite map_fmap_compose.
     eapply gmap_fmap_disjoint.
     eauto.
@@ -623,6 +606,19 @@ Unshelve.
   destruct b.(bufDirty).
   2: { iApply (mapsto_txn_conflicts_with with "H1 H2"). }
   iApply (mapsto_txn_conflicts_with with "H1 H2").
+Qed.
+
+Lemma map_filter_elem_of_dom {L} `{Countable L} {V} (m: gmap L V) P `{∀ x, Decision (P x)} (k: L) :
+  k ∈ dom (gset _) (filter P m) ↔
+  ∃ v, m !! k = Some v ∧ P (k, v).
+Proof.
+  rewrite !elem_of_dom.
+  split.
+  - destruct 1 as [x [Hlookup HP]%map_filter_lookup_Some].
+    eauto.
+  - destruct 1 as [v [Hlookup HP]].
+    eexists.
+    apply map_filter_lookup_Some; eauto.
 Qed.
 
 Theorem wp_BufTxn__CommitWait buftx mt γUnified dinit (wait : bool) E (Q : nat -> iProp Σ) :
@@ -666,7 +662,22 @@ Proof.
 
   iAssert (⌜ dom (gset addr) (filter (λ x, bufDirty <$> (gBufmap !! fst x) = Some true) mt) =
              dom (gset addr) (filter (λ x, (snd x).(bufDirty) = true) gBufmap) ⌝)%I as "%Hdom".
-  { admit. }
+  { iPureIntro.
+   apply dom_filter_L; intros a.
+   rewrite map_filter_elem_of_dom /=.
+   split.
+   - intros [v [Hlookup Hdirty]].
+     rewrite Hlookup /=.
+     simplify_eq/=.
+     eapply (f_equal (fmap _)) in Hlookup.
+     rewrite -lookup_fmap in Hlookup.
+     eapply lookup_weaken in Hlookup; [|apply Hbufmapelem].
+     fmap_Some in Hlookup as vo.
+     rewrite Hlookup.
+     eexists; split; eauto.
+     congruence.
+   - intros [vo [Hlookup Hdirty]].
+     fmap_Some in Hdirty; eauto. }
 
   iDestruct (big_sepM_mono with "Hctxelem1") as "Hctxelem1".
   { iIntros (k x Hkx) "H".
