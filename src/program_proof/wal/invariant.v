@@ -198,35 +198,52 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
         ⌜(Forall (λ pos, int.val pos ≤ slidingM.memEnd σ) txns.*1)⌝
   ).
 
-Theorem memLog_linv_implies_is_mem_memLog γ (σ: locked_state) diskEnd_txn_id :
-  memLog_linv γ σ.(memLog) σ.(diskEnd) diskEnd_txn_id -∗
-  memLog_linv γ σ.(memLog) σ.(diskEnd) diskEnd_txn_id ∗
-  ⌜∃ (memStart_txn_id: nat) (txns: list (u64 * list update.t)),
-    is_mem_memLog σ.(memLog) txns memStart_txn_id⌝.
+Lemma memLog_linv_txns_combined_updates memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id :
+    ∀ (Htxn_id_ordering: (memStart_txn_id ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat)
+      (HloggerPosOK: int.val diskEnd ≤ int.val logger_pos ≤ int.val memLog.(slidingM.mutable)),
+    memLog_linv_txns memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id -∗
+    ⌜has_updates memLog.(slidingM.log) (drop (S memStart_txn_id) txns)⌝.
 Proof.
-  iIntros "HmemLog".
-  iNamed "HmemLog".
-  iNamed "Htxns".
-  epose proof (has_updates_app _ _ _ _ His_memStart His_loggerEnd) as Hhas_updates_mid.
+  intros ??.
+  iNamed 1.
+  pose proof (has_updates_app _ _ _ _ His_memStart His_loggerEnd) as Hhas_updates_mid.
   rewrite -subslice_from_start subslice_app_contig in Hhas_updates_mid.
   2: rewrite /slidingM.logIndex; lia.
   rewrite subslice_from_start subslice_app_contig in Hhas_updates_mid.
   2: rewrite /slidingM.logIndex; lia.
-  epose proof (has_updates_app _ _ _ _ Hhas_updates_mid His_nextDiskEnd) as Hhas_updates_mid'.
+  pose proof (has_updates_app _ _ _ _ Hhas_updates_mid His_nextDiskEnd) as Hhas_updates_mid'.
   rewrite -subslice_from_start subslice_app_contig in Hhas_updates_mid'.
   2: rewrite /slidingM.logIndex; lia.
   rewrite subslice_from_start subslice_app_contig in Hhas_updates_mid'.
   2: rewrite /slidingM.logIndex; lia.
-  epose proof (has_updates_app _ _ _ _ Hhas_updates_mid' His_nextTxn) as Hhas_updates.
+  pose proof (has_updates_app _ _ _ _ Hhas_updates_mid' His_nextTxn) as Hhas_updates.
   rewrite take_drop /subslice drop_take_drop in Hhas_updates; try lia.
-  iSplitL.
-  2: {
-    iExists memStart_txn_id, txns.
-    iPureIntro.
-    rewrite /is_mem_memLog //.
-  }
-  iExists memStart_txn_id, nextDiskEnd_txn_id, _, _, logger_txn_id.
-  iFrame "# ∗ %".
+  auto.
+Qed.
+
+(* NOTE(tej): this is only proven because it was there before; it's just like
+the above but integrates Htxnpos_bound into the result *)
+Lemma memLog_linv_txns_to_is_mem_memLog memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id :
+    ∀ (Htxn_id_ordering: (memStart_txn_id ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat)
+      (HloggerPosOK: int.val diskEnd ≤ int.val logger_pos ≤ int.val memLog.(slidingM.mutable))
+      (Htxnpos_bound: Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1),
+    memLog_linv_txns memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id -∗
+    ⌜is_mem_memLog memLog txns memStart_txn_id⌝.
+Proof.
+  iIntros (???) "Htxns".
+  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hupds; auto.
+Qed.
+
+(* NOTE(tej): almost certainly useless, since txns is existential *)
+Theorem memLog_linv_implies_is_mem_memLog γ memLog diskEnd diskEnd_txn_id :
+  memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
+  ⌜∃ (memStart_txn_id: nat) (txns: list (u64 * list update.t)),
+    is_mem_memLog memLog txns memStart_txn_id⌝.
+Proof.
+  iIntros "HmemLog".
+  iNamed "HmemLog".
+  iDestruct (memLog_linv_txns_to_is_mem_memLog with "Htxns") as %HmemLog; auto.
+  eauto.
 Qed.
 
 Definition wal_linv_fields st σ: iProp Σ :=
@@ -419,6 +436,7 @@ Definition logger_inv γ circ_l: iProp Σ :=
   "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
 
 (* TODO: also needs authoritative ownership of some other variables *)
+(** installer_inv is the resources exclusively owned by the installer thread *)
 Definition installer_inv γ: iProp Σ :=
   "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available.
   (* XXX definitely missing stuff *)

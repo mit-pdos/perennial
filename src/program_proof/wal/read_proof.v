@@ -205,9 +205,10 @@ Theorem simulate_read_cache_hit {l γ Q σ dinit memLog diskEnd diskEnd_txn_id b
 Proof.
   iIntros (Happly) "[Hinner HP] Hlinv Hfupd".
   iNamed "Hinner".
-  iDestruct (memLog_linv_implies_is_mem_memLog with "Hlinv") as "Hlinv".
-
   iNamed "Hlinv".
+  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [done..|].
+
+  iNamed "Htxns".
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
 
   iMod ("Hfupd" $! σ σ with "[] [] HP") as "[HP HQ]"; first by eauto.
@@ -217,8 +218,6 @@ Proof.
     { eapply (relation.suchThat_runs _ _ true). eauto. }
     simpl. monad_simpl. simpl.
     rewrite /last_disk /disk_at_txn_id take_ge; last by lia.
-    rewrite /is_mem_memLog in His_memLog.
-    destruct His_memLog as [Hall_updates Hall_pos].
     rewrite Hall_updates in Happly.
     erewrite apply_upds_drop_txn; eauto.
     constructor. reflexivity.
@@ -228,7 +227,7 @@ Proof.
   iFrame "HP HQ".
   iFrame.
   iSplit; first by done.
-  iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
+  iExists _, _, _, _, _. iFrame "∗#%".
 Qed.
 
 Lemma apply_upds_in_not_None : ∀ upds a d,
@@ -277,6 +276,7 @@ Proof.
   iNamed "Hinner".
 
   iNamed "Hlinv".
+  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [done..|].
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
 
   iNamed "Hdisk".
@@ -302,8 +302,7 @@ Proof.
     econstructor; simpl.
     { eapply (relation.suchThat_runs _ _ tt).
       simpl.
-      destruct His_memLog as [His_memLog Hmemlog_pos].
-      rewrite His_memLog in Happly.
+      rewrite Hall_updates in Happly.
       rewrite /no_updates_since /set /=.
       eapply apply_upds_no_updates_since; last by apply Happly.
       (* missing memStart_txn_id < installed_txn_id from invariant?? *)
