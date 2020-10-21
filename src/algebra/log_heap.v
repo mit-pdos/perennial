@@ -81,6 +81,13 @@ Section definitions.
   Definition mapsto_cur (l: L) (v: V) : iProp Σ :=
     ptsto_mut hG.(log_heap_name) l 1 v.
 
+  Theorem mapsto_cur_conflict l v1 v2 :
+    mapsto_cur l v1 -∗ mapsto_cur l v2 -∗ False.
+  Proof.
+    rewrite /mapsto_cur.
+    iApply ptsto_conflict.
+  Qed.
+
 End definitions.
 
 Lemma seq_heap_init `{log_heapPreG L V Σ} σl:

@@ -209,7 +209,9 @@ Qed.
 
 Lemma is_mem_memLog_append (bs : list update.t) (σ : locked_state) (σs : log_state.t) (memStart_txn_id : nat) :
     slidingM.wf (memWrite σ.(memLog) bs) →
-    (memStart_txn_id ≤ length σs.(log_state.txns))%nat →
+    (* TODO: this used to require memStart_txn_id ≤, but now this is required;
+    does this make sense? it's coming from a drop (S memStart_txn_id). *)
+    (S memStart_txn_id ≤ length σs.(log_state.txns))%nat →
     is_mem_memLog σ.(memLog) σs.(log_state.txns) memStart_txn_id →
     is_mem_memLog (memWrite σ.(memLog) bs)
                     (σs.(log_state.txns) ++ [(slidingM.endPos (memWrite σ.(memLog) bs), bs)])
@@ -349,10 +351,10 @@ Proof.
     destruct matches; lia.
 Qed.
 
-Lemma is_durable_append γ cs txns txns' installed_txn_id diskEnd_txn_id :
+Lemma is_durable_append cs txns txns' installed_txn_id diskEnd_txn_id :
   (diskEnd_txn_id < length txns)%nat ->
-  is_durable γ cs txns installed_txn_id diskEnd_txn_id -∗
-  is_durable (Σ:=Σ) γ cs (txns ++ txns') installed_txn_id diskEnd_txn_id.
+  is_durable cs txns installed_txn_id diskEnd_txn_id -∗
+  is_durable (Σ:=Σ) cs (txns ++ txns') installed_txn_id diskEnd_txn_id.
 Proof.
   intros Hbound.
   rewrite /is_durable; iNamed 1.
