@@ -333,14 +333,14 @@ Proof.
   iMod (alloc_txns_ctx _ σ.(log_state.txns)) as (γtxns_ctx_name) "Htxns_ctx".
 
   set (γ0 :=
-         ((set txns_name (λ _, γtxns_name)
-          (set logger_pos_name (λ _, γlogger_pos_name)
-          (set logger_txn_id_name (λ _, γlogger_txn_id)
-          (set cs_name (λ _, γcs_name)
-          (set txns_ctx_name (λ _, γtxns_ctx_name)
-                   (set start_avail_name (λ _, γstart_avail_name)
-                        (set diskEnd_avail_name (λ _, γdiskEnd_avail_name)
-                             (set circ_name (λ _, γcirc') γ)))))))))).
+         γ <| circ_name := γcirc' |>
+           <| diskEnd_avail_name := γdiskEnd_avail_name |>
+           <| start_avail_name := γstart_avail_name |>
+           <| txns_ctx_name := γtxns_ctx_name |>
+           <| cs_name := γcs_name |>
+           <| logger_txn_id_name := γlogger_txn_id |>
+           <| logger_pos_name := γlogger_pos_name |>
+           <| txns_name := γtxns_name |>).
 
   set (memLog := {|
                  slidingM.log := upds;
