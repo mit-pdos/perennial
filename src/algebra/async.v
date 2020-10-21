@@ -30,7 +30,7 @@ Local Definition is_last σs k i : Prop :=
   ∃ v, lookup_async σs i k = Some v ∧
     ∀ i', i ≤ i' → i' < length (possible σs) → lookup_async σs i' k = Some v.
 Local Definition own_last_auth γ σs : iProp Σ :=
-  ∃ last, ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth last).
+  ∃ last, ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth 1 last).
 Local Definition own_last_frag γ k i : iProp Σ :=
   own γ.(async_map) (gmap_view_frag k (DfracOwn 1) i).
 
@@ -269,7 +269,7 @@ Proof.
   iMod (fmlist_alloc (possible σs)) as (γlist) "Hlist".
   iMod (fmlist_get_lb with "Hlist") as "[Halist Hflist]".
   set (last := (λ _, length (pending σs)) <$> (latest σs)).
-  iMod (own_alloc (gmap_view_auth last)) as (γmap) "Hmap".
+  iMod (own_alloc (gmap_view_auth 1 last)) as (γmap) "Hmap".
   { apply gmap_view_auth_valid. }
   iModIntro. iExists (Build_async_gname γlist γmap).
   rewrite /async_ctx /=. iFrame. iExists last. iFrame.

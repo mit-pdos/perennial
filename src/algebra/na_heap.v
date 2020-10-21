@@ -132,7 +132,7 @@ Section definitions.
   Definition na_heap_ctx (σ:gmap L (LK * V)) : iProp Σ := (∃ m (sz: gmap Z Z),
     ⌜ dom _ m ⊆ dom (gset L) σ ⌝ ∧
      own (na_heap_name hG) (● to_na_heap tls σ) ∗
-     own (na_meta_name hG) (gmap_view_auth m) ∗
+     own (na_meta_name hG) (gmap_view_auth 1 m) ∗
      own (na_size_name hG) (● to_na_size sz) ∗
      ⌜ block_sizes_wf σ sz ⌝ )%I.
 End definitions.
@@ -195,7 +195,7 @@ Proof.
   { rewrite auth_auth_valid. exact: to_na_heap_valid. }
   iMod (own_alloc (● to_na_size ∅)) as (γs) "Hs".
   { rewrite auth_auth_valid. exact: to_na_size_valid. }
-  iMod (own_alloc (gmap_view_auth ∅)) as (γm) "Hm".
+  iMod (own_alloc (gmap_view_auth 1 ∅)) as (γm) "Hm".
   { apply gmap_view_auth_valid. }
   iModIntro. iExists (Na_HeapG L V Σ _ _ _ _ _ _ _ γh γs γm).
   iExists ∅, ∅; simpl. iFrame "Hh Hm". rewrite dom_empty_L. iFrame.
@@ -957,7 +957,7 @@ Section na_heap_defs.
     { rewrite auth_auth_valid. exact: to_na_heap_valid. }
     iMod (own_alloc (● to_na_size ∅)) as (γs) "Hs".
     { rewrite auth_auth_valid. exact: to_na_size_valid. }
-    iMod (own_alloc (gmap_view_auth ∅)) as (γm) "Hm".
+    iMod (own_alloc (gmap_view_auth 1 ∅)) as (γm) "Hm".
     { apply gmap_view_auth_valid. }
     iModIntro. iExists {| na_heap_heap_name := γh; na_heap_size_name := γs; na_heap_meta_name := γm |}.
     iExists ∅, ∅; simpl. iFrame "Hh Hm". rewrite dom_empty_L. iFrame.
@@ -971,7 +971,7 @@ Section na_heap_defs.
   Proof.
     iMod (own_alloc (● to_na_heap tls σ)) as (γh) "Hh".
     { rewrite auth_auth_valid. exact: to_na_heap_valid. }
-    iMod (own_alloc (gmap_view_auth ∅)) as (γm) "Hm".
+    iMod (own_alloc (gmap_view_auth 1 ∅)) as (γm) "Hm".
     { apply gmap_view_auth_valid. }
     iMod (own_alloc (● to_na_size ∅)) as (γs) "Hs".
     { rewrite auth_auth_valid. exact: to_na_size_valid. }

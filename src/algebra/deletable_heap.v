@@ -423,7 +423,7 @@ Section gen_heap_deletable.
 
   Lemma mapsto_valid l q v : l ↦{q} v -∗ ✓ q.
   Proof.
-    rewrite mapsto_eq /mapsto_def own_valid !discrete_valid -auth_frag_valid.
+    rewrite mapsto_eq /mapsto_def own_valid !discrete_valid auth_frag_valid.
     by apply pure_mono=> /singleton_valid [??].
   Qed.
   Lemma mapsto_valid_2 l q1 q2 v1 v2 : l ↦{q1} v1 -∗ l ↦{q2} v2 -∗ ✓ (q1 + q2)%Qp.

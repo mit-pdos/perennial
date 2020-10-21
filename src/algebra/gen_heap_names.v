@@ -84,11 +84,11 @@ Section gen_heap_defs.
            let _ := gen_heapG_update_pre _ names in
            [∗ map] i↦v ∈ σ, i ↦ v .
   Proof.
-    iMod (own_alloc (gmap_view_auth (V:=leibnizO V) σ ⋅ to_gen_heap σ)) as (γh) "(?&Hfrag)".
+    iMod (own_alloc (gmap_view_auth 1 (V:=leibnizO V) σ ⋅ to_gen_heap σ)) as (γh) "(?&Hfrag)".
     { apply view_both_valid=>n k [df va]. rewrite lookup_fmap.
       destruct (σ !! k) as [v|] eqn:Hk; rewrite Hk; last done.
       simpl. intros [= <- <-]. eexists. done. }
-    iMod (own_alloc (gmap_view_auth (V:=gnameO) ∅)) as (γm) "Hm".
+    iMod (own_alloc (gmap_view_auth 1 (V:=gnameO) ∅)) as (γm) "Hm".
     { apply gmap_view_auth_valid. }
     iModIntro. iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
     iFrame. iSplitR "Hfrag".
@@ -106,9 +106,9 @@ Section gen_heap_defs.
   Lemma gen_heap_name_reinit {Σ} (hG: gen_heapG L V Σ) σ :
     ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update hG names) σ.
   Proof.
-    iMod (own_alloc (gmap_view_auth (V:=leibnizO V) σ)) as (γh) "Hh".
+    iMod (own_alloc (gmap_view_auth 1 (V:=leibnizO V) σ)) as (γh) "Hh".
     { apply gmap_view_auth_valid. }
-    iMod (own_alloc (gmap_view_auth (V:=gnameO) ∅)) as (γm) "Hm".
+    iMod (own_alloc (gmap_view_auth 1 (V:=gnameO) ∅)) as (γm) "Hm".
     { apply gmap_view_auth_valid. }
     iModIntro. iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
     iExists ∅; simpl. iFrame "Hh Hm". by rewrite dom_empty_L.
