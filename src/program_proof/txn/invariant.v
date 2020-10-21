@@ -168,4 +168,70 @@ Proof.
   intuition eauto; congruence.
 Qed.
 
+Theorem mapsto_txn_cur γ (a : addr) (v : {K & bufDataT K}) :
+  mapsto_txn γ a v -∗
+  mapsto_cur (hG := γ.(txn_logheap)) a v ∗
+  (∀ v', mapsto_cur (hG := γ.(txn_logheap)) a v' -∗ mapsto_txn γ a v').
+Proof.
+  rewrite /mapsto_txn.
+  iIntros "H". iNamed "H".
+  iFrame.
+  iIntros (v') "H". iExists _. iFrame.
+Qed.
+
+Theorem mapsto_txn_cur_map {A} γ (m : gmap addr A) (f : A -> {K & bufDataT K}) (xform : A -> A):
+  ( [∗ map] a↦v ∈ m, mapsto_txn γ a (f v) ) -∗
+  ( [∗ map] a↦v ∈ m, mapsto_cur (hG := γ.(txn_logheap)) a (f v)) ∗
+  ( ([∗ map] a↦v ∈ xform <$> m, mapsto_cur (hG := γ.(txn_logheap)) a (f v)) -∗
+    [∗ map] a↦v ∈ xform <$> m, mapsto_txn γ a (f v) ).
+Proof.
+  iIntros "Hm".
+  iDestruct (big_sepM_mono _ (λ a v, mapsto_cur (hG := γ.(txn_logheap)) a (f v) ∗
+                                    (mapsto_cur (hG := γ.(txn_logheap)) a (f (xform v)) -∗ mapsto_txn γ a (f (xform v))))%I with "Hm") as "Hm".
+  2: iDestruct (big_sepM_sep with "Hm") as "[$ Hm1]".
+  { iIntros (k x Hkx) "H". iDestruct (mapsto_txn_cur with "H") as "[$ H]".
+    iIntros "H'". iApply "H". iFrame. }
+  iIntros "Hm0".
+  iDestruct (bi_iff_2 with "[Hm1]") as "Hm1".
+  1: iApply (big_sepM_fmap _ (λ k x, mapsto_cur k (f x) -∗ mapsto_txn γ k (f x))%I).
+  2: iDestruct (big_sepM_sep with "[$Hm0 $Hm1]") as "Hm".
+  1: iFrame.
+  iApply (big_sepM_mono with "Hm").
+  iIntros (k x Hkx) "[H0 H1]". iApply "H1". iFrame.
+Qed.
+
+Theorem mapsto_txn_locked (γ : txn_names) l dinit lwh a data E :
+  ↑invN ⊆ E ->
+  ↑walN ⊆ E ∖ ↑invN ->
+  is_wal (wal_heap_inv γ.(txn_walnames)) l (wal_heap_walnames γ.(txn_walnames)) dinit ∗
+  inv invN (is_txn_always γ) ∗
+  is_locked_walheap γ.(txn_walnames) lwh ∗
+  mapsto_txn γ a data
+  ={E}=∗
+    is_locked_walheap γ.(txn_walnames) lwh ∗
+    mapsto_txn γ a data ∗
+    ⌜ ∃ v, locked_wh_disk lwh !! int.val a.(addrBlock) = Some v ⌝.
+Proof.
+  iIntros (H0 H1) "(#Hiswal & #Hinv & Hlockedheap & Hmapsto)".
+  iInv "Hinv" as ">Htxnalways".
+  iNamed "Htxnalways".
+  iNamed "Hmapsto".
+  iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as %Hvalid.
+  eapply gmap_addr_by_block_lookup in Hvalid.
+  destruct Hvalid as [offmap [Hmetam Hoffmap]].
+  iDestruct (big_sepM2_lookup_2_some with "Hheapmatch") as (x) "%Hlm"; eauto.
+  iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hx Hheapmatch]"; eauto.
+  iNamed "Hx".
+  iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Htxn_hb]") as "(Hlockedheap & Htxn_hb & %)"; eauto.
+  iModIntro.
+  iSplitR "Hlockedheap Hmapsto_log Hmapsto_meta Hmod_frag".
+  { iNext. iExists _, _, _. iFrame.
+    iApply "Hheapmatch". iExists _, _, _. iFrame. iFrame "%". }
+  iModIntro.
+  iFrame.
+  iSplitL.
+  { iExists _. iFrame. }
+  iExists _. done.
+Qed.
+
 End goose_lang.
