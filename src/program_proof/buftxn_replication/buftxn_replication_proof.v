@@ -3,7 +3,7 @@ From Perennial.algebra Require Import liftable liftable2 async.
 
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn buftxn_replication.
-From Perennial.program_proof Require Import buftxn.buftxn_proof buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import buftxn.buftxn_proof buftxn.sep_buftxn_proof txn.invariant.
 
 From Perennial.goose_lang.lib Require Import crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
@@ -69,7 +69,7 @@ Section goose_lang.
     "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_l) ∗
     (* TODO: make this a crash lock with cinv *)
     "#His_lock" ∷ is_lock lockN #m_l (rb_linv l γ) ∗
-    "#His_txn" ∷ txn_proof.is_txn txn_l γ.(buftxn_txn_names) dinit ∗
+    "#His_txn" ∷ invariant.is_txn txn_l γ.(buftxn_txn_names) dinit ∗
     "#Htxns" ∷ is_txn_system txnN γ.
 
   Theorem wp_RepBlock__Read l Q :
