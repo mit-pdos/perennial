@@ -59,7 +59,7 @@ Definition TryLock_spec_pre (srv args reply:loc) (lockReq:@RPCRequest u64) γrpc
 
 Lemma tryLock_core_spec (srv:loc) (tryLockArgs:u64) :
 {{{ 
-     LockServer_own_core srv ∗ TryLock_Pre tryLockArgs
+     LockServer_own_core srv ∗ ▷ TryLock_Pre tryLockArgs
 }}}
   LockServer__tryLock_core #srv #tryLockArgs
 {{{
@@ -72,7 +72,7 @@ Admitted.
 Definition TryLockRequestC := @RPCRequest u64.
 Definition TryLockReplyC := @RPCReply bool.
 
-Lemma TryLock_spec_using_helper (srv req_ptr reply_ptr:loc) (req:TryLockRequestC) (reply:TryLockReplyC) γrpc γPost :
+Lemma TryLock_spec (srv req_ptr reply_ptr:loc) (req:TryLockRequestC) (reply:TryLockReplyC) γrpc γPost :
 {{{ TryLock_spec_pre srv req_ptr reply_ptr req γrpc γPost
     ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
@@ -82,60 +82,11 @@ Lemma TryLock_spec_using_helper (srv req_ptr reply_ptr:loc) (req:TryLockRequestC
   ∨ RPCReplyReceipt req reply'.(Ret) γrpc)
 }}}.
 Proof.
-  iIntros (Φ) "[Hpre Hreply] Hpost".
-  iNamed "Hpre".
-  wp_lam.
-  wp_pures.
-  iNamed "Hls".
-  wp_loadField.
-  wp_apply (acquire_spec mutexN #mu_ptr _ with "Hmu").
-  iIntros "(Hlocked & Hlsown)".
-  iNamed "Hlsown".
-  iNamed "Hreq"; iNamed "Hreply".
-  wp_seq.
-  repeat wp_loadField.
-  wp_apply (LockServer__checkReplyCache_spec with "[-Hpost Hlocked Hlsown]"); first iFrame.
-  iIntros (runCore) "HcheckCachePost".
-  iDestruct "HcheckCachePost" as (b reply' ->) "HcachePost".
-  iNamed "HcachePost".
-  destruct b.
-  {
-    wp_pures.
-    wp_loadField.
-    iDestruct "Hcases" as "[[% _]|Hcases]"; first done.
-    iNamed "Hcases".
-    wp_apply (release_spec mutexN #mu_ptr _ with "[-Hreply Hpost Hcases]"); try iFrame "Hmu Hlocked"; eauto.
-    { iNext.  iFrame. iExists _, _, _, _. iFrame. }
-    wp_seq.
-    iApply "Hpost".
-    iExists reply'.
-    iFrame.
-  }
-  {
-    wp_pures.
-    iDestruct "Hcases" as "[Hcases | [% _]]"; last discriminate.
-    iNamed "Hcases".
-    repeat wp_loadField.
-    iMod (server_takes_request with "[] [] [Hsrpc]") as "[HcorePre Hprocessing]"; eauto.
-    iMod "HcorePre".
-    wp_apply (tryLock_core_spec with "[$Hlsown $HcorePre]"); eauto.
-    iIntros (retval) "[Hsrv HcorePost]".
-    iNamed "Hreply".
-    iDestruct "HcorePost" as (r ->) "HcorePost".
-    wp_storeField.
-    wp_loadField.
-    wp_loadField.
-    wp_loadField.
-    wp_apply (wp_MapInsert _ _ lastReplyM _ r #r with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
-    iMod (server_completes_request with "[] [] HcorePost Hprocessing") as "[#Hreceipt Hsrpc] /="; eauto.
-    wp_seq.
-    wp_loadField.
-    wp_apply (release_spec mutexN #mu_ptr _ with "[-HReplyOwnStale HReplyOwnRet Hpost]"); try iFrame "Hmu Hlocked".
-    { iNext. iFrame. iExists _, _, _, _. iFrame. }
-    wp_seq.
-    iApply "Hpost".
-    iExists {|Stale:=false; Ret:=r |}. rewrite H1. iFrame; iFrame "#".
-  }
+  replace (LockServer__TryLock) with (LockServer_Function LockServer__tryLock_core "LockServer__TryLock"); eauto.
+  iIntros (Φ) "Hpre Hpost".
+  iApply (LockServer_Function_spec with "[Hpre]"); eauto.
+  { apply tryLock_core_spec. } 
+  iDestruct "Hpre" as "[Hpre Hreply]". iFrame.
 Qed.
 
 Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockRequestC) (lockReply:TryLockReplyC) γrpc γPost :
@@ -155,7 +106,7 @@ Lemma CallTryLock_spec (srv args reply:loc) (lockArgs:TryLockRequestC) (lockRepl
 Proof using Type*.
   replace (CallTryLock) with (CallFunction LockServer__TryLock "CallTryLock"); eauto.
   iIntros (Φ) "Hpre Hpost".
-  iApply (CallFunction_spec with "[Hpre]"); eauto; try refine TryLock_spec_using_helper; eauto.
+  iApply (CallFunction_spec with "[Hpre]"); eauto; try refine TryLock_spec; eauto.
   { by rewrite /Persistent; eauto. }
   { Opaque own_reply. simpl. iNamed "Hpre". iFrame "#";iFrame. }
 Qed.

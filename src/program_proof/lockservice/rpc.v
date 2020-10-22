@@ -306,19 +306,18 @@ Proof using Type*.
   by injection Heq as ->.
 Qed.
 
-Lemma server_replies_to_request {_:into_val.IntoVal R} (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:RPC_GS) (reply:R)
-      (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
+Lemma server_replies_to_request {_:into_val.IntoVal R} (req:RPCRequest) (γrpc:RPC_GS) (reply:R)
+      (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) :
      (lastSeqM !! req.(CID) = Some req.(Seq))
   -> (∃ ok, map_get lastReplyM req.(CID) = (reply, ok))
   -> (inv replyCacheInvN (ReplyCache_inv γrpc ))
-  -∗ (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γP))
   -∗ RPCServer_own lastSeqM lastReplyM γrpc
   ={⊤}=∗
       RPCReplyReceipt req reply γrpc
   ∗ RPCServer_own (lastSeqM) (lastReplyM) γrpc.
 Proof.
   intros Hsome [ok Hreplymapget].
-  iIntros "Hlinv HreqInv Hsown"; iNamed "Hsown".
+  iIntros "Hlinv Hsown"; iNamed "Hsown".
   iAssert ⌜ok = true⌝%I as %->.
   { iDestruct (big_sepM2_lookup_1 _ _ _ req.(CID) with "Hrcagree") as "HH"; eauto.
     iDestruct "HH" as (x B) "H".
