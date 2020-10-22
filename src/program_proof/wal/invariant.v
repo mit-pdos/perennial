@@ -346,11 +346,15 @@ Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) 
 Global Instance is_installed_Timeless γ d txns installed_txn_id diskEnd_txn_id :
   Timeless (is_installed γ d txns installed_txn_id diskEnd_txn_id) := _.
 
-(* weakening of [is_installed] for the sake of reading *)
+(* weakening of [is_installed] at crash time *)
+(* TODO(tej): remove "read" from the name, reading actually uses an accessor
+theorem rather than this weakening *)
 Definition is_installed_read d txns installed_lb diskEnd_txn_id : iProp Σ :=
+  ∃ new_installed_txn_id,
+    ⌜(installed_lb ≤ new_installed_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
   ([∗ map] a ↦ _ ∈ d,
     ∃ (b: Block),
-      ⌜∃ txn_id', (installed_lb ≤ txn_id' ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat ∧
+      ⌜∃ txn_id', (txn_id' = installed_lb ∨ txn_id' = new_installed_txn_id) ∧
       apply_upds (txn_upds (take (S txn_id') txns)) d !! a = Some b⌝ ∗
       a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
 
@@ -457,9 +461,8 @@ Definition installer_inv γ: iProp Σ :=
 Global Instance is_installed_read_Timeless {d txns installed_lb diskEnd_txn_id} :
   Timeless (is_installed_read d txns installed_lb diskEnd_txn_id) := _.
 
-(* this illustrates what reads rely on and is used by the crash proof, since
-after a crash we only rely on this property to restore the stronger
-invariant. *)
+(* this illustrates what crashes rely on; at crash time being_installed is
+arbitrary, so we weaken to this *)
 Theorem is_installed_weaken_read γ d txns installed_lb diskEnd_txn_id :
   is_installed γ d txns installed_lb diskEnd_txn_id -∗
   is_installed_read d txns installed_lb diskEnd_txn_id.
@@ -467,6 +470,8 @@ Proof.
   rewrite /is_installed /is_installed_read.
   iIntros "I".
   iNamed "I".
+  iExists new_installed_txn_id.
+  iSplit; [ done | ].
   iApply (big_sepM_mono with "Hdata").
   iIntros (a b0 Hlookup) "HI".
   iDestruct "HI" as (b' txn_id') "([% %] & Hb&%)".
@@ -474,7 +479,7 @@ Proof.
   iPureIntro.
   split; [|done].
   exists txn_id'. split; [|done].
-  destruct (decide _); intuition; subst; lia.
+  destruct (decide _); intuition; subst; auto.
 Qed.
 
 (* TODO: this isn't true, because [is_installed_read] is too weak, allowing
@@ -490,6 +495,11 @@ Theorem is_installed_restore_read γ d txns installed_txn_id diskEnd_txn_id new_
   is_installed_read d txns installed_txn_id diskEnd_txn_id -∗
   is_installed γ d txns installed_txn_id diskEnd_txn_id.
 Proof.
+  iIntros "Hinstalled_txn Hbeing_installed Hbeing_installed_txns Hinstalled_read".
+  iDestruct "Hinstalled_read" as (new_installed_txn_id' Hbounds) "Hd".
+  (* TODO: [new_installed_txn_id] is used in both ghost variable and in
+   [is_installed_read], can't be in both; might get fixed by getting rid of
+   [being_installed_txns_name] *)
 Abort.
 
 Theorem is_wal_read_mem l γ dinit : is_wal l γ dinit -∗ |={⊤}=> ▷ is_wal_mem l γ.
