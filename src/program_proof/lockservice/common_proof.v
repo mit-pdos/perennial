@@ -161,7 +161,6 @@ Definition is_server (srv_ptr:loc) γrpc: iProp Σ :=
 .
 End common_defs.
 
-
 Section common_proof.
 Context `{rpc_args:RPCArgs A}.
 Definition LockReply := @RPCReply bool.
@@ -212,55 +211,14 @@ Proof.
   wp_pures.
   iNamed "Hreply".
   wp_storeField.
-
-  iAssert
-    (
-{{{
-⌜int.nat req.(rpc.Seq) > 0⌝
-}}}
-  if: #ok then #v ≥ #req.(rpc.Seq)
-         else #false
-{{{ ifr, RET ifr; ∃b:bool, ⌜ifr = #b⌝
-  ∗ ((⌜b = false⌝ ∗ ⌜int.nat v < int.nat req.(rpc.Seq)⌝)
-      ∨
-     (⌜b = true⌝ ∗  ⌜(int.val req.(rpc.Seq) ≤ int.val v ∧ ok=true)%Z⌝)
-    )
-}}}
-    )%I as "Htemp".
-  {
-    iIntros (Ψ). iModIntro.
-    iIntros "HΨpre HΨpost".
-    iDestruct "HΨpre" as "%".
-    destruct ok.
-    { wp_pures.
-      destruct bool_decide eqn:Hineq.
-      - apply bool_decide_eq_true in Hineq.
-        iApply "HΨpost". iExists true.
-        iSplitL ""; first done.
-        iRight. iFrame. by iPureIntro.
-      - apply bool_decide_eq_false in Hineq.
-        iApply "HΨpost". iExists false.
-        iSplitL ""; first done.
-        iLeft. iFrame. iSplitL ""; eauto.
-        iPureIntro. lia.
-    }
-    {
-      wp_pures.
-      apply map_get_false in HSeqMapGet as [Hnone Hv]. rewrite Hv.
-      iApply "HΨpost". iExists false.
-      iSplitL ""; first done.
-      iLeft. iSplitL ""; eauto.
-    }
-  }
-  wp_apply "Htemp"; eauto.
-  iIntros (ifr) "Hifr".
-  iDestruct "Hifr" as (b ->) "Hifr".
-  destruct b.
+  wp_apply (wp_and ok (int.val req.(rpc.Seq) ≤ int.val v)%Z).
+  { iApply wp_value. by destruct ok. }
+  { iIntros "_". wp_pures. done. }
+  rewrite bool_decide_decide.
+  destruct (decide (ok ∧ int.val req.(rpc.Seq) ≤ int.val v)%Z) as [ [Hok Hineq]|Hmiss].
   { (* Cache hit *)
+    destruct ok; last done. clear Hok. (* ok = false *)
     wp_pures.
-    iDestruct "Hifr" as "[[% _]|[_ Hineq ]]"; first discriminate.
-    iDestruct "Hineq" as %[Hineq Hok].
-    rewrite ->Hok in *.
     apply map_get_true in HSeqMapGet.
     destruct bool_decide eqn:Hineqstrict.
     - wp_pures.
@@ -289,8 +247,7 @@ Proof.
   }
   { (* Cache miss *)
     wp_pures.
-    iDestruct "Hifr" as "[[_ Hineq]|[% _ ]]"; last discriminate.
-    iDestruct "Hineq" as %Hineq.
+    apply not_and_r in Hmiss.
     wp_loadField.
     wp_apply (wp_MapInsert _ _ lastSeqM _ req.(rpc.Seq) (#req.(rpc.Seq)) with "HlastSeqMap"); eauto.
     iIntros "HlastSeqMap".
@@ -300,8 +257,12 @@ Proof.
     iFrame; iFrame "#".
     iSplitL ""; eauto.
     iLeft. iFrame. iPureIntro.
-    split; eauto. split; eauto. injection HSeqMapGet as <-.
-    simpl. word.
+    split; eauto. split; eauto. injection HSeqMapGet as <- Hv. simpl.
+    destruct Hmiss as [Hnok|Hineq].
+    - destruct ok; first done.
+      destruct (lastSeqM !! req.(CID)); first done.
+      simpl. word.
+    - word.
   }
 Qed.
 
