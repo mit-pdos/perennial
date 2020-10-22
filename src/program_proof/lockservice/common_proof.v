@@ -12,6 +12,7 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From iris.algebra Require Import numbers.
 From Coq.Structures Require Import OrdersTac.
+
 Section rpc_types.
 Context `{!heapG Σ}.
 
@@ -61,7 +62,6 @@ End rpc_types.
 Section common_proof.
 
 Context `{!heapG Σ}.
-
 Axiom nondet_spec:
   {{{ True }}}
     nondet #()
@@ -127,7 +127,6 @@ Defined.
 { eauto. }
 Defined.
 
-Section common_defs.
 Context `{!rpcG Σ u64}.
 Context `{Server_own_core: loc -> iProp Σ}.
 
@@ -682,4 +681,4 @@ Proof using Type*.
   }
 Qed.
   
-End lockservice_common_proof.
+End common_proof.
