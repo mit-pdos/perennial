@@ -160,7 +160,7 @@ Section goose_lang.
   to use address [a] in a transaction", together with the fact that the current
   disk value is obj *)
   Definition modify_token γ (a: addr) obj: iProp Σ :=
-    txn_proof.mapsto_txn γ.(buftxn_txn_names) a obj.
+    txn.invariant.mapsto_txn γ.(buftxn_txn_names) a obj.
 
   Definition is_buftxn_at_txn l γ dinit γtxn P0 i : iProp Σ :=
     ∃ (mT: gmap addr versioned_object),
@@ -539,8 +539,9 @@ Section goose_lang.
         somehow *)
     }}}
       BufTxn__CommitWait #l #true
-    {{{ (txn_id':nat) (ok:bool), RET #ok;
-        if ok then P (λ a v, modify_token γ a v ∗
+    {{{ (ok:bool), RET #ok;
+        if ok then ∃ txn_id',
+            P (λ a v, modify_token γ a v ∗
                              ephemeral_val_from γ.(buftxn_async_name) txn_id' a v) ∗
                      txn_durable γ txn_id'
         else P0 }}}.
@@ -555,10 +556,14 @@ Section goose_lang.
     iNamed "Hbuftxn".
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
-    wp_apply (mspec.wp_BufTxn__CommitWait _ _ _ _ _ _
+    wp_apply (mspec.wp_BufTxn__CommitWait
+                ([∗ map] a↦v ∈ (mspec.committed <$> mT),
+                 ephemeral_val_from γ.(buftxn_async_name) txn_id0 a v)
+                _ _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
                 with "[$Hbuftxn Hold_vals]").
-    { iInv "Htxn_system" as ">Hinner" "Hclo".
+    { iSplit; [ iFrame | ].
+      iInv "Htxn_system" as ">Hinner" "Hclo".
       iModIntro.
       iNamed "Hinner".
       iExists σs.
@@ -586,19 +591,18 @@ Section goose_lang.
     iIntros (ok) "Hpost".
     destruct ok.
     - iDestruct "Hpost" as (txn_id) "(HQ&Hlower_bound&Hmod_tokens)".
-      iApply ("HΦ" $! txn_id).
+      iApply "HΦ". iExists txn_id.
       iSplitR "Hlower_bound".
       + iApply "HPrestore".
         iApply big_sepM_subseteq; eauto.
         iApply big_sepM_sep; iFrame.
       + iSpecialize ("Hlower_bound" with "[% //]").
         iAssumption.
-    - iApply "HΦ".
+    - iDestruct "Hpost" as "[Heph Hmod_tokens]".
+      iApply "HΦ".
       iApply "HrestoreP0".
       rewrite big_sepM_sep.
       iFrame.
-      (* TODO: on failure [mspec.BufTxn__CommitWait] loses any resources in the
-      fupd, should give those back (the usual [PreQ] business) *)
-  Admitted.
+  Qed.
 
 End goose_lang.

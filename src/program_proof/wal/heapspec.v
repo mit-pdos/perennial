@@ -1387,8 +1387,8 @@ Proof.
   intuition eauto.
 Qed.
 
-Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) (PreQ : iProp Σ) lwh :
-  ( PreQ ={⊤ ∖ ↑walN, E}=∗
+Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) (PreQ : iProp Σ) (PreQ' : iProp Σ) lwh :
+  PreQ' ∧ ( PreQ ={⊤ ∖ ↑walN, E}=∗
       ∃ olds crash_heaps,
         memappend_pre γh.(wal_heap_h) bs olds ∗
         memappend_crash_pre γh bs crash_heaps ∗
@@ -1404,10 +1404,11 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) (PreQ : iProp Σ) lwh 
         let txn_num := length σ.(log_state.txns) in
       ( (wal_heap_inv γh) σ
           ={⊤ ∖↑ walN}=∗ ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ (wal_heap_inv γh) σ' ∗ (txn_pos γh.(wal_heap_walnames) txn_num txn_id -∗ Q txn_id)) ) ∧
-    ( "Hlockedheap" ∷ is_locked_walheap γh lwh ∗ PreQ )).
+    ( "Hlockedheap" ∷ is_locked_walheap γh lwh ∗ PreQ ∗ PreQ' )).
 Proof using walheapG0.
   iIntros "Hpre Hlockedheap HpreQ".
-  iSplit; last by iFrame.
+  iSplit; last first.
+  { iFrame. iLeft in "Hpre". iFrame. }
 
   iIntros (σ σ' pos) "% % Hinv".
   iNamed "Hinv".

@@ -621,10 +621,10 @@ Proof.
     apply map_filter_lookup_Some; eauto.
 Qed.
 
-Theorem wp_BufTxn__CommitWait buftx mt γUnified dinit (wait : bool) E (Q : nat -> iProp Σ) :
+Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) :
   {{{
     is_buftxn buftx mt γUnified dinit ∗
-    ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
+    PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
         "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (1/2) σl ∗
         "Hcrashstates_fupd" ∷ (
           let σ := (modified <$> mt) ∪ latest σl in
@@ -640,6 +640,7 @@ Theorem wp_BufTxn__CommitWait buftx mt γUnified dinit (wait : bool) E (Q : nat 
       (⌜wait = true⌝ -∗ own γUnified.(txn_walnames).(wal_heap_durable_lb) (◯ (MaxNat txnid))) ∗
       [∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v
     else
+      PreQ ∗
       [∗ map] a ↦ v ∈ committed <$> mt, mapsto_txn γUnified a v
   }}}.
 Proof.
@@ -764,7 +765,7 @@ Proof.
     admit.
 
   - admit.
-    (* TODO: need PreQ in txn__CommitWait *)
+    (* TODO: need PreQ in txn__CommitWait *) (* NOTE(tej): done *)
 *)
 Admitted.
 
