@@ -17,7 +17,7 @@ End TryLockRequest.
 Module TryLockReply.
   Definition S := struct.decl [
     "Stale" :: boolT;
-    "Ret" :: boolT
+    "Ret" :: uint64T
   ].
 End TryLockReply.
 
@@ -54,7 +54,7 @@ Module LockServer.
     "mu" :: lockRefT;
     "locks" :: mapT boolT;
     "lastSeq" :: mapT uint64T;
-    "lastReply" :: mapT boolT
+    "lastReply" :: mapT uint64T
   ].
 End LockServer.
 
@@ -62,10 +62,10 @@ Definition LockServer__tryLock_core: val :=
   rec: "LockServer__tryLock_core" "ls" "lockname" :=
     let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") "lockname" in
     (if: "locked"
-    then #false
+    then #0
     else
       MapInsert (struct.loadF LockServer.S "locks" "ls") "lockname" #true;;
-      #true).
+      #1).
 
 Definition LockServer__unlock_core: val :=
   rec: "LockServer__unlock_core" "ls" "lockname" :=
@@ -73,8 +73,8 @@ Definition LockServer__unlock_core: val :=
     (if: "locked"
     then
       MapInsert (struct.loadF LockServer.S "locks" "ls") "lockname" #false;;
-      #true
-    else #false).
+      #1
+    else #0).
 
 Definition LockServer__checkReplyCache: val :=
   rec: "LockServer__checkReplyCache" "ls" "CID" "Seq" "reply" :=
@@ -128,7 +128,7 @@ Definition MakeServer: val :=
     let: "ls" := struct.alloc LockServer.S (zero_val (struct.t LockServer.S)) in
     struct.storeF LockServer.S "locks" "ls" (NewMap boolT);;
     struct.storeF LockServer.S "lastSeq" "ls" (NewMap uint64T);;
-    struct.storeF LockServer.S "lastReply" "ls" (NewMap boolT);;
+    struct.storeF LockServer.S "lastReply" "ls" (NewMap uint64T);;
     struct.storeF LockServer.S "mu" "ls" (lock.new #());;
     "ls".
 
@@ -224,7 +224,7 @@ Definition Clerk__Lock: val :=
   rec: "Clerk__Lock" "ck" "lockname" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: Clerk__TryLock "ck" "lockname"
+      (if: (Clerk__TryLock "ck" "lockname" = #1)
       then Break
       else Continue));;
     #true.
