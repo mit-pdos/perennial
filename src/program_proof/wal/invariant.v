@@ -1,5 +1,5 @@
 From Goose.github_com.mit_pdos.goose_nfsd Require Export wal.
-From RecordUpdate Require Import RecordSet.
+From RecordUpdate Require Import RecordUpdate.
 From iris.algebra Require Import gset.
 
 From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Map.
@@ -321,24 +321,24 @@ region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
 Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) : iProp Σ :=
   ∃ (new_installed_txn_id: nat) (being_installed: gset Z),
-    (* TODO: the other half of these are owned by the installer, giving it full
+    (* TODO(tej): the other half of these are owned by the installer, giving it full
      knowledge of in-progress installations and exclusive update rights; need to
      write down what it maintains as part of its loop invariant *)
     "Howninstalled" ∷ (
       "Hinstalled_txn" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
       "Hbeing_installed" ∷ ghost_var γ.(being_installed_name) (1/2) being_installed ∗
+      (* TODO(tej): this should probably be replaced with a persistent [txns_are]
+      fact rather than a new ghost variable *)
       "Hbeing_installed_txns" ∷ ghost_var γ.(being_installed_txns_name) (1/2)
         (subslice (S installed_txn_id) (S new_installed_txn_id) txns)) ∗
     "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ new_installed_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
     "Hdata" ∷ ([∗ map] a ↦ _ ∈ d,
-     ∃ (b: Block),
+     ∃ (b: Block) (txn_id': nat),
        (* every disk block has at least through installed_txn_id (most have
         exactly, but some blocks may be in the process of being installed) *)
-       (* TODO: too strict for crashes, should be [a ∈ being_installed → txn_id'
-       = new_installed_txn_id], else could be either *)
-       ⌜let txn_id' := (if decide (a ∈ being_installed)
-                        then new_installed_txn_id
-                        else installed_txn_id) in
+       ⌜(if decide (a ∈ being_installed)
+        then txn_id' = new_installed_txn_id
+        else txn_id' = new_installed_txn_id ∨ txn_id' = installed_txn_id) ∧
         let txns := take (S txn_id') txns in
         apply_upds (txn_upds txns) d !! a = Some b⌝ ∗
        a d↦ b ∗ ⌜2 + LogSz ≤ a⌝).
@@ -469,13 +469,28 @@ Proof.
   iNamed "I".
   iApply (big_sepM_mono with "Hdata").
   iIntros (a b0 Hlookup) "HI".
-  iDestruct "HI" as (b') "(%&Hb&%)".
+  iDestruct "HI" as (b' txn_id') "([% %] & Hb&%)".
   iExists b'; iFrame.
   iPureIntro.
-  split; auto.
-  destruct (decide _); [ exists new_installed_txn_id | exists installed_lb ];
-    split_and!; auto; try lia.
+  split; [|done].
+  exists txn_id'. split; [|done].
+  destruct (decide _); intuition; subst; lia.
 Qed.
+
+(* TODO: this isn't true, because [is_installed_read] is too weak, allowing
+every address to be any txn_id in the right range; we can prove something
+intermediate between these predicates that is true on crash but does guarantee
+that every address is one of the two transactions, and that can be restored on
+crash *)
+Theorem is_installed_restore_read γ d txns installed_txn_id diskEnd_txn_id new_installed_txn_id :
+  ghost_var γ.(installed_txn_name) (1/2) installed_txn_id -∗
+  ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) -∗
+  ghost_var γ.(being_installed_txns_name) (1/2)
+    (subslice (S installed_txn_id) (S new_installed_txn_id) txns) -∗
+  is_installed_read d txns installed_txn_id diskEnd_txn_id -∗
+  is_installed γ d txns installed_txn_id diskEnd_txn_id.
+Proof.
+Abort.
 
 Theorem is_wal_read_mem l γ dinit : is_wal l γ dinit -∗ |={⊤}=> ▷ is_wal_mem l γ.
 Proof.
@@ -561,14 +576,12 @@ Proof.
   by intros ->.
 Qed.
 
-Global Instance circ_names_inhabited : Inhabited circ_names := populate!.
-
 Definition wal_names_dummy {hG:gen_heapPreG nat (u64 * list update.t) Σ} : wal_names.
   constructor; try exact inhabitant.
 Defined.
 
 Theorem alloc_txns_ctx E txns :
-  ⊢ |={E}=> ∃ γtxns, txns_ctx (set txns_ctx_name (λ _, γtxns) wal_names_dummy) txns.
+  ⊢ |={E}=> ∃ γtxns, txns_ctx (wal_names_dummy <|txns_ctx_name := γtxns|>) txns.
 Proof.
   iMod (alist_alloc txns) as (γtxns) "Hctx".
   iExists γtxns.

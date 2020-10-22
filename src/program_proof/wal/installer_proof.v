@@ -74,11 +74,9 @@ Proof.
   iNamedRestorable "Hbs".
   iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Hdata") as "[Hb Hdata]".
   iApply restore_intro in "Hb".
-  iDestruct "Hb" as (b) "(%Hbvalue&Hb&%Ha_bound&Hb')".
+  iDestruct "Hb" as (b txn_id') "([%Htxn_id' %Hbvalue] &Hb & %Ha_bound &Hb')".
   iDestruct (restore_elim with "Hb'") as "#Hb_restore"; iClear "Hb'".
-  iExists (if decide (int.val a ∈ being_installed)
-           then new_installed_txn_id
-           else installed_lb), b.
+  iExists txn_id', b.
   iFrame "Hb".
   iSplit.
   { iPureIntro. split; auto.
@@ -412,6 +410,7 @@ Proof.
     iDestruct "Hinner" as "(>%Hwf&Hmem&>?&>?&>?&>?)"; iNamed.
     iNamed "Hdisk".
     iNamed "Hdisk".
+    (* TODO: why is this not using [is_installed_read_lookup]? *)
     iNamed "Hinstalled".
     iNamed "Howninstalled".
 
@@ -431,7 +430,9 @@ Proof.
     {
       iModIntro.
       iIntros (addr' b' Hb' Hneq) "Hdata".
-      iDestruct "Hdata" as (b_old) "(%Happly_upds&Hmapsto&%Haddr_bound)".
+      iDestruct "Hdata" as (b_old txn_id') "([%Htxn_id' %Happly_upds] &Hmapsto&%Haddr_bound)".
+      (* TODO: this proof hasn't been updated to new invariant, the way
+      [is_installed_read_lookup] has been *)
       Existential 2 := (λ a b, (∃ (b: Block),
         ⌜let txn_id' := (if decide (a ∈ (take (S (int.nat i)) ((λ u, int.val (update.addr u)) <$> upds)))
                         then new_installed_txn_id

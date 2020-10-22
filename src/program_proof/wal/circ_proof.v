@@ -60,6 +60,7 @@ Record circ_names :=
     blocks_name: gname;
     start_name: gname;
     diskEnd_name: gname; }.
+Global Instance circ_names_inhabited : Inhabited circ_names := populate!.
 
 Implicit Types (γ:circ_names).
 
