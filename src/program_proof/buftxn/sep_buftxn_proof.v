@@ -168,8 +168,8 @@ Section goose_lang.
       "Hold_vals" ∷ ([∗ map] a↦v ∈ mspec.committed <$> mT,
                      ephemeral_val_from γ.(buftxn_async_name) i a v) ∗
       "#HrestoreP0" ∷ □ (([∗ map] a↦v ∈ mspec.committed <$> mT,
-                          ephemeral_val_from γ.(buftxn_async_name) i a v ∗
-                          modify_token γ a v) -∗
+                          modify_token γ a v ∗
+                          ephemeral_val_from γ.(buftxn_async_name) i a v) -∗
                          P0) ∗
       "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) dinit ∗
       "Htxn_ctx" ∷ map_ctx γtxn 1 (mspec.modified <$> mT)
@@ -284,8 +284,9 @@ Section goose_lang.
                       ephemeral_val_from γ.(buftxn_async_name) i a v) ={E}=∗
     ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
                       is_buftxn_at_txn l γ dinit γtxn
-                        (([∗ map] a↦v ∈ m, ephemeral_val_from γ.(buftxn_async_name) i a v ∗
-                                           modify_token γ a v) ∗
+                        (([∗ map] a↦v ∈ m, modify_token γ a v ∗
+                                           ephemeral_val_from γ.(buftxn_async_name) i a v
+                         ) ∗
                          P0) i.
   Proof.
     iIntros (?) "Hctx Hm".
@@ -315,8 +316,8 @@ Section goose_lang.
         if we supply the old [ephemeral_val_from] facts saved here *)
     P (buftxn_maps_to γtxn) ∗
     is_buftxn_at_txn l γ dinit γtxn
-      (P (λ a v, ephemeral_val_from γ.(buftxn_async_name) i a v ∗
-                 modify_token γ a v)
+      (P (λ a v, modify_token γ a v ∗
+                 ephemeral_val_from γ.(buftxn_async_name) i a v)
        ∗ P0) i.
   Proof.
     iIntros (?) "Hctx HP".

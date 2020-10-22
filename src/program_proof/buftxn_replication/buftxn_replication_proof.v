@@ -73,13 +73,16 @@ Section goose_lang.
     "#Htxns" ∷ is_txn_system txnN γ.
 
   Theorem wp_RepBlock__Read l Q :
+    (* TODO: need disjointness because invariant.walN and walN are not parameters *)
+    txnN ## invariant.walN →
+    txnN ## invN →
     {{{ "#Hrb" ∷ is_rep_block l ∗
         "Hfupd" ∷ (∀ σ, P σ ={⊤}=∗ P σ ∗ Q σ)
     }}}
       RepBlock__Read #l
     {{{ s σ (ok:bool), RET (slice_val s, #ok); is_slice s u8T 1 σ ∗ Q σ }}}.
   Proof.
-    iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (Hdisj1 Hdisj2 Φ) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hrb".
     wp_call.
     wp_loadField.
@@ -117,14 +120,14 @@ Section goose_lang.
     iAssert (rb_rep a0 a1 σ (buftxn_maps_to γtxn)) with "[Ha0 Ha1]" as "rb_rep".
     { iFrame. }
     wp_apply (wp_BufTxn__CommitWait _ _ (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
-    { unfold txnN, invariant.walN.
-      admit. (* disjointness *) }
-    { admit. (* disjointness *) }
-    iIntros (txn_id' ok) "Hpost".
+    { solve_ndisj. }
+    { solve_ndisj. }
+
+    iIntros (ok) "Hpost".
     wp_pures.
     wp_loadField.
     destruct ok.
-    - iDestruct "Hpost" as "[rb_rep #Hdurable]".
+    - iDestruct "Hpost" as (txn_id') "[rb_rep #Hdurable]".
       wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
       { iNext.
         iExists _, _, _, _.
@@ -136,14 +139,10 @@ Section goose_lang.
       wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
       { iNext.
         iExists _, _, _, _.
-        iFrame "∗#".
-        (* TODO(tej): well shoot, I guess we should've done modify_token and
-        then ephemeral_val_from... *)
-        admit.
-      }
+        iFrame "∗#". }
       wp_pures.
       iApply "HΦ".
       iFrame.
-  Admitted.
+  Qed.
 
 End goose_lang.
