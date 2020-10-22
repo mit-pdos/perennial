@@ -13,10 +13,18 @@ From Perennial.Helpers Require Import ModArith.
 From iris.algebra Require Import numbers.
 From Coq.Structures Require Import OrdersTac.
 
+(** Colelcting the CMRAs we need. *)
+Class rpcG Σ (R : Type) := RpcG {
+  rpc_fmcounterG :> fmcounter_mapG Σ;
+  rpc_escrowG :> inG Σ (exclR unitO);
+  rpc_mapG :> mapG Σ (u64*u64) (option R);
+}.
+(* FIXME: add subΣ instance. *)
+
 Section rpc.
 Context `{!heapG Σ}.
-
-Context {A:Type}.
+Context {A:Type} {R:Type}.
+Context `{!rpcG Σ R}.
 
 Record RPCRequest :=
 {
@@ -25,17 +33,12 @@ Record RPCRequest :=
   Args : A ;
 }.
 
-Context {R:Type}.
 
 Record RPCReply :=
 {
   Stale : bool ;
   Ret : R ;
 }.
-
-Context `{fmcounter_mapG Σ}.
-Context `{!inG Σ (exclR unitO)}.
-Context `{!mapG Σ (u64*u64) (option R)}.
 
 (** Reply-cache ghost names. *)
 Record RPC_GS :=
@@ -112,7 +115,7 @@ Lemma server_takes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iPr
       ▷ PreCond req.(Args)
       ∗ RPCRequestProcessing req γrpc lastSeqM lastReplyM.
 Proof.
-  intros.
+  intros Hlseq Hrseq.
   iIntros "Hlinv HreqInv Hsown"; iNamed "Hsown".
   iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
   iAssert ((|==> [∗ map] cid↦seq ∈ <[req.(CID):=old_seq]> lastSeqM, cid fm[[γrpc.(lseq)]]↦int.nat seq)%I) with "[Hlseq_own]" as ">Hlseq_own".
@@ -154,7 +157,7 @@ Proof.
     iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
-    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in H1; last by apply u64_Z_through_nat.
+    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
     replace (int.val req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
     lia.
   }
@@ -163,7 +166,7 @@ Proof.
     iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
-    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in H1; last by apply u64_Z_through_nat.
+    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
     replace (int.val req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
     lia.
   }
@@ -308,7 +311,7 @@ Proof using Type*.
   iIntros "#Hinv #Hptstoro HγP".
   iInv rpcRequestInvN as "HMinner" "HMClose".
   iDestruct "HMinner" as "[#>Hlseqbound [[Hbad _] | [[_ >Hbad] | HMinner]]]".
-  { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">%". destruct H0; discriminate. }
+  { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">[_ []]". }
   { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as %Hbad. destruct Hbad; discriminate. }
   iDestruct "HMinner" as "[#Hlseq_lb Hrest]".
   iDestruct (later_exist with "Hrest") as "Hrest".
