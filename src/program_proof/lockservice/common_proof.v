@@ -129,13 +129,10 @@ Print RPCReturn.
 Defined.
 
 Section common_defs.
-Context `{R}.
+Context {R : Type}.
 Context `{rpc_args:RPCArgs A}.
 Context {R_RPCReturn:RPCReturn R}.
-Context `{fmcounter_mapG Σ}.
-Context `{!inG Σ (exclR unitO)}.
-Context `{!mapG Σ (u64*u64) (option R)}.
-Context `{!mapG Σ (u64*u64) (option bool)}.
+Context `{!rpcG Σ R}.
 Context `{Server_own_core: loc -> iProp Σ}.
 
 Definition Server_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
@@ -165,10 +162,9 @@ Section common_proof.
 Context `{rpc_args:RPCArgs A}.
 Definition LockReply := @RPCReply bool.
 
-Context `{fmcounter_mapG Σ}.
-Context `{!inG Σ (exclR unitO)}.
-Context `{!mapG Σ (u64*u64) (option bool)}.
+Context `{!rpcG Σ bool}.
 Context `{Server_own_core: loc -> iProp Σ}.
+
 Lemma LockServer__checkReplyCache_spec (srv reply_ptr:loc) (req:@RPCRequest A) (reply:LockReply) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
      "%" ∷ ⌜int.nat req.(rpc.Seq) > 0⌝
@@ -364,12 +360,18 @@ Proof.
     { iNext. iFrame. iExists _, _, _, _. iFrame. }
     wp_seq.
     iApply "Hpost".
-    iExists {|Stale:=false; Ret:=r |}. rewrite H2. iFrame; iFrame "#".
+    iExists {|Stale:=false; Ret:=r |}. rewrite H1. iFrame; iFrame "#".
   }
 Qed.
+End common_proof.
+
+Section common_proof_generic.
+Context `{!rpcG Σ R}.
+Context `{rpc_args:RPCArgs A}.
+Context `{Server_own_core: loc -> iProp Σ}.
 
 (* Returns true iff server reported error or request "timed out" *)
-Definition CallFunction {R} {r_rpcret:RPCReturn R} (f:val) (fname:string) : val :=
+Definition CallFunction {r_rpcret:RPCReturn R} (f:val) (fname:string) : val :=
   rec: fname "srv" "args" "reply" :=
     Fork (let: "dummy_reply" := struct.alloc (retty_to_rdesc)  (zero_val (struct.t (retty_to_rdesc))) in
           Skip;;
@@ -380,7 +382,7 @@ Definition CallFunction {R} {r_rpcret:RPCReturn R} (f:val) (fname:string) : val 
     then f "srv" "args" "reply"
     else #true).
 
-Lemma CallFunction_spec {R} {R_RPCReturn:RPCReturn R} `{!mapG Σ (u64*u64) (option R)} (srv req_ptr reply_ptr:loc) (req:@RPCRequest A) (reply:@RPCReply R) (f:val) (fname:string) PreCond PostCond γrpc γPost :
+Lemma CallFunction_spec {R_RPCReturn:RPCReturn R} (srv req_ptr reply_ptr:loc) (req:@RPCRequest A) (reply:@RPCReply R) (f:val) (fname:string) PreCond PostCond γrpc γPost :
 ¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
 -> (∀ (srv' req_ptr' reply_ptr' : loc) (req':RPCRequest) 
    (reply' : @RPCReply R) (γrpc' : RPC_GS) (γPost' : gname),
@@ -456,7 +458,7 @@ Proof.
     iApply "Hpost".
     iSplitL ""; first done.
     iDestruct "fPost" as (reply'') "[Hreply fPost]".
-    iExists _. iFrame.
+    iExists _. done.
     }
     {
       iSplit; try done.
@@ -516,12 +518,10 @@ Definition own_clerk (ck:val) (srv:loc) (γrpc:RPC_GS) : iProp Σ
     ∗ "Hcrpc" ∷ RPCClient_own cid cseqno γrpc
 .
 
-End common_proof.
+End common_proof_generic.
 
 Definition LockRequest := @RPCRequest u64.
-Context `{fmcounter_mapG Σ}.
-Context `{!inG Σ (exclR unitO)}.
-Context `{!mapG Σ (u64*u64) (option bool)}.
+Context `{!rpcG Σ bool}.
 Context `{Server_own_core: loc -> iProp Σ}.
 
 Lemma Clerk_Function_spec (f:val) (fname:string) ck (srv:loc) (args:u64) γrpc PreCond PostCond :
@@ -552,7 +552,7 @@ Proof using Type*.
   intros Hfspec.
   iIntros (Φ) "[Hprecond [Hclerk #Hsrv]] Hpost".
   iNamed "Hclerk".
-  rewrite H0.
+  rewrite H.
   wp_lam.
   wp_pures.
   wp_loadField.

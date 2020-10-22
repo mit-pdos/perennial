@@ -1,17 +1,18 @@
-From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof nondet.
+From Coq.Structures Require Import OrdersTac.
+From stdpp Require Import gmap.
+From iris.algebra Require Import numbers.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Perennial.goose_lang Require Import notation.
 From Perennial.program_proof Require Import proof_prelude.
-From stdpp Require Import gmap.
 From RecordUpdate Require Import RecordUpdate.
 From Perennial.algebra Require Import auth_map fmcounter.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From iris.algebra Require Import numbers.
-From Coq.Structures Require Import OrdersTac.
+From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof nondet.
+
 Section lockservice_proof.
 Context `{!heapG Σ}.
 
@@ -20,10 +21,8 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Definition locknameN (lockname : u64) := nroot .@ "lock" .@ lockname.
 
-  Context `{!mapG Σ (u64*u64) (option bool)}.
+  Context `{!rpcG Σ bool}.
   Context `{!mapG Σ (u64*u64) unit}.
-  Context `{!inG Σ (exclR unitO)}.
-  Context `{!fmcounter_mapG Σ}.
   Context `{Ps : u64 -> iProp Σ}.
 
   Parameter validLocknames : gmap u64 unit.

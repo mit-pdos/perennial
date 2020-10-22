@@ -13,10 +13,18 @@ From Perennial.Helpers Require Import ModArith.
 From iris.algebra Require Import numbers.
 From Coq.Structures Require Import OrdersTac.
 
+(** Colelcting the CMRAs we need. *)
+Class rpcG Σ (R : Type) := RpcG {
+  rpc_fmcounterG :> fmcounter_mapG Σ;
+  rpc_escrowG :> inG Σ (exclR unitO);
+  rpc_mapG :> mapG Σ (u64*u64) (option R);
+}.
+(* FIXME: add subΣ instance. *)
+
 Section rpc.
 Context `{!heapG Σ}.
-
-Context {A:Type}.
+Context {A:Type} {R:Type}.
+Context `{!rpcG Σ R}.
 
 Record RPCRequest :=
 {
@@ -25,7 +33,6 @@ Record RPCRequest :=
   Args : A ;
 }.
 
-Context {R:Type}.
 
 Record RPCReply :=
 {
@@ -33,15 +40,12 @@ Record RPCReply :=
   Ret : R ;
 }.
 
-Context `{fmcounter_mapG Σ}.
-Context `{!inG Σ (exclR unitO)}.
-Context `{!mapG Σ (u64*u64) (option R)}.
-
+(** Reply-cache ghost names. *)
 Record RPC_GS :=
   mkγrpc {
-      rc:gname;
-      lseq:gname;
-      cseq:gname
+      rc:gname; (* full reply history: tracks the reply for every (CID, SEQ) pair that exists, where [None] means "reply not yet determined" *)
+      lseq:gname; (* latest sequence number for each client seen by server *)
+      cseq:gname (* next sequence number to be used by each client (i.e., one ahead of the latest that it used *)
     }.
 
 Definition RPCClient_own (cid cseqno:u64) (γrpc:RPC_GS) : iProp Σ :=
@@ -67,6 +71,11 @@ Definition RPCRequestStale (req:RPCRequest) γrpc : iProp Σ :=
   (req.(CID) fm[[γrpc.(cseq)]]> ((int.nat req.(Seq)) + 1))
 .
 
+(** The per-request invariant has 4 states.
+initialized: Request created and "on its way" to the server.
+processing: The server received the request and is computing the reply.
+done: The reply was computed as is waiting for the client to take notice.
+dead: The client took out ownership of the reply. *)
 Definition RPCRequest_inv (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:RPC_GS) (γPost:gname) : iProp Σ :=
    "#Hlseq_bound" ∷ req.(CID) fm[[γrpc.(cseq)]]> int.nat req.(Seq)
     ∗ ( (* Initialized, but server has not started processing *)
@@ -93,6 +102,8 @@ Definition ReplyCache_inv (γrpc:RPC_GS) : iProp Σ :=
 Definition replyCacheInvN : namespace := nroot .@ "replyCacheInvN".
 Definition rpcRequestInvN := nroot .@ "rpcRequestInvN".
 
+(** Server side: begin processing a request that is not in the reply cache yet.
+Returns the request precondition. *)
 Lemma server_takes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (old_seq:u64) (γrpc:RPC_GS)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
      ((map_get lastSeqM req.(CID)).1 = old_seq)
@@ -104,7 +115,7 @@ Lemma server_takes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iPr
       ▷ PreCond req.(Args)
       ∗ RPCRequestProcessing req γrpc lastSeqM lastReplyM.
 Proof.
-  intros.
+  intros Hlseq Hrseq.
   iIntros "Hlinv HreqInv Hsown"; iNamed "Hsown".
   iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
   iAssert ((|==> [∗ map] cid↦seq ∈ <[req.(CID):=old_seq]> lastSeqM, cid fm[[γrpc.(lseq)]]↦int.nat seq)%I) with "[Hlseq_own]" as ">Hlseq_own".
@@ -146,7 +157,7 @@ Proof.
     iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
-    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in H1; last by apply u64_Z_through_nat.
+    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
     replace (int.val req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
     lia.
   }
@@ -155,13 +166,15 @@ Proof.
     iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
-    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in H1; last by apply u64_Z_through_nat.
+    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
     replace (int.val req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
     lia.
   }
 Qed.
 
-Lemma server_completes_request {_:Inhabited R} (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:RPC_GS) (reply:R)
+(** Server side: complete processing a request and register it in the reply cache.
+Requires the request postcondition. *)
+Lemma server_completes_request `{!Inhabited R} (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:RPC_GS) (reply:R)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
   (inv replyCacheInvN (ReplyCache_inv γrpc ))
   -∗ (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γP))
@@ -211,6 +224,8 @@ Proof using Type*.
   }
 Qed.
 
+(** Server side: when a request [args] has a sequence number less than [lseq],
+then it is stale. *)
 Lemma smaller_seqno_stale_fact (req:RPCRequest) (lseq:u64) (γrpc:RPC_GS) lastSeqM lastReplyM:
   lastSeqM !! req.(CID) = Some lseq ->
   (int.val req.(Seq) < int.val lseq)%Z ->
@@ -245,6 +260,8 @@ Proof.
   iFrame; iFrame "#".
 Qed.
 
+(** Client side: allocate a new request.
+Returns the request invariant and the "escrow" token to take out the reply ownership. *)
 Lemma alloc_γrc (req:RPCRequest) γrpc PreCond PostCond:
   (int.nat req.(Seq)) + 1 = int.nat (word.add req.(Seq) 1)
   -> inv replyCacheInvN (ReplyCache_inv γrpc )
@@ -284,6 +301,7 @@ Proof using Type*.
   rewrite Hsafeincr. iFrame. iExists _; iFrame; iFrame "#".
 Qed.
 
+(** Client side: get the postcondition out of a reply using the "escrow" token. *)
 Lemma get_request_post {_:Inhabited R} (req:RPCRequest) (r:R) γrpc γPost PreCond PostCond :
   (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γPost))
     -∗ RPCReplyReceipt req r γrpc
@@ -293,7 +311,7 @@ Proof using Type*.
   iIntros "#Hinv #Hptstoro HγP".
   iInv rpcRequestInvN as "HMinner" "HMClose".
   iDestruct "HMinner" as "[#>Hlseqbound [[Hbad _] | [[_ >Hbad] | HMinner]]]".
-  { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">%". destruct H0; discriminate. }
+  { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">[_ []]". }
   { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as %Hbad. destruct Hbad; discriminate. }
   iDestruct "HMinner" as "[#Hlseq_lb Hrest]".
   iDestruct (later_exist with "Hrest") as "Hrest".
@@ -306,6 +324,7 @@ Proof using Type*.
   by injection Heq as ->.
 Qed.
 
+(** Server side: lookup reply in the cache, and return the appropriate receipt. *)
 Lemma server_replies_to_request {_:into_val.IntoVal R} (req:RPCRequest) (γrpc:RPC_GS) (reply:R)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) :
      (lastSeqM !! req.(CID) = Some req.(Seq))
