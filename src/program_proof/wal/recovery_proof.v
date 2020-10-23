@@ -228,7 +228,11 @@ Proof.
   iExists installed_txn_id, diskEnd_txn_id; simpl.
   assert (installed_txn_id <= diskEnd_txn_id) by word.
   iSplitL "Hinstalled".
-  { rewrite /is_installed_read.
+  { iDestruct "Hinstalled" as (new_installed_txn_id) "[% Hinstalled]".
+    rewrite /is_installed_read.
+    iExists _.
+    iSplit.
+    { admit. }
     iApply (big_sepM_mono with "Hinstalled").
     iIntros (a b0 Hlookup) "H".
     iDestruct "H" as (b) "(%Happly_upds&Ha&%Ha_bound)".
@@ -236,9 +240,13 @@ Proof.
     iPureIntro.
     destruct Happly_upds as (txn_id'&Hbound&Happly).
     exists txn_id'; split_and!; auto; autorewrite with len; try lia.
-    rewrite take_take.
-    replace (S txn_id' `min` S diskEnd_txn_id)%nat with (S txn_id') by lia.
-    auto. }
+    2: {
+      rewrite take_take.
+      replace (S txn_id' `min` S diskEnd_txn_id)%nat with (S txn_id') by lia.
+      auto.
+    }
+    admit.
+  }
   admit.
 (*
   iPureIntro. split_and!.
