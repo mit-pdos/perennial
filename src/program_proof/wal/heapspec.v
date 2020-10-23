@@ -1587,6 +1587,72 @@ Proof.
   eapply in_drop_ge; [ | eauto ]; lia.
 Qed.
 
+Lemma wal_heap_inv_mapsto_in_bounds γ walptr wn dinit a v E :
+  ↑walN.@"wal" ⊆ E ->
+  is_wal (wal_heap_inv γ) walptr wn dinit -∗
+  mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
+  mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
+  in_bounds wn a.
+Proof.
+  iIntros (HE) "#Hwal Hmapsto".
+  iDestruct "Hwal" as "[Hwal _]".
+  iInv "Hwal" as "Hwal_open".
+  iDestruct "Hwal_open" as (σ) "[Hwalinner >Hheapinv]".
+  iDestruct (is_wal_inner_base_disk with "Hwalinner") as "#>Hbasedisk".
+  iAssert (in_bounds wn a) with "[-]" as "#Ha".
+  2: {
+    iModIntro. iSplitL "Hwalinner Hheapinv".
+    { iNext. iExists _. iFrame. }
+    iModIntro. iFrame "Ha". done. }
+  iNamed "Hheapinv".
+  iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
+  iDestruct (big_sepM_lookup with "Hgh") as "%Ha"; eauto.
+  iExists _. iFrame "Hbasedisk". iPureIntro.
+  destruct Ha as [Ha _]. destruct Ha as [_ Ha]. destruct Ha as [b Ha].
+  eauto.
+Qed.
+
+Lemma apply_upds_wf_some σ (a : u64) :
+  wal_wf σ ->
+  is_Some (apply_upds (txn_upds σ.(log_state.txns)) σ.(log_state.d) !! int.val a) ->
+  is_Some (σ.(log_state.d) !! int.val a).
+Proof.
+  rewrite /wal_wf /addrs_wf. intuition.
+  destruct H0.
+  eapply lookup_apply_upds in H0; intuition eauto.
+  rewrite /log_state.updates in H1.
+  destruct H3. intuition subst.
+  eapply Forall_forall in H1; eauto.
+  destruct H1. destruct H1. eauto.
+Qed.
+
+Lemma wal_heap_inv_apply_upds_in_bounds γ walptr dinit wn σd σtxns a b :
+  apply_upds (txn_upds σtxns) σd !! int.val a = Some b ->
+  is_wal (wal_heap_inv γ) walptr wn dinit -∗
+  ghost_var γ.(wal_heap_txns) (1 / 2) (σd, σtxns) ={⊤}=∗
+  ghost_var γ.(wal_heap_txns) (1 / 2) (σd, σtxns) ∗
+  in_bounds wn a.
+Proof.
+  iIntros (Happly) "#Hwal H".
+  iDestruct "Hwal" as "[Hwal _]".
+  iInv "Hwal" as "Hwal_open".
+  iDestruct "Hwal_open" as (σ) "[Hwalinner >Hheapinv]".
+  iDestruct (is_wal_inner_base_disk with "Hwalinner") as "#>Hbasedisk".
+  iAssert (▷ in_bounds wn a)%I with "[-]" as "#Ha".
+  2: {
+    iModIntro. iSplitL "Hwalinner Hheapinv".
+    { iNext. iExists _. iFrame. }
+    iDestruct "Ha" as ">Ha".
+    iModIntro. iFrame "Ha". done. }
+  iModIntro.
+  iExists _. iFrame "Hbasedisk".
+  iNamed "Hheapinv".
+  iDestruct (ghost_var_agree with "H Htxns") as "%Heq".
+  inversion Heq; clear Heq; subst.
+  iPureIntro.
+  eapply apply_upds_wf_some; eauto.
+Qed.
+
 Theorem wp_Walog__Read l (blkno : u64) γ lwh b wn dinit :
   {{{ is_wal (wal_heap_inv γ) l wn dinit ∗
       is_locked_walheap γ lwh ∗
@@ -1603,6 +1669,9 @@ Proof using walheapG0.
   unfold locked_wh_disk in *.
   destruct lwh as [σd σtxns].
   unfold is_locked_walheap in *. simpl in *.
+
+  iMod (wal_heap_inv_apply_upds_in_bounds with "Hwal Htxnsfrag") as "[Htxnsfrag #Hinbounds]"; eauto.
+
   wp_apply (wp_Walog__ReadMem _
     (λ mb,
       match mb with
@@ -1710,12 +1779,12 @@ Proof using walheapG0.
     wp_apply (wp_Walog__ReadInstalled _
       (λ b', ghost_var γ.(wal_heap_txns) (1/2) (σd, σtxns) ∗ ⌜ b' = b ⌝)%I
       with "[$Hwal $Hbl]").
-    { admit. }
+    { iFrame "#". }
     iIntros (bli) "Hbli".
     iDestruct "Hbli" as (b0) "(Hb0 & Hlatestfrag & ->)".
     iApply "HΦ". iFrame.
   }
-Admitted.
+Qed.
 
 Theorem wal_heap_mapsto_latest_helper γ lwh (a : u64) (v : heap_block) σ :
   wal_heap_inv γ σ ∗
@@ -1783,31 +1852,6 @@ Proof using walheapG0.
   iExists _, _. iFrame.
   iPureIntro.
   eapply wal_wf_advance_durable_lb; eauto. lia.
-Qed.
-
-Lemma wal_heap_inv_mapsto_in_bounds γ walptr dinit a v E :
-  ↑walN.@"wal" ⊆ E ->
-  is_wal (wal_heap_inv γ) walptr γ.(wal_heap_walnames) dinit -∗
-  mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
-  mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
-  in_bounds γ.(wal_heap_walnames) a.
-Proof.
-  iIntros (HE) "#Hwal Hmapsto".
-  iDestruct "Hwal" as "[Hwal _]".
-  iInv "Hwal" as "Hwal_open".
-  iDestruct "Hwal_open" as (σ) "[Hwalinner >Hheapinv]".
-  iDestruct (is_wal_inner_base_disk with "Hwalinner") as "#>Hbasedisk".
-  iAssert (in_bounds γ.(wal_heap_walnames) a) with "[-]" as "#Ha".
-  2: {
-    iModIntro. iSplitL "Hwalinner Hheapinv".
-    { iNext. iExists _. iFrame. }
-    iModIntro. iFrame "Ha". done. }
-  iNamed "Hheapinv".
-  iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
-  iDestruct (big_sepM_lookup with "Hgh") as "%Ha"; eauto.
-  iExists _. iFrame "Hbasedisk". iPureIntro.
-  destruct Ha as [Ha _]. destruct Ha as [_ Ha]. destruct Ha as [b Ha].
-  eauto.
 Qed.
 
 End heap.
