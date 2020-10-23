@@ -486,13 +486,32 @@ Proof.
       rewrite ?subslice_zero_length.
       done.
     }
+    eapply is_txn_bound in HdiskEnd_txn0.
+    pose proof (has_updates_app _ _ _ _ His_memStart0 His_loggerEnd0) as His_memStart_new.
+    rewrite subslice_take_drop in His_memStart_new.
+
+    replace (take (slidingM.logIndex σ0.(memLog) σ0.(diskEnd)) σ0.(memLog).(slidingM.log))
+      with (take (slidingM.logIndex σ0.(memLog) σ0.(diskEnd))
+        (take (slidingM.logIndex σ0.(memLog) σ.(memLog).(slidingM.mutable)) σ0.(memLog).(slidingM.log)))
+      in His_memStart_new.
+    2: {
+      rewrite take_take.
+      rewrite min_l; eauto.
+      rewrite /slidingM.logIndex. word. }
+    rewrite take_drop in His_memStart_new.
+
     rewrite (subslice_split_r (S memStart_txn_id0) (S σ0.(locked_diskEnd_txn_id)) (S nextDiskEnd_txn_id) txns0); try lia.
-    all: admit.
+    iPureIntro.
+    rewrite Hupds_len.
+    replace (int.val σ.(diskEnd) +
+         (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat : u64)
+      with (σ.(memLog).(slidingM.mutable)) by word.
+    eauto.
   - iFrame.
     iSplitL "HownLoggerPos_logger".
     + iExists _; iFrame.
     + iExists _; iFrame.
-Admitted.
+Qed.
 
 Theorem wp_Walog__logger l circ_l γ dinit :
   {{{ "#Hwal" ∷ is_wal P l γ dinit ∗
