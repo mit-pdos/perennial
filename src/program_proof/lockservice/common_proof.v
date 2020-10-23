@@ -253,8 +253,8 @@ Proof.
   }
 Qed.
 
-Definition LockServer_Function (coreFunction:val) (fname:string) : val :=
-  rec: "LockServer__TryLock" "ls" "req" "reply" :=
+Definition Server_Function (coreFunction:val) (fname:string) : val :=
+  rec: fname "ls" "req" "reply" :=
     lock.acquire (struct.loadF LockServer.S "mu" "ls");;
     (if: LockServer__checkReplyCache "ls" (struct.loadF argty_to_adesc "CID" "req") (struct.loadF argty_to_adesc "Seq" "req") "reply"
     then
@@ -266,7 +266,10 @@ Definition LockServer_Function (coreFunction:val) (fname:string) : val :=
       lock.release (struct.loadF LockServer.S "mu" "ls");;
       #false).
 
-Lemma LockServer_Function_spec (coreFunction:val) (fname:string) (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γPost PreCond PostCond :
+Lemma Server_Function_spec (coreFunction:val) (fname:string) (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γPost PreCond PostCond :
+
+¬(fname = "ls") -> ¬(fname = "req") -> ¬(fname = "reply") 
+->
 (
 ∀ (srv':loc) (args':u64),
 {{{ 
@@ -287,16 +290,24 @@ Lemma LockServer_Function_spec (coreFunction:val) (fname:string) (srv req_ptr re
   ∗ "#Hreq" ∷ read_request req_ptr req
   ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
-  (LockServer_Function coreFunction fname) #srv #req_ptr #reply_ptr
+  (Server_Function coreFunction fname) #srv #req_ptr #reply_ptr
 {{{ RET #false; ∃ reply':Reply64, own_reply reply_ptr reply'
     ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale req γrpc)
   ∨ RPCReplyReceipt req reply'.(Ret) γrpc)
 }}}.
 Proof.
+  intros Hne1 Hne2 Hne3.
   intros HfCoreSpec.
   iIntros (Φ) "Hpre Hpost".
   iNamed "Hpre".
   wp_lam.
+  rewrite (@decide_False _ (fname = "ls")); last done.
+  rewrite (@decide_False _ (fname = "reply")); last done.
+  rewrite (@decide_False _ (fname = "req")); last done.
+  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "req"))); eauto.
+  2:{ split; eauto. injection. eauto. }
+  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "reply"))); eauto.
+  2:{ split; eauto. injection. eauto. }
   wp_pures.
   iNamed "Hls".
   wp_loadField.
@@ -469,7 +480,7 @@ Proof.
 Qed.
 
 Definition Clerk__Function (f:val) (fname:string) : val :=
-  rec: "Clerk__TryLock" "ck" "lockname" :=
+  rec: fname "ck" "lockname" :=
     overflow_guard_incr (struct.loadF Clerk.S "seq" "ck");;
     let: "args" := ref_to (refT (struct.t argty_to_adesc)) (struct.new argty_to_adesc [
       "Args" ::= "lockname";
@@ -499,7 +510,8 @@ Definition own_clerk (ck:val) (srv:loc) (γrpc:RPC_GS) : iProp Σ
 .
 
 Lemma Clerk_Function_spec (f:val) (fname:string) ck (srv:loc) (args:u64) γrpc PreCond PostCond :
-
+¬(fname = "ck") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "errb") -> ¬(fname = "lockname")
+->
 (∀ (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc' γPost',
 {{{ "#Hls" ∷ is_server srv γrpc'
     ∗ "#HargsInv" ∷ inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc' γPost')
@@ -523,11 +535,27 @@ Lemma Clerk_Function_spec (f:val) (fname:string) ck (srv:loc) (args:u64) γrpc P
     (Clerk__Function f fname) ck (into_val.to_val args)
   {{{ v, RET v; ∃(retv:u64), ⌜v = #retv⌝ ∗ own_clerk ck srv γrpc ∗ PostCond args retv }}}.
 Proof using Type*.
+  intros Hne1 Hne2 Hne3 Hne4 Hne5.
   intros Hfspec.
   iIntros (Φ) "[Hprecond [Hclerk #Hsrv]] Hpost".
   iNamed "Hclerk".
   rewrite H.
   wp_lam.
+
+  rewrite (@decide_False _ (fname = "ck")); last done.
+  rewrite (@decide_False _ (fname = "reply")); last done.
+  rewrite (@decide_False _ (fname = "args")); last done.
+  rewrite (@decide_False _ (fname = "errb")); last done.
+  rewrite (@decide_False _ (fname = "lockname")); last done.
+  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "args"))); eauto.
+  2:{ split; eauto. injection. eauto. }
+  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "reply"))); eauto.
+  2:{ split; eauto. injection. eauto. }
+  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "errb"))); eauto.
+  2:{ split; eauto. injection. eauto. }
+  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "lockname"))); eauto.
+  2:{ split; eauto. injection. eauto. }
+
   wp_pures.
   wp_loadField.
   wp_apply (overflow_guard_incr_spec).
@@ -649,7 +677,17 @@ Proof using Type*.
   iPureIntro. lia.
 Qed.
 
-Lemma Clerk__from_core (coreFunction:val) (coreName:string) ck (srv:loc) (args:u64) γrpc PreCond PostCond :
+Definition name_neq (name:string) : Prop :=
+¬(name = "ls") ∧ ¬(name = "req") ∧ ¬(name = "srv") ∧
+¬(name = "ck") ∧ ¬(name = "args") ∧ ¬(name = "reply") ∧ ¬(name = "errb") ∧ ¬(name = "lockname") ∧
+¬(name = "dummy_reply") 
+.
+
+Lemma Clerk__from_core (coreFunction:val) (serverName:string) (callName:string) (clerkName:string) ck (srv:loc) (args:u64) γrpc PreCond PostCond :
+  name_neq clerkName ∧
+  name_neq serverName ∧
+  name_neq callName
+->
 (
 ∀ (srv':loc) (args':u64),
 {{{ 
@@ -667,18 +705,21 @@ Lemma Clerk__from_core (coreFunction:val) (coreName:string) ck (srv:loc) (args:u
     ∗ own_clerk ck srv γrpc
     ∗ is_server srv γrpc
 }}}
-    (Clerk__Function (CallFunction (LockServer_Function coreFunction "") "CallTryLock") coreName) ck (into_val.to_val args)
+    (Clerk__Function (CallFunction (Server_Function coreFunction serverName) callName) clerkName) ck (into_val.to_val args)
   {{{ v, RET v; ∃(retv:u64), ⌜v = #retv⌝ ∗ own_clerk ck srv γrpc ∗ PostCond args retv }}}.
 Proof using Type*.
-  intros HcoreSpec.
+  intros Hne HcoreSpec.
+  destruct Hne as [Hone Hne]; repeat destruct Hone as [? Hone].
+  destruct Hne as [Hone2 Hne]; repeat destruct Hone2 as [? Hone2].
+  repeat destruct Hne as [? Hne].
   iIntros (Φ) "Hpre Hpost".
   iApply (Clerk_Function_spec with "[Hpre]"); eauto.
   intros.
   iIntros "Hpre Hpost".
   iApply (CallFunction_spec with "[Hpre]"); eauto.
   { intros. iIntros "Hpre Hpost".
-    wp_apply (LockServer_Function_spec with "[Hpre]"); eauto.
+    wp_apply (Server_Function_spec with "[Hpre]"); eauto.
   }
 Qed.
-  
+
 End common_proof.

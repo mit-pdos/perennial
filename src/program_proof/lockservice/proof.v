@@ -30,7 +30,9 @@ Definition locknameN (lockname : u64) := nroot .@ "lock" .@ lockname.
 
 Definition TryLock_Post : u64 -> u64 -> iProp Σ := λ args reply, (⌜reply = 0⌝ ∨ ⌜reply = 1⌝ ∗ (Ps args))%I.
 Definition TryLock_Pre : u64 -> iProp Σ := λ args, ⌜is_Some (validLocknames !! args)⌝%I.
-Definition TryLockRequest_inv := RPCRequest_inv TryLock_Pre TryLock_Post.
+
+Definition Unlock_Post : u64 -> u64 -> iProp Σ := λ args reply, True %I.
+Definition Unlock_Pre : u64 -> iProp Σ := λ args, (⌜is_Some (validLocknames !! args)⌝ ∗ (Ps args))%I.
 
 Definition LockServer_own_core (srv:loc) : iProp Σ :=
   ∃ (locks_ptr:loc) (locksM:gmap u64 bool),
@@ -40,12 +42,6 @@ Definition LockServer_own_core (srv:loc) : iProp Σ :=
 .
 
 Definition is_lockserver := is_server (Server_own_core:=LockServer_own_core).
-
-Definition TryLock_spec_pre (srv args reply:loc) (lockReq:@RPCRequest u64) γrpc γPost : iProp Σ
-  :=
-     "#Hls" ∷ is_lockserver srv γrpc
-           ∗ "#HreqInv" ∷ inv rpcRequestInvN (TryLockRequest_inv lockReq γrpc γPost)
-           ∗ "#Hreq" ∷ read_request args lockReq.
 
 Lemma tryLock_core_spec (srv:loc) (tryLockArgs:u64) :
 {{{ 
@@ -99,6 +95,54 @@ Proof.
     iRight. by iFrame.
 Qed.
 
+Lemma unlock_core_spec (srv:loc) (unLockArgs:u64) :
+{{{
+     LockServer_own_core srv ∗ ▷ Unlock_Pre unLockArgs
+}}}
+  LockServer__unlock_core #srv #unLockArgs
+{{{
+   v, RET v; LockServer_own_core srv
+      ∗ (∃b:u64, ⌜v = #b⌝ ∗ Unlock_Post unLockArgs b)
+}}}.
+Proof.
+  iIntros (Φ) "[Hlsown Hpre] Hpost".
+  wp_lam.
+  wp_let.
+  iNamed "Hlsown".
+  wp_loadField.
+  wp_apply (wp_MapGet with "HlocksMap"); eauto.
+  iIntros (locked ok) "[% HlocksMap]".
+  destruct locked.
+  {
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_MapInsert with "HlocksMap"); eauto; iIntros "HlocksMap".
+    iDestruct "Hpre" as (Hpre) "HP".
+    iDestruct (big_sepM2_dom with "Hlockeds") as %HlocksDom.
+    iDestruct (big_sepM2_delete _ _ _ unLockArgs true () with "Hlockeds") as "[H_ Hlockeds]"; eauto.
+    {
+      rewrite /map_get in H.
+      assert (is_Some (locksM !! unLockArgs)) as HLocknameInLocks.
+      { apply elem_of_dom. apply elem_of_dom in Hpre. rewrite HlocksDom. done. }
+      destruct HLocknameInLocks as [ x  HLocknameInLocks].
+      rewrite HLocknameInLocks in H.
+        by injection H as ->.
+    }
+    { by destruct Hpre as [ [] Hpre]. }
+    iDestruct (big_sepM2_insert_delete _ _ _ unLockArgs false () with "[$Hlockeds $HP]") as "Hlockeds"; eauto.
+    replace (<[unLockArgs:=()]> validLocknames) with (validLocknames).
+    2:{ rewrite insert_id; eauto. by destruct Hpre as [ [] HLocknameValid]. }
+    wp_seq.
+    iApply "Hpost".
+    iSplit; eauto.
+    iExists _, _; iFrame.
+  }
+  {
+    wp_pures. iApply "Hpost". iSplitL; eauto.
+    iExists _, _; iFrame.
+  }
+Qed.
+
 Lemma Clerk__TryLock_spec ck (srv:loc) (ln:u64) γrpc :
   {{{
        ⌜is_Some (validLocknames !! ln)⌝
@@ -109,7 +153,23 @@ Lemma Clerk__TryLock_spec ck (srv:loc) (ln:u64) γrpc :
     {{{ v, RET v; ∃(b:u64), ⌜v = #b⌝ ∗ own_clerk ck srv γrpc ∗ (⌜b = 0⌝ ∨ ⌜b = 1⌝ ∗ Ps ln) }}}.
 Proof using Type*.
   iIntros (Φ) "Hpre Hpost".
-  iApply (Clerk__from_core _ "TryLock" with "[Hpre]"); try apply tryLock_core_spec; eauto.
+  iApply (Clerk__from_core LockServer__tryLock_core "LockServer__TryLock" "CallTryLock" "Clerk__TryLock" with "[Hpre]"); try apply tryLock_core_spec; eauto.
+  { by unfold name_neq. }
+Qed.
+
+Lemma Clerk__Unlock_spec ck (srv:loc) (ln:u64) γrpc :
+  {{{
+       (⌜is_Some (validLocknames !! ln)⌝
+      ∗ Ps ln)
+      ∗ own_clerk ck srv γrpc
+      ∗ is_lockserver srv γrpc 
+  }}}
+    Clerk__Unlock ck #ln
+    {{{ v, RET v; ∃(b:u64), ⌜v = #b⌝ ∗ own_clerk ck srv γrpc ∗ True }}}.
+Proof using Type*.
+  iIntros (Φ) "Hpre Hpost".
+  iApply (Clerk__from_core LockServer__unlock_core "LockServer__Unlock" "CallUnlock" "Clerk__Unlock" with "[Hpre]"); try apply unlock_core_spec; eauto.
+  { by unfold name_neq. }
 Qed.
 
 Lemma Clerk__Lock_spec ck (srv:loc) (ln:u64) γrpc :

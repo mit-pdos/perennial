@@ -149,7 +149,7 @@ Definition CallTryLock: val :=
 (* Returns true iff server reported error or request "timed out" *)
 Definition CallUnlock: val :=
   rec: "CallUnlock" "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := struct.alloc TryLockReply.S (zero_val UnlockReply) in
+    Fork (let: "dummy_reply" := struct.alloc TryLockReply.S (zero_val (struct.t TryLockReply.S)) in
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             LockServer__Unlock "srv" "args" "dummy_reply";;
@@ -203,17 +203,17 @@ Definition Clerk__TryLock: val :=
 Definition Clerk__Unlock: val :=
   rec: "Clerk__Unlock" "ck" "lockname" :=
     overflow_guard_incr (struct.loadF Clerk.S "seq" "ck");;
-    let: "args" := struct.new UnlockRequest.S [
+    let: "args" := ref_to (refT (struct.t UnlockRequest.S)) (struct.new UnlockRequest.S [
       "Args" ::= "lockname";
       "CID" ::= struct.loadF Clerk.S "cid" "ck";
       "Seq" ::= struct.loadF Clerk.S "seq" "ck"
-    ] in
+    ]) in
     struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
-    let: "errb" := ref (zero_val boolT) in
+    let: "errb" := ref_to boolT #false in
     let: "reply" := struct.alloc TryLockReply.S (zero_val (struct.t TryLockReply.S)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] CallUnlock (struct.loadF Clerk.S "primary" "ck") "args" "reply";;
+      "errb" <-[boolT] CallUnlock (struct.loadF Clerk.S "primary" "ck") (![refT (struct.t UnlockRequest.S)] "args") "reply";;
       (if: (![boolT] "errb" = #false)
       then Break
       else Continue));;
