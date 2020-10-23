@@ -868,10 +868,21 @@ Proof using txnG0 Σ.
       iSplit.
       {
         iPureIntro. revert Hoff. rewrite /bufDataT_in_block. intuition eauto; subst.
-        admit.
+        eapply Hlwh in H3; eauto.
+        rewrite lookup_fmap Hoff'k /= in H3.
+        rewrite latest_update_app; eauto.
       }
       {
-        admit.
+        destruct modsince; eauto.
+        iPureIntro. intros prefix.
+        destruct (decide (length (lv.2.2 ++ [(lv.1).(update.b)]) ≤ prefix)).
+        { rewrite take_ge; last by lia.
+          revert Hoff. rewrite /bufDataT_in_block. intuition eauto; subst.
+          eapply Hlwh in H3; eauto.
+          rewrite lookup_fmap Hoff'k /= in H3.
+          rewrite latest_update_app; eauto. }
+        rewrite take_app_le. 2: { rewrite app_length /= in n. lia. }
+        eauto.
       }
     }
 
