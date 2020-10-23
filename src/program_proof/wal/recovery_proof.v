@@ -67,9 +67,9 @@ Ltac iPersist H :=
   let H' := (eval cbn in (String.append "#" H)) in
   iDestruct H as H'.
 
-Instance is_installed_Durable txns txn_id diskEnd_txn_id :
-  IntoCrash (is_installed_read dinit txns txn_id diskEnd_txn_id)
-            (λ _, is_installed_read dinit txns txn_id diskEnd_txn_id).
+Instance is_installed_Durable txns txn_id diskEnd_txn_id installed_txn_id :
+  IntoCrash (is_installed_read dinit txns txn_id diskEnd_txn_id installed_txn_id)
+            (λ _, is_installed_read dinit txns txn_id diskEnd_txn_id installed_txn_id).
 Proof. apply _. Qed.
 
 Lemma concat_mono {A: Type} (l1 l2: list (list A)):
