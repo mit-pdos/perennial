@@ -383,18 +383,18 @@ Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
     "#Hend_txn_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt.
 
 Definition is_base_disk γ (d : disk) : iProp Σ :=
-  own γ.(base_disk_name) (to_agree d : agreeR (leibnizO disk)).
+  own γ.(base_disk_name) (to_agree d : agreeR diskO).
 
-Instance is_base_disk_persistent γ d : Persistent (is_base_disk γ d) := _.
+Global Instance is_base_disk_persistent γ d : Persistent (is_base_disk γ d) := _.
+Global Instance is_base_disk_timeless γ d : Timeless (is_base_disk γ d) := _.
 
 Theorem is_base_disk_agree γ d0 d1 :
   is_base_disk γ d0 -∗ is_base_disk γ d1 -∗ ⌜d0=d1⌝.
 Proof.
   rewrite /is_base_disk.
   iIntros "H0 H1".
-  iDestruct (own_valid_2 with "H0 H1") as "%H".
-  epose proof (to_agree_op_inv_L (d0 : leibnizO disk) (d1 : leibnizO disk)).
-  eapply H0 in H. done.
+  iDestruct (own_valid_2 with "H0 H1") as %->%to_agree_op_inv_L.
+  auto.
 Qed.
 
 Definition disk_inv γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
@@ -912,3 +912,5 @@ Ltac destruct_is_wal :=
   iNamed "Hmem"; iNamed "Hstfields".
 
 Hint Unfold locked_wf : word.
+
+Typeclasses Opaque is_base_disk.

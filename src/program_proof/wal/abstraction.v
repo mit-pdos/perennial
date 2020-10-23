@@ -19,6 +19,7 @@ Definition LogSz: Z := 511.
 Hint Unfold LogSz : word.
 
 Definition disk := gmap Z Block.
+Canonical Structure diskO := leibnizO disk.
 
 Definition txn_upds (txns: list (u64 * list update.t)) : list update.t :=
   concat (snd <$> txns).

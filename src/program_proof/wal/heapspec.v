@@ -1,5 +1,4 @@
-From RecordUpdate Require Import RecordSet.
-Import RecordSetNotations.
+From RecordUpdate Require Import RecordUpdate.
 
 From iris.algebra Require Import numbers.
 
@@ -1597,19 +1596,16 @@ Proof.
   iIntros (HE) "#Hwal Hmapsto".
   iDestruct "Hwal" as "[Hwal _]".
   iInv "Hwal" as "Hwal_open".
-  iDestruct "Hwal_open" as (σ) "[Hwalinner >Hheapinv]".
-  iDestruct (is_wal_inner_base_disk with "Hwalinner") as "#>Hbasedisk".
-  iAssert (in_bounds wn a) with "[-]" as "#Ha".
-  2: {
-    iModIntro. iSplitL "Hwalinner Hheapinv".
-    { iNext. iExists _. iFrame. }
-    iModIntro. iFrame "Ha". done. }
-  iNamed "Hheapinv".
-  iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
-  iDestruct (big_sepM_lookup with "Hgh") as "%Ha"; eauto.
-  iExists _. iFrame "Hbasedisk". iPureIntro.
-  destruct Ha as [Ha _]. destruct Ha as [_ Ha]. destruct Ha as [b Ha].
-  eauto.
+  iAssert (◇ in_bounds wn a)%I as "#>Ha".
+  { iDestruct "Hwal_open" as (σ) "[Hwalinner >Hheapinv]".
+    iDestruct (is_wal_inner_base_disk with "Hwalinner") as "#>Hbasedisk".
+    iNamed "Hheapinv".
+    iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
+    iDestruct (big_sepM_lookup with "Hgh") as "%Ha"; eauto.
+    iExists _. iFrame "Hbasedisk". iPureIntro.
+    destruct Ha as [Ha _]. destruct Ha as [_ Ha]. destruct Ha as [b Ha].
+    eauto. }
+  by iFrame "∗#".
 Qed.
 
 Lemma apply_upds_wf_some σ (a : u64) :
