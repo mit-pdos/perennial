@@ -190,7 +190,7 @@ Proof.
   iNamed "Hstart_circ".
   iMod (txn_pos_valid_locked with "Hwal HmemStart_txn Howntxns") as "(%HmemStart_txn&Howntxns)".
   iMod (txn_pos_valid_locked with "Hwal HnextDiskEnd_txn Howntxns") as "(%HnextDiskEnd_txn&Howntxns)".
-  iMod (get_txns_are _ _ _ _ memStart_txn_id (S nextDiskEnd_txn_id) with "Howntxns Hwal") as "[Htxns_are Howntxns]"; eauto.
+  iMod (get_txns_are _ _ _ _ _ memStart_txn_id (S nextDiskEnd_txn_id) with "Howntxns Hwal") as "[Htxns_are Howntxns]"; eauto.
   { pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
     lia. }
 
@@ -218,11 +218,14 @@ Proof.
   }
   iMod ("HdiskEnd_pos_helper" with "Howntxns") as "[Howntxns #HdiskEnd_pos]".
 
+  iNamed "Htxns".
+
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
   wp_apply (wp_loadField_ro with "HmemLock").
   iDestruct "Htxns_are" as "#Htxns_are".
   wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs $His_lock $Hlocked HownLoggerPos_logger HownLoggerTxn_logger]").
-  { iExists _; iFrame "# ∗".
+  {
+    iExists _; iFrame "# % ∗".
     iSplitR "Howntxns HmemEnd_txn HownStableSet HownLoggerPos_linv HownLoggerTxn_linv".
     - iExists _; iFrame "% ∗".
     - iExists _, _, _, _, _.
@@ -236,7 +239,7 @@ Proof.
       iSplit.
       { iPureIntro. lia. }
       iSplit.
-      { rewrite ?subslice_zero_length. done. }
+      2: { rewrite ?subslice_zero_length. done. }
       iPureIntro.
       rewrite -> (subslice_split_r (slidingM.logIndex σ.(memLog) σ.(diskEnd)) (slidingM.logIndex σ.(memLog) logger_pos)) by word.
       rewrite -> (subslice_split_r (S σ.(locked_diskEnd_txn_id)) (S logger_txn_id)); [ | lia | ].
@@ -285,7 +288,7 @@ Proof.
     iSplitR; auto.
     iExists _; iFrame.
     iExists installed_txn_id, (Nat.max diskEnd_txn_id nextDiskEnd_txn_id).
-    iFrame "# ∗".
+    iFrame "# % ∗".
     iSplitL "Hinstalled".
     { iApply (is_installed_extend_durable with "Hinstalled").
       apply is_txn_bound in HnextDiskEnd'.
@@ -452,6 +455,7 @@ Proof.
       iFrame "HdiskEnd_at_least_new".
     }
 
+    iNamed "Htxns".
     iExists _, nextDiskEnd_txn_id0, _, _, _.
     iFrame.
     iFrame "HmemStart_txn HmemEnd_txn".
@@ -472,21 +476,23 @@ Proof.
       iPureIntro. word.
     }
     iSplit.
-    { done. }
+    2: done.
+    iFrame "%".
     iSplit.
-    { done. }
-    iSplit.
-    { done. }
-    rewrite Hupds_len.
-    replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
-      with (σ.(memLog).(slidingM.mutable)) by word.
-    rewrite ?subslice_zero_length.
-    done.
+    2: {
+      rewrite !Hupds_len.
+      replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
+        with (σ.(memLog).(slidingM.mutable)) by word.
+      rewrite ?subslice_zero_length.
+      done.
+    }
+    rewrite (subslice_split_r (S memStart_txn_id0) (S σ0.(locked_diskEnd_txn_id)) (S nextDiskEnd_txn_id) txns0); try lia.
+    all: admit.
   - iFrame.
     iSplitL "HownLoggerPos_logger".
     + iExists _; iFrame.
     + iExists _; iFrame.
-Qed.
+Admitted.
 
 Theorem wp_Walog__logger l circ_l γ dinit :
   {{{ "#Hwal" ∷ is_wal P l γ dinit ∗
