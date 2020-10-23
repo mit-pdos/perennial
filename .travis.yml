@@ -76,7 +76,6 @@ script:
       set -ex
       ~/.local/bin/pytest etc
       make -j2 -k ci
-      make -j2 -k vok-checks
       "
   - echo -en 'travis_fold:end:build\\r'
 

@@ -27,10 +27,6 @@ vok: $(QUICK_CHECK_FILES:.v=.vok)
 interpreter: src/goose_lang/interpreter/generated_test.vos
 check-assumptions: src/program_proof/examples/print_assumptions.vo
 
-# TODO: remove when wal builds
-# temporary extra checks that use the wal only via a vos build
-vok-checks: src/program_proof/buftxn/idealized_buftxn_spec.vok
-
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
 	$(Q)coqdep -vos -f _CoqProject $(ALL_VFILES) > $@
