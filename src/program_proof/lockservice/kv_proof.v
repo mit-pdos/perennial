@@ -70,5 +70,40 @@ Proof.
   iFrame. iExists _, _; iFrame.
 Qed.
 
+Lemma get_core_spec (srv:loc) (k:u64) :
+{{{ 
+     KVServer_own_core srv ∗ ▷ Get_Pre k
+}}}
+  KVServer__get_core #srv #k%V
+{{{
+   v, RET v; ∃va:u64, ⌜v = #va⌝ ∗ KVServer_own_core srv
+      ∗ (Get_Post k va)
+}}}.
+Proof.
+  iIntros (Φ) "[Hksown Hpre] Hpost".
+  wp_lam.
+  wp_pures.
+  iNamed "Hksown".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_MapGet with "HkvsMap").
+  iIntros (va ok) "[% HkvsMap]".
+  iDestruct "Hpre" as (v') "Hpre".
+  iDestruct (map_valid with "Hkvctx Hpre") as %Hvalid.
+  assert (va = v') as ->.
+  {
+    rewrite /map_get in H.
+    rewrite ->bool_decide_true in H; eauto.
+    simpl in H.
+    injection H as H.
+    rewrite /default in H.
+    rewrite Hvalid in H.
+    done.
+  }
+  wp_pures.
+  iApply "Hpost".
+  iExists v'; iFrame.
+  iSplit; eauto. iExists _, _; iFrame.
+Qed.
 
-End lockservice_proof.
+End kv_proof.
