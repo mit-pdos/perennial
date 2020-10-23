@@ -339,16 +339,21 @@ Lemma is_installed_append γ d txns txns' txn_id diskEnd_txn_id :
   is_installed γ d (txns ++ txns') txn_id diskEnd_txn_id.
 Proof.
   rewrite /is_installed.
-  iNamed 1.
+  iNamed 1. iNamed "Howninstalled".
   iExists new_installed_txn_id, being_installed.
   iFrame.
+  rewrite -subslice_before_app_eq; last by lia. iFrame.
   iSplitR "Hdata".
   - iPureIntro.
     len.
   - iApply (big_sepM_mono with "Hdata"); simpl.
-    intros.
-    rewrite take_app_le; auto.
-    destruct matches; lia.
+    iIntros (k x Hkx) "H".
+    iDestruct "H" as (b txn_id') "(% & H & %)".
+    iExists b, txn_id'. iFrame. iFrame "%". iPureIntro.
+    destruct (decide (k ∈ being_installed)).
+    { intuition. rewrite take_app_le; eauto. lia. }
+    split. { intuition. }
+    rewrite -> take_app_le by lia. intuition eauto.
 Qed.
 
 Lemma is_durable_append cs txns txns' installed_txn_id diskEnd_txn_id :
@@ -389,7 +394,9 @@ Proof.
     eapply is_txn_bound; eauto. }
   iSplit.
   { iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
+  iSplit.
   { iExists _. iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
+  done.
 Qed.
 
 Lemma memWrite_one_preserves_logIndex σ upd pos :
@@ -803,6 +810,7 @@ Proof.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd_txn.
         iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
+        iDestruct (memLog_linv_txns_to_is_mem_memLog with "Htxns") as "%His_mem_memLog"; eauto.
         iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σs)
                 with "[% //] [%] [$HP]") as "(%Haddrs & HP & HQ)".
         { simpl; monad_simpl.
@@ -874,27 +882,37 @@ Proof.
           iFrame "#". }
         iSplit.
         { iExists _. iFrame. iFrame "%". }
-        { iPureIntro.
+        iSplit.
+        { iNamed "Htxns".
+          iPureIntro.
           pose proof (is_txn_bound _ _ _ HmemStart_txn).
           pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
           split_and!.
-          - eapply is_mem_memLog_append; eauto.
-            lia.
-          - rewrite -> drop_app_le by lia.
+          - rewrite !memWrite_preserves_logIndex.
+            rewrite -subslice_before_app_eq; last by lia.
+            rewrite memWrite_preserves_mutable; eauto; try word.
+            rewrite /numMutableN /slidingM.logIndex. word.
+          - rewrite -> subslice_app_1 by lia.
             rewrite !memWrite_preserves_logIndex.
+            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
+            auto.
+          - rewrite -> subslice_app_1 by lia.
+            rewrite !memWrite_preserves_logIndex !memWrite_same_mutable.
+            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
+            auto.
+          - rewrite -> drop_app_le by lia.
+            rewrite !memWrite_preserves_logIndex !memWrite_same_mutable.
             eapply memWrite_has_updates in His_nextTxn; [ | eauto | ].
             { rewrite memWrite_preserves_logIndex in His_nextTxn.
               rewrite memWrite_same_mutable in His_nextTxn. done. }
             lia.
-          - rewrite -> subslice_app_1 by lia.
-            rewrite !memWrite_preserves_logIndex.
-            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
-            auto.
-          - rewrite -> subslice_app_1 by lia.
-            rewrite !memWrite_preserves_logIndex.
-            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
-            auto.
         }
+        iPureIntro.
+        rewrite fmap_app.
+        eapply Forall_app; split.
+        { pose proof (memWrite_memEnd_bound σ.(memLog) bs).
+          eapply Forall_impl; eauto. simpl. intros. subst memLog'. lia. }
+        simpl. econstructor; eauto. word.
       - wp_apply util_proof.wp_DPrintf.
         iAssert (wal_linv σₛ.(wal_st) γ) with "[Hfields HmemLog_linv HdiskEnd_circ Hstart_circ]" as "Hlockinv".
         { iExists _; iFrame. }
