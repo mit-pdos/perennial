@@ -393,7 +393,9 @@ Proof.
   rewrite /is_base_disk.
   iIntros "H0 H1".
   iDestruct (own_valid_2 with "H0 H1") as "%H".
-Admitted.
+  epose proof (to_agree_op_inv_L (d0 : leibnizO disk) (d1 : leibnizO disk)).
+  eapply H0 in H. done.
+Qed.
 
 Definition disk_inv γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
   ∃ installed_txn_id diskEnd_txn_id,
