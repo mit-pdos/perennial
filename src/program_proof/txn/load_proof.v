@@ -20,6 +20,32 @@ Context `{!txnG Σ}.
 
 Implicit Types (s : Slice.t) (γ: @txn_names Σ).
 
+Lemma wal_heap_inv_mapsto_in_bounds γ walptr dinit a v :
+  is_wal (wal_heap_inv γ.(txn_walnames)) walptr γ.(txn_walnames).(wal_heap_walnames) dinit -∗
+  inv invN (is_txn_always γ) -∗
+  mapsto_cur (hG := γ.(txn_logheap)) a v ={⊤}=∗
+  mapsto_cur (hG := γ.(txn_logheap)) a v ∗
+  in_bounds γ.(txn_walnames).(wal_heap_walnames) (addrBlock a).
+Proof.
+  iIntros "#Hwal #Htxn Hmapsto".
+  iInv "Htxn" as ">Htxn_open" "Htxn_close".
+  iNamed "Htxn_open".
+  iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto") as "%Hmapsto".
+  iFrame "Hmapsto".
+  eapply gmap_addr_by_block_lookup in Hmapsto.
+  destruct Hmapsto as [offmap [Hmapsto_block Hoff]].
+  iDestruct (big_sepM2_lookup_1_some with "Hheapmatch") as (metaoff) "%"; eauto.
+  iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hblock Hheapmatch]"; eauto.
+  iNamed "Hblock".
+  iMod (wal_heap_inv_mapsto_in_bounds with "Hwal Htxn_hb") as "[Htxn_hb $]".
+  { solve_ndisj. }
+  iDestruct ("Hheapmatch" with "[Htxn_hb Htxn_in_hb]") as "Hheapmatch".
+  { iExists _, _, _. iFrame. iFrame "%". }
+  iMod ("Htxn_close" with "[-]") as "_".
+  { iNext. iExists _, _, _. iFrame. }
+  done.
+Qed.
+
 Theorem wp_txn_Load l γ dinit a v :
   {{{ is_txn l γ dinit ∗
       mapsto_txn γ a v
@@ -154,6 +180,8 @@ Proof using txnG0 Σ.
   iNamed "Hres".
   wp_pures.
 
+  iMod (wal_heap_inv_mapsto_in_bounds with "[$] [$] Hmapsto_log") as "[Hmapsto_log #Hinbounds]".
+
   wp_apply (wp_Walog__ReadInstalled _
     (λ b,
       "Hmapsto_log" ∷ mapsto_cur a v ∗
@@ -163,8 +191,7 @@ Proof using txnG0 Σ.
     )%I
     with "[$Hiswal Hmapsto_log Hmapsto_meta Hmod_frag]").
   {
-    iSplitR.
-    { admit. }
+    iFrame "Hinbounds".
 
     iApply (wal_heap_readinstalled (⊤ ∖ ↑walN ∖ ↑invN) with "[Hmapsto_log Hmapsto_meta Hmod_frag]").
 
@@ -229,6 +256,6 @@ Proof using txnG0 Σ.
   destruct v.
   iSplitR; first done.
   iExists _. iFrame.
-Admitted.
+Qed.
 
 End goose_lang.

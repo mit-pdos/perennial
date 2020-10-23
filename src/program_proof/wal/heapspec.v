@@ -1785,4 +1785,29 @@ Proof using walheapG0.
   eapply wal_wf_advance_durable_lb; eauto. lia.
 Qed.
 
+Lemma wal_heap_inv_mapsto_in_bounds γ walptr dinit a v E :
+  ↑walN.@"wal" ⊆ E ->
+  is_wal (wal_heap_inv γ) walptr γ.(wal_heap_walnames) dinit -∗
+  mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
+  mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
+  in_bounds γ.(wal_heap_walnames) a.
+Proof.
+  iIntros (HE) "#Hwal Hmapsto".
+  iDestruct "Hwal" as "[Hwal _]".
+  iInv "Hwal" as "Hwal_open".
+  iDestruct "Hwal_open" as (σ) "[Hwalinner >Hheapinv]".
+  iDestruct (is_wal_inner_base_disk with "Hwalinner") as "#>Hbasedisk".
+  iAssert (in_bounds γ.(wal_heap_walnames) a) with "[-]" as "#Ha".
+  2: {
+    iModIntro. iSplitL "Hwalinner Hheapinv".
+    { iNext. iExists _. iFrame. }
+    iModIntro. iFrame "Ha". done. }
+  iNamed "Hheapinv".
+  iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
+  iDestruct (big_sepM_lookup with "Hgh") as "%Ha"; eauto.
+  iExists _. iFrame "Hbasedisk". iPureIntro.
+  destruct Ha as [Ha _]. destruct Ha as [_ Ha]. destruct Ha as [b Ha].
+  eauto.
+Qed.
+
 End heap.

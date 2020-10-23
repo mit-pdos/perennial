@@ -319,10 +319,10 @@ Proof.
     iFrame.
     iExists _. iFrame.
     iExists installed_txn_id, _ . simpl.
-    iSplit. 2: iSplit. 3: iSplit. 4: iSplit. 5: iFrame "%".
-    4: { iExists diskEnd0. iFrame "%". iFrame "#". iPureIntro. lia. }
-    3: { iFrame "# %". iPureIntro. lia. }
-    2: { iFrame "# %". }
+    iFrame "#".
+    iSplit. 2: iSplit. 3: iSplit. 4: eauto.
+    3: { iExists diskEnd0. iFrame "%". iFrame "#". iPureIntro. lia. }
+    2: { iFrame "# %". iPureIntro. lia. }
     iExists _, _. iFrame. iFrame "%".
   }
 

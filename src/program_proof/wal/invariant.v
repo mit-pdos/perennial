@@ -27,6 +27,7 @@ Class walG Σ :=
     wal_stable_map   :> ghost_varG Σ (gmap nat unit);
     wal_stable_mapG  :> mapG Σ nat unit;
     wal_logger_pos   :> ghost_varG Σ u64;
+    wal_base_disk    :> inG Σ (agreeR (leibnizO disk));
   }.
 
 Section goose_lang.
@@ -55,13 +56,15 @@ Record wal_names := mkWalNames
     logger_pos_name : gname;
     (* TODO: this is the logger's next transaction id? *)
     logger_txn_id_name : gname;
+    base_disk_name : gname;
   }.
 
 Global Instance _eta_wal_names : Settable _ :=
   settable! mkWalNames <circ_name; cs_name; txns_ctx_name; txns_name;
                         installed_txn_name; being_installed_name; being_installed_txns_name;
                         diskEnd_avail_name; start_avail_name;
-                        stable_txn_ids_name; logger_pos_name; logger_txn_id_name>.
+                        stable_txn_ids_name; logger_pos_name; logger_txn_id_name;
+                        base_disk_name>.
 
 Implicit Types (γ: wal_names).
 Implicit Types (s: log_state.t) (memLog: slidingM.t) (txns: list (u64 * list update.t)).
@@ -382,13 +385,27 @@ Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
     "%Hend_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
     "#Hend_txn_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt.
 
+Definition is_base_disk γ (d : disk) : iProp Σ :=
+  own γ.(base_disk_name) (to_agree d : agreeR (leibnizO disk)).
+
+Instance is_base_disk_persistent γ d : Persistent (is_base_disk γ d) := _.
+
+Theorem is_base_disk_agree γ d0 d1 :
+  is_base_disk γ d0 -∗ is_base_disk γ d1 -∗ ⌜d0=d1⌝.
+Proof.
+  rewrite /is_base_disk.
+  iIntros "H0 H1".
+  iDestruct (own_valid_2 with "H0 H1") as "%H".
+Admitted.
+
 Definition disk_inv γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
   ∃ installed_txn_id diskEnd_txn_id,
       "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#Hdurable"   ∷ is_durable cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb) ∗
-      "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝.
+      "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝ ∗
+      "#Hbasedisk"  ∷ is_base_disk γ s.(log_state.d).
 
 Definition disk_inv_durable γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
  ∃ installed_txn_id diskEnd_txn_id,
@@ -874,6 +891,16 @@ Proof.
   iIntros (Φ) "[#Hst Hlkinv] HΦ".
   shutdown_fields.
   iApply ("HΦ" with "[$]").
+Qed.
+
+Lemma is_wal_inner_base_disk γ σ dinit walptr :
+  is_wal_inner walptr γ σ dinit -∗
+  is_base_disk γ σ.(log_state.d).
+Proof.
+  iNamed 1.
+  iNamed "Hdisk".
+  iNamed "Hdisk".
+  iFrame "#".
 Qed.
 
 End goose_lang.

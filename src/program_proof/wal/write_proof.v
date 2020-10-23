@@ -396,6 +396,7 @@ Proof.
   { iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
   iSplit.
   { iExists _. iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
+  iFrame "#".
   done.
 Qed.
 

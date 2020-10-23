@@ -49,15 +49,24 @@ Let N := walN.
 Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
-Definition in_bounds γ (a: u64): iProp Σ. Admitted.
-Instance in_bounds_persistent γ a : Persistent (in_bounds γ a).
-Proof. Admitted.
+Definition in_bounds γ (a: u64): iProp Σ :=
+  ∃ d,
+    "Hbounddisk" ∷ is_base_disk γ d ∗
+    "%Hinbounds" ∷ ⌜is_Some (d !! int.val a)⌝.
+
+Instance in_bounds_persistent γ a : Persistent (in_bounds γ a) := _.
 
 (* TODO: this will actually require combining in_bounds with some authoritative
 resource from the invariant, obviously it can't be for an arbitrary [σ] *)
 Theorem in_bounds_valid γ σ a :
+  is_base_disk γ σ.(log_state.d) -∗
   in_bounds γ a -∗ ⌜is_Some (σ.(log_state.d) !! int.val a)⌝.
-Proof. Admitted.
+Proof.
+  iIntros "Hbase Hbound".
+  iNamed "Hbound".
+  iDestruct (is_base_disk_agree with "Hbase Hbounddisk") as %<-.
+  eauto.
+Qed.
 
 (* this is more or less big_sepM_lookup_acc, but with is_installed_read unfolded *)
 Theorem is_installed_read_lookup {γ d txns installed_lb durable_txn_id} {a: u64} :
@@ -230,7 +239,7 @@ Proof.
   iNamed "Hdisk".
   iNamed "Hdisk".
 
-  iDestruct (in_bounds_valid _ σ with "Ha_valid") as %Hlookup.
+  iDestruct (in_bounds_valid _ σ with "Hbasedisk Ha_valid") as %Hlookup.
   iDestruct (is_installed_read_lookup Hlookup with "Hinstalled") as
       (txn_id b [Htxn_id Hbval]) "(Hb&Hinstalled)".
   iModIntro.
