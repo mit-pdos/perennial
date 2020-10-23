@@ -519,6 +519,14 @@ Proof.
   intros ->; auto.
 Qed.
 
+Lemma gmap_addr_by_block_union_lookup {T} (m0 m1 : gmap addr T) o0 o1 k :
+  gmap_addr_by_block m0 !! k = Some o0 ->
+  gmap_addr_by_block m1 !! k = Some o1 ->
+  gmap_addr_by_block (m0 ∪ m1) !! k = Some (o0 ∪ o1).
+Proof.
+  rewrite /gmap_addr_by_block.
+Admitted.
+
 Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
@@ -702,7 +710,10 @@ Proof using txnG0 Σ.
       iSplit.
       { iPureIntro. eapply map_filter_lookup_Some_2.
         2: { simpl. eapply elem_of_dom. eauto. }
-        admit. }
+        eapply map_filter_lookup_Some_11 in Hoffmap.
+        eapply gmap_addr_by_block_union_lookup; eauto.
+        rewrite gmap_addr_by_block_fmap lookup_fmap Hbufamap_in //.
+      }
       subst.
       iExists _. iSplit; eauto.
       iExists _, _, _. iSplit; eauto.
