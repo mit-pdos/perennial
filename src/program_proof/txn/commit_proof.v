@@ -527,6 +527,12 @@ Proof.
   rewrite /gmap_addr_by_block.
 Admitted.
 
+Lemma latest_update_app c : ∀ b a,
+  latest_update a (b ++ [c]) = c.
+Proof.
+  induction b; simpl; eauto.
+Qed.
+
 Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
@@ -684,7 +690,7 @@ Proof using txnG0 Σ.
       rewrite zip_fst_snd. iFrame.
     }
 
-    iIntros (pos' lwh') "(Hcrash & Hq)".
+    iIntros (pos') "(Hcrash & Hq)".
     rewrite /memappend_crash /memappend_q.
 
     iDestruct "Hcrash" as "(Hlockedheap & Hcrashheaps)".
@@ -710,6 +716,11 @@ Proof using txnG0 Σ.
       with "Hmapstos") as "Hmapstos".
 
     iDestruct (big_sepML_sepL_combine with "[$Hheapmatch $Hq]") as "Hheapmatch".
+    iDestruct (big_sepML_nodup (λ lv, lv.1.(update.addr)) with "Hheapmatch []") as "%Hnodup".
+    { iIntros (k1 k2 v1 v2 lv1 lv2 H) "[H0 _] [H1 _]".
+      iDestruct "H0" as (??) "[% _]".
+      iDestruct "H1" as (??) "[% _]". iPureIntro. congruence. }
+
     iDestruct (big_sepML_sepM_ex with "Hheapmatch") as "Hheapmatch".
     iDestruct (big_sepM_mono_dom_Q with "[] [Hmapstos Hmetactx Hheapmatch]") as "[Hmapstos_and_metactx Hheapmatch]".
     4: iDestruct (big_sepM_filter_split with "[$Hheapmatch $Hheapmatch_rebuild]") as "Hheapmatch".
@@ -722,7 +733,7 @@ Proof using txnG0 Σ.
       rewrite gmap_addr_by_block_dom_union.
       rewrite gmap_addr_by_block_fmap. rewrite dom_fmap_L. set_solver. }
     { simpl. iModIntro. iIntros (k offmap Hoffmap) "[[Hmapstos Hmetactx] H]".
-      iDestruct "H" as (lv) "[H Hmapsto]".
+      iDestruct "H" as (lv) "(%Hlv_in & H & Hmapsto)".
       iDestruct "H" as (blockK meta) "(% & % & % & Hinblock)".
       eapply map_filter_lookup_Some_12 in Hoffmap as Hbufamap_in.
       eapply elem_of_dom in Hbufamap_in. destruct Hbufamap_in as [offmap' Hbufamap_in].
@@ -750,6 +761,26 @@ Proof using txnG0 Σ.
         eapply elem_of_dom in H. destruct H as [x' H].
         rewrite -lookup_gmap_uncurry in H. rewrite Hoffmap /= in H.
         eapply elem_of_dom; eauto.
+      }
+
+      assert (apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd) !! int.val (lv.1).(update.addr) = Some (latest_update lv.2.1 lv.2.2)) as Hlwh.
+      { admit. }
+
+      iDestruct (big_sepML_lookup_m_acc with "Hupdmap") as (i u) "(% & % & _)"; eauto.
+      intuition idtac.
+      destruct H5 as [bk [Hbk Hcontents]].
+      rewrite Hbk in H1. inversion H1; clear H1; subst.
+      eapply Hcontents in Hlwh.
+
+      assert (u = lv.1); subst.
+      {
+        eapply elem_of_list_lookup_1 in Hlv_in. destruct Hlv_in as [j Hlv_in].
+        rewrite list_lookup_fmap in H2.
+        destruct (updlist_olds !! i) eqn:Hu'; simpl in *; try congruence.
+        destruct (decide (i = j)); subst; try congruence.
+        exfalso. apply n. eapply NoDup_lookup; eauto.
+        { rewrite list_lookup_fmap. rewrite Hu'. eauto. }
+        { rewrite list_lookup_fmap. rewrite Hlv_in /=. rewrite -H4. congruence. }
       }
 
       rewrite /bufDataTs_in_block.
@@ -812,6 +843,7 @@ Proof using txnG0 Σ.
       iIntros (k x Hkx). iModIntro. iIntros "H".
       iDestruct "H" as (γmeta) "(% & H)".
       iDestruct "H" as (modsince) "(%Hoff & Hmeta & %Hin_true & %Hmod)".
+      specialize (Hlwh k).
 
       destruct (offmap' !! k) eqn:Hoff'k.
       {
@@ -820,8 +852,12 @@ Proof using txnG0 Σ.
         { iPureIntro. apply lookup_union_Some_l. rewrite lookup_fmap Hoff'k. done. }
         iExists γmeta. iSplit; first done.
         iExists _; iFrame.
-        iPureIntro. rewrite /bufDataT_in_block.
-        admit.
+        iPureIntro.
+        rewrite /bufDataT_in_block /= in Hoff. intuition subst.
+        eapply Hlwh in H3; eauto.
+        rewrite lookup_fmap Hoff'k /= in H3. destruct H3. rewrite -H7 in H5.
+        rewrite /bufDataT_in_block /=. intuition eauto.
+        rewrite latest_update_app; eauto.
       }
 
       iExists x.

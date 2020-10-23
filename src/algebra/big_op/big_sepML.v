@@ -403,7 +403,7 @@ Section maplist.
 
   Theorem big_sepML_sepM_ex Φ m l :
     big_sepML Φ m l -∗
-    big_opM _ (λ k v, ∃ lv, Φ k v lv) m.
+    big_opM _ (λ k v, ∃ lv, ⌜ lv ∈ l ⌝ ∗ Φ k v lv) m.
   Proof.
     rewrite big_sepML_eq /big_sepML_def; iIntros "Hlm".
     iDestruct "Hlm" as (lm) "[% Hlm]".
@@ -412,7 +412,17 @@ Section maplist.
     iIntros (k x Hkx) "H".
     iDestruct "H" as (lv) "[% H]".
     iExists _. iFrame.
+    iPureIntro. rewrite H0. eapply elem_of_map_to_list in H1. eapply (elem_of_list_fmap_1 snd) in H1. eapply H1.
   Qed.
+
+  Theorem big_sepML_nodup {T} (f : LV -> T) Φ m l :
+    big_sepML Φ m l -∗
+    ( ∀ k1 k2 v1 v2 lv1 lv2,
+      ⌜f lv1 = f lv2⌝ -∗
+      Φ k1 v1 lv1 -∗ Φ k2 v2 lv2 -∗ ⌜k1 = k2⌝ ) -∗
+    ⌜NoDup (f <$> l)⌝.
+  Proof.
+  Admitted.
 
   Theorem big_sepML_sepL_split Φ (P : LV -> PROP) m l :
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l -∗

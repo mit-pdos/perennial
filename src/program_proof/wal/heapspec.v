@@ -1391,8 +1391,8 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) (PreQ : iProp Σ) (Pre
       ∃ olds crash_heaps,
         memappend_pre γh.(wal_heap_h) bs olds ∗
         memappend_crash_pre γh bs crash_heaps ∗
-        ( ∀ pos lwh',
-            memappend_crash γh bs crash_heaps lwh' ∗
+        ( ∀ pos,
+            memappend_crash γh bs crash_heaps (Build_locked_walheap (locked_wh_σd lwh) (locked_wh_σtxns lwh ++ [(pos, bs)])) ∗
             memappend_q γh.(wal_heap_h) bs olds
           ={E, ⊤ ∖ ↑walN}=∗ txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos -∗ Q pos ) ) -∗
   is_locked_walheap γh lwh -∗
@@ -1446,7 +1446,7 @@ Proof using walheapG0.
 
   iMod (ghost_var_update_halves (async_put (apply_upds_u64 (latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
 
-  iSpecialize ("Hfupd" $! (pos') (Build_locked_walheap _ _)).
+  iSpecialize ("Hfupd" $! (pos')).
 
   iDestruct ("Hfupd" with "[$Hlockedheap $Hq $Hcrashheapsfrag]") as "Hfupd".
   iMod "Hfupd".
