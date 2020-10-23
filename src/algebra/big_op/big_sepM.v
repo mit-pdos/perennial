@@ -452,6 +452,56 @@ Section map.
       rewrite map_union_filter. iFrame.
   Qed.
 
+  Lemma big_sepM_mono_gen_Q {B} (Q : PROP) (Φ : K->A->PROP) (Ψ : K->B->PROP) (m1 : gmap K A) (m2 : gmap K B) :
+    ⌜ ∀ k, m1 !! k = None -> m2 !! k = None ⌝ -∗
+    □ ( ∀ k x1,
+        ⌜ m1 !! k = Some x1 ⌝ -∗
+        (Q ∗ Φ k x1) -∗
+        ∃ x2,
+        ⌜ m2 !! k = Some x2 ⌝ ∗
+        (Q ∗ Ψ k x2) ) -∗
+    (Q ∗ [∗ map] k↦x ∈ m1, Φ k x) -∗
+    (Q ∗ [∗ map] k↦x ∈ m2, Ψ k x).
+  Proof using BiAffine0.
+    iIntros "#Hnone #Hsome [HQ Hm]".
+    iInduction m1 as [|i x m] "IH" using map_ind forall (m2).
+    - iFrame "HQ".
+      iAssert (⌜m2 = ∅⌝)%I as "->".
+      2: iApply big_sepM_empty; done.
+      iDestruct "Hnone" as "%Hnone".
+      iPureIntro. apply map_eq; intros i. rewrite lookup_empty. eauto.
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      iDestruct ("Hsome" with "[] [$HQ $Hi]") as (x2) "[% [HQ Hi]]".
+      { rewrite lookup_insert; done. }
+      replace m2 with (<[i := x2]> (delete i m2)).
+      2: { rewrite insert_delete insert_id; eauto. }
+      iDestruct ("IH" $! (delete i m2) with "[] [] HQ Hm") as "[HQ Hm]".
+      { iDestruct "Hnone" as "%Hnone".
+        iPureIntro. intros k Hk. destruct (decide (i = k)); subst.
+        { rewrite lookup_delete; done. }
+        specialize (Hnone k). repeat rewrite -> lookup_insert_ne in Hnone by eauto.
+        eauto.
+      }
+      {
+        iModIntro. iIntros (k kx Hkx) "H".
+        iDestruct ("Hsome" with "[] H") as (x0) "[% H]".
+        { destruct (decide (i = k)); subst.
+          { rewrite lookup_insert; iPureIntro; congruence. }
+          rewrite lookup_insert_ne; eauto.
+        }
+        iExists _. iFrame.
+        destruct (decide (i = k)); subst; try congruence.
+        rewrite lookup_delete_ne; eauto.
+        rewrite -> lookup_insert_ne in H2 by eauto.
+        rewrite -> lookup_delete_ne in H2 by eauto.
+        done.
+      }
+      iFrame.
+      iApply big_sepM_insert.
+      { rewrite lookup_delete; eauto. }
+      iFrame.
+  Qed.
+
   Lemma big_sepM_mono_gen {B} (Φ : K->A->PROP) (Ψ : K->B->PROP) (m1 : gmap K A) (m2 : gmap K B) :
     ⌜ ∀ k, m1 !! k = None -> m2 !! k = None ⌝ -∗
     □ ( ∀ k x1,
@@ -464,38 +514,27 @@ Section map.
     ([∗ map] k↦x ∈ m2, Ψ k x).
   Proof using BiAffine0.
     iIntros "#Hnone #Hsome Hm".
-    iInduction m1 as [|i x m] "IH" using map_ind forall (m2).
-    - iAssert (⌜m2 = ∅⌝)%I as "->".
-      2: iApply big_sepM_empty; done.
-      iDestruct "Hnone" as "%Hnone".
-      iPureIntro. apply map_eq; intros i. rewrite lookup_empty. eauto.
-    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
-      iDestruct ("Hsome" with "[] Hi") as (x2) "[% Hi]".
-      { rewrite lookup_insert; done. }
-      replace m2 with (<[i := x2]> (delete i m2)).
-      2: { rewrite insert_delete insert_id; eauto. }
-      iApply big_sepM_insert.
-      { rewrite lookup_delete; eauto. }
-      iFrame.
-      iApply ("IH" with "[] [] Hm").
-      { iDestruct "Hnone" as "%Hnone".
-        iPureIntro. intros k Hk. destruct (decide (i = k)); subst.
-        { rewrite lookup_delete; done. }
-        specialize (Hnone k). repeat rewrite -> lookup_insert_ne in Hnone by eauto.
-        eauto.
-      }
-      iModIntro. iIntros (k kx Hkx) "H".
-      iDestruct ("Hsome" with "[] H") as (x0) "[% H]".
-      { destruct (decide (i = k)); subst.
-        { rewrite lookup_insert; iPureIntro; congruence. }
-        rewrite lookup_insert_ne; eauto.
-      }
-      iExists _. iFrame.
-      destruct (decide (i = k)); subst; try congruence.
-      rewrite lookup_delete_ne; eauto.
-      rewrite -> lookup_insert_ne in H2 by eauto.
-      rewrite -> lookup_delete_ne in H2 by eauto.
-      done.
+    iDestruct (big_sepM_mono_gen_Q emp%I with "Hnone [Hsome] [Hm]") as "[_ Hm]"; iFrame.
+    iIntros (k x Hkx). iModIntro. iIntros "[_ H]".
+    iDestruct ("Hsome" $! k x Hkx with "H") as (x2) "[% H]".
+    iExists x2. iSplit; first done. iSplit; first done. iExact "H".
+  Qed.
+
+  Lemma big_sepM_mono_dom_Q {B} (Q : PROP) (Φ : K->A->PROP) (Ψ : K->B->PROP) (m1 : gmap K A) (m2 : gmap K B) :
+    dom (gset K) m1 = dom (gset K) m2 ->
+    □ ( ∀ k x1,
+        ⌜ m1 !! k = Some x1 ⌝ -∗
+        (Q ∗ Φ k x1) -∗
+        ∃ x2,
+        ⌜ m2 !! k = Some x2 ⌝ ∗
+        (Q ∗ Ψ k x2) ) -∗
+    (Q ∗ [∗ map] k↦x ∈ m1, Φ k x) -∗
+    (Q ∗ [∗ map] k↦x ∈ m2, Ψ k x).
+  Proof using BiAffine0.
+    iIntros (Hnone).
+    iApply big_sepM_mono_gen_Q.
+    iPureIntro. intros k Hk.
+    apply not_elem_of_dom in Hk. rewrite Hnone in Hk. apply not_elem_of_dom in Hk. done.
   Qed.
 
   Lemma big_sepM_mono_dom {B} (Φ : K->A->PROP) (Ψ : K->B->PROP) (m1 : gmap K A) (m2 : gmap K B) :

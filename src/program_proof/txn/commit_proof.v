@@ -595,6 +595,18 @@ Proof using txnG0 Σ.
 
     iDestruct (ghost_var_agree with "Hcrashstates Hcrashstates_frag") as %->.
 
+    iAssert (⌜ ∀ a, a ∈ dom (gset _) bufamap -> a ∈ dom (gset _) σl.(latest) ⌝)%I as "%Hsubset_addr".
+    {
+      iIntros (a Ha).
+      eapply elem_of_dom in Ha. destruct Ha.
+      iDestruct (big_sepM_lookup with "Hmapstos") as "Ha"; eauto.
+      iNamed "Ha".
+      iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as %Hvalid.
+      iPureIntro.
+      apply elem_of_dom. rewrite Hvalid. eauto.
+    }
+    apply elem_of_subseteq in Hsubset_addr.
+
     iDestruct (gmap_addr_by_block_big_sepM with "Hmapstos") as "Hmapstos".
 
     iAssert (⌜ ∀ a, a ∈ dom (gset _) (gmap_addr_by_block bufamap) -> a ∈ dom (gset _) (gmap_addr_by_block σl.(latest)) ⌝)%I as "%Hsubset".
@@ -693,15 +705,23 @@ Proof using txnG0 Σ.
       apply elem_of_dom. eauto.
     }
 
+    iDestruct (gmap_addr_by_block_big_sepM' _
+      (λ a v, mapsto_txn γ a (existT v.(buf_).(bufKind) v.(data_)))
+      with "Hmapstos") as "Hmapstos".
+
     iDestruct (big_sepML_sepL_combine with "[$Hheapmatch $Hq]") as "Hheapmatch".
     iDestruct (big_sepML_sepM_ex with "Hheapmatch") as "Hheapmatch".
-    iDestruct (big_sepM_mono_dom with "[] Hheapmatch") as "Hheapmatch".
-    3: iDestruct (big_sepM_filter_split with "[$Hheapmatch $Hheapmatch_rebuild]") as "Hheapmatch".
+    iDestruct (big_sepM_mono_dom_Q with "[] [Hmapstos Hmetactx Hheapmatch]") as "[Hmapstos_and_metactx Hheapmatch]".
+    4: iDestruct (big_sepM_filter_split with "[$Hheapmatch $Hheapmatch_rebuild]") as "Hheapmatch".
+    3: {
+      iSplitL "Hmapstos Hmetactx". { iAccu. }
+      iExact "Hheapmatch".
+    }
     { simpl. epose proof (dom_filter_eq (gmap_addr_by_block σl.(latest)) _ (λ x, x ∈ dom (gset u64) (gmap_addr_by_block bufamap))) as He.
       rewrite He. 1: reflexivity.
       rewrite gmap_addr_by_block_dom_union.
       rewrite gmap_addr_by_block_fmap. rewrite dom_fmap_L. set_solver. }
-    { simpl. iModIntro. iIntros (k offmap Hoffmap) "H".
+    { simpl. iModIntro. iIntros (k offmap Hoffmap) "[[Hmapstos Hmetactx] H]".
       iDestruct "H" as (lv) "[H Hmapsto]".
       iDestruct "H" as (blockK meta) "(% & % & % & Hinblock)".
       eapply map_filter_lookup_Some_12 in Hoffmap as Hbufamap_in.
@@ -715,18 +735,113 @@ Proof using txnG0 Σ.
         rewrite gmap_addr_by_block_fmap lookup_fmap Hbufamap_in //.
       }
       subst.
+
+      assert (dom (gset _) offmap' ⊆ dom (gset _) offmap).
+      {
+        eapply map_filter_lookup_Some_11 in Hoffmap.
+        eapply elem_of_subseteq; intros off Hoff'.
+        eapply elem_of_dom in Hoff'. destruct Hoff' as [x Hoff'].
+        replace (offmap' !! off) with (bufamap !! ((lv.1).(update.addr), off)) in Hoff'.
+        2: {
+          rewrite -lookup_gmap_uncurry. rewrite Hbufamap_in. done.
+        }
+        assert (((lv.1).(update.addr), off) ∈ dom (gset _) σl.(latest)).
+        { eapply elem_of_dom_2 in Hoff'. set_solver. }
+        eapply elem_of_dom in H. destruct H as [x' H].
+        rewrite -lookup_gmap_uncurry in H. rewrite Hoffmap /= in H.
+        eapply elem_of_dom; eauto.
+      }
+
+      rewrite /bufDataTs_in_block.
+      iDestruct (big_sepM2_dom with "Hinblock") as "%Hdomeq".
+      iDestruct (big_sepM2_sepM_1 with "Hinblock") as "Hinblock".
+      iDestruct (big_sepM_mono_dom_Q _ _
+        (λ k y1,
+          ∃ y2 : gname,
+            ⌜meta !! k = Some y2⌝
+            ∗ (∃ modifiedSinceInstall : bool,
+                 "%Hoff_in_block" ∷ ⌜bufDataT_in_block (latest_update lv.2.1 lv.2.2) blockK (lv.1).(update.addr) k y1⌝ ∗
+                 "Hoff_own" ∷ ghost_var y2 (1 / 2) modifiedSinceInstall ∗
+                 "%Hmod_bufamap" ∷ ⌜k ∈ dom (gset _) offmap' -> modifiedSinceInstall = true⌝ ∗
+                 "%Hoff_prefix_in_block" ∷ ⌜if modifiedSinceInstall
+                        then True
+                        else
+                         ∀ prefix : nat,
+                           bufDataT_in_block
+                             (latest_update lv.2.1 (take prefix lv.2.2)) blockK
+                             (lv.1).(update.addr) k y1⌝))%I
+        offmap offmap with "[] [Hmapstos Hmetactx Hinblock]") as "[Hmapstos_and_metactx Hinblock]".
+      { eauto. }
+      2: iSplitL "Hmapstos Hmetactx"; [ iAccu | iExact "Hinblock" ].
+      { iIntros (k x Hkx). iModIntro. iIntros "[[Hmapstos Hmetactx] H]".
+        iExists x. iSplit; first done.
+        iDestruct "H" as (γmeta) "[% H]".
+        iDestruct "H" as (modsince) "(% & Hmod & %)".
+        destruct (decide (k ∈ dom (gset _) offmap')).
+        {
+          apply elem_of_dom in e. destruct e.
+          iDestruct (big_sepM_lookup_acc _ bufamap ((lv.1).(update.addr), k) with "Hmapstos") as "[Hk Hmapstos]".
+          { erewrite <- (lookup_gmap_uncurry bufamap). rewrite Hbufamap_in /=. eauto. }
+          iNamed "Hk".
+          iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmeta_name".
+          rewrite <- (lookup_gmap_uncurry metam) in Hmeta_name. rewrite H0 /= in Hmeta_name.
+          replace (γmeta) with (γm) by congruence.
+          iDestruct (ghost_var_agree with "Hmod Hmod_frag") as %->.
+          iDestruct ("Hmapstos" with "[Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hmapstos".
+          { iExists _. iFrame. }
+          iFrame. iExists _. iSplit; first done.
+          iExists _. iFrame. iFrame "%". iPureIntro; eauto.
+        }
+        iFrame.
+        iExists _; iSplit; first done.
+        iExists _; iFrame. iFrame "%". iPureIntro; eauto.
+      }
+      iDestruct "Hmapstos_and_metactx" as "[Hmapstos Hmetactx]".
+      iFrame.
+
       iExists _. iSplit; eauto.
       iExists _, _, _. iSplit; eauto.
       iFrame "Hmapsto".
-      admit.
+
+      iApply big_sepM_sepM2_merge_ex.
+      { rewrite -Hdomeq. rewrite dom_union_L. rewrite dom_fmap_L. set_solver. }
+
+      iApply (big_sepM_mono_dom with "[] Hinblock").
+      { rewrite dom_union_L. rewrite dom_fmap_L. set_solver. }
+
+      iIntros (k x Hkx). iModIntro. iIntros "H".
+      iDestruct "H" as (γmeta) "(% & H)".
+      iDestruct "H" as (modsince) "(%Hoff & Hmeta & %Hin_true & %Hmod)".
+
+      destruct (offmap' !! k) eqn:Hoff'k.
+      {
+        rewrite Hin_true. 2: { eapply elem_of_dom; eauto. }
+        iExists _. iSplit.
+        { iPureIntro. apply lookup_union_Some_l. rewrite lookup_fmap Hoff'k. done. }
+        iExists γmeta. iSplit; first done.
+        iExists _; iFrame.
+        iPureIntro. rewrite /bufDataT_in_block.
+        admit.
+      }
+
+      iExists x.
+      iSplit.
+      { iPureIntro. rewrite lookup_union_r; eauto. rewrite lookup_fmap Hoff'k //. }
+      iExists _; iSplit; first done.
+      iExists _; iFrame.
+      iSplit.
+      {
+        iPureIntro. revert Hoff. rewrite /bufDataT_in_block. intuition eauto; subst.
+        admit.
+      }
+      {
+        admit.
+      }
     }
 
-    iDestruct (gmap_addr_by_block_big_sepM' _
-      (λ a v, mapsto_txn γ a (existT v.(buf_).(bufKind) v.(data_)))
-      with "Hmapstos") as "Hmapstos".
+    iDestruct "Hmapstos_and_metactx" as "[Hmapstos Hmetactx]".
 
     iDestruct (big_sepL2_length with "Hcrashheapsmatch") as "%Hcrash_heaps_len".
-
     iCombine ("Hcrashstates_frag Hcrashstates") as "Hcrashstates".
     iMod (ghost_var_update (async_put σl'latest σl) with "Hcrashstates") as "[Hcrashstates Hcrashstates_frag]".
 
