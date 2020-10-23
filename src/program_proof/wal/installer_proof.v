@@ -451,19 +451,26 @@ Proof.
         apply elem_of_app in e.
         destruct e as [He | He].
         2: apply elem_of_list_singleton in He; contradiction.
-        rewrite decide_True // in Happly_upds.
-        apply elem_of_list_to_set.
-        assumption.
+        rewrite decide_True in Htxn_id'.
+        2: {
+          apply elem_of_list_to_set.
+          assumption.
+        }
+        subst. eauto.
       - rewrite (take_S_r _ _ (int.val addr_i)) in n0.
         2: rewrite list_lookup_fmap Hu_lookup //=.
         apply not_elem_of_app in n0.
         destruct n0 as (Hn&_).
-        rewrite decide_False // in Happly_upds.
-        apply not_elem_of_list_to_set.
-        assumption.
+        rewrite decide_False in Htxn_id'.
+        2: {
+          apply not_elem_of_list_to_set.
+          assumption.
+        }
+        intuition subst; eauto.
+        admit.
     }
 
-    iDestruct "Hdata_acc" as (b_disk) "(%Hb_disk&Haddr_i_mapsto&%Haddr_LogSz_bound)".
+    iDestruct "Hdata_acc" as (b_disk txn_id') "(%Hb_disk&Haddr_i_mapsto&%Haddr_LogSz_bound)".
     iExists _.
     iFrame "Haddr_i_mapsto".
     iIntros "!> !> /= Haddr_i_mapsto".
@@ -502,7 +509,7 @@ Proof.
       2: iFrame.
       iIntros (addr' b' Hb') "Hsep".
       iDestruct "Hsep" as (b_sep) "(%Hsep&Hd&%Haddr_bound)".
-      iExists _.
+      iExists _, _.
       iFrame (Haddr_bound) "∗".
       iPureIntro.
       destruct (decide (addr' = int.val addr_i)).
@@ -512,8 +519,12 @@ Proof.
           apply elem_of_list_to_set.
           assumption.
         - rewrite decide_False //.
-          apply not_elem_of_list_to_set.
-          assumption.
+          2: {
+            apply not_elem_of_list_to_set.
+            assumption.
+          }
+          intuition eauto.
+          admit.
       }
       subst.
       rewrite decide_True.
@@ -531,7 +542,7 @@ Proof.
         2: lia.
         rewrite list_lookup_fmap Hu_lookup //=.
       }
-      assumption.
+      intuition eauto.
     }
     iIntros "!> Hb_i".
     iApply "HΦ".
@@ -555,6 +566,7 @@ Proof.
     rewrite fmap_length.
     lia.
   }
+  admit.
 Admitted.
 
 (* TODO: why do we need this here again? *)
@@ -734,9 +746,11 @@ Proof.
     }
     iApply (big_sepM_mono with "Hdata").
     iIntros (addr blk Haddr_bound) "Hdata".
-    iDestruct "Hdata" as (b) "(Hb&Haddr_d&Haddr_bound)".
-    iExists _.
-    iFrame "∗ %".
+    destruct (decide (addr ∈ empty)); try set_solver.
+    iDestruct "Hdata" as (b txn_id') "(%Hb&Haddr_d&%Haddr_bound')".
+    iExists b, txn_id'.
+    iFrame "∗ %". iPureIntro. intuition eauto.
+    admit.
   }
 
   iModIntro.
