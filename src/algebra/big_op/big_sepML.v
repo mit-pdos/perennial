@@ -415,15 +415,6 @@ Section maplist.
     iPureIntro. rewrite H0. eapply elem_of_map_to_list in H1. eapply (elem_of_list_fmap_1 snd) in H1. eapply H1.
   Qed.
 
-  Theorem big_sepML_nodup {T} (f : LV -> T) Φ m l :
-    big_sepML Φ m l -∗
-    ( ∀ k1 k2 v1 v2 lv1 lv2,
-      ⌜f lv1 = f lv2⌝ -∗
-      Φ k1 v1 lv1 -∗ Φ k2 v2 lv2 -∗ ⌜k1 = k2⌝ ) -∗
-    ⌜NoDup (f <$> l)⌝.
-  Proof.
-  Admitted.
-
   Theorem big_sepML_sepL_split Φ (P : LV -> PROP) m l :
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l -∗
     big_sepML Φ m l ∗ big_opL _ (λ i, P) l.
@@ -528,6 +519,25 @@ Section maplist.
     rewrite big_sepML_eq.
     typeclasses eauto.
   Qed.
+
+  Theorem big_sepML_nodup `{!BiPureForall PROP} {T} (f : LV -> T) Φ m l :
+    big_sepML Φ m l -∗
+    ( ∀ k1 k2 v1 v2 lv1 lv2,
+      ⌜f lv1 = f lv2⌝ -∗
+      Φ k1 v1 lv1 -∗ Φ k2 v2 lv2 -∗ ⌜k1 = k2⌝ ) -∗
+    ⌜NoDup (f <$> l)⌝.
+  Proof.
+    iIntros "Hlm Heq".
+    iAssert (⌜∀ i j x, f <$> l !! i = Some x -> f <$> l !! j = Some x -> i = j⌝)%I with "[Hlm Heq]" as "%Halt".
+    2: {
+      iPureIntro. eapply NoDup_alt. intros. eapply Halt; rewrite -list_lookup_fmap; eauto.
+    }
+    iIntros (i j x Hi Hj).
+    destruct (l !! i) eqn:Hei; simpl in *; try congruence.
+    destruct (l !! j) eqn:Hej; simpl in *; try congruence.
+
+    admit.
+  Admitted.
 
 End maplist.
 

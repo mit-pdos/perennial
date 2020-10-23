@@ -1387,10 +1387,12 @@ Proof.
 Qed.
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) (PreQ : iProp Σ) (PreQ' : iProp Σ) lwh :
-  PreQ' ∧ ( PreQ ={⊤ ∖ ↑walN, E}=∗
+  PreQ' ∧ ( PreQ ∗ is_locked_walheap γh lwh ={⊤ ∖ ↑walN, E}=∗
       ∃ olds crash_heaps,
+        |={E}=>
         memappend_pre γh.(wal_heap_h) bs olds ∗
         memappend_crash_pre γh bs crash_heaps ∗
+        is_locked_walheap γh lwh ∗
         ( ∀ pos,
             memappend_crash γh bs crash_heaps (Build_locked_walheap (locked_wh_σd lwh) (locked_wh_σtxns lwh ++ [(pos, bs)])) ∗
             memappend_q γh.(wal_heap_h) bs olds
@@ -1415,9 +1417,10 @@ Proof using walheapG0.
   simpl in *; monad_inv.
   simpl in *.
 
-  iDestruct ("Hpre" with "HpreQ") as "Hpre".
+  iDestruct ("Hpre" with "[$HpreQ $Hlockedheap]") as "Hpre".
 
-  iMod "Hpre" as (olds crash_heaps0) "(Hpre & Hprecrash & Hfupd)".
+  iMod "Hpre" as (olds crash_heaps0) "Hpre".
+  iMod "Hpre" as "(Hpre & Hprecrash & Hlockedheap & Hfupd)".
   iNamed "Hprecrash".
 
   iDestruct (memappend_pre_addrs_wf with "Hpre Hctx Hgh") as %Haddrswf.

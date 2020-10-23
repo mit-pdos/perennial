@@ -526,6 +526,7 @@ Proof.
 Qed.
 
 Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
+  ↑walN.@"wal" ⊆ E ->
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
@@ -549,7 +550,7 @@ Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q
           mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)))
   }}}.
 Proof using txnG0 Σ.
-  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
+  iIntros (HE Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
   iPoseProof "Htxn" as "Htxn0".
   iNamed "Htxn".
 
@@ -583,7 +584,7 @@ Proof using txnG0 Σ.
     iSplit; [ iDestruct "Hfupd" as "[$ _]" | iRight in "Hfupd" ].
     iInv invN as ">Hinner" "Hinner_close".
     iMod "Hfupd".
-    iIntros "Hmapstos".
+    iIntros "[Hmapstos Hwal_latest]".
     iModIntro.
     iNamed "Hinner".
     iNamed "Hfupd".
@@ -672,6 +673,24 @@ Proof using txnG0 Σ.
 
     iFrame "Hcrashheaps".
 
+    iDestruct "Hiswal" as "[#Hiswal0 #Hiswal1]".
+    iInv "Hiswal0" as (σ) "[Hiswal_inner >Hiswal_heap]".
+    iAssert (⌜∀ lv, lv ∈ updlist_olds ->
+             apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd) !! int.val (lv.1).(update.addr) = Some (latest_update lv.2.1 lv.2.2)⌝)%I
+      as "%Hlwh_any".
+    {
+      iIntros (lv Hlv).
+      eapply elem_of_list_lookup_1 in Hlv. destruct Hlv as [i Hlv].
+      iDestruct (big_sepML_lookup_l_acc with "Hheapmatch") as (k v) "(% & Hlv & _)"; eauto.
+      iDestruct "Hlv" as "[_ Hlv]".
+      iDestruct (wal_heap_mapsto_latest_helper with "[$Hiswal_heap $Hwal_latest $Hlv]") as "%Hlwh_ok".
+      eauto.
+    }
+    iModIntro. iSplitL "Hiswal_inner Hiswal_heap".
+    { iModIntro. iExists _. iFrame. }
+    iModIntro.
+    iFrame "Hwal_latest".
+
     iDestruct (big_sepML_sepL_split with "Hheapmatch") as "[Hheapmatch Hupdlist_olds]".
 
     iSplitL "Hupdlist_olds".
@@ -726,6 +745,10 @@ Proof using txnG0 Σ.
       rewrite gmap_addr_by_block_fmap. rewrite dom_fmap_L. set_solver. }
     { simpl. iModIntro. iIntros (k offmap Hoffmap) "[[Hmapstos Hmetactx] H]".
       iDestruct "H" as (lv) "(%Hlv_in & H & Hmapsto)".
+
+      iAssert (⌜apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd) !! int.val (lv.1).(update.addr) = Some (latest_update lv.2.1 lv.2.2)⌝)%I as "%Hlwh".
+      { eauto. }
+
       iDestruct "H" as (blockK meta) "(% & % & % & Hinblock)".
       eapply map_filter_lookup_Some_12 in Hoffmap as Hbufamap_in.
       eapply elem_of_dom in Hbufamap_in. destruct Hbufamap_in as [offmap' Hbufamap_in].
@@ -754,9 +777,6 @@ Proof using txnG0 Σ.
         rewrite -lookup_gmap_uncurry in H. rewrite Hoffmap /= in H.
         eapply elem_of_dom; eauto.
       }
-
-      assert (apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd) !! int.val (lv.1).(update.addr) = Some (latest_update lv.2.1 lv.2.2)) as Hlwh.
-      { admit. }
 
       iDestruct (big_sepML_lookup_m_acc with "Hupdmap") as (i u) "(% & % & _)"; eauto.
       intuition idtac.
@@ -947,6 +967,7 @@ Proof using txnG0 Σ.
 Admitted.
 
 Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
+  ↑walN.@"wal" ⊆ E ->
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
@@ -972,7 +993,7 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (Pre
           mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)))
   }}}.
 Proof.
-  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
+  iIntros (HE Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
 
   wp_call.
   wp_apply wp_ref_to; [val_ty|].
@@ -992,7 +1013,7 @@ Proof.
       simpl in *; word.
     }
 
-    wp_apply (wp_txn__doCommit _ _ _ _ _ _ _ _ PreQ with "[$Htxn $Hbufs $Hbufpre Hfupd]").
+    wp_apply (wp_txn__doCommit _ _ _ _ _ _ _ _ PreQ with "[$Htxn $Hbufs $Hbufpre Hfupd]"); eauto.
     {
       iSplit; [ iDestruct "Hfupd" as "[$ _]" | iRight in "Hfupd" ].
       iMod "Hfupd".
