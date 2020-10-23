@@ -519,14 +519,6 @@ Proof.
   intros ->; auto.
 Qed.
 
-Lemma gmap_addr_by_block_union_lookup {T} (m0 m1 : gmap addr T) o0 o1 k :
-  gmap_addr_by_block m0 !! k = Some o0 ->
-  gmap_addr_by_block m1 !! k = Some o1 ->
-  gmap_addr_by_block (m0 ∪ m1) !! k = Some (o0 ∪ o1).
-Proof.
-  rewrite /gmap_addr_by_block.
-Admitted.
-
 Lemma latest_update_app c : ∀ b a,
   latest_update a (b ++ [c]) = c.
 Proof.

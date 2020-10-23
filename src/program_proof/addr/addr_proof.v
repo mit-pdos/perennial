@@ -543,6 +543,40 @@ Section gmap_addr_by_block.
         eapply lookup_union_None in n. intuition.
   Qed.
 
+  Lemma gmap_addr_by_block_union_lookup (m0 m1 : gmap addr T) o0 o1 k :
+    gmap_addr_by_block m0 !! k = Some o0 ->
+    gmap_addr_by_block m1 !! k = Some o1 ->
+    gmap_addr_by_block (m0 ∪ m1) !! k = Some (o0 ∪ o1).
+  Proof.
+    rewrite /gmap_addr_by_block.
+    intros.
+    eapply gmap_uncurry_non_empty in H as H'.
+    eapply map_choose in H'. destruct H' as [i [x H']].
+    assert (m0 !! (k, i) = Some x).
+    { rewrite -(lookup_gmap_uncurry m0). rewrite H. eauto. }
+    assert ((m0 ∪ m1) !! (k, i) = Some x).
+    { eapply lookup_union_Some_l; eauto. }
+    eapply gmap_uncurry_lookup_exists in H2 as H2'.
+    destruct H2' as [offmap [H2' H2'']].
+    simpl in *.
+    rewrite H2'. f_equal.
+    apply map_eq; intros j.
+    destruct ((m0 ∪ m1) !! (k, j)) eqn:He.
+    all: pose proof He as He'.
+    all: rewrite -lookup_gmap_uncurry H2' /= in He'.
+    all: rewrite He'; symmetry.
+    2: {
+      eapply lookup_union_None in He; intuition.
+      rewrite -lookup_gmap_uncurry H /= in H3.
+      rewrite -lookup_gmap_uncurry H0 /= in H4.
+      eapply lookup_union_None; eauto.
+    }
+    eapply lookup_union_Some_raw in He; intuition.
+    { rewrite -lookup_gmap_uncurry H /= in H3. eapply lookup_union_Some_l; eauto. }
+    { rewrite -lookup_gmap_uncurry H /= in H4. rewrite -lookup_gmap_uncurry H0 /= in H5.
+      eapply lookup_union_Some_raw; eauto. }
+  Qed.
+
 End gmap_addr_by_block.
 
 
