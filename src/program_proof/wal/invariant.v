@@ -833,16 +833,21 @@ Proof.
       lia.
 Qed.
 
-Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id
+Lemma memLog_linv_pers_core_strengthen γ0 γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id
       txns (logger_pos : u64) (logger_txn_id : nat):
-  (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id) -∗
+  (memLog_linv_pers_core γ0 σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id) -∗
+  □(∀ txn_id pos, txn_pos γ0 txn_id pos -∗ txn_pos γ txn_id pos) -∗
   (ghost_var γ.(txns_name) (1/2) txns) -∗
   (ghost_var γ.(logger_pos_name) (1 / 2) logger_pos) -∗
   (ghost_var γ.(logger_txn_id_name) (1 / 2) logger_txn_id) -∗
   memLog_linv_nextDiskEnd_txn_id γ σ.(slidingM.mutable) nextDiskEnd_txn_id -∗
+  diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro () -∗
   memLog_linv γ σ diskEnd diskEnd_txn_id.
 Proof.
-  iNamed 1. iIntros "Ht Hlp Hlt Hnext". iExists _, _, _, _, _. iFrame "∗ # %".
+  iNamed 1. iIntros "Ht Hsame_txns Hlp Hlt Hnext HdiskEnd_stable'". iExists _, _, _, _, _. iFrame "∗ # %".
+  iSplit.
+  - iApply ("Ht" with "HmemStart_txn").
+  - iApply ("Ht" with "HmemEnd_txn").
 Qed.
 
 (** * WPs for field operations in terms of lock invariant *)

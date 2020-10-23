@@ -67,10 +67,13 @@ Ltac iPersist H :=
   let H' := (eval cbn in (String.append "#" H)) in
   iDestruct H as H'.
 
+(* TODO(tej): why isn't this true any more? *)
+(*
 Instance is_installed_Durable txns txn_id diskEnd_txn_id installed_txn_id :
   IntoCrash (is_installed_read dinit txns txn_id diskEnd_txn_id installed_txn_id)
             (λ _, is_installed_read dinit txns txn_id diskEnd_txn_id installed_txn_id).
 Proof. apply _. Qed.
+*)
 
 Lemma concat_mono {A: Type} (l1 l2: list (list A)):
   incl l1 l2 →
@@ -208,7 +211,7 @@ Proof.
   iPersist "Hdurable".
   unify_ghost_var γ.(cs_name).
   clear cs; rename cs0 into cs.
-  iDestruct (is_installed_weaken_read with "Hinstalled") as "Hinstalled".
+  iDestruct (is_installed_weaken_read with "Hinstalled") as (new_installed_txn_id) "Hinstalled".
   set (σ':= log_crash_to σ diskEnd_txn_id).
   iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
   specialize (Hcrash _ Htrans).
@@ -227,6 +230,8 @@ Proof.
   rewrite /disk_inv_durable.
   iExists installed_txn_id, diskEnd_txn_id; simpl.
   assert (installed_txn_id <= diskEnd_txn_id) by word.
+  admit.
+  (*
   iSplitL "Hinstalled".
   { iDestruct "Hinstalled" as (new_installed_txn_id) "[% Hinstalled]".
     rewrite /is_installed_read.
@@ -247,7 +252,8 @@ Proof.
     }
     admit.
   }
-  admit.
+  *)
+
 (*
   iPureIntro. split_and!.
   - apply circ_matches_txns_crash; auto.
@@ -296,6 +302,8 @@ Global Instance disk_inv_durable_disc γ σ cs:
   Discretizable (disk_inv_durable γ σ cs dinit).
 Proof. apply _. Qed.
 
+(* halt at σ0 ~~> σ1 ~recovery, crashes~> σ1  *)
+
 Theorem wpc_mkLog_recover k (d : loc) γ σ :
   {{{ is_wal_inner_durable γ σ dinit }}}
     mkLog #d @ NotStuck; k; ⊤
@@ -339,6 +347,16 @@ Proof.
   iMod (ghost_var_alloc diskEnd_txn_id) as (γlogger_txn_id) "(γlogger_txn_id & Hown_logger_txn_id)".
   iMod (ghost_var_alloc cs) as (γcs_name) "(γcs_name & Hown_cs)".
   iMod (alloc_txns_ctx _ σ.(log_state.txns)) as (γtxns_ctx_name) "Htxns_ctx".
+  iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
+  iMod (map_alloc_ro installed_txn_id () with "Hstable_txns") as "[Hstable_txns #Hinstalled_stable]".
+  { set_solver. }
+  iAssert (|==> ∃ (stable_txns: gmap nat unit), map_ctx γstable_txn_ids_name 1 stable_txns ∗ diskEnd_txn_id [[γstable_txn_ids_name]]↦ro ())%I with "[Hstable_txns]" as "HdiskEnd_txn_id_mod".
+  { destruct (decide (installed_txn_id = diskEnd_txn_id)); subst.
+    - iExists _; iFrame "#∗"; done.
+    - iMod (map_alloc_ro diskEnd_txn_id with "Hstable_txns") as "[Hstable_txns #HdiskEnd_stable]".
+      { rewrite lookup_insert_ne //. }
+      iModIntro. iExists _; iFrame "#∗". }
+  iMod "HdiskEnd_txn_id_mod" as (stable_txns) "[[Hstable_txns1 Hstable_txns2] #HdiskEnd_stable]".
 
   set (γ0 :=
          γ <| circ_name := γcirc' |>
@@ -348,7 +366,8 @@ Proof.
            <| cs_name := γcs_name |>
            <| logger_txn_id_name := γlogger_txn_id |>
            <| logger_pos_name := γlogger_pos_name |>
-           <| txns_name := γtxns_name |>).
+           <| txns_name := γtxns_name |>
+           <| stable_txn_ids_name := γstable_txn_ids_name |>).
 
   set (memLog := {|
                  slidingM.log := upds;
@@ -396,14 +415,19 @@ Proof.
     }
 *)
 
-  wpc_frame_compl "Htxns_ctx Howntxns γtxns γlogger_pos γlogger_txn_id Hupd_slice HdiskEnd_exactly Hstart_exactly".
-  { crash_case.
+  wpc_frame "Hinstalled HΦ Hcirc Happender Hthread_end Hthread_start".
+  {
+    crash_case.
     rewrite /is_wal_inner_durable. iExists γ0.
     iSplit; first auto.
     iSplit; first auto.
     iNext. iExists cs.
     iFrame. rewrite /disk_inv_durable.
-    iExists _, _. iFrame "Hinstalled". iFrame "# %".
+
+    iExists _, _, _. iFrame "Hinstalled Hdurable". iFrame (Hdaddrs_init).
+    iSplit.
+    { iNamed "circ.start". iFrame "#%". }
+    iNamed "circ.end". iFrame "#%". eauto.
   }
   wp_pures.
   wp_apply (wp_new_free_lock); iIntros (ml) "Hlock".
@@ -419,12 +443,14 @@ Proof.
   iIntros (st) "Hwal_state".
   wp_pures.
 
-
-  iDestruct (memLog_linv_pers_core_strengthen with "H γtxns γlogger_pos [$] []") as "HmemLog_linv".
-  {
-    (* allocate map of stable txn id earlier ? *)
-    admit.
-  }
+  iDestruct (memLog_linv_pers_core_strengthen _ γ0 with "H [] γtxns γlogger_pos γlogger_txn_id [Hstable_txns1] [$]") as "HmemLog_linv".
+  { admit. (* need to translate txn_pos between ctxs *) }
+  { rewrite /memLog_linv_nextDiskEnd_txn_id.
+    simpl.
+    (* TODO: keep the other half earlier *)
+    iExists stable_txns; iFrame "Hstable_txns1".
+    iFrame "#".
+    admit. }
 
   iMod (alloc_lock walN _ _ (wal_linv st γ0)
           with "[$] [HmemLog_linv Hsliding Hwal_state Hstart_exactly HdiskEnd_exactly]") as "#lk".
@@ -468,8 +494,10 @@ Proof.
     iExists (Build_wal_state _ _ _ _ _ _ _). simpl. iFrame "#".
     admit.
   }
-  iSplitL "".
+  iSplitL "Hstable_txns2".
   {
+    rewrite /nextDiskEnd_inv.
+    iExists _; iFrame.
     (* other 1/2 of stable map ctx that should be allocated up above *)
     admit.
   }

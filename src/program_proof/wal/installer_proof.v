@@ -83,13 +83,12 @@ Proof.
   iNamedRestorable "Hbs".
   iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Hdata") as "[Hb Hdata]".
   iApply restore_intro in "Hb".
-  iDestruct "Hb" as (b txn_id') "([%Htxn_id' %Hbvalue] &Hb & %Ha_bound &Hb')".
+  iDestruct "Hb" as (b txn_id') "((%Hin_bounds&%Halready_installed&%Happly_upds) &Hb & %Ha_bound &Hb')".
   iDestruct (restore_elim with "Hb'") as "#Hb_restore"; iClear "Hb'".
   iExists txn_id', b.
   iFrame "Hb".
   iSplit.
-  { iPureIntro. split; auto.
-    destruct (decide _); lia. }
+  { iPureIntro. auto with lia. }
   iIntros "Hb".
   iApply "Hbs"; iFrame.
   iApply "Hdata".
@@ -442,17 +441,25 @@ Proof.
       iDestruct "Hdata" as (b_old txn_id') "([%Htxn_id' %Happly_upds] &Hmapsto&%Haddr_bound)".
       (* TODO: this proof hasn't been updated to new invariant, the way
       [is_installed_read_lookup] has been *)
-      Existential 2 := (λ a b, (∃ (b: Block),
-        ⌜let txn_id' := (if decide (a ∈ (take (S (int.nat i)) ((λ u, int.val (update.addr u)) <$> upds)))
-                        then new_installed_txn_id
-                        else installed_txn_id) in
-        let txns := take (S txn_id') σs.(log_state.txns) in
-        apply_upds (txn_upds txns) σs.(log_state.d) !! a = Some b⌝ ∗
-        a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I)%I.
+      Existential 2 := (λ a _,
+   ∃ (b: Block) (txn_id': nat),
+     (* every disk block has at least through installed_txn_id (most have
+      exactly, but some blocks may be in the process of being installed) *)
+     let txns := σs.(log_state.txns) in
+     let already_installed := (take (S (int.nat i)) ((λ u, int.val (update.addr u)) <$> upds)) in
+     ⌜installed_txn_id ≤ txn_id' ≤ new_installed_txn_id ∧
+      ( a ∈ already_installed → txn_id' = new_installed_txn_id ) ∧
+      let txns := take (S txn_id') txns in
+      apply_upds (txn_upds txns) σs.(log_state.d) !! a = Some b⌝ ∗
+     a d↦ b ∗ ⌜2 + LogSz ≤ a⌝)%I.
       rewrite /=.
-      iExists _.
+      iExists _, txn_id'.
       iFrame (Haddr_bound) "∗".
       iPureIntro.
+      admit.
+
+      (*
+      (* TODO: restore this proof to new invariant *)
       destruct (decide (addr' = int.val addr_i)); first intuition.
       destruct (decide (addr' ∈ take (S (int.nat i)) ((λ u : update.t, int.val u.(update.addr)) <$> upds))).
       - rewrite (take_S_r _ _ (int.val addr_i)) in e.
@@ -476,7 +483,7 @@ Proof.
           assumption.
         }
         intuition subst; eauto.
-        admit.
+*)
     }
 
     iDestruct "Hdata_acc" as (b_disk txn_id') "(%Hb_disk&Haddr_i_mapsto&%Haddr_LogSz_bound)".
@@ -484,6 +491,9 @@ Proof.
     iFrame "Haddr_i_mapsto".
     iIntros "!> !> /= Haddr_i_mapsto".
 
+    admit. (* TODO: fix this remainder for new is_installed_core *)
+
+    (*
     iMod ("Hclose" with "[Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hinstalled_txn Hbeing_installed Hbeing_installed_txns HP Hdata Haddr_i_mapsto]") as "_".
     {
       iIntros "!>".
@@ -576,6 +586,7 @@ Proof.
     lia.
   }
   admit.
+*)
 Admitted.
 
 (* TODO: why do we need this here again? *)
