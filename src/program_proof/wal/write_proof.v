@@ -338,9 +338,9 @@ Lemma is_installed_append γ d txns txns' txn_id diskEnd_txn_id :
   is_installed γ d txns txn_id diskEnd_txn_id -∗
   is_installed γ d (txns ++ txns') txn_id diskEnd_txn_id.
 Proof.
-  rewrite /is_installed.
+  rewrite /is_installed /is_installed_core.
   iNamed 1. iNamed "Howninstalled".
-  iExists new_installed_txn_id, being_installed.
+  iExists new_installed_txn_id, already_installed.
   iFrame.
   rewrite -subslice_before_app_eq; last by lia. iFrame.
   iSplitR "Hdata".
@@ -350,7 +350,7 @@ Proof.
     iIntros (k x Hkx) "H".
     iDestruct "H" as (b txn_id') "(% & H & %)".
     iExists b, txn_id'. iFrame. iFrame "%". iPureIntro.
-    destruct (decide (k ∈ being_installed)).
+    destruct (decide (k ∈ already_installed)).
     { intuition. rewrite take_app_le; eauto. lia. }
     split. { intuition. }
     rewrite -> take_app_le by lia. intuition eauto.
