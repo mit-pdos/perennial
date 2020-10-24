@@ -811,7 +811,7 @@ Proof.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd_txn.
         iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
-        iDestruct (memLog_linv_txns_to_is_mem_memLog with "Htxns") as "%His_mem_memLog"; eauto.
+        iDestruct (memLog_linv_txns_to_is_mem_memLog with "Htxns") as "%His_mem_memLog"; eauto; try lia.
         iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σs)
                 with "[% //] [%] [$HP]") as "(%Haddrs & HP & HQ)".
         { simpl; monad_simpl.
@@ -871,7 +871,7 @@ Proof.
         { iExists _; iFrame.
           iPureIntro.
           eapply locked_wf_memWrite; eauto. }
-        iExists memStart_txn_id, nextDiskEnd_txn_id, _, _, _; iFrame.
+        iExists memStart_txn_id, _, nextDiskEnd_txn_id, _, _, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
         autorewrite with len.
         iFrame "%".

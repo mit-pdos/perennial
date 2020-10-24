@@ -228,7 +228,7 @@ Proof.
     iExists _; iFrame "# % ∗".
     iSplitR "Howntxns HmemEnd_txn HownStableSet HownLoggerPos_linv HownLoggerTxn_linv".
     - iExists _; iFrame "% ∗".
-    - iExists _, _, _, _, _.
+    - iExists _, _, _, _, _, _.
       iFrame "HownLoggerPos_linv HownLoggerTxn_linv".
       iFrame "# % ∗".
       iModIntro.
@@ -372,6 +372,7 @@ Proof.
   iRename "HnextDiskEnd_txn" into "HnextDiskEnd_txn_old".
   iRename "HnextDiskEnd_stable" into "HnextDiskEnd_stable_old".
   iRename "HmemEnd_txn" into "HmemEnd_txn_old".
+  iRename "Hinstalled_txn_id_bound" into "Hinstalled_txn_id_bound_old".
   iNamed "HmemLog_linv".
   iDestruct (ghost_var_agree with "HownLoggerPos_linv HownLoggerPos_logger") as %Heqloggerpos; subst.
   iDestruct (ghost_var_agree with "HownLoggerTxn_linv HownLoggerTxn_logger") as %Heqloggertxn; subst.
@@ -456,10 +457,11 @@ Proof.
     }
 
     iNamed "Htxns".
-    iExists _, nextDiskEnd_txn_id0, _, _, _.
+    iExists _, _, nextDiskEnd_txn_id0, _, _, _.
     iFrame.
     iFrame "HmemStart_txn HmemEnd_txn".
     iFrame "HnextDiskEnd_stable_old".
+    iFrame "Hinstalled_txn_id_bound".
 
     iSplit.
     { iPureIntro. lia. }

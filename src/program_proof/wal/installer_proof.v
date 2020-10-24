@@ -3,6 +3,7 @@ From iris.algebra Require Import gset.
 
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
+From Perennial.algebra Require Import fmcounter.
 
 Section simulation.
   Context `{!invG Σ}.
@@ -361,14 +362,14 @@ Theorem wp_installBlocks γ l dinit d bufs_s (bufs: list update.t)
       "%Hbufs" ∷ ⌜has_updates bufs subtxns⌝ ∗
       "%Hbufs_addrs" ∷ ⌜Forall (λ u : update.t, ∃ (b: Block), dinit !! int.val u.(update.addr) = Some b) bufs⌝ ∗
       "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) ∗
-      "Hinstalled_txn_installer" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
+      "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
       "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
   }}}
     installBlocks #d (slice_val bufs_s)
   {{{ RET #();
       "#Hwal" ∷ is_wal P l γ dinit ∗
       "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.val (update.addr u)) <$> bufs)) ∗
-      "Hinstalled_txn_installer" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
+      "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
       "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
   }}}.
 Proof.
@@ -390,7 +391,7 @@ Proof.
   wp_apply (slice.wp_forSlice (fun i =>
     ("Hupds" ∷ [∗ list] uv;upd ∈ bks;upds, is_update uv q upd) ∗
     "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (list_to_set (C:=gset Z) (take (int.nat i) ((λ u, int.val (update.addr u)) <$> upds))) ∗
-    "Hinstalled_txn_installer" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
+    "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
     "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
     )%I with "[] [$Hbks_s $Hupds $Hbeing_installed_installer $Hinstalled_txn_installer $Hbeing_installed_txns_installer]").
   {
@@ -423,7 +424,7 @@ Proof.
     iNamed "Howninstalled".
 
     iDestruct (ghost_var_agree with "Hbeing_installed_installer Hbeing_installed") as %<-.
-    iDestruct (ghost_var_agree with "Hinstalled_txn_installer Hinstalled_txn") as %<-.
+    iDestruct (fmcounter_agree_1 with "Hinstalled_txn_installer Hinstalled_txn") as %<-.
     iDestruct (ghost_var_agree with "Hbeing_installed_txns_installer Hbeing_installed_txns") as %->.
     iMod (ghost_var_update_halves (list_to_set (C:=gset Z) (take (S (int.nat i)) ((λ u, int.val (update.addr u)) <$> upds)))
       with "Hbeing_installed_installer Hbeing_installed") as
@@ -703,7 +704,7 @@ Theorem wp_Walog__logInstall γ l dinit (installed_txn_id: nat) (subtxns: list (
       "#lk" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
       "#cond_install" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
       "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) ∗
-      "Hinstalled_txn_installer" ∷ ghost_var γ.(installed_txn_name) (1/2) installed_txn_id ∗
+      "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
       "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
   }}}
     Walog__logInstall #l
@@ -766,7 +767,7 @@ Proof.
     }
     iApply (big_sepM_mono with "Hdata").
     iIntros (addr blk Haddr_bound) "Hdata".
-    destruct (decide (addr ∈ empty)); try set_solver.
+    destruct (decide (addr ∈ (∅ : gset _))); try set_solver.
     iDestruct "Hdata" as (b txn_id') "(%Hb&Haddr_d&%Haddr_bound')".
     iExists b, txn_id'.
     iFrame "∗ %". iPureIntro. intuition eauto.
@@ -783,7 +784,7 @@ Proof.
     iApply "Hlkinv"; iFrameNamed.
     iSplitR "His_memLog HmemLog HdiskEnd Hshutdown Hnthread".
     {
-      iExists _, _, _, _, _.
+      iExists _, _, _, _, _, _.
       iFrame "∗ # %".
     }
     iApply "Hfields"; iFrameNamed.
@@ -805,7 +806,7 @@ Proof.
     iApply "Hlkinv"; iFrameNamed.
     iSplitR "His_memLog HmemLog HdiskEnd Hshutdown Hnthread".
     {
-      iExists _, _, _, _, _.
+      iExists _, _, _, _, _, _.
       iFrame "∗ # %".
     }
     iApply "Hfields"; iFrameNamed.

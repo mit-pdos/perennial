@@ -28,7 +28,6 @@ Class walG Σ :=
     wal_stable_mapG  :> mapG Σ nat unit;
     wal_logger_pos   :> ghost_varG Σ u64;
     wal_base_disk    :> inG Σ (agreeR (leibnizO disk));
-    wal_fmcounter    :> fmcounterG Σ;
   }.
 
 Section goose_lang.

@@ -374,7 +374,7 @@ Proof.
                  slidingM.start := diskStart;
                  slidingM.mutable := int.val diskStart + length upds |}).
 
-  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id diskEnd_txn_id σ.(log_state.txns) diskEnd diskEnd_txn_id) with "[-]" as "#H".
+  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id diskEnd_txn_id σ.(log_state.txns) diskEnd diskEnd_txn_id installed_txn_id) with "[-]" as "#H".
   {
     admit.
   }
@@ -443,14 +443,15 @@ Proof.
   iIntros (st) "Hwal_state".
   wp_pures.
 
-  iDestruct (memLog_linv_pers_core_strengthen _ γ0 with "H [] γtxns γlogger_pos γlogger_txn_id [Hstable_txns1] [$]") as "HmemLog_linv".
+  iDestruct (memLog_linv_pers_core_strengthen _ γ0 with "H [] γtxns γlogger_pos γlogger_txn_id [] [Hstable_txns1] [$]") as "HmemLog_linv".
   { admit. (* need to translate txn_pos between ctxs *) }
   { rewrite /memLog_linv_nextDiskEnd_txn_id.
     simpl.
     (* TODO: keep the other half earlier *)
-    iExists stable_txns; iFrame "Hstable_txns1".
-    iFrame "#".
+    iExists stable_txns. (* iFrame "Hstable_txns1".
+    iFrame "#". *)
     admit. }
+  { admit. }
 
   iMod (alloc_lock walN _ _ (wal_linv st γ0)
           with "[$] [HmemLog_linv Hsliding Hwal_state Hstart_exactly HdiskEnd_exactly]") as "#lk".
