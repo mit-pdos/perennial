@@ -1,6 +1,7 @@
+From Coq Require Import Program.Equality.
+
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
-
 
 From Perennial.Helpers Require Import bytes.
 From Perennial.program_proof Require Import proof_prelude.
@@ -860,8 +861,6 @@ Proof.
   intros Hbound.
   bit_cases off; byte_cases b0; vm_refl.
 Qed.
-
-From Coq Require Import Program.Equality.
 
 Lemma drop_take_lookup {A} i (l: list A) x :
   l !! i = Some x →
