@@ -8,7 +8,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import buf.
 From Perennial.program_proof Require Import util_proof disk_lib.
 From Perennial.program_proof Require Export buf.defs.
 From Perennial.program_proof Require Import addr.addr_proof wal.abstraction.
-From Perennial.Helpers Require Import NamedProps.
+From Perennial.Helpers Require Import NamedProps PropRestore.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
@@ -846,12 +846,93 @@ Proof.
   auto.
 Qed.
 
+(** * [byte → list bool] reasoning *)
+
+Definition get_buf_data_bit (b: Block) (off: u64) : bool :=
+  let b_byte := get_byte b (int.val off `div` 8) in
+  let b_bit  := default false (byte_to_bits b_byte !! Z.to_nat (int.val off `mod` 8)) in
+  b_bit.
+
 Theorem get_bit_ok b0 (off: u64) :
   (int.val off < 8) →
   get_bit b0 off = default false (byte_to_bits b0 !! int.nat off).
 Proof.
   intros Hbound.
   bit_cases off; byte_cases b0; vm_refl.
+Qed.
+
+From Coq Require Import Program.Equality.
+
+Lemma drop_take_lookup {A} i (l: list A) x :
+  l !! i = Some x →
+  drop i (take (S i) l) = [x].
+Proof.
+  intros.
+  apply elem_of_list_split_length in H as (l1 & l2 & -> & ->).
+  rewrite take_app_ge; [ | lia ].
+  rewrite drop_app_ge; [ | lia ].
+  replace (length l1 - length l1)%nat with 0%nat by lia.
+  replace (S (length l1) - length l1)%nat with 1%nat by lia.
+  simpl.
+  destruct l2; auto.
+Qed.
+
+Lemma extract_nth_bit blk (off: nat) :
+  extract_nth blk 1 off =
+  if decide (off < block_bytes)%nat then
+    [b2val (default inhabitant (vec_to_list blk !! off))]
+  else [].
+Proof.
+  rewrite /extract_nth.
+  rewrite !Nat.mul_1_r.
+  rewrite /Block_to_vals.
+  rewrite -fmap_take -fmap_drop.
+  destruct (decide _).
+  - destruct (lookup_lt_is_Some_2 blk off) as [b0 Hlookup].
+    { len. }
+    rewrite Hlookup.
+    erewrite drop_take_lookup; eauto.
+  - rewrite take_ge; [ | len ].
+    rewrite drop_ge; [ | len ].
+    auto.
+Qed.
+
+Lemma valid_off_bit_trivial off : valid_off KindBit off ↔ True.
+Proof.
+  rewrite /valid_off /=.
+  rewrite Z.mod_1_r //.
+Qed.
+
+Theorem is_bufData_bit blk off (d: bufDataT KindBit) :
+  is_bufData_at_off blk off d ↔ (int.nat off `div` 8 < block_bytes)%nat ∧ bufBit (get_buf_data_bit blk off) = d.
+Proof.
+  rewrite /is_bufData_at_off.
+  dependent destruction d.
+  rewrite valid_off_bit_trivial.
+  split.
+  - intros [_ ?].
+    destruct H as [byte0 [Hnth_byte Hget_bit]].
+    rewrite -> get_bit_ok in Hget_bit by word.
+    rewrite extract_nth_bit in Hnth_byte.
+    destruct (decide _); [ | congruence ].
+    split; [ lia | ].
+    inversion Hnth_byte; subst; clear Hnth_byte.
+    f_equal.
+    rewrite /get_buf_data_bit /get_byte.
+    word_cleanup.
+    rewrite Z2Nat_inj_div //.
+    word.
+  - intros [Hbound Hbeq].
+    inversion Hbeq; subst; clear Hbeq.
+    split; [done|].
+    rewrite extract_nth_bit.
+    rewrite decide_True //.
+    eexists; split; [eauto|].
+    rewrite -> get_bit_ok by word.
+    rewrite /get_buf_data_bit /get_byte.
+    word_cleanup.
+    rewrite Z2Nat_inj_div //.
+    word.
 Qed.
 
 Definition install_one_bit (src dst:byte) (bit:nat) : byte :=
@@ -965,6 +1046,69 @@ Proof.
     + apply symmetry, masks_different in H0; eauto; contradiction.
 Qed.
 
+Lemma list_alter_lookup_insert {A} (l: list A) (i: nat) (f: A → A) x0 :
+  l !! i = Some x0 →
+  alter f i l = <[i:=f x0]> l.
+Proof.
+  revert i; induction l as [|x l]; intros i.
+  - reflexivity.
+  - destruct i; simpl.
+    + congruence.
+    + intros Halter%IHl.
+      rewrite -/(alter f i l) Halter //.
+Qed.
+
+Theorem wp_installBit
+        (src_s: Slice.t) (src_b: u8) q (* source *)
+        (dst_s: Slice.t)  (dst_bs: list u8) (* destination *)
+        (dstoff: u64) (* the offset we're modifying, in bits *) :
+  (int.val dstoff < 8 * Z.of_nat (length dst_bs)) →
+  {{{ is_slice_small src_s byteT q [src_b] ∗ is_slice_small dst_s byteT 1 dst_bs  }}}
+    installBit (slice_val src_s) (slice_val dst_s) #dstoff
+  {{{ RET #();
+      let dst_bs' :=
+          alter
+            (λ dst, install_one_bit src_b dst (Z.to_nat $ int.val dstoff `mod` 8))
+            (Z.to_nat $ int.val dstoff `div` 8) dst_bs in
+      is_slice_small src_s byteT q [src_b] ∗ is_slice_small dst_s byteT 1 dst_bs' }}}.
+Proof.
+  iIntros (Hbound Φ) "Hpre HΦ".
+  iDestruct "Hpre" as "[Hsrc Hdst]".
+  wp_call.
+  destruct (lookup_lt_is_Some_2 dst_bs (Z.to_nat (int.val dstoff `div` 8)))
+    as [dst_b Hlookup]; first word.
+  wp_apply (wp_SliceGet (V:=u8) with "[$Hdst]").
+  { iPureIntro. word_cleanup. eauto. }
+  iIntros "Hdst".
+  wp_apply (wp_SliceGet (V:=u8) with "[$Hsrc]").
+  { iPureIntro. change (int.nat 0) with 0%nat. reflexivity. }
+  iIntros "Hsrc".
+  wp_apply wp_installOneBit; first word.
+  wp_apply (wp_SliceSet (V:=u8) with "[$Hdst]").
+  { iPureIntro. word_cleanup. eauto. }
+  iIntros "Hdst".
+  iApply "HΦ".
+  iFrame "Hsrc".
+  iExactEq "Hdst".
+  f_equal.
+  word_cleanup.
+  erewrite list_alter_lookup_insert; eauto.
+Qed.
+
+Hint Unfold valid_addr block_bytes : word.
+
+Lemma is_slice_to_block s q bs :
+  length bs = block_bytes →
+  is_slice_small s byteT q bs -∗
+  is_block s q (list_to_block bs).
+Proof.
+  iIntros (Hlen) "Hs".
+  rewrite /is_block.
+  rewrite list_to_block_to_vals //.
+Qed.
+
+Hint Rewrite @alter_length : len.
+
 Theorem wp_Buf__Install bufptr a b blk_s blk :
   {{{
     is_buf bufptr a b ∗
@@ -994,122 +1138,67 @@ Proof.
   - wp_pures.
     wp_loadField.
     wp_loadField.
-
-
-
-    wp_call.
-
-    assert (∃ (b : u8), Block_to_vals blk !! int.nat (word.divu (addrOff a) 8) = Some #b) as Hsome.
-    { rewrite block_byte_index; try word; intros.
-      { unfold valid_addr, block_bytes in *. intuition idtac. word. }
-      eauto. }
-    destruct Hsome as [vb Hsome].
-
-    wp_apply (slice.wp_SliceGet with "[$Hblk]"); eauto.
-    iIntros "[Hblk %]".
-
-    iDestruct "Hbufdata" as (x) "[Hbufdata <-]".
-    wp_apply (slice.wp_SliceGet with "[$Hbufdata]"); first done.
-    iIntros "[Hbufdata %]".
-
-    wp_call.
-    wp_apply wp_ref_to; eauto. iIntros (l) "Hvblk".
-    wp_pures.
-    wp_if_destruct.
-    + wp_if_destruct.
-      * wp_load. wp_store. wp_load.
-        wp_apply (slice.wp_SliceSet with "[$Hblk]"); eauto.
-        iIntros "Hblk".
-        wp_apply util_proof.wp_DPrintf.
-
-        rewrite insert_Block_to_vals; intros.
-        { revert H. rewrite /valid_addr /valid_off /block_bytes /=. word. }
-
-        iApply "HΦ".
-
-        iSplitR "Hblk".
-        {
-          iExists _. iFrame.
-          iSplitL "Hsz".
-          { iExists _. iFrame. done. }
-          iExists _. iFrame. done.
-        }
-
-        iSplitL.
-        { iFrame. }
-
-        iPureIntro; intros.
-        destruct (decide (off = addrOff a)); subst.
-        { rewrite /is_bufData_at_off. intuition eauto.
-          eexists. admit.
-        }
-
-        admit.
-
-      * wp_load. wp_store. wp_load.
-        wp_apply (slice.wp_SliceSet with "[$Hblk]"); eauto.
-        iIntros "Hblk".
-        wp_apply util_proof.wp_DPrintf.
-        iApply "HΦ".
-        admit.
-
-    + wp_load.
-      wp_apply (slice.wp_SliceSet with "[$Hblk]"); eauto.
-      iIntros "Hblk".
-      wp_apply util_proof.wp_DPrintf.
-      iApply "HΦ".
-      admit.
-
-  - wp_pures.
-    wp_loadField.
-    wp_pures.
-    wp_loadField.
-    wp_pures.
-    wp_if_destruct.
-    2: {
-      exfalso. apply Heqb; clear Heqb.
-      unfold valid_off in *. (* XXX there is no [int.val] here.. *)
-      admit.
-    }
-
-    wp_loadField.
-    wp_loadField.
-    wp_loadField.
-    wp_call.
-
-    wp_apply (wp_SliceTake' with "Hbufdata").
-    { rewrite /inode_to_vals fmap_length vec_to_list_length /inode_bytes. word. }
-    iIntros "Hbufdata".
-
-    iDestruct (slice.is_slice_small_sz with "Hblk") as "%Hlen".
-    rewrite length_Block_to_vals /block_bytes in Hlen.
-    wp_apply wp_SliceSkip'.
-    { replace (int.val blk_s.(Slice.sz)) with 4096 by lia. iPureIntro.
-      word_cleanup. eapply Z.div_le_upper_bound; try lia.
-      rewrite /valid_addr /block_bytes in H. word. }
-
-    wp_apply (wp_SliceCopy with "[Hblk Hbufdata]").
-    { admit. }
-    { admit. }
-
-    iIntros "[Hbufdata Hblk]".
-    wp_apply util_proof.wp_DPrintf.
+    iDestruct "Hbufdata" as (src_b) "[Hsrc %Hsrc_data]".
+    wp_apply (wp_installBit with "[$Hsrc $Hblk]").
+    { rewrite vec_to_list_length.
+      word. }
+    iIntros "[Hsrc Hdst]".
+    wp_apply wp_DPrintf.
     iApply "HΦ".
-    admit.
-
-  - wp_pures.
-    wp_loadField.
-    wp_loadField.
-    wp_pures.
-    wp_if_destruct.
-    2: {
-      exfalso. apply Heqb0; clear Heqb0.
-      unfold valid_off in *. (* XXX there is no [int.val] here.. *)
-      admit.
-    }
-
-    wp_loadField.
-    (* XXX stack overflow........ *)
+    iDestruct (is_slice_to_block with "Hdst") as "$".
+    { len. }
+    iSplitL.
+    { iExists _; iFrame "∗%"; simpl.
+      iSplitR "Hsrc".
+      - eauto with iFrame.
+      - iExists _; iFrame "∗%". }
+    iIntros (off d) "!%".
+    intros.
+    apply is_bufData_bit in H1 as [Hoff_bound <-].
+    word_cleanup.
+    remember (int.val (addrOff a) `div` 8) as byteOff.
+    remember (int.val (addrOff a) `mod` 8) as bitOff.
+    destruct (lookup_lt_is_Some_2 (vec_to_list blk) (Z.to_nat byteOff))
+      as [byte0 Hlookup_byte]; [ len | ].
+    subst b.
+    destruct (decide _); [subst off|].
+    + (* modified the desired bit *)
+      apply is_bufData_bit; split; [done|].
+      f_equal.
+      rewrite /get_buf_data_bit.
+      rewrite /get_byte.
+      rewrite get_bit_ok; [ | word ].
+      word_cleanup.
+      rewrite list_to_block_to_list; [|len].
+      rewrite -!HeqbyteOff -!HeqbitOff.
+      rewrite list_lookup_alter.
+      f_equal.
+      rewrite Hlookup_byte.
+      rewrite install_one_bit_spec; [ | word ].
+      rewrite decide_True //.
+    + (* other bits are unchanged *)
+      apply is_bufData_bit; split; [done|].
+      f_equal.
+      rewrite /get_buf_data_bit.
+      (* are we looking up the same byte, but a different bit? *)
+      destruct (decide (int.val off `div` 8 = byteOff)).
+      * rewrite e.
+        word_cleanup.
+        rewrite /get_byte.
+        rewrite list_to_block_to_list; [|len].
+        rewrite list_lookup_alter.
+        rewrite Hlookup_byte /=.
+        f_equal.
+        rewrite install_one_bit_spec; [ | word ].
+        rewrite decide_False //.
+        intros Heq.
+        contradiction n.
+        word.
+      * rewrite /get_byte.
+        rewrite list_to_block_to_list; [|len].
+        rewrite list_lookup_alter_ne //.
+        word.
+  - (* inode and panic cases *)
     admit.
 Admitted.
 
