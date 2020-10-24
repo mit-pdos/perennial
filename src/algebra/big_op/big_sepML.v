@@ -535,9 +535,53 @@ Section maplist.
     iIntros (i j x Hi Hj).
     destruct (l !! i) eqn:Hei; simpl in *; try congruence.
     destruct (l !! j) eqn:Hej; simpl in *; try congruence.
+    destruct (decide (i = j)); eauto.
 
-    admit.
-  Admitted.
+    rewrite big_sepML_eq /big_sepML_def.
+    iDestruct "Hlm" as (lm) "[% Hlm]".
+
+    destruct (list_some_map_to_list _ _ _ _ Hei H0) as [ki Hki].
+    pose proof (map_to_list_delete _ _ _ _ _ Hei Hki H0) as Hdel.
+
+    destruct (decide (i < j)); eauto.
+    - eapply (list_some_map_to_list _ (j-1)) in Hdel as Hdelk.
+      2: {
+        rewrite -> lookup_delete_ge by lia.
+        replace (S (j-1)) with j by lia; eauto.
+      }
+      destruct Hdelk as [kj Hkj].
+      destruct (decide (ki = kj)); subst.
+      { rewrite lookup_delete in Hkj; congruence. }
+
+      iDestruct (big_sepM2_lookup_2_some with "Hlm") as (mi) "%Hmi"; eauto.
+      iDestruct (big_sepM2_delete with "Hlm") as "[Hi Hlm]"; eauto.
+
+      iDestruct (big_sepM2_lookup_2_some with "Hlm") as (mj) "%Hmj"; eauto.
+      iDestruct (big_sepM2_delete with "Hlm") as "[Hj Hlm]"; eauto.
+
+      iDestruct ("Heq" with "[] Hi Hj") as "%Hx".
+      { iPureIntro; congruence. }
+      congruence.
+
+    - eapply (list_some_map_to_list _ j) in Hdel as Hdelk.
+      2: {
+        rewrite -> lookup_delete_lt by lia.
+        eauto.
+      }
+      destruct Hdelk as [kj Hkj].
+      destruct (decide (ki = kj)); subst.
+      { rewrite lookup_delete in Hkj; congruence. }
+
+      iDestruct (big_sepM2_lookup_2_some with "Hlm") as (mi) "%Hmi"; eauto.
+      iDestruct (big_sepM2_delete with "Hlm") as "[Hi Hlm]"; eauto.
+
+      iDestruct (big_sepM2_lookup_2_some with "Hlm") as (mj) "%Hmj"; eauto.
+      iDestruct (big_sepM2_delete with "Hlm") as "[Hj Hlm]"; eauto.
+
+      iDestruct ("Heq" with "[] Hi Hj") as "%Hx".
+      { iPureIntro; congruence. }
+      congruence.
+  Qed.
 
 End maplist.
 
