@@ -846,99 +846,12 @@ Proof.
   auto.
 Qed.
 
-Definition byte_to_bits (x: byte): list bool :=
-  Z.testbit (int.val x) <$> seqZ 0 8.
-
-Theorem length_byte_to_bits x : length (byte_to_bits x) = 8%nat.
-Proof.
-  rewrite /byte_to_bits fmap_length seqZ_length //.
-Qed.
-
-Hint Rewrite length_byte_to_bits : len.
-
-Definition bits_to_byte (bs: list bool): byte :=
-   U8 (fold_right Z.add 0 (imap (λ n (b: bool), if b then 2^n else 0) bs)).
-
-Inductive bit_offset_vals (bit: u64): Prop :=
-| Bit0 (Heq:bit = U64 0) | Bit1 (Heq:bit = U64 1)
-| Bit2 (Heq:bit = U64 2) | Bit3 (Heq:bit = U64 3)
-| Bit4 (Heq:bit = U64 4) | Bit5 (Heq:bit = U64 5)
-| Bit6 (Heq:bit = U64 6) | Bit7 (Heq:bit = U64 7)
-.
-
-Lemma explode_bit_off (bit: u64) :
-  int.val bit < 8 →
-  bit_offset_vals bit.
-Proof.
-  intros Hbound.
-  destruct (decide (int.val bit = 0)) as [Heq|]; [ apply Bit0, (inj int.val); rewrite Heq; reflexivity | ].
-  destruct (decide (int.val bit = 1)) as [Heq|]; [ apply Bit1, (inj int.val); rewrite Heq; reflexivity | ].
-  destruct (decide (int.val bit = 1)) as [Heq|]; [ apply Bit1, (inj int.val); rewrite Heq; reflexivity | ].
-  destruct (decide (int.val bit = 2)) as [Heq|]; [ apply Bit2, (inj int.val); rewrite Heq; reflexivity | ].
-  destruct (decide (int.val bit = 3)) as [Heq|]; [ apply Bit3, (inj int.val); rewrite Heq; reflexivity | ].
-  destruct (decide (int.val bit = 4)) as [Heq|]; [ apply Bit4, (inj int.val); rewrite Heq; reflexivity | ].
-  destruct (decide (int.val bit = 5)) as [Heq|]; [ apply Bit5, (inj int.val); rewrite Heq; reflexivity | ].
-  destruct (decide (int.val bit = 6)) as [Heq|]; [ apply Bit6, (inj int.val); rewrite Heq; reflexivity | ].
-  destruct (decide (int.val bit = 7)) as [Heq|]; [ apply Bit7, (inj int.val); rewrite Heq; reflexivity | ].
-  exfalso; word.
-Qed.
-
 Theorem get_bit_ok b0 (off: u64) :
   (int.val off < 8) →
   get_bit b0 off = default false (byte_to_bits b0 !! int.nat off).
 Proof.
   intros Hbound.
-  destruct (explode_bit_off off); [auto|..]; subst;
-    (destruct (byte_explode b0); subst b0; vm_compute; reflexivity).
-Qed.
-
-Theorem byte_to_bits_to_byte (x:byte) :
-  bits_to_byte (byte_to_bits x) = x.
-Proof.
-  destruct (byte_explode x); subst x; reflexivity.
-Qed.
-
-Lemma explode_bits (bs: list bool) :
-  length bs = 8%nat →
-  ∃ (b0 b1 b2 b3 b4 b5 b6 b7: bool),
-    bs = [b0;b1;b2;b3;b4;b5;b6;b7].
-Proof.
-  intros Hlen.
-  repeat (let b := fresh "b" in
-          destruct bs as [|b bs];
-          [ simpl in Hlen; lia
-          | exists b]).
-  destruct bs; [reflexivity | simpl in Hlen; lia].
-Qed.
-
-Theorem bits_to_byte_to_bits (bs:list bool) :
-  length bs = 8%nat →
-  byte_to_bits (bits_to_byte bs) = bs.
-Proof.
-  intros Hlen.
-  apply explode_bits in Hlen as (b0&b1&b2&b3&b4&b5&b6&b7&->).
-  (repeat match goal with b:bool |- _ => destruct b end);
-    vm_compute; reflexivity.
-Qed.
-
-Instance byte_to_bits_inj : Inj eq eq byte_to_bits.
-Proof.
-  intros b1 b2 Heq%(f_equal bits_to_byte).
-  rewrite !byte_to_bits_to_byte // in Heq.
-Qed.
-
-Theorem byte_bit_ext_eq b1 b2 :
-  (∀ (off:nat), (off < 8)%nat →
-                byte_to_bits b1 !! off = byte_to_bits b2 !! off) →
-  b1 = b2.
-Proof.
-  intros.
-  apply (inj byte_to_bits).
-  apply (list_eq_same_length _ _ 8); [len|len|].
-  intros off x1 x2 Hbound.
-  intros.
-  rewrite H // in H0.
-  congruence.
+  bit_cases off; byte_cases b0; vm_refl.
 Qed.
 
 Definition install_one_bit (src dst:byte) (bit:nat) : byte :=
@@ -995,8 +908,7 @@ Lemma mask_bit_ok (b: u8) (bit: u64) :
 Proof.
   intros Hle.
   apply (inj int.val).
-  destruct (explode_bit_off bit); [auto|..]; subst;
-    (destruct (byte_explode b); subst; vm_compute; reflexivity).
+  bit_cases bit; byte_cases b; vm_refl.
 Qed.
 
 Lemma masks_different (bit:u64) :
@@ -1005,8 +917,8 @@ Lemma masks_different (bit:u64) :
 Proof.
   intros Hbound Heq%(f_equal int.val).
   change (int.val (U8 0)) with 0 in Heq.
-  destruct (explode_bit_off bit); [auto|..]; subst;
-    (vm_compute in Heq; by inversion Heq).
+  move: Heq.
+  bit_cases bit; vm_compute; by inversion 1.
 Qed.
 
 Theorem wp_installOneBit (src dst: u8) (bit: u64) :
@@ -1034,8 +946,7 @@ Proof.
       rewrite Heqb0.
       apply (inj byte_to_bits).
       rewrite bits_to_byte_to_bits; [|len].
-      destruct (explode_bit_off bit); [auto|..]; subst;
-        (destruct (byte_explode dst); subst; vm_compute; reflexivity).
+      bit_cases bit; byte_cases dst; vm_refl.
     + destruct (default false (byte_to_bits src !! int.nat bit)) eqn:?; last contradiction.
       destruct (default false (byte_to_bits dst !! int.nat bit)) eqn:?; first contradiction.
       wp_load. wp_store. wp_load.
@@ -1044,8 +955,7 @@ Proof.
       rewrite Heqb1.
       apply (inj byte_to_bits).
       rewrite bits_to_byte_to_bits; [|len].
-      destruct (explode_bit_off bit); [auto|..]; subst;
-        (destruct (byte_explode dst); subst; vm_compute; reflexivity).
+      bit_cases bit; byte_cases dst; vm_refl.
   - wp_load.
     iExactEq "HΦ"; do 3 f_equal.
     rewrite install_one_bit_id //.
