@@ -2,6 +2,7 @@ From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
 
+From Perennial.Helpers Require Import bytes.
 From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buf.
 From Perennial.program_proof Require Import util_proof disk_lib.
@@ -12,6 +13,10 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
+(* TODO(tej): we don't get these definitions due to not importing the buftxn
+proof; should fix that *)
+Notation object := ({K & bufDataT K}).
+
 Section heap.
 Context `{!heapG Σ}.
 
@@ -20,10 +25,10 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Definition is_buf_data {K} (s : Slice.t) (d : bufDataT K) (a : addr) : iProp Σ :=
   match d with
-  | bufBit b => ∃ (b0 : u8), slice.is_slice_small s u8T 1%Qp (#b0 :: nil) ∗
+  | bufBit b => ∃ (b0 : u8), slice.is_slice_small s u8T 1 (#b0 :: nil) ∗
     ⌜ get_bit b0 (word.modu a.(addrOff) 8) = b ⌝
-  | bufInode i => slice.is_slice_small s u8T 1%Qp (inode_to_vals i)
-  | bufBlock b => slice.is_slice_small s u8T 1%Qp (Block_to_vals b)
+  | bufInode i => slice.is_slice_small s u8T 1 (inode_to_vals i)
+  | bufBlock b => slice.is_slice_small s u8T 1 (Block_to_vals b)
   end.
 
 Definition is_buf_without_data (bufptr : loc) (a : addr) (o : buf) (data : Slice.t) : iProp Σ :=
@@ -56,6 +61,46 @@ Proof.
   iNamed "Hisbuf".
   iNamed "Hisbuf_without_data".
   eauto.
+Qed.
+
+Definition objKind (obj: object): bufDataKind := projT1 obj.
+Definition objData (obj: object): bufDataT (objKind obj) := projT2 obj.
+
+Definition data_has_obj (data: list byte) (a:addr) (obj: object) : Prop :=
+  match objData obj with
+  | bufBit b =>
+    ∃ b0, data = [b0] ∧
+          get_bit b0 (word.modu (addrOff a) 8) = b
+  | bufInode i => vec_to_list i = data
+  | bufBlock b => vec_to_list b = data
+  end.
+
+Theorem data_has_obj_to_buf_data s a obj data :
+  data_has_obj data a obj →
+  is_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
+Proof.
+  rewrite /data_has_obj /is_buf_data.
+  iIntros (?) "Hs".
+  destruct (objData obj); subst.
+  - destruct H as (b' & -> & <-).
+    iExists b'; iFrame.
+    auto.
+  - iFrame.
+  - iFrame.
+Qed.
+
+Theorem is_buf_data_has_obj s a obj :
+  is_buf_data s (objData obj) a ⊣⊢ ∃ data, is_slice_small s u8T 1 data ∗
+                                           ⌜data_has_obj data a obj⌝.
+Proof.
+  iSplit; intros.
+  - rewrite /data_has_obj /is_buf_data.
+    destruct (objData obj); subst; eauto.
+    iDestruct 1 as (b') "[Hs %]".
+    iExists [b']; iFrame.
+    eauto.
+  - iDestruct 1 as (data) "[Hs %]".
+    iApply (data_has_obj_to_buf_data with "Hs"); auto.
 Qed.
 
 Theorem wp_buf_loadField_sz bufptr a b :
@@ -598,7 +643,7 @@ Proof using.
     { destruct K.
       { simpl. repeat word_cleanup. }
       { simpl. repeat word_cleanup. }
-      { replace (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat by reflexivity.
+      { change (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat.
         repeat word_cleanup. }
     }
     {
@@ -611,7 +656,7 @@ Proof using.
       { simpl. simpl in Hoff. repeat word_cleanup. }
       {
         assert (a.(addrOff) = 0) as Hoff0.
-        { replace (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat in Hoff by reflexivity.
+        { change (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat in Hoff.
           word.
         }
 
@@ -661,8 +706,7 @@ Opaque PeanoNat.Nat.div.
     f_equal.
     { rewrite Z2Nat.inj_add; try word.
       rewrite Z2Nat_inj_div; try word.
-      replace (Z.to_nat 1) with (1)%nat by reflexivity.
-      replace (Z.to_nat 8) with (8)%nat by reflexivity.
+      change (Z.to_nat 8) with 8%nat.
       word. }
 
   - iExactEq "Hs"; f_equal.
@@ -681,9 +725,9 @@ Opaque PeanoNat.Nat.div.
     f_equal.
     { rewrite Z2Nat_inj_div; try word.
       simpl bufSz in *.
-      replace (Z.to_nat 8) with 8%nat by reflexivity.
-      replace (Z.to_nat 128) with 128%nat by reflexivity.
-      replace (128 * 8)%nat with (8 * 128)%nat by reflexivity.
+      change (Z.to_nat 8) with 8%nat.
+      change (Z.to_nat 128) with 128%nat.
+      change (128 * 8)%nat with (8 * 128)%nat.
       rewrite -Nat.div_div; try word.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
@@ -700,11 +744,11 @@ Opaque PeanoNat.Nat.div.
       simpl bufSz in *.
       rewrite Z2Nat.inj_add; try word.
       rewrite Z2Nat_inj_div; try word.
-      replace (Z.to_nat 1) with (1)%nat by reflexivity.
-      replace (Z.to_nat 8) with (8)%nat by reflexivity.
-      replace (Z.to_nat 128) with (128)%nat by reflexivity.
+      change (Z.to_nat 1) with 1%nat.
+      change (Z.to_nat 8) with 8%nat.
+      change (Z.to_nat 128) with 128%nat.
       rewrite Z2Nat.inj_add; try word.
-      replace (Z.to_nat (128*8-1)) with (128*8-1)%nat by reflexivity.
+      change (Z.to_nat (128*8-1)) with (128*8-1)%nat.
 
       replace (128 * 8)%nat with (8 * 128)%nat by reflexivity.
       rewrite -Nat.div_div; try word.
@@ -733,7 +777,7 @@ Opaque PeanoNat.Nat.div.
       }
 
       rewrite mult_comm. rewrite -> Nat.div_add_l by lia.
-      replace ((8 * 128 - 1) `div` 8)%nat with (127)%nat by reflexivity.
+      change ((8 * 128 - 1) `div` 8)%nat with (127)%nat.
       lia.
     }
 
@@ -748,11 +792,11 @@ Opaque PeanoNat.Nat.div.
     }
     rewrite Hoff0.
     unfold block_bytes in *.
-    replace (word.divu 0 8) with (U64 0) by reflexivity.
-    replace (word.add 0 (Z.to_nat 4096 * 8)%nat) with (U64 (4096 * 8)) by reflexivity.
-    replace (word.sub (4096 * 8) 1) with (U64 32767) by reflexivity.
-    replace (word.divu 32767 8) with (U64 4095) by reflexivity.
-    replace (word.add 4095 1) with (U64 4096) by reflexivity.
+    change (word.divu 0 8) with (U64 0).
+    change (word.add 0 (Z.to_nat 4096 * 8)%nat) with (U64 (4096 * 8)).
+    change (word.sub (4096 * 8) 1) with (U64 32767).
+    change (word.divu 32767 8) with (U64 4095).
+    change (word.add 4095 1) with (U64 4096).
     rewrite firstn_all2.
     2: { rewrite length_Block_to_vals /block_bytes. word. }
     rewrite skipn_O //.
@@ -763,6 +807,252 @@ Lemma insert_Block_to_vals blk i (v : u8) (Hlt : (i < block_bytes)%nat) :
 Proof.
   rewrite /Block_to_vals /b2val vec_to_list_insert.
   rewrite list_fmap_insert fin_to_nat_to_fin //.
+Qed.
+
+(** * Operating on blocks as if they were [nat -> byte]. *)
+
+Definition get_byte (b:Block) (off:Z) : byte :=
+  default inhabitant (vec_to_list b !! Z.to_nat off).
+
+Definition update_byte (b:Block) (off:Z) (x:byte) : Block :=
+  if decide (0 ≤ off) then
+    list_to_block (<[Z.to_nat off:=x]> (vec_to_list b))
+  else b.
+
+Hint Unfold block_bytes : word.
+
+Theorem get_update_eq (b:Block) (off:Z) x :
+  0 ≤ off < 4096 →
+  get_byte (update_byte b off x) off = x.
+Proof.
+  intros Hbound.
+  rewrite /get_byte /update_byte.
+  rewrite decide_True; [|word].
+  rewrite list_to_block_to_list; [|len].
+  rewrite list_lookup_insert; [|len].
+  auto.
+Qed.
+
+Theorem get_update_ne (b:Block) (off off':Z) x :
+  off ≠ off' →
+  0 ≤ off' →
+  get_byte (update_byte b off x) off' = get_byte b off'.
+Proof.
+  intros Hne Hbound.
+  rewrite /get_byte /update_byte.
+  destruct (decide _); auto.
+  rewrite list_to_block_to_list; [|len].
+  rewrite list_lookup_insert_ne; [|word].
+  auto.
+Qed.
+
+Definition byte_to_bits (x: byte): list bool :=
+  Z.testbit (int.val x) <$> seqZ 0 8.
+
+Theorem length_byte_to_bits x : length (byte_to_bits x) = 8%nat.
+Proof.
+  rewrite /byte_to_bits fmap_length seqZ_length //.
+Qed.
+
+Hint Rewrite length_byte_to_bits : len.
+
+Definition bits_to_byte (bs: list bool): byte :=
+   U8 (fold_right Z.add 0 (imap (λ n (b: bool), if b then 2^n else 0) bs)).
+
+Inductive bit_offset_vals (bit: u64): Prop :=
+| Bit0 (Heq:bit = U64 0) | Bit1 (Heq:bit = U64 1)
+| Bit2 (Heq:bit = U64 2) | Bit3 (Heq:bit = U64 3)
+| Bit4 (Heq:bit = U64 4) | Bit5 (Heq:bit = U64 5)
+| Bit6 (Heq:bit = U64 6) | Bit7 (Heq:bit = U64 7)
+.
+
+Lemma explode_bit_off (bit: u64) :
+  int.val bit < 8 →
+  bit_offset_vals bit.
+Proof.
+  intros Hbound.
+  destruct (decide (int.val bit = 0)) as [Heq|]; [ apply Bit0, (inj int.val); rewrite Heq; reflexivity | ].
+  destruct (decide (int.val bit = 1)) as [Heq|]; [ apply Bit1, (inj int.val); rewrite Heq; reflexivity | ].
+  destruct (decide (int.val bit = 1)) as [Heq|]; [ apply Bit1, (inj int.val); rewrite Heq; reflexivity | ].
+  destruct (decide (int.val bit = 2)) as [Heq|]; [ apply Bit2, (inj int.val); rewrite Heq; reflexivity | ].
+  destruct (decide (int.val bit = 3)) as [Heq|]; [ apply Bit3, (inj int.val); rewrite Heq; reflexivity | ].
+  destruct (decide (int.val bit = 4)) as [Heq|]; [ apply Bit4, (inj int.val); rewrite Heq; reflexivity | ].
+  destruct (decide (int.val bit = 5)) as [Heq|]; [ apply Bit5, (inj int.val); rewrite Heq; reflexivity | ].
+  destruct (decide (int.val bit = 6)) as [Heq|]; [ apply Bit6, (inj int.val); rewrite Heq; reflexivity | ].
+  destruct (decide (int.val bit = 7)) as [Heq|]; [ apply Bit7, (inj int.val); rewrite Heq; reflexivity | ].
+  exfalso; word.
+Qed.
+
+Theorem get_bit_ok b0 (off: u64) :
+  (int.val off < 8) →
+  get_bit b0 off = default false (byte_to_bits b0 !! int.nat off).
+Proof.
+  intros Hbound.
+  destruct (explode_bit_off off); [auto|..]; subst;
+    (destruct (byte_explode b0); subst b0; vm_compute; reflexivity).
+Qed.
+
+Theorem byte_to_bits_to_byte (x:byte) :
+  bits_to_byte (byte_to_bits x) = x.
+Proof.
+  destruct (byte_explode x); subst x; reflexivity.
+Qed.
+
+Lemma explode_bits (bs: list bool) :
+  length bs = 8%nat →
+  ∃ (b0 b1 b2 b3 b4 b5 b6 b7: bool),
+    bs = [b0;b1;b2;b3;b4;b5;b6;b7].
+Proof.
+  intros Hlen.
+  repeat (let b := fresh "b" in
+          destruct bs as [|b bs];
+          [ simpl in Hlen; lia
+          | exists b]).
+  destruct bs; [reflexivity | simpl in Hlen; lia].
+Qed.
+
+Theorem bits_to_byte_to_bits (bs:list bool) :
+  length bs = 8%nat →
+  byte_to_bits (bits_to_byte bs) = bs.
+Proof.
+  intros Hlen.
+  apply explode_bits in Hlen as (b0&b1&b2&b3&b4&b5&b6&b7&->).
+  (repeat match goal with b:bool |- _ => destruct b end);
+    vm_compute; reflexivity.
+Qed.
+
+Instance byte_to_bits_inj : Inj eq eq byte_to_bits.
+Proof.
+  intros b1 b2 Heq%(f_equal bits_to_byte).
+  rewrite !byte_to_bits_to_byte // in Heq.
+Qed.
+
+Theorem byte_bit_ext_eq b1 b2 :
+  (∀ (off:nat), (off < 8)%nat →
+                byte_to_bits b1 !! off = byte_to_bits b2 !! off) →
+  b1 = b2.
+Proof.
+  intros.
+  apply (inj byte_to_bits).
+  apply (list_eq_same_length _ _ 8); [len|len|].
+  intros off x1 x2 Hbound.
+  intros.
+  rewrite H // in H0.
+  congruence.
+Qed.
+
+Definition install_one_bit (src dst:byte) (bit:nat) : byte :=
+  (* bit in src we should copy *)
+  let b := default false (byte_to_bits src !! bit) in
+  let dst'_bits := <[bit:=b]> (byte_to_bits dst) in
+  let dst' := bits_to_byte dst'_bits in
+  dst'.
+
+Lemma install_one_bit_spec src dst (bit: nat) :
+  (bit < 8)%nat →
+  ∀ bit', byte_to_bits (install_one_bit src dst bit) !! bit' =
+          if (decide (bit = bit')) then byte_to_bits src !! bit
+          else byte_to_bits dst !! bit'.
+Proof.
+  intros Hbound bit'.
+  rewrite /install_one_bit.
+  rewrite bits_to_byte_to_bits; [|len].
+  destruct (decide _); subst.
+  - rewrite list_lookup_insert; [|len].
+    destruct (byte_to_bits src !! bit') eqn:Hlookup; auto.
+    move: Hlookup; rewrite lookup_ge_None; len.
+  - rewrite list_lookup_insert_ne //.
+Qed.
+
+Lemma default_list_lookup_lt {A:Type} (l: list A) (i: nat) x def :
+  i < length l →
+  default def (l !! i) = x →
+  l !! i = Some x.
+Proof.
+  destruct (l !! i) eqn:Hlookup; simpl; [congruence|].
+  move: Hlookup; rewrite lookup_ge_None; lia.
+Qed.
+
+Lemma install_one_bit_id src dst bit :
+  (bit < 8)%nat →
+  default false (byte_to_bits src !! bit) = default false (byte_to_bits dst !! bit) →
+  install_one_bit src dst bit = dst.
+Proof.
+  intros.
+  rewrite /install_one_bit.
+  rewrite H0.
+  rewrite list_insert_id.
+  - rewrite byte_to_bits_to_byte //.
+  - eapply default_list_lookup_lt; len; eauto.
+Qed.
+
+Lemma mask_bit_ok (b: u8) (bit: u64) :
+  int.val bit < 8 →
+  word.and b (word.slu (U8 1) (u8_from_u64 bit)) =
+  if default false (byte_to_bits b !! int.nat bit) then
+    U8 (2^(int.nat bit))
+  else U8 0.
+Proof.
+  intros Hle.
+  apply (inj int.val).
+  destruct (explode_bit_off bit); [auto|..]; subst;
+    (destruct (byte_explode b); subst; vm_compute; reflexivity).
+Qed.
+
+Lemma masks_different (bit:u64) :
+  int.val bit < 8 →
+  U8 (2^int.nat bit ) ≠ U8 0.
+Proof.
+  intros Hbound Heq%(f_equal int.val).
+  change (int.val (U8 0)) with 0 in Heq.
+  destruct (explode_bit_off bit); [auto|..]; subst;
+    (vm_compute in Heq; by inversion Heq).
+Qed.
+
+Theorem wp_installOneBit (src dst: u8) (bit: u64) :
+  int.val bit < 8 →
+  {{{ True }}}
+    installOneBit #src #dst #bit
+  {{{ RET #(install_one_bit src dst (int.nat bit)); True }}}.
+Proof.
+  iIntros (Hbit_bounded Φ) "_ HΦ".
+  iSpecialize ("HΦ" with "[//]").
+  wp_call.
+  wp_apply wp_ref_to; first by val_ty.
+  iIntros (new_l) "new_l".
+  wp_pures.
+  rewrite !mask_bit_ok //.
+  wp_if_destruct; wp_pures.
+  - rewrite !mask_bit_ok //.
+    wp_if_destruct; wp_pures.
+    + wp_load. wp_store. wp_load.
+      destruct (default false (byte_to_bits src !! int.nat bit)) eqn:?.
+      { apply masks_different in H0; auto; contradiction. }
+      destruct (default false (byte_to_bits dst !! int.nat bit)) eqn:?; last contradiction.
+      iExactEq "HΦ"; do 3 f_equal.
+      rewrite /install_one_bit.
+      rewrite Heqb0.
+      apply (inj byte_to_bits).
+      rewrite bits_to_byte_to_bits; [|len].
+      destruct (explode_bit_off bit); [auto|..]; subst;
+        (destruct (byte_explode dst); subst; vm_compute; reflexivity).
+    + destruct (default false (byte_to_bits src !! int.nat bit)) eqn:?; last contradiction.
+      destruct (default false (byte_to_bits dst !! int.nat bit)) eqn:?; first contradiction.
+      wp_load. wp_store. wp_load.
+      iExactEq "HΦ"; do 3 f_equal.
+      rewrite /install_one_bit.
+      rewrite Heqb1.
+      apply (inj byte_to_bits).
+      rewrite bits_to_byte_to_bits; [|len].
+      destruct (explode_bit_off bit); [auto|..]; subst;
+        (destruct (byte_explode dst); subst; vm_compute; reflexivity).
+  - wp_load.
+    iExactEq "HΦ"; do 3 f_equal.
+    rewrite install_one_bit_id //.
+    { lia. }
+    destruct (default false _), (default false _); auto.
+    + apply masks_different in H0; eauto; contradiction.
+    + apply symmetry, masks_different in H0; eauto; contradiction.
 Qed.
 
 Theorem wp_Buf__Install bufptr a b blk_s blk :
@@ -794,6 +1084,9 @@ Proof.
   - wp_pures.
     wp_loadField.
     wp_loadField.
+
+
+
     wp_call.
 
     assert (∃ (b : u8), Block_to_vals blk !! int.nat (word.divu (addrOff a) 8) = Some #b) as Hsome.
