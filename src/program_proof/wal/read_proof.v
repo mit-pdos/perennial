@@ -206,7 +206,7 @@ Proof.
   iIntros (Happly) "[Hinner HP] Hlinv Hfupd".
   iNamed "Hinner".
   iNamed "Hlinv".
-  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [done..|].
+  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [lia|done..|].
 
   iNamed "Htxns".
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
@@ -227,7 +227,7 @@ Proof.
   iFrame "HP HQ".
   iFrame.
   iSplit; first by done.
-  iExists _, _, _, _, _. iFrame "∗#%".
+  iExists _, _, _, _, _, _. iFrame "∗#%".
 Qed.
 
 Lemma apply_upds_in_not_None : ∀ upds a d,
@@ -276,7 +276,7 @@ Proof.
   iNamed "Hinner".
 
   iNamed "Hlinv".
-  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [done..|].
+  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [lia|done..|].
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
 
   iNamed "Hdisk".
@@ -284,6 +284,9 @@ Proof.
   iNamed "circ.end".
   iNamed "circ.start".
   iNamed "Hinstalled".
+
+  iNamed "Howninstalled".
+  iDestruct (fmcounter_agree_2 with "Hinstalled_txn Hinstalled_txn_id_bound") as "%Hbound".
 
   iMod ("Hfupd" with "[] [] HP") as "[HP HQ]"; first by eauto.
   {
@@ -305,8 +308,8 @@ Proof.
       rewrite Hall_updates in Happly.
       rewrite /no_updates_since /set /=.
       eapply apply_upds_no_updates_since; last by apply Happly.
-      (* missing memStart_txn_id < installed_txn_id from invariant?? *)
-      admit. }
+      lia.
+    }
     monad_simpl.
   }
 
@@ -326,8 +329,8 @@ Proof.
     iExists _, _. iFrame. iFrame "%".
   }
 
-  iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
-Admitted.
+  iExists _, _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
+Qed.
 
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ dinit a :
   {{{ is_wal P l γ dinit ∗

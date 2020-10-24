@@ -127,8 +127,8 @@ Proof.
     epose proof (wal_wf_txns_mono_pos Hwf HmemEnd_is_txn HnextDiskEnd_is_txn0). lia.
   }
 
-  iExists memStart_txn_id, (length σs.(log_state.txns) - 1)%nat, σs.(log_state.txns), _, _; simpl.
-  iFrame "Howntxns HownLoggerPos_linv HownLoggerTxn_linv".
+  iExists memStart_txn_id, _, (length σs.(log_state.txns) - 1)%nat, σs.(log_state.txns), _, _; simpl.
+  iFrame "Howntxns HownLoggerPos_linv HownLoggerTxn_linv Hinstalled_txn_id_bound".
   iFrame "HmemStart_txn HmemEnd_txn".
   iFrame "%".
   iSplit.
