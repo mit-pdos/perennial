@@ -1159,6 +1159,76 @@ Proof.
   erewrite list_alter_lookup_insert; eauto.
 Qed.
 
+Lemma list_inserts_app_r' {A} (l1 l2 l3: list A) (i: nat) :
+  (length l2 ≤ i)%nat →
+  list_inserts i l1 (l2 ++ l3) = l2 ++ list_inserts (i-length l2) l1 l3.
+Proof.
+  intros.
+  replace i with (length l2 + (i - length l2))%nat at 1 by lia.
+  rewrite list_inserts_app_r //.
+Qed.
+
+Theorem wp_installBytes
+        (src_s: Slice.t) (src_bs: list u8) q (* source *)
+        (dst_s: Slice.t) (dst_bs: list u8) (* destination *)
+        (dstoff: u64) (* the offset we're modifying, in bits *)
+        (nbit: u64)   (* the number of bits we're modifying *) :
+  int.val nbit `div` 8 ≤ Z.of_nat (length src_bs) →
+  int.val dstoff `div` 8 + int.val nbit `div` 8 ≤ Z.of_nat (length dst_bs) →
+  {{{ is_slice_small src_s byteT q src_bs ∗
+      is_slice_small dst_s byteT 1 dst_bs
+  }}}
+    installBytes (slice_val src_s) (slice_val dst_s) #dstoff #nbit
+  {{{ RET #(); is_slice_small src_s byteT q src_bs ∗
+               let src_bs' := take (Z.to_nat $ int.val nbit `div` 8) src_bs in
+               let dst_bs' := list_inserts (Z.to_nat $ int.val dstoff `div` 8) src_bs' dst_bs in
+               is_slice_small dst_s byteT 1 dst_bs'
+  }}}.
+Proof.
+  intros Hnbound Hdst_has_space.
+  iIntros (Φ) "Hpre HΦ". iDestruct "Hpre" as "[Hsrc Hdst]".
+  wp_call.
+  iDestruct (is_slice_small_sz with "Hsrc") as %Hsrc_sz.
+  iDestruct (is_slice_small_sz with "Hdst") as %Hdst_sz.
+  wp_apply (wp_SliceTake byteT); first by word.
+  wp_pures.
+  wp_apply wp_SliceSkip'; first by (iPureIntro; word).
+  iDestruct (slice_small_split _ (word.divu dstoff 8) with "Hdst")
+    as "[Hdst1 Hdst2]"; first by word.
+  iDestruct (slice_small_split _ (word.divu nbit 8) with "Hsrc")
+    as "[Hsrc1 Hsrc2]"; first by word.
+  wp_apply (wp_SliceCopy (V:=u8) with "[$Hsrc1 $Hdst2]").
+  { len. }
+  iIntros "[Hsrc1 Hdst2']".
+  wp_pures.
+  iDestruct (is_slice_combine with "Hdst1 Hdst2'")
+    as "Hdst"; first by word.
+  iDestruct (is_slice_combine with "Hsrc1 Hsrc2")
+    as "Hsrc"; first by word.
+  rewrite take_drop.
+  iApply "HΦ".
+  iFrame "Hsrc".
+  iExactEq "Hdst".
+  f_equal.
+  len.
+  rewrite -> Nat.min_l by word.
+  rewrite drop_drop.
+  rewrite -[l in list_inserts _ _ l](take_drop (int.nat (word.divu dstoff 8)) dst_bs).
+  rewrite -> list_inserts_app_r' by len.
+  f_equal.
+  match goal with
+  | |- context[list_inserts ?n _ _] => replace n with 0%nat by len
+  end.
+  match goal with
+  | |- context[list_inserts _ _ ?l] =>
+    rewrite -(take_drop (int.nat (word.divu nbit 8)) l)
+  end.
+  rewrite -> list_inserts_0_r by len.
+  rewrite drop_drop.
+  f_equal.
+  f_equal; word.
+Qed.
+
 Hint Unfold valid_addr block_bytes : word.
 
 Lemma is_slice_to_block s q bs :
