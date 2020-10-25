@@ -1171,10 +1171,10 @@ Hint Unfold valid_addr block_bytes : word.
 
 Lemma is_slice_to_block s q bs :
   length bs = block_bytes →
-  is_slice_small s byteT q bs -∗
+  is_slice_small s byteT q bs ⊣⊢
   is_block s q (list_to_block bs).
 Proof.
-  iIntros (Hlen) "Hs".
+  iIntros (Hlen).
   rewrite /is_block.
   rewrite list_to_block_to_vals //.
 Qed.
@@ -1188,6 +1188,68 @@ Definition is_installed_block (blk: Block) (buf_b: buf) (off': u64) (blk': Block
     if decide (off = off')
     then is_bufData_at_off blk' off buf_b.(bufData)
     else is_bufData_at_off blk' off d0.
+
+Lemma is_installed_block_bit (off:u64) (b bufDirty : bool) (blk : Block) :
+    int.val off < block_bytes * 8 →
+    ∀ src_b : u8,
+      get_bit src_b (word.modu off 8) = b
+      → is_installed_block
+          blk
+          {| bufKind := KindBit; bufData := bufBit b; bufDirty := bufDirty |}
+          off
+          (list_to_block
+             (alter
+                (λ (dst:u8),
+                 install_one_bit src_b dst
+                                 (Z.to_nat (int.val off `mod` 8)))
+                (Z.to_nat (int.val off `div` 8)) (vec_to_list blk))).
+Proof.
+  intros Haddroff_bound src_b <-.
+  rewrite -> get_bit_ok by word.
+  intros off' d ?.
+  apply is_bufData_bit in H as [Hoff_bound <-].
+  word_cleanup.
+  remember (int.val off `div` 8) as byteOff.
+  remember (int.val off `mod` 8) as bitOff.
+  destruct (lookup_lt_is_Some_2 (vec_to_list blk) (Z.to_nat byteOff))
+    as [byte0 Hlookup_byte]; [ len | ].
+  destruct (decide _); [subst off'|].
+  + (* modified the desired bit *)
+    apply is_bufData_bit; split; [done|].
+    f_equal.
+    rewrite /get_buf_data_bit.
+    rewrite /get_byte.
+    word_cleanup.
+    rewrite list_to_block_to_list; [|len].
+    rewrite -!HeqbyteOff -!HeqbitOff.
+    rewrite list_lookup_alter.
+    f_equal.
+    rewrite Hlookup_byte.
+    rewrite install_one_bit_spec; [ | word ].
+    rewrite decide_True //.
+  + (* other bits are unchanged *)
+    apply is_bufData_bit; split; [done|].
+    f_equal.
+    rewrite /get_buf_data_bit.
+    f_equal.
+    (* are we looking up the same byte, but a different bit? *)
+    destruct (decide (int.val off' `div` 8 = byteOff)).
+    * rewrite e.
+      word_cleanup.
+      rewrite /get_byte.
+      rewrite -> list_to_block_to_list by len.
+      rewrite list_lookup_alter.
+      rewrite Hlookup_byte /=.
+      rewrite install_one_bit_spec; [ | word ].
+      rewrite decide_False //.
+      intros Heq.
+      contradiction n.
+      word.
+    * rewrite /get_byte.
+      rewrite -> list_to_block_to_list by len.
+      rewrite list_lookup_alter_ne //.
+      word.
+Qed.
 
 Theorem wp_Buf__Install bufptr a b blk_s blk :
   {{{
@@ -1208,9 +1270,9 @@ Proof.
   wp_call.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
-
   destruct b; simpl in *.
   destruct bufData.
+
   - wp_pures.
     wp_loadField.
     wp_loadField.
@@ -1228,60 +1290,16 @@ Proof.
       iSplitR "Hsrc".
       - eauto with iFrame.
       - iExists _; iFrame "∗%". }
-    subst b; simpl.
-    rewrite get_bit_ok; [|word].
-    iIntros (off d) "!%".
-    intros.
-    apply is_bufData_bit in H1 as [Hoff_bound <-].
-    word_cleanup.
-    remember (int.val (addrOff a) `div` 8) as byteOff.
-    remember (int.val (addrOff a) `mod` 8) as bitOff.
-    destruct (lookup_lt_is_Some_2 (vec_to_list blk) (Z.to_nat byteOff))
-      as [byte0 Hlookup_byte]; [ len | ].
-    destruct (decide _); [subst off|].
-    + (* modified the desired bit *)
-      apply is_bufData_bit; split; [done|].
-      f_equal.
-      rewrite /get_buf_data_bit.
-      rewrite /get_byte.
-      word_cleanup.
-      rewrite list_to_block_to_list; [|len].
-      rewrite -!HeqbyteOff -!HeqbitOff.
-      rewrite list_lookup_alter.
-      f_equal.
-      rewrite Hlookup_byte.
-      rewrite install_one_bit_spec; [ | word ].
-      rewrite decide_True //.
-    + (* other bits are unchanged *)
-      apply is_bufData_bit; split; [done|].
-      f_equal.
-      rewrite /get_buf_data_bit.
-      (* are we looking up the same byte, but a different bit? *)
-      destruct (decide (int.val off `div` 8 = byteOff)).
-      * rewrite e.
-        word_cleanup.
-        rewrite /get_byte.
-        rewrite list_to_block_to_list; [|len].
-        rewrite list_lookup_alter.
-        rewrite Hlookup_byte /=.
-        f_equal.
-        rewrite install_one_bit_spec; [ | word ].
-        rewrite decide_False //.
-        intros Heq.
-        contradiction n.
-        word.
-      * rewrite /get_byte.
-        rewrite list_to_block_to_list; [|len].
-        rewrite list_lookup_alter_ne //.
-        word.
+    iPureIntro.
+    apply is_installed_block_bit; auto.
+    word.
+
   - wp_pures.
     wp_loadField. wp_pures.
     wp_loadField.
     wp_pures.
-    wp_if_destruct; last first.
-    { exfalso.
-      apply Heqb.
-      f_equal.
+    rewrite bool_decide_eq_true_2; last first.
+    { f_equal.
       f_equal.
       apply (inj int.val).
       destruct H as [? ?].
@@ -1290,6 +1308,7 @@ Proof.
       change (Z.of_nat 1024) with (8*128) in H1.
       rewrite Z.rem_mul_r // in H1.
       word. }
+    wp_if.
     wp_loadField. wp_loadField. wp_loadField.
     admit.
 Admitted.
