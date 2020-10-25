@@ -68,7 +68,8 @@ Definition installBit: val :=
 Definition installBytes: val :=
   rec: "installBytes" "src" "dst" "dstoff" "nbit" :=
     let: "sz" := "nbit" `quot` #8 in
-    SliceCopy byteT (SliceSkip byteT "dst" ("dstoff" `quot` #8)) (SliceTake "src" "sz").
+    SliceCopy byteT (SliceSkip byteT "dst" ("dstoff" `quot` #8)) (SliceTake "src" "sz");;
+    #().
 
 (* Install the bits from buf into blk.  Two cases: a bit or an inode *)
 Definition Buf__Install: val :=
