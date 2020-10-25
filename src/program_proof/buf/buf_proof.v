@@ -953,6 +953,37 @@ Proof.
   repeat rewrite !Nat2Z_inj_div !Nat2Z.inj_mul !Z2Nat.id //; try word.
 Qed.
 
+Global Instance Nat_mul_comm : Comm eq Nat.mul.
+Proof. intros x1 x2. lia. Qed.
+
+Global Instance Z_mul_comm : Comm eq Z.mul.
+Proof. intros x1 x2. lia. Qed.
+
+Global Instance Nat_mul_assoc : Assoc eq Nat.mul.
+Proof. intros x1 x2 x3. lia. Qed.
+
+Global Instance Z_mul_assoc : Assoc eq Z.mul.
+Proof. intros x1 x2 x3. lia. Qed.
+
+Lemma Nat_div_exact_2 : ∀ a b : nat, (b ≠ 0 → a `mod` b = 0 → a = b * a `div` b)%nat.
+Proof.
+  intros.
+  apply Nat.div_exact; auto.
+Qed.
+
+Lemma Z_mod_1024_to_div_8 (z:Z) :
+  z `mod` 1024 = 0 →
+  z `div` 8 = 128*(z `div` 1024).
+Proof.
+  intros.
+  rewrite {1}(Z_div_exact_2 _ _ _ H) //.
+  rewrite (comm Z.mul 1024).
+  change 1024 with (128*8) at 2.
+  rewrite (assoc Z.mul).
+  rewrite Z.div_mul //.
+  rewrite {1}(comm Z.mul) //.
+Qed.
+
 Theorem is_bufData_inode blk off (d: bufDataT KindInode) :
   is_bufData_at_off blk off d ↔
   (int.nat off `div` 8 < block_bytes)%nat ∧
@@ -992,12 +1023,16 @@ Proof.
     rewrite list_to_inode_buf_to_list; last first.
     { rewrite /subslice /inode_bytes; len.
       change (Z.to_nat 128) with 128%nat.
-      change (Z.to_nat 4096) with 4096%nat in *.
-      admit. (* TODO(tej): needs more sophisticated mod arith?
-                            or should we assume off < 8*block_bytes instead? *)
-    }
+      change (Z.of_nat 1024) with 1024 in Hvalid.
+      pose proof (Z_mod_1024_to_div_8 (int.val off) Hvalid) as Hdiv8.
+      assert (int.nat off `div` 8 = 128 * int.nat off `div` 1024)%nat.
+      { apply Nat2Z.inj.
+        rewrite ?Nat2Z.inj_mul ?Nat2Z_inj_div //.
+        word. }
+      rewrite H.
+      word. }
     auto.
-Admitted.
+Qed.
 
 Definition install_one_bit (src dst:byte) (bit:nat) : byte :=
   (* bit in src we should copy *)
