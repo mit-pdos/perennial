@@ -24,6 +24,11 @@ Coercion LitProphecy : proph_id >-> base_lit.
 Notation "'str' s" := (LitString s) (at level 30, format "'str' s") : val_scope.
 
 Definition b2val {ext: ext_op}: u8 -> val := λ (b:u8), LitV (LitByte b).
+Global Instance b2val_inj {ext: ext_op} : Inj eq eq b2val.
+Proof.
+  intros b1 b2 Heq.
+  inversion Heq; auto.
+Qed.
 
 Coercion App : expr >-> Funclass.
 

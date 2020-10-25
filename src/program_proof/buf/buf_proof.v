@@ -953,14 +953,6 @@ Proof.
   repeat rewrite !Nat2Z_inj_div !Nat2Z.inj_mul !Z2Nat.id //; try word.
 Qed.
 
-Search Inj b2val.
-
-Global Instance b2val_inj : Inj eq eq b2val.
-Proof.
-  intros b1 b2 Heq.
-  inversion Heq; auto.
-Qed.
-
 Theorem is_bufData_inode blk off (d: bufDataT KindInode) :
   is_bufData_at_off blk off d ↔
   (int.nat off `div` 8 < block_bytes)%nat ∧
