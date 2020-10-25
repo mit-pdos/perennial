@@ -934,6 +934,79 @@ Proof.
     word.
 Qed.
 
+(* TODO(tej): I should have used !!! (lookup_total), which is [default inhabitant
+(_ !! _)] ([list_lookup_total_alt] proves that). *)
+
+(* off is a bit offset *)
+Definition get_inode (blk: Block) (off: nat) : inode_buf :=
+  let start_byte := (off `div` 8)%nat in
+  list_to_inode_buf (subslice start_byte (start_byte+inode_bytes) (vec_to_list blk)).
+
+Lemma Nat_div_inode_bits (off:nat) :
+  off `mod` 1024 = 0 →
+  (off `div` (inode_bytes * 8) * inode_bytes =
+   off `div` 8)%nat.
+Proof.
+  intros.
+  word_cleanup.
+  apply (inj Z.of_nat).
+  repeat rewrite !Nat2Z_inj_div !Nat2Z.inj_mul !Z2Nat.id //; try word.
+Qed.
+
+Search Inj b2val.
+
+Global Instance b2val_inj : Inj eq eq b2val.
+Proof.
+  intros b1 b2 Heq.
+  inversion Heq; auto.
+Qed.
+
+Theorem is_bufData_inode blk off (d: bufDataT KindInode) :
+  is_bufData_at_off blk off d ↔
+  (int.nat off `div` 8 < block_bytes)%nat ∧
+  valid_off KindInode off ∧
+  bufInode (get_inode blk (int.nat off)) = d.
+Proof.
+  dependent destruction d; simpl.
+  rewrite /is_bufData_at_off.
+  rewrite /extract_nth.
+  rewrite /Block_to_vals.
+  rewrite -fmap_take -fmap_drop.
+  rewrite /get_inode.
+  split.
+  - intros [Hvalid Heq].
+    rewrite PeanoNat.Nat.mul_succ_l in Heq.
+    rewrite /valid_off /= in Hvalid.
+    rewrite -> Nat_div_inode_bits in Heq by word.
+    rewrite /subslice.
+    rewrite /inode_to_vals in Heq.
+    apply (inj (fmap b2val)) in Heq.
+    assert (int.nat off `div` 8 < block_bytes)%nat.
+    { apply (f_equal length) in Heq.
+      move: Heq; len. }
+    split; first done.
+    split; first done.
+    f_equal.
+    rewrite Heq.
+    rewrite inode_buf_to_list_to_inode_buf //.
+  - intros (Hbound&Hvalid&Hdata).
+    inversion Hdata; subst; clear Hdata.
+    split; first done.
+    rewrite /valid_off /= in Hvalid.
+    rewrite /inode_to_vals.
+    f_equal.
+    rewrite PeanoNat.Nat.mul_succ_l.
+    rewrite -> !Nat_div_inode_bits by word.
+    rewrite list_to_inode_buf_to_list; last first.
+    { rewrite /subslice /inode_bytes; len.
+      change (Z.to_nat 128) with 128%nat.
+      change (Z.to_nat 4096) with 4096%nat in *.
+      admit. (* TODO(tej): needs more sophisticated mod arith?
+                            or should we assume off < 8*block_bytes instead? *)
+    }
+    auto.
+Admitted.
+
 Definition install_one_bit (src dst:byte) (bit:nat) : byte :=
   (* bit in src we should copy *)
   let b := default false (byte_to_bits src !! bit) in
@@ -1108,6 +1181,14 @@ Qed.
 
 Hint Rewrite @alter_length : len.
 
+(** states that [blk'] is like [blk] but with [buf_b] installed at [off'] *)
+Definition is_installed_block (blk: Block) (buf_b: buf) (off': u64) (blk': Block) : Prop :=
+  ∀ off (d0: bufDataT buf_b.(bufKind)),
+    is_bufData_at_off blk off d0 →
+    if decide (off = off')
+    then is_bufData_at_off blk' off buf_b.(bufData)
+    else is_bufData_at_off blk' off d0.
+
 Theorem wp_Buf__Install bufptr a b blk_s blk :
   {{{
     is_buf bufptr a b ∗
@@ -1118,11 +1199,7 @@ Theorem wp_Buf__Install bufptr a b blk_s blk :
     (blk': Block), RET #();
     is_buf bufptr a b ∗
     is_block blk_s 1 blk' ∗
-    ⌜ ∀ off (d0 : bufDataT b.(bufKind)),
-      is_bufData_at_off blk off d0 ->
-      if decide (off = a.(addrOff))
-      then is_bufData_at_off blk' off b.(bufData)
-      else is_bufData_at_off blk' off d0 ⌝
+    ⌜ is_installed_block blk b a.(addrOff) blk' ⌝
   }}}.
 Proof.
   iIntros (Φ) "[Hisbuf Hblk] HΦ".
@@ -1151,6 +1228,8 @@ Proof.
       iSplitR "Hsrc".
       - eauto with iFrame.
       - iExists _; iFrame "∗%". }
+    subst b; simpl.
+    rewrite get_bit_ok; [|word].
     iIntros (off d) "!%".
     intros.
     apply is_bufData_bit in H1 as [Hoff_bound <-].
@@ -1159,14 +1238,12 @@ Proof.
     remember (int.val (addrOff a) `mod` 8) as bitOff.
     destruct (lookup_lt_is_Some_2 (vec_to_list blk) (Z.to_nat byteOff))
       as [byte0 Hlookup_byte]; [ len | ].
-    subst b.
     destruct (decide _); [subst off|].
     + (* modified the desired bit *)
       apply is_bufData_bit; split; [done|].
       f_equal.
       rewrite /get_buf_data_bit.
       rewrite /get_byte.
-      rewrite get_bit_ok; [ | word ].
       word_cleanup.
       rewrite list_to_block_to_list; [|len].
       rewrite -!HeqbyteOff -!HeqbitOff.
@@ -1197,7 +1274,23 @@ Proof.
         rewrite list_to_block_to_list; [|len].
         rewrite list_lookup_alter_ne //.
         word.
-  - (* inode and panic cases *)
+  - wp_pures.
+    wp_loadField. wp_pures.
+    wp_loadField.
+    wp_pures.
+    wp_if_destruct; last first.
+    { exfalso.
+      apply Heqb.
+      f_equal.
+      f_equal.
+      apply (inj int.val).
+      destruct H as [? ?].
+      word_cleanup.
+      rewrite /valid_off /= in H1.
+      change (Z.of_nat 1024) with (8*128) in H1.
+      rewrite Z.rem_mul_r // in H1.
+      word. }
+    wp_loadField. wp_loadField. wp_loadField.
     admit.
 Admitted.
 

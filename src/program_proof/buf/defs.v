@@ -10,6 +10,58 @@ Definition inode_buf := vec u8 inode_bytes.
 Definition inode_to_vals {ext: ext_op} (i:inode_buf) : list val :=
   fmap b2val (vec_to_list i).
 
+Hint Unfold inode_bytes : word.
+
+Definition list_to_inode_buf (l: list u8) : inode_buf :=
+  match decide (length l = inode_bytes) with
+  | left H => eq_rect _ _ (list_to_vec l) _ H
+  | _ => inhabitant
+  end.
+
+Lemma vec_to_list_to_vec_eq_rect A (l: list A) n (H: length l = n) :
+  vec_to_list (eq_rect _ _ (list_to_vec l) _ H) = l.
+Proof.
+  rewrite <- H; simpl.
+  rewrite vec_to_list_to_vec.
+  auto.
+Qed.
+
+Theorem list_to_inode_buf_to_list l :
+  length l = inode_bytes ->
+  vec_to_list (list_to_inode_buf l) = l.
+Proof.
+  intros H.
+  rewrite /list_to_inode_buf.
+  rewrite decide_left.
+  rewrite vec_to_list_to_vec_eq_rect; auto.
+Qed.
+
+Theorem inode_buf_list_inj l (i: inode_buf) :
+  l = vec_to_list i →
+  i = list_to_inode_buf l.
+Proof.
+  intros ->.
+  apply vec_to_list_inj2.
+  rewrite list_to_inode_buf_to_list //.
+  rewrite vec_to_list_length //.
+Qed.
+
+Theorem inode_buf_to_list_to_inode_buf i :
+  list_to_inode_buf (vec_to_list i) = i.
+Proof.
+  symmetry.
+  apply inode_buf_list_inj.
+  auto.
+Qed.
+
+Theorem list_to_inode_buf_to_vals l :
+  length l = inode_bytes ->
+  inode_to_vals (list_to_inode_buf l) = b2val <$> l.
+Proof.
+  intros H.
+  rewrite /inode_to_vals list_to_inode_buf_to_list //.
+Qed.
+
 Inductive bufDataKind :=
 | KindBit
 | KindInode
