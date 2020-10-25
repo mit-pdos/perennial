@@ -973,16 +973,10 @@ Qed.
 
 Lemma Z_mod_1024_to_div_8 (z:Z) :
   z `mod` 1024 = 0 →
-  z `div` 8 = 128*(z `div` 1024).
-Proof.
-  intros.
-  rewrite {1}(Z_div_exact_2 _ _ _ H) //.
-  rewrite (comm Z.mul 1024).
-  change 1024 with (128*8) at 2.
-  rewrite (assoc Z.mul).
-  rewrite Z.div_mul //.
-  rewrite {1}(comm Z.mul) //.
-Qed.
+  z `div` 8 = 128 * (z `div` 1024).
+Proof. lia. Qed.
+
+Hint Rewrite Nat2Z.inj_mul Nat2Z_inj_div : word.
 
 Theorem is_bufData_inode blk off (d: bufDataT KindInode) :
   is_bufData_at_off blk off d ↔
@@ -1026,10 +1020,7 @@ Proof.
       change (Z.of_nat 1024) with 1024 in Hvalid.
       pose proof (Z_mod_1024_to_div_8 (int.val off) Hvalid) as Hdiv8.
       assert (int.nat off `div` 8 = 128 * int.nat off `div` 1024)%nat.
-      { apply Nat2Z.inj.
-        rewrite ?Nat2Z.inj_mul ?Nat2Z_inj_div //.
-        word. }
-      rewrite H.
+      { apply Nat2Z.inj. word. }
       word. }
     auto.
 Qed.
