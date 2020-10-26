@@ -273,7 +273,7 @@ Lemma Server_Function_spec (coreFunction:val) (fname:string) (srv req_ptr reply_
 (
 ∀ (srv':loc) (args':u64),
 {{{ 
-     Server_own_core srv' ∗ ▷ PreCond args'
+     Server_own_core srv' ∗ PreCond args'
 }}}
   coreFunction #srv' (into_val.to_val args')
 {{{
@@ -337,11 +337,11 @@ Proof.
     iFrame.
   }
   {
-    wp_pures.
     iDestruct "Hcases" as "[Hcases | [% _]]"; last discriminate.
     iNamed "Hcases".
-    repeat wp_loadField.
     iMod (server_takes_request with "[] [] [Hsrpc]") as "[HcorePre Hprocessing]"; eauto.
+    wp_pures.
+    repeat wp_loadField.
     wp_apply (HfCoreSpec with "[$Hlsown $HcorePre]"); eauto.
     iIntros (retval) "[Hsrv HcorePost]".
     iNamed "Hreply".
@@ -691,7 +691,7 @@ Lemma Clerk__from_core (coreFunction:val) (serverName:string) (callName:string) 
 (
 ∀ (srv':loc) (args':u64),
 {{{ 
-     Server_own_core srv' ∗ ▷ PreCond args'
+     Server_own_core srv' ∗ PreCond args'
 }}}
   coreFunction #srv' (into_val.to_val args')
 {{{

@@ -178,7 +178,7 @@ Lemma server_completes_request `{!Inhabited R} (PreCond  : A -> iProp Σ) (PostC
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
   (inv replyCacheInvN (ReplyCache_inv γrpc ))
   -∗ (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γP))
-  -∗ PostCond req.(Args) reply
+  -∗ ▷ PostCond req.(Args) reply
   -∗ RPCRequestProcessing req γrpc lastSeqM lastReplyM
   ={⊤}=∗
       RPCReplyReceipt req reply γrpc

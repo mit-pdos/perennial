@@ -45,7 +45,7 @@ Definition is_lockserver := is_server (Server_own_core:=LockServer_own_core).
 
 Lemma tryLock_core_spec (srv:loc) (tryLockArgs:u64) :
 {{{ 
-     LockServer_own_core srv ∗ ▷ TryLock_Pre tryLockArgs
+     LockServer_own_core srv ∗ TryLock_Pre tryLockArgs
 }}}
   LockServer__tryLock_core #srv #tryLockArgs
 {{{
@@ -97,7 +97,7 @@ Qed.
 
 Lemma unlock_core_spec (srv:loc) (unLockArgs:u64) :
 {{{
-     LockServer_own_core srv ∗ ▷ Unlock_Pre unLockArgs
+     LockServer_own_core srv ∗ Unlock_Pre unLockArgs
 }}}
   LockServer__unlock_core #srv #unLockArgs
 {{{
