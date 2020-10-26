@@ -282,7 +282,7 @@ Lemma Server_Function_spec (coreFunction:val) (fname:string) (srv req_ptr reply_
 }}}
 )
 
-->
+-∗
 
 {{{
   "#Hls" ∷ is_server srv γrpc
@@ -297,8 +297,7 @@ Lemma Server_Function_spec (coreFunction:val) (fname:string) (srv req_ptr reply_
 }}}.
 Proof.
   intros Hne1 Hne2 Hne3.
-  intros HfCoreSpec.
-  iIntros (Φ) "Hpre Hpost".
+  iIntros "#HfCoreSpec" (Φ) "!# Hpre Hpost".
   iNamed "Hpre".
   wp_lam.
   rewrite (@decide_False _ (fname = "ls")); last done.
@@ -342,7 +341,7 @@ Proof.
     iMod (server_takes_request with "[] [] [Hsrpc]") as "[HcorePre Hprocessing]"; eauto.
     wp_pures.
     repeat wp_loadField.
-    wp_apply (HfCoreSpec with "[$Hlsown $HcorePre]"); eauto.
+    wp_apply ("HfCoreSpec" with "[$Hlsown $HcorePre]"); eauto.
     iIntros (retval) "[Hsrv HcorePost]".
     iNamed "Hreply".
     iDestruct "HcorePost" as (r ->) "HcorePost".
@@ -391,7 +390,7 @@ Lemma CallFunction_spec (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply
              )
 }}}
 )
-      ->
+      -∗
 {{{ "#Hls" ∷ is_server srv γrpc
     ∗ "#HargsInv" ∷ inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γPost)
     ∗ "#Hargs" ∷ read_request req_ptr req
@@ -407,8 +406,8 @@ Lemma CallFunction_spec (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply
              )))
 }}}.
 Proof.
-  intros Hne1 Hne2 Hne3 Hne4 Hspec.
-  iIntros (Φ) "Hpre Hpost".
+  intros Hne1 Hne2 Hne3 Hne4.
+  iIntros "#Hspec" (Φ) "!# Hpre Hpost".
   iNamed "Hpre".
   wp_rec.
   rewrite (@decide_False _ (fname = "srv")); last done.
@@ -442,7 +441,7 @@ Proof.
     iModIntro.
     iIntros "[_ Hpre] Hpost".
     iDestruct "Hpre" as (reply') "Hreply".
-    wp_apply (Hspec with "[Hreply]"); eauto; try iFrame "#".
+    wp_apply ("Hspec" with "[Hreply]"); eauto; try iFrame "#".
 
     iIntros "fPost".
     wp_seq.
@@ -462,7 +461,7 @@ Proof.
   iIntros (choice) "[Hv|Hv]"; iDestruct "Hv" as %->.
   {
     wp_pures.
-    wp_apply (Hspec with "[$HReplyOwnStale $HReplyOwnRet]"); eauto; try iFrame "#".
+    wp_apply ("Hspec" with "[$HReplyOwnStale $HReplyOwnRet]"); eauto; try iFrame "#".
     iDestruct 1 as (reply') "[Hreply fPost]".
     iApply "Hpost".
     iFrame.
@@ -526,7 +525,7 @@ Lemma Clerk_Function_spec (f:val) (fname:string) ck (srv:loc) (args:u64) γrpc P
                ∨ RPCReplyReceipt req reply'.(Ret) γrpc'
              )))
 }}})
-  ->
+  -∗
   {{{
        PreCond args
       ∗ own_clerk ck srv γrpc
@@ -536,8 +535,7 @@ Lemma Clerk_Function_spec (f:val) (fname:string) ck (srv:loc) (args:u64) γrpc P
   {{{ v, RET v; ∃(retv:u64), ⌜v = #retv⌝ ∗ own_clerk ck srv γrpc ∗ PostCond args retv }}}.
 Proof using Type*.
   intros Hne1 Hne2 Hne3 Hne4 Hne5.
-  intros Hfspec.
-  iIntros (Φ) "[Hprecond [Hclerk #Hsrv]] Hpost".
+  iIntros "#Hfspec" (Φ) "!# [Hprecond [Hclerk #Hsrv]] Hpost".
   iNamed "Hclerk".
   rewrite H.
   wp_lam.
@@ -610,7 +608,7 @@ Proof using Type*.
     wp_loadField.
     iDestruct "Hreply" as (lockReply) "Hreply".
     (* WHY: Why does this destruct not work when inside the proof for CalTryLock's pre? *)
-    wp_apply (Hfspec with "[Hreply]"); eauto.
+    wp_apply ("Hfspec" with "[Hreply]"); eauto.
     {
       iSplitL "".
       { iExists _. iFrame "#". }
@@ -699,7 +697,7 @@ Lemma Clerk__from_core (coreFunction:val) (serverName:string) (callName:string) 
       ∗ (∃r:u64, ⌜v = into_val.to_val r⌝ ∗ PostCond args' r)
 }}}
 )
-->
+-∗
 {{{
      PreCond args
     ∗ own_clerk ck srv γrpc
@@ -708,18 +706,15 @@ Lemma Clerk__from_core (coreFunction:val) (serverName:string) (callName:string) 
     (Clerk__Function (CallFunction (Server_Function coreFunction serverName) callName) clerkName) ck (into_val.to_val args)
   {{{ v, RET v; ∃(retv:u64), ⌜v = #retv⌝ ∗ own_clerk ck srv γrpc ∗ PostCond args retv }}}.
 Proof using Type*.
-  intros Hne HcoreSpec.
+  intros Hne.
   destruct Hne as [Hone Hne]; repeat destruct Hone as [? Hone].
   destruct Hne as [Hone2 Hne]; repeat destruct Hone2 as [? Hone2].
   repeat destruct Hne as [? Hne].
-  iIntros (Φ) "Hpre Hpost".
-  iApply (Clerk_Function_spec with "[Hpre]"); eauto.
-  intros.
-  iIntros "Hpre Hpost".
-  iApply (CallFunction_spec with "[Hpre]"); eauto.
-  { intros. iIntros "Hpre Hpost".
-    wp_apply (Server_Function_spec with "[Hpre]"); eauto.
-  }
+  iIntros "#HcoreSpec" (Φ) "!# Hpre Hpost".
+  iApply (Clerk_Function_spec with "[] Hpre"); [done..| |done].
+  iIntros "*". iApply CallFunction_spec; [done..|].
+  iIntros "*". iApply Server_Function_spec; [done..|].
+  eauto.
 Qed.
 
 End common_proof.

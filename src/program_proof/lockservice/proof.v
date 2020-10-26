@@ -153,8 +153,11 @@ Lemma Clerk__TryLock_spec ck (srv:loc) (ln:u64) γrpc :
     {{{ v, RET v; ∃(b:u64), ⌜v = #b⌝ ∗ own_clerk ck srv γrpc ∗ (⌜b = 0⌝ ∨ ⌜b = 1⌝ ∗ Ps ln) }}}.
 Proof using Type*.
   iIntros (Φ) "Hpre Hpost".
-  iApply (Clerk__from_core LockServer__tryLock_core "LockServer__TryLock" "CallTryLock" "Clerk__TryLock" with "[Hpre]"); try apply tryLock_core_spec; eauto.
-  { by unfold name_neq. }
+  iApply (Clerk__from_core LockServer__tryLock_core "LockServer__TryLock" "CallTryLock" "Clerk__TryLock" with "[] [Hpre]").
+  - by unfold name_neq.
+  - iIntros "* % !#". iApply tryLock_core_spec.
+  - eauto.
+  - eauto.
 Qed.
 
 Lemma Clerk__Unlock_spec ck (srv:loc) (ln:u64) γrpc :
@@ -168,8 +171,11 @@ Lemma Clerk__Unlock_spec ck (srv:loc) (ln:u64) γrpc :
     {{{ v, RET v; ∃(b:u64), ⌜v = #b⌝ ∗ own_clerk ck srv γrpc ∗ True }}}.
 Proof using Type*.
   iIntros (Φ) "Hpre Hpost".
-  iApply (Clerk__from_core LockServer__unlock_core "LockServer__Unlock" "CallUnlock" "Clerk__Unlock" with "[Hpre]"); try apply unlock_core_spec; eauto.
-  { by unfold name_neq. }
+  iApply (Clerk__from_core LockServer__unlock_core "LockServer__Unlock" "CallUnlock" "Clerk__Unlock" with "[] [Hpre]").
+  - by unfold name_neq.
+  - iIntros "* % !#". iApply unlock_core_spec.
+  - eauto.
+  - eauto.
 Qed.
 
 Lemma Clerk__Lock_spec ck (srv:loc) (ln:u64) γrpc :
