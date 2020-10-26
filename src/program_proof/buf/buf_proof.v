@@ -1486,6 +1486,19 @@ Proof.
   apply is_bufData_block; auto.
 Qed.
 
+Lemma bufSz_block_eq :
+  Z.of_nat (bufSz KindBlock) = 32768.
+Proof. reflexivity. Qed.
+
+Lemma valid_block_off_addr a :
+  valid_addr a →
+  valid_off KindBlock (addrOff a) →
+  addrOff a = U64 0.
+Proof.
+  destruct 1 as [? _].
+  apply valid_block_off; auto.
+Qed.
+
 Theorem wp_Buf__Install bufptr a b blk_s blk :
   {{{
     is_buf bufptr a b ∗
@@ -1566,23 +1579,23 @@ Proof.
     iPureIntro.
     apply is_installed_block_inode.
     auto.
-  - wp_pures.
+
+  - destruct H as [H Hvalidoff].
+    rewrite (valid_block_off_addr a) //.
+    rewrite bufSz_block_eq.
+    wp_pures.
     wp_loadField. wp_loadField.
     wp_pures.
     rewrite bool_decide_eq_true_2; last first.
     { f_equal.
       f_equal.
       apply (inj int.val).
-      destruct H as [[? _] Hvalidoff].
       rewrite /valid_off in Hvalidoff.
-      change (Z.of_nat $ bufSz KindBlock) with 32768 in Hvalidoff.
+      rewrite bufSz_block_eq in Hvalidoff.
       word. }
     wp_if.
-    change (Z.of_nat (bufSz KindBlock)) with 32768.
     wp_loadField. wp_loadField. wp_loadField.
-    destruct H.
-    rewrite (valid_block_off (addrOff a)) //; last first.
-    { word. }
+    rewrite (valid_block_off_addr a) //.
     wp_apply (wp_installBytes with "[$Hbufdata $Hblk]").
     { len. }
     { len. }
