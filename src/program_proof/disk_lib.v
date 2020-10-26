@@ -77,6 +77,24 @@ Proof.
   rewrite /Block_to_vals list_to_block_to_list //.
 Qed.
 
+Theorem block_list_inj l (b: Block) :
+  l = vec_to_list b →
+  b = list_to_block l.
+Proof.
+  intros ->.
+  apply vec_to_list_inj2.
+  rewrite list_to_block_to_list //.
+  rewrite vec_to_list_length //.
+Qed.
+
+Theorem block_to_list_to_block i :
+  list_to_block (vec_to_list i) = i.
+Proof.
+  symmetry.
+  apply block_list_inj.
+  auto.
+Qed.
+
 Lemma array_to_block l q (bs: list byte) :
   length bs = Z.to_nat 4096 ->
   l ↦∗[byteT]{q} (b2val <$> bs) -∗ mapsto_block l q (list_to_block bs).

@@ -569,7 +569,7 @@ Qed.
 Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : bufDataT K) : Prop :=
   valid_off K off ∧
   match d with
-  | bufBlock d => b = d
+  | bufBlock d => b = d ∧ int.val off = 0
   | bufInode i => extract_nth b inode_bytes ((int.nat off)/(inode_bytes*8)) = inode_to_vals i
   | bufBit d => ∃ (b0 : u8), extract_nth b 1 ((int.nat off)/8) = #b0 :: nil ∧
       get_bit b0 (word.modu off 8) = d
@@ -1025,6 +1025,29 @@ Proof.
     auto.
 Qed.
 
+Lemma valid_block_off off :
+  int.val off < block_bytes * 8 →
+  valid_off KindBlock off →
+  off = U64 0.
+Proof.
+  intros Hbound.
+  rewrite /valid_off => Hvalid_off.
+  change (Z.of_nat (bufSz KindBlock)) with 32768 in Hvalid_off.
+  change (block_bytes * 8) with 32768 in Hbound.
+  apply (inj int.val).
+  word.
+Qed.
+
+Lemma is_bufData_block b off (d: bufDataT KindBlock) :
+  is_bufData_at_off b off d ↔ off = U64 0 ∧ bufBlock b = d.
+Proof.
+  dependent destruction d.
+  rewrite /is_bufData_at_off /=.
+  rewrite /valid_off.
+  change (Z.of_nat $ bufSz KindBlock) with 32768.
+  (intuition subst); try congruence; try word.
+Qed.
+
 Definition install_one_bit (src dst:byte) (bit:nat) : byte :=
   (* bit in src we should copy *)
   let b := default false (byte_to_bits src !! bit) in
@@ -1339,6 +1362,59 @@ Proof.
       word.
 Qed.
 
+Hint Rewrite @inserts_length : len.
+
+Lemma is_installed_block_inode (a : addr) (i : inode_buf) (bufDirty : bool) (blk : Block) :
+    valid_addr a ∧ valid_off KindInode (addrOff a) →
+    is_installed_block
+      blk
+      {| bufKind := KindInode; bufData := bufInode i; bufDirty := bufDirty |}
+      (addrOff a)
+      (list_to_block
+         (list_inserts (Z.to_nat (int.val (addrOff a) `div` 8))
+                       (take (Z.to_nat (int.val 1024%nat `div` 8)) i) blk)).
+Proof.
+  intros H.
+  destruct H as [[? ?] ?].
+  generalize dependent (addrOff a); intros off.
+  intros Hoff_bound Hvalid_off.
+  intros off' d Hdata_at_off; simpl in *.
+  apply is_bufData_inode in Hdata_at_off as (Hoff'_bound&Hoff'_valid&<-).
+  destruct (decide _); [subst off'|]; apply is_bufData_inode.
+  - split; first done.
+    split; first done.
+    f_equal.
+    rewrite /get_inode.
+    rewrite -> list_to_block_to_list by len.
+    admit. (* subslice gets exactly what was inserted *)
+  - split; first done.
+    split; first done.
+    f_equal.
+    rewrite /get_inode.
+    f_equal.
+    admit. (* first, off'/8 ≠ off/8 (due to divisibility) *)
+    (* then, list_inserts doesn't affect this subslice *)
+Admitted.
+
+Lemma is_installed_block_block (b : Block) (bufDirty : bool) (blk : Block) :
+    is_installed_block
+      blk
+      {| bufKind := KindBlock; bufData := bufBlock b; bufDirty := bufDirty |} 0
+      (list_to_block (list_inserts 0 (take block_bytes b) blk)).
+Proof.
+  rewrite -> take_ge by len.
+  rewrite -[l in list_inserts _ _ l]app_nil_r.
+  rewrite -> list_inserts_0_r by len.
+  rewrite app_nil_r.
+
+  rewrite block_to_list_to_block.
+  intros off d Hdata%is_bufData_block.
+  destruct Hdata as [-> <-].
+  simpl.
+  destruct (decide _); [ subst | congruence ].
+  apply is_bufData_block; auto.
+Qed.
+
 Theorem wp_Buf__Install bufptr a b blk_s blk :
   {{{
     is_buf bufptr a b ∗
@@ -1360,7 +1436,6 @@ Proof.
   wp_loadField.
   destruct b; simpl in *.
   destruct bufData.
-
   - wp_pures.
     wp_loadField.
     wp_loadField.
@@ -1398,8 +1473,65 @@ Proof.
       word. }
     wp_if.
     wp_loadField. wp_loadField. wp_loadField.
-    admit.
-Admitted.
+    simpl.
+    wp_apply (wp_installBytes with "[$Hbufdata $Hblk]").
+    { len. }
+    { len.
+      change (int.val 1024%nat `div` 8) with 128.
+      destruct H as [Hvalid H].
+      destruct Hvalid.
+      rewrite Z_mod_1024_to_div_8 //.
+      word. }
+    iIntros "[Hbufdata Hblk]".
+    wp_pures. wp_apply wp_DPrintf.
+    iDestruct (is_slice_to_block with "Hblk") as "Hblk".
+    { len. }
+    iApply "HΦ".
+    iFrame "Hblk".
+    iSplitL.
+    { iExists _; iFrame.
+      iExists _; iFrame "%∗".
+      done. }
+    iPureIntro.
+    apply is_installed_block_inode.
+    auto.
+  - wp_pures.
+    wp_loadField. wp_loadField.
+    wp_pures.
+    rewrite bool_decide_eq_true_2; last first.
+    { f_equal.
+      f_equal.
+      apply (inj int.val).
+      destruct H as [[? _] Hvalidoff].
+      rewrite /valid_off in Hvalidoff.
+      change (Z.of_nat $ bufSz KindBlock) with 32768 in Hvalidoff.
+      word. }
+    wp_if.
+    change (Z.of_nat (bufSz KindBlock)) with 32768.
+    wp_loadField. wp_loadField. wp_loadField.
+    destruct H.
+    rewrite (valid_block_off (addrOff a)) //; last first.
+    { word. }
+    wp_apply (wp_installBytes with "[$Hbufdata $Hblk]").
+    { len. }
+    { len. }
+    iIntros "[Hsrc Hblk]".
+    iDestruct (is_slice_to_block with "Hblk") as "Hblk".
+    { len. }
+    wp_pures. wp_apply wp_DPrintf.
+    iApply "HΦ".
+    iFrame "Hblk".
+    iSplitL.
+    { iExists _; iFrame.
+      iExists _; iFrame "∗%".
+      iPureIntro.
+      split; [|done].
+      simpl; auto. }
+    iPureIntro.
+    change (Z.to_nat (int.val 0 `div` 8)) with 0%nat.
+    change (Z.to_nat (int.val 32768 `div` 8)) with block_bytes.
+    apply is_installed_block_block.
+Qed.
 
 Theorem wp_Buf__SetDirty bufptr a b :
   {{{
