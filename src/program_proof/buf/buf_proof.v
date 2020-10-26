@@ -1364,6 +1364,53 @@ Qed.
 
 Hint Rewrite @inserts_length : len.
 
+Lemma subslice_lookup_ge_iff {A} n m i (l: list A) :
+  (m ≤ length l)%nat →
+  (m ≤ n+i)%nat ↔
+  subslice n m l !! i = None.
+Proof.
+  intros Hmbound.
+  rewrite lookup_ge_None.
+  rewrite subslice_length //.
+  lia.
+Qed.
+
+Lemma subslice_lookup_ge {A} n m i (l: list A) :
+  (m ≤ length l)%nat →
+  (m ≤ n+i)%nat →
+  subslice n m l !! i = None.
+Proof.
+  intros ??.
+  apply subslice_lookup_ge_iff; auto.
+Qed.
+
+Lemma subslice_list_inserts_eq {A} (k l: list A) n m :
+  (m = n + length k)%nat →
+  (n + length k ≤ length l)%nat →
+  subslice n m (list_inserts n k l) = k.
+Proof.
+  intros -> Hinsert_in_bounds.
+  apply list_eq; intros i.
+  destruct (decide (i < length k)) as [Hbound|?].
+  - rewrite -> subslice_lookup by lia.
+    rewrite list_lookup_inserts; auto with f_equal lia.
+  - rewrite subslice_lookup_ge; auto with lia.
+    + rewrite lookup_ge_None_2 //; lia.
+    + rewrite inserts_length; lia.
+Qed.
+
+Lemma Nat_mod_1024_to_div_8 (n:nat) :
+  Z.of_nat n `mod` 1024 = 0 →
+  (n `div` 8 = 128 * (n `div` 1024))%nat.
+Proof.
+  intros Hn_mod.
+  pose proof (Z_mod_1024_to_div_8 (Z.of_nat n) Hn_mod).
+  apply (f_equal Z.to_nat) in H.
+  rewrite Z2Nat_inj_div in H; try lia.
+  apply (inj Z.of_nat).
+  move: H; word.
+Qed.
+
 Lemma is_installed_block_inode (a : addr) (i : inode_buf) (bufDirty : bool) (blk : Block) :
     valid_addr a ∧ valid_off KindInode (addrOff a) →
     is_installed_block
@@ -1387,19 +1434,36 @@ Proof.
     split; first done.
     f_equal.
     rewrite /get_inode.
+    rewrite /valid_off /= in Hvalid_off.
     rewrite -> list_to_block_to_list by len.
-    admit. (* subslice gets exactly what was inserted *)
+    rewrite Z2Nat_inj_div; try word.
+    change (Z.to_nat 8) with 8%nat.
+    rewrite subslice_list_inserts_eq; len.
+    { rewrite inode_buf_to_list_to_inode_buf //. }
+    cut (int.val off `div` 8 + 128 ≤ 4096).
+    { intros.
+      rewrite /inode_bytes /block_bytes.
+      move: H; word_cleanup.
+      rewrite -> Z2Nat.inj_le by word.
+      rewrite -> Z2Nat.inj_add by word.
+      rewrite -> Z2Nat_inj_div by word.
+      auto. }
+    word.
   - split; first done.
     split; first done.
     f_equal.
     rewrite /get_inode.
     f_equal.
     rewrite -> list_to_block_to_list by len.
+    rewrite /valid_off /= in Hvalid_off, Hoff'_valid.
     assert (int.nat off' `div` 8 ≠ int.nat off `div` 8).
     { intros Heq.
       apply n.
-      rewrite /valid_off /= in Hvalid_off, Hoff'_valid.
       word. }
+    replace (Z.to_nat (int.val off `div` 8)) with (int.nat off `div` 8)%nat; last first.
+    { rewrite Z2Nat_inj_div //; word. }
+    rewrite -> !Nat_mod_1024_to_div_8 by lia.
+    rewrite -> !Z_mod_1024_to_div_8 in H by lia.
     admit. (* TODO: list_inserts doesn't affect this subslice *)
 Admitted.
 
