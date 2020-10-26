@@ -1380,6 +1380,8 @@ Proof.
   intros Hoff_bound Hvalid_off.
   intros off' d Hdata_at_off; simpl in *.
   apply is_bufData_inode in Hdata_at_off as (Hoff'_bound&Hoff'_valid&<-).
+  change (Z.to_nat (int.val 1024%nat `div` 8)) with inode_bytes.
+  rewrite -> take_ge by len.
   destruct (decide _); [subst off'|]; apply is_bufData_inode.
   - split; first done.
     split; first done.
@@ -1392,8 +1394,13 @@ Proof.
     f_equal.
     rewrite /get_inode.
     f_equal.
-    admit. (* first, off'/8 ≠ off/8 (due to divisibility) *)
-    (* then, list_inserts doesn't affect this subslice *)
+    rewrite -> list_to_block_to_list by len.
+    assert (int.nat off' `div` 8 ≠ int.nat off `div` 8).
+    { intros Heq.
+      apply n.
+      rewrite /valid_off /= in Hvalid_off, Hoff'_valid.
+      word. }
+    admit. (* TODO: list_inserts doesn't affect this subslice *)
 Admitted.
 
 Lemma is_installed_block_block (b : Block) (bufDirty : bool) (blk : Block) :
