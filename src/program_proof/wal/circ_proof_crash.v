@@ -353,6 +353,19 @@ Proof.
 Qed.
 *)
 
+(* XXX: but need to give evidence that the new γ' is the same across those two existentials *)
+Lemma circ_buf_crash_obligation_alt Prec Pcrash γ σ:
+  is_circular_state γ σ -∗
+  □ (P σ ={⊤}=∗ Prec σ ∗ Pcrash σ) -∗
+  P σ -∗
+  |={⊤}=> is_circular N P γ ∗ (<disc> |C={⊤}_0=> ∃ γ', is_circular_state γ' σ ∗ Prec σ)
+                            ∗ □ (C -∗ |0={⊤}=> inv N (∃ σ γ', is_circular_state_crash γ σ ∗
+                                                              circular_crash_ghost_exchange γ γ' ∗
+                                                              Pcrash σ)).
+Proof.
+Abort.
+
+
 (* Once the circular buffer is initialized or recovered, the is_circular
    invariant can be allocated. By allocating that invariant, we no longer need
    to show is_circular_state γ σ ∗ P σ in the crash condition anymore, because at
