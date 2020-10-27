@@ -464,6 +464,15 @@ Section goose_lang.
       iApply (data_has_obj_to_buf_data with "Hs"); auto.
   Qed.
 
+  (* the subst in this lemma is really where the magic is happening *)
+  Lemma is_buf_data_rew K s a obj (H: objKind obj = K) :
+    is_buf_data s (objData obj) a -∗
+    is_buf_data s (rew [bufDataT] H in objData obj) a.
+  Proof.
+    subst.
+    reflexivity.
+  Qed.
+
   Theorem wp_BufTxn__OverWrite l γ dinit γtxn P0 i (a: addr) (sz: u64)
           (data_s: Slice.t) (data: list byte) obj0 obj :
     bufSz (objKind obj) = int.nat sz →
@@ -488,7 +497,7 @@ Section goose_lang.
       iSplitL.
       - iApply data_has_obj_to_buf_data in "Hdata"; eauto.
         simpl.
-        admit. (* XXX(tej): something involving dependent types... *)
+        iApply (is_buf_data_rew with "Hdata").
       - iPureIntro.
         simpl.
         destruct vo0 as [K0 [c0 m0]]; simpl in *; subst.
@@ -508,7 +517,7 @@ Section goose_lang.
     f_equal.
     f_equal.
     destruct obj; simpl in *; subst; reflexivity.
-  Admitted.
+  Qed.
 
   (*
   lift: modify_token ∗ stable_maps_to ==∗ buftxn_maps_to
