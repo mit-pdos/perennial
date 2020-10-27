@@ -1399,6 +1399,23 @@ Proof.
     + rewrite inserts_length; lia.
 Qed.
 
+Lemma subslice_list_inserts_ne {A} (k l: list A) n m i :
+  ( m ≤ length l )%nat →
+  ( m ≤ i ∨
+    i + length k ≤ n )%nat →
+  subslice n m (list_inserts i k l) = subslice n m l.
+Proof.
+  intros.
+  apply list_eq; intros j.
+  destruct (decide (n+j < m)) as [Hbound|?].
+  - repeat rewrite -> subslice_lookup by lia.
+    intuition.
+    + rewrite list_lookup_inserts_lt; last by lia. done.
+    + rewrite list_lookup_inserts_ge; last by lia. done.
+  - repeat rewrite -> subslice_lookup_ge; auto with lia.
+    rewrite inserts_length; lia.
+Qed.
+
 Lemma Nat_mod_1024_to_div_8 (n:nat) :
   Z.of_nat n `mod` 1024 = 0 →
   (n `div` 8 = 128 * (n `div` 1024))%nat.
@@ -1464,8 +1481,21 @@ Proof.
     { rewrite Z2Nat_inj_div //; word. }
     rewrite -> !Nat_mod_1024_to_div_8 by lia.
     rewrite -> !Z_mod_1024_to_div_8 in H by lia.
-    admit. (* TODO: list_inserts doesn't affect this subslice *)
-Admitted.
+    rewrite /inode_bytes.
+    rewrite subslice_list_inserts_ne; eauto;
+      rewrite vec_to_list_length.
+    + revert Hoff'_bound. rewrite /block_bytes.
+      change 1024%nat with (8 * 128)%nat.
+      rewrite -Nat.div_div; [ | lia | lia ].
+      generalize (int.nat off' `div` 8)%nat; intros x Hx.
+      assert (x `div` 128 < 32)%nat; try lia.
+      eapply Nat.div_lt_upper_bound; lia.
+    + destruct (decide (int.nat off' < int.nat off)); [ left | right ].
+      * assert ((int.nat off' `div` 1024)%nat < (int.nat off `div` 1024)%nat); last by lia.
+        rewrite !Nat2Z_inj_div; lia.
+      * assert ((int.nat off' `div` 1024)%nat > (int.nat off `div` 1024)%nat); last by lia.
+        rewrite !Nat2Z_inj_div; lia.
+Qed.
 
 Lemma is_installed_block_block (b : Block) (bufDirty : bool) (blk : Block) :
     is_installed_block
