@@ -66,7 +66,7 @@ Proof.
     wp_loadField. wp_loadField.
     wp_apply (wp_log_len with "His_memLog"); iIntros "His_memLog".
     wp_pures.
-    change (int.val (word.divu (word.sub 4096 8) 8)) with LogSz.
+    change (int.Z (word.divu (word.sub 4096 8) 8)) with LogSz.
     wp_if_destruct.
     - wp_loadField.
       wp_apply (wp_condWait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
@@ -128,7 +128,7 @@ Proof.
 Qed.
 
 Lemma logIndex_diff memLog pos1 pos2 :
-  int.val memLog.(slidingM.start) ≤ int.val pos1 →
+  int.Z memLog.(slidingM.start) ≤ int.Z pos1 →
   (slidingM.logIndex memLog pos2 - slidingM.logIndex memLog pos1)%nat =
   (int.nat pos2 - int.nat pos1)%nat.
 Proof.
@@ -329,7 +329,7 @@ Proof.
       }
       rewrite max_l; last by lia.
 
-      assert (int.val σ.(memLog).(slidingM.mutable) ≤ int.val σ.(diskEnd)) as HdiskEnd_le_mutable.
+      assert (int.Z σ.(memLog).(slidingM.mutable) ≤ int.Z σ.(diskEnd)) as HdiskEnd_le_mutable.
       { eapply wal_wf_txns_mono_pos'; eauto. lia. }
       assert (σ.(memLog).(slidingM.mutable) = σ.(diskEnd)) as HdiskEnd_eq_mutable by word.
       rewrite HdiskEnd_eq_mutable.
@@ -351,7 +351,7 @@ Proof.
     destruct (decide (diskEnd_txn_id ≤ nextDiskEnd_txn_id)).
     { rewrite max_r; last by lia. iFrame "#". iPureIntro; eauto. }
     rewrite max_l; last by lia. iFrame "#".
-    assert (int.val σ.(memLog).(slidingM.mutable) ≤ int.val σ.(diskEnd)) as HdiskEnd_le_mutable.
+    assert (int.Z σ.(memLog).(slidingM.mutable) ≤ int.Z σ.(diskEnd)) as HdiskEnd_le_mutable.
     { eapply wal_wf_txns_mono_pos'; eauto. lia. }
     assert (σ.(memLog).(slidingM.mutable) = σ.(diskEnd)) as HdiskEnd_eq_mutable by word.
     rewrite HdiskEnd_eq_mutable.
@@ -415,7 +415,7 @@ Proof.
   iApply "HΦ".
   iFrame "His_locked".
   iSplitR "Hcirc_appender HnotLogging HownLoggerPos_logger HownLoggerTxn_logger".
-  - iExists (set diskEnd (λ _, int.val σ.(diskEnd) + int.val s.(Slice.sz))
+  - iExists (set diskEnd (λ _, int.Z σ.(diskEnd) + int.Z s.(Slice.sz))
             (set locked_diskEnd_txn_id (λ _, nextDiskEnd_txn_id) σ0)).
     iDestruct (updates_slice_frag_len with "Hupds") as "%Hupds_len".
     rewrite subslice_length in Hupds_len; last by word.
@@ -437,20 +437,20 @@ Proof.
       iSplitR "HdiskEnd_exactly".
       2: {
         rewrite Hupds_len.
-        replace (int.val
-            (int.val σ.(diskEnd) +
+        replace (int.Z
+            (int.Z σ.(diskEnd) +
              (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat)) with
-          (int.val σ.(diskEnd) +
+          (int.Z σ.(diskEnd) +
                            (int.nat σ.(memLog).(slidingM.mutable) -
                             int.nat σ.(diskEnd))%nat).
         { iFrame. }
         word.
       }
       rewrite Hupds_len.
-      replace (int.val
-       (int.val σ.(diskEnd) +
+      replace (int.Z
+       (int.Z σ.(diskEnd) +
         (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
-        with (int.val σ.(diskEnd) +
+        with (int.Z σ.(diskEnd) +
                              (int.nat σ.(memLog).(slidingM.mutable) -
                               int.nat σ.(diskEnd))%nat) by word.
       iFrame "HdiskEnd_at_least_new".
@@ -467,13 +467,13 @@ Proof.
     { iPureIntro. lia. }
     iSplit.
     { rewrite Hupds_len.
-      replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
+      replace (U64 (int.Z σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
         with (σ.(memLog).(slidingM.mutable)) by word.
       done.
     }
     iSplit.
     { rewrite Hupds_len.
-      replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
+      replace (U64 (int.Z σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
         with (σ.(memLog).(slidingM.mutable)) by word.
       iPureIntro. word.
     }
@@ -483,7 +483,7 @@ Proof.
     iSplit.
     2: {
       rewrite !Hupds_len.
-      replace (U64 (int.val σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
+      replace (U64 (int.Z σ.(diskEnd) + (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
         with (σ.(memLog).(slidingM.mutable)) by word.
       rewrite ?subslice_zero_length.
       done.
@@ -505,7 +505,7 @@ Proof.
     rewrite (subslice_split_r (memStart_txn_id0) (S σ0.(locked_diskEnd_txn_id)) (S nextDiskEnd_txn_id) txns0); try lia.
     iPureIntro.
     rewrite Hupds_len.
-    replace (int.val σ.(diskEnd) +
+    replace (int.Z σ.(diskEnd) +
          (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat : u64)
       with (σ.(memLog).(slidingM.mutable)) by word.
     eauto.

@@ -218,12 +218,12 @@ Proof. apply _. Qed.
 (* int and the u64_through* theorems are for backwards compatibility *)
 
 Module int.
-  Notation val := word.unsigned.
+  Notation Z := word.unsigned.
 
-  Notation nat x := (Z.to_nat (word.unsigned x)).
+  Notation nat x := (Z.to_nat (Z x)).
 End int.
 
-Theorem u64_Z_through_nat (x:u64) : Z.of_nat (int.nat x) = int.val x.
+Theorem u64_Z_through_nat (x:u64) : Z.of_nat (int.nat x) = int.Z x.
 Proof.
   rewrite Z2Nat.id; auto.
   pose proof (word.unsigned_range x); lia.
@@ -236,14 +236,14 @@ Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (int.nat x).
 Definition u8_to_string (x:byte) : String.string := String.String (u8_to_ascii x) String.EmptyString.
 
 (* conversions up *)
-Definition u8_to_u32 (x:byte) : u32 := U32 (int.val x).
-Definition u8_to_u64 (x:byte) : u64 := U64 (int.val x).
-Definition u32_to_u64 (x:u32) : u64 := U64 (int.val x).
+Definition u8_to_u32 (x:byte) : u32 := U32 (int.Z x).
+Definition u8_to_u64 (x:byte) : u64 := U64 (int.Z x).
+Definition u32_to_u64 (x:u32) : u64 := U64 (int.Z x).
 
 (* conversions down *)
-Definition u32_from_u64 (x:u64) : u32 := U32 (int.val x).
-Definition u8_from_u64 (x:u64) : byte := U8 (int.val x).
-Definition u8_from_u32 (x:u32) : byte := U8 (int.val x).
+Definition u32_from_u64 (x:u64) : u32 := U32 (int.Z x).
+Definition u8_from_u64 (x:u64) : byte := U8 (int.Z x).
+Definition u8_from_u32 (x:u32) : byte := U8 (int.Z x).
 
 Theorem wrap_small `{word: Interface.word width} {ok: word.ok word} (x:Z) :
   0 <= x < 2^width ->
@@ -253,7 +253,7 @@ Proof.
   rewrite Zmod_small; auto.
 Qed.
 
-Theorem u32_to_u64_val x : int.val (u32_to_u64 x) = int.val x.
+Theorem u32_to_u64_val x : int.Z (u32_to_u64 x) = int.Z x.
 Proof.
   unfold u32_to_u64, U64.
   rewrite word.unsigned_of_Z.
@@ -261,8 +261,8 @@ Proof.
   pose proof (word.unsigned_range x); lia.
 Qed.
 
-Theorem u32_from_u64_val (x: u64) : int.val x < 2^32 ->
-                                    int.val (u32_from_u64 x) = int.val x.
+Theorem u32_from_u64_val (x: u64) : int.Z x < 2^32 ->
+                                    int.Z (u32_from_u64 x) = int.Z x.
 Proof.
   unfold u32_from_u64, U32; intros.
   rewrite word.unsigned_of_Z.
@@ -367,7 +367,7 @@ Qed.
 
 Lemma combine_unfold n b (t: HList.tuple byte n) :
   combine (S n) {| PrimitivePair.pair._1 := b; PrimitivePair.pair._2 := t |} =
-  Z.lor (int.val b) (combine n t ≪ 8).
+  Z.lor (int.Z b) (combine n t ≪ 8).
 Proof.
   reflexivity.
 Qed.
@@ -435,22 +435,22 @@ Proof.
   exact H.
 Qed.
 
-Lemma unsigned_U64 z : int.val (U64 z) = word.wrap (word:=u64_instance.u64) z.
+Lemma unsigned_U64 z : int.Z (U64 z) = word.wrap (word:=u64_instance.u64) z.
 Proof.
   unfold U64; rewrite word.unsigned_of_Z; auto.
 Qed.
 
-Lemma unsigned_U32 z : int.val (U32 z) = word.wrap (word:=u32_instance.u32) z.
+Lemma unsigned_U32 z : int.Z (U32 z) = word.wrap (word:=u32_instance.u32) z.
 Proof.
   unfold U32; rewrite word.unsigned_of_Z; auto.
 Qed.
 
-Lemma unsigned_U64_0 : int.val (U64 0) = 0.
+Lemma unsigned_U64_0 : int.Z (U64 0) = 0.
 Proof.
   reflexivity.
 Qed.
 
-Lemma unsigned_U32_0 : int.val (U32 0) = 0.
+Lemma unsigned_U32_0 : int.Z (U32 0) = 0.
 Proof.
   reflexivity.
 Qed.
@@ -472,22 +472,22 @@ Ltac word_cleanup :=
   ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32;
   try autorewrite with word;
   repeat match goal with
-         | [ H: context[word.unsigned (U64 (Zpos ?x))] |- _ ] => change (int.val (Zpos x)) with (Zpos x) in *
-         | [ |- context[word.unsigned (U64 (Zpos ?x))] ] => change (int.val (Zpos x)) with (Zpos x)
-         | [ H: context[word.unsigned (U32 (Zpos ?x))] |- _ ] => change (int.val (U32 (Zpos x))) with (Zpos x) in *
-         | [ |- context[word.unsigned (U32 (Zpos ?x))] ] => change (int.val (U32 (Zpos x))) with (Zpos x)
+         | [ H: context[word.unsigned (U64 (Zpos ?x))] |- _ ] => change (int.Z (Zpos x)) with (Zpos x) in *
+         | [ |- context[word.unsigned (U64 (Zpos ?x))] ] => change (int.Z (Zpos x)) with (Zpos x)
+         | [ H: context[word.unsigned (U32 (Zpos ?x))] |- _ ] => change (int.Z (U32 (Zpos x))) with (Zpos x) in *
+         | [ |- context[word.unsigned (U32 (Zpos ?x))] ] => change (int.Z (U32 (Zpos x))) with (Zpos x)
          end;
   repeat match goal with
-         | [ |- context[int.val ?x] ] =>
+         | [ |- context[int.Z ?x] ] =>
            lazymatch goal with
-           | [ H': 0 <= int.val x < 2^64 |- _ ] => fail
-           | [ H': 0 <= int.val x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
+           | [ H': 0 <= int.Z x < 2^64 |- _ ] => fail
+           | [ H': 0 <= int.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
-         | [ H: context[int.val ?x] |- _ ] =>
+         | [ H: context[int.Z ?x] |- _ ] =>
            lazymatch goal with
-           | [ H': 0 <= int.val x < 2^64 |- _ ] => fail
-           | [ H': 0 <= int.val x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
+           | [ H': 0 <= int.Z x < 2^64 |- _ ] => fail
+           | [ H': 0 <= int.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
          end;
@@ -537,7 +537,7 @@ Qed.
 
 Theorem val_u32 z :
   0 <= z < 2 ^ 32 ->
-  int.val (U32 z) = z.
+  int.Z (U32 z) = z.
 Proof.
   intros.
   unfold U32.
@@ -547,7 +547,7 @@ Qed.
 
 Theorem val_u64 z :
   0 <= z < 2 ^ 64 ->
-  int.val (U64 z) = z.
+  int.Z (U64 z) = z.
 Proof.
   intros.
   unfold U64.

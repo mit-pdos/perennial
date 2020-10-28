@@ -210,9 +210,9 @@ Definition disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr
   | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
     bts <- mget;
       let σ := fst bts in
-      _ <- mlift (σ.(world) !! int.val a) ("Disk WriteOp failed: No block at write address " ++ (pretty a));
+      _ <- mlift (σ.(world) !! int.Z a) ("Disk WriteOp failed: No block at write address " ++ (pretty a));
       b <- mlift (read_block_from_heap σ l) ("Disk WriteOp failed: Read from heap failed at location " ++ (pretty l));
-      _ <- mput ((set world <[ int.val a := b ]> σ), snd bts);
+      _ <- mput ((set world <[ int.Z a := b ]> σ), snd bts);
       mret (Val $ LitV (LitUnit))
   | (SizeOp, LitV LitUnit) =>
     bts <- mget;
@@ -270,7 +270,7 @@ Proof.
     destruct arg2; try by inversion H1.
     destruct l; try by inversion H1.
     simpl in H1.
-    destruct (world σ !! int.val n) eqn:disk_at_n; rewrite disk_at_n in H1; try by inversion H1.
+    destruct (world σ !! int.Z n) eqn:disk_at_n; rewrite disk_at_n in H1; try by inversion H1.
     destruct (read_block_from_heap σ l) eqn:block_at_l; try by inversion H1.
     simpl in H1.
     inversion H1.

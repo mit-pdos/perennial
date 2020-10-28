@@ -258,8 +258,8 @@ Admitted.
 Definition valid_key (key: specs.addr) (sz: nat):=
   key = specs.Build_addr key.(specs.addrBlock) 0 ∧
   specs.valid_addr key ∧
-  int.val key.(specs.addrBlock) >= int.val LogSz ∧
-  int.val key.(specs.addrBlock) < int.val sz.
+  int.Z key.(specs.addrBlock) >= int.Z LogSz ∧
+  int.Z key.(specs.addrBlock) < int.Z sz.
 
 Lemma valid_key_under_sz (kvsblks : gmap specs.addr {K & defs.bufDataT K}) key sz :
   valid_key key sz -> ∃ b, kvsblks !! key = Some (existT defs.KindBlock b).
@@ -342,16 +342,16 @@ Proof.
   wp_call.
   wp_loadField.
   wp_pures.
-  remember(bool_decide (int.val sz < int.val _)) as Hszcomp.
+  remember(bool_decide (int.Z sz < int.Z _)) as Hszcomp.
   destruct Hszcomp; wp_pures.
   - wp_apply wp_panic.
-    destruct (decide_rel Z.lt (int.val sz) _); try discriminate. lia.
+    destruct (decide_rel Z.lt (int.Z sz) _); try discriminate. lia.
   - change (u64_instance.u64.(@word.add 64) (u64_instance.u64.(@word.divu 64) (u64_instance.u64.(@word.sub 64) 4096 8) 8) 2)
       with (U64 LogSz).
-    remember(bool_decide (int.val _ < int.val LogSz)) as Hlgszcomp.
+    remember(bool_decide (int.Z _ < int.Z LogSz)) as Hlgszcomp.
     destruct Hlgszcomp; wp_pures.
     * wp_apply wp_panic.
-      destruct (decide_rel Z.lt _ (int.val LogSz)); try discriminate. lia.
+      destruct (decide_rel Z.lt _ (int.Z LogSz)); try discriminate. lia.
     * wp_loadField.
       wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx γt) "Hbtxn".

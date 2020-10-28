@@ -65,7 +65,7 @@ Definition allocPos : transition log_state.t u64 :=
   suchThat (λ s (pos': u64),
             (∀ (pos: u64) txn_id,
                 is_txn s.(log_state.txns) txn_id pos ->
-                int.val pos ≤ int.val pos')).
+                int.Z pos ≤ int.Z pos')).
 
 Definition log_mem_append (txn: list update.t): transition log_state.t u64 :=
   pos ← allocPos;
@@ -86,7 +86,7 @@ Theorem mem_append_preserves_wf σ pos upds :
   (* pos should be at least as high as any position given out *)
   (∀ (pos': u64) txn_id,
       is_txn σ.(log_state.txns) txn_id pos' ->
-      int.val pos' ≤ int.val pos) ->
+      int.Z pos' ≤ int.Z pos) ->
   wal_wf σ ->
   wal_wf (set log_state.txns (λ txns, txns ++ [(pos, upds)]) σ).
 Proof.
@@ -150,7 +150,7 @@ Definition log_read_cache (a:u64): transition log_state.t (option Block) :=
   ok ← any bool;
   if (ok:bool)
   then d ← reads last_disk;
-       match d !! int.val a with
+       match d !! int.Z a with
        | None => undefined
        | Some b => ret (Some b)
        end
@@ -172,4 +172,4 @@ Definition log_read_installed (a:u64): transition log_state.t Block :=
                                  txn_id <
                                  length s.(log_state.txns))%nat;
   d ← reads (disk_at_txn_id installed_txn_id);
-  unwrap (d !! int.val a).
+  unwrap (d !! int.Z a).

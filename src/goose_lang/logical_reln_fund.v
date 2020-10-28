@@ -1377,7 +1377,7 @@ Proof using spec_trans.
     iApply wp_wpc.
     iApply wp_fupd.
     iDestruct "Hv1" as (nint) "(->&->)".
-    destruct (decide (0 < int.val nint)) as [Hnonneg|]; last first.
+    destruct (decide (0 < int.Z nint)) as [Hnonneg|]; last first.
     {
       iMod (ghost_allocN_non_pos_stuck with "[$] [$]") as %[].
       { eauto. }
@@ -1472,8 +1472,8 @@ Proof using spec_trans.
     }
     iModIntro.
     iExists _. iFrame. iLeft.
-    unshelve (iExists (addr_plus_off l (ty_size t * int.val off)),
-                                      (addr_plus_off ls (ty_size t * int.val off)), _, (idx + int.val off), _, _; iFrame); eauto.
+    unshelve (iExists (addr_plus_off l (ty_size t * int.Z off)),
+                                      (addr_plus_off ls (ty_size t * int.Z off)), _, (idx + int.Z off), _, _; iFrame); eauto.
     rewrite ?addr_base_of_plus ?addr_offset_of_plus. iPureIntro; split_and!; eauto.
     * rewrite Hoff. rewrite -ty_size_length.
       specialize (ty_size_ge_0 t). intros.
@@ -1522,7 +1522,7 @@ Proof using spec_trans.
     }
     iModIntro.
     iExists _. iFrame.
-    replace (k * int.val 1) with k by word.
+    replace (k * int.Z 1) with k by word.
     iLeft.
     rewrite ?map_length.
     unshelve (iExists (l' +ₗ k), (ls' +ₗ k), _, _, _; iFrame).

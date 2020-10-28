@@ -362,7 +362,7 @@ Proof.
   wp_loadField.
   wp_pures.
 
-  destruct (bool_decide (int.val 0 < int.val nwaiters))%Z.
+  destruct (bool_decide (int.Z 0 < int.Z nwaiters))%Z.
 
   {
     wp_pures.
@@ -442,7 +442,7 @@ Qed.
 Definition NSHARD : Z := 43.
 
 Definition covered_by_shard (shardnum : Z) (covered: gset u64) : gset u64 :=
-  filter (λ x, Z.modulo (int.val x) NSHARD = shardnum) covered.
+  filter (λ x, Z.modulo (int.Z x) NSHARD = shardnum) covered.
 
 Lemma covered_by_shard_mod addr covered :
   addr ∈ covered <->
@@ -467,8 +467,8 @@ Proof.
 Qed.
 
 Lemma covered_by_shard_insert x X :
-  covered_by_shard (int.val (word.modu x (U64 NSHARD))) ({[x]} ∪ X) =
-  {[x]} ∪ covered_by_shard (int.val (word.modu x (U64 NSHARD))) X.
+  covered_by_shard (int.Z (word.modu x (U64 NSHARD))) ({[x]} ∪ X) =
+  {[x]} ∪ covered_by_shard (int.Z (word.modu x (U64 NSHARD))) X.
 Proof.
   rewrite /covered_by_shard filter_union_L filter_singleton_L //.
   rewrite /NSHARD.
@@ -476,9 +476,9 @@ Proof.
 Qed.
 
 Lemma covered_by_shard_insert_ne (x x' : u64) X :
-  (int.val x `mod` NSHARD)%Z ≠ int.val x' ->
-  covered_by_shard (int.val x') ({[x]} ∪ X) =
-    covered_by_shard (int.val x') X.
+  (int.Z x `mod` NSHARD)%Z ≠ int.Z x' ->
+  covered_by_shard (int.Z x') ({[x]} ∪ X) =
+    covered_by_shard (int.Z x') X.
 Proof.
   intros.
   rewrite /covered_by_shard filter_union_L filter_singleton_not_L.
@@ -502,7 +502,7 @@ Qed.
 Lemma covered_by_shard_split (P : u64 -> iProp Σ) covered :
   ( [∗ set] a ∈ covered, P a ) -∗
   [∗ set] shardnum ∈ rangeSet 0 NSHARD,
-    [∗ set] a ∈ covered_by_shard (int.val shardnum) covered, P a.
+    [∗ set] a ∈ covered_by_shard (int.Z shardnum) covered, P a.
 Proof.
   induction covered using set_ind_L.
   - iIntros "H".
@@ -559,7 +559,7 @@ Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gse
 
 Definition Locked (ghs : list (gen_heapG u64 bool Σ)) (addr : u64) : iProp Σ :=
   ∃ gh,
-    ⌜ ghs !! (Z.to_nat (Z.modulo (int.val addr) NSHARD)) = Some gh ⌝ ∗
+    ⌜ ghs !! (Z.to_nat (Z.modulo (int.Z addr) NSHARD)) = Some gh ⌝ ∗
     locked gh addr.
 
 
@@ -586,8 +586,8 @@ Proof using gen_heapPreG0.
                             "Hvar" ∷ shards ↦[slice.T (refT (struct.t lockShard.S))] (slice_val s) ∗
                             "Hslice" ∷ is_slice s (struct.ptrT lockShard.S) 1 shardlocs ∗
                             "%Hlen" ∷ ⌜ length shardlocs = int.nat i ⌝ ∗
-                            "Hpp" ∷ ( [∗ set] shardnum ∈ rangeSet (int.val i) (NSHARD-int.val i),
-                              [∗ set] a ∈ covered_by_shard (int.val shardnum) covered, P a ) ∗
+                            "Hpp" ∷ ( [∗ set] shardnum ∈ rangeSet (int.Z i) (NSHARD-int.Z i),
+                              [∗ set] a ∈ covered_by_shard (int.Z shardnum) covered, P a ) ∗
                             "Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shardlocs; ghs,
                               is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P)%I
             with "[] [$Hi Hvar Hcovered]").
@@ -616,13 +616,13 @@ Proof using gen_heapPreG0.
     iSplitR.
     { rewrite app_length Hlen /=. word. }
     iSplitL "Hpp".
-    { replace (int.val (word.add i 1))%Z with (int.val i + 1)%Z by word.
-      replace (NSHARD - (int.val i + 1))%Z with (NSHARD - int.val i - 1)%Z by word.
+    { replace (int.Z (word.add i 1))%Z with (int.Z i + 1)%Z by word.
+      replace (NSHARD - (int.Z i + 1))%Z with (NSHARD - int.Z i - 1)%Z by word.
       iFrame. }
     iApply (big_sepL2_app with "Hshards").
     iApply big_sepL2_singleton.
     rewrite Hlen.
-    replace (Z.of_nat (int.nat i + 0)) with (int.val (U64 (int.val i))) by word.
+    replace (Z.of_nat (int.nat i + 0)) with (int.Z (U64 (int.Z i))) by word.
     iFrame.
   }
   {
@@ -634,7 +634,7 @@ Proof using gen_heapPreG0.
     { done. }
     iSplitL "Hcovered".
     { iDestruct (covered_by_shard_split with "Hcovered") as "Hsplit".
-      replace (int.val 0%Z) with 0%Z by word.
+      replace (int.Z 0%Z) with 0%Z by word.
       replace (NSHARD - 0)%Z with NSHARD by word.
       iFrame. }
     iApply big_sepL2_nil. done.

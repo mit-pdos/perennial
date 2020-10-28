@@ -34,12 +34,12 @@ Proof.
 Qed.
 
 Theorem sum_overflow_check (x y: u64) :
-  int.val (word.add x y) < int.val x <-> int.val x + int.val y >= 2^64.
+  int.Z (word.add x y) < int.Z x <-> int.Z x + int.Z y >= 2^64.
 Proof.
   split; intros.
   - revert H; word_cleanup; intros.
     rewrite /word.wrap in H1.
-    destruct (decide (int.val x + int.val y >= 2^64)); [ auto | exfalso ].
+    destruct (decide (int.Z x + int.Z y >= 2^64)); [ auto | exfalso ].
     lia.
   - word_cleanup.
     rewrite /word.wrap.
@@ -47,12 +47,12 @@ Proof.
 Qed.
 
 Theorem word_add1_neq (x: u64) :
-  int.val x ≠ int.val (word.add x (U64 1)).
+  int.Z x ≠ int.Z (word.add x (U64 1)).
 Proof.
   simpl.
-  destruct (decide (int.val x + 1 < 2^64)%Z); [ word | ].
+  destruct (decide (int.Z x + 1 < 2^64)%Z); [ word | ].
   rewrite word.unsigned_add.
-  change (int.val (U64 1)) with 1%Z.
+  change (int.Z (U64 1)) with 1%Z.
   rewrite /word.wrap.
   lia.
 Qed.

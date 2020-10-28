@@ -736,7 +736,7 @@ Definition mapsto_vals_toks l q vs : iProp Σ :=
 
 Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
   (0 < length (flatten_struct v))%nat →
-  (0 < int.val n)%Z →
+  (0 < int.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
                               na_block_size l (int.nat n * length (flatten_struct v))%nat ∗
@@ -785,7 +785,7 @@ Qed.
 
 Lemma wp_allocN_seq0 s E v (n: u64) :
   length (flatten_struct v) = 0%nat →
-  (0 < int.val n)%Z →
+  (0 < int.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); True }}}.
 Proof.
@@ -801,7 +801,7 @@ Qed.
    so they can use this lemma, which removes the assumption about the struct being non zero
    sized *)
 Lemma wp_allocN_seq s E v (n: u64) :
-  (0 < int.val n)%Z →
+  (0 < int.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
                               (mapsto_vals (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1 (flatten_struct v)) }}}.
@@ -825,7 +825,7 @@ Lemma wp_alloc_untyped stk E v v0 :
   {{{ True }}} ref (Val v) @ stk; E
   {{{ l, RET LitV (LitLoc l); l ↦ v0 }}}.
 Proof.
-  assert (0 < int.val (U64 1)) by (change (int.val 1) with 1; lia).
+  assert (0 < int.Z (U64 1)) by (change (int.Z 1) with 1; lia).
   iIntros (Hflat ?) "_ HΦ". iApply wp_allocN_seq; auto.
   iNext. iIntros (?) "H". iApply "HΦ".
   change (int.nat 1) with 1%nat; simpl.

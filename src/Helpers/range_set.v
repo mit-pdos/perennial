@@ -9,7 +9,7 @@ Definition rangeSet (start sz: Z): gset u64 :=
 Theorem rangeSet_lookup (start sz: Z) (i: u64) :
   0 ≤ start →
   start + sz < 2^64 →
-  i ∈ rangeSet start sz ↔ start ≤ int.val i < start + sz.
+  i ∈ rangeSet start sz ↔ start ≤ int.Z i < start + sz.
 Proof.
   intros Hpos Hoverflow.
   rewrite /rangeSet.
@@ -17,7 +17,7 @@ Proof.
   rewrite elem_of_list_fmap.
   split; intros.
   - destruct H as [y [-> Hin%elem_of_seqZ]]; word.
-  - exists (int.val i).
+  - exists (int.Z i).
     split; [ word | ].
     apply elem_of_seqZ; word.
 Qed.
@@ -60,15 +60,15 @@ Qed.
 
 Lemma rangeSet_append_one:
   ∀ start sz : u64,
-    int.val start + int.val sz < 2 ^ 64
+    int.Z start + int.Z sz < 2 ^ 64
     → ∀ i : u64,
-      int.val i < int.val (word.add start sz)
-      → int.val start ≤ int.val i
-      → {[i]} ∪ rangeSet (int.val start) (int.val i - int.val start) =
-        rangeSet (int.val start) (int.val i - int.val start + 1).
+      int.Z i < int.Z (word.add start sz)
+      → int.Z start ≤ int.Z i
+      → {[i]} ∪ rangeSet (int.Z start) (int.Z i - int.Z start) =
+        rangeSet (int.Z start) (int.Z i - int.Z start + 1).
 Proof.
   intros start sz Hbound i Hibound Hilower_bound.
-  replace (int.val (word.add start sz)) with (int.val start + int.val sz) in Hibound by word.
+  replace (int.Z (word.add start sz)) with (int.Z start + int.Z sz) in Hibound by word.
   apply gset_eq; intros.
   rewrite elem_of_union.
   rewrite elem_of_singleton.
@@ -78,7 +78,7 @@ Proof.
     word.
   - intuition; try word.
     right.
-    assert (int.val x ≠ int.val i) by (apply not_inj; auto).
+    assert (int.Z x ≠ int.Z i) by (apply not_inj; auto).
     word.
 Qed.
 

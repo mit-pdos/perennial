@@ -307,18 +307,18 @@ Qed.
 Lemma bit_off_explode (P: u64 → Prop)
   (Bit0: P (U64 0)) (Bit1: P (U64 1)) (Bit2: P (U64 2)) (Bit3: P (U64 3)) (Bit4: P (U64 4)) (Bit5: P (U64 5)) (Bit6: P (U64 6)) (Bit7: P (U64 7)) :
   ∀ (bit: u64),
-    int.val bit < 8 →
+    int.Z bit < 8 →
     P bit.
 Proof.
   intros bit Hbound.
-  destruct (decide (int.val bit = 0)) as [Heq|]; [ refine (eq_rect _ _ Bit0 _ _); apply (inj int.val); rewrite Heq; reflexivity |].
-  destruct (decide (int.val bit = 1)) as [Heq|]; [ refine (eq_rect _ _ Bit1 _ _); apply (inj int.val); rewrite Heq; reflexivity |].
-  destruct (decide (int.val bit = 2)) as [Heq|]; [ refine (eq_rect _ _ Bit2 _ _); apply (inj int.val); rewrite Heq; reflexivity |].
-  destruct (decide (int.val bit = 3)) as [Heq|]; [ refine (eq_rect _ _ Bit3 _ _); apply (inj int.val); rewrite Heq; reflexivity |].
-  destruct (decide (int.val bit = 4)) as [Heq|]; [ refine (eq_rect _ _ Bit4 _ _); apply (inj int.val); rewrite Heq; reflexivity |].
-  destruct (decide (int.val bit = 5)) as [Heq|]; [ refine (eq_rect _ _ Bit5 _ _); apply (inj int.val); rewrite Heq; reflexivity |].
-  destruct (decide (int.val bit = 6)) as [Heq|]; [ refine (eq_rect _ _ Bit6 _ _); apply (inj int.val); rewrite Heq; reflexivity |].
-  destruct (decide (int.val bit = 7)) as [Heq|]; [ refine (eq_rect _ _ Bit7 _ _); apply (inj int.val); rewrite Heq; reflexivity |].
+  destruct (decide (int.Z bit = 0)) as [Heq|]; [ refine (eq_rect _ _ Bit0 _ _); apply (inj int.Z); rewrite Heq; reflexivity |].
+  destruct (decide (int.Z bit = 1)) as [Heq|]; [ refine (eq_rect _ _ Bit1 _ _); apply (inj int.Z); rewrite Heq; reflexivity |].
+  destruct (decide (int.Z bit = 2)) as [Heq|]; [ refine (eq_rect _ _ Bit2 _ _); apply (inj int.Z); rewrite Heq; reflexivity |].
+  destruct (decide (int.Z bit = 3)) as [Heq|]; [ refine (eq_rect _ _ Bit3 _ _); apply (inj int.Z); rewrite Heq; reflexivity |].
+  destruct (decide (int.Z bit = 4)) as [Heq|]; [ refine (eq_rect _ _ Bit4 _ _); apply (inj int.Z); rewrite Heq; reflexivity |].
+  destruct (decide (int.Z bit = 5)) as [Heq|]; [ refine (eq_rect _ _ Bit5 _ _); apply (inj int.Z); rewrite Heq; reflexivity |].
+  destruct (decide (int.Z bit = 6)) as [Heq|]; [ refine (eq_rect _ _ Bit6 _ _); apply (inj int.Z); rewrite Heq; reflexivity |].
+  destruct (decide (int.Z bit = 7)) as [Heq|]; [ refine (eq_rect _ _ Bit7 _ _); apply (inj int.Z); rewrite Heq; reflexivity |].
   exfalso; word.
 Qed.
 

@@ -41,7 +41,7 @@ Qed.
 Theorem find_highest_index_apply_upds log u i :
   find_highest_index (update.addr <$> log) u.(update.addr) = Some i →
   log !! i = Some u →
-  apply_upds log ∅ !! (int.val u.(update.addr)) = Some u.(update.b).
+  apply_upds log ∅ !! (int.Z u.(update.addr)) = Some u.(update.b).
 Proof.
   intros.
   apply find_highest_index_Some_split in H as (poss1 & poss2 & (Heq & Hnotin & <-)).
@@ -60,8 +60,8 @@ Qed.
 
 Lemma apply_upds_not_in_general (a: u64) log d :
     forall (Hnotin: a ∉ update.addr <$> log),
-    d !! int.val a = None →
-    apply_upds log d !! int.val a = None.
+    d !! int.Z a = None →
+    apply_upds log d !! int.Z a = None.
 Proof.
   revert d.
   induction log; simpl; intros; auto.
@@ -75,7 +75,7 @@ Qed.
 
 Lemma apply_upds_not_in (a: u64) log :
     a ∉ update.addr <$> log →
-    apply_upds log ∅ !! int.val a = None.
+    apply_upds log ∅ !! int.Z a = None.
 Proof.
   intros Hnotin.
   apply apply_upds_not_in_general; auto.
@@ -87,8 +87,8 @@ Theorem wp_WalogState__readMem γ (st: loc) σ (a: u64) diskEnd_txn_id :
     WalogState__readMem #st #a
   {{{ b_s (ok:bool), RET (slice_val b_s, #ok);
       (if ok then ∃ b, is_block b_s 1 b ∗
-                       ⌜apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = Some b⌝
-      else ⌜b_s = Slice.nil ∧ apply_upds σ.(memLog).(slidingM.log) ∅ !! int.val a = None⌝) ∗
+                       ⌜apply_upds σ.(memLog).(slidingM.log) ∅ !! int.Z a = Some b⌝
+      else ⌜b_s = Slice.nil ∧ apply_upds σ.(memLog).(slidingM.log) ∅ !! int.Z a = None⌝) ∗
       "Hfields" ∷ wal_linv_fields st σ ∗
       "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) diskEnd_txn_id
   }}}.
@@ -152,7 +152,7 @@ Qed.
 
 Lemma apply_upds_in : ∀ upds a d0 d1,
   a ∈ (update.addr <$> upds) ->
-  apply_upds upds d0 !! int.val a = apply_upds upds d1 !! int.val a.
+  apply_upds upds d0 !! int.Z a = apply_upds upds d1 !! int.Z a.
 Proof.
   induction upds; simpl; intros.
   - inversion H.
@@ -164,8 +164,8 @@ Proof.
 Qed.
 
 Lemma apply_upds_drop' : ∀ off upds d (a : u64) b,
-  ( ∀ d0, apply_upds (drop off upds) d0 !! int.val a = Some b ) ->
-  apply_upds upds d !! int.val a = Some b.
+  ( ∀ d0, apply_upds (drop off upds) d0 !! int.Z a = Some b ) ->
+  apply_upds upds d !! int.Z a = Some b.
 Proof.
   induction off; simpl; intros.
   - rewrite drop_0 in H. done.
@@ -173,8 +173,8 @@ Proof.
 Qed.
 
 Lemma apply_upds_drop : ∀ off upds d (a : u64) b,
-  apply_upds (drop off upds) ∅ !! int.val a = Some b ->
-  apply_upds upds d !! int.val a = Some b.
+  apply_upds (drop off upds) ∅ !! int.Z a = Some b ->
+  apply_upds upds d !! int.Z a = Some b.
 Proof.
   intros.
   destruct (decide (a ∈ (update.addr <$> drop off upds))).
@@ -184,8 +184,8 @@ Proof.
 Qed.
 
 Lemma apply_upds_drop_txn : ∀ off txns d (a : u64) b,
-  apply_upds (txn_upds (drop off txns)) ∅ !! int.val a = Some b ->
-  apply_upds (txn_upds txns) d !! int.val a = Some b.
+  apply_upds (txn_upds (drop off txns)) ∅ !! int.Z a = Some b ->
+  apply_upds (txn_upds txns) d !! int.Z a = Some b.
 Proof.
   intros.
   destruct (txn_upds_drop off txns). rewrite H0 in H.
@@ -193,7 +193,7 @@ Proof.
 Qed.
 
 Theorem simulate_read_cache_hit {l γ Q σ dinit memLog diskEnd diskEnd_txn_id b a} :
-  apply_upds memLog.(slidingM.log) ∅ !! int.val a = Some b ->
+  apply_upds memLog.(slidingM.log) ∅ !! int.Z a = Some b ->
   (is_wal_inner l γ σ dinit ∗ P σ) -∗
   memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) mb,
@@ -232,7 +232,7 @@ Qed.
 
 Lemma apply_upds_in_not_None : ∀ upds a d,
   a ∈ update.addr <$> upds ->
-  apply_upds upds d !! int.val a ≠ None.
+  apply_upds upds d !! int.Z a ≠ None.
 Proof.
   induction upds; simpl; intros.
   { inversion H. }
@@ -245,7 +245,7 @@ Qed.
 
 Lemma apply_upds_no_updates_since memStart (a : u64) installed txns :
   (memStart ≤ installed)%nat ->
-  apply_upds (txn_upds (drop memStart txns)) ∅ !! int.val a = None ->
+  apply_upds (txn_upds (drop memStart txns)) ∅ !! int.Z a = None ->
   Forall (λ u, u.(update.addr) ≠ a) (txn_upds (drop installed txns)).
 Proof.
   intros.
@@ -262,7 +262,7 @@ Proof.
 Qed.
 
 Theorem simulate_read_cache_miss {l γ Q σ dinit memLog diskEnd diskEnd_txn_id a} :
-  apply_upds memLog.(slidingM.log) ∅ !! int.val a = None ->
+  apply_upds memLog.(slidingM.log) ∅ !! int.Z a = None ->
   (is_wal_inner l γ σ dinit ∗ P σ) -∗
   memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) mb,

@@ -128,7 +128,7 @@ Definition is_enc (enc_v:val) (sz:Z) (r: Rec) (remaining: Z) : iProp Σ :=
 Theorem wp_new_enc stk E (sz: u64) :
   {{{ True }}}
     NewEnc #sz @ stk; E
-  {{{ (enc_v:val), RET enc_v; is_enc enc_v (int.val sz) [] (int.val sz) }}}.
+  {{{ (enc_v:val), RET enc_v; is_enc enc_v (int.Z sz) [] (int.Z sz) }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.

@@ -28,7 +28,7 @@ Section goose.
   Qed.
 
   Definition EBlk (addr: u64) :=
-   (∃ v n, "Ha" ∷ int.val addr d↦ v ∗ "%H0iseven" ∷ ⌜ Block_to_vals v !! O = Some #(U8 n) ∧ Z.even n ⌝)%I.
+   (∃ v n, "Ha" ∷ int.Z addr d↦ v ∗ "%H0iseven" ∷ ⌜ Block_to_vals v !! O = Some #(U8 n) ∧ Z.even n ⌝)%I.
 
   Definition written_slice : list val :=
     <[int.nat 0:=#(U8 4)]> (replicate (int.nat 4096) (zero_val byteT)).

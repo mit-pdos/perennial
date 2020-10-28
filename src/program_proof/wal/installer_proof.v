@@ -53,7 +53,7 @@ Let circN := walN .@ "circ".
 Definition in_bounds γ (a: u64): iProp Σ :=
   ∃ d,
     "Hbounddisk" ∷ is_base_disk γ d ∗
-    "%Hinbounds" ∷ ⌜is_Some (d !! int.val a)⌝.
+    "%Hinbounds" ∷ ⌜is_Some (d !! int.Z a)⌝.
 
 Instance in_bounds_persistent γ a : Persistent (in_bounds γ a) := _.
 
@@ -61,7 +61,7 @@ Instance in_bounds_persistent γ a : Persistent (in_bounds γ a) := _.
 resource from the invariant, obviously it can't be for an arbitrary [σ] *)
 Theorem in_bounds_valid γ σ a :
   is_base_disk γ σ.(log_state.d) -∗
-  in_bounds γ a -∗ ⌜is_Some (σ.(log_state.d) !! int.val a)⌝.
+  in_bounds γ a -∗ ⌜is_Some (σ.(log_state.d) !! int.Z a)⌝.
 Proof.
   iIntros "Hbase Hbound".
   iNamed "Hbound".
@@ -71,12 +71,12 @@ Qed.
 
 (* this is more or less big_sepM_lookup_acc, but with is_installed_read unfolded *)
 Theorem is_installed_read_lookup {γ d txns installed_lb durable_txn_id} {a: u64} :
-  is_Some (d !! int.val a) ->
+  is_Some (d !! int.Z a) ->
   is_installed γ d txns installed_lb durable_txn_id -∗
   ∃ txn_id b,
     ⌜(installed_lb ≤ txn_id ≤ durable_txn_id)%nat ∧
-      apply_upds (txn_upds (take (S txn_id) txns)) d !! int.val a = Some b⌝ ∗
-    int.val a d↦ b ∗ (int.val a d↦ b -∗ is_installed γ d txns installed_lb durable_txn_id).
+      apply_upds (txn_upds (take (S txn_id) txns)) d !! int.Z a = Some b⌝ ∗
+    int.Z a d↦ b ∗ (int.Z a d↦ b -∗ is_installed γ d txns installed_lb durable_txn_id).
 Proof.
   rewrite /is_installed_read.
   iIntros (Hlookup) "Hbs".
@@ -116,7 +116,7 @@ Proof. by destruct σ. Qed.
 (* TODO: move memWrite proofs to sliding.v *)
 Lemma memWrite_one_NoDup σ u :
   NoDup (update.addr <$> σ.(slidingM.log)) →
-  int.val σ.(slidingM.mutable) - int.val σ.(slidingM.start) = 0 →
+  int.Z σ.(slidingM.mutable) - int.Z σ.(slidingM.start) = 0 →
   NoDup (update.addr <$> (memWrite_one σ u).(slidingM.log)).
 Proof.
   intros Hnodup Hro_len.
@@ -142,7 +142,7 @@ Qed.
 
 Lemma memWrite_all_NoDup σ bufs:
   NoDup (update.addr <$> σ.(slidingM.log)) →
-  int.val σ.(slidingM.mutable) - int.val σ.(slidingM.start) = 0 →
+  int.Z σ.(slidingM.mutable) - int.Z σ.(slidingM.start) = 0 →
   NoDup (update.addr <$> (memWrite σ bufs).(slidingM.log)).
 Proof.
   generalize dependent σ.
@@ -185,7 +185,7 @@ Proof.
                  {|
                    slidingM.log := [];
                    slidingM.start := 0;
-                   slidingM.mutable := int.val 0 + 0%nat |} bufs)).
+                   slidingM.mutable := int.Z 0 + 0%nat |} bufs)).
   iDestruct (is_sliding_wf with "Hsliding") as %Hwf.
   wp_apply (wp_sliding__takeTill with "Hsliding").
   { rewrite sliding_set_mutable_start /=.
@@ -305,7 +305,7 @@ Qed.
 
 Lemma apply_upds_notin d upds (a: u64) :
   a ∉ (update.addr <$> upds) →
-  apply_upds upds d !! int.val a = d !! int.val a.
+  apply_upds upds d !! int.Z a = d !! int.Z a.
 Proof.
   rewrite -(reverse_involutive upds).
   remember (reverse upds) as upds_r.
@@ -324,7 +324,7 @@ Proof.
   2: {
     simpl in Hneq.
     apply not_elem_of_cons in Hneq.
-    destruct (decide (int.val addr = int.val a)).
+    destruct (decide (int.Z addr = int.Z a)).
     2: intuition.
     assert (addr = a) by word.
     intuition.
@@ -335,7 +335,7 @@ Qed.
 Lemma apply_upds_NoDup_lookup d upds i a b :
   NoDup (update.addr <$> upds) →
   upds !! i = Some {| update.addr := a; update.b := b |} →
-  (apply_upds upds d) !! int.val a = Some b.
+  (apply_upds upds d) !! int.Z a = Some b.
 Proof.
   intros Hnodup Hlookup.
   rewrite -(take_drop (S i) upds).
@@ -360,7 +360,7 @@ Theorem wp_installBlocks γ l dinit d bufs_s (bufs: list update.t)
   {{{ "Hbufs_s" ∷ updates_slice_frag bufs_s 1 bufs ∗
       "#Hwal" ∷ is_wal P l γ dinit ∗
       "%Hbufs" ∷ ⌜has_updates bufs subtxns⌝ ∗
-      "%Hbufs_addrs" ∷ ⌜Forall (λ u : update.t, ∃ (b: Block), dinit !! int.val u.(update.addr) = Some b) bufs⌝ ∗
+      "%Hbufs_addrs" ∷ ⌜Forall (λ u : update.t, ∃ (b: Block), dinit !! int.Z u.(update.addr) = Some b) bufs⌝ ∗
       "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
       "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
       "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
@@ -368,7 +368,7 @@ Theorem wp_installBlocks γ l dinit d bufs_s (bufs: list update.t)
     installBlocks #d (slice_val bufs_s)
   {{{ RET #();
       "#Hwal" ∷ is_wal P l γ dinit ∗
-      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.val (update.addr u)) <$> bufs)) ∗
+      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.Z (update.addr u)) <$> bufs)) ∗
       "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
       "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
   }}}.
@@ -390,7 +390,7 @@ Proof.
 
   wp_apply (slice.wp_forSlice (fun i =>
     ("Hupds" ∷ [∗ list] uv;upd ∈ bks;upds, is_update uv q upd) ∗
-    "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) (take (int.nat i) ((λ u, int.val (update.addr u)) <$> upds))) ∗
+    "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) (take (int.nat i) ((λ u, int.Z (update.addr u)) <$> upds))) ∗
     "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
     "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
     )%I with "[] [$Hbks_s $Hupds $Halready_installed_installer $Hinstalled_txn_installer $Hbeing_installed_txns_installer]").
@@ -426,7 +426,7 @@ Proof.
     iDestruct (ghost_var_agree with "Halready_installed_installer Halready_installed") as %<-.
     iDestruct (fmcounter_agree_1 with "Hinstalled_txn_installer Hinstalled_txn") as %<-.
     iDestruct (ghost_var_agree with "Hbeing_installed_txns_installer Hbeing_installed_txns") as %->.
-    iMod (ghost_var_update_halves (list_to_set (C:=gset Z) (take (S (int.nat i)) ((λ u, int.val (update.addr u)) <$> upds)))
+    iMod (ghost_var_update_halves (list_to_set (C:=gset Z) (take (S (int.nat i)) ((λ u, int.Z (update.addr u)) <$> upds)))
       with "Halready_installed_installer Halready_installed") as
           "[Halready_installed_installer Hbeing_installed]".
 
@@ -447,7 +447,7 @@ Proof.
      (* every disk block has at least through installed_txn_id (most have
       exactly, but some blocks may be in the process of being installed) *)
      let txns := σs.(log_state.txns) in
-     let already_installed := (take (S (int.nat i)) ((λ u, int.val (update.addr u)) <$> upds)) in
+     let already_installed := (take (S (int.nat i)) ((λ u, int.Z (update.addr u)) <$> upds)) in
      ⌜installed_txn_id ≤ txn_id' ≤ new_installed_txn_id ∧
       ( a ∈ already_installed → txn_id' = new_installed_txn_id ) ∧
       let txns := take (S txn_id') txns in
@@ -461,9 +461,9 @@ Proof.
 
       (*
       (* TODO: restore this proof to new invariant *)
-      destruct (decide (addr' = int.val addr_i)); first intuition.
-      destruct (decide (addr' ∈ take (S (int.nat i)) ((λ u : update.t, int.val u.(update.addr)) <$> upds))).
-      - rewrite (take_S_r _ _ (int.val addr_i)) in e.
+      destruct (decide (addr' = int.Z addr_i)); first intuition.
+      destruct (decide (addr' ∈ take (S (int.nat i)) ((λ u : update.t, int.Z u.(update.addr)) <$> upds))).
+      - rewrite (take_S_r _ _ (int.Z addr_i)) in e.
         2: rewrite list_lookup_fmap Hu_lookup //=.
         apply elem_of_app in e.
         destruct e as [He | He].
@@ -474,7 +474,7 @@ Proof.
           assumption.
         }
         subst. eauto.
-      - rewrite (take_S_r _ _ (int.val addr_i)) in n0.
+      - rewrite (take_S_r _ _ (int.Z addr_i)) in n0.
         2: rewrite list_lookup_fmap Hu_lookup //=.
         apply not_elem_of_app in n0.
         destruct n0 as (Hn&_).
@@ -532,9 +532,9 @@ Proof.
       iExists _, _.
       iFrame (Haddr_bound) "∗".
       iPureIntro.
-      destruct (decide (addr' = int.val addr_i)).
+      destruct (decide (addr' = int.Z addr_i)).
       2: {
-        destruct (decide (addr' ∈ take (S (int.nat i)) ((λ u : update.t, int.val u.(update.addr)) <$> upds))).
+        destruct (decide (addr' ∈ take (S (int.nat i)) ((λ u : update.t, int.Z u.(update.addr)) <$> upds))).
         - rewrite decide_True //.
           apply elem_of_list_to_set.
           assumption.
@@ -569,7 +569,7 @@ Proof.
     iFrame.
     replace (int.nat (word.add i 1)) with (S (int.nat i)).
     2: {
-      assert (int.val bks_s.(Slice.sz) ≤ 2^64 - 1) by word.
+      assert (int.Z bks_s.(Slice.sz) ≤ 2^64 - 1) by word.
       word.
     }
     iFrame.

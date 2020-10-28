@@ -28,7 +28,7 @@ Hint Unfold slidingM.numMutable : word.
 Theorem wp_WalogState__updatesOverflowU64 st σ (newUpdates: u64) :
   {{{ wal_linv_fields st σ }}}
     WalogState__updatesOverflowU64 #st #newUpdates
-  {{{ (overflow:bool), RET #overflow; ⌜overflow = bool_decide (slidingM.memEnd σ.(memLog) + int.val newUpdates >= 2^64)⌝ ∗
+  {{{ (overflow:bool), RET #overflow; ⌜overflow = bool_decide (slidingM.memEnd σ.(memLog) + int.Z newUpdates >= 2^64)⌝ ∗
                                       wal_linv_fields st σ
   }}}.
 Proof.
@@ -51,10 +51,10 @@ Proof.
 Qed.
 
 Theorem wp_WalogState__memLogHasSpace st σ (newUpdates: u64) :
-  slidingM.memEnd σ.(memLog) + int.val newUpdates < 2^64 ->
+  slidingM.memEnd σ.(memLog) + int.Z newUpdates < 2^64 ->
   {{{ wal_linv_fields st σ }}}
     WalogState__memLogHasSpace #st #newUpdates
-  {{{ (has_space:bool), RET #has_space; ⌜has_space = bool_decide (slidingM.memEnd σ.(memLog) - int.val σ.(diskEnd) + int.val newUpdates ≤ LogSz)⌝ ∗
+  {{{ (has_space:bool), RET #has_space; ⌜has_space = bool_decide (slidingM.memEnd σ.(memLog) - int.Z σ.(diskEnd) + int.Z newUpdates ≤ LogSz)⌝ ∗
                                         wal_linv_fields st σ
   }}}.
 Proof.
@@ -67,7 +67,7 @@ Proof.
   wp_loadField. wp_apply (wp_sliding__end with "His_memLog"); iIntros "His_memLog".
   wp_loadField.
   wp_pures.
-  change (int.val $ word.divu (word.sub 4096 8) 8) with LogSz.
+  change (int.Z $ word.divu (word.sub 4096 8) 8) with LogSz.
   iAssert (wal_linv_fields st σ) with "[-HΦ]" as "Hfields".
   { iFrame.
     iExists _; by iFrame "# ∗". }
@@ -147,7 +147,7 @@ Qed.
 
 Lemma is_mem_memLog_endpos_highest σ txns start_txn_id upds :
   is_mem_memLog σ txns start_txn_id ->
-  (forall pos txn_id, is_txn txns txn_id pos -> int.val pos ≤ slidingM.memEnd (memWrite σ upds)).
+  (forall pos txn_id, is_txn txns txn_id pos -> int.Z pos ≤ slidingM.memEnd (memWrite σ upds)).
 Proof.
   pose proof (memWrite_length_bound σ upds) as Hσ'len.
   destruct 1 as [Hupds Hhighest].
@@ -160,7 +160,7 @@ Proof.
 Qed.
 
 Theorem memWrite_one_wf σ u :
-  int.val σ.(slidingM.start) + S (length σ.(slidingM.log)) < 2^64 ->
+  int.Z σ.(slidingM.start) + S (length σ.(slidingM.log)) < 2^64 ->
   slidingM.wf σ ->
   slidingM.wf (memWrite_one σ u).
 Proof.
@@ -173,7 +173,7 @@ Proof.
 Qed.
 
 Theorem memWrite_wf σ upds :
-  int.val σ.(slidingM.start) + length σ.(slidingM.log) + length upds < 2^64 ->
+  int.Z σ.(slidingM.start) + length σ.(slidingM.log) + length upds < 2^64 ->
   slidingM.wf σ ->
   slidingM.wf (memWrite σ upds).
 Proof.
@@ -274,7 +274,7 @@ Qed.
 
 Lemma memWrite_preserves_mutable' memLog upds :
   slidingM.wf memLog ->
-  int.val memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
+  int.Z memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
   take
     (numMutableN (memWrite memLog upds))
     (memWrite memLog upds).(slidingM.log) =
@@ -294,7 +294,7 @@ Qed.
 Lemma memWrite_preserves_mutable memLog upds (n : nat) :
   slidingM.wf memLog ->
   n ≤ numMutableN memLog ->
-  int.val memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
+  int.Z memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
   take
     n
     (memWrite memLog upds).(slidingM.log) =
@@ -312,8 +312,8 @@ Qed.
 
 Lemma memWrite_preserves_mutable_suffix memLog upds diskEnd (mutableEnd : u64) :
   slidingM.wf memLog ->
-  int.val mutableEnd ≤ int.val memLog.(slidingM.mutable) ->
-  int.val memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
+  int.Z mutableEnd ≤ int.Z memLog.(slidingM.mutable) ->
+  int.Z memLog.(slidingM.start) + length memLog.(slidingM.log) + length upds < 2^64 ->
   subslice (slidingM.logIndex memLog diskEnd)
            (slidingM.logIndex memLog mutableEnd)
            (memWrite memLog upds).(slidingM.log) =
@@ -432,15 +432,15 @@ Qed.
 Lemma memWrite_one_endPos σ u :
   slidingM.wf σ ->
   slidingM.memEnd σ + 1 < 2 ^ 64 ->
-  int.val σ.(slidingM.mutable) < int.val (slidingM.endPos (memWrite_one σ u)).
+  int.Z σ.(slidingM.mutable) < int.Z (slidingM.endPos (memWrite_one σ u)).
 Proof.
   rewrite /slidingM.wf /slidingM.memEnd; intros.
   rewrite /memWrite_one.
   destruct (find_highest_index (update.addr <$> σ.(slidingM.log)) u.(update.addr)) eqn:He.
-  - destruct (decide (int.val σ.(slidingM.mutable) - int.val σ.(slidingM.start) ≤ n)).
+  - destruct (decide (int.Z σ.(slidingM.mutable) - int.Z σ.(slidingM.start) ≤ n)).
     + rewrite /slidingM.endPos /set insert_length /=.
-      assert (int.val σ.(slidingM.mutable) ≤ int.val σ.(slidingM.start) + length σ.(slidingM.log)) by word.
-      assert (int.val σ.(slidingM.mutable) ≤ int.val σ.(slidingM.start) + n) by word.
+      assert (int.Z σ.(slidingM.mutable) ≤ int.Z σ.(slidingM.start) + length σ.(slidingM.log)) by word.
+      assert (int.Z σ.(slidingM.mutable) ≤ int.Z σ.(slidingM.start) + n) by word.
       assert (n < length σ.(slidingM.log)).
       2: { word. }
       eapply find_highest_index_ok' in He. intuition idtac.
@@ -454,7 +454,7 @@ Lemma memWrite_endPos :
   ∀ bs σ,
     slidingM.wf σ ->
     slidingM.memEnd σ + length bs < 2 ^ 64 ->
-    int.val (slidingM.endPos σ) ≤ int.val (slidingM.endPos (memWrite σ bs)).
+    int.Z (slidingM.endPos σ) ≤ int.Z (slidingM.endPos (memWrite σ bs)).
 Proof.
   rewrite /slidingM.memEnd.
   induction bs.
@@ -476,7 +476,7 @@ Lemma memWrite_endPos_lt bs σ :
   slidingM.wf σ ->
   slidingM.memEnd σ + length bs < 2 ^ 64 ->
   0 < length bs ->
-  int.val σ.(slidingM.mutable) < int.val (slidingM.endPos (memWrite σ bs)).
+  int.Z σ.(slidingM.mutable) < int.Z (slidingM.endPos (memWrite σ bs)).
 Proof.
   destruct bs; simpl; intros; try lia.
   eapply Z.lt_le_trans.
@@ -541,13 +541,13 @@ Proof.
   destruct (decide (length bs = 0)%nat).
   { destruct bs; eauto; simpl in *; lia. }
 
-  assert (int.val ml.(slidingM.mutable) < int.val (slidingM.endPos (memWrite ml bs))).
+  assert (int.Z ml.(slidingM.mutable) < int.Z (slidingM.endPos (memWrite ml bs))).
   { eapply memWrite_endPos_lt; eauto. lia. }
 
   destruct (decide (txn_id > nextDiskEnd_txn_id)).
   { rewrite Hmaxstable in H0; first by congruence. lia. }
 
-  assert (int.val (slidingM.endPos (memWrite ml bs)) ≤ int.val ml.(slidingM.mutable)).
+  assert (int.Z (slidingM.endPos (memWrite ml bs)) ≤ int.Z ml.(slidingM.mutable)).
   2: lia.
 
   eapply wal_wf_txns_mono_pos'.
@@ -561,12 +561,12 @@ Lemma memWrite_one_eq ml addr b d :
   slidingM.wf ml ->
   apply_upds
     (drop (slidingM.logIndex ml ml.(slidingM.mutable))
-      (memWrite_one ml {| update.addr := addr; update.b := b |}).(slidingM.log)) d !! int.val addr = Some b.
+      (memWrite_one ml {| update.addr := addr; update.b := b |}).(slidingM.log)) d !! int.Z addr = Some b.
 Proof.
   rewrite /slidingM.wf; intros.
   rewrite /memWrite_one /=.
   destruct (find_highest_index (update.addr <$> ml.(slidingM.log)) addr) eqn:Hidx; rewrite Hidx /=.
-  - destruct (decide (int.val ml.(slidingM.mutable) - int.val ml.(slidingM.start) ≤ n)); simpl.
+  - destruct (decide (int.Z ml.(slidingM.mutable) - int.Z ml.(slidingM.start) ≤ n)); simpl.
     + eapply find_highest_index_Some_split in Hidx.
       destruct Hidx as [l1 [l2 Hidx]].
       destruct Hidx as [Happ [Hhighest Hlen]].
@@ -601,14 +601,14 @@ Lemma apply_upds_lookup_eq : ∀ upds d0 d1 a,
 Proof.
   induction upds; simpl; intros; eauto.
   destruct a.
-  destruct (decide (a0 = int.val addr)); subst.
+  destruct (decide (a0 = int.Z addr)); subst.
   - eapply IHupds. rewrite !lookup_insert. eauto.
   - eapply IHupds. rewrite lookup_insert_ne; eauto. rewrite lookup_insert_ne; eauto.
 Qed.
 
 Lemma memWrite_one_ne ml addr a' b d :
   slidingM.wf ml ->
-  a' ≠ int.val addr ->
+  a' ≠ int.Z addr ->
   apply_upds
     (drop (slidingM.logIndex ml ml.(slidingM.mutable))
       (memWrite_one ml {| update.addr := addr; update.b := b |}).(slidingM.log)) d !! a' =
@@ -619,7 +619,7 @@ Proof.
   rewrite /slidingM.wf; intros.
   rewrite /memWrite_one /=.
   destruct (find_highest_index (update.addr <$> ml.(slidingM.log)) addr) eqn:Hidx; rewrite Hidx /=.
-  - destruct (decide (int.val ml.(slidingM.mutable) - int.val ml.(slidingM.start) ≤ n)); simpl.
+  - destruct (decide (int.Z ml.(slidingM.mutable) - int.Z ml.(slidingM.start) ≤ n)); simpl.
     + eapply find_highest_index_Some_split in Hidx.
       destruct Hidx as [l1 [l2 Hidx]].
       destruct Hidx as [Happ [Hhighest Hlen]].
@@ -689,7 +689,7 @@ Proof.
   rewrite memWrite_one_same_mutable.
   destruct a.
   eapply map_eq; intros.
-  destruct (decide (i = int.val addr)); subst.
+  destruct (decide (i = int.Z addr)); subst.
   {
     rewrite lookup_insert.
     rewrite memWrite_one_eq; eauto.
@@ -718,7 +718,7 @@ Proof.
   iDestruct (updates_slice_frag_len with "Hbufs") as %Hbufs_sz.
   wp_apply wp_slice_len.
   wp_pures.
-  change (int.val (word.divu (word.sub 4096 8) 8)) with LogSz.
+  change (int.Z (word.divu (word.sub 4096 8) 8)) with LogSz.
   wp_if_destruct.
   - wp_pures.
     iApply "HΦ".

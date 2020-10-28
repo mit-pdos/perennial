@@ -15,7 +15,7 @@ Tactic Notation "byte_cases" constr(b) :=
 Ltac vm_refl := vm_compute; reflexivity.
 
 Definition byte_to_bits (x: byte): list bool :=
-  Z.testbit (int.val x) <$> seqZ 0 8.
+  Z.testbit (int.Z x) <$> seqZ 0 8.
 
 Theorem length_byte_to_bits x : length (byte_to_bits x) = 8%nat.
 Proof.

@@ -77,8 +77,8 @@ Record time := {
 Global Instance EqDec_time : EqDecision time.
   intro; intros.
   destruct x, y.
-  destruct (Z.eq_dec (int.val time_sec0) (int.val time_sec1));
-  destruct (Z.eq_dec (int.val time_nsec0) (int.val time_nsec1)).
+  destruct (Z.eq_dec (int.Z time_sec0) (int.Z time_sec1));
+  destruct (Z.eq_dec (int.Z time_nsec0) (int.Z time_nsec1)).
 (*
   - left; subst; auto.
   - right; subst; congruence.
@@ -426,7 +426,7 @@ Section SymbolicStep.
   Definition fid_does_not_exist (s: State) (fid: fileid) : bool :=
     fold_left (fun acc x =>
                  match x with
-                 | (f,i) => acc && bool_decide (int.val i.(latest).(inode_state_meta).(inode_meta_fileid) <> int.val fid)
+                 | (f,i) => acc && bool_decide (int.Z i.(latest).(inode_state_meta).(inode_meta_fileid) <> int.Z fid)
                  end)
               (gmap_to_list s.(fhs)) true.
   Definition fh_does_not_exist (s: State) (f: fh) : bool :=
@@ -521,10 +521,10 @@ Section SymbolicStep.
     end.
 
   Definition time_ge (t t' : time) : bool :=
-    orb (bool_decide (int.val t.(time_sec) <= int.val t'.(time_sec)))
+    orb (bool_decide (int.Z t.(time_sec) <= int.Z t'.(time_sec)))
         (andb (bool_decide (t'.(time_sec) = t.(time_sec)))
               (orb (bool_decide (t'.(time_nsec) = t.(time_nsec)))
-                    (bool_decide (int.val t.(time_nsec) <= int.val t'.(time_nsec))))).
+                    (bool_decide (int.Z t.(time_nsec) <= int.Z t'.(time_nsec))))).
 
   Definition get_time : transition State time :=
     t <- call_reads (clock);
@@ -580,7 +580,7 @@ Section SymbolicStep.
       match i.(inode_state_type) with
       | Ifile buf cverf =>
         outOfSpace <- symBool;
-        if andb (bool_decide (int.val len >? int.val (len_buf buf))) outOfSpace then
+        if andb (bool_decide (int.Z len >? int.Z (len_buf buf))) outOfSpace then
           ret (Err a ERR_NOSPC)
         else
           ret (OK a (i <| inode_state_type := Ifile (resize_buf len buf) cverf |>
@@ -687,14 +687,14 @@ Section SymbolicStep.
     match i.(inode_state_type) with
     | Ifile buf _ =>
       let res := read_buf buf off count in
-      let eof := if decide (int.val (len_buf buf) >? (int.val off + int.val count)) then false else true in
+      let eof := if decide (int.Z (len_buf buf) >? (int.Z off + int.Z count)) then false else true in
       ret (OK2 (Some iattr) eof res)
     | _ => ret (Err (Some iattr) ERR_INVAL)
     end.
 
 
   Definition check_space (wcc_before : wcc_attr) (buf buf' : buf) : transition State (res wcc_data Prop) :=
-      if (decide (int.val (len_buf buf') >? int.val (len_buf buf)))
+      if (decide (int.Z (len_buf buf') >? int.Z (len_buf buf)))
        then ret (Err (Build_wcc_data (Some wcc_before) (Some wcc_before)) ERR_NOSPC)
        else ret (OK (Build_wcc_data (Some wcc_before) (Some wcc_before)) True).
 
@@ -1148,10 +1148,10 @@ Section SymbolicStep.
     i <~- get_fh h (@None fattr);
     iattr <- inode_attrs i;
     st <- suchThatBool (fun _ st => bool_decide
-      (int.val st.(fsstat_ok_fbytes) <= int.val st.(fsstat_ok_tbytes) ∧
-      int.val st.(fsstat_ok_abytes) <= int.val st.(fsstat_ok_fbytes) ∧
-      int.val st.(fsstat_ok_ffiles) <= int.val st.(fsstat_ok_tfiles) ∧
-      int.val st.(fsstat_ok_afiles) <= int.val st.(fsstat_ok_ffiles)));
+      (int.Z st.(fsstat_ok_fbytes) <= int.Z st.(fsstat_ok_tbytes) ∧
+      int.Z st.(fsstat_ok_abytes) <= int.Z st.(fsstat_ok_fbytes) ∧
+      int.Z st.(fsstat_ok_ffiles) <= int.Z st.(fsstat_ok_tfiles) ∧
+      int.Z st.(fsstat_ok_afiles) <= int.Z st.(fsstat_ok_ffiles)));
     ret (OK (Some iattr) st).
 
   Definition fsinfo_step (h : fh) : transition State (res post_op_attr fsinfo_ok) :=

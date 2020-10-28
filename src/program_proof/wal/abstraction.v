@@ -41,8 +41,8 @@ Module log_state.
 End log_state.
 
 Definition addr_wf (a: u64) (d: disk) :=
-  2 + LogSz ≤ int.val a ∧
-  ∃ (b: Block), d !! (int.val a) = Some b.
+  2 + LogSz ≤ int.Z a ∧
+  ∃ (b: Block), d !! (int.Z a) = Some b.
 
 Definition addrs_wf (updates: list update.t) (d: disk) :=
   Forall (λ u, addr_wf u.(update.addr) d) updates.
@@ -118,12 +118,12 @@ End list_mono.
 Definition wal_wf (s : log_state.t) :=
   addrs_wf (log_state.updates s) s.(log_state.d) ∧
   (* monotonicity of txnids  *)
-  list_mono (λ pos1 pos2, int.val pos1 ≤ int.val pos2) (fst <$> s.(log_state.txns)) ∧
+  list_mono (λ pos1 pos2, int.Z pos1 ≤ int.Z pos2) (fst <$> s.(log_state.txns)) ∧
   s.(log_state.installed_lb) ≤ s.(log_state.durable_lb) < length s.(log_state.txns).
 
 (** * apply_upds: interpret txns on top of disk *)
 Definition apply_upds (upds: list update.t) (d: disk): disk :=
-  fold_left (fun d '(update.mk a b) => <[int.val a := b]> d) upds d.
+  fold_left (fun d '(update.mk a b) => <[int.Z a := b]> d) upds d.
 
 Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :=
   forall d, apply_upds log d =

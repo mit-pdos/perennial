@@ -393,7 +393,7 @@ Proof.
   set (memLog := {|
                  slidingM.log := upds;
                  slidingM.start := diskStart;
-                 slidingM.mutable := int.val diskStart + length upds |}).
+                 slidingM.mutable := int.Z diskStart + length upds |}).
 
   iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id diskEnd_txn_id σ.(log_state.txns) diskEnd diskEnd_txn_id installed_txn_id) with "[-]" as "#H".
   {
@@ -498,7 +498,7 @@ Proof.
   iMod (alloc_lock walN _ _ (wal_linv st γ0)
           with "[$] [HmemLog_linv Hsliding Hwal_state Hstart_exactly HdiskEnd_exactly]") as "#lk".
   { rewrite /wal_linv.
-    assert (int.val diskStart + length upds = int.val diskEnd) as Heq_plus.
+    assert (int.Z diskStart + length upds = int.Z diskEnd) as Heq_plus.
     { etransitivity; last eassumption. rewrite /circΣ.diskEnd //=. subst. word. }
     iExists {| diskEnd := diskEnd; memLog := _ |}. iSplitL "Hwal_state Hsliding".
     { iExists {| memLogPtr := _; shutdown := _; nthread := _ |}.

@@ -77,19 +77,19 @@ Proof.
   { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
   remember 0 as z.
   iRename "Hi0" into "Hiz".
-  assert (0 <= z <= int.val s.(Slice.sz)) by word.
+  assert (0 <= z <= int.Z s.(Slice.sz)) by word.
   iDestruct (is_slice_small_sz with "Hs") as %Hslen.
   autorewrite with len in Hslen.
   clear Heqz; generalize dependent z.
   intros z Hzrange.
-  assert (int.val (U64 z) = z) by (rewrite /U64; word).
+  assert (int.Z (U64 z) = z) by (rewrite /U64; word).
   (iLöb as "IH" forall (z Hzrange H)).
   wpc_if_destruct.
   - wpc_pures.
     { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
     destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first word.
     wpc_apply (wpc_SliceGet with "[$Hs] [HΦ Hiz]").
-    { replace (int.val z); eauto. }
+    { replace (int.Z z); eauto. }
     { iSplit.
       - iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro.
         iIntros "_".
@@ -107,18 +107,18 @@ Proof.
           iIntros "!> Hiz1".
           wpc_pures.
           { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
-          assert (int.val (z + 1) = int.val z + 1) by word.
+          assert (int.Z (z + 1) = int.Z z + 1) by word.
           replace (word.add z 1) with (U64 (z + 1)) by word.
           iSpecialize ("IH" $! (z+1) with "[] []").
           { iPureIntro; word. }
           { iPureIntro; word. }
           wpc_apply ("IH" with "[$] [$] [$]"). }
-  - assert (z = int.val s.(Slice.sz)) by lia; subst z.
+  - assert (z = int.Z s.(Slice.sz)) by lia; subst z.
     wpc_pures; swap 2 3.
     { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
     { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
     iRight in "HΦ".
-    replace (U64 (int.val s.(Slice.sz))) with s.(Slice.sz); last first.
+    replace (U64 (int.Z s.(Slice.sz))) with s.(Slice.sz); last first.
     { rewrite /U64 word.of_Z_unsigned //. }
     iApply ("HΦ" with "[$]").
 Qed.

@@ -42,10 +42,10 @@ Theorem wpc_recoverCircular stk k E1 d σ γ :
       is_circular_state γ' σ ∗
       is_circular_appender γ' c ∗
       start_is γ' (1/2) diskStart ∗
-      diskEnd_is γ' (1/2) (int.val diskStart + length upds) ∗
+      diskEnd_is γ' (1/2) (int.Z diskStart + length upds) ∗
       ⌜σ.(circΣ.start) = diskStart⌝ ∗
       ⌜σ.(circΣ.upds) = upds⌝ ∗
-      ⌜circΣ.diskEnd σ = int.val diskEnd⌝
+      ⌜circΣ.diskEnd σ = int.Z diskEnd⌝
   }}}
   {{{ is_circular_state γ σ }}}.
 Proof.
@@ -115,7 +115,7 @@ Proof.
 
   wpc_pures.
   wpc_apply (wpc_forUpto (fun i =>
-    ⌜int.val σ.(start) <= int.val i⌝ ∗
+    ⌜int.Z σ.(start) <= int.Z i⌝ ∗
     (∃ bufSlice,
       bufsloc ↦[slice.T (struct.t Update.S)] (slice_val bufSlice) ∗
       updates_slice bufSlice (take (int.nat i - int.nat σ.(start)) σ.(upds))) ∗
@@ -141,7 +141,7 @@ Proof.
 
     wpc_frame_seq.
     wp_load.
-    list_elem addrs0 (int.val i `mod` LogSz) as a.
+    list_elem addrs0 (int.Z i `mod` LogSz) as a.
     { destruct Hlow_wf.
       mod_bound; word. }
     wp_apply (wp_SliceGet _ _ _ _ 1 addrs0 with "[$Hdiskaddrs]"); eauto.
@@ -161,10 +161,10 @@ Proof.
 
     wpc_pures.
     change (word.divu _ _) with (U64 LogSz).
-    destruct (list_lookup_lt _ blocks0 (Z.to_nat (int.val i `mod` LogSz))) as [b Hblookup].
+    destruct (list_lookup_lt _ blocks0 (Z.to_nat (int.Z i `mod` LogSz))) as [b Hblookup].
     { destruct Hlow_wf.
       mod_bound; word. }
-    iDestruct (disk_array_acc_disc _ blocks0 (int.val i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.
+    iDestruct (disk_array_acc_disc _ blocks0 (int.Z i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.
     { mod_bound; word. }
     wpc_apply (wpc_Read with "[Hdi]").
     { iExactEq "Hdi".
@@ -216,10 +216,10 @@ Proof.
     apply list_lookup_lt in Hinbounds.
     destruct Hinbounds as [[a' b'] Hieq].
     pose proof (Hupds _ _ Hieq) as Haddr_block_eq. rewrite /LogSz /= in Haddr_block_eq.
-    replace (int.val (start σ) + Z.of_nat (int.nat i - int.nat (start σ)))
-      with (int.val i) in Haddr_block_eq by word.
+    replace (int.Z (start σ) + Z.of_nat (int.nat i - int.nat (start σ)))
+      with (int.Z i) in Haddr_block_eq by word.
     destruct Haddr_block_eq.
-    replace (Z.to_nat (int.val i + 1) - int.nat (start σ))%nat with (S (int.nat i - int.nat (start σ))) by word.
+    replace (Z.to_nat (int.Z i + 1) - int.nat (start σ))%nat with (S (int.nat i - int.nat (start σ))) by word.
     erewrite take_S_r; eauto.
     rewrite Hieq /=.
     congruence.

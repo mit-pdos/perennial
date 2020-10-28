@@ -569,7 +569,7 @@ Qed.
 Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : bufDataT K) : Prop :=
   valid_off K off ∧
   match d with
-  | bufBlock d => b = d ∧ int.val off = 0
+  | bufBlock d => b = d ∧ int.Z off = 0
   | bufInode i => extract_nth b inode_bytes ((int.nat off)/(inode_bytes*8)) = inode_to_vals i
   | bufBit d => ∃ (b0 : u8), extract_nth b 1 ((int.nat off)/8) = #b0 :: nil ∧
       get_bit b0 (word.modu off 8) = d
@@ -648,7 +648,7 @@ Proof using.
         repeat word_cleanup. }
     }
     {
-      replace (int.val s.(Slice.sz)) with (length (Block_to_vals blk) : Z).
+      replace (int.Z s.(Slice.sz)) with (length (Block_to_vals blk) : Z).
       2: { word. }
       rewrite length_Block_to_vals. unfold block_bytes.
       repeat word_cleanup.
@@ -695,7 +695,7 @@ Opaque PeanoNat.Nat.div.
     rewrite word.unsigned_sub.
     rewrite word.unsigned_add.
     word_cleanup.
-    replace (int.val a.(addrOff) + Z.of_nat 1 - 1) with (int.val a.(addrOff)) by lia.
+    replace (int.Z a.(addrOff) + Z.of_nat 1 - 1) with (int.Z a.(addrOff)) by lia.
 
     rewrite -H3 /extract_nth.
     replace (int.nat a.(addrOff) `div` 8 * 1)%nat with (int.nat a.(addrOff) `div` 8)%nat by lia.
@@ -720,7 +720,7 @@ Opaque PeanoNat.Nat.div.
     rewrite word.unsigned_sub.
     rewrite word.unsigned_add.
     word_cleanup.
-    replace (int.val a.(addrOff) + Z.of_nat (Z.to_nat 128 * 8) - 1) with (int.val a.(addrOff) + (128*8-1)) by lia.
+    replace (int.Z a.(addrOff) + Z.of_nat (Z.to_nat 128 * 8) - 1) with (int.Z a.(addrOff) + (128*8-1)) by lia.
 
     rewrite -Hatoff /extract_nth.
     f_equal.
@@ -732,7 +732,7 @@ Opaque PeanoNat.Nat.div.
       rewrite -Nat.div_div; try word.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
-        replace (int.val (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
+        replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -mod_Zmod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
@@ -755,7 +755,7 @@ Opaque PeanoNat.Nat.div.
       rewrite -Nat.div_div; try word.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
-        replace (int.val (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
+        replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -mod_Zmod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
@@ -770,7 +770,7 @@ Opaque PeanoNat.Nat.div.
       edestruct (Nat.div_exact (int.nat (addrOff a)) 8) as [_ Hz]; first by lia.
       rewrite -> Hz at 1.
       2: {
-        replace (int.val (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
+        replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -mod_Zmod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
@@ -850,12 +850,12 @@ Qed.
 (** * [byte → list bool] reasoning *)
 
 Definition get_buf_data_bit (b: Block) (off: u64) : bool :=
-  let b_byte := get_byte b (int.val off `div` 8) in
-  let b_bit  := default false (byte_to_bits b_byte !! Z.to_nat (int.val off `mod` 8)) in
+  let b_byte := get_byte b (int.Z off `div` 8) in
+  let b_bit  := default false (byte_to_bits b_byte !! Z.to_nat (int.Z off `mod` 8)) in
   b_bit.
 
 Theorem get_bit_ok b0 (off: u64) :
-  (int.val off < 8) →
+  (int.Z off < 8) →
   get_bit b0 off = default false (byte_to_bits b0 !! int.nat off).
 Proof.
   intros Hbound.
@@ -1018,7 +1018,7 @@ Proof.
     { rewrite /subslice /inode_bytes; len.
       change (Z.to_nat 128) with 128%nat.
       change (Z.of_nat 1024) with 1024 in Hvalid.
-      pose proof (Z_mod_1024_to_div_8 (int.val off) Hvalid) as Hdiv8.
+      pose proof (Z_mod_1024_to_div_8 (int.Z off) Hvalid) as Hdiv8.
       assert (int.nat off `div` 8 = 128 * int.nat off `div` 1024)%nat.
       { apply Nat2Z.inj. word. }
       word. }
@@ -1026,7 +1026,7 @@ Proof.
 Qed.
 
 Lemma valid_block_off off :
-  int.val off < block_bytes * 8 →
+  int.Z off < block_bytes * 8 →
   valid_off KindBlock off →
   off = U64 0.
 Proof.
@@ -1034,7 +1034,7 @@ Proof.
   rewrite /valid_off => Hvalid_off.
   change (Z.of_nat (bufSz KindBlock)) with 32768 in Hvalid_off.
   change (block_bytes * 8) with 32768 in Hbound.
-  apply (inj int.val).
+  apply (inj int.Z).
   word.
 Qed.
 
@@ -1094,29 +1094,29 @@ Proof.
 Qed.
 
 Lemma mask_bit_ok (b: u8) (bit: u64) :
-  int.val bit < 8 →
+  int.Z bit < 8 →
   word.and b (word.slu (U8 1) (u8_from_u64 bit)) =
   if default false (byte_to_bits b !! int.nat bit) then
     U8 (2^(int.nat bit))
   else U8 0.
 Proof.
   intros Hle.
-  apply (inj int.val).
+  apply (inj int.Z).
   bit_cases bit; byte_cases b; vm_refl.
 Qed.
 
 Lemma masks_different (bit:u64) :
-  int.val bit < 8 →
+  int.Z bit < 8 →
   U8 (2^int.nat bit ) ≠ U8 0.
 Proof.
-  intros Hbound Heq%(f_equal int.val).
-  change (int.val (U8 0)) with 0 in Heq.
+  intros Hbound Heq%(f_equal int.Z).
+  change (int.Z (U8 0)) with 0 in Heq.
   move: Heq.
   bit_cases bit; vm_compute; by inversion 1.
 Qed.
 
 Theorem wp_installOneBit (src dst: u8) (bit: u64) :
-  int.val bit < 8 →
+  int.Z bit < 8 →
   {{{ True }}}
     installOneBit #src #dst #bit
   {{{ RET #(install_one_bit src dst (int.nat bit)); True }}}.
@@ -1175,20 +1175,20 @@ Theorem wp_installBit
         (src_s: Slice.t) (src_b: u8) q (* source *)
         (dst_s: Slice.t)  (dst_bs: list u8) (* destination *)
         (dstoff: u64) (* the offset we're modifying, in bits *) :
-  (int.val dstoff < 8 * Z.of_nat (length dst_bs)) →
+  (int.Z dstoff < 8 * Z.of_nat (length dst_bs)) →
   {{{ is_slice_small src_s byteT q [src_b] ∗ is_slice_small dst_s byteT 1 dst_bs  }}}
     installBit (slice_val src_s) (slice_val dst_s) #dstoff
   {{{ RET #();
       let dst_bs' :=
           alter
-            (λ dst, install_one_bit src_b dst (Z.to_nat $ int.val dstoff `mod` 8))
-            (Z.to_nat $ int.val dstoff `div` 8) dst_bs in
+            (λ dst, install_one_bit src_b dst (Z.to_nat $ int.Z dstoff `mod` 8))
+            (Z.to_nat $ int.Z dstoff `div` 8) dst_bs in
       is_slice_small src_s byteT q [src_b] ∗ is_slice_small dst_s byteT 1 dst_bs' }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ".
   iDestruct "Hpre" as "[Hsrc Hdst]".
   wp_call.
-  destruct (lookup_lt_is_Some_2 dst_bs (Z.to_nat (int.val dstoff `div` 8)))
+  destruct (lookup_lt_is_Some_2 dst_bs (Z.to_nat (int.Z dstoff `div` 8)))
     as [dst_b Hlookup]; first word.
   wp_apply (wp_SliceGet (V:=u8) with "[$Hdst]").
   { iPureIntro. word_cleanup. eauto. }
@@ -1222,15 +1222,15 @@ Theorem wp_installBytes
         (dst_s: Slice.t) (dst_bs: list u8) (* destination *)
         (dstoff: u64) (* the offset we're modifying, in bits *)
         (nbit: u64)   (* the number of bits we're modifying *) :
-  int.val nbit `div` 8 ≤ Z.of_nat (length src_bs) →
-  int.val dstoff `div` 8 + int.val nbit `div` 8 ≤ Z.of_nat (length dst_bs) →
+  int.Z nbit `div` 8 ≤ Z.of_nat (length src_bs) →
+  int.Z dstoff `div` 8 + int.Z nbit `div` 8 ≤ Z.of_nat (length dst_bs) →
   {{{ is_slice_small src_s byteT q src_bs ∗
       is_slice_small dst_s byteT 1 dst_bs
   }}}
     installBytes (slice_val src_s) (slice_val dst_s) #dstoff #nbit
   {{{ RET #(); is_slice_small src_s byteT q src_bs ∗
-               let src_bs' := take (Z.to_nat $ int.val nbit `div` 8) src_bs in
-               let dst_bs' := list_inserts (Z.to_nat $ int.val dstoff `div` 8) src_bs' dst_bs in
+               let src_bs' := take (Z.to_nat $ int.Z nbit `div` 8) src_bs in
+               let dst_bs' := list_inserts (Z.to_nat $ int.Z dstoff `div` 8) src_bs' dst_bs in
                is_slice_small dst_s byteT 1 dst_bs'
   }}}.
 Proof.
@@ -1301,7 +1301,7 @@ Definition is_installed_block (blk: Block) (buf_b: buf) (off': u64) (blk': Block
     else is_bufData_at_off blk' off d0.
 
 Lemma is_installed_block_bit (off:u64) (b bufDirty : bool) (blk : Block) :
-    int.val off < block_bytes * 8 →
+    int.Z off < block_bytes * 8 →
     ∀ src_b : u8,
       get_bit src_b (word.modu off 8) = b
       → is_installed_block
@@ -1312,16 +1312,16 @@ Lemma is_installed_block_bit (off:u64) (b bufDirty : bool) (blk : Block) :
              (alter
                 (λ (dst:u8),
                  install_one_bit src_b dst
-                                 (Z.to_nat (int.val off `mod` 8)))
-                (Z.to_nat (int.val off `div` 8)) (vec_to_list blk))).
+                                 (Z.to_nat (int.Z off `mod` 8)))
+                (Z.to_nat (int.Z off `div` 8)) (vec_to_list blk))).
 Proof.
   intros Haddroff_bound src_b <-.
   rewrite -> get_bit_ok by word.
   intros off' d ?.
   apply is_bufData_bit in H as [Hoff_bound <-].
   word_cleanup.
-  remember (int.val off `div` 8) as byteOff.
-  remember (int.val off `mod` 8) as bitOff.
+  remember (int.Z off `div` 8) as byteOff.
+  remember (int.Z off `mod` 8) as bitOff.
   destruct (lookup_lt_is_Some_2 (vec_to_list blk) (Z.to_nat byteOff))
     as [byte0 Hlookup_byte]; [ len | ].
   destruct (decide _); [subst off'|].
@@ -1344,7 +1344,7 @@ Proof.
     rewrite /get_buf_data_bit.
     f_equal.
     (* are we looking up the same byte, but a different bit? *)
-    destruct (decide (int.val off' `div` 8 = byteOff)).
+    destruct (decide (int.Z off' `div` 8 = byteOff)).
     * rewrite e.
       word_cleanup.
       rewrite /get_byte.
@@ -1435,8 +1435,8 @@ Lemma is_installed_block_inode (a : addr) (i : inode_buf) (bufDirty : bool) (blk
       {| bufKind := KindInode; bufData := bufInode i; bufDirty := bufDirty |}
       (addrOff a)
       (list_to_block
-         (list_inserts (Z.to_nat (int.val (addrOff a) `div` 8))
-                       (take (Z.to_nat (int.val 1024%nat `div` 8)) i) blk)).
+         (list_inserts (Z.to_nat (int.Z (addrOff a) `div` 8))
+                       (take (Z.to_nat (int.Z 1024%nat `div` 8)) i) blk)).
 Proof.
   intros H.
   destruct H as [[? ?] ?].
@@ -1444,7 +1444,7 @@ Proof.
   intros Hoff_bound Hvalid_off.
   intros off' d Hdata_at_off; simpl in *.
   apply is_bufData_inode in Hdata_at_off as (Hoff'_bound&Hoff'_valid&<-).
-  change (Z.to_nat (int.val 1024%nat `div` 8)) with inode_bytes.
+  change (Z.to_nat (int.Z 1024%nat `div` 8)) with inode_bytes.
   rewrite -> take_ge by len.
   destruct (decide _); [subst off'|]; apply is_bufData_inode.
   - split; first done.
@@ -1457,7 +1457,7 @@ Proof.
     change (Z.to_nat 8) with 8%nat.
     rewrite subslice_list_inserts_eq; len.
     { rewrite inode_buf_to_list_to_inode_buf //. }
-    cut (int.val off `div` 8 + 128 ≤ 4096).
+    cut (int.Z off `div` 8 + 128 ≤ 4096).
     { intros.
       rewrite /inode_bytes /block_bytes.
       move: H; word_cleanup.
@@ -1477,7 +1477,7 @@ Proof.
     { intros Heq.
       apply n.
       word. }
-    replace (Z.to_nat (int.val off `div` 8)) with (int.nat off `div` 8)%nat; last first.
+    replace (Z.to_nat (int.Z off `div` 8)) with (int.nat off `div` 8)%nat; last first.
     { rewrite Z2Nat_inj_div //; word. }
     rewrite -> !Nat_mod_1024_to_div_8 by lia.
     rewrite -> !Z_mod_1024_to_div_8 in H by lia.
@@ -1578,7 +1578,7 @@ Proof.
     rewrite bool_decide_eq_true_2; last first.
     { f_equal.
       f_equal.
-      apply (inj int.val).
+      apply (inj int.Z).
       destruct H as [? ?].
       word_cleanup.
       rewrite /valid_off /= in H1.
@@ -1591,7 +1591,7 @@ Proof.
     wp_apply (wp_installBytes with "[$Hbufdata $Hblk]").
     { len. }
     { len.
-      change (int.val 1024%nat `div` 8) with 128.
+      change (int.Z 1024%nat `div` 8) with 128.
       destruct H as [Hvalid H].
       destruct Hvalid.
       rewrite Z_mod_1024_to_div_8 //.
@@ -1619,7 +1619,7 @@ Proof.
     rewrite bool_decide_eq_true_2; last first.
     { f_equal.
       f_equal.
-      apply (inj int.val).
+      apply (inj int.Z).
       rewrite /valid_off in Hvalidoff.
       rewrite bufSz_block_eq in Hvalidoff.
       word. }
@@ -1642,8 +1642,8 @@ Proof.
       split; [|done].
       simpl; auto. }
     iPureIntro.
-    change (Z.to_nat (int.val 0 `div` 8)) with 0%nat.
-    change (Z.to_nat (int.val 32768 `div` 8)) with block_bytes.
+    change (Z.to_nat (int.Z 0 `div` 8)) with 0%nat.
+    change (Z.to_nat (int.Z 32768 `div` 8)) with block_bytes.
     apply is_installed_block_block.
 Qed.
 

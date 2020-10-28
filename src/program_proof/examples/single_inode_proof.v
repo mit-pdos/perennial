@@ -58,7 +58,7 @@ Section goose.
     "#alloc" ∷ readonly (l ↦[SingleInode.S :: "alloc"] #alloc_ref).
 
   (** State of unallocated blocks *)
-  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
+  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.Z a d↦ b.
 
   Definition pre_s_inode l (sz: Z) σ : iProp Σ :=
     ∃ inode_ref alloc_ref γused γblocks,
@@ -114,7 +114,7 @@ Section goose.
     rewrite big_sepL_app.
     iDestruct "Hd" as "[Hinodes Hfree]".
     iDestruct "Hinodes" as "[Hzero _]".
-    change (0%nat + 0)%Z with (int.val (U64 0)).
+    change (0%nat + 0)%Z with (int.Z (U64 0)).
     iDestruct (init_inode with "Hzero") as "Hinode".
     simpl.
     iMod (ghost_var_alloc (nil : list Block)) as
@@ -162,11 +162,11 @@ Section goose.
 
   Theorem wpc_Open {k} (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
-    (0 < int.val sz)%Z →
-    {{{ "Hcinv" ∷ s_inode_cinv (int.val sz) σ0 true }}}
+    (0 < int.Z sz)%Z →
+    {{{ "Hcinv" ∷ s_inode_cinv (int.Z sz) σ0 true }}}
       Open #d_ref #sz @ NotStuck; S k; ⊤
-    {{{ l, RET #l; pre_s_inode l (int.val sz) σ0 }}}
-    {{{ s_inode_cinv (int.val sz) σ0 true }}}.
+    {{{ l, RET #l; pre_s_inode l (int.Z sz) σ0 }}}
+    {{{ s_inode_cinv (int.Z sz) σ0 true }}}.
   Proof.
     iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
@@ -223,7 +223,7 @@ Section goose.
     iDestruct (unify_used_set with "HPalloc HPinode") as %Hused_inode.
 
     iCache with "HΦ Hs_inode Hpre_inode HPinode HPalloc Hunused".
-    { iAssert (alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (int.val sz - 1)) true)
+    { iAssert (alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (int.Z sz - 1)) true)
             with "[HPalloc Hunused]" as "Halloc".
       { iExists _; iFrame "∗ %". }
       iFromCache. }

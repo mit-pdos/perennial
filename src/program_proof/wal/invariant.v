@@ -93,7 +93,7 @@ Global Instance locked_state_eta: Settable _ :=
 Global Instance locked_state_witness: Inhabited locked_state := populate!.
 
 Definition locked_wf (σ: locked_state) :=
-  int.val σ.(memLog).(slidingM.start) ≤ int.val σ.(diskEnd) ≤ int.val σ.(memLog).(slidingM.mutable) ∧
+  int.Z σ.(memLog).(slidingM.start) ≤ int.Z σ.(diskEnd) ≤ int.Z σ.(memLog).(slidingM.mutable) ∧
   slidingM.wf σ.(memLog).
 
 (*
@@ -152,7 +152,7 @@ Definition memLog_linv_txns (σ: slidingM.t) (diskEnd logger_pos: u64) txns memS
 abstract state starting at the memStart_txn_id *)
 Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
   has_updates memLog.(slidingM.log) (drop memStart_txn_id txns) ∧
-  (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
+  (Forall (λ pos, int.Z pos ≤ slidingM.memEnd memLog) txns.*1).
 
 Reserved Notation "x ≤ y ≤ z ≤ v ≤ w"
   (at level 70, y at next level, z at next level, v at next level).
@@ -166,13 +166,13 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_
       "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt ∗
       "#HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
       "#HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
-      "%HloggerPosOK" ∷ ⌜int.val diskEnd ≤ int.val logger_pos ≤ int.val σ.(slidingM.mutable)⌝ ∗
+      "%HloggerPosOK" ∷ ⌜int.Z diskEnd ≤ int.Z logger_pos ≤ int.Z σ.(slidingM.mutable)⌝ ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
       "#Htxns" ∷ memLog_linv_txns σ diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
       "%Htxnpos_bound" ∷
-        ⌜(Forall (λ pos, int.val pos ≤ slidingM.memEnd σ) txns.*1)⌝
+        ⌜(Forall (λ pos, int.Z pos ≤ slidingM.memEnd σ) txns.*1)⌝
   ).
 
 Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id installed_txn_id_bound :
@@ -202,13 +202,13 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
       "HnextDiskEnd" ∷ memLog_linv_nextDiskEnd_txn_id γ σ.(slidingM.mutable) nextDiskEnd_txn_id ∗
       "HownLoggerPos_linv" ∷ ghost_var γ.(logger_pos_name) (1/2) logger_pos ∗
       "HownLoggerTxn_linv" ∷ ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id ∗
-      "%HloggerPosOK" ∷ ⌜int.val diskEnd ≤ int.val logger_pos ≤ int.val σ.(slidingM.mutable)⌝ ∗
+      "%HloggerPosOK" ∷ ⌜int.Z diskEnd ≤ int.Z logger_pos ≤ int.Z σ.(slidingM.mutable)⌝ ∗
       (* Here we establish what the memLog contains, which is necessary for reads
       to work (they read through memLogMap, but the lock invariant establishes
       that this matches memLog). *)
       "#Htxns" ∷ memLog_linv_txns σ diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
       "%Htxnpos_bound" ∷
-        ⌜(Forall (λ pos, int.val pos ≤ slidingM.memEnd σ) txns.*1)⌝
+        ⌜(Forall (λ pos, int.Z pos ≤ slidingM.memEnd σ) txns.*1)⌝
   ).
 
 (* this is what witnesses the basic role of the memLog, which is to contain all
@@ -216,7 +216,7 @@ the updates (expressed in memLog_linv_txns in a finer-grained way for all the
 subsets, which are needed by the logger/installer but not for reads) *)
 Lemma memLog_linv_txns_combined_updates memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id :
     ∀ (Htxn_id_ordering: (memStart_txn_id ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat)
-      (HloggerPosOK: int.val diskEnd ≤ int.val logger_pos ≤ int.val memLog.(slidingM.mutable)),
+      (HloggerPosOK: int.Z diskEnd ≤ int.Z logger_pos ≤ int.Z memLog.(slidingM.mutable)),
     memLog_linv_txns memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id -∗
     ⌜has_updates memLog.(slidingM.log) (drop memStart_txn_id txns)⌝.
 Proof.
@@ -241,8 +241,8 @@ Qed.
 the above but integrates Htxnpos_bound into the result *)
 Lemma memLog_linv_txns_to_is_mem_memLog memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id :
     ∀ (Htxn_id_ordering: (memStart_txn_id ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat)
-      (HloggerPosOK: int.val diskEnd ≤ int.val logger_pos ≤ int.val memLog.(slidingM.mutable))
-      (Htxnpos_bound: Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1),
+      (HloggerPosOK: int.Z diskEnd ≤ int.Z logger_pos ≤ int.Z memLog.(slidingM.mutable))
+      (Htxnpos_bound: Forall (λ pos, int.Z pos ≤ slidingM.memEnd memLog) txns.*1),
     memLog_linv_txns memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id -∗
     ⌜is_mem_memLog memLog txns memStart_txn_id⌝.
 Proof.
@@ -273,9 +273,9 @@ Definition wal_linv_fields st σ: iProp Σ :=
   )%I.
 
 Definition diskEnd_linv γ (diskEnd: u64) diskEnd_txn_id: iProp Σ :=
-  "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.val diskEnd) ∗
+  "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.Z diskEnd) ∗
   "HdiskEnd_exactly" ∷ thread_own_ctx γ.(diskEnd_avail_name)
-                         ("HdiskEnd_is" ∷ diskEnd_is γ.(circ_name) (1/2) (int.val diskEnd)).
+                         ("HdiskEnd_is" ∷ diskEnd_is γ.(circ_name) (1/2) (int.Z diskEnd)).
 
 Definition diskStart_linv γ (start: u64): iProp Σ :=
   "#Hstart_at_least" ∷ start_at_least γ.(circ_name) start ∗
@@ -382,7 +382,7 @@ Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :
 Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
   ∃ (diskEnd: u64),
     "%Hdurable_lb" ∷ ⌜(durable_lb ≤ diskEnd_txn_id)%nat⌝ ∗
-    "%HdiskEnd_val" ∷ ⌜int.val diskEnd = circΣ.diskEnd cs⌝ ∗
+    "%HdiskEnd_val" ∷ ⌜int.Z diskEnd = circΣ.diskEnd cs⌝ ∗
     "%Hend_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
     "#Hend_txn_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt.
 
@@ -786,7 +786,7 @@ Lemma wal_wf_txns_mono_pos {σ txn_id1 pos1 txn_id2 pos2} :
   wal_wf σ ->
   is_txn σ.(log_state.txns) txn_id1 pos1 ->
   is_txn σ.(log_state.txns) txn_id2 pos2 ->
-  int.val pos1 < int.val pos2 ->
+  int.Z pos1 < int.Z pos2 ->
   (txn_id1 < txn_id2)%nat.
 Proof.
   destruct 1 as (_&Hmono&_).
@@ -807,7 +807,7 @@ Lemma wal_wf_txns_mono_pos' {σ txn_id1 pos1 txn_id2 pos2} :
   is_txn σ.(log_state.txns) txn_id1 pos1 ->
   is_txn σ.(log_state.txns) txn_id2 pos2 ->
   (txn_id1 ≤ txn_id2)%nat ->
-  int.val pos1 ≤ int.val pos2.
+  int.Z pos1 ≤ int.Z pos2.
 Proof.
   clear P.
   rewrite /wal_wf /is_txn; intuition.
@@ -822,7 +822,7 @@ Lemma wal_wf_txns_mono_highest {σ txn_id1 pos1 txn_id2 pos2} :
   wal_wf σ ->
   is_txn σ.(log_state.txns) txn_id1 pos1 ->
   is_highest_txn σ.(log_state.txns) txn_id2 pos2 ->
-  int.val pos1 ≤ int.val pos2 ->
+  int.Z pos1 ≤ int.Z pos2 ->
   (txn_id1 ≤ txn_id2)%nat.
 Proof.
   intros Hwf Htxn1 Htxn2 Hle.
@@ -831,7 +831,7 @@ Proof.
   - assert (txn_id1 < txn_id2)%nat; try lia.
     eapply wal_wf_txns_mono_pos; eauto.
     + eapply Htxn2.
-    + assert (int.val pos1 ≠ int.val pos2).
+    + assert (int.Z pos1 ≠ int.Z pos2).
       { intro H.
         assert (pos1 = pos2) by word; congruence. }
       lia.

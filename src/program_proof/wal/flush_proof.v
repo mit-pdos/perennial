@@ -75,7 +75,7 @@ Qed.
 Theorem simulate_flush l γ Q σ dinit pos txn_id nextDiskEnd_txn_id mutable :
   is_circular circN (circular_pred γ) γ.(circ_name) -∗
   (is_wal_inner l γ σ dinit ∗ P σ) -∗
-  diskEnd_at_least γ.(circ_name) (int.val pos) -∗
+  diskEnd_at_least γ.(circ_name) (int.Z pos) -∗
   txn_pos γ txn_id pos -∗
   memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) (b : ()),
@@ -203,7 +203,7 @@ Proof.
       destruct (decide (txn_id ≤ diskEnd_txn_id)).
       { rewrite max_l; last by lia. eauto. }
       rewrite max_r; last by lia.
-      destruct (decide (int.val pos = int.val diskEnd)); try lia.
+      destruct (decide (int.Z pos = int.Z diskEnd)); try lia.
       replace diskEnd with pos; eauto.
       word.
 
@@ -273,7 +273,7 @@ Proof.
   wp_bind (For _ _ _).
   wp_apply (wp_forBreak_cond (λ b,
                wal_linv σₛ.(wal_st) γ ∗ locked #σₛ.(memLock) ∗
-               if b then ⊤ else diskEnd_at_least γ.(circ_name) (int.val pos))%I
+               if b then ⊤ else diskEnd_at_least γ.(circ_name) (int.Z pos))%I
            with "[] [$Hlkinv $Hlocked]").
   { iIntros "!>" (Φ') "(Hlkinv&Hlocked&_) HΦ".
     wp_loadField.

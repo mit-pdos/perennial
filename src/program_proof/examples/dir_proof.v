@@ -173,7 +173,7 @@ Section goose.
   .
 
   (** State of unallocated blocks *)
-  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
+  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.Z a d↦ b.
 
   Definition is_dir l (sz: Z) k' : iProp Σ :=
     ∃ (alloc_ref: loc) (inode_refs: list loc) γalloc γused γblocks,
@@ -296,10 +296,10 @@ Section goose.
         ++ iPureIntro. rewrite app_length; simpl. lia.
         ++ rewrite big_sepL_app. iFrame "Hinodes".
            repeat rewrite big_sepL_singleton.
-           replace (Z.of_nat n) with (int.val (U64 n)) by word.
+           replace (Z.of_nat n) with (int.Z (U64 n)) by word.
            rewrite Hinode_len.
            replace (n+0)%nat with n by word.
-           replace (Z.of_nat n) with (int.val (U64 n)) by word.
+           replace (Z.of_nat n) with (int.Z (U64 n)) by word.
            iDestruct (init_inode with "Hinode") as "Hinode".
            iFrame.
     }
@@ -517,7 +517,7 @@ Section goose.
       { crash_case. iLeft. iFrame. }
       wpc_bind (load_ty _ _). wpc_frame. wp_load. iNamed 1.
       wpc_bind (inode.Open _ _).
-      change (int.val (U64 5)) with (Z.of_nat num_inodes) in Hbound.
+      change (int.Z (U64 5)) with (Z.of_nat num_inodes) in Hbound.
       list_elem s_inodes n as s_inode.
       rewrite [drop (int.nat n) s_inodes](drop_S _ s_inode); last by auto.
       iDestruct (big_sepL_cons with "Hinode_cinvs") as "[Hs_inode Hinode_cinvs]".
@@ -580,14 +580,14 @@ Section goose.
         iExists _. iFrame.
       - iApply (big_sepL_mono with "Hinode_cinvs").
         iIntros (???) "Hpre".
-        change (int.val (U64 5)) with 5%Z in Hbound'.
+        change (int.Z (U64 5)) with 5%Z in Hbound'.
         iExactEq "Hpre".
         f_equal; len.
         rewrite H /num_inodes.
         replace (int.nat i `min` 5)%nat with (int.nat i) by lia.
         f_equal. }
     iIntros "!> (Hinv&Haddr)". iNamed "Hinv".
-    change (int.val (U64 5)) with 5%Z.
+    change (int.Z (U64 5)) with 5%Z.
     rewrite -> take_ge by word.
     rewrite -> drop_ge by word.
     wpc_frame_compl "Hinodes".
@@ -775,11 +775,11 @@ Section goose.
   Qed.
 
   Theorem wpc_Open {k} (d: loc) (sz: u64) σ0 :
-    (5 ≤ int.val sz)%Z →
-    {{{ dir_cinv (int.val sz) σ0 true }}}
+    (5 ≤ int.Z sz)%Z →
+    {{{ dir_cinv (int.Z sz) σ0 true }}}
       Open #d #sz @ NotStuck; (S k); ⊤
-    {{{ l, RET #l; pre_dir l (int.val sz) σ0 }}}
-    {{{ dir_cinv (int.val sz) σ0 false }}}.
+    {{{ l, RET #l; pre_dir l (int.Z sz) σ0 }}}
+    {{{ dir_cinv (int.Z sz) σ0 false }}}.
   Proof using allocG0 heapG0 inG0 inG1 Σ.
     iIntros (? Φ Φc) "Hcinv HΦ".
     wpc_call.
@@ -1198,8 +1198,8 @@ Section recov.
 
   (* Just a simple example of using idempotence *)
   Theorem wpr_Open (d: loc) (sz: u64) σ0:
-    (5 ≤ int.val sz)%Z →
-    dir_cinv (int.val sz) σ0 true -∗
+    (5 ≤ int.Z sz)%Z →
+    dir_cinv (int.Z sz) σ0 true -∗
     wpr NotStuck 2 ⊤
         (Open #d #sz)
         (Open #d #sz)
@@ -1208,7 +1208,7 @@ Section recov.
         (λ _ _, True%I).
   Proof using allocG0.
     iIntros (Hsz) "Hstart".
-    iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I (λ _, ∃ σ', dir_cinv (int.val sz) σ' false)%I with "[Hstart] []").
+    iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I (λ _, ∃ σ', dir_cinv (int.Z sz) σ' false)%I with "[Hstart] []").
     { wpc_apply (wpc_Open with "Hstart"); auto. iSplit.
       * iModIntro. eauto.
       * eauto.

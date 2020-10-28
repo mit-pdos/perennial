@@ -87,7 +87,7 @@ Proof.
 Qed.
 
 Theorem is_slice_small_nil t q s :
-  int.val s.(Slice.sz) = 0 ->
+  int.Z s.(Slice.sz) = 0 ->
   ⊢ is_slice_small s t q [].
 Proof.
   intros Hsz.
@@ -96,7 +96,7 @@ Proof.
 Qed.
 
 Lemma slice_small_split s (n: u64) t q vs :
-  int.val n <= length vs →
+  int.Z n <= length vs →
   is_slice_small s t q vs -∗ is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ∗
            is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs).
 Proof.
@@ -195,7 +195,7 @@ Proof.
 Qed.
 
 Lemma wp_SliceAppend'' stk E s t `{!IntoValForType IntoVal0 t} vs1 vs2 (x: V) (q : Qp) (n : u64) :
-  0 ≤ int.val n ≤ int.val (Slice.sz s) ≤ int.val (Slice.cap s) ->
+  0 ≤ int.Z n ≤ int.Z (Slice.sz s) ≤ int.Z (Slice.cap s) ->
   (Qcanon.Qclt q 1)%Qc ->
   {{{ is_slice_small (slice_take s t n) t q vs1 ∗
       is_slice (slice_skip s t n) t 1 vs2 }}}
@@ -203,8 +203,8 @@ Lemma wp_SliceAppend'' stk E s t `{!IntoValForType IntoVal0 t} vs1 vs2 (x: V) (q
   {{{ s', RET slice_val s';
       is_slice_small (slice_take s' t n) t q vs1 ∗
       is_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) ∗
-      ⌜int.val (Slice.sz s') ≤ int.val (Slice.cap s') ∧
-       int.val (Slice.sz s') = (int.val (Slice.sz s) + 1)%Z⌝}}}.
+      ⌜int.Z (Slice.sz s') ≤ int.Z (Slice.cap s') ∧
+       int.Z (Slice.sz s') = (int.Z (Slice.sz s) + 1)%Z⌝}}}.
 Proof.
   iIntros (Hn Hq Φ) "[Hsm Hs] HΦ".
   wp_apply (slice.wp_SliceAppend'' with "[$Hsm $Hs]").
@@ -363,7 +363,7 @@ Qed.
 
 Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
   (∀ (i: u64) (x: V),
-      {{{ I i ∗ ⌜int.val i < int.val s.(Slice.sz)⌝ ∗
+      {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
         body #i (to_val x) @ stk; E
       {{{ RET #(); I (word.add i (U64 1)) }}}) -∗

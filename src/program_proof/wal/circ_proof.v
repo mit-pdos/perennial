@@ -24,7 +24,7 @@ Module circΣ.
   Global Instance _eta: Settable _ := settable! mk <upds; start>.
   Global Instance _witness: Inhabited t := populate!.
   Definition diskEnd (s:t): Z :=
-    int.val s.(start) + Z.of_nat (length s.(upds)).
+    int.Z s.(start) + Z.of_nat (length s.(upds)).
 End circΣ.
 
 Notation start := circΣ.start.
@@ -35,7 +35,7 @@ Definition circ_read : transition circΣ.t (list update.t * u64) :=
   ret s.
 
 Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
-  modify (fun σ => set upds (drop (Z.to_nat (int.val newStart - int.val σ.(start))%Z)) σ);;
+  modify (fun σ => set upds (drop (Z.to_nat (int.Z newStart - int.Z σ.(start))%Z)) σ);;
   modify (set start (fun _ => newStart)).
 
 Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t unit :=
@@ -86,7 +86,7 @@ Definition is_low_state (startpos endpos : u64) (addrs: list u64) (blocks : list
     2 d↦∗ blocks.
 
 Definition circ_wf (σ: circΣ.t) :=
-  let start: Z := int.val σ.(start) in
+  let start: Z := int.Z σ.(start) in
   let endpos: Z := circΣ.diskEnd σ in
   start <= endpos <= start + LogSz ∧
   start + length σ.(upds) < 2^64 ∧
@@ -94,7 +94,7 @@ Definition circ_wf (σ: circΣ.t) :=
 
 Definition has_circ_updates σ (addrs: list u64) (blocks: list Block) :=
   forall (i: nat),
-    let off := Z.to_nat ((int.val σ.(circΣ.start) + i) `mod` LogSz) in
+    let off := Z.to_nat ((int.Z σ.(circΣ.start) + i) `mod` LogSz) in
     forall u, σ.(circΣ.upds) !! i = Some u ->
          addrs !! off = Some (update.addr u) ∧
          blocks !! off = Some (update.b u).
@@ -155,7 +155,7 @@ Qed.
 Theorem start_at_least_to_le γ σ startpos :
   circ_positions γ σ -∗
   start_at_least γ startpos -∗
-  ⌜int.val startpos <= int.val (start σ)⌝.
+  ⌜int.Z startpos <= int.Z (start σ)⌝.
 Proof.
   iIntros "[Hstart1 _] Hstart2".
   rewrite /start_is.
@@ -469,11 +469,11 @@ Qed.
 Lemma circ_wf_advance:
   ∀ (newStart : u64) (σ : circΣ.t),
     circ_wf σ
-    → int.val (start σ) ≤ int.val newStart
-      ∧ int.val newStart ≤ int.val (start σ) + length (upds σ)
+    → int.Z (start σ) ≤ int.Z newStart
+      ∧ int.Z newStart ≤ int.Z (start σ) + length (upds σ)
     → circ_wf
         (set start (λ _ : u64, newStart)
-             (set upds (drop (Z.to_nat (int.val newStart - int.val (start σ)))) σ)).
+             (set upds (drop (Z.to_nat (int.Z newStart - int.Z (start σ)))) σ)).
 Proof.
   destruct σ as [upds start].
   rewrite /circ_wf /circΣ.diskEnd; simpl; intros.
@@ -482,10 +482,10 @@ Qed.
 
 Lemma diskEnd_advance_unchanged:
   ∀ (newStart : u64) (σ : circΣ.t),
-    int.val (start σ) <= int.val newStart <= circΣ.diskEnd σ ->
+    int.Z (start σ) <= int.Z newStart <= circΣ.diskEnd σ ->
     circΣ.diskEnd
         (set start (λ _ : u64, newStart)
-             (set upds (drop (Z.to_nat (int.val newStart - int.val (start σ)))) σ))
+             (set upds (drop (Z.to_nat (int.Z newStart - int.Z (start σ)))) σ))
     = circΣ.diskEnd σ.
 Proof.
   rewrite /circΣ.diskEnd /=.
@@ -495,11 +495,11 @@ Qed.
 
 Lemma has_circ_updates_advance :
   ∀ (newStart : u64) (σ : circΣ.t) (addrs : list u64) (blocks : list Block)
-    (Hbounds: int.val (start σ) <= int.val newStart <= int.val (start σ) + length (upds σ))
+    (Hbounds: int.Z (start σ) <= int.Z newStart <= int.Z (start σ) + length (upds σ))
     (Hupds: has_circ_updates σ addrs blocks),
     has_circ_updates
         (set start (λ _ : u64, newStart)
-             (set upds (drop (Z.to_nat (int.val newStart - int.val (start σ)))) σ)) addrs
+             (set upds (drop (Z.to_nat (int.Z newStart - int.Z (start σ)))) σ)) addrs
         blocks.
 Proof.
   rewrite /has_circ_updates /=.
@@ -519,10 +519,10 @@ Hint Unfold circΣ.diskEnd : word.
 
 Lemma circ_positions_advance (newStart: u64) γ σ (start0: u64) :
   circ_wf σ ->
-  int.val start0 <= int.val newStart <= circΣ.diskEnd σ ->
+  int.Z start0 <= int.Z newStart <= circΣ.diskEnd σ ->
   circ_positions γ σ ∗ start_is γ (1/2) start0 ==∗
   circ_positions γ (set start (λ _ : u64, newStart)
-                        (set upds (drop (Z.to_nat (int.val newStart - int.val (start σ)))) σ)) ∗
+                        (set upds (drop (Z.to_nat (int.Z newStart - int.Z (start σ)))) σ)) ∗
   start_is γ (1/2) newStart ∗ start_at_least γ newStart.
 Proof.
   iIntros (Hwf Hmono) "[Hpos Hstart1]".
@@ -540,7 +540,7 @@ Theorem wp_circular__Advance (Q: iProp Σ) γ (d: val) (start0: u64) (newStart :
   {{{ is_circular γ ∗
       start_is γ (1/2) start0 ∗
       diskEnd_at_least γ diskEnd_lb ∗
-      ⌜int.val start0 ≤ int.val newStart ≤ diskEnd_lb⌝ ∗
+      ⌜int.Z start0 ≤ int.Z newStart ≤ diskEnd_lb⌝ ∗
     (∀ σ, ⌜circ_wf σ⌝ ∗ P σ ∗ ⌜σ.(circΣ.start) = start0⌝ -∗
       (∀ σ' b, ⌜relation.denote (circ_advance newStart) σ σ' b⌝ ∗ ⌜circ_wf σ'⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q))
   }}}
@@ -616,8 +616,8 @@ Ltac mod_bound :=
   end.
 
 Theorem wrap_small_log_addr (x:u64) :
-  word.wrap (word:=u64_instance.u64) (2 + int.val x `mod` word.wrap (word:=u64_instance.u64) LogSz) =
-  2 + int.val x `mod` LogSz.
+  word.wrap (word:=u64_instance.u64) (2 + int.Z x `mod` word.wrap (word:=u64_instance.u64) LogSz) =
+  2 + int.Z x `mod` LogSz.
 Proof.
   unfold LogSz.
   change (word.wrap 511) with 511.
@@ -666,9 +666,9 @@ Proof.
 Qed.
 
 Lemma has_circ_updates_blocks σ addrs blocks (i : u64) bi :
-  length (circ_proof.upds σ) + int.val i < LogSz ->
+  length (circ_proof.upds σ) + int.Z i < LogSz ->
   has_circ_updates σ addrs blocks ->
-  has_circ_updates σ addrs (<[Z.to_nat ((circΣ.diskEnd σ + int.val i) `mod` LogSz) := bi]> blocks).
+  has_circ_updates σ addrs (<[Z.to_nat ((circΣ.diskEnd σ + int.Z i) `mod` LogSz) := bi]> blocks).
 Proof.
   clear.
   rewrite /has_circ_updates; intros Hbound Hhas_upds i0 u **.
@@ -726,7 +726,7 @@ Qed.
 Lemma update_blocks_take_S upds blocks endpos (i : u64) addr_i b_i :
   upds !! int.nat i = Some {| update.addr := addr_i; update.b := b_i |} ->
   update_blocks blocks endpos (take (S (int.nat i)) upds) =
-  <[Z.to_nat ((endpos + int.val i) `mod` 511) := b_i]> (update_blocks blocks endpos (take (int.nat i) upds)).
+  <[Z.to_nat ((endpos + int.Z i) `mod` 511) := b_i]> (update_blocks blocks endpos (take (int.nat i) upds)).
 Proof.
   intros.
   erewrite take_S_r; eauto.
@@ -751,7 +751,7 @@ Qed.
 Lemma update_addrs_take_S upds addrs endpos (i : u64) addr_i b_i :
   upds !! int.nat i = Some {| update.addr := addr_i; update.b := b_i |} ->
   update_addrs addrs endpos (take (S (int.nat i)) upds) =
-  <[Z.to_nat ((endpos + int.val i) `mod` 511) := addr_i]> (update_addrs addrs endpos (take (int.nat i) upds)).
+  <[Z.to_nat ((endpos + int.Z i) `mod` 511) := addr_i]> (update_addrs addrs endpos (take (int.nat i) upds)).
 Proof.
   intros.
   erewrite take_S_r; eauto.
@@ -766,22 +766,22 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
         (startpos_lb endpos : u64) (bufs : Slice.t) q
         (addrs : list u64) (blocks : list Block) diskaddrslice (upds : list update.t) :
   length addrs = Z.to_nat LogSz ->
-  int.val endpos + Z.of_nat (length upds) < 2^64 ->
-  (int.val endpos - int.val startpos_lb) + length upds ≤ LogSz ->
+  int.Z endpos + Z.of_nat (length upds) < 2^64 ->
+  (int.Z endpos - int.Z startpos_lb) + length upds ≤ LogSz ->
   {{{ is_circular γ ∗
       ghost_var γ.(blocks_name) (1/2) blocks ∗
       start_at_least γ startpos_lb ∗
-      diskEnd_is γ (1/2) (int.val endpos) ∗
+      diskEnd_is γ (1/2) (int.Z endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 addrs ∗
       updates_slice_frag bufs q upds
   }}}
     circularAppender__logBlocks #c d #endpos (slice_val bufs)
   {{{ RET #();
-      let addrs' := update_addrs addrs (int.val endpos) upds in
-      let blocks' := update_blocks blocks (int.val endpos) upds in
+      let addrs' := update_addrs addrs (int.Z endpos) upds in
+      let blocks' := update_blocks blocks (int.Z endpos) upds in
       ghost_var γ.(blocks_name) (1/2) blocks' ∗
-      diskEnd_is γ (1/2) (int.val endpos) ∗
+      diskEnd_is γ (1/2) (int.Z endpos) ∗
       c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 addrs' ∗
       updates_slice_frag bufs q upds
@@ -797,12 +797,12 @@ Proof.
   iDestruct (big_sepL2_length with "Hbks") as %Hslen2.
 
   wp_apply (slice.wp_forSlice (fun i =>
-    let addrs' := update_addrs addrs (int.val endpos) (take (int.nat i) upds) in
-    let blocks' := update_blocks blocks (int.val endpos) (take (int.nat i) upds) in
+    let addrs' := update_addrs addrs (int.Z endpos) (take (int.nat i) upds) in
+    let blocks' := update_blocks blocks (int.Z endpos) (take (int.nat i) upds) in
     ghost_var γ.(blocks_name) (1/2) blocks' ∗
     c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
     is_slice_small diskaddrslice uint64T 1 addrs' ∗
-    diskEnd_is γ (1/2) (int.val endpos) ∗
+    diskEnd_is γ (1/2) (int.Z endpos) ∗
     ( [∗ list] b_upd;upd ∈ bks;upds, is_update b_upd q upd)
     )%I (* XXX why is %I needed? *)
     with "[] [$Hγblocks $Hdiskaddrs $Hslice $Hupdslice $Hend $Hbks]").
@@ -846,14 +846,14 @@ Proof.
   iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd.
   iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb.
   iDestruct "Hlow" as (hdr1 hdr2 Hhdr1 Hhdr2) "(Hd0&Hd1&Hd2)".
-  pose proof (Z.mod_bound_pos (int.val endpos + int.val i) LogSz); intuition (try word).
-  list_elem blocks'' ((int.val endpos + int.val i) `mod` LogSz) as b.
-  iDestruct (disk_array_acc _ _ ((int.val endpos + int.val i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]"; eauto.
+  pose proof (Z.mod_bound_pos (int.Z endpos + int.Z i) LogSz); intuition (try word).
+  list_elem blocks'' ((int.Z endpos + int.Z i) `mod` LogSz) as b.
+  iDestruct (disk_array_acc _ _ ((int.Z endpos + int.Z i) `mod` LogSz) with "[$Hd2]") as "[Hdi Hd2]"; eauto.
   { word. }
   iExists b.
   assert (length (circ_proof.upds σ ++ upds) ≤ LogSz ∧
-          int.val endpos = circΣ.diskEnd σ ∧
-          int.val endpos + Z.of_nat (length upds) < 2^64) by len.
+          int.Z endpos = circΣ.diskEnd σ ∧
+          int.Z endpos + Z.of_nat (length upds) < 2^64) by len.
 
   iFrame "Hdi".
   iIntros "!> !> Hdi".
@@ -870,9 +870,9 @@ Proof.
     iExists _, _; iFrame.
     iSplitR.
     { iPureIntro.
-      generalize dependent (update_blocks blocks (int.val endpos)
+      generalize dependent (update_blocks blocks (int.Z endpos)
                                           (take (int.nat i) upds)); intros blocks' **.
-      replace (int.val endpos) with (circΣ.diskEnd σ) by word.
+      replace (int.Z endpos) with (circΣ.diskEnd σ) by word.
       eapply has_circ_updates_blocks; eauto.
       autorewrite with len in *. word.
     }
@@ -900,12 +900,12 @@ Proof.
   word_cleanup.
   iFrame.
   iSplitL "Hγblocks".
-  { replace (Z.to_nat (int.val i + 1)) with (S (int.nat i)) by lia.
+  { replace (Z.to_nat (int.Z i + 1)) with (S (int.nat i)) by lia.
     erewrite update_blocks_take_S; eauto. }
   iSplitL "Haddrs".
-  { replace (Z.to_nat (int.val i + 1)) with (S (int.nat i)) by lia.
+  { replace (Z.to_nat (int.Z i + 1)) with (S (int.nat i)) by lia.
     erewrite update_addrs_take_S; eauto.
-    replace (int.val (word.add endpos i)) with (int.val endpos + int.val i) by word.
+    replace (int.Z (word.add endpos i)) with (int.Z endpos + int.Z i) by word.
     rewrite /is_slice_small /list.untype.
     rewrite list_fmap_insert //.
   }
@@ -963,16 +963,16 @@ Proof.
 Qed.
 
 Lemma has_circ_updates_app upds0 start addrs blocks (endpos : u64) upds :
-  int.val endpos = circΣ.diskEnd {| circΣ.upds := upds0; circΣ.start := start |} ->
+  int.Z endpos = circΣ.diskEnd {| circΣ.upds := upds0; circΣ.start := start |} ->
   length (upds0 ++ upds) ≤ LogSz ->
-  circ_low_wf addrs (update_blocks blocks (int.val endpos) upds) ->
+  circ_low_wf addrs (update_blocks blocks (int.Z endpos) upds) ->
   has_circ_updates
     {| circΣ.upds := upds0; circΣ.start := start |} addrs
-    (update_blocks blocks (int.val endpos) upds) ->
+    (update_blocks blocks (int.Z endpos) upds) ->
   has_circ_updates
     {| circΣ.upds := upds0 ++ upds; circΣ.start := start |}
-    (update_addrs addrs (int.val endpos) upds)
-    (update_blocks blocks (int.val endpos) upds).
+    (update_addrs addrs (int.Z endpos) upds)
+    (update_blocks blocks (int.Z endpos) upds).
 Proof.
   rewrite /has_circ_updates /=.
   intros Hendpos Hupdlen [Hbound1 Hbound2] Hupds.
@@ -989,7 +989,7 @@ Proof.
     rewrite /update_addrs /update_blocks.
     rewrite -> lookup_update_circ_new by word.
     rewrite -> ?lookup_update_circ_new by word.
-    replace (Z.to_nat (int.val start + i - int.val endpos)) with
+    replace (Z.to_nat (int.Z start + i - int.Z endpos)) with
         (i - length upds0)%nat by word.
     rewrite H; intuition eauto.
 Qed.
@@ -1008,20 +1008,20 @@ Lemma circ_low_wf_update_addrs
       (endpos : u64) (upds : list update.t) (addrs : list u64)
       (blocks' : list Block) :
   circ_low_wf addrs blocks'
-  → circ_low_wf (update_addrs addrs (int.val endpos) upds)
-                (update_blocks blocks' (int.val endpos) upds).
+  → circ_low_wf (update_addrs addrs (int.Z endpos) upds)
+                (update_blocks blocks' (int.Z endpos) upds).
 Proof.
   rewrite /circ_low_wf; len.
 Qed.
 
 Lemma circ_positions_append upds γ σ (startpos endpos: u64) :
-  int.val endpos + Z.of_nat (length upds) < 2^64 ->
-  (int.val endpos - int.val startpos) + length upds ≤ LogSz ->
+  int.Z endpos + Z.of_nat (length upds) < 2^64 ->
+  (int.Z endpos - int.Z startpos) + length upds ≤ LogSz ->
   circ_positions γ σ -∗
   start_at_least γ startpos -∗
-  diskEnd_is γ (1/2) (int.val endpos) -∗
+  diskEnd_is γ (1/2) (int.Z endpos) -∗
   |==> circ_positions γ (set circ_proof.upds (λ u : list update.t, u ++ upds) σ) ∗
-       diskEnd_is γ (1/2) (int.val endpos + length upds).
+       diskEnd_is γ (1/2) (int.Z endpos + length upds).
 Proof.
   iIntros (Hendpos_overflow Hhasspace) "[$ Hend1] #Hstart Hend2".
   rewrite /circΣ.diskEnd /=; autorewrite with len.
@@ -1033,7 +1033,7 @@ Proof.
   iSplitR "Hend2".
   2: {
     rewrite /diskEnd_is /diskEnd_at_least.
-    replace (Z.to_nat (int.val endpos + length upds))
+    replace (Z.to_nat (int.Z endpos + length upds))
       with (int.nat endpos + length upds)%nat by lia. iFrame "Hatleast".
     iSplitR. { iPureIntro. split; word. }
     iFrame.
@@ -1041,7 +1041,7 @@ Proof.
 
   rewrite /diskEnd_is /diskEnd_at_least.
   replace (Z.to_nat
-         (int.val (start σ) + (length (circ_proof.upds σ) + length upds)%nat))
+         (int.Z (start σ) + (length (circ_proof.upds σ) + length upds)%nat))
     with (int.nat endpos + length upds)%nat by lia.
   iFrame "Hatleast".
   iSplitR. { iPureIntro. split; word. }
@@ -1049,21 +1049,21 @@ Proof.
 Qed.
 
 Theorem wp_circular__Append (Q: iProp Σ) γ (d: val) q (startpos endpos : u64) (bufs : Slice.t) (upds : list update.t) c :
-  int.val endpos + Z.of_nat (length upds) < 2^64 ->
-  (int.val endpos - int.val startpos) + length upds ≤ LogSz ->
+  int.Z endpos + Z.of_nat (length upds) < 2^64 ->
+  (int.Z endpos - int.Z startpos) + length upds ≤ LogSz ->
   {{{ is_circular γ ∗
       updates_slice_frag bufs q upds ∗
-      diskEnd_is γ (1/2) (int.val endpos) ∗
+      diskEnd_is γ (1/2) (int.Z endpos) ∗
       start_at_least γ startpos ∗
       is_circular_appender γ c ∗
-      (∀ σ, ⌜circ_wf σ⌝ ∗ ⌜circΣ.diskEnd σ = int.val endpos⌝ ∗ P σ -∗
+      (∀ σ, ⌜circ_wf σ⌝ ∗ ⌜circΣ.diskEnd σ = int.Z endpos⌝ ∗ P σ -∗
           ∀ σ' b, ⌜relation.denote (circ_append upds endpos) σ σ' b⌝ ∗ ⌜circ_wf σ'⌝ ={⊤ ∖↑ N}=∗ P σ' ∗ Q)
   }}}
     circularAppender__Append #c d #endpos (slice_val bufs)
   {{{ RET #(); Q ∗
       updates_slice_frag bufs q upds ∗
       is_circular_appender γ c ∗
-      diskEnd_is γ (1/2) (int.val endpos + length upds)
+      diskEnd_is γ (1/2) (int.Z endpos + length upds)
   }}}.
 Proof.
   iIntros (Hendpos_overflow Hhasspace Φ) "(#Hcirc & Hslice & Hend & #Hstart & Hca & Hfupd) HΦ".
@@ -1097,7 +1097,7 @@ Proof.
 
   iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
   iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.
-  iMod (ghost_var_update_halves (update_addrs addrs (int.val endpos) upds) with "Haddrs Hγaddrs") as "[Haddrs Hγaddrs]".
+  iMod (ghost_var_update_halves (update_addrs addrs (int.Z endpos) upds) with "Haddrs Hγaddrs") as "[Haddrs Hγaddrs]".
   iMod (circ_positions_append upds with "[$] Hstart [$]") as "[Hpos Hend]"; [ done | done | ].
   iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd'.
   iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb'.
@@ -1266,8 +1266,8 @@ Proof.
     { iPureIntro.
       simpl in Hbkslen.
       apply circ_low_wf_empty; word. }
-    change (int.val 0) with 0.
-    change (int.val 1) with 1.
+    change (int.Z 0) with 0.
+    change (int.Z 1) with 1.
     iExists block0, block0.
     iFrame.
     iPureIntro.

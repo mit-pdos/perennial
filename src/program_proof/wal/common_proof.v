@@ -122,7 +122,7 @@ Proof.
   }
   eapply is_txn_bound in HdiskEnd_txn as HdiskEnd_txn_bound.
   eapply is_txn_bound in HnextDiskEnd_is_txn0 as HnextDiskEnd_txn0_bound.
-  destruct (decide (int.val σ.(memLog).(slidingM.mutable) ≤ int.val (slidingM.endPos σ.(memLog)))).
+  destruct (decide (int.Z σ.(memLog).(slidingM.mutable) ≤ int.Z (slidingM.endPos σ.(memLog)))).
   2: {
     epose proof (wal_wf_txns_mono_pos Hwf HmemEnd_is_txn HnextDiskEnd_is_txn0). lia.
   }
@@ -145,7 +145,7 @@ Proof.
     apply has_updates_eq_nil; auto.
     rewrite /slidingM.logIndex /slidingM.endPos /=.
     word_cleanup.
-    replace (Z.to_nat (int.val σ.(memLog).(slidingM.start) + length σ.(memLog).(slidingM.log)) -
+    replace (Z.to_nat (int.Z σ.(memLog).(slidingM.start) + length σ.(memLog).(slidingM.log)) -
          int.nat σ.(memLog).(slidingM.start))%nat with (length σ.(memLog).(slidingM.log)) by lia.
     rewrite drop_all //. }
   rewrite (subslice_split_r _ (S nextDiskEnd_txn_id) _ σs.(log_state.txns)); try lia.

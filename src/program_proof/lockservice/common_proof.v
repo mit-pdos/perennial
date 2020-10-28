@@ -71,13 +71,13 @@ Lemma overflow_guard_incr_spec stk E (v:u64) :
 {{{ True }}}
   overflow_guard_incr #v @ stk ; E
 {{{
-     RET #(); ⌜((int.val v) + 1 = int.val (word.add v 1))%Z⌝
+     RET #(); ⌜((int.Z v) + 1 = int.Z (word.add v 1))%Z⌝
 }}}.
 Proof.
   iIntros (Φ) "Hpre Hpost".
   wp_lam. wp_pures.
   wp_apply (wp_forBreak_cond
-              (fun b => ((⌜b = true⌝ ∨ ⌜((int.val v) + 1 = int.val (word.add v 1))%Z⌝)
+              (fun b => ((⌜b = true⌝ ∨ ⌜((int.Z v) + 1 = int.Z (word.add v 1))%Z⌝)
 )) with "[] []")%I; eauto.
   {
     iIntros (Ψ). iModIntro.
@@ -95,15 +95,15 @@ Proof.
       wp_pures.
       iApply "HΨpost". iFrame; iRight.
       iPureIntro.
-      assert (int.val (word.add v 1) >= int.val v)%Z by lia.
-      destruct (bool_decide ((int.val v) + 1 < 2 ^ 64 ))%Z eqn:Hnov.
+      assert (int.Z (word.add v 1) >= int.Z v)%Z by lia.
+      destruct (bool_decide ((int.Z v) + 1 < 2 ^ 64 ))%Z eqn:Hnov.
       {
         apply bool_decide_eq_true in Hnov.
         word.
       }
       apply bool_decide_eq_false in Hnov.
-      assert (int.val v + (int.val 1) >= 2 ^ 64)%Z.
-      { replace (int.val 1)%Z with (1)%Z by word. lia. }
+      assert (int.Z v + (int.Z 1) >= 2 ^ 64)%Z.
+      { replace (int.Z 1)%Z with (1)%Z by word. lia. }
       apply sum_overflow_check in H0.
       contradiction.
     }
@@ -171,7 +171,7 @@ LockServer__checkReplyCache #srv #req.(CID) #req.(rpc.Seq) #reply_ptr
      v, RET v; ∃(b:bool) (reply':Reply64), "Hre" ∷ ⌜v = #b⌝
     ∗ "Hreply" ∷ own_reply reply_ptr reply'
     ∗ "Hcases" ∷ ("%" ∷ ⌜b = false⌝
-         ∗ "%" ∷ ⌜(int.val req.(rpc.Seq) > int.val (map_get lastSeqM req.(CID)).1)%Z⌝
+         ∗ "%" ∷ ⌜(int.Z req.(rpc.Seq) > int.Z (map_get lastSeqM req.(CID)).1)%Z⌝
          ∗ "%" ∷ ⌜reply'.(Stale) = false⌝
          ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(CID):=req.(rpc.Seq)]>lastSeqM)
          ∨ 
@@ -198,11 +198,11 @@ Proof.
   iNamed "Hreply".
   unfold retty_to_rdesc.
   wp_storeField.
-  wp_apply (wp_and ok (int.val req.(rpc.Seq) ≤ int.val v)%Z).
+  wp_apply (wp_and ok (int.Z req.(rpc.Seq) ≤ int.Z v)%Z).
   { iApply wp_value. by destruct ok. }
   { iIntros "_". wp_pures. done. }
   rewrite bool_decide_decide.
-  destruct (decide (ok ∧ int.val req.(rpc.Seq) ≤ int.val v)%Z) as [ [Hok Hineq]|Hmiss].
+  destruct (decide (ok ∧ int.Z req.(rpc.Seq) ≤ int.Z v)%Z) as [ [Hok Hineq]|Hmiss].
   { (* Cache hit *)
     destruct ok; last done. clear Hok. (* ok = false *)
     wp_pures.
@@ -221,7 +221,7 @@ Proof.
       assert (v = req.(rpc.Seq)) as ->. {
         (* not strict + non-strict ineq ==> eq *)
         apply bool_decide_eq_false in Hineqstrict.
-        assert (int.val req.(rpc.Seq) = int.val v) by lia; word.
+        assert (int.Z req.(rpc.Seq) = int.Z v) by lia; word.
       }
       wp_loadField.
       wp_apply (wp_MapGet with "HlastReplyMap").

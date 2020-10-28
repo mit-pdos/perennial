@@ -107,7 +107,7 @@ Returns the request precondition. *)
 Lemma server_takes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (old_seq:u64) (γrpc:RPC_GS)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
      ((map_get lastSeqM req.(CID)).1 = old_seq)
-  -> (int.val req.(Seq) > int.val old_seq)%Z
+  -> (int.Z req.(Seq) > int.Z old_seq)%Z
   -> (inv replyCacheInvN (ReplyCache_inv γrpc ))
   -∗ (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γP))
   -∗ RPCServer_own lastSeqM lastReplyM γrpc
@@ -157,8 +157,8 @@ Proof.
     iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
-    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
-    replace (int.val req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
+    replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
     lia.
   }
   {
@@ -166,8 +166,8 @@ Proof.
     iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
-    replace (int.val old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
-    replace (int.val req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
+    replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
     lia.
   }
 Qed.
@@ -228,7 +228,7 @@ Qed.
 then it is stale. *)
 Lemma smaller_seqno_stale_fact (req:RPCRequest) (lseq:u64) (γrpc:RPC_GS) lastSeqM lastReplyM:
   lastSeqM !! req.(CID) = Some lseq ->
-  (int.val req.(Seq) < int.val lseq)%Z ->
+  (int.Z req.(Seq) < int.Z lseq)%Z ->
   inv replyCacheInvN (ReplyCache_inv γrpc) -∗
   RPCServer_own lastSeqM lastReplyM γrpc
     ={⊤}=∗
@@ -248,7 +248,7 @@ Proof.
   iDestruct (map_ro_valid with "Hrcctx Hptstoro") as %HinReplyHistory.
   iDestruct (big_sepM_delete _ _ _ with "Hcseq_lb") as "[Hcseq_lb_one _] /="; eauto.
   iDestruct (fmcounter_map_mono_lb (int.nat req.(Seq) + 2) with "Hcseq_lb_one") as "#HStaleFact".
-  { replace (int.val req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hineq; last by apply u64_Z_through_nat.
+  { replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hineq; last by apply u64_Z_through_nat.
     simpl.
     lia.
   }

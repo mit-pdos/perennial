@@ -734,7 +734,7 @@ Proof.
 Qed.
 
 Lemma ghost_allocN_non_pos_stuck j K `{LanguageCtx _ K} E v (n: u64) :
-  ¬ (0 < int.val n)%Z →
+  ¬ (0 < int.Z n)%Z →
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) -∗ |NC={E}=> False.
@@ -760,7 +760,7 @@ Definition spec_mapsto_vals_toks l q vs : iProp Σ :=
 
 Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
   (0 < length (flatten_struct v))%nat →
-  (0 < int.val n)%Z →
+  (0 < int.Z n)%Z →
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) -∗ |NC={E}=>

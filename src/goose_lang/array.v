@@ -223,7 +223,7 @@ Proof.
 Qed.
 
 Lemma wp_allocN t s E v (n: u64) :
-  (0 < int.val n)%Z →
+  (0 < int.Z n)%Z →
   val_ty v t ->
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); l ↦∗[t] replicate (int.nat n) v }}}.

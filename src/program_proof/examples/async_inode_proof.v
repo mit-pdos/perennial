@@ -50,8 +50,8 @@ Definition is_inode_durable addr σ (addrs: list u64) : iProp Σ :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜block_encodes hdr ([EncUInt64 (length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
     "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-    "Hhdr" ∷ int.val addr d↦ hdr ∗
-    "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.val a d↦ b
+    "Hhdr" ∷ int.Z addr d↦ hdr ∗
+    "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.Z a d↦ b
 .
 Local Hint Extern 1 (environments.envs_entails _ (is_inode_durable _ _ _)) => unfold is_inode_durable : core.
 
@@ -61,10 +61,10 @@ Theorem is_inode_durable_read addr σ addrs :
       "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
       "%Hencoded" ∷ ⌜block_encodes hdr ([EncUInt64 (length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
       "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-      "Hhdr" ∷ int.val addr d↦ hdr ∗
-      "Hdata" ∷ ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.val a d↦ b) ∗
-      "Hdurable" ∷ □(int.val addr d↦ hdr -∗
-                    ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.val a d↦ b) -∗
+      "Hhdr" ∷ int.Z addr d↦ hdr ∗
+      "Hdata" ∷ ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.Z a d↦ b) ∗
+      "Hdurable" ∷ □(int.Z addr d↦ hdr -∗
+                    ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.Z a d↦ b) -∗
                    is_inode_durable addr σ addrs).
 Proof.
   iNamed 1.
@@ -187,7 +187,7 @@ Qed.
 valid post-crash inode state, which we can then recover with the usual [Open]
 recovery procedure. *)
 Theorem init_inode addr :
-  int.val addr d↦ block0 -∗ inode_cinv addr (inode.mk ∅ [] []).
+  int.Z addr d↦ block0 -∗ inode_cinv addr (inode.mk ∅ [] []).
 Proof.
   iIntros "Hhdr".
   iExists [], block0.
@@ -236,8 +236,8 @@ Theorem wpc_Open k {d:loc} {addr σ} :
   {{{ inode_cinv addr σ }}}.
 Proof.
   iIntros (Φ Φc) "Hinode HΦ"; iNamed "Hinode".
-  iAssert (□ (int.val addr d↦ hdr ∗
-              ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.val a d↦ b) -∗
+  iAssert (□ (int.Z addr d↦ hdr ∗
+              ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.Z a d↦ b) -∗
               inode_cinv addr σ))%I as "#Hinode".
   { iIntros "!> (?&?)". eauto 10 with iFrame. }
   iDestruct (big_sepL2_length with "Hdata") as %Hblocklen.
@@ -448,8 +448,8 @@ Proof.
       rewrite lookup_ge_None_2 //.
       rewrite app_length.
       (* XXX show that this sum doesn't overflow *)
-      assert (int.val (word.add addr_s.(Slice.sz) buffered_s.(Slice.sz)) =
-              int.val (addr_s.(Slice.sz)) + int.val (buffered_s.(Slice.sz))) as Heq.
+      assert (int.Z (word.add addr_s.(Slice.sz) buffered_s.(Slice.sz)) =
+              int.Z (addr_s.(Slice.sz)) + int.Z (buffered_s.(Slice.sz))) as Heq.
       { admit. }
       word.
     }
@@ -558,7 +558,7 @@ Proof.
       destruct (list_lookup_lt _ bks (int.nat (word.sub off addr_s.(Slice.sz)))) as [blk Hlookup].
       {
         assert (word.sub off (addr_s.(Slice.sz)) =
-                int.val off - int.val addr_s.(Slice.sz)) as ->.
+                int.Z off - int.Z addr_s.(Slice.sz)) as ->.
         { admit. }
         admit.
       }
@@ -802,7 +802,7 @@ Proof.
   iPureIntro. rewrite /= app_length in Hle. lia.
 Qed.
 
-Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
+Let Ψ (a: u64) := (∃ b, int.Z a d↦ b)%I.
 
 Theorem wpc_Inode__Append {k} {l k' P addr} q (b_s: Slice.t) (b0: Block) :
   (S k < k')%nat →
@@ -1009,7 +1009,7 @@ Proof.
     iSplit; first by iFromCache.
     iIntros ">Hb Hreserved".
     iDeexHyp "Hb".
-    iAssert (□ ∀ b0, int.val a d↦ b0 ∗
+    iAssert (□ ∀ b0, int.Z a d↦ b0 ∗
                       (Φc) -∗
                       (Φc ∗ block_cinv Ψ γalloc a))%I as "#Hbc".
     { iIntros "!>" (b') "(Hb & Hfupd)".

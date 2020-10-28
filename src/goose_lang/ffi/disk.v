@@ -167,12 +167,12 @@ Section disk.
   Definition ext_step (op: DiskOp) (v: val): transition state val :=
     match op, v with
     | ReadOp, LitV (LitInt a) =>
-      b ← reads (λ σ, σ.(world) !! int.val a) ≫= unwrap;
+      b ← reads (λ σ, σ.(world) !! int.Z a) ≫= unwrap;
       l ← allocateN 4096;
       modify (state_insert_list l (Block_to_vals b));;
       ret $ #(LitLoc l)
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
-      _ ← reads (λ σ, σ.(world) !! int.val a) ≫= unwrap;
+      _ ← reads (λ σ, σ.(world) !! int.Z a) ≫= unwrap;
         (* TODO: use Sydney's executable version from disk_interpreter.v as
         the generator here *)
       b ← suchThat (gen:=fun _ _ => None) (λ σ b, (forall (i:Z), 0 <= i -> i < 4096 ->
@@ -180,7 +180,7 @@ Section disk.
                 | Some (Reading _, v) => Block_to_vals b !! Z.to_nat i = Some v
                 | _ => False
                 end));
-      modify (set world <[ int.val a := b ]>);;
+      modify (set world <[ int.Z a := b ]>);;
       ret #()
     | SizeOp, LitV LitUnit =>
       sz ← reads (λ σ, disk_size σ.(world));
@@ -238,7 +238,7 @@ lemmas. *)
 
   Theorem read_fresh : forall σ a b,
       let l := fresh_locs (dom (gset loc) (heap σ)) in
-      σ.(world) !! int.val a = Some b ->
+      σ.(world) !! int.Z a = Some b ->
       relation.denote (ext_step ReadOp (LitV $ LitInt a)) σ (state_insert_list l (Block_to_vals b) σ) (LitV $ LitLoc $ l).
   Proof.
     intros.
@@ -271,9 +271,9 @@ lemmas. *)
     ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
 
   Lemma wp_ReadOp s E (a: u64) q b :
-    {{{ ▷ int.val a d↦{q} b }}}
+    {{{ ▷ int.Z a d↦{q} b }}}
       ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
-    {{{ l, RET LitV (LitLoc l); int.val a d↦{q} b ∗
+    {{{ l, RET LitV (LitLoc l); int.Z a d↦{q} b ∗
                                   mapsto_block l 1 b }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -384,9 +384,9 @@ lemmas. *)
   Qed.
 
   Lemma wp_WriteOp s E (a: u64) b q l :
-    {{{ ▷ ∃ b0, int.val a d↦{1} b0 ∗ mapsto_block l q b }}}
+    {{{ ▷ ∃ b0, int.Z a d↦{1} b0 ∗ mapsto_block l q b }}}
       ExternalOp WriteOp (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
-    {{{ RET LitV LitUnit; int.val a d↦{1} b ∗ mapsto_block l q b}}}.
+    {{{ RET LitV LitUnit; int.Z a d↦{1} b ∗ mapsto_block l q b}}}.
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.

@@ -857,7 +857,7 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
     | LitV (LitLoc l), LitV (LitInt off) => match op with
                                            | OffsetOp k =>
-                                             Some $ LitV $ LitLoc (l +ₗ k * (int.val (off: u64)))
+                                             Some $ LitV $ LitLoc (l +ₗ k * (int.Z (off: u64)))
                                            | _ => None
                                            end
     | _, _ => None
@@ -1021,9 +1021,9 @@ Fixpoint head_trans (e: expr) :
       ret $ LitV $ LitInt x)
   | AllocN (Val (LitV (LitInt n))) (Val v) =>
     atomically
-      (check (0 < int.val n)%Z;;
-       l ← allocateN (int.val n * length (flatten_struct v));
-       modify (state_init_heap l (int.val n) v);;
+      (check (0 < int.Z n)%Z;;
+       l ← allocateN (int.Z n * length (flatten_struct v));
+       modify (state_init_heap l (int.Z n) v);;
        ret $ LitV $ LitLoc l)
   | PrepareWrite (Val (LitV (LitLoc l))) =>
     atomically
@@ -1157,9 +1157,9 @@ Proof using ext. clear ffi_semantics ffi.
 
 Lemma alloc_fresh v (n: u64) σ :
   let l := fresh_locs (dom (gset loc) σ.(heap)) in
-  (0 < int.val n)%Z →
+  (0 < int.Z n)%Z →
   head_step (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ []
-            (Val $ LitV $ LitLoc l) (state_init_heap l (int.val n) v σ) [].
+            (Val $ LitV $ LitLoc l) (state_init_heap l (int.Z n) v σ) [].
 Proof.
   intros.
   rewrite /head_step /=.

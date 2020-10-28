@@ -30,7 +30,7 @@ Definition is_log' (sz disk_sz: u64) (vs:list Block): iProp Σ :=
   is_hdr sz disk_sz ∗
   1 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ ∗
   (∃ (free: list Block), (1 + length vs) d↦∗ free ∗
-  ⌜ (1 + length vs + length free)%Z = int.val disk_sz ⌝)
+  ⌜ (1 + length vs + length free)%Z = int.Z disk_sz ⌝)
 .
 
 Definition log_fields (l:loc) (sz disk_sz: u64): iProp Σ :=
@@ -75,7 +75,7 @@ Proof.
     rewrite vec_to_list_length //.
   }
   simpl in Hsz.
-  apply (inj int.val); word.
+  apply (inj int.Z); word.
 Qed.
 (*
 Theorem wpc_Log__reset_fupd stk k E1 E1' E2 l bs :
@@ -210,18 +210,18 @@ Proof.
 Qed.
 
 Theorem is_log_read (i: u64) (sz disk_sz: u64) bs :
-  int.val i < int.val sz ->
+  int.Z i < int.Z sz ->
   is_log' sz disk_sz bs -∗
     ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗
-         (1 + int.val i) d↦ b ∗
-         ((1 + int.val i) d↦ b -∗ is_log' sz disk_sz bs).
+         (1 + int.Z i) d↦ b ∗
+         ((1 + int.Z i) d↦ b -∗ is_log' sz disk_sz bs).
 Proof.
   iIntros (Hi) "Hlog".
   destruct_with_eqn (bs !! int.nat i).
   - iExists b.
     iSplitR; eauto.
     iDestruct "Hlog" as "(Hhdr & Hlog & % & free)".
-    iDestruct (disk_array_acc 1 bs (int.val i) with "Hlog") as "(Hdi&Hupd)"; eauto.
+    iDestruct (disk_array_acc 1 bs (int.Z i) with "Hlog") as "(Hdi&Hupd)"; eauto.
     { word. }
     iFrame.
     iIntros "Hdi"; iDestruct ("Hupd" with "Hdi") as "Hlog".
@@ -232,7 +232,7 @@ Proof.
 Qed.
 
 Theorem wp_Log__get stk E (lptr: loc) bs (i: u64) :
-  {{{ ptsto_log lptr bs ∗ ⌜int.val i < 2^64-1⌝ }}}
+  {{{ ptsto_log lptr bs ∗ ⌜int.Z i < 2^64-1⌝ }}}
     Log__get #lptr #i @ stk; E
   {{{ s (ok: bool), RET (slice_val s, #ok);
       (if ok
@@ -274,7 +274,7 @@ Qed.
 
 (* TODO: prove this based on [wp_Log__get] *)
 Theorem wpc_Log__get stk k E1 (lptr: loc) bs (i: u64) :
-  {{{ ptsto_log lptr bs ∗ ⌜int.val i < 2^64-1⌝ }}}
+  {{{ ptsto_log lptr bs ∗ ⌜int.Z i < 2^64-1⌝ }}}
     Log__get #lptr #i @ stk; k; E1
   {{{ s (ok: bool), RET (slice_val s, #ok);
       (if ok
@@ -380,16 +380,16 @@ Proof.
 Qed.
 
 Theorem wpc_WriteArray stk k E1 l bs q (s: Slice.t) b (off: u64) :
-  {{{ l d↦∗ bs ∗ is_block s q b ∗ ⌜0 <= int.val off - l < Z.of_nat (length bs)⌝ }}}
+  {{{ l d↦∗ bs ∗ is_block s q b ∗ ⌜0 <= int.Z off - l < Z.of_nat (length bs)⌝ }}}
     Write #off (slice_val s) @ stk; k; E1
-  {{{ RET #(); l d↦∗ <[Z.to_nat (int.val off - l) := b]> bs ∗ is_block s q b }}}
+  {{{ RET #(); l d↦∗ <[Z.to_nat (int.Z off - l) := b]> bs ∗ is_block s q b }}}
   {{{ ∃ bs', l d↦∗ bs' ∗ ⌜length bs' = length bs⌝ }}}.
 Proof.
   iIntros (Φ Φc) "(Hda&Hs&%&%) HΦ".
-  destruct (list_lookup_lt _ bs (Z.to_nat (int.val off - l))) as [b0 Hlookup].
+  destruct (list_lookup_lt _ bs (Z.to_nat (int.Z off - l))) as [b0 Hlookup].
   { word. }
-  iDestruct (disk_array_acc_disc _ _ (int.val off - l) with "[$Hda]") as "[Hoff Hda_rest]"; eauto.
-  replace (l + (int.val off - l)) with (int.val off) by lia.
+  iDestruct (disk_array_acc_disc _ _ (int.Z off - l) with "[$Hda]") as "[Hoff Hda_rest]"; eauto.
+  replace (l + (int.Z off - l)) with (int.Z off) by lia.
   iApply (wpc_Write with "[Hoff Hs] [Hda_rest HΦ]").
   - iExists _; iFrame.
   - iSplit.
@@ -408,12 +408,12 @@ Proof.
 Qed.
 
 Theorem wpc_writeAll stk (k: nat) E1 bk_s bks bs0 bs (off: u64) :
-  {{{ blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs0 ∗
+  {{{ blocks_slice bk_s bks bs ∗ int.Z off d↦∗ bs0 ∗
                                  ⌜length bs0 = length bs⌝ ∗
-                                 ⌜int.val off + length bs0 < 2^64⌝ }}}
+                                 ⌜int.Z off + length bs0 < 2^64⌝ }}}
     writeAll (slice_val bk_s) #off @ stk; k; E1
-  {{{ RET #(); blocks_slice bk_s bks bs ∗ int.val off d↦∗ bs }}}
-  {{{ ∃ bs', int.val off d↦∗ bs' ∗ ⌜length bs' = length bs0⌝ }}}.
+  {{{ RET #(); blocks_slice bk_s bks bs ∗ int.Z off d↦∗ bs }}}
+  {{{ ∃ bs', int.Z off d↦∗ bs' ∗ ⌜length bs' = length bs0⌝ }}}.
 Proof.
   iIntros (Φ Φc) "(Hbs&Hd&%&%) HΦ".
   rewrite /writeAll.
@@ -427,7 +427,7 @@ Proof.
 
   iApply (wpc_forSlice (fun i =>
                          (([∗ list] b_s;b ∈ bks;bs, is_block b_s 1 b) ∗
-                         int.val off d↦∗ (take (int.nat i) bs ++ drop (int.nat i) bs0))%I)
+                         int.Z off d↦∗ (take (int.nat i) bs ++ drop (int.nat i) bs0))%I)
             with "[] [] [$Hbk_s $Hbks $Hd] [HΦ]"); cycle -1.
   - iSplit.
     + iDestruct "HΦ" as "[$ _]".
@@ -447,8 +447,8 @@ Proof.
     { crash_case. iExists _; iFrame.
       iPureIntro.
       rewrite app_length take_length drop_length; lia. }
-    destruct (list_lookup_Z_lt bs0 (int.val i)) as [b0_z Hlookup_b0]; first word.
-    destruct (list_lookup_Z_lt bs (int.val i)) as [b_z Hlookup_b]; first word.
+    destruct (list_lookup_Z_lt bs0 (int.Z i)) as [b0_z Hlookup_b0]; first word.
+    destruct (list_lookup_Z_lt bs (int.Z i)) as [b_z Hlookup_b]; first word.
     iDestruct (big_sepL2_lookup_acc _ _ _ (int.nat i) with "Hbks")
       as "[Hbsz Hbs_rest]"; eauto.
     word_cleanup.
@@ -471,7 +471,7 @@ Proof.
       * iIntros "!> [Hdz Hbsz]".
         iDestruct ("Hbs_rest" with "Hbsz") as "Hbs".
         word_cleanup.
-        replace (int.val off + int.val i - int.val off) with (int.val i) by lia.
+        replace (int.Z off + int.Z i - int.Z off) with (int.Z i) by lia.
         erewrite list_copy_new; eauto.
         rewrite drop_insert_gt; last lia.
         rewrite Z2Nat.inj_add; [ | word | word ].
@@ -497,10 +497,10 @@ Lemma is_log_split sz disk_sz bs free1 free2 z1 z2 :
   1 d↦∗ bs -∗ (* log *)
   z1 d↦∗ free1 -∗ (* potentially modified free space *)
   z2 d↦∗ free2 -∗
-  ⌜z1 = (1 + int.val sz)%Z⌝ ∗
-  ⌜int.val sz = Z.of_nat (length bs)⌝ ∗
-  ⌜z2 = (1 + int.val sz + Z.of_nat (length free1))%Z⌝ ∗
-  ⌜(z2 + length free2)%Z = int.val disk_sz⌝ -∗
+  ⌜z1 = (1 + int.Z sz)%Z⌝ ∗
+  ⌜int.Z sz = Z.of_nat (length bs)⌝ ∗
+  ⌜z2 = (1 + int.Z sz + Z.of_nat (length free1))%Z⌝ ∗
+  ⌜(z2 + length free2)%Z = int.Z disk_sz⌝ -∗
   is_log' sz disk_sz bs.
 Proof.
   iIntros "Hhdr Hlog Hfree1 Hfree2 (->&%&->&%)".
@@ -518,16 +518,16 @@ Qed.
 Lemma is_log'_append (sz new_elems disk_sz: u64) bs0 bs free :
   is_hdr (word.add sz new_elems) disk_sz -∗
   1 d↦∗ bs0 -∗
-  (1 + int.val sz) d↦∗ bs -∗
+  (1 + int.Z sz) d↦∗ bs -∗
   (1 + length bs0 + length bs) d↦∗ free -∗
-  (⌜int.val sz = Z.of_nat (length bs0)⌝ ∗
-   ⌜int.val new_elems = Z.of_nat (length bs)⌝ ∗
-   ⌜(1 + int.val sz + length bs + length free = int.val disk_sz)%Z⌝) -∗
+  (⌜int.Z sz = Z.of_nat (length bs0)⌝ ∗
+   ⌜int.Z new_elems = Z.of_nat (length bs)⌝ ∗
+   ⌜(1 + int.Z sz + length bs + length free = int.Z disk_sz)%Z⌝) -∗
   is_log' (word.add sz new_elems) disk_sz (bs0 ++ bs).
 Proof.
   iIntros "Hhdr Hlog Hnew Hfree (%&%&%)".
   iDestruct (disk_array_app with "[$Hlog Hnew]") as "Hlog".
-  { replace (1 + length bs0) with (1 + int.val sz) by word.
+  { replace (1 + length bs0) with (1 + int.Z sz) by word.
     iFrame. }
   rewrite /is_log'.
   iFrame.
@@ -679,7 +679,7 @@ Proof.
     { word. }
     wpc_apply (wpc_writeAll with "[Halloc $Hbs]").
     + word_cleanup.
-      replace (1 + int.val sz) with (1 + length bs0) by word.
+      replace (1 + int.Z sz) with (1 + length bs0) by word.
       iFrame.
       iPureIntro.
       len.
@@ -696,9 +696,9 @@ Proof.
           lia. }
         iExists (bs' ++ drop (Z.to_nat (length bs)) free).
         iDestruct (disk_array_app with "[$Hfree0 Hfree]") as "Hfree".
-        { replace (1 + int.val sz + length bs') with (1 + length bs0 + length bs) by lia.
+        { replace (1 + int.Z sz + length bs') with (1 + length bs0 + length bs) by lia.
           iFrame. }
-        replace (1 + length bs0) with (1 + int.val sz) by lia.
+        replace (1 + length bs0) with (1 + int.Z sz) by lia.
         iFrame.
         iPureIntro.
         len.
@@ -751,7 +751,7 @@ Lemma is_log_reset disk_sz vs free :
   is_hdr 0 disk_sz -∗
   1 d↦∗ vs -∗
   (1 + length vs) d↦∗ free -∗
-  ⌜(1 + length vs + length free)%Z = int.val disk_sz⌝ -∗
+  ⌜(1 + length vs + length free)%Z = int.Z disk_sz⌝ -∗
   is_log' (U64 0) disk_sz [].
 Proof.
   iIntros "Hhdr Hold Hfree %".
@@ -840,7 +840,7 @@ Proof.
   wp_steps.
   iDestruct (slice.is_slice_sz with "Hs") as %Hsz.
   rewrite length_Block_to_vals in Hsz.
-  assert (int.val s.(Slice.sz) = 4096) as Hlen.
+  assert (int.Z s.(Slice.sz) = 4096) as Hlen.
   { change block_bytes with 4096%nat in Hsz; lia. }
   pose proof Hhdr as Hhdr'.
   wp_apply (wp_new_dec with "[Hs]").

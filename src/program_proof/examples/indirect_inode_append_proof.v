@@ -49,11 +49,11 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
       ⌜σ !! a = Some block_reserved⌝ -∗
       ▷ Palloc σ ={E}=∗ ▷ Palloc (<[a:=block_used]> σ)).
 
-Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
+Let Ψ (a: u64) := (∃ b, int.Z a d↦ b)%I.
 
 Theorem wp_appendDirect {l σ addr} (a: u64) b:
   {{{
-    "Ha" ∷ int.val a d↦ b ∗
+    "Ha" ∷ int.Z a d↦ b ∗
     "Hinv" ∷ inode_linv l σ addr
   }}}
   Inode__appendDirect #l #a
@@ -61,7 +61,7 @@ Theorem wp_appendDirect {l σ addr} (a: u64) b:
       (∀ σ', ⌜σ' = set inode.blocks (λ bs, bs ++ [b]) (set inode.addrs ({[a]} ∪.) σ)⌝ -∗
                          "%Hsize" ∷ ⌜length σ.(inode.blocks) < maxDirect⌝
                          ∗ "Hinv" ∷ inode_linv l σ' addr)
-      else ⌜ length σ.(inode.blocks) >= maxDirect ⌝ ∗ "Ha" ∷ int.val a d↦ b
+      else ⌜ length σ.(inode.blocks) >= maxDirect ⌝ ∗ "Ha" ∷ int.Z a d↦ b
   }}}.
 Proof.
   iIntros (Φ) "Hpre". iNamed "Hpre". iNamed "Hinv".
@@ -101,7 +101,7 @@ Proof.
   wp_if_destruct.
   (* Fits within maxDirect *)
   {
-    replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0 by word.
+    replace (int.Z (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0 by word.
     assert (length (σ.(inode.blocks)) <= 500) as Hsz by word.
     assert (Z.of_nat ds.(impl_s.numInd) = 0) as HnumInd0.
     {
@@ -376,7 +376,7 @@ Proof.
 
     iPureIntro.
     apply Znot_lt_ge in Heqb0.
-    replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0; word.
+    replace (int.Z (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0; word.
   }
 Qed.
 
@@ -405,7 +405,7 @@ Theorem wp_writeIndirect {l σ d lref} (addr: u64) ds direct_s indirect_s
                   ∧ ds.(impl_s.indBlkAddrsList) !! index = Some indBlkAddrs⌝ ∗
        "%Hlen" ∷ ⌜length indBlkAddrs < int.nat indirectNumBlocks⌝ ∗
        "Hro_state" ∷ inode_state l d lref ∗
-       "Ha" ∷ int.val a d↦ b ∗
+       "Ha" ∷ int.Z a d↦ b ∗
        "Haddr_s" ∷ is_slice indblkaddrs_s uint64T 1
        (indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length (indBlkAddrs) + 1)) `mod` indirectNumBlocks)) (U64 0))
   }}}
@@ -617,7 +617,7 @@ Theorem wp_appendIndirect {l σ addr d lref direct_s indirect_s ds} (a: u64) b:
     "%Hsize" ∷ ⌜length σ.(inode.blocks) >= maxDirect ∧ length σ.(inode.blocks) < MaxBlocks⌝ ∗
     "Hro_state" ∷ inode_state l d lref ∗
     "Hinv" ∷ inode_linv_with l σ addr direct_s indirect_s ds ∗
-    "Ha" ∷ int.val a d↦ b
+    "Ha" ∷ int.Z a d↦ b
 
   }}}
   Inode__appendIndirect #l #a
@@ -635,8 +635,8 @@ Theorem wp_appendIndirect {l σ addr d lref direct_s indirect_s ds} (a: u64) b:
         -∗ "Hinv" ∷ inode_linv_with l σ' addr direct_s indirect_s ds')
       else
         "Hinv" ∷ inode_linv_with l σ addr direct_s indirect_s ds ∗
-        "Ha" ∷ int.val a d↦ b ∗
-        "Hsize" ∷ ⌜ (roundUpDiv ((length σ.(inode.blocks)) - maxDirect) indirectNumBlocks >= int.val indirect_s.(Slice.sz)) ⌝
+        "Ha" ∷ int.Z a d↦ b ∗
+        "Hsize" ∷ ⌜ (roundUpDiv ((length σ.(inode.blocks)) - maxDirect) indirectNumBlocks >= int.Z indirect_s.(Slice.sz)) ⌝
   }}}.
 Proof.
   iIntros (Φ) "Hpre". iNamed "Hpre".
@@ -689,7 +689,7 @@ Proof.
     iFrame.
     repeat (iSplitR; iPureIntro; [repeat (split; eauto)|]).
     rewrite -Hiaddrs in HlenInd.
-    assert (Z.of_nat (length iaddrs) = int.val indirect_s.(Slice.sz)) by word.
+    assert (Z.of_nat (length iaddrs) = int.Z indirect_s.(Slice.sz)) by word.
     rewrite -H -HiaddrsLen.
     rewrite HnumInd /roundUpDiv; word.
   }
@@ -704,7 +704,7 @@ Proof.
 
     (* Here are a bunch of facts *)
     (* TODO these are replicated from READ *)
-    assert (int.val index < ds.(impl_s.numInd)) as HindexMax. {
+    assert (int.Z index < ds.(impl_s.numInd)) as HindexMax. {
       rewrite take_length Min.min_l in HlenInd; word.
     }
     destruct (list_lookup_lt _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (int.nat index)) as [indA Hlookup].
@@ -786,7 +786,7 @@ Proof.
       apply lookup_lt_is_Some_2.
       unfold maxDirect, indirectNumBlocks in *.
       rewrite fmap_length HindBlockLen.
-      assert (int.val offset < 512).
+      assert (int.Z offset < 512).
       {
         rewrite Hoffset. by apply Z_mod_lt.
       }
@@ -801,7 +801,7 @@ Proof.
       unfold maxDirect, indirectNumBlocks in *.
       rewrite HindNum in Heqb0.
       pose (Znot_le_gt _ _ Heqb0) as HindNumGt.
-      replace (int.val (length σ.(inode.blocks))) with (Z.of_nat (length σ.(inode.blocks))) in * by word.
+      replace (int.Z (length σ.(inode.blocks))) with (Z.of_nat (length σ.(inode.blocks))) in * by word.
       word.
     }
     assert (ind_blocks_at_index σ (int.nat index) = drop (int.nat maxDirect + int.nat index * int.nat indirectNumBlocks) σ.(inode.blocks))
@@ -828,7 +828,7 @@ Proof.
       (* Index facts *)
       {
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-        replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks)))) - 500)
+        replace (int.Z (U64 (Z.of_nat (length σ.(inode.blocks)))) - 500)
           with (Z.of_nat (length σ.(inode.blocks)) - 500) in Hindex by word.
         word.
       }
@@ -840,10 +840,10 @@ Proof.
         rewrite Hlen HindBlksAtIndex drop_length.
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         replace (int.nat (U64 500) + int.nat index * int.nat (U64 512))%nat
-          with (Z.to_nat (500 + int.val index * 512)) by word.
+          with (Z.to_nat (500 + int.Z index * 512)) by word.
         replace (Z.of_nat (int.nat (U64 512))) with 512 by word.
         rewrite Hindex.
-        replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
+        replace (int.Z (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
         word.
       }
 
@@ -888,12 +888,12 @@ Proof.
     rewrite /maxDirect /indirectNumBlocks in Hindex, Hoffset.
     assert (int.nat index = int.nat index0) as tmp1.
     {
-      replace ((int.val (length σ.(inode.blocks)) - 500) `div` 512) with ((length σ.(inode.blocks) - 500) `div` 512) in Hindex by word.
+      replace ((int.Z (length σ.(inode.blocks)) - 500) `div` 512) with ((length σ.(inode.blocks) - 500) `div` 512) in Hindex by word.
       rewrite -Hindex in Hindex0. word.
     }
     assert (int.nat offset = int.nat offset0) as tmp2.
     {
-      replace ((int.val (length σ.(inode.blocks)) - 500) `mod` 512) with ((length σ.(inode.blocks) - 500) `mod` 512) in Hoffset by word.
+      replace ((int.Z (length σ.(inode.blocks)) - 500) `mod` 512) with ((length σ.(inode.blocks) - 500) `mod` 512) in Hoffset by word.
       rewrite -Hoffset in Hoffset0; word.
     }
     assert (indBlkAddrs0 = indBlkAddrs) as tmp3.
@@ -943,7 +943,7 @@ Proof.
         repeat rewrite list_to_set_app_L.
         repeat rewrite -union_assoc_L.
         repeat f_equiv.
-        assert (int.val index < length (ds.(impl_s.indBlkAddrsList))) as HindexExists.
+        assert (int.Z index < length (ds.(impl_s.indBlkAddrsList))) as HindexExists.
         {
           pose proof (lookup_lt_Some ds.(impl_s.indBlkAddrsList) (int.nat index) _ HaddrLookup).
           word.
@@ -1069,9 +1069,9 @@ Proof.
                   (500 + k * 512 + 512)%nat by word.
               assert (500 + Z.of_nat k * 512 + 512 ≤ Z.of_nat (length σ.(inode.blocks))) as tmp.
               {
-                eapply (Z.le_trans (500 + k * 512 + 512) (500 + (int.val index -1) * 512 + 512) (length σ.(inode.blocks))); [word|].
+                eapply (Z.le_trans (500 + k * 512 + 512) (500 + (int.Z index -1) * 512 + 512) (length σ.(inode.blocks))); [word|].
                 rewrite Hindex.
-                replace (int.val (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
+                replace (int.Z (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
                 word.
               }
               word.
@@ -1097,7 +1097,7 @@ Proof.
            (* Hdata *)
            rewrite -tmp1; simpl.
            rewrite -HindNumIndex.
-           assert (int.val indNum + 1 = ds.(impl_s.numInd)) as HindNumSucc.
+           assert (int.Z indNum + 1 = ds.(impl_s.numInd)) as HindNumSucc.
            {
              rewrite HindNum. rewrite HnumInd.
              rewrite max_r; [|word].

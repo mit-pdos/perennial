@@ -210,7 +210,7 @@ Theorem mapsto_txn_locked (γ : txn_names) l dinit lwh a data E :
   ={E}=∗
     is_locked_walheap γ.(txn_walnames) lwh ∗
     mapsto_txn γ a data ∗
-    ⌜ ∃ v, locked_wh_disk lwh !! int.val a.(addrBlock) = Some v ⌝.
+    ⌜ ∃ v, locked_wh_disk lwh !! int.Z a.(addrBlock) = Some v ⌝.
 Proof.
   iIntros (H0 H1) "(#Hiswal & #Hinv & Hlockedheap & Hmapsto)".
   iInv "Hinv" as ">Htxnalways".

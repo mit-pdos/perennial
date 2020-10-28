@@ -79,7 +79,7 @@ Proof.
 Qed.
 
 Lemma updates_slice_frag_len bk_s q bs :
-  updates_slice_frag bk_s q bs -∗ ⌜int.val bk_s.(Slice.sz) = length bs⌝.
+  updates_slice_frag bk_s q bs -∗ ⌜int.Z bk_s.(Slice.sz) = length bs⌝.
 Proof.
   iIntros "Hupds".
   iDestruct "Hupds" as (bks) "[Hbs Hbks]".
@@ -94,7 +94,7 @@ Proof.
 Qed.
 
 Lemma updates_slice_len bk_s bs :
-  updates_slice bk_s bs -∗ ⌜int.val bk_s.(Slice.sz) = length bs⌝.
+  updates_slice bk_s bs -∗ ⌜int.Z bk_s.(Slice.sz) = length bs⌝.
 Proof.
   iIntros "Hupds".
   iDestruct (updates_slice_frag_acc with "Hupds") as "[Hupds _]".
@@ -295,7 +295,7 @@ Proof.
 Qed.
 
 Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : u64) (q : Qp) :
-  0 ≤ int.val n ≤ int.val (Slice.sz bk_s) ≤ int.val (Slice.cap bk_s) ->
+  0 ≤ int.Z n ≤ int.Z (Slice.sz bk_s) ≤ int.Z (Slice.cap bk_s) ->
   (Qcanon.Qclt q 1)%Qc ->
   {{{ updates_slice_frag (slice_take bk_s (struct.t Update.S) n) q (take (int.nat n) bs) ∗
       updates_slice (slice_skip bk_s (struct.t Update.S) n) (drop (int.nat n) bs) ∗
@@ -304,8 +304,8 @@ Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n :
   {{{ bk_s', RET slice_val bk_s';
       updates_slice_frag (slice_take bk_s' (struct.t Update.S) n) q (take (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
       updates_slice (slice_skip bk_s' (struct.t Update.S) n) (drop (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
-      ⌜int.val (Slice.sz bk_s') ≤ int.val (Slice.cap bk_s') ∧
-       int.val (Slice.sz bk_s') = (int.val (Slice.sz bk_s) + 1)%Z⌝
+      ⌜int.Z (Slice.sz bk_s') ≤ int.Z (Slice.cap bk_s') ∧
+       int.Z (Slice.sz bk_s') = (int.Z (Slice.sz bk_s) + 1)%Z⌝
   }}}.
 Proof.
   iIntros (Hn Hq Φ) "(Hfrag & Hupds & Hub) HΦ".

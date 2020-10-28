@@ -49,11 +49,11 @@ Definition is_inode_durable addr σ (addrs: list u64) : iProp Σ :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜block_encodes hdr ([EncUInt64 (length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
     "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-    "Hhdr" ∷ int.val addr d↦ hdr ∗
+    "Hhdr" ∷ int.Z addr d↦ hdr ∗
     (* TODO: this does not support reading lock-free; we could make it [∃ q,
-    int.val a d↦{q} b], but that wouldn't support lock-free writes if we
+    int.Z a d↦{q} b], but that wouldn't support lock-free writes if we
     implemented those *)
-    "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b
+    "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.blocks), int.Z a d↦ b
 .
 Local Hint Extern 1 (environments.envs_entails _ (is_inode_durable _ _ _)) => unfold is_inode_durable : core.
 
@@ -63,10 +63,10 @@ Theorem is_inode_durable_read addr σ addrs :
       "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
       "%Hencoded" ∷ ⌜block_encodes hdr ([EncUInt64 (length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
       "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-      "Hhdr" ∷ int.val addr d↦ hdr ∗
-      "Hdata" ∷ ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b) ∗
-      "Hdurable" ∷ □(int.val addr d↦ hdr -∗
-                    ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b) -∗
+      "Hhdr" ∷ int.Z addr d↦ hdr ∗
+      "Hdata" ∷ ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.Z a d↦ b) ∗
+      "Hdurable" ∷ □(int.Z addr d↦ hdr -∗
+                    ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.Z a d↦ b) -∗
                    is_inode_durable addr σ addrs).
 Proof.
   iNamed 1.
@@ -166,7 +166,7 @@ Qed.
 valid post-crash inode state, which we can then recover with the usual [Open]
 recovery procedure. *)
 Theorem init_inode addr :
-  int.val addr d↦ block0 -∗ inode_cinv addr (inode.mk ∅ []).
+  int.Z addr d↦ block0 -∗ inode_cinv addr (inode.mk ∅ []).
 Proof.
   iIntros "Hhdr".
   iExists [], block0.
@@ -208,8 +208,8 @@ Theorem wpc_Open k {d:loc} {addr σ} :
   {{{ inode_cinv addr σ }}}.
 Proof.
   iIntros (Φ Φc) "Hinode HΦ"; iNamed "Hinode".
-  iAssert (□ (int.val addr d↦ hdr ∗
-              ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.val a d↦ b) -∗
+  iAssert (□ (int.Z addr d↦ hdr ∗
+              ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.Z a d↦ b) -∗
               inode_cinv addr σ))%I as "#Hinode".
   { iIntros "!> (?&?)". eauto 10 with iFrame. }
   iDestruct (big_sepL2_length with "Hdata") as %Hblocklen.
@@ -664,7 +664,7 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
       ⌜σ !! a = Some block_reserved⌝ -∗
       ▷ Palloc σ ={E}=∗ ▷ Palloc (<[a:=block_used]> σ)).
 
-Let Ψ (a: u64) := (∃ b, int.val a d↦ b)%I.
+Let Ψ (a: u64) := (∃ b, int.Z a d↦ b)%I.
 
 (* This does not fit the "atomic triple" pattern because of the possibility to
 return [#false] without actually performing the commit.
@@ -722,7 +722,7 @@ Proof.
     iSplit; first by iFromCache.
     iIntros ">Hb Hreserved".
     iDeexHyp "Hb".
-    iAssert (□ ∀ b0, int.val a d↦ b0 ∗
+    iAssert (□ ∀ b0, int.Z a d↦ b0 ∗
                       (Φc) -∗
                       (Φc ∗ block_cinv Ψ γalloc a))%I as "#Hbc".
     { iIntros "!>" (b') "(Hb & Hfupd)".

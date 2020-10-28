@@ -76,7 +76,7 @@ Section goose.
     "#alloc" ∷ readonly (l ↦[SingleInode.S :: "alloc"] #alloc_ref).
 
   (** State of unallocated blocks *)
-  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.val a d↦ b.
+  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.Z a d↦ b.
 
   Definition pre_s_inode γdur γbuf l (sz: Z) σ : iProp Σ :=
     ∃ inode_ref alloc_ref δused δdur δbuf,
@@ -173,7 +173,7 @@ Section goose.
     rewrite big_sepL_app.
     iDestruct "Hd" as "[Hinodes Hfree]".
     iDestruct "Hinodes" as "[Hzero _]".
-    change (0%nat + 0)%Z with (int.val (U64 0)).
+    change (0%nat + 0)%Z with (int.Z (U64 0)).
     iDestruct (init_inode with "Hzero") as "Hinode".
     simpl.
     iMod (ghost_var_alloc (nil : list Block)) as
@@ -243,11 +243,11 @@ Section goose.
 
   Theorem wpc_Open {k} γdur γbuf (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
-    (0 < int.val sz)%Z →
-    {{{ "Hcinv" ∷ s_inode_cinv γdur γbuf (int.val sz) σ0 true }}}
+    (0 < int.Z sz)%Z →
+    {{{ "Hcinv" ∷ s_inode_cinv γdur γbuf (int.Z sz) σ0 true }}}
       Open #d_ref #sz @ NotStuck; S k; ⊤
     {{{ l, RET #l;
-       ∃ γbuf', pre_s_inode γdur γbuf' l (int.val sz) (set s_inode.buffered_blocks (λ _, []) σ0) ∗
+       ∃ γbuf', pre_s_inode γdur γbuf' l (int.Z sz) (set s_inode.buffered_blocks (λ _, []) σ0) ∗
                 (* New buf points to fact *)
                 inode_mapsto γbuf' (s_inode.durable_blocks σ0) ∗
                 (* Durable lb for current state *)
@@ -255,7 +255,7 @@ Section goose.
                 (* Old buf points to fact *)
                 inode_mapsto γbuf (s_inode.durable_blocks σ0 ++ s_inode.buffered_blocks σ0)
     }}}
-    {{{ s_inode_cinv γdur γbuf (int.val sz) σ0 true }}}.
+    {{{ s_inode_cinv γdur γbuf (int.Z sz) σ0 true }}}.
   Proof.
     iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
@@ -320,7 +320,7 @@ Section goose.
 
     iMod (P_get_lbs with "HP") as "(HP&Hdurable_lb&Hcurr_lb)".
     iCache with "HΦ Hδdurable_blocks Hpre_inode HPinode HPalloc Hunused HP".
-    { iAssert (alloc_crash_cond (Palloc δused) allocΨ (rangeSet 1 (int.val sz - 1)) true)
+    { iAssert (alloc_crash_cond (Palloc δused) allocΨ (rangeSet 1 (int.Z sz - 1)) true)
             with "[HPalloc Hunused]" as "Halloc".
       { iExists _; iFrame "∗ %". }
       iFromCache. }

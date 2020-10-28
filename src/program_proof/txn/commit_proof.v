@@ -46,7 +46,7 @@ Definition updOffsetsOK blknum diskLatest walBlock K (offmap : gmap u64 buf) : P
 
 Definition updBlockOK blknum walBlock K (locked_wh_disk : disk) (offmap : gmap u64 buf) : Prop :=
   ∀ diskLatest,
-    locked_wh_disk !! int.val blknum = Some diskLatest ->
+    locked_wh_disk !! int.Z blknum = Some diskLatest ->
     updOffsetsOK blknum diskLatest walBlock K offmap.
 
 Definition updBlockKindOK blknum walBlock γ (locked_wh_disk : disk) (offmap : gmap u64 buf) : Prop :=
@@ -62,7 +62,7 @@ Proof.
   rewrite /valid_addr /valid_off /bufSz /addr2flat_z; intuition idtac.
   simpl addrOff in *.
   simpl addrBlock in *.
-  cut (int.val off = 0); [intros; word|].
+  cut (int.Z off = 0); [intros; word|].
   apply Z.div_exact in H0 as ->; [|word].
   rewrite Z.div_small; [|word].
   reflexivity.
@@ -78,7 +78,7 @@ Theorem mapsto_txn_locked (γ : txn_names) l dinit lwh a data E :
   ={E}=∗
     is_locked_walheap γ.(txn_walnames) lwh ∗
     mapsto_txn γ a data ∗
-    ⌜ ∃ v, locked_wh_disk lwh !! int.val a.(addrBlock) = Some v ⌝.
+    ⌜ ∃ v, locked_wh_disk lwh !! int.Z a.(addrBlock) = Some v ⌝.
 Proof.
   iIntros (H0 H1) "(#Hiswal & #Hinv & Hlockedheap & Hmapsto)".
   iInv "Hinv" as ">Htxnalways".
@@ -685,7 +685,7 @@ Proof using txnG0 Σ.
     iDestruct "Hiswal" as "[#Hiswal0 #Hiswal1]".
     iInv "Hiswal0" as (σ) "[Hiswal_inner >Hiswal_heap]".
     iAssert (⌜∀ lv, lv ∈ updlist_olds ->
-             apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd) !! int.val (lv.1).(update.addr) = Some (latest_update lv.2.1 lv.2.2)⌝)%I
+             apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd) !! int.Z (lv.1).(update.addr) = Some (latest_update lv.2.1 lv.2.2)⌝)%I
       as "%Hlwh_any".
     {
       iIntros (lv Hlv).
@@ -755,7 +755,7 @@ Proof using txnG0 Σ.
     { simpl. iModIntro. iIntros (k offmap Hoffmap) "[[Hmapstos Hmetactx] H]".
       iDestruct "H" as (lv) "(%Hlv_in & H & Hmapsto)".
 
-      iAssert (⌜apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd) !! int.val (lv.1).(update.addr) = Some (latest_update lv.2.1 lv.2.2)⌝)%I as "%Hlwh".
+      iAssert (⌜apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd) !! int.Z (lv.1).(update.addr) = Some (latest_update lv.2.1 lv.2.2)⌝)%I as "%Hlwh".
       { eauto. }
 
       iDestruct "H" as (blockK meta) "(% & % & % & Hinblock)".
@@ -1029,7 +1029,7 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
   rewrite bool_decide_decide.
-  destruct (decide (int.val 0 < int.val bufs.(Slice.sz))).
+  destruct (decide (int.Z 0 < int.Z bufs.(Slice.sz))).
   - wp_pures.
 
     iAssert (⌜ bufamap ≠ ∅ ⌝)%I as "%Hnotempty".
@@ -1088,14 +1088,14 @@ Proof.
     { destruct buflist.
       { iDestruct (big_sepML_empty_m with "Hbufpre") as %->. done. }
       iDestruct (is_slice_sz with "Hbufs") as "%Hlen". simpl in *.
-      replace (int.val 0) with 0 in n by word. word.
+      replace (int.Z 0) with 0 in n by word. word.
     }
 
     wp_load.
     iApply "HΦ".
 
     iDestruct (is_slice_sz with "Hbufs") as %Hbuflistlen.
-    assert (int.val bufs.(Slice.sz) = 0) by (revert n; word).
+    assert (int.Z bufs.(Slice.sz) = 0) by (revert n; word).
     assert (length (list.untype buflist) = 0%nat) by len.
     rewrite fmap_length in H0.
     apply length_zero_iff_nil in H0; subst.
