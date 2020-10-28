@@ -525,6 +525,15 @@ Proof.
   induction b; simpl; eauto.
 Qed.
 
+Lemma big_sepL2_async_latest {X Y} (xx : async X) (yy : async Y) (P : nat -> X -> Y -> iProp Σ) :
+  ( [∗ list] k↦x;y ∈ possible xx;possible yy, P k x y ) -∗
+  P (length xx.(pending)) xx.(latest) yy.(latest).
+Proof.
+  iIntros "H".
+  iDestruct (big_sepL2_snoc with "H") as "[H Hlatest]".
+  iApply "Hlatest".
+Qed.
+
 Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   ↑walN.@"wal" ⊆ E ->
   {{{ is_txn l γ dinit ∗
@@ -900,6 +909,7 @@ Proof using txnG0 Σ.
 
     iDestruct "Hmapstos_and_metactx" as "[Hmapstos Hmetactx]".
 
+    iDestruct "Hcrashheapsmatch" as "#Hcrashheapsmatch".
     iDestruct (big_sepL2_length with "Hcrashheapsmatch") as "%Hcrash_heaps_len".
     iCombine ("Hcrashstates_frag Hcrashstates") as "Hcrashstates".
     iMod (ghost_var_update (async_put σl'latest σl) with "Hcrashstates") as "[Hcrashstates Hcrashstates_frag]".
@@ -928,6 +938,23 @@ Proof using txnG0 Σ.
         rewrite -Hheapmatch_dom.
         rewrite gmap_addr_by_block_dom_union.
         rewrite gmap_addr_by_block_fmap. rewrite dom_fmap_L. set_solver. }
+
+      iFrame "Hcrashheapsmatch".
+      iSplit; last done.
+      simpl.
+      iDestruct (big_sepL2_async_latest with "Hcrashheapsmatch") as "Hcrashheap_latest".
+      iApply big_sepM2_forall.
+      iSplit.
+      { iDestruct (big_sepM2_dom with "Hcrashheap_latest") as "%Hlatestdom".
+        iPureIntro. intros.
+        rewrite -?elem_of_dom gmap_addr_by_block_dom_union.
+        rewrite gmap_addr_by_block_fmap dom_fmap.
+        admit.
+      }
+
+      iIntros (k offmap blk Hoffmap Hblk).
+      rewrite /bufDataTs_in_crashblock /bufDataT_in_block.
+      (* either use [Hupdmap_kind] if k is in updlist_olds, or use [Hcrashheap_latest] if not in updlist_olds *)
       admit.
     }
 
