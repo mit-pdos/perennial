@@ -330,13 +330,13 @@ Ltac eval_term t :=
 Ltac eval_u32 :=
   match goal with
   | |- context[int.Z (U32 ?z)] =>
-    rewrite  (val_u32 z ltac:(lia))
+    rewrite  (Z_u32 z ltac:(lia))
   end.
 
 Ltac eval_u64 :=
   match goal with
   | |- context[int.Z (U64 ?z)] =>
-    rewrite  (val_u64 z ltac:(lia))
+    rewrite  (Z_u64 z ltac:(lia))
   end.
 
 Theorem u8_to_from_u32 x :

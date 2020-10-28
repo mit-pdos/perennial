@@ -190,7 +190,7 @@ Instance u64_eq_dec : EqDecision u64 := _.
 Instance u32_eq_dec : EqDecision u32 := _.
 Instance u8_eq_dec : EqDecision u8 := _.
 
-Instance int_val_inj `(word: Interface.word width) {word_ok: word.ok word} : Inj eq eq word.unsigned.
+Instance int_Z_inj `(word: Interface.word width) {word_ok: word.ok word} : Inj eq eq word.unsigned.
 Proof.
   intros x1 x2.
   intros.
@@ -253,7 +253,7 @@ Proof.
   rewrite Zmod_small; auto.
 Qed.
 
-Theorem u32_to_u64_val x : int.Z (u32_to_u64 x) = int.Z x.
+Theorem u32_to_u64_Z x : int.Z (u32_to_u64 x) = int.Z x.
 Proof.
   unfold u32_to_u64, U64.
   rewrite word.unsigned_of_Z.
@@ -261,7 +261,7 @@ Proof.
   pose proof (word.unsigned_range x); lia.
 Qed.
 
-Theorem u32_from_u64_val (x: u64) : int.Z x < 2^32 ->
+Theorem u32_from_u64_Z (x: u64) : int.Z x < 2^32 ->
                                     int.Z (u32_from_u64 x) = int.Z x.
 Proof.
   unfold u32_from_u64, U32; intros.
@@ -535,7 +535,7 @@ Proof.
   - apply elem_of_list_further. done.
 Qed.
 
-Theorem val_u32 z :
+Theorem Z_u32 z :
   0 <= z < 2 ^ 32 ->
   int.Z (U32 z) = z.
 Proof.
@@ -545,7 +545,7 @@ Proof.
   rewrite wrap_small; auto.
 Qed.
 
-Theorem val_u64 z :
+Theorem Z_u64 z :
   0 <= z < 2 ^ 64 ->
   int.Z (U64 z) = z.
 Proof.
@@ -564,7 +564,7 @@ Proof.
   { apply NoDup_seqZ. }
   Set Printing Coercions. (* This is impossible to work on otherwise... *)
   clear- Hlb Hub. intros x y Hx%elem_of_seqZ Hy%elem_of_seqZ Heq.
-  rewrite <-(val_u64 x), <-(val_u64 y).
+  rewrite <-(Z_u64 x), <-(Z_u64 y).
   - by rewrite Heq.
   - word.
   - word.

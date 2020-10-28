@@ -545,7 +545,7 @@ Proof.
       word_cleanup.
 
       intros.
-      apply int_val_inj; first by apply u64_instance.u64_word_ok.
+      apply int_Z_inj; first by apply u64_instance.u64_word_ok.
       rewrite -Heq. word.
 Qed.
 

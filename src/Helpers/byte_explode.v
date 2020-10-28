@@ -42,7 +42,7 @@ Proof.
   let t n c :=
     destruct (decide (z = n)) as [->|?];
     [ refine (eq_rect (U8 n) P c _ _);
-      apply (@int_val_inj 8 u8_instance.u8 u8_instance.u8_word_ok); vm_compute; reflexivity
+      apply (@int_Z_inj 8 u8_instance.u8 u8_instance.u8_word_ok); vm_compute; reflexivity
     |] in
   (* python3 -c 'print(";\n".join([f"t {i} Byte{i}" for i in range(256)]) + ".")' *)
   t 0 Byte0;

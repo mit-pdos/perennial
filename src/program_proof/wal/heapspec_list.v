@@ -1060,7 +1060,7 @@ Proof.
     destruct (decide (addr = a)).
     * subst. rewrite ?lookup_insert //=.
     * rewrite ?lookup_insert_ne //=.
-      intros Heq2%int_val_inj; first congruence.
+      intros Heq2%int_Z_inj; first congruence.
       apply _.
 Qed.
 
