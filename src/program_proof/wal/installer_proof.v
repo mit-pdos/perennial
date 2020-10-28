@@ -361,14 +361,14 @@ Theorem wp_installBlocks γ l dinit d bufs_s (bufs: list update.t)
       "#Hwal" ∷ is_wal P l γ dinit ∗
       "%Hbufs" ∷ ⌜has_updates bufs subtxns⌝ ∗
       "%Hbufs_addrs" ∷ ⌜Forall (λ u : update.t, ∃ (b: Block), dinit !! int.val u.(update.addr) = Some b) bufs⌝ ∗
-      "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) ∗
+      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
       "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
       "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
   }}}
     installBlocks #d (slice_val bufs_s)
   {{{ RET #();
       "#Hwal" ∷ is_wal P l γ dinit ∗
-      "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.val (update.addr u)) <$> bufs)) ∗
+      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.val (update.addr u)) <$> bufs)) ∗
       "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
       "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
   }}}.
@@ -390,10 +390,10 @@ Proof.
 
   wp_apply (slice.wp_forSlice (fun i =>
     ("Hupds" ∷ [∗ list] uv;upd ∈ bks;upds, is_update uv q upd) ∗
-    "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (list_to_set (C:=gset Z) (take (int.nat i) ((λ u, int.val (update.addr u)) <$> upds))) ∗
+    "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) (take (int.nat i) ((λ u, int.val (update.addr u)) <$> upds))) ∗
     "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
     "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
-    )%I with "[] [$Hbks_s $Hupds $Hbeing_installed_installer $Hinstalled_txn_installer $Hbeing_installed_txns_installer]").
+    )%I with "[] [$Hbks_s $Hupds $Halready_installed_installer $Hinstalled_txn_installer $Hbeing_installed_txns_installer]").
   {
     iIntros (i buf Φₗ) "!> [HI [% %]] HΦ".
     iNamed "HI".
@@ -423,12 +423,12 @@ Proof.
     iNamed "Hinstalled".
     iNamed "Howninstalled".
 
-    iDestruct (ghost_var_agree with "Hbeing_installed_installer Hbeing_installed") as %<-.
+    iDestruct (ghost_var_agree with "Halready_installed_installer Halready_installed") as %<-.
     iDestruct (fmcounter_agree_1 with "Hinstalled_txn_installer Hinstalled_txn") as %<-.
     iDestruct (ghost_var_agree with "Hbeing_installed_txns_installer Hbeing_installed_txns") as %->.
     iMod (ghost_var_update_halves (list_to_set (C:=gset Z) (take (S (int.nat i)) ((λ u, int.val (update.addr u)) <$> upds)))
-      with "Hbeing_installed_installer Hbeing_installed") as
-          "[Hbeing_installed_installer Hbeing_installed]".
+      with "Halready_installed_installer Halready_installed") as
+          "[Halready_installed_installer Hbeing_installed]".
 
     apply mk_is_Some in Hbinit.
     apply Hdaddrs_init in Hbinit.
@@ -495,7 +495,7 @@ Proof.
     admit. (* TODO: fix this remainder for new is_installed_core *)
 
     (*
-    iMod ("Hclose" with "[Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hinstalled_txn Hbeing_installed Hbeing_installed_txns HP Hdata Haddr_i_mapsto]") as "_".
+    iMod ("Hclose" with "[Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hinstalled_txn Halready_installed Hbeing_installed_txns HP Hdata Haddr_i_mapsto]") as "_".
     {
       iIntros "!>".
       iExists _.
@@ -634,12 +634,12 @@ Admitted. *)
 (* Lemma ghost_var_update_new_installed_emp γ l (installed_txn_id: nat) (new_installed_txn_id: nat) (txns: list (u64 * list update.t)):
   "#Hwal" ∷ is_wal P l γ -∗
   (* "%Hnew_installed_txn_id_bound" ∷ ⌜installed_txn_id ≤ new_installed_txn_id ≤ diskEnd_txn_id⌝ -∗ *)
-  "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1 / 2) (∅: gset Z) -∗
+  "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1 / 2) (∅: gset Z) -∗
   "Hnew_installed_installer" ∷ ghost_var γ.(new_installed_name) (1 / 2) installed_txn_id -∗
   "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1 / 2) txns -∗
   |={⊤}=> ∃ (new_txns: list (u64 * list update.t)),
     is_wal P l γ ∗
-    ghost_var γ.(being_installed_name) (1 / 2) (∅: gset Z) ∗
+    ghost_var γ.(already_installed_name) (1 / 2) (∅: gset Z) ∗
     ghost_var γ.(new_installed_name) (1 / 2) new_installed_txn_id ∗
     ghost_var γ.(being_installed_txns_name) (1 / 2) new_txns.
 Proof.
@@ -659,7 +659,7 @@ Proof.
   iMod (ghost_var_update_halves (subslice (S installed_txn_id0) (S new_installed_txn_id) σs.(log_state.txns))
     with "Hbeing_installed_txns_installer Hbeing_installed_txns") as
         "[Hbeing_installed_txns_installer Hbeing_installed_txns]".
-  iMod ("Hclose" with "[Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs γdiskEnd_txn_id2 Hdurable Hnew_installed Hbeing_installed Hbeing_installed_txns Hdata HP]").
+  iMod ("Hclose" with "[Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs γdiskEnd_txn_id2 Hdurable Hnew_installed Halready_installed Hbeing_installed_txns Hdata HP]").
   {
     iExists _.
     iFrame "% ∗".
@@ -669,7 +669,7 @@ Proof.
     iFrame "# ∗".
     iExists new_installed_txn_id, _.
     iFrame "Hnew_installed".
-    iFrame "Hbeing_installed".
+    iFrame "Halready_installed".
     iFrame "Hbeing_installed_txns".
     iSplitR.
     {
@@ -703,7 +703,7 @@ Theorem wp_Walog__logInstall γ l dinit (installed_txn_id: nat) (subtxns: list (
       "His_locked" ∷ locked #σₛ.(memLock) ∗
       "#lk" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
       "#cond_install" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
-      "Hbeing_installed_installer" ∷ ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) ∗
+      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
       "Hinstalled_txn_installer" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
       "Hbeing_installed_txns_installer" ∷ ghost_var γ.(being_installed_txns_name) (1/2) subtxns
   }}}
@@ -745,11 +745,11 @@ Proof.
   iDestruct "Hinstalled" as (? ?) "(Howninstalled&Hinstalled)".
   iNamed "Howninstalled".
   iNamed "Howninstalled".
-  iDestruct (ghost_var_agree with "Hbeing_installed_installer Hbeing_installed") as %<-.
+  iDestruct (ghost_var_agree with "Halready_installed_installer Halready_installed") as %<-.
   iMod (ghost_var_update_halves (subslice (S installed_txn_id0) (S diskEnd_txn_id) σs.(log_state.txns))
     with "Hbeing_installed_txns_installer Hbeing_installed_txns") as
         "[Hbeing_installed_txns_installer Hbeing_installed_txns]".
-  iMod ("Hclose" with "[Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hinstalled_txn Hbeing_installed Hbeing_installed_txns Hdisk Hinstalled HP]") as "_".
+  iMod ("Hclose" with "[Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hinstalled_txn Halready_installed Hbeing_installed_txns Hdisk Hinstalled HP]") as "_".
   {
     iExists _.
     iFrame "∗ # %".

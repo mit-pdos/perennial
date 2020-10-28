@@ -554,7 +554,6 @@ Proof.
      the new one only if we crashed mid install *)
 
   iExists _, _. iFrame "Hdurable".
-
 Admitted. (* BUG: the theorem statement isn't complete yet, but if we abort
 this, then the proof runs in -vos mode... *)
 

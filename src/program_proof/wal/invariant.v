@@ -48,7 +48,7 @@ Record wal_names := mkWalNames
     txns_ctx_name : gname;
     txns_name : gname;
     installed_txn_name : gname;
-    being_installed_name : gname;
+    already_installed_name : gname;
     being_installed_txns_name : gname;
     diskEnd_avail_name : gname;
     start_avail_name : gname;
@@ -61,7 +61,7 @@ Record wal_names := mkWalNames
 
 Global Instance _eta_wal_names : Settable _ :=
   settable! mkWalNames <circ_name; cs_name; txns_ctx_name; txns_name;
-                        installed_txn_name; being_installed_name; being_installed_txns_name;
+                        installed_txn_name; already_installed_name; being_installed_txns_name;
                         diskEnd_avail_name; start_avail_name;
                         stable_txn_ids_name; logger_pos_name; logger_txn_id_name;
                         base_disk_name>.
@@ -323,8 +323,6 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
 
 Global Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
 
-(* TODO: rename [being_installed_name] to [already_installed_name] *)
-
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
@@ -334,7 +332,7 @@ Definition is_installed_core γ d txns (installed_txn_id: nat) (diskEnd_txn_id: 
    write down what it maintains as part of its loop invariant *)
   "Howninstalled" ∷ (
     "Hinstalled_txn" ∷ fmcounter γ.(installed_txn_name) (1/2) installed_txn_id ∗
-    "Hbeing_installed" ∷ ghost_var γ.(being_installed_name) (1/2) already_installed ∗
+    "Halready_installed" ∷ ghost_var γ.(already_installed_name) (1/2) already_installed ∗
     (* TODO(tej): this should probably be replaced with a persistent [txns_are]
     fact rather than a new ghost variable *)
     "Hbeing_installed_txns" ∷ ghost_var γ.(being_installed_txns_name) (1/2)
@@ -501,7 +499,7 @@ that every address is one of the two transactions, and that can be restored on
 crash *)
 Theorem is_installed_restore_read γ d txns installed_txn_id diskEnd_txn_id new_installed_txn_id :
   fmcounter γ.(installed_txn_name) (1/2) installed_txn_id -∗
-  ghost_var γ.(being_installed_name) (1/2) (∅: gset Z) -∗
+  ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) -∗
   ghost_var γ.(being_installed_txns_name) (1/2)
     (subslice (S installed_txn_id) (S new_installed_txn_id) txns) -∗
   is_installed_read d txns installed_txn_id diskEnd_txn_id new_installed_txn_id -∗
