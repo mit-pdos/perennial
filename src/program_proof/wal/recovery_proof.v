@@ -451,9 +451,7 @@ Proof.
       rewrite -> (drop_ge σ.(log_state.txns)) by lia.
       split_and!; auto using has_updates_nil.
       destruct Hdurable as [Hdurable_updates _].
-      admit. (* XXX(tej+joe): we have an S in the goal due to
-      [memLog_linv_txns], but no S in the hypotheses due to [circ_has_txns] *)
-    }
+      congruence. }
     admit.
   }
 
