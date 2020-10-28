@@ -229,16 +229,6 @@ Proof.
   pose proof (word.unsigned_range x); lia.
 Qed.
 
-Theorem u64_nat_through_Z (x:u64) : Z.to_nat (int.val x) = int.nat x.
-Proof.
-  reflexivity.
-Qed.
-
-Theorem u8_nat_through_Z (x:u8) : Z.to_nat (int.val x) = int.nat x.
-Proof.
-  reflexivity.
-Qed.
-
 (* should maybe convert this into an explicit match on ints at some point *)
 Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (int.nat x).
 
