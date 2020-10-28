@@ -321,6 +321,22 @@ Proof.
   lia.
 Qed.
 
+Lemma txns_mono_lt_last σ diskEnd :
+  wal_wf σ →
+  is_txn σ.(log_state.txns) (length σ.(log_state.txns) - 1) diskEnd →
+  Forall (λ pos, int.Z pos ≤ int.Z diskEnd) σ.(log_state.txns).*1.
+Proof.
+  intros Hwf Htxn.
+  apply Forall_forall => pos Hin.
+  apply elem_of_list_lookup in Hin as [txn_id Hlookup].
+  assert (is_txn σ.(log_state.txns) txn_id pos).
+  { rewrite /is_txn.
+    rewrite -list_lookup_fmap //. }
+  eapply (wal_wf_txns_mono_pos' (txn_id1:=txn_id)); eauto.
+  apply is_txn_bound in H.
+  lia.
+Qed.
+
 Theorem wpc_mkLog_recover k (d : loc) γ σ :
   {{{ is_wal_inner_durable γ σ dinit }}}
     mkLog #d @ NotStuck; k; ⊤
@@ -367,16 +383,18 @@ Proof.
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
   iMod (map_alloc_ro installed_txn_id () with "Hstable_txns") as "[Hstable_txns #Hinstalled_stable]".
   { set_solver. }
-  iAssert (|==> ∃ (stable_txns: gmap nat unit),
+  iAssert (|==> let stable_txns := <[diskEnd_txn_id:=()]> {[installed_txn_id:=()]} in
                 map_ctx γstable_txn_ids_name 1 stable_txns ∗
                 diskEnd_txn_id [[γstable_txn_ids_name]]↦ro ())%I
     with "[Hstable_txns]" as "HdiskEnd_txn_id_mod".
   { destruct (decide (installed_txn_id = diskEnd_txn_id)); subst.
-    - iExists _; iFrame "#∗"; done.
+    - iModIntro.
+      rewrite insert_singleton.
+      iFrame "∗#".
     - iMod (map_alloc_ro diskEnd_txn_id with "Hstable_txns") as "[Hstable_txns #HdiskEnd_stable]".
       { rewrite lookup_insert_ne //. }
-      iModIntro. iExists _; iFrame "#∗". }
-  iMod "HdiskEnd_txn_id_mod" as (stable_txns)
+      iModIntro. iFrame "#∗". }
+  iMod "HdiskEnd_txn_id_mod" as
     "[[Hstable_txns1 Hstable_txns2] #HdiskEnd_stable]".
 
   set (γ0 :=
@@ -452,7 +470,14 @@ Proof.
       split_and!; auto using has_updates_nil.
       destruct Hdurable as [Hdurable_updates _].
       congruence. }
-    admit.
+    (* replace (slidingM.memEnd memLog) with (int.Z diskStart + length upds); last first.
+    { rewrite /slidingM.memEnd //=. } *)
+    iPureIntro.
+    replace (slidingM.memEnd memLog) with (int.Z memLog.(slidingM.mutable)); last first.
+    { rewrite /memLog /slidingM.memEnd /=.
+      subst; word. }
+    eapply txns_mono_lt_last; eauto.
+    subst; auto.
   }
 
   wpc_frame "Hinstalled HΦ Hcirc Happender Hthread_end Hthread_start".
@@ -483,15 +508,24 @@ Proof.
   iIntros (st) "Hwal_state".
   wp_pures.
 
-  iDestruct (memLog_linv_pers_core_strengthen _ γ0 with "H [] γtxns γlogger_pos γlogger_txn_id [] [Hstable_txns1] [$]") as "HmemLog_linv".
-  { admit. (* need to translate txn_pos between ctxs *) }
+  iDestruct (memLog_linv_pers_core_strengthen _ γ0 with "H [] γtxns γlogger_pos γlogger_txn_id [Hstable_txns1] [] [$]") as "HmemLog_linv".
+  { auto. }
   { rewrite /memLog_linv_nextDiskEnd_txn_id.
     simpl.
-    (* TODO: keep the other half earlier *)
-    iExists stable_txns. (* iFrame "Hstable_txns1".
-    iFrame "#". *)
-    admit. }
-  { admit. }
+    iExists _; iFrame "Hstable_txns1".
+    iFrame "#".
+    iSplit.
+    - admit. (* maybe should have fetched this txn_pos earlier for
+      diskEnd_txn_id *)
+    - iDestruct "Hdurable" as %Hdurable.
+      destruct Hdurable.
+      iPureIntro.
+      intros.
+      rewrite -> lookup_insert_ne by lia.
+      rewrite -> lookup_singleton_ne by lia.
+      auto. }
+  { admit. (* new ghost variable, need to allocate fmcounter for
+  installed_txn_name *) }
 
   iMod (alloc_lock walN _ _ (wal_linv st γ0)
           with "[$] [HmemLog_linv Hsliding Hwal_state Hstart_exactly HdiskEnd_exactly]") as "#lk".
@@ -521,6 +555,15 @@ Proof.
   wp_apply wp_allocStruct.
   { repeat econstructor. }
   iIntros (l) "Hl". wp_pures. wp_apply (util_proof.wp_DPrintf).
+  iApply struct_fields_split in "Hl".
+  iNamed "Hl".
+  iMod (readonly_alloc_1 with "memLock") as "#memLock".
+  iMod (readonly_alloc_1 with "d") as "#d".
+  iMod (readonly_alloc_1 with "circ") as "#circ".
+  iMod (readonly_alloc_1 with "st") as "#st".
+  iMod (readonly_alloc_1 with "condLogger") as "#condLogger".
+  iMod (readonly_alloc_1 with "condInstall") as "#condInstall".
+  iMod (readonly_alloc_1 with "condShut") as "#condShut".
   wp_pures.
   iNamed 1. iRight in "HΦ".
   iApply ("HΦ" $! γ0). iSplitR ""; last auto.
@@ -529,18 +572,16 @@ Proof.
   iSplitR "Hcirc γcs_name"; last first.
   { iExists _. iFrame. }
   rewrite /is_wal_inner. iFrame (Hwf). iFrame.
-  rewrite /is_wal_mem.
-  iSplitL "Hl".
-  {
+  iSplitL "".
+  { rewrite /is_wal_mem.
     iExists (Build_wal_state _ _ _ _ _ _ _). simpl. iFrame "#".
-    admit.
   }
   iSplitL "Hstable_txns2".
   {
     rewrite /nextDiskEnd_inv.
     iExists _; iFrame.
-    (* other 1/2 of stable map ctx that should be allocated up above *)
-    admit.
+    simpl.
+    admit. (* need to construct rest of stable invariant *)
   }
   iExists _. iFrame "Hown_cs". rewrite /disk_inv. iFrame (Hdaddrs_init).
   (* When allocating stable ctx, must allocate membership facts saying that installed/diskend txn id
@@ -552,6 +593,8 @@ Proof.
      the new one only if we crashed mid install *)
 
   iExists _, _. iFrame "Hdurable".
+  (* TODO: [is_installed], [is_installed_txn], [is_durable_txn], and allocate
+  [is_base_disk] *)
 Admitted. (* BUG: the theorem statement isn't complete yet, but if we abort
 this, then the proof runs in -vos mode... *)
 

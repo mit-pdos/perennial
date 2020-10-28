@@ -209,7 +209,7 @@ Qed.
 
 Local Fixpoint struct_big_fields_rec l q (d: descriptor) (fs:descriptor) (v:val): iProp Σ :=
   match fs with
-  | [] => ⌜v = #()⌝
+  | [] => "_" ∷ ⌜v = #()⌝
   | (f,t)::fs =>
     match v with
     | PairV v1 v2 => f ∷ struct_field_mapsto l q d f v1 ∗
