@@ -21,7 +21,7 @@ Record lockservice_names := LockserviceGN {
 
 Class lockserviceG Σ := LockserviceG {
   ls_rpcG :> rpcG Σ u64; (* RPC layer ghost state *)
-  ls_locksAllocG :> mapG Σ u64 bool; (* [ls_locksAllocGN]: tracks with locks *logically* exist; true=exists *)
+  ls_locksAllocG :> mapG Σ u64 unit; (* [ls_locksAllocGN]: tracks with locks *logically* exist; true=exists *)
   ls_locksMapDomG :> ghost_varG Σ (gset u64); (* [ls_mapDomGN]: Tracking the set of locks that *physically* exist *)
 }.
 
@@ -35,13 +35,9 @@ Context {Ps : u64 -> iProp Σ}. (* Per-lock invariant *)
 
 Implicit Types (γ : lockservice_names).
 
-(** A token for being allowed to allocate a lock name. *)
-Definition lockservice_alloc_token γ (ln:u64) : iProp Σ :=
-  ln [[ γ.(ls_locksAllocGN) ]]↦ false.
-
 (** Witness showing that this lock exists *)
 Definition lockservice_is_lock γ (ln:u64) : iProp Σ :=
-  ln [[ γ.(ls_locksAllocGN) ]]↦ro true.
+  ln [[ γ.(ls_locksAllocGN) ]]↦ro ().
 
 Definition TryLock_Post : u64 -> u64 -> iProp Σ := λ args reply, (⌜reply = 0⌝ ∨ ⌜reply = 1⌝ ∗ (Ps args))%I.
 Definition TryLock_Pre γ : u64 -> iProp Σ := (λ args, lockservice_is_lock γ args)%I.
@@ -51,13 +47,14 @@ Definition Unlock_Pre γ : u64 -> iProp Σ := (λ args, lockservice_is_lock γ a
 
 (** Lockserver invariant (maintained even when the Mutex is held) *)
 Definition Lockserver_inv γ : iProp Σ :=
-  ∃ (locksAlloc: gmap u64 bool) (locksMapDom:gset u64),
+  ∃ (locksAlloc: gmap u64 unit) (locksMapDom:gset u64),
     "Hdom" ∷ ghost_var γ.(ls_locksMapDomGN) (1/2) locksMapDom ∗ (* we know the lock domain *)
     "Hlocks" ∷ map_ctx γ.(ls_locksAllocGN) 1 locksAlloc ∗ (* we own the logical lock tracking *)
     "HlocksEx" ∷ ⌜locksMapDom ⊆ dom (gset _) locksAlloc⌝ ∗ (* all physically-existing locks exist logically *)
+    "#HlocksRO" ∷ ([∗ map] ln ↦ ex ∈ locksAlloc, ln [[γ.(ls_locksAllocGN)]]↦ro ()) ∗
     "HlocksNew" ∷ [∗ map] ln ↦ ex ∈ locksAlloc,
       (* all logically-existing locks either exist physically or have their invariant here *)
-      (⌜ex = false ∨ ln ∈ locksMapDom⌝ ∨ Ps ln)
+      (⌜ln ∈ locksMapDom⌝ ∨ Ps ln)
 .
 
 (** Lockserver mutex invariant *)
@@ -73,26 +70,32 @@ Definition is_lockserver (srv:loc) γ : iProp Σ :=
   "#Hinv" ∷ inv lockserviceInvN (Lockserver_inv γ) ∗
   "#Hmutex" ∷ is_server (Server_own_core:=LockServer_own_core γ) srv γ.(ls_rpcGN).
 
-(** Allocate a new lock in the lockservice, given the corresponding token
-and the lock invariant. *)
+(** Allocate a new lock in the lockservice, given the prop guarded by the lock *)
 Lemma lockservice_alloc_lock γ (srv:loc) ln E :
   ↑lockserviceN ⊆ E →
   is_lockserver srv γ -∗
-  Ps ln -∗
-  lockservice_alloc_token γ ln ={E}=∗ lockservice_is_lock γ ln.
+  Ps ln
+  ={E}=∗ lockservice_is_lock γ ln.
 Proof.
-  iIntros (?) "Hserver HP Htok". iNamed "Hserver".
+  iIntros (?) "Hserver HP". iNamed "Hserver".
   iInv "Hinv" as "Hlockinv".
   (* FIXME: looks like iNamed does not handle the ▷ here *)
-  iDestruct "Hlockinv" as (locksAlloc locksMapDom) "(>Hdom & >Hlocks & >HlocksEx & HlocksNew)".
-  iDestruct (map_valid with "Hlocks Htok") as %Hlookup.
-  iMod (map_update ln false true with "Hlocks Htok") as "[Hlocks Htok]".
-  iMod (map_freeze with "Hlocks Htok") as "[Hlocks $]".
+  iDestruct "Hlockinv" as (locksAlloc locksMapDom) "(>Hdom & >Hlocks & >HlocksEx & #>HlocksRO & HlocksNew)".
+  destruct (locksAlloc !! ln) eqn:Hln.
+  - destruct u.
+    iDestruct (big_sepM_delete with "HlocksRO") as "[#His_lock _]"; first done.
+    iModIntro. iSplitL; last done. iNext.
+    iExists _, locksMapDom. iFrame; iFrame "#".
+  - iMod (map_alloc_ro ln () with "Hlocks") as "[Hlocks #Hptsto]"; first eauto.
+    iDestruct (big_sepM_later with "HlocksNew") as "HlocksNew".
+    iDestruct (big_sepM_insert _ locksAlloc ln () with "[HP $HlocksNew]") as "HlocksNew"; first done.
+    { by iRight. }
+    Search "big_sepM_later".
+    iDestruct (big_sepM_later with "HlocksNew") as "HlocksNew".
+    iDestruct (big_sepM_insert _ locksAlloc ln () with "[$HlocksRO $Hptsto]") as "HlocksRO2"; first done.
   iModIntro. iSplitL; last done. iNext.
-  iExists _, locksMapDom. iFrame. iSplit.
-  - iDestruct "HlocksEx" as %HlocksEx. iPureIntro. set_solver.
-  - iApply (big_sepM_insert_override_2 with "HlocksNew"); first done.
-    iIntros "_". eauto.
+  iExists _, locksMapDom. iFrame; iFrame "#".
+  iDestruct "HlocksEx" as %HlocksEx. iPureIntro. set_solver.
 Qed.
 
 Lemma tryLock_core_spec γ (srv:loc) (ln:u64) :
@@ -146,13 +149,13 @@ Proof.
     + (* The lock did not exist yet, we have to "physically allocate" it. *)
       apply map_get_false in H as [H _].
       iApply fupd_wp.
-      iInv "Hinv" as (locksAlloc locksDom) "(>Hdom & >Hlocks & >HlocksEx & HlocksNew)".
+      iInv "Hinv" as (locksAlloc locksDom) "(>Hdom & >Hlocks & >HlocksEx &  #HlocksRO & HlocksNew)".
       iDestruct (ghost_var_agree with "HmapDom Hdom") as %<-.
       iMod (ghost_var_update_halves ({[ ln ]} ∪ dom (gset _) locksM) with "HmapDom Hdom") as "[HmapDom Hdom]".
       iDestruct (map_valid with "Hlocks Hpre") as %Halloc.
       iDestruct (big_sepM_delete with "HlocksNew") as "[HP HlocksNew]"; first exact Halloc.
       iDestruct "HP" as "[>HP|HP]".
-      { iDestruct "HP" as %[HP|HP%elem_of_dom]; first done. exfalso.
+      { iDestruct "HP" as %HP%elem_of_dom. exfalso.
         destruct HP as [? HP]. rewrite HP in H. done. }
       iModIntro. iSplitL "HlocksNew HlocksEx Hlocks Hdom".
       { iNext. iExists _, _. iFrame "Hdom Hlocks".
@@ -160,12 +163,12 @@ Proof.
         - iDestruct "HlocksEx" as %HlocksEx. iPureIntro.
           assert (ln ∈ dom (gset _) locksAlloc). { apply elem_of_dom. eauto. }
           set_solver.
-        - iApply (big_sepM_delete _ _ ln); first done. iSplitR.
-          { iLeft. iPureIntro. right. set_solver. }
+        - iFrame "#". iApply (big_sepM_delete _ _ ln); first done. iSplitR.
+          { iLeft. iPureIntro. set_solver. }
           iApply (big_sepM_mono with "HlocksNew").
           intros ln' ? _. simpl. iIntros "[Hln'|Hln']"; last by eauto.
-          iLeft. iDestruct "Hln'" as %[?|Hln']; first by eauto.
-          iPureIntro. right. set_solver. }
+          iLeft. iDestruct "Hln'" as %Hln'.
+          iPureIntro. set_solver. }
       iModIntro. wp_pures. iApply "Hpost".
 
       rewrite /TryLock_Post.
