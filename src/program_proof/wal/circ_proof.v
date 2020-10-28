@@ -264,28 +264,49 @@ Definition circular_crash_ghost_exchange γold γnew : iProp Σ :=
 Definition is_circular γ : iProp Σ :=
   ncinv N (∃ σ, is_circular_state γ σ ∗ P σ).
 
-Lemma crash_upd γold σ :
-  is_circular_state γold σ ==∗
-  ∃ γnew, is_circular_state γnew σ ∗
-          is_circular_state_crash γold σ ∗
-          circular_crash_ghost_exchange γold γnew.
-Proof.
-  iIntros "Hcs".
-  iDestruct "Hcs" as (Hwf) "[Hpos Hcs]".
-  iDestruct "Hcs" as (addrs0 blocks0 Hupds) "(Hown & Hlow)".
-  iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
-  iDestruct "Hpos" as "(Hstart&%&Hend&Hend_at_least)".
+Definition init_ghost_state γ :=
+  ("Haddrs'" ∷ ghost_var γ.(addrs_name) 1 ([] : list u64) ∗
+  "Hblocks'" ∷ ghost_var γ.(blocks_name) 1 ([] : list Block) ∗
+  "Hstart1" ∷ fmcounter γ.(start_name) 1 0 ∗
+  "HdiskEnd1" ∷ fmcounter γ.(diskEnd_name) 1 0)%I.
 
-  iMod (ghost_var_alloc addrs0) as (addrs_name') "[Haddrs' Hγaddrs]".
-  iMod (ghost_var_alloc blocks0) as (blocks_name') "[Hblocks' Hγblocks]".
-  iMod (fmcounter_alloc (int.nat σ.(start))) as (start_name') "[Hstart1 Hstart2]".
-  iMod (fmcounter_alloc (Z.to_nat (circΣ.diskEnd σ))) as (diskEnd_name') "[HdiskEnd1 HdiskEnd2]".
+Lemma alloc_init_ghost_state :
+  ⊢ |==> ∃ γnew, init_ghost_state γnew.
+Proof.
+  iMod (ghost_var_alloc ([] : list u64)) as (addrs_name') "Haddrs'".
+  iMod (ghost_var_alloc ([] : list Block)) as (blocks_name') "Hblocks'".
+  iMod (fmcounter_alloc O) as (start_name') "Hstart1".
+  iMod (fmcounter_alloc O) as (diskEnd_name') "HdiskEnd1".
   set (γnew := {| addrs_name := addrs_name';
                 blocks_name := blocks_name';
                 start_name := start_name';
                 diskEnd_name := diskEnd_name'; |}).
   iExists γnew.
-  iMod (fmcounter_get_lb with "HdiskEnd2") as "[HdiskEnd2 #HdiskEndLb]".
+  by iFrame.
+Qed.
+
+Lemma crash_upd γold γnew σ :
+  is_circular_state γold σ -∗ init_ghost_state γnew ==∗
+  is_circular_state γnew σ ∗
+  is_circular_state_crash γold σ ∗
+  circular_crash_ghost_exchange γold γnew.
+Proof.
+  iStartProof.
+
+  iIntros "Hcs". iNamed 1.
+
+  iDestruct "Hcs" as (Hwf) "[Hpos Hcs]".
+  iDestruct "Hcs" as (addrs0 blocks0 Hupds) "(Hown & Hlow)".
+  iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
+  iDestruct "Hpos" as "(Hstart&%&Hend&Hend_at_least)".
+
+  iMod (ghost_var_update addrs0 with "Haddrs'") as "[Haddrs' Hγaddrs]".
+  iMod (ghost_var_update blocks0 with "Hblocks'") as "[Hblocks' Hγblocks]".
+  iMod (fmcounter_update (int.nat σ.(start)) with "Hstart1") as "[[Hstart1 Hstart2] _]".
+  { lia. }
+  iMod (fmcounter_update (Z.to_nat (circΣ.diskEnd σ)) with "HdiskEnd1") as "[[HdiskEnd1 HdiskEnd2] #HdiskEndlb]".
+  { lia. }
+
   iSplitL "Haddrs' Hblocks' Hstart1 HdiskEnd1 Hlow".
   { iModIntro.
     rewrite /is_circular_state.

@@ -353,18 +353,40 @@ Proof.
 Qed.
 *)
 
-(* XXX: but need to give evidence that the new γ' is the same across those two existentials *)
 Lemma circ_buf_crash_obligation_alt Prec Pcrash γ σ:
   is_circular_state γ σ -∗
-  □ (P σ ={⊤}=∗ Prec σ ∗ Pcrash σ) -∗
+  □ (∀ σ, ▷ P σ -∗ |0={⊤ ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
   P σ -∗
-  |={⊤}=> is_circular N P γ ∗ (<disc> |C={⊤}_0=> ∃ γ', is_circular_state γ' σ ∗ Prec σ)
-                            ∗ □ (C -∗ |0={⊤}=> inv N (∃ σ γ', is_circular_state_crash γ σ ∗
-                                                              circular_crash_ghost_exchange γ γ' ∗
-                                                              Pcrash σ)).
+  |={⊤}=> ∃ γ', is_circular N P γ ∗ (<disc> |C={⊤}_0=> ∃ σ, is_circular_state γ' σ ∗ Prec σ)
+                            ∗ □ (C -∗ |0={⊤}=> inv N (∃ σ, is_circular_state_crash γ σ ∗
+                                                           circular_crash_ghost_exchange γ γ' ∗
+                                                           Pcrash σ)).
 Proof.
-Abort.
-
+  iIntros "Hcs #HPwand HP".
+  iMod (alloc_init_ghost_state) as (γ') "Hinit".
+  iMod (ncinv_cinv_alloc N ⊤ ⊤
+         ((∃ σ, is_circular_state γ σ ∗ P σ) ∗ init_ghost_state γ')
+         (∃ σ, is_circular_state_crash γ σ ∗
+               circular_crash_ghost_exchange γ γ' ∗
+               Pcrash σ)%I
+         (∃ σ, is_circular_state γ' σ ∗ Prec σ)%I with
+            "[] [Hcs HP Hinit]") as "(Hncinv&Hcfupd&Hcinv)".
+  { solve_ndisj. }
+  { iModIntro. iIntros "(H1&>Hinit)".
+    iDestruct "H1" as (σ') "(>Hstate&HP)".
+    iMod ("HPwand" with "[$]") as "(HPrec&HPcrash)".
+    iMod (crash_upd with "[$] [$]") as "(Hcs&Hcs_crash&Hexchange)".
+    iModIntro.
+    iSplitR "Hcs HPrec".
+    { iNext. iExists _. iFrame. }
+    { iNext. iExists _. iFrame. }
+  }
+  { iNext. iFrame. iExists _. iFrame. }
+  iModIntro. iExists γ'.
+  iSplitL "Hncinv".
+  { rewrite /is_circular. iApply ncinv_split_l; iApply "Hncinv". }
+  eauto.
+Qed.
 
 (* Once the circular buffer is initialized or recovered, the is_circular
    invariant can be allocated. By allocating that invariant, we no longer need
