@@ -502,7 +502,7 @@ Proof.
       rewrite /slidingM.logIndex. word. }
     rewrite take_drop in His_memStart_new.
 
-    rewrite (subslice_split_r (S memStart_txn_id0) (S σ0.(locked_diskEnd_txn_id)) (S nextDiskEnd_txn_id) txns0); try lia.
+    rewrite (subslice_split_r (memStart_txn_id0) (S σ0.(locked_diskEnd_txn_id)) (S nextDiskEnd_txn_id) txns0); try lia.
     iPureIntro.
     rewrite Hupds_len.
     replace (int.val σ.(diskEnd) +

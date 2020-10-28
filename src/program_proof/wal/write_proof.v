@@ -211,7 +211,7 @@ Lemma is_mem_memLog_append (bs : list update.t) (σ : locked_state) (σs : log_s
     slidingM.wf (memWrite σ.(memLog) bs) →
     (* TODO: this used to require memStart_txn_id ≤, but now this is required;
     does this make sense? it's coming from a drop (S memStart_txn_id). *)
-    (S memStart_txn_id ≤ length σs.(log_state.txns))%nat →
+    (memStart_txn_id ≤ length σs.(log_state.txns))%nat →
     is_mem_memLog σ.(memLog) σs.(log_state.txns) memStart_txn_id →
     is_mem_memLog (memWrite σ.(memLog) bs)
                     (σs.(log_state.txns) ++ [(slidingM.endPos (memWrite σ.(memLog) bs), bs)])

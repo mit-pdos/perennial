@@ -129,7 +129,7 @@ Definition memLog_linv_txns (σ: slidingM.t) (diskEnd logger_pos: u64) txns memS
     ⌜has_updates
       (take (slidingM.logIndex σ diskEnd)
             σ.(slidingM.log))
-      (subslice (S memStart_txn_id) (S diskEnd_txn_id) txns)⌝ ∗
+      (subslice memStart_txn_id (S diskEnd_txn_id) txns)⌝ ∗
   "%His_loggerEnd" ∷
     ⌜has_updates
       (subslice (slidingM.logIndex σ diskEnd)
@@ -151,7 +151,7 @@ Definition memLog_linv_txns (σ: slidingM.t) (diskEnd logger_pos: u64) txns memS
 (** the simple role of the memLog is to contain all the transactions in the
 abstract state starting at the memStart_txn_id *)
 Definition is_mem_memLog memLog txns memStart_txn_id : Prop :=
-  has_updates memLog.(slidingM.log) (drop (S memStart_txn_id) txns) ∧
+  has_updates memLog.(slidingM.log) (drop memStart_txn_id txns) ∧
   (Forall (λ pos, int.val pos ≤ slidingM.memEnd memLog) txns.*1).
 
 Reserved Notation "x ≤ y ≤ z ≤ v ≤ w"
@@ -218,7 +218,7 @@ Lemma memLog_linv_txns_combined_updates memLog diskEnd logger_pos txns memStart_
     ∀ (Htxn_id_ordering: (memStart_txn_id ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat)
       (HloggerPosOK: int.val diskEnd ≤ int.val logger_pos ≤ int.val memLog.(slidingM.mutable)),
     memLog_linv_txns memLog diskEnd logger_pos txns memStart_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id -∗
-    ⌜has_updates memLog.(slidingM.log) (drop (S memStart_txn_id) txns)⌝.
+    ⌜has_updates memLog.(slidingM.log) (drop memStart_txn_id txns)⌝.
 Proof.
   intros ??.
   iNamed 1.
