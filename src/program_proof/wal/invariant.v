@@ -323,6 +323,8 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
 
 Global Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
 
+(* TODO: rename [being_installed_name] to [already_installed_name] *)
+
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
