@@ -1,4 +1,4 @@
-From stdpp Require Import decidable countable.
+From stdpp Require Import decidable countable finite.
 From coqutil Require Import Datatypes.HList.
 From coqutil.Z Require Import BitOps.
 From coqutil.Word Require Naive.
@@ -606,4 +606,27 @@ Proof.
   rewrite seqZ_app; try word.
   unfold seqZ; simpl.
   replace (0%nat + (j+n))%Z with (j + n)%Z by word; auto.
+Qed.
+
+Instance word_finite `(word: Interface.word width) {word_ok: word.ok word} : Finite word.
+Proof.
+  apply (enc_finite
+    (λ w, int.nat w)
+    (λ n, word.of_Z (Z.of_nat n))
+    (Z.to_nat (2^width))).
+  - intros w. rewrite Z2Nat.id.
+    + apply word.of_Z_unsigned.
+    + apply word.unsigned_range.
+  - intros w. apply Z2Nat.inj_lt.
+    + apply word.unsigned_range.
+    + apply Z.pow_nonneg. done.
+    + apply word.unsigned_range.
+  - intros n ?. rewrite word.unsigned_of_Z.
+    rewrite wrap_small.
+    + rewrite Nat2Z.id. done.
+    + split.
+      * apply Nat2Z.is_nonneg.
+      * apply Nat2Z.inj_lt in H.
+        rewrite Z2Nat.id in H; [done|].
+        apply Z.pow_nonneg. done.
 Qed.
