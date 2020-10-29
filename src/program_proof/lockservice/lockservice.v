@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-(* common.go *)
+(* 0_common.go *)
 
 (* TryLock(lockname) returns OK=true if the lock is not held.
    If it is held, it returns OK=false immediately. *)
@@ -62,7 +62,13 @@ Definition overflow_guard_incr: val :=
     (for: (λ: <>, "v" + #1 < "v"); (λ: <>, Skip) := λ: <>,
       Continue).
 
-(* kvserver.go *)
+(* 0_nondet.go *)
+
+Definition nondet: val :=
+  rec: "nondet" <> :=
+    #true.
+
+(* 1_kvserver.go *)
 
 Module KVServer.
   Definition S := struct.decl [
@@ -134,13 +140,7 @@ Definition MakeKVServer: val :=
     struct.storeF KVServer.S "mu" "ks" (lock.new #());;
     "ks".
 
-(* nondet.go *)
-
-Definition nondet: val :=
-  rec: "nondet" <> :=
-    #true.
-
-(* lockserver.go *)
+(* 1_lockserver.go *)
 
 Module LockServer.
   Definition S := struct.decl [
@@ -216,8 +216,8 @@ Definition LockServer__Unlock: val :=
       lock.release (struct.loadF LockServer.S "mu" "ls");;
       #false).
 
-Definition MakeServer: val :=
-  rec: "MakeServer" <> :=
+Definition MakeLockServer: val :=
+  rec: "MakeLockServer" <> :=
     let: "ls" := struct.alloc LockServer.S (zero_val (struct.t LockServer.S)) in
     struct.storeF LockServer.S "locks" "ls" (NewMap boolT);;
     struct.storeF LockServer.S "lastSeq" "ls" (NewMap uint64T);;
@@ -225,7 +225,7 @@ Definition MakeServer: val :=
     struct.storeF LockServer.S "mu" "ls" (lock.new #());;
     "ls".
 
-(* rpc.go *)
+(* 2_rpc.go *)
 
 (* Returns true iff server reported error or request "timed out" *)
 Definition CallTryLock: val :=
@@ -275,7 +275,59 @@ Definition CallGet: val :=
     then KVServer__Get "srv" "args" "reply"
     else #true).
 
-(* client.go *)
+(* 3_kvclient.go *)
+
+(* the lockservice Clerk lives in the client
+   and maintains a little state. *)
+Module KVClerk.
+  Definition S := struct.decl [
+    "primary" :: struct.ptrT KVServer.S;
+    "cid" :: uint64T;
+    "seq" :: uint64T
+  ].
+End KVClerk.
+
+Definition MakeKVClerk: val :=
+  rec: "MakeKVClerk" "primary" "cid" :=
+    let: "ck" := struct.alloc KVClerk.S (zero_val (struct.t KVClerk.S)) in
+    struct.storeF KVClerk.S "primary" "ck" "primary";;
+    struct.storeF KVClerk.S "cid" "ck" "cid";;
+    struct.storeF KVClerk.S "seq" "ck" #1;;
+    "ck".
+
+Definition KVClerk__Put: val :=
+  rec: "KVClerk__Put" "ck" "key" "val" :=
+    overflow_guard_incr (struct.loadF KVClerk.S "seq" "ck");;
+    let: "args" := ref_to (refT (struct.t PutRequest.S)) (struct.new PutRequest.S [
+      "Args" ::= struct.mk PutArgs.S [
+        "Key" ::= "key";
+        "Value" ::= "val"
+      ];
+      "CID" ::= struct.loadF KVClerk.S "cid" "ck";
+      "Seq" ::= struct.loadF KVClerk.S "seq" "ck"
+    ]) in
+    struct.storeF KVClerk.S "seq" "ck" (struct.loadF KVClerk.S "seq" "ck" + #1);;
+    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
+    Skip;;
+    (for: (λ: <>, (CallPut (struct.loadF KVClerk.S "primary" "ck") (![refT (struct.t PutRequest.S)] "args") "reply" = #true)); (λ: <>, Skip) := λ: <>,
+      Continue).
+
+Definition KVClerk__Get: val :=
+  rec: "KVClerk__Get" "ck" "key" :=
+    overflow_guard_incr (struct.loadF KVClerk.S "seq" "ck");;
+    let: "args" := ref_to (refT (struct.t GetRequest.S)) (struct.new GetRequest.S [
+      "Args" ::= "key";
+      "CID" ::= struct.loadF KVClerk.S "cid" "ck";
+      "Seq" ::= struct.loadF KVClerk.S "seq" "ck"
+    ]) in
+    struct.storeF KVClerk.S "seq" "ck" (struct.loadF KVClerk.S "seq" "ck" + #1);;
+    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
+    Skip;;
+    (for: (λ: <>, (CallGet (struct.loadF KVClerk.S "primary" "ck") (![refT (struct.t GetRequest.S)] "args") "reply" = #true)); (λ: <>, Skip) := λ: <>,
+      Continue);;
+    struct.loadF RPCReply.S "Ret" "reply".
+
+(* 3_lockclient.go *)
 
 (* the lockservice Clerk lives in the client
    and maintains a little state. *)
@@ -346,54 +398,85 @@ Definition Clerk__Lock: val :=
       else Continue));;
     #true.
 
-(* kvclient.go *)
+(* 4_bank.go *)
 
-(* the lockservice Clerk lives in the client
-   and maintains a little state. *)
-Module KVClerk.
+Module Bank.
   Definition S := struct.decl [
-    "primary" :: struct.ptrT KVServer.S;
-    "cid" :: uint64T;
-    "seq" :: uint64T
+    "ls" :: struct.ptrT LockServer.S;
+    "ks" :: struct.ptrT KVServer.S
   ].
-End KVClerk.
+End Bank.
 
-Definition MakeKVClerk: val :=
-  rec: "MakeKVClerk" "primary" "cid" :=
-    let: "ck" := struct.alloc KVClerk.S (zero_val (struct.t KVClerk.S)) in
-    struct.storeF KVClerk.S "primary" "ck" "primary";;
-    struct.storeF KVClerk.S "cid" "ck" "cid";;
-    struct.storeF KVClerk.S "seq" "ck" #1;;
-    "ck".
+Module BankClerk.
+  Definition S := struct.decl [
+    "lck" :: struct.ptrT Clerk.S;
+    "kvck" :: struct.ptrT KVClerk.S;
+    "acc1" :: uint64T;
+    "acc2" :: uint64T
+  ].
+End BankClerk.
 
-Definition KVClerk__Put: val :=
-  rec: "KVClerk__Put" "ck" "key" "val" :=
-    overflow_guard_incr (struct.loadF KVClerk.S "seq" "ck");;
-    let: "args" := ref_to (refT (struct.t PutRequest.S)) (struct.new PutRequest.S [
-      "Args" ::= struct.mk PutArgs.S [
-        "Key" ::= "key";
-        "Value" ::= "val"
-      ];
-      "CID" ::= struct.loadF KVClerk.S "cid" "ck";
-      "Seq" ::= struct.loadF KVClerk.S "seq" "ck"
-    ]) in
-    struct.storeF KVClerk.S "seq" "ck" (struct.loadF KVClerk.S "seq" "ck" + #1);;
-    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-    Skip;;
-    (for: (λ: <>, (CallPut (struct.loadF KVClerk.S "primary" "ck") (![refT (struct.t PutRequest.S)] "args") "reply" = #true)); (λ: <>, Skip) := λ: <>,
-      Continue).
+Definition acquire_two: val :=
+  rec: "acquire_two" "lck" "l1" "l2" :=
+    (if: "l1" < "l2"
+    then
+      Clerk__Lock "lck" "l1";;
+      Clerk__Lock "lck" "l2"
+    else
+      Clerk__Lock "lck" "l2";;
+      Clerk__Lock "lck" "l1").
 
-Definition KVClerk__Get: val :=
-  rec: "KVClerk__Get" "ck" "key" :=
-    overflow_guard_incr (struct.loadF KVClerk.S "seq" "ck");;
-    let: "args" := ref_to (refT (struct.t GetRequest.S)) (struct.new GetRequest.S [
-      "Args" ::= "key";
-      "CID" ::= struct.loadF KVClerk.S "cid" "ck";
-      "Seq" ::= struct.loadF KVClerk.S "seq" "ck"
-    ]) in
-    struct.storeF KVClerk.S "seq" "ck" (struct.loadF KVClerk.S "seq" "ck" + #1);;
-    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-    Skip;;
-    (for: (λ: <>, (CallGet (struct.loadF KVClerk.S "primary" "ck") (![refT (struct.t GetRequest.S)] "args") "reply" = #true)); (λ: <>, Skip) := λ: <>,
-      Continue);;
-    struct.loadF RPCReply.S "Ret" "reply".
+Definition release_two: val :=
+  rec: "release_two" "lck" "l1" "l2" :=
+    (if: "l1" < "l2"
+    then
+      Clerk__Unlock "lck" "l2";;
+      Clerk__Unlock "lck" "l1"
+    else
+      Clerk__Unlock "lck" "l1";;
+      Clerk__Unlock "lck" "l2").
+
+(* Requires that the account numbers are smaller than num_accounts
+   If account balance in acc_from is at least amount, transfer amount to acc_to *)
+Definition BankClerk__transfer_internal: val :=
+  rec: "BankClerk__transfer_internal" "bck" "acc_from" "acc_to" "amount" :=
+    acquire_two (struct.loadF BankClerk.S "lck" "bck") "acc_from" "acc_to";;
+    let: "old_amount" := KVClerk__Get (struct.loadF BankClerk.S "kvck" "bck") "acc_from" in
+    (if: "old_amount" ≥ "amount"
+    then
+      KVClerk__Put (struct.loadF BankClerk.S "kvck" "bck") "acc_from" ("old_amount" - "amount");;
+      KVClerk__Put (struct.loadF BankClerk.S "kvck" "bck") "acc_to" (KVClerk__Get (struct.loadF BankClerk.S "kvck" "bck") "acc_to" + "amount");;
+      #()
+    else #());;
+    release_two (struct.loadF BankClerk.S "lck" "bck") "acc_from" "acc_to".
+
+Definition BankClerk__SimpleTransfer: val :=
+  rec: "BankClerk__SimpleTransfer" "bck" "amount" :=
+    BankClerk__transfer_internal "bck" (struct.loadF BankClerk.S "acc1" "bck") (struct.loadF BankClerk.S "acc2" "bck") "amount".
+
+(* If account balance in acc_from is at least amount, transfer amount to acc_to *)
+Definition BankClerk__SimpleAudit: val :=
+  rec: "BankClerk__SimpleAudit" "bck" :=
+    acquire_two (struct.loadF BankClerk.S "lck" "bck") (struct.loadF BankClerk.S "acc1" "bck") (struct.loadF BankClerk.S "acc2" "bck");;
+    let: "sum" := KVClerk__Get (struct.loadF BankClerk.S "kvck" "bck") (struct.loadF BankClerk.S "acc1" "bck") + KVClerk__Get (struct.loadF BankClerk.S "kvck" "bck") (struct.loadF BankClerk.S "acc2" "bck") in
+    release_two (struct.loadF BankClerk.S "lck" "bck") (struct.loadF BankClerk.S "acc1" "bck") (struct.loadF BankClerk.S "acc2" "bck");;
+    "sum".
+
+Definition MakeBank: val :=
+  rec: "MakeBank" "acc" "balance" :=
+    let: "ls" := MakeLockServer #() in
+    let: "ks" := MakeKVServer #() in
+    MapInsert (struct.loadF KVServer.S "kvs" "ks") "acc" "balance";;
+    struct.mk Bank.S [
+      "ls" ::= "ls";
+      "ks" ::= "ks"
+    ].
+
+Definition MakeBankClerk: val :=
+  rec: "MakeBankClerk" "b" "acc1" "acc2" "cid" :=
+    let: "bck" := struct.alloc BankClerk.S (zero_val (struct.t BankClerk.S)) in
+    struct.storeF BankClerk.S "lck" "bck" (MakeClerk (struct.get Bank.S "ls" "b") "cid");;
+    struct.storeF BankClerk.S "kvck" "bck" (MakeKVClerk (struct.get Bank.S "ks" "b") "cid");;
+    struct.storeF BankClerk.S "acc1" "bck" "acc1";;
+    struct.storeF BankClerk.S "acc2" "bck" "acc2";;
+    "bck".
