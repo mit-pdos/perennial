@@ -540,11 +540,6 @@ Proof.
   iIntros "I". iDestruct "I" as (?) "I". iExists _, _. iFrame.
 Qed.
 
-(* TODO: this isn't true, because [is_installed_read] is too weak, allowing
-every address to be any txn_id in the right range; we can prove something
-intermediate between these predicates that is true on crash but does guarantee
-that every address is one of the two transactions, and that can be restored on
-crash *)
 Theorem is_installed_restore_read γ d txns installed_txn_id diskEnd_txn_id new_installed_txn_id :
   fmcounter γ.(installed_txn_name) (1/2) installed_txn_id -∗
   fmcounter γ.(new_installed_txn_name) (1/2) new_installed_txn_id -∗

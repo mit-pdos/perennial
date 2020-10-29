@@ -593,8 +593,14 @@ Proof.
      the new one only if we crashed mid install *)
 
   iExists _, _. iFrame "Hdurable".
-  (* TODO: [is_installed], [is_installed_txn], [is_durable_txn], and allocate
-  [is_base_disk] *)
+  iDestruct (is_installed_restore_read with "[] [] [] Hinstalled") as "Hinstalled".
+  { admit. (* fmcounter for [installed_txn_name] *) }
+  { admit. (* [already_installed_name] *) }
+  { admit. (* [being_installed_txns_name] *) }
+  (* TODO: [is_installed] is at old durable_lb, not new [installed_txn_id], not
+           sure how to resolve this (maybe [disk_inv_durable] shouldn't
+           instantiate it at durable_lb but at installed_txn_id) *)
+  (* TODO: [is_installed_txn], [is_durable_txn], and allocate [is_base_disk] *)
 Admitted. (* BUG: the theorem statement isn't complete yet, but if we abort
 this, then the proof runs in -vos mode... *)
 
