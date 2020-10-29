@@ -9,7 +9,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From RecordUpdate Require Import RecordUpdate.
 From Perennial.algebra Require Import auth_map fmcounter.
 From Perennial.goose_lang.lib Require Import lock.
-From Perennial.Helpers Require Import NamedProps.
+From Perennial.Helpers Require Import NamedProps Integers.
 From Perennial.Helpers Require Import ModArith.
 From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof nondet rpc proof kv_proof.
 
@@ -30,7 +30,8 @@ Context `{!heapG Σ, !bankG Σ}.
 
 Implicit Types (γ : bank_names).
 
-Context `{acc1:u64, acc2:u64}. (* Per-lock invariant *)
+Context `{acc1:u64, acc2:u64, bal_total:Z}. (* Account names and total balance for bank; using Z for 
+                                               anything involking arithmetic *)
 
 Definition kv_gn γ := γ.(bank_ks_names).(ks_kvMapGN).
 Definition log_gn γ := γ.(bank_logBalGN).
@@ -48,13 +49,42 @@ Definition own_bank_clerk (bank_ck:loc) γ : iProp Σ :=
   "Hacc1" ∷ bank_ck ↦[BankClerk.S :: "acc1"] #acc1 ∗
   "Hacc1" ∷ bank_ck ↦[BankClerk.S :: "acc2"] #acc2 ∗
 
-  "#Hacc1_is_lock" ∷ lockservice_is_lock γ.(bank_ls_names) acc1 ∗
-  "#Hacc2_is_lock" ∷ lockservice_is_lock γ.(bank_ls_names) acc2
+  "Hacc1_is_lock" ∷ lockservice_is_lock γ.(bank_ls_names) acc1 ∗
+  "Hacc2_is_lock" ∷ lockservice_is_lock γ.(bank_ls_names) acc2
 .
 
+Check bal_total.
+
 Definition bank_inv γ : iProp Σ :=
-  ∃ logBalMap:gmap u64 u64,
-  "HlogBalCtxl" ∷ map_ctx (log_gn γ) 1 logBalMap
+  ∃ (bal1 bal2:u64),
+  "HlogBalCtxl" ∷ map_ctx (log_gn γ) 1 ({[ acc1:=bal1 ]} ∪ {[ acc2:=bal2 ]}) ∗
+  ⌜(int.Z bal1 + int.Z bal2 = bal_total)%Z⌝
   .
+
+Definition bankN := nroot .@ "bank".
+
+Lemma Bank__SimpleTransfer_spec (bck:loc) (amount:u64) γ :
+{{{
+     inv bankN (bank_inv γ) ∗
+     own_bank_clerk bck γ
+}}}
+  BankClerk__SimpleTransfer #bck #amount
+{{{
+     RET #();
+     own_bank_clerk bck γ
+}}}.
+Proof.
+  iIntros (Φ) "[#Hbinv Hpre] Hpost".
+  iNamed "Hpre".
+  (* FIXME: iNamed not working correctly? *)
+  iDestruct "Hpre" as "(Hacc1 & Hacc2 & #Hacc_is_lock)".
+  iNamed "Hacc_is_lock".
+  wp_lam. wp_pures.
+  wp_loadField.
+  wp_loadField.
+  wp_lam. (* We just use the helper function in-line *)
+  wp_pures.
+  wp_loadField.
+Admitted.
 
 End bank_proof.
