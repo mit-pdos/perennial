@@ -33,7 +33,7 @@ Section lockservice_proof.
 Context `{!heapG Σ, !lockserviceG Σ}.
 Context {Ps : u64 -> iProp Σ}. (* Per-lock invariant *)
 
-Implicit Types (γ : lockserviceGN).
+Implicit Types (γ : lockservice_names).
 
 (** A token for being allowed to allocate a lock name. *)
 Definition lockservice_alloc_token γ (ln:u64) : iProp Σ :=
