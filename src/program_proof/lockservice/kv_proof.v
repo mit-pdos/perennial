@@ -11,7 +11,7 @@ From Perennial.algebra Require Import auth_map fmcounter.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof nondet.
+From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof nondet rpc.
 
 Section kv_proof.
 Context `{!heapG Σ}.
@@ -22,9 +22,6 @@ Implicit Types (stk:stuckness) (E: coPset).
   Context `{!rpcG Σ u64}.
   Context `{!mapG Σ (u64*u64) unit}.
   Context `{!mapG Σ u64 u64}.
-  Context `{Ps : u64 -> iProp Σ}.
-
-  Parameter validLocknames : gmap u64 unit.
 
   Context `{γkv:gname}.
 
@@ -44,11 +41,14 @@ Definition KVServer_own_core (srv:loc) : iProp Σ :=
 ∗ "Hkvctx" ∷ map_ctx γkv 1 kvsM
 .
 
+(* FIXME: this is currently just a placeholder *)
+Definition own_kvclerk (kck:loc) (γrpc:rpc_names): iProp Σ := True.
+
 Definition is_kvserver := is_server (Server_own_core:=KVServer_own_core).
 
 Lemma put_core_spec (srv:loc) (k:u64) (v:u64) :
 {{{ 
-     KVServer_own_core srv ∗ ▷ Put_Pre k v
+     KVServer_own_core srv ∗ Put_Pre k v
 }}}
   KVServer__put_core #srv (#k, (#v, #()))%V
 {{{
@@ -72,7 +72,7 @@ Qed.
 
 Lemma get_core_spec (srv:loc) (k:u64) :
 {{{ 
-     KVServer_own_core srv ∗ ▷ Get_Pre k
+     KVServer_own_core srv ∗ Get_Pre k
 }}}
   KVServer__get_core #srv #k%V
 {{{
@@ -105,5 +105,27 @@ Proof.
   iExists v'; iFrame.
   iSplit; eauto. iExists _, _; iFrame.
 Qed.
+
+Lemma KVClerk__Get_spec (kck:loc) (key:u64) γ :
+{{{
+     own_kvclerk kck γ ∗ (key [[γkv]]↦ _ )
+}}}
+  KVClerk__Get #kck #key
+{{{
+     v, RET v; ∃va, 
+     own_kvclerk kck γ ∗ (key [[γkv]]↦ va )
+}}}.
+Admitted.
+
+Lemma KVClerk__Put_spec (kck:loc) (key va:u64) γ :
+{{{
+     own_kvclerk kck γ ∗ (key [[γkv]]↦ _ )
+}}}
+  KVClerk__Get #kck #key #va
+{{{
+     RET #();
+     own_kvclerk kck γ ∗ (key [[γkv]]↦ va)
+}}}.
+Admitted.
 
 End kv_proof.
