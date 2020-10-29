@@ -12,7 +12,9 @@ Import uPred.
 
 (* Heap that supports non-atomic operations. Very mildly adapted from
    lambda-rust by Jung et al., and generalized to support arbitrary
-   domains/ranges of values, as opposed to lambda-rust locs and values. *)
+   domains/ranges of values, as opposed to lambda-rust locs and values.
+
+   This is used for the physical heap in GooseLang. *)
 
 Definition lock_stateR : cmraT :=
   csumR unitR natR.

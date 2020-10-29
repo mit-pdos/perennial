@@ -9,7 +9,11 @@ Import uPred.
 
 (** Adds support to iris.base_logic.lib.gen_heap for extracting and changing the
 names of ghost variables, to use as part of a crash "generation" and support
-updating the generation of a heap. *)
+updating the generation of a heap.
+
+This is used for the FFI layer in GooseLang.
+([na_heap], which is used for the physical heap, contains a similar construction.)
+*)
 
 Section gen_heap_defs.
   Context {L V : Type} `{Countable L}.
