@@ -130,7 +130,7 @@ Defined.
 Context `{!rpcG Σ u64}.
 Context `{Server_own_core: loc -> iProp Σ}.
 
-Definition Server_mutex_inv (srv:loc) (γrpc:RPC_GS) : iProp Σ :=
+Definition Server_mutex_inv (srv:loc) (γrpc:rpc_names) : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64)
     (lastReplyM:gmap u64 u64),
       "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
@@ -376,7 +376,7 @@ Definition CallFunction (f:val) (fname:string) : val :=
 Lemma CallFunction_spec (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) (f:val) (fname:string) PreCond PostCond γrpc γPost :
 ¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
 -> (∀ (srv' req_ptr' reply_ptr' : loc) (req':RPCRequest) 
-   (reply' : Reply64) (γrpc' : RPC_GS) (γPost' : gname),
+   (reply' : Reply64) (γrpc' : rpc_names) (γPost' : gname),
 {{{ "#Hls" ∷ is_server srv' γrpc'
     ∗ "#HargsInv" ∷ inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req' γrpc' γPost')
     ∗ "#Hargs" ∷ read_request req_ptr' req'
@@ -497,7 +497,7 @@ Definition Clerk__Function (f:val) (fname:string) : val :=
       else Continue));;
     struct.loadF retty_to_rdesc "Ret" "reply".
 
-Definition own_clerk (ck:val) (srv:loc) (γrpc:RPC_GS) : iProp Σ
+Definition own_clerk (ck:val) (srv:loc) (γrpc:rpc_names) : iProp Σ
   :=
   ∃ (ck_l:loc) (cid cseqno : u64),
     "%" ∷ ⌜ck = #ck_l⌝

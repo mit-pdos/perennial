@@ -41,14 +41,14 @@ Record RPCReply :=
 }.
 
 (** Reply-cache ghost names. *)
-Record RPC_GS :=
+Record rpc_names :=
   mkγrpc {
       rc:gname; (* full reply history: tracks the reply for every (CID, SEQ) pair that exists, where [None] means "reply not yet determined" *)
       lseq:gname; (* latest sequence number for each client seen by server *)
       cseq:gname (* next sequence number to be used by each client (i.e., one ahead of the latest that it used *)
     }.
 
-Definition RPCClient_own (cid cseqno:u64) (γrpc:RPC_GS) : iProp Σ :=
+Definition RPCClient_own (cid cseqno:u64) (γrpc:rpc_names) : iProp Σ :=
   "Hcseq_own" ∷ (cid fm[[γrpc.(cseq)]]↦ int.nat cseqno)
 .
 
@@ -76,7 +76,7 @@ initialized: Request created and "on its way" to the server.
 processing: The server received the request and is computing the reply.
 done: The reply was computed as is waiting for the client to take notice.
 dead: The client took out ownership of the reply. *)
-Definition RPCRequest_inv (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:RPC_GS) (γPost:gname) : iProp Σ :=
+Definition RPCRequest_inv (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:rpc_names) (γPost:gname) : iProp Σ :=
    "#Hlseq_bound" ∷ req.(CID) fm[[γrpc.(cseq)]]> int.nat req.(Seq)
     ∗ ( (* Initialized, but server has not started processing *)
       "Hreply" ∷ (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦ None ∗ PreCond req.(Args) ∨ 
@@ -93,7 +93,7 @@ Definition RPCRequest_inv (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iPro
       )
     ).
 
-Definition ReplyCache_inv (γrpc:RPC_GS) : iProp Σ :=
+Definition ReplyCache_inv (γrpc:rpc_names) : iProp Σ :=
   ∃ replyHistory:gmap (u64 * u64) (option R),
       ("Hrcctx" ∷ map_ctx γrpc.(rc) 1 replyHistory)
     ∗ ("#Hcseq_lb" ∷ [∗ map] cid_seq ↦ _ ∈ replyHistory, cid_seq.1 fm[[γrpc.(cseq)]]> int.nat cid_seq.2)
@@ -104,7 +104,7 @@ Definition rpcRequestInvN := nroot .@ "rpcRequestInvN".
 
 (** Server side: begin processing a request that is not in the reply cache yet.
 Returns the request precondition. *)
-Lemma server_takes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (old_seq:u64) (γrpc:RPC_GS)
+Lemma server_takes_request (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (old_seq:u64) (γrpc:rpc_names)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
      ((map_get lastSeqM req.(CID)).1 = old_seq)
   -> (int.Z req.(Seq) > int.Z old_seq)%Z
@@ -174,7 +174,7 @@ Qed.
 
 (** Server side: complete processing a request and register it in the reply cache.
 Requires the request postcondition. *)
-Lemma server_completes_request `{!Inhabited R} (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:RPC_GS) (reply:R)
+Lemma server_completes_request `{!Inhabited R} (PreCond  : A -> iProp Σ) (PostCond  : A -> R -> iProp Σ) (req:RPCRequest) (γrpc:rpc_names) (reply:R)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γP :
   (inv replyCacheInvN (ReplyCache_inv γrpc ))
   -∗ (inv rpcRequestInvN (RPCRequest_inv PreCond PostCond req γrpc γP))
@@ -226,7 +226,7 @@ Qed.
 
 (** Server side: when a request [args] has a sequence number less than [lseq],
 then it is stale. *)
-Lemma smaller_seqno_stale_fact (req:RPCRequest) (lseq:u64) (γrpc:RPC_GS) lastSeqM lastReplyM:
+Lemma smaller_seqno_stale_fact (req:RPCRequest) (lseq:u64) (γrpc:rpc_names) lastSeqM lastReplyM:
   lastSeqM !! req.(CID) = Some lseq ->
   (int.Z req.(Seq) < int.Z lseq)%Z ->
   inv replyCacheInvN (ReplyCache_inv γrpc) -∗
@@ -325,7 +325,7 @@ Proof using Type*.
 Qed.
 
 (** Server side: lookup reply in the cache, and return the appropriate receipt. *)
-Lemma server_replies_to_request {_:into_val.IntoVal R} (req:RPCRequest) (γrpc:RPC_GS) (reply:R)
+Lemma server_replies_to_request {_:into_val.IntoVal R} (req:RPCRequest) (γrpc:rpc_names) (reply:R)
       (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) :
      (lastSeqM !! req.(CID) = Some req.(Seq))
   -> (∃ ok, map_get lastReplyM req.(CID) = (reply, ok))
