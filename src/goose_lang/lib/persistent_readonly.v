@@ -69,7 +69,7 @@ Section goose_lang.
   Qed.
 
   Theorem readonly_load_lt E P `{H: AsMapsTo P Φ} :
-    readonly P -∗ |={E}=> ∃ (q: Qp), ⌜(q < 1)%Qc⌝ ∗ Φ q.
+    readonly P -∗ |={E}=> ∃ (q: Qp), ⌜(q < 1)%Qp⌝ ∗ Φ q.
   Proof.
     unseal.
     iIntros "#Hro".

@@ -142,7 +142,7 @@ Qed.
 Lemma array_frac_valid l t q vs :
   0 < ty_size t →
   0 < length vs →
-  array l q t vs -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
+  array l q t vs -∗ ⌜(q ≤ 1)%Qp⌝.
 Proof.
   iIntros (??) "Ha".
   destruct vs; [simpl in H0; lia|].

@@ -73,7 +73,7 @@ Section goose_lang.
 
   Theorem struct_mapsto_frac_valid l q t v :
     0 < ty_size t →
-    l ↦[t]{q} v -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
+    l ↦[t]{q} v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof.
     unseal.
     iIntros (?) "[Hvals %Hval_ty]".

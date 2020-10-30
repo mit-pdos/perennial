@@ -196,7 +196,7 @@ Qed.
 
 Lemma wp_SliceAppend'' stk E s t `{!IntoValForType IntoVal0 t} vs1 vs2 (x: V) (q : Qp) (n : u64) :
   0 ≤ int.Z n ≤ int.Z (Slice.sz s) ≤ int.Z (Slice.cap s) ->
-  (Qcanon.Qclt q 1)%Qc ->
+  (q < 1)%Qp ->
   {{{ is_slice_small (slice_take s t n) t q vs1 ∗
       is_slice (slice_skip s t n) t 1 vs2 }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E

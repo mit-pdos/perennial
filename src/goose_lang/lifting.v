@@ -66,7 +66,7 @@ Section definitions.
   Qed.
 
   Theorem heap_mapsto_frac_valid l q v:
-     heap_mapsto l q v -∗ ⌜(q ≤ 1%Qp)%Qc⌝.
+     heap_mapsto l q v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof.
     iIntros "H".
     iDestruct (heap_mapsto_na_acc with "H") as "(Hna&_)".

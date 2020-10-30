@@ -107,7 +107,7 @@ Qed.
 Lemma is_slice_small_frac_valid s t q vs :
   0 < ty_size t →
   0 < length vs →
-  is_slice_small s t q vs -∗ ⌜(q ≤ 1)%Qc⌝.
+  is_slice_small s t q vs -∗ ⌜(q ≤ 1)%Qp⌝.
 Proof.
   iIntros (??) "[Ha _]".
   by iApply (array_frac_valid with "Ha").
@@ -116,7 +116,7 @@ Qed.
 Lemma is_slice_frac_valid s t q vs :
   0 < ty_size t →
   0 < length vs →
-  is_slice s t q vs -∗ ⌜(q ≤ 1)%Qc⌝.
+  is_slice s t q vs -∗ ⌜(q ≤ 1)%Qp⌝.
 Proof.
   iIntros (??) "Hs".
   iDestruct (is_slice_to_small with "Hs") as "Hs".
@@ -1013,7 +1013,7 @@ Lemma replicate_singleton {A} (x:A) :
 Proof. reflexivity. Qed.
 
 Lemma array_split_1n l q t vs :
-  (1 <= length vs)%nat ->
+  (1 ≤ length vs)%nat ->
   l ↦∗[t]{q} vs -∗ ∃ v vs', l ↦[t]{q} v ∗ (l +ₗ ty_size t) ↦∗[t]{q} vs' ∗ ⌜vs = v::vs'⌝.
 Proof.
   iIntros (Hlen).
@@ -1029,7 +1029,7 @@ Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) (n : u64) :
   has_zero t ->
   val_ty x t ->
   0 ≤ int.Z n ≤ int.Z (Slice.sz s) ≤ int.Z (Slice.cap s) ->
-  (Qcanon.Qclt q 1)%Qc ->
+  (q < 1)%Qp ->
   {{{ is_slice_small (slice_take s t n) t q vs1 ∗
       is_slice (slice_skip s t n) t 1 vs2 }}}
     SliceAppend t s x @ stk; E
@@ -1121,7 +1121,7 @@ Proof.
     wp_call.
 
     iDestruct (as_fractional_weaken q with "Hptr") as "Hptr".
-    { eapply Qcanon.Qclt_le_weak. eauto. }
+    { apply Qp_lt_le_incl. eauto. }
 
     iDestruct (array_app with "[Hprefix Hptr]") as "Hptr".
     { rewrite /slice_take /slice_skip /=.
@@ -1154,7 +1154,7 @@ Proof.
     rewrite array_app.
     iDestruct "Hvs" as "[Hprefix Hvs]".
     iDestruct (as_fractional_weaken q with "Hprefix") as "Hprefix".
-    { eapply Qcanon.Qclt_le_weak. eauto. }
+    { eapply Qp_lt_le_incl. eauto. }
 
     iFrame "Hprefix".
     iSplitR.

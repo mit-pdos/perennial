@@ -296,7 +296,7 @@ Qed.
 
 Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : u64) (q : Qp) :
   0 ≤ int.Z n ≤ int.Z (Slice.sz bk_s) ≤ int.Z (Slice.cap bk_s) ->
-  (Qcanon.Qclt q 1)%Qc ->
+  (q < 1)%Qp ->
   {{{ updates_slice_frag (slice_take bk_s (struct.t Update.S) n) q (take (int.nat n) bs) ∗
       updates_slice (slice_skip bk_s (struct.t Update.S) n) (drop (int.nat n) bs) ∗
       is_block uv.2 1 b }}}

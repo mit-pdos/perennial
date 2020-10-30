@@ -11,21 +11,18 @@ Section bi.
   Implicit Types (P:PROP) (Φ: Qp → PROP) (q: Qp).
 
   Theorem fractional_weaken Φ `{fractional.Fractional _ Φ} q1 q2 :
-    (q1 ≤ q2)%Qc ->
+    (q1 ≤ q2)%Qp ->
     Φ q2 -∗ Φ q1.
   Proof.
-    iIntros (Hle) "H".
-    edestruct (Qcanon.Qcle_lt_or_eq); eauto.
-    - edestruct Qp_split_lt; eauto.
-      rewrite -H1.
+    iIntros ([Hlt%Qp_split_lt|<-]%Qp_le_lteq) "H".
+    - destruct Hlt as [? <-].
       rewrite fractional.
       iDestruct "H" as "[$ _]".
-    - apply Qp_eq in H0.
-      subst; done.
+    - done.
   Qed.
 
   Theorem as_fractional_weaken `{!fractional.AsFractional P Φ q2} q1 :
-    (q1 ≤ q2)%Qc →
+    (q1 ≤ q2)%Qp →
     P -∗ Φ q1.
   Proof.
     iIntros (?) "HP".

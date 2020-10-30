@@ -3,6 +3,7 @@ From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.bi Require Import fractional.
 From iris.algebra Require Import excl csum frac auth agree numbers.
+Set Default Proof Using "Type".
 
 (* Very heavily based on part of the ARC CMRA from the weakmem branch of lambda-rust by Dang et al.
    See https://gitlab.mpi-sws.org/iris/lambda-rust/-/blob/masters/weak_mem/theories/lang/arc_cmra.v
@@ -55,12 +56,13 @@ Section frac_count.
     iIntros "own". rewrite -own_op.
     iMod (@own_update _ _ with "own") as "$"; [|done].
     apply auth_update_alloc.
-    rewrite Pos.add_comm Qp_plus_comm -pos_op_plus /= -frac_op' pair_op Some_op.
+    rewrite Pos.add_comm Qp_add_comm -pos_op_plus /= -frac_op' pair_op Some_op.
     rewrite -{2}(right_id None op (Some ((q' /2)%Qp, _))).
     apply op_local_update_discrete => _ /=. split; simpl; [|done].
-    apply frac_valid'. rewrite -Hqq' comm -{2}(Qp_div_2 q').
-    apply Qcplus_le_mono_l. rewrite -{1}(Qcanon.Qcplus_0_l (q'/2)%Qp).
-    apply Qcplus_le_mono_r, Qp_ge_0.
+    apply frac_valid'. rewrite -Hqq' comm.
+    apply Qp_add_le_mono; first done.
+    rewrite -[X in (_ ≤ X)%Qp]Qp_div_2.
+    apply Qp_le_add_r.
   Qed.
 
   Lemma fc_auth_last_agree γ q q':

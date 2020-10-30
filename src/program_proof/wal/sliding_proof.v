@@ -23,7 +23,7 @@ Definition readonly_log_inner' logSlice σ (q : Qp) : iProp Σ :=
                   (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
 Definition readonly_log_inner logSlice σ : iProp Σ :=
-   ∃ (q : Qp), ⌜Qcanon.Qclt q 1⌝ ∗ readonly_log_inner' logSlice σ q.
+   ∃ (q : Qp), ⌜q < 1⌝%Qp ∗ readonly_log_inner' logSlice σ q.
 
 Definition mutable_log logSlice σ : iProp Σ :=
   "%logSlice_wf" ∷ ⌜int.nat logSlice.(Slice.sz) = length σ.(slidingM.log) ∧ int.Z logSlice.(Slice.sz) ≤ int.Z logSlice.(Slice.cap)⌝ ∗
