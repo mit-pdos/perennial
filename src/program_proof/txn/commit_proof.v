@@ -534,6 +534,25 @@ Proof.
   iApply "Hlatest".
 Qed.
 
+Lemma apply_upds_u64_dom : ∀ upds d,
+  ( ∀ blkno,
+    blkno ∈ update.addr <$> upds ->
+    blkno ∈ dom (gset u64) d ) ->
+  dom (gset u64) (apply_upds_u64 d upds) =
+  dom (gset u64) d.
+Proof.
+  induction upds; simpl; eauto; intros.
+  rewrite IHupds.
+  - rewrite dom_insert_L.
+    assert (a.(update.addr) ∈ dom (gset u64) d); last by set_solver.
+    eapply H. constructor.
+  - intros.
+    destruct (decide (blkno = a.(update.addr))); subst.
+    + apply elem_of_dom. rewrite lookup_insert. eauto.
+    + apply elem_of_dom. rewrite lookup_insert_ne; eauto. rewrite -elem_of_dom.
+      eapply H. econstructor. eauto.
+Qed.
+
 Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   ↑walN.@"wal" ⊆ E ->
   {{{ is_txn l γ dinit ∗
@@ -694,6 +713,18 @@ Proof using txnG0 Σ.
       iDestruct "Hlv" as "[_ Hlv]".
       iDestruct (wal_heap_mapsto_latest_helper with "[$Hiswal_heap $Hwal_latest $Hlv]") as "%Hlwh_ok".
       eauto.
+    }
+    iAssert (⌜∀ lv, lv ∈ updlist_olds ->
+                update.addr (fst lv) ∈ dom (gset u64) (gmap_addr_by_block σl.(latest))⌝)%I
+      as "%Hupdlist_olds_σl_latest".
+    {
+      iIntros (lv Hlv).
+      eapply elem_of_list_lookup_1 in Hlv. destruct Hlv as [i Hlv].
+      iDestruct (big_sepML_lookup_l_acc with "Hheapmatch") as (k v) "(% & Hlv & _)"; eauto.
+      iDestruct "Hlv" as "[Hlv _]".
+      iDestruct "Hlv" as (blockK v0) "(<- & _ & _ & _)".
+      eapply map_filter_lookup_Some_11 in H.
+      iPureIntro. eapply elem_of_dom. eauto.
     }
     iModIntro. iSplitL "Hiswal_inner Hiswal_heap".
     { iModIntro. iExists _. iFrame. }
@@ -949,7 +980,21 @@ Proof using txnG0 Σ.
         iPureIntro. intros.
         rewrite -?elem_of_dom gmap_addr_by_block_dom_union.
         rewrite gmap_addr_by_block_fmap dom_fmap.
-        admit.
+        rewrite subseteq_union_1_L; eauto.
+
+        assert (∀ (blkno : u64), blkno ∈ update.addr <$> updlist_olds.*1 ->
+                blkno ∈ dom (gset u64) (gmap_addr_by_block σl.(latest)))
+          as Hupdlist_olds_σl_latest_blkno.
+        {
+          intros blkno Hblkno.
+          eapply elem_of_list_fmap_2 in Hblkno. destruct Hblkno as [u [? Hblkno]]. subst.
+          eapply elem_of_list_fmap_2 in Hblkno. destruct Hblkno as [lv [? Hblkno]]. subst.
+          eauto.
+        }
+
+        rewrite Hlatestdom.
+        rewrite apply_upds_u64_dom; eauto.
+        rewrite -Hlatestdom; eauto.
       }
 
       iIntros (k offmap blk Hoffmap Hblk).
