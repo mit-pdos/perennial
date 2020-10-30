@@ -563,6 +563,28 @@ Proof.
   rewrite lookup_insert_ne; eauto.
 Qed.
 
+Lemma apply_upds_u64_lookup lv : ∀ updlist_olds d,
+  lv ∈ updlist_olds ->
+  NoDup ((λ lv : update.t * (Block * list Block), (lv.1).(update.addr)) <$> updlist_olds) ->
+  apply_upds_u64 d updlist_olds.*1 !! (lv.1).(update.addr) = Some (lv.1).(update.b).
+Proof.
+  induction updlist_olds; simpl; intros.
+  { inversion H. }
+  inversion H0; clear H0; subst.
+  rewrite apply_upds_u64_insert.
+  2: {
+    rewrite -list_fmap_map.
+    rewrite -list_fmap_compose.
+    eapply H3.
+  }
+  inversion H; clear H; subst.
+  { rewrite lookup_insert. eauto. }
+  rewrite lookup_insert_ne.
+  { apply IHupdlist_olds; eauto. }
+  intro H. rewrite H in H3. apply H3.
+  eapply elem_of_list_fmap_1_alt; eauto.
+Qed.
+
 Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   ↑walN.@"wal" ⊆ E ->
   {{{ is_txn l γ dinit ∗
@@ -1061,6 +1083,12 @@ Proof using txnG0 Σ.
           erewrite Hlwh_any in Hsome; last by eauto. iPureIntro. congruence.
         }
 
+        iAssert (⌜blk = (lv.1).(update.b)⌝)%I as %->.
+        {
+          rewrite apply_upds_u64_lookup in Hblk; eauto.
+          iPureIntro. congruence.
+        }
+
         erewrite gmap_addr_by_block_union_lookup in Hoffmap; eauto.
         2: {
           rewrite gmap_addr_by_block_fmap lookup_fmap Hbufamap. done. }
@@ -1087,7 +1115,6 @@ Proof using txnG0 Σ.
           rewrite lookup_fmap HbufData /= in Hok'.
           destruct Hok' as [Hok' ?]; subst.
           intuition eauto.
-          admit.
         }
         {
           iDestruct (big_sepM_lookup with "Hpre") as "(%Hin & %Hvalidaddr & %Hvalidoff & %Hk')"; eauto.
@@ -1097,7 +1124,7 @@ Proof using txnG0 Σ.
           specialize (Hok' _ bufData Hvalidaddr Hvalidoff Hin).
           rewrite lookup_fmap in Hnone. rewrite -> fmap_None in Hnone.
           rewrite lookup_fmap Hnone /= in Hok'.
-          admit.
+          eauto.
         }
       }
       {
@@ -1144,8 +1171,9 @@ Proof using txnG0 Σ.
     wp_pures.
     iApply "HΦ". iFrame.
   }
-  Fail idtac.
-Admitted.
+Unshelve.
+  all: eauto.
+Qed.
 
 Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   ↑walN.@"wal" ⊆ E ->
