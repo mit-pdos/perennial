@@ -1853,4 +1853,25 @@ Proof using walheapG0.
   eapply wal_wf_advance_durable_lb; eauto. lia.
 Qed.
 
+Theorem lwh_crash_heaps γ σ crash_heaps lwh :
+  ghost_var γ.(wal_heap_crash_heaps) (1 / 2) crash_heaps -∗
+  is_locked_walheap γ lwh -∗
+  wal_heap_inv γ σ -∗
+  ∃ installed_lb durable_lb,
+    wal_heap_inv_crashes crash_heaps
+      {|
+        log_state.d := lwh.(locked_wh_σd);
+        log_state.txns := lwh.(locked_wh_σtxns);
+        log_state.installed_lb := installed_lb;
+        log_state.durable_lb := durable_lb |}.
+Proof.
+  iIntros "Hch Hlwh Hinv".
+  iNamed "Hinv".
+  iDestruct (ghost_var_agree with "Hch Hcrash_heaps_own") as %<-.
+  destruct σ; simpl.
+  iDestruct (ghost_var_agree with "Hlwh Htxns") as "%Hlwh".
+  inversion Hlwh; clear Hlwh; subst.
+  iExists _, _. iFrame.
+Qed.
+
 End heap.

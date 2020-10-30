@@ -709,10 +709,11 @@ Proof using txnG0 Σ.
     iExists (snd <$> updlist_olds).
     iExists crash_heaps.
 
-    iFrame "Hcrashheaps".
-
     iDestruct "Hiswal" as "[#Hiswal0 #Hiswal1]".
     iInv "Hiswal0" as (σ) "[Hiswal_inner >Hiswal_heap]".
+
+    iDestruct (lwh_crash_heaps with "Hcrashheaps Hwal_latest Hiswal_heap") as (lwh_installed lwh_durable) "#Hlwh_crash_heaps".
+
     iAssert (⌜∀ lv, lv ∈ updlist_olds ->
              apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd) !! int.Z (lv.1).(update.addr) = Some (latest_update lv.2.1 lv.2.2)⌝)%I
       as "%Hlwh_any".
@@ -752,6 +753,7 @@ Proof using txnG0 Σ.
     { iModIntro. iExists _. iFrame. }
     iModIntro.
     iFrame "Hwal_latest".
+    iFrame "Hcrashheaps".
 
     iDestruct (big_sepML_sepL_split with "Hheapmatch") as "[Hheapmatch Hupdlist_olds]".
 
@@ -1047,6 +1049,18 @@ Proof using txnG0 Σ.
         iDestruct (big_sepM2_lookup with "Hcrashheap_latest") as (K') "(%Hk' & Hpre)"; eauto.
         rewrite Hkind in Hk'; inversion Hk'; clear Hk'; subst.
 
+        iAssert (⌜x2 = latest_update lv.2.1 lv.2.2⌝)%I as %->.
+        {
+          iNamed "Hlwh_crash_heaps".
+          iDestruct (big_sepL_app with "Hpossible_heaps") as "[_ Hlatest_crash_heap]".
+          simpl.
+          iDestruct ("Hlatest_crash_heap") as "[%Hlatest_crash_heap' _]".
+          rewrite Hlatest_crash_heap' in Hsome.
+          rewrite /possible app_length /= in Hcrashes_complete.
+          rewrite take_ge in Hsome; last by lia.
+          erewrite Hlwh_any in Hsome; last by eauto. iPureIntro. congruence.
+        }
+
         erewrite gmap_addr_by_block_union_lookup in Hoffmap; eauto.
         2: {
           rewrite gmap_addr_by_block_fmap lookup_fmap Hbufamap. done. }
@@ -1067,7 +1081,12 @@ Proof using txnG0 Σ.
           iDestruct (big_sepM_lookup with "Hpre") as "(%Hin & %Hvalidaddr & %Hvalidoff & %Hk')"; eauto.
           iPureIntro.
           destruct offmap''off. simpl in *; subst.
-          specialize (Hok' _ b Hvalidaddr Hvalidoff).
+          specialize (Hok' _ b Hvalidaddr Hvalidoff Hin).
+          rewrite lookup_fmap in HbufData.
+          eapply fmap_Some_1 in HbufData. destruct HbufData as [HbufDataPrev [HbufData ?]]; subst; simpl in *.
+          rewrite lookup_fmap HbufData /= in Hok'.
+          destruct Hok' as [Hok' ?]; subst.
+          intuition eauto.
           admit.
         }
         {
@@ -1075,7 +1094,9 @@ Proof using txnG0 Σ.
           iPureIntro.
           intuition eauto.
           destruct bufData as [bufDataK bufData]. simpl in *. subst.
-          specialize (Hok' _ bufData Hvalidaddr Hvalidoff).
+          specialize (Hok' _ bufData Hvalidaddr Hvalidoff Hin).
+          rewrite lookup_fmap in Hnone. rewrite -> fmap_None in Hnone.
+          rewrite lookup_fmap Hnone /= in Hok'.
           admit.
         }
       }
