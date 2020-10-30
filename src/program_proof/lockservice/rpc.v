@@ -33,7 +33,6 @@ Record RPCRequest :=
   Args : A ;
 }.
 
-
 Record RPCReply :=
 {
   Stale : bool ;
@@ -42,7 +41,7 @@ Record RPCReply :=
 
 (** Reply-cache ghost names. *)
 Record rpc_names :=
-  mkγrpc {
+  RpcNames {
       rc:gname; (* full reply history: tracks the reply for every (CID, SEQ) pair that exists, where [None] means "reply not yet determined" *)
       lseq:gname; (* latest sequence number for each client seen by server *)
       cseq:gname (* next sequence number to be used by each client (i.e., one ahead of the latest that it used *)

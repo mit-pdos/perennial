@@ -13,7 +13,7 @@ From Perennial.Helpers Require Import NamedProps Integers.
 From Perennial.Helpers Require Import ModArith.
 From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof nondet rpc proof kv_proof.
 
-Record bank_names := BankGN {
+Record bank_names := BankNames {
   bank_ls_names : lockservice_names;
   bank_ks_names : kvservice_names;
   bank_logBalGN : gname (* *)

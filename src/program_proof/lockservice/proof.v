@@ -13,7 +13,7 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof nondet.
 
-Record lockservice_names := LockserviceGN {
+Record lockservice_names := LockserviceNames {
   ls_rpcGN : rpc_names;
   ls_locksAllocGN : gname;
   ls_locksMapDomGN : gname;
