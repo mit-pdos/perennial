@@ -193,25 +193,30 @@ Reserved Notation "x ≤ y ≤ z ≤ u ≤ v ≤ w"
   (at level 70, y at next level, z at next level, u at next level, v at next level).
 Notation "x ≤ y ≤ z ≤ u ≤ v ≤ w" := (x ≤ y ∧ y ≤ z ∧ z ≤ u ∧ u ≤ v ∧ v ≤ w)%nat : nat_scope.
 
-Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id nextDiskEnd_txn_id (txns: list (u64 * list update.t)) (logger_pos : u64) (logger_txn_id : nat) (installer_pos : u64) (installer_txn_id : nat) installed_txn_id_bound : iProp Σ :=
-  (∃ (memStart_txn_id: nat),
-      "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ installed_txn_id_bound ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
-      "#HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
-      "%HdiskEnd_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
-      "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt ∗
-      "#HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
-      "#HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
-      "%HloggerPosOK" ∷ ⌜int.Z diskEnd ≤ int.Z logger_pos ≤ int.Z σ.(slidingM.mutable)⌝ ∗
-      (* Here we establish what the memLog contains, which is necessary for reads
-      to work (they read through memLogMap, but the lock invariant establishes
-      that this matches memLog). *)
-      "#Htxns" ∷ memLog_linv_txns σ installer_pos diskEnd logger_pos txns memStart_txn_id installer_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
-      "%Htxnpos_bound" ∷
-        ⌜(Forall (λ pos, int.Z pos ≤ slidingM.memEnd σ) txns.*1)⌝
-  ).
+Definition memLog_linv_pers_core γ (σ: slidingM.t) (diskEnd: u64)
+           diskEnd_txn_id nextDiskEnd_txn_id (txns: list (u64 * list update.t))
+           (logger_pos : u64) (logger_txn_id : nat) (installer_pos : u64)
+           (installer_txn_id : nat)
+           (memStart_txn_id : nat) : iProp Σ :=
+      "%Htxn_id_ordering" ∷ ⌜(memStart_txn_id ≤ installer_txn_id ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat⌝ ∗
+    "#HmemStart_txn" ∷ txn_pos γ memStart_txn_id σ.(slidingM.start) ∗
+    "#Hinstalled_txn_id_bound" ∷ fmcounter_lb γ.(installed_txn_name) memStart_txn_id ∗
+    "%HdiskEnd_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
+    "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt ∗
+    "#HnextDiskEnd_txn" ∷ txn_pos γ nextDiskEnd_txn_id σ.(slidingM.mutable) ∗
+    "#HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
+    "%HloggerPosOK" ∷ ⌜int.Z diskEnd ≤ int.Z logger_pos ≤ int.Z σ.(slidingM.mutable)⌝ ∗
+    (* Here we establish what the memLog contains, which is necessary for reads
+    to work (they read through memLogMap, but the lock invariant establishes
+    that this matches memLog). *)
+    "#Htxns" ∷ memLog_linv_txns σ installer_pos diskEnd logger_pos txns memStart_txn_id installer_txn_id diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
+    "%Htxnpos_bound" ∷
+      ⌜(Forall (λ pos, int.Z pos ≤ slidingM.memEnd σ) txns.*1)⌝.
 
-Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos installer_txn_id installed_txn_id_bound :
-  Persistent (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos installer_txn_id installed_txn_id_bound).
+Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id
+       nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos installer_txn_id memStart_txn_id :
+  Persistent (memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id
+              nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos installer_txn_id memStart_txn_id).
 Proof. apply _. Qed.
 
 Definition memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id : iProp Σ :=
@@ -783,6 +788,12 @@ Proof.
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
   iExists _, _.
+  (* TODO(tej): this is a good example of bad [iFrame] performance: this iFrame
+  needs to attempt to frame every hypothesis with the unfolded [wal_linv] in the goal, even though that never works;
+  we'd like the wand to just not be subject to framing, but we also don't want to manually split the hypotheses.
+
+  For example, wrapping the wand in [tc_opaque] makes this fast.
+   *)
   iFrame.
   iIntros (shutdown' nthread') "Hshutdown Hnthread".
   iExists σ; iFrame "# ∗".
@@ -862,25 +873,30 @@ Proof.
       lia.
 Qed.
 
-Lemma memLog_linv_pers_core_strengthen γ0 γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id
-      txns (logger_pos : u64) (logger_txn_id : nat) (installer_pos : u64) (installer_txn_id : nat) installed_txn_id_bound :
-  (memLog_linv_pers_core γ0 σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos installer_txn_id installed_txn_id_bound) -∗
-  □(∀ txn_id pos, txn_pos γ0 txn_id pos -∗ txn_pos γ txn_id pos) -∗
-  (ghost_var γ.(txns_name) (1/2) txns) -∗
-  (ghost_var γ.(logger_pos_name) (1 / 2) logger_pos) -∗
-  (ghost_var γ.(logger_txn_id_name) (1 / 2) logger_txn_id) -∗
-  (ghost_var γ.(installer_pos_name) (1 / 2) installer_pos) -∗
-  (ghost_var γ.(installer_txn_id_name) (1 / 2) installer_txn_id) -∗
-  memLog_linv_nextDiskEnd_txn_id γ σ.(slidingM.mutable) nextDiskEnd_txn_id -∗
-  fmcounter_lb γ.(installed_txn_name) installed_txn_id_bound -∗
-  diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro () -∗
+Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id
+      txns (logger_pos : u64) (logger_txn_id : nat) (installer_pos : u64) (installer_txn_id : nat) memStart_txn_id :
+  int.Z installer_pos ≤ int.Z diskEnd →
+  memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos installer_txn_id memStart_txn_id -∗
+  ("Hsame_txns" ∷ ghost_var γ.(txns_name) (1/2) txns ∗
+    "Hlp" ∷ ghost_var γ.(logger_pos_name) (1 / 2) logger_pos ∗
+    "Hlt" ∷ ghost_var γ.(logger_txn_id_name) (1 / 2) logger_txn_id ∗
+    "Hip" ∷ ghost_var γ.(installer_pos_name) (1 / 2) installer_pos ∗
+    "Hit" ∷ ghost_var γ.(installer_txn_id_name) (1 / 2) installer_txn_id ∗
+    "HmemStart_txn_id" ∷ ghost_var γ.(memStart_txn_id_name) (1 / 2) memStart_txn_id ∗
+    "Hnext" ∷ memLog_linv_nextDiskEnd_txn_id γ σ.(slidingM.mutable) nextDiskEnd_txn_id) -∗
   memLog_linv γ σ diskEnd diskEnd_txn_id.
 Proof.
-  iNamed 1. iIntros "Ht Hsame_txns Hlp Hlt Hip Hit Hnext Hinst HdiskEnd_stable'".
-  iExists _, _, _, _, _, _, _, _. iFrame "∗ # %".
+  intros Hinstall_diskEnd_order.
+  iNamed 1.
+  iNamed 1.
+  rewrite /memLog_linv.
+  (* installed_txn_id_bound is set to memStart_txn_id *)
+  iExists memStart_txn_id, memStart_txn_id.
+  repeat iExists _.
+  iFrame "∗ # %".
   iSplit.
-  - iApply ("Ht" with "HmemStart_txn").
-  - iApply ("Ht" with "HmemEnd_txn").
+  - iPureIntro. lia.
+  - iPureIntro. lia.
 Qed.
 
 (** * WPs for field operations in terms of lock invariant *)
