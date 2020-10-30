@@ -43,7 +43,7 @@ Definition own_bank_clerk (bank_ck:loc) γ : iProp Σ :=
   "%" ∷ ⌜acc1 ≠ acc2⌝ ∗
   "#Hls" ∷ is_lockserver ls_srv γ.(bank_ls_names) (Ps:=bankPs γ) ∗
   "#Hks" ∷ is_kvserver ks_srv γ.(bank_ks_names) ∗
-  "Hlck_own" ∷ own_clerk #lck ls_srv γ.(bank_ls_names).(ls_rpcGN) ∗
+  "Hlck_own" ∷ own_lockclerk #lck ls_srv γ.(bank_ls_names) ∗
   "Hkck_own" ∷ own_kvclerk kck ks_srv γ.(bank_ks_names).(ks_rpcGN) ∗
 
   "Hkck" ∷ bank_ck ↦[BankClerk.S :: "kvck"] #kck ∗
@@ -68,11 +68,11 @@ Lemma acquire_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
      is_lockserver lsrv γ.(bank_ls_names) (Ps:=bankPs γ) ∗
      lockservice_is_lock γ.(bank_ls_names) ln1 ∗
      lockservice_is_lock γ.(bank_ls_names) ln2 ∗
-     own_clerk #lck lsrv γ.(bank_ls_names).(ls_rpcGN)
+     own_lockclerk #lck lsrv γ.(bank_ls_names)
 }}}
   acquire_two #lck #ln1 #ln2
 {{{
-     RET #(); own_clerk #lck lsrv γ.(bank_ls_names).(ls_rpcGN) ∗
+     RET #(); own_lockclerk #lck lsrv γ.(bank_ls_names) ∗
      bankPs γ ln1 ∗
      bankPs γ ln2
 }}}.
@@ -82,28 +82,62 @@ Proof.
   wp_pures.
   destruct bool_decide; wp_pures.
   {
-    wp_apply (Clerk__Lock_spec with "[Hlck Hls]").
-     { iFrame "# ∗". iExactEq "Hlck". (* FIXME Set Printing All. *) admit. }
-     admit.
+    wp_apply (Clerk__Lock_spec with "[$Hlck $Hls $Hln1_islock]").
+    iIntros "[Hlck HP1]".
+    wp_pures.
+    wp_apply (Clerk__Lock_spec with "[$Hlck $Hls $Hln2_islock]").
+    iIntros "[Hlck HP2]".
+    wp_pures.
+    iApply "Hpost". iFrame.
   }
-Admitted.
+  {
+    wp_apply (Clerk__Lock_spec with "[$Hlck $Hls $Hln2_islock]").
+    iIntros "[Hlck HP2]".
+    wp_pures.
+    wp_apply (Clerk__Lock_spec with "[$Hlck $Hls $Hln1_islock]").
+    iIntros "[Hlck HP1]".
+    wp_pures.
+    iApply "Hpost". iFrame.
+  }
+Qed.
 
 Lemma release_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
-let γrpc := γ.(bank_ls_names).(ls_rpcGN) in
 {{{
      is_lockserver lsrv γ.(bank_ls_names) (Ps:=bankPs γ) ∗
      lockservice_is_lock γ.(bank_ls_names) ln1 ∗
      lockservice_is_lock γ.(bank_ls_names) ln2 ∗
      bankPs γ ln1 ∗
      bankPs γ ln2 ∗
-     own_clerk #lck lsrv γrpc
+     own_lockclerk #lck lsrv γ.(bank_ls_names)
 }}}
   release_two #lck #ln1 #ln2
 {{{
-     RET #(); own_clerk #lck lsrv γrpc
+     RET #(); own_lockclerk #lck lsrv γ.(bank_ls_names)
 }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(#Hls & #Hln1_islock & #Hln2_islock & HP1 & HP2 & Hlck) Hpost".
+  wp_lam.
+  wp_pures.
+  destruct bool_decide; wp_pures.
+  {
+    wp_apply (Clerk__Unlock_spec with "[$Hlck $Hls $Hln2_islock $HP2]").
+    iIntros (v) "Hlck". iDestruct "Hlck" as (b ->) "[Hlck _]".
+    wp_pures.
+    wp_apply (Clerk__Unlock_spec with "[$Hlck $Hls $Hln1_islock $HP1]").
+    iIntros (v) "Hlck". iDestruct "Hlck" as (b2 ->) "[Hlck _]".
+    wp_pures.
+    iApply "Hpost"; iFrame.
+  }
+  {
+    wp_apply (Clerk__Unlock_spec with "[$Hlck $Hls $Hln1_islock $HP1]").
+    iIntros (v) "Hlck". iDestruct "Hlck" as (b ->) "[Hlck _]".
+    wp_pures.
+    wp_apply (Clerk__Unlock_spec with "[$Hlck $Hls $Hln2_islock $HP2]").
+    iIntros (v) "Hlck". iDestruct "Hlck" as (b2 ->) "[Hlck _]".
+    wp_pures.
+    iApply "Hpost"; iFrame.
+  }
+Qed.
 
 Lemma Bank__SimpleTransfer_spec (bck:loc) (amount:u64) γ :
 {{{

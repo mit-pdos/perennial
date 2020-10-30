@@ -424,7 +424,8 @@ Definition acquire_two: val :=
       Clerk__Lock "lck" "l2"
     else
       Clerk__Lock "lck" "l2";;
-      Clerk__Lock "lck" "l1").
+      Clerk__Lock "lck" "l1");;
+    #().
 
 Definition release_two: val :=
   rec: "release_two" "lck" "l1" "l2" :=
@@ -434,7 +435,8 @@ Definition release_two: val :=
       Clerk__Unlock "lck" "l1"
     else
       Clerk__Unlock "lck" "l1";;
-      Clerk__Unlock "lck" "l2").
+      Clerk__Unlock "lck" "l2");;
+    #().
 
 (* Requires that the account numbers are smaller than num_accounts
    If account balance in acc_from is at least amount, transfer amount to acc_to *)
