@@ -48,10 +48,18 @@ Theorem wp_new_dec stk E s q b r :
   block_encodes b r →
   {{{ is_block s q b }}}
     NewDec (slice_val s) @ stk; E
-  {{{ dec_v, RET dec_v; is_dec dec_v r }}}.
+  {{{ dec_v, RET dec_v; is_dec dec_v r s q b }}}.
 Proof.
   iIntros (Henc Φ) "Hpre HΦ".
   wp_apply (marshal_proof.wp_new_dec with "Hpre"); eauto.
+Qed.
+
+Lemma is_dec_to_is_block dec_v r s q (b: Block) :
+  is_dec dec_v r s q b -∗
+  is_block s q b.
+Proof.
+  iIntros "H". iDestruct (is_dec_to_is_slice_small with "H") as "H".
+  iFrame.
 Qed.
 
 End goose_lang.
