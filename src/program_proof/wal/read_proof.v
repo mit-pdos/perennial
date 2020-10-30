@@ -227,7 +227,7 @@ Proof.
   iFrame "HP HQ".
   iFrame.
   iSplit; first by done.
-  iExists _, _, _, _, _, _. iFrame "∗#%".
+  repeat iExists _. iFrame "∗#%".
 Qed.
 
 Lemma apply_upds_in_not_None : ∀ upds a d,
@@ -314,7 +314,8 @@ Proof.
   }
 
   iModIntro. iFrame "HQ".
-  iSplitR "HnextDiskEnd HownLoggerPos_linv HownLoggerTxn_linv Howntxns".
+  iSplitR "HnextDiskEnd HownLoggerPos_linv HownLoggerTxn_linv Howntxns
+    HownInstallerPos_linv HownInstallerTxn_linv Hown_memStart_txn_id_linv".
   { iExists _. iFrame "HP".
     iSplit.
     { rewrite /wal_wf in Hwf. rewrite /wal_wf. iPureIntro. simpl.
@@ -326,10 +327,10 @@ Proof.
     iSplit. 2: iSplit. 3: iSplit. 4: eauto.
     3: { iExists diskEnd0. iFrame "%". iFrame "#". iPureIntro. lia. }
     2: { iFrame "# %". iPureIntro. lia. }
-    iExists _, _. iFrame. iFrame "%".
+    iExists _, _. iFrame. iFrame "%#".
   }
 
-  iExists _, _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
+  repeat iExists _. iFrame. iFrame "#". iFrame "%".
 Qed.
 
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ dinit a :
