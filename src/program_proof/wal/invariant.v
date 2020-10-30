@@ -544,13 +544,14 @@ Theorem is_installed_restore_read γ d txns installed_txn_id diskEnd_txn_id new_
   fmcounter γ.(installed_txn_name) (1/2) installed_txn_id -∗
   fmcounter γ.(new_installed_txn_name) (1/2) new_installed_txn_id -∗
   ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) -∗
+  txns_are γ (S installed_txn_id) (subslice (S installed_txn_id) (S new_installed_txn_id) txns) -∗
   is_installed_read d txns installed_txn_id diskEnd_txn_id new_installed_txn_id -∗
   is_installed γ d txns installed_txn_id diskEnd_txn_id.
 Proof.
-  iIntros "Hinstalled_txn Hnew_installed_txn Hbeing_installed Hinstalled_read".
+  iIntros "Hinstalled_txn Hnew_installed_txn Hbeing_installed Htxns Hinstalled_read".
   iNamed "Hinstalled_read".
   iExists _, _.
-  iFrame "Hinstalled_txn Hnew_installed_txn Hbeing_installed".
+  iFrame "Hinstalled_txn Hnew_installed_txn Hbeing_installed Htxns".
   iSplit.
   { iPureIntro. lia. }
   iApply (big_sepM_mono with "Hdata").
