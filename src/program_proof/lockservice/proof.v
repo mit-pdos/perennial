@@ -54,7 +54,11 @@ Definition Lockserver_inv γ : iProp Σ :=
     "Hlocks" ∷ map_ctx γ.(ls_locksAllocGN) 1 locksAlloc ∗ (* we own the logical lock tracking *)
     "HlocksEx" ∷ ⌜locksMapDom ⊆ dom (gset _) locksAlloc⌝ ∗ (* all physically-existing locks exist logically *)
     "HlocksNew" ∷ [∗ map] ln ↦ ex ∈ locksAlloc,
-      (* keep around persistent witness to lock being logically allocated for anything in the map_ctx *)
+      (* Keep around persistent witness to lock being logically allocated for anything in the map_ctx.
+         This is needed to hand out witnesses for existing locks in [lockservice_alloc_lock].
+         (We can otherwise not exclude that someone somewhere fully exclusively owns this name...
+         if we used the proper RA, [auth (gset u64)], instead of piggy-backing on auth_map,
+         this would not be needed. *)
       ln [[γ.(ls_locksAllocGN)]]↦ro () ∗
       (* all logically-existing locks either exist physically or have their invariant here *)
       (⌜ln ∈ locksMapDom⌝ ∨ Ps ln)
