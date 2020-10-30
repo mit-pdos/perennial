@@ -111,15 +111,14 @@ Proof.
   iSplit; eauto. iExists _, _; iFrame.
 Qed.
 
-Lemma KVClerk__Get_spec (kck ksrv:loc) (key:u64) γ :
+Lemma KVClerk__Get_spec (kck ksrv:loc) (key va:u64) γ  :
 {{{
      is_kvserver ksrv γ ∗
-     own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ _ )
+     own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ va)
 }}}
   KVClerk__Get #kck #key
 {{{
-     v, RET v; ∃va, 
-     own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
+     v, RET v; ⌜v = #va⌝ ∗ own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
 }}}.
 Admitted.
 
@@ -128,7 +127,7 @@ Lemma KVClerk__Put_spec (kck ksrv:loc) (key va:u64) γ :
      is_kvserver ksrv γ ∗
      own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ _ )
 }}}
-  KVClerk__Get #kck #key #va
+  KVClerk__Put #kck #key #va
 {{{
      RET #();
      own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
