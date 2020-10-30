@@ -553,6 +553,16 @@ Proof.
       eapply H. econstructor. eauto.
 Qed.
 
+Lemma apply_upds_u64_lookup_ne blkno : ∀ upds d,
+  blkno ∉ update.addr <$> upds ->
+  apply_upds_u64 d upds !! blkno = d !! blkno.
+Proof.
+  induction upds; simpl; eauto; intros.
+  eapply not_elem_of_cons in H; destruct H as [H H'].
+  rewrite IHupds; eauto.
+  rewrite lookup_insert_ne; eauto.
+Qed.
+
 Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   ↑walN.@"wal" ⊆ E ->
   {{{ is_txn l γ dinit ∗
@@ -715,7 +725,7 @@ Proof using txnG0 Σ.
       eauto.
     }
     iAssert (⌜∀ lv, lv ∈ updlist_olds ->
-                update.addr (fst lv) ∈ dom (gset u64) (gmap_addr_by_block σl.(latest))⌝)%I
+                update.addr (fst lv) ∈ dom (gset u64) (gmap_addr_by_block bufamap)⌝)%I
       as "%Hupdlist_olds_σl_latest".
     {
       iIntros (lv Hlv).
@@ -723,8 +733,20 @@ Proof using txnG0 Σ.
       iDestruct (big_sepML_lookup_l_acc with "Hheapmatch") as (k v) "(% & Hlv & _)"; eauto.
       iDestruct "Hlv" as "[Hlv _]".
       iDestruct "Hlv" as (blockK v0) "(<- & _ & _ & _)".
-      eapply map_filter_lookup_Some_11 in H.
-      iPureIntro. eapply elem_of_dom. eauto.
+      eapply map_filter_lookup_Some_12 in H as H'.
+      eauto.
+    }
+    iAssert (⌜∀ (blkno : u64),
+              blkno ∈ dom (gset u64) (gmap_addr_by_block bufamap) ->
+              blkno ∈ update.addr <$> updlist_olds.*1⌝)%I
+      as "%Hupdlist_olds_bufamap".
+    {
+      iIntros (blkno Hblkno).
+      apply elem_of_dom in Hblkno; destruct Hblkno.
+      iDestruct (big_sepML_lookup_m_acc with "Hupdmap_addr") as (i lv) "(% & <- & _)"; eauto.
+      iPureIntro.
+      eapply elem_of_list_lookup_2.
+      rewrite list_lookup_fmap. erewrite H0. done.
     }
     iModIntro. iSplitL "Hiswal_inner Hiswal_heap".
     { iModIntro. iExists _. iFrame. }
@@ -999,8 +1021,74 @@ Proof using txnG0 Σ.
 
       iIntros (k offmap blk Hoffmap Hblk).
       rewrite /bufDataTs_in_crashblock /bufDataT_in_block.
-      (* either use [Hupdmap_kind] if k is in updlist_olds, or use [Hcrashheap_latest] if not in updlist_olds *)
-      admit.
+
+      destruct (decide (k ∈ update.addr <$> updlist_olds.*1)).
+      {
+        eapply elem_of_list_fmap_2 in e. destruct e as [u [? Hu]]. subst.
+        eapply elem_of_list_fmap_2 in Hu. destruct Hu as [lv [? Hlv]]. subst.
+        eapply Hupdlist_olds_σl_latest in Hlv as Hbufamap.
+        apply elem_of_dom in Hbufamap. destruct Hbufamap as [bufamap_lv Hbufamap].
+        eapply elem_of_list_lookup_1 in Hlv as Hlv'. destruct Hlv' as [lvi Hlv'].
+        iDestruct (big_sepML_lookup_l_acc with "Hupdmap") as (blkno bufamap_lv') "Hupdmap_lv"; eauto.
+        { rewrite list_lookup_fmap. erewrite Hlv'. done. }
+        iDestruct "Hupdmap_lv" as "(%Hbufamap_lv' & [<- %Hkindok] & _)".
+        replace (bufamap_lv') with (bufamap_lv) in * by congruence.
+        destruct Hkindok as [K [Hkind Hok]].
+
+        iExists _. iSplit; first by iFrame "%".
+        iApply big_sepM_forall. iIntros (off bufData HbufData).
+        eapply Hlwh_any in Hlv as Hok'. eapply Hok in Hok'.
+        rewrite /updOffsetsOK in Hok'.
+
+        eapply Hupdlist_olds_σl_latest in Hlv as Hl.
+        eapply elem_of_subseteq in Hl; eauto.
+        apply elem_of_dom in Hl. destruct Hl as [offmap'' Hl].
+        iDestruct (big_sepM2_lookup_1_some with "Hcrashheap_latest") as (?) "%Hsome"; eauto.
+        iDestruct (big_sepM2_lookup with "Hcrashheap_latest") as (K') "(%Hk' & Hpre)"; eauto.
+        rewrite Hkind in Hk'; inversion Hk'; clear Hk'; subst.
+
+        erewrite gmap_addr_by_block_union_lookup in Hoffmap; eauto.
+        2: {
+          rewrite gmap_addr_by_block_fmap lookup_fmap Hbufamap. done. }
+        inversion Hoffmap; clear Hoffmap; subst.
+        eapply lookup_union_Some_raw in HbufData. destruct HbufData as [HbufData | [Hnone HbufData]].
+        {
+          assert (is_Some (offmap'' !! off)) as Hoffmap''.
+          {
+            eapply elem_of_dom.
+            eapply gmap_addr_by_block_elem_of_2; eauto.
+            eapply elem_of_subseteq; eauto.
+            eapply gmap_addr_by_block_elem_of_1; eauto.
+            rewrite lookup_fmap in HbufData.
+            eapply fmap_Some_1 in HbufData; destruct HbufData; intuition.
+            eapply elem_of_dom. eauto.
+          }
+          destruct Hoffmap'' as [offmap''off Hoffmap''].
+          iDestruct (big_sepM_lookup with "Hpre") as "(%Hin & %Hvalidaddr & %Hvalidoff & %Hk')"; eauto.
+          iPureIntro.
+          destruct offmap''off. simpl in *; subst.
+          specialize (Hok' _ b Hvalidaddr Hvalidoff).
+          admit.
+        }
+        {
+          iDestruct (big_sepM_lookup with "Hpre") as "(%Hin & %Hvalidaddr & %Hvalidoff & %Hk')"; eauto.
+          iPureIntro.
+          intuition eauto.
+          destruct bufData as [bufDataK bufData]. simpl in *. subst.
+          specialize (Hok' _ bufData Hvalidaddr Hvalidoff).
+          admit.
+        }
+      }
+      {
+        rewrite apply_upds_u64_lookup_ne in Hblk; eauto.
+        rewrite gmap_addr_by_block_union_lookup_none in Hoffmap.
+        2: {
+          eapply not_elem_of_dom.
+          rewrite gmap_addr_by_block_fmap.
+          rewrite dom_fmap_L. eauto.
+        }
+        iDestruct (big_sepM2_lookup with "Hcrashheap_latest") as "Hcrashheap_latest_k"; eauto.
+      }
     }
 
     rewrite Hcrash_heaps_len.

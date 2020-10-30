@@ -577,6 +577,69 @@ Section gmap_addr_by_block.
       eapply lookup_union_Some_raw; eauto. }
   Qed.
 
+  Lemma gmap_addr_by_block_union_lookup_none (m0 m1 : gmap addr T) k :
+    gmap_addr_by_block m0 !! k = None ->
+    gmap_addr_by_block (m0 ∪ m1) !! k = gmap_addr_by_block m1 !! k.
+  Proof.
+    rewrite /gmap_addr_by_block.
+    intros.
+    destruct (gmap_uncurry m1 !! k) eqn:Hk.
+    {
+      eapply gmap_uncurry_non_empty in Hk as H'.
+      eapply map_choose in H'. destruct H' as [i [x H']].
+      assert (m0 !! (k, i) = None).
+      { rewrite -(lookup_gmap_uncurry m0). rewrite H. eauto. }
+      assert ((m0 ∪ m1) !! (k, i) = Some x).
+      { rewrite lookup_union_r; eauto.
+        rewrite -(lookup_gmap_uncurry m1). rewrite Hk. eauto. }
+      eapply gmap_uncurry_lookup_exists in H1 as H1'.
+      destruct H1' as [offmap [H1' H1'']].
+      simpl in *.
+      rewrite H1'. f_equal.
+      apply map_eq; intros j.
+      destruct ((m0 ∪ m1) !! (k, j)) eqn:He.
+      all: pose proof He as He'.
+      all: rewrite -lookup_gmap_uncurry H1' /= in He'.
+      all: rewrite He'; symmetry.
+      2: {
+        eapply lookup_union_None in He; intuition.
+        rewrite -lookup_gmap_uncurry H /= in H2.
+        rewrite -lookup_gmap_uncurry Hk /= in H3.
+        eauto.
+      }
+      eapply lookup_union_Some_raw in He; intuition.
+      { rewrite -lookup_gmap_uncurry H /= in H2. congruence. }
+      { rewrite -lookup_gmap_uncurry H /= in H3. rewrite -lookup_gmap_uncurry Hk /= in H4. eauto. }
+    }
+    {
+      eapply lookup_gmap_uncurry_None; intros j.
+      eapply lookup_gmap_uncurry_None in H.
+      eapply lookup_gmap_uncurry_None in Hk.
+      eapply lookup_union_None; eauto.
+    }
+  Qed.
+
+  Lemma gmap_addr_by_block_elem_of_1 m offmap blk off :
+    gmap_addr_by_block m !! blk = Some offmap ->
+    off ∈ dom (gset u64) offmap ->
+    (blk, off) ∈ dom (gset addr) m.
+  Proof.
+    rewrite /gmap_addr_by_block; intros.
+    apply elem_of_dom. apply elem_of_dom in H0. destruct H0.
+    rewrite -lookup_gmap_uncurry. rewrite H /=. rewrite H0. eauto.
+  Qed.
+
+  Lemma gmap_addr_by_block_elem_of_2 m offmap blk off :
+    gmap_addr_by_block m !! blk = Some offmap ->
+    (blk, off) ∈ dom (gset addr) m ->
+    off ∈ dom (gset u64) offmap.
+  Proof.
+    rewrite /gmap_addr_by_block; intros.
+    apply elem_of_dom. apply elem_of_dom in H0. destruct H0.
+    rewrite -lookup_gmap_uncurry in H0. rewrite H /= in H0.
+    rewrite H0. eauto.
+  Qed.
+
 End gmap_addr_by_block.
 
 
