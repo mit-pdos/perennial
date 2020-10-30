@@ -30,8 +30,7 @@ Context `{!heapG Σ, !bankG Σ}.
 
 Implicit Types (γ : bank_names).
 
-Context `{acc1:u64, acc2:u64, bal_total:u64}. (* Account names and total balance for bank; using Z for 
-                                               anything involking arithmetic *)
+Context `{acc1:u64, acc2:u64, bal_total:u64}. (* Account names and total balance for bank *)
 
 Definition kv_gn γ := γ.(bank_ks_names).(ks_kvMapGN).
 Definition log_gn γ := γ.(bank_logBalGN).
@@ -65,24 +64,36 @@ Definition bank_inv γ : iProp Σ :=
 Definition bankN := nroot .@ "bank".
 
 Lemma acquire_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
-let γrpc := γ.(bank_ls_names).(ls_rpcGN) in
 {{{
      is_lockserver lsrv γ.(bank_ls_names) (Ps:=bankPs γ) ∗
-     own_clerk #lck lsrv γrpc
+     lockservice_is_lock γ.(bank_ls_names) ln1 ∗
+     lockservice_is_lock γ.(bank_ls_names) ln2 ∗
+     own_clerk #lck lsrv γ.(bank_ls_names).(ls_rpcGN)
 }}}
   acquire_two #lck #ln1 #ln2
 {{{
-     RET #(); own_clerk #lck lsrv γrpc ∗
+     RET #(); own_clerk #lck lsrv γ.(bank_ls_names).(ls_rpcGN) ∗
      bankPs γ ln1 ∗
      bankPs γ ln2
 }}}.
 Proof.
+  iIntros (Φ) "(#Hls & #Hln1_islock & #Hln2_islock & Hlck) Hpost".
+  wp_lam.
+  wp_pures.
+  destruct bool_decide; wp_pures.
+  {
+    wp_apply (Clerk__Lock_spec with "[Hlck Hls]").
+     { iFrame "# ∗". iExactEq "Hlck". (* FIXME Set Printing All. *) admit. }
+     admit.
+  }
 Admitted.
 
 Lemma release_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
 let γrpc := γ.(bank_ls_names).(ls_rpcGN) in
 {{{
      is_lockserver lsrv γ.(bank_ls_names) (Ps:=bankPs γ) ∗
+     lockservice_is_lock γ.(bank_ls_names) ln1 ∗
+     lockservice_is_lock γ.(bank_ls_names) ln2 ∗
      bankPs γ ln1 ∗
      bankPs γ ln2 ∗
      own_clerk #lck lsrv γrpc
@@ -116,7 +127,7 @@ Proof.
   wp_lam. (* We just use the helper function in-line *)
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_two_spec with "[$Hlck_own $Hls]").
+  wp_apply (acquire_two_spec with "[$Hlck_own $Hls]"); first iFrame "#".
   iIntros "(Hlck_own & Hacc1_unlocked & Hacc2_unlocked)".
   iDestruct "Hacc1_unlocked" as (bal1) "(Hacc1_phys & Hacc1_log)".
   iDestruct "Hacc2_unlocked" as (bal2) "(Hacc2_phys & Hacc2_log)".
@@ -154,13 +165,13 @@ Proof.
     iModIntro.
     wp_loadField.
     wp_apply (release_two_spec with "[$Hlck_own $Hls Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
-    { iSplitL "Hacc1_phys Hacc1_log"; iExists _; iFrame. }
+    { iFrame "#". iSplitL "Hacc1_phys Hacc1_log"; iExists _; iFrame. }
     iIntros "Hlck_own".
     iApply "Hpost".
     iExists _, _, _, _; iFrame "∗ # %".
   - (* Don't do the transfer *)
     wp_loadField. wp_apply (release_two_spec with "[$Hlck_own $Hls Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
-    { iSplitL "Hacc1_phys Hacc1_log"; iExists _; iFrame. }
+    { iFrame "#". iSplitL "Hacc1_phys Hacc1_log"; iExists _; iFrame. }
     iIntros "Hlck_own".
     iApply "Hpost".
     iExists _, _, _, _; iFrame "∗ # %".
@@ -184,7 +195,7 @@ Proof.
   wp_lam.
   repeat wp_loadField.
 
-  wp_apply (acquire_two_spec with "[$Hlck_own $Hls]").
+  wp_apply (acquire_two_spec with "[$Hlck_own $Hls]"); first iFrame "#".
   iIntros "(Hlck_own & Hacc1_unlocked & Hacc2_unlocked)".
   iDestruct "Hacc1_unlocked" as (bal1) "(Hacc1_phys & Hacc1_log)".
   iDestruct "Hacc2_unlocked" as (bal2) "(Hacc2_phys & Hacc2_log)".
@@ -217,7 +228,6 @@ Proof.
   {
     erewrite lookup_union_Some_r in Hacc2_logphys; last by apply lookup_singleton.
     { by injection Hacc2_logphys. }
-    Search "disjoint_singleton".
     rewrite map_disjoint_singleton_l.
     by apply lookup_singleton_ne.
   }
@@ -225,7 +235,7 @@ Proof.
   { iNext. iExists _, _. iFrame "∗ %". }
   iModIntro.
   repeat wp_loadField.
-  wp_apply (release_two_spec with "[$Hlck_own $Hls Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
+  wp_apply (release_two_spec with "[$Hlck_own $Hls Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]"); first iFrame "#".
   { iSplitL "Hacc1_phys Hacc1_log"; iExists _; iFrame. }
   iIntros "Hlck_own".
   wp_pures.
