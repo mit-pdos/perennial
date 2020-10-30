@@ -30,7 +30,7 @@ Context `{!heapG Σ, !bankG Σ}.
 
 Implicit Types (γ : bank_names).
 
-Context `{acc1:u64, acc2:u64, bal_total:Z}. (* Account names and total balance for bank; using Z for 
+Context `{acc1:u64, acc2:u64, bal_total:u64}. (* Account names and total balance for bank; using Z for 
                                                anything involking arithmetic *)
 
 Definition kv_gn γ := γ.(bank_ks_names).(ks_kvMapGN).
@@ -59,7 +59,7 @@ Definition own_bank_clerk (bank_ck:loc) γ : iProp Σ :=
 Definition bank_inv γ : iProp Σ :=
   ∃ (bal1 bal2:u64),
   "HlogBalCtx" ∷ map_ctx (log_gn γ) 1 ({[ acc1:=bal1 ]} ∪ {[ acc2:=bal2 ]}) ∗
-  "%" ∷ ⌜(int.Z bal1 + int.Z bal2 = bal_total)%Z⌝
+  "%" ∷ ⌜(word.add bal1 bal2 = bal_total)%Z⌝
   .
 
 Definition bankN := nroot .@ "bank".
@@ -127,7 +127,8 @@ Proof.
   iDestruct "Hbal1_get" as (->) "[Hkck_own Hacc1_phys]".
   wp_pures.
   destruct bool_decide eqn:HenoughBalance; wp_pures.
-  - wp_loadField. wp_apply (KVClerk__Put_spec with "[$Hkck_own $Hks Hacc1_phys]"); first eauto.
+  - (* Safe to do the transfer *)
+    wp_loadField. wp_apply (KVClerk__Put_spec with "[$Hkck_own $Hks Hacc1_phys]"); first eauto.
     iIntros "[Hkck_own Hacc1_phys]".
     wp_pures.
     wp_loadField.
@@ -157,11 +158,80 @@ Proof.
     iIntros "Hlck_own".
     iApply "Hpost".
     iExists _, _, _, _; iFrame "∗ # %".
-  - wp_loadField. wp_apply (release_two_spec with "[$Hlck_own $Hls Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
+  - (* Don't do the transfer *)
+    wp_loadField. wp_apply (release_two_spec with "[$Hlck_own $Hls Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
     { iSplitL "Hacc1_phys Hacc1_log"; iExists _; iFrame. }
     iIntros "Hlck_own".
     iApply "Hpost".
     iExists _, _, _, _; iFrame "∗ # %".
 Admitted.
+
+Lemma Bank__SimpleAudit_spec (bck:loc) γ :
+{{{
+     inv bankN (bank_inv γ) ∗
+     own_bank_clerk bck γ
+}}}
+  BankClerk__SimpleAudit #bck
+{{{
+     RET #bal_total;
+     own_bank_clerk bck γ
+}}}.
+Proof.
+  iIntros (Φ) "[#Hbinv Hpre] Hpost".
+  iNamed "Hpre".
+  iDestruct "Hpre" as "(Hacc1 & Hacc2 & #Hacc_is_lock)".
+  iNamed "Hacc_is_lock".
+  wp_lam.
+  repeat wp_loadField.
+
+  wp_apply (acquire_two_spec with "[$Hlck_own $Hls]").
+  iIntros "(Hlck_own & Hacc1_unlocked & Hacc2_unlocked)".
+  iDestruct "Hacc1_unlocked" as (bal1) "(Hacc1_phys & Hacc1_log)".
+  iDestruct "Hacc2_unlocked" as (bal2) "(Hacc2_phys & Hacc2_log)".
+
+  wp_pures.
+  repeat wp_loadField.
+  wp_apply (KVClerk__Get_spec with "[$Hkck_own $Hks Hacc1_phys]"); first eauto.
+  iIntros (v_bal1_g) "Hbal1_get".
+  iDestruct "Hbal1_get" as (->) "[Hkck_own Hacc1_phys]".
+
+  repeat wp_loadField.
+  wp_apply (KVClerk__Get_spec with "[$Hkck_own $Hks Hacc2_phys]"); first eauto.
+  iIntros (v_bal2_g) "Hbal2_get".
+  iDestruct "Hbal2_get" as (->) "[Hkck_own Hacc2_phys]".
+  wp_pures.
+
+  (* Use inv to know that the sum is total_bal *)
+  iApply fupd_wp.
+  iInv bankN as ">HbankInv" "HbankInvClose".
+  iNamed "HbankInv".
+  iDestruct (map_valid with "HlogBalCtx Hacc1_log") as %Hacc1_logphys.
+  assert (bal0 = bal1) as ->.
+  {
+    erewrite lookup_union_Some_l in Hacc1_logphys; last by apply lookup_singleton.
+    by injection Hacc1_logphys.
+  }
+
+  iDestruct (map_valid with "HlogBalCtx Hacc2_log") as %Hacc2_logphys.
+  assert (bal2 = bal3) as ->.
+  {
+    erewrite lookup_union_Some_r in Hacc2_logphys; last by apply lookup_singleton.
+    { by injection Hacc2_logphys. }
+    Search "disjoint_singleton".
+    rewrite map_disjoint_singleton_l.
+    by apply lookup_singleton_ne.
+  }
+  iMod ("HbankInvClose" with "[HlogBalCtx]") as "_".
+  { iNext. iExists _, _. iFrame "∗ %". }
+  iModIntro.
+  repeat wp_loadField.
+  wp_apply (release_two_spec with "[$Hlck_own $Hls Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
+  { iSplitL "Hacc1_phys Hacc1_log"; iExists _; iFrame. }
+  iIntros "Hlck_own".
+  wp_pures.
+  rewrite H0.
+  iApply "Hpost".
+  iExists _, _, _, _; iFrame "∗ # %".
+Qed.
 
 End bank_proof.
