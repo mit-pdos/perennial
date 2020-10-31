@@ -342,7 +342,7 @@ Proof.
   iNamed 1. iNamed "Howninstalled".
   iExists new_installed_txn_id, already_installed.
   iFrame.
-  rewrite -subslice_before_app_eq; last by lia. iFrame.
+  rewrite -subslice_before_app_eq; last by lia. iFrame "#".
   iSplitR "Hdata".
   - iPureIntro.
     len.
@@ -867,11 +867,11 @@ Proof.
         iExists (set memLog (λ _, memLog') σ); simpl.
         rewrite memWrite_same_start.
         iFrame.
-        iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet HownLoggerPos_linv HownLoggerTxn_linv".
+        iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet HownLoggerPos_linv HownLoggerTxn_linv HownInstallerPos_linv HownInstallerTxn_linv Hown_memStart_txn_id_linv".
         { iExists _; iFrame.
           iPureIntro.
           eapply locked_wf_memWrite; eauto. }
-        iExists memStart_txn_id, _, nextDiskEnd_txn_id, _, _, _; iFrame.
+        iExists memStart_txn_id, _, nextDiskEnd_txn_id, _, _, _, _, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
         autorewrite with len.
         iFrame "%".
@@ -893,6 +893,10 @@ Proof.
             rewrite -subslice_before_app_eq; last by lia.
             rewrite memWrite_preserves_mutable; eauto; try word.
             rewrite /numMutableN /slidingM.logIndex. word.
+          - rewrite -> subslice_app_1 by lia.
+            rewrite !memWrite_preserves_logIndex.
+            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
+            auto.
           - rewrite -> subslice_app_1 by lia.
             rewrite !memWrite_preserves_logIndex.
             rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].

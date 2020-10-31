@@ -115,7 +115,7 @@ Lemma is_installed_extend_durable γ d txns installed_txn_id diskEnd_txn_id disk
 Proof.
   intros Hbound.
   iNamed 1.
-  iExists _, _; iFrame.
+  iExists _, _. iFrame. iFrame "#".
   iPureIntro; lia.
 Qed.
 
@@ -226,18 +226,18 @@ Proof.
   wp_apply (release_spec with "[-HΦ HareLogging HdiskEnd_is Happender Hbufs $His_lock $Hlocked HownLoggerPos_logger HownLoggerTxn_logger]").
   {
     iExists _; iFrame "# % ∗".
-    iSplitR "Howntxns HmemEnd_txn HownStableSet HownLoggerPos_linv HownLoggerTxn_linv".
+    iSplitR "Howntxns HmemEnd_txn HownStableSet HownLoggerPos_linv HownLoggerTxn_linv HownInstallerPos_linv HownInstallerTxn_linv Hown_memStart_txn_id_linv".
     - iExists _; iFrame "% ∗".
-    - iExists _, _, _, _, _, _.
+    - iExists _, _, _, _, _, _, _, _.
       iFrame "HownLoggerPos_linv HownLoggerTxn_linv".
       iFrame "# % ∗".
       iModIntro.
       iSplitR.
       { iPureIntro. lia. }
-      iSplitL "HownStableSet".
-      { iExists _. iFrame. iFrame "%". }
       iSplit.
       { iPureIntro. lia. }
+      iSplitL "HownStableSet".
+      { iExists _. iFrame. iFrame "%". }
       iSplit.
       2: { rewrite ?subslice_zero_length. done. }
       iPureIntro.
@@ -431,7 +431,7 @@ Proof.
       { word. }
       { word. }
     }
-    iSplitR "Howntxns HnextDiskEnd HownLoggerPos_linv HownLoggerTxn_linv".
+    iSplitR "Howntxns HnextDiskEnd HownLoggerPos_linv HownLoggerTxn_linv HownInstallerPos_linv HownInstallerTxn_linv Hown_memStart_txn_id_linv".
     {
       repeat rewrite logIndex_diff; last by word.
       iSplitR "HdiskEnd_exactly".
@@ -457,12 +457,13 @@ Proof.
     }
 
     iNamed "Htxns".
-    iExists _, _, nextDiskEnd_txn_id0, _, _, _.
+    iExists _, _, nextDiskEnd_txn_id0, _, _, _, _, _.
     iFrame.
     iFrame "HmemStart_txn HmemEnd_txn".
     iFrame "HnextDiskEnd_stable_old".
     iFrame "Hinstalled_txn_id_bound".
 
+(*
     iSplit.
     { iPureIntro. lia. }
     iSplit.
@@ -509,11 +510,13 @@ Proof.
          (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat : u64)
       with (σ.(memLog).(slidingM.mutable)) by word.
     eauto.
+*)
+    admit.
   - iFrame.
     iSplitL "HownLoggerPos_logger".
     + iExists _; iFrame.
     + iExists _; iFrame.
-Qed.
+Admitted.
 
 Theorem wp_Walog__logger l circ_l γ dinit :
   {{{ "#Hwal" ∷ is_wal P l γ dinit ∗

@@ -413,10 +413,9 @@ Proof.
                  slidingM.start := diskStart;
                  slidingM.mutable := int.Z diskStart + length upds |}).
 
-  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id diskEnd_txn_id σ.(log_state.txns) diskEnd diskEnd_txn_id installed_txn_id) with "[-]" as "#H".
+  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id diskEnd_txn_id σ.(log_state.txns) diskEnd diskEnd_txn_id installed_txn_id installed_txn_id installed_txn_id) with "[-]" as "#H".
   {
     rewrite /memLog_linv_pers_core.
-    iExists installed_txn_id.
     iFrame "#".
     iNamed "circ.start".
     iNamed "circ.end".
@@ -427,7 +426,9 @@ Proof.
     iDestruct (txns_ctx_txn_pos with "[$]") as "#$".
     { subst. auto with f_equal. }
     assert (diskEnd = diskEnd0) by word; subst diskEnd0.
-    iSplitL "".
+    iSplit.
+    { admit. }
+    iSplit.
     { eauto. }
     assert (memLog.(slidingM.mutable) = slidingM.endPos memLog) as Hmutable_is_endPos.
     { subst.
@@ -463,13 +464,17 @@ Proof.
         subst.
         rewrite /slidingM.endPos /=.
         word. }
+(*
       rewrite -> (take_ge upds) by lia.
       rewrite !subslice_zero_length.
       rewrite -> (drop_ge upds) by lia.
       rewrite -> (drop_ge σ.(log_state.txns)) by lia.
       split_and!; auto using has_updates_nil.
       destruct Hdurable as [Hdurable_updates _].
-      congruence. }
+      congruence.
+*)
+      admit.
+    }
     (* replace (slidingM.memEnd memLog) with (int.Z diskStart + length upds); last first.
     { rewrite /slidingM.memEnd //=. } *)
     iPureIntro.
@@ -508,7 +513,8 @@ Proof.
   iIntros (st) "Hwal_state".
   wp_pures.
 
-  iDestruct (memLog_linv_pers_core_strengthen _ γ0 with "H [] γtxns γlogger_pos γlogger_txn_id [Hstable_txns1] [] [$]") as "HmemLog_linv".
+(*
+  iDestruct (memLog_linv_pers_core_strengthen γ0 with "H [] γtxns γlogger_pos γlogger_txn_id [Hstable_txns1] [] [$]") as "HmemLog_linv".
   { auto. }
   { rewrite /memLog_linv_nextDiskEnd_txn_id.
     simpl.
@@ -601,6 +607,8 @@ Proof.
            sure how to resolve this (maybe [disk_inv_durable] shouldn't
            instantiate it at durable_lb but at installed_txn_id) *)
   (* TODO: [is_installed_txn], [is_durable_txn], and allocate [is_base_disk] *)
+*)
+  admit.
 Admitted. (* BUG: the theorem statement isn't complete yet, but if we abort
 this, then the proof runs in -vos mode... *)
 

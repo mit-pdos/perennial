@@ -137,7 +137,6 @@ Proof.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
   wp_pures. wp_call.
-  Search _ struct.alloc.
   wp_apply wp_allocStruct; eauto.
   iIntros (iptr) "Hi".
   iDestruct (struct_fields_split with "Hi") as "Hi". iNamed "Hi".

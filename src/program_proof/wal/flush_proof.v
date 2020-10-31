@@ -189,7 +189,7 @@ Proof.
   iExists _; iFrame.
   iExists installed_txn_id, (Nat.max diskEnd_txn_id txn_id). iFrame "# ∗".
   iSplitL "Hinstalled".
-  { iNamed "Hinstalled". iExists _, _. iFrame. iPureIntro. auto with lia. }
+  { iNamed "Hinstalled". iExists _, _. iFrame. iFrame "#". iPureIntro. auto with lia. }
   iSplit.
   - iDestruct "Hdurable" as %Hcirc_matches. iPureIntro. simpl.
     unfold circ_matches_txns in *. intuition try lia.
@@ -330,7 +330,7 @@ Proof.
   wp_apply (release_spec with "[-HQ HΦ]").
   { iFrame "lk". iFrame "Hlocked". iNext. iExists _.
     iFrame.
-    iExists _, _, _, _, _, _.
+    iExists _, _, _, _, _, _, _, _.
     iFrame "∗#%".
     iNamed "Htxns".
     iPureIntro. intuition (eauto; try lia).

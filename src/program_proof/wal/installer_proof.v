@@ -637,7 +637,7 @@ Proof.
   done.
 Qed.
 
-Theorem wp_Walog__logInstall γ l dinit (diskEnd_txn_id_bound: nat) σₛ :
+Theorem wp_Walog__logInstall γ l dinit σₛ :
   {{{ "#st" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
       "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
       "#memLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
@@ -834,7 +834,8 @@ Theorem wp_Walog__installer γ l dinit :
     Walog__installer #l
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "#Hwal HΦ".
+  iIntros (Φ) "H HΦ".
+  iNamed "H".
   iMod (is_wal_read_mem with "Hwal") as "#Hmem".
   wp_call.
   iNamed "Hmem".
