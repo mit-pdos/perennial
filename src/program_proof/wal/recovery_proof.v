@@ -49,7 +49,7 @@ Definition log_crash_to σ diskEnd_txn_id :=
 
 Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id :
   is_durable_txn (Σ:=Σ) γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
-  is_durable cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
+  is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
   ⌜relation.denote log_crash σ (log_crash_to σ diskEnd_txn_id) tt⌝.
 Proof.
   iNamed 1.
@@ -142,9 +142,9 @@ Lemma is_installed_txn_implies_non_empty_txns γ cs txns installed_txn_id lb:
   ⌜ txns ≠ [] ⌝.
 Proof. iNamed 1. iPureIntro. by eapply is_txn_implies_non_empty_txns. Qed.
 
-Lemma circ_matches_txns_crash cs txns installed_txn_id diskEnd_txn_id:
-  circ_matches_txns cs txns installed_txn_id diskEnd_txn_id →
-  circ_matches_txns cs (take (S diskEnd_txn_id) txns) installed_txn_id diskEnd_txn_id.
+Lemma circ_matches_txns_crash cs txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id:
+  circ_matches_txns cs txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id →
+  circ_matches_txns cs (take (S diskEnd_txn_id) txns) installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id.
 Proof.
   rewrite /circ_matches_txns/has_updates.
   destruct 1 as [Heq Hlb].

@@ -604,6 +604,8 @@ Lemma snapshot_memLog_txns_are γ l dinit log diskEnd_pos (diskEnd_txn_id: nat) 
   "Hlinv" ∷ memLog_linv γ log diskEnd_pos diskEnd_txn_id -∗
   "HownInstallerPos_installer" ∷ (∃ (installer_pos : nat), ghost_var γ.(installer_pos_name) (1/2) installer_pos) -∗
   "HownInstallerTxn_installer" ∷ (∃ (installer_txn_id : nat), ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id) -∗
+  "HownLockedInstallerPos_installer" ∷ (∃ (locked_installer_pos : u64), ghost_var γ.(locked_installer_pos_name) (1/2) locked_installer_pos) -∗
+  "HownLockedInstallerTxn_installer" ∷ (∃ (locked_installer_txn_id : nat), ghost_var γ.(locked_installer_txn_id_name) (1/2) locked_installer_txn_id) -∗
   |={⊤}=> ∃ memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id,
     "%Hsnapshot" ∷ ⌜has_updates
       (take (slidingM.logIndex log diskEnd_pos) log.(slidingM.log))
@@ -611,9 +613,12 @@ Lemma snapshot_memLog_txns_are γ l dinit log diskEnd_pos (diskEnd_txn_id: nat) 
     "#Hsnapshot_txns" ∷ txns_are γ memStart_txn_id (subslice memStart_txn_id (S diskEnd_txn_id) txns) ∗
     "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 memStart_txn_id nextDiskEnd_txn_id txns
-                                logger_pos logger_txn_id ∗
+                                logger_pos logger_txn_id
+                                diskEnd_pos diskEnd_txn_id ∗
     "HownInstallerPos_installer" ∷ ghost_var γ.(installer_pos_name) (1/2) (int.nat diskEnd_pos) ∗
-    "HownInstallerTxn_installer" ∷ ghost_var γ.(installer_txn_id_name) (1/2) diskEnd_txn_id.
+    "HownInstallerTxn_installer" ∷ ghost_var γ.(installer_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownLockedInstallerPos_installer" ∷ ghost_var γ.(locked_installer_pos_name) (1/2) diskEnd_pos ∗
+    "HownLockedInstallerTxn_installer" ∷ ghost_var γ.(locked_installer_txn_id_name) (1/2) diskEnd_txn_id.
 Proof.
   iIntros.
   iNamed.
@@ -622,6 +627,8 @@ Proof.
   iNamed "Htxns".
   iNamed "HownInstallerPos_installer".
   iNamed "HownInstallerTxn_installer".
+  iNamed "HownLockedInstallerPos_installer".
+  iNamed "HownLockedInstallerTxn_installer".
 
   assert (diskEnd_txn_id < length txns) as HdiskEnd_bound by admit.  (* this follows from HdiskEnd_txn *)
   iMod (get_txns_are _ _ _ _ _ memStart_txn_id (S diskEnd_txn_id)
@@ -645,6 +652,12 @@ Proof.
   iMod (ghost_var_update_halves diskEnd_txn_id with
     "HownInstallerTxn_installer HownInstallerTxn_walinv"
   ) as "[HownInstallerTxn_installer HownInstallerTxn_walinv]".
+  iMod (ghost_var_update_halves diskEnd_pos with
+    "HownLockedInstallerPos_installer HownLockedInstallerPos_linv"
+  ) as "[HownLockedInstallerPos_installer HownLockedInstallerPos_linv]".
+  iMod (ghost_var_update_halves diskEnd_txn_id with
+    "HownLockedInstallerTxn_installer HownLockedInstallerTxn_linv"
+  ) as "[HownLockedInstallerTxn_installer HownLockedInstallerTxn_linv]".
 
   iMod ("Hclose" with "[Htxns_ctx γtxns HnextDiskEnd_inv Howncs
     HownInstallerPos_walinv HownInstallerTxn_walinv HownDiskEndMem_walinv HownDiskEndMemTxn_walinv
@@ -686,21 +699,40 @@ Proof.
   }
 
   iExists _, _, _, _, _.
-  iFrame "HownInstallerPos_installer HownInstallerTxn_installer Htxns_subslice".
+  iFrame "HownInstallerPos_installer HownInstallerTxn_installer
+    HownLockedInstallerPos_installer HownLockedInstallerTxn_installer
+    Htxns_subslice".
+
+  pose proof (has_updates_app _ _ _ _ His_installerEnd His_diskEnd) as Hmatches.
+  rewrite subslice_app_contig in Hmatches.
+  2: lia.
+  rewrite -subslice_from_start subslice_app_contig in Hmatches.
+  2: rewrite /slidingM.logIndex; lia.
+  rewrite subslice_from_start in Hmatches.
+
   iSplitR.
-  1: eauto.
-  iFrame "∗ # %".
-  eauto.
+  1: iPureIntro; apply Hmatches.
+  iFrame.
+  iFrame (HdiskEnd_txn Htxnpos_bound) "#".
+  iSplitR.
+  1: iPureIntro; lia.
+  iSplitR.
+  1: iPureIntro; lia.
+  iPureIntro.
+  intuition.
+  rewrite subslice_zero_length subslice_zero_length //.
 Admitted.
 
-Lemma unify_memLog_memStart_txn_id γ log diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id memStart_txn_id_ext :
+Lemma unify_memLog_memStart_txn_id γ log diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id locked_installer_pos locked_installer_txn_id memStart_txn_id_ext :
   "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 memStart_txn_id nextDiskEnd_txn_id txns
-                                logger_pos logger_txn_id -∗
+                                logger_pos logger_txn_id
+                                locked_installer_pos locked_installer_txn_id -∗
   "Hown_memStart_txn_id_installer" ∷ ghost_var γ.(memStart_txn_id_name) (1/2) memStart_txn_id_ext -∗
     "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 memStart_txn_id_ext nextDiskEnd_txn_id txns
-                                logger_pos logger_txn_id ∗
+                                logger_pos logger_txn_id
+                                locked_installer_pos locked_installer_txn_id ∗
     "Hown_memStart_txn_id_installer" ∷ ghost_var γ.(memStart_txn_id_name) (1/2) memStart_txn_id_ext ∗
     "%HmemStart_txn_id_eq" ∷ ⌜memStart_txn_id = memStart_txn_id_ext⌝.
 Proof.
@@ -714,14 +746,16 @@ Proof.
   eauto.
 Qed.
 
-Lemma unify_memLog_txns γ log diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id txns_ext :
+Lemma unify_memLog_txns γ log diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id locked_installer_pos locked_installer_txn_id txns_ext :
   "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 memStart_txn_id nextDiskEnd_txn_id txns
-                                logger_pos logger_txn_id -∗
+                                logger_pos logger_txn_id
+                                locked_installer_pos locked_installer_txn_id -∗
   "γtxns"  ∷ ghost_var γ.(txns_name) (1/2) txns_ext -∗
     "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 memStart_txn_id nextDiskEnd_txn_id txns_ext
-                                logger_pos logger_txn_id ∗
+                                logger_pos logger_txn_id
+                                locked_installer_pos locked_installer_txn_id ∗
     "γtxns"  ∷ ghost_var γ.(txns_name) (1/2) txns_ext ∗
     "%Htxns_eq" ∷ ⌜txns = txns_ext⌝.
 Proof.
@@ -735,18 +769,20 @@ Proof.
   eauto.
 Qed.
 
-Lemma unify_memLog_diskEnd_mem γ log diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id (diskEnd_pos_ext diskEnd_txn_id_ext: nat) :
+Lemma unify_memLog_diskEnd_mem γ log diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id locked_installer_pos locked_installer_txn_id (diskEnd_pos_ext diskEnd_txn_id_ext: nat) :
   "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 memStart_txn_id nextDiskEnd_txn_id txns
-                                logger_pos logger_txn_id -∗
+                                logger_pos logger_txn_id
+                                locked_installer_pos locked_installer_txn_id -∗
   "HownDiskEndMem" ∷ ghost_var γ.(diskEnd_mem_name) (1/2) diskEnd_pos_ext -∗
   "HownDiskEndMemTxn" ∷ ghost_var γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id_ext -∗
     "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 memStart_txn_id nextDiskEnd_txn_id txns
-                                logger_pos logger_txn_id ∗
-    "HownDiskEndMem" ∷ ghost_var γ.(diskEnd_mem_name) (1/2) (slidingM.logIndex log diskEnd_pos) ∗
+                                logger_pos logger_txn_id
+                                locked_installer_pos locked_installer_txn_id ∗
+    "HownDiskEndMem" ∷ ghost_var γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd_pos) ∗
     "HownDiskEndMemTxn" ∷ ghost_var γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
-    "%HdiskEnd_pos_eq" ∷ ⌜slidingM.logIndex log diskEnd_pos = diskEnd_pos_ext⌝ ∗
+    "%HdiskEnd_pos_eq" ∷ ⌜int.nat diskEnd_pos = diskEnd_pos_ext⌝ ∗
     "%HdiskEnd_txn_id_eq" ∷ ⌜diskEnd_txn_id = diskEnd_txn_id_ext⌝.
 Proof.
   iIntros.
@@ -759,11 +795,12 @@ Proof.
   eauto.
 Qed.
 
-Lemma linv_get_pers_core γ σ diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id :
+Lemma linv_get_pers_core γ σ diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id locked_installer_pos locked_installer_txn_id :
   "Hlinv" ∷ memLog_linv_core γ σ diskEnd_pos diskEnd_txn_id
                                 memStart_txn_id nextDiskEnd_txn_id txns
-                                logger_pos logger_txn_id -∗
-  "#Hlinv_pers" ∷ memLog_linv_pers_core γ σ diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id.
+                                logger_pos logger_txn_id
+                                locked_installer_pos locked_installer_txn_id -∗
+  "#Hlinv_pers" ∷ memLog_linv_pers_core γ σ diskEnd_pos diskEnd_txn_id memStart_txn_id nextDiskEnd_txn_id txns logger_pos logger_txn_id locked_installer_pos locked_installer_txn_id.
 Proof.
   iIntros "Hlinv".
   iDestruct "Hlinv" as "(#Hlinv_pers&Hlinv)".
@@ -934,7 +971,8 @@ Proof.
   iNamed "Hinstaller".
   iNamed "HmemStart_txn_id".
   iMod (snapshot_memLog_txns_are with "Hwal HmemLog_linv
-    HownInstallerPos_installer HownInstallerTxn_installer"
+    HownInstallerPos_installer HownInstallerTxn_installer
+    HownLockedInstallerPos_installer HownLockedInstallerTxn_installer"
   ) as (memStart_txn_id_linv nextDiskEnd_txn_id txns logger_pos logger_txn_id) "Hsnapshot".
   iNamed "Hsnapshot".
   iDestruct (unify_memLog_memStart_txn_id with "Hlinv Hown_memStart_txn_id_installer")
@@ -1039,7 +1077,7 @@ Proof.
     iApply "Hlkinv"; iFrameNamed.
     iSplitL "Hlinv".
     {
-      iExists _, _, _, _, _.
+      iExists _, _, _, _, _, _, _.
       iFrame "Hlinv".
     }
     iSplitL "Hstart_exactly"; first by iFrame.
