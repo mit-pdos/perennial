@@ -94,12 +94,17 @@ Qed.
 
 Hint Unfold slidingM.logIndex slidingM.wf : word.
 
-Lemma circ_matches_extend cs txns installed_txn_id diskEnd_txn_id new_txn nextDiskEnd_txn_id :
-  (installed_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat →
+Reserved Notation "x ≤ y ≤ z ≤ v ≤ w"
+  (at level 70, y at next level, z at next level, v at next level).
+Notation "x ≤ y ≤ z ≤ v ≤ w" := (x ≤ y ∧ y ≤ z ∧ z ≤ v ∧ v ≤ w)%nat : nat_scope.
+
+Lemma circ_matches_extend cs txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id new_txn nextDiskEnd_txn_id :
+  (installer_pos ≤ diskEnd_mem ≤ length cs.(circΣ.upds))%nat →
+  (installed_txn_id ≤ installer_txn_id ≤ diskEnd_mem_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat →
   (nextDiskEnd_txn_id < length txns)%nat →
   has_updates new_txn (subslice (S diskEnd_txn_id) (S nextDiskEnd_txn_id) txns) →
-  circ_matches_txns cs txns installed_txn_id diskEnd_txn_id →
-  circ_matches_txns (set upds (λ u, u ++ new_txn) cs) txns installed_txn_id nextDiskEnd_txn_id.
+  circ_matches_txns cs txns installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id installed_txn_id diskEnd_txn_id →
+  circ_matches_txns (set upds (λ u, u ++ new_txn) cs) txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id nextDiskEnd_txn_id.
 Proof.
   rewrite /circ_matches_txns /=.
   intros ? ? ? [? ?].
@@ -186,6 +191,7 @@ Proof.
       "(HdiskEnd_exactly&Hlog_owned&HareLogging)";
     iNamed "Hlog_owned".
   iNamed "HmemLog_linv".
+  iNamed "Hlinv_pers".
   iNamed "HnextDiskEnd".
   iNamed "Hstart_circ".
   iMod (txn_pos_valid_locked with "Hwal HmemStart_txn Howntxns") as "(%HmemStart_txn&Howntxns)".

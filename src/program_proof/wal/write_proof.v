@@ -356,16 +356,21 @@ Proof.
     rewrite -> take_app_le by lia. intuition eauto.
 Qed.
 
-Lemma is_durable_append cs txns txns' installed_txn_id diskEnd_txn_id :
+Lemma is_durable_append γ cs txns txns' installed_txn_id diskEnd_txn_id :
   (diskEnd_txn_id < length txns)%nat ->
-  is_durable cs txns installed_txn_id diskEnd_txn_id -∗
-  is_durable (Σ:=Σ) cs (txns ++ txns') installed_txn_id diskEnd_txn_id.
+  is_durable γ cs txns installed_txn_id diskEnd_txn_id -∗
+  is_durable (Σ:=Σ) γ cs (txns ++ txns') installed_txn_id diskEnd_txn_id.
 Proof.
   intros Hbound.
   rewrite /is_durable; iNamed 1.
+  iExists _, _, _, _.
+  iFrame.
   iPureIntro.
   rewrite /circ_matches_txns in Hcirc_matches |- *.
-  rewrite -> subslice_app_1 by lia; auto.
+  rewrite -> subslice_app_1 by lia.
+  rewrite -> subslice_app_1 by lia.
+  rewrite -> subslice_app_1 by lia.
+  intuition.
 Qed.
 
 Lemma is_txn_app txns extra txn_id pos :
