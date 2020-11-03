@@ -105,6 +105,7 @@ Fail Example testFooBarMutation_ok : failing_testFooBarMutation #() ~~> #true :=
 Fail Example testStructUpdates_ok : failing_testStructUpdates #() ~~> #true := t.
 Example testNestedStructUpdates_ok : testNestedStructUpdates #() ~~> #true := t.
 Example testStructConstructions_ok : testStructConstructions #() ~~> #true := t.
+Example testIncompleteStruct_ok : testIncompleteStruct #() ~~> #true := t.
 Example testStoreInStructVar_ok : testStoreInStructVar #() ~~> #true := t.
 Example testStoreInStructPointerVar_ok : testStoreInStructPointerVar #() ~~> #true := t.
 Example testStoreComposite_ok : testStoreComposite #() ~~> #true := t.

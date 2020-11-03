@@ -1061,6 +1061,20 @@ Definition testStructConstructions: val :=
     "ok" <-[boolT] (![boolT] "ok") && ("p4" ≠ ![refT (struct.t TwoInts.S)] "p1");;
     ![boolT] "ok".
 
+Definition testIncompleteStruct: val :=
+  rec: "testIncompleteStruct" <> :=
+    let: "ok" := ref_to boolT #true in
+    let: "p1" := struct.mk TwoInts.S [
+      "x" ::= #0
+    ] in
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "y" "p1" = #0);;
+    let: "p2" := struct.mk S.S [
+      "a" ::= #2
+    ] in
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "x" (struct.get S.S "b" "p2") = #0);;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get S.S "c" "p2" = #false);;
+    ![boolT] "ok".
+
 Module StructWrap.
   Definition S := struct.decl [
     "i" :: uint64T

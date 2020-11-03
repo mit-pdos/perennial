@@ -77,13 +77,12 @@ Fixpoint build_struct_val d (field_vals: list (string*expr)): option expr :=
   let lookup_f := assocl_lookup field_vals in
   match d with
   | [] => Some (Val #())
-  | (f,_)::fs => match lookup_f f with
-           | Some e => match build_struct_val fs field_vals with
-                      | Some e' => Some (e, e')%E
-                      | None => None
-                      end
-           | None => None
-           end
+  | (f,ft)::fs =>
+    let e := default (Val (zero_val ft)) (lookup_f f) in
+    match build_struct_val fs field_vals with
+    | Some e' => Some (e, e')%E
+    | None => None
+    end
   end.
 
 Definition buildStruct d (fvs: list (string*expr)) : expr :=
@@ -92,18 +91,16 @@ Definition buildStruct d (fvs: list (string*expr)) : expr :=
   | None => LitV LitUnit
   end.
 
-(* TODO: support zero values for missing fields *)
 Fixpoint build_struct_f d (field_vals: list (string*val)): option val :=
   let lookup_f := assocl_lookup field_vals in
   match d with
   | [] => Some (#())
-  | (f,_)::fs => match lookup_f f with
-           | Some e => match build_struct_f fs field_vals with
-                      | Some e' => Some (e, e')%V
-                      | None => None
-                      end
-           | _ => None
-           end
+  | (f,ft)::fs =>
+    let e := default (zero_val ft) (lookup_f f) in
+    match build_struct_f fs field_vals with
+    | Some e' => Some (e, e')%V
+    | None => None
+    end
   end.
 
 Definition buildStruct_f d (fvs: list (string*val)) : val :=
