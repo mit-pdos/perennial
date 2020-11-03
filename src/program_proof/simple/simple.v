@@ -110,14 +110,14 @@ Definition covered_inodes : gset u64 :=
 
 Definition Nbuftxn := nroot .@ "buftxn".
 
-Theorem wp_ReadInode γ γtxn (inum : u64) len blk (btxn : loc) dinit P0 txn_start ibuf :
-  {{{ is_buftxn_at_txn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 txn_start ∗
+Theorem wp_ReadInode γ γtxn (inum : u64) len blk (btxn : loc) dinit P0 ibuf :
+  {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
       buftxn_maps_to γtxn (inum2addr inum) (existT KindInode (bufInode ibuf)) ∗
       ⌜encodes_inode len blk ibuf⌝ ∗
       ⌜ inum ∈ covered_inodes ⌝ }}}
     ReadInode #btxn #inum
   {{{ l, RET #l;
-      is_buftxn_at_txn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 txn_start ∗
+      is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
       buftxn_maps_to γtxn (inum2addr inum) (existT KindInode (bufInode ibuf)) ∗
       is_inode_mem l inum len blk }}}.
 Proof.
@@ -179,8 +179,8 @@ Definition is_fs γ (nfs: loc) dinit : iProp Σ :=
     "#Hislm" ∷ is_lockMap lm γ.(simple_lockmapghs) covered_inodes (is_inode_stable γ) ∗
     "#Hsrc" ∷ inv N (is_source γ).
 
-Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents txn_start P0 dinit bbuf :
-  {{{ is_buftxn_at_txn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 txn_start ∗
+Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents P0 dinit bbuf :
+  {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
       is_inode_mem ip inum len blk ∗
       ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
       ⌜ len = length contents ⌝ ∗
@@ -189,7 +189,7 @@ Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (byt
     Inode__Read #ip #btxn #offset #bytesToRead
   {{{ resSlice (eof : bool) (vs : list u8), RET (slice_val resSlice, #eof);
       is_slice resSlice u8T 1 vs ∗
-      is_buftxn_at_txn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 txn_start ∗
+      is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
       is_inode_mem ip inum len blk ∗
       buftxn_maps_to γtxn (blk2addr blk) (existT _ (defs.bufBlock bbuf)) ∗
       ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
@@ -417,7 +417,6 @@ Proof.
 
   (* XXX weird pattern: caller gets to lift predicates into buftxn *)
   iNamed "Hinode_enc".
-  iSpecialize ("Hbuftxn" $! 0).
   iMod (lift_into_txn with "Hbuftxn [$Hinode_enc_mapsto] []") as "[Hinode_enc_mapsto Hbuftxn]".
   { solve_ndisj. }
   { (* XXX missing from inode lock invariant? *) admit. }
