@@ -87,6 +87,7 @@ Proof.
 
   iApply "HΦ".
   iNamed "HmemLog_linv".
+  iNamed "Hlinv_pers".
   iNamed "Htxns".
   iDestruct "HmemStart_txn" as "#HmemStart_txn".
   iDestruct "HmemEnd_txn" as "#HmemEnd_txn".
@@ -112,7 +113,7 @@ Proof.
                        (set slidingM.mutable (λ _ : u64, slidingM.endPos σ.(memLog)) σ.(memLog))) σ).
   simpl.
   iFrame "# ∗".
-  iSplitR "Howntxns HownLoggerPos_linv HownLoggerTxn_linv HnextDiskEnd HownInstallerPos_linv HownInstallerTxn_linv Hown_memStart_txn_id_linv".
+  iSplitR "Howntxns HownLoggerPos_linv HownLoggerTxn_linv HnextDiskEnd HownInstallerPosMem_linv HownInstallerTxnMem_linv HownInstalledTxnMem_linv".
   { iExists _; iFrame.
     iPureIntro.
     split_and!; simpl; auto; try word.
@@ -127,17 +128,19 @@ Proof.
     epose proof (wal_wf_txns_mono_pos Hwf HmemEnd_is_txn HnextDiskEnd_is_txn0). lia.
   }
 
-  iExists memStart_txn_id, _, (length σs.(log_state.txns) - 1)%nat, σs.(log_state.txns), _, _, _, _; simpl.
-  iFrame "Howntxns HownLoggerPos_linv HownLoggerTxn_linv Hinstalled_txn_id_bound".
+  iExists installed_txn_id_mem, (length σs.(log_state.txns) - 1)%nat, σs.(log_state.txns), _, _, _, _; simpl.
+  iFrame "Howntxns HownLoggerPos_linv HownLoggerTxn_linv".
   iFrame "HmemStart_txn HmemEnd_txn".
-  iFrame "HownInstallerPos_linv HownInstallerTxn_linv Hown_memStart_txn_id_linv".
+  iFrame "HownInstallerPosMem_linv HownInstallerTxnMem_linv HownInstalledTxnMem_linv".
   iFrame "%".
   iSplit.
+  2: {
+    iNamed "HnextDiskEnd". iExists _. iFrame. iFrame "#". iFrame "%".
+  }
+  iSplit.
   { iPureIntro. lia. }
   iSplit.
   { iPureIntro. lia. }
-  iSplitL "HnextDiskEnd".
-  { iNamed "HnextDiskEnd". iExists _. iFrame. iFrame "#". iFrame "%". }
   iSplit.
   2: { rewrite logIndex_set_mutable /=.
     replace (S (length σs.(log_state.txns) - 1)) with (length σs.(log_state.txns)) by lia.
