@@ -120,7 +120,7 @@ Lemma is_installed_extend_durable γ d txns installed_txn_id diskEnd_txn_id disk
 Proof.
   intros Hbound.
   iNamed 1.
-  iExists _, _. iFrame. iFrame "#".
+  iExists _, _, _. iFrame. iFrame "#".
   iPureIntro; lia.
 Qed.
 

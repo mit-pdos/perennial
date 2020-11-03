@@ -206,7 +206,8 @@ Proof.
   iIntros (Happly) "[Hinner HP] Hlinv Hfupd".
   iNamed "Hinner".
   iNamed "Hlinv".
-  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [lia|done..|].
+  iNamed "Hlinv_pers".
+  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [lia|lia|].
 
   iNamed "Htxns".
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
@@ -276,7 +277,8 @@ Proof.
   iNamed "Hinner".
 
   iNamed "Hlinv".
-  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [lia|done..|].
+  iNamed "Hlinv_pers".
+  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [lia|lia|].
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
 
   iNamed "Hdisk".
