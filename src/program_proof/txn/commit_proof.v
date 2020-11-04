@@ -1180,20 +1180,20 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (Pre
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
-      PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
+      PreQ ∧ ( ⌜bufamap ≠ ∅⌝ ={⊤ ∖ ↑walN ∖ ↑invN, E}=∗ ∃ (σl : async (gmap addr {K & bufDataT K})),
           "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (1/2) σl ∗
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT _ b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
-            ⌜bufamap ≠ ∅⌝ ∗
             ghost_var γ.(txn_crashstates) (1/2) (async_put σ σl)
             ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl))  ))
   }}}
     Txn__CommitWait #l (slice_val bufs) #wait
   {{{ (ok : bool), RET #ok;
       if ok then
-        ( ⌜bufamap ≠ ∅⌝ -∗ ∃ (txn_id : nat),
+        (( ⌜bufamap ≠ ∅⌝ -∗ ∃ (txn_id : nat),
           Q txn_id ∗
           ( ⌜wait=true⌝ -∗ @mnat_own_lb Σ _ γ.(txn_walnames).(wal_heap_durable_lb) txn_id ) ) ∗
+        ( ⌜bufamap = ∅⌝ -∗ PreQ )) ∗
         [∗ map] a ↦ buf ∈ bufamap,
           mapsto_txn γ a (existT _ buf.(buf_).(bufData))
       else
@@ -1225,14 +1225,14 @@ Proof.
     wp_apply (wp_txn__doCommit _ _ _ _ _ _ _ _ PreQ with "[$Htxn $Hbufs $Hbufpre Hfupd]"); eauto.
     {
       iSplit; [ iDestruct "Hfupd" as "[$ _]" | iRight in "Hfupd" ].
-      iMod "Hfupd".
+      iMod ("Hfupd" with "[]") as "Hfupd"; first eauto.
       iModIntro.
       iNamed "Hfupd".
       iExists σl. iFrame "Hcrashstates_frag".
 
       iIntros "H".
       iMod ("Hcrashstates_fupd" with "[H]").
-      { iFrame. done. }
+      { iFrame. }
 
       iModIntro. done.
     }
@@ -1249,12 +1249,16 @@ Proof.
         iIntros "HQ".
         wp_load.
         iApply "HΦ". iFrame.
+        iSplitL.
+        2: { iIntros "%H". congruence. }
         iIntros (?). iExists txn_id. iFrame.
         done.
 
       * wp_pures.
         wp_load.
         iApply "HΦ". iFrame.
+        iSplitL.
+        2: { iIntros "%H". congruence. }
         iIntros (?). iExists txn_id. iFrame.
         iIntros (?). intuition congruence.
 
@@ -1283,7 +1287,10 @@ Proof.
     apply length_zero_iff_nil in H0; subst.
 
     iSplit; last by iApply big_sepM_empty.
-    iIntros. congruence.
+    iSplitR.
+    { iIntros; congruence. }
+    iIntros.
+    iDestruct "Hfupd" as "[Hpreq _]". iFrame.
 Qed.
 
 

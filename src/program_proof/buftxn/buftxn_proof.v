@@ -705,9 +705,10 @@ Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : 
   {{{
     (ok : bool), RET #ok;
     if ok then
-      (⌜anydirty=true⌝ -∗ ∃ txnid,
+      ((⌜anydirty=true⌝ -∗ ∃ txnid,
       Q txnid ∗
       (⌜wait = true⌝ -∗ mnat_own_lb γUnified.(txn_walnames).(wal_heap_durable_lb) txnid)) ∗
+      (⌜anydirty=false⌝ -∗ PreQ)) ∗
       [∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v
     else
       PreQ ∗
@@ -813,10 +814,11 @@ Proof.
     {
       iSplit.
       { iDestruct "Hfupd" as "[$ _]". }
+      iIntros "%Hempty".
       iDestruct "Hfupd" as "[_ Hfupd]".
       iMod "Hfupd" as (σl) "Hfupd". iNamed "Hfupd".
       iModIntro. iExists _. iFrame.
-      iIntros "[% H]".
+      iIntros "H".
       iMod ("Hcrashstates_fupd" with "[H]") as "$"; last done.
 
       replace (modified <$> mt) with (modified <$> (filter (λ v, bufDirty <$> gBufmap !! v.1 = Some true) mt ∪
@@ -835,21 +837,35 @@ Proof.
 
   iApply "HΦ".
   destruct ok.
-  - iDestruct "Hunifiedtxns" as "[Hq Hmapsto0]".
+  - iDestruct "Hunifiedtxns" as "[[Hq Hpreq] Hmapsto0]".
     iSplitR "Hmapsto0 Hctxelem1".
     {
-      iIntros "%Hany".
-      destruct anydirty; try congruence.
-      iDestruct ("Hq" with "[]") as (txnid) "[Hq Hflush]".
+      iSplitR "Hpreq".
       {
-        iPureIntro. intro Hempty. eapply map_fmap_empty_inv in Hempty.
-        assert (filter (λ b, (b.2).(bufDirty) = true) gBufmap = ∅); intuition try congruence.
-        (* Hempty says every element in mt is not dirty *)
-        admit.
-      }
+        iIntros "%Hany".
+        destruct anydirty; try congruence.
+        iDestruct ("Hq" with "[]") as (txnid) "[Hq Hflush]".
+        {
+          iPureIntro. intro Hempty. eapply map_fmap_empty_inv in Hempty.
+          assert (filter (λ b, (b.2).(bufDirty) = true) gBufmap = ∅); intuition try congruence.
+          (* Hempty says every element in mt is not dirty *)
+          admit.
+        }
 
-      iExists _.
-      iFrame "Hq". iFrame "Hflush".
+        iExists _.
+        iFrame "Hq". iFrame "Hflush".
+      }
+      {
+        iIntros "%Hany".
+        iApply "Hpreq".
+        iPureIntro.
+        eapply Hanydirty in Hany.
+        assert (filter (λ v : addr * versioned_object, bufDirty <$> gBufmap !! v.1 = Some true) mt = ∅) as Hz.
+        {
+          admit.
+        }
+        rewrite Hz. rewrite map_fmap_empty; auto.
+      }
     }
     rewrite big_sepM_fmap.
     iDestruct (big_sepM_union (λ k x, mapsto_txn γUnified k (modified x)) with "[Hmapsto0 Hctxelem1]") as "Hmapsto".
