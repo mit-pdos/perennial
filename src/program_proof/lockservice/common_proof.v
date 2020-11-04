@@ -147,8 +147,8 @@ Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ s
 Definition is_server (srv_ptr:loc) γrpc: iProp Σ :=
   ∃ mu_ptr,
       "Hmuptr" ∷ readonly (srv_ptr ↦[LockServer.S :: "mu"] #mu_ptr)
-    ∗ ( "Hlinv" ∷ inv replyTableInvN (ReplyTable_inv γrpc ) )
-    ∗ ( "Hmu" ∷ is_lock mutexN #mu_ptr (Server_mutex_inv srv_ptr γrpc))
+    ∗ "Hlinv" ∷ is_RPCServer γrpc
+    ∗ "Hmu" ∷ is_lock mutexN #mu_ptr (Server_mutex_inv srv_ptr γrpc)
 .
 
 Definition Request64 := @RPCRequest u64.
@@ -157,7 +157,7 @@ Definition Reply64 := @RPCReply u64.
 Lemma LockServer__checkReplyCache_spec (srv reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
      "%" ∷ ⌜int.nat req.(rpc.Seq) > 0⌝
-    ∗ "#Hrinv" ∷ (inv replyTableInvN (ReplyTable_inv γrpc))
+    ∗ "#Hrinv" ∷ is_RPCServer γrpc
     ∗ "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
     ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
     ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
@@ -285,7 +285,7 @@ Lemma Server_Function_spec (coreFunction:val) (fname:string) (srv req_ptr reply_
 
 {{{
   "#Hls" ∷ is_server srv γrpc
-  ∗ "#HreqInv" ∷ inv rpcRequestInvN (RPCRequest_inv γrpc γPost PreCond PostCond req)
+  ∗ "#HreqInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
   ∗ "#Hreq" ∷ read_request req_ptr req
   ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
@@ -377,7 +377,7 @@ Lemma CallFunction_spec (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply
 -> (∀ (srv' req_ptr' reply_ptr' : loc) (req':RPCRequest) 
    (reply' : Reply64) (γrpc' : rpc_names) (γPost' : gname),
 {{{ "#Hls" ∷ is_server srv' γrpc'
-    ∗ "#HargsInv" ∷ inv rpcRequestInvN (RPCRequest_inv γrpc' γPost' PreCond PostCond req')
+    ∗ "#HargsInv" ∷ is_RPCRequest γrpc' γPost' PreCond PostCond req'
     ∗ "#Hargs" ∷ read_request req_ptr' req'
     ∗ own_reply reply_ptr' reply'
 }}}
@@ -391,7 +391,7 @@ Lemma CallFunction_spec (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply
 )
       -∗
 {{{ "#Hls" ∷ is_server srv γrpc
-    ∗ "#HargsInv" ∷ inv rpcRequestInvN (RPCRequest_inv γrpc γPost PreCond PostCond req)
+    ∗ "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
     ∗ "#Hargs" ∷ read_request req_ptr req
     ∗ own_reply reply_ptr reply
 }}}
@@ -512,7 +512,7 @@ Lemma Clerk_Function_spec (f:val) (fname:string) ck (srv:loc) (args:u64) γrpc P
 ->
 (∀ (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc' γPost',
 {{{ "#Hls" ∷ is_server srv γrpc'
-    ∗ "#HargsInv" ∷ inv rpcRequestInvN (RPCRequest_inv γrpc' γPost' PreCond PostCond req)
+    ∗ "#HargsInv" ∷ is_RPCRequest γrpc' γPost' PreCond PostCond req
     ∗ "#Hargs" ∷ read_request req_ptr req
     ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
@@ -585,7 +585,7 @@ Proof using Type*.
               (fun b =>
  (let req := ({| Args := args; CID:= cid; rpc.Seq := cseqno|}) in
     "#Hargs" ∷ read_request req_ptr req
-  ∗ "#Hargsinv" ∷ (inv rpcRequestInvN (RPCRequest_inv γrpc γP PreCond PostCond req))
+  ∗ "#Hargsinv" ∷ is_RPCRequest γrpc γP PreCond PostCond req
   ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
   ∗ "Hseq" ∷ (ck_l ↦[Clerk.S :: "seq"] #(LitInt (word.add req.(rpc.Seq) 1)))
   ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] #srv

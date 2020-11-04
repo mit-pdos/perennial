@@ -11,7 +11,7 @@ From Perennial.algebra Require Import auth_map fmcounter.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.Helpers Require Import NamedProps Integers.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc nondet rpc lockservice_proof kv_proof.
+From Perennial.program_proof.lockservice Require Import lockservice nondet lockservice_proof kv_proof.
 
 Record bank_names := BankNames {
   bank_ls_names : lockservice_names;
