@@ -7,11 +7,11 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Perennial.goose_lang Require Import notation.
 From Perennial.program_proof Require Import proof_prelude.
 From RecordUpdate Require Import RecordUpdate.
-From Perennial.algebra Require Import auth_map fmcounter.
+From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof.lockservice Require Import lockservice fmcounter_map rpc common_proof nondet.
+From Perennial.program_proof.lockservice Require Import lockservice rpc common_proof nondet.
 
 Record lockservice_names := LockserviceNames {
   ls_rpcGN : rpc_names;
