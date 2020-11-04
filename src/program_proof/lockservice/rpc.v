@@ -36,9 +36,18 @@ Section gset.
   Lemma big_sepS_elem_of_acc_impl x Φ X :
     x ∈ X →
     ([∗ set] y ∈ X, Φ y) -∗ Φ x ∗
-      (∀ Ψ, Ψ x -∗ □ (∀ y, ⌜y ∈ X ∧ y ≠ x⌝ -∗ Φ y -∗ Ψ y) -∗ ([∗ set] y ∈ X, Ψ y)).
+      (∀ Ψ, Ψ x -∗ □ (∀ y, ⌜y ∈ X ∧ y ≠ x⌝ → Φ y -∗ Ψ y) -∗ ([∗ set] y ∈ X, Ψ y)).
   Proof.
-  Admitted.
+    intros Helem. rewrite big_sepS_delete //. apply sep_mono_r.
+    apply forall_intro=>Ψ.
+    rewrite (big_sepS_impl Φ Ψ).
+    rewrite wand_curry comm -wand_curry. apply wand_intro_r.
+    assert (∀ a : T, a ∈ X ∧ a ≠ x ↔ a ∈ X ∖ {[x]}) as Hiff by set_solver.
+    setoid_rewrite Hiff.
+    rewrite wand_elim_l.
+    apply wand_intro_l.
+    rewrite -big_sepS_delete //.
+  Qed.
 
 End gset.
 
