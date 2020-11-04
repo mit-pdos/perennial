@@ -227,6 +227,7 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t)
     "#Htxns" ∷ memLog_linv_txns σ
       installer_pos_mem diskEnd logger_pos txns
       installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
+    (* this should be true from wal_wf_txns_mono_pos' and HmemEnd_txn *)
     "%Htxnpos_bound" ∷
       ⌜(Forall (λ pos, int.Z pos ≤ slidingM.memEnd σ) txns.*1)⌝
   .
@@ -255,6 +256,7 @@ Definition memLog_linv_core γ (σ: slidingM.t) (diskEnd: u64) (diskEnd_txn_id: 
     "HownLoggerTxn_linv" ∷ ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id ∗
     "HownInstallerPosMem_linv" ∷ ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem ∗
     "HownInstallerTxnMem_linv" ∷ ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem ∗
+    (* TODO: turn diskEnd_mem ghost variables into fmcounters *)
     "HownDiskEndMem_linv" ∷ ghost_var γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
     "HownDiskEndMemTxn_linv" ∷ ghost_var γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
     "HownInstalledPosMem_linv" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗

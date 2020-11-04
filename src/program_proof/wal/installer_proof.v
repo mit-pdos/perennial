@@ -1408,14 +1408,22 @@ Proof.
   destruct memLog.
   rewrite /slidingM.endPos /slidingM.memEnd /=.
   simpl in *.
+  rewrite /locked_wf /slidingM.wf /= in Hlocked_wf.
+
+  (* this would follow if we turned the diskEnd_mem ghost variables into fmcounters *)
+  assert (int.nat σ.(invariant.diskEnd) ≤ int.nat diskEnd)%nat by admit.
+  assert (int.nat diskEnd < int.nat start + length log)%nat by admit.
 
   iSplit.
   {
     rewrite drop_length.
     replace (word.add σ.(invariant.diskEnd)
       (length log - (int.nat σ.(invariant.diskEnd) - int.nat start))%nat)
-      with (word.add start (length log)). (* need to relate σ.(diskEnd) to σ' *)
-    2: admit.
+      with (word.add start (length log)).
+    2: {
+      apply (inj int.Z).
+      word.
+    }
     iFrame "HmemEnd_txn'".
   }
 
@@ -1427,7 +1435,7 @@ Proof.
     rewrite drop_length.
     replace (int.Z σ.(invariant.diskEnd) +
         (length log - (int.nat σ.(invariant.diskEnd) - int.nat start))%nat)
-      with (int.Z start + length log) by admit. (* need to relate σ.(diskEnd) to σ' *)
+      with (int.Z start + length log) by word.
     apply Htxnpos_bound'.
   }
 
