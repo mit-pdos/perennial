@@ -70,13 +70,14 @@ Proof.
 Qed.
 
 (* this is more or less big_sepM_lookup_acc, but with is_installed_read unfolded *)
-Theorem is_installed_read_lookup {γ d txns installed_lb durable_txn_id} {a: u64} :
-  is_Some (d !! int.Z a) ->
+Theorem is_installed_read_lookup {γ d txns installed_lb durable_txn_id} {a} :
+  is_Some (d !! a) ->
   is_installed γ d txns installed_lb durable_txn_id -∗
-  ∃ txn_id b,
-    ⌜(installed_lb ≤ txn_id ≤ durable_txn_id)%nat ∧
-      apply_upds (txn_upds (take (S txn_id) txns)) d !! int.Z a = Some b⌝ ∗
-    int.Z a d↦ b ∗ (int.Z a d↦ b -∗ is_installed γ d txns installed_lb durable_txn_id).
+  ∃ b txn_id',
+    ⌜installed_lb ≤ txn_id' ≤ durable_txn_id ∧
+      apply_upds (txn_upds (take (S txn_id') txns)) d !! a = Some b⌝ ∗
+     a d↦ b ∗ ⌜2 + LogSz ≤ a⌝ ∗
+     (a d↦ b -∗ is_installed γ d txns installed_lb durable_txn_id).
 Proof.
   rewrite /is_installed_read.
   iIntros (Hlookup) "Hbs".
@@ -86,10 +87,12 @@ Proof.
   iApply restore_intro in "Hb".
   iDestruct "Hb" as (b txn_id') "((%Hin_bounds&%Halready_installed&%Happly_upds) &Hb & %Ha_bound &Hb')".
   iDestruct (restore_elim with "Hb'") as "#Hb_restore"; iClear "Hb'".
-  iExists txn_id', b.
+  iExists _, txn_id'.
   iFrame "Hb".
-  iSplit.
-  { iPureIntro. auto with lia. }
+  iSplitR.
+  1: iPureIntro; eauto with lia.
+  iSplitR.
+  1: iPureIntro; eauto with lia.
   iIntros "Hb".
   iApply "Hbs"; iFrame.
   iApply "Hdata".
@@ -241,9 +244,9 @@ Proof.
 
   iDestruct (in_bounds_valid _ σ with "Hbasedisk Ha_valid") as %Hlookup.
   iDestruct (is_installed_read_lookup Hlookup with "Hinstalled") as
-      (txn_id b [Htxn_id Hbval]) "(Hb&Hinstalled)".
+      (b txn_id) "(%Htxn_id&Hb&%Hbound&Hinstalled)".
   iModIntro.
-  iExists b; iFrame "Hb".
+  iExists _; iFrame "Hb".
   iNext.
   iIntros "Hb".
   iSpecialize ("Hinstalled" with "Hb").
@@ -258,7 +261,11 @@ Proof.
     repeat (simpl; monad_simpl).
     exists σ txn_id.
     { econstructor; eauto; lia. }
-    repeat (simpl; monad_simpl). }
+    repeat (simpl; monad_simpl).
+    destruct Htxn_id as (_&Htxn_id).
+    rewrite Htxn_id.
+    simpl. monad_simpl.
+  }
   iMod "HinnerN" as "_".
   iFrame.
   iMod ("Hclose" with "[-HQ HΦ]") as "_".

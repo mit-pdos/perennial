@@ -382,7 +382,7 @@ Definition is_dblock_with_txns d txns (being_installed_start_txn_id: nat) (being
   ∃ (b: Block) (txn_id': nat),
      (* every disk block has at least up to (being_installed_start_txn_id - 1)
      (most have exactly, but some blocks may be in the process of being installed) *)
-     ⌜being_installed_start_txn_id ≤ S txn_id' ≤ S being_installed_end_txn_id ∧
+     ⌜being_installed_start_txn_id ≤ txn_id' ≤ being_installed_end_txn_id ∧
       ( a ∈ already_installed → txn_id' = being_installed_end_txn_id ) ∧
       let subtxns := take (S txn_id') txns in
       apply_upds (txn_upds subtxns) d !! a = Some b⌝ ∗
@@ -906,7 +906,8 @@ Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id nextDiskEnd_
     "HownDiskEndMemTxn" ∷ ghost_var γ.(diskEnd_mem_txn_id_name) (1 / 2) diskEnd_txn_id ∗
     "Hip" ∷ ghost_var γ.(installer_pos_mem_name) (1 / 2) installer_pos_mem ∗
     "Hit" ∷ ghost_var γ.(installer_txn_id_mem_name) (1 / 2) installer_txn_id_mem ∗
-    "Hinstalled_txn_id_mem" ∷ ghost_var γ.(installed_txn_id_mem_name) (1 / 2) installed_txn_id_mem ∗
+    "HownInstalledPosMem" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗
+    "HownInstalledTxnMem" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem ∗
     "Hnext" ∷ memLog_linv_nextDiskEnd_txn_id γ σ.(slidingM.mutable) nextDiskEnd_txn_id) -∗
   memLog_linv γ σ diskEnd diskEnd_txn_id.
 Proof.
