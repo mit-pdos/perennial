@@ -258,9 +258,8 @@ Definition memLog_linv_core γ (σ: slidingM.t) (diskEnd: u64) (diskEnd_txn_id: 
     "HownLoggerTxn_linv" ∷ ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id ∗
     "HownInstallerPosMem_linv" ∷ ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem ∗
     "HownInstallerTxnMem_linv" ∷ ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem ∗
-    (* TODO: turn diskEnd_mem ghost variables into fmcounters *)
-    "HownDiskEndMem_linv" ∷ ghost_var γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
-    "HownDiskEndMemTxn_linv" ∷ ghost_var γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownDiskEndMem_linv" ∷ fmcounter γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
+    "HownDiskEndMemTxn_linv" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
     "HownInstalledPosMem_linv" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗
     "HownInstalledTxnMem_linv" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
   .
@@ -443,8 +442,8 @@ Definition is_durable γ cs txns installed_txn_id diskEnd_txn_id : iProp Σ :=
   ∃ (installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id: nat),
     "HownInstallerPos_walinv" ∷ ghost_var γ.(installer_pos_name) (1/2) installer_pos ∗
     "HownInstallerTxn_walinv" ∷ ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id ∗
-    "HownDiskEndMem_walinv" ∷ ghost_var γ.(diskEnd_mem_name) (1/2) diskEnd_mem ∗
-    "HownDiskEndMemTxn_walinv" ∷ ghost_var γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_mem_txn_id ∗
+    "HownDiskEndMem_walinv" ∷ fmcounter γ.(diskEnd_mem_name) (1/2) diskEnd_mem ∗
+    "HownDiskEndMemTxn_walinv" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_mem_txn_id ∗
     "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id⌝.
 
 Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :=
@@ -926,8 +925,8 @@ Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id nextDiskEnd_
   ("Hsame_txns" ∷ ghost_var γ.(txns_name) (1/2) txns ∗
     "Hlp" ∷ ghost_var γ.(logger_pos_name) (1 / 2) logger_pos ∗
     "Hlt" ∷ ghost_var γ.(logger_txn_id_name) (1 / 2) logger_txn_id ∗
-    "HownDiskEndMem" ∷ ghost_var γ.(diskEnd_mem_name) (1 / 2) (int.nat diskEnd) ∗
-    "HownDiskEndMemTxn" ∷ ghost_var γ.(diskEnd_mem_txn_id_name) (1 / 2) diskEnd_txn_id ∗
+    "HownDiskEndMem" ∷ fmcounter γ.(diskEnd_mem_name) (1 / 2) (int.nat diskEnd) ∗
+    "HownDiskEndMemTxn" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1 / 2) diskEnd_txn_id ∗
     "Hip" ∷ ghost_var γ.(installer_pos_mem_name) (1 / 2) installer_pos_mem ∗
     "Hit" ∷ ghost_var γ.(installer_txn_id_mem_name) (1 / 2) installer_txn_id_mem ∗
     "HownInstalledPosMem" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗
