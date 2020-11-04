@@ -183,7 +183,8 @@ Section goose_lang.
                           durable_mapsto γ a v) -∗
                          P0) ∗
       "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) dinit anydirty ∗
-      "Htxn_ctx" ∷ map_ctx γtxn 1 (mspec.modified <$> mT)
+      "Htxn_ctx" ∷ map_ctx γtxn 1 (mspec.modified <$> mT) ∗
+      "%Hanydirty" ∷ ⌜anydirty=false -> mspec.modified <$> mT = mspec.committed <$> mT⌝
   .
 
   Global Instance: Params (@is_buftxn) 4 := {}.
@@ -213,7 +214,7 @@ Section goose_lang.
   Proof.
     iIntros "Htxn #Hwand".
     iNamed "Htxn".
-    iExists mT; iFrame "∗#".
+    iExists mT, _; iFrame "∗#%".
     iIntros "!> Hm".
     iApply "Hwand". iApply "HrestoreP0". iFrame.
   Qed.
@@ -277,10 +278,12 @@ Section goose_lang.
     iMod (map_alloc a obj with "Htxn_ctx") as "[Htxn_ctx Ha]"; eauto.
     iModIntro.
     iFrame "Ha".
-    iExists (<[a:=object_to_versioned obj]> mT); iFrame "#∗".
+    iExists (<[a:=object_to_versioned obj]> mT), _; iFrame "#∗".
     rewrite !fmap_insert committed_to_versioned modified_to_versioned.
     rewrite !big_sepM_insert //.
     iFrame.
+    iSplit.
+    2: { iPureIntro. destruct anydirty; intuition congruence. }
     iIntros "!> [[$ $] Hstable]".
     iApply "HrestoreP0"; iFrame.
   Qed.
@@ -370,7 +373,7 @@ Section goose_lang.
     iMod (map_init ∅) as (γtxn) "Hctx".
     iModIntro.
     iApply "HΦ".
-    iExists ∅.
+    iExists ∅, false.
     rewrite !fmap_empty !big_sepM_empty.
     iFrame "∗#".
     auto with iFrame.
@@ -415,13 +418,15 @@ Section goose_lang.
       iMod (map_update with "Htxn_ctx Ha") as
           "[Htxn_ctx $]".
       iModIntro.
-      iExists (<[a:=mspec.mkVersioned (objData (mspec.committed vo)) obj']> mT).
+      iExists (<[a:=mspec.mkVersioned (objData (mspec.committed vo)) obj']> mT), true.
       iFrame "Htxn_system".
       rewrite !fmap_insert !mspec.committed_mkVersioned !mspec.modified_mkVersioned //.
       change (existT (objKind ?x) (objData ?x)) with x.
       rewrite (insert_id (mspec.committed <$> mT)); last first.
       { rewrite lookup_fmap Hmt_lookup //. }
+      rewrite orb_true_r.
       iFrame "#∗".
+      iPureIntro; intros; congruence.
     - (* user did not change buf, so no basic updates are needed *)
       iModIntro.
       simpl.
@@ -429,8 +434,9 @@ Section goose_lang.
       { rewrite Hmt_lookup.
         destruct vo as [K [c m]]; done. }
       iFrame "Ha".
-      iExists mT.
+      iExists mT, _.
       iFrameNamed.
+      iPureIntro. destruct anydirty; eauto.
   Qed.
 
   Definition data_has_obj (data: list byte) (a:addr) obj : Prop :=
@@ -512,11 +518,13 @@ Section goose_lang.
     iModIntro.
     iApply "HΦ".
     iFrame "Ha".
-    iExists _; iFrame "Htxn_system Hbuftxn".
+    iExists _, true; iFrame "Htxn_system Hbuftxn".
     rewrite !fmap_insert !mspec.committed_mkVersioned !mspec.modified_mkVersioned /=.
     rewrite (insert_id (mspec.committed <$> mT)); last first.
     { rewrite lookup_fmap Hlookup //. }
     iFrame "#∗".
+    iSplit.
+    2: eauto.
     iExactEq "Htxn_ctx".
     rewrite /named.
     f_equal.
@@ -605,7 +613,7 @@ Section goose_lang.
                 _ _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
                 with "[$Hbuftxn Hold_vals]").
-    { iSplit; [ iAccu | ].
+    2: { iSplit; [ iAccu | ].
       iInv "Htxn_system" as ">Hinner" "Hclo".
       iModIntro.
       iNamed "Hinner".
@@ -632,23 +640,32 @@ Section goose_lang.
       rewrite length_possible_async_put.
       iExactEq "Hnew".
       auto with f_equal lia. }
+    { (* XXX hmm, seems like we got the masks wrong... *)
+      admit. }
     iIntros (ok) "Hpost".
     destruct ok.
-    - iDestruct "Hpost" as (txn_id) "(HQ&Hlower_bound&Hmod_tokens)".
-      iAssert (txn_durable γ txn_id) as "#Hdurable_txn_id {Hlower_bound}".
-      { iApply "Hlower_bound". done. }
-      iApply "HΦ".
-      iApply "HPrestore".
-      iApply big_sepM_subseteq; eauto.
-      iApply big_sepM_sep; iFrame.
-      iApply (big_sepM_impl with "HQ []").
-      iIntros "!>" (k x ?) "Hval".
-      iExists _; iFrame "∗#".
+    - iDestruct "Hpost" as "[Hpostq Hmod_tokens]".
+      destruct anydirty.
+      + iDestruct ("Hpostq" with "[]") as (txn_id) "(HQ&Hlower_bound)"; eauto.
+        iAssert (txn_durable γ txn_id) as "#Hdurable_txn_id {Hlower_bound}".
+        { iApply "Hlower_bound". done. }
+        iApply "HΦ".
+        iApply "HPrestore".
+        iApply big_sepM_subseteq; eauto.
+        iApply big_sepM_sep; iFrame.
+        iApply (big_sepM_impl with "HQ []").
+        iIntros "!>" (k x ?) "Hval".
+        iExists _; iFrame "∗#".
+      + iApply "HΦ".
+        iApply "HPrestore".
+        iApply big_sepM_subseteq; eauto.
+        iApply big_sepM_sep; iFrame.
+        (* ??? *) admit.
     - iDestruct "Hpost" as "[Heph Hmod_tokens]".
       iApply "HΦ".
       iApply "HrestoreP0".
       rewrite big_sepM_sep.
       iFrame.
-  Qed.
+  Admitted.
 
 End goose_lang.
