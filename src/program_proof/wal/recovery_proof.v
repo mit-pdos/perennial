@@ -28,19 +28,6 @@ Lemma is_wal_inner_durable_init (bs: list Block) :
   ∃ γ, is_wal_inner_durable γ s dinit.
 Admitted.
 
-Lemma diskEnd_is_get_at_least (γ: circ_names) q (z: Z):
-  diskEnd_is γ q z ==∗ diskEnd_is γ q z ∗ diskEnd_at_least γ z.
-Proof.
-  iIntros "(%&Hfm&Hend)". iMod (fmcounter.fmcounter_get_lb with "[$]") as "($&$)".
-  eauto.
-Qed.
-
-Lemma start_is_get_at_least (γ: circ_names) q (z: u64):
-  start_is γ q z ==∗ start_is γ q z ∗ start_at_least γ z.
-Proof.
-  iIntros "Hfm". by iMod (fmcounter.fmcounter_get_lb with "[$]") as "($&$)".
-Qed.
-
 Existing Instance own_into_crash.
 
 Definition log_crash_to σ diskEnd_txn_id :=
@@ -388,10 +375,10 @@ Proof.
 
   iDestruct (is_circular_state_wf with "Hcirc") as %Hwf_circ.
   iNamed "Hdiskinv".
-  iMod (diskEnd_is_get_at_least with "[$]") as "(Hdisk&#Hdisk_atLeast)".
+  iDestruct (diskEnd_is_to_at_least with "[$]") as "#Hdisk_atLeast".
   (* TODO: also allocate diskEnd_txn_id ghost var and put in this thread_own_alloc *)
   iMod (thread_own_alloc with "Hdisk") as (γdiskEnd_avail_name) "(HdiskEnd_exactly&Hthread_end)".
-  iMod (start_is_get_at_least with "[$]") as "(Hstart&#Hstart_atLeast)".
+  iMod (start_is_to_at_least with "[$]") as "(Hstart&#Hstart_atLeast)".
   iMod (thread_own_alloc with "Hstart") as (γstart_avail_name) "(Hstart_exactly&Hthread_start)".
   iMod (ghost_var_alloc σ.(log_state.txns)) as (γtxns_name) "(γtxns & Howntxns)".
   iMod (ghost_var_alloc diskEnd) as (γlogger_pos_name) "(γlogger_pos & Hown_logger_pos)".

@@ -1,4 +1,5 @@
 From iris.bi.lib Require Import fractional.
+From iris.base_logic.lib Require Import mnat.
 From Perennial.algebra Require Import deletable_heap.
 
 From RecordUpdate Require Import RecordSet.
@@ -315,14 +316,12 @@ Proof.
 
     iMod (ghost_var_alloc addrs0) as (addrs_name') "[Haddrs' Hγaddrs]".
     iMod (ghost_var_alloc blocks0) as (blocks_name') "[Hblocks' Hγblocks]".
-    iMod (fmcounter_alloc (int.nat σ.(start))) as (start_name') "[Hstart1 Hstart2]".
-    iMod (fmcounter_alloc (Z.to_nat (circΣ.diskEnd σ))) as (diskEnd_name') "[HdiskEnd1 HdiskEnd2]".
+    iMod (mnat_alloc (int.nat σ.(start))) as (start_name') "[[Hstart1 Hstart2] _]".
+    iMod (mnat_alloc (Z.to_nat (circΣ.diskEnd σ))) as (diskEnd_name') "[[HdiskEnd1 HdiskEnd2] #HdiskEndLb]".
     set (γ' := {| addrs_name := addrs_name';
                   blocks_name := blocks_name';
                   start_name := start_name';
                   diskEnd_name := diskEnd_name'; |}).
-
-    iMod (fmcounter_get_lb with "HdiskEnd2") as "[HdiskEnd2 #HdiskEndLb]".
 
     wp_pures.
     iNamed 1.

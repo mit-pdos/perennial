@@ -1330,7 +1330,7 @@ Proof.
     with "HownInstalledTxnMem_installer HownInstalledTxnMem_linv") as
         "[HownInstalledTxnMem_installer HownInstalledTxnMem_linv]".
   iNamed "Hstart_circ".
-  iMod (start_is_to_at_least with "Hstart_is") as "(Hstart_is&#Hstart_at_least')".
+  iDestruct (start_is_to_at_least with "Hstart_is") as "(Hstart_is&#Hstart_at_least')".
   iMod (thread_own_put with "Hstart_exactly Hinstalling Hstart_is")
     as "[Hstart_exactly HnotInstalling]".
 
