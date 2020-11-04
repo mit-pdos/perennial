@@ -54,6 +54,10 @@ Proof.
   - intuition congruence.
 Qed.
 
+Lemma map_get_val k m :
+  (map_get m k).1 = default IntoVal_def (m !! k).
+Proof. reflexivity. Qed.
+
 Definition is_map (mref:loc) (m: Map.t V) :=
   map.is_map mref (Map.untype m).
 

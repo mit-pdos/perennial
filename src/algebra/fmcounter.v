@@ -7,6 +7,8 @@ Set Default Proof Using "Type".
 
 (* Algebras to help with circular buffer proof *)
 
+(* TODO: replace by Iris' own_mnat *)
+
 (* fmcounter = Fractional monotone counter *)
 Definition fmcounterUR := authUR max_natUR.
 Class fmcounterG Σ :=

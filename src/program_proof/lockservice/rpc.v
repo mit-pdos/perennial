@@ -26,6 +26,22 @@ Context `{!heapG Σ}.
 Context {A:Type} {R:Type}.
 Context `{!rpcG Σ R}.
 
+
+(* FIXME: move upstream *)
+Section gset.
+  Context `{Countable T}.
+  Implicit Types X : gset T.
+  Implicit Types Φ : T → iProp Σ.
+
+  Lemma big_sepS_elem_of_acc_impl x Φ X :
+    x ∈ X →
+    ([∗ set] y ∈ X, Φ y) -∗ Φ x ∗
+      (∀ Ψ, Ψ x -∗ □ (∀ y, ⌜y ∈ X ∧ y ≠ x⌝ -∗ Φ y -∗ Ψ y) -∗ ([∗ set] y ∈ X, Ψ y)).
+  Proof.
+  Admitted.
+
+End gset.
+
 Record RPCRequest :=
 {
   CID : u64 ;
@@ -51,8 +67,12 @@ Definition RPCClient_own (γrpc:rpc_names) (cid cseqno:u64) : iProp Σ :=
   "Hcseq_own" ∷ (cid fm[[γrpc.(cseq)]]↦ int.nat cseqno)
 .
 
+(** Ownership of *all* the server-side sequence number tracking tokens *)
+Definition RPCServer_lseq γrpc (lastSeqM:gmap u64 u64) : iProp Σ :=
+  ([∗ set] cid ∈ (fin_to_set u64), cid fm[[γrpc.(lseq)]]↦ int.nat (default (U64 0) (lastSeqM !! cid)))%I.
+
 Definition RPCServer_own γrpc (lastSeqM:gmap u64 u64) lastReplyM : iProp Σ :=
-    ("Hlseq_own" ∷ [∗ map] cid ↦ seq ∈ lastSeqM, cid fm[[γrpc.(lseq)]]↦ int.nat seq)
+    "Hlseq_own" ∷ RPCServer_lseq γrpc lastSeqM
   ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) [[γrpc.(rc)]]↦ro Some r)
 .
 
@@ -60,10 +80,10 @@ Definition RPCReplyReceipt γrpc (req:RPCRequest) (r:R) : iProp Σ :=
   (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦ro Some r
 .
 
-Definition RPCRequestProcessing γrpc (req:RPCRequest) lastSeqM lastReplyM : iProp Σ :=
-  ("Hprocessing_ptsto" ∷ (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦{1/2} None)
-  ∗ ("Hlseq_own" ∷ [∗ map] cid ↦ seq ∈ <[req.(CID):=req.(Seq)]> lastSeqM, cid fm[[γrpc.(lseq)]]↦ int.nat seq)
-  ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) [[γrpc.(rc)]]↦ro Some r)
+Definition RPCRequestProcessing γrpc (req:RPCRequest) (lastSeqM:gmap u64 u64) lastReplyM : iProp Σ :=
+  ("Hprocessing_ptsto" ∷ (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦{1/2} None) ∗
+  ("Hlseq_own" ∷ RPCServer_lseq γrpc (<[req.(CID):=req.(Seq)]> lastSeqM)) ∗
+  ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) [[γrpc.(rc)]]↦ro Some r)
 .
 
 Definition RPCRequestStale γrpc (req:RPCRequest) : iProp Σ :=
@@ -114,7 +134,7 @@ Lemma make_rpc_server E :
   ⊢ |={E}=> ∃ γrpc,
     is_RPCServer γrpc ∗ (* server-side invariant *)
     RPCServer_own γrpc ∅ ∅ ∗ (* server mutex invariant *)
-    [∗ set] cid ∈ (fin_to_set u64), RPCClient_own γrpc cid 0.  (* SEQ counters for all possible clients *)
+    [∗ set] cid ∈ fin_to_set u64, RPCClient_own γrpc cid 0.  (* SEQ counters for all possible clients *)
 Proof.
 Admitted.
 
@@ -171,46 +191,29 @@ Lemma server_takes_request E (PreCond : A -> iProp Σ) (PostCond : A -> R -> iPr
     ▷ PreCond req.(Args)
     ∗ RPCRequestProcessing γrpc req lastSeqM lastReplyM.
 Proof.
+  rewrite map_get_val.
   intros ? Hlseq Hrseq.
   iIntros "HreqInv Hsown"; iNamed "Hsown".
   iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
-  iAssert ((|==> [∗ map] cid↦seq ∈ <[req.(CID):=old_seq]> lastSeqM, cid fm[[γrpc.(lseq)]]↦int.nat seq)%I) with "[Hlseq_own]" as ">Hlseq_own".
-  {
-    destruct (map_get lastSeqM req.(CID)).2 eqn:Hok.
-    {
-      assert (map_get lastSeqM req.(CID) = (old_seq, true)) as Hmapget.
-      { by apply pair_equal_spec. }
-      apply map_get_true in Hmapget.
-      rewrite insert_id; eauto.
-    }
-    {
-      assert (map_get lastSeqM req.(CID) = (old_seq, false)) as Hmapget; first by apply pair_equal_spec.
-      iMod (fmcounter_map_alloc 0 γrpc.(lseq) req.(CID) with "[$]") as "Hlseq_own_new".
-      apply map_get_false in Hmapget as [Hnone Hdef].
-      simpl in Hdef. rewrite Hdef.
-      iDestruct (big_sepM_insert _ _ req.(CID) with "[$Hlseq_own Hlseq_own_new]") as "Hlseq_own"; eauto.
-      replace ((int.nat 0)%Z) with 0 by word.
-      done.
-    }
-  }
+  iDestruct (big_sepS_elem_of_acc_impl req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
+    first by apply elem_of_fin_to_set.
+  rewrite Hlseq.
   iDestruct "Hcases" as "[[>Hunproc Hpre]|[Hproc|Hproc]]".
   {
     iDestruct "Hunproc" as "[Hunproc_inv Hunproc]".
-    iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
     iMod (fmcounter_map_update _ _ _ (int.nat req.(Seq)) with "Hlseq_one") as "Hlseq_one"; first lia.
     iMod (fmcounter_map_get_lb with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
-    iDestruct (big_sepM_insert_delete with "[$Hlseq_own $Hlseq_one]") as "Hlseq_own".
-    rewrite ->insert_insert in *.
     iMod ("HMClose" with "[Hunproc_inv]") as "_"; eauto.
     {
       iNext. iFrame "#". iRight. iLeft. iFrame.
     }
-    iModIntro.
-    iFrame; iFrame "#".
+    iModIntro. iFrame "∗#".
+    iApply ("Hlseq_own" with "[Hlseq_one]"); simpl.
+    - rewrite lookup_insert. done.
+    - iIntros "!#" (y [_ ?]). rewrite lookup_insert_ne //. eauto.
   }
   {
     iDestruct "Hproc" as "[#>Hlseq_lb _]".
-    iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
     replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
@@ -219,7 +222,6 @@ Proof.
   }
   {
     iDestruct "Hproc" as "[#>Hlseq_lb _]".
-    iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
     replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
@@ -261,11 +263,11 @@ Proof using Type*.
     iMod ("HNClose" with "[Hrcctx Hcseq_lb2]") as "_".
     { iNext. iExists _; iFrame; iFrame "#". }
 
-    iDestruct (big_sepM_delete _ _ (req.(CID)) _ with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply lookup_insert.
+    iDestruct (big_sepS_elem_of_acc _ _ req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply elem_of_fin_to_set.
+    rewrite lookup_insert /=.
     iMod (fmcounter_map_update _ _ _ (int.nat req.(Seq)) with "Hlseq_one") as "Hlseq_one"; first lia.
     iMod (fmcounter_map_get_lb with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
-    iDestruct (big_sepM_insert_delete with "[$Hlseq_own $Hlseq_one]") as "Hlseq_own".
-    rewrite ->insert_insert in *.
+    iSpecialize ("Hlseq_own" with "Hlseq_one").
     iMod ("HMClose" with "[Hpost]") as "_".
     { iNext. iFrame "#". iRight. iRight. iFrame. iExists _; iFrame "#".
       by iRight.
