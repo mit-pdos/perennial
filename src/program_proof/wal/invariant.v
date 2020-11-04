@@ -70,6 +70,7 @@ Record wal_names := mkWalNames
     (* it's used to break up has_updates for the circular queue so that the installer can Advance just to that point *)
     diskEnd_mem_name : gname;
     diskEnd_mem_txn_id_name : gname;
+    installed_pos_mem_name : gname;
     installed_txn_id_mem_name : gname;
     base_disk_name : gname;
   }.
@@ -83,7 +84,7 @@ Global Instance _eta_wal_names : Settable _ :=
                         installer_pos_mem_name; installer_txn_id_mem_name;
                         installer_pos_name; installer_txn_id_name;
                         diskEnd_mem_name; diskEnd_mem_txn_id_name;
-                        installed_txn_id_mem_name;
+                        installed_pos_mem_name; installed_txn_id_mem_name;
                         base_disk_name>.
 
 Implicit Types (γ: wal_names).
@@ -256,6 +257,7 @@ Definition memLog_linv_core γ (σ: slidingM.t) (diskEnd: u64) (diskEnd_txn_id: 
     "HownInstallerTxnMem_linv" ∷ ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem ∗
     "HownDiskEndMem_linv" ∷ ghost_var γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
     "HownDiskEndMemTxn_linv" ∷ ghost_var γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownInstalledPosMem_linv" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗
     "HownInstalledTxnMem_linv" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
   .
 
@@ -394,6 +396,7 @@ Definition is_installed_core γ d txns (installed_txn_id being_installed_start_t
    knowledge of in-progress installations and exclusive update rights; need to
    write down what it maintains as part of its loop invariant *)
   "Howninstalled" ∷ (
+    (* why do these need to be fmcounters? *)
     "HownBeingInstalledStartTxn_walinv" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
     "HownBeingInstalledEndTxn_walinv" ∷ fmcounter γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
     "Halready_installed" ∷ ghost_var γ.(already_installed_name) (1/2) already_installed) ∗
@@ -537,17 +540,18 @@ Definition logger_inv γ circ_l: iProp Σ :=
 (* TODO: also needs authoritative ownership of some other variables *)
 (** installer_inv is the resources exclusively owned by the installer thread *)
 Definition installer_inv γ: iProp Σ :=
-  "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available ∗
-  "HownInstallerPos_installer" ∷ (∃ (installer_pos : nat), ghost_var γ.(installer_pos_name) (1/2) installer_pos) ∗
-  "HownInstallerTxn_installer" ∷ (∃ (installer_txn_id : nat), ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id) ∗
-  "HownInstallerPosMem_installer" ∷ (∃ (installer_pos_mem : u64), ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem) ∗
-  "HownInstallerTxnMem_installer" ∷ (∃ (installer_txn_id_mem : nat), ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem) ∗
-  "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
-  "Hinstalled_txn_id_mem" ∷ (∃ (installed_txn_id_mem : nat),
+  ∃ (installed_txn_id_mem : nat),
+    "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available ∗
+    "HownInstallerPos_installer" ∷ (∃ (installer_pos : nat), ghost_var γ.(installer_pos_name) (1/2) installer_pos) ∗
+    "HownInstallerTxn_installer" ∷ (∃ (installer_txn_id : nat), ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id) ∗
+    "HownInstallerPosMem_installer" ∷ (∃ (installer_pos_mem : u64), ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem) ∗
+    "HownInstallerTxnMem_installer" ∷ (∃ (installer_txn_id_mem : nat), ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem) ∗
+    "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
     "HownBeingInstalledStartTxn_installer" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) installed_txn_id_mem ∗
     "HownBeingInstalledEndTxn_installer" ∷ fmcounter γ.(being_installed_end_txn_name) (1/2) installed_txn_id_mem ∗
+    "HownInstalledPosMem_installer" ∷ (∃ (installed_pos_mem : u64), ghost_var γ.(installed_pos_mem_name) (1/2) installed_pos_mem) ∗
     "HownInstalledTxnMem_installer" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
-  ).
+.
 
 Global Instance is_installed_read_Timeless {d txns installed_lb diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id} :
   Timeless (is_installed_read d txns installed_lb diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id) := _.

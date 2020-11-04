@@ -723,25 +723,60 @@ Proof.
   rewrite subslice_zero_length subslice_zero_length //.
 Admitted.
 
-Lemma unify_memLog_installed_txn_id_mem γ log diskEnd_pos diskEnd_txn_id installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos_mem installer_txn_id_mem installed_txn_id_mem_ext :
+Lemma unify_memLog_installed_pos_mem γ log diskEnd_pos diskEnd_txn_id installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos_mem installer_txn_id_mem installed_pos_mem_ext installed_txn_id_mem_ext :
   "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 installed_txn_id_mem nextDiskEnd_txn_id txns
                                 logger_pos logger_txn_id
                                 installer_pos_mem installer_txn_id_mem -∗
+  "HownInstalledPosMem_installer" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) installed_pos_mem_ext -∗
   "HownInstalledTxnMem_installer" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem_ext -∗
     "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
-                                installed_txn_id_mem_ext nextDiskEnd_txn_id txns
+                                installed_txn_id_mem nextDiskEnd_txn_id txns
                                 logger_pos logger_txn_id
                                 installer_pos_mem installer_txn_id_mem ∗
-    "HownInstalledTxnMem_installer" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem_ext ∗
+    "HownInstalledPosMem_installer" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) log.(slidingM.start) ∗
+    "HownInstalledTxnMem_installer" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem ∗
+    "%Hinstalled_pos_mem_eq" ∷ ⌜log.(slidingM.start) = installed_pos_mem_ext⌝ ∗
     "%Hinstalled_txn_id_mem_eq" ∷ ⌜installed_txn_id_mem = installed_txn_id_mem_ext⌝.
 Proof.
   iIntros.
   iNamed.
   iNamed "Hlinv".
   iDestruct (ghost_var_agree with
+    "HownInstalledPosMem_installer HownInstalledPosMem_linv"
+  ) as %->.
+  iDestruct (ghost_var_agree with
     "HownInstalledTxnMem_installer HownInstalledTxnMem_linv"
-  ) as %<-.
+  ) as %->.
+  iFrame "∗ # %".
+  eauto.
+Qed.
+
+Lemma unify_memLog_installer_pos_mem γ log diskEnd_pos diskEnd_txn_id installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos_mem installer_txn_id_mem installer_pos_mem_ext installer_txn_id_mem_ext :
+  "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
+                                installed_txn_id_mem nextDiskEnd_txn_id txns
+                                logger_pos logger_txn_id
+                                installer_pos_mem installer_txn_id_mem -∗
+  "HownInstallerPosMem_installer" ∷ ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem_ext -∗
+  "HownInstallerTxnMem_installer" ∷ ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem_ext -∗
+    "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
+                                installed_txn_id_mem nextDiskEnd_txn_id txns
+                                logger_pos logger_txn_id
+                                installer_pos_mem installer_txn_id_mem ∗
+    "HownInstallerPosMem_installer" ∷ ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem ∗
+    "HownInstallerTxnMem_installer" ∷ ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem ∗
+    "%Hinstaller_pos_mem_eq" ∷ ⌜installer_pos_mem = installer_pos_mem_ext⌝ ∗
+    "%Hinstaller_txn_id_mem_eq" ∷ ⌜installer_txn_id_mem = installer_txn_id_mem_ext⌝.
+Proof.
+  iIntros.
+  iNamed.
+  iNamed "Hlinv".
+  iDestruct (ghost_var_agree with
+    "HownInstallerPosMem_installer HownInstallerPosMem_linv"
+  ) as %->.
+  iDestruct (ghost_var_agree with
+    "HownInstallerTxnMem_installer HownInstallerTxnMem_linv"
+  ) as %->.
   iFrame "∗ # %".
   eauto.
 Qed.
@@ -969,14 +1004,15 @@ Proof.
   wp_loadField.
 
   iNamed "Hinstaller".
-  iNamed "Hinstalled_txn_id_mem".
   iMod (snapshot_memLog_txns_are with "Hwal HmemLog_linv
     HownInstallerPos_installer HownInstallerTxn_installer
     HownInstallerPosMem_installer HownInstallerTxnMem_installer"
   ) as (installed_txn_id_mem_linv nextDiskEnd_txn_id txns logger_pos logger_txn_id) "Hsnapshot".
   iNamed "Hsnapshot".
-  iDestruct (unify_memLog_installed_txn_id_mem with "Hlinv HownInstalledTxnMem_installer")
-    as "(Hlinv&HownInstalledTxnMem_installer&->)".
+  iNamed "HownInstalledPosMem_installer".
+  iDestruct (unify_memLog_installed_pos_mem with
+    "Hlinv HownInstalledPosMem_installer HownInstalledTxnMem_installer")
+    as "(Hlinv&HownInstalledPosMem_installer&HownInstalledTxnMem_installer&<-&->)".
   iMod (thread_own_get with "Hstart_exactly HnotInstalling") as "(Hstart_exactly&Hstart_is&Hinstalling)".
 
   wp_apply (wp_sliding__takeTill with "His_memLog"); first by word.
@@ -1062,8 +1098,8 @@ Proof.
 
   (* these names would be free if the above was a lemma *)
   remember σs.(log_state.txns) as txns.
-  iClear "circ.start circ.end Hbasedisk Hbeing_installed_txns".
-  clear Heqtxns Hwf Hdaddrs_init σs Hinstalled_bounds Hcirc_matches diskEnd_txn_id installer_pos installer_txn_id installed_txn_id.
+  iClear "circ.start circ.end Hbasedisk Hbeing_installed_txns Hmem".
+  clear Heqtxns Hwf Hdaddrs_init σs Hinstalled_bounds Hcirc_matches diskEnd_txn_id installer_pos installer_txn_id installed_txn_id cs.
 
   iModIntro.
 
@@ -1083,6 +1119,7 @@ Proof.
     iSplitL "HdiskEnd_exactly"; first by iFrame.
     iApply "Hfields"; iFrameNamed.
   }
+  iClear (Hlocked_wf) "Hlkinv Hfields Hstart_at_least".
   wp_pures.
   wp_apply util_proof.wp_DPrintf.
   wp_pures.
@@ -1152,7 +1189,7 @@ Proof.
     simpl in Hrelation; monad_inv.
 
     iInv "Hwal" as (σs) "[Hinner HP]".
-    iDestruct "Hinner" as "(>%Hwf&_&>Htxns_ctx&>γtxns&>HnextDiskEnd_inv&>Hdisk)"; iNamed.
+    iDestruct "Hinner" as "(>%Hwf&Hmem&>Htxns_ctx&>γtxns&>HnextDiskEnd_inv&>Hdisk)"; iNamed.
     iNamed "Hdisk".
     iNamed "Hdisk".
     rewrite /circular_pred.
@@ -1256,7 +1293,196 @@ Proof.
   iIntros "(Hpost&Hstart_is)".
   iNamed "Hpost".
 
-  admit. (* TODO: acquire lock *)
+  wp_loadField.
+  wp_apply (acquire_spec with "lk").
+  iIntros "(His_locked&Hlkinv)".
+
+  iDestruct "Hlkinv" as (σ') "Hlkinv".
+  iNamedRestorable "Hlkinv".
+  iNamed "Hfields".
+  iNamed "Hfield_ptsto".
+
+  wp_loadField.
+  wp_call.
+  wp_loadField.
+
+  iDestruct "HmemLog_linv" as (installed_txn_id_mem' nextDiskEnd_txn_id' txns' logger_pos' logger_txn_id' installer_pos_mem' installer_txn_id_mem') "Hlinv".
+  iDestruct (unify_memLog_installed_pos_mem with
+    "Hlinv HownInstalledPosMem_installer HownInstalledTxnMem_installer")
+    as "(Hlinv&HownInstalledPosMem_installer&HownInstalledTxnMem_installer&%Hinstalled_pos_mem_eq&->)".
+  iDestruct (unify_memLog_installer_pos_mem with
+    "Hlinv HownInstallerPosMem_installer HownInstallerTxnMem_installer")
+    as "(Hlinv&HownInstallerPosMem_installer&HownInstallerTxnMem_installer&->&->)".
+  iDestruct "Hlinv" as "(#Hlinv_pers&Howntxns&HnextDiskEnd&Hγ)".
+  iNamed "Hγ".
+  iDestruct "Hlinv_pers" as "(%Hlog_index_ordering'&%Htxn_id_ordering'&#HmemStart_txn'&%HdiskEnd_txn'&#HdiskEnd_stable'&#HmemEnd_txn'&#Htxns')".
+  iMod (ghost_var_update_halves σ.(diskEnd)
+    with "HownInstalledPosMem_installer HownInstalledPosMem_linv") as
+        "[HownInstalledPosMem_installer HownInstalledPosMem_linv]".
+  iMod (ghost_var_update_halves σ.(locked_diskEnd_txn_id)
+    with "HownInstalledTxnMem_installer HownInstalledTxnMem_linv") as
+        "[HownInstalledTxnMem_installer HownInstalledTxnMem_linv]".
+  iNamed "Hstart_circ".
+  iMod (start_is_to_at_least with "Hstart_is") as "(Hstart_is&#Hstart_at_least')".
+  iMod (thread_own_put with "Hstart_exactly Hinstalling Hstart_is")
+    as "[Hstart_exactly HnotInstalling]".
+
+  wp_apply (wp_sliding__deleteFrom with "His_memLog").
+  1: lia.
+  iIntros "His_memLog".
+  wp_loadField.
+  wp_apply (wp_condBroadcast with "cond_install").
+  wp_pures.
+
+  iApply "HΦ".
+  iFrame "His_locked".
+  iSplitR "HownBeingInstalledStartTxn_installer HownBeingInstalledEndTxn_installer
+    Halready_installed_installer
+    HownInstalledPosMem_installer HownInstalledTxnMem_installer
+    HownInstallerPosMem_installer HownInstallerTxnMem_installer
+    HownInstallerPos_installer HownInstallerTxn_installer
+    HnotInstalling".
+  2: {
+    iExists _.
+    iFrame.
+    iSplitL "HownInstallerPos_installer".
+    1: iExists _; iFrame.
+    iSplitL "HownInstallerTxn_installer".
+    1: iExists _; iFrame.
+    iSplitL "HownInstallerPosMem_installer".
+    1: iExists _; iFrame.
+    iSplitL "HownInstallerTxnMem_installer".
+    1: iExists _; iFrame.
+    1: iExists _; iFrame.
+  }
+  iExists {|
+    diskEnd := σ'.(diskEnd);
+    locked_diskEnd_txn_id := σ'.(locked_diskEnd_txn_id);
+    memLog := (set slidingM.start (λ _ : u64, σ.(diskEnd))
+      (set slidingM.log
+        (drop (slidingM.logIndex σ'.(memLog) σ.(diskEnd)))
+          σ'.(memLog)))
+  |}.
+  simpl.
+  iSplitL "His_memLog HmemLog HdiskEnd Hshutdown Hnthread".
+  {
+    iExists _.
+    simpl.
+    iFrame.
+    iPureIntro.
+    rewrite /locked_wf /=.
+    split; first by lia.
+    rewrite /slidingM.wf /= drop_length.
+    destruct Hlocked_wf as (Hlocked_wf_bound&Hsliding_wf).
+    rewrite /slidingM.wf in Hsliding_wf.
+    rewrite /slidingM.logIndex.
+    word.
+  }
+  iFrame "HdiskEnd_circ Hstart_exactly Hstart_at_least'".
+  iExists _, _, _, _, _, _, _.
+  iFrame.
+  iSplit.
+  {
+    iPureIntro.
+    destruct σ'.
+    simpl.
+    simpl in Hlog_index_ordering'.
+    lia.
+  }
+  iSplit.
+  1: iPureIntro; lia.
+  simpl.
+  iSplit.
+  1: admit. (* use txns_ctx_txn_pos earlier on HdiskEnd_txn *)
+  iFrame (HdiskEnd_txn') "HdiskEnd_stable'".
+
+  destruct σ'.
+  rewrite /memLog_linv_txns /= /slidingM.logIndex.
+  destruct memLog.
+  rewrite /slidingM.endPos /slidingM.memEnd /=.
+  simpl in *.
+
+  iSplit.
+  {
+    rewrite drop_length.
+    replace (word.add σ.(invariant.diskEnd)
+      (length log - (int.nat σ.(invariant.diskEnd) - int.nat start))%nat)
+      with (word.add start (length log)). (* need to relate σ.(diskEnd) to σ' *)
+    2: admit.
+    iFrame "HmemEnd_txn'".
+  }
+
+  iDestruct "Htxns'" as
+    "[(%His_installerEnd'&%His_diskEnd'&%His_loggerEnd'&%His_nextDiskEnd'&%His_nextTxn') %Htxnpos_bound']".
+  iSplit.
+  2: {
+    iPureIntro.
+    rewrite drop_length.
+    replace (int.Z σ.(invariant.diskEnd) +
+        (length log - (int.nat σ.(invariant.diskEnd) - int.nat start))%nat)
+      with (int.Z start + length log) by admit. (* need to relate σ.(diskEnd) to σ' *)
+    apply Htxnpos_bound'.
+  }
+
+  iPureIntro.
+  split; first by rewrite Nat.sub_diag take_0 subslice_zero_length //.
+  split.
+  {
+    rewrite Nat.sub_diag.
+    rewrite subslice_drop_take.
+    2: lia.
+    rewrite drop_drop Nat.add_0_r Nat.sub_0_r.
+    rewrite subslice_drop_take in His_diskEnd'.
+    2: lia.
+    replace (int.nat diskEnd - int.nat start -
+      (int.nat σ.(invariant.diskEnd) - int.nat start))%nat
+      with (int.nat diskEnd - int.nat σ.(invariant.diskEnd))%nat
+      in His_diskEnd' by lia.
+    apply His_diskEnd'.
+  }
+  split.
+  {
+    rewrite subslice_drop_take.
+    2: lia.
+    rewrite drop_drop.
+    rewrite subslice_drop_take in His_loggerEnd'.
+    2: lia.
+    replace (int.nat logger_pos' - int.nat start -
+      (int.nat diskEnd - int.nat start))%nat
+      with (int.nat logger_pos' - int.nat diskEnd)%nat
+      in His_loggerEnd' by lia.
+    replace (int.nat logger_pos' - int.nat σ.(invariant.diskEnd) -
+      (int.nat diskEnd - int.nat σ.(invariant.diskEnd)))%nat
+      with (int.nat logger_pos' - int.nat diskEnd)%nat by lia.
+    replace (int.nat σ.(invariant.diskEnd) - int.nat start +
+      (int.nat diskEnd - int.nat σ.(invariant.diskEnd)))%nat
+      with (int.nat diskEnd - int.nat start)%nat by lia.
+    apply His_loggerEnd'.
+  }
+  split.
+  {
+    rewrite subslice_drop_take.
+    2: lia.
+    rewrite drop_drop.
+    rewrite subslice_drop_take in His_nextDiskEnd'.
+    2: lia.
+    replace (int.nat mutable - int.nat start -
+      (int.nat logger_pos' - int.nat start))%nat
+      with (int.nat mutable - int.nat logger_pos')%nat
+      in His_nextDiskEnd' by lia.
+    replace (int.nat mutable - int.nat σ.(invariant.diskEnd) -
+      (int.nat logger_pos' - int.nat σ.(invariant.diskEnd)))%nat
+      with (int.nat mutable - int.nat logger_pos')%nat by lia.
+    replace (int.nat σ.(invariant.diskEnd) - int.nat start +
+      (int.nat logger_pos' - int.nat σ.(invariant.diskEnd)))%nat
+      with (int.nat logger_pos' - int.nat start)%nat by lia.
+    apply His_nextDiskEnd'.
+  }
+  rewrite drop_drop.
+  replace (int.nat σ.(invariant.diskEnd) - int.nat start +
+    (int.nat mutable - int.nat σ.(invariant.diskEnd)))%nat
+    with (int.nat mutable - int.nat start)%nat by lia.
+  apply His_nextTxn'.
 Admitted.
 
 Theorem wp_Walog__installer γ l dinit :
@@ -1280,8 +1506,7 @@ Proof.
     "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ ∗
     "Hlocked" ∷ locked #σₛ.(memLock) ∗
     "Hinstaller" ∷ installer_inv γ
-  )%I
-           with "[] [$Hlocked $Hlockinv $Hinstaller]").
+  )%I with "[] [$Hlocked $Hlockinv $Hinstaller]").
   { clear post Φ.
     iIntros "!>" (Φ) "I HΦ"; iNamed "I".
     wp_apply (wp_load_shutdown with "[$st $Hlockinv]"); iIntros (shutdown) "Hlockinv".
