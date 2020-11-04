@@ -1,6 +1,6 @@
 Import EqNotations.
 From Perennial.Helpers Require Import Map.
-From iris.algebra Require Import numbers.
+From iris.base_logic.lib Require Import mnat.
 From Perennial.algebra Require Import auth_map liftable liftable2 log_heap async.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
@@ -174,7 +174,7 @@ Section goose_lang.
          txn_durable γ i.
 
   Definition is_buftxn l γ dinit γtxn P0 : iProp Σ :=
-    ∃ (mT: gmap addr versioned_object),
+    ∃ (mT: gmap addr versioned_object) anydirty,
       "#Htxn_system" ∷ is_txn_system γ ∗
       "Hold_vals" ∷ ([∗ map] a↦v ∈ mspec.committed <$> mT,
                      durable_mapsto γ a v) ∗
@@ -182,7 +182,7 @@ Section goose_lang.
                           modify_token γ a v ∗
                           durable_mapsto γ a v) -∗
                          P0) ∗
-      "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) dinit ∗
+      "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) dinit anydirty ∗
       "Htxn_ctx" ∷ map_ctx γtxn 1 (mspec.modified <$> mT)
   .
 
