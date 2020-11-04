@@ -75,7 +75,7 @@ Implicit Types (mT : gmap addr versioned_object).
 Definition is_buftxn (buftx : loc)
                      mT
                      γUnified
-                     dinit : iProp Σ :=
+                     dinit anydirty : iProp Σ :=
   (
     ∃ (l : loc) (bufmap : loc) (gBufmap : gmap addr buf),
       "Hbuftx.l" ∷ buftx ↦[BufTxn.S :: "txn"] #l ∗
@@ -91,11 +91,12 @@ Definition is_buftxn (buftx : loc)
                      | None => false
                      | Some buf => bufDirty buf
                      end in
-        ⌜dirty=true ∨ committed v = modified v⌝ )
+        ⌜dirty=true ∨ committed v = modified v⌝ ) ∗
+      "%Hanydirty" ∷ ⌜anydirty=false <-> filter (λ b, (snd b).(bufDirty) = true) gBufmap = ∅⌝
   )%I.
 
-Lemma is_buftxn_to_committed_mapsto_txn buftx mT γUnified dinit :
-  is_buftxn buftx mT γUnified dinit -∗
+Lemma is_buftxn_to_committed_mapsto_txn buftx mT γUnified dinit anydirty :
+  is_buftxn buftx mT γUnified dinit anydirty -∗
   [∗ map] a ↦ v ∈ committed <$> mT, mapsto_txn γUnified a v.
 Proof.
   iNamed 1.
@@ -104,8 +105,8 @@ Proof.
   iIntros (a obj Hlookup) "[Ha _]". iFrame.
 Qed.
 
-Lemma is_buftxn_not_in_map buftx mT γUnified dinit a v0 :
-  is_buftxn buftx mT γUnified dinit -∗
+Lemma is_buftxn_not_in_map buftx mT γUnified dinit anydirty a v0 :
+  is_buftxn buftx mT γUnified dinit anydirty -∗
   mapsto_txn γUnified a v0 -∗
   ⌜mT !! a = None⌝.
 Proof.
@@ -123,7 +124,7 @@ Theorem wp_buftxn_Begin l γUnified dinit:
   }}}
     Begin #l
   {{{ (buftx : loc), RET #buftx;
-      is_buftxn buftx ∅ γUnified dinit
+      is_buftxn buftx ∅ γUnified dinit false
   }}}.
 Proof.
   iIntros (Φ) "#Htxn HΦ".
@@ -145,9 +146,9 @@ Proof.
   rewrite big_sepM_empty //.
 Qed.
 
-Theorem wp_BufTxn__ReadBuf buftx mT γUnified dinit a (sz : u64) v :
+Theorem wp_BufTxn__ReadBuf buftx mT γUnified dinit anydirty a (sz : u64) v :
   {{{
-    is_buftxn buftx mT γUnified dinit ∗
+    is_buftxn buftx mT γUnified dinit anydirty ∗
     ⌜ mT !! a = Some v ⌝ ∗
     ⌜ sz = bufSz (projT1 v) ⌝
   }}}
@@ -158,7 +159,7 @@ Theorem wp_BufTxn__ReadBuf buftx mT γUnified dinit a (sz : u64) v :
     ( ∀ v' dirty',
       ( ⌜ dirty' = true ∨ (dirty' = dirty ∧ snd (projT2 v) = v') ⌝ ∗
         is_buf bufptr a (Build_buf (projT1 v) v' dirty') ) ==∗
-      ( is_buftxn buftx (<[a := existT _ (fst (projT2 v), v')]> mT) γUnified dinit ) )
+      ( is_buftxn buftx (<[a := existT _ (fst (projT2 v), v')]> mT) γUnified dinit (orb anydirty dirty') ) )
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %Ha & ->) HΦ".
@@ -202,13 +203,13 @@ Proof.
     destruct b, v, p. simpl in *. subst.
     unfold committed, modified in *. simpl in *.
 
-    apply eq_sigT_eq_dep in H.
-    apply Eqdep_dec.eq_dep_eq_dec in H.
+    apply eq_sigT_eq_dep in H3.
+    apply Eqdep_dec.eq_dep_eq_dec in H3.
     2: apply bufDataKind_eq_dec.
 
-    inversion H3; clear H3; subst.
-    apply eq_sigT_eq_dep in H5.
-    apply Eqdep_dec.eq_dep_eq_dec in H5.
+    inversion H5; clear H5; subst.
+    apply eq_sigT_eq_dep in H7.
+    apply Eqdep_dec.eq_dep_eq_dec in H7.
     2: apply bufDataKind_eq_dec.
 
     subst.
@@ -234,14 +235,22 @@ Proof.
       }
       iSplit.
       { iApply big_sepM_insert_delete; iFrame "#". }
-      iApply big_sepM_insert_delete.
-      rewrite lookup_insert /=.
-      iSplitL "He". { iFrame. iPureIntro; eauto. }
-      iApply big_sepM_mono; try iFrame.
-      iIntros (xa xb Hb) "H".
-      destruct (decide (a = xa)); subst.
-      { rewrite lookup_delete in Hb. congruence. }
-      rewrite lookup_insert_ne; eauto.
+      iSplit.
+      {
+        iApply big_sepM_insert_delete.
+        rewrite lookup_insert /=.
+        iSplitL "He". { iFrame. iPureIntro; eauto. }
+        iApply big_sepM_mono; try iFrame.
+        iIntros (xa xb Hb) "H".
+        destruct (decide (a = xa)); subst.
+        { rewrite lookup_delete in Hb. congruence. }
+        rewrite lookup_insert_ne; eauto.
+      }
+      iPureIntro.
+      split; intro Hx.
+      { destruct anydirty; simpl in *; congruence. }
+      rewrite map_filter_insert in Hx; last eauto.
+      eapply insert_non_empty in Hx. exfalso; eauto.
 
     + iModIntro.
       iExists _, _, _.
@@ -254,14 +263,28 @@ Proof.
       }
       iSplit.
       { iApply big_sepM_insert_delete; iFrame "#". }
-      iApply big_sepM_insert_delete.
-      rewrite lookup_insert /=.
-      iSplitL "He". { iFrame. iPureIntro. intuition congruence. }
-      iApply big_sepM_mono; try iFrame.
-      iIntros (xa xb Hb) "H".
-      destruct (decide (a = xa)); subst.
-      { rewrite lookup_delete in Hb. congruence. }
-      rewrite lookup_insert_ne; eauto.
+      iSplit.
+      {
+        iApply big_sepM_insert_delete.
+        rewrite lookup_insert /=.
+        iSplitL "He". { iFrame. iPureIntro. intuition congruence. }
+        iApply big_sepM_mono; try iFrame.
+        iIntros (xa xb Hb) "H".
+        destruct (decide (a = xa)); subst.
+        { rewrite lookup_delete in Hb. congruence. }
+        rewrite lookup_insert_ne; eauto.
+      }
+      iPureIntro.
+      split; intro Hx.
+      { destruct anydirty; simpl in *; try congruence.
+        rewrite map_filter_insert_not'; eauto.
+        simpl; intros y Hy Htrue.
+        assert (filter (λ (b : addr * buf), (b.2).(bufDirty) = true) gBufmap !! a = Some y) as Hz.
+        { eapply map_filter_lookup_Some_2; eauto. }
+        rewrite H in Hz; eauto. congruence. }
+      destruct anydirty; simpl; try reflexivity.
+      rewrite map_filter_insert_not_delete in Hx; last eauto.
+      rewrite delete_notin in Hx; eauto.
 
   - destruct (gBufmap !! a) eqn:Hbufmap_a.
     2: {
@@ -302,14 +325,22 @@ Proof.
       }
       iSplit.
       { iApply big_sepM_insert_delete; iFrame "#". }
-      iApply big_sepM_insert_delete.
-      rewrite lookup_insert /=.
-      iSplitL "He". { iFrame. iPureIntro. rewrite /committed /modified /=. intuition eauto. }
-      iApply big_sepM_mono; try iFrame.
-      iIntros (xa xb Hb) "H".
-      destruct (decide (a = xa)); subst.
-      { rewrite lookup_delete in Hb. congruence. }
-      rewrite lookup_insert_ne; eauto.
+      iSplit.
+      {
+        iApply big_sepM_insert_delete.
+        rewrite lookup_insert /=.
+        iSplitL "He". { iFrame. iPureIntro. rewrite /committed /modified /=. intuition eauto. }
+        iApply big_sepM_mono; try iFrame.
+        iIntros (xa xb Hb) "H".
+        destruct (decide (a = xa)); subst.
+        { rewrite lookup_delete in Hb. congruence. }
+        rewrite lookup_insert_ne; eauto.
+      }
+      iPureIntro.
+      split; intro Hx.
+      { destruct anydirty; simpl in *; congruence. }
+      rewrite map_filter_insert in Hx; last eauto.
+      eapply insert_non_empty in Hx. exfalso; eauto.
 
     + iModIntro.
       iExists _, _, _.
@@ -322,19 +353,45 @@ Proof.
       }
       iSplit.
       { iApply big_sepM_insert_delete; iFrame "#". }
-      iApply big_sepM_insert_delete.
-      rewrite lookup_insert /=.
-      iSplitL "He". { iFrame. iDestruct "Hepure" as %He. rewrite Hbufmap_a /= in He. iPureIntro. rewrite /committed /modified /=. intuition idtac. }
-      iApply big_sepM_mono; try iFrame.
-      iIntros (xa xb Hb) "H".
-      destruct (decide (a = xa)); subst.
-      { rewrite lookup_delete in Hb. congruence. }
-      rewrite lookup_insert_ne; eauto.
+      iSplit.
+      {
+        iApply big_sepM_insert_delete.
+        rewrite lookup_insert /=.
+        iSplitL "He". { iFrame. iDestruct "Hepure" as %He. rewrite Hbufmap_a /= in He. iPureIntro. rewrite /committed /modified /=. intuition idtac. }
+        iApply big_sepM_mono; try iFrame.
+        iIntros (xa xb Hb) "H".
+        destruct (decide (a = xa)); subst.
+        { rewrite lookup_delete in Hb. congruence. }
+        rewrite lookup_insert_ne; eauto.
+      }
+      iPureIntro.
+      split; intro Hx.
+      { destruct anydirty; simpl in *; try congruence. subst.
+        rewrite map_filter_insert_not'; eauto.
+        simpl; intros y Hy Htrue.
+        assert (filter (λ (b : addr * buf), (b.2).(bufDirty) = true) gBufmap !! a = Some y) as Hz.
+        { eapply map_filter_lookup_Some_2; eauto. }
+        rewrite H in Hz; eauto. inversion Hz. }
+      destruct anydirty; simpl.
+      {
+        exfalso.
+        destruct bufDirty.
+        {
+          rewrite map_filter_insert in Hx; eauto.
+          eapply insert_non_empty in Hx; eauto.
+        }
+        rewrite map_filter_insert_not' in Hx; eauto.
+        { eapply H3 in Hx; congruence. }
+        intros y Hy. rewrite Hbufmap_a in Hy. inversion Hy; subst. eauto.
+      }
+      destruct bufDirty; try reflexivity. exfalso.
+      rewrite map_filter_insert in Hx; eauto.
+      eapply insert_non_empty in Hx; eauto.
 Qed.
 
-Theorem wp_BufTxn__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K * bufDataT K)%type}) (sz : u64) (vslice : Slice.t) :
+Theorem wp_BufTxn__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K * bufDataT K)%type}) (sz : u64) (vslice : Slice.t) anydirty :
   {{{
-    is_buftxn buftx mt γUnified dinit ∗
+    is_buftxn buftx mt γUnified dinit anydirty ∗
     ⌜ mt !! a = Some v0 ⌝ ∗
     is_buf_data vslice (snd (projT2 v)) a ∗
     ⌜ sz = bufSz (projT1 v) ⌝ ∗
@@ -343,7 +400,7 @@ Theorem wp_BufTxn__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K
     BufTxn__OverWrite #buftx (addr2val a) #sz (slice_val vslice)
   {{{
     RET #();
-    is_buftxn buftx (<[a := v]> mt) γUnified dinit
+    is_buftxn buftx (<[a := v]> mt) γUnified dinit true
   }}}.
 Proof using.
   iIntros (Φ) "(Htxn & %Ha & Hvslice & -> & %) HΦ".
@@ -362,8 +419,8 @@ Opaque struct.t.
 
   destruct v, p.
   inversion H; subst.
-  apply eq_sigT_eq_dep in H4.
-  apply Eqdep_dec.eq_dep_eq_dec in H4.
+  apply eq_sigT_eq_dep in H6.
+  apply Eqdep_dec.eq_dep_eq_dec in H6.
   2: apply bufDataKind_eq_dec.
   subst.
 
@@ -416,14 +473,20 @@ Opaque struct.t.
     iSplit.
     { iApply big_sepM_insert_delete; iFrame "#".
       iPureIntro; intuition. }
-    iApply big_sepM_insert_delete.
-    rewrite lookup_insert /=.
-    iSplitL "He". { iFrame. intuition. }
-    iApply big_sepM_mono; try iFrame.
-    iIntros (xa xb Hb) "H".
-    destruct (decide (a = xa)); subst.
-    { rewrite lookup_delete in Hb. congruence. }
-    rewrite lookup_insert_ne; eauto.
+    iSplit.
+    {
+      iApply big_sepM_insert_delete.
+      rewrite lookup_insert /=.
+      iSplitL "He". { iFrame. intuition. }
+      iApply big_sepM_mono; try iFrame.
+      iIntros (xa xb Hb) "H".
+      destruct (decide (a = xa)); subst.
+      { rewrite lookup_delete in Hb. congruence. }
+      rewrite lookup_insert_ne; eauto.
+    }
+    iPureIntro. split; intros Hx; try congruence.
+    rewrite -> map_filter_insert in Hx by eauto.
+    eapply insert_non_empty in Hx. exfalso; eauto.
 
   - iDestruct "Hbufmapptr" as "[-> Hisbufmap]".
     wp_load.
@@ -458,25 +521,31 @@ Opaque struct.t.
     iSplit.
     { iApply big_sepM_insert_delete; iFrame "#".
       iPureIntro; intuition. }
-    iApply big_sepM_insert_delete.
-    rewrite lookup_insert /=.
-    iSplitL "He". { iFrame. intuition. }
-    iApply big_sepM_mono; try iFrame.
-    iIntros (xa xb Hb) "H".
-    destruct (decide (a = xa)); subst.
-    { rewrite lookup_delete in Hb. congruence. }
-    rewrite lookup_insert_ne; eauto.
+    iSplit.
+    {
+      iApply big_sepM_insert_delete.
+      rewrite lookup_insert /=.
+      iSplitL "He". { iFrame. intuition. }
+      iApply big_sepM_mono; try iFrame.
+      iIntros (xa xb Hb) "H".
+      destruct (decide (a = xa)); subst.
+      { rewrite lookup_delete in Hb. congruence. }
+      rewrite lookup_insert_ne; eauto.
+    }
+    iPureIntro. split; intros Hx; try congruence.
+    rewrite -> map_filter_insert in Hx by eauto.
+    eapply insert_non_empty in Hx. exfalso; eauto.
 Qed.
 
-Theorem BufTxn_lift_one buftx mt γUnified dinit a v E :
+Theorem BufTxn_lift_one buftx mt γUnified dinit a v E anydirty :
   ↑invN ⊆ E ->
   (
-    is_buftxn buftx mt γUnified dinit ∗
+    is_buftxn buftx mt γUnified dinit anydirty ∗
     mapsto_txn γUnified a v
   )
     ={E}=∗
   (
-    is_buftxn buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified dinit
+    is_buftxn buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified dinit anydirty
   ).
 Proof.
   iIntros (HNE) "[Htxn Ha]".
@@ -505,7 +574,7 @@ Proof.
 
   iModIntro.
   iExists _, _, _.
-  iFrame. iFrame "#".
+  iFrame. iFrame "#%".
 
   iSplit.
   { iPureIntro. rewrite ?fmap_insert /=. destruct v.
@@ -540,15 +609,15 @@ Proof.
   rewrite !map_disjoint_dom !dom_fmap_L //.
 Qed.
 
-Theorem BufTxn_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E :
+Theorem BufTxn_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E anydirty :
   ↑invN ⊆ E ->
   (
-    is_buftxn buftx mt γUnified dinit ∗
+    is_buftxn buftx mt γUnified dinit anydirty ∗
     [∗ map] a ↦ v ∈ m, mapsto_txn γUnified a v
   )
     ={E}=∗
   (
-    is_buftxn buftx (((λ v, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ mt) γUnified dinit
+    is_buftxn buftx (((λ v, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ mt) γUnified dinit anydirty
   ).
 Proof.
   iIntros (HNE) "[Htxn Ha]".
@@ -572,7 +641,7 @@ Proof.
 
   iModIntro.
   iExists _, _, _.
-  iFrame. iFrame "#".
+  iFrame. iFrame "#%".
 
   iSplit.
   { iPureIntro.
@@ -621,10 +690,10 @@ Proof.
     apply map_filter_lookup_Some; eauto.
 Qed.
 
-Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) :
+Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) anydirty :
   ↑walN.@"wal" ⊆ E ->
   {{{
-    is_buftxn buftx mt γUnified dinit ∗
+    is_buftxn buftx mt γUnified dinit anydirty ∗
     PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
         "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (1/2) σl ∗
         "Hcrashstates_fupd" ∷ (
@@ -636,9 +705,9 @@ Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : 
   {{{
     (ok : bool), RET #ok;
     if ok then
-      ∃ txnid,
+      (⌜anydirty=true⌝ -∗ ∃ txnid,
       Q txnid ∗
-      (⌜wait = true⌝ -∗ mnat_own_lb γUnified.(txn_walnames).(wal_heap_durable_lb) txnid) ∗
+      (⌜wait = true⌝ -∗ mnat_own_lb γUnified.(txn_walnames).(wal_heap_durable_lb) txnid)) ∗
       [∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v
     else
       PreQ ∗
@@ -767,13 +836,21 @@ Proof.
   iApply "HΦ".
   destruct ok.
   - iDestruct "Hunifiedtxns" as "[Hq Hmapsto0]".
-    iDestruct ("Hq" with "[]") as (txnid) "[Hq Hflush]".
+    iSplitR "Hmapsto0 Hctxelem1".
     {
-      (* need to generate an empty txn if bypassing log for read-only *)
-      admit.
-    }
+      iIntros "%Hany".
+      destruct anydirty; try congruence.
+      iDestruct ("Hq" with "[]") as (txnid) "[Hq Hflush]".
+      {
+        iPureIntro. intro Hempty. eapply map_fmap_empty_inv in Hempty.
+        assert (filter (λ b, (b.2).(bufDirty) = true) gBufmap = ∅); intuition try congruence.
+        (* Hempty says every element in mt is not dirty *)
+        admit.
+      }
 
-    iExists _. iFrame "Hq". iFrame "Hflush".
+      iExists _.
+      iFrame "Hq". iFrame "Hflush".
+    }
     rewrite big_sepM_fmap.
     iDestruct (big_sepM_union (λ k x, mapsto_txn γUnified k (modified x)) with "[Hmapsto0 Hctxelem1]") as "Hmapsto".
     2: {
