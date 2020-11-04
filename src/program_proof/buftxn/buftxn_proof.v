@@ -691,7 +691,6 @@ Proof.
 Qed.
 
 Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) anydirty :
-  ↑walN.@"wal" ⊆ E ->
   {{{
     is_buftxn buftx mt γUnified dinit anydirty ∗
     PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
@@ -715,7 +714,7 @@ Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : 
       [∗ map] a ↦ v ∈ committed <$> mt, mapsto_txn γUnified a v
   }}}.
 Proof.
-  iIntros (HE Φ) "(Htxn & Hfupd) HΦ".
+  iIntros (Φ) "(Htxn & Hfupd) HΦ".
   iNamed "Htxn".
 
   wp_call.

@@ -586,7 +586,6 @@ Proof.
 Qed.
 
 Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
-  ↑walN.@"wal" ⊆ E ->
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
@@ -610,7 +609,7 @@ Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q
           mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)))
   }}}.
 Proof using txnG0 Σ.
-  iIntros (HE Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
+  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
   iPoseProof "Htxn" as "Htxn0".
   iNamed "Htxn".
 
@@ -733,6 +732,10 @@ Proof using txnG0 Σ.
 
     iDestruct "Hiswal" as "[#Hiswal0 #Hiswal1]".
     iInv "Hiswal0" as (σ) "[Hiswal_inner >Hiswal_heap]".
+    { admit. }
+
+    (* XXX opening up the wal invariant at this point is not allowed..
+      figure out how to move this into wp_Walog__MemAppend / wal_heap_memappend *)
 
     iDestruct (lwh_crash_heaps with "Hcrashheaps Hwal_latest Hiswal_heap") as (lwh_installed lwh_durable) "#Hlwh_crash_heaps".
 
@@ -747,6 +750,9 @@ Proof using txnG0 Σ.
       iDestruct (wal_heap_mapsto_latest_helper with "[$Hiswal_heap $Hwal_latest $Hlv]") as "%Hlwh_ok".
       eauto.
     }
+    iModIntro. iSplitL "Hiswal_inner Hiswal_heap".
+    { iModIntro. iExists _. iFrame. }
+
     iAssert (⌜∀ lv, lv ∈ updlist_olds ->
                 update.addr (fst lv) ∈ dom (gset u64) (gmap_addr_by_block bufamap)⌝)%I
       as "%Hupdlist_olds_σl_latest".
@@ -771,8 +777,6 @@ Proof using txnG0 Σ.
       eapply elem_of_list_lookup_2.
       rewrite list_lookup_fmap. erewrite H0. done.
     }
-    iModIntro. iSplitL "Hiswal_inner Hiswal_heap".
-    { iModIntro. iExists _. iFrame. }
     iModIntro.
     iFrame "Hwal_latest".
     iFrame "Hcrashheaps".
@@ -1176,7 +1180,6 @@ Unshelve.
 Qed.
 
 Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
-  ↑walN.@"wal" ⊆ E ->
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
@@ -1202,7 +1205,7 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (Pre
           mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)))
   }}}.
 Proof.
-  iIntros (HE Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
+  iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
 
   wp_call.
   wp_apply wp_ref_to; [val_ty|].
