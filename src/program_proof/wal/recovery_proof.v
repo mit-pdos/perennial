@@ -213,7 +213,6 @@ Proof.
   iNamed "Hdisk".
   iNamed "Hdisk".
 
-  iPersist "Hdurable".
   unify_ghost_var γ.(cs_name).
   clear cs; rename cs0 into cs.
   iDestruct (is_installed_weaken_read with "Hinstalled") as (new_installed_txn_id) "Hinstalled".
@@ -222,9 +221,11 @@ Proof.
   specialize (Hcrash _ Htrans).
   iNamed "circ.start".
   iNamed "circ.end".
-  iDestruct "Hdurable" as %Hdurable.
+  iNamed "Hdurable".
   iCrash.
-  iExists _; iFrame "% ∗".
+  iExists _; iFrame.
+  iSplit.
+  { eauto. }
   iSplit.
   { iPureIntro.
     eapply log_crash_to_wf; eauto. }
@@ -346,9 +347,11 @@ Theorem wpc_mkLog_recover k (d : loc) γ σ :
   {{{ is_wal_inner_durable γ σ dinit }}}
     mkLog #d @ NotStuck; k; ⊤
   {{{ γ' l, RET #l;
-       is_wal_inv_pre l γ' σ dinit ∗
-       (* XXX whatever it is that background threads needs *)
-       True}}}
+       "Hwal_inv_pre" ∷ is_wal_inv_pre l γ' σ dinit ∗
+       "Hlogger" ∷ (∃ (circ_l: loc), "#Hcirc2" ∷ readonly (l ↦[Walog.S :: "circ"] #circ_l) ∗
+                              logger_inv γ circ_l) ∗
+       "Hinstaller" ∷ installer_inv γ
+       }}}
   {{{ ∃ γ', is_wal_inner_durable γ' σ dinit }}}.
 Proof.
   clear P.
@@ -365,12 +368,11 @@ Proof.
   iSplit.
   { iLeft in "HΦ". iModIntro. iNext. iIntros "Hcirc". iApply "HΦ".
     iExists _.
-    iSplit; first auto;
-    iSplit; first auto;
-    iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
-  }
+    iSplit; first by auto.
+    iSplit; first by auto.
+    iExists _; iFrame. }
 
-  iNext. iIntros (γcirc' c diskStart diskEnd bufSlice upds).
+  iIntros "!>" (γcirc' c diskStart diskEnd bufSlice upds).
   iIntros "(Hupd_slice&Hcirc&Happender&Hstart&Hdisk&%&%&%)".
 
   iDestruct (is_circular_state_wf with "Hcirc") as %Hwf_circ.
@@ -378,7 +380,7 @@ Proof.
   iDestruct (diskEnd_is_to_at_least with "[$]") as "#Hdisk_atLeast".
   (* TODO: also allocate diskEnd_txn_id ghost var and put in this thread_own_alloc *)
   iMod (thread_own_alloc with "Hdisk") as (γdiskEnd_avail_name) "(HdiskEnd_exactly&Hthread_end)".
-  iMod (start_is_to_at_least with "[$]") as "(Hstart&#Hstart_atLeast)".
+  iDestruct (start_is_to_at_least with "[$]") as "(Hstart&#Hstart_atLeast)".
   iMod (thread_own_alloc with "Hstart") as (γstart_avail_name) "(Hstart_exactly&Hthread_start)".
   iMod (ghost_var_alloc σ.(log_state.txns)) as (γtxns_name) "(γtxns & Howntxns)".
   iMod (ghost_var_alloc diskEnd) as (γlogger_pos_name) "(γlogger_pos & Hown_logger_pos)".
@@ -418,13 +420,27 @@ Proof.
                  slidingM.start := diskStart;
                  slidingM.mutable := int.Z diskStart + length upds |}).
 
-  iAssert (memLog_linv_pers_core γ0 memLog diskEnd diskEnd_txn_id diskEnd_txn_id σ.(log_state.txns) diskEnd diskEnd_txn_id installed_txn_id installed_txn_id installed_txn_id) with "[-]" as "#H".
+  iAssert (memLog_linv_pers_core γ0 memLog diskEnd
+             diskEnd_txn_id
+             (* installed_txn_id_mem *)
+             diskEnd_txn_id
+             (* nextDiskEnd_txn_id *)
+             diskEnd_txn_id
+             σ.(log_state.txns)
+             (* logger_pos *)
+             diskEnd
+             (* logger_txn_id *)
+             diskEnd_txn_id
+             (* installer_pos_mem *)
+             installed_txn_id
+             (* installer_txn_id_mem *)
+             installed_txn_id) with "[-]" as "#H".
   {
     rewrite /memLog_linv_pers_core.
     iFrame "#".
     iNamed "circ.start".
     iNamed "circ.end".
-    iDestruct "Hdurable" as %Hdurable.
+    iNamed "Hdurable".
     iSplit.
     { iPureIntro.
       word. }
