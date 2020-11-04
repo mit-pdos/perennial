@@ -148,9 +148,11 @@ Lemma circ_matches_txns_crash cs txns installed_txn_id installer_pos installer_t
 Proof.
   rewrite /circ_matches_txns/has_updates.
   destruct 1 as [Heq Hlb].
-  split; auto.
-  intros d. rewrite Heq /subslice take_idemp //=.
-Qed.
+  split.
+  - admit.
+  - admit.
+  (* intros d. rewrite Heq /subslice take_idemp //=. *)
+Admitted.
 
 Lemma is_txn_from_take_is_txn n txns id pos:
   is_txn (take n txns) id pos →
@@ -192,6 +194,22 @@ Proof.
     intros (x&Hlookup&Hpos); subst.
     eapply lookup_take_Some in Hlookup; lia.
 Qed.
+
+Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
+  is_wal_inv_pre l γ s dinit -∗
+  □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
+        ▷ P s -∗ |0={⊤ ∖ ↑N}=> ▷ Prec s' ∗ ▷ Pcrash s s') -∗
+  P s -∗
+  |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
+                (<disc> |C={⊤}_0=> ∃ s, ⌜wal_post_crash s⌝ ∗
+                                         is_wal_inner l γ' s dinit ∗ Prec s) ∗
+                □ (C -∗ |0={⊤}=> inv N (∃ s s',
+                                           ⌜relation.denote log_crash s s' tt⌝ ∗
+                                           is_wal_inner_crash γ s ∗
+                                           wal_ghost_exchange γ γ' ∗
+                                           Pcrash s s')).
+Proof.
+Admitted.
 
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
   (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
