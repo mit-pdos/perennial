@@ -103,14 +103,19 @@ Lemma circ_matches_extend cs txns installed_txn_id installer_pos installer_txn_i
   (installed_txn_id ≤ installer_txn_id ≤ diskEnd_mem_txn_id ≤ diskEnd_txn_id ≤ nextDiskEnd_txn_id)%nat →
   (nextDiskEnd_txn_id < length txns)%nat →
   has_updates new_txn (subslice (S diskEnd_txn_id) (S nextDiskEnd_txn_id) txns) →
-  circ_matches_txns cs txns installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id installed_txn_id diskEnd_txn_id →
-  circ_matches_txns (set upds (λ u, u ++ new_txn) cs) txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id nextDiskEnd_txn_id.
+  circ_matches_txns cs
+    txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id →
+  circ_matches_txns (set upds (λ u, u ++ new_txn) cs)
+    txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id nextDiskEnd_txn_id.
 Proof.
-  rewrite /circ_matches_txns /=.
-  intros ? ? ? [? ?].
-  split; [ | lia ].
-  rewrite -> (subslice_split_r installed_txn_id (S diskEnd_txn_id) (S nextDiskEnd_txn_id)) by lia.
-  apply has_updates_app; auto.
+  rewrite /circ_matches_txns /=. intuition; last by lia.
+  - rewrite -> take_app_le by lia. eauto.
+  - rewrite -> subslice_app_1 by lia. eauto.
+  - rewrite -> (subslice_split_r (S diskEnd_mem_txn_id) (S diskEnd_txn_id) (S nextDiskEnd_txn_id)) by lia.
+    rewrite -> drop_app_le by lia.
+    apply has_updates_app; auto.
+  - rewrite /circΣ.diskEnd /set /= app_length.
+    unfold circΣ.diskEnd in *. lia.
 Qed.
 
 Lemma is_installed_extend_durable γ d txns installed_txn_id diskEnd_txn_id diskEnd_txn_id' :
