@@ -15,6 +15,62 @@ From Perennial.program_proof Require Import marshal_block util_proof.
 From Perennial.program_proof Require Import circ_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
+(***************)
+(*
+
+Crash reasoning strategy:
+
+OLD APPROACH:
+
+We had a persistent assertion is_circular γ, which was an invariant containing
+is_circular_state γ σ * P σ, where P is a client chosen rep predicate.  Hence,
+by Perennial 1 style reasoning we could know on crash that we had
+is_circular_state γ σ * P σ. Because is_circular_state only referred to disk
+resources and ghost resources, it was stable under post_crash, hence recovery
+got as a precondiiton is_circular_state γ σ * P σ. Recovery generated some fresh
+γ' and is_circular_state γ' σ * P σ + the resources sent to installer/logger in
+γ' (which were otherwise lost upon crash).
+
+NEW APPROACH:
+
+is_circular is as before, but using an ncinv. We introduce 3 additional predicates:
+
+- init_ghost_state -- this is all of the ghost resources used by both is_circular_state and installer/loggers
+
+- is_circular_state_crash -- this represents a "weakening" of is_circular_state that will be an invariant at crash time.
+
+- circular_crash_ghost_exchange -- this is a series of disjunctions of the form (own γold ... \/ own γnew)
+
+Then we have a lemma crash_upd, which transforms is_circular_state into the resources at crash time.
+
+Lemma crash_upd γold γnew σ :
+  is_circular_state γold σ -∗ init_ghost_state γnew ==∗
+  is_circular_state γnew σ ∗
+  is_circular_state_crash γold σ ∗
+  circular_crash_ghost_exchange γold γnew.
+
+This is then used as part of the following lemma, which should be called at the end of recovery:
+
+
+Lemma circ_buf_crash_obligation_alt Prec Pcrash γ σ:
+  is_circular_state γ σ -∗
+  □ (∀ σ, ▷ P σ -∗ |0={⊤ ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
+  P σ -∗
+  |={⊤}=> ∃ γ', is_circular N P γ ∗ (<disc> |C={⊤}_0=> ∃ σ, is_circular_state γ' σ ∗ Prec σ)
+                            ∗ □ (C -∗ |0={⊤}=> inv N (∃ σ, is_circular_state_crash γ σ ∗
+                                                           circular_crash_ghost_exchange γ γ' ∗
+                                                           Pcrash σ)).
+
+which is used to remove is_circular_state from the crash obligation etc.
+
+When a crash transition actually modifies the state, the above should be changed to:
+  □ (∀ σ σ' (Hcrash: crash_rel σ σ'), ▷ P σ -∗ |0={⊤ ∖ ↑N}=> ▷ Prec σ' ∗ ▷ Pcrash σ σ') ...
+
+and analogously in crash_upd. This would allow us to encode further tha Prec σ'
+should only hold if σ' is a post-crash state.
+
+*)
+(***************)
 
 Section heap.
 Context `{!heapG Σ}.
