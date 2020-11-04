@@ -622,6 +622,7 @@ Proof.
 Qed.
 
 Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) :
+  ↑walN.@"wal" ⊆ E ->
   {{{
     is_buftxn buftx mt γUnified dinit ∗
     PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
@@ -644,7 +645,7 @@ Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : 
       [∗ map] a ↦ v ∈ committed <$> mt, mapsto_txn γUnified a v
   }}}.
 Proof.
-  iIntros (Φ) "(Htxn & Hfupd) HΦ".
+  iIntros (HE Φ) "(Htxn & Hfupd) HΦ".
   iNamed "Htxn".
 
   wp_call.
@@ -693,9 +694,25 @@ Proof.
   { iIntros (k x Hkx) "H".
     eapply map_filter_lookup_Some in Hkx; simpl in Hkx; destruct Hkx.
     destruct (gBufmap !! k).
-    { simpl in *. destruct b.(bufDirty); try congruence. iExact "H". }
+    { simpl in *. destruct b.(bufDirty); try congruence.
+      iDestruct "H" as "[H _]". iExact "H". }
     simpl in *. congruence. }
   simpl.
+
+  wp_apply (wp_txn_CommitWait _ _ _ _ _ _
+    ((λ (o : versioned_object),
+            Build_buf_and_prev_data
+           (Build_buf (projT1 o) (snd (projT2 o)) true)
+           (fst (projT2 o))
+      ) <$> 
+      (filter (λ v : addr * versioned_object, bufDirty <$> gBufmap !! v.1 = Some true) mt))
+    _
+    E PreQ Q
+    with "[$Histxn $Hdirtyslice Hdirtylist Hctxelem0 Hfupd]"); eauto.
+  {
+    iSplitR "Hfupd".
+    {
+      admit.
 
 (*
   replace (filter (λ x, bufDirty <$> gBufmap !! x.1 = Some true) mt)
@@ -706,12 +723,6 @@ Proof.
   iPoseProof big_sepM_fmap as "[#Hfmap0 #Hfmap1]".
   iDestruct ("Hfmap0" with "Hctxelem0") as "Hctxelem0".
 
-  wp_apply (wp_txn_CommitWait _ _ _ _ _ _ _ _
-    (λ txnid,
-      ( [∗ map] k↦x ∈ filter (λ v, bufDirty <$> gBufmap !! v.1 ≠ Some true) mt, mapsto_txn γUnified k x ) ∗
-      Q txnid)%I
-    with "[$Histxn $Hdirtyslice Hdirtylist Hctxelem0 Hctxelem1 Hfupd]").
-  {
     iDestruct (big_sepML_sepM with "[$Hdirtylist $Hctxelem0]") as "Hdirtylist".
     iSplitL "Hdirtylist".
     { iApply (big_sepML_mono with "Hdirtylist").
@@ -727,22 +738,28 @@ Proof.
       (* use Hctxelem1, Hcrashstates_frag, and Histxn *)
       admit.
     }
+*)
 
-    iModIntro.
-    iExists _. iFrame.
-    iIntros "[% Hcrashstates_fupd']".
-
-    iMod ("Hcrashstates_fupd" with "[Hcrashstates_fupd']") as "HQ".
+    }
     {
-      rewrite <- Hmt at 2.
+      iSplit.
+      { iDestruct "Hfupd" as "[$ _]". }
+      iDestruct "Hfupd" as "[_ Hfupd]".
+      iMod "Hfupd" as (σl) "Hfupd". iNamed "Hfupd".
+      iModIntro. iExists _. iFrame.
+      iIntros "[% H]".
+      iMod ("Hcrashstates_fupd" with "[H]") as "$"; last done.
+
+      replace (modified <$> mt) with (modified <$> (filter (λ v, bufDirty <$> gBufmap !! v.1 = Some true) mt ∪
+                                                    filter (λ v, bufDirty <$> gBufmap !! v.1 ≠ Some true) mt)).
+      2: { rewrite map_union_filter; eauto. }
+      rewrite map_fmap_union.
       rewrite -assoc.
-      setoid_rewrite -> (map_subseteq_union _ σl.(latest)) at 2; eauto.
-      iExactEq "Hcrashstates_fupd'". repeat f_equal.
+      iExactEq "H". f_equal. f_equal. f_equal.
+      { rewrite -map_fmap_compose. reflexivity. }
+      rewrite map_subseteq_union; eauto.
       admit.
     }
-
-    iModIntro.
-    iFrame.
   }
   iIntros (ok) "Hunifiedtxns".
   wp_pures.
@@ -756,17 +773,41 @@ Proof.
       admit.
     }
 
-    iDestruct "Hq" as "[Hmapsto1 Hq]".
-    iExists _. iFrame.
-    iDestruct (big_sepM_fmap with "Hmapsto0") as "Hmapsto0".
-    iDestruct (big_sepM_union with "[$Hmapsto0 $Hmapsto1]") as "Hmapsto".
-    { admit. }
-    iExactEq "Hmapsto". repeat f_equal.
-    admit.
+    iExists _. iFrame "Hq". iFrame "Hflush".
+    rewrite big_sepM_fmap.
+    iDestruct (big_sepM_union (λ k x, mapsto_txn γUnified k (modified x)) with "[Hmapsto0 Hctxelem1]") as "Hmapsto".
+    2: {
+      iSplitL "Hmapsto0".
+      { iApply (big_sepM_mono with "Hmapsto0").
+        iIntros (k x Hkx) "H".
+        destruct x; rewrite /modified /=. iFrame. }
+      iApply (big_sepM_mono with "Hctxelem1").
+      iIntros (k x Hkx) "[H %Heq]".
+      destruct Heq as [Heq | Heq]; first congruence.
+      rewrite Heq; iFrame.
+    }
+    { eapply map_disjoint_filter. }
+    rewrite map_union_filter.
+    rewrite big_sepM_fmap.
+    iFrame.
 
-  - admit.
-    (* TODO: need PreQ in txn__CommitWait *) (* NOTE(tej): done *)
-*)
+  - iDestruct "Hunifiedtxns" as "[Hpreq Hmapsto0]".
+    iFrame "Hpreq".
+
+    rewrite big_sepM_fmap.
+    iDestruct (big_sepM_union (λ k x, mapsto_txn γUnified k (committed x)) with "[Hmapsto0 Hctxelem1]") as "Hmapsto".
+    2: {
+      iSplitL "Hmapsto0".
+      { iApply (big_sepM_mono with "Hmapsto0").
+        iIntros (k x Hkx) "H".
+        destruct x; rewrite /committed /=. iFrame. }
+      iApply (big_sepM_mono with "Hctxelem1").
+      iIntros (k x Hkx) "[H _]". iFrame.
+    }
+    { eapply map_disjoint_filter. }
+    rewrite map_union_filter.
+    rewrite big_sepM_fmap.
+    iFrame.
 Admitted.
 
 End heap.
