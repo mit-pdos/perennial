@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From iris.algebra Require Import numbers.
+From iris.base_logic.lib Require Import mnat.
 From Perennial.algebra Require Import deletable_heap log_heap liftable.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
@@ -638,7 +638,7 @@ Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : 
     if ok then
       ∃ txnid,
       Q txnid ∗
-      (⌜wait = true⌝ -∗ own γUnified.(txn_walnames).(wal_heap_durable_lb) (◯ (MaxNat txnid))) ∗
+      (⌜wait = true⌝ -∗ mnat_own_lb γUnified.(txn_walnames).(wal_heap_durable_lb) txnid) ∗
       [∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v
     else
       PreQ ∗

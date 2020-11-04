@@ -143,7 +143,7 @@ Section goose_lang.
 
   Definition txn_durable γ txn_id :=
     (* oof, this leaks all the abstractions *)
-    own γ.(buftxn_txn_names).(txn_walnames).(heapspec.wal_heap_durable_lb) (◯ (MaxNat txn_id)).
+    mnat_own_lb γ.(buftxn_txn_names).(txn_walnames).(heapspec.wal_heap_durable_lb) txn_id.
 
 
   Definition txn_system_inv γ: iProp Σ :=

@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordUpdate.
 
-From iris.algebra Require Import numbers.
+From iris.base_logic.lib Require Import mnat.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
@@ -17,7 +17,7 @@ Inductive heap_block :=
 Class walheapG (Σ: gFunctors) :=
   { walheap_u64_heap_block :> gen_heapPreG u64 heap_block Σ;
     walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
-    walheap_max_nat :> inG Σ (authR max_natUR);
+    walheap_mnat :> mnatG Σ;
     walheap_asyncCrashHeap :> ghost_varG Σ (async (gmap u64 Block));
     walheap_heap :> heapG Σ;
     walheap_wal :> walG Σ
@@ -72,11 +72,11 @@ Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
     "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ ghost_var γ.(wal_heap_txns) (1/2) (ls.(log_state.d), ls.(log_state.txns)) ∗
-    "Hinstalled" ∷ own γ.(wal_heap_installed) (● (MaxNat ls.(log_state.installed_lb))) ∗
+    "Hinstalled" ∷ mnat_own_auth γ.(wal_heap_installed) 1 ls.(log_state.installed_lb) ∗
     "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
     "Hcrash_heaps_own" ∷ ghost_var γ.(wal_heap_crash_heaps) (1/2) crash_heaps ∗
     "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls ∗
-    "Hcrash_heaps_lb" ∷ own γ.(wal_heap_durable_lb) (● (MaxNat ls.(log_state.durable_lb))).
+    "Hcrash_heaps_lb" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb).
 
 Definition no_updates (l: list update.t) a : Prop :=
   forall u, u ∈ l -> u.(update.addr) ≠ a.
@@ -94,54 +94,6 @@ Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
   apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
-
-
-Global Instance max_nat_frag_persistent γ (m : max_nat) : Persistent (own γ (◯ m)).
-Proof. apply _. Qed.
-
-Lemma max_nat_advance γ m n :
-  (m ≤ n)%nat ->
-  own γ (● (MaxNat m)) ==∗
-  own γ (● (MaxNat n)).
-Proof.
-  iIntros (H) "Hm".
-  iMod (own_update with "Hm") as "Hn".
-  2: iFrame; done.
-  eapply auth_update_auth.
-  eapply max_nat_local_update.
-  simpl.
-  lia.
-Qed.
-
-Lemma max_nat_snapshot_le γ m n :
-  (m ≤ n)%nat ->
-  own γ (● (MaxNat n)) ==∗
-  own γ (● (MaxNat n)) ∗
-  own γ (◯ (MaxNat m)).
-Proof.
-  iIntros (H) "Hn".
-  iMod (own_update _ _ ((● (MaxNat n)) ⋅ ◯ (MaxNat m)) with "Hn") as "[Hn Hm]".
-  2: iFrame; done.
-  apply auth_update_alloc.
-  apply local_update_unital_discrete.
-  compute -[max].
-  intros.
-  inversion H1; subst; clear H1.
-  split; auto.
-  f_equal.
-  lia.
-Qed.
-
-Lemma max_nat_snapshot γ (m: nat) :
-  own γ (● (MaxNat m)) ==∗
-  own γ (● (MaxNat m)) ∗
-  own γ (◯ (MaxNat m)).
-Proof.
-  iIntros "Hm".
-  iMod (max_nat_snapshot_le _ _ m with "Hm") as "[Hm Hmfrag]"; first by reflexivity.
-  iModIntro.
-  iFrame.
-Qed.
 
 
 (* In lemmas; probably belong in one of the external list libraries *)
@@ -1038,20 +990,19 @@ Proof.
 
   - simpl in *; monad_inv.
 
-    iMod (max_nat_advance _ _ new_installed with "Hinstalled") as "Hinstalled".
-    { intuition idtac. }
+    iMod (mnat_update new_installed with "Hinstalled") as "Hinstalled".
+    { intuition. }
 
-    iMod (max_nat_snapshot with "Hinstalled") as "[Hinstalled Hinstalledfrag]".
-    iMod (max_nat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+    iDestruct (mnat_get_lb with "Hinstalled") as "#Hinstalledfrag".
+    iMod (mnat_update new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
     { lia. }
 
     iMod (gen_heap_update _ _ _ (HB (latest_update installed (updates_since txn_id a σ)) nil) with "Hctx Ha") as "[Hctx Ha]".
-    iDestruct ("Hfupd" $! None with "[Ha]") as "Hfupd".
+    iMod ("Hfupd" $! None with "[Ha]").
     {
       rewrite /readmem_q.
       iFrame.
     }
-    iMod "Hfupd".
     iModIntro.
     iSplitL "Hctx Hgh Htxns Hinstalled Hinstalledfrag Hcrash_heaps Hcrash_heaps_own Hcrash_heaps_lb".
     2: iFrame.
@@ -1709,10 +1660,10 @@ Proof using walheapG0.
       simpl in *; monad_inv.
       simpl in *; monad_inv.
 
-      iMod (max_nat_advance _ _ new_installed with "Hinstalled") as "Hinstalled".
+      iMod (mnat_update new_installed with "Hinstalled") as "Hinstalled".
       { intuition idtac. }
-      iMod (max_nat_snapshot with "Hinstalled") as "[Hinstalled #Hinstalledfrag]".
-      iMod (max_nat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+      iDestruct (mnat_get_lb with "Hinstalled") as "#Hinstalledfrag".
+      iMod (mnat_update new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
       { lia. }
 
       iModIntro.
@@ -1743,14 +1694,12 @@ Proof using walheapG0.
       rewrite <- H5 in Hb.
       rewrite <- H6 in Hb.
 
-      iDestruct (own_valid_2 with "Hinstalled Hinstalledfrag")
-        as %[?%max_nat_included _]%auth_both_valid_discrete.
+      iDestruct (mnat_own_lb_valid with "Hinstalled Hinstalledfrag") as %[_ Hle].
 
       rewrite no_updates_since_last_disk in Heqo; eauto.
       2: {
         rewrite /no_updates_since. rewrite H6.
         eapply no_updates_since_le; last by eauto.
-        simpl in H7.
         lia.
       }
 
@@ -1829,7 +1778,7 @@ Theorem wp_Walog__Flush_heap l γ dinit (txn_id : nat) (pos : u64) :
   }}}
     wal.Walog__Flush #l #pos
   {{{ RET #();
-      own (wal_heap_durable_lb γ) (◯ (MaxNat txn_id))
+      mnat_own_lb γ.(wal_heap_durable_lb) txn_id
   }}}.
 Proof using walheapG0.
   iIntros (Φ) "(#Hwal & Hpos) HΦ".
@@ -1841,9 +1790,10 @@ Proof using walheapG0.
   intuition idtac.
 
   iNamed "Hinv".
-  iMod (max_nat_advance _ _ new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+  iMod (mnat_update new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
   { lia. }
-  iMod (max_nat_snapshot_le _ txn_id with "Hcrash_heaps_lb") as "[Hcrash_heaps_lb Hpost]".
+  iDestruct (mnat_get_lb with "Hcrash_heaps_lb") as "#Hlb".
+  iDestruct (mnat_own_lb_le _ _ txn_id with "Hlb") as "#Hpost".
   { lia. }
   iFrame "Hpost".
 
