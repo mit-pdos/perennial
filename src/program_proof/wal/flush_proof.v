@@ -67,7 +67,7 @@ Proof.
       econstructor; monad_simpl; lia. }
   - simpl.
     iFrame.
-    iExists _; iFrame.
+    iExists _. iFrame "Howncs".
     iExists installed_txn_id, _. simpl. iFrame "# ∗ %".
     iExists _. iFrame "%". iPureIntro. lia.
 Qed.
@@ -189,9 +189,12 @@ Proof.
   iExists _; iFrame.
   iExists installed_txn_id, (Nat.max diskEnd_txn_id txn_id). iFrame "# ∗".
   iSplitL "Hinstalled".
-  { iNamed "Hinstalled". iExists _, _. iFrame. iFrame "#". iPureIntro. auto with lia. }
+  { iNamed "Hinstalled". iExists _, _, _. iFrame. iFrame "#". iPureIntro. auto with lia. }
   iSplit.
-  - iDestruct "Hdurable" as %Hcirc_matches. iPureIntro. simpl.
+  - iNamed "Hdurable".
+    iExists _, _, _, _.
+    iFrame.
+    iPureIntro.
     unfold circ_matches_txns in *. intuition try lia.
     rewrite -> (subslice_split_r _ (S diskEnd_txn_id) _ σ.(log_state.txns)) by lia.
     eapply has_updates_app_nils; eauto.
@@ -329,10 +332,13 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HQ HΦ]").
   { iFrame "lk". iFrame "Hlocked". iNext. iExists _.
-    iFrame.
-    iExists _, _, _, _, _, _, _, _.
+    iFrame "Hfields HdiskEnd_circ Hstart_circ".
+    iExists _, _, _, _, _, _, _.
     iFrame "∗#%".
+    iNamed "Hlinv_pers".
+    iFrame "#%".
     iNamed "Htxns".
+    iFrame "%".
     iPureIntro. intuition (eauto; try lia).
     - rewrite -> (subslice_split_r _ (S nextDiskEnd_txn_id) _ σ.(log_state.txns)); try lia.
       eapply has_updates_app_nils; eauto.
