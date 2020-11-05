@@ -425,7 +425,7 @@ Proof.
   wpc_pures.
   { crash_case. iExists bs0; iFrame. auto. }
 
-  iApply (wpc_forSlice (fun i =>
+  iApply (wpc_forSlice (V:=Slice.t) (fun i =>
                          (([∗ list] b_s;b ∈ bks;bs, is_block b_s 1 b) ∗
                          int.Z off d↦∗ (take (int.nat i) bs ++ drop (int.nat i) bs0))%I)
             with "[] [] [$Hbk_s $Hbks $Hd] [HΦ]"); cycle -1.
