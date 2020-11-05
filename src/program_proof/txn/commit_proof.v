@@ -643,7 +643,7 @@ Proof using txnG0 Σ.
     iSplit; [ iDestruct "Hfupd" as "[$ _]" | iRight in "Hfupd" ].
     iInv invN as ">Hinner" "Hinner_close".
     iMod "Hfupd".
-    iIntros "[Hmapstos Hwal_latest]".
+    iIntros (σ) "(Hmapstos & Hwal_latest & Hiswal_heap)".
     iModIntro.
     iNamed "Hinner".
     iNamed "Hfupd".
@@ -730,13 +730,6 @@ Proof using txnG0 Σ.
     iExists (snd <$> updlist_olds).
     iExists crash_heaps.
 
-    iDestruct "Hiswal" as "[#Hiswal0 #Hiswal1]".
-    iInv "Hiswal0" as (σ) "[Hiswal_inner >Hiswal_heap]".
-    { admit. }
-
-    (* XXX opening up the wal invariant at this point is not allowed..
-      figure out how to move this into wp_Walog__MemAppend / wal_heap_memappend *)
-
     iDestruct (lwh_crash_heaps with "Hcrashheaps Hwal_latest Hiswal_heap") as (lwh_installed lwh_durable) "#Hlwh_crash_heaps".
 
     iAssert (⌜∀ lv, lv ∈ updlist_olds ->
@@ -750,9 +743,6 @@ Proof using txnG0 Σ.
       iDestruct (wal_heap_mapsto_latest_helper with "[$Hiswal_heap $Hwal_latest $Hlv]") as "%Hlwh_ok".
       eauto.
     }
-    iModIntro. iSplitL "Hiswal_inner Hiswal_heap".
-    { iModIntro. iExists _. iFrame. }
-
     iAssert (⌜∀ lv, lv ∈ updlist_olds ->
                 update.addr (fst lv) ∈ dom (gset u64) (gmap_addr_by_block bufamap)⌝)%I
       as "%Hupdlist_olds_σl_latest".
@@ -780,6 +770,7 @@ Proof using txnG0 Σ.
     iModIntro.
     iFrame "Hwal_latest".
     iFrame "Hcrashheaps".
+    iFrame "Hiswal_heap".
 
     iDestruct (big_sepML_sepL_split with "Hheapmatch") as "[Hheapmatch Hupdlist_olds]".
 
