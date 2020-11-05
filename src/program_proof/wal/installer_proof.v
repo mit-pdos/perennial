@@ -455,8 +455,7 @@ Lemma fmcounter_merge (γ: gname) (q1 q2: Qp) (n: nat) :
   fmcounter γ (q1 + q2) n.
 Proof.
   iIntros "Hn1 Hn2".
-  iApply fmcounter_sep.
-  iFrame.
+  iCombine "Hn1 Hn2" as "$".
 Qed.
 
 Lemma fmcounter_update_halves (γ: gname) (n1 n2 n': nat) :
@@ -469,13 +468,159 @@ Lemma fmcounter_update_halves (γ: gname) (n1 n2 n': nat) :
 Proof.
   iIntros (Hle) "Hn1 Hn2".
   iDestruct (fmcounter_agree_1 with "Hn1 Hn2") as %<-.
-  iDestruct (fmcounter_merge with "Hn1 Hn2") as "Hn".
-  rewrite Qp_half_half.
-  iMod (fmcounter_update _ _ _ Hle with "Hn") as "(Hn&Hlb)".
-  iFrame.
-  iApply fmcounter_sep.
-  rewrite Qp_half_half.
-  eauto.
+  iCombine "Hn1 Hn2" as "Hn".
+  iMod (fmcounter_update n' with "Hn") as "[[$ $] $]"; eauto.
+Qed.
+
+Lemma has_updates_addrs upds txns :
+  has_updates upds txns →
+  (λ u, int.Z u.(update.addr)) <$> upds ⊆ (λ u, int.Z u.(update.addr)) <$> concat txns.*2.
+Proof.
+  rewrite /has_updates /txn_upds; intros ?.
+  specialize (H ∅).
+  intros a.
+  rewrite -apply_upds_empty_dom H apply_upds_empty_dom //.
+Qed.
+
+Lemma list_app_subseteq {A} (l1 l2 l : list A) :
+  l1 ++ l2 ⊆ l ↔ l1 ⊆ l ∧ l2 ⊆ l.
+Proof.
+  set_solver.
+Qed.
+
+Lemma list_cons_subseteq {A} (x: A) (l1 l2: list A) :
+  x :: l1 ⊆ l2 ↔ x ∈ l2 ∧ l1 ⊆ l2.
+Proof. set_solver. Qed.
+
+Lemma elem_of_subseteq_concat {A} (x:list A) (l:list (list A)) :
+  x ∈ l → x ⊆ concat l.
+Proof.
+  intros Helem.
+  apply elem_of_list_split in Helem as (l1 & l2 & ->).
+  rewrite concat_app concat_cons.
+  set_solver.
+Qed.
+
+Lemma concat_respects_subseteq {A} (l1 l2: list (list A)) :
+  l1 ⊆ l2 →
+  concat l1 ⊆ concat l2.
+Proof.
+  generalize dependent l2.
+  induction l1 as [|x l1]; intros; simpl.
+  - set_solver.
+  - apply list_cons_subseteq in H as [Helem ?].
+    apply list_app_subseteq. split; [|by eauto].
+    apply elem_of_subseteq_concat; auto.
+Qed.
+
+Lemma list_fmap_mono {A B} (f: A → B) (l1 l2: list A) :
+  l1 ⊆ l2 → f <$> l1 ⊆ f <$> l2.
+Proof.
+  intros Hsubseteq.
+  apply (iffRL (elem_of_subseteq _ _)).
+  intros y Hin.
+  destruct (elem_of_list_fmap_2 _ _ _ Hin) as (x&Hy&Hx).
+  apply ((iffLR (elem_of_subseteq _ _)) Hsubseteq x) in Hx.
+  apply (elem_of_list_fmap_1_alt _ _ _ _ Hx Hy).
+Qed.
+
+Lemma txn_upds_subseteq txns1 txns2 :
+  txns1 ⊆ txns2 →
+  txn_upds txns1 ⊆ txn_upds txns2.
+Proof.
+  rewrite /txn_upds => ?.
+  apply concat_respects_subseteq, list_fmap_mono; auto.
+Qed.
+
+Lemma subslice_subslice_subseteq {A} (l: list A) (s1 e1 s2 e2: nat):
+  s2 ≤ s1 →
+  e1 ≤ e2 →
+  subslice s1 e1 l ⊆ subslice s2 e2 l.
+Proof.
+  intros Hs_le He_le.
+  apply (iffRL (elem_of_subseteq _ _)).
+  intros x Hin.
+  apply elem_of_list_lookup in Hin.
+  destruct Hin as (i&Hin).
+  apply (elem_of_list_lookup_2 _ (s1 + i - s2)).
+  pose proof (subslice_lookup_bound' _ _ _ _ _ _ Hin) as Hlookup_bound.
+  rewrite subslice_lookup.
+  2: lia.
+  replace (s2 + (s1 + i - s2))%nat with (s1 + i)%nat by lia.
+  apply subslice_lookup_some in Hin.
+  assumption.
+Qed.
+
+Lemma subslice_complete {A} (l: list A) :
+  l = subslice 0 (length l) l.
+Proof.
+  rewrite subslice_take_drop.
+  rewrite drop_0 take_ge //.
+Qed.
+
+Lemma drop_subseteq {A} (l: list A) n :
+  drop n l ⊆ l.
+Proof.
+  intros x.
+  rewrite !elem_of_list_lookup.
+  setoid_rewrite lookup_drop.
+  naive_solver.
+Qed.
+
+Lemma subslice_subseteq {A} (l: list A) (s1 e1: nat):
+  subslice s1 e1 l ⊆ l.
+Proof.
+  destruct (decide (e1 ≤ length l)).
+  - rewrite {2}(subslice_complete l).
+    apply subslice_subslice_subseteq; auto.
+    lia.
+  - Search subslice.
+    rewrite subslice_take_drop.
+    rewrite -> take_ge by lia.
+    apply drop_subseteq.
+Qed.
+
+Lemma fmap_subslice {A B} (f: A → B) (l: list A) n m :
+  f <$> subslice n m l = subslice n m (f <$> l).
+Proof.
+  rewrite !subslice_take_drop fmap_drop fmap_take //.
+Qed.
+
+Lemma txns_are_in_bounds E γ start txns l dinit :
+  ↑walN.@"wal" ⊆ E →
+  txns_are γ start txns -∗
+  is_wal P l γ dinit -∗
+  |={E}=> ⌜Forall (λ (u: update.t), int.Z u.(update.addr) ∈ dom (gset _) dinit) (concat txns.*2)⌝.
+Proof.
+  iIntros (Hmask) "#Htxns_are [Hinv _]".
+  iInv "Hinv" as "Hinner".
+  iModIntro.
+  rewrite -fupd_except_0.
+  rewrite -fupd_intro.
+  iSplit; auto.
+  iDestruct "Hinner" as (σ) "[Hinner _]".
+  iDestruct "Hinner" as "(>? &_ & >? &_&_& >?)"; iNamed.
+  iNamed "Hdisk".
+  iNamed "Hdisk".
+  iModIntro.
+  iDestruct (txns_are_sound with "Htxns_ctx Htxns_are") as %Hsub.
+  destruct Hwf as (Haddrs_wf&_).
+  rewrite /log_state.updates in Haddrs_wf.
+  iPureIntro.
+  apply (Forall_subset _ _ (concat σ.(log_state.txns).*2)).
+  - apply concat_respects_subseteq.
+    etrans; [ | eapply subslice_subseteq ].
+    apply (f_equal (λ x, x.*2)) in Hsub.
+    rewrite -Hsub.
+    rewrite fmap_subslice //.
+  - fold (txn_upds σ.(log_state.txns)).
+    rewrite /addrs_wf in Haddrs_wf.
+    eapply Forall_impl; eauto.
+    simpl; intros.
+    destruct H as [_ [? ?]].
+    apply elem_of_dom.
+    apply Hdaddrs_init.
+    eexists; eauto.
 Qed.
 
 Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
@@ -487,6 +632,7 @@ Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
           - All addresses in bufs should be addresses in subtxns by Hbufs.
           - These txns should only contain addresses from log_state.updates when we open the wal invariant.
           - wal_wf. *)
+      (* TODO(tej): txns_are_in_bounds above should be good enough to derive this *)
       "%Hbufs_addrs" ∷ ⌜Forall (λ u : update.t, ∃ (b: Block), dinit !! int.Z u.(update.addr) = Some b) bufs⌝ ∗
       "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
       "HownBeingInstalledStartTxn_installer" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
@@ -945,77 +1091,6 @@ Proof.
   iFrame "Hlinv_pers".
 Qed.
 
-Lemma list_fmap_mono {A B} (f: A → B) (l1 l2: list A) :
-  l1 ⊆ l2 → f <$> l1 ⊆ f <$> l2.
-Proof.
-  intros Hsubseteq.
-  apply (iffRL (elem_of_subseteq _ _)).
-  intros y Hin.
-  destruct (elem_of_list_fmap_2 _ _ _ Hin) as (x&Hy&Hx).
-  apply ((iffLR (elem_of_subseteq _ _)) Hsubseteq x) in Hx.
-  apply (elem_of_list_fmap_1_alt _ _ _ _ Hx Hy).
-Qed.
-
-Lemma subslice_subseteq {A} (l: list A) (s1 e1 s2 e2: nat):
-  s2 ≤ s1 →
-  e1 ≤ e2 →
-  subslice s1 e1 l ⊆ subslice s2 e2 l.
-Proof.
-  intros Hs_le He_le.
-  apply (iffRL (elem_of_subseteq _ _)).
-  intros x Hin.
-  apply elem_of_list_lookup in Hin.
-  destruct Hin as (i&Hin).
-  apply (elem_of_list_lookup_2 _ (s1 + i - s2)).
-  pose proof (subslice_lookup_bound' _ _ _ _ _ _ Hin) as Hlookup_bound.
-  rewrite subslice_lookup.
-  2: lia.
-  replace (s2 + (s1 + i - s2))%nat with (s1 + i)%nat by lia.
-  apply subslice_lookup_some in Hin.
-  assumption.
-Qed.
-
-(* this pure proof should be true but is annoying to prove *)
-
-Lemma list_app_subseteq {A} (l1 l2 l : list A) :
-  l1 ++ l2 ⊆ l ↔ l1 ⊆ l ∧ l2 ⊆ l.
-Proof.
-  set_solver.
-Qed.
-
-Lemma list_cons_subseteq {A} (x: A) (l1 l2: list A) :
-  x :: l1 ⊆ l2 ↔ x ∈ l2 ∧ l1 ⊆ l2.
-Proof. set_solver. Qed.
-
-Lemma elem_of_subseteq_concat {A} (x:list A) (l:list (list A)) :
-  x ∈ l → x ⊆ concat l.
-Proof.
-  intros Helem.
-  apply elem_of_list_split in Helem as (l1 & l2 & ->).
-  rewrite concat_app concat_cons.
-  set_solver.
-Qed.
-
-Lemma concat_respects_subseteq {A} (l1 l2: list (list A)) :
-  l1 ⊆ l2 →
-  concat l1 ⊆ concat l2.
-Proof.
-  generalize dependent l2.
-  induction l1 as [|x l1]; intros; simpl.
-  - set_solver.
-  - apply list_cons_subseteq in H as [Helem ?].
-    apply list_app_subseteq. split; [|by eauto].
-    apply elem_of_subseteq_concat; auto.
-Qed.
-
-Lemma txn_upds_subseteq txns1 txns2 :
-  txns1 ⊆ txns2 →
-  txn_upds txns1 ⊆ txn_upds txns2.
-Proof.
-  rewrite /txn_upds => ?.
-  apply concat_respects_subseteq, list_fmap_mono; auto.
-Qed.
-
 Lemma advance_being_installed_start_txn_id γ l dinit (being_installed_start_txn_id being_installed_end_txn_id: nat) upds txns :
   "#Hwal" ∷ is_wal P l γ dinit -∗
   "HownBeingInstalledStartTxn_installer" ∷
@@ -1120,7 +1195,7 @@ Proof.
       σs.(log_state.txns)))) as Hsubseteq.
     {
       apply txn_upds_subseteq.
-      apply subslice_subseteq.
+      apply subslice_subslice_subseteq.
       all: lia.
     }
     eapply list_fmap_mono in Hsubseteq.
