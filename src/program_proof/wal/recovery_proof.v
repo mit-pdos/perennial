@@ -441,11 +441,14 @@ Proof.
     iNamed "circ.start".
     iNamed "circ.end".
     iNamed "Hdurable".
+    rewrite /circ_matches_txns in Hcirc_matches. intuition idtac.
     iSplit.
     { iPureIntro.
-      word. }
+      admit.
+      (* word. *)
+    }
     iDestruct (txns_ctx_txn_pos with "[$]") as "#$".
-    { subst. auto with f_equal. }
+    { subst. auto with f_equal. admit. }
     assert (diskEnd = diskEnd0) by word; subst diskEnd0.
     iSplit.
     { admit. }
@@ -461,7 +464,11 @@ Proof.
 
     iSplit.
     { iDestruct (txns_ctx_txn_pos with "[$]") as "#$".
-      subst; auto. }
+      subst; auto. admit. }
+
+    admit.
+
+(*
 
     assert (diskEnd_txn_id = (length σ.(log_state.txns) - 1)%nat) as HdiskEnd_is_last.
     { eapply wal_post_crash_durable_lb; eauto. }
@@ -504,9 +511,10 @@ Proof.
       subst; word. }
     eapply txns_mono_lt_last; eauto.
     subst; auto.
+*)
   }
 
-  wpc_frame "Hinstalled HΦ Hcirc Happender Hthread_end Hthread_start".
+  wpc_frame "Hinstalled HΦ Hcirc Happender Hthread_end Hthread_start Hdurable".
   {
     crash_case.
     rewrite /is_wal_inner_durable. iExists γ0.
@@ -515,7 +523,7 @@ Proof.
     iNext. iExists cs.
     iFrame. rewrite /disk_inv_durable.
 
-    iExists _, _, _. iFrame "Hinstalled Hdurable". iFrame (Hdaddrs_init).
+    iExists _, _, _, _. iFrame "Hinstalled Hdurable". iFrame (Hdaddrs_init).
     iSplit.
     { iNamed "circ.start". iFrame "#%". }
     iNamed "circ.end". iFrame "#%". eauto.
