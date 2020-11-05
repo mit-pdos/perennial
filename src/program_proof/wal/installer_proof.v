@@ -578,11 +578,8 @@ Lemma txns_are_in_bounds E γ start txns l dinit :
   |={E}=> ⌜Forall (λ (u: update.t), ∃ b, dinit !! int.Z u.(update.addr) = Some b) (txn_upds txns)⌝.
 Proof.
   iIntros (Hmask) "#Htxns_are [Hinv _]".
-  iInv "Hinv" as "Hinner".
-  iModIntro.
-  rewrite -fupd_except_0.
-  rewrite -fupd_intro.
-  iSplit; auto.
+  iApply (inv_open_persistent with "Hinv"); auto.
+  iIntros "Hinner".
   iDestruct "Hinner" as (σ) "[Hinner _]".
   iDestruct "Hinner" as "(>? &_ & >? &_&_& >?)"; iNamed.
   iNamed "Hdisk".
