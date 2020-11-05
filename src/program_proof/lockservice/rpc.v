@@ -1,13 +1,8 @@
-From Coq.Structures Require Import OrdersTac.
-From RecordUpdate Require Import RecordUpdate.
-From stdpp Require Import gmap.
-From iris.program_logic Require Export weakestpre.
-From Perennial.algebra Require Import auth_map fmcounter.
-From Perennial.goose_lang.lib Require Import lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
+From Perennial.algebra Require Import auth_map fmcounter.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.program_proof.lockservice Require Import fmcounter_map nondet.
+From Perennial.program_proof.lockservice Require Import fmcounter_map.
 
 (** RPC layer ghost names. *)
 Record rpc_names := RpcNames {

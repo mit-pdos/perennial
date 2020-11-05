@@ -1,5 +1,6 @@
 From Perennial.goose_lang Require Import notation typing.
 From Perennial.goose_lang.lib Require Import typed_mem slice.slice struct.struct.
+Set Default Proof Using "Type".
 
 Class IntoVal {ext: ext_op} V :=
   { to_val: V -> val;
@@ -113,5 +114,15 @@ Section instances.
     intros.
     apply slice_val_ty.
   Qed.
+
+
+  Global Instance bool_IntoVal : IntoVal bool.
+  Proof.
+    refine {| into_val.to_val := λ (x: bool), #x;
+              IntoVal_def := false; |}; congruence.
+  Defined.
+
+  Global Instance bool_IntoVal_boolT : IntoValForType bool_IntoVal boolT.
+  Proof. constructor; auto. Qed.
 
 End instances.

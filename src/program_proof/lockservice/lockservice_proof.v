@@ -73,14 +73,20 @@ Definition LockServer_own_core γ (srv:loc) : iProp Σ :=
     "Hlockeds" ∷ [∗ map] ln ↦ locked ∈ locksM, (⌜locked=true⌝ ∨ (Ps ln)) (* we own the invariants of all not-held locks *)
 .
 
-Definition is_lockserver (srv:loc) γ : iProp Σ :=
+Definition is_lockserver γ (srv:loc) : iProp Σ :=
   "#Hinv" ∷ inv lockserviceInvN (Lockserver_inv γ) ∗
   "#Hmutex" ∷ is_server (Server_own_core:=LockServer_own_core γ) srv γ.(ls_rpcGN).
+
+Definition lockserver_cid_token γ cid :=
+  RPCClient_own γ.(ls_rpcGN) cid 0.
+
+Definition own_lockclerk γ ck srv :=
+  own_clerk ck srv γ.(ls_rpcGN).
 
 (** Allocate a new lock in the lockservice, given the prop guarded by the lock *)
 Lemma lockservice_alloc_lock γ (srv:loc) ln E :
   ↑lockserviceN ⊆ E →
-  is_lockserver srv γ -∗
+  is_lockserver γ srv -∗
   Ps ln ={E}=∗
   lockservice_is_lock γ ln.
 Proof.
@@ -103,6 +109,49 @@ Proof.
     iExists _, locksMapDom. iFrame; iFrame "#".
     iDestruct "HlocksEx" as %HlocksEx. iPureIntro. set_solver.
 Qed.
+
+Lemma MakeLockServer_spec :
+  {{{ True }}}
+    MakeLockServer #()
+  {{{ γ srv, RET #srv;
+    is_lockserver γ srv ∗ [∗ set] cid ∈ fin_to_set u64, lockserver_cid_token γ cid
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ". wp_lam.
+  iMod make_rpc_server as (γrpc) "(#is_server & server_own & cli_tokens)"; first done.
+  iMod (ghost_var_alloc (∅ : gset u64)) as (γdom) "[Hdom1 Hdom2]".
+  iMod (map_init (∅ : gmap u64 unit)) as (γlocks) "Hloglocks".
+  pose (γ := LockserviceNames γrpc γlocks γdom).
+
+  wp_apply wp_allocStruct; first by eauto.
+  iIntros (l) "Hl". wp_pures.
+  iDestruct (struct_fields_split with "Hl") as "(l_mu & l_locks & l_lastSeq & l_lastReply &_)".
+  wp_apply (wp_NewMap bool (t:=boolT)). iIntros (locks) "Hlocks".
+  wp_storeField.
+  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastSeq) "HlastSeq".
+  wp_storeField.
+  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastReply) "HlastReply".
+  wp_storeField.
+  wp_apply (newlock_spec _ _ (Server_mutex_inv (Server_own_core:=LockServer_own_core γ) l γrpc) with "[-HΦ cli_tokens l_mu Hdom1 Hloglocks]").
+  { iNext. rewrite /Server_mutex_inv.
+    iExists _, _, _, _. iFrame "l_lastSeq l_lastReply".
+    iFrame. iExists _, _. iFrame.
+    rewrite dom_empty_L. iFrame.
+    iApply big_sepM_empty. done. }
+  iIntros (lk) "Hlock".
+  iDestruct (is_lock_flat with "Hlock") as %[lock ->].
+  iApply wp_fupd.
+  wp_storeField.
+  iApply ("HΦ" $! γ). iFrame "cli_tokens". rewrite /is_lockserver /is_server.
+  iMod (inv_alloc with "[Hdom1 Hloglocks]") as "$".
+  { iExists _, _. iFrame. iSplit.
+    - iPureIntro. done.
+    - iApply big_sepM_empty. done. }
+  iExists _. iFrame "Hlock is_server".
+  iMod (readonly_alloc_1 with "l_mu") as "$".
+  done.
+Qed.
+
 
 Lemma tryLock_core_spec γ (srv:loc) (ln:u64) :
 inv lockserviceInvN (Lockserver_inv γ) -∗
@@ -226,10 +275,6 @@ Proof.
   - wp_pures. iApply "Hpost". iSplitL; eauto.
     iExists _, _; iFrame.
 Qed.
-
-Definition own_lockclerk ck srv γ :=
-  own_clerk ck srv γ.(ls_rpcGN)
-.
 
 Lemma Clerk__TryLock_spec γ ck (srv:loc) (ln:u64) :
   {{{

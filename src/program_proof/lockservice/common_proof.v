@@ -116,12 +116,6 @@ Qed.
 
 Global Instance u64_RPCArgs : RPCArgs u64 := { a_ty := uint64T }.
 
-Global Instance ToVal_bool : into_val.IntoVal bool.
-Proof.
-  refine {| into_val.to_val := λ (x: bool), #x;
-            IntoVal_def := false; |}; congruence.
-Defined.
-
 #[refine] Global Instance u64_RPCReply : RPCReturn u64 := {r_ty := uint64T; r_default := 0 }.
 { eauto. }
 { eauto. }
