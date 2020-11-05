@@ -613,7 +613,7 @@ Section goose_lang.
                 _ _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
                 with "[$Hbuftxn Hold_vals]").
-    2: { iSplit; [ iAccu | ].
+    { iSplit; [ iAccu | ].
       iInv "Htxn_system" as ">Hinner" "Hclo".
       iModIntro.
       iNamed "Hinner".
@@ -640,8 +640,6 @@ Section goose_lang.
       rewrite length_possible_async_put.
       iExactEq "Hnew".
       auto with f_equal lia. }
-    { (* XXX hmm, seems like we got the masks wrong... *)
-      admit. }
     iIntros (ok) "Hpost".
     destruct ok.
     - iDestruct "Hpost" as "[[Hpostq Hpreq] Hmod_tokens]".
@@ -667,6 +665,6 @@ Section goose_lang.
       iApply "HrestoreP0".
       rewrite big_sepM_sep.
       iFrame.
-  Admitted.
+  Qed.
 
 End goose_lang.
