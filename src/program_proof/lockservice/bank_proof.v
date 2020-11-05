@@ -38,13 +38,13 @@ Definition log_gn γ := γ.(bank_logBalGN).
 Definition bankPs γ := λ k, (∃v, k [[kv_gn γ]]↦v ∗ k [[log_gn γ]]↦v)%I.
 
 (* TODO: consider making is_*server part of own_*clerk *)
-Definition own_bank_clerk (bank_ck:loc) γ : iProp Σ :=
+Definition own_bank_clerk γ (bank_ck:loc) : iProp Σ :=
   ∃ (lck kck ls_srv ks_srv:loc), 
   "%" ∷ ⌜acc1 ≠ acc2⌝ ∗
-  "#Hls" ∷ is_lockserver ls_srv γ.(bank_ls_names) (Ps:=bankPs γ) ∗
-  "#Hks" ∷ is_kvserver ks_srv γ.(bank_ks_names) ∗
-  "Hlck_own" ∷ own_lockclerk #lck ls_srv γ.(bank_ls_names) ∗
-  "Hkck_own" ∷ own_kvclerk kck ks_srv γ.(bank_ks_names).(ks_rpcGN) ∗
+  "#Hls" ∷ is_lockserver γ.(bank_ls_names) ls_srv (Ps:=bankPs γ) ∗
+  "#Hks" ∷ is_kvserver γ.(bank_ks_names) ks_srv ∗
+  "Hlck_own" ∷ own_lockclerk γ.(bank_ls_names) #lck ls_srv ∗
+  "Hkck_own" ∷ own_kvclerk γ.(bank_ks_names).(ks_rpcGN) kck ks_srv ∗
 
   "Hkck" ∷ bank_ck ↦[BankClerk.S :: "kvck"] #kck ∗
   "Hlck" ∷ bank_ck ↦[BankClerk.S :: "lck"] #lck ∗
@@ -65,14 +65,14 @@ Definition bankN := nroot .@ "bank".
 
 Lemma acquire_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
 {{{
-     is_lockserver lsrv γ.(bank_ls_names) (Ps:=bankPs γ) ∗
+     is_lockserver γ.(bank_ls_names) lsrv (Ps:=bankPs γ) ∗
      lockservice_is_lock γ.(bank_ls_names) ln1 ∗
      lockservice_is_lock γ.(bank_ls_names) ln2 ∗
-     own_lockclerk #lck lsrv γ.(bank_ls_names)
+     own_lockclerk γ.(bank_ls_names) #lck lsrv
 }}}
   acquire_two #lck #ln1 #ln2
 {{{
-     RET #(); own_lockclerk #lck lsrv γ.(bank_ls_names) ∗
+     RET #(); own_lockclerk γ.(bank_ls_names) #lck lsrv ∗
      bankPs γ ln1 ∗
      bankPs γ ln2
 }}}.
@@ -103,16 +103,16 @@ Qed.
 
 Lemma release_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
 {{{
-     is_lockserver lsrv γ.(bank_ls_names) (Ps:=bankPs γ) ∗
+     is_lockserver γ.(bank_ls_names) lsrv (Ps:=bankPs γ) ∗
      lockservice_is_lock γ.(bank_ls_names) ln1 ∗
      lockservice_is_lock γ.(bank_ls_names) ln2 ∗
      bankPs γ ln1 ∗
      bankPs γ ln2 ∗
-     own_lockclerk #lck lsrv γ.(bank_ls_names)
+     own_lockclerk γ.(bank_ls_names) #lck lsrv
 }}}
   release_two #lck #ln1 #ln2
 {{{
-     RET #(); own_lockclerk #lck lsrv γ.(bank_ls_names)
+     RET #(); own_lockclerk γ.(bank_ls_names) #lck lsrv
 }}}.
 Proof.
   iIntros (Φ) "(#Hls & #Hln1_islock & #Hln2_islock & HP1 & HP2 & Hlck) Hpost".
@@ -142,12 +142,12 @@ Qed.
 Lemma Bank__SimpleTransfer_spec (bck:loc) (amount:u64) γ :
 {{{
      inv bankN (bank_inv γ) ∗
-     own_bank_clerk bck γ
+     own_bank_clerk γ bck
 }}}
   BankClerk__SimpleTransfer #bck #amount
 {{{
      RET #();
-     own_bank_clerk bck γ
+     own_bank_clerk γ bck
 }}}.
 Proof.
   iIntros (Φ) "[#Hbinv Hpre] Hpost".
@@ -214,12 +214,12 @@ Admitted.
 Lemma Bank__SimpleAudit_spec (bck:loc) γ :
 {{{
      inv bankN (bank_inv γ) ∗
-     own_bank_clerk bck γ
+     own_bank_clerk γ bck
 }}}
   BankClerk__SimpleAudit #bck
 {{{
      RET #bal_total;
-     own_bank_clerk bck γ
+     own_bank_clerk γ bck
 }}}.
 Proof.
   iIntros (Φ) "[#Hbinv Hpre] Hpost".

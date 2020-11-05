@@ -47,11 +47,11 @@ Definition KVServer_own_core γ (srv:loc) : iProp Σ :=
 .
 
 (* FIXME: this is currently just a placeholder *)
-Definition own_kvclerk (kck ks_srv:loc) (γrpc:rpc_names): iProp Σ := True.
+Definition own_kvclerk (γrpc:rpc_names) (kck ks_srv:loc): iProp Σ := True.
 
-Definition is_kvserver (srv:loc) γ := is_server (Server_own_core:=KVServer_own_core γ) srv γ.(ks_rpcGN).
+Definition is_kvserver γ (srv:loc) := is_server (Server_own_core:=KVServer_own_core γ) srv γ.(ks_rpcGN).
 
-Lemma put_core_spec (srv:loc) (k:u64) (v:u64) γ :
+Lemma put_core_spec γ (srv:loc) (k:u64) (v:u64) :
 {{{ 
      KVServer_own_core γ srv ∗ k [[γ.(ks_kvMapGN)]]↦ _
 }}}
@@ -113,24 +113,24 @@ Qed.
 
 Lemma KVClerk__Get_spec (kck ksrv:loc) (key va:u64) γ  :
 {{{
-     is_kvserver ksrv γ ∗
-     own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ va)
+     is_kvserver γ ksrv ∗
+     own_kvclerk γ.(ks_rpcGN) kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ va)
 }}}
   KVClerk__Get #kck #key
 {{{
-     v, RET v; ⌜v = #va⌝ ∗ own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
+     v, RET v; ⌜v = #va⌝ ∗ own_kvclerk γ.(ks_rpcGN) kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
 }}}.
 Admitted.
 
 Lemma KVClerk__Put_spec (kck ksrv:loc) (key va:u64) γ :
 {{{
-     is_kvserver ksrv γ ∗
-     own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ _ )
+     is_kvserver γ ksrv ∗
+     own_kvclerk γ.(ks_rpcGN) kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ _ )
 }}}
   KVClerk__Put #kck #key #va
 {{{
      RET #();
-     own_kvclerk kck ksrv γ.(ks_rpcGN) ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
+     own_kvclerk γ.(ks_rpcGN) kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
 }}}.
 Admitted.
 

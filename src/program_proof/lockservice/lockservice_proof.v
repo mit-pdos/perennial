@@ -279,11 +279,11 @@ Qed.
 Lemma Clerk__TryLock_spec γ ck (srv:loc) (ln:u64) :
   {{{
     lockservice_is_lock γ ln ∗
-    own_lockclerk ck srv γ ∗
-    is_lockserver srv γ 
+    own_lockclerk γ ck srv ∗
+    is_lockserver γ srv 
   }}}
     Clerk__TryLock ck #ln
-  {{{ v, RET v; ∃(b:u64), ⌜v = #b⌝ ∗ own_lockclerk ck srv γ ∗ (⌜b = 0⌝ ∨ ⌜b = 1⌝ ∗ Ps ln) }}}.
+  {{{ v, RET v; ∃(b:u64), ⌜v = #b⌝ ∗ own_lockclerk γ ck srv ∗ (⌜b = 0⌝ ∨ ⌜b = 1⌝ ∗ Ps ln) }}}.
 Proof using Type*.
   iIntros (Φ) "(#Htok & Hclerk & #[Hinv Hserver]) Hpost".
   iApply (Clerk__from_core LockServer__tryLock_core "LockServer__TryLock" "CallTryLock" "Clerk__TryLock" _ _ _ _ (TryLock_Pre γ) TryLock_Post with "[] [Hclerk]").
@@ -297,11 +297,11 @@ Lemma Clerk__Unlock_spec γ ck (srv:loc) (ln:u64) :
   {{{
     lockservice_is_lock γ ln ∗
     Ps ln ∗
-    own_lockclerk ck srv γ ∗
-    is_lockserver srv γ 
+    own_lockclerk γ ck srv ∗
+    is_lockserver γ srv
   }}}
     Clerk__Unlock ck #ln
-    {{{ v, RET v; ∃(b:u64), ⌜v = #b⌝ ∗ own_lockclerk ck srv γ ∗ True }}}.
+  {{{ v, RET v; ∃(b:u64), ⌜v = #b⌝ ∗ own_lockclerk γ ck srv ∗ True }}}.
 Proof using Type*.
   iIntros (Φ) "(#Htok & HP & Hclerk & #[Hinv Hserver]) Hpost".
   iApply (Clerk__from_core LockServer__unlock_core "LockServer__Unlock" "CallUnlock" "Clerk__Unlock" _ _ _ _ (Unlock_Pre γ) Unlock_Post with "[] [Hclerk HP]").
@@ -314,11 +314,11 @@ Qed.
 Lemma Clerk__Lock_spec γ ck (srv:loc) (ln:u64) :
   {{{
     lockservice_is_lock γ ln ∗
-    own_lockclerk ck srv γ ∗
-    is_lockserver srv γ
+    own_lockclerk γ ck srv ∗
+    is_lockserver γ srv
   }}}
     Clerk__Lock ck #ln
-  {{{ RET #true; own_lockclerk ck srv γ ∗ Ps ln }}}.
+  {{{ RET #true; own_lockclerk γ ck srv ∗ Ps ln }}}.
 Proof using Type*.
   iIntros (Φ) "[#Htok [Hclerk_own #Hinv]] Hpost".
   wp_lam.
