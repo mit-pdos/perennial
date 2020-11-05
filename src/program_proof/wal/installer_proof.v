@@ -474,7 +474,7 @@ Qed.
 
 Lemma has_updates_addrs upds txns :
   has_updates upds txns →
-  (λ u, int.Z u.(update.addr)) <$> upds ⊆ (λ u, int.Z u.(update.addr)) <$> concat txns.*2.
+  (λ u, int.Z u.(update.addr)) <$> upds ⊆ (λ u, int.Z u.(update.addr)) <$> txn_upds txns.
 Proof.
   rewrite /has_updates /txn_upds; intros ?.
   specialize (H ∅).
@@ -590,7 +590,7 @@ Lemma txns_are_in_bounds E γ start txns l dinit :
   ↑walN.@"wal" ⊆ E →
   txns_are γ start txns -∗
   is_wal P l γ dinit -∗
-  |={E}=> ⌜Forall (λ (u: update.t), int.Z u.(update.addr) ∈ dom (gset _) dinit) (concat txns.*2)⌝.
+  |={E}=> ⌜Forall (λ (u: update.t), ∃ b, dinit !! int.Z u.(update.addr) = Some b) (txn_upds txns)⌝.
 Proof.
   iIntros (Hmask) "#Htxns_are [Hinv _]".
   iInv "Hinv" as "Hinner".
@@ -617,10 +617,8 @@ Proof.
     rewrite /addrs_wf in Haddrs_wf.
     eapply Forall_impl; eauto.
     simpl; intros.
-    destruct H as [_ [? ?]].
-    apply elem_of_dom.
-    apply Hdaddrs_init.
-    eexists; eauto.
+    destruct H as [_ [b ?]].
+    apply Hdaddrs_init; eauto.
 Qed.
 
 Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
@@ -628,12 +626,6 @@ Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
   {{{ "Hbufs_s" ∷ updates_slice_frag bufs_s q bufs ∗
       "#Hwal" ∷ is_wal P l γ dinit ∗
       "%Hbufs" ∷ ⌜has_updates bufs subtxns⌝ ∗
-      (* TODO: Hbufs_addrs should be redundant from the following reasons:
-          - All addresses in bufs should be addresses in subtxns by Hbufs.
-          - These txns should only contain addresses from log_state.updates when we open the wal invariant.
-          - wal_wf. *)
-      (* TODO(tej): txns_are_in_bounds above should be good enough to derive this *)
-      "%Hbufs_addrs" ∷ ⌜Forall (λ u : update.t, ∃ (b: Block), dinit !! int.Z u.(update.addr) = Some b) bufs⌝ ∗
       "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
       "HownBeingInstalledStartTxn_installer" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
       "HownBeingInstalledEndTxn_installer" ∷ fmcounter γ.(being_installed_end_txn_name) (1/2) (being_installed_start_txn_id + length subtxns) ∗
@@ -649,6 +641,17 @@ Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
 Proof.
   wp_start.
   wp_call.
+
+  iMod (txns_are_in_bounds with "Hsubtxns [$]") as %Htxns_addrs; first auto.
+  assert (Forall (λ u : update.t, ∃ (b: Block), dinit !! int.Z u.(update.addr) = Some b) bufs) as Hbufs_addrs.
+  { eapply has_updates_addrs in Hbufs.
+    move: Htxns_addrs.
+    change (λ u, ∃ b, dinit !! int.Z u.(update.addr) = Some b) with
+      ((λ a, ∃ b, dinit !! a = Some b) ∘ (λ u, int.Z u.(update.addr))).
+    intros.
+    rewrite -Forall_fmap.
+    apply Forall_fmap in Htxns_addrs.
+    eapply Forall_subset; eauto. }
 
   (* this is the problem where we don't differentiate between ownership
     of buf pointers and ownership of the bufs themselves,.
@@ -817,6 +820,7 @@ Proof.
   2: rewrite fmap_length; lia.
   rewrite (equiv_upds_addrs_eq bufs upds Hsame_upds).
   by iFrame "∗ #".
+  Fail idtac.
 Admitted.
 
 (* TODO: why do we need this here again? *)
@@ -1441,33 +1445,26 @@ Proof.
   ]").
   {
     iFrame (Hsnapshot) "Hsnapshot_txns".
-    iSplit.
-    { admit. } (* this should be redundant, see comment in theorem statement *)
-    rewrite subslice_length.
-    2: lia.
-    replace (installed_txn_id_mem + (S σ.(locked_diskEnd_txn_id) - (S installed_txn_id_mem)))%nat
-      with σ.(locked_diskEnd_txn_id) by lia.
-    iFrame.
+    rewrite -> subslice_length by lia.
+    iExactEq "HownBeingInstalledEndTxn_installer".
+    rewrite /named.
+    auto with f_equal lia.
   }
 
   iIntros "(_&Halready_installed_installer&HownBeingInstalledStartTxn_installer&HownBeingInstalledEndTxn_installer)".
-  rewrite subslice_length.
-  2: lia.
+  rewrite -> subslice_length by lia.
   replace (installed_txn_id_mem + (S σ.(locked_diskEnd_txn_id) - (S installed_txn_id_mem)))%nat
     with σ.(locked_diskEnd_txn_id) by lia.
 
   (* TODO: there ought to be a neater way to do this specialization *)
-  iPoseProof (advance_being_installed_start_txn_id with "[]") as "Hadvance".
-  1: iFrame "#".
+  iPoseProof (advance_being_installed_start_txn_id with "[$]") as "Hadvance".
   iDestruct ("Hadvance" with "HownBeingInstalledStartTxn_installer HownBeingInstalledEndTxn_installer
       Halready_installed_installer") as "Hadvance'".
-  iPoseProof ("Hadvance'" with "[]") as "Hadvance'".
-  1: iPureIntro; apply Hsnapshot.
+  iPoseProof ("Hadvance'" with "[%//]") as "Hadvance'".
   iDestruct ("Hadvance'" with "Hsnapshot_txns") as "Hadvance'".
-  iMod ("Hadvance'" with "[]")
+  iMod ("Hadvance'" with "[%]")
     as "(HownBeingInstalledStartTxn_installer&HownBeingInstalledEndTxn_installer&Halready_installed_installer)".
-  1: iPureIntro; rewrite subslice_length; lia.
-  iClear "Hadvance".
+  { rewrite subslice_length; lia. }
 
   wp_loadField.
   wp_apply (wp_circular__Advance _ _ (
@@ -1788,7 +1785,7 @@ Proof.
     (int.nat mutable - int.nat σ.(invariant.diskEnd)))%nat
     with (int.nat mutable - int.nat start)%nat by lia.
   by apply His_nextTxn'.
-Admitted.
+Qed.
 
 Theorem wp_Walog__installer γ l dinit :
   {{{ "#Hwal" ∷ is_wal P l γ dinit ∗
