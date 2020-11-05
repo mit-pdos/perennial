@@ -809,6 +809,7 @@ Proof.
         iNamed "HmemLog_linv".
         iNamed "HnextDiskEnd".
         iNamed "Hinner".
+        iNamed "Hlinv_pers".
         (* XXX: unify_ghost doesn't rewrite everywhere *)
         iDestruct (ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
@@ -870,14 +871,22 @@ Proof.
         iExists (set memLog (λ _, memLog') σ); simpl.
         rewrite memWrite_same_start.
         iFrame.
-        iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet HownLoggerPos_linv HownLoggerTxn_linv HownInstallerPos_linv HownInstallerTxn_linv Hown_memStart_txn_id_linv".
+        iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet
+                 HownLoggerPos_linv HownLoggerTxn_linv
+                 HownInstallerPosMem_linv HownInstallerTxnMem_linv
+                 HownInstalledPosMem_linv HownInstalledTxnMem_linv".
         { iExists _; iFrame.
           iPureIntro.
           eapply locked_wf_memWrite; eauto. }
-        iExists memStart_txn_id, _, nextDiskEnd_txn_id, _, _, _, _, _; iFrame.
+        iExists _, nextDiskEnd_txn_id, _, _, _, _, _; iFrame.
         rewrite memWrite_same_start memWrite_same_mutable; iFrame "#".
         autorewrite with len.
+        iFrame.
         iFrame "%".
+        iSplitR.
+        2: { iExists _. iFrame. iFrame "%". }
+        admit.
+(*
         iSplit.
         { iPureIntro. eapply is_txn_app. eauto. }
         iSplit.
@@ -921,6 +930,7 @@ Proof.
         { pose proof (memWrite_memEnd_bound σ.(memLog) bs).
           eapply Forall_impl; eauto. simpl. intros. subst memLog'. lia. }
         simpl. econstructor; eauto. word.
+*)
       - wp_apply util_proof.wp_DPrintf.
         iAssert (wal_linv σₛ.(wal_st) γ) with "[Hfields HmemLog_linv HdiskEnd_circ Hstart_circ]" as "Hlockinv".
         { iExists _; iFrame. }
@@ -942,6 +952,6 @@ Proof.
     wp_pures.
     iApply "HΦ".
     destruct ok; iFrame.
-Qed.
+Admitted.
 
 End goose_lang.
