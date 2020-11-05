@@ -49,19 +49,23 @@ Section goose_lang.
   Proof. apply _. Qed.
 
   Definition rb_linv l γ: iProp Σ :=
-    ∃ a0 a1 σ i,
+    ∃ a0 a1 σ,
       "a0" ∷ l ↦[RepBlock.S :: "a0"] (addr2val a0) ∗
       "a1" ∷ l ↦[RepBlock.S :: "a1"] (addr2val a1) ∗
+(*
       "#rb_durable" ∷ txn_durable γ i ∗
+*)
       "rb_rep" ∷ rb_rep a0 a1 σ
                    (λ a v, modify_token γ a v ∗
-                           ephemeral_val_from γ.(buftxn_async_name) i a v) ∗
+                           durable_mapsto γ a v) ∗
       "HP" ∷ P σ.
 
   Definition rb_cinv a0 a1 l γ: iProp Σ :=
-    ∃ σ i, rb_rep a0 a1 σ (ephemeral_val_from γ.(buftxn_async_name) i) ∗
-           P σ ∗
-           txn_durable γ i.
+    ∃ σ, rb_rep a0 a1 σ (durable_mapsto γ) ∗
+           P σ
+(* ∗
+           txn_durable γ i *)
+.
 
   Definition is_rep_block l: iProp Σ :=
     ∃ γ dinit (txn_l m_l: loc),
@@ -127,10 +131,11 @@ Section goose_lang.
     wp_pures.
     wp_loadField.
     destruct ok.
-    - iDestruct "Hpost" as (txn_id') "[rb_rep #Hdurable]".
+    - (* iDestruct "Hpost" as (txn_id') "[rb_rep #Hdurable]". *)
+      iRename "Hpost" into "rb_rep".
       wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
       { iNext.
-        iExists _, _, _, _.
+        iExists _, _, _.
         iFrame "∗#". }
       wp_pures.
       iApply "HΦ".
@@ -138,7 +143,7 @@ Section goose_lang.
     - iRename "Hpost" into "rb_rep".
       wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
       { iNext.
-        iExists _, _, _, _.
+        iExists _, _, _.
         iFrame "∗#". }
       wp_pures.
       iApply "HΦ".
