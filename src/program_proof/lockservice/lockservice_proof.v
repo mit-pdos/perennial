@@ -1,16 +1,12 @@
 From Coq.Structures Require Import OrdersTac.
 From stdpp Require Import gmap.
-From iris.algebra Require Import numbers coPset gset.
-From iris.program_logic Require Export weakestpre.
-From Perennial.goose_lang Require Import prelude.
-From Perennial.goose_lang Require Import ffi.disk_prelude.
-From Perennial.goose_lang Require Import notation.
-From Perennial.program_proof Require Import proof_prelude.
 From RecordUpdate Require Import RecordUpdate.
-From Perennial.algebra Require Import auth_map.
-From Perennial.goose_lang.lib Require Import lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
+From Perennial.algebra Require Import auth_map.
+From Perennial.goose_lang Require Import notation.
+From Perennial.goose_lang.lib Require Import lock.
+From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice rpc common_proof nondet.
 
 Record lockservice_names := LockserviceNames {
@@ -78,7 +74,7 @@ Definition is_lockserver γ (srv:loc) : iProp Σ :=
   "#Hmutex" ∷ is_server (Server_own_core:=LockServer_own_core γ) srv γ.(ls_rpcGN).
 
 Definition lockserver_cid_token γ cid :=
-  RPCClient_own γ.(ls_rpcGN) cid 0.
+  RPCClient_own γ.(ls_rpcGN) cid 1.
 
 Definition own_lockclerk γ ck srv :=
   own_clerk ck srv γ.(ls_rpcGN).
@@ -122,6 +118,7 @@ Proof.
   iMod (ghost_var_alloc (∅ : gset u64)) as (γdom) "[Hdom1 Hdom2]".
   iMod (map_init (∅ : gmap u64 unit)) as (γlocks) "Hloglocks".
   pose (γ := LockserviceNames γrpc γlocks γdom).
+  iApply wp_fupd.
 
   wp_apply wp_allocStruct; first by eauto.
   iIntros (l) "Hl". wp_pures.
@@ -140,7 +137,6 @@ Proof.
     iApply big_sepM_empty. done. }
   iIntros (lk) "Hlock".
   iDestruct (is_lock_flat with "Hlock") as %[lock ->].
-  iApply wp_fupd.
   wp_storeField.
   iApply ("HΦ" $! γ). iFrame "cli_tokens". rewrite /is_lockserver /is_server.
   iMod (inv_alloc with "[Hdom1 Hloglocks]") as "$".
@@ -152,6 +148,25 @@ Proof.
   done.
 Qed.
 
+Lemma MakeLockClerk_spec γ (srv : loc) (cid : u64) :
+  {{{ is_lockserver γ srv ∗ lockserver_cid_token γ cid }}}
+    MakeClerk #srv #cid
+  {{{ ck, RET ck; own_lockclerk γ ck srv }}}.
+Proof.
+  iIntros (Φ) "[#Hserver Hcid] HΦ". wp_lam.
+  rewrite /lockserver_cid_token /own_lockclerk.
+  iApply wp_fupd.
+
+  wp_apply wp_allocStruct; first by eauto.
+  iIntros (l) "Hl". wp_pures.
+  iDestruct (struct_fields_split with "Hl") as "(l_primary & l_cid & l_seq &_)".
+  wp_storeField.
+  wp_storeField.
+  wp_storeField.
+  
+  iApply "HΦ". iExists _, _, _.
+  iFrame. eauto with lia.
+Qed.
 
 Lemma tryLock_core_spec γ (srv:loc) (ln:u64) :
 inv lockserviceInvN (Lockserver_inv γ) -∗
@@ -235,7 +250,7 @@ Qed.
 
 Lemma unlock_core_spec γ (srv:loc) (ln:u64) :
 {{{
-     LockServer_own_core γ srv ∗ Unlock_Pre γ ln
+  LockServer_own_core γ srv ∗ Unlock_Pre γ ln
 }}}
   LockServer__unlock_core #srv #ln
 {{{

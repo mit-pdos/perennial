@@ -133,7 +133,7 @@ Lemma make_rpc_server E :
   ⊢ |={E}=> ∃ γrpc,
     is_RPCServer γrpc ∗ (* server-side invariant *)
     RPCServer_own γrpc ∅ ∅ ∗ (* server mutex invariant *)
-    [∗ set] cid ∈ fin_to_set u64, RPCClient_own γrpc cid 0. (* SEQ counters for all possible clients *)
+    [∗ set] cid ∈ fin_to_set u64, RPCClient_own γrpc cid 1. (* SEQ counters for all possible clients *)
 Proof.
   iIntros (?).
   iMod fmcounter_map_alloc as (γcseq) "Hcseq".

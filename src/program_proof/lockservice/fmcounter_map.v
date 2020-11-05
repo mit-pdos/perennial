@@ -40,10 +40,10 @@ Notation "k fm[[ γ ]]> n " := (fmcounter_map_lb γ k (n + 1))
 Section fmcounter_map_props.
   Context `{!fmcounter_mapG Σ}.
 
-  Lemma fmcounter_map_alloc :
-    ⊢ |==> ∃ γ, [∗ set] k ∈ (fin_to_set u64), k fm[[γ]]↦ 0.
+  Lemma fmcounter_map_alloc (n : nat) :
+    ⊢ |==> ∃ γ, [∗ set] k ∈ (fin_to_set u64), k fm[[γ]]↦ n.
   Proof.
-    pose (m := gset_to_gmap (mnat_auth_auth 1 0) (fin_to_set u64)).
+    pose (m := gset_to_gmap (mnat_auth_auth 1 n) (fin_to_set u64)).
     iMod (own_alloc m) as (γ) "Hown".
     { intros k. rewrite lookup_gset_to_gmap option_guard_True; last by apply elem_of_fin_to_set.
       rewrite Some_valid. apply mnat_auth_auth_valid. }
