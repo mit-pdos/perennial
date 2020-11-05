@@ -847,8 +847,20 @@ Proof.
         {
           iPureIntro. intro Hempty. eapply map_fmap_empty_inv in Hempty.
           assert (filter (λ b, (b.2).(bufDirty) = true) gBufmap = ∅); intuition try congruence.
-          (* Hempty says every element in mt is not dirty *)
-          admit.
+          eapply map_empty; intros a.
+          eapply map_filter_lookup_None.
+          destruct (gBufmap !! a) eqn:He; intuition eauto. right.
+          simpl. intros bb Hx Hbb. inversion Hx; clear Hx; subst.
+          eapply lookup_weaken in Hbufmapelem.
+          2: { rewrite lookup_fmap. erewrite He. eauto. }
+          rewrite lookup_fmap /modified in Hbufmapelem.
+          eapply fmap_Some_1 in Hbufmapelem; destruct Hbufmapelem as [mb [Hbufmapelem He2]].
+          destruct bb; simpl in *. inversion He2; subst.
+          apply eq_sigT_eq_dep in He2. apply Eqdep_dec.eq_dep_eq_dec in He2; last apply bufDataKind_eq_dec.
+          subst.
+          eapply map_filter_lookup_Some_2 in Hbufmapelem.
+          { erewrite Hempty in Hbufmapelem. inversion Hbufmapelem. }
+          simpl. rewrite He. simpl. eauto.
         }
 
         iExists _.
@@ -861,7 +873,14 @@ Proof.
         eapply Hanydirty in Hany.
         assert (filter (λ v : addr * versioned_object, bufDirty <$> gBufmap !! v.1 = Some true) mt = ∅) as Hz.
         {
-          admit.
+          eapply map_empty; intros a.
+          eapply map_filter_lookup_None.
+          destruct (mt !! a) eqn:He; intuition eauto. right.
+          simpl. intros vo Hx Hvo. inversion Hx; clear Hx; subst.
+          eapply fmap_Some_1 in Hvo. destruct Hvo as [bb [Hvo He2]].
+          eapply map_filter_lookup_Some_2 in Hvo.
+          { erewrite H0 in Hvo. inversion Hvo. }
+          simpl. eauto.
         }
         rewrite Hz. rewrite map_fmap_empty; auto.
       }
