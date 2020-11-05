@@ -733,15 +733,7 @@ Proof.
   iNamed "HownInstallerPosMem_installer".
   iNamed "HownInstallerTxnMem_installer".
 
-  assert (diskEnd_txn_id < length txns)%nat as HdiskEnd_bound.
-  {
-    rewrite /is_txn -list_lookup_fmap in HdiskEnd_txn.
-    apply lookup_lt_Some in HdiskEnd_txn.
-    rewrite fmap_length in HdiskEnd_txn.
-    apply HdiskEnd_txn.
-  }
-
-
+  pose proof (is_txn_bound _ _ _ HdiskEnd_txn) as HdiskEnd_bound.
   iMod (get_txns_are _ _ _ _ _ (S installed_txn_id_mem) (S diskEnd_txn_id)
     (subslice (S installed_txn_id_mem) (S diskEnd_txn_id) txns)
     with "Howntxns Hwal") as "(#Htxns_subslice&Howntxns)"; eauto.
@@ -1289,6 +1281,7 @@ Proof.
   iMod (fmcounter_get_lb with "HownDiskEndMem_walinv") as
     "[HownDiskEndMem_walinv #HownDiskEndMem_lb]".
 
+  pose proof (is_txn_bound _ _ _ HdiskEnd_txn) as HdiskEnd_mem_bound.
   rewrite /is_txn in HdiskEnd_txn.
   destruct (σs.(log_state.txns) !! σ.(locked_diskEnd_txn_id)) as [diskEnd_txn|] eqn:HdiskEnd_txn_eq.
   2: simpl in HdiskEnd_txn; inversion HdiskEnd_txn.
@@ -1342,14 +1335,7 @@ Proof.
   iClear "circ.start circ.end Hbasedisk Hbeing_installed_txns Hmem".
   clear Heqtxns Hwf Hdaddrs_init σs Hinstalled_bounds Hcirc_matches diskEnd_txn_id installer_pos installer_txn_id installed_txn_id cs.
 
-  assert (σ.(locked_diskEnd_txn_id) < length txns)%nat as HdiskEnd_mem_bound.
-  {
-    apply lookup_lt_Some in HdiskEnd_txn_eq.
-    apply HdiskEnd_txn_eq.
-  }
-
   iModIntro.
-
   wp_loadField.
   wp_apply (release_spec with "[$lk $His_locked Hlinv
     HdiskEnd_exactly Hstart_exactly
@@ -1475,7 +1461,6 @@ Proof.
       rewrite subslice_zero_length /txns_are /list_subseq //.
     }
 
-    rewrite /circ_matches_txns in Hcirc_matches.
     destruct Hcirc_matches as (Hmatches_locked_diskEnd&Hmatches_diskEnd_mem&Hmatches_diskEnd&Hcirc_log_index_ordering&Hcirc_txn_id_ordering).
     rewrite /circΣ.diskEnd /= in Hcirc_log_index_ordering.
     replace (Z.to_nat (int.Z (start σc) + length (circΣ.upds σc)))
@@ -1637,9 +1622,8 @@ Proof.
   iSplit.
   1: iPureIntro; lia.
   simpl.
-  iSplit.
-  1: admit. (* use txns_ctx_txn_pos earlier on HdiskEnd_txn *)
-  iFrame (HdiskEnd_txn') "HdiskEnd_stable'".
+  iDestruct (txn_val_to_pos with "HdiskEnd_txn_val") as "HdiskEnd_txn_pos".
+  iFrame (HdiskEnd_txn') "HdiskEnd_stable' HdiskEnd_txn_pos".
 
   destruct σ'.
   rewrite /memLog_linv_txns /= /slidingM.logIndex.
@@ -1654,10 +1638,7 @@ Proof.
     replace (word.add σ.(invariant.diskEnd)
       (length log - (int.nat σ.(invariant.diskEnd) - int.nat start))%nat)
       with (word.add start (length log)).
-    2: {
-      apply (inj int.Z).
-      word.
-    }
+    2: apply (inj int.Z); word.
     iFrame "HmemEnd_txn'".
   }
 
