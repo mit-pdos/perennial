@@ -574,8 +574,7 @@ Proof.
   - rewrite {2}(subslice_complete l).
     apply subslice_subslice_subseteq; auto.
     lia.
-  - Search subslice.
-    rewrite subslice_take_drop.
+  - rewrite subslice_take_drop.
     rewrite -> take_ge by lia.
     apply drop_subseteq.
 Qed.
