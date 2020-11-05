@@ -288,7 +288,9 @@ Proof.
   iNamed "Hinstalled".
 
   iNamed "Howninstalled".
+(*
   iDestruct (fmcounter_agree_2 with "Hinstalled_txn Hinstalled_txn_id_bound") as "%Hbound".
+*)
 
   iMod ("Hfupd" with "[] [] HP") as "[HP HQ]"; first by eauto.
   {
@@ -310,30 +312,36 @@ Proof.
       rewrite Hall_updates in Happly.
       rewrite /no_updates_since /set /=.
       eapply apply_upds_no_updates_since; last by apply Happly.
+      admit.
+(*
       lia.
+*)
     }
     monad_simpl.
   }
 
   iModIntro. iFrame "HQ".
   iSplitR "HnextDiskEnd HownLoggerPos_linv HownLoggerTxn_linv Howntxns
-    HownInstallerPos_linv HownInstallerTxn_linv Hown_memStart_txn_id_linv".
+    HownInstallerPosMem_linv HownInstallerTxnMem_linv
+    HownInstalledPosMem_linv HownInstalledTxnMem_linv
+    HownDiskEndMem_linv HownDiskEndMemTxn_linv".
   { iExists _. iFrame "HP".
     iSplit.
     { rewrite /wal_wf in Hwf. rewrite /wal_wf. iPureIntro. simpl.
       intuition eauto; lia. }
     iFrame.
-    iExists _. iFrame.
-    iExists installed_txn_id, _ . simpl.
+    iExists _. iFrame "Howncs".
+    iExists installed_txn_id, diskEnd_txn_id0. simpl.
+    iFrame "Hdurable".
     iFrame "#".
     iSplit. 2: iSplit. 3: iSplit. 4: eauto.
     3: { iExists diskEnd0. iFrame "%". iFrame "#". iPureIntro. lia. }
     2: { iFrame "# %". iPureIntro. lia. }
-    iExists _, _. iFrame. iFrame "%#".
+    iExists _, _, _. iFrame. iFrame "%#".
   }
 
   repeat iExists _. iFrame. iFrame "#". iFrame "%".
-Qed.
+Admitted.
 
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ dinit a :
   {{{ is_wal P l γ dinit ∗
