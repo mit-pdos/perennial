@@ -59,25 +59,47 @@ Section fmcounter_map_props.
   Qed.
 
   Lemma fmcounter_map_get_lb γ k q n :
-    k fm[[γ]]↦{q} n ==∗ k fm[[γ]]↦{q} n ∗ k fm[[γ]]≥ n.
+    k fm[[γ]]↦{q} n -∗ k fm[[γ]]↦{q} n ∗ k fm[[γ]]≥ n.
+  Proof.
+    rewrite /fmcounter_map_own /fmcounter_map_lb.
+    rewrite -own_op singleton_op.
+    (* FIXME: needs Iris update *)
   Admitted.
 
   Lemma fmcounter_map_update (n' n:nat) γ k:
-    n ≤ n' →
-    k fm[[γ]]↦ n ==∗ k fm[[γ]]↦ n'.
-  Admitted.
+    (n ≤ n')%nat →
+    k fm[[γ]]↦ n ==∗ k fm[[γ]]↦ n' ∗ k fm[[γ]]≥ n'.
+  Proof.
+    rewrite /fmcounter_map_own /fmcounter_map_lb=>Hn.
+    rewrite -own_op singleton_op. iApply own_update. apply singleton_update.
+    apply mnat_auth_update. done.
+  Qed.
 
   Lemma fmcounter_map_agree_lb γ k q n1 n2 :
-    k fm[[γ]]↦{q} n1 -∗ k fm[[γ]]≥ n2 -∗ ⌜n1 ≥ n2⌝.
-  Admitted.
+    k fm[[γ]]↦{q} n1 -∗ k fm[[γ]]≥ n2 -∗ ⌜n1 ≥ n2⌝%nat.
+  Proof.
+    rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros "H1 H2".
+    iCombine "H1 H2" as "H".
+    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mnat_auth_both_frac_valid.
+    eauto.
+  Qed.
 
   Lemma fmcounter_map_agree_strict_lb γ k q n1 n2 :
-    k fm[[γ]]↦{q} n1 -∗ k fm[[γ]]> n2 -∗ ⌜n1 > n2⌝.
-  Admitted.
+    k fm[[γ]]↦{q} n1 -∗ k fm[[γ]]> n2 -∗ ⌜n1 > n2⌝%nat.
+  Proof.
+    rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros "H1 H2".
+    iCombine "H1 H2" as "H".
+    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mnat_auth_both_frac_valid.
+    eauto with lia.
+  Qed.
 
   Lemma fmcounter_map_mono_lb (n1 n2:nat) γ k :
     n1 ≤ n2 ->
     k fm[[γ]]≥ n2 -∗ k fm[[γ]]≥ n1.
+  Proof.
+    rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros (Hn).
+    iApply own_mono. apply singleton_included. right.
+    (* FIXME: needs Iris update to get [mnat_auth_frag_mono] *)
   Admitted.
 
 End fmcounter_map_props.

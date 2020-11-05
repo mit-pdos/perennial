@@ -180,9 +180,8 @@ Proof using Type*.
   iMod (map_alloc (req.(CID), req.(Seq)) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
   iMod (own_alloc (Excl ())) as "HγP"; first done.
   iDestruct "HγP" as (γPost) "HγP".
-  iMod (fmcounter_map_update (int.nat req.(Seq) + 1) with "Hcseq_own") as "Hcseq_own".
+  iMod (fmcounter_map_update (int.nat req.(Seq) + 1) with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
   { simpl. lia. }
-  iMod (fmcounter_map_get_lb with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
   iDestruct (big_sepM_insert _ _ _ None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
   iMod (inv_alloc rpcRequestInvN _ (RPCRequest_inv γrpc γPost PreCond PostCond req) with "[Hrcptsto HPreCond]") as "#Hreqinv_init".
   {
@@ -214,11 +213,10 @@ Proof.
   iDestruct (big_sepS_elem_of_acc_impl req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
     first by apply elem_of_fin_to_set.
   rewrite Hlseq.
-  iDestruct "Hcases" as "[[>Hunproc Hpre]|[Hproc|Hproc]]".
+  iDestruct "Hcases" as "[[>Hunproc Hpre]|Hproc]".
   {
     iDestruct "Hunproc" as "[Hunproc_inv Hunproc]".
-    iMod (fmcounter_map_update (int.nat req.(Seq)) with "Hlseq_one") as "Hlseq_one"; first lia.
-    iMod (fmcounter_map_get_lb with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
+    iMod (fmcounter_map_update (int.nat req.(Seq)) with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]"; first lia.
     iMod ("HMClose" with "[Hunproc_inv]") as "_"; eauto.
     {
       iNext. iFrame "#". iRight. iLeft. iFrame.
@@ -229,15 +227,8 @@ Proof.
     - iIntros "!#" (y [_ ?]). rewrite lookup_insert_ne //. eauto.
   }
   {
-    iDestruct "Hproc" as "[#>Hlseq_lb _]".
-    iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
-    iExFalso; iPureIntro.
-    replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
-    replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
-    lia.
-  }
-  {
-    iDestruct "Hproc" as "[#>Hlseq_lb _]".
+    iAssert (▷ req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq))%I with "[Hproc]" as "#>Hlseq_lb".
+    { iDestruct "Hproc" as "[Hproc|Hproc]"; iDestruct "Hproc" as "[Hlseq_lb _]"; done. }
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
     replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
@@ -281,8 +272,7 @@ Proof using Type*.
 
     iDestruct (big_sepS_elem_of_acc _ _ req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply elem_of_fin_to_set.
     rewrite lookup_insert /=.
-    iMod (fmcounter_map_update (int.nat req.(Seq)) with "Hlseq_one") as "Hlseq_one"; first lia.
-    iMod (fmcounter_map_get_lb with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
+    iMod (fmcounter_map_update (int.nat req.(Seq)) with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]"; first lia.
     iSpecialize ("Hlseq_own" with "Hlseq_one").
     iMod ("HMClose" with "[Hpost]") as "_".
     { iNext. iFrame "#". iRight. iRight. iFrame. iExists _; iFrame "#".
@@ -345,7 +335,7 @@ Lemma client_stale_seqno γrpc req seq :
 Proof.
   iIntros "Hreq Hcl".
   iDestruct (fmcounter_map_agree_strict_lb with "Hcl Hreq") as %Hlt.
-  iPureIntro. done.
+  iPureIntro. lia.
 Qed.
 
 (** Client side: get the postcondition out of a reply using the "escrow" token. *)
