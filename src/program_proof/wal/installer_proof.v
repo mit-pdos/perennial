@@ -155,27 +155,47 @@ Proof.
   - rewrite memWrite_one_same_start memWrite_one_same_mutable //.
 Qed.
 
+Lemma apply_upds_dom upds d :
+  ∀ (a: Z), a ∈ dom (gset Z) (apply_upds upds d) ↔
+            a ∈ ((λ u, int.Z u.(update.addr)) <$> upds) ∨ a ∈ (dom (gset Z) d).
+Proof.
+  induction upds as [|[a b] upds] using rev_ind.
+  - simpl.
+    set_solver+.
+  - intros.
+    rewrite fmap_app apply_upds_app /=.
+    set_solver.
+Qed.
+
+Lemma apply_upds_empty_dom upds :
+  ∀ a, a ∈ dom (gset Z) (apply_upds upds ∅) ↔
+       a ∈ ((λ u, int.Z u.(update.addr)) <$> upds).
+Proof.
+  intros.
+  rewrite apply_upds_dom.
+  set_solver.
+Qed.
+
 Lemma equiv_upds_addrs_subseteq upds1 upds2 :
-  (∀ d, apply_upds upds1 d = apply_upds upds2 d) →
+  (apply_upds upds1 ∅ = apply_upds upds2 ∅) →
   (λ u : update.t, int.Z u.(update.addr)) <$> upds2 ⊆
   (λ u : update.t, int.Z u.(update.addr)) <$> upds1.
 Proof.
-Admitted.
+  intros.
+  intros a.
+  rewrite -!apply_upds_empty_dom.
+  rewrite H //.
+Qed.
 
-(* could we generalize this to aribtrary types? *)
+Lemma list_to_set_subseteq `{Countable A} (l1 l2: list A) :
+  l1 ⊆ l2 ↔
+  list_to_set (C:=gset _) l1 ⊆ list_to_set (C:=gset _) l2.
+Proof. set_solver. Qed.
+
 Lemma list_to_set_subseteq_Z (l1 l2: list Z) :
   l1 ⊆ l2 →
   list_to_set (C:=gset Z) l1 ⊆ list_to_set (C:=gset Z) l2.
-Proof.
-  intros Hsubseteq.
-  Check elem_of_subseteq.
-  apply (iffRL (elem_of_subseteq _ _)).
-  intros x Hin1.
-  apply elem_of_list_to_set.
-  apply ((iffLR (elem_of_subseteq _ _)) Hsubseteq).
-  apply elem_of_list_to_set in Hin1.
-  auto.
-Qed.
+Proof. apply list_to_set_subseteq. Qed.
 
 Lemma equiv_upds_addrs_eq (upds1 upds2: list update.t) :
   (∀ d, apply_upds upds1 d = apply_upds upds2 d) →
@@ -185,13 +205,11 @@ Proof.
   intros Hequiv.
   apply (iffRL (set_equiv_spec_L _ _)).
   split.
-  - apply list_to_set_subseteq_Z.
+  - apply list_to_set_subseteq.
     apply equiv_upds_addrs_subseteq.
     apply Hequiv.
-  - apply list_to_set_subseteq_Z.
+  - apply list_to_set_subseteq.
     apply equiv_upds_addrs_subseteq.
-    intros d.
-    specialize (Hequiv d).
     auto.
 Qed.
 
