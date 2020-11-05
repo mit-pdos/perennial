@@ -514,7 +514,7 @@ Proof.
   iIntros (bks_s q upds) "Hpost".
   iNamed "Hpost".
   apply (apply_upds_equiv_implies_has_updates_equiv _ _ _ Hsame_upds) in Hbufs.
-  pose proof (equiv_upds_addrs_subseteq _ _ Hsame_upds) as Hupds_subseteq.
+  pose proof (equiv_upds_addrs_subseteq _ _ (Hsame_upds ∅)) as Hupds_subseteq.
 
   wp_pures.
   iDestruct "Habsorbed" as (bks) "(Hbks_s&Hupds)".
@@ -985,11 +985,44 @@ Qed.
 
 (* this pure proof should be true but is annoying to prove *)
 
+Lemma list_app_subseteq {A} (l1 l2 l : list A) :
+  l1 ++ l2 ⊆ l ↔ l1 ⊆ l ∧ l2 ⊆ l.
+Proof.
+  set_solver.
+Qed.
+
+Lemma list_cons_subseteq {A} (x: A) (l1 l2: list A) :
+  x :: l1 ⊆ l2 ↔ x ∈ l2 ∧ l1 ⊆ l2.
+Proof. set_solver. Qed.
+
+Lemma elem_of_subseteq_concat {A} (x:list A) (l:list (list A)) :
+  x ∈ l → x ⊆ concat l.
+Proof.
+  intros Helem.
+  apply elem_of_list_split in Helem as (l1 & l2 & ->).
+  rewrite concat_app concat_cons.
+  set_solver.
+Qed.
+
+Lemma concat_respects_subseteq {A} (l1 l2: list (list A)) :
+  l1 ⊆ l2 →
+  concat l1 ⊆ concat l2.
+Proof.
+  generalize dependent l2.
+  induction l1 as [|x l1]; intros; simpl.
+  - set_solver.
+  - apply list_cons_subseteq in H as [Helem ?].
+    apply list_app_subseteq. split; [|by eauto].
+    apply elem_of_subseteq_concat; auto.
+Qed.
+
 Lemma txn_upds_subseteq txns1 txns2 :
-  txns1 ⊆ txns1 →
+  txns1 ⊆ txns2 →
   txn_upds txns1 ⊆ txn_upds txns2.
 Proof.
-Admitted.
+  rewrite /txn_upds => ?.
+  apply concat_respects_subseteq, list_fmap_mono; auto.
+Qed.
 
 Lemma advance_being_installed_start_txn_id γ l dinit (being_installed_start_txn_id being_installed_end_txn_id: nat) upds txns :
   "#Hwal" ∷ is_wal P l γ dinit -∗
