@@ -108,13 +108,11 @@ Lemma fmcounter_update_halves (γ: gname) (n1 n2 n': nat) :
 Proof.
   iIntros (Hle) "Hn1 Hn2".
   iDestruct (fmcounter_agree_1 with "Hn1 Hn2") as %<-.
-  iDestruct (fmcounter_merge with "Hn1 Hn2") as "Hn".
+  iDestruct (fmcounter_sep with "[$Hn1 $Hn2]") as "Hn".
   rewrite Qp_half_half.
-  iMod (fmcounter_update _ _ _ Hle with "Hn") as "(Hn&Hlb)".
+  iMod (fmcounter_update _ _ _ Hle with "Hn") as "([Hn1 Hn2]&$)".
+  iModIntro.
   iFrame.
-  iApply fmcounter_sep.
-  rewrite Qp_half_half.
-  eauto.
 Qed.
 
 Global Instance fmcounter_lb_pers γ n: Persistent (fmcounter_lb γ n).

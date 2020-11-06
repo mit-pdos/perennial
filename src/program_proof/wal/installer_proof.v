@@ -449,15 +449,6 @@ Proof.
   apply lookup_insert.
 Qed.
 
-Lemma fmcounter_merge (γ: gname) (q1 q2: Qp) (n: nat) :
-  fmcounter γ q1 n -∗
-  fmcounter γ q2 n -∗
-  fmcounter γ (q1 + q2) n.
-Proof.
-  iIntros "Hn1 Hn2".
-  iCombine "Hn1 Hn2" as "$".
-Qed.
-
 Lemma has_updates_addrs upds txns :
   has_updates upds txns →
   (λ u, int.Z u.(update.addr)) <$> upds ⊆ (λ u, int.Z u.(update.addr)) <$> txn_upds txns.
