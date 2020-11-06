@@ -98,6 +98,25 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Lemma fmcounter_update_halves (γ: gname) (n1 n2 n': nat) :
+  (n1 ≤ n')%nat →
+  fmcounter γ (1/2) n1 -∗
+  fmcounter γ (1/2) n2 -∗
+  |==> fmcounter γ (1/2) n' ∗
+     fmcounter γ (1/2) n' ∗
+     fmcounter_lb γ n'.
+Proof.
+  iIntros (Hle) "Hn1 Hn2".
+  iDestruct (fmcounter_agree_1 with "Hn1 Hn2") as %<-.
+  iDestruct (fmcounter_merge with "Hn1 Hn2") as "Hn".
+  rewrite Qp_half_half.
+  iMod (fmcounter_update _ _ _ Hle with "Hn") as "(Hn&Hlb)".
+  iFrame.
+  iApply fmcounter_sep.
+  rewrite Qp_half_half.
+  eauto.
+Qed.
+
 Global Instance fmcounter_lb_pers γ n: Persistent (fmcounter_lb γ n).
 Proof. apply _. Qed.
 

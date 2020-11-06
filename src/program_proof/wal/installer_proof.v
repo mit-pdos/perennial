@@ -458,20 +458,6 @@ Proof.
   iCombine "Hn1 Hn2" as "$".
 Qed.
 
-Lemma fmcounter_update_halves (γ: gname) (n1 n2 n': nat) :
-  (n1 ≤ n')%nat →
-  fmcounter γ (1/2) n1 -∗
-  fmcounter γ (1/2) n2 -∗
-  |==> fmcounter γ (1/2) n' ∗
-     fmcounter γ (1/2) n' ∗
-     fmcounter_lb γ n'.
-Proof.
-  iIntros (Hle) "Hn1 Hn2".
-  iDestruct (fmcounter_agree_1 with "Hn1 Hn2") as %<-.
-  iCombine "Hn1 Hn2" as "Hn".
-  iMod (fmcounter_update n' with "Hn") as "[[$ $] $]"; eauto.
-Qed.
-
 Lemma has_updates_addrs upds txns :
   has_updates upds txns →
   (λ u, int.Z u.(update.addr)) <$> upds ⊆ (λ u, int.Z u.(update.addr)) <$> txn_upds txns.

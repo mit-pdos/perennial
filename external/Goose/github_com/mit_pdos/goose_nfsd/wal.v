@@ -430,6 +430,7 @@ Definition Walog__logAppend: val :=
       lock.release (struct.loadF Walog.S "memLock" "l");;
       circularAppender__Append "circ" (struct.loadF Walog.S "d" "l") "diskEnd" "newbufs";;
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
+      Linearize;;
       struct.storeF WalogState.S "diskEnd" (struct.loadF Walog.S "st" "l") ("diskEnd" + slice.len "newbufs");;
       lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
       lock.condBroadcast (struct.loadF Walog.S "condInstall" "l");;
