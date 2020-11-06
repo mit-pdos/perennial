@@ -673,7 +673,14 @@ Section maplist2.
       iFrame.
   Qed.
 
+  Theorem big_sepML_fmap Φ (f : W -> V) mw l :
+    ( big_sepML (λ k v lv, Φ k v lv) (f <$> mw) l ) ⊣⊢
+    ( big_sepML (λ k w lv, Φ k (f w) lv) mw l ).
+  Proof.
+  Admitted.
+
 End maplist2.
+
 
 Theorem big_sepML_change_m {K V0 V1 LV} `{EqDecision K} `{Countable K} (m0 : gmap K V0) (m1 : gmap K V1) (l : list LV) Φ :
   dom (gset _) m0 = dom (gset _) m1 ->

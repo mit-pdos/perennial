@@ -789,34 +789,44 @@ Proof.
   {
     iSplitR "Hfupd Hctxelem1".
     {
-      admit.
+      assert (filter (λ x, (x.2).(bufDirty) = true) gBufmap =
+              (λ o : versioned_object, {| bufKind := projT1 o;
+                                          bufData := (projT2 o).2;
+                                          bufDirty := true |}) <$>
+              filter (λ v, bufDirty <$> gBufmap !! v.1 = Some true) mt) as Hgmt.
+      {
+        eapply map_eq; intros a.
+        destruct (filter (λ x : addr * buf, (x.2).(bufDirty) = true) gBufmap !! a) eqn:Heq.
+        2: {
+          rewrite lookup_fmap.
+          rewrite map_filter_lookup_None_2; eauto.
+          eapply map_filter_lookup_None_1 in Heq. intuition.
+          { right; intros; simpl. rewrite H1 in H3. done. }
+          right; intros; simpl.
+          eapply fmap_Some_1 in H3. destruct H3; intuition; subst.
+          eapply H1; eauto.
+        }
+        eapply map_filter_lookup_Some in Heq; destruct Heq; simpl in *; subst.
+        eapply lookup_weaken in Hbufmapelem.
+        2: { rewrite lookup_fmap. erewrite H. done. }
+        rewrite lookup_fmap in Hbufmapelem.
+        eapply fmap_Some_1 in Hbufmapelem. destruct Hbufmapelem; intuition; subst.
+        rewrite lookup_fmap.
+        erewrite map_filter_lookup_Some_2; eauto.
+        2: { simpl. rewrite H. simpl. congruence. }
+        simpl. f_equal.
+        destruct b. simpl in *.
+        rewrite /modified /= in H3. inversion H3; subst.
+        done.
+      }
+      rewrite Hgmt.
 
-(*
-  replace (filter (λ x, bufDirty <$> gBufmap !! x.1 = Some true) mt)
-     with ((λ b : buf, existT b.(bufKind) b.(bufData)) <$>
-           (filter (λ x : addr * buf, (x.2).(bufDirty) = true) gBufmap)).
-  2: { admit. }
-
-  iPoseProof big_sepM_fmap as "[#Hfmap0 #Hfmap1]".
-  iDestruct ("Hfmap0" with "Hctxelem0") as "Hctxelem0".
-
-    iDestruct (big_sepML_sepM with "[$Hdirtylist $Hctxelem0]") as "Hdirtylist".
-    iSplitL "Hdirtylist".
-    { iApply (big_sepML_mono with "Hdirtylist").
+      rewrite !big_sepML_fmap.
+      iDestruct (big_sepML_sepM with "[$Hdirtylist $Hctxelem0]") as "Hdirtylist".
+      iApply (big_sepML_mono with "Hdirtylist").
       iPureIntro.
-      iIntros (k v lv) "(Hisbuf & H)".
-      iFrame. }
-
-    iMod "Hfupd".
-    iNamed "Hfupd".
-
-    iAssert (⌜filter (λ v, bufDirty <$> gBufmap !! v.1 ≠ Some true) mt ⊆ σl.(latest) ⌝)%I as "%Hcleansubset".
-    {
-      (* use Hctxelem1, Hcrashstates_frag, and Histxn *)
-      admit.
-    }
-*)
-
+      iIntros (k v lv) "[Hbuf Hmapsto]".
+      rewrite /is_txn_buf_pre. iFrame.
     }
     {
       iSplit.
@@ -975,6 +985,6 @@ Proof.
     rewrite map_union_filter.
     rewrite big_sepM_fmap.
     iFrame.
-Admitted.
+Qed.
 
 End heap.
