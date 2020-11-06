@@ -585,11 +585,31 @@ Proof.
   eapply elem_of_list_fmap_1_alt; eauto.
 Qed.
 
+Definition txn_crashstates_matches_mapsto σl γ σl' a v :
+  ( ( log_heap_ctx (hG := γ.(txn_logheap)) σl ∗ ghost_var γ.(txn_crashstates) (1/2) σl ) ∗
+    ghost_var γ.(txn_crashstates) (1 / 2) σl' ∗
+    mapsto_txn γ a v ) -∗
+  ⌜σl'.(latest) !! a = Some v⌝.
+Proof.
+  iIntros "[[Hctx H0] [H1 Hmapsto]]".
+  iNamed "Hmapsto".
+  iDestruct (log_heap_valid_cur with "Hctx Hmapsto_log") as %Heq.
+  iDestruct (ghost_var_agree with "H0 H1") as %->.
+  done.
+Qed.
+
 Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
-      PreQ ∧ (|={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
+      PreQ ∧ (|={⊤ ∖ ↑walN ∖ ↑invN, E}=>
+        ∀ CP,
+        □ ( ∀ σl a v,
+          ( CP ∗ ghost_var γ.(txn_crashstates) (1/2) σl ∗ mapsto_txn γ a v ) -∗ ⌜σl.(latest) !! a = Some v⌝ ) ∗
+        CP
+        ={E}=∗
+        CP ∗
+        ∃ (σl : async (gmap addr {K & bufDataT K})),
           "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (1/2) σl ∗
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
@@ -644,8 +664,19 @@ Proof using txnG0 Σ.
     iInv invN as ">Hinner" "Hinner_close".
     iMod "Hfupd".
     iIntros (σ) "(Hmapstos & Hwal_latest & Hiswal_heap)".
-    iModIntro.
     iNamed "Hinner".
+
+    iMod ("Hfupd" with "[Hlogheapctx Hcrashstates]") as "Hfupd".
+    {
+      iSplitR.
+      { iModIntro. iIntros (σl a v) "(CP & H & Hmapsto)".
+        iApply (txn_crashstates_matches_mapsto logm). iFrame "H Hmapsto".
+        iExact "CP". }
+      iFrame.
+    }
+
+    iModIntro.
+    iDestruct "Hfupd" as "[[Hlogheapctx Hcrashstates] Hfupd]".
     iNamed "Hfupd".
 
     rewrite /memappend_pre.
@@ -1174,7 +1205,14 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (Pre
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
-      PreQ ∧ ( ⌜bufamap ≠ ∅⌝ ={⊤ ∖ ↑walN ∖ ↑invN, E}=∗ ∃ (σl : async (gmap addr {K & bufDataT K})),
+      PreQ ∧ ( ⌜bufamap ≠ ∅⌝ ={⊤ ∖ ↑walN ∖ ↑invN, E}=∗
+        ∀ CP,
+        □ ( ∀ σl a v,
+          ( CP ∗ ghost_var γ.(txn_crashstates) (1/2) σl ∗ mapsto_txn γ a v ) -∗ ⌜σl.(latest) !! a = Some v⌝ ) ∗
+        CP
+        ={E}=∗
+        CP ∗
+        ∃ (σl : async (gmap addr {K & bufDataT K})),
           "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (1/2) σl ∗
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT _ b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
@@ -1221,14 +1259,7 @@ Proof.
       iSplit; [ iDestruct "Hfupd" as "[$ _]" | iRight in "Hfupd" ].
       iMod ("Hfupd" with "[]") as "Hfupd"; first eauto.
       iModIntro.
-      iNamed "Hfupd".
-      iExists σl. iFrame "Hcrashstates_frag".
-
-      iIntros "H".
-      iMod ("Hcrashstates_fupd" with "[H]").
-      { iFrame. }
-
-      iModIntro. done.
+      iExact "Hfupd".
     }
 
     iIntros (commitpos ok) "Hbufpost".
