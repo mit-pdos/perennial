@@ -642,9 +642,9 @@ Section goose_lang.
       auto with f_equal lia. }
     iIntros (ok) "Hpost".
     destruct ok.
-    - iDestruct "Hpost" as "[[Hpostq Hpreq] Hmod_tokens]".
-      destruct anydirty.
-      + iDestruct ("Hpostq" with "[]") as (txn_id) "(HQ&Hlower_bound)"; eauto.
+    - iDestruct "Hpost" as "[Hpost | Hpost]".
+      + iDestruct "Hpost" as "[%Hanydirty_true Hpost]".
+        iDestruct "Hpost" as (txn_id) "(HQ & Hmod_tokens & Hlower_bound)".
         iAssert (txn_durable γ txn_id) as "#Hdurable_txn_id {Hlower_bound}".
         { iApply "Hlower_bound". done. }
         iApply "HΦ".
@@ -654,7 +654,8 @@ Section goose_lang.
         iApply (big_sepM_impl with "HQ []").
         iIntros "!>" (k x ?) "Hval".
         iExists _; iFrame "∗#".
-      + iDestruct ("Hpreq" with "[]") as "Hpreq"; eauto.
+      + iDestruct "Hpost" as "[%Hanydirty_false Hpost]".
+        iDestruct "Hpost" as "(Hpreq & Hmod_tokens)".
         iApply "HΦ".
         iApply "HPrestore".
         iApply big_sepM_subseteq; eauto.
