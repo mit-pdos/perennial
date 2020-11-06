@@ -677,7 +677,13 @@ Section maplist2.
     ( big_sepML (λ k v lv, Φ k v lv) (f <$> mw) l ) ⊣⊢
     ( big_sepML (λ k w lv, Φ k (f w) lv) mw l ).
   Proof.
-  Admitted.
+    rewrite ?big_sepML_eq /big_sepML_def.
+    iSplit.
+    - iIntros "H"; iDestruct "H" as (lm) "[%Hlm H]".
+      rewrite big_sepM2_fmap_l. iExists _. iFrame "%∗".
+    - iIntros "H"; iDestruct "H" as (lm) "[%Hlm H]".
+      rewrite -big_sepM2_fmap_l. iExists _. iFrame "%∗".
+  Qed.
 
 End maplist2.
 
