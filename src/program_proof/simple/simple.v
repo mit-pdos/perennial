@@ -368,7 +368,6 @@ Proof.
   iApply struct_fields_split. iFrame. done.
 Qed.
 
-Check is_slice.
 Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset : u64) (count : u32) (Q : SimpleNFS.res (bool * SimpleNFS.buf) -> iProp Σ) dinit :
   {{{ is_fs γ nfs dinit ∗
       is_fh fhslice fh ∗
@@ -425,7 +424,7 @@ Proof.
     Transparent nfstypes.READ3res.S.
     simpl.
     Opaque nfstypes.READ3res.S.
-    congruence.
+    intro He. inversion He. (* XXX why doesn't [congruence] do the right thing? *)
   }
 
   wp_loadField.
