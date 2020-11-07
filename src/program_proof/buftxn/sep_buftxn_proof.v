@@ -258,15 +258,20 @@ Section goose_lang.
   Theorem lift_into_txn E l γ dinit γtxn P0 a obj :
     ↑invN ⊆ E →
     is_buftxn l γ dinit γtxn P0 -∗
+(*
     modify_token γ a obj -∗
+*)
     durable_mapsto γ a obj
     ={E}=∗
     buftxn_maps_to γtxn a obj ∗
      is_buftxn l γ dinit γtxn
        (durable_mapsto γ a obj ∗
+(*
         modify_token γ a obj ∗
+*)
         P0).
   Proof.
+(*
     iIntros (?) "Hctx Ha Ha_i".
     iNamed "Hctx".
     iDestruct (mspec.is_buftxn_not_in_map with "Hbuftxn Ha") as %Hnotin.
@@ -287,15 +292,17 @@ Section goose_lang.
     iIntros "!> [[$ $] Hstable]".
     iApply "HrestoreP0"; iFrame.
   Qed.
+*)
+  Admitted.
 
   Theorem lift_map_into_txn E l γ dinit γtxn P0 m :
     ↑invN ⊆ E →
     is_buftxn l γ dinit γtxn P0 -∗
-    ([∗ map] a↦v ∈ m, modify_token γ a v ∗
+    ([∗ map] a↦v ∈ m, (* modify_token γ a v ∗ *)
                       durable_mapsto γ a v) ={E}=∗
     ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
                       is_buftxn l γ dinit γtxn
-                        (([∗ map] a↦v ∈ m, modify_token γ a v ∗
+                        (([∗ map] a↦v ∈ m, (* modify_token γ a v ∗ *)
                                            durable_mapsto γ a v
                          ) ∗
                          P0).
@@ -306,8 +313,8 @@ Section goose_lang.
       rewrite !left_id.
       by iFrame.
     - rewrite !big_sepM_insert //.
-      iDestruct "Hm" as "[[Ha_mod Ha_eph] Hm]".
-      iMod (lift_into_txn with "Hctx Ha_mod Ha_eph") as "[Ha Hctx]"; first by auto.
+      iDestruct "Hm" as "[Ha_eph Hm]".
+      iMod (lift_into_txn with "Hctx Ha_eph") as "[Ha Hctx]"; first by auto.
       iMod ("IH" with "Hctx Hm") as "[Hm Hctx]".
       iModIntro.
       iFrame.
@@ -319,7 +326,7 @@ Section goose_lang.
           l γ dinit γtxn P0 :
     ↑invN ⊆ E →
     is_buftxn l γ dinit γtxn P0 -∗
-    P (λ a v, modify_token γ a v ∗
+    P (λ a v, (* modify_token γ a v ∗ *)
               durable_mapsto γ a v)
     ={E}=∗
         (* TODO: somehow need to keep track of this P over ephemeral_val_from
@@ -327,12 +334,13 @@ Section goose_lang.
         if we supply the old [ephemeral_val_from] facts saved here *)
     P (buftxn_maps_to γtxn) ∗
     is_buftxn l γ dinit γtxn
-      (P (λ a v, modify_token γ a v ∗
+      (P (λ a v, (* modify_token γ a v ∗ *)
                  durable_mapsto γ a v)
        ∗ P0).
   Proof.
     iIntros (?) "Hctx HP".
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hm #HP]".
+(*
     iMod (lift_map_into_txn with "Hctx Hm") as "[Hm Hctx]".
     { solve_ndisj. }
     iModIntro.
@@ -343,6 +351,8 @@ Section goose_lang.
       iIntros "!> [Hm $]".
       iApply "HP"; auto.
   Qed.
+*)
+  Admitted.
 
   Lemma init_txn_system {E} l_txn γUnified dinit σs :
     is_txn l_txn γUnified dinit ∗ ghost_var γUnified.(txn_crashstates) (1/2) σs ={E}=∗
@@ -591,7 +601,7 @@ Section goose_lang.
       BufTxn__CommitWait #l #true
     {{{ (ok:bool), RET #ok;
         if ok then
-            P (λ a v, modify_token γ a v ∗
+            P (λ a v, (* modify_token γ a v ∗ *)
                       durable_mapsto γ a v)
         else P0 }}}.
   (* crash condition will be [∃ txn_id', P0 (ephemeral_val_from
@@ -650,22 +660,28 @@ Section goose_lang.
         iApply "HΦ".
         iApply "HPrestore".
         iApply big_sepM_subseteq; eauto.
+(*
         iApply big_sepM_sep; iFrame.
         iApply (big_sepM_impl with "HQ []").
         iIntros "!>" (k x ?) "Hval".
         iExists _; iFrame "∗#".
+*)
+        admit.
       + iDestruct "Hpost" as "[%Hanydirty_false Hpost]".
         iDestruct "Hpost" as "(Hpreq & Hmod_tokens)".
         iApply "HΦ".
         iApply "HPrestore".
         iApply big_sepM_subseteq; eauto.
+(*
         iApply big_sepM_sep; iFrame.
         rewrite Hanydirty; eauto.
+*)
+        admit.
     - iDestruct "Hpost" as "[Heph Hmod_tokens]".
       iApply "HΦ".
       iApply "HrestoreP0".
       rewrite big_sepM_sep.
       iFrame.
-  Qed.
+  Admitted.
 
 End goose_lang.

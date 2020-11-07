@@ -52,13 +52,13 @@ Definition blk2addr blk := Build_addr blk 0.
 Definition is_inode_enc γ (inum: u64) (len: u64) (blk: u64) : iProp Σ :=
   ∃ (ibuf : defs.inode_buf),
     "%Hinode_encodes" ∷ ⌜ encodes_inode len blk (vec_to_list ibuf) ⌝ ∗
-    "Hinode_enc_mapsto" ∷ mapsto_txn γ.(simple_buftxn).(buftxn_txn_names) (inum2addr inum) (existT _ (defs.bufInode ibuf)).
+    "Hinode_enc_mapsto" ∷ durable_mapsto γ.(simple_buftxn) (inum2addr inum) (existT _ (defs.bufInode ibuf)).
 
 Definition is_inode_data γ (len : u64) (blk: u64) (contents: list u8) : iProp Σ :=
   ∃ (bbuf : Block),
     "%Hdiskdata" ∷ ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
     "%Hdisklen" ∷ ⌜ len = length contents ⌝ ∗
-    "Hdiskblk" ∷ mapsto_txn γ.(simple_buftxn).(buftxn_txn_names) (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
+    "Hdiskblk" ∷ durable_mapsto γ.(simple_buftxn) (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
 
 Definition is_inode_disk γ (inum: u64) (state: list u8) : iProp Σ :=
   ∃ (blk: u64),
@@ -81,6 +81,7 @@ Proof.
   rewrite /addr2val /inum2addr /=.
   rewrite /LogSz /InodeSz.
   replace (word.add (word.divu (word.sub 4096 8) 8) 2)%Z with (U64 513) by reflexivity.
+  
 (*
   replace (word.mul (word.mul inum 128) 8)%Z with (U64 (inum * 128 * 8)%nat).
   { iApply "HΦ". done. }
@@ -370,14 +371,12 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
         "Offset" ::= #offset;
         "Count" ::= #count
       ])%V
-  {{{ (ok : bool) v,
+  {{{ v,
       RET v;
-      if ok then
-        ⌜ getField_f nfstypes.READ3res.S "Status" v = #0 ⌝ ∗
+      ( ⌜ getField_f nfstypes.READ3res.S "Status" v = #0 ⌝ ∗
         ∃ (eof : bool) (dataslice : Slice.t) r,
-          Q r
-      else
-        ⌜ getField_f nfstypes.READ3res.S "Status" v ≠ #0 ⌝
+          Q r ) ∨
+      ( ⌜ getField_f nfstypes.READ3res.S "Status" v ≠ #0 ⌝ )
   }}}.
 Proof.
   iIntros (Φ) "(Hfs & #Hfh & Hfupd) HΦ".
@@ -401,7 +400,8 @@ Proof.
     iIntros "Hreply".
 
     wp_load.
-    iApply ("HΦ" $! false).
+    iApply "HΦ".
+    iRight.
     iPureIntro.
     Transparent nfstypes.READ3res.S.
     simpl.
@@ -417,17 +417,15 @@ Proof.
 
   (* XXX weird pattern: caller gets to lift predicates into buftxn *)
   iNamed "Hinode_enc".
-  iMod (lift_into_txn with "Hbuftxn [$Hinode_enc_mapsto] []") as "[Hinode_enc_mapsto Hbuftxn]".
+  iMod (lift_into_txn with "Hbuftxn Hinode_enc_mapsto") as "[Hinode_enc_mapsto Hbuftxn]".
   { solve_ndisj. }
-  { (* XXX missing from inode lock invariant? *) admit. }
 
   wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc_mapsto]"); first by auto.
   iIntros (ip) "(Hbuftxn & Hinode_enc_mapsto & Hinode_mem)".
 
   iNamed "Hinode_data".
-  iMod (lift_into_txn with "Hbuftxn [$Hdiskblk] []") as "[Hdiskblk Hbuftxn]".
+  iMod (lift_into_txn with "Hbuftxn Hdiskblk") as "[Hdiskblk Hbuftxn]".
   { solve_ndisj. }
-  { admit. }
 
   wp_apply (wp_Inode__Read with "[$Hbuftxn $Hinode_mem $Hdiskblk]").
   { eauto. }
@@ -435,9 +433,19 @@ Proof.
   wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc_mapsto Hdiskblk]").
   all: try solve_ndisj.
   2: {
-    admit.
+    iCombine "Hinode_enc_mapsto Hdiskblk" as "H".
+    generalize (buftxn_maps_to γtxn); intros u.
+    iExact "H".
   }
-  { admit. }
+  { typeclasses eauto. }
+
+  iIntros (ok) "Hcommit".
+  iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
+  wp_if_destruct; subst.
+  - wp_storeField.
+    wp_apply wp_slice_len.
+    admit.
+
 
 (*
     iModIntro.
@@ -465,42 +473,36 @@ Proof.
     iMod ("Hclose" with "[Hsrcown Hsrcheap HP]").
     { iModIntro. iExists _. iFrame. }
     iModIntro.
+*)
 
-    (* XXX this might be simpler using Tej's buftxn spec *)
-    admit.
-  }
-
-  iIntros (ok) "Hok".
-  wp_if_destruct.
-  2: {
-    wp_apply (wp_storeField_struct with "Hreply"); first by auto.
-    iIntros "Hreply".
-
+  - wp_storeField.
     wp_loadField.
-    (* XXX commitWait stole my [Hinode_state]! *)
-(*
-    wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_enc Hinode_data Hinode_state]").
+    wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
     { iExists _. iFrame.
-      iExists _. iFrame. }
-
-    wp_load.
-    iApply ("HΦ" $! false).
+      iDestruct "Hcommit" as "(Hblk & Hinum & _)".
+      iExists _. iSplitL "Hinum".
+      { iExists _. iFrame. iFrame "%". }
+      iExists _. iFrame. iFrame "%".
+    }
+    wp_apply (wp_LoadAt with "[Status Resok Resfail]").
+    { iNext.
+      iApply struct_fields_split.
+      rewrite /struct_fields /struct.struct_big_fields_rec. simpl.
+      (* XXX what would be a convenient way to put all the struct fields back together? *)
+      admit.
+    }
+    iIntros "Hreply".
+    iApply "HΦ".
+    iRight.
     iPureIntro.
     Transparent nfstypes.READ3res.S.
     simpl.
     Opaque nfstypes.READ3res.S.
+    admit.
+(*
     congruence.
 *)
-    admit.
-  }
+  Admitted.
 
-  iDestruct (struct_fields_split with "Hreply") as "Hreply".
-  iNamed "Hreply".
-  wp_storeField.
-  (* XXX how to do anything with [struct.fieldRef]? *)
-  admit.
-*)
-  admit.
-Admitted.
 
 End heap.
