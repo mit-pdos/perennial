@@ -252,6 +252,10 @@ Proof.
       wp_load.
       wp_apply (wp_buf_loadField_data with "Hbuf").
       iIntros (vslice) "[Hbufdata Hbufnodata]".
+      simpl.
+      apply (f_equal length) in Hcontent as Hlens.
+      autorewrite with len in Hlens.
+      rewrite -> word.unsigned_sub, wrap_small in Hbound by word.
       wp_apply (wp_SliceGet (V:=u8) with "[$Hbufdata]").
       { admit. }
       iIntros "Hbufdata".
@@ -289,9 +293,12 @@ Proof.
     iFrame "Hdataslice Hbuftxn".
     iFrame.
 
-    iPureIntro. intuition.
-    { admit. }
-    { admit. }
+    iPureIntro. intuition (try congruence).
+    { subst.
+      apply (f_equal length) in Hcontent as Hlen.
+      apply (f_equal length) in H0 as Hlen2.
+      move: Hlen Hlen2; len.
+      admit. }
 
   - admit.
 Admitted.
