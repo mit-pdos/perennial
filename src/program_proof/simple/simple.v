@@ -516,7 +516,7 @@ Proof.
     wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
     iIntros (fl) "[%Hfl Resok]".
     wp_apply (wp_storeField_struct with "Resok").
-    { compute. (* XXX actually not true.. *) admit. }
+    { auto. }
     iIntros "Resok".
     rewrite Hfl; clear Hfl fl.
 
