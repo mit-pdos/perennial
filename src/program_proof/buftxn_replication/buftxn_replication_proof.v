@@ -52,20 +52,13 @@ Section goose_lang.
     ∃ a0 a1 σ,
       "a0" ∷ l ↦[RepBlock.S :: "a0"] (addr2val a0) ∗
       "a1" ∷ l ↦[RepBlock.S :: "a1"] (addr2val a1) ∗
-(*
-      "#rb_durable" ∷ txn_durable γ i ∗
-*)
       "rb_rep" ∷ rb_rep a0 a1 σ
-                   (λ a v, modify_token γ a v ∗
-                           durable_mapsto γ a v) ∗
+                   (λ a v, durable_mapsto γ a v) ∗
       "HP" ∷ P σ.
 
   Definition rb_cinv a0 a1 l γ: iProp Σ :=
     ∃ σ, rb_rep a0 a1 σ (durable_mapsto γ) ∗
-           P σ
-(* ∗
-           txn_durable γ i *)
-.
+           P σ.
 
   Definition is_rep_block l: iProp Σ :=
     ∃ γ dinit (txn_l m_l: loc),
