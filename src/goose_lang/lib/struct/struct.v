@@ -328,6 +328,11 @@ Qed.
 
 Opaque structFieldRef.
 
+Lemma struct_field_mapsto_unfold l q d f v off t :
+  field_offset d f = Some (off, t) →
+  struct_field_mapsto l q d f v = ((l +ₗ off) ↦[t]{q} v)%I.
+Proof. unseal. by intros ->. Qed.
+
 Lemma wp_struct_fieldRef_mapsto l q d f off t v :
   field_offset d f = Some (off, t) →
   {{{ struct_field_mapsto l q d f v  }}}
@@ -335,14 +340,13 @@ Lemma wp_struct_fieldRef_mapsto l q d f off t v :
   {{{ fl, RET #fl; ⌜∀ v', fl ↦[t]{q} v' ⊣⊢ struct_field_mapsto l q d f v'⌝ ∗ fl ↦[t]{q} v }}}.
 Proof.
   iIntros (Hoff Φ) "Hf HΦ".
-  unseal.
-  rewrite Hoff.
+  erewrite struct_field_mapsto_unfold; eauto.
   wp_apply wp_struct_fieldRef.
   { rewrite Hoff //. }
   rewrite /struct.fieldRef_f Hoff.
-  iApply "HΦ".
-  iFrame.
-  iPureIntro; auto.
+  iApply "HΦ"; iFrame.
+  iIntros "!%" (v').
+  erewrite struct_field_mapsto_unfold; eauto.
 Qed.
 
 Lemma struct_mapsto_field_offset_acc l q d f0 (off: Z) t0 v :
