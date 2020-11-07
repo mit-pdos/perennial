@@ -305,6 +305,46 @@ Proof.
   rewrite struct_mapsto_to_big struct_big_sep_to_fields //.
 Qed.
 
+Transparent structFieldRef.
+
+Lemma wp_struct_fieldRef d f0 (l: loc) :
+  match field_offset d f0 with
+  | Some _ => True
+  | None => False
+  end →
+  {{{ True }}}
+    struct.fieldRef d f0 #l
+  {{{ RET #(struct.fieldRef_f d f0 l); True }}}.
+Proof.
+  iIntros (Hoff_valid Φ) "_ HΦ".
+  rewrite /struct.fieldRef /struct.fieldRef_f.
+  destruct (field_offset d f0) as [[off t]|] eqn:Hoff; [|by destruct Hoff_valid]; wp_pures.
+  iSpecialize ("HΦ" with "[//]").
+  iExactEq "HΦ".
+  f_equal. f_equal.
+  change (int.Z 1) with 1.
+  rewrite Z.mul_1_r //.
+Qed.
+
+Opaque structFieldRef.
+
+Lemma wp_struct_fieldRef_mapsto l q d f off t v :
+  field_offset d f = Some (off, t) →
+  {{{ struct_field_mapsto l q d f v  }}}
+    struct.fieldRef d f #l
+  {{{ fl, RET #fl; ⌜fl ↦[t]{q} v ⊣⊢ struct_field_mapsto l q d f v⌝ ∗ fl ↦[t]{q} v }}}.
+Proof.
+  iIntros (Hoff Φ) "Hf HΦ".
+  unseal.
+  rewrite Hoff.
+  wp_apply wp_struct_fieldRef.
+  { rewrite Hoff //. }
+  rewrite /struct.fieldRef_f Hoff.
+  iApply "HΦ".
+  iFrame.
+  iPureIntro; auto.
+Qed.
+
 Lemma struct_mapsto_field_offset_acc l q d f0 (off: Z) t0 v :
   field_offset d f0 = Some (off, t0) ->
   struct_mapsto l q (struct.t d) v -∗

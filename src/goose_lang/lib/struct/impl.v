@@ -153,6 +153,12 @@ Definition structFieldRef d f0: val :=
   | None => λ: <>, #()
   end.
 
+Definition structFieldRef_f d f0 l: loc :=
+  match field_offset d f0 with
+  | Some (off, t) => l +ₗ off
+  | None => null
+  end.
+
 Definition loadField (d:descriptor) (f:string) : val :=
   match field_offset d f with
   | Some (off, t) => λ: "p", load_ty t (BinOp (OffsetOp off) (Var "p") #1)
@@ -194,6 +200,7 @@ Module struct.
   Notation alloc := allocStruct.
   Notation get := getField.
   Notation fieldRef := structFieldRef.
+  Notation fieldRef_f := structFieldRef_f.
   Notation load := loadStruct.
   Notation loadF := loadField.
   Notation store := storeStruct.
