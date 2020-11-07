@@ -329,6 +329,13 @@ Proof.
   done.
 Qed.
 
+Lemma elem_of_covered_inodes (x:u64) :
+  x ∈ covered_inodes ↔ (2 ≤ int.Z x < 32)%Z.
+Proof.
+  rewrite /covered_inodes.
+  rewrite rangeSet_lookup //.
+Qed.
+
 Theorem wp_validInum (i : u64) :
   {{{ True }}}
     validInum #i
@@ -337,22 +344,32 @@ Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
   wp_if_destruct.
-  { iApply "HΦ". admit. (* done. *) }
+  { iApply "HΦ". rewrite elem_of_covered_inodes.
+    iPureIntro.
+    split; [ inversion 1 | intros ].
+    move: H0; word. }
   wp_if_destruct.
-  { iApply "HΦ". admit. (* done. *) }
+  { iApply "HΦ". rewrite elem_of_covered_inodes.
+    iPureIntro.
+    split; [ inversion 1 | intros ].
+    move: H0; word. }
   wp_call.
+  change (int.Z (word.divu _ _)) with 32%Z.
   wp_if_destruct.
-  { iApply "HΦ". admit. (* done. *) }
+  { iApply "HΦ". rewrite elem_of_covered_inodes.
+    iPureIntro.
+    split; [ inversion 1 | intros ].
+    word. }
   iApply "HΦ".
   iPureIntro. intuition.
-  rewrite /covered_inodes /NumInodes /InodeSz.
-  replace (4096 `div` 128) with (32) by reflexivity.
-  replace (word.divu (U64 4096) (U64 128)) with (U64 32) in Heqb1 by reflexivity.
-  apply rangeSet_lookup; try lia.
-  split.
-  { admit. }
-  { word. }
-Admitted.
+  rewrite elem_of_covered_inodes.
+  split; [ | word ].
+  assert (i ≠ U64 0) as Hnot_0%(not_inj (f:=int.Z)) by congruence.
+  assert (i ≠ U64 1) as Hnot_1%(not_inj (f:=int.Z)) by congruence.
+  change (int.Z 0%Z) with 0%Z in *.
+  change (int.Z 1%Z) with 1%Z in *.
+  word.
+Qed.
 
 Opaque nfstypes.READ3res.S.
 
@@ -364,6 +381,9 @@ Definition is_fs γ (nfs: loc) dinit : iProp Σ :=
     "#Hislm" ∷ is_lockMap lm γ.(simple_lockmapghs) covered_inodes (is_inode_stable γ) ∗
     "#Hsrc" ∷ inv N (is_source γ) ∗
     "#Htxnsys" ∷ is_txn_system Nbuftxn γ.(simple_buftxn).
+
+Global Instance is_fs_persistent γ nfs dinit : Persistent (is_fs γ nfs dinit).
+Proof. apply _. Qed.
 
 
 Lemma nfstypes_read3res_merge reply s ok fail :
