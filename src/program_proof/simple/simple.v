@@ -172,14 +172,6 @@ Definition is_inode_stable γ (inum: u64) : iProp Σ :=
 
 Definition N := nroot .@ "simplenfs".
 
-Definition is_fs γ (nfs: loc) dinit : iProp Σ :=
-  ∃ (txn lm : loc),
-    "#Hfs_txn" ∷ readonly (nfs ↦[Nfs.S :: "t"] #txn) ∗
-    "#Hfs_lm" ∷ readonly (nfs ↦[Nfs.S :: "l"] #lm) ∗
-    "#Histxn" ∷ is_txn txn γ.(simple_buftxn).(buftxn_txn_names) dinit ∗
-    "#Hislm" ∷ is_lockMap lm γ.(simple_lockmapghs) covered_inodes (is_inode_stable γ) ∗
-    "#Hsrc" ∷ inv N (is_source γ).
-
 Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents P0 dinit bbuf :
   {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
       is_inode_mem ip inum len blk ∗
@@ -356,6 +348,27 @@ Admitted.
 
 Opaque nfstypes.READ3res.S.
 
+Definition is_fs γ (nfs: loc) dinit : iProp Σ :=
+  ∃ (txn lm : loc),
+    "#Hfs_txn" ∷ readonly (nfs ↦[Nfs.S :: "t"] #txn) ∗
+    "#Hfs_lm" ∷ readonly (nfs ↦[Nfs.S :: "l"] #lm) ∗
+    "#Histxn" ∷ is_txn txn γ.(simple_buftxn).(buftxn_txn_names) dinit ∗
+    "#Hislm" ∷ is_lockMap lm γ.(simple_lockmapghs) covered_inodes (is_inode_stable γ) ∗
+    "#Hsrc" ∷ inv N (is_source γ) ∗
+    "#Htxnsys" ∷ is_txn_system Nbuftxn γ.(simple_buftxn).
+
+
+Lemma nfstypes_read3res_merge reply s ok fail :
+  ( reply ↦[nfstypes.READ3res.S :: "Status"] s ∗
+    reply ↦[nfstypes.READ3res.S :: "Resok"] ok ∗
+    reply ↦[nfstypes.READ3res.S :: "Resfail"] fail ) -∗
+  reply ↦[struct.t nfstypes.READ3res.S]{1} (s, (ok, (fail, #()))).
+Proof.
+  iIntros "(Status & Resok & Resfail)".
+  iApply struct_fields_split. iFrame. done.
+Qed.
+
+Check is_slice.
 Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset : u64) (count : u32) (Q : SimpleNFS.res (bool * SimpleNFS.buf) -> iProp Σ) dinit :
   {{{ is_fs γ nfs dinit ∗
       is_fh fhslice fh ∗
@@ -373,10 +386,15 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
       ])%V
   {{{ v,
       RET v;
-      ( ⌜ getField_f nfstypes.READ3res.S "Status" v = #0 ⌝ ∗
-        ∃ (eof : bool) (dataslice : Slice.t) r,
-          Q r ) ∨
-      ( ⌜ getField_f nfstypes.READ3res.S "Status" v ≠ #0 ⌝ )
+      ( ∃ (eof : bool) (databuf : list u8) (dataslice : Slice.t) resok,
+        ⌜ getField_f nfstypes.READ3res.S "Status" v = #(U32 0) ⌝ ∗
+        ⌜ getField_f nfstypes.READ3res.S "Resok" v = resok ⌝ ∗
+        ⌜ getField_f nfstypes.READ3resok.S "Eof" resok = #eof ⌝ ∗
+        ⌜ getField_f nfstypes.READ3resok.S "Data" resok = slice_val dataslice ⌝ ∗
+        is_slice dataslice u8T 1%Qp databuf ∗
+        Q (SimpleNFS.OK (eof, databuf)) ) ∨
+      ( ⌜ getField_f nfstypes.READ3res.S "Status" v ≠ #(U32 0) ⌝ ∗
+        Q SimpleNFS.Err )
   }}}.
 Proof.
   iIntros (Φ) "(Hfs & #Hfh & Hfupd) HΦ".
@@ -387,8 +405,7 @@ Proof.
   iIntros (reply) "Hreply".
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
-  wp_apply (wp_BufTxn__Begin with "[$Histxn]").
-  { admit. }
+  wp_apply (wp_BufTxn__Begin with "[$Histxn $Htxnsys]").
   iIntros (γtxn buftx) "Hbuftxn".
   wp_apply (wp_fh2ino with "Hfh").
   wp_pures.
@@ -402,6 +419,8 @@ Proof.
     wp_load.
     iApply "HΦ".
     iRight.
+    iSplit.
+    2: admit.
     iPureIntro.
     Transparent nfstypes.READ3res.S.
     simpl.
@@ -443,9 +462,51 @@ Proof.
   iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
   wp_if_destruct; subst.
   - wp_storeField.
-    wp_apply wp_slice_len.
-    admit.
 
+    wp_apply wp_slice_len.
+    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+    iIntros (fl) "[%Hfl Resok]".
+    wp_apply (wp_storeField_struct with "Resok").
+    { compute. (* XXX actually not true.. *) admit. }
+    iIntros "Resok".
+    rewrite Hfl; clear Hfl fl.
+
+    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+    iIntros (fl) "[%Hfl Resok]".
+    wp_apply (wp_storeField_struct with "Resok").
+    { compute. val_ty. }
+    iIntros "Resok".
+    rewrite Hfl; clear Hfl fl.
+
+    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+    iIntros (fl) "[%Hfl Resok]".
+    wp_apply (wp_storeField_struct with "Resok").
+    { compute. val_ty. }
+    iIntros "Resok".
+    rewrite Hfl; clear Hfl fl.
+
+    wp_loadField.
+    wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
+    { iExists _. iFrame.
+      iDestruct "Hcommit" as "(Hinum & Hblk)".
+      iExists _. iSplitL "Hinum".
+      { iExists _. iFrame. iFrame "%". }
+      iExists _. iFrame. iFrame "%".
+    }
+
+    wp_apply (wp_LoadAt with "[Status Resok Resfail]").
+    { iModIntro. iApply nfstypes_read3res_merge. iFrame. }
+    iIntros "Hreply". simpl.
+    iApply "HΦ". iLeft.
+    iExists _, _, _, _.
+Transparent nfstypes.READ3res.S.
+    iSplit; first done.
+    iSplit; first done.
+    iSplit; first done.
+    iSplit; first done.
+    iFrame.
+    (* Need to actually simulate to get Q *)
+    admit.
 
 (*
     iModIntro.
@@ -485,24 +546,16 @@ Proof.
       iExists _. iFrame. iFrame "%".
     }
     wp_apply (wp_LoadAt with "[Status Resok Resfail]").
-    { iNext.
-      iApply struct_fields_split.
-      rewrite /struct_fields /struct.struct_big_fields_rec. simpl.
-      (* XXX what would be a convenient way to put all the struct fields back together? *)
-      admit.
-    }
+    { iModIntro. iApply nfstypes_read3res_merge. iFrame. }
     iIntros "Hreply".
     iApply "HΦ".
-    iRight.
+    iRight. iSplit.
+    2: admit.
     iPureIntro.
     Transparent nfstypes.READ3res.S.
     simpl.
     Opaque nfstypes.READ3res.S.
-    admit.
-(*
-    congruence.
-*)
+    done.
   Admitted.
-
 
 End heap.

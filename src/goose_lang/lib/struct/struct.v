@@ -332,7 +332,7 @@ Lemma wp_struct_fieldRef_mapsto l q d f off t v :
   field_offset d f = Some (off, t) →
   {{{ struct_field_mapsto l q d f v  }}}
     struct.fieldRef d f #l
-  {{{ fl, RET #fl; ⌜fl ↦[t]{q} v ⊣⊢ struct_field_mapsto l q d f v⌝ ∗ fl ↦[t]{q} v }}}.
+  {{{ fl, RET #fl; ⌜∀ v', fl ↦[t]{q} v' ⊣⊢ struct_field_mapsto l q d f v'⌝ ∗ fl ↦[t]{q} v }}}.
 Proof.
   iIntros (Hoff Φ) "Hf HΦ".
   unseal.
