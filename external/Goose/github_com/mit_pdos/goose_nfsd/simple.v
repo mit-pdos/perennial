@@ -420,7 +420,7 @@ Definition Nfs__NFSPROC3_READ: val :=
       (if: "ok"
       then
         struct.storeF nfstypes.READ3res.S "Status" "reply" nfstypes.NFS3_OK;;
-        struct.storeF nfstypes.READ3resok.S "Count" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") (slice.len "data");;
+        struct.storeF nfstypes.READ3resok.S "Count" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") (to_u32 (slice.len "data"));;
         struct.storeF nfstypes.READ3resok.S "Data" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") "data";;
         struct.storeF nfstypes.READ3resok.S "Eof" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") "eof"
       else struct.storeF nfstypes.READ3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT);;

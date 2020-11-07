@@ -141,6 +141,7 @@ def main():
             "util",
             "wal",
             "buftxn_replication",
+            "simple",
         ]
         for pkg in pkgs:
             if pkg == ".":
