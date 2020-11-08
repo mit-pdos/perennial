@@ -92,7 +92,7 @@ Definition Inode__Read: val :=
     then (slice.nil, #true)
     else
       let: "count" := ref_to uint64T "bytesToRead" in
-      (if: ![uint64T] "count" ≥ "offset" + struct.loadF Inode.S "Size" "ip"
+      (if: "offset" + ![uint64T] "count" ≥ struct.loadF Inode.S "Size" "ip"
       then
         "count" <-[uint64T] struct.loadF Inode.S "Size" "ip" - "offset";;
         #()

@@ -53,21 +53,21 @@ Definition encodes_inode (len: u64) (blk: u64) data : Prop :=
 Definition inum2addr (inum : u64) := Build_addr LogSz (int.nat inum * InodeSz * 8).
 Definition blk2addr blk := Build_addr blk 0.
 
-Definition is_inode_enc γ (inum: u64) (len: u64) (blk: u64) : iProp Σ :=
+Definition is_inode_enc (inum: u64) (len: u64) (blk: u64) (mapsto: addr -> object -> iProp Σ) : iProp Σ :=
   ∃ (ibuf : defs.inode_buf),
     "%Hinode_encodes" ∷ ⌜ encodes_inode len blk (vec_to_list ibuf) ⌝ ∗
-    "Hinode_enc_mapsto" ∷ durable_mapsto γ.(simple_buftxn) (inum2addr inum) (existT _ (defs.bufInode ibuf)).
+    "Hinode_enc_mapsto" ∷ mapsto (inum2addr inum) (existT _ (defs.bufInode ibuf)).
 
-Definition is_inode_data γ (len : u64) (blk: u64) (contents: list u8) : iProp Σ :=
+Definition is_inode_data (len : u64) (blk: u64) (contents: list u8) (mapsto: addr -> object -> iProp Σ) : iProp Σ :=
   ∃ (bbuf : Block),
     "%Hdiskdata" ∷ ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
     "%Hdisklen" ∷ ⌜ len = length contents ⌝ ∗
-    "Hdiskblk" ∷ durable_mapsto γ.(simple_buftxn) (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
+    "Hdiskblk" ∷ mapsto (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
 
-Definition is_inode_disk γ (inum: u64) (state: list u8) : iProp Σ :=
+Definition is_inode (inum: u64) (state: list u8) (mapsto: addr -> object -> iProp Σ) : iProp Σ :=
   ∃ (blk: u64),
-    "Hinode_enc" ∷ is_inode_enc γ inum (length state) blk ∗
-    "Hinode_data" ∷ is_inode_data γ (length state) blk state.
+    "Hinode_enc" ∷ is_inode_enc inum (length state) blk mapsto ∗
+    "Hinode_data" ∷ is_inode_data (length state) blk state mapsto.
 
 Definition is_inode_mem (l: loc) (inum: u64) (len: u64) (blk: u64) : iProp Σ :=
   "Hinum" ∷ l ↦[Inode.S :: "Inum"] #inum ∗
@@ -112,30 +112,30 @@ Qed.
 
 Definition Nbuftxn := nroot .@ "buftxn".
 
-Theorem wp_ReadInode γ γtxn (inum : u64) len blk (btxn : loc) dinit P0 ibuf :
+Theorem wp_ReadInode γ γtxn (inum : u64) len blk (btxn : loc) dinit P0 :
   {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
-      buftxn_maps_to γtxn (inum2addr inum) (existT KindInode (bufInode ibuf)) ∗
-      ⌜encodes_inode len blk ibuf⌝ ∗
+      is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
       ⌜ inum ∈ covered_inodes ⌝ }}}
     ReadInode #btxn #inum
   {{{ l, RET #l;
       is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
-      buftxn_maps_to γtxn (inum2addr inum) (existT KindInode (bufInode ibuf)) ∗
+      is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
       is_inode_mem l inum len blk }}}.
 Proof.
-  iIntros (Φ) "(Hbuftxn & Henc & % & %) HΦ".
+  iIntros (Φ) "(Hbuftxn & Henc & %Hcovered) HΦ".
+  iNamed "Henc".
 
   wp_call.
   wp_apply (wp_inum2Addr); auto.
   {
     iPureIntro.
-    rewrite /covered_inodes in H1.
-    eapply rangeSet_lookup in H1; try lia.
+    rewrite /covered_inodes in Hcovered.
+    eapply rangeSet_lookup in Hcovered; try lia.
     rewrite /NumInodes /InodeSz. simpl. lia.
   }
 
   replace (#(LitInt (word.mul 128 8))) with (#1024%nat) by reflexivity.
-  wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn $Henc]"); eauto.
+  wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn $Hinode_enc_mapsto]"); eauto.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
   wp_pures. wp_call.
@@ -146,8 +146,8 @@ Proof.
   iIntros (bufslice) "[Hbufdata Hbufwithoutdata]".
   rewrite is_buf_data_has_obj. iDestruct "Hbufdata" as (bufdata) "[Hbufslice %]".
   wp_apply (wp_new_dec with "Hbufslice").
-  { rewrite /encodes_inode in H0.
-    rewrite /data_has_obj /= in H2. subst. eauto. }
+  { rewrite /encodes_inode in Hinode_encodes.
+    rewrite /data_has_obj /= in H0. subst. eauto. }
   iIntros (dec) "Hdec".
   wp_storeField.
   wp_apply (wp_Dec__GetInt with "Hdec"). iIntros "Hdec".
@@ -163,36 +163,35 @@ Proof.
   }
   wp_pures.
   iApply "HΦ".
-  iFrame.
+  iFrame. iExists _. iFrame "∗%".
 Qed.
 
 Definition is_inode_stable γ (inum: u64) : iProp Σ :=
   ∃ (state: list u8),
     "Hinode_state" ∷ mapsto (hG := γ.(simple_src)) inum 1%Qp (sync state) ∗
-    "Hinode_disk" ∷ is_inode_disk γ inum state.
+    "Hinode_disk" ∷ is_inode inum state (durable_mapsto γ.(simple_buftxn)).
 
 Definition N := nroot .@ "simplenfs".
 
-Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents P0 dinit bbuf :
+Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents P0 dinit :
   {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
       is_inode_mem ip inum len blk ∗
-      ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
-      ⌜ len = length contents ⌝ ∗
-      buftxn_maps_to γtxn (blk2addr blk) (existT _ (defs.bufBlock bbuf))
+      is_inode_data len blk contents (buftxn_maps_to γtxn)
   }}}
     Inode__Read #ip #btxn #offset #bytesToRead
   {{{ resSlice (eof : bool) (vs : list u8), RET (slice_val resSlice, #eof);
       is_slice resSlice u8T 1 vs ∗
       is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
       is_inode_mem ip inum len blk ∗
-      buftxn_maps_to γtxn (blk2addr blk) (existT _ (defs.bufBlock bbuf)) ∗
+      is_inode_data len blk contents (buftxn_maps_to γtxn) ∗
       ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
       ⌜ eof = true <-> (int.nat offset + length vs ≥ int.nat len)%nat ⌝
   }}}.
 Proof.
-  iIntros (Φ) "(Hbuftxn & Hmem & % & % & Hdata) HΦ".
+  iIntros (Φ) "(Hbuftxn & Hmem & Hdata) HΦ".
   wp_call.
   iNamed "Hmem".
+  iNamed "Hdata".
   wp_loadField.
   wp_if_destruct.
   { wp_pures.
@@ -200,7 +199,8 @@ Proof.
     iApply "HΦ".
     iSplitR.
     { iApply (is_slice_zero (V:=u8)). }
-    iFrame.
+    iFrame. iSplit.
+    { iExists _. iFrame "∗%". }
     iPureIntro; intuition.
     simpl. lia.
   }
@@ -209,98 +209,119 @@ Proof.
   iIntros (count) "Hcount".
   wp_pures.
   wp_loadField. wp_load.
-  wp_if_destruct.
-  - wp_loadField. wp_store. wp_pures.
-    wp_apply util_proof.wp_DPrintf.
-    wp_pures.
-    wp_apply (wp_NewSlice (V:=u8)).
-    iIntros (dataslice) "Hdataslice".
-    wp_apply wp_ref_to; first by val_ty.
-    iIntros (datavar) "Hdatavar".
-    wp_pures.
-    wp_loadField.
-    wp_apply wp_block2addr.
-    wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn $Hdata]"); first by reflexivity.
 
-    iIntros (dirty bufptr) "[Hbuf Hbufupd]".
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_apply wp_ref_to; first by val_ty.
-    iIntros (b) "Hb".
-    wp_pures.
-
-    replace (replicate (int.nat 0%Z) IntoVal_def) with (@nil u8) by reflexivity.
-
-    wp_apply (wp_forUpto (λ i,
-      ∃ dataslice vs,
-        "Hdatavar" ∷ datavar ↦[slice.T byteT] (slice_val dataslice) ∗
-        "Hdataslice" ∷ is_slice dataslice byteT 1 vs ∗
-        "%Hcontent" ∷ ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
-        "Hbuf" ∷ is_buf bufptr (blk2addr blk) {|
-           bufKind := projT1 (existT KindBlock (bufBlock bbuf));
-           bufData := projT2 (existT KindBlock (bufBlock bbuf));
-           bufDirty := dirty |}
-      )%I with "[] [$Hb Hdatavar Hdataslice Hbuf]").
-    { word. }
-    {
-      iIntros (b').
-      iIntros (Φ') "!>".
-      iIntros "(HI & Hb & %Hbound) HΦ'".
-      iNamed "HI".
-      wp_pures.
-      wp_load.
-      wp_apply (wp_buf_loadField_data with "Hbuf").
-      iIntros (vslice) "[Hbufdata Hbufnodata]".
-      simpl.
-      apply (f_equal length) in Hcontent as Hlens.
-      autorewrite with len in Hlens.
-      rewrite -> word.unsigned_sub, wrap_small in Hbound by word.
-      wp_apply (wp_SliceGet (V:=u8) with "[$Hbufdata]").
-      { admit. }
-      iIntros "Hbufdata".
-      wp_load.
-      wp_apply (wp_SliceAppend (V:=u8) with "Hdataslice").
-      iIntros (dataslice') "Hdataslice".
-      wp_store.
-      iApply "HΦ'".
-      iFrame "Hb".
-      iExists _, _.
-      iFrame "Hdatavar".
-      iFrame "Hdataslice".
-      iSplitR.
-      { rewrite app_length /=.
-        admit.
-      }
-      iApply is_buf_return_data. iFrame.
-    }
-    {
-      iExists _, _.
-      iFrame.
-      rewrite /= //.
-    }
-
-    iIntros "(HI & Hb)".
-    iNamed "HI".
-
-    iMod ("Hbufupd" with "[$Hbuf] []") as "[Hbuftxn Hbuf]".
-    { intuition. }
-
-    wp_apply util_proof.wp_DPrintf.
-    wp_load.
-    wp_pures.
-    iApply "HΦ".
-    iFrame "Hdataslice Hbuftxn".
+  wp_apply (wp_If_join
+    ("Hcount" ∷ count ↦[uint64T] #(U64 (Z.min (int.Z bytesToRead) (int.Z len - int.Z offset))) ∗
+     "Hisize" ∷ ip ↦[Inode.S :: "Size"] #len) with "[Hcount Hisize]").
+  1: iSplit.
+  { iIntros "[%Hdec HΦ]". apply bool_decide_eq_true_1 in Hdec.
+    wp_loadField. wp_store.
+    iApply "HΦ". iFrame.
+    rewrite Z.min_r.
+    2: { revert Hdec. word_cleanup. (* what if [offset+bytesToRead] overflows? *) admit. }
+    replace (word.sub len offset) with (U64 (int.Z len - int.Z offset)) by word.
     iFrame.
+  }
+  { iIntros "[%Hdec HΦ]". apply bool_decide_eq_false_1 in Hdec.
+    rewrite Z.min_l.
+    2: { revert Hdec. word_cleanup. (* what if [offset+bytesToRead] overflows? *) admit. }
+    replace (bytesToRead) with (U64 (int.Z bytesToRead)) by word.
+    (* XXX how to get rid of the outermost [WP #()]? *)
+    admit.
+  }
+  iIntros "H". iNamed "H".
 
-    iPureIntro. intuition (try congruence).
-    { subst.
-      apply (f_equal length) in Hcontent as Hlen.
-      apply (f_equal length) in H0 as Hlen2.
-      move: Hlen Hlen2; len.
-      admit. }
+  wp_apply util_proof.wp_DPrintf.
+  wp_pures.
+  wp_apply (wp_NewSlice (V:=u8)).
+  iIntros (dataslice) "Hdataslice".
+  wp_apply wp_ref_to; first by val_ty.
+  iIntros (datavar) "Hdatavar".
+  wp_pures.
+  wp_loadField.
+  wp_apply wp_block2addr.
+  wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn $Hdiskblk]"); first by reflexivity.
 
-  - admit.
+  iIntros (dirty bufptr) "[Hbuf Hbufupd]".
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_apply wp_ref_to; first by val_ty.
+  iIntros (b) "Hb".
+  wp_pures.
+
+  replace (replicate (int.nat 0%Z) IntoVal_def) with (@nil u8) by reflexivity.
+
+  wp_apply (wp_forUpto (λ i,
+    ∃ dataslice vs,
+      "Hdatavar" ∷ datavar ↦[slice.T byteT] (slice_val dataslice) ∗
+      "Hdataslice" ∷ is_slice dataslice byteT 1 vs ∗
+      "%Hcontent" ∷ ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
+      "Hbuf" ∷ is_buf bufptr (blk2addr blk) {|
+         bufKind := projT1 (existT KindBlock (bufBlock bbuf));
+         bufData := projT2 (existT KindBlock (bufBlock bbuf));
+         bufDirty := dirty |}
+    )%I with "[] [$Hb Hdatavar Hdataslice Hbuf]").
+  { word. }
+  {
+    iIntros (b').
+    iIntros (Φ') "!>".
+    iIntros "(HI & Hb & %Hbound) HΦ'".
+    iNamed "HI".
+    wp_pures.
+    wp_load.
+    wp_apply (wp_buf_loadField_data with "Hbuf").
+    iIntros (vslice) "[Hbufdata Hbufnodata]".
+    simpl.
+    apply (f_equal length) in Hcontent as Hlens.
+    autorewrite with len in Hlens.
+(*
+    rewrite -> word.unsigned_sub, wrap_small in Hbound by word.
+*)
+    wp_apply (wp_SliceGet (V:=u8) with "[$Hbufdata]").
+    { admit. }
+    iIntros "Hbufdata".
+    wp_load.
+    wp_apply (wp_SliceAppend (V:=u8) with "Hdataslice").
+    iIntros (dataslice') "Hdataslice".
+    wp_store.
+    iApply "HΦ'".
+    iFrame "Hb".
+    iExists _, _.
+    iFrame "Hdatavar".
+    iFrame "Hdataslice".
+    iSplitR.
+    { rewrite app_length /=.
+      admit.
+    }
+    iApply is_buf_return_data. iFrame.
+  }
+  {
+    iExists _, _.
+    iFrame.
+    rewrite /= //.
+  }
+
+  iIntros "(HI & Hb)".
+  iNamed "HI".
+
+  iMod ("Hbufupd" with "[$Hbuf] []") as "[Hbuftxn Hbuf]".
+  { intuition. }
+
+  wp_apply util_proof.wp_DPrintf.
+  wp_load.
+  wp_pures.
+  iApply "HΦ".
+  iFrame "Hdataslice Hbuftxn".
+  iFrame. iSplit.
+  { iExists _. iFrame "∗%". }
+
+  iPureIntro. intuition (try congruence).
+  { subst.
+    apply (f_equal length) in Hcontent as Hlen.
+    apply (f_equal length) in Hdiskdata as Hlen2.
+    move: Hlen Hlen2; len.
+    admit. }
 Admitted.
 
 Definition is_fh (s : Slice.t) (fh : u64) : iProp Σ :=
@@ -481,30 +502,19 @@ Proof.
   wp_apply (wp_LockMap__Acquire with "[$Hislm]"); first by intuition eauto.
   iIntros "[Hstable Hlocked]".
   iNamed "Hstable".
+
+  iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]".
+  { solve_ndisj. }
   iNamed "Hinode_disk".
 
-  (* XXX weird pattern: caller gets to lift predicates into buftxn *)
-  iNamed "Hinode_enc".
-  iMod (lift_into_txn with "Hbuftxn Hinode_enc_mapsto") as "[Hinode_enc_mapsto Hbuftxn]".
-  { solve_ndisj. }
+  wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.
+  iIntros (ip) "(Hbuftxn & Hinode_enc & Hinode_mem)".
 
-  wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc_mapsto]"); first by intuition eauto.
-  iIntros (ip) "(Hbuftxn & Hinode_enc_mapsto & Hinode_mem)".
-
-  iNamed "Hinode_data".
-  iMod (lift_into_txn with "Hbuftxn Hdiskblk") as "[Hdiskblk Hbuftxn]".
-  { solve_ndisj. }
-
-  wp_apply (wp_Inode__Read with "[$Hbuftxn $Hinode_mem $Hdiskblk]").
-  { eauto. }
-  iIntros (resSlice eof vs) "(HresSlice & Hbuftxn & Hinode_mem & Hdiskblk & %Hvs & %Heof)".
-  wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc_mapsto Hdiskblk]").
+  wp_apply (wp_Inode__Read with "[$Hbuftxn $Hinode_mem $Hinode_data]").
+  iIntros (resSlice eof vs) "(HresSlice & Hbuftxn & Hinode_mem & Hinode_data & %Hvs & %Heof)".
+  wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
+  4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
   all: try solve_ndisj.
-  2: {
-    iCombine "Hinode_enc_mapsto Hdiskblk" as "H".
-    generalize (buftxn_maps_to γtxn); intros u.
-    iExact "H".
-  }
   { typeclasses eauto. }
 
   iIntros (ok) "Hcommit".
@@ -560,11 +570,8 @@ Proof.
     wp_loadField.
     wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
     { iExists _. iFrame.
-      iDestruct "Hcommit" as "(Hinum & Hblk)".
-      iExists _. iSplitL "Hinum".
-      { iExists _. iFrame. iFrame "%". }
-      iExists _. iFrame. iFrame "%".
-    }
+      iDestruct "Hcommit" as "(Hinode_enc & Hinode_data)".
+      iExists _. iFrame. }
 
     wp_apply (wp_LoadAt with "[Status Resok Resfail]").
     { iModIntro. iApply nfstypes_read3res_merge. iFrame. }
@@ -613,11 +620,7 @@ Transparent nfstypes.READ3res.S.
     wp_loadField.
     wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
     { iExists _. iFrame.
-      iDestruct "Hcommit" as "(Hblk & Hinum & _)".
-      iExists _. iSplitL "Hinum".
-      { iExists _. iFrame. iFrame "%". }
-      iExists _. iFrame. iFrame "%".
-    }
+      iDestruct "Hcommit" as "[Hinode_disk _]". iFrame. }
 
     wp_apply (wp_LoadAt with "[Status Resok Resfail]").
     { iModIntro. iApply nfstypes_read3res_merge. iFrame. }
