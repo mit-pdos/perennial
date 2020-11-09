@@ -91,20 +91,20 @@ Proof.
   wp_call.
   rewrite /addr2val /inum2addr /=.
   rewrite /LogSz /InodeSz.
+
+  rewrite /NumInodes /InodeSz in H.
+  replace (4096 `div` 128) with (32) in H by reflexivity.
+
   replace (word.add (word.divu (word.sub 4096 8) 8) 2)%Z with (U64 513) by reflexivity.
-  
-(*
-  replace (word.mul (word.mul inum 128) 8)%Z with (U64 (inum * 128 * 8)%nat).
+  replace (word.mul (word.mul inum 128) 8)%Z with (U64 (int.nat inum * 128 * 8)%nat).
   { iApply "HΦ". done. }
 
-  revert H.
-  rewrite /NumInodes /InodeSz.
-  replace (4096 `div` 128) with (32) by reflexivity.
-  intros.
-  word_cleanup.
-  admit.
-*)
-Admitted.
+  assert (int.Z (word.mul (word.mul inum 128) 8) = int.Z inum * 1024)%Z.
+  { rewrite word.unsigned_mul.
+    rewrite word.unsigned_mul. word. }
+
+  word.
+Qed.
 
 Theorem wp_block2addr bn :
   {{{ True }}}
