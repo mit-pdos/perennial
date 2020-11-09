@@ -474,7 +474,9 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
         ⌜ getField_f nfstypes.READ3resok.S "Data" resok = slice_val dataslice ⌝ ∗
         is_slice dataslice u8T 1%Qp databuf ∗
         Q (SimpleNFS.OK (eof, databuf)) ) ∨
-      ( ⌜ getField_f nfstypes.READ3res.S "Status" v ≠ #(U32 0) ⌝ ∗
+      ( ∃ (stat : Z),
+        ⌜ getField_f nfstypes.READ3res.S "Status" v = #(U32 stat) ⌝ ∗
+        ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.
 Proof using Ptimeless.
@@ -522,13 +524,13 @@ Proof using Ptimeless.
 
     wp_load.
     iApply "HΦ".
-    iRight.
+    iRight. iExists _.
     iFrame "HQ".
     iPureIntro.
     Transparent nfstypes.READ3res.S.
-    simpl.
+    simpl. intuition eauto.
     Opaque nfstypes.READ3res.S.
-    intro He. inversion He. (* XXX why doesn't [congruence] do the right thing? *)
+    lia.
   }
 
   wp_loadField.
@@ -676,12 +678,12 @@ Transparent nfstypes.READ3res.S.
     { iModIntro. iApply nfstypes_read3res_merge. iFrame. }
     iIntros "Hreply".
     iApply "HΦ".
-    iRight. iFrame "HQ".
+    iRight. iExists _. iFrame "HQ".
     iPureIntro.
     Transparent nfstypes.READ3res.S.
-    simpl.
+    simpl. intuition eauto.
     Opaque nfstypes.READ3res.S.
-    done.
+    lia.
 Qed.
 
 End heap.
