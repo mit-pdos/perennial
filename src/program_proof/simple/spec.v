@@ -72,8 +72,9 @@ Definition setattr (f : fh) (a : sattr) (i : async buf) : transition State unit 
   end.
 
 Definition read (f : fh) (off : u64) (count : u32) (i : async buf) : transition State (bool * buf) :=
-  let resbuf := firstn (int.nat count) (skipn (int.nat off) (latest i)) in
-  let reseof := if ge_dec (int.nat off + int.nat count) (length (latest i)) then true else false in
+  readcount <- suchThat (gen:=fun _ _ => None) (λ s readcount, int.nat off + readcount ≤ length (latest i));
+  let resbuf := firstn readcount (skipn (int.nat off) (latest i)) in
+  let reseof := if ge_dec (int.nat off + readcount) (length (latest i)) then true else false in
   ret (reseof, resbuf).
 
 Definition write (f : fh) (off : u64) (stab : stable) (data : buf) (i : async buf) : transition State write_ok :=

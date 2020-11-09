@@ -185,6 +185,7 @@ Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (byt
       is_inode_mem ip inum len blk ∗
       is_inode_data len blk contents (buftxn_maps_to γtxn) ∗
       ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
+      ⌜ length vs ≤ int.nat bytesToRead ⌝ ∗
       ⌜ eof = true <-> (int.nat offset + length vs ≥ int.nat len)%nat ⌝
   }}}.
 Proof.
@@ -201,8 +202,7 @@ Proof.
     { iApply (is_slice_zero (V:=u8)). }
     iFrame. iSplit.
     { iExists _. iFrame "∗%". }
-    iPureIntro; intuition.
-    simpl. lia.
+    iPureIntro; intuition; simpl; lia.
   }
 
   wp_apply wp_ref_to; first by val_ty.
@@ -219,14 +219,17 @@ Proof.
   1: iSplit.
   { iIntros "[%Hdec HΦ]". apply bool_decide_eq_true_1 in Hdec.
     wp_loadField. wp_store.
-    iApply "HΦ". iFrame.
+    iApply "HΦ".
     iExists _. iFrame. iPureIntro. split.
     { lia. }
     word.
   }
   { iIntros "[%Hdec HΦ]". apply bool_decide_eq_false_1 in Hdec.
-    (* XXX how to get rid of the outermost [WP #()]? *)
-    admit.
+    iApply wp_value.
+    iApply "HΦ".
+    iExists _. iFrame. iPureIntro. split.
+    { lia. }
+    revert Hdec. word.
   }
   iIntros "H". iNamed "H".
 
@@ -322,6 +325,9 @@ Proof.
   { iExists _. iFrame "∗%". }
 
   iPureIntro. intuition (try congruence).
+  {
+    lia.
+  }
   {
     apply bool_decide_eq_true_1 in H0.
     rewrite Hvslen. revert H0. word.
@@ -520,6 +526,7 @@ Proof.
 
   wp_apply (wp_Inode__Read with "[$Hbuftxn $Hinode_mem $Hinode_data]").
   iIntros (resSlice eof vs) "(HresSlice & Hbuftxn & Hinode_mem & Hinode_data & %Hvs & %Heof)".
+
   wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
   4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
   all: try solve_ndisj.
@@ -569,6 +576,8 @@ Proof.
       instantiate (3 := false).
       simpl.
       monad_simpl.
+      econstructor. { econstructor. instantiate (1 := length vs). admit. }
+      monad_simpl.
     }
     iMod "Hfupd" as "[HP HQ]".
     iMod ("Hclose" with "[Hsrcown Hsrcheap HP]").
@@ -594,11 +603,11 @@ Transparent nfstypes.READ3res.S.
     iFrame. iExactEq "HQ".
     f_equal. f_equal. f_equal.
     { destruct eof; (intuition idtac);
-        destruct (ge_dec (int.nat offset + int.nat count) (length state)); try reflexivity.
-      { (* need [length vs <= count]? *) admit. }
-      { symmetry. eapply H3. admit. }
+        destruct (ge_dec (int.nat offset + length vs) (length state)); try reflexivity.
+      { exfalso. apply n. revert H3. admit. }
+      { symmetry. eapply H5. revert g. admit. }
     }
-    { rewrite -Hvs. (* again, [length vs] and [count].. *) admit. }
+    { eauto. }
 
   - wp_storeField.
 
