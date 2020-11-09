@@ -13,7 +13,7 @@ Theorem wp_forBreak_cond (I: bool -> iProp Σ) stk E (cond body: val) :
     if: cond #() then body #() else #false @ stk; E
   {{{ r, RET #r; I r }}} -∗
   {{{ I true }}}
-    (for: cond; (λ: <>, (λ: <>, #())%V #())%V :=
+    (for: cond; (λ: <>, Skip)%V :=
        body) @ stk; E
   {{{ RET #(); I false }}}.
 Proof.
@@ -51,7 +51,7 @@ Theorem wp_forBreak (I: bool -> iProp Σ) stk E (body: val) :
     body #() @ stk; E
   {{{ r, RET #r; I r }}} -∗
   {{{ I true }}}
-    (for: (λ: <>, #true)%V ; (λ: <>, (λ: <>, #())%V #())%V :=
+    (for: (λ: <>, #true)%V ; (λ: <>, Skip)%V :=
        body) @ stk; E
   {{{ RET #(); I false }}}.
 Proof.
@@ -62,6 +62,40 @@ Proof.
   wp_pures.
   wp_apply ("Hbody" with "[$]").
   iFrame.
+Qed.
+
+
+Theorem wp_forBreak_cond' (P: iProp Σ) stk E (cond body: val) (Φ : val → iProp Σ) :
+  P -∗
+  □ (P -∗
+      WP if: cond #() then body #() else #false @ stk; E
+      {{ v, ⌜v = #true⌝ ∗ P ∨ ⌜v = #false⌝ ∗ Φ #() }}) -∗
+  WP (for: cond; (λ: <>, Skip)%V := body) @ stk; E {{ Φ }}.
+Proof.
+  iIntros "HP #Hloop".
+  iApply (wp_forBreak_cond (λ b, ⌜b = true⌝ ∗ P ∨ ⌜b = false⌝ ∗ Φ #()) with "[] [-]")%I.
+  - iIntros "!#" (Φ') "Hinv HΦ'".
+    iDestruct "Hinv" as "[[_ HP]|[% _]]"; last done.
+    iSpecialize ("Hloop" with "HP").
+    iApply (wp_wand with "[HΦ' Hloop]").
+    { iApply wp_frame_step_l'. iFrame. }
+    iIntros (v) "[HP [[-> Hpost]|[-> Hpost]]]".
+    + iApply "HP". iLeft. eauto.
+    + iApply "HP". iRight. eauto.
+  - iLeft. eauto.
+  - iNext. iIntros "[[% _]|[_ HΦ]]"; first done.
+    eauto.
+Qed.
+
+Theorem wp_forBreak' (P: iProp Σ) stk E (body: val) (Φ : val → iProp Σ) :
+  P -∗
+  □ (P -∗
+      WP body #() @ stk; E
+      {{ v, ⌜v = #true⌝ ∗ P ∨ ⌜v = #false⌝ ∗ Φ #() }}) -∗
+  WP (for: (λ: <>, #true)%V; (λ: <>, Skip)%V := body) @ stk; E {{ Φ }}.
+Proof.
+  iIntros "HP #Hloop". iApply (wp_forBreak_cond' with "HP").
+  iIntros "!# HP". wp_pures. iApply "Hloop". done.
 Qed.
 
 Local Opaque load_ty store_ty.
@@ -284,3 +318,13 @@ Proof.
 Qed.
 
 End goose_lang.
+
+(** Tactics for convenient loop reasoning *)
+Ltac wp_forBreak_cond :=
+  wp_bind (For _ _ _); iApply (wp_forBreak_cond' with "[-]");
+  [ by iNamedAccu
+  | iIntros "!# __CTX"; iNamed "__CTX" ].
+Ltac wp_forBreak :=
+  wp_bind (For _ _ _); iApply (wp_forBreak' with "[-]");
+  [ by iNamedAccu
+  | iIntros "!# __CTX"; iNamed "__CTX" ].

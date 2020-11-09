@@ -74,43 +74,30 @@ Lemma overflow_guard_incr_spec stk E (v:u64) :
      RET #(); ⌜((int.Z v) + 1 = int.Z (word.add v 1))%Z⌝
 }}}.
 Proof.
-  iIntros (Φ) "Hpre Hpost".
+  iIntros (Φ) "_ Hpost".
   wp_lam. wp_pures.
-  wp_apply (wp_forBreak_cond
-              (fun b => ((⌜b = true⌝ ∨ ⌜((int.Z v) + 1 = int.Z (word.add v 1))%Z⌝)
-)) with "[] []")%I; eauto.
+  wp_forBreak_cond.
+  wp_pures.
+  destruct bool_decide eqn:Hineq.
   {
-    iIntros (Ψ). iModIntro.
-    iIntros "_ HΨpost".
-    wp_pures.
-    destruct bool_decide eqn:Hineq.
-    {
-      apply bool_decide_eq_true in Hineq.
-      wp_pures.
-      iApply "HΨpost".
-      iFrame; by iLeft.
-    }
-    {
-      apply bool_decide_eq_false in Hineq.
-      wp_pures.
-      iApply "HΨpost". iFrame; iRight.
-      iPureIntro.
-      assert (int.Z (word.add v 1) >= int.Z v)%Z by lia.
-      destruct (bool_decide ((int.Z v) + 1 < 2 ^ 64 ))%Z eqn:Hnov.
-      {
-        apply bool_decide_eq_true in Hnov.
-        word.
-      }
-      apply bool_decide_eq_false in Hnov.
-      assert (int.Z v + (int.Z 1) >= 2 ^ 64)%Z.
-      { replace (int.Z 1)%Z with (1)%Z by word. lia. }
-      apply sum_overflow_check in H0.
-      contradiction.
-    }
+    apply bool_decide_eq_true in Hineq.
+    wp_pures. iLeft. by iFrame.
   }
   {
-    iIntros "[ %| %]"; first discriminate.
-    by iApply "Hpost".
+    apply bool_decide_eq_false in Hineq.
+    wp_pures. iRight. iSplitR; first done.
+    iApply "Hpost". iPureIntro.
+    assert (int.Z (word.add v 1) >= int.Z v)%Z by lia.
+    destruct (bool_decide ((int.Z v) + 1 < 2 ^ 64 ))%Z eqn:Hnov.
+    {
+      apply bool_decide_eq_true in Hnov.
+      word.
+    }
+    apply bool_decide_eq_false in Hnov.
+    assert (int.Z v + (int.Z 1) >= 2 ^ 64)%Z.
+    { replace (int.Z 1)%Z with (1)%Z by word. lia. }
+    apply sum_overflow_check in H0.
+    contradiction.
   }
 Qed.
 
@@ -418,36 +405,22 @@ Proof.
   wp_let.
   wp_apply wp_fork.
   {
-    Hint Resolve r_has_zero : core.
-    wp_apply (wp_allocStruct); first eauto.
+    wp_apply (wp_allocStruct); first by eauto.
     iIntros (l) "Hl".
     iDestruct (struct_fields_split with "Hl") as "[HStale HRet]".
     iNamed "HStale"; iNamed "HRet".
     wp_let. wp_pures.
-    wp_apply (wp_forBreak
-                (fun b => ⌜b = true⌝∗
-                                   ∃ reply, (own_reply l reply)
-                )%I with "[] [Stale Ret]");
-             try eauto.
-    {
-    iIntros (Ψ).
-    iModIntro.
-    iIntros "[_ Hpre] Hpost".
-    iDestruct "Hpre" as (reply') "Hreply".
-    wp_apply ("Hspec" with "[Hreply]"); eauto; try iFrame "#".
-
+    (* Set up loop invariant *)
+    iAssert (∃ reply, (own_reply l reply))%I with "[Stale Ret]" as "Hreply".
+    { iExists {| Stale:=false; Ret:=r_default |}. iFrame. }
+    wp_forBreak. wp_pures.
+    iDestruct "Hreply" as (reply') "Hreply".
+    wp_apply ("Hspec" with "[-]").
+    { iFrame "#∗". }
     iIntros "fPost".
-    wp_seq.
-    iApply "Hpost".
-    iSplitL ""; first done.
+    wp_seq. iLeft. iSplitR; first done.
     iDestruct "fPost" as (reply'') "[Hreply fPost]".
     iExists _. done.
-    }
-    {
-      iSplit; try done.
-      iExists {| Stale:=false; Ret:=r_default |}.
-      iFrame.
-    }
   }
   wp_seq.
   wp_apply (nondet_spec).
@@ -575,93 +548,55 @@ Proof using Type*.
   iMod (make_request {| Args:=args; CID:=cid; rpc.Seq:=cseqno|} PreCond PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
   { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
-  wp_apply (wp_forBreak
-              (fun b =>
- (let req := ({| Args := args; CID:= cid; rpc.Seq := cseqno|}) in
-    "#Hargs" ∷ read_request req_ptr req
-  ∗ "#Hargsinv" ∷ is_RPCRequest γrpc γP PreCond PostCond req
-  ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
-  ∗ "Hseq" ∷ (ck_l ↦[Clerk.S :: "seq"] #(LitInt (word.add req.(rpc.Seq) 1)))
-  ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] #srv
-  ∗ "Hreq_ptr_ptr" ∷ req_ptr_ptr ↦[refT (uint64T * (uint64T * (uint64T * unitT))%ht)] #req_ptr
-  ∗ "Herrb_ptr" ∷ (∃ (err:bool), errb_ptr ↦[boolT] #err)
-  ∗ "Hreply" ∷ (∃ reply', own_reply reply_ptr reply' ∗ (⌜b = true⌝ ∨ PostCond args reply'.(Ret) ))
-  ∗ "HγP" ∷ (⌜b = false⌝ ∨ own γP (Excl ()))
-  ∗ ("Hcseq_own" ∷ RPCClient_own γrpc req.(CID) (word.add req.(rpc.Seq) 1))
-  ∗ ("Hpost" ∷ ∀ v : val, (∃ retv : u64, ⌜v = #retv⌝ ∗ own_clerk #ck_l srv γrpc ∗ PostCond args retv) -∗ Φ v)
-              ))%I with "[] [-]"); eauto.
+  (* Prepare the loop invariant *)
+  iAssert (∃ (err:bool), errb_ptr ↦[boolT] #err)%I with "[Herrb_ptr]" as "Herrb_ptr".
+  { iExists _. done. }
+  iAssert (∃ reply', own_reply reply_ptr reply')%I with "[Hreply]" as "Hreply".
+  { iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
+    iExists {| Ret:=_; Stale:=false |}. iFrame. }
+  wp_forBreak.
+  iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
+  wp_load.
+  wp_loadField.
+  iDestruct "Hreply" as (lockReply) "Hreply".
+  wp_apply ("Hfspec" with "[Hreply]").
   {
-    iIntros (Ψ).
-    iModIntro.
-    iIntros "Hpre HΨpost".
-    wp_lam.
-    iNamed "Hpre".
-    iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
+    iSplitL "".
+    { iExists _. iFrame "#". }
+    iFrame "#".
+    iDestruct "Hreply" as "[Hreply rest]".
+    eauto with iFrame.
+  }
+
+  iIntros (err) "HCallTryLockPost".
+  iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [#Hre | [#Hre HCallPost]]]".
+  { (* No reply from CallTryLock *)
+    iDestruct "Hre" as %->.
+    wp_store.
     wp_load.
-    wp_loadField.
-    iDestruct "Hreply" as (lockReply) "Hreply".
-    (* WHY: Why does this destruct not work when inside the proof for CalTryLock's pre? *)
-    wp_apply ("Hfspec" with "[Hreply]"); eauto.
-    {
-      iSplitL "".
-      { iExists _. iFrame "#". }
-      iFrame "#".
-      iDestruct "Hreply" as "[Hreply rest]".
-      iFrame.
-    }
-
-    iIntros (err) "HCallTryLockPost".
-    iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [#Hre | [#Hre HCallPost]]]".
-    { (* No reply from CallTryLock *)
-      iDestruct "Hre" as %->.
-      wp_store.
-      wp_load.
-      wp_pures.
-      iApply "HΨpost".
-      iFrame; iFrame "#".
-      iSplitL "Herrb_ptr"; eauto.
-      iExists _; iFrame. by iLeft.
-    }
-    { (* Got a reply from CallTryLock *)
-      iDestruct "Hre" as %->.
-      wp_store.
-      wp_load.
-      iDestruct "HγP" as "[%|HγP]"; first discriminate.
-      iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
-      {
-        iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
-        simpl in bad. replace (int.nat (word.add cseqno 1)) with (int.nat cseqno + 1) in bad by word. lia.
-      }
-      iMod (get_request_post with "Hargsinv Hrcptstoro HγP") as "HP"; first done.
-      wp_pures.
-      iNamed "Hreply".
-      iApply "HΨpost".
-      iFrame; iFrame "#".
-      iSplitL "Herrb_ptr"; eauto.
-      iSplitR ""; last by iLeft.
-      iExists _; iFrame.
-    }
-  }
-  {
-    iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
-    simpl.
+    wp_pures.
+    iLeft. iSplitR; first done.
     iFrame; iFrame "#".
-    iSplitL ""; eauto.
     iSplitL "Herrb_ptr"; eauto.
-    replace (int.nat cseqno + 1) with (int.nat (word.add cseqno 1)) by word.
-    iFrame.
-    iExists {| Ret:=_; Stale:=false |}.  iFrame. by iLeft.
   }
-
-  iIntros "LoopPost".
+  (* Got a reply from CallTryLock; leaving the loop *)
+  iDestruct "Hre" as %->.
+  wp_store.
+  wp_load.
+  iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
+  {
+    iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
+    simpl in bad. replace (int.nat (word.add cseqno 1)) with (int.nat cseqno + 1) in bad by word. lia.
+  }
+  iMod (get_request_post with "Hreqinv_init Hrcptstoro HγP") as "HP"; first done.
+  wp_pures.
+  iNamed "Hreply".
+  iRight. iSplitR; first done.
   wp_seq.
-  iNamed "LoopPost".
-  iDestruct "Hreply" as (lockReply) "[Hreply HP]". iNamed "Hreply".
-  iDestruct "HP" as "[%|HP]"; first discriminate.
   wp_loadField.
   iApply "Hpost".
-  iExists lockReply.(Ret); iFrame; iFrame "#".
-  iSplitL ""; first done.
+  iExists lockReply'.(Ret); iFrame; iFrame "#".
+  iSplitR; first done.
   unfold own_clerk.
   iExists _, _, (word.add cseqno 1)%nat; iFrame.
   simpl.
