@@ -72,7 +72,7 @@ Definition setattr (f : fh) (a : sattr) (i : async buf) : transition State unit 
   end.
 
 Definition read (f : fh) (off : u64) (count : u32) (i : async buf) : transition State (bool * buf) :=
-  readcount <- suchThat (gen:=fun _ _ => None) (λ s readcount, int.nat off + readcount ≤ length (latest i));
+  readcount <- suchThat (gen:=fun _ _ => None) (λ s readcount, readcount = 0 ∨ int.nat off + readcount ≤ length (latest i));
   let resbuf := firstn readcount (skipn (int.nat off) (latest i)) in
   let reseof := if ge_dec (int.nat off + readcount) (length (latest i)) then true else false in
   ret (reseof, resbuf).

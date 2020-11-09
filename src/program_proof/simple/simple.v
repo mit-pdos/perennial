@@ -29,7 +29,7 @@ Record simple_names := {
 }.
 
 Variable P : SimpleNFS.State -> iProp Σ.
-Context `{!forall σ, Timeless (P σ)}.
+Context `{Ptimeless : !forall σ, Timeless (P σ)}.
 
 Definition LogSz : nat := 513.
 Definition InodeSz : nat := 128.
@@ -38,14 +38,21 @@ Definition NumInodes : nat := 4096 / InodeSz.
 Definition covered_inodes : gset u64 :=
   rangeSet 2 (NumInodes-2).
 
+Definition no_overflows (src : SimpleNFS.State) : iProp Σ :=
+  ([∗ map] _↦istate ∈ src, ⌜∀ contents, contents ∈ possible istate -> (length contents < 2^64)%Z⌝)%I.
+
+Global Instance no_overflows_Persistent src : Persistent (no_overflows src).
+Proof. refine _. Qed.
+
 Definition is_source γ : iProp Σ :=
   ∃ (src: SimpleNFS.State),
-    ghost_var γ.(simple_state) (1/2) src ∗
+    "Hsrcown" ∷ ghost_var γ.(simple_state) (1/2) src ∗
     (* If we were doing a refinement proof, the top-level source_state would
      * own the ◯ of this ghost variable.. *)
-    gen_heap_ctx (hG := γ.(simple_src)) src ∗
-    ⌜dom (gset _) src = covered_inodes⌝ ∗
-    P src.
+    "Hsrcheap" ∷ gen_heap_ctx (hG := γ.(simple_src)) src ∗
+    "%Hdom" ∷ ⌜dom (gset _) src = covered_inodes⌝ ∗
+    "#Hnooverflow" ∷ no_overflows src ∗
+    "HP" ∷ P src.
 
 Definition encodes_inode (len: u64) (blk: u64) data : Prop :=
   has_encoding data (EncUInt64 len :: EncUInt64 blk :: nil).
@@ -147,7 +154,7 @@ Proof.
   rewrite is_buf_data_has_obj. iDestruct "Hbufdata" as (bufdata) "[Hbufslice %]".
   wp_apply (wp_new_dec with "Hbufslice").
   { rewrite /encodes_inode in Hinode_encodes.
-    rewrite /data_has_obj /= in H0. subst. eauto. }
+    rewrite /data_has_obj /= in H. subst. eauto. }
   iIntros (dec) "Hdec".
   wp_storeField.
   wp_apply (wp_Dec__GetInt with "Hdec"). iIntros "Hdec".
@@ -341,12 +348,12 @@ Proof.
     lia.
   }
   {
-    apply bool_decide_eq_true_1 in H0.
-    rewrite Hvslen. revert H0. word.
+    apply bool_decide_eq_true_1 in H.
+    rewrite Hvslen. revert H. word.
   }
   {
     eapply bool_decide_eq_true_2.
-    revert H0. rewrite Hvslen. word.
+    revert H. rewrite Hvslen. word.
   }
 Qed.
 
@@ -394,12 +401,12 @@ Proof.
   { iApply "HΦ". rewrite elem_of_covered_inodes.
     iPureIntro.
     split; [ inversion 1 | intros ].
-    move: H0; word. }
+    move: H; word. }
   wp_if_destruct.
   { iApply "HΦ". rewrite elem_of_covered_inodes.
     iPureIntro.
     split; [ inversion 1 | intros ].
-    move: H0; word. }
+    move: H; word. }
   wp_call.
   change (int.Z (word.divu _ _)) with 32%Z.
   wp_if_destruct.
@@ -470,7 +477,7 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
       ( ⌜ getField_f nfstypes.READ3res.S "Status" v ≠ #(U32 0) ⌝ ∗
         Q SimpleNFS.Err )
   }}}.
-Proof.
+Proof using Ptimeless.
   iIntros (Φ) "(Hfs & #Hfh & Hfupd) HΦ".
   iNamed "Hfs".
 
@@ -493,7 +500,7 @@ Proof.
     (* Simulate to get Q *)
     iApply fupd_wp.
     iInv "Hsrc" as ">Hopen" "Hclose".
-    iDestruct "Hopen" as (src) "(Hsrcown & Hsrcheap & %Hdom & HP)".
+    iNamed "Hopen".
     iDestruct ("Hfupd" with "[] HP") as "Hfupd".
     {
       iPureIntro.
@@ -510,7 +517,7 @@ Proof.
     }
     iMod "Hfupd" as "[HP HQ]".
     iMod ("Hclose" with "[Hsrcown Hsrcheap HP]").
-    { iModIntro. iExists _. iFrame "∗%". }
+    { iModIntro. iExists _. iFrame "∗%#". }
     iModIntro.
 
     wp_load.
@@ -537,7 +544,7 @@ Proof.
   iIntros (ip) "(Hbuftxn & Hinode_enc & Hinode_mem)".
 
   wp_apply (wp_Inode__Read with "[$Hbuftxn $Hinode_mem $Hinode_data]").
-  iIntros (resSlice eof vs) "(HresSlice & Hbuftxn & Hinode_mem & Hinode_data & %Hvs & %Heof)".
+  iIntros (resSlice eof vs) "(HresSlice & Hbuftxn & Hinode_mem & Hinode_data & %Hvs & %Hvslen & %Heof)".
 
   wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
   4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
@@ -574,8 +581,9 @@ Proof.
     (* Simulate to get Q *)
     iApply fupd_wp.
     iInv "Hsrc" as ">Hopen" "Hclose".
-    iDestruct "Hopen" as (src) "(Hsrcown & Hsrcheap & %Hdom & HP)".
+    iNamed "Hopen".
     iDestruct (gen_heap_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
+    iDestruct (big_sepM_lookup with "Hnooverflow") as %Hnooverflow; eauto.
     iDestruct ("Hfupd" with "[] HP") as "Hfupd".
     {
       iPureIntro.
@@ -588,12 +596,20 @@ Proof.
       instantiate (3 := false).
       simpl.
       monad_simpl.
-      econstructor. { econstructor. instantiate (1 := length vs). admit. }
+      econstructor. { econstructor. instantiate (1 := length vs).
+        destruct (decide (length vs = 0)) eqn:He; eauto. right.
+        rewrite -Hvs. rewrite take_length.
+        rewrite drop_length.
+        destruct (decide (int.nat offset ≤ length state)); first by lia.
+        exfalso.
+        rewrite -> drop_ge in Hvs by lia. rewrite take_nil in Hvs.
+        subst. simpl in n. congruence.
+      }
       monad_simpl.
     }
     iMod "Hfupd" as "[HP HQ]".
     iMod ("Hclose" with "[Hsrcown Hsrcheap HP]").
-    { iModIntro. iExists _. iFrame "∗%". }
+    { iModIntro. iExists _. iFrame "∗%#". }
     iModIntro.
 
     wp_loadField.
@@ -613,11 +629,17 @@ Transparent nfstypes.READ3res.S.
     iSplit; first done.
     iSplit; first done.
     iFrame. iExactEq "HQ".
+    assert (length state < 2^64)%Z as Hlenstatebound.
+    { eapply Hnooverflow; clear Hnooverflow.
+      constructor. }
+    clear Hnooverflow.
+    assert (int.nat (U64 (Z.of_nat (length state))) = length state) as Hlenstate.
+    { word. }
     f_equal. f_equal. f_equal.
     { destruct eof; (intuition idtac);
         destruct (ge_dec (int.nat offset + length vs) (length state)); try reflexivity.
-      { exfalso. apply n. revert H3. admit. }
-      { symmetry. eapply H5. revert g. admit. }
+      { lia. }
+      { symmetry. eapply H2. lia. }
     }
     { eauto. }
 
@@ -626,7 +648,7 @@ Transparent nfstypes.READ3res.S.
     (* Simulate to get Q *)
     iApply fupd_wp.
     iInv "Hsrc" as ">Hopen" "Hclose".
-    iDestruct "Hopen" as (src) "(Hsrcown & Hsrcheap & %Hdom & HP)".
+    iNamed "Hopen".
     iDestruct (gen_heap_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
     iDestruct ("Hfupd" with "[] HP") as "Hfupd".
     {
@@ -643,7 +665,7 @@ Transparent nfstypes.READ3res.S.
     }
     iMod "Hfupd" as "[HP HQ]".
     iMod ("Hclose" with "[Hsrcown Hsrcheap HP]").
-    { iModIntro. iExists _. iFrame "∗%". }
+    { iModIntro. iExists _. iFrame "∗%#". }
     iModIntro.
 
     wp_loadField.
@@ -661,6 +683,6 @@ Transparent nfstypes.READ3res.S.
     simpl.
     Opaque nfstypes.READ3res.S.
     done.
-  Admitted.
+Qed.
 
 End heap.
