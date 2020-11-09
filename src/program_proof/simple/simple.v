@@ -926,4 +926,103 @@ Transparent nfstypes.GETATTR3res.S.
     lia.
 Admitted.
 
+Opaque nfstypes.WRITE3res.S.
+
+Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset : u64) (dataslice : Slice.t) (databuf : list u8) (Q : SimpleNFS.res u32 -> iProp Σ) (stab : u32) dinit :
+  {{{ is_fs γ nfs dinit ∗
+      is_fh fhslice fh ∗
+      is_slice dataslice u8T 1%Qp databuf ∗
+      ∀ σ σ' (r : SimpleNFS.res u32) E,
+        ⌜relation.denote (SimpleNFS.wrapper fh (SimpleNFS.write fh offset databuf)) σ σ' r⌝ -∗
+        ( P σ ={E}=∗ P σ' ∗ Q r )
+  }}}
+    Nfs__NFSPROC3_WRITE #nfs
+      (struct.mk_f nfstypes.WRITE3args.S [
+        "File" ::= struct.mk_f nfstypes.Nfs_fh3.S [
+          "Data" ::= slice_val fhslice
+        ];
+        "Offset" ::= #offset;
+        "Count" ::= #(U32 (length databuf));
+        "Stable" ::= #stab;
+        "Data" ::= (slice_val dataslice)
+      ])%V
+  {{{ v,
+      RET v;
+      ( ∃ (count : u32) resok,
+        ⌜ getField_f nfstypes.WRITE3res.S "Status" v = #(U32 0) ⌝ ∗
+        ⌜ getField_f nfstypes.WRITE3res.S "Resok" v = resok ⌝ ∗
+        ⌜ getField_f nfstypes.WRITE3resok.S "Count" resok = #count ⌝ ∗
+        Q (SimpleNFS.OK count) ) ∨
+      ( ∃ (stat : Z),
+        ⌜ getField_f nfstypes.WRITE3res.S "Status" v = #(U32 stat) ⌝ ∗
+        ⌜ stat ≠ 0 ⌝ ∗
+        Q SimpleNFS.Err )
+  }}}.
+Proof using Ptimeless.
+  iIntros (Φ) "(Hfs & #Hfh & Hdata & Hfupd) HΦ".
+  iNamed "Hfs".
+
+  wp_call.
+  wp_apply wp_ref_of_zero; first by auto.
+  iIntros (reply) "Hreply".
+  wp_apply util_proof.wp_DPrintf.
+  wp_loadField.
+  wp_apply (wp_BufTxn__Begin with "[$Histxn $Htxnsys]").
+  iIntros (γtxn buftx) "Hbuftxn".
+  wp_apply (wp_fh2ino with "Hfh").
+  wp_pures.
+  wp_apply util_proof.wp_DPrintf.
+  wp_apply (wp_validInum).
+  iIntros (valid) "%Hvalid".
+  wp_if_destruct.
+  { wp_apply (wp_storeField_struct with "Hreply"); first by auto.
+    iIntros "Hreply".
+
+    (* Simulate to get Q *)
+    iApply fupd_wp.
+    iInv "Hsrc" as ">Hopen" "Hclose".
+    iNamed "Hopen".
+    iDestruct ("Hfupd" with "[] HP") as "Hfupd".
+    {
+      iPureIntro.
+      simpl.
+      monad_simpl.
+      simpl.
+      destruct (src !! fh) eqn:He.
+      { exfalso.
+        assert (fh ∈ dom (gset u64) src) as Hin.
+        { apply elem_of_dom. rewrite He. eauto. }
+        rewrite Hdom in Hin. apply Hvalid in Hin. congruence. }
+      rewrite He.
+      econstructor. eauto.
+    }
+    iMod "Hfupd" as "[HP HQ]".
+    iMod ("Hclose" with "[Hsrcown Hsrcheap HP]").
+    { iModIntro. iExists _. iFrame "∗%#". }
+    iModIntro.
+
+    wp_load.
+    iApply "HΦ".
+    iRight. iExists _.
+    iFrame "HQ".
+    iPureIntro.
+    simpl. intuition eauto.
+    lia.
+  }
+
+  wp_loadField.
+  wp_apply (wp_LockMap__Acquire with "[$Hislm]"); first by intuition eauto.
+  iIntros "[Hstable Hlocked]".
+  iNamed "Hstable".
+
+  iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]".
+  { solve_ndisj. }
+  iNamed "Hinode_disk".
+
+  wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.
+  iIntros (ip) "(Hbuftxn & Hinode_enc & Hinode_mem)".
+
+  admit.
+Admitted.
+
 End heap.

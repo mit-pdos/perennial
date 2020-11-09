@@ -34,16 +34,6 @@ Record sattr := {
 
 Definition buf := list u8.
 
-Inductive stable :=
-| UNSTABLE
-| SYNC
-.
-
-Record write_ok := {
-  write_ok_count : u32;
-  write_ok_committed : stable;
-}.
-
 Definition State := gmap u64 buf.
 
 Definition wrapper (f : fh) `(fn : buf -> transition State T) : transition State (res T) :=
@@ -77,11 +67,11 @@ Definition read (f : fh) (off : u64) (count : u32) (i : buf) : transition State 
   let reseof := if ge_dec (int.nat off + readcount) (length i) then true else false in
   ret (reseof, resbuf).
 
-Definition write (f : fh) (off : u64) (stab : stable) (data : buf) (i : buf) : transition State write_ok :=
+Definition write (f : fh) (off : u64) (data : buf) (i : buf) : transition State u32 :=
   let i' := app i (replicate ((int.nat off + length data) - length i) (U8 0)) in
   let i'' := app (firstn (int.nat off) i')
              (app data (skipn (int.nat off + length data) i')) in
   _ <- modify (fun s => insert f i'' s);
-  ret (Build_write_ok (U32 (length data)) stab).
+  ret (U32 (length data)).
 
 End SimpleNFS.
