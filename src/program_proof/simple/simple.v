@@ -18,13 +18,13 @@ From Perennial.program_proof Require Import simple.spec.
 
 Section heap.
 Context `{!buftxnG Σ}.
-Context `{!ghost_varG Σ (gmap u64 (async (list u8)))}.
+Context `{!ghost_varG Σ (gmap u64 (list u8))}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Record simple_names := {
   simple_buftxn : buftxn_names Σ;
   simple_state : gname;
-  simple_src : gen_heapG u64 (async (list u8)) Σ;
+  simple_src : gen_heapG u64 (list u8) Σ;
   simple_lockmapghs : list (gen_heapG u64 bool Σ);
 }.
 
@@ -39,7 +39,7 @@ Definition covered_inodes : gset u64 :=
   rangeSet 2 (NumInodes-2).
 
 Definition no_overflows (src : SimpleNFS.State) : iProp Σ :=
-  ([∗ map] _↦istate ∈ src, ⌜∀ contents, contents ∈ possible istate -> (length contents < 2^64)%Z⌝)%I.
+  ([∗ map] _↦istate ∈ src, ⌜(length istate < 2^64)%Z⌝)%I.
 
 Global Instance no_overflows_Persistent src : Persistent (no_overflows src).
 Proof. refine _. Qed.
@@ -175,7 +175,7 @@ Qed.
 
 Definition is_inode_stable γ (inum: u64) : iProp Σ :=
   ∃ (state: list u8),
-    "Hinode_state" ∷ mapsto (hG := γ.(simple_src)) inum 1%Qp (sync state) ∗
+    "Hinode_state" ∷ mapsto (hG := γ.(simple_src)) inum 1%Qp state ∗
     "Hinode_disk" ∷ is_inode inum state (durable_mapsto γ.(simple_buftxn)).
 
 Definition N := nroot .@ "simplenfs".
@@ -630,8 +630,7 @@ Transparent nfstypes.READ3res.S.
     iSplit; first done.
     iFrame. iExactEq "HQ".
     assert (length state < 2^64)%Z as Hlenstatebound.
-    { eapply Hnooverflow; clear Hnooverflow.
-      constructor. }
+    { eapply Hnooverflow; clear Hnooverflow. }
     clear Hnooverflow.
     assert (int.nat (U64 (Z.of_nat (length state))) = length state) as Hlenstate.
     { word. }
