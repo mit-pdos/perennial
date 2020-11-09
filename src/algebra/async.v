@@ -63,6 +63,30 @@ transactions [lo, hi) *)
 Definition ephemeral_txn_val_range γ (lo hi:nat) (k: K) (v: V): iProp Σ :=
   [∗ list] i ∈ seq lo (hi-lo), ephemeral_txn_val γ i k v.
 
+Lemma own_last_frag_conflict γ k i1 i2 :
+  own_last_frag γ k i1 -∗
+  own_last_frag γ k i2 -∗
+  False.
+Proof.
+  rewrite /own_last_frag.
+  iIntros "H1 H2".
+  iDestruct (own_valid_2 with "H1 H2") as %Hvalid%gmap_view_frag_op_valid_L.
+  iPureIntro.
+  destruct Hvalid as [Hdfrac _].
+  rewrite dfrac_op_own in Hdfrac.
+  apply (iffLR (dfrac_valid_own _)) in Hdfrac.
+  contradiction.
+Qed.
+
+Lemma ephemeral_val_from_conflict γ i1 i2 k v1 v2 :
+  ephemeral_val_from γ i1 k v1 -∗
+  ephemeral_val_from γ i2 k v2 -∗
+  False.
+Proof.
+  iIntros "[_ H1] [_ H2]".
+  iApply (own_last_frag_conflict with "H1 H2").
+Qed.
+
 Global Instance async_ctx_timeless γ σs : Timeless (async_ctx γ σs).
 Proof. apply _. Qed.
 

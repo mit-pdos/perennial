@@ -270,7 +270,6 @@ Section goose_lang.
     iIntros (?) "Hctx Ha Ha_i".
     iNamed "Hctx".
     iDestruct "Ha" as (obj0) "Ha".
-    Search txn_system_inv mapsto_txn.
     iDestruct (mspec.is_buftxn_not_in_map with "Hbuftxn Ha") as %Hnotin.
     assert ((mspec.modified <$> mT) !! a = None).
     { rewrite lookup_fmap Hnotin //. }
@@ -349,11 +348,9 @@ Section goose_lang.
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hm #HP]".
     { apply conflicting_sep_r.
       apply conflicting_exists; intros.
-      rewrite /ephemeral_val_from.
       hnf; intros ????.
-      iIntros "((_&H1) & _) ((_&H2) & _)".
-      iIntros (->).
-      admit. (* own_last_frag conflict *) }
+      iIntros "[H1 _] [H2 _]" (->).
+      iApply (ephemeral_val_from_conflict with "H1 H2"). }
     iMod (lift_map_into_txn with "Hctx Hm") as "[Hm Hctx]".
     { solve_ndisj. }
     iModIntro.
@@ -363,7 +360,7 @@ Section goose_lang.
     - iApply (is_buftxn_wand with "Hctx").
       iIntros "!> [Hm $]".
       iApply "HP"; auto.
-  Admitted.
+  Qed.
 
   Lemma init_txn_system {E} l_txn γUnified dinit σs :
     is_txn l_txn γUnified dinit ∗ ghost_var γUnified.(txn_crashstates) (1/2) σs ={E}=∗
