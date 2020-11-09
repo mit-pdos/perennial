@@ -126,24 +126,27 @@ Definition Inode__Write: val :=
     (if: "count" ≠ slice.len "dataBuf"
     then (#0, #false)
     else
-      (if: "offset" + "count" > disk.BlockSize
+      (if: util.SumOverflows "offset" "count"
       then (#0, #false)
       else
-        let: "buffer" := buftxn.BufTxn__ReadBuf "btxn" (block2addr (struct.loadF Inode.S "Data" "ip")) common.NBITBLOCK in
-        let: "b" := ref_to uint64T #0 in
-        (for: (λ: <>, ![uint64T] "b" < "count"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
-          SliceSet byteT (struct.loadF buf.Buf.S "Data" "buffer") ("offset" + ![uint64T] "b") (SliceGet byteT "dataBuf" (![uint64T] "b"));;
-          Continue);;
-        buf.Buf__SetDirty "buffer";;
-        util.DPrintf #1 (#(str"Write: off %d cnt %d size %d
-        ")) #();;
-        (if: "offset" + "count" > struct.loadF Inode.S "Size" "ip"
-        then
-          struct.storeF Inode.S "Size" "ip" ("offset" + "count");;
-          Inode__WriteInode "ip" "btxn";;
-          #()
-        else #());;
-        ("count", #true))).
+        (if: "offset" + "count" > disk.BlockSize
+        then (#0, #false)
+        else
+          let: "buffer" := buftxn.BufTxn__ReadBuf "btxn" (block2addr (struct.loadF Inode.S "Data" "ip")) common.NBITBLOCK in
+          let: "b" := ref_to uint64T #0 in
+          (for: (λ: <>, ![uint64T] "b" < "count"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
+            SliceSet byteT (struct.loadF buf.Buf.S "Data" "buffer") ("offset" + ![uint64T] "b") (SliceGet byteT "dataBuf" (![uint64T] "b"));;
+            Continue);;
+          buf.Buf__SetDirty "buffer";;
+          util.DPrintf #1 (#(str"Write: off %d cnt %d size %d
+          ")) #();;
+          (if: "offset" + "count" > struct.loadF Inode.S "Size" "ip"
+          then
+            struct.storeF Inode.S "Size" "ip" ("offset" + "count");;
+            Inode__WriteInode "ip" "btxn";;
+            #()
+          else #());;
+          ("count", #true)))).
 
 Definition ReadInode: val :=
   rec: "ReadInode" "btxn" "inum" :=
@@ -461,18 +464,12 @@ Definition Nfs__NFSPROC3_WRITE: val :=
         struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT;;
         ![struct.t nfstypes.WRITE3res.S] "reply"
       else
-        let: "ok" := ref (zero_val boolT) in
-        (if: (struct.get nfstypes.WRITE3args.S "Stable" "args" = nfstypes.FILE_SYNC)
-        then "ok" <-[boolT] buftxn.BufTxn__CommitWait "txn" #true
-        else
-          (if: (struct.get nfstypes.WRITE3args.S "Stable" "args" = nfstypes.DATA_SYNC)
-          then "ok" <-[boolT] buftxn.BufTxn__CommitWait "txn" #true
-          else "ok" <-[boolT] buftxn.BufTxn__CommitWait "txn" #false));;
-        (if: ![boolT] "ok"
+        let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+        (if: "ok"
         then
           struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3_OK;;
-          struct.storeF nfstypes.WRITE3resok.S "Count" (struct.fieldRef nfstypes.WRITE3res.S "Resok" "reply") "count";;
-          struct.storeF nfstypes.WRITE3resok.S "Committed" (struct.fieldRef nfstypes.WRITE3res.S "Resok" "reply") (struct.get nfstypes.WRITE3args.S "Stable" "args")
+          struct.storeF nfstypes.WRITE3resok.S "Count" (struct.fieldRef nfstypes.WRITE3res.S "Resok" "reply") (to_u32 "count");;
+          struct.storeF nfstypes.WRITE3resok.S "Committed" (struct.fieldRef nfstypes.WRITE3res.S "Resok" "reply") nfstypes.FILE_SYNC
         else struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT);;
         lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
         ![struct.t nfstypes.WRITE3res.S] "reply")).
