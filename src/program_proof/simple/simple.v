@@ -686,4 +686,244 @@ Transparent nfstypes.READ3res.S.
     lia.
 Qed.
 
+Opaque nfstypes.GETATTR3res.S.
+
+Theorem wp_Inode__MkFattr ip inum len blk :
+  {{{
+      is_inode_mem ip inum len blk
+  }}}
+    Inode__MkFattr #ip
+  {{{ fattr3, RET fattr3;
+      is_inode_mem ip inum len blk ∗
+      ⌜ getField_f nfstypes.Fattr3.S "Size" fattr3 = #len ⌝ ∗
+      ⌜ getField_f nfstypes.Fattr3.S "Fileid" fattr3 = #inum ⌝ ∗
+      ⌜ val_ty fattr3 (struct.t nfstypes.Fattr3.S) ⌝
+  }}}.
+Proof.
+  iIntros (Φ) "Hmem HΦ".
+  wp_call.
+  iNamed "Hmem".
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_pures.
+  iApply "HΦ".
+  iSplit.
+  { iFrame. }
+  iPureIntro; simpl. eauto.
+Qed.
+
+Lemma nfstypes_getattr3res_merge reply s ok :
+  ( reply ↦[nfstypes.GETATTR3res.S :: "Status"] s ∗
+    reply ↦[nfstypes.GETATTR3res.S :: "Resok"] ok ) -∗
+  reply ↦[struct.t nfstypes.GETATTR3res.S]{1} (s, (ok, #())).
+Proof.
+  iIntros "(Status & Resok)".
+  iApply struct_fields_split. iFrame. done.
+Qed.
+
+Theorem wp_NFSPROC3_GETATTR γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (Q : SimpleNFS.res SimpleNFS.fattr -> iProp Σ) dinit :
+  {{{ is_fs γ nfs dinit ∗
+      is_fh fhslice fh ∗
+      ∀ σ σ' r E,
+        ⌜relation.denote (SimpleNFS.wrapper fh (SimpleNFS.getattr fh)) σ σ' r⌝ -∗
+        ( P σ ={E}=∗ P σ' ∗ Q r )
+  }}}
+    Nfs__NFSPROC3_GETATTR #nfs
+      (struct.mk_f nfstypes.GETATTR3args.S [
+        "Object" ::= struct.mk_f nfstypes.Nfs_fh3.S [
+          "Data" ::= slice_val fhslice
+        ]
+      ])%V
+  {{{ v,
+      RET v;
+      ( ∃ (sz : u64) resok fattr3,
+        ⌜ getField_f nfstypes.GETATTR3res.S "Status" v = #(U32 0) ⌝ ∗
+        ⌜ getField_f nfstypes.GETATTR3res.S "Resok" v = resok ⌝ ∗
+        ⌜ getField_f nfstypes.GETATTR3resok.S "Obj_attributes" resok = fattr3 ⌝ ∗
+        ⌜ getField_f nfstypes.Fattr3.S "Size" fattr3 = #sz ⌝ ∗
+        Q (SimpleNFS.OK (SimpleNFS.Build_fattr sz)) ) ∨
+      ( ∃ (stat : Z),
+        ⌜ getField_f nfstypes.GETATTR3res.S "Status" v = #(U32 stat) ⌝ ∗
+        ⌜ stat ≠ 0 ⌝ ∗
+        Q SimpleNFS.Err )
+  }}}.
+Proof using Ptimeless.
+  iIntros (Φ) "(Hfs & #Hfh & Hfupd) HΦ".
+  iNamed "Hfs".
+
+  wp_call.
+  wp_apply wp_ref_of_zero; first by auto.
+  iIntros (reply) "Hreply".
+  wp_apply util_proof.wp_DPrintf.
+  wp_loadField.
+  wp_apply (wp_BufTxn__Begin with "[$Histxn $Htxnsys]").
+  iIntros (γtxn buftx) "Hbuftxn".
+  wp_apply (wp_fh2ino with "Hfh").
+  wp_pures.
+  wp_if_destruct.
+  {
+    wp_apply (wp_storeField_struct with "Hreply"); first by auto. iIntros "Hreply".
+    (* Our spec doesn't allow returning a funny root inode *)
+    admit.
+  }
+
+  wp_apply (wp_validInum).
+  iIntros (valid) "%Hvalid".
+  wp_if_destruct.
+  {
+    wp_apply (wp_storeField_struct with "Hreply"); first by auto. iIntros "Hreply".
+
+    (* Simulate to get Q *)
+    iApply fupd_wp.
+    iInv "Hsrc" as ">Hopen" "Hclose".
+    iNamed "Hopen".
+    iDestruct ("Hfupd" with "[] HP") as "Hfupd".
+    {
+      iPureIntro.
+      simpl.
+      monad_simpl.
+      simpl.
+      destruct (src !! fh) eqn:He.
+      { exfalso.
+        assert (fh ∈ dom (gset u64) src) as Hin.
+        { apply elem_of_dom. rewrite He. eauto. }
+        rewrite Hdom in Hin. apply Hvalid in Hin. congruence. }
+      rewrite He.
+      econstructor. eauto.
+    }
+    iMod "Hfupd" as "[HP HQ]".
+    iMod ("Hclose" with "[Hsrcown Hsrcheap HP]").
+    { iModIntro. iExists _. iFrame "∗%#". }
+    iModIntro.
+
+    wp_load.
+    iApply "HΦ".
+    iRight. iExists _.
+    iFrame "HQ".
+    iPureIntro.
+    Transparent nfstypes.GETATTR3res.S.
+    simpl. intuition eauto.
+    Opaque nfstypes.GETATTR3res.S.
+    lia.
+  }
+
+  wp_loadField.
+  wp_apply (wp_LockMap__Acquire with "[$Hislm]"); first by intuition eauto.
+  iIntros "[Hstable Hlocked]".
+  iNamed "Hstable".
+
+  iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]".
+  { solve_ndisj. }
+  iNamed "Hinode_disk".
+
+  wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.
+  iIntros (ip) "(Hbuftxn & Hinode_enc & Hinode_mem)".
+
+  wp_apply (wp_Inode__MkFattr with "Hinode_mem").
+  iIntros (fattr3) "(Hinode_mem & % & % & %)".
+
+  iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
+
+  wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+  iIntros (fl) "[%Hfl Resok]".
+  wp_apply (wp_storeField_struct with "Resok").
+  { eauto. }
+  iIntros "Resok".
+  rewrite Hfl; clear Hfl fl.
+
+  wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
+  4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
+  all: try solve_ndisj.
+  { typeclasses eauto. }
+
+  iIntros (ok) "Hcommit".
+
+  wp_if_destruct; subst.
+  - wp_storeField.
+
+    (* Simulate to get Q *)
+    iApply fupd_wp.
+    iInv "Hsrc" as ">Hopen" "Hclose".
+    iNamed "Hopen".
+    iDestruct (gen_heap_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
+    iDestruct (big_sepM_lookup with "Hnooverflow") as %Hnooverflow; eauto.
+    iDestruct ("Hfupd" with "[] HP") as "Hfupd".
+    {
+      iPureIntro.
+      simpl.
+      monad_simpl.
+      simpl.
+      rewrite Hsrc_fh.
+      simpl.
+      econstructor. { econstructor. auto. }
+      instantiate (3 := false).
+      simpl.
+      monad_simpl.
+    }
+    iMod "Hfupd" as "[HP HQ]".
+    iMod ("Hclose" with "[Hsrcown Hsrcheap HP]").
+    { iModIntro. iExists _. iFrame "∗%#". }
+    iModIntro.
+
+    wp_loadField.
+    wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
+    { iExists _. iFrame.
+      iDestruct "Hcommit" as "(Hinode_enc & Hinode_data)".
+      iExists _. iFrame. }
+
+    wp_apply (wp_LoadAt with "[Status Resok]").
+    { iModIntro. iApply nfstypes_getattr3res_merge. iFrame. }
+    iIntros "Hreply". simpl.
+    iApply "HΦ". iLeft.
+    iExists _, _, _.
+Transparent nfstypes.GETATTR3res.S.
+    iSplit; first done.
+    iSplit; first done.
+    iSplit; first done.
+    iSplit; first done.
+    iFrame.
+
+  - wp_storeField.
+
+    (* Simulate to get Q *)
+    iApply fupd_wp.
+    iInv "Hsrc" as ">Hopen" "Hclose".
+    iNamed "Hopen".
+    iDestruct (gen_heap_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
+    iDestruct ("Hfupd" with "[] HP") as "Hfupd".
+    {
+      iPureIntro.
+      simpl.
+      monad_simpl.
+      simpl.
+      rewrite Hsrc_fh.
+      simpl.
+      econstructor. { econstructor. auto. }
+      instantiate (3 := true).
+      simpl.
+      monad_simpl.
+    }
+    iMod "Hfupd" as "[HP HQ]".
+    iMod ("Hclose" with "[Hsrcown Hsrcheap HP]").
+    { iModIntro. iExists _. iFrame "∗%#". }
+    iModIntro.
+
+    wp_loadField.
+    wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
+    { iExists _. iFrame.
+      iDestruct "Hcommit" as "[Hinode_disk _]". iFrame. }
+
+    wp_apply (wp_LoadAt with "[Status Resok]").
+    { iModIntro. iApply nfstypes_getattr3res_merge. iFrame. }
+    iIntros "Hreply".
+    iApply "HΦ".
+    iRight. iExists _. iFrame "HQ".
+    iPureIntro.
+    Transparent nfstypes.READ3res.S.
+    simpl. intuition eauto.
+    Opaque nfstypes.READ3res.S.
+    lia.
+Admitted.
+
 End heap.
