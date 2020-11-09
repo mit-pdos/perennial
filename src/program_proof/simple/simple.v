@@ -61,7 +61,7 @@ Definition is_inode_enc (inum: u64) (len: u64) (blk: u64) (mapsto: addr -> objec
 Definition is_inode_data (len : u64) (blk: u64) (contents: list u8) (mapsto: addr -> object -> iProp Σ) : iProp Σ :=
   ∃ (bbuf : Block),
     "%Hdiskdata" ∷ ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
-    "%Hdisklen" ∷ ⌜ len = length contents ⌝ ∗
+    "%Hdisklen" ∷ ⌜ int.Z len = length contents ⌝ ∗
     "Hdiskblk" ∷ mapsto (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
 
 Definition is_inode (inum: u64) (state: list u8) (mapsto: addr -> object -> iProp Σ) : iProp Σ :=
@@ -207,25 +207,24 @@ Proof.
 
   wp_apply wp_ref_to; first by val_ty.
   iIntros (count) "Hcount".
-  wp_pures.
   wp_loadField. wp_load.
 
   wp_apply (wp_If_join
-    ("Hcount" ∷ count ↦[uint64T] #(U64 (Z.min (int.Z bytesToRead) (int.Z len - int.Z offset))) ∗
-     "Hisize" ∷ ip ↦[Inode.S :: "Size"] #len) with "[Hcount Hisize]").
+    (∃ (countval : u64),
+      "Hcount" ∷ count ↦[uint64T] #countval ∗
+      "Hisize" ∷ ip ↦[Inode.S :: "Size"] #len ∗
+      "%Hcountval0" ∷ ⌜(int.Z countval ≤ int.Z bytesToRead)%Z⌝ ∗
+      "%Hcountval1" ∷ ⌜(int.Z offset + int.Z countval ≤ int.Z len)%Z⌝
+    ) with "[Hcount Hisize]").
   1: iSplit.
   { iIntros "[%Hdec HΦ]". apply bool_decide_eq_true_1 in Hdec.
     wp_loadField. wp_store.
     iApply "HΦ". iFrame.
-    rewrite Z.min_r.
-    2: { revert Hdec. word_cleanup. (* what if [offset+bytesToRead] overflows? *) admit. }
-    replace (word.sub len offset) with (U64 (int.Z len - int.Z offset)) by word.
-    iFrame.
+    iExists _. iFrame. iPureIntro. split.
+    { lia. }
+    word.
   }
   { iIntros "[%Hdec HΦ]". apply bool_decide_eq_false_1 in Hdec.
-    rewrite Z.min_l.
-    2: { revert Hdec. word_cleanup. (* what if [offset+bytesToRead] overflows? *) admit. }
-    replace (bytesToRead) with (U64 (int.Z bytesToRead)) by word.
     (* XXX how to get rid of the outermost [WP #()]? *)
     admit.
   }
@@ -256,7 +255,8 @@ Proof.
     ∃ dataslice vs,
       "Hdatavar" ∷ datavar ↦[slice.T byteT] (slice_val dataslice) ∗
       "Hdataslice" ∷ is_slice dataslice byteT 1 vs ∗
-      "%Hcontent" ∷ ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
+      "%Hcontent" ∷ ⌜ firstn (int.nat i) (skipn (int.nat offset) contents) = vs ⌝ ∗
+      "%Hvslen" ∷ ⌜ length vs = (int.nat i) ⌝ ∗
       "Hbuf" ∷ is_buf bufptr (blk2addr blk) {|
          bufKind := projT1 (existT KindBlock (bufBlock bbuf));
          bufData := projT2 (existT KindBlock (bufBlock bbuf));
@@ -290,10 +290,13 @@ Proof.
     iExists _, _.
     iFrame "Hdatavar".
     iFrame "Hdataslice".
-    iSplitR.
-    { rewrite app_length /=.
+    iSplit.
+    { iPureIntro. word_cleanup.
+      replace (Z.to_nat (int.Z b' + 1)) with (int.nat b' + 1) by word.
       admit.
     }
+    iSplit.
+    { iPureIntro. rewrite app_length /=. word. }
     iApply is_buf_return_data. iFrame.
   }
   {
@@ -308,6 +311,8 @@ Proof.
   iMod ("Hbufupd" with "[$Hbuf] []") as "[Hbuftxn Hbuf]".
   { intuition. }
 
+  wp_loadField. wp_load. wp_pures.
+
   wp_apply util_proof.wp_DPrintf.
   wp_load.
   wp_pures.
@@ -317,11 +322,14 @@ Proof.
   { iExists _. iFrame "∗%". }
 
   iPureIntro. intuition (try congruence).
-  { subst.
-    apply (f_equal length) in Hcontent as Hlen.
-    apply (f_equal length) in Hdiskdata as Hlen2.
-    move: Hlen Hlen2; len.
-    admit. }
+  {
+    apply bool_decide_eq_true_1 in H0.
+    rewrite Hvslen. revert H0. word.
+  }
+  {
+    eapply bool_decide_eq_true_2.
+    revert H0. rewrite Hvslen. word.
+  }
 Admitted.
 
 Definition is_fh (s : Slice.t) (fh : u64) : iProp Σ :=

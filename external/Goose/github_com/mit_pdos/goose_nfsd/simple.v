@@ -92,7 +92,7 @@ Definition Inode__Read: val :=
     then (slice.nil, #true)
     else
       let: "count" := ref_to uint64T "bytesToRead" in
-      (if: "offset" + ![uint64T] "count" ≥ struct.loadF Inode.S "Size" "ip"
+      (if: ![uint64T] "count" > struct.loadF Inode.S "Size" "ip" - "offset"
       then
         "count" <-[uint64T] struct.loadF Inode.S "Size" "ip" - "offset";;
         #()
@@ -106,9 +106,10 @@ Definition Inode__Read: val :=
       (for: (λ: <>, ![uint64T] "b" < "countCopy"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
         "data" <-[slice.T byteT] SliceAppend byteT (![slice.T byteT] "data") (SliceGet byteT (struct.loadF buf.Buf.S "Data" "buf") ("offset" + ![uint64T] "b"));;
         Continue);;
-      util.DPrintf #10 (#(str"Read: off %d cnt %d -> %v
+      let: "eof" := "offset" + ![uint64T] "count" ≥ struct.loadF Inode.S "Size" "ip" in
+      util.DPrintf #10 (#(str"Read: off %d cnt %d -> %v, %v
       ")) #();;
-      (![slice.T byteT] "data", #false)).
+      (![slice.T byteT] "data", "eof")).
 
 Definition Inode__WriteInode: val :=
   rec: "Inode__WriteInode" "ip" "btxn" :=
