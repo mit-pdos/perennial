@@ -278,11 +278,18 @@ Proof.
     simpl.
     apply (f_equal length) in Hcontent as Hlens.
     autorewrite with len in Hlens.
-(*
-    rewrite -> word.unsigned_sub, wrap_small in Hbound by word.
-*)
-    wp_apply (wp_SliceGet (V:=u8) with "[$Hbufdata]").
-    { admit. }
+
+    destruct (vec_to_list bbuf !! int.nat (word.add offset b')) eqn:He.
+    2: {
+      exfalso.
+      eapply lookup_ge_None_1 in He.
+      assert (int.nat (word.add offset b') < length contents).
+      { revert Hcountval1. revert Hbound. word. }
+      assert (length bbuf ≥ length contents).
+      2: { lia. }
+      rewrite -Hdiskdata. rewrite take_length. lia.
+    }
+    wp_apply (wp_SliceGet (V:=u8) with "[$Hbufdata]"); eauto.
     iIntros "Hbufdata".
     wp_load.
     wp_apply (wp_SliceAppend (V:=u8) with "Hdataslice").
@@ -295,8 +302,13 @@ Proof.
     iFrame "Hdataslice".
     iSplit.
     { iPureIntro. word_cleanup.
-      replace (Z.to_nat (int.Z b' + 1)) with (int.nat b' + 1) by word.
-      admit.
+      replace (Z.to_nat (int.Z b' + 1)) with (S (int.nat b')) by word.
+      erewrite take_S_r.
+      { rewrite Hcontent. eauto. }
+      rewrite lookup_drop. rewrite -Hdiskdata.
+      rewrite lookup_take.
+      { replace (int.nat (word.add offset b')) with (int.nat offset + int.nat b') in He by word. done. }
+      lia.
     }
     iSplit.
     { iPureIntro. rewrite app_length /=. word. }
@@ -336,7 +348,7 @@ Proof.
     eapply bool_decide_eq_true_2.
     revert H0. rewrite Hvslen. word.
   }
-Admitted.
+Qed.
 
 Definition is_fh (s : Slice.t) (fh : u64) : iProp Σ :=
   ∃ vs,
