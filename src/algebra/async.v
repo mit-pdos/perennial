@@ -254,6 +254,22 @@ Proof.
   - apply Htail; done.
 Qed.
 
+Theorem ephemeral_val_from_agree_latest γ σs i k v :
+  async_ctx γ σs -∗
+  ephemeral_val_from γ i k v -∗
+  ⌜latest σs !! k = Some v⌝.
+Proof.
+  iIntros "Hctx Hval".
+  iDestruct (ephemeral_val_from_in_bounds with "Hctx Hval") as %Hbound.
+  iDestruct (ephemeral_val_from_val _ _ _ (length (possible σs) - 1) with "Hctx Hval") as "#Hval_latest".
+  { lia. }
+  { lia. }
+  iDestruct (ephemeral_txn_val_lookup with "Hctx Hval_latest") as %Hlookup.
+  iPureIntro.
+  rewrite /lookup_async lookup_possible_latest' /= in Hlookup.
+  auto.
+Qed.
+
 (** Move the "from" resource from i to i', and obtain a
 [ephemeral_txn_val_range] for the skipped range and including [i']. *)
 Theorem ephemeral_val_from_split i' γ i k v σs :

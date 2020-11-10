@@ -155,7 +155,7 @@ Section goose_lang.
   (* this is for the entire txn manager, and relates it to some ghost state *)
   Definition is_txn_system γ : iProp Σ :=
     "Htxn_inv" ∷ inv N (txn_system_inv γ) ∗
-    "His_txn" ∷ ∃ l dinit, is_txn l γ.(buftxn_txn_names) dinit.
+    "His_txn" ∷ inv invN (is_txn_always γ.(buftxn_txn_names)).
 
   (* TODO: eventually need a proper name for this; I think of it as "the right
   to use address [a] in a transaction" *)
@@ -255,8 +255,36 @@ Section goose_lang.
     mspec.modified (object_to_versioned obj) = obj.
   Proof. destruct obj; reflexivity. Qed.
 
-  Theorem lift_into_txn E l γ dinit γtxn P0 a obj :
+  Lemma durable_mapsto_mapsto_txn_agree E γ a obj1 obj2 :
+    ↑N ⊆ E →
     ↑invN ⊆ E →
+    N ## invN →
+    is_txn_system γ -∗
+    durable_mapsto γ a obj1 -∗
+    mapsto_txn γ.(buftxn_txn_names) a obj2 -∗
+    |={E}=> ⌜obj1 = obj2⌝ ∗ durable_mapsto γ a obj1 ∗ mapsto_txn γ.(buftxn_txn_names) a obj2.
+  Proof.
+    iIntros (???) "#Hinv Ha_i Ha". iNamed "Hinv".
+    iInv "His_txn" as ">Hinner1".
+    iInv "Htxn_inv" as ">Hinner2".
+    iAssert (⌜obj1 = obj2⌝)%I as %?; last first.
+    { iFrame. auto. }
+    iNamed "Hinner1".
+    iClear "Hheapmatch Hcrashheapsmatch Hmetactx".
+    iNamed "Hinner2".
+    iDestruct (ghost_var_agree with "Hcrashstates [$]") as %->.
+    iDestruct (mapsto_txn_cur with "Ha") as "[Ha _]".
+    iDestruct "Ha_i" as (i) "[Ha_i _]".
+    iDestruct (ephemeral_val_from_agree_latest with "H●latest Ha_i") as %Hlookup_obj.
+    iDestruct (log_heap_valid_cur with "Hlogheapctx [$]") as %Hlookup_obj0.
+    iPureIntro.
+    congruence.
+  Qed.
+
+  Theorem lift_into_txn E l γ dinit γtxn P0 a obj :
+    ↑N ⊆ E →
+    ↑invN ⊆ E →
+    N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
     modify_token γ a -∗
     durable_mapsto γ a obj
@@ -267,9 +295,13 @@ Section goose_lang.
         modify_token γ a ∗
         P0).
   Proof.
-    iIntros (?) "Hctx Ha Ha_i".
+    iIntros (???) "Hctx Ha Ha_i".
     iNamed "Hctx".
     iDestruct "Ha" as (obj0) "Ha".
+
+    iMod (durable_mapsto_mapsto_txn_agree with "[$] Ha_i Ha") as "(%Heq & Ha_i & Ha)";
+      [ solve_ndisj.. | subst obj0 ].
+
     iDestruct (mspec.is_buftxn_not_in_map with "Hbuftxn Ha") as %Hnotin.
     assert ((mspec.modified <$> mT) !! a = None).
     { rewrite lookup_fmap Hnotin //. }
@@ -287,13 +319,13 @@ Section goose_lang.
     iSplit.
     { iIntros "!> [[$ $] Hstable]".
       iApply "HrestoreP0"; iFrame. }
-    iSplit.
-    2: { iPureIntro. destruct anydirty; intuition congruence. }
-    admit.
-  Admitted.
+    iPureIntro. destruct anydirty; intuition congruence.
+  Qed.
 
   Theorem lift_map_into_txn E l γ dinit γtxn P0 m :
     ↑invN ⊆ E →
+    ↑N ⊆ E →
+    N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
     ([∗ map] a↦v ∈ m, modify_token γ a ∗
                       durable_mapsto γ a v) ={E}=∗
@@ -304,14 +336,14 @@ Section goose_lang.
                          ) ∗
                          P0).
   Proof.
-    iIntros (?) "Hctx Hm".
+    iIntros (???) "Hctx Hm".
     iInduction m as [|a v m] "IH" using map_ind forall (P0).
     - setoid_rewrite big_sepM_empty.
       rewrite !left_id.
       by iFrame.
     - rewrite !big_sepM_insert //.
       iDestruct "Hm" as "[[Ha_mod Ha_dur] Hm]".
-      iMod (lift_into_txn with "Hctx Ha_mod Ha_dur") as "[Ha Hctx]"; first by auto.
+      iMod (lift_into_txn with "Hctx Ha_mod Ha_dur") as "[Ha Hctx]"; [ solve_ndisj .. | ].
       iMod ("IH" with "Hctx Hm") as "[Hm Hctx]".
       iModIntro.
       iFrame.
@@ -334,6 +366,8 @@ Section goose_lang.
   Theorem lift_liftable_into_txn E `{!Liftable P}
           l γ dinit γtxn P0 :
     ↑invN ⊆ E →
+    ↑N ⊆ E →
+    N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
     P (λ a v, modify_token γ a ∗
               durable_mapsto γ a v)
@@ -344,15 +378,15 @@ Section goose_lang.
                  durable_mapsto γ a v)
        ∗ P0).
   Proof.
-    iIntros (?) "Hctx HP".
+    iIntros (???) "Hctx HP".
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hm #HP]".
     { apply conflicting_sep_r.
       apply conflicting_exists; intros.
       hnf; intros ????.
       iIntros "[H1 _] [H2 _]" (->).
       iApply (ephemeral_val_from_conflict with "H1 H2"). }
-    iMod (lift_map_into_txn with "Hctx Hm") as "[Hm Hctx]".
-    { solve_ndisj. }
+    iMod (lift_map_into_txn with "Hctx Hm") as "[Hm Hctx]";
+      [ solve_ndisj .. | ].
     iModIntro.
     iFrame.
     iSplitR "Hctx".
@@ -376,7 +410,8 @@ Section goose_lang.
       iExists _; iFrame. }
     iModIntro.
     simpl.
-    eauto with iFrame.
+    iSplit; first by auto.
+    iNamed "Htxn"; iFrame "#".
   Qed.
 
   Theorem wp_BufTxn__Begin (l_txn: loc) γ dinit :
