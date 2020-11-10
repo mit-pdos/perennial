@@ -2,6 +2,19 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+(* lockmap is a sharded lock map.
+
+   The API is as if LockMap consisted of a lock for every possible uint64
+   (which we think of as "addresses", but they could be any abstract location);
+   LockMap.Acquire(a) acquires the lock associated with a and
+   LockMap.Release(a) release it.
+
+   The implementation doesn't actually maintain all of these locks; it
+   instead maintains a fixed collection of shards so that shard i is
+   responsible for maintaining the lock state of all a such that a % NSHARDS = i.
+   Acquiring a lock requires synchronizing with any threads accessing the same
+   shard. *)
+
 Module lockState.
   Definition S := struct.decl [
     "held" :: boolT;
