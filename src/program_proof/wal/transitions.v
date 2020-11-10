@@ -38,6 +38,24 @@ Definition log_crash : transition log_state.t unit :=
   modify (set log_state.durable_lb (fun _ => crash_txn));;
   ret tt.
 
+Lemma log_crash_unfold σ σ' :
+  relation.denote log_crash σ σ' () ↔
+  ∃ (crash_txn:nat),
+    (σ.(log_state.durable_lb) ≤ crash_txn < length σ.(log_state.txns))%nat ∧
+    σ' = (set log_state.txns (take (S crash_txn)) σ)
+           <|log_state.durable_lb := crash_txn|>.
+Proof.
+  rewrite /log_crash.
+  split; simpl; intros.
+  - monad_inv.
+    eauto.
+  - destruct H as (crash_txn & Hbounds & ->).
+    eapply (relation.bind_runs _ _ _ _ crash_txn).
+    + simpl.
+      constructor; eauto.
+    + monad_simpl.
+Qed.
+
 Definition suchThatMax {Σ} (pred: Σ -> nat -> Prop) : transition Σ nat :=
   suchThat (λ s x, pred s x ∧ ∀ y, pred s y -> y ≤ x).
 

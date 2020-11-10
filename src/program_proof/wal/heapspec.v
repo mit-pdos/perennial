@@ -56,6 +56,10 @@ Record wal_heap_gnames := {
   wal_heap_walnames : wal_names;
 }.
 
+Global Instance wal_heap_gnames_eta : Settable _ :=
+  settable! Build_wal_heap_gnames <wal_heap_h; wal_heap_crash_heaps; wal_heap_durable_lb;
+                                   wal_heap_txns; wal_heap_installed; wal_heap_walnames>.
+
 Definition wal_heap_inv_crash (crashheap : gmap u64 Block)
       (base : disk) (txns_prefix : list (u64 * list update.t)) : iProp Σ :=
   let txn_disk := apply_upds (txn_upds txns_prefix) base in
@@ -91,6 +95,67 @@ Record locked_walheap := {
 
 Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
   ghost_var γ.(wal_heap_txns) (1/2) (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)).
+
+Definition list_to_async {A} `{!Inhabited A} (l: list A) : async A :=
+  {| latest := match last l with
+               | Some x => x
+               | None => inhabitant
+               end;
+     pending := take (length l - 1)%nat l;
+  |}.
+
+Instance rev_inj A : Inj eq eq (@rev A).
+Proof.
+  intros l1 l2 Heq.
+  rewrite -[l1]rev_involutive -[l2]rev_involutive.
+  rewrite Heq //.
+Qed.
+
+Lemma list_to_async_possible {A} `{!Inhabited A} (l: list A) :
+  (0 < length l)%nat →
+  possible (list_to_async l) = l.
+Proof.
+  intros.
+  rewrite /possible /list_to_async /=.
+  apply (inj (@rev _)).
+  rewrite rev_app_distr.
+  destruct (last l) eqn:?.
+  - simpl.
+    rewrite -skipn_rev.
+    (* this is not going so well... *)
+Admitted.
+
+Lemma wal_heap_inv_crash_transform γ ls ls' :
+  relation.denote log_crash ls ls' () →
+  wal_heap_inv γ ls -∗
+  |==> ∃ γ', ⌜γ'.(wal_heap_walnames) = γ.(wal_heap_walnames)⌝ ∗
+             wal_heap_inv γ' ls' ∗
+             mnat_own_auth γ'.(wal_heap_durable_lb) 1 ls'.(log_state.durable_lb) ∗
+             is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
+                                     locked_wh_σtxns := ls'.(log_state.txns);
+                                  |}
+.
+Proof.
+  rewrite log_crash_unfold.
+  intros (crash_txn & Hbound & Hls'_eq).
+  match type of Hls'_eq with
+  | _ = ?ls'_val => set (ls'':=ls'_val);
+                    subst ls'; rename ls'' into ls';
+                    fold ls'
+  end. simpl.
+  iNamed 1.
+  iMod (ghost_var_alloc (ls.(log_state.d), ls'.(log_state.txns)))
+    as (wal_heap_txns_name) "[Htxns' Htxns2]".
+  iMod (ghost_var_alloc (list_to_async_possible (take (S crash_txn) (possible crash_heaps))))
+    as (wal_heap_crash_heaps_name) "Hcrash_heaps_own'".
+  (* TODO: allocate lower-bound *)
+
+  iModIntro.
+  iExists (γ <| wal_heap_txns := wal_heap_txns_name |>
+             <| wal_heap_crash_heaps := wal_heap_crash_heaps_name |>).
+  rewrite /wal_heap_inv /=.
+  iSplit; first by auto.
+Admitted.
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
   apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
