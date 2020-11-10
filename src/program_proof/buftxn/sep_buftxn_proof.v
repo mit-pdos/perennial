@@ -157,8 +157,29 @@ Section goose_lang.
     "Htxn_inv" ∷ inv N (txn_system_inv γ) ∗
     "His_txn" ∷ inv invN (is_txn_always γ.(buftxn_txn_names)).
 
-  (* TODO: eventually need a proper name for this; I think of it as "the right
-  to use address [a] in a transaction" *)
+  Lemma init_txn_system {E} l_txn γUnified dinit σs :
+    is_txn l_txn γUnified dinit ∗ ghost_var γUnified.(txn_crashstates) (1/2) σs ={E}=∗
+    ∃ γ, ⌜γ.(buftxn_txn_names) = γUnified⌝ ∗
+         is_txn_system γ.
+  Proof.
+    iIntros "[#Htxn Hasync]".
+    iMod (async_ctx_init σs) as (γasync) "H●async".
+    set (γ:={|buftxn_txn_names := γUnified; buftxn_async_name := γasync; |}).
+    iExists γ.
+    iMod (inv_alloc N E (txn_system_inv γ) with "[-]") as "$".
+    { iNext.
+      iExists _; iFrame. }
+    iModIntro.
+    simpl.
+    iSplit; first by auto.
+    iNamed "Htxn"; iFrame "#".
+  Qed.
+
+  (* modify_token is an obligation from the buftxn_proof, which is how the txn
+  invariant keeps track of exclusive ownership over an address. This proof has a
+  more sophisticated notion of owning an address coming from the logical setup
+  in [async.v], but we still have to track this token to be able to lift
+  addresses into a transaction. *)
   Definition modify_token γ (a: addr) : iProp Σ :=
     ∃ obj, txn.invariant.mapsto_txn γ.(buftxn_txn_names) a obj.
 
@@ -173,18 +194,21 @@ Section goose_lang.
     ∃ i, ephemeral_val_from γ.(buftxn_async_name) i a obj ∗
          txn_durable γ i.
 
+  Definition durable_mapsto_own γ a obj: iProp Σ :=
+    modify_token γ a ∗ durable_mapsto γ a obj.
+
   Definition is_buftxn l γ dinit γtxn P0 : iProp Σ :=
     ∃ (mT: gmap addr versioned_object) anydirty,
       "#Htxn_system" ∷ is_txn_system γ ∗
       "Hold_vals" ∷ ([∗ map] a↦v ∈ mspec.committed <$> mT,
                      durable_mapsto γ a v) ∗
       "#HrestoreP0" ∷ □ (([∗ map] a↦v ∈ mspec.committed <$> mT,
-                          modify_token γ a ∗
-                          durable_mapsto γ a v) -∗
+                          durable_mapsto_own γ a v) -∗
                          P0) ∗
       "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) dinit anydirty ∗
       "Htxn_ctx" ∷ map_ctx γtxn 1 (mspec.modified <$> mT) ∗
-      "%Hanydirty" ∷ ⌜anydirty=false -> mspec.modified <$> mT = mspec.committed <$> mT⌝
+      "%Hanydirty" ∷ ⌜anydirty=false →
+                      mspec.modified <$> mT = mspec.committed <$> mT⌝
   .
 
   Global Instance: Params (@is_buftxn) 4 := {}.
@@ -195,7 +219,7 @@ Section goose_lang.
     intros P1 P2 Hequiv.
     rewrite /is_buftxn.
     setoid_rewrite Hequiv.
-    auto.
+    reflexivity.
   Qed.
 
   Global Instance is_buftxn_mono l γ dinit γtxn :
@@ -286,16 +310,12 @@ Section goose_lang.
     ↑invN ⊆ E →
     N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
-    modify_token γ a -∗
-    durable_mapsto γ a obj
+    durable_mapsto_own γ a obj
     ={E}=∗
     buftxn_maps_to γtxn a obj ∗
-     is_buftxn l γ dinit γtxn
-       (durable_mapsto γ a obj ∗
-        modify_token γ a ∗
-        P0).
+    is_buftxn l γ dinit γtxn (durable_mapsto_own γ a obj ∗ P0).
   Proof.
-    iIntros (???) "Hctx Ha Ha_i".
+    iIntros (???) "Hctx [Ha Ha_i]".
     iNamed "Hctx".
     iDestruct "Ha" as (obj0) "Ha".
 
@@ -327,13 +347,10 @@ Section goose_lang.
     ↑N ⊆ E →
     N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
-    ([∗ map] a↦v ∈ m, modify_token γ a ∗
-                      durable_mapsto γ a v) ={E}=∗
+    ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v) ={E}=∗
     ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
                       is_buftxn l γ dinit γtxn
-                        (([∗ map] a↦v ∈ m, modify_token γ a ∗
-                                           durable_mapsto γ a v
-                         ) ∗
+                        (([∗ map] a↦v ∈ m, durable_mapsto_own γ a v) ∗
                          P0).
   Proof.
     iIntros (???) "Hctx Hm".
@@ -343,7 +360,9 @@ Section goose_lang.
       by iFrame.
     - rewrite !big_sepM_insert //.
       iDestruct "Hm" as "[[Ha_mod Ha_dur] Hm]".
-      iMod (lift_into_txn with "Hctx Ha_mod Ha_dur") as "[Ha Hctx]"; [ solve_ndisj .. | ].
+      iAssert (durable_mapsto_own γ a v) with "[Ha_mod Ha_dur]" as "Ha".
+      { iFrame. }
+      iMod (lift_into_txn with "Hctx Ha") as "[Ha Hctx]"; [ solve_ndisj .. | ].
       iMod ("IH" with "Hctx Hm") as "[Hm Hctx]".
       iModIntro.
       iFrame.
@@ -369,13 +388,11 @@ Section goose_lang.
     ↑N ⊆ E →
     N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
-    P (λ a v, modify_token γ a ∗
-              durable_mapsto γ a v)
+    P (λ a v, durable_mapsto_own γ a v)
     ={E}=∗
     P (buftxn_maps_to γtxn) ∗
     is_buftxn l γ dinit γtxn
-      (P (λ a v, modify_token γ a ∗
-                 durable_mapsto γ a v)
+      (P (λ a v, durable_mapsto_own γ a v)
        ∗ P0).
   Proof.
     iIntros (???) "Hctx HP".
@@ -394,24 +411,6 @@ Section goose_lang.
     - iApply (is_buftxn_wand with "Hctx").
       iIntros "!> [Hm $]".
       iApply "HP"; auto.
-  Qed.
-
-  Lemma init_txn_system {E} l_txn γUnified dinit σs :
-    is_txn l_txn γUnified dinit ∗ ghost_var γUnified.(txn_crashstates) (1/2) σs ={E}=∗
-    ∃ γ, ⌜γ.(buftxn_txn_names) = γUnified⌝ ∗
-         is_txn_system γ.
-  Proof.
-    iIntros "[#Htxn Hasync]".
-    iMod (async_ctx_init σs) as (γasync) "H●async".
-    set (γ:={|buftxn_txn_names := γUnified; buftxn_async_name := γasync; |}).
-    iExists γ.
-    iMod (inv_alloc N E (txn_system_inv γ) with "[-]") as "$".
-    { iNext.
-      iExists _; iFrame. }
-    iModIntro.
-    simpl.
-    iSplit; first by auto.
-    iNamed "Htxn"; iFrame "#".
   Qed.
 
   Theorem wp_BufTxn__Begin (l_txn: loc) γ dinit :
@@ -607,6 +606,8 @@ Section goose_lang.
   {P0 stable_maps_to ∨ P stable_maps_to}
 *)
 
+  (* TODO: is this too weak with [durable_mapsto]? does it need to be
+  [durable_mapsto_own]? *)
   Lemma async_ctx_durable_map_split γ mT σs :
     async_ctx γ.(buftxn_async_name) σs -∗
     ([∗ map] a↦v ∈ mT, durable_mapsto γ a v) -∗
@@ -645,8 +646,7 @@ Section goose_lang.
       BufTxn__CommitWait #l #true
     {{{ (ok:bool), RET #ok;
         if ok then
-            P (λ a v, (* modify_token γ a v ∗ *)
-                      durable_mapsto γ a v)
+            P (λ a v, durable_mapsto_own γ a v)
         else P0 }}}.
   (* crash condition will be [∃ txn_id', P0 (ephemeral_val_from
      γ.(buftxn_async_name) txn_id') ∨ P (ephemeral_val_from γ.(buftxn_async_name)
@@ -705,28 +705,32 @@ Section goose_lang.
         iApply "HΦ".
         iApply "HPrestore".
         iApply big_sepM_subseteq; eauto.
-(*
         iApply big_sepM_sep; iFrame.
+        rewrite /durable_mapsto.
+        iSplitR "HQ".
+        (* TODO: factor this out to a lemma *)
+        { iApply (big_sepM_mono with "Hmod_tokens").
+          rewrite /modify_token. eauto. }
         iApply (big_sepM_impl with "HQ []").
         iIntros "!>" (k x ?) "Hval".
         iExists _; iFrame "∗#".
-*)
-        admit.
       + iDestruct "Hpost" as "[%Hanydirty_false Hpost]".
         iDestruct "Hpost" as "(Hpreq & Hmod_tokens)".
         iApply "HΦ".
         iApply "HPrestore".
         iApply big_sepM_subseteq; eauto.
-(*
         iApply big_sepM_sep; iFrame.
+        iSplitR "Hpreq".
+        { iApply (big_sepM_mono with "Hmod_tokens").
+          rewrite /modify_token. eauto. }
         rewrite Hanydirty; eauto.
-*)
-        admit.
     - iDestruct "Hpost" as "[Heph Hmod_tokens]".
       iApply "HΦ".
       iApply "HrestoreP0".
       rewrite big_sepM_sep.
       iFrame.
-  Admitted.
+      iApply (big_sepM_mono with "Hmod_tokens").
+      rewrite /modify_token. eauto.
+  Qed.
 
 End goose_lang.

@@ -175,7 +175,7 @@ Qed.
 Definition is_inode_stable γ (inum: u64) : iProp Σ :=
   ∃ (state: list u8),
     "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state ∗
-    "Hinode_disk" ∷ is_inode inum state (durable_mapsto γ.(simple_buftxn)).
+    "Hinode_disk" ∷ is_inode inum state (durable_mapsto_own γ.(simple_buftxn)).
 
 Definition N := nroot .@ "simplenfs".
 
@@ -537,8 +537,8 @@ Proof using Ptimeless.
   iIntros "[Hstable Hlocked]".
   iNamed "Hstable".
 
-  iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]".
-  { solve_ndisj. }
+  iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]";
+    [ solve_ndisj .. | ].
   iNamed "Hinode_disk".
 
   wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.
@@ -813,6 +813,8 @@ Proof using Ptimeless.
   iNamed "Hstable".
 
   iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]".
+  { solve_ndisj. }
+  { solve_ndisj. }
   { solve_ndisj. }
   iNamed "Hinode_disk".
 
@@ -1154,8 +1156,8 @@ Proof using Ptimeless.
   iIntros "[Hstable Hlocked]".
   iNamed "Hstable".
 
-  iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]".
-  { solve_ndisj. }
+  iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]";
+    [ solve_ndisj .. | ].
   iNamed "Hinode_disk".
 
   wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.

@@ -53,7 +53,7 @@ Section goose_lang.
       "a0" ∷ l ↦[RepBlock.S :: "a0"] (addr2val a0) ∗
       "a1" ∷ l ↦[RepBlock.S :: "a1"] (addr2val a1) ∗
       "rb_rep" ∷ rb_rep a0 a1 σ
-                   (λ a v, durable_mapsto γ a v) ∗
+                   (λ a v, durable_mapsto_own γ a v) ∗
       "HP" ∷ P σ.
 
   Definition rb_cinv a0 a1 l γ: iProp Σ :=
@@ -95,6 +95,8 @@ Section goose_lang.
     wp_loadField.
     change (word.mul 8 4096) with (U64 32768).
     iMod (lift_liftable_into_txn with "Htxn rb_rep") as "[rb_rep Htxn]".
+    { solve_ndisj. }
+    { solve_ndisj. }
     { solve_ndisj. }
     rewrite (right_id emp%I).
     iNamed "rb_rep".
