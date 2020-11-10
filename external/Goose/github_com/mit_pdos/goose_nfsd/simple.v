@@ -624,6 +624,41 @@ Definition Nfs__NFSPROC3_COMMIT: val :=
       lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
       ![struct.t nfstypes.COMMIT3res.S] "reply").
 
+(* recover_example.go *)
+
+Definition exampleWorker: val :=
+  rec: "exampleWorker" "nfs" "ino" :=
+    let: "fh" := struct.mk Fh.S [
+      "Ino" ::= "ino"
+    ] in
+    let: "buf" := NewSlice byteT #1024 in
+    Nfs__NFSPROC3_GETATTR "nfs" (struct.mk nfstypes.GETATTR3args.S [
+      "Object" ::= Fh__MakeFh3 "fh"
+    ]);;
+    Nfs__NFSPROC3_READ "nfs" (struct.mk nfstypes.READ3args.S [
+      "File" ::= Fh__MakeFh3 "fh";
+      "Offset" ::= #0;
+      "Count" ::= #(U32 1024)
+    ]);;
+    Nfs__NFSPROC3_WRITE "nfs" (struct.mk nfstypes.WRITE3args.S [
+      "File" ::= Fh__MakeFh3 "fh";
+      "Offset" ::= #0;
+      "Count" ::= #(U32 1024);
+      "Data" ::= "buf"
+    ]).
+
+Definition RecoverExample: val :=
+  rec: "RecoverExample" "d" :=
+    let: "txn" := txn.MkTxn "d" in
+    let: "lockmap" := lockmap.MkLockMap #() in
+    let: "nfs" := struct.new Nfs.S [
+      "t" ::= "txn";
+      "l" ::= "lockmap"
+    ] in
+    Fork (exampleWorker "nfs" #3);;
+    Fork (exampleWorker "nfs" #3);;
+    Fork (exampleWorker "nfs" #4).
+
 (* start.go *)
 
 Definition MakeNfs: val :=
