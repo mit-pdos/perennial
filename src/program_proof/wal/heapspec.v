@@ -1115,12 +1115,12 @@ Definition readinstalled_q γh (a : u64) (installed : Block) (bs : list Block) (
   )%I.
 
 Theorem wal_heap_readinstalled E γh a (Q : Block -> iProp Σ) :
-  ( |={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
+  ( |NC={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
         ( ∀ b, readinstalled_q γh.(wal_heap_h) a installed bs b ={E, ⊤ ∖ ↑walN}=∗ Q b ) ) -∗
   ( ∀ σ σ' b',
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_read_installed a) σ σ' b'⌝ -∗
-      ( (wal_heap_inv γh) σ ={⊤ ∖↑ walN}=∗ (wal_heap_inv γh) σ' ∗ Q b' ) ).
+      ( (wal_heap_inv γh) σ -∗ |NC={⊤ ∖↑ walN}=> (wal_heap_inv γh) σ' ∗ Q b' ) ).
 Proof using walheapG0 Σ.
   iIntros "Ha".
   iIntros (σ σ' b') "% % Hinv".
@@ -1610,7 +1610,7 @@ Qed.
 Lemma wal_heap_inv_mapsto_in_bounds γ walptr wn dinit a v E :
   ↑walN.@"wal" ⊆ E ->
   is_wal (wal_heap_inv γ) walptr wn dinit -∗
-  mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
+  mapsto (hG := γ.(wal_heap_h)) a 1 v -∗ |NC={E}=>
   mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
   in_bounds wn a.
 Proof.
@@ -1646,7 +1646,7 @@ Qed.
 Lemma wal_heap_inv_apply_upds_in_bounds γ walptr dinit wn σd σtxns a b :
   apply_upds (txn_upds σtxns) σd !! int.Z a = Some b ->
   is_wal (wal_heap_inv γ) walptr wn dinit -∗
-  ghost_var γ.(wal_heap_txns) (1 / 2) (σd, σtxns) ={⊤}=∗
+  ghost_var γ.(wal_heap_txns) (1 / 2) (σd, σtxns) -∗ |NC={⊤}=>
   ghost_var γ.(wal_heap_txns) (1 / 2) (σd, σtxns) ∗
   in_bounds wn a.
 Proof.
@@ -1698,7 +1698,7 @@ Proof using walheapG0.
           ⌜wal_wf σ⌝
           -∗ ⌜relation.denote (log_read_installed blkno) σ σ' b0⌝
              -∗ wal_heap_inv γ σ
-                ={⊤ ∖ ↑walN}=∗ wal_heap_inv γ σ'
+                -∗ |NC={⊤ ∖ ↑walN}=> wal_heap_inv γ σ'
                             ∗ ghost_var γ.(wal_heap_txns) (1/2) (σd, σtxns) ∗ ⌜b0 = b⌝
       end
     )%I with "[$Hwal Htxnsfrag]").
@@ -1826,7 +1826,7 @@ Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit :
   ↑walN ⊆ E ->
   is_wal (wal_heap_inv γ) l wn dinit ∗
   is_locked_walheap γ lwh ∗
-  mapsto (hG := γ.(wal_heap_h)) a 1 v ={E}=∗
+  mapsto (hG := γ.(wal_heap_h)) a 1 v -∗ |NC={E}=>
     is_locked_walheap γ lwh ∗
     mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
     ⌜ locked_wh_disk lwh !! int.Z a = Some (hb_latest_update v) ⌝.

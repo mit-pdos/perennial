@@ -282,14 +282,14 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ dinit a :
        (∀ σ σ' b,
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_read_installed a) σ σ' b⌝ -∗
-         (P σ ={⊤ ∖↑ N}=∗ P σ' ∗ Q b))
+         (P σ -∗ |NC={⊤ ∖↑ N}=> P σ' ∗ Q b))
    }}}
     Walog__ReadInstalled #l #a
   {{{ bl, RET slice_val bl; ∃ b, is_block bl 1 b ∗ Q b}}}.
 Proof.
   iIntros (Φ) "(#Hwal & #Ha_valid & Hfupd) HΦ".
   wp_call.
-  wp_apply (wp_Read_fupd _ _ 1 (* q=1 *)).
+  wp_apply (wp_Read_ncfupd _ _ 1 (* q=1 *)).
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
   iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
@@ -566,10 +566,10 @@ Lemma txns_are_in_bounds E γ start txns l dinit :
   ↑walN.@"wal" ⊆ E →
   txns_are γ start txns -∗
   is_wal P l γ dinit -∗
-  |={E}=> ⌜Forall (λ (u: update.t), ∃ b, dinit !! int.Z u.(update.addr) = Some b) (txn_upds txns)⌝.
+  |NC={E}=> ⌜Forall (λ (u: update.t), ∃ b, dinit !! int.Z u.(update.addr) = Some b) (txn_upds txns)⌝.
 Proof.
   iIntros (Hmask) "#Htxns_are [Hinv _]".
-  iApply (inv_open_persistent with "Hinv"); auto.
+  iApply (ncinv_open_persistent with "Hinv"); auto.
   iIntros "Hinner".
   iDestruct "Hinner" as (σ) "[Hinner _]".
   iDestruct "Hinner" as "(>? &_ & >? &_&_& >?)"; iNamed.
@@ -666,7 +666,7 @@ Proof.
     wp_pures.
     wp_apply util_proof.wp_DPrintf.
     wp_pures.
-    wp_apply (wp_Write_fupd (⊤ ∖ ↑walN.@"wal") with "Hi").
+    wp_apply (wp_Write_ncfupd (⊤ ∖ ↑walN.@"wal") with "Hi").
 
     assert (((λ u : update.t, int.Z u.(update.addr)) <$> upds) !! int.nat i = Some (int.Z addr_i)) as Hu_lookup_map.
     1: rewrite list_lookup_fmap Hu_lookup //.
@@ -832,7 +832,7 @@ Lemma snapshot_memLog_txns_are γ l dinit log diskEnd_pos (diskEnd_txn_id: nat) 
   "HownInstallerTxn_installer" ∷ (∃ (installer_txn_id : nat), ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id) -∗
   "HownInstallerPosMem_installer" ∷ (∃ (installer_pos_mem : u64), ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem) -∗
   "HownInstallerTxnMem_installer" ∷ (∃ (installer_txn_id_mem : nat), ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem) -∗
-  |={⊤}=> ∃ installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id,
+  |NC={⊤}=> ∃ installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id,
     "%Hsnapshot" ∷ ⌜has_updates
       (take (slidingM.logIndex log diskEnd_pos) log.(slidingM.log))
       (subslice (S installed_txn_id_mem) (S diskEnd_txn_id) txns)⌝ ∗
@@ -1080,7 +1080,7 @@ Lemma advance_being_installed_start_txn_id γ l dinit (being_installed_start_txn
   "%Hupds" ∷ ⌜has_updates upds txns⌝ -∗
   "#Htxns" ∷ txns_are γ (S being_installed_start_txn_id) txns -∗
   "%Htxns_length" ∷ ⌜(being_installed_start_txn_id + length txns = being_installed_end_txn_id)%nat⌝ -∗
-  |={⊤}=>
+  |NC={⊤}=>
   "HownBeingInstalledStartTxn_installer" ∷
     fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_end_txn_id ∗
   "HownBeingInstalledEndTxn_installer" ∷
@@ -1306,7 +1306,7 @@ Proof.
   (* vvv TODO: factor this out into a lemma vvv *)
 
   iDestruct "Hwal" as "[Hwal Hcircular]".
-  rewrite -fupd_wp.
+  rewrite -ncfupd_wp.
   iInv "Hwal" as (σs) "[Hinner HP]" "Hclose".
   iDestruct "Hinner" as "(>%Hwf&#Hmem&>Htxns_ctx&>γtxns&>HnextDiskEnd_inv&>Hdisk)".
   iDestruct "Hdisk" as (cs) "(Howncs&Hdisk)".

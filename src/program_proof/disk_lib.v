@@ -221,6 +221,27 @@ Proof.
   eauto.
 Qed.
 
+Lemma wp_Read_ncfupd {stk E} E' (a: u64) q :
+  ∀ Φ,
+    (|NC={E,E'}=> ∃ b, int.Z a d↦{q} b ∗
+      ▷ (int.Z a d↦{q} b -∗ |NC={E',E}=> (∀ s, is_block_full s b -∗ Φ (slice_val s)))) -∗
+    WP  Read #a @ stk; E {{ Φ }}.
+Proof.
+  iIntros (Φ) "Hupd".
+  wp_call.
+  wp_bind (ExternalOp _ _).
+  iApply (wp_ncatomic _ E E').
+  iMod "Hupd" as (b) "[Hda Hupd]"; iModIntro.
+  wp_apply (wp_ReadOp with "Hda").
+  iIntros (l) "(Hda&Hl)".
+  iMod ("Hupd" with "Hda") as "HQ"; iModIntro.
+  iDestruct (block_array_to_slice _ _ _ 4096 with "Hl") as "Hs".
+  wp_pures.
+  wp_apply (wp_raw_slice with "Hs").
+  iIntros (s) "Hs".
+  iApply "HQ"; iFrame.
+Qed.
+
 Lemma wp_Read_fupd {stk E} E' (a: u64) q :
   ∀ Φ,
     (|={E,E'}=> ∃ b, int.Z a d↦{q} b ∗

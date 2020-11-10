@@ -77,7 +77,7 @@ Proof.
   iNamed "Hlkinv".
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
-  rewrite -wp_fupd.
+  rewrite -wp_ncfupd.
   iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf.
   wp_call.
   rewrite /WalogState__memEnd.

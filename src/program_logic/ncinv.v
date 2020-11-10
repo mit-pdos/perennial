@@ -192,6 +192,20 @@ Implicit Types P : iProp Σ.
     iFrame.
   Qed.
 
+  Lemma ncinv_open_persistent N E (P Q: iProp Σ) `{!Persistent Q} :
+    ↑N ⊆ E →
+    ncinv N P -∗
+    (▷ P -∗ ◇ Q) -∗
+    |NC={E}=> Q.
+  Proof.
+    iIntros (?) "#Hinv HPQ".
+    iInv "Hinv" as "HP".
+    iModIntro.
+    rewrite -ncfupd_except_0 -ncfupd_intro.
+    iSplit; [done|].
+    iApply ("HPQ" with "[$]").
+  Qed.
+
   (* One model of an ncinv that generates a cfupd for the P at allocation *)
   Context `{!stagedG Σ}.
 
@@ -230,7 +244,7 @@ Implicit Types P : iProp Σ.
 
   Lemma ncinv_cinv_alloc N E1 E2 P Pcrash Prec :
     ↑N ⊆ E2 →
-    □ (▷ P -∗ |0={E2 ∖ ↑N}=> ▷ Pcrash ∗ ▷ Prec) -∗
+    □ (▷ P -∗ |C={E2 ∖ ↑N}_0=> Pcrash ∗ Prec) -∗
     ▷ P ={E1}=∗ ncinv N P ∗ (<disc> |C={E2}_0=> Prec) ∗ □ (C -∗ |0={E2}=> inv N Pcrash).
   Proof using stagedG0.
     iIntros (?) "#Hwand HP".
@@ -249,25 +263,25 @@ Implicit Types P : iProp Σ.
       * rewrite ncfupd_eq /ncfupd_def. iIntros (?) "HNC".
         iDestruct (NC_C with "[$] [$]") as %[].
     - do 2 iModIntro.
-      iIntros "HC". iInv "Hinv" as "H" "Hclo".
+      iIntros "#HC". iInv "Hinv" as "H" "Hclo".
       iDestruct "H" as "[(HP&>Hpending1)|(C&Hcrash&Hcase&Hdone1)]".
-      { iMod ("Hwand" with "[$]") as "(Hcrash&Hrec)".
+      { iMod ("Hwand" with "[$] [$]") as "(Hcrash&Hrec)".
         iMod (pending_upd_done with "Hpending1") as "Hdone1".
         iMod (pending_upd_done with "Hpending2") as "Hdone2".
         iMod ("Hclo" with "[Hcrash Hdone1 Hdone2 HC]").
-        { iRight. iFrame. }
+        { iRight. iFrame "# ∗". }
         eauto. }
       { iDestruct "Hcase" as "[Hrec | >Hfalse]".
         * iMod (pending_upd_done with "Hpending2") as "Hdone2".
           iMod ("Hclo" with "[Hcrash Hdone1 Hdone2 HC]").
-          { iRight. iFrame. }
+          { iRight. iFrame "# ∗". }
           by iFrame.
         * iDestruct (pending_done with "[$] [$]") as %[].
       }
     - do 2 iModIntro.
       iIntros "#HC". iInv "Hinv" as "H" "Hclo".
       iDestruct "H" as "[(HP&>Hpending1)|(C&Hcrash&Hcase&>#Hdone1)]".
-      { iMod ("Hwand" with "[$]") as "(Hcrash&Hrec)".
+      { iMod ("Hwand" with "[$] [$]") as "(Hcrash&Hrec)".
         iMod (pending_upd_done with "Hpending1") as "#Hdone1".
         iMod ("Hclo" with "[Hcrash Hrec]").
         { iRight. iFrame "∗ #". }

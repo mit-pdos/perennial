@@ -74,14 +74,14 @@ Theorem mapsto_txn_locked (γ : txn_names) l dinit lwh a data E :
   is_wal (wal_heap_inv γ.(txn_walnames)) l (wal_heap_walnames γ.(txn_walnames)) dinit ∗
   inv invN (is_txn_always γ) ∗
   is_locked_walheap γ.(txn_walnames) lwh ∗
-  mapsto_txn γ a data
-  ={E}=∗
+  mapsto_txn γ a data -∗
+  |NC={E}=>
     is_locked_walheap γ.(txn_walnames) lwh ∗
     mapsto_txn γ a data ∗
     ⌜ ∃ v, locked_wh_disk lwh !! int.Z a.(addrBlock) = Some v ⌝.
 Proof.
   iIntros (H0 H1) "(#Hiswal & #Hinv & Hlockedheap & Hmapsto)".
-  iInv "Hinv" as ">Htxnalways".
+  iInv "Hinv" as ">Htxnalways" "Hclo".
   iNamed "Htxnalways".
   iNamed "Hmapsto".
   iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as %Hvalid.
@@ -91,8 +91,7 @@ Proof.
   iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hx Hheapmatch]"; eauto.
   iNamed "Hx".
   iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Htxn_hb]") as "(Hlockedheap & Htxn_hb & %)"; eauto.
-  iModIntro.
-  iSplitR "Hlockedheap Hmapsto_log Hmapsto_meta Hmod_frag".
+  iMod ("Hclo" with "[-Hlockedheap Hmapsto_log Hmapsto_meta Hmod_frag]").
   { iNext. iExists _, _, _. iFrame.
     iApply "Hheapmatch". iExists _, _, _. iFrame. iFrame "%". }
   iModIntro.

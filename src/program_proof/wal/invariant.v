@@ -550,7 +550,7 @@ Definition is_wal_inv_pre (l: loc) γ s (dinit : disk) : iProp Σ :=
   is_wal_inner l γ s dinit ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
 
 Definition is_wal (l : loc) γ (dinit : disk) : iProp Σ :=
-  inv innerN (∃ σ, is_wal_inner l γ σ dinit ∗ P σ) ∗
+  ncinv innerN (∃ σ, is_wal_inner l γ σ dinit ∗ P σ) ∗
   is_circular circN (circular_pred γ) γ.(circ_name).
 
 (** logger_inv is the resources exclusively owned by the logger thread *)
@@ -612,11 +612,11 @@ Proof.
   set_solver.
 Qed.
 
-Theorem is_wal_read_mem l γ dinit : is_wal l γ dinit -∗ |={⊤}=> ▷ is_wal_mem l γ.
+Theorem is_wal_read_mem l γ dinit : is_wal l γ dinit -∗ |NC={⊤}=> ▷ is_wal_mem l γ.
 Proof.
   iIntros "#Hwal".
   iDestruct "Hwal" as "[Hinv _]".
-  iApply (inv_dup_acc with "Hinv"); first by set_solver.
+  iApply (ncinv_dup_acc with "Hinv"); first by set_solver.
   iIntros "HinvI".
   iDestruct "HinvI" as (σ) "[HinvI HP]".
   iDestruct "HinvI" as "(%Hwf&#Hmem&Hrest)".
@@ -627,10 +627,10 @@ Qed.
 
 Theorem is_wal_open l wn dinit E :
   ↑innerN ⊆ E ->
-  is_wal l wn dinit
-  ={E, E ∖ ↑innerN}=∗
+  is_wal l wn dinit -∗
+  |NC={E, E ∖ ↑innerN}=>
     ∃ σ, ▷ P σ ∗
-    ( ▷ P σ ={E ∖ ↑innerN, E}=∗ emp ).
+    ( ▷ P σ -∗ |NC={E ∖ ↑innerN, E}=> emp ).
 Proof.
   iIntros (HN) "[#? _]".
   iInv innerN as (σ) "[Hwalinner HP]" "Hclose".
@@ -781,7 +781,7 @@ Theorem txn_pos_valid_locked l γ dinit txns txn_id pos :
   is_wal l γ dinit -∗
   txn_pos γ txn_id pos -∗
   ghost_var γ.(txns_name) (1/2) txns -∗
-  |={⊤}=> ⌜is_txn txns txn_id pos⌝ ∗ ghost_var γ.(txns_name) (1/2) txns.
+  |NC={⊤}=> ⌜is_txn txns txn_id pos⌝ ∗ ghost_var γ.(txns_name) (1/2) txns.
 Proof.
   iIntros "[#? _] #Hpos Howntxns".
   iInv innerN as (σ) "[Hinner HP]".
@@ -802,7 +802,7 @@ Theorem get_txns_are l γ dinit txns start till txns_sub :
   (start ≤ till ≤ length txns)%nat →
   ghost_var γ.(txns_name) (1/2) txns -∗
   is_wal l γ dinit -∗
-  |={⊤}=> txns_are γ start txns_sub ∗ ghost_var γ.(txns_name) (1/2) txns.
+  |NC={⊤}=> txns_are γ start txns_sub ∗ ghost_var γ.(txns_name) (1/2) txns.
 Proof.
   iIntros (??) "Hown #Hwal".
   iDestruct "Hwal" as "[Hwal _]".
