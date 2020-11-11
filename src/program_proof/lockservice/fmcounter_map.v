@@ -7,7 +7,7 @@ From Perennial.program_proof Require Import proof_prelude.
 Class fmcounter_mapG Σ :=
    { fmcounter_map_inG :> inG Σ (gmapUR u64 mnat_authR) }.
 
-(* TODO: move upstream *)
+(* TODO: move upstream (Iris MR 567) *)
 Section gmap.
 Context `{Countable K} {A : cmraT}.
 Implicit Types m : gmap K A.
@@ -63,7 +63,7 @@ Section fmcounter_map_props.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb.
     rewrite -own_op singleton_op.
-    (* FIXME: needs Iris update *)
+    (* FIXME: needs Iris update (Iris MR 572) *)
   Admitted.
 
   Lemma fmcounter_map_update (n' n:nat) γ k:
@@ -99,7 +99,7 @@ Section fmcounter_map_props.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros (Hn).
     iApply own_mono. apply singleton_included. right.
-    (* FIXME: needs Iris update to get [mnat_auth_frag_mono] *)
+    (* FIXME: needs Iris update to get [mnat_auth_frag_mono] (Iris MR 572) *)
   Admitted.
 
 End fmcounter_map_props.

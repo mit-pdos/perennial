@@ -25,7 +25,7 @@ Context {A:Type} {R:Type}.
 Context `{!rpcG Σ R}.
 
 
-(* FIXME: move upstream *)
+(* FIXME: move upstream (Iris MR 570) *)
 Section gset.
   Context `{Countable T}.
   Implicit Types X : gset T.
