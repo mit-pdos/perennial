@@ -660,7 +660,6 @@ Proof.
   wp_apply (wp_mkSliding with "[$]").
   { destruct Hwf_circ as (?&?). subst; lia. }
 
-  wp_pures.
   iIntros (lslide) "Hsliding".
   iDestruct (is_sliding_wf with "[$]") as %Hsliding_wf.
   wp_apply wp_allocStruct; first by auto.

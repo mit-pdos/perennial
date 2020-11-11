@@ -7,8 +7,6 @@ Class IntoVal {ext: ext_op} V :=
     IntoVal_def: V;
     IntoVal_inj :> Inj eq eq to_val;
   }.
-(* Require [V] to not be an evar before doing TC search *)
-Hint Mode IntoVal - !.
 
 (* TODO: make V explicit and H implicit, so `{!IntoValForType V t} does the right thing *)
 Class IntoValForType {ext V} (H: @IntoVal ext V) {ext_ty: ext_types ext} (t:ty) :=
@@ -16,10 +14,9 @@ Class IntoValForType {ext V} (H: @IntoVal ext V) {ext_ty: ext_types ext} (t:ty) 
       to_val_has_zero: has_zero t;
       (* TODO: this isn't necessary, but it seems reasonable *)
       to_val_ty: forall v, val_ty (to_val v) t; }.
-(* Require [V] and [ty] to not be an evar before doing TC search
-FIXME: This is not enough to avoid bad types being inferred for
-lemmas such as wp_SliceSubslice_drop_rest.  *)
-Hint Mode IntoValForType - ! - - !.
+(* Require [V] or [ty] to not be an evar before doing TC search *)
+Hint Mode IntoValForType - - - - ! : typeclass_instances.
+Hint Mode IntoValForType - ! - - - : typeclass_instances.
 
 
 Instance Permutation_inj_list_fmap {A B} (f: A -> B) `{!Inj eq eq f} :

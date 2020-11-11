@@ -1199,8 +1199,7 @@ Proof.
   iIntros (ϕ) "[%Hi Henc] Hϕ".
   wp_call.
   wp_call.
-  change (#0) with (zero_val (baseT uint64BT)).
-  wp_apply wp_ref_of_zero; auto.
+  wp_apply (wp_ref_of_zero _ _ (baseT uint64BT)); first by auto.
   iIntros (i) "Hi".
   wp_let.
 

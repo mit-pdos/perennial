@@ -29,7 +29,7 @@ Proof.
 Qed.
 
 Lemma tac_wpc_expr_eval `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
-      `{!heapG Σ, !crashG Σ} Δ (s: stuckness) (k: nat) E1 Φ (Φc: iProp Σ) e e' :
+      `{!heapG Σ} Δ (s: stuckness) (k: nat) E1 Φ (Φc: iProp Σ) e e' :
   (∀ (e'':=e'), e = e'') →
   envs_entails Δ (WPC e' @ s; k; E1 {{ Φ }} {{ Φc }}) → envs_entails Δ (WPC e @ s; k; E1 {{ Φ }} {{ Φc }}).
 Proof. by intros ->. Qed.
@@ -38,8 +38,8 @@ Tactic Notation "wpc_expr_eval" tactic(t) :=
   iStartProof;
   lazymatch goal with
   | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q1 ?Q2) =>
-    eapply tac_wpc_expr_eval;
-      [let x := fresh in intros x; t; unfold x; reflexivity|]
+    notypeclasses refine (tac_wpc_expr_eval _ _ _ _ _ _ e _ _ _);
+      [let x := fresh in intros x; t; unfold x; notypeclasses refine eq_refl|]
   end.
 
 (* XXX: this caches the wrong thing as compared to the old version *)
@@ -174,8 +174,10 @@ Ltac crash_case :=
 
 Ltac wpc_pures :=
   iStartProof;
-  let Hcrash := fresh "Hcrash" in
-  wpc_pure _ Hcrash; [try iFromCache .. | repeat (wpc_pure_no_later _ Hcrash; []); clear Hcrash].
+  first [ let Hcrash := fresh "Hcrash" in
+          wpc_pure _ Hcrash;
+          [try iFromCache .. | repeat (wpc_pure_no_later _ Hcrash; []); clear Hcrash]
+        | wpc_finish ].
 
 Lemma tac_wpc_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} K Δ s k E1 Φ Φc e f :

@@ -17,8 +17,8 @@ Tactic Notation "wp_expr_eval" tactic(t) :=
   iStartProof;
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    eapply tac_wp_expr_eval;
-      [let x := fresh in intros x; t; unfold x; reflexivity|]
+    notypeclasses refine (tac_wp_expr_eval _ _ _ _ e _ _ _);
+      [let x := fresh in intros x; t; unfold x; notypeclasses refine eq_refl|]
   | _ => fail "wp_expr_eval: not a 'wp'"
   end.
 
@@ -151,7 +151,7 @@ Ltac wp_pures :=
  (* The `;[]` makes sure that no side-condition
                              magically spawns. *)
   first [ (wp_pure _; []); repeat (wp_pure_no_later _; [])
-        | try wp_value_head ].
+        | wp_finish ].
 
 (** Unlike [wp_pures], the tactics [wp_rec] and [wp_lam] should also reduce
 lambdas/recs that are hidden behind a definition, i.e. they should use

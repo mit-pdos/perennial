@@ -190,8 +190,7 @@ Section goose.
 
     wpc_pures.
     wpc_frame_seq.
-    change (InjLV #()) with (zero_val (mapValT (struct.t alloc.unit.S))).
-    wp_apply wp_NewMap.
+    wp_apply (wp_NewMap _ (t:=struct.t alloc.unit.S)).
     iIntros (mref) "Hused".
     iDestruct (is_addrset_from_empty with "Hused") as "Hused".
     iNamed 1.

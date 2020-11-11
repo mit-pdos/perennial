@@ -183,7 +183,7 @@ Proof.
   iIntros (q s) "(His_memLog&Hbufs)".
   wp_pures.
   wp_apply wp_slice_len; wp_pures.
-  wp_if_destruct; wp_pures.
+  wp_if_destruct.
   { iApply "HΦ".
     iFrame "Hlocked".
     iSplitR "HnotLogging Happender HownLoggerPos_logger HownLoggerTxn_logger".
@@ -191,6 +191,7 @@ Proof.
       iExists _; iFrame "% ∗".
     - iFrame.
   }
+  wp_pures.
   iNamed "HdiskEnd_circ".
   iMod (thread_own_get with "HdiskEnd_exactly HnotLogging") as
       "(HdiskEnd_exactly&Hlog_owned&HareLogging)";

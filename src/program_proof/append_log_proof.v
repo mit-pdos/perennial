@@ -570,7 +570,6 @@ Proof.
     wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
     wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".
-    wp_pures.
     iIntros "H". iNamed "H".
     wpc_pures; first by (crash_case; eauto).
     iDestruct (disk_array_cons with "Hdisk") as "[Hd0 Hdrest]".
