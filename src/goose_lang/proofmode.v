@@ -225,9 +225,8 @@ Tactic Notation "wp_if_destruct" :=
            | [ H: (?x <=? ?y)%Z = false |- _ ] => apply Z.leb_gt in H
            | [ H: bool_decide _ = true |- _ ] => apply bool_decide_eq_true_1 in H
            | [ H: bool_decide _ = false |- _ ] => apply bool_decide_eq_false_1 in H
-           | [ H: negb _ = true |- _ ] => apply negb_true_iff in H; subst
-           | [ H: negb _ = false |- _ ] => apply negb_false_iff in H; subst
-           (* Why does Iris need its own [negb]? *)
+           (* Match regular [negb], not proofmode [negb] (which is not usually in scope,
+              but in this file we imported [proofmode.base] via [proofmode.coq_tactics]). *)
            | [ H: Datatypes.negb _ = true |- _ ] => apply negb_true_iff in H; subst
            | [ H: Datatypes.negb _ = false |- _ ] => apply negb_false_iff in H; subst
            | [ H: LitV _ = LitV _ |- _ ] => apply inv_litv in H
