@@ -137,8 +137,16 @@ Theorem mapsto_txn_valid γ a v E :
     mapsto_txn γ a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ∧ γ.(txn_kinds) !! a.(addrBlock) = Some (projT1 v) ⌝.
 Proof.
   iIntros (HN) "#Hinv H".
-  iNamed "H".
   iInv invN as ">Halways".
+  lazymatch goal with
+  | |- envs_entails _ ?g =>
+    lazymatch g with
+    | context[bi_pure ?φ] =>
+      iAssert (⌜φ⌝)%I as "#-#Hgoal"; [ | by iFrame ]
+    end
+  end.
+
+  iNamed "H".
   iNamed "Halways".
 
   iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
@@ -156,13 +164,6 @@ Proof.
   iDestruct ("Htxn_in_hb" with "[Hoff_own]") as "Htxn_in_hb"; eauto.
   iDestruct ("Hheapmatch" with "[Htxn_hb Htxn_in_hb]") as "Hheapmatch".
   { iExists _, _, _; iFrame. done. }
-
-  iModIntro.
-  iSplitR "Hmapsto_log Hmapsto_meta Hmod_frag".
-  { iModIntro. iExists _, _, _. iFrame. }
-  iModIntro.
-  iSplitL.
-  { iExists _. iFrame. }
   iPureIntro.
   unfold bufDataT_in_block in *.
   intuition eauto; congruence.
