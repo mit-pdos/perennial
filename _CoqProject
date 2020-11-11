@@ -4,7 +4,8 @@
 # Iris-disabled warnings
 -arg -w -arg -notation-overridden,-redundant-canonical-projection
 -Q external/stdpp/theories stdpp
--Q external/iris/theories iris
+-Q external/iris/iris iris
+-Q external/iris/iris_heap_lang iris.heap_lang
 -Q external/string-ident/theories iris_string_ident
 -Q external/coqutil/src/coqutil coqutil
 -Q external/Goose Goose

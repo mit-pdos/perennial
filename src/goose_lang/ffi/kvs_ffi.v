@@ -846,7 +846,7 @@ Proof.
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { auto. }
-  iMod (gen_heap_alloc_gen ∅ kvs_init_s with "Hvals_auth") as "Hgh".
+  iMod (gen_heap_alloc_big ∅ kvs_init_s with "Hvals_auth") as "Hgh".
   { apply map_disjoint_empty_r. }
   { iMod ("Hclo" with "[Hσ H Hrest Hgh]") as "_".
     - iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen".

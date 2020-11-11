@@ -384,11 +384,11 @@ Global Instance is_circular_state_timeless γ σ :
 
 Global Instance mnat_own_auth_discretizable (γ: gname) q n :
   Discretizable (mnat_own_auth γ q n).
-Proof. rewrite /mnat_own_auth. apply _. Qed.
+Proof. rewrite mnat_own_auth_eq. apply _. Qed.
 
 Global Instance mnat_own_lb_discretizable (γ: gname) n :
   Discretizable (mnat_own_lb γ n).
-Proof. rewrite /mnat_own_lb. apply _. Qed.
+Proof. rewrite mnat_own_lb_eq. apply _. Qed.
 
 Global Instance is_circular_state_discretizable γ σ:
   Discretizable (is_circular_state γ σ).

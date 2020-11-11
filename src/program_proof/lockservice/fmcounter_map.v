@@ -7,22 +7,6 @@ From Perennial.program_proof Require Import proof_prelude.
 Class fmcounter_mapG Σ :=
    { fmcounter_map_inG :> inG Σ (gmapUR u64 mnat_authR) }.
 
-(* TODO: move upstream (Iris MR 567) *)
-Section gmap.
-Context `{Countable K} {A : cmraT}.
-Implicit Types m : gmap K A.
-Implicit Types i : K.
-Implicit Types x y : A.
-
-Lemma big_opM_singletons (m : gmap K A) :
-  ([^op map] k ↦ x ∈ m, {[ k := x ]}) ≡ m.
-Proof.
-  induction m as [|k x m Hk IH] using map_ind.
-  - rewrite big_opM_empty. done.
-  - rewrite big_opM_insert // IH insert_singleton_op //.
-Qed.
-End gmap.
-
 Definition fmcounter_map_own `{!fmcounter_mapG Σ} γ (k:u64) q n :=
   own γ {[ k := mnat_auth_auth q n]}.
 Definition fmcounter_map_lb `{!fmcounter_mapG Σ} γ (k:u64) n :=
@@ -49,7 +33,7 @@ Section fmcounter_map_props.
       rewrite Some_valid. apply mnat_auth_auth_valid. }
     iExists γ.
     rewrite -(big_opM_singletons m).
-    rewrite (big_opM_own_1 (H0:=mnat_auth_auth 1 0)).
+    rewrite big_opM_own_1.
     replace (fin_to_set u64) with (dom (gset _) m); last first.
     { rewrite dom_gset_to_gmap. done. }
     iApply big_sepM_dom.
@@ -70,8 +54,8 @@ Section fmcounter_map_props.
     (n ≤ n')%nat →
     k fm[[γ]]↦ n ==∗ k fm[[γ]]↦ n' ∗ k fm[[γ]]≥ n'.
   Proof.
-    rewrite /fmcounter_map_own /fmcounter_map_lb=>Hn.
-    rewrite -own_op singleton_op. iApply own_update. apply singleton_update.
+    rewrite -fmcounter_map_get_lb /fmcounter_map_own=>Hn.
+    iApply own_update. apply singleton_update.
     apply mnat_auth_update. done.
   Qed.
 
