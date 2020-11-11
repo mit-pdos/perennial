@@ -150,8 +150,8 @@ Ltac wp_pures :=
   iStartProof;
  (* The `;[]` makes sure that no side-condition
                              magically spawns. *)
-  try ((wp_pure _; []);
-       repeat (wp_pure_no_later _; [])).
+  first [ (wp_pure _; []); repeat (wp_pure_no_later _; [])
+        | try wp_value_head ].
 
 (** Unlike [wp_pures], the tactics [wp_rec] and [wp_lam] should also reduce
 lambdas/recs that are hidden behind a definition, i.e. they should use

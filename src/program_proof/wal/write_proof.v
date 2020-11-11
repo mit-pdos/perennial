@@ -776,7 +776,6 @@ Proof.
       wp_if_destruct.
       { (* error path *)
         wp_store.
-        wp_pures.
         iApply "HΦ".
         iExists _, _; iFrame.
         rewrite right_id.

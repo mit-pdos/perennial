@@ -237,7 +237,7 @@ Proof.
   wp_apply wp_ArbitraryInt.
   iIntros (extra) "_".
   wp_pures.
-  wp_if_destruct; wp_pures; iApply "HΦ"; iPureIntro.
+  wp_if_destruct; try wp_pures; iApply "HΦ"; iPureIntro.
   - rewrite word.unsigned_add /word.wrap in Heqb.
     rewrite word.unsigned_add /word.wrap.
     word.
@@ -359,8 +359,7 @@ Proof.
   iIntros (Hzero Φ) "_ HΦ".
   wp_call.
   wp_if_destruct.
-  - wp_pures.
-    rewrite /slice.nil slice_val_fold.
+  - rewrite /slice.nil slice_val_fold.
     iApply "HΦ".
     rewrite replicate_0.
     iApply is_slice_zero.

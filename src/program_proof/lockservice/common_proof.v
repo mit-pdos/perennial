@@ -179,7 +179,7 @@ Proof.
   unfold retty_to_rdesc.
   wp_storeField.
   wp_apply (wp_and ok (int.Z req.(rpc.Seq) ≤ int.Z v)%Z).
-  { iApply wp_value. by destruct ok. }
+  { wp_pures. by destruct ok. }
   { iIntros "_". wp_pures. done. }
   rewrite bool_decide_decide.
   destruct (decide (ok ∧ int.Z req.(rpc.Seq) ≤ int.Z v)%Z) as [ [Hok Hineq]|Hmiss].

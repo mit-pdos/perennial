@@ -231,7 +231,7 @@ Proof.
     word.
   }
   { iIntros "[%Hdec HΦ]". apply bool_decide_eq_false_1 in Hdec.
-    iApply wp_value.
+    wp_pures.
     iApply "HΦ".
     iExists _. iFrame. iPureIntro. split.
     { lia. }
