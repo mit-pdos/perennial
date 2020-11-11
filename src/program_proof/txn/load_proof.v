@@ -5,7 +5,7 @@ From iris.algebra Require Import numbers.
 
 From Perennial.Helpers Require Import Transitions NamedProps Map.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.algebra Require Import deletable_heap log_heap.
+From Perennial.algebra Require Import auth_map log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
@@ -69,7 +69,7 @@ Proof using txnG0 Σ.
 
   wp_apply (wp_Walog__ReadMem _ (λ mb,
     "Hmapsto_log" ∷ mapsto_cur a v ∗
-    "Hmapsto_meta" ∷ mapsto a 1 γm ∗
+    "Hmapsto_meta" ∷ ptsto_mut γ.(txn_metaheap) a 1 γm ∗
     match mb with
     | Some b =>
       "Hmod_frag" ∷ ghost_var γm (1/2) true ∗
@@ -85,7 +85,7 @@ Proof using txnG0 Σ.
     iModIntro.
 
     iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
-    iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
+    iDestruct (map_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
 
     eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
     eapply gmap_addr_by_block_lookup in Hmetavalid; destruct Hmetavalid.
@@ -112,7 +112,7 @@ Proof using txnG0 Σ.
         iExists _, _, _. iFrame.
       }
 
-      iMod "Hinv_closer".
+      iMod "Hinv_closer" as "_".
       iModIntro. iFrame.
       iPureIntro.
       rewrite /bufDataT_in_block in Hoff_in_block. subst. intuition eauto.
@@ -185,7 +185,7 @@ Proof using txnG0 Σ.
   wp_apply (wp_Walog__ReadInstalled _
     (λ b,
       "Hmapsto_log" ∷ mapsto_cur a v ∗
-      "Hmapsto_meta" ∷ mapsto a 1 γm ∗
+      "Hmapsto_meta" ∷ ptsto_mut γ.(txn_metaheap) a 1 γm ∗
       "%Hv" ∷ ⌜ is_bufData_at_off b a.(addrOff) (projT2 v) ∧ valid_addr a ⌝ ∗
       "Hmod_frag" ∷ ghost_var γm (1/2) true
     )%I
@@ -200,7 +200,7 @@ Proof using txnG0 Σ.
     iModIntro.
 
     iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
-    iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
+    iDestruct (map_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
 
     eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
     eapply gmap_addr_by_block_lookup in Hmetavalid; destruct Hmetavalid.
@@ -230,7 +230,7 @@ Proof using txnG0 Σ.
       iFrame.
     }
 
-    iMod "Hinv_closer".
+    iMod "Hinv_closer" as "_".
     iModIntro.
     iPureIntro.
 

@@ -5,7 +5,7 @@ From iris.base_logic.lib Require Import mnat.
 
 From Perennial.Helpers Require Import Transitions NamedProps Map.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.algebra Require Import deletable_heap log_heap.
+From Perennial.algebra Require Import auth_map log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
@@ -84,7 +84,7 @@ Proof.
   iInv "Hinv" as ">Htxnalways" "Hclo".
   iNamed "Htxnalways".
   iNamed "Hmapsto".
-  iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as %Hvalid.
+  iDestruct (map_valid with "Hmetactx Hmapsto_meta") as %Hvalid.
   eapply gmap_addr_by_block_lookup in Hvalid.
   destruct Hvalid as [offmap [Hmetam Hoffmap]].
   iDestruct (big_sepM2_lookup_2_some with "Hheapmatch") as (x) "%Hlm"; eauto.
@@ -937,7 +937,7 @@ Proof using txnG0 Σ.
           iDestruct (big_sepM_lookup_acc _ bufamap ((lv.1).(update.addr), k) with "Hmapstos") as "[Hk Hmapstos]".
           { erewrite <- (lookup_gmap_uncurry bufamap). rewrite Hbufamap_in /=. eauto. }
           iNamed "Hk".
-          iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmeta_name".
+          iDestruct (map_valid with "Hmetactx Hmapsto_meta") as "%Hmeta_name".
           rewrite <- (lookup_gmap_uncurry metam) in Hmeta_name. rewrite H0 /= in Hmeta_name.
           replace (γmeta) with (γm) by congruence.
           iDestruct (ghost_var_agree with "Hmod Hmod_frag") as %->.

@@ -5,7 +5,7 @@ From iris.base_logic.lib Require Import mnat.
 
 From Perennial.Helpers Require Import Transitions NamedProps Map.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.algebra Require Import deletable_heap log_heap.
+From Perennial.algebra Require Import auth_map log_heap.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
@@ -19,13 +19,13 @@ Class txnG (Σ: gFunctors) :=
     txn_boolG :> ghost_varG Σ bool;
     txn_walheapG :> walheapG Σ;
     txn_logheapG :> log_heapPreG addr {K & bufDataT K} Σ;
-    txn_metaheapG :> gen_heapPreG addr gname Σ;
+    txn_metaheapG :> mapG Σ addr gname;
     txn_crashstatesG :> ghost_varG Σ (async (gmap addr {K & bufDataT K}));
   }.
 
 Record txn_names {Σ} := {
   txn_logheap : log_heapG addr {K & bufDataT K} Σ;
-  txn_metaheap : gen_heapG addr gname Σ;
+  txn_metaheap : gname;
   txn_walnames : @wal_heap_gnames Σ;
   txn_crashstates : gname;
   txn_kinds : gmap u64 bufDataKind;
@@ -43,7 +43,7 @@ Definition invN : namespace := nroot .@ "txninv".
 Definition mapsto_txn (γ : txn_names) (l : addr) (v : {K & bufDataT K}) : iProp Σ :=
   ∃ γm,
     "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) l v ∗
-    "Hmapsto_meta" ∷ mapsto (hG := γ.(txn_metaheap)) l 1 γm ∗
+    "Hmapsto_meta" ∷ ptsto_mut γ.(txn_metaheap) l 1 γm ∗
     "Hmod_frag" ∷ ghost_var γm (1/2) true.
 
 Theorem mapsto_txn_2 γ a v0 v1 :
@@ -55,8 +55,7 @@ Proof.
   iIntros "H0 H1".
   iDestruct "H0" as (g0) "(H0log & H0m & H0own)".
   iDestruct "H1" as (g1) "(H1log & H1m & H1own)".
-  iDestruct (mapsto_disjoint with "H0m H1m") as %Hnoteq.
-  eauto.
+  iDestruct (ptsto_conflict with "H0m H1m") as %[].
 Qed.
 
 Definition bufDataT_in_block (walblock : Block) blockK (blkno off : u64) (bufData : {K & bufDataT K}) : Prop :=
@@ -94,7 +93,7 @@ Definition is_txn_always (γ : txn_names) : iProp Σ :=
       (crash_heaps : async (gmap u64 Block)),
       "Hlogheapctx" ∷ log_heap_ctx (hG := γ.(txn_logheap)) logm ∗
       "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (1/2) logm ∗
-      "Hmetactx" ∷ gen_heap_ctx (hG := γ.(txn_metaheap)) metam ∗
+      "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 metam ∗
       "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
         ∃ installed bs blockK,
           "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
@@ -150,7 +149,7 @@ Proof.
   iNamed "Halways".
 
   iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
-  iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
+  iDestruct (map_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
 
   eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
   eapply gmap_addr_by_block_lookup in Hmetavalid; destruct Hmetavalid.
@@ -217,7 +216,7 @@ Proof.
   iInv "Hinv" as ">Htxnalways" "Hclo".
   iNamed "Htxnalways".
   iNamed "Hmapsto".
-  iDestruct (gen_heap_valid with "Hmetactx Hmapsto_meta") as %Hvalid.
+  iDestruct (map_valid with "Hmetactx Hmapsto_meta") as %Hvalid.
   eapply gmap_addr_by_block_lookup in Hvalid.
   destruct Hvalid as [offmap [Hmetam Hoffmap]].
   iDestruct (big_sepM2_lookup_2_some with "Hheapmatch") as (x) "%Hlm"; eauto.
