@@ -54,50 +54,23 @@ Section gen_heap_defs.
 
   Local Notation "l ↦ v" := (mapsto l 1 v) (at level 20) : bi_scope.
 
-  (* FIXME: this breaks through *two* layers of abstraction.
-   TODO: Equip upstream with support for "big-op" initialization, and then use that instead. *)
-  Local Definition to_gen_heap (σ : gmap L V) : gmap_viewR L (leibnizO V) :=
-    ◯V ((λ v, (DfracOwn 1, to_agree v)) <$> σ).
-
-  Lemma heap_init_to_bigOp {Σ} {hG: gen_heapPreG L V Σ} n σ:
-    own (gen_heap_name (gen_heapG_update_pre _ n)) (to_gen_heap σ) -∗
-        let _ := gen_heapG_update_pre _ n in
-        [∗ map] i↦v ∈ σ, i ↦ v .
-  Proof.
-    induction σ using map_ind.
-    - iIntros. rewrite //=.
-    - iIntros "Hown".
-      rewrite big_opM_insert //.
-      iAssert (own (gen_heap_name _)
-                   (to_gen_heap m) ∗
-                   (i ↦ x))%I
-        with "[Hown]" as "[Hrest $]".
-      {
-        rewrite mapsto_eq /mapsto_def //.
-        rewrite /to_gen_heap fmap_insert.
-        rewrite insert_singleton_op; last first.
-        { rewrite lookup_fmap. have: (m !! i = None). done. move=>-> //. }
-        rewrite view_frag_op. iDestruct "Hown" as "(?&?)". iFrame.
-        rewrite /gmap_view_frag. done.
-      }
-      by iApply IHσ.
-  Qed.
-
   Lemma gen_heap_name_strong_init `{!gen_heapPreG L V Σ} σ :
-    ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update_pre _ names) σ ∗
-           let _ := gen_heapG_update_pre _ names in
+    ⊢ |==> ∃ names : gen_heap_names, let _ := gen_heapG_update_pre _ names in
+           gen_heap_interp (hG := gen_heapG_update_pre _ names) σ ∗
            [∗ map] i↦v ∈ σ, i ↦ v .
   Proof.
-    iMod (own_alloc (gmap_view_auth 1 (V:=leibnizO V) σ ⋅ to_gen_heap σ)) as (γh) "(?&Hfrag)".
-    { apply view_both_valid=>n k [df va]. rewrite lookup_fmap.
-      destruct (σ !! k) as [v|] eqn:Hk; rewrite Hk; last done.
-      simpl. intros [= <- <-]. eexists. done. }
-    iMod (own_alloc (gmap_view_auth 1 (V:=gnameO) ∅)) as (γm) "Hm".
-    { apply gmap_view_auth_valid. }
-    iModIntro. iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
-    iFrame. iSplitR "Hfrag".
-    - iExists ∅; simpl. iFrame. by rewrite dom_empty_L.
-    - by iApply heap_init_to_bigOp.
+    (** Cannot reuse [gen_heap_init] as that does not guarnatee that the same [inG] will remain in use *)
+    iMod (own_alloc (gmap_view_auth 1 (∅ : gmap L (leibnizO V)))) as (γh) "Hh".
+    { exact: gmap_view_auth_valid. }
+    iMod (own_alloc (gmap_view_auth 1 (∅ : gmap L gnameO))) as (γm) "Hm".
+    { exact: gmap_view_auth_valid. }
+    pose (names := {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}).
+    iExists names.
+    iAssert (gen_heap_interp (hG:=gen_heapG_update_pre _ names) ∅) with "[Hh Hm]" as "Hinterp".
+    { iExists ∅; simpl. iFrame "Hh Hm". by rewrite dom_empty_L. }
+    iMod (gen_heap_alloc_big _ σ with "Hinterp") as "(Hinterp & $ & _)".
+    { apply map_disjoint_empty_r. }
+    rewrite right_id_L. done.
   Qed.
 
   Lemma gen_heap_name_init `{!gen_heapPreG L V Σ} σ :
