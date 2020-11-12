@@ -16,45 +16,25 @@ From Coq.Structures Require Import OrdersTac.
 Section rpc_types.
 Context `{!heapG Σ}.
 
-Class RPCArgs (A:Type) :=
+Print into_val.IntoVal.
+#[refine] Instance u64_pair_val : into_val.IntoVal (u64*u64) :=
   {
-  RPCArgs_IntoVal:> into_val.IntoVal A ;
-  a_ty : ty;
+  to_val := λ x, (#x.1, #x.2)%V ;
+  IntoVal_def := (U64(0), U64(0)) ;
+  IntoVal_inj := _
   }.
+Admitted.
 
-Class RPCReturn (R:Type) :=
-  {
-  RPCReturn_Inhabited:> Inhabited R ;
-  RPCReturn_IntoVal:> into_val.IntoVal R ;
-  r_ty : ty ;
-  r_has_zero:has_zero r_ty ;
-  r_default: R;
-  r_default_is_zero: (into_val.to_val r_default) = zero_val r_ty;
-  }.
-
-Context {A:Type}.
-Context {A_RPCArgs:RPCArgs A}.
-Context {R:Type}.
-Context {R_RPCReturn:RPCReturn R}.
-
-Definition retty_to_rdesc :=
-  [("Stale", boolT) ; ("Ret", r_ty) ].
-
-Definition argty_to_adesc :=
-  [("CID", uint64T) ; ("Seq", uint64T) ; ("Args", a_ty) ].
-
-Definition read_request (args_ptr:loc) (a : @RPCRequest A) : iProp Σ :=
-  let req_desc := argty_to_adesc in
+Definition read_request (args_ptr:loc) (a : @RPCRequest (u64 * u64)) : iProp Σ :=
     "#HSeqPositive" ∷ ⌜int.nat a.(rpc.Seq) > 0⌝
-  ∗ "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[req_desc :: "Args"] (into_val.to_val a.(Args)))
-  ∗ "#HArgsOwnCID" ∷ readonly (args_ptr ↦[req_desc :: "CID"] #a.(CID))
-  ∗ "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[req_desc :: "Seq"] #a.(rpc.Seq))
+  ∗ "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Args"] (into_val.to_val a.(Args)))
+  ∗ "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest.S :: "CID"] #a.(CID))
+  ∗ "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Seq"] #a.(rpc.Seq))
 .
 
-Definition own_reply (reply_ptr:loc) (r : @RPCReply R) : iProp Σ :=
-  let reply_desc := retty_to_rdesc in
-    "HReplyOwnStale" ∷ reply_ptr ↦[reply_desc :: "Stale"] #r.(Stale)
-  ∗ "HReplyOwnRet" ∷ reply_ptr ↦[reply_desc :: "Ret"] (into_val.to_val r.(Ret))
+Definition own_reply (reply_ptr:loc) (r : @RPCReply (u64)) : iProp Σ :=
+    "HReplyOwnStale" ∷ reply_ptr ↦[RPCReply.S :: "Stale"] #r.(Stale)
+  ∗ "HReplyOwnRet" ∷ reply_ptr ↦[RPCReply.S :: "Ret"] (into_val.to_val r.(Ret))
 .
 
 End rpc_types.
@@ -101,52 +81,41 @@ Proof.
   }
 Qed.
 
-Global Instance u64_RPCArgs : RPCArgs u64 := { a_ty := uint64T }.
-
-#[refine] Global Instance u64_RPCReply : RPCReturn u64 := {r_ty := uint64T; r_default := 0 }.
-{ eauto. }
-{ eauto. }
-Defined.
-
 Context `{!rpcG Σ u64}.
-Context `{Server_own_core: loc -> iProp Σ}.
 
-Definition Server_mutex_inv (srv:loc) (γrpc:rpc_names) : iProp Σ :=
-  ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64)
-    (lastReplyM:gmap u64 u64),
-      "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
-    ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
+Definition RPCServer_mutex_inv (sv:loc) (γrpc:rpc_names) (server_own_core:iProp Σ): iProp Σ :=
+  ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 u64),
+      "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
+    ∗ "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
     ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
     ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
-    ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM)
-    ∗ Server_own_core srv
+    ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM) (* TODO: Probably should get better naming for this *)
+    ∗ server_own_core
 .
 
 Definition mutexN : namespace := nroot .@ "lockservermutexN".
 Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
 
 Definition is_server (srv_ptr:loc) γrpc: iProp Σ :=
-  ∃ mu_ptr,
-      "Hmuptr" ∷ readonly (srv_ptr ↦[LockServer.S :: "mu"] #mu_ptr)
+  ∃ sv_ptr,
+      "Hsvptr" ∷ readonly (sv_ptr ↦[LockServer.S :: "sv"] #sv_ptr)
     ∗ "Hlinv" ∷ is_RPCServer γrpc
-    ∗ "Hmu" ∷ is_lock mutexN #mu_ptr (Server_mutex_inv srv_ptr γrpc)
+    ∗ "Hmu" ∷ is_lock mutexN #sv_ptr (RPCServer_mutex_inv sv_ptr γrpc True) (* TODO: Add core mutex invariant for server *)
 .
 
-Definition Request64 := @RPCRequest u64.
-Definition Reply64 := @RPCReply u64.
+Definition Request64 := @RPCRequest (u64 * u64).
+Definition Reply64 := @RPCReply (u64).
 
-Lemma LockServer__checkReplyCache_spec (srv reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
+Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
      "%" ∷ ⌜int.nat req.(rpc.Seq) > 0⌝
     ∗ "#Hrinv" ∷ is_RPCServer γrpc
-    ∗ "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
-    ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
     ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
     ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
     ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM)
     ∗ ("Hreply" ∷ own_reply reply_ptr reply)
 }}}
-LockServer__checkReplyCache #srv #req.(CID) #req.(rpc.Seq) #reply_ptr
+CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(CID) #req.(rpc.Seq) #reply_ptr
 {{{
      v, RET v; ∃(b:bool) (reply':Reply64), "Hre" ∷ ⌜v = #b⌝
     ∗ "Hreply" ∷ own_reply reply_ptr reply'
@@ -160,8 +129,6 @@ LockServer__checkReplyCache #srv #req.(CID) #req.(rpc.Seq) #reply_ptr
          ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req)
           ∨ RPCReplyReceipt γrpc req reply'.(Ret)))
 
-    ∗ "HlastSeqOwn" ∷ srv ↦[LockServer.S :: "lastSeq"] #lastSeq_ptr
-    ∗ "HlastReplyOwn" ∷ srv ↦[LockServer.S :: "lastReply"] #lastReply_ptr
     ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
     ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM)
 }}}
@@ -176,7 +143,6 @@ Proof.
   iIntros (v ok) "(HSeqMapGet&HlastSeqMap)"; iDestruct "HSeqMapGet" as %HSeqMapGet.
   wp_pures.
   iNamed "Hreply".
-  unfold retty_to_rdesc.
   wp_storeField.
   wp_apply (wp_and ok (int.Z req.(rpc.Seq) ≤ int.Z v)%Z).
   { wp_pures. by destruct ok. }
@@ -203,7 +169,6 @@ Proof.
         apply bool_decide_eq_false in Hineqstrict.
         assert (int.Z req.(rpc.Seq) = int.Z v) by lia; word.
       }
-      wp_loadField.
       wp_apply (wp_MapGet with "HlastReplyMap").
       iIntros (reply_v reply_get_ok) "(HlastReplyMapGet & HlastReplyMap)"; iDestruct "HlastReplyMapGet" as %HlastReplyMapGet.
       iMod (server_replies_to_request with "[Hrinv] [Hsrpc]") as "[#Hreceipt Hsrpc]"; eauto.
@@ -215,7 +180,6 @@ Proof.
   { (* Cache miss *)
     wp_pures.
     apply not_and_r in Hmiss.
-    wp_loadField.
     wp_apply (wp_MapInsert _ _ lastSeqM _ req.(rpc.Seq) (#req.(rpc.Seq)) with "HlastSeqMap"); eauto.
     iIntros "HlastSeqMap".
     wp_seq.
