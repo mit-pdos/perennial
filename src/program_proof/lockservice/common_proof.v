@@ -283,28 +283,14 @@ Proof.
   }
 Qed.
 
-(* Returns true iff server reported error or request "timed out" *)
-Definition CallFunction (f:val) (fname:string) : val :=
-  rec: fname "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := struct.alloc (retty_to_rdesc)  (zero_val (struct.t (retty_to_rdesc))) in
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            f "srv" "args" "dummy_reply";;
-            Continue));;
-    (if: nondet #()
-    then f "srv" "args" "reply"
-    else #true).
-
-Lemma CallFunction_spec (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) (f:val) (fname:string) PreCond PostCond γrpc γPost :
-¬(fname = "srv") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "dummy_reply")
--> (∀ (srv' req_ptr' reply_ptr' : loc) (req':RPCRequest) 
+Lemma RemoteProcedureCall_spec (sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) (f:val) (fname:string) server_own_core PreCond PostCond γrpc γPost :
+(∀ (req_ptr' reply_ptr' : loc) (req':RPCRequest) 
    (reply' : Reply64) (γrpc' : rpc_names) (γPost' : gname),
-{{{ "#Hls" ∷ is_server srv' γrpc'
-    ∗ "#HargsInv" ∷ is_RPCRequest γrpc' γPost' PreCond PostCond req'
+{{{ "#HargsInv" ∷ is_RPCRequest γrpc' γPost' PreCond PostCond req'
     ∗ "#Hargs" ∷ read_request req_ptr' req'
     ∗ own_reply reply_ptr' reply'
 }}}
-  f #srv' #req_ptr' #reply_ptr'
+  f #req_ptr' #reply_ptr'
 {{{ RET #false; ∃ reply'',
     own_reply reply_ptr' reply''
         ∗ (⌜reply''.(Stale) = true⌝ ∗ RPCRequestStale γrpc' req'
@@ -313,12 +299,12 @@ Lemma CallFunction_spec (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply
 }}}
 )
       -∗
-{{{ "#Hls" ∷ is_server srv γrpc
+{{{ "#Hls" ∷ is_rpcserver sv γrpc server_own_core
     ∗ "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
     ∗ "#Hargs" ∷ read_request req_ptr req
     ∗ own_reply reply_ptr reply
 }}}
-  (CallFunction f fname) #srv #req_ptr #reply_ptr
+  RemoteProcedureCall f #req_ptr #reply_ptr
 {{{ e, RET e;
     (∃ reply',
     own_reply reply_ptr reply' 
@@ -328,20 +314,9 @@ Lemma CallFunction_spec (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply
              )))
 }}}.
 Proof.
-  intros Hne1 Hne2 Hne3 Hne4.
   iIntros "#Hspec" (Φ) "!# Hpre Hpost".
   iNamed "Hpre".
   wp_rec.
-  rewrite (@decide_False _ (fname = "srv")); last done.
-  rewrite (@decide_False _ (fname = "reply")); last done.
-  rewrite (@decide_False _ (fname = "dummy_reply")); last done.
-  rewrite (@decide_False _ (fname = "args")); last done.
-  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "args"))); eauto.
-  2:{ split; eauto. injection. eauto. }
-  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "reply"))); eauto.
-  2:{ split; eauto. injection. eauto. }
-  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "dummy_reply"))); eauto.
-  2:{ split; eauto. injection. eauto. }
   simpl.
   wp_let.
   wp_let.
@@ -354,7 +329,7 @@ Proof.
     wp_let. wp_pures.
     (* Set up loop invariant *)
     iAssert (∃ reply, (own_reply l reply))%I with "[Stale Ret]" as "Hreply".
-    { iExists {| Stale:=false; Ret:=r_default |}. iFrame. }
+    { iExists {| Stale:=false; Ret:=_ |}. iFrame. }
     wp_forBreak. wp_pures.
     iDestruct "Hreply" as (reply') "Hreply".
     wp_apply ("Hspec" with "[-]").
