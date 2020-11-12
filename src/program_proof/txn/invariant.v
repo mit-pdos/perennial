@@ -86,26 +86,28 @@ Definition bufDataTs_in_crashblock (walblock : Block) (blkno : u64) blockK
       ⌜ bufDataT_in_block walblock blockK blkno off bufData ⌝
   )%I.
 
+Definition is_txn_state (γ:txn_names)
+           (* the state of txn is these two variables *)
+           (logm : async (gmap addr object))
+           (crash_heaps: async (gmap u64 Block)) : iProp Σ :=
+  ∃ (metam : gmap addr gname),
+    "Hlogheapctx" ∷ log_heap_ctx (hG := γ.(txn_logheap)) logm ∗
+    "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (1/2) logm ∗
+    "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 metam ∗
+    "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
+      ∃ installed bs blockK,
+        "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
+        "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
+        "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
+    "Hcrashheaps" ∷ ghost_var γ.(txn_walnames).(wal_heap_crash_heaps) (1/2) crash_heaps ∗
+    "Hcrashheapsmatch" ∷ ( [∗ list] logmap;walheap ∈ possible logm;possible crash_heaps,
+      [∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
+        ∃ blockK,
+          "%Htxn_cb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
+          "Htxn_in_cb" ∷ bufDataTs_in_crashblock walblock blkno blockK offmap ).
+
 Definition is_txn_always (γ : txn_names) : iProp Σ :=
-  (
-    ∃ (logm : async (gmap addr {K & bufDataT K}))
-      (metam : gmap addr gname)
-      (crash_heaps : async (gmap u64 Block)),
-      "Hlogheapctx" ∷ log_heap_ctx (hG := γ.(txn_logheap)) logm ∗
-      "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (1/2) logm ∗
-      "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 metam ∗
-      "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
-        ∃ installed bs blockK,
-          "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
-          "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
-          "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
-      "Hcrashheaps" ∷ ghost_var γ.(txn_walnames).(wal_heap_crash_heaps) (1/2) crash_heaps ∗
-      "Hcrashheapsmatch" ∷ ( [∗ list] logmap;walheap ∈ possible logm;possible crash_heaps,
-        [∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
-          ∃ blockK,
-            "%Htxn_cb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
-            "Htxn_in_cb" ∷ bufDataTs_in_crashblock walblock blkno blockK offmap )
-  )%I.
+  ∃ logm crash_heaps, is_txn_state γ logm crash_heaps.
 
 Global Instance is_txn_always_timeless γ :
   Timeless (is_txn_always γ) := _.
