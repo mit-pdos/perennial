@@ -17,7 +17,7 @@ Section rpc_types.
 Context `{!heapG Σ}.
 
 Print into_val.IntoVal.
-#[refine] Instance u64_pair_val : into_val.IntoVal (u64*u64) :=
+#[refine] Global Instance u64_pair_val : into_val.IntoVal (u64*u64) :=
   {
   to_val := λ x, (#x.1, #x.2)%V ;
   IntoVal_def := (U64(0), U64(0)) ;
@@ -96,14 +96,14 @@ Definition RPCServer_mutex_inv (sv:loc) (γrpc:rpc_names) (server_own_core:iProp
 Definition mutexN : namespace := nroot .@ "lockservermutexN".
 Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
 
-Definition is_server (srv_ptr:loc) γrpc: iProp Σ :=
-  ∃ sv_ptr,
-      "Hsvptr" ∷ readonly (sv_ptr ↦[LockServer.S :: "sv"] #sv_ptr)
-    ∗ "Hlinv" ∷ is_RPCServer γrpc
-    ∗ "Hmu" ∷ is_lock mutexN #sv_ptr (RPCServer_mutex_inv sv_ptr γrpc True) (* TODO: Add core mutex invariant for server *)
+Definition is_rpcserver (sv_ptr:loc) γrpc server_own_core: iProp Σ :=
+  ∃ (mu_ptr:loc),
+      "Hlinv" ∷ is_RPCServer γrpc
+    ∗ "Hmu_ptr" ∷ readonly(sv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr)
+    ∗ "Hmu" ∷ is_lock mutexN #mu_ptr (RPCServer_mutex_inv sv_ptr γrpc server_own_core)
 .
 
-Definition Request64 := @RPCRequest (u64 * u64).
+Definition Request64 := @RPCRequest (u64 * u64). (* TODO: rename these *)
 Definition Reply64 := @RPCReply (u64).
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
@@ -197,31 +197,16 @@ Proof.
   }
 Qed.
 
-Definition Server_Function (coreFunction:val) (fname:string) : val :=
-  rec: fname "ls" "req" "reply" :=
-    lock.acquire (struct.loadF LockServer.S "mu" "ls");;
-    (if: LockServer__checkReplyCache "ls" (struct.loadF argty_to_adesc "CID" "req") (struct.loadF argty_to_adesc "Seq" "req") "reply"
-    then
-      lock.release (struct.loadF LockServer.S "mu" "ls");;
-      #false
-    else
-      struct.storeF retty_to_rdesc "Ret" "reply" (coreFunction "ls" (struct.loadF argty_to_adesc "Args" "req"));;
-      MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF argty_to_adesc "CID" "req") (struct.loadF retty_to_rdesc "Ret" "reply");;
-      lock.release (struct.loadF LockServer.S "mu" "ls");;
-      #false).
+Lemma RPCServer__HandlRequest_spec (coreFunction:val) (sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γPost server_own_core PreCond PostCond :
 
-Lemma Server_Function_spec (coreFunction:val) (fname:string) (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γPost PreCond PostCond :
-
-¬(fname = "ls") -> ¬(fname = "req") -> ¬(fname = "reply") 
-->
 (
-∀ (srv':loc) (args':u64),
+∀ (args':u64*u64),
 {{{ 
-     Server_own_core srv' ∗ PreCond args'
+     server_own_core ∗ PreCond args'
 }}}
-  coreFunction #srv' (into_val.to_val args')
+  coreFunction (into_val.to_val args')
 {{{
-   v, RET v; Server_own_core srv'
+   v, RET v; server_own_core
       ∗ (∃r:u64, ⌜v = into_val.to_val r⌝ ∗ PostCond args' r)
 }}}
 )
@@ -229,28 +214,20 @@ Lemma Server_Function_spec (coreFunction:val) (fname:string) (srv req_ptr reply_
 -∗
 
 {{{
-  "#Hls" ∷ is_server srv γrpc
+  "#Hls" ∷ is_rpcserver sv γrpc server_own_core
   ∗ "#HreqInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
   ∗ "#Hreq" ∷ read_request req_ptr req
   ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
-  (Server_Function coreFunction fname) #srv #req_ptr #reply_ptr
+  RPCServer__HandleRequest #sv coreFunction #req_ptr #reply_ptr
 {{{ RET #false; ∃ reply':Reply64, own_reply reply_ptr reply'
     ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req)
   ∨ RPCReplyReceipt γrpc req reply'.(Ret))
 }}}.
 Proof.
-  intros Hne1 Hne2 Hne3.
   iIntros "#HfCoreSpec" (Φ) "!# Hpre Hpost".
   iNamed "Hpre".
   wp_lam.
-  rewrite (@decide_False _ (fname = "ls")); last done.
-  rewrite (@decide_False _ (fname = "reply")); last done.
-  rewrite (@decide_False _ (fname = "req")); last done.
-  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "req"))); eauto.
-  2:{ split; eauto. injection. eauto. }
-  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "reply"))); eauto.
-  2:{ split; eauto. injection. eauto. }
   wp_pures.
   iNamed "Hls".
   wp_loadField.
@@ -261,7 +238,8 @@ Proof.
   repeat wp_loadField.
   iNamed "Hlsown".
   iDestruct "HSeqPositive" as %HSeqPositive.
-  wp_apply (LockServer__checkReplyCache_spec with "[-Hpost Hlocked Hlsown]"); first iFrame.
+  repeat wp_loadField.
+  wp_apply (CheckReplyTable_spec with "[-Hpost Hlocked Hlsown HlastSeqOwn HlastReplyOwn]"); first iFrame.
   { iFrame "#". done. }
   iIntros (runCore) "HcheckCachePost".
   iDestruct "HcheckCachePost" as (b reply' ->) "HcachePost".
