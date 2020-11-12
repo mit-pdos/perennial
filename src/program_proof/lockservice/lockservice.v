@@ -4,55 +4,9 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 (* 0_common.go *)
 
-(* TryLock(lockname) returns OK=true if the lock is not held.
-   If it is held, it returns OK=false immediately. *)
-Module TryLockRequest.
-  Definition S := struct.decl [
-    "CID" :: uint64T;
-    "Seq" :: uint64T;
-    "Args" :: uint64T
-  ].
-End TryLockRequest.
-
-Module RPCReply.
-  Definition S := struct.decl [
-    "Stale" :: boolT;
-    "Ret" :: uint64T
-  ].
-End RPCReply.
-
-(* Unlock(lockname) returns OK=true if the lock was held.
-   It returns OK=false if the lock was not held. *)
-Module UnlockRequest.
-  Definition S := struct.decl [
-    "CID" :: uint64T;
-    "Seq" :: uint64T;
-    "Args" :: uint64T
-  ].
-End UnlockRequest.
-
-Module PutArgs.
-  Definition S := struct.decl [
-    "Key" :: uint64T;
-    "Value" :: uint64T
-  ].
-End PutArgs.
-
-Module PutRequest.
-  Definition S := struct.decl [
-    "CID" :: uint64T;
-    "Seq" :: uint64T;
-    "Args" :: struct.t PutArgs.S
-  ].
-End PutRequest.
-
-Module GetRequest.
-  Definition S := struct.decl [
-    "CID" :: uint64T;
-    "Seq" :: uint64T;
-    "Args" :: uint64T
-  ].
-End GetRequest.
+Definition nondet: val :=
+  rec: "nondet" <> :=
+    #true.
 
 (* Call this before doing an increment that has risk of overflowing.
    If it's going to overflow, this'll loop forever, so the bad addition can never happen *)
@@ -62,35 +16,37 @@ Definition overflow_guard_incr: val :=
     (for: (λ: <>, "v" + #1 < "v"); (λ: <>, Skip) := λ: <>,
       Continue).
 
-(* 0_nondet.go *)
+(* 0_rpc.go *)
 
-Definition nondet: val :=
-  rec: "nondet" <> :=
-    #true.
-
-(* 1_kvserver.go *)
-
-Module KVServer.
+Module RPCVals.
   Definition S := struct.decl [
-    "mu" :: lockRefT;
-    "kvs" :: mapT uint64T;
-    "lastSeq" :: mapT uint64T;
-    "lastReply" :: mapT uint64T
+    "U64_1" :: uint64T;
+    "U64_2" :: uint64T
   ].
-End KVServer.
+End RPCVals.
 
-Definition KVServer__put_core: val :=
-  rec: "KVServer__put_core" "ks" "kv" :=
-    MapInsert (struct.loadF KVServer.S "kvs" "ks") (struct.get PutArgs.S "Key" "kv") (struct.get PutArgs.S "Value" "kv");;
-    #0.
+Module RPCRequest.
+  Definition S := struct.decl [
+    "CID" :: uint64T;
+    "Seq" :: uint64T;
+    "Args" :: struct.t RPCVals.S
+  ].
+End RPCRequest.
 
-Definition KVServer__get_core: val :=
-  rec: "KVServer__get_core" "ks" "key" :=
-    Fst (MapGet (struct.loadF KVServer.S "kvs" "ks") "key").
+Module RPCReply.
+  Definition S := struct.decl [
+    "Stale" :: boolT;
+    "Ret" :: uint64T
+  ].
+End RPCReply.
 
-Definition KVServer__checkReplyCache: val :=
-  rec: "KVServer__checkReplyCache" "ks" "CID" "Seq" "reply" :=
-    let: ("last", "ok") := MapGet (struct.loadF KVServer.S "lastSeq" "ks") "CID" in
+Definition RpcFunc: ty := (struct.ptrT RPCRequest.S -> struct.ptrT RPCReply.S -> boolT)%ht.
+
+Definition RpcCoreHandler: ty := (struct.t RPCVals.S -> uint64T)%ht.
+
+Definition CheckReplyTable: val :=
+  rec: "CheckReplyTable" "lastSeq" "lastReply" "CID" "Seq" "reply" :=
+    let: ("last", "ok") := MapGet "lastSeq" "CID" in
     struct.storeF RPCReply.S "Stale" "reply" #false;;
     (if: "ok" && ("Seq" ≤ "last")
     then
@@ -99,60 +55,136 @@ Definition KVServer__checkReplyCache: val :=
         struct.storeF RPCReply.S "Stale" "reply" #true;;
         #true
       else
-        struct.storeF RPCReply.S "Ret" "reply" (Fst (MapGet (struct.loadF KVServer.S "lastReply" "ks") "CID"));;
+        struct.storeF RPCReply.S "Ret" "reply" (Fst (MapGet "lastReply" "CID"));;
         #true)
     else
-      MapInsert (struct.loadF KVServer.S "lastSeq" "ks") "CID" "Seq";;
+      MapInsert "lastSeq" "CID" "Seq";;
       #false).
+
+(* Emulate an RPC call over a lossy network.
+   Returns true iff server reported error or request "timed out".
+   For the "real thing", this should instead submit a request via the network. *)
+Definition RemoteProcedureCall: val :=
+  rec: "RemoteProcedureCall" "rpc" "req" "reply" :=
+    Fork (let: "dummy_reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
+          Skip;;
+          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+            "rpc" "req" "dummy_reply";;
+            Continue));;
+    (if: nondet #()
+    then "rpc" "req" "reply"
+    else #true).
+
+(* Common code for RPC clients: tracking of CID and next sequence number. *)
+Module RPCClient.
+  Definition S := struct.decl [
+    "cid" :: uint64T;
+    "seq" :: uint64T
+  ].
+End RPCClient.
+
+Definition MakeRPCClient: val :=
+  rec: "MakeRPCClient" "cid" :=
+    struct.new RPCClient.S [
+      "cid" ::= "cid";
+      "seq" ::= #1
+    ].
+
+Definition RPCClient__MakeRequest: val :=
+  rec: "RPCClient__MakeRequest" "cl" "rpc" "args" :=
+    overflow_guard_incr (struct.loadF RPCClient.S "seq" "cl");;
+    let: "req" := ref_to (refT (struct.t RPCRequest.S)) (struct.new RPCRequest.S [
+      "Args" ::= "args";
+      "CID" ::= struct.loadF RPCClient.S "cid" "cl";
+      "Seq" ::= struct.loadF RPCClient.S "seq" "cl"
+    ]) in
+    struct.storeF RPCClient.S "seq" "cl" (struct.loadF RPCClient.S "seq" "cl" + #1);;
+    let: "errb" := ref_to boolT #false in
+    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      "errb" <-[boolT] RemoteProcedureCall "rpc" (![refT (struct.t RPCRequest.S)] "req") "reply";;
+      (if: (![boolT] "errb" = #false)
+      then Break
+      else Continue));;
+    struct.loadF RPCReply.S "Ret" "reply".
+
+(* Common code for RPC servers: locking and handling of stale and redundant requests through
+   the reply table. *)
+Module RPCServer.
+  Definition S := struct.decl [
+    "mu" :: lockRefT;
+    "lastSeq" :: mapT uint64T;
+    "lastReply" :: mapT uint64T
+  ].
+End RPCServer.
+
+Definition MakeRPCServer: val :=
+  rec: "MakeRPCServer" <> :=
+    let: "sv" := struct.alloc RPCServer.S (zero_val (struct.t RPCServer.S)) in
+    struct.storeF RPCServer.S "lastSeq" "sv" (NewMap uint64T);;
+    struct.storeF RPCServer.S "lastReply" "sv" (NewMap uint64T);;
+    struct.storeF RPCServer.S "mu" "sv" (lock.new #());;
+    "sv".
+
+Definition RPCServer__HandleRequest: val :=
+  rec: "RPCServer__HandleRequest" "sv" "core" "req" "reply" :=
+    lock.acquire (struct.loadF RPCServer.S "mu" "sv");;
+    (if: CheckReplyTable (struct.loadF RPCServer.S "lastSeq" "sv") (struct.loadF RPCServer.S "lastReply" "sv") (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCRequest.S "Seq" "req") "reply"
+    then
+      lock.release (struct.loadF RPCServer.S "mu" "sv");;
+      #false
+    else
+      struct.storeF RPCReply.S "Ret" "reply" ("core" (struct.loadF RPCRequest.S "Args" "req"));;
+      MapInsert (struct.loadF RPCServer.S "lastReply" "sv") (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCReply.S "Ret" "reply");;
+      lock.release (struct.loadF RPCServer.S "mu" "sv");;
+      #false).
+
+(* 1_kvserver.go *)
+
+Module KVServer.
+  Definition S := struct.decl [
+    "sv" :: struct.ptrT RPCServer.S;
+    "kvs" :: mapT uint64T
+  ].
+End KVServer.
+
+Definition KVServer__put_core: val :=
+  rec: "KVServer__put_core" "ks" "args" :=
+    MapInsert (struct.loadF KVServer.S "kvs" "ks") (struct.get RPCVals.S "U64_1" "args") (struct.get RPCVals.S "U64_2" "args");;
+    #0.
+
+Definition KVServer__get_core: val :=
+  rec: "KVServer__get_core" "ks" "args" :=
+    Fst (MapGet (struct.loadF KVServer.S "kvs" "ks") (struct.get RPCVals.S "U64_1" "args")).
 
 Definition KVServer__Put: val :=
   rec: "KVServer__Put" "ks" "req" "reply" :=
-    lock.acquire (struct.loadF KVServer.S "mu" "ks");;
-    (if: KVServer__checkReplyCache "ks" (struct.loadF PutRequest.S "CID" "req") (struct.loadF PutRequest.S "Seq" "req") "reply"
-    then
-      lock.release (struct.loadF KVServer.S "mu" "ks");;
-      #false
-    else
-      struct.storeF RPCReply.S "Ret" "reply" (KVServer__put_core "ks" (struct.loadF PutRequest.S "Args" "req"));;
-      MapInsert (struct.loadF KVServer.S "lastReply" "ks") (struct.loadF PutRequest.S "CID" "req") (struct.loadF RPCReply.S "Ret" "reply");;
-      lock.release (struct.loadF KVServer.S "mu" "ks");;
-      #false).
+    RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") (KVServer__put_core "ks") "req" "reply".
 
 Definition KVServer__Get: val :=
   rec: "KVServer__Get" "ks" "req" "reply" :=
-    lock.acquire (struct.loadF KVServer.S "mu" "ks");;
-    (if: KVServer__checkReplyCache "ks" (struct.loadF GetRequest.S "CID" "req") (struct.loadF GetRequest.S "Seq" "req") "reply"
-    then
-      lock.release (struct.loadF KVServer.S "mu" "ks");;
-      #false
-    else
-      struct.storeF RPCReply.S "Ret" "reply" (KVServer__get_core "ks" (struct.loadF GetRequest.S "Args" "req"));;
-      MapInsert (struct.loadF KVServer.S "lastReply" "ks") (struct.loadF GetRequest.S "CID" "req") (struct.loadF RPCReply.S "Ret" "reply");;
-      lock.release (struct.loadF KVServer.S "mu" "ks");;
-      #false).
+    RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") (KVServer__get_core "ks") "req" "reply".
 
 Definition MakeKVServer: val :=
   rec: "MakeKVServer" <> :=
     let: "ks" := struct.alloc KVServer.S (zero_val (struct.t KVServer.S)) in
     struct.storeF KVServer.S "kvs" "ks" (NewMap uint64T);;
-    struct.storeF KVServer.S "lastSeq" "ks" (NewMap uint64T);;
-    struct.storeF KVServer.S "lastReply" "ks" (NewMap uint64T);;
-    struct.storeF KVServer.S "mu" "ks" (lock.new #());;
+    struct.storeF KVServer.S "sv" "ks" (MakeRPCServer #());;
     "ks".
 
 (* 1_lockserver.go *)
 
 Module LockServer.
   Definition S := struct.decl [
-    "mu" :: lockRefT;
-    "locks" :: mapT boolT;
-    "lastSeq" :: mapT uint64T;
-    "lastReply" :: mapT uint64T
+    "sv" :: struct.ptrT RPCServer.S;
+    "locks" :: mapT boolT
   ].
 End LockServer.
 
 Definition LockServer__tryLock_core: val :=
-  rec: "LockServer__tryLock_core" "ls" "lockname" :=
+  rec: "LockServer__tryLock_core" "ls" "args" :=
+    let: "lockname" := struct.get RPCVals.S "U64_1" "args" in
     let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") "lockname" in
     (if: "locked"
     then #0
@@ -161,7 +193,8 @@ Definition LockServer__tryLock_core: val :=
       #1).
 
 Definition LockServer__unlock_core: val :=
-  rec: "LockServer__unlock_core" "ls" "lockname" :=
+  rec: "LockServer__unlock_core" "ls" "args" :=
+    let: "lockname" := struct.get RPCVals.S "U64_1" "args" in
     let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") "lockname" in
     (if: "locked"
     then
@@ -169,111 +202,24 @@ Definition LockServer__unlock_core: val :=
       #1
     else #0).
 
-Definition LockServer__checkReplyCache: val :=
-  rec: "LockServer__checkReplyCache" "ls" "CID" "Seq" "reply" :=
-    let: ("last", "ok") := MapGet (struct.loadF LockServer.S "lastSeq" "ls") "CID" in
-    struct.storeF RPCReply.S "Stale" "reply" #false;;
-    (if: "ok" && ("Seq" ≤ "last")
-    then
-      (if: "Seq" < "last"
-      then
-        struct.storeF RPCReply.S "Stale" "reply" #true;;
-        #true
-      else
-        struct.storeF RPCReply.S "Ret" "reply" (Fst (MapGet (struct.loadF LockServer.S "lastReply" "ls") "CID"));;
-        #true)
-    else
-      MapInsert (struct.loadF LockServer.S "lastSeq" "ls") "CID" "Seq";;
-      #false).
-
 (* server Lock RPC handler.
    returns true iff error *)
 Definition LockServer__TryLock: val :=
   rec: "LockServer__TryLock" "ls" "req" "reply" :=
-    lock.acquire (struct.loadF LockServer.S "mu" "ls");;
-    (if: LockServer__checkReplyCache "ls" (struct.loadF TryLockRequest.S "CID" "req") (struct.loadF TryLockRequest.S "Seq" "req") "reply"
-    then
-      lock.release (struct.loadF LockServer.S "mu" "ls");;
-      #false
-    else
-      struct.storeF RPCReply.S "Ret" "reply" (LockServer__tryLock_core "ls" (struct.loadF TryLockRequest.S "Args" "req"));;
-      MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF TryLockRequest.S "CID" "req") (struct.loadF RPCReply.S "Ret" "reply");;
-      lock.release (struct.loadF LockServer.S "mu" "ls");;
-      #false).
+    RPCServer__HandleRequest (struct.loadF LockServer.S "sv" "ls") (LockServer__tryLock_core "ls") "req" "reply".
 
 (* server Unlock RPC handler.
    returns true iff error *)
 Definition LockServer__Unlock: val :=
   rec: "LockServer__Unlock" "ls" "req" "reply" :=
-    lock.acquire (struct.loadF LockServer.S "mu" "ls");;
-    (if: LockServer__checkReplyCache "ls" (struct.loadF UnlockRequest.S "CID" "req") (struct.loadF UnlockRequest.S "Seq" "req") "reply"
-    then
-      lock.release (struct.loadF LockServer.S "mu" "ls");;
-      #false
-    else
-      struct.storeF RPCReply.S "Ret" "reply" (LockServer__unlock_core "ls" (struct.loadF UnlockRequest.S "Args" "req"));;
-      MapInsert (struct.loadF LockServer.S "lastReply" "ls") (struct.loadF UnlockRequest.S "CID" "req") (struct.loadF RPCReply.S "Ret" "reply");;
-      lock.release (struct.loadF LockServer.S "mu" "ls");;
-      #false).
+    RPCServer__HandleRequest (struct.loadF LockServer.S "sv" "ls") (LockServer__unlock_core "ls") "req" "reply".
 
 Definition MakeLockServer: val :=
   rec: "MakeLockServer" <> :=
     let: "ls" := struct.alloc LockServer.S (zero_val (struct.t LockServer.S)) in
     struct.storeF LockServer.S "locks" "ls" (NewMap boolT);;
-    struct.storeF LockServer.S "lastSeq" "ls" (NewMap uint64T);;
-    struct.storeF LockServer.S "lastReply" "ls" (NewMap uint64T);;
-    struct.storeF LockServer.S "mu" "ls" (lock.new #());;
+    struct.storeF LockServer.S "sv" "ls" (MakeRPCServer #());;
     "ls".
-
-(* 2_rpc.go *)
-
-(* Returns true iff server reported error or request "timed out" *)
-Definition CallTryLock: val :=
-  rec: "CallTryLock" "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            LockServer__TryLock "srv" "args" "dummy_reply";;
-            Continue));;
-    (if: nondet #()
-    then LockServer__TryLock "srv" "args" "reply"
-    else #true).
-
-(* Returns true iff server reported error or request "timed out" *)
-Definition CallUnlock: val :=
-  rec: "CallUnlock" "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            LockServer__Unlock "srv" "args" "dummy_reply";;
-            Continue));;
-    (if: nondet #()
-    then LockServer__Unlock "srv" "args" "reply"
-    else #true).
-
-(* Returns true iff server reported error or request "timed out" *)
-Definition CallPut: val :=
-  rec: "CallPut" "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            KVServer__Put "srv" "args" "dummy_reply";;
-            Continue));;
-    (if: nondet #()
-    then KVServer__Put "srv" "args" "reply"
-    else #true).
-
-(* Returns true iff server reported error or request "timed out" *)
-Definition CallGet: val :=
-  rec: "CallGet" "srv" "args" "reply" :=
-    Fork (let: "dummy_reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            KVServer__Get "srv" "args" "dummy_reply";;
-            Continue));;
-    (if: nondet #()
-    then KVServer__Get "srv" "args" "reply"
-    else #true).
 
 (* 3_kvclient.go *)
 
@@ -282,6 +228,7 @@ Definition CallGet: val :=
 Module KVClerk.
   Definition S := struct.decl [
     "primary" :: struct.ptrT KVServer.S;
+    "client" :: struct.ptrT RPCClient.S;
     "cid" :: uint64T;
     "seq" :: uint64T
   ].
@@ -291,41 +238,21 @@ Definition MakeKVClerk: val :=
   rec: "MakeKVClerk" "primary" "cid" :=
     let: "ck" := struct.alloc KVClerk.S (zero_val (struct.t KVClerk.S)) in
     struct.storeF KVClerk.S "primary" "ck" "primary";;
-    struct.storeF KVClerk.S "cid" "ck" "cid";;
-    struct.storeF KVClerk.S "seq" "ck" #1;;
+    struct.storeF KVClerk.S "client" "ck" (MakeRPCClient "cid");;
     "ck".
 
 Definition KVClerk__Put: val :=
   rec: "KVClerk__Put" "ck" "key" "val" :=
-    overflow_guard_incr (struct.loadF KVClerk.S "seq" "ck");;
-    let: "args" := ref_to (refT (struct.t PutRequest.S)) (struct.new PutRequest.S [
-      "Args" ::= struct.mk PutArgs.S [
-        "Key" ::= "key";
-        "Value" ::= "val"
-      ];
-      "CID" ::= struct.loadF KVClerk.S "cid" "ck";
-      "Seq" ::= struct.loadF KVClerk.S "seq" "ck"
-    ]) in
-    struct.storeF KVClerk.S "seq" "ck" (struct.loadF KVClerk.S "seq" "ck" + #1);;
-    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-    Skip;;
-    (for: (λ: <>, (CallPut (struct.loadF KVClerk.S "primary" "ck") (![refT (struct.t PutRequest.S)] "args") "reply" = #true)); (λ: <>, Skip) := λ: <>,
-      Continue).
+    RPCClient__MakeRequest (struct.loadF KVClerk.S "client" "ck") (KVServer__Put (struct.loadF KVClerk.S "primary" "ck")) (struct.mk RPCVals.S [
+      "U64_1" ::= "key";
+      "U64_2" ::= "val"
+    ]).
 
 Definition KVClerk__Get: val :=
   rec: "KVClerk__Get" "ck" "key" :=
-    overflow_guard_incr (struct.loadF KVClerk.S "seq" "ck");;
-    let: "args" := ref_to (refT (struct.t GetRequest.S)) (struct.new GetRequest.S [
-      "Args" ::= "key";
-      "CID" ::= struct.loadF KVClerk.S "cid" "ck";
-      "Seq" ::= struct.loadF KVClerk.S "seq" "ck"
-    ]) in
-    struct.storeF KVClerk.S "seq" "ck" (struct.loadF KVClerk.S "seq" "ck" + #1);;
-    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-    Skip;;
-    (for: (λ: <>, (CallGet (struct.loadF KVClerk.S "primary" "ck") (![refT (struct.t GetRequest.S)] "args") "reply" = #true)); (λ: <>, Skip) := λ: <>,
-      Continue);;
-    struct.loadF RPCReply.S "Ret" "reply".
+    RPCClient__MakeRequest (struct.loadF KVClerk.S "client" "ck") (KVServer__Get (struct.loadF KVClerk.S "primary" "ck")) (struct.mk RPCVals.S [
+      "U64_1" ::= "key"
+    ]).
 
 (* 3_lockclient.go *)
 
@@ -334,8 +261,7 @@ Definition KVClerk__Get: val :=
 Module Clerk.
   Definition S := struct.decl [
     "primary" :: struct.ptrT LockServer.S;
-    "cid" :: uint64T;
-    "seq" :: uint64T
+    "client" :: struct.ptrT RPCClient.S
   ].
 End Clerk.
 
@@ -343,57 +269,30 @@ Definition MakeClerk: val :=
   rec: "MakeClerk" "primary" "cid" :=
     let: "ck" := struct.alloc Clerk.S (zero_val (struct.t Clerk.S)) in
     struct.storeF Clerk.S "primary" "ck" "primary";;
-    struct.storeF Clerk.S "cid" "ck" "cid";;
-    struct.storeF Clerk.S "seq" "ck" #1;;
+    struct.storeF Clerk.S "client" "ck" (MakeRPCClient "cid");;
     "ck".
 
 Definition Clerk__TryLock: val :=
   rec: "Clerk__TryLock" "ck" "lockname" :=
-    overflow_guard_incr (struct.loadF Clerk.S "seq" "ck");;
-    let: "args" := ref_to (refT (struct.t TryLockRequest.S)) (struct.new TryLockRequest.S [
-      "Args" ::= "lockname";
-      "CID" ::= struct.loadF Clerk.S "cid" "ck";
-      "Seq" ::= struct.loadF Clerk.S "seq" "ck"
-    ]) in
-    struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
-    let: "errb" := ref_to boolT #false in
-    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] CallTryLock (struct.loadF Clerk.S "primary" "ck") (![refT (struct.t TryLockRequest.S)] "args") "reply";;
-      (if: (![boolT] "errb" = #false)
-      then Break
-      else Continue));;
-    struct.loadF RPCReply.S "Ret" "reply".
+    RPCClient__MakeRequest (struct.loadF Clerk.S "client" "ck") (LockServer__TryLock (struct.loadF Clerk.S "primary" "ck")) (struct.mk RPCVals.S [
+      "U64_1" ::= "lockname"
+    ]) ≠ #0.
 
 (* ask the lock service to unlock a lock.
    returns true if the lock was previously held,
    false otherwise. *)
 Definition Clerk__Unlock: val :=
   rec: "Clerk__Unlock" "ck" "lockname" :=
-    overflow_guard_incr (struct.loadF Clerk.S "seq" "ck");;
-    let: "args" := ref_to (refT (struct.t UnlockRequest.S)) (struct.new UnlockRequest.S [
-      "Args" ::= "lockname";
-      "CID" ::= struct.loadF Clerk.S "cid" "ck";
-      "Seq" ::= struct.loadF Clerk.S "seq" "ck"
-    ]) in
-    struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
-    let: "errb" := ref_to boolT #false in
-    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] CallUnlock (struct.loadF Clerk.S "primary" "ck") (![refT (struct.t UnlockRequest.S)] "args") "reply";;
-      (if: (![boolT] "errb" = #false)
-      then Break
-      else Continue));;
-    struct.loadF RPCReply.S "Ret" "reply".
+    RPCClient__MakeRequest (struct.loadF Clerk.S "client" "ck") (LockServer__Unlock (struct.loadF Clerk.S "primary" "ck")) (struct.mk RPCVals.S [
+      "U64_1" ::= "lockname"
+    ]) ≠ #0.
 
 (* Spins until we have the lock *)
 Definition Clerk__Lock: val :=
   rec: "Clerk__Lock" "ck" "lockname" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (Clerk__TryLock "ck" "lockname" = #1)
+      (if: Clerk__TryLock "ck" "lockname"
       then Break
       else Continue));;
     #true.

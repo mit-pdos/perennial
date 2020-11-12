@@ -16,7 +16,7 @@ From Perennial.program_proof.lockservice Require Import lockservice nondet locks
 Record bank_names := BankNames {
   bank_ls_names : lockservice_names;
   bank_ks_names : kvservice_names;
-  bank_logBalGN : gname (* *)
+  bank_logBalGN : gname (* Logical balances of accounts; must match the physical balance by the time you give up the lock *)
 }.
 
 Class bankG Σ := BankG {
