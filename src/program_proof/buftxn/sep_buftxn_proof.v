@@ -197,12 +197,25 @@ Section goose_lang.
   Definition durable_mapsto_own γ a obj: iProp Σ :=
     modify_token γ a ∗ durable_mapsto γ a obj.
 
+  (* TODO(tej): we need to split out the crash part of [is_buftxn] from the
+    in-memory part so that the caller can frame away the crash condition for the
+    duration of the critical section before CommitWait, rather than being forced
+    to continually re-prove P0 using [is_buftxn ... P0].
+
+   The only way I see to do this is to completely drop [modify_token] on crash
+   and rely solely on [ephemeral_val_from] and its [own_last_frag] in particular
+   as the token the caller preserves on crash and exchanges for a [modify_token]
+   in the fresh generation. In theory I see no reason why we can't do this, but
+   it's a more complicated ghost exchanger for this proof to provide. *)
   Definition is_buftxn l γ dinit γtxn P0 : iProp Σ :=
     ∃ (mT: gmap addr versioned_object) anydirty,
       "#Htxn_system" ∷ is_txn_system γ ∗
       "Hold_vals" ∷ ([∗ map] a↦v ∈ mspec.committed <$> mT,
                      durable_mapsto γ a v) ∗
       "#HrestoreP0" ∷ □ (([∗ map] a↦v ∈ mspec.committed <$> mT,
+                          (* the [durable_mapsto] part comes from [Hold_vals],
+                          the modification tokens need to come from
+                          [mspec.is_buftxn] *)
                           durable_mapsto_own γ a v) -∗
                          P0) ∗
       "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) dinit anydirty ∗
