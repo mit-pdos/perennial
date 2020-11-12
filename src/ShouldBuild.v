@@ -23,8 +23,8 @@ From Perennial.program_proof Require
      wp_to_wpc.
 From Perennial.program_proof.examples Require
      all_examples.
-From Perennial.program_proof.lockservice Require
-     bank_proof.
+(* From Perennial.program_proof.lockservice Require
+     bank_proof. *)
 From Perennial.goose_lang Require
      ffi.append_log_ffi
      ffi.kvs_ffi.
