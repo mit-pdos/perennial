@@ -52,6 +52,13 @@ Definition wrapper (f : fh) `(fn : buf -> transition State T) : transition State
 Definition getattr (f : fh) (i : buf) : transition State fattr :=
   ret (Build_fattr (U64 (length i))).
 
+Definition full_getattr (f : fh) : transition State (res fattr) :=
+  if decide (f = U64 1) then
+    r <- suchThat (gen:=fun _ _ => None) (λ _ _, True);
+    ret (OK r)
+  else
+    wrapper f (getattr f).
+
 Definition setattr (f : fh) (a : sattr) (i : buf) : transition State unit :=
   match (sattr_size a) with
   | None => ret tt

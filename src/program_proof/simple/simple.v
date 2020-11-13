@@ -712,6 +712,20 @@ Proof.
   iPureIntro; simpl. eauto.
 Qed.
 
+Theorem wp_rootFattr :
+  {{{ True
+  }}}
+    rootFattr #()
+  {{{ fattr3, RET fattr3;
+      ⌜ getField_f nfstypes.Fattr3.S "Size" fattr3 = #0 ⌝ ∗
+      ⌜ val_ty fattr3 (struct.t nfstypes.Fattr3.S) ⌝
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  iApply "HΦ". eauto.
+Qed.
+
 Lemma nfstypes_getattr3res_merge reply s ok :
   ( reply ↦[nfstypes.GETATTR3res.S :: "Status"] s ∗
     reply ↦[nfstypes.GETATTR3res.S :: "Resok"] ok ) -∗
@@ -725,7 +739,7 @@ Theorem wp_NFSPROC3_GETATTR γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (Q : S
   {{{ is_fs γ nfs dinit ∗
       is_fh fhslice fh ∗
       ∀ σ σ' r E,
-        ⌜relation.denote (SimpleNFS.wrapper fh (SimpleNFS.getattr fh)) σ σ' r⌝ -∗
+        ⌜relation.denote (SimpleNFS.full_getattr fh) σ σ' r⌝ -∗
         ( P σ ={E}=∗ P σ' ∗ Q r )
   }}}
     Nfs__NFSPROC3_GETATTR #nfs
@@ -763,8 +777,48 @@ Proof using Ptimeless.
   wp_if_destruct.
   {
     wp_apply (wp_storeField_struct with "Hreply"); first by auto. iIntros "Hreply".
-    (* Our spec doesn't allow returning a funny root inode *)
-    admit.
+
+    (* Simulate to get Q *)
+    iApply fupd_wp.
+    iInv "Hsrc" as ">Hopen" "Hclose".
+    iNamed "Hopen".
+    iDestruct ("Hfupd" with "[] HP") as "Hfupd".
+    {
+      iPureIntro.
+      rewrite /SimpleNFS.full_getattr.
+      match goal with
+      | |- context[if ?cond then _ else _] => destruct cond
+      end; try congruence.
+      econstructor. { econstructor. eauto. }
+      simpl.
+      monad_simpl.
+    }
+    iMod "Hfupd" as "[HP HQ]".
+    iMod ("Hclose" with "[Hsrcheap HP]").
+    { iModIntro. iExists _. iFrame "∗%#". }
+    iModIntro.
+
+    wp_apply wp_rootFattr. iIntros (fattr3) "(%Hlen & %Hfattr3)".
+
+    iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
+
+    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+    iIntros (fl) "[%Hfl Resok]".
+    wp_apply (wp_storeField_struct with "Resok").
+    { eauto. }
+    iIntros "Resok".
+    rewrite Hfl; clear Hfl fl.
+
+    wp_apply (wp_LoadAt with "[Status Resok]").
+    { iModIntro. iApply nfstypes_getattr3res_merge. iFrame. }
+    iIntros "Hreply".
+
+    iApply "HΦ". iLeft. iExists _, _, _.
+    iSplit; first done.
+    iSplit; first done.
+    iSplit; first done.
+    iSplit; first done.
+    iFrame.
   }
 
   wp_apply (wp_validInum).
@@ -780,6 +834,10 @@ Proof using Ptimeless.
     iDestruct ("Hfupd" with "[] HP") as "Hfupd".
     {
       iPureIntro.
+      rewrite /SimpleNFS.full_getattr.
+      match goal with
+      | |- context[if ?cond then _ else _] => destruct cond
+      end; try congruence.
       simpl.
       monad_simpl.
       simpl.
@@ -852,6 +910,10 @@ Proof using Ptimeless.
     iDestruct ("Hfupd" with "[] HP") as "Hfupd".
     {
       iPureIntro.
+      rewrite /SimpleNFS.full_getattr.
+      match goal with
+      | |- context[if ?cond then _ else _] => destruct cond
+      end; try congruence.
       simpl.
       monad_simpl.
       simpl.
@@ -895,6 +957,10 @@ Transparent nfstypes.GETATTR3res.S.
     iDestruct ("Hfupd" with "[] HP") as "Hfupd".
     {
       iPureIntro.
+      rewrite /SimpleNFS.full_getattr.
+      match goal with
+      | |- context[if ?cond then _ else _] => destruct cond
+      end; try congruence.
       simpl.
       monad_simpl.
       simpl.
@@ -925,7 +991,7 @@ Transparent nfstypes.GETATTR3res.S.
     simpl. intuition eauto.
     Opaque nfstypes.READ3res.S.
     lia.
-Admitted.
+Qed.
 
 Opaque nfstypes.WRITE3res.S.
 
