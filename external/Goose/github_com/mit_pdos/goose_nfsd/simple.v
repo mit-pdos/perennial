@@ -132,21 +132,24 @@ Definition Inode__Write: val :=
         (if: "offset" + "count" > disk.BlockSize
         then (#0, #false)
         else
-          let: "buffer" := buftxn.BufTxn__ReadBuf "btxn" (block2addr (struct.loadF Inode.S "Data" "ip")) common.NBITBLOCK in
-          let: "b" := ref_to uint64T #0 in
-          (for: (λ: <>, ![uint64T] "b" < "count"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
-            SliceSet byteT (struct.loadF buf.Buf.S "Data" "buffer") ("offset" + ![uint64T] "b") (SliceGet byteT "dataBuf" (![uint64T] "b"));;
-            Continue);;
-          buf.Buf__SetDirty "buffer";;
-          util.DPrintf #1 (#(str"Write: off %d cnt %d size %d
-          ")) #();;
-          (if: "offset" + "count" > struct.loadF Inode.S "Size" "ip"
-          then
-            struct.storeF Inode.S "Size" "ip" ("offset" + "count");;
-            Inode__WriteInode "ip" "btxn";;
-            #()
-          else #());;
-          ("count", #true)))).
+          (if: "offset" > struct.loadF Inode.S "Size" "ip"
+          then (#0, #false)
+          else
+            let: "buffer" := buftxn.BufTxn__ReadBuf "btxn" (block2addr (struct.loadF Inode.S "Data" "ip")) common.NBITBLOCK in
+            let: "b" := ref_to uint64T #0 in
+            (for: (λ: <>, ![uint64T] "b" < "count"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
+              SliceSet byteT (struct.loadF buf.Buf.S "Data" "buffer") ("offset" + ![uint64T] "b") (SliceGet byteT "dataBuf" (![uint64T] "b"));;
+              Continue);;
+            buf.Buf__SetDirty "buffer";;
+            util.DPrintf #1 (#(str"Write: off %d cnt %d size %d
+            ")) #();;
+            (if: "offset" + "count" > struct.loadF Inode.S "Size" "ip"
+            then
+              struct.storeF Inode.S "Size" "ip" ("offset" + "count");;
+              Inode__WriteInode "ip" "btxn";;
+              #()
+            else #());;
+            ("count", #true))))).
 
 Definition ReadInode: val :=
   rec: "ReadInode" "btxn" "inum" :=
