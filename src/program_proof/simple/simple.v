@@ -1003,7 +1003,9 @@ Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (co
         is_inode_mem ip inum len' blk ∗
         is_inode_enc inum len' blk (buftxn_maps_to γtxn) ∗
         is_inode_data len' blk contents' (buftxn_maps_to γtxn) ∗
-        ⌜ wcount = count ∧ ok = true ⌝ ) ∨
+        ⌜ wcount = count ∧ ok = true ∧
+          (int.Z offset + length databuf < 2^64)%Z ∧
+          (int.Z offset ≤ int.Z len)%Z ⌝ ) ∨
       ( is_inode_mem ip inum len blk ∗
         is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
         is_inode_data len blk contents (buftxn_maps_to γtxn) ∗
@@ -1019,13 +1021,13 @@ Proof.
   wp_apply util_proof.wp_SumOverflows.
   iIntros (ok) "%Hok". subst.
   wp_if_destruct.
-  { wp_pures. iApply "HΦ". iFrame. iRight. iFrame. done. }
+  { wp_pures. iApply "HΦ". iFrame "Hbuftxn". iRight. iFrame. done. }
   wp_if_destruct.
-  { wp_pures. iApply "HΦ". iFrame. iRight. iFrame. done. }
+  { wp_pures. iApply "HΦ". iFrame "Hbuftxn". iRight. iFrame. done. }
   iNamed "Hmem".
   wp_loadField.
   wp_if_destruct.
-  { wp_pures. iApply "HΦ". iFrame. iRight. iFrame. done. }
+  { wp_pures. iApply "HΦ". iFrame "Hbuftxn". iRight. iFrame. done. }
 
   iNamed "Hdata".
   wp_loadField.
@@ -1180,7 +1182,12 @@ Proof.
     rewrite Z.max_r.
     2: { revert Heqb2. word. }
     iFrame.
-    iSplit; last by done.
+    iSplit.
+    2: {
+      iPureIntro. intuition eauto.
+      { rewrite -Hcount; word. }
+      lia.
+    }
     iExists _. iFrame. iPureIntro.
     rewrite Hbbuf. rewrite Hcontents0 Hcontents1.
     rewrite !app_length.
@@ -1214,7 +1221,12 @@ Proof.
     2: { revert Heqb2. word. }
     replace (U64 (int.Z len)) with (len) by word.
     iFrame.
-    iSplit; last by done.
+    iSplit.
+    2: {
+      iPureIntro. intuition eauto.
+      { rewrite -Hcount; word. }
+      lia.
+    }
     iExists _. iFrame. iPureIntro.
     rewrite Hbbuf. rewrite Hcontents0 Hcontents1 Hbuf.
     rewrite !app_length.
@@ -1355,13 +1367,13 @@ Proof using Ptimeless.
   wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.
   iIntros (ip) "(Hbuftxn & Hinode_enc & Hinode_mem)".
 
-  wp_apply (wp_Inode__Write with "[$Hbuftxn $Hinode_mem $Hinode_data Hdata]").
+  wp_apply (wp_Inode__Write with "[$Hbuftxn $Hinode_mem $Hinode_data $Hinode_enc Hdata]").
   { iDestruct (is_slice_to_small with "Hdata") as "$".
-    iPureIntro.
+    iPureIntro. intuition eauto.
     rewrite /u32_to_u64. word.
   }
 
-  iIntros (wcount ok) "[Hbuftxn [(Hinode_mem & Hinode_data & %Hok) | Hok]]"; intuition subst.
+  iIntros (wcount ok) "[Hbuftxn [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
   {
     wp_pures.
 
@@ -1408,6 +1420,8 @@ Proof using Ptimeless.
         instantiate (3 := false).
         simpl.
         monad_simpl.
+        econstructor. { econstructor. revert H3. word. }
+        monad_simpl.
       }
       iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
       iMod "Hfupd" as "[HP HQ]".
@@ -1417,7 +1431,10 @@ Proof using Ptimeless.
         iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
         iApply (big_sepM_insert_delete with "[$H1]").
         iPureIntro.
-        admit.
+        rewrite !app_length drop_length.
+        rewrite take_length_le.
+        2: { revert H3. word. }
+        lia.
       }
       iModIntro.
 
@@ -1425,7 +1442,29 @@ Proof using Ptimeless.
       wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
       { iExists _. iFrame.
         iDestruct "Hcommit" as "(Hinode_enc & Hinode_data)".
-        iExists _. admit. }
+        iExists _.
+        replace (length
+         (take (int.nat offset) state ++
+          databuf ++ drop (int.nat offset + length databuf) state) : Z)
+          with (int.Z (length state)
+                  `max` (int.Z offset + int.Z (u32_to_u64 (U32 (length databuf)))))%Z.
+        2: {
+          rewrite /u32_to_u64. word_cleanup.
+          destruct (decide (int.Z offset + length databuf ≤ length state)%Z).
+          { rewrite Z.max_l; last by lia.
+            rewrite !app_length. rewrite drop_length.
+            rewrite take_length_le; lia. }
+          { rewrite Z.max_r; last by lia.
+            rewrite !app_length. rewrite drop_length.
+            rewrite take_length_le; try lia.
+            revert H3. word. }
+        }
+        iFrame.
+        rewrite /u32_to_u64. word_cleanup.
+        rewrite (firstn_all2 databuf); last by lia.
+        replace (Z.to_nat (length databuf)) with (length databuf) by lia.
+        iFrame.
+      }
 
       wp_apply (wp_LoadAt with "[Status Resok Resfail]").
       { iModIntro. iApply nfstypes_write3res_merge. iFrame. }
@@ -1483,7 +1522,7 @@ Proof using Ptimeless.
   }
 
   {
-    iDestruct "Hok" as "(Hinode_mem & Hinode_data & %Hok)". intuition subst.
+    iDestruct "Hok" as "(Hinode_mem & Hinode_enc & Hinode_data & %Hok)". intuition subst.
     wp_pures.
 
     (* Implicit transaction abort *)
@@ -1527,6 +1566,10 @@ Proof using Ptimeless.
     iSplit; first done.
     iFrame.
     iPureIntro. lia.
-Admitted.
+  }
+
+Unshelve.
+  exact tt.
+Qed.
 
 End heap.

@@ -68,10 +68,9 @@ Definition read (f : fh) (off : u64) (count : u32) (i : buf) : transition State 
   ret (reseof, resbuf).
 
 Definition write (f : fh) (off : u64) (data : buf) (i : buf) : transition State u32 :=
-  let i' := app i (replicate ((int.nat off + length data) - length i) (U8 0)) in
-  let i'' := app (firstn (int.nat off) i')
-             (app data (skipn (int.nat off + length data) i')) in
-  _ <- modify (fun s => insert f i'' s);
+  _ <- suchThat (gen:=fun _ _ => None) (fun (_: State) (_: unit) => int.nat off ≤ length i);
+  let i' := app (firstn (int.nat off) i) (app data (skipn (int.nat off + length data) i)) in
+  _ <- modify (fun s => insert f i' s);
   ret (U32 (length data)).
 
 End SimpleNFS.
