@@ -258,7 +258,8 @@ Definition KVClerk__Put: val :=
     RPCClient__MakeRequest (struct.loadF KVClerk.S "client" "ck") (KVServer__Put (struct.loadF KVClerk.S "primary" "ck")) (struct.mk RPCVals.S [
       "U64_1" ::= "key";
       "U64_2" ::= "val"
-    ]).
+    ]);;
+    #().
 
 Definition KVClerk__Get: val :=
   rec: "KVClerk__Get" "ck" "key" :=
