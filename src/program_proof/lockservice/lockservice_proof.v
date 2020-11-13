@@ -487,10 +487,24 @@ Proof.
   iFrame "#".
 Qed.
 
+Lemma MakeRPCClient_spec γrpc (cid : u64) :
+  {{{ RPCClient_own γrpc cid 1 }}}
+    MakeRPCClient #cid
+  {{{ cl, RET #cl; own_rpcclient cl γrpc }}}.
+Proof.
+  iIntros (Φ) "Hclient_own Hpost". wp_lam.
+  wp_apply wp_allocStruct; first by eauto.
+  iIntros (l) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "(l_cid & l_seq & _)".
+  iApply "Hpost".
+  iExists _, _. iFrame.
+  by iPureIntro; word.
+Qed.
+
 Lemma MakeLockClerk_spec γ (srv : loc) (cid : u64) :
   {{{ is_lockserver γ srv ∗ lockserver_cid_token γ cid }}}
     MakeClerk #srv #cid
-  {{{ ck, RET ck; own_lockclerk γ ck srv }}}.
+  {{{ ck, RET #ck; own_lockclerk γ ck srv }}}.
 Proof.
   iIntros (Φ) "[#Hserver Hcid] HΦ". wp_lam.
   rewrite /lockserver_cid_token /own_lockclerk.
@@ -498,14 +512,13 @@ Proof.
 
   wp_apply wp_allocStruct; first by eauto.
   iIntros (l) "Hl". wp_pures.
-  iDestruct (struct_fields_split with "Hl") as "(l_primary & l_cid & l_seq &_)".
+  iDestruct (struct_fields_split with "Hl") as "(l_primary & l_client & _)".
   wp_storeField.
+  wp_apply (MakeRPCClient_spec with "Hcid").
+  iIntros (cl) "Hcl".
   wp_storeField.
-  wp_storeField.
-  
-  iApply "HΦ". iExists _, _, _.
-  iFrame. eauto with lia.
+  iApply "HΦ". iExists _.
+  by iFrame.
 Qed.
-
 
 End lockservice_proof.
