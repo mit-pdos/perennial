@@ -93,17 +93,17 @@ Definition MakeRPCClient: val :=
 Definition RPCClient__MakeRequest: val :=
   rec: "RPCClient__MakeRequest" "cl" "rpc" "args" :=
     overflow_guard_incr (struct.loadF RPCClient.S "seq" "cl");;
-    let: "req" := ref_to (refT (struct.t RPCRequest.S)) (struct.new RPCRequest.S [
+    let: "req" := struct.new RPCRequest.S [
       "Args" ::= "args";
       "CID" ::= struct.loadF RPCClient.S "cid" "cl";
       "Seq" ::= struct.loadF RPCClient.S "seq" "cl"
-    ]) in
+    ] in
     struct.storeF RPCClient.S "seq" "cl" (struct.loadF RPCClient.S "seq" "cl" + #1);;
     let: "errb" := ref_to boolT #false in
     let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] RemoteProcedureCall "rpc" (![refT (struct.t RPCRequest.S)] "req") "reply";;
+      "errb" <-[boolT] RemoteProcedureCall "rpc" "req" "reply";;
       (if: (![boolT] "errb" = #false)
       then Break
       else Continue));;

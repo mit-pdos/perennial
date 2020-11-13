@@ -16,18 +16,27 @@ From Coq.Structures Require Import OrdersTac.
 Section rpc_types.
 Context `{!heapG Σ}.
 
-#[refine] Global Instance u64_pair_val : into_val.IntoVal (u64*u64) :=
+#[refine] Global Instance u64_pair_val : into_val.IntoVal (u64*(u64 * unit)) :=
   {
-  to_val := λ x, (#x.1, #x.2)%V ;
-  IntoVal_def := (U64(0), U64(0)) ;
+  to_val := λ x, (#x.1, (#x.2.1, #()))%V ;
+  IntoVal_def := (U64(0), (U64(0), ())) ;
   IntoVal_inj := _
   }.
 Proof.
   intros x1 x2 [=].
-  abstract (destruct x1, x2; simpl in *; subst; auto).
+  destruct x1. destruct x2.
+  simpl in *. subst. 
+  destruct p.
+  destruct p0.
+  simpl in *.
+  subst.
+  by destruct u3, u1.
 Defined.
+(* TODO: fix this messy proof *)
 
-Definition read_request (args_ptr:loc) (a : @RPCRequest (u64 * u64)) : iProp Σ :=
+Definition RPCValC:Type := u64 * (u64 * unit).
+
+Definition read_request (args_ptr:loc) (a : @RPCRequest (RPCValC)) : iProp Σ :=
     "#HSeqPositive" ∷ ⌜int.nat a.(rpc.Seq) > 0⌝
   ∗ "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Args"] (into_val.to_val a.(Args)))
   ∗ "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest.S :: "CID"] #a.(CID))
@@ -105,7 +114,7 @@ Definition is_rpcserver (sv_ptr:loc) γrpc server_own_core: iProp Σ :=
     ∗ "Hmu" ∷ is_lock mutexN #mu_ptr (RPCServer_mutex_inv sv_ptr γrpc server_own_core)
 .
 
-Definition Request64 := @RPCRequest (u64 * u64). (* TODO: rename these *)
+Definition Request64 := @RPCRequest (RPCValC). (* TODO: rename these *)
 Definition Reply64 := @RPCReply (u64).
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
@@ -202,7 +211,7 @@ Qed.
 Lemma RPCServer__HandlRequest_spec (coreFunction:val) (sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γPost server_own_core PreCond PostCond :
 
 (
-∀ (args':u64*u64),
+∀ (args':RPCValC),
 {{{ 
      server_own_core ∗ PreCond args'
 }}}
@@ -285,7 +294,7 @@ Proof.
   }
 Qed.
 
-Lemma RemoteProcedureCall_spec (sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) (f:val) (fname:string) server_own_core PreCond PostCond γrpc γPost :
+Lemma RemoteProcedureCall_spec (req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) (f:val) PreCond PostCond γrpc γPost :
 (∀ (req_ptr' reply_ptr' : loc) (req':RPCRequest) 
    (reply' : Reply64) (γrpc' : rpc_names) (γPost' : gname),
 {{{ "#HargsInv" ∷ is_RPCRequest γrpc' γPost' PreCond PostCond req'
@@ -301,8 +310,7 @@ Lemma RemoteProcedureCall_spec (sv req_ptr reply_ptr:loc) (req:Request64) (reply
 }}}
 )
       -∗
-{{{ "#Hls" ∷ is_rpcserver sv γrpc server_own_core
-    ∗ "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
+{{{ "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
     ∗ "#Hargs" ∷ read_request req_ptr req
     ∗ own_reply reply_ptr reply
 }}}
@@ -363,97 +371,56 @@ Proof.
   }
 Qed.
 
-Definition Clerk__Function (f:val) (fname:string) : val :=
-  rec: fname "ck" "lockname" :=
-    overflow_guard_incr (struct.loadF Clerk.S "seq" "ck");;
-    let: "args" := ref_to (refT (struct.t argty_to_adesc)) (struct.new argty_to_adesc [
-      "Args" ::= "lockname";
-      "CID" ::= struct.loadF Clerk.S "cid" "ck";
-      "Seq" ::= struct.loadF Clerk.S "seq" "ck"
-    ]) in
-    struct.storeF Clerk.S "seq" "ck" (struct.loadF Clerk.S "seq" "ck" + #1);;
-    let: "errb" := ref_to boolT #false in
-    let: "reply" := struct.alloc retty_to_rdesc (zero_val (struct.t retty_to_rdesc)) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] f (struct.loadF Clerk.S "primary" "ck") (![refT (struct.t argty_to_adesc)] "args") "reply";;
-      (if: (![boolT] "errb" = #false)
-      then Break
-      else Continue));;
-    struct.loadF retty_to_rdesc "Ret" "reply".
-
-Definition own_clerk (ck:val) (srv:loc) (γrpc:rpc_names) : iProp Σ
+Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ
   :=
-  ∃ (ck_l:loc) (cid cseqno : u64),
-    "%" ∷ ⌜ck = #ck_l⌝
-    ∗ "%" ∷ ⌜int.nat cseqno > 0⌝
-    ∗ "Hcid" ∷ ck_l ↦[Clerk.S :: "cid"] #cid
-    ∗ "Hseq" ∷ ck_l ↦[Clerk.S :: "seq"] #cseqno
-    ∗ "Hprimary" ∷ ck_l ↦[Clerk.S :: "primary"] #srv
+  ∃ (cid cseqno : u64),
+      "%" ∷ ⌜int.nat cseqno > 0⌝
+    ∗ "Hcid" ∷ cl_ptr ↦[RPCClient.S :: "cid"] #cid
+    ∗ "Hseq" ∷ cl_ptr ↦[RPCClient.S :: "seq"] #cseqno
     ∗ "Hcrpc" ∷ RPCClient_own γrpc cid cseqno
 .
 
-Lemma Clerk_Function_spec (f:val) (fname:string) ck (srv:loc) (args:u64) γrpc PreCond PostCond :
-¬(fname = "ck") -> ¬(fname = "args") -> ¬(fname = "reply") -> ¬(fname = "errb") -> ¬(fname = "lockname")
-->
-(∀ (srv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc' γPost',
-{{{ "#Hls" ∷ is_server srv γrpc'
-    ∗ "#HargsInv" ∷ is_RPCRequest γrpc' γPost' PreCond PostCond req
-    ∗ "#Hargs" ∷ read_request req_ptr req
-    ∗ "Hreply" ∷ own_reply reply_ptr reply
+Lemma RPCClient__MakeRequest_spec (f:val) cl_ptr args γrpc PreCond PostCond :
+(∀ (req_ptr' reply_ptr' : loc) (req':RPCRequest) 
+   (reply' : Reply64) (γrpc' : rpc_names) (γPost' : gname),
+{{{ "#HargsInv" ∷ is_RPCRequest γrpc' γPost' PreCond PostCond req'
+    ∗ "#Hargs" ∷ read_request req_ptr' req'
+    ∗ own_reply reply_ptr' reply'
 }}}
-  f #srv #req_ptr #reply_ptr
-{{{ e, RET e;
-    (∃ reply', own_reply reply_ptr reply'
-    ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝
-        ∗ (⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc' req
-               ∨ RPCReplyReceipt γrpc' req reply'.(Ret)
-             )))
-}}})
+  f #req_ptr' #reply_ptr'
+{{{ RET #false; ∃ reply'',
+    own_reply reply_ptr' reply''
+        ∗ (⌜reply''.(Stale) = true⌝ ∗ RPCRequestStale γrpc' req'
+               ∨ RPCReplyReceipt γrpc' req' reply''.(Ret)
+             )
+}}}
+)
   -∗
   {{{
        PreCond args
-      ∗ own_clerk ck srv γrpc
-      ∗ is_server srv γrpc
+      ∗ own_rpcclient cl_ptr γrpc
+      ∗ is_RPCServer γrpc
   }}}
-    (Clerk__Function f fname) ck (into_val.to_val args)
-  {{{ v, RET v; ∃(retv:u64), ⌜v = #retv⌝ ∗ own_clerk ck srv γrpc ∗ PostCond args retv }}}.
+    RPCClient__MakeRequest #cl_ptr f (into_val.to_val args)
+  {{{ v, RET v; ∃(retv:u64), ⌜v = #retv⌝ ∗ own_rpcclient cl_ptr γrpc ∗ PostCond args retv }}}.
 Proof using Type*.
-  intros Hne1 Hne2 Hne3 Hne4 Hne5.
-  iIntros "#Hfspec" (Φ) "!# [Hprecond [Hclerk #Hsrv]] Hpost".
+  iIntros "#Hfspec" (Φ) "!# [Hprecond [Hclerk #Hlinv]] Hpost".
   iNamed "Hclerk".
-  rewrite H.
   wp_lam.
-
-  rewrite (@decide_False _ (fname = "ck")); last done.
-  rewrite (@decide_False _ (fname = "reply")); last done.
-  rewrite (@decide_False _ (fname = "args")); last done.
-  rewrite (@decide_False _ (fname = "errb")); last done.
-  rewrite (@decide_False _ (fname = "lockname")); last done.
-  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "args"))); eauto.
-  2:{ split; eauto. injection. eauto. }
-  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "reply"))); eauto.
-  2:{ split; eauto. injection. eauto. }
-  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "errb"))); eauto.
-  2:{ split; eauto. injection. eauto. }
-  rewrite (@decide_True _ (BNamed fname ≠ <>%binder ∧ (BNamed fname ≠ BNamed "lockname"))); eauto.
-  2:{ split; eauto. injection. eauto. }
-
   wp_pures.
   wp_loadField.
   wp_apply (overflow_guard_incr_spec).
   iIntros (Hincr_safe).
   wp_seq.
-  repeat wp_loadField.
+  wp_loadField.
+  wp_loadField.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (req_ptr) "Hreq".
   iDestruct (struct_fields_split with "Hreq") as "(HCID&HSeq&HArgs&_)".
   iMod (readonly_alloc_1 with "HCID") as "#HCID".
   iMod (readonly_alloc_1 with "HSeq") as "#HSeq".
   iMod (readonly_alloc_1 with "HArgs") as "#HArgs".
-  wp_apply wp_ref_to; first eauto.
-  iIntros (req_ptr_ptr) "Hreq_ptr".
-  wp_let.
+  wp_pures.
   wp_loadField.
   wp_binop.
   wp_storeField.
@@ -463,7 +430,6 @@ Proof using Type*.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (reply_ptr) "Hreply".
   wp_pures.
-  iDestruct "Hsrv" as (mu_ptr) "Hsrv". iNamed "Hsrv".
   iMod (make_request {| Args:=args; CID:=cid; rpc.Seq:=cseqno|} PreCond PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
   { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
@@ -475,16 +441,23 @@ Proof using Type*.
     iExists {| Ret:=_; Stale:=false |}. iFrame. }
   wp_forBreak.
   iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
-  wp_load.
-  wp_loadField.
+  wp_pures.
   iDestruct "Hreply" as (lockReply) "Hreply".
-  wp_apply ("Hfspec" with "[Hreply]").
+  wp_apply (RemoteProcedureCall_spec with "[] [Hreply]").
   {
-    iSplitL "".
-    { iExists _. iFrame "#". }
-    iFrame "#".
-    iDestruct "Hreply" as "[Hreply rest]".
-    eauto with iFrame.
+    iIntros.
+    iIntros (Ψ).
+    iModIntro.
+    iNamed 1.
+    iIntros "HΨpost".
+    wp_apply ("Hfspec" with "[HReplyOwnStale HReplyOwnRet]").
+    {
+      iFrame "# ∗".
+    }
+    iApply "HΨpost".
+  }
+  {
+    by iFrame "# ∗".
   }
 
   iIntros (err) "HCallTryLockPost".
@@ -516,54 +489,10 @@ Proof using Type*.
   iApply "Hpost".
   iExists lockReply'.(Ret); iFrame; iFrame "#".
   iSplitR; first done.
-  unfold own_clerk.
-  iExists _, _, (word.add cseqno 1)%nat; iFrame.
+  iExists _, (word.add cseqno 1)%nat; iFrame.
   simpl.
-  iSplitL ""; first done.
   assert (int.nat cseqno + 1 = int.nat (word.add cseqno 1))%nat as <-; first by word.
   iPureIntro. lia.
-Qed.
-
-Definition name_neq (name:string) : Prop :=
-¬(name = "ls") ∧ ¬(name = "req") ∧ ¬(name = "srv") ∧
-¬(name = "ck") ∧ ¬(name = "args") ∧ ¬(name = "reply") ∧ ¬(name = "errb") ∧ ¬(name = "lockname") ∧
-¬(name = "dummy_reply") 
-.
-
-Lemma Clerk__from_core (coreFunction:val) (serverName:string) (callName:string) (clerkName:string) ck (srv:loc) (args:u64) γrpc PreCond PostCond :
-  name_neq clerkName ∧
-  name_neq serverName ∧
-  name_neq callName
-->
-(
-∀ (srv':loc) (args':u64),
-{{{ 
-     Server_own_core srv' ∗ PreCond args'
-}}}
-  coreFunction #srv' (into_val.to_val args')
-{{{
-   v, RET v; Server_own_core srv'
-      ∗ (∃r:u64, ⌜v = into_val.to_val r⌝ ∗ PostCond args' r)
-}}}
-)
--∗
-{{{
-     PreCond args
-    ∗ own_clerk ck srv γrpc
-    ∗ is_server srv γrpc
-}}}
-    (Clerk__Function (CallFunction (Server_Function coreFunction serverName) callName) clerkName) ck (into_val.to_val args)
-  {{{ v, RET v; ∃(retv:u64), ⌜v = #retv⌝ ∗ own_clerk ck srv γrpc ∗ PostCond args retv }}}.
-Proof using Type*.
-  intros Hne.
-  destruct Hne as [Hone Hne]; repeat destruct Hone as [? Hone].
-  destruct Hne as [Hone2 Hne]; repeat destruct Hone2 as [? Hone2].
-  repeat destruct Hne as [? Hne].
-  iIntros "#HcoreSpec" (Φ) "!# Hpre Hpost".
-  iApply (Clerk_Function_spec with "[] Hpre"); [done..| |done].
-  iIntros "*". iApply CallFunction_spec; [done..|].
-  iIntros "*". iApply Server_Function_spec; [done..|].
-  eauto.
 Qed.
 
 End common_proof.
