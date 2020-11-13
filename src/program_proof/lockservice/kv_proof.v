@@ -243,7 +243,7 @@ Qed.
 Definition kvserver_cid_token γ cid :=
   RPCClient_own γ.(ks_rpcGN) cid 1.
 
-Lemma MakeLockServer_spec :
+Lemma MakeKVServer_spec :
   {{{ True }}}
     MakeKVServer #()
   {{{ γ srv, RET #srv;
@@ -270,7 +270,28 @@ Proof.
   iExists sv. iFrame "#".
   by iMod (readonly_alloc_1 with "l_sv") as "$".
 Qed.
-
 (* TODO: return all of the ptsto's here; update KVServer_own_core so it has map_ctx bigger than the physical map *)
+
+
+Lemma MakeKVClerk_spec γ (srv : loc) (cid : u64) :
+  {{{ is_kvserver γ srv ∗ kvserver_cid_token γ cid }}}
+    MakeKVClerk #srv #cid
+  {{{ ck, RET #ck; own_kvclerk γ ck srv }}}.
+Proof.
+  iIntros (Φ) "[#Hserver Hcid] HΦ". wp_lam.
+  rewrite /kvserver_cid_token /own_kvclerk.
+  iApply wp_fupd.
+
+  wp_apply wp_allocStruct; first by eauto.
+  iIntros (l) "Hl". wp_pures.
+  iDestruct (struct_fields_split with "Hl") as "(l_primary & l_client & _)".
+  wp_storeField.
+  wp_apply (MakeRPCClient_spec with "Hcid").
+  iIntros (cl) "Hcl".
+  wp_storeField.
+  iApply "HΦ". iExists _.
+  by iFrame.
+Qed.
+
 
 End kv_proof.
