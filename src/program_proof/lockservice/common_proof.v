@@ -16,14 +16,16 @@ From Coq.Structures Require Import OrdersTac.
 Section rpc_types.
 Context `{!heapG Σ}.
 
-Print into_val.IntoVal.
 #[refine] Global Instance u64_pair_val : into_val.IntoVal (u64*u64) :=
   {
   to_val := λ x, (#x.1, #x.2)%V ;
   IntoVal_def := (U64(0), U64(0)) ;
   IntoVal_inj := _
   }.
-Admitted.
+Proof.
+  intros x1 x2 [=].
+  abstract (destruct x1, x2; simpl in *; subst; auto).
+Defined.
 
 Definition read_request (args_ptr:loc) (a : @RPCRequest (u64 * u64)) : iProp Σ :=
     "#HSeqPositive" ∷ ⌜int.nat a.(rpc.Seq) > 0⌝
