@@ -1009,7 +1009,16 @@ Proof.
     iIntros "Hbufdata".
     wp_pures.
     iApply "HΦ'". iFrame.
-    iExists (vinsert _ u bbuf'). iSplit.
+    
+    assert ((int.nat (word.add offset count')) <  4096%nat) as fin.
+    {
+      rewrite /is_Some in H.
+      destruct H.
+      apply lookup_lt_Some in H.
+      rewrite vec_to_list_length /block_bytes in H.
+      lia.
+    }
+    iExists (vinsert (nat_to_fin fin) u bbuf'). iSplit.
     { iApply is_buf_return_data. iFrame.
       iExactEq "Hbufdata".
       rewrite /= /Block_to_vals vec_to_list_insert.
@@ -1019,6 +1028,20 @@ Proof.
     }
     iPureIntro.
     rewrite vec_to_list_insert Hbbuf.
+    erewrite fin_to_nat_to_fin.
+    replace (int.nat (word.add offset count')) with ((int.nat offset)+(int.nat count')).
+    2 :{
+      admit.
+    }
+    assert ((int.nat offset) = (length (take (int.nat offset) bbuf))) as Hoff.
+    1: {
+      rewrite take_length.
+      rewrite vec_to_list_length /block_bytes.
+      admit.
+    }
+    rewrite -> Hoff at 1.
+    rewrite insert_app_r.
+    f_equal.
     admit.
   }
   {
