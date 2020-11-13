@@ -116,16 +116,47 @@ Proof.
   iSplit; last done. iExists _, _; iFrame.
 Qed.
 
-Lemma KVClerk__Get_spec (kck ksrv:loc) (key va:u64) γ  :
+Lemma KVServer__Get_spec srv va γ :
+is_kvserver γ srv -∗
 {{{
-     is_kvserver γ ksrv ∗
-     own_kvclerk γ.(ks_rpcGN) kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ va)
+    True
+}}}
+    KVServer__Get #srv
+{{{ (f:goose_lang.val), RET f;
+        is_rpcHandler f γ.(ks_rpcGN) (Get_Pre γ va) (Get_Post γ va)
+}}}.
+Admitted.
+
+Lemma KVClerk__Get_spec (kck ksrv:loc) (key va:u64) γ  :
+is_kvserver γ ksrv -∗
+{{{
+     own_kvclerk γ kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ va)
 }}}
   KVClerk__Get #kck #key
 {{{
-     v, RET v; ⌜v = #va⌝ ∗ own_kvclerk γ.(ks_rpcGN) kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
+     v, RET #v; ⌜v = va⌝ ∗ own_kvclerk γ kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
 }}}.
-Admitted.
+Proof.
+  iIntros "#Hserver" (Φ) "!# (Hclerk & Hpre) Hpost".
+  wp_lam.
+  wp_pures. 
+  iNamed "Hclerk".
+  repeat wp_loadField.
+  wp_apply KVServer__Get_spec; first eauto.
+  iIntros (f) "#Hfspec".
+  wp_loadField.
+  wp_apply (RPCClient__MakeRequest_spec _ cl_ptr (key, (U64(0), ())) γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
+  {
+    iNamed "Hserver". iNamed "His_rpc". iFrame "# ∗".
+  }
+  iIntros (v) "Hretv".
+  iDestruct "Hretv" as "[Hrpcclient HcorePost]".
+  iApply "Hpost".
+  iDestruct "HcorePost" as (->) "Hkv".
+  iSplit; first done.
+  iFrame "Hkv".
+  iExists _; iFrame.
+Qed.
 
 Lemma KVClerk__Put_spec (kck ksrv:loc) (key va:u64) γ :
 {{{
