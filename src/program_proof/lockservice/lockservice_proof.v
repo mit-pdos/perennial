@@ -70,14 +70,19 @@ Definition LockServer_own_core γ (srv:loc) : iProp Σ :=
 .
 
 Definition is_lockserver γ (srv:loc) : iProp Σ :=
+  ∃ (sv:loc),
   "#Hinv" ∷ inv lockserviceInvN (Lockserver_inv γ) ∗
-  "#Hmutex" ∷ is_server (Server_own_core:=LockServer_own_core γ) srv γ.(ls_rpcGN).
+  "#Hsv" ∷ readonly (srv ↦[LockServer.S :: "sv"] #sv) ∗
+  "#His_rpc" ∷ is_rpcserver srv γ.(ls_rpcGN) (LockServer_own_core γ srv).
 
 Definition lockserver_cid_token γ cid :=
   RPCClient_own γ.(ls_rpcGN) cid 1.
 
-Definition own_lockclerk γ ck srv :=
-  own_clerk ck srv γ.(ls_rpcGN).
+Definition own_lockclerk γ ck_ptr srv : iProp Σ :=
+  ∃ (cl_ptr:loc),
+   "Hcl_ptr" ∷ ck_ptr ↦[Clerk.S :: "client"] #cl_ptr ∗
+   "Hprimary" ∷ ck_ptr ↦[Clerk.S :: "primary"] #srv ∗
+   "Hcl" ∷ own_rpcclient cl_ptr γ.(ls_rpcGN).
 
 (** Allocate a new lock in the lockservice, given the prop guarded by the lock *)
 Lemma lockservice_alloc_lock γ (srv:loc) ln E :
@@ -106,74 +111,12 @@ Proof.
     iDestruct "HlocksEx" as %HlocksEx. iPureIntro. set_solver.
 Qed.
 
-Lemma MakeLockServer_spec :
-  {{{ True }}}
-    MakeLockServer #()
-  {{{ γ srv, RET #srv;
-    is_lockserver γ srv ∗ [∗ set] cid ∈ fin_to_set u64, lockserver_cid_token γ cid
-  }}}.
-Proof.
-  iIntros (Φ) "_ HΦ". wp_lam.
-  iMod make_rpc_server as (γrpc) "(#is_server & server_own & cli_tokens)"; first done.
-  iMod (ghost_var_alloc (∅ : gset u64)) as (γdom) "[Hdom1 Hdom2]".
-  iMod (map_init (∅ : gmap u64 unit)) as (γlocks) "Hloglocks".
-  pose (γ := LockserviceNames γrpc γlocks γdom).
-  iApply wp_fupd.
-
-  wp_apply wp_allocStruct; first by eauto.
-  iIntros (l) "Hl". wp_pures.
-  iDestruct (struct_fields_split with "Hl") as "(l_mu & l_locks & l_lastSeq & l_lastReply &_)".
-  wp_apply (wp_NewMap bool (t:=boolT)). iIntros (locks) "Hlocks".
-  wp_storeField.
-  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastSeq) "HlastSeq".
-  wp_storeField.
-  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastReply) "HlastReply".
-  wp_storeField.
-  wp_apply (newlock_spec _ _ (Server_mutex_inv (Server_own_core:=LockServer_own_core γ) l γrpc) with "[-HΦ cli_tokens l_mu Hdom1 Hloglocks]").
-  { iNext. rewrite /Server_mutex_inv.
-    iExists _, _, _, _. iFrame "l_lastSeq l_lastReply".
-    iFrame. iExists _, _. iFrame.
-    rewrite dom_empty_L. iFrame.
-    iApply big_sepM_empty. done. }
-  iIntros (lk) "Hlock".
-  iDestruct (is_lock_flat with "Hlock") as %[lock ->].
-  wp_storeField.
-  iApply ("HΦ" $! γ). iFrame "cli_tokens". rewrite /is_lockserver /is_server.
-  iMod (inv_alloc with "[Hdom1 Hloglocks]") as "$".
-  { iExists _, _. iFrame. iSplit.
-    - iPureIntro. done.
-    - iApply big_sepM_empty. done. }
-  iExists _. iFrame "Hlock is_server".
-  iMod (readonly_alloc_1 with "l_mu") as "$".
-  done.
-Qed.
-
-Lemma MakeLockClerk_spec γ (srv : loc) (cid : u64) :
-  {{{ is_lockserver γ srv ∗ lockserver_cid_token γ cid }}}
-    MakeClerk #srv #cid
-  {{{ ck, RET ck; own_lockclerk γ ck srv }}}.
-Proof.
-  iIntros (Φ) "[#Hserver Hcid] HΦ". wp_lam.
-  rewrite /lockserver_cid_token /own_lockclerk.
-  iApply wp_fupd.
-
-  wp_apply wp_allocStruct; first by eauto.
-  iIntros (l) "Hl". wp_pures.
-  iDestruct (struct_fields_split with "Hl") as "(l_primary & l_cid & l_seq &_)".
-  wp_storeField.
-  wp_storeField.
-  wp_storeField.
-  
-  iApply "HΦ". iExists _, _, _.
-  iFrame. eauto with lia.
-Qed.
-
-Lemma tryLock_core_spec γ (srv:loc) (ln:u64) :
+Lemma tryLock_core_spec γ (srv:loc) (ln irr:u64) :
 inv lockserviceInvN (Lockserver_inv γ) -∗
 {{{ 
      LockServer_own_core γ srv ∗ TryLock_Pre γ ln
 }}}
-  LockServer__tryLock_core #srv #ln
+  LockServer__tryLock_core #srv (#ln, (#irr ,#()))%V
 {{{
    v, RET v; LockServer_own_core γ srv
       ∗ (∃b:u64, ⌜v = #b⌝ ∗ TryLock_Post ln b)
@@ -181,7 +124,7 @@ inv lockserviceInvN (Lockserver_inv γ) -∗
 Proof.
   iIntros "#Hinv" (Φ) "!# [Hlsown #Hpre] Hpost".
   wp_lam.
-  wp_let.
+  wp_pures.
   iNamed "Hlsown".
   wp_loadField.
   wp_apply (wp_MapGet with "Hmap"); eauto.
@@ -248,11 +191,11 @@ Proof.
       iApply big_sepM_insert; first done. iFrame "Hlockeds". eauto.
 Qed.
 
-Lemma unlock_core_spec γ (srv:loc) (ln:u64) :
+Lemma unlock_core_spec γ (srv:loc) (ln irr:u64) :
 {{{
   LockServer_own_core γ srv ∗ Unlock_Pre γ ln
 }}}
-  LockServer__unlock_core #srv #ln
+  LockServer__unlock_core #srv (#ln, (#irr ,#()))%V
 {{{
    v, RET v; LockServer_own_core γ srv
       ∗ (∃b:u64, ⌜v = #b⌝ ∗ Unlock_Post ln b)
@@ -291,21 +234,105 @@ Proof.
     iExists _, _; iFrame.
 Qed.
 
+Lemma RPCClient__MakeRequest_spec' (f:goose_lang.val) cl_ptr args γrpc PreCond PostCond Φ :
+  PreCond args -∗
+own_rpcclient cl_ptr γrpc -∗
+is_RPCServer γrpc -∗
+(∀v, Φ v -∗ ∃(retv:u64), ⌜v = #retv⌝ ∗ own_rpcclient cl_ptr γrpc ∗ PostCond args retv ) -∗
+    WP RPCClient__MakeRequest #cl_ptr f (into_val.to_val args)
+  {{ Φ }}.
+Admitted.
+(*
+Lemma tryLock_core_spec' srv γ:
+inv lockserviceInvN (Lockserver_inv γ) -∗
+{{{
+     True
+}}}
+  LockServer__tryLock_core #srv 
+{{{
+    (f:goose_lang.val), RET f;
+    is_rpchandler...
+}}}.
+Proof.
+Admitted.
+*)
+
+Definition TryLock_Pre' γ : (u64*(u64*unit)) -> iProp Σ := (λ args, lockservice_is_lock γ args.1)%I.
+Definition TryLock_Post' : (u64*(u64*unit)) -> u64 -> iProp Σ := λ args reply, (⌜reply = 0⌝ ∨ ⌜reply = 1⌝ ∗ (Ps args.1))%I.
+
+Lemma LockServer__TryLock_spec srv:
+  {{{
+       True
+  }}}
+    LockServer__TryLock #srv
+    {{{ (f:goose_lang.val), RET f;
+        □∀(req_ptr reply_ptr:loc) γrpc γPost req reply γ,
+          {{{ read_request  req_ptr req ∗
+              own_reply reply_ptr reply ∗
+              is_RPCRequest (A:=RPCValC) γrpc γPost (TryLock_Pre' γ) TryLock_Post' req
+           }}}
+          f #req_ptr #reply_ptr
+          {{{ RET #false; ∃ reply',
+                   own_reply reply_ptr reply'
+                   ∗ (⌜reply'.(Stale) = true⌝
+                      ∗ RPCRequestStale γrpc req
+                      ∨ RPCReplyReceipt γrpc req reply'.(Ret))
+          }}}
+    }}}.
+Admitted.
+
 Lemma Clerk__TryLock_spec γ ck (srv:loc) (ln:u64) :
   {{{
     lockservice_is_lock γ ln ∗
     own_lockclerk γ ck srv ∗
     is_lockserver γ srv 
   }}}
-    Clerk__TryLock ck #ln
-  {{{ v, RET v; ∃(b:u64), ⌜v = #b⌝ ∗ own_lockclerk γ ck srv ∗ (⌜b = 0⌝ ∨ ⌜b = 1⌝ ∗ Ps ln) }}}.
+    Clerk__TryLock #ck #ln
+  {{{ v, RET v; ∃(b:bool), ⌜v = #b⌝ ∗ own_lockclerk γ ck srv ∗ (⌜b = false⌝ ∨ ⌜b = true⌝ ∗ Ps ln) }}}.
 Proof using Type*.
-  iIntros (Φ) "(#Htok & Hclerk & #[Hinv Hserver]) Hpost".
-  iApply (Clerk__from_core LockServer__tryLock_core "LockServer__TryLock" "CallTryLock" "Clerk__TryLock" _ _ _ _ (TryLock_Pre γ) TryLock_Post with "[] [Hclerk]").
-  - by unfold name_neq.
-  - iIntros "* % !# [??]". iApply tryLock_core_spec; eauto.
-  - eauto with iFrame.
-  - eauto.
+  iIntros (Φ) "(#Htok & Hclerk & #Hserver) Hpost".
+  iNamed "Hserver".
+  wp_lam.
+  wp_pures. 
+  iNamed "Hclerk".
+  repeat wp_loadField.
+  wp_apply LockServer__TryLock_spec.
+  iIntros (f) "#Hfspec".
+  wp_loadField.
+  wp_apply (RPCClient__MakeRequest_spec _ cl_ptr (ln, (U64(0), ())) γ.(ls_rpcGN) with "[] [Hcl]"); eauto.
+  {
+    iIntros. iIntros (Ψ). iModIntro.
+    iNamed 1. iIntros "HΨpost".
+    wp_apply ("Hfspec" with "[HReplyOwnStale HReplyOwnRet]").
+    { iFrame "∗ #". }
+    iApply "HΨpost".
+  }
+  {
+   iNamed "His_rpc". iFrame "# ∗".
+  }
+  iIntros (v) "Hretv".
+  wp_binop.
+  wp_pures.
+  iNamed "Hretv".
+  iDestruct "Hretv" as "(H1 & H2 & H3)".
+  iDestruct "H1" as %->.
+  iApply "Hpost".
+  
+  iExists (negb (bool_decide (#retv = #0))).
+  iSplit; first eauto.
+  iFrame.
+  iSplitR "H3".
+  { eauto with iFrame. }
+  rewrite negb_true_iff.
+  rewrite negb_false_iff.
+  rewrite bool_decide_eq_true.
+  rewrite bool_decide_eq_false.
+  unfold TryLock_Post'.
+  simpl.
+  iDestruct "H3" as "[%|H3]".
+  { iLeft. iPureIntro. by rewrite H.  }
+  iDestruct "H3" as (->) "H3".
+  iRight. iSplit; done.
 Qed.
 
 Lemma Clerk__Unlock_spec γ ck (srv:loc) (ln:u64) :
@@ -374,5 +401,68 @@ Proof using Type*.
   iApply "Hpost".
   iFrame.
 Qed.
+
+Lemma MakeLockServer_spec :
+  {{{ True }}}
+    MakeLockServer #()
+  {{{ γ srv, RET #srv;
+    is_lockserver γ srv ∗ [∗ set] cid ∈ fin_to_set u64, lockserver_cid_token γ cid
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ". wp_lam.
+  iMod make_rpc_server as (γrpc) "(#is_server & server_own & cli_tokens)"; first done.
+  iMod (ghost_var_alloc (∅ : gset u64)) as (γdom) "[Hdom1 Hdom2]".
+  iMod (map_init (∅ : gmap u64 unit)) as (γlocks) "Hloglocks".
+  pose (γ := LockserviceNames γrpc γlocks γdom).
+  iApply wp_fupd.
+
+  wp_apply wp_allocStruct; first by eauto.
+  iIntros (l) "Hl". wp_pures.
+  iDestruct (struct_fields_split with "Hl") as "(l_mu & l_locks & l_lastSeq & l_lastReply &_)".
+  wp_apply (wp_NewMap bool (t:=boolT)). iIntros (locks) "Hlocks".
+  wp_storeField.
+  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastSeq) "HlastSeq".
+  wp_storeField.
+  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastReply) "HlastReply".
+  wp_storeField.
+  wp_apply (newlock_spec _ _ (Server_mutex_inv (Server_own_core:=LockServer_own_core γ) l γrpc) with "[-HΦ cli_tokens l_mu Hdom1 Hloglocks]").
+  { iNext. rewrite /Server_mutex_inv.
+    iExists _, _, _, _. iFrame "l_lastSeq l_lastReply".
+    iFrame. iExists _, _. iFrame.
+    rewrite dom_empty_L. iFrame.
+    iApply big_sepM_empty. done. }
+  iIntros (lk) "Hlock".
+  iDestruct (is_lock_flat with "Hlock") as %[lock ->].
+  wp_storeField.
+  iApply ("HΦ" $! γ). iFrame "cli_tokens". rewrite /is_lockserver /is_server.
+  iMod (inv_alloc with "[Hdom1 Hloglocks]") as "$".
+  { iExists _, _. iFrame. iSplit.
+    - iPureIntro. done.
+    - iApply big_sepM_empty. done. }
+  iExists _. iFrame "Hlock is_server".
+  iMod (readonly_alloc_1 with "l_mu") as "$".
+  done.
+Qed.
+
+Lemma MakeLockClerk_spec γ (srv : loc) (cid : u64) :
+  {{{ is_lockserver γ srv ∗ lockserver_cid_token γ cid }}}
+    MakeClerk #srv #cid
+  {{{ ck, RET ck; own_lockclerk γ ck srv }}}.
+Proof.
+  iIntros (Φ) "[#Hserver Hcid] HΦ". wp_lam.
+  rewrite /lockserver_cid_token /own_lockclerk.
+  iApply wp_fupd.
+
+  wp_apply wp_allocStruct; first by eauto.
+  iIntros (l) "Hl". wp_pures.
+  iDestruct (struct_fields_split with "Hl") as "(l_primary & l_cid & l_seq &_)".
+  wp_storeField.
+  wp_storeField.
+  wp_storeField.
+  
+  iApply "HΦ". iExists _, _, _.
+  iFrame. eauto with lia.
+Qed.
+
 
 End lockservice_proof.

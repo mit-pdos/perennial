@@ -13,8 +13,9 @@ From Perennial.Helpers Require Import ModArith.
 From iris.algebra Require Import numbers.
 From Coq.Structures Require Import OrdersTac.
 
-Section rpc_types.
+Section common_proof.
 Context `{!heapG Σ}.
+Context `{!rpcG Σ u64}.
 
 #[refine] Global Instance u64_pair_val : into_val.IntoVal (u64*(u64 * unit)) :=
   {
@@ -48,11 +49,6 @@ Definition own_reply (reply_ptr:loc) (r : @RPCReply (u64)) : iProp Σ :=
   ∗ "HReplyOwnRet" ∷ reply_ptr ↦[RPCReply.S :: "Ret"] (into_val.to_val r.(Ret))
 .
 
-End rpc_types.
-
-Section common_proof.
-
-Context `{!heapG Σ}.
 Axiom nondet_spec:
   {{{ True }}}
     nondet #()
@@ -91,8 +87,6 @@ Proof.
     contradiction.
   }
 Qed.
-
-Context `{!rpcG Σ u64}.
 
 Definition RPCServer_mutex_inv (sv:loc) (γrpc:rpc_names) (server_own_core:iProp Σ): iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 u64),
@@ -208,22 +202,30 @@ Proof.
   }
 Qed.
 
-Lemma RPCServer__HandlRequest_spec (coreFunction:val) (sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γPost server_own_core PreCond PostCond :
+(* f is a rpcHandler if it satisfies this specification *)
+Definition is_rpcHandler (f:val) : iProp Σ :=
+  ∀ γrpc γPost req_ptr reply_ptr req reply PostCond PreCond,
+    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
+                    ∗ "#Hargs" ∷ read_request req_ptr req
+                    ∗ "Hreply" ∷ own_reply reply_ptr reply
+    }}} (* TODO: put this precondition into a defn *)
+      f #req_ptr #reply_ptr
+    {{{ RET #false; ∃ reply',
+        own_reply reply_ptr reply'
+                    ∗ (⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req
+                        ∨ RPCReplyReceipt γrpc req reply'.(Ret)
+                    )
+    }}}
+    .
 
-(
-∀ (args':RPCValC),
-{{{ 
-     server_own_core ∗ PreCond args'
-}}}
-  coreFunction (into_val.to_val args')
-{{{
-   v, RET v; server_own_core
-      ∗ (∃r:u64, ⌜v = into_val.to_val r⌝ ∗ PostCond args' r)
-}}}
-)
-
--∗
-
+(* This will alow handler functions using RPCServer__HandleRequest to establish is_rpcHandler *)
+Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γPost server_own_core PreCond PostCond :
+□(server_own_core -∗ PreCond req.(Args) -∗
+  WP coreFunction (into_val.to_val req.(Args))
+{{
+   v, server_own_core
+      ∗ (∃r:u64, ⌜v = into_val.to_val r⌝ ∗ PostCond req.(Args) r)
+}}) -∗ (* Can't replace this with is_rpcHandler, because the only curried function with #sv and coreFunction applied is a proper rpcHandler*)
 {{{
   "#Hls" ∷ is_rpcserver sv γrpc server_own_core
   ∗ "#HreqInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
@@ -250,7 +252,7 @@ Proof.
   iNamed "Hlsown".
   iDestruct "HSeqPositive" as %HSeqPositive.
   repeat wp_loadField.
-  wp_apply (CheckReplyTable_spec with "[-Hpost Hlocked Hlsown HlastSeqOwn HlastReplyOwn]"); first iFrame.
+  wp_apply (CheckReplyTable_spec with "[-Hpost Hlocked Hlsown HlastSeqOwn HlastReplyOwn HfCoreSpec]"); first iFrame.
   { iFrame "#". done. }
   iIntros (runCore) "HcheckCachePost".
   iDestruct "HcheckCachePost" as (b reply' ->) "HcachePost".
@@ -274,7 +276,9 @@ Proof.
     iMod (server_takes_request with "[] [Hsrpc]") as "[HcorePre Hprocessing]"; eauto.
     wp_pures.
     repeat wp_loadField.
-    wp_apply ("HfCoreSpec" with "[$Hlsown $HcorePre]"); eauto.
+    wp_bind (coreFunction _).
+    iApply (wp_wand with "[HfCoreSpec Hlsown HcorePre]").
+    { iApply ("HfCoreSpec" with "Hlsown"); eauto. }
     iIntros (retval) "[Hsrv HcorePost]".
     iNamed "Hreply".
     iDestruct "HcorePost" as (r ->) "HcorePost".
@@ -295,24 +299,11 @@ Proof.
 Qed.
 
 Lemma RemoteProcedureCall_spec (req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) (f:val) PreCond PostCond γrpc γPost :
-(∀ (req_ptr' reply_ptr' : loc) (req':RPCRequest) 
-   (reply' : Reply64) (γrpc' : rpc_names) (γPost' : gname),
-{{{ "#HargsInv" ∷ is_RPCRequest γrpc' γPost' PreCond PostCond req'
-    ∗ "#Hargs" ∷ read_request req_ptr' req'
-    ∗ own_reply reply_ptr' reply'
-}}}
-  f #req_ptr' #reply_ptr'
-{{{ RET #false; ∃ reply'',
-    own_reply reply_ptr' reply''
-        ∗ (⌜reply''.(Stale) = true⌝ ∗ RPCRequestStale γrpc' req'
-               ∨ RPCReplyReceipt γrpc' req' reply''.(Ret)
-             )
-}}}
-)
-      -∗
-{{{ "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
-    ∗ "#Hargs" ∷ read_request req_ptr req
-    ∗ own_reply reply_ptr reply
+is_rpcHandler f -∗
+{{{
+  "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req ∗
+  "#Hargs" ∷ read_request req_ptr req ∗
+  "Hreply" ∷ own_reply reply_ptr reply
 }}}
   RemoteProcedureCall f #req_ptr #reply_ptr
 {{{ e, RET e;
@@ -354,7 +345,7 @@ Proof.
   iIntros (choice) "[Hv|Hv]"; iDestruct "Hv" as %->.
   {
     wp_pures.
-    wp_apply ("Hspec" with "[$HReplyOwnStale $HReplyOwnRet]"); eauto; try iFrame "#".
+    wp_apply ("Hspec" with "[$Hreply]"); eauto; try iFrame "#".
     iDestruct 1 as (reply') "[Hreply fPost]".
     iApply "Hpost".
     iFrame.
@@ -381,28 +372,14 @@ Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ
 .
 
 Lemma RPCClient__MakeRequest_spec (f:val) cl_ptr args γrpc PreCond PostCond :
-(∀ (req_ptr' reply_ptr' : loc) (req':RPCRequest) 
-   (reply' : Reply64) (γrpc' : rpc_names) (γPost' : gname),
-{{{ "#HargsInv" ∷ is_RPCRequest γrpc' γPost' PreCond PostCond req'
-    ∗ "#Hargs" ∷ read_request req_ptr' req'
-    ∗ own_reply reply_ptr' reply'
+is_rpcHandler f -∗
+{{{
+  PreCond args ∗
+  own_rpcclient cl_ptr γrpc ∗
+  is_RPCServer γrpc
 }}}
-  f #req_ptr' #reply_ptr'
-{{{ RET #false; ∃ reply'',
-    own_reply reply_ptr' reply''
-        ∗ (⌜reply''.(Stale) = true⌝ ∗ RPCRequestStale γrpc' req'
-               ∨ RPCReplyReceipt γrpc' req' reply''.(Ret)
-             )
-}}}
-)
-  -∗
-  {{{
-       PreCond args
-      ∗ own_rpcclient cl_ptr γrpc
-      ∗ is_RPCServer γrpc
-  }}}
-    RPCClient__MakeRequest #cl_ptr f (into_val.to_val args)
-  {{{ v, RET v; ∃(retv:u64), ⌜v = #retv⌝ ∗ own_rpcclient cl_ptr γrpc ∗ PostCond args retv }}}.
+  RPCClient__MakeRequest #cl_ptr f (into_val.to_val args)
+{{{ (retv:u64), RET #retv; own_rpcclient cl_ptr γrpc ∗ PostCond args retv }}}.
 Proof using Type*.
   iIntros "#Hfspec" (Φ) "!# [Hprecond [Hclerk #Hlinv]] Hpost".
   iNamed "Hclerk".
@@ -443,22 +420,8 @@ Proof using Type*.
   iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
   wp_pures.
   iDestruct "Hreply" as (lockReply) "Hreply".
-  wp_apply (RemoteProcedureCall_spec with "[] [Hreply]").
-  {
-    iIntros.
-    iIntros (Ψ).
-    iModIntro.
-    iNamed 1.
-    iIntros "HΨpost".
-    wp_apply ("Hfspec" with "[HReplyOwnStale HReplyOwnRet]").
-    {
-      iFrame "# ∗".
-    }
-    iApply "HΨpost".
-  }
-  {
-    by iFrame "# ∗".
-  }
+  wp_apply (RemoteProcedureCall_spec with "[] [Hreply]"); first done.
+  { by iFrame "# ∗". }
 
   iIntros (err) "HCallTryLockPost".
   iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [#Hre | [#Hre HCallPost]]]".
@@ -487,8 +450,7 @@ Proof using Type*.
   wp_seq.
   wp_loadField.
   iApply "Hpost".
-  iExists lockReply'.(Ret); iFrame; iFrame "#".
-  iSplitR; first done.
+  iFrame; iFrame "#".
   iExists _, (word.add cseqno 1)%nat; iFrame.
   simpl.
   assert (int.nat cseqno + 1 = int.nat (word.add cseqno 1))%nat as <-; first by word.
