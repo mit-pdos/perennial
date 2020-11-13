@@ -31,13 +31,11 @@ Implicit Types (γ : kvservice_names).
 Local Notation "k [[ γ ]]↦ '_'" := (∃ v, k [[γ]]↦ v)%I
 (at level 20, format "k  [[ γ ]]↦ '_'") : bi_scope.
 
-(*
-Definition Get_Pre : u64 -> iProp Σ := (λ k, k [[γkv]]↦ _)%I.
-Definition Get_Post : u64 -> u64 -> iProp Σ := λ k v, (k [[γkv]]↦ v)%I.
+Definition Get_Pre γ va : RPCValC -> iProp Σ := (λ args, args.1 [[γ.(ks_kvMapGN)]]↦ va)%I.
+Definition Get_Post γ va : RPCValC -> u64 -> iProp Σ := λ args v, (⌜v = va⌝ ∗ args.1 [[γ.(ks_kvMapGN)]]↦ v)%I.
 
-Definition Put_Pre : u64 -> u64 -> iProp Σ := (λ k _, k [[γkv]]↦ _)%I.
-Definition Put_Post : u64 -> u64 -> iProp Σ := (λ k v, k [[γkv]]↦ v)%I.
-*)
+Definition Put_Pre γ : RPCValC -> iProp Σ := (λ args, args.1 [[γ.(ks_kvMapGN)]]↦ _)%I.
+Definition Put_Post γ : RPCValC -> u64 -> iProp Σ := (λ args _, args.1 [[γ.(ks_kvMapGN)]]↦ args.2.1)%I.
 
 Definition KVServer_own_core γ (srv:loc) : iProp Σ :=
   ∃ (kvs_ptr:loc) (kvsM:gmap u64 u64),
@@ -47,18 +45,26 @@ Definition KVServer_own_core γ (srv:loc) : iProp Σ :=
 .
 
 (* FIXME: this is currently just a placeholder *)
-Definition own_kvclerk (γrpc:rpc_names) (kck ks_srv:loc): iProp Σ := True.
+Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
+  ∃ (cl_ptr:loc),
+   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
+   "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
+   "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN).
 
-Definition is_kvserver γ (srv:loc) := is_server (Server_own_core:=KVServer_own_core γ) srv γ.(ks_rpcGN).
+Definition is_kvserver γ (srv:loc) : iProp Σ :=
+  ∃ (sv:loc),
+  "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #sv) ∗
+  "#His_rpc" ∷ is_rpcserver sv γ.(ks_rpcGN) (KVServer_own_core γ srv)
+.
 
-Lemma put_core_spec γ (srv:loc) (k:u64) (v:u64) :
+Lemma put_core_spec γ (srv:loc) args (v:u64) :
 {{{ 
-     KVServer_own_core γ srv ∗ k [[γ.(ks_kvMapGN)]]↦ _
+     KVServer_own_core γ srv ∗ Put_Pre γ args
 }}}
-  KVServer__put_core #srv (#k, (#v, #()))%V
+  KVServer__put_core #srv (into_val.to_val args)
 {{{
    RET #0; KVServer_own_core γ srv
-      ∗ k [[γ.(ks_kvMapGN)]]↦ v
+      ∗ Put_Post γ args 0
 }}}.
 Proof.
   iIntros (Φ) "[Hksown Hpre] Hpost".
@@ -75,14 +81,14 @@ Proof.
   iFrame. iExists _, _; iFrame.
 Qed.
 
-Lemma get_core_spec (srv:loc) (k:u64) γ :
+Lemma get_core_spec (srv:loc) args (va:u64) γ :
 {{{ 
-     KVServer_own_core γ srv ∗ k [[γ.(ks_kvMapGN)]]↦ _
+     KVServer_own_core γ srv ∗ Get_Pre γ va args
 }}}
-  KVServer__get_core #srv #k%V
+  KVServer__get_core #srv (into_val.to_val args)%V
 {{{
-   v, RET v; ∃va:u64, ⌜v = #va⌝ ∗ KVServer_own_core γ srv
-      ∗ k [[γ.(ks_kvMapGN)]]↦ va
+   r, RET #r; KVServer_own_core γ srv ∗
+   Get_Post γ va args r
 }}}.
 Proof.
   iIntros (Φ) "[Hksown Hpre] Hpost".
@@ -92,10 +98,9 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "HkvsMap").
-  iIntros (va ok) "[% HkvsMap]".
-  iDestruct "Hpre" as (v') "Hpre".
+  iIntros (v ok) "[% HkvsMap]".
   iDestruct (map_valid with "Hkvctx Hpre") as %Hvalid.
-  assert (va = v') as ->.
+  assert (va = v) as ->.
   {
     rewrite /map_get in H.
     rewrite ->bool_decide_true in H; eauto.
@@ -107,8 +112,8 @@ Proof.
   }
   wp_pures.
   iApply "Hpost".
-  iExists v'; iFrame.
-  iSplit; eauto. iExists _, _; iFrame.
+  iFrame.
+  iSplit; last done. iExists _, _; iFrame.
 Qed.
 
 Lemma KVClerk__Get_spec (kck ksrv:loc) (key va:u64) γ  :
