@@ -1154,9 +1154,21 @@ Proof.
           take (int.nat offset) bbuf) as Hcontents0.
   { rewrite -Hdiskdata.
     rewrite take_take. f_equal. lia. }
+
   assert (drop (int.nat offset + int.nat dataslice.(Slice.sz)) contents =
-          drop (int.nat offset + int.nat dataslice.(Slice.sz)) bbuf) as Hcontents1.
-  { admit. }
+          drop (int.nat offset + int.nat dataslice.(Slice.sz)) (take (length contents) bbuf))
+    as Hcontents1.
+  { congruence. }
+
+  assert ( (drop (int.nat offset + int.nat dataslice.(Slice.sz)) bbuf) =
+           (drop (int.nat offset + int.nat dataslice.(Slice.sz))
+                 (take (length contents) bbuf ++ (drop (length contents) bbuf))))
+     as Hbuf.
+  { rewrite take_drop; done. }
+
+  assert (length contents ≤ length bbuf) as Hlencontents.
+  { eapply (f_equal length) in Hdiskdata.
+    rewrite take_length in Hdiskdata. lia. }
 
   wp_if_destruct.
   { wp_storeField.
@@ -1171,9 +1183,30 @@ Proof.
     iSplit; last by done.
     iExists _. iFrame. iPureIntro.
     rewrite Hbbuf. rewrite Hcontents0 Hcontents1.
-    split.
-    { rewrite firstn_all. eauto. }
-    { admit. }
+    rewrite !app_length.
+    rewrite drop_length.
+    rewrite take_length_le; last by ( rewrite vec_to_list_length /block_bytes; word ).
+    rewrite take_length_le; last by ( rewrite Hcount; lia ).
+    rewrite take_length_le; last by ( rewrite vec_to_list_length /block_bytes; word ).
+    replace (length contents) with (int.nat len) by word.
+    split. 2: { revert Heqb2. word. }
+    rewrite app_assoc. rewrite take_app_le.
+    2: {
+      rewrite !app_length.
+      rewrite take_length_le. 2: rewrite vec_to_list_length /block_bytes; word.
+      rewrite take_length_le. 2: rewrite Hcount; lia.
+      revert Heqb2. word.
+    }
+    rewrite firstn_all2.
+    2: {
+      rewrite !app_length.
+      rewrite take_length_le. 2: rewrite vec_to_list_length /block_bytes; word.
+      rewrite take_length_le. 2: rewrite Hcount; lia.
+      revert Heqb2. word.
+    }
+    f_equal. rewrite drop_ge. 1: rewrite app_nil_r; eauto.
+    rewrite take_length_le. 2: rewrite vec_to_list_length /block_bytes; word.
+    rewrite Hcount. revert Heqb2. word.
   }
   { wp_pures.
     iApply "HΦ". iFrame "Hbuftxn". iLeft.
@@ -1183,12 +1216,39 @@ Proof.
     iFrame.
     iSplit; last by done.
     iExists _. iFrame. iPureIntro.
-    rewrite Hbbuf. rewrite Hcontents0 Hcontents1.
-    split.
-    { rewrite firstn_all. eauto. }
-    { admit. }
+    rewrite Hbbuf. rewrite Hcontents0 Hcontents1 Hbuf.
+    rewrite !app_length.
+    rewrite drop_length.
+    rewrite take_length_le. 2: { rewrite vec_to_list_length /block_bytes. revert Heqb0; word. }
+    rewrite take_length_le. 2: { rewrite Hcount; lia. }
+    rewrite take_length_le. 2: { lia. }
+    replace (length contents) with (int.nat len) by word.
+    split. 2: { revert Heqb2. word. }
+    rewrite drop_app_le.
+    2: {
+      rewrite take_length_le. 2: lia.
+      revert Heqb2. word.
+    }
+    rewrite app_assoc. rewrite app_assoc. rewrite take_app_le.
+    2: {
+      rewrite !app_length.
+      rewrite drop_length.
+      rewrite take_length_le. 2: lia.
+      rewrite take_length_le. 2: rewrite Hcount; lia.
+      rewrite take_length_le. 2: lia.
+      revert Heqb2. word.
+    }
+    rewrite firstn_all2.
+    1: { rewrite app_assoc; eauto. }
+
+    rewrite !app_length.
+    rewrite drop_length.
+    rewrite take_length_le. 2: lia.
+    rewrite take_length_le. 2: rewrite Hcount; lia.
+    rewrite take_length_le. 2: lia.
+    revert Heqb2. word.
   }
-Admitted.
+Qed.
 
 Lemma nfstypes_write3res_merge reply s ok fail :
   ( reply ↦[nfstypes.WRITE3res.S :: "Status"] s ∗
