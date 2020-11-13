@@ -929,6 +929,14 @@ Admitted.
 
 Opaque nfstypes.WRITE3res.S.
 
+Lemma length_1_singleton {T} (l : list T) :
+  length l = 1 -> ∃ v, l = [v].
+Proof.
+  destruct l; simpl in *; intros; try lia.
+  destruct l; simpl in *; intros; try lia.
+  eexists; eauto.
+Qed.
+
 Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (count : u64) dataslice databuf P0 dinit contents :
   {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
       is_inode_mem ip inum len blk ∗
@@ -1030,19 +1038,44 @@ Proof.
     rewrite vec_to_list_insert Hbbuf.
     erewrite fin_to_nat_to_fin.
     replace (int.nat (word.add offset count')) with ((int.nat offset)+(int.nat count')).
-    2 :{
-      admit.
-    }
+    2: { word. }
     assert ((int.nat offset) = (length (take (int.nat offset) bbuf))) as Hoff.
     1: {
       rewrite take_length.
       rewrite vec_to_list_length /block_bytes.
-      admit.
+      revert fin. word_cleanup.
     }
     rewrite -> Hoff at 1.
     rewrite insert_app_r.
     f_equal.
-    admit.
+    replace (int.nat count') with (length (take (int.nat count') databuf) + 0) at 1.
+    2: {
+      rewrite take_length_le; first by lia. word.
+    }
+    rewrite insert_app_r.
+    replace (int.nat (word.add count' 1%Z)) with (S (int.nat count')) at 1 by word.
+    erewrite take_S_r; eauto.
+    rewrite -app_assoc. f_equal.
+    erewrite <- drop_take_drop.
+    1: rewrite insert_app_l.
+    1: f_equal.
+    3: word.
+    2: {
+      rewrite drop_length.
+      rewrite firstn_length_le.
+      2: { rewrite vec_to_list_length /block_bytes. revert fin. word. }
+      revert fin. word.
+    }
+    replace (int.nat (word.add count' 1%Z)) with (int.nat count' + 1) by word.
+    rewrite plus_assoc.
+    rewrite skipn_firstn_comm.
+    replace (int.nat offset + int.nat count' + 1 - (int.nat offset + int.nat count')) with 1 by word.
+    edestruct (length_1_singleton (T:=u8) (take 1 (drop (int.nat offset + int.nat count') bbuf))) as [x Hx].
+    2: { rewrite Hx. done. }
+    rewrite firstn_length_le; eauto.
+    rewrite drop_length.
+    rewrite vec_to_list_length /block_bytes.
+    revert fin. word.
   }
   {
     iExists _. iFrame.
