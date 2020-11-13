@@ -57,7 +57,7 @@ Definition is_kvserver γ (srv:loc) : iProp Σ :=
   "#His_rpc" ∷ is_rpcserver sv γ.(ks_rpcGN) (KVServer_own_core γ srv)
 .
 
-Lemma put_core_spec γ (srv:loc) args (v:u64) :
+Lemma put_core_spec γ (srv:loc) args :
 {{{ 
      KVServer_own_core γ srv ∗ Put_Pre γ args
 }}}
@@ -145,6 +145,37 @@ Proof.
   wp_lam.
   wp_apply (get_core_spec with "[Hpre]"); eauto.
 Qed.
+
+Lemma KVServer__Put_spec srv γ :
+is_kvserver γ srv -∗
+{{{
+    True
+}}}
+    KVServer__Put #srv
+{{{ (f:goose_lang.val), RET f;
+        is_rpcHandler f γ.(ks_rpcGN) (Put_Pre γ) (Put_Post γ)
+}}}.
+Proof.
+  iIntros "#Hks".
+  iIntros (Φ) "!# Hpre Hpost".
+  wp_lam.
+  wp_pures.
+  iApply "Hpost".
+
+  unfold is_rpcHandler.
+  iIntros.
+  iIntros (Ψ) "!# Hpre Hpost".
+  iNamed "Hpre".
+  wp_lam. wp_pures.
+  iNamed "Hks".
+  wp_loadField.
+  wp_apply (RPCServer__HandleRequest_spec with "[] [Hreply]"); iFrame "# ∗".
+  iModIntro. iIntros (Θ).
+  iIntros "Hpre Hpost".
+  wp_lam.
+  wp_apply (put_core_spec with "[Hpre]"); eauto.
+Qed.
+(* TODO: see if any more repetition can be removed *)
 
 Lemma KVClerk__Get_spec (kck ksrv:loc) (key va:u64) γ  :
 is_kvserver γ ksrv -∗
