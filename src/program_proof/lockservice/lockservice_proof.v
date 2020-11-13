@@ -415,6 +415,42 @@ Proof using Type*.
   iFrame.
 Qed.
 
+(* TODO: need to take in γrpc as input (as opposed to allocating it ourselves) because
+  the server γ has to get allocated before this is called, in order to pass it into LockServer_core_own.
+
+  Should consider changing something to make it so this actually allocates the γrpc.
+  That might be non-sensical for the crash-safe version of this.
+*)
+Lemma MakeRPCServer_spec server_own_core γrpc :
+  {{{ is_RPCServer γrpc ∗ RPCServer_own γrpc ∅ ∅ ∗ server_own_core }}}
+    MakeRPCServer #()
+  {{{ sv, RET #sv; is_rpcserver sv γrpc server_own_core }}}
+.
+Proof.
+  iIntros (Φ) "[#Hrpcinv Hpre] Hpost".
+  wp_lam.
+  wp_apply (wp_allocStruct); first eauto.
+  iIntros (l) "Hl".
+  wp_pures.
+  iDestruct (struct_fields_split with "Hl") as "(l_mu & l_lastSeq & l_lastReply & _)".
+
+  iApply wp_fupd.
+  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastSeq) "HlastSeq".
+  wp_storeField.
+  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastReply) "HlastReply".
+  wp_storeField.
+  wp_apply (newlock_spec _ _ (RPCServer_mutex_inv _ _ server_own_core) with "[-Hpost l_mu]").
+  { iNext.
+    iExists _, _, _, _. iFrame "l_lastSeq l_lastReply".
+    iFrame. }
+  iIntros (lk) "Hlock".
+  iDestruct (is_lock_flat with "Hlock") as %[lock ->].
+  wp_storeField.
+  iMod (readonly_alloc_1 with "l_mu") as "l_mu".
+  iApply "Hpost".
+  by iExists _; iFrame "# ∗".
+Qed.
+
 Lemma MakeLockServer_spec :
   {{{ True }}}
     MakeLockServer #()
@@ -426,35 +462,29 @@ Proof.
   iMod make_rpc_server as (γrpc) "(#is_server & server_own & cli_tokens)"; first done.
   iMod (ghost_var_alloc (∅ : gset u64)) as (γdom) "[Hdom1 Hdom2]".
   iMod (map_init (∅ : gmap u64 unit)) as (γlocks) "Hloglocks".
-  pose (γ := LockserviceNames γrpc γlocks γdom).
+  set (γ := LockserviceNames γrpc γlocks γdom) in *.
   iApply wp_fupd.
 
   wp_apply wp_allocStruct; first by eauto.
   iIntros (l) "Hl". wp_pures.
-  iDestruct (struct_fields_split with "Hl") as "(l_mu & l_locks & l_lastSeq & l_lastReply &_)".
+  iDestruct (struct_fields_split with "Hl") as "(l_sv & l_locks & _)".
   wp_apply (wp_NewMap bool (t:=boolT)). iIntros (locks) "Hlocks".
   wp_storeField.
-  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastSeq) "HlastSeq".
-  wp_storeField.
-  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastReply) "HlastReply".
-  wp_storeField.
-  wp_apply (newlock_spec _ _ (Server_mutex_inv (Server_own_core:=LockServer_own_core γ) l γrpc) with "[-HΦ cli_tokens l_mu Hdom1 Hloglocks]").
-  { iNext. rewrite /Server_mutex_inv.
-    iExists _, _, _, _. iFrame "l_lastSeq l_lastReply".
-    iFrame. iExists _, _. iFrame.
-    rewrite dom_empty_L. iFrame.
+  wp_apply (MakeRPCServer_spec (LockServer_own_core γ l) with "[$server_own $is_server l_locks Hlocks Hdom2]").
+  { iExists _, _. iFrame. rewrite dom_empty_L. iFrame.
     iApply big_sepM_empty. done. }
-  iIntros (lk) "Hlock".
-  iDestruct (is_lock_flat with "Hlock") as %[lock ->].
+  iIntros (sv) "#Hsv".
   wp_storeField.
-  iApply ("HΦ" $! γ). iFrame "cli_tokens". rewrite /is_lockserver /is_server.
+  iApply ("HΦ" $! γ).
+  iFrame "cli_tokens".
   iMod (inv_alloc with "[Hdom1 Hloglocks]") as "$".
   { iExists _, _. iFrame. iSplit.
     - iPureIntro. done.
     - iApply big_sepM_empty. done. }
-  iExists _. iFrame "Hlock is_server".
-  iMod (readonly_alloc_1 with "l_mu") as "$".
-  done.
+  iExists sv. replace (γ.(ls_rpcGN)) with γrpc; last done. 
+  iMod (readonly_alloc_1 with "l_sv") as "$".
+  iModIntro.
+  iFrame "#".
 Qed.
 
 Lemma MakeLockClerk_spec γ (srv : loc) (cid : u64) :
