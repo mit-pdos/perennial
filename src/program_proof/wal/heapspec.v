@@ -125,36 +125,71 @@ Proof.
     (* this is not going so well... *)
 Admitted.
 
+Lemma wal_heap_inv_crashes_crash crash_heaps crash_txn ls ls' :
+  ls'.(log_state.d) = ls.(log_state.d) →
+  ls'.(log_state.txns) = take (S crash_txn) ls.(log_state.txns) →
+  wal_heap_inv_crashes crash_heaps ls -∗
+  wal_heap_inv_crashes (list_to_async
+      (take (S crash_txn) (possible crash_heaps))) ls'.
+Proof.
+  (* really simple, just take a prefix of the input [∗ list] *)
+Admitted.
+
 Lemma wal_heap_inv_crash_transform γ ls ls' :
   relation.denote log_crash ls ls' () →
   wal_heap_inv γ ls -∗
   |==> ∃ γ', ⌜γ'.(wal_heap_walnames) = γ.(wal_heap_walnames)⌝ ∗
              wal_heap_inv γ' ls' ∗
-             mnat_own_auth γ'.(wal_heap_durable_lb) 1 ls'.(log_state.durable_lb) ∗
+             (* TODO: don't say this so precisely, give an abstract statement *)
+             mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
+             mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
+             ghost_var γ.(wal_heap_txns) (1 / 2)
+                       (ls.(log_state.d), ls.(log_state.txns)) ∗
+            (∃ (crash_heaps: async (gmap u64 Block)),
+                ghost_var γ.(wal_heap_crash_heaps) (1/2) crash_heaps ∗
+                ghost_var γ'.(wal_heap_crash_heaps)
+                  (1 / 2)
+                  (list_to_async
+                    (* length might be off-by-one *)
+                    (take (length ls'.(log_state.txns)) (possible crash_heaps)))) ∗
              is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
                                      locked_wh_σtxns := ls'.(log_state.txns);
                                   |}
 .
 Proof.
-  rewrite log_crash_unfold.
-  intros (crash_txn & Hbound & Hls'_eq).
+  iIntros (Htrans).
+  iNamed 1.
+  pose proof (log_crash_to_wf _ _ _ Hwf Htrans).
+  apply log_crash_unfold in Htrans as (crash_txn & Hbound & Hls'_eq).
   match type of Hls'_eq with
   | _ = ?ls'_val => set (ls'':=ls'_val);
                     subst ls'; rename ls'' into ls';
                     fold ls'
   end. simpl.
-  iNamed 1.
   iMod (ghost_var_alloc (ls.(log_state.d), ls'.(log_state.txns)))
     as (wal_heap_txns_name) "[Htxns' Htxns2]".
-  iMod (ghost_var_alloc (list_to_async_possible (take (S crash_txn) (possible crash_heaps))))
-    as (wal_heap_crash_heaps_name) "Hcrash_heaps_own'".
-  (* TODO: allocate lower-bound *)
+  iMod (ghost_var_alloc (list_to_async (take (S crash_txn) (possible crash_heaps))))
+    as (wal_heap_crash_heaps_name) "[Hcrash_heaps_own' Hcrash_heaps_own2]".
+  iMod (mnat_alloc crash_txn) as (wal_heap_durable_lb_name) "[Hcrash_heaps_lb' Hcrash_heaps_lb_lb]".
 
   iModIntro.
   iExists (γ <| wal_heap_txns := wal_heap_txns_name |>
-             <| wal_heap_crash_heaps := wal_heap_crash_heaps_name |>).
+             <| wal_heap_crash_heaps := wal_heap_crash_heaps_name |>
+             <| wal_heap_durable_lb := wal_heap_durable_lb_name |>).
   rewrite /wal_heap_inv /=.
   iSplit; first by auto.
+  iFrame.
+  iSplitR "Hcrash_heaps_own Hcrash_heaps_own2"; last first.
+  { iExists _; iFrame.
+    by rewrite -> take_length_le by lia. }
+  iExists _, _; iFrame "#∗%".
+  iSplit.
+  { iApply (big_sepM_mono with "Hgh").
+    intros ?? _.
+    rewrite /wal_heap_inv_addr /ls' //=.
+    admit. (* seems about right, using wal_wf to show crash_txn is above installed_lb *) }
+  iApply (wal_heap_inv_crashes_crash with "Hcrash_heaps"); auto.
+  all: fail "goals remaining".
 Admitted.
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=

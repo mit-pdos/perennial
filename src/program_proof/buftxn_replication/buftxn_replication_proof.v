@@ -58,7 +58,7 @@ Section goose_lang.
 
   Definition rb_cinv a0 a1 l γ: iProp Σ :=
     ∃ σ, rb_rep a0 a1 σ (durable_mapsto γ) ∗
-           P σ.
+         P σ.
 
   Definition is_rep_block l: iProp Σ :=
     ∃ γ dinit (txn_l m_l: loc),
