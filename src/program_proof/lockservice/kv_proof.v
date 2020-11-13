@@ -125,7 +125,26 @@ is_kvserver γ srv -∗
 {{{ (f:goose_lang.val), RET f;
         is_rpcHandler f γ.(ks_rpcGN) (Get_Pre γ va) (Get_Post γ va)
 }}}.
-Admitted.
+Proof.
+  iIntros "#Hks".
+  iIntros (Φ) "!# Hpre Hpost".
+  wp_lam.
+  wp_pures.
+  iApply "Hpost".
+
+  unfold is_rpcHandler.
+  iIntros.
+  iIntros (Ψ) "!# Hpre Hpost".
+  iNamed "Hpre".
+  wp_lam. wp_pures.
+  iNamed "Hks".
+  wp_loadField.
+  wp_apply (RPCServer__HandleRequest_spec with "[] [Hreply]"); iFrame "# ∗".
+  iModIntro. iIntros (Θ).
+  iIntros "Hpre Hpost".
+  wp_lam.
+  wp_apply (get_core_spec with "[Hpre]"); eauto.
+Qed.
 
 Lemma KVClerk__Get_spec (kck ksrv:loc) (key va:u64) γ  :
 is_kvserver γ ksrv -∗
