@@ -457,4 +457,54 @@ Proof using Type*.
   iPureIntro. lia.
 Qed.
 
+Lemma MakeRPCClient_spec γrpc (cid : u64) :
+  {{{ RPCClient_own γrpc cid 1 }}}
+    MakeRPCClient #cid
+  {{{ cl, RET #cl; own_rpcclient cl γrpc }}}.
+Proof.
+  iIntros (Φ) "Hclient_own Hpost". wp_lam.
+  wp_apply wp_allocStruct; first by eauto.
+  iIntros (l) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "(l_cid & l_seq & _)".
+  iApply "Hpost".
+  iExists _, _. iFrame.
+  by iPureIntro; word.
+Qed.
+
+(* TODO: need to take in γrpc as input (as opposed to allocating it ourselves) because
+  the server γ has to get allocated before this is called, in order to pass it into LockServer_core_own.
+
+  Should consider changing something to make it so this actually allocates the γrpc.
+  That might be non-sensical for the crash-safe version of this.
+*)
+Lemma MakeRPCServer_spec server_own_core γrpc :
+  {{{ is_RPCServer γrpc ∗ RPCServer_own γrpc ∅ ∅ ∗ server_own_core }}}
+    MakeRPCServer #()
+  {{{ sv, RET #sv; is_rpcserver sv γrpc server_own_core }}}
+.
+Proof.
+  iIntros (Φ) "[#Hrpcinv Hpre] Hpost".
+  wp_lam.
+  wp_apply (wp_allocStruct); first eauto.
+  iIntros (l) "Hl".
+  wp_pures.
+  iDestruct (struct_fields_split with "Hl") as "(l_mu & l_lastSeq & l_lastReply & _)".
+
+  iApply wp_fupd.
+  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastSeq) "HlastSeq".
+  wp_storeField.
+  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastReply) "HlastReply".
+  wp_storeField.
+  wp_apply (newlock_spec _ _ (RPCServer_mutex_inv _ _ server_own_core) with "[-Hpost l_mu]").
+  { iNext.
+    iExists _, _, _, _. iFrame "l_lastSeq l_lastReply".
+    iFrame. }
+  iIntros (lk) "Hlock".
+  iDestruct (is_lock_flat with "Hlock") as %[lock ->].
+  wp_storeField.
+  iMod (readonly_alloc_1 with "l_mu") as "l_mu".
+  iApply "Hpost".
+  by iExists _; iFrame "# ∗".
+Qed.
+
 End common_proof.

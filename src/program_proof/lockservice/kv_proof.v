@@ -240,4 +240,37 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Definition kvserver_cid_token γ cid :=
+  RPCClient_own γ.(ks_rpcGN) cid 1.
+
+Lemma MakeLockServer_spec :
+  {{{ True }}}
+    MakeKVServer #()
+  {{{ γ srv, RET #srv;
+    is_kvserver γ srv ∗ [∗ set] cid ∈ fin_to_set u64, kvserver_cid_token γ cid
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ". wp_lam.
+  iMod make_rpc_server as (γrpc) "(#is_server & server_own & cli_tokens)"; first done.
+  iMod (map_init (∅ : gmap u64 u64)) as (γkv) "Hγkv".
+  set (γ := KVserviceGN γrpc γkv) in *.
+  iApply wp_fupd.
+
+  wp_apply wp_allocStruct; first by eauto.
+  iIntros (l) "Hl". wp_pures.
+  iDestruct (struct_fields_split with "Hl") as "(l_sv & l_locks & _)".
+  wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (kvs) "Hkvs".
+  wp_storeField.
+  wp_apply (MakeRPCServer_spec (KVServer_own_core γ l) with "[$server_own $is_server l_locks Hγkv Hkvs]").
+  { iExists _, _. iFrame. }
+  iIntros (sv) "#Hsv".
+  wp_storeField.
+  iApply ("HΦ" $! γ).
+  iFrame "cli_tokens".
+  iExists sv. iFrame "#".
+  by iMod (readonly_alloc_1 with "l_sv") as "$".
+Qed.
+
+(* TODO: return all of the ptsto's here; update KVServer_own_core so it has map_ctx bigger than the physical map *)
+
 End kv_proof.
