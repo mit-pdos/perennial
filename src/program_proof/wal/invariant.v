@@ -482,14 +482,6 @@ Definition disk_inv γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
       "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝ ∗
       "#Hbasedisk"  ∷ is_base_disk γ s.(log_state.d).
 
-Definition disk_inv_durable γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
- ∃ installed_txn_id diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id,
-      "Hinstalled" ∷ is_installed_read s.(log_state.d) s.(log_state.txns) s.(log_state.installed_lb) diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id ∗
-      "Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
-      "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
-      "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb) ∗
-      "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝.
-
 Definition stable_sound (txns : list (u64 * list update.t)) (stable_txns : gmap nat unit) :=
   ∀ (txn_id txn_id' : nat) (pos : u64),
     txn_id' > txn_id ->
@@ -521,7 +513,7 @@ Definition wal_post_crash σ: Prop :=
 Definition is_wal_inner_durable γ s dinit : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "%Hpostcrash" ∷ ⌜wal_post_crash s⌝ ∗
-    "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv_durable γ s cs dinit ∗
+    "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv γ s cs dinit ∗
                     "Hcirc" ∷ is_circular_state γ.(circ_name) cs
 .
 

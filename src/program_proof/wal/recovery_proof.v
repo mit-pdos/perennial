@@ -215,6 +215,7 @@ Proof.
   iFrame.
 Qed.
 
+(* Called after wpc for recovery is completed, so l is the location of the wal *)
 Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   is_wal_inv_pre l γ s dinit -∗
   □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
@@ -235,7 +236,6 @@ Proof.
   iDestruct "Hinv_pre" as "(Hinner&Hcirc)".
   iDestruct "Hcirc" as (cs) "(Hcirc_state&Hcirc_pred)".
 
-  rewrite /is_wal_inv_pre.
   rewrite /circular_pred.
   iMod (circ_buf_crash_obligation_alt circN (λ σ, circular_pred γ σ)%I
                                       (λ σ, circular_pred γ σ)%I
@@ -257,7 +257,7 @@ Proof.
          (∃ s cs0,
                 ghost_var γ.(cs_name) (1/2) cs0 ∗
                 (is_circular_state γ'.(circ_name) cs0 -∗
-                 ⌜wal_post_crash s⌝ ∗ is_wal_inner_durable γ' s dinit ∗ Prec s))%I with
+                 ⌜wal_post_crash s⌝ ∗ (is_wal_inner_durable γ' s dinit) ∗ Prec s))%I with
             "[] [Hinner HP Hinit]") as "(Hncinv&Hcfupd&Hcinv)".
   { solve_ndisj. }
   { iModIntro. iIntros "(H1&>H2) #HC".
@@ -265,36 +265,51 @@ Proof.
     iDestruct "His_wal_inner" as "(>%Hwf&_&>?&>?&>?&>?)"; iNamed.
     iNamed "Hdisk".
     iNamed "Hdisk".
-    iDestruct (is_installed_weaken_read with "Hinstalled") as
-        (new_being_installed_txn_id new_being_installed_end_txn_id) "Hinstalled".
     set (σ':= log_crash_to σ diskEnd_txn_id).
     iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
     iNamed "circ.start".
     iNamed "circ.end".
     iNamed "Hdurable".
     iMod ("Hwand" $! σ σ' with "[//] HP") as "(HPrec&HPcrash)".
-    iModIntro.
     iSplitL "HPcrash".
-    { iExists σ, σ'. iFrame. iNext. eauto. }
-    iNext. iExists σ', cs0. iFrame "Howncs". iIntros "Hcirc". iSplitL "".
+    { iModIntro. iExists σ, σ'. iFrame. iNext. eauto. }
+    iExists σ', cs0. iFrame "Howncs". iFrame "HPrec".
+    do 2iModIntro.
+    iIntros "Hcirc". iSplitL "".
     { iPureIntro. by eapply log_crash_to_post_crash. }
-    iFrame "HPrec".
+
+
     rewrite /is_wal_inner_durable.
-    iSplit.
+    iSplitL "".
     { iPureIntro. eapply log_crash_to_wf; eauto. }
-    iSplit.
+    iSplitL "".
     { iPureIntro. by eapply log_crash_to_post_crash. }
     iExists cs0. iFrame "Hcirc".
-    rewrite /disk_inv_durable.
+    rewrite /disk_inv.
+    simpl.
     iExists installed_txn_id, diskEnd_txn_id; simpl.
     assert (installed_txn_id <= diskEnd_txn_id) by word.
-    iExists new_being_installed_txn_id, new_being_installed_end_txn_id.
     iSplitL "Hinstalled".
     {
-      rewrite /is_installed_read.
-      iDestruct "Hinstalled" as (γ1 already_installed) "Hinstalled".
-      iExists _, _.
-      admit.
+      rewrite /is_installed/is_installed_core.
+      iNamed "Hinstalled". iNamed "Howninstalled".
+      iExists being_installed_start_txn_id, being_installed_end_txn_id, ∅.
+      iSplitL "".
+      { (* TODO: the wal_init_ghost_state should explode to these and we should set above *) admit. }
+      iSplitL "".
+      { iPureIntro. split_and!; try len. }
+      iSplitL "".
+      { (* TODO: when initializing the txns_ctx for γ', it should be a truncation of γ's
+           such that persistently we have txn_val γ txn_id  -∗ txn_val γ' txn_id if txn_id <= diskEnd_txn_id.*)
+        admit.
+      }
+      iApply (big_sepM_mono with "Hdata").
+      iIntros (k x Hlookup) "H". rewrite /is_dblock_with_txns.
+      iDestruct "H" as (b txn_id' Hinstalled) "(?&?)". iExists b, txn_id'. iFrame.
+      iPureIntro.
+      split_and!; try lia.
+      - set_solver.
+      - rewrite take_take. rewrite ->min_l by lia. intuition eauto.
     }
     admit.
   }
@@ -318,9 +333,6 @@ Proof.
     iDestruct ("Hwand'" with "[$]") as "$".
   }
   iFrame.
-  Unshelve.
-  - exact γ1.
-  - exact already_installed.
 Abort.
 
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
@@ -358,7 +370,6 @@ Proof.
   { iPureIntro.
     eapply log_crash_to_post_crash; eauto. }
   iExists cs; iFrame.
-  rewrite /disk_inv_durable.
   iExists installed_txn_id, diskEnd_txn_id; simpl.
   assert (installed_txn_id <= diskEnd_txn_id) by word.
   admit.
@@ -429,8 +440,8 @@ Global Instance is_wal_inner_durable_disc γ σ:
   Discretizable (is_wal_inner_durable γ σ dinit).
 Proof. apply _. Qed.
 
-Global Instance disk_inv_durable_disc γ σ cs:
-  Discretizable (disk_inv_durable γ σ cs dinit).
+Global Instance disk_inv_disc γ σ cs:
+  Discretizable (disk_inv γ σ cs dinit).
 Proof. apply _. Qed.
 
 (* halt at σ0 ~~> σ1 ~recovery, crashes~> σ1  *)
@@ -646,12 +657,13 @@ Proof.
     iSplit; first auto.
     iSplit; first auto.
     iNext. iExists cs.
-    iFrame. rewrite /disk_inv_durable.
+    iFrame. rewrite /disk_inv.
 
-    iExists _, _, _, _. iFrame "Hinstalled Hdurable". iFrame (Hdaddrs_init).
+    iExists _, _. admit.
+    (* iFrame "Hinstalled Hdurable". iFrame (Hdaddrs_init).
     iSplit.
     { iNamed "circ.start". iFrame "#%". }
-    iNamed "circ.end". iFrame "#%". eauto.
+    iNamed "circ.end". iFrame "#%". eauto. *)
   }
   wp_pures.
   wp_apply (wp_new_free_lock); iIntros (ml) "Hlock".
