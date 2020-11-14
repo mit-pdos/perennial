@@ -98,6 +98,7 @@ Definition RPCServer_mutex_inv (sv:loc) (γrpc:rpc_names) (server_own_core:iProp
     ∗ server_own_core
 .
 
+(* TODO: Rename these to something generic *)
 Definition mutexN : namespace := nroot .@ "lockservermutexN".
 Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
 
