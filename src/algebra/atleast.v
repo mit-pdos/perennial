@@ -400,7 +400,7 @@ Global Instance into_atleast_persistently P Q :
   IntoAtLeast k P Q → IntoAtLeast k (<pers> P) (<pers> Q).
 Proof. rewrite /IntoAtLeast=> ->. by rewrite atleast_persistently. Qed.
 
-Global Instance elim_modal_abstimeless p P Q {P'} :
+Global Instance elim_modal_abstimeless p P Q P' :
   IntoAtLeast k P P' → IsAtLeast k Q → ElimModal True p p P P' Q Q.
 Proof.
   intros. rewrite /ElimModal (atleast_intro k (_ -∗ _)%I) (into_atleast k P).

@@ -381,7 +381,7 @@ Section gen_heap_deletable.
   Implicit Types v : V.
 
   (** General properties of mapsto *)
-  Global Instance mapsto_discretizable q v {l} :
+  Global Instance mapsto_discretizable q v l :
     Discretizable (l ↦{q} v).
   Proof. rewrite mapsto_eq. apply _. Qed.
   Global Instance mapsto_timeless l q v : Timeless (l ↦{q} v).

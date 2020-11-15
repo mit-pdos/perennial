@@ -18,7 +18,7 @@ Class mapG Σ K V `{Countable K} :=
 Definition mapΣ K V `{Countable K} :=
   #[GFunctor (authR (mapUR K V))].
 
-Instance subG_mapG K V `{Countable K} {Σ} :
+Instance subG_mapG K V `{Countable K} Σ :
   subG (mapΣ K V) Σ → mapG Σ K V.
 Proof. solve_inG. Qed.
 
@@ -128,7 +128,7 @@ Section auth_map.
   Ltac unseal :=
     rewrite /ptsto_mut /ptsto_ro ?ptsto_eq.
 
-  Global Instance ptsto_timeless {γ k mq v} : Timeless (ptsto γ k mq v).
+  Global Instance ptsto_timeless γ k mq v : Timeless (ptsto γ k mq v).
   Proof. unseal; apply _. Qed.
 
   Global Instance ptsto_Fractional γ k v : Fractional (λ q, ptsto_mut γ k q v).
@@ -139,10 +139,10 @@ Section auth_map.
   Global Instance ptsto_AsFractional γ k q v : AsFractional (ptsto_mut γ k q v) (λ q, ptsto_mut γ k q v) q.
   Proof. split; auto; apply _. Qed.
 
-  Global Instance ptsto_ro_timeless {γ k v} : Timeless (ptsto_ro γ k v).
+  Global Instance ptsto_ro_timeless γ k v : Timeless (ptsto_ro γ k v).
   Proof. unseal; apply _. Qed.
 
-  Global Instance ptsto_ro_persistent {γ k v} : Persistent (ptsto_ro γ k v).
+  Global Instance ptsto_ro_persistent γ k v : Persistent (ptsto_ro γ k v).
   Proof. unseal; apply _. Qed.
 
   Lemma Cinl_valid (A B:cmraT) (x:A) :

@@ -97,7 +97,7 @@ Section goose.
     iApply (alloc_crash_cond_from_post_crash with "[$]").
   Qed.
 
-  Instance s_inode_inv_Timeless {γblocks blocks} :
+  Instance s_inode_inv_Timeless γblocks blocks :
     Timeless (s_inode_inv γblocks blocks).
   Proof. apply _. Qed.
 
