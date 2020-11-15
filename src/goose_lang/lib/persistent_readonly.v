@@ -53,7 +53,7 @@ Section goose_lang.
   Global Instance readonly_persistent P `{H: AsMapsTo P Φ} : Persistent (readonly P).
   Proof. unseal; apply _. Qed.
 
-  Instance as_mapsto_AsFractional P `{H: AsMapsTo P Φ} :
+  Instance as_mapsto_AsFractional P `{H: AsMapsTo P Φ} {q} :
     AsFractional (Φ q) (λ q, Φ q) q.
   Proof.
     split; auto.
@@ -135,7 +135,7 @@ Proof.
   split; [done|apply _|apply _].
 Qed.
 
-Instance mapsto_AsMapsTo `{ffi_sem: ext_semantics} `(hG: gen_heapG Σ) :
+Instance mapsto_AsMapsTo `{ffi_sem: ext_semantics} `(hG: gen_heapG Σ) {l v} :
   AsMapsTo (mapsto (hG:=hG) l 1 v) (λ q, mapsto (hG:=hG) l q v).
 Proof.
   split; [done|apply _|apply _].

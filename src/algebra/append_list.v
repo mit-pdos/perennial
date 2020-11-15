@@ -26,13 +26,13 @@ Definition list_ctx γ q l: iProp Σ :=
   "Hctx" ∷ map_ctx γ q (list_to_imap l) ∗
   "Hels" ∷ [∗ list] i↦x ∈ l, list_el γ i x.
 
-Global Instance list_ctx_timeless : Timeless (list_ctx γ q l).
+Global Instance list_ctx_timeless {γ q l} : Timeless (list_ctx γ q l).
 Proof. apply _. Qed.
-Global Instance list_el_timeless : Timeless (list_el γ i x).
+Global Instance list_el_timeless {γ i x} : Timeless (list_el γ i x).
 Proof. apply _. Qed.
-Global Instance list_el_persistent : Persistent (list_el γ i x).
+Global Instance list_el_persistent {γ i x} : Persistent (list_el γ i x).
 Proof. apply _. Qed.
-Global Instance list_ctx_fractional : Fractional (λ q, list_ctx γ q l).
+Global Instance list_ctx_fractional {γ l} : Fractional (λ q, list_ctx γ q l).
 Proof. apply _. Qed.
 
 Lemma lookup_list_to_imap_length l :

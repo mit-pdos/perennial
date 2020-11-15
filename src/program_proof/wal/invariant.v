@@ -379,7 +379,7 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
     "cond_shut" ∷ lock.is_cond σₛ.(condShut) #σₛ.(memLock) ∗
     "lk" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ).
 
-Global Instance is_wal_mem_persistent : Persistent (is_wal_mem l γ) := _.
+Global Instance is_wal_mem_persistent {l γ} : Persistent (is_wal_mem l γ) := _.
 
 Definition is_dblock_with_txns d txns (being_installed_start_txn_id: nat) (being_installed_end_txn_id: nat) (already_installed: gset Z) a : iProp Σ :=
   ∃ (b: Block) (txn_id': nat),

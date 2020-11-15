@@ -91,7 +91,7 @@ Section liftable.
     eauto with iFrame.
   Qed.
 
-  Global Instance singleton_liftable :
+  Global Instance singleton_liftable {a v} :
     Liftable (fun mapsto => mapsto a v)%I.
   Proof.
     intros; unfold Liftable.

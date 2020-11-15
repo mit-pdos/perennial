@@ -506,14 +506,14 @@ Section maplist.
     iApply "IH". iFrame.
   Qed.
 
-  Global Instance big_sepML_persistent `(!∀ k v lv, Persistent (Φ k v lv)) :
+  Global Instance big_sepML_persistent `(!∀ k v lv, Persistent (Φ k v lv)) {m l} :
     Persistent (big_sepML Φ m l).
   Proof.
     rewrite big_sepML_eq.
     typeclasses eauto.
   Qed.
 
-  Global Instance big_sepML_absorbing `(!∀ k v lv, Absorbing (Φ k v lv)) :
+  Global Instance big_sepML_absorbing `(!∀ k v lv, Absorbing (Φ k v lv)) {m l} :
     Absorbing (big_sepML Φ m l).
   Proof.
     rewrite big_sepML_eq.
