@@ -12,4 +12,10 @@ if test -z ${FOLDER+x}; then
     FOLDER=src/
 fi
 
-make $(make -n "$FILE"o | egrep '^echo "COQC '"$FOLDER" | sed -r 's/^.*"COQC (.*)"$/\1ok/') "$@"
+FILES=$(make -n "$FILE"o | egrep '^echo "COQC '"$FOLDER" | sed -r 's/^.*"COQC (.*)"$/\1ok/')
+if test -z "$FILES"; then
+    echo "Nothing found to build in $FOLDER"
+    exit 1
+fi
+
+make $FILES "$@"
