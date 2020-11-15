@@ -65,7 +65,7 @@ Section bi.
 
   Ltac unseal := rewrite cached_eq /cached_def.
 
-  Global Instance cached_Persistent : Persistent (@cached R c).
+  Global Instance cached_Persistent {R c} : Persistent (@cached R c).
   Proof. unseal. apply _. Qed.
 
   Lemma cached_elim R (c: cache R) Δs :
