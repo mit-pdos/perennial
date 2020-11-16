@@ -12,7 +12,7 @@ From Perennial.goose_lang.lib Require Import lock.
 From Perennial.goose_lang.lib Require Import crash_lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof.lockservice Require Import lockservice_crash rpc rpc_durable nondet kv_proof common_proof.
+From Perennial.program_proof.lockservice Require Import lockservice_crash rpc rpc_durable nondet kv_proof common_proof fmcounter_map.
 
 Section kv_durable_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
@@ -206,15 +206,17 @@ Variable coreFunction:goose_lang.val.
 Variable PreCond:RPCValC -> iProp Σ.
 Variable PostCond:RPCValC -> u64 -> iProp Σ.
 
-Lemma RPC_core_spec_example Rpers R (args:RPCValC) :
+Lemma RPC_core_spec_example R (args:RPCValC) :
   {{{
-       "#HRpers" ∷ Rpers ∗
        "HR" ∷ R ∗
        "#HgetP" ∷ □(R ={⊤, ⊤ ∖ ↑rpcRequestInvN }=∗ ▷ PreCond args ∗ (▷ PreCond args ={⊤ ∖ ↑rpcRequestInvN, ⊤}=∗ R))
  }}}
-    coreFunction (into_val.to_val args)
+    coreFunction (into_val.to_val args) @ NotStuck ; 36; ⊤
  {{{
-      (r:u64), RET #r; R ∗ PreCond args ==∗ PostCond args r
+      (r:u64), RET #r; R ∗ (PreCond args ==∗ PostCond args r)
+ }}}
+ {{{
+      R
  }}}
 .
 Admitted.
@@ -222,7 +224,7 @@ Admitted.
 Lemma RPCServer__HandleRequest_spec' (makeDurable:goose_lang.val) (srv sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost :
 {{{
   "#Hls" ∷ is_kvserver srv sv γ
-  ∗ "#HreqInv" ∷ is_RPCRequest γ.(ks_rpcGN) γPost PreCond PostCond req
+  ∗ "#HreqInv" ∷ is_durable_RPCRequest γ.(ks_rpcGN) γPost PreCond PostCond req
   ∗ "#Hreq" ∷ read_request req_ptr req
   ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
@@ -310,8 +312,59 @@ Proof.
     iApply "Hpost".
     iExists _; iFrame.
   - (* Case of actually running core function and updating durable state *)
-    admit.
-   (* 
+    wpc_pures.
+
+    iDestruct "Hcases" as "[Hcases | [% _]]"; last discriminate.
+    iNamed "Hcases".
+
+    repeat (wpc_bind (struct.loadF _ _ _);
+    wpc_frame;
+    wp_loadField;
+    iNamed 1).
+    wpc_apply (RPC_core_spec_example (RPCServer_own γ.(ks_rpcGN) kv_server.(kv_durable_proof.sv).(lastSeqM) kv_server.(kv_durable_proof.sv).(lastReplyM))
+                 with "[Hsrpc]").
+    {
+      iSplitL "Hsrpc".
+      { iFrame "Hsrpc". }
+      iModIntro.
+      iIntros "Hrpcs_own".
+      iInv "HreqInv" as "Hrinv" "Hrclose".
+      iDestruct "Hrinv" as "[Hlseqbound [Hrinv|Hproc]]".
+      { admit. }
+      {
+        iAssert (▷ req.(CID) fm[[γ.(ks_rpcGN).(lseq)]]≥ int.nat req.(Seq))%I with "[Hproc]" as "#>Hlseq_lb".
+        { iDestruct "Hproc" as "[Hlseq_lb _]"; done. }
+        iNamed "Hrpcs_own".
+        rewrite map_get_val in H1.
+        iDestruct (big_sepS_elem_of_acc_impl req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
+          first by apply elem_of_fin_to_set.
+        iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
+        iExFalso; iPureIntro.
+        simpl in H1.
+        replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+        admit.
+        (* lia. *)
+      }
+    }
+   iSplit.
+    {
+      iModIntro. iNext. iIntros "Hsrpc".
+      iSplit; first done.
+      iExists _; iFrame.
+    }
+    iIntros (v).
+    iNext.
+    iIntros "[Hsrpc Hfupd]".
+
+    (* wpc_loadField. *)
+    wpc_bind (struct.storeF _ _ _ _).
+    wpc_frame.
+    (*
+    wp_storeField.
+    iNamed 1).
+     *)
+
+   (*
     wpc_bind (struct.loadF _ _ _).
     wpc_frame.
     wp_loadField.
