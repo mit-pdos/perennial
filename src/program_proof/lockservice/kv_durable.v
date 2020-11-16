@@ -207,10 +207,10 @@ Variable makeDurable:goose_lang.val.
 Variable PreCond:RPCValC -> iProp Σ.
 Variable PostCond:RPCValC -> u64 -> iProp Σ.
 
-Lemma RPC_core_spec_example R (args:RPCValC) :
+Lemma RPC_core_spec_example R N (args:RPCValC) :
   {{{
-       "HR" ∷ R ∗
-       "#HgetP" ∷ □(R ={⊤, ⊤ ∖ ↑rpcRequestInvN }=∗ ▷ PreCond args ∗ (▷ PreCond args ={⊤ ∖ ↑rpcRequestInvN, ⊤}=∗ R))
+       "Hcinv" ∷ cinv_sem N R (PreCond args) ∗
+       "HR" ∷ R
  }}}
     coreFunction (into_val.to_val args) @ NotStuck ; 36; ⊤
  {{{
@@ -354,31 +354,9 @@ Proof.
     wpc_frame;
     wp_loadField;
     iNamed 1).
+    iMod (rpc_get_cancellable_inv with "HreqInv") as "Hcinv"; eauto.
     wpc_apply (RPC_core_spec_example (RPCServer_own γ.(ks_rpcGN) kv_server.(kv_durable_proof.sv).(lastSeqM) kv_server.(kv_durable_proof.sv).(lastReplyM))
-                 with "[Hsrpc]").
-    {
-      iSplitL "Hsrpc".
-      { iFrame "Hsrpc". }
-      iModIntro.
-      iIntros "Hrpcs_own".
-      iInv "HreqInv" as "Hrinv" "Hrclose".
-      iDestruct "Hrinv" as "[Hlseqbound [Hrinv|Hproc]]".
-      { admit. }
-      {
-        iAssert (▷ req.(CID) fm[[γ.(ks_rpcGN).(lseq)]]≥ int.nat req.(Seq))%I with "[Hproc]" as "#>Hlseq_lb".
-        { iDestruct "Hproc" as "[Hlseq_lb _]"; done. }
-        iNamed "Hrpcs_own".
-        rewrite map_get_val in H1.
-        iDestruct (big_sepS_elem_of_acc_impl req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
-          first by apply elem_of_fin_to_set.
-        iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
-        iExFalso; iPureIntro.
-        simpl in H1.
-        replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
-        admit.
-        (* lia. *)
-      }
-    }
+                 with "[$Hsrpc $Hcinv]").
    iSplit.
     {
       iModIntro. iNext. iIntros "Hsrpc".
@@ -409,9 +387,17 @@ Proof.
     iNamed 1.
     wpc_pures.
     wpc_apply (make_durable_spec with "[-Hpost Hkvctx Hsrpc]").
-    { admit. }
+    { iFrame. (* TODO: don't instantiate with the original kvserver *) admit. }
     iSplit.
-    { admit. }
+    { iIntros.
+      iModIntro. iNext.
+      iIntros "Hkvdurable".
+      iSplit; first done.
+
+      iDestruct "Hkvdurable" as "[Hkvdurable|Hkvdurable]".
+      + iModIntro; iExists _; iFrame.
+      + (* TODO: Pass in Hkvctx into core function (as *_core_own or some such) and put on LHS of fupd *)
+        admit. }
     iNext. iIntros "[Hkvdurable Hsrvown]". 
     iSplitR "Hsrvown Hkvdurable Hkvctx Hsrpc"; last first.
     {
@@ -428,10 +414,10 @@ Proof.
 
     wp_pures.
     wp_loadField.
+    iApply wp_fupd.
     wp_apply (crash_lock.release_spec with "Hlocked"); first eauto.
     wp_pures.
     iApply "Hpost".
-
     (* Need to go back and apply fupd to get reply receipt *)
 
 Admitted.

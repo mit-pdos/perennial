@@ -28,4 +28,27 @@ Local Definition RPCRequest_durable_inv (γrpc:rpc_names) (γPost:gname) (PreCon
 Definition is_durable_RPCRequest (γrpc:rpc_names) (γPost:gname) (PreCond : A -> iProp Σ) (PostCond : A -> R -> iProp Σ) (req:RPCRequest) : iProp Σ :=
   inv rpcRequestInvN (RPCRequest_durable_inv γrpc γPost PreCond PostCond req).
 
+Lemma server_executes_durable_request (req:@RPCRequest A) reply γrpc γPost PreCond PostCond lastSeqM lastReplyM :
+  is_durable_RPCRequest γrpc γPost PreCond PostCond req -∗
+  is_RPCServer γrpc -∗
+  RPCServer_own γrpc lastSeqM lastReplyM -∗
+  (PreCond req.(Args) ==∗ PostCond req.(Args) reply) -∗
+  RPCReplyReceipt γrpc req reply ∗
+  RPCServer_own γrpc (<[req.(CID):=req.(Seq)]> lastSeqM) (<[req.(CID):=reply]> lastReplyM)
+  .
+Admitted.
+
+(* Semantic cancellable invariant *)
+Definition cinv_sem (N : namespace) (R : iProp Σ) (P : iProp Σ) : iProp Σ :=
+  □ ∀ E, ⌜↑N ⊆ E⌝ → (R ={E, E ∖ ↑N }=∗ ▷ P ∗ R ∗ (▷ P ={E ∖ ↑N, E}=∗ True))
+.
+
+Lemma rpc_get_cancellable_inv (req:@RPCRequest A) γrpc γPost PreCond PostCond lastSeqM lastReplyM (old_seq:u64) :
+  ((map_get lastSeqM req.(CID)).1 = old_seq) →
+  (int.Z req.(Seq) > int.Z old_seq)%Z →
+  is_durable_RPCRequest γrpc γPost PreCond PostCond req ={⊤}=∗
+  cinv_sem rpcRequestInvN (RPCServer_own γrpc lastSeqM lastReplyM) (PreCond req.(Args)).
+Proof.
+Admitted.
+
 End rpc_durable.
