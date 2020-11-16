@@ -111,19 +111,30 @@ Proof.
   rewrite Heq //.
 Qed.
 
-Lemma list_to_async_possible {A} `{!Inhabited A} (l: list A) :
+Lemma possible_list_to_async {A} `{!Inhabited A} (l: list A) :
   (0 < length l)%nat →
   possible (list_to_async l) = l.
 Proof.
   intros.
   rewrite /possible /list_to_async /=.
-  apply (inj (@rev _)).
-  rewrite rev_app_distr.
-  destruct (last l) eqn:?.
-  - simpl.
-    rewrite -skipn_rev.
-    (* this is not going so well... *)
-Admitted.
+  (* this is proof isn't really inductive, but somehow the reverse part of this
+  induction is helpful (we're basically doing case analysis on [] vs l ++
+  [x]) *)
+  induction l using rev_ind.
+  - simpl in H; lia.
+  - rewrite last_snoc.
+    rewrite app_length /=.
+    replace (length l + 1 - 1)%nat with (length l) by lia.
+    rewrite take_app //.
+Qed.
+
+Lemma length_possible {A} (x: async A) :
+  length (possible x) = 1 + length x.(pending).
+Proof.
+  rewrite /possible /=.
+  rewrite app_length /=.
+  lia.
+Qed.
 
 Lemma wal_heap_inv_crashes_crash crash_heaps crash_txn ls ls' :
   ls'.(log_state.d) = ls.(log_state.d) →
@@ -132,8 +143,26 @@ Lemma wal_heap_inv_crashes_crash crash_heaps crash_txn ls ls' :
   wal_heap_inv_crashes (list_to_async
       (take (S crash_txn) (possible crash_heaps))) ls'.
 Proof.
-  (* really simple, just take a prefix of the input [∗ list] *)
-Admitted.
+  rewrite /wal_heap_inv_crashes.
+  intros -> ->.
+  iNamed 1.
+  iSplit.
+  - iPureIntro.
+    rewrite possible_list_to_async //; len.
+    rewrite length_possible.
+    lia.
+  - rewrite possible_list_to_async //; last first.
+    { len.
+      rewrite length_possible; lia. }
+    rewrite -{1}(take_drop (S crash_txn) (possible crash_heaps)).
+    iDestruct (big_sepL_app with "Hpossible_heaps") as "[Hpre _]".
+    iApply (big_sepL_mono with "Hpre").
+    intros.
+    apply lookup_take_Some in H.
+    iIntros "H".
+    rewrite take_take.
+    rewrite Nat.min_l //.
+Qed.
 
 Lemma wal_heap_inv_crash_transform γ ls ls' :
   relation.denote log_crash ls ls' () →
