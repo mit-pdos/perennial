@@ -133,15 +133,13 @@ Definition RPCServer__HandleRequest: val :=
   rec: "RPCServer__HandleRequest" "sv" "core" "makeDurable" "req" "reply" :=
     lock.acquire (struct.loadF RPCServer.S "mu" "sv");;
     (if: CheckReplyTable (struct.loadF RPCServer.S "lastSeq" "sv") (struct.loadF RPCServer.S "lastReply" "sv") (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCRequest.S "Seq" "req") "reply"
-    then
-      lock.release (struct.loadF RPCServer.S "mu" "sv");;
-      #false
+    then #()
     else
       struct.storeF RPCReply.S "Ret" "reply" ("core" (struct.loadF RPCRequest.S "Args" "req"));;
       MapInsert (struct.loadF RPCServer.S "lastReply" "sv") (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCReply.S "Ret" "reply");;
-      "makeDurable" #();;
-      lock.release (struct.loadF RPCServer.S "mu" "sv");;
-      #false).
+      "makeDurable" #());;
+    lock.release (struct.loadF RPCServer.S "mu" "sv");;
+    #false.
 
 (* 1_kvserver.go *)
 

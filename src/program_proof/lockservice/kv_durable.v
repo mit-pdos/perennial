@@ -89,6 +89,44 @@ Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
    "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
    "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN).
 
+Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γ (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
+{{{
+     "%" ∷ ⌜int.nat req.(rpc.Seq) > 0⌝
+    ∗ "#Hrinv" ∷ is_RPCServer γ.(ks_rpcGN)
+    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
+    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ ("Hsrpc" ∷ RPCServer_own γ.(ks_rpcGN) lastSeqM lastReplyM)
+    ∗ ("Hreply" ∷ own_reply reply_ptr reply)
+}}}
+CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(CID) #req.(rpc.Seq) #reply_ptr @ NotStuck ; 36; ⊤
+{{{
+     (b:bool) reply', RET #b;
+      "Hreply" ∷ own_reply reply_ptr reply'
+    ∗ "Hcases" ∷ ("%" ∷ ⌜b = false⌝
+         ∗ "%" ∷ ⌜(int.Z req.(rpc.Seq) > int.Z (map_get lastSeqM req.(CID)).1)%Z⌝
+         ∗ "%" ∷ ⌜reply'.(Stale) = false⌝
+         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(CID):=req.(rpc.Seq)]>lastSeqM)
+         ∨ 
+         "%" ∷ ⌜b = true⌝
+         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
+         ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γ.(ks_rpcGN) req)
+          ∨ RPCReplyReceipt γ.(ks_rpcGN) req reply'.(Ret)))
+
+    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ ("Hsrpc" ∷ RPCServer_own γ.(ks_rpcGN) lastSeqM lastReplyM)
+}}}
+{{{
+    RPCServer_own γ.(ks_rpcGN) lastSeqM lastReplyM
+}}}
+.
+Proof.
+  iIntros (Φ Φc) "Hpre Hpost".
+  iNamed "Hpre".
+  wpc_call.
+  { iNext. iFrame. }
+  { iNext. iFrame. }
+Admitted.
+
 Lemma RPCServer__HandleRequest_spec' (coreFunction makeDurable:goose_lang.val) (srv sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost PreCond PostCond :
 {{{
   "#Hls" ∷ is_kvserver srv sv γ
@@ -112,8 +150,16 @@ Proof.
   iIntros "Hlocked".
   wp_pures.
   iApply (wpc_wp _ _ _ _ _ True).
-  crash_lock_open "Hlocked"; eauto.
-  { iModIntro. done. }
+
+  (*
+  iDestruct "Hlocked" as "(Hinv & #Hmu_nc & Hlocked)".
+  iApply (wpc_na_crash_inv_open with "Hinv"); eauto.
+  iSplit; first by iModIntro.
+   *)
+  wpc_bind_seq.
+  crash_lock_open "Hlocked".
+  { eauto. }
+  { by iModIntro. }
   iIntros ">Hlsown".
   iNamed "Hlsown".
   iNamed "Hkv". iNamed "Hrpc".
@@ -136,6 +182,58 @@ Proof.
   wpc_frame_go "HlastSeqOwn" base.Right [INamed "HlastSeqOwn"].
   wp_loadField.
   iNamed 1.
+
+  (* TODO: understand exactly what's going on here *)
+  wpc_apply (CheckReplyTable_spec with "[$Hsrpc $HlastSeqMap $HlastReplyMap $Hreply]"); first eauto.
+  iSplit.
+  { iModIntro. iNext. iIntros. iSplit; first done.
+    iExists _; iFrame. }
+  iNext.
+  iIntros (b reply').
+  iNamed 1.
+
+  destruct b.
+  - (* Seen request in reply table; easy because we don't touch durable state *)
+    wpc_pures.
+    iDestruct "Hcases" as "[Hcases|Hcases]".
+    { (* Wrong case of postcondition of CheckReplyTable *) 
+      iNamed "Hcases"; discriminate. }
+    iNamed "Hcases".
+    (* Do loadField on non-readonly ptsto *)
+    iSplitR "HlocksOwn HkvsMap Hkvdurable Hsrpc HlastSeqOwn HlastReplyOwn Hkvctx HlastSeqMap HlastReplyMap"; last first.
+    {
+      iNext. iExists _; iFrame. unfold KVServer_own_core.
+      iSplitL "HlocksOwn HkvsMap".
+      - iExists _; iFrame.
+      - iExists _, _; iFrame.
+    }
+    iIntros "Hlocked".
+    iSplit.
+    { by iModIntro. }
+    wpc_pures; first by iModIntro.
+    iApply (wp_wpc).
+    wp_loadField.
+    wp_apply (crash_lock.release_spec with "[$Hlocked]"); first done.
+    wp_pures.
+    iApply "Hpost".
+    iExists _; iFrame.
+  - (* Case of actually running core function and updating durable state *)
+    admit.
+   (* 
+    wpc_bind (struct.loadF _ _ _).
+    wpc_frame.
+    wp_loadField.
+    iNamed 1.
+
+    iDestruct (na_crash_inv_alloc 36 ⊤ (RPCServer_mutex_cinv γ) (RPCServer_mutex_inv srv sv γ) with "[] []") as "HH".
+    { admit. }
+    { admit. }
+    iMod (fupd_level_fupd with "HH") as "(Hfull&?)".
+    wpc_frame.
+    wp_apply (crash_lock.release_spec with "[$Hmu_nc $Hlocked $Hfull]"); first eauto.
+    wp_seq.
+    iNamed 1.
+*)
 Admitted.
 
 End kv_proof.
