@@ -1926,58 +1926,16 @@ Proof using Ptimeless.
           iPureIntro. lia.
         }
       }
+      iDestruct "Hok" as "(Hinode_mem & Hinode_enc & Hinode_data & %Hok)". intuition subst.
+      wp_pures.
+      (* a failed case; but maybe from incorrect code *)
+      admit.
+    }
+    wp_storeField.
 
-      {
-        iDestruct "Hok" as "(Hinode_mem & Hinode_enc & Hinode_data & %Hok)". intuition subst.
-        wp_pures.
+    (* TODO: write inode *)
+    admit.
 
-        (* Implicit transaction abort *)
-        iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "Hold".
-
-        (* Simulate to get Q *)
-        iApply fupd_wp.
-        iInv "Hsrc" as ">Hopen" "Hclose".
-        iNamed "Hopen".
-        iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
-        iDestruct ("Hfupd" with "[] HP") as "Hfupd".
-        {
-          iPureIntro.
-          simpl.
-          monad_simpl.
-          simpl.
-          rewrite Hsrc_fh.
-          simpl.
-          econstructor. { econstructor. auto. }
-          instantiate (3 := true).
-          simpl.
-          monad_simpl.
-        }
-        iMod "Hfupd" as "[HP HQ]".
-        iMod ("Hclose" with "[Hsrcheap HP]").
-        { iModIntro. iExists _. iFrame "∗%#". }
-        iModIntro.
-
-        wp_loadField.
-        wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hold]").
-        { iExists _. iFrame. iDestruct "Hold" as "[Hinode _]". iFrame. }
-
-        iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
-        wp_storeField.
-
-        wp_apply (wp_LoadAt with "[Status Resok Resfail]").
-        { iModIntro. iApply nfstypes_write3res_merge. iFrame. }
-        iIntros "Hreply". simpl.
-        iApply "HΦ". iRight.
-        iExists _.
-        iSplit; first done.
-        iFrame.
-        iPureIntro. lia.
-      }
-
-    Unshelve.
-      exact tt.
-Qed.
-*)
 Admitted.
 
 End heap.
