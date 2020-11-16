@@ -4,10 +4,9 @@
 name: Update coq/tested
 
 on:
-  # TODO: re-enable when branch protection is re-enabled
-  #schedule:
-  #  # run at 06:59 UTC (3am eastern) each day
-  #  - cron:  '59 6 * * *'
+  schedule:
+    # run at 06:59 UTC (3am eastern) each day
+    - cron:  '59 6 * * *'
 
 jobs:
   update_branch:
