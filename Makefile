@@ -76,6 +76,13 @@ ci: skip-qed src/ShouldBuild.vo
 		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
 		fi
 
+# compiled by Coq CI
+# not intended for normal development
+lite: src/LiteBuild.vo
+	$(Q)if [ ${TIMED} = "true" ]; then \
+		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
+		fi
+
 clean:
 	@echo "CLEAN vo glob aux"
 	$(Q)find $(SRC_DIRS) \( -name "*.vo" -o -name "*.vo[sk]" \
