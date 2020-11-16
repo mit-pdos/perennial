@@ -290,6 +290,36 @@ Lemma subslice_take_drop' {A} (n k: nat) (l: list A) :
   take k (drop n l) = subslice n (n + k) l.
 Proof. rewrite /subslice firstn_skipn_comm //. Qed.
 
+Lemma subslice_take {A} (l: list A) n m k :
+  subslice n m (take k l) = subslice n (m `min` k) l.
+Proof.
+  rewrite subslice_take_drop.
+  rewrite take_take //.
+Qed.
+
+Lemma subslice_take_all {A} (l: list A) n m k :
+  m ≤ k →
+  subslice n m (take k l) = subslice n m l.
+Proof.
+  intros.
+  rewrite subslice_take.
+  rewrite Nat.min_l //.
+Qed.
+
+Lemma subslice_drop {A} (l: list A) n m k :
+  subslice n m (drop k l) = subslice (k + n) (k + m) l.
+Proof.
+  destruct (decide (n ≤ m)).
+  - rewrite subslice_drop_take //.
+    rewrite drop_drop.
+    rewrite subslice_take_drop'.
+    f_equal.
+    lia.
+  - rewrite -> subslice_none by lia.
+    rewrite -> subslice_none by lia.
+    auto.
+Qed.
+
 Theorem subslice_split_r {A} n m m' (l: list A) :
   (n ≤ m ≤ m')%nat →
   (m ≤ length l)%nat →

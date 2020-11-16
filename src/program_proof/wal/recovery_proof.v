@@ -452,14 +452,12 @@ Proof.
       { iPureIntro. split_and!; try len. }
 
       iSplitL "Hold_txns".
-      { (* TODO: when initializing the txns_ctx for γ', it should be a truncation of γ's
-           such that persistently we have txn_val γ txn_id  -∗ txn_val γ' txn_id if txn_id <= diskEnd_txn_id.*)
-        iDestruct (old_txns_are_get with "Hold_txns Hbeing_installed_txns") as "#Hbeing_installed_txns'".
+      { iDestruct (old_txns_are_get with "Hold_txns Hbeing_installed_txns") as "#Hbeing_installed_txns'".
         { rewrite subslice_length; len. }
         iExactEq "Hbeing_installed_txns'". rewrite /named.
         f_equal.
-        admit. (* subslice is already more restrictive than the take, so take
-        does nothing *)
+        rewrite subslice_take_all //.
+        lia.
       }
 
       iApply (big_sepM_mono with "Hdata").
