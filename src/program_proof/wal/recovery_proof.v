@@ -25,6 +25,7 @@ Lemma is_wal_inner_durable_init (bs: list Block) :
   513 d↦∗ bs ={⊤}=∗
   let s := (log_state.mk (list_to_map (imap (λ i x, (513 + Z.of_nat i, x)) bs)) [(U64 0, [])] 0 0) in
   ∃ γ, is_wal_inner_durable γ s dinit.
+Proof.
 Admitted.
 
 Existing Instance own_into_crash.
@@ -181,13 +182,17 @@ Proof.
     eapply lookup_take_Some in Hlookup; lia.
 Qed.
 
-Lemma alloc_wal_init_ghost_state :
-  ⊢ |==> ∃ γnew, wal_init_ghost_state γnew.
+Lemma alloc_wal_init_ghost_state γ :
+  ⊢ |==> ∃ γnew, ⌜γnew.(base_disk_name) = γ.(base_disk_name)⌝ ∗
+                 wal_init_ghost_state γnew.
 Proof.
-  iMod (ghost_var_alloc (U64 0)) as (installer_pos_name) "Hinstalled_pos".
+  iMod (ghost_var_alloc 0%nat) as (installer_pos_name) "Hinstalled_pos".
   iMod (ghost_var_alloc 0%nat) as (installer_txn_id_name) "Hinstalled_txn_id".
-  iMod (ghost_var_alloc 0%nat) as (diskEnd_mem_name) "HdiskEnd".
-  iMod (ghost_var_alloc 0%nat) as (diskEnd_mem_txn_id_name) "HdiskEnd_txn_id".
+  iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_name) "HdiskEnd".
+  iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_txn_id_name) "HdiskEnd_txn_id".
+  iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
+  (* TODO: probably will take γcirc for new names as a parameter, not initialize
+  it here *)
   iMod (alloc_init_ghost_state) as (γcirc) "Hcirc".
   iMod (ghost_var_alloc 0%nat) as (TODO_NAME) "HTODO".
   iModIntro.
@@ -200,7 +205,7 @@ Proof.
             already_installed_name := TODO_NAME;
             diskEnd_avail_name := TODO_NAME;
             start_avail_name := TODO_NAME;
-            stable_txn_ids_name := TODO_NAME;
+            stable_txn_ids_name := γstable_txn_ids_name;
             logger_pos_name := TODO_NAME;
             logger_txn_id_name := TODO_NAME;
             installer_pos_mem_name := TODO_NAME;
@@ -211,8 +216,69 @@ Proof.
             diskEnd_mem_txn_id_name := diskEnd_mem_txn_id_name;
             installed_pos_mem_name := TODO_NAME;
             installed_txn_id_mem_name := TODO_NAME;
-            base_disk_name := TODO_NAME |}.
-  iFrame.
+            base_disk_name := γ.(base_disk_name) |}; simpl.
+  by iFrame.
+Qed.
+
+Lemma is_base_disk_crash γ γ' d :
+  γ'.(base_disk_name) = γ.(base_disk_name) →
+  is_base_disk γ d -∗ is_base_disk γ' d.
+Proof.
+  rewrite /is_base_disk => -> //.
+Qed.
+
+Lemma init_stable_txns γ (installed_txn_id diskEnd_txn_id : nat) :
+  map_ctx   γ.(stable_txn_ids_name) 1 (∅ : gmap nat unit) -∗
+  |==> "Hstable_txns" ∷ map_ctx γ.(stable_txn_ids_name) 1
+                    (<[diskEnd_txn_id:=()]> {[installed_txn_id := ()]}) ∗
+       "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro () ∗
+       "#Hinstalled_txn_id_stable" ∷ installed_txn_id [[γ.(stable_txn_ids_name)]]↦ro ().
+Proof.
+  iIntros "Hstable_txns".
+  iMod (map_alloc_ro installed_txn_id () with "Hstable_txns") as "[Hstable_txns #Hinstalled_stable]".
+  { set_solver. }
+  iAssert (|==> let stable_txns := <[diskEnd_txn_id:=()]> {[installed_txn_id:=()]} in
+                map_ctx γ.(stable_txn_ids_name) 1 stable_txns ∗
+                diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro ())%I
+    with "[Hstable_txns]" as "HdiskEnd_txn_id_mod".
+  { destruct (decide (installed_txn_id = diskEnd_txn_id)); subst.
+    - iModIntro.
+      rewrite insert_singleton.
+      iFrame "∗#".
+    - iMod (map_alloc_ro diskEnd_txn_id with "Hstable_txns") as "[Hstable_txns #HdiskEnd_stable]".
+      { rewrite lookup_insert_ne //. }
+      iModIntro. iFrame "#∗". }
+  iMod "HdiskEnd_txn_id_mod" as
+    "[[Hstable_txns1 Hstable_txns2] #HdiskEnd_stable]".
+  by iFrame "#∗".
+Qed.
+
+Lemma is_installed_txn_crash γ γ' cs txns installed_txn_id installed_lb crash_txn  :
+  (installed_txn_id ≤ crash_txn)%nat →
+  is_installed_txn γ cs txns installed_txn_id installed_lb -∗
+  installed_txn_id [[γ'.(stable_txn_ids_name)]]↦ro () -∗
+  is_installed_txn γ' cs (take (S crash_txn) txns) installed_txn_id installed_lb.
+Proof.
+  iIntros (?). iNamed 1. iIntros "#Hstart_stable'".
+  rewrite /is_installed_txn.
+  iFrame "%#".
+  iPureIntro.
+  rewrite /is_txn in Hstart_txn |- *.
+  rewrite -> lookup_take by lia.
+  auto.
+Qed.
+
+Lemma is_durable_txn_crash γ γ' cs txns diskEnd_txn_id durable_lb :
+  is_durable_txn γ cs txns diskEnd_txn_id durable_lb -∗
+  diskEnd_txn_id [[γ'.(stable_txn_ids_name)]]↦ro () -∗
+  is_durable_txn γ' cs (take (S diskEnd_txn_id) txns) diskEnd_txn_id diskEnd_txn_id.
+Proof.
+  iNamed 1. iIntros "#Hend_txn_stable'".
+  rewrite /is_durable_txn.
+  iExists diskEnd; iFrame "%#".
+  iSplit; first (iPureIntro; lia).
+  iPureIntro.
+  apply is_txn_take; auto.
 Qed.
 
 (* Called after wpc for recovery is completed, so l is the location of the wal *)
@@ -231,7 +297,7 @@ Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
                                            Pcrash s s')).
 Proof.
   iIntros "Hinv_pre #Hwand HP".
-  iMod (alloc_wal_init_ghost_state) as (γ0) "Hinit".
+  iMod (alloc_wal_init_ghost_state γ) as (γ0 Hγ0_same) "Hinit".
   rewrite /is_wal_inv_pre.
   iDestruct "Hinv_pre" as "(Hinner&Hcirc)".
   iDestruct "Hcirc" as (cs) "(Hcirc_state&Hcirc_pred)".
@@ -245,6 +311,7 @@ Proof.
   { iFrame. }
 
   set (γ' := γ0 <| circ_name := γcirc' |>).
+
   iExists γ'. rewrite /is_wal.
   iFrame "His_circular".
   iMod (ncinv_cinv_alloc (N.@"wal") ⊤ ⊤
@@ -260,16 +327,24 @@ Proof.
                  ⌜wal_post_crash s⌝ ∗ (is_wal_inner_durable γ' s dinit) ∗ Prec s))%I with
             "[] [Hinner HP Hinit]") as "(Hncinv&Hcfupd&Hcinv)".
   { solve_ndisj. }
-  { iModIntro. iIntros "(H1&>H2) #HC".
+  { iModIntro. iIntros "(H1&>Hinit) #HC".
     iDestruct "H1" as (σ) "(His_wal_inner&HP)".
     iDestruct "His_wal_inner" as "(>%Hwf&_&>?&>?&>?&>?)"; iNamed.
     iNamed "Hdisk".
     iNamed "Hdisk".
+
+    iNamed "Hinit".
+    iMod (init_stable_txns _ installed_txn_id diskEnd_txn_id with "[$]") as "Hstable". iNamed "Hstable".
+
     set (σ':= log_crash_to σ diskEnd_txn_id).
     iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
-    iNamed "circ.start".
-    iNamed "circ.end".
     iNamed "Hdurable".
+
+    iMod (ghost_var_update installer_pos with "installer_pos") as "[installer_pos1 installer_pos2]".
+    iMod (ghost_var_update installer_txn_id with "installer_txn_id") as "[installer_txn_id1 installer_txn_id2]".
+    iMod (fmcounter_update diskEnd_mem with "diskEnd_mem") as "[[diskEnd_mem1 diskEnd_mem2] #diskEnd_mem_lb]"; first by lia.
+    iMod (fmcounter_update diskEnd_mem_txn_id with "diskEnd_mem_txn_id") as "[[diskEnd_mem_txn_id1 diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
+
     iMod ("Hwand" $! σ σ' with "[//] HP") as "(HPrec&HPcrash)".
     iSplitL "HPcrash".
     { iModIntro. iExists σ, σ'. iFrame. iNext. eauto. }
@@ -311,7 +386,16 @@ Proof.
       - set_solver.
       - rewrite take_take. rewrite ->min_l by lia. intuition eauto.
     }
-    admit.
+    iFrame (Hdaddrs_init).
+    iDestruct (is_base_disk_crash with "Hbasedisk") as "$".
+    { auto. }
+    iClear "Hwand". (* TODO: actually need this *)
+    iDestruct (is_installed_txn_crash with "circ.start [$]") as "$"; first lia.
+    iDestruct (is_durable_txn_crash with "circ.end [$]") as "$".
+    efeed pose proof (circ_matches_txns_crash) as Hcirc_matches'; first by eauto.
+    iExists _, _, _, _; iFrame (Hcirc_matches') "∗".
+    (* TODO: lots of residual resources that need to go somewhere (part of
+    [logger_inv] and [installer_inv] in particular) *)
   }
   {
     iNext.

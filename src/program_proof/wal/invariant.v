@@ -518,10 +518,12 @@ Definition is_wal_inner_durable γ s dinit : iProp Σ :=
 .
 
 Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
-    ghost_var γnew.(installer_pos_name) 1 (U64 0) ∗
-    ghost_var γnew.(installer_txn_id_name) 1 0%nat ∗
-    ghost_var γnew.(diskEnd_mem_name) 1 0%nat ∗
-    ghost_var γnew.(diskEnd_mem_txn_id_name) 1 0%nat.
+    "installer_pos" ∷ ghost_var γnew.(installer_pos_name) 1 0%nat ∗
+    "installer_txn_id" ∷ ghost_var γnew.(installer_txn_id_name) 1 0%nat ∗
+    "diskEnd_mem" ∷ fmcounter γnew.(diskEnd_mem_name) 1 0%nat ∗
+    "diskEnd_mem_txn_id" ∷ fmcounter γnew.(diskEnd_mem_txn_id_name) 1 0%nat ∗
+    "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit)
+.
 
 Definition is_wal_inner_crash (γold: wal_names) s' : iProp Σ := True.
 
