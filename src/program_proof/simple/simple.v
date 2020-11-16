@@ -1884,8 +1884,6 @@ Proof using Ptimeless.
           f_equal.
         }
         
-(*
-
         {
           iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
           wp_storeField.
@@ -1919,7 +1917,7 @@ Proof using Ptimeless.
             iDestruct "Hcommit" as "(Hinode & _)". iFrame. }
 
           wp_apply (wp_LoadAt with "[Status Resok Resfail]").
-          { iModIntro. iApply nfstypes_write3res_merge. iFrame. }
+          { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
           iIntros "Hreply". simpl.
           iApply "HΦ". iRight.
           iExists _.
