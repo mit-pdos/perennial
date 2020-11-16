@@ -227,19 +227,19 @@ Proof.
   rewrite /is_base_disk => -> //.
 Qed.
 
-Lemma init_stable_txns γ (installed_txn_id diskEnd_txn_id : nat) :
-  map_ctx   γ.(stable_txn_ids_name) 1 (∅ : gmap nat unit) -∗
-  |==> "Hstable_txns" ∷ map_ctx γ.(stable_txn_ids_name) 1
+Lemma init_stable_txns γstable_txn_ids_name (installed_txn_id diskEnd_txn_id : nat) :
+  map_ctx   γstable_txn_ids_name 1 (∅ : gmap nat unit) -∗
+  |==> "Hstable_txns" ∷ map_ctx γstable_txn_ids_name 1
                     (<[diskEnd_txn_id:=()]> {[installed_txn_id := ()]}) ∗
-       "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro () ∗
-       "#Hinstalled_txn_id_stable" ∷ installed_txn_id [[γ.(stable_txn_ids_name)]]↦ro ().
+       "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γstable_txn_ids_name]]↦ro () ∗
+       "#Hinstalled_txn_id_stable" ∷ installed_txn_id [[γstable_txn_ids_name]]↦ro ().
 Proof.
   iIntros "Hstable_txns".
   iMod (map_alloc_ro installed_txn_id () with "Hstable_txns") as "[Hstable_txns #Hinstalled_stable]".
   { set_solver. }
   iAssert (|==> let stable_txns := <[diskEnd_txn_id:=()]> {[installed_txn_id:=()]} in
-                map_ctx γ.(stable_txn_ids_name) 1 stable_txns ∗
-                diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro ())%I
+                map_ctx γstable_txn_ids_name 1 stable_txns ∗
+                diskEnd_txn_id [[γstable_txn_ids_name]]↦ro ())%I
     with "[Hstable_txns]" as "HdiskEnd_txn_id_mod".
   { destruct (decide (installed_txn_id = diskEnd_txn_id)); subst.
     - iModIntro.
@@ -343,7 +343,7 @@ Proof.
     iNamed "Hdisk".
 
     iNamed "Hinit".
-    iMod (init_stable_txns _ installed_txn_id diskEnd_txn_id with "[$]") as "Hstable". iNamed "Hstable".
+    iMod (init_stable_txns γ'.(stable_txn_ids_name) installed_txn_id diskEnd_txn_id with "[$]") as "Hstable". iNamed "Hstable".
 
     set (σ':= log_crash_to σ diskEnd_txn_id).
     iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
@@ -617,21 +617,8 @@ Proof.
   iMod (ghost_var_alloc cs) as (γcs_name) "(γcs_name & Hown_cs)".
   iMod (alloc_txns_ctx _ σ.(log_state.txns)) as (γtxns_ctx_name) "Htxns_ctx".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
-  iMod (map_alloc_ro installed_txn_id () with "Hstable_txns") as "[Hstable_txns #Hinstalled_stable]".
-  { set_solver. }
-  iAssert (|==> let stable_txns := <[diskEnd_txn_id:=()]> {[installed_txn_id:=()]} in
-                map_ctx γstable_txn_ids_name 1 stable_txns ∗
-                diskEnd_txn_id [[γstable_txn_ids_name]]↦ro ())%I
-    with "[Hstable_txns]" as "HdiskEnd_txn_id_mod".
-  { destruct (decide (installed_txn_id = diskEnd_txn_id)); subst.
-    - iModIntro.
-      rewrite insert_singleton.
-      iFrame "∗#".
-    - iMod (map_alloc_ro diskEnd_txn_id with "Hstable_txns") as "[Hstable_txns #HdiskEnd_stable]".
-      { rewrite lookup_insert_ne //. }
-      iModIntro. iFrame "#∗". }
-  iMod "HdiskEnd_txn_id_mod" as
-    "[[Hstable_txns1 Hstable_txns2] #HdiskEnd_stable]".
+  iMod (init_stable_txns _ installed_txn_id diskEnd_txn_id with "Hstable_txns")
+    as "([Hstable_txns1 Hstable_txns2] & ? & ?)". iNamed.
 
   set (γ0 :=
          γ <| circ_name := γcirc' |>
