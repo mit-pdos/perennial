@@ -281,6 +281,14 @@ Proof.
   apply is_txn_take; auto.
 Qed.
 
+(* TODO: at some point we need to produce this to start the wal background
+threads *)
+Definition background_inv l γ : iProp Σ :=
+  ∃ (circ_l: loc),
+    l ↦[Walog.S :: "circ"] #circ_l ∗
+    logger_inv γ circ_l ∗
+    installer_inv γ.
+
 (* Called after wpc for recovery is completed, so l is the location of the wal *)
 Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   is_wal_inv_pre l γ s dinit -∗
@@ -315,7 +323,8 @@ Proof.
   iExists γ'. rewrite /is_wal.
   iFrame "His_circular".
   iMod (ncinv_cinv_alloc (N.@"wal") ⊤ ⊤
-         ((∃ σ, is_wal_inner l γ σ dinit ∗ P σ) ∗ wal_init_ghost_state γ')
+         ((∃ σ, is_wal_inner l γ σ dinit ∗ P σ) ∗
+                wal_init_ghost_state γ')
          (∃ σ σ',
                ⌜relation.denote log_crash σ σ' tt⌝ ∗
                is_wal_inner_crash γ σ ∗
@@ -346,6 +355,7 @@ Proof.
     iMod (fmcounter_update diskEnd_mem_txn_id with "diskEnd_mem_txn_id") as "[[diskEnd_mem_txn_id1 diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
 
     iMod ("Hwand" $! σ σ' with "[//] HP") as "(HPrec&HPcrash)".
+    iClear "Hwand".
     iSplitL "HPcrash".
     { iModIntro. iExists σ, σ'. iFrame. iNext. eauto. }
     iExists σ', cs0. iFrame "Howncs". iFrame "HPrec".
@@ -389,7 +399,6 @@ Proof.
     iFrame (Hdaddrs_init).
     iDestruct (is_base_disk_crash with "Hbasedisk") as "$".
     { auto. }
-    iClear "Hwand". (* TODO: actually need this *)
     iDestruct (is_installed_txn_crash with "circ.start [$]") as "$"; first lia.
     iDestruct (is_durable_txn_crash with "circ.end [$]") as "$".
     efeed pose proof (circ_matches_txns_crash) as Hcirc_matches'; first by eauto.
