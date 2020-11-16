@@ -59,6 +59,8 @@ Definition RPCServer_own_phys γrpc (sv:loc) rpc_server : iProp Σ :=
 ∗ ("Hsrpc" ∷ rpc.RPCServer_own γrpc rpc_server.(lastSeqM) rpc_server.(lastReplyM)) (* TODO: Probably should get better naming for this *)
 .
 
+(* Note: have to put the entire RPCServer_mutex_inv in a na_crash_inv because the crash obligation RPCServer_mutex_cinv existentially quantifies over both about the rpc state and core state *)
+
 Instance durable_timeless kv_server : Timeless (kvserver_durable_is kv_server).
 Admitted.
 
@@ -125,7 +127,80 @@ Proof.
   wpc_call.
   { iNext. iFrame. }
   { iNext. iFrame. }
-Admitted.
+  iCache with "Hsrpc Hpost".
+  { iDestruct "Hpost" as "[Hpost _]". iModIntro. iNext. by iApply "Hpost". }
+  wpc_pures.
+  iApply wpc_fupd.
+  wpc_frame.
+  wp_apply (wp_MapGet with "HlastSeqMap").
+  iIntros (v ok) "(HSeqMapGet&HlastSeqMap)"; iDestruct "HSeqMapGet" as %HSeqMapGet.
+  wp_pures.
+  iNamed "Hreply".
+  wp_storeField.
+  wp_apply (wp_and ok (int.Z req.(rpc.Seq) ≤ int.Z v)%Z).
+  { wp_pures. by destruct ok. }
+  { iIntros "_". wp_pures. done. }
+  rewrite bool_decide_decide.
+  destruct (decide (ok ∧ int.Z req.(rpc.Seq) ≤ int.Z v)%Z) as [ [Hok Hineq]|Hmiss].
+  { (* Cache hit *)
+    destruct ok; last done. clear Hok. (* ok = false *)
+    wp_pures.
+    apply map_get_true in HSeqMapGet.
+    destruct bool_decide eqn:Hineqstrict.
+    - wp_pures.
+      apply bool_decide_eq_true in Hineqstrict.
+      wp_storeField.
+      iNamed 1.
+      iMod (smaller_seqno_stale_fact with "[] Hsrpc") as "[Hsrpc #Hstale]"; eauto.
+      iDestruct "Hpost" as "[_ Hpost]".
+      iApply "Hpost".
+      iModIntro.
+      iSplitL "HReplyOwnStale HReplyOwnRet".
+      { eauto with iFrame. instantiate (1:={| Ret:=_; Stale:=_ |}).
+        iFrame. }
+      iFrame; iFrame "#".
+      iRight.
+      eauto with iFrame.
+    - wp_pures.
+      assert (v = req.(rpc.Seq)) as ->. {
+        (* not strict + non-strict ineq ==> eq *)
+        apply bool_decide_eq_false in Hineqstrict.
+        assert (int.Z req.(rpc.Seq) = int.Z v) by lia; word.
+      }
+      wp_apply (wp_MapGet with "HlastReplyMap").
+      iIntros (reply_v reply_get_ok) "(HlastReplyMapGet & HlastReplyMap)"; iDestruct "HlastReplyMapGet" as %HlastReplyMapGet.
+      wp_storeField.
+      iNamed 1.
+      iMod (server_replies_to_request with "[Hrinv] [Hsrpc]") as "[#Hreceipt Hsrpc]"; eauto.
+      iApply "Hpost".
+      iModIntro.
+      iSplitL "HReplyOwnStale HReplyOwnRet".
+      { eauto with iFrame. instantiate (1:={| Ret:=_; Stale:=_ |}).
+        iFrame. }
+      iFrame.
+      iRight.
+      by iFrame; iFrame "#".
+  }
+  { (* Cache miss *)
+    wp_pures.
+    apply not_and_r in Hmiss.
+    wp_apply (wp_MapInsert _ _ lastSeqM _ req.(rpc.Seq) (#req.(rpc.Seq)) with "HlastSeqMap"); eauto.
+    iIntros "HlastSeqMap".
+    wp_seq.
+    iNamed 1.
+    iDestruct "Hpost" as "[_ Hpost]".
+    iApply ("Hpost" $! _ ({| Stale:=false; Ret:=reply.(Ret) |}) ).
+    iModIntro.
+    iFrame; iFrame "#".
+    iLeft. iFrame. iPureIntro.
+    split; eauto. split; eauto. injection HSeqMapGet as <- Hv. simpl.
+    destruct Hmiss as [Hnok|Hineq].
+    - destruct ok; first done.
+      destruct (lastSeqM !! req.(CID)); first done.
+      simpl. word.
+    - word.
+  }
+Qed.
 
 Lemma RPCServer__HandleRequest_spec' (coreFunction makeDurable:goose_lang.val) (srv sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost PreCond PostCond :
 {{{
