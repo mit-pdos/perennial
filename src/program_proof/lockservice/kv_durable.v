@@ -203,6 +203,7 @@ Proof.
 Qed.
 
 Variable coreFunction:goose_lang.val.
+Variable makeDurable:goose_lang.val.
 Variable PreCond:RPCValC -> iProp Σ.
 Variable PostCond:RPCValC -> u64 -> iProp Σ.
 
@@ -221,7 +222,40 @@ Lemma RPC_core_spec_example R (args:RPCValC) :
 .
 Admitted.
 
-Lemma RPCServer__HandleRequest_spec' (makeDurable:goose_lang.val) (srv sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost :
+(**
+ Precondition owns all of the physical state of the server.
+ Post condition gives it right back, but updates the durable state.
+*)
+Lemma make_durable_spec (srv sv_ptr lastSeq_ptr lastReply_ptr kvs_ptr:loc) old_kv_server kv_server :
+  {{{
+    "HlastSeqOwn" ∷ sv_ptr ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
+∗ "HlastReplyOwn" ∷ sv_ptr ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
+∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) kv_server.(sv).(lastSeqM)
+∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) kv_server.(sv).(lastReplyM)
+∗  "HlocksOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr
+∗ "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
+∗ "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #sv_ptr)
+∗ "Holdkv" ∷ kvserver_durable_is old_kv_server
+  }}}
+    makeDurable #() @ NotStuck ; 36 ; ⊤
+  {{{
+       RET #(); kvserver_durable_is kv_server
+∗ "HlastSeqOwn" ∷ sv_ptr ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
+∗ "HlastReplyOwn" ∷ sv_ptr ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
+∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) kv_server.(sv).(lastSeqM)
+∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) kv_server.(sv).(lastReplyM)
+∗  "HlocksOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr
+∗ "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
+∗ "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #sv_ptr)
+∗ "Holdkv" ∷ kvserver_durable_is old_kv_server
+
+  }}}
+  {{{
+ kvserver_durable_is old_kv_server ∨ kvserver_durable_is kv_server
+}}}.
+Admitted.
+
+Lemma RPCServer__HandleRequest_spec' (srv sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost :
 {{{
   "#Hls" ∷ is_kvserver srv sv γ
   ∗ "#HreqInv" ∷ is_durable_RPCRequest γ.(ks_rpcGN) γPost PreCond PostCond req
@@ -352,33 +386,55 @@ Proof.
       iSplit; first done.
       iExists _; iFrame.
     }
-    iIntros (v).
+    iIntros (retval).
     iNext.
     iIntros "[Hsrpc Hfupd]".
 
-    (* wpc_loadField. *)
+    iNamed "Hreply".
+
+    (* wpc_storeField *)
     wpc_bind (struct.storeF _ _ _ _).
     wpc_frame.
-    (*
     wp_storeField.
+    iNamed 1.
+
+    wpc_pures.
+    repeat (wpc_bind (struct.loadF _ _ _);
+    wpc_frame;
+    wp_loadField;
     iNamed 1).
-     *)
 
-   (*
-    wpc_bind (struct.loadF _ _ _).
+    wpc_bind_seq.
     wpc_frame.
+    wp_apply (wp_MapInsert with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
+    iNamed 1.
+    wpc_pures.
+    wpc_apply (make_durable_spec with "[-Hpost Hkvctx Hsrpc]").
+    { admit. }
+    iSplit.
+    { admit. }
+    iNext. iIntros "[Hkvdurable Hsrvown]". 
+    iSplitR "Hsrvown Hkvdurable Hkvctx Hsrpc"; last first.
+    {
+      iNamed "Hsrvown".
+      iNext. iExists _; iFrame.
+      iSplitL "HlocksOwn HkvsMap".
+      - iExists _; iFrame.
+      - iExists _, _; iFrame.
+    }
+
+    iIntros "Hlocked".
+    iSplit; first by iModIntro.
+    iApply (wp_wpc).
+
+    wp_pures.
     wp_loadField.
-    iNamed 1.
+    wp_apply (crash_lock.release_spec with "Hlocked"); first eauto.
+    wp_pures.
+    iApply "Hpost".
 
-    iDestruct (na_crash_inv_alloc 36 ⊤ (RPCServer_mutex_cinv γ) (RPCServer_mutex_inv srv sv γ) with "[] []") as "HH".
-    { admit. }
-    { admit. }
-    iMod (fupd_level_fupd with "HH") as "(Hfull&?)".
-    wpc_frame.
-    wp_apply (crash_lock.release_spec with "[$Hmu_nc $Hlocked $Hfull]"); first eauto.
-    wp_seq.
-    iNamed 1.
-*)
+    (* Need to go back and apply fupd to get reply receipt *)
+
 Admitted.
 
 End kv_proof.
