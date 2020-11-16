@@ -82,7 +82,7 @@ Definition is_kvserver (srv_ptr sv_ptr:loc) γ : iProp Σ :=
   "#Hlinv" ∷ is_RPCServer γ.(ks_rpcGN) ∗
   "#Hmu_ptr" ∷ readonly(sv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr) ∗
   "#Hmu" ∷ is_crash_lock mutexN 37 #mu_ptr (RPCServer_mutex_inv srv_ptr sv_ptr γ)
-    (RPCServer_mutex_cinv γ)
+    (|={⊤}=> RPCServer_mutex_cinv γ)
 .
 
 Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
@@ -294,7 +294,7 @@ Proof.
   iNamed "Hreq".
   iCache with "Hkvdurable Hkvctx Hsrpc".
   { iModIntro; iNext. iSplit; first done.
-    iExists _; iFrame.
+    iExists _; iFrame. by iModIntro.
   }
   wpc_loadField.
   wpc_loadField.
@@ -311,11 +311,10 @@ Proof.
   wp_loadField.
   iNamed 1.
 
-  (* TODO: understand exactly what's going on here *)
   wpc_apply (CheckReplyTable_spec with "[$Hsrpc $HlastSeqMap $HlastReplyMap $Hreply]"); first eauto.
   iSplit.
   { iModIntro. iNext. iIntros. iSplit; first done.
-    iExists _; iFrame. }
+    iExists _; iFrame. by iModIntro. }
   iNext.
   iIntros (b reply').
   iNamed 1.
@@ -384,7 +383,7 @@ Proof.
     {
       iModIntro. iNext. iIntros "Hsrpc".
       iSplit; first done.
-      iExists _; iFrame.
+      iExists _; iFrame. by iModIntro.
     }
     iIntros (retval).
     iNext.
