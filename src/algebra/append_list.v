@@ -109,6 +109,15 @@ Proof.
   auto.
 Qed.
 
+Theorem alist_agree {γ} l i x1 x2 :
+  list_el γ i x1 -∗
+  list_el γ i x2 -∗
+  ⌜x1 = x2⌝.
+Proof.
+  rewrite /list_el.
+  iApply ptsto_ro_agree.
+Qed.
+
 Theorem alist_app1 {γ l} x :
   list_ctx γ 1 l ==∗
   list_ctx γ 1 (l ++ [x]) ∗ list_el γ (length l) x.

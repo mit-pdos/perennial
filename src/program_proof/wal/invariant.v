@@ -141,6 +141,13 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Lemma txns_ctx_app {γ} txns' txns : txns_ctx γ txns ==∗ txns_ctx γ (txns ++ txns').
+Proof.
+  rewrite /txns_ctx.
+  iIntros "Hctx".
+  by iMod (alist_app _ txns' with "Hctx") as "[$ _]".
+Qed.
+
 Global Instance txn_pos_timeless γ txn_id pos :
   Timeless (txn_pos γ txn_id pos) := _.
 
@@ -522,7 +529,8 @@ Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
     "installer_txn_id" ∷ ghost_var γnew.(installer_txn_id_name) 1 0%nat ∗
     "diskEnd_mem" ∷ fmcounter γnew.(diskEnd_mem_name) 1 0%nat ∗
     "diskEnd_mem_txn_id" ∷ fmcounter γnew.(diskEnd_mem_txn_id_name) 1 0%nat ∗
-    "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit)
+    "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit) ∗
+    "txns_ctx" ∷ txns_ctx γnew []
 .
 
 Definition is_wal_inner_crash (γold: wal_names) s' : iProp Σ := True.

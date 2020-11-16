@@ -146,11 +146,10 @@ Lemma is_txn_from_take_is_txn n txns id pos:
   is_txn txns id pos.
 Proof.
   rewrite /is_txn.
-  rewrite ?fmap_Some.
-  intros (x&Hlookup&Hpos).
-  eexists; split; eauto.
-  rewrite -(firstn_skipn n txns).
-  apply lookup_app_l_Some; eauto.
+  destruct (decide (id < n)%nat).
+  { by rewrite -> lookup_take by lia. }
+  rewrite -> lookup_take_ge by lia.
+  inversion 1.
 Qed.
 
 Hint Unfold circ_matches_txns : word.
@@ -191,6 +190,7 @@ Proof.
   iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_name) "HdiskEnd".
   iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_txn_id_name) "HdiskEnd_txn_id".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
+  iMod (alist_alloc (@nil (u64 * list update.t))) as (γtxns_ctx_name) "Htxns_ctx".
   (* TODO: probably will take γcirc for new names as a parameter, not initialize
   it here *)
   iMod (alloc_init_ghost_state) as (γcirc) "Hcirc".
@@ -198,7 +198,7 @@ Proof.
   iModIntro.
   iExists {| circ_name := γcirc;
             cs_name := TODO_NAME;
-            txns_ctx_name := TODO_NAME;
+            txns_ctx_name := γtxns_ctx_name;
             txns_name := TODO_NAME;
             being_installed_start_txn_name := TODO_NAME;
             being_installed_end_txn_name := TODO_NAME;
@@ -289,6 +289,68 @@ Definition background_inv l γ : iProp Σ :=
     logger_inv γ circ_l ∗
     installer_inv γ.
 
+Definition old_txn_factory γ crash_txn γ' : iProp Σ :=
+  ∃ txns, txns_ctx γ txns ∗
+  [∗ list] i↦txn ∈ (take (S crash_txn) txns), list_el γ'.(txns_ctx_name) i txn.
+
+Lemma txns_ctx_make_factory γ txns crash_txn γ' :
+  txns_ctx γ txns -∗
+  txns_ctx γ' (take (S crash_txn) txns) -∗
+  old_txn_factory γ crash_txn γ' ∗ txns_ctx γ' (take (S crash_txn) txns).
+Proof.
+  rewrite {2 3}/txns_ctx /list_ctx /old_txn_factory.
+  iIntros "Htxn [Hctx #Hels]".
+  iFrame "#∗".
+  iExists _; iFrame "#∗".
+Qed.
+
+Lemma old_txn_get γ γ' crash_txn txn_id txn :
+  (txn_id ≤ crash_txn)%nat →
+  old_txn_factory γ crash_txn γ' -∗
+  txn_val γ txn_id txn -∗
+  txn_val γ' txn_id txn.
+Proof.
+  iIntros (?) "Hfactory Hel".
+  iDestruct "Hfactory" as (txns) "[Hctx Hels]".
+  iDestruct (alist_lookup with "Hctx Hel") as %Hloookup.
+  iDestruct (big_sepL_lookup with "Hels") as "$".
+  rewrite -> lookup_take by lia. done.
+Qed.
+
+Lemma old_txns_are_get γ γ' crash_txn start txns_sub :
+  (* hopefully this S crash_txn is correct... *)
+  (start + length txns_sub ≤ S crash_txn)%nat →
+  old_txn_factory γ crash_txn γ' -∗
+  txns_are γ start txns_sub -∗
+  txns_are γ' start txns_sub.
+Proof.
+  iIntros (Hbound) "Hfactory Htxns".
+  rewrite /txns_are /list_subseq.
+  admit. (* a bit difficult, need to apply [old_txn_get] on every element, but
+            can't use [big_sepL_impl] becuase we need to maintain the factory as a
+            separate non-persistent induction invariant *)
+Admitted.
+
+(* NOTE(tej): probably obsolete, was trying another approach before coming up
+with factory stuff above *)
+Lemma txns_ctx_crash_val_persist γ γ' txns crash_txn :
+  txns_ctx γ txns -∗
+  txns_ctx γ' (take (S crash_txn) txns) -∗
+  (* TODO(tej): not sure if it's possible to prove this persistently; the
+  overall conclusion of this lemma is persistent so maybe it doesn't matter but
+  it would be much more convenient to get a persistent conclusion *)
+  (∀ txn_id txn, ⌜txn_id ≤ crash_txn⌝ -∗
+                  txn_val γ txn_id txn -∗
+                  txn_val γ' txn_id txn).
+Proof.
+  rewrite /txns_ctx /txn_val.
+  iIntros "Hctx1 Hctx2". rewrite /named.
+  iIntros (???) "#Hel1".
+  iDestruct (alist_lookup with "Hctx1 Hel1") as %Hlookup1.
+  iDestruct (alist_lookup_el with "Hctx2") as "$".
+  rewrite -> lookup_take by lia. done.
+Qed.
+
 (* Called after wpc for recovery is completed, so l is the location of the wal *)
 Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   is_wal_inv_pre l γ s dinit -∗
@@ -353,6 +415,10 @@ Proof.
     iMod (ghost_var_update installer_txn_id with "installer_txn_id") as "[installer_txn_id1 installer_txn_id2]".
     iMod (fmcounter_update diskEnd_mem with "diskEnd_mem") as "[[diskEnd_mem1 diskEnd_mem2] #diskEnd_mem_lb]"; first by lia.
     iMod (fmcounter_update diskEnd_mem_txn_id with "diskEnd_mem_txn_id") as "[[diskEnd_mem_txn_id1 diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
+    iMod (txns_ctx_app (take (S diskEnd_txn_id) σ.(log_state.txns)) with "txns_ctx") as "Htxns_ctx'".
+    rewrite app_nil_l.
+
+    iDestruct (txns_ctx_make_factory with "Htxns_ctx Htxns_ctx'") as "[Hold_txns Htxns_ctx']".
 
     iMod ("Hwand" $! σ σ' with "[//] HP") as "(HPrec&HPcrash)".
     iClear "Hwand".
@@ -374,7 +440,8 @@ Proof.
     simpl.
     iExists installed_txn_id, diskEnd_txn_id; simpl.
     assert (installed_txn_id <= diskEnd_txn_id) by word.
-    iSplitL "Hinstalled".
+
+    iSplitL "Hinstalled Hold_txns".
     {
       rewrite /is_installed/is_installed_core.
       iNamed "Hinstalled". iNamed "Howninstalled".
@@ -383,11 +450,18 @@ Proof.
       { (* TODO: the wal_init_ghost_state should explode to these and we should set above *) admit. }
       iSplitL "".
       { iPureIntro. split_and!; try len. }
-      iSplitL "".
+
+      iSplitL "Hold_txns".
       { (* TODO: when initializing the txns_ctx for γ', it should be a truncation of γ's
            such that persistently we have txn_val γ txn_id  -∗ txn_val γ' txn_id if txn_id <= diskEnd_txn_id.*)
-        admit.
+        iDestruct (old_txns_are_get with "Hold_txns Hbeing_installed_txns") as "#Hbeing_installed_txns'".
+        { rewrite subslice_length; len. }
+        iExactEq "Hbeing_installed_txns'". rewrite /named.
+        f_equal.
+        admit. (* subslice is already more restrictive than the take, so take
+        does nothing *)
       }
+
       iApply (big_sepM_mono with "Hdata").
       iIntros (k x Hlookup) "H". rewrite /is_dblock_with_txns.
       iDestruct "H" as (b txn_id' Hinstalled) "(?&?)". iExists b, txn_id'. iFrame.
@@ -406,6 +480,7 @@ Proof.
     (* TODO: lots of residual resources that need to go somewhere (part of
     [logger_inv] and [installer_inv] in particular) *)
   }
+
   {
     iNext.
     iSplitR "Hinit".
