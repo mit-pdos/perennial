@@ -1771,6 +1771,9 @@ Proof using Ptimeless.
 
         wp_if_destruct.
         {
+          (* Implicit transaction abort *)
+          iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "Hold".
+          
           iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
           wp_storeField.
           wp_loadField.
@@ -1800,9 +1803,8 @@ Proof using Ptimeless.
           iMod ("Hclose" with "[Hsrcheap HP]").
           { iModIntro. iExists _. iFrame "∗%#". }
           iModIntro.
-          wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hinode_data]").
-          { admit. }
-
+          wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hold]").
+          { iExists _. iFrame. iDestruct "Hold" as "[Hinode _]". iFrame. }
           wp_apply (wp_LoadAt with "[Status Resok Resfail]").
           { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
           iIntros "Hreply". simpl.
