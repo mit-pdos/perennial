@@ -12,7 +12,7 @@ From Perennial.goose_lang.lib Require Import lock.
 From Perennial.goose_lang.lib Require Import crash_lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof.lockservice Require Import lockservice_crash rpc nondet kv_proof common_proof.
+From Perennial.program_proof.lockservice Require Import lockservice_crash rpc rpc_durable nondet kv_proof common_proof.
 
 Section kv_durable_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
@@ -202,7 +202,24 @@ Proof.
   }
 Qed.
 
-Lemma RPCServer__HandleRequest_spec' (coreFunction makeDurable:goose_lang.val) (srv sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost PreCond PostCond :
+Variable coreFunction:goose_lang.val.
+Variable PreCond:RPCValC -> iProp Σ.
+Variable PostCond:RPCValC -> u64 -> iProp Σ.
+
+Lemma RPC_core_spec_example Rpers R (args:RPCValC) :
+  {{{
+       "#HRpers" ∷ Rpers ∗
+       "HR" ∷ R ∗
+       "#HgetP" ∷ □(R ={⊤, ⊤ ∖ ↑rpcRequestInvN }=∗ ▷ PreCond args ∗ (▷ PreCond args ={⊤ ∖ ↑rpcRequestInvN, ⊤}=∗ R))
+ }}}
+    coreFunction (into_val.to_val args)
+ {{{
+      (r:u64), RET #r; R ∗ PreCond args ==∗ PostCond args r
+ }}}
+.
+Admitted.
+
+Lemma RPCServer__HandleRequest_spec' (makeDurable:goose_lang.val) (srv sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost :
 {{{
   "#Hls" ∷ is_kvserver srv sv γ
   ∗ "#HreqInv" ∷ is_RPCRequest γ.(ks_rpcGN) γPost PreCond PostCond req
