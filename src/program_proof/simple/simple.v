@@ -1802,9 +1802,15 @@ Proof using Ptimeless.
           iModIntro.
           wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hinode_data]").
           { admit. }
-          
-            (* generated code is wrong: no commit wait in this case. *)
-            admit.
+
+          wp_apply (wp_LoadAt with "[Status Resok Resfail]").
+          { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
+          iIntros "Hreply". simpl.
+          iApply "HΦ". iRight.
+          iExists _.
+          iSplit; first done.
+          iFrame.
+          iPureIntro. lia.
         }
         wp_pures.
 
