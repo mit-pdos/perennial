@@ -929,11 +929,11 @@ Proof.
   iDestruct "Hfreemap" as (m) "[Hfreemap %Hdom]".
   wp_apply (wp_MapInsert _ _ _ _ () with "Hfreemap"); first by auto.
   iIntros "Hfreemap".
-  do 2 wp_pure _.
+  do 2 wp_pure1.
   wp_bind (Skip).
 
   iInv "Halloc_inv" as "H" "Hclo".
-  wp_pure _.
+  wp_pure1.
   iNamed "H".
   (* TODO: iNamed doesn't work because reserved_block re-uses the name
   Halloc_inv from is_allocator *)

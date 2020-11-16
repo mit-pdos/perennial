@@ -164,7 +164,7 @@ Proof.
   iDestruct "Hmref" as (mv H) "Hmref".
   wp_call.
   wp_untyped_load.
-  wp_pure (_ _).
+  wp_closure.
   iAssert (∀ v ok, ⌜map_get m k = (v, ok)⌝ -∗ Φ (v, #ok)%V)%I with "[Hmref HΦ]" as "HΦ".
   { iIntros (v ok) "%".
     iApply ("HΦ" with "[Hmref]").
@@ -287,7 +287,7 @@ Proof.
   iIntros "[Hm0 Hm1]".
   wp_let.
   destruct m; simpl in *.
-  wp_pure (Rec _ _ _).
+  wp_closure.
   match goal with
   | |- context[RecV (BNamed "mapIter") _ ?body] => set (loop:=body)
   end.

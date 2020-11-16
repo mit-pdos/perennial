@@ -364,7 +364,7 @@ Proof.
   wp_apply (wp_WalogState__readMem with "[$Hfields $HmemLog_linv]").
   iIntros (b_s ok) "(Hb&?&?)"; iNamed.
   (* really meant to do wp_pure until wp_bind Skip succeeds *)
-  do 8 wp_pure _; wp_bind Skip.
+  do 8 wp_pure1; wp_bind Skip.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σs) "[Hinner HP]".
   wp_pures.

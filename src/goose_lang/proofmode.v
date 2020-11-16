@@ -8,6 +8,10 @@ From Perennial.goose_lang Require Export typing.
 Set Default Proof Using "Type".
 Import uPred.
 
+(** Hack to work around ltac parsing idiosyncracies: make 2nd argument an open_constr *)
+Tactic Notation "open_unify" constr(e1) open_constr(e2) :=
+  unify e1 e2.
+
 Lemma tac_wp_expr_eval `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E Φ e e' :
   (∀ (e'':=e'), e = e'') →
   envs_entails Δ (WP e' @ s; E {{ Φ }}) → envs_entails Δ (WP e @ s; E {{ Φ }}).
@@ -82,6 +86,7 @@ Ltac solve_vals_compare_safe :=
      [True] or we have it in the context. *)
   fast_done || (left; fast_done) || (right; fast_done).
 
+
 (** The argument [efoc] can be used to specify the construct that should be
 reduced. For example, you can write [wp_pure (EIf _ _ _)], which will search
 for an [EIf _ _ _] in the expression, and reduce it.
@@ -89,55 +94,79 @@ for an [EIf _ _ _] in the expression, and reduce it.
 The use of [open_constr] in this tactic is essential. It will convert all holes
 (i.e. [_]s) into evars, that later get unified when an occurences is found
 (see [unify e' efoc] in the code below). *)
-Tactic Notation "wp_pure_later" open_constr(efoc) :=
+Tactic Notation "wp_pure_later" tactic3(filter) :=
   lazymatch goal with
   | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
     let e := eval simpl in e in
     reshape_expr e ltac:(fun K e' =>
-      unify e' efoc;
-      eapply (tac_wp_pure _ _ _ _ K e');
+      filter e';
+      first [ eapply (tac_wp_pure _ _ _ _ K e');
       [iSolveTC                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |iSolveTC                       (* IntoLaters *)
       |wp_finish                      (* new goal *)
-      ])
-    || fail "wp_pure: cannot find" efoc "in" e "or" efoc "is not a redex"
+      ] | fail 3 "wp_pure: is not a redex" ]
+          (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
+   ) || fail "wp_pure: cannot find redex pattern"
   | _ => fail "wp_pure: not a 'wp'"
   end.
 
-Tactic Notation "wp_pure_no_later" open_constr(efoc) :=
+Tactic Notation "wp_pure_no_later" tactic3(filter) :=
   lazymatch goal with
-  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
     let e := eval simpl in e in
     reshape_expr e ltac:(fun K e' =>
-      unify e' efoc;
-      eapply (tac_wp_pure_no_later _ _ _ K e');
+      filter e';
+      first [ eapply (tac_wp_pure_no_later _ _ _ K e');
       [iSolveTC                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |wp_finish                      (* new goal *)
-      ])
-    || fail "wp_pure: cannot find" efoc "in" e "or" efoc "is not a redex"
+      ] | fail 3 "wp_pure: is not a redex" ]
+   ) || fail "wp_pure: cannot find redex pattern"
   | _ => fail "wp_pure: not a 'wp'"
   end.
 
 (* smart version that decides which one to use *)
-Tactic Notation "wp_pure" open_constr(efoc) :=
+Tactic Notation "wp_pure_smart" tactic3(filter) :=
   iStartProof;
   lazymatch goal with
   | |- envs_entails ?envs _ =>
     lazymatch envs with
-    | context[Esnoc _ _ (bi_later _)] => wp_pure_later efoc
-    | _ => wp_pure_no_later efoc
+    | context[Esnoc _ _ (bi_later _)] => wp_pure_later filter
+    | _ => wp_pure_no_later filter
     end
   end.
+Tactic Notation "wp_pure" open_constr(efoc) :=
+  wp_pure_smart ltac:(fun e => unify e efoc).
 
-(* TODO: do this in one go, without [repeat]. *)
+(* This needs to detect all things that [wp_pures] should reduce. *)
+Ltac wp_pure_filter e' :=
+  (* For Beta-redices, we do *syntactic* matching only, to avoid unfolding
+     definitions. This matches the treatment for [pure_beta] via [AsRecV]. *)
+  first [ lazymatch e' with (App (Val (RecV _ _ _)) (Val _)) => idtac end
+        | open_unify e' (rec: _ _ := _)%E
+        | open_unify e' (InjL (Val _))
+        | open_unify e' (InjR (Val _))
+        | open_unify e' (Val _, Val _)%E
+        | open_unify e' (Fst (Val _))
+        | open_unify e' (Snd (Val _))
+        | open_unify e' (if: (Val _) then _ else _)%E
+        | open_unify e' (Case (Val _) _ _)
+        | open_unify e' (UnOp _ (Val _))
+        | open_unify e' (BinOp _ (Val _) (Val _))].
+
+Ltac wp_pure1 :=
+  iStartProof; wp_pure_smart wp_pure_filter.
 Ltac wp_pures :=
   iStartProof;
- (* The `;[]` makes sure that no side-condition
+  lazymatch goal with
+    | |- envs_entails ?envs (wp ?s ?E (Val ?v) ?Q) => wp_finish
+    | |- _ =>
+      (* The `;[]` makes sure that no side-condition
                              magically spawns. *)
-  first [ (wp_pure _; []); repeat (wp_pure_no_later _; [])
-        | wp_finish ].
+      (* TODO: do this in one go, without [repeat]. *)
+      try ((wp_pure_smart wp_pure_filter; []); repeat (wp_pure_no_later wp_pure_filter; []))
+  end.
 
 (** Unlike [wp_pures], the tactics [wp_rec] and [wp_lam] should also reduce
 lambdas/recs that are hidden behind a definition, i.e. they should use
@@ -149,7 +178,7 @@ the reduction, and finally we clear this new hypothesis. *)
 Tactic Notation "wp_rec" :=
   let H := fresh in
   pose proof AsRecV_recv as H;
-  wp_pure (App _ _);
+  wp_pure (App (Val (RecV _ _ _)) (Val _));
   clear H.
 
 Theorem inv_litv {ext:ext_op} l1 l2 : LitV l1 = LitV l2 -> l1 = l2.
@@ -158,7 +187,7 @@ Proof.
 Qed.
 
 (* TODO: why are these notations instead of Ltac? *)
-Tactic Notation "wp_if" := wp_pure (If _ _ _).
+Tactic Notation "wp_if" := wp_pure (If (Val _) _ _).
 Tactic Notation "wp_if_true" := wp_pure (If (LitV (LitBool true)) _ _).
 Tactic Notation "wp_if_false" := wp_pure (If (LitV (LitBool false)) _ _).
 Tactic Notation "wp_unop" := wp_pure (UnOp _ _).
@@ -167,14 +196,15 @@ Tactic Notation "wp_op" := wp_unop || wp_binop.
 Tactic Notation "wp_lam" := wp_rec.
 Tactic Notation "wp_let" := wp_pure (Rec BAnon (BNamed _) _); wp_lam.
 Tactic Notation "wp_seq" := wp_pure (Rec BAnon BAnon _); wp_lam.
-Tactic Notation "wp_proj" := wp_pure (Fst _) || wp_pure (Snd _).
-Tactic Notation "wp_case" := wp_pure (Case _ _ _).
+Tactic Notation "wp_proj" := wp_pure (Fst (Val _)) || wp_pure (Snd (Val _)).
+Tactic Notation "wp_case" := wp_pure (Case (Val _) _ _).
 Tactic Notation "wp_match" := wp_case; wp_pure (Rec _ _ _); wp_lam.
-Tactic Notation "wp_inj" := wp_pure (InjL _) || wp_pure (InjR _).
-Tactic Notation "wp_pair" := wp_pure (Pair _ _).
+Tactic Notation "wp_inj" := wp_pure (InjL (Val _)) || wp_pure (InjR (Val _)).
+Tactic Notation "wp_pair" := wp_pure (Pair (Val _) (Val _)).
 Tactic Notation "wp_closure" := wp_pure (Rec _ _ _).
-Ltac wp_step := wp_pure (App _ _) || wp_let || wp_seq || wp_pures.
-Ltac wp_steps := repeat wp_step.
+(* TODO: get rid of these old aliases *)
+Ltac wp_step := try wp_pures.
+Ltac wp_steps := try wp_pures.
 Ltac wp_call := wp_lam; wp_steps.
 
 Lemma tac_wp_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} K Δ s E Φ e f :
