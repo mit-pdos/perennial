@@ -352,20 +352,24 @@ Definition Nfs__NFSPROC3_SETATTR: val :=
           let: "data" := NewSlice byteT ("newsize" - struct.loadF Inode.S "Size" "ip") in
           let: ("count", "writeok") := Inode__Write "ip" "txn" (struct.loadF Inode.S "Size" "ip") ("newsize" - struct.loadF Inode.S "Size" "ip") "data" in
           (if: (~ "writeok") || ("count" ≠ "newsize" - struct.loadF Inode.S "Size" "ip")
-          then
-            struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_NOSPC;;
-            lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
-            ![struct.t nfstypes.SETATTR3res.S] "reply"
-          else #())
+          then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_NOSPC
+          else
+            let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+            (if: "ok"
+            then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
+            else struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT))
         else
           struct.storeF Inode.S "Size" "ip" "newsize";;
-          Inode__WriteInode "ip" "txn");;
-        #()
-      else #());;
-      let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
-      (if: "ok"
-      then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
-      else struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT);;
+          Inode__WriteInode "ip" "txn";;
+          let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+          (if: "ok"
+          then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
+          else struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT))
+      else
+        let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+        (if: "ok"
+        then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
+        else struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT));;
       lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
       ![struct.t nfstypes.SETATTR3res.S] "reply").
 
