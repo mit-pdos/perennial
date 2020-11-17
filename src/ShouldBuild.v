@@ -13,6 +13,7 @@ From Perennial.program_proof Require
      append_log_proof
      (* append_log_refinement *)
      lockmap_proof
+     crash_lockmap_proof
      wal.proof
      wal.specs
      txn.txn_proof
