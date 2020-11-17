@@ -164,6 +164,176 @@ Proof.
     rewrite Nat.min_l //.
 Qed.
 
+Lemma wal_heap_inv_addr_crash ls k x crash_txn :
+  ls.(log_state.installed_lb) ≤ crash_txn →
+  let ls' := (set log_state.txns (take (S crash_txn)) ls)
+                <| log_state.durable_lb := crash_txn |> in
+  wal_heap_inv_addr ls k x -∗
+  wal_heap_inv_addr ls' k x.
+Proof.
+  intros Hbound.
+  rewrite /wal_heap_inv_addr //=.
+  iPureIntro.
+  intros [? Hinstalled].
+  split; [done|].
+  destruct x as [installed_block blocks_since_install].
+  destruct Hinstalled as (txn_id & ?&?&?).
+  exists txn_id.
+  split_and!; [done | | ].
+  - rewrite /disk_at_txn_id /=.
+    rewrite -> take_take, Nat.min_l by lia.
+    assumption.
+  - rewrite /updates_since /=.
+    admit. (* TODO(tej): not true, blocks since install change when we take a
+    prefix of transactions (x won't be the same) *)
+Abort.
+
+(* TODO(tej): drop_end is a useless notion; I originally thought the
+blocks_since_install could be computed by removing the right number of blocks
+from the old blocks_since_install, but this is the filtered set of updates to a
+particular address. We need to know the existential txn_id being used to say how
+that list gets prefixed on crash. *)
+
+Definition drop_end {A} (n: nat) (l: list A) :=
+  take (length l - n) l.
+
+Lemma drop_end_to_take {A} n (l: list A) :
+  (n ≤ length l)%nat →
+  drop_end (length l - n) l = take n l.
+Proof.
+  intros.
+  rewrite /drop_end.
+  auto with f_equal lia.
+Qed.
+
+Lemma drop_drop_end {A} n m (l: list A) :
+  drop n (drop_end m l) = drop_end m (drop n l).
+Proof.
+  rewrite /drop_end.
+  rewrite take_drop_commute.
+  rewrite drop_length.
+  destruct (decide (n + m ≤ length l)).
+  - auto with f_equal lia.
+  - rewrite !drop_ge //; len.
+Qed.
+
+Definition heap_block_blocks_since_install (hb: heap_block) :=
+  let 'HB _ blocks_since_install := hb in blocks_since_install.
+
+Instance list_fmap_respects_prefix_of {A B} (f: A → B) : Proper (prefix ==> prefix) (fmap f).
+Proof.
+  intros l1 l2 [l' ->].
+  eexists.
+  rewrite fmap_app //.
+Qed.
+
+Instance list_filter_respects_prefix_of {A} (f: A → Prop) `{!∀ x, Decision (f x)} :
+  Proper (prefix ==> prefix) (filter f).
+Proof.
+  intros l1 l2 [l' ->].
+  eexists.
+  rewrite filter_app //.
+Qed.
+
+Instance concat_respects_prefix {A} : Proper (prefix ==> prefix) (concat (A:=A)).
+Proof.
+  intros l1 l2 [l' ->].
+  eexists.
+  rewrite concat_app //.
+Qed.
+
+Lemma take_prefix {A} (l1 l2: list A) n :
+  l1 `prefix_of` l2 →
+  take n l1 `prefix_of` l2.
+Proof.
+  intros [l' ->].
+  exists (drop n l1 ++ l').
+  rewrite app_assoc.
+  rewrite take_drop //.
+Qed.
+
+Lemma wal_heap_inv_addr_crash ls a b crash_txn :
+  ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns) →
+  let ls' := (set log_state.txns (take (S crash_txn)) ls)
+                <| log_state.durable_lb := crash_txn |> in
+  wal_heap_inv_addr ls a b -∗
+  ∃ b', ⌜heap_block_blocks_since_install b' `prefix_of` heap_block_blocks_since_install b⌝ ∗
+         wal_heap_inv_addr ls' a b'.
+Proof.
+  intros Hbound.
+  rewrite /wal_heap_inv_addr //=.
+  iPureIntro.
+  intros [? Hinstalled].
+  destruct b as [installed_block blocks_since_install].
+  destruct Hinstalled as (txn_id & ?&?&?).
+  eexists (HB installed_block _).
+  split_and!; [ | done | ].
+  2: {
+    exists txn_id.
+    split_and!; [done | | ].
+    - rewrite /disk_at_txn_id /=.
+      rewrite -> take_take, Nat.min_l by lia.
+      assumption.
+    - rewrite //=.
+  }
+  simpl.
+  rewrite /updates_since /= in H2 |- *.
+  rewrite skipn_firstn_comm.
+  rewrite -H2.
+  rewrite /updates_for_addr.
+  f_equiv.
+  f_equiv.
+  rewrite /txn_upds.
+  f_equiv.
+  f_equiv.
+  apply take_prefix.
+  reflexivity.
+Qed.
+
+Lemma wal_heap_gh_crash crash_txn (gh: gmap u64 heap_block) ls :
+  ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns) →
+  let ls' := (set log_state.txns (take (S crash_txn)) ls)
+                <| log_state.durable_lb := crash_txn |> in
+  ([∗ map] a↦b ∈ gh, wal_heap_inv_addr ls a b) -∗
+  |==> ∃ (γ': gen_heapG u64 heap_block Σ) gh',
+      ⌜dom (gset _) gh' = dom (gset _) gh⌝ ∗
+      gen_heap_ctx (hG:=γ') gh' ∗
+      (* TODO: something has been lost along the way about how these values
+      relate to the old ones; probably the exchanger is the only thing that can
+      contain that information *)
+      [∗ map] a↦b ∈ gh', wal_heap_inv_addr ls' a b.
+Proof using walheapG0.
+  intros Hbound.
+  cbn zeta.
+  iIntros "#Hinv".
+  iInduction gh as [|a b gh] "IH" using map_ind.
+  - iMod (gen_heap_init (∅ : gmap u64 heap_block)) as (γwal_heap_h) "Hgh'".
+    iModIntro.
+    iExists _, ∅.
+    rewrite dom_empty_L.
+    rewrite big_sepM_empty.
+    by iFrame.
+  - rewrite big_sepM_insert //.
+    iDestruct "Hinv" as "[Ha Hinv]".
+    iMod ("IH" with "[//]") as (γ' gh' Hdom) "[Hctx #Hinv']".
+    iExists γ'.
+    iDestruct (wal_heap_inv_addr_crash _ _ _ crash_txn with "Ha") as (b' Hprefix) "Ha'".
+    { lia. }
+    assert (gh' !! a = None).
+    { apply not_elem_of_dom.
+      rewrite Hdom.
+      apply not_elem_of_dom; done. }
+    iMod (gen_heap_alloc _ a b' with "Hctx") as "[Hctx Hmapsto]"; first by auto.
+    (* TODO: this is where we're not collecting the mapsto facts *)
+    iModIntro.
+    iExists (<[a:=b']> gh').
+    iFrame.
+    rewrite !dom_insert_L //.
+    iSplit; first by (iPureIntro; congruence).
+    rewrite big_sepM_insert //.
+    iFrame "#".
+Qed.
+
 Lemma wal_heap_inv_crash_transform γ ls ls' :
   relation.denote log_crash ls ls' () →
   wal_heap_inv γ ls -∗
@@ -195,6 +365,13 @@ Proof.
                     subst ls'; rename ls'' into ls';
                     fold ls'
   end. simpl.
+  (* TODO: note that this loses the old map, which makes it impossible to use
+  those resources to write an exchanger for wal_heap_h mapsto facts in the old
+  generation (don't know if those are useful) *)
+  iMod (wal_heap_gh_crash crash_txn with "Hgh") as
+      (γwal_heap_h gh' Hdom) "[Hctx' Hgh'] {Hctx}".
+  { destruct Hwf.
+    lia. }
   iMod (ghost_var_alloc (ls.(log_state.d), ls'.(log_state.txns)))
     as (wal_heap_txns_name) "[Htxns' Htxns2]".
   iMod (ghost_var_alloc (list_to_async (take (S crash_txn) (possible crash_heaps))))
@@ -202,7 +379,8 @@ Proof.
   iMod (mnat_alloc crash_txn) as (wal_heap_durable_lb_name) "[Hcrash_heaps_lb' Hcrash_heaps_lb_lb]".
 
   iModIntro.
-  iExists (γ <| wal_heap_txns := wal_heap_txns_name |>
+  iExists (γ <| wal_heap_h := γwal_heap_h |>
+             <| wal_heap_txns := wal_heap_txns_name |>
              <| wal_heap_crash_heaps := wal_heap_crash_heaps_name |>
              <| wal_heap_durable_lb := wal_heap_durable_lb_name |>).
   rewrite /wal_heap_inv /=.
@@ -212,14 +390,8 @@ Proof.
   { iExists _; iFrame.
     by rewrite -> take_length_le by lia. }
   iExists _, _; iFrame "#∗%".
-  iSplit.
-  { iApply (big_sepM_mono with "Hgh").
-    intros ?? _.
-    rewrite /wal_heap_inv_addr /ls' //=.
-    admit. (* seems about right, using wal_wf to show crash_txn is above installed_lb *) }
   iApply (wal_heap_inv_crashes_crash with "Hcrash_heaps"); auto.
-  all: fail "goals remaining".
-Admitted.
+Qed.
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
   apply_upds (txn_upds lwh.(locked_wh_σtxns)) lwh.(locked_wh_σd).
