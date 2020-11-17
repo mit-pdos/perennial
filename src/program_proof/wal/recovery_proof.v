@@ -307,14 +307,32 @@ Proof.
   apply is_txn_take; auto.
 Qed.
 
-(* TODO: at some point we need to produce this to start the wal background
-threads *)
+Definition logger_resources γ : iProp Σ :=
+  (* subset of logger that doesn't include [is_circular_appender], which depends
+  on in-memory state *)
+  "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
+  "HownLoggerPos_logger" ∷ (∃ (logger_pos : u64), ghost_var γ.(logger_pos_name) (1/2) logger_pos) ∗
+  "HownLoggerTxn_logger" ∷ (∃ (logger_txn_id : nat), ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id).
+
+(* TODO: reconstruct this on crash *)
+Definition wal_resources γ : iProp Σ :=
+  logger_resources γ ∗ installer_inv γ.
+
+(* TODO: recovery needs to produce this *)
 Definition background_inv l γ : iProp Σ :=
   ∃ (circ_l: loc),
     l ↦[Walog.S :: "circ"] #circ_l ∗
     logger_inv γ circ_l ∗
     installer_inv γ.
 
+(* txns_ctx factory: a way to remember that some [txn_val]s are valid even after
+a crash *)
+Section txns_factory.
+
+(* the crux of this approach is this resource, which has an auth over the old
+transactions in [γ] and connects them to the transactions in [γ']. [txn_val]s in
+[γ] that are prior to the crash point can be used to get one in the new
+generation. *)
 Definition old_txn_factory γ crash_txn γ' : iProp Σ :=
   ∃ txns, txns_ctx γ txns ∗
   [∗ list] i↦txn ∈ (take (S crash_txn) txns), list_el γ'.(txns_ctx_name) i txn.
@@ -344,7 +362,6 @@ Proof.
 Qed.
 
 Lemma old_txns_are_get γ γ' crash_txn start txns_sub :
-  (* hopefully this S crash_txn is correct... *)
   (start + length txns_sub ≤ S crash_txn)%nat →
   old_txn_factory γ crash_txn γ' -∗
   txns_are γ start txns_sub -∗
@@ -352,30 +369,18 @@ Lemma old_txns_are_get γ γ' crash_txn start txns_sub :
 Proof.
   iIntros (Hbound) "Hfactory Htxns".
   rewrite /txns_are /list_subseq.
-  admit. (* a bit difficult, need to apply [old_txn_get] on every element, but
-            can't use [big_sepL_impl] becuase we need to maintain the factory as a
-            separate non-persistent induction invariant *)
-Admitted.
-
-(* NOTE(tej): probably obsolete, was trying another approach before coming up
-with factory stuff above *)
-Lemma txns_ctx_crash_val_persist γ γ' txns crash_txn :
-  txns_ctx γ txns -∗
-  txns_ctx γ' (take (S crash_txn) txns) -∗
-  (* TODO(tej): not sure if it's possible to prove this persistently; the
-  overall conclusion of this lemma is persistent so maybe it doesn't matter but
-  it would be much more convenient to get a persistent conclusion *)
-  (∀ txn_id txn, ⌜txn_id ≤ crash_txn⌝ -∗
-                  txn_val γ txn_id txn -∗
-                  txn_val γ' txn_id txn).
-Proof.
-  rewrite /txns_ctx /txn_val.
-  iIntros "Hctx1 Hctx2". rewrite /named.
-  iIntros (???) "#Hel1".
-  iDestruct (alist_lookup with "Hctx1 Hel1") as %Hlookup1.
-  iDestruct (alist_lookup_el with "Hctx2") as "$".
-  rewrite -> lookup_take by lia. done.
+  iInduction txns_sub as [|txn txns] "IH" forall (start Hbound).
+  - rewrite !big_sepL_nil //.
+  - simpl in Hbound.
+    rewrite !big_sepL_cons.
+    iDestruct "Htxns" as "[Htxn Htxns]".
+    rewrite Nat.add_0_r.
+    iDestruct (old_txn_get with "Hfactory Htxn") as "#$"; first by lia.
+    setoid_rewrite <- Nat.add_succ_comm.
+    iApply ("IH" with "[%] [$] Htxns").
+    lia.
 Qed.
+End txns_factory.
 
 (* Called after wpc for recovery is completed, so l is the location of the wal *)
 Lemma wal_crash_obligation_alt Prec Pcrash l γ s :

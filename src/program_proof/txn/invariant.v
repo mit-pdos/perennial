@@ -64,7 +64,7 @@ Definition bufDataT_in_block (walblock : Block) blockK (blkno off : u64) (bufDat
   valid_off (projT1 bufData) off ∧
   blockK = projT1 bufData.
 
-Definition bufDataTs_in_block (installed : Block) (bs : list Block) (blkno : u64) blockK
+Definition bufDataTs_in_block (installed : Block) (bs : list Block) (blkno : u64) (blockK : bufDataKind)
                               (offmap : gmap u64 {K & bufDataT K})
                               (metamap : gmap u64 gname) : iProp Σ :=
   ( [∗ map] off ↦ bufData;γm ∈ offmap;metamap,
