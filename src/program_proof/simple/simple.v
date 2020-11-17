@@ -2078,10 +2078,8 @@ Proof using Ptimeless.
             wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
             { iExists _. iFrame. iDestruct "Hcommit" as "[Hinode_enc Hinode_data]".
               iExists _.
-              rewrite firstn_length_le.
-              2: word.
               iDestruct (is_inode_data_shrink with "Hinode_data") as "Hinode_data"; eauto.
-              rewrite firstn_length_le.
+              rewrite firstn_length_le. 
               2: word.
               iFrame.
               replace (U64 (Z.of_nat (int.nat u))) with u by word.
