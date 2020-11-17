@@ -1638,11 +1638,10 @@ Unshelve.
   exact tt.
 Qed.
 
-Lemma is_inode_data_shrink: forall state blk (u: u64) γtxn,
+Lemma is_inode_data_shrink: forall state blk (u: u64) M,
    ¬ (int.Z (length state) < int.Z u)%Z ->
-  is_inode_data (length state) blk state (buftxn_maps_to γtxn) -∗
-  is_inode_data (length (take (int.nat u) state)) blk (take (int.nat u) state)
-                (buftxn_maps_to γtxn).
+  is_inode_data (length state) blk state M -∗
+  is_inode_data (length (take (int.nat u) state)) blk (take (int.nat u) state) M.
 Proof.
   iIntros (state blk u γtxn) "%H Hinode_data".
   iNamed "Hinode_data".
@@ -2023,7 +2022,7 @@ Proof using Ptimeless.
       iIntros "(Hbuftxn & Hinode_enc & Hinode_mem)".
       wp_pures.
 
-      wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc]").
+      wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
       4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
       { typeclasses eauto. }
       all: try solve_ndisj.
@@ -2076,15 +2075,17 @@ Proof using Ptimeless.
           {
             iModIntro.
             wp_loadField.
-            wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit Hinode_data]").
-            { iExists _. iFrame. 
+            wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
+            { iExists _. iFrame. iDestruct "Hcommit" as "[Hinode_enc Hinode_data]".
               iExists _.
               rewrite firstn_length_le.
               2: word.
               iDestruct (is_inode_data_shrink with "Hinode_data") as "Hinode_data"; eauto.
               rewrite firstn_length_le.
               2: word.
-              admit. (* XXX buftxn_maps_to -> durable_mapsto_own *)
+              iFrame.
+              replace (U64 (Z.of_nat (int.nat u))) with u by word.
+              iFrame.
             }
             wp_apply (wp_LoadAt with "[Status Resok Resfail]").
 
