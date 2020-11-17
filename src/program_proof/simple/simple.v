@@ -1638,6 +1638,33 @@ Unshelve.
   exact tt.
 Qed.
 
+Lemma is_inode_data_shrink: forall state blk (u: u64) γtxn,
+   ¬ (int.Z (length state) < int.Z u)%Z ->
+  is_inode_data (length state) blk state (buftxn_maps_to γtxn) -∗
+  is_inode_data (length (take (int.nat u) state)) blk (take (int.nat u) state)
+                (buftxn_maps_to γtxn).
+Proof.
+  iIntros (state blk u γtxn) "%H Hinode_data".
+  iNamed "Hinode_data".
+  rewrite /is_inode_data.
+  iExists bbuf.
+  iFrame.
+  iPureIntro.
+  split.
+  {
+    rewrite firstn_length_le.
+    1: {
+      rewrite <- Hdiskdata.
+      rewrite take_take.
+      assert ((int.nat u `min` length state) = (int.nat u)) by word.
+      rewrite H0; auto.
+    }
+    word.
+  }
+  rewrite firstn_length_le.
+  all: word.
+Qed.
+
 Opaque nfstypes.SETATTR3res.S.
 
 Lemma nfstypes_setattr3res_merge reply s ok fail :
@@ -2050,7 +2077,10 @@ Proof using Ptimeless.
               iExists _.
               rewrite firstn_length_le.
               2: word.
-              admit.
+              iDestruct (is_inode_data_shrink with "Hinode_data") as "Hinode_data"; eauto.
+              rewrite firstn_length_le.
+              2: word.
+              admit. (* XXX buftxn_maps_to -> durable_mapsto_own *)
             }
             wp_apply (wp_LoadAt with "[Status Resok Resfail]").
 
