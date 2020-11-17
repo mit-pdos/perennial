@@ -2026,36 +2026,41 @@ Proof using Ptimeless.
 
         iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
         iMod "Hfupd" as "[HP HQ]".
+
+        assert (int.nat u - length state = 0).
+        1: { revert Heqb. word. }
+        rewrite H.
+        rewrite replicate_0.
+        rewrite app_nil_r.
+                
         iMod ("Hclose" with "[Hsrcheap HP]").
         { iModIntro. iExists _.  iFrame "∗%#". iSplit.
-          { iPureIntro. rewrite /= dom_insert_L. set_solver. }
-          iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
-          iApply (big_sepM_insert_delete with "[$H1]").
-          iPureIntro.
-          assert (int.nat u - length state = 0).
-          1: { revert Heqb. word. }
-          rewrite H.
-          rewrite replicate_0.
-          rewrite app_nil_r.
-          rewrite firstn_length_le.
-          all: word.
-        }
-        iModIntro.
-        wp_loadField.
-        wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
-        { iExists _. iFrame. 
-          iExists _.
-          admit.
-        }
-        wp_apply (wp_LoadAt with "[Status Resok Resfail]").
+            { iPureIntro. rewrite /= dom_insert_L. set_solver. }
+            iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
+            iApply (big_sepM_insert_delete with "[$H1]").
+            iPureIntro.
+            rewrite firstn_length_le.
+            all: word.
+          }
+          {
+            iModIntro.
+            wp_loadField.
+            wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit Hinode_data]").
+            { iExists _. iFrame. 
+              iExists _.
+              rewrite firstn_length_le.
+              2: word.
+              admit.
+            }
+            wp_apply (wp_LoadAt with "[Status Resok Resfail]").
 
-        { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
-        iIntros "Hreply". simpl.
-        iApply "HΦ". iLeft.
-        iSplit; first done.
-        iExactEq "HQ".
-        f_equal.
-      }
+            { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
+            iIntros "Hreply". simpl.
+            iApply "HΦ". iLeft.
+            iSplit; first done.
+            iExactEq "HQ".
+            f_equal.
+          }
 
       {
         iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
