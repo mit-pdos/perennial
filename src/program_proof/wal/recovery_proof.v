@@ -20,6 +20,28 @@ Context (P: log_state.t -> iProp Σ).
 Let N := walN.
 Let circN := walN .@ "circ".
 
+Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
+    "installer_pos" ∷ ghost_var γnew.(installer_pos_name) 1 0%nat ∗
+    "installer_txn_id" ∷ ghost_var γnew.(installer_txn_id_name) 1 0%nat ∗
+    "diskEnd_mem" ∷ fmcounter γnew.(diskEnd_mem_name) 1 0%nat ∗
+    "diskEnd_mem_txn_id" ∷ fmcounter γnew.(diskEnd_mem_txn_id_name) 1 0%nat ∗
+    "being_installed_start_txn" ∷ fmcounter γnew.(being_installed_start_txn_name) 1 0%nat ∗
+    "being_installed_end_txn" ∷ fmcounter γnew.(being_installed_end_txn_name) 1 0%nat ∗
+    "already_installed" ∷ ghost_var γnew.(already_installed_name) 1 (∅ : gset Z)  ∗
+    "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit) ∗
+    "txns_ctx" ∷ txns_ctx γnew [] ∗
+    "start_avail" ∷ thread_own γnew.(start_avail_name) Available ∗
+    "start_avail_ctx" ∷ thread_own_ctx γnew.(start_avail_name) True
+.
+
+Definition is_wal_inner_crash (γold: wal_names) s' : iProp Σ := True.
+
+Definition wal_ghost_exchange (γold γnew: wal_names) : iProp Σ := True.
+
+(* This is produced by recovery as a post condition, can be used to get is_wal *)
+Definition is_wal_inv_pre (l: loc) γ s (dinit : disk) : iProp Σ :=
+  is_wal_inner l γ s dinit ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
+
 Lemma is_wal_inner_durable_init (bs: list Block) :
   0 d↦∗ repeat block0 513 ∗
   513 d↦∗ bs ={⊤}=∗
@@ -187,24 +209,28 @@ Lemma alloc_wal_init_ghost_state γ :
 Proof.
   iMod (ghost_var_alloc 0%nat) as (installer_pos_name) "Hinstalled_pos".
   iMod (ghost_var_alloc 0%nat) as (installer_txn_id_name) "Hinstalled_txn_id".
+  iMod (ghost_var_alloc (∅ : gset Z)) as (already_installed_name) "Halready_installed".
   iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_name) "HdiskEnd".
   iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_txn_id_name) "HdiskEnd_txn_id".
+  iMod (fmcounter_alloc 0%nat) as (being_installed_start_txn_name) "Hbeing_start".
+  iMod (fmcounter_alloc 0%nat) as (being_installed_end_txn_name) "Hbeing_end".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
   iMod (alist_alloc (@nil (u64 * list update.t))) as (γtxns_ctx_name) "Htxns_ctx".
   (* TODO: probably will take γcirc for new names as a parameter, not initialize
   it here *)
   iMod (alloc_init_ghost_state) as (γcirc) "Hcirc".
   iMod (ghost_var_alloc 0%nat) as (TODO_NAME) "HTODO".
+  iMod (thread_own_alloc True with "[//]") as (start_avail_name) "(Hstart_avail_ctx&Hstart_avail)".
   iModIntro.
   iExists {| circ_name := γcirc;
             cs_name := TODO_NAME;
             txns_ctx_name := γtxns_ctx_name;
             txns_name := TODO_NAME;
-            being_installed_start_txn_name := TODO_NAME;
-            being_installed_end_txn_name := TODO_NAME;
-            already_installed_name := TODO_NAME;
+            being_installed_start_txn_name := being_installed_start_txn_name;
+            being_installed_end_txn_name := being_installed_end_txn_name;
+            already_installed_name := already_installed_name;
             diskEnd_avail_name := TODO_NAME;
-            start_avail_name := TODO_NAME;
+            start_avail_name := start_avail_name;
             stable_txn_ids_name := γstable_txn_ids_name;
             logger_pos_name := TODO_NAME;
             logger_txn_id_name := TODO_NAME;
@@ -359,7 +385,8 @@ Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
                 (<disc> |C={⊤}_0=> ∃ s, ⌜wal_post_crash s⌝ ∗
-                                         is_wal_inner_durable γ' s dinit ∗ Prec s) ∗
+                                         (* NOTE: need to add the ghost state that the logger will need *)
+                                         is_wal_inner_durable γ' s dinit ∗ installer_inv γ' ∗ Prec s) ∗
                 □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
                                            ⌜relation.denote log_crash s s' tt⌝ ∗
                                            is_wal_inner_crash γ s ∗
@@ -395,7 +422,8 @@ Proof.
          (∃ s cs0,
                 ghost_var γ.(cs_name) (1/2) cs0 ∗
                 (is_circular_state γ'.(circ_name) cs0 -∗
-                 ⌜wal_post_crash s⌝ ∗ (is_wal_inner_durable γ' s dinit) ∗ Prec s))%I with
+                 circ_resources γ'.(circ_name) cs0 -∗
+                 ⌜wal_post_crash s⌝ ∗ (is_wal_inner_durable γ' s dinit) ∗ installer_inv γ' ∗ Prec s))%I with
             "[] [Hinner HP Hinit]") as "(Hncinv&Hcfupd&Hcinv)".
   { solve_ndisj. }
   { iModIntro. iIntros "(H1&>Hinit) #HC".
@@ -410,12 +438,18 @@ Proof.
     set (σ':= log_crash_to σ diskEnd_txn_id).
     iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
     iNamed "Hdurable".
+    iNamed "Hinstalled". iNamed "Howninstalled".
 
     iMod (ghost_var_update installer_pos with "installer_pos") as "[installer_pos1 installer_pos2]".
     iMod (ghost_var_update installer_txn_id with "installer_txn_id") as "[installer_txn_id1 installer_txn_id2]".
+    iMod (ghost_var_update ∅ with "already_installed") as "[already_installed1 already_installed2]".
     iMod (fmcounter_update diskEnd_mem with "diskEnd_mem") as "[[diskEnd_mem1 diskEnd_mem2] #diskEnd_mem_lb]"; first by lia.
     iMod (fmcounter_update diskEnd_mem_txn_id with "diskEnd_mem_txn_id") as "[[diskEnd_mem_txn_id1 diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
+    iMod (fmcounter_update being_installed_start_txn_id with "being_installed_start_txn") as "[[being_installed_start_txn1 being_installed_start_txn2] #being_installed_start_txn_id_mem_lb]"; first by lia.
+    iMod (fmcounter_update being_installed_end_txn_id with "being_installed_end_txn") as "[[being_installed_end_txn1 being_installed_end_txn2] #being_installed_end_txn_id_mem_lb]"; first by lia.
     iMod (txns_ctx_app (take (S diskEnd_txn_id) σ.(log_state.txns)) with "txns_ctx") as "Htxns_ctx'".
+
+    (* XXX: thread own put, but need circ_resources first *)
     rewrite app_nil_l.
 
     iDestruct (txns_ctx_make_factory with "Htxns_ctx Htxns_ctx'") as "[Hold_txns Htxns_ctx']".
@@ -426,11 +460,19 @@ Proof.
     { iModIntro. iExists σ, σ'. iFrame. iNext. eauto. }
     iExists σ', cs0. iFrame "Howncs". iFrame "HPrec".
     do 2iModIntro.
-    iIntros "Hcirc". iSplitL "".
+    iIntros "Hcirc Hcirc_resources". iSplitL "".
     { iPureIntro. by eapply log_crash_to_post_crash. }
 
 
+    (*
     rewrite /is_wal_inner_durable.
+    iSplitR; last first.
+    {
+      rewrite /installer_inv.
+      iExists being_installed_start_txn_id. installed_txn_id_mem.
+     *)
+    iSplitL.
+    {
     iSplitL "".
     { iPureIntro. eapply log_crash_to_wf; eauto. }
     iSplitL "".
@@ -441,13 +483,14 @@ Proof.
     iExists installed_txn_id, diskEnd_txn_id; simpl.
     assert (installed_txn_id <= diskEnd_txn_id) by word.
 
-    iSplitL "Hinstalled Hold_txns".
+    iSplitL "being_installed_start_txn1 being_installed_end_txn1
+             already_installed1 Hold_txns Hdata".
     {
       rewrite /is_installed/is_installed_core.
-      iNamed "Hinstalled". iNamed "Howninstalled".
       iExists being_installed_start_txn_id, being_installed_end_txn_id, ∅.
-      iSplitL "".
-      { (* TODO: the wal_init_ghost_state should explode to these and we should set above *) admit. }
+      iFrame "being_installed_start_txn1".
+      iFrame "being_installed_end_txn1".
+      iFrame "already_installed1".
       iSplitL "".
       { iPureIntro. split_and!; try len. }
 
@@ -478,7 +521,13 @@ Proof.
     (* TODO: lots of residual resources that need to go somewhere (part of
     [logger_inv] and [installer_inv] in particular) *)
   }
-
+  {
+    rewrite /installer_inv. iExists being_installed_start_txn_id.
+    iSplitL.
+    { (* TODO: need to allocate thread own above *) admit. }
+    admit.
+  }
+  }
   {
     iNext.
     iSplitR "Hinit".
@@ -492,11 +541,11 @@ Proof.
   {
     iModIntro. iMod "His_circular_cfupd". iMod "Hcfupd".
     iModIntro. iNext.
-    iDestruct "His_circular_cfupd" as (cs0) "(His_circular_state&Hpred)".
+    iDestruct "His_circular_cfupd" as (cs0) "(His_circular_state&Hres&Hpred)".
     iDestruct "Hcfupd" as (s0 cs0') "(Hpred'&Hwand')".
     iExists s0. rewrite /circular_pred.
     iDestruct (ghost_var_agree with "Hpred Hpred'") as %->.
-    iDestruct ("Hwand'" with "[$]") as "$".
+    iDestruct ("Hwand'" with "[$] [$]") as "$".
   }
   iFrame.
 Abort.

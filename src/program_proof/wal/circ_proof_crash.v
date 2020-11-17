@@ -412,7 +412,10 @@ Lemma circ_buf_crash_obligation_alt Prec Pcrash γ σ:
   is_circular_state γ σ -∗
   □ (∀ σ, ▷ P σ -∗ |0={⊤ ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
   P σ -∗
-  |={⊤}=> ∃ γ', is_circular N P γ ∗ (<disc> |C={⊤}_0=> ∃ σ, is_circular_state γ' σ ∗ Prec σ)
+  |={⊤}=> ∃ γ', is_circular N P γ ∗
+                            (<disc> |C={⊤}_0=> ∃ σ, is_circular_state γ' σ ∗
+                                                    circ_resources γ' σ ∗
+                                                    Prec σ)
                             ∗ □ (C -∗ |0={⊤}=> inv N (∃ σ, is_circular_state_crash γ σ ∗
                                                            circular_crash_ghost_exchange γ γ' ∗
                                                            Pcrash σ)).
@@ -424,15 +427,15 @@ Proof.
          (∃ σ, is_circular_state_crash γ σ ∗
                circular_crash_ghost_exchange γ γ' ∗
                Pcrash σ)%I
-         (∃ σ, is_circular_state γ' σ ∗ Prec σ)%I with
+         (∃ σ, is_circular_state γ' σ ∗ circ_resources γ' σ ∗ Prec σ)%I with
             "[] [Hcs HP Hinit]") as "(Hncinv&Hcfupd&Hcinv)".
   { solve_ndisj. }
   { iModIntro. iIntros "(H1&>Hinit)".
     iDestruct "H1" as (σ') "(>Hstate&HP)".
     iMod ("HPwand" with "[$]") as "(HPrec&HPcrash)".
-    iMod (crash_upd with "[$] [$]") as "(Hcs&Hcs_crash&Hexchange)".
+    iMod (crash_upd with "[$] [$]") as "(Hcs&Hres&Hcs_crash&Hexchange)".
     iModIntro.
-    iSplitR "Hcs HPrec".
+    iSplitR "Hcs HPrec Hres".
     { iNext. iExists _. iFrame. }
     { iNext. iExists _. iFrame. }
   }

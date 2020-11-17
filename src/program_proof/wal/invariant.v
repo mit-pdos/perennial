@@ -524,33 +524,6 @@ Definition is_wal_inner_durable γ s dinit : iProp Σ :=
                     "Hcirc" ∷ is_circular_state γ.(circ_name) cs
 .
 
-Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
-    "installer_pos" ∷ ghost_var γnew.(installer_pos_name) 1 0%nat ∗
-    "installer_txn_id" ∷ ghost_var γnew.(installer_txn_id_name) 1 0%nat ∗
-    "diskEnd_mem" ∷ fmcounter γnew.(diskEnd_mem_name) 1 0%nat ∗
-    "diskEnd_mem_txn_id" ∷ fmcounter γnew.(diskEnd_mem_txn_id_name) 1 0%nat ∗
-    "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit) ∗
-    "txns_ctx" ∷ txns_ctx γnew []
-.
-
-Definition is_wal_inner_crash (γold: wal_names) s' : iProp Σ := True.
-
-Definition wal_ghost_exchange (γold γnew: wal_names) : iProp Σ := True.
-
-Lemma wal_crash_upd l γold γnew s s' dinit :
-  relation.denote log_crash s s' () →
-  is_wal_inner l γold s dinit -∗ wal_init_ghost_state γnew ==∗
-  is_wal_inner_durable γnew s' dinit ∗
-  is_wal_inner_crash γold s' ∗
-  wal_ghost_exchange γold γnew.
-Proof.
-  (* TODO: start this proof *)
-Admitted.
-
-(* This is produced by recovery as a post condition, can be used to get is_wal *)
-Definition is_wal_inv_pre (l: loc) γ s (dinit : disk) : iProp Σ :=
-  is_wal_inner l γ s dinit ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
-
 Definition is_wal (l : loc) γ (dinit : disk) : iProp Σ :=
   ncinv innerN (∃ σ, is_wal_inner l γ σ dinit ∗ P σ) ∗
   is_circular circN (circular_pred γ) γ.(circ_name).

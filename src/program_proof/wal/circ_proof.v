@@ -262,15 +262,25 @@ Definition is_circular_state_crash γ σ : iProp Σ :=
     ⌜has_circ_updates σ addrs blocks⌝ ∗
     circ_own_dup γ addrs blocks.
 
-Definition circular_crash_ghost_exchange γold γnew : iProp Σ :=
+Definition circular_crash_ghost_exchange (γold γnew : circ_names) : iProp Σ := True%I.
+(*
   ∃ (addrs : list u64) (blocks: list Block) start dend,
   ((ghost_var γold.(addrs_name) (1/2) addrs ∗ ghost_var γold.(blocks_name) (1/2) blocks) ∨
    (ghost_var γnew.(addrs_name) (1/2) addrs ∗ ghost_var γnew.(blocks_name) (1/2) blocks)) ∗
   (start_is γold (1/2) start ∨ start_is γnew (1/2) start) ∗
   (diskEnd_is γold (1/2) dend ∨ diskEnd_is γnew (1/2) dend).
+*)
 
 Definition is_circular γ : iProp Σ :=
   ncinv N (∃ σ, is_circular_state γ σ ∗ P σ).
+
+Definition is_circular_appender γ (circ: loc) : iProp Σ :=
+  ∃ s (addrs : list u64) (blocks: list Block),
+    ⌜circ_low_wf addrs blocks⌝ ∗
+    ghost_var γ.(addrs_name) (1/2) addrs ∗
+    ghost_var γ.(blocks_name) (1/2) blocks ∗
+    circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
+    is_slice_small s uint64T 1 addrs.
 
 Definition init_ghost_state γ :=
   ("Haddrs'" ∷ ghost_var γ.(addrs_name) 1 ([] : list u64) ∗
@@ -293,9 +303,17 @@ Proof.
   by iFrame.
 Qed.
 
+Definition circ_resources γ σ : iProp Σ :=
+  start_is γ (1/2) (circΣ.start σ) ∗
+  diskEnd_is γ (1/2) (circΣ.diskEnd σ) ∗
+  ∃ addrs blocks,
+    ⌜circ_low_wf addrs blocks⌝ ∗
+    ghost_var γ.(addrs_name) (1/2) addrs ∗ ghost_var γ.(blocks_name) (1/2) blocks.
+
 Lemma crash_upd γold γnew σ :
   is_circular_state γold σ -∗ init_ghost_state γnew ==∗
   is_circular_state γnew σ ∗
+  circ_resources γnew σ ∗
   is_circular_state_crash γold σ ∗
   circular_crash_ghost_exchange γold γnew.
 Proof.
@@ -325,6 +343,8 @@ Proof.
     iSplitR; first eauto.
     iExists _, _. iFrame. eauto.
   }
+  iSplitL "Hstart2 HdiskEnd2 Hγaddrs Hγblocks".
+  { iFrame. iSplitR; first eauto. iExists _, _. iFrame. eauto. }
   iSplitL "Haddrs Hblocks Hstart Hend Hend_at_least".
   { iModIntro.
     rewrite /is_circular_state_crash.
@@ -337,21 +357,8 @@ Proof.
     rewrite /circ_own_dup.
     iExists (1/2)%Qp. iFrame. eauto.
   }
-  iModIntro.
-  rewrite /circular_crash_ghost_exchange. iExists _, _, _, _.
-  iSplitL "Hγaddrs Hγblocks".
-  { iRight. iFrame. }
-  iFrame "Hstart2".
-  iRight. iFrame. eauto.
+  eauto.
 Qed.
-
-Definition is_circular_appender γ (circ: loc) : iProp Σ :=
-  ∃ s (addrs : list u64) (blocks: list Block),
-    ⌜circ_low_wf addrs blocks⌝ ∗
-    ghost_var γ.(addrs_name) (1/2) addrs ∗
-    ghost_var γ.(blocks_name) (1/2) blocks ∗
-    circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
-    is_slice_small s uint64T 1 addrs.
 
 Lemma is_circular_state_wf γ σ :
   is_circular_state γ σ -∗ ⌜ circ_wf σ ⌝.
