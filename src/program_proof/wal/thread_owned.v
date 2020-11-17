@@ -24,6 +24,15 @@ Definition thread_own_ctx γ P: iProp Σ :=
 Definition thread_own γ (s:OwnStatus) : iProp Σ :=
   ghost_var γ (1/2) (if s then true else false).
 
+Global Instance thread_own_ctx_timeless γ P `{!Timeless P} : Timeless (thread_own_ctx γ P).
+Proof.
+  rewrite /thread_own_ctx.
+  apply bi.exist_timeless; intros.
+  destruct x; apply _.
+Qed.
+
+Global Instance thread_own_timeless γ s : Timeless (thread_own γ s) := _.
+
 Theorem thread_own_alloc P :
   P -∗ |==> ∃ γ, thread_own_ctx γ P ∗ thread_own γ Available.
 Proof.
