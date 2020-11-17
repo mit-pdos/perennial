@@ -39,6 +39,9 @@ jobs:
           startGroup Print opam config
             opam config list; opam repo list; opam list
           endGroup
+          startGroup Set up permissions
+            sudo chown -R coq:coq /home/coq/perennial
+          endGroup
           startGroup Build
             make -j2 -k ci
           endGroup
