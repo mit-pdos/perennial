@@ -36,6 +36,48 @@ Record KVServerC :=
 
 Axiom kvserver_durable_is : KVServerC -> iProp Σ.
 
+(**
+  Crash-safety plan:
+
+  KVServer_core_own_vol kvserver: ownership of volatile (in-memory) state, that can be directly modified by the core function
+
+  KVServer_core_own_ghost kvserver: ownership of state that isn't supposed to be modified until the durable write (i.e. this is ghost state associated with the core function's spec)
+
+  RPCServer_core_own_vol rpcserver: same as above, but for RPCServer
+  RPCServer_core_own_ghost rpcserver: same as above, but for RPCServer
+
+  KVServer_durable_own : ownership of durable state for the KVServer, including the contained RPCServer object
+
+  This is what must be proved about a core function.
+  ∀ R,
+  { _core_own_vol old_state ∗ R ∗ cinv_sem R (PreCond args) }
+    coreFunction args
+  { _core_own_vol new_state ∗ (PreCond args -∗ _core_own_ghost old_state ={⊤}=∗ _core_own_ghost new_state ∗ PostCond args ret) }
+  The point of the cinv_sem is that the coreFunction and R is that the core function can access the PreCond as often as it likes, so long as it maintains it. It wouldn't make sense to put it in an inv, because the PreCond won't always hold.
+
+  This might look a bit logically like having a quadruple that looks something like { ... ∗ PreCond } coreFunction args { ... ∗ PreCond } { PreCond }.
+  But, that would make sense if the PreCond was used somewhere in some recovery function. But, the requests don't disappear after a crash, and there's no such thing as "recovery for a sent request". Instead, the RPCRequest invariant governs what the req looks like for all-time, so the core function spec is also in terms of a (weaker) invariant (the cinv_sem).
+
+  From the core function spec, we get a fupd that allows us to simultaneously get the PostCond from the PreCond, and to update the ghost state.
+  For the kvserver put, this fupd would use the map_ctx for γkv and the ptsto from PreCond, and give back a new ptsto and new map_ctx (necessarily the map_ctx for the new_state).
+
+  { _core_own_vol new_state ∗ _durable_own old_state }
+    makeDurable
+  { _core_own_vol new_state ∗ _durable_own new_state }
+  { _durable_own new_state ∨ _durable_own old_state } (* atomicity of makeDurable *)
+
+
+  The crash obligation while holding the server mutex is (|={⊤}=> ∃ some_state, _core_own_ghost some_state ∗ _durable_own some_state).
+  When we call makeDurable, we need to make sure that the crash obligation of makeDurable together with the resources left over (the ones we didn't pass as PreCond of makeDurable) imply the crash obligation (this is the <blah> -∗ Φc part of the makeDurable quadruple spec). In other words, we'll have an obligation to prove
+
+  _durable_own_new_state ∨ _durable_own old_state ={⊤}=∗ ∃ some_state, _core_own_ghost some_state ∗ _durable_own some_state
+
+  We simply split into the two cases, and fire the fupd in the second case to update ghost state to match the new durable state.
+
+  Additionally, we also will be forced to apply the fupd to update the state of _own_ghost to match the durable state; this will also give us the reply receipt, which is the postcondition for the HandleRequest function. The client can, as before, take the PostCond out of RPCRequest_inv.
+
+*)
+
 Definition RPCServer_mutex_cinv γ : iProp Σ :=
   ∃ kv_server,
   "Hkvdurable" ∷ kvserver_durable_is kv_server
