@@ -1904,7 +1904,8 @@ Proof using Ptimeless.
                   (length (take (int.nat u) state ++ replicate (int.nat u - length state) (U8 0)): Z ).
 
               2: {
-                rewrite app_length replicate_length.
+                rewrite app_length replicate_length take_length_ge.
+                2: { revert Heqb. word. }
                 admit.
               }
               replace
