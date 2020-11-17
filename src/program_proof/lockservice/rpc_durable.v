@@ -32,7 +32,7 @@ Lemma server_executes_durable_request (req:@RPCRequest A) reply γrpc γPost Pre
   is_durable_RPCRequest γrpc γPost PreCond PostCond req -∗
   is_RPCServer γrpc -∗
   RPCServer_own γrpc lastSeqM lastReplyM -∗
-  (PreCond req.(Args) ==∗ PostCond req.(Args) reply) -∗
+  (PreCond req.(Args) ==∗ PostCond req.(Args) reply) ={⊤}=∗
   RPCReplyReceipt γrpc req reply ∗
   RPCServer_own γrpc (<[req.(CID):=req.(Seq)]> lastSeqM) (<[req.(CID):=reply]> lastReplyM)
   .

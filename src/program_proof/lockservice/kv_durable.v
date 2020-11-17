@@ -386,8 +386,9 @@ Proof.
     wp_apply (wp_MapInsert with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
     iNamed 1.
     wpc_pures.
-    wpc_apply (make_durable_spec with "[-Hpost Hkvctx Hsrpc]").
-    { iFrame. (* TODO: don't instantiate with the original kvserver *) admit. }
+    iApply wpc_fupd.
+    wpc_apply (make_durable_spec _ _ _ _ _ _ {| kvsM := _ ; sv:={| lastSeqM := (<[req.(CID):=req.(Seq)]> kv_server.(kv_durable_proof.sv).(lastSeqM)) ; lastReplyM := _ |} |} with "[-Hpost Hkvctx Hsrpc Hfupd HReplyOwnRet HReplyOwnStale]").
+    { simpl. iFrame "#∗". }
     iSplit.
     { iIntros.
       iModIntro. iNext.
@@ -396,13 +397,17 @@ Proof.
 
       iDestruct "Hkvdurable" as "[Hkvdurable|Hkvdurable]".
       + iModIntro; iExists _; iFrame.
-      + (* TODO: Pass in Hkvctx into core function (as *_core_own or some such) and put on LHS of fupd *)
+      +  (* TODO: Pass in Hkvctx into core function (as *_core_own or some such) and put on LHS of fupd *)
         admit. }
-    iNext. iIntros "[Hkvdurable Hsrvown]". 
+    simpl.
+    iNext. iIntros "[Hkvdurable Hsrvown]".
+    iDestruct (server_executes_durable_request with "[Hlinv] [] [Hsrpc] [Hfupd]") as "[Hreceipt Hsrpc]"; eauto.
+    iModIntro.
     iSplitR "Hsrvown Hkvdurable Hkvctx Hsrpc"; last first.
     {
       iNamed "Hsrvown".
-      iNext. iExists _; iFrame.
+      iNext. iExists _. iFrame "Hkvdurable".
+      iFrame. simpl.
       iSplitL "HlocksOwn HkvsMap".
       - iExists _; iFrame.
       - iExists _, _; iFrame.
@@ -418,8 +423,8 @@ Proof.
     wp_apply (crash_lock.release_spec with "Hlocked"); first eauto.
     wp_pures.
     iApply "Hpost".
-    (* Need to go back and apply fupd to get reply receipt *)
-
+    iModIntro.
+    iExists {| Stale:=_ ; Ret:=retval |}; iFrame.
 Admitted.
 
 End kv_proof.
