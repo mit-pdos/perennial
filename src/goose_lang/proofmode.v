@@ -228,6 +228,24 @@ Tactic Notation "wp_bind" open_constr(efoc) :=
   | _ => fail "wp_bind: not a 'wp'"
   end.
 
+Lemma base_lit_inv (l1 l2: base_lit) :
+  l1 = l2 →
+  match l1, l2 with
+  | LitInt n1, LitInt n2 => n1 = n2
+  | LitInt32 n1, LitInt32 n2 => n1 = n2
+  | LitBool b1, LitBool b2 => b1 = b2
+  | LitByte n1, LitByte n2 => n1 = n2
+  | LitString s1, LitString s2 => s1 = s2
+  | LitUnit, LitUnit => True
+  | LitPoison, LitPoison => True
+  | LitLoc x1, LitLoc x2 => x1 = x2
+  | LitProphecy p1, LitProphecy p2 => p1 = p2
+  | _, _ => False
+  end.
+Proof.
+  destruct l1, l2; inversion 1; auto.
+Qed.
+
 Tactic Notation "wp_if_destruct" :=
   wp_pures;
   (try wp_bind (If _ _ _));
@@ -246,7 +264,7 @@ Tactic Notation "wp_if_destruct" :=
            | [ H: Datatypes.negb _ = true |- _ ] => apply negb_true_iff in H; subst
            | [ H: Datatypes.negb _ = false |- _ ] => apply negb_false_iff in H; subst
            | [ H: LitV _ = LitV _ |- _ ] => apply inv_litv in H
-           | [ H: @eq base_lit _ _ |- _ ] => inversion H; subst; clear H
+           | [ H: @eq base_lit _ _ |- _ ] => apply base_lit_inv in H; simpl in H; subst
            end;
     [ wp_if_true | wp_if_false ]
   | |- envs_entails _ (wp _ _ ?e _) =>

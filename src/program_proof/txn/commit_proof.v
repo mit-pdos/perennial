@@ -238,8 +238,8 @@ Opaque struct.t.
         exfalso.
         destruct buf; destruct buf_0; simpl in *.
         destruct bufKind; cbn in *; try congruence.
-        { inversion H1. }
-        { inversion H1. }
+        { inversion Heqb0. }
+        { inversion Heqb0. }
       }
 
       wp_apply wp_ref_of_zero; first by eauto.

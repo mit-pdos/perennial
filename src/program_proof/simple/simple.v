@@ -1884,6 +1884,7 @@ Proof using Ptimeless.
               iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
               iApply (big_sepM_insert_delete with "[$H1]").
               iPureIntro.
+              rewrite app_length replicate_length.
               admit.
             }
 
@@ -1899,7 +1900,10 @@ Proof using Ptimeless.
                 with
                   (length (take (int.nat u) state ++ replicate (int.nat u - length state) (U8 0)): Z ).
 
-              2: admit.
+              2: {
+                rewrite app_length replicate_length.
+                admit.
+              }
               replace
                   (take (int.nat (length state)) state ++
                        take (int.nat (word.sub u (length state)))

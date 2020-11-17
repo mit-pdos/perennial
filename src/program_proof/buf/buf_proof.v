@@ -1133,11 +1133,11 @@ Proof.
     wp_if_destruct; wp_pures.
     + wp_load. wp_store. wp_load.
       destruct (default false (byte_to_bits src !! int.nat bit)) eqn:?.
-      { apply masks_different in H0; auto; contradiction. }
+      { apply masks_different in Heqb0; auto; contradiction. }
       destruct (default false (byte_to_bits dst !! int.nat bit)) eqn:?; last contradiction.
       iExactEq "HΦ"; do 3 f_equal.
       rewrite /install_one_bit.
-      rewrite Heqb0.
+      rewrite Heqb1.
       apply (inj byte_to_bits).
       rewrite bits_to_byte_to_bits; [|len].
       bit_cases bit; byte_cases dst; vm_refl.
@@ -1155,8 +1155,8 @@ Proof.
     rewrite install_one_bit_id //.
     { lia. }
     destruct (default false _), (default false _); auto.
-    + apply masks_different in H0; eauto; contradiction.
-    + apply symmetry, masks_different in H0; eauto; contradiction.
+    + apply masks_different in Heqb; eauto; contradiction.
+    + apply symmetry, masks_different in Heqb; eauto; contradiction.
 Qed.
 
 Lemma list_alter_lookup_insert {A} (l: list A) (i: nat) (f: A → A) x0 :
