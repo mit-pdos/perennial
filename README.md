@@ -1,6 +1,6 @@
 # Verifying concurrent, crash-safe systems with Perennial
 
-![Build Status](https://github.com/mit-pdos/perennial/workflows/CI/badge.svg)
+[![Build Status](https://github.com/mit-pdos/perennial/workflows/CI/badge.svg)](https://github.com/mit-pdos/perennial/actions?query=workflow%3ACI)
 
 Perennial is a system for verifying correctness for systems with both
 concurrency and crash-safety requirements, including recovery procedures. For
