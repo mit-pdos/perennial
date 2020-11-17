@@ -1884,7 +1884,11 @@ Proof using Ptimeless.
               iApply (big_sepM_insert_delete with "[$H1]").
               iPureIntro.
               rewrite app_length replicate_length.
-              admit.
+              rewrite replicate_length in H0.
+              rewrite take_length_ge.
+              2: { revert Heqb. word. }
+              revert H0.
+              word.
             }
 
             iModIntro.
