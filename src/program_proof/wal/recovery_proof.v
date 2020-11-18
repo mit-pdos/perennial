@@ -26,7 +26,7 @@ Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
     "diskEnd_mem" ∷ fmcounter γnew.(diskEnd_mem_name) 1 0%nat ∗
     "diskEnd_mem_txn_id" ∷ fmcounter γnew.(diskEnd_mem_txn_id_name) 1 0%nat ∗
     "being_installed_start_txn" ∷ fmcounter γnew.(being_installed_start_txn_name) 1 0%nat ∗
-    "being_installed_end_txn" ∷ fmcounter γnew.(being_installed_end_txn_name) 1 0%nat ∗
+    "being_installed_end_txn" ∷ ghost_var γnew.(being_installed_end_txn_name) 1 0%nat ∗
     "already_installed" ∷ ghost_var γnew.(already_installed_name) 1 (∅ : gset Z)  ∗
     "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit) ∗
     "txns_ctx" ∷ txns_ctx γnew [] ∗
@@ -218,7 +218,7 @@ Proof.
   iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_name) "HdiskEnd".
   iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_txn_id_name) "HdiskEnd_txn_id".
   iMod (fmcounter_alloc 0%nat) as (being_installed_start_txn_name) "Hbeing_start".
-  iMod (fmcounter_alloc 0%nat) as (being_installed_end_txn_name) "Hbeing_end".
+  iMod (ghost_var_alloc 0%nat) as (being_installed_end_txn_name) "Hbeing_end".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
   iMod (alist_alloc (@nil (u64 * list update.t))) as (γtxns_ctx_name) "Htxns_ctx".
   iMod (thread_own_alloc True with "[//]") as (start_avail_name) "(Hstart_avail_ctx&Hstart_avail)".
@@ -460,12 +460,12 @@ Proof.
     iMod (fmcounter_update diskEnd_mem with "diskEnd_mem") as "[[diskEnd_mem1 diskEnd_mem2] #diskEnd_mem_lb]"; first by lia.
     iMod (fmcounter_update diskEnd_mem_txn_id with "diskEnd_mem_txn_id") as "[[diskEnd_mem_txn_id1 diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
     iMod (fmcounter_update being_installed_start_txn_id with "being_installed_start_txn") as "[[being_installed_start_txn1 being_installed_start_txn2] #being_installed_start_txn_id_mem_lb]"; first by lia.
-    iMod (fmcounter_update being_installed_end_txn_id with "being_installed_end_txn") as "[[being_installed_end_txn1 being_installed_end_txn2] #being_installed_end_txn_id_mem_lb]"; first by lia.
+    iMod (ghost_var_update being_installed_end_txn_id with "being_installed_end_txn") as "[being_installed_end_txn1 being_installed_end_txn2]".
     iMod (txns_ctx_app (take (S diskEnd_txn_id) σ.(log_state.txns)) with "txns_ctx") as "Htxns_ctx'".
     rewrite app_nil_l.
     iMod (ghost_var_update σ'.(log_state.txns) with "txns") as "[Htxns1 Htxns2]".
 
-    (* XXX: thread_own_put for start_avail and diskEnd_avail, but need circ_resources first *)
+    (* TODO: thread_own_put for start_avail and diskEnd_avail *)
 
     iDestruct (txns_ctx_make_factory with "Htxns_ctx Htxns_ctx'") as "[Hold_txns Htxns_ctx']".
 
