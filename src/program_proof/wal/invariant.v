@@ -355,6 +355,13 @@ Definition wal_linv (st: loc) γ : iProp Σ :=
     "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
     "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id).
 
+(* TODO: when possible, refactor wal_linv to use this directly *)
+Definition wal_linv_durable γ : iProp Σ :=
+  ∃ σ,
+    "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
+    "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
+    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id).
+
 (** The implementation state contained in the *Walog struct, which is all
 read-only. *)
 Record wal_state :=
@@ -520,6 +527,7 @@ Definition wal_post_crash σ: Prop :=
 Definition is_wal_inner_durable γ s dinit : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "%Hpostcrash" ∷ ⌜wal_post_crash s⌝ ∗
+    "Hwal_linv" ∷ wal_linv_durable γ ∗
     "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv γ s cs dinit ∗
                     "Hcirc" ∷ is_circular_state γ.(circ_name) cs
 .
