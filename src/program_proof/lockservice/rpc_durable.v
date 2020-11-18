@@ -2,6 +2,7 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From Perennial.algebra Require Import auth_map fmcounter.
 From Perennial.program_proof Require Import proof_prelude.
+From iris.algebra Require Import gmap lib.mnat_auth.
 From Perennial.program_proof.lockservice Require Import fmcounter_map rpc.
 
 Section rpc_durable.
@@ -32,8 +33,14 @@ Definition is_durable_RPCRequest (γrpc:rpc_names) (γPost γPre:gname) (PreCond
   inv rpcRequestInvN (RPCRequest_durable_inv γrpc γPost γPre PreCond PostCond req).
 
 Definition RPCServer_own_processing γrpc (req:@RPCRequest A) lastSeqM lastReplyM : iProp Σ :=
+  req.(CID) fm[[γrpc.(lseq)]]↦{1/4} int.nat (map_get lastSeqM req.(CID)).1 ∗
+  (req.(CID) fm[[γrpc.(lseq)]]↦ int.nat (map_get lastSeqM req.(CID)).1 -∗
+  RPCServer_own γrpc lastSeqM lastReplyM).
+
+(*
   (∃ s, req.(CID) fm[[γrpc.(lseq)]]↦{3 / 4} s) -∗
   RPCServer_own γrpc lastSeqM lastReplyM.
+*)
 
 (* TODO: own_processing is actually just a bigSep of ownerships; the -∗ is just a more convenient to use elsewhere*)
 Global Instance RPCServer_own_processing_disc γrpc (req:@RPCRequest A) lastSeqM lastReplyM : Discretizable (RPCServer_own_processing γrpc req lastSeqM lastReplyM).
@@ -45,7 +52,7 @@ Lemma server_takes_request (req:@RPCRequest A) γrpc γPost γPre PreCond PostCo
   is_durable_RPCRequest γrpc γPost γPre PreCond PostCond req -∗
   RPCServer_own γrpc lastSeqM lastReplyM
   ={⊤}=∗
-  own γPre (Excl ()) ∗ PreCond req.(Args) ∗
+  own γPre (Excl ()) ∗ ▷ PreCond req.(Args) ∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM.
 Proof.
   rewrite map_get_val.
@@ -56,14 +63,44 @@ Proof.
     first by apply elem_of_fin_to_set.
   rewrite Hlseq.
 
-  (* TODO: want  to just do [Hlseq_one], but it applies the lemma in the wrong direction *)
-  replace 1%Qp with (1/4 + 3/4)%Qp; last by apply Qp_quarter_three_quarter.
-  iDestruct (fmcounter_map_sep _ (1/4) (3/4) with "Hlseq_one") as "[H1/4 H3/4]".
-  replace (1/4 + 3/4)%Qp with 1%Qp; last by (symmetry; apply Qp_quarter_three_quarter).
+  iDestruct "Hcases" as "[[>Hunproc Hpre]|Hproc]".
+  {
 
+    iDestruct "Hpre" as "[>Hbad|[>HγP Hpre]]".
+    - iNamed "Hbad". iCombine "Hbad Hlseq_one" as "Hbad".
+      iDestruct (own_valid with "Hbad") as %Hbad.
+      apply singleton_valid in Hbad.
+      apply mnat_auth_frac_op_valid in Hbad as [Hbad _].
+      iExFalso; iPureIntro.
+      Search Qp.
+      by apply (Qp_not_add_le_r (3 / 4) 1).
+    -
+    (* TODO: want  to just do [Hlseq_one], but it applies the lemma in the wrong direction *)
+    replace 1%Qp with (1/4 + 3/4)%Qp; last by apply Qp_quarter_three_quarter.
+    iDestruct (fmcounter_map_sep _ (1/4) (3/4) with "Hlseq_one") as "[H1/4 H3/4]".
+    replace (1/4 + 3/4)%Qp with 1%Qp; last by (symmetry; apply Qp_quarter_three_quarter).
+    iMod ("HMClose" with "[Hunproc H3/4]") as "_".
+    {
+      iNext. iFrame "#".
+      iLeft. iFrame. iLeft. eauto with iFrame.
+    }
+    iModIntro. iFrame.
+    rewrite -Hlseq.
+    iFrame.
+    rewrite map_get_val.
+    iFrame "#∗".
+  }
+  {
+    iAssert (▷ req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq))%I with "[Hproc]" as "#>Hlseq_lb".
+    { iDestruct "Hproc" as "[Hlseq_lb _]"; done. }
+    iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
+    iExFalso; iPureIntro.
+    replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
+    replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    lia.
+  }
+Qed.
   
-Admitted.
-
 (* Opposite of above *)
 Lemma server_returns_request (req:@RPCRequest A) γrpc γPost γPre PreCond PostCond lastSeqM lastReplyM (old_seq:u64) :
   ((map_get lastSeqM req.(CID)).1 = old_seq) →
@@ -74,21 +111,41 @@ Lemma server_returns_request (req:@RPCRequest A) γrpc γPost γPre PreCond Post
   RPCServer_own_processing γrpc req lastSeqM lastReplyM
   ={⊤}=∗
   RPCServer_own γrpc lastSeqM lastReplyM.
-(*
-      iInv "HreqInv" as "Hrinv" "Hrclose".
-      iDestruct "Hrinv" as "[#Hreqeq_lb [Hunproc|Hproc]]".
-      - iDestruct "Hunproc" as "[>Hptsto [>Hfmptsto|[>Hbad _]]]".
-        -- unfold RPCServer_own_processing.
-           iSpecialize ("Hsrpc_proc" with "Hfmptsto").
-           iExists _; iFrame.
-           iMod ("Hrclose" with "[HγPre Hpre Hptsto]") as "_".
-           { iNext. iFrame "#". iLeft. iFrame. iRight. iFrame. }
-           by iModIntro.
-        -- by iDestruct (own_valid_2 with "HγPre Hbad") as %Hbad.
-      - (* TODO: annoying proof with inequalities; just use γPre instead *)
-        admit.
-*)
-Admitted.
+Proof.
+  rewrite map_get_val.
+  intros Hlseq Hrseq.
+  iIntros "HreqInv HγPre Hpre Hsrpc_proc".
+  iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
+
+  iDestruct "Hcases" as "[[>Hunproc Hpre2]|Hproc]".
+  {
+    iDestruct "Hpre2" as "[>H3/4|[>HγP Hpre2]]".
+    - iNamed "H3/4".
+      iDestruct "Hsrpc_proc" as "[H1/4 Hsrpc_lseq_rest]".
+      iCombine "H1/4 H3/4" as "Hfmptsto".
+      iDestruct (own_valid with "Hfmptsto") as %Hvalid.
+      apply singleton_valid in Hvalid.
+      apply mnat_auth_frac_op_valid in Hvalid as [_ <-].
+      rewrite mnat_auth_auth_frac_op.
+      replace (1/4 + 3/4)%Qp with 1%Qp; last by (symmetry; apply Qp_quarter_three_quarter).
+      iSpecialize ("Hsrpc_lseq_rest" with "Hfmptsto").
+      iMod ("HMClose" with "[HγPre Hpre Hunproc]") as "_"; last by iModIntro.
+      iNext. iFrame "#". iLeft. iFrame "#∗". iRight. iFrame.
+    - by iDestruct (own_valid_2 with "HγP HγPre") as %Hbad.
+  }
+  {
+    iAssert (▷ req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq))%I with "[Hproc]" as "#>Hlseq_lb".
+    { iDestruct "Hproc" as "[Hlseq_lb _]"; done. }
+    iDestruct "Hsrpc_proc" as "[H1/4 Hsrpc_lseq_rest]".
+    iDestruct (fmcounter_map_agree_lb with "H1/4 Hlseq_lb") as %Hlseq_lb_ineq.
+    iExFalso; iPureIntro.
+    replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
+    replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    rewrite map_get_val in Hlseq_lb_ineq.
+    rewrite Hlseq in Hlseq_lb_ineq.
+    lia.
+  }
+Qed.
 
 Lemma server_executes_durable_request' (req:@RPCRequest A) reply γrpc γPost γPre PreCond PostCond lastSeqM lastReplyM (old_seq:u64) ctx ctx':
   (* TODO: get rid of this requirement by putting γPre in the postcondition case *)
