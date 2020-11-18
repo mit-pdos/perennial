@@ -244,8 +244,8 @@ Implicit Types P : iProp Σ.
 
   Lemma ncinv_cinv_alloc N E1 E2 P Pcrash Prec :
     ↑N ⊆ E2 →
-    □ (▷ P -∗ |C={E2 ∖ ↑N}_0=> Pcrash ∗ Prec) -∗
-    ▷ P ={E1}=∗ ncinv N P ∗ (<disc> |C={E2}_0=> Prec) ∗ □ (C -∗ |0={E2}=> inv N Pcrash).
+    □ (▷ P -∗ (C -∗ |0={E2 ∖ ↑N}=> ▷ Pcrash ∗ ▷ Prec)) -∗
+    ▷ P ={E1}=∗ ncinv N P ∗ (<bdisc> (C -∗ |0={E2}=> ▷ Prec)) ∗ □ (C -∗ |0={E2}=> inv N Pcrash).
   Proof using stagedG0.
     iIntros (?) "#Hwand HP".
     rewrite ncinv_eq /ncinv_def.

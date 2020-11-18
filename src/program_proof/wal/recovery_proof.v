@@ -395,9 +395,9 @@ Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
         ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s' ∗ ▷ Pcrash s s') -∗
   P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
-                (<disc> |C={⊤}_0=> ∃ s, ⌜wal_post_crash s⌝ ∗
+                (<bdisc> (C -∗ |0={⊤}=> ▷ ∃ s, ⌜wal_post_crash s⌝ ∗
                                          (* NOTE: need to add the ghost state that the logger will need *)
-                                         is_wal_inner_durable γ' s dinit ∗ wal_resources γ' ∗ Prec s) ∗
+                                         is_wal_inner_durable γ' s dinit ∗ wal_resources γ' ∗ Prec s)) ∗
                 □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
                                            ⌜relation.denote log_crash s s' tt⌝ ∗
                                            is_wal_inner_crash γ s ∗
@@ -410,38 +410,41 @@ Proof.
   iDestruct "Hcirc" as (cs) "(Hcirc_state&Hcirc_pred)".
 
   rewrite /circular_pred.
-  iMod (circ_buf_crash_obligation_alt circN (λ σ, circular_pred γ σ)%I
+  iMod (circ_buf_crash_obligation_alt circN (λ σ, circular_pred γ σ)%I (↑circN)
                                       (λ σ, circular_pred γ σ)%I
                                       (λ _, True)%I with "Hcirc_state [] [Hcirc_pred]") as
       (γcirc') "(#His_circular&His_circular_cfupd&His_circular_crash)".
+  { solve_ndisj. }
   { iModIntro. by iIntros (σ) ">$". }
   { iFrame. }
 
   iMod (alloc_wal_init_ghost_state γ γcirc') as (γ') "H"; iNamed "H".
+  iDestruct (own_discrete_laterable with "His_circular_cfupd") as (Pcirc_tok) "(HPcirc_tok&#HPcirc_tok_wand)".
 
   iExists γ'. rewrite /is_wal.
   iFrame "His_circular".
   iMod (ncinv_cinv_alloc (N.@"wal") ⊤ ⊤
          ((∃ σ, is_wal_inner l γ σ dinit ∗ P σ) ∗
-                wal_init_ghost_state γ')
+                wal_init_ghost_state γ' ∗ Pcirc_tok)
          (∃ σ σ',
                ⌜relation.denote log_crash σ σ' tt⌝ ∗
                is_wal_inner_crash γ σ ∗
                wal_ghost_exchange γ γ' ∗
                Pcrash σ σ')%I
-         (∃ s cs0,
-                ghost_var γ.(cs_name) (1/2) cs0 ∗
-                (is_circular_state γ'.(circ_name) cs0 -∗
-                 circ_resources γ'.(circ_name) cs0 -∗
-                 ⌜wal_post_crash s⌝ ∗ (is_wal_inner_durable γ' s dinit) ∗
-                 wal_resources γ' ∗ Prec s))%I with
-            "[] [Hinner HP Hinit]") as "(Hncinv&Hcfupd&Hcinv)".
+         (∃ s,
+                 ⌜wal_post_crash s⌝ ∗ (is_wal_inner_durable γ' s dinit) ∗ wal_resources γ' ∗ Prec s)%I with
+            "[] [Hinner HP Hinit HPcirc_tok]") as "(Hncinv&Hcfupd&Hcinv)".
   { solve_ndisj. }
-  { iModIntro. iIntros "(H1&>Hinit) #HC".
+  { iModIntro. iIntros "(H1&>Hinit&Htok) #HC".
+    iMod ("HPcirc_tok_wand" with "[$]") as "H".
+    iSpecialize ("H" with "[$]").
+    iMod (fupd_level_mask_mono with "H") as (cs0') "(Hcirc&Hcirc_resources&>Hcirc_pred)"; first solve_ndisj.
     iDestruct "H1" as (σ) "(His_wal_inner&HP)".
     iDestruct "His_wal_inner" as "(>%Hwf&_&>?&>?&>?&>?)"; iNamed.
     iNamed "Hdisk".
     iNamed "Hdisk".
+    rewrite /circular_pred.
+    iDestruct (ghost_var_agree with "Howncs Hcirc_pred") as %<-.
 
     iNamed "Hinit".
     iMod (init_stable_txns γ'.(stable_txn_ids_name) installed_txn_id diskEnd_txn_id with "[$]") as "Hstable". iNamed "Hstable".
@@ -470,19 +473,11 @@ Proof.
     iClear "Hwand".
     iSplitL "HPcrash".
     { iModIntro. iExists σ, σ'. iFrame. iNext. eauto. }
-    iExists σ', cs0. iFrame "Howncs". iFrame "HPrec".
+    iExists σ'. iFrame "HPrec".
     do 2iModIntro.
-    iIntros "Hcirc Hcirc_resources". iSplitL "".
+    iSplitL "".
     { iPureIntro. by eapply log_crash_to_post_crash. }
 
-
-    (*
-    rewrite /is_wal_inner_durable.
-    iSplitR; last first.
-    {
-      rewrite /installer_inv.
-      iExists being_installed_start_txn_id. installed_txn_id_mem.
-     *)
     iSplitR "start_avail diskEnd_avail
              being_installed_start_txn2 being_installed_end_txn2".
     {
@@ -490,7 +485,7 @@ Proof.
     { iPureIntro. eapply log_crash_to_wf; eauto. }
     iSplitL "".
     { iPureIntro. by eapply log_crash_to_post_crash. }
-    iExists cs0. iFrame "Hcirc".
+    iExists cs0. rewrite Hcirc_name. iFrame "Hcirc".
     rewrite /disk_inv.
     simpl.
     iExists installed_txn_id, diskEnd_txn_id; simpl.
@@ -546,7 +541,7 @@ Proof.
   }
   }
   {
-    iNext.
+    iNext. iFrame "HPcirc_tok".
     iSplitR "Hinit".
     { iExists _. iFrame. }
     rewrite /wal_init_ghost_state. by iFrame.
@@ -554,17 +549,6 @@ Proof.
   iModIntro.
   iSplitL "Hncinv".
   { rewrite /N. iApply ncinv_split_l. iApply "Hncinv". }
-  iSplitL "His_circular_cfupd Hcfupd".
-  {
-    iModIntro. iMod "His_circular_cfupd". iMod "Hcfupd".
-    iModIntro. iNext.
-    iDestruct "His_circular_cfupd" as (cs0) "(His_circular_state&Hres&Hpred)".
-    iDestruct "Hcfupd" as (s0 cs0') "(Hpred'&Hwand')".
-    iExists s0. rewrite /circular_pred.
-    iDestruct (ghost_var_agree with "Hpred Hpred'") as %->.
-    subst.
-    iDestruct ("Hwand'" with "[$] [$]") as "$".
-  }
   iFrame.
   all: fail "goals remaining".
 Admitted.

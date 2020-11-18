@@ -57,7 +57,7 @@ Lemma circ_buf_crash_obligation_alt Prec Pcrash γ σ:
   is_circular_state γ σ -∗
   □ (∀ σ, ▷ P σ -∗ |0={⊤ ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
   P σ -∗
-  |={⊤}=> ∃ γ', is_circular N P γ ∗ (<disc> |C={⊤}_0=> ∃ σ, is_circular_state γ' σ ∗ Prec σ)
+  |={⊤}=> ∃ γ', is_circular N P γ ∗ (<bdisc> C -∗ |0={⊤}=> ▷ ∃ σ, is_circular_state γ' σ ∗ Prec σ)
                             ∗ □ (C -∗ |0={⊤}=> inv N (∃ σ, is_circular_state_crash γ σ ∗
                                                            circular_crash_ghost_exchange γ γ' ∗
                                                            Pcrash σ)).
@@ -408,21 +408,22 @@ Proof.
 Qed.
 *)
 
-Lemma circ_buf_crash_obligation_alt Prec Pcrash γ σ:
+Lemma circ_buf_crash_obligation_alt E Prec Pcrash γ σ:
+  ↑N ⊆ E →
   is_circular_state γ σ -∗
-  □ (∀ σ, ▷ P σ -∗ |0={⊤ ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
+  □ (∀ σ, ▷ P σ -∗ |0={E ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
   P σ -∗
   |={⊤}=> ∃ γ', is_circular N P γ ∗
-                            (<disc> |C={⊤}_0=> ∃ σ, is_circular_state γ' σ ∗
+                            (<bdisc> (C -∗ |0={E}=> ∃ σ, is_circular_state γ' σ ∗
                                                     circ_resources γ' σ ∗
-                                                    Prec σ)
-                            ∗ □ (C -∗ |0={⊤}=> inv N (∃ σ, is_circular_state_crash γ σ ∗
+                                                    ▷ Prec σ))
+                            ∗ □ (C -∗ |0={E}=> inv N (∃ σ, is_circular_state_crash γ σ ∗
                                                            circular_crash_ghost_exchange γ γ' ∗
                                                            Pcrash σ)).
 Proof.
-  iIntros "Hcs #HPwand HP".
+  iIntros (?) "Hcs #HPwand HP".
   iMod (alloc_init_ghost_state) as (γ') "Hinit".
-  iMod (ncinv_cinv_alloc N ⊤ ⊤
+  iMod (ncinv_cinv_alloc N ⊤ E
          ((∃ σ, is_circular_state γ σ ∗ P σ) ∗ init_ghost_state γ')
          (∃ σ, is_circular_state_crash γ σ ∗
                circular_crash_ghost_exchange γ γ' ∗
@@ -434,7 +435,7 @@ Proof.
     iDestruct "H1" as (σ') "(>Hstate&HP)".
     iMod ("HPwand" with "[$]") as "(HPrec&HPcrash)".
     iMod (crash_upd with "[$] [$]") as "(Hcs&Hres&Hcs_crash&Hexchange)".
-    iModIntro.
+    iIntros "HC". iModIntro.
     iSplitR "Hcs HPrec Hres".
     { iNext. iExists _. iFrame. }
     { iNext. iExists _. iFrame. }
@@ -443,7 +444,9 @@ Proof.
   iModIntro. iExists γ'.
   iSplitL "Hncinv".
   { rewrite /is_circular. iApply ncinv_split_l; iApply "Hncinv". }
-  eauto.
+  eauto. iFrame "Hcinv".
+  iModIntro. iIntros "HC". iMod ("Hcfupd" with "[$]") as (?) "(>?&>?&?)".
+  iModIntro; iExists _; iFrame.
 Qed.
 
 (* Once the circular buffer is initialized or recovered, the is_circular

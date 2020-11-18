@@ -200,6 +200,17 @@ Proof.
        iDestruct "HP" as "(_&$)".
 Qed.
 
+Lemma own_discrete_laterable Q:
+  own_discrete Q -∗
+  (∃ P, ▷ P ∗ □ (▷ P -∗ ◇ Q)).
+Proof.
+  iIntros "HP".
+  iDestruct (own_discrete_elim_conj True%I Q with "[HP]") as "H".
+  { iSplit; eauto. }
+  iDestruct "H" as (P0 P1) "(HP0&HP1&#HP1'&#?)".
+  iExists P1. iFrame "# ∗".
+Qed.
+
 (* The reverse direction needs a stronger axiom on cmras it seems. Namely, that when you split something
    discrete, you get discrete things. *)
 Lemma own_discrete_sep P Q: own_discrete P ∗ own_discrete Q ⊢ own_discrete (P ∗ Q).
