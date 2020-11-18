@@ -86,4 +86,28 @@ Section fmcounter_map_props.
     (* FIXME: needs Iris update to get [mnat_auth_frag_mono] (Iris MR 572) *)
   Admitted.
 
+  Lemma fmcounter_map_sep γ q1 q2 k n:
+    k fm[[γ]]↦{q1 + q2} n ⊣⊢ k fm[[γ]]↦{q1} n ∗ k fm[[γ]]↦{q2} n.
+  Proof.
+  iSplit.
+  - iIntros "H".
+    rewrite -own_op.
+    rewrite singleton_op.
+    by rewrite mnat_auth_auth_frac_op.
+  - iIntros "(Hm1&Hm2)". iCombine "Hm1 Hm2" as "Hm".
+    by rewrite mnat_auth_auth_frac_op.
+  Qed.
+
+  Global Instance fmcounter_map_fractional γ k n :
+    Fractional (λ q, fmcounter_map_own γ k q n).
+  Proof. intros p q. by apply fmcounter_map_sep. Qed.
+
+  Global Instance fmcounter_map_as_fractional γ k q n :
+    AsFractional (k fm[[γ]]↦{q} n) (λ q, fmcounter_map_own γ k q n) q.
+  Proof. split; first by done. apply _. Qed.
+
+  Global Instance fmcounter_map_into_sep γ k n :
+    IntoSep (k fm[[γ]]↦{1} n) (k fm[[γ]]↦{1/2} n) (k fm[[γ]]↦{1/2} n).
+  Proof. apply _. Qed.
+
 End fmcounter_map_props.

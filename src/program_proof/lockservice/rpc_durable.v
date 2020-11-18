@@ -47,6 +47,21 @@ Lemma server_takes_request (req:@RPCRequest A) γrpc γPost γPre PreCond PostCo
   ={⊤}=∗
   own γPre (Excl ()) ∗ PreCond req.(Args) ∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM.
+Proof.
+  rewrite map_get_val.
+  intros Hlseq Hrseq.
+  iIntros "HreqInv Hsown"; iNamed "Hsown".
+  iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
+  iDestruct (big_sepS_elem_of_acc _ _ req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
+    first by apply elem_of_fin_to_set.
+  rewrite Hlseq.
+
+  (* TODO: want  to just do [Hlseq_one], but it applies the lemma in the wrong direction *)
+  replace 1%Qp with (1/4 + 3/4)%Qp; last by apply Qp_quarter_three_quarter.
+  iDestruct (fmcounter_map_sep _ (1/4) (3/4) with "Hlseq_one") as "[H1/4 H3/4]".
+  replace (1/4 + 3/4)%Qp with 1%Qp; last by (symmetry; apply Qp_quarter_three_quarter).
+
+  
 Admitted.
 
 (* Opposite of above *)
