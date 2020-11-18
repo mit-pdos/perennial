@@ -627,7 +627,7 @@ Proof.
     eapply Forall_subset; eauto. }
 
   (* this is the problem where we don't differentiate between ownership
-    of buf pointers and ownership of the bufs themselves,.
+    of buf pointers and ownership of the bufs themselves.
     This is a problem because the memWrite hack to remove duplicates
     in absorbBufs requires full ownership of the buf pointers,
     but we only have readonly ownership of the bufs themselves. *)

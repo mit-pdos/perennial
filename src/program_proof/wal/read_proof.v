@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import wal.invariant.
+From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 
 Section goose_lang.
 Context `{!heapG Σ}.
@@ -263,17 +263,20 @@ Proof.
 Qed.
 
 Theorem simulate_read_cache_miss {l γ Q σ dinit memLog diskEnd diskEnd_txn_id a} :
-  apply_upds memLog.(slidingM.log) ∅ !! int.Z a = None ->
+  apply_upds memLog.(slidingM.log) ∅ !! int.Z a = None →
   (is_wal_inner l γ σ dinit ∗ P σ) -∗
+  is_circular circN (circular_pred γ) γ.(circ_name) -∗
   memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
+  diskStart_linv γ memLog.(slidingM.start) -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' dinit ∗ P σ') ∗
               "HQ" ∷ Q None ∗
-              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
+              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id ∗
+              "Hstart_circ" ∷ diskStart_linv γ memLog.(slidingM.start).
 Proof.
-  iIntros (Happly) "[Hinner HP] Hlinv Hfupd".
+  iIntros (Happly) "[Hinner HP] Hcirc Hlinv Hstart_circ Hfupd".
   iNamed "Hinner".
 
   iNamed "Hlinv".
@@ -288,9 +291,28 @@ Proof.
   iNamed "Hinstalled".
 
   iNamed "Howninstalled".
-(*
-  iDestruct (fmcounter_agree_2 with "Hinstalled_txn Hinstalled_txn_id_bound") as "%Hbound".
-*)
+  iNamed "Hstart_circ".
+  (* we need NC and also ↑walN.@"circ" ⊆ E for this *)
+  (* we could pass it in as a precondition, but that would
+     require breaking up is_wal_inner *)
+  assert (int.Z memLog.(slidingM.start) ≤ int.Z (start cs)) by admit.
+  (*
+  iMod (is_circular_start_lb_agree with "Hstart_at_least Hcirc Howncs")
+    as "(%Hstart_lb&Howncs)".
+  1: solve_ndisj.
+  *)
+  iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
+  iAssert (⌜
+    start cs = memLog.(slidingM.start) →
+    Forall (λ u, u.2 = [])
+      (subslice (S installed_txn_id) (S installed_txn_id_mem) σ.(log_state.txns))
+  ⌝)%I as %Hnils.
+  {
+    iIntros (Hstart_eq).
+    rewrite -Hstart_eq in HmemStart_txn.
+    iNamed "HnextDiskEnd".
+    iDestruct (subslice_stable_nils2 _ _ installed_txn_id installed_txn_id_mem _ Hwf with "[HnextDiskEnd_inv HnextDiskEnd_stable]") as %Hnils; eauto.
+  }
 
   iMod ("Hfupd" with "[] [] HP") as "[HP HQ]"; first by eauto.
   {
@@ -311,11 +333,24 @@ Proof.
       simpl.
       rewrite Hall_updates in Happly.
       rewrite /no_updates_since /set /=.
-      eapply apply_upds_no_updates_since; last by apply Happly.
+
+      destruct (decide (installed_txn_id_mem ≤ installed_txn_id)).
+      {
+        eapply apply_upds_no_updates_since; last by apply Happly.
+        lia.
+      }
+      destruct (decide (int.Z memLog.(slidingM.start) < int.Z (start cs))).
+      {
+        apply (wal_wf_txns_mono_pos Hwf HmemStart_txn Hstart_txn) in l0.
+        lia.
+      }
+      assert (int.Z (start cs) = int.Z memLog.(slidingM.start)) as Hstart_eq by lia.
+      apply (inj int.Z) in Hstart_eq.
+      apply Hnils in Hstart_eq.
+      apply (apply_upds_no_updates_since _ _ (S installed_txn_id_mem)) in Happly.
+      2: lia.
+      (* implied by Happly and Hstart_eq *)
       admit.
-(*
-      lia.
-*)
     }
     monad_simpl.
   }
@@ -367,6 +402,15 @@ Proof.
   do 8 wp_pure1; wp_bind Skip.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σs) "[Hinner HP]".
+  iApply wp_ncfupd.
+  wp_call.
+  (*
+    we can get this here:
+    int.Z memLog.(slidingM.start) ≤ int.Z (start cs)
+    (see comment in simulate_read_cache_miss)
+  *)
+  iModIntro.
+
   wp_pures.
   destruct ok.
   - iDestruct "Hb" as (b) "[Hb %HmemLog_lookup]".
@@ -376,8 +420,7 @@ Proof.
     iMod "HinnerN" as "_".
     iModIntro.
     iSplitL "Hinner HP".
-    { iNext.
-      iExists _; iFrame. }
+    { iExists _. iFrame. }
     wp_loadField.
     wp_apply (release_spec with "[$lk $Hlocked HmemLog_linv Hfields HdiskEnd_circ Hstart_circ]").
     { iExists _; iFrame. }
@@ -386,8 +429,8 @@ Proof.
     iExists _; iFrame.
   - iDestruct "Hb" as "[-> %HmemLog_lookup]".
     iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
-    iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
-      as "(Hinv&?&?)"; iNamed.
+    iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] Hcirc HmemLog_linv Hstart_circ Hfupd")
+      as "(Hinv&?&?&?)"; iNamed.
     iMod "HinnerN" as "_".
     iModIntro.
     iFrame "Hinv".

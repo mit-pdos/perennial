@@ -617,6 +617,28 @@ Proof.
   iExists _. iFrame.
 Qed.
 
+Theorem is_circular_start_lb_agree E γ lb cs :
+  ↑circN ⊆ E ->
+  start_at_least γ.(circ_name) lb -∗
+  is_circular circN (circular_pred γ) γ.(circ_name) -∗
+  ghost_var γ.(cs_name) (1/2) cs -∗
+  |NC={E}=> ⌜int.Z lb ≤ int.Z (circΣ.start cs)⌝ ∗ ghost_var γ.(cs_name) (1/2) cs.
+Proof.
+  rewrite /circular_pred.
+  iIntros (Hsub) "#Hstart_lb #Hcirc Hown".
+  iInv "Hcirc" as ">Hinner" "Hclose".
+  iDestruct "Hinner" as (σ) "(Hstate&Hγ)".
+  unify_ghost_var γ.(cs_name).
+  iFrame "Hown".
+  iDestruct (is_circular_state_pos_acc with "Hstate") as "([HdiskStart HdiskEnd]&Hstate)".
+  iDestruct (start_is_agree_2 with "HdiskStart Hstart_lb") as %Hlb.
+  iFrame (Hlb).
+  iSpecialize ("Hstate" with "[$HdiskStart $HdiskEnd]").
+  iApply "Hclose".
+  iNext.
+  iExists _; iFrame.
+Qed.
+
 Theorem is_circular_diskEnd_lb_agree E γ lb cs :
   ↑circN ⊆ E ->
   diskEnd_at_least γ.(circ_name) lb -∗

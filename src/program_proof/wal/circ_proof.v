@@ -386,6 +386,28 @@ Proof.
   word.
 Qed.
 
+Lemma start_is_agree γ q1 q2 startpos1 startpos2 :
+  start_is γ q1 startpos1 -∗
+  start_is γ q2 startpos2 -∗
+  ⌜startpos1 = startpos2⌝.
+Proof.
+  iIntros "Hstart1 Hstart2".
+  iDestruct (mnat_own_auth_agree with "Hstart1 Hstart2") as %[_ Heq].
+  iPureIntro.
+  word.
+Qed.
+
+Lemma start_is_agree_2 γ q startpos lb :
+  start_is γ q startpos -∗
+  start_at_least γ lb -∗
+  ⌜int.Z lb ≤ int.Z startpos ⌝.
+Proof.
+  iIntros "Hstart Hlb".
+  iDestruct (mnat_own_lb_valid with "Hstart Hlb") as %[_ Hlb].
+  iPureIntro.
+  word.
+Qed.
+
 Global Instance is_circular_state_timeless γ σ :
   Timeless (is_circular_state γ σ) := _.
 
