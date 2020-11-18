@@ -483,6 +483,7 @@ Proof using Ptimeless.
   iNamed "Hfs".
 
   wp_call.
+  iFreeze "HΦ".
   wp_apply wp_ref_of_zero; first by auto.
   iIntros (reply) "Hreply".
   wp_apply util_proof.wp_DPrintf.
@@ -522,6 +523,7 @@ Proof using Ptimeless.
     iModIntro.
 
     wp_load.
+    iThaw "HΦ".
     iApply "HΦ".
     iRight. iExists _.
     iFrame "HQ".
@@ -622,6 +624,7 @@ Proof using Ptimeless.
     wp_apply (wp_LoadAt with "[Status Resok Resfail]").
     { iModIntro. iApply nfstypes_read3res_merge. iFrame. }
     iIntros "Hreply". simpl.
+    iThaw "HΦ".
     iApply "HΦ". iLeft.
     iExists _, _, _, _.
 Transparent nfstypes.READ3res.S.
@@ -676,6 +679,7 @@ Transparent nfstypes.READ3res.S.
     wp_apply (wp_LoadAt with "[Status Resok Resfail]").
     { iModIntro. iApply nfstypes_read3res_merge. iFrame. }
     iIntros "Hreply".
+    iThaw "HΦ".
     iApply "HΦ".
     iRight. iExists _. iFrame "HQ".
     iPureIntro.
@@ -1709,6 +1713,7 @@ Proof using Ptimeless.
   iNamed "Hfs".
 
   wp_call.
+  iFreeze "HΦ".
   wp_apply wp_ref_of_zero; first by auto.
   iIntros (reply) "Hreply".
   wp_apply util_proof.wp_DPrintf.
@@ -1749,6 +1754,7 @@ Proof using Ptimeless.
     iModIntro.
 
     wp_load.
+    iThaw "HΦ".
     iApply "HΦ".
     iRight. iExists _.
     iFrame "HQ".
@@ -1834,6 +1840,7 @@ Proof using Ptimeless.
           wp_apply (wp_LoadAt with "[Status Resok Resfail]").
           { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
           iIntros "Hreply". simpl.
+          iThaw "HΦ".
           iApply "HΦ". iRight.
           iExists _.
           iSplit; first done.
@@ -1920,6 +1927,7 @@ Proof using Ptimeless.
 
             { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
             iIntros "Hreply". simpl.
+            iThaw "HΦ".
             iApply "HΦ". iLeft.
             iSplit; first done.
             iExactEq "HQ".
@@ -1961,6 +1969,7 @@ Proof using Ptimeless.
             wp_apply (wp_LoadAt with "[Status Resok Resfail]").
             { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
             iIntros "Hreply". simpl.
+            iThaw "HΦ".
             iApply "HΦ". iRight.
             iExists _.
             iSplit; first done.
@@ -2013,6 +2022,7 @@ Proof using Ptimeless.
         wp_apply (wp_LoadAt with "[Status Resok Resfail]").
         { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
         iIntros "Hreply". simpl.
+        iThaw "HΦ".
         iApply "HΦ". iRight.
         iExists _.
         iSplit; first done.
@@ -2095,6 +2105,7 @@ Proof using Ptimeless.
 
             { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
             iIntros "Hreply". simpl.
+            iThaw "HΦ".
             iApply "HΦ". iLeft.
             iSplit; first done.
             iExactEq "HQ".
@@ -2138,6 +2149,7 @@ Proof using Ptimeless.
 
        { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
        iIntros "Hreply". simpl.
+       iThaw "HΦ".
        iApply "HΦ". iRight.
        iExists _.
        iSplit; first done.
@@ -2190,6 +2202,7 @@ Proof using Ptimeless.
     wp_apply (wp_LoadAt with "[Status Resok Resfail]").
     { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
     iIntros "Hreply". simpl.
+    iThaw "HΦ".
     iApply "HΦ". iLeft.
     iSplit; first done.
     iFrame.
@@ -2229,6 +2242,7 @@ Proof using Ptimeless.
     wp_apply (wp_LoadAt with "[Status Resok Resfail]").
     { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
     iIntros "Hreply". simpl.
+    iThaw "HΦ".
     iApply "HΦ". iRight. iExists _.
     iSplit; first done.
     iSplit; first done.
