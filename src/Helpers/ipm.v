@@ -85,6 +85,21 @@ Declare Scope freeze_scope.
 Notation "☃" := (freeze _) (at level 0, only printing) : freeze_scope.
 Global Open Scope freeze_scope.
 
+Lemma tac_delay_split {PROP: bi} (R P Q: PROP) :
+  (P ∗ R) -∗ (R -∗ Q) -∗ P ∗ Q.
+Proof.
+  iIntros "[$ R]".
+  iIntros "H".
+  iApply "H"; iFrame.
+Qed.
+
+Ltac iSplitDelay :=
+  let PROP := iBiOfGoal in
+  let R := fresh "remainder" in
+  evar (R:PROP.(bi_car));
+  iApply (tac_delay_split R with "[-] []");
+  subst R.
+
 Module tests.
   Section bi.
     Context {PROP: bi} `{BiAffine PROP}.
@@ -118,6 +133,17 @@ Module tests.
       iFreeze "H".
       iThaw "H".
       auto.
+    Qed.
+
+    Example test_delay_split (P Q R S T: PROP) :
+      P ∗ Q ∗ R ∗ S ∗ T -∗ (P ∗ T ∗ R) ∗ (S ∗ Q).
+    Proof.
+      iIntros "(P&Q&R&S&T)".
+      iSplitDelay.
+      - iFrame.
+        rewrite left_id. iAccu. (* would be iNamedAccu *)
+      - iIntros "(Q&S)". (* would be iNamed 1 *)
+        iFrame.
     Qed.
 
   End bi.
