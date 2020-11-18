@@ -350,8 +350,8 @@ Definition Nfs__NFSPROC3_SETATTR: val :=
         (if: struct.loadF Inode.S "Size" "ip" < "newsize"
         then
           let: "data" := NewSlice byteT ("newsize" - struct.loadF Inode.S "Size" "ip") in
-          let: ("count", "writeok") := Inode__Write "ip" "txn" (struct.loadF Inode.S "Size" "ip") ("newsize" - struct.loadF Inode.S "Size" "ip") "data" in
-          (if: (~ "writeok") || ("count" ≠ "newsize" - struct.loadF Inode.S "Size" "ip")
+          Inode__Write "ip" "txn" (struct.loadF Inode.S "Size" "ip") ("newsize" - struct.loadF Inode.S "Size" "ip") "data";;
+          (if: struct.loadF Inode.S "Size" "ip" ≠ "newsize"
           then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_NOSPC
           else
             let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
