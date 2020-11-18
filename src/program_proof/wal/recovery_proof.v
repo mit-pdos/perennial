@@ -408,6 +408,41 @@ Proof.
 Qed.
 End txns_factory.
 
+
+Lemma diskEnd_linv_post_crash γ' diskEnd Q diskEnd_txn_id :
+  int.Z (U64 diskEnd) = diskEnd →
+  diskEnd_is γ'.(circ_name) (1/2) diskEnd -∗
+  thread_own_ctx γ'.(diskEnd_avail_name) Q -∗
+  thread_own γ'.(diskEnd_avail_name) Available -∗
+  |==> diskEnd_linv γ' diskEnd diskEnd_txn_id ∗
+        thread_own γ'.(diskEnd_avail_name) Available.
+Proof.
+  iIntros (Hbound) "H Hctx Havail".
+  iDestruct (diskEnd_is_to_at_least with "[$]") as "#Hatleast".
+  iMod (thread_own_get with "Hctx Havail") as "(Hctx & _ & Hused)".
+  rewrite /diskEnd_linv.
+  replace (int.Z (U64 diskEnd)) with diskEnd by auto.
+  iMod (thread_own_put (diskEnd_is γ'.(circ_name) (1/2) diskEnd) with
+        "Hctx Hused H") as "[$ $]".
+  by iFrame "#".
+Qed.
+
+Lemma diskStart_linv_post_crash γ' start Q :
+  start_is γ'.(circ_name) (1/2) start -∗
+  thread_own_ctx γ'.(start_avail_name) Q -∗
+  thread_own γ'.(start_avail_name) Available -∗
+  |==> diskStart_linv γ' start ∗
+       thread_own γ'.(start_avail_name) Available.
+Proof.
+  iIntros "H Hctx Havail".
+  iDestruct (start_is_to_at_least with "[$]") as "[H #Hatleast]".
+  iMod (thread_own_get with "Hctx Havail") as "(Hctx & _ & Hused)".
+  rewrite /diskEnd_linv.
+  iMod (thread_own_put (start_is γ'.(circ_name) (1/2) start) with
+        "Hctx Hused H") as "[$ $]".
+  by iFrame "#".
+Qed.
+
 (* Called after wpc for recovery is completed, so l is the location of the wal *)
 Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   is_wal_inv_pre l γ s dinit -∗
@@ -490,27 +525,21 @@ Proof.
 
     iDestruct (is_durable_txn_crash with "circ.end [$]") as "#Hdurable_txn".
     iNamed "circ.end".
+    iPoseProof "circ.start" as "#tmp"; iNamed "tmp".
     iDestruct "Hcirc_resources" as "(Hcirc_start&Hcirc_diskEnd & Happender)".
 
-    (* TODO: refactor into a lemma *)
-    iAssert (|==> (∀ n, diskEnd_linv γ' diskEnd n) ∗
-                  thread_own γ'.(diskEnd_avail_name) Available)%I
-      with "[Hcirc_diskEnd diskEnd_avail_ctx diskEnd_avail]" as
-        ">(HdiskEnd_linv&diskEnd_avail)".
-    {
-      iDestruct (diskEnd_is_to_at_least with "[$]") as "#Hatleast".
-      iMod (thread_own_get with "diskEnd_avail_ctx diskEnd_avail") as "(diskEnd_avail_ctx & _ & diskEnd_used)".
-      iMod (thread_own_put (diskEnd_is γ'.(circ_name) (1/2) (int.Z diskEnd)) with
-           "diskEnd_avail_ctx diskEnd_used [Hcirc_diskEnd]") as "[HdiskEnd_avail_ctx diskEnd_avail]".
-      { subst.
-        iExactEq "Hcirc_diskEnd".
-        congruence. }
-      iModIntro.
-      iFrame "∗".
-      iIntros "_".
-      iExactEq "Hatleast".
-      rewrite /named.
-      congruence. }
+    iMod (diskEnd_linv_post_crash _ (int.Z diskEnd) _ diskEnd_txn_id
+            with "[Hcirc_diskEnd] diskEnd_avail_ctx diskEnd_avail")
+         as "(HdiskEnd_linv & diskEnd_avail)".
+    { word. }
+    { iExactEq "Hcirc_diskEnd".
+      auto with f_equal. }
+
+    iMod (diskStart_linv_post_crash
+         with "[Hcirc_start] start_avail_ctx start_avail")
+      as "(HdiskStart_linv & start_avail)".
+    { iExactEq "Hcirc_start".
+      eauto with f_equal. }
 
     iMod ("Hwand" $! σ σ' with "[//] HP") as "(HPrec&HPcrash)".
     iClear "Hwand".
@@ -529,7 +558,7 @@ Proof.
     { iPureIntro. eapply log_crash_to_wf; eauto. }
     iSplitL "".
     { iPureIntro. by eapply log_crash_to_post_crash. }
-    iSplitL "HdiskEnd_linv".
+    iSplitL "HdiskStart_linv HdiskEnd_linv".
     { rewrite /wal_linv_durable.
       iExists {| diskEnd := diskEnd;
                  locked_diskEnd_txn_id := diskEnd_txn_id;
@@ -539,11 +568,10 @@ Proof.
                            |}
               |}.
       simpl.
-      iSpecialize ("HdiskEnd_linv" $! diskEnd_txn_id); iFrame.
-      iSplitL "". (* needs actual resources *)
-      { admit. (* TODO: diskStart_linv *) }
+      replace (U64 (int.Z diskEnd)) with diskEnd by word.
+      iFrame.
       rewrite /memLog_linv.
-      admit. }
+      admit. (* need more resources *) }
 
     iExists cs0. rewrite Hcirc_name. iFrame "Hcirc".
     rewrite /disk_inv.
@@ -582,7 +610,7 @@ Proof.
     iFrame (Hdaddrs_init).
     iDestruct (is_base_disk_crash with "Hbasedisk") as "$".
     { auto. }
-    iDestruct (is_installed_txn_crash with "circ.start [$]") as "$"; first lia.
+    iDestruct (is_installed_txn_crash γ γ' with "circ.start [$]") as "$"; first lia.
     iFrame "Hdurable_txn".
     efeed pose proof (circ_matches_txns_crash) as Hcirc_matches'; first by eauto.
     iExists _, _, _, _; iFrame (Hcirc_matches') "∗".
