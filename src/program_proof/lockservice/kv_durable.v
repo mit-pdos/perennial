@@ -276,7 +276,7 @@ Lemma wp_coreFunction γ R N (args:RPCValC) kvserver :
       kvserver' (r:u64), RET #r; R ∗
             KVServer_core_own_vol srv_ptr kvserver' ∗
             (* TODO: putting this here because need to be discretizable *)
-            □ (PreCond args -∗ KVServer_core_own_ghost γ kvserver ==∗ PostCond args r ∗ KVServer_core_own_ghost γ kvserver')
+            □ (▷ PreCond args -∗ KVServer_core_own_ghost γ kvserver ==∗ PostCond args r ∗ KVServer_core_own_ghost γ kvserver')
  }}}
  {{{
       R
@@ -479,7 +479,7 @@ Proof.
       iDestruct "Hkvdurable" as "[Hkvdurable|Hkvdurable]".
       + iModIntro; iExists _; iFrame.
       +  (* TODO: Pass in Hkvctx into core function (as *_core_own or some such) and put on LHS of fupd *)
-        iMod (server_executes_durable_request with "[Hlinv] [] [Hsrpc] [Hfupd] [Hkvghost]") as "(Hreceipt & Hsrpc & Hkvghost)"; eauto.
+        iMod (server_executes_durable_request with "[Hlinv] [] [Hsrpc] Hfupd Hkvghost") as "(Hreceipt & Hsrpc & Hkvghost)"; eauto.
         iModIntro.
         iExists _. iFrame "Hkvdurable". simpl. iFrame.
     }
