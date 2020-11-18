@@ -295,21 +295,21 @@ Variable PostCond:RPCValC -> u64 -> iProp Σ.
 Variable srv_ptr:loc.
 Variable sv_ptr:loc.
 
-Lemma wp_coreFunction γ R N (args:RPCValC) kvserver :
+Lemma wp_coreFunction γ (args:RPCValC) kvserver :
   {{{
        "Hvol" ∷ KVServer_core_own_vol srv_ptr kvserver ∗
-       "Hcinv" ∷ cinv_sem N R (PreCond args) ∗
-       "HR" ∷ R
+       "Hpre" ∷ (PreCond args)
  }}}
     coreFunction (into_val.to_val args) @ NotStuck ; 36; ⊤
  {{{
-      kvserver' (r:u64), RET #r; R ∗
+      kvserver' (r:u64) P', RET #r; P' ∗
             KVServer_core_own_vol srv_ptr kvserver' ∗
+            □ (P' -∗ PreCond args) ∗
             (* TODO: putting this here because need to be discretizable *)
-            □ (▷ PreCond args -∗ KVServer_core_own_ghost γ kvserver ==∗ PostCond args r ∗ KVServer_core_own_ghost γ kvserver')
+            □ (▷ P' -∗ KVServer_core_own_ghost γ kvserver ==∗ PostCond args r ∗ KVServer_core_own_ghost γ kvserver')
  }}}
  {{{
-      R
+      (PreCond args)
  }}}
 .
 Admitted.
@@ -359,10 +359,10 @@ Lemma wpc_makeDurable old_kv_server kv_server :
 }}}.
 Admitted.
 
-Lemma wp_RPCServer__HandleRequest' (req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost :
+Lemma wp_RPCServer__HandleRequest' (req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost γPre:
 {{{
   "#Hls" ∷ is_kvserver srv_ptr sv_ptr γ
-  ∗ "#HreqInv" ∷ is_durable_RPCRequest γ.(ks_rpcGN) γPost PreCond PostCond req
+  ∗ "#HreqInv" ∷ is_durable_RPCRequest γ.(ks_rpcGN) γPost γPre PreCond PostCond req
   ∗ "#Hreq" ∷ read_request req_ptr req
   ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
@@ -460,14 +460,21 @@ Proof.
     wpc_frame;
     wp_loadField;
     iNamed 1).
-    iMod (rpc_get_cancellable_inv with "HreqInv") as "Hcinv"; eauto.
-    wpc_apply (wp_coreFunction γ (RPCServer_own γ.(ks_rpcGN) kv_server.(kv_durable_proof.sv).(lastSeqM) kv_server.(kv_durable_proof.sv).(lastReplyM))
-                 with "[$Hsrpc $Hcinv $Hkvvol]").
-   iSplit.
+    iMod (server_takes_request with "[] Hsrpc") as "(HγPre & Hpre & Hsrpc_proc)"; eauto.
+    wpc_apply (wp_coreFunction with "[$Hpre $Hkvvol]").
+    iSplit.
     {
-      iModIntro. iNext. iIntros "Hsrpc".
+      iModIntro. iNext. iIntros "Hpre".
       iSplit; first done.
-      iExists _; iFrame. by iModIntro.
+      iInv "HreqInv" as "Hrinv" "Hrclose".
+      iDestruct "Hrinv" as "[#Hreqeq_lb [Hunproc|Hproc]]".
+      - iDestruct "Hunproc" as "[>Hptsto [>Hfmptsto|[>Hbad _]]]".
+        -- unfold RPCServer_own_processing.
+           iSpecialize ("Hsrpc_proc" with "Hfmptsto").
+           iExists _; iFrame. by iModIntro.
+        -- by iDestruct (own_valid_2 with "HγPre Hbad") as %Hbad.
+      - (* TODO: annoying proof with inequalities; just use γPre instead *)
+        admit.
     }
     iNext.
     iIntros (kvserver' retval).
