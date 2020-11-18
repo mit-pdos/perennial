@@ -50,7 +50,7 @@ jobs:
             ./etc/timing-report.py --max-files 30 > timing.txt
             cat timing.txt
           endGroup
-    - uses: actions/upload-artifact
+    - uses: actions/upload-artifact@v2
       with:
         name: timing-report
         path: timing.txt
