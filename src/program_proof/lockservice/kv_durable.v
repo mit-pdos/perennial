@@ -302,7 +302,10 @@ Lemma wp_coreFunction γ (args:RPCValC) kvserver :
  }}}
     coreFunction (into_val.to_val args) @ NotStuck ; 36; ⊤
  {{{
-      kvserver' (r:u64) P', RET #r; P' ∗
+      (* TODO: need the disc to proof work out *)
+      kvserver' (r:u64) P', RET #r; 
+            ⌜Discretizable P'⌝ ∗
+             (P') ∗
             KVServer_core_own_vol srv_ptr kvserver' ∗
             □ (P' -∗ PreCond args) ∗
             (* TODO: putting this here because need to be discretizable *)
@@ -471,14 +474,25 @@ Proof.
       - iDestruct "Hunproc" as "[>Hptsto [>Hfmptsto|[>Hbad _]]]".
         -- unfold RPCServer_own_processing.
            iSpecialize ("Hsrpc_proc" with "Hfmptsto").
-           iExists _; iFrame. by iModIntro.
+           iExists _; iFrame.
+           iMod ("Hrclose" with "[HγPre Hpre Hptsto]") as "_".
+           { iNext. iFrame "#". iLeft. iFrame. iRight. iFrame. }
+           by iModIntro.
         -- by iDestruct (own_valid_2 with "HγPre Hbad") as %Hbad.
       - (* TODO: annoying proof with inequalities; just use γPre instead *)
         admit.
     }
     iNext.
-    iIntros (kvserver' retval).
-    iIntros "(Hsrpc & Hkvvol & #Hfupd)".
+    iIntros (kvserver' retval P').
+    iIntros "(% & HP' & Hkvvol & #HPimpliesPre & #Hfupd)".
+    iCache with "Hkvdurable HγPre HP' Hsrpc_proc Hkvghost".
+    {
+      iModIntro. iNext.
+      iSplit; first done.
+      iDestruct ("HPimpliesPre" with "HP'") as "HP'".
+      (* same proof as above; just swap γPre and PreCond for the ptsto and specialize Hsrpc_proc *)
+      admit.
+    }
 
     iNamed "Hreply".
 
@@ -504,25 +518,33 @@ Proof.
                                                  {| lastSeqM := (<[req.(CID):=req.(Seq)]> kv_server.(sv).(lastSeqM)) ;
                                                     lastReplyM := (<[req.(CID):=retval]> kv_server.(sv).(lastReplyM))
                                                  |}
-                                 |} with "[-Hpost Hkvghost Hsrpc HReplyOwnRet HReplyOwnStale]").
+                                 |} with "[-Hpost Hkvghost Hsrpc_proc HP' HγPre HReplyOwnRet HReplyOwnStale]").
     { iFrame. simpl. iExists _, _. iFrame. }
     iSplit.
-    {
-      iIntros.
+    { (* show that crash condition of makeDurable maintains our crash condition *)
       iModIntro. iNext.
       iIntros "Hkvdurable".
       iSplit; first done.
 
       iDestruct "Hkvdurable" as "[Hkvdurable|Hkvdurable]".
-      + iModIntro; iExists _; iFrame.
-      +  (* TODO: Pass in Hkvctx into core function (as *_core_own or some such) and put on LHS of fupd *)
-        iMod (server_executes_durable_request with "[Hlinv] [] [Hsrpc] Hfupd Hkvghost") as "(Hreceipt & Hsrpc & Hkvghost)"; eauto.
-        iModIntro.
-        iExists _. iFrame "Hkvdurable". simpl. iFrame.
+      + iDestruct ("HPimpliesPre" with "HP'") as "Hpre".
+        iModIntro. iExists _; iFrame. admit. (* TODO: same proof again; swap γPre+PreCond for Hsrpc *)
+      + iDestruct (server_executes_durable_request' with "HreqInv Hlinv [Hsrpc_proc] HγPre [HP' Hfupd] Hkvghost") as "HH"; eauto.
+        {
+          iExists P'. iFrame "HP'".
+          iFrame "Hfupd".
+        }
+        iMod "HH" as "(Hreceipt & Hsrpc & Hkvghost)"; eauto.
+        unfold KVServer_core_own_ghost.
+        iExists _; iFrame "Hkvdurable".
+        simpl. by iFrame.
     }
     iNext. iIntros "[Hkvdurable Hsrvown]".
     simpl.
-    iMod (server_executes_durable_request with "[Hlinv] [] [Hsrpc] [Hfupd] [Hkvghost]") as "(Hreceipt & Hsrpc & Hkvghost)"; eauto.
+    iMod (server_executes_durable_request' with "HreqInv Hlinv [Hsrpc_proc] HγPre [HP' Hfupd] Hkvghost") as "HH"; eauto.
+    { iExists P'. iFrame "HP'".
+      iFrame "Hfupd". }
+    iDestruct "HH" as "(Hreceipt & Hsrpc & Hkvghost)".
     iModIntro.
     iSplitR "Hsrvown Hkvdurable Hkvghost Hsrpc"; last first.
     {
@@ -543,6 +565,6 @@ Proof.
     iApply "Hpost".
     iModIntro.
     iExists {| Stale:=_ ; Ret:=retval |}; iFrame.
-Qed.
+Admitted.
 
 End kv_proof.
