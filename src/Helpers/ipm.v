@@ -48,7 +48,7 @@ Definition freeze {A} (x:A) := x.
 Lemma freeze_eq {A} (x:A) : freeze x = x.
 Proof. reflexivity. Qed.
 
-Ltac iFreeze H :=
+Ltac iFreezeCore H :=
   let i := lazymatch type of H with
            | string => constr:(INamed H)
            | _ => H
@@ -62,7 +62,16 @@ Ltac iFreeze H :=
             fail 1 "iFreeze:" H "not found"
   end.
 
-Ltac iThaw H :=
+Local Ltac iFreeze_go Hs :=
+  lazymatch Hs with
+  | [] => idtac
+  | ESelIdent _ ?H :: ?Hs => iFreezeCore H; iFreeze_go Hs
+  | ESelPure _ :: _ => fail 1 "iFreeze does not support Gallina identifiers"
+  end.
+Tactic Notation "iFreeze" constr(Hs) :=
+  let Hs := iElaborateSelPat Hs in iFreeze_go Hs.
+
+Ltac iThawCore H :=
   let i := lazymatch type of H with
            | string => constr:(INamed H)
            | _ => H
@@ -75,6 +84,13 @@ Ltac iThaw H :=
   | None => let H := pretty_ident i in
             fail 1 "iThaw:" H "not found"
   end.
+Local Ltac iThaw_go Hs :=
+  lazymatch Hs with
+  | [] => idtac
+  | ESelIdent _ ?H :: ?Hs => iThawCore H; iFreeze_go Hs
+  end.
+Tactic Notation "iThaw" constr(Hs) :=
+  let Hs := iElaborateSelPat Hs in iThaw_go Hs.
 
 Typeclasses Opaque freeze.
 Opaque freeze.
@@ -126,13 +142,32 @@ Module tests.
       Fail iExactEq "foo".
     Abort.
 
-    Example test_freeze Φ n :
-      Φ (n + 1) -∗ True.
+    Example test_freeze_one Φ n :
+      Φ (n + 1) -∗ Φ (n + 1).
     Proof.
       iIntros "H".
       iFreeze "H".
+      Fail progress iFrame.
       iThaw "H".
-      auto.
+      iExact "H".
+    Qed.
+
+    Example test_freeze_several Φ1 Φ2 Φ3 n :
+      Φ1 n -∗ Φ2 2 -∗ (Φ1 n ∗ Φ3 n) -∗ Φ1 n ∗ Φ2 2.
+    Proof.
+      iIntros "H1 H2 H3".
+      iFreeze "H1 H2".
+      iDestruct "H3" as "[$ _]".
+      iThaw "H2".
+      iFrame.
+    Qed.
+
+    Example test_freeze_persistent Φ1 Φ2 Φ3 n :
+      □Φ1 n -∗ □Φ2 2 -∗ (Φ1 n ∗ Φ3 n) -∗ Φ1 n.
+    Proof.
+      iIntros "#H1 #H2 H3".
+      iFreeze "#".
+      iDestruct "H3" as "[$ _]".
     Qed.
 
     Example test_delay_split (P Q R S T: PROP) :
