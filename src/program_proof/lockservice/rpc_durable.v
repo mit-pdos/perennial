@@ -92,9 +92,9 @@ Proof.
     lia.
   }
 Qed.
-(* Semantic cancellable invariant *)
+(* Semantic cancellable invariant with ⊤ namespace *)
 Definition cinv_sem (N : namespace) (R : iProp Σ) (P : iProp Σ) : iProp Σ :=
-  □ ∀ E, ⌜↑N ⊆ E⌝ → (R ={E, E ∖ ↑N }=∗ ▷ P ∗ R ∗ (▷ P ={E ∖ ↑N, E}=∗ True))
+  □ (R ={⊤, ⊤ ∖ ↑N }=∗ ▷ P ∗ R ∗ (▷ P ={⊤ ∖ ↑N, ⊤}=∗ True))
 .
 
 Lemma rpc_get_cancellable_inv (req:@RPCRequest A) γrpc γPost PreCond PostCond lastSeqM lastReplyM (old_seq:u64) :
@@ -103,6 +103,36 @@ Lemma rpc_get_cancellable_inv (req:@RPCRequest A) γrpc γPost PreCond PostCond 
   is_durable_RPCRequest γrpc γPost PreCond PostCond req ={⊤}=∗
   cinv_sem rpcRequestInvN (RPCServer_own γrpc lastSeqM lastReplyM) (PreCond req.(Args)).
 Proof.
-Admitted.
+  rewrite map_get_val.
+  intros Hlseq Hrseq.
+  iIntros "#HreqInv".
+  do 2 iModIntro.
+  iIntros "Hsrpc".
+  iInv "HreqInv" as "Hrinv" "Hrclose".
+
+  iDestruct "Hrinv" as "[#>Hreqeq_lb [Hunproc|Hproc]]".
+  {
+    iDestruct "Hunproc" as "[Hrcptsto Hpre]".
+    iModIntro.
+    iFrame.
+    iIntros "Hpre".
+    iMod ("Hrclose" with "[Hpre Hrcptsto]").
+    { iNext. unfold RPCRequest_durable_inv. iFrame "#". iLeft. iFrame "#∗". }
+    by iModIntro.
+  }
+  {
+    iNamed "Hsrpc".
+    iAssert (▷ req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq))%I with "[Hproc]" as "#>Hlseq_lb".
+    { iDestruct "Hproc" as "[Hlseq_lb _]"; done. }
+
+    iDestruct (big_sepS_elem_of_acc _ _ req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply elem_of_fin_to_set.
+    iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
+    iExFalso; iPureIntro.
+    replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
+    replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    rewrite Hlseq in Hlseq_lb_ineq.
+    lia.
+  }
+Qed.
 
 End rpc_durable.
