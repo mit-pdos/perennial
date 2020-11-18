@@ -541,6 +541,19 @@ Proof.
     { iExactEq "Hcirc_start".
       eauto with f_equal. }
 
+    iFreeze "# Hdata".
+
+    (* TODO(tej): these are my best guesses from the invariant, but they'll be
+    driven by a lemma that re-establishes [memLog_linv_pers_core] using maybe
+    just [circ_matches_txns] *)
+    iMod (ghost_var_update (int.nat cs0.(circΣ.start)) with "installer_pos_mem")
+         as "[installer_pos_mem1 installer_pos_mem2]".
+    iMod (ghost_var_update installed_txn_id with "installed_txn_id_mem")
+         as "[installed_txn_id_mem1 installed_txn_id_mem2]".
+    iMod (ghost_var_update installed_txn_id with "installer_txn_id_mem")
+         as "[installer_txn_id_mem1 installer_txn_id_mem2]".
+
+    iThaw "Hwand".
     iMod ("Hwand" $! σ σ' with "[//] HP") as "(HPrec&HPcrash)".
     iClear "Hwand".
     iSplitL "HPcrash".
@@ -550,6 +563,7 @@ Proof.
     iSplitL "".
     { iPureIntro. by eapply log_crash_to_post_crash. }
 
+
     iSplitR "start_avail diskEnd_avail
              being_installed_start_txn2 being_installed_end_txn2
              ".
@@ -558,8 +572,9 @@ Proof.
     { iPureIntro. eapply log_crash_to_wf; eauto. }
     iSplitL "".
     { iPureIntro. by eapply log_crash_to_post_crash. }
-    iSplitL "HdiskStart_linv HdiskEnd_linv".
+    iSplitDelay.
     { rewrite /wal_linv_durable.
+      rewrite sep_exist_r.
       iExists {| diskEnd := diskEnd;
                  locked_diskEnd_txn_id := diskEnd_txn_id;
                  memLog := {| slidingM.log := cs0.(circΣ.upds);
@@ -569,10 +584,15 @@ Proof.
               |}.
       simpl.
       replace (U64 (int.Z diskEnd)) with diskEnd by word.
-      iFrame.
-      rewrite /memLog_linv.
-      admit. (* need more resources *) }
+      iFrame "HdiskEnd_linv HdiskStart_linv".
+      rewrite /memLog_linv /memLog_linv_core.
 
+      rewrite sep_exist_r; iExists installed_txn_id.
+      iSplitL "installer_pos_mem1 installed_txn_id_mem1 installer_txn_id_mem1".
+      - admit. (* prove this *)
+      - iNamedAccu.
+    }
+    iNamed 1.
     iExists cs0. rewrite Hcirc_name. iFrame "Hcirc".
     rewrite /disk_inv.
     simpl.
@@ -610,7 +630,8 @@ Proof.
     iFrame (Hdaddrs_init).
     iDestruct (is_base_disk_crash with "Hbasedisk") as "$".
     { auto. }
-    iDestruct (is_installed_txn_crash γ γ' with "circ.start [$]") as "$"; first lia.
+    iThaw "#".
+    iDestruct (is_installed_txn_crash γ γ' with "circ.start Hinstalled_txn_id_stable") as "$"; first by lia.
     iFrame "Hdurable_txn".
     efeed pose proof (circ_matches_txns_crash) as Hcirc_matches'; first by eauto.
     iExists _, _, _, _; iFrame (Hcirc_matches') "∗".

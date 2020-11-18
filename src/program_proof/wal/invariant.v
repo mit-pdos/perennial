@@ -172,7 +172,10 @@ Proof.
   iDestruct (alist_subseq_lookup with "Hctx Htxns_are") as "$".
 Qed.
 
-Definition memLog_linv_txns (σ: slidingM.t) (installer_pos_mem diskEnd logger_pos: u64) txns installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id : iProp Σ :=
+Definition memLog_linv_txns (σ: slidingM.t)
+           (installer_pos_mem diskEnd logger_pos: u64) txns
+           installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id
+           logger_txn_id nextDiskEnd_txn_id : iProp Σ :=
   "%His_installerEnd" ∷
     ⌜has_updates
       (take (slidingM.logIndex σ installer_pos_mem)
