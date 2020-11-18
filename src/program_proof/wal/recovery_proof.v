@@ -203,9 +203,10 @@ Proof.
     eapply lookup_take_Some in Hlookup; lia.
 Qed.
 
-Lemma alloc_wal_init_ghost_state γ :
-  ⊢ |==> ∃ γnew, ⌜γnew.(base_disk_name) = γ.(base_disk_name)⌝ ∗
-                 wal_init_ghost_state γnew.
+Lemma alloc_wal_init_ghost_state γ γcirc :
+  ⊢ |==> ∃ γnew, "%Hbase_name" ∷ ⌜γnew.(base_disk_name) = γ.(base_disk_name)⌝ ∗
+                 "%Hcirc_name" ∷ ⌜γnew.(circ_name) = γcirc⌝ ∗
+                 "Hinit" ∷ wal_init_ghost_state γnew.
 Proof.
   iMod (ghost_var_alloc 0%nat) as (installer_pos_name) "Hinstalled_pos".
   iMod (ghost_var_alloc 0%nat) as (installer_txn_id_name) "Hinstalled_txn_id".
@@ -216,9 +217,6 @@ Proof.
   iMod (fmcounter_alloc 0%nat) as (being_installed_end_txn_name) "Hbeing_end".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
   iMod (alist_alloc (@nil (u64 * list update.t))) as (γtxns_ctx_name) "Htxns_ctx".
-  (* TODO: probably will take γcirc for new names as a parameter, not initialize
-  it here *)
-  iMod (alloc_init_ghost_state) as (γcirc) "Hcirc".
   iMod (ghost_var_alloc 0%nat) as (TODO_NAME) "HTODO".
   iMod (thread_own_alloc True with "[//]") as (start_avail_name) "(Hstart_avail_ctx&Hstart_avail)".
   iModIntro.
@@ -399,7 +397,6 @@ Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
                                            Pcrash s s')).
 Proof.
   iIntros "Hinv_pre #Hwand HP".
-  iMod (alloc_wal_init_ghost_state γ) as (γ0 Hγ0_same) "Hinit".
   rewrite /is_wal_inv_pre.
   iDestruct "Hinv_pre" as "(Hinner&Hcirc)".
   iDestruct "Hcirc" as (cs) "(Hcirc_state&Hcirc_pred)".
@@ -412,7 +409,7 @@ Proof.
   { iModIntro. by iIntros (σ) ">$". }
   { iFrame. }
 
-  set (γ' := γ0 <| circ_name := γcirc' |>).
+  iMod (alloc_wal_init_ghost_state γ γcirc') as (γ') "H"; iNamed "H".
 
   iExists γ'. rewrite /is_wal.
   iFrame "His_circular".
@@ -550,9 +547,11 @@ Proof.
     iDestruct "Hcfupd" as (s0 cs0') "(Hpred'&Hwand')".
     iExists s0. rewrite /circular_pred.
     iDestruct (ghost_var_agree with "Hpred Hpred'") as %->.
+    subst.
     iDestruct ("Hwand'" with "[$] [$]") as "$".
   }
   iFrame.
+  all: fail "goals remaining".
 Abort.
 
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
