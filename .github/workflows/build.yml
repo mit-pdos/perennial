@@ -46,3 +46,11 @@ jobs:
             make -j2 -k ci
           endGroup
           sudo chown -R coq:coq . # Revert permissions back
+          startGroup Create timing report
+            ./etc/timing-report.py --max-files 30 > timing.txt
+            cat timing.txt
+          endGroup
+    - uses: actions/upload-artifact
+      with:
+        name: timing-report
+        path: timing.txt
