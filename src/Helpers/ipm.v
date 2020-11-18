@@ -80,14 +80,14 @@ Ltac iThawCore H :=
   | Some (_, ?P) =>
     first [ is_var P; subst P; rewrite freeze_eq
           | let H := pretty_ident i in
-            fail 1 "iThaw:" H "is not frozen"]
+            fail 0 "iThaw:" H "is not frozen"]
   | None => let H := pretty_ident i in
-            fail 1 "iThaw:" H "not found"
+            fail 0 "iThaw:" H "not found"
   end.
 Local Ltac iThaw_go Hs :=
   lazymatch Hs with
   | [] => idtac
-  | ESelIdent _ ?H :: ?Hs => iThawCore H; iFreeze_go Hs
+  | ESelIdent _ ?H :: ?Hs => try iThawCore H; iThaw_go Hs
   end.
 Tactic Notation "iThaw" constr(Hs) :=
   let Hs := iElaborateSelPat Hs in iThaw_go Hs.
@@ -167,6 +167,7 @@ Module tests.
     Proof.
       iIntros "#H1 #H2 H3".
       iFreeze "#".
+      iThaw "#".
       iDestruct "H3" as "[$ _]".
     Qed.
 
