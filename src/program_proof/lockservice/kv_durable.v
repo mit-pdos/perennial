@@ -469,18 +469,9 @@ Proof.
     {
       iModIntro. iNext. iIntros "Hpre".
       iSplit; first done.
-      iInv "HreqInv" as "Hrinv" "Hrclose".
-      iDestruct "Hrinv" as "[#Hreqeq_lb [Hunproc|Hproc]]".
-      - iDestruct "Hunproc" as "[>Hptsto [>Hfmptsto|[>Hbad _]]]".
-        -- unfold RPCServer_own_processing.
-           iSpecialize ("Hsrpc_proc" with "Hfmptsto").
-           iExists _; iFrame.
-           iMod ("Hrclose" with "[HγPre Hpre Hptsto]") as "_".
-           { iNext. iFrame "#". iLeft. iFrame. iRight. iFrame. }
-           by iModIntro.
-        -- by iDestruct (own_valid_2 with "HγPre Hbad") as %Hbad.
-      - (* TODO: annoying proof with inequalities; just use γPre instead *)
-        admit.
+      iMod (server_returns_request with "[HreqInv] HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
+      iModIntro.
+      iExists _; iFrame.
     }
     iNext.
     iIntros (kvserver' retval P').
@@ -489,9 +480,10 @@ Proof.
     {
       iModIntro. iNext.
       iSplit; first done.
-      iDestruct ("HPimpliesPre" with "HP'") as "HP'".
-      (* same proof as above; just swap γPre and PreCond for the ptsto and specialize Hsrpc_proc *)
-      admit.
+      iDestruct ("HPimpliesPre" with "HP'") as "Hpre".
+      iMod (server_returns_request with "[HreqInv] HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
+      iModIntro.
+      iExists _; iFrame.
     }
 
     iNamed "Hreply".
@@ -528,7 +520,8 @@ Proof.
 
       iDestruct "Hkvdurable" as "[Hkvdurable|Hkvdurable]".
       + iDestruct ("HPimpliesPre" with "HP'") as "Hpre".
-        iModIntro. iExists _; iFrame. admit. (* TODO: same proof again; swap γPre+PreCond for Hsrpc *)
+        iMod (server_returns_request with "[HreqInv] HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
+        iModIntro. iExists _; iFrame.
       + iDestruct (server_executes_durable_request' with "HreqInv Hlinv [Hsrpc_proc] HγPre [HP' Hfupd] Hkvghost") as "HH"; eauto.
         {
           iExists P'. iFrame "HP'".
@@ -565,6 +558,6 @@ Proof.
     iApply "Hpost".
     iModIntro.
     iExists {| Stale:=_ ; Ret:=retval |}; iFrame.
-Admitted.
+Qed.
 
 End kv_proof.

@@ -18,7 +18,7 @@ Local Definition RPCRequest_durable_inv (γrpc:rpc_names) (γPost γPre:gname) (
     ∗ ( (* Initialized, but server has not started processing *)
       "Hreply" ∷ (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦ None ∗
                ((∃ s, req.(CID) fm[[γrpc.(lseq)]]↦{3/4} s) ∨ own γPre (Excl ()) ∗ PreCond req.(Args) ) ∨ 
-      (* Not doing full ownership of the fmcounter becuase we (probably) want to remember the value.
+      (* Not doing full ownership of the fmcounter becuase we (probably) want to remember the value..k
         Doing 3/4 so we know that if we are given 3/4 ownership, then this disjunction can't be in the first case *)
 
       (* Server has finished processing; two sub-states for wether client has taken PostCond out *)
@@ -39,7 +39,6 @@ Definition RPCServer_own_processing γrpc (req:@RPCRequest A) lastSeqM lastReply
 Global Instance RPCServer_own_processing_disc γrpc (req:@RPCRequest A) lastSeqM lastReplyM : Discretizable (RPCServer_own_processing γrpc req lastSeqM lastReplyM).
 Admitted.
 
-
 Lemma server_takes_request (req:@RPCRequest A) γrpc γPost γPre PreCond PostCond lastSeqM lastReplyM (old_seq:u64) :
   ((map_get lastSeqM req.(CID)).1 = old_seq) →
   (int.Z req.(Seq) > int.Z old_seq)%Z →
@@ -48,6 +47,32 @@ Lemma server_takes_request (req:@RPCRequest A) γrpc γPost γPre PreCond PostCo
   ={⊤}=∗
   own γPre (Excl ()) ∗ PreCond req.(Args) ∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM.
+Admitted.
+
+(* Opposite of above *)
+Lemma server_returns_request (req:@RPCRequest A) γrpc γPost γPre PreCond PostCond lastSeqM lastReplyM (old_seq:u64) :
+  ((map_get lastSeqM req.(CID)).1 = old_seq) →
+  (int.Z req.(Seq) > int.Z old_seq)%Z →
+  is_durable_RPCRequest γrpc γPost γPre PreCond PostCond req -∗
+  own γPre (Excl ()) -∗
+  PreCond req.(Args) -∗
+  RPCServer_own_processing γrpc req lastSeqM lastReplyM
+  ={⊤}=∗
+  RPCServer_own γrpc lastSeqM lastReplyM.
+(*
+      iInv "HreqInv" as "Hrinv" "Hrclose".
+      iDestruct "Hrinv" as "[#Hreqeq_lb [Hunproc|Hproc]]".
+      - iDestruct "Hunproc" as "[>Hptsto [>Hfmptsto|[>Hbad _]]]".
+        -- unfold RPCServer_own_processing.
+           iSpecialize ("Hsrpc_proc" with "Hfmptsto").
+           iExists _; iFrame.
+           iMod ("Hrclose" with "[HγPre Hpre Hptsto]") as "_".
+           { iNext. iFrame "#". iLeft. iFrame. iRight. iFrame. }
+           by iModIntro.
+        -- by iDestruct (own_valid_2 with "HγPre Hbad") as %Hbad.
+      - (* TODO: annoying proof with inequalities; just use γPre instead *)
+        admit.
+*)
 Admitted.
 
 Lemma server_executes_durable_request' (req:@RPCRequest A) reply γrpc γPost γPre PreCond PostCond lastSeqM lastReplyM (old_seq:u64) ctx ctx':
