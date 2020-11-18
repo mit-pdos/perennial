@@ -28,13 +28,15 @@ Local Definition RPCRequest_durable_inv (γrpc:rpc_names) (γPost:gname) (PreCon
 Definition is_durable_RPCRequest (γrpc:rpc_names) (γPost:gname) (PreCond : A -> iProp Σ) (PostCond : A -> R -> iProp Σ) (req:RPCRequest) : iProp Σ :=
   inv rpcRequestInvN (RPCRequest_durable_inv γrpc γPost PreCond PostCond req).
 
-Lemma server_executes_durable_request (req:@RPCRequest A) reply γrpc γPost PreCond PostCond lastSeqM lastReplyM :
+Lemma server_executes_durable_request (req:@RPCRequest A) reply γrpc γPost PreCond PostCond lastSeqM lastReplyM ctx ctx' :
   is_durable_RPCRequest γrpc γPost PreCond PostCond req -∗
   is_RPCServer γrpc -∗
   RPCServer_own γrpc lastSeqM lastReplyM -∗
-  (PreCond req.(Args) ==∗ PostCond req.(Args) reply) ={⊤}=∗
+  (PreCond req.(Args) -∗ ctx ==∗ PostCond req.(Args) reply ∗ ctx') -∗
+  ctx ={⊤}=∗
   RPCReplyReceipt γrpc req reply ∗
-  RPCServer_own γrpc (<[req.(CID):=req.(Seq)]> lastSeqM) (<[req.(CID):=reply]> lastReplyM)
+  RPCServer_own γrpc (<[req.(CID):=req.(Seq)]> lastSeqM) (<[req.(CID):=reply]> lastReplyM) ∗
+  ctx'
   .
 Admitted.
 

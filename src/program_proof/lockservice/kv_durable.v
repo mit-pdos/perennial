@@ -34,8 +34,6 @@ Record KVServerC :=
   kvsM : gmap u64 u64;
   }.
 
-Axiom kvserver_durable_is : KVServerC -> iProp Σ.
-
 (**
   Crash-safety plan:
 
@@ -52,7 +50,7 @@ Axiom kvserver_durable_is : KVServerC -> iProp Σ.
   ∀ R,
   { _core_own_vol old_state ∗ R ∗ cinv_sem R (PreCond args) }
     coreFunction args
-  { _core_own_vol new_state ∗ (PreCond args -∗ _core_own_ghost old_state ={⊤}=∗ _core_own_ghost new_state ∗ PostCond args ret) }
+  { _core_own_vol new_state ∗ R ∗ (PreCond args -∗ _core_own_ghost old_state ={⊤}=∗ _core_own_ghost new_state ∗ PostCond args ret) }
   The point of the cinv_sem is that the coreFunction and R is that the core function can access the PreCond as often as it likes, so long as it maintains it. It wouldn't make sense to put it in an inv, because the PreCond won't always hold.
 
   This might look a bit logically like having a quadruple that looks something like { ... ∗ PreCond } coreFunction args { ... ∗ PreCond } { PreCond }.
@@ -78,42 +76,58 @@ Axiom kvserver_durable_is : KVServerC -> iProp Σ.
 
 *)
 
-Definition RPCServer_mutex_cinv γ : iProp Σ :=
+Axiom KVServer_durable_own : KVServerC -> iProp Σ.
+
+Definition KVServer_core_own_vol (srv:loc) kv_server : iProp Σ :=
+  ∃ (kvs_ptr:loc),
+  "HkvsOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr ∗
+  "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
+.
+
+Definition KVServer_core_own_ghost γ kv_server : iProp Σ :=
+  "Hkvctx" ∷ map_ctx γ.(ks_kvMapGN) 1 kv_server.(kvsM)
+.
+
+Definition KVServer_core_own γ (srv:loc) kv_server : iProp Σ :=
+  "Hkvvol" ∷ KVServer_core_own_vol srv kv_server ∗
+  "Hkvghost" ∷ KVServer_core_own_ghost γ kv_server
+.
+
+Definition KVServer_mutex_cinv γ : iProp Σ :=
   ∃ kv_server,
-  "Hkvdurable" ∷ kvserver_durable_is kv_server
+  "Hkvdurable" ∷ KVServer_durable_own kv_server
 ∗ "Hsrpc" ∷ RPCServer_own γ.(ks_rpcGN) kv_server.(sv).(lastSeqM) kv_server.(sv).(lastReplyM)
 ∗ "Hkvctx" ∷ map_ctx γ.(ks_kvMapGN) 1 kv_server.(kvsM)
 .
 
-Definition KVServer_own_core γ (srv:loc) kv_server : iProp Σ :=
-  ∃ (kvs_ptr:loc),
-  "HlocksOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr
-∗ "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
-∗ "Hkvctx" ∷ map_ctx γ.(ks_kvMapGN) 1 kv_server.(kvsM)
-.
-
-Definition RPCServer_own_phys γrpc (sv:loc) rpc_server : iProp Σ :=
+Definition RPCServer_own_vol (sv:loc) rpc_server : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc),
     "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
 ∗ "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
 ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) rpc_server.(lastSeqM)
 ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) rpc_server.(lastReplyM)
-∗ ("Hsrpc" ∷ rpc.RPCServer_own γrpc rpc_server.(lastSeqM) rpc_server.(lastReplyM)) (* TODO: Probably should get better naming for this *)
 .
 
-(* Note: have to put the entire RPCServer_mutex_inv in a na_crash_inv because the crash obligation RPCServer_mutex_cinv existentially quantifies over both about the rpc state and core state *)
+Definition RPCServer_own_ghost (sv:loc) γrpc rpc_server : iProp Σ :=
+  "Hsrpc" ∷ rpc.RPCServer_own γrpc rpc_server.(lastSeqM) rpc_server.(lastReplyM) (* TODO: Probably should get better naming for this *)
+.
 
-Instance durable_timeless kv_server : Timeless (kvserver_durable_is kv_server).
+Definition RPCServer_phys_own γrpc (sv:loc) rpc_server : iProp Σ :=
+  "Hrpcvol" ∷ RPCServer_own_vol sv rpc_server ∗
+  "Hrpcghost" ∷ RPCServer_own_ghost sv γrpc rpc_server
+.
+
+Instance durable_timeless kv_server : Timeless (KVServer_durable_own kv_server).
 Admitted.
 
-Instance durable_disc kv_server : Discretizable (kvserver_durable_is kv_server).
+Instance durable_disc kv_server : Discretizable (KVServer_durable_own kv_server).
 Admitted.
 
-Definition RPCServer_mutex_inv srv_ptr sv_ptr γ : iProp Σ :=
+Definition KVServer_mutex_inv srv_ptr sv_ptr γ : iProp Σ :=
   ∃ kv_server,
-    "Hkv" ∷ KVServer_own_core γ srv_ptr kv_server ∗
-    "Hrpc" ∷ RPCServer_own_phys γ.(ks_rpcGN) sv_ptr kv_server.(sv) ∗
-    "Hkvdurable" ∷ kvserver_durable_is kv_server
+    "Hkv" ∷ KVServer_core_own γ srv_ptr kv_server ∗
+    "Hrpc" ∷ RPCServer_phys_own γ.(ks_rpcGN) sv_ptr kv_server.(sv) ∗
+    "Hkvdurable" ∷ KVServer_durable_own kv_server
 .
 
 Definition mutexN : namespace := nroot .@ "kvmutexN".
@@ -123,8 +137,8 @@ Definition is_kvserver (srv_ptr sv_ptr:loc) γ : iProp Σ :=
   "#Hsv" ∷ readonly (srv_ptr ↦[KVServer.S :: "sv"] #sv_ptr) ∗
   "#Hlinv" ∷ is_RPCServer γ.(ks_rpcGN) ∗
   "#Hmu_ptr" ∷ readonly(sv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr) ∗
-  "#Hmu" ∷ is_crash_lock mutexN 37 #mu_ptr (RPCServer_mutex_inv srv_ptr sv_ptr γ)
-    (|={⊤}=> RPCServer_mutex_cinv γ)
+  "#Hmu" ∷ is_crash_lock mutexN 37 #mu_ptr (KVServer_mutex_inv srv_ptr sv_ptr γ)
+    (|={⊤}=> KVServer_mutex_cinv γ)
 .
 
 Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
@@ -248,15 +262,21 @@ Variable coreFunction:goose_lang.val.
 Variable makeDurable:goose_lang.val.
 Variable PreCond:RPCValC -> iProp Σ.
 Variable PostCond:RPCValC -> u64 -> iProp Σ.
+Variable srv_ptr:loc.
+Variable sv_ptr:loc.
 
-Lemma RPC_core_spec_example R N (args:RPCValC) :
+Lemma wp_coreFunction γ R N (args:RPCValC) kvserver :
   {{{
+       "Hvol" ∷ KVServer_core_own_vol srv_ptr kvserver ∗
        "Hcinv" ∷ cinv_sem N R (PreCond args) ∗
        "HR" ∷ R
  }}}
     coreFunction (into_val.to_val args) @ NotStuck ; 36; ⊤
  {{{
-      (r:u64), RET #r; R ∗ (PreCond args ==∗ PostCond args r)
+      kvserver' (r:u64), RET #r; R ∗
+            KVServer_core_own_vol srv_ptr kvserver' ∗
+            (* TODO: putting this here because need to be discretizable *)
+            □ (PreCond args -∗ KVServer_core_own_ghost γ kvserver ==∗ PostCond args r ∗ KVServer_core_own_ghost γ kvserver')
  }}}
  {{{
       R
@@ -266,45 +286,57 @@ Admitted.
 
 (**
  Precondition owns all of the physical state of the server.
- Post condition gives it right back, but updates the durable state.
-*)
-Lemma make_durable_spec (srv sv_ptr lastSeq_ptr lastReply_ptr kvs_ptr:loc) old_kv_server kv_server :
+ Postcondition gives it back *unchanged*, but updates the durable state.
+
+(P -∗ core_own)
+P
+
+(P -∗ Q)
+P
+
+Q is something such that (Q -∗ )
+
+use to get core_own. destruct ∃'s. take a bunch of steps using mem ptsto's from core_own.
+Then, want to give back P.
+
+This is a probably unsound hack just to get back the same existentially quantified ptrs that make up KVServer_core_own_vol. Otherwise, would need to iDestruct again. In this particular code, it isn't an issue to iDestruct it again, but it would be a problem if we wrote code that saved, e.g. lastSeq_ptr in a local var, and then did something with that local var after wpc_makeDurable, since we won't be able to show that the new lastSeq_ptr is the same as before.
+
+Doing this hack because there I feel like to be a better way than explicitly writing out the existentially quantified vars as arguments to wpc_makeDurable.
+
+  □(P -∗
+     KVServer_core_own_vol γ srv kv_server
+  ) -∗
   {{{
-    "HlastSeqOwn" ∷ sv_ptr ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
-∗ "HlastReplyOwn" ∷ sv_ptr ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
-∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) kv_server.(sv).(lastSeqM)
-∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) kv_server.(sv).(lastReplyM)
-∗  "HlocksOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr
-∗ "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
-∗ "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #sv_ptr)
-∗ "Holdkv" ∷ kvserver_durable_is old_kv_server
+      "HP" ∷ P ∗
+      "Holdkv" ∷ KVServer_durable_own old_kv_server
+  }}}
+
+*)
+Lemma wpc_makeDurable old_kv_server kv_server :
+  {{{
+     KVServer_core_own_vol srv_ptr kv_server ∗
+     RPCServer_own_vol sv_ptr kv_server.(sv) ∗
+     KVServer_durable_own old_kv_server
   }}}
     makeDurable #() @ NotStuck ; 36 ; ⊤
   {{{
-       RET #(); kvserver_durable_is kv_server
-∗ "HlastSeqOwn" ∷ sv_ptr ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
-∗ "HlastReplyOwn" ∷ sv_ptr ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
-∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) kv_server.(sv).(lastSeqM)
-∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) kv_server.(sv).(lastReplyM)
-∗  "HlocksOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr
-∗ "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
-∗ "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #sv_ptr)
-∗ "Holdkv" ∷ kvserver_durable_is old_kv_server
-
+       RET #(); KVServer_durable_own kv_server ∗
+     KVServer_core_own_vol srv_ptr kv_server ∗
+     RPCServer_own_vol sv_ptr kv_server.(sv)
   }}}
   {{{
- kvserver_durable_is old_kv_server ∨ kvserver_durable_is kv_server
+ KVServer_durable_own old_kv_server ∨ KVServer_durable_own kv_server
 }}}.
 Admitted.
 
-Lemma RPCServer__HandleRequest_spec' (srv sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost :
+Lemma wp_RPCServer__HandleRequest' (req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γ γPost :
 {{{
-  "#Hls" ∷ is_kvserver srv sv γ
+  "#Hls" ∷ is_kvserver srv_ptr sv_ptr γ
   ∗ "#HreqInv" ∷ is_durable_RPCRequest γ.(ks_rpcGN) γPost PreCond PostCond req
   ∗ "#Hreq" ∷ read_request req_ptr req
   ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
-  RPCServer__HandleRequest #sv coreFunction makeDurable #req_ptr #reply_ptr
+  RPCServer__HandleRequest #sv_ptr coreFunction makeDurable #req_ptr #reply_ptr
 {{{ RET #false; ∃ reply':Reply64, own_reply reply_ptr reply'
     ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γ.(ks_rpcGN) req)
   ∨ RPCReplyReceipt γ.(ks_rpcGN) req reply'.(Ret))
@@ -334,13 +366,17 @@ Proof.
   iNamed "Hlsown".
   iNamed "Hkv". iNamed "Hrpc".
   iNamed "Hreq".
-  iCache with "Hkvdurable Hkvctx Hsrpc".
+  (* this iNamed stuff is a bit silly *)
+
+  unfold RPCServer_own_ghost. iNamed "Hrpcghost".
+  iCache with "Hkvdurable Hkvghost Hsrpc".
   { iModIntro; iNext. iSplit; first done.
     iExists _; iFrame. by iModIntro.
   }
   wpc_loadField.
   wpc_loadField.
 
+  iNamed "Hrpcvol".
   (* Do loadField on non-readonly ptsto *)
   wpc_bind (struct.loadF _ _ _).
   wpc_frame.
@@ -369,12 +405,10 @@ Proof.
       iNamed "Hcases"; discriminate. }
     iNamed "Hcases".
     (* Do loadField on non-readonly ptsto *)
-    iSplitR "HlocksOwn HkvsMap Hkvdurable Hsrpc HlastSeqOwn HlastReplyOwn Hkvctx HlastSeqMap HlastReplyMap"; last first.
+    iSplitR "Hkvvol Hkvdurable Hsrpc HlastSeqOwn HlastReplyOwn Hkvghost HlastSeqMap HlastReplyMap"; last first.
     {
-      iNext. iExists _; iFrame. unfold KVServer_own_core.
-      iSplitL "HlocksOwn HkvsMap".
-      - iExists _; iFrame.
-      - iExists _, _; iFrame.
+      iNext. iExists _; iFrame.
+      iExists _, _; iFrame.
     }
     iIntros "Hlocked".
     iSplit.
@@ -397,17 +431,17 @@ Proof.
     wp_loadField;
     iNamed 1).
     iMod (rpc_get_cancellable_inv with "HreqInv") as "Hcinv"; eauto.
-    wpc_apply (RPC_core_spec_example (RPCServer_own γ.(ks_rpcGN) kv_server.(kv_durable_proof.sv).(lastSeqM) kv_server.(kv_durable_proof.sv).(lastReplyM))
-                 with "[$Hsrpc $Hcinv]").
+    wpc_apply (wp_coreFunction γ (RPCServer_own γ.(ks_rpcGN) kv_server.(kv_durable_proof.sv).(lastSeqM) kv_server.(kv_durable_proof.sv).(lastReplyM))
+                 with "[$Hsrpc $Hcinv $Hkvvol]").
    iSplit.
     {
       iModIntro. iNext. iIntros "Hsrpc".
       iSplit; first done.
       iExists _; iFrame. by iModIntro.
     }
-    iIntros (retval).
     iNext.
-    iIntros "[Hsrpc Hfupd]".
+    iIntros (kvserver' retval).
+    iIntros "(Hsrpc & Hkvvol & #Hfupd)".
 
     iNamed "Hreply".
 
@@ -429,10 +463,15 @@ Proof.
     iNamed 1.
     wpc_pures.
     iApply wpc_fupd.
-    wpc_apply (make_durable_spec _ _ _ _ _ _ {| kvsM := _ ; sv:={| lastSeqM := (<[req.(CID):=req.(Seq)]> kv_server.(kv_durable_proof.sv).(lastSeqM)) ; lastReplyM := _ |} |} with "[-Hpost Hkvctx Hsrpc Hfupd HReplyOwnRet HReplyOwnStale]").
-    { simpl. iFrame "#∗". }
+    wpc_apply (wpc_makeDurable _ {| kvsM := _; sv :=
+                                                 {| lastSeqM := (<[req.(CID):=req.(Seq)]> kv_server.(sv).(lastSeqM)) ;
+                                                    lastReplyM := (<[req.(CID):=retval]> kv_server.(sv).(lastReplyM))
+                                                 |}
+                                 |} with "[-Hpost Hkvghost Hsrpc HReplyOwnRet HReplyOwnStale]").
+    { iFrame. simpl. iExists _, _. iFrame. }
     iSplit.
-    { iIntros.
+    {
+      iIntros.
       iModIntro. iNext.
       iIntros "Hkvdurable".
       iSplit; first done.
@@ -440,19 +479,19 @@ Proof.
       iDestruct "Hkvdurable" as "[Hkvdurable|Hkvdurable]".
       + iModIntro; iExists _; iFrame.
       +  (* TODO: Pass in Hkvctx into core function (as *_core_own or some such) and put on LHS of fupd *)
-        admit. }
-    simpl.
+        iMod (server_executes_durable_request with "[Hlinv] [] [Hsrpc] [Hfupd] [Hkvghost]") as "(Hreceipt & Hsrpc & Hkvghost)"; eauto.
+        iModIntro.
+        iExists _. iFrame "Hkvdurable". simpl. iFrame.
+    }
     iNext. iIntros "[Hkvdurable Hsrvown]".
-    iDestruct (server_executes_durable_request with "[Hlinv] [] [Hsrpc] [Hfupd]") as "[Hreceipt Hsrpc]"; eauto.
+    simpl.
+    iMod (server_executes_durable_request with "[Hlinv] [] [Hsrpc] [Hfupd] [Hkvghost]") as "(Hreceipt & Hsrpc & Hkvghost)"; eauto.
     iModIntro.
-    iSplitR "Hsrvown Hkvdurable Hkvctx Hsrpc"; last first.
+    iSplitR "Hsrvown Hkvdurable Hkvghost Hsrpc"; last first.
     {
       iNamed "Hsrvown".
       iNext. iExists _. iFrame "Hkvdurable".
-      iFrame. simpl.
-      iSplitL "HlocksOwn HkvsMap".
-      - iExists _; iFrame.
-      - iExists _, _; iFrame.
+      iFrame.
     }
 
     iIntros "Hlocked".
@@ -467,6 +506,6 @@ Proof.
     iApply "Hpost".
     iModIntro.
     iExists {| Stale:=_ ; Ret:=retval |}; iFrame.
-Admitted.
+Qed.
 
 End kv_proof.
