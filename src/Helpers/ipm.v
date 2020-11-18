@@ -39,6 +39,52 @@ Tactic Notation "iRight" "in" constr(H) :=
   let pat := constr:(IList [[IDrop; IIdent H]]) in
   iDestruct H as pat.
 
+(** freezing: hiding a hypothesis body
+
+    the basic interface for this trick is borrowed from VST *)
+
+Definition freeze {A} (x:A) := x.
+
+Lemma freeze_eq {A} (x:A) : freeze x = x.
+Proof. reflexivity. Qed.
+
+Ltac iFreeze H :=
+  let i := lazymatch type of H with
+           | string => constr:(INamed H)
+           | _ => H
+           end in
+  lazymatch iTypeOf i with
+  | Some (_, ?P) =>
+    iEval (rewrite -(freeze_eq P)) in i;
+    let var := fresh "__frozen" in
+    set (var:=freeze P)
+  | None => let H := pretty_ident i in
+            fail 1 "iFreeze:" H "not found"
+  end.
+
+Ltac iThaw H :=
+  let i := lazymatch type of H with
+           | string => constr:(INamed H)
+           | _ => H
+           end in
+  lazymatch iTypeOf i with
+  | Some (_, ?P) =>
+    first [ is_var P; subst P; rewrite freeze_eq
+          | let H := pretty_ident i in
+            fail 1 "iThaw:" H "is not frozen"]
+  | None => let H := pretty_ident i in
+            fail 1 "iThaw:" H "not found"
+  end.
+
+Typeclasses Opaque freeze.
+Opaque freeze.
+
+(* hide frozen terms from display (even in the Coq context) *)
+(* closing this scope will re-display frozen terms *)
+Declare Scope freeze_scope.
+Notation "☃" := (freeze _) (at level 0, only printing) : freeze_scope.
+Global Open Scope freeze_scope.
+
 Module tests.
   Section bi.
     Context {PROP: bi} `{BiAffine PROP}.
@@ -64,5 +110,15 @@ Module tests.
       iIntros "H".
       Fail iExactEq "foo".
     Abort.
+
+    Example test_freeze Φ n :
+      Φ (n + 1) -∗ True.
+    Proof.
+      iIntros "H".
+      iFreeze "H".
+      iThaw "H".
+      auto.
+    Qed.
+
   End bi.
 End tests.
