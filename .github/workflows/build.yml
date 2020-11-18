@@ -39,9 +39,10 @@ jobs:
           startGroup Print opam config
             opam config list; opam repo list; opam list
           endGroup
-          startGroup Set up permissions
-            sudo chown -R coq:coq .
-          endGroup
+          sudo chown -R coq:coq . # Workaround a permission issue:
+            # the container user has UID=GID=1000,
+            # while the GHA workdir has (UID=1001, GID=116).
           startGroup Build
             make -j2 -k ci
           endGroup
+          sudo chown -R coq:coq . # Revert permissions back
