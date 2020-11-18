@@ -1493,7 +1493,7 @@ Proof using Ptimeless.
       iMod "Hfupd" as "[HP HQ]".
       iMod ("Hclose" with "[Hsrcheap HP]").
       { iModIntro. iExists _. iFrame "∗%#". iSplit.
-        { iPureIntro. rewrite /= dom_insert_L. set_solver. }
+        { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom H5. }
         iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
         iApply (big_sepM_insert_delete with "[$H1]").
         iPureIntro.
@@ -1799,7 +1799,7 @@ Proof using Ptimeless.
         {
           (* Implicit transaction abort *)
           iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "Hold".
-          
+
           iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
           wp_storeField.
           wp_loadField.
@@ -1879,7 +1879,7 @@ Proof using Ptimeless.
             iMod "Hfupd" as "[HP HQ]".
             iMod ("Hclose" with "[Hsrcheap HP]").
             { iModIntro. iExists _.  iFrame "∗%#". iSplit.
-              { iPureIntro. rewrite /= dom_insert_L. set_solver. }
+              { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom H5. }
               iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
               iApply (big_sepM_insert_delete with "[$H1]").
               iPureIntro.
@@ -1898,24 +1898,21 @@ Proof using Ptimeless.
               iDestruct "Hcommit" as "(Hinode_enc & Hinode_data)".
               iExists _.
 
-              replace (int.Z (length state)
-                             `max` (int.Z (length state) + int.Z (word.sub u (length state))))%Z
-                with
-                  (length (take (int.nat u) state ++ replicate (int.nat u - length state) (U8 0)): Z ).
-
-              2: {
-                rewrite app_length replicate_length take_length_ge.
-                2: { revert Heqb. word. }
-                admit.
-              }
-              replace
-                  (take (int.nat (length state)) state ++
-                       take (int.nat (word.sub u (length state)))
-                         (replicate (int.nat (word.sub u (length state))) IntoVal_def) ++
-                       drop (int.nat (length state) + int.nat (word.sub u (length state)))
-                       state)%list with
-                  (take (int.nat u) state ++ replicate (int.nat u - length state) (U8 0))%list.
-              2: admit.
+              assert (length state < int.Z u)%Z by (revert Heqb; word).
+              rewrite -> Z.max_r in Heqb0 by word.
+              rewrite -Heqb0. word_cleanup.
+              rewrite -> Z.max_r by word.
+              rewrite !app_length !replicate_length take_length_ge.
+              2: word.
+              replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
+              replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
+              replace (length state + (int.nat u - length state)) with (int.nat u) by lia.
+              replace (U64 (int.nat u)) with (U64 (int.Z u)) by word. iFrame.
+              replace (Z.to_nat (length state)) with (length state) by lia.
+              rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
+              rewrite drop_ge; last by lia. rewrite app_nil_r.
+              rewrite firstn_all2. 2: rewrite replicate_length; lia.
+              replace (Z.to_nat (int.Z u - length state)) with (int.nat u - length state) by lia.
               iFrame.
             }
 
@@ -1973,11 +1970,15 @@ Proof using Ptimeless.
         }
       }
       {
-        (* Implicit transaction abort, write failed, NOSPC  *)
-        iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "Hold".
-
         iDestruct "Hok" as "(Hinode_mem & Hinode_enc & Hinode_data & %Hok)". intuition subst.
         wp_pures.
+        iNamed "Hinode_mem".
+        wp_loadField.
+        wp_if_destruct.
+        2: lia.
+
+        (* Implicit transaction abort, write failed, NOSPC  *)
+        iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "Hold".
 
         iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
         wp_storeField.
@@ -2070,7 +2071,7 @@ Proof using Ptimeless.
                 
         iMod ("Hclose" with "[Hsrcheap HP]").
         { iModIntro. iExists _.  iFrame "∗%#". iSplit.
-            { iPureIntro. rewrite /= dom_insert_L. set_solver. }
+            { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom Hvalid. }
             iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
             iApply (big_sepM_insert_delete with "[$H1]").
             iPureIntro.
@@ -2233,6 +2234,6 @@ Proof using Ptimeless.
     iSplit; first done.
     iFrame.
   }
-Admitted.
+Qed.
 
 End heap.
