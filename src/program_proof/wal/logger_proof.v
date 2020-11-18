@@ -36,7 +36,7 @@ Theorem wp_Walog__waitForSpace l γ σₛ :
       "Hlocked" ∷ locked #σₛ.(memLock)  ∗
       "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
       "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
-      "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
+      "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
       "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
       "%Hhas_space" ∷ ⌜length σ.(memLog).(slidingM.log) ≤ LogSz⌝
   }}}.
@@ -49,7 +49,7 @@ Proof.
               (λ b, "Hlocked" ∷ locked #σₛ.(memLock) ∗
                     "*" ∷ ∃ σ, "Hfields" ∷ wal_linv_fields σₛ.(wal_st) σ ∗
                                "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
-                               "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
+                               "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
                                "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
                                "%Hbreak" ∷ ⌜b = false → (length σ.(memLog).(slidingM.log) ≤ LogSz)⌝
               )%I

@@ -340,7 +340,7 @@ Definition wal_linv_fields st σ: iProp Σ :=
   "His_memLog" ∷ is_sliding σₗ.(memLogPtr) σ.(memLog)
   )%I.
 
-Definition diskEnd_linv γ (diskEnd: u64) diskEnd_txn_id: iProp Σ :=
+Definition diskEnd_linv γ (diskEnd: u64) : iProp Σ :=
   "#HdiskEnd_at_least" ∷ diskEnd_at_least γ.(circ_name) (int.Z diskEnd) ∗
   "HdiskEnd_exactly" ∷ thread_own_ctx γ.(diskEnd_avail_name)
                          ("HdiskEnd_is" ∷ diskEnd_is γ.(circ_name) (1/2) (int.Z diskEnd)).
@@ -354,14 +354,14 @@ Definition diskStart_linv γ (start: u64): iProp Σ :=
 Definition wal_linv (st: loc) γ : iProp Σ :=
   ∃ σ,
     "Hfields" ∷ wal_linv_fields st σ ∗
-    "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
+    "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
     "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
     "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id).
 
 (* TODO: when possible, refactor wal_linv to use this directly *)
 Definition wal_linv_durable γ : iProp Σ :=
   ∃ σ,
-    "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) σ.(locked_diskEnd_txn_id) ∗
+    "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
     "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
     "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id).
 

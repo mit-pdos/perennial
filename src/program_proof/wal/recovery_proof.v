@@ -409,12 +409,12 @@ Qed.
 End txns_factory.
 
 
-Lemma diskEnd_linv_post_crash γ' diskEnd Q diskEnd_txn_id :
+Lemma diskEnd_linv_post_crash γ' diskEnd Q :
   int.Z (U64 diskEnd) = diskEnd →
   diskEnd_is γ'.(circ_name) (1/2) diskEnd -∗
   thread_own_ctx γ'.(diskEnd_avail_name) Q -∗
   thread_own γ'.(diskEnd_avail_name) Available -∗
-  |==> diskEnd_linv γ' diskEnd diskEnd_txn_id ∗
+  |==> diskEnd_linv γ' diskEnd ∗
         thread_own γ'.(diskEnd_avail_name) Available.
 Proof.
   iIntros (Hbound) "H Hctx Havail".
@@ -528,7 +528,7 @@ Proof.
     iPoseProof "circ.start" as "#tmp"; iNamed "tmp".
     iDestruct "Hcirc_resources" as "(Hcirc_start&Hcirc_diskEnd & Happender)".
 
-    iMod (diskEnd_linv_post_crash _ (int.Z diskEnd) _ diskEnd_txn_id
+    iMod (diskEnd_linv_post_crash _ (int.Z diskEnd)
             with "[Hcirc_diskEnd] diskEnd_avail_ctx diskEnd_avail")
          as "(HdiskEnd_linv & diskEnd_avail)".
     { word. }
