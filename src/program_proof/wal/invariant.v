@@ -408,7 +408,7 @@ Definition is_installed_core γ d txns (installed_txn_id being_installed_start_t
   "Howninstalled" ∷ (
     (* why do these need to be fmcounters? *)
     "HownBeingInstalledStartTxn_walinv" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
-    "HownBeingInstalledEndTxn_walinv" ∷ fmcounter γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
+    "HownBeingInstalledEndTxn_walinv" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
     "Halready_installed" ∷ ghost_var γ.(already_installed_name) (1/2) already_installed) ∗
   (* TODO: ⌜diskEnd_txn_id < length txns⌝ shouldn't be necessary, follows from Hend_txn in is_durable *)
   "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ being_installed_start_txn_id ≤ being_installed_end_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
@@ -538,7 +538,7 @@ Definition logger_inv γ circ_l: iProp Σ :=
 (* TODO: also needs authoritative ownership of some other variables *)
 (** installer_inv is the resources exclusively owned by the installer thread *)
 Definition installer_inv γ: iProp Σ :=
-  ∃ (installed_txn_id_mem : nat),
+  ∃ (installed_txn_id_mem being_installed_end_txn_id: nat),
     "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available ∗
     "HownInstallerPos_installer" ∷ (∃ (installer_pos : nat), ghost_var γ.(installer_pos_name) (1/2) installer_pos) ∗
     "HownInstallerTxn_installer" ∷ (∃ (installer_txn_id : nat), ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id) ∗
@@ -546,7 +546,8 @@ Definition installer_inv γ: iProp Σ :=
     "HownInstallerTxnMem_installer" ∷ (∃ (installer_txn_id_mem : nat), ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem) ∗
     "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
     "HownBeingInstalledStartTxn_installer" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) installed_txn_id_mem ∗
-    "HownBeingInstalledEndTxn_installer" ∷ fmcounter γ.(being_installed_end_txn_name) (1/2) installed_txn_id_mem ∗
+    "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
+    "#HdiskEndMem_lb_installer" ∷ fmcounter_lb γ.(diskEnd_mem_txn_id_name) being_installed_end_txn_id ∗
     "HownInstalledPosMem_installer" ∷ (∃ (installed_pos_mem : u64), ghost_var γ.(installed_pos_mem_name) (1/2) installed_pos_mem) ∗
     "HownInstalledTxnMem_installer" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
 .
@@ -567,7 +568,7 @@ Qed.
 
 Theorem is_installed_restore_read γ d txns installed_txn_id diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id :
   fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id -∗
-  fmcounter γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id -∗
+  ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id -∗
   ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) -∗
   txns_are γ (S being_installed_start_txn_id) (subslice (S being_installed_start_txn_id) (S being_installed_end_txn_id) txns) -∗
   is_installed_read d txns installed_txn_id being_installed_start_txn_id being_installed_end_txn_id diskEnd_txn_id -∗
