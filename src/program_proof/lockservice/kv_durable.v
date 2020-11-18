@@ -35,7 +35,7 @@ Record KVServerC :=
   }.
 
 (**
-  Crash-safety plan:
+  Old crash-safety plan:
 
   KVServer_core_own_vol kvserver: ownership of volatile (in-memory) state, that can be directly modified by the core function
 
@@ -74,6 +74,36 @@ Record KVServerC :=
 
   Additionally, we also will be forced to apply the fupd to update the state of _own_ghost to match the durable state; this will also give us the reply receipt, which is the postcondition for the HandleRequest function. The client can, as before, take the PostCond out of RPCRequest_inv.
 
+*)
+
+(**
+
+New crash-safety plan:
+
+The old plan suffers from the same problem as original perennial. You have to
+keep opening and closing the invariant, so you might lose some information,
+unless you use something like recovery leases.
+
+Here's a better approach:
+To get out the PreCond, the server must put a token in the invariant. We keep
+ownership of this token in the server's mutex invariant (the ghost part).
+This means that if we have an obligation to prove that we never lose these
+tokens as we execute code while holding the lock. When we take PreCond out of
+the invariant, we'll actually get PreCond \ast \gamma P. Finally, we can show
+that the crash condition for owning the token is implied by
+PreCond \ast \gamma P. Namely, with \gamma P and PreCond in hand, on a crash,
+we can open up the invariant, show that we are in the unprocesssed case of the
+invariant (by using the RPCServer_own that we have not changed yet), then use
+the \gamma P and PreCond to get back the token that we need for our crash
+obligation.
+
+By doing this, we can pass in P to a function that has P in its crash
+condition, and show that it implies our crash condition! So the core function
+proof no longer needs to repeatedly open and close an invariant.
+
+For token, we can get away with using the fmcounter_map lseq ptsto for that
+client. For now, this'll allow us to avoid needing to add more ghost state to
+coordinate this stuff.
 *)
 
 Axiom KVServer_durable_own : KVServerC -> iProp Σ.
