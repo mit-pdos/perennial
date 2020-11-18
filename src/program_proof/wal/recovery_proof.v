@@ -32,6 +32,8 @@ Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
     "txns_ctx" ∷ txns_ctx γnew [] ∗
     "start_avail" ∷ thread_own γnew.(start_avail_name) Available ∗
     "start_avail_ctx" ∷ thread_own_ctx γnew.(start_avail_name) True ∗
+    "diskEnd_avail" ∷ thread_own γnew.(diskEnd_avail_name) Available ∗
+    "diskEnd_avail_ctx" ∷ thread_own_ctx γnew.(diskEnd_avail_name) True ∗
     "cs" ∷ ghost_var γnew.(cs_name) 1 (inhabitant : circΣ.t) ∗
     "txns" ∷ ghost_var γnew.(txns_name) 1 ([] : list (u64 * list update.t))
 .
@@ -220,6 +222,7 @@ Proof.
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
   iMod (alist_alloc (@nil (u64 * list update.t))) as (γtxns_ctx_name) "Htxns_ctx".
   iMod (thread_own_alloc True with "[//]") as (start_avail_name) "(Hstart_avail_ctx&Hstart_avail)".
+  iMod (thread_own_alloc True with "[//]") as (diskEnd_avail_name) "(HdiskEnd_avail_ctx&HdiskEnd_avail)".
   iMod (ghost_var_alloc (inhabitant : circΣ.t)) as (cs_name) "Hcs".
   iMod (ghost_var_alloc ([] : list (u64 * list update.t))) as (txns_name) "Htxns".
 
@@ -232,7 +235,7 @@ Proof.
             being_installed_start_txn_name := being_installed_start_txn_name;
             being_installed_end_txn_name := being_installed_end_txn_name;
             already_installed_name := already_installed_name;
-            diskEnd_avail_name := TODO_NAME;
+            diskEnd_avail_name := diskEnd_avail_name;
             start_avail_name := start_avail_name;
             stable_txn_ids_name := γstable_txn_ids_name;
             logger_pos_name := TODO_NAME;
@@ -394,7 +397,7 @@ Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
                 (<disc> |C={⊤}_0=> ∃ s, ⌜wal_post_crash s⌝ ∗
                                          (* NOTE: need to add the ghost state that the logger will need *)
-                                         is_wal_inner_durable γ' s dinit ∗ installer_inv γ' ∗ Prec s) ∗
+                                         is_wal_inner_durable γ' s dinit ∗ wal_resources γ' ∗ Prec s) ∗
                 □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
                                            ⌜relation.denote log_crash s s' tt⌝ ∗
                                            is_wal_inner_crash γ s ∗
@@ -430,7 +433,8 @@ Proof.
                 ghost_var γ.(cs_name) (1/2) cs0 ∗
                 (is_circular_state γ'.(circ_name) cs0 -∗
                  circ_resources γ'.(circ_name) cs0 -∗
-                 ⌜wal_post_crash s⌝ ∗ (is_wal_inner_durable γ' s dinit) ∗ installer_inv γ' ∗ Prec s))%I with
+                 ⌜wal_post_crash s⌝ ∗ (is_wal_inner_durable γ' s dinit) ∗
+                 wal_resources γ' ∗ Prec s))%I with
             "[] [Hinner HP Hinit]") as "(Hncinv&Hcfupd&Hcinv)".
   { solve_ndisj. }
   { iModIntro. iIntros "(H1&>Hinit) #HC".
@@ -458,7 +462,7 @@ Proof.
     rewrite app_nil_l.
     iMod (ghost_var_update σ'.(log_state.txns) with "txns") as "[Htxns1 Htxns2]".
 
-    (* XXX: thread_own_put for start_avail, but need circ_resources first *)
+    (* XXX: thread_own_put for start_avail and diskEnd_avail, but need circ_resources first *)
 
     iDestruct (txns_ctx_make_factory with "Htxns_ctx Htxns_ctx'") as "[Hold_txns Htxns_ctx']".
 
@@ -479,7 +483,8 @@ Proof.
       rewrite /installer_inv.
       iExists being_installed_start_txn_id. installed_txn_id_mem.
      *)
-    iSplitL.
+    iSplitR "start_avail diskEnd_avail
+             being_installed_start_txn2 being_installed_end_txn2".
     {
     iSplitL "".
     { iPureIntro. eapply log_crash_to_wf; eauto. }
@@ -530,10 +535,14 @@ Proof.
     [logger_inv] and [installer_inv] in particular) *)
   }
   {
-    rewrite /installer_inv. iExists being_installed_start_txn_id.
-    iSplitL.
-    { (* TODO: need to allocate thread own above *) admit. }
-    admit.
+    rewrite /wal_resources.
+    rewrite /installer_inv.
+    iSplitL "diskEnd_avail".
+    { iFrame.
+      admit. (* more ghost vars *) }
+    iExists being_installed_start_txn_id.
+    iFrame.
+    admit. (* more ghost vars *)
   }
   }
   {
@@ -558,7 +567,7 @@ Proof.
   }
   iFrame.
   all: fail "goals remaining".
-Abort.
+Admitted.
 
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
   (∀ σ', relation.denote (log_crash) σ σ' tt → IntoCrash (P σ) (P' σ')) →
