@@ -510,6 +510,17 @@ Proof.
   set_solver.
 Qed.
 
+Lemma is_durable_txn_get_txn_pos γ' cs txns diskEnd_txn_id durable_lb :
+  is_durable_txn γ' cs txns diskEnd_txn_id durable_lb -∗
+  txns_ctx γ' txns -∗
+  txn_pos γ' diskEnd_txn_id (U64 (circΣ.diskEnd cs)).
+Proof.
+  iNamed 1.
+  iIntros "Hctx".
+  iDestruct (txns_ctx_txn_pos with "Hctx") as "$"; eauto.
+  replace (U64 (circΣ.diskEnd cs)) with diskEnd by word; auto.
+Qed.
+
 (* Called after wpc for recovery is completed, so l is the location of the wal *)
 Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   is_wal_inv_pre l γ s dinit -∗
@@ -591,7 +602,13 @@ Proof.
     iDestruct (txns_ctx_make_factory with "Htxns_ctx Htxns_ctx'") as "[Hold_txns Htxns_ctx']".
 
     iDestruct (is_durable_txn_crash with "circ.end [$]") as "#Hdurable_txn".
+
+    iDestruct (is_durable_txn_get_txn_pos with "Hdurable_txn Htxns_ctx'") as "#HdiskEnd_pos".
+
     iNamed "circ.end".
+
+    replace (U64 (circΣ.diskEnd cs0)) with diskEnd by word.
+
     iPoseProof "circ.start" as "#tmp"; iNamed "tmp".
     iDestruct "Hcirc_resources" as "(Hcirc_start&Hcirc_diskEnd & Happender)".
 
@@ -608,6 +625,10 @@ Proof.
     { iExactEq "Hcirc_start".
       eauto with f_equal. }
 
+    iDestruct "Hstable_txns" as "[Hstable_txns1 Hstable_txns2]".
+    iDestruct (memLog_linv_nextDiskEnd_txn_id_post_crash with
+               "Hstable_txns1 HdiskEnd_pos [$]")
+              as "HnextDiskEnd_linv"; first by lia.
     iFreeze "# Hdata".
 
     (* TODO(tej): these are my best guesses from the invariant, but they'll be
@@ -625,6 +646,7 @@ Proof.
         as "[logger_pos1 logger_pos2]".
     iMod (ghost_var_update diskEnd_txn_id with "logger_txn_id")
         as "[logger_txn_id1 logger_txn_id2]".
+
 
     (*
 memLog_linv_pers_core facts:
