@@ -279,30 +279,80 @@ Proof.
   rewrite /is_base_disk => -> //.
 Qed.
 
+Definition map_set_ctx {K} `{Countable K} `{!mapG Σ K ()}
+           (γ: gname) q (m: gmap K ()) : iProp Σ :=
+  map_ctx γ q m ∗
+  [∗ map] k↦_ ∈ m, ptsto_ro γ k ().
+
+Lemma map_set_ctx_alloc1 {K} `{Countable K} `{!mapG Σ K ()} {γ: gname} (k:K) (s: gset K) :
+  map_set_ctx γ 1 (gset_to_gmap () s) -∗
+  |==> map_set_ctx γ 1 (gset_to_gmap () ({[k]} ∪ s)) ∗
+       ptsto_ro γ k ().
+Proof.
+  iDestruct 1 as "[Hctx Hro]".
+  destruct (gset_to_gmap () s !! k) eqn:Hlookup.
+  - (* already there, just need to extract it *)
+    iModIntro.
+    destruct u.
+    iDestruct (big_sepM_lookup _ _ k () with "Hro") as "#$"; first by auto.
+    replace ({[k]} ∪ s) with s; [ by iFrame | ].
+    apply lookup_gset_to_gmap_Some in Hlookup as [? _].
+    set_solver.
+  - iMod (map_alloc_ro k () with "Hctx") as "[Hctx #Hk]"; first by auto.
+    iModIntro.
+    iFrame "Hk".
+    rewrite gset_to_gmap_union_singleton.
+    iFrame.
+    rewrite big_sepM_insert //.
+    iFrame "#∗".
+Qed.
+
+Lemma map_set_ctx_alloc {K} `{Countable K} `{!mapG Σ K ()} {γ: gname} (s' s: gset K) :
+  map_set_ctx γ 1 (gset_to_gmap () s) -∗
+  |==> map_set_ctx γ 1 (gset_to_gmap () (s' ∪ s)) ∗
+       [∗ set] k ∈ s', ptsto_ro γ k ().
+Proof.
+  iIntros "Hctx".
+  iInduction s' as [|k s'] "IH" using set_ind_L.
+  - rewrite left_id_L big_sepS_empty.
+    by iFrame.
+  - rewrite -union_assoc_L.
+    rewrite gset_to_gmap_union_singleton.
+    rewrite big_sepS_insert //.
+    iMod ("IH" with "Hctx") as "[Hctx $]".
+    iMod (map_set_ctx_alloc1 k with "Hctx") as "[Hctx #$]".
+    iModIntro.
+    rewrite gset_to_gmap_union_singleton //.
+Qed.
+
+Lemma map_alloc_ro_set {K} `{Countable K} `{!mapG Σ K ()} {γ: gname} (s: gset K) :
+  map_ctx γ 1 (∅ : gmap K ()) -∗
+  |==> map_ctx γ 1 (gset_to_gmap () s) ∗
+       [∗ set] k∈s, ptsto_ro γ k ().
+Proof.
+  iIntros "Hctx".
+  iMod (map_set_ctx_alloc s ∅ with "[Hctx]") as "[Hctx $]".
+  - rewrite /map_set_ctx.
+    rewrite gset_to_gmap_empty.
+    rewrite big_sepM_empty.
+    iFrame.
+  - rewrite right_id_L.
+    iDestruct "Hctx" as "[$ _]".
+    auto.
+Qed.
+
 Lemma init_stable_txns γstable_txn_ids_name (installed_txn_id diskEnd_txn_id : nat) :
   map_ctx   γstable_txn_ids_name 1 (∅ : gmap nat unit) -∗
-  |==> "Hstable_txns" ∷ map_ctx γstable_txn_ids_name 1
-                    (<[diskEnd_txn_id:=()]> {[installed_txn_id := ()]}) ∗
+  |==> "Hstable_txns" ∷ map_ctx γstable_txn_ids_name 1 (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id]}) ∗
        "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γstable_txn_ids_name]]↦ro () ∗
        "#Hinstalled_txn_id_stable" ∷ installed_txn_id [[γstable_txn_ids_name]]↦ro ().
 Proof.
   iIntros "Hstable_txns".
-  iMod (map_alloc_ro installed_txn_id () with "Hstable_txns") as "[Hstable_txns #Hinstalled_stable]".
-  { set_solver. }
-  iAssert (|==> let stable_txns := <[diskEnd_txn_id:=()]> {[installed_txn_id:=()]} in
-                map_ctx γstable_txn_ids_name 1 stable_txns ∗
-                diskEnd_txn_id [[γstable_txn_ids_name]]↦ro ())%I
-    with "[Hstable_txns]" as "HdiskEnd_txn_id_mod".
-  { destruct (decide (installed_txn_id = diskEnd_txn_id)); subst.
-    - iModIntro.
-      rewrite insert_singleton.
-      iFrame "∗#".
-    - iMod (map_alloc_ro diskEnd_txn_id with "Hstable_txns") as "[Hstable_txns #HdiskEnd_stable]".
-      { rewrite lookup_insert_ne //. }
-      iModIntro. iFrame "#∗". }
-  iMod "HdiskEnd_txn_id_mod" as
-    "[[Hstable_txns1 Hstable_txns2] #HdiskEnd_stable]".
-  by iFrame "#∗".
+  iMod (map_alloc_ro_set with "Hstable_txns") as "[$ Hro]".
+  iModIntro.
+
+  iDestruct (big_sepS_elem_of with "Hro") as "#$"; first by set_solver.
+  iDestruct (big_sepS_elem_of with "Hro") as "#$"; first by set_solver.
 Qed.
 
 Lemma is_installed_txn_crash γ γ' cs txns installed_txn_id installed_lb crash_txn  :
@@ -443,6 +493,23 @@ Proof.
   by iFrame "#".
 Qed.
 
+Lemma memLog_linv_nextDiskEnd_txn_id_post_crash γ diskEnd diskEnd_txn_id installed_txn_id :
+  (installed_txn_id ≤ diskEnd_txn_id)%nat →
+  map_ctx γ.(stable_txn_ids_name) (1/2) (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id]}) -∗
+  txn_pos γ diskEnd_txn_id diskEnd -∗
+  diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro () -∗
+  memLog_linv_nextDiskEnd_txn_id γ diskEnd diskEnd_txn_id.
+Proof.
+  iIntros (Hbound) "Hctx #Hpos #HdiskEnd_stable".
+  iExists _; iFrame "#∗".
+  iPureIntro.
+  intros ??.
+  apply lookup_gset_to_gmap_None.
+  assert (txn_id ≠ diskEnd_txn_id) by lia.
+  assert (txn_id ≠ installed_txn_id) by lia.
+  set_solver.
+Qed.
+
 (* Called after wpc for recovery is completed, so l is the location of the wal *)
 Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   is_wal_inv_pre l γ s dinit -∗
@@ -548,10 +615,34 @@ Proof.
     just [circ_matches_txns] *)
     iMod (ghost_var_update (int.nat cs0.(circΣ.start)) with "installer_pos_mem")
          as "[installer_pos_mem1 installer_pos_mem2]".
+    iMod (ghost_var_update (int.nat cs0.(circΣ.start)) with "installed_pos_mem")
+         as "[installed_pos_mem1 installed_pos_mem2]".
     iMod (ghost_var_update installed_txn_id with "installed_txn_id_mem")
          as "[installed_txn_id_mem1 installed_txn_id_mem2]".
     iMod (ghost_var_update installed_txn_id with "installer_txn_id_mem")
          as "[installer_txn_id_mem1 installer_txn_id_mem2]".
+    iMod (ghost_var_update (Z.to_nat (circΣ.diskEnd cs0)) with "logger_pos")
+        as "[logger_pos1 logger_pos2]".
+    iMod (ghost_var_update diskEnd_txn_id with "logger_txn_id")
+        as "[logger_txn_id1 logger_txn_id2]".
+
+    (*
+memLog_linv_pers_core facts:
+
+todo:
+    "#Hlinv_pers" ∷ memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos_mem installer_txn_id_mem ∗
+done:
+    "Howntxns" ∷ ghost_var γ.(txns_name) (1/2) txns ∗
+    "HownDiskEndMem_linv" ∷ fmcounter γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
+    "HownDiskEndMemTxn_linv" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HnextDiskEnd" ∷ memLog_linv_nextDiskEnd_txn_id γ σ.(slidingM.mutable) nextDiskEnd_txn_id ∗
+    "HownInstallerPosMem_linv" ∷ ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem ∗
+    "HownInstallerTxnMem_linv" ∷ ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem ∗
+    "HownInstalledPosMem_linv" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗
+    "HownInstalledTxnMem_linv" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
+    "HownLoggerPos_linv" ∷ ghost_var γ.(logger_pos_name) (1/2) logger_pos ∗
+    "HownLoggerTxn_linv" ∷ ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id ∗
+     *)
 
     iThaw "Hwand".
     iMod ("Hwand" $! σ σ' with "[//] HP") as "(HPrec&HPcrash)".
