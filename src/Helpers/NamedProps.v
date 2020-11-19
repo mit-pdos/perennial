@@ -22,16 +22,22 @@ Set Default Proof Using "Type".
   There are a few more top-level tactics provided to work with named
   propositions:
   - [iNamed] names any anonymous hypotheses (without destructing them)
-  - [iNamed 1] on a wand introduces and destructs the the premise.
+  - [iNamed 1] on a wand introduces and destructs the premise.
+  - [iNamedAccu] is like [iAccu] - it solves a goal which is an evar with the
+    conjunction of all the hypotheses - but produces a conjunction of named
+    hypotheses. This is especially useful when that evar ?Q shows up as a
+    premise in a wand, [?Q -∗ ...], at which point you can do [iNamed 1] to
+    restore the context, including all the names.
   - [iFrameNamed] is a work-in-progress tactic to frame a goal with named
     conjuncts with the hypotheses using the names. This is intended to be much
     faster than framing the entire persistent and spatial contexts.
 
-  Note that this library provides general support for propositions and are not
-  specific to definitions. You can use them in Hoare logic preconditions (to
-  make the first iIntros more stable), in the postcondition (to make it easier
-  for the caller to re-introduce hypotheses), or in loop invariants (to serve
-  both of these purposes).
+  Note that this library provides general support for propositions and is not
+  specific to definitions. You can use named hypotheses in Hoare logic
+  preconditions (to make the first iIntros more stable), in the postcondition
+  (to make it easier for the caller to re-introduce hypotheses), or in loop
+  invariants (to serve both of these purposes). If they ever get in the way you
+  can always [rewrite /named] to get rid of the names.
  *)
 
 (* Named props are just the underlying prop. We used to have this sealed, but it
@@ -50,6 +56,10 @@ Section named.
   Proof. auto. Qed.
   Theorem from_named name (P: PROP) : named name P -∗ P.
   Proof. auto. Qed.
+
+  (* implementation of [iNamedAccu]; the soundness proof basically shows these
+  definitions are equivalent to the ones used in the [iAccu] implementation,
+  since we can simply unfold [named, since we can simply unfold [named]] *)
 
   Fixpoint env_to_named_prop_go (acc : PROP) (Γ : env PROP) : PROP :=
     match Γ with
