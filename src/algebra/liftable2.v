@@ -126,7 +126,7 @@ Section bi.
     iSplitL "Hmapsto1 Hm1".
     - iApply "Hmapsto1"; iFrame "%∗".
     - iApply "Hmapsto2"; iFrame "%∗".
-    Grab Existential Variables.
+    Unshelve.
     all: assumption.
   Qed.
 

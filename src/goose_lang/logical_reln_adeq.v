@@ -165,7 +165,7 @@ Proof.
   }
   (* BUG: Coq v8.11 requires Grab Existential Variables and not Unshelve to get
   this obligation *)
-  Grab Existential Variables.
+  Unshelve.
   apply subG_styPreG, _.
 Qed.
 
