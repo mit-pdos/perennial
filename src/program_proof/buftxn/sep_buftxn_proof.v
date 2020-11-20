@@ -287,6 +287,13 @@ Section goose_lang.
     iExists _; iFrame.
   Qed.
 
+  Theorem is_buftxn_durable_to_old_pred γ γdurable P0 :
+    is_buftxn_durable γ γdurable P0 -∗ P0 (durable_mapsto γ).
+  Proof.
+    iNamed 1.
+    iApply "HrestoreP0". iFrame.
+  Qed.
+
   Theorem is_buftxn_to_old_pred l γ dinit γtxn P0 :
     is_buftxn l γ dinit γtxn P0 -∗ P0 (durable_mapsto_own γ).
   Proof.
