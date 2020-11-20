@@ -126,24 +126,19 @@ is_kvserver γ srv -∗
         is_rpcHandler f γ.(ks_rpcGN) (Get_Pre γ va) (Get_Post γ va)
 }}}.
 Proof.
-  iIntros "#Hks".
-  iIntros (Φ) "!# Hpre Hpost".
+  iIntros "#Hls".
+  iIntros (Φ) "!# _ Hpost".
   wp_lam.
   wp_pures.
   iApply "Hpost".
-
-  unfold is_rpcHandler.
-  iIntros.
-  iIntros (Ψ) "!# Hpre Hpost".
-  iNamed "Hpre".
-  wp_lam. wp_pures.
-  iNamed "Hks".
+  iApply is_rpcHandler_eta; simpl.
+  iIntros "!#" (_ _).
+  iNamed "Hls". wp_pures.
   wp_loadField.
-  wp_apply (RPCServer__HandleRequest_spec with "[] [Hreply]"); iFrame "# ∗".
-  iModIntro. iIntros (Θ).
-  iIntros "Hpre Hpost".
-  wp_lam.
-  wp_apply (get_core_spec with "[Hpre]"); eauto.
+  iApply (RPCServer__HandleRequest_spec with "[] His_rpc"); last by eauto.
+  clear Φ. iIntros (req) "!#". iIntros (Φ) "Hpre HΦ".
+  wp_pures.
+  iApply (get_core_spec with "Hpre"); last by eauto.
 Qed.
 
 Lemma KVClerk__Get_spec (kck ksrv:loc) (key va:u64) γ  :
@@ -187,24 +182,19 @@ is_kvserver γ srv -∗
         is_rpcHandler f γ.(ks_rpcGN) (Put_Pre γ) (Put_Post γ)
 }}}.
 Proof.
-  iIntros "#Hks".
-  iIntros (Φ) "!# Hpre Hpost".
+  iIntros "#Hls".
+  iIntros (Φ) "!# _ Hpost".
   wp_lam.
   wp_pures.
   iApply "Hpost".
-
-  unfold is_rpcHandler.
-  iIntros.
-  iIntros (Ψ) "!# Hpre Hpost".
-  iNamed "Hpre".
-  wp_lam. wp_pures.
-  iNamed "Hks".
+  iApply is_rpcHandler_eta; simpl.
+  iIntros "!#" (_ _).
+  iNamed "Hls". wp_pures.
   wp_loadField.
-  wp_apply (RPCServer__HandleRequest_spec with "[] [Hreply]"); iFrame "# ∗".
-  iModIntro. iIntros (Θ).
-  iIntros "Hpre Hpost".
-  wp_lam.
-  wp_apply (put_core_spec with "[Hpre]"); eauto.
+  iApply (RPCServer__HandleRequest_spec with "[] His_rpc"); last by eauto.
+  clear Φ. iIntros (req) "!#". iIntros (Φ) "Hpre HΦ".
+  wp_pures.
+  iApply (put_core_spec with "Hpre"); last by eauto.
 Qed.
 (* TODO: see if any more repetition can be removed *)
 

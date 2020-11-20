@@ -96,12 +96,24 @@ Definition is_rpcHandler (f:val) γrpc PreCond PostCond : iProp Σ :=
     }}} (* TODO: put this precondition into a defn *)
       f #req_ptr #reply_ptr
     {{{ RET #false; ∃ reply',
-        own_reply reply_ptr reply'
-                    ∗ (⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req
-                        ∨ RPCReplyReceipt γrpc req reply'.(Ret)
-                    )
+        own_reply reply_ptr reply' ∗
+        (⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
+           RPCReplyReceipt γrpc req reply'.(Ret))
     }}}
     .
+
+Lemma is_rpcHandler_eta (e:expr) γrpc PreCond PostCond :
+  □ (∀ v1 v2,
+    WP subst "reply" v1 (subst "req" v2 e) {{ v, is_rpcHandler v γrpc PreCond PostCond }}) -∗
+  is_rpcHandler
+    (λ: "req" "reply", e (Var "req") (Var "reply"))
+    γrpc PreCond PostCond.
+Proof.
+  iIntros "#He" (????? Φ) "!# Hpre HΦ".
+  wp_pures. wp_bind (subst _ _ _).
+  iApply (wp_wand with "He"). iIntros (f) "Hfhandler".
+  iApply ("Hfhandler" with "Hpre"). done.
+Qed.
 
 Lemma overflow_guard_incr_spec stk E (v:u64) : 
 {{{ True }}}
@@ -229,43 +241,30 @@ Proof.
 Qed.
 
 (* This will alow handler functions using RPCServer__HandleRequest to establish is_rpcHandler *)
-Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γPost server_own_core PreCond PostCond :
-  (
-{{{
-  server_own_core ∗ PreCond req.(Args)
-}}}
+Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc server_own_core PreCond PostCond :
+(∀ req : RPCRequest,
+{{{ server_own_core ∗ PreCond req.(Args) }}}
   coreFunction (into_val.to_val req.(Args))%V
-{{{
-   (r:u64), RET #r; server_own_core
-      ∗ PostCond req.(Args) r
-}}}) -∗ (* Can't replace this with is_rpcHandler, because the only curried function with #sv and coreFunction applied is a proper rpcHandler*)
-{{{
-  "#Hls" ∷ is_rpcserver sv γrpc server_own_core
-  ∗ "#HreqInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
-  ∗ "#Hreq" ∷ read_request req_ptr req
-  ∗ "Hreply" ∷ own_reply reply_ptr reply
-}}}
-  RPCServer__HandleRequest #sv coreFunction #req_ptr #reply_ptr
-{{{ RET #false; ∃ reply':Reply64, own_reply reply_ptr reply'
-    ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req)
-  ∨ RPCReplyReceipt γrpc req reply'.(Ret))
-}}}.
+{{{ (r:u64), RET #r; server_own_core ∗ PostCond req.(Args) r }}}) -∗
+{{{ is_rpcserver sv γrpc server_own_core }}}
+  RPCServer__HandleRequest #sv coreFunction
+{{{ f, RET f; is_rpcHandler f γrpc PreCond PostCond }}}.
 Proof.
-  iIntros "#HfCoreSpec" (Φ) "!# Hpre Hpost".
-  iNamed "Hpre".
+  iIntros "#HfCoreSpec" (Φ) "!# #Hls Hpost".
   wp_lam.
-  wp_pures.
-  iNamed "Hls".
+  wp_pures. iApply "Hpost". clear Φ.
+  iIntros (????? Φ) "!# Hpre HΦ".
+  iNamed "Hpre". iNamed "Hls".
   wp_loadField.
   wp_apply (acquire_spec mutexN #mu_ptr _ with "Hmu").
   iIntros "(Hlocked & Hlsown)".
-  iNamed "Hreq"; iNamed "Hreply".
+  iNamed "Hargs"; iNamed "Hreply".
   wp_seq.
   repeat wp_loadField.
   iNamed "Hlsown".
   iDestruct "HSeqPositive" as %HSeqPositive.
   repeat wp_loadField.
-  wp_apply (CheckReplyTable_spec with "[-Hpost Hlocked Hlsown HlastSeqOwn HlastReplyOwn HfCoreSpec]"); first iFrame.
+  wp_apply (CheckReplyTable_spec with "[-HΦ Hlocked Hlsown HlastSeqOwn HlastReplyOwn HfCoreSpec]"); first iFrame.
   { iFrame "#". done. }
   iIntros (runCore) "HcheckCachePost".
   iDestruct "HcheckCachePost" as (b reply' ->) "HcachePost".
@@ -276,10 +275,10 @@ Proof.
     wp_loadField.
     iDestruct "Hcases" as "[[% _]|Hcases]"; first done.
     iNamed "Hcases".
-    wp_apply (release_spec mutexN #mu_ptr _ with "[-Hreply Hpost Hcases]"); try iFrame "Hmu Hlocked"; eauto.
+    wp_apply (release_spec mutexN #mu_ptr _ with "[-Hreply HΦ Hcases]"); try iFrame "Hmu Hlocked"; eauto.
     { iNext. iFrame. iExists _, _, _, _. iFrame. }
     wp_seq.
-    iApply "Hpost".
+    iApply "HΦ".
     iExists reply'.
     iFrame.
   }
@@ -300,10 +299,10 @@ Proof.
     iMod (server_completes_request with "[] [] HcorePost Hprocessing") as "[#Hreceipt Hsrpc] /="; eauto.
     wp_seq.
     wp_loadField.
-    wp_apply (release_spec mutexN #mu_ptr _ with "[-HReplyOwnStale HReplyOwnRet Hpost]"); try iFrame "Hmu Hlocked".
+    wp_apply (release_spec mutexN #mu_ptr _ with "[-HReplyOwnStale HReplyOwnRet HΦ]"); try iFrame "Hmu Hlocked".
     { iNext. iFrame. iExists _, _, _, _. iFrame. }
     wp_seq.
-    iApply "Hpost".
+    iApply "HΦ".
     iExists {|Stale:=false; Ret:=retval |}. rewrite H1. iFrame; iFrame "#".
   }
 Qed.

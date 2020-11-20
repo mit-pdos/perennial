@@ -160,17 +160,15 @@ Definition KVServer__get_core: val :=
 
 Definition KVServer__Put: val :=
   rec: "KVServer__Put" "ks" "req" "reply" :=
-    let: "f" := (λ: "args",
+    RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") (λ: "args",
       KVServer__put_core "ks" "args"
-      ) in
-    RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") "f" "req" "reply".
+      ) "req" "reply".
 
 Definition KVServer__Get: val :=
   rec: "KVServer__Get" "ks" "req" "reply" :=
-    let: "f" := (λ: "args",
+    RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") (λ: "args",
       KVServer__get_core "ks" "args"
-      ) in
-    RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") "f" "req" "reply".
+      ) "req" "reply".
 
 Definition MakeKVServer: val :=
   rec: "MakeKVServer" <> :=
@@ -212,19 +210,17 @@ Definition LockServer__unlock_core: val :=
    returns true iff error *)
 Definition LockServer__TryLock: val :=
   rec: "LockServer__TryLock" "ls" "req" "reply" :=
-    let: "f" := (λ: "args",
+    RPCServer__HandleRequest (struct.loadF LockServer.S "sv" "ls") (λ: "args",
       LockServer__tryLock_core "ls" "args"
-      ) in
-    RPCServer__HandleRequest (struct.loadF LockServer.S "sv" "ls") "f" "req" "reply".
+      ) "req" "reply".
 
 (* server Unlock RPC handler.
    returns true iff error *)
 Definition LockServer__Unlock: val :=
   rec: "LockServer__Unlock" "ls" "req" "reply" :=
-    let: "f" := (λ: "args",
+    RPCServer__HandleRequest (struct.loadF LockServer.S "sv" "ls") (λ: "args",
       LockServer__unlock_core "ls" "args"
-      ) in
-    RPCServer__HandleRequest (struct.loadF LockServer.S "sv" "ls") "f" "req" "reply".
+      ) "req" "reply".
 
 Definition MakeLockServer: val :=
   rec: "MakeLockServer" <> :=

@@ -248,23 +248,18 @@ is_lockserver γ srv -∗
 }}}.
 Proof.
   iIntros "#Hls".
-  iIntros (Φ) "!# Hpre Hpost".
+  iIntros (Φ) "!# _ Hpost".
   wp_lam.
   wp_pures.
   iApply "Hpost".
-
-  unfold is_rpcHandler.
-  iIntros.
-  iIntros (Ψ) "!# Hpre Hpost".
-  iNamed "Hpre".
-  wp_lam. wp_pures.
-  iNamed "Hls".
+  iApply is_rpcHandler_eta; simpl.
+  iIntros "!#" (_ _).
+  iNamed "Hls". wp_pures.
   wp_loadField.
-  wp_apply (RPCServer__HandleRequest_spec with "[] [Hreply]"); iFrame "# ∗".
-  iModIntro. iIntros (Θ).
-  iIntros "Hpre Hpost".
-  wp_lam.
-  wp_apply (tryLock_core_spec with "[] [Hpre]"); eauto.
+  iApply (RPCServer__HandleRequest_spec with "[] His_rpc"); last by eauto.
+  clear Φ. iIntros (req) "!#". iIntros (Φ) "Hpre HΦ".
+  wp_pures.
+  iApply (tryLock_core_spec with "Hinv Hpre"); last by eauto.
 Qed.
 
 Lemma Clerk__TryLock_spec γ ck (srv:loc) (ln:u64) :
@@ -315,23 +310,18 @@ is_lockserver γ srv -∗
 }}}.
 Proof.
   iIntros "#Hls".
-  iIntros (Φ) "!# Hpre Hpost".
+  iIntros (Φ) "!# _ Hpost".
   wp_lam.
   wp_pures.
   iApply "Hpost".
-
-  unfold is_rpcHandler.
-  iIntros.
-  iIntros (Ψ) "!# Hpre Hpost".
-  iNamed "Hpre".
-  wp_lam. wp_pures.
-  iNamed "Hls".
+  iApply is_rpcHandler_eta; simpl.
+  iIntros "!#" (_ _).
+  iNamed "Hls". wp_pures.
   wp_loadField.
-  wp_apply (RPCServer__HandleRequest_spec with "[] [Hreply]"); iFrame "# ∗".
-  iModIntro. iIntros (Θ).
-  iIntros "Hpre Hpost".
-  wp_lam.
-  wp_apply (unlock_core_spec with "[Hpre]"); eauto.
+  iApply (RPCServer__HandleRequest_spec with "[] His_rpc"); last by eauto.
+  clear Φ. iIntros (req) "!#". iIntros (Φ) "Hpre HΦ".
+  wp_pures.
+  iApply (unlock_core_spec with "Hpre"); last by eauto.
 Qed.
 
 Lemma Clerk__Unlock_spec γ ck (srv:loc) (ln:u64) :
