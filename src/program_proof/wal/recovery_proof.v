@@ -178,12 +178,22 @@ Proof.
   intros ->.
   rewrite /circ_matches_txns.
   destruct 1 as (Hupd1&Hupd2&Hupd3&?&?).
+  rewrite /circΣ.diskEnd in H.
+  rewrite !subslice_take.
+  rewrite -> !Nat.min_l by lia.
+  pose proof (has_updates_app _ _ _ _ Hupd2 Hupd3) as Hupd23.
+  rewrite subslice_from_drop in Hupd23.
+  rewrite -> !subslice_app_contig in Hupd23 by lia.
+  replace (Z.to_nat (circΣ.diskEnd cs) - int.nat (start cs))%nat
+    with (length (upds cs)) by (rewrite /circΣ.diskEnd; word).
   split; [ | split; [ | split ] ].
-  - admit.
-  - admit.
-  - admit.
-  - lia.
-Admitted.
+  - auto.
+  - auto.
+  - rewrite drop_ge //.
+    rewrite subslice_zero_length.
+    apply has_updates_nil.
+  - rewrite /circΣ.diskEnd; lia.
+Qed.
 
 Lemma is_txn_from_take_is_txn n txns id pos:
   is_txn (take n txns) id pos →
