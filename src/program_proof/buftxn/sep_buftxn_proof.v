@@ -197,6 +197,9 @@ Section goose_lang.
   Definition durable_mapsto_own γ a obj: iProp Σ :=
     modify_token γ a ∗ durable_mapsto γ a obj.
 
+  Global Instance durable_mapsto_own_discretizable γ a obj: Discretizable (durable_mapsto_own γ a obj).
+  Proof. apply _. Qed.
+
   (* TODO(tej): we need to split out the crash part of [is_buftxn] from the
     in-memory part so that the caller can frame away the crash condition for the
     duration of the critical section before CommitWait, rather than being forced

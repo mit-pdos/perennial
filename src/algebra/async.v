@@ -2,7 +2,7 @@ From stdpp Require Import countable.
 From iris.algebra Require Import mlist gmap_view.
 From iris.base_logic Require Import lib.iprop.
 From iris.proofmode Require Import tactics.
-From Perennial.algebra Require Import log_heap.
+From Perennial.algebra Require Import log_heap own_discrete.
 
 Set Default Proof Using "Type".
 
@@ -62,6 +62,15 @@ Definition ephemeral_val_from γ (i:nat) (k: K) (v: V) : iProp Σ :=
 transactions [lo, hi) *)
 Definition ephemeral_txn_val_range γ (lo hi:nat) (k: K) (v: V): iProp Σ :=
   [∗ list] i ∈ seq lo (hi-lo), ephemeral_txn_val γ i k v.
+
+Global Instance ephemeral_txn_val_discretizable γ i k v: Discretizable (ephemeral_txn_val γ i k v).
+Proof. apply _. Qed.
+
+Global Instance ephemeral_val_from_discretizable γ i k v: Discretizable (ephemeral_val_from γ i k v).
+Proof. apply _. Qed.
+
+Global Instance ephemeral_txn_val_range_discretizable γ lo hi k v: Discretizable (ephemeral_txn_val_range γ lo hi k v).
+Proof. apply _. Qed.
 
 Lemma own_last_frag_conflict γ k i1 i2 :
   own_last_frag γ k i1 -∗

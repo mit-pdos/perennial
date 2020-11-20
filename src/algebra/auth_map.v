@@ -5,6 +5,8 @@ From iris.algebra Require Import excl agree auth gmap csum.
 From iris.bi.lib Require Import fractional.
 From iris.base_logic.lib Require Import own.
 
+From Perennial.algebra Require Import own_discrete.
+
 Set Default Goal Selector "!".
 Set Default Proof Using "Type".
 
@@ -143,6 +145,12 @@ Section auth_map.
   Proof. unseal; apply _. Qed.
 
   Global Instance ptsto_ro_persistent γ k v : Persistent (ptsto_ro γ k v).
+  Proof. unseal; apply _. Qed.
+
+  Global Instance ptsto_mut_discretizable γ a q v: Discretizable (ptsto_mut γ a q v).
+  Proof. unseal; apply _. Qed.
+
+  Global Instance ptsto_ro_discretizable γ a v: Discretizable (ptsto_ro γ a v).
   Proof. unseal; apply _. Qed.
 
   Lemma Cinl_valid (A B:cmraT) (x:A) :
