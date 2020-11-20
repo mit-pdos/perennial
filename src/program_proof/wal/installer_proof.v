@@ -619,7 +619,7 @@ Proof.
   iMod (get_txns_are _ _ _ _ _ (S installed_txn_id_mem) (S diskEnd_txn_id)
     (subslice (S installed_txn_id_mem) (S diskEnd_txn_id) txns)
     with "Howntxns Hwal") as "(#Htxns_subslice&Howntxns)"; eauto.
-  1: lia.
+  { lia. }
 
   iDestruct "Hwal" as "[Hwal Hcircular]".
   iInv "Hwal" as (σs) "[Hinner HP]" "Hclose".
@@ -648,16 +648,15 @@ Proof.
     HownInstallerPos_walinv HownInstallerTxn_walinv HownDiskEndMem_walinv HownDiskEndMemTxn_walinv
     Hinstalled HP]") as "_".
   {
+    iNext.
     iExists _.
     iFrame "Hmem Htxns_ctx γtxns HnextDiskEnd_inv HP".
-    iSplitR.
-    1: eauto.
+    iSplit; first by eauto.
     iExists _.
     iFrame "Howncs".
     iExists _, _.
     iFrame "Hinstalled circ.start circ.end Hbasedisk".
-    iSplitL.
-    2: eauto.
+    iSplit; [ | by eauto ].
     iExists _, _, _, _.
     iFrame "HownInstallerPos_walinv HownInstallerTxn_walinv HownDiskEndMem_walinv HownDiskEndMemTxn_walinv".
     iPureIntro.
@@ -671,16 +670,13 @@ Proof.
     split.
     {
       pose proof (has_updates_app _ _ _ _ Hmatches_installer_pos Hmatches_diskEnd_pos) as Hmatches.
-      rewrite subslice_app_contig in Hmatches.
-      2: lia.
-      rewrite -subslice_from_start subslice_app_contig in Hmatches.
-      2: lia.
+      rewrite -> subslice_app_contig in Hmatches by lia.
+      rewrite <- subslice_from_start, subslice_app_contig in Hmatches by lia.
       rewrite subslice_from_start in Hmatches.
-      apply Hmatches.
+      assumption.
     }
-    intuition.
-    2-3: lia.
-    rewrite subslice_zero_length subslice_zero_length //.
+    split_and!; try lia; eauto.
+    rewrite !subslice_zero_length //.
   }
 
   iExists _, _, _, _, _.
@@ -689,22 +685,16 @@ Proof.
     Htxns_subslice".
 
   pose proof (has_updates_app _ _ _ _ His_installerEnd His_diskEnd) as Hmatches.
-  rewrite subslice_app_contig in Hmatches.
-  2: lia.
-  rewrite -subslice_from_start subslice_app_contig in Hmatches.
-  2: rewrite /slidingM.logIndex; lia.
+  rewrite -> subslice_app_contig in Hmatches by lia.
+  rewrite -subslice_from_start subslice_app_contig in Hmatches; last first.
+  { rewrite /slidingM.logIndex; lia. }
   rewrite subslice_from_start in Hmatches.
 
-  iSplitR.
-  1: iPureIntro; apply Hmatches.
+  iSplitR; first by eauto.
   iFrame.
   iFrame (HdiskEnd_txn Htxnpos_bound) "#".
-  iSplitR.
-  1: iPureIntro; lia.
-  iSplitR.
-  1: iPureIntro; lia.
   iPureIntro.
-  intuition.
+  split_and!; auto with lia.
   rewrite subslice_zero_length subslice_zero_length //.
 Qed.
 
