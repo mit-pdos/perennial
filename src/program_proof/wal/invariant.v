@@ -172,6 +172,11 @@ Proof.
   iDestruct (alist_subseq_lookup with "Hctx Htxns_are") as "$".
 Qed.
 
+Lemma txns_are_nil γ start : ⊢ txns_are γ start [].
+Proof.
+  iApply list_subseq_nil.
+Qed.
+
 Definition memLog_linv_txns (σ: slidingM.t)
            (installer_pos_mem diskEnd logger_pos: u64) txns
            installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id

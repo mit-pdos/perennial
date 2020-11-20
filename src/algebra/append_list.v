@@ -100,6 +100,11 @@ Proof.
     iFrame "# ∗".
 Qed.
 
+Lemma list_subseq_nil {γ} n : ⊢ list_subseq γ n [].
+Proof.
+  rewrite /list_subseq big_sepL_nil //.
+Qed.
+
 Theorem alist_lookup {γ q} l i x :
   list_ctx γ q l -∗ list_el γ i x -∗ ⌜l !! i = Some x⌝.
 Proof.
