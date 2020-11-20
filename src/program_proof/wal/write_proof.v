@@ -869,42 +869,42 @@ Proof.
         autorewrite with len.
         iFrame.
         iFrame "%".
-        iSplitR.
+        iSplit.
         2: { iExists _. iFrame. iFrame "%". }
-        admit.
-(*
+        subst memLog'.
+        rewrite Nat.add_sub memWrite_same_start memWrite_same_mutable.
         iSplit.
-        { iPureIntro. eapply is_txn_app. eauto. }
+        1: iPureIntro; lia.
+        iFrame "HmemStart_txn Hnew_txn_pos".
         iSplit.
-        { autorewrite with len.
-          rewrite Nat.add_sub.
-          iFrame "#". }
-        iSplit.
-        { iExists _. iFrame. iFrame "%". }
-        iSplit.
-        { iNamed "Htxns".
+        {
           iPureIntro.
+          rewrite /is_txn lookup_app_l.
+          2: apply is_txn_bound in HdiskEnd_txn; assumption.
+          eauto.
+        }
+        iSplit.
+        {
+          iNamed "Htxns".
+          rewrite /memLog_linv_txns.
+          iPureIntro.
+          rewrite !memWrite_preserves_logIndex !memWrite_same_mutable.
           pose proof (is_txn_bound _ _ _ HmemStart_txn).
           pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
           split_and!.
-          - rewrite !memWrite_preserves_logIndex.
-            rewrite -subslice_before_app_eq; last by lia.
+          - rewrite -subslice_before_app_eq; last by lia.
             rewrite memWrite_preserves_mutable; eauto; try word.
             rewrite /numMutableN /slidingM.logIndex. word.
           - rewrite -> subslice_app_1 by lia.
-            rewrite !memWrite_preserves_logIndex.
             rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
             auto.
           - rewrite -> subslice_app_1 by lia.
-            rewrite !memWrite_preserves_logIndex.
             rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
             auto.
           - rewrite -> subslice_app_1 by lia.
-            rewrite !memWrite_preserves_logIndex !memWrite_same_mutable.
             rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
             auto.
           - rewrite -> drop_app_le by lia.
-            rewrite !memWrite_preserves_logIndex !memWrite_same_mutable.
             eapply memWrite_has_updates in His_nextTxn; [ | eauto | ].
             { rewrite memWrite_preserves_logIndex in His_nextTxn.
               rewrite memWrite_same_mutable in His_nextTxn. done. }
@@ -914,9 +914,8 @@ Proof.
         rewrite fmap_app.
         eapply Forall_app; split.
         { pose proof (memWrite_memEnd_bound σ.(memLog) bs).
-          eapply Forall_impl; eauto. simpl. intros. subst memLog'. lia. }
+          eapply Forall_impl; eauto. simpl. intros. lia. }
         simpl. econstructor; eauto. word.
-*)
       - wp_apply util_proof.wp_DPrintf.
         iAssert (wal_linv σₛ.(wal_st) γ) with "[Hfields HmemLog_linv HdiskEnd_circ Hstart_circ]" as "Hlockinv".
         { iExists _; iFrame. }
@@ -938,6 +937,6 @@ Proof.
     wp_pures.
     iApply "HΦ".
     destruct ok; iFrame.
-Admitted.
+Qed.
 
 End goose_lang.
