@@ -165,10 +165,9 @@ Lemma is_installed_txn_implies_non_empty_txns γ cs txns installed_txn_id lb:
   ⌜ txns ≠ [] ⌝.
 Proof. iNamed 1. iPureIntro. by eapply is_txn_implies_non_empty_txns. Qed.
 
-Lemma circ_matches_txns_crash cs txns installed_txn_id installer_pos installer_txn_id
-      diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id
-      diskEnd :
-  (* TODO: add correct assumptions on diskEnd *)
+Lemma circ_matches_txns_crash diskEnd cs txns installed_txn_id installer_pos installer_txn_id
+      diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id :
+  diskEnd = Z.to_nat (circΣ.diskEnd cs) →
   circ_matches_txns cs txns
                     installed_txn_id installer_pos installer_txn_id
                     diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id →
@@ -176,12 +175,14 @@ Lemma circ_matches_txns_crash cs txns installed_txn_id installer_pos installer_t
                     installed_txn_id installer_pos installer_txn_id
                     diskEnd diskEnd_txn_id diskEnd_txn_id.
 Proof.
+  intros ->.
   rewrite /circ_matches_txns.
-  destruct 1 as [Heq Hlb].
-  split.
+  destruct 1 as (Hupd1&Hupd2&Hupd3&?&?).
+  split; [ | split; [ | split ] ].
   - admit.
   - admit.
-  (* intros d. rewrite Heq /subslice take_idemp //=. *)
+  - admit.
+  - lia.
 Admitted.
 
 Lemma is_txn_from_take_is_txn n txns id pos:
@@ -859,7 +860,8 @@ done:
     iDestruct (is_installed_txn_crash γ γ' with "circ.start Hinstalled_txn_id_stable") as "$"; first by lia.
     iFrame "Hdurable_txn".
     rewrite /is_durable.
-    efeed pose proof (circ_matches_txns_crash) as Hcirc_matches'; first by eauto.
+    efeed pose proof (circ_matches_txns_crash (int.nat diskEnd)) as Hcirc_matches'; [ | by eauto | ].
+    { word. }
     iExists _, _, _, _; iFrame (Hcirc_matches') "∗".
   }
   {
