@@ -572,14 +572,14 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
-Lemma tac_wp_loadField Δ Δ' s E i K l q d f v Φ :
+Lemma tac_wp_loadField Δ Δ' s E i l q d f v Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_lookup i Δ' = Some (false, struct_field_mapsto l q d f v)%I →
-  envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
-  envs_entails Δ (WP fill K (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
+  envs_entails Δ' (Φ v) →
+  envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_eq=> ???.
-  rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_loadField.
+  eapply bi.wand_apply; first exact: wp_loadField.
   rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
   by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
 Qed.
@@ -606,13 +606,13 @@ Proof.
   iApply ("HΦ" with "[//]").
 Qed.
 
-Lemma tac_wp_loadField_ro {E} Δ s i K l d f v Φ :
+Lemma tac_wp_loadField_ro {E} Δ s i l d f v Φ :
   envs_lookup i Δ = Some (true, readonly (struct_field_mapsto l 1%Qp d f v))%I →
-  envs_entails Δ (WP fill K (Val v) @ s; E {{ Φ }}) →
-  envs_entails Δ (WP fill K (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
+  envs_entails Δ (Φ v) →
+  envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_eq=> ? HΦ.
-  rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_loadField_ro.
+  eapply bi.wand_apply; first exact: wp_loadField_ro.
   rewrite envs_lookup_split //; simpl.
   iIntros "[#Hro Henvs]".
   iSplitR; auto.
@@ -651,17 +651,17 @@ Qed.
 
 Opaque loadField storeField.
 
-Lemma tac_wp_storeField Δ Δ' Δ'' stk E i K l d f v v' Φ :
+Lemma tac_wp_storeField Δ Δ' Δ'' stk E i l d f v v' Φ :
   val_ty v' (field_ty d f) →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_lookup i Δ' = Some (false, l ↦[d :: f] v)%I →
   envs_simple_replace i false (Esnoc Enil i (l ↦[d :: f] v')) Δ' = Some Δ'' →
-  envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
-  envs_entails Δ (WP fill K (struct.storeF d f (LitV l) (Val v')) @ stk; E {{ Φ }}).
+  envs_entails Δ'' (Φ (LitV LitUnit)) →
+  envs_entails Δ (WP (struct.storeF d f (LitV l) (Val v')) @ stk; E {{ Φ }}).
 Proof.
   intros Hty.
   rewrite envs_entails_eq=> ????.
-  rewrite -wp_bind. eapply bi.wand_apply; first by eapply wp_storeField.
+  eapply bi.wand_apply; first by eapply wp_storeField.
   rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
   rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
 Qed.
@@ -711,25 +711,27 @@ Notation "l ↦[ d :: f ]{ q } v" :=
 Notation "l ↦[ d :: f ] v" :=
   (struct_field_mapsto l 1 d f%string v%V).
 
+
 Tactic Notation "wp_loadField" :=
   let solve_mapsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
     iAssumptionCore || fail 1 "wp_load: cannot find" l "↦[d :: f] ?" in
   wp_pures;
+  wp_bind (struct.loadF _ _ (Val _));
   match goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_loadField_ro _ _ _ K))
+      [eapply tac_wp_loadField_ro
       |fail 1 "wp_loadField: cannot find 'struct.loadF' in" e];
     [iAssumptionCore
-    |wp_finish]
+    |]
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_loadField _ _ _ _ _ K))
+      [eapply tac_wp_loadField
       |fail 2 "wp_loadField: cannot find 'struct.loadF' in" e];
     [iSolveTC
     |solve_mapsto ()
-    |wp_finish]
+    |]
   | _ => fail 1 "wp_loadField: not a 'wp'"
   end.
 
@@ -738,15 +740,16 @@ Tactic Notation "wp_storeField" :=
     let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
     iAssumptionCore || fail "wp_storeField: cannot find" l "↦[d :: f] ?" in
   wp_pures;
+  wp_bind (struct.storeF _ _ (Val _) (Val _));
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_storeField _ _ _ _ _ _ K))
+      [eapply tac_wp_storeField
       |fail 1 "wp_storeField: cannot find 'storeField' in" e];
     [val_ty
     |iSolveTC
     |solve_mapsto ()
     |pm_reflexivity
-    |first [wp_seq|wp_finish]]
+    |try wp_seq ]
   | _ => fail "wp_storeField: not a 'wp'"
   end.
