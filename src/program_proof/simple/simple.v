@@ -118,13 +118,13 @@ Qed.
 
 Definition Nbuftxn := nroot .@ "buftxn".
 
-Theorem wp_ReadInode γ γtxn (inum : u64) len blk (btxn : loc) dinit P0 :
-  {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
+Theorem wp_ReadInode γ γtxn (inum : u64) len blk (btxn : loc) dinit γdurable :
+  {{{ is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
       is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
       ⌜ inum ∈ covered_inodes ⌝ }}}
     ReadInode #btxn #inum
   {{{ l, RET #l;
-      is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
+      is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
       is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
       is_inode_mem l inum len blk }}}.
 Proof.
@@ -179,15 +179,15 @@ Definition is_inode_stable γ (inum: u64) : iProp Σ :=
 
 Definition N := nroot .@ "simplenfs".
 
-Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents P0 dinit :
-  {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
+Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents γdurable dinit :
+  {{{ is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
       is_inode_mem ip inum len blk ∗
       is_inode_data len blk contents (buftxn_maps_to γtxn)
   }}}
     Inode__Read #ip #btxn #offset #bytesToRead
   {{{ resSlice (eof : bool) (vs : list u8), RET (slice_val resSlice, #eof);
       is_slice resSlice u8T 1 vs ∗
-      is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
+      is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
       is_inode_mem ip inum len blk ∗
       is_inode_data len blk contents (buftxn_maps_to γtxn) ∗
       ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
@@ -543,11 +543,15 @@ Proof using Ptimeless.
     [ solve_ndisj .. | ].
   iNamed "Hinode_disk".
 
-  wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.
-  iIntros (ip) "(Hbuftxn & Hinode_enc & Hinode_mem)".
+  iNamed "Hbuftxn".
 
-  wp_apply (wp_Inode__Read with "[$Hbuftxn $Hinode_mem $Hinode_data]").
-  iIntros (resSlice eof vs) "(HresSlice & Hbuftxn & Hinode_mem & Hinode_data & %Hvs & %Hvslen & %Heof)".
+  wp_apply (wp_ReadInode with "[$Hbuftxn_mem $Hinode_enc]"); first by intuition eauto.
+  iIntros (ip) "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
+
+  wp_apply (wp_Inode__Read with "[$Hbuftxn_mem $Hinode_mem $Hinode_data]").
+  iIntros (resSlice eof vs) "(HresSlice & Hbuftxn_mem & Hinode_mem & Hinode_data & %Hvs & %Hvslen & %Heof)".
+
+  iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
   wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
   4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
@@ -880,8 +884,10 @@ Proof using Ptimeless.
   { solve_ndisj. }
   iNamed "Hinode_disk".
 
-  wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.
-  iIntros (ip) "(Hbuftxn & Hinode_enc & Hinode_mem)".
+  iNamed "Hbuftxn".
+
+  wp_apply (wp_ReadInode with "[$Hbuftxn_mem $Hinode_enc]"); first by intuition eauto.
+  iIntros (ip) "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
 
   wp_apply (wp_Inode__MkFattr with "Hinode_mem").
   iIntros (fattr3) "(Hinode_mem & % & % & %)".
@@ -894,6 +900,8 @@ Proof using Ptimeless.
   { eauto. }
   iIntros "Resok".
   rewrite Hfl; clear Hfl fl.
+
+  iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
   wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
   4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
@@ -1007,15 +1015,15 @@ Proof.
   eexists; eauto.
 Qed.
 
-Theorem wp_Inode__WriteInode γ γtxn (inum : u64) len len' blk (l : loc) (btxn : loc) dinit P0 :
-  {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
+Theorem wp_Inode__WriteInode γ γtxn (inum : u64) len len' blk (l : loc) (btxn : loc) dinit γdurable :
+  {{{ is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
       is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
       is_inode_mem l inum len' blk ∗
       ⌜ inum ∈ covered_inodes ⌝
   }}}
     Inode__WriteInode #l #btxn
   {{{ RET #();
-      is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
+      is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
       is_inode_enc inum len' blk (buftxn_maps_to γtxn) ∗
       is_inode_mem l inum len' blk }}}.
 Proof.
@@ -1054,8 +1062,8 @@ Proof.
   eapply Hdata.
 Qed.
 
-Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (count : u64) dataslice databuf P0 dinit contents :
-  {{{ is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
+Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (count : u64) dataslice databuf γdurable dinit contents :
+  {{{ is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
       is_inode_mem ip inum len blk ∗
       is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
       is_inode_data len blk contents (buftxn_maps_to γtxn) ∗
@@ -1065,7 +1073,7 @@ Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (co
   }}}
     Inode__Write #ip #btxn #offset #count (slice_val dataslice)
   {{{ (wcount: u64) (ok: bool), RET (#wcount, #ok);
-      is_buftxn Nbuftxn btxn γ.(simple_buftxn) dinit γtxn P0 ∗
+      is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
       ( ( let contents' := ((firstn (int.nat offset) contents) ++
                           (firstn (int.nat count) databuf) ++
                           (skipn (int.nat offset + int.nat count) contents))%list in
@@ -1434,18 +1442,22 @@ Proof using Ptimeless.
     [ solve_ndisj .. | ].
   iNamed "Hinode_disk".
 
-  wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.
-  iIntros (ip) "(Hbuftxn & Hinode_enc & Hinode_mem)".
+  iNamed "Hbuftxn".
 
-  wp_apply (wp_Inode__Write with "[$Hbuftxn $Hinode_mem $Hinode_data $Hinode_enc Hdata]").
+  wp_apply (wp_ReadInode with "[$Hbuftxn_mem $Hinode_enc]"); first by intuition eauto.
+  iIntros (ip) "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
+
+  wp_apply (wp_Inode__Write with "[$Hbuftxn_mem $Hinode_mem $Hinode_data $Hinode_enc Hdata]").
   { iDestruct (is_slice_to_small with "Hdata") as "$".
     iPureIntro. intuition eauto.
     rewrite /u32_to_u64. word.
   }
 
-  iIntros (wcount ok) "[Hbuftxn [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
+  iIntros (wcount ok) "[Hbuftxn_mem [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
   {
     wp_pures.
+
+    iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
     wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
     4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
@@ -1594,6 +1606,8 @@ Proof using Ptimeless.
   {
     iDestruct "Hok" as "(Hinode_mem & Hinode_enc & Hinode_data & %Hok)". intuition subst.
     wp_pures.
+
+    iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
     (* Implicit transaction abort *)
     iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "Hold".
@@ -1772,8 +1786,10 @@ Proof using Ptimeless.
     [ solve_ndisj .. | ].
   iNamed "Hinode_disk".
 
-  wp_apply (wp_ReadInode with "[$Hbuftxn $Hinode_enc]"); first by intuition eauto.
-  iIntros (ip) "(Hbuftxn & Hinode_enc & Hinode_mem)".
+  iNamed "Hbuftxn".
+
+  wp_apply (wp_ReadInode with "[$Hbuftxn_mem $Hinode_enc]"); first by intuition eauto.
+  iIntros (ip) "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
 
   wp_pures.
   destruct sattr.
@@ -1789,14 +1805,16 @@ Proof using Ptimeless.
       iIntros (zeros) "Hzeros".
       wp_loadField. wp_loadField.
 
-      wp_apply (wp_Inode__Write with "[$Hbuftxn $Hinum $Hisize $Hidata $Hinode_data $Hinode_enc Hzeros]").
+      wp_apply (wp_Inode__Write with "[$Hbuftxn_mem $Hinum $Hisize $Hidata $Hinode_data $Hinode_enc Hzeros]").
       { iDestruct (is_slice_to_small with "Hzeros") as "$".
         iPureIntro. intuition eauto.
         rewrite replicate_length. done.
       }
 
-      iIntros (wcount ok) "[Hbuftxn [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
+      iIntros (wcount ok) "[Hbuftxn_mem [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
       {
+        iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
+
         wp_pures.
         iNamed "Hinode_mem".
         wp_loadField.
@@ -1986,6 +2004,8 @@ Proof using Ptimeless.
         wp_if_destruct.
         2: lia.
 
+        iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
+
         (* Implicit transaction abort, write failed, NOSPC  *)
         iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "Hold".
 
@@ -2033,10 +2053,12 @@ Proof using Ptimeless.
     {
       (* shrink inode *)
       wp_storeField.
-      wp_apply (wp_Inode__WriteInode with "[$Hbuftxn Hinum Hisize Hidata $Hinode_enc]").
+      wp_apply (wp_Inode__WriteInode with "[$Hbuftxn_mem Hinum Hisize Hidata $Hinode_enc]").
       { iFrame. iPureIntro. apply Hvalid; auto. }
-      iIntros "(Hbuftxn & Hinode_enc & Hinode_mem)".
+      iIntros "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
       wp_pures.
+
+      iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
       wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
       4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
@@ -2158,6 +2180,8 @@ Proof using Ptimeless.
       }
     }
   }
+
+  iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
   (* Not changing the length at all. *)
   wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").

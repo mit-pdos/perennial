@@ -200,75 +200,106 @@ Section goose_lang.
   Global Instance durable_mapsto_own_discretizable γ a obj: Discretizable (durable_mapsto_own γ a obj).
   Proof. apply _. Qed.
 
-  (* TODO(tej): we need to split out the crash part of [is_buftxn] from the
-    in-memory part so that the caller can frame away the crash condition for the
-    duration of the critical section before CommitWait, rather than being forced
-    to continually re-prove P0 using [is_buftxn ... P0].
-
-   The only way I see to do this is to completely drop [modify_token] on crash
-   and rely solely on [ephemeral_val_from] and its [own_last_frag] in particular
-   as the token the caller preserves on crash and exchanges for a [modify_token]
-   in the fresh generation. In theory I see no reason why we can't do this, but
-   it's a more complicated ghost exchanger for this proof to provide. *)
-  Definition is_buftxn l γ dinit γtxn P0 : iProp Σ :=
+  Definition is_buftxn_mem l γ dinit γtxn γdurable : iProp Σ :=
     ∃ (mT: gmap addr versioned_object) anydirty,
       "#Htxn_system" ∷ is_txn_system γ ∗
-      "Hold_vals" ∷ ([∗ map] a↦v ∈ mspec.committed <$> mT,
-                     durable_mapsto γ a v) ∗
-      "#HrestoreP0" ∷ □ (([∗ map] a↦v ∈ mspec.committed <$> mT,
-                          (* the [durable_mapsto] part comes from [Hold_vals],
-                          the modification tokens need to come from
-                          [mspec.is_buftxn] *)
-                          durable_mapsto_own γ a v) -∗
-                         P0) ∗
       "Hbuftxn" ∷ mspec.is_buftxn l mT γ.(buftxn_txn_names) dinit anydirty ∗
       "Htxn_ctx" ∷ map_ctx γtxn 1 (mspec.modified <$> mT) ∗
       "%Hanydirty" ∷ ⌜anydirty=false →
-                      mspec.modified <$> mT = mspec.committed <$> mT⌝
+                      mspec.modified <$> mT = mspec.committed <$> mT⌝ ∗
+      "Hdurable" ∷ map_ctx γdurable (1/2) (mspec.committed <$> mT)
   .
+
+  Definition is_buftxn_durable γ γdurable (P0 : (_ -> _ -> iProp Σ) -> iProp Σ) : iProp Σ :=
+    ∃ committed_mT,
+      "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT ∗
+      "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT,
+                     durable_mapsto γ a v) ∗
+      "#HrestoreP0" ∷ □ (∀ mapsto,
+                         ([∗ map] a↦v ∈ committed_mT,
+                          mapsto a v) -∗
+                         P0 mapsto)
+  .
+
+  Definition is_buftxn l γ dinit γtxn P0 : iProp Σ :=
+    ∃ γdurable,
+      "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable ∗
+      "Hbuftxn_durable" ∷ is_buftxn_durable γ γdurable P0.
 
   Global Instance: Params (@is_buftxn) 4 := {}.
 
-  Global Instance is_buftxn_proper l γ dinit γtxn :
-    Proper ((⊣⊢) ==> (⊣⊢)) (is_buftxn l γ dinit γtxn).
+  Global Instance is_buftxn_durable_proper γ γdurable :
+    Proper (pointwise_relation _ (⊣⊢) ==> (⊣⊢)) (is_buftxn_durable γ γdurable).
   Proof.
     intros P1 P2 Hequiv.
-    rewrite /is_buftxn.
+    rewrite /is_buftxn_durable.
     setoid_rewrite Hequiv.
     reflexivity.
   Qed.
 
-  Global Instance is_buftxn_mono l γ dinit γtxn :
-    Proper ((⊢) ==> (⊢)) (is_buftxn l γ dinit γtxn).
+  Global Instance is_buftxn_durable_mono γ γdurable :
+    Proper (pointwise_relation _ (⊢) ==> (⊢)) (is_buftxn_durable γ γdurable).
+  Proof.
+    intros P1 P2 Hequiv.
+    rewrite /is_buftxn_durable.
+    setoid_rewrite Hequiv.
+    reflexivity.
+  Qed.
+
+  Theorem is_buftxn_durable_wand γ γdurable P1 P2 :
+    is_buftxn_durable γ γdurable P1 -∗
+    □(∀ mapsto, P1 mapsto -∗ P2 mapsto) -∗
+    is_buftxn_durable γ γdurable P2.
+  Proof.
+    iIntros "Htxn #Hwand".
+    iNamed "Htxn".
+    iExists _; iFrame "∗#%".
+    iIntros (mapsto) "!> Hm".
+    iApply "Hwand". iApply "HrestoreP0". iFrame.
+  Qed.
+
+  Global Instance is_buftxn_proper l γ dinit γtxn :
+    Proper (pointwise_relation _ (⊣⊢) ==> (⊣⊢)) (is_buftxn l γ dinit γtxn).
   Proof.
     intros P1 P2 Hequiv.
     rewrite /is_buftxn.
     setoid_rewrite Hequiv.
-    reflexivity.
+    done.
+  Qed.
+
+  Global Instance is_buftxn_mono l γ dinit γtxn :
+    Proper (pointwise_relation _ (⊢) ==> (⊢)) (is_buftxn l γ dinit γtxn).
+  Proof.
+    intros P1 P2 Hequiv.
+    rewrite /is_buftxn.
+    setoid_rewrite Hequiv.
+    done.
   Qed.
 
   Theorem is_buftxn_wand l γ dinit γtxn P1 P2 :
     is_buftxn l γ dinit γtxn P1 -∗
-    □(P1 -∗ P2) -∗
+    □(∀ mapsto, P1 mapsto -∗ P2 mapsto) -∗
     is_buftxn l γ dinit γtxn P2.
   Proof.
     iIntros "Htxn #Hwand".
     iNamed "Htxn".
-    iExists mT, _; iFrame "∗#%".
-    iIntros "!> Hm".
-    iApply "Hwand". iApply "HrestoreP0". iFrame.
+    iDestruct (is_buftxn_durable_wand with "Hbuftxn_durable Hwand") as "Hbuftxn_durable".
+    iExists _; iFrame.
   Qed.
 
   Theorem is_buftxn_to_old_pred l γ dinit γtxn P0 :
-    is_buftxn l γ dinit γtxn P0 -∗ P0.
+    is_buftxn l γ dinit γtxn P0 -∗ P0 (durable_mapsto_own γ).
   Proof.
     iNamed 1.
-    iDestruct (mspec.is_buftxn_to_committed_mapsto_txn with "Hbuftxn") as "Hmod_tokens".
+    iNamed "Hbuftxn_mem".
+    iNamed "Hbuftxn_durable".
+    iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->.
     iApply "HrestoreP0".
-    rewrite big_sepM_sep; iFrame.
-    iApply (big_sepM_mono with "Hmod_tokens").
-    rewrite /modify_token.
-    iIntros (?? _) "Hmap". eauto.
+    iApply big_sepM_sep. iFrame.
+    iDestruct (mspec.is_buftxn_to_committed_mapsto_txn with "Hbuftxn") as "Hmod".
+    iApply (big_sepM_mono with "Hmod").
+    iIntros (k x Hkx) "H".
+    iExists _; iFrame.
   Qed.
 
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=
@@ -321,6 +352,23 @@ Section goose_lang.
     congruence.
   Qed.
 
+  Theorem is_buftxn_durable_not_in_map γ a obj γdurable P0 committed_mT :
+    durable_mapsto γ a obj -∗
+    is_buftxn_durable γ γdurable P0 -∗
+    map_ctx γdurable (1 / 2) committed_mT -∗
+    ⌜committed_mT !! a = None⌝.
+  Proof.
+    iIntros "Ha Hdur Hctx".
+    destruct (committed_mT !! a) eqn:He; try eauto.
+    iNamed "Hdur".
+    iDestruct (map_ctx_agree with "Hctx Hdurable_frag") as %->.
+    iDestruct (big_sepM_lookup with "Hold_vals") as "Ha2"; eauto.
+    iDestruct "Ha" as (i) "[Ha _]".
+    iDestruct "Ha2" as (i2) "[Ha2 _]".
+    iDestruct (ephemeral_val_from_conflict with "Ha Ha2") as "H".
+    done.
+  Qed.
+
   Theorem lift_into_txn E l γ dinit γtxn P0 a obj :
     ↑N ⊆ E →
     ↑invN ⊆ E →
@@ -329,10 +377,12 @@ Section goose_lang.
     durable_mapsto_own γ a obj
     ={E}=∗
     buftxn_maps_to γtxn a obj ∗
-    is_buftxn l γ dinit γtxn (durable_mapsto_own γ a obj ∗ P0).
+    is_buftxn l γ dinit γtxn (λ mapsto, mapsto a obj ∗ P0 mapsto).
   Proof.
     iIntros (???) "Hctx [Ha Ha_i]".
     iNamed "Hctx".
+    iNamed "Hbuftxn_mem".
+
     iDestruct "Ha" as (obj0) "Ha".
 
     iMod (durable_mapsto_mapsto_txn_agree with "[$] Ha_i Ha") as "(%Heq & Ha_i & Ha)";
@@ -345,17 +395,31 @@ Section goose_lang.
     { rewrite lookup_fmap Hnotin //. }
     iMod (mspec.BufTxn_lift_one _ _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hbuftxn"; auto.
     iMod (map_alloc a obj with "Htxn_ctx") as "[Htxn_ctx Ha]"; eauto.
+
+    iNamed "Hbuftxn_durable".
+    iDestruct (map_ctx_agree with "Hdurable Hdurable_frag") as %<-.
+    iCombine "Hdurable Hdurable_frag" as "Hdurable".
+    iMod (map_alloc a obj with "Hdurable") as "[Hdurable _]"; eauto.
+    iDestruct "Hdurable" as "[Hdurable Hdurable_frag]".
+
     iModIntro.
     iFrame "Ha".
-    iExists (<[a:=object_to_versioned obj]> mT), anydirty.
-    iFrame "Htxn_system".
-    rewrite !fmap_insert committed_to_versioned modified_to_versioned.
-    rewrite !big_sepM_insert //.
-    iFrame.
-    iSplit.
-    { iIntros "!> [[$ $] Hstable]".
-      iApply "HrestoreP0"; iFrame. }
-    iPureIntro. destruct anydirty; intuition congruence.
+    iExists _. iSplitR "Hdurable_frag Hold_vals Ha_i".
+    {
+      iExists (<[a:=object_to_versioned obj]> mT), anydirty.
+      iFrame "Htxn_system".
+      rewrite !fmap_insert committed_to_versioned modified_to_versioned.
+      iFrame.
+      iPureIntro. destruct anydirty; intuition congruence.
+    }
+    {
+      iExists _. iFrame "Hdurable_frag".
+      rewrite !big_sepM_insert //. iFrame.
+      iModIntro.
+      iIntros (mapsto) "H".
+      iDestruct (big_sepM_insert with "H") as "[Ha H]"; eauto. iFrame.
+      iApply "HrestoreP0"; iFrame.
+    }
   Qed.
 
   Theorem lift_map_into_txn E l γ dinit γtxn P0 m :
@@ -366,13 +430,15 @@ Section goose_lang.
     ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v) ={E}=∗
     ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
                       is_buftxn l γ dinit γtxn
-                        (([∗ map] a↦v ∈ m, durable_mapsto_own γ a v) ∗
-                         P0).
+                        (λ mapsto,
+                         ([∗ map] a↦v ∈ m, mapsto a v) ∗
+                         P0 mapsto).
   Proof.
     iIntros (???) "Hctx Hm".
     iInduction m as [|a v m] "IH" using map_ind forall (P0).
     - setoid_rewrite big_sepM_empty.
       rewrite !left_id.
+      setoid_rewrite (@left_id _ _ _ _ emp_sep).
       by iFrame.
     - rewrite !big_sepM_insert //.
       iDestruct "Hm" as "[[Ha_mod Ha_dur] Hm]".
@@ -383,7 +449,8 @@ Section goose_lang.
       iModIntro.
       iFrame.
       iApply (is_buftxn_mono with "Hctx"); auto.
-      iIntros "($&$&$)".
+      iIntros (mapsto) "(H0 & H1 & $)".
+      iApply big_sepM_insert; eauto. iFrame.
   Qed.
 
   Lemma conflicting_exists {PROP:bi} (A L V : Type) (P : A → L → V → PROP) :
@@ -408,8 +475,8 @@ Section goose_lang.
     ={E}=∗
     P (buftxn_maps_to γtxn) ∗
     is_buftxn l γ dinit γtxn
-      (P (λ a v, durable_mapsto_own γ a v)
-       ∗ P0).
+      (λ mapsto,
+       P mapsto ∗ P0 mapsto).
   Proof.
     iIntros (???) "Hctx HP".
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hm #HP]".
@@ -425,14 +492,14 @@ Section goose_lang.
     iSplitR "Hctx".
     - iApply "HP"; iFrame.
     - iApply (is_buftxn_wand with "Hctx").
-      iIntros "!> [Hm $]".
+      iIntros (mapsto) "!> [Hm $]".
       iApply "HP"; auto.
   Qed.
 
   Theorem wp_BufTxn__Begin (l_txn: loc) γ dinit :
     {{{ is_txn l_txn γ.(buftxn_txn_names) dinit ∗ is_txn_system γ }}}
       Begin #l_txn
-    {{{ γtxn l, RET #l; is_buftxn l γ dinit γtxn emp }}}.
+    {{{ γtxn l, RET #l; is_buftxn l γ dinit γtxn (λ _, emp) }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ".
     iDestruct "Hpre" as "[#His_txn #Htxn_inv]".
@@ -440,12 +507,22 @@ Section goose_lang.
     wp_apply (mspec.wp_buftxn_Begin with "His_txn").
     iIntros (l) "Hbuftxn".
     iMod (map_init ∅) as (γtxn) "Hctx".
+    iMod (map_init ∅) as (γdurable) "[Hdurable Hdurable_frag]".
     iModIntro.
     iApply "HΦ".
-    iExists ∅, false.
-    rewrite !fmap_empty !big_sepM_empty.
-    iFrame "∗#".
-    auto with iFrame.
+    iExists γdurable. iSplitR "Hdurable_frag".
+    {
+      iExists ∅, false.
+      rewrite !fmap_empty. iFrame "Hctx".
+      iFrame "∗#".
+      auto with iFrame.
+    }
+    {
+      iExists ∅.
+      rewrite !big_sepM_empty.
+      iFrame "∗#".
+      auto with iFrame.
+    }
   Qed.
 
   Definition is_object l a obj: iProp Σ :=
@@ -454,16 +531,16 @@ Section goose_lang.
                        bufData := objData obj;
                        bufDirty := dirty |}.
 
-  Theorem wp_BufTxn__ReadBuf l γ dinit γtxn P0 (a: addr) (sz: u64) obj :
+  Theorem wp_BufTxn__ReadBuf l γ dinit γtxn γdurable (a: addr) (sz: u64) obj :
     bufSz (objKind obj) = int.nat sz →
-    {{{ is_buftxn l γ dinit γtxn P0 ∗ buftxn_maps_to γtxn a obj }}}
+    {{{ is_buftxn_mem l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a obj }}}
       BufTxn__ReadBuf #l (addr2val a) #sz
     {{{ dirty (bufptr:loc), RET #bufptr;
         is_buf bufptr a (Build_buf _ (objData obj) dirty) ∗
         (∀ (obj': bufDataT (objKind obj)) dirty',
             is_buf bufptr a (Build_buf _ obj' dirty') -∗
             ⌜dirty' = true ∨ (dirty' = dirty ∧ obj' = objData obj)⌝ ==∗
-            is_buftxn l γ dinit γtxn P0 ∗ buftxn_maps_to γtxn a (existT (objKind obj) obj')) }}}.
+            is_buftxn_mem l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a (existT (objKind obj) obj')) }}}.
   Proof.
     iIntros (? Φ) "Hpre HΦ".
     iDestruct "Hpre" as "[Hbuftxn Ha]".
@@ -553,18 +630,18 @@ Section goose_lang.
     reflexivity.
   Qed.
 
-  Theorem wp_BufTxn__OverWrite l γ dinit γtxn P0 (a: addr) (sz: u64)
+  Theorem wp_BufTxn__OverWrite l γ dinit γtxn γdurable (a: addr) (sz: u64)
           (data_s: Slice.t) (data: list byte) obj0 obj :
     bufSz (objKind obj) = int.nat sz →
     data_has_obj data a obj →
     objKind obj = objKind obj0 →
-    {{{ is_buftxn l γ dinit γtxn P0 ∗ buftxn_maps_to γtxn a obj0 ∗
+    {{{ is_buftxn_mem l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a obj0 ∗
         (* NOTE(tej): this has to be a 1 fraction, because the slice is
         incorporated into the buftxn, is handed out in ReadBuf, and should then
         be mutable. *)
         is_slice_small data_s byteT 1 data }}}
       BufTxn__OverWrite #l (addr2val a) #sz (slice_val data_s)
-    {{{ RET #(); is_buftxn l γ dinit γtxn P0 ∗ buftxn_maps_to γtxn a obj }}}.
+    {{{ RET #(); is_buftxn_mem l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a obj }}}.
   Proof.
     iIntros (??? Φ) "Hpre HΦ".
     iDestruct "Hpre" as "(Hbuftxn & Ha & Hdata)".
@@ -663,7 +740,7 @@ Section goose_lang.
     {{{ (ok:bool), RET #ok;
         if ok then
             P (λ a v, durable_mapsto_own γ a v)
-        else P0 }}}.
+        else P0 (λ a v, durable_mapsto_own γ a v) }}}.
   (* crash condition will be [∃ txn_id', P0 (ephemeral_val_from
      γ.(buftxn_async_name) txn_id') ∨ P (ephemeral_val_from γ.(buftxn_async_name)
      txn_id') ]
@@ -673,6 +750,9 @@ Section goose_lang.
   Proof.
     iIntros (?? Φ) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hbuftxn".
+    iNamed "Hbuftxn_mem".
+    iNamed "Hbuftxn_durable".
+    iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->.
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
     (* here things are a little tricky because committing doesn't give us
@@ -743,10 +823,19 @@ Section goose_lang.
     - iDestruct "Hpost" as "[Heph Hmod_tokens]".
       iApply "HΦ".
       iApply "HrestoreP0".
-      rewrite big_sepM_sep.
-      iFrame.
+      iApply big_sepM_sep; iFrame.
       iApply (big_sepM_mono with "Hmod_tokens").
-      rewrite /modify_token. eauto.
+      iIntros (k x Hkx) "H".
+      iExists _; iFrame.
+  Qed.
+
+  Theorem is_buftxn_mem_durable l γ dinit γtxn P0 γdurable :
+    is_buftxn_mem l γ dinit γtxn γdurable -∗
+    is_buftxn_durable γ γdurable P0 -∗
+    is_buftxn l γ dinit γtxn P0.
+  Proof.
+    iIntros "Hmem Hdurable".
+    iExists _. iFrame.
   Qed.
 
 End goose_lang.
