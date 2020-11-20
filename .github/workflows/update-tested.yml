@@ -7,6 +7,8 @@ on:
   schedule:
     # run at 06:59 UTC (3am eastern) each day
     - cron:  '59 6 * * *'
+  # enable manual trigger
+  workflow_dispatch:
 
 jobs:
   update_branch:
