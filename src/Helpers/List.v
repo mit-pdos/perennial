@@ -398,3 +398,9 @@ Proof.
   rewrite subslice_lookup in H'; eauto.
   eapply subslice_lookup_bound. eauto.
 Qed.
+
+Lemma fmap_subslice {A B} (f: A → B) (l: list A) n m :
+  f <$> subslice n m l = subslice n m (f <$> l).
+Proof.
+  rewrite !subslice_take_drop fmap_drop fmap_take //.
+Qed.

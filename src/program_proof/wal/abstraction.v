@@ -242,3 +242,161 @@ Proof.
   rewrite apply_upds_app.
   rewrite (txn_upds_nils nils) /=; eauto.
 Qed.
+
+Lemma apply_upds_equiv_implies_has_updates_equiv upds1 upds2 txns :
+  (∀ d : disk, apply_upds upds1 d = apply_upds upds2 d) →
+  has_updates upds1 txns →
+  has_updates upds2 txns.
+Proof.
+  intros Hequiv Hupds1 d.
+  rewrite -(Hequiv d) //.
+Qed.
+
+(** installer-related properties *)
+
+Lemma apply_upds_notin d upds (a: u64) :
+  a ∉ (update.addr <$> upds) →
+  apply_upds upds d !! int.Z a = d !! int.Z a.
+Proof.
+  rewrite -(reverse_involutive upds).
+  remember (reverse upds) as upds_r.
+  clear Hequpds_r upds.
+  induction upds_r.
+  1: eauto.
+  intros Hnotin.
+  rewrite fmap_reverse fmap_cons reverse_cons -fmap_reverse in Hnotin.
+  apply not_elem_of_app in Hnotin.
+  destruct Hnotin as (Hnotin&Hneq).
+  apply IHupds_r in Hnotin.
+  rewrite reverse_cons apply_upds_app.
+  destruct a0.
+  simpl.
+  rewrite lookup_insert_ne.
+  2: {
+    simpl in Hneq.
+    apply not_elem_of_cons in Hneq.
+    destruct (decide (int.Z addr = int.Z a)).
+    2: intuition.
+    assert (addr = a) by word.
+    intuition.
+  }
+  intuition.
+Qed.
+
+(* this looks very similar to the previous one, but it doesn't seem like one implies the other
+  since there may not exist an addr such that a = int.Z addr *)
+Lemma apply_upds_notin' d upds (a: Z) :
+  a ∉ ((λ u, int.Z u.(update.addr)) <$> upds) →
+  apply_upds upds d !! a = d !! a.
+Proof.
+  rewrite -(reverse_involutive upds).
+  remember (reverse upds) as upds_r.
+  clear Hequpds_r upds.
+  induction upds_r.
+  1: eauto.
+  intros Hnotin.
+  rewrite fmap_reverse fmap_cons reverse_cons -fmap_reverse in Hnotin.
+  apply not_elem_of_app in Hnotin.
+  destruct Hnotin as (Hnotin&Hneq).
+  apply IHupds_r in Hnotin.
+  rewrite reverse_cons apply_upds_app.
+  destruct a0.
+  simpl.
+  rewrite lookup_insert_ne.
+  2: {
+    simpl in Hneq.
+    apply not_elem_of_cons in Hneq.
+    intuition.
+  }
+  intuition.
+Qed.
+
+Lemma apply_upds_NoDup_lookup d upds i a b :
+  NoDup (update.addr <$> upds) →
+  upds !! i = Some {| update.addr := a; update.b := b |} →
+  (apply_upds upds d) !! int.Z a = Some b.
+Proof.
+  intros Hnodup Hlookup.
+  rewrite -(take_drop (S i) upds).
+  rewrite -(take_drop (S i) upds) fmap_app in Hnodup.
+  apply NoDup_app in Hnodup.
+  destruct Hnodup as (Hnodup&Heither&_).
+  rewrite apply_upds_app apply_upds_notin.
+  2: {
+    apply Heither.
+    rewrite -(lookup_take _ (S i)) in Hlookup.
+    2: lia.
+    apply (elem_of_list_lookup_2 _ i).
+    rewrite list_lookup_fmap Hlookup //.
+  }
+  rewrite (take_S_r _ _ _ Hlookup) apply_upds_app /=.
+  apply lookup_insert.
+Qed.
+
+Lemma apply_upds_dom upds d :
+  ∀ (a: Z), a ∈ dom (gset Z) (apply_upds upds d) ↔
+            a ∈ ((λ u, int.Z u.(update.addr)) <$> upds) ∨ a ∈ (dom (gset Z) d).
+Proof.
+  induction upds as [|[a b] upds] using rev_ind.
+  - simpl.
+    set_solver+.
+  - intros.
+    rewrite fmap_app apply_upds_app /=.
+    set_solver.
+Qed.
+
+Lemma apply_upds_empty_dom upds :
+  ∀ a, a ∈ dom (gset Z) (apply_upds upds ∅) ↔
+       a ∈ ((λ u, int.Z u.(update.addr)) <$> upds).
+Proof.
+  intros.
+  rewrite apply_upds_dom.
+  set_solver.
+Qed.
+
+Lemma equiv_upds_addrs_subseteq upds1 upds2 :
+  (apply_upds upds1 ∅ = apply_upds upds2 ∅) →
+  (λ u : update.t, int.Z u.(update.addr)) <$> upds2 ⊆
+  (λ u : update.t, int.Z u.(update.addr)) <$> upds1.
+Proof.
+  intros.
+  intros a.
+  rewrite -!apply_upds_empty_dom.
+  rewrite H //.
+Qed.
+
+Lemma has_updates_addrs upds txns :
+  has_updates upds txns →
+  (λ u, int.Z u.(update.addr)) <$> upds ⊆ (λ u, int.Z u.(update.addr)) <$> txn_upds txns.
+Proof.
+  rewrite /has_updates /txn_upds; intros ?.
+  specialize (H ∅).
+  intros a.
+  rewrite -apply_upds_empty_dom H apply_upds_empty_dom //.
+Qed.
+
+Lemma list_to_set_subseteq `{Countable A} (l1 l2: list A) :
+  l1 ⊆ l2 ↔
+  list_to_set (C:=gset _) l1 ⊆ list_to_set (C:=gset _) l2.
+Proof. set_solver. Qed.
+
+Lemma list_to_set_subseteq_Z (l1 l2: list Z) :
+  l1 ⊆ l2 →
+  list_to_set (C:=gset Z) l1 ⊆ list_to_set (C:=gset Z) l2.
+Proof. apply list_to_set_subseteq. Qed.
+
+Lemma equiv_upds_addrs_eq (upds1 upds2: list update.t) :
+  (∀ d, apply_upds upds1 d = apply_upds upds2 d) →
+  list_to_set (C:=gset Z) ((λ u : update.t, int.Z u.(update.addr)) <$> upds2) =
+  list_to_set (C:=gset Z) ((λ u : update.t, int.Z u.(update.addr)) <$> upds1).
+Proof.
+  intros Hequiv.
+  apply (iffRL (set_equiv_spec_L _ _)).
+  split.
+  - apply list_to_set_subseteq.
+    apply equiv_upds_addrs_subseteq.
+    apply Hequiv.
+  - apply list_to_set_subseteq.
+    apply equiv_upds_addrs_subseteq.
+    auto.
+Qed.

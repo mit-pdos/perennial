@@ -1,6 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import gset.
 
+From Perennial.Helpers Require Import ListSubset.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 From Perennial.algebra Require Import fmcounter.
@@ -55,10 +56,8 @@ Definition in_bounds γ (a: u64): iProp Σ :=
     "Hbounddisk" ∷ is_base_disk γ d ∗
     "%Hinbounds" ∷ ⌜is_Some (d !! int.Z a)⌝.
 
-Instance in_bounds_persistent γ a : Persistent (in_bounds γ a) := _.
+Global Instance in_bounds_persistent γ a : Persistent (in_bounds γ a) := _.
 
-(* TODO: this will actually require combining in_bounds with some authoritative
-resource from the invariant, obviously it can't be for an arbitrary [σ] *)
 Theorem in_bounds_valid γ σ a :
   is_base_disk γ σ.(log_state.d) -∗
   in_bounds γ a -∗ ⌜is_Some (σ.(log_state.d) !! int.Z a)⌝.
@@ -153,64 +152,6 @@ Proof.
   apply IHbufs.
   - apply memWrite_one_NoDup; auto.
   - rewrite memWrite_one_same_start memWrite_one_same_mutable //.
-Qed.
-
-Lemma apply_upds_dom upds d :
-  ∀ (a: Z), a ∈ dom (gset Z) (apply_upds upds d) ↔
-            a ∈ ((λ u, int.Z u.(update.addr)) <$> upds) ∨ a ∈ (dom (gset Z) d).
-Proof.
-  induction upds as [|[a b] upds] using rev_ind.
-  - simpl.
-    set_solver+.
-  - intros.
-    rewrite fmap_app apply_upds_app /=.
-    set_solver.
-Qed.
-
-Lemma apply_upds_empty_dom upds :
-  ∀ a, a ∈ dom (gset Z) (apply_upds upds ∅) ↔
-       a ∈ ((λ u, int.Z u.(update.addr)) <$> upds).
-Proof.
-  intros.
-  rewrite apply_upds_dom.
-  set_solver.
-Qed.
-
-Lemma equiv_upds_addrs_subseteq upds1 upds2 :
-  (apply_upds upds1 ∅ = apply_upds upds2 ∅) →
-  (λ u : update.t, int.Z u.(update.addr)) <$> upds2 ⊆
-  (λ u : update.t, int.Z u.(update.addr)) <$> upds1.
-Proof.
-  intros.
-  intros a.
-  rewrite -!apply_upds_empty_dom.
-  rewrite H //.
-Qed.
-
-Lemma list_to_set_subseteq `{Countable A} (l1 l2: list A) :
-  l1 ⊆ l2 ↔
-  list_to_set (C:=gset _) l1 ⊆ list_to_set (C:=gset _) l2.
-Proof. set_solver. Qed.
-
-Lemma list_to_set_subseteq_Z (l1 l2: list Z) :
-  l1 ⊆ l2 →
-  list_to_set (C:=gset Z) l1 ⊆ list_to_set (C:=gset Z) l2.
-Proof. apply list_to_set_subseteq. Qed.
-
-Lemma equiv_upds_addrs_eq (upds1 upds2: list update.t) :
-  (∀ d, apply_upds upds1 d = apply_upds upds2 d) →
-  list_to_set (C:=gset Z) ((λ u : update.t, int.Z u.(update.addr)) <$> upds2) =
-  list_to_set (C:=gset Z) ((λ u : update.t, int.Z u.(update.addr)) <$> upds1).
-Proof.
-  intros Hequiv.
-  apply (iffRL (set_equiv_spec_L _ _)).
-  split.
-  - apply list_to_set_subseteq.
-    apply equiv_upds_addrs_subseteq.
-    apply Hequiv.
-  - apply list_to_set_subseteq.
-    apply equiv_upds_addrs_subseteq.
-    auto.
 Qed.
 
 Theorem wp_absorbBufs b_s (bufs: list update.t) :
@@ -341,166 +282,6 @@ Proof.
   iDestruct (is_slice_to_small with "Hs") as "$".
 Qed.
 
-Lemma apply_upds_equiv_implies_has_updates_equiv upds1 upds2 txns :
-  (∀ d : disk, apply_upds upds1 d = apply_upds upds2 d) →
-  has_updates upds1 txns →
-  has_updates upds2 txns.
-Proof.
-  intros Hequiv Hupds1 d.
-  rewrite -(Hequiv d) //.
-Qed.
-
-Lemma Forall_subset {A} f (l1: list A) (l2: list A) :
-  l1 ⊆ l2 →
-  Forall f l2 →
-  Forall f l1.
-Proof.
-  intros Hsubset Hl2.
-  apply List.Forall_forall.
-  intros x Hin_l1.
-  apply elem_of_list_In in Hin_l1.
-  destruct (elem_of_subseteq l1 l2) as (Hsubset_elem_of&_).
-  apply Hsubset_elem_of with (x := x) in Hsubset; intuition.
-  destruct (List.Forall_forall f l2) as (Hl2_impl&_).
-  apply elem_of_list_In in Hsubset.
-  apply (Hl2_impl Hl2 x) in Hsubset.
-  done.
-Qed.
-
-Lemma apply_upds_notin d upds (a: u64) :
-  a ∉ (update.addr <$> upds) →
-  apply_upds upds d !! int.Z a = d !! int.Z a.
-Proof.
-  rewrite -(reverse_involutive upds).
-  remember (reverse upds) as upds_r.
-  clear Hequpds_r upds.
-  induction upds_r.
-  1: eauto.
-  intros Hnotin.
-  rewrite fmap_reverse fmap_cons reverse_cons -fmap_reverse in Hnotin.
-  apply not_elem_of_app in Hnotin.
-  destruct Hnotin as (Hnotin&Hneq).
-  apply IHupds_r in Hnotin.
-  rewrite reverse_cons apply_upds_app.
-  destruct a0.
-  simpl.
-  rewrite lookup_insert_ne.
-  2: {
-    simpl in Hneq.
-    apply not_elem_of_cons in Hneq.
-    destruct (decide (int.Z addr = int.Z a)).
-    2: intuition.
-    assert (addr = a) by word.
-    intuition.
-  }
-  intuition.
-Qed.
-
-(* this looks very similar to the previous one, but it doesn't seem like one implies the other
-  since there may not exist an addr such that a = int.Z addr *)
-Lemma apply_upds_notin' d upds (a: Z) :
-  a ∉ ((λ u, int.Z u.(update.addr)) <$> upds) →
-  apply_upds upds d !! a = d !! a.
-Proof.
-  rewrite -(reverse_involutive upds).
-  remember (reverse upds) as upds_r.
-  clear Hequpds_r upds.
-  induction upds_r.
-  1: eauto.
-  intros Hnotin.
-  rewrite fmap_reverse fmap_cons reverse_cons -fmap_reverse in Hnotin.
-  apply not_elem_of_app in Hnotin.
-  destruct Hnotin as (Hnotin&Hneq).
-  apply IHupds_r in Hnotin.
-  rewrite reverse_cons apply_upds_app.
-  destruct a0.
-  simpl.
-  rewrite lookup_insert_ne.
-  2: {
-    simpl in Hneq.
-    apply not_elem_of_cons in Hneq.
-    destruct (decide (int.Z addr = a)).
-    2: intuition.
-    assert (addr = a) by word.
-    intuition.
-  }
-  intuition.
-Qed.
-
-Lemma apply_upds_NoDup_lookup d upds i a b :
-  NoDup (update.addr <$> upds) →
-  upds !! i = Some {| update.addr := a; update.b := b |} →
-  (apply_upds upds d) !! int.Z a = Some b.
-Proof.
-  intros Hnodup Hlookup.
-  rewrite -(take_drop (S i) upds).
-  rewrite -(take_drop (S i) upds) fmap_app in Hnodup.
-  apply NoDup_app in Hnodup.
-  destruct Hnodup as (Hnodup&Heither&_).
-  rewrite apply_upds_app apply_upds_notin.
-  2: {
-    apply Heither.
-    rewrite -(lookup_take _ (S i)) in Hlookup.
-    2: lia.
-    apply (elem_of_list_lookup_2 _ i).
-    rewrite list_lookup_fmap Hlookup //.
-  }
-  rewrite (take_S_r _ _ _ Hlookup) apply_upds_app /=.
-  apply lookup_insert.
-Qed.
-
-Lemma has_updates_addrs upds txns :
-  has_updates upds txns →
-  (λ u, int.Z u.(update.addr)) <$> upds ⊆ (λ u, int.Z u.(update.addr)) <$> txn_upds txns.
-Proof.
-  rewrite /has_updates /txn_upds; intros ?.
-  specialize (H ∅).
-  intros a.
-  rewrite -apply_upds_empty_dom H apply_upds_empty_dom //.
-Qed.
-
-Lemma list_app_subseteq {A} (l1 l2 l : list A) :
-  l1 ++ l2 ⊆ l ↔ l1 ⊆ l ∧ l2 ⊆ l.
-Proof.
-  set_solver.
-Qed.
-
-Lemma list_cons_subseteq {A} (x: A) (l1 l2: list A) :
-  x :: l1 ⊆ l2 ↔ x ∈ l2 ∧ l1 ⊆ l2.
-Proof. set_solver. Qed.
-
-Lemma elem_of_subseteq_concat {A} (x:list A) (l:list (list A)) :
-  x ∈ l → x ⊆ concat l.
-Proof.
-  intros Helem.
-  apply elem_of_list_split in Helem as (l1 & l2 & ->).
-  rewrite concat_app concat_cons.
-  set_solver.
-Qed.
-
-Lemma concat_respects_subseteq {A} (l1 l2: list (list A)) :
-  l1 ⊆ l2 →
-  concat l1 ⊆ concat l2.
-Proof.
-  generalize dependent l2.
-  induction l1 as [|x l1]; intros; simpl.
-  - set_solver.
-  - apply list_cons_subseteq in H as [Helem ?].
-    apply list_app_subseteq. split; [|by eauto].
-    apply elem_of_subseteq_concat; auto.
-Qed.
-
-Lemma list_fmap_mono {A B} (f: A → B) (l1 l2: list A) :
-  l1 ⊆ l2 → f <$> l1 ⊆ f <$> l2.
-Proof.
-  intros Hsubseteq.
-  apply (iffRL (elem_of_subseteq _ _)).
-  intros y Hin.
-  destruct (elem_of_list_fmap_2 _ _ _ Hin) as (x&Hy&Hx).
-  apply ((iffLR (elem_of_subseteq _ _)) Hsubseteq x) in Hx.
-  apply (elem_of_list_fmap_1_alt _ _ _ _ Hx Hy).
-Qed.
-
 Lemma txn_upds_subseteq txns1 txns2 :
   txns1 ⊆ txns2 →
   txn_upds txns1 ⊆ txn_upds txns2.
@@ -528,15 +309,6 @@ Proof.
   assumption.
 Qed.
 
-Lemma drop_subseteq {A} (l: list A) n :
-  drop n l ⊆ l.
-Proof.
-  intros x.
-  rewrite !elem_of_list_lookup.
-  setoid_rewrite lookup_drop.
-  naive_solver.
-Qed.
-
 Lemma subslice_subseteq {A} (l: list A) (s1 e1: nat):
   subslice s1 e1 l ⊆ l.
 Proof.
@@ -547,12 +319,6 @@ Proof.
   - rewrite subslice_take_drop.
     rewrite -> take_ge by lia.
     apply drop_subseteq.
-Qed.
-
-Lemma fmap_subslice {A B} (f: A → B) (l: list A) n m :
-  f <$> subslice n m l = subslice n m (f <$> l).
-Proof.
-  rewrite !subslice_take_drop fmap_drop fmap_take //.
 Qed.
 
 Lemma txns_are_in_bounds E γ start txns l dinit :
@@ -786,7 +552,7 @@ Proof.
   2: rewrite fmap_length; lia.
   rewrite (equiv_upds_addrs_eq bufs upds Hsame_upds).
   by iFrame "∗ #".
-  Fail idtac.
+  all: fail "goals remaining".
 Admitted.
 
 (* TODO: why do we need this here again? *)
@@ -1181,21 +947,6 @@ Qed.
 Reserved Notation "x ≤ y ≤ z ≤ v ≤ w"
   (at level 70, y at next level, z at next level, v at next level).
 Notation "x ≤ y ≤ z ≤ v ≤ w" := (x ≤ y ∧ y ≤ z ∧ z ≤ v ∧ v ≤ w)%nat : nat_scope.
-
-Lemma subslice_lookup_eq {A} (n1 n2 n3: nat) (l1 l2: list A) :
-  (n1 ≤ n2)%nat →
-  (n2 < n3)%nat →
-  subslice n1 n3 l1 = subslice n1 n3 l2 →
-  l1 !! n2 = l2 !! n2.
-Proof.
-  intros Hlb Hub Hsubslice_eq.
-  replace n2 with (n1 + (n2 - n1))%nat by lia.
-  rewrite -(subslice_lookup _ _ n3).
-  2: lia.
-  rewrite -(subslice_lookup _ _ n3).
-  2: lia.
-  rewrite Hsubslice_eq //.
-Qed.
 
 Lemma is_durable_txn_get_is_txn γ cs txns diskEnd_txn_id durable_lb :
   "#circ.end" ∷ is_durable_txn γ cs txns diskEnd_txn_id durable_lb -∗
