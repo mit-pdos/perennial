@@ -409,7 +409,6 @@ Definition logger_resources γ : iProp Σ :=
   "HownLoggerPos_logger" ∷ (∃ (logger_pos : u64), ghost_var γ.(logger_pos_name) (1/2) logger_pos) ∗
   "HownLoggerTxn_logger" ∷ (∃ (logger_txn_id : nat), ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id).
 
-(* TODO: reconstruct this on crash *)
 Definition wal_resources γ : iProp Σ :=
   logger_resources γ ∗ installer_inv γ.
 
@@ -682,9 +681,6 @@ Proof.
               as "HnextDiskEnd_linv"; first by lia.
     iFreeze "# Hdata".
 
-    (* TODO(tej): these are my best guesses from the invariant, but they'll be
-    driven by a lemma that re-establishes [memLog_linv_pers_core] using maybe
-    just [circ_matches_txns] *)
     iMod (ghost_var_update (cs0.(circΣ.start)) with "installer_pos_mem")
          as "[installer_pos_mem1 installer_pos_mem2]".
     iMod (ghost_var_update (cs0.(circΣ.start)) with "installed_pos_mem")
@@ -1008,12 +1004,11 @@ Ltac show_crash2 :=
   iSplitL ""; first auto;
   iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
 
-Global Instance is_wal_inner_durable_disc γ σ:
-  Discretizable (is_wal_inner_durable γ σ dinit).
+Global Instance is_wal_inner_durable_disc γ s:
+  Discretizable (is_wal_inner_durable γ s dinit).
 Proof.
-  (* TODO: figure out what part of wal_linv_durable is not easily
-  Discretizable *)
-Abort.
+  apply _.
+Qed.
 
 Global Instance disk_inv_disc γ σ cs:
   Discretizable (disk_inv γ σ cs dinit).

@@ -1,6 +1,7 @@
 From iris.proofmode Require Import tactics.
 From iris.bi.lib Require Import fractional.
 From iris.base_logic.lib Require Import iprop own.
+From Perennial.algebra Require Import own_discrete.
 From Perennial.program_logic Require Import ghost_var.
 Set Default Proof Using "Type".
 
@@ -31,7 +32,15 @@ Proof.
   destruct x; apply _.
 Qed.
 
+Global Instance thread_own_ctx_discretizable γ P `{!Discretizable P} : Discretizable (thread_own_ctx γ P).
+Proof.
+  rewrite /thread_own_ctx.
+  apply exist_discretizable; intros.
+  destruct x; apply _.
+Qed.
+
 Global Instance thread_own_timeless γ s : Timeless (thread_own γ s) := _.
+Global Instance thread_own_discretizable γ s : Discretizable (thread_own γ s) := _.
 
 Theorem thread_own_alloc P :
   P -∗ |==> ∃ γ, thread_own_ctx γ P ∗ thread_own γ Available.
