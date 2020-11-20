@@ -2,7 +2,7 @@ From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
 From iris.program_logic Require Export weakestpre.
 From iris.program_logic Require Import atomic.
-From Perennial.goose_lang Require Import lifting.
+From Perennial.goose_lang Require Import lifting proofmode.
 From Perennial.goose_lang.lib Require Import struct.struct.
 From Perennial.program_logic Require Export crash_weakestpre staged_invariant.
 From Perennial.Helpers Require Export ipm NamedProps ProofCaching.
@@ -119,49 +119,55 @@ The use of [open_constr] in this tactic is essential. It will convert all holes
 (i.e. [_]s) into evars, that later get unified when an occurences is found
 (see [unify e' efoc] in the code below). *)
 
-Tactic Notation "wpc_pure_later" open_constr(efoc) simple_intropattern(H) :=
+Tactic Notation "wpc_pure_later" tactic3(filter) "as" simple_intropattern(H) :=
   lazymatch goal with
   | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q ?Qc) =>
     let e := eval simpl in e in
     reshape_expr e ltac:(fun K e' =>
-      unify e' efoc;
-      eapply (tac_wpc_pure_ctx _ _ _ _ _ K e');
+      filter e';
+      first [ eapply (tac_wpc_pure_ctx _ _ _ _ _ K e');
       [iSolveTC                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |iSolveTC                       (* IntoLaters *)
       | try (apply H)                 (* crash condition, try to re-use existing proof *)
       | first [ intros H || intros _]; wpc_finish H (* new goal *)
-      ])
-    || fail "wpc_pure_later: cannot find" efoc "in" e "or" efoc "is not a redex"
+      ] | fail 3 "wp_pure: first pattern match is not a redex" ]
+          (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
+   )
+    || fail "wpc_pure_later: cannot find redex pattern"
   | _ => fail "wpc_pure_later: not a 'wpc'"
   end.
 
-Tactic Notation "wpc_pure_no_later" open_constr(efoc) simple_intropattern(H) :=
+Tactic Notation "wpc_pure_no_later" tactic3(filter) "as" simple_intropattern(H) :=
   lazymatch goal with
   | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q ?Qc) =>
     let e := eval simpl in e in
     reshape_expr e ltac:(fun K e' =>
-      unify e' efoc;
-      eapply (tac_wpc_pure_no_later_ctx _ _ _ _ K e');
+      filter e';
+      first [ eapply (tac_wpc_pure_no_later_ctx _ _ _ _ K e');
       [iSolveTC                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       | try (apply H)                 (* crash condition, try to re-use existing proof *)
       | first [ intros H || intros _]; wpc_finish H (* new goal *)
-      ])
-    || fail "wpc_pure: cannot find" efoc "in" e "or" efoc "is not a redex"
+      ] | fail 3 "wp_pure: first pattern match is not a redex" ]
+          (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
+   )
+    || fail "wpc_pure: cannot find redex pattern"
   | _ => fail "wpc_pure: not a 'wpc'"
   end.
 
-Tactic Notation "wpc_pure" open_constr(efoc) simple_intropattern(H) :=
+Tactic Notation "wpc_pure_smart" tactic3(filter) "as" simple_intropattern(H) :=
   iStartProof;
   lazymatch goal with
   | |- envs_entails ?envs _ =>
     lazymatch envs with
-    | context[Esnoc _ _ (bi_and _ (bi_later _))] => wpc_pure_later efoc H
-    | context[Esnoc _ _ (bi_later _)] => wpc_pure_later efoc H
-    | _ => wpc_pure_no_later efoc H
+    | context[Esnoc _ _ (bi_and _ (bi_later _))] => wpc_pure_later filter as H
+    | context[Esnoc _ _ (bi_later _)] => wpc_pure_later filter as H
+    | _ => wpc_pure_no_later filter as H
     end
   end.
+Tactic Notation "wpc_pure" open_constr(efoc) simple_intropattern(H) :=
+  wpc_pure_smart ltac:(fun e => unify e efoc) as H.
 
 Ltac crash_case :=
   try lazymatch goal with
@@ -172,12 +178,18 @@ Ltac crash_case :=
         end
       end.
 
+Tactic Notation "wpc_pure1" simple_intropattern(H) :=
+  iStartProof;
+  wpc_pure_smart wp_pure_filter as H.
 Ltac wpc_pures :=
   iStartProof;
-  first [ let Hcrash := fresh "Hcrash" in
-          wpc_pure _ Hcrash;
-          [try iFromCache .. | repeat (wpc_pure_no_later _ Hcrash; []); clear Hcrash]
-        | wpc_finish ].
+  let Hcrash := fresh "Hcrash" in
+  lazymatch goal with
+    | |- envs_entails ?envs (wpc ?s ?k ?E1 (Val _) ?Q ?Qc) => wpc_finish Hcrash
+    | |- _ =>
+      wpc_pure1 Hcrash;
+      [try iFromCache .. | repeat (wpc_pure_no_later wp_pure_filter as Hcrash; []); clear Hcrash]
+  end.
 
 Lemma tac_wpc_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} K Δ s k E1 Φ Φc e f :
@@ -293,14 +305,14 @@ Tactic Notation "wpc_frame_compl" constr(pat) := wpc_frame_pat base.Right pat.
 Tactic Notation "wpc_rec" simple_intropattern(H) :=
   let HAsRecV := fresh in
   pose proof AsRecV_recv as HAsRecV;
-  wpc_pure (App (RecV _ _ _) _) H;
+  wpc_pure (App (Val (RecV _ _ _)) (Val _)) H;
   clear HAsRecV.
 Tactic Notation "wpc_let" simple_intropattern(H) := wpc_pure (Rec BAnon (BNamed _) _) H; wpc_rec H.
 
 Ltac wpc_call :=
   let Hcrash := fresh "Hcrash" in
   wpc_rec Hcrash;
-  [ try iFromCache; crash_case .. | wpc_pure _ Hcrash; [try iFromCache; crash_case ..  | repeat (wpc_pure _ Hcrash; []); clear Hcrash] ].
+  [ try iFromCache; crash_case .. | wpc_pure1 Hcrash; [try iFromCache; crash_case ..  | repeat (wpc_pure1 Hcrash; []); clear Hcrash] ].
 
 Ltac wpc_bind_core K :=
   lazymatch eval hnf in K with
@@ -376,7 +388,7 @@ Tactic Notation "wpc_if_destruct" :=
 Tactic Notation "wpc_loadField" :=
   lazymatch goal with
   | |- envs_entails _ (wpc _ _ _ _ _ _) =>
-    try wpc_bind (struct.loadF _ _ _);
+    wpc_bind (struct.loadF _ _ (Val _));
     lazymatch goal with
     | |- envs_entails ?env (wpc _ _ _
                                 (App (Val (struct.loadF ?d ?fname))

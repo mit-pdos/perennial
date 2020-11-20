@@ -239,7 +239,7 @@ Proof.
     auto.
   }
   clear Hcrash.
-  wpc_pure _ Hcrash; auto.
+  wpc_pure1 Hcrash; auto.
   {
     iDestruct (Himpl with "[%] H0") as "H0".
     { lia. }
@@ -248,9 +248,9 @@ Proof.
     iExists _; iFrame.
     auto.
   }
-  wpc_pure _ _; auto.
-  wpc_pure _ _; auto.
-  wpc_pure _ _; auto.
+  wpc_pure1 _; auto.
+  wpc_pure1 _; auto.
+  wpc_pure1 _; auto.
   wpc_pure (Rec _ _ _) Hcrash.
   match goal with
   | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
@@ -295,9 +295,9 @@ Proof.
     wp_load.
     wp_store.
     iNamed 1.
-    wpc_pure _ Hcrash.
+    wpc_pure1 Hcrash.
     { iFromCache. }
-    wpc_pure _ Hcrash.
+    wpc_pure1 Hcrash.
     iApply ("IH" with "[%] [] HIx Hl").
     { iIntros (i Hbound) "HIx".
       iDestruct (Himpl with "[%] HIx") as "$".

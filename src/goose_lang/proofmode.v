@@ -105,7 +105,7 @@ Tactic Notation "wp_pure_later" tactic3(filter) :=
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |iSolveTC                       (* IntoLaters *)
       |wp_finish                      (* new goal *)
-      ] | fail 3 "wp_pure: is not a redex" ]
+      ] | fail 3 "wp_pure: first pattern match is not a redex" ]
           (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
    ) || fail "wp_pure: cannot find redex pattern"
   | _ => fail "wp_pure: not a 'wp'"
@@ -121,7 +121,7 @@ Tactic Notation "wp_pure_no_later" tactic3(filter) :=
       [iSolveTC                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |wp_finish                      (* new goal *)
-      ] | fail 3 "wp_pure: is not a redex" ]
+      ] | fail 3 "wp_pure: first pattern match is not a redex" ]
    ) || fail "wp_pure: cannot find redex pattern"
   | _ => fail "wp_pure: not a 'wp'"
   end.
@@ -165,7 +165,7 @@ Ltac wp_pures :=
       (* The `;[]` makes sure that no side-condition
                              magically spawns. *)
       (* TODO: do this in one go, without [repeat]. *)
-      try ((wp_pure_smart wp_pure_filter; []); repeat (wp_pure_no_later wp_pure_filter; []))
+      try ((wp_pure1; []); repeat (wp_pure_no_later wp_pure_filter; []))
   end.
 
 (** Unlike [wp_pures], the tactics [wp_rec] and [wp_lam] should also reduce
