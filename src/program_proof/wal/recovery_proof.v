@@ -722,7 +722,11 @@ done:
 
     iSplitR "start_avail diskEnd_avail
              being_installed_start_txn2 being_installed_end_txn2
-             installer_pos2
+             installer_pos2 installer_txn_id2
+             logger_pos2 logger_txn_id2
+             installer_pos_mem2 installer_txn_id_mem2
+             already_installed2
+             installed_pos_mem2 installed_txn_id_mem2
              ".
     {
     iSplitL "".
@@ -859,16 +863,21 @@ done:
     iExists _, _, _, _; iFrame (Hcirc_matches') "∗".
   }
   {
-    rewrite /wal_resources.
+    rewrite /wal_resources /logger_resources.
     rewrite /installer_inv.
-    iSplitL "diskEnd_avail".
-    { iFrame.
-      admit. (* more ghost vars, residual from above proof *) }
-    iExists being_installed_start_txn_id, being_installed_end_txn_id.
+    rewrite /named.
+    iThaw "#".
+    iDestruct "diskEnd_mem_txn_lb" as "-#diskEnd_mem_txn_lb".
+    iClear "#".
+    iDestruct (fmcounter_lb_mono _ being_installed_end_txn_id with "diskEnd_mem_txn_lb") as
+        "diskEnd_mem_txn_lb"; first by word.
+    iFrame "start_avail diskEnd_avail".
+    repeat first [ iExists _ |
+                   rewrite sep_exist_l |
+                   rewrite sep_exist_r ].
     iFrame.
-    iSplitL "installer_pos2".
-    { iExists _; iFrame. }
-    admit. (* more ghost vars, residual from above proof *)
+    admit. (* TODO: being_installed_start_txn_name is actually
+    [being_installed_start_txn_id], but is expected to be [installed_txn_id] *)
   }
   }
   {
