@@ -54,6 +54,55 @@ Axiom nondet_spec:
     nondet #()
   {{{ v, RET v; ⌜v = #true⌝ ∨ ⌜v = #false⌝}}}.
 
+Definition RPCServer_mutex_inv (sv:loc) (γrpc:rpc_names) (server_own_core:iProp Σ): iProp Σ :=
+  ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 u64),
+      "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
+    ∗ "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
+    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
+    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM) (* TODO: Probably should get better naming for this *)
+    ∗ server_own_core
+.
+
+(* TODO: Rename these to something generic *)
+Definition mutexN : namespace := nroot .@ "lockservermutexN".
+Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
+
+Definition is_rpcserver (sv_ptr:loc) γrpc server_own_core: iProp Σ :=
+  ∃ (mu_ptr:loc),
+      "Hlinv" ∷ is_RPCServer γrpc
+    ∗ "Hmu_ptr" ∷ readonly(sv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr)
+    ∗ "Hmu" ∷ is_lock mutexN #mu_ptr (RPCServer_mutex_inv sv_ptr γrpc server_own_core)
+.
+
+Definition Request64 := @RPCRequest (RPCValC). (* TODO: rename these *)
+Definition Reply64 := @RPCReply (u64).
+
+Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ
+  :=
+  ∃ (cid cseqno : u64),
+      "%" ∷ ⌜int.nat cseqno > 0⌝
+    ∗ "Hcid" ∷ cl_ptr ↦[RPCClient.S :: "cid"] #cid
+    ∗ "Hseq" ∷ cl_ptr ↦[RPCClient.S :: "seq"] #cseqno
+    ∗ "Hcrpc" ∷ RPCClient_own γrpc cid cseqno
+.
+
+(* f is a rpcHandler if it satisfies this specification *)
+Definition is_rpcHandler (f:val) γrpc PreCond PostCond : iProp Σ :=
+  ∀ γPost req_ptr reply_ptr req reply,
+    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
+                    ∗ "#Hargs" ∷ read_request req_ptr req
+                    ∗ "Hreply" ∷ own_reply reply_ptr reply
+    }}} (* TODO: put this precondition into a defn *)
+      f #req_ptr #reply_ptr
+    {{{ RET #false; ∃ reply',
+        own_reply reply_ptr reply'
+                    ∗ (⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req
+                        ∨ RPCReplyReceipt γrpc req reply'.(Ret)
+                    )
+    }}}
+    .
+
 Lemma overflow_guard_incr_spec stk E (v:u64) : 
 {{{ True }}}
   overflow_guard_incr #v @ stk ; E
@@ -87,30 +136,6 @@ Proof.
     contradiction.
   }
 Qed.
-
-Definition RPCServer_mutex_inv (sv:loc) (γrpc:rpc_names) (server_own_core:iProp Σ): iProp Σ :=
-  ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 u64),
-      "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
-    ∗ "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
-    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
-    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
-    ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM) (* TODO: Probably should get better naming for this *)
-    ∗ server_own_core
-.
-
-(* TODO: Rename these to something generic *)
-Definition mutexN : namespace := nroot .@ "lockservermutexN".
-Definition lockRequestInvN (cid seq : u64) := nroot .@ "lock" .@ cid .@ "," .@ seq.
-
-Definition is_rpcserver (sv_ptr:loc) γrpc server_own_core: iProp Σ :=
-  ∃ (mu_ptr:loc),
-      "Hlinv" ∷ is_RPCServer γrpc
-    ∗ "Hmu_ptr" ∷ readonly(sv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr)
-    ∗ "Hmu" ∷ is_lock mutexN #mu_ptr (RPCServer_mutex_inv sv_ptr γrpc server_own_core)
-.
-
-Definition Request64 := @RPCRequest (RPCValC). (* TODO: rename these *)
-Definition Reply64 := @RPCReply (u64).
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
@@ -202,22 +227,6 @@ Proof.
     - word.
   }
 Qed.
-
-(* f is a rpcHandler if it satisfies this specification *)
-Definition is_rpcHandler (f:val) γrpc PreCond PostCond : iProp Σ :=
-  ∀ γPost req_ptr reply_ptr req reply,
-    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
-                    ∗ "#Hargs" ∷ read_request req_ptr req
-                    ∗ "Hreply" ∷ own_reply reply_ptr reply
-    }}} (* TODO: put this precondition into a defn *)
-      f #req_ptr #reply_ptr
-    {{{ RET #false; ∃ reply',
-        own_reply reply_ptr reply'
-                    ∗ (⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req
-                        ∨ RPCReplyReceipt γrpc req reply'.(Ret)
-                    )
-    }}}
-    .
 
 (* This will alow handler functions using RPCServer__HandleRequest to establish is_rpcHandler *)
 Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γPost server_own_core PreCond PostCond :
@@ -362,15 +371,6 @@ Proof.
     by iLeft.
   }
 Qed.
-
-Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ
-  :=
-  ∃ (cid cseqno : u64),
-      "%" ∷ ⌜int.nat cseqno > 0⌝
-    ∗ "Hcid" ∷ cl_ptr ↦[RPCClient.S :: "cid"] #cid
-    ∗ "Hseq" ∷ cl_ptr ↦[RPCClient.S :: "seq"] #cseqno
-    ∗ "Hcrpc" ∷ RPCClient_own γrpc cid cseqno
-.
 
 Lemma RPCClient__MakeRequest_spec (f:val) cl_ptr args γrpc PreCond PostCond :
 is_rpcHandler f γrpc PreCond PostCond -∗
