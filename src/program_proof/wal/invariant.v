@@ -448,7 +448,9 @@ Definition is_installed_read d txns installed_lb diskEnd_txn_id being_installed_
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
   ghost_var γ.(cs_name) (1/2) cs.
 
-Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id :=
+Definition circ_matches_txns (cs:circΣ.t) txns
+           installed_txn_id installer_pos installer_txn_id
+           diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id :=
   has_updates (take (installer_pos - int.nat cs.(circΣ.start)) cs.(circΣ.upds))
     (subslice (S installed_txn_id) (S installer_txn_id) txns) ∧
   has_updates (subslice (installer_pos - int.nat cs.(circΣ.start)) (diskEnd_mem - int.nat cs.(circΣ.start)) cs.(circΣ.upds))
@@ -457,6 +459,37 @@ Definition circ_matches_txns (cs:circΣ.t) txns installed_txn_id installer_pos i
     (subslice (S diskEnd_mem_txn_id) (S diskEnd_txn_id) txns) ∧
   (int.nat cs.(circΣ.start) ≤ installer_pos ≤ diskEnd_mem ≤ Z.to_nat (circΣ.diskEnd cs))%nat ∧
   (installed_txn_id ≤ installer_txn_id ≤ diskEnd_mem_txn_id ≤ diskEnd_txn_id)%nat.
+
+Lemma circ_matches_txns_combine cs txns
+      installed_txn_id installer_pos installer_txn_id
+      diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id :
+  circ_matches_txns cs txns installed_txn_id installer_pos installer_txn_id
+                    diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id →
+  has_updates cs.(circΣ.upds) (subslice (S installed_txn_id) (S diskEnd_txn_id) txns).
+Proof.
+  destruct 1 as (Hupds1 & Hupds2 & Hupds3 & ?&?).
+  rewrite /circΣ.diskEnd in H.
+  pose proof (has_updates_app _ _ _ _ Hupds1 Hupds2) as Hupds12.
+  pose proof (has_updates_app _ _ _ _ Hupds12 Hupds3) as Hupds123.
+  match type of Hupds123 with
+  | has_updates ?us ?txns =>
+    lazymatch goal with
+    | |- has_updates ?us' ?txns' =>
+      replace us' with us;
+        [ replace txns' with txns;
+          [ assumption | ]
+        | ]
+    end
+  end.
+  - rewrite -> subslice_app_contig by lia.
+    rewrite -> subslice_app_contig by lia.
+    auto.
+  - rewrite subslice_from_take.
+    rewrite subslice_from_drop.
+    rewrite -> subslice_app_contig by lia.
+    rewrite -> subslice_app_contig by lia.
+    rewrite -subslice_complete //.
+Qed.
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)

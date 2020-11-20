@@ -806,9 +806,9 @@ done:
           rewrite firstn_all.
           rewrite skipn_all.
           rewrite -> drop_ge by len.
-          unfold circ_matches_txns in Hcirc_matches.
           split_and!; auto using has_updates_nil.
-          admit. (* TODO: line up txns in circ_matches_txns *)
+          rewrite subslice_take Nat.min_id.
+          apply circ_matches_txns_combine in Hcirc_matches; auto.
         }
         iPureIntro.
         replace (take _ _) with (σ'.(log_state.txns)) by reflexivity.

@@ -528,13 +528,6 @@ Proof.
   assumption.
 Qed.
 
-Lemma subslice_complete {A} (l: list A) :
-  l = subslice 0 (length l) l.
-Proof.
-  rewrite subslice_take_drop.
-  rewrite drop_0 take_ge //.
-Qed.
-
 Lemma drop_subseteq {A} (l: list A) n :
   drop n l ⊆ l.
 Proof.

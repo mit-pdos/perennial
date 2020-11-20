@@ -161,6 +161,26 @@ Theorem subslice_take_drop {A} n m (l: list A) :
   drop n (take m l).
 Proof. reflexivity. Qed.
 
+Lemma subslice_from_take {A} m (l: list A) :
+  take m l = subslice 0 m l.
+Proof.
+  rewrite /subslice //.
+Qed.
+
+Lemma subslice_from_drop {A} n (l: list A) :
+  drop n l = subslice n (length l) l.
+Proof.
+  rewrite /subslice.
+  rewrite take_ge; auto.
+Qed.
+
+Lemma subslice_complete {A} (l: list A) :
+  l = subslice 0 (length l) l.
+Proof.
+  rewrite subslice_take_drop.
+  rewrite drop_0 take_ge //.
+Qed.
+
 Theorem subslice_drop_take {A} n m (l: list A) :
   n ≤ m →
   subslice n m l =
