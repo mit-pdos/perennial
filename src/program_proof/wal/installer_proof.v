@@ -933,7 +933,7 @@ Proof.
 
   iDestruct (unify_memLog_txns with "Hlinv γtxns") as "(Hlinv&γtxns&->)".
   iDestruct (linv_get_pers_core with "Hlinv") as "#Hlinv_pers".
-  iDestruct "Hlinv_pers" as "(?&?&?&?&?&?&?&?)".
+  iDestruct "Hlinv_pers" as "(?&?&?&?&?&?&?&?&?)".
   iNamed.
   iNamed "Howninstalled".
   iDestruct (ghost_var_agree with "Halready_installed_installer Halready_installed") as %<-.
@@ -1002,7 +1002,7 @@ Proof.
 
   (* these names would be free if the above was a lemma *)
   remember σs.(log_state.txns) as txns.
-  iClear "circ.start circ.end Hbasedisk Hbeing_installed_txns Hmem".
+  iClear "circ.start circ.end Hbasedisk Hbeing_installed_txns Hmem HinstalledTxn_lb".
   clear Heqtxns Hwf Hdaddrs_init σs Hinstalled_bounds Hcirc_matches diskEnd_txn_id installer_pos installer_txn_id cs.
 
   iModIntro.
@@ -1101,6 +1101,8 @@ Proof.
       with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as
           "(HownBeingInstalledStartTxn_installer&HownBeingInstalledStartTxn_walinv&_)".
     1: lia.
+    iMod (fmcounter_get_lb with "HownBeingInstalledStartTxn_walinv")
+      as "(HownBeingInstalledStartTxn_walinv&HinstalledTxn_lb')".
     iMod (ghost_var_update_halves (∅: gset Z)
       with "Halready_installed_installer Halready_installed") as
           "[Halready_installed_installer Halready_installed]".
@@ -1273,7 +1275,7 @@ Proof.
     as "(Hlinv&HownInstallerPosMem_installer&HownInstallerTxnMem_installer&->&->)".
   iDestruct "Hlinv" as "(#Hlinv_pers&Howntxns&HnextDiskEnd&Hγ)".
   iNamed "Hγ".
-  iDestruct "Hlinv_pers" as "(%Hlog_index_ordering'&%Htxn_id_ordering'&#HmemStart_txn'&%HdiskEnd_txn'&#HdiskEnd_stable'&#HmemEnd_txn'&#Htxns')".
+  iDestruct "Hlinv_pers" as "(%Hlog_index_ordering'&%Htxn_id_ordering'&#HmemStart_txn'&%HdiskEnd_txn'&#HdiskEnd_stable'&#HmemEnd_txn'&#HinstalledTxn_lb'&#Htxns'&%Htxnpos_bound')".
   iMod (ghost_var_update_halves σ.(diskEnd)
     with "HownInstalledPosMem_installer HownInstalledPosMem_linv") as
         "[HownInstalledPosMem_installer HownInstalledPosMem_linv]".
@@ -1285,6 +1287,8 @@ Proof.
   iMod (thread_own_put with "Hstart_exactly Hinstalling Hstart_is")
     as "[Hstart_exactly HnotInstalling]".
   iDestruct (fmcounter_agree_2 with "HownDiskEndMem_linv HownDiskEndMem_lb") as %HdiskEnd_lb.
+  iMod (fmcounter_get_lb with "HownBeingInstalledStartTxn_installer")
+    as "(HownBeingInstalledStartTxn_installer&#HinstalledTxn_lb)".
 
   wp_apply (wp_sliding__deleteFrom with "His_memLog").
   1: lia.
@@ -1353,7 +1357,7 @@ Proof.
   1: iPureIntro; lia.
   simpl.
   iDestruct (txn_val_to_pos with "HdiskEnd_txn_val") as "HdiskEnd_txn_pos".
-  iFrame (HdiskEnd_txn') "HdiskEnd_stable' HdiskEnd_txn_pos".
+  iFrame (HdiskEnd_txn') "HdiskEnd_stable' HdiskEnd_txn_pos HinstalledTxn_lb".
 
   destruct σ'.
   rewrite /memLog_linv_txns /= /slidingM.logIndex.
@@ -1373,7 +1377,7 @@ Proof.
   }
 
   iDestruct "Htxns'" as
-    "[(%His_installerEnd'&%His_diskEnd'&%His_loggerEnd'&%His_nextDiskEnd'&%His_nextTxn') %Htxnpos_bound']".
+    "(%His_installerEnd'&%His_diskEnd'&%His_loggerEnd'&%His_nextDiskEnd'&%His_nextTxn')".
   iSplit.
   2: {
     iPureIntro.

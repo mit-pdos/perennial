@@ -603,10 +603,12 @@ Proof.
 
     iExists _, nextDiskEnd_txn_id0, _, _, _, _, _.
     iFrame.
+    iClear "HinstalledTxn_lb".
     iNamed "Hlinv_pers".
     iNamed "Htxns".
     iFrame "HmemStart_txn HmemEnd_txn".
     iFrame "HnextDiskEnd_stable_old".
+    iFrame "HinstalledTxn_lb".
 
     iSplit.
     { iPureIntro. word. }

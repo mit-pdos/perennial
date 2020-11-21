@@ -338,7 +338,7 @@ Lemma is_installed_append γ d txns txns' txn_id diskEnd_txn_id :
 Proof.
   rewrite /is_installed /is_installed_core.
   iNamed 1. iNamed "Howninstalled".
-  iExists being_installed_start_txn_id, being_installed_end_txn_id, already_installed.
+  iExists being_installed_end_txn_id, already_installed.
   iFrame.
   rewrite -subslice_before_app_eq; last by lia. iFrame "#".
   iSplitR "Hdata".

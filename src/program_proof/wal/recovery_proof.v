@@ -639,7 +639,7 @@ Proof.
     iMod (ghost_var_update installer_pos with "installer_pos") as "[installer_pos1 installer_pos2]".
     iMod (ghost_var_update installer_txn_id with "installer_txn_id") as "[installer_txn_id1 installer_txn_id2]".
     iMod (ghost_var_update ∅ with "already_installed") as "[already_installed1 already_installed2]".
-    iMod (fmcounter_update being_installed_start_txn_id with "being_installed_start_txn") as "[[being_installed_start_txn1 being_installed_start_txn2] #being_installed_start_txn_id_mem_lb]"; first by lia.
+    iMod (fmcounter_update installed_txn_id with "being_installed_start_txn") as "[[being_installed_start_txn1 being_installed_start_txn2] #being_installed_start_txn_id_mem_lb]"; first by lia.
     iMod (ghost_var_update being_installed_end_txn_id with "being_installed_end_txn") as "[being_installed_end_txn1 being_installed_end_txn2]".
     iMod (txns_ctx_app (take (S diskEnd_txn_id) σ.(log_state.txns)) with "txns_ctx") as "Htxns_ctx'".
     rewrite app_nil_l.
@@ -788,7 +788,7 @@ done:
           unfold circ_wf in *.
           word.
         }
-        iFrame (HdiskEnd_is_txn) "HdiskEnd_pos".
+        iFrame (HdiskEnd_is_txn) "HdiskEnd_pos being_installed_start_txn_id_mem_lb".
         replace (slidingM.memEnd _) with (int.Z diskEnd) by reflexivity.
         iSplit.
         {
@@ -835,7 +835,7 @@ done:
              already_installed1 Hold_txns Hdata".
     {
       rewrite /is_installed/is_installed_core.
-      iExists being_installed_start_txn_id, being_installed_end_txn_id, ∅.
+      iExists being_installed_end_txn_id, ∅.
       iFrame "being_installed_start_txn1".
       iFrame "being_installed_end_txn1".
       iFrame "already_installed1".
@@ -884,8 +884,6 @@ done:
                    rewrite sep_exist_l |
                    rewrite sep_exist_r ].
     iFrame.
-    admit. (* TODO: being_installed_start_txn_name is actually
-    [being_installed_start_txn_id], but is expected to be [installed_txn_id] *)
   }
   }
   {
@@ -899,7 +897,7 @@ done:
   { rewrite /N. iApply ncinv_split_l. iApply "Hncinv". }
   iFrame.
   all: fail "goals remaining".
-Admitted.
+Qed.
 
 (*
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':

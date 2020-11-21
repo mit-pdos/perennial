@@ -265,18 +265,15 @@ Qed.
 Theorem simulate_read_cache_miss {l γ Q σ dinit memLog diskEnd diskEnd_txn_id a} :
   apply_upds memLog.(slidingM.log) ∅ !! int.Z a = None →
   (is_wal_inner l γ σ dinit ∗ P σ) -∗
-  is_circular circN (circular_pred γ) γ.(circ_name) -∗
   memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
-  diskStart_linv γ memLog.(slidingM.start) -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
   |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' dinit ∗ P σ') ∗
               "HQ" ∷ Q None ∗
-              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id ∗
-              "Hstart_circ" ∷ diskStart_linv γ memLog.(slidingM.start).
+              "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
 Proof.
-  iIntros (Happly) "[Hinner HP] Hcirc Hlinv Hstart_circ Hfupd".
+  iIntros (Happly) "[Hinner HP] Hlinv Hfupd".
   iNamed "Hinner".
 
   iNamed "Hlinv".
@@ -291,17 +288,10 @@ Proof.
   iNamed "Hinstalled".
 
   iNamed "Howninstalled".
-  iNamed "Hstart_circ".
-  (* we need NC and also ↑walN.@"circ" ⊆ E for this *)
-  (* we could pass it in as a precondition, but that would
-     require breaking up is_wal_inner *)
-  assert (int.Z memLog.(slidingM.start) ≤ int.Z (start cs)) by admit.
-  (*
-  iMod (is_circular_start_lb_agree with "Hstart_at_least Hcirc Howncs")
-    as "(%Hstart_lb&Howncs)".
-  1: solve_ndisj.
-  *)
   iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
+  iDestruct (fmcounter_agree_2 with "HownBeingInstalledStartTxn_walinv HinstalledTxn_lb")
+    as %HinstalledTxn_lb.
+
   iAssert (⌜
     start cs = memLog.(slidingM.start) →
     Forall (λ u, u.2 = [])
@@ -334,23 +324,8 @@ Proof.
       rewrite Hall_updates in Happly.
       rewrite /no_updates_since /set /=.
 
-      destruct (decide (installed_txn_id_mem ≤ installed_txn_id)).
-      {
-        eapply apply_upds_no_updates_since; last by apply Happly.
-        lia.
-      }
-      destruct (decide (int.Z memLog.(slidingM.start) < int.Z (start cs))).
-      {
-        apply (wal_wf_txns_mono_pos Hwf HmemStart_txn Hstart_txn) in l0.
-        lia.
-      }
-      assert (int.Z (start cs) = int.Z memLog.(slidingM.start)) as Hstart_eq by lia.
-      apply (inj int.Z) in Hstart_eq.
-      apply Hnils in Hstart_eq.
-      apply (apply_upds_no_updates_since _ _ (S installed_txn_id_mem)) in Happly.
-      2: lia.
-      (* implied by Happly and Hstart_eq *)
-      admit.
+      eapply apply_upds_no_updates_since; last by apply Happly.
+      lia.
     }
     monad_simpl.
   }
@@ -372,11 +347,11 @@ Proof.
     iSplit. 2: iSplit. 3: iSplit. 4: eauto.
     3: { iExists diskEnd0. iFrame "%". iFrame "#". iPureIntro. lia. }
     2: { iFrame "# %". iPureIntro. lia. }
-    iExists _, _, _. iFrame. iFrame "%#".
+    iExists _, _. iFrame. iFrame "%#".
   }
 
   repeat iExists _. iFrame. iFrame "#". iFrame "%".
-Admitted.
+Qed.
 
 Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ dinit a :
   {{{ is_wal P l γ dinit ∗
@@ -404,11 +379,6 @@ Proof.
   iInv "Hwal" as (σs) "[Hinner HP]".
   iApply wp_ncfupd.
   wp_call.
-  (*
-    we can get this here:
-    int.Z memLog.(slidingM.start) ≤ int.Z (start cs)
-    (see comment in simulate_read_cache_miss)
-  *)
   iModIntro.
 
   wp_pures.
@@ -429,8 +399,8 @@ Proof.
     iExists _; iFrame.
   - iDestruct "Hb" as "[-> %HmemLog_lookup]".
     iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
-    iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] Hcirc HmemLog_linv Hstart_circ Hfupd")
-      as "(Hinv&?&?&?)"; iNamed.
+    iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
+      as "(Hinv&?&?)"; iNamed.
     iMod "HinnerN" as "_".
     iModIntro.
     iFrame "Hinv".

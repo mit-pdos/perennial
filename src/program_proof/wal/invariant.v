@@ -52,6 +52,7 @@ Record wal_names := mkWalNames
     (* the range (being_installed_start, being_installed_end] is the range of txns that the installer is installing *)
     (* when not installing, we should have being_installed_start = being_installed_end = installed_txn *)
     (* TODO: being_installed_end_txn should always be the same as installer_txn, remove the redundancy *)
+    (* TODO: rename being_installed_start_txn to installed_txn since they are now always the same *)
     being_installed_start_txn_name : gname;
     being_installed_end_txn_name : gname;
     already_installed_name : gname;
@@ -238,6 +239,8 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t)
     "%HdiskEnd_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
     "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt ∗
     "#HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
+    (* being_installed_start being used as a proxy for on-disk installed_txn *)
+    "#HinstalledTxn_lb" ∷ fmcounter_lb γ.(being_installed_start_txn_name) installed_txn_id_mem ∗
     (* Here we establish what the memLog contains, which is necessary for reads
     to work (they read through memLogMap, but the lock invariant establishes
     that this matches memLog). *)
