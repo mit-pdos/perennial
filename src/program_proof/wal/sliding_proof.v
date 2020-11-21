@@ -668,8 +668,8 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
-Theorem wp_sliding__memWrite l q_b memLog bufs upds :
-  {{{ is_sliding l q_b memLog ∗ updates_slice_frag' bufs 1 q_b upds ∗
+Theorem wp_sliding__memWrite l q q_b memLog bufs upds :
+  {{{ is_sliding l q_b memLog ∗ updates_slice_frag' bufs q q_b upds ∗
       ⌜slidingM.memEnd memLog + length upds < 2^64⌝}}}
     sliding__memWrite #l (slice_val bufs)
   {{{ RET #(); is_sliding l q_b (memWrite memLog upds) }}}.

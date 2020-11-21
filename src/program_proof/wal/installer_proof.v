@@ -154,8 +154,8 @@ Proof.
   - rewrite memWrite_one_same_start memWrite_one_same_mutable //.
 Qed.
 
-Theorem wp_absorbBufs b_s q_b (bufs: list update.t) :
-  {{{ updates_slice_frag' b_s 1 q_b bufs }}}
+Theorem wp_absorbBufs b_s q q_b (bufs: list update.t) :
+  {{{ updates_slice_frag' b_s q q_b bufs }}}
     absorbBufs (slice_val b_s)
   {{{ b_s' bufs', RET slice_val b_s';
       "Habsorbed" ∷ updates_slice' q_b b_s' bufs' ∗
@@ -370,14 +370,7 @@ Proof.
     apply Forall_fmap in Htxns_addrs.
     eapply Forall_subset; eauto. }
 
-  (* this is the problem where we don't differentiate between ownership
-    of buf pointers and ownership of the bufs themselves.
-    This is a problem because the memWrite hack to remove duplicates
-    in absorbBufs requires full ownership of the buf pointers,
-    but we only have readonly ownership of the bufs themselves. *)
-  iAssert (updates_slice_frag' bufs_s 1 q bufs) with "[Hbufs_s]" as "Hbufs_copy".
-  { admit. (* TODO: code needs to copy slice (but shallow copy blocks, crucially) *) }
-  wp_apply (wp_absorbBufs with "Hbufs_copy").
+  wp_apply (wp_absorbBufs with "Hbufs_s").
   iIntros (bks_s upds) "Hpost".
   iNamed "Hpost".
   apply (apply_upds_equiv_implies_has_updates_equiv _ _ _ Hsame_upds) in Hbufs.
@@ -544,8 +537,7 @@ Proof.
   2: rewrite fmap_length; lia.
   rewrite (equiv_upds_addrs_eq bufs upds Hsame_upds).
   by iFrame "∗ #".
-  all: fail "goals remaining".
-Admitted.
+Qed.
 
 (* TODO: why do we need this here again? *)
 Opaque is_sliding.
