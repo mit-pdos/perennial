@@ -5,7 +5,8 @@ From iris.base_logic.lib Require Import mnat.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.Helpers Require Import Transitions List.
-From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.specs.
+From Perennial.program_proof Require Import wal.abstraction wal.specs.
+From Perennial.program_proof Require Import wal.heapspec_lib.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.algebra Require Import deletable_heap log_heap.
 From Perennial.Helpers Require Import NamedProps.
@@ -81,12 +82,6 @@ Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
     "Hcrash_heaps_own" ∷ ghost_var γ.(wal_heap_crash_heaps) (1/2) crash_heaps ∗
     "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls ∗
     "Hcrash_heaps_lb" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb).
-
-Definition no_updates (l: list update.t) a : Prop :=
-  forall u, u ∈ l -> u.(update.addr) ≠ a.
-
-Definition is_update (l: list update.t) a b : Prop :=
-  ∃ u, u ∈ l /\ u.(update.addr) = a /\ u.(update.b) = b.
 
 Record locked_walheap := {
   locked_wh_σd : disk;
@@ -184,7 +179,7 @@ Proof.
     rewrite -> take_take, Nat.min_l by lia.
     assumption.
   - rewrite /updates_since /=.
-    admit. (* TODO(tej): not true, blocks since install change when we take a
+    (* TODO(tej): not true, blocks since install change when we take a
     prefix of transactions (x won't be the same) *)
 Abort.
 
@@ -290,6 +285,21 @@ Proof.
   reflexivity.
 Qed.
 
+Lemma wal_heap_inv_addr_latest_update ls a hb :
+  wal_wf ls →
+  wal_heap_inv_addr ls a hb -∗
+  ⌜last_disk ls !! int.Z a = Some (hb_latest_update hb)⌝.
+Proof.
+  iIntros (Hwf [Ha_wf Hinv]).
+  iPureIntro.
+  destruct hb as [installed_block blocks_since_install].
+  destruct Hinv as (txn_id & Hbound & Hlookup_install & Hupdates_since).
+  simpl.
+  apply updates_since_to_last_disk in Hlookup_install; auto.
+  rewrite Hupdates_since in Hlookup_install.
+  auto.
+Qed.
+
 Lemma wal_heap_gh_crash crash_txn (gh: gmap u64 heap_block) ls :
   ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns) →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
@@ -301,7 +311,7 @@ Lemma wal_heap_gh_crash crash_txn (gh: gmap u64 heap_block) ls :
       (* TODO: something has been lost along the way about how these values
       relate to the old ones; probably the exchanger is the only thing that can
       contain that information *)
-      [∗ map] a↦b ∈ gh', wal_heap_inv_addr ls' a b.
+      [∗ map] a↦b ∈ gh', wal_heap_inv_addr ls' a b ∗ mapsto (hG:=γ') a 1 b.
 Proof using walheapG0.
   intros Hbound.
   cbn zeta.
@@ -311,11 +321,11 @@ Proof using walheapG0.
     iModIntro.
     iExists _, ∅.
     rewrite dom_empty_L.
-    rewrite big_sepM_empty.
+    rewrite !big_sepM_empty.
     by iFrame.
   - rewrite big_sepM_insert //.
     iDestruct "Hinv" as "[Ha Hinv]".
-    iMod ("IH" with "[//]") as (γ' gh' Hdom) "[Hctx #Hinv']".
+    iMod ("IH" with "[//]") as (γ' gh' Hdom) "[Hctx Hinv']".
     iExists γ'.
     iDestruct (wal_heap_inv_addr_crash _ _ _ crash_txn with "Ha") as (b' Hprefix) "Ha'".
     { lia. }
@@ -324,15 +334,17 @@ Proof using walheapG0.
       rewrite Hdom.
       apply not_elem_of_dom; done. }
     iMod (gen_heap_alloc _ a b' with "Hctx") as "[Hctx Hmapsto]"; first by auto.
-    (* TODO: this is where we're not collecting the mapsto facts *)
     iModIntro.
     iExists (<[a:=b']> gh').
     iFrame.
     rewrite !dom_insert_L //.
     iSplit; first by (iPureIntro; congruence).
     rewrite big_sepM_insert //.
-    iFrame "#".
+    iFrame "#∗".
 Qed.
+
+Definition async_take {A} `{!Inhabited A} (n:nat) (l: async A) : async A :=
+  list_to_async (take n (possible l)).
 
 Lemma wal_heap_inv_crash_transform γ ls ls' :
   relation.denote log_crash ls ls' () →
@@ -346,11 +358,12 @@ Lemma wal_heap_inv_crash_transform γ ls ls' :
                        (ls.(log_state.d), ls.(log_state.txns)) ∗
             (∃ (crash_heaps: async (gmap u64 Block)),
                 ghost_var γ.(wal_heap_crash_heaps) (1/2) crash_heaps ∗
-                ghost_var γ'.(wal_heap_crash_heaps)
-                  (1 / 2)
-                  (list_to_async
-                    (* length might be off-by-one *)
-                    (take (length ls'.(log_state.txns)) (possible crash_heaps)))) ∗
+                let crash_heaps' := async_take (length ls'.(log_state.txns)) crash_heaps in
+                ghost_var γ'.(wal_heap_crash_heaps) (1 / 2) crash_heaps'
+            (* TODO: need to include all the wal_heap_h hb's; their values can
+            be related to [latest crash_heaps'] using [wal_heap_inv_crashes],
+            which we're proving anyway *)
+            ) ∗
              is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
                                      locked_wh_σtxns := ls'.(log_state.txns);
                                   |}
@@ -390,6 +403,10 @@ Proof.
   { iExists _; iFrame.
     by rewrite -> take_length_le by lia. }
   iExists _, _; iFrame "#∗%".
+  iDestruct (big_sepM_sep with "Hgh'") as "[Hgh' Hwal_heap_mapstos]".
+  (* TODO: we should return Hwal_heap_mapstos as well, related to [latest
+  crash_heaps] *)
+  iFrame.
   iApply (wal_heap_inv_crashes_crash with "Hcrash_heaps"); auto.
 Qed.
 

@@ -896,7 +896,6 @@ done:
   iSplitL "Hncinv".
   { rewrite /N. iApply ncinv_split_l. iApply "Hncinv". }
   iFrame.
-  all: fail "goals remaining".
 Qed.
 
 (*
