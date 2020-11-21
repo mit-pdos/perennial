@@ -1039,6 +1039,7 @@ Proof.
   replace (installed_txn_id_mem + (S σ.(locked_diskEnd_txn_id) - (S installed_txn_id_mem)))%nat
     with σ.(locked_diskEnd_txn_id) by lia.
 
+  wp_apply wp_Barrier.
   wp_loadField.
 
   wp_apply (wp_circular__Advance _ _ (

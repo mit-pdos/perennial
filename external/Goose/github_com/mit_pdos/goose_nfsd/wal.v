@@ -374,6 +374,7 @@ Definition Walog__logInstall: val :=
       util.DPrintf #5 (#(str"logInstall up to %d
       ")) #();;
       installBlocks (struct.loadF Walog.S "d" "l") "bufs";;
+      disk.Barrier #();;
       Advance (struct.loadF Walog.S "d" "l") "installEnd";;
       lock.acquire (struct.loadF Walog.S "memLock" "l");;
       WalogState__cutMemLog (struct.loadF Walog.S "st" "l") "installEnd";;
