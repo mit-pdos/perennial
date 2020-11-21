@@ -416,34 +416,34 @@ Definition is_dblock_with_txns d txns (being_installed_start_txn_id: nat) (being
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
-Definition is_installed_core γ d txns (installed_txn_id being_installed_start_txn_id being_installed_end_txn_id diskEnd_txn_id: nat) (already_installed: gset Z) : iProp Σ :=
+Definition is_installed_core γ d txns (installed_txn_id being_installed_end_txn_id diskEnd_txn_id: nat) (already_installed: gset Z) : iProp Σ :=
   (* TODO(tej): the other half of these are owned by the installer, giving it full
    knowledge of in-progress installations and exclusive update rights; need to
    write down what it maintains as part of its loop invariant *)
   "Howninstalled" ∷ (
     (* why do these need to be fmcounters? *)
-    "HownBeingInstalledStartTxn_walinv" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
+    "HownBeingInstalledStartTxn_walinv" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) installed_txn_id ∗
     "HownBeingInstalledEndTxn_walinv" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
     "Halready_installed" ∷ ghost_var γ.(already_installed_name) (1/2) already_installed) ∗
   (* TODO: ⌜diskEnd_txn_id < length txns⌝ shouldn't be necessary, follows from Hend_txn in is_durable *)
-  "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ being_installed_start_txn_id ≤ being_installed_end_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
-  "#Hbeing_installed_txns" ∷ txns_are γ (S being_installed_start_txn_id)
-    (subslice (S being_installed_start_txn_id) (S being_installed_end_txn_id) txns) ∗
-  "Hdata" ∷ ([∗ map] a ↦ _ ∈ d, is_dblock_with_txns d txns being_installed_start_txn_id being_installed_end_txn_id already_installed a).
+  "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ installed_txn_id ≤ being_installed_end_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
+  "#Hbeing_installed_txns" ∷ txns_are γ (S installed_txn_id)
+    (subslice (S installed_txn_id) (S being_installed_end_txn_id) txns) ∗
+  "Hdata" ∷ ([∗ map] a ↦ _ ∈ d, is_dblock_with_txns d txns installed_txn_id being_installed_end_txn_id already_installed a).
 
-Global Instance is_installed_core_Timeless γ d txns installed_txn_id being_installed_start_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed :
-  Timeless (is_installed_core γ d txns installed_txn_id being_installed_start_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed) := _.
+Global Instance is_installed_core_Timeless γ d txns installed_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed :
+  Timeless (is_installed_core γ d txns installed_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed) := _.
 
 Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) : iProp Σ :=
-  ∃ being_installed_start_txn_id being_installed_end_txn_id already_installed,
-    is_installed_core γ d txns installed_txn_id being_installed_start_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed.
+  ∃ being_installed_end_txn_id already_installed,
+    is_installed_core γ d txns installed_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed.
 
 (* weakening of [is_installed] at crash time *)
 (* TODO(tej): remove "read" from the name, reading actually uses an accessor
 theorem rather than this weakening *)
-Definition is_installed_read d txns installed_lb diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id : iProp Σ :=
+Definition is_installed_read d txns installed_lb diskEnd_txn_id being_installed_end_txn_id : iProp Σ :=
   ∃ γ already_installed,
-    is_installed_core γ d txns installed_lb diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id already_installed.
+    is_installed_core γ d txns installed_lb diskEnd_txn_id being_installed_end_txn_id already_installed.
 
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
   ghost_var γ.(cs_name) (1/2) cs.
@@ -601,31 +601,31 @@ Definition installer_inv γ: iProp Σ :=
     "HownInstalledTxnMem_installer" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
 .
 
-Global Instance is_installed_read_Timeless {d txns installed_lb diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id} :
-  Timeless (is_installed_read d txns installed_lb diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id) := _.
+Global Instance is_installed_read_Timeless {d txns installed_lb diskEnd_txn_id being_installed_end_txn_id} :
+  Timeless (is_installed_read d txns installed_lb diskEnd_txn_id being_installed_end_txn_id) := _.
 
 (* this illustrates what crashes rely on; at crash time being_installed is
 arbitrary, so we weaken to this *)
 Theorem is_installed_weaken_read γ d txns installed_lb diskEnd_txn_id :
   is_installed γ d txns installed_lb diskEnd_txn_id -∗
-  ∃ being_installed_start_txn_id being_installed_end_txn_id,
-    is_installed_read d txns installed_lb being_installed_start_txn_id being_installed_end_txn_id diskEnd_txn_id.
+  ∃ being_installed_end_txn_id,
+    is_installed_read d txns installed_lb being_installed_end_txn_id diskEnd_txn_id.
 Proof.
   rewrite /is_installed_read /is_installed.
-  iIntros "I". iDestruct "I" as (???) "I". iExists _, _, _, _. iFrame.
+  iIntros "I". iDestruct "I" as (??) "I". iExists _, _, _. iFrame.
 Qed.
 
-Theorem is_installed_restore_read γ d txns installed_txn_id diskEnd_txn_id being_installed_start_txn_id being_installed_end_txn_id :
-  fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id -∗
+Theorem is_installed_restore_read γ d txns installed_txn_id diskEnd_txn_id being_installed_end_txn_id :
+  fmcounter γ.(being_installed_start_txn_name) (1/2) installed_txn_id -∗
   ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id -∗
   ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) -∗
-  txns_are γ (S being_installed_start_txn_id) (subslice (S being_installed_start_txn_id) (S being_installed_end_txn_id) txns) -∗
-  is_installed_read d txns installed_txn_id being_installed_start_txn_id being_installed_end_txn_id diskEnd_txn_id -∗
+  txns_are γ (S installed_txn_id) (subslice (S installed_txn_id) (S being_installed_end_txn_id) txns) -∗
+  is_installed_read d txns installed_txn_id being_installed_end_txn_id diskEnd_txn_id -∗
   is_installed γ d txns installed_txn_id diskEnd_txn_id.
 Proof.
   iIntros "HownBeingInstalledStartTxn HownBeingInstalledEndTxn Halready_installed Htxns Hinstalled_read".
   iNamed "Hinstalled_read".
-  iExists _, _, _.
+  iExists _, _.
   iFrame "Halready_installed HownBeingInstalledStartTxn HownBeingInstalledEndTxn Htxns".
   iSplit.
   { iPureIntro. lia. }
