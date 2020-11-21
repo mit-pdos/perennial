@@ -72,7 +72,6 @@ Proof.
       apply singleton_valid in Hbad.
       apply mnat_auth_frac_op_valid in Hbad as [Hbad _].
       iExFalso; iPureIntro.
-      Search Qp.
       by apply (Qp_not_add_le_r (3 / 4) 1).
     -
     (* TODO: want  to just do [Hlseq_one], but it applies the lemma in the wrong direction *)
