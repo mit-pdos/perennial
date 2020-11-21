@@ -189,7 +189,7 @@ Proof.
   iExists _; iFrame.
   iExists installed_txn_id, (Nat.max diskEnd_txn_id txn_id). iFrame "# ∗".
   iSplitL "Hinstalled".
-  { iNamed "Hinstalled". iExists _, _, _. iFrame. iFrame "#". iPureIntro. auto with lia. }
+  { iNamed "Hinstalled". iExists _, _. iFrame. iFrame "#". iPureIntro. auto with lia. }
   iSplit.
   - iNamed "Hdurable".
     iExists _, _, _, _.
