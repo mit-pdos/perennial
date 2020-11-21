@@ -1,4 +1,3 @@
-From Perennial.program_proof.lockservice Require Import lockservice nondet rpc.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
@@ -12,6 +11,8 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From iris.algebra Require Import numbers.
 From Coq.Structures Require Import OrdersTac.
+From Perennial.program_proof.lockservice Require Import lockservice nondet.
+From Perennial.program_proof.lockservice Require Export rpc_base.
 
 Section common_proof.
 Context `{!heapG Σ}.
@@ -38,15 +39,15 @@ Defined.
 Definition RPCValC:Type := u64 * (u64 * unit).
 
 Definition read_request (args_ptr:loc) (a : @RPCRequest (RPCValC)) : iProp Σ :=
-    "#HSeqPositive" ∷ ⌜int.nat a.(rpc.Seq) > 0⌝
-  ∗ "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Args"] (into_val.to_val a.(Args)))
-  ∗ "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest.S :: "CID"] #a.(CID))
-  ∗ "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Seq"] #a.(rpc.Seq))
+    "#HSeqPositive" ∷ ⌜int.nat a.(Req_Seq) > 0⌝
+  ∗ "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Args"] (into_val.to_val a.(Req_Args)))
+  ∗ "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest.S :: "CID"] #a.(Req_CID))
+  ∗ "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Seq"] #a.(Req_Seq))
 .
 
 Definition own_reply (reply_ptr:loc) (r : @RPCReply (u64)) : iProp Σ :=
-    "HReplyOwnStale" ∷ reply_ptr ↦[RPCReply.S :: "Stale"] #r.(Stale)
-  ∗ "HReplyOwnRet" ∷ reply_ptr ↦[RPCReply.S :: "Ret"] (into_val.to_val r.(Ret))
+    "HReplyOwnStale" ∷ reply_ptr ↦[RPCReply.S :: "Stale"] #r.(Rep_Stale)
+  ∗ "HReplyOwnRet" ∷ reply_ptr ↦[RPCReply.S :: "Ret"] (into_val.to_val r.(Rep_Ret))
 .
 
 Axiom nondet_spec:
@@ -97,8 +98,8 @@ Definition is_rpcHandler (f:val) γrpc PreCond PostCond : iProp Σ :=
       f #req_ptr #reply_ptr
     {{{ RET #false; ∃ reply',
         own_reply reply_ptr reply' ∗
-        (⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
-           RPCReplyReceipt γrpc req reply'.(Ret))
+        (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
+           RPCReplyReceipt γrpc req reply'.(Rep_Ret))
     }}}
     .
 
@@ -151,26 +152,26 @@ Qed.
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
-     "%" ∷ ⌜int.nat req.(rpc.Seq) > 0⌝
+     "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝
     ∗ "#Hrinv" ∷ is_RPCServer γrpc
     ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
     ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
     ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM)
     ∗ ("Hreply" ∷ own_reply reply_ptr reply)
 }}}
-CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(CID) #req.(rpc.Seq) #reply_ptr
+CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply_ptr
 {{{
      v, RET v; ∃(b:bool) (reply':Reply64), "Hre" ∷ ⌜v = #b⌝
     ∗ "Hreply" ∷ own_reply reply_ptr reply'
     ∗ "Hcases" ∷ ("%" ∷ ⌜b = false⌝
-         ∗ "%" ∷ ⌜(int.Z req.(rpc.Seq) > int.Z (map_get lastSeqM req.(CID)).1)%Z⌝
-         ∗ "%" ∷ ⌜reply'.(Stale) = false⌝
-         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(CID):=req.(rpc.Seq)]>lastSeqM)
+         ∗ "%" ∷ ⌜(int.Z req.(Req_Seq) > int.Z (map_get lastSeqM req.(Req_CID)).1)%Z⌝
+         ∗ "%" ∷ ⌜reply'.(Rep_Stale) = false⌝
+         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
          ∨ 
          "%" ∷ ⌜b = true⌝
          ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
-         ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req)
-          ∨ RPCReplyReceipt γrpc req reply'.(Ret)))
+         ∗ ((⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req)
+          ∨ RPCReplyReceipt γrpc req reply'.(Rep_Ret)))
 
     ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
     ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM)
@@ -187,11 +188,11 @@ Proof.
   wp_pures.
   iNamed "Hreply".
   wp_storeField.
-  wp_apply (wp_and ok (int.Z req.(rpc.Seq) ≤ int.Z v)%Z).
+  wp_apply (wp_and ok (int.Z req.(Req_Seq) ≤ int.Z v)%Z).
   { wp_pures. by destruct ok. }
   { iIntros "_". wp_pures. done. }
   rewrite bool_decide_decide.
-  destruct (decide (ok ∧ int.Z req.(rpc.Seq) ≤ int.Z v)%Z) as [ [Hok Hineq]|Hmiss].
+  destruct (decide (ok ∧ int.Z req.(Req_Seq) ≤ int.Z v)%Z) as [ [Hok Hineq]|Hmiss].
   { (* Cache hit *)
     destruct ok; last done. clear Hok. (* ok = false *)
     wp_pures.
@@ -203,38 +204,38 @@ Proof.
       wp_storeField.
       iApply "Hpost".
       iExists true.
-      iExists {| Stale:=true; Ret:=_ |}.
+      iExists {| Rep_Stale:=true; Rep_Ret:=_ |}.
       iFrame; iFrame "#".
       iSplitL ""; eauto.
     - wp_pures.
-      assert (v = req.(rpc.Seq)) as ->. {
+      assert (v = req.(Req_Seq)) as ->. {
         (* not strict + non-strict ineq ==> eq *)
         apply bool_decide_eq_false in Hineqstrict.
-        assert (int.Z req.(rpc.Seq) = int.Z v) by lia; word.
+        assert (int.Z req.(Req_Seq) = int.Z v) by lia; word.
       }
       wp_apply (wp_MapGet with "HlastReplyMap").
       iIntros (reply_v reply_get_ok) "(HlastReplyMapGet & HlastReplyMap)"; iDestruct "HlastReplyMapGet" as %HlastReplyMapGet.
       iMod (server_replies_to_request with "[Hrinv] [Hsrpc]") as "[#Hreceipt Hsrpc]"; eauto.
       wp_storeField.
       iApply "Hpost".
-      iExists true. iExists {|Stale:=false; Ret:=reply_v |}.
+      iExists true. iExists {|Rep_Stale:=false; Rep_Ret:=reply_v |}.
       iFrame; iFrame "#". eauto.
   }
   { (* Cache miss *)
     wp_pures.
     apply not_and_r in Hmiss.
-    wp_apply (wp_MapInsert _ _ lastSeqM _ req.(rpc.Seq) (#req.(rpc.Seq)) with "HlastSeqMap"); eauto.
+    wp_apply (wp_MapInsert _ _ lastSeqM _ req.(Req_Seq) (#req.(Req_Seq)) with "HlastSeqMap"); eauto.
     iIntros "HlastSeqMap".
     wp_seq.
     iApply "Hpost".
-    iExists false. iExists {| Stale:=false; Ret:=reply.(Ret)|}.
+    iExists false. iExists {| Rep_Stale:=false; Rep_Ret:=reply.(Rep_Ret)|}.
     iFrame; iFrame "#".
     iSplitL ""; eauto.
     iLeft. iFrame. iPureIntro.
     split; eauto. split; eauto. injection HSeqMapGet as <- Hv. simpl.
     destruct Hmiss as [Hnok|Hineq].
     - destruct ok; first done.
-      destruct (lastSeqM !! req.(CID)); first done.
+      destruct (lastSeqM !! req.(Req_CID)); first done.
       simpl. word.
     - word.
   }
@@ -243,9 +244,9 @@ Qed.
 (* This will alow handler functions using RPCServer__HandleRequest to establish is_rpcHandler *)
 Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc server_own_core PreCond PostCond :
 (∀ req : RPCRequest,
-{{{ server_own_core ∗ PreCond req.(Args) }}}
-  coreFunction (into_val.to_val req.(Args))%V
-{{{ (r:u64), RET #r; server_own_core ∗ PostCond req.(Args) r }}}) -∗
+{{{ server_own_core ∗ PreCond req.(Req_Args) }}}
+  coreFunction (into_val.to_val req.(Req_Args))%V
+{{{ (r:u64), RET #r; server_own_core ∗ PostCond req.(Req_Args) r }}}) -∗
 {{{ is_rpcserver sv γrpc server_own_core }}}
   RPCServer__HandleRequest #sv coreFunction
 {{{ f, RET f; is_rpcHandler f γrpc PreCond PostCond }}}.
@@ -303,7 +304,7 @@ Proof.
     { iNext. iFrame. iExists _, _, _, _. iFrame. }
     wp_seq.
     iApply "HΦ".
-    iExists {|Stale:=false; Ret:=retval |}. rewrite H1. iFrame; iFrame "#".
+    iExists {|Rep_Stale:=false; Rep_Ret:=retval |}. rewrite H1. iFrame; iFrame "#".
   }
 Qed.
 
@@ -319,8 +320,8 @@ is_rpcHandler f γrpc PreCond PostCond -∗
     (∃ reply',
     own_reply reply_ptr reply' 
     ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝
-        ∗ (⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γrpc req
-               ∨ RPCReplyReceipt γrpc req reply'.(Ret)
+        ∗ (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req
+               ∨ RPCReplyReceipt γrpc req reply'.(Rep_Ret)
              )))
 }}}.
 Proof.
@@ -339,7 +340,7 @@ Proof.
     wp_let. wp_pures.
     (* Set up loop invariant *)
     iAssert (∃ reply, (own_reply l reply))%I with "[Stale Ret]" as "Hreply".
-    { iExists {| Stale:=false; Ret:=_ |}. iFrame. }
+    { iExists {| Rep_Stale:=false; Rep_Ret:=_ |}. iFrame. }
     wp_forBreak. wp_pures.
     iDestruct "Hreply" as (reply') "Hreply".
     wp_apply ("Hspec" with "[-]").
@@ -407,7 +408,7 @@ Proof using Type*.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (reply_ptr) "Hreply".
   wp_pures.
-  iMod (make_request {| Args:=args; CID:=cid; rpc.Seq:=cseqno|} PreCond PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
+  iMod (make_request {| Req_Args:=args; Req_CID:=cid; Req_Seq:=cseqno|} PreCond PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
   { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
   (* Prepare the loop invariant *)
@@ -415,7 +416,7 @@ Proof using Type*.
   { iExists _. done. }
   iAssert (∃ reply', own_reply reply_ptr reply')%I with "[Hreply]" as "Hreply".
   { iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
-    iExists {| Ret:=_; Stale:=false |}. iFrame. }
+    iExists {| Rep_Ret:=_; Rep_Stale:=false |}. iFrame. }
   wp_forBreak.
   iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
   wp_pures.

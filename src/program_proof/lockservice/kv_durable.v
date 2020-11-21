@@ -12,7 +12,7 @@ From Perennial.goose_lang.lib Require Import lock.
 From Perennial.goose_lang.lib Require Import crash_lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof.lockservice Require Import lockservice_crash rpc rpc_durable nondet kv_proof common_proof fmcounter_map.
+From Perennial.program_proof.lockservice Require Import lockservice_crash rpc_proof rpc_durable nondet kv_proof fmcounter_map.
 
 Section kv_durable_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
@@ -139,7 +139,7 @@ Definition RPCServer_own_vol (sv:loc) rpc_server : iProp Σ :=
 .
 
 Definition RPCServer_own_ghost (sv:loc) γrpc rpc_server : iProp Σ :=
-  "Hsrpc" ∷ rpc.RPCServer_own γrpc rpc_server.(lastSeqM) rpc_server.(lastReplyM) (* TODO: Probably should get better naming for this *)
+  "Hsrpc" ∷ RPCServer_own γrpc rpc_server.(lastSeqM) rpc_server.(lastReplyM) (* TODO: Probably should get better naming for this *)
 .
 
 Definition RPCServer_phys_own γrpc (sv:loc) rpc_server : iProp Σ :=
@@ -179,26 +179,26 @@ Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γ (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
-     "%" ∷ ⌜int.nat req.(rpc.Seq) > 0⌝
+     "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝
     ∗ "#Hrinv" ∷ is_RPCServer γ.(ks_rpcGN)
     ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
     ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
     ∗ ("Hsrpc" ∷ RPCServer_own γ.(ks_rpcGN) lastSeqM lastReplyM)
     ∗ ("Hreply" ∷ own_reply reply_ptr reply)
 }}}
-CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(CID) #req.(rpc.Seq) #reply_ptr @ NotStuck ; 36; ⊤
+CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply_ptr @ NotStuck ; 36; ⊤
 {{{
      (b:bool) reply', RET #b;
       "Hreply" ∷ own_reply reply_ptr reply'
     ∗ "Hcases" ∷ ("%" ∷ ⌜b = false⌝
-         ∗ "%" ∷ ⌜(int.Z req.(rpc.Seq) > int.Z (map_get lastSeqM req.(CID)).1)%Z⌝
-         ∗ "%" ∷ ⌜reply'.(Stale) = false⌝
-         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(CID):=req.(rpc.Seq)]>lastSeqM)
+         ∗ "%" ∷ ⌜(int.Z req.(Req_Seq) > int.Z (map_get lastSeqM req.(Req_CID)).1)%Z⌝
+         ∗ "%" ∷ ⌜reply'.(Rep_Stale) = false⌝
+         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
          ∨ 
          "%" ∷ ⌜b = true⌝
          ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
-         ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γ.(ks_rpcGN) req)
-          ∨ RPCReplyReceipt γ.(ks_rpcGN) req reply'.(Ret)))
+         ∗ ((⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γ.(ks_rpcGN) req)
+          ∨ RPCReplyReceipt γ.(ks_rpcGN) req reply'.(Rep_Ret)))
 
     ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
     ∗ ("Hsrpc" ∷ RPCServer_own γ.(ks_rpcGN) lastSeqM lastReplyM)
@@ -223,11 +223,11 @@ Proof.
   wp_pures.
   iNamed "Hreply".
   wp_storeField.
-  wp_apply (wp_and ok (int.Z req.(rpc.Seq) ≤ int.Z v)%Z).
+  wp_apply (wp_and ok (int.Z req.(Req_Seq) ≤ int.Z v)%Z).
   { wp_pures. by destruct ok. }
   { iIntros "_". wp_pures. done. }
   rewrite bool_decide_decide.
-  destruct (decide (ok ∧ int.Z req.(rpc.Seq) ≤ int.Z v)%Z) as [ [Hok Hineq]|Hmiss].
+  destruct (decide (ok ∧ int.Z req.(Req_Seq) ≤ int.Z v)%Z) as [ [Hok Hineq]|Hmiss].
   { (* Cache hit *)
     destruct ok; last done. clear Hok. (* ok = false *)
     wp_pures.
@@ -242,16 +242,16 @@ Proof.
       iApply "Hpost".
       iModIntro.
       iSplitL "HReplyOwnStale HReplyOwnRet".
-      { eauto with iFrame. instantiate (1:={| Ret:=_; Stale:=_ |}).
+      { eauto with iFrame. instantiate (1:={| Rep_Ret:=_; Rep_Stale:=_ |}).
         iFrame. }
       iFrame; iFrame "#".
       iRight.
       eauto with iFrame.
     - wp_pures.
-      assert (v = req.(rpc.Seq)) as ->. {
+      assert (v = req.(Req_Seq)) as ->. {
         (* not strict + non-strict ineq ==> eq *)
         apply bool_decide_eq_false in Hineqstrict.
-        assert (int.Z req.(rpc.Seq) = int.Z v) by lia; word.
+        assert (int.Z req.(Req_Seq) = int.Z v) by lia; word.
       }
       wp_apply (wp_MapGet with "HlastReplyMap").
       iIntros (reply_v reply_get_ok) "(HlastReplyMapGet & HlastReplyMap)"; iDestruct "HlastReplyMapGet" as %HlastReplyMapGet.
@@ -261,7 +261,7 @@ Proof.
       iApply "Hpost".
       iModIntro.
       iSplitL "HReplyOwnStale HReplyOwnRet".
-      { eauto with iFrame. instantiate (1:={| Ret:=_; Stale:=_ |}).
+      { eauto with iFrame. instantiate (1:={| Rep_Ret:=_; Rep_Stale:=_ |}).
         iFrame. }
       iFrame.
       iRight.
@@ -270,19 +270,19 @@ Proof.
   { (* Cache miss *)
     wp_pures.
     apply not_and_r in Hmiss.
-    wp_apply (wp_MapInsert _ _ lastSeqM _ req.(rpc.Seq) (#req.(rpc.Seq)) with "HlastSeqMap"); eauto.
+    wp_apply (wp_MapInsert _ _ lastSeqM _ req.(Req_Seq) (#req.(Req_Seq)) with "HlastSeqMap"); eauto.
     iIntros "HlastSeqMap".
     wp_seq.
     iNamed 1.
     iDestruct "Hpost" as "[_ Hpost]".
-    iApply ("Hpost" $! _ ({| Stale:=false; Ret:=reply.(Ret) |}) ).
+    iApply ("Hpost" $! _ ({| Rep_Stale:=false; Rep_Ret:=reply.(Rep_Ret) |}) ).
     iModIntro.
     iFrame; iFrame "#".
     iLeft. iFrame. iPureIntro.
     split; eauto. split; eauto. injection HSeqMapGet as <- Hv. simpl.
     destruct Hmiss as [Hnok|Hineq].
     - destruct ok; first done.
-      destruct (lastSeqM !! req.(CID)); first done.
+      destruct (lastSeqM !! req.(Req_CID)); first done.
       simpl. word.
     - word.
   }
@@ -371,8 +371,8 @@ Lemma wp_RPCServer__HandleRequest' (req_ptr reply_ptr:loc) (req:Request64) (repl
 }}}
   RPCServer__HandleRequest #sv_ptr coreFunction makeDurable #req_ptr #reply_ptr
 {{{ RET #false; ∃ reply':Reply64, own_reply reply_ptr reply'
-    ∗ ((⌜reply'.(Stale) = true⌝ ∗ RPCRequestStale γ.(ks_rpcGN) req)
-  ∨ RPCReplyReceipt γ.(ks_rpcGN) req reply'.(Ret))
+    ∗ ((⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γ.(ks_rpcGN) req)
+  ∨ RPCReplyReceipt γ.(ks_rpcGN) req reply'.(Rep_Ret))
 }}}.
 Proof.
   iIntros (Φ) "Hpre Hpost".
@@ -507,8 +507,8 @@ Proof.
     wpc_pures.
     iApply wpc_fupd.
     wpc_apply (wpc_makeDurable _ {| kvsM := _; sv :=
-                                                 {| lastSeqM := (<[req.(CID):=req.(Seq)]> kv_server.(sv).(lastSeqM)) ;
-                                                    lastReplyM := (<[req.(CID):=retval]> kv_server.(sv).(lastReplyM))
+                                                 {| lastSeqM := (<[req.(Req_CID):=req.(Req_Seq)]> kv_server.(sv).(lastSeqM)) ;
+                                                    lastReplyM := (<[req.(Req_CID):=retval]> kv_server.(sv).(lastReplyM))
                                                  |}
                                  |} with "[-Hpost Hkvghost Hsrpc_proc HP' HγPre HReplyOwnRet HReplyOwnStale]").
     { iFrame. simpl. iExists _, _. iFrame. }
@@ -557,7 +557,7 @@ Proof.
     wp_pures.
     iApply "Hpost".
     iModIntro.
-    iExists {| Stale:=_ ; Ret:=retval |}; iFrame.
+    iExists {| Rep_Stale:=_ ; Rep_Ret:=retval |}; iFrame.
 Qed.
 
 End kv_proof.

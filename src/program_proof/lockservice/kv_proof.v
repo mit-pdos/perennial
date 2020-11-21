@@ -11,7 +11,7 @@ From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof.lockservice Require Import lockservice rpc common_proof nondet rpc.
+From Perennial.program_proof.lockservice Require Import lockservice rpc_proof nondet.
 
 Record kvservice_names := KVserviceGN {
   ks_rpcGN : rpc_names;

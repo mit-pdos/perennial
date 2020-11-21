@@ -3,7 +3,7 @@ From Perennial.Helpers Require Import ModArith.
 From Perennial.algebra Require Import auth_map fmcounter.
 From Perennial.program_proof Require Import proof_prelude.
 From iris.algebra Require Import gmap lib.mnat_auth.
-From Perennial.program_proof.lockservice Require Import fmcounter_map rpc.
+From Perennial.program_proof.lockservice Require Import fmcounter_map rpc_base.
 
 Section rpc_durable.
 Context `{!heapG Σ}.
@@ -15,17 +15,17 @@ initialized: Request created and "on its way" to the server.
 done: The reply was computed as is waiting for the client to take notice.
 dead: The client took out ownership of the reply. *)
 Local Definition RPCRequest_durable_inv (γrpc:rpc_names) (γPost γPre:gname) (PreCond : A -> iProp Σ) (PostCond : A -> R -> iProp Σ) (req:RPCRequest) : iProp Σ :=
-   "#Hlseq_bound" ∷ req.(CID) fm[[γrpc.(cseq)]]> int.nat req.(Seq)
+   "#Hlseq_bound" ∷ req.(Req_CID) fm[[γrpc.(cseq)]]> int.nat req.(Req_Seq)
     ∗ ( (* Initialized, but server has not started processing *)
-      "Hreply" ∷ (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦ None ∗
-               ((∃ s, req.(CID) fm[[γrpc.(lseq)]]↦{3/4} s) ∨ own γPre (Excl ()) ∗ PreCond req.(Args) ) ∨ 
+      "Hreply" ∷ (req.(Req_CID), req.(Req_Seq)) [[γrpc.(rc)]]↦ None ∗
+               ((∃ s, req.(Req_CID) fm[[γrpc.(lseq)]]↦{3/4} s) ∨ own γPre (Excl ()) ∗ PreCond req.(Req_Args) ) ∨ 
       (* Not doing full ownership of the fmcounter becuase we (probably) want to remember the value..k
         Doing 3/4 so we know that if we are given 3/4 ownership, then this disjunction can't be in the first case *)
 
       (* Server has finished processing; two sub-states for wether client has taken PostCond out *)
-      req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq)
-      ∗ (∃ (last_reply:R), (req.(CID), req.(Seq)) [[γrpc.(rc)]]↦ro Some last_reply
-        ∗ (own γPost (Excl ()) ∨ PostCond req.(Args) last_reply)
+      req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq)
+      ∗ (∃ (last_reply:R), (req.(Req_CID), req.(Req_Seq)) [[γrpc.(rc)]]↦ro Some last_reply
+        ∗ (own γPost (Excl ()) ∨ PostCond req.(Req_Args) last_reply)
       )
     ).
 
@@ -33,8 +33,8 @@ Definition is_durable_RPCRequest (γrpc:rpc_names) (γPost γPre:gname) (PreCond
   inv rpcRequestInvN (RPCRequest_durable_inv γrpc γPost γPre PreCond PostCond req).
 
 Definition RPCServer_own_processing γrpc (req:@RPCRequest A) lastSeqM lastReplyM : iProp Σ :=
-  req.(CID) fm[[γrpc.(lseq)]]↦{1/4} int.nat (map_get lastSeqM req.(CID)).1 ∗
-  (req.(CID) fm[[γrpc.(lseq)]]↦ int.nat (map_get lastSeqM req.(CID)).1 -∗
+  req.(Req_CID) fm[[γrpc.(lseq)]]↦{1/4} int.nat (map_get lastSeqM req.(Req_CID)).1 ∗
+  (req.(Req_CID) fm[[γrpc.(lseq)]]↦ int.nat (map_get lastSeqM req.(Req_CID)).1 -∗
   RPCServer_own γrpc lastSeqM lastReplyM).
 
 (*
@@ -47,19 +47,19 @@ Global Instance RPCServer_own_processing_disc γrpc (req:@RPCRequest A) lastSeqM
 Admitted.
 
 Lemma server_takes_request (req:@RPCRequest A) γrpc γPost γPre PreCond PostCond lastSeqM lastReplyM (old_seq:u64) :
-  ((map_get lastSeqM req.(CID)).1 = old_seq) →
-  (int.Z req.(Seq) > int.Z old_seq)%Z →
+  ((map_get lastSeqM req.(Req_CID)).1 = old_seq) →
+  (int.Z req.(Req_Seq) > int.Z old_seq)%Z →
   is_durable_RPCRequest γrpc γPost γPre PreCond PostCond req -∗
   RPCServer_own γrpc lastSeqM lastReplyM
   ={⊤}=∗
-  own γPre (Excl ()) ∗ ▷ PreCond req.(Args) ∗
+  own γPre (Excl ()) ∗ ▷ PreCond req.(Req_Args) ∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM.
 Proof.
   rewrite map_get_val.
   intros Hlseq Hrseq.
   iIntros "HreqInv Hsown"; iNamed "Hsown".
   iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
-  iDestruct (big_sepS_elem_of_acc _ _ req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
+  iDestruct (big_sepS_elem_of_acc _ _ req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
     first by apply elem_of_fin_to_set.
   rewrite Hlseq.
 
@@ -91,23 +91,23 @@ Proof.
     iFrame "#∗".
   }
   {
-    iAssert (▷ req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq))%I with "[Hproc]" as "#>Hlseq_lb".
+    iAssert (▷ req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq))%I with "[Hproc]" as "#>Hlseq_lb".
     { iDestruct "Hproc" as "[Hlseq_lb _]"; done. }
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
     replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
-    replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    replace (int.Z req.(Req_Seq)) with (Z.of_nat (int.nat req.(Req_Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
     lia.
   }
 Qed.
   
 (* Opposite of above *)
 Lemma server_returns_request (req:@RPCRequest A) γrpc γPost γPre PreCond PostCond lastSeqM lastReplyM (old_seq:u64) :
-  ((map_get lastSeqM req.(CID)).1 = old_seq) →
-  (int.Z req.(Seq) > int.Z old_seq)%Z →
+  ((map_get lastSeqM req.(Req_CID)).1 = old_seq) →
+  (int.Z req.(Req_Seq) > int.Z old_seq)%Z →
   is_durable_RPCRequest γrpc γPost γPre PreCond PostCond req -∗
   own γPre (Excl ()) -∗
-  PreCond req.(Args) -∗
+  PreCond req.(Req_Args) -∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM
   ={⊤}=∗
   RPCServer_own γrpc lastSeqM lastReplyM.
@@ -134,13 +134,13 @@ Proof.
     - by iDestruct (own_valid_2 with "HγP HγPre") as %Hbad.
   }
   {
-    iAssert (▷ req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq))%I with "[Hproc]" as "#>Hlseq_lb".
+    iAssert (▷ req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq))%I with "[Hproc]" as "#>Hlseq_lb".
     { iDestruct "Hproc" as "[Hlseq_lb _]"; done. }
     iDestruct "Hsrpc_proc" as "[H1/4 Hsrpc_lseq_rest]".
     iDestruct (fmcounter_map_agree_lb with "H1/4 Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
     replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
-    replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    replace (int.Z req.(Req_Seq)) with (Z.of_nat (int.nat req.(Req_Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
     rewrite map_get_val in Hlseq_lb_ineq.
     rewrite Hlseq in Hlseq_lb_ineq.
     lia.
@@ -149,17 +149,17 @@ Qed.
 
 Lemma server_executes_durable_request' (req:@RPCRequest A) reply γrpc γPost γPre PreCond PostCond lastSeqM lastReplyM (old_seq:u64) ctx ctx':
   (* TODO: get rid of this requirement by putting γPre in the postcondition case *)
-  ((map_get lastSeqM req.(CID)).1 = old_seq) →
-  (int.Z req.(Seq) > int.Z old_seq)%Z →
+  ((map_get lastSeqM req.(Req_CID)).1 = old_seq) →
+  (int.Z req.(Req_Seq) > int.Z old_seq)%Z →
   is_durable_RPCRequest γrpc γPost γPre PreCond PostCond req -∗
   is_RPCServer γrpc -∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM -∗
   own γPre (Excl()) -∗
   (∃ R, R ∗ 
-  (▷ R -∗ ctx ==∗ PostCond req.(Args) reply ∗ ctx')) -∗
+  (▷ R -∗ ctx ==∗ PostCond req.(Req_Args) reply ∗ ctx')) -∗
   ctx ={⊤}=∗
   (RPCReplyReceipt γrpc req reply ∗
-  RPCServer_own γrpc (<[req.(CID):=req.(Seq)]> lastSeqM) (<[req.(CID):=reply]> lastReplyM) ∗
+  RPCServer_own γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM) ∗
   ctx').
 Admitted.
 
@@ -234,10 +234,10 @@ Definition cinv_sem (N : namespace) (R : iProp Σ) (P : iProp Σ) : iProp Σ :=
 .
 
 Lemma rpc_get_cancellable_inv (req:@RPCRequest A) γrpc γPost PreCond PostCond lastSeqM lastReplyM (old_seq:u64) :
-  ((map_get lastSeqM req.(CID)).1 = old_seq) →
-  (int.Z req.(Seq) > int.Z old_seq)%Z →
+  ((map_get lastSeqM req.(Req_CID)).1 = old_seq) →
+  (int.Z req.(Req_Seq) > int.Z old_seq)%Z →
   is_durable_RPCRequest γrpc γPost PreCond PostCond req ={⊤}=∗
-  cinv_sem rpcRequestInvN (RPCServer_own γrpc lastSeqM lastReplyM) (PreCond req.(Args)).
+  cinv_sem rpcRequestInvN (RPCServer_own γrpc lastSeqM lastReplyM) (PreCond req.(Req_Args)).
 Proof.
   rewrite map_get_val.
   intros Hlseq Hrseq.
@@ -258,14 +258,14 @@ Proof.
   }
   {
     iNamed "Hsrpc".
-    iAssert (▷ req.(CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Seq))%I with "[Hproc]" as "#>Hlseq_lb".
+    iAssert (▷ req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq))%I with "[Hproc]" as "#>Hlseq_lb".
     { iDestruct "Hproc" as "[Hlseq_lb _]"; done. }
 
-    iDestruct (big_sepS_elem_of_acc _ _ req.(CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply elem_of_fin_to_set.
+    iDestruct (big_sepS_elem_of_acc _ _ req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply elem_of_fin_to_set.
     iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
     iExFalso; iPureIntro.
     replace (int.Z old_seq) with (Z.of_nat (int.nat old_seq)) in Hrseq; last by apply u64_Z_through_nat.
-    replace (int.Z req.(Seq)) with (Z.of_nat (int.nat req.(Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
+    replace (int.Z req.(Req_Seq)) with (Z.of_nat (int.nat req.(Req_Seq))) in Hlseq_lb_ineq; last by apply u64_Z_through_nat.
     rewrite Hlseq in Hlseq_lb_ineq.
     lia.
   }
