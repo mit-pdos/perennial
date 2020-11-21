@@ -132,7 +132,7 @@ Proof.
   iFrame "Howntxns HownLoggerPos_linv HownLoggerTxn_linv".
   iFrame "HmemStart_txn HmemEnd_txn".
   iFrame "HownInstallerPosMem_linv HownInstallerTxnMem_linv HownInstalledTxnMem_linv".
-  iFrame "%".
+  iFrame "% HinstalledTxn_lb".
   iSplit.
   2: {
     iNamed "HnextDiskEnd". iExists _. iFrame. iFrame "#". iFrame "%".
