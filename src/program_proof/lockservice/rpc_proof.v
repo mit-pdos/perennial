@@ -11,10 +11,10 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From iris.algebra Require Import numbers.
 From Coq.Structures Require Import OrdersTac.
-From Perennial.program_proof.lockservice Require Import lockservice nondet.
+From Perennial.program_proof.lockservice Require Import lockservice common_proof.
 From Perennial.program_proof.lockservice Require Export rpc_base.
 
-Section common_proof.
+Section rpc_proof.
 Context `{!heapG Σ}.
 Context `{!rpcG Σ u64}.
 
@@ -49,11 +49,6 @@ Definition own_reply (reply_ptr:loc) (r : @RPCReply (u64)) : iProp Σ :=
     "HReplyOwnStale" ∷ reply_ptr ↦[RPCReply.S :: "Stale"] #r.(Rep_Stale)
   ∗ "HReplyOwnRet" ∷ reply_ptr ↦[RPCReply.S :: "Ret"] (into_val.to_val r.(Rep_Ret))
 .
-
-Axiom nondet_spec:
-  {{{ True }}}
-    nondet #()
-  {{{ v, RET v; ⌜v = #true⌝ ∨ ⌜v = #false⌝}}}.
 
 Definition RPCServer_mutex_inv (sv:loc) (γrpc:rpc_names) (server_own_core:iProp Σ): iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 u64),
@@ -114,40 +109,6 @@ Proof.
   wp_pures. wp_bind (subst _ _ _).
   iApply (wp_wand with "He"). iIntros (f) "Hfhandler".
   iApply ("Hfhandler" with "Hpre"). done.
-Qed.
-
-Lemma overflow_guard_incr_spec stk E (v:u64) : 
-{{{ True }}}
-  overflow_guard_incr #v @ stk ; E
-{{{
-     RET #(); ⌜((int.Z v) + 1 = int.Z (word.add v 1))%Z⌝
-}}}.
-Proof.
-  iIntros (Φ) "_ Hpost".
-  wp_lam. wp_pures.
-  wp_forBreak_cond.
-  wp_pures.
-  destruct bool_decide eqn:Hineq.
-  {
-    apply bool_decide_eq_true in Hineq.
-    wp_pures. iLeft. by iFrame.
-  }
-  {
-    apply bool_decide_eq_false in Hineq.
-    wp_pures. iRight. iSplitR; first done.
-    iApply "Hpost". iPureIntro.
-    assert (int.Z (word.add v 1) >= int.Z v)%Z by lia.
-    destruct (bool_decide ((int.Z v) + 1 < 2 ^ 64 ))%Z eqn:Hnov.
-    {
-      apply bool_decide_eq_true in Hnov.
-      word.
-    }
-    apply bool_decide_eq_false in Hnov.
-    assert (int.Z v + (int.Z 1) >= 2 ^ 64)%Z.
-    { replace (int.Z 1)%Z with (1)%Z by word. lia. }
-    apply sum_overflow_check in H0.
-    contradiction.
-  }
 Qed.
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
@@ -508,4 +469,4 @@ Proof.
   by iExists _; iFrame "# ∗".
 Qed.
 
-End common_proof.
+End rpc_proof.
