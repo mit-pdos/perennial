@@ -240,6 +240,10 @@ Definition sliding__takeTill: val :=
   rec: "sliding__takeTill" "s" "end" :=
     SliceTake (SliceTake (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - struct.loadF sliding.S "start" "s")) ("end" - struct.loadF sliding.S "start" "s").
 
+Definition sliding__intoMutable: val :=
+  rec: "sliding__intoMutable" "s" :=
+    SliceSkip (struct.t Update.S) (struct.loadF sliding.S "log" "s") (struct.loadF sliding.S "mutable" "s" - struct.loadF sliding.S "start" "s").
+
 (* deleteFrom deletes read-only updates up to newStart,
    correctly updating the start position *)
 Definition sliding__deleteFrom: val :=
@@ -327,8 +331,7 @@ Definition absorbBufs: val :=
   rec: "absorbBufs" "bufs" :=
     let: "s" := mkSliding slice.nil #0 in
     sliding__memWrite "s" "bufs";;
-    sliding__clearMutable "s";;
-    sliding__takeTill "s" (sliding__end "s").
+    sliding__intoMutable "s".
 
 (* installBlocks installs the updates in bufs to the data region
 

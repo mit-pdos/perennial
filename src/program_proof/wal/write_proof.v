@@ -80,14 +80,14 @@ Qed.
 
 (* TODO: this intermediate function still provides no value, since it has
 essentially the same spec as sliding.memWrite *)
-Theorem wp_WalogState__doMemAppend l memLog bufs upds :
-  {{{ "His_memLog" ∷ is_sliding l memLog ∗
-      "Hupds" ∷ updates_slice_frag bufs 1 upds ∗
+Theorem wp_WalogState__doMemAppend l q_b memLog bufs upds :
+  {{{ "His_memLog" ∷ is_sliding l q_b memLog ∗
+      "Hupds" ∷ updates_slice_frag' bufs 1 q_b upds ∗
       "%Hoverflow" ∷ ⌜slidingM.memEnd memLog + length upds < 2 ^ 64⌝
   }}}
     doMemAppend #l (slice_val bufs)
   {{{ RET #(slidingM.endPos (memWrite memLog upds));
-      "His_memLog" ∷ is_sliding l (memWrite memLog upds) }}}.
+      "His_memLog" ∷ is_sliding l q_b (memWrite memLog upds) }}}.
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".

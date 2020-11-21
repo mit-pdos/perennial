@@ -26,19 +26,25 @@ Proof.
   iIntros "[$ _]".
 Qed.
 
-Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
+Definition updates_slice' q (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
   ∃ bks, is_slice bk_s (struct.t Update.S) 1 (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
-                                     is_block (snd b_upd) 1 b ∗
+                                     is_block (snd b_upd) q b ∗
                                      ⌜fst b_upd = a⌝.
 
-Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp Σ :=
-  ∃ bks, is_slice_small bk_s (struct.t Update.S) q (update_val <$> bks) ∗
-   [∗ list] _ ↦ uv;upd ∈ bks;bs, is_update uv q upd.
+Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
+  updates_slice' 1 bk_s bs.
 
-Theorem updates_slice_cap_acc bk_s bs :
-  updates_slice bk_s bs ⊣⊢
-  updates_slice_frag bk_s 1 bs ∗ is_slice_cap bk_s (struct.t Update.S).
+Definition updates_slice_frag' (bk_s: Slice.t) (q1 q2:Qp) (bs: list update.t): iProp Σ :=
+  ∃ bks, is_slice_small bk_s (struct.t Update.S) q1 (update_val <$> bks) ∗
+   [∗ list] _ ↦ uv;upd ∈ bks;bs, is_update uv q2 upd.
+
+Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp Σ :=
+  updates_slice_frag' bk_s q q bs.
+
+Theorem updates_slice_cap_acc' bk_s q bs :
+  updates_slice' q bk_s bs ⊣⊢
+  updates_slice_frag' bk_s 1 q bs ∗ is_slice_cap bk_s (struct.t Update.S).
 Proof.
   iSplit.
   - iIntros "Hupds".
@@ -57,29 +63,34 @@ Proof.
       by iIntros "[% $]".
 Qed.
 
-Theorem updates_slice_frag_acc bk_s bs :
-  updates_slice bk_s bs -∗
-  updates_slice_frag bk_s 1 bs ∗
-   (∀ bs', updates_slice_frag bk_s 1 bs' -∗ updates_slice bk_s bs').
+Theorem updates_slice_cap_acc bk_s bs :
+  updates_slice bk_s bs ⊣⊢
+  updates_slice_frag bk_s 1 bs ∗ is_slice_cap bk_s (struct.t Update.S).
+Proof. iApply updates_slice_cap_acc'. Qed.
+
+Theorem updates_slice_frag_acc q bk_s bs :
+  updates_slice' q bk_s bs -∗
+  updates_slice_frag' bk_s 1 q bs ∗
+   (∀ bs', updates_slice_frag' bk_s 1 q bs' -∗ updates_slice' q bk_s bs').
 Proof.
   iIntros "Hupds".
-  rewrite updates_slice_cap_acc.
+  rewrite updates_slice_cap_acc'.
   iDestruct "Hupds" as "[$ Hcap]".
   iIntros (bs') "Hupds".
-  rewrite updates_slice_cap_acc.
+  rewrite updates_slice_cap_acc'.
   iFrame.
 Qed.
 
-Theorem updates_slice_to_frag bk_s bs :
-  updates_slice bk_s bs -∗
-  updates_slice_frag bk_s 1 bs.
+Theorem updates_slice_to_frag bk_s q bs :
+  updates_slice' q bk_s bs -∗
+  updates_slice_frag' bk_s 1 q bs.
 Proof.
-  rewrite updates_slice_cap_acc.
+  rewrite updates_slice_cap_acc'.
   iIntros "[$ _]".
 Qed.
 
-Lemma updates_slice_frag_len bk_s q bs :
-  updates_slice_frag bk_s q bs -∗ ⌜int.Z bk_s.(Slice.sz) = length bs⌝.
+Lemma updates_slice_frag_len bk_s q1 q2 bs :
+  updates_slice_frag' bk_s q1 q2 bs -∗ ⌜int.Z bk_s.(Slice.sz) = length bs⌝.
 Proof.
   iIntros "Hupds".
   iDestruct "Hupds" as (bks) "[Hbs Hbks]".
@@ -93,8 +104,8 @@ Proof.
   word.
 Qed.
 
-Lemma updates_slice_len bk_s bs :
-  updates_slice bk_s bs -∗ ⌜int.Z bk_s.(Slice.sz) = length bs⌝.
+Lemma updates_slice_len bk_s q bs :
+  updates_slice' q bk_s bs -∗ ⌜int.Z bk_s.(Slice.sz) = length bs⌝.
 Proof.
   iIntros "Hupds".
   iDestruct (updates_slice_frag_acc with "Hupds") as "[Hupds _]".
@@ -207,11 +218,11 @@ Opaque slice.T.
 
 Hint Resolve val_ty_update : val_ty.
 
-Theorem wp_SliceSet_updates stk E bk_s bs (i: u64) (u0 u: update.t) uv :
+Theorem wp_SliceSet_updates stk E bk_s q_b bs (i: u64) (u0 u: update.t) uv :
   bs !! int.nat i = Some u0 ->
-  {{{ updates_slice_frag bk_s 1 bs ∗ is_update uv 1 u }}}
+  {{{ updates_slice_frag' bk_s 1 q_b bs ∗ is_update uv q_b u }}}
     SliceSet (struct.t Update.S) (slice_val bk_s) #i (update_val uv) @ stk; E
-  {{{ RET #(); updates_slice_frag bk_s 1 (<[int.nat i := u]> bs)
+  {{{ RET #(); updates_slice_frag' bk_s 1 q_b (<[int.nat i := u]> bs)
   }}}.
 Proof.
   iIntros (Hlookup Φ) "[Hupds Hu] HΦ".
@@ -236,11 +247,11 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Theorem wp_SliceSet_updates' stk E bk_s bs (i: u64) (u0 u: update.t) uv :
+Theorem wp_SliceSet_updates' stk E bk_s q_b bs (i: u64) (u0 u: update.t) uv :
   bs !! int.nat i = Some u0 ->
-  {{{ updates_slice_frag bk_s 1 bs ∗ is_update uv 1 u }}}
+  {{{ updates_slice_frag' bk_s 1 q_b bs ∗ is_update uv q_b u }}}
     SliceSet (struct.t Update.S) (slice_val bk_s) #i (update_val uv) @ stk; E
-  {{{ RET #(); updates_slice_frag bk_s 1 (<[int.nat i := u]> bs)
+  {{{ RET #(); updates_slice_frag' bk_s 1 q_b (<[int.nat i := u]> bs)
   }}}.
 Proof.
   iIntros (Hlookup Φ) "[Hupds Hu] HΦ".
@@ -272,11 +283,11 @@ Qed.
 
 Hint Resolve has_zero_update : core.
 
-Theorem wp_SliceAppend_updates {stk E bk_s bs} {uv: u64 * Slice.t} {b} :
-  {{{ updates_slice bk_s bs ∗ is_block uv.2 1 b }}}
+Theorem wp_SliceAppend_updates {stk E bk_s q bs} {uv: u64 * Slice.t} {b} :
+  {{{ updates_slice' q bk_s bs ∗ is_block uv.2 q b }}}
     SliceAppend (struct.t Update.S) (slice_val bk_s) (update_val uv) @ stk; E
   {{{ bk_s', RET slice_val bk_s';
-      updates_slice bk_s' (bs ++ [update.mk uv.1 b])
+      updates_slice' q bk_s' (bs ++ [update.mk uv.1 b])
   }}}.
 Proof.
   iIntros (Φ) "[Hupds Hub] HΦ".
@@ -294,16 +305,16 @@ Proof.
   simpl. auto.
 Qed.
 
-Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : u64) (q : Qp) :
+Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : u64) (q q_b q_b' : Qp) :
   0 ≤ int.Z n ≤ int.Z (Slice.sz bk_s) ≤ int.Z (Slice.cap bk_s) ->
   (q < 1)%Qp ->
-  {{{ updates_slice_frag (slice_take bk_s (struct.t Update.S) n) q (take (int.nat n) bs) ∗
-      updates_slice (slice_skip bk_s (struct.t Update.S) n) (drop (int.nat n) bs) ∗
-      is_block uv.2 1 b }}}
+  {{{ updates_slice_frag' (slice_take bk_s (struct.t Update.S) n) q q_b (take (int.nat n) bs) ∗
+      updates_slice' q_b' (slice_skip bk_s (struct.t Update.S) n) (drop (int.nat n) bs) ∗
+      is_block uv.2 q_b' b }}}
     SliceAppend (struct.t Update.S) (slice_val bk_s) (update_val uv) @ stk; E
   {{{ bk_s', RET slice_val bk_s';
-      updates_slice_frag (slice_take bk_s' (struct.t Update.S) n) q (take (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
-      updates_slice (slice_skip bk_s' (struct.t Update.S) n) (drop (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
+      updates_slice_frag' (slice_take bk_s' (struct.t Update.S) n) q q_b (take (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
+      updates_slice' q_b' (slice_skip bk_s' (struct.t Update.S) n) (drop (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
       ⌜int.Z (Slice.sz bk_s') ≤ int.Z (Slice.cap bk_s') ∧
        int.Z (Slice.sz bk_s') = (int.Z (Slice.sz bk_s) + 1)%Z⌝
   }}}.
@@ -335,17 +346,17 @@ Proof.
   simpl. auto.
 Qed.
 
-Theorem wp_forSlice_updates (I: u64 -> iProp Σ) stk E s q us (body: val) :
+Theorem wp_forSlice_updates (I: u64 -> iProp Σ) stk E s q q_b us (body: val) :
   (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t),
       {{{ I i ∗ ⌜(int.nat i < length us)%nat⌝ ∗
-                is_update uv q u ∗
+                is_update uv q_b u ∗
                 ⌜us !! int.nat i = Some u⌝ }}}
         body #i (update_val uv) @ stk; E
       {{{ RET #(); I (word.add i (U64 1)) ∗
-                   is_block uv.2 q u.(update.b) }}}) -∗
-    {{{ I (U64 0) ∗ updates_slice_frag s q us }}}
+                   is_block uv.2 q_b u.(update.b) }}}) -∗
+    {{{ I (U64 0) ∗ updates_slice_frag' s q q_b us }}}
       forSlice (struct.t Update.S) body (slice_val s) @ stk; E
-    {{{ RET #(); I s.(Slice.sz) ∗ updates_slice_frag s q us }}}.
+    {{{ RET #(); I s.(Slice.sz) ∗ updates_slice_frag' s q q_b us }}}.
 Proof.
   iIntros "#Hwp".
   iIntros "!>" (Φ) "(I0&Hupds) HΦ".
@@ -355,7 +366,8 @@ Proof.
   iDestruct (big_sepL2_length with "Hbs") as %Hlen_eq.
   wp_apply (wp_forSlice
               (fun i => I i ∗
-                       [∗ list] b_upd;upd ∈ bks;us, is_update b_upd q upd)%I with "[] [$I0 $Hs $Hbs]").
+               [∗ list] b_upd;upd ∈ bks;us, is_update b_upd q_b upd)%I
+    with "[] [$I0 $Hs $Hbs]").
   {
     clear Φ.
     iIntros (i x).
@@ -379,14 +391,15 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Theorem wp_forSlice_updates_consume (I: u64 -> iProp Σ) stk E s q us (body: val) :
+Theorem wp_forSlice_updates_consume {stk E}
+        (I: u64 -> iProp Σ) s q q_b us (body: val) :
   (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t),
       {{{ I i ∗ ⌜(int.nat i < length us)%nat⌝ ∗
-                is_update uv q u ∗
+                is_update uv q_b u ∗
                 ⌜us !! int.nat i = Some u⌝ }}}
         body #i (update_val uv) @ stk; E
       {{{ RET #(); I (word.add i (U64 1)) }}}) -∗
-    {{{ I (U64 0) ∗ updates_slice_frag s q us }}}
+    {{{ I (U64 0) ∗ updates_slice_frag' s q q_b us }}}
       forSlice (struct.t Update.S) body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) }}}.
 Proof.
@@ -399,7 +412,7 @@ Proof.
   wp_apply (wp_forSlice
               (fun i => I i ∗
                        [∗ list] b_upd;upd ∈ (drop (int.nat i) bks);(drop (int.nat i) us),
-                                            is_update b_upd q upd)%I
+                                            is_update b_upd q_b upd)%I
               with "[] [$I0 $Hs $Hbs]").
   {
     clear Φ.
@@ -428,6 +441,7 @@ Proof.
   iFrame.
 Qed.
 
+(* TODO(tej): not actually used *)
 Theorem wp_forSlicePrefix_updates (I: list update.t -> list update.t -> iProp Σ) stk E s q us (body: val) :
   (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t) (upds upds': list update.t),
       {{{ I upds (u :: upds') ∗
@@ -470,17 +484,19 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wp_forSlicePrefix_updates_consume (I: list update.t -> list update.t -> iProp Σ) stk E s q us (body: val) :
+Theorem wp_forSlicePrefix_updates_consume {stk E}
+        (I: list update.t -> list update.t -> iProp Σ)
+        s q q_b us (body: val) :
   (∀ (i: u64) (uv: u64 * Slice.t) (u: update.t) (upds upds': list update.t),
       {{{ I upds (u :: upds') ∗
-            is_update uv q u ∗
+            is_update uv q_b u ∗
             ⌜(int.nat i < length us)%nat⌝ ∗
             ⌜us !! int.nat i = Some u⌝ ∗
             ⌜upds ++ u :: upds' = us⌝ ∗
             ⌜length upds = int.nat i⌝ }}}
         body #i (update_val uv) @ stk; E
       {{{ RET #(); I (upds ++ [u]) upds' }}}) -∗
-    {{{ I [] us ∗ updates_slice_frag s q us }}}
+    {{{ I [] us ∗ updates_slice_frag' s q q_b us }}}
       forSlice (struct.t Update.S) body (slice_val s) @ stk; E
     {{{ RET #(); I us [] }}}.
 Proof.

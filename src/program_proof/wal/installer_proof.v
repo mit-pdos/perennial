@@ -154,18 +154,18 @@ Proof.
   - rewrite memWrite_one_same_start memWrite_one_same_mutable //.
 Qed.
 
-Theorem wp_absorbBufs b_s (bufs: list update.t) :
-  {{{ updates_slice_frag b_s 1 bufs }}}
+Theorem wp_absorbBufs b_s q_b (bufs: list update.t) :
+  {{{ updates_slice_frag' b_s 1 q_b bufs }}}
     absorbBufs (slice_val b_s)
-  {{{ b_s' q bufs', RET slice_val b_s';
-      "Habsorbed" ∷ updates_slice_frag b_s' q bufs' ∗
+  {{{ b_s' bufs', RET slice_val b_s';
+      "Habsorbed" ∷ updates_slice' q_b b_s' bufs' ∗
       "%Hsame_upds" ∷ ⌜∀ d, apply_upds bufs d = apply_upds bufs' d⌝ ∗
       "%Hnodup" ∷ ⌜NoDup (update.addr <$> bufs')⌝  }}}.
 Proof.
   wp_start.
   wp_call.
   change slice.nil with (slice_val Slice.nil).
-  wp_apply (wp_mkSliding _ []).
+  wp_apply (wp_mkSliding _ q_b []).
   { simpl; word. }
   { iSplitL.
     - iExists []; simpl.
@@ -178,34 +178,19 @@ Proof.
   { iPureIntro.
     rewrite /slidingM.memEnd /=. word. }
   iIntros "Hsliding".
-  wp_apply (wp_sliding__clearMutable with "Hsliding"); iIntros "Hsliding".
-  wp_apply (wp_sliding__end with "Hsliding"); iIntros "Hsliding".
-  simpl.
-  set (bufs':=(memWrite
-                 {|
-                   slidingM.log := [];
-                   slidingM.start := 0;
-                   slidingM.mutable := int.Z 0 + 0%nat |} bufs)).
-  iDestruct (is_sliding_wf with "Hsliding") as %Hwf.
-  wp_apply (wp_sliding__takeTill with "Hsliding").
-  { rewrite sliding_set_mutable_start /=.
-    rewrite slidingM_endPos_val //=.
-    word. }
-  iIntros (q b_s') "[Hsliding Hbufs']".
-  simpl.
-  rewrite take_ge.
-  { iApply "HΦ"; iFrame "Hbufs'".
-    iPureIntro; intuition.
-    - intros; rewrite memWrite_apply_upds //.
-    - subst bufs'.
-      apply memWrite_all_NoDup; simpl.
-      + constructor.
-      + word.
-  }
-  rewrite /slidingM.logIndex /=.
-  rewrite slidingM_endPos_val //=.
-  replace bufs'.(slidingM.start) with (U64 0) by rewrite memWrite_same_start //.
-  word.
+  wp_pures.
+  wp_apply (wp_sliding__intoMutable with "Hsliding").
+  { rewrite /slidingM.numMutable /=.
+    rewrite memWrite_same_mutable memWrite_same_start /=.
+    reflexivity. }
+  iIntros (s) "Hs".
+  iApply "HΦ"; iFrame "Hs".
+
+  iPureIntro; intuition.
+  - intros; rewrite memWrite_apply_upds //.
+  - apply memWrite_all_NoDup; simpl.
+    + constructor.
+    + word.
 Qed.
 
 Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
@@ -390,15 +375,17 @@ Proof.
     This is a problem because the memWrite hack to remove duplicates
     in absorbBufs requires full ownership of the buf pointers,
     but we only have readonly ownership of the bufs themselves. *)
-  replace q with 1%Qp by admit; clear q.
-  wp_apply (wp_absorbBufs with "Hbufs_s").
-  iIntros (bks_s q upds) "Hpost".
+  iAssert (updates_slice_frag' bufs_s 1 q bufs) with "[Hbufs_s]" as "Hbufs_copy".
+  { admit. (* TODO: code needs to copy slice (but shallow copy blocks, crucially) *) }
+  wp_apply (wp_absorbBufs with "Hbufs_copy").
+  iIntros (bks_s upds) "Hpost".
   iNamed "Hpost".
   apply (apply_upds_equiv_implies_has_updates_equiv _ _ _ Hsame_upds) in Hbufs.
   pose proof (equiv_upds_addrs_subseteq _ _ (Hsame_upds ∅)) as Hupds_subseteq.
 
   wp_pures.
   iDestruct "Habsorbed" as (bks) "(Hbks_s&Hupds)".
+  iDestruct (is_slice_to_small with "Hbks_s") as "Hbks_s".
   iDestruct (slice.is_slice_small_sz with "Hbks_s") as %Hslen.
   rewrite fmap_length in Hslen.
   iDestruct (big_sepL2_length with "Hupds") as %Hslen2.
@@ -408,7 +395,7 @@ Proof.
       "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) (take (int.nat i) ((λ u, int.Z (update.addr u)) <$> upds))) ∗
       "HownBeingInstalledStartTxn_installer" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
       "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) (being_installed_start_txn_id + length subtxns)%nat
-    )%I with "[] [$Hbks_s $Hupds $Halready_installed_installer $HownBeingInstalledStartTxn_installer $HownBeingInstalledEndTxn_installer]").
+    )%I with "[] [$Hbks_s Hupds $Halready_installed_installer $HownBeingInstalledStartTxn_installer $HownBeingInstalledEndTxn_installer]").
   {
     iIntros (i buf Φₗ) "!> [HI [% %]] HΦ".
     iNamed "HI".
@@ -545,6 +532,11 @@ Proof.
     rewrite /is_update /=.
     eauto.
   }
+  { rewrite /is_update.
+    iApply (big_sepL2_mono with "Hupds").
+    iIntros (?????) "Hb".
+    destruct y2; simpl.
+    iDestruct "Hb" as "[$ $]". }
   iIntros "[(?&?&?&?) Hbks_s]".
   iNamed.
   iApply "HΦ".

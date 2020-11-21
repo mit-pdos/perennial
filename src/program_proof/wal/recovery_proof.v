@@ -1213,7 +1213,7 @@ Proof.
   wp_apply (wp_new_free_lock); iIntros (ml) "Hlock".
   wp_pures.
   iDestruct (updates_slice_cap_acc with "Hupd_slice") as "[Hupd_slice Hupds_cap]".
-  wp_apply (wp_mkSliding with "[$]").
+  wp_apply (wp_mkSliding _ 1 with "[$]").
   { destruct Hwf_circ as (?&?). subst; lia. }
 
   iIntros (lslide) "Hsliding".
