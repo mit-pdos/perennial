@@ -572,6 +572,52 @@ Proof.
   lia.
 Qed.
 
+Lemma stable_sound_crash txns stable_txns crash_txn :
+  stable_sound txns stable_txns →
+  stable_sound (take crash_txn txns) stable_txns.
+Proof.
+  rewrite /stable_sound;
+    intros Hstable ??? Hgt Hlookup Htxn Htxn'.
+  specialize (Hstable _ _ pos Hgt Hlookup).
+  rewrite /is_txn in Htxn; fmap_Some in Htxn as txn.
+  rewrite /is_txn in Htxn'; fmap_Some in Htxn' as txn'.
+  pose proof (lookup_take_Some _ _ _ _ Htxn).
+  pose proof (lookup_take_Some _ _ _ _ Htxn').
+  rewrite lookup_take in Htxn; auto.
+  rewrite lookup_take in Htxn'; auto.
+  rewrite lookup_take //.
+  apply Hstable; rewrite /is_txn.
+  - rewrite Htxn //.
+  - rewrite Htxn' /=.
+    congruence.
+Qed.
+
+Lemma nextDiskEnd_inv_post_crash_stable_sound γ txns installed_txn_id diskEnd_txn_id :
+  nextDiskEnd_inv γ txns -∗
+  installed_txn_id [[γ.(stable_txn_ids_name)]]↦ro () -∗
+  ⌜let stable_txns' := gset_to_gmap tt {[diskEnd_txn_id; installed_txn_id]} in
+  stable_sound (take (S diskEnd_txn_id) txns) stable_txns'⌝.
+Proof.
+  simpl.
+  iNamed 1. iIntros "Hinstalled_stable".
+  iDestruct (map_ro_valid with "Hstablectx Hinstalled_stable") as %Hinstalled_stable.
+  apply (stable_sound_crash _ _ (S diskEnd_txn_id)) in HafterNextDiskEnd.
+  iPureIntro.
+
+  iIntros (??? Hlt Hlookup Htxn Htxn').
+  apply lookup_gset_to_gmap_Some in Hlookup as [Hlookup _].
+  pose proof Htxn' as Htxn'_backup.
+  rewrite /is_txn in Htxn'.
+  fmap_Some in Htxn' as txn'.
+  assert (txn_id = diskEnd_txn_id ∨ txn_id = installed_txn_id)
+    as [-> | ->] by set_solver.
+  { (* we're talking about diskEnd_txn_id *)
+    apply mk_is_Some, lookup_lt_is_Some_1 in Htxn'.
+    move: Htxn'; len. }
+  (* this is installed_txn_id, which we get from its stability before *)
+  eapply HafterNextDiskEnd; eauto.
+Qed.
+
 (* Called after wpc for recovery is completed, so l is the location of the wal *)
 Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   is_wal_inv_pre l γ s dinit -∗
@@ -658,6 +704,8 @@ Proof.
 
     iPoseProof "circ.start" as "#circ.start2"; iNamed "circ.start2".
     iDestruct "Hcirc_resources" as "(Hcirc_start&Hcirc_diskEnd & Happender)".
+    iDestruct (nextDiskEnd_inv_post_crash_stable_sound _ _ _ diskEnd_txn_id
+                 with "HnextDiskEnd_inv Hstart_txn_stable") as %Hstable.
 
     iDestruct (txns_ctx_txn_pos _ _ installed_txn_id with "Htxns_ctx") as "#Hinstalled_pos";
       first by eauto.
@@ -753,9 +801,8 @@ done:
     iSplitL "Hstable_txns2".
     { iThaw "#". iExists _. iFrame "# ∗".
       iPureIntro.
-      rewrite /stable_sound.
-      admit.
-    }
+      (* we proved this before with [memLog_linv_nextDiskEnd_txn_id_post_crash] *)
+      assumption. }
     iExists cs0.
     iSplitDelay.
     { rewrite /wal_linv_durable.
@@ -921,7 +968,7 @@ done:
   iSplitL "Hncinv".
   { rewrite /N. iApply ncinv_split_l. iApply "Hncinv". }
   iFrame.
-Admitted.
+Qed.
 
 (*
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
