@@ -91,20 +91,18 @@ Ltac mod_bound :=
   end.
 
 Theorem wpc_recoverCircular stk k E1 d σ γ :
-  {{{ is_circular_state γ σ ∗ circ_resources γ σ}}}
+  {{{ is_circular_state γ σ ∗ is_circular_appender_pre γ}}}
     recoverCircular #d @ stk; k; E1
   {{{ (c:loc) (diskStart diskEnd: u64) (bufSlice:Slice.t) (upds: list update.t),
       RET (#c, #diskStart, #diskEnd, slice_val bufSlice);
       updates_slice bufSlice upds ∗
       is_circular_state γ σ ∗
       is_circular_appender γ c ∗
-      start_is γ (1/2) diskStart ∗
-      diskEnd_is γ (1/2) (int.Z diskStart + length upds) ∗
       ⌜σ.(circΣ.start) = diskStart⌝ ∗
       ⌜σ.(circΣ.upds) = upds⌝ ∗
       ⌜circΣ.diskEnd σ = int.Z diskEnd⌝
   }}}
-  {{{ is_circular_state γ σ ∗ circ_resources γ σ }}}.
+  {{{ is_circular_state γ σ ∗ is_circular_appender_pre γ }}}.
 Proof.
   clear P.
   iIntros (Φ Φc) "(Hcs&Hres) HΦ".
@@ -330,8 +328,7 @@ Proof.
     iDestruct "HΦ" as "(_&HΦ)".
     iApply ("HΦ").
     iFrame "Hpos Hupds". iFrame.
-    iDestruct "Hres" as "(Hstart_is&Hend_is&Hpre)".
-    iDestruct "Hpre" as (???) "(Haddrs'&Hblocks')".
+    iDestruct "Hres" as (???) "(Haddrs'&Hblocks')".
     iDestruct (ghost_var_agree with "Hblocks Hblocks'") as %->.
     iDestruct (ghost_var_agree with "Haddrs Haddrs'") as %->.
     iSplitL "Hd0 Hd1 Hd2 Hblocks Haddrs".
@@ -347,11 +344,13 @@ Proof.
       iFrame.
     }
     iFrame.
+    (*
     iSplitL "Hend_is".
     {
       iExactEq "Hend_is".
       rewrite take_ge; auto. destruct Hwf; word.
     }
+     *)
     iPureIntro; split_and!; eauto.
     * rewrite take_ge; auto. destruct Hwf; word.
     * destruct Hwf.

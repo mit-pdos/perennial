@@ -191,6 +191,23 @@ Section proof.
   Global Instance is_cond_persistent c lk :
     Persistent (is_cond c lk) := _.
 
+  Theorem wp_newCond' lk :
+    {{{ is_free_lock lk }}}
+      lock.newCond #lk
+    {{{ (c: loc), RET #c; is_free_lock lk ∗ is_cond c #lk }}}.
+  Proof.
+    rewrite /is_cond.
+    iIntros (Φ) "Hl HΦ".
+    wp_call.
+    wp_apply wp_alloc_untyped; [ auto | ].
+    iIntros (c) "Hc".
+    (* FIXME: need a let binding in the implementation to do an iMod after the
+    Alloc (so the goal needs to still be a WP) *)
+    iMod (readonly_alloc_1 with "Hc") as "Hcond".
+    wp_pures.
+    iApply "HΦ". iFrame.
+  Qed.
+
   Theorem wp_newCond lk R :
     {{{ is_lock lk R }}}
       lock.newCond lk
