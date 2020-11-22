@@ -454,16 +454,16 @@ Proof.
   set_solver.
 Qed.
 
-Lemma wal_heap_h_latest_updates γ crash_heaps gh ls :
+Lemma wal_heap_h_latest_updates γwal_heap_h crash_heaps gh ls :
   wal_wf ls →
   set_map int.Z (dom (gset u64) gh) = dom (gset _) ls.(log_state.d) →
   ([∗ map] a↦hb ∈ gh,
    wal_heap_inv_addr ls a hb ∗
-   mapsto (hG:=γ.(wal_heap_h)) a 1 hb) -∗
+   mapsto (hG:=γwal_heap_h) a 1 hb) -∗
   wal_heap_inv_crashes crash_heaps ls -∗
   ([∗ map] a↦b ∈ latest crash_heaps, ∃ hb,
     ⌜hb_latest_update hb = b⌝ ∗
-    mapsto (hG:=γ.(wal_heap_h)) a 1 hb).
+    mapsto (hG:=γwal_heap_h) a 1 hb).
 Proof.
   iIntros (Hwf Hgh_complete) "Haddr #Hcrash".
   iNamed "Hcrash".
@@ -503,6 +503,9 @@ Proof.
   iExists _; eauto.
 Qed.
 
+(* TODO: probably should seal [list_to_async] instead... *)
+Opaque async_take.
+
 Lemma wal_heap_inv_crash_transform γ ls ls' :
   relation.denote log_crash ls ls' () →
   wal_heap_inv γ ls -∗
@@ -516,13 +519,10 @@ Lemma wal_heap_inv_crash_transform γ ls ls' :
             (∃ (crash_heaps: async (gmap u64 Block)),
                 ghost_var γ.(wal_heap_crash_heaps) (1/2) crash_heaps ∗
                 let crash_heaps' := async_take (length ls'.(log_state.txns)) crash_heaps in
-                ghost_var γ'.(wal_heap_crash_heaps) (1 / 2) crash_heaps') ∗
-                (* ([∗ map] a↦b ∈ latest crash_heaps, ∃ hb,
+                ghost_var γ'.(wal_heap_crash_heaps) (1 / 2) crash_heaps' ∗
+                ([∗ map] a↦b ∈ latest crash_heaps', ∃ hb,
                   ⌜hb_latest_update hb = b⌝ ∗
-                  mapsto (hG:=γ'.(wal_heap_h)) a 1 hb) *)
-            (* TODO: need to include all the wal_heap_h hb's; their values can
-            be related to [latest crash_heaps'] using [wal_heap_inv_crashes],
-            which we're proving anyway *)
+                  mapsto (hG:=γ'.(wal_heap_h)) a 1 hb)) ∗
              is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
                                      locked_wh_σtxns := ls'.(log_state.txns);
                                   |}
@@ -536,7 +536,9 @@ Proof.
   | _ = ?ls'_val => set (ls'':=ls'_val);
                     subst ls'; rename ls'' into ls';
                     fold ls'
-  end. simpl.
+  end.
+  set (crash_heap':=async_take (length ls'.(log_state.txns)) crash_heaps).
+  simpl.
   (* TODO: note that this loses the old map, which makes it impossible to use
   those resources to write an exchanger for wal_heap_h mapsto facts in the old
   generation (don't know if those are useful) *)
@@ -556,18 +558,31 @@ Proof.
              <| wal_heap_crash_heaps := wal_heap_crash_heaps_name |>
              <| wal_heap_durable_lb := wal_heap_durable_lb_name |>).
   rewrite /wal_heap_inv /=.
+
   iSplit; first by auto.
   iFrame.
-  iSplitR "Hcrash_heaps_own Hcrash_heaps_own2"; last first.
+  iDestruct (wal_heap_inv_crashes_crash _ crash_txn ls ls' with "Hcrash_heaps") as "#Hcrash_heaps'"; auto.
+  iDestruct (big_sepM_sep with "Hgh'") as "[#Hinv_addr Hgh']".
+  iSplitR "Hcrash_heaps_own Hcrash_heaps_own2 Hgh'"; last first.
   { iExists _; iFrame.
-    by rewrite -> take_length_le by lia. }
+    rewrite -/crash_heap'.
+    iSplitL "Hcrash_heaps_own2".
+    { rewrite /crash_heap' /=.
+      rewrite -> take_length_le by lia.
+      iFrame. }
+    iDestruct (big_sepM_sep with "[Hinv_addr Hgh']") as "Hgh'".
+    { iSplitR "Hgh'"; [ iFrame "Hinv_addr" | iFrame ]. }
+    simpl.
+    rewrite -/ls'.
+    iApply (wal_heap_h_latest_updates _ crash_heap' with "Hgh' [Hcrash_heaps']"); auto.
+    { rewrite Hdom Hgh_complete.
+      auto. }
+    rewrite /crash_heap' /=.
+    rewrite -> take_length_le by lia.
+    iFrame "#".
+  }
   iExists _, _; iFrame "#∗%".
-  iDestruct (big_sepM_sep with "Hgh'") as "[Hgh' Hwal_heap_mapstos]".
-  (* TODO: we should return Hwal_heap_mapstos as well, related to [latest
-  crash_heaps] *)
-  iFrame.
-  iSplit; first by (iPureIntro; congruence).
-  iApply (wal_heap_inv_crashes_crash with "Hcrash_heaps"); auto.
+  iPureIntro; congruence.
 Qed.
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
