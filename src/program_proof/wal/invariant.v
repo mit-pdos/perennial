@@ -571,8 +571,12 @@ Definition wal_post_crash σ: Prop :=
 Definition is_wal_inner_durable γ s dinit : iProp Σ :=
     "%Hwf" ∷ ⌜wal_wf s⌝ ∗
     "%Hpostcrash" ∷ ⌜wal_post_crash s⌝ ∗
+    "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
+    "γtxns"  ∷ ghost_var γ.(txns_name) (1/2) s.(log_state.txns) ∗
+    "HnextDiskEnd_inv" ∷ nextDiskEnd_inv γ s.(log_state.txns) ∗
     "Hwal_linv" ∷ wal_linv_durable γ ∗
     "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv γ s cs dinit ∗
+                    "Howncs" ∷ ghost_var γ.(cs_name) 1 cs ∗
                     "Hcirc" ∷ is_circular_state γ.(circ_name) cs
 .
 

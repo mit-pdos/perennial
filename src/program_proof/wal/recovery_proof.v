@@ -693,6 +693,8 @@ Proof.
         as "[logger_pos1 logger_pos2]".
     iMod (ghost_var_update diskEnd_txn_id with "logger_txn_id")
         as "[logger_txn_id1 logger_txn_id2]".
+    iMod (ghost_var_update cs0 with "cs")
+        as "cs".
 
     iMod (fmcounter_update (int.nat diskEnd) with "diskEnd_mem") as "[[diskEnd_mem1 diskEnd_mem2] #diskEnd_mem_lb]"; first by lia.
     iMod (fmcounter_update diskEnd_txn_id with "diskEnd_mem_txn_id") as "[[diskEnd_mem_txn_id1 diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
@@ -741,6 +743,10 @@ done:
     { iPureIntro. eapply log_crash_to_wf; eauto. }
     iSplitL "".
     { iPureIntro. by eapply log_crash_to_post_crash. }
+    iFrame "Htxns_ctx'".
+    iFrame "Htxns2".
+    iSplitL "Hstable_txns2".
+    { iExists _. iFrame. admit. }
     iSplitDelay.
     { rewrite /wal_linv_durable.
       rewrite sep_exist_r.
@@ -828,7 +834,7 @@ done:
     iNamed 1.
     iExists cs0. rewrite Hcirc_name. iFrame "Hcirc".
     rewrite /disk_inv.
-    simpl.
+    iFrame "cs".
     iExists installed_txn_id, diskEnd_txn_id; simpl.
     assert (installed_txn_id <= diskEnd_txn_id) by word.
 
@@ -899,7 +905,7 @@ done:
   iSplitL "Hncinv".
   { rewrite /N. iApply ncinv_split_l. iApply "Hncinv". }
   iFrame.
-Qed.
+Admitted.
 
 (*
 Lemma is_wal_inner_durable_post_crash l γ σ cs P':
@@ -1004,11 +1010,15 @@ Ltac show_crash2 :=
   iSplitL ""; first auto;
   iFrame; iExists _; iFrame; iExists _, _; iFrame "∗ #".
 
+Global Instance txns_ctx_disc γ x:
+  Discretizable (txns_ctx γ x).
+Proof.
+  rewrite /txns_ctx/list_ctx. apply _.
+Qed.
+
 Global Instance is_wal_inner_durable_disc γ s:
   Discretizable (is_wal_inner_durable γ s dinit).
-Proof.
-  apply _.
-Qed.
+Proof. apply _. Qed.
 
 Global Instance disk_inv_disc γ σ cs:
   Discretizable (disk_inv γ σ cs dinit).
@@ -1182,17 +1192,18 @@ Proof.
 
   iApply wpc_fupd.
   wpc_frame "Hwal_linv Hinstalled HΦ Hcirc Happender HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hdurable
-             Hinstaller".
+             Hinstaller Howncs Htxns_ctx γtxns HnextDiskEnd_inv".
   {
     iDestruct "Happender" as (????) "(Haddrs&Hblocks&?)".
     crash_case.
     rewrite /is_wal_inner_durable.
     iNext.
+    iFrame "Htxns_ctx γtxns HnextDiskEnd_inv".
     iSplitR "Haddrs Hblocks HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hinstaller".
     {
       iSplit; first by auto.
       iSplit; first by auto.
-      iFrame "Hwal_linv". iExists _. iFrame "Hcirc". rewrite /disk_inv.
+      iFrame "Hwal_linv". iExists _. iFrame "Hcirc". rewrite /disk_inv. iFrame "Howncs".
       iExists _, _. iFrame "# ∗". eauto.
     }
     { iFrame. iExists _, _. iFrame. eauto. }
@@ -1210,47 +1221,6 @@ Proof.
   iIntros (st) "Hwal_state".
   wp_pures.
 
-(*
-  iDestruct (memLog_linv_pers_core_strengthen γ0 with "H [] γtxns γlogger_pos γlogger_txn_id [Hstable_txns1] [] [$]") as "HmemLog_linv".
-  { auto. }
-  { rewrite /memLog_linv_nextDiskEnd_txn_id.
-    simpl.
-    iExists _; iFrame "Hstable_txns1".
-    iFrame "#".
-    iSplit.
-    - admit. (* maybe should have fetched this txn_pos earlier for
-      diskEnd_txn_id *)
-    - iDestruct "Hdurable" as %Hdurable.
-      destruct Hdurable.
-      iPureIntro.
-      intros.
-      rewrite -> lookup_insert_ne by lia.
-      rewrite -> lookup_singleton_ne by lia.
-      auto. }
-  { admit. (* new ghost variable, need to allocate fmcounter for
-  installed_txn_name *) }
-*)
-
-  (*
-  iMod (alloc_lock walN _ _ (wal_linv st γ0)
-          with "[$] [HmemLog_linv Hsliding Hwal_state Hstart_exactly HdiskEnd_exactly]") as "#lk".
-  { rewrite /wal_linv.
-    assert (int.Z diskStart + length upds = int.Z diskEnd) as Heq_plus.
-    { etransitivity; last eassumption. rewrite /circΣ.diskEnd //=. subst. word. }
-    iExists {| diskEnd := diskEnd; memLog := _ |}. iSplitL "Hwal_state Hsliding".
-    { iExists {| memLogPtr := _; shutdown := _; nthread := _ |}.
-      iDestruct (struct_fields_split with "Hwal_state") as "Hwal_state".
-      iDestruct "Hwal_state" as "(?&?&?&?&_)".
-      iFrame. iPureIntro. rewrite /locked_wf//=.
-      { destruct Hwf_circ as (?&?). subst. split.
-        * split; first lia. rewrite Heq_plus. word.
-        * eauto.
-      }
-    }
-    rewrite //= /diskEnd_linv/diskStart_linv -Heq_plus.
-    iFrame. iFrame "Hdisk_atLeast Hstart_atLeast".
-  }
-   *)
   wp_pures.
   wp_apply (wp_newCond' with "[$]").
   iIntros (condLogger) "(Hlock&#cond_logger)".
@@ -1326,18 +1296,20 @@ Proof.
   rewrite /is_wal_inv_pre.
   rewrite /circular_pred.
   rewrite /is_wal_inner.
-  iSplitL "Hcirc Hinstalled Hdurable".
+  iSplitL "Hcirc Hinstalled Hdurable Howncs Htxns_ctx γtxns HnextDiskEnd_inv".
   {
-    iSplitR "Hcirc"; last first.
-    { iExists _. iFrame. (* TODO: Missing circular_pred in is_wal_inner_durable? *) admit. }
-    iSplitL; first eauto.
-    iSplitL.
+    iDestruct "Howncs" as "(Howncs1&Howncs2)".
+    iSplitR "Hcirc Howncs1"; last first.
+    { iExists _. iFrame. }
+    iSplitL ""; first eauto.
+    iSplitL "".
     { rewrite /is_wal_mem.
       iExists {| memLock := _; wal_d := _; circ := _; wal_st := _; condLogger := _;
                  condInstall := _; condShut := _ |}.
       iFrame "#".
     }
-    admit.
+    iFrame.
+    iExists _. iFrame. rewrite /disk_inv. iExists _, _. iFrame "# ∗". eauto.
   }
   iSplitL "Happender HnotLogging HownLoggerPos_logger HownLoggerTxn_logger".
   { iExists _. iFrame "# ∗". }
