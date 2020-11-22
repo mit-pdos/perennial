@@ -418,7 +418,44 @@ Proof.
   eauto.
 Qed.
 
+Lemma big_sepM_sepS_exists {PROP:bi} `{Countable K} V (Φ: K → V → PROP) m :
+  ([∗ map] k↦v ∈ m, Φ k v)%I ⊣⊢
+  [∗ set] k ∈ dom (gset _) m, ∃ v, ⌜m !! k = Some v⌝ ∧ Φ k v.
+Proof.
+  induction m as [|k v m] using map_ind.
+  - rewrite big_sepM_empty dom_empty_L big_sepS_empty.
+    auto.
+  - rewrite big_sepM_insert //.
+    rewrite dom_insert_L.
+    rewrite big_sepS_insert; last first.
+    { apply not_elem_of_dom; auto. }
+    rewrite lookup_insert.
+    rewrite IHm.
+    f_equiv.
+    + iSplit; [ iIntros "H"; iExists _; by iFrame | ].
+      iDestruct 1 as (v' Heq) "H"; simplify_eq/=; iFrame.
+    + iSplit; iApply big_sepS_mono; iIntros (k' Hlookup) "Hs".
+      * iDestruct "Hs" as (v' Hlookup') "H".
+        iExists _; iFrame.
+        destruct (decide (k = k')); [ congruence | ].
+        rewrite lookup_insert_ne //.
+      * iDestruct "Hs" as (v' Hlookup') "H".
+        iExists _; iFrame.
+        apply elem_of_dom in Hlookup as [? ?].
+        destruct (decide (k = k')); [ congruence | ].
+        rewrite lookup_insert_ne // in Hlookup'.
+        auto.
+Qed.
+
+Instance set_map_inj `{Countable A} `{Countable B} (f: A → B) : Inj eq eq f → Inj (⊆) (⊆) (set_map f : gset A → gset B).
+Proof.
+  intros Hinj.
+  intros s1 s2 Hsub.
+  set_solver.
+Qed.
+
 Lemma wal_heap_h_latest_updates γ crash_heaps gh ls :
+  wal_wf ls →
   set_map int.Z (dom (gset u64) gh) = dom (gset _) ls.(log_state.d) →
   ([∗ map] a↦hb ∈ gh,
    wal_heap_inv_addr ls a hb ∗
@@ -428,15 +465,43 @@ Lemma wal_heap_h_latest_updates γ crash_heaps gh ls :
     ⌜hb_latest_update hb = b⌝ ∗
     mapsto (hG:=γ.(wal_heap_h)) a 1 hb).
 Proof.
-  iIntros (Hgh_complete) "Haddr #Hcrash".
+  iIntros (Hwf Hgh_complete) "Haddr #Hcrash".
   iNamed "Hcrash".
   iDestruct (big_sepL_lookup _ _ (length (possible crash_heaps) - 1)
                              with "Hpossible_heaps") as "#Hlatest".
   { rewrite lookup_possible_latest' //. }
   rewrite -> take_ge by lia.
   iDestruct (wal_heap_inv_crash_as_last_disk with "Hlatest") as %Hlatest.
-  (* TODO: figure out how to use domain information to figure this out *)
-Abort.
+  iApply big_sepM_sepS_exists in "Haddr".
+  iApply big_sepM_sepS_exists.
+
+  (* NOTE(tej): the other direction doesn't seem guaranteed if [last_disk ls]
+  maps addresses >2^64... *)
+  assert (set_map int.Z (dom (gset u64) crash_heaps.(latest)) ⊆
+         dom (gset _) (last_disk ls)).
+  { apply elem_of_subseteq; intros a.
+    rewrite elem_of_map.
+    rewrite elem_of_dom.
+    intros [x [-> Helem]].
+    apply elem_of_dom in Helem.
+    rewrite Hlatest in Helem; auto. }
+
+  iApply big_sepS_mono.
+  2: {
+    iApply (big_sepS_subseteq with "Haddr").
+    rewrite /last_disk in H.
+    rewrite disk_at_txn_id_same_dom // in H.
+    rewrite -Hgh_complete in H.
+    apply (inj (set_map int.Z)) in H.
+    auto.
+  }
+  iIntros (a Helem) "H".
+  iDestruct "H" as (hb Hlookup) "[#Hheap Hmapsto]".
+  iDestruct (wal_heap_inv_addr_latest_update with "Hheap") as %Hlast_lookup; auto.
+  rewrite -Hlatest in Hlast_lookup.
+  rewrite Hlast_lookup.
+  iExists _; eauto.
+Qed.
 
 Lemma wal_heap_inv_crash_transform γ ls ls' :
   relation.denote log_crash ls ls' () →
