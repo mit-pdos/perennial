@@ -364,7 +364,9 @@ Lemma init_stable_txns γstable_txn_ids_name (installed_txn_id diskEnd_txn_id : 
   map_ctx   γstable_txn_ids_name 1 (∅ : gmap nat unit) -∗
   |==> "Hstable_txns" ∷ map_ctx γstable_txn_ids_name 1 (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id]}) ∗
        "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γstable_txn_ids_name]]↦ro () ∗
-       "#Hinstalled_txn_id_stable" ∷ installed_txn_id [[γstable_txn_ids_name]]↦ro ().
+       "#Hinstalled_txn_id_stable" ∷ installed_txn_id [[γstable_txn_ids_name]]↦ro () ∗
+       "#Hstable_ro" ∷ ([∗ map] txn_id ↦ _ ∈ (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id]}),
+                       txn_id [[γstable_txn_ids_name]]↦ro tt).
 Proof.
   iIntros "Hstable_txns".
   iMod (map_alloc_ro_set with "Hstable_txns") as "[$ Hro]".
@@ -372,6 +374,9 @@ Proof.
 
   iDestruct (big_sepS_elem_of with "Hro") as "#$"; first by set_solver.
   iDestruct (big_sepS_elem_of with "Hro") as "#$"; first by set_solver.
+  iApply big_sepM_dom.
+  rewrite dom_gset_to_gmap.
+  eauto.
 Qed.
 
 Lemma is_installed_txn_crash γ γ' cs txns installed_txn_id installed_lb crash_txn  :
@@ -746,7 +751,11 @@ done:
     iFrame "Htxns_ctx'".
     iFrame "Htxns2".
     iSplitL "Hstable_txns2".
-    { iExists _. iFrame. admit. }
+    { iThaw "#". iExists _. iFrame "# ∗".
+      iPureIntro.
+      rewrite /stable_sound.
+      admit.
+    }
     iSplitDelay.
     { rewrite /wal_linv_durable.
       rewrite sep_exist_r.
