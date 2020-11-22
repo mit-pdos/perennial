@@ -756,6 +756,7 @@ done:
       rewrite /stable_sound.
       admit.
     }
+    iExists cs0.
     iSplitDelay.
     { rewrite /wal_linv_durable.
       rewrite sep_exist_r.
@@ -770,14 +771,20 @@ done:
       replace (U64 (int.Z diskEnd)) with diskEnd by word.
       iFrame "HdiskEnd_linv HdiskStart_linv".
       rewrite /memLog_linv /memLog_linv_core.
-
-      rewrite sep_exist_r; iExists installed_txn_id.
       iSplitL "installer_pos_mem1 installer_txn_id_mem1
                logger_pos1 logger_txn_id1
                diskEnd_mem1 diskEnd_mem_txn_id1
                installed_pos_mem1 installed_txn_id_mem1
                Htxns1 HnextDiskEnd_linv".
-      - iExists _, _, _, _, _, _.
+      - iSplitL ""; first eauto.
+        iSplitL ""; first eauto.
+        iSplitL "".
+        { iPureIntro. rewrite /locked_wf/=; split_and!; try word.
+          rewrite /circ_wf in Hcirc_wf.
+          rewrite /slidingM.wf/=; split_and!; try word.
+          rewrite /circΣ.diskEnd. word.
+        }
+        iExists installed_txn_id, _, _, _, _, _, _.
         iFrame.
         simpl.
 
@@ -841,7 +848,7 @@ done:
       - iNamedAccu.
     }
     iNamed 1.
-    iExists cs0. rewrite Hcirc_name. iFrame "Hcirc".
+    rewrite Hcirc_name. iFrame "Hcirc".
     rewrite /disk_inv.
     iFrame "cs".
     iExists installed_txn_id, diskEnd_txn_id; simpl.
@@ -1104,101 +1111,6 @@ Proof.
                  slidingM.start := diskStart;
                  slidingM.mutable := int.Z diskStart + length upds |}).
 
-  (*
-  iAssert (memLog_linv_pers_core γ0 memLog diskEnd
-             diskEnd_txn_id
-             (* installed_txn_id_mem *)
-             diskEnd_txn_id
-             (* nextDiskEnd_txn_id *)
-             diskEnd_txn_id
-             σ.(log_state.txns)
-             (* logger_pos *)
-             diskEnd
-             (* logger_txn_id *)
-             diskEnd_txn_id
-             (* installer_pos_mem *)
-             installed_txn_id
-             (* installer_txn_id_mem *)
-             installed_txn_id) with "[-]" as "#H".
-  {
-    rewrite /memLog_linv_pers_core.
-    iFrame "#".
-    iNamed "circ.start".
-    iNamed "circ.end".
-    iNamed "Hdurable".
-    rewrite /circ_matches_txns in Hcirc_matches. intuition idtac.
-    iSplit.
-    { iPureIntro.
-      admit.
-      (* word. *)
-    }
-    iDestruct (txns_ctx_txn_pos with "[$]") as "#$".
-    { subst. auto with f_equal. admit. }
-    assert (diskEnd = diskEnd0) by word; subst diskEnd0.
-    iSplit.
-    { admit. }
-    iSplit.
-    { eauto. }
-    assert (memLog.(slidingM.mutable) = slidingM.endPos memLog) as Hmutable_is_endPos.
-    { subst.
-      rewrite /memLog /slidingM.endPos /=.
-      word. }
-    assert (memLog.(slidingM.mutable) = diskEnd) as Hmutable_is_diskEnd.
-    { subst. subst memLog. simpl.
-      word. }
-
-    iSplit.
-    { iDestruct (txns_ctx_txn_pos with "[$]") as "#$".
-      subst; auto. admit. }
-
-    admit.
-   *)
-
-(*
-
-    assert (diskEnd_txn_id = (length σ.(log_state.txns) - 1)%nat) as HdiskEnd_is_last.
-    { eapply wal_post_crash_durable_lb; eauto. }
-    rewrite -HdiskEnd_is_last.
-
-    iSplit.
-    { iDestruct (txns_ctx_txn_pos with "[$]") as "#$".
-      rewrite -Hmutable_is_endPos.
-      subst; auto. }
-    rewrite Hmutable_is_diskEnd.
-    iSplitL "".
-    { iPureIntro; lia. }
-    iSplitL "".
-    { rewrite /memLog_linv_txns.
-      iPureIntro.
-      change (memLog.(slidingM.log)) with upds.
-      rewrite Hmutable_is_diskEnd.
-      replace (slidingM.logIndex memLog diskEnd) with (length upds); last first.
-      { rewrite /slidingM.logIndex /memLog /=.
-        rewrite -Hmutable_is_diskEnd Hmutable_is_endPos.
-        subst.
-        rewrite /slidingM.endPos /=.
-        word. }
-(*
-      rewrite -> (take_ge upds) by lia.
-      rewrite !subslice_zero_length.
-      rewrite -> (drop_ge upds) by lia.
-      rewrite -> (drop_ge σ.(log_state.txns)) by lia.
-      split_and!; auto using has_updates_nil.
-      destruct Hdurable as [Hdurable_updates _].
-      congruence.
-*)
-      admit.
-    }
-    (* replace (slidingM.memEnd memLog) with (int.Z diskStart + length upds); last first.
-    { rewrite /slidingM.memEnd //=. } *)
-    iPureIntro.
-    replace (slidingM.memEnd memLog) with (int.Z memLog.(slidingM.mutable)); last first.
-    { rewrite /memLog /slidingM.memEnd /=.
-      subst; word. }
-    eapply txns_mono_lt_last; eauto.
-    subst; auto.
-*)
-
   iApply wpc_fupd.
   wpc_frame "Hwal_linv Hinstalled HΦ Hcirc Happender HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hdurable
              Hinstaller Howncs Htxns_ctx γtxns HnextDiskEnd_inv".
@@ -1212,7 +1124,7 @@ Proof.
     {
       iSplit; first by auto.
       iSplit; first by auto.
-      iFrame "Hwal_linv". iExists _. iFrame "Hcirc". rewrite /disk_inv. iFrame "Howncs".
+      iExists _. iFrame "Hwal_linv". iFrame "Hcirc". rewrite /disk_inv. iFrame "Howncs".
       iExists _, _. iFrame "# ∗". eauto.
     }
     { iFrame. iExists _, _. iFrame. eauto. }
@@ -1255,51 +1167,18 @@ Proof.
   iMod (alloc_lock walN _ _ (wal_linv st γ)
           with "[$] [Hwal_state Hwal_linv Hsliding]") as "#lk".
   { rewrite /wal_linv. iNext.
-    rewrite /wal_linv_durable. iNamed "Hwal_linv". iExists σ0. iFrame.
+    rewrite /wal_linv_durable. iDestruct "Hwal_linv" as (σls Heq1 Heq2 Hlocked_wf) "Hwal_linv".
+    iNamed "Hwal_linv". iExists σls. iFrame.
     rewrite /wal_linv_fields.
     iExists {| memLogPtr := _; shutdown := _; nthread := _ |}.
       iDestruct (struct_fields_split with "Hwal_state") as "Hwal_state".
-      iDestruct "Hwal_state" as "(?&?&?&?&_)".
-      iFrame. simpl.
-      (* TODO: it seems like wal_linv_durable forgets too much about the connection
-               between the existentially quantified locked_state and the actual wal σ state.
-               That information could all be reconstructed from ghost state, but it seems annoying to do so
-
-         Need to know
-
-         #σ0.(invariant.diskEnd = #diskEnd where
-         circΣ.diskEnd cs = int.Z diskEnd
-
-         And need to know
-         σ0 (invariant.memLog) = memLog := {|
-                           slidingM.log := upds;
-                           slidingM.start := diskStart;
-                           slidingM.mutable := int.Z diskStart + length upds |} : slidingM.t
-         where:
-         start cs = diskStart
-         circ_proof.upds cs = upds
-         circΣ.diskEnd cs = int.Z diskEnd
-
-         Might as well include locked_wf too?
-       *)
-      admit.
-    (*
-    iFrame.
-    assert (int.Z diskStart + length upds = int.Z diskEnd) as Heq_plus.
-    { etransitivity; last eassumption. rewrite /circΣ.diskEnd //=. subst. word. }
-    iExists {| diskEnd := diskEnd; memLog := _ |}. iSplitL "Hwal_state Hsliding".
-    { iExists {| memLogPtr := _; shutdown := _; nthread := _ |}.
-      iDestruct (struct_fields_split with "Hwal_state") as "Hwal_state".
-      iDestruct "Hwal_state" as "(?&?&?&?&_)".
-      iFrame. iPureIntro. rewrite /locked_wf//=.
-      { destruct Hwf_circ as (?&?). subst. split.
-        * split; first lia. rewrite Heq_plus. word.
-        * eauto.
-      }
-    }
-    rewrite //= /diskEnd_linv/diskStart_linv -Heq_plus.
-    iFrame. iFrame "Hdisk_atLeast Hstart_atLeast".
-    *)
+      iNamed "Hwal_state".
+      iFrame. iSplitL "diskEnd".
+      { rewrite /named. iExactEq "diskEnd". f_equal.
+        do 2 f_equal. word. }
+      iSplitL ""; eauto.
+      rewrite /named. iExactEq "Hsliding". f_equal.
+      subst. eauto.
   }
   iModIntro.
   rewrite /is_wal_inv_pre.
@@ -1323,7 +1202,7 @@ Proof.
   iSplitL "Happender HnotLogging HownLoggerPos_logger HownLoggerTxn_logger".
   { iExists _. iFrame "# ∗". }
   iFrame "Hinstaller".
-Admitted.
+Qed.
 
 Theorem wpc_MkLog_recover stk k E1 d γ σ:
   {{{ is_wal_inner_durable γ σ dinit }}}

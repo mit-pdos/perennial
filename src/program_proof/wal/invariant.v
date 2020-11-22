@@ -367,11 +367,17 @@ Definition wal_linv (st: loc) γ : iProp Σ :=
     "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id).
 
 (* TODO: when possible, refactor wal_linv to use this directly *)
-Definition wal_linv_durable γ : iProp Σ :=
-  ∃ σ,
-    "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
-    "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
-    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id).
+Definition wal_linv_durable γ cs : iProp Σ :=
+  ∃ σls,
+    ⌜ int.Z σls.(diskEnd) = circΣ.diskEnd cs ⌝ ∗
+    ⌜ σls.(memLog) = {| slidingM.log := cs.(circΣ.upds);
+                              slidingM.start := cs.(circΣ.start);
+                              slidingM.mutable := U64 (circΣ.diskEnd cs);
+                     |} ⌝ ∗
+    ⌜ locked_wf σls ⌝ ∗
+    "HdiskEnd_circ" ∷ diskEnd_linv γ σls.(diskEnd) ∗
+    "Hstart_circ" ∷ diskStart_linv γ σls.(memLog).(slidingM.start) ∗
+    "HmemLog_linv" ∷ memLog_linv γ σls.(memLog) σls.(diskEnd) σls.(locked_diskEnd_txn_id).
 
 (** The implementation state contained in the *Walog struct, which is all
 read-only. *)
@@ -574,8 +580,8 @@ Definition is_wal_inner_durable γ s dinit : iProp Σ :=
     "Htxns_ctx" ∷ txns_ctx γ s.(log_state.txns) ∗
     "γtxns"  ∷ ghost_var γ.(txns_name) (1/2) s.(log_state.txns) ∗
     "HnextDiskEnd_inv" ∷ nextDiskEnd_inv γ s.(log_state.txns) ∗
-    "Hwal_linv" ∷ wal_linv_durable γ ∗
-    "Hdisk" ∷ ∃ cs, "Hdiskinv" ∷ disk_inv γ s cs dinit ∗
+    "Hdisk" ∷ ∃ cs, "Hwal_linv" ∷ wal_linv_durable γ cs ∗
+                    "Hdiskinv" ∷ disk_inv γ s cs dinit ∗
                     "Howncs" ∷ ghost_var γ.(cs_name) 1 cs ∗
                     "Hcirc" ∷ is_circular_state γ.(circ_name) cs
 .
