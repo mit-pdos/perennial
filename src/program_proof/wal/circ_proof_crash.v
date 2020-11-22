@@ -91,35 +91,35 @@ Ltac mod_bound :=
   end.
 
 Theorem wpc_recoverCircular stk k E1 d σ γ :
-  {{{ is_circular_state γ σ }}}
+  {{{ is_circular_state γ σ ∗ circ_resources γ σ}}}
     recoverCircular #d @ stk; k; E1
-  {{{ γ' (c:loc) (diskStart diskEnd: u64) (bufSlice:Slice.t) (upds: list update.t),
+  {{{ (c:loc) (diskStart diskEnd: u64) (bufSlice:Slice.t) (upds: list update.t),
       RET (#c, #diskStart, #diskEnd, slice_val bufSlice);
       updates_slice bufSlice upds ∗
-      is_circular_state γ' σ ∗
-      is_circular_appender γ' c ∗
-      start_is γ' (1/2) diskStart ∗
-      diskEnd_is γ' (1/2) (int.Z diskStart + length upds) ∗
+      is_circular_state γ σ ∗
+      is_circular_appender γ c ∗
+      start_is γ (1/2) diskStart ∗
+      diskEnd_is γ (1/2) (int.Z diskStart + length upds) ∗
       ⌜σ.(circΣ.start) = diskStart⌝ ∗
       ⌜σ.(circΣ.upds) = upds⌝ ∗
       ⌜circΣ.diskEnd σ = int.Z diskEnd⌝
   }}}
-  {{{ is_circular_state γ σ }}}.
+  {{{ is_circular_state γ σ ∗ circ_resources γ σ }}}.
 Proof.
   clear P.
-  iIntros (Φ Φc) "Hcs HΦ".
+  iIntros (Φ Φc) "(Hcs&Hres) HΦ".
 
   Opaque struct.t.
   rewrite /recoverCircular.
   wpc_pures; first iFrame.
-  { crash_case; eauto. }
+  { crash_case; eauto with iFrame. }
 
   iDestruct "Hcs" as (Hwf) "[Hpos Hcs]".
   iDestruct "Hcs" as (addrs0 blocks0 Hupds) "(Hown & Hlow)".
   iDestruct "Hown" as (Hlow_wf) "[Haddrs Hblocks]".
   iDestruct "Hlow" as (hdr1 hdr2 Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
 
-  iCache with "HΦ Hpos Haddrs Hblocks Hd0 Hd1 Hd2".
+  iCache with "HΦ Hpos Haddrs Hblocks Hd0 Hd1 Hd2 Hres".
   { crash_case.
     iFrame "% ∗".
     iExists _, _; iFrame "∗ %".
@@ -313,6 +313,7 @@ Proof.
     iIntros (ca) "Hca".
 
     wp_load.
+    (*
 
     iMod (ghost_var_alloc addrs0) as (addrs_name') "[Haddrs' Hγaddrs]".
     iMod (ghost_var_alloc blocks0) as (blocks_name') "[Hblocks' Hγblocks]".
@@ -323,53 +324,40 @@ Proof.
                   start_name := start_name';
                   diskEnd_name := diskEnd_name'; |}).
 
+    *)
     wp_pures.
     iNamed 1.
     iDestruct "HΦ" as "(_&HΦ)".
-    iApply ("HΦ" $! γ').
-    iFrame "Hupds".
-    iFrame "Hstart1 HdiskEnd1 HdiskEndLb".
-    iSplitR "Hca Hdiskaddrs Hγaddrs Hγblocks Hstart2 HdiskEnd2".
-    { iSplit; first by eauto.
-      iSplit.
-      { iPureIntro.
-        destruct Hwf; word. }
-      iExists _, _.
-      iSplit; first by eauto.
-      iSplitL "Haddrs' Hblocks'".
-      { iFrame "Haddrs' Hblocks'".
-        iPureIntro; eauto. }
-      iExists _, _.
-      iFrame.
-      iPureIntro; eauto.
+    iApply ("HΦ").
+    iFrame "Hpos Hupds". iFrame.
+    iDestruct "Hres" as "(Hstart_is&Hend_is&Hpre)".
+    iDestruct "Hpre" as (???) "(Haddrs'&Hblocks')".
+    iDestruct (ghost_var_agree with "Hblocks Hblocks'") as %->.
+    iDestruct (ghost_var_agree with "Haddrs Haddrs'") as %->.
+    iSplitL "Hd0 Hd1 Hd2 Hblocks Haddrs".
+    { iSplit; first done. iExists _, _. iFrame.
+      iSplit; first done.
+      iSplit; first done.
+      iExists _, _. iFrame. eauto.
     }
-    iSplitR "Hstart2 HdiskEnd2".
+    iSplitL "Hca Hposl Hdiskaddrs Haddrs' Hblocks'".
     {
-      iExists _, _, _.
+      iExists _, _, _. iFrame. iSplit; first done.
       iDestruct (struct_fields_split with "Hca") as "[Hca _]".
-      by iFrame. }
-    iFrame.
-    iSplitL.
-    { iSplit.
-      { iPureIntro; destruct Hwf; len. }
-      iSplitL "HdiskEnd2".
-      { iExactEq "HdiskEnd2".
-        f_equal.
-        destruct Hwf; len. }
-      iExactEq "HdiskEndLb".
-      rewrite /diskEnd_at_least. subst γ'. simpl.
-      f_equal.
-      destruct Hwf; len.
+      iFrame.
     }
-    iPureIntro; intuition eauto.
-    * rewrite take_ge; auto.
-      destruct Hwf; word.
-    * word_cleanup.
-      destruct Hwf.
+    iFrame.
+    iSplitL "Hend_is".
+    {
+      iExactEq "Hend_is".
+      rewrite take_ge; auto. destruct Hwf; word.
+    }
+    iPureIntro; split_and!; eauto.
+    * rewrite take_ge; auto. destruct Hwf; word.
+    * destruct Hwf.
       rewrite /circΣ.diskEnd.
       word.
 Qed.
-
 
 (* XXX: this instance seems dangerous, I don't want it to get picked up for an l ↦ v, for example.
   But it seems not to since those definitions are sealed. *)

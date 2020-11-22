@@ -303,12 +303,15 @@ Proof.
   by iFrame.
 Qed.
 
-Definition circ_resources γ σ : iProp Σ :=
-  start_is γ (1/2) (circΣ.start σ) ∗
-  diskEnd_is γ (1/2) (circΣ.diskEnd σ) ∗
+Definition is_circular_appender_pre γ : iProp Σ :=
   ∃ addrs blocks,
     ⌜circ_low_wf addrs blocks⌝ ∗
     ghost_var γ.(addrs_name) (1/2) addrs ∗ ghost_var γ.(blocks_name) (1/2) blocks.
+
+Definition circ_resources γ σ : iProp Σ :=
+  start_is γ (1/2) (circΣ.start σ) ∗
+  diskEnd_is γ (1/2) (circΣ.diskEnd σ) ∗
+  is_circular_appender_pre γ.
 
 Lemma crash_upd γold γnew σ :
   is_circular_state γold σ -∗ init_ghost_state γnew ==∗
