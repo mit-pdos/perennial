@@ -4,7 +4,7 @@ From iris.base_logic.lib Require Import mnat.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
-From Perennial.Helpers Require Import Transitions List.
+From Perennial.Helpers Require Import Transitions List gset.
 From Perennial.program_proof Require Import wal.abstraction wal.specs.
 From Perennial.program_proof Require Import wal.heapspec_lib.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
@@ -74,6 +74,7 @@ Definition wal_heap_inv_crashes (heaps : async (gmap u64 Block)) (ls : log_state
 
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (gh : gmap u64 heap_block) (crash_heaps : async (gmap u64 Block)),
+    "%Hgh_complete" ∷ ⌜set_map int.Z (dom (gset u64) gh) = dom (gset _) ls.(log_state.d)⌝ ∗
     "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ ghost_var γ.(wal_heap_txns) (1/2) (ls.(log_state.d), ls.(log_state.txns)) ∗
@@ -346,6 +347,97 @@ Qed.
 Definition async_take {A} `{!Inhabited A} (n:nat) (l: async A) : async A :=
   list_to_async (take n (possible l)).
 
+Lemma wal_heap_inv_crash_as_last_disk crash_heap ls :
+  wal_heap_inv_crash crash_heap ls.(log_state.d) ls.(log_state.txns) -∗
+  ⌜∀ (a: u64), crash_heap !! a = last_disk ls !! int.Z a⌝.
+Proof.
+  rewrite /wal_heap_inv_crash.
+  iPureIntro; intros.
+  rewrite H.
+  rewrite /last_disk /disk_at_txn_id.
+  rewrite -> take_ge by lia.
+  auto.
+Qed.
+
+Lemma apply_upds_dom_eq upds d :
+  dom (gset Z) (apply_upds upds d) =
+  list_to_set ((λ u, int.Z u.(update.addr)) <$> upds) ∪ dom (gset Z) d.
+Proof.
+  apply gset_eq.
+  intros.
+  rewrite elem_of_union.
+  rewrite elem_of_list_to_set.
+  apply apply_upds_dom.
+Qed.
+
+Instance txn_upds_respect_prefix : Proper (prefix ==> prefix) txn_upds.
+Proof.
+  intros l1 l2 H.
+  rewrite /txn_upds.
+  f_equiv.
+  f_equiv.
+  auto.
+Qed.
+
+Lemma Forall_prefix {A} (P : A → Prop) (l1 l2: list A) :
+  l1 `prefix_of` l2 →
+  Forall P l2 →
+  Forall P l1.
+Proof.
+  rewrite !Forall_lookup.
+  intros [l1' ->].
+  intros.
+  apply (H i x).
+  apply lookup_app_l_Some; auto.
+Qed.
+
+Lemma disk_at_txn_id_same_dom txn_id ls :
+  wal_wf ls →
+  dom (gset _) (disk_at_txn_id txn_id ls) =
+  dom _        ls.(log_state.d).
+Proof.
+  intros (Haddrs_wf & _).
+  rewrite /disk_at_txn_id.
+  rewrite /log_state.updates /addrs_wf in Haddrs_wf.
+  rewrite apply_upds_dom_eq.
+  match goal with
+  | |- list_to_set ?l ∪ ?s = _ =>
+    cut (list_to_set l ⊆ s); [ set_solver | ]
+  end.
+  apply elem_of_subseteq; setoid_rewrite elem_of_list_to_set; intros.
+  apply elem_of_list_fmap_2 in H as [u [-> H]].
+  apply (Forall_prefix _ (txn_upds $ take (S txn_id) ls.(log_state.txns))) in Haddrs_wf; last first.
+  { f_equiv.
+    apply take_prefix.
+    auto. }
+  apply elem_of_list_lookup_1 in H as [i Hlookup].
+  eapply Forall_lookup in Hlookup; eauto.
+  simpl in Hlookup.
+  destruct Hlookup as [_ (b & Hlookup)].
+  apply elem_of_dom.
+  eauto.
+Qed.
+
+Lemma wal_heap_h_latest_updates γ crash_heaps gh ls :
+  set_map int.Z (dom (gset u64) gh) = dom (gset _) ls.(log_state.d) →
+  ([∗ map] a↦hb ∈ gh,
+   wal_heap_inv_addr ls a hb ∗
+   mapsto (hG:=γ.(wal_heap_h)) a 1 hb) -∗
+  wal_heap_inv_crashes crash_heaps ls -∗
+  ([∗ map] a↦b ∈ latest crash_heaps, ∃ hb,
+    ⌜hb_latest_update hb = b⌝ ∗
+    mapsto (hG:=γ.(wal_heap_h)) a 1 hb).
+Proof.
+  iIntros (Hgh_complete) "Haddr #Hcrash".
+  iNamed "Hcrash".
+  iDestruct (big_sepL_lookup _ _ (length (possible crash_heaps) - 1)
+                             with "Hpossible_heaps") as "#Hlatest".
+  { rewrite lookup_possible_latest' //. }
+  rewrite -> take_ge by lia.
+  iDestruct (wal_heap_inv_crash_as_last_disk with "Hlatest") as %Hlatest.
+  (* TODO: figure out how to use domain information to figure this out *)
+Abort.
+
 Lemma wal_heap_inv_crash_transform γ ls ls' :
   relation.denote log_crash ls ls' () →
   wal_heap_inv γ ls -∗
@@ -359,11 +451,13 @@ Lemma wal_heap_inv_crash_transform γ ls ls' :
             (∃ (crash_heaps: async (gmap u64 Block)),
                 ghost_var γ.(wal_heap_crash_heaps) (1/2) crash_heaps ∗
                 let crash_heaps' := async_take (length ls'.(log_state.txns)) crash_heaps in
-                ghost_var γ'.(wal_heap_crash_heaps) (1 / 2) crash_heaps'
+                ghost_var γ'.(wal_heap_crash_heaps) (1 / 2) crash_heaps') ∗
+                (* ([∗ map] a↦b ∈ latest crash_heaps, ∃ hb,
+                  ⌜hb_latest_update hb = b⌝ ∗
+                  mapsto (hG:=γ'.(wal_heap_h)) a 1 hb) *)
             (* TODO: need to include all the wal_heap_h hb's; their values can
             be related to [latest crash_heaps'] using [wal_heap_inv_crashes],
             which we're proving anyway *)
-            ) ∗
              is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
                                      locked_wh_σtxns := ls'.(log_state.txns);
                                   |}
@@ -407,6 +501,7 @@ Proof.
   (* TODO: we should return Hwal_heap_mapstos as well, related to [latest
   crash_heaps] *)
   iFrame.
+  iSplit; first by (iPureIntro; congruence).
   iApply (wal_heap_inv_crashes_crash with "Hcrash_heaps"); auto.
 Qed.
 
@@ -450,7 +545,7 @@ Proof.
       exists x.
       split; auto.
       apply in_cons; auto.
-Qed.  
+Qed.
 
 Theorem incl_concat {A: Type} (l1 l2: list (list A)):
   incl l1 l2 ->
@@ -498,7 +593,7 @@ Proof.
   rewrite drop_drop.
   replace ((n0 + (n1 - n0))%nat) with (n1) by lia; auto.
 Qed.
-  
+
 (* Helper lemmas *)
 
 Theorem is_update_cons_eq: forall l a0,
@@ -612,7 +707,7 @@ Proof.
   f_equal.
   rewrite filter_app //.
 Qed.
-  
+
 Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
   wal_wf σ ->
   disk_at_txn_id txn_id σ !! int.Z a = Some installed ->
@@ -669,7 +764,7 @@ Proof.
   rewrite concat_app.
   rewrite apply_upds_app; auto.
 Qed.
-  
+
 Theorem apply_update_ne:
   forall u1 u2 d,
   u1.(update.addr) ≠ u2.(update.addr) ->
@@ -841,7 +936,7 @@ Proof.
     rewrite lookup_insert_ne in H0; eauto.
     simpl in *.
     intro Hx.
-    apply H. word.  
+    apply H. word.
   - intros.
     rewrite apply_upds_cons in H0.
     rewrite apply_upds_cons.
@@ -988,7 +1083,7 @@ Proof.
     intuition.
     right.
     apply is_update_cons; auto.
-Qed.  
+Qed.
 
 Theorem txn_ups_take_elem_of u l:
   forall (txn_id txn_id': nat),
@@ -1042,7 +1137,7 @@ Proof using walheapG0 Σ.
   rewrite apply_upds_txn_upds_app in H2.
   apply lookup_apply_upds in H2 as H2'; eauto.
   intuition.
-  1: destruct (decide (b = b1)); congruence. 
+  1: destruct (decide (b = b1)); congruence.
   destruct H4 as [u H4].
   exists u.
   intuition.
@@ -1268,6 +1363,11 @@ Definition readmem_q γh (a : u64) (installed : Block) (bs : list Block) (res : 
     end
   )%I.
 
+Lemma union_singleton_l_id `{Countable A} (a:A) (x: gset A) :
+  a ∈ x →
+  {[a]} ∪ x = x.
+Proof. set_solver. Qed.
+
 Theorem wal_heap_readmem E γh a (Q : option Block -> iProp Σ) :
   ( |={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
         ( ∀ mb, readmem_q γh a installed bs mb ={E, ⊤ ∖ ↑walN}=∗ Q mb ) ) -∗
@@ -1354,6 +1454,12 @@ Proof.
     }
     rewrite /wal_heap_inv.
     iExists _, _; iFrame.
+
+    iSplit.
+    { iPureIntro.
+      rewrite /= !dom_insert_L.
+      rewrite union_singleton_l_id //.
+      apply elem_of_dom; eauto. }
 
     iPureIntro.
     eapply wal_wf_advance_installed_lb.
@@ -1565,7 +1671,7 @@ Proof.
   - simpl in H. exfalso. apply H. apply elem_of_list_here.
   - rewrite -> insert_commute by eauto.
     rewrite IHbs; eauto.
-    intro Hne. apply H. apply elem_of_list_further. eauto. 
+    intro Hne. apply H. apply elem_of_list_further. eauto.
 Qed.
 
 Lemma apply_upds_u64_delete bs : ∀ heapdisk a,
@@ -1579,7 +1685,7 @@ Proof.
   - simpl in H. exfalso. apply H. apply elem_of_list_here.
   - rewrite <- delete_insert_ne by eauto.
     rewrite IHbs; eauto.
-    intro Hne. apply H. apply elem_of_list_further. eauto. 
+    intro Hne. apply H. apply elem_of_list_further. eauto.
 Qed.
 
 Lemma apply_upds_u64_split heapdisk bs γ unmodified :
@@ -1738,6 +1844,9 @@ Proof using walheapG0.
 
   iExists _, _.
   iFrame.
+  iSplit.
+  { simpl; eauto.
+    admit. (* need dom memapped_gh unchanged *) }
   iDestruct (big_sepM_forall with "Hgh") as %Hgh.
   iSplitL.
   2: iSplit.
@@ -1841,7 +1950,8 @@ Proof using walheapG0.
       erewrite updates_for_addr_notin; eauto.
       rewrite app_nil_r; auto.
     }
-Qed.
+    all: fail "goals remaining".
+Admitted.
 
 Theorem no_updates_since_le σ a t0 t1 :
   (t0 ≤ t1)%nat ->
@@ -1989,6 +2099,8 @@ Proof using walheapG0.
       iModIntro.
       iSplitL "Hctx Hgh Htxns Hinstalled Hcrash_heaps_own Hcrash_heaps Hcrash_heaps_lb".
       { iExists _, _. iFrame.
+        iSplit.
+        { simpl; auto. }
         iSplitL "Hgh".
         {
           iApply wal_update_installed; first by intuition lia.
@@ -2119,6 +2231,8 @@ Proof using walheapG0.
 
   iModIntro.
   iExists _, _. iFrame.
+  iSplit.
+  { simpl; auto. }
   iPureIntro.
   eapply wal_wf_advance_durable_lb; eauto. lia.
 Qed.
