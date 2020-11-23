@@ -836,6 +836,112 @@ Section goose_lang.
       iExists _; iFrame.
   Qed.
 
+  Theorem wpc_BufTxn__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} k :
+    N ## invariant.walN →
+    N ## invN →
+    {{{ "Hbuftxn" ∷ is_buftxn l γ dinit γtxn P0 ∗
+        "HP" ∷ P (buftxn_maps_to γtxn)
+    }}}
+      BufTxn__CommitWait #l #true @ NotStuck; k; ⊤
+    {{{ (ok:bool), RET #ok;
+        if ok then
+            P (λ a v, durable_mapsto_own γ a v)
+        else P0 (λ a v, durable_mapsto_own γ a v) }}}
+    {{{ P0 (durable_mapsto γ) ∨
+         P (durable_mapsto γ) }}}.
+  Proof.
+    iIntros (?? Φ Φc) "Hpre HΦ". iNamed "Hpre".
+    iNamed "Hbuftxn".
+    iNamed "Hbuftxn_mem".
+    iNamed "Hbuftxn_durable".
+    iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->.
+    iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
+    iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
+
+    wpc_frame "HΦ Hdurable_frag Hold_vals".
+    { crash_case.
+      iDestruct (is_buftxn_durable_to_old_pred with "[Hold_vals Hdurable_frag]") as "Hold".
+      { iExists _. iFrame "∗#". }
+      iModIntro. iFrame.
+    }
+
+(*
+    (* here things are a little tricky because committing doesn't give us
+    [durable_mapsto] but just [ephemeral_val_from] *)
+    wp_apply (mspec.wp_BufTxn__CommitWait
+                (* ([∗ map] a↦v ∈ (mspec.committed <$> mT),
+                 ephemeral_val_from γ.(buftxn_async_name) txn_id0 a v) *) _
+                _ _ _ _ _ _
+              (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
+                with "[$Hbuftxn]").
+    { iSplit; [ iAccu | ].
+      iDestruct "Htxn_system" as "[Hinv _]".
+      iInv "Hinv" as ">Hinner" "Hclo".
+      iModIntro.
+      iNamed "Hinner".
+      iExists σs.
+      iFrame "H◯async".
+      iIntros "H◯async".
+
+      (* NOTE: we don't use this theorem and instead inline its proof (to some
+      extent) since we really need to know what the new map is, to restore
+      txn_system_inv. *)
+      (* iMod (map_update_predicate with "H●latest HP0 HP") as (m') "[H●latest HP]". *)
+      iMod (async_ctx_durable_map_split with "H●latest Hold_vals")
+        as "(H●latest & #Hold_vals & Hnew)".
+      (* Hold_vals is what we should be using in the crash condition *)
+
+      iMod (async_update_map (mspec.modified <$> mT) with "H●latest Hnew") as "[H●latest Hnew]".
+      { set_solver. }
+
+      iMod ("Hclo" with "[H◯async H●latest]") as "_".
+      { iNext.
+        iExists _.
+        iFrame. }
+      iModIntro.
+      rewrite length_possible_async_put.
+      iExactEq "Hnew".
+      auto with f_equal lia. }
+    iIntros (ok) "Hpost".
+    destruct ok.
+    - iDestruct "Hpost" as "[Hpost | Hpost]".
+      + iDestruct "Hpost" as "[%Hanydirty_true Hpost]".
+        iDestruct "Hpost" as (txn_id) "(HQ & Hmod_tokens & Hlower_bound)".
+        iAssert (txn_durable γ txn_id) as "#Hdurable_txn_id {Hlower_bound}".
+        { iApply "Hlower_bound". done. }
+        iApply "HΦ".
+        iApply "HPrestore".
+        iApply big_sepM_subseteq; eauto.
+        iApply big_sepM_sep; iFrame.
+        rewrite /durable_mapsto.
+        iSplitR "HQ".
+        (* TODO: factor this out to a lemma *)
+        { iApply (big_sepM_mono with "Hmod_tokens").
+          rewrite /modify_token. eauto. }
+        iApply (big_sepM_impl with "HQ []").
+        iIntros "!>" (k x ?) "Hval".
+        iExists _; iFrame "∗#".
+      + iDestruct "Hpost" as "[%Hanydirty_false Hpost]".
+        iDestruct "Hpost" as "(Hpreq & Hmod_tokens)".
+        iApply "HΦ".
+        iApply "HPrestore".
+        iApply big_sepM_subseteq; eauto.
+        iApply big_sepM_sep; iFrame.
+        iSplitR "Hpreq".
+        { iApply (big_sepM_mono with "Hmod_tokens").
+          rewrite /modify_token. eauto. }
+        rewrite Hanydirty; eauto.
+    - iDestruct "Hpost" as "[Heph Hmod_tokens]".
+      iApply "HΦ".
+      iApply "HrestoreP0".
+      iApply big_sepM_sep; iFrame.
+      iApply (big_sepM_mono with "Hmod_tokens").
+      iIntros (k x Hkx) "H".
+      iExists _; iFrame.
+  Qed.
+*)
+  Admitted.
+
   Theorem is_buftxn_mem_durable l γ dinit γtxn P0 γdurable :
     is_buftxn_mem l γ dinit γtxn γdurable -∗
     is_buftxn_durable γ γdurable P0 -∗
