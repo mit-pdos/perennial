@@ -412,6 +412,22 @@ Definition Nfs__NFSPROC3_ACCESS: val :=
     struct.storeF nfstypes.ACCESS3resok.S "Access" (struct.fieldRef nfstypes.ACCESS3res.S "Resok" "reply") (nfstypes.ACCESS3_READ `or` nfstypes.ACCESS3_LOOKUP `or` nfstypes.ACCESS3_MODIFY `or` nfstypes.ACCESS3_EXTEND `or` nfstypes.ACCESS3_DELETE `or` nfstypes.ACCESS3_EXECUTE);;
     ![struct.t nfstypes.ACCESS3res.S] "reply".
 
+Definition NFSPROC3_READ_wp: val :=
+  rec: "NFSPROC3_READ_wp" "args" "reply" "inum" "txn" :=
+    let: "ip" := ReadInode "txn" "inum" in
+    let: ("data", "eof") := Inode__Read "ip" "txn" (struct.get nfstypes.READ3args.S "Offset" "args") (to_u64 (struct.get nfstypes.READ3args.S "Count" "args")) in
+    struct.storeF nfstypes.READ3resok.S "Count" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") (to_u32 (slice.len "data"));;
+    struct.storeF nfstypes.READ3resok.S "Data" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") "data";;
+    struct.storeF nfstypes.READ3resok.S "Eof" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") "eof".
+
+Definition NFSPROC3_READ_internal: val :=
+  rec: "NFSPROC3_READ_internal" "args" "reply" "inum" "txn" :=
+    NFSPROC3_READ_wp "args" "reply" "inum" "txn";;
+    let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+    (if: "ok"
+    then struct.storeF nfstypes.READ3res.S "Status" "reply" nfstypes.NFS3_OK
+    else struct.storeF nfstypes.READ3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT).
+
 Definition Nfs__NFSPROC3_READ: val :=
   rec: "Nfs__NFSPROC3_READ" "nfs" "args" :=
     let: "reply" := ref (zero_val (struct.t nfstypes.READ3res.S)) in
@@ -425,16 +441,7 @@ Definition Nfs__NFSPROC3_READ: val :=
       ![struct.t nfstypes.READ3res.S] "reply"
     else
       lockmap.LockMap__Acquire (struct.loadF Nfs.S "l" "nfs") "inum";;
-      let: "ip" := ReadInode "txn" "inum" in
-      let: ("data", "eof") := Inode__Read "ip" "txn" (struct.get nfstypes.READ3args.S "Offset" "args") (to_u64 (struct.get nfstypes.READ3args.S "Count" "args")) in
-      let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
-      (if: "ok"
-      then
-        struct.storeF nfstypes.READ3res.S "Status" "reply" nfstypes.NFS3_OK;;
-        struct.storeF nfstypes.READ3resok.S "Count" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") (to_u32 (slice.len "data"));;
-        struct.storeF nfstypes.READ3resok.S "Data" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") "data";;
-        struct.storeF nfstypes.READ3resok.S "Eof" (struct.fieldRef nfstypes.READ3res.S "Resok" "reply") "eof"
-      else struct.storeF nfstypes.READ3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT);;
+      NFSPROC3_READ_internal "args" "reply" "inum" "txn";;
       lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
       ![struct.t nfstypes.READ3res.S] "reply").
 

@@ -6,7 +6,7 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
-From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof lockmap_proof addr.addr_proof buf.buf_proof.
+From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
 From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
@@ -74,6 +74,11 @@ Definition is_inode (inum: u64) (state: list u8) (mapsto: addr -> object -> iPro
   ∃ (blk: u64),
     "Hinode_enc" ∷ is_inode_enc inum (length state) blk mapsto ∗
     "Hinode_data" ∷ is_inode_data (length state) blk state mapsto.
+
+Definition is_inode_crash γ (inum: u64) : iProp Σ :=
+  ∃ (state_spec state_durable: list u8),
+    "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state_spec ∗
+    "Hinode_disk" ∷ is_inode inum state_durable (durable_mapsto γ.(simple_buftxn)).
 
 Definition is_inode_mem (l: loc) (inum: u64) (len: u64) (blk: u64) : iProp Σ :=
   "Hinum" ∷ l ↦[Inode.S :: "Inum"] #inum ∗
@@ -431,7 +436,8 @@ Definition is_fs γ (nfs: loc) dinit : iProp Σ :=
     "#Hfs_txn" ∷ readonly (nfs ↦[Nfs.S :: "t"] #txn) ∗
     "#Hfs_lm" ∷ readonly (nfs ↦[Nfs.S :: "l"] #lm) ∗
     "#Histxn" ∷ is_txn txn γ.(simple_buftxn).(buftxn_txn_names) dinit ∗
-    "#Hislm" ∷ is_lockMap lm γ.(simple_lockmapghs) covered_inodes (is_inode_stable γ) ∗
+    "#Hislm" ∷ is_crash_lockMap 10 lm γ.(simple_lockmapghs) covered_inodes
+                                (is_inode_stable γ) (is_inode_crash γ) ∗
     "#Hsrc" ∷ inv N (is_source γ) ∗
     "#Htxnsys" ∷ is_txn_system Nbuftxn γ.(simple_buftxn).
 
@@ -536,7 +542,17 @@ Proof using Ptimeless.
 
   wp_loadField.
   wp_apply (wp_LockMap__Acquire with "[$Hislm]"); first by intuition eauto.
-  iIntros "[Hstable Hlocked]".
+  iIntros "Hcrashlocked".
+
+  wp_pures.
+  wp_bind (NFSPROC3_READ_internal _ _ _ _).
+
+  iDestruct (use_CrashLocked _ 8 with "Hcrashlocked") as "Hcrashuse"; first by lia.
+  iApply (wpc_wp _ _ _ _ _ True).
+  iApply "Hcrashuse".
+  iSplit.
+  { iModIntro. iModIntro. done. }
+  iIntros ">Hstable".
   iNamed "Hstable".
 
   iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]";
@@ -545,45 +561,64 @@ Proof using Ptimeless.
 
   iNamed "Hbuftxn".
 
+  iCache with "Hinode_state Hbuftxn_durable".
+  { crash_case.
+    iDestruct (is_buftxn_durable_to_old_pred with "Hbuftxn_durable") as "[Hold _]".
+    iModIntro.
+    iModIntro.
+    iSplit; first done.
+    iExists _, _.
+    iFrame.
+  }
+
+  wpc_call.
+  wpc_bind (NFSPROC3_READ_wp _ _ _ _).
+  wpc_frame.
+
+  wp_call.
+
   wp_apply (wp_ReadInode with "[$Hbuftxn_mem $Hinode_enc]"); first by intuition eauto.
   iIntros (ip) "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
 
   wp_apply (wp_Inode__Read with "[$Hbuftxn_mem $Hinode_mem $Hinode_data]").
   iIntros (resSlice eof vs) "(HresSlice & Hbuftxn_mem & Hinode_mem & Hinode_data & %Hvs & %Hvslen & %Heof)".
 
+  iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
+
+  wp_apply wp_slice_len.
+  wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+  iIntros (fl) "[%Hfl Resok]".
+  wp_apply (wp_storeField_struct with "Resok").
+  { auto. }
+  iIntros "Resok".
+  rewrite Hfl; clear Hfl fl.
+
+  wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+  iIntros (fl) "[%Hfl Resok]".
+  wp_apply (wp_storeField_struct with "Resok").
+  { compute. val_ty. }
+  iIntros "Resok".
+  rewrite Hfl; clear Hfl fl.
+
+  wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+  iIntros (fl) "[%Hfl Resok]".
+  wp_apply (wp_storeField_struct with "Resok").
+  { compute. val_ty. }
+  iIntros "Resok".
+  rewrite Hfl; clear Hfl fl.
+
+  iNamed 1.
   iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
+(*
   wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
   4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
   all: try solve_ndisj.
   { typeclasses eauto. }
 
   iIntros (ok) "Hcommit".
-  iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
   wp_if_destruct; subst.
   - wp_storeField.
-
-    wp_apply wp_slice_len.
-    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
-    iIntros (fl) "[%Hfl Resok]".
-    wp_apply (wp_storeField_struct with "Resok").
-    { auto. }
-    iIntros "Resok".
-    rewrite Hfl; clear Hfl fl.
-
-    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
-    iIntros (fl) "[%Hfl Resok]".
-    wp_apply (wp_storeField_struct with "Resok").
-    { compute. val_ty. }
-    iIntros "Resok".
-    rewrite Hfl; clear Hfl fl.
-
-    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
-    iIntros (fl) "[%Hfl Resok]".
-    wp_apply (wp_storeField_struct with "Resok").
-    { compute. val_ty. }
-    iIntros "Resok".
-    rewrite Hfl; clear Hfl fl.
 
     (* Simulate to get Q *)
     iApply fupd_wp.
@@ -692,6 +727,8 @@ Transparent nfstypes.READ3res.S.
     Opaque nfstypes.READ3res.S.
     lia.
 Qed.
+*)
+Admitted.
 
 Opaque nfstypes.GETATTR3res.S.
 
