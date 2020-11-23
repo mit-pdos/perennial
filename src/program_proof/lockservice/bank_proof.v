@@ -43,8 +43,8 @@ Definition own_bank_clerk γ (bank_ck:loc) : iProp Σ :=
   "%" ∷ ⌜acc1 ≠ acc2⌝ ∗
   "#Hls" ∷ is_lockserver γ.(bank_ls_names) ls_srv (Ps:=bankPs γ) ∗
   "#Hks" ∷ is_kvserver γ.(bank_ks_names) ks_srv ∗
-  "Hlck_own" ∷ own_lockclerk γ.(bank_ls_names) #lck ls_srv ∗
-  "Hkck_own" ∷ own_kvclerk γ.(bank_ks_names).(ks_rpcGN) kck ks_srv ∗
+  "Hlck_own" ∷ own_lockclerk γ.(bank_ls_names) lck ls_srv ∗
+  "Hkck_own" ∷ own_kvclerk γ.(bank_ks_names) kck ks_srv ∗
 
   "Hkck" ∷ bank_ck ↦[BankClerk.S :: "kvck"] #kck ∗
   "Hlck" ∷ bank_ck ↦[BankClerk.S :: "lck"] #lck ∗
@@ -68,11 +68,11 @@ Lemma acquire_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
      is_lockserver γ.(bank_ls_names) lsrv (Ps:=bankPs γ) ∗
      lockservice_is_lock γ.(bank_ls_names) ln1 ∗
      lockservice_is_lock γ.(bank_ls_names) ln2 ∗
-     own_lockclerk γ.(bank_ls_names) #lck lsrv
+     own_lockclerk γ.(bank_ls_names) lck lsrv
 }}}
   acquire_two #lck #ln1 #ln2
 {{{
-     RET #(); own_lockclerk γ.(bank_ls_names) #lck lsrv ∗
+     RET #(); own_lockclerk γ.(bank_ls_names) lck lsrv ∗
      bankPs γ ln1 ∗
      bankPs γ ln2
 }}}.
@@ -108,11 +108,11 @@ Lemma release_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
      lockservice_is_lock γ.(bank_ls_names) ln2 ∗
      bankPs γ ln1 ∗
      bankPs γ ln2 ∗
-     own_lockclerk γ.(bank_ls_names) #lck lsrv
+     own_lockclerk γ.(bank_ls_names) lck lsrv
 }}}
   release_two #lck #ln1 #ln2
 {{{
-     RET #(); own_lockclerk γ.(bank_ls_names) #lck lsrv
+     RET #(); own_lockclerk γ.(bank_ls_names) lck lsrv
 }}}.
 Proof.
   iIntros (Φ) "(#Hls & #Hln1_islock & #Hln2_islock & HP1 & HP2 & Hlck) Hpost".
@@ -121,19 +121,19 @@ Proof.
   destruct bool_decide; wp_pures.
   {
     wp_apply (Clerk__Unlock_spec with "[$Hlck $Hls $Hln2_islock $HP2]").
-    iIntros (v) "Hlck". iDestruct "Hlck" as (b ->) "[Hlck _]".
+    iIntros (v) "[Hlck _]".
     wp_pures.
     wp_apply (Clerk__Unlock_spec with "[$Hlck $Hls $Hln1_islock $HP1]").
-    iIntros (v) "Hlck". iDestruct "Hlck" as (b2 ->) "[Hlck _]".
+    iIntros (b) "[Hlck _]".
     wp_pures.
     iApply "Hpost"; iFrame.
   }
   {
     wp_apply (Clerk__Unlock_spec with "[$Hlck $Hls $Hln1_islock $HP1]").
-    iIntros (v) "Hlck". iDestruct "Hlck" as (b ->) "[Hlck _]".
+    iIntros (v) "[Hlck _]".
     wp_pures.
     wp_apply (Clerk__Unlock_spec with "[$Hlck $Hls $Hln2_islock $HP2]").
-    iIntros (v) "Hlck". iDestruct "Hlck" as (b2 ->) "[Hlck _]".
+    iIntros (b) "[Hlck _]".
     wp_pures.
     iApply "Hpost"; iFrame.
   }
@@ -167,21 +167,21 @@ Proof.
   iDestruct "Hacc2_unlocked" as (bal2) "(Hacc2_phys & Hacc2_log)".
   wp_pures.
   wp_loadField.
-  wp_apply (KVClerk__Get_spec with "[$Hkck_own $Hks Hacc1_phys]"); first eauto.
+  wp_apply (KVClerk__Get_spec with "Hks [$Hkck_own Hacc1_phys]"); first done.
   iIntros (v_bal1_g) "Hbal1_get".
   iDestruct "Hbal1_get" as (->) "[Hkck_own Hacc1_phys]".
   wp_pures.
   destruct bool_decide eqn:HenoughBalance; wp_pures.
   - (* Safe to do the transfer *)
-    wp_loadField. wp_apply (KVClerk__Put_spec with "[$Hkck_own $Hks Hacc1_phys]"); first eauto.
+    wp_loadField. wp_apply (KVClerk__Put_spec with "Hks [$Hkck_own Hacc1_phys]"); first by eauto.
     iIntros "[Hkck_own Hacc1_phys]".
     wp_pures.
     wp_loadField.
-    wp_apply (KVClerk__Get_spec with "[$Hkck_own $Hks Hacc2_phys]"); first eauto.
+    wp_apply (KVClerk__Get_spec with "Hks [$Hkck_own Hacc2_phys]"); first by eauto.
     iIntros (v_bal2_g) "Hbal2_get".
     iDestruct "Hbal2_get" as (->) "[Hkck_own Hacc2_phys]".
     wp_loadField.
-    wp_apply (KVClerk__Put_spec with "[$Hkck_own $Hks Hacc2_phys]"); first eauto.
+    wp_apply (KVClerk__Put_spec with "Hks [$Hkck_own Hacc2_phys]"); first by eauto.
     iIntros "[Hkck_own Hacc2_phys]".
     wp_pures.
     iApply fupd_wp.
@@ -236,12 +236,12 @@ Proof.
 
   wp_pures.
   repeat wp_loadField.
-  wp_apply (KVClerk__Get_spec with "[$Hkck_own $Hks Hacc1_phys]"); first eauto.
+  wp_apply (KVClerk__Get_spec with "Hks [$Hkck_own Hacc1_phys]"); first by eauto.
   iIntros (v_bal1_g) "Hbal1_get".
   iDestruct "Hbal1_get" as (->) "[Hkck_own Hacc1_phys]".
 
   repeat wp_loadField.
-  wp_apply (KVClerk__Get_spec with "[$Hkck_own $Hks Hacc2_phys]"); first eauto.
+  wp_apply (KVClerk__Get_spec with "Hks [$Hkck_own Hacc2_phys]"); first by eauto.
   iIntros (v_bal2_g) "Hbal2_get".
   iDestruct "Hbal2_get" as (->) "[Hkck_own Hacc2_phys]".
   wp_pures.

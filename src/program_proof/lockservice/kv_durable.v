@@ -464,7 +464,8 @@ Proof.
     wp_loadField;
     iNamed 1).
     iMod (server_takes_request with "[] Hsrpc") as "(HγPre & Hpre & Hsrpc_proc)"; eauto.
-    wpc_apply (wp_coreFunction with "[$Hpre $Hkvvol]").
+    (* FIXME: Hpre starts with a ▷ but we need it without. *)
+    wpc_apply (wp_coreFunction with "[Hpre $Hkvvol]").
     iSplit.
     {
       iModIntro. iNext. iIntros "Hpre".
