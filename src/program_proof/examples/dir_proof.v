@@ -906,7 +906,7 @@ Section goose.
     (* Now we get to the actual read operation. *)
     iApply (wpc_Inode__Read with "Hinode"); first done.
     iSplit.
-    { by crash_case. }
+    { by iLeft in "HΦ". }
     iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
     (* We need to learn that this inode exists in σD. *)
@@ -923,7 +923,7 @@ Section goose.
     iModIntro. iSplitL "Hownblocks Hused1".
     { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }
     iSplit.
-    { by crash_case. }
+    { by iLeft in "HΦ". }
     iIntros (s) "Hpost". iApply "HΦ".
     iFrame. done.
   Qed.
@@ -961,7 +961,7 @@ Section goose.
     (* Now we get to the actual size operation. *)
     iApply (wpc_Inode__Size with "Hinode"); first done.
     iSplit.
-    { by crash_case. }
+    { by iLeft in "HΦ". }
     iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
     (* We need to learn that this inode exists in σD. *)
@@ -978,7 +978,7 @@ Section goose.
     iModIntro. iSplitL "Hownblocks Hused1".
     { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }
     iSplit.
-    - by crash_case.
+    - by iLeft in "HΦ".
     - iIntros "_". by iApply "HΦ".
   Qed.
 

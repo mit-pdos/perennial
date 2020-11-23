@@ -352,15 +352,14 @@ Theorem wpc_Inode__Read {k} {l k' P addr} {off: u64} :
     <<{ ∀∀ σ mb, ⌜mb = σ.(inode.blocks) !! int.nat off⌝ ∗ ▷ P σ }>>
       Inode__Read #l #off @ NotStuck; (S k); ⊤
     <<{ ▷ P σ }>>
-    {{{ s, RET (slice_val s); match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end }}}.
+    {{{ s, RET (slice_val s); match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end }}}
+    {{{ True }}}.
 Proof.
   iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
-  wpc_call.
-  { by iLeft in "Hfupd". }
-  { by iLeft in "Hfupd". }
+  wpc_call; [done..|].
   iCache with "Hfupd".
-  { by iLeft in "Hfupd". }
+  { iLeft in "Hfupd". iIntros "!> !>". by iApply "Hfupd". }
   wpc_pures.
   wpc_bind_seq.
   wpc_frame.
@@ -377,12 +376,16 @@ Proof.
   iMod (fupd_later_to_disc with "HP") as "HP".
 
   iCache with "Hfupd Hlockinv HP".
-  { iLeft in "Hfupd". iModIntro. iNext. iFrame. iExists _; iFrame. }
+  { iLeft in "Hfupd". iModIntro. iNext.
+    iSplitL "Hfupd"; first by iApply "Hfupd".
+    iExists _; iFrame. }
   wpc_call.
   wpc_bind (_ ≥ _)%E.
   iNamed "Hlockinv".
   iCache with "Hfupd HP Hdurable".
-  { iLeft in "Hfupd". iModIntro. iNext. iFrame. iExists _; iFrame. iExists _. iFrame. }
+  { iLeft in "Hfupd". iModIntro. iNext.
+    iSplitL "Hfupd"; first by iApply "Hfupd".
+    iExists _; iFrame. iExists _. iFrame. }
   iDestruct (is_inode_durable_size with "Hdurable") as %Hlen1.
   wpc_frame.
   wp_loadField.
@@ -395,7 +398,9 @@ Proof.
   - 
     iApply ncfupd_wpc.
     iSplit.
-    { iLeft in "Hfupd". iModIntro. iModIntro. iNext. iFrame. iExists _; iFrame. iExists _. iFrame. }
+    { iLeft in "Hfupd". iModIntro. iModIntro. iNext.
+      iSplitL "Hfupd"; first by iApply "Hfupd".
+      iExists _; iFrame. iExists _. iFrame. }
     iRight in "Hfupd".
     iMod (own_disc_fupd_elim with "HP") as "HP".
 
@@ -406,14 +411,16 @@ Proof.
     iMod (fupd_later_to_disc with "HP") as "HP".
     iApply wpc_fupd. iModIntro.
     wpc_pures.
-    { iLeft in "HQ". iModIntro. iFrame "HQ". eauto 10 with iFrame. }
+    { iLeft in "HQ". iModIntro. iNext.
+      iSplitL "HQ"; first by iApply "HQ".
+      eauto 10 with iFrame. }
     iMod (own_disc_fupd_elim with "HP") as "HP".
     iModIntro.
     iSplitR "HP addrs Haddrs Hdurable"; last first.
     { iNext. iExists _. iFrame. eauto 10 with iFrame. }
     iIntros "His_locked".
-    iSplit; first by iLeft in "HQ". (* TODO(Ralf): can we avoid this double-proof? *)
-    iCache with "HQ"; first by iLeft in "HQ".
+    iSplit; first (iLeft in "HQ"; iIntros "!> !>"; by iApply "HQ"). (* TODO(Ralf): can we avoid this double-proof? *)
+    iCache with "HQ"; first (iLeft in "HQ"; iIntros "!> !>"; by iApply "HQ").
     wpc_pures.
     wpc_frame "HQ".
     wp_loadField.
@@ -435,7 +442,9 @@ Proof.
     wpc_pures.
     iApply ncfupd_wpc.
     iSplit.
-    { iLeft in "Hfupd". iModIntro. iModIntro. iNext. iFrame. iExists _; iFrame. iExists _. iFrame. }
+    { iLeft in "Hfupd". iModIntro. iModIntro. iNext.
+      iSplitL "Hfupd"; first by iApply "Hfupd".
+      iExists _; iFrame. iExists _. iFrame. }
     iDestruct (is_inode_durable_read with "Hdurable") as "H"; iNamed "H".
     iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
     destruct Hblock_lookup as [b0 Hlookup2].
@@ -452,7 +461,8 @@ Proof.
     { iLeft in "HQ". iModIntro. iNext. iIntros "Hda".
       iSpecialize ("Hdata" with "Hda").
       iSpecialize ("Hdurable" with "Hhdr Hdata").
-      iFrame. eauto 10 with iFrame. }
+      iSplitL "HQ"; first by iApply "HQ".
+      eauto 10 with iFrame. }
     iIntros "!>" (s) "[Hda Hb]".
     iDestruct (own_discrete_elim with "Hdata") as "Hdata".
     iSpecialize ("Hdata" with "Hda").
@@ -461,8 +471,8 @@ Proof.
     { iMod (own_disc_fupd_elim with "HP"). iModIntro. eauto 10 with iFrame. }
     iModIntro.
     iIntros "His_locked".
-    iSplit; first by iLeft in "HQ". (* TODO(Ralf): can we avoid this double-proof? *)
-    iCache with "HQ"; first by iLeft in "HQ".
+    iSplit; first (iLeft in "HQ"; iIntros "!> !>"; by iApply "HQ"). (* TODO(Ralf): can we avoid this double-proof? *)
+    iCache with "HQ"; first (iLeft in "HQ"; iIntros "!> !>"; by iApply "HQ").
     wpc_frame.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "His_locked"); auto.
@@ -493,10 +503,10 @@ Proof.
   iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iApply (wpc_Inode__Read with "Hinode"); first done.
   iSplit.
-  { iLeft in "HΦ". iModIntro. iApply "HΦ". done. }
+  { iLeft in "HΦ". iModIntro. iApply "HΦ". }
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
-  { iLeft in "HΦ". iModIntro. iApply "HΦ". done. }
+  { iLeft in "HΦ". iModIntro. iApply "HΦ". }
   iIntros (s) "Hblock". iApply "HΦ". iFrame. done.
 Qed.
 
@@ -506,10 +516,12 @@ Theorem wpc_Inode__Size {k} {l k' P addr}:
     <<{ ∀∀ σ (sz: u64), ⌜int.nat sz = inode.size σ⌝ ∗ ▷ P σ }>>
       Inode__Size #l @ NotStuck; (S k); ⊤
     <<{ ▷ P σ }>>
-    {{{ RET #sz; True }}}.
+    {{{ RET #sz; True }}}
+    {{{ True }}}.
 Proof.
   iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
+  iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
   rewrite /Inode__Size.
   wpc_pures; first by iLeft in "Hfupd".
   iCache with "Hfupd"; first by iLeft in "Hfupd".
@@ -542,6 +554,7 @@ Proof.
 
   iMod (fupd_later_to_disc with "HP") as "HP".
   iModIntro.
+  iEval (rewrite ->!(left_id True bi_wand)%I) in "HQ".
   iCache with "HQ Hdurable HP".
   { iLeft in "HQ". iModIntro. eauto 10 with iFrame. }
   iApply wpc_fupd.
@@ -578,10 +591,10 @@ Proof.
   iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
   iApply (wpc_Inode__Size with "Hinode"); first done.
   iSplit.
-  { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. by iApply "HΦ". }
+  { iLeft in "Hfupd". iLeft in "HΦ". iIntros "!> !> _". by iApply "HΦ". }
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
-  { iSpecialize ("HQc" with "[$]"). iLeft in "HΦ". iModIntro. by iApply "HΦ". }
+  { iSpecialize ("HQc" with "[$]"). iLeft in "HΦ". iIntros "!> !> _". by iApply "HΦ". }
   iIntros "_". iApply "HΦ". done.
 Qed.
 

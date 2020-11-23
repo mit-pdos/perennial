@@ -208,14 +208,14 @@ Section goose.
       <<{ ∀∀ σ, ▷ P σ }>>
         RepBlock__Read #l #primary @ NotStuck; (S k); ⊤
       <<{ ▷ P σ }>>
-      {{{ s, RET (slice_val s); is_block s 1 σ }}}.
+      {{{ s, RET (slice_val s); is_block s 1 σ }}}
+      {{{ True }}}.
   Proof.
     iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
     iNamed "Hrb".
     iNamed "Hro_state".
-    wpc_call.
-    { by iLeft in "Hfupd". }
-    { by iLeft in "Hfupd". }
+    wpc_call; [done..|].
+    iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
     iCache with "Hfupd". (* after we stripped the later, cache proof *)
     { by iLeft in "Hfupd". }
     wpc_pures.
@@ -246,6 +246,7 @@ Section goose.
     iMod (own_disc_fupd_elim with "HP") as "HP".
     iRight in "Hfupd".
     iMod ("Hfupd" with "HP") as "[HP HQ]".
+    iEval (rewrite ->(left_id True bi_wand)%I) in "HQ".
     iMod (fupd_later_to_disc with "HP") as "HP".
     iApply wpc_ncfupd. iModIntro.
     wpc_apply (wpc_Read with "Haddr'").
@@ -290,10 +291,10 @@ Section goose.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iApply (wpc_RepBlock__Read with "Hrb"); first done.
     iSplit.
-    { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. iApply "HΦ". done. }
+    { iLeft in "Hfupd". iLeft in "HΦ". iIntros "!> !> _". iApply "HΦ". done. }
     iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
     iModIntro. iFrame "HP". iSplit.
-    { iLeft in "HΦ". iSpecialize ("HQc" with "[$]"). iModIntro; by iApply "HΦ". }
+    { iLeft in "HΦ". iSpecialize ("HQc" with "[$]"). iIntros "!> !> _"; by iApply "HΦ". }
     iIntros (s) "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
@@ -304,14 +305,14 @@ Section goose.
       <<{ ∀∀ σ, ▷ P σ }>>
         RepBlock__Write #l (slice_val s) @ NotStuck; (S k); ⊤
       <<{ ▷ P b }>>
-      {{{ RET #(); is_block s q b }}}.
+      {{{ RET #(); is_block s q b }}}
+      {{{ True }}}.
   Proof.
     iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
     iNamed "Hrb".
     iNamed "Hro_state".
-    wpc_call.
-    { iLeft in "Hfupd"; auto. }
-    { iLeft in "Hfupd"; auto. }
+    wpc_call; [done..|].
+    iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
     iCache with "Hfupd".
     { iLeft in "Hfupd"; auto. }
     wpc_pures.
@@ -351,6 +352,7 @@ Section goose.
     iRight in "Hfupd".
     iMod (own_disc_fupd_elim with "HP") as "HP".
     iMod ("Hfupd" with "HP") as "[HP HΦ]".
+    iEval (rewrite ->(left_id True bi_wand)%I) in "HΦ".
     iMod (fupd_later_to_disc with "HP") as "HP".
     iModIntro. iSplit.
     { iLeft in "HΦ". iModIntro. eauto 10 with iFrame. }
@@ -398,10 +400,10 @@ Section goose.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iApply (wpc_RepBlock__Write with "[$Hrb $Hb //]"); first done.
     iFrame. iSplit.
-    { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. iApply "HΦ". done. }
+    { iLeft in "Hfupd". iLeft in "HΦ". iIntros "!> !> _". iApply "HΦ". done. }
     iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
     iModIntro. iFrame "HP". iSplit.
-    { iLeft in "HΦ". iSpecialize ("HQc" with "[$]"). iModIntro. iApply "HΦ". iApply "HQc". }
+    { iLeft in "HΦ". iSpecialize ("HQc" with "[$]"). iIntros "!> !> _". iApply "HΦ". iApply "HQc". }
     iIntros "Hblock". iRight in "HΦ". iApply "HΦ". iFrame.
   Qed.
 
@@ -437,7 +439,10 @@ Section goose.
     iApply (wpc_idx_mono 1); first lia.
     wpc_apply (wpc_RepBlock__Read with "Hrblock").
     { lia. }
-    iIntros. iModIntro. iFrame "# ∗".
+    iSplit.
+    { iLeft in "HΦ". iIntros "!> !> _". done. }
+    iIntros "!> * ?". iModIntro. iFrame "# ∗".
+    rewrite left_id.
     iSplit; first iFromCache.
     iIntros. iRight in "HΦ". iApply "HΦ".
     eauto.

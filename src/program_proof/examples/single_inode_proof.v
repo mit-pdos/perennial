@@ -337,7 +337,8 @@ Section goose.
     wpc_loadField.
     wpc_apply (wpc_Inode__Read inodeN (k':=k') with "Hinode").
     { lia. }
-    iIntros (σ mb) "[ -> >HPinode]".
+    iSplit; first by iLeft in "HΦ".
+    iIntros "!>" (σ mb) "[ -> >HPinode]".
     iInv "Hinv" as "Hinner".
     iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
     iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
@@ -351,7 +352,7 @@ Section goose.
     iFrame.
     iSplitR "HΦ HQ"; first by eauto with iFrame.
     iModIntro. iSplit.
-    - crash_case; auto.
+    - by iLeft in "HΦ".
     - iIntros (s) "Hb".
       iApply "HΦ"; iFrame. done.
   Qed.
