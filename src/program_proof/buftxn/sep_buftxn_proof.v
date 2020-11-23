@@ -836,6 +836,14 @@ Section goose_lang.
       iExists _; iFrame.
   Qed.
 
+  Definition while_committing γ γcommit mT :=
+    ( ( "Hγcommit" ∷ ghost_var γcommit (1/2) false ∗
+        "Hold_vals" ∷ [∗ map] a↦v ∈ (mspec.committed <$> mT), durable_mapsto γ a v ) ∨
+      ( "Hγcommit" ∷ ghost_var γcommit (1/2) true ∗
+        "Hnew_vals" ∷ [∗ map] a↦v ∈ (mspec.modified <$> mT), durable_mapsto γ a v ) )%I.
+
+  Definition while_committingN := nroot .@ "while-committing".
+
   Theorem wpc_BufTxn__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} k :
     N ## invariant.walN →
     N ## invN →
@@ -858,14 +866,26 @@ Section goose_lang.
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
 
-    wpc_frame "HΦ Hdurable_frag Hold_vals".
+    iMod (ghost_var_alloc false) as (γcommit) "[Hγcommit Hγcommit_frag]".
+    iApply fupd_wpc.
+    iMod (inv_alloc while_committingN _ (while_committing γ γcommit mT)
+      with "[Hγcommit Hold_vals]") as "#Hwhile".
+    { iModIntro. iLeft. iFrame. }
+    iModIntro.
+
+    wpc_frame "HΦ Hdurable_frag".
     { crash_case.
+      (* XXX question 1: how to open Hwhile?? *)
+      (* XXX question 2: can we cancel this invariant when the function returns,
+          so that we can return ownership of the new durable mapstos? *)
+(*
       iDestruct (is_buftxn_durable_to_old_pred with "[Hold_vals Hdurable_frag]") as "Hold".
       { iExists _. iFrame "∗#". }
       iModIntro. iFrame.
+*)
+      admit.
     }
 
-(*
     (* here things are a little tricky because committing doesn't give us
     [durable_mapsto] but just [ephemeral_val_from] *)
     wp_apply (mspec.wp_BufTxn__CommitWait
@@ -873,7 +893,7 @@ Section goose_lang.
                  ephemeral_val_from γ.(buftxn_async_name) txn_id0 a v) *) _
                 _ _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
-                with "[$Hbuftxn]").
+                with "[$Hbuftxn Hγcommit_frag]").
     { iSplit; [ iAccu | ].
       iDestruct "Htxn_system" as "[Hinv _]".
       iInv "Hinv" as ">Hinner" "Hclo".
@@ -883,6 +903,7 @@ Section goose_lang.
       iFrame "H◯async".
       iIntros "H◯async".
 
+(*
       (* NOTE: we don't use this theorem and instead inline its proof (to some
       extent) since we really need to know what the new map is, to restore
       txn_system_inv. *)
