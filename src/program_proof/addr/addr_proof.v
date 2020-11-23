@@ -686,11 +686,11 @@ Hint Unfold valid_addr : word.
 Hint Unfold addr2flat : word.
 Hint Unfold addr2flat_z : word.
 
-Theorem wp_Addr__Flatid a :
+Theorem wp_Addr__Flatid a stk E :
   {{{
     ⌜ valid_addr a ⌝
   }}}
-    Addr__Flatid (addr2val a)
+    Addr__Flatid (addr2val a) @ stk; E
   {{{
     v, RET #v; ⌜ v = addr2flat a ⌝
   }}}.

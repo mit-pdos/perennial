@@ -121,9 +121,9 @@ Section proof.
     iApply "HΦ". iFrame.
   Qed.
 
-  Lemma try_acquire_spec E lk R :
+  Lemma try_acquire_spec stk E lk R :
     ↑N ⊆ E →
-    {{{ is_lock lk R }}} lock.try_acquire lk @ E
+    {{{ is_lock lk R }}} lock.try_acquire lk @ stk; E
     {{{ b, RET #b; if b is true then locked lk ∗ R else True }}}.
   Proof.
     iIntros (? Φ) "#Hl HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -143,9 +143,9 @@ Section proof.
       eauto with iFrame.
   Qed.
 
-  Lemma acquire_spec' E lk R :
+  Lemma acquire_spec' stk E lk R :
     ↑N ⊆ E →
-    {{{ is_lock lk R }}} lock.acquire lk @ E {{{ RET #(); locked lk ∗ R }}}.
+    {{{ is_lock lk R }}} lock.acquire lk @ stk; E {{{ RET #(); locked lk ∗ R }}}.
   Proof.
     iIntros (? Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_acquire_spec with "Hl"); auto. iIntros ([]).
@@ -157,9 +157,9 @@ Section proof.
     {{{ is_lock lk R }}} lock.acquire lk {{{ RET #(); locked lk ∗ R }}}.
   Proof. eapply acquire_spec'; auto. Qed.
 
-  Lemma release_spec' E lk R :
+  Lemma release_spec' stk E lk R :
     ↑N ⊆ E →
-    {{{ is_lock lk R ∗ locked lk ∗ ▷ R }}} lock.release lk @ E {{{ RET #(); True }}}.
+    {{{ is_lock lk R ∗ locked lk ∗ ▷ R }}} lock.release lk @ stk; E {{{ RET #(); True }}}.
   Proof.
     iIntros (? Φ) "(Hlock & Hlocked & HR) HΦ".
     iDestruct "Hlock" as (l ->) "#Hinv".

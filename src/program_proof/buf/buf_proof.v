@@ -104,11 +104,11 @@ Proof.
     iApply (data_has_obj_to_buf_data with "Hs"); auto.
 Qed.
 
-Theorem wp_buf_loadField_sz bufptr a b :
+Theorem wp_buf_loadField_sz bufptr a b stk E :
   {{{
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf.S "Sz" #bufptr
+    struct.loadF buf.Buf.S "Sz" #bufptr @ stk; E
   {{{
     RET #(bufSz b.(bufKind));
     is_buf bufptr a b
@@ -122,11 +122,11 @@ Proof using.
   iExists _. iFrame. iExists _. iFrame. done.
 Qed.
 
-Theorem wp_buf_loadField_addr bufptr a b :
+Theorem wp_buf_loadField_addr bufptr a b stk E :
   {{{
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf.S "Addr" #bufptr
+    struct.loadF buf.Buf.S "Addr" #bufptr @ stk; E
   {{{
     RET (addr2val a);
     is_buf bufptr a b
@@ -140,11 +140,11 @@ Proof using.
   iExists _; iFrame. iExists _; iFrame. done.
 Qed.
 
-Theorem wp_buf_loadField_dirty bufptr a b :
+Theorem wp_buf_loadField_dirty bufptr a b stk E :
   {{{
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf.S "dirty" #bufptr
+    struct.loadF buf.Buf.S "dirty" #bufptr @ stk ; E
   {{{
     RET #(b.(bufDirty));
     is_buf bufptr a b
@@ -158,11 +158,11 @@ Proof using.
   iExists _; iFrame. iExists _; iFrame. done.
 Qed.
 
-Theorem wp_buf_wd_loadField_sz bufptr a b dataslice :
+Theorem wp_buf_wd_loadField_sz bufptr a b dataslice stk E :
   {{{
     is_buf_without_data bufptr a b dataslice
   }}}
-    struct.loadF buf.Buf.S "Sz" #bufptr
+    struct.loadF buf.Buf.S "Sz" #bufptr @ stk; E
   {{{
     RET #(bufSz b.(bufKind));
     is_buf_without_data bufptr a b dataslice
@@ -175,11 +175,11 @@ Proof using.
   iExists _. iFrame. done.
 Qed.
 
-Theorem wp_buf_wd_loadField_addr bufptr a b dataslice :
+Theorem wp_buf_wd_loadField_addr bufptr a b dataslice stk E :
   {{{
     is_buf_without_data bufptr a b dataslice
   }}}
-    struct.loadF buf.Buf.S "Addr" #bufptr
+    struct.loadF buf.Buf.S "Addr" #bufptr @ stk; E
   {{{
     RET (addr2val a);
     is_buf_without_data bufptr a b dataslice
@@ -192,11 +192,11 @@ Proof using.
   iExists _. iFrame. done.
 Qed.
 
-Theorem wp_buf_wd_loadField_dirty bufptr a b dataslice :
+Theorem wp_buf_wd_loadField_dirty bufptr a b dataslice stk E :
   {{{
     is_buf_without_data bufptr a b dataslice
   }}}
-    struct.loadF buf.Buf.S "dirty" #bufptr
+    struct.loadF buf.Buf.S "dirty" #bufptr @ stk; E
   {{{
     RET #(b.(bufDirty));
     is_buf_without_data bufptr a b dataslice
@@ -218,11 +218,11 @@ Proof.
   iExists _. iFrame.
 Qed.
 
-Theorem wp_buf_loadField_data bufptr a b :
+Theorem wp_buf_loadField_data bufptr a b stk E :
   {{{
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf.S "Data" #bufptr
+    struct.loadF buf.Buf.S "Data" #bufptr @ stk; E
   {{{
     (vslice : Slice.t), RET (slice_val vslice);
     is_buf_data vslice b.(bufData) a ∗
@@ -237,13 +237,13 @@ Proof using.
   iFrame. iExists _; iFrame. done.
 Qed.
 
-Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k') :
+Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k') stk E :
   {{{
     is_buf bufptr a b ∗
     is_buf_data vslice v' a ∗
     ⌜ k' = b.(bufKind) ⌝
   }}}
-    struct.storeF buf.Buf.S "Data" #bufptr (slice_val vslice)
+    struct.storeF buf.Buf.S "Data" #bufptr (slice_val vslice) @ stk; E
   {{{
     RET #();
     is_buf bufptr a (Build_buf k' v' b.(bufDirty))
@@ -260,11 +260,11 @@ Proof using.
   iExists _; iFrame. iExists _; iFrame. intuition subst. done.
 Qed.
 
-Theorem wp_MkBufMap :
+Theorem wp_MkBufMap stk E :
   {{{
     emp
   }}}
-    MkBufMap #()
+    MkBufMap #() @ stk; E
   {{{
     (l : loc), RET #l;
     is_bufmap l ∅
@@ -291,12 +291,12 @@ Opaque zero_val. (* XXX can we avoid this? *)
   done.
 Qed.
 
-Theorem wp_BufMap__Insert l m bl a b :
+Theorem wp_BufMap__Insert l m bl a b stk E :
   {{{
     is_bufmap l m ∗
     is_buf bl a b
   }}}
-    BufMap__Insert #l #bl
+    BufMap__Insert #l #bl @ stk; E
   {{{
     RET #();
     is_bufmap l (<[a := b]> m)
@@ -330,12 +330,12 @@ Proof using.
     iExists _; iFrame. iExists _; iFrame. done.
 Qed.
 
-Theorem wp_BufMap__Del l m a :
+Theorem wp_BufMap__Del l m a stk E :
   {{{
     is_bufmap l m ∗
     ⌜ valid_addr a ⌝
   }}}
-    BufMap__Del #l (addr2val a)
+    BufMap__Del #l (addr2val a) @ stk; E
   {{{
     RET #();
     is_bufmap l (delete a m)
@@ -363,12 +363,12 @@ Proof using.
     rewrite delete_notin; eauto.
 Qed.
 
-Theorem wp_BufMap__Lookup l m a :
+Theorem wp_BufMap__Lookup l m a stk E :
   {{{
     is_bufmap l m ∗
     ⌜ valid_addr a ⌝
   }}}
-    BufMap__Lookup #l (addr2val a)
+    BufMap__Lookup #l (addr2val a) @ stk; E
   {{{
     (bptr : loc), RET #bptr;
     match m !! a with
@@ -414,11 +414,11 @@ Proof using.
     iExists _, _, _. iFrame. done.
 Qed.
 
-Theorem wp_BufMap__DirtyBufs l m :
+Theorem wp_BufMap__DirtyBufs l m stk E1 :
   {{{
     is_bufmap l m
   }}}
-    BufMap__DirtyBufs #l
+    BufMap__DirtyBufs #l @ stk ; E1
   {{{
     (s : Slice.t) (bufptrlist : list loc), RET (slice_val s);
     is_slice s (refT (struct.t Buf.S)) 1 bufptrlist ∗
@@ -586,12 +586,12 @@ Proof.
   eauto.
 Qed.
 
-Theorem wp_MkBuf K a data (bufdata : bufDataT K) :
+Theorem wp_MkBuf K a data (bufdata : bufDataT K) stk E :
   {{{
     is_buf_data data bufdata a ∗
     ⌜ valid_addr a ∧ valid_off K a.(addrOff) ⌝
   }}}
-    MkBuf (addr2val a) #(bufSz K) (slice_val data)
+    MkBuf (addr2val a) #(bufSz K) (slice_val data) @ stk; E
   {{{
     (bufptr : loc), RET #bufptr;
     is_buf bufptr a (Build_buf _ bufdata false)
@@ -618,13 +618,13 @@ Qed.
 
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
-Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) :
+Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) stk E :
   {{{
     slice.is_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
     ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
     ⌜ valid_addr a ⌝
   }}}
-    MkBufLoad (addr2val a) #(bufSz K) (slice_val s)
+    MkBufLoad (addr2val a) #(bufSz K) (slice_val s) @ stk; E
   {{{
     (bufptr : loc), RET #bufptr;
     is_buf bufptr a (Build_buf _ bufdata false)
@@ -1115,10 +1115,10 @@ Proof.
   bit_cases bit; vm_compute; by inversion 1.
 Qed.
 
-Theorem wp_installOneBit (src dst: u8) (bit: u64) :
+Theorem wp_installOneBit (src dst: u8) (bit: u64) stk E :
   int.Z bit < 8 →
   {{{ True }}}
-    installOneBit #src #dst #bit
+    installOneBit #src #dst #bit @ stk; E
   {{{ RET #(install_one_bit src dst (int.nat bit)); True }}}.
 Proof.
   iIntros (Hbit_bounded Φ) "_ HΦ".
@@ -1174,10 +1174,10 @@ Qed.
 Theorem wp_installBit
         (src_s: Slice.t) (src_b: u8) q (* source *)
         (dst_s: Slice.t)  (dst_bs: list u8) (* destination *)
-        (dstoff: u64) (* the offset we're modifying, in bits *) :
+        (dstoff: u64) (* the offset we're modifying, in bits *) stk E :
   (int.Z dstoff < 8 * Z.of_nat (length dst_bs)) →
   {{{ is_slice_small src_s byteT q [src_b] ∗ is_slice_small dst_s byteT 1 dst_bs  }}}
-    installBit (slice_val src_s) (slice_val dst_s) #dstoff
+    installBit (slice_val src_s) (slice_val dst_s) #dstoff @ stk; E
   {{{ RET #();
       let dst_bs' :=
           alter
@@ -1221,13 +1221,13 @@ Theorem wp_installBytes
         (src_s: Slice.t) (src_bs: list u8) q (* source *)
         (dst_s: Slice.t) (dst_bs: list u8) (* destination *)
         (dstoff: u64) (* the offset we're modifying, in bits *)
-        (nbit: u64)   (* the number of bits we're modifying *) :
+        (nbit: u64)   (* the number of bits we're modifying *) stk E :
   int.Z nbit `div` 8 ≤ Z.of_nat (length src_bs) →
   int.Z dstoff `div` 8 + int.Z nbit `div` 8 ≤ Z.of_nat (length dst_bs) →
   {{{ is_slice_small src_s byteT q src_bs ∗
       is_slice_small dst_s byteT 1 dst_bs
   }}}
-    installBytes (slice_val src_s) (slice_val dst_s) #dstoff #nbit
+    installBytes (slice_val src_s) (slice_val dst_s) #dstoff #nbit @ stk; E
   {{{ RET #(); is_slice_small src_s byteT q src_bs ∗
                let src_bs' := take (Z.to_nat $ int.Z nbit `div` 8) src_bs in
                let dst_bs' := list_inserts (Z.to_nat $ int.Z dstoff `div` 8) src_bs' dst_bs in
@@ -1529,12 +1529,12 @@ Proof.
   apply valid_block_off; auto.
 Qed.
 
-Theorem wp_Buf__Install bufptr a b blk_s blk :
+Theorem wp_Buf__Install bufptr a b blk_s blk stk E :
   {{{
     is_buf bufptr a b ∗
     is_block blk_s 1 blk
   }}}
-    Buf__Install #bufptr (slice_val blk_s)
+    Buf__Install #bufptr (slice_val blk_s) @ stk; E
   {{{
     (blk': Block), RET #();
     is_buf bufptr a b ∗
@@ -1647,11 +1647,11 @@ Proof.
     apply is_installed_block_block.
 Qed.
 
-Theorem wp_Buf__SetDirty bufptr a b :
+Theorem wp_Buf__SetDirty bufptr a b stk E :
   {{{
     is_buf bufptr a b
   }}}
-    Buf__SetDirty #bufptr
+    Buf__SetDirty #bufptr @ stk; E
   {{{
     RET #();
     is_buf bufptr a (Build_buf b.(bufKind) b.(bufData) true)
