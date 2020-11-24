@@ -359,7 +359,7 @@ Proof.
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call; [done..|].
   iCache with "Hfupd".
-  { iLeft in "Hfupd". iIntros "!> !>". by iApply "Hfupd". }
+  { crash_case; auto. }
   wpc_pures.
   wpc_bind_seq.
   wpc_frame.
@@ -375,17 +375,14 @@ Proof.
   iEval (rewrite /named) in "HP".
   iMod (fupd_later_to_disc with "HP") as "HP".
 
+  iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
   iCache with "Hfupd Hlockinv HP".
-  { iLeft in "Hfupd". iModIntro. iNext.
-    iSplitL "Hfupd"; first by iApply "Hfupd".
-    iExists _; iFrame. }
+  { iLeft in "Hfupd". iModIntro. eauto with iFrame. }
   wpc_call.
   wpc_bind (_ ≥ _)%E.
   iNamed "Hlockinv".
   iCache with "Hfupd HP Hdurable".
-  { iLeft in "Hfupd". iModIntro. iNext.
-    iSplitL "Hfupd"; first by iApply "Hfupd".
-    iExists _; iFrame. iExists _. iFrame. }
+  { iLeft in "Hfupd". iModIntro. eauto 10 with iFrame. }
   iDestruct (is_inode_durable_size with "Hdurable") as %Hlen1.
   wpc_frame.
   wp_loadField.
@@ -398,9 +395,7 @@ Proof.
   - 
     iApply ncfupd_wpc.
     iSplit.
-    { iLeft in "Hfupd". iModIntro. iModIntro. iNext.
-      iSplitL "Hfupd"; first by iApply "Hfupd".
-      iExists _; iFrame. iExists _. iFrame. }
+    { iLeft in "Hfupd". iIntros "!> !>". eauto 10 with iFrame. }
     iRight in "Hfupd".
     iMod (own_disc_fupd_elim with "HP") as "HP".
 
@@ -410,17 +405,16 @@ Proof.
       lia. }
     iMod (fupd_later_to_disc with "HP") as "HP".
     iApply wpc_fupd. iModIntro.
+    iEval (rewrite ->(left_id True bi_wand)%I) in "HQ".
     wpc_pures.
-    { iLeft in "HQ". iModIntro. iNext.
-      iSplitL "HQ"; first by iApply "HQ".
-      eauto 10 with iFrame. }
+    { iLeft in "HQ". iModIntro. eauto 10 with iFrame. }
     iMod (own_disc_fupd_elim with "HP") as "HP".
     iModIntro.
     iSplitR "HP addrs Haddrs Hdurable"; last first.
     { iNext. iExists _. iFrame. eauto 10 with iFrame. }
     iIntros "His_locked".
-    iSplit; first (iLeft in "HQ"; iIntros "!> !>"; by iApply "HQ"). (* TODO(Ralf): can we avoid this double-proof? *)
-    iCache with "HQ"; first (iLeft in "HQ"; iIntros "!> !>"; by iApply "HQ").
+    iSplit; first by iLeft in "HQ". (* TODO(Ralf): can we avoid this double-proof? *)
+    iCache with "HQ"; first by iLeft in "HQ".
     wpc_pures.
     wpc_frame "HQ".
     wp_loadField.
@@ -442,9 +436,7 @@ Proof.
     wpc_pures.
     iApply ncfupd_wpc.
     iSplit.
-    { iLeft in "Hfupd". iModIntro. iModIntro. iNext.
-      iSplitL "Hfupd"; first by iApply "Hfupd".
-      iExists _; iFrame. iExists _. iFrame. }
+    { iLeft in "Hfupd". do 2 iModIntro. eauto 10 with iFrame. }
     iDestruct (is_inode_durable_read with "Hdurable") as "H"; iNamed "H".
     iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
     destruct Hblock_lookup as [b0 Hlookup2].
@@ -471,8 +463,9 @@ Proof.
     { iMod (own_disc_fupd_elim with "HP"). iModIntro. eauto 10 with iFrame. }
     iModIntro.
     iIntros "His_locked".
-    iSplit; first (iLeft in "HQ"; iIntros "!> !>"; by iApply "HQ"). (* TODO(Ralf): can we avoid this double-proof? *)
-    iCache with "HQ"; first (iLeft in "HQ"; iIntros "!> !>"; by iApply "HQ").
+    iEval (rewrite ->(left_id True bi_wand)%I) in "HQ".
+    iSplit; first by iLeft in "HQ". (* TODO(Ralf): can we avoid this double-proof? *)
+    iCache with "HQ"; first by iLeft in "HQ".
     wpc_frame.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "His_locked"); auto.
@@ -682,7 +675,8 @@ Let Ψ (a: u64) := (∃ b, int.Z a d↦ b)%I.
 (* This does not fit the "atomic triple" pattern because of the possibility to
 return [#false] without actually performing the commit.
 It should be possible to phrase it as a "commit that does not change
-anything". *)
+anything", but that still requires atomic triples with an ∃∃ quantifier
+in the atomic postcondition. *)
 Theorem wpc_Inode__Append {k}
         {l k' P addr}
         (* allocator stuff *)
