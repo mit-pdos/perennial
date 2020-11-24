@@ -395,10 +395,7 @@ Proof.
   iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call.
-  { by iLeft in "Hfupd". }
-  { by iLeft in "Hfupd". }
-  iCache with "Hfupd".
-  { by iLeft in "Hfupd". }
+  iCache with "Hfupd"; first by crash_case.
   wpc_pures.
   wpc_bind_seq.
   wpc_frame.

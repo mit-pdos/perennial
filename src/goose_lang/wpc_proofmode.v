@@ -175,6 +175,7 @@ Ltac crash_case :=
         is_var Φc;
         lazymatch senv with
         | context[Esnoc _ ?H (<disc> ▷ (_ -∗ Φc) ∧ _)%I] => iLeft in H; iModIntro; iApply H
+        | context[Esnoc _ ?H (<disc> ▷ Φc ∧ _)%I] => iLeft in H; iModIntro; iExact H
         end
       end.
 

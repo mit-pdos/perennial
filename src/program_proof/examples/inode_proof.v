@@ -358,8 +358,7 @@ Proof.
   iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call; [done..|].
-  iCache with "Hfupd".
-  { crash_case; auto. }
+  iCache with "Hfupd"; first by crash_case.
   wpc_pures.
   wpc_bind_seq.
   wpc_frame.
@@ -392,8 +391,7 @@ Proof.
   wp_pures.
   iNamed 1.
   wpc_if_destruct.
-  - 
-    iApply ncfupd_wpc.
+  - iApply ncfupd_wpc.
     iSplit.
     { iLeft in "Hfupd". iIntros "!> !>". eauto 10 with iFrame. }
     iRight in "Hfupd".
@@ -446,6 +444,7 @@ Proof.
     iMod (own_disc_fupd_elim with "HP") as "HP".
     iMod ("Hfupd" $! σ with "[$HP]") as "[HP HQ]".
     { iPureIntro; eauto. }
+    iEval (rewrite ->(left_id True bi_wand)%I) in "HQ".
     iMod (fupd_later_to_disc with "HP") as "HP".
     iApply wpc_fupd. iModIntro.
     wpc_apply (wpc_Read with "Hb").
@@ -453,7 +452,6 @@ Proof.
     { iLeft in "HQ". iModIntro. iNext. iIntros "Hda".
       iSpecialize ("Hdata" with "Hda").
       iSpecialize ("Hdurable" with "Hhdr Hdata").
-      iSplitL "HQ"; first by iApply "HQ".
       eauto 10 with iFrame. }
     iIntros "!>" (s) "[Hda Hb]".
     iDestruct (own_discrete_elim with "Hdata") as "Hdata".
@@ -463,7 +461,6 @@ Proof.
     { iMod (own_disc_fupd_elim with "HP"). iModIntro. eauto 10 with iFrame. }
     iModIntro.
     iIntros "His_locked".
-    iEval (rewrite ->(left_id True bi_wand)%I) in "HQ".
     iSplit; first by iLeft in "HQ". (* TODO(Ralf): can we avoid this double-proof? *)
     iCache with "HQ"; first by iLeft in "HQ".
     wpc_frame.
@@ -699,15 +696,12 @@ Theorem wpc_Inode__Append {k}
         ⌜s !! addr' = Some block_reserved⌝ -∗
          ▷ P σ ∗ ▷ Palloc s -∗ |NC={⊤ ∖ ↑allocN}=>
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
-  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
+    WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call.
-  { iLeft in "Hfupd"; auto. }
-  { iLeft in "Hfupd"; auto. }
-  iCache with "Hfupd".
-  { iLeft in "Hfupd"; auto. }
+  iCache with "Hfupd"; first by crash_case.
   wpc_pures.
   wpc_frame_seq.
   wp_apply (wp_Reserve _ _ _ (λ ma, emp)%I with "[$Halloc]"); auto.

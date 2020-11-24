@@ -216,12 +216,11 @@ Section goose.
     iNamed "Hro_state".
     wpc_call; [done..|].
     iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
-    iCache with "Hfupd". (* after we stripped the later, cache proof *)
-    { by iLeft in "Hfupd". }
+    iCache with "Hfupd"; first by crash_case. (* after we stripped the later, cache proof *)
     wpc_pures.
     wpc_frame_seq.
     wp_loadField.
-    wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
+    wp_apply (crash_lock.acquire_spec with "Hlock"); first by auto.
     iIntros "His_locked"; iNamed 1.
     wpc_pures.
     wpc_bind (RepBlock__readAddr _ _); wpc_frame.
@@ -313,12 +312,11 @@ Section goose.
     iNamed "Hro_state".
     wpc_call; [done..|].
     iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
-    iCache with "Hfupd".
-    { iLeft in "Hfupd"; auto. }
+    iCache with "Hfupd"; first by crash_case.
     wpc_pures.
     wpc_frame_seq.
     wp_loadField.
-    wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
+    wp_apply (crash_lock.acquire_spec with "Hlock"); first by auto.
     iIntros "His_locked".
     iNamed 1.
 
@@ -330,8 +328,7 @@ Section goose.
     iNamed "Hlkinv".
     iMod (fupd_later_to_disc with "HP") as "HP".
     iCache with "HP Hprimary Hbackup Hfupd".
-    { iLeft in "Hfupd". iModIntro. iFrame. iNext.
-      eauto 10 with iFrame. }
+    { iLeft in "Hfupd". iModIntro. eauto 10 with iFrame. }
 
     (* call to (lower-case) write, doing the actual writes *)
     wpc_call.
@@ -361,9 +358,9 @@ Section goose.
     { by iLeft in "HΦ". }
 
     wpc_pures.
-    { iLeft in "HΦ". iModIntro. iNext. iFrame. eauto 10 with iFrame. }
+    { iLeft in "HΦ". iModIntro. iNext. eauto 10 with iFrame. }
     iCache with "HΦ Hprimary Hbackup HP".
-    { iLeft in "HΦ". iModIntro. iNext. iFrame. eauto 10 with iFrame. }
+    { iLeft in "HΦ". iModIntro. iNext. eauto 10 with iFrame. }
     wpc_loadField.
     wpc_pures.
     iApply wpc_fupd.
@@ -432,8 +429,7 @@ Section goose.
     (* Here is the use of the cfupd to cancel out the rblock_cinv from crash condition,
        which is important because RepBlock__Read doesn't guarantee rblock_cinv! *)
     iMod "Hcfupd" as "_".
-    iCache with "HΦ".
-    { iLeft in "HΦ". auto. }
+    iCache with "HΦ"; first by iLeft in "HΦ".
     wpc_pures.
     (* Weaken the levels. *)
     iApply (wpc_idx_mono 1); first lia.

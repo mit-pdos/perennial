@@ -400,24 +400,20 @@ Section goose.
     rewrite alloc_free_reserved //.
   Qed.
 
-  (* FIXME: in case of failure, the resources put into "Hfupd" are lost! *)
-  Theorem wpc_SingleInode__Append {k} (Q: iProp Σ) l sz b_s b0 k' :
+  (* See [wpc_Inode__Append] for why this is not using atomic triple notation. *)
+  Theorem wpc_SingleInode__Append {k} l sz b_s b0 k' :
     (S k < k')%nat →
-    {{{ "Hinode" ∷ is_single_inode l sz k' ∗
+    ∀ Φ Φc,
+        "Hinode" ∷ is_single_inode l sz k' ∗
         "Hb" ∷ is_block b_s 1 b0 ∗
-        "Hfupd" ∷ ((∀ σ σ',
+        "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ (Φ #false ∧ ∀ σ σ',
           ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
-         ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ Q))
-    }}}
-      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤
-    {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
-    {{{ True }}}.
+          ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
+      WPC SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
   Proof.
-    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
     wpc_call.
-    { crash_case; auto. }
-    { crash_case; auto. }
-    iCache with "HΦ".
+    iCache with "Hfupd".
     { crash_case; auto. }
     wpc_pures.
     iNamed "Hinode". iNamed "Hro_state".
@@ -428,9 +424,9 @@ Section goose.
     iSplit; [ | iSplit; [ | iSplit ] ].
     - iApply reserve_fupd_Palloc.
     - iApply free_fupd_Palloc.
-    - iLeft in "HΦ". iModIntro. by iApply "HΦ".
+    - iLeft in "Hfupd". done.
     - iSplit.
-      { (* Failure case. *) iApply "HΦ". done. }
+      { (* Failure case. *) iRight in "Hfupd". iLeft in "Hfupd". done. }
       iNext.
       iIntros (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
       iEval (rewrite /Palloc) in "HPalloc"; iNamed.
@@ -455,8 +451,33 @@ Section goose.
       rewrite /Palloc.
       rewrite alloc_used_insert -Heq.
       iFrame.
-      iSplit; first by crash_case.
-      iApply "HΦ". done.
+  Qed.
+
+  (* Note that this spec is a lot weaker than the one above because in case of
+  failure, the resources put into "Hfupd" are lost! *)
+  Theorem wpc_SingleInode__Append_triple {k} (Q: iProp Σ) l sz b_s b0 k' :
+    (S k < k')%nat →
+    {{{ "Hinode" ∷ is_single_inode l sz k' ∗
+        "Hb" ∷ is_block b_s 1 b0 ∗
+        "Hfupd" ∷ ((∀ σ σ',
+          ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
+         ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ Q))
+    }}}
+      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤
+    {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
+    {{{ True }}}.
+  Proof.
+    iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iApply wpc_SingleInode__Append; first done.
+    iFrame. iSplit.
+    { iLeft in "HΦ". iModIntro. iApply "HΦ". done. }
+    iNext. iSplit.
+    { iClear "Hfupd". (* This is where resources are lost. *)
+      iRight in "HΦ". by iApply "HΦ". }
+    iIntros (σ mb) "%Hσ HP". iMod ("Hfupd" with "[//] HP") as "[HP HQ]".
+    iModIntro. iFrame "HP". iSplit.
+    { iLeft in "HΦ". iModIntro. iApply "HΦ". done. }
+    iApply "HΦ". done.
   Qed.
 
 End goose.

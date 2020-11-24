@@ -357,7 +357,6 @@ Proof.
   { iLeft in "Hfupd". iFrame. }
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   wpc_atomic.
-  { iLeft in "Hfupd". iFrame. }
   iRight in "Hfupd".
   iMod "Hfupd" as (b0) "[Hda HQ]".
   wp_apply (wp_WriteOp with "[Hda Hs]").
