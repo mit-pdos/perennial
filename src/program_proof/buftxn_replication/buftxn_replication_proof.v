@@ -98,10 +98,10 @@ Section goose_lang.
     { solve_ndisj. }
     { solve_ndisj. }
     { solve_ndisj. }
-    rewrite (right_id emp%I).
     iNamed "rb_rep".
     iMod ("Hfupd" with "HP") as "[HP HQ]".
-    wp_apply (wp_BufTxn__ReadBuf with "[$Htxn $Ha0]").
+    iNamed "Htxn".
+    wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn_mem $Ha0]").
     { reflexivity. }
     iIntros (dirty bufptr) "[Hbuf Htxn_restore]".
     wp_pures.
@@ -113,11 +113,12 @@ Section goose_lang.
     iDestruct (is_buf_return_data _ _ {| bufKind := KindBlock |} _ (bufBlock _) with "[Hdata $Hbuf]") as "Hbuf".
     { simpl; iFrame. }
     simpl.
-    iMod ("Htxn_restore" with "Hbuf [%]") as "[Htxn Ha0]".
+    iMod ("Htxn_restore" with "Hbuf [%]") as "[Hbuftxn_mem Ha0]".
     { eauto. }
     wp_pures.
     iAssert (rb_rep a0 a1 σ (buftxn_maps_to γtxn)) with "[Ha0 Ha1]" as "rb_rep".
     { iFrame. }
+    iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Htxn".
     wp_apply (wp_BufTxn__CommitWait _ _ (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
     { solve_ndisj. }
     { solve_ndisj. }
@@ -136,6 +137,7 @@ Section goose_lang.
       iApply "HΦ".
       iFrame.
     - iRename "Hpost" into "rb_rep".
+      iDestruct "rb_rep" as "[rb_rep _]".
       wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
       { iNext.
         iExists _, _, _.

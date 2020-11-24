@@ -19,8 +19,7 @@ From Perennial.program_proof Require
      txn.txn_proof
      buftxn.buftxn_proof
      buftxn.sep_buftxn_proof
-     (* TODO: temporarily disabled while it's broken *)
-     (* buftxn_replication.buftxn_replication_proof *)
+     buftxn_replication.buftxn_replication_proof
      simple.simple
      wp_to_wpc.
 From Perennial.program_proof.examples Require
