@@ -300,6 +300,19 @@ Definition validInum: val :=
         then #false
         else #true))).
 
+Definition NFSPROC3_GETATTR_wp: val :=
+  rec: "NFSPROC3_GETATTR_wp" "args" "reply" "inum" "txn" :=
+    let: "ip" := ReadInode "txn" "inum" in
+    struct.storeF nfstypes.GETATTR3resok.S "Obj_attributes" (struct.fieldRef nfstypes.GETATTR3res.S "Resok" "reply") (Inode__MkFattr "ip").
+
+Definition NFSPROC3_GETATTR_internal: val :=
+  rec: "NFSPROC3_GETATTR_internal" "args" "reply" "inum" "txn" :=
+    NFSPROC3_GETATTR_wp "args" "reply" "inum" "txn";;
+    let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+    (if: "ok"
+    then struct.storeF nfstypes.GETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
+    else struct.storeF nfstypes.GETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT).
+
 Definition Nfs__NFSPROC3_GETATTR: val :=
   rec: "Nfs__NFSPROC3_GETATTR" "nfs" "args" :=
     let: "reply" := ref (zero_val (struct.t nfstypes.GETATTR3res.S)) in
@@ -319,14 +332,41 @@ Definition Nfs__NFSPROC3_GETATTR: val :=
         ![struct.t nfstypes.GETATTR3res.S] "reply"
       else
         lockmap.LockMap__Acquire (struct.loadF Nfs.S "l" "nfs") "inum";;
-        let: "ip" := ReadInode "txn" "inum" in
-        struct.storeF nfstypes.GETATTR3resok.S "Obj_attributes" (struct.fieldRef nfstypes.GETATTR3res.S "Resok" "reply") (Inode__MkFattr "ip");;
-        let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
-        (if: "ok"
-        then struct.storeF nfstypes.GETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
-        else struct.storeF nfstypes.GETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT);;
+        NFSPROC3_GETATTR_internal "args" "reply" "inum" "txn";;
         lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
         ![struct.t nfstypes.GETATTR3res.S] "reply")).
+
+Definition NFSPROC3_SETATTR_wp: val :=
+  rec: "NFSPROC3_SETATTR_wp" "args" "reply" "inum" "txn" :=
+    let: "ip" := ReadInode "txn" "inum" in
+    let: "ok" := ref (zero_val boolT) in
+    (if: struct.get nfstypes.Set_size3.S "Set_it" (struct.get nfstypes.Sattr3.S "Size" (struct.get nfstypes.SETATTR3args.S "New_attributes" "args"))
+    then
+      let: "newsize" := struct.get nfstypes.Set_size3.S "Size" (struct.get nfstypes.Sattr3.S "Size" (struct.get nfstypes.SETATTR3args.S "New_attributes" "args")) in
+      (if: struct.loadF Inode.S "Size" "ip" < "newsize"
+      then
+        let: "data" := NewSlice byteT ("newsize" - struct.loadF Inode.S "Size" "ip") in
+        Inode__Write "ip" "txn" (struct.loadF Inode.S "Size" "ip") ("newsize" - struct.loadF Inode.S "Size" "ip") "data";;
+        (if: struct.loadF Inode.S "Size" "ip" ≠ "newsize"
+        then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_NOSPC
+        else "ok" <-[boolT] #true)
+      else
+        struct.storeF Inode.S "Size" "ip" "newsize";;
+        Inode__WriteInode "ip" "txn";;
+        "ok" <-[boolT] #true)
+    else "ok" <-[boolT] #true);;
+    ![boolT] "ok".
+
+Definition NFSPROC3_SETATTR_internal: val :=
+  rec: "NFSPROC3_SETATTR_internal" "args" "reply" "inum" "txn" :=
+    let: "ok1" := NFSPROC3_SETATTR_wp "args" "reply" "inum" "txn" in
+    (if: ~ "ok1"
+    then #()
+    else
+      let: "ok2" := buftxn.BufTxn__CommitWait "txn" #true in
+      (if: "ok2"
+      then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
+      else struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT)).
 
 Definition Nfs__NFSPROC3_SETATTR: val :=
   rec: "Nfs__NFSPROC3_SETATTR" "nfs" "args" :=
@@ -343,33 +383,7 @@ Definition Nfs__NFSPROC3_SETATTR: val :=
       ![struct.t nfstypes.SETATTR3res.S] "reply"
     else
       lockmap.LockMap__Acquire (struct.loadF Nfs.S "l" "nfs") "inum";;
-      let: "ip" := ReadInode "txn" "inum" in
-      (if: struct.get nfstypes.Set_size3.S "Set_it" (struct.get nfstypes.Sattr3.S "Size" (struct.get nfstypes.SETATTR3args.S "New_attributes" "args"))
-      then
-        let: "newsize" := struct.get nfstypes.Set_size3.S "Size" (struct.get nfstypes.Sattr3.S "Size" (struct.get nfstypes.SETATTR3args.S "New_attributes" "args")) in
-        (if: struct.loadF Inode.S "Size" "ip" < "newsize"
-        then
-          let: "data" := NewSlice byteT ("newsize" - struct.loadF Inode.S "Size" "ip") in
-          Inode__Write "ip" "txn" (struct.loadF Inode.S "Size" "ip") ("newsize" - struct.loadF Inode.S "Size" "ip") "data";;
-          (if: struct.loadF Inode.S "Size" "ip" ≠ "newsize"
-          then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_NOSPC
-          else
-            let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
-            (if: "ok"
-            then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
-            else struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT))
-        else
-          struct.storeF Inode.S "Size" "ip" "newsize";;
-          Inode__WriteInode "ip" "txn";;
-          let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
-          (if: "ok"
-          then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
-          else struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT))
-      else
-        let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
-        (if: "ok"
-        then struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3_OK
-        else struct.storeF nfstypes.SETATTR3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT));;
+      NFSPROC3_SETATTR_internal "args" "reply" "inum" "txn";;
       lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
       ![struct.t nfstypes.SETATTR3res.S] "reply").
 
@@ -445,15 +459,29 @@ Definition Nfs__NFSPROC3_READ: val :=
       lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
       ![struct.t nfstypes.READ3res.S] "reply").
 
-Definition Nfs__foo: val :=
-  rec: "Nfs__foo" "nfs" :=
-    Nfs__NFSPROC3_READ "nfs" (struct.mk nfstypes.READ3args.S [
-      "File" ::= struct.mk nfstypes.Nfs_fh3.S [
-        "Data" ::= slice.nil
-      ];
-      "Offset" ::= #0;
-      "Count" ::= #(U32 0)
-    ]).
+Definition NFSPROC3_WRITE_wp: val :=
+  rec: "NFSPROC3_WRITE_wp" "args" "reply" "inum" "txn" :=
+    let: "ip" := ReadInode "txn" "inum" in
+    let: ("count", "writeok") := Inode__Write "ip" "txn" (struct.get nfstypes.WRITE3args.S "Offset" "args") (to_u64 (struct.get nfstypes.WRITE3args.S "Count" "args")) (struct.get nfstypes.WRITE3args.S "Data" "args") in
+    (if: ~ "writeok"
+    then
+      struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT;;
+      #false
+    else
+      struct.storeF nfstypes.WRITE3resok.S "Count" (struct.fieldRef nfstypes.WRITE3res.S "Resok" "reply") (to_u32 "count");;
+      struct.storeF nfstypes.WRITE3resok.S "Committed" (struct.fieldRef nfstypes.WRITE3res.S "Resok" "reply") nfstypes.FILE_SYNC;;
+      #true).
+
+Definition NFSPROC3_WRITE_internal: val :=
+  rec: "NFSPROC3_WRITE_internal" "args" "reply" "inum" "txn" :=
+    let: "ok1" := NFSPROC3_WRITE_wp "args" "reply" "inum" "txn" in
+    (if: ~ "ok1"
+    then #()
+    else
+      let: "ok2" := buftxn.BufTxn__CommitWait "txn" #true in
+      (if: "ok2"
+      then struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3_OK
+      else struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT)).
 
 Definition Nfs__NFSPROC3_WRITE: val :=
   rec: "Nfs__NFSPROC3_WRITE" "nfs" "args" :=
@@ -470,23 +498,9 @@ Definition Nfs__NFSPROC3_WRITE: val :=
       ![struct.t nfstypes.WRITE3res.S] "reply"
     else
       lockmap.LockMap__Acquire (struct.loadF Nfs.S "l" "nfs") "inum";;
-      let: "ip" := ReadInode "txn" "inum" in
-      let: ("count", "writeok") := Inode__Write "ip" "txn" (struct.get nfstypes.WRITE3args.S "Offset" "args") (to_u64 (struct.get nfstypes.WRITE3args.S "Count" "args")) (struct.get nfstypes.WRITE3args.S "Data" "args") in
-      (if: ~ "writeok"
-      then
-        lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
-        struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT;;
-        ![struct.t nfstypes.WRITE3res.S] "reply"
-      else
-        let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
-        (if: "ok"
-        then
-          struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3_OK;;
-          struct.storeF nfstypes.WRITE3resok.S "Count" (struct.fieldRef nfstypes.WRITE3res.S "Resok" "reply") (to_u32 "count");;
-          struct.storeF nfstypes.WRITE3resok.S "Committed" (struct.fieldRef nfstypes.WRITE3res.S "Resok" "reply") nfstypes.FILE_SYNC
-        else struct.storeF nfstypes.WRITE3res.S "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT);;
-        lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
-        ![struct.t nfstypes.WRITE3res.S] "reply")).
+      NFSPROC3_WRITE_internal "args" "reply" "inum" "txn";;
+      lockmap.LockMap__Release (struct.loadF Nfs.S "l" "nfs") "inum";;
+      ![struct.t nfstypes.WRITE3res.S] "reply").
 
 Definition Nfs__NFSPROC3_CREATE: val :=
   rec: "Nfs__NFSPROC3_CREATE" "nfs" "args" :=
