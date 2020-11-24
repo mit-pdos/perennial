@@ -303,33 +303,32 @@ Proof.
   auto.
 Qed.
 
-Lemma wal_heap_gh_crash crash_txn (gh: gmap u64 heap_block) ls :
+Lemma wal_heap_gh_crash (γ: gen_heapG _ _ _) crash_txn (gh: gmap u64 heap_block) ls :
   ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns) →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
                 <| log_state.durable_lb := crash_txn |> in
+  gen_heap_ctx (hG:=γ) ∅ -∗
   ([∗ map] a↦b ∈ gh, wal_heap_inv_addr ls a b) -∗
-  |==> ∃ (γ': gen_heapG u64 heap_block Σ) gh',
+  |==> ∃ gh',
       ⌜dom (gset _) gh' = dom (gset _) gh⌝ ∗
-      gen_heap_ctx (hG:=γ') gh' ∗
+      gen_heap_ctx (hG:=γ) gh' ∗
       (* TODO: something has been lost along the way about how these values
       relate to the old ones; probably the exchanger is the only thing that can
       contain that information *)
-      [∗ map] a↦b ∈ gh', wal_heap_inv_addr ls' a b ∗ mapsto (hG:=γ') a 1 b.
+      [∗ map] a↦b ∈ gh', wal_heap_inv_addr ls' a b ∗ mapsto (hG:=γ) a 1 b.
 Proof using walheapG0.
   intros Hbound.
   cbn zeta.
-  iIntros "#Hinv".
+  iIntros "Hctx #Hinv".
   iInduction gh as [|a b gh] "IH" using map_ind.
-  - iMod (gen_heap_init (∅ : gmap u64 heap_block)) as (γwal_heap_h) "Hgh'".
-    iModIntro.
-    iExists _, ∅.
+  - iModIntro.
+    iExists ∅.
     rewrite dom_empty_L.
     rewrite !big_sepM_empty.
     by iFrame.
   - rewrite big_sepM_insert //.
     iDestruct "Hinv" as "[Ha Hinv]".
-    iMod ("IH" with "[//]") as (γ' gh' Hdom) "[Hctx Hinv']".
-    iExists γ'.
+    iMod ("IH" with "Hinv Hctx") as (gh' Hdom) "[Hctx Hinv']".
     iDestruct (wal_heap_inv_addr_crash _ _ _ crash_txn with "Ha") as (b' Hprefix) "Ha'".
     { lia. }
     assert (gh' !! a = None).
@@ -508,11 +507,11 @@ Proof.
 Qed.
 
 Definition heapspec_init_ghost_state γ  : iProp Σ :=
-  gen_heap_ctx (hG:=γ.(wal_heap_h)) (∅: gmap u64 heap_block) ∗
-  ghost_var γ.(wal_heap_crash_heaps) 1 (Build_async (∅ : gmap u64 Block) []) ∗
-  mnat_own_auth γ.(wal_heap_durable_lb) 1 0%nat ∗
-  ghost_var γ.(wal_heap_txns) 1 (@nil (u64 * list update.t)) ∗
-  mnat_own_auth γ.(wal_heap_installed) 1 0%nat.
+  "wal_heap_h" ∷ gen_heap_ctx (hG:=γ.(wal_heap_h)) (∅: gmap u64 heap_block) ∗
+  "wal_heap_crash_heaps" ∷ ghost_var γ.(wal_heap_crash_heaps) 1 (Build_async (∅ : gmap u64 Block) []) ∗
+  "wal_durable_lb" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 0%nat ∗
+  "wal_heap_txns" ∷ ghost_var γ.(wal_heap_txns) 1 (∅ : disk, @nil (u64 * list update.t)) ∗
+  "wal_heap_installed" ∷ mnat_own_auth γ.(wal_heap_installed) 1 0%nat.
 
 Lemma alloc_heapspec_init_ghost_state γwal_names :
   ⊢ |==> ∃ γ', "%Hwal_names" ∷ ⌜γ'.(wal_heap_walnames) = γwal_names⌝ ∗
@@ -521,12 +520,12 @@ Proof.
   iMod (gen_heap_init (∅: gmap u64 heap_block)) as (wal_heap_h) "?".
   iMod (ghost_var_alloc (Build_async (∅ : gmap u64 Block) _)) as (wal_heap_crash_heaps) "?".
   iMod (mnat_alloc 0) as (wal_heap_durable_lb) "[? _]".
-  iMod (ghost_var_alloc (@nil (u64 * list update.t))) as (wal_heap_txns) "?".
+  iMod (ghost_var_alloc (∅ : disk, @nil (u64 * list update.t))) as (wal_heap_txns) "?".
   iMod (mnat_alloc 0) as (wal_heap_installed) "[? _]".
 
   iModIntro.
   iExists (Build_wal_heap_gnames _ _ _ _ _ _); simpl.
-  rewrite /heapspec_init_ghost_state /=.
+  rewrite /heapspec_init_ghost_state /named /=.
   iFrame.
   eauto.
 Qed.
@@ -605,20 +604,20 @@ Definition heapspec_resources γ γ' ls ls' :=
 
 Opaque list_to_async.
 
-Lemma wal_heap_inv_crash_transform0 γ ls ls' :
+Lemma wal_heap_inv_crash_transform0 γ γ' ls ls' :
   relation.denote log_crash ls ls' () →
   wal_heap_inv γ ls -∗
-  |==> ∃ γ', ⌜γ'.(wal_heap_walnames) = γ.(wal_heap_walnames)⌝ ∗
-             ⌜wal_wf ls'⌝ ∗
-             wal_heap_inv γ' ls' ∗
-             mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
-             mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
-             ghost_var γ.(wal_heap_txns) (1 / 2)
-                       (ls.(log_state.d), ls.(log_state.txns)) ∗
-             crash_heaps_pre_exchange γ γ' ls' ∗
-             is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
-                                     locked_wh_σtxns := ls'.(log_state.txns);
-                                  |}
+  heapspec_init_ghost_state γ' -∗
+  |==> ⌜wal_wf ls'⌝ ∗
+       wal_heap_inv γ' ls' ∗
+       mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
+       mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
+       ghost_var γ.(wal_heap_txns) (1 / 2)
+                 (ls.(log_state.d), ls.(log_state.txns)) ∗
+       crash_heaps_pre_exchange γ γ' ls' ∗
+       is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
+                               locked_wh_σtxns := ls'.(log_state.txns);
+                            |}
 .
 Proof.
   iIntros (Htrans).
@@ -638,30 +637,30 @@ Proof.
     rewrite -> take_length_le by lia.
     auto. }
   simpl.
+  iNamed 1.
   (* TODO: note that this loses the old map, which makes it impossible to use
   those resources to write an exchanger for wal_heap_h mapsto facts in the old
   generation (don't know if those are useful) *)
-  iMod (wal_heap_gh_crash crash_txn with "Hgh") as
-      (γwal_heap_h gh' Hdom) "[Hctx' Hgh'] {Hctx}".
+  iMod (wal_heap_gh_crash _ crash_txn with "wal_heap_h Hgh") as
+      (gh' Hdom) "[Hctx' Hgh'] {Hctx}".
   { destruct Hwf.
     lia. }
-  iMod (ghost_var_alloc (ls.(log_state.d), ls'.(log_state.txns)))
-    as (wal_heap_txns_name) "[Htxns' Htxns2]".
-  iMod (ghost_var_alloc (list_to_async (take (S crash_txn) (possible crash_heaps))))
-    as (wal_heap_crash_heaps_name) "H".
+
+  iMod (ghost_var_update (ls.(log_state.d), ls'.(log_state.txns)) with "wal_heap_txns")
+    as "[Htxns' Htxns2]".
+  iMod (ghost_var_update (list_to_async (take (S crash_txn) (possible crash_heaps)))
+          with "wal_heap_crash_heaps")
+    as "H".
   iEval (rewrite -Qp_quarter_three_quarter) in "H".
   iDestruct (fractional.fractional_split_1 with "H") as "[Hcrash_heaps_own' Hcrash_heaps_own2]".
-  iMod (mnat_alloc crash_txn) as (wal_heap_durable_lb_name) "[Hcrash_heaps_lb' Hcrash_heaps_lb_lb]".
+  iMod (mnat_update_with_lb _ _ crash_txn with "wal_durable_lb") as "[Hcrash_heaps_lb' Hcrash_heaps_lb_lb]"; first lia.
+  iMod (mnat_update_with_lb _ _ ls.(log_state.installed_lb) with "wal_heap_installed")
+    as "{Hinstalled} [Hinstalled #Hinstalled_lb]"; first by lia.
 
   iModIntro.
-  iExists (γ <| wal_heap_h := γwal_heap_h |>
-             <| wal_heap_txns := wal_heap_txns_name |>
-             <| wal_heap_crash_heaps := wal_heap_crash_heaps_name |>
-             <| wal_heap_durable_lb := wal_heap_durable_lb_name |>).
   rewrite /wal_heap_inv /=.
   iFrame (Hwf').
 
-  iSplit; first by auto.
   iFrame.
   iDestruct (wal_heap_inv_crashes_crash _ crash_txn ls ls' with "Hcrash_heaps") as "#Hcrash_heaps'"; auto.
   iDestruct (big_sepM_sep with "Hgh'") as "[#Hinv_addr Hgh']".
@@ -683,16 +682,16 @@ Proof.
   iPureIntro; congruence.
 Qed.
 
-Lemma wal_heap_inv_crash_transform γ ls ls' :
+Lemma wal_heap_inv_crash_transform γ γ' ls ls' :
   relation.denote log_crash ls ls' () →
   wal_heap_inv γ ls -∗
-  |==> ∃ γ', ⌜γ'.(wal_heap_walnames) = γ.(wal_heap_walnames)⌝ ∗
-             wal_heap_inv γ' ls' ∗
-             heapspec_resources γ γ' ls ls'.
+  heapspec_init_ghost_state γ' -∗
+  |==> wal_heap_inv γ' ls' ∗
+       heapspec_resources γ γ' ls ls'.
 Proof.
-  iIntros (Htrans) "Hinv".
-  iMod (wal_heap_inv_crash_transform0 with "Hinv") as (γ' Hnames Hwf') "[Hinv resources]"; eauto.
-  iExists _; iFrame (Hnames) "Hinv".
+  iIntros (Htrans) "Hinv Hinit".
+  iMod (wal_heap_inv_crash_transform0 with "Hinv Hinit") as (Hwf') "[Hinv resources]"; eauto.
+  iFrame "Hinv".
   iModIntro.
   iDestruct "resources" as "(?&?&?&?&?)".
   iFrame.
