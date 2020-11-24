@@ -496,11 +496,6 @@ Section goose_lang.
   Proof.
     iIntros (???) "Hctx HP".
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hm #HP]".
-    { apply conflicting_sep_r.
-      apply conflicting_exists; intros.
-      hnf; intros ????.
-      iIntros "[H1 _] [H2 _]" (->).
-      iApply (ephemeral_val_from_conflict with "H1 H2"). }
     iMod (lift_map_into_txn with "Hctx Hm") as "[Hm Hctx]";
       [ solve_ndisj .. | ].
     iModIntro.
