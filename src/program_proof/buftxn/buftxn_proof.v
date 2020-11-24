@@ -694,10 +694,10 @@ Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : 
   {{{
     is_buftxn buftx mt γUnified dinit anydirty ∗
     PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
-        "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (1/2) σl ∗
+        "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (3/4) σl ∗
         "Hcrashstates_fupd" ∷ (
           let σ := (modified <$> mt) ∪ latest σl in
-          ghost_var γUnified.(txn_crashstates) (1/2) (async_put σ σl)
+          ghost_var γUnified.(txn_crashstates) (3/4) (async_put σ σl)
           ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ))
   }}}
     BufTxn__CommitWait #buftx #wait

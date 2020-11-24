@@ -148,7 +148,7 @@ Section goose_lang.
 
   Definition txn_system_inv γ: iProp Σ :=
     ∃ (σs: async (gmap addr object)),
-      "H◯async" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (1/2) σs ∗
+      "H◯async" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (3/4) σs ∗
       "H●latest" ∷ async_ctx γ.(buftxn_async_name) σs
   .
 
@@ -158,7 +158,7 @@ Section goose_lang.
     "His_txn" ∷ inv invN (is_txn_always γ.(buftxn_txn_names)).
 
   Lemma init_txn_system {E} l_txn γUnified dinit σs :
-    is_txn l_txn γUnified dinit ∗ ghost_var γUnified.(txn_crashstates) (1/2) σs ={E}=∗
+    is_txn l_txn γUnified dinit ∗ ghost_var γUnified.(txn_crashstates) (3/4) σs ={E}=∗
     ∃ γ, ⌜γ.(buftxn_txn_names) = γUnified⌝ ∗
          is_txn_system γ.
   Proof.

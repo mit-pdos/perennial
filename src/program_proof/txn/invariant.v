@@ -20,11 +20,11 @@ Class txnG (Σ: gFunctors) :=
     txn_walheapG :> walheapG Σ;
     txn_logheapG :> log_heapPreG addr {K & bufDataT K} Σ;
     txn_metaheapG :> mapG Σ addr gname;
-    txn_crashstatesG :> ghost_varG Σ (async (gmap addr {K & bufDataT K}));
+    txn_crashstatesG :> ghost_varG Σ (async (gmap addr object));
   }.
 
 Record txn_names {Σ} := {
-  txn_logheap : log_heapG addr {K & bufDataT K} Σ;
+  txn_logheap : log_heapG addr object Σ;
   txn_metaheap : gname;
   txn_walnames : @wal_heap_gnames Σ;
   txn_crashstates : gname;
@@ -40,7 +40,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 Definition lockN : namespace := nroot .@ "txnlock".
 Definition invN : namespace := nroot .@ "txninv".
 
-Definition mapsto_txn (γ : txn_names) (l : addr) (v : {K & bufDataT K}) : iProp Σ :=
+Definition mapsto_txn (γ : txn_names) (l : addr) (v : object) : iProp Σ :=
   ∃ γm,
     "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) l v ∗
     "Hmapsto_meta" ∷ ptsto_mut γ.(txn_metaheap) l 1 γm ∗
@@ -65,7 +65,7 @@ Definition bufDataT_in_block (walblock : Block) blockK (blkno off : u64) (bufDat
   blockK = projT1 bufData.
 
 Definition bufDataTs_in_block (installed : Block) (bs : list Block) (blkno : u64) (blockK : bufDataKind)
-                              (offmap : gmap u64 {K & bufDataT K})
+                              (offmap : gmap u64 object)
                               (metamap : gmap u64 gname) : iProp Σ :=
   ( [∗ map] off ↦ bufData;γm ∈ offmap;metamap,
       ∃ (modifiedSinceInstall : bool),
@@ -80,7 +80,7 @@ Global Instance bufDataTs_in_block_timeless installed bs blkno blockK offmap met
   Timeless (bufDataTs_in_block installed bs blkno blockK offmap metamap) := _.
 
 Definition bufDataTs_in_crashblock (walblock : Block) (blkno : u64) blockK
-                                   (offmap : gmap u64 {K & bufDataT K}) : iProp Σ :=
+                                   (offmap : gmap u64 object) : iProp Σ :=
   (* Very similar to txn_bufDataT_in_block *)
   ( [∗ map] off ↦ bufData ∈ offmap,
       ⌜ bufDataT_in_block walblock blockK blkno off bufData ⌝
@@ -92,7 +92,7 @@ Definition is_txn_state (γ:txn_names)
            (crash_heaps: async (gmap u64 Block)) : iProp Σ :=
   ∃ (metam : gmap addr gname),
     "Hlogheapctx" ∷ log_heap_ctx (hG := γ.(txn_logheap)) logm ∗
-    "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (1/2) logm ∗
+    "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (1/4) logm ∗
     "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 metam ∗
     "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
       ∃ installed bs blockK,
