@@ -2,6 +2,7 @@ From RecordUpdate Require Import RecordSet.
 
 From Perennial.algebra Require Import deletable_heap.
 From Perennial.goose_lang Require Import crash_modality.
+From Perennial.program_logic Require Import atomic.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import single_inode.
 From Perennial.goose_lang.lib Require Import lock.crash_lock.
@@ -311,7 +312,48 @@ Section goose.
     iExists _, _; iFrame.
   Qed.
 
-  Theorem wpc_Read {k} (Q: option Block → iProp Σ) l sz k' (i: u64) :
+  Theorem wpc_Read {k} l sz k' (i: u64) :
+    (S k < k')%nat →
+    ⊢ {{{ "#Hinode" ∷ is_single_inode l sz k' }}}
+      <<{ ∀∀ σ mb, ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ ∗ ▷ P σ }>>
+        SingleInode__Read #l #i @ NotStuck; (S k); ⊤∖↑N
+      <<{ ▷ P σ }>>
+      {{{ (s:Slice.t), RET (slice_val s);
+        match mb with
+        | None => ⌜s = Slice.nil⌝
+        | Some b => is_block s 1 b
+        end }}}
+      {{{ True }}}.
+  Proof.
+    iIntros (? Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
+    wpc_call.
+    { crash_case; auto. }
+    { crash_case; auto. }
+    iCache with "Hfupd".
+    { crash_case; auto. }
+    iNamed "Hinode". iNamed "Hro_state".
+    wpc_pures.
+    wpc_loadField.
+    wpc_apply (wpc_Inode__Read inodeN (k':=k') with "Hinode").
+    { lia. }
+    iSplit; first by iLeft in "Hfupd".
+    iIntros "!>" (σ mb) "[ -> >HPinode]".
+    iInv "Hinv" as "Hinner".
+    iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
+    iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+      last iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
+    { solve_ndisj. }
+    rewrite {2}/s_inode_inv. iNamed "Hsinv".
+    iNamed "HPinode". simpl.
+    iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
+    iMod "HcloseM" as "_".
+    iModIntro.
+    iFrame.
+    iSplitL; last by auto.
+    eauto with iFrame.
+  Qed.
+
+  Theorem wpc_Read_triple {k} (Q: option Block → iProp Σ) l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode l sz k' ∗
         "Hfupd" ∷ (∀ σ mb,
@@ -327,34 +369,13 @@ Section goose.
     {{{ True }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    wpc_call.
-    { crash_case; auto. }
-    { crash_case; auto. }
-    iCache with "HΦ Hfupd".
-    { crash_case; auto. }
-    iNamed "Hinode". iNamed "Hro_state".
-    wpc_pures.
-    wpc_loadField.
-    wpc_apply (wpc_Inode__Read inodeN (k':=k') with "Hinode").
-    { lia. }
-    iSplit; first by iLeft in "HΦ".
-    iIntros "!>" (σ mb) "[ -> >HPinode]".
-    iInv "Hinv" as "Hinner".
-    iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
-    iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
-      last iMod ("Hfupd" with "[% //] HP") as "[HP HQ]".
-    { solve_ndisj. }
-    rewrite {2}/s_inode_inv. iNamed "Hsinv".
-    iNamed "HPinode". simpl.
-    iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
-    iMod "HcloseM" as "_".
-    iModIntro.
-    iFrame.
-    iSplitR "HΦ HQ"; first by eauto with iFrame.
-    iModIntro. iSplit.
-    - by iLeft in "HΦ".
-    - iIntros (s) "Hb".
-      iApply "HΦ"; iFrame. done.
+    iApply (wpc_Read with "Hinode"); first done.
+    iSplit.
+    { iLeft in "HΦ". iModIntro. iApply "HΦ". }
+    iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[//] HP") as "[HP HQ]".
+    iModIntro. iFrame "HP". iSplit.
+    { iLeft in "HΦ". iModIntro. iApply "HΦ". }
+    iIntros (s) "Hblock". iApply "HΦ". iFrame. done.
   Qed.
 
   (* these two fupds are easy to prove universally because the change they make
@@ -379,6 +400,7 @@ Section goose.
     rewrite alloc_free_reserved //.
   Qed.
 
+  (* FIXME: in case of failure, the resources put into "Hfupd" are lost! *)
   Theorem wpc_Append {k} (Q: iProp Σ) l sz b_s b0 k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode l sz k' ∗

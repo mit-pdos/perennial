@@ -15,10 +15,10 @@ Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ s ; k ; E1 <<{ Qa '
   (□ ∀ Φ Φc,
       P -∗
       <disc> ▷ (Qc%I%I -∗ Φc) (* crash condition before lin.point *) ∧
-        ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={⊤}=> Qa ∗
+        ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={E1}=> Qa ∗
           (<disc> ▷ (Qc -∗ Φc) (* crash condition after lin.point *) ∧
            ∀ z1, .. (∀ zn, Q -∗ Φ pat%V) .. )) .. ) -∗
-      WPC e @ s; k; E1 {{ Φ }} {{ Φc }})%I
+      WPC e @ s; k; ⊤ {{ Φ }} {{ Φc }})%I
     (at level 20, x1 closed binder, xn closed binder, z1 closed binder, zn closed binder,
      format "'[hv' {{{  P  } } }  '/'  <<{  ∀∀  x1  ..  xn ,  Pa }>>  '/  ' e  '/' @  s ; k ;  E1  '/' <<{ Qa }>>  '/' {{{  z1  ..  zn ,  RET  pat ;  Q  } } }  '/' {{{  Qc  } } } ']'") : bi_scope.
 
@@ -26,9 +26,9 @@ Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ s ; k ; E1 <<{ Qa '
   (□ ∀ Φ Φc,
       P -∗
       <disc> ▷ (Qc%I%I -∗ Φc) (* crash condition before lin.point *) ∧
-        ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={⊤}=> Qa ∗
+        ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={E1}=> Qa ∗
           (<disc> ▷ (Qc -∗ Φc) (* crash condition after lin.point *) ∧
           (Q -∗ Φ pat%V) )) .. ) -∗
-      WPC e @ s; k; E1 {{ Φ }} {{ Φc }})%I
+      WPC e @ s; k; ⊤ {{ Φ }} {{ Φc }})%I
     (at level 20, x1 closed binder, xn closed binder,
      format "'[hv' {{{  P  } } }  '/'  <<{  ∀∀  x1  ..  xn ,  Pa }>>  '/  ' e  '/' @  s ; k ;  E1  '/' <<{ Qa }>>  '/' {{{  RET  pat ;  Q  } } }  '/' {{{  Qc  } } } ']'") : bi_scope.
