@@ -594,11 +594,9 @@ Proof.
   - by iDestruct (ghost_var_valid_2 with "Hcrash_heaps_old34 Hcrash_heaps_old") as %[Hle ?].
 Qed.
 
-Definition heapspec_resources γ γ' ls ls' :=
+Definition heapspec_resources γ γ' ls' :=
   (
     heapspec_exchanger γ γ' ∗
-    ghost_var γ.(wal_heap_txns) (1 / 2)
-            (ls.(log_state.d), ls.(log_state.txns)) ∗
     (* put into txn's lock invariant *)
     is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
                             locked_wh_σtxns := ls'.(log_state.txns);
@@ -615,8 +613,6 @@ Lemma wal_heap_inv_crash_transform0 γ γ' ls ls' :
        wal_heap_inv γ' ls' ∗
        mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
        mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
-       ghost_var γ.(wal_heap_txns) (1 / 2)
-                 (ls.(log_state.d), ls.(log_state.txns)) ∗
        crash_heaps_pre_exchange γ γ' ls' ∗
        is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
                                locked_wh_σtxns := ls'.(log_state.txns);
@@ -690,13 +686,13 @@ Lemma wal_heap_inv_crash_transform γ γ' ls ls' :
   wal_heap_inv γ ls -∗
   heapspec_init_ghost_state γ' -∗
   |==> wal_heap_inv γ' ls' ∗
-       heapspec_resources γ γ' ls ls'.
+       heapspec_resources γ γ' ls'.
 Proof.
   iIntros (Htrans) "Hinv Hinit".
   iMod (wal_heap_inv_crash_transform0 with "Hinv Hinit") as (Hwf') "[Hinv resources]"; eauto.
   iFrame "Hinv".
   iModIntro.
-  iDestruct "resources" as "(?&?&?&?&?)".
+  iDestruct "resources" as "(?&?&?&?)".
   iFrame.
   iExists _, _; iFrame "%∗".
   apply log_crash_unfold in Htrans as (crash_txn & Hbound & Hls'_eq).
