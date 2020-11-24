@@ -757,8 +757,7 @@ Proof.
   iPoseProof (wpc_strong_crash_frame' with "[$] [$]") as "H"; eauto.
   iApply (wpc_strong_mono' with "H"); auto.
   iSplit; eauto.
-  - by iIntros (?) "($&_)".
-  - by iIntros "!> H !> !>".
+  by iIntros (?) "($&_)".
 Qed.
 
 Lemma wpc_frame_l' s k E1 e Φ Φc R R' :
@@ -952,9 +951,6 @@ Lemma wpc_fupd s k E1 e Φ Φc:
   ( WPC e @ s; k; E1 {{ v, |={E1}=> Φ v }} {{ Φc }}) ⊢ WPC e @ s; k; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "H". iApply (wpc_strong_mono' with "H"); rewrite ?difference_diag_L; auto.
-  iSplit.
-  - eauto.
-  - iModIntro. eauto.
 Qed.
 
 Lemma wpc_ncfupd s k E1 e Φ Φc:
@@ -1643,11 +1639,7 @@ Section proofmode_classes.
   Proof.
     rewrite /Frame=> HR Hdisc HRc.
     iIntros "(HR&Hwpc)".
-    iAssert (R ∧ <disc>  R')%I with "[HR]" as "HR".
-    { iSplit; auto.
-      - rewrite (into_discrete_fupd R). rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
-        eauto.
-    }
+    iAssert (R ∧ <disc>  R')%I with "[HR]" as "HR"; first by auto.
     iPoseProof (wpc_frame_l' with "[$Hwpc HR]") as "Hwpc".
     { iSplit.
       * iApply "HR".
@@ -1669,7 +1661,7 @@ Section proofmode_classes.
     rewrite /Frame=> HR Hdisc HRc.
     iIntros "(HR&Hwpc)".
     iAssert (□?p R ∧ <disc> □?p R')%I with "[HR]" as "HR".
-    { iSplit; auto. destruct p => //=.
+    { iSplit; first by auto. destruct p => //=.
       - rewrite (into_discrete R). iDestruct "HR" as "#HR".
         rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
         iModIntro. iModIntro. rewrite own_discrete_elim; eauto.
@@ -1785,6 +1777,8 @@ Section proofmode_classes.
   Qed.
   *)
 End proofmode_classes.
+
+Hint Extern 1 (environments.envs_entails _ (|C={_}_ _ => _)) => iModIntro : core.
 
 From iris.program_logic Require Import ectx_language.
 

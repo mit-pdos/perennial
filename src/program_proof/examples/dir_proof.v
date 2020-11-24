@@ -1210,10 +1210,7 @@ Section recov.
   Proof using allocG0.
     iIntros (Hsz) "Hstart".
     iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I (λ _, ∃ σ', dir_cinv (int.Z sz) σ' false)%I with "[Hstart] []").
-    { wpc_apply (wpc_Open with "Hstart"); auto. iSplit.
-      * iModIntro. eauto.
-      * eauto.
-    }
+    { wpc_apply (wpc_Open with "Hstart"); auto 10. }
     iModIntro. iIntros (????) "H".
     iDestruct "H" as (σ'') "Hstart".
     iNext. iCrash.
@@ -1222,7 +1219,6 @@ Section recov.
     iMod (dir_cinv_crash_true with "Hstart") as "Hstart".
     wpc_apply (wpc_Open with "Hstart").
     { eauto. }
-    iSplit; eauto.
-    iModIntro; eauto.
+    eauto 10.
   Qed.
 End recov.

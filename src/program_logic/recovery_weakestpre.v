@@ -4,6 +4,9 @@ From iris.base_logic.lib Require Import wsat.
 From iris.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Export crash_lang crash_weakestpre.
 Import uPred.
+
+Set Default Proof Using "Type".
+
 (*** Recovery ***)
 
 Class pbundleG (T: ofeT) (Σ: gFunctors) := {
@@ -108,9 +111,7 @@ Proof.
   { iDestruct "Hc" as "($&_)". }
   iDestruct "Hc" as "(_&Hc)".
   iApply ("IH" $! E1 rec Hi' Hc' t' (λ t v, Φrx Hi' Hc' t v)%I with " [Hc]").
-  { iApply (wpc_strong_mono' with "Hc"); auto. iClear "# ∗".
-    iSplit; auto. iModIntro. auto.
-  }
+  { iApply (wpc_strong_mono' with "Hc"); auto. }
   eauto.
 Qed.
 

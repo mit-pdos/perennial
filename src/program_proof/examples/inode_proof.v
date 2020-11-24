@@ -211,7 +211,7 @@ Proof.
   iAssert (□ (int.Z addr d↦ hdr ∗
               ([∗ list] a;b ∈ addrs;σ.(inode.blocks), int.Z a d↦ b) -∗
               inode_cinv addr σ))%I as "#Hinode".
-  { iIntros "!> (?&?)". eauto 10 with iFrame. }
+  { eauto 10 with iFrame. }
   iDestruct (big_sepL2_length with "Hdata") as %Hblocklen.
   rewrite /Open.
   wpc_pures.
@@ -331,8 +331,7 @@ Proof.
   { iLeft in "HΦ". iModIntro. iNext. by iApply "HΦ". }
   iNamed "Hlockinv".
   wpc_frame "HΦ Hdurable".
-  { crash_case.
-    iExists _; iFrame. }
+  { crash_case. eauto with iFrame. }
   wp_loadField.
   iNamed 1.
   iApply "HΦ".
@@ -376,12 +375,12 @@ Proof.
 
   iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
   iCache with "Hfupd Hlockinv HP".
-  { iLeft in "Hfupd". iModIntro. eauto with iFrame. }
+  { iLeft in "Hfupd". eauto with iFrame. }
   wpc_call.
   wpc_bind (_ ≥ _)%E.
   iNamed "Hlockinv".
   iCache with "Hfupd HP Hdurable".
-  { iLeft in "Hfupd". iModIntro. eauto 10 with iFrame. }
+  { iLeft in "Hfupd". eauto 10 with iFrame. }
   iDestruct (is_inode_durable_size with "Hdurable") as %Hlen1.
   wpc_frame.
   wp_loadField.
@@ -393,7 +392,7 @@ Proof.
   wpc_if_destruct.
   - iApply ncfupd_wpc.
     iSplit.
-    { iLeft in "Hfupd". iIntros "!> !>". eauto 10 with iFrame. }
+    { iLeft in "Hfupd". eauto 12 with iFrame. }
     iRight in "Hfupd".
     iMod (own_disc_fupd_elim with "HP") as "HP".
 
@@ -405,11 +404,11 @@ Proof.
     iApply wpc_fupd. iModIntro.
     iEval (rewrite ->(left_id True bi_wand)%I) in "HQ".
     wpc_pures.
-    { iLeft in "HQ". iModIntro. eauto 10 with iFrame. }
+    { iLeft in "HQ". eauto 12 with iFrame. }
     iMod (own_disc_fupd_elim with "HP") as "HP".
     iModIntro.
     iSplitR "HP addrs Haddrs Hdurable"; last first.
-    { iNext. iExists _. iFrame. eauto 10 with iFrame. }
+    { eauto 10 with iFrame. }
     iIntros "His_locked".
     iSplit; first by iLeft in "HQ". (* TODO(Ralf): can we avoid this double-proof? *)
     iCache with "HQ"; first by iLeft in "HQ".
@@ -434,7 +433,7 @@ Proof.
     wpc_pures.
     iApply ncfupd_wpc.
     iSplit.
-    { iLeft in "Hfupd". do 2 iModIntro. eauto 10 with iFrame. }
+    { iLeft in "Hfupd". eauto 10 with iFrame. }
     iDestruct (is_inode_durable_read with "Hdurable") as "H"; iNamed "H".
     iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
     destruct Hblock_lookup as [b0 Hlookup2].
@@ -458,7 +457,7 @@ Proof.
     iSpecialize ("Hdata" with "Hda").
     iSpecialize ("Hdurable" with "Hhdr Hdata").
     iSplitR "Hdurable addrs Haddrs HP"; last first.
-    { iMod (own_disc_fupd_elim with "HP"). iModIntro. eauto 10 with iFrame. }
+    { iMod (own_disc_fupd_elim with "HP"). eauto 10 with iFrame. }
     iModIntro.
     iIntros "His_locked".
     iSplit; first by iLeft in "HQ". (* TODO(Ralf): can we avoid this double-proof? *)
@@ -527,7 +526,7 @@ Proof.
   iMod (fupd_later_to_disc with "HP") as "HP".
   iApply ncfupd_wpc.
   iSplit.
-  { iLeft in "Hfupd". do 2 iModIntro. iNext. eauto 10 with iFrame. }
+  { iLeft in "Hfupd". eauto 10 with iFrame. }
   iEval (rewrite /named) in "HP".
   iNamed "Hlockinv".
   iNamed "Hlockinv".
@@ -546,14 +545,14 @@ Proof.
   iModIntro.
   iEval (rewrite ->!(left_id True bi_wand)%I) in "HQ".
   iCache with "HQ Hdurable HP".
-  { iLeft in "HQ". iModIntro. eauto 10 with iFrame. }
+  { iLeft in "HQ". eauto 10 with iFrame. }
   iApply wpc_fupd.
   wpc_frame.
   wp_loadField.
   wp_apply wp_slice_len.
   iNamed 1.
   iSplitR "HP addrs Haddrs Hdurable"; last first.
-  { iMod (own_disc_fupd_elim with "HP") as "HP". iModIntro. eauto 10 with iFrame.  }
+  { iMod (own_disc_fupd_elim with "HP") as "HP". eauto 10 with iFrame.  }
   iIntros "!> His_locked".
   iSplit; first by iLeft in "HQ".
   iCache with "HQ"; first by iLeft in "HQ".

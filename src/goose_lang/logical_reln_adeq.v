@@ -94,11 +94,7 @@ Proof.
       { iPureIntro. apply _. }
       { simpl. by rewrite fmap_empty subst_map_empty. }
       rewrite fmap_empty subst_map_empty.
-      iApply (wpc_strong_mono _ _ _ _ _ _ _ _ (λ _, True%I) with "[$]"); eauto.
-      iSplit.
-      - eauto.
-      - simpl. iModIntro; eauto. by iIntros "_ !>".
-    }
+      iApply (wpc_strong_mono _ _ _ _ _ _ _ _ (λ _, True%I) with "[$]"); eauto 10. }
   }
   iApply (wpc_strong_mono with "[$]"); eauto.
   iSplit.

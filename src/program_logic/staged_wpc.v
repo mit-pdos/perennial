@@ -248,7 +248,7 @@ Proof.
   iApply (big_sepL_mono with "Hefs").
   iIntros. iApply (wpc0_strong_mono with "[$]"); eauto.
   { naive_solver lia. }
-  iSplit; first auto. iIntros "!> ?"; eauto. iModIntro; eauto.
+  iSplit; first auto. iIntros "!> ?"; eauto.
 Qed.
 
 Lemma wpc_staged_inv_open' γ s k k' k'' k2 mj E1 E1' e Φ Φc Q Qrest Qnew P :

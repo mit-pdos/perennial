@@ -141,7 +141,7 @@ Section goose.
     { by iLeft in "HΦ". }
     iApply (wpc_idx_mono 1); first by lia.
     iApply (wpc_fork with "[Hcrash]").
-    { iNext. iApply (wpc_consumeEvenBlock with "Hcrash"); eauto. iSplit; try iModIntro; eauto. }
+    { iNext. iApply (wpc_consumeEvenBlock with "Hcrash"); eauto. }
     iSplit.
     { by iLeft in "HΦ". }
     { iNext; by iApply "HΦ". }

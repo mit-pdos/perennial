@@ -697,6 +697,8 @@ Section own_disc_fupd_props.
 
 End own_disc_fupd_props.
 
+Hint Extern 1 (environments.envs_entails _ (<disc> _)) => iModIntro : core.
+
 Section test.
 
   Context `{invG Σ}.

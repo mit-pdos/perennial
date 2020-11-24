@@ -139,10 +139,10 @@ Section goose.
     iIntros (Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iDeexHyp "Hbackup".
     wpc_call.
-    { iNext. eauto with iFrame. }
-    { iNext. eauto with iFrame. }
+    { eauto 10 with iFrame. }
+    { eauto 10 with iFrame. }
     iCache with "Hprimary Hbackup HΦ".
-    { crash_case. iNext. eauto with iFrame. }
+    { crash_case. eauto 10 with iFrame. }
     (* read block content, write it to backup block *)
     wpc_pures.
     wpc_apply (wpc_Read with "Hprimary").
@@ -328,7 +328,7 @@ Section goose.
     iNamed "Hlkinv".
     iMod (fupd_later_to_disc with "HP") as "HP".
     iCache with "HP Hprimary Hbackup Hfupd".
-    { iLeft in "Hfupd". iModIntro. eauto 10 with iFrame. }
+    { iLeft in "Hfupd". eauto 10 with iFrame. }
 
     (* call to (lower-case) write, doing the actual writes *)
     wpc_call.
@@ -352,15 +352,15 @@ Section goose.
     iEval (rewrite ->(left_id True bi_wand)%I) in "HΦ".
     iMod (fupd_later_to_disc with "HP") as "HP".
     iModIntro. iSplit.
-    { iLeft in "HΦ". iModIntro. eauto 10 with iFrame. }
+    { iLeft in "HΦ". eauto 10 with iFrame. }
     iIntros "Hb".
     iCache (<disc> ▷ Φc)%I with "HΦ".
     { by iLeft in "HΦ". }
 
     wpc_pures.
-    { iLeft in "HΦ". iModIntro. iNext. eauto 10 with iFrame. }
+    { iLeft in "HΦ". eauto 10 with iFrame. }
     iCache with "HΦ Hprimary Hbackup HP".
-    { iLeft in "HΦ". iModIntro. iNext. eauto 10 with iFrame. }
+    { iLeft in "HΦ". eauto 10 with iFrame. }
     wpc_loadField.
     wpc_pures.
     iApply wpc_fupd.
@@ -368,8 +368,8 @@ Section goose.
     wpc_apply (wpc_Write' with "[$Hb Hbackup]").
     { iFrame. }
     iSplit; [ | iNext ].
-    { iLeft in "HΦ". iModIntro. iNext. iIntros "[Hbackup|Hbackup]";
-      iFrame; eauto 10 with iFrame.
+    { iLeft in "HΦ". iModIntro. iNext.
+      iIntros "[Hbackup|Hbackup]"; eauto 10 with iFrame.
     }
     iIntros "(Hbackup&Hb)".
     iSplitR "Hprimary Hbackup HP"; last first.
@@ -475,16 +475,14 @@ Section recov.
   Proof.
     iIntros "Hstart".
     iApply (idempotence_wpr _ (S (S O)) ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ)%I with "[Hstart]").
-    { wpc_apply (wpc_Open with "Hstart").
-      iSplit; eauto. iModIntro. eauto.
-    }
+    { wpc_apply (wpc_Open with "Hstart"). eauto 10. }
     iModIntro. iIntros (????) "H".
     iDestruct "H" as (σ'') "Hstart".
     iNext. iCrash.
     iIntros.
     iSplit; first done.
     wpc_apply (wpc_Open with "Hstart").
-    iSplit; try iModIntro; eauto.
+    eauto 10.
   Qed.
 
   Theorem wpr_OpenRead (d_ref: loc) addr σ:
@@ -498,16 +496,14 @@ Section recov.
   Proof using stagedG0.
     iIntros "Hstart".
     iApply (idempotence_wpr _ 2 ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ ∗ True)%I with "[Hstart]").
-    { wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart]").
-      iSplit; try iModIntro; eauto.
-    }
+    { wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart]"). eauto 10. }
     iModIntro. iIntros (????) "H".
     iDestruct "H" as (σ'') "(Hstart&_)".
     iNext. iCrash.
     iIntros (?).
     iSplit; first done.
     wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart] []").
-    iSplit; try iModIntro; eauto.
+    eauto 10.
   Qed.
 End recov.
 
