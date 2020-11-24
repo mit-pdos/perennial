@@ -2465,7 +2465,7 @@ Proof using walheapG0.
 Qed.
 
 Theorem lwh_crash_heaps γ σ crash_heaps lwh :
-  ghost_var γ.(wal_heap_crash_heaps) (1 / 2) crash_heaps -∗
+  ghost_var γ.(wal_heap_crash_heaps) (3 / 4) crash_heaps -∗
   is_locked_walheap γ lwh -∗
   wal_heap_inv γ σ -∗
   ∃ installed_lb durable_lb,
