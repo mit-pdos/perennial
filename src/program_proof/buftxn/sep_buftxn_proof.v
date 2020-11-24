@@ -183,6 +183,15 @@ Section goose_lang.
   Definition modify_token γ (a: addr) : iProp Σ :=
     ∃ obj, txn.invariant.mapsto_txn γ.(buftxn_txn_names) a obj.
 
+  Global Instance modify_token_conflicting γ T :
+    Conflicting (λ (l : addr) (_ : T), modify_token γ l).
+  Proof.
+    iIntros (a0 v0 a1 v1) "H0 H1".
+    iDestruct "H0" as (o0) "H0".
+    iDestruct "H1" as (o1) "H1".
+    iApply (mspec.mapsto_txn_conflicting with "H0 H1").
+  Qed.
+
   (* The basic statement of what is in the logical, committed disk of the
   transaction system.
 

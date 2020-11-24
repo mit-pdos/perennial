@@ -455,6 +455,35 @@ Proof.
   iApply struct_fields_split. iFrame. done.
 Qed.
 
+Lemma is_inode_crash_ro γ fh state state' blk :
+  fh [[γ.(simple_src)]]↦ state' ∗
+  ( is_inode fh state (durable_mapsto γ.(simple_buftxn))
+    ∨ is_inode_enc fh (length state) blk (durable_mapsto γ.(simple_buftxn))
+    ∗ is_inode_data (length state) blk state (durable_mapsto γ.(simple_buftxn)) )
+  -∗ is_inode_crash γ fh.
+Proof.
+  iIntros "[Hfh Hi]".
+  iExists _, _. iFrame.
+  iDestruct "Hi" as "[$|[He Hd]]".
+  iExists _. iFrame.
+Qed.
+
+Lemma is_inode_crash_ro_own γ fh state state' blk :
+  fh [[γ.(simple_src)]]↦ state' ∗
+  ( is_inode fh state (durable_mapsto_own γ.(simple_buftxn))
+    ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γ.(simple_buftxn))
+    ∗ is_inode_data (length state) blk state (durable_mapsto_own γ.(simple_buftxn)) )
+  -∗ is_inode_crash γ fh.
+Proof.
+  iIntros "[Hfh H]".
+  iDestruct (liftable_mono (Φ := λ m, is_inode fh state m
+      ∨ is_inode_enc fh (length state) blk m
+        ∗ is_inode_data (length state) blk state m)%I
+    _ (durable_mapsto γ.(simple_buftxn)) with "H") as "H".
+  { iIntros (??) "[_ $]". }
+  iApply is_inode_crash_ro; iFrame.
+Qed.
+
 Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset : u64) (count : u32) (Q : SimpleNFS.res (bool * SimpleNFS.buf) -> iProp Σ) dinit :
   {{{ is_fs γ nfs dinit ∗
       is_fh fhslice fh ∗
@@ -574,7 +603,6 @@ Proof using Ptimeless.
   wpc_call.
   wpc_bind (NFSPROC3_READ_wp _ _ _ _).
   wpc_frame.
-
   wp_call.
 
   wp_apply (wp_ReadInode with "[$Hbuftxn_mem $Hinode_enc]"); first by intuition eauto.
@@ -620,10 +648,10 @@ Proof using Ptimeless.
   { typeclasses eauto. }
 
   iSplit.
-  { iModIntro. iModIntro. iIntros "H". iDestruct "H" as "[H | H]".
-    { admit. }
-    { admit. }
-  }
+  { iModIntro. iModIntro.
+    iIntros "[[H _]|[H0 H1]]"; iSplit; try done; iApply is_inode_crash_ro; iFrame "Hinode_state".
+    { iLeft; iFrame. }
+    { iRight; iFrame. } }
 
   iModIntro.
   iIntros (ok) "Hcommit".
@@ -663,12 +691,8 @@ Proof using Ptimeless.
     iModIntro.
 
     wpc_frame "Hinode_state Hcommit".
-    { iModIntro. iModIntro. iDestruct "Hcommit" as "[H0 H1]".
-      iSplit; first by done.
-      iExists _, _. iFrame.
-      iExists _.
-      admit.
-    }
+    { iModIntro. iModIntro. iSplit; try done.
+      iApply is_inode_crash_ro_own. iFrame "Hinode_state". iRight. iFrame. }
 
     wp_storeField.
     iNamed 1.
@@ -737,10 +761,7 @@ Transparent nfstypes.READ3res.S.
     wpc_frame "Hinode_state Hcommit".
     { iModIntro. iModIntro. iDestruct "Hcommit" as "[H0 H1]".
       iSplit; first by done.
-      iExists _, _. iFrame.
-      iExists _.
-      admit.
-    }
+      iApply is_inode_crash_ro_own. iFrame "Hinode_state". iLeft; iFrame. }
 
     wp_storeField.
     iNamed 1.
@@ -772,7 +793,7 @@ Transparent nfstypes.READ3res.S.
 
 Unshelve.
   all: eauto.
-Admitted.
+Qed.
 
 Opaque nfstypes.GETATTR3res.S.
 

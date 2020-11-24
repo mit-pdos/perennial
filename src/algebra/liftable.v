@@ -61,9 +61,27 @@ Section liftable.
     all: eauto.
   Qed.
 
+  Theorem liftable_or P Q : Liftable P → Liftable Q → Liftable (fun h => P h ∨ Q h)%I.
+  Proof using BiAffine0 BiPureForall0.
+    unfold Liftable in *.
+    intros LiftableP LiftableQ.
+    iIntros (??) "[H|H]".
+    - iDestruct (LiftableP with "H") as (m) "[Hm #Hi]"; eauto.
+      iExists m. iFrame.
+      iModIntro. iIntros (m') "H". iLeft. iApply "Hi". iFrame.
+    - iDestruct (LiftableQ with "H") as (m) "[Hm #Hi]"; eauto.
+      iExists m. iFrame.
+      iModIntro. iIntros (m') "H". iRight. iApply "Hi". iFrame.
+  Qed.
+
   Global Instance star_liftable `{Liftable P} `{Liftable Q} : Liftable (fun h => P h ∗ Q h)%I.
   Proof using BiAffine0 BiPureForall0.
     apply liftable_sep; auto.
+  Qed.
+
+  Global Instance or_liftable `{Liftable P} `{Liftable Q} : Liftable (fun h => P h ∨ Q h)%I.
+  Proof using BiAffine0 BiPureForall0.
+    apply liftable_or; auto.
   Qed.
 
   Global Instance exists_liftable T Φ :
@@ -139,6 +157,17 @@ Section liftable.
     apply (list_liftable' l 0 Φ) in H.
     simpl in H.
     auto.
+  Qed.
+
+  Theorem liftable_mono `{Liftable Φ} M1 M2 {Hconflict : Conflicting M1} :
+    (∀ a v, M1 a v -∗ M2 a v) ->
+    Φ M1 -∗ Φ M2.
+  Proof.
+    iIntros (HM) "H1".
+    iDestruct (H with "H1") as (m) "[Hm #Hrestore]".
+    iDestruct (big_sepM_mono with "Hm") as "Hm".
+    { iIntros (k x Hkx) "H". iDestruct (HM with "H") as "H". iExact "H". }
+    iApply "Hrestore"; iFrame.
   Qed.
 
 End liftable.
