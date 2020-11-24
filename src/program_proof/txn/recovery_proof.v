@@ -34,9 +34,13 @@ Definition is_txn_durable γ dinit : iProp Σ :=
 
 Definition txn_exchanger (γ γ' : @txn_names Σ) : iProp Σ := True.
 
-Instance is_txn_durable_discretizable γ dinit :
+Global Instance is_txn_always_discretizable γ :
+  Discretizable (is_txn_always γ).
+Proof. apply _. Qed.
+
+Global Instance is_txn_durable_discretizable γ dinit :
   Discretizable (is_txn_durable γ dinit).
-Proof. admit. Admitted.
+Proof. apply _. Qed.
 
 Theorem wpc_MkTxn (d:loc) dinit (γ:txn_names) logm k :
   {{{ is_txn_durable γ dinit ∗ ghost_var γ.(txn_crashstates) (3/4) logm }}}

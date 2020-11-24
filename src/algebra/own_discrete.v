@@ -392,6 +392,16 @@ Section instances_iProp.
     (∀ k x, Discretizable (Φ k x)) → Discretizable ([∗ map] k↦x ∈ m, Φ k x).
   Proof. rewrite big_opM_eq. intros. apply big_sepL_discretizable=> _ [??]; apply _. Qed.
 
+  Global Instance big_sepM2_discretizable `{Countable K} {A B: Type} (Φ: K → A → B → iProp Σ) m1 m2 :
+    (∀ k x y, Discretizable (Φ k x y)) →
+    Discretizable ([∗ map] k↦x;y ∈ m1;m2, Φ k x y).
+  Proof.
+    rewrite big_sepM2_eq. intros.
+    rewrite /big_sepM2_def.
+    rewrite bi.persistent_and_sep.
+    apply _.
+  Qed.
+
   Global Instance big_sepL2_discretizable {A B} (Φ: nat → A → B → iProp Σ) l1 l2 :
     (∀ k x1 x2, Discretizable (Φ k x1 x2)) →
     Discretizable ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2).
