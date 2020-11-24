@@ -75,11 +75,6 @@ Definition is_inode (inum: u64) (state: list u8) (mapsto: addr -> object -> iPro
     "Hinode_enc" ∷ is_inode_enc inum (length state) blk mapsto ∗
     "Hinode_data" ∷ is_inode_data (length state) blk state mapsto.
 
-Definition is_inode_crash γ (inum: u64) : iProp Σ :=
-  ∃ (state_spec state_durable: list u8),
-    "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state_spec ∗
-    "Hinode_disk" ∷ is_inode inum state_durable (durable_mapsto γ.(simple_buftxn)).
-
 Definition is_inode_mem (l: loc) (inum: u64) (len: u64) (blk: u64) : iProp Σ :=
   "Hinum" ∷ l ↦[Inode.S :: "Inum"] #inum ∗
   "Hisize" ∷ l ↦[Inode.S :: "Size"] #len ∗
@@ -181,6 +176,15 @@ Definition is_inode_stable γ (inum: u64) : iProp Σ :=
   ∃ (state: list u8),
     "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state ∗
     "Hinode_disk" ∷ is_inode inum state (durable_mapsto_own γ.(simple_buftxn)).
+
+Definition is_inode_crash γ (inum: u64) : iProp Σ :=
+  ∃ (state: list u8),
+    "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state ∗
+    "Hinode_disk" ∷ is_inode inum state (durable_mapsto γ.(simple_buftxn)).
+
+Definition is_inode_unstable γ (inum: u64) state0 state1 : iProp Σ :=
+  "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state0 ∗
+  "Hinode_disk" ∷ is_inode inum state1 (durable_mapsto γ.(simple_buftxn)).
 
 Definition N := nroot .@ "simplenfs".
 
@@ -455,21 +459,21 @@ Proof.
   iApply struct_fields_split. iFrame. done.
 Qed.
 
-Lemma is_inode_crash_ro γ fh state state' blk :
-  fh [[γ.(simple_src)]]↦ state' ∗
+Lemma is_inode_crash_ro γ fh state blk :
+  fh [[γ.(simple_src)]]↦ state ∗
   ( is_inode fh state (durable_mapsto γ.(simple_buftxn))
     ∨ is_inode_enc fh (length state) blk (durable_mapsto γ.(simple_buftxn))
     ∗ is_inode_data (length state) blk state (durable_mapsto γ.(simple_buftxn)) )
   -∗ is_inode_crash γ fh.
 Proof.
   iIntros "[Hfh Hi]".
-  iExists _, _. iFrame.
+  iExists _. iFrame.
   iDestruct "Hi" as "[$|[He Hd]]".
   iExists _. iFrame.
 Qed.
 
-Lemma is_inode_crash_ro_own γ fh state state' blk :
-  fh [[γ.(simple_src)]]↦ state' ∗
+Lemma is_inode_crash_ro_own γ fh state blk :
+  fh [[γ.(simple_src)]]↦ state ∗
   ( is_inode fh state (durable_mapsto_own γ.(simple_buftxn))
     ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γ.(simple_buftxn))
     ∗ is_inode_data (length state) blk state (durable_mapsto_own γ.(simple_buftxn)) )
@@ -596,7 +600,7 @@ Proof using Ptimeless.
     iModIntro.
     iModIntro.
     iSplit; first done.
-    iExists _, _.
+    iExists _.
     iFrame.
   }
 
@@ -1004,7 +1008,7 @@ Proof using Ptimeless.
     iModIntro.
     iModIntro.
     iSplit; first done.
-    iExists _, _.
+    iExists _.
     iFrame.
   }
 
@@ -1621,7 +1625,7 @@ Proof using Ptimeless.
     iModIntro.
     iModIntro.
     iSplit; first done.
-    iExists _, _.
+    iExists _.
     iFrame.
   }
 
@@ -1693,6 +1697,65 @@ Proof using Ptimeless.
     rewrite (firstn_all2 databuf); last by lia.
     replace (Z.to_nat (length databuf)) with (length databuf) by lia.
 
+  wpc_apply (wpc_strong_mono _ _ _ _ _ _ _ _ _
+    (is_inode_crash γ fh ∨
+     is_inode_unstable γ fh state (take (int.nat offset) state ++
+          databuf ++ drop (int.nat offset + length databuf) state)
+    ) with "[-]").
+  5: iSplit.
+  5: {
+    iIntros (v) "HΦ".
+    iModIntro. iExact "HΦ".
+  }
+  5: {
+    iModIntro. iIntros ">Hpre C".
+    iDestruct "Hpre" as "[Hpre | Hpre]".
+    { iModIntro. iFrame. }
+    iNamed "Hpre".
+
+    (* XXX how to update [Hinode_state] here? *)
+    admit.
+
+    (* To update [Hinode_state], something like this should work: *)
+
+    (*
+      iApply fupd_wpc.
+      iInv "Hsrc" as ">Hopen" "Hclose".
+      iNamed "Hopen".
+      iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh2".
+      iDestruct ("Hfupd" with "[] HP") as "Hfupd".
+      {
+        iPureIntro.
+        simpl.
+        monad_simpl.
+        simpl.
+        rewrite Hsrc_fh2.
+        simpl.
+        econstructor. { econstructor. auto. }
+        instantiate (3 := false).
+        simpl.
+        monad_simpl.
+        econstructor. { econstructor. revert H3. word. }
+        monad_simpl.
+      }
+      iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
+      iMod "Hfupd" as "[HP HQ]".
+      iMod ("Hclose" with "[Hsrcheap HP]").
+      { iModIntro. iExists _. iFrame "∗%#". iSplit.
+        { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom0 H5. }
+        iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
+        iApply (big_sepM_insert_delete with "[$H1]").
+        iPureIntro.
+        rewrite !app_length drop_length.
+        rewrite take_length_le.
+        2: { revert H3. word. }
+        lia.
+      }
+      iModIntro.
+    *)
+  }
+
+  4: {
     wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
     4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
     all: try solve_ndisj.
@@ -1700,9 +1763,10 @@ Proof using Ptimeless.
 
     iSplit.
     { iModIntro. iModIntro.
-      iIntros "[[H _]|[H0 H1]]"; iSplit; try done; iApply is_inode_crash_ro; iFrame "Hinode_state".
-      { iLeft; iFrame. }
-      { iRight; iFrame. } }
+      iIntros "[[H _]|[H0 H1]]".
+      { iLeft. iApply is_inode_crash_ro. iFrame. }
+      { iRight. iFrame. iExists _. iFrame. }
+    }
 
     iModIntro.
     iIntros (ok) "Hcommit".
@@ -1743,8 +1807,8 @@ Proof using Ptimeless.
       iModIntro.
 
       wpc_frame "Hinode_state Hcommit".
-      { iModIntro. iModIntro. iSplit; try done.
-        iApply is_inode_crash_ro_own. iFrame "Hinode_state". iRight. iFrame. }
+      { iModIntro. iModIntro. iLeft.
+        iApply is_inode_crash_ro_own. iFrame. }
 
       wp_storeField.
       iNamed 1.
@@ -1800,8 +1864,8 @@ Proof using Ptimeless.
 
       iDestruct "Hcommit" as "[Hcommit _]".
       wpc_frame "Hinode_state Hcommit".
-      { iModIntro. iModIntro. iSplit; try done.
-        iApply is_inode_crash_ro_own. iFrame "Hinode_state". iLeft; iFrame. }
+      { iModIntro. iModIntro. iLeft.
+        iApply is_inode_crash_ro_own. iFrame. }
 
       wp_storeField.
       iNamed 1.
@@ -1827,6 +1891,11 @@ Proof using Ptimeless.
       iFrame.
       iPureIntro. lia.
     }
+  }
+
+  1: eauto.
+  2: set_solver.
+  1: shelve.
   }
 
   {
