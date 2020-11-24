@@ -1961,7 +1961,7 @@ Proof using Ptimeless.
 Unshelve.
   all: eauto.
   exact tt.
-Qed.
+Admitted.
 
 Lemma is_inode_data_shrink: forall state blk (u: u64) M,
    ¬ (int.Z (length state) < int.Z u)%Z ->
