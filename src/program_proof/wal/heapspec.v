@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordUpdate.
 
-From iris.base_logic.lib Require Import mnat.
+From Perennial.algebra Require Import mnat.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
@@ -551,6 +551,9 @@ Definition heapspec_exchanger γ γ' : iProp Σ :=
     "Hdurable_lb_old" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
     "#Hdurable_lb_lb" ∷ mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
     "Hcrash_heaps_exchange" ∷ (crash_heaps_pre_exchange γ γ' ls' ∨ crash_heaps_post_exchange γ).
+
+Global Instance heapspec_exchanger_discretizable γ γ' : Discretizable (heapspec_exchanger γ γ').
+Proof. apply _. Qed.
 
 Lemma heapspec_exchange_durable_lb γ γ' lb :
   heapspec_exchanger γ γ' -∗

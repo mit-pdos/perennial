@@ -249,7 +249,21 @@ Proof.
   rewrite ?uPred.ownM_unit' ?left_id. eauto.
 Qed.
 
+Lemma own_discrete_or_l P Q :
+  own_discrete P -∗ own_discrete (P ∨ Q).
+Proof.
+  rewrite !own_discrete_eq /own_discrete_def.
+  repeat f_equiv.
+  auto.
+Qed.
 
+Lemma own_discrete_or_r P Q :
+  own_discrete Q -∗ own_discrete (P ∨ Q).
+Proof.
+  rewrite !own_discrete_eq /own_discrete_def.
+  repeat f_equiv.
+  auto.
+Qed.
 
 Global Instance own_discrete_ne : NonExpansive own_discrete.
 Proof. rewrite ?own_discrete_eq. solve_proper. Qed.
@@ -309,6 +323,19 @@ Section instances.
     iPoseProof (HΦ with "[$]") as "Hx".
     iApply (own_discrete_wand with "[] Hx").
     iModIntro. eauto.
+  Qed.
+
+  Global Instance or_discretizable P Q:
+    Discretizable P →
+    Discretizable Q →
+    Discretizable (P ∨ Q).
+  Proof.
+    rewrite /Discretizable.
+    iIntros (HPd HQd) "[HP|HQ]".
+    - iApply own_discrete_or_l.
+      iApply (HPd with "HP").
+    - iApply own_discrete_or_r.
+      iApply (HQd with "HQ").
   Qed.
 
   Global Instance ownM_discretizable (a: M):

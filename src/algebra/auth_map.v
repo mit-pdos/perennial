@@ -60,6 +60,9 @@ Section auth_map.
       ⌜m = fmap fst ro_m⌝ ∗
       own γ (●{q} to_mapUR ro_m).
 
+  Global Instance map_ctx_discretizable γ q m : Discretizable (map_ctx γ q m).
+  Proof. apply _. Qed.
+
   Global Instance map_ctx_fractional γ m : Fractional (λ q, map_ctx γ q m).
   Proof.
     iIntros (q1 q2).
