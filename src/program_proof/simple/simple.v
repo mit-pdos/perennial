@@ -1665,6 +1665,34 @@ Proof using Ptimeless.
 
     iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
+    iApply fupd_wpc.
+    iInv "Hsrc" as ">Hopen" "Hclose".
+    iNamed "Hopen".
+    iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
+    iDestruct (big_sepM_lookup with "Hnooverflow") as %Hnooverflow; eauto.
+    iMod ("Hclose" with "[Hsrcheap HP]").
+    { iModIntro. iExists _. iFrame "∗%#". }
+    iModIntro. iClear "Hnooverflow".
+
+    replace (int.Z (length state)
+              `max` (int.Z offset + int.Z (u32_to_u64 (U32 (length databuf)))))%Z
+      with (length (take (int.nat offset) state ++
+                    databuf ++ drop (int.nat offset + length databuf) state) : Z).
+    2: {
+      rewrite /u32_to_u64. word_cleanup.
+      destruct (decide (int.Z offset + length databuf ≤ length state)%Z).
+      { rewrite Z.max_l; last by lia.
+        rewrite !app_length. rewrite drop_length.
+        rewrite take_length_le; lia. }
+      { rewrite Z.max_r; last by lia.
+        rewrite !app_length. rewrite drop_length.
+        rewrite take_length_le; try lia.
+        revert H3. word. }
+    }
+    rewrite /u32_to_u64. word_cleanup.
+    rewrite (firstn_all2 databuf); last by lia.
+    replace (Z.to_nat (length databuf)) with (length databuf) by lia.
+
     wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
     4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
     all: try solve_ndisj.
@@ -1674,7 +1702,7 @@ Proof using Ptimeless.
     { iModIntro. iModIntro.
       iIntros "[[H _]|[H0 H1]]"; iSplit; try done; iApply is_inode_crash_ro; iFrame "Hinode_state".
       { iLeft; iFrame. }
-      { iRight. admit. } }
+      { iRight; iFrame. } }
 
     iModIntro.
     iIntros (ok) "Hcommit".
@@ -1683,15 +1711,14 @@ Proof using Ptimeless.
       iApply fupd_wpc.
       iInv "Hsrc" as ">Hopen" "Hclose".
       iNamed "Hopen".
-      iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
-      iDestruct (big_sepM_lookup with "Hnooverflow") as %Hnooverflow; eauto.
+      iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh2".
       iDestruct ("Hfupd" with "[] HP") as "Hfupd".
       {
         iPureIntro.
         simpl.
         monad_simpl.
         simpl.
-        rewrite Hsrc_fh.
+        rewrite Hsrc_fh2.
         simpl.
         econstructor. { econstructor. auto. }
         instantiate (3 := false).
@@ -1704,7 +1731,7 @@ Proof using Ptimeless.
       iMod "Hfupd" as "[HP HQ]".
       iMod ("Hclose" with "[Hsrcheap HP]").
       { iModIntro. iExists _. iFrame "∗%#". iSplit.
-        { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom H5. }
+        { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom0 H5. }
         iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
         iApply (big_sepM_insert_delete with "[$H1]").
         iPureIntro.
@@ -1717,7 +1744,7 @@ Proof using Ptimeless.
 
       wpc_frame "Hinode_state Hcommit".
       { iModIntro. iModIntro. iSplit; try done.
-        iApply is_inode_crash_ro_own. iFrame "Hinode_state". iRight. admit. }
+        iApply is_inode_crash_ro_own. iFrame "Hinode_state". iRight. iFrame. }
 
       wp_storeField.
       iNamed 1.
@@ -1727,28 +1754,7 @@ Proof using Ptimeless.
         iModIntro.
         iExists _. iFrame "Hinode_state".
         iDestruct "Hcommit" as "(Hinode_enc & Hinode_data)".
-        iExists _.
-        replace (length
-         (take (int.nat offset) state ++
-          databuf ++ drop (int.nat offset + length databuf) state) : Z)
-          with (int.Z (length state)
-                  `max` (int.Z offset + int.Z (u32_to_u64 (U32 (length databuf)))))%Z.
-        2: {
-          rewrite /u32_to_u64. word_cleanup.
-          destruct (decide (int.Z offset + length databuf ≤ length state)%Z).
-          { rewrite Z.max_l; last by lia.
-            rewrite !app_length. rewrite drop_length.
-            rewrite take_length_le; lia. }
-          { rewrite Z.max_r; last by lia.
-            rewrite !app_length. rewrite drop_length.
-            rewrite take_length_le; try lia.
-            revert H3. word. }
-        }
-        iFrame.
-        rewrite /u32_to_u64. word_cleanup.
-        rewrite (firstn_all2 databuf); last by lia.
-        replace (Z.to_nat (length databuf)) with (length databuf) by lia.
-        iFrame.
+        iExists _. iFrame.
       }
       iIntros "Hcrashlocked".
       iSplit.
@@ -1773,14 +1779,14 @@ Proof using Ptimeless.
       iApply fupd_wpc.
       iInv "Hsrc" as ">Hopen" "Hclose".
       iNamed "Hopen".
-      iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
+      iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh2".
       iDestruct ("Hfupd" with "[] HP") as "Hfupd".
       {
         iPureIntro.
         simpl.
         monad_simpl.
         simpl.
-        rewrite Hsrc_fh.
+        rewrite Hsrc_fh2.
         simpl.
         econstructor. { econstructor. auto. }
         instantiate (3 := true).
@@ -1886,7 +1892,7 @@ Proof using Ptimeless.
 Unshelve.
   all: eauto.
   exact tt.
-Admitted.
+Qed.
 
 Lemma is_inode_data_shrink: forall state blk (u: u64) M,
    ¬ (int.Z (length state) < int.Z u)%Z ->
