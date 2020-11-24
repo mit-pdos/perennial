@@ -165,7 +165,7 @@ Section goose.
     (k' < k)%nat →
     (0 < int.Z sz)%Z →
     {{{ "Hcinv" ∷ s_inode_cinv (int.Z sz) σ0 true }}}
-      Open #d_ref #sz @ NotStuck; S k; ⊤
+      Open #d_ref #sz @ S k; ⊤
     {{{ l, RET #l; pre_s_inode l (int.Z sz) σ0 }}}
     {{{ s_inode_cinv (int.Z sz) σ0 true }}}.
   Proof.
@@ -316,7 +316,7 @@ Section goose.
     (S k < k')%nat →
     ⊢ {{{ "#Hinode" ∷ is_single_inode l sz k' }}}
       <<{ ∀∀ σ mb, ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ ∗ ▷ P σ }>>
-        SingleInode__Read #l #i @ NotStuck; (S k); ⊤∖↑N
+        SingleInode__Read #l #i @ (S k); ⊤∖↑N
       <<{ ▷ P σ }>>
       {{{ (s:Slice.t), RET (slice_val s);
         match mb with
@@ -360,7 +360,7 @@ Section goose.
                       ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
-      SingleInode__Read #l #i @ NotStuck; (S k); ⊤
+      SingleInode__Read #l #i @ (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -409,7 +409,7 @@ Section goose.
         "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ (Φ #false ∧ ∀ σ σ',
           ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
           ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
-      WPC SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
+      WPC SingleInode__Append #l (slice_val b_s) @ (S k); ⊤ {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
     wpc_call.
@@ -463,7 +463,7 @@ Section goose.
           ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
          ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ Q))
     }}}
-      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤
+      SingleInode__Append #l (slice_val b_s) @ (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ True }}}.
   Proof.

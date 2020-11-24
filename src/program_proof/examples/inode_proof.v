@@ -203,7 +203,7 @@ Qed.
 
 Theorem wpc_Open k {d:loc} {addr σ} :
   {{{ inode_cinv addr σ }}}
-    inode.Open #d #addr @ NotStuck; k; ⊤
+    inode.Open #d #addr @ k; ⊤
   {{{ l, RET #l; pre_inode l addr σ }}}
   {{{ inode_cinv addr σ }}}.
 Proof.
@@ -317,7 +317,7 @@ Qed.
 
 Theorem wpc_Inode__UsedBlocks {k } {l σ addr} :
   {{{ pre_inode l addr σ  }}}
-    Inode__UsedBlocks #l @ NotStuck; k; ⊤
+    Inode__UsedBlocks #l @ k; ⊤
   {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
       is_slice s uint64T 1 addrs ∗
       ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
@@ -349,7 +349,7 @@ Theorem wpc_Inode__Read {k} {l k' P addr} {off: u64} :
   (S k < k')%nat →
   ⊢ {{{ "Hinode" ∷ is_inode l (S k') P addr }}}
     <<{ ∀∀ σ mb, ⌜mb = σ.(inode.blocks) !! int.nat off⌝ ∗ ▷ P σ }>>
-      Inode__Read #l #off @ NotStuck; (S k); ⊤
+      Inode__Read #l #off @ S k; ⊤
     <<{ ▷ P σ }>>
     {{{ s, RET (slice_val s); match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end }}}
     {{{ True }}}.
@@ -481,7 +481,7 @@ Theorem wpc_Inode__Read_triple {k} {l k' P addr} {off: u64} Q :
         ⌜σ' = σ ∧ mb = σ.(inode.blocks) !! int.nat off⌝ ∗
         ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q mb)
   }}}
-    Inode__Read #l #off @ NotStuck; (S k); ⊤
+    Inode__Read #l #off @ (S k); ⊤
   {{{ s mb, RET slice_val s;
       (match mb with
        | Some b => is_block s 1 b
@@ -503,7 +503,7 @@ Theorem wpc_Inode__Size {k} {l k' P addr}:
   (S k < k')%nat →
   ⊢ {{{ "Hinode" ∷ is_inode l (S k') P addr }}}
     <<{ ∀∀ σ (sz: u64), ⌜int.nat sz = inode.size σ⌝ ∗ ▷ P σ }>>
-      Inode__Size #l @ NotStuck; (S k); ⊤
+      Inode__Size #l @ S k; ⊤
     <<{ ▷ P σ }>>
     {{{ RET #sz; True }}}
     {{{ True }}}.
@@ -573,7 +573,7 @@ Theorem wpc_Inode__Size_triple {k} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iProp
           ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
           ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q sz))
   }}}
-    Inode__Size #l @ NotStuck; (S k); ⊤
+    Inode__Size #l @ (S k); ⊤
   {{{ sz, RET #sz; Q sz }}}
   {{{ Qc }}}.
 Proof.
@@ -695,7 +695,7 @@ Theorem wpc_Inode__Append {k}
         ⌜s !! addr' = Some block_reserved⌝ -∗
          ▷ P σ ∗ ▷ Palloc s -∗ |NC={⊤ ∖ ↑allocN}=>
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
-    WPC Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
+    WPC Inode__Append #l (slice_val b_s) #alloc_ref @ (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
@@ -942,7 +942,7 @@ Theorem wpc_Inode__Append_triple {k}
          ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN}=∗
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ Q))
   }}}
-    Inode__Append #l (slice_val b_s) #alloc_ref @ NotStuck; (S k); ⊤
+    Inode__Append #l (slice_val b_s) #alloc_ref @ (S k); ⊤
   {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
   {{{ Qc }}}.
 Proof.

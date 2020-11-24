@@ -132,7 +132,7 @@ Section goose.
   backup, going from the crash invariant to the lock invariant. *)
   Theorem wpc_Open {k } (d_ref: loc) addr σ :
     {{{ rblock_cinv addr σ }}}
-      Open #d_ref #addr @ NotStuck; (S k); ⊤
+      Open #d_ref #addr @ (S k); ⊤
     {{{ (l:loc), RET #l; is_pre_rblock l addr σ }}}
     {{{ rblock_cinv addr σ }}}.
   Proof.
@@ -206,7 +206,7 @@ Section goose.
     (S k ≤ k')%nat →
     ⊢ {{{ "Hrb" ∷ is_rblock (S k') l addr }}}
       <<{ ∀∀ σ, ▷ P σ }>>
-        RepBlock__Read #l #primary @ NotStuck; (S k); ⊤
+        RepBlock__Read #l #primary @ (S k); ⊤
       <<{ ▷ P σ }>>
       {{{ s, RET (slice_val s); is_block s 1 σ }}}
       {{{ True }}}.
@@ -283,7 +283,7 @@ Section goose.
         "HQc" ∷ (∀ σ, Q σ -∗ <disc> Qc) ∗ (* crash condition after "linearization point" *)
         "Hfupd" ∷ (<disc> Qc (* crash condition before "linearization point" *) ∧
                    (∀ σ, ▷ P σ ={⊤}=∗ ▷ P σ ∗ Q σ)) }}}
-      RepBlock__Read #l #primary @ NotStuck; (S k); ⊤
+      RepBlock__Read #l #primary @ (S k); ⊤
     {{{ s b, RET (slice_val s); is_block s 1 b ∗ Q b }}}
     {{{ Qc }}}.
   Proof.
@@ -302,7 +302,7 @@ Section goose.
     ⊢ {{{ "Hrb" ∷ is_rblock (S k') l addr ∗
           "Hb" ∷ is_block s q b }}}
       <<{ ∀∀ σ, ▷ P σ }>>
-        RepBlock__Write #l (slice_val s) @ NotStuck; (S k); ⊤
+        RepBlock__Write #l (slice_val s) @ (S k); ⊤
       <<{ ▷ P b }>>
       {{{ RET #(); is_block s q b }}}
       {{{ True }}}.
@@ -390,7 +390,7 @@ Section goose.
         "Hb" ∷ is_block s q b ∗
         "HQc" ∷ (Q -∗ <disc> ▷ Qc) ∗
         "Hfupd" ∷ (<disc> ▷ Qc ∧ (∀ σ, ▷ P σ ={⊤}=∗ ▷ P b ∗ Q)) }}}
-      RepBlock__Write #l (slice_val s) @ NotStuck; (S k); ⊤
+      RepBlock__Write #l (slice_val s) @ (S k); ⊤
     {{{ RET #(); Q ∗ is_block s q b }}}
     {{{ Qc }}}.
   Proof.
@@ -411,7 +411,7 @@ Section goose.
 
   Theorem wpc_OpenRead (d_ref: loc) addr σ:
     {{{ rblock_cinv addr σ ∗ P σ }}}
-      OpenRead d_ref addr @ NotStuck; 2; ⊤
+      OpenRead d_ref addr @ 2; ⊤
     {{{ (x: val), RET x; True }}}
     {{{ ∃ σ, rblock_cinv addr σ ∗ P σ }}}.
   Proof using stagedG0.

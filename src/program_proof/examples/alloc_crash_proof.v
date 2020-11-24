@@ -621,7 +621,7 @@ Theorem wp_Reserve (Q: option u64 → iProp Σ) l dset γ n' E1:
            end⌝ -∗
           ▷ P σ ={E1 ∖ ↑N}=∗ ▷ P σ' ∗ Q ma)
   }}}
-    Allocator__Reserve #l  @ NotStuck; E1
+    Allocator__Reserve #l @ E1
   {{{ a (ok: bool), RET (#a, #ok);
       if ok then Q (Some a) ∗ reserved_block γ (S n') a (Ψ a)
       else Q None }}}.
@@ -735,7 +735,7 @@ Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E
           ▷ P σ ={E1 ∖ ↑N}=∗ ▷ P σ' ∗ Q ma) ∧
       Qc
   }}}
-    Allocator__Reserve #l  @ NotStuck; n; E1
+    Allocator__Reserve #l @ n; E1
   {{{ a (ok: bool), RET (#a, #ok);
       if ok then Q (Some a) ∗ reserved_block γ n' a (Ψ a)
       else Q None }}}
