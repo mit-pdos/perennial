@@ -4,6 +4,9 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 From Perennial.program_proof Require Import wal.circ_proof_crash.
 From Perennial.goose_lang Require Import crash_modality.
+From Perennial.program_proof Require Import wal.logger_proof.
+From Perennial.program_proof Require Import wal.installer_proof.
+
 Open Scope Z.
 
 Section goose_lang.
@@ -623,7 +626,7 @@ Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   is_wal_inv_pre l γ s dinit -∗
   □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
         ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s' ∗ ▷ Pcrash s s') -∗
-  P s -∗
+  ▷ P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
                 (<bdisc> (C -∗ |0={⊤}=> ▷ ∃ s, ⌜wal_post_crash s⌝ ∗
                                          (* NOTE: need to add the ghost state that the logger will need *)
@@ -1251,23 +1254,71 @@ Proof.
   iFrame "Hinstaller".
 Qed.
 
-Theorem wpc_MkLog_recover stk k E1 d γ σ:
-  {{{ is_wal_inner_durable γ σ dinit }}}
-    MkLog #d @ stk; k; E1
-  {{{ σ' γ' l, RET #l;
-      ⌜relation.denote (log_crash) σ σ' tt⌝ ∗
-       is_wal_inv_pre l γ' σ' dinit }}}
-  {{{ ∃ γ', is_wal_inner_durable γ' σ dinit }}}.
-Proof.
-Admitted.
+Definition wal_cfupd_cancel k γ' Prec : iProp Σ :=
+  (<disc> (|C={⊤}_k=>  ∃ s, ⌜wal_post_crash s⌝ ∗
+                                 is_wal_inner_durable γ' s dinit ∗
+                                 wal_resources γ' ∗ Prec s)).
 
-(* XXX: this is not quite correctly stated, there is some condition on E *)
-Theorem is_wal_inv_alloc {k : nat} l γ σ :
-  ▷ P σ -∗
-  is_wal_inv_pre l γ σ dinit ={⊤}=∗
-  is_wal P l γ dinit ∗
-  <disc> |C={⊤}_(S k)=> (∃ σ', is_wal_inner_durable γ σ' dinit ∗ P σ').
+Definition wal_cinv γ γ' Pcrash : iProp Σ :=
+  □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
+                                      ⌜relation.denote log_crash s s' tt⌝ ∗
+                                       is_wal_inner_crash γ s ∗
+                                       wal_ghost_exchange γ γ' ∗
+                                       Pcrash s s')).
+
+Theorem wpc_MkLog_recover k (d: loc) γ σ Prec Pcrash:
+  □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
+        ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s' ∗ ▷ Pcrash s s') -∗
+  {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ ∗ ▷ P σ }}}
+    MkLog #d @ NotStuck; k; ⊤
+  {{{ γ' l, RET #l;
+      is_wal P l γ dinit ∗
+      wal_cfupd_cancel k γ' Prec ∗
+      wal_cinv γ γ' Pcrash
+  }}}
+  {{{ ∃ γ' σ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ (P σ' ∨ Prec σ') }}}.
 Proof.
-Admitted.
+  iIntros "#Hwand".
+  iIntros "!>" (Φ Φc) "(Hdurable&Hres&HP) HΦ".
+  rewrite /MkLog.
+  iMod (fupd_later_to_disc with "HP") as "HP".
+  wpc_pures.
+  { iLeft in "HΦ". iModIntro. iNext. iApply "HΦ". iExists _, _. iFrame. }
+  wpc_bind (mkLog #d).
+  wpc_apply (wpc_mkLog_recover with "[$]").
+  iSplit.
+  { iLeft in "HΦ". iModIntro. iNext. iIntros "(?&?)".
+    iApply "HΦ". iExists _, _. iFrame. }
+  iNext. iIntros (l). iNamed 1.
+  iMod (own_disc_fupd_elim with "HP") as "HP".
+  iMod (wal_crash_obligation_alt with "Hwal_inv_pre Hwand HP") as (γ') "(#His_wal&Hcancel&#Hcinv)".
+  iApply (wpc_crash_frame_wand' with "[-Hcancel] [Hcancel]"); last first.
+  { iModIntro. iIntros "H".
+    iSpecialize ("Hcancel" with "[$]").
+    iMod (fupd_level_le with "Hcancel") as "H"; first lia.
+    iModIntro. iNext. iExact "H".
+  }
+  iApply (wp_wpc_frame').
+  iSplitL "HΦ".
+  { iApply (and_mono with "HΦ"); last done.
+    { iIntros "H1". do 2 iModIntro. iIntros "H2".
+      iDestruct "H2" as (s Hcrash) "(Hinner&Hres&Hrec)".
+      iApply "H1". iExists _, _. iFrame. }
+  }
+  wp_pures. rewrite /Walog__startBackgroundThreads. wp_pures.
+  wp_apply (wp_fork with "[Hlogger]").
+  { iNext. iDestruct "Hlogger" as (?) "(Hro&Hlogger)".
+    iNamed "Hro".
+    wp_loadField.
+    by wp_apply (wp_Walog__logger with "[$]").
+  }
+  wp_pures.
+  wp_apply (wp_fork with "[Hinstaller]").
+  { iNext.
+    by wp_apply (wp_Walog__installer with "[$]").
+  }
+  wp_pures. iIntros "H Hcfupd".
+  iApply "H". iFrame "# ∗".
+Qed.
 
 End goose_lang.
