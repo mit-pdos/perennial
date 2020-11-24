@@ -436,7 +436,7 @@ Section goose.
     { iNamed "Hs_inv". iFrame. }
   Qed.
 
-  Theorem wpc_Read {k} (Q: option Block → iProp Σ) γdur γbuf l sz k' (i: u64) :
+  Theorem wpc_SingleInode__Read {k} (Q: option Block → iProp Σ) γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗ inode_mapsto γbuf blks ∗ Q (blks !! int.nat i)
@@ -489,7 +489,7 @@ Section goose.
   (* If you have the full inode_mapsto (or rather, can get it by a view-shift, then
      you know the exact results of your read, compare with wp_Read_fupd_triple for disk *)
 
-  Theorem wpc_Read1 {k} (Q: option Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
+  Theorem wpc_SingleInode__Read1 {k} (Q: option Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
@@ -504,7 +504,7 @@ Section goose.
     {{{ True }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    wpc_apply (wpc_Read Q with "[$Hinode Hfupd]"); try eassumption.
+    wpc_apply (wpc_SingleInode__Read Q with "[$Hinode Hfupd]"); try eassumption.
     { iIntros (blks) "Hpts". iMod "Hfupd" as (blks') "(Hpts'&Hclo)".
       iDestruct (inode_mapsto_agree with "[$] [$]") as %->.
       iMod ("Hclo" with "[$]"). iFrame. eauto.
@@ -516,7 +516,7 @@ Section goose.
      you know the exact results of your read. One can prove a corresponding thing for if the read
      is out of bounds, saying that you can get either nothing or something (and then a new lb *)
 
-  Theorem wpc_Read2 {k} (Q: Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
+  Theorem wpc_SingleInode__Read2 {k} (Q: Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks b, ⌜ blks !! int.nat i = Some b ⌝ ∧ inode_current_lb γbuf blks
@@ -527,7 +527,7 @@ Section goose.
     {{{ True }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    wpc_apply (wpc_Read (λ mb, match mb with None => False | Some b => Q b end)%I
+    wpc_apply (wpc_SingleInode__Read (λ mb, match mb with None => False | Some b => Q b end)%I
                  with "[$Hinode Hfupd]"); try eassumption.
     { iIntros (blks) "Hpts". iMod "Hfupd" as (blks' b Hlookup') "(Hpts'&Hclo)".
       iDestruct (inode_mapsto_lb_agree with "[$] [$]") as %Hprefix.
@@ -565,7 +565,8 @@ Section goose.
     rewrite alloc_free_reserved //.
   Qed.
 
-  Theorem wpc_Append {k} (Q Qc: iProp Σ) γdur γbuf q l sz b_s b0 k' :
+  (* FIXME: in case of failure, the resources put into "Hfupd" are lost! *)
+  Theorem wpc_SingleInode__Append {k} (Q Qc: iProp Σ) γdur γbuf q l sz b_s b0 k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hb" ∷ is_block b_s q b0 ∗
@@ -618,7 +619,7 @@ Section goose.
       * iApply "HΦ". by iRight in "HQ".
   Qed.
 
-  Theorem wpc_Append1 {k} (Q Qc: iProp Σ) E γdur γbuf q l sz b_s b0 k' :
+  Theorem wpc_SingleInode__Append1 {k} (Q Qc: iProp Σ) E γdur γbuf q l sz b_s b0 k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hb" ∷ is_block b_s q b0 ∗
@@ -630,7 +631,7 @@ Section goose.
     {{{ Qc }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    wpc_apply (wpc_Append Q Qc with "[$Hinode Hfupd $Hb]"); try eassumption.
+    wpc_apply (wpc_SingleInode__Append Q Qc with "[$Hinode Hfupd $Hb]"); try eassumption.
     { iSplit.
       { by iLeft in "Hfupd". }
       iRight in "Hfupd".
@@ -642,7 +643,7 @@ Section goose.
     eauto.
   Qed.
 
-  Theorem wpc_Flush {k} (Q Qc: iProp Σ) γdur γbuf l sz k' :
+  Theorem wpc_SingleInode__Flush {k} (Q Qc: iProp Σ) γdur γbuf l sz k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ={⊤ ∖ ↑N}=∗
@@ -738,7 +739,7 @@ Section goose.
       { eauto. }
   Qed.
 
-  Theorem wpc_Flush1 {k} (Q: iProp Σ) γdur γbuf blks l sz k' :
+  Theorem wpc_SingleInode__Flush1 {k} (Q: iProp Σ) γdur γbuf blks l sz k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hlb" ∷ inode_current_lb γbuf blks
@@ -749,7 +750,7 @@ Section goose.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iDestruct "Hlb" as "#Hlb".
-    wpc_apply (wpc_Flush (inode_durable_lb γdur γbuf blks) True with "[$Hinode Hlb]"); try eassumption.
+    wpc_apply (wpc_SingleInode__Flush (inode_durable_lb γdur γbuf blks) True with "[$Hinode Hlb]"); try eassumption.
     { iSplit.
       * iModIntro; eauto.
       * iIntros (blks') "(Hcurr&Hdur)".
