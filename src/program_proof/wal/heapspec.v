@@ -57,6 +57,8 @@ Record wal_heap_gnames := {
   wal_heap_walnames : wal_names;
 }.
 
+Implicit Types (γ:wal_heap_gnames).
+
 Global Instance wal_heap_gnames_eta : Settable _ :=
   settable! Build_wal_heap_gnames <wal_heap_h; wal_heap_crash_heaps; wal_heap_durable_lb;
                                    wal_heap_txns; wal_heap_installed; wal_heap_walnames>.
@@ -447,7 +449,9 @@ Proof.
         auto.
 Qed.
 
-Instance set_map_inj `{Countable A} `{Countable B} (f: A → B) : Inj eq eq f → Inj (⊆) (⊆) (set_map f : gset A → gset B).
+Instance set_map_inj `{Countable A} `{Countable B} (f: A → B) :
+  Inj eq eq f →
+  Inj (⊆) (⊆) (set_map f : gset A → gset B).
 Proof.
   intros Hinj.
   intros s1 s2 Hsub.
@@ -506,26 +510,75 @@ Qed.
 (* TODO: probably should seal [list_to_async] instead... *)
 Opaque async_take.
 
+Definition heapspec_init_ghost_state γ  : iProp Σ :=
+  gen_heap_ctx (hG:=γ.(wal_heap_h)) (∅: gmap u64 heap_block) ∗
+  ghost_var γ.(wal_heap_crash_heaps) 1 (Build_async (∅ : gmap u64 Block) []) ∗
+  mnat_own_auth γ.(wal_heap_durable_lb) 1 0%nat ∗
+  ghost_var γ.(wal_heap_txns) 1 (@nil (u64 * list update.t)) ∗
+  mnat_own_auth γ.(wal_heap_installed) 1 0%nat.
+
+Lemma alloc_heapspec_init_ghost_state γwal_names :
+  ⊢ |==> ∃ γ', "%Hwal_names" ∷ ⌜γ'.(wal_heap_walnames) = γwal_names⌝ ∗
+               "Hinit" ∷ heapspec_init_ghost_state γ'.
+Proof.
+  iMod (gen_heap_init (∅: gmap u64 heap_block)) as (wal_heap_h) "?".
+  iMod (ghost_var_alloc (Build_async (∅ : gmap u64 Block) _)) as (wal_heap_crash_heaps) "?".
+  iMod (mnat_alloc 0) as (wal_heap_durable_lb) "[? _]".
+  iMod (ghost_var_alloc (@nil (u64 * list update.t))) as (wal_heap_txns) "?".
+  iMod (mnat_alloc 0) as (wal_heap_installed) "[? _]".
+
+  iModIntro.
+  iExists (Build_wal_heap_gnames _ _ _ _ _ _); simpl.
+  rewrite /heapspec_init_ghost_state /=.
+  iFrame.
+  eauto.
+Qed.
+
+Definition heapspec_exchanger γ γ' : iProp Σ :=
+  ∃ ls ls',
+    "%Hlb_mono" ∷ ⌜(ls.(log_state.durable_lb) ≤ ls'.(log_state.durable_lb))%nat⌝ ∗
+    (* old durable_lb for purposes of exchanging lower-bounds in old
+    generation *)
+    "Hdurable_lb_old" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
+    "#Hdurable_lb_lb" ∷ mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
+    "Hcrash_heaps_exchange" ∷ (∃ (crash_heaps: async (gmap u64 Block)),
+        "Hcrash_heaps_old" ∷ ghost_var γ.(wal_heap_crash_heaps) (1/2) crash_heaps ∗
+        let crash_heaps' := async_take (length ls'.(log_state.txns)) crash_heaps in
+        "Hcrash_heaps" ∷ ghost_var γ'.(wal_heap_crash_heaps) (1/2) crash_heaps' ∗
+        ([∗ map] a↦b ∈ latest crash_heaps', ∃ hb,
+          ⌜hb_latest_update hb = b⌝ ∗
+          mapsto (hG:=γ'.(wal_heap_h)) a 1 hb)).
+
+Lemma heapspec_exchange_durable_lb γ γ' lb :
+  heapspec_exchanger γ γ' -∗
+  mnat_own_lb γ.(wal_heap_durable_lb) lb -∗
+  mnat_own_lb γ'.(wal_heap_durable_lb) lb.
+Proof.
+  iNamed 1.
+  iIntros "#Hold_lb_lb".
+  iDestruct (mnat_own_lb_valid with "Hdurable_lb_old [$]") as %[_ Hlb].
+  iApply (mnat_own_lb_le with "Hdurable_lb_lb").
+  lia.
+Qed.
+
+Definition heapspec_resources γ γ' ls ls' :=
+  (
+    heapspec_exchanger γ γ' ∗
+    ghost_var γ.(wal_heap_txns) (1 / 2)
+            (ls.(log_state.d), ls.(log_state.txns)) ∗
+    (* put into txn's lock invariant *)
+    is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
+                            locked_wh_σtxns := ls'.(log_state.txns);
+                        |}
+  )%I.
+
+
 Lemma wal_heap_inv_crash_transform γ ls ls' :
   relation.denote log_crash ls ls' () →
   wal_heap_inv γ ls -∗
   |==> ∃ γ', ⌜γ'.(wal_heap_walnames) = γ.(wal_heap_walnames)⌝ ∗
              wal_heap_inv γ' ls' ∗
-             (* TODO: don't say this so precisely, give an abstract statement *)
-             mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
-             mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
-             ghost_var γ.(wal_heap_txns) (1 / 2)
-                       (ls.(log_state.d), ls.(log_state.txns)) ∗
-            (∃ (crash_heaps: async (gmap u64 Block)),
-                ghost_var γ.(wal_heap_crash_heaps) (1/2) crash_heaps ∗
-                let crash_heaps' := async_take (length ls'.(log_state.txns)) crash_heaps in
-                ghost_var γ'.(wal_heap_crash_heaps) (1 / 2) crash_heaps' ∗
-                ([∗ map] a↦b ∈ latest crash_heaps', ∃ hb,
-                  ⌜hb_latest_update hb = b⌝ ∗
-                  mapsto (hG:=γ'.(wal_heap_h)) a 1 hb)) ∗
-             is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
-                                     locked_wh_σtxns := ls'.(log_state.txns);
-                                  |}
+             heapspec_resources γ γ' ls ls'
 .
 Proof.
   iIntros (Htrans).
