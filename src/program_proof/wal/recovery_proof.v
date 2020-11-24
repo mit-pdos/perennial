@@ -1322,3 +1322,46 @@ Proof.
 Qed.
 
 End goose_lang.
+
+Section stable.
+Context `{!heapG Σ}.
+Context `{!walG Σ}.
+
+Local Instance ghost_var_into_crash {A} `{ghost_varG Σ A} (γ: gname) q (x: A):
+  IntoCrash (ghost_var γ q x) (λ _, ghost_var γ q x).
+Proof.
+  rewrite /IntoCrash. iApply post_crash_nodep.
+Qed.
+
+Instance is_installed_stable γ d txns installed_txn_id diskEnd_txn_id :
+  IntoCrash (is_installed γ d txns installed_txn_id diskEnd_txn_id)
+            (λ _, is_installed γ d txns installed_txn_id diskEnd_txn_id).
+Proof.
+  rewrite /IntoCrash. iNamed 1.
+  iNamed "Howninstalled".
+Admitted.
+
+Instance disk_inv_stable γ s cs dinit:
+  IntoCrash (disk_inv γ s cs dinit) (λ _, disk_inv γ s cs dinit).
+Proof.
+  rewrite /IntoCrash. iNamed 1.
+  iDestruct (post_crash_nodep with "circ.start") as "-#circ.start'".
+  iDestruct (post_crash_nodep with "circ.end") as "-#circ.end'".
+  iDestruct (post_crash_nodep with "Hdurable") as "Hdurable".
+  iDestruct (post_crash_nodep with "Hbasedisk") as "-#Hbasedisk'".
+  iCrash. iExists _, _. iFrame. eauto.
+Qed.
+
+Instance is_wal_inner_durable_stable γ s dinit:
+  IntoCrash (is_wal_inner_durable γ s dinit) (λ _, is_wal_inner_durable γ s dinit).
+Proof.
+  rewrite /IntoCrash. iNamed 1. iNamed "Hdisk".
+  iDestruct (post_crash_nodep with "HnextDiskEnd_inv") as "HnextDiskEnd_inv".
+  iDestruct (post_crash_nodep with "Htxns_ctx") as "Htxns_ctx".
+  iDestruct (post_crash_nodep with "Hwal_linv") as "Hwal_linv".
+  iCrash. iFrame.
+  iSplit; first done.
+  iSplit; first done.
+  iExists _. iFrame.
+Qed.
+End stable.

@@ -365,7 +365,7 @@ Local Instance own_into_crash {A} `{inG Σ A} (γ: gname) (x: A):
 Proof.
   rewrite /IntoCrash. iApply post_crash_nodep.
 Qed.
-Local Instance gost_var_into_crash {A} `{ghost_varG Σ A} (γ: gname) q (x: A):
+Local Instance ghost_var_into_crash {A} `{ghost_varG Σ A} (γ: gname) q (x: A):
   IntoCrash (ghost_var γ q x) (λ _, ghost_var γ q x).
 Proof.
   rewrite /IntoCrash. iApply post_crash_nodep.
