@@ -312,7 +312,7 @@ Section goose.
     iExists _, _; iFrame.
   Qed.
 
-  Theorem wpc_Read {k} l sz k' (i: u64) :
+  Theorem wpc_SingleInode__Read {k} l sz k' (i: u64) :
     (S k < k')%nat →
     ⊢ {{{ "#Hinode" ∷ is_single_inode l sz k' }}}
       <<{ ∀∀ σ mb, ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ ∗ ▷ P σ }>>
@@ -353,7 +353,7 @@ Section goose.
     eauto with iFrame.
   Qed.
 
-  Theorem wpc_Read_triple {k} (Q: option Block → iProp Σ) l sz k' (i: u64) :
+  Theorem wpc_SingleInode__Read_triple {k} (Q: option Block → iProp Σ) l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode l sz k' ∗
         "Hfupd" ∷ (∀ σ mb,
@@ -369,7 +369,7 @@ Section goose.
     {{{ True }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    iApply (wpc_Read with "Hinode"); first done.
+    iApply (wpc_SingleInode__Read with "Hinode"); first done.
     iSplit.
     { iLeft in "HΦ". iModIntro. iApply "HΦ". }
     iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[//] HP") as "[HP HQ]".
@@ -401,7 +401,7 @@ Section goose.
   Qed.
 
   (* FIXME: in case of failure, the resources put into "Hfupd" are lost! *)
-  Theorem wpc_Append {k} (Q: iProp Σ) l sz b_s b0 k' :
+  Theorem wpc_SingleInode__Append {k} (Q: iProp Σ) l sz b_s b0 k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode l sz k' ∗
         "Hb" ∷ is_block b_s 1 b0 ∗

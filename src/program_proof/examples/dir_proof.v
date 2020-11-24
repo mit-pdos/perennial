@@ -869,7 +869,7 @@ Section goose.
     iExists _; iFrame "∗ %".
   Qed.
 
-  Theorem wpc_Read {k} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
+  Theorem wpc_Dir__Read {k} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
     (S k < k')%nat →
     int.nat idx < num_inodes →
     {{{ "#Hdir" ∷ is_dir l sz k' ∗
@@ -928,7 +928,7 @@ Section goose.
     iFrame. done.
   Qed.
 
-  Theorem wpc_Size {k} (Q: u64 → iProp Σ) l sz k' (idx: u64):
+  Theorem wpc_Dir__Size {k} (Q: u64 → iProp Σ) l sz k' (idx: u64):
     (S k < k')%nat →
     int.nat idx < num_inodes →
     {{{ "#Hdir" ∷ is_dir l sz k' ∗
@@ -1062,7 +1062,8 @@ Section goose.
         eauto.
   Qed.
 
-  Theorem wpc_Append {k} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
+  (* FIXME: in case of failure, the resources put into "Hfupd" are lost! *)
+  Theorem wpc_Dir__Append {k} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
     (2 + k < k')%nat →
     int.nat idx < num_inodes →
     {{{ "#Hdir" ∷ is_dir l sz k' ∗
