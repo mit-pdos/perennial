@@ -854,7 +854,7 @@ Section goose_lang.
     {{{ "Hbuftxn" ∷ is_buftxn l γ dinit γtxn P0 ∗
         "HP" ∷ P (buftxn_maps_to γtxn)
     }}}
-      BufTxn__CommitWait #l #true @ NotStuck; k; ⊤
+      BufTxn__CommitWait #l #true @ k; ⊤
     {{{ (ok:bool), RET #ok;
         if ok then
             P (λ a v, durable_mapsto_own γ a v)

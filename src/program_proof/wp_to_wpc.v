@@ -92,7 +92,7 @@ Qed.
 Lemma wpc_spec P Φ Φc γ k :
   is_foo1 N1 P γ ∗
   (<disc> ▷ Φc ∧ (∀ σ, ▷ P σ -∗ |NC={⊤ ∖ ↑ N}=> ▷ P (transition σ) ∗ (<disc> ▷ Φc ∧ Φ (#())))) -∗
-  WPC e @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
+  WPC e @ (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof using stagedG0.
   iIntros "(His_foo&Hfupd)".
   rewrite bi.and_comm.

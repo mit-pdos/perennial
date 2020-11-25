@@ -1115,7 +1115,7 @@ Qed.
 
 Theorem wpc_mkLog_recover k (d : loc) γ σ :
   {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ }}}
-    mkLog #d @ NotStuck; k; ⊤
+    mkLog #d @ k; ⊤
   {{{ l, RET #l;
        "Hwal_inv_pre" ∷ is_wal_inv_pre l γ σ dinit ∗
        "Hlogger" ∷ (∃ (circ_l: loc), "#Hcirc2" ∷ readonly (l ↦[Walog.S :: "circ"] #circ_l) ∗
@@ -1270,7 +1270,7 @@ Theorem wpc_MkLog_recover k (d: loc) γ σ Prec Pcrash:
   □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
         ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s' ∗ ▷ Pcrash s s') -∗
   {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ ∗ ▷ P σ }}}
-    MkLog #d @ NotStuck; k; ⊤
+    MkLog #d @ k; ⊤
   {{{ γ' l, RET #l;
       is_wal P l γ dinit ∗
       wal_cfupd_cancel k γ' Prec ∗

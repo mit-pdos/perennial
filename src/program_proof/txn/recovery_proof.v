@@ -67,7 +67,7 @@ Proof. apply _. Qed.
 
 Theorem wpc_MkTxn (d:loc) dinit (γ:txn_names) logm k :
   {{{ is_txn_durable γ dinit ∗ ghost_var γ.(txn_crashstates) (3/4) logm }}}
-    MkTxn #d @ NotStuck; k; ⊤
+    MkTxn #d @ k; ⊤
   {{{ (l: loc), RET #l; is_txn l γ dinit ∗ ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ a v)
       (* cfupd stuff *) }}}
   {{{ ∃ γ', ⌜ txn_kinds γ' = txn_kinds γ ⌝ ∗ is_txn_durable γ' dinit ∗ txn_exchanger γ γ' }}}.
