@@ -384,16 +384,8 @@ Notation "'WPC' e @ s ; k ; E1 {{ Φ } } {{ Φc } }" := (wpc s k%nat E1 e%E Φ �
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
 Notation "'WPC' e @ k ; E1 {{ Φ } } {{ Φc } }" := (wpc NotStuck k%nat E1 e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
-(*
-Notation "'WPC' e @ E1 ; E2 ? {{ Φ } } {{ Φc } }" := (wpc MaybeStuck E1 E2 e%E Φ Φc)
-  (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
-*)
 Notation "'WPC' e @ k {{ Φ } } {{ Φc } }" := (wpc NotStuck k%nat ⊤ e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
-(*
-Notation "'WPC' e ? {{ Φ } } {{ Φc } }" := (wpc MaybeStuck ⊤ ∅ e%E Φ Φc)
-  (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
-*)
 
 (** Notations with binder.  The indentation for the inner format block is chosen
 such that *if* one has a single-character mask (e.g. [E]), the second line

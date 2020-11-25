@@ -46,7 +46,7 @@ Section goose.
 
   Theorem wpc_consumeEvenBlock_seq {k E1} (d_ref: loc) (addr: u64) :
     {{{ EBlk addr }}}
-      consumeEvenBlock #d_ref #addr @ NotStuck;k; E1
+      consumeEvenBlock #d_ref #addr @ k; E1
     {{{ RET #(); EBlk addr }}}
     {{{ EBlk addr }}}.
   Proof.
@@ -107,7 +107,7 @@ Section goose.
   Theorem wpc_consumeEvenBlock {k k'} (d_ref: loc) (addr: u64):
     (S k ≤ k')%nat →
     {{{ na_crash_inv (S k') (EBlk addr) (EBlk addr) }}}
-      consumeEvenBlock #d_ref #addr @ NotStuck; (S k); ⊤
+      consumeEvenBlock #d_ref #addr @ (S k); ⊤
     {{{ RET #() ; True }}}
     {{{ True }}}.
   Proof.
@@ -126,7 +126,7 @@ Section goose.
 
   Theorem wpc_TransferEvenBlock (d_ref: loc) (addr: u64) :
     {{{ EBlk addr }}}
-      TransferEvenBlock #d_ref #addr @ NotStuck; 2; ⊤
+      TransferEvenBlock #d_ref #addr @ 2; ⊤
     {{{ RET #() ; True }}}
     {{{ EBlk addr }}}.
   Proof using stagedG0.

@@ -231,7 +231,7 @@ Local Hint Resolve wf_clear_buffered : core.
 
 Theorem wpc_Open k {d:loc} {addr σ} :
   {{{ inode_cinv addr σ }}}
-    async_inode.Open #d #addr @ NotStuck; k; ⊤
+    async_inode.Open #d #addr @ k; ⊤
   {{{ l, RET #l; pre_inode l addr (set inode.buffered_blocks (λ _, []) σ) }}}
   {{{ inode_cinv addr σ }}}.
 Proof.
@@ -353,7 +353,7 @@ Qed.
 
 Theorem wpc_Inode__UsedBlocks {k} {l σ addr} :
   {{{ pre_inode l addr σ  }}}
-    Inode__UsedBlocks #l @ NotStuck; k; ⊤
+    Inode__UsedBlocks #l @ k; ⊤
   {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
       is_slice s uint64T 1 addrs ∗
       ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
@@ -390,7 +390,7 @@ Theorem wpc_Inode__Read {k} {l k' P addr} {off: u64} :
         ⌜mb = (σ.(inode.durable_blocks) ++ σ.(inode.buffered_blocks)) !! int.nat off⌝ ∗
         ▷ P σ -∗ |NC={⊤}=> ▷ P σ ∗ (<disc> ▷ Φc ∧ ∀ s,
           match mb with Some b => (∃ q, is_block s q b) | None => ⌜s = Slice.nil⌝ end -∗ Φ (slice_val s))) -∗
-    WPC Inode__Read #l #off @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
+    WPC Inode__Read #l #off @ (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
@@ -593,7 +593,7 @@ Theorem wpc_Inode__Read_triple {k} {l k' P addr} {off: u64} Q :
         ⌜σ' = σ ∧ mb = (σ.(inode.durable_blocks) ++ σ.(inode.buffered_blocks)) !! int.nat off⌝ ∗
         ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q mb)
   }}}
-    Inode__Read #l #off @ NotStuck; (S k); ⊤
+    Inode__Read #l #off @ (S k); ⊤
   {{{ s mb, RET slice_val s;
       (match mb with
        | Some b => ∃ q, is_block s q b
@@ -619,7 +619,7 @@ Theorem wpc_Inode__Size {k} {l k' P addr}:
       "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ (∀ σ (sz: u64),
           ⌜int.nat sz = inode.size σ⌝ ∗
           ▷ P σ -∗ |NC={⊤}=> ▷ P σ ∗ (<disc> ▷ Φc ∧ Φ (#sz: val)))) -∗
-    WPC Inode__Size #l @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
+    WPC Inode__Size #l @ (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
@@ -694,7 +694,7 @@ Theorem wpc_Inode__Size_triple {k} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iProp
           ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
           ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q sz))
   }}}
-    Inode__Size #l @ NotStuck; (S k); ⊤
+    Inode__Size #l @ (S k); ⊤
   {{{ sz, RET #sz; Q sz }}}
   {{{ Qc }}}.
 Proof.
@@ -810,7 +810,7 @@ Theorem wpc_Inode__Append {k} {l k' P addr} q (b_s: Slice.t) (b0: Block) :
         ⌜σ' = set inode.buffered_blocks (λ bs, bs ++ [b0]) σ⌝ -∗
         ⌜inode.wf σ⌝ -∗
          ▷ P σ -∗ |NC={⊤}=> ▷ P σ' ∗ (<disc> ▷ Φc ∧ Φ #true))) -∗
-  WPC Inode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
+  WPC Inode__Append #l (slice_val b_s) @ (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
@@ -937,7 +937,7 @@ Theorem wpc_Inode__flushOne {k}
                            "HP" ∷ ▷ P σ' ∗
                            "Hinode" ∷ is_inode l (S k') P addr -∗
                            Φ #true)))) -∗
-  WPC Inode__flushOne #l #alloc_ref @ NotStuck; (S k); ⊤ {{ Φ }}
+  WPC Inode__flushOne #l #alloc_ref @ (S k); ⊤ {{ Φ }}
     {{ Φc ∗  (∃ σ0, "Hlockcinv" ∷ inode_cinv addr σ0 ∗ "HP" ∷ P σ0)  }}.
 Proof.
   iIntros (Hbuf_list ??? Φ Φc) "Hpre"; iNamed "Hpre".
@@ -1213,7 +1213,7 @@ Theorem wpc_Inode__Flush {k}
       "#Halloc_fupd" ∷ □ reserve_fupd (⊤ ∖ ↑allocN) Palloc ∗
       "#Hfree_fupd" ∷ □ (∀ a, free_fupd (⊤ ∖ ↑allocN) Palloc a) ∗
       "Hfupd" ∷ (<disc> ▷ Φc ∧ (∀ σ, flush_fupd P Palloc σ Φ Φc σ.(inode.buffered_blocks))) -∗
-  WPC Inode__Flush #l #alloc_ref @ NotStuck; (S k); ⊤ {{ Φ }} {{ Φc }}.
+  WPC Inode__Flush #l #alloc_ref @ (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".

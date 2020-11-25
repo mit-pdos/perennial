@@ -466,7 +466,7 @@ Section goose.
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
           inode_cinv (U64 (Z.of_nat i)) s_inode)
       }}}
-      openInodes #d @ NotStuck; k; ⊤
+      openInodes #d @ k; ⊤
     {{{ inode_s inode_refs, RET (slice_val inode_s);
         is_slice_small inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
         [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
@@ -603,7 +603,7 @@ Section goose.
     {{{ "Hinode_s" ∷ is_slice_small inode_s (struct.ptrT inode.Inode.S) 1 inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                     pre_inode inode_ref i s_inode }}}
-      inodeUsedBlocks (slice_val inode_s) @ NotStuck; k; ⊤
+      inodeUsedBlocks (slice_val inode_s) @ k; ⊤
     {{{ (addrs_ref:loc) used, RET #addrs_ref;
         "Hused_set" ∷ is_addrset addrs_ref used ∗
         "%Hused_eq" ∷ ⌜used = ⋃ (inode.addrs <$> s_inodes)⌝ ∗
@@ -777,7 +777,7 @@ Section goose.
   Theorem wpc_Open {k} (d: loc) (sz: u64) σ0 :
     (5 ≤ int.Z sz)%Z →
     {{{ dir_cinv (int.Z sz) σ0 true }}}
-      Open #d #sz @ NotStuck; (S k); ⊤
+      Open #d #sz @ (S k); ⊤
     {{{ l, RET #l; pre_dir l (int.Z sz) σ0 }}}
     {{{ dir_cinv (int.Z sz) σ0 false }}}.
   Proof using allocG0 heapG0 inG0 inG1 Σ.
@@ -878,7 +878,7 @@ Section goose.
                        mb = blocks !! int.nat i⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
-      Dir__Read #l #idx #i @ NotStuck; (S k); ⊤
+      Dir__Read #l #idx #i @ (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -937,7 +937,7 @@ Section goose.
                        int.nat sz = length blocks⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q sz)
     }}}
-      Dir__Size #l #idx @ NotStuck; (S k); ⊤
+      Dir__Size #l #idx @ (S k); ⊤
     {{{ sz, RET #sz; Q sz }}}
     {{{ True }}}.
   Proof.
@@ -1072,7 +1072,7 @@ Section goose.
                       ⌜σ.(dir.inodes) !! int.nat idx = Some blocks⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P (dir.mk $ <[ int.nat idx := blocks ++ [b0] ]> σ.(dir.inodes)) ∗ Q)
     }}}
-      Dir__Append #l #idx (slice_val b_s) @ NotStuck; (S k); ⊤
+      Dir__Append #l #idx (slice_val b_s) @ (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ True }}}.
   Proof.

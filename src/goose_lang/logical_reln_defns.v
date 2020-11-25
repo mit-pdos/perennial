@@ -78,7 +78,7 @@ Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semanti
 
 Definition has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) (K: sexpr → sexpr) (CTX: LanguageCtx K),
-      j ⤇ K es -∗ WPC e @ NotStuck; sty_lvl_ops; ⊤ {{ v, ∃ vs, j ⤇ K (of_val vs)
+      j ⤇ K es -∗ WPC e @ sty_lvl_ops; ⊤ {{ v, ∃ vs, j ⤇ K (of_val vs)
                                                                     ∗ vty vs v }}
                                                       {{ True }})%I.
 
@@ -274,9 +274,9 @@ Definition sty_crash_inv_obligation :=
      e (Φ: ival → iProp Σ),
     ⊢ sty_init hS -∗
     spec_ctx -∗
-    (sty_inv hS -∗ (WPC e @ NotStuck; sty_lvl_ops; ⊤ {{ Φ }} {{ True%I }})) -∗
+    (sty_inv hS -∗ (WPC e @ sty_lvl_ops; ⊤ {{ Φ }} {{ True%I }})) -∗
     |={⊤}=> sty_inv hS ∗
-    WPC e @ NotStuck; sty_lvl_init; ⊤ {{ Φ }} {{ sty_crash_cond hS }}).
+    WPC e @ sty_lvl_init; ⊤ {{ Φ }} {{ sty_crash_cond hS }}).
 
 Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.

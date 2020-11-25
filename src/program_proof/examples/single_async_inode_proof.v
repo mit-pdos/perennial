@@ -245,7 +245,7 @@ Section goose.
     (k' < k)%nat →
     (0 < int.Z sz)%Z →
     {{{ "Hcinv" ∷ s_inode_cinv γdur γbuf (int.Z sz) σ0 true }}}
-      Open #d_ref #sz @ NotStuck; S k; ⊤
+      Open #d_ref #sz @ S k; ⊤
     {{{ l, RET #l;
        ∃ γbuf', pre_s_inode γdur γbuf' l (int.Z sz) (set s_inode.buffered_blocks (λ _, []) σ0) ∗
                 (* New buf points to fact *)
@@ -441,7 +441,7 @@ Section goose.
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗ inode_mapsto γbuf blks ∗ Q (blks !! int.nat i)
     }}}
-      SingleInode__Read #l #i @ NotStuck; (S k); ⊤
+      SingleInode__Read #l #i @ (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -495,7 +495,7 @@ Section goose.
         "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
                                 (inode_mapsto γbuf blks -∗ |={E, ⊤∖↑N}=> Q (blks !! int.nat i))
     }}}
-      SingleInode__Read #l #i @ NotStuck; (S k); ⊤
+      SingleInode__Read #l #i @ (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -522,7 +522,7 @@ Section goose.
         "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks b, ⌜ blks !! int.nat i = Some b ⌝ ∧ inode_current_lb γbuf blks
                                  ∗ |={E, ⊤∖↑N}=> Q b
     }}}
-      SingleInode__Read #l #i @ NotStuck; (S k); ⊤
+      SingleInode__Read #l #i @ (S k); ⊤
     {{{ (s:Slice.t) b, RET (slice_val s); (∃ q, is_block s q b) ∗ Q b }}}
     {{{ True }}}.
   Proof.
@@ -573,7 +573,7 @@ Section goose.
         "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗
                                 inode_mapsto γbuf (blks ++ [b0]) ∗ (<disc> ▷ Qc ∧ Q))
     }}}
-      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤
+      SingleInode__Append #l (slice_val b_s) @ (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ Qc }}}.
   Proof.
@@ -626,7 +626,7 @@ Section goose.
         "Hfupd" ∷ (<disc> ▷ Qc ∧ |={⊤ ∖ ↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
                                   (inode_mapsto γbuf (blks ++ [b0]) ={E, ⊤ ∖ ↑N}=∗ <disc> ▷ Qc ∧ Q))
     }}}
-      SingleInode__Append #l (slice_val b_s) @ NotStuck; (S k); ⊤
+      SingleInode__Append #l (slice_val b_s) @ (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ Qc }}}.
   Proof.
@@ -649,7 +649,7 @@ Section goose.
         "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ={⊤ ∖ ↑N}=∗
                                 inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ∗ (<disc> ▷ Qc ∧ Q))
     }}}
-      SingleInode__Flush #l @ NotStuck; (S k); ⊤
+      SingleInode__Flush #l @ (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ Qc }}}.
   Proof.
@@ -744,7 +744,7 @@ Section goose.
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hlb" ∷ inode_current_lb γbuf blks
     }}}
-      SingleInode__Flush #l @ NotStuck; (S k); ⊤
+      SingleInode__Flush #l @ (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then inode_durable_lb γdur γbuf blks else emp }}}
     {{{ True }}}.
   Proof.

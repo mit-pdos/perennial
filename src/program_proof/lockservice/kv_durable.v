@@ -186,7 +186,7 @@ Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γ (l
     ∗ ("Hsrpc" ∷ RPCServer_own γ.(ks_rpcGN) lastSeqM lastReplyM)
     ∗ ("Hreply" ∷ own_reply reply_ptr reply)
 }}}
-CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply_ptr @ NotStuck ; 36; ⊤
+CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply_ptr @ 36; ⊤
 {{{
      (b:bool) reply', RET #b;
       "Hreply" ∷ own_reply reply_ptr reply'
@@ -300,7 +300,7 @@ Lemma wp_coreFunction γ (args:RPCValC) kvserver :
        "Hvol" ∷ KVServer_core_own_vol srv_ptr kvserver ∗
        "Hpre" ∷ (PreCond args)
  }}}
-    coreFunction (into_val.to_val args) @ NotStuck ; 36; ⊤
+    coreFunction (into_val.to_val args) @ 36; ⊤
  {{{
       (* TODO: need the disc to proof work out *)
       kvserver' (r:u64) P', RET #r; 
@@ -351,7 +351,7 @@ Lemma wpc_makeDurable old_kv_server kv_server :
      RPCServer_own_vol sv_ptr kv_server.(sv) ∗
      KVServer_durable_own old_kv_server
   }}}
-    makeDurable #() @ NotStuck ; 36 ; ⊤
+    makeDurable #() @ 36 ; ⊤
   {{{
        RET #(); KVServer_durable_own kv_server ∗
      KVServer_core_own_vol srv_ptr kv_server ∗

@@ -67,7 +67,7 @@ Lemma wpc_na_crash_inv_open_modify Qnew s k k' k'' E1 e Φ Φc Q P :
   k'' ≤ (S k) →
   S k ≤ k' →
   na_crash_inv (S k') Q P -∗
-  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ NotStuck; k''; E1
+  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ k''; E1
                     {{λ v, ▷ Qnew v ∗
                            ▷ □ (Qnew v -∗ P)  ∗ (na_crash_inv (S k') (Qnew v) P -∗ (<disc> ▷ Φc ∧ Φ v))}}
                     {{ Φc ∗ P }})) -∗
@@ -98,7 +98,7 @@ Lemma wpc_na_crash_inv_open s k k' k'' E1 e Φ Φc Q P:
   k'' ≤ (S k) →
   S k ≤ k' →
   na_crash_inv (S k') Q P -∗
-  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ NotStuck; k''; E1
+  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ k''; E1
                     {{λ v, ▷ Q ∗ (na_crash_inv (S k') Q P -∗ (<disc> ▷ Φc ∧ Φ v))}}
                     {{ Φc ∗ P }})) -∗
   WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}.
