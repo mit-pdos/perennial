@@ -11,6 +11,29 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 Section goose_lang.
 Context `{!txnG Σ}.
 
+Implicit Types (γ: @txn_names Σ).
+
+Definition txn_init_ghost_state γ : iProp Σ :=
+  let logm0 := Build_async (∅: gmap addr object) [] in
+  "logheap" ∷ log_heap_ctx (hG:=γ.(txn_logheap)) logm0 ∗
+  "crashstates" ∷ ghost_var γ.(txn_crashstates) 1 logm0 ∗
+  "metaheap" ∷ map_ctx γ.(txn_metaheap) 1 (∅ : gmap addr gname).
+
+Lemma alloc_txn_init_ghost_state (γtxn_walnames: wal_heap_gnames) kinds :
+  ⊢ |==> ∃ γ, ⌜γ.(txn_walnames) = γtxn_walnames⌝ ∗
+              ⌜γ.(txn_kinds) = kinds⌝ ∗
+              txn_init_ghost_state γ.
+Proof.
+  set (logm:=Build_async (∅: gmap addr object) []).
+  iMod (seq_heap_init logm) as (txn_logheap) "[? _]".
+  iMod (ghost_var_alloc logm) as (txn_crashstates) "?".
+  iMod (map_init (∅ : gmap addr gname)) as (txn_metaheap) "?".
+  iModIntro.
+  iExists (Build_txn_names _ _ _ _ _ _).
+  rewrite /txn_init_ghost_state /=.
+  by iFrame.
+Qed.
+
 (* Definitely missing the durable invariant of the heapspec layer, which should
 say something more complete about [γ.(txn_walnames)]. Otherwise there probably
 isn't enough to relate the state inside [is_txn_always] to that in
@@ -64,6 +87,7 @@ Proof.
          as (γ'_txn_walnames ?) "Hheapspec_init_ghost_state".
   set (P := λ ls, (wal_heap_inv γ.(txn_walnames) ls ∗ heapspec_init_ghost_state γ'_txn_walnames)%I).
   (* TODO: need init_ghost_state for the txn so we can define γ', the new names *)
+  (* TODO: use [alloc_txn_init_ghost_state] *)
   set (Prec := True).
   set (Pcrash := True).
   wpc_apply (wpc_MkLog_recover dinit P).
