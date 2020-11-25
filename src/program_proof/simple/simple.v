@@ -1974,19 +1974,11 @@ Proof.
   iExists bbuf.
   iFrame.
   iPureIntro.
-  split.
-  {
-    rewrite firstn_length_le.
-    1: {
-      rewrite <- Hdiskdata.
-      rewrite take_take.
-      assert ((int.nat u `min` length state) = (int.nat u)) by word.
-      rewrite H0; auto.
-    }
-    word.
-  }
-  rewrite firstn_length_le.
-  all: word.
+  rewrite -> firstn_length_le by lia.
+  split; [ | word ].
+  rewrite <- Hdiskdata.
+  rewrite take_take.
+  auto with f_equal lia.
 Qed.
 
 Opaque nfstypes.SETATTR3res.S.
