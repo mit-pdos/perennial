@@ -1502,14 +1502,24 @@ Proof.
   iApply struct_fields_split. iFrame. done.
 Qed.
 
+(* XXX
+  joe, how can we avoid relying on this false fact?
+  we need [Hfupd] in two branches of the proof:
+  the crash condition and the non-crash execution.
+*)
+Theorem false_dup_fupd (Hfupd : iProp Σ) :
+  Hfupd -∗ Hfupd ∗ Hfupd.
+Admitted.
+
 Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset : u64) (dataslice : Slice.t) (databuf : list u8) (Q : SimpleNFS.res u32 -> iProp Σ) (stab : u32) dinit :
   {{{ is_fs γ nfs dinit ∗
       is_fh fhslice fh ∗
       is_slice dataslice u8T 1%Qp databuf ∗
       ⌜ (length databuf < 2^32)%Z ⌝ ∗
-      ∀ σ σ' (r : SimpleNFS.res u32) E,
+      <disc>
+      ( ∀ σ σ' (r : SimpleNFS.res u32) E,
         ⌜relation.denote (SimpleNFS.wrapper fh (SimpleNFS.write fh offset databuf)) σ σ' r⌝ -∗
-        ( P σ ={E}=∗ P σ' ∗ Q r )
+        ( P σ -∗ |8={E}=> P σ' ∗ Q r ) )
   }}}
     Nfs__NFSPROC3_WRITE #nfs
       (struct.mk_f nfstypes.WRITE3args.S [
@@ -1557,6 +1567,10 @@ Proof using Ptimeless.
     iApply fupd_wp.
     iInv "Hsrc" as ">Hopen" "Hclose".
     iNamed "Hopen".
+
+    iDestruct (own_disc_fupd_level_elim with "Hfupd") as "Hfupd".
+    iMod "Hfupd" as "Hfupd".
+
     iDestruct ("Hfupd" with "[] HP") as "Hfupd".
     {
       iPureIntro.
@@ -1684,11 +1698,13 @@ Proof using Ptimeless.
     rewrite (firstn_all2 databuf); last by lia.
     replace (Z.to_nat (length databuf)) with (length databuf) by lia.
 
+  iDestruct (false_dup_fupd with "Hfupd") as "[Hfupd Hfupd_clone]".
+
   wpc_apply (wpc_strong_mono _ _ _ _ _ _ _ _ _
     (is_inode_crash γ fh ∨
      is_inode_unstable γ fh state (take (int.nat offset) state ++
           databuf ++ drop (int.nat offset + length databuf) state)
-    ) with "[-]").
+    ) with "[-Hfupd_clone] [Hfupd_clone]").
   5: iSplit.
   5: {
     iIntros (v) "HΦ".
@@ -1700,45 +1716,40 @@ Proof using Ptimeless.
     { iModIntro. iFrame. }
     iNamed "Hpre".
 
-    (* XXX how to update [Hinode_state] here? *)
-    admit.
+    iInv "Hsrc" as ">Hopen" "Hclose".
+    iNamed "Hopen".
+    iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh2".
+    iDestruct ("Hfupd_clone" with "[] HP") as "Hfupd".
+    {
+      iPureIntro.
+      simpl.
+      monad_simpl.
+      simpl.
+      rewrite Hsrc_fh2.
+      simpl.
+      eapply relation.bind_runs with (x:=false). { econstructor. auto. }
+      simpl.
+      monad_simpl.
+      econstructor. { econstructor. revert H3. word. }
+      monad_simpl.
+    }
+    iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
+    iMod (fupd_level_le with "Hfupd") as "[HP HQ]"; first by lia.
+    iMod ("Hclose" with "[Hsrcheap HP]").
+    { iModIntro. iExists _. iFrame "∗%#". iSplit.
+      { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom0 H5. }
+      iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
+      iApply (big_sepM_insert_delete with "[$H1]").
+      iPureIntro.
+      rewrite !app_length drop_length.
+      rewrite take_length_le.
+      2: { revert H3. word. }
+      lia.
+    }
+    iModIntro.
 
-    (* To update [Hinode_state], something like this should work: *)
-
-    (*
-      iApply fupd_wpc.
-      iInv "Hsrc" as ">Hopen" "Hclose".
-      iNamed "Hopen".
-      iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh2".
-      iDestruct ("Hfupd" with "[] HP") as "Hfupd".
-      {
-        iPureIntro.
-        simpl.
-        monad_simpl.
-        simpl.
-        rewrite Hsrc_fh2.
-        simpl.
-        eapply relation.bind_runs with (x:=false). { econstructor. auto. }
-        simpl.
-        monad_simpl.
-        econstructor. { econstructor. revert H3. word. }
-        monad_simpl.
-      }
-      iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
-      iMod "Hfupd" as "[HP HQ]".
-      iMod ("Hclose" with "[Hsrcheap HP]").
-      { iModIntro. iExists _. iFrame "∗%#". iSplit.
-        { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom0 H5. }
-        iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
-        iApply (big_sepM_insert_delete with "[$H1]").
-        iPureIntro.
-        rewrite !app_length drop_length.
-        rewrite take_length_le.
-        2: { revert H3. word. }
-        lia.
-      }
-      iModIntro.
-    *)
+    iModIntro. iSplit; first by done.
+    iExists _. iFrame.
   }
 
   4: {
@@ -1762,6 +1773,10 @@ Proof using Ptimeless.
       iInv "Hsrc" as ">Hopen" "Hclose".
       iNamed "Hopen".
       iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh2".
+
+      iDestruct (own_disc_fupd_level_elim with "Hfupd") as "Hfupd".
+      iMod "Hfupd" as "Hfupd".
+
       iDestruct ("Hfupd" with "[] HP") as "Hfupd".
       {
         iPureIntro.
@@ -1829,6 +1844,10 @@ Proof using Ptimeless.
       iInv "Hsrc" as ">Hopen" "Hclose".
       iNamed "Hopen".
       iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh2".
+
+      iDestruct (own_disc_fupd_level_elim with "Hfupd") as "Hfupd".
+      iMod "Hfupd" as "Hfupd".
+
       iDestruct ("Hfupd" with "[] HP") as "Hfupd".
       {
         iPureIntro.
@@ -1898,6 +1917,10 @@ Proof using Ptimeless.
     iInv "Hsrc" as ">Hopen" "Hclose".
     iNamed "Hopen".
     iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
+
+    iDestruct (own_disc_fupd_level_elim with "Hfupd") as "Hfupd".
+    iMod "Hfupd" as "Hfupd".
+
     iDestruct ("Hfupd" with "[] HP") as "Hfupd".
     {
       iPureIntro.
@@ -1943,8 +1966,9 @@ Proof using Ptimeless.
 
 Unshelve.
   all: eauto.
-  exact tt.
-Admitted.
+  all: try exact 0.
+  all: try exact tt.
+Qed.
 
 Lemma is_inode_data_shrink: forall state blk (u: u64) M,
    ¬ (int.Z (length state) < int.Z u)%Z ->
