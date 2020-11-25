@@ -1543,7 +1543,7 @@ Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset 
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.
-Proof using Ptimeless.
+Proof using Ptimeless ghost_varG0.
   iIntros (Φ) "(Hfs & #Hfh & Hdata & %Hdatalenbound & Hfupd) HΦ".
   iNamed "Hfs".
 
@@ -2153,64 +2153,19 @@ Proof using Ptimeless.
 
         wp_if_destruct.
         {
-          (* XXX should be possible to prove this case is not reachable,
-              because if ip.Write() succeeded, it will give us the right
-              length.. *)
-
           iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
-          wp_storeField.
+          wp_storeField. wp_load. iNamed 1.
 
-          (* Simulate to get Q after write failed *)
-          iApply fupd_wp.
+          iApply fupd_wpc.
           iInv "Hsrc" as ">Hopen" "Hclose".
           iNamed "Hopen".
-          iDestruct ("Hfupd" with "[] HP") as "Hfupd".
-          {
-            iPureIntro.
-            simpl.
-            monad_simpl.
-            simpl.
-            destruct (src !! fh) eqn:He.
-            {
-              rewrite He.
-              eapply relation.bind_runs with (x:=true). { econstructor. auto. }
-              simpl.
-              monad_simpl.
-            }
-            rewrite He.
-            econstructor. eauto.
-          }
-          iMod "Hfupd" as "[HP HQ]".
-          iMod ("Hclose" with "[Hsrcheap HP]").
-          { iModIntro. iExists _. iFrame "∗%#". }
-          iModIntro.
-
-          wp_load.
-
-          iNamed 1.
-          wpc_pures.
-
-          (* Implicit transaction abort *)
-          iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
-          iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "[Hold _]".
-
-          iSplitR "Hinode_state Hold".
-          2: { iModIntro. iExists _. iFrame. }
-          iIntros "Hcrashlocked".
-          iSplit.
-          { iModIntro. done. }
-
-          wp_loadField.
-          wp_apply (wp_LockMap__Release with "Hcrashlocked").
-          wp_apply (wp_LoadAt with "[Status Resok Resfail]").
-          { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
-          iIntros "Hreply". simpl.
-          iThaw "HΦ".
-          iApply "HΦ". iRight.
-          iExists _.
-          iSplit; first done.
-          iFrame.
-          iPureIntro. lia.
+          iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
+          iDestruct (big_sepM_lookup with "Hnooverflow") as %Hnooverflow; eauto.
+          exfalso.
+          revert Heqb. word_cleanup. intros.
+          revert H0. rewrite replicate_length. word_cleanup. intros.
+          apply Heqb0. rewrite Z.max_r; last by lia. word_cleanup.
+          f_equal. f_equal. word.
         }
 
         {
