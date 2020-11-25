@@ -1,12 +1,5 @@
-From Perennial.goose_lang Require Import prelude.
-From Perennial.goose_lang Require Import notation.
-From Perennial.program_proof Require Import proof_prelude.
-From stdpp Require Import gmap.
-From Perennial.goose_lang.lib Require Import lock.
-From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From iris.algebra Require Import numbers.
-From Coq.Structures Require Import OrdersTac.
+From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice nondet.
 
 Section common_proof.

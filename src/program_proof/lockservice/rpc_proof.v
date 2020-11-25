@@ -1,16 +1,9 @@
-From iris.program_logic Require Export weakestpre.
-From Perennial.goose_lang Require Import prelude.
-From Perennial.goose_lang Require Import ffi.disk_prelude.
-From Perennial.goose_lang Require Import notation.
-From Perennial.program_proof Require Import proof_prelude.
 From stdpp Require Import gmap.
-From RecordUpdate Require Import RecordUpdate.
+From iris.algebra Require Import numbers.
+From iris.program_logic Require Export weakestpre.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
-From Perennial.Helpers Require Import NamedProps.
-From Perennial.Helpers Require Import ModArith.
-From iris.algebra Require Import numbers.
-From Coq.Structures Require Import OrdersTac.
+From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice common_proof.
 From Perennial.program_proof.lockservice Require Export rpc_base.
 
@@ -403,7 +396,7 @@ Proof using Type*.
   iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
   {
     iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
-    simpl in bad. replace (int.nat (word.add cseqno 1)) with (int.nat cseqno + 1) in bad by word. lia.
+    simpl in bad. replace (int.nat (word.add cseqno 1)) with (int.nat cseqno + 1)%nat in bad by word. lia.
   }
   iMod (get_request_post with "Hreqinv_init Hrcptstoro HγP") as "HP"; first done.
   wp_pures.

@@ -1,16 +1,5 @@
-From Coq.Structures Require Import OrdersTac.
-From stdpp Require Import gmap.
-From iris.algebra Require Import numbers.
-From iris.program_logic Require Export weakestpre.
-From Perennial.goose_lang Require Import prelude.
-From Perennial.goose_lang Require Import ffi.disk_prelude.
-From Perennial.goose_lang Require Import notation.
-From Perennial.program_proof Require Import proof_prelude.
-From RecordUpdate Require Import RecordUpdate.
 From Perennial.algebra Require Import auth_map fmcounter.
-From Perennial.goose_lang.lib Require Import lock.
-From Perennial.Helpers Require Import NamedProps Integers.
-From Perennial.Helpers Require Import ModArith.
+From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice nondet lockservice_proof kv_proof.
 
 Record bank_names := BankNames {
