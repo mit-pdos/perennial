@@ -2061,7 +2061,17 @@ Proof using Ptimeless.
 
   wp_loadField.
   wp_apply (wp_LockMap__Acquire with "[$Hislm]"); first by intuition eauto.
-  iIntros "[Hstable Hlocked]".
+  iIntros "Hcrashlocked".
+
+  wp_pures.
+  wp_bind (NFSPROC3_SETATTR_internal _ _ _ _).
+
+  iDestruct (use_CrashLocked _ 8 with "Hcrashlocked") as "Hcrashuse"; first by lia.
+  iApply (wpc_wp _ _ _ _ _ True).
+  iApply "Hcrashuse".
+  iSplit.
+  { iModIntro. iModIntro. done. }
+  iIntros ">Hstable".
   iNamed "Hstable".
 
   iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]";
@@ -2070,8 +2080,26 @@ Proof using Ptimeless.
 
   iNamed "Hbuftxn".
 
+  iCache with "Hinode_state Hbuftxn_durable".
+  { crash_case.
+    iDestruct (is_buftxn_durable_to_old_pred with "Hbuftxn_durable") as "[Hold _]".
+    iModIntro.
+    iModIntro.
+    iSplit; first done.
+    iExists _.
+    iFrame.
+  }
+
+  wpc_call.
+  wpc_bind (NFSPROC3_SETATTR_wp _ _ _ _).
+  wpc_frame.
+  wp_call.
+
   wp_apply (wp_ReadInode with "[$Hbuftxn_mem $Hinode_enc]"); first by intuition eauto.
   iIntros (ip) "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
+
+  wp_apply (typed_mem.wp_AllocAt); eauto.
+  iIntros (wpok) "Hwpok".
 
   wp_pures.
   destruct sattr.
@@ -2095,20 +2123,18 @@ Proof using Ptimeless.
 
       iIntros (wcount ok) "[Hbuftxn_mem [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
       {
-        iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
-
-        wp_pures.
         iNamed "Hinode_mem".
         wp_loadField.
+        wp_pures.
 
         wp_if_destruct.
         {
-          (* Implicit transaction abort *)
-          iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "Hold".
+          (* XXX should be possible to prove this case is not reachable,
+              because if ip.Write() succeeded, it will give us the right
+              length.. *)
 
           iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
           wp_storeField.
-          wp_loadField.
 
           (* Simulate to get Q after write failed *)
           iApply fupd_wp.
@@ -2134,8 +2160,24 @@ Proof using Ptimeless.
           iMod ("Hclose" with "[Hsrcheap HP]").
           { iModIntro. iExists _. iFrame "∗%#". }
           iModIntro.
-          wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hold]").
-          { iExists _. iFrame. iDestruct "Hold" as "[Hinode _]". iFrame. }
+
+          wp_load.
+
+          iNamed 1.
+          wpc_pures.
+
+          (* Implicit transaction abort *)
+          iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
+          iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "[Hold _]".
+
+          iSplitR "Hinode_state Hold".
+          2: { iModIntro. iExists _. iFrame. }
+          iIntros "Hcrashlocked".
+          iSplit.
+          { iModIntro. done. }
+
+          wp_loadField.
+          wp_apply (wp_LockMap__Release with "Hcrashlocked").
           wp_apply (wp_LoadAt with "[Status Resok Resfail]").
           { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
           iIntros "Hreply". simpl.
@@ -2148,8 +2190,15 @@ Proof using Ptimeless.
         }
 
         {
-          wp_pures.
+          wp_store.
+          wp_load.
 
+          iNamed 1.
+          wpc_pures.
+          iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
+
+          (* XXX need joe's help to figure out how to do a [fupd] on [Hinode_state] at crash time *)
+(*
           wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
           4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
           all: try solve_ndisj.
@@ -2275,51 +2324,63 @@ Proof using Ptimeless.
             iFrame.
             iPureIntro. lia.
           }
+*)
+          admit.
         }
       }
+
       {
         iDestruct "Hok" as "(Hinode_mem & Hinode_enc & Hinode_data & %Hok)". intuition subst.
-        wp_pures.
         iNamed "Hinode_mem".
         wp_loadField.
         wp_if_destruct.
         2: lia.
 
-        iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
-
-        (* Implicit transaction abort, write failed, NOSPC  *)
-        iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "Hold".
-
         iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
         wp_storeField.
 
-        (* Simulate to get Q *)
+        (* Simulate to get Q after write failed *)
         iApply fupd_wp.
         iInv "Hsrc" as ">Hopen" "Hclose".
         iNamed "Hopen".
-        iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
         iDestruct ("Hfupd" with "[] HP") as "Hfupd".
         {
           iPureIntro.
           simpl.
           monad_simpl.
           simpl.
-          rewrite Hsrc_fh.
-          simpl.
-          econstructor. { econstructor. auto. }
-          instantiate (3 := true).
-          simpl.
-          monad_simpl.
+          destruct (src !! fh) eqn:He.
+          {
+            rewrite He.
+            eapply relation.bind_runs with (x:=true). { econstructor. auto. }
+            simpl.
+            monad_simpl.
+          }
+          rewrite He.
+          econstructor. eauto.
         }
         iMod "Hfupd" as "[HP HQ]".
         iMod ("Hclose" with "[Hsrcheap HP]").
         { iModIntro. iExists _. iFrame "∗%#". }
         iModIntro.
 
-        wp_loadField.
-        wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hold]").
-        { iExists _. iFrame. iDestruct "Hold" as "[Hinode _]". iFrame. }
+        wp_load.
 
+        iNamed 1.
+        wpc_pures.
+
+        (* Implicit transaction abort *)
+        iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
+        iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "[Hold _]".
+
+        iSplitR "Hinode_state Hold".
+        2: { iModIntro. iExists _. iFrame. }
+        iIntros "Hcrashlocked".
+        iSplit.
+        { iModIntro. done. }
+
+        wp_loadField.
+        wp_apply (wp_LockMap__Release with "Hcrashlocked").
         wp_apply (wp_LoadAt with "[Status Resok Resfail]").
         { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
         iIntros "Hreply". simpl.
@@ -2338,7 +2399,15 @@ Proof using Ptimeless.
       { iFrame. iPureIntro. apply Hvalid; auto. }
       iIntros "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
       wp_pures.
+      wp_store.
+      wp_load.
 
+      iNamed 1.
+      wpc_pures.
+
+      admit.
+      (* XXX need to [fupd] to make the crash condition work out. *)
+(*
       iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
       wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
@@ -2353,7 +2422,7 @@ Proof using Ptimeless.
         wp_storeField.
         wp_pures.
 
-       (* Simulate to get Q, commit succeeded *)
+        (* Simulate to get Q, commit succeeded *)
         iApply fupd_wp.
         iInv "Hsrc" as ">Hopen" "Hclose".
         iNamed "Hopen".
@@ -2459,25 +2528,36 @@ Proof using Ptimeless.
        iFrame.
        iPureIntro. lia.
       }
+*)
     }
   }
+
+  wp_store.
+  wp_load.
+
+  iNamed 1.
+  wpc_pures.
 
   iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
   (* Not changing the length at all. *)
-  wp_apply (wp_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
+  wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
   4: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
   { typeclasses eauto. }
   all: try solve_ndisj.
+
+  iSplit.
+  { iModIntro. iModIntro.
+    iIntros "[[H _]|[H0 H1]]"; iSplit; try done; iApply is_inode_crash_ro; iFrame "Hinode_state".
+    { iLeft; iFrame. }
+    { iRight; iFrame. } }
+
+  iModIntro.
   iIntros (ok) "Hcommit".
-  wp_if_destruct.
-
+  destruct ok.
   {
-    iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
-    wp_storeField.
-
-    (* Simulate to get Q, commit failed *)
-    iApply fupd_wp.
+    (* Simulate to get Q *)
+    iApply fupd_wpc.
     iInv "Hsrc" as ">Hopen" "Hclose".
     iNamed "Hopen".
     iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
@@ -2498,12 +2578,27 @@ Proof using Ptimeless.
     iMod ("Hclose" with "[Hsrcheap HP]").
     { iModIntro. iExists _.  iFrame "∗%#". }
     iModIntro.
-    wp_loadField.
-    wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
-    { iExists _. iFrame.
-      iDestruct "Hcommit" as "(Hinode_enc & Hinode_data)".
-      iExists _. iFrame.
+
+    wpc_frame "Hinode_state Hcommit".
+    { iModIntro; iModIntro; iSplit; try done.
+      iApply is_inode_crash_ro_own. iFrame "Hinode_state". iRight. iFrame. }
+
+    iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
+    wp_storeField.
+
+    iNamed 1.
+    iSplitR "Hinode_state Hcommit".
+    2: {
+      iModIntro.
+      iExists _; iFrame.
+      iExists _; iFrame.
     }
+    iIntros "Hcrashlocked".
+    iSplit.
+    { iModIntro. done. }
+
+    wp_loadField.
+    wp_apply (wp_LockMap__Release with "Hcrashlocked").
     wp_apply (wp_LoadAt with "[Status Resok Resfail]").
     { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
     iIntros "Hreply". simpl.
@@ -2512,12 +2607,10 @@ Proof using Ptimeless.
     iSplit; first done.
     iFrame.
   }
-  {
-    iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
-    wp_storeField.
 
+  {
     (* Simulate to get Q, commit failed *)
-    iApply fupd_wp.
+    iApply fupd_wpc.
     iInv "Hsrc" as ">Hopen" "Hclose".
     iNamed "Hopen".
     iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
@@ -2538,12 +2631,27 @@ Proof using Ptimeless.
     iMod ("Hclose" with "[Hsrcheap HP]").
     { iModIntro. iExists _.  iFrame "∗%#". }
     iModIntro.
-    wp_loadField.
-    wp_apply (wp_LockMap__Release with "[$Hislm $Hlocked Hinode_state Hcommit]").
-    { iExists _. iFrame.
-      iDestruct "Hcommit" as "(Hinode & _)".
-      iFrame.
+
+    iDestruct "Hcommit" as "[Hcommit _]". 
+    wpc_frame "Hinode_state Hcommit".
+    { iModIntro; iModIntro; iSplit; try done.
+      iApply is_inode_crash_ro_own. iFrame "Hinode_state". iLeft. iFrame. }
+
+    iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
+    wp_storeField.
+
+    iNamed 1.
+    iSplitR "Hinode_state Hcommit".
+    2: {
+      iModIntro.
+      iExists _; iFrame.
     }
+    iIntros "Hcrashlocked".
+    iSplit.
+    { iModIntro. done. }
+
+    wp_loadField.
+    wp_apply (wp_LockMap__Release with "Hcrashlocked").
     wp_apply (wp_LoadAt with "[Status Resok Resfail]").
     { iModIntro. iApply nfstypes_setattr3res_merge. iFrame. }
     iIntros "Hreply". simpl.
@@ -2553,6 +2661,8 @@ Proof using Ptimeless.
     iSplit; first done.
     iFrame.
   }
-Qed.
+Unshelve.
+  all: eauto.
+Admitted.
 
 End heap.
