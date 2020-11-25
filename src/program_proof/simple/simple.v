@@ -674,11 +674,12 @@ Proof using Ptimeless.
       simpl.
       rewrite Hsrc_fh.
       simpl.
-      econstructor. { econstructor. auto. }
-      instantiate (3 := false).
+      eapply relation.bind_runs with (x:=false). { econstructor. auto. }
       simpl.
       monad_simpl.
-      econstructor. { econstructor. instantiate (1 := length vs).
+      econstructor.
+      {
+        eapply relation.suchThat_runs with (x:=length vs).
         destruct (decide (length vs = 0)) eqn:He; eauto. right.
         rewrite -Hvs. rewrite take_length.
         rewrite drop_length.
@@ -752,8 +753,7 @@ Transparent nfstypes.READ3res.S.
       simpl.
       rewrite Hsrc_fh.
       simpl.
-      econstructor. { econstructor. auto. }
-      instantiate (3 := true).
+      eapply relation.bind_runs with (x:=true). { econstructor. auto. }
       simpl.
       monad_simpl.
     }
@@ -900,9 +900,7 @@ Proof using Ptimeless.
     {
       iPureIntro.
       rewrite /SimpleNFS.full_getattr.
-      match goal with
-      | |- context[if ?cond then _ else _] => destruct cond
-      end; try congruence.
+      case_decide as cond; try congruence.
       econstructor. { econstructor. eauto. }
       simpl.
       monad_simpl.
@@ -949,9 +947,7 @@ Proof using Ptimeless.
     {
       iPureIntro.
       rewrite /SimpleNFS.full_getattr.
-      match goal with
-      | |- context[if ?cond then _ else _] => destruct cond
-      end; try congruence.
+      case_decide as cond; try congruence.
       simpl.
       monad_simpl.
       simpl.
@@ -1061,16 +1057,11 @@ Proof using Ptimeless.
     {
       iPureIntro.
       rewrite /SimpleNFS.full_getattr.
-      match goal with
-      | |- context[if ?cond then _ else _] => destruct cond
-      end; try congruence.
+      case_decide as cond; try congruence.
       simpl.
       monad_simpl.
-      simpl.
-      rewrite Hsrc_fh.
-      simpl.
-      econstructor. { econstructor. auto. }
-      instantiate (3 := false).
+      rewrite /= Hsrc_fh /=.
+      eapply relation.bind_runs with (x:=false). { econstructor. auto. }
       simpl.
       monad_simpl.
     }
@@ -1120,18 +1111,14 @@ Transparent nfstypes.GETATTR3res.S.
     {
       iPureIntro.
       rewrite /SimpleNFS.full_getattr.
-      match goal with
-      | |- context[if ?cond then _ else _] => destruct cond
-      end; try congruence.
+      case_decide as cond; try congruence.
       simpl.
       monad_simpl.
       simpl.
       rewrite Hsrc_fh.
       simpl.
-      econstructor. { econstructor. auto. }
-      instantiate (3 := true).
-      simpl.
-      monad_simpl.
+      eapply relation.bind_runs with (x:=true). { econstructor. auto. }
+      econstructor. auto.
     }
     iMod "Hfupd" as "[HP HQ]".
     iMod ("Hclose" with "[Hsrcheap HP]").
@@ -1731,8 +1718,7 @@ Proof using Ptimeless.
         simpl.
         rewrite Hsrc_fh2.
         simpl.
-        econstructor. { econstructor. auto. }
-        instantiate (3 := false).
+        eapply relation.bind_runs with (x:=false). { econstructor. auto. }
         simpl.
         monad_simpl.
         econstructor. { econstructor. revert H3. word. }
@@ -1784,8 +1770,7 @@ Proof using Ptimeless.
         simpl.
         rewrite Hsrc_fh2.
         simpl.
-        econstructor. { econstructor. auto. }
-        instantiate (3 := false).
+        eapply relation.bind_runs with (x:=false). { econstructor. auto. }
         simpl.
         monad_simpl.
         econstructor. { econstructor. revert H3. word. }
@@ -1852,8 +1837,7 @@ Proof using Ptimeless.
         simpl.
         rewrite Hsrc_fh2.
         simpl.
-        econstructor. { econstructor. auto. }
-        instantiate (3 := true).
+        eapply relation.bind_runs with (x:=true). { econstructor. auto. }
         simpl.
         monad_simpl.
       }
@@ -1922,8 +1906,7 @@ Proof using Ptimeless.
       simpl.
       rewrite Hsrc_fh.
       simpl.
-      econstructor. { econstructor. auto. }
-      instantiate (3 := true).
+      eapply relation.bind_runs with (x:=true). { econstructor. auto. }
       simpl.
       monad_simpl.
     }
@@ -2140,8 +2123,7 @@ Proof using Ptimeless.
             destruct (src !! fh) eqn:He.
             {
               rewrite He.
-              econstructor. { econstructor. auto. }
-              instantiate (3 := true).            
+              eapply relation.bind_runs with (x:=true). { econstructor. auto. }
               simpl.
               monad_simpl.
             }
