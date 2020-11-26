@@ -239,7 +239,7 @@ Section ghost_step.
     ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp0, σ0) ∗
                             source_pool_map (tpool_to_map tp) ∗
                             source_state σ ∗
-                            <disc> |C={⊤}_0=> (source_inv r tp0 σ0).
+                            <disc> |C={⊤}_0=> (▷ source_inv r tp0 σ0).
   Proof.
     intros Herased Hno_err.
     iMod (own_alloc (● (tpool_to_res tp, Some (Excl σ))

@@ -22,7 +22,7 @@ Lemma staged_inv_init_cfupd' γ k k' E1 P:
   k' ≤ k →
   staged_inv (S k') E1 γ P ∗
   staged_pending 1%Qp γ -∗
-  (<disc> |C={E1}_(S k)=> P).
+  (<disc> |C={E1}_(S k)=> ▷P).
 Proof.
   iIntros (Hle)  "(#Hinv&Hpending)".
   iModIntro. iIntros "HC".

@@ -490,7 +490,9 @@ Proof.
   - iMod (na_crash_inv_alloc _ E (block_cinv γ k) (Ψ k) with "[$] []") as
         "(Hbund&Hpend)".
     { iIntros "!> !> H". iLeft. eauto. }
-    iModIntro. iFrame.
+    iFrame.
+    rewrite /free_block_pending.
+    iModIntro. admit. (* seems to require Ψ to be timeless? *)
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
     iMod (na_crash_inv_alloc _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as

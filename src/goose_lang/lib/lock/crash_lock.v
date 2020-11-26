@@ -72,7 +72,7 @@ Section proof.
     □ (R -∗ Rcrash) -∗
     ▷ R ={⊤}=∗
     is_crash_lock (S k') #lk R Rcrash ∗
-    <disc> |C={⊤}_(S k')=> Rcrash.
+    <disc> |C={⊤}_(S k')=> ▷Rcrash.
   Proof.
     clear.
     iIntros "Hfree #HRcrash HR".
