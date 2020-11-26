@@ -601,19 +601,19 @@ Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
-      PreQ ∧ (|={⊤ ∖ ↑walN ∖ ↑invN, E}=>
+      PreQ ∧ (|NC={⊤ ∖ ↑walN ∖ ↑invN, E}=>
         ∀ CP,
         □ ( ∀ σl a v,
           ( CP ∗ ghost_var γ.(txn_crashstates) (3/4) σl ∗ mapsto_txn γ a v ) -∗ ⌜σl.(latest) !! a = Some v⌝ ) ∗
         CP
-        ={E}=∗
+        -∗ |NC={E}=>
         CP ∗
         ∃ (σl : async (gmap addr {K & bufDataT K})),
           "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (3/4) σl ∗
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
             ghost_var γ.(txn_crashstates) (3/4) (async_put σ σl)
-            ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ))
+           -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN}=> Q (length (possible σl)) ))
   }}}
     Txn__doCommit #l (slice_val bufs)
   {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
@@ -661,8 +661,8 @@ Proof using txnG0 Σ.
   { iApply (wal_heap_memappend E with "[Hfupd] Hwal_latest Hmapstos").
     iSplit; [ iDestruct "Hfupd" as "[$ _]" | iRight in "Hfupd" ].
     iInv invN as ">Hinner" "Hinner_close".
-    iMod "Hfupd".
     iIntros (σ) "(Hmapstos & Hwal_latest & Hiswal_heap)".
+    iMod "Hfupd".
     iNamed "Hinner".
 
     iMod ("Hfupd" with "[Hlogheapctx Hcrashstates]") as "Hfupd".
@@ -1204,19 +1204,19 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (Pre
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
-      PreQ ∧ ( ⌜bufamap ≠ ∅⌝ ={⊤ ∖ ↑walN ∖ ↑invN, E}=∗
+      PreQ ∧ ( ⌜bufamap ≠ ∅⌝ -∗ |NC={⊤ ∖ ↑walN ∖ ↑invN, E}=>
         ∀ CP,
         □ ( ∀ σl a v,
           ( CP ∗ ghost_var γ.(txn_crashstates) (3/4) σl ∗ mapsto_txn γ a v ) -∗ ⌜σl.(latest) !! a = Some v⌝ ) ∗
         CP
-        ={E}=∗
+        -∗ |NC={E}=>
         CP ∗
         ∃ (σl : async (gmap addr {K & bufDataT K})),
           "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (3/4) σl ∗
           "Hcrashstates_fupd" ∷ (
             let σ := ((λ b, existT _ b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
             ghost_var γ.(txn_crashstates) (3/4) (async_put σ σl)
-            ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl))  ))
+            -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN}=> Q (length (possible σl))  ))
   }}}
     Txn__CommitWait #l (slice_val bufs) #wait
   {{{ (ok : bool), RET #ok;

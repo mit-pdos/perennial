@@ -644,6 +644,47 @@ Proof.
     iMod (fupd_level_split_level with "HΦ"); auto.
 Qed.
 
+Lemma wpc0_step_strong_mono s1 s2 k1 k2 mj1 mj2 E1 E2 e Φ Ψ Φc Ψc :
+  to_val e = None →
+  s1 ⊑ s2 → k1 ≤ k2 → omega_le (Some mj1) (Some mj2) → E1 ⊆ E2 → 
+  wpc0 s1 k1 mj1 E1 e Φ Φc -∗
+  ▷ (∀ v, Φ v -∗ |NC={E2}=> Ψ v) ∧ <disc> (▷ Φc -∗ |C={E2}_k2=> Ψc) -∗
+  wpc0 s2 k2 mj2 E2 e Ψ Ψc.
+Proof.
+  iIntros (Hval ??? HE) "H HΦ".
+  iLöb as "IH" forall (e Hval E1 E2 HE Φ Ψ Φc Ψc).
+  rewrite !wpc0_unfold /wpc_pre.
+  iMod (fupd_mask_mono with "H") as "H"; auto.
+  iModIntro.
+  iSplit.
+  - rewrite Hval.
+    iIntros (q σ1 κ κs n) "Hσ HNC".
+    iMod (fupd_intro_mask' E2 E1) as "Hclo"; first done.
+    iDestruct "H" as "(H&_)".
+    iMod ("H" with "[$] [$]") as "(%&H)".
+    iModIntro.
+    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 efs Hstep).
+    iMod ("H" with "[//]") as "H".
+    iIntros "!> !>". iMod "H" as "(Hσ & H & Hefs & HNC)". iMod "Hclo" as "_". iModIntro.
+    iFrame.
+    iSplitR "Hefs".
+    ** by iApply (wpc0_strong_mono with "H [$]").
+    ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
+       iIntros "H".  iApply (wpc0_strong_mono with "H []"); eauto.
+       { iSplit; first auto. iIntros "!> _". iIntros "HC". by iApply fupd_level_mask_weaken; first set_solver+. }
+  - iDestruct "H" as "(_&H)". iDestruct "HΦ" as "(_&HΦ)".
+    iModIntro.
+    iIntros "#HC".
+    iSpecialize ("H" with "[$]").
+    iMod (fupd_split_level_intro_mask' _ E1) as "Hclo"; first auto.
+    iMod (fupd_split_level_le with "H") as "H"; auto.
+    { naive_solver lia. }
+    iMod "Hclo" as "_".
+    iSpecialize ("HΦ" with "H HC").
+    iMod (fupd_level_split_level with "HΦ"); auto.
+Qed.
+
+
 Lemma wpc_strong_mono s1 s2 k1 k2 E1 E2 e Φ Ψ Φc Ψc :
   s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 →
   WPC e @ s1; k1; E1 {{ Φ }} {{ Φc }} -∗
@@ -652,6 +693,18 @@ Lemma wpc_strong_mono s1 s2 k1 k2 E1 E2 e Φ Ψ Φc Ψc :
 Proof.
   iIntros (?? HE) "H HΦ". rewrite wpc_eq. iIntros (mj). iSpecialize ("H" $! mj).
   iApply (wpc0_strong_mono _ _ _ _ mj mj with "[$] [$]"); eauto.
+  { naive_solver. }
+Qed.
+
+Lemma wpc_step_strong_mono s1 s2 k1 k2 E1 E2 e Φ Ψ Φc Ψc :
+  to_val e = None →
+  s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 →
+  WPC e @ s1; k1; E1 {{ Φ }} {{ Φc }} -∗
+  ▷ (∀ v, Φ v -∗ |NC={E2}=> Ψ v) ∧ <disc> (▷ Φc -∗ |C={E2}_k2=> Ψc) -∗
+  WPC e @ s2; k2; E2 {{ Ψ }} {{ Ψc }}.
+Proof.
+  iIntros (??? HE) "H HΦ". rewrite wpc_eq. iIntros (mj). iSpecialize ("H" $! mj).
+  iApply (wpc0_step_strong_mono _ _ _ _ mj mj with "[$] [$]"); eauto.
   { naive_solver. }
 Qed.
 

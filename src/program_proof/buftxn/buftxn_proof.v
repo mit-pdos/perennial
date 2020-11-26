@@ -9,6 +9,9 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
 From Perennial.program_proof Require Import wal.specs wal.heapspec txn.txn_proof buf.buf_proof addr.addr_proof.
 
+From Perennial.program_logic Require Import invariants_mutable.
+From Perennial.program_proof Require wp_to_wpc.
+
 (* an object is the data for a sub-block object, a dynamic bundle of a kind and
 data of the appropriate size *)
 (* NOTE(tej): not necessarily the best name, because it's so general as to be
@@ -693,12 +696,12 @@ Qed.
 Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) anydirty :
   {{{
     is_buftxn buftx mt γUnified dinit anydirty ∗
-    PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
+    (|NC={⊤ ∖ ↑walN ∖ ↑ invN}=> PreQ) ∧ (|NC={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
         "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (3/4) σl ∗
         "Hcrashstates_fupd" ∷ (
           let σ := (modified <$> mt) ∪ latest σl in
           ghost_var γUnified.(txn_crashstates) (3/4) (async_put σ σl)
-          ={E, ⊤ ∖ ↑walN ∖ ↑invN}=∗ Q (length (possible σl)) ))
+          -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN}=> Q (length (possible σl)) ))
   }}}
     BufTxn__CommitWait #buftx #wait
   {{{
@@ -778,7 +781,7 @@ Proof.
       (filter (λ v : addr * versioned_object, bufDirty <$> gBufmap !! v.1 = Some true) mt))
     _
     E
-    (PreQ ∗
+    ((|NC={⊤ ∖ ↑walN ∖ ↑invN}=> PreQ) ∗
       ( [∗ map] k↦x ∈ filter (λ v, bufDirty <$> gBufmap !! v.1 ≠ Some true) mt,
         mapsto_txn γUnified k (committed x) ∗ ⌜false = true ∨ committed x = modified x⌝ ))%I
     (λ txn_id,
@@ -880,6 +883,7 @@ Proof.
     }
   }
   iIntros (ok) "Hunifiedtxns".
+  iApply wp_ncfupd.
   wp_pures.
 
   iApply "HΦ".
@@ -908,7 +912,7 @@ Proof.
         simpl. rewrite He. simpl. eauto.
       }
       iDestruct "Hq" as "[Hq Hctxelem1]".
-      iSplit; first by done.
+      iSplitL ""; first by done.
       iExists _.
       iFrame "Hq". iFrame "Hflush".
 
@@ -928,10 +932,11 @@ Proof.
       rewrite map_union_filter.
       rewrite big_sepM_fmap.
       iFrame.
+      eauto.
     }
     {
       iRight.
-      iSplit; first by done.
+      iSplitL ""; first by done.
       iDestruct ("Hpreq" with "[]") as "[Hpreq Hctxelem1]".
       1: {
         iPureIntro.
@@ -965,10 +970,13 @@ Proof.
       rewrite map_union_filter.
       rewrite big_sepM_fmap.
       iFrame.
+      iMod (ncfupd_mask_mono with "Hpreq"); auto.
     }
 
   - iDestruct "Hunifiedtxns" as "[Hpreq Hmapsto0]".
     iDestruct "Hpreq" as "[Hpreq Hctxelem1]".
+    iMod (ncfupd_mask_mono with "Hpreq") as "Hpreq"; first auto.
+    iModIntro.
     iFrame "Hpreq".
 
     rewrite big_sepM_fmap.
@@ -985,6 +993,195 @@ Proof.
     rewrite map_union_filter.
     rewrite big_sepM_fmap.
     iFrame.
+Qed.
+
+Context `{!stagedG Σ}.
+
+Definition wpwpcN := nroot.@"temp".
+
+Theorem wpc_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q Qc : nat -> iProp Σ) anydirty k :
+  {{{
+    is_buftxn buftx mt γUnified dinit anydirty ∗
+    <disc> PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
+        "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (3/4) σl ∗
+        "Hcrashstates_fupd" ∷ (
+          let σ := (modified <$> mt) ∪ latest σl in
+          ghost_var γUnified.(txn_crashstates) (3/4) (async_put σ σl)
+          ={E, ⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN}=∗ <disc> (▷ Qc (length (possible σl))) ∧ Q (length (possible σl)) ))
+  }}}
+    BufTxn__CommitWait #buftx #wait @ (S k) ; ⊤
+  {{{
+    (ok : bool), RET #ok;
+    if ok then
+      ((⌜anydirty=true⌝ ∗ ∃ txnid,
+      Q txnid ∗
+      ([∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v) ∗
+      (⌜wait = true⌝ -∗ mnat_own_lb γUnified.(txn_walnames).(wal_heap_durable_lb) txnid)) ∨
+      (⌜anydirty=false⌝ ∗ PreQ ∗
+      [∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v))
+    else
+      PreQ ∗
+      [∗ map] a ↦ v ∈ committed <$> mt, mapsto_txn γUnified a v
+  }}}
+  {{{ (∃ txnid, Qc txnid) ∨ PreQ }}}.
+Proof using stagedG0.
+  iIntros (Φ Φc) "(His_buftxn&Hfupd) HΦc".
+  rewrite bi.and_comm.
+  rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
+  iDestruct (own_discrete_elim_conj with "Hfupd") as (Q_keep Q_inv) "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
+  iMod (pending_alloc) as (γpending) "Hpending".
+  iMod (inv_mut_alloc (S k) wpwpcN _ wp_to_wpc.mysch ([
+   (∃ txnid, Qc txnid) ∨ PreQ; staged_done γpending; C; staged_pending (3/4)%Qp γpending])%I [Q_inv] with "[HQ_inv]") as "(#Hinv&Hfull)".
+  { rewrite wp_to_wpc.mysch_interp_strong. iLeft. iSplit; first auto.
+    iMod ("Hwand1" with "[$]") as "H".
+    iModIntro. iMod (fupd_level_split_level with "H") as "$".
+    { lia. }
+    eauto.
+  }
+  iDestruct (pending_split34 with "Hpending") as "(Hpend34&Hpend14)".
+  iAssert (WPC _ @ S k; ⊤ {{ v, ∃ (ok: bool), ⌜ v = #ok ⌝ ∗ (staged_pending (3 / 4)%Qp γpending -∗ |NC={⊤}=>
+                 (if ok
+                  then
+                   ⌜anydirty = true⌝
+                   ∗ (∃ txnid : nat,
+                        Q txnid
+                        ∗ ([∗ map] a↦v ∈ (modified <$> mt), mapsto_txn γUnified a v)
+                          ∗ (⌜wait = true⌝ -∗ mnat_own_lb γUnified.(txn_walnames).(wal_heap_durable_lb) txnid))
+                   ∨ ⌜anydirty = false⌝ ∗ PreQ ∗ ([∗ map] a↦v ∈ (modified <$> mt), mapsto_txn γUnified a v)
+                  else PreQ ∗ ([∗ map] a↦v ∈ (committed <$> mt), mapsto_txn γUnified a v)))}} {{ True }})%I with "[His_buftxn HQ_keep Hpend14 Hfull]" as "Hwpc";
+    last first.
+  {
+    iApply wpc_ncfupd.
+    iApply (wpc_step_strong_mono with "Hwpc"); auto.
+    iSplit.
+    * iNext. iIntros (?) "Hwand". iDestruct "Hwand" as (ok ->) "Hwand". iModIntro. iRight in "HΦc".
+      iApply "HΦc". iApply "Hwand". by iFrame.
+    * iLeft in "HΦc". iIntros "!> _". iIntros "HC".
+      {
+        iPoseProof (fupd_level_le _ _ _ (S k) with "HΦc") as "HΦc".
+        { lia. }
+        iMod (fupd_level_mask_mono with "HΦc") as "HΦc"; first by set_solver+.
+        iMod (inv_mut_acc with "Hinv") as (Qs) "(H&Hclo)"; first auto.
+        rewrite wp_to_wpc.mysch_interp_weak /=.
+        iDestruct "H" as "[(_&>H)|[Hfalse1|Hfalse2]]".
+        * iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def).
+          iMod (fupd_split_level_intro_mask' _ ∅) as "Hclo''"; first by set_solver+.
+          iMod (fupd_split_level_le with "H") as "H"; first lia.
+          iMod "Hclo''".
+          iSpecialize ("Hclo" with "[HC Hpend34]").
+          { iRight. iLeft. iFrame. }
+          iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def) in "Hclo".
+          iMod "Hclo". iModIntro. iApply "HΦc". iApply "H".
+        * iDestruct "Hfalse1" as "(>_&>?)". iDestruct (pending34_pending34 with "[$] [$]") as "[]".
+        * iDestruct "Hfalse2" as ">?". iDestruct (pending_done with "[$] [$]") as "[]".
+      }
+  }
+  iApply (wp_wpc).
+  iApply wp_ncfupd.
+  wp_apply (wp_BufTxn__CommitWait (staged_pending (3/4) γpending -∗ |NC={⊤}=> PreQ) _ _ _ _ _ E
+                                  (λ n, staged_pending (3/4) γpending -∗ |NC={⊤}=> Q n)%I
+              with "[$His_buftxn Hfull Hpend14 HQ_keep]").
+  { iSplit.
+    - rewrite ncfupd_eq /ncfupd_def. iIntros (q) "HNC".
+      iMod (inv_mut_full_acc with "Hfull") as "(H&Hclo)"; first auto.
+      { solve_ndisj. }
+      rewrite ?mysch_interp_strong.
+      iDestruct "H" as "[HQ|Hfalse]"; last first.
+      { iDestruct "Hfalse" as "[(>Hfalse&_)|>Hfalse]".
+        * iDestruct (NC_C with "[$] [$]") as "[]".
+        * iDestruct (pending_done with "[$] [$]") as "[]".
+      }
+      iDestruct "HQ" as "(HQ&_)".
+      iMod ("Hwand2" with "[$]") as "Hfupd".
+      iRight in "Hfupd".
+
+      iEval (rewrite -(and_idem (<bdisc> _)%I)) in "Hfupd".
+      iClear "Hwand1 Hwand2".
+      iDestruct (own_discrete_elim_conj with "Hfupd") as (Q_keep' Q_inv')
+                                                                  "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
+      iMod ("Hclo" $! [Q_inv'] with "[HQ_inv]") as "Hfull".
+      { rewrite ?wp_to_wpc.mysch_interp_strong. iLeft. iSplit; first auto.
+        iMod ("Hwand1" with "[$]") as "H".
+        iModIntro. iMod (fupd_level_split_level with "H") as "HQc".
+        { lia. }
+        iModIntro. eauto.
+      }
+      iFrame. iModIntro.
+      iIntros "Hpend34" (q1) "HNC".
+      iMod (inv_mut_full_acc with "Hfull") as "(H&Hclo)"; first auto.
+      rewrite ?mysch_interp_strong.
+      iDestruct "H" as "[HQ|Hfalse]"; last first.
+      { iDestruct "Hfalse" as "[(>Hfalse&_)|>Hfalse]".
+        * iDestruct (NC_C with "[$] [$]") as "[]".
+        * iDestruct (pending_done with "[$] [$]") as "[]".
+      }
+      iDestruct "HQ" as "(HQ&_)".
+      iMod ("Hwand2" with "[$]") as "(HΦ&_)".
+      iDestruct (pending_join34 with "[$]") as "Hpend".
+      iMod (pending_upd_done with "Hpend") as "Hdone".
+      iMod ("Hclo" $! [True]%I with "[Hdone]").
+      { rewrite ?mysch_interp_strong. iRight. by iRight. }
+      iFrame. eauto.
+      iEval (rewrite own_discrete_elim) in "HΦ".
+      iPoseProof (fupd_level_fupd with "HΦ") as "HΦ".
+      iMod (fupd_mask_mono with "HΦ") as "$"; first by set_solver+.
+      eauto.
+    - rewrite ncfupd_eq /ncfupd_def. iIntros (q) "HNC".
+      iMod (inv_mut_full_acc with "Hfull") as "(H&Hclo)"; first auto.
+      { solve_ndisj. }
+      rewrite ?mysch_interp_strong.
+      iDestruct "H" as "[HQ|Hfalse]"; last first.
+      { iDestruct "Hfalse" as "[(>Hfalse&_)|>Hfalse]".
+        * iDestruct (NC_C with "[$] [$]") as "[]".
+        * iDestruct (pending_done with "[$] [$]") as "[]".
+      }
+      iDestruct "HQ" as "(HQ&_)".
+      iMod ("Hwand2" with "[$]") as "Hfupd".
+      iLeft in "Hfupd".
+      iMod ("Hfupd").
+      iDestruct "Hfupd" as (σl) "Hfupd".
+      iEval (rewrite bi.and_comm) in "Hfupd".
+      iModIntro. iFrame.
+      iExists _. iNamed "Hfupd". iFrame. iIntros "?".
+
+      iIntros (q') "HNC". iMod ("Hcrashstates_fupd" with "[$]") as "Hcrashstates".
+      iClear "Hwand1 Hwand2".
+      iDestruct (own_discrete_elim_conj with "Hcrashstates") as (Q_keep' Q_inv')
+                                                                  "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
+      iMod ("Hclo" $! [Q_inv'] with "[HQ_inv]") as "Hfull".
+      { rewrite ?wp_to_wpc.mysch_interp_strong. iLeft. iSplit; first auto.
+        iMod ("Hwand1" with "[$]") as "H".
+        iModIntro. iMod (fupd_level_split_level with "H") as "HQc".
+        { lia. }
+        iModIntro. eauto.
+      }
+      iFrame. iModIntro.
+      iIntros "Hpend34" (q1) "HNC".
+      iMod (inv_mut_full_acc with "Hfull") as "(H&Hclo)"; first auto.
+      rewrite ?mysch_interp_strong.
+      iDestruct "H" as "[HQ|Hfalse]"; last first.
+      { iDestruct "Hfalse" as "[(>Hfalse&_)|>Hfalse]".
+        * iDestruct (NC_C with "[$] [$]") as "[]".
+        * iDestruct (pending_done with "[$] [$]") as "[]".
+      }
+      iDestruct "HQ" as "(HQ&_)".
+      iMod ("Hwand2" with "[$]") as "(HΦ&_)".
+      iDestruct (pending_join34 with "[$]") as "Hpend".
+      iMod (pending_upd_done with "Hpend") as "Hdone".
+      iMod ("Hclo" $! [True]%I with "[Hdone]").
+      { rewrite ?mysch_interp_strong. iRight. by iRight. }
+      iFrame. eauto.
+  }
+
+  iIntros (ok) "H".
+  iIntros "!>". iExists ok; iSplit; first done. iIntros "Hpending34".
+  destruct ok.
+  - iDestruct "H" as "[(Hp&H)|H]".
+    * iLeft. iFrame. iDestruct "H" as (txid) "(HQ&H1&H2)". iExists _; iFrame.
+      by iApply "HQ".
+    * iRight. iFrame. iDestruct "H" as "($&H&$)".
+      by iApply "H".
+  - iDestruct "H" as "(H&$)". by iApply "H".
 Qed.
 
 End heap.

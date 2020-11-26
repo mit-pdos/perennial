@@ -1982,9 +1982,9 @@ Proof.
 Qed.
 
 Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) (PreQ : iProp Σ) (PreQ' : iProp Σ) lwh :
-  PreQ' ∧ ( ∀ σ, PreQ ∗ is_locked_walheap γh lwh ∗ wal_heap_inv γh σ ={⊤ ∖ ↑walN, E}=∗
+  PreQ' ∧ ( ∀ σ, PreQ ∗ is_locked_walheap γh lwh ∗ wal_heap_inv γh σ -∗ |NC={⊤ ∖ ↑walN, E}=>
       ∃ olds crash_heaps,
-        |={E}=>
+        |NC={E}=>
         memappend_pre γh.(wal_heap_h) bs olds ∗
         memappend_crash_pre γh bs crash_heaps ∗
         is_locked_walheap γh lwh ∗
@@ -1992,7 +1992,7 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) (PreQ : iProp Σ) (Pre
         ( ∀ pos,
             memappend_crash γh bs crash_heaps (Build_locked_walheap (locked_wh_σd lwh) (locked_wh_σtxns lwh ++ [(pos, bs)])) ∗
             memappend_q γh.(wal_heap_h) bs olds
-          ={E, ⊤ ∖ ↑walN}=∗ txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos -∗ Q pos ) ) -∗
+          -∗ |NC={E, ⊤ ∖ ↑walN}=> txn_pos γh.(wal_heap_walnames) (length (possible crash_heaps)) pos -∗ Q pos ) ) -∗
   is_locked_walheap γh lwh -∗
   PreQ -∗
   ( ( ∀ σ σ' txn_id,
@@ -2000,7 +2000,7 @@ Theorem wal_heap_memappend E γh bs (Q : u64 -> iProp Σ) (PreQ : iProp Σ) (Pre
       ⌜relation.denote (log_mem_append bs) σ σ' txn_id⌝ -∗
         let txn_num := length σ.(log_state.txns) in
       ( (wal_heap_inv γh) σ
-          ={⊤ ∖↑ walN}=∗ ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ (wal_heap_inv γh) σ' ∗ (txn_pos γh.(wal_heap_walnames) txn_num txn_id -∗ Q txn_id)) ) ∧
+          -∗ |NC={⊤ ∖↑ walN}=> ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ (wal_heap_inv γh) σ' ∗ (txn_pos γh.(wal_heap_walnames) txn_num txn_id -∗ Q txn_id)) ) ∧
     ( "Hlockedheap" ∷ is_locked_walheap γh lwh ∗ PreQ ∗ PreQ' )).
 Proof using walheapG0.
   iIntros "Hpre Hlockedheap HpreQ".

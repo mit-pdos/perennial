@@ -774,7 +774,7 @@ Section goose_lang.
                 _ _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
                 with "[$Hbuftxn Hold_vals]").
-    { iSplit; [ iAccu | ].
+    { iSplit; [ iModIntro; iAccu | ].
       iDestruct "Htxn_system" as "[Hinv _]".
       iInv "Hinv" as ">Hinner" "Hclo".
       iModIntro.
@@ -870,6 +870,10 @@ Section goose_lang.
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
 
+    (* This proof should now just call wpc_BufTxn__CommitWait, the
+    while_commiting invariant should not be needed. *)
+
+    (*
     iMod (ghost_var_alloc false) as (γcommit) "[Hγcommit Hγcommit_frag]".
     iApply fupd_wpc.
     iMod (inv_alloc while_committingN _ (while_committing γ γcommit mT)
@@ -964,6 +968,7 @@ Section goose_lang.
       iIntros (k x Hkx) "H".
       iExists _; iFrame.
   Qed.
+*)
 *)
   Admitted.
 

@@ -697,7 +697,7 @@ Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ dinit bu
          ⌜wal_wf σ⌝ -∗
          ⌜relation.denote (log_mem_append bs) σ σ' pos⌝ -∗
          let txn_id := length σ.(log_state.txns) in
-         (P σ ={⊤ ∖↑ N}=∗ ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ P σ' ∗ (txn_pos γ txn_id pos -∗ Q pos))) ∧ PreQ
+         (P σ -∗ |NC={⊤ ∖↑ N}=> ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ P σ' ∗ (txn_pos γ txn_id pos -∗ Q pos))) ∧ PreQ
    }}}
     Walog__MemAppend #l (slice_val bufs)
   {{{ pos (ok : bool), RET (#pos, #ok); if ok then Q pos ∗ ∃ txn_id, txn_pos γ txn_id pos else PreQ }}}.
@@ -735,7 +735,7 @@ Proof.
                                 ⌜wal_wf σ⌝
                                 -∗ ⌜relation.denote (log_mem_append bs) σ σ' pos⌝
                                 -∗ P σ
-                                ={⊤ ∖ ↑N}=∗ ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ P σ'
+                                -∗ |NC={⊤ ∖ ↑N}=> ⌜addrs_wf bs σ.(log_state.d)⌝ ∗ P σ'
                                 ∗ (txn_pos γ (length σ.(log_state.txns)) pos
                                 -∗ Q pos)) ∧ PreQ else
                                (if ok then Q txn ∗ ∃ txn_id, txn_pos γ txn_id txn else PreQ)) ∗
