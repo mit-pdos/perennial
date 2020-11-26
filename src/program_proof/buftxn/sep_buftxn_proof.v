@@ -840,21 +840,14 @@ Section goose_lang.
       iExists _; iFrame.
   Qed.
 
-  Definition while_committing γ γcommit mT :=
-    ( ( "Hγcommit" ∷ ghost_var γcommit (1/2) false ∗
-        "Hold_vals" ∷ [∗ map] a↦v ∈ (mspec.committed <$> mT), durable_mapsto γ a v ) ∨
-      ( "Hγcommit" ∷ ghost_var γcommit (1/2) true ∗
-        "Hnew_vals" ∷ [∗ map] a↦v ∈ (mspec.modified <$> mT), durable_mapsto γ a v ) )%I.
-
-  Definition while_committingN := nroot .@ "while-committing".
-
-  Theorem wpc_BufTxn__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} k :
+  Theorem wpc_BufTxn__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} klevel :
     N ## invariant.walN →
     N ## invN →
+    N ## mspec.wpwpcN ->
     {{{ "Hbuftxn" ∷ is_buftxn l γ dinit γtxn P0 ∗
         "HP" ∷ P (buftxn_maps_to γtxn)
     }}}
-      BufTxn__CommitWait #l #true @ k; ⊤
+      BufTxn__CommitWait #l #true @ S klevel; ⊤
     {{{ (ok:bool), RET #ok;
         if ok then
             P (λ a v, durable_mapsto_own γ a v)
@@ -862,47 +855,24 @@ Section goose_lang.
     {{{ P0 (durable_mapsto γ) ∨
          P (durable_mapsto γ) }}}.
   Proof.
-    iIntros (?? Φ Φc) "Hpre HΦ". iNamed "Hpre".
+    iIntros (??? Φ Φc) "Hpre HΦ". iNamed "Hpre".
     iNamed "Hbuftxn".
     iNamed "Hbuftxn_mem".
     iNamed "Hbuftxn_durable".
     iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->.
-    iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
+    iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable #HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
-
-    (* This proof should now just call wpc_BufTxn__CommitWait, the
-    while_commiting invariant should not be needed. *)
-
-    (*
-    iMod (ghost_var_alloc false) as (γcommit) "[Hγcommit Hγcommit_frag]".
-    iApply fupd_wpc.
-    iMod (inv_alloc while_committingN _ (while_committing γ γcommit mT)
-      with "[Hγcommit Hold_vals]") as "#Hwhile".
-    { iModIntro. iLeft. iFrame. }
-    iModIntro.
-
-    wpc_frame "HΦ Hdurable_frag".
-    { crash_case.
-      (* XXX question 1: how to open Hwhile?? *)
-      (* XXX question 2: can we cancel this invariant when the function returns,
-          so that we can return ownership of the new durable mapstos? *)
-(*
-      iDestruct (is_buftxn_durable_to_old_pred with "[Hold_vals Hdurable_frag]") as "Hold".
-      { iExists _. iFrame "∗#". }
-      iModIntro. iFrame.
-*)
-      admit.
-    }
 
     (* here things are a little tricky because committing doesn't give us
     [durable_mapsto] but just [ephemeral_val_from] *)
-    wp_apply (mspec.wp_BufTxn__CommitWait
+    wpc_apply (mspec.wpc_BufTxn__CommitWait
                 (* ([∗ map] a↦v ∈ (mspec.committed <$> mT),
                  ephemeral_val_from γ.(buftxn_async_name) txn_id0 a v) *) _
                 _ _ _ _ _ _
-              (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
-                with "[$Hbuftxn Hγcommit_frag]").
-    { iSplit; [ iAccu | ].
+              (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT,
+                            ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
+                with "[$Hbuftxn Hold_vals]").
+    { iSplit; [ iModIntro; iAccu | ].
       iDestruct "Htxn_system" as "[Hinv _]".
       iInv "Hinv" as ">Hinner" "Hclo".
       iModIntro.
@@ -911,7 +881,6 @@ Section goose_lang.
       iFrame "H◯async".
       iIntros "H◯async".
 
-(*
       (* NOTE: we don't use this theorem and instead inline its proof (to some
       extent) since we really need to know what the new map is, to restore
       txn_system_inv. *)
@@ -929,8 +898,24 @@ Section goose_lang.
         iFrame. }
       iModIntro.
       rewrite length_possible_async_put.
+      replace (S (length (possible σs)) - 1)%nat with (length (possible σs))%nat by lia.
+      iSplit.
+      { iModIntro. iModIntro. generalize (length (possible σs)); intros. iAccu. }
       iExactEq "Hnew".
       auto with f_equal lia. }
+    iSplit.
+    { iDestruct "HΦ" as "[HΦc _]". iModIntro. iModIntro. iIntros "H".
+      iApply "HΦc". iDestruct "H" as "[H|H]".
+      { iDestruct "H" as (txnid) "H".
+        iDestruct (big_sepM_subseteq with "H") as "H"; eauto.
+        (* XXX how to decide whether iLeft or iRight?
+          depends on what's actually durable on disk. *)
+        iRight. iApply "HPrestore".
+        admit.
+      }
+      { iLeft. iApply "HrestoreP0". iFrame. }
+    }
+    iModIntro.
     iIntros (ok) "Hpost".
     destruct ok.
     - iDestruct "Hpost" as "[Hpost | Hpost]".
