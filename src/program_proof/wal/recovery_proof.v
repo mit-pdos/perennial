@@ -1276,19 +1276,20 @@ Theorem wpc_MkLog_recover k (d: loc) γ σ Prec Pcrash:
       wal_cfupd_cancel k γ' Prec ∗
       wal_cinv γ γ' Pcrash
   }}}
-  {{{ ∃ γ' σ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ (P σ' ∨ Prec σ') }}}.
+  {{{ ∃ σ', (is_wal_inner_durable γ σ' dinit ∗ wal_resources γ ∗ P σ' ∨
+      ∃ γ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ Prec σ') }}}.
 Proof.
   iIntros "#Hwand".
   iIntros "!>" (Φ Φc) "(Hdurable&Hres&HP) HΦ".
   rewrite /MkLog.
   iMod (fupd_later_to_disc with "HP") as "HP".
   wpc_pures.
-  { iLeft in "HΦ". iModIntro. iNext. iApply "HΦ". iExists _, _. iFrame. }
+  { iLeft in "HΦ". iModIntro. iNext. iApply "HΦ". iExists _. iLeft. iFrame. }
   wpc_bind (mkLog #d).
   wpc_apply (wpc_mkLog_recover with "[$]").
   iSplit.
   { iLeft in "HΦ". iModIntro. iNext. iIntros "(?&?)".
-    iApply "HΦ". iExists _, _. iFrame. }
+    iApply "HΦ". iExists _. iLeft. iFrame. }
   iNext. iIntros (l). iNamed 1.
   iMod (own_disc_fupd_elim with "HP") as "HP".
   iMod (wal_crash_obligation_alt with "Hwal_inv_pre Hwand HP") as (γ') "(#His_wal&Hcancel&#Hcinv)".
@@ -1303,7 +1304,7 @@ Proof.
   { iApply (and_mono with "HΦ"); last done.
     { iIntros "H1". do 2 iModIntro. iIntros "H2".
       iDestruct "H2" as (s Hcrash) "(Hinner&Hres&Hrec)".
-      iApply "H1". iExists _, _. iFrame. }
+      iApply "H1". iExists _. iRight. iExists _. iFrame. }
   }
   wp_pures. rewrite /Walog__startBackgroundThreads. wp_pures.
   wp_apply (wp_fork with "[Hlogger]").
