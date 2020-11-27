@@ -31,7 +31,7 @@ Section proof.
       MkLockMap #() @ NotStuck; (S k); ⊤
     {{{ l ghs, RET #l; is_crash_lockMap (S k) l ghs covered P Pcrash ∗
                        <disc> (|C={⊤}_(S k)=> [∗ set] a ∈ covered, ▷ Pcrash a) }}}
-    {{{ [∗ set] a ∈ covered, Pcrash a }}}.
+    {{{ [∗ set] a ∈ covered, ▷ Pcrash a }}}.
   Proof using gen_heapPreG0.
     iIntros (Φ Φc) "HP HΦ".
     iAssert (|={⊤}=> [∗ set] a ∈ covered, na_crash_inv (S k) (P a) (Pcrash a) ∗
@@ -58,21 +58,19 @@ Section proof.
     3: {
       iApply (wpc_mono with "H"); eauto.
       repeat (f_equiv; simpl).
-      auto.
+      by rewrite big_sepS_later.
     }
     { eauto. }
     iSplitL "HΦ".
     {
       iApply (and_mono_l with "HΦ").
       f_equiv.
-      iIntros "HΦ Hc".
-      admit. (* TODO(tej): laters have been mismanaged *)
     }
     wp_apply (wp_MkLockMap with "Hna").
     iIntros (l ghs) "His_lockMap". iIntros "HΦ Hcfupd".
     iApply "HΦ". iFrame.
     rewrite big_sepS_later //.
-  Admitted.
+  Qed.
 
   Theorem wp_LockMap__Acquire k l ghs covered (addr : u64) (P Pcrash : u64 -> iProp Σ) :
     {{{ is_crash_lockMap k l ghs covered P Pcrash ∗
@@ -87,12 +85,12 @@ Section proof.
     iDestruct "H" as "($&%)".
   Qed.
 
-  Lemma use_CrashLocked E1 k k' e lk ghs addr R Rcrash Φ Φc:
+  Lemma use_CrashLocked E1 k k' e lk ghs addr R Rcrash Φ Φc {HL: AbsLaterable Φc}:
     (S k ≤ k')%nat →
     CrashLocked (S k') lk ghs addr R Rcrash -∗
-    <disc> ▷ Φc ∧ (▷ R addr -∗
-         WPC e @ (S k); E1 {{ λ v, (CrashLocked (S k') lk ghs addr R Rcrash -∗ (<disc> ▷ Φc ∧ Φ v)) ∗ ▷ R addr }}
-                                         {{ Φc ∗ Rcrash addr }}) -∗
+    <disc> Φc ∧ (▷ R addr -∗
+         WPC e @ (S k); E1 {{ λ v, (CrashLocked (S k') lk ghs addr R Rcrash -∗ (<disc> Φc ∧ Φ v)) ∗ ▷ R addr }}
+                                         {{ Φc ∗ ▷ Rcrash addr }}) -∗
     WPC e @ (S k); E1 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (?) "Hcrash_locked H".

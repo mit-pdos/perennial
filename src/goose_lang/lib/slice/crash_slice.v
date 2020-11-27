@@ -17,7 +17,7 @@ Context `{!IntoVal V}.
 Implicit Types (v:V) (vs: list V).
 
 Lemma wpc_slice_len k stk E1 s Φ Φc :
-  <disc> ▷ Φc ∧ Φ #(Slice.sz s) -∗
+  <disc> Φc ∧ Φ #(Slice.sz s) -∗
   WPC slice.len (slice_val s) @ stk; k; E1 {{ v, Φ v }} {{ Φc }}.
 Proof.
   iIntros "HΦ".

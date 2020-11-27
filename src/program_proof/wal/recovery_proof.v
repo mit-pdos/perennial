@@ -1140,7 +1140,7 @@ Proof.
 
   wpc_apply (wpc_recoverCircular with "[$]").
   iSplit.
-  { iLeft in "HΦ". iModIntro. iNext. iIntros "(Hcirc&Happend)". iApply "HΦ".
+  { iLeft in "HΦ". iModIntro. iIntros "(Hcirc&Happend)". iApply "HΦ".
     iSplitR "Happend HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hinstaller".
     {
       iSplit; first by auto.
@@ -1168,7 +1168,6 @@ Proof.
     iDestruct "Happender" as (????) "(Haddrs&Hblocks&?)".
     crash_case.
     rewrite /is_wal_inner_durable.
-    iNext.
     iFrame "Htxns_ctx γtxns HnextDiskEnd_inv".
     iSplitR "Haddrs Hblocks HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hinstaller".
     {
@@ -1276,18 +1275,18 @@ Theorem wpc_MkLog_recover k (d: loc) γ σ Prec Pcrash:
       wal_cfupd_cancel k γ' Prec ∗
       wal_cinv γ γ' Pcrash
   }}}
-  {{{ ∃ γ' σ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ (P σ' ∨ Prec σ') }}}.
+  {{{ ∃ γ' σ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ (▷ P σ' ∨ ▷ Prec σ') }}}.
 Proof.
   iIntros "#Hwand".
   iIntros "!>" (Φ Φc) "(Hdurable&Hres&HP) HΦ".
   rewrite /MkLog.
   iMod (fupd_later_to_disc with "HP") as "HP".
   wpc_pures.
-  { iLeft in "HΦ". iModIntro. iNext. iApply "HΦ". iExists _, _. iFrame. }
+  { iLeft in "HΦ". iModIntro. iApply "HΦ". iExists _, _. iFrame. }
   wpc_bind (mkLog #d).
   wpc_apply (wpc_mkLog_recover with "[$]").
   iSplit.
-  { iLeft in "HΦ". iModIntro. iNext. iIntros "(?&?)".
+  { iLeft in "HΦ". iModIntro. iIntros "(?&?)".
     iApply "HΦ". iExists _, _. iFrame. }
   iNext. iIntros (l). iNamed 1.
   iMod (own_disc_fupd_elim with "HP") as "HP".
@@ -1296,13 +1295,13 @@ Proof.
   { iModIntro. iIntros "H".
     iSpecialize ("Hcancel" with "[$]").
     iMod (fupd_level_le with "Hcancel") as "H"; first lia.
-    iModIntro. iNext. iExact "H".
+    iModIntro. iExact "H".
   }
   iApply (wp_wpc_frame').
   iSplitL "HΦ".
   { iApply (and_mono with "HΦ"); last done.
-    { iIntros "H1". do 2 iModIntro. iIntros "H2".
-      iDestruct "H2" as (s Hcrash) "(Hinner&Hres&Hrec)".
+    { iIntros "H1 !> H2".
+      iDestruct "H2" as (s) "(?&Hinner&Hres&Hrec)".
       iApply "H1". iExists _, _. iFrame. }
   }
   wp_pures. rewrite /Walog__startBackgroundThreads. wp_pures.

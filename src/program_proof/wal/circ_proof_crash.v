@@ -125,7 +125,7 @@ Proof.
 
   wpc_apply (wpc_Read with "[Hd0]"); first by iFrame.
   iSplit.
-  { iLeft in "HΦ". iModIntro. iNext. iIntros "Hd0". iApply "HΦ".
+  { iLeft in "HΦ". iModIntro. iIntros "Hd0". iApply "HΦ".
     iFrame "% ∗".
     iExists _, _; iFrame "∗ %".
     iExists _, _; iFrame "∗ %". }
@@ -135,7 +135,7 @@ Proof.
 
   wpc_apply (wpc_Read with "[Hd1]"); first iFrame.
   iSplit.
-  { iLeft in "HΦ". iModIntro. iNext. iIntros "Hd1". iApply "HΦ".
+  { iLeft in "HΦ". iModIntro. iIntros "Hd1". iApply "HΦ".
     iFrame "% ∗".
     iExists _, _; iFrame "∗ %".
     iExists _, _; iFrame "∗ %". }
@@ -226,7 +226,7 @@ Proof.
       f_equal.
       mod_bound; word. }
     iSplit.
-    { iLeft in "HΦ". iModIntro. iNext. iIntros "Hdi".
+    { iLeft in "HΦ". iModIntro. iIntros "Hdi".
       iSpecialize ("Hd2'" with "[Hdi]").
       { iExactEq "Hdi". f_equal. mod_bound. word. }
       rewrite list_insert_id; eauto. iApply "HΦ"; eauto. }
@@ -293,7 +293,7 @@ Proof.
     auto.
 
   - iSplit.
-    { iLeft in "HΦ". iModIntro. iNext. iDestruct 1 as (i) "(Hd2&%)".
+    { iLeft in "HΦ". iModIntro. iDestruct 1 as (i) "(Hd2&%)".
       iApply "HΦ".
       iFrame "% ∗".
       iExists _, _; iFrame "∗ %".
@@ -447,7 +447,7 @@ Qed.
 Lemma circ_buf_crash_obligation e Φ Φc Φc' k σ γ:
   is_circular_state γ σ  -∗
   P σ -∗
-  □ ((∃ σ', is_circular_state γ σ' ∗ P σ') -∗ Φc -∗ Φc') -∗
+  □ (▷ (∃ σ', is_circular_state γ σ' ∗ P σ') -∗ Φc -∗ Φc') -∗
   (is_circular N P γ -∗ (WPC e @ k; ⊤ {{ Φ }} {{ Φc }})) -∗
   |={⊤}=> is_circular N P γ ∗ WPC e @ k; ⊤ {{ Φ }} {{ Φc' }}%I.
 Proof.
@@ -460,7 +460,7 @@ Proof.
   iSpecialize ("HWP" with "[$]").
   iApply (wpc_strong_mono with "HWP"); auto.
   iSplit; first eauto.
-  iModIntro. iIntros "H1 !> !> H2".
+  iModIntro. iIntros "H1 !> H2".
   iApply ("Hcrash1" with "[$] [$]").
 Qed.
 
@@ -470,7 +470,7 @@ Lemma circ_buf_crash_obligation_simple e Φ k σ γ:
   P σ -∗
   (is_circular N P γ -∗ (WPC e @ k; ⊤ {{ Φ }} {{ True }})) -∗
   |={⊤}=> is_circular N P γ ∗
-          WPC e @ k; ⊤ {{ Φ }} {{ ∃ σ', is_circular_state γ σ' ∗ P σ' }}%I.
+          WPC e @ k; ⊤ {{ Φ }} {{ ▷ ∃ σ', is_circular_state γ σ' ∗ P σ' }}%I.
 Proof.
   iIntros "Hstate HP HWP".
   iApply (circ_buf_crash_obligation with "[$] [$] [] [$]"); auto; set_solver+.
