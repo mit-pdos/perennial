@@ -31,6 +31,9 @@ Record txn_names {Σ} := {
   txn_kinds : gmap u64 bufDataKind;
 }.
 
+Global Instance txn_names_eta {Σ} : Settable _ :=
+  settable! (@Build_txn_names Σ) <txn_logheap;txn_metaheap;txn_walnames;txn_crashstates;txn_kinds>.
+
 Section goose_lang.
 Context `{!txnG Σ}.
 
