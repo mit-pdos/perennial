@@ -239,7 +239,7 @@ Section ghost_step.
     ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp0, σ0) ∗
                             source_pool_map (tpool_to_map tp) ∗
                             source_state σ ∗
-                            <disc> |C={⊤}_0=> (▷ source_inv r tp0 σ0).
+                            <disc> |C={⊤}_0=> (source_inv r tp0 σ0).
   Proof.
     intros Herased Hno_err.
     iMod (own_alloc (● (tpool_to_res tp, Some (Excl σ))
@@ -261,7 +261,8 @@ Section ghost_step.
     rewrite pair_split.
     iDestruct "Hfrag" as "($&$)". iFrame "Hinv".
     iModIntro.
-    iApply (cfupd_weaken_all with "[$]"); eauto.
+    iMod (cfupd_weaken_all with "[Hcfupd]") as "H"; eauto.
+    iDestruct "H" as ">$". eauto.
   Qed.
 
   Lemma source_cfg_init2 `{cfgPreG Σ} r tp σ :

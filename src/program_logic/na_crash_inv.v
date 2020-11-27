@@ -62,21 +62,22 @@ Proof.
   iFrame "#". iIntros. iApply "HQ'". by iApply "Hwand0".
 Qed.
 
-Lemma wpc_na_crash_inv_open_modify Qnew s k k' k'' E1 e Φ Φc Q P :
+Lemma wpc_na_crash_inv_open_modify Qnew s k k' k'' E1 e Φ Φc {HL: AbsLaterable Φc} Q P :
   k'' ≤ k' →
   k'' ≤ (S k) →
   S k ≤ k' →
   na_crash_inv (S k') Q P -∗
-  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ k''; E1
+  (<disc> Φc ∧ (▷ Q -∗ WPC e @ k''; E1
                     {{λ v, ▷ Qnew v ∗
-                           ▷ □ (Qnew v -∗ P)  ∗ (na_crash_inv (S k') (Qnew v) P -∗ (<disc> ▷ Φc ∧ Φ v))}}
-                    {{ Φc ∗ P }})) -∗
+                           ▷ □ (Qnew v -∗ P)  ∗ (na_crash_inv (S k') (Qnew v) P -∗ (<disc> Φc ∧ Φ v))}}
+                    {{ Φc ∗ ▷ P }})) -∗
   WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}.
 Proof.
   crash_unseal.
   iIntros (???) "Hbundle Hwp".
   iDestruct "Hbundle" as (???) "(Hval&HQ0&HQP)".
-  iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ Qnew _ with "[-]"); try iFrame "Hval"; eauto.
+  unshelve (iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ Qnew _ with "[-]"); try iFrame "Hval"; eauto).
+  { apply _. }
   { lia. }
   iSplit.
   { iDestruct "Hwp" as "($&_)". }
@@ -93,14 +94,14 @@ Qed.
 
 (* TODO: in theory this can implement ElimAcc for iInv support; see
 [elim_acc_wp_nonatomic] *)
-Lemma wpc_na_crash_inv_open s k k' k'' E1 e Φ Φc Q P:
+Lemma wpc_na_crash_inv_open s k k' k'' E1 e Φ Φc {HL: AbsLaterable Φc} Q P:
   k'' ≤ k' →
   k'' ≤ (S k) →
   S k ≤ k' →
   na_crash_inv (S k') Q P -∗
-  (<disc> ▷ Φc ∧ (▷ Q -∗ WPC e @ k''; E1
-                    {{λ v, ▷ Q ∗ (na_crash_inv (S k') Q P -∗ (<disc> ▷ Φc ∧ Φ v))}}
-                    {{ Φc ∗ P }})) -∗
+  (<disc> Φc ∧ (▷ Q -∗ WPC e @ k''; E1
+                    {{λ v, ▷ Q ∗ (na_crash_inv (S k') Q P -∗ (<disc> Φc ∧ Φ v))}}
+                    {{ Φc ∗ ▷ P }})) -∗
   WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (???) "H1 Hwp".

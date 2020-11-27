@@ -889,7 +889,7 @@ Proof using spec_trans.
       iApply (wpc_mono with "H"); eauto.
     }
 
-    iSplit; first eauto. iNext. iExists _; iFrame; eauto.
+    iSplit; first (iModIntro; iApply "Hj"). iNext. iExists _; iFrame; eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.
