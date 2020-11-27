@@ -718,10 +718,12 @@ Proof.
   iModIntro.
   iDestruct "resources" as "(?&?&?&?)".
   iFrame.
-  iExists _, _; iFrame "%∗".
+  iExists ls, ls'; iFrame "%∗".
   apply log_crash_unfold in Htrans as (crash_txn & Hbound & Hls'_eq).
   subst ls'; simpl.
-  iPureIntro; lia.
+  iSplit; first by (iPureIntro; lia).
+  iExists 1%Qp, _. unshelve iExists _; [ | iFrame ].
+  lia.
 Qed.
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
