@@ -67,7 +67,7 @@ jobs:
         name: timing-report
         path: timing-${{matrix.coq_version}}.txt
 
-  "vos build":
+  build-vos:
     runs-on: ubuntu-latest
     strategy:
       matrix:
