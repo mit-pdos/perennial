@@ -544,11 +544,14 @@ Definition crash_heaps_post_exchange γ : iProp Σ :=
   (∃ (crash_heaps: async (gmap u64 Block)),
       "Hcrash_heaps_old" ∷ ghost_var γ.(wal_heap_crash_heaps) (3/4) crash_heaps).
 
+Definition heapspec_durable_exchanger γ bnd : iProp Σ :=
+  (∃ q n (Hle: n ≤ bnd), mnat_own_auth γ.(wal_heap_durable_lb) q n).
+
 Definition heapspec_exchanger γ γ' : iProp Σ :=
   ∃ ls ls', "%Hwal_wf" ∷ ⌜ wal_wf ls' ⌝ ∗
     "%Hlb_mono" ∷ ⌜(ls.(log_state.durable_lb) ≤ ls'.(log_state.durable_lb))%nat⌝ ∗
     (* old durable_lb for purposes of exchanging lower-bounds in old generation *)
-    "Hdurable_lb_old" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
+    "Hdurable_lb_old" ∷ heapspec_durable_exchanger γ ls.(log_state.durable_lb) ∗
     "#Hdurable_lb_lb" ∷ mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
     "Hcrash_heaps_exchange" ∷ (crash_heaps_pre_exchange γ γ' ls' ∨ crash_heaps_post_exchange γ).
 
@@ -562,35 +565,56 @@ Lemma heapspec_exchange_durable_lb γ γ' lb :
 Proof.
   iNamed 1.
   iIntros "#Hold_lb_lb".
+  iDestruct "Hdurable_lb_old" as (q n Hle) "Hdurable_lb_old".
   iDestruct (mnat_own_lb_valid with "Hdurable_lb_old [$]") as %[_ Hlb].
   iApply (mnat_own_lb_le with "Hdurable_lb_lb").
   lia.
 Qed.
 
-Lemma heapspec_exchange_crash_heaps γ γ' lb crash_heaps :
-  heapspec_exchanger γ γ' -∗
+Lemma heapspec_durable_exchanger_dup γ n :
+  heapspec_durable_exchanger γ n -∗
+  heapspec_durable_exchanger γ n ∗
+  heapspec_durable_exchanger γ n.
+Proof.
+  iIntros "H". iDestruct "H" as (q n' Hle) "(H1&H2)".
+  iSplitL "H1"; iExists _, _; iFrame; eauto.
+Qed.
+
+Lemma heapspec_durable_exchanger_use γ n lb :
+  heapspec_durable_exchanger γ n -∗
   mnat_own_lb γ.(wal_heap_durable_lb) lb -∗
+  ⌜ lb ≤ n ⌝.
+Proof.
+  iIntros "H1 H2".
+  iDestruct "H1" as (? ? ?) "H".
+  iDestruct (mnat_own_lb_valid with "[$] [$]") as %[_ Hlb].
+  iPureIntro; lia.
+Qed.
+
+Lemma heapspec_exchange_crash_heaps γ γ' crash_heaps :
+  heapspec_exchanger γ γ' -∗
   ghost_var γ.(wal_heap_crash_heaps) (3/4) crash_heaps -∗
   heapspec_exchanger γ γ' ∗
   (∃ ls',
-      ⌜ lb < length ls'.(log_state.txns) ⌝%nat ∗
+      heapspec_durable_exchanger γ (length ls'.(log_state.txns) - 1) ∗
       let crash_heaps' := async_take (length ls'.(log_state.txns)) crash_heaps in
       "Hcrash_heaps" ∷ ghost_var γ'.(wal_heap_crash_heaps) (3/4) crash_heaps' ∗
       ([∗ map] a↦b ∈ latest crash_heaps', ∃ hb,
         ⌜hb_latest_update hb = b⌝ ∗
         mapsto (hG:=γ'.(wal_heap_h)) a 1 hb)).
 Proof.
-  iIntros "Hexch #Hold_lb_lb Hcrash_heaps_old34".
+  iIntros "Hexch Hcrash_heaps_old34".
   iNamed "Hexch".
-  iDestruct (mnat_own_lb_valid with "Hdurable_lb_old [$]") as %[_ Hlb].
+  iDestruct (heapspec_durable_exchanger_dup with "Hdurable_lb_old") as "(Hdurable_lb_old1&Hdurable_lb_old2)".
   iDestruct "Hcrash_heaps_exchange" as "[H|H]"; iNamed "H".
   - iDestruct (ghost_var_agree with "[$] [$]") as %<-.
-    iSplitR "Hcrash_heaps H".
+    iSplitR "Hcrash_heaps H Hdurable_lb_old2".
     * iExists ls, ls'. iFrame "% # ∗".
       iRight. iExists _; iFrame.
-    * iExists ls'. iSplit.
-      { iPureIntro. destruct Hwal_wf. lia. }
-      iFrame.
+    * iExists ls'. iFrame.
+      { iDestruct "Hdurable_lb_old2" as (? n Hle) "H".
+        unshelve (iExists q, n, _; iFrame).
+        destruct Hwal_wf. lia. }
   - by iDestruct (ghost_var_valid_2 with "Hcrash_heaps_old34 Hcrash_heaps_old") as %[Hle ?].
 Qed.
 

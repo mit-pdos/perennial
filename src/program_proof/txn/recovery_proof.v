@@ -8,6 +8,8 @@ From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.
 From Perennial.program_proof Require Import txn.invariant.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
+From RecordUpdate Require Import RecordUpdate.
+Import RecordSetNotations.
 Section goose_lang.
 Context `{!txnG Σ}.
 
@@ -55,7 +57,16 @@ Definition is_txn_durable γ dinit : iProp Σ :=
     ⌜hb_latest_update hb = b⌝ ∗
     mapsto (hG:=γ.(txn_walnames).(wal_heap_h)) a 1 hb).
 
-Definition txn_exchanger (γ γ' : @txn_names Σ) : iProp Σ := True.
+Definition txn_pre_exchange γ γ' : iProp Σ :=
+ (∃ σs : async (gmap addr object), "H◯async" ∷ ghost_var γ'.(txn_crashstates) (3/4) σs ∗
+              heapspec_durable_exchanger γ.(txn_walnames) (length (possible σs) - 1)).
+
+Definition txn_post_exchange γ γ' : iProp Σ :=
+ (∃ σs : async (gmap addr object), "H◯async" ∷ ghost_var γ.(txn_crashstates) (3/4) σs).
+
+Definition txn_exchanger (γ γ' : @txn_names Σ) : iProp Σ :=
+  heapspec_exchanger γ.(txn_walnames) γ'.(txn_walnames) ∗
+  (txn_pre_exchange γ γ' ∨ txn_post_exchange γ γ').
 
 Global Instance is_txn_always_discretizable γ :
   Discretizable (is_txn_always γ).
@@ -70,14 +81,15 @@ Theorem wpc_MkTxn (d:loc) dinit (γ:txn_names) logm k :
     MkTxn #d @ k; ⊤
   {{{ (l: loc), RET #l; is_txn l γ dinit ∗ ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ a v)
       (* cfupd stuff *) }}}
-  {{{ ∃ γ', ⌜ txn_kinds γ' = txn_kinds γ ⌝ ∗ is_txn_durable γ' dinit ∗ txn_exchanger γ γ' }}}.
+  {{{ is_txn_durable γ dinit ∗ ghost_var γ.(txn_crashstates) (3/4) logm  ∨
+      (∃ γ', ⌜ txn_kinds γ' = txn_kinds γ ⌝ ∗ is_txn_durable γ' dinit ∗ txn_exchanger γ γ') }}}.
 Proof.
   iIntros (Φ Φc) "(Hdur&Hlogm) HΦ".
   rewrite /MkTxn. wpc_pures.
-  { crash_case. iNext. iExists γ. iSplit; first done. iFrame "Hdur". }
+  { crash_case. iNext. iLeft; by iFrame. }
 
   iCache with "Hdur HΦ Hlogm".
-  { crash_case.  iExists γ. iSplit; first done. iFrame "Hdur". }
+  { crash_case. iNext. iLeft; by iFrame. }
   wpc_bind (lock.new _).
   wpc_frame; wp_apply (wp_new_free_lock).
   iIntros (lk) "Hlock". iNamed 1.
@@ -85,10 +97,9 @@ Proof.
   iNamed "Hdur".
   iMod (alloc_heapspec_init_ghost_state (γ.(txn_walnames).(wal_heap_walnames)))
          as (γ'_txn_walnames ?) "Hheapspec_init".
-  set (P := λ ls, (wal_heap_inv γ.(txn_walnames) ls ∗ heapspec_init_ghost_state γ'_txn_walnames)%I).
-  (* TODO: need init_ghost_state for the txn so we can define γ', the new names *)
   iMod (alloc_txn_init_ghost_state γ'_txn_walnames γ.(txn_kinds)) as
       (γ' Hwalnames_eq Hkinds_eq) "Htxn_init".
+  set (P := λ ls, (wal_heap_inv γ.(txn_walnames) ls ∗ heapspec_init_ghost_state γ'_txn_walnames)%I).
   set (Prec (ls': log_state.t) :=
          (wal_heap_inv γ'.(txn_walnames) ls' ∗
           heapspec_resources γ.(txn_walnames) γ'.(txn_walnames) ls')%I).
@@ -108,10 +119,53 @@ Proof.
       iModIntro. iNext.
       iIntros "Hcrash".
       iApply "HΦ".
-      rewrite /P /Prec.
-      iDestruct "Hcrash" as (γ'' ls'') "(Hdur' & Hres' & [HP|HP])".
+      iDestruct "Hcrash" as (ls'') "[HP|HP]".
       - admit.
-      - admit. }
+      - iDestruct "HP" as (γ'') "(Hdur' & Hres' & HP)".
+        iAssert (C -∗ |0={⊤}=>
+                  ∃ γ'0, ⌜γ'0.(txn_kinds) = γ.(txn_kinds)⌝ ∗ is_txn_durable γ'0 dinit ∗ txn_exchanger γ γ'0)%I
+        with "[-]" as "Hgoal".
+        {
+
+        rewrite /Prec. iDestruct "HP" as "(Hheap_inv&Hheap_res)".
+        rewrite /is_txn_durable.
+        iIntros "C".
+        iExists (γ'<|txn_walnames;wal_heap_walnames := γ''|>). iSplitL ""; first eauto.
+
+        iClear "Hlocked_walheap".
+        rewrite /heapspec_resources.
+        iDestruct "Hheap_res" as "(Hheap_exchanger&Hlocked_walheap)".
+        iNamed "Hdur".
+        iDestruct (heapspec_exchange_crash_heaps with "[$] [$]") as "(Hheap_exchange&Hnew)".
+        iDestruct "Hnew" as (ls''') "(Hheap_lb_exchange&Hcrash_heaps0)".
+        iNamed "Hcrash_heaps0".
+
+        iNamed "Htxn_init".
+        iMod (ghost_var_update (async_take (length ls'''.(log_state.txns)) logm) with "crashstates")
+             as "crashstates".
+        iEval (rewrite -Qp_quarter_three_quarter) in "crashstates".
+        iDestruct (fractional.fractional_split_1 with "crashstates") as
+            "[crashstates1 crashstates2]".
+        iDestruct (heapspec_durable_exchanger_dup with "[$]")
+                  as "(Hheap_lb_exchange1&Hheap_lb_exchange2)".
+        iSplitR "crashstates2 Hheap_lb_exchange2 Hheap_exchange"; last first.
+        { iModIntro. rewrite /txn_exchanger. iFrame.
+          iLeft. iExists _. iFrame.
+          iExactEq "Hheap_lb_exchange2".
+          f_equal. rewrite /async_take.
+          rewrite possible_list_to_async //=; len.
+          * admit.
+          * admit.
+          (* Should be provable, but we've lost too much info about connection between logm and ls''' *)
+        }
+        iExists ls''. simpl. iFrame "Hheap_inv Hres' Hdur'".
+
+        iFrame. iSplitR "Hcrash_heaps Hcrash_heaps0"; last first.
+        { iExists _. iFrame. eauto. }
+
+        rewrite /is_txn_always/is_txn_state.
+        admit. }
+    (*
     iNext. iIntros (γ'' l) "(Hwal & Hwal_cfupd & Hwal_cinv)".
     wpc_frame "Hdur HΦ Hlogm".
     { admit. }
@@ -129,6 +183,7 @@ Proof.
     iModIntro.
     iNamed 1.
     iRight in "HΦ".
+    *)
 Admitted.
 
 End goose_lang.
