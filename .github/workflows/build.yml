@@ -31,22 +31,16 @@ jobs:
         coq_version: ${{ matrix.coq_version }}
         ocaml_version: '4.09-flambda'
         install: |
-          startGroup Install dependencies
-            sudo apt-get update
-            sudo apt-get install -y python3 python3-pip sqlite3
-            pip3 install -r etc/requirements.txt -r etc/requirements-test.txt
-          endGroup
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip sqlite3
+          pip3 install -r etc/requirements.txt -r etc/requirements-test.txt
         before_script: |
           sudo chown -R coq:coq . # workaround a permission issue
         script: |
-          startGroup Build
-            make -j2 -k ci
-          endGroup
+          make -j2 -k ci
         after_script: |
-          startGroup Create timing report
-            ./etc/timing-report.py --max-files 30 > timing.txt
-            cat timing.txt
-          endGroup
+          ./etc/timing-report.py --max-files 30 > timing.txt
+          cat timing.txt
         uninstall: ""
     - name: Revert permissions
       # to avoid a warning at cleanup time
