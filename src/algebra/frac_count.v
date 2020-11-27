@@ -16,8 +16,6 @@ Set Default Proof Using "Type".
 Definition frac_countUR :=
   (optionUR (prodR fracR positiveR)).
 
-l ↦{q} v ∗ (l +ₗl) ↦ #rc
-
 Class frac_countG Σ :=
   { frac_count_inG :> inG Σ (authR frac_countUR) }.
 
