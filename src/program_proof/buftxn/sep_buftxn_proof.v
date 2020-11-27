@@ -953,9 +953,6 @@ Section goose_lang.
       iIntros (k x Hkx) "H".
       iExists _; iFrame.
   Qed.
-*)
-*)
-  Admitted.
 
   Theorem is_buftxn_mem_durable l γ dinit γtxn P0 γdurable :
     is_buftxn_mem l γ dinit γtxn γdurable -∗
