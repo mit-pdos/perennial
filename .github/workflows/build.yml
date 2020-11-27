@@ -39,9 +39,24 @@ jobs:
         script: |
           make -j2 -k ci
         after_script: |
-          ./etc/timing-report.py --max-files 30 > timing.txt
-          cat timing.txt
+          startGroup Create timing report
+            ./etc/timing-report.py --max-files 30 > timing.txt
+            cat timing.txt
+          endGroup
         uninstall: ""
+        # workaround for https://github.com/coq-community/docker-coq-action/issues/34
+        custom_script: |
+          {{before_install}}
+          startGroup Install dependencies
+            {{install}}
+          endGroup
+          {{after_install}}
+          {{before_script}}
+          startGroup Build
+            {{script}}
+          endGroup
+          {{after_script}}
+          {{uninstall}}
     - name: Revert permissions
       # to avoid a warning at cleanup time
       if: ${{ always() }}
