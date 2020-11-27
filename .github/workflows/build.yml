@@ -30,26 +30,28 @@ jobs:
         opam_file: 'coq-perennial.opam'
         coq_version: ${{ matrix.coq_version }}
         ocaml_version: '4.09-flambda'
-        custom_script: |
+        install: |
           startGroup Install dependencies
             sudo apt-get update
             sudo apt-get install -y python3 python3-pip sqlite3
             pip3 install -r etc/requirements.txt -r etc/requirements-test.txt
           endGroup
-          startGroup Print opam config
-            opam config list; opam repo list; opam list
-          endGroup
-          sudo chown -R coq:coq . # Workaround a permission issue:
-            # the container user has UID=GID=1000,
-            # while the GHA workdir has (UID=1001, GID=116).
+        before_script: |
+          sudo chown -R coq:coq . # workaround a permission issue
+        script: |
           startGroup Build
             make -j2 -k ci
           endGroup
-          sudo chown -R coq:coq . # Revert permissions back
+        after_script: |
           startGroup Create timing report
             ./etc/timing-report.py --max-files 30 > timing.txt
             cat timing.txt
           endGroup
+        uninstall: ""
+    - name: Revert permissions
+      # to avoid a warning at cleanup time
+      if: ${{ always() }}
+      run: sudo chown -R 1001:116 .
     - uses: actions/upload-artifact@v2
       with:
         name: timing-report
