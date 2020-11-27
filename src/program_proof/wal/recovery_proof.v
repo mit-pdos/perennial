@@ -628,10 +628,10 @@ Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
         ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s' ∗ ▷ Pcrash s s') -∗
   ▷ P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
-                (<bdisc> (C -∗ |0={⊤}=> ▷ ∃ s, ⌜wal_post_crash s⌝ ∗
+                (<bdisc> (C -∗ |0={⊤}=> ∃ s, ⌜wal_post_crash s⌝ ∗
                                          (* NOTE: need to add the ghost state that the logger will need *)
                                          is_wal_inner_durable γ' s dinit ∗
-                                         wal_resources γ' ∗ Prec s)) ∗
+                                         wal_resources γ' ∗ ▷ Prec s)) ∗
                 □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
                                            ⌜relation.denote log_crash s s' tt⌝ ∗
                                            is_wal_inner_crash γ s ∗
@@ -970,7 +970,9 @@ done:
   iModIntro.
   iSplitL "Hncinv".
   { rewrite /N. iApply ncinv_split_l. iApply "Hncinv". }
-  iFrame.
+  iFrame. iModIntro. iIntros "HC".
+  iMod ("Hcfupd" with "[$]") as (s0) "(>%&>?&>?&?)".
+  iModIntro; iExists _. iFrame. eauto.
 Qed.
 
 (*
@@ -1256,7 +1258,7 @@ Qed.
 Definition wal_cfupd_cancel k γ' Prec : iProp Σ :=
   (<disc> (|C={⊤}_k=>  ∃ s, ⌜wal_post_crash s⌝ ∗
                                  is_wal_inner_durable γ' s dinit ∗
-                                 wal_resources γ' ∗ Prec s)).
+                                 wal_resources γ' ∗ ▷ Prec s)).
 
 Definition wal_cinv γ γ' Pcrash : iProp Σ :=
   □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
