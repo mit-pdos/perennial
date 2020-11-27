@@ -10,11 +10,13 @@ Set Default Proof Using "Type".
    We rename their StrongAuth and StrongTok to fc_auth and fc_tok and remove some of the Rust ARC terminology.
  *)
 
-(* Lets you take a fractional permission and split it up while tracking how many splits there
-   are. *)
+(* Lets you take a fractional permission and split it up while tracking how many
+   splits there are. *)
 
 Definition frac_countUR :=
   (optionUR (prodR fracR positiveR)).
+
+l ↦{q} v ∗ (l +ₗl) ↦ #rc
 
 Class frac_countG Σ :=
   { frac_count_inG :> inG Σ (authR frac_countUR) }.

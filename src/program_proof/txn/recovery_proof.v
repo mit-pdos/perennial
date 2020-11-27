@@ -84,13 +84,51 @@ Proof.
   wpc_bind (MkLog #d).
   iNamed "Hdur".
   iMod (alloc_heapspec_init_ghost_state (γ.(txn_walnames).(wal_heap_walnames)))
-         as (γ'_txn_walnames ?) "Hheapspec_init_ghost_state".
+         as (γ'_txn_walnames ?) "Hheapspec_init".
   set (P := λ ls, (wal_heap_inv γ.(txn_walnames) ls ∗ heapspec_init_ghost_state γ'_txn_walnames)%I).
   (* TODO: need init_ghost_state for the txn so we can define γ', the new names *)
-  (* TODO: use [alloc_txn_init_ghost_state] *)
-  set (Prec := True).
-  set (Pcrash := True).
-  wpc_apply (wpc_MkLog_recover dinit P).
+  iMod (alloc_txn_init_ghost_state γ'_txn_walnames γ.(txn_kinds)) as
+      (γ' Hwalnames_eq Hkinds_eq) "Htxn_init".
+  set (Prec (ls': log_state.t) :=
+         (wal_heap_inv γ'.(txn_walnames) ls' ∗
+          heapspec_resources γ.(txn_walnames) γ'.(txn_walnames) ls')%I).
+  set (Pcrash (ls ls' : log_state.t) := (True)%I : iProp Σ).
+  wpc_apply (wpc_MkLog_recover dinit P _ _ _ _ Prec Pcrash
+            with "[] [$His_wal_inner_durable Hwal_res Hwal_heap_inv Hheapspec_init]").
+  - iIntros "!>" (???) ">HP".
+    iDestruct "HP" as "[Hinv Hinit]".
+    iMod (wal_heap_inv_crash_transform with "Hinv Hinit") as "[Hinv Hres]"; eauto.
+    rewrite /Prec /Pcrash.
+    rewrite Hwalnames_eq.
+    iModIntro.
+    by iFrame.
+  - iFrame.
+  - iSplit.
+    { iLeft in "HΦ".
+      iModIntro. iNext.
+      iIntros "Hcrash".
+      iApply "HΦ".
+      rewrite /P /Prec.
+      iDestruct "Hcrash" as (γ'' ls'') "(Hdur' & Hres' & [HP|HP])".
+      - admit.
+      - admit. }
+    iNext. iIntros (γ'' l) "(Hwal & Hwal_cfupd & Hwal_cinv)".
+    wpc_frame "Hdur HΦ Hlogm".
+    { admit. }
+    rewrite -wp_fupd.
+    wp_apply wp_allocStruct; first by val_ty.
+    iIntros (txn_l) "Htxn".
+    iApply struct_fields_split in "Htxn". iNamed "Htxn".
+    wp_pures.
+    iMod (readonly_alloc_1 with "mu") as "mu".
+    iMod (readonly_alloc_1 with "log") as "log".
+    iMod (alloc_lock lockN _ _ (is_txn_locked txn_l γ.(txn_walnames))
+            with "Hlock [pos Hlocked_walheap]") as "Htxn_lock".
+    { iNext. rewrite /is_txn_locked.
+      iExists _, _, _; iFrame. }
+    iModIntro.
+    iNamed 1.
+    iRight in "HΦ".
 Admitted.
 
 End goose_lang.
