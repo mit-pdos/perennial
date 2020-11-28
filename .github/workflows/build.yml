@@ -40,7 +40,7 @@ jobs:
           make -j2 -k ci
         after_script: |
           startGroup Create timing report
-            ./etc/timing-report.py --max-files 50 | tee timing-$${{matrix.coq_version}}.txt
+            ./etc/timing-report.py --max-files 50
           endGroup
         uninstall: ""
         # workaround for https://github.com/coq-community/docker-coq-action/issues/34
@@ -60,10 +60,6 @@ jobs:
       # to avoid a warning at cleanup time
       if: ${{ always() }}
       run: sudo chown -R 1001:116 .
-    - uses: actions/upload-artifact@v2
-      with:
-        name: timing-report
-        path: timing-${{matrix.coq_version}}.txt
 
   build-vos:
     runs-on: ubuntu-latest
@@ -94,7 +90,7 @@ jobs:
           make -j2 -k vos
         after_script: |
           startGroup Create timing report
-            ./etc/timing-report.py --max-files 50 | tee timing-$${{matrix.coq_version}}.txt
+            ./etc/timing-report.py --max-files 50
           endGroup
         uninstall: ""
         # workaround for https://github.com/coq-community/docker-coq-action/issues/34
