@@ -385,11 +385,31 @@ Definition alloc_crash_cond (d: gset u64) (post_crash: bool) : iProp Σ :=
        "HPalloc" ∷ ▷ P σ ∗
        "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
 
+Definition alloc_crash_cond_no_later (d: gset u64) (post_crash: bool) : iProp Σ :=
+  ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
+       "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
+       "HPalloc" ∷ P σ ∗
+       "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
+
 Lemma alloc_crash_cond_from_post_crash d :
   alloc_crash_cond d true -∗ alloc_crash_cond d false.
 Proof.
   iNamed 1.
   iExists _; iFrame "% ∗".
+Qed.
+
+Lemma alloc_crash_cond_no_later_from_post_crash d :
+  alloc_crash_cond_no_later d true -∗ alloc_crash_cond_no_later d false.
+Proof.
+  iNamed 1.
+  iExists _; iFrame "% ∗".
+Qed.
+
+Lemma alloc_crash_cond_strip_later `{∀ x, Timeless (P x)} d b:
+  alloc_crash_cond d b -∗ ◇ alloc_crash_cond_no_later d b.
+Proof.
+  iIntros "H".
+  iNamed "H". iDestruct "HPalloc" as ">HPalloc". iModIntro. iExists _; by iFrame.
 Qed.
 
 Definition revert_reserved (σ : alloc.t) : alloc.t :=
@@ -441,6 +461,20 @@ Qed.
 Lemma alloc_crash_cond_crash_true d E :
   (∀ σ, ▷ P σ ={E}=∗ ▷ P (revert_reserved σ)) -∗
   alloc_crash_cond d false ={E}=∗ alloc_crash_cond d true.
+Proof.
+  clear.
+  iIntros "H".
+  iNamed 1.
+  iMod ("H" with "HPalloc"). iModIntro. iExists _. iFrame.
+  rewrite unused_revert_reserved. iFrame.
+  iPureIntro; split.
+  - apply alloc_post_crash_revert_reserved.
+  - rewrite dom_revert_reserved. auto.
+Qed.
+
+Lemma alloc_crash_cond_no_later_crash_true d E :
+  (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
+  alloc_crash_cond_no_later d false ={E}=∗ alloc_crash_cond_no_later d true.
 Proof.
   clear.
   iIntros "H".
@@ -988,6 +1022,17 @@ Instance allocator_crash_cond_stable d b :
   (∀ x, IntoCrash (▷ P _ x) (λ hG, ▷ P hG x)%I) →
   (∀ x, IntoCrash (Ψ _ x) (λ hG, Ψ hG x)) →
   IntoCrash (alloc_crash_cond (P _) (Ψ _) d b) (λ hG, alloc_crash_cond (P hG) (Ψ hG) d b).
+Proof.
+  intros.
+  hnf; iNamed 1.
+  iCrash.
+  iExists _. iFrame. eauto.
+Qed.
+
+Instance allocator_crash_cond_no_later_stable d b :
+  (∀ x, IntoCrash (P _ x) (λ hG, P hG x)%I) →
+  (∀ x, IntoCrash (Ψ _ x) (λ hG, Ψ hG x)) →
+  IntoCrash (alloc_crash_cond_no_later (P _) (Ψ _) d b) (λ hG, alloc_crash_cond_no_later (P hG) (Ψ hG) d b).
 Proof.
   intros.
   hnf; iNamed 1.

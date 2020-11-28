@@ -193,7 +193,7 @@ Section goose.
                     "Hinodes" ∷ ([∗ list] i↦s_inode ∈ s_inodes,
                    "Hinode_cinv" ∷ inode_cinv (U64 (Z.of_nat i)) s_inode ∗
                     "HPinode" ∷ Pinode γblocks γused i s_inode)) ∗
-    "Halloc" ∷ alloc_crash_cond (Palloc γused) allocΨ (rangeSet num_inodes (sz-num_inodes)) post_crash ∗
+    "Halloc" ∷ alloc_crash_cond_no_later (Palloc γused) allocΨ (rangeSet num_inodes (sz-num_inodes)) post_crash ∗
     "Hs_inode" ∷ dir_inv γblocks σ
   .
 
@@ -202,7 +202,7 @@ Section goose.
   Proof.
     iNamed 1.
     iExists _, _; iFrame.
-    iApply alloc_crash_cond_from_post_crash; auto.
+    iApply alloc_crash_cond_no_later_from_post_crash; auto.
   Qed.
 
   Definition pre_dir l (sz: Z) dir : iProp Σ :=
@@ -433,6 +433,7 @@ Section goose.
     iDestruct "Hdir" as (σ') "(>Hdir_inv&HP)".
     iIntros "HC". rewrite -big_sepL_later.
     iDestruct "Hinodes" as ">Hinodes".
+    iDestruct (alloc_crash_cond_strip_later with "[$Halloc]") as ">Halloc".
     iModIntro.
     iExists _; iFrame.
     iExists _, _; iFrame.
@@ -784,11 +785,9 @@ Section goose.
     {{{ dir_cinv (int.Z sz) σ0 false }}}.
   Proof using allocG0 heapG0 inG0 inG1 Σ.
     iIntros (? Φ Φc) "Hcinv HΦ".
-    (*
     wpc_call.
-    { iApply dir_cinv_post_crash; auto. rewrite /dir_cinv. iExists _, _. }
     { iApply dir_cinv_post_crash; auto. }
-     *)
+    { iApply dir_cinv_post_crash; auto. }
     iNamed "Hcinv".
     iCache with "HΦ Hinodes Halloc Hs_inode".
     { crash_case.
@@ -799,7 +798,7 @@ Section goose.
     iDestruct (big_sepL_sep with "Hinodes") as "(Hinode_cinvs&HPinodes)".
     wpc_apply (wpc_openInodes with "Hinode_cinvs"); auto.
     iSplit.
-    { iLeft in "HΦ". iModIntro. iNext. iIntros "Hinode_cinvs".
+    { iLeft in "HΦ". iModIntro. iIntros "Hinode_cinvs".
       iApply "HΦ".
       iApply dir_cinv_post_crash.
       iExists _, _; iFrame.
@@ -816,7 +815,7 @@ Section goose.
     wpc_pures.
     wpc_apply (wpc_inodeUsedBlocks with "[$Hinode_s $Hpre_inodes]").
     iSplit.
-    { iLeft in "HΦ". iModIntro. iNext. iIntros "Hinode_cinvs".
+    { iLeft in "HΦ". iModIntro. iIntros "Hinode_cinvs".
       iApply "HΦ".
       iApply dir_cinv_post_crash.
       iExists _, _; iFrame.
@@ -908,9 +907,20 @@ Section goose.
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
     (* Now we get to the actual read operation. *)
-    iApply (wpc_Inode__Read with "Hinode"); first done.
-    iSplit.
-    { by iLeft in "HΦ". }
+    iApply (wpc_step_strong_mono _ _ _ _ _ _ _
+         (λ v, (∃ s mb, ⌜ v = slice_val s ⌝ ∗
+                match mb with
+                | Some b => is_block s 1 b
+                | None => ⌜s = Slice.nil⌝
+                end ∗ Q mb))%I _ True with "[-HΦ] [HΦ]"); auto.
+    2: { iSplit.
+         * iNext. iIntros (?) "H". iDestruct "H" as (??) "(%&?)". subst.
+           iModIntro. iRight in "HΦ". by iApply "HΦ".
+         * iLeft in "HΦ".  iModIntro. iIntros. iModIntro. by iApply "HΦ". }
+    iApply (wpc_Inode__Read with "[Hinode]"); first done.
+    { iPureIntro; apply _. }
+    { iFrame "#". }
+    iSplit; first eauto.
     iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
     (* We need to learn that this inode exists in σD. *)
@@ -927,9 +937,9 @@ Section goose.
     iModIntro. iSplitL "Hownblocks Hused1".
     { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }
     iSplit.
-    { by iLeft in "HΦ". }
-    iIntros (s) "Hpost". iApply "HΦ".
-    iFrame. done.
+    { eauto. }
+    iIntros (s) "Hpost".
+    iExists _, _; iSplit; first eauto; iFrame. eauto.
   Qed.
 
   Theorem wpc_Dir__Size {k} (Q: u64 → iProp Σ) l sz k' (idx: u64):
@@ -963,9 +973,15 @@ Section goose.
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
     (* Now we get to the actual size operation. *)
-    iApply (wpc_Inode__Size with "Hinode"); first done.
-    iSplit.
-    { by iLeft in "HΦ". }
+    iApply (wpc_step_strong_mono _ _ _ _ _ _ _
+           (λ v, ∃ (sz : u64), ⌜ v = #sz ⌝ ∗ Q sz)%I _ _ with "[-HΦ] [HΦ]"); auto.
+    2: { iSplit.
+         * iNext. iIntros (?) "H". iDestruct "H" as (?) "(%&?)". subst.
+           iModIntro. iRight in "HΦ". by iApply "HΦ".
+         * iLeft in "HΦ".  iModIntro. iIntros. iModIntro. by iApply "HΦ". }
+    iApply (wpc_Inode__Size with "[] [$Hinode]"); first done.
+    { iPureIntro; apply _. }
+    iSplit; first eauto.
     iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
     (* We need to learn that this inode exists in σD. *)
@@ -982,8 +998,8 @@ Section goose.
     iModIntro. iSplitL "Hownblocks Hused1".
     { (* re-establish inode invariant *) rewrite /Pinode. eauto 10 with iFrame. }
     iSplit.
-    - by iLeft in "HΦ".
-    - iIntros "_". by iApply "HΦ".
+    - eauto.
+    - iIntros "_". eauto.
   Qed.
 
 
@@ -1013,7 +1029,7 @@ Section goose.
     dir_cinv sz σ false ={E}=∗ dir_cinv sz σ true.
   Proof.
     iNamed 1. rewrite /dir_cinv.
-    iMod (alloc_crash_cond_crash_true with "[] Halloc").
+    iMod (alloc_crash_cond_no_later_crash_true with "[] Halloc").
     {
       iIntros (σ0). rewrite /Palloc/named. rewrite used_revert_reserved.
       iIntros "H". eauto.
@@ -1099,15 +1115,21 @@ Section goose.
     wpc_pures.
     wpc_loadField.
     (* Now we get to the actual append operation. *)
+    iApply (wpc_step_strong_mono _ _ _ _ _ _ _
+           (λ v, ∃ (ok: bool), ⌜ v = #ok ⌝ ∗ if ok then Q else emp)%I _ _ with "[-HΦ] [HΦ]"); auto.
+    2: { iSplit.
+         * iNext. iIntros (?) "H". iDestruct "H" as (?) "(%&?)". subst.
+           iModIntro. iRight in "HΦ". by iApply "HΦ".
+         * iLeft in "HΦ".  iModIntro. iIntros. iModIntro. by iApply "HΦ". }
     iApply (wpc_Inode__Append (n:=k') (k':=k') inodeN allocN);
       [lia|lia|solve_ndisj|..].
     iFrame "Hinode Hb Halloc".
     iSplit; [ | iSplit; [ | iSplit ] ].
     - iApply reserve_fupd_Palloc.
     - iApply free_fupd_Palloc.
-    - by crash_case.
+    - eauto.
     - iSplit.
-      { (* Failure case *) iRight in "HΦ". iApply "HΦ". done. }
+      { (* Failure case *) iNext. iExists _; iSplit; eauto. }
       iIntros "!>" (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
       iEval (rewrite /Palloc) in "HPalloc". iNamed "HPalloc".
       iNamed "HPinode".
@@ -1135,7 +1157,7 @@ Section goose.
       iModIntro.
       iFrame.
       rewrite /Palloc.
-      iSplitR "HΦ HQ".
+      iSplitR "HQ".
       { iNext. iExists _. iFrame "Hused".
         (* Show that the domain bookeeping worked out. *)
         iPureIntro. split.
@@ -1144,7 +1166,7 @@ Section goose.
         - rewrite alloc_used_insert.
           apply alloc_insert_dom; auto.
       }
-      iSplit; first by crash_case. by iApply "HΦ".
+      iSplit; eauto.
   Qed.
 
 End goose.
@@ -1180,7 +1202,7 @@ Section crash_stable.
     rewrite /IntoCrash /dir_cinv.
     iNamed 1.
     iNamed "Hinodes".
-    rewrite (allocator_crash_cond_stable (λ _, Palloc γused)).
+    rewrite (allocator_crash_cond_no_later_stable (λ _, Palloc γused)).
     rewrite /dir_inv.
     iNamed "Hs_inode".
     rewrite /inode_allblocks.
