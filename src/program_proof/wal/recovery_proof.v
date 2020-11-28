@@ -4,6 +4,7 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 From Perennial.program_proof Require Import wal.circ_proof_crash.
 From Perennial.goose_lang Require Import crash_modality.
+From Perennial.goose_lang Require wpr_lifting.
 From Perennial.program_proof Require Import wal.logger_proof.
 From Perennial.program_proof Require Import wal.installer_proof.
 
@@ -1335,13 +1336,27 @@ Proof.
   rewrite /IntoCrash. iApply post_crash_nodep.
 Qed.
 
+Local Instance fmcounter_into_crash `{fmcounterG Σ} (γ: gname) q (x: nat):
+  IntoCrash (fmcounter γ q x) (λ _, fmcounter γ q x).
+Proof.
+  rewrite /IntoCrash. iApply post_crash_nodep.
+Qed.
+
+Local Instance txns_are_into_crash γ n l:
+  IntoCrash (txns_are γ n l) (λ _, txns_are γ n l).
+Proof.
+  rewrite /IntoCrash. iApply post_crash_nodep.
+Qed.
+
 Instance is_installed_stable γ d txns installed_txn_id diskEnd_txn_id :
   IntoCrash (is_installed γ d txns installed_txn_id diskEnd_txn_id)
             (λ _, is_installed γ d txns installed_txn_id diskEnd_txn_id).
 Proof.
   rewrite /IntoCrash. iNamed 1.
   iNamed "Howninstalled".
-Admitted.
+  iDestruct "Hbeing_installed_txns" as "-#Hbeing_installed_txns".
+  iCrash. iExists _, _. iFrame "% ∗".
+Qed.
 
 Instance disk_inv_stable γ s cs dinit:
   IntoCrash (disk_inv γ s cs dinit) (λ _, disk_inv γ s cs dinit).
@@ -1367,3 +1382,56 @@ Proof.
   iExists _. iFrame.
 Qed.
 End stable.
+
+
+(* this is not interesting on its own, but is just a test to make sure that the
+   wal spec is coherent *)
+
+Import wpr_lifting.
+
+Section recov.
+  Context `{!heapG Σ}.
+  Context `{!walG Σ}.
+
+  (* Just a simple example of using idempotence *)
+  Theorem wpr_MkLog (d: loc) γ s dinit:
+    is_wal_inner_durable γ s dinit -∗
+    wal_resources γ -∗
+    wpr NotStuck 2 ⊤
+        (MkLog #d)
+        (MkLog #d)
+        (λ _, True%I)
+        (λ _, True%I)
+        (λ _ _, True%I).
+  Proof.
+    iIntros "His_wal_inner_durable Hres".
+    iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I
+                            (λ _, ∃ σ' γ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ ▷ True)%I
+                            with "[His_wal_inner_durable Hres] []").
+    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ (λ _, True)%I (λ _ _, True)%I
+                   with "[] [$His_wal_inner_durable $Hres]"); auto 10.
+      iSplit.
+      * iModIntro.
+        iDestruct 1 as (?) "[(?&?&_)|H]".
+        ** iExists _, _. iFrame. eauto.
+        ** iDestruct "H" as (?) "(?&?&_)". iExists _, _. iFrame. eauto.
+      * eauto.
+    }
+    iModIntro. iIntros (????) "H".
+    iDestruct "H" as (σ'') "Hstart".
+    iNext. 
+    iDestruct "Hstart" as (?) "(H1&Hres&_)".
+    rewrite is_wal_inner_durable_stable.
+    iDestruct (post_crash_nodep with "Hres") as "Hres".
+    iCrash. iIntros "_". iSplit; first done.
+    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ (λ _, True)%I (λ _ _, True)%I
+                 with "[] [$H1 $Hres]"); auto 10.
+      iSplit.
+      * iModIntro.
+        iDestruct 1 as (?) "[(?&?&_)|H]".
+        ** iExists _, _. iFrame. eauto.
+        ** iDestruct "H" as (?) "(?&?&_)". iExists _, _. iFrame. eauto.
+      * eauto.
+    }
+  Qed.
+End recov.
