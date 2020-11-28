@@ -492,14 +492,14 @@ Proof.
     { iIntros "!> !> H". iLeft. eauto. }
     iFrame.
     rewrite /free_block_pending.
-    iModIntro. iModIntro. iMod "Hpend". iModIntro. iIntros "HC". by iDestruct "Hpend" as ">Hpend".
+    iModIntro. iModIntro. iMod "Hpend" as ">$". iModIntro. iModIntro. done.
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
     iMod (na_crash_inv_alloc _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as
         "(Hbund&Hpend)".
     { iIntros "!> !> H". iRight. eauto. }
-    iModIntro. iFrame. iModIntro. iMod "Hpend".
-    iIntros "HC". iDestruct "Hpend" as ">Hpend". iModIntro. iFrame. eauto.
+    iModIntro. iFrame. iModIntro. iMod "Hpend" as ">Hpend".
+    iModIntro. iFrame. eauto.
 Qed.
 
 Theorem is_allocator_alloc n l σ `{∀ a, Timeless (Ψ a)} :

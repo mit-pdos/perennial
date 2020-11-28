@@ -328,6 +328,23 @@ Section cfupd.
     cfupd k E1 ([∗ set] a ∈ σ, P a).
   Proof. rewrite big_opS_eq. apply cfupd_big_sepL. Qed.
 
+  Lemma is_except_0_wand {PROP:bi} (P Q: PROP) :
+    IsExcept0 Q → IsExcept0 (P -∗ Q).
+  Proof.
+    rewrite /IsExcept0.
+    intros HQ.
+    rewrite -{2}HQ.
+    iIntros ">HQ HP !>".
+    iApply ("HQ" with "HP").
+  Qed.
+
+  Global Instance cfupd_is_except0 k E Q : IsExcept0 (cfupd k E Q).
+  Proof.
+    rewrite /cfupd.
+    apply is_except_0_wand.
+    apply _.
+  Qed.
+
 End cfupd.
 
 (* Open to alternative notation for this. *)
