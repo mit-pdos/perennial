@@ -74,7 +74,7 @@ Theorem wpc_MkTxn (d:loc) dinit (γ:txn_names) logm k :
 Proof.
   iIntros (Φ Φc) "(Hdur&Hlogm) HΦ".
   rewrite /MkTxn. wpc_pures.
-  { crash_case. iNext. iExists γ. iSplit; first done. iFrame "Hdur". }
+  { crash_case. iExists γ. iSplit; first done. iFrame "Hdur". }
 
   iCache with "Hdur HΦ Hlogm".
   { crash_case.  iExists γ. iSplit; first done. iFrame "Hdur". }
