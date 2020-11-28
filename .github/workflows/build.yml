@@ -40,7 +40,7 @@ jobs:
           make -j2 -k ci
         after_script: |
           startGroup Create timing report
-            ./etc/timing-report.py --max-files 50 | tee timing-$${matrix.coq_version}.txt
+            ./etc/timing-report.py --max-files 50 | tee timing-$${{matrix.coq_version}}.txt
           endGroup
         uninstall: ""
         # workaround for https://github.com/coq-community/docker-coq-action/issues/34
@@ -94,8 +94,7 @@ jobs:
           make -j2 -k vos
         after_script: |
           startGroup Create timing report
-            ./etc/timing-report.py --max-files 30 > timing.txt
-            cat timing.txt
+            ./etc/timing-report.py --max-files 50 | tee timing-$${{matrix.coq_version}}.txt
           endGroup
         uninstall: ""
         # workaround for https://github.com/coq-community/docker-coq-action/issues/34
