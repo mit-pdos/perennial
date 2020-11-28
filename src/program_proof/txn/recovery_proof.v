@@ -164,9 +164,12 @@ Proof.
         { iExists _. iFrame. eauto. }
 
         rewrite /is_txn_always/is_txn_state.
+        (* this is a bunch of work *)
         admit. }
-    (*
-    iNext. iIntros (γ'' l) "(Hwal & Hwal_cfupd & Hwal_cinv)".
+        (* TODO: need to fix up modalities so assert above makes sense *)
+        admit. }
+
+    iNext. iIntros (γ'' l) "(#Hwal & Hwal_cfupd & #Hwal_cinv)".
     wpc_frame "Hdur HΦ Hlogm".
     { admit. }
     rewrite -wp_fupd.
@@ -174,16 +177,27 @@ Proof.
     iIntros (txn_l) "Htxn".
     iApply struct_fields_split in "Htxn". iNamed "Htxn".
     wp_pures.
-    iMod (readonly_alloc_1 with "mu") as "mu".
-    iMod (readonly_alloc_1 with "log") as "log".
+    iMod (readonly_alloc_1 with "mu") as "#mu".
+    iMod (readonly_alloc_1 with "log") as "#log".
     iMod (alloc_lock lockN _ _ (is_txn_locked txn_l γ.(txn_walnames))
-            with "Hlock [pos Hlocked_walheap]") as "Htxn_lock".
+            with "Hlock [pos Hlocked_walheap]") as "#Htxn_lock".
     { iNext. rewrite /is_txn_locked.
       iExists _, _, _; iFrame. }
+    iMod (inv_alloc invN with "His_txn_always") as "#Htxn_inv".
     iModIntro.
     iNamed 1.
     iRight in "HΦ".
-    *)
+    iApply "HΦ".
+    iSplitR ""; last first.
+    { admit. (* TODO: get mapsto_txn facts from allocating all of them *) }
+    rewrite /is_txn.
+    iExists _, _; iFrame "#".
+    iApply (is_wal_alter with "Hwal").
+    iModIntro. iClear "#".
+    rewrite /P.
+    iIntros (?) "[$ $]".
+    iIntros (?) "$".
+    all: fail "goals remaining".
 Admitted.
 
 End goose_lang.

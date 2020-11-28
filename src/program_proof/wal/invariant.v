@@ -1058,6 +1058,23 @@ Qed.
 
 End goose_lang.
 
+Lemma is_wal_alter `{!heapG Σ, !walG Σ} (P1 P2: log_state.t → iProp Σ) l γ dinit :
+  is_wal P1 l γ dinit -∗
+  □(∀ σ, P1 σ -∗ P2 σ ∗ (∀ σ', P2 σ' -∗ P1 σ')) -∗
+  is_wal P2 l γ dinit.
+Proof.
+  iIntros "#Hwal #Himpl".
+  iDestruct "Hwal" as "[Hinv $]".
+  iApply (ncinv_alter with "Hinv").
+  do 2 iModIntro.
+  iDestruct 1 as (σ) "[Hinner HP]".
+  iDestruct ("Himpl" with "HP") as "[HP2 HP1]".
+  iSplitL "Hinner HP2"; first by eauto with iFrame.
+  iDestruct 1 as (σ') "[Hinner HP2]".
+  iExists _; iFrame.
+  iApply ("HP1" with "[$]").
+Qed.
+
 Ltac destruct_is_wal :=
   iMod (is_wal_read_mem with "Hwal") as "#Hmem";
   wp_call;
