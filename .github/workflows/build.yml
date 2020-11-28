@@ -73,13 +73,17 @@ jobs:
         coq_version: ${{ matrix.coq_version }}
         ocaml_version: '4.09-flambda'
         install: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip sqlite3
-          pip3 install -r etc/requirements.txt
+          startGroup Install dependencies
+            sudo apt-get update
+            sudo apt-get install -y python3 python3-pip sqlite3
+            pip3 install -r etc/requirements.txt
+          endGroup
         before_script: |
           sudo chown -R coq:coq . # workaround a permission issue
         script: |
-          make -j2 -k vos
+          startGroup Build
+            make -j2 -k vos
+          endGroup
         after_script: |
           startGroup Create timing report
             ./etc/timing-report.py --max-files 50
