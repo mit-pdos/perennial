@@ -151,8 +151,8 @@ Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
 iExists _; iFrame; iPureIntro; word : core.
 
 Theorem wpc_forBreak_cond' (I: bool -> iProp Σ) Ic Φ Φc stk k E1 (cond body: val) :
-  (∀ b, I b -∗ <disc> ▷ Ic) -∗
-  <disc> ▷ (Ic -∗ Φc) ∧ ▷ (I false -∗ Φ #()) -∗
+  (∀ b, I b -∗ <disc> Ic) -∗
+  <disc> (Ic -∗ Φc) ∧ ▷ (I false -∗ Φ #()) -∗
   □ (I true -∗
      WPC if: cond #() then body #() else #false @ stk; k; E1
      {{ v, ∃ b : bool, ⌜ v = #b ⌝ ∧ I b }}
@@ -191,7 +191,7 @@ Proof.
 Qed.
 
 Theorem wpc_forBreak_cond (I: bool -> iProp Σ) Ic stk k E1 (cond body: val) :
-  (∀ b, I b -∗ <disc> ▷ Ic) →
+  (∀ b, I b -∗ <disc> Ic) →
   {{{ I true }}}
     if: cond #() then body #() else #false @ stk; k; E1
   {{{ r, RET #r; I r }}}
@@ -234,7 +234,6 @@ Proof.
     iDestruct (Himpl with "[%] H0") as "H0".
     { lia. }
     crash_case.
-    iNext.
     iExists _; iFrame.
     auto.
   }
@@ -244,7 +243,6 @@ Proof.
     iDestruct (Himpl with "[%] H0") as "H0".
     { lia. }
     crash_case.
-    iNext.
     iExists _; iFrame.
     auto.
   }
@@ -266,7 +264,7 @@ Proof.
     iDestruct (Himpl with "[] [$]") as "?"; eauto.
     { iPureIntro; lia. }
     crash_case.
-    iNext; iExists _; iFrame.
+    iExists _; iFrame.
     iPureIntro. lia.
   }
   wpc_pures.
@@ -281,7 +279,7 @@ Proof.
   - wpc_apply ("Hbody" with "[$HIx $Hl]").
     { iPureIntro; lia. }
     iSplit.
-    { iDestruct "HΦ" as "(HΦ&_)". iModIntro. iNext. iIntros "[IH1 | IH2]"; iApply "HΦ"; auto. }
+    { iDestruct "HΦ" as "(HΦ&_)". iModIntro. iIntros "[IH1 | IH2]"; iApply "HΦ"; auto. }
     iIntros "!> [HIx Hl]".
     iCache with "HΦ HIx".
     {
@@ -304,7 +302,7 @@ Proof.
       revert Hbound; word. }
     { iPureIntro; word. }
     iSplit.
-    + iLeft in "HΦ". iModIntro. iNext.
+    + iLeft in "HΦ". iModIntro.
       iIntros "HIx".
       iApply "HΦ".
       iDestruct "HIx" as (x') "[HI %]".

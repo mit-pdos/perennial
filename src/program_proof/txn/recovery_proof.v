@@ -86,10 +86,10 @@ Theorem wpc_MkTxn (d:loc) dinit (γ:txn_names) logm k :
 Proof.
   iIntros (Φ Φc) "(Hdur&Hlogm) HΦ".
   rewrite /MkTxn. wpc_pures.
-  { crash_case. iNext. iLeft; by iFrame. }
+  { crash_case. iLeft; by iFrame. }
 
   iCache with "Hdur HΦ Hlogm".
-  { crash_case. iNext. iLeft; by iFrame. }
+  { crash_case. iLeft; by iFrame. }
   wpc_bind (lock.new _).
   wpc_frame; wp_apply (wp_new_free_lock).
   iIntros (lk) "Hlock". iNamed 1.
@@ -116,7 +116,7 @@ Proof.
   - iFrame.
   - iSplit.
     { iLeft in "HΦ".
-      iModIntro. iNext.
+      iModIntro.
       iIntros "Hcrash".
       iApply "HΦ".
       iDestruct "Hcrash" as (ls'') "[HP|HP]".
@@ -127,14 +127,14 @@ Proof.
         with "[-]" as "Hgoal".
         {
 
-        rewrite /Prec. iDestruct "HP" as "(Hheap_inv&Hheap_res)".
+        rewrite /Prec. iDestruct "HP" as "(>Hheap_inv&Hheap_res)".
         rewrite /is_txn_durable.
         iIntros "C".
         iExists (γ'<|txn_walnames;wal_heap_walnames := γ''|>). iSplitL ""; first eauto.
 
         iClear "Hlocked_walheap".
         rewrite /heapspec_resources.
-        iDestruct "Hheap_res" as "(Hheap_exchanger&Hlocked_walheap)".
+        iDestruct "Hheap_res" as "(>Hheap_exchanger&>Hlocked_walheap)".
         iNamed "Hdur".
         iDestruct (heapspec_exchange_crash_heaps with "[$] [$]") as "(Hheap_exchange&Hnew)".
         iDestruct "Hnew" as (ls''') "(Hheap_lb_exchange&Hcrash_heaps0)".

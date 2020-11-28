@@ -999,7 +999,7 @@ Context `{!stagedG Σ}.
 
 Definition wpwpcN := nroot.@"temp".
 
-Theorem wpc_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q Qc : nat -> iProp Σ) anydirty k :
+Theorem wpc_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q Qc : nat -> iProp Σ) {HT1: Timeless PreQ} {HT2: ∀ n, Timeless (Qc n)} anydirty k :
   {{{
     is_buftxn buftx mt γUnified dinit anydirty ∗
     <disc> PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
@@ -1066,7 +1066,7 @@ Proof using stagedG0.
         iDestruct "H" as "[(_&>H)|[Hfalse1|Hfalse2]]".
         * iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def).
           iMod (fupd_split_level_intro_mask' _ ∅) as "Hclo''"; first by set_solver+.
-          iMod (fupd_split_level_le with "H") as "H"; first lia.
+          iMod (fupd_split_level_le with "H") as ">H"; first lia.
           iMod "Hclo''".
           iSpecialize ("Hclo" with "[HC Hpend34]").
           { iRight. iLeft. iFrame. }

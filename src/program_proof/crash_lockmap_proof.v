@@ -30,12 +30,12 @@ Section proof.
     {{{ [∗ set] a ∈ covered, P a ∗ □ (P a -∗ Pcrash a) }}}
       MkLockMap #() @ NotStuck; (S k); ⊤
     {{{ l ghs, RET #l; is_crash_lockMap (S k) l ghs covered P Pcrash ∗
-                       <disc> (|C={⊤}_(S k)=> [∗ set] a ∈ covered, Pcrash a) }}}
-    {{{ [∗ set] a ∈ covered, Pcrash a }}}.
+                       <disc> (|C={⊤}_(S k)=> [∗ set] a ∈ covered, ▷ Pcrash a) }}}
+    {{{ [∗ set] a ∈ covered, ▷ Pcrash a }}}.
   Proof using gen_heapPreG0.
     iIntros (Φ Φc) "HP HΦ".
     iAssert (|={⊤}=> [∗ set] a ∈ covered, na_crash_inv (S k) (P a) (Pcrash a) ∗
-                                          <disc> (|C={⊤}_S k=> Pcrash a))%I
+                                          <disc> (|C={⊤}_S k=> ▷ Pcrash a))%I
       with "[HP]" as "Hcrash_inv".
     { iApply big_sepS_fupd. iApply (big_sepS_mono with "HP").
       iIntros (a Hin) "(HP&#HPwand)".
@@ -44,18 +44,32 @@ Section proof.
     iMod "Hcrash_inv" as "H".
     iDestruct (big_sepS_sep with "H") as "(Hna&Hcfupd)".
     rewrite big_sepS_own_disc_fupd.
-    rewrite cfupd_big_sepS.
-    iApply (wpc_crash_frame_wand' with "[-Hcfupd] Hcfupd").
+    iApply (wpc_crash_frame_wand' with "[-Hcfupd] [Hcfupd]"); last first.
+    { iModIntro.
+      iApply cfupd_big_sepS in "Hcfupd".
+      rewrite big_sepS_later_2.
+      iAssumption. }
     iPoseProof (wp_wpc_step_frame' _ _ _ _ _
-                ((([∗ set] a ∈ covered, Pcrash a) -∗ Φc))%I
+                (([∗ set] a ∈ covered, ▷ Pcrash a) -∗ Φc)%I
                 (∀ (l : loc) (ghs : list (gen_heapG u64 bool Σ)),
                     is_crash_lockMap (S k) l ghs covered P Pcrash
-                                     ∗ <disc> (|C={⊤}_S k=> [∗ set] a ∈ covered, Pcrash a) -∗ Φ #l)%I
-                  with "[$HΦ Hna]") as "H"; last by iApply (wpc_mono with "H").
+                                     ∗ <disc> (|C={⊤}_S k=> [∗ set] a ∈ covered, ▷ Pcrash a) -∗ Φ #l)%I
+                  with "[HΦ Hna]") as "H".
+    3: {
+      iApply (wpc_mono with "H"); eauto.
+      repeat (f_equiv; simpl).
+      by rewrite big_sepS_later.
+    }
     { eauto. }
+    iSplitL "HΦ".
+    {
+      iApply (and_mono_l with "HΦ").
+      f_equiv.
+    }
     wp_apply (wp_MkLockMap with "Hna").
     iIntros (l ghs) "His_lockMap". iIntros "HΦ Hcfupd".
     iApply "HΦ". iFrame.
+    rewrite big_sepS_later //.
   Qed.
 
   Theorem wp_LockMap__Acquire k l ghs covered (addr : u64) (P Pcrash : u64 -> iProp Σ) :
@@ -71,12 +85,12 @@ Section proof.
     iDestruct "H" as "($&%)".
   Qed.
 
-  Lemma use_CrashLocked E1 k k' e lk ghs addr R Rcrash Φ Φc:
+  Lemma use_CrashLocked E1 k k' e lk ghs addr R Rcrash Φ Φc {HL: AbsLaterable Φc}:
     (S k ≤ k')%nat →
     CrashLocked (S k') lk ghs addr R Rcrash -∗
-    <disc> ▷ Φc ∧ (▷ R addr -∗
-         WPC e @ (S k); E1 {{ λ v, (CrashLocked (S k') lk ghs addr R Rcrash -∗ (<disc> ▷ Φc ∧ Φ v)) ∗ ▷ R addr }}
-                                         {{ Φc ∗ Rcrash addr }}) -∗
+    <disc> Φc ∧ (▷ R addr -∗
+         WPC e @ (S k); E1 {{ λ v, (CrashLocked (S k') lk ghs addr R Rcrash -∗ (<disc> Φc ∧ Φ v)) ∗ ▷ R addr }}
+                                         {{ Φc ∗ ▷ Rcrash addr }}) -∗
     WPC e @ (S k); E1 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (?) "Hcrash_locked H".

@@ -261,7 +261,8 @@ Section ghost_step.
     rewrite pair_split.
     iDestruct "Hfrag" as "($&$)". iFrame "Hinv".
     iModIntro.
-    iApply (cfupd_weaken_all with "[$]"); eauto.
+    iMod (cfupd_weaken_all with "[Hcfupd]") as "H"; eauto.
+    iDestruct "H" as ">$". eauto.
   Qed.
 
   Lemma source_cfg_init2 `{cfgPreG Σ} r tp σ :

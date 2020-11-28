@@ -872,7 +872,7 @@ Section goose_lang.
               (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT,
                             ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
                 with "[$Hbuftxn Hold_vals]").
-    { iSplit; [ iModIntro; iAccu | ].
+    3: { iSplit; [ iModIntro; iAccu | ].
       iDestruct "Htxn_system" as "[Hinv _]".
       iInv "Hinv" as ">Hinner" "Hclo".
       iModIntro.
@@ -903,8 +903,10 @@ Section goose_lang.
       { iModIntro. iModIntro. generalize (length (possible σs)); intros. iAccu. }
       iExactEq "Hnew".
       auto with f_equal lia. }
+    { apply _. }
+    { apply _. }
     iSplit.
-    { iDestruct "HΦ" as "[HΦc _]". iModIntro. iModIntro. iIntros "H".
+    { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
       iApply "HΦc". iDestruct "H" as "[H|H]".
       { iDestruct "H" as (txnid) "H".
         iDestruct (big_sepM_subseteq with "H") as "H"; eauto.

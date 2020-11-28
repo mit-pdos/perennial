@@ -382,6 +382,12 @@ Definition alloc_crash_cond' σ : iProp Σ :=
 Definition alloc_crash_cond (d: gset u64) (post_crash: bool) : iProp Σ :=
   ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
        "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
+       "HPalloc" ∷ ▷ P σ ∗
+       "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
+
+Definition alloc_crash_cond_no_later (d: gset u64) (post_crash: bool) : iProp Σ :=
+  ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
+       "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
        "HPalloc" ∷ P σ ∗
        "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
 
@@ -390,6 +396,20 @@ Lemma alloc_crash_cond_from_post_crash d :
 Proof.
   iNamed 1.
   iExists _; iFrame "% ∗".
+Qed.
+
+Lemma alloc_crash_cond_no_later_from_post_crash d :
+  alloc_crash_cond_no_later d true -∗ alloc_crash_cond_no_later d false.
+Proof.
+  iNamed 1.
+  iExists _; iFrame "% ∗".
+Qed.
+
+Lemma alloc_crash_cond_strip_later `{∀ x, Timeless (P x)} d b:
+  alloc_crash_cond d b -∗ ◇ alloc_crash_cond_no_later d b.
+Proof.
+  iIntros "H".
+  iNamed "H". iDestruct "HPalloc" as ">HPalloc". iModIntro. iExists _; by iFrame.
 Qed.
 
 Definition revert_reserved (σ : alloc.t) : alloc.t :=
@@ -439,8 +459,22 @@ Proof.
 Qed.
 
 Lemma alloc_crash_cond_crash_true d E :
-  (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
+  (∀ σ, ▷ P σ ={E}=∗ ▷ P (revert_reserved σ)) -∗
   alloc_crash_cond d false ={E}=∗ alloc_crash_cond d true.
+Proof.
+  clear.
+  iIntros "H".
+  iNamed 1.
+  iMod ("H" with "HPalloc"). iModIntro. iExists _. iFrame.
+  rewrite unused_revert_reserved. iFrame.
+  iPureIntro; split.
+  - apply alloc_post_crash_revert_reserved.
+  - rewrite dom_revert_reserved. auto.
+Qed.
+
+Lemma alloc_crash_cond_no_later_crash_true d E :
+  (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
+  alloc_crash_cond_no_later d false ={E}=∗ alloc_crash_cond_no_later d true.
 Proof.
   clear.
   iIntros "H".
@@ -472,11 +506,11 @@ Proof.
   try (by rewrite decide_True).
 Qed.
 
-Lemma free_block_init γ n σ E:
+Lemma free_block_init γ n σ E `{∀ a, Timeless (Ψ a)}:
   alloc_post_crash σ →
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
   ([∗ map] k↦v ∈ σ, mapsto (hG := alloc_status_name γ) k 1 v) -∗
-  |={E}=> ([∗ set] k ∈ dom (gset _) σ, <disc> free_block_pending γ n k) ∗
+  |={E}=> ([∗ set] k ∈ dom (gset _) σ, <disc> |C={⊤}_S n=> free_block_pending γ n k) ∗
           ([∗ set] k ∈ alloc.free σ, free_block γ n k).
 Proof.
   iIntros (Hcrashed) "Hfree Hpts".
@@ -490,16 +524,19 @@ Proof.
   - iMod (na_crash_inv_alloc _ E (block_cinv γ k) (Ψ k) with "[$] []") as
         "(Hbund&Hpend)".
     { iIntros "!> !> H". iLeft. eauto. }
-    iModIntro. iFrame.
+    iFrame.
+    rewrite /free_block_pending.
+    iModIntro. iModIntro. iMod "Hpend" as ">$". iModIntro. iModIntro. done.
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
     iMod (na_crash_inv_alloc _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as
         "(Hbund&Hpend)".
     { iIntros "!> !> H". iRight. eauto. }
-    iModIntro. iFrame.
+    iModIntro. iFrame. iModIntro. iMod "Hpend" as ">Hpend".
+    iModIntro. iFrame. eauto.
 Qed.
 
-Theorem is_allocator_alloc n l σ :
+Theorem is_allocator_alloc n l σ `{∀ a, Timeless (Ψ a)} :
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
   ▷ P σ -∗
   is_allocator_mem_pre l σ
@@ -535,10 +572,13 @@ Proof.
   iMod "Hpending" as "Hset".
   iMod (cfupd_weaken_all with "Hallocinv") as "Hallocinner"; auto.
   { lia. }
-  iModIntro. iNext.
+  rewrite /free_block_pending.
+  rewrite cfupd_big_sepS.
+  iMod "Hset".
+  iDestruct "Hallocinner" as (?) "(>%Hdom&>Hstatus&>?&?)".
+  iModIntro.
   rewrite /alloc_crash_cond.
 
-  iNamed "Hallocinner".
   iExists _. iFrame.
   fold (alloc.domain σ).
   rewrite /alloc.unused.
@@ -547,6 +587,7 @@ Proof.
   rewrite -?big_sepM_dom big_sepM_filter.
   iDestruct (big_sepM_mono_with_inv with "Hstatus Hset") as "(_&$)".
   iIntros (k x Hlookup) "(Hctx&Hfree)".
+  rewrite /free_block_pending.
   iDestruct "Hfree" as "[HΨ|Hused]".
   - iFrame. destruct (decide _); eauto.
   - iDestruct (gen_heap_valid with "[$] Hused") as %Hlookup'.
@@ -760,18 +801,18 @@ Proof.
   iRight; auto.
 Qed.
 
-Lemma prepare_reserved_block_reuse R' R n n' γ e a Φ Φc:
+Lemma prepare_reserved_block_reuse R' R n n' γ e a Φ Φc `{HL: AbsLaterable _ Φc}:
   (S n ≤ n')%nat →
   language.to_val e = None →
   reserved_block γ (S n') a R -∗
-  <disc> ▷ Φc ∧
+  <disc> Φc ∧
   (▷ R -∗
    reserved_block_in_prep γ (S n') a -∗
-   WPC e @ (S n); ⊤ {{ λ v, (reserved_block γ (S n') a (R' v) -∗ <disc> ▷ Φc ∧ Φ v) ∗
+   WPC e @ (S n); ⊤ {{ λ v, (reserved_block γ (S n') a (R' v) -∗ <disc> Φc ∧ Φ v) ∗
                                            (R' v) ∗
                                            reserved_block_in_prep γ (S n') a ∗
                                            □ (R' v -∗ block_cinv γ a) }}
-                                   {{ Φc ∗ block_cinv γ a }}) -∗
+                                   {{ Φc ∗ ▷ block_cinv γ a }}) -∗
   WPC e @  (S n); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??) "Hreserved H".
@@ -789,18 +830,18 @@ Proof.
       iIntros. iApply "Hclose". iSplitR "Hprep".
       ** by iFrame.
       ** iIntros. eauto.
-    * iIntros. iIntros "!> (?&?) !> !>"; iFrame.
+    * iIntros. iIntros "!> (?&?) !>"; iFrame.
 Qed.
 
-Lemma prepare_reserved_block E1 R n n' γ e a Φ Φc:
+Lemma prepare_reserved_block E1 R n n' γ e a Φ Φc `{AbsLaterable _ Φc}:
   (S n ≤ n')%nat →
   language.to_val e = None →
   reserved_block γ (S n') a R -∗
-  <disc> ▷ Φc ∧
+  <disc> Φc ∧
   (▷ R -∗
    reserved_block_in_prep γ n' a -∗
-   WPC e @ (S n); E1 {{ λ v, (<disc> ▷ Φc ∧ Φ v) ∗ block_cinv γ a }}
-                                   {{ Φc ∗ block_cinv γ a }}) -∗
+   WPC e @ (S n); E1 {{ λ v, (<disc> Φc ∧ Φ v) ∗ block_cinv γ a }}
+                                   {{ Φc ∗ ▷ block_cinv γ a }}) -∗
   WPC e @  (S n); E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??) "Hreserved H".
@@ -818,7 +859,7 @@ Proof.
       iSplitL "".
       ** eauto.
       ** eauto.
-    * iIntros. iIntros "!> (?&?) !> !>"; iFrame.
+    * iIntros. iIntros "!> (?&?) !>"; iFrame.
 Qed.
 
 Lemma free_mark_used_non_free σ a:
@@ -978,9 +1019,20 @@ Context (P: heapG Σ → alloc.t → iProp Σ).
 Context (Ψ: heapG Σ → u64 → iProp Σ).
 
 Instance allocator_crash_cond_stable d b :
-  (∀ x, IntoCrash (P _ x) (λ hG, P hG x)) →
+  (∀ x, IntoCrash (▷ P _ x) (λ hG, ▷ P hG x)%I) →
   (∀ x, IntoCrash (Ψ _ x) (λ hG, Ψ hG x)) →
   IntoCrash (alloc_crash_cond (P _) (Ψ _) d b) (λ hG, alloc_crash_cond (P hG) (Ψ hG) d b).
+Proof.
+  intros.
+  hnf; iNamed 1.
+  iCrash.
+  iExists _. iFrame. eauto.
+Qed.
+
+Instance allocator_crash_cond_no_later_stable d b :
+  (∀ x, IntoCrash (P _ x) (λ hG, P hG x)%I) →
+  (∀ x, IntoCrash (Ψ _ x) (λ hG, Ψ hG x)) →
+  IntoCrash (alloc_crash_cond_no_later (P _) (Ψ _) d b) (λ hG, alloc_crash_cond_no_later (P hG) (Ψ hG) d b).
 Proof.
   intros.
   hnf; iNamed 1.

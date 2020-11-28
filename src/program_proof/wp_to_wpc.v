@@ -89,9 +89,9 @@ Proof.
   do 2 (rewrite ?bi_schema_interp_unfold /= //=).
 Qed.
 
-Lemma wpc_spec P Φ Φc γ k :
+Lemma wpc_spec P Φ Φc `{HT: Timeless _ Φc} γ k :
   is_foo1 N1 P γ ∗
-  (<disc> ▷ Φc ∧ (∀ σ, ▷ P σ -∗ |NC={⊤ ∖ ↑ N}=> ▷ P (transition σ) ∗ (<disc> ▷ Φc ∧ Φ (#())))) -∗
+  (<disc> Φc ∧ (∀ σ, ▷ P σ -∗ |NC={⊤ ∖ ↑ N}=> ▷ P (transition σ) ∗ (<disc> Φc ∧ Φ (#())))) -∗
   WPC e @ (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof using stagedG0.
   iIntros "(His_foo&Hfupd)".
@@ -146,7 +146,7 @@ Proof using stagedG0.
           iSpecialize ("Hclo" with "[HC Hpend34]").
           { iRight. iLeft. iFrame. }
           iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def) in "Hclo".
-          iMod "Hclo". eauto.
+          iMod "Hclo". by iDestruct "H" as ">$".
         * iDestruct "Hfalse1" as "(>_&>?)". iDestruct (pending34_pending34 with "[$] [$]") as "[]".
         * iDestruct "Hfalse2" as ">?". iDestruct (pending_done with "[$] [$]") as "[]".
       }

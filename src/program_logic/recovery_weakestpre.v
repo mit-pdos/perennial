@@ -27,7 +27,7 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
   (invG Σ -d> crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
   (invG Σ -d> crashG Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ :=
   λ H1 H2 t E e rec Φ Φinv Φr,
-  (WPC e @ s ; k; E 
+  (WPC e @ s ; k; E
      {{ Φ }}
      {{ ∀ σ σ' (HC: crash_prim_step CS σ σ') κs n,
         state_interp σ κs n ={∅}=∗  ▷ ∀ H1 H2 q, NC q ={⊤}=∗ ∃ t, state_interp σ' κs 0 ∗ (Φinv H1 H2 t ∧ wpr H1 H2 t E rec rec (λ v, Φr H1 H2 t v) Φinv Φr) ∗ NC q}})%I.
@@ -76,7 +76,7 @@ Proof.
   iDestruct "HΦ" as "(_&HΦ)".
   rewrite own_discrete_idemp.
   iIntros "!> H".
-  do 2 iModIntro. iIntros (?????) "Hinterp". iMod ("H" with "[//] Hinterp") as "H".
+  iModIntro. iIntros (?????) "Hinterp". iMod ("H" with "[//] Hinterp") as "H".
   iModIntro. iNext. iIntros (Hi' Hc' ?) "HNC". iMod ("H" $! Hi' Hc' with "[$]") as (?) "(?&H&HNC)".
   iModIntro. iExists _. iFrame.
   iSplit.
@@ -103,7 +103,7 @@ Proof.
   iSplit; first auto. iIntros "!> Hcx".
   iApply @fupd_level_mask_weaken.
   { set_solver +. }
-  iNext. iIntros. iMod ("Hidemp" with "[ ] [$] [$]") as "H".
+  iIntros. iMod ("Hidemp" with "[ ] [$] [$]") as "H".
   { eauto. }
   iModIntro. iNext. iIntros (Hi' Hc' ?) "HNC". iMod ("H" $! Hi' Hc' with "[$]") as (t') "(?&Hc&HNC)".
   iExists _. iFrame. iModIntro.

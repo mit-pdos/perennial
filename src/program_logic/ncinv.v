@@ -213,7 +213,7 @@ Implicit Types P : iProp Σ.
     (∃ γ, inv N (P ∨ (C ∗ staged_done γ)))%I.
 
   Lemma ncinv_alloc N E P:
-    ▷ P ={E}=∗ ncinv N P ∗ <disc> |C={↑N}_0=> P.
+    ▷ P ={E}=∗ ncinv N P ∗ <disc> |C={↑N}_0=> ▷ P.
   Proof using stagedG0.
     iIntros "HP". rewrite ncinv_eq /ncinv_def.
     iMod (pending_alloc) as (γ) "Hpending".

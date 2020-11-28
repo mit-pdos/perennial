@@ -62,7 +62,7 @@ Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 tp σ s tr or:
                                       ∗ ffi_start (refinement_spec_ffiG) σ.(world)
                                       ∗ trace_ctx
                                       ∗ <disc> (|C={⊤}_0=> source_inv (CS := spec_crash_lang) r tp0 σ0)
-                                      ∗ <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ spec_assert.spec_interp σ0)
+                                      ∗ <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ ▷ spec_assert.spec_interp σ0)
                                       ∗ <disc> (|C={⊤}_0=> trace_inv).
 Proof using Hrpre Hcpre.
   iIntros (???? Hsteps Hsafe) "Htr Hor".
@@ -81,8 +81,9 @@ Proof using Hrpre Hcpre.
   iMod (ncinv_alloc (spec_traceN) _ trace_inv with "[-Hcfupd2]") as "($&Hcfupd3)".
   { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame; eauto. }
   iModIntro. iSplitL "Hcfupd2".
-  { iModIntro. iApply cfupd_weaken_all; try iFrame; eauto. }
-  { iModIntro. iApply cfupd_weaken_all; try iFrame; eauto. }
+  { iModIntro. iMod (cfupd_weaken_all with "[$]") as "H"; try iFrame; eauto.
+    iDestruct "H" as (?) "(>?&?)". iIntros. iExists _. by iFrame. }
+  { iModIntro. iMod (cfupd_weaken_all with "[$]") as "H"; auto. iDestruct "H" as ">$". eauto. }
 Qed.
 
 Lemma goose_spec_init2 {hG: heapG Σ} r tp σ tr or:
@@ -96,7 +97,7 @@ Lemma goose_spec_init2 {hG: heapG Σ} r tp σ tr or:
                                      ∗ ffi_start (refinement_spec_ffiG) σ.(world)
                                      ∗ trace_ctx
                                      ∗ <disc> (|C={⊤}_0=> source_inv (CS := spec_crash_lang) r tp σ)
-                                     ∗ <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ spec_assert.spec_interp σ0)
+                                     ∗ <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ ▷ spec_assert.spec_interp σ0)
                                      ∗ <disc> (|C={⊤}_0=> trace_inv).
 Proof using Hrpre Hcpre.
   intros; eapply goose_spec_init1; eauto.
@@ -116,7 +117,7 @@ Lemma goose_spec_crash_init {hG: heapG Σ} {hRG: refinement_heapG Σ} r tp0 σ0 
              ∗ ffi_restart (refinement_spec_ffiG) (world σ_post_crash)
              ∗ trace_ctx
              ∗ <disc> (|C={⊤}_0=> source_inv (CS := spec_crash_lang) r tp0 σ0)
-             ∗ <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ spec_assert.spec_interp σ0)
+             ∗ <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ ▷ spec_assert.spec_interp σ0)
              ∗ <disc> (|C={⊤}_0=> trace_inv).
 Proof using Hrpre Hcpre.
   iIntros (?? Hsteps Hsafe Hcrash) "Htr Hor Hffi".
@@ -139,8 +140,9 @@ Proof using Hrpre Hcpre.
   iMod (ncinv_alloc (spec_traceN) _ trace_inv with "[-Hcfupd2]") as "($&Hcfupd3)".
   { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame; eauto. }
   iModIntro. iSplitL "Hcfupd2".
-  { iModIntro; iApply cfupd_weaken_all; try iFrame; eauto. }
-  { iModIntro; iApply cfupd_weaken_all; try iFrame; eauto. }
+  { iModIntro. iMod (cfupd_weaken_all with "[$]") as "H"; try iFrame; eauto.
+    iDestruct "H" as (?) "(>?&?)". iIntros. iExists _. by iFrame. }
+  { iModIntro. iMod (cfupd_weaken_all with "[$]") as "H"; auto. iDestruct "H" as ">$". eauto. }
 Qed.
 
 Lemma trace_inv_open {hG: heapG Σ} {hrG: refinement_heapG Σ}  rs es σs σ:
@@ -191,7 +193,7 @@ Theorem heap_recv_refinement_adequacy k es e rs r σs σ φ φr (Φinv: heapG Σ
        (spec_ctx' rs ([es], σs) -∗
         trace_ctx -∗
         <disc> (|C={⊤}_0=> source_inv (CS := spec_crash_lang) rs [es] σs) -∗
-        <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ spec_assert.spec_interp σ0) -∗
+        <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ ▷ spec_assert.spec_interp σ0) -∗
         <disc> (|C={⊤}_0=> trace_inv) -∗
        □ (∀ hG, Φinv hG -∗
                        ∃ Href', spec_ctx' (hR := Href') rs ([es], σs) ∗ trace_ctx (hR := Href')) ∗
@@ -302,7 +304,7 @@ Lemma wpc_trace_inv_open k es σs e Hheap Href Φ Φc:
   spec_ctx' es ([es], σs) -∗
   trace_ctx -∗
   <disc> (|C={⊤}_0=> source_inv (CS := spec_crash_lang) es [es] σs) -∗
-  <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ spec_assert.spec_interp σ0) -∗
+  <disc> (|C={⊤}_0=> ∃ σ0, source_state σ0 ∗ ▷ spec_assert.spec_interp σ0) -∗
   <disc> (|C={⊤}_0=> trace_inv) -∗
   WPC e @ k; ⊤ {{ v, Φ Hheap Href v }}{{Φc Hheap Href}} -∗
   WPC e @ k; ⊤ {{ _, True }}{{∃ (Hi : invG Σ) (hC : crashG Σ) (hRef : refinement_heapG Σ)
@@ -315,6 +317,15 @@ Lemma wpc_trace_inv_open k es σs e Hheap Href Φ Φc:
                                 ∗ Φc (heap_update Σ Hheap Hi hC (heap_get_names Σ Hheap)) hRef}}.
 Proof.
   iIntros "#Hspec #Htrace Hcfupd1 Hcfupd2 Hcfupd3 H".
+  iAssert (<disc> (|C={⊤}_0=> ∃ σs'', source_state σs'' ∗ (na_heap_ctx tls (heap σs'')
+                      ∗ ▷ ffi_ctx refinement_spec_ffiG (world σs'')
+                      ∗ @trace_auth _ (@refinement_traceG spec_ext spec_ffi spec_ffi_semantics spec_interp Σ Href) (trace σs'')
+                      ∗ @oracle_auth _ ((@refinement_traceG spec_ext spec_ffi spec_ffi_semantics spec_interp Σ Href)) (oracle σs'') ∗ ⌜null_non_alloc (heap σs'')⌝)))%I
+          with "[Hcfupd2]" as "Hcfupd2".
+  { iModIntro. iMod (cfupd_weaken_all with "Hcfupd2") as "Hcfupd2"; eauto; try lia.
+    iDestruct "Hcfupd2" as (?) "(?&(>?&?&>?&>?&>?))".
+    iModIntro. iExists _; iFrame. }
+
   iApply (wpc_crash_frame_wand with "[-Hcfupd1] [Hcfupd1]"); last first.
   { iModIntro. iApply cfupd_weaken_all; try iFrame; eauto. lia. }
   iApply (wpc_crash_frame_wand with "[-Hcfupd2] [Hcfupd2]"); last first.
@@ -327,11 +338,12 @@ Proof.
   iDestruct "Hspec" as "(Hsource&Hstate)".
   iModIntro.
   iIntros "HΦc HC".
-  iModIntro. iNext.
+  iModIntro.
   iIntros "Htrace_open Hinterp H".
   iDestruct "H" as (? es' σs') "(H1&H2)".
   iDestruct "H2" as %(Hexec&Hsafe).
   iDestruct "Hinterp" as (σs'') "(Hspec_state_frag&Hspec_interp)".
+  rewrite /spec_assert.spec_interp.
   iDestruct "Hspec_interp" as "(?&?&Hspec_trace_auth&Hspec_oracle_auth&?)".
   iDestruct "Htrace_open" as (???? ??) "(Htrace_frag&Hspec_trace_frag&Horacle_frag&Htspec_oracle_frag)".
   iDestruct (source_state_reconcile with "[$] [$]") as %Heq0'.

@@ -628,10 +628,10 @@ Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
         ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s' ∗ ▷ Pcrash s s') -∗
   ▷ P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
-                (<bdisc> (C -∗ |0={⊤}=> ▷ ∃ s, ⌜wal_post_crash s⌝ ∗
+                (<bdisc> (C -∗ |0={⊤}=> ∃ s, ⌜wal_post_crash s⌝ ∗
                                          (* NOTE: need to add the ghost state that the logger will need *)
                                          is_wal_inner_durable γ' s dinit ∗
-                                         wal_resources γ' ∗ Prec s)) ∗
+                                         wal_resources γ' ∗ ▷ Prec s)) ∗
                 □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
                                            ⌜relation.denote log_crash s s' tt⌝ ∗
                                            is_wal_inner_crash γ s ∗
@@ -970,7 +970,9 @@ done:
   iModIntro.
   iSplitL "Hncinv".
   { rewrite /N. iApply ncinv_split_l. iApply "Hncinv". }
-  iFrame.
+  iFrame. iModIntro. iIntros "HC".
+  iMod ("Hcfupd" with "[$]") as (s0) "(>%&>?&>?&?)".
+  iModIntro; iExists _. iFrame. eauto.
 Qed.
 
 (*
@@ -1140,7 +1142,7 @@ Proof.
 
   wpc_apply (wpc_recoverCircular with "[$]").
   iSplit.
-  { iLeft in "HΦ". iModIntro. iNext. iIntros "(Hcirc&Happend)". iApply "HΦ".
+  { iLeft in "HΦ". iModIntro. iIntros "(Hcirc&Happend)". iApply "HΦ".
     iSplitR "Happend HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hinstaller".
     {
       iSplit; first by auto.
@@ -1168,7 +1170,6 @@ Proof.
     iDestruct "Happender" as (????) "(Haddrs&Hblocks&?)".
     crash_case.
     rewrite /is_wal_inner_durable.
-    iNext.
     iFrame "Htxns_ctx γtxns HnextDiskEnd_inv".
     iSplitR "Haddrs Hblocks HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hinstaller".
     {
@@ -1257,7 +1258,7 @@ Qed.
 Definition wal_cfupd_cancel k γ' Prec : iProp Σ :=
   (<disc> (|C={⊤}_k=>  ∃ s, ⌜wal_post_crash s⌝ ∗
                                  is_wal_inner_durable γ' s dinit ∗
-                                 wal_resources γ' ∗ Prec s)).
+                                 wal_resources γ' ∗ ▷ Prec s)).
 
 Definition wal_cinv γ γ' Pcrash : iProp Σ :=
   □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
@@ -1276,19 +1277,19 @@ Theorem wpc_MkLog_recover k (d: loc) γ σ Prec Pcrash:
       wal_cfupd_cancel k γ' Prec ∗
       wal_cinv γ γ' Pcrash
   }}}
-  {{{ ∃ σ', (is_wal_inner_durable γ σ' dinit ∗ wal_resources γ ∗ P σ' ∨
-      ∃ γ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ Prec σ') }}}.
+  {{{ ∃ σ', (is_wal_inner_durable γ σ' dinit ∗ wal_resources γ ∗ ▷ P σ' ∨
+      ∃ γ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ ▷ Prec σ') }}}.
 Proof.
   iIntros "#Hwand".
   iIntros "!>" (Φ Φc) "(Hdurable&Hres&HP) HΦ".
   rewrite /MkLog.
   iMod (fupd_later_to_disc with "HP") as "HP".
   wpc_pures.
-  { iLeft in "HΦ". iModIntro. iNext. iApply "HΦ". iExists _. iLeft. iFrame. }
+  { iLeft in "HΦ". iModIntro. iApply "HΦ". iExists _. iLeft. iFrame. }
   wpc_bind (mkLog #d).
   wpc_apply (wpc_mkLog_recover with "[$]").
   iSplit.
-  { iLeft in "HΦ". iModIntro. iNext. iIntros "(?&?)".
+  { iLeft in "HΦ". iModIntro. iIntros "(?&?)".
     iApply "HΦ". iExists _. iLeft. iFrame. }
   iNext. iIntros (l). iNamed 1.
   iMod (own_disc_fupd_elim with "HP") as "HP".
@@ -1297,12 +1298,12 @@ Proof.
   { iModIntro. iIntros "H".
     iSpecialize ("Hcancel" with "[$]").
     iMod (fupd_level_le with "Hcancel") as "H"; first lia.
-    iModIntro. iNext. iExact "H".
+    iModIntro. iExact "H".
   }
   iApply (wp_wpc_frame').
   iSplitL "HΦ".
   { iApply (and_mono with "HΦ"); last done.
-    { iIntros "H1". do 2 iModIntro. iIntros "H2".
+    { iIntros "H1". iModIntro. iIntros "H2".
       iDestruct "H2" as (s Hcrash) "(Hinner&Hres&Hrec)".
       iApply "H1". iExists _. iRight. iExists _. iFrame. }
   }
