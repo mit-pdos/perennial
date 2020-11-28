@@ -55,7 +55,7 @@ Section goose.
     { iExists _, _; eauto. }
     { iExists _, _; eauto. }
     rewrite /BlockSize.
-    iCache (<disc> ▷ Φc)%I with "HΦ Ha".
+    iCache (<disc> Φc)%I with "HΦ Ha".
     { crash_case. iExists _, _; eauto. }
     wpc_pures.
     wpc_frame_seq.
@@ -79,7 +79,7 @@ Section goose.
     iExists _. iFrame. iNext.
     iIntros "Hwritten".
     iModIntro.
-    iCache (<disc> ▷ Φc)%I with "Hwritten HΦ".
+    iCache (<disc> Φc)%I with "Hwritten HΦ".
     { crash_case. iExists _, 4. iFrame. iPureIntro. rewrite //=. }
     iSplit; first iFromCache.
     iIntros "Hblock".
@@ -88,7 +88,7 @@ Section goose.
     wpc_bind (Read _).
     iApply (wpc_Read with "Hwritten").
     iSplit.
-    { iLeft in "HΦ". iModIntro. iNext. iIntros "Hwritten". iApply "HΦ".
+    { iLeft in "HΦ". iModIntro. iIntros "Hwritten". iApply "HΦ".
       iExists _, 4. iFrame. iPureIntro. rewrite //=. }
     iNext. iIntros (s') "(Hwritten&Hslice)".
     wpc_pures.
@@ -112,16 +112,22 @@ Section goose.
     {{{ True }}}.
   Proof.
     iIntros (? Φ Φc) "Hncinv HΦ".
+    iApply (wpc_step_strong_mono' _ _ _ _ _ _ _
+           (λ v, ⌜ v = #() ⌝ ∗ True)%I _ _ with "[-HΦ] [HΦ]"); auto.
+    2: { iSplit.
+         * iNext. iIntros (?) "H". iDestruct "H" as (?) "%". subst.
+           iModIntro. iRight in "HΦ". by iApply "HΦ".
+         * iLeft in "HΦ".  iModIntro. iIntros. iModIntro. by iApply "HΦ". }
     iApply (wpc_na_crash_inv_open with "Hncinv"); try eassumption.
     { lia. }
-    iSplit; first by crash_case.
+    iSplit; first eauto.
     iIntros ">Hblk".
     wpc_apply (wpc_consumeEvenBlock_seq with "[$]").
     iSplit.
-    { iLeft in "HΦ". iModIntro. iNext. iIntros; iFrame. by iApply "HΦ". }
+    { iModIntro. iIntros; iFrame. }
     iNext. iIntros "$ _".
-    iSplit; first by crash_case.
-    by iApply "HΦ".
+    iSplit; eauto.
+    Unshelve. exact ⊤.
   Qed.
 
   Theorem wpc_TransferEvenBlock (d_ref: loc) (addr: u64) :
@@ -133,17 +139,18 @@ Section goose.
     iIntros (Φ Φc) "HEblk HΦ".
     iMod (na_crash_inv_alloc 1 _ (EBlk addr) (EBlk addr) with "HEblk []") as "(Hcrash&Hcfupd)".
     { auto. }
+    iApply (wpc_cfupd).
     iMod "Hcfupd" as "_".
     wpc_call.
-    { by iLeft in "HΦ". }
-    { by iLeft in "HΦ". }
+    { iLeft in "HΦ". iModIntro. iIntros ">H". iIntros "? !>". by iApply "HΦ". }
+    { iLeft in "HΦ". iModIntro. iIntros ">H". iIntros "? !>". by iApply "HΦ". }
     wpc_pures.
-    { by iLeft in "HΦ". }
+    { iLeft in "HΦ". iModIntro. iIntros ">H". iIntros "? !>". by iApply "HΦ". }
     iApply (wpc_idx_mono 1); first by lia.
     iApply (wpc_fork with "[Hcrash]").
     { iNext. iApply (wpc_consumeEvenBlock with "Hcrash"); eauto. }
     iSplit.
-    { by iLeft in "HΦ". }
+    { iLeft in "HΦ". iModIntro. iIntros ">H". iIntros "? !>". by iApply "HΦ". }
     { iNext; by iApply "HΦ". }
   Qed.
 
