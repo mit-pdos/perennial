@@ -387,7 +387,7 @@ Section goose.
     ▷ P σ -∗
     pre_dir l sz σ ={⊤}=∗
     is_dir l sz k ∗
-    <disc> |C={⊤}_(S k)=> ∃ σ', dir_cinv sz σ' false ∗ P σ'.
+    <disc> |C={⊤}_(S k)=> ∃ σ', dir_cinv sz σ' false ∗ ▷ P σ'.
   Proof.
     iIntros (?) "HP"; iNamed 1.
     iNamed "Hinodes".
@@ -430,8 +430,10 @@ Section goose.
     iMod "Hinodes_crash" as "Hinodes".
     iMod (cfupd_weaken_all with "Hinv_crash") as "Hdir"; auto.
     { lia. }
-    iModIntro. iNext.
-    iDestruct "Hdir" as (σ') "(Hdir_inv&HP)".
+    iDestruct "Hdir" as (σ') "(>Hdir_inv&HP)".
+    iIntros "HC". rewrite -big_sepL_later.
+    iDestruct "Hinodes" as ">Hinodes".
+    iModIntro.
     iExists _; iFrame.
     iExists _, _; iFrame.
 
@@ -477,7 +479,7 @@ Section goose.
   Proof.
     iIntros (? Φ Φc) "Hinode_cinvs HΦ".
     rewrite /openInodes; wpc_pures.
-    { iLeft in "HΦ". iModIntro. iNext. by iApply "HΦ". }
+    { iLeft in "HΦ". iModIntro. by iApply "HΦ". }
     iCache with "HΦ Hinode_cinvs".
     { crash_case; auto. }
     wpc_frame_seq.
@@ -525,7 +527,7 @@ Section goose.
       { replace (U64 $ int.nat n + 0) with n by word.
         iFrame. }
       iSplit.
-      { iLeft in "HΦ". iModIntro. iIntros "!> Hs_inode".
+      { iLeft in "HΦ". iModIntro. iIntros "Hs_inode".
         iDestruct (big_sepL_cons (λ k y, inode_cinv (int.nat n + k) y) with "[Hs_inode $Hinode_cinvs]") as "Hinode_cinvs".
         { replace (U64 $ int.nat n + 0) with n by word.
           iFrame. }
@@ -534,7 +536,7 @@ Section goose.
       }
       iIntros "!>" (inode_ref) "Hpre_inode".
       wpc_frame "HΦ Hpre_inode Hpre_inodes Hinode_cinvs".
-      { crash_case. iLeft. iFrame. iNext. iExactEq "Hpre_inode". f_equal; word. }
+      { crash_case. iLeft. iFrame. iExactEq "Hpre_inode". f_equal; word. }
       wp_load.
       wp_apply (wp_SliceAppend' with "Hinode_slice").
       iIntros (inode_s') "Hinode_slice".
@@ -566,7 +568,7 @@ Section goose.
       rewrite /named //. }
     iSplit.
     { (* loop crash condition implies overall crash condition *)
-      iLeft in "HΦ". iModIntro. iNext.
+      iLeft in "HΦ". iModIntro.
       iIntros "Hinv".
       iDestruct "Hinv" as (i) "(Hpre&%Hbound')".
       iNamed "Hpre".
@@ -591,7 +593,7 @@ Section goose.
     rewrite -> take_ge by word.
     rewrite -> drop_ge by word.
     wpc_frame_compl "Hinodes".
-    { crash_case. iNext. eauto. }
+    { crash_case. eauto. }
     wp_load.
     iNamed 1.
     iRight in "HΦ"; iApply "HΦ".
@@ -656,7 +658,7 @@ Section goose.
       wpc_apply (wpc_Inode__UsedBlocks with "Hinode").
       iSplit.
       { iRight in "Hpre_inodes".
-        crash_case. iLeft in "HΦ". iModIntro. iNext. iIntros. iApply "HΦ".
+        crash_case. iLeft in "HΦ". iModIntro. iIntros. iApply "HΦ".
         iSpecialize ("Hpre_inodes" with "[$]").
         iApply big_sepL2_to_sepL_2 in "Hpre_inodes".
         iApply (big_sepL_mono with "Hpre_inodes").
@@ -782,9 +784,11 @@ Section goose.
     {{{ dir_cinv (int.Z sz) σ0 false }}}.
   Proof using allocG0 heapG0 inG0 inG1 Σ.
     iIntros (? Φ Φc) "Hcinv HΦ".
+    (*
     wpc_call.
+    { iApply dir_cinv_post_crash; auto. rewrite /dir_cinv. iExists _, _. }
     { iApply dir_cinv_post_crash; auto. }
-    { iApply dir_cinv_post_crash; auto. }
+     *)
     iNamed "Hcinv".
     iCache with "HΦ Hinodes Halloc Hs_inode".
     { crash_case.
