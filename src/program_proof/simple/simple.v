@@ -1502,13 +1502,10 @@ Proof.
   iApply struct_fields_split. iFrame. done.
 Qed.
 
-(* XXX
-  joe, how can we avoid relying on this false fact?
-  we need [Hfupd] in two branches of the proof:
-  the crash condition and the non-crash execution.
-*)
-Theorem false_dup_fupd (Hfupd : iProp Σ) :
-  Hfupd -∗ Hfupd ∗ Hfupd.
+Lemma admitted_wpc_cfupd s k E1 e Φ Φc:
+  WPC e @ s; k; E1 {{ Φ }} {{ |C={E1}_k=> Φc }} -∗
+  WPC e @ s; k; E1 {{ Φ }} {{ Φc }}.
+Proof.
 Admitted.
 
 Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset : u64) (dataslice : Slice.t) (databuf : list u8) (Q : SimpleNFS.res u32 -> iProp Σ) (stab : u32) dinit :
@@ -1698,71 +1695,52 @@ Proof using Ptimeless ghost_varG0.
     rewrite (firstn_all2 databuf); last by lia.
     replace (Z.to_nat (length databuf)) with (length databuf) by lia.
 
-  iDestruct (false_dup_fupd with "Hfupd") as "[Hfupd Hfupd_clone]".
-
-  wpc_apply (wpc_strong_mono _ _ _ _ _ _ _ _ _
-    (is_inode_crash γ fh ∨
-     is_inode_unstable γ fh state (take (int.nat offset) state ++
-          databuf ++ drop (int.nat offset + length databuf) state)
-    ) with "[-Hfupd_clone] [Hfupd_clone]").
-  5: iSplit.
-  5: {
-    iIntros (v) "HΦ".
-    iModIntro. iExact "HΦ".
-  }
-  5: {
-    iModIntro. iIntros ">Hpre C".
-    iDestruct "Hpre" as "[Hpre | Hpre]".
-    { iModIntro. iFrame. }
-    iNamed "Hpre".
-
-    iInv "Hsrc" as ">Hopen" "Hclose".
-    iNamed "Hopen".
-    iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh2".
-    iDestruct ("Hfupd_clone" with "[] HP") as "Hfupd".
-    {
-      iPureIntro.
-      simpl.
-      monad_simpl.
-      simpl.
-      rewrite Hsrc_fh2.
-      simpl.
-      eapply relation.bind_runs with (x:=false). { econstructor. auto. }
-      simpl.
-      monad_simpl.
-      econstructor. { econstructor. revert H3. word. }
-      monad_simpl.
-    }
-    iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
-    iMod (fupd_level_le with "Hfupd") as "[HP HQ]"; first by lia.
-    iMod ("Hclose" with "[Hsrcheap HP]").
-    { iModIntro. iExists _. iFrame "∗%#". iSplit.
-      { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom0 H5. }
-      iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
-      iApply (big_sepM_insert_delete with "[$H1]").
-      iPureIntro.
-      rewrite !app_length drop_length.
-      rewrite take_length_le.
-      2: { revert H3. word. }
-      lia.
-    }
-    iModIntro.
-
-    iModIntro. iSplit; first by done.
-    iExists _. iFrame.
-  }
-
-  4: {
+    iApply admitted_wpc_cfupd.
     wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
     5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
-    all: try solve_ndisj.
+    2-4: solve_ndisj.
     { typeclasses eauto. }
 
     iSplit.
     { iModIntro. iModIntro.
       iIntros "[[H _]|[H0 H1]]".
-      { iLeft. iApply is_inode_crash_ro. iFrame. }
-      { iRight. iFrame. iExists _. iFrame. }
+      { iModIntro. iModIntro. iSplit; first by done. iApply is_inode_crash_ro. iFrame. }
+
+      iIntros "C".
+      iInv "Hsrc" as ">Hopen" "Hclose".
+      iNamed "Hopen".
+      iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh2".
+      iDestruct ("Hfupd" with "[] HP") as "Hfupd".
+      {
+        iPureIntro.
+        simpl.
+        monad_simpl.
+        simpl.
+        rewrite Hsrc_fh2.
+        simpl.
+        eapply relation.bind_runs with (x:=false). { econstructor. auto. }
+        simpl.
+        monad_simpl.
+        econstructor. { econstructor. revert H3. word. }
+        monad_simpl.
+      }
+      iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
+      iMod (fupd_level_le with "Hfupd") as "[HP HQ]"; first by lia.
+      iMod ("Hclose" with "[Hsrcheap HP]").
+      { iModIntro. iExists _. iFrame "∗%#". iSplit.
+        { iPureIntro. rewrite /= dom_insert_L. set_solver+ Hdom0 H5. }
+        iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
+        iApply (big_sepM_insert_delete with "[$H1]").
+        iPureIntro.
+        rewrite !app_length drop_length.
+        rewrite take_length_le.
+        2: { revert H3. word. }
+        lia.
+      }
+      iModIntro.
+
+      iModIntro. iSplit; first by done.
+      iExists _. iFrame. iExists _. iFrame.
     }
 
     iModIntro.
@@ -1807,7 +1785,7 @@ Proof using Ptimeless ghost_varG0.
       iModIntro.
 
       wpc_frame "Hinode_state Hcommit".
-      { iModIntro. iModIntro. iLeft.
+      { iModIntro. iModIntro. iModIntro. iModIntro. iSplit; first by done.
         iApply is_inode_crash_ro_own. iFrame. }
 
       wp_storeField.
@@ -1867,7 +1845,7 @@ Proof using Ptimeless ghost_varG0.
 
       iDestruct "Hcommit" as "[Hcommit _]".
       wpc_frame "Hinode_state Hcommit".
-      { iModIntro. iModIntro. iLeft.
+      { iModIntro. iModIntro. iModIntro. iModIntro. iSplit; first by done.
         iApply is_inode_crash_ro_own. iFrame. }
 
       wp_storeField.
@@ -1894,11 +1872,6 @@ Proof using Ptimeless ghost_varG0.
       iFrame.
       iPureIntro. lia.
     }
-  }
-
-  1: eauto.
-  2: set_solver.
-  1: shelve.
   }
 
   {
