@@ -201,9 +201,7 @@ Proof.
         admit. }
 
     iNext. iIntros (γ'' l) "(#Hwal & Hwal_cfupd & #Hwal_cinv)".
-    admit.
-    (*
-    wpc_frame "Hdur HΦ Hlogm".
+    wpc_frame_compl "Hlock Hlocked_walheap His_txn_always".
     { admit. }
     rewrite -wp_fupd.
     wp_apply wp_allocStruct; first by val_ty.
@@ -216,7 +214,8 @@ Proof.
             with "Hlock [pos Hlocked_walheap]") as "#Htxn_lock".
     { iNext. rewrite /is_txn_locked.
       iExists _, _, _; iFrame. }
-    iMod (inv_alloc invN with "His_txn_always") as "#Htxn_inv".
+    iMod (inv_alloc invN _ (is_txn_always γ) with "[His_txn_always]") as "#Htxn_inv".
+    { iNext. iExists _, _; iFrame. }
     iModIntro.
     iNamed 1.
     iRight in "HΦ".
@@ -231,7 +230,6 @@ Proof.
     iIntros (?) "[$ $]".
     iIntros (?) "$".
     all: fail "goals remaining".
-     *)
 Admitted.
 
 End goose_lang.
