@@ -626,13 +626,14 @@ Qed.
 Lemma wal_crash_obligation_alt Prec Pcrash l γ s :
   is_wal_inv_pre l γ s dinit -∗
   □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
-        ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s' ∗ ▷ Pcrash s s') -∗
+        ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
   ▷ P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
-                (<bdisc> (C -∗ |0={⊤}=> ∃ s, ⌜wal_post_crash s⌝ ∗
+                       (<bdisc> (C -∗ |0={⊤}=> ∃ s s',
+                                         ⌜relation.denote log_crash s s' tt⌝ ∗
                                          (* NOTE: need to add the ghost state that the logger will need *)
-                                         is_wal_inner_durable γ' s dinit ∗
-                                         wal_resources γ' ∗ ▷ Prec s)) ∗
+                                         is_wal_inner_durable γ' s' dinit ∗
+                                         wal_resources γ' ∗ ▷ Prec s s')) ∗
                 □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
                                            ⌜relation.denote log_crash s s' tt⌝ ∗
                                            is_wal_inner_crash γ s ∗
@@ -666,8 +667,9 @@ Proof.
                is_wal_inner_crash γ σ ∗
                wal_ghost_exchange γ γ' ∗
                Pcrash σ σ')%I
-         (∃ s,
-                 ⌜wal_post_crash s⌝ ∗ (is_wal_inner_durable γ' s dinit) ∗ wal_resources γ' ∗ Prec s)%I with
+         (∃ s s',
+                 ⌜relation.denote log_crash s s' tt⌝ ∗
+                 (is_wal_inner_durable γ' s' dinit) ∗ wal_resources γ' ∗ Prec s s')%I with
             "[] [Hinner HP Hinit HPcirc_tok]") as "(Hncinv&Hcfupd&Hcinv)".
   { solve_ndisj. }
   { iModIntro. iIntros "(H1&>Hinit&Htok) #HC".
@@ -780,10 +782,10 @@ done:
     iClear "Hwand".
     iSplitL "HPcrash".
     { iModIntro. iExists σ, σ'. iFrame. iNext. eauto. }
-    iExists σ'. iFrame "HPrec".
+    iExists σ, σ'. iFrame "HPrec".
     do 2iModIntro.
     iSplitL "".
-    { iPureIntro. by eapply log_crash_to_post_crash. }
+    { iPureIntro. eauto. }
 
 
     iSplitR "start_avail diskEnd_avail
@@ -972,8 +974,8 @@ done:
   iSplitL "Hncinv".
   { rewrite /N. iApply ncinv_split_l. iApply "Hncinv". }
   iFrame. iModIntro. iIntros "HC".
-  iMod ("Hcfupd" with "[$]") as (s0) "(>%&>?&>?&?)".
-  iModIntro; iExists _. iFrame. eauto.
+  iMod ("Hcfupd" with "[$]") as (s0 s1) "(>%&>?&>?&?)".
+  iModIntro; iExists _, _. iFrame. eauto.
 Qed.
 
 (*
@@ -1257,9 +1259,9 @@ Proof.
 Qed.
 
 Definition wal_cfupd_cancel k γ' Prec : iProp Σ :=
-  (<disc> (|C={⊤}_k=>  ∃ s, ⌜wal_post_crash s⌝ ∗
-                                 is_wal_inner_durable γ' s dinit ∗
-                                 wal_resources γ' ∗ ▷ Prec s)).
+  (<disc> (|C={⊤}_k=>  ∃ s s', ⌜relation.denote log_crash s s' tt⌝ ∗
+                                 is_wal_inner_durable γ' s' dinit ∗
+                                 wal_resources γ' ∗ ▷ Prec s s')).
 
 Definition wal_cinv γ γ' Pcrash : iProp Σ :=
   □ (C -∗ |0={⊤}=> inv (N.@"wal") (∃ s s',
@@ -1270,7 +1272,7 @@ Definition wal_cinv γ γ' Pcrash : iProp Σ :=
 
 Theorem wpc_MkLog_recover k (d: loc) γ σ Prec Pcrash:
   □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
-        ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s' ∗ ▷ Pcrash s s') -∗
+        ▷ P s -∗ |0={⊤ ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
   {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ ∗ ▷ P σ }}}
     MkLog #d @ k; ⊤
   {{{ γ' l, RET #l;
@@ -1278,8 +1280,9 @@ Theorem wpc_MkLog_recover k (d: loc) γ σ Prec Pcrash:
       wal_cfupd_cancel k γ' Prec ∗
       wal_cinv γ γ' Pcrash
   }}}
-  {{{ ∃ σ', (is_wal_inner_durable γ σ' dinit ∗ wal_resources γ ∗ ▷ P σ' ∨
-      ∃ γ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ ▷ Prec σ') }}}.
+  {{{ ∃ σ', (is_wal_inner_durable γ σ' dinit ∗ wal_resources γ ∗ ▷ P σ') ∨
+      (∃ σ0 γ', ⌜relation.denote log_crash σ0 σ' tt⌝ ∗
+               is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ ▷ Prec σ0 σ') }}}.
 Proof.
   iIntros "#Hwand".
   iIntros "!>" (Φ Φc) "(Hdurable&Hres&HP) HΦ".
@@ -1305,8 +1308,10 @@ Proof.
   iSplitL "HΦ".
   { iApply (and_mono with "HΦ"); last done.
     { iIntros "H1". iModIntro. iIntros "H2".
-      iDestruct "H2" as (s Hcrash) "(Hinner&Hres&Hrec)".
-      iApply "H1". iExists _. iRight. iExists _. iFrame. }
+      iDestruct "H2" as (s0 s1 Hcrash) "(Hinner&Hres&Hrec)".
+      iApply "H1". iExists _. iRight. iExists _, _.
+      iSplit; first eauto.
+      iFrame. }
   }
   wp_pures. rewrite /Walog__startBackgroundThreads. wp_pures.
   wp_apply (wp_fork with "[Hlogger]").
@@ -1408,29 +1413,29 @@ Section recov.
     iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I
                             (λ _, ∃ σ' γ', is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ ▷ True)%I
                             with "[His_wal_inner_durable Hres] []").
-    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ (λ _, True)%I (λ _ _, True)%I
+    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ (λ _ _, True)%I (λ _ _, True)%I
                    with "[] [$His_wal_inner_durable $Hres]"); auto 10.
       iSplit.
       * iModIntro.
         iDestruct 1 as (?) "[(?&?&_)|H]".
         ** iExists _, _. iFrame. eauto.
-        ** iDestruct "H" as (?) "(?&?&_)". iExists _, _. iFrame. eauto.
+        ** iDestruct "H" as (???) "(?&?&_)". iExists _, _. iFrame. eauto.
       * eauto.
     }
     iModIntro. iIntros (????) "H".
     iDestruct "H" as (σ'') "Hstart".
-    iNext. 
+    iNext.
     iDestruct "Hstart" as (?) "(H1&Hres&_)".
     rewrite is_wal_inner_durable_stable.
     iDestruct (post_crash_nodep with "Hres") as "Hres".
     iCrash. iIntros "_". iSplit; first done.
-    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ (λ _, True)%I (λ _ _, True)%I
+    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ (λ _ _, True)%I (λ _ _, True)%I
                  with "[] [$H1 $Hres]"); auto 10.
       iSplit.
       * iModIntro.
         iDestruct 1 as (?) "[(?&?&_)|H]".
         ** iExists _, _. iFrame. eauto.
-        ** iDestruct "H" as (?) "(?&?&_)". iExists _, _. iFrame. eauto.
+        ** iDestruct "H" as (???) "(?&?&_)". iExists _, _. iFrame. eauto.
       * eauto.
     }
   Qed.
