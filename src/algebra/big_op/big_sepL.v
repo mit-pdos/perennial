@@ -402,6 +402,20 @@ Section list2.
     iMod "H".
     eauto with iFrame.
   Qed.
+
+  Theorem big_sepL2_prefix `{!BiAffine PROP} (Φ : A → B → PROP) l1 l2 l1' l2' :
+    l1' `prefix_of` l1 →
+    l2' `prefix_of` l2 →
+    length l1' = length l2' →
+    ([∗ list] y1;y2 ∈ l1; l2, Φ y1 y2) -∗
+    ([∗ list] y1;y2 ∈ l1'; l2', Φ y1 y2).
+  Proof.
+    iIntros (Hpre1 Hpre2 Hlen) "H".
+    destruct Hpre1 as (l1_rest & ->).
+    destruct Hpre2 as (l2_rest & ->).
+    iDestruct (big_sepL2_app_equiv with "H") as "($&_)"; eauto.
+  Qed.
+
 End list2.
 
 End list.

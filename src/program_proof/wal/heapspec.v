@@ -94,46 +94,6 @@ Record locked_walheap := {
 Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
   ghost_var γ.(wal_heap_txns) (1/2) (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)).
 
-Definition list_to_async {A} `{!Inhabited A} (l: list A) : async A :=
-  {| latest := match last l with
-               | Some x => x
-               | None => inhabitant
-               end;
-     pending := take (length l - 1)%nat l;
-  |}.
-
-Instance rev_inj A : Inj eq eq (@rev A).
-Proof.
-  intros l1 l2 Heq.
-  rewrite -[l1]rev_involutive -[l2]rev_involutive.
-  rewrite Heq //.
-Qed.
-
-Lemma possible_list_to_async {A} `{!Inhabited A} (l: list A) :
-  (0 < length l)%nat →
-  possible (list_to_async l) = l.
-Proof.
-  intros.
-  rewrite /possible /list_to_async /=.
-  (* this is proof isn't really inductive, but somehow the reverse part of this
-  induction is helpful (we're basically doing case analysis on [] vs l ++
-  [x]) *)
-  induction l using rev_ind.
-  - simpl in H; lia.
-  - rewrite last_snoc.
-    rewrite app_length /=.
-    replace (length l + 1 - 1)%nat with (length l) by lia.
-    rewrite take_app //.
-Qed.
-
-Lemma length_possible {A} (x: async A) :
-  length (possible x) = 1 + length x.(pending).
-Proof.
-  rewrite /possible /=.
-  rewrite app_length /=.
-  lia.
-Qed.
-
 Lemma wal_heap_inv_crashes_crash crash_heaps crash_txn ls ls' :
   ls'.(log_state.d) = ls.(log_state.d) →
   ls'.(log_state.txns) = take (S crash_txn) ls.(log_state.txns) →
@@ -344,9 +304,6 @@ Proof using walheapG0.
     rewrite big_sepM_insert //.
     iFrame "#∗".
 Qed.
-
-Definition async_take {A} `{!Inhabited A} (n:nat) (l: async A) : async A :=
-  list_to_async (take n (possible l)).
 
 Lemma wal_heap_inv_crash_as_last_disk crash_heap ls :
   wal_heap_inv_crash crash_heap ls.(log_state.d) ls.(log_state.txns) -∗
