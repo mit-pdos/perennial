@@ -242,7 +242,7 @@ Section ghost_step.
                             source_pool_map (tpool_to_map tp) ∗
                             source_state σ ∗
                             <disc> |C={⊤}_0=> (source_inv r tp0 σ0).
-  Proof.
+  Proof using H1.
     intros Herased Hno_err.
     iMod (own_alloc (● (tpool_to_res tp, Some (Excl σ))
                        ⋅ ◯ (tpool_to_res tp, Some (Excl σ)))) as (γ) "(Hauth&Hfrag)".
@@ -273,14 +273,16 @@ Section ghost_step.
                             source_pool_map (tpool_to_map tp) ∗
                             source_state σ ∗
                             <disc> |C={⊤}_0=> (source_inv r tp σ).
-  Proof.
+  Proof using H1.
     intros Hno_err.
     iApply source_cfg_init1; eauto.
     { econstructor. econstructor. }
   Qed.
 
   Context `{cfgG Σ}.
-  Context `{Inhabited (state Λ)}.
+  Context `{Hstate_inhabited: Inhabited (state Λ)}.
+
+  Set Default Proof Using "Hstate_inhabited".
 
   Lemma source_pool_singleton e:
     source_pool_map (tpool_to_map [e]) -∗ 0 ⤇ e.

@@ -69,9 +69,9 @@ Lemma except_0_atleast P : ◇ P ⊣⊢ ◇_1 P.
 Proof. rewrite /bi_atleast/bi_except_0//=. Qed.
 
 Lemma atleast_True : ◇_k True ⊣⊢ True.
-Proof. rewrite /bi_atleast. apply (anti_symm _); auto. Qed.
+Proof using H. rewrite /bi_atleast. apply (anti_symm _); auto. Qed.
 Lemma atleast_emp `{!BiAffine PROP} : ◇_k emp ⊣⊢ emp.
-Proof. by rewrite -True_emp atleast_True. Qed.
+Proof using H. by rewrite -True_emp atleast_True. Qed.
 Lemma atleast_or P Q : ◇_k (P ∨ Q) ⊣⊢ ◇_k P ∨ ◇_k Q.
 Proof.
   rewrite /bi_atleast. apply (anti_symm _); auto.
@@ -119,7 +119,7 @@ Proof. by rewrite /bi_intuitionistically -atleast_persistently atleast_affinely_
 Lemma atleast_intuitionistically_if_2 p P : □?p ◇_k P ⊢ ◇_k □?p P.
 Proof. destruct p; simpl; auto using atleast_intuitionistically_2. Qed.
 Lemma atleast_absorbingly P : ◇_k <absorb> P ⊣⊢ <absorb> ◇_k P.
-Proof. by rewrite /bi_absorbingly atleast_sep atleast_True. Qed.
+Proof using H. by rewrite /bi_absorbingly atleast_sep atleast_True. Qed.
 
 Lemma atleast_frame_l P Q : P ∗ ◇_k Q ⊢ ◇_k (P ∗ Q).
 Proof. by rewrite {1}(atleast_intro P) atleast_sep. Qed.

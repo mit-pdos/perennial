@@ -311,7 +311,7 @@ Section modality_alt.
   Context `{Hi2: !IntoCrash Q Q'}.
   Lemma test R :
     P -∗ Q -∗ R -∗ post_crash (λ hG', P' hG' ∗ Q' hG').
-  Proof.
+  Proof using All.
     iIntros "HP HQ HR". iCrash. iFrame.
   Qed.
 
