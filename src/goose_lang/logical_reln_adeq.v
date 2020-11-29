@@ -12,6 +12,8 @@ From Perennial.Helpers Require Import Qextra.
 From Perennial.Helpers Require List.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_fund.
 
+Set Default Proof Using "Type".
+
 Section adeq.
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field

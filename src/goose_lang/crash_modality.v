@@ -3,6 +3,8 @@ From Perennial.Helpers Require Import ipm NamedProps.
 
 From Perennial.goose_lang Require Import lifting.
 
+Set Default Proof Using "Type".
+
 Section goose_lang.
 Context `{ffi_semantics: ext_semantics}.
 Context `{!ffi_interp ffi}.

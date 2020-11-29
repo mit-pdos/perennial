@@ -8,6 +8,8 @@ Import interface.bi.
 Import derived_laws.bi.
 Import derived_laws_later.bi.
 
+Set Default Proof Using "Type".
+
 Definition bi_atleast {PROP : bi} (k : nat) (P : PROP) : PROP := (▷^k False ∨ P)%I.
 Arguments bi_atleast {_} _ _%I : simpl never.
 Notation "◇_ n P" := (bi_atleast n P) (at level 20, n at level 9, P at level 20,

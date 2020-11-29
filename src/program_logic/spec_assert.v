@@ -5,6 +5,8 @@ From iris.program_logic Require Export language.
 From iris.program_logic Require Import lifting.
 From Perennial.program_logic Require Export crash_lang ncinv staged_invariant.
 
+Set Default Proof Using "Type".
+
 (*
 
    Encoding of an abstract source program as a ghost resource, in order to use
