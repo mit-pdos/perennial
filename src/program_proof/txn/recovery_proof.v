@@ -138,6 +138,9 @@ Abort.
 
 Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
     "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 ∅ ∗
+    "Hcrash_heaps0" ∷ ([∗ map] a↦b ∈ latest crash_heaps, ∃ hb,
+     ⌜hb_latest_update hb = b⌝ ∗
+     mapsto (hG:=γ.(txn_walnames).(wal_heap_h)) a 1 hb) ∗
     "Hcrashheapsmatch" ∷ crash_heaps_match γ logm crash_heaps ==∗
     ∃ metam,
     map_ctx γ.(txn_metaheap) 1 metam ∗
@@ -273,6 +276,7 @@ Proof.
 
       iMod (crash_heaps_match_heapmatch_latest γ' with "[$Hcrashheapsmatch_new $metaheap]") as
          (metam_new) "(metaheap&Heapmatch_new&Hpts)".
+      { admit. (* TODO: should receive Hcrash_heaps0, but it's needed later in this proof *) }
 
       iExists (async_take (length ls2.(log_state.txns)) logm).
       iSplitL ""; first eauto.
