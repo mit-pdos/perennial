@@ -304,60 +304,6 @@ Section map.
 End map.
 
 
-Section gmap_curry.
-
-  Context `{EqDecision A} `{Countable A}.
-  Context `{EqDecision B} `{Countable B}.
-  Variable (T : Type).
-
-  Theorem gmap_uncurry_insert (m : gmap (A * B) T) (k : A * B) (v : T) :
-    m !! k = None ->
-    gmap_uncurry (<[k:=v]> m) =
-      <[fst k :=
-        <[snd k := v]> (default ∅ ((gmap_uncurry m) !! fst k))]>
-      (gmap_uncurry m).
-  Proof.
-    intros.
-    destruct k as [b o].
-    rewrite /gmap_uncurry.
-    rewrite map_fold_insert_L; eauto.
-    2: {
-      intros.
-      destruct j1, j2.
-      destruct (decide (a = a0)); subst.
-      - repeat rewrite <- partial_alter_compose.
-        apply partial_alter_ext.
-        destruct x; intros; simpl.
-        + rewrite insert_commute; eauto. congruence.
-        + rewrite insert_commute; eauto. congruence.
-      - rewrite partial_alter_commute; eauto.
-    }
-
-    simpl.
-    eapply partial_alter_ext; intros.
-    rewrite H2. reflexivity.
-  Qed.
-
-  Theorem gmap_uncurry_lookup_exists (m : gmap (A * B) T) (k : A * B) (v : T) :
-    m !! k = Some v ->
-    ∃ offmap,
-      gmap_uncurry m !! (fst k) = Some offmap ∧
-      offmap !! (snd k) = Some v.
-  Proof.
-    intros.
-    destruct k.
-    destruct (gmap_uncurry m !! a) eqn:He.
-    - eexists; intuition eauto.
-      rewrite -lookup_gmap_uncurry in H1.
-      rewrite He in H1; simpl in H1. eauto.
-    - exfalso. simpl in He.
-      pose proof (lookup_gmap_uncurry_None m a). destruct H2.
-      rewrite H2 in H1; eauto. congruence.
-  Qed.
-
-End gmap_curry.
-
-
 Section gmap_addr_by_block.
 
   Variable (T : Type).
@@ -642,6 +588,53 @@ Section gmap_addr_by_block.
 
 End gmap_addr_by_block.
 
+  (* This proof route seems horrible. Another way to go would be to try to prove a lemma about
+     map_zip and gmap_uncurry *)
+  Theorem gmap_addr_by_block_big_sepM2
+          {PROP: bi} `{BiAffine PROP}
+          {T1 T2} (m1 : gmap addr T1) (m2: gmap addr T2) (Φ : addr -> T1 -> T2 -> PROP) :
+    ( [∗ map] a ↦ v1; v2 ∈ m1; m2, Φ a v1 v2 ) -∗
+    ( [∗ map] blkno ↦ offmap1; offmap2 ∈ gmap_addr_by_block m1; gmap_addr_by_block m2,
+        [∗ map] off ↦ v1; v2 ∈ offmap1; offmap2, Φ (Build_addr blkno off) v1 v2 ).
+  Proof.
+    iIntros "Hm".
+    iInduction m1 as [|i x1 m1] "IH" using map_ind forall (m2).
+    - rewrite gmap_addr_by_block_empty.
+      iDestruct (big_sepM2_dom with "Hm") as %Hdom.
+      assert (m2 = ∅) as ->.
+      { apply dom_empty_inv_L. by rewrite -Hdom dom_empty_L. }
+      rewrite //=.
+    - iDestruct (big_sepM2_dom with "Hm") as %Hdom.
+      iDestruct (big_sepM2_insert_left_inv with "Hm") as (x2 Hlookup) "(H1&Hm)"; eauto.
+      iDestruct ("IH" with "Hm") as "Hm".
+      rewrite gmap_addr_by_block_insert; eauto.
+      assert ( m2 = (<[i := x2]> (delete i m2))) as Heq_lookup.
+      { admit. }
+      iEval (rewrite Heq_lookup).
+      rewrite gmap_addr_by_block_insert; last first.
+      { admit. }
+      destruct i as [b o].
+      destruct (gmap_addr_by_block m1 !! b) eqn:He1.
+      + destruct ((gmap_addr_by_block (delete (b, o) m2) !! b)) eqn:He2.
+        ** iDestruct (big_sepM2_insert_acc with "Hm") as "[Hb Hm]"; eauto.
+           iApply "Hm".
+           iApply big_sepM2_insert.
+           { simpl.
+             pose proof (lookup_gmap_uncurry m1 b o).
+             rewrite H0 in H1. rewrite He1 in H1. simpl in H1.
+             rewrite He1 /=. eauto. }
+           { simpl.
+             pose proof (lookup_gmap_uncurry (delete (b, o) m2) b o).
+             rewrite lookup_delete in H1.
+             rewrite He2 /=. rewrite He2 /= in H1. eauto. }
+           iFrame.
+           rewrite He1 He2. iFrame.
+        **  exfalso. admit.
+      + iApply big_sepM2_insert; eauto.
+        { admit. }
+        iFrame.
+        rewrite He1 /=.
+  Admitted.
 
 Theorem gmap_addr_by_block_fmap {A B} (m : gmap addr A) (f : A -> B) :
   gmap_addr_by_block (f <$> m) =

@@ -825,5 +825,114 @@ Section map2.
     all: typeclasses eauto.
   Qed.
 
+  Lemma big_sepM2_insert_left_inv Φ (m1 : gmap K A) (m2 : gmap K B) k a :
+    m1 !! k = None →
+    ([∗ map] k↦y1;y2 ∈ <[k := a]>m1; m2, Φ k y1 y2) -∗
+    ∃ b, ⌜ m2 !! k = Some b ⌝ ∗ Φ k a b ∗ [∗ map] k↦y1;y2 ∈ m1; delete k m2, Φ k y1 y2.
+  Proof using BiAffine0.
+    iIntros (Hone) "H".
+    iDestruct (big_sepM2_dom with "H") as %Hdom.
+    assert (∃ b, m2 !! k = Some b) as (b&Hlookup).
+    { apply elem_of_dom. rewrite -Hdom. set_solver. }
+    rewrite -(insert_id m2 k b) //.
+    rewrite big_sepM2_insert_delete.
+    iDestruct "H" as "(HΦ&H)".
+    iExists b. iFrame. iSplit.
+    { rewrite lookup_insert //. }
+    rewrite delete_notin // delete_insert_delete //.
+  Qed.
 End map2.
+
+Section gmap_curry.
+
+  Context `{EqDecision A} `{Countable A}.
+  Context `{EqDecision B} `{Countable B}.
+  Variable (T : Type).
+
+  Theorem gmap_uncurry_insert (m : gmap (A * B) T) (k : A * B) (v : T) :
+    m !! k = None ->
+    gmap_uncurry (<[k:=v]> m) =
+      <[fst k :=
+        <[snd k := v]> (default ∅ ((gmap_uncurry m) !! fst k))]>
+      (gmap_uncurry m).
+  Proof.
+    intros.
+    destruct k as [b o].
+    rewrite /gmap_uncurry.
+    rewrite map_fold_insert_L; eauto.
+    2: {
+      intros.
+      destruct j1, j2.
+      destruct (decide (a = a0)); subst.
+      - repeat rewrite <- partial_alter_compose.
+        apply partial_alter_ext.
+        destruct x; intros; simpl.
+        + rewrite insert_commute; eauto. congruence.
+        + rewrite insert_commute; eauto. congruence.
+      - rewrite partial_alter_commute; eauto.
+    }
+
+    simpl.
+    eapply partial_alter_ext; intros.
+    rewrite H2. reflexivity.
+  Qed.
+
+  Theorem gmap_uncurry_insert_delete (m : gmap (A * B) T) (k : A * B) (v : T) :
+    m !! k = None ->
+    gmap_uncurry (<[k:=v]> m) =
+      <[fst k :=
+        <[snd k := v]> (default ∅ ((gmap_uncurry m) !! fst k))]>
+      (delete (fst k) (gmap_uncurry m)).
+  Proof.
+    intros.
+    rewrite gmap_uncurry_insert //. rewrite insert_delete //.
+  Qed.
+
+  Theorem gmap_uncurry_lookup_exists (m : gmap (A * B) T) (k : A * B) (v : T) :
+    m !! k = Some v ->
+    ∃ offmap,
+      gmap_uncurry m !! (fst k) = Some offmap ∧
+      offmap !! (snd k) = Some v.
+  Proof.
+    intros.
+    destruct k.
+    destruct (gmap_uncurry m !! a) eqn:He.
+    - eexists; intuition eauto.
+      rewrite -lookup_gmap_uncurry in H1.
+      rewrite He in H1; simpl in H1. eauto.
+    - exfalso. simpl in He.
+      pose proof (lookup_gmap_uncurry_None m a). destruct H2.
+      rewrite H2 in H1; eauto. congruence.
+  Qed.
+
+End gmap_curry.
+
+(* TODO(joe): got halfway through this before I realized gmap_addr_by_block_big_sepM exists *)
+Lemma big_sepM_gmap_uncurry `{Countable K1} `{Countable K2} {X : Type}
+      (m: gmap (K1*K2) X) (Φ : K1 → K2 → X → PROP) :
+  ([∗ map] k↦y ∈ m, Φ (fst k) (snd k) y) -∗
+  ([∗ map] k1↦m1' ∈ gmap_uncurry m, [∗ map] k2↦y ∈ m1', Φ k1 k2 y)%I.
+Proof.
+  iIntros "H".
+  iInduction m as [| i x m1] "IH" using map_ind.
+  * rewrite /gmap_uncurry //=.
+  * rewrite big_sepM_insert //.
+    iDestruct "H" as "(HΦ&H)".
+    rewrite ?gmap_uncurry_insert_delete //; last first.
+    iDestruct ("IH" with "H") as "H".
+    rewrite big_sepM_insert ?lookup_delete //.
+    destruct (gmap_uncurry m1 !! i.1) as [m1'|] eqn:Hlookup.
+    ** assert (Hdel: gmap_uncurry m1 = <[i.1 := m1']> (delete i.1 (gmap_uncurry m1))).
+       { rewrite insert_delete insert_id //=. }
+       iEval (rewrite Hdel) in "H".
+       rewrite big_sepM_insert ?lookup_delete //.
+       iDestruct "H" as "(H1&H2)".
+       iFrame. simpl. rewrite big_sepM_insert; first by iFrame.
+       destruct i as (i1&i2).
+       rewrite -lookup_gmap_uncurry in H1.
+       rewrite Hlookup /= in H1.
+       eauto.
+    **
+Abort.
+
 End bi.

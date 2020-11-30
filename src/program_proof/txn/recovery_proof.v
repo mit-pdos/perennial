@@ -57,6 +57,90 @@ Definition is_txn_durable γ dinit : iProp Σ :=
     ⌜hb_latest_update hb = b⌝ ∗
     mapsto (hG:=γ.(txn_walnames).(wal_heap_h)) a 1 hb).
 
+Definition crash_heap_match γ logmap walheap : iProp Σ :=
+  ([∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
+        ∃ blockK,
+       "%Htxn_cb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
+       "Htxn_in_cb" ∷ bufDataTs_in_crashblock walblock blkno blockK offmap)%I.
+
+Definition crash_heaps_match γ logm crash_heaps : iProp Σ :=
+  ([∗ list] logmap;walheap ∈ possible logm;possible crash_heaps, crash_heap_match γ logmap walheap).
+
+Lemma crash_heaps_match_async_take γ logm crash_heaps n :
+  (0 < n)%nat →
+  (n ≤ length (possible logm))%nat →
+  crash_heaps_match γ logm crash_heaps -∗
+  crash_heaps_match γ (async_take n logm) (async_take n crash_heaps).
+Proof.
+  rewrite /crash_heaps_match.
+  iIntros (Hlt Hle) "Hl".
+  iDestruct (big_sepL2_length with "Hl") as %Hlen.
+  iApply (big_sepL2_prefix with "Hl"); auto.
+  - apply async_take_possible_prefix; auto.
+  - apply async_take_possible_prefix; auto. lia.
+  - rewrite ?possible_list_to_async ?take_length; lia.
+Qed.
+
+Lemma crashheapsmatch_transfer_gname γ1 γ2 logm crash_heaps :
+  txn_kinds γ2 = txn_kinds γ1 →
+  crash_heaps_match γ1 logm crash_heaps -∗
+  crash_heaps_match γ2 logm crash_heaps.
+Proof. iIntros (Heq) "H". rewrite /crash_heaps_match/crash_heap_match Heq. eauto. Qed.
+
+Lemma allocate_metamap names (m: gmap addr object):
+  map_ctx names 1 ∅ ==∗
+  ∃ metam,
+  map_ctx names 1 metam ∗
+  ([∗ map] addr↦bufData;γm ∈ m;metam, ghost_var γm (1/2) true) ∗
+  ([∗ map] addr↦bufData;γm ∈ m;metam, ptsto_mut names addr 1 γm ∗ ghost_var γm (1/2) true).
+Proof.
+  iIntros "Hctx".
+  iInduction m as [|i x m] "IH" using map_ind.
+  - iExists ∅. rewrite ?big_sepM2_empty //. by iFrame.
+  - iMod ("IH" with "Hctx") as (metam) "(H1&H2&H3)".
+    iDestruct (big_sepM2_dom with "H2") as %Hdom.
+    iMod (ghost_var_alloc true) as (γm) "[Hm1 Hm2]".
+    assert (metam !! i = None).
+    { apply not_elem_of_dom. rewrite -Hdom.
+      apply not_elem_of_dom. eauto. }
+    iMod (map_alloc i γm with "[$]") as "(Hctx&Hpts)"; auto.
+    iExists (<[i := γm]>metam).
+    iFrame. iSplitL "H2 Hm1".
+    { rewrite big_sepM2_insert //. by iFrame. }
+    { rewrite big_sepM2_insert //. by iFrame. }
+Qed.
+
+
+Lemma crash_heap_match_to_heapmatch γ offmap crash_heap :
+    "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 ∅ ∗
+    "Hcrashheapmatch" ∷ crash_heap_match γ offmap crash_heap ==∗
+    ∃ metam,
+    "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 metam ∗
+    "Hmeta_maptso" ∷ ([∗ map] l↦γm ∈ metam, ghost_var γm (1/2) true) ∗
+    "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block offmap;gmap_addr_by_block metam,
+      ∃ installed bs blockK,
+        "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
+        "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
+        "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ).
+Proof.
+  iNamed 1.
+  rewrite /crash_heap_match.
+Abort.
+
+
+Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
+    "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 ∅ ∗
+    "Hcrashheapsmatch" ∷ crash_heaps_match γ logm crash_heaps ==∗
+    ∃ metam,
+    map_ctx γ.(txn_metaheap) 1 metam ∗
+    [∗ map] l↦γm ∈ metam, ghost_var γm (1/2) true ∗
+    "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
+      ∃ installed bs blockK,
+        "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
+        "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
+        "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ).
+Proof. Abort.
+
 Definition txn_pre_exchange γ γ' : iProp Σ :=
  (∃ σs : async (gmap addr object), "H◯async" ∷ ghost_var γ'.(txn_crashstates) (3/4) σs ∗
               heapspec_durable_exchanger γ.(txn_walnames) (length (possible σs) - 1)).
