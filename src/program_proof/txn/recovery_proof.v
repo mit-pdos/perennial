@@ -50,13 +50,7 @@ Definition is_txn_durable γ dinit : iProp Σ :=
   "Hlocked_walheap" ∷ is_locked_walheap γ.(txn_walnames) {| locked_wh_σd := ls'.(log_state.d);
                         locked_wh_σtxns := ls'.(log_state.txns);
                     |} ∗
-  "His_txn_always" ∷ is_txn_state γ logm crash_heaps ∗
-  (* ⌜ lb < length ls'.(log_state.txns) ⌝%nat ∗ *)
-  (* XXX this is already in is_txn_state
-     "Hcrash_heaps" ∷ ghost_var γ.(txn_walnames).(wal_heap_crash_heaps) (3/4) crash_heaps ∗ *)
-  "Hgh_ptsto" ∷ ([∗ map] a↦b ∈ latest crash_heaps, ∃ hb,
-    ⌜hb_latest_update hb = b⌝ ∗
-    mapsto (hG:=γ.(txn_walnames).(wal_heap_h)) a 1 hb).
+  "His_txn_always" ∷ is_txn_state γ logm crash_heaps.
 
 Definition txn_resources γ logm : iProp Σ :=
   "Hlogm" ∷ ghost_var γ.(txn_crashstates) (3/4) logm ∗
@@ -274,9 +268,8 @@ Proof.
         as "[logheap Hlatest]".
       { intros. apply lookup_empty. }
 
-      iMod (crash_heaps_match_heapmatch_latest γ' with "[$Hcrashheapsmatch_new $metaheap]") as
+      iMod (crash_heaps_match_heapmatch_latest γ' with "[$Hcrashheapsmatch_new $metaheap $Hcrash_heaps0]") as
          (metam_new) "(metaheap&Heapmatch_new&Hpts)".
-      { admit. (* TODO: should receive Hcrash_heaps0, but it's needed later in this proof *) }
 
       iExists (async_take (length ls2.(log_state.txns)) logm).
       iSplitL ""; first eauto.
