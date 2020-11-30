@@ -43,6 +43,7 @@ isn't enough to relate the state inside [is_txn_always] to that in
 
 Definition is_txn_durable γ dinit : iProp Σ :=
   ∃ ls' logm crash_heaps,
+  "%Hpostcrash" ∷ ⌜ wal_post_crash ls' ⌝ ∗
   "His_wal_inner_durable" ∷ is_wal_inner_durable γ.(txn_walnames).(wal_heap_walnames) ls' dinit ∗
   "Hwal_res" ∷ wal_resources γ.(txn_walnames).(wal_heap_walnames) ∗
   "Hwal_heap_inv" ∷ wal_heap_inv γ.(txn_walnames) ls' ∗
@@ -182,26 +183,19 @@ Lemma wal_heap_inv_wf names ls:
   ⌜ wal_wf ls ⌝.
 Proof. iNamed 1. eauto. Qed.
 
-(* TODO(joe): define txn_resources, it seems it should contain
-  at least ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ a v
-  and ghost_var γ.(txn_crashstates) (3/4) logm. *)
-
-
 Theorem wpc_MkTxn (d:loc) dinit (γ:txn_names) logm k :
   {{{ is_txn_durable γ dinit ∗ txn_resources γ logm }}}
     MkTxn #d @ k; ⊤
   {{{ (l: loc), RET #l; is_txn l γ dinit ∗ ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ a v)
       (* cfupd stuff *) }}}
-  {{{ is_txn_durable γ dinit ∗ txn_resources γ logm  ∨
-      (∃ γ' logm',
-       ⌜ txn_kinds γ' = txn_kinds γ ⌝ ∗ is_txn_durable γ' dinit ∗ txn_resources γ' logm') }}}.
+  {{{ ∃ γ' logm', ⌜ txn_kinds γ' = txn_kinds γ ⌝ ∗ is_txn_durable γ' dinit ∗ txn_resources γ' logm' }}}.
 Proof.
   iIntros (Φ Φc) "(Hdur&Hres) HΦ".
   rewrite /MkTxn. wpc_pures.
-  { crash_case. iLeft; by iFrame. }
+  { crash_case. iExists _, _. iFrame. eauto. }
 
   iCache with "Hdur HΦ Hres".
-  { crash_case. iLeft; by iFrame. }
+  { crash_case. iExists _, _. iFrame. eauto. }
   wpc_bind (lock.new _).
   wpc_frame; wp_apply (wp_new_free_lock).
   iIntros (lk) "Hlock". iNamed 1.
@@ -219,6 +213,7 @@ Proof.
   iApply wpc_cfupd.
   wpc_apply (wpc_MkLog_recover dinit P _ _ _ _ Prec Pcrash
             with "[] [$His_wal_inner_durable Hwal_res Hwal_heap_inv Hheapspec_init]").
+  - auto.
   - iIntros "!>" (???) ">HP".
     iDestruct "HP" as "[Hinv Hinit]".
     iMod (wal_heap_inv_crash_transform with "Hinv Hinit") as "[Hinv Hres]"; eauto.
@@ -231,90 +226,88 @@ Proof.
     { iLeft in "HΦ".
       iModIntro.
       iIntros "Hcrash".
-      iDestruct "Hcrash" as (ls2) "[HP|HP]".
-      - iDestruct "HP" as "(Hdur' & Hres' & HP)".
-        (* iLeft. iFrame "Hlogm".
-        iExists _. iFrame "Hdur' Hres'". *)
-        admit.
-      - iDestruct "HP" as (ls1 γ'walnames Hcrashls12) "(Hdur' & Hres' & HP)".
-        iNamed "His_txn_always".
-        iNamed "Hres".
+      iDestruct "Hcrash" as (ls1) "HP".
+      iDestruct "HP" as (ls2 γ'walnames Hcrashls12) "(Hdur' & Hres' & HP)".
+      iNamed "His_txn_always".
+      iNamed "Hres".
 
-        iAssert (C -∗ |0={⊤}=>
-                       ∃ γ'0 logm',
-                        ⌜γ'0.(txn_kinds) = γ.(txn_kinds)⌝ ∗ is_txn_durable γ'0 dinit ∗ 
-                        txn_resources γ'0 logm' )%I
-        with "[-HΦ]" as "Hgoal".
-        {
+      iAssert (C -∗ |0={⊤}=>
+                     ∃ γ'0 logm',
+                      ⌜γ'0.(txn_kinds) = γ.(txn_kinds)⌝ ∗ is_txn_durable γ'0 dinit ∗
+                      txn_resources γ'0 logm' )%I
+      with "[-HΦ]" as "Hgoal".
+      {
 
-        rewrite /Prec. iDestruct "HP" as "(>Hheap_inv&Hheap_res)".
-        rewrite /is_txn_durable.
-        iIntros "C".
-        iExists (γ'<|txn_walnames;wal_heap_walnames := γ'walnames|>).
+      rewrite /Prec. iDestruct "HP" as "(>Hheap_inv&Hheap_res)".
+      rewrite /is_txn_durable.
+      iIntros "C".
+      iExists (γ'<|txn_walnames;wal_heap_walnames := γ'walnames|>).
 
-        iClear "Hlocked_walheap".
-        rewrite /heapspec_resources.
-        iDestruct "Hheap_res" as "(>Hheap_exchanger&>Hlocked_walheap)".
-        iDestruct (heapspec_exchange_crash_heaps with "[$] [$]") as "(Hheap_exchange&Hnew)".
-        iDestruct "Hnew" as "(Hheap_lb_exchange&Hcrash_heaps0)".
-        iNamed "Hcrash_heaps0".
+      iClear "Hlocked_walheap".
+      rewrite /heapspec_resources.
+      iDestruct "Hheap_res" as "(>Hheap_exchanger&>Hlocked_walheap)".
+      iDestruct (heapspec_exchange_crash_heaps with "[$] [$]") as "(Hheap_exchange&Hnew)".
+      iDestruct "Hnew" as "(Hheap_lb_exchange&Hcrash_heaps0)".
+      iNamed "Hcrash_heaps0".
 
-        iDestruct (wal_heap_inv_wf with "Hheap_inv") as %Hls2wf.
-        iNamed "Htxn_init".
-        iDestruct (ghost_var_agree with "Hcrashstates Hlogm") as %->.
-        iDestruct (big_sepL2_length with "Hcrashheapsmatch") as %Hlen_logm.
-        assert (length ls2.(log_state.txns) ≤ length (possible logm))%nat.
-        { rewrite Hlen_logm -Hlenold //=.
-          apply log_crash_txns_length. auto. }
-        assert (0 < length ls2.(log_state.txns))%nat.
-        { destruct Hls2wf. lia. }
+      iDestruct (wal_heap_inv_wf with "Hheap_inv") as %Hls2wf.
+      iNamed "Htxn_init".
+      iDestruct (ghost_var_agree with "Hcrashstates Hlogm") as %->.
+      iDestruct (big_sepL2_length with "Hcrashheapsmatch") as %Hlen_logm.
+      assert (length ls2.(log_state.txns) ≤ length (possible logm))%nat.
+      { rewrite Hlen_logm -Hlenold //=.
+        apply log_crash_txns_length. auto. }
+      assert (0 < length ls2.(log_state.txns))%nat.
+      { destruct Hls2wf. lia. }
 
-        iMod (ghost_var_update (async_take (length ls2.(log_state.txns)) logm) with "crashstates")
-             as "crashstates".
-        iDestruct (crash_heaps_match_async_take γ _ _ (length ls2.(log_state.txns)) with "Hcrashheapsmatch")
-             as "#Hcrashheapsmatch'"; auto.
-        iDestruct (crash_heaps_match_transfer_gname _ γ' with "Hcrashheapsmatch'") as "#Hcrashheapsmatch_new".
-        { auto. }
+      iMod (ghost_var_update (async_take (length ls2.(log_state.txns)) logm) with "crashstates")
+           as "crashstates".
+      iDestruct (crash_heaps_match_async_take γ _ _ (length ls2.(log_state.txns)) with "Hcrashheapsmatch")
+           as "#Hcrashheapsmatch'"; auto.
+      iDestruct (crash_heaps_match_transfer_gname _ γ' with "Hcrashheapsmatch'") as "#Hcrashheapsmatch_new".
+      { auto. }
 
-        iMod (map_alloc_many (async_take (length ls2.(log_state.txns)) logm).(latest) with "logheap")
-          as "[logheap Hlatest]".
-        { intros. apply lookup_empty. }
+      iMod (map_alloc_many (async_take (length ls2.(log_state.txns)) logm).(latest) with "logheap")
+        as "[logheap Hlatest]".
+      { intros. apply lookup_empty. }
 
-        iMod (crash_heaps_match_heapmatch_latest γ' with "[$Hcrashheapsmatch_new $metaheap]") as
-           (metam_new) "(metaheap&Heapmatch_new&Hpts)".
+      iMod (crash_heaps_match_heapmatch_latest γ' with "[$Hcrashheapsmatch_new $metaheap]") as
+         (metam_new) "(metaheap&Heapmatch_new&Hpts)".
 
-        iExists (async_take (length ls2.(log_state.txns)) logm).
-        iSplitL ""; first eauto.
+      iExists (async_take (length ls2.(log_state.txns)) logm).
+      iSplitL ""; first eauto.
 
 
-        iEval (rewrite -Qp_quarter_three_quarter) in "crashstates".
-        iDestruct (fractional.fractional_split_1 with "crashstates") as
-            "[crashstates1 crashstates2]".
-        iDestruct (heapspec_durable_exchanger_dup with "[$]")
-                  as "(Hheap_lb_exchange1&Hheap_lb_exchange2)".
-        iSplitR "crashstates2 Hheap_lb_exchange2 Hheap_exchange Hpts Hlatest"; last first.
-        { iModIntro. rewrite /txn_exchanger. iFrame.
-          iCombine "Hpts Hlatest" as "Hpts".
-          rewrite -big_sepM_sep.
-          iApply (big_sepM_mono with "Hpts").
-          iIntros (???) "(H1&H2)".
-          iDestruct "H1" as (γm) "(H1a&H1b)".
-          iExists γm. iFrame.
-        }
-        iExists ls2, _, _. simpl. iFrame "Hheap_inv Hres' Hdur'".
+      iEval (rewrite -Qp_quarter_three_quarter) in "crashstates".
+      iDestruct (fractional.fractional_split_1 with "crashstates") as
+          "[crashstates1 crashstates2]".
+      iDestruct (heapspec_durable_exchanger_dup with "[$]")
+                as "(Hheap_lb_exchange1&Hheap_lb_exchange2)".
+      iSplitR "crashstates2 Hheap_lb_exchange2 Hheap_exchange Hpts Hlatest"; last first.
+      { iModIntro. rewrite /txn_exchanger. iFrame.
+        iCombine "Hpts Hlatest" as "Hpts".
+        rewrite -big_sepM_sep.
+        iApply (big_sepM_mono with "Hpts").
+        iIntros (???) "(H1&H2)".
+        iDestruct "H1" as (γm) "(H1a&H1b)".
+        iExists γm. iFrame.
+      }
+      iExists ls2, _, _. simpl. iFrame "Hheap_inv Hres' Hdur'".
 
-        iFrame "Hcrash_heaps".
-        iFrame.
-        iExists metam_new.
-        iFrame "# ∗".
-        rewrite /log_heap_ctx /=. iEval (rewrite right_id) in "logheap". iFrame "logheap".
-        eauto.
-        (* TODO: a bunch of resources are getting dropped on the floor *)
-        }
-        iIntros "HC".
-        iSpecialize ("Hgoal" with "[$]").
-        iMod (fupd_level_le with "Hgoal"); first lia.
-        iApply "HΦ". iRight. eauto.
+      iFrame "Hcrash_heaps".
+      iSplitL "".
+      { iModIntro. iPureIntro. eapply log_crash_to_post_crash; eauto. }
+      iFrame.
+      iExists metam_new.
+      iFrame "# ∗".
+      rewrite /log_heap_ctx /=. iEval (rewrite right_id) in "logheap". iFrame "logheap".
+      eauto.
+      (* TODO: a bunch of resources are getting dropped on the floor *)
+      }
+      iIntros "HC".
+      iSpecialize ("Hgoal" with "[$]").
+      iMod (fupd_level_le with "Hgoal"); first lia.
+      iApply "HΦ". eauto.
     }
     iNext. iIntros (γ'' l) "(#Hwal & Hwal_cfupd & #Hwal_cinv)".
     wpc_frame_compl "Hlock Hlocked_walheap His_txn_always".
