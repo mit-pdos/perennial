@@ -373,8 +373,21 @@ Proof.
       iModIntro. iApply "HΦ". eauto.
     }
     iNext. iIntros (γ'' l) "(#Hwal & Hwal_cfupd & #Hwal_cinv)".
-    wpc_frame_compl "Hlock Hlocked_walheap His_txn_always".
-    { admit. }
+    iApply wpc_fupd.
+    iApply wpc_cfupd.
+    wpc_frame_compl "Hlock Hlocked_walheap".
+    {
+      iLeft in "HΦ".
+      iModIntro.
+      iMod "Hwal_cfupd".
+      iMod (txn_crash_transform with "[$His_txn_always $Hres $Htxn_init Hwal_cfupd]") as "Htransform".
+      { auto. }
+      { iDestruct "Hwal_cfupd" as (??) "H".
+        iExists _, _, _. iFrame.
+      }
+      { lia. }
+      iModIntro. iApply "HΦ". eauto.
+    }
     rewrite -wp_fupd.
     wp_apply wp_allocStruct; first by val_ty.
     iIntros (txn_l) "Htxn".
@@ -386,10 +399,10 @@ Proof.
             with "Hlock [pos Hlocked_walheap]") as "#Htxn_lock".
     { iNext. rewrite /is_txn_locked.
       iExists _, _, _; iFrame. }
-    iMod (inv_alloc invN _ (is_txn_always γ) with "[His_txn_always]") as "#Htxn_inv".
-    { iNext. iExists _, _; iFrame. }
     iModIntro.
     iNamed 1.
+    iMod (inv_alloc invN _ (is_txn_always γ) with "[His_txn_always]") as "#Htxn_inv".
+    { iNext. iExists _, _; iFrame. }
     iRight in "HΦ".
     iApply "HΦ".
     iNamed "Hres".
@@ -397,7 +410,7 @@ Proof.
     rewrite /is_txn.
     iExists _, _; iFrame "#".
     iApply (is_wal_alter with "Hwal").
-    iModIntro. iClear "#".
+    do 2 iModIntro. iClear "#".
     rewrite /P.
     iIntros (?) "[$ $]".
     iIntros (?) "$".
@@ -405,6 +418,6 @@ Proof.
     (* XXX: track this down. *)
     exact (U64 0).
     all: fail "goals remaining".
-Admitted.
+Qed.
 
 End goose_lang.
