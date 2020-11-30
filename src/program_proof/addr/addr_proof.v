@@ -588,6 +588,47 @@ Section gmap_addr_by_block.
 
 End gmap_addr_by_block.
 
+Lemma gmap_addr_by_block_dom_eq {T0 T1} (m0 : gmap addr T0) (m1 : gmap addr T1) :
+  dom (gset addr) m0 = dom (gset addr) m1 ->
+  dom (gset u64) (gmap_addr_by_block m0) = dom (gset u64) (gmap_addr_by_block m1).
+Proof.
+  intros.
+  eapply gset.gset_eq; intros x.
+  rewrite /gmap_addr_by_block.
+  rewrite !elem_of_dom.
+  destruct (gmap_uncurry m0 !! x) eqn:He0;
+    destruct (gmap_uncurry m1 !! x) eqn:He1.
+  1: { split; intros; eauto. }
+  3: { split; intros Hx; inversion Hx; inversion H0. }
+  { exfalso.
+    eapply gmap_uncurry_non_empty in He0 as Hg. eapply map_choose in Hg. destruct Hg as [i [ix Hg]].
+    eapply lookup_gmap_uncurry_None in He1. rewrite <- not_elem_of_dom in He1.
+    rewrite -H in He1. eapply not_elem_of_dom in He1.
+    rewrite -lookup_gmap_uncurry in He1. rewrite He0 /= in He1. erewrite Hg in He1. congruence.
+  }
+  { exfalso.
+    eapply gmap_uncurry_non_empty in He1 as Hg. eapply map_choose in Hg. destruct Hg as [i [ix Hg]].
+    eapply lookup_gmap_uncurry_None in He0. rewrite <- not_elem_of_dom in He0.
+    rewrite H in He0. eapply not_elem_of_dom in He0.
+    rewrite -lookup_gmap_uncurry in He0. rewrite He1 /= in He0. erewrite Hg in He0. congruence.
+  }
+Qed.
+
+Lemma gmap_addr_by_block_dom_eq2 {T0 T1} (m0 : gmap addr T0) (m1 : gmap addr T1) (blk : u64) (mb0 : gmap u64 T0) (mb1 : gmap u64 T1) :
+  dom (gset addr) m0 = dom (gset addr) m1 ->
+  gmap_addr_by_block m0 !! blk = Some mb0 ->
+  gmap_addr_by_block m1 !! blk = Some mb1 ->
+  dom (gset u64) mb0 = dom (gset u64) mb1.
+Proof.
+  intros.
+  eapply gset.gset_eq; intros x.
+  split; intros Hx.
+  - eapply gmap_addr_by_block_elem_of_1 in Hx; eauto. rewrite H in Hx.
+    eapply gmap_addr_by_block_elem_of_2 in Hx; eauto.
+  - eapply gmap_addr_by_block_elem_of_1 in Hx; eauto. rewrite -H in Hx.
+    eapply gmap_addr_by_block_elem_of_2 in Hx; eauto.
+Qed.
+
 Theorem gmap_addr_by_block_map_zip {T1 T2} (m1 : gmap addr T1) (m2 : gmap addr T2) :
   (∀ k : addr, is_Some (m1 !! k) ↔ is_Some (m2 !! k)) ->
   (λ (x : gmap _ _ * _), map_zip x.1 x.2) <$> map_zip (gmap_addr_by_block m1) (gmap_addr_by_block m2) =

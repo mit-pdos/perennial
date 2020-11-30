@@ -130,6 +130,30 @@ Proof.
 Abort.
 
 
+Theorem mapsto_txn_alloc {T} (γ : gname) (logm : gmap addr T) :
+  map_ctx γ 1 ∅
+  ==∗
+  ∃ m,
+    ⌜dom (gset addr) m = dom (gset addr) logm⌝ ∗
+    map_ctx γ 1 m ∗
+    ([∗ map] a↦_ ∈ logm, ∃ (γm : gname), a [[γ]]↦ γm ∗ ghost_var γm (1/2) true) ∗
+    ([∗ map] _↦γm ∈ m, ghost_var γm (1/2) true).
+Proof.
+  iIntros "H".
+  iInduction logm as [|a v m] "IH" using map_ind.
+  { iModIntro. iExists _. iFrame. rewrite !big_sepM_empty. rewrite !dom_empty_L. done. }
+  iMod ("IH" with "H") as (m0) "(%Hdom & H & H0 & H1)".
+  assert (m0 !! a = None).
+  { apply not_elem_of_dom in H. apply not_elem_of_dom. rewrite Hdom. eauto. }
+  iMod (ghost_var_alloc true) as (γm) "[Hγ0 Hγ1]".
+  iMod (map_alloc a γm with "H") as "[H Ha]"; eauto.
+  iModIntro. iExists _. iFrame "H". iSplit.
+  { iPureIntro. rewrite !dom_insert_L Hdom. done. }
+  iSplitL "H0 Hγ0 Ha".
+  { iApply big_sepM_insert; eauto. iFrame. iExists _. iFrame. }
+  iApply big_sepM_insert; eauto. iFrame.
+Qed.
+
 Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
     "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 ∅ ∗
     "Hcrash_heaps0" ∷ ([∗ map] a↦b ∈ latest crash_heaps, ∃ hb,
@@ -144,7 +168,44 @@ Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
         "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
         "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
     "Hmapsto_txns" ∷ ([∗ map] addr↦bufData ∈ latest logm, ∃ γm, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true).
-Proof. Admitted.
+Proof.
+  iNamed 1.
+  iMod (mapsto_txn_alloc _ logm.(latest) with "Hmetactx") as (metam) "(%Hdom & Hmetactx' & H0 & H1)".
+
+  rewrite /crash_heaps_match /possible.
+  rewrite big_sepL2_snoc.
+  iDestruct "Hcrashheapsmatch" as "[_ Hlatestmatch]".
+  rewrite /crash_heap_match.
+
+  iModIntro. iExists _. iFrame "Hmetactx'".
+  iFrame "H0".
+
+  iDestruct (big_sepM2_flip with "Hlatestmatch") as "Hlatestmatch".
+  iDestruct (big_sepM2_sepM_merge with "[$Hlatestmatch $Hcrash_heaps0]") as "Hlatestmatch".
+  iDestruct (big_sepM2_flip with "Hlatestmatch") as "Hlatestmatch".
+
+  iDestruct (big_sepM2_sepM_1 with "Hlatestmatch") as "Hlatestmatch".
+  iDestruct (gmap_addr_by_block_big_sepM with "H1") as "H1".
+  iDestruct (big_sepM_sepM2_merge with "[$Hlatestmatch $H1]") as "H".
+  { eapply gmap_addr_by_block_dom_eq; eauto. }
+
+  iApply (big_sepM2_mono with "H").
+  iIntros (k y1 y2 Hky1 Hky2) "[H0 H1]".
+  iDestruct "H0" as (y0) "(%Hcl & H0 & H2)".
+  iDestruct "H0" as (block) "[%Hk H0]". iNamed "H0".
+  iDestruct "H2" as (hb) "[%Hb Hmapsto]".
+  destruct hb.
+  iExists _, _, _. iFrame. iFrame "%".
+
+  rewrite /bufDataTs_in_block /bufDataTs_in_crashblock.
+  iDestruct (big_sepM_sepM2_merge with "[$Htxn_in_cb $H1]") as "H1".
+  { eapply gmap_addr_by_block_dom_eq2; eauto. }
+
+  iApply (big_sepM2_mono with "H1").
+  iIntros (k0 y3 y4 Hky3 Hky4) "[%Hblk H]".
+  iExists _. iFrame. iPureIntro.
+  rewrite -Hb in Hblk. eauto.
+Qed.
 
 Definition txn_pre_exchange γ γ' : iProp Σ :=
  (∃ σs : async (gmap addr object), "H◯async" ∷ ghost_var γ'.(txn_crashstates) (3/4) σs ∗
