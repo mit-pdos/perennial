@@ -241,8 +241,8 @@ Lemma NoDup_app_singleton A l (x:A) :
 Proof.
   intros Hnodup%NoDup_app.
   destruct Hnodup as (_&Hnotin&_).
-  intros ?%Hnotin.
-  apply H0.
+  intros H%Hnotin.
+  apply H.
   constructor.
 Qed.
 

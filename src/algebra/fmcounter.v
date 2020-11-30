@@ -23,8 +23,8 @@ Definition fmcounter_lb γ (n: nat) := own γ (◯ (MaxNat n)).
 Instance inj_MaxNat_equiv : Inj eq equiv MaxNat.
 Proof.
   intros n1 n2.
-  intros ?%leibniz_equiv.
-  inversion H1; auto.
+  intros H0%leibniz_equiv.
+  inversion H0; auto.
 Qed.
 
 Lemma fmcounter_agree_1 γ q1 q2 n1 n2:
