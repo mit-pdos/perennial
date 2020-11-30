@@ -635,8 +635,18 @@ Proof.
   iIntros "[%Hdom Hm]".
   rewrite -gmap_addr_by_block_map_zip //.
   iSplit.
-  { iPureIntro; intros.
-    admit. }
+  { iPureIntro; intros. split; intros Hm.
+    { destruct Hm as [m Hm]. apply gmap_addr_by_block_off_not_empty in Hm as Hme.
+      apply map_choose in Hme. destruct Hme as [i [x Hme]]. apply elem_of_dom_2 in Hme.
+      eapply gmap_addr_by_block_elem_of_1 in Hme; eauto.
+      rewrite -> elem_of_dom in Hme. eapply Hdom in Hme. destruct Hme as [v Hme].
+      eapply gmap_addr_by_block_lookup in Hme. destruct Hme. intuition eauto. }
+    { destruct Hm as [m Hm]. apply gmap_addr_by_block_off_not_empty in Hm as Hme.
+      apply map_choose in Hme. destruct Hme as [i [x Hme]]. apply elem_of_dom_2 in Hme.
+      eapply gmap_addr_by_block_elem_of_1 in Hme; eauto.
+      rewrite -> elem_of_dom in Hme. eapply Hdom in Hme. destruct Hme as [v Hme].
+      eapply gmap_addr_by_block_lookup in Hme. destruct Hme. intuition eauto. }
+  }
   rewrite big_sepM_fmap.
   iApply (big_sepM_mono with "Hm"); intros.
   iIntros "Hm".
@@ -651,7 +661,7 @@ Proof.
   simpl in *.
   rewrite -Hlookup1 -Hlookup2.
   auto.
-Admitted.
+Qed.
 
 Theorem gmap_addr_by_block_fmap {A B} (m : gmap addr A) (f : A -> B) :
   gmap_addr_by_block (f <$> m) =
