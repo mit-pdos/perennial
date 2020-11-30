@@ -631,17 +631,26 @@ Theorem gmap_addr_by_block_big_sepM2
       [∗ map] off ↦ v1; v2 ∈ offmap1; offmap2, Φ (Build_addr blkno off) v1 v2 ).
 Proof.
   rewrite big_sepM2_eq /big_sepM2_def.
-  iIntros "[%Hdom H]".
+  rewrite gmap_addr_by_block_big_sepM.
+  iIntros "[%Hdom Hm]".
+  rewrite -gmap_addr_by_block_map_zip //.
   iSplit.
-  2: {
-    iDestruct (gmap_addr_by_block_big_sepM with "H") as "H".
-    rewrite -gmap_addr_by_block_map_zip; eauto.
-    rewrite big_sepM_fmap.
-    iApply (big_sepM_mono with "H").
-    iIntros (k x Hkx) "H". iFrame. iPureIntro.
-    admit.
-  }
-  admit.
+  { iPureIntro; intros.
+    admit. }
+  rewrite big_sepM_fmap.
+  iApply (big_sepM_mono with "Hm"); intros.
+  iIntros "Hm".
+  iFrame.
+  iPureIntro; intros.
+  apply map_lookup_zip_with_Some in H0 as (m1_ & m2_ & -> & Hlookup1 & Hlookup2).
+  simpl.
+  apply (f_equal (λ x, x ≫= lookup k0)) in Hlookup1.
+  rewrite lookup_gmap_uncurry in Hlookup1.
+  apply (f_equal (λ x, x ≫= lookup k0)) in Hlookup2.
+  rewrite lookup_gmap_uncurry in Hlookup2.
+  simpl in *.
+  rewrite -Hlookup1 -Hlookup2.
+  auto.
 Admitted.
 
 Theorem gmap_addr_by_block_fmap {A B} (m : gmap addr A) (f : A -> B) :
