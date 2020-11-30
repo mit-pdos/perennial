@@ -81,13 +81,13 @@ Proof.
   - rewrite ?possible_list_to_async ?take_length; lia.
 Qed.
 
-Lemma crashheapsmatch_transfer_gname γ1 γ2 logm crash_heaps :
+Lemma crash_heaps_match_transfer_gname γ1 γ2 logm crash_heaps :
   txn_kinds γ2 = txn_kinds γ1 →
   crash_heaps_match γ1 logm crash_heaps -∗
   crash_heaps_match γ2 logm crash_heaps.
 Proof. iIntros (Heq) "H". rewrite /crash_heaps_match/crash_heap_match Heq. eauto. Qed.
 
-Lemma allocate_metamap names (m: gmap addr object):
+Lemma alloc_metamap names (m: gmap addr object):
   map_ctx names 1 ∅ ==∗
   ∃ metam,
   map_ctx names 1 metam ∗
@@ -121,10 +121,13 @@ Lemma crash_heap_match_to_heapmatch γ offmap crash_heap :
       ∃ installed bs blockK,
         "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
         "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
-        "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ).
+        "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
+    "Hptsto" ∷ ([∗ map] addr↦bufData;γm ∈ offmap;metam, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true).
 Proof.
   iNamed 1.
   rewrite /crash_heap_match.
+  iMod (alloc_metamap _ offmap with "[$]") as (metam) "(Hctx&H1&H2)".
+  iDestruct (gmap_addr_by_block_big_sepM2 with "H1") as "H1".
 Abort.
 
 
@@ -133,13 +136,13 @@ Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
     "Hcrashheapsmatch" ∷ crash_heaps_match γ logm crash_heaps ==∗
     ∃ metam,
     map_ctx γ.(txn_metaheap) 1 metam ∗
-    [∗ map] l↦γm ∈ metam, ghost_var γm (1/2) true ∗
     "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
       ∃ installed bs blockK,
         "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
         "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
-        "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ).
-Proof. Abort.
+        "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
+    "Hptsto" ∷ ([∗ map] addr↦bufData;γm ∈ latest logm;metam, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true).
+Proof. Admitted.
 
 Definition txn_pre_exchange γ γ' : iProp Σ :=
  (∃ σs : async (gmap addr object), "H◯async" ∷ ghost_var γ'.(txn_crashstates) (3/4) σs ∗
@@ -174,6 +177,11 @@ Lemma wal_heap_inv_wf names ls:
   wal_heap_inv names ls -∗
   ⌜ wal_wf ls ⌝.
 Proof. iNamed 1. eauto. Qed.
+
+(* TODO(joe): define txn_resources, it seems it should contain
+  at least ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ a v
+  and ghost_var γ.(txn_crashstates) (3/4) logm. *)
+
 
 Theorem wpc_MkTxn (d:loc) dinit (γ:txn_names) logm k :
   {{{ is_txn_durable γ dinit ∗ ghost_var γ.(txn_crashstates) (3/4) logm }}}
@@ -218,19 +226,17 @@ Proof.
     { iLeft in "HΦ".
       iModIntro.
       iIntros "Hcrash".
-      iModIntro.
-      iApply "HΦ".
       iDestruct "Hcrash" as (ls2) "[HP|HP]".
       - iDestruct "HP" as "(Hdur' & Hres' & HP)".
-        iLeft. iFrame "Hlogm".
-        iExists _. iFrame "Hdur' Hres'".
+        (* iLeft. iFrame "Hlogm".
+        iExists _. iFrame "Hdur' Hres'". *)
         admit.
       - iDestruct "HP" as (ls1 γ'walnames Hcrashls12) "(Hdur' & Hres' & HP)".
         iNamed "His_txn_always".
 
         iAssert (C -∗ |0={⊤}=>
                   ∃ γ'0, ⌜γ'0.(txn_kinds) = γ.(txn_kinds)⌝ ∗ is_txn_durable γ'0 dinit ∗ txn_exchanger γ γ'0)%I
-        with "[-]" as "Hgoal".
+        with "[-HΦ]" as "Hgoal".
         {
 
         rewrite /Prec. iDestruct "HP" as "(>Hheap_inv&Hheap_res)".
@@ -249,8 +255,26 @@ Proof.
         iNamed "Htxn_init".
         iDestruct (ghost_var_agree with "Hcrashstates Hlogm") as %->.
         iDestruct (big_sepL2_length with "Hcrashheapsmatch") as %Hlen_logm.
+        assert (length ls2.(log_state.txns) ≤ length (possible logm))%nat.
+        { rewrite Hlen_logm -Hlenold //=.
+          apply log_crash_txns_length. auto. }
+        assert (0 < length ls2.(log_state.txns))%nat.
+        { destruct Hls2wf. lia. }
+
         iMod (ghost_var_update (async_take (length ls2.(log_state.txns)) logm) with "crashstates")
              as "crashstates".
+        iDestruct (crash_heaps_match_async_take γ _ _ (length ls2.(log_state.txns)) with "Hcrashheapsmatch")
+             as "#Hcrashheapsmatch'"; auto.
+        iDestruct (crash_heaps_match_transfer_gname _ γ' with "Hcrashheapsmatch'") as "#Hcrashheapsmatch_new".
+        { auto. }
+
+        iMod (map_alloc_many (async_take (length ls2.(log_state.txns)) logm).(latest) with "logheap")
+          as "[logheap Hlatest]".
+        { intros. apply lookup_empty. }
+
+        iMod (crash_heaps_match_heapmatch_latest γ' with "[$Hcrashheapsmatch_new $metaheap]") as
+           (metam_new) "(metaheap&Heapmatch_new&Hpts)".
+
         iEval (rewrite -Qp_quarter_three_quarter) in "crashstates".
         iDestruct (fractional.fractional_split_1 with "crashstates") as
             "[crashstates1 crashstates2]".
@@ -264,26 +288,23 @@ Proof.
           iFrame.
           iExactEq "Hheap_lb_exchange2".
           f_equal. rewrite /async_take.
-          assert (length ls2.(log_state.txns) ≤ length (possible logm))%nat.
-          { rewrite Hlen_logm -Hlenold //=.
-            apply log_crash_txns_length. auto. }
           rewrite possible_list_to_async //=; len.
-          destruct Hls2wf. lia.
         }
         iExists ls2, _, _. simpl. iFrame "Hheap_inv Hres' Hdur'".
 
         iFrame "Hcrash_heaps".
         iFrame.
-        (*
-        { iExists _. iFrame. eauto. }
-         *)
-
-        rewrite /is_txn_always/is_txn_state.
-        (* this is a bunch of work *)
-        admit. }
-        (* TODO: need to fix up modalities so assert above makes sense *)
-        admit. }
-
+        iExists metam_new.
+        iFrame "# ∗".
+        rewrite /log_heap_ctx /=. iEval (rewrite right_id) in "logheap". iFrame "logheap".
+        eauto.
+        (* TODO: a bunch of resources are getting dropped on the floor *)
+        }
+        iIntros "HC".
+        iSpecialize ("Hgoal" with "[$]").
+        iMod (fupd_level_le with "Hgoal"); first lia.
+        iApply "HΦ". iRight. eauto.
+    }
     iNext. iIntros (γ'' l) "(#Hwal & Hwal_cfupd & #Hwal_cinv)".
     wpc_frame_compl "Hlock Hlocked_walheap His_txn_always".
     { admit. }
@@ -305,7 +326,9 @@ Proof.
     iRight in "HΦ".
     iApply "HΦ".
     iSplitR ""; last first.
-    { admit. (* TODO: get mapsto_txn facts from allocating all of them *) }
+    { admit. (* TODO: get mapsto_txn facts from allocating all of them *)
+      (* TODO(joe): or rather, it seems they will need to be included as part of precondition
+                    in txn_resources *) }
     rewrite /is_txn.
     iExists _, _; iFrame "#".
     iApply (is_wal_alter with "Hwal").
