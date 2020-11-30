@@ -6,7 +6,7 @@ From Perennial.Helpers Require Import Transitions Integers.
 From Perennial.algebra Require Import log_heap.
 Require Import Extraction.
 Set Implicit Arguments.
-Open Scope string_scope.
+
 
 Module SimpleNFS.
 
@@ -36,7 +36,7 @@ Definition buf := list u8.
 
 Definition State := gmap u64 buf.
 
-Definition wrapper (f : fh) `(fn : buf -> transition State T) : transition State (res T) :=
+Definition wrapper (f : fh) {T} (fn : buf -> transition State T) : transition State (res T) :=
   i <- reads (fun s => s !! f);
   match i with
   | None => ret Err
@@ -63,20 +63,22 @@ Definition setattr (f : fh) (a : sattr) (i : buf) : transition State unit :=
   match (sattr_size a) with
   | None => ret tt
   | Some sz =>
-    let i' := app (firstn (int.nat sz) i) (replicate (int.nat sz - length i) (U8 0)) in
+    let i' := take (int.nat sz) i ++ replicate (int.nat sz - length i) (U8 0) in
     _ <- modify (fun s => insert f i' s);
     ret tt
   end.
 
 Definition read (f : fh) (off : u64) (count : u32) (i : buf) : transition State (bool * buf) :=
-  readcount <- suchThat (gen:=fun _ _ => None) (λ s readcount, readcount = 0 ∨ int.nat off + readcount ≤ length i);
-  let resbuf := firstn readcount (skipn (int.nat off) i) in
-  let reseof := if ge_dec (int.nat off + readcount) (length i) then true else false in
+  let off := int.nat off in
+  readcount <- suchThat (gen:=fun _ _ => None) (λ s readcount, readcount = 0 ∨ off + readcount ≤ length i);
+  let resbuf := take readcount (drop off i) in
+  let reseof := if ge_dec (off + readcount) (length i) then true else false in
   ret (reseof, resbuf).
 
 Definition write (f : fh) (off : u64) (data : buf) (i : buf) : transition State u32 :=
-  _ <- suchThat (gen:=fun _ _ => None) (fun (_: State) (_: unit) => int.nat off ≤ length i);
-  let i' := app (firstn (int.nat off) i) (app data (skipn (int.nat off + length data) i)) in
+  let off := int.nat off in
+  _ <- check (off ≤ length i);
+  let i' := take off i ++ data ++ drop (off + length data) i in
   _ <- modify (fun s => insert f i' s);
   ret (U32 (length data)).
 

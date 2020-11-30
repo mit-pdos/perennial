@@ -1710,7 +1710,9 @@ Proof using Ptimeless ghost_varG0.
         eapply relation.bind_runs with (x:=false). { econstructor. auto. }
         simpl.
         monad_simpl.
-        econstructor. { econstructor. revert H3. word. }
+        rewrite /ifThenElse.
+        rewrite -> decide_True by (move: H3; word).
+        simpl.
         monad_simpl.
       }
       iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
@@ -1753,7 +1755,9 @@ Proof using Ptimeless ghost_varG0.
         eapply relation.bind_runs with (x:=false). { econstructor. auto. }
         simpl.
         monad_simpl.
-        econstructor. { econstructor. revert H3. word. }
+        rewrite /ifThenElse.
+        rewrite -> decide_True by (move: H3; word).
+        simpl.
         monad_simpl.
       }
       iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
