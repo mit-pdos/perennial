@@ -180,6 +180,24 @@ Lemma wal_heap_inv_wf names ls:
   ⌜ wal_wf ls ⌝.
 Proof. iNamed 1. eauto. Qed.
 
+Lemma latest_wal_heap_h_mapsto_split (γ: gen_heapG u64 heap_block Σ) gh :
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ mapsto (hG:=γ) a 1 hb) ⊣⊢
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ mapsto (hG:=γ) a (1/2) hb) ∗
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ mapsto (hG:=γ) a (1/2) hb).
+Proof.
+  rewrite -big_sepM_sep.
+  repeat f_equiv.
+  iSplit.
+  - iDestruct 1 as (hb <-) "[H1 H2]".
+    iSplitL "H1"; eauto with iFrame.
+  - iDestruct 1 as "[H1 H2]".
+    iDestruct "H1" as (hb <-) "H1".
+    iDestruct "H2" as (hb' <-) "H2".
+    iDestruct (mapsto_agree with "H1 H2") as %<-.
+    iCombine "H1 H2" as "H".
+    eauto.
+Qed.
+
 Theorem wpc_MkTxn (d:loc) dinit (γ:txn_names) logm k :
   {{{ is_txn_durable γ dinit ∗ txn_resources γ logm }}}
     MkTxn #d @ k; ⊤
