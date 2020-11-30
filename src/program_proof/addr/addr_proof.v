@@ -588,53 +588,88 @@ Section gmap_addr_by_block.
 
 End gmap_addr_by_block.
 
-  (* This proof route seems horrible. Another way to go would be to try to prove a lemma about
-     map_zip and gmap_uncurry *)
-  Theorem gmap_addr_by_block_big_sepM2
-          {PROP: bi} `{BiAffine PROP}
-          {T1 T2} (m1 : gmap addr T1) (m2: gmap addr T2) (Φ : addr -> T1 -> T2 -> PROP) :
-    ( [∗ map] a ↦ v1; v2 ∈ m1; m2, Φ a v1 v2 ) -∗
-    ( [∗ map] blkno ↦ offmap1; offmap2 ∈ gmap_addr_by_block m1; gmap_addr_by_block m2,
-        [∗ map] off ↦ v1; v2 ∈ offmap1; offmap2, Φ (Build_addr blkno off) v1 v2 ).
-  Proof.
-    iIntros "Hm".
-    iInduction m1 as [|i x1 m1] "IH" using map_ind forall (m2).
-    - rewrite gmap_addr_by_block_empty.
-      iDestruct (big_sepM2_dom with "Hm") as %Hdom.
-      assert (m2 = ∅) as ->.
-      { apply dom_empty_inv_L. by rewrite -Hdom dom_empty_L. }
-      rewrite //=.
-    - iDestruct (big_sepM2_dom with "Hm") as %Hdom.
-      iDestruct (big_sepM2_insert_left_inv with "Hm") as (x2 Hlookup) "(H1&Hm)"; eauto.
-      iDestruct ("IH" with "Hm") as "Hm".
-      rewrite gmap_addr_by_block_insert; eauto.
-      assert ( m2 = (<[i := x2]> (delete i m2))) as Heq_lookup.
+Theorem gmap_addr_by_block_map_zip {T1 T2} (m1 : gmap addr T1) (m2 : gmap addr T2) :
+  (∀ k : addr, is_Some (m1 !! k) ↔ is_Some (m2 !! k)) ->
+  (λ (x : gmap _ _ * _), map_zip x.1 x.2) <$> map_zip (gmap_addr_by_block m1) (gmap_addr_by_block m2) =
+  gmap_addr_by_block (map_zip m1 m2).
+Proof.
+  revert m2.
+  induction m1 using map_ind; intros.
+  - rewrite gmap_addr_by_block_empty !map_zip_empty_l gmap_addr_by_block_empty fmap_empty //.
+  - specialize (IHm1 (delete i m2)).
+    assert (is_Some (m2 !! i)) as Hk2.
+    { apply H0. rewrite lookup_insert. eauto. }
+    destruct Hk2 as [x2 Hkx2].
+    replace m2 with (<[i:=x2]> (delete i m2)).
+    2: rewrite insert_delete insert_id //.
+    rewrite gmap_addr_by_block_insert; eauto.
+    rewrite gmap_addr_by_block_insert. 2: rewrite lookup_delete //.
+    rewrite !map_zip_insert.
+    rewrite gmap_addr_by_block_insert. 2: rewrite map_zip_lookup_none_2 // lookup_delete //.
+    rewrite fmap_insert /=.
+    rewrite -IHm1.
+    2: { intro k. destruct (decide (k = i)); subst.
+      { rewrite H. rewrite lookup_delete. split; intro Hx; inversion Hx; congruence. }
+      specialize (H0 k). rewrite lookup_insert_ne in H0; eauto. rewrite lookup_delete_ne; eauto.
+    }
+    f_equal.
+    rewrite !map_zip_insert. f_equal.
+    destruct (gmap_addr_by_block m !! addrBlock i) eqn:He.
+    2: { simpl. rewrite map_zip_empty_l. rewrite lookup_fmap.
+      rewrite map_zip_lookup_none_1; eauto. }
+    destruct (gmap_addr_by_block (delete i m2) !! addrBlock i) eqn:He2.
+    2: { simpl. rewrite map_zip_empty_r. rewrite lookup_fmap.
+      rewrite map_zip_lookup_none_2; eauto. }
+    rewrite lookup_fmap. erewrite map_zip_lookup_some; eauto.
+Qed.
+
+Theorem gmap_addr_by_block_big_sepM2
+        {PROP: bi} `{BiAffine PROP}
+        {T1 T2} (m1 : gmap addr T1) (m2: gmap addr T2) (Φ : addr -> T1 -> T2 -> PROP) :
+  ( [∗ map] a ↦ v1; v2 ∈ m1; m2, Φ a v1 v2 ) -∗
+  ( [∗ map] blkno ↦ offmap1; offmap2 ∈ gmap_addr_by_block m1; gmap_addr_by_block m2,
+      [∗ map] off ↦ v1; v2 ∈ offmap1; offmap2, Φ (Build_addr blkno off) v1 v2 ).
+Proof.
+  rewrite big_sepM2_eq /big_sepM2_def.
+
+  iIntros "Hm".
+  iInduction m1 as [|i x1 m1] "IH" using map_ind forall (m2).
+  - rewrite gmap_addr_by_block_empty.
+    iDestruct (big_sepM2_dom with "Hm") as %Hdom.
+    assert (m2 = ∅) as ->.
+    { apply dom_empty_inv_L. by rewrite -Hdom dom_empty_L. }
+    rewrite //=.
+  - iDestruct (big_sepM2_dom with "Hm") as %Hdom.
+    iDestruct (big_sepM2_insert_left_inv with "Hm") as (x2 Hlookup) "(H1&Hm)"; eauto.
+    iDestruct ("IH" with "Hm") as "Hm".
+    rewrite gmap_addr_by_block_insert; eauto.
+    assert ( m2 = (<[i := x2]> (delete i m2))) as Heq_lookup.
+    { admit. }
+    iEval (rewrite Heq_lookup).
+    rewrite gmap_addr_by_block_insert; last first.
+    { admit. }
+    destruct i as [b o].
+    destruct (gmap_addr_by_block m1 !! b) eqn:He1.
+    + destruct ((gmap_addr_by_block (delete (b, o) m2) !! b)) eqn:He2.
+      ** iDestruct (big_sepM2_insert_acc with "Hm") as "[Hb Hm]"; eauto.
+         iApply "Hm".
+         iApply big_sepM2_insert.
+         { simpl.
+           pose proof (lookup_gmap_uncurry m1 b o).
+           rewrite H0 in H1. rewrite He1 in H1. simpl in H1.
+           rewrite He1 /=. eauto. }
+         { simpl.
+           pose proof (lookup_gmap_uncurry (delete (b, o) m2) b o).
+           rewrite lookup_delete in H1.
+           rewrite He2 /=. rewrite He2 /= in H1. eauto. }
+         iFrame.
+         rewrite He1 He2. iFrame.
+      **  exfalso. admit.
+    + iApply big_sepM2_insert; eauto.
       { admit. }
-      iEval (rewrite Heq_lookup).
-      rewrite gmap_addr_by_block_insert; last first.
-      { admit. }
-      destruct i as [b o].
-      destruct (gmap_addr_by_block m1 !! b) eqn:He1.
-      + destruct ((gmap_addr_by_block (delete (b, o) m2) !! b)) eqn:He2.
-        ** iDestruct (big_sepM2_insert_acc with "Hm") as "[Hb Hm]"; eauto.
-           iApply "Hm".
-           iApply big_sepM2_insert.
-           { simpl.
-             pose proof (lookup_gmap_uncurry m1 b o).
-             rewrite H0 in H1. rewrite He1 in H1. simpl in H1.
-             rewrite He1 /=. eauto. }
-           { simpl.
-             pose proof (lookup_gmap_uncurry (delete (b, o) m2) b o).
-             rewrite lookup_delete in H1.
-             rewrite He2 /=. rewrite He2 /= in H1. eauto. }
-           iFrame.
-           rewrite He1 He2. iFrame.
-        **  exfalso. admit.
-      + iApply big_sepM2_insert; eauto.
-        { admit. }
-        iFrame.
-        rewrite He1 /=.
-  Admitted.
+      iFrame.
+      rewrite He1 /=.
+Admitted.
 
 Theorem gmap_addr_by_block_fmap {A B} (m : gmap addr A) (f : A -> B) :
   gmap_addr_by_block (f <$> m) =
