@@ -631,44 +631,17 @@ Theorem gmap_addr_by_block_big_sepM2
       [∗ map] off ↦ v1; v2 ∈ offmap1; offmap2, Φ (Build_addr blkno off) v1 v2 ).
 Proof.
   rewrite big_sepM2_eq /big_sepM2_def.
-
-  iIntros "Hm".
-  iInduction m1 as [|i x1 m1] "IH" using map_ind forall (m2).
-  - rewrite gmap_addr_by_block_empty.
-    iDestruct (big_sepM2_dom with "Hm") as %Hdom.
-    assert (m2 = ∅) as ->.
-    { apply dom_empty_inv_L. by rewrite -Hdom dom_empty_L. }
-    rewrite //=.
-  - iDestruct (big_sepM2_dom with "Hm") as %Hdom.
-    iDestruct (big_sepM2_insert_left_inv with "Hm") as (x2 Hlookup) "(H1&Hm)"; eauto.
-    iDestruct ("IH" with "Hm") as "Hm".
-    rewrite gmap_addr_by_block_insert; eauto.
-    assert ( m2 = (<[i := x2]> (delete i m2))) as Heq_lookup.
-    { admit. }
-    iEval (rewrite Heq_lookup).
-    rewrite gmap_addr_by_block_insert; last first.
-    { admit. }
-    destruct i as [b o].
-    destruct (gmap_addr_by_block m1 !! b) eqn:He1.
-    + destruct ((gmap_addr_by_block (delete (b, o) m2) !! b)) eqn:He2.
-      ** iDestruct (big_sepM2_insert_acc with "Hm") as "[Hb Hm]"; eauto.
-         iApply "Hm".
-         iApply big_sepM2_insert.
-         { simpl.
-           pose proof (lookup_gmap_uncurry m1 b o).
-           rewrite H0 in H1. rewrite He1 in H1. simpl in H1.
-           rewrite He1 /=. eauto. }
-         { simpl.
-           pose proof (lookup_gmap_uncurry (delete (b, o) m2) b o).
-           rewrite lookup_delete in H1.
-           rewrite He2 /=. rewrite He2 /= in H1. eauto. }
-         iFrame.
-         rewrite He1 He2. iFrame.
-      **  exfalso. admit.
-    + iApply big_sepM2_insert; eauto.
-      { admit. }
-      iFrame.
-      rewrite He1 /=.
+  iIntros "[%Hdom H]".
+  iSplit.
+  2: {
+    iDestruct (gmap_addr_by_block_big_sepM with "H") as "H".
+    rewrite -gmap_addr_by_block_map_zip; eauto.
+    rewrite big_sepM_fmap.
+    iApply (big_sepM_mono with "H").
+    iIntros (k x Hkx) "H". iFrame. iPureIntro.
+    admit.
+  }
+  admit.
 Admitted.
 
 Theorem gmap_addr_by_block_fmap {A B} (m : gmap addr A) (f : A -> B) :
