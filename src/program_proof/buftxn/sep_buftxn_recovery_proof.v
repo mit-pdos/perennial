@@ -131,9 +131,20 @@ Section goose_lang.
     iInv ("Hinv") as ">H" "Hclo".
     iNamed "H".
     iDestruct "Hcrash_point" as "(Hasync&%Heq)".
-    iAssert (⌜dom _ m ⊆ dom _ logm.(latest)⌝)%I with "[-]" as "%Hdom2".
-    { admit. (* TODO: need to argue that having an ephemeral_val_from means you're in
-           the domain of the latest thing in the async_ctx *) }
+    iAssert (⌜dom (gset addr) m ⊆ dom (gset addr) logm.(latest)⌝)%I with "[Hval Hasync]" as "%Hdom2".
+    {
+      clear Hdom1.
+      iInduction m as [| i x m] "IH" using map_ind.
+      { iPureIntro; set_solver. }
+      rewrite big_sepM_insert //.
+      iDestruct "Hval" as "(Hval1&Hval)".
+      iDestruct ("IH" with "[$] [$]") as %Hdom.
+      iDestruct (ephemeral_val_from_agree_latest with "[$] [$]") as %Hlookup.
+      iPureIntro. rewrite dom_insert.
+      assert (i ∈ dom (gset addr) (logm.(latest))).
+      { apply elem_of_dom. eauto. }
+      set_solver.
+    }
 
     destruct (decide (crash_txn < txn_id)).
     - (* We roll back, txn_id is not durable *)
