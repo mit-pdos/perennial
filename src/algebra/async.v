@@ -291,6 +291,11 @@ Proof.
   - apply Htail; done.
 Qed.
 
+Theorem ephemeral_val_from_val_at_same γ i k v :
+  ephemeral_val_from γ i k v -∗
+  ephemeral_txn_val γ i k v.
+Proof. iDestruct 1 as "(#?&?)". eauto. Qed.
+
 Theorem ephemeral_val_from_agree_latest γ q σs i k v :
   async_ctx γ q σs -∗
   ephemeral_val_from γ i k v -∗

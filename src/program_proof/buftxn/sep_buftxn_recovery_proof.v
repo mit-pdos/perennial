@@ -36,7 +36,7 @@ Section goose_lang.
     (* TODO: wrap crash_txn in an agree, give out an exchanger ghost name for
     it *)
     async_ctx γ.(buftxn_async_name) 1 logm ∗
-    ⌜length (possible logm) = crash_txn⌝.
+    ⌜(length (possible logm) = crash_txn + 1)%nat⌝.
 
   Definition token_exchanger (a:addr) crash_txn γ γ' : iProp Σ :=
     (∃ i, async.own_last_frag γ.(buftxn_async_name) a i) ∨
@@ -60,7 +60,7 @@ Section goose_lang.
     ∃ logm crash_txn,
        "Hcrash_point" ∷ crash_point γ logm crash_txn ∗
        (* TODO need durable lb in γ *)
-       "Hcrash_txn_durable" ∷ txn_durable γ' crash_txn ∗
+       "#Hcrash_txn_durable" ∷ txn_durable γ' crash_txn ∗
        "Hexchanger" ∷ addr_exchangers crash_txn γ γ' (latest logm)
   .
 
@@ -116,20 +116,22 @@ Section goose_lang.
     □ |C={⊤}_0=> inv (N.@"txn") (sep_txn_exchanger γ γ').
 
   Lemma exchange_mapsto_commit γ γ' m0 m txn_id k :
-  ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
-  "Hold_vals" ∷ ([∗ map] k↦x ∈ m0,
-        ∃ i : nat, txn_durable γ i ∗
-                   ephemeral_txn_val_range γ.(buftxn_async_name) i txn_id k x) ∗
-  "Hval" ∷ [∗ map] k↦x ∈ m, ephemeral_val_from γ.(buftxn_async_name) txn_id k x) -∗
-  |C={⊤}_S k => ([∗ map] a↦v ∈ m0, durable_mapsto_own γ' a v) ∨
-                ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
+    dom (gset _) m0 ⊆ dom (gset _) m →
+    ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
+    "Hold_vals" ∷ ([∗ map] k↦x ∈ m0,
+          ∃ i : nat, txn_durable γ i ∗
+                     ephemeral_txn_val_range γ.(buftxn_async_name) i txn_id k x) ∗
+    "Hval" ∷ [∗ map] k↦x ∈ m, ephemeral_val_from γ.(buftxn_async_name) txn_id k x) -∗
+    |C={⊤}_S k => ([∗ map] a↦v ∈ m0, durable_mapsto_own γ' a v) ∨
+                  ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
   Proof.
-    iNamed 1.
+    iIntros (Hdom1) "H". iNamed "H".
     iMod ("Htxn_cinv") as "#Hinv"; first lia.
     iIntros "HC".
     iInv ("Hinv") as ">H" "Hclo".
     iNamed "H".
-    iAssert (⌜m ⊆ dom _ logm.(latest)⌝)%I with "[-]" as "%Hdom".
+    iDestruct "Hcrash_point" as "(Hasync&%Heq)".
+    iAssert (⌜dom _ m ⊆ dom _ logm.(latest)⌝)%I with "[-]" as "%Hdom2".
     { admit. (* TODO: need to argue that having an ephemeral_val_from means you're in
            the domain of the latest thing in the async_ctx *) }
 
@@ -139,9 +141,36 @@ Section goose_lang.
         with "[Hold_vals]" as "#Hold".
       {(* TODO: proving this weakening will require an exchanger connecting
          crash_txn to txn_durable γ *) admit. }
-      admit.
+      iAssert ([∗ map] k0↦_ ∈ m, ∃ txn_id x, ephemeral_val_from γ.(buftxn_async_name) txn_id k0 x)%I
+       with "[Hval]" as "Hval".
+      { iApply (big_sepM_mono with "Hval"); eauto. }
+      iDestruct (big_sepM_dom with "Hval") as "Hval".
+      iDestruct (big_sepS_subseteq with "Hval") as "Hval"; eauto.
+      iDestruct (big_sepM_dom with "Hval") as "Hval".
+      iCombine "Hold Hval" as "Hval".
+      iEval (rewrite -big_sepM_sep) in "Hval".
+      iDestruct (exchange_big_sepM_addrs with "[$] [$] Hval") as "(Hexchanger&Hval)".
+      { etransitivity; last eassumption; eauto. }
+      iMod ("Hclo" with "[Hexchanger Hasync]").
+      { iNext. iExists _, _. iFrame "# ∗". eauto. }
+      iModIntro. eauto.
     - (* We go forward, txn_id is durable *)
-      admit.
+      iAssert (async_ctx γ.(buftxn_async_name) 1 logm ∗
+                ([∗ map] k0↦x ∈ m, ephemeral_txn_val γ.(buftxn_async_name) crash_txn k0 x
+                    ∗ (∃ (i : nat) (v : object), ephemeral_val_from γ.(buftxn_async_name) i k0 v)))%I
+              with "[Hasync Hval]" as "[Hasync Hval]".
+      {iDestruct (big_sepM_mono_with_inv with "Hasync Hval") as "($&H)"; last iApply "H".
+       iIntros (? ? Hlookup) "(Hasync&Hval)".
+       iDestruct (ephemeral_val_from_val with "Hasync Hval") as "#$".
+       { lia. }
+       { lia. }
+       iFrame. iExists _, _; eauto.
+      }
+      iDestruct (exchange_big_sepM_addrs with "[$] [$] Hval") as "(Hexchanger&Hval)".
+      { eauto. }
+      iMod ("Hclo" with "[Hexchanger Hasync]").
+      { iNext. iExists _, _. iFrame "# ∗". eauto. }
+      iModIntro. eauto.
   Admitted.
 
 
