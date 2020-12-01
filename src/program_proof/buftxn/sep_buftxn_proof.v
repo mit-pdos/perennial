@@ -704,6 +704,7 @@ Section goose_lang.
       eauto with iFrame.
   Qed.
 
+
   Theorem wp_BufTxn__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} :
     N ## invariant.walN →
     N ## invN →
@@ -836,8 +837,15 @@ Section goose_lang.
                 _ _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT,
                             ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
+              (λ txn_id',
+               ([∗ map] a↦v∈mspec.modified <$> mT,
+                            ephemeral_val_from γ.(buftxn_async_name) txn_id' a v) ∗
+               ([∗ map] k↦x ∈ (mspec.committed <$> mT), ∃ i : nat,
+                   txn_durable γ i
+                               ∗ ephemeral_txn_val_range γ.(buftxn_async_name) i
+                                                              txn_id' k x))%I
                 with "[$Hbuftxn Hold_vals]").
-    3: { iSplit; [ iModIntro; iAccu | ].
+    1: { iSplit; [ iModIntro; iAccu | ].
       iDestruct "Htxn_system" as "[Hinv _]".
       iInv "Hinv" as ">Hinner" "Hclo".
       iModIntro.
@@ -865,16 +873,14 @@ Section goose_lang.
       rewrite length_possible_async_put.
       replace (S (length (possible σs)) - 1)%nat with (length (possible σs))%nat by lia.
       iSplit.
-      { iModIntro. iModIntro. generalize (length (possible σs)); intros. iAccu. }
+      { iModIntro. iModIntro. generalize (length (possible σs)); intros. iFrame "# ∗". }
       iExactEq "Hnew".
       auto with f_equal lia. }
-    { apply _. }
-    { apply _. }
     iSplit.
     { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
       iDestruct "H" as "[H|H]".
       {
-        iDestruct "H" as (txnid) "H".
+        iDestruct "H" as (txnid) "(H&#Hold_vals)".
         iDestruct (big_sepM_subseteq with "H") as "H"; eauto.
         (* XXX need to do some [cfupd] to decide whether to use the left or right side of [HΦc] *)
         admit.

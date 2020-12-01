@@ -38,7 +38,7 @@ Section goose_lang.
     async_ctx γ.(buftxn_async_name) logm ∗
     ⌜length (possible logm) = crash_txn⌝.
 
-  Definition addr_token_exchanger (a:addr) crash_txn γ γ' : iProp Σ :=
+  Definition token_exchanger (a:addr) crash_txn γ γ' : iProp Σ :=
     (∃ i, async.own_last_frag γ.(buftxn_async_name) a i) ∨
     (async.own_last_frag γ'.(buftxn_async_name) a crash_txn ∗ modify_token γ' a).
 
@@ -50,18 +50,60 @@ Section goose_lang.
   Definition ephemeral_txn_val_exchanger (a:addr) crash_txn γ γ' : iProp Σ :=
     ∃ v, ephemeral_txn_val γ.(buftxn_async_name) crash_txn a v ∗
          ephemeral_txn_val γ'.(buftxn_async_name) crash_txn a v.
+  
+  Definition addr_exchangers {A} txn γ γ' (m : gmap addr A) : iProp Σ :=
+    ([∗ map] a↦_ ∈ m,
+        token_exchanger a txn γ γ' ∗
+        ephemeral_txn_val_exchanger a txn γ γ')%I.
 
   Definition sep_txn_exchanger γ γ' : iProp Σ :=
     ∃ logm crash_txn,
-       crash_point γ logm crash_txn ∗
-       txn_durable γ' crash_txn ∗
-       ([∗ map] a↦_ ∈ latest logm,
-        addr_token_exchanger a crash_txn γ γ' ∗
-        ephemeral_txn_val_exchanger a crash_txn γ γ')
+       "Hcrash_point" ∷ crash_point γ logm crash_txn ∗
+       (* TODO need durable lb in γ *)
+       "Hcrash_txn_durable" ∷ txn_durable γ' crash_txn ∗
+       "Hexchanger" ∷ addr_exchangers crash_txn γ γ' (latest logm)
   .
+
+  Lemma exchange_big_sepM_addrs γ γ' (m0 m1 : gmap addr object) crash_txn :
+    dom (gset _) m0 ⊆ dom (gset _) m1 →
+    "Hexchanger" ∷ addr_exchangers crash_txn γ γ' m1 -∗
+    "Hold" ∷ [∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(buftxn_async_name) crash_txn k0 x -∗
+    "Hexchanger" ∷ addr_exchangers crash_txn γ γ' m1 ∗
+    "Hnew" ∷ [∗ map] k0↦x ∈ m0, ephemeral_txn_val γ'.(buftxn_async_name) crash_txn k0 x.
+  Proof. Admitted.
 
   Definition txn_cinv γ γ' : iProp Σ :=
     □ |C={⊤}_0=> inv (N.@"txn") (sep_txn_exchanger γ γ').
+
+  Lemma exchange_mapsto_commit γ γ' m0 m txn_id k :
+  ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
+  "Hold_vals" ∷ [∗ map] k↦x ∈ m0,
+        ∃ i : nat, txn_durable γ i ∗
+                   ephemeral_txn_val_range γ.(buftxn_async_name) i txn_id k x ∗
+  "H" ∷ [∗ map] k↦x ∈ m, ephemeral_val_from γ.(buftxn_async_name) txn_id k x) -∗
+  |C={⊤}_S k => ([∗ map] a↦v ∈ m0, durable_mapsto_own γ' a v) ∨
+                ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
+  Proof.
+    iNamed 1.
+    iMod ("Htxn_cinv") as "#Hinv"; first lia.
+    iIntros "HC".
+    iInv ("Hinv") as ">H" "Hclo".
+    iNamed "H".
+    iAssert (⌜m ⊆ dom _ logm.(latest)⌝)%I with "[-]" as "%Hdom".
+    { admit. (* TODO: need to argue that having an ephemeral_val_from means you're in
+           the domain of the latest thing in the async_ctx *) }
+
+    destruct (decide (crash_txn < txn_id)).
+    - (* We roll back, txn_id is not durable *)
+      iAssert (([∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(buftxn_async_name) crash_txn k0 x)%I)
+        with "[Hold_vals]" as "#Hold".
+      {(* TODO: proving this weakening will require an exchanger connecting
+         crash_txn to txn_durable γ *) admit. }
+      admit.
+    - (* We go forward, txn_id is durable *)
+      admit.
+  Admitted.
+
 
   Theorem wpc_MkTxn (d:loc) γ dinit logm k :
     {{{ is_txn_durable γ dinit logm }}}
