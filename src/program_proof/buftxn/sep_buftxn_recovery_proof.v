@@ -38,6 +38,15 @@ Section goose_lang.
     async_ctx γ.(buftxn_async_name) 1 logm ∗
     ⌜(length (possible logm) = crash_txn + 1)%nat⌝.
 
+  Definition txn_durable_exchanger γ txn_id :=
+    heapspec.heapspec_durable_exchanger γ.(buftxn_txn_names).(txn_walnames) txn_id.
+
+  Lemma txn_durable_exchanger_use γ n lb :
+    txn_durable_exchanger γ n -∗
+    txn_durable γ lb -∗
+    ⌜ (lb ≤ n)%nat ⌝.
+  Proof. iIntros. iApply (heapspec.heapspec_durable_exchanger_use with "[$] [$]"). Qed.
+
   Definition token_exchanger (a:addr) crash_txn γ γ' : iProp Σ :=
     (∃ i, async.own_last_frag γ.(buftxn_async_name) a i) ∨
     (async.own_last_frag γ'.(buftxn_async_name) a crash_txn ∗ modify_token γ' a).
@@ -59,7 +68,7 @@ Section goose_lang.
   Definition sep_txn_exchanger γ γ' : iProp Σ :=
     ∃ logm crash_txn,
        "Hcrash_point" ∷ crash_point γ logm crash_txn ∗
-       (* TODO need durable lb in γ *)
+       "Hdurable_exchanger" ∷ txn_durable_exchanger γ crash_txn ∗
        "#Hcrash_txn_durable" ∷ txn_durable γ' crash_txn ∗
        "Hexchanger" ∷ addr_exchangers crash_txn γ γ' (latest logm)
   .
@@ -95,22 +104,6 @@ Section goose_lang.
       - iExists _. iFrame "#". }
     iFrame "# ∗". iExists _. iFrame "# ∗".
   Qed.
-
-  (* This can't be correct, because the precondition is persistent, yet the postcondition is not. *)
-  (*
-  Lemma exchange_big_sepM_addrs γ γ' (m0 m1 : gmap addr object) crash_txn :
-    dom (gset _) m0 ⊆ dom (gset _) m1 →
-    addr_exchangers crash_txn γ γ' m1 -∗
-    ([∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(buftxn_async_name) crash_txn k0 x) -∗
-    "Hexchanger" ∷ addr_exchangers crash_txn γ γ' m1 ∗
-    "Hnew" ∷ [∗ map] k0↦x ∈ m0, ephemeral_txn_val γ'.(buftxn_async_name) crash_txn k0 x.
-  Proof.
-    iIntros (?) "H1 H2".
-    rewrite /addr_exchangers.
-    iDestruct (big_sepM_mono_with_inv with "H1 H2") as "($&H)"; last iApply "H".
-    iIntros (k o Hlookup) "(Hm&HHephem)".
-   *)
-
 
   Definition txn_cinv γ γ' : iProp Σ :=
     □ |C={⊤}_0=> inv (N.@"txn") (sep_txn_exchanger γ γ').
@@ -148,10 +141,17 @@ Section goose_lang.
 
     destruct (decide (crash_txn < txn_id)).
     - (* We roll back, txn_id is not durable *)
-      iAssert (([∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(buftxn_async_name) crash_txn k0 x)%I)
-        with "[Hold_vals]" as "#Hold".
-      {(* TODO: proving this weakening will require an exchanger connecting
-         crash_txn to txn_durable γ *) admit. }
+      iAssert (txn_durable_exchanger γ crash_txn ∗
+               ([∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(buftxn_async_name) crash_txn k0 x))%I
+        with "[Hold_vals Hdurable_exchanger]" as "(Hdurable_exchanger&#Hold)".
+      {
+        iDestruct (big_sepM_mono_with_inv with "Hdurable_exchanger Hold_vals") as "($&H)"; last iApply "H".
+        iIntros (?? Hlookup) "(Hdurable_exchanger&H)".
+        iDestruct "H" as (i) "(Hdurable&Hrange)".
+        iDestruct (txn_durable_exchanger_use with "[$] [$]") as %Hlb.
+        iFrame. iApply (ephemeral_txn_val_range_acc with "[$]").
+        lia.
+      }
       iAssert ([∗ map] k0↦_ ∈ m, ∃ txn_id x, ephemeral_val_from γ.(buftxn_async_name) txn_id k0 x)%I
        with "[Hval]" as "Hval".
       { iApply (big_sepM_mono with "Hval"); eauto. }
@@ -162,7 +162,7 @@ Section goose_lang.
       iEval (rewrite -big_sepM_sep) in "Hval".
       iDestruct (exchange_big_sepM_addrs with "[$] [$] Hval") as "(Hexchanger&Hval)".
       { etransitivity; last eassumption; eauto. }
-      iMod ("Hclo" with "[Hexchanger Hasync]").
+      iMod ("Hclo" with "[Hexchanger Hdurable_exchanger Hasync]").
       { iNext. iExists _, _. iFrame "# ∗". eauto. }
       iModIntro. eauto.
     - (* We go forward, txn_id is durable *)
@@ -179,10 +179,10 @@ Section goose_lang.
       }
       iDestruct (exchange_big_sepM_addrs with "[$] [$] Hval") as "(Hexchanger&Hval)".
       { eauto. }
-      iMod ("Hclo" with "[Hexchanger Hasync]").
+      iMod ("Hclo" with "[Hexchanger Hdurable_exchanger Hasync]").
       { iNext. iExists _, _. iFrame "# ∗". eauto. }
       iModIntro. eauto.
-  Admitted.
+  Qed.
 
 
   Theorem wpc_MkTxn (d:loc) γ dinit logm k :
