@@ -112,7 +112,7 @@ Section goose_lang.
   Definition txn_system_inv γ: iProp Σ :=
     ∃ (σs: async (gmap addr object)),
       "H◯async" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (3/4) σs ∗
-      "H●latest" ∷ async_ctx γ.(buftxn_async_name) σs
+      "H●latest" ∷ async_ctx γ.(buftxn_async_name) 1 σs
   .
 
   (* this is for the entire txn manager, and relates it to some ghost state *)
@@ -676,9 +676,9 @@ Section goose_lang.
   (* TODO: is this too weak with [durable_mapsto]? does it need to be
   [durable_mapsto_own]? *)
   Lemma async_ctx_durable_map_split γ mT σs :
-    async_ctx γ.(buftxn_async_name) σs -∗
+    async_ctx γ.(buftxn_async_name) 1 σs -∗
     ([∗ map] a↦v ∈ mT, durable_mapsto γ a v) -∗
-    |==> async_ctx γ.(buftxn_async_name) σs ∗
+    |==> async_ctx γ.(buftxn_async_name) 1 σs ∗
           (* this complex expression is persistent and guarantees that the value
           after a crash comes from [mT] if we crash to any current transaction
           (that is, to a transaction id [≤ length (possible σs)]) *)

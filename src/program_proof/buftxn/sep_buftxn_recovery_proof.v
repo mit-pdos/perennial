@@ -19,14 +19,14 @@ Section goose_lang.
   Implicit Types (obj: object).
 
   Definition txn_init_ghost_state (logm_init: gmap addr object) γ : iProp Σ :=
-    async_ctx γ.(buftxn_async_name) {| latest := logm_init; pending := [] |}.
+    async_ctx γ.(buftxn_async_name) 1 {| latest := logm_init; pending := [] |}.
 
   (* NOTE(tej): we're combining the durable part with the resources into one
   definition here, unlike in lower layers (they should be fixed) *)
   Definition is_txn_durable γ dinit logm : iProp Σ :=
     is_txn_durable γ.(buftxn_txn_names) dinit ∗
     txn_resources γ.(buftxn_txn_names) logm ∗
-    async_ctx γ.(buftxn_async_name) logm.
+    async_ctx γ.(buftxn_async_name) 1 logm.
 
   Definition txn_cfupd_cancel dinit k γ' : iProp Σ :=
     (<disc> (|C={⊤}_k=>
@@ -35,7 +35,7 @@ Section goose_lang.
   Definition crash_point γ logm crash_txn : iProp Σ :=
     (* TODO: wrap crash_txn in an agree, give out an exchanger ghost name for
     it *)
-    async_ctx γ.(buftxn_async_name) logm ∗
+    async_ctx γ.(buftxn_async_name) 1 logm ∗
     ⌜length (possible logm) = crash_txn⌝.
 
   Definition token_exchanger (a:addr) crash_txn γ γ' : iProp Σ :=

@@ -1,6 +1,7 @@
 From stdpp Require Import countable.
 From iris.algebra Require Import mlist gmap_view.
 From iris.base_logic Require Import lib.iprop.
+From iris.bi Require Import lib.fractional.
 From iris.proofmode Require Import tactics.
 From Perennial.algebra Require Import log_heap own_discrete.
 
@@ -29,8 +30,8 @@ Definition lookup_async σs i k : option V :=
 Local Definition is_last σs k i : Prop :=
   ∃ v, lookup_async σs i k = Some v ∧
     ∀ i', i ≤ i' → i' < length (possible σs) → lookup_async σs i' k = Some v.
-Local Definition own_last_auth γ σs : iProp Σ :=
-  ∃ (last: gmap K nat), ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth 1 last).
+Local Definition own_last_auth γ q σs : iProp Σ :=
+  ∃ (last: gmap K nat), ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth q last).
 Local Definition own_last_frag γ k i : iProp Σ :=
   own γ.(async_map) (gmap_view_frag k (DfracOwn 1) i).
 
@@ -41,10 +42,10 @@ a certain key, which ensures that the key stayed unchanged since then.
  Durability is orthogonal to this library: separately from the async we know
  that some index is durable, which guarantees that facts about that index and
  below can be carried across a crash. *)
-Definition async_ctx γ σs : iProp Σ :=
-   own_last_auth γ σs ∗
+Definition async_ctx γ q σs : iProp Σ :=
+   own_last_auth γ q σs ∗
       (* We also have the [lb] in here to avoid some update modalities below. *)
-      fmlist γ.(async_list) 1 (possible σs) ∗ fmlist_lb γ.(async_list) (possible σs).
+      fmlist γ.(async_list) q (possible σs) ∗ fmlist_lb γ.(async_list) (possible σs).
 
 (* ephemeral_txn_val owns only a single point in the ephemeral transactions.
 It is persistent. *)
@@ -96,8 +97,25 @@ Proof.
   iApply (own_last_frag_conflict with "H1 H2").
 Qed.
 
-Global Instance async_ctx_timeless γ σs : Timeless (async_ctx γ σs).
+Global Instance async_ctx_timeless γ q σs : Timeless (async_ctx γ q σs).
 Proof. apply _. Qed.
+
+Global Instance async_ctx_fractional γ σs : Fractional (λ q, async_ctx γ q σs).
+Proof.
+  apply fractional_sep; [ | apply _ ].
+  intros p q.
+  rewrite /own_last_auth.
+  iSplit.
+  - iDestruct 1 as (last ?) "[H1 H2]".
+    iSplitL "H1"; rewrite /own_last_auth; eauto.
+  - iDestruct 1 as "[H1 H2]".
+    iDestruct "H1" as (last1 ?) "H1".
+    iDestruct "H2" as (last2 ?) "H2".
+    iDestruct (own_valid_2 with "H1 H2") as %Hvalid%gmap_view_auth_frac_op_inv_L.
+    subst.
+    iCombine "H1 H2" as "H".
+    eauto.
+Qed.
 
 Local Lemma lookup_async_insert_ne k k' v' m σs j :
   k ≠ k' →
@@ -115,9 +133,9 @@ Qed.
 Local Lemma own_last_shift γ σs k i i' :
   (i ≤ i')%nat →
   (i' < length (possible σs))%nat →
-  own_last_auth γ σs -∗
+  own_last_auth γ 1 σs -∗
   own_last_frag  γ k i ==∗
-  own_last_auth γ σs ∗ own_last_frag γ k i'.
+  own_last_auth γ 1 σs ∗ own_last_frag γ k i'.
 Proof.
   iIntros (Hle Hi') "Halast Hflast".
   iDestruct "Halast" as (last Hlast) "Hmap".
@@ -137,7 +155,7 @@ Proof.
 Qed.
 
 Local Lemma own_last_put γ σs :
-  own_last_auth γ σs -∗ own_last_auth γ (async_put (latest σs) σs).
+  own_last_auth γ 1 σs -∗ own_last_auth γ 1 (async_put (latest σs) σs).
 Proof.
   iIntros "Hlast". iDestruct "Hlast" as (last Hlast) "Hmap".
   iExists last. iFrame. iPureIntro.
@@ -163,9 +181,9 @@ Qed.
 (* As far as just [own_last] is concerned, we can change the value of the
 last transaction. *)
 Local Lemma own_last_update γ σs k v' m i :
-  own_last_auth γ (async_put m σs) -∗
+  own_last_auth γ 1 (async_put m σs) -∗
   own_last_frag γ k i ==∗
-  own_last_auth γ (async_put (<[k:=v']> m) σs) ∗
+  own_last_auth γ 1 (async_put (<[k:=v']> m) σs) ∗
     own_last_frag γ k (S (length (possible σs)) - 1).
 Proof.
   iIntros "Halast Hflast". iDestruct "Halast" as (last Hlast) "Hmap".
@@ -203,8 +221,8 @@ Proof.
   iDestruct (big_sepL_lookup with "Hrange") as "$"; eauto.
 Qed.
 
-Theorem ephemeral_val_from_in_bounds γ σs i k v :
-  async_ctx γ σs -∗
+Theorem ephemeral_val_from_in_bounds γ q σs i k v :
+  async_ctx γ q σs -∗
   ephemeral_val_from γ i k v -∗
   (* if equal, only owns the new transactions and no current ones *)
   ⌜i < length (possible σs)⌝%nat.
@@ -217,8 +235,8 @@ Proof.
   apply lookup_lt_is_Some. rewrite Hi. eauto.
 Qed.
 
-Theorem ephemeral_txn_val_lookup γ σs i k v :
-  async_ctx γ σs -∗
+Theorem ephemeral_txn_val_lookup γ q σs i k v :
+  async_ctx γ q σs -∗
   ephemeral_txn_val γ i k v -∗
   ⌜lookup_async σs i k = Some v⌝.
 Proof.
@@ -229,9 +247,9 @@ Proof.
   rewrite /lookup_async Hi /=. done.
 Qed.
 
-Theorem ephemeral_lookup_txn_val γ σs i k v :
+Theorem ephemeral_lookup_txn_val γ q σs i k v :
   lookup_async σs i k = Some v →
-  async_ctx γ σs -∗
+  async_ctx γ q σs -∗
   ephemeral_txn_val γ i k v.
 Proof.
   rewrite /lookup_async /ephemeral_txn_val.
@@ -243,10 +261,10 @@ Proof.
 Qed.
 
 (** All transactions since [i] have the value given by [ephemeral_val_from γ i]. *)
-Theorem ephemeral_val_from_val γ σs i i' k v :
+Theorem ephemeral_val_from_val γ q σs i i' k v :
   (i ≤ i') →
   (i' < length (possible σs))%nat →
-  async_ctx γ σs -∗
+  async_ctx γ q σs -∗
   ephemeral_val_from γ i k v -∗
   ephemeral_txn_val γ i' k v.
 Proof.
@@ -255,7 +273,7 @@ Proof.
   iClear "Hval".
   iDestruct "Hauth" as "(Halast & Halist & Hflist)".
   iDestruct "Halast" as (last Hlast) "Hmap".
-  iDestruct (own_valid_2 with "Hmap Hlast") as %[_ Hmap]%gmap_view_both_valid_L.
+  iDestruct (own_valid_2 with "Hmap Hlast") as %(_  & _ & Hmap)%gmap_view_both_frac_valid_L.
   destruct (Hlast _ _ Hmap) as (v' & Hlookup' & Htail).
   rewrite Hlookup in Hlookup'. injection Hlookup' as [=<-].
   iApply ephemeral_lookup_txn_val; last first.
@@ -263,14 +281,14 @@ Proof.
   - apply Htail; done.
 Qed.
 
-Theorem ephemeral_val_from_agree_latest γ σs i k v :
-  async_ctx γ σs -∗
+Theorem ephemeral_val_from_agree_latest γ q σs i k v :
+  async_ctx γ q σs -∗
   ephemeral_val_from γ i k v -∗
   ⌜latest σs !! k = Some v⌝.
 Proof.
   iIntros "Hctx Hval".
   iDestruct (ephemeral_val_from_in_bounds with "Hctx Hval") as %Hbound.
-  iDestruct (ephemeral_val_from_val _ _ _ (length (possible σs) - 1) with "Hctx Hval") as "#Hval_latest".
+  iDestruct (ephemeral_val_from_val _ _ _ _ (length (possible σs) - 1) with "Hctx Hval") as "#Hval_latest".
   { lia. }
   { lia. }
   iDestruct (ephemeral_txn_val_lookup with "Hctx Hval_latest") as %Hlookup.
@@ -284,9 +302,9 @@ Qed.
 Theorem ephemeral_val_from_split i' γ i k v σs :
   (i ≤ i')%nat →
   (i' < length (possible σs))%nat →
-  async_ctx γ σs -∗
+  async_ctx γ 1 σs -∗
   ephemeral_val_from γ i k v ==∗
-  async_ctx γ σs ∗ ephemeral_txn_val_range γ i (S i') k v ∗ ephemeral_val_from γ i' k v.
+  async_ctx γ 1 σs ∗ ephemeral_txn_val_range γ i (S i') k v ∗ ephemeral_val_from γ i' k v.
 Proof.
   iIntros (Hle Hi') "Hauth Hfromi".
 
@@ -313,7 +331,7 @@ Qed.
 every address in the domain; this is where it's useful to know that the async
 has maps with the same domain *)
 Theorem async_ctx_init σs:
-  ⊢ |==> ∃ γ, async_ctx γ σs.
+  ⊢ |==> ∃ γ, async_ctx γ 1 σs.
 Proof.
   iMod (fmlist_alloc (possible σs)) as (γlist) "Hlist".
   iMod (fmlist_get_lb with "Hlist") as "[Halist Hflist]".
@@ -333,10 +351,10 @@ Qed.
 
 Theorem async_update_map m' γ σs m0 :
   dom (gset _) m' = dom (gset _) m0 →
-  async_ctx γ σs -∗
+  async_ctx γ 1 σs -∗
   ([∗ map] k↦v ∈ m0, ephemeral_val_from γ (length (possible σs) - 1) k v) -∗
   |==> let σs' := (async_put (m' ∪ latest σs) σs) in
-     async_ctx γ σs' ∗
+     async_ctx γ 1 σs' ∗
        ([∗ map] k↦v ∈ m', ephemeral_val_from γ (length (possible σs') - 1) k v).
        (* We could also make this [length (possible σs)]; not sure what is more useful. *)
 Proof.
@@ -348,7 +366,7 @@ Proof.
   iFrame "Hflist".
 
   (* Take care of the [ephemeral_txn_val] part of the goal. *)
-  rewrite /ephemeral_val_from [(own_last_auth _ _ ∗ _)%I]comm.
+  rewrite /ephemeral_val_from [(own_last_auth _ _ _ ∗ _)%I]comm.
   iEval (rewrite big_sepM_sep -assoc). iSplitR.
   { iApply big_sepM_forall.
     iIntros "!>" (k v Hm').
@@ -381,9 +399,9 @@ Qed.
 
 (* this splits off an [ephemeral_val_from] at exactly the last transaction *)
 Theorem async_ctx_ephemeral_val_from_split γ σs i k v :
-  async_ctx γ σs -∗
+  async_ctx γ 1 σs -∗
   ephemeral_val_from γ i k v ==∗
-  async_ctx γ σs ∗ ephemeral_txn_val_range γ i (length (possible σs)) k v ∗
+  async_ctx γ 1 σs ∗ ephemeral_txn_val_range γ i (length (possible σs)) k v ∗
     ephemeral_val_from γ (length (possible σs) - 1) k v.
 Proof.
   iIntros "Hctx Hi+".
@@ -396,9 +414,9 @@ Qed.
 
 (* this splits off several [ephemeral_val_from] all at the last transaction *)
 Theorem async_ctx_ephemeral_val_from_map_split γ σs i m :
-  async_ctx γ σs -∗
+  async_ctx γ 1 σs -∗
   big_opM bi_sep (ephemeral_val_from γ i) m ==∗
-  async_ctx γ σs ∗ big_opM bi_sep (ephemeral_txn_val_range γ i (length (possible σs))) m ∗
+  async_ctx γ 1 σs ∗ big_opM bi_sep (ephemeral_txn_val_range γ i (length (possible σs))) m ∗
   big_opM bi_sep (ephemeral_val_from γ (length (possible σs) - 1)) m.
 Proof.
   iIntros "Hctx Hm".
