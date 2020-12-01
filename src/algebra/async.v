@@ -88,6 +88,16 @@ Proof.
   contradiction.
 Qed.
 
+Lemma ephemeral_txn_val_agree γ i k v1 v2 :
+  ephemeral_txn_val γ i k v1 -∗
+  ephemeral_txn_val γ i k v2 -∗
+  ⌜ v1 = v2 ⌝.
+Proof.
+  iDestruct 1 as (? Hlookup1) "Hidx1".
+  iDestruct 1 as (? Hlookup2) "Hidx2".
+  iDestruct (fmlist_idx_agree_1 with "[$] [$]") as %->; iPureIntro; congruence.
+Qed.
+
 Lemma ephemeral_val_from_conflict γ i1 i2 k v1 v2 :
   ephemeral_val_from γ i1 k v1 -∗
   ephemeral_val_from γ i2 k v2 -∗

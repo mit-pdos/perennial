@@ -50,7 +50,7 @@ Section goose_lang.
   Definition ephemeral_txn_val_exchanger (a:addr) crash_txn γ γ' : iProp Σ :=
     ∃ v, ephemeral_txn_val γ.(buftxn_async_name) crash_txn a v ∗
          ephemeral_txn_val γ'.(buftxn_async_name) crash_txn a v.
-  
+
   Definition addr_exchangers {A} txn γ γ' (m : gmap addr A) : iProp Σ :=
     ([∗ map] a↦_ ∈ m,
         token_exchanger a txn γ γ' ∗
@@ -66,21 +66,61 @@ Section goose_lang.
 
   Lemma exchange_big_sepM_addrs γ γ' (m0 m1 : gmap addr object) crash_txn :
     dom (gset _) m0 ⊆ dom (gset _) m1 →
-    "Hexchanger" ∷ addr_exchangers crash_txn γ γ' m1 -∗
-    "Hold" ∷ [∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(buftxn_async_name) crash_txn k0 x -∗
+    txn_durable γ' crash_txn -∗
+    addr_exchangers crash_txn γ γ' m1 -∗
+    ([∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(buftxn_async_name) crash_txn k0 x ∗
+                        (∃ i v, ephemeral_val_from γ.(buftxn_async_name) i k0 v)) -∗
+    addr_exchangers crash_txn γ γ' m1 ∗
+    [∗ map] k0↦x ∈ m0, durable_mapsto_own γ' k0 x.
+  Proof.
+    iIntros (Hdom) "#Hdur H1 H2".
+    rewrite /addr_exchangers.
+    iCombine "Hdur H1" as "H1".
+    iDestruct (big_sepM_mono_with_inv with "H1 H2") as "((_&$)&H)"; last iApply "H".
+    iIntros (k o Hlookup) "((#Hdur&Hm)&Hephem)".
+    assert (is_Some (m1 !! k)) as (v&?).
+    { apply elem_of_dom, Hdom, elem_of_dom. eauto. }
+    iDestruct (big_sepM_lookup_acc with "Hm") as "(H&Hm)"; first eassumption.
+    iDestruct "Hephem" as "(#Hval0&Hephem)".
+    iDestruct "Hephem" as (??) "(_&Htok0)".
+    iDestruct "H" as "(Htok&#Hval)".
+    iDestruct "Hval" as (?) "(Hval1&Hval2)".
+    iDestruct (ephemeral_txn_val_agree with "Hval0 Hval1") as %Heq. subst.
+    iDestruct "Htok" as "[Hl|(Hr1&Hr2)]".
+    { iExFalso. iDestruct "Hl" as (?) "H".
+      iApply (own_last_frag_conflict with "[$] [$]"). }
+    iSpecialize ("Hm" with "[Htok0]").
+    { iSplitL "Htok0".
+      - iLeft. eauto.
+      - iExists _. iFrame "#". }
+    iFrame "# ∗". iExists _. iFrame "# ∗".
+  Qed.
+
+  (* This can't be correct, because the precondition is persistent, yet the postcondition is not. *)
+  (*
+  Lemma exchange_big_sepM_addrs γ γ' (m0 m1 : gmap addr object) crash_txn :
+    dom (gset _) m0 ⊆ dom (gset _) m1 →
+    addr_exchangers crash_txn γ γ' m1 -∗
+    ([∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(buftxn_async_name) crash_txn k0 x) -∗
     "Hexchanger" ∷ addr_exchangers crash_txn γ γ' m1 ∗
     "Hnew" ∷ [∗ map] k0↦x ∈ m0, ephemeral_txn_val γ'.(buftxn_async_name) crash_txn k0 x.
-  Proof. Admitted.
+  Proof.
+    iIntros (?) "H1 H2".
+    rewrite /addr_exchangers.
+    iDestruct (big_sepM_mono_with_inv with "H1 H2") as "($&H)"; last iApply "H".
+    iIntros (k o Hlookup) "(Hm&HHephem)".
+   *)
+
 
   Definition txn_cinv γ γ' : iProp Σ :=
     □ |C={⊤}_0=> inv (N.@"txn") (sep_txn_exchanger γ γ').
 
   Lemma exchange_mapsto_commit γ γ' m0 m txn_id k :
   ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
-  "Hold_vals" ∷ [∗ map] k↦x ∈ m0,
+  "Hold_vals" ∷ ([∗ map] k↦x ∈ m0,
         ∃ i : nat, txn_durable γ i ∗
-                   ephemeral_txn_val_range γ.(buftxn_async_name) i txn_id k x ∗
-  "H" ∷ [∗ map] k↦x ∈ m, ephemeral_val_from γ.(buftxn_async_name) txn_id k x) -∗
+                   ephemeral_txn_val_range γ.(buftxn_async_name) i txn_id k x) ∗
+  "Hval" ∷ [∗ map] k↦x ∈ m, ephemeral_val_from γ.(buftxn_async_name) txn_id k x) -∗
   |C={⊤}_S k => ([∗ map] a↦v ∈ m0, durable_mapsto_own γ' a v) ∨
                 ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
   Proof.
