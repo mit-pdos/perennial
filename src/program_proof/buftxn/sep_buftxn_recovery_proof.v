@@ -32,8 +32,33 @@ Section goose_lang.
     (<disc> (|C={⊤}_k=>
               ∃ logm', is_txn_durable γ' dinit logm' )).
 
+  Definition crash_point γ logm crash_txn : iProp Σ :=
+    (* TODO: wrap crash_txn in an agree, give out an exchanger ghost name for
+    it *)
+    async_ctx γ.(buftxn_async_name) logm ∗
+    ⌜length (possible logm) = crash_txn⌝.
+
+  Definition addr_token_exchanger (a:addr) crash_txn γ γ' : iProp Σ :=
+    (∃ i, async.own_last_frag γ.(buftxn_async_name) a i) ∨
+    (async.own_last_frag γ'.(buftxn_async_name) a crash_txn ∗ modify_token γ' a).
+
+  (* TODO: exchange
+  [ephemeral_txn_val crash_txn γ a v]
+  for
+  [ephemeral_txn_val crash_txn γ' a v]
+   *)
+  Definition ephemeral_txn_val_exchanger (a:addr) crash_txn γ γ' : iProp Σ :=
+    ∃ v, ephemeral_txn_val γ.(buftxn_async_name) crash_txn a v ∗
+         ephemeral_txn_val γ'.(buftxn_async_name) crash_txn a v.
+
   Definition sep_txn_exchanger γ γ' : iProp Σ :=
-    True.
+    ∃ logm crash_txn,
+       crash_point γ logm crash_txn ∗
+       txn_durable γ' crash_txn ∗
+       ([∗ map] a↦_ ∈ latest logm,
+        addr_token_exchanger a crash_txn γ γ' ∗
+        ephemeral_txn_val_exchanger a crash_txn γ γ')
+  .
 
   Definition txn_cinv γ γ' : iProp Σ :=
     □ |C={⊤}_0=> inv (N.@"txn") (sep_txn_exchanger γ γ').

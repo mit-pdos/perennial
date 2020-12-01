@@ -30,7 +30,7 @@ Local Definition is_last σs k i : Prop :=
   ∃ v, lookup_async σs i k = Some v ∧
     ∀ i', i ≤ i' → i' < length (possible σs) → lookup_async σs i' k = Some v.
 Local Definition own_last_auth γ σs : iProp Σ :=
-  ∃ last, ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth 1 last).
+  ∃ (last: gmap K nat), ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth 1 last).
 Local Definition own_last_frag γ k i : iProp Σ :=
   own γ.(async_map) (gmap_view_frag k (DfracOwn 1) i).
 
