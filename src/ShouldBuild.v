@@ -18,7 +18,7 @@ From Perennial.program_proof Require
      wal.specs
      txn.txn_proof
      buftxn.buftxn_proof
-     buftxn.sep_buftxn_proof
+     buftxn.sep_buftxn_proof buftxn.sep_buftxn_recovery_proof
      buftxn_replication.buftxn_replication_proof
      simple.simple
      wp_to_wpc.
