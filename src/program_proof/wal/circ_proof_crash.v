@@ -90,6 +90,96 @@ Ltac mod_bound :=
    pose proof (Z.mod_bound_pos x m)
   end.
 
+Lemma split_513_blocks :
+  0 d↦∗ repeat block0 513 -∗
+  0 d↦ block0 ∗ 1 d↦ block0 ∗ 2 d↦∗ repeat block0 511.
+Proof. reflexivity. Qed.
+
+Lemma circ_own_init :
+  ⊢ |==> ∃ γaddrs γblocks,
+        let addrs := repeat (U64 0) 511 in
+        let blocks := repeat block0 511 in
+        ⌜circ_low_wf addrs blocks⌝ ∗
+        ghost_var γaddrs 1 addrs ∗
+        ghost_var γblocks 1 blocks.
+Proof.
+  iMod (ghost_var_alloc (repeat (U64 0) 511)) as (γaddrs) "?".
+  iMod (ghost_var_alloc (repeat block0 511)) as (γblocks) "?".
+  iModIntro.
+  iExists _, _; iFrame.
+  iPureIntro.
+  rewrite /circ_low_wf.
+  rewrite !repeat_length //.
+Qed.
+
+Lemma zero_encodings :
+  let σ := {| upds := []; start := U64 0; |} in
+  block_encodes block0
+    ([EncUInt64 (circΣ.diskEnd σ)] ++ map EncUInt64 (repeat (U64 0) 511))
+  ∧ block_encodes block0 [EncUInt64 (start σ)].
+Proof.
+  rewrite /block_encodes /has_encoding.
+  split.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+Lemma circular_init :
+  0 d↦∗ repeat block0 513 -∗
+  |==> ∃ γ, is_circular_state γ {| upds := []; start := U64 0; |} ∗
+            is_circular_appender_pre γ ∗
+            start_is γ (1/2) (U64 0) ∗
+            diskEnd_is γ (1/2) 0.
+Proof.
+  set (σ:={| upds := []; start := U64 0; |}).
+  assert (circΣ.diskEnd σ = 0) as HdiskEnd by reflexivity.
+  rewrite split_513_blocks.
+  iIntros "(Hhdr1 & Hhdr2 & Hlog)".
+  iMod circ_own_init as (γaddrs γblocks Hlow_wf) "[[Haddrs1 Haddrs2] [Hblocks1 Hblocks2]]".
+  iMod (mnat_alloc 0) as (γstart) "[[Hstart1 Hstart2] #Hstart_lb]".
+  iMod (mnat_alloc 0) as (γend) "[[Hend1 Hend2] #Hend_lb]".
+  iExists {| addrs_name := γaddrs; blocks_name := γblocks;
+             start_name := γstart; diskEnd_name := γend;
+          |}.
+  iModIntro.
+  rewrite /is_circular_state.
+  iSplitR "Haddrs2 Hblocks2 Hstart2 Hend2".
+  - iSplit.
+    { iPureIntro; hnf; simpl.
+      rewrite HdiskEnd.
+      word. }
+    iSplitL "Hstart1 Hend1".
+    { rewrite /circ_positions.
+      rewrite /start_is /diskEnd_is /diskEnd_at_least /=.
+      rewrite HdiskEnd.
+      iFrame "#∗".
+      iPureIntro; lia. }
+    iExists _, _.
+    rewrite /circ_own.
+    cbn [addrs_name blocks_name].
+    iFrame "Haddrs1 Hblocks1".
+    iSplit.
+    { iPureIntro.
+      rewrite /σ /has_circ_updates.
+      cbn [upds start].
+      inversion 1. }
+    iSplit; first by eauto.
+    rewrite /is_low_state.
+    iExists block0, block0; iFrame "Hhdr1 Hhdr2 Hlog".
+    iPureIntro.
+    apply zero_encodings.
+  - rewrite /is_circular_appender_pre.
+    iSplitL "Haddrs2 Hblocks2".
+    + iExists _, _.
+      iSplit; first by eauto.
+      iFrame.
+    + rewrite /start_is /diskEnd_is /=.
+      iFrame.
+      iSplit; first by (iPureIntro; lia).
+      rewrite /diskEnd_at_least /=.
+      iFrame "#".
+Qed.
+
 Theorem wpc_recoverCircular stk k E1 d σ γ :
   {{{ is_circular_state γ σ ∗ is_circular_appender_pre γ}}}
     recoverCircular #d @ stk; k; E1

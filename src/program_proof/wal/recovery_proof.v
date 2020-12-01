@@ -60,14 +60,6 @@ Definition wal_ghost_exchange (γold γnew: wal_names) : iProp Σ := True.
 Definition is_wal_inv_pre (l: loc) γ s (dinit : disk) : iProp Σ :=
   is_wal_inner l γ s dinit ∗ (∃ cs, is_circular_state γ.(circ_name) cs ∗ circular_pred γ cs).
 
-Lemma is_wal_inner_durable_init (bs: list Block) :
-  0 d↦∗ repeat block0 513 ∗
-  513 d↦∗ bs ={⊤}=∗
-  let s := (log_state.mk (list_to_map (imap (λ i x, (513 + Z.of_nat i, x)) bs)) [(U64 0, [])] 0 0) in
-  ∃ γ, is_wal_inner_durable γ s dinit.
-Proof.
-Admitted.
-
 Existing Instance own_into_crash.
 
 Definition log_crash_to σ diskEnd_txn_id :=
@@ -295,6 +287,211 @@ Proof.
   by iFrame.
 Qed.
 
+Lemma alloc_wal_init_ghost_state' γcirc :
+  ⊢ |==> ∃ γbasedisk γnew,
+      "#Hbase_disk" ∷ is_base_disk γnew dinit ∗
+      "%Hbase_name" ∷ ⌜γnew.(base_disk_name) = γbasedisk⌝ ∗
+      "%Hcirc_name" ∷ ⌜γnew.(circ_name) = γcirc⌝ ∗
+      "Hinit" ∷ wal_init_ghost_state γnew.
+Proof.
+  iMod (own_alloc (to_agree dinit)) as (γbasedisk) "H".
+  { done. }
+  iMod (alloc_wal_init_ghost_state (wal_names_dummy <| base_disk_name := γbasedisk |>) γcirc) as (γnew Heq1 Heq2) "?"; iNamed.
+  simpl in Heq1; subst.
+  rewrite /is_base_disk.
+  iModIntro.
+  iExists _, _; iFrame.
+  eauto.
+Qed.
+
+Definition log_state0 bs : log_state.t :=
+  {|
+    log_state.d := list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs);
+    log_state.txns := [(U64 0, [])];
+    log_state.installed_lb := 0;
+    log_state.durable_lb := 0
+  |}.
+
+Lemma log_state0_wf bs : wal_wf (log_state0 bs).
+Proof.
+  rewrite /wal_wf /=.
+  split_and!; try lia.
+  - change (log_state.updates (log_state0 bs)) with (@nil update.t).
+    rewrite /addrs_wf.
+    apply Forall_nil; auto.
+  - rewrite /list_mono; intros.
+    apply lookup_lt_Some in Hx1.
+    apply lookup_lt_Some in Hx2.
+    simpl in Hx1, Hx2.
+    lia.
+Qed.
+
+Lemma log_state0_post_crash bs : wal_post_crash (log_state0 bs).
+Proof.
+  rewrite /wal_post_crash /=.
+  auto.
+Qed.
+
+Definition logger_resources γ : iProp Σ :=
+  (* subset of logger, with the pre resources needed to eventually form [is_circular_appender], which depends on in-memory state *)
+  "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
+  "HownLoggerPos_logger" ∷ (∃ (logger_pos : u64), ghost_var γ.(logger_pos_name) (1/2) logger_pos) ∗
+  "HownLoggerTxn_logger" ∷ (∃ (logger_txn_id : nat), ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id) ∗
+  "Happender_pre" ∷ is_circular_appender_pre γ.(circ_name).
+
+Definition wal_resources γ : iProp Σ :=
+  logger_resources γ ∗ installer_inv γ.
+
+Definition background_inv l γ : iProp Σ :=
+  ∃ (circ_l: loc),
+    l ↦[Walog.S :: "circ"] #circ_l ∗
+    logger_inv γ circ_l ∗
+    installer_inv γ.
+
+Ltac iDestruct_2 H :=
+  (* TODO(tej): I'm sorry *)
+  let pat := eval cbv in ("[" +:+ H +:+ " " +:+ H +:+ "2]") in
+  iDestruct H as pat.
+
+Lemma  memLog_linv_pers_core_init γ :
+  0%nat [[γ.(stable_txn_ids_name)]]↦ro () ∗
+  txn_pos γ 0 0 ∗
+  fmcounter_lb γ.(being_installed_start_txn_name) 0
+  -∗ memLog_linv_pers_core γ
+    {| slidingM.log := []; slidingM.start := 0; slidingM.mutable := 0 |} 0 0 0 0
+    [(U64 0, [])] 0 0 0 0.
+Proof.
+  iIntros "#(?&?&?)".
+  rewrite /memLog_linv_pers_core /named /=.
+  change (slidingM.endPos _) with (U64 0).
+  rewrite /slidingM.memEnd /=.
+  iFrame "#".
+  iSplit; first by done.
+  iSplit; first by done.
+  iSplit; first by done.
+  rewrite /memLog_linv_txns /named /=.
+  rewrite !subslice_zero_length take_nil drop_nil.
+  iSplit; eauto using has_updates_nil.
+  iPureIntro.
+  constructor; auto using Forall_nil.
+  word.
+Qed.
+
+Lemma memLog_linv_nextDiskEnd_txn_id_init γ :
+  ⊢ |==> memLog_linv_nextDiskEnd_txn_id γ 0 0.
+Proof.
+Abort.
+
+Lemma memLog_linv_init γ :
+  (0%nat [[γ.(stable_txn_ids_name)]]↦ro () ∗
+  txn_pos γ 0 0 ∗
+  fmcounter_lb γ.(being_installed_start_txn_name) 0) -∗
+  (ghost_var γ.(txns_name) (1 / 2) [(U64 0, [])]
+    ∗ ghost_var γ.(logger_pos_name) (1 / 2) (U64 0)
+      ∗ ghost_var γ.(logger_txn_id_name) (1 / 2) 0%nat
+        ∗ ghost_var γ.(installer_pos_mem_name) (1 / 2) (U64 0)
+          ∗ ghost_var γ.(installer_txn_id_mem_name) (1 / 2) 0%nat
+            ∗ fmcounter γ.(diskEnd_mem_name) (1 / 2) 0%nat
+              ∗ fmcounter γ.(diskEnd_mem_txn_id_name) (1 / 2) 0%nat
+                ∗ ghost_var γ.(installed_pos_mem_name) (1 / 2) (U64 0)
+                  ∗ ghost_var γ.(installed_txn_id_mem_name) (1 / 2) 0%nat)
+  -∗ memLog_linv γ
+    {| slidingM.log := [];
+       slidingM.start := 0;
+       slidingM.mutable := 0; |} 0 0.
+Proof.
+  iIntros "#Hpers Hvars".
+  iDestruct "Hvars" as "(?&?&?&?&?&?&?&?&?)".
+  rewrite /memLog_linv.
+  iExists 0%nat, 0%nat, [(U64 0, [])], (U64 0), 0%nat, (U64 0), 0%nat.
+  rewrite /memLog_linv_core /named.
+  iDestruct (memLog_linv_pers_core_init with "Hpers") as "$".
+  simpl.
+  iFrame.
+Abort.
+
+Lemma wal_linv_durable_init γ :
+(diskEnd_at_least γ.(circ_name) 0
+   ∗ thread_own_ctx γ.(diskEnd_avail_name)
+       (diskEnd_is γ.(circ_name) (1 / 2) 0))
+  ∗ (start_at_least γ.(circ_name) 0
+     ∗ thread_own_ctx γ.(start_avail_name) (start_is γ.(circ_name) (1 / 2) 0)) -∗
+  wal_linv_durable γ {| circΣ.upds := []; circΣ.start := U64 0; |}.
+Proof.
+  iIntros "[[#HdiskEnd_lb HdiskEnd_ctx] [#Hstart_lb Hstart_ctx]]".
+  rewrite /wal_linv_durable.
+  iExists {| diskEnd := U64 0;
+             locked_diskEnd_txn_id := 0;
+             memLog := _;
+          |}; simpl.
+  change (circΣ.diskEnd _) with 0.
+  iSplit; first by done.
+  iSplit; first by done.
+  rewrite /locked_wf /diskEnd_linv /diskStart_linv /=.
+  iSplit.
+  { iPureIntro.
+    split; [ done | ].
+    rewrite /slidingM.wf /=.
+    word. }
+  rewrite /named.
+  iFrame "#∗".
+Abort.
+
+(* TODO: dinit needs to have the domain [513, 513 + length bs) (values don't
+matter) *)
+Lemma is_wal_inner_durable_init (bs: list Block) :
+  0 d↦∗ repeat block0 513 ∗
+  513 d↦∗ bs ={⊤}=∗
+  let σ := log_state0 bs in
+  ∃ γ, is_wal_inner_durable γ σ dinit ∗ wal_resources γ.
+Proof.
+  iIntros "[Hlog Hdata]".
+  iMod (circular_init with "Hlog") as (γcirc) "(Hcirc & Hcirc_appender & Hstart & Hend)".
+  iMod (alloc_wal_init_ghost_state' γcirc) as (γbasedisk γ) "Hinit". iNamed "Hinit".
+
+  iNamed "Hinit".
+  iMod (map_alloc_ro 0%nat () with "stable_txn_ids") as "[stable_txn_ids #H0stable]".
+  { done. }
+  change (<[0%nat:=()]> ∅) with ({[0%nat:=()]} : gmap nat unit).
+  iMod (ghost_var_update [(U64 0, [])] with "txns") as "txns".
+  iMod (ghost_var_update {| circΣ.upds := []; circΣ.start := U64 0 |} with "cs") as "cs".
+  iDestruct_2 "logger_pos".
+  iDestruct_2 "logger_txn_id".
+  iDestruct_2 "txns".
+  iDestruct_2 "stable_txn_ids".
+
+  iMod (alloc_txn_pos (U64 0) [] with "txns_ctx") as "[txns_ctx _]".
+  simpl.
+
+  subst.
+  iModIntro.
+  iExists γ.
+  rewrite /is_wal_inner_durable.
+  cbn [log_state.txns log_state0].
+  iFrame "txns_ctx txns".
+  iSplitL "Hcirc stable_txn_ids cs Hstart Hend".
+  - iSplit; first by eauto using log_state0_wf.
+    iSplit; first by eauto using log_state0_post_crash.
+    rewrite /nextDiskEnd_inv.
+    iSplitL "stable_txn_ids".
+    + iExists _; iFrame.
+      rewrite big_sepM_singleton. iFrame "#".
+      iPureIntro.
+      rewrite /stable_sound.
+      intros.
+      rewrite /is_txn in H1, H2.
+      rewrite -list_lookup_fmap /= in H1.
+      rewrite -list_lookup_fmap /= in H2.
+      apply lookup_lt_Some in H1.
+      apply lookup_lt_Some in H2.
+      simpl in *; lia.
+    + iExists _; iFrame.
+      iSplitR.
+      * admit. (* wal_linv_durable *)
+      * admit.
+  - admit.
+Admitted.
+
 Lemma is_base_disk_crash γ γ' d :
   γ'.(base_disk_name) = γ.(base_disk_name) →
   is_base_disk γ d -∗ is_base_disk γ' d.
@@ -410,23 +607,6 @@ Proof.
   iPureIntro.
   apply is_txn_take; auto.
 Qed.
-
-Definition logger_resources γ : iProp Σ :=
-  (* subset of logger, with the pre resources needed to eventually form [is_circular_appender], which depends on in-memory state *)
-  "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
-  "HownLoggerPos_logger" ∷ (∃ (logger_pos : u64), ghost_var γ.(logger_pos_name) (1/2) logger_pos) ∗
-  "HownLoggerTxn_logger" ∷ (∃ (logger_txn_id : nat), ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id) ∗
-  "Happender_pre" ∷ is_circular_appender_pre γ.(circ_name).
-
-Definition wal_resources γ : iProp Σ :=
-  logger_resources γ ∗ installer_inv γ.
-
-(* TODO: recovery needs to produce this *)
-Definition background_inv l γ : iProp Σ :=
-  ∃ (circ_l: loc),
-    l ↦[Walog.S :: "circ"] #circ_l ∗
-    logger_inv γ circ_l ∗
-    installer_inv γ.
 
 (* txns_ctx factory: a way to remember that some [txn_val]s are valid even after
 a crash *)
