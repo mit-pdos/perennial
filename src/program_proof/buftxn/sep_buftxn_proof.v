@@ -864,6 +864,8 @@ Section goose_lang.
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable #HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
 
+    iApply wpc_cfupd.
+
     (* here things are a little tricky because committing doesn't give us
     [durable_mapsto] but just [ephemeral_val_from] *)
     wpc_apply (mspec.wpc_BufTxn__CommitWait
@@ -908,15 +910,14 @@ Section goose_lang.
     { apply _. }
     iSplit.
     { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
-      iApply "HΦc". iDestruct "H" as "[H|H]".
-      { iDestruct "H" as (txnid) "H".
+      iDestruct "H" as "[H|H]".
+      {
+        iDestruct "H" as (txnid) "H".
         iDestruct (big_sepM_subseteq with "H") as "H"; eauto.
-        (* XXX how to decide whether iLeft or iRight?
-          depends on what's actually durable on disk. *)
-        iRight. iApply "HPrestore".
+        (* XXX need to do some [cfupd] to decide whether to use the left or right side of [HΦc] *)
         admit.
       }
-      { iLeft. iApply "HrestoreP0". iFrame. }
+      { iModIntro. iApply "HΦc". iLeft. iApply "HrestoreP0". iFrame. }
     }
     iModIntro.
     iIntros (ok) "Hpost".
