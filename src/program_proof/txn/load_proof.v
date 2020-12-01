@@ -22,7 +22,7 @@ Implicit Types (s : Slice.t) (γ: @txn_names Σ).
 
 Lemma wal_heap_inv_mapsto_in_bounds γ walptr dinit a v :
   is_wal (wal_heap_inv γ.(txn_walnames)) walptr γ.(txn_walnames).(wal_heap_walnames) dinit -∗
-  inv invN (is_txn_always γ) -∗
+  ncinv invN (is_txn_always γ) -∗
   mapsto_cur (hG := γ.(txn_logheap)) a v -∗ |NC={⊤}=>
   mapsto_cur (hG := γ.(txn_logheap)) a v ∗
   in_bounds γ.(txn_walnames).(wal_heap_walnames) (addrBlock a).

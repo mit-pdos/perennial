@@ -1,5 +1,6 @@
 From iris.algebra Require Export big_op.
 From iris.proofmode Require Import tactics.
+From iris.base_logic Require Import ncfupd.
 From iris_string_ident Require Import ltac2_string_ident.
 
 Set Default Proof Using "Type".
@@ -555,6 +556,36 @@ Section map.
   Qed.
 
 End map.
+
+Section iprop_map.
+
+  Context `{invG Σ, crashG Σ}.
+  Context `{Countable K} {A : Type}.
+  Implicit Types m : gmap K A.
+  Implicit Types Φ Ψ : K → A → iProp Σ.
+
+  Lemma big_sepM_mono_ncfupd `{invG Σ, crashG Σ} Φ Ψ m (I : iProp Σ) E :
+   □ ( ∀ k x, ⌜ m !! k = Some x ⌝ →
+      I ∗ Φ k x -∗ |NC={E}=> I ∗ Ψ k x ) -∗
+    I ∗ ([∗ map] k↦x ∈ m, Φ k x) -∗ |NC={E}=>
+    I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
+  Proof.
+    iIntros "#Hfupd [HI Hm]".
+    iInduction m as [|i x m] "IH" using map_ind.
+    - iModIntro. iFrame. iApply big_sepM_empty. done.
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      iMod ("Hfupd" with "[] [$HI $Hi]") as "[HI Hi]".
+      { rewrite lookup_insert. eauto. }
+      iMod ("IH" with "[Hfupd] HI Hm") as "[HI Hm]".
+      { iModIntro. iIntros (k x0 Hkx0) "[HI Hk]".
+        destruct (decide (k = i)); subst; try congruence.
+        iApply "Hfupd".
+        { rewrite lookup_insert_ne; eauto. }
+        iFrame.
+      }
+      iFrame. iApply big_sepM_insert; eauto. iFrame. done.
+  Qed.
+End iprop_map.
 
 Section map2.
   Context `{Countable K} {A B : Type}.

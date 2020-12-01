@@ -4,6 +4,7 @@ From iris.base_logic.lib Require Import mnat.
 From Perennial.algebra Require Import auth_map liftable liftable2 log_heap async.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
+From Perennial.program_logic Require Export ncinv.
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof txn.txn_proof.
 From Perennial.program_proof Require buftxn.buftxn_proof.
 From Perennial.program_proof Require Import proof_prelude.
@@ -154,8 +155,8 @@ Section goose_lang.
 
   (* this is for the entire txn manager, and relates it to some ghost state *)
   Definition is_txn_system γ : iProp Σ :=
-    "Htxn_inv" ∷ inv N (txn_system_inv γ) ∗
-    "His_txn" ∷ inv invN (is_txn_always γ.(buftxn_txn_names)).
+    "Htxn_inv" ∷ ncinv N (txn_system_inv γ) ∗
+    "His_txn" ∷ ncinv invN (is_txn_always γ.(buftxn_txn_names)).
 
   Lemma init_txn_system {E} l_txn γUnified dinit σs :
     is_txn l_txn γUnified dinit ∗ ghost_var γUnified.(txn_crashstates) (3/4) σs ={E}=∗
@@ -166,7 +167,7 @@ Section goose_lang.
     iMod (async_ctx_init σs) as (γasync) "H●async".
     set (γ:={|buftxn_txn_names := γUnified; buftxn_async_name := γasync; |}).
     iExists γ.
-    iMod (inv_alloc N E (txn_system_inv γ) with "[-]") as "$".
+    iMod (ncinv_alloc N E (txn_system_inv γ) with "[-]") as "($&Hcfupd)".
     { iNext.
       iExists _; iFrame. }
     iModIntro.
@@ -349,7 +350,7 @@ Section goose_lang.
     is_txn_system γ -∗
     durable_mapsto γ a obj1 -∗
     mapsto_txn γ.(buftxn_txn_names) a obj2 -∗
-    |={E}=> ⌜obj1 = obj2⌝ ∗ durable_mapsto γ a obj1 ∗ mapsto_txn γ.(buftxn_txn_names) a obj2.
+    |NC={E}=> ⌜obj1 = obj2⌝ ∗ durable_mapsto γ a obj1 ∗ mapsto_txn γ.(buftxn_txn_names) a obj2.
   Proof.
     iIntros (???) "#Hinv Ha_i Ha". iNamed "Hinv".
     iInv "His_txn" as ">Hinner1".
@@ -391,7 +392,7 @@ Section goose_lang.
     N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
     durable_mapsto_own γ a obj
-    ={E}=∗
+    -∗ |NC={E}=>
     buftxn_maps_to γtxn a obj ∗
     is_buftxn l γ dinit γtxn (λ mapsto, mapsto a obj ∗ P0 mapsto).
   Proof.
@@ -443,7 +444,7 @@ Section goose_lang.
     ↑N ⊆ E →
     N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
-    ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v) ={E}=∗
+    ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v) -∗ |NC={E}=>
     ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
                       is_buftxn l γ dinit γtxn
                         (λ mapsto,
@@ -488,7 +489,7 @@ Section goose_lang.
     N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
     P (λ a v, durable_mapsto_own γ a v)
-    ={E}=∗
+    -∗ |NC={E}=>
     P (buftxn_maps_to γtxn) ∗
     is_buftxn l γ dinit γtxn
       (λ mapsto,

@@ -128,7 +128,7 @@ Definition is_txn (l : loc) (γ : txn_names) dinit : iProp Σ :=
       "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
       "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       "Hiswal" ∷ is_wal (wal_heap_inv (txn_walnames γ)) walptr (wal_heap_walnames (txn_walnames γ)) dinit ∗
-      "Histxna" ∷ inv invN (is_txn_always γ) ∗
+      "Histxna" ∷ ncinv invN (is_txn_always γ) ∗
       "Histxn_lock" ∷ is_lock lockN #mu (is_txn_locked l (txn_walnames γ))
   )%I.
 
@@ -136,8 +136,8 @@ Global Instance is_txn_persistent l γ dinit : Persistent (is_txn l γ dinit) :=
 
 Theorem mapsto_txn_valid γ a v E :
   ↑invN ⊆ E ->
-  inv invN (is_txn_always γ) -∗
-  mapsto_txn γ a v ={E}=∗
+  ncinv invN (is_txn_always γ) -∗
+  mapsto_txn γ a v -∗ |NC={E}=>
     mapsto_txn γ a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ∧ γ.(txn_kinds) !! a.(addrBlock) = Some (projT1 v) ⌝.
 Proof.
   iIntros (HN) "#Hinv H".
@@ -209,7 +209,7 @@ Theorem mapsto_txn_locked (γ : txn_names) l dinit lwh a data E :
   ↑invN ⊆ E ->
   ↑walN ⊆ E ∖ ↑invN ->
   is_wal (wal_heap_inv γ.(txn_walnames)) l (wal_heap_walnames γ.(txn_walnames)) dinit ∗
-  inv invN (is_txn_always γ) ∗
+  ncinv invN (is_txn_always γ) ∗
   is_locked_walheap γ.(txn_walnames) lwh ∗
   mapsto_txn γ a data
   -∗ |NC={E}=>

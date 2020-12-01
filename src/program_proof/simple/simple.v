@@ -488,6 +488,16 @@ Proof.
   iApply is_inode_crash_ro; iFrame.
 Qed.
 
+Lemma is_inode_stable_crash γ fh:
+  is_inode_stable γ fh -∗ is_inode_crash γ fh.
+Proof.
+  rewrite /is_inode_stable.
+  iDestruct 1 as (?) "(H1&H2)".
+  iApply is_inode_crash_ro_own; iFrame.
+  Unshelve.
+  exact (U64 0).
+Qed.
+
 Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset : u64) (count : u32) (Q : SimpleNFS.res (bool * SimpleNFS.buf) -> iProp Σ) dinit :
   {{{ is_fs γ nfs dinit ∗
       is_fh fhslice fh ∗
@@ -586,13 +596,20 @@ Proof using Ptimeless.
   iSplit.
   { iModIntro. done. }
   iIntros ">Hstable".
+  iApply ncfupd_wpc; iSplit.
+  {
+    iModIntro. iModIntro. iSplit; first done. iNext.
+    by iApply is_inode_stable_crash.
+  }
   iNamed "Hstable".
+
 
   iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]";
     [ solve_ndisj .. | ].
   iNamed "Hinode_disk".
 
   iNamed "Hbuftxn".
+  iModIntro.
 
   iCache with "Hinode_state Hbuftxn_durable".
   { crash_case.
@@ -986,6 +1003,11 @@ Proof using Ptimeless.
   iSplit.
   { iModIntro. done. }
   iIntros ">Hstable".
+  iApply ncfupd_wpc; iSplit.
+  {
+    iModIntro. iModIntro. iSplit; first done. iNext.
+    by iApply is_inode_stable_crash.
+  }
   iNamed "Hstable".
 
   iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]".
@@ -995,6 +1017,7 @@ Proof using Ptimeless.
   iNamed "Hinode_disk".
 
   iNamed "Hbuftxn".
+  iModIntro.
 
   iCache with "Hinode_state Hbuftxn_durable".
   { crash_case.
@@ -1599,6 +1622,11 @@ Proof using Ptimeless ghost_varG0.
   iSplit.
   { iModIntro. done. }
   iIntros ">Hstable".
+  iApply ncfupd_wpc; iSplit.
+  {
+    iModIntro. iModIntro. iSplit; first done. iNext.
+    by iApply is_inode_stable_crash.
+  }
   iNamed "Hstable".
 
   iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]";
@@ -1607,6 +1635,7 @@ Proof using Ptimeless ghost_varG0.
 
   iNamed "Hbuftxn".
 
+  iModIntro.
   iCache with "Hinode_state Hbuftxn_durable".
   { crash_case.
     iDestruct (is_buftxn_durable_to_old_pred with "Hbuftxn_durable") as "[Hold _]".
@@ -2064,6 +2093,11 @@ Proof using Ptimeless.
   iSplit.
   { iModIntro. done. }
   iIntros ">Hstable".
+  iApply ncfupd_wpc; iSplit.
+  {
+    iModIntro. iModIntro. iSplit; first done. iNext.
+    by iApply is_inode_stable_crash.
+  }
   iNamed "Hstable".
 
   iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]";
@@ -2072,6 +2106,7 @@ Proof using Ptimeless.
 
   iNamed "Hbuftxn".
 
+  iModIntro.
   iCache with "Hinode_state Hbuftxn_durable".
   { crash_case.
     iDestruct (is_buftxn_durable_to_old_pred with "Hbuftxn_durable") as "[Hold _]".

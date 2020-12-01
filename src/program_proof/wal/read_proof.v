@@ -198,8 +198,8 @@ Theorem simulate_read_cache_hit {l γ Q σ dinit memLog diskEnd diskEnd_txn_id b
   memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
-        -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
-  |={⊤ ∖ ↑N}=> (is_wal_inner l γ σ dinit ∗ P σ) ∗
+        -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ -∗ |NC={⊤ ∖ ↑N}=> P σ' ∗ Q mb) -∗
+  |NC={⊤ ∖ ↑N}=> (is_wal_inner l γ σ dinit ∗ P σ) ∗
               "HQ" ∷ Q (Some b) ∗
               "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
 Proof.
@@ -268,8 +268,8 @@ Theorem simulate_read_cache_miss {l γ Q σ dinit memLog diskEnd diskEnd_txn_id 
   memLog_linv γ memLog diskEnd diskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) mb,
       ⌜wal_wf σ⌝
-        -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q mb) -∗
-  |={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' dinit ∗ P σ') ∗
+        -∗ ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗ P σ -∗ |NC={⊤ ∖ ↑N}=> P σ' ∗ Q mb) -∗
+  |NC={⊤ ∖ ↑N}=> (∃ σ', is_wal_inner l γ σ' dinit ∗ P σ') ∗
               "HQ" ∷ Q None ∗
               "HmemLog_linv" ∷ memLog_linv γ memLog diskEnd diskEnd_txn_id.
 Proof.
@@ -358,7 +358,7 @@ Theorem wp_Walog__ReadMem (Q: option Block -> iProp Σ) l γ dinit a :
        (∀ σₛ σₛ' mb,
          ⌜wal_wf σₛ⌝ -∗
          ⌜relation.denote (log_read_cache a) σₛ σₛ' mb⌝ -∗
-         (P σₛ ={⊤ ∖ ↑N}=∗ P σₛ' ∗ Q mb))
+         (P σₛ -∗ |NC={⊤ ∖ ↑N}=> P σₛ' ∗ Q mb))
    }}}
     Walog__ReadMem #l #a
   {{{ (ok:bool) bl, RET (slice_val bl, #ok); if ok
@@ -384,7 +384,7 @@ Proof.
   wp_pures.
   destruct ok.
   - iDestruct "Hb" as (b) "[Hb %HmemLog_lookup]".
-    iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
+    iMod (ncfupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
     iMod (simulate_read_cache_hit HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
       as "([Hinner HP]&?&?)"; iNamed.
     iMod "HinnerN" as "_".

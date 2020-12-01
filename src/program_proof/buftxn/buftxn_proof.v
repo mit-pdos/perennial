@@ -546,7 +546,7 @@ Theorem BufTxn_lift_one buftx mt γUnified dinit a v E anydirty :
     is_buftxn buftx mt γUnified dinit anydirty ∗
     mapsto_txn γUnified a v
   )
-    ={E}=∗
+    -∗ |NC={E}=>
   (
     is_buftxn buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified dinit anydirty
   ).
@@ -618,7 +618,7 @@ Theorem BufTxn_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E anydirty 
     is_buftxn buftx mt γUnified dinit anydirty ∗
     [∗ map] a ↦ v ∈ m, mapsto_txn γUnified a v
   )
-    ={E}=∗
+    -∗ |NC={E}=>
   (
     is_buftxn buftx (((λ v, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ mt) γUnified dinit anydirty
   ).
@@ -635,7 +635,7 @@ Proof.
 
   iDestruct (big_sepM_disjoint_pred with "Hctxelem Ha") as %Hd.
 
-  iMod (big_sepM_mono_fupd _ (fun a (v : {K : bufDataKind & (bufDataT K * bufDataT K)%type}) => mapsto_txn γUnified a (existT (projT1 v) (projT2 v).1) ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ⌝)%I _ emp%I with "[] [$Ha]") as "[_ Ha]".
+  iMod (big_sepM_mono_ncfupd _ (fun a (v : {K : bufDataKind & (bufDataT K * bufDataT K)%type}) => mapsto_txn γUnified a (existT (projT1 v) (projT2 v).1) ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ⌝)%I _ emp%I with "[] [$Ha]") as "[_ Ha]".
   { iModIntro. iIntros (???) "[_ H]".
     iNamed "Histxn".
     iMod (mapsto_txn_valid with "Histxna [H Histxna]") as "[H %Havalid]"; eauto.
@@ -1002,12 +1002,12 @@ Definition wpwpcN := nroot.@"temp".
 Theorem wpc_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q Qc : nat -> iProp Σ) {HT1: Timeless PreQ} {HT2: ∀ n, Timeless (Qc n)} anydirty k :
   {{{
     is_buftxn buftx mt γUnified dinit anydirty ∗
-    <disc> PreQ ∧ ( |={⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
+    <disc> PreQ ∧ ( |NC={⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
         "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (3/4) σl ∗
         "Hcrashstates_fupd" ∷ (
           let σ := (modified <$> mt) ∪ latest σl in
           ghost_var γUnified.(txn_crashstates) (3/4) (async_put σ σl)
-          ={E, ⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN}=∗ <disc> (▷ Qc (length (possible σl))) ∧ Q (length (possible σl)) ))
+          -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN}=> <disc> (▷ Qc (length (possible σl))) ∧ Q (length (possible σl)) ))
   }}}
     BufTxn__CommitWait #buftx #wait @ (S k) ; ⊤
   {{{
@@ -1138,13 +1138,13 @@ Proof using stagedG0.
       iDestruct "HQ" as "(HQ&_)".
       iMod ("Hwand2" with "[$]") as "Hfupd".
       iLeft in "Hfupd".
-      iMod ("Hfupd").
+      iMod ("Hfupd" with "[$]") as "(Hfupd&HNC)".
       iDestruct "Hfupd" as (σl) "Hfupd".
-      iEval (rewrite bi.and_comm) in "Hfupd".
+      iEval (setoid_rewrite bi.and_comm) in "Hfupd".
       iModIntro. iFrame.
       iExists _. iNamed "Hfupd". iFrame. iIntros "?".
 
-      iIntros (q') "HNC". iMod ("Hcrashstates_fupd" with "[$]") as "Hcrashstates".
+      iIntros (q') "HNC". iMod ("Hcrashstates_fupd" with "[$] [$]") as "(Hcrashstates&HNC)".
       iClear "Hwand1 Hwand2".
       iDestruct (own_discrete_elim_conj with "Hcrashstates") as (Q_keep' Q_inv')
                                                                   "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".

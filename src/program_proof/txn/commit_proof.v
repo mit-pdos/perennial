@@ -72,7 +72,7 @@ Theorem mapsto_txn_locked (γ : txn_names) l dinit lwh a data E :
   ↑invN ⊆ E ->
   ↑walN ⊆ E ∖ ↑invN ->
   is_wal (wal_heap_inv γ.(txn_walnames)) l (wal_heap_walnames γ.(txn_walnames)) dinit ∗
-  inv invN (is_txn_always γ) ∗
+  ncinv invN (is_txn_always γ) ∗
   is_locked_walheap γ.(txn_walnames) lwh ∗
   mapsto_txn γ a data -∗
   |NC={E}=>
@@ -102,7 +102,7 @@ Proof.
 Qed.
 
 Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
-  {{{ inv invN (is_txn_always γ) ∗
+  {{{ ncinv invN (is_txn_always γ) ∗
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗
@@ -405,7 +405,7 @@ Proof.
 Qed.
 
 Theorem wp_txn__installBufs l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
-  {{{ inv invN (is_txn_always γ) ∗
+  {{{ ncinv invN (is_txn_always γ) ∗
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
       readonly (l ↦[Txn.S :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗

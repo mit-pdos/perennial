@@ -401,7 +401,7 @@ Proof.
       iExists _, _, _; iFrame. }
     iModIntro.
     iNamed 1.
-    iMod (inv_alloc invN _ (is_txn_always γ) with "[His_txn_always]") as "#Htxn_inv".
+    iMod (ncinv_alloc invN _ (is_txn_always γ) with "[His_txn_always]") as "(#Htxn_inv&Hcfupd)".
     { iNext. iExists _, _; iFrame. }
     iRight in "HΦ".
     iApply "HΦ".

@@ -1551,12 +1551,12 @@ Lemma union_singleton_l_id `{Countable A} (a:A) (x: gset A) :
 Proof. set_solver. Qed.
 
 Theorem wal_heap_readmem E γh a (Q : option Block -> iProp Σ) :
-  ( |={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
-        ( ∀ mb, readmem_q γh a installed bs mb ={E, ⊤ ∖ ↑walN}=∗ Q mb ) ) -∗
+  ( |NC={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
+        ( ∀ mb, readmem_q γh a installed bs mb -∗ |NC={E, ⊤ ∖ ↑walN}=> Q mb ) ) -∗
   ( ∀ σ σ' mb,
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_read_cache a) σ σ' mb⌝ -∗
-      ( (wal_heap_inv γh) σ ={⊤ ∖ ↑walN}=∗ (wal_heap_inv γh) σ' ∗ Q mb ) ).
+      ( (wal_heap_inv γh) σ -∗ |NC={⊤ ∖ ↑walN}=> (wal_heap_inv γh) σ' ∗ Q mb ) ).
 Proof.
   iIntros "Ha".
   iIntros (σ σ' mb) "% % Hinv".
@@ -1657,7 +1657,7 @@ Definition readinstalled_q γh (a : u64) (installed : Block) (bs : list Block) (
 
 Theorem wal_heap_readinstalled E γh a (Q : Block -> iProp Σ) :
   ( |NC={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
-        ( ∀ b, readinstalled_q γh.(wal_heap_h) a installed bs b ={E, ⊤ ∖ ↑walN}=∗ Q b ) ) -∗
+        ( ∀ b, readinstalled_q γh.(wal_heap_h) a installed bs b -∗ |NC={E, ⊤ ∖ ↑walN}=> Q b ) ) -∗
   ( ∀ σ σ' b',
       ⌜wal_wf σ⌝ -∗
       ⌜relation.denote (log_read_installed a) σ σ' b'⌝ -∗
