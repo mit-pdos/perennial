@@ -381,7 +381,8 @@ Section goose_lang.
       iExists _; iFrame.
   Qed.
 
-  Theorem wpc_BufTxn__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} klevel :
+  (* we're not how to prove this spec, but see below for correct version *)
+  Theorem wpc_BufTxn__CommitWait_BAD {l γ dinit γtxn} P0 P `{!Liftable P} klevel :
     N ## invariant.walN →
     N ## invN →
     N ## mspec.wpwpcN ->
@@ -395,6 +396,24 @@ Section goose_lang.
         else P0 (λ a v, durable_mapsto_own γ a v) }}}
     {{{ P0 (durable_mapsto γ) ∨
          P (durable_mapsto γ) }}}.
+  Proof.
+  Admitted.
+
+  Theorem wpc_BufTxn__CommitWait {l γ γ' dinit γtxn} P0 P `{!Liftable P} klevel :
+    N ## invariant.walN →
+    N ## invN →
+    N ## mspec.wpwpcN ->
+    {{{ "Hbuftxn" ∷ is_buftxn N l γ dinit γtxn P0 ∗
+        "HP" ∷ P (buftxn_maps_to γtxn) ∗
+        "#Htxn_cinv" ∷ txn_cinv N γ γ'
+    }}}
+      BufTxn__CommitWait #l #true @ S klevel; ⊤
+    {{{ (ok:bool), RET #ok;
+        if ok then
+            P (λ a v, durable_mapsto_own γ a v)
+        else P0 (λ a v, durable_mapsto_own γ a v) }}}
+    {{{ P0 (durable_mapsto_own γ') ∨
+         P (durable_mapsto_own γ') }}}.
   Proof.
     iIntros (??? Φ Φc) "Hpre HΦ". iNamed "Hpre".
     iNamed "Hbuftxn".
@@ -458,11 +477,16 @@ Section goose_lang.
       iDestruct "H" as "[H|H]".
       {
         iDestruct "H" as (txnid) "(H&#Hold_vals)".
-        iDestruct (big_sepM_subseteq with "H") as "H"; eauto.
-        (* XXX need to do some [cfupd] to decide whether to use the left or right side of [HΦc] *)
-        admit.
+        iMod (exchange_mapsto_commit with "[$Htxn_cinv $H $Hold_vals]") as "H".
+        { rewrite ?dom_fmap //. }
+        iModIntro.
+        iApply "HΦc".
+        iDestruct "H" as "[H|H]".
+        - iLeft. iApply "HrestoreP0". iApply "H".
+        - iRight. iApply "HPrestore". iDestruct (big_sepM_subseteq with "H") as "H"; eauto.
       }
-      { iModIntro. iApply "HΦc". iLeft. iApply "HrestoreP0". iFrame. }
+      { iMod (exchange_durable_mapsto with "[$Htxn_cinv $H]") as "H".
+        iModIntro. iApply "HΦc". iLeft. iApply "HrestoreP0". iFrame. }
     }
     iModIntro.
     iIntros (ok) "Hpost".
@@ -501,7 +525,9 @@ Section goose_lang.
       iApply (big_sepM_mono with "Hmod_tokens").
       iIntros (k x Hkx) "H".
       iExists _; iFrame.
-  Admitted.
+      Unshelve.
+      apply _.
+  Qed.
 
   Theorem is_buftxn_mem_durable l γ dinit γtxn P0 γdurable :
     is_buftxn_mem N l γ dinit γtxn γdurable -∗

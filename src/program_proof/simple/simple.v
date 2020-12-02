@@ -662,7 +662,7 @@ Proof using Ptimeless.
 
   iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
-  wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
+  wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
   2-4: try solve_ndisj.
   2: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
   { typeclasses eauto. }
@@ -1053,7 +1053,7 @@ Proof using Ptimeless.
 
   iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
-  wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
+  wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
   5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
   all: try solve_ndisj.
   { typeclasses eauto. }
@@ -1714,7 +1714,7 @@ Proof using Ptimeless ghost_varG0.
     replace (Z.to_nat (length databuf)) with (length databuf) by lia.
 
     iApply wpc_cfupd.
-    wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
+    wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
     5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
     2-4: solve_ndisj.
     { typeclasses eauto. }
@@ -2179,7 +2179,7 @@ Proof using Ptimeless.
           iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
           iApply wpc_cfupd.
-          wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
+          wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
           5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
           2-4: solve_ndisj.
           { typeclasses eauto. }
@@ -2495,7 +2495,7 @@ Proof using Ptimeless.
       iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
       iApply wpc_cfupd.
-      wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
+      wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
       5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
       2-4: solve_ndisj.
       { typeclasses eauto. }
@@ -2707,7 +2707,7 @@ Proof using Ptimeless.
   iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
   (* Not changing the length at all. *)
-  wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn Hinode_enc Hinode_data]").
+  wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
   5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
   { typeclasses eauto. }
   all: try solve_ndisj.
