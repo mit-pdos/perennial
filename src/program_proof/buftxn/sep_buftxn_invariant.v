@@ -143,6 +143,16 @@ Section goose_lang.
     ∃ i, ephemeral_val_from γ.(buftxn_async_name) i a obj ∗
          txn_durable γ i.
 
+  Global Instance durable_mapsto_conflicting γ :
+    Conflicting (λ a v, durable_mapsto γ a v).
+  Proof.
+    iIntros (a0 v0 a1 v1) "H0 H1".
+    iDestruct "H0" as (o0) "[H0 _]".
+    iDestruct "H1" as (o1) "[H1 _]".
+    destruct (decide (a0 = a1)); try done; subst.
+    iDestruct (ephemeral_val_from_conflict with "H0 H1") as "H". done.
+  Qed.
+
   Definition durable_mapsto_own γ a obj: iProp Σ :=
     modify_token γ a ∗ durable_mapsto γ a obj.
 

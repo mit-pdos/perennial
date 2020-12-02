@@ -24,6 +24,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Record simple_names := {
   simple_buftxn : buftxn_names Σ;
+  simple_buftxn_next : buftxn_names Σ;
   simple_src : gname;
   simple_lockmapghs : list (gen_heapG u64 bool Σ);
 }.
@@ -180,11 +181,7 @@ Definition is_inode_stable γ (inum: u64) : iProp Σ :=
 Definition is_inode_crash γ (inum: u64) : iProp Σ :=
   ∃ (state: list u8),
     "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state ∗
-    "Hinode_disk" ∷ is_inode inum state (durable_mapsto γ.(simple_buftxn)).
-
-Definition is_inode_unstable γ (inum: u64) state0 state1 : iProp Σ :=
-  "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state0 ∗
-  "Hinode_disk" ∷ is_inode inum state1 (durable_mapsto γ.(simple_buftxn)).
+    "Hinode_disk" ∷ is_inode inum state (durable_mapsto_own γ.(simple_buftxn_next)).
 
 Definition N := nroot .@ "simplenfs".
 
@@ -443,7 +440,8 @@ Definition is_fs γ (nfs: loc) dinit : iProp Σ :=
     "#Hislm" ∷ is_crash_lockMap 10 lm γ.(simple_lockmapghs) covered_inodes
                                 (is_inode_stable γ) (is_inode_crash γ) ∗
     "#Hsrc" ∷ inv N (is_source γ) ∗
-    "#Htxnsys" ∷ is_txn_system Nbuftxn γ.(simple_buftxn).
+    "#Htxnsys" ∷ is_txn_system Nbuftxn γ.(simple_buftxn) ∗
+    "#Htxncrash" ∷ txn_cinv Nbuftxn γ.(simple_buftxn) γ.(simple_buftxn_next).
 
 Global Instance is_fs_persistent γ nfs dinit : Persistent (is_fs γ nfs dinit).
 Proof. apply _. Qed.
@@ -459,11 +457,11 @@ Proof.
   iApply struct_fields_split. iFrame. done.
 Qed.
 
-Lemma is_inode_crash_ro γ fh state blk :
+Lemma is_inode_crash_next γ fh state blk :
   fh [[γ.(simple_src)]]↦ state ∗
-  ( is_inode fh state (durable_mapsto γ.(simple_buftxn))
-    ∨ is_inode_enc fh (length state) blk (durable_mapsto γ.(simple_buftxn))
-    ∗ is_inode_data (length state) blk state (durable_mapsto γ.(simple_buftxn)) )
+  ( is_inode fh state (durable_mapsto_own γ.(simple_buftxn_next))
+    ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γ.(simple_buftxn_next))
+    ∗ is_inode_data (length state) blk state (durable_mapsto_own γ.(simple_buftxn_next)) )
   -∗ is_inode_crash γ fh.
 Proof.
   iIntros "[Hfh Hi]".
@@ -472,28 +470,59 @@ Proof.
   iExists _. iFrame.
 Qed.
 
-Lemma is_inode_crash_ro_own γ fh state blk :
+Lemma is_inode_crash_prev γ fh state blk klevel :
+  txn_cinv Nbuftxn γ.(simple_buftxn) γ.(simple_buftxn_next) -∗
+  fh [[γ.(simple_src)]]↦ state ∗
+  ( is_inode fh state (durable_mapsto γ.(simple_buftxn))
+    ∨ is_inode_enc fh (length state) blk (durable_mapsto γ.(simple_buftxn))
+    ∗ is_inode_data (length state) blk state (durable_mapsto γ.(simple_buftxn)) )
+  -∗
+  |C={⊤}_S klevel=>
+  is_inode_crash γ fh.
+Proof.
+  iIntros "#Hcinv [Hfh H]".
+
+  iDestruct (@liftable _ _ _ _ _ (λ m, is_inode fh state m ∨ is_inode_enc fh (length state) blk m ∗ is_inode_data (length state) blk state m)%I with "H") as (mlift) "[H #Hrestore]".
+
+  iMod (exchange_durable_mapsto with "[$Hcinv $H]") as "H".
+  iDestruct ("Hrestore" with "H") as "H".
+
+  iModIntro.
+  iApply is_inode_crash_next; iFrame.
+Qed.
+
+Lemma is_inode_crash_prev_own γ fh state blk klevel :
+  txn_cinv Nbuftxn γ.(simple_buftxn) γ.(simple_buftxn_next) -∗
   fh [[γ.(simple_src)]]↦ state ∗
   ( is_inode fh state (durable_mapsto_own γ.(simple_buftxn))
     ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γ.(simple_buftxn))
     ∗ is_inode_data (length state) blk state (durable_mapsto_own γ.(simple_buftxn)) )
-  -∗ is_inode_crash γ fh.
+  -∗
+  |C={⊤}_S klevel=>
+  is_inode_crash γ fh.
 Proof.
-  iIntros "[Hfh H]".
+  iIntros "#Hcinv [Hfh H]".
+
   iDestruct (liftable_mono (Φ := λ m, is_inode fh state m
       ∨ is_inode_enc fh (length state) blk m
         ∗ is_inode_data (length state) blk state m)%I
     _ (durable_mapsto γ.(simple_buftxn)) with "H") as "H".
   { iIntros (??) "[_ $]". }
-  iApply is_inode_crash_ro; iFrame.
+
+  iApply (is_inode_crash_prev with "Hcinv"). iFrame.
 Qed.
 
-Lemma is_inode_stable_crash γ fh:
-  is_inode_stable γ fh -∗ is_inode_crash γ fh.
+Lemma is_inode_stable_crash γ fh klevel :
+  txn_cinv Nbuftxn γ.(simple_buftxn) γ.(simple_buftxn_next) -∗
+  is_inode_stable γ fh
+  -∗
+  |C={⊤}_S klevel=>
+  is_inode_crash γ fh.
 Proof.
+  iIntros "#Hcinv".
   rewrite /is_inode_stable.
   iDestruct 1 as (?) "(H1&H2)".
-  iApply is_inode_crash_ro_own; iFrame.
+  iApply is_inode_crash_prev_own; iFrame "∗#".
   Unshelve.
   exact (U64 0).
 Qed.
@@ -598,11 +627,11 @@ Proof using Ptimeless.
   iIntros ">Hstable".
   iApply ncfupd_wpc; iSplit.
   {
-    iModIntro. iModIntro. iSplit; first done. iNext.
-    by iApply is_inode_stable_crash.
+    iModIntro.
+    iMod (is_inode_stable_crash with "Htxncrash Hstable") as "Hcrash".
+    iModIntro. iSplit; first done. done.
   }
   iNamed "Hstable".
-
 
   iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]";
     [ solve_ndisj .. | ].
@@ -611,13 +640,14 @@ Proof using Ptimeless.
   iNamed "Hbuftxn".
   iModIntro.
 
+  iApply wpc_cfupd.
   iCache with "Hinode_state Hbuftxn_durable".
   { crash_case.
     iDestruct (is_buftxn_durable_to_old_pred with "Hbuftxn_durable") as "[Hold _]".
     iModIntro.
-    iSplit; first done.
-    iExists _.
-    iFrame.
+    iMod (is_inode_crash_prev with "Htxncrash [$Hinode_state $Hold]") as "Hcrash".
+    iModIntro.
+    iSplit; done.
   }
 
   wpc_call.
@@ -662,16 +692,17 @@ Proof using Ptimeless.
 
   iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
-  wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
+  wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
   2-4: try solve_ndisj.
   2: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
   { typeclasses eauto. }
 
   iSplit.
   { iModIntro.
-    iIntros "[[H _]|[H0 H1]]"; iSplit; try done; iApply is_inode_crash_ro; iFrame "Hinode_state".
-    { iLeft; iFrame. }
-    { iRight; iFrame. } }
+    iIntros "[[H _]|[H0 H1]]"; iModIntro; iSplit; try done; iModIntro.
+    { iApply is_inode_crash_next. iFrame. }
+    { iApply is_inode_crash_next. iFrame "Hinode_state". iRight. iFrame. }
+  }
 
   iModIntro.
   iIntros (ok) "Hcommit".
@@ -712,8 +743,9 @@ Proof using Ptimeless.
     iModIntro.
 
     wpc_frame "Hinode_state Hcommit".
-    { iModIntro. iSplit; try done.
-      iApply is_inode_crash_ro_own. iFrame "Hinode_state". iRight. iFrame. }
+    { iModIntro.
+      iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
+      iModIntro. iSplit; done. }
 
     wp_storeField.
     iNamed 1.
@@ -778,17 +810,18 @@ Transparent nfstypes.READ3res.S.
     { iModIntro. iExists _. iFrame "∗%#". }
     iModIntro.
 
+    iDestruct "Hcommit" as "[Hcommit _]".
     wpc_frame "Hinode_state Hcommit".
-    { iModIntro. iDestruct "Hcommit" as "[H0 H1]".
-      iSplit; first by done.
-      iApply is_inode_crash_ro_own. iFrame "Hinode_state". iLeft; iFrame. }
+    { iModIntro.
+      iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
+      iModIntro.
+      iSplit; done. }
 
     wp_storeField.
     iNamed 1.
 
     iSplitR "Hinode_state Hcommit".
     2: {
-      iDestruct "Hcommit" as "[H _]".
       iModIntro.
       iExists _; iFrame.
     }
