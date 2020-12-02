@@ -26,15 +26,48 @@ Variable P : SimpleNFS.State -> iProp Σ.
 Context `{Ptimeless : !forall σ, Timeless (P σ)}.
 Opaque slice_val.
 
-Theorem wp_RecoverExample (d : loc) :
-  {{{ True }}}
-    RecoverExample #d
-  {{{ RET #(); True }}}.
+Theorem wpc_RecoverExample γ (d : loc) dinit logm klevel :
+  {{{
+    recovery_proof.is_txn_durable γ dinit ∗ txn_resources γ logm
+  }}}
+    RecoverExample #d @ S klevel; ⊤
+  {{{ RET #(); True }}}
+  {{{ True }}}.
 Proof using Ptimeless.
-  iIntros (Φ) "H HΦ".
-  wp_call.
+  iIntros (Φ Φc) "(Htxndurable & Htxnres) HΦ".
+  rewrite /RecoverExample.
+  wpc_pures.
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
+
+  wpc_apply (wpc_MkTxn with "[$Htxndurable $Htxnres]").
+
+  iSplit.
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
+    iDestruct "H" as (γ' logm') "(%Hkinds & Htxndurable & Htxnres)".
+    iApply "HΦc". done. }
+
+  iModIntro.
+  iIntros (l) "(#Histxn & Hmapsto)".
+
+  wpc_pures.
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
+
+  wpc_apply wpc_MkLockMap.
+  { (* where to get old predicates? probably [Hlmcrash] from below.. *) admit. }
+
+  iSplit.
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
+    iApply "HΦc". done. }
+
+  iModIntro.
+  iIntros (lm ghs) "[#Hlm Hlmcrash]".
+
+  wpc_pures.
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
+
+  admit.
 Admitted.
 
-Print Assumptions wp_RecoverExample.
+Print Assumptions wpc_RecoverExample.
 
 End heap.
