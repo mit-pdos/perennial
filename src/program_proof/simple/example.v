@@ -63,15 +63,16 @@ Proof using ghost_varG0.
   iApply "HΦ". done.
 Qed.
 
-Theorem wpc_RecoverExample γ (d : loc) dinit logm klevel :
+Theorem wpc_RecoverExample γ γsrc (d : loc) dinit logm :
   {{{
-    is_txn_durable γ dinit logm
+    is_txn_durable γ dinit logm ∗
+    inv N (is_source P γsrc)
   }}}
-    RecoverExample #d @ S klevel; ⊤
+    RecoverExample #d @ 10; ⊤
   {{{ RET #(); True }}}
   {{{ True }}}.
 Proof.
-  iIntros (Φ Φc) "Htxndurable HΦ".
+  iIntros (Φ Φc) "(Htxndurable & #Hsrc) HΦ".
   rewrite /RecoverExample.
   wpc_pures.
   { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
@@ -84,12 +85,12 @@ Proof.
     iApply "HΦc". done. }
 
   iModIntro.
-  iIntros (γ' l) "(#Histxn & #Htxnsys & Hcfupdcancel & Htxncrash)".
+  iIntros (γ' l) "(#Histxn & #Htxnsys & Hcfupdcancel & #Htxncrash)".
 
   wpc_pures.
   { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
 
-  wpc_apply wpc_MkLockMap.
+  wpc_apply (wpc_MkLockMap _ _ (is_inode_stable γsrc γ) (is_inode_stable γsrc γ')).
   { (* where to get old predicates? probably [Hlmcrash] from below.. *) admit. }
 
   iSplit.
@@ -99,11 +100,34 @@ Proof.
   iModIntro.
   iIntros (lm ghs) "[#Hlm Hlmcrash]".
 
-  wpc_pures.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
+  iApply wp_wpc_frame'.
+  iSplitL "Hlmcrash HΦ".
+  { iSplit.
+    { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
+    { iDestruct "HΦ" as "[_ HΦ]". iExact "HΦ". } }
 
-  
-  admit.
+  wp_apply wp_allocStruct; first by eauto.
+  iIntros (nfs) "Hnfs".
+
+  iDestruct (struct_fields_split with "Hnfs") as "Hnfs". iNamed "Hnfs".
+  iMod (readonly_alloc_1 with "t") as "#Ht".
+  iMod (readonly_alloc_1 with "l") as "#Hl".
+
+  iAssert (is_fs P (Build_simple_names γ γ' γsrc ghs) nfs dinit) with "[]" as "Hfs".
+  { iExists _, _.
+    iFrame "Ht Hl Histxn Htxnsys Htxncrash Hsrc Hlm".
+  }
+
+  wp_apply wp_fork.
+  { wp_apply wp_exampleWorker. { iExact "Hfs". } done. }
+
+  wp_apply wp_fork.
+  { wp_apply wp_exampleWorker. { iExact "Hfs". } done. }
+
+  wp_apply wp_fork.
+  { wp_apply wp_exampleWorker. { iExact "Hfs". } done. }
+
+  iIntros "HΦ". iApply "HΦ". done.
 Admitted.
 
 Print Assumptions wpc_RecoverExample.

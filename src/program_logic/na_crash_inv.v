@@ -30,7 +30,7 @@ Ltac crash_unseal :=
   rewrite /na_crash_inv_def.
 
 Lemma na_crash_inv_alloc k E P Q:
-  ▷ Q -∗ ▷ □ (Q -∗ P) -∗ |(S k)={E}=> na_crash_inv (S k) Q P ∗ <disc> |C={⊤}_(S k)=> ▷ P.
+  ▷ Q -∗ ▷ □ (Q -∗ |C={⊤}_(S k)=> P) -∗ |(S k)={E}=> na_crash_inv (S k) Q P ∗ <disc> |C={⊤}_(S k)=> ▷ P.
 Proof.
   crash_unseal.
   iIntros "HQ #HQP".

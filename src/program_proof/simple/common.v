@@ -142,12 +142,12 @@ Proof.
   word.
 Qed.
 
-Lemma is_inode_crash_next γ fh state blk :
-  fh [[γ.(simple_src)]]↦ state ∗
-  ( is_inode fh state (durable_mapsto_own γ.(simple_buftxn_next))
-    ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γ.(simple_buftxn_next))
-    ∗ is_inode_data (length state) blk state (durable_mapsto_own γ.(simple_buftxn_next)) )
-  -∗ is_inode_crash γ fh.
+Lemma is_inode_crash_next γsrc γnext fh state blk :
+  fh [[γsrc]]↦ state ∗
+  ( is_inode fh state (durable_mapsto_own γnext)
+    ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γnext)
+    ∗ is_inode_data (length state) blk state (durable_mapsto_own γnext) )
+  -∗ is_inode_stable γsrc γnext fh.
 Proof.
   iIntros "[Hfh Hi]".
   iExists _. iFrame.
@@ -155,15 +155,15 @@ Proof.
   iExists _. iFrame.
 Qed.
 
-Lemma is_inode_crash_prev γ fh state blk klevel :
-  txn_cinv Nbuftxn γ.(simple_buftxn) γ.(simple_buftxn_next) -∗
-  fh [[γ.(simple_src)]]↦ state ∗
-  ( is_inode fh state (durable_mapsto γ.(simple_buftxn))
-    ∨ is_inode_enc fh (length state) blk (durable_mapsto γ.(simple_buftxn))
-    ∗ is_inode_data (length state) blk state (durable_mapsto γ.(simple_buftxn)) )
+Lemma is_inode_crash_prev γsrc γprev γnext fh state blk klevel :
+  txn_cinv Nbuftxn γprev γnext -∗
+  fh [[γsrc]]↦ state ∗
+  ( is_inode fh state (durable_mapsto γprev)
+    ∨ is_inode_enc fh (length state) blk (durable_mapsto γprev)
+    ∗ is_inode_data (length state) blk state (durable_mapsto γprev) )
   -∗
   |C={⊤}_S klevel=>
-  is_inode_crash γ fh.
+  is_inode_stable γsrc γnext fh.
 Proof.
   iIntros "#Hcinv [Hfh H]".
 
@@ -176,33 +176,33 @@ Proof.
   iApply is_inode_crash_next; iFrame.
 Qed.
 
-Lemma is_inode_crash_prev_own γ fh state blk klevel :
-  txn_cinv Nbuftxn γ.(simple_buftxn) γ.(simple_buftxn_next) -∗
-  fh [[γ.(simple_src)]]↦ state ∗
-  ( is_inode fh state (durable_mapsto_own γ.(simple_buftxn))
-    ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γ.(simple_buftxn))
-    ∗ is_inode_data (length state) blk state (durable_mapsto_own γ.(simple_buftxn)) )
+Lemma is_inode_crash_prev_own γsrc γprev γnext fh state blk klevel :
+  txn_cinv Nbuftxn γprev γnext -∗
+  fh [[γsrc]]↦ state ∗
+  ( is_inode fh state (durable_mapsto_own γprev)
+    ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γprev)
+    ∗ is_inode_data (length state) blk state (durable_mapsto_own γprev) )
   -∗
   |C={⊤}_S klevel=>
-  is_inode_crash γ fh.
+  is_inode_stable γsrc γnext fh.
 Proof.
   iIntros "#Hcinv [Hfh H]".
 
   iDestruct (liftable_mono (Φ := λ m, is_inode fh state m
       ∨ is_inode_enc fh (length state) blk m
         ∗ is_inode_data (length state) blk state m)%I
-    _ (durable_mapsto γ.(simple_buftxn)) with "H") as "H".
+    _ (durable_mapsto γprev) with "H") as "H".
   { iIntros (??) "[_ $]". }
 
   iApply (is_inode_crash_prev with "Hcinv"). iFrame.
 Qed.
 
-Lemma is_inode_stable_crash γ fh klevel :
-  txn_cinv Nbuftxn γ.(simple_buftxn) γ.(simple_buftxn_next) -∗
-  is_inode_stable γ fh
+Lemma is_inode_stable_crash γsrc γprev γnext fh klevel :
+  txn_cinv Nbuftxn γprev γnext -∗
+  is_inode_stable γsrc γprev fh
   -∗
   |C={⊤}_S klevel=>
-  is_inode_crash γ fh.
+  is_inode_stable γsrc γnext fh.
 Proof.
   iIntros "#Hcinv".
   rewrite /is_inode_stable.

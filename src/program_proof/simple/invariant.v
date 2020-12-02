@@ -49,7 +49,7 @@ Definition is_source γ : iProp Σ :=
   ∃ (src: SimpleNFS.State),
     (* If we were doing a refinement proof, the top-level source_state would
      * own 1/2 of this [map_ctx] *)
-    "Hsrcheap" ∷ map_ctx γ.(simple_src) 1%Qp src ∗
+    "Hsrcheap" ∷ map_ctx γ 1%Qp src ∗
     "%Hdom" ∷ ⌜dom (gset _) src = covered_inodes⌝ ∗
     "#Hnooverflow" ∷ no_overflows src ∗
     "HP" ∷ P src.
@@ -83,15 +83,10 @@ Definition is_inode_mem (l: loc) (inum: u64) (len: u64) (blk: u64) : iProp Σ :=
 
 Definition Nbuftxn := nroot .@ "buftxn".
 
-Definition is_inode_stable γ (inum: u64) : iProp Σ :=
+Definition is_inode_stable γsrc γtxn (inum: u64) : iProp Σ :=
   ∃ (state: list u8),
-    "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state ∗
-    "Hinode_disk" ∷ is_inode inum state (durable_mapsto_own γ.(simple_buftxn)).
-
-Definition is_inode_crash γ (inum: u64) : iProp Σ :=
-  ∃ (state: list u8),
-    "Hinode_state" ∷ inum [[γ.(simple_src)]]↦ state ∗
-    "Hinode_disk" ∷ is_inode inum state (durable_mapsto_own γ.(simple_buftxn_next)).
+    "Hinode_state" ∷ inum [[γsrc]]↦ state ∗
+    "Hinode_disk" ∷ is_inode inum state (durable_mapsto_own γtxn).
 
 Definition N := nroot .@ "simplenfs".
 
@@ -106,8 +101,9 @@ Definition is_fs γ (nfs: loc) dinit : iProp Σ :=
     "#Hfs_lm" ∷ readonly (nfs ↦[Nfs.S :: "l"] #lm) ∗
     "#Histxn" ∷ is_txn txn γ.(simple_buftxn).(buftxn_txn_names) dinit ∗
     "#Hislm" ∷ is_crash_lockMap 10 lm γ.(simple_lockmapghs) covered_inodes
-                                (is_inode_stable γ) (is_inode_crash γ) ∗
-    "#Hsrc" ∷ inv N (is_source γ) ∗
+                                (is_inode_stable γ.(simple_src) γ.(simple_buftxn))
+                                (is_inode_stable γ.(simple_src) γ.(simple_buftxn_next)) ∗
+    "#Hsrc" ∷ inv N (is_source γ.(simple_src)) ∗
     "#Htxnsys" ∷ is_txn_system Nbuftxn γ.(simple_buftxn) ∗
     "#Htxncrash" ∷ txn_cinv Nbuftxn γ.(simple_buftxn) γ.(simple_buftxn_next).
 
