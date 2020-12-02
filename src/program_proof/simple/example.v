@@ -67,7 +67,7 @@ Theorem wpc_RecoverExample γ (d : loc) dinit logm klevel :
     RecoverExample #d @ S klevel; ⊤
   {{{ RET #(); True }}}
   {{{ True }}}.
-Proof using Ptimeless.
+Proof.
   iIntros (Φ Φc) "Htxndurable HΦ".
   rewrite /RecoverExample.
   wpc_pures.
