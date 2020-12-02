@@ -29,7 +29,7 @@ Theorem wp_exampleWorker (nfs : loc) (inum : u64) γ dinit :
   {{{ is_fs P γ nfs dinit }}}
     exampleWorker #nfs #inum
   {{{ RET #(); True }}}.
-Proof.
+Proof using ghost_varG0.
   iIntros (Φ) "#Hfs HΦ".
   wp_call.
   wp_apply (wp_NewSlice (V:=u8)).
@@ -51,14 +51,17 @@ Proof.
 
   wp_apply wp_Fh__MakeFh3.
   iIntros (fh2) "Hfh".
-  replace 1024%Z with (Z.of_nat $ length (replicate (int.nat 1024%Z) (U8 0))).
-  2: { rewrite replicate_length. word. }
+  wp_apply (wp_NFSPROC3_WRITE with "[$Hfs $Hfh $Hs]").
+  { rewrite !replicate_length. iSplit.
+    { iPureIntro. word. }
+    iModIntro.
+    iIntros (σ σ' r E) "%Hrel HP".
+    iModIntro. iSplit; done. }
+  iIntros (v2) "Hv2".
 
-  wp_apply (wp_NFSPROC3_WRITE with "[$Hfs $Hfh Hs]").
-  { iFrame "Hs".
-    iSplit; first by len.
-    admit. (* HOCAP fupd *) }
-Admitted.
+  wp_pures.
+  iApply "HΦ". done.
+Qed.
 
 Theorem wpc_RecoverExample γ (d : loc) dinit logm klevel :
   {{{

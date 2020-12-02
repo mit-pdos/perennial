@@ -673,7 +673,8 @@ Definition exampleWorker: val :=
       "Offset" ::= #0;
       "Count" ::= #(U32 1024);
       "Data" ::= "buf"
-    ]).
+    ]);;
+    #().
 
 Definition RecoverExample: val :=
   rec: "RecoverExample" "d" :=
