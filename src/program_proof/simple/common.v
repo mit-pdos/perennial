@@ -79,6 +79,27 @@ Proof.
   done.
 Qed.
 
+Theorem wp_Fh__MakeFh3 inum :
+  {{{ True }}}
+    Fh__MakeFh3 (#inum, #())%V
+  {{{ s, RET (slice_val s, #()); is_fh s inum }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_pures.
+  wp_call.
+  wp_apply wp_new_enc.
+  iIntros (enc) "Henc".
+  wp_apply (wp_Enc__PutInt with "Henc"); first by word.
+  iIntros "Henc".
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (s data) "(%Henc & %Hlen & Hs)".
+  iDestruct (is_slice_to_small with "Hs") as "Hs".
+  iMod (readonly_alloc_1 with "Hs") as "Hs".
+  wp_pures.
+  iApply "HΦ".
+  iExists _. iFrame. done.
+Qed.
+
 Lemma elem_of_covered_inodes (x:u64) :
   x ∈ covered_inodes ↔ (2 ≤ int.Z x < 32)%Z.
 Proof.

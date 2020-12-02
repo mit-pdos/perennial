@@ -45,6 +45,6 @@ Section goose_lang.
     {{{ ∃ γ' logm', ⌜ γ'.(buftxn_txn_names).(txn_kinds) = γ.(buftxn_txn_names).(txn_kinds) ⌝ ∗
                    is_txn_durable γ' dinit logm' }}}.
   Proof.
-  Abort.
+  Admitted.
 
 End goose_lang.

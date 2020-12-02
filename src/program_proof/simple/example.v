@@ -7,14 +7,14 @@ From Perennial.program_proof Require Import proof_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
 From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import buftxn.sep_buftxn_proof buftxn.sep_buftxn_recovery_proof.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
 From Perennial.algebra Require Import log_heap.
 From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
-From Perennial.program_proof.simple Require Import spec proofs.
+From Perennial.program_proof.simple Require Import spec invariant proofs.
 
 Section heap.
 Context `{!buftxnG Σ}.
@@ -22,32 +22,66 @@ Context `{!ghost_varG Σ (gmap u64 (list u8))}.
 Context `{!mapG Σ u64 (list u8)}.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Variable P : SimpleNFS.State -> iProp Σ.
-Context `{Ptimeless : !forall σ, Timeless (P σ)}.
-Opaque slice_val.
+Definition P (s : SimpleNFS.State) : iProp Σ :=
+  True.
+
+Theorem wp_exampleWorker (nfs : loc) (inum : u64) γ dinit :
+  {{{ is_fs P γ nfs dinit }}}
+    exampleWorker #nfs #inum
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "#Hfs HΦ".
+  wp_call.
+  wp_apply (wp_NewSlice (V:=u8)).
+  iIntros (s) "Hs".
+
+  wp_apply wp_Fh__MakeFh3.
+  iIntros (fh0) "Hfh".
+  wp_apply (wp_NFSPROC3_GETATTR with "[$Hfs $Hfh]").
+  { iIntros (σ σ' r E) "%Hrel HP".
+    iModIntro. iSplit; done. }
+  iIntros (v0) "Hv0".
+
+  wp_apply wp_Fh__MakeFh3.
+  iIntros (fh1) "Hfh".
+  wp_apply (wp_NFSPROC3_READ with "[$Hfs $Hfh]").
+  { iIntros (σ σ' r E) "%Hrel HP".
+    iModIntro. iSplit; done. }
+  iIntros (v1) "Hv1".
+
+  wp_apply wp_Fh__MakeFh3.
+  iIntros (fh2) "Hfh".
+  replace 1024%Z with (length (replicate (int.nat 1024%Z) IntoVal_def) : Z).
+  2: { rewrite replicate_length. word. }
+
+  (* XXX why doesn't wp_NFSPROC3_WRITE apply? *)
+(*
+  wp_apply (wp_NFSPROC3_WRITE with "[$Hfs]").
+*)
+Admitted.
 
 Theorem wpc_RecoverExample γ (d : loc) dinit logm klevel :
   {{{
-    recovery_proof.is_txn_durable γ dinit ∗ txn_resources γ logm
+    is_txn_durable γ dinit logm
   }}}
     RecoverExample #d @ S klevel; ⊤
   {{{ RET #(); True }}}
   {{{ True }}}.
 Proof using Ptimeless.
-  iIntros (Φ Φc) "(Htxndurable & Htxnres) HΦ".
+  iIntros (Φ Φc) "Htxndurable HΦ".
   rewrite /RecoverExample.
   wpc_pures.
   { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
 
-  wpc_apply (wpc_MkTxn with "[$Htxndurable $Htxnres]").
+  wpc_apply (wpc_MkTxn with "Htxndurable").
 
   iSplit.
   { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
-    iDestruct "H" as (γ' logm') "(%Hkinds & Htxndurable & Htxnres)".
+    iDestruct "H" as (γ' logm') "(%Hkinds & Htxndurable)".
     iApply "HΦc". done. }
 
   iModIntro.
-  iIntros (l) "(#Histxn & Hmapsto)".
+  iIntros (γ' l) "(#Histxn & #Htxnsys & Hcfupdcancel & Htxncrash)".
 
   wpc_pures.
   { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
@@ -65,6 +99,7 @@ Proof using Ptimeless.
   wpc_pures.
   { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
 
+  
   admit.
 Admitted.
 
