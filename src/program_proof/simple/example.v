@@ -51,13 +51,13 @@ Proof.
 
   wp_apply wp_Fh__MakeFh3.
   iIntros (fh2) "Hfh".
-  replace 1024%Z with (length (replicate (int.nat 1024%Z) IntoVal_def) : Z).
+  replace 1024%Z with (Z.of_nat $ length (replicate (int.nat 1024%Z) (U8 0))).
   2: { rewrite replicate_length. word. }
 
-  (* XXX why doesn't wp_NFSPROC3_WRITE apply? *)
-(*
-  wp_apply (wp_NFSPROC3_WRITE with "[$Hfs]").
-*)
+  wp_apply (wp_NFSPROC3_WRITE with "[$Hfs $Hfh Hs]").
+  { iFrame "Hs".
+    iSplit; first by len.
+    admit. (* HOCAP fupd *) }
 Admitted.
 
 Theorem wpc_RecoverExample γ (d : loc) dinit logm klevel :
