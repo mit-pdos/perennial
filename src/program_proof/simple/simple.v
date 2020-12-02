@@ -2135,8 +2135,10 @@ Proof using Ptimeless.
   iIntros ">Hstable".
   iApply ncfupd_wpc; iSplit.
   {
-    iModIntro. iModIntro. iSplit; first done. iNext.
-    by iApply is_inode_stable_crash.
+    iModIntro.
+    iMod (is_inode_stable_crash with "Htxncrash Hstable") as "H".
+    iModIntro.
+    iSplit; done.
   }
   iNamed "Hstable".
 
@@ -2145,15 +2147,16 @@ Proof using Ptimeless.
   iNamed "Hinode_disk".
 
   iNamed "Hbuftxn".
-
   iModIntro.
+
+  iApply wpc_cfupd.
   iCache with "Hinode_state Hbuftxn_durable".
   { crash_case.
     iDestruct (is_buftxn_durable_to_old_pred with "Hbuftxn_durable") as "[Hold _]".
     iModIntro.
-    iSplit; first done.
-    iExists _.
-    iFrame.
+    iMod (is_inode_crash_prev with "Htxncrash [$Hinode_state $Hold]") as "H".
+    iModIntro.
+    iSplit; done.
   }
 
   wpc_call.
@@ -2218,8 +2221,7 @@ Proof using Ptimeless.
           wpc_pures.
           iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
-          iApply wpc_cfupd.
-          wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
+          wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
           5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
           2-4: solve_ndisj.
           { typeclasses eauto. }
@@ -2227,7 +2229,8 @@ Proof using Ptimeless.
           iSplit.
           { iModIntro.
             iIntros "[[H _]|[H0 H1]]".
-            { iModIntro. iSplit; first by done. iApply is_inode_crash_ro. iFrame. }
+            { iDestruct (is_inode_crash_next with "[$Hinode_state $H]") as "H".
+              iModIntro. iSplit; done. }
 
             iIntros "C".
             iInv "Hsrc" as ">Hopen" "Hclose".
@@ -2329,8 +2332,11 @@ Proof using Ptimeless.
             iDestruct "Hcommit" as "(Hinode_enc & Hinode_data)".
 
             wpc_frame "Hinode_state Hinode_enc Hinode_data".
-            { iModIntro. iModIntro. iSplit; first by done.
-              iApply is_inode_crash_ro_own. iFrame "Hinode_state". iRight.
+            { iModIntro.
+              iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state Hinode_enc Hinode_data]") as "H".
+              2: { iModIntro. iSplit; done. }
+
+              iRight.
               assert (length state < int.Z u)%Z by (revert Heqb; word).
               rewrite -> Z.max_r in Heqb0 by word.
               rewrite -Heqb0. word_cleanup.
@@ -2423,8 +2429,9 @@ Proof using Ptimeless.
 
             iDestruct "Hcommit" as "[Hcommit _]".
             wpc_frame "Hinode_state Hcommit".
-            { iModIntro. iModIntro. iSplit; first by done.
-              iApply is_inode_crash_ro_own. iFrame. }
+            { iModIntro.
+              iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
+              iModIntro. iSplit; done. }
 
             iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
             wp_storeField.
@@ -2534,8 +2541,7 @@ Proof using Ptimeless.
 
       iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
-      iApply wpc_cfupd.
-      wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
+      wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
       5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
       2-4: solve_ndisj.
       { typeclasses eauto. }
@@ -2543,7 +2549,7 @@ Proof using Ptimeless.
       iSplit.
       { iModIntro.
         iIntros "[[H _]|[H0 H1]]".
-        { iModIntro. iSplit; first by done. iApply is_inode_crash_ro. iFrame. }
+        { iDestruct (is_inode_crash_next with "[$Hinode_state $H]") as "H". iModIntro. iSplit; done. }
 
         iIntros "C".
         iInv "Hsrc" as ">Hopen" "Hclose".
@@ -2581,8 +2587,10 @@ Proof using Ptimeless.
           rewrite -> firstn_length_le by word.
           word.
         }
-        iModIntro. iSplit; first by done.
-        iExists _. iFrame. iExists _.
+
+        iDestruct (is_inode_crash_next with "[$Hinode_state H0 H1]") as "H".
+        2: { iModIntro. iSplit; done. }
+        iRight.
         rewrite -> firstn_length_le by word.
         iDestruct (is_inode_data_shrink _ _ u with "H1") as "H1".
         { word. }
@@ -2642,8 +2650,10 @@ Proof using Ptimeless.
         iDestruct (is_inode_data_shrink _ _ u with "Hinode_data") as "Hinode_data"; first by word.
 
         wpc_frame "Hinode_state Hinode_enc Hinode_data".
-        { iModIntro. iModIntro. iSplit; first by done.
-          iApply is_inode_crash_ro_own. iFrame "Hinode_state". iRight.
+        { iModIntro.
+          iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state Hinode_enc Hinode_data]") as "H".
+          2: { iModIntro. iSplit; done. }
+          iRight.
           repeat rewrite -> firstn_length_le by word.
           replace (U64 (Z.of_nat (int.nat u))) with u by word. iFrame. }
 
@@ -2708,8 +2718,9 @@ Proof using Ptimeless.
         iDestruct "Hcommit" as "[Hcommit _]".
 
         wpc_frame "Hinode_state Hcommit".
-        { iModIntro. iModIntro. iSplit; first by done.
-          iApply is_inode_crash_ro_own. iFrame. }
+        { iModIntro.
+          iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
+          iModIntro; iSplit; done. }
 
         iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
         wp_storeField.
@@ -2747,16 +2758,16 @@ Proof using Ptimeless.
   iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
 
   (* Not changing the length at all. *)
-  wpc_apply (wpc_BufTxn__CommitWait_BAD with "[$Hbuftxn Hinode_enc Hinode_data]").
+  wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
   5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
   { typeclasses eauto. }
   all: try solve_ndisj.
 
   iSplit.
   { iModIntro.
-    iIntros "[[H _]|[H0 H1]]"; iSplit; try done; iApply is_inode_crash_ro; iFrame "Hinode_state".
-    { iLeft; iFrame. }
-    { iRight; iFrame. } }
+    iIntros "[[H _]|[H0 H1]]"; iModIntro; iSplit; try done; iModIntro.
+    { iApply is_inode_crash_next. iFrame. }
+    { iApply is_inode_crash_next. iFrame "Hinode_state". iRight. iFrame. } }
 
   iModIntro.
   iIntros (ok) "Hcommit".
@@ -2790,8 +2801,9 @@ Proof using Ptimeless.
     iModIntro.
 
     wpc_frame "Hinode_state Hcommit".
-    { iModIntro; iSplit; try done.
-      iApply is_inode_crash_ro_own. iFrame "Hinode_state". iRight. iFrame. }
+    { iModIntro.
+      iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
+      iModIntro. iSplit; done. }
 
     iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
     wp_storeField.
@@ -2848,8 +2860,9 @@ Proof using Ptimeless.
 
     iDestruct "Hcommit" as "[Hcommit _]". 
     wpc_frame "Hinode_state Hcommit".
-    { iModIntro; iSplit; try done.
-      iApply is_inode_crash_ro_own. iFrame "Hinode_state". iLeft. iFrame. }
+    { iModIntro.
+      iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
+      iModIntro. iSplit; done. }
 
     iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
     wp_storeField.

@@ -381,24 +381,6 @@ Section goose_lang.
       iExists _; iFrame.
   Qed.
 
-  (* we're not how to prove this spec, but see below for correct version *)
-  Theorem wpc_BufTxn__CommitWait_BAD {l γ dinit γtxn} P0 P `{!Liftable P} klevel :
-    N ## invariant.walN →
-    N ## invN →
-    N ## mspec.wpwpcN ->
-    {{{ "Hbuftxn" ∷ is_buftxn N l γ dinit γtxn P0 ∗
-        "HP" ∷ P (buftxn_maps_to γtxn)
-    }}}
-      BufTxn__CommitWait #l #true @ S klevel; ⊤
-    {{{ (ok:bool), RET #ok;
-        if ok then
-            P (λ a v, durable_mapsto_own γ a v)
-        else P0 (λ a v, durable_mapsto_own γ a v) }}}
-    {{{ P0 (durable_mapsto γ) ∨
-         P (durable_mapsto γ) }}}.
-  Proof.
-  Admitted.
-
   Theorem wpc_BufTxn__CommitWait {l γ γ' dinit γtxn} P0 P `{!Liftable P} klevel :
     N ## invariant.walN →
     N ## invN →
