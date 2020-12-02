@@ -24,9 +24,9 @@ Section goose_lang.
   (* NOTE(tej): we're combining the durable part with the resources into one
   definition here, unlike in lower layers (they should be fixed) *)
   Definition is_txn_durable γ dinit logm : iProp Σ :=
-    is_txn_durable γ.(buftxn_txn_names) dinit ∗
-    txn_resources γ.(buftxn_txn_names) logm ∗
-    async_ctx γ.(buftxn_async_name) 1 logm.
+    "Hlower_durable" ∷ is_txn_durable γ.(buftxn_txn_names) dinit ∗
+    "Hlower_res" ∷ txn_resources γ.(buftxn_txn_names) logm ∗
+    "Hasync_ctx" ∷ async_ctx γ.(buftxn_async_name) 1 logm.
 
   Definition txn_cfupd_cancel dinit k γ' : iProp Σ :=
     (<disc> (|C={⊤}_k=>
@@ -45,6 +45,24 @@ Section goose_lang.
     {{{ ∃ γ' logm', ⌜ γ'.(buftxn_txn_names).(txn_kinds) = γ.(buftxn_txn_names).(txn_kinds) ⌝ ∗
                    is_txn_durable γ' dinit logm' }}}.
   Proof.
+    iIntros (Φ Φc) "H HΦ".
+    rewrite /is_txn_durable.
+    iNamed "H".
+    iApply wpc_cfupd.
+    iApply wpc_ncfupd.
+    wpc_apply (recovery_proof.wpc_MkTxn with "[$Hlower_durable $Hlower_res]").
+    iSplit.
+    - iLeft in "HΦ". iModIntro.
+      iIntros "H". iDestruct "H" as (?? Heq) "(Hlower_durable&Hlower_res)".
+      iMod (async_ctx_init logm') as (γasync') "Hasync_ctx'".
+      iIntros "HC !>".
+      iApply "HΦ".
+      iExists {| buftxn_txn_names := γ'; buftxn_async_name := γasync' |}, _.
+      iFrame "Hlower_durable Hlower_res Hasync_ctx'".
+      eauto.
+    - iNext. iIntros (l) "H".
+      iRight in "HΦ".
+      simpl.
   Admitted.
 
 End goose_lang.

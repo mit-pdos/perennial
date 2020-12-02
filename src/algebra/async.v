@@ -1,5 +1,6 @@
 From stdpp Require Import countable.
-From iris.algebra Require Import mlist gmap_view.
+From iris.algebra Require Import gmap_view.
+From Perennial.algebra Require Import mlist.
 From iris.base_logic Require Import lib.iprop.
 From iris.bi Require Import lib.fractional.
 From iris.proofmode Require Import tactics.
@@ -71,6 +72,9 @@ Global Instance ephemeral_val_from_discretizable γ i k v: Discretizable (epheme
 Proof. apply _. Qed.
 
 Global Instance ephemeral_txn_val_range_discretizable γ lo hi k v: Discretizable (ephemeral_txn_val_range γ lo hi k v).
+Proof. apply _. Qed.
+
+Global Instance async_ctx_discretizable γ q l: Discretizable (async_ctx γ q l).
 Proof. apply _. Qed.
 
 Lemma own_last_frag_conflict γ k i1 i2 :
