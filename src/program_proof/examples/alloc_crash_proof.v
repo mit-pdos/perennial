@@ -493,7 +493,8 @@ Theorem reserved_block_weaken γ n k R R' :
   reserved_block γ n k R'.
 Proof.
   iIntros "#HR' #Hwand"; iNamed 1.
-  iFrame. by iApply (na_crash_inv_weaken with "HR' [$]").
+  iFrame. iApply (na_crash_inv_weaken with "HR' []"); auto.
+  iModIntro. iIntros "H". iModIntro. iNext. by iApply "Hwand".
 Qed.
 
 Lemma free_big_sepS_to_all σ (Φ: u64 → iProp Σ):
@@ -523,7 +524,7 @@ Proof.
   destruct x.
   - iMod (na_crash_inv_alloc _ E (block_cinv γ k) (Ψ k) with "[$] []") as
         "(Hbund&Hpend)".
-    { iIntros "!> !> H". iLeft. eauto. }
+    { iIntros "!> H !>". iLeft. eauto. }
     iFrame.
     rewrite /free_block_pending.
     iModIntro. iModIntro. iMod "Hpend" as ">$". iModIntro. iModIntro. done.
@@ -531,7 +532,7 @@ Proof.
   - (* TODO: should they all be in the same na_crash_inv? *)
     iMod (na_crash_inv_alloc _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as
         "(Hbund&Hpend)".
-    { iIntros "!> !> H". iRight. eauto. }
+    { iIntros "!> H !>". iRight. eauto. }
     iModIntro. iFrame. iModIntro. iMod "Hpend" as ">Hpend".
     iModIntro. iFrame. eauto.
 Qed.
@@ -826,7 +827,9 @@ Proof.
     { iFrame. iExists _. eauto. }
     iApply (wpc_strong_mono with "H"); eauto.
     iSplit.
-    * iIntros (?) "(Hclose&HR&Hprep&Hcinv)". iModIntro. iFrame. iFrame "#".
+    * iIntros (?) "(Hclose&HR&Hprep&#Hcinv)". iModIntro. iFrame. iFrame "#".
+      iSplitL "".
+      { iModIntro. iIntros "HR !>"; iNext; by iApply "Hcinv". }
       iIntros. iApply "Hclose". iSplitR "Hprep".
       ** by iFrame.
       ** iIntros. eauto.

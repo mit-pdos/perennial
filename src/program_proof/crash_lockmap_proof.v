@@ -27,7 +27,7 @@ Section proof.
     Locked ghs addr.
 
   Theorem wpc_MkLockMap k covered (P Pcrash : u64 -> iProp Σ) :
-    {{{ [∗ set] a ∈ covered, P a ∗ □ (P a -∗ Pcrash a) }}}
+    {{{ [∗ set] a ∈ covered, P a ∗ □ (▷ P a -∗ |C={⊤}_k=> ▷ Pcrash a) }}}
       MkLockMap #() @ NotStuck; (S k); ⊤
     {{{ l ghs, RET #l; is_crash_lockMap (S k) l ghs covered P Pcrash ∗
                        <disc> (|C={⊤}_(S k)=> [∗ set] a ∈ covered, ▷ Pcrash a) }}}

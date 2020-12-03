@@ -118,7 +118,7 @@ Section goose.
                              (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)%I
                              (∃ σ, "Hclkinv" ∷ rblock_cinv addr σ ∗ "HP" ∷ P σ)%I
             with "Hfree_lock [] [Hlinv HP]") as "(Hlk&$)".
-    { iIntros "!>"; iNamed 1.
+    { iIntros "!> H !> !>". iNamed "H".
       iExists _; iFrame.
       iApply rblock_linv_to_cinv; iFrame. }
     { eauto with iFrame. }

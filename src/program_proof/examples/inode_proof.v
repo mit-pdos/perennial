@@ -192,7 +192,7 @@ Proof.
                            (∃ σ, "Hlockinv" ∷ inode_linv l addr σ ∗ "HP" ∷ P σ)%I
                            (∃ σ, "Hlockcinv" ∷ inode_cinv addr σ ∗ "HP" ∷ P σ)%I
             with "Hfree_lock [] [Hlockinv HP]") as "[His_lock $]".
-  { iIntros "!> Hlock"; iNamed "Hlock".
+  { iIntros "!> Hlock !> !>"; iNamed "Hlock".
     iExists _; iFrame.
     iApply inode_linv_to_cinv; auto. }
   { eauto with iFrame. }

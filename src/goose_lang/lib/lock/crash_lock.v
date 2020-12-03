@@ -69,7 +69,7 @@ Section proof.
 
   Lemma alloc_crash_lock_cfupd {lk} k' (R Rcrash : iProp Σ):
     is_free_lock lk -∗
-    □ (R -∗ Rcrash) -∗
+    □ (▷ R -∗ |C={⊤}_k'=> ▷ Rcrash) -∗
     ▷ R ={⊤}=∗
     is_crash_lock (S k') #lk R Rcrash ∗
     <disc> |C={⊤}_(S k')=> ▷ Rcrash.
@@ -85,7 +85,7 @@ Section proof.
 
   Lemma alloc_crash_lock k k' Φ Φc e lk (R Rcrash : iProp Σ):
     (k' < k)%nat →
-    □ (R -∗ Rcrash) ∗
+    □ (▷ R -∗ |C={⊤}_k'=> ▷ Rcrash) ∗
     ▷ R ∗
     is_free_lock lk ∗
     (is_crash_lock (S k') #lk R Rcrash -∗

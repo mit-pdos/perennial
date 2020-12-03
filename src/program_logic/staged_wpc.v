@@ -128,7 +128,7 @@ Lemma wpc_staged_inv_open_aux' γ s k k' k'' k0post j jpost E1 E1' e Φ Φc {HL:
   NC q ∗
   staged_value_later (S k') k'' j E1' E1 γ
                (wpc_no_fupd NotStuck k'' (S j) E1 e
-                   (λ v, ▷ Q v ∗ ▷ □ (Q v -∗ P) ∗ (staged_value (S k') k0post jpost E1' γ
+                   (λ v, ▷ Q v ∗ □ (▷ Q v -∗ |C={E1'}_k0post=> ▷ P) ∗ (staged_value (S k') k0post jpost E1' γ
                                                                 (Q v) True (P) -∗ <disc> Φc ∧ Φ v))%I
                    (Φc ∗ ▷ P))
                 Φc
@@ -142,7 +142,7 @@ Proof.
     iDestruct (NC_split with "HNC") as "(HNC1&HNC2)".
     iPoseProof (staged_inv_later_open' E1 _ _ _ _ _ _ _ _ _ (NC (q/2)) True%I
                                        (wpc_no_fupd NotStuck k'' _ E1 e
-                                                    (λ v0, ▷ Q v0 ∗ ▷ □ (Q v0 -∗ P)
+                                                    (λ v0, ▷ Q v0 ∗  □ (▷ Q v0 -∗ |C={E1'}_k0post=> ▷ P)
                                                              ∗ (staged_value (S k') _ _ E1' γ (Q v0) True P
                                                                              -∗ <disc> Φc ∧ Φ v0))%I
                                                     (Φc ∗ ▷ P)%I)
@@ -159,7 +159,10 @@ Proof.
       iPoseProof (staged_inv_open_modify_ae E1 _ _ k0post j jpost _ _ _ _ _ (Q v) True%I (NC (q/2))
                   with "Hval [HQ]") as "H"; try lia.
       { iIntros ">$". iModIntro. iFrame. iModIntro.
-        iIntros "HQ HC". iModIntro. iSplitR ""; last done. iNext. by iApply "HQP". }
+        iIntros "HQ HC".
+        iSpecialize ("HQP" with "[$] [$]").
+        iMod (fupd_level_split_level with "HQP"); first lia.
+        iModIntro. iSplitR ""; last done. iNext. eauto. }
       iMod (fupd_level_fupd with "H") as "[(H&Hval)|Hcrash]"; last first.
       { iDestruct "Hcrash" as "(_&HC)". iDestruct (NC_C with "[$] [$]") as "[]". }
       iModIntro. iDestruct (NC_join with "[$]") as "$".
@@ -193,7 +196,7 @@ Proof.
   iDestruct (NC_split with "HNC") as "(HNC1&HNC2)".
   iPoseProof (staged_inv_later_open' E1 _ _ _ _ _ _ _ _ _ (NC (q0/2)) True%I
                                        (wpc_no_fupd NotStuck k'' _ E1 e
-                                                    (λ v0, ▷ Q v0 ∗ ▷ □ (Q v0 -∗ P)
+                                                    (λ v0, ▷ Q v0 ∗ □ (▷ Q v0 -∗ |C={E1'}__=> ▷ P)
                                                              ∗ (staged_value (S k') _ _ E1' γ (Q v0) True P
                                                                              -∗ <disc> Φc ∧ Φ v0))%I
                                                     (Φc ∗ ▷ P))
@@ -270,18 +273,19 @@ Lemma wpc_staged_inv_open' γ s k k' k'' k2 mj E1 E1' e Φ Φc {HL: AbsLaterable
   k'' ≤ (S k) →
   (S k) ≤ k' →
   k2 ≤ k' →
+  k'' ≤ k2 →
   staged_value (S k') k2 mj E1' γ Q Qrest P ∗
   (<disc> Φc ∧
   (▷ Q -∗
    WPC e @ NotStuck; k''; E1
       {{λ v, ▷ Qnew v ∗
-             ▷ □ (Qnew v -∗ P) ∗
+             □ (▷ Qnew v -∗ |C={E1'}_k2=> ▷ P) ∗
             (staged_value (S k') k2 mj E1' γ (Qnew v) True P -∗  (<disc> Φc ∧ Φ v))}}
       {{ Φc ∗ ▷ P }}))
   ⊢
   WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (?????) "(Hval&Hwp)".
+  iIntros (??????) "(Hval&Hwp)".
   rewrite wpc_unfold.
   iIntros (j').
   destruct (to_val e) as [v|] eqn:Hval.
@@ -314,7 +318,9 @@ Proof.
                   with "Hclo' [HQ]") as "H"; try auto.
       {
         iIntros ">$". iFrame. iModIntro. iIntros "!> HQ HC".
-        iModIntro. iSplitR ""; last done. by iApply "HQP".
+        iSpecialize ("HQP" with "[$] [$]").
+        iMod (fupd_level_split_level with "HQP"); first lia. iFrame.
+        iModIntro. eauto.
       }
       iMod (fupd_level_fupd with "H") as "[(H&Hclo')|Hcrash]"; last first.
       {

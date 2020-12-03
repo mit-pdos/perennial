@@ -19,7 +19,7 @@ Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
 Definition na_crash_inv_def k Q P :=
-  (∃ γ Q0 Qr, staged_value k O O ⊤ γ Q0 Qr P ∗ (Q0 -∗ Q) ∗ ▷ □ (Q -∗ P))%I.
+  (∃ γ Q0 Qr, staged_value k (pred k) O ⊤ γ Q0 Qr P ∗ (Q0 -∗ Q) ∗  □ (▷ Q -∗ |C={⊤}_(pred k)=> ▷ P))%I.
 Definition na_crash_inv_aux : seal (@na_crash_inv_def). by eexists. Qed.
 Definition na_crash_inv := (na_crash_inv_aux).(unseal).
 Definition na_crash_inv_eq := (na_crash_inv_aux).(seal_eq).
@@ -30,28 +30,28 @@ Ltac crash_unseal :=
   rewrite /na_crash_inv_def.
 
 Lemma na_crash_inv_alloc k E P Q:
-  ▷ Q -∗ ▷ □ (Q -∗ P) -∗ |(S k)={E}=> na_crash_inv (S k) Q P ∗ <disc> |C={⊤}_(S k)=> ▷ P.
+  ▷ Q -∗ □ (▷ Q -∗ |C={⊤}_k=> ▷ P) -∗ |(S k)={E}=> na_crash_inv (S k) Q P ∗ <disc> |C={⊤}_(S k)=> ▷ P.
 Proof.
   crash_unseal.
   iIntros "HQ #HQP".
   iMod (staged_inv_alloc (k) E ⊤
                          P Q True%I with "[HQ]") as (i') "(#Hinv&Hval&Hpend)".
-  { iFrame "#". iFrame. iModIntro; iIntros; eauto. iSplitL; last done.
-    iApply "HQP"; eauto. }
+  { iFrame "#". iFrame. iModIntro; iIntros; eauto.
+    iMod ("HQP" with "[$]"); eauto. }
   iModIntro.
   iSplitL "Hval".
-  { iExists _, Q, _. iFrame. iFrame "#". auto. }
+  { iExists _, Q, _. iFrame. iFrame "#". simpl. iFrame. auto. }
   iApply (staged_inv_init_cfupd' with "[Hpend]"); eauto.
 Qed.
 
 Lemma na_crash_inv_status_wand k Q P:
   na_crash_inv k Q P -∗
-  ▷ □ (Q -∗ P).
+  □ (▷ Q -∗ |C={⊤}_(pred k)=> ▷ P).
 Proof. crash_unseal. iDestruct 1 as (???) "(?&?&$)". Qed.
 
 Lemma na_crash_inv_weaken k Q Q' P :
   (Q -∗ Q') -∗
-  ▷ □(Q' -∗ P) -∗
+  □(▷ Q' -∗ |C={⊤}_(pred k)=> ▷ P) -∗
   na_crash_inv k Q P -∗
   na_crash_inv k Q' P.
 Proof.
@@ -69,7 +69,8 @@ Lemma wpc_na_crash_inv_open_modify Qnew s k k' k'' E1 e Φ Φc {HL: AbsLaterable
   na_crash_inv (S k') Q P -∗
   (<disc> Φc ∧ (▷ Q -∗ WPC e @ k''; E1
                     {{λ v, ▷ Qnew v ∗
-                           ▷ □ (Qnew v -∗ P)  ∗ (na_crash_inv (S k') (Qnew v) P -∗ (<disc> Φc ∧ Φ v))}}
+                           □ (▷ Qnew v -∗ |C={⊤}_k'=> ▷ P)
+                           ∗ (na_crash_inv (S k') (Qnew v) P -∗ (<disc> Φc ∧ Φ v))}}
                     {{ Φc ∗ ▷ P }})) -∗
   WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}.
 Proof.
@@ -78,7 +79,6 @@ Proof.
   iDestruct "Hbundle" as (???) "(Hval&HQ0&HQP)".
   unshelve (iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ Qnew _ with "[-]"); try iFrame "Hval"; eauto).
   { apply _. }
-  { lia. }
   iSplit.
   { iDestruct "Hwp" as "($&_)". }
   iDestruct "Hwp" as "(_&Hwp)". iIntros "HQ".

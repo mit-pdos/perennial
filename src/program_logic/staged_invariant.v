@@ -195,15 +195,15 @@ Proof.
 Qed.
 
 Lemma staged_inv_alloc k E E' P Q Qr:
-  ▷ Q ∗ □ (C -∗ ▷ Q -∗ ▷ P ∗ ▷ Qr) -∗ |(S k)={E}=>
-  ∃ γ, staged_inv (S k) E' γ P ∗ staged_value (S k) O O E' γ Q Qr P ∗ staged_pending 1%Qp γ.
+  ▷ Q ∗ □ (▷ Q -∗ |C={E'}_k=> ▷ P ∗ ▷ Qr) -∗ |(S k)={E}=>
+  ∃ γ, staged_inv (S k) E' γ P ∗ staged_value (S k) k O E' γ Q Qr P ∗ staged_pending 1%Qp γ.
 Proof.
   iMod (pending_alloc) as (γp) "Hp".
   iMod (pending_alloc) as (γcancel) "Hc".
   iMod (pending_alloc) as (γr) "Hr".
   iIntros "(HQ&HQP)".
   rewrite uPred_fupd_level_eq.
-  iPoseProof (ae_inv_alloc' O (Some O) E
+  iPoseProof (ae_inv_alloc' k (Some O) E
         (((Q ∨ ((Qr ∨ staged_done γr) ∗ C ∗ (P ∨ staged_done γp))) ∨ staged_done γcancel))%I
         with "[HQ]") as "H".
   { repeat iLeft. auto. }
@@ -224,7 +224,9 @@ Proof.
     { iIntros "[HQ|>Hfalse]"; last first.
       { iDestruct (pending_done with "Hc1 [$]") as %[]. }
       iDestruct "HQ" as "[HQ|H]".
-      { iDestruct ("HQP" with "[$] [$]") as "($&HQr)".
+      {
+        iSpecialize ("HQP" with "[$] [$]").
+        iMod (fupd_level_split_level with "HQP") as "($&HQr)"; first lia.
         iMod (pending_upd_done with "Hpend") as "#Hdone".
         iModIntro. iFrame "Hc1". iLeft. iRight. iFrame "# ∗".
       }
