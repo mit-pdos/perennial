@@ -25,13 +25,12 @@ Section goose_lang.
   definition here, unlike in lower layers (they should be fixed) *)
   Definition is_txn_durable γ dinit logm : iProp Σ :=
     "Hlower_durable" ∷ is_txn_durable γ.(buftxn_txn_names) dinit ∗
-    "Hlower_res" ∷ txn_resources γ.(buftxn_txn_names) logm ∗
+    "Hlogm" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (3/4) logm ∗
     "Hasync_ctx" ∷ async_ctx γ.(buftxn_async_name) 1 logm.
 
   Definition txn_cfupd_cancel dinit k γ' : iProp Σ :=
-    (<disc> (|C={⊤}_k=>
+    (<bdisc> (|C={⊤}_k=>
               ∃ logm', is_txn_durable γ' dinit logm' )).
-
 
 
   Theorem wpc_MkTxn (d:loc) γ dinit logm k :
@@ -50,19 +49,22 @@ Section goose_lang.
     iNamed "H".
     iApply wpc_cfupd.
     iApply wpc_ncfupd.
-    wpc_apply (recovery_proof.wpc_MkTxn with "[$Hlower_durable $Hlower_res]").
+    wpc_apply (recovery_proof.wpc_MkTxn ⊤ with "[$Hlower_durable]").
     3: {
       iSplit.
       - iLeft in "HΦ". iModIntro.
-        iIntros "H". iDestruct "H" as (?? Heq) "(Hlower_durable&Hlower_res&Hg)".
+        iIntros "H". iDestruct "H" as (?? Heq) "(Hlower_durable&[%Heq2|Hres])".
+        { rewrite Heq2. iModIntro. iApply "HΦ". iExists γ, _. iFrame. eauto. }
         iMod (async_ctx_init logm') as (γasync') "Hasync_ctx'".
         iIntros "HC !>".
         iApply "HΦ".
         iExists {| buftxn_txn_names := γ'; buftxn_async_name := γasync' |}, _.
-        iFrame "Hlower_durable Hlower_res Hasync_ctx'".
-        eauto.
+        iFrame "Hlower_durable  Hasync_ctx'".
+        iClear "Hlogm".
+        iNamed "Hres". iFrame. eauto.
       - iNext. iIntros (γ' l) "(#Histxn&Hcancel&Hmapstos)".
         iRight in "HΦ".
+        rewrite /txn_cfupd_res.
         (* XXX *)
         iModIntro. iApply "HΦ".
         admit.

@@ -316,14 +316,14 @@ Implicit Types P : iProp Σ.
   Lemma ncinv_cinv_alloc' N E1 E2 P Pcrash Prec :
     ↑N ⊆ E2 →
     □ (▷ P -∗ (C -∗ |0={E2 ∖ ↑N}=> ▷ Pcrash ∗ ▷ Prec)) -∗
-    ▷ P ={E1}=∗ ncinv N P ∗ (<bdisc> (C -∗ |0={E2}=> ▷ Prec)) ∗ (C -∗ |0={E2}=> ▷ Pcrash).
+    ▷ P ={E1}=∗ ncinv N P ∗ (<bdisc> (C -∗ |0={E2}=> ▷ Prec)) ∗ (<bdisc> (C -∗ |0={E2}=> ▷ Pcrash)).
   Proof using stagedG0.
     iIntros (?) "#Hwand HP".
     iMod (pending_alloc) as (γ) "Hpending".
     iMod (ncinv_cinv_alloc N E1 E2 P (staged_done γ ∨ Pcrash)%I Prec with "[] HP") as "($&$&#H)".
     { auto. }
     { iIntros "!> HP HC". iMod ("Hwand" with "[$] [$]") as "($&$)"; eauto. }
-    iIntros "!> HC". iMod ("H" with "[$]") as "Hinv".
+    iIntros "!> !> HC". iMod ("H" with "[$]") as "Hinv".
     iInv "Hinv" as "HPcrash" "Hclo".
     iDestruct "HPcrash" as "[>Hfalse|$]".
     { iDestruct (pending_done with "[$] [$]") as %[]. }
