@@ -168,7 +168,7 @@ Definition is_kvserver (srv_ptr sv_ptr:loc) γ : iProp Σ :=
   "#Hlinv" ∷ is_RPCServer γ.(ks_rpcGN) ∗
   "#Hmu_ptr" ∷ readonly(sv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr) ∗
   "#Hmu" ∷ is_crash_lock mutexN 37 #mu_ptr (KVServer_mutex_inv srv_ptr sv_ptr γ)
-    (|={⊤}=> KVServer_mutex_cinv γ)
+    (|={⊤}=> KVServer_mutex_cinv γ) (* FIXME(RJ): we should be able to get rid of the fupd here now *)
 .
 
 Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
