@@ -412,6 +412,46 @@ Proof.
   - iSplit; first auto. iModIntro. iIntros "H". by iModIntro.
 Qed.
 
+Lemma big_sepS_impl_cfupd `{Countable A} (Φ Ψ: A -> iProp Σ) (s : gset A) E k :
+  ([∗ set] a∈s, Φ a) -∗
+  □ (∀ x, ⌜x ∈ s⌝ -∗ Φ x -∗ |C={E}_k=> Ψ x)
+  -∗ |C={E}_k=>
+  ([∗ set] a∈s, Ψ a).
+Proof.
+  iIntros "H #Hupd".
+  iInduction s as [|x X ? s] "IH" using set_ind_L.
+  { iModIntro. iApply big_sepS_empty. done. }
+  repeat rewrite -> big_sepS_union by set_solver.
+  iDestruct "H" as "[Hx H]".
+  iMod ("IH" with "[Hupd] H") as "H".
+  { iModIntro. iIntros (y Hy). iApply "Hupd". iPureIntro. set_solver. }
+  rewrite !big_sepS_singleton.
+  iMod ("Hupd" with "[] Hx") as "Hx".
+  { iPureIntro. set_solver. }
+  iModIntro.
+  iFrame.
+Qed.
+
+Lemma big_sepM_impl_cfupd `{Countable A} {V} (Φ Ψ: A -> V -> iProp Σ) (m : gmap A V) E k :
+  ([∗ map] a↦v∈m, Φ a v) -∗
+  □ (∀ a x, ⌜m !! a = Some x⌝ -∗ Φ a x -∗ |C={E}_k=> Ψ a x)
+  -∗ |C={E}_k=>
+  ([∗ map] a↦v∈m, Ψ a v).
+Proof.
+  iIntros "H #Hupd".
+  iInduction m as [|x m] "IH" using map_ind.
+  { iModIntro. iApply big_sepM_empty. done. }
+  repeat rewrite -> big_sepM_insert by eauto.
+  iDestruct "H" as "[Hx H]".
+  iMod ("IH" with "[Hupd] H") as "H".
+  { iModIntro. iIntros (a y Hy). iApply "Hupd". iPureIntro.
+    rewrite lookup_insert_ne; eauto. intro Hx; subst; congruence. }
+  iMod ("Hupd" with "[] Hx") as "Hx".
+  { iPureIntro. rewrite lookup_insert. done. }
+  iModIntro.
+  iFrame.
+Qed.
+
 (*
 Lemma cfupd_big_sepS `{Countable A} (σ: gset A)(P: A → iProp Σ) k E1  :
   ([∗ set] a ∈ σ, |C={E1, ∅}_(LVL k)=> P a) -∗

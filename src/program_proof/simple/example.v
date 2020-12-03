@@ -66,36 +66,73 @@ Qed.
 Theorem wpc_RecoverExample γ γsrc (d : loc) dinit logm :
   {{{
     is_txn_durable γ dinit logm ∗
-    inv N (is_source P γsrc)
+    inv N (is_source P γsrc) ∗
+    [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a
   }}}
     RecoverExample #d @ 10; ⊤
   {{{ RET #(); True }}}
-  {{{ True }}}.
+  {{{
+    ∃ γ' logm',
+    is_txn_durable γ' dinit logm' ∗
+    [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a
+  }}}.
 Proof.
-  iIntros (Φ Φc) "(Htxndurable & #Hsrc) HΦ".
+  iIntros (Φ Φc) "(Htxndurable & #Hsrc & Hstable) HΦ".
   rewrite /RecoverExample.
   wpc_pures.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc".
+    iExists _, _. iFrame. }
 
+  iApply wpc_cfupd.
   wpc_apply (wpc_MkTxn with "Htxndurable").
 
   iSplit.
   { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
     iDestruct "H" as (γ' logm') "(%Hkinds & Htxndurable)".
-    iApply "HΦc". done. }
+    iMod (big_sepS_impl_cfupd with "Hstable []") as "Hcrash".
+    { iModIntro. iIntros (x Hx) "H".
+      (* XXX wpc_MkTxn needs to give us the exchanger on crash,
+        so that we can use it with [is_inode_stable_crash] *)
+      (*
+      iMod (is_inode_stable_crash with "Htxncrash H") as "H".
+      iModIntro. iExact "H".
+      *)
+      admit.
+    }
+
+    iModIntro.
+    iApply "HΦc".
+    iExists _, _. iFrame.
+  }
 
   iModIntro.
   iIntros (γ' l) "(#Histxn & #Htxnsys & Hcfupdcancel & #Htxncrash)".
 
   wpc_pures.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro.
+    iMod (big_sepS_impl_cfupd with "Hstable []") as "Hcrash".
+    { iModIntro. iIntros (x Hx) "H".
+      iMod (is_inode_stable_crash with "Htxncrash H") as "H".
+      iModIntro. iExact "H". }
+    iModIntro.
+    iApply "HΦc".
+    iExists _, _.
+    iFrame "Hcrash".
+    (* XXX where do i get an [is_txn_durable]? *)
+    admit.
+  }
 
-  wpc_apply (wpc_MkLockMap _ _ (is_inode_stable γsrc γ) (is_inode_stable γsrc γ')).
-  { (* where to get old predicates? probably [Hlmcrash] from below.. *) admit. }
+  wpc_apply (wpc_MkLockMap _ covered_inodes (is_inode_stable γsrc γ) (is_inode_stable γsrc γ') with "[Hstable]").
+  { iApply (big_sepS_impl with "Hstable").
+    iModIntro.
+    iIntros (a Ha) "H". iFrame.
+    iModIntro. iIntros ">Hstable".
+    iMod (is_inode_stable_crash with "Htxncrash Hstable") as "Hstable".
+    iModIntro. done. }
 
   iSplit.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
-    iApply "HΦc". done. }
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H". iModIntro.
+    iApply "HΦc". iExists _, _. admit. }
 
   iModIntro.
   iIntros (lm ghs) "[#Hlm Hlmcrash]".
@@ -103,7 +140,7 @@ Proof.
   iApply wp_wpc_frame'.
   iSplitL "Hlmcrash HΦ".
   { iSplit.
-    { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". done. }
+    { iDestruct "HΦ" as "[HΦc _]". iModIntro. iModIntro. iApply "HΦc". iExists _, _. admit. }
     { iDestruct "HΦ" as "[_ HΦ]". iExact "HΦ". } }
 
   wp_apply wp_allocStruct; first by eauto.
