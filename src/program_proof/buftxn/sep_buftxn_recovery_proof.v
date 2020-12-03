@@ -51,18 +51,24 @@ Section goose_lang.
     iApply wpc_cfupd.
     iApply wpc_ncfupd.
     wpc_apply (recovery_proof.wpc_MkTxn with "[$Hlower_durable $Hlower_res]").
-    iSplit.
-    - iLeft in "HΦ". iModIntro.
-      iIntros "H". iDestruct "H" as (?? Heq) "(Hlower_durable&Hlower_res)".
-      iMod (async_ctx_init logm') as (γasync') "Hasync_ctx'".
-      iIntros "HC !>".
-      iApply "HΦ".
-      iExists {| buftxn_txn_names := γ'; buftxn_async_name := γasync' |}, _.
-      iFrame "Hlower_durable Hlower_res Hasync_ctx'".
-      eauto.
-    - iNext. iIntros (l) "H".
-      iRight in "HΦ".
-      simpl.
+    3: {
+      iSplit.
+      - iLeft in "HΦ". iModIntro.
+        iIntros "H". iDestruct "H" as (?? Heq) "(Hlower_durable&Hlower_res&Hg)".
+        iMod (async_ctx_init logm') as (γasync') "Hasync_ctx'".
+        iIntros "HC !>".
+        iApply "HΦ".
+        iExists {| buftxn_txn_names := γ'; buftxn_async_name := γasync' |}, _.
+        iFrame "Hlower_durable Hlower_res Hasync_ctx'".
+        eauto.
+      - iNext. iIntros (γ' l) "(#Histxn&Hcancel&Hmapstos)".
+        iRight in "HΦ".
+        (* XXX *)
+        iModIntro. iApply "HΦ".
+        admit.
+    }
+    { admit. }
+    { admit. }
   Admitted.
 
 End goose_lang.
