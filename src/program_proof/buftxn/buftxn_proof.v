@@ -12,13 +12,6 @@ From Perennial.program_proof Require Import wal.specs wal.heapspec txn.txn_proof
 From Perennial.program_logic Require Import invariants_mutable.
 From Perennial.program_proof Require wp_to_wpc.
 
-(* an object is the data for a sub-block object, a dynamic bundle of a kind and
-data of the appropriate size *)
-(* NOTE(tej): not necessarily the best name, because it's so general as to be
-meaningless *)
-(* TODO(tej): it would be nice if both of these were records *)
-Notation object := ({K & bufDataT K}).
-Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
 Definition mkVersioned {K:bufDataKind} (c m: bufDataT K) : versioned_object :=
   existT K (c, m).
 

@@ -14,9 +14,13 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
-(* TODO(tej): we don't get these definitions due to not importing the buftxn
-proof; should fix that *)
+(* an object is the data for a sub-block object, a dynamic bundle of a kind and
+data of the appropriate size *)
+(* NOTE(tej): not necessarily the best name, because it's so general as to be
+meaningless *)
+(* TODO(tej): it would be nice if both of these were records *)
 Notation object := ({K & bufDataT K}).
+Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
 
 Section heap.
 Context `{!heapG Σ}.
