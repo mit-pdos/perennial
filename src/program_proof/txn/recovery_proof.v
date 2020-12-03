@@ -53,8 +53,7 @@ Definition is_txn_durable γ dinit : iProp Σ :=
   "His_txn_always" ∷ is_txn_state γ logm crash_heaps.
 
 Definition txn_resources γ logm : iProp Σ :=
-  "Hlogm" ∷ ghost_var γ.(txn_crashstates) (3/4) logm ∗
-  "Hmapsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ a v).
+  "Hlogm" ∷ ghost_var γ.(txn_crashstates) (3/4) logm.
 
 Definition crash_heap_match γ logmap walheap : iProp Σ :=
   ([∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
@@ -249,20 +248,21 @@ Lemma txn_crash_transform dinit (γ γ': txn_names) logm1 logm2 crash_heaps
              is_wal_inner_durable γ'0 σ' dinit ∗ wal_resources γ'0 ∗
              ▷ (wal_heap_inv γ'.(txn_walnames) σ' ∗
                 heapspec_resources γ.(txn_walnames) γ'.(txn_walnames) σ0 σ')) -∗
-  (|C={⊤}_0=> ∃ γ' (logm' : async (gmap addr object)),
-         ⌜γ'.(txn_kinds) = γ.(txn_kinds)⌝ ∗ is_txn_durable γ' dinit ∗ txn_resources γ' logm')%I.
+  (|0={∅}=> ∃ walnames (logm' : async (gmap addr object)),
+         let γ' := (γ'<|txn_walnames;wal_heap_walnames := walnames|>) in
+         ⌜γ'.(txn_kinds) = γ.(txn_kinds)⌝ ∗ is_txn_durable γ' dinit ∗ txn_resources γ' logm' ∗
+         "Hmapsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm'), mapsto_txn γ' a v))%I.
 Proof.
   iNamed 1.
   iDestruct "Hcrash" as (ls1) "HP".
   iDestruct "HP" as (ls2 γ'walnames Hcrashls12) "(Hdur' & Hres' & HP)".
   iNamed "His_txn_always".
+  rewrite /txn_resources.
   iNamed "Hres".
   iDestruct (ghost_var_agree with "Hcrashstates Hlogm") as %->.
 
   rewrite /Prec. iDestruct "HP" as "(>Hheap_inv&Hheap_res)".
   rewrite /is_txn_durable.
-  iIntros "C".
-  iExists (γ'<|txn_walnames;wal_heap_walnames := γ'walnames|>).
 
   rewrite /heapspec_resources.
   iDestruct "Hheap_res" as "(>Hheap_exchanger&>Hlocked_walheap)".
@@ -293,6 +293,7 @@ Proof.
   iMod (crash_heaps_match_heapmatch_latest γ' with "[$Hcrashheapsmatch_new $metaheap $Hcrash_heaps0]") as
      (metam_new) "(metaheap&Heapmatch_new&Hpts)".
 
+  iExists _.
   iExists (async_take (length ls2.(log_state.txns)) logm2).
   iSplitL ""; first eauto.
 
@@ -324,14 +325,29 @@ Proof.
   (* TODO: a bunch of resources are getting dropped on the floor *)
 Qed.
 
-Theorem wpc_MkTxn (d:loc) dinit (γ:txn_names) logm k :
+  Definition txn_cfupd_cancel E dinit k γ' : iProp Σ :=
+    (<bdisc> (|C={E}_k=>
+              ▷ ∃ walnames logm',
+               let γ' := (γ' <| txn_walnames; wal_heap_walnames := walnames |>) in
+               is_txn_durable γ' dinit ∗ txn_resources γ' logm' )).
+
+Definition txn_cfupd_mapstos E γ : iProp Σ :=
+  (<disc> (|C={E}_0=> ∃ (logm : async (gmap addr object)),
+    ("Hmapsto_txns" ∷ ([∗ map] addr↦bufData ∈ latest logm, ∃ γm, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true))))%I.
+
+Theorem wpc_MkTxn E (d:loc) dinit (γ:txn_names) logm k :
+  ↑walN ⊆ E →
+  ↑invN ⊆ E →
   {{{ is_txn_durable γ dinit ∗ txn_resources γ logm }}}
     MkTxn #d @ k; ⊤
-  {{{ (l: loc), RET #l; is_txn l γ dinit ∗ ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ a v)
-      (* cfupd stuff *) }}}
-  {{{ ∃ γ' logm', ⌜ txn_kinds γ' = txn_kinds γ ⌝ ∗ is_txn_durable γ' dinit ∗ txn_resources γ' logm' }}}.
+  {{{ γ' (l: loc), RET #l;
+      is_txn l γ dinit ∗
+      txn_cfupd_cancel E dinit 0 γ' ∗
+      txn_cfupd_mapstos E γ' }}}
+  {{{ ∃ γ' logm', ⌜ txn_kinds γ' = txn_kinds γ ⌝ ∗ is_txn_durable γ' dinit ∗ txn_resources γ' logm'
+      ∗ (⌜ γ' = γ ⌝ ∨ "Hmapsto_txns" ∷ ([∗ map] a↦v ∈ logm'.(latest), mapsto_txn γ' a v)) }}}.
 Proof.
-  iIntros (Φ Φc) "(Hdur&Hres) HΦ".
+  iIntros (?? Φ Φc) "(Hdur&Hres) HΦ".
   rewrite /MkTxn. wpc_pures.
   { crash_case. iExists _, _. iFrame. eauto. }
 
@@ -352,8 +368,9 @@ Proof.
           heapspec_resources γ.(txn_walnames) γ'.(txn_walnames) ls ls')%I).
   set (Pcrash (ls ls' : log_state.t) := (True)%I : iProp Σ).
   iApply wpc_cfupd.
-  wpc_apply (wpc_MkLog_recover dinit P _ _ _ _ Prec Pcrash
+  wpc_apply (wpc_MkLog_recover dinit P (↑walN) _ _ _ _ Prec Pcrash
             with "[] [$His_wal_inner_durable Hwal_res Hwal_heap_inv Hheapspec_init]").
+  - auto.
   - auto.
   - iIntros "!>" (???) ">HP".
     iDestruct "HP" as "[Hinv Hinit]".
@@ -366,11 +383,15 @@ Proof.
   - iSplit.
     { iLeft in "HΦ".
       iModIntro.
-      iIntros "Hcrash".
-      iMod (txn_crash_transform with "[$]") as "Htransform".
+      iIntros "Hcrash HC".
+      iPoseProof (txn_crash_transform with "[$]") as "Htransform".
       { auto. }
+      iDestruct (fupd_level_le _ _ _ k with "Htransform") as "Htransform".
       { lia. }
-      iModIntro. iApply "HΦ". eauto.
+      iMod (fupd_level_mask_mono with "Htransform") as "Htransform"; auto.
+      iModIntro. iApply "HΦ".
+      iDestruct "Htransform" as (???) "(?&?&?)".
+      iExists _, _. iFrame. eauto.
     }
     iNext. iIntros (γ'' l) "(#Hwal & Hwal_cfupd & #Hwal_cinv)".
     iApply wpc_fupd.
@@ -379,14 +400,21 @@ Proof.
     {
       iLeft in "HΦ".
       iModIntro.
-      iMod "Hwal_cfupd".
-      iMod (txn_crash_transform with "[$His_txn_always $Hres $Htxn_init Hwal_cfupd]") as "Htransform".
+      iIntros "HC".
+      iSpecialize ("Hwal_cfupd" with "[$]").
+      iPoseProof (fupd_level_le _ _ _ k with "Hwal_cfupd") as "Hwal_cfupd"; first lia.
+      iMod (fupd_level_mask_mono with "Hwal_cfupd") as "Hwal_cfupd"; auto.
+      iPoseProof (txn_crash_transform with "[$His_txn_always $Hres $Htxn_init Hwal_cfupd]") as "Htransform".
       { auto. }
       { iDestruct "Hwal_cfupd" as (??) "H".
         iExists _, _, _. iFrame.
       }
+      iDestruct (fupd_level_le _ _ _ k with "Htransform") as "Htransform".
       { lia. }
-      iModIntro. iApply "HΦ". eauto.
+      iMod (fupd_level_mask_mono with "Htransform") as "Htransform"; auto.
+      iModIntro. iApply "HΦ".
+      iDestruct "Htransform" as (???) "(?&?&?)".
+      iExists _, _. iFrame. eauto.
     }
     rewrite -wp_fupd.
     wp_apply wp_allocStruct; first by val_ty.
@@ -401,23 +429,65 @@ Proof.
       iExists _, _, _; iFrame. }
     iModIntro.
     iNamed 1.
-    iMod (ncinv_alloc invN _ (is_txn_always γ) with "[His_txn_always]") as "(#Htxn_inv&Hcfupd)".
-    { iNext. iExists _, _; iFrame. }
+    rewrite /wal_cfupd_cancel.
+    iDestruct (own_discrete_laterable with "Hwal_cfupd") as (Pwal_tok) "(HPwal_tok&#HPwal_tok_wand)".
+    iMod (ncinv_cinv_alloc' invN _ E
+            (is_txn_always γ ∗ Pwal_tok ∗ (∃ logm, txn_resources γ logm) ∗ txn_init_ghost_state γ')
+            (∃ logm', ([∗ map] a ↦ v ∈ latest (logm'), mapsto_txn γ' a v))%I
+            (∃ walnames logm',
+                let γ' := (γ'<|txn_walnames;wal_heap_walnames := walnames|>) in
+                is_txn_durable γ' dinit ∗ txn_resources γ' logm')%I
+      with "[] [His_txn_always HPwal_tok Htxn_init Hres]") as "(#Htxn_inv&Hcfupd)".
+    { set_solver. }
+    { iIntros "!> (>H&?&>Hres&>Hinit) #HC".
+      iDestruct "Hres" as (logm') "Hres".
+      iSpecialize ("Hwal_cinv" with "[$]").
+      iMod ("HPwal_tok_wand" with "[$]") as "Hwal_cfupd".
+      iSpecialize ("Hwal_cfupd" with "HC").
+      iDestruct "H" as (??) "H".
+      iMod (fupd_level_mask_mono with "Hwal_cfupd") as "Hwal_cfupd".
+      { solve_ndisj. }
+      iPoseProof (txn_crash_transform _ γ γ' with "[H Hwal_cfupd Hres Hinit]") as "Htransform".
+      { auto. }
+      { iFrame "H Hres Hinit".
+        iDestruct "Hwal_cfupd" as (??) "(?&?&?&?)".
+        iExists _, _, _. iFrame.
+      }
+      iMod (fupd_level_mask_mono with "Htransform") as "Htransform"; auto.
+      { set_solver+. }
+      iModIntro.
+      iDestruct "Htransform" as (???) "(Hdur&Hres&Hmapsto)".
+      iSplitR "Hdur Hres".
+      { iNext. iExists _. iNamed "Hmapsto". iFrame "Hmapsto_txns". }
+      { iNext. iExists _, _. iFrame. }
+    }
+    { iNext. iFrame. iSplitL "His_txn_always".
+      - iExists _, _; iFrame.
+      - iExists _. iFrame. }
+    iDestruct "Hcfupd" as "(Hcfupd_cancel&Hcfupd)".
     iRight in "HΦ".
     iApply "HΦ".
-    iNamed "Hres".
-    iFrame "Hmapsto_txns".
-    rewrite /is_txn.
-    iExists _, _; iFrame "#".
-    iApply (is_wal_alter with "Hwal").
-    do 2 iModIntro. iClear "#".
-    rewrite /P.
-    iIntros (?) "[$ $]".
-    iIntros (?) "$".
+    iSplitL "".
+    {
+      iExists _, _; iFrame "#".
+      iSplitL.
+      - iApply (is_wal_alter with "Hwal").
+        do 2 iModIntro. iClear "#".
+        rewrite /P.
+        iIntros (?) "[$ $]".
+        iIntros (?) "$".
+      -  iApply (ncinv_alter with "Htxn_inv").
+         iIntros "!> !> !> (H&?)".
+         iFrame. eauto.
+    }
+    iModIntro.
+    iFrame "Hcfupd_cancel".
+    rewrite /txn_cfupd_mapstos.
+    admit.
     Unshelve.
     (* XXX: track this down. *)
     exact (U64 0).
     all: fail "goals remaining".
-Qed.
+Admitted.
 
 End goose_lang.
