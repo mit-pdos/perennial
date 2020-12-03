@@ -49,6 +49,8 @@ Section proof.
       iApply cfupd_big_sepS in "Hcfupd".
       rewrite big_sepS_later_2.
       iAssumption. }
+    2: set_solver.
+    2: lia.
     iPoseProof (wp_wpc_step_frame' _ _ _ _ _
                 (([∗ set] a ∈ covered, ▷ Pcrash a) -∗ Φc)%I
                 (∀ (l : loc) (ghs : list (gen_heapG u64 bool Σ)),
