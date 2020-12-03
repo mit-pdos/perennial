@@ -68,7 +68,7 @@ Proof.
   eauto.
 Qed.
 
-(* this is more or less big_sepM_lookup_acc, but with is_installed_read unfolded *)
+(* this is more or less big_sepM_lookup_acc, but with is_installed unfolded *)
 Theorem is_installed_read_lookup {γ d txns installed_lb durable_txn_id} {a} :
   is_Some (d !! a) ->
   is_installed γ d txns installed_lb durable_txn_id -∗
@@ -78,7 +78,6 @@ Theorem is_installed_read_lookup {γ d txns installed_lb durable_txn_id} {a} :
      a d↦ b ∗ ⌜2 + LogSz ≤ a⌝ ∗
      (a d↦ b -∗ is_installed γ d txns installed_lb durable_txn_id).
 Proof.
-  rewrite /is_installed_read.
   iIntros (Hlookup) "Hbs".
   destruct Hlookup as [b0 Hlookup].
   iNamedRestorable "Hbs".

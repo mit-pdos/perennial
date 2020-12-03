@@ -82,18 +82,6 @@ Proof.
   eapply is_txn_bound; eauto.
 Qed.
 
-Ltac iPersist H :=
-  let H' := (eval cbn in (String.append "#" H)) in
-  iDestruct H as H'.
-
-(* TODO(tej): why isn't this true any more? *)
-(*
-Instance is_installed_Durable txns txn_id diskEnd_txn_id installed_txn_id :
-  IntoCrash (is_installed_read dinit txns txn_id diskEnd_txn_id installed_txn_id)
-            (λ _, is_installed_read dinit txns txn_id diskEnd_txn_id installed_txn_id).
-Proof. apply _. Qed.
-*)
-
 Lemma concat_mono {A: Type} (l1 l2: list (list A)):
   incl l1 l2 →
   incl (concat l1) (concat l2).
@@ -810,12 +798,12 @@ Lemma wal_crash_obligation_alt E Prec Pcrash l γ s :
         ▷ P s -∗ |0={E ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
   ▷ P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
-                       (<bdisc> (C -∗ |0={E}=> ∃ s s',
+                       (<bdisc> (|C={E}_0=> ∃ s s',
                                          ⌜relation.denote log_crash s s' tt⌝ ∗
                                          (* NOTE: need to add the ghost state that the logger will need *)
                                          is_wal_inner_durable γ' s' dinit ∗
                                          wal_resources γ' ∗ ▷ Prec s s')) ∗
-                □ (C -∗ |0={E}=> inv (N.@"wal") (∃ s s',
+                □ (|C={E}_0=> inv (N.@"wal") (∃ s s',
                                            ⌜relation.denote log_crash s s' tt⌝ ∗
                                            is_wal_inner_crash γ s ∗
                                            wal_ghost_exchange γ γ' ∗
@@ -1188,9 +1176,6 @@ Proof.
 Qed.
 
 
-(* TODO: adapt this theorem to new generation management (proof still has some
-   useful memlog reconstruction stuff) *)
-
 Theorem wpc_mkLog_recover k (d : loc) γ σ :
   {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ }}}
     mkLog #d @ k; ⊤
@@ -1337,7 +1322,7 @@ Definition wal_cfupd_cancel E k γ' Prec : iProp Σ :=
                                  wal_resources γ' ∗ ▷ Prec s s')).
 
 Definition wal_cinv E γ γ' Pcrash : iProp Σ :=
-  □ (C -∗ |0={E}=> inv (N.@"wal") (∃ s s',
+  □ (|C={E}_0=> inv (N.@"wal") (∃ s s',
                                       ⌜relation.denote log_crash s s' tt⌝ ∗
                                        is_wal_inner_crash γ s ∗
                                        wal_ghost_exchange γ γ' ∗

@@ -1,7 +1,7 @@
 Import EqNotations.
 From Perennial.Helpers Require Import Map.
 From iris.base_logic.lib Require Import mnat.
-From Perennial.algebra Require Import auth_map liftable liftable2 log_heap async.
+From Perennial.algebra Require Import auth_map liftable log_heap async.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
 From Perennial.program_logic Require Export ncinv.
@@ -38,46 +38,6 @@ exchange ephemeral_txn_val γ for ephemeral_txn_val γ' if the transaction id wa
 want to use similar names in this spec *)
 Module mspec := buftxn.buftxn_proof.
 
-(*
-Theorem holds_at_map_ctx `{Countable0: Countable L} {V} `{!mapG Σ L V} (P: (L → V → iProp Σ) → iProp Σ)
-        γ q mq d m :
-  dom _ m = d →
-  map_ctx γ q m -∗
-  HoldsAt P (λ a v, ptsto γ a mq v) d -∗
-  map_ctx γ q m ∗ ([∗ map] a↦v ∈ m, ptsto γ a mq v) ∗
-                PredRestore P m.
-Proof.
-  iIntros (<-) "Hctx HP".
-  iDestruct "HP" as (m') "(%Hdom & Hm & Hmapsto2)"; rewrite /named.
-  iDestruct (map_valid_subset with "Hctx Hm") as %Hsubset.
-  assert (m = m') by eauto using map_subset_dom_eq; subst m'.
-  iFrame.
-Qed.
-*)
-
-Theorem map_update_predicate `{!EqDecision L, !Countable L} {V} `{!mapG Σ L V}
-        (P0 P: (L → V → iProp Σ) → iProp Σ) (γ: gname) mapsto2 d m :
-  map_ctx γ 1 m -∗
-  HoldsAt P0 (λ a v, ptsto_mut γ a 1 v) d -∗
-  HoldsAt P mapsto2 d -∗
-  |==> ∃ m', map_ctx γ 1 m' ∗ HoldsAt P (λ a v, ptsto_mut γ a 1 v ∗ mapsto2 a v) d.
-Proof.
-  iIntros "Hctx HP0 HP".
-  iDestruct (HoldsAt_elim_big_sepM with "HP0") as (m0) "[%Hdom_m0 Hstable]".
-  iDestruct "HP" as (m') "(%Hdom & HPm & HP)"; rewrite /named.
-  iMod (map_update_map m' with "Hctx Hstable") as "[Hctx Hstable]".
-  { congruence. }
-  iModIntro.
-  iExists _; iFrame.
-  iDestruct (big_sepM_sep with "[$Hstable $HPm]") as "Hm".
-  iExists _; iFrame.
-  iPureIntro.
-  congruence.
-Qed.
-
-(* TODO(tej): we don't get these definitions due to not importing the buftxn
-proof; should fix that *)
-Notation object := ({K & bufDataT K}).
 Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
 
 Definition objKind (obj: object): bufDataKind := projT1 obj.

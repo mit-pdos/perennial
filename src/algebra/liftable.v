@@ -40,6 +40,14 @@ Section liftable.
     auto.
   Qed.
 
+  Lemma liftable_restore_elim P `{!Liftable P} mapsto1 `{!Conflicting mapsto1} :
+    P mapsto1 -∗ ∃ m, ([∗ map] a↦v ∈ m, mapsto1 a v) ∗ □PredRestore P m.
+  Proof.
+    iIntros "HP".
+    iDestruct (liftable with "HP") as (m) "[Hm HP]".
+    iExists _; iFrame.
+  Qed.
+
   Theorem liftable_sep P Q : Liftable P → Liftable Q → Liftable (fun h => P h ∗ Q h)%I.
   Proof using BiAffine0 BiPureForall0.
     unfold Liftable in *.

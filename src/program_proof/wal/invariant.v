@@ -448,9 +448,7 @@ Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) 
     is_installed_core γ d txns installed_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed.
 
 (* weakening of [is_installed] at crash time *)
-(* TODO(tej): remove "read" from the name, reading actually uses an accessor
-theorem rather than this weakening *)
-Definition is_installed_read d txns installed_lb diskEnd_txn_id being_installed_end_txn_id : iProp Σ :=
+Definition is_installed_crash d txns installed_lb diskEnd_txn_id being_installed_end_txn_id : iProp Σ :=
   ∃ γ already_installed,
     is_installed_core γ d txns installed_lb diskEnd_txn_id being_installed_end_txn_id already_installed.
 
@@ -614,40 +612,18 @@ Definition installer_inv γ: iProp Σ :=
     "HownInstalledTxnMem_installer" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
 .
 
-Global Instance is_installed_read_Timeless {d txns installed_lb diskEnd_txn_id being_installed_end_txn_id} :
-  Timeless (is_installed_read d txns installed_lb diskEnd_txn_id being_installed_end_txn_id) := _.
+Global Instance is_installed_crash_Timeless {d txns installed_lb diskEnd_txn_id being_installed_end_txn_id} :
+  Timeless (is_installed_crash d txns installed_lb diskEnd_txn_id being_installed_end_txn_id) := _.
 
 (* this illustrates what crashes rely on; at crash time being_installed is
 arbitrary, so we weaken to this *)
-Theorem is_installed_weaken_read γ d txns installed_lb diskEnd_txn_id :
+Theorem is_installed_weaken_crash γ d txns installed_lb diskEnd_txn_id :
   is_installed γ d txns installed_lb diskEnd_txn_id -∗
   ∃ being_installed_end_txn_id,
-    is_installed_read d txns installed_lb being_installed_end_txn_id diskEnd_txn_id.
+    is_installed_crash d txns installed_lb being_installed_end_txn_id diskEnd_txn_id.
 Proof.
-  rewrite /is_installed_read /is_installed.
+  rewrite /is_installed_crash /is_installed.
   iIntros "I". iDestruct "I" as (??) "I". iExists _, _, _. iFrame.
-Qed.
-
-Theorem is_installed_restore_read γ d txns installed_txn_id diskEnd_txn_id being_installed_end_txn_id :
-  fmcounter γ.(being_installed_start_txn_name) (1/2) installed_txn_id -∗
-  ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id -∗
-  ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) -∗
-  txns_are γ (S installed_txn_id) (subslice (S installed_txn_id) (S being_installed_end_txn_id) txns) -∗
-  is_installed_read d txns installed_txn_id being_installed_end_txn_id diskEnd_txn_id -∗
-  is_installed γ d txns installed_txn_id diskEnd_txn_id.
-Proof.
-  iIntros "HownBeingInstalledStartTxn HownBeingInstalledEndTxn Halready_installed Htxns Hinstalled_read".
-  iNamed "Hinstalled_read".
-  iExists _, _.
-  iFrame "Halready_installed HownBeingInstalledStartTxn HownBeingInstalledEndTxn Htxns".
-  iSplit.
-  { iPureIntro. lia. }
-  iApply (big_sepM_mono with "Hdata").
-  iIntros (k x Hkx) "H".
-  iDestruct "H" as (b txn_id') "(% & H & %)".
-  iExists _, txn_id'. iFrame. iSplit; try done.
-  iPureIntro. intuition eauto.
-  set_solver.
 Qed.
 
 Theorem is_wal_read_mem l γ dinit : is_wal l γ dinit -∗ |NC={⊤}=> ▷ is_wal_mem l γ.
@@ -905,15 +881,6 @@ Proof.
   iExists (set shutdown (λ _, shutdown') (set nthread (λ _, nthread') σₗ)); simpl.
   by iFrame "# ∗".
 Qed.
-
-(* TODO: need a replacement in terms of memLog *)
-Theorem wal_linv_load_nextDiskEnd st γ :
-  wal_linv st γ -∗
-    ∃ (x:u64),
-      st ↦[WalogState.S :: "nextDiskEnd"]{1/2} #x ∗
-         (st ↦[WalogState.S :: "nextDiskEnd"]{1/2} #x -∗ wal_linv st γ).
-Proof.
-Abort.
 
 Lemma is_txn_pos_unique txns tid pos pos' :
   is_txn txns tid pos ->
