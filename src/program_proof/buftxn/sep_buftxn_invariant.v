@@ -120,10 +120,8 @@ Section goose_lang.
   Proof. apply _. Qed.
 
   Definition crash_point γ logm crash_txn : iProp Σ :=
-    (* TODO: wrap crash_txn in an agree, give out an exchanger ghost name for
-    it *)
     async_ctx γ.(buftxn_async_name) 1 logm ∗
-    ⌜(length (possible logm) = crash_txn + 1)%nat⌝.
+    ⌜(length (possible logm) >= crash_txn + 1)%nat⌝.
 
   Definition txn_durable_exchanger γ txn_id :=
     heapspec.heapspec_durable_exchanger γ.(buftxn_txn_names).(txn_walnames) txn_id.

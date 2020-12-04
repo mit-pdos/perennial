@@ -1175,6 +1175,16 @@ Proof.
   lia.
 Qed.
 
+Lemma wal_post_crash_durable_lb_length_txns:
+  ∀ σ : log_state.t,
+    wal_post_crash σ →
+    σ.(log_state.durable_lb) = (length σ.(log_state.txns) - 1)%nat.
+Proof.
+  intros σ Hpostcrash.
+  rewrite /wal_post_crash in Hpostcrash.
+  rewrite -Hpostcrash.
+  lia.
+Qed.
 
 Theorem wpc_mkLog_recover k (d : loc) γ σ :
   {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ }}}

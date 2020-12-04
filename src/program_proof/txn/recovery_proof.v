@@ -239,9 +239,11 @@ Definition txn_exchanger (γ γ' : @txn_names Σ) : iProp Σ :=
 Definition txn_resources γ γ' logm : iProp Σ :=
   (∃ logm0 (txn_id : nat),
   "%Hlen_crash_txn" ∷ ⌜ (length (possible logm) = txn_id + 1)%nat ⌝ ∗
+  "%Hlen_compare" ∷ ⌜ (length (possible logm) ≤ length (possible logm0))%nat ⌝ ∗
   "Hlogm" ∷ ghost_var γ'.(txn_crashstates) (3/4) logm ∗
   "Holdlogm" ∷ ghost_var γ.(txn_crashstates) (1/4) logm0 ∗
   "Hmapsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ' a v) ∗
+  "Hdurable" ∷ mnat.mnat_own_lb γ'.(txn_walnames).(heapspec.wal_heap_durable_lb) txn_id ∗
   "Hdurable_exchanger" ∷ heapspec_durable_exchanger γ.(txn_walnames) txn_id)%I.
 
 
@@ -315,12 +317,24 @@ Proof.
       { rewrite take_length. lia. }
       { rewrite take_length. lia. }
     }
+    iSplitL "".
+    { iPureIntro. rewrite /async_take.
+      rewrite possible_list_to_async; last first.
+      { rewrite take_length. lia. }
+      { rewrite take_length. lia. }
+    }
     iCombine "Hpts Hlatest" as "Hpts".
     rewrite -big_sepM_sep.
-    iApply (big_sepM_mono with "Hpts").
-    iIntros (???) "(H1&H2)".
-    iDestruct "H1" as (γm) "(H1a&H1b)".
-    iExists γm. iFrame.
+    iSplitL "Hpts".
+    {
+      iApply (big_sepM_mono with "Hpts").
+      iIntros (???) "(H1&H2)".
+      iDestruct "H1" as (γm) "(H1a&H1b)".
+      iExists γm. iFrame.
+    }
+    iNamed "Hheap_exchange". simpl.
+    rewrite (wal_post_crash_durable_lb_length_txns ls2); first iFrame "#".
+    eapply log_crash_to_post_crash; eauto.
   }
   iExists ls2, _, _. simpl. iFrame "Hheap_inv Hres' Hdur'".
 
@@ -332,7 +346,6 @@ Proof.
   iFrame "# ∗".
   rewrite /log_heap_ctx /=. iEval (rewrite right_id) in "logheap". iFrame "logheap".
   eauto.
-  (* TODO: a bunch of resources are getting dropped on the floor *)
 Qed.
 
   Definition txn_cfupd_cancel E dinit k γ' : iProp Σ :=

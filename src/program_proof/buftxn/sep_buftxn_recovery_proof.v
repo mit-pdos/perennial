@@ -11,9 +11,14 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import disk_prelude.
 
+From RecordUpdate Require Import RecordUpdate.
+Import RecordSetNotations.
+
 Section goose_lang.
   Context `{!buftxnG Σ}.
   Context {N:namespace}.
+  Context (Hdisj1: (↑N : coPset) ## ↑invN).
+  Context (Hdisj2: (↑N : coPset) ## ↑invariant.walN).
 
   Implicit Types (l: loc) (γ: buftxn_names Σ) (γtxn: gname).
   Implicit Types (obj: object).
@@ -49,7 +54,7 @@ Section goose_lang.
     iNamed "H".
     iApply wpc_cfupd.
     iApply wpc_ncfupd.
-    wpc_apply (recovery_proof.wpc_MkTxn ⊤ with "[$Hlower_durable]").
+    wpc_apply (recovery_proof.wpc_MkTxn (↑invariant.walN ∪ ↑invN) with "[$Hlower_durable]").
     3: {
       iSplit.
       - iLeft in "HΦ". iModIntro.
@@ -62,15 +67,77 @@ Section goose_lang.
         iFrame "Hlower_durable  Hasync_ctx'".
         iClear "Hlogm".
         iNamed "Hres". iFrame. eauto.
-      - iNext. iIntros (γ' l) "(#Histxn&Hcancel&Hmapstos)".
+      - iNext. iIntros (γtxn_names' l) "(#Histxn&Hcancel&Hmapstos)".
         iRight in "HΦ".
         rewrite /txn_cfupd_res.
-        (* XXX *)
-        iModIntro. iApply "HΦ".
+        iDestruct (own_discrete_laterable with "Hmapstos") as (Ptxn_tok) "(HPtxn_tok&#HPtxn_tok_wand)".
+        iMod (async_ctx_init (Build_async (∅ : gmap addr object) [])) as (γasync') "Hasync_ctx'".
+        set (γ' := {| buftxn_txn_names := γtxn_names'; buftxn_async_name := γasync' |}).
+        iMod (ncinv_cinv_alloc' N _ ⊤
+                (txn_system_inv γ ∗ async_ctx γasync' 1 {| latest := ∅; pending := [] |} ∗ Ptxn_tok)
+                (sep_txn_exchanger γ γ')
+                (∃ logm', is_txn_durable γ' dinit logm')%I
+          with "[] [Hlogm Hasync_ctx' HPtxn_tok Hasync_ctx]") as "(#Htxn_inv&Hcfupd)".
+        { set_solver. }
+        {
+          iModIntro. iIntros "(>Hinv&>Hctx&HPtxn_tok) HC".
+          iNamed "Hinv".
+          iDestruct ("HPtxn_tok_wand" with "[$]") as ">H".
+          iSpecialize ("H" with "[$]").
+          iMod (fupd_level_mask_mono with "H") as ">H".
+          { set_solver. }
+          iNamed "H".
+          iAssert (|==> async_ctx γasync' 1 logm0 ∗
+                        ([∗ map] k↦v ∈ latest logm0, ephemeral_val_from γasync' (length (possible logm0) - 1) k v)
+                        )%I with "[Hctx]" as ">(Hctx&Hephem)".
+          { admit. }
+          iModIntro.
+          iDestruct (ghost_var_agree with "Holdlogm [$]") as %<-.
+          iSplitL "Hdurable_exchanger Hdurable Hmapsto_txns Hephem H●latest".
+          {
+            iNext. iExists logm1, txn_id. iFrame.
+            iSplitL "".
+            { iPureIntro. lia. }
+            iCombine "Hmapsto_txns Hephem" as "Hpts".
+            rewrite -big_sepM_sep.
+            rewrite /addr_exchangers.
+
+            (* TODO: need to know logm0 and logm1 have the same domain, but
+               where will this ocme from?  if async_ctx maintains that every map
+               has same domain, then we can use the logm0 is a prefix of loogm1
+               (that can be provided by txn_recovery *)
+
+            (* TODO: need to regenerate the old txn vals, but we have the ctx *)
+            assert (dom (gset _) logm1.(latest) = dom (gset _) logm0.(latest)) as Hdom.
+            { admit. }
+            iApply big_sepM_dom. rewrite Hdom. iApply big_sepM_dom.
+            iApply (big_sepM_mono with "Hpts").
+            {
+              iIntros (?? Hlookup) "(Hmapsto&Hval)".
+              iDestruct "Hval" as "(#Hval&Htok)".
+              iSplitL "Hmapsto Htok".
+              { rewrite /token_exchanger.
+                iRight. iSplitL "Htok".
+                { iExactEq "Htok". f_equal. lia. }
+                { iExists _. iFrame. }
+              }
+              iExists _.
+              iSplitR "Hval".
+              { admit. }
+              { iExactEq "Hval". f_equal. lia. }
+            }
+          }
+          rewrite /is_txn_durable.
+          iNext. iExists _. simpl. iFrame "Hctx Hlogm".
+          admit.
+        }
+        {
+        iFrame. iNext. rewrite /txn_system_inv. iExists _. iFrame.
+        }
         admit.
     }
-    { admit. }
-    { admit. }
+    { set_solver+. }
+    { set_solver+. }
   Admitted.
 
 End goose_lang.
