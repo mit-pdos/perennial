@@ -202,11 +202,77 @@ Proof.
       exists (a.1, v); auto.
 Qed.
 
+Lemma lookup_list_to_map K `{Countable K} A (l: list (K * A)) k v :
+  NoDup l.*1 →
+  list_to_map (M:=gmap K A) l !! k = Some v ↔ (k, v) ∈ l.
+Proof.
+  intros.
+  split; eauto using lookup_list_to_map_1, lookup_list_to_map_2.
+Qed.
+
 Definition gh_heapblock0 (bs: list Block) : gmap u64 heap_block :=
   list_to_map (imap (λ (i:nat) b, (U64 (513 + i), HB b [])) bs).
 
 Definition crash_heap0 (bs: list Block) : gmap u64 Block :=
   list_to_map (imap (λ (i:nat) b, (U64 (513 + i), b)) bs).
+
+Lemma fst_imap {A B C} (f: nat → B) (g: A → C) (l: list A) :
+  (imap (λ i x, (f i, g x)) l).*1 = f <$> seq 0 (length l).
+Proof.
+  rewrite fmap_imap.
+  change (λ n, fst ∘ _) with (λ n (_:A), f n).
+  cut (∀ i, imap (λ n _, f (i + n)%nat) l = f <$> seq i (length l)).
+  { intros H; rewrite -H //. }
+  induction l; simpl; auto; intros.
+  replace (i + 0)%nat with i by lia.
+  f_equal.
+  fold (f <$> (seq (S i) (length l))).
+  rewrite -IHl.
+  apply imap_ext; intros; simpl.
+  f_equal.
+  lia.
+Qed.
+
+Lemma disk_index_nodup (bs: list Block) :
+  NoDup (imap (λ (i : nat) (x : Block), (513 + i, x)) bs).*1.
+Proof.
+  rewrite fst_imap.
+  apply NoDup_fmap.
+  - intros i1 i2; lia.
+  - apply NoDup_seq.
+Qed.
+
+Local Hint Resolve  disk_index_nodup : core.
+
+Lemma lookup_init_disk (bs: list Block) (idx: nat) b :
+  513 + Z.of_nat (length bs) < 2^64 →
+  bs !! idx = Some b →
+  list_to_map (M:=gmap _ _) (imap (λ (i0 : nat) (x0 : Block), (513 + i0, x0)) bs) !! int.Z (U64 (513 + idx)) = Some b.
+Proof.
+  intros Hbound Hlookup.
+  pose proof (lookup_lt_Some _ _ _ Hlookup) as Hlt.
+  apply lookup_list_to_map_2; auto.
+  apply elem_of_lookup_imap.
+  exists idx, b; intuition eauto.
+  f_equal.
+  word.
+Qed.
+
+Lemma addr_wf_init:
+  ∀ bs : list Block,
+    513 + length bs < 2 ^ 64
+    → ∀ (idx : nat) (b: Block),
+      bs !! idx = Some b →
+      addr_wf (513 + idx)
+                (list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs)).
+Proof.
+  intros bs Hbound idx b Hlookup.
+  pose proof (lookup_lt_Some _ _ _ Hlookup) as Hlt.
+  rewrite /addr_wf.
+  split; [ word | ].
+  exists b.
+  erewrite lookup_init_disk; eauto.
+Qed.
 
 Lemma wal_heap_inv_init (γwalnames: wal_names) bs :
   513 + Z.of_nat (length bs) < 2^64 →
@@ -267,7 +333,12 @@ Proof.
     apply map_Forall_lookup; intros.
     apply lookup_list_to_map_1 in H.
     apply elem_of_lookup_imap in H as (idx & b & [=] & Hlookup); subst.
-    admit. }
+    split.
+    { eapply addr_wf_init; eauto. }
+    exists 0%nat. split; [ lia | ].
+    rewrite /disk_at_txn_id /=.
+    erewrite lookup_init_disk; eauto.
+  }
   iSplit.
   { iPureIntro.
     apply log_state0_wf. }
@@ -280,7 +351,21 @@ Proof.
   intros.
   simpl.
   rewrite /crash_heap0.
-  admit. (* annoying Z vs u64 difference *)
+  apply option_eq; intros.
+  rewrite !lookup_list_to_map //.
+  { rewrite !elem_of_lookup_imap.
+    split.
+    - destruct 1 as (i & b & [=] & Hlookup); subst.
+      pose proof (lookup_lt_Some _ _ _ Hlookup).
+      exists i, b; split; auto.
+      f_equal.
+      word.
+    - destruct 1 as (i & b & [=] & Hlookup); subst.
+      exists i, b; split; auto.
+      f_equal.
+      word. }
+  rewrite fst_imap.
+  admit. (* coercions hide that there's a u64 conversion - this only has no duplicates because 513 + length bs never overflows *)
 Admitted.
 
 Close Scope Z_scope.
