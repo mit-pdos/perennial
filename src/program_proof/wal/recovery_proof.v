@@ -45,9 +45,11 @@ Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
     "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit) ∗
     "txns_ctx" ∷ txns_ctx γnew [] ∗
     "start_avail" ∷ thread_own γnew.(start_avail_name) Available ∗
-    "start_avail_ctx" ∷ thread_own_ctx γnew.(start_avail_name) True ∗
+    "start_avail_ctx" ∷ thread_own_ctx γnew.(start_avail_name)
+      (start_is γnew.(circ_name) (1 / 2) 0) ∗
     "diskEnd_avail" ∷ thread_own γnew.(diskEnd_avail_name) Available ∗
-    "diskEnd_avail_ctx" ∷ thread_own_ctx γnew.(diskEnd_avail_name) True ∗
+    "diskEnd_avail_ctx" ∷ thread_own_ctx γnew.(diskEnd_avail_name)
+      (diskEnd_is γnew.(circ_name) (1 / 2) 0) ∗
     "cs" ∷ ghost_var γnew.(cs_name) 1 (inhabitant : circΣ.t) ∗
     "txns" ∷ ghost_var γnew.(txns_name) 1 ([] : list (u64 * list update.t))
 .
@@ -220,10 +222,12 @@ Proof.
 Qed.
 
 Lemma alloc_wal_init_ghost_state γ γcirc :
-  ⊢ |==> ∃ γnew, "%Hbase_name" ∷ ⌜γnew.(base_disk_name) = γ.(base_disk_name)⌝ ∗
+  (start_is γcirc (1/2) 0 ∗ diskEnd_is γcirc (1/2) 0) -∗
+  |==> ∃ γnew, "%Hbase_name" ∷ ⌜γnew.(base_disk_name) = γ.(base_disk_name)⌝ ∗
                  "%Hcirc_name" ∷ ⌜γnew.(circ_name) = γcirc⌝ ∗
                  "Hinit" ∷ wal_init_ghost_state γnew.
 Proof.
+  iIntros "(Hstart&HdiskEnd)".
   (* this pos is a nat *)
   iMod (ghost_var_alloc 0%nat) as (installer_pos_name) "Hinstalled_pos".
   iMod (ghost_var_alloc 0%nat) as (installer_txn_id_name) "Hinstalled_txn_id".
@@ -245,8 +249,8 @@ Proof.
   iMod (ghost_var_alloc 0%nat) as (being_installed_end_txn_name) "Hbeing_end".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
   iMod (alist_alloc (@nil (u64 * list update.t))) as (γtxns_ctx_name) "Htxns_ctx".
-  iMod (thread_own_alloc True with "[//]") as (start_avail_name) "(Hstart_avail_ctx&Hstart_avail)".
-  iMod (thread_own_alloc True with "[//]") as (diskEnd_avail_name) "(HdiskEnd_avail_ctx&HdiskEnd_avail)".
+  iMod (thread_own_alloc with "Hstart") as (start_avail_name) "(Hstart_avail_ctx&Hstart_avail)".
+  iMod (thread_own_alloc with "HdiskEnd") as (diskEnd_avail_name) "(HdiskEnd_avail_ctx&HdiskEnd_avail)".
   iMod (ghost_var_alloc (inhabitant : circΣ.t)) as (cs_name) "Hcs".
   iMod (ghost_var_alloc ([] : list (u64 * list update.t))) as (txns_name) "Htxns".
 
@@ -275,23 +279,6 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma alloc_wal_init_ghost_state' γcirc :
-  ⊢ |==> ∃ γbasedisk γnew,
-      "#Hbase_disk" ∷ is_base_disk γnew dinit ∗
-      "%Hbase_name" ∷ ⌜γnew.(base_disk_name) = γbasedisk⌝ ∗
-      "%Hcirc_name" ∷ ⌜γnew.(circ_name) = γcirc⌝ ∗
-      "Hinit" ∷ wal_init_ghost_state γnew.
-Proof.
-  iMod (own_alloc (to_agree dinit)) as (γbasedisk) "H".
-  { done. }
-  iMod (alloc_wal_init_ghost_state (wal_names_dummy <| base_disk_name := γbasedisk |>) γcirc) as (γnew Heq1 Heq2) "?"; iNamed.
-  simpl in Heq1; subst.
-  rewrite /is_base_disk.
-  iModIntro.
-  iExists _, _; iFrame.
-  eauto.
-Qed.
-
 Definition log_state0 bs : log_state.t :=
   {|
     log_state.d := list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs);
@@ -299,6 +286,25 @@ Definition log_state0 bs : log_state.t :=
     log_state.installed_lb := 0;
     log_state.durable_lb := 0
   |}.
+
+Lemma alloc_wal_init_ghost_state' γcirc bs :
+  (start_is γcirc (1/2) 0 ∗ diskEnd_is γcirc (1/2) 0) -∗
+  |==> ∃ γbasedisk γnew,
+      "#Hbase_disk" ∷ is_base_disk γnew (log_state0 bs).(log_state.d) ∗
+      "%Hbase_name" ∷ ⌜γnew.(base_disk_name) = γbasedisk⌝ ∗
+      "%Hcirc_name" ∷ ⌜γnew.(circ_name) = γcirc⌝ ∗
+      "Hinit" ∷ wal_init_ghost_state γnew.
+Proof.
+  iIntros "Hcirc".
+  iMod (own_alloc (to_agree (log_state0 bs).(log_state.d))) as (γbasedisk) "H".
+  { done. }
+  iMod (alloc_wal_init_ghost_state (wal_names_dummy <| base_disk_name := γbasedisk |>) γcirc with "Hcirc") as (γnew Heq1 Heq2) "?"; iNamed.
+  simpl in Heq1; subst.
+  rewrite /is_base_disk.
+  iModIntro.
+  iExists _, _; iFrame.
+  eauto.
+Qed.
 
 Lemma log_state0_wf bs : wal_wf (log_state0 bs).
 Proof.
@@ -341,10 +347,25 @@ Ltac iDestruct_2 H :=
   let pat := eval cbv in ("[" +:+ H +:+ " " +:+ H +:+ "2]") in
   iDestruct H as pat.
 
-Lemma  memLog_linv_pers_core_init γ :
-  0%nat [[γ.(stable_txn_ids_name)]]↦ro () ∗
+Definition memLog_linv_init_ghost_state γ : iProp Σ :=
+  (ghost_var γ.(txns_name) (1 / 2) [(U64 0, [])]
+    ∗ ghost_var γ.(logger_pos_name) (1 / 2) (U64 0)
+    ∗ ghost_var γ.(logger_txn_id_name) (1 / 2) 0%nat
+    ∗ ghost_var γ.(installer_pos_mem_name) (1 / 2) (U64 0)
+    ∗ ghost_var γ.(installer_txn_id_mem_name) (1 / 2) 0%nat
+    ∗ fmcounter γ.(diskEnd_mem_name) (1 / 2) 0%nat
+    ∗ fmcounter γ.(diskEnd_mem_txn_id_name) (1 / 2) 0%nat
+    ∗ ghost_var γ.(installed_pos_mem_name) (1 / 2) (U64 0)
+    ∗ ghost_var γ.(installed_txn_id_mem_name) (1 / 2) 0%nat
+    ∗ map_ctx γ.(stable_txn_ids_name) (1/2) {[0%nat := ()]}).
+
+Definition memLog_linv_init_pers_state γ : iProp Σ :=
+  (0%nat [[γ.(stable_txn_ids_name)]]↦ro () ∗
   txn_pos γ 0 0 ∗
-  fmcounter_lb γ.(being_installed_start_txn_name) 0
+  fmcounter_lb γ.(being_installed_start_txn_name) 0).
+
+Lemma memLog_linv_pers_core_init γ :
+  memLog_linv_init_pers_state γ
   -∗ memLog_linv_pers_core γ
     {| slidingM.log := []; slidingM.start := 0; slidingM.mutable := 0 |} 0 0 0 0
     [(U64 0, [])] 0 0 0 0.
@@ -366,47 +387,49 @@ Proof.
 Qed.
 
 Lemma memLog_linv_nextDiskEnd_txn_id_init γ :
-  ⊢ |==> memLog_linv_nextDiskEnd_txn_id γ 0 0.
+  memLog_linv_init_pers_state γ -∗
+  map_ctx γ.(stable_txn_ids_name) (1/2) {[0%nat := ()]} -∗
+    memLog_linv_nextDiskEnd_txn_id γ 0 0.
 Proof.
-Abort.
+  iIntros "#(?&?&?) Hstable".
+  iExists ({[0%nat:=()]} : gmap nat unit).
+  iFrame "∗ #".
+  iPureIntro.
+  intros txn_id Hlb.
+  apply lookup_singleton_ne.
+  lia.
+Qed.
 
 Lemma memLog_linv_init γ :
-  (0%nat [[γ.(stable_txn_ids_name)]]↦ro () ∗
-  txn_pos γ 0 0 ∗
-  fmcounter_lb γ.(being_installed_start_txn_name) 0) -∗
-  (ghost_var γ.(txns_name) (1 / 2) [(U64 0, [])]
-    ∗ ghost_var γ.(logger_pos_name) (1 / 2) (U64 0)
-      ∗ ghost_var γ.(logger_txn_id_name) (1 / 2) 0%nat
-        ∗ ghost_var γ.(installer_pos_mem_name) (1 / 2) (U64 0)
-          ∗ ghost_var γ.(installer_txn_id_mem_name) (1 / 2) 0%nat
-            ∗ fmcounter γ.(diskEnd_mem_name) (1 / 2) 0%nat
-              ∗ fmcounter γ.(diskEnd_mem_txn_id_name) (1 / 2) 0%nat
-                ∗ ghost_var γ.(installed_pos_mem_name) (1 / 2) (U64 0)
-                  ∗ ghost_var γ.(installed_txn_id_mem_name) (1 / 2) 0%nat)
-  -∗ memLog_linv γ
-    {| slidingM.log := [];
-       slidingM.start := 0;
-       slidingM.mutable := 0; |} 0 0.
+  memLog_linv_init_pers_state γ -∗
+  memLog_linv_init_ghost_state γ -∗
+    memLog_linv γ
+      {| slidingM.log := [];
+         slidingM.start := 0;
+         slidingM.mutable := 0; |} 0 0.
 Proof.
   iIntros "#Hpers Hvars".
-  iDestruct "Hvars" as "(?&?&?&?&?&?&?&?&?)".
+  iDestruct "Hvars" as "(?&?&?&?&?&?&?&?&?&Hstable)".
   rewrite /memLog_linv.
   iExists 0%nat, 0%nat, [(U64 0, [])], (U64 0), 0%nat, (U64 0), 0%nat.
   rewrite /memLog_linv_core /named.
   iDestruct (memLog_linv_pers_core_init with "Hpers") as "$".
   simpl.
   iFrame.
-Abort.
+  iApply (memLog_linv_nextDiskEnd_txn_id_init with "Hpers Hstable").
+Qed.
 
 Lemma wal_linv_durable_init γ :
-(diskEnd_at_least γ.(circ_name) 0
+  (diskEnd_at_least γ.(circ_name) 0
    ∗ thread_own_ctx γ.(diskEnd_avail_name)
        (diskEnd_is γ.(circ_name) (1 / 2) 0))
   ∗ (start_at_least γ.(circ_name) 0
      ∗ thread_own_ctx γ.(start_avail_name) (start_is γ.(circ_name) (1 / 2) 0)) -∗
+  memLog_linv_init_pers_state γ -∗
+  memLog_linv_init_ghost_state γ -∗
   wal_linv_durable γ {| circΣ.upds := []; circΣ.start := U64 0; |}.
 Proof.
-  iIntros "[[#HdiskEnd_lb HdiskEnd_ctx] [#Hstart_lb Hstart_ctx]]".
+  iIntros "[[#HdiskEnd_lb HdiskEnd_ctx] [#Hstart_lb Hstart_ctx]] #HmemLog_pers HmemLog_ghost".
   rewrite /wal_linv_durable.
   iExists {| diskEnd := U64 0;
              locked_diskEnd_txn_id := 0;
@@ -423,7 +446,8 @@ Proof.
     word. }
   rewrite /named.
   iFrame "#∗".
-Abort.
+  iApply (memLog_linv_init with "HmemLog_pers HmemLog_ghost").
+Qed.
 
 (* TODO: dinit needs to have the domain [513, 513 + length bs) (values don't
 matter) *)
@@ -435,7 +459,9 @@ Lemma is_wal_inner_durable_init (bs: list Block) :
 Proof.
   iIntros "[Hlog Hdata]".
   iMod (circular_init with "Hlog") as (γcirc) "(Hcirc & Hcirc_appender & Hstart & Hend)".
-  iMod (alloc_wal_init_ghost_state' γcirc) as (γbasedisk γ) "Hinit". iNamed "Hinit".
+  iDestruct (start_is_to_at_least with "Hstart") as "#Hstart_lb".
+  iDestruct (diskEnd_is_to_at_least with "Hend") as "#Hend_lb".
+  iMod (alloc_wal_init_ghost_state' γcirc bs with "[$Hstart $Hend]") as (γbasedisk γ) "Hinit". iNamed "Hinit".
 
   iNamed "Hinit".
   iMod (map_alloc_ro 0%nat () with "stable_txn_ids") as "[stable_txn_ids #H0stable]".
@@ -445,9 +471,24 @@ Proof.
   iMod (ghost_var_update {| circΣ.upds := []; circΣ.start := U64 0 |} with "cs") as "cs".
   iDestruct_2 "logger_pos".
   iDestruct_2 "logger_txn_id".
+  iDestruct_2 "installer_pos".
+  iDestruct_2 "installer_txn_id".
   iDestruct_2 "txns".
   iDestruct_2 "stable_txn_ids".
+  iDestruct_2 "diskEnd_mem".
+  iDestruct_2 "diskEnd_mem_txn_id".
+  iDestruct_2 "installed_pos_mem".
+  iDestruct_2 "installed_txn_id_mem".
+  iDestruct_2 "installer_pos_mem".
+  iDestruct_2 "installer_txn_id_mem".
+  iDestruct_2 "already_installed".
+  iDestruct_2 "being_installed_start_txn".
+  iDestruct_2 "being_installed_end_txn".
 
+  iMod (fmcounter_get_lb with "being_installed_start_txn")
+    as "[being_installed_start_txn #being_installed_start_txn_lb]".
+  iMod (fmcounter_get_lb with "diskEnd_mem_txn_id")
+    as "[diskEnd_mem_txn_id #diskEnd_mem_txn_id_lb]".
   iMod (alloc_txn_pos (U64 0) [] with "txns_ctx") as "[txns_ctx _]".
   simpl.
 
@@ -456,28 +497,82 @@ Proof.
   iExists γ.
   rewrite /is_wal_inner_durable.
   cbn [log_state.txns log_state0].
+  iPoseProof (txns_ctx_txn_pos _ _ 0 0 with "txns_ctx") as "#Htxn_pos".
+  1: rewrite //.
   iFrame "txns_ctx txns".
-  iSplitL "Hcirc stable_txn_ids cs Hstart Hend".
-  - iSplit; first by eauto using log_state0_wf.
-    iSplit; first by eauto using log_state0_post_crash.
-    rewrite /nextDiskEnd_inv.
-    iSplitL "stable_txn_ids".
-    + iExists _; iFrame.
-      rewrite big_sepM_singleton. iFrame "#".
+  iAssert (memLog_linv_init_ghost_state _) with "[$]" as "HmemLog_ghost".
+  iAssert (is_installed_core_ghost _ _ _ _) with "[$]" as "Hinstalled_ghost".
+
+  iSplitL "Hcirc stable_txn_ids cs
+    HmemLog_ghost start_avail_ctx diskEnd_avail_ctx
+    Hinstalled_ghost Hdata
+    installer_pos2 installer_txn_id2 diskEnd_mem diskEnd_mem_txn_id2".
+  2: {
+    iFrame.
+    iSplitL "logger_pos logger_txn_id".
+    1: iSplitL "logger_pos"; iExists _; iFrame.
+    iExists _, _.
+    iFrame "diskEnd_mem_txn_id_lb ∗".
+    iSplitL "installer_pos"; first by (iExists _; iFrame).
+    iSplitL "installer_txn_id"; first by (iExists _; iFrame).
+    iSplitL "installer_pos_mem"; first by (iExists _; iFrame).
+    iSplitL "installer_txn_id_mem"; iExists _; iFrame.
+  }
+  iSplit; first by eauto using log_state0_wf.
+  iSplit; first by eauto using log_state0_post_crash.
+  rewrite /nextDiskEnd_inv.
+  iSplitL "stable_txn_ids".
+  {
+    iExists _; iFrame.
+    rewrite big_sepM_singleton. iFrame "#".
+    iPureIntro.
+    rewrite /stable_sound.
+    intros.
+    rewrite /is_txn in H1, H2.
+    rewrite -list_lookup_fmap /= in H1.
+    rewrite -list_lookup_fmap /= in H2.
+    apply lookup_lt_Some in H1.
+    apply lookup_lt_Some in H2.
+    simpl in *; lia.
+  }
+  iExists _; iFrame.
+  iSplitL "HmemLog_ghost start_avail_ctx diskEnd_avail_ctx".
+  {
+    iApply (wal_linv_durable_init with "[start_avail_ctx diskEnd_avail_ctx] [] HmemLog_ghost").
+    all: iFrame "∗#".
+  }
+  iExists 0%nat, 0%nat.
+  iSplitL "Hinstalled_ghost Hdata".
+  {
+    iExists _, _.
+    iFrame.
+    iSplit; first by (rewrite /log_state0 /=; iPureIntro; lia).
+    iSplit; first by (rewrite subslice_zero_length; iApply txns_are_nil).
+    iApply (big_sepM_mono (λ a b, a d↦ b)%I).
+    {
+      iIntros (addr b Hb) "?".
+      iExists _, _.
+      iFrame.
       iPureIntro.
-      rewrite /stable_sound.
-      intros.
-      rewrite /is_txn in H1, H2.
-      rewrite -list_lookup_fmap /= in H1.
-      rewrite -list_lookup_fmap /= in H2.
-      apply lookup_lt_Some in H1.
-      apply lookup_lt_Some in H2.
-      simpl in *; lia.
-    + iExists _; iFrame.
-      iSplitR.
-      * admit. (* wal_linv_durable *)
-      * admit.
-  - admit.
+      split; first by (intuition; lia).
+      apply elem_of_list_to_map_2 in Hb.
+      destruct (elem_of_lookup_imap_1 _ _ _ Hb) as (a'&b'&Ha'&Hlookup).
+      inversion Ha'.
+      rewrite /LogSz.
+      lia.
+    }
+    admit. (* pure goal, probably needs induction *)
+  }
+  iSplitL "installer_pos2 installer_txn_id2 diskEnd_mem diskEnd_mem_txn_id2".
+  {
+    iExists _, _, _, _.
+    iFrame.
+    eauto.
+  }
+  iFrame "#".
+  iSplit; first by rewrite /log_state0 //.
+  iSplit; first by (iExists (U64 0); rewrite /log_state0 /circΣ.diskEnd //).
+  admit. (* needs fact about domain of dinit *)
 Admitted.
 
 Lemma is_base_disk_crash γ γ' d :
@@ -692,7 +787,7 @@ Lemma diskStart_linv_post_crash γ' start Q :
        thread_own γ'.(start_avail_name) Available.
 Proof.
   iIntros "H Hctx Havail".
-  iDestruct (start_is_to_at_least with "[$]") as "[H #Hatleast]".
+  iDestruct (start_is_to_at_least with "[$]") as "#Hatleast".
   iMod (thread_own_get with "Hctx Havail") as "(Hctx & _ & Hused)".
   rewrite /diskEnd_linv.
   iMod (thread_own_put (start_is γ'.(circ_name) (1/2) start) with
