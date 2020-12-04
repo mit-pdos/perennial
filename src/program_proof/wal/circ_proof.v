@@ -165,7 +165,7 @@ Proof.
 Qed.
 
 Theorem start_is_to_at_least (γ: circ_names) (x: u64) q :
-  start_is γ q x -∗ start_is γ q x ∗ start_at_least γ x.
+  start_is γ q x -∗ start_at_least γ x.
 Proof.
   iIntros "H".
   iDestruct (mnat_get_lb with "H") as "#Hlb".

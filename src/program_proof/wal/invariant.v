@@ -422,6 +422,11 @@ Definition is_dblock_with_txns d txns (being_installed_start_txn_id: nat) (being
       apply_upds (txn_upds subtxns) d !! a = Some b⌝ ∗
      a d↦ b ∗ ⌜2 + LogSz ≤ a⌝.
 
+Definition is_installed_core_ghost γ (being_installed_start_txn_id being_installed_end_txn_id: nat) (already_installed: gset Z) : iProp Σ :=
+  "HownBeingInstalledStartTxn_walinv" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
+  "HownBeingInstalledEndTxn_walinv" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
+  "Halready_installed" ∷ ghost_var γ.(already_installed_name) (1/2) already_installed.
+
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
@@ -429,11 +434,7 @@ Definition is_installed_core γ d txns (installed_txn_id being_installed_end_txn
   (* TODO(tej): the other half of these are owned by the installer, giving it full
    knowledge of in-progress installations and exclusive update rights; need to
    write down what it maintains as part of its loop invariant *)
-  "Howninstalled" ∷ (
-    (* why do these need to be fmcounters? *)
-    "HownBeingInstalledStartTxn_walinv" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) installed_txn_id ∗
-    "HownBeingInstalledEndTxn_walinv" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
-    "Halready_installed" ∷ ghost_var γ.(already_installed_name) (1/2) already_installed) ∗
+  "Howninstalled" ∷ is_installed_core_ghost γ installed_txn_id being_installed_end_txn_id already_installed ∗
   (* TODO: ⌜diskEnd_txn_id < length txns⌝ shouldn't be necessary, follows from Hend_txn in is_durable *)
   "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ installed_txn_id ≤ being_installed_end_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
   "#Hbeing_installed_txns" ∷ txns_are γ (S installed_txn_id)
