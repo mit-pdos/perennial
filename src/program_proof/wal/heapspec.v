@@ -167,7 +167,7 @@ Proof.
     lia.
 Qed.
 
-Lemma lookup_list_to_map K `{Countable K} A (l: list (K * A)) k v :
+Lemma lookup_list_to_map_1 K `{Countable K} A (l: list (K * A)) k v :
   list_to_map (M:=gmap K A) l !! k = Some v → (k, v) ∈ l.
 Proof.
   induction l; simpl.
@@ -180,6 +180,26 @@ Proof.
     + rewrite lookup_insert_ne //.
       intros Hin%IHl.
       apply elem_of_list_further; auto.
+Qed.
+
+Lemma lookup_list_to_map_2 K `{Countable K} A (l: list (K * A)) k v :
+  NoDup l.*1 →
+  (k, v) ∈ l → list_to_map (M:=gmap K A) l !! k = Some v.
+Proof.
+  intros Hnodup.
+  induction l; simpl.
+  - inversion 1.
+  - rewrite fmap_cons in Hnodup.
+    inversion Hnodup; subst; clear Hnodup.
+    intros Hin.
+    apply elem_of_cons in Hin as [<-|Hin]; simpl.
+    + rewrite lookup_insert //.
+    + rewrite lookup_insert_ne.
+      { eauto. }
+      intros <-.
+      contradiction H2.
+      apply elem_of_list_fmap.
+      exists (a.1, v); auto.
 Qed.
 
 Definition gh_heapblock0 (bs: list Block) : gmap u64 heap_block :=
