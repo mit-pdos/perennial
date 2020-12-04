@@ -91,6 +91,18 @@ Proof.
   auto.
 Qed.
 
+Theorem thread_own_replace {γ} P' P :
+  thread_own_ctx γ P -∗
+  thread_own γ Available -∗
+  P' ==∗ thread_own_ctx γ P' ∗ thread_own γ Available.
+Proof.
+  iIntros "Hctx Havail H".
+  iMod (thread_own_get with "Hctx Havail") as "(Hctx&_&Hused)".
+  iMod (thread_own_put with "Hctx Hused H") as "(Hctx&Havail)".
+  iFrame.
+  eauto.
+Qed.
+
 End thread_owned.
 
 Global Opaque thread_own_ctx thread_own.

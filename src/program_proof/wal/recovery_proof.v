@@ -45,11 +45,9 @@ Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
     "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit) ∗
     "txns_ctx" ∷ txns_ctx γnew [] ∗
     "start_avail" ∷ thread_own γnew.(start_avail_name) Available ∗
-    "start_avail_ctx" ∷ thread_own_ctx γnew.(start_avail_name)
-      (start_is γnew.(circ_name) (1 / 2) 0) ∗
+    "start_avail_ctx" ∷ thread_own_ctx γnew.(start_avail_name) True ∗
     "diskEnd_avail" ∷ thread_own γnew.(diskEnd_avail_name) Available ∗
-    "diskEnd_avail_ctx" ∷ thread_own_ctx γnew.(diskEnd_avail_name)
-      (diskEnd_is γnew.(circ_name) (1 / 2) 0) ∗
+    "diskEnd_avail_ctx" ∷ thread_own_ctx γnew.(diskEnd_avail_name) True ∗
     "cs" ∷ ghost_var γnew.(cs_name) 1 (inhabitant : circΣ.t) ∗
     "txns" ∷ ghost_var γnew.(txns_name) 1 ([] : list (u64 * list update.t))
 .
@@ -222,12 +220,10 @@ Proof.
 Qed.
 
 Lemma alloc_wal_init_ghost_state γ γcirc :
-  (start_is γcirc (1/2) 0 ∗ diskEnd_is γcirc (1/2) 0) -∗
-  |==> ∃ γnew, "%Hbase_name" ∷ ⌜γnew.(base_disk_name) = γ.(base_disk_name)⌝ ∗
+  ⊢ |==> ∃ γnew, "%Hbase_name" ∷ ⌜γnew.(base_disk_name) = γ.(base_disk_name)⌝ ∗
                  "%Hcirc_name" ∷ ⌜γnew.(circ_name) = γcirc⌝ ∗
                  "Hinit" ∷ wal_init_ghost_state γnew.
 Proof.
-  iIntros "(Hstart&HdiskEnd)".
   (* this pos is a nat *)
   iMod (ghost_var_alloc 0%nat) as (installer_pos_name) "Hinstalled_pos".
   iMod (ghost_var_alloc 0%nat) as (installer_txn_id_name) "Hinstalled_txn_id".
@@ -249,8 +245,8 @@ Proof.
   iMod (ghost_var_alloc 0%nat) as (being_installed_end_txn_name) "Hbeing_end".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
   iMod (alist_alloc (@nil (u64 * list update.t))) as (γtxns_ctx_name) "Htxns_ctx".
-  iMod (thread_own_alloc with "Hstart") as (start_avail_name) "(Hstart_avail_ctx&Hstart_avail)".
-  iMod (thread_own_alloc with "HdiskEnd") as (diskEnd_avail_name) "(HdiskEnd_avail_ctx&HdiskEnd_avail)".
+  iMod (thread_own_alloc True with "[//]") as (start_avail_name) "(Hstart_avail_ctx&Hstart_avail)".
+  iMod (thread_own_alloc True with "[//]") as (diskEnd_avail_name) "(HdiskEnd_avail_ctx&HdiskEnd_avail)".
   iMod (ghost_var_alloc (inhabitant : circΣ.t)) as (cs_name) "Hcs".
   iMod (ghost_var_alloc ([] : list (u64 * list update.t))) as (txns_name) "Htxns".
 
@@ -288,17 +284,15 @@ Definition log_state0 bs : log_state.t :=
   |}.
 
 Lemma alloc_wal_init_ghost_state' γcirc bs :
-  (start_is γcirc (1/2) 0 ∗ diskEnd_is γcirc (1/2) 0) -∗
-  |==> ∃ γbasedisk γnew,
+  ⊢ |==> ∃ γbasedisk γnew,
       "#Hbase_disk" ∷ is_base_disk γnew (log_state0 bs).(log_state.d) ∗
       "%Hbase_name" ∷ ⌜γnew.(base_disk_name) = γbasedisk⌝ ∗
       "%Hcirc_name" ∷ ⌜γnew.(circ_name) = γcirc⌝ ∗
       "Hinit" ∷ wal_init_ghost_state γnew.
 Proof.
-  iIntros "Hcirc".
   iMod (own_alloc (to_agree (log_state0 bs).(log_state.d))) as (γbasedisk) "H".
   { done. }
-  iMod (alloc_wal_init_ghost_state (wal_names_dummy <| base_disk_name := γbasedisk |>) γcirc with "Hcirc") as (γnew Heq1 Heq2) "?"; iNamed.
+  iMod (alloc_wal_init_ghost_state (wal_names_dummy <| base_disk_name := γbasedisk |>) γcirc) as (γnew Heq1 Heq2) "?"; iNamed.
   simpl in Heq1; subst.
   rewrite /is_base_disk.
   iModIntro.
@@ -491,7 +485,7 @@ Proof.
   iMod (circular_init with "Hlog") as (γcirc) "(Hcirc & Hcirc_appender & Hstart & Hend)".
   iDestruct (start_is_to_at_least with "Hstart") as "#Hstart_lb".
   iDestruct (diskEnd_is_to_at_least with "Hend") as "#Hend_lb".
-  iMod (alloc_wal_init_ghost_state' γcirc bs with "[$Hstart $Hend]") as (γbasedisk γ) "Hinit". iNamed "Hinit".
+  iMod (alloc_wal_init_ghost_state' γcirc bs) as (γbasedisk γ) "Hinit". iNamed "Hinit".
 
   iNamed "Hinit".
   iMod (map_alloc_ro 0%nat () with "stable_txn_ids") as "[stable_txn_ids #H0stable]".
@@ -521,6 +515,10 @@ Proof.
     as "[diskEnd_mem_txn_id #diskEnd_mem_txn_id_lb]".
   iMod (alloc_txn_pos (U64 0) [] with "txns_ctx") as "[txns_ctx _]".
   simpl.
+  iMod (thread_own_replace with "start_avail_ctx start_avail Hstart")
+    as "(start_avail_ctx&start_avail)".
+  iMod (thread_own_replace with "diskEnd_avail_ctx diskEnd_avail Hend")
+    as "(diskEnd_avail_ctx&diskEnd_avail)".
 
   subst.
   iModIntro.
@@ -920,7 +918,7 @@ Lemma wal_crash_obligation_alt E Prec Pcrash l γ s :
   ↑walN ⊆ E →
   is_wal_inv_pre l γ s dinit -∗
   □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
-        ▷ P s -∗ |0={E ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
+    ▷ P s -∗ |0={E ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
   ▷ P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
     (<bdisc> (|C={E}_0=> ∃ s s',
