@@ -265,7 +265,7 @@ Proof.
   { iPureIntro.
     simpl.
     apply map_Forall_lookup; intros.
-    apply lookup_list_to_map in H.
+    apply lookup_list_to_map_1 in H.
     apply elem_of_lookup_imap in H as (idx & b & [=] & Hlookup); subst.
     admit. }
   iSplit.
