@@ -1485,7 +1485,7 @@ Theorem wpc_MkLog_recover E k (d: loc) γ σ Prec Pcrash (Hpostcrash: wal_post_c
       wal_cfupd_cancel E 0 γ' Prec ∗
       wal_cinv E γ γ' Pcrash
   }}}
-  {{{ (∃ σ0 σ' γ', ⌜relation.denote log_crash σ0 σ' tt⌝ ∗
+  {{{ (∃ γ' σ0 σ', ⌜relation.denote log_crash σ0 σ' tt⌝ ∗
                is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ ▷ Prec σ0 σ') }}}.
 Proof.
   iIntros (?) "#Hwand".

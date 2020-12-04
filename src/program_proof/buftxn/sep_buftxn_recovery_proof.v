@@ -134,10 +134,7 @@ Section goose_lang.
             }
           }
           rewrite /is_txn_durable.
-          iNext. iExists _. simpl.  iFrame "Hctx' Hlogm".
-          iDestruct "Hcancel" as (γwalnames) "Hrec".
-          (* This is nearly right except for something funny with the names here *)
-          admit.
+          iNext. iExists _. simpl.  iFrame "Hctx' Hlogm Hcancel".
         }
         {
         iFrame. iNext. rewrite /txn_system_inv. iExists _. iFrame.
@@ -155,6 +152,6 @@ Section goose_lang.
     }
     { set_solver+. }
     { set_solver+. }
-  Admitted.
+  Qed.
 
 End goose_lang.
