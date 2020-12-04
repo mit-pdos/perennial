@@ -447,7 +447,7 @@ Proof.
   by iFrame "∗#".
 Qed.
 
-Theorem async_pre_ctx_init σs:
+Theorem async_pre_ctx_init:
   ⊢ |==> ∃ γ, async_pre_ctx γ.
 Proof.
   iMod (fmlist_alloc []) as (γlist) "Hlist".
