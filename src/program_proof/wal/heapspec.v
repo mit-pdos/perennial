@@ -4,7 +4,7 @@ From Perennial.algebra Require Import mnat.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
-From Perennial.Helpers Require Import Transitions List gset.
+From Perennial.Helpers Require Import Transitions List range_set gset.
 From Perennial.program_proof Require Import wal.abstraction wal.specs.
 From Perennial.program_proof Require Import wal.heapspec_lib.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
@@ -93,6 +93,177 @@ Record locked_walheap := {
 
 Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
   ghost_var γ.(wal_heap_txns) (1/2) (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)).
+
+Definition heapspec_init_ghost_state γ  : iProp Σ :=
+  "wal_heap_h" ∷ gen_heap_ctx (hG:=γ.(wal_heap_h)) (∅: gmap u64 heap_block) ∗
+  "wal_heap_crash_heaps" ∷ ghost_var γ.(wal_heap_crash_heaps) 1 (Build_async (∅ : gmap u64 Block) []) ∗
+  "wal_durable_lb" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 0%nat ∗
+  "wal_heap_txns" ∷ ghost_var γ.(wal_heap_txns) 1 (∅ : disk, @nil (u64 * list update.t)) ∗
+  "wal_heap_installed" ∷ mnat_own_auth γ.(wal_heap_installed) 1 0%nat.
+
+Lemma alloc_heapspec_init_ghost_state γwal_names :
+  ⊢ |==> ∃ γ', "%Hwal_names" ∷ ⌜γ'.(wal_heap_walnames) = γwal_names⌝ ∗
+               "Hinit" ∷ heapspec_init_ghost_state γ'.
+Proof.
+  iMod (gen_heap_init (∅: gmap u64 heap_block)) as (wal_heap_h) "?".
+  iMod (ghost_var_alloc (Build_async (∅ : gmap u64 Block) _)) as (wal_heap_crash_heaps) "?".
+  iMod (mnat_alloc 0) as (wal_heap_durable_lb) "[? _]".
+  iMod (ghost_var_alloc (∅ : disk, @nil (u64 * list update.t))) as (wal_heap_txns) "?".
+  iMod (mnat_alloc 0) as (wal_heap_installed) "[? _]".
+
+  iModIntro.
+  iExists (Build_wal_heap_gnames _ _ _ _ _ _); simpl.
+  rewrite /heapspec_init_ghost_state /named /=.
+  iFrame.
+  eauto.
+Qed.
+
+Open Scope Z_scope.
+
+Lemma dom_blocks_to_map_u64 {A} (f: Block → A) (bs: list Block) :
+  dom (gset u64) (list_to_map (imap (λ i x, (U64 (513 + i), f x)) bs) : gmap u64 _) =
+  rangeSet 513 (length bs).
+Proof.
+  rewrite dom_list_to_map_L.
+  rewrite fmap_imap /=.
+  change (λ n, fst ∘ _) with (λ (n:nat) (_:Block), U64 (513 + n)).
+  rewrite /rangeSet.
+  f_equal.
+  remember 513 as start. clear Heqstart.
+  generalize dependent start.
+  induction bs; simpl; intros.
+  - reflexivity.
+  - rewrite -> seqZ_cons by lia.
+    replace (Z.succ start) with (start + 1)%Z by lia.
+    replace (Z.pred (S (length bs))) with (Z.of_nat $ length bs) by lia.
+    rewrite fmap_cons.
+    replace (start + 0%nat) with start by lia.
+    f_equal.
+    rewrite -IHbs.
+    apply imap_ext; intros; simpl.
+    f_equal.
+    lia.
+Qed.
+
+Lemma dom_blocks_to_map_Z {A} (f: Block → A) (bs: list Block) :
+  dom (gset Z) (list_to_map (imap (λ i x, (513 + i, f x)) bs) : gmap Z _) =
+  list_to_set (seqZ 513 (length bs)).
+Proof.
+  rewrite dom_list_to_map_L.
+  rewrite fmap_imap /=.
+  change (λ n, fst ∘ _) with (λ (n:nat) (_:Block), (513 + n)).
+  f_equal.
+  remember 513 as start. clear Heqstart.
+  generalize dependent start.
+  induction bs; simpl; intros.
+  - reflexivity.
+  - rewrite -> seqZ_cons by lia.
+    replace (Z.succ start) with (start + 1) by lia.
+    replace (Z.pred (S (length bs))) with (Z.of_nat $ length bs) by lia.
+    replace (start + 0%nat) with start by lia.
+    f_equal.
+    rewrite -IHbs.
+    apply imap_ext; intros; simpl.
+    lia.
+Qed.
+
+Lemma lookup_list_to_map K `{Countable K} A (l: list (K * A)) k v :
+  list_to_map (M:=gmap K A) l !! k = Some v → (k, v) ∈ l.
+Proof.
+  induction l; simpl.
+  - inversion 1.
+  - destruct (decide (k = a.1)); subst.
+    + rewrite lookup_insert.
+      inversion 1; subst.
+      destruct a; simpl.
+      constructor.
+    + rewrite lookup_insert_ne //.
+      intros Hin%IHl.
+      apply elem_of_list_further; auto.
+Qed.
+
+Definition gh_heapblock0 (bs: list Block) : gmap u64 heap_block :=
+  list_to_map (imap (λ (i:nat) b, (U64 (513 + i), HB b [])) bs).
+
+Definition crash_heap0 (bs: list Block) : gmap u64 Block :=
+  list_to_map (imap (λ (i:nat) b, (U64 (513 + i), b)) bs).
+
+Lemma wal_heap_inv_init (γwalnames: wal_names) bs :
+  513 + Z.of_nat (length bs) < 2^64 →
+  ⊢ |==> ∃ γheapnames, "Hheap_inv" ∷ wal_heap_inv γheapnames (log_state0 bs) ∗
+                       "wal_heap_locked" ∷ is_locked_walheap γheapnames
+                         {| locked_wh_σd := (log_state0 bs).(log_state.d);
+                            locked_wh_σtxns := [(U64 0, [])]|} ∗
+                       "wal_heap_h_mapsto" ∷ ([∗ map] l↦v ∈ gh_heapblock0 bs,
+                          mapsto (hG:=γheapnames.(wal_heap_h)) l 1 v) ∗
+                       "wal_heap_crash_heaps" ∷ ghost_var γheapnames.(wal_heap_crash_heaps)
+                              (3 / 4) (Build_async (crash_heap0 bs) [])
+.
+Proof.
+  intros Hbound.
+  rewrite /wal_heap_inv /is_locked_walheap.
+
+  set (gh:= gh_heapblock0 bs).
+  set (crash_heaps:=Build_async (crash_heap0 bs) []).
+
+  iMod (alloc_heapspec_init_ghost_state γwalnames) as (γheapnames Heq1) "?"; iNamed.
+  iNamed "Hinit".
+
+  iMod (gen_heap_alloc_gen _ gh with "wal_heap_h") as "(wal_heap_h & wal_heap_mapsto)".
+  { apply map_disjoint_empty_r. }
+  rewrite right_id_L.
+  iMod (ghost_var_update (list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs), [(U64 0, [])])
+       with "wal_heap_txns") as "[wal_heap_txns1 wal_heap_txns2]".
+  iMod (ghost_var_update crash_heaps with "wal_heap_crash_heaps")
+       as "H".
+  iEval (rewrite -Qp_three_quarter_quarter) in "H".
+  iDestruct (fractional.fractional_split with "H") as "[wal_heap_crash_heaps1 wal_heap_crash_heaps2]".
+
+  iModIntro.
+
+  simpl.
+  iExists γheapnames; iFrame.
+  iExists gh, crash_heaps.
+  iSplit.
+  { iPureIntro.
+    rewrite dom_blocks_to_map_u64.
+    rewrite dom_blocks_to_map_Z.
+    apply gset_eq; intros.
+    rewrite elem_of_map.
+    rewrite elem_of_list_to_set.
+    rewrite elem_of_seqZ.
+    split; intros.
+    - destruct H as [i [-> Hlookup]].
+      apply rangeSet_lookup in Hlookup; word.
+    - exists (U64 x).
+      rewrite -> rangeSet_lookup by word.
+      word.
+  }
+
+  iFrame.
+  iSplit.
+  { iPureIntro.
+    simpl.
+    apply map_Forall_lookup; intros.
+    apply lookup_list_to_map in H.
+    apply elem_of_lookup_imap in H as (idx & b & [=] & Hlookup); subst.
+    admit. }
+  iSplit.
+  { iPureIntro.
+    apply log_state0_wf. }
+  rewrite /wal_heap_inv_crashes /=.
+  iSplit; first by auto.
+  rewrite /wal_heap_inv_crash.
+
+  rewrite right_id.
+  iPureIntro.
+  intros.
+  simpl.
+  rewrite /crash_heap0.
+  admit. (* annoying Z vs u64 difference *)
+Admitted.
+
+Close Scope Z_scope.
 
 Lemma wal_heap_inv_crashes_crash crash_heaps crash_txn ls ls' :
   ls'.(log_state.d) = ls.(log_state.d) →
@@ -461,30 +632,6 @@ Proof.
   rewrite -Hlatest in Hlast_lookup.
   rewrite Hlast_lookup.
   iExists _; eauto.
-Qed.
-
-Definition heapspec_init_ghost_state γ  : iProp Σ :=
-  "wal_heap_h" ∷ gen_heap_ctx (hG:=γ.(wal_heap_h)) (∅: gmap u64 heap_block) ∗
-  "wal_heap_crash_heaps" ∷ ghost_var γ.(wal_heap_crash_heaps) 1 (Build_async (∅ : gmap u64 Block) []) ∗
-  "wal_durable_lb" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 0%nat ∗
-  "wal_heap_txns" ∷ ghost_var γ.(wal_heap_txns) 1 (∅ : disk, @nil (u64 * list update.t)) ∗
-  "wal_heap_installed" ∷ mnat_own_auth γ.(wal_heap_installed) 1 0%nat.
-
-Lemma alloc_heapspec_init_ghost_state γwal_names :
-  ⊢ |==> ∃ γ', "%Hwal_names" ∷ ⌜γ'.(wal_heap_walnames) = γwal_names⌝ ∗
-               "Hinit" ∷ heapspec_init_ghost_state γ'.
-Proof.
-  iMod (gen_heap_init (∅: gmap u64 heap_block)) as (wal_heap_h) "?".
-  iMod (ghost_var_alloc (Build_async (∅ : gmap u64 Block) _)) as (wal_heap_crash_heaps) "?".
-  iMod (mnat_alloc 0) as (wal_heap_durable_lb) "[? _]".
-  iMod (ghost_var_alloc (∅ : disk, @nil (u64 * list update.t))) as (wal_heap_txns) "?".
-  iMod (mnat_alloc 0) as (wal_heap_installed) "[? _]".
-
-  iModIntro.
-  iExists (Build_wal_heap_gnames _ _ _ _ _ _); simpl.
-  rewrite /heapspec_init_ghost_state /named /=.
-  iFrame.
-  eauto.
 Qed.
 
 Definition crash_heaps_pre_exchange γ γ' ls ls' : iProp Σ :=
