@@ -449,6 +449,36 @@ Proof.
   iApply (memLog_linv_init with "HmemLog_pers HmemLog_ghost").
 Qed.
 
+Lemma disk_array_to_big_opM_ind arrEnd bs :
+  (arrEnd - length bs) d↦∗ bs -∗
+  [∗ map] a↦b ∈ list_to_map (imap (λ i b', (arrEnd - length bs + i, b')) bs), a d↦ b.
+Proof.
+  iInduction bs as [|b0] "IH"; first by eauto.
+  iIntros "Hbs".
+  rewrite disk_array_cons /= Z.add_0_r.
+  iDestruct "Hbs" as "[Hb0 Hbs]".
+  replace (arrEnd - S (length bs) + 1) with (arrEnd - length bs) by lia.
+  iApply "IH" in "Hbs".
+  iApply (big_sepM_insert_2 with "[Hb0]").
+  1: eauto.
+  replace (imap ((λ (i : nat) (b' : Block), (arrEnd - S (length bs) + i, b')) ∘ S) bs)
+    with (imap (λ (i : nat) (b' : Block), (arrEnd - length bs + i, b')) bs).
+  1: iAssumption.
+  apply imap_ext.
+  intros a b Hin.
+  simpl.
+  f_equal.
+  lia.
+Qed.
+
+Lemma disk_array_to_big_opM start bs :
+  start d↦∗ bs -∗
+  [∗ map] a↦b ∈ list_to_map (imap (λ i b', (start + i, b')) bs), a d↦ b.
+Proof.
+  replace start with ((start + length bs) - length bs) by lia.
+  apply disk_array_to_big_opM_ind.
+Qed.
+
 (* TODO: dinit needs to have the domain [513, 513 + length bs) (values don't
 matter) *)
 Lemma is_wal_inner_durable_init (bs: list Block) :
@@ -561,7 +591,7 @@ Proof.
       rewrite /LogSz.
       lia.
     }
-    admit. (* pure goal, probably needs induction *)
+    iApply (disk_array_to_big_opM with "Hdata").
   }
   iSplitL "installer_pos2 installer_txn_id2 diskEnd_mem diskEnd_mem_txn_id2".
   {
@@ -893,16 +923,16 @@ Lemma wal_crash_obligation_alt E Prec Pcrash l γ s :
         ▷ P s -∗ |0={E ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
   ▷ P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
-                       (<bdisc> (|C={E}_0=> ∃ s s',
-                                         ⌜relation.denote log_crash s s' tt⌝ ∗
-                                         (* NOTE: need to add the ghost state that the logger will need *)
-                                         is_wal_inner_durable γ' s' dinit ∗
-                                         wal_resources γ' ∗ ▷ Prec s s')) ∗
-                □ (|C={E}_0=> inv (N.@"wal") (∃ s s',
-                                           ⌜relation.denote log_crash s s' tt⌝ ∗
-                                           is_wal_inner_crash γ s ∗
-                                           wal_ghost_exchange γ γ' ∗
-                                           Pcrash s s')).
+    (<bdisc> (|C={E}_0=> ∃ s s',
+      ⌜relation.denote log_crash s s' tt⌝ ∗
+      (* NOTE: need to add the ghost state that the logger will need *)
+      is_wal_inner_durable γ' s' dinit ∗
+      wal_resources γ' ∗ ▷ Prec s s')) ∗
+      □ (|C={E}_0=> inv (N.@"wal") (∃ s s',
+        ⌜relation.denote log_crash s s' tt⌝ ∗
+        is_wal_inner_crash γ s ∗
+        wal_ghost_exchange γ γ' ∗
+        Pcrash s s')).
 Proof.
   iIntros (Hin) "Hinv_pre #Hwand HP".
   rewrite /is_wal_inv_pre.
