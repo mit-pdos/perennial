@@ -52,6 +52,32 @@ Definition is_txn_durable γ dinit : iProp Σ :=
                     |} ∗
   "His_txn_always" ∷ is_txn_state γ logm crash_heaps.
 
+Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) bs :
+  0 d↦∗ repeat block0 513 ∗ 513 d↦∗ bs -∗
+ |={⊤}=> ∃ γ, is_txn_durable γ dinit ∗
+         (* TODO: for each block, we need a bunch of mapsto_txns for all of the
+         objects in that block (easy for blocks, harder for inodes and bits) *)
+         ([∗ map] a ↦ K ∈ kinds,
+          match K with
+          | KindBit => emp
+          | KindInode => emp
+          | KindBlock => mapsto_txn γ (a, U64 0) (existT KindBlock (bufBlock block0))
+          end).
+Proof.
+  iIntros "H".
+  iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
+
+  (* TODO: should factor out a heapspec init theorem that produces wal_heap_inv
+  (this just allocates dummy ghost state) *)
+  iMod (alloc_heapspec_init_ghost_state γwalnames) as (γheapnames Heq1) "Hheap".
+
+  iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Htxn".
+
+  (* TODO: set ghost state *)
+
+  iModIntro. iExists γ.
+Abort.
+
 Definition crash_heap_match γ logmap walheap : iProp Σ :=
   ([∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
         ∃ blockK,
