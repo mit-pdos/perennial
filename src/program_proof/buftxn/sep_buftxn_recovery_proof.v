@@ -23,8 +23,8 @@ Section goose_lang.
   Implicit Types (l: loc) (γ: buftxn_names Σ) (γtxn: gname).
   Implicit Types (obj: object).
 
-  Definition txn_init_ghost_state (logm_init: gmap addr object) γ : iProp Σ :=
-    async_ctx γ.(buftxn_async_name) 1 {| latest := logm_init; pending := [] |}.
+  Definition txn_init_ghost_state γ : iProp Σ :=
+    async_pre_ctx γ.(buftxn_async_name).
 
   (* NOTE(tej): we're combining the durable part with the resources into one
   definition here, unlike in lower layers (they should be fixed) *)
@@ -60,27 +60,31 @@ Section goose_lang.
       - iLeft in "HΦ". iModIntro.
         iIntros "H". iDestruct "H" as (?? Heq) "(Hlower_durable&[%Heq2|Hres])".
         { rewrite Heq2. iModIntro. iApply "HΦ". iExists γ, _. iFrame. eauto. }
-        iMod (async_ctx_init logm') as (γasync') "Hasync_ctx'".
-        iIntros "HC !>".
+        iRename "Hlogm" into "Holdlogm1".
+        iNamed "Hres".
+        iDestruct (ghost_var_agree with "Holdlogm1 [$]") as %<-.
+        iIntros "HC".
+        iMod (async_pre_ctx_init) as (γasync') "Hasync_ctx'".
+        iMod (async_ctx_init_set_prefix _ _ _ logm logm' with "Hasync_ctx [$]")
+          as "(Hasync_ctx&Hasync_ctx'&Hpts)".
+        { eauto. }
+        iIntros "!>".
         iApply "HΦ".
         iExists {| buftxn_txn_names := γ'; buftxn_async_name := γasync' |}, _.
-        iFrame "Hlower_durable  Hasync_ctx'".
-        iClear "Hlogm".
-        iNamed "Hres". iFrame. eauto.
+        iFrame "Hlower_durable  Hasync_ctx'". iFrame. eauto.
       - iNext. iIntros (γtxn_names' l) "(#Histxn&Hcancel&Hmapstos)".
         iRight in "HΦ".
         rewrite /txn_cfupd_res.
         iDestruct (own_discrete_laterable with "Hmapstos") as (Ptxn_tok) "(HPtxn_tok&#HPtxn_tok_wand)".
         iDestruct (own_discrete_laterable with "Hcancel") as
             (Ptxn_cancel_tok) "(HPtxn_cancel_tok&#HPtxn_cancel_tok_wand)".
-        destruct (possible_lookup_0 logm) as (σ&Hlookup0).
 
 
-        iMod (async_init_ctx_init σ) as (γasync') "Hasync_init_ctx'".
+        iMod (async_pre_ctx_init) as (γasync') "Hasync_init_ctx'".
         iDestruct (async_ctx_to_lb with "Hasync_ctx") as "#Hasync_lb".
         set (γ' := {| buftxn_txn_names := γtxn_names'; buftxn_async_name := γasync' |}).
         iMod (ncinv_cinv_alloc N _ ⊤
-                (txn_system_inv γ ∗ (async_init_ctx γasync' σ ∗ Ptxn_tok ∗ Ptxn_cancel_tok))
+                (txn_system_inv γ ∗ (async_pre_ctx γasync' ∗ Ptxn_tok ∗ Ptxn_cancel_tok))
                 (sep_txn_exchanger γ γ')
                 (∃ logm', is_txn_durable γ' dinit logm')%I
           with "[] [Hlogm Hasync_init_ctx' HPtxn_tok HPtxn_cancel_tok Hasync_ctx]") as "(#Htxn_inv&Hcfupd)".
@@ -98,9 +102,7 @@ Section goose_lang.
           iMod (fupd_level_mask_mono with "Hcancel") as ">Hcancel".
           { set_solver. }
           iDestruct (ghost_var_agree with "Holdlogm [$]") as %<-.
-          iDestruct (async_ctx_lb_prefix with "[$] [$]") as %Hasync_pre'.
-          iMod (async_init_ctx_set_prefix _ _ _ _ logm0 with "H●latest Hctx") as "(H●latest&Hctx'&Hephem)".
-          { apply async_prefix_lookup_0 in Hasync_pre'. congruence. }
+          iMod (async_ctx_init_set_prefix _ _ _ _ logm0 with "H●latest Hctx") as "(H●latest&Hctx'&Hephem)".
           { eauto. }
           iModIntro.
           iDestruct (async_ctx_doms_prefix_latest _ _ logm0 logm1 with "[$]") as %Hdom.

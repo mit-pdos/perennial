@@ -166,6 +166,7 @@ Section goose_lang.
     "His_txn_system" ∷ is_txn_system γ ∗
     "Htxn_cinv" ∷ txn_cinv γ γ'.
 
+  (*
   Lemma init_txn_system {E} l_txn γUnified dinit σs :
     is_txn l_txn γUnified dinit ∗ ghost_var γUnified.(txn_crashstates) (3/4) σs ={E}=∗
     ∃ γ, ⌜γ.(buftxn_txn_names) = γUnified⌝ ∗
@@ -183,6 +184,7 @@ Section goose_lang.
     iSplit; first by auto.
     iNamed "Htxn"; iFrame "#".
   Qed.
+   *)
 
 
   Definition is_buftxn_mem l γ dinit γtxn γdurable : iProp Σ :=
