@@ -154,7 +154,7 @@ Section goose_lang.
   .
 
   Definition txn_cinv γ γ' : iProp Σ :=
-    □ |C={⊤}_0=> inv (N.@"txn") (sep_txn_exchanger γ γ').
+    □ |C={⊤}_0=> inv N (sep_txn_exchanger γ γ').
 
   (* this is for the entire txn manager, and relates it to some ghost state *)
 

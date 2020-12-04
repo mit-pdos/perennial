@@ -33,9 +33,9 @@ Section goose_lang.
     "Hlogm" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (3/4) logm ∗
     "Hasync_ctx" ∷ async_ctx γ.(buftxn_async_name) 1 logm.
 
-  Definition txn_cfupd_cancel dinit k γ' : iProp Σ :=
-    (<bdisc> (|C={⊤}_k=>
-              ∃ logm', is_txn_durable γ' dinit logm' )).
+  Definition txn_cfupd_cancel dinit γ' : iProp Σ :=
+    (<bdisc> (|C={⊤}_0=>
+              ▷ ∃ logm', is_txn_durable γ' dinit logm' )).
 
 
   Theorem wpc_MkTxn (d:loc) γ dinit logm k :
@@ -44,7 +44,7 @@ Section goose_lang.
     {{{ γ' (l: loc), RET #l;
         is_txn l γ.(buftxn_txn_names) dinit ∗
         is_txn_system N γ ∗
-        txn_cfupd_cancel dinit k γ' ∗
+        txn_cfupd_cancel dinit γ' ∗
         txn_cinv N γ γ' }}}
     {{{ ∃ γ' logm', ⌜ γ'.(buftxn_txn_names).(txn_kinds) = γ.(buftxn_txn_names).(txn_kinds) ⌝ ∗
                    is_txn_durable γ' dinit logm' }}}.
@@ -71,28 +71,40 @@ Section goose_lang.
         iRight in "HΦ".
         rewrite /txn_cfupd_res.
         iDestruct (own_discrete_laterable with "Hmapstos") as (Ptxn_tok) "(HPtxn_tok&#HPtxn_tok_wand)".
-        iMod (async_ctx_init (Build_async (∅ : gmap addr object) [])) as (γasync') "Hasync_ctx'".
+        iDestruct (own_discrete_laterable with "Hcancel") as
+            (Ptxn_cancel_tok) "(HPtxn_cancel_tok&#HPtxn_cancel_tok_wand)".
+        destruct (possible_lookup_0 logm) as (σ&Hlookup0).
+
+
+        iMod (async_init_ctx_init σ) as (γasync') "Hasync_init_ctx'".
+        iDestruct (async_ctx_to_lb with "Hasync_ctx") as "#Hasync_lb".
         set (γ' := {| buftxn_txn_names := γtxn_names'; buftxn_async_name := γasync' |}).
-        iMod (ncinv_cinv_alloc' N _ ⊤
-                (txn_system_inv γ ∗ async_ctx γasync' 1 {| latest := ∅; pending := [] |} ∗ Ptxn_tok)
+        iMod (ncinv_cinv_alloc N _ ⊤
+                (txn_system_inv γ ∗ (async_init_ctx γasync' σ ∗ Ptxn_tok ∗ Ptxn_cancel_tok))
                 (sep_txn_exchanger γ γ')
                 (∃ logm', is_txn_durable γ' dinit logm')%I
-          with "[] [Hlogm Hasync_ctx' HPtxn_tok Hasync_ctx]") as "(#Htxn_inv&Hcfupd)".
+          with "[] [Hlogm Hasync_init_ctx' HPtxn_tok HPtxn_cancel_tok Hasync_ctx]") as "(#Htxn_inv&Hcfupd)".
         { set_solver. }
         {
-          iModIntro. iIntros "(>Hinv&>Hctx&HPtxn_tok) HC".
+          iModIntro. iIntros "(>Hinv&>Hctx&HPtxn_tok&HPtxn_cancel_tok) #HC".
           iNamed "Hinv".
           iDestruct ("HPtxn_tok_wand" with "[$]") as ">H".
           iSpecialize ("H" with "[$]").
           iMod (fupd_level_mask_mono with "H") as ">H".
           { set_solver. }
           iNamed "H".
-          iAssert (|==> async_ctx γasync' 1 logm0 ∗
-                        ([∗ map] k↦v ∈ latest logm0, ephemeral_val_from γasync' (length (possible logm0) - 1) k v)
-                        )%I with "[Hctx]" as ">(Hctx&Hephem)".
-          { admit. }
-          iModIntro.
+          iDestruct ("HPtxn_cancel_tok_wand" with "[$]") as ">Hcancel".
+          iSpecialize ("Hcancel" with "[$]").
+          iMod (fupd_level_mask_mono with "Hcancel") as ">Hcancel".
+          { set_solver. }
           iDestruct (ghost_var_agree with "Holdlogm [$]") as %<-.
+          iDestruct (async_ctx_lb_prefix with "[$] [$]") as %Hasync_pre'.
+          iMod (async_init_ctx_set_prefix _ _ _ _ logm0 with "H●latest Hctx") as "(H●latest&Hctx'&Hephem)".
+          { apply async_prefix_lookup_0 in Hasync_pre'. congruence. }
+          { eauto. }
+          iModIntro.
+          iDestruct (async_ctx_doms_prefix_latest _ _ logm0 logm1 with "[$]") as %Hdom.
+          { auto. }
           iSplitL "Hdurable_exchanger Hdurable Hmapsto_txns Hephem H●latest".
           {
             iNext. iExists logm1, txn_id. iFrame.
@@ -102,19 +114,11 @@ Section goose_lang.
             rewrite -big_sepM_sep.
             rewrite /addr_exchangers.
 
-            (* TODO: need to know logm0 and logm1 have the same domain, but
-               where will this ocme from?  if async_ctx maintains that every map
-               has same domain, then we can use the logm0 is a prefix of loogm1
-               (that can be provided by txn_recovery *)
-
-            (* TODO: need to regenerate the old txn vals, but we have the ctx *)
-            assert (dom (gset _) logm1.(latest) = dom (gset _) logm0.(latest)) as Hdom.
-            { admit. }
-            iApply big_sepM_dom. rewrite Hdom. iApply big_sepM_dom.
+            iApply big_sepM_dom. rewrite -Hdom. iApply big_sepM_dom.
             iApply (big_sepM_mono with "Hpts").
             {
-              iIntros (?? Hlookup) "(Hmapsto&Hval)".
-              iDestruct "Hval" as "(#Hval&Htok)".
+              iIntros (?? Hlookup) "(Hmapsto&#Hval1&Hval_from)".
+              iDestruct "Hval_from" as "(#Hval2&Htok)".
               iSplitL "Hmapsto Htok".
               { rewrite /token_exchanger.
                 iRight. iSplitL "Htok".
@@ -122,19 +126,30 @@ Section goose_lang.
                 { iExists _. iFrame. }
               }
               iExists _.
-              iSplitR "Hval".
-              { admit. }
-              { iExactEq "Hval". f_equal. lia. }
+              iSplit.
+              { iExactEq "Hval1". f_equal. lia. }
+              { iExactEq "Hval2". f_equal. lia. }
             }
           }
           rewrite /is_txn_durable.
-          iNext. iExists _. simpl. iFrame "Hctx Hlogm".
+          iNext. iExists _. simpl.  iFrame "Hctx' Hlogm".
+          iDestruct "Hcancel" as (γwalnames) "Hrec".
+          (* This is nearly right except for something funny with the names here *)
           admit.
         }
         {
         iFrame. iNext. rewrite /txn_system_inv. iExists _. iFrame.
         }
-        admit.
+        iDestruct "Hcfupd" as "(Hcfupd1&Hcfupd2)".
+        iModIntro. iApply "HΦ".
+        iFrame "#".
+        iSplitL "".
+        { rewrite /is_txn_system. rewrite /is_txn. iNamed "Histxn". iFrame "#".
+          iApply (ncinv_split_l). iApply "Htxn_inv".
+        }
+        rewrite /txn_cfupd_cancel.
+        rewrite /txn_cinv.
+        iFrame.
     }
     { set_solver+. }
     { set_solver+. }

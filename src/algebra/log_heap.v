@@ -52,6 +52,10 @@ Lemma length_possible_pending' {T} (a : async T) :
   length (possible a) - 1 = length (pending a).
 Proof. rewrite /possible last_length. lia. Qed.
 
+Lemma possible_lookup_0 {T} (a: async T) :
+  is_Some (possible a !! 0).
+Proof. destruct a as [? []]; eauto. Qed.
+
 Lemma lookup_possible_latest {T} (a : async T) :
   possible a !! length (pending a) = Some (latest a).
 Proof.
@@ -114,6 +118,14 @@ Qed.
 
 Definition async_take {A} `{!Inhabited A} (n:nat) (l: async A) : async A :=
   list_to_async (take n (possible l)).
+
+Definition async_prefix {A} (l1 l2: async A) :=
+  possible l1  `prefix_of` possible l2.
+
+Lemma async_prefix_lookup_0 {A} (l1 l2: async A) :
+  async_prefix l1 l2 →
+  possible l1 !! 0 = possible l2 !! 0.
+ Proof. intros (?&->). destruct l1 as [? []] => //=. Qed.
 
 Lemma async_take_pending_prefix {A} `{!Inhabited A} (n: nat) (l: async A) :
   pending (async_take n l) `prefix_of` pending l.
@@ -181,7 +193,7 @@ Proof.
   apply prefix_app.
   rewrite firstn_length_le in Heqk; eauto.
   subst. rewrite /possible/= in Hle.
-  clear Hlen. 
+  clear Hlen.
   replace (drop (n - 1) pending0 ++ [latest0]) with
       (drop (n- 1) (pending0 ++ [latest0])); last first.
   { rewrite drop_app_le; last first.
@@ -190,6 +202,12 @@ Proof.
   }
   eapply last_take_drop_prefix; eauto.
 Qed.
+
+Lemma async_take_async_prefix {A} `{!Inhabited A} (n: nat) (l: async A):
+  0 < n →
+  n <= length (possible l) →
+  async_prefix (async_take n l) l.
+Proof. intros. apply async_take_possible_prefix; auto. Qed.
 
 Section definitions.
   Context `{hG : log_heapG L V Σ}.

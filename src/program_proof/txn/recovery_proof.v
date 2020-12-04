@@ -238,6 +238,7 @@ Definition txn_exchanger (γ γ' : @txn_names Σ) : iProp Σ :=
 
 Definition txn_resources γ γ' logm : iProp Σ :=
   (∃ logm0 (txn_id : nat),
+  "%Hasync_pre" ∷ ⌜ async_prefix logm logm0 ⌝ ∗
   "%Hlen_crash_txn" ∷ ⌜ (length (possible logm) = txn_id + 1)%nat ⌝ ∗
   "%Hlen_compare" ∷ ⌜ (length (possible logm) ≤ length (possible logm0))%nat ⌝ ∗
   "Hlogm" ∷ ghost_var γ'.(txn_crashstates) (3/4) logm ∗
@@ -311,6 +312,10 @@ Proof.
             as "(Hheap_lb_exchange1&Hheap_lb_exchange2)".
   iSplitR "Hcrashstates crashstates2 Hheap_lb_exchange2 Hheap_exchange Hpts Hlatest"; last first.
   { iModIntro. iExists _, ((length ls2.(log_state.txns)) - 1)%nat. iFrame.
+    iSplitL "".
+    {
+      iPureIntro. apply async_take_async_prefix; lia.
+    }
     iSplitL "".
     { iPureIntro. rewrite /async_take.
       rewrite possible_list_to_async; last first.

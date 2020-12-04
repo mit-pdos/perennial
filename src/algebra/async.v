@@ -48,6 +48,9 @@ Definition async_ctx γ q σs : iProp Σ :=
       (* We also have the [lb] in here to avoid some update modalities below. *)
       fmlist γ.(async_list) q (possible σs) ∗ fmlist_lb γ.(async_list) (possible σs).
 
+Definition async_lb γ σs : iProp Σ :=
+  fmlist_lb γ.(async_list) (possible σs).
+
 (* ephemeral_txn_val owns only a single point in the ephemeral transactions.
 It is persistent. *)
 Definition ephemeral_txn_val γ (i:nat) (k: K) (v: V) : iProp Σ :=
@@ -64,6 +67,12 @@ Definition ephemeral_val_from γ (i:nat) (k: K) (v: V) : iProp Σ :=
 transactions [lo, hi) *)
 Definition ephemeral_txn_val_range γ (lo hi:nat) (k: K) (v: V): iProp Σ :=
   [∗ list] i ∈ seq lo (hi-lo), ephemeral_txn_val γ i k v.
+
+(* TODO: this definition is tentative, what actually matters are the admitted
+   lemmas below about it, so any definition satisfying that API will work! *)
+Definition async_init_ctx γ σ : iProp Σ :=
+  async_ctx γ 1 (Build_async σ []) ∗
+  ([∗ map] k↦v ∈ σ, ephemeral_val_from γ 0 k v).
 
 Global Instance ephemeral_txn_val_discretizable γ i k v: Discretizable (ephemeral_txn_val γ i k v).
 Proof. apply _. Qed.
@@ -261,6 +270,46 @@ Proof.
   rewrite /lookup_async Hi /=. done.
 Qed.
 
+Lemma async_ctx_lb_prefix γ q σs σs' :
+  async_ctx γ q σs -∗
+  async_lb γ σs' -∗
+  ⌜ async_prefix σs' σs ⌝.
+Proof.
+  iIntros "H1 H2".
+  iDestruct "H1" as "(?&?&?)".
+  iDestruct (fmlist_agree_2 with "[$] [$]") as "$".
+Qed.
+
+Lemma async_ctx_to_lb γ q σs :
+  async_ctx γ q σs -∗
+  async_lb γ σs.
+Proof. iIntros "H1". iDestruct "H1" as "(?&?&$)". Qed.
+
+(* TODO: this seems implicitly true from the rules, but not sure it is actually
+   derivable. Worst case, seems like we can add this as a pure fact in async_ctx
+   *)
+Theorem async_ctx_doms γ q σs i σ :
+  possible σs !! i = Some σ →
+  async_ctx γ q σs -∗
+  ⌜ dom (gset K) σ = dom (gset K) σs.(latest) ⌝.
+Proof. Admitted.
+
+Theorem async_ctx_doms_prefix_latest γ q σs' σs :
+  async_prefix σs' σs →
+  async_ctx γ q σs -∗
+  ⌜ dom (gset K) σs'.(latest) = dom (gset K) σs.(latest) ⌝.
+Proof.
+  iIntros (Hprefix) "Hctx".
+  iDestruct (async_ctx_doms _ _ _ (length (possible σs') - 1) (σs'.(latest)) with "Hctx")
+            as %Hdom.
+  {
+    destruct Hprefix as (?&->).
+    rewrite lookup_app_l; first apply lookup_possible_latest'.
+    rewrite /possible app_length /=. lia.
+  }
+  eauto.
+Qed.
+
 Theorem ephemeral_lookup_txn_val γ q σs i k v :
   lookup_async σs i k = Some v →
   async_ctx γ q σs -∗
@@ -273,6 +322,13 @@ Proof.
   iExists _. iSplit; first done.
   iApply fmlist_lb_to_idx; done.
 Qed.
+
+(* TODO: Seems to be an easy consequence of the previous *)
+Theorem emphemeral_lookup_all_txn_val γ q σs i σ:
+  possible σs !! i = Some σ →
+  async_ctx γ q σs -∗
+  [∗ map] k↦v ∈ σ, ephemeral_txn_val γ i k v.
+Proof. Admitted.
 
 (** All transactions since [i] have the value given by [ephemeral_val_from γ i]. *)
 Theorem ephemeral_val_from_val γ q σs i i' k v :
@@ -368,6 +424,10 @@ Proof.
     rewrite /lookup_async lookup_possible_latest /=. done.
 Qed.
 
+Theorem async_init_ctx_init σ:
+  ⊢ |==> ∃ γ, async_init_ctx γ σ.
+Proof. Admitted.
+
 Theorem async_update_map m' γ σs m0 :
   dom (gset _) m' = dom (gset _) m0 →
   async_ctx γ 1 σs -∗
@@ -415,6 +475,17 @@ Proof.
     iMod (own_last_update with "Halast Hlast") as "[Halast Hlast]".
     rewrite insert_union_l /ephemeral_val_from. iFrame. done.
 Qed.
+
+Theorem async_init_ctx_set_prefix γ γ' q σs σs' σ:
+  possible σs !! 0 = Some σ →
+  async_prefix σs' σs →
+  async_ctx γ q σs -∗
+  async_init_ctx γ' σ ==∗
+  async_ctx γ q σs ∗ async_ctx γ' 1 σs' ∗
+  ([∗ map] k↦v ∈ latest σs',
+     ephemeral_txn_val γ (length (possible σs') - 1) k v ∗
+     ephemeral_val_from γ' (length (possible σs') - 1) k v).
+Proof. Admitted.
 
 (* this splits off an [ephemeral_val_from] at exactly the last transaction *)
 Theorem async_ctx_ephemeral_val_from_split γ σs i k v :
