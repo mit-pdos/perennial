@@ -114,16 +114,28 @@ Proof.
       apply elem_of_list_further; auto.
 Qed.
 
+Definition gh_heapblock0 (bs: list Block) : gmap u64 heap_block :=
+  list_to_map (imap (λ (i:nat) b, (U64 (513 + i), HB b [])) bs).
+
+Definition crash_heap0 (bs: list Block) : gmap u64 Block :=
+  list_to_map (imap (λ (i:nat) b, (U64 (513 + i), b)) bs).
+
 Lemma wal_heap_inv_init (γwalnames: wal_names) bs :
   513 + Z.of_nat (length bs) < 2^64 →
-  ⊢ |==> ∃ γheapnames, wal_heap_inv γheapnames (log_state0 bs).
+  ⊢ |==> ∃ γheapnames, "Hheap_inv" ∷ wal_heap_inv γheapnames (log_state0 bs) ∗
+                       "wal_heap_txns2" ∷ ghost_var γheapnames.(wal_heap_txns) (1 / 2)
+                         ((log_state0 bs).(log_state.d), [(U64 0, [])]) ∗
+                       "wal_heap_h_mapsto" ∷ ([∗ map] l↦v ∈ gh_heapblock0 bs,
+                          mapsto (hG:=γheapnames.(wal_heap_h)) l 1 v) ∗
+                       "wal_heap_crash_heaps" ∷ ghost_var γheapnames.(wal_heap_crash_heaps)
+                              (3 / 4) (Build_async (crash_heap0 bs) [])
+.
 Proof.
   intros Hbound.
   rewrite /wal_heap_inv.
 
-  set (gh:=list_to_map (imap (λ (i:nat) b, (U64 (513 + i), HB b [])) bs) : gmap u64 _).
-  set (crash_heap0:=list_to_map (imap (λ (i:nat) b, (U64 (513 + i), b)) bs) : gmap u64 _).
-  set (crash_heaps:=Build_async crash_heap0 []).
+  set (gh:= gh_heapblock0 bs).
+  set (crash_heaps:=Build_async (crash_heap0 bs) []).
 
   iMod (alloc_heapspec_init_ghost_state γwalnames) as (γheapnames Heq1) "?"; iNamed.
   iNamed "Hinit".
@@ -141,7 +153,8 @@ Proof.
   iModIntro.
 
   simpl.
-  iExists γheapnames, gh, (Build_async crash_heap0 []).
+  iExists γheapnames; iFrame.
+  iExists gh, crash_heaps.
   iSplit.
   { iPureIntro.
     rewrite dom_blocks_to_map_u64.
@@ -174,7 +187,7 @@ Proof.
   rewrite /wal_heap_inv_crash.
 
   rewrite right_id.
-  iPureIntro. (* TODO(tej): all resources are leftover, should be in postcondition *)
+  iPureIntro.
   intros.
   simpl.
   rewrite /crash_heap0.
@@ -197,7 +210,8 @@ Proof.
   iIntros (Hbound) "H".
   iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
 
-  iMod (wal_heap_inv_init γwalnames bs) as (γheapnames Heq1) "Hheap"; first done.
+  iMod (wal_heap_inv_init γwalnames bs) as (γheapnames) "Hheap"; first done.
+  iNamed "Hheap".
 
   iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Htxn".
 
