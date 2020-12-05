@@ -11,6 +11,11 @@ single thread that is allowed to access it *)
 Class thread_ownG Σ :=
   { thread_own_ghost_bool :> ghost_varG Σ bool; }.
 
+Definition thread_ownΣ : gFunctors := #[ ghost_varΣ bool ].
+
+Global Instance subG_thread_ownΣ Σ : subG thread_ownΣ Σ → thread_ownG Σ.
+Proof. solve_inG. Qed.
+
 Inductive OwnStatus := Available | Used.
 
 Section thread_owned.

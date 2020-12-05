@@ -14,6 +14,11 @@ Definition fmcounterUR := authUR max_natUR.
 Class fmcounterG Σ :=
   { fmcounter_inG :> inG Σ fmcounterUR }.
 
+Definition fmcounterΣ : gFunctors := #[ GFunctor fmcounterUR ].
+
+Instance subG_fmcounterΣ Σ : subG fmcounterΣ Σ → fmcounterG Σ.
+Proof. solve_inG. Qed.
+
 Section fmc_props.
 Context `{fmcounterG Σ}.
 

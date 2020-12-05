@@ -13,6 +13,11 @@ Set Default Proof Using "Type".
 Class alistG Σ A :=
   { alist_inG :> mapG Σ nat A; }.
 
+Definition alistΣ A : gFunctors := #[ mapΣ nat A ].
+
+Instance subG_alistΣ Σ A : subG (alistΣ A) Σ → alistG Σ A.
+Proof. solve_inG. Qed.
+
 Section list.
 Context {A:Type}.
 Context `{!alistG Σ A}.

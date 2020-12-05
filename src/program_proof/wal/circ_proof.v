@@ -48,6 +48,12 @@ Class circG Σ :=
     circ_stagedG :> stagedG Σ;
   }.
 
+Definition circΣ : gFunctors :=
+  #[ghost_varΣ (list u64); ghost_varΣ (list Block); mnatΣ; stagedΣ].
+
+Instance subG_circΣ Σ : subG circΣ Σ → circG Σ.
+Proof. solve_inG. Qed.
+
 Section heap.
 Context `{!heapG Σ}.
 Context `{!circG Σ}.

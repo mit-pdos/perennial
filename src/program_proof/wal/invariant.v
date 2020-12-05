@@ -32,6 +32,27 @@ Class walG Σ :=
     wal_fmcounter    :> fmcounterG Σ;
   }.
 
+Definition walΣ : gFunctors :=
+  #[ circΣ;
+   gen_heapΣ nat (u64 * list update.t);
+   ghost_varΣ circΣ.t;
+   ghost_varΣ (u64 * nat);
+   ghost_varΣ (list update.t);
+   ghost_varΣ (list (u64 * list update.t));
+   ghost_varΣ nat;
+   ghost_varΣ (gset Z);
+   thread_ownΣ;
+   alistΣ (u64 * list update.t);
+   ghost_varΣ (gmap nat unit);
+   mapΣ nat unit;
+   ghost_varΣ u64;
+   GFunctor (agreeR (leibnizO disk));
+   fmcounterΣ
+   ].
+
+Instance subG_walΣ Σ : subG walΣ Σ → walG Σ.
+Proof. solve_inG. Qed.
+
 Section goose_lang.
 Context `{!heapG Σ}.
 Context `{!walG Σ}.

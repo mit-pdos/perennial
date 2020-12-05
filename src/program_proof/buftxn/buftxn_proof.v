@@ -61,6 +61,12 @@ Class buftxnG Σ :=
     buftxn_bufs  :> gen_heapPreG addr object Σ;
   }.
 
+Definition buftxnΣ : gFunctors :=
+  #[ txnΣ; gen_heapΣ addr object ].
+
+Instance subG_buftxnΣ Σ : subG buftxnΣ Σ → buftxnG Σ.
+Proof. solve_inG. Qed.
+
 Section heap.
 Context `{!buftxnG Σ}.
 Context `{!heapG Σ}.

@@ -23,6 +23,16 @@ Class walheapG (Σ: gFunctors) :=
     walheap_wal :> walG Σ
   }.
 
+Definition walheapΣ : gFunctors :=
+  #[ gen_heapΣ u64 heap_block;
+   ghost_varΣ (gmap Z Block * list (u64 * list update.t));
+   mnatΣ;
+   ghost_varΣ (async (gmap u64 Block));
+   walΣ ].
+
+Instance subG_walheapΣ Σ : subG walheapΣ Σ → walheapG Σ.
+Proof. solve_inG. Qed.
+
 Section heap.
 
 Context `{!walheapG Σ}.

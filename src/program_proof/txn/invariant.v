@@ -18,10 +18,21 @@ Class txnG (Σ: gFunctors) :=
   {
     txn_boolG :> ghost_varG Σ bool;
     txn_walheapG :> walheapG Σ;
-    txn_logheapG :> log_heapPreG addr {K & bufDataT K} Σ;
+    txn_logheapG :> log_heapPreG addr object Σ;
     txn_metaheapG :> mapG Σ addr gname;
     txn_crashstatesG :> ghost_varG Σ (async (gmap addr object));
   }.
+
+Definition txnΣ : gFunctors :=
+  #[ ghost_varΣ bool;
+   walheapΣ;
+   log_heapΣ addr object;
+   mapΣ addr gname;
+   ghost_varΣ (async (gmap addr object))
+   ].
+
+Instance subG_txnΣ Σ : subG txnΣ Σ → txnG Σ.
+Proof. solve_inG. Qed.
 
 Record txn_names {Σ} := {
   txn_logheap : log_heapG addr object Σ;
