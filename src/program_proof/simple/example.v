@@ -15,6 +15,29 @@ From Perennial.algebra Require Import log_heap.
 From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof.simple Require Import spec invariant proofs.
+From Perennial.goose_lang Require Import crash_modality.
+
+Section stable.
+Context `{!buftxnG Σ}.
+Context `{!gen_heapPreG u64 bool Σ}.
+Context `{!ghost_varG Σ (gmap u64 (list u8))}.
+Context `{!mapG Σ u64 (list u8)}.
+
+Global Instance is_inode_stable_set_stable γsrc γ':
+    IntoCrash ([∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)
+              (λ _, ([∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a))%I.
+Proof. rewrite /IntoCrash. iApply post_crash_nodep. Qed.
+
+Global Instance is_txn_durable_stable γ dinit logm:
+    IntoCrash (is_txn_durable γ dinit logm) (λ _, is_txn_durable γ dinit logm).
+Proof.
+  rewrite /IntoCrash. iNamed 1.
+  iDestruct (post_crash_nodep with "Hlogm") as "Hlogm".
+  iDestruct (post_crash_nodep with "Hasync_ctx") as "Hasync_ctx".
+  iCrash. rewrite /is_txn_durable. iFrame "Hlogm Hasync_ctx".
+Admitted.
+
+End stable.
 
 Section heap.
 Context `{!buftxnG Σ}.

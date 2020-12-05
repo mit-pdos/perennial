@@ -7,6 +7,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.program_proof Require Import txn.invariant.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
+From Perennial.goose_lang Require Import crash_modality.
 
 From RecordUpdate Require Import RecordUpdate.
 Import RecordSetNotations.
@@ -615,3 +616,31 @@ Proof.
 Qed.
 
 End goose_lang.
+
+Section stable.
+Context `{!txnG Σ}.
+
+Existing Instance ghost_var_into_crash.
+Existing Instance fmcounter_into_crash.
+Existing Instance is_wal_inner_durable_stable.
+
+Global Instance is_txn_durable_stable γ dinit:
+  IntoCrash (is_txn_durable γ dinit) (λ _, is_txn_durable γ dinit).
+Proof.
+  rewrite /IntoCrash.
+  iNamed 1.
+  iDestruct (post_crash_nodep with "His_txn_always") as "His_txn_always".
+  iDestruct (post_crash_nodep with "Hwal_res") as "Hwal_res".
+  iDestruct (post_crash_nodep with "Hwal_heap_inv") as "Hwal_heap_inv".
+  iDestruct (post_crash_nodep with "Hlocked_walheap") as "Hlocked_walheap".
+  iCrash.
+  iExists ls', logm, crash_heaps.
+  iSplit; first eauto.
+  iFrame "Hwal_res".
+  iFrame "Hwal_heap_inv".
+  iFrame "Hlocked_walheap".
+  iFrame "His_txn_always".
+  Set Printing Implicit.
+  (* TODO: need to move heapG instances out of various classes *)
+Abort.
+End stable.
