@@ -1,4 +1,4 @@
-From Perennial.Helpers Require Import Transitions NamedProps Map gset.
+From Perennial.Helpers Require Import Transitions NamedProps Map gset range_set.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
 
@@ -52,30 +52,107 @@ Definition is_txn_durable γ dinit : iProp Σ :=
                     |} ∗
   "His_txn_always" ∷ is_txn_state γ logm crash_heaps.
 
-Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) bs :
-  513 + Z.of_nat (length bs) < 2^64 →
-  0 d↦∗ repeat block0 513 ∗ 513 d↦∗ bs -∗
+
+Definition inode0_map : gmap u64 object :=
+  Eval compute [set_map list_to_set fmap list_fmap] in
+  gset_to_gmap (existT _ (bufInode inode_buf0))
+               (list_to_set $ (λ i, U64 (i*8*128)%Z) <$> [0;1;2;3;4;5;6;7;8]).
+
+Definition bit0_map : gmap u64 object :=
+  gset_to_gmap (existT _ (bufBit false))
+               (list_to_set $ U64 <$> seqZ 0 (8*4096)).
+
+Definition block0_map : gmap u64 object :=
+  {[U64 0 := existT _ (bufBlock block0)]}.
+
+Definition kind_heap0 (kinds: gmap u64 bufDataKind) : gmap addr object :=
+  gmap_curry ((λ K, match K with
+                   | KindBit => bit0_map
+                   | KindInode => inode0_map
+                   | KindBlock => block0_map
+                   end) <$> kinds).
+
+Lemma repeat_to_replicate {A} (x:A) n :
+  repeat x n = replicate n x.
+Proof.
+  induction n; simpl; congruence.
+Qed.
+
+Lemma crash_heap0_repeat_block0 (sz: nat) :
+  513 + sz < 2^64 →
+  crash_heap0 (repeat block0 sz) = gset_to_gmap block0 (rangeSet 513 (Z.of_nat sz)).
+Proof.
+  rewrite repeat_to_replicate.
+  intros Hbound.
+  rewrite /crash_heap0.
+  apply map_eq; intros i.
+  apply option_eq; intros b.
+  rewrite lookup_gset_to_gmap.
+  rewrite lookup_list_to_map.
+  - rewrite elem_of_lookup_imap.
+    setoid_rewrite lookup_replicate.
+    destruct (decide (i ∈ rangeSet 513 sz));
+    try (rewrite -> option_guard_True by done);
+    try (rewrite -> option_guard_False by done).
+    + apply rangeSet_lookup in e; [ | word .. ].
+      split; [ naive_solver | ].
+      inversion 1; subst.
+      eexists (Z.to_nat (int.Z i - 513)), _.
+      split_and!; eauto; try lia.
+      f_equal; word.
+    + rewrite -> rangeSet_lookup in n by word.
+      split; [ | inversion 1 ]; intros.
+      destruct H as (i' & b' & [=] & ? & ?); subst.
+      move: n; word.
+  - rewrite fst_imap.
+    rewrite replicate_length.
+    admit. (* NoDup of u64 *)
+Admitted.
+
+Hint Rewrite repeat_length : len.
+
+(* sz is the number of blocks besides the log (so the size of the disk - 513) *)
+Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
+  513 + Z.of_nat sz < 2^64 →
+  0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
  |={⊤}=> ∃ γ, is_txn_durable γ dinit ∗
-         (* TODO: for each block, we need a bunch of mapsto_txns for all of the
-         objects in that block (easy for blocks, harder for inodes and bits) *)
-         ([∗ map] a ↦ K ∈ kinds,
-          match K with
-          | KindBit => emp
-          | KindInode => emp
-          | KindBlock => mapsto_txn γ (a, U64 0) (existT KindBlock (bufBlock block0))
-          end).
+         ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
 Proof.
   iIntros (Hbound) "H".
   iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
 
-  iMod (wal_heap_inv_init γwalnames bs) as (γheapnames) "Hheap"; first done.
+  set (bs:=repeat block0 sz).
+
+  iMod (wal_heap_inv_init γwalnames bs) as (γheapnames Heq1) "Hheap".
+  { rewrite /bs; len. }
   iNamed "Hheap".
 
-  iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Htxn".
+  iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Hinit".
+  iNamed "Hinit".
+  iMod (log_heap_set (kind_heap0 kinds) with "logheap") as "[logheap logheap_mapsto_curs]".
+  iMod (ghost_var_update (Build_async (kind_heap0 kinds) [])
+          with "crashstates") as "H".
+  iEval (rewrite -Qp_quarter_three_quarter) in "H".
+  iDestruct (fractional.fractional_split with "H") as "[crashstates1 crashstates2]".
 
-  (* TODO: set ghost state *)
+  (* TODO: set up metamap *)
 
   iModIntro. iExists γ.
+  rewrite /is_txn_durable.
+  iSplitL. (* TODO: split out resources needed for mapsto_txn *)
+  2: admit.
+  iExists (log_state0 bs), (Build_async (kind_heap0 kinds) []).
+  iExists (Build_async (crash_heap0 bs) []).
+
+  iSplit.
+  { iPureIntro.
+    auto using log_state0_post_crash. }
+  rewrite Heq2 Heq1.
+  iFrame "Hwal Hwal_res Hheap_inv wal_heap_locked".
+  rewrite /is_txn_state.
+  rewrite Heq2.
+  simpl.
+  iFrame "wal_heap_crash_heaps logheap crashstates1".
 Abort.
 
 Definition crash_heap_match γ logmap walheap : iProp Σ :=

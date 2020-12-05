@@ -240,6 +240,22 @@ Proof.
   iFrame.
 Qed.
 
+(* change a log_heap_ctx entirely, using a pre-allocated but empty
+log_heap_ctx *)
+Lemma log_heap_set `{hG: log_heapG L V Σ} (σ: gmap L V) :
+  log_heap_ctx (Build_async ∅ []) -∗
+  |==> log_heap_ctx (Build_async σ []) ∗
+    [∗ map] l↦v ∈ σ, mapsto_cur l v.
+Proof.
+  iIntros "Hm".
+  iMod (map_alloc_many σ with "Hm") as "[Hm Hlatest]".
+  { intros. apply lookup_empty. }
+  simpl.
+  rewrite right_id_L.
+  iModIntro.
+  iFrame.
+Qed.
+
 Section log_heap.
   Context `{log_heapG L V Σ}.
   Implicit Types P Q : iProp Σ.
