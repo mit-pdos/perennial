@@ -48,7 +48,7 @@ Section goose_lang.
         txn_cinv N γ γ' }}}
     {{{ ∃ γ' logm', ⌜ γ'.(buftxn_txn_names).(txn_kinds) = γ.(buftxn_txn_names).(txn_kinds) ⌝ ∗
                    is_txn_durable γ' dinit logm' }}}.
-  Proof.
+  Proof using Hdisj1 Hdisj2.
     iIntros (Φ Φc) "H HΦ".
     rewrite /is_txn_durable.
     iNamed "H".
