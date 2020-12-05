@@ -13,6 +13,7 @@ From RecordUpdate Require Import RecordUpdate.
 Import RecordSetNotations.
 Section goose_lang.
 Context `{!txnG Σ}.
+Context `{!heapG Σ}.
 
 Implicit Types (γ: @txn_names Σ).
 
@@ -619,6 +620,7 @@ End goose_lang.
 
 Section stable.
 Context `{!txnG Σ}.
+Context `{!heapG Σ}.
 
 Existing Instance ghost_var_into_crash.
 Existing Instance fmcounter_into_crash.
@@ -640,7 +642,6 @@ Proof.
   iFrame "Hwal_heap_inv".
   iFrame "Hlocked_walheap".
   iFrame "His_txn_always".
-  Set Printing Implicit.
-  (* TODO: need to move heapG instances out of various classes *)
-Abort.
+  eauto.
+Qed.
 End stable.

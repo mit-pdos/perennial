@@ -41,6 +41,7 @@ Module mspec := buftxn.buftxn_proof.
 
 Section goose_lang.
   Context `{!buftxnG Σ}.
+  Context `{!heapG Σ}.
 
   Context (N:namespace).
 

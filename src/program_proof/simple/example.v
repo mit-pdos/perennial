@@ -19,6 +19,7 @@ From Perennial.goose_lang Require Import crash_modality.
 
 Section stable.
 Context `{!buftxnG Σ}.
+Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 bool Σ}.
 Context `{!ghost_varG Σ (gmap u64 (list u8))}.
 Context `{!mapG Σ u64 (list u8)}.
@@ -34,13 +35,14 @@ Proof.
   rewrite /IntoCrash. iNamed 1.
   iDestruct (post_crash_nodep with "Hlogm") as "Hlogm".
   iDestruct (post_crash_nodep with "Hasync_ctx") as "Hasync_ctx".
-  iCrash. rewrite /is_txn_durable. iFrame "Hlogm Hasync_ctx".
-Admitted.
+  iCrash. rewrite /is_txn_durable. iFrame.
+Qed.
 
 End stable.
 
 Section heap.
 Context `{!buftxnG Σ}.
+Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 bool Σ}.
 Context `{!ghost_varG Σ (gmap u64 (list u8))}.
 Context `{!mapG Σ u64 (list u8)}.

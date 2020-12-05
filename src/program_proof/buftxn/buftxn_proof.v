@@ -63,6 +63,7 @@ Class buftxnG Σ :=
 
 Section heap.
 Context `{!buftxnG Σ}.
+Context `{!heapG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).

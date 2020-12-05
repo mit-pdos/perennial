@@ -20,13 +20,13 @@ Class walheapG (Σ: gFunctors) :=
     walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
     walheap_mnat :> mnatG Σ;
     walheap_asyncCrashHeap :> ghost_varG Σ (async (gmap u64 Block));
-    walheap_heap :> heapG Σ;
     walheap_wal :> walG Σ
   }.
 
 Section heap.
 
 Context `{!walheapG Σ}.
+Context `{!heapG Σ}.
 
 (* Invariant and definitions *)
 

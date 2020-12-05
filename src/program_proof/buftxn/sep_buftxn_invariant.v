@@ -58,6 +58,7 @@ Arguments buftxn_names Σ : assert, clear implicits.
 
 Section goose_lang.
   Context `{!buftxnG Σ}.
+  Context `{!heapG Σ}.
 
   Context (N:namespace).
 

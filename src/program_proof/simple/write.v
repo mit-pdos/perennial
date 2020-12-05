@@ -18,6 +18,7 @@ From Perennial.program_proof Require Import simple.spec simple.invariant simple.
 
 Section heap.
 Context `{!buftxnG Σ}.
+Context `{!heapG Σ}.
 Context `{!ghost_varG Σ (gmap u64 (list u8))}.
 Context `{!mapG Σ u64 (list u8)}.
 Implicit Types (stk:stuckness) (E: coPset).

@@ -36,6 +36,7 @@ Global Instance txn_names_eta {Σ} : Settable _ :=
 
 Section goose_lang.
 Context `{!txnG Σ}.
+Context `{!heapG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
