@@ -16,7 +16,7 @@ Import RecordSetNotations.
 
 Section goose_lang.
   Context `{!buftxnG Σ}.
-  Context {N:namespace}.
+  Context (N:namespace).
   Context (Hdisj1: (↑N : coPset) ## ↑invN).
   Context (Hdisj2: (↑N : coPset) ## ↑invariant.walN).
 
@@ -38,6 +38,53 @@ Section goose_lang.
               ▷ ∃ logm', is_txn_durable γ' dinit logm' )).
 
 
+  Lemma sep_txn_crash_transform γ σs γasync' γtxn_names' dinit :
+    "H◯async" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (3 / 4) σs ∗
+    "H●latest" ∷ async_ctx γ.(buftxn_async_name) 1 σs ∗
+    "Hctx" ∷ async_pre_ctx γasync' ∗
+    "H" ∷ (∃ logm0 : async (gmap addr object), txn_resources γ.(buftxn_txn_names) γtxn_names' logm0) ∗
+    "Hcancel" ∷ recovery_proof.is_txn_durable γtxn_names' dinit ==∗
+    let γ' := {| buftxn_txn_names := γtxn_names'; buftxn_async_name := γasync' |} in
+     sep_txn_exchanger γ γ' ∗ (∃ logm' : async (gmap addr object), is_txn_durable γ' dinit logm').
+  Proof.
+    iNamed 1.
+    iNamed "H".
+    iDestruct (ghost_var_agree with "Holdlogm [$]") as %<-.
+    iMod (async_ctx_init_set_prefix _ _ _ _ logm0 with "H●latest Hctx") as "(H●latest&Hctx'&Hephem)".
+    { eauto. }
+    iModIntro.
+    iDestruct (async_ctx_doms_prefix_latest _ _ logm0 logm1 with "[$]") as %Hdom.
+    { auto. }
+    iSplitL "Hdurable_exchanger Hdurable Hmapsto_txns Hephem H●latest".
+    {
+      iExists logm1, txn_id. iFrame.
+      iSplitL "".
+      { iPureIntro. lia. }
+      iCombine "Hmapsto_txns Hephem" as "Hpts".
+      rewrite -big_sepM_sep.
+      rewrite /addr_exchangers.
+
+      iApply big_sepM_dom. rewrite -Hdom. iApply big_sepM_dom.
+      iApply (big_sepM_mono with "Hpts").
+      {
+        iIntros (?? Hlookup) "(Hmapsto&#Hval1&Hval_from)".
+        iDestruct "Hval_from" as "(#Hval2&Htok)".
+        iSplitL "Hmapsto Htok".
+        { rewrite /token_exchanger.
+          iRight. iSplitL "Htok".
+          { iExactEq "Htok". f_equal. lia. }
+          { iExists _. iFrame. }
+        }
+        iExists _.
+        iSplit.
+        { iExactEq "Hval1". f_equal. lia. }
+        { iExactEq "Hval2". f_equal. lia. }
+      }
+    }
+    rewrite /is_txn_durable.
+    iExists _. simpl.  iFrame "Hctx' Hlogm Hcancel".
+  Qed.
+
   Theorem wpc_MkTxn (d:loc) γ dinit logm k :
     {{{ is_txn_durable γ dinit logm }}}
       txn.MkTxn #d @ k; ⊤
@@ -47,7 +94,9 @@ Section goose_lang.
         txn_cfupd_cancel dinit γ' ∗
         txn_cinv N γ γ' }}}
     {{{ ∃ γ' logm', ⌜ γ'.(buftxn_txn_names).(txn_kinds) = γ.(buftxn_txn_names).(txn_kinds) ⌝ ∗
-                   is_txn_durable γ' dinit logm' }}}.
+        is_txn_durable γ' dinit logm' ∗
+       (⌜ γ' = γ ⌝ ∨ (* sep_txn_exchanger γ γ' *)
+        txn_cinv N γ γ') }}}.
   Proof using Hdisj1 Hdisj2.
     iIntros (Φ Φc) "H HΦ".
     rewrite /is_txn_durable.
@@ -61,17 +110,20 @@ Section goose_lang.
         iIntros "H". iDestruct "H" as (?? Heq) "(Hlower_durable&[%Heq2|Hres])".
         { rewrite Heq2. iModIntro. iApply "HΦ". iExists γ, _. iFrame. eauto. }
         iRename "Hlogm" into "Holdlogm1".
-        iNamed "Hres".
-        iDestruct (ghost_var_agree with "Holdlogm1 [$]") as %<-.
         iIntros "HC".
         iMod (async_pre_ctx_init) as (γasync') "Hasync_ctx'".
-        iMod (async_ctx_init_set_prefix _ _ _ logm logm' with "Hasync_ctx [$]")
-          as "(Hasync_ctx&Hasync_ctx'&Hpts)".
+        iMod (sep_txn_crash_transform γ with "[$Holdlogm1 $Hasync_ctx $Hasync_ctx' $Hlower_durable Hres]")
+          as "(H1&H2)".
         { eauto. }
-        iIntros "!>".
+
         iApply "HΦ".
-        iExists {| buftxn_txn_names := γ'; buftxn_async_name := γasync' |}, _.
-        iFrame "Hlower_durable  Hasync_ctx'". iFrame. eauto.
+        iDestruct "H2" as (logm'') "H2".
+        iExists {| buftxn_txn_names := γ'; buftxn_async_name := γasync' |}, logm''.
+        iMod (inv_alloc' with "H1") as "#Hinv".
+        iModIntro.
+        iFrame "H2". iSplit; first eauto.
+        iRight. rewrite /txn_cinv. do 2 iModIntro.
+        iFrame "Hinv".
       - iNext. iIntros (γtxn_names' l) "(#Histxn&Hcancel&Hmapstos)".
         iRight in "HΦ".
         rewrite /txn_cfupd_res.
@@ -96,45 +148,12 @@ Section goose_lang.
           iSpecialize ("H" with "[$]").
           iMod (fupd_level_mask_mono with "H") as ">H".
           { set_solver. }
-          iNamed "H".
           iDestruct ("HPtxn_cancel_tok_wand" with "[$]") as ">Hcancel".
           iSpecialize ("Hcancel" with "[$]").
           iMod (fupd_level_mask_mono with "Hcancel") as ">Hcancel".
           { set_solver. }
-          iDestruct (ghost_var_agree with "Holdlogm [$]") as %<-.
-          iMod (async_ctx_init_set_prefix _ _ _ _ logm0 with "H●latest Hctx") as "(H●latest&Hctx'&Hephem)".
-          { eauto. }
-          iModIntro.
-          iDestruct (async_ctx_doms_prefix_latest _ _ logm0 logm1 with "[$]") as %Hdom.
-          { auto. }
-          iSplitL "Hdurable_exchanger Hdurable Hmapsto_txns Hephem H●latest".
-          {
-            iNext. iExists logm1, txn_id. iFrame.
-            iSplitL "".
-            { iPureIntro. lia. }
-            iCombine "Hmapsto_txns Hephem" as "Hpts".
-            rewrite -big_sepM_sep.
-            rewrite /addr_exchangers.
-
-            iApply big_sepM_dom. rewrite -Hdom. iApply big_sepM_dom.
-            iApply (big_sepM_mono with "Hpts").
-            {
-              iIntros (?? Hlookup) "(Hmapsto&#Hval1&Hval_from)".
-              iDestruct "Hval_from" as "(#Hval2&Htok)".
-              iSplitL "Hmapsto Htok".
-              { rewrite /token_exchanger.
-                iRight. iSplitL "Htok".
-                { iExactEq "Htok". f_equal. lia. }
-                { iExists _. iFrame. }
-              }
-              iExists _.
-              iSplit.
-              { iExactEq "Hval1". f_equal. lia. }
-              { iExactEq "Hval2". f_equal. lia. }
-            }
-          }
-          rewrite /is_txn_durable.
-          iNext. iExists _. simpl.  iFrame "Hctx' Hlogm Hcancel".
+          iMod (sep_txn_crash_transform with "[$]") as "($&$)".
+          eauto.
         }
         {
         iFrame. iNext. rewrite /txn_system_inv. iExists _. iFrame.
