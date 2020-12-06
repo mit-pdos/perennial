@@ -16,6 +16,7 @@ From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof.simple Require Import spec invariant proofs.
 From Perennial.goose_lang Require Import crash_modality.
+From Perennial.goose_lang Require wpr_lifting.
 
 Section heap.
 Context `{!heapG Σ}.
@@ -116,6 +117,47 @@ Proof using All.
   iIntros "HΦ". iApply "HΦ". done.
 Qed.
 
-Print Assumptions wpc_RecoverExample.
-
 End heap.
+
+Import wpr_lifting.
+
+Section recov.
+  Context `{!heapG Σ}.
+  Context `{!gen_heapPreG u64 bool Σ}.
+  Context `{!simpleG Σ}.
+
+  (* Just a simple example of using idempotence *)
+  Theorem wpr_RecoverExample (d: loc) γ γsrc dinit logm:
+    is_txn_durable γ dinit logm -∗
+    is_source P γsrc -∗
+    ([∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a) -∗
+    wpr NotStuck 10 ⊤
+        (RecoverExample #d)
+        (RecoverExample #d)
+        (λ _, True%I)
+        (λ _, True%I)
+        (λ _ _, True%I).
+  Proof using All.
+    iIntros "Hdurable Hsource Hinodes".
+    iApply (idempotence_wpr NotStuck 10 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I
+                            (λ _, ∃ γ' γsrc' logm',
+                                is_txn_durable γ' dinit logm' ∗
+                                is_source P γsrc' ∗
+                                [∗ set] a ∈ covered_inodes, is_inode_stable γsrc' γ' a)%I
+                            with "[-] []").
+    { wpc_apply (wpc_RecoverExample with "[-]").
+      { iFrame "Hdurable". iFrame "Hsource". iExact "Hinodes". }
+      eauto. }
+    iModIntro.
+    iIntros (????) "H".
+    iDestruct "H" as (???) "(Hdurable&Hsource&Hinodes)".
+    iNext. iDestruct (is_source_into_crash P (λ _, P) with "[] [$]") as "Hsource".
+    { eauto. }
+    iCrash. iIntros "_". iSplit; first eauto.
+    { wpc_apply (wpc_RecoverExample with "[-]").
+      { iFrame "Hdurable". iFrame "Hsource". iExact "Hinodes". }
+      eauto. }
+  Qed.
+
+  Print Assumptions wpr_RecoverExample.
+End recov.

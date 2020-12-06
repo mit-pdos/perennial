@@ -36,6 +36,18 @@ Proof.
   iCrash. rewrite /is_txn_durable. iFrame.
 Qed.
 
+Lemma is_source_into_crash P P' γsrc:
+  (∀ σ, P σ -∗ post_crash (λ hG, P' hG σ)) -∗
+  is_source P γsrc -∗ post_crash (λ hG, is_source (P' hG) γsrc).
+Proof.
+  iIntros "HPwand Hsrc".
+  iNamed "Hsrc".
+  iDestruct (post_crash_nodep with "Hnooverflow") as "-#Hnooverflow'".
+  iDestruct (post_crash_nodep with "Hsrcheap") as "Hsrcheap".
+  iDestruct ("HPwand" with "[$]") as "HP".
+  iCrash. iExists _. iFrame. eauto.
+Qed.
+
 End stable.
 
 Section heap.
