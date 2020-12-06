@@ -111,82 +111,6 @@ Proof.
     admit. (* NoDup of u64 *)
 Admitted.
 
-Hint Rewrite repeat_length : len.
-
-(* sz is the number of blocks besides the log (so the size of the disk - 513) *)
-Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
-  513 + Z.of_nat sz < 2^64 →
-  0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
- |={⊤}=> ∃ γ, is_txn_durable γ dinit ∗
-         ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
-Proof.
-  iIntros (Hbound) "H".
-  iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
-
-  set (bs:=repeat block0 sz).
-
-  iMod (wal_heap_inv_init γwalnames bs) as (γheapnames Heq1) "Hheap".
-  { rewrite /bs; len. }
-  iNamed "Hheap".
-
-  iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Hinit".
-  iNamed "Hinit".
-  iMod (log_heap_set (kind_heap0 kinds) with "logheap") as "[logheap logheap_mapsto_curs]".
-  iMod (ghost_var_update (Build_async (kind_heap0 kinds) [])
-          with "crashstates") as "H".
-  iEval (rewrite -Qp_quarter_three_quarter) in "H".
-  iDestruct (fractional.fractional_split with "H") as "[crashstates1 crashstates2]".
-
-  (* TODO: set up metamap *)
-
-  iModIntro. iExists γ.
-  rewrite /is_txn_durable.
-  iSplitL. (* TODO: split out resources needed for mapsto_txn *)
-  2: admit.
-  iExists (log_state0 bs), (Build_async (kind_heap0 kinds) []).
-  iExists (Build_async (crash_heap0 bs) []).
-
-  iSplit.
-  { iPureIntro.
-    auto using log_state0_post_crash. }
-  rewrite Heq2 Heq1.
-  iFrame "Hwal Hwal_res Hheap_inv wal_heap_locked".
-  rewrite /is_txn_state.
-  rewrite Heq2.
-  simpl.
-  iFrame "wal_heap_crash_heaps logheap crashstates1".
-Abort.
-
-Definition crash_heap_match γ logmap walheap : iProp Σ :=
-  ([∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
-        ∃ blockK,
-       "%Htxn_cb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
-       "Htxn_in_cb" ∷ bufDataTs_in_crashblock walblock blkno blockK offmap)%I.
-
-Definition crash_heaps_match γ logm crash_heaps : iProp Σ :=
-  ([∗ list] logmap;walheap ∈ possible logm;possible crash_heaps, crash_heap_match γ logmap walheap).
-
-Lemma crash_heaps_match_async_take γ logm crash_heaps n :
-  (0 < n)%nat →
-  (n ≤ length (possible logm))%nat →
-  crash_heaps_match γ logm crash_heaps -∗
-  crash_heaps_match γ (async_take n logm) (async_take n crash_heaps).
-Proof.
-  rewrite /crash_heaps_match.
-  iIntros (Hlt Hle) "Hl".
-  iDestruct (big_sepL2_length with "Hl") as %Hlen.
-  iApply (big_sepL2_prefix with "Hl"); auto.
-  - apply async_take_possible_prefix; auto.
-  - apply async_take_possible_prefix; auto. lia.
-  - rewrite ?possible_list_to_async ?take_length; lia.
-Qed.
-
-Lemma crash_heaps_match_transfer_gname γ1 γ2 logm crash_heaps :
-  txn_kinds γ2 = txn_kinds γ1 →
-  crash_heaps_match γ1 logm crash_heaps -∗
-  crash_heaps_match γ2 logm crash_heaps.
-Proof. iIntros (Heq) "H". rewrite /crash_heaps_match/crash_heap_match Heq. eauto. Qed.
-
 Lemma alloc_metamap names (m: gmap addr object):
   map_ctx names 1 ∅ ==∗
   ∃ metam,
@@ -233,6 +157,95 @@ Proof.
   { iApply big_sepM_insert; eauto. iFrame. iExists _. iFrame. }
   iApply big_sepM_insert; eauto. iFrame.
 Qed.
+
+Hint Rewrite repeat_length : len.
+
+(* sz is the number of blocks besides the log (so the size of the disk - 513) *)
+Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
+  513 + Z.of_nat sz < 2^64 →
+  0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
+ |={⊤}=> ∃ γ, is_txn_durable γ dinit ∗
+         ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
+Proof.
+  iIntros (Hbound) "H".
+  iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
+
+  set (bs:=repeat block0 sz).
+
+  iMod (wal_heap_inv_init γwalnames bs) as (γheapnames Heq1) "Hheap".
+  { rewrite /bs; len. }
+  iNamed "Hheap".
+
+  iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Hinit".
+  iNamed "Hinit".
+  iMod (log_heap_set (kind_heap0 kinds) with "logheap") as "[logheap logheap_mapsto_curs]".
+  iMod (ghost_var_update (Build_async (kind_heap0 kinds) [])
+          with "crashstates") as "H".
+  iEval (rewrite -Qp_quarter_three_quarter) in "H".
+  iDestruct (fractional.fractional_split with "H") as "[crashstates1 crashstates2]".
+
+  iMod (alloc_metamap _ (kind_heap0 kinds) with "metaheap") as (metamap) "(metaheap & Hmetas1 & Hmetas2)".
+
+  iModIntro. iExists γ.
+  rewrite /is_txn_durable.
+  iSplitL. (* TODO: split out resources needed for mapsto_txn *)
+  2: admit.
+  iExists (log_state0 bs), (Build_async (kind_heap0 kinds) []).
+  iExists (Build_async (crash_heap0 bs) []).
+
+  iSplit.
+  { iPureIntro.
+    auto using log_state0_post_crash. }
+  rewrite Heq2 Heq1.
+  iFrame "Hwal Hwal_res Hheap_inv wal_heap_locked".
+  rewrite /is_txn_state.
+  iExists metamap.
+  rewrite Heq2.
+  simpl.
+  iFrame "wal_heap_crash_heaps logheap crashstates1 metaheap".
+  iSplitL "Hmetas1 wal_heap_h_mapsto".
+  - iDestruct (gmap_addr_by_block_big_sepM2 with "Hmetas1") as "Hmetas".
+    (* already wrong need to somehow merge the mapstos over gh_heapblock0 bs
+    into this big_sepM2 *)
+    iApply (big_sepM2_mono with "Hmetas").
+    intros.
+    iIntros "Hm".
+    iExists block0, [].
+    admit.
+  - rewrite right_id /named.
+    rewrite /bufDataTs_in_crashblock.
+    admit. (* this is just a pure fact *)
+Abort.
+
+Definition crash_heap_match γ logmap walheap : iProp Σ :=
+  ([∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
+        ∃ blockK,
+       "%Htxn_cb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
+       "Htxn_in_cb" ∷ bufDataTs_in_crashblock walblock blkno blockK offmap)%I.
+
+Definition crash_heaps_match γ logm crash_heaps : iProp Σ :=
+  ([∗ list] logmap;walheap ∈ possible logm;possible crash_heaps, crash_heap_match γ logmap walheap).
+
+Lemma crash_heaps_match_async_take γ logm crash_heaps n :
+  (0 < n)%nat →
+  (n ≤ length (possible logm))%nat →
+  crash_heaps_match γ logm crash_heaps -∗
+  crash_heaps_match γ (async_take n logm) (async_take n crash_heaps).
+Proof.
+  rewrite /crash_heaps_match.
+  iIntros (Hlt Hle) "Hl".
+  iDestruct (big_sepL2_length with "Hl") as %Hlen.
+  iApply (big_sepL2_prefix with "Hl"); auto.
+  - apply async_take_possible_prefix; auto.
+  - apply async_take_possible_prefix; auto. lia.
+  - rewrite ?possible_list_to_async ?take_length; lia.
+Qed.
+
+Lemma crash_heaps_match_transfer_gname γ1 γ2 logm crash_heaps :
+  txn_kinds γ2 = txn_kinds γ1 →
+  crash_heaps_match γ1 logm crash_heaps -∗
+  crash_heaps_match γ2 logm crash_heaps.
+Proof. iIntros (Heq) "H". rewrite /crash_heaps_match/crash_heap_match Heq. eauto. Qed.
 
 Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
     "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 ∅ ∗
