@@ -16,11 +16,23 @@ From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof Require Import simple.spec.
 
+Class simpleG Σ :=
+  { simple_fs_stateG :> ghost_varG Σ (gmap u64 (list u8));
+    simple_mapG :> mapG Σ u64 (list u8);
+    simple_buftxnG :> buftxnG Σ;
+  }.
+
+Definition simpleΣ :=
+  #[ ghost_varΣ (gmap u64 (list u8));
+   mapΣ u64 (list u8);
+   buftxnΣ ].
+
+Instance subG_simpleΣ Σ : subG simpleΣ Σ → simpleG Σ.
+Proof. solve_inG. Qed.
+
 Section heap.
-Context `{!buftxnG Σ}.
 Context `{!heapG Σ}.
-Context `{!ghost_varG Σ (gmap u64 (list u8))}.
-Context `{!mapG Σ u64 (list u8)}.
+Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Record simple_names := {

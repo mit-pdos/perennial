@@ -17,10 +17,8 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof Require Import simple.spec simple.invariant simple.common simple.iread simple.iwrite.
 
 Section heap.
-Context `{!buftxnG Σ}.
 Context `{!heapG Σ}.
-Context `{!ghost_varG Σ (gmap u64 (list u8))}.
-Context `{!mapG Σ u64 (list u8)}.
+Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Variable P : SimpleNFS.State -> iProp Σ.
@@ -71,7 +69,7 @@ Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset 
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.
-Proof using Ptimeless ghost_varG0.
+Proof using Ptimeless.
   iIntros (Φ) "(Hfs & #Hfh & Hdata & %Hdatalenbound & Hfupd) HΦ".
   iNamed "Hfs".
 

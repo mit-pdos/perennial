@@ -14,6 +14,16 @@ Class asyncG Σ (K V: Type) `{Countable K, EqDecision V} := {
   async_mapG :> inG Σ (gmap_viewR K natO);
 }.
 
+Definition asyncΣ K V `{Countable K, EqDecision V} : gFunctors :=
+  #[ fmlistΣ (gmap K V); GFunctor (gmap_viewR K natO) ].
+
+Instance subG_asyncΣ Σ K V `{Countable K, EqDecision V} : subG (asyncΣ K V) Σ → asyncG Σ K V.
+Proof.
+  intros.
+  apply subG_inv in H0 as [? ?]. (* FIXME(tej): why is this needed? *)
+  solve_inG.
+Qed.
+
 (** We need two ghost names. *)
 Record async_gname := {
   async_list : gname;

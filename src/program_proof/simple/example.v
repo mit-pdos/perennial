@@ -18,11 +18,9 @@ From Perennial.program_proof.simple Require Import spec invariant proofs.
 From Perennial.goose_lang Require Import crash_modality.
 
 Section stable.
-Context `{!buftxnG Σ}.
 Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 bool Σ}.
-Context `{!ghost_varG Σ (gmap u64 (list u8))}.
-Context `{!mapG Σ u64 (list u8)}.
+Context `{!simpleG Σ}.
 
 Global Instance is_inode_stable_set_stable γsrc γ':
     IntoCrash ([∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)
@@ -41,11 +39,9 @@ Qed.
 End stable.
 
 Section heap.
-Context `{!buftxnG Σ}.
 Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 bool Σ}.
-Context `{!ghost_varG Σ (gmap u64 (list u8))}.
-Context `{!mapG Σ u64 (list u8)}.
+Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Definition P (s : SimpleNFS.State) : iProp Σ :=
@@ -55,7 +51,7 @@ Theorem wp_exampleWorker (nfs : loc) (inum : u64) γ dinit :
   {{{ is_fs P γ nfs dinit }}}
     exampleWorker #nfs #inum
   {{{ RET #(); True }}}.
-Proof using ghost_varG0.
+Proof.
   iIntros (Φ) "#Hfs HΦ".
   wp_call.
   wp_apply (wp_NewSlice (V:=u8)).
@@ -102,7 +98,7 @@ Theorem wpc_RecoverExample γ γsrc (d : loc) dinit logm :
     is_txn_durable γ' dinit logm' ∗
     [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a
   }}}.
-Proof using buftxnG0 gen_heapPreG0 ghost_varG0 mapG0 Σ.
+Proof using All.
   iIntros (Φ Φc) "(Htxndurable & #Hsrc & Hstable) HΦ".
   rewrite /RecoverExample.
   wpc_pures.

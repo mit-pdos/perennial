@@ -49,6 +49,12 @@ Class buftxnG Σ :=
     buftxn_asyncG :> asyncG Σ addr object;
   }.
 
+Definition buftxnΣ : gFunctors :=
+  #[ mapΣ addr object; mspec.buftxnΣ; asyncΣ addr object ].
+
+Instance subG_buftxnΣ Σ : subG buftxnΣ Σ → buftxnG Σ.
+Proof. solve_inG. Qed.
+
 Record buftxn_names {Σ} :=
   { buftxn_txn_names : @txn_names Σ;
     buftxn_async_name : async_gname;

@@ -17,10 +17,8 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof Require Import simple.spec simple.invariant simple.common.
 
 Section heap.
-Context `{!buftxnG Σ}.
 Context `{!heapG Σ}.
-Context `{!ghost_varG Σ (gmap u64 (list u8))}.
-Context `{!mapG Σ u64 (list u8)}.
+Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Theorem wp_ReadInode γ γtxn (inum : u64) len blk (btxn : loc) dinit γdurable :
