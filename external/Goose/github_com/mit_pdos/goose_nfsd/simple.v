@@ -676,14 +676,19 @@ Definition exampleWorker: val :=
     ]);;
     #().
 
-Definition RecoverExample: val :=
-  rec: "RecoverExample" "d" :=
+Definition Recover: val :=
+  rec: "Recover" "d" :=
     let: "txn" := txn.MkTxn "d" in
     let: "lockmap" := lockmap.MkLockMap #() in
     let: "nfs" := struct.new Nfs.S [
       "t" ::= "txn";
       "l" ::= "lockmap"
     ] in
+    "nfs".
+
+Definition RecoverExample: val :=
+  rec: "RecoverExample" "d" :=
+    let: "nfs" := Recover "d" in
     Fork (exampleWorker "nfs" #3);;
     Fork (exampleWorker "nfs" #3);;
     Fork (exampleWorker "nfs" #4).

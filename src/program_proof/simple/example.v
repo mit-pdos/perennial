@@ -17,27 +17,6 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof.simple Require Import spec invariant proofs.
 From Perennial.goose_lang Require Import crash_modality.
 
-Section stable.
-Context `{!heapG Σ}.
-Context `{!gen_heapPreG u64 bool Σ}.
-Context `{!simpleG Σ}.
-
-Global Instance is_inode_stable_set_stable γsrc γ':
-    IntoCrash ([∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)
-              (λ _, ([∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a))%I.
-Proof. rewrite /IntoCrash. iApply post_crash_nodep. Qed.
-
-Global Instance is_txn_durable_stable γ dinit logm:
-    IntoCrash (is_txn_durable γ dinit logm) (λ _, is_txn_durable γ dinit logm).
-Proof.
-  rewrite /IntoCrash. iNamed 1.
-  iDestruct (post_crash_nodep with "Hlogm") as "Hlogm".
-  iDestruct (post_crash_nodep with "Hasync_ctx") as "Hasync_ctx".
-  iCrash. rewrite /is_txn_durable. iFrame.
-Qed.
-
-End stable.
-
 Section heap.
 Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 bool Σ}.
@@ -88,104 +67,43 @@ Qed.
 Theorem wpc_RecoverExample γ γsrc (d : loc) dinit logm :
   {{{
     is_txn_durable γ dinit logm ∗
-    inv N (is_source P γsrc) ∗
+    is_source P γsrc ∗
     [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a
   }}}
     RecoverExample #d @ 10; ⊤
   {{{ RET #(); True }}}
   {{{
-    ∃ γ' logm',
+    ∃ γ' γsrc' logm',
     is_txn_durable γ' dinit logm' ∗
-    [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a
+    is_source P γsrc' ∗
+    [∗ set] a ∈ covered_inodes, is_inode_stable γsrc' γ' a
   }}}.
 Proof using All.
-  iIntros (Φ Φc) "(Htxndurable & #Hsrc & Hstable) HΦ".
+  iIntros (Φ Φc) "(Htxndurable & Hsrc & Hstable) HΦ".
   rewrite /RecoverExample.
   wpc_pures.
   { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc".
-    iExists _, _. iFrame. }
+    iExists _, _, _. iFrame. }
 
   iApply wpc_cfupd.
-  wpc_apply (wpc_MkTxn Nbuftxn with "Htxndurable").
-  { solve_ndisj. }
-  { solve_ndisj. }
-
+  wpc_apply (wpc_Recover P P with "[$Htxndurable $Hsrc $Hstable]").
+  { eauto. }
   iSplit.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
-    iDestruct "H" as (γ' logm') "(%Hkinds & Htxndurable)".
-    iDestruct "Htxndurable" as "(Hdurable&[%Heq|#Hexch])".
-    { subst. iModIntro. iApply "HΦc". iExists _, _. iFrame. }
-    iMod (big_sepS_impl_cfupd with "Hstable []") as "Hcrash".
-    { iModIntro. iIntros (x Hx) "H".
-      iApply (is_inode_stable_crash with "[$] H").
-    }
-    iModIntro.
-    iApply "HΦc".
-    iExists _, _. iFrame.
+  { iLeft in "HΦ". iIntros "!> H". iDestruct "H" as (???) "(H1&>H2&H3)".
+    iModIntro. iApply "HΦ". iExists _, _, _. iFrame.
   }
-
-  iModIntro.
-  iIntros (γ' l) "(#Histxn & #Htxnsys & Hcfupdcancel & #Htxncrash)".
-
-  wpc_pures.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro.
-    iMod (big_sepS_impl_cfupd with "Hstable []") as "Hcrash".
-    { iModIntro. iIntros (x Hx) "H".
-      iMod (is_inode_stable_crash with "Htxncrash H") as "H".
-      iModIntro. iExact "H". }
-    iMod "Hcfupdcancel" as ">Hcfupdcancel".
-    iModIntro.
-    iApply "HΦc".
-    iDestruct "Hcfupdcancel" as (?) "H".
-    iExists _, _.
-    iFrame "Hcrash H".
-  }
-
-  wpc_apply (wpc_MkLockMap _ covered_inodes (is_inode_stable γsrc γ) (is_inode_stable γsrc γ') with "[Hstable]").
-  { iApply (big_sepS_impl with "Hstable").
-    iModIntro.
-    iIntros (a Ha) "H". iFrame.
-    iModIntro. iIntros ">Hstable".
-    iMod (is_inode_stable_crash with "Htxncrash Hstable") as "Hstable".
-    iModIntro. done. }
-
-  iSplit.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
-    rewrite -big_sepS_later.
-    iDestruct "H" as ">H".
-    iMod "Hcfupdcancel" as ">Hcfupdcancel".
-    iDestruct "Hcfupdcancel" as (?) "Hcfupdcancel".
-    iModIntro.
-    iApply "HΦc".
-    iExists _, _.
-    iFrame.
-  }
-
-  iModIntro.
-  iIntros (lm ghs) "[#Hlm Hlmcrash]".
-
+  iNext. iIntros (??) "(#Hfs&Hcancel)".
   iApply wp_wpc_frame'.
-  iSplitL "Hlmcrash Hcfupdcancel HΦ".
+  iSplitL "Hcancel HΦ".
   { iSplit.
     { iDestruct "HΦ" as "[HΦc _]". iModIntro.
-      rewrite -big_sepS_later.
-      iMod "Hlmcrash" as ">Hlmcrash". iMod "Hcfupdcancel" as ">Hcfupdcancel".
-      iModIntro. iApply "HΦc". iDestruct "Hcfupdcancel" as (?) "?". 
-      iExists _, _. iFrame. }
-    { iDestruct "HΦ" as "[_ HΦ]". iExact "HΦ". } }
-
-  wp_apply wp_allocStruct; first by eauto.
-  iIntros (nfs) "Hnfs".
-
-  iDestruct (struct_fields_split with "Hnfs") as "Hnfs". iNamed "Hnfs".
-  iMod (readonly_alloc_1 with "t") as "#Ht".
-  iMod (readonly_alloc_1 with "l") as "#Hl".
-
-  iAssert (is_fs P (Build_simple_names γ γ' γsrc ghs) nfs dinit) with "[]" as "Hfs".
-  { iExists _, _.
-    iFrame "Ht Hl Histxn Htxnsys Htxncrash Hsrc Hlm".
+      iMod "Hcancel" as (???) "(?&>?&?)".
+      iModIntro. iApply "HΦc".
+      iExists _, _, _. iFrame. }
+    { iRight in "HΦ". iExact "HΦ". }
   }
 
+  wp_pures.
   wp_apply wp_fork.
   { wp_apply wp_exampleWorker. { iExact "Hfs". } done. }
 
