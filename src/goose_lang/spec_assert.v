@@ -1,4 +1,4 @@
-From iris.algebra Require Import auth frac agree gmap list excl.
+From iris.algebra Require Import auth frac agree gmap excl.
 From iris.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.program_logic Require Export language.

@@ -1,5 +1,5 @@
 From iris.proofmode Require Import tactics.
-From iris.algebra Require Import auth excl list gmap_view.
+From iris.algebra Require Import auth excl gmap_view.
 From iris.base_logic.lib Require Export own proph_map.
 Set Default Proof Using "Type".
 Import uPred.

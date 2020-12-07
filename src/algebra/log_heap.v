@@ -1,5 +1,5 @@
 (* Multi-generational heaps *)
-From iris.algebra Require Import auth gmap frac agree functions list.
+From iris.algebra Require Import auth gmap frac agree functions.
 From iris.bi.lib Require Import fractional.
 From iris.base_logic.lib Require Export own invariants.
 From iris.base_logic.lib Require Import gen_heap.
