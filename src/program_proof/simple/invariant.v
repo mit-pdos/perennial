@@ -1,5 +1,4 @@
-From RecordUpdate Require Import RecordSet.
-Import RecordSetNotations.
+From RecordUpdate Require Import RecordUpdate.
 
 From Perennial.algebra Require Import deletable_heap liftable auth_map.
 From Perennial.Helpers Require Import Transitions.
@@ -11,7 +10,6 @@ From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
-From Perennial.algebra Require Import log_heap.
 From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof Require Import simple.spec.

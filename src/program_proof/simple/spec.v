@@ -1,11 +1,10 @@
 From stdpp Require Import decidable countable gmap.
-From Coq Require Import List String.
-From RecordUpdate Require Import RecordSet.
-Import RecordSetNotations.
+From Coq Require Import String List.
+From RecordUpdate Require Import RecordUpdate.
 From Perennial.Helpers Require Import Transitions Integers.
-From Perennial.algebra Require Import log_heap.
-Require Import Extraction.
 Set Implicit Arguments.
+
+Close Scope Z_scope.
 
 
 Module SimpleNFS.
