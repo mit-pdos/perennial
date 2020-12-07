@@ -162,13 +162,15 @@ Hint Rewrite repeat_length : len.
 
 (* sz is the number of blocks besides the log (so the size of the disk - 513) *)
 Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
+  dom (gset _) dinit = list_to_set (seqZ 513 sz) →
   513 + Z.of_nat sz < 2^64 →
   0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
  |={⊤}=> ∃ γ, is_txn_durable γ dinit ∗
          ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
 Proof.
-  iIntros (Hbound) "H".
+  iIntros (Hdinit_dom Hbound) "H".
   iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
+  { len; auto. }
 
   set (bs:=repeat block0 sz).
 

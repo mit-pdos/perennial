@@ -130,53 +130,6 @@ Qed.
 
 Open Scope Z_scope.
 
-Lemma dom_blocks_to_map_u64 {A} (f: Block → A) (bs: list Block) :
-  dom (gset u64) (list_to_map (imap (λ i x, (U64 (513 + i), f x)) bs) : gmap u64 _) =
-  rangeSet 513 (length bs).
-Proof.
-  rewrite dom_list_to_map_L.
-  rewrite fmap_imap /=.
-  change (λ n, fst ∘ _) with (λ (n:nat) (_:Block), U64 (513 + n)).
-  rewrite /rangeSet.
-  f_equal.
-  remember 513 as start. clear Heqstart.
-  generalize dependent start.
-  induction bs; simpl; intros.
-  - reflexivity.
-  - rewrite -> seqZ_cons by lia.
-    replace (Z.succ start) with (start + 1)%Z by lia.
-    replace (Z.pred (S (length bs))) with (Z.of_nat $ length bs) by lia.
-    rewrite fmap_cons.
-    replace (start + 0%nat) with start by lia.
-    f_equal.
-    rewrite -IHbs.
-    apply imap_ext; intros; simpl.
-    f_equal.
-    lia.
-Qed.
-
-Lemma dom_blocks_to_map_Z {A} (f: Block → A) (bs: list Block) :
-  dom (gset Z) (list_to_map (imap (λ i x, (513 + i, f x)) bs) : gmap Z _) =
-  list_to_set (seqZ 513 (length bs)).
-Proof.
-  rewrite dom_list_to_map_L.
-  rewrite fmap_imap /=.
-  change (λ n, fst ∘ _) with (λ (n:nat) (_:Block), (513 + n)).
-  f_equal.
-  remember 513 as start. clear Heqstart.
-  generalize dependent start.
-  induction bs; simpl; intros.
-  - reflexivity.
-  - rewrite -> seqZ_cons by lia.
-    replace (Z.succ start) with (start + 1) by lia.
-    replace (Z.pred (S (length bs))) with (Z.of_nat $ length bs) by lia.
-    replace (start + 0%nat) with start by lia.
-    f_equal.
-    rewrite -IHbs.
-    apply imap_ext; intros; simpl.
-    lia.
-Qed.
-
 Lemma lookup_list_to_map_1 K `{Countable K} A (l: list (K * A)) k v :
   list_to_map (M:=gmap K A) l !! k = Some v → (k, v) ∈ l.
 Proof.

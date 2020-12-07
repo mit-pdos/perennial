@@ -1,5 +1,7 @@
 From RecordUpdate Require Import RecordUpdate.
 
+From Perennial.Helpers Require Import range_set.
+
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 From Perennial.program_proof Require Import wal.circ_proof_crash.
@@ -473,15 +475,61 @@ Proof.
   apply disk_array_to_big_opM_ind.
 Qed.
 
-(* TODO: dinit needs to have the domain [513, 513 + length bs) (values don't
-matter) *)
+Lemma dom_blocks_to_map_u64 {A} (f: Block → A) (bs: list Block) :
+  dom (gset u64) (list_to_map (imap (λ i x, (U64 (513 + i), f x)) bs) : gmap u64 _) =
+  rangeSet 513 (length bs).
+Proof.
+  rewrite dom_list_to_map_L.
+  rewrite fmap_imap /=.
+  change (λ n, fst ∘ _) with (λ (n:nat) (_:Block), U64 (513 + n)).
+  rewrite /rangeSet.
+  f_equal.
+  remember 513 as start. clear Heqstart.
+  generalize dependent start.
+  induction bs; simpl; intros.
+  - reflexivity.
+  - rewrite -> seqZ_cons by lia.
+    replace (Z.succ start) with (start + 1)%Z by lia.
+    replace (Z.pred (S (length bs))) with (Z.of_nat $ length bs) by lia.
+    rewrite fmap_cons.
+    replace (start + 0%nat) with start by lia.
+    f_equal.
+    rewrite -IHbs.
+    apply imap_ext; intros; simpl.
+    f_equal.
+    lia.
+Qed.
+
+Lemma dom_blocks_to_map_Z {A} (f: Block → A) (bs: list Block) :
+  dom (gset Z) (list_to_map (imap (λ i x, (513 + i, f x)) bs) : gmap Z _) =
+  list_to_set (seqZ 513 (length bs)).
+Proof.
+  rewrite dom_list_to_map_L.
+  rewrite fmap_imap /=.
+  change (λ n, fst ∘ _) with (λ (n:nat) (_:Block), (513 + n)).
+  f_equal.
+  remember 513 as start. clear Heqstart.
+  generalize dependent start.
+  induction bs; simpl; intros.
+  - reflexivity.
+  - rewrite -> seqZ_cons by lia.
+    replace (Z.succ start) with (start + 1) by lia.
+    replace (Z.pred (S (length bs))) with (Z.of_nat $ length bs) by lia.
+    replace (start + 0%nat) with start by lia.
+    f_equal.
+    rewrite -IHbs.
+    apply imap_ext; intros; simpl.
+    lia.
+Qed.
+
 Lemma is_wal_inner_durable_init (bs: list Block) :
+  dom (gset _) dinit = list_to_set (seqZ 513 (length bs)) →
   0 d↦∗ repeat block0 513 ∗
   513 d↦∗ bs ={⊤}=∗
   let σ := log_state0 bs in
   ∃ γ, is_wal_inner_durable γ σ dinit ∗ wal_resources γ.
 Proof.
-  iIntros "[Hlog Hdata]".
+  iIntros (Hdinit_dom) "[Hlog Hdata]".
   iMod (circular_init with "Hlog") as (γcirc) "(Hcirc & Hcirc_appender & Hstart & Hend)".
   iDestruct (start_is_to_at_least with "Hstart") as "#Hstart_lb".
   iDestruct (diskEnd_is_to_at_least with "Hend") as "#Hend_lb".
@@ -600,8 +648,14 @@ Proof.
   iFrame "#".
   iSplit; first by rewrite /log_state0 //.
   iSplit; first by (iExists (U64 0); rewrite /log_state0 /circΣ.diskEnd //).
-  admit. (* needs fact about domain of dinit *)
-Admitted.
+  iPureIntro.
+  intros.
+  rewrite -!elem_of_dom.
+  rewrite Hdinit_dom.
+  f_equiv.
+  simpl.
+  rewrite dom_blocks_to_map_Z //.
+Qed.
 
 Lemma is_base_disk_crash γ γ' d :
   γ'.(base_disk_name) = γ.(base_disk_name) →
