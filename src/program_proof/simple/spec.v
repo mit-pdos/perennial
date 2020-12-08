@@ -58,11 +58,17 @@ Definition full_getattr (f : fh) : transition State (res fattr) :=
   else
     wrapper f (getattr f).
 
+Declare Scope slice.
+Delimit Scope slice with slice.
+Notation "a [: n ]" := (take n a) (at level 20, n at level 50, format "a [: n ]") : slice.
+Notation "a [ n :]" := (drop n a) (at level 10, n at level 50, format "a [ n :]") : slice.
+Open Scope slice.
+
 Definition setattr (f : fh) (a : sattr) (i : buf) : transition State unit :=
   match (sattr_size a) with
   | None => ret tt
   | Some sz =>
-    let i' := take (int.nat sz) i ++ replicate (int.nat sz - length i) (U8 0) in
+    let i' := i[:int.nat sz] ++ replicate (int.nat sz - length i) (U8 0) in
     _ <- modify (fun s => insert f i' s);
     ret tt
   end.
@@ -77,7 +83,7 @@ Definition read (f : fh) (off : u64) (count : u32) (i : buf) : transition State 
 Definition write (f : fh) (off : u64) (data : buf) (i : buf) : transition State u32 :=
   let off := int.nat off in
   _ <- check (off ≤ length i);
-  let i' := take off i ++ data ++ drop (off + length data) i in
+  let i' := i[:off] ++ data ++ i[off + length data :] in
   _ <- modify (fun s => insert f i' s);
   ret (U32 (length data)).
 
