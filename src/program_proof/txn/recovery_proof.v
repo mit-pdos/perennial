@@ -285,11 +285,10 @@ Proof.
   iMod (alloc_metamap _ (kind_heap0 kinds) with "metaheap") as (metamap) "(metaheap & Hmetas1 & Hmetas2)".
 
   iModIntro. iExists γ.
+  iFrame "crashstates2".
   rewrite /is_txn_durable.
   iSplitR "Hmetas2 logheap_mapsto_curs".
   2: {
-    iSplitR.
-    { admit. (* we never allocated this ghost state... *) }
     iDestruct (big_sepM2_sepM_1 with "Hmetas2") as "Hmetas2".
     iDestruct (big_sepM_sep with "[$Hmetas2 $logheap_mapsto_curs]") as "H".
     iApply (big_sepM_mono with "H").
@@ -318,8 +317,8 @@ Proof.
     iDestruct (big_sepM2_sepM_1 with "Hmetas") as "Hmetas".
 
     rewrite /kind_heap0 /gmap_addr_by_block.
-    rewrite gmap_uncurry_curry_non_empty.
-    2: {
+    rewrite gmap_uncurry_curry_non_empty; last first.
+    {
       intros i x Hix. rewrite lookup_fmap in Hix.
       apply fmap_Some_1 in Hix. destruct Hix. intuition idtac.
       destruct x0; subst.
@@ -372,8 +371,8 @@ Proof.
     rewrite /bufDataTs_in_crashblock.
 
     rewrite /kind_heap0 /gmap_addr_by_block.
-    rewrite gmap_uncurry_curry_non_empty.
-    2: {
+    rewrite gmap_uncurry_curry_non_empty; last first.
+    {
       intros i x Hix. rewrite lookup_fmap in Hix.
       apply fmap_Some_1 in Hix. destruct Hix. intuition idtac.
       destruct x0; subst.
@@ -423,7 +422,7 @@ Proof.
     etransitivity; last by apply Hbound.
     pose proof (block_bytes_pos).
     eapply Zmult_gt_0_lt_compat_r; lia.
-Admitted.
+Qed.
 
 Definition crash_heap_match γ logmap walheap : iProp Σ :=
   ([∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
