@@ -36,14 +36,15 @@ Section goose_lang.
 
   Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
     dom (gset _) dinit = list_to_set (seqZ 513 sz) →
-    513 + Z.of_nat sz < 2^64 →
+    dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
+    (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
     0 d↦∗ repeat circ_proof.block0 513 ∗ 513 d↦∗ repeat circ_proof.block0 sz -∗
   |={⊤}=> ∃ γ, let logm0 := Build_async (kind_heap0 kinds) [] in
                is_txn_durable γ dinit logm0 ∗
                ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_mapsto_own γ a o)
   .
   Proof.
-    iIntros (Hbound Hlt) "Hpre".
+    iIntros (Hdom1 Hdom2 Hlt) "Hpre".
 
     set (logm0 := Build_async (kind_heap0 kinds) []).
 
