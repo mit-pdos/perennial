@@ -286,10 +286,10 @@ Proof.
 
   iModIntro. iExists γ.
   rewrite /is_txn_durable.
-  iSplitR "Hmetas2 logheap_mapsto_curs wal_heap_crash_heaps".
+  iSplitR "Hmetas2 logheap_mapsto_curs".
   2: {
-    iSplitL "wal_heap_crash_heaps".
-    { admit. }
+    iSplitR.
+    { admit. (* we never allocated this ghost state... *) }
     iDestruct (big_sepM2_sepM_1 with "Hmetas2") as "Hmetas2".
     iDestruct (big_sepM_sep with "[$Hmetas2 $logheap_mapsto_curs]") as "H".
     iApply (big_sepM_mono with "H").
