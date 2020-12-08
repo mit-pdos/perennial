@@ -62,7 +62,7 @@ Definition inode0_map : gmap u64 object :=
 
 Definition bit0_map : gmap u64 object :=
   gset_to_gmap (existT _ (bufBit false))
-               (list_to_set $ U64 <$> seqZ 0 (8*4096)).
+               (list_to_set $ U64 <$> seqZ 0 (8*block_bytes)).
 
 Definition block0_map : gmap u64 object :=
   {[U64 0 := existT _ (bufBlock block0)]}.
@@ -108,8 +108,14 @@ Proof.
       move: n; word.
   - rewrite fst_imap.
     rewrite replicate_length.
-    admit. (* NoDup of u64 *)
-Admitted.
+    eapply NoDup_fmap_2_strong; last by eapply NoDup_seq.
+    intros x y Hx Hy Heq.
+    eapply elem_of_seq in Hx.
+    eapply elem_of_seq in Hy.
+    assert (int.Z (U64 (513 + Z.of_nat x)) = int.Z (U64 (513 + Z.of_nat y))).
+    { rewrite Heq. eauto. }
+    revert H. word.
+Qed.
 
 Lemma alloc_metamap names (m: gmap addr object):
   map_ctx names 1 ∅ ==∗
@@ -160,19 +166,108 @@ Qed.
 
 Hint Rewrite repeat_length : len.
 
+Lemma block_bytes_pos : 0 < Z.of_nat block_bytes.
+Proof. rewrite /block_bytes. lia. Qed.
+
+Opaque block_bytes.
+
+Lemma bit0_map_not_empty : ∅ ≠ bit0_map.
+Proof.
+  intro H. assert (bit0_map !! (U64 0) = None).
+  { rewrite -H. apply lookup_empty. }
+  apply lookup_gset_to_gmap_None in H0.
+  apply not_elem_of_list_to_set in H0.
+  apply H0. apply elem_of_list_fmap. eexists; intuition eauto.
+  eapply elem_of_seqZ. pose proof block_bytes_pos. lia.
+Qed.
+
+Lemma inode0_map_not_empty : ∅ ≠ inode0_map.
+Proof.
+  intro H. assert (inode0_map !! (U64 0) = None).
+  { rewrite -H. apply lookup_empty. }
+  apply lookup_gset_to_gmap_None in H0.
+  apply not_elem_of_union in H0. destruct H0 as [H0 H1].
+  replace (U64 (0 * 8 * 128)) with (U64 0) in H0 by reflexivity.
+  apply H0. eapply elem_of_singleton. congruence.
+Qed.
+
+Lemma block0_map_not_empty : ∅ ≠ block0_map.
+Proof.
+  intro H. assert (block0_map !! (U64 0) = None).
+  { rewrite -H. apply lookup_empty. }
+  rewrite lookup_singleton in H0. congruence.
+Qed.
+
+Hint Resolve bit0_map_not_empty : notempty.
+Hint Resolve inode0_map_not_empty : notempty.
+Hint Resolve block0_map_not_empty : notempty.
+
+Lemma repeat_lookup_inv {T} (a b : T) : ∀ n i, repeat a n !! i = Some b -> a = b.
+Proof.
+  induction n; simpl; intros.
+  { rewrite lookup_nil in H. congruence. }
+  destruct i; eauto.
+  inversion H; eauto.
+Qed.
+
+Lemma bufDataT_in_block0 kind off o n :
+  match kind with
+  | KindBit => bit0_map
+  | KindInode => inode0_map
+  | KindBlock => block0_map
+  end !! off = Some o ->
+  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  bufDataT_in_block block0 kind n off o.
+Proof.
+  intros. destruct kind.
+  - eapply lookup_gset_to_gmap_Some in H. intuition subst.
+    assert (valid_off KindBit off).
+    { apply valid_off_bit_trivial; eauto. }
+    rewrite /bufDataT_in_block /=. intuition eauto.
+    + rewrite /is_bufData_at_off. intuition eauto.
+      exists (U8 0). admit.
+    + rewrite /valid_addr /addr2flat_z /=.
+      admit.
+
+  - eapply lookup_gset_to_gmap_Some in H. intuition subst.
+    assert (valid_off KindInode off).
+    { admit. }
+    rewrite /bufDataT_in_block /=. intuition eauto.
+    + rewrite /is_bufData_at_off. intuition eauto.
+      admit.
+    + rewrite /valid_addr /addr2flat_z /=.
+      admit.
+
+  - rewrite /block0_map in H.
+    eapply lookup_singleton_Some in H. intuition subst.
+    assert (valid_off KindBlock (U64 0)).
+    { rewrite /valid_off.
+      replace (int.Z (U64 0)) with 0 by reflexivity.
+      rewrite Zmod_0_l. done. }
+    rewrite /bufDataT_in_block /=. intuition eauto.
+    + rewrite /is_bufData_at_off. intuition eauto.
+    + rewrite /valid_addr /addr2flat_z /=.
+      intuition try word.
+      pose proof (block_bytes_pos). word.
+Admitted.
+
 (* sz is the number of blocks besides the log (so the size of the disk - 513) *)
 Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
   dom (gset _) dinit = list_to_set (seqZ 513 sz) →
-  513 + Z.of_nat sz < 2^64 →
+  dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
+  (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
   0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
  |={⊤}=> ∃ γ, is_txn_durable γ dinit ∗
          ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
 Proof.
-  iIntros (Hdinit_dom Hbound) "H".
+  iIntros (Hdinit_dom Hkinds_dom Hbound) "H".
   iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
   { len; auto. }
 
   set (bs:=repeat block0 sz).
+
+  assert (513 + Z.of_nat sz < 2^64) as Hbound2.
+  { pose proof (block_bytes_pos). lia. }
 
   iMod (wal_heap_inv_init γwalnames bs) as (γheapnames Heq1) "Hheap".
   { rewrite /bs; len. }
@@ -190,8 +285,15 @@ Proof.
 
   iModIntro. iExists γ.
   rewrite /is_txn_durable.
-  iSplitL. (* TODO: split out resources needed for mapsto_txn *)
-  2: admit.
+  iSplitR "Hmetas2 logheap_mapsto_curs".
+  2: {
+    iDestruct (big_sepM2_sepM_1 with "Hmetas2") as "Hmetas2".
+    iDestruct (big_sepM_sep with "[$Hmetas2 $logheap_mapsto_curs]") as "H".
+    iApply (big_sepM_mono with "H").
+    iIntros (k x Hkx) "[H0 H1]".
+    iDestruct "H0" as (γm) "(% & Ha & Hb)".
+    iExists _. iFrame.
+  }
   iExists (log_state0 bs), (Build_async (kind_heap0 kinds) []).
   iExists (Build_async (crash_heap0 bs) []).
 
@@ -205,19 +307,120 @@ Proof.
   rewrite Heq2.
   simpl.
   iFrame "wal_heap_crash_heaps logheap crashstates1 metaheap".
+
   iSplitL "Hmetas1 wal_heap_h_mapsto".
   - iDestruct (gmap_addr_by_block_big_sepM2 with "Hmetas1") as "Hmetas".
-    (* already wrong need to somehow merge the mapstos over gh_heapblock0 bs
-    into this big_sepM2 *)
-    iApply (big_sepM2_mono with "Hmetas").
+    iDestruct (big_sepM2_dom with "Hmetas") as "%Hmetadom".
+    iApply big_sepM_sepM2_merge_ex; eauto.
+    iDestruct (big_sepM2_sepM_1 with "Hmetas") as "Hmetas".
+
+    rewrite /kind_heap0 /gmap_addr_by_block.
+    rewrite gmap_uncurry_curry_non_empty.
+    2: {
+      intros i x Hix. rewrite lookup_fmap in Hix.
+      apply fmap_Some_1 in Hix. destruct Hix. intuition idtac.
+      destruct x0; subst.
+      { eapply bit0_map_not_empty. eassumption. }
+      { eapply inode0_map_not_empty. eassumption. }
+      { eapply block0_map_not_empty. eassumption. }
+    }
+
+    iDestruct (big_sepM_sepM2_merge with "[$wal_heap_h_mapsto $Hmetas]") as "H".
+    { rewrite /gh_heapblock0.
+      rewrite dom_fmap_L Hkinds_dom.
+      rewrite dom_list_to_map_L. f_equal.
+      rewrite fst_imap. subst bs. rewrite repeat_length. rewrite /seqZ.
+      replace (Z.to_nat (Z.of_nat sz)) with sz by lia.
+      rewrite list_fmap_compose. f_equal.
+      eapply list_fmap_ext; eauto. lia.
+    }
+
+    iDestruct (big_sepM2_sepM_2 with "H") as "H".
+    iApply (big_sepM_mono with "H").
     intros.
     iIntros "Hm".
-    iExists block0, [].
-    admit.
+    iDestruct "Hm" as (hb) "(%Hhb & Hmapsto & H)". destruct hb.
+    iDestruct "H" as (mm) "(%Hmm & Hmm)".
+    iExists _. iSplit; first by eauto.
+    rewrite lookup_fmap in H.
+    destruct (kinds !! k) eqn:Hk; simpl in H; inversion H; clear H. subst.
+    iExists _, _, _. iSplit; first by (subst; eauto).
+    iFrame. iApply (big_sepM2_mono with "Hmm").
+    intros. iIntros "H".
+    iExists _. iFrame. iPureIntro.
+    apply lookup_list_to_map_1 in Hhb.
+    apply elem_of_lookup_imap_1 in Hhb. destruct Hhb as [hb_i [hb_b [Hhb0 Hhb1]]].
+    inversion Hhb0; clear Hhb0; subst. simpl.
+    apply repeat_lookup_inv in Hhb1; subst.
+
+    eapply bufDataT_in_block0; eauto.
+    assert (is_Some (γ.(txn_kinds) !! U64 (513 + Z.of_nat hb_i))) as Hs; eauto.
+    eapply elem_of_dom in Hs. rewrite Hkinds_dom in Hs.
+    eapply elem_of_list_to_set in Hs.
+    eapply elem_of_list_fmap_2 in Hs. destruct Hs as [y [Hs0 Hs1]]. rewrite Hs0.
+    eapply elem_of_seqZ in Hs1. intuition subst.
+    replace (int.Z (U64 y)) with y by word.
+    rewrite -Z.mul_assoc. rewrite -Z.mul_assoc in Hbound.
+    eapply Z.le_lt_trans; last by apply Hbound.
+    pose proof (block_bytes_pos).
+    eapply Zmult_gt_0_le_compat_r; try lia.
+
   - rewrite right_id /named.
     rewrite /bufDataTs_in_crashblock.
-    admit. (* this is just a pure fact *)
-Abort.
+
+    rewrite /kind_heap0 /gmap_addr_by_block.
+    rewrite gmap_uncurry_curry_non_empty.
+    2: {
+      intros i x Hix. rewrite lookup_fmap in Hix.
+      apply fmap_Some_1 in Hix. destruct Hix. intuition idtac.
+      destruct x0; subst.
+      { eapply bit0_map_not_empty. eassumption. }
+      { eapply inode0_map_not_empty. eassumption. }
+      { eapply block0_map_not_empty. eassumption. }
+    }
+
+    iApply big_sepM_sepM2_merge_ex.
+    {
+      rewrite /crash_heap0.
+      rewrite dom_fmap_L Hkinds_dom.
+      rewrite dom_list_to_map_L. f_equal.
+      rewrite fst_imap. subst bs. rewrite repeat_length. rewrite /seqZ.
+      replace (Z.to_nat (Z.of_nat sz)) with sz by lia.
+      rewrite -list_fmap_compose.
+      eapply list_fmap_ext; eauto.
+      intros. rewrite /compose. f_equal. lia.
+    }
+
+    rewrite big_sepM_forall. iPureIntro. intros x m Hxm.
+    rewrite lookup_fmap in Hxm.
+    destruct (kinds !! x) eqn:He; inversion Hxm; clear Hxm; subst.
+    exists block0. split.
+    {
+      rewrite crash_heap0_repeat_block0; last by lia.
+      eapply lookup_gset_to_gmap_Some; intuition eauto.
+      eapply rangeSet_lookup; try lia.
+      assert (is_Some (γ.(txn_kinds) !! x)) as Hs; eauto.
+      eapply elem_of_dom in Hs. rewrite Hkinds_dom in Hs.
+      eapply elem_of_list_to_set in Hs.
+      eapply elem_of_list_fmap_2 in Hs. destruct Hs as [y [Hs0 Hs1]].
+      eapply elem_of_seqZ in Hs1. intuition subst; word.
+    }
+
+    eexists _. intuition eauto.
+    eapply map_Forall_lookup_2. intros.
+
+    eapply bufDataT_in_block0; eauto.
+    assert (is_Some (γ.(txn_kinds) !! x)) as Hs; eauto.
+    eapply elem_of_dom in Hs. rewrite Hkinds_dom in Hs.
+    eapply elem_of_list_to_set in Hs.
+    eapply elem_of_list_fmap_2 in Hs. destruct Hs as [y [Hs0 Hs1]].
+    eapply elem_of_seqZ in Hs1. intuition subst.
+    replace (int.Z (U64 y)) with y by word.
+    rewrite -Z.mul_assoc. rewrite -Z.mul_assoc in Hbound.
+    etransitivity; last by apply Hbound.
+    pose proof (block_bytes_pos).
+    eapply Zmult_gt_0_lt_compat_r; lia.
+Qed.
 
 Definition crash_heap_match γ logmap walheap : iProp Σ :=
   ([∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
