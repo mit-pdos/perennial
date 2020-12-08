@@ -34,6 +34,48 @@ Section goose_lang.
     "Hlogm" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (3/4) logm ∗
     "Hasync_ctx" ∷ async_ctx γ.(buftxn_async_name) 1 logm.
 
+  Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
+    dom (gset _) dinit = list_to_set (seqZ 513 sz) →
+    513 + Z.of_nat sz < 2^64 →
+    0 d↦∗ repeat circ_proof.block0 513 ∗ 513 d↦∗ repeat circ_proof.block0 sz -∗
+  |={⊤}=> ∃ γ, let logm0 := Build_async (kind_heap0 kinds) [] in
+               is_txn_durable γ dinit logm0 ∗
+               ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_mapsto_own γ a o)
+  .
+  Proof.
+    iIntros (Hbound Hlt) "Hpre".
+
+    set (logm0 := Build_async (kind_heap0 kinds) []).
+
+    iMod (recovery_proof.is_txn_durable_init dinit kinds with "Hpre") as
+        (γtxn) "(Htxn_durable & Hlogm & Hmapsto)"; [ done .. | ].
+    iMod (async_pre_ctx_init) as (γasync) "Hctx".
+    iMod (async_ctx_init _ logm0 with "Hctx") as "[Hctx Hephemeral_val_froms]".
+    { simpl. apply Forall_nil; auto. }
+    simpl.
+
+    iModIntro.
+    iExists {| buftxn_txn_names := γtxn;
+               buftxn_async_name := γasync; |}.
+    rewrite /is_txn_durable /=.
+    (* TODO: iFrame here is way slower than it should be, if Htxn_durable isn't
+    specified first *)
+    iFrame "Htxn_durable ∗".
+    iDestruct (big_sepM_sep with "[$Hmapsto $Hephemeral_val_froms]") as "H".
+    iApply (big_sepM_mono with "H"); simpl.
+    intros.
+    iIntros "[Hmapsto Heph]".
+    rewrite /durable_mapsto_own.
+    iSplitL "Hmapsto".
+    - iExists _; iFrame.
+    - rewrite /durable_mapsto /=.
+      iExists _; iFrame.
+      rewrite /txn_durable /=.
+      admit. (* need to somehow keep track of mnat for heapspec
+      wal_heap_durable_lb (where is that even allocated during
+      initialization?) *)
+  Admitted.
+
   Definition txn_cfupd_cancel dinit γ' : iProp Σ :=
     (<bdisc> (|C={⊤}_0=>
               ▷ ∃ logm', is_txn_durable γ' dinit logm' )).

@@ -166,6 +166,7 @@ Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
   513 + Z.of_nat sz < 2^64 →
   0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
  |={⊤}=> ∃ γ, is_txn_durable γ dinit ∗
+              ghost_var γ.(txn_crashstates) (3/4) (Build_async (kind_heap0 kinds) []) ∗
          ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
 Proof.
   iIntros (Hdinit_dom Hbound) "H".
@@ -173,6 +174,7 @@ Proof.
   { len; auto. }
 
   set (bs:=repeat block0 sz).
+  set (logm0:=Build_async (kind_heap0 kinds) []).
 
   iMod (wal_heap_inv_init γwalnames bs) as (γheapnames Heq1) "Hheap".
   { rewrite /bs; len. }
@@ -181,6 +183,7 @@ Proof.
   iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Hinit".
   iNamed "Hinit".
   iMod (log_heap_set (kind_heap0 kinds) with "logheap") as "[logheap logheap_mapsto_curs]".
+  rewrite -/logm0.
   iMod (ghost_var_update (Build_async (kind_heap0 kinds) [])
           with "crashstates") as "H".
   iEval (rewrite -Qp_quarter_three_quarter) in "H".
@@ -189,10 +192,11 @@ Proof.
   iMod (alloc_metamap _ (kind_heap0 kinds) with "metaheap") as (metamap) "(metaheap & Hmetas1 & Hmetas2)".
 
   iModIntro. iExists γ.
+  iFrame "crashstates2".
   rewrite /is_txn_durable.
   iSplitL. (* TODO: split out resources needed for mapsto_txn *)
   2: admit.
-  iExists (log_state0 bs), (Build_async (kind_heap0 kinds) []).
+  iExists (log_state0 bs), logm0.
   iExists (Build_async (crash_heap0 bs) []).
 
   iSplit.
@@ -217,7 +221,7 @@ Proof.
   - rewrite right_id /named.
     rewrite /bufDataTs_in_crashblock.
     admit. (* this is just a pure fact *)
-Abort.
+Admitted.
 
 Definition crash_heap_match γ logmap walheap : iProp Σ :=
   ([∗ map] blkno ↦ offmap;walblock ∈ gmap_addr_by_block logmap;walheap,
