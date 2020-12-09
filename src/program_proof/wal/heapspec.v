@@ -240,6 +240,7 @@ Qed.
 Lemma wal_heap_inv_init (γwalnames: wal_names) bs :
   513 + Z.of_nat (length bs) < 2^64 →
   ⊢ |==> ∃ γheapnames, "%Hwalnames" ∷ ⌜γheapnames.(wal_heap_walnames) = γwalnames⌝ ∗
+                       "#Hheap_lb" ∷ mnat_own_lb γheapnames.(wal_heap_durable_lb) 0 ∗
                        "Hheap_inv" ∷ wal_heap_inv γheapnames (log_state0 bs) ∗
                        "wal_heap_locked" ∷ is_locked_walheap γheapnames
                          {| locked_wh_σd := (log_state0 bs).(log_state.d);
@@ -268,12 +269,14 @@ Proof.
        as "H".
   iEval (rewrite -Qp_three_quarter_quarter) in "H".
   iDestruct (fractional.fractional_split with "H") as "[wal_heap_crash_heaps1 wal_heap_crash_heaps2]".
+  iDestruct (mnat_get_lb with "wal_durable_lb") as "#Hlb".
 
   iModIntro.
 
   simpl.
   iExists γheapnames; iFrame.
   iSplit; first by done.
+  iFrame "Hlb".
   iExists gh, crash_heaps.
   iSplit.
   { iPureIntro.

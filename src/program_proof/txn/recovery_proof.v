@@ -1,3 +1,4 @@
+From iris.base_logic.lib Require Import mnat.
 From Perennial.Helpers Require Import Transitions NamedProps Map gset range_set.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
@@ -214,6 +215,7 @@ Lemma block0_to_vals : Block_to_vals block0 = replicate block_bytes (#(U8 0)).
 Proof. reflexivity. Qed.
 
 Lemma extract_inode0 (off: u64) :
+  (* off is actually less than 8*8*128 *)
   int.Z off < 8*4096 → (* TODO: not sure what bound is *)
   extract_nth block0 inode_bytes (int.nat off `div` (inode_bytes * 8)) =
   inode_to_vals inode_buf0.
@@ -340,9 +342,11 @@ Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
   dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
   (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
   0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
- |={⊤}=> ∃ γ, is_txn_durable γ dinit ∗
-         ghost_var γ.(txn_crashstates) (3/4) (Build_async (kind_heap0 kinds) []) ∗
-         ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
+ |={⊤}=> ∃ γ,
+         "Htxn_durable" ∷ is_txn_durable γ dinit ∗
+         "#Hdurable_lb" ∷ mnat_own_lb γ.(txn_walnames).(wal_heap_durable_lb) 0 ∗
+         "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (3/4) (Build_async (kind_heap0 kinds) []) ∗
+         "Hmapsto_txns" ∷ ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
 Proof.
   iIntros (Hdinit_dom Hkinds_dom Hbound) "H".
   iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
@@ -368,7 +372,8 @@ Proof.
   iMod (alloc_metamap _ (kind_heap0 kinds) with "metaheap") as (metamap) "(metaheap & Hmetas1 & Hmetas2)".
 
   iModIntro. iExists γ.
-  iFrame "crashstates2".
+  rewrite Heq2.
+  iFrame "Hheap_lb crashstates2".
   rewrite /is_txn_durable.
   iSplitR "Hmetas2 logheap_mapsto_curs".
   2: {

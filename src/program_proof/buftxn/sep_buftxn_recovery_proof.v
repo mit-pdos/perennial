@@ -41,6 +41,7 @@ Section goose_lang.
     0 d↦∗ repeat circ_proof.block0 513 ∗ 513 d↦∗ repeat circ_proof.block0 sz -∗
   |={⊤}=> ∃ γ, let logm0 := Build_async (kind_heap0 kinds) [] in
                is_txn_durable γ dinit logm0 ∗
+               txn_durable γ 0 ∗
                ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_mapsto_own γ a o)
   .
   Proof.
@@ -49,7 +50,7 @@ Section goose_lang.
     set (logm0 := Build_async (kind_heap0 kinds) []).
 
     iMod (recovery_proof.is_txn_durable_init dinit kinds with "Hpre") as
-        (γtxn) "(Htxn_durable & Hlogm & Hmapsto)"; [ done .. | ].
+        (γtxn) "Htxn"; [ done .. | iNamed "Htxn" ].
     iMod (async_pre_ctx_init) as (γasync) "Hctx".
     iMod (async_ctx_init _ logm0 with "Hctx") as "[Hctx Hephemeral_val_froms]".
     { simpl. apply Forall_nil; auto. }
@@ -62,20 +63,18 @@ Section goose_lang.
     (* TODO: iFrame here is way slower than it should be, if Htxn_durable isn't
     specified first *)
     iFrame "Htxn_durable ∗".
-    iDestruct (big_sepM_sep with "[$Hmapsto $Hephemeral_val_froms]") as "H".
-    iApply (big_sepM_mono with "H"); simpl.
-    intros.
-    iIntros "[Hmapsto Heph]".
+    iFrame "Hdurable_lb".
+    iDestruct (big_sepM_sep with "[$Hmapsto_txns $Hephemeral_val_froms]") as "H".
+    iApply (big_sepM_impl with "H"); simpl.
+    iIntros "!>" (a o Hlookup) "[Hmapsto Heph]".
     rewrite /durable_mapsto_own.
     iSplitL "Hmapsto".
     - iExists _; iFrame.
     - rewrite /durable_mapsto /=.
       iExists _; iFrame.
       rewrite /txn_durable /=.
-      admit. (* need to somehow keep track of mnat for heapspec
-      wal_heap_durable_lb (where is that even allocated during
-      initialization?) *)
-  Admitted.
+      iFrame "#".
+  Qed.
 
   Definition txn_cfupd_cancel dinit γ' : iProp Σ :=
     (<bdisc> (|C={⊤}_0=>
