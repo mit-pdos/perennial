@@ -220,6 +220,105 @@ Lemma extract_inode0 (off: u64) :
 Proof.
 Admitted.
 
+Lemma bufDataT_in_block0_bit off o (n: u64) :
+  bit0_map !! off = Some o ->
+  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  bufDataT_in_block block0 KindBit n off o.
+Proof.
+  intros H H0.
+  eapply lookup_gset_to_gmap_Some in H. intuition subst.
+  assert (valid_off KindBit off).
+  { apply valid_off_bit_trivial; eauto. }
+  rewrite /bufDataT_in_block /=.
+  apply elem_of_list_to_set in H1.
+  apply elem_of_list_lookup in H1 as [i ?].
+  fmap_Some in H1.
+  apply lookup_seqZ in H1 as [-> ?].
+  intuition eauto.
+  + rewrite /is_bufData_at_off. intuition eauto.
+    exists (U8 0).
+    rewrite !Z.add_0_l.
+    split.
+    * rewrite /extract_nth block0_to_vals.
+      rewrite take_replicate drop_replicate.
+      match goal with
+      | |- context[replicate ?n _] => replace n with 1%nat; [ reflexivity | ]
+      end.
+      rewrite block_bytes_eq in H1 |- *.
+      rewrite !Nat.mul_1_r.
+      rewrite Nat.min_l; [ lia | ].
+      replace (int.nat i) with i by word.
+      apply Z.div_lt_upper_bound in H1; [ | lia ].
+      rewrite -> Z2Nat.id in H1 by lia.
+      replace (Nat.div i 8) with (Z.to_nat $ Z.div (Z.of_nat i) 8); try lia.
+      rewrite Z2Nat_inj_div; try lia.
+      change (Z.to_nat 8) with 8%nat.
+      rewrite Nat2Z.id.
+      lia.
+    * rewrite /get_bit.
+      rewrite decide_False //.
+      intros Heq%(f_equal int.Z); move: Heq.
+      rewrite word.unsigned_and_nowrap.
+      rewrite word.unsigned_sru_nowrap.
+      { change (int.Z (U8 0)) with 0; simpl.
+        rewrite Z.shiftr_0_l //. }
+      rewrite /u8_from_u64.
+      rewrite word.unsigned_of_Z word.unsigned_modu_nowrap //.
+      change (int.Z 8) with 8.
+      rewrite block_bytes_eq in H1.
+      replace (int.Z i) with (Z.of_nat i) by word.
+      rewrite /word.wrap.
+      assert (0 ≤ i `mod` 8 < 8) by (apply Z.mod_bound_pos; lia).
+      rewrite Z.mod_small; lia.
+  + rewrite /valid_addr /addr2flat_z /=.
+    rewrite -> block_bytes_eq in *.
+    split_and!; try word.
+Qed.
+
+Lemma bufDataT_in_block0_inode off o (n: u64) :
+  inode0_map !! off = Some o ->
+  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  bufDataT_in_block block0 KindInode n off o.
+Proof.
+  intros.
+  eapply lookup_gset_to_gmap_Some in H. intuition subst.
+  rewrite -> !elem_of_union, !elem_of_singleton, elem_of_empty in H1.
+  rewrite /bufDataT_in_block; simpl.
+  rewrite /is_bufData_at_off.
+  feed pose proof (extract_inode0 off) as Hextract.
+  { (intuition subst); reflexivity. }
+  rewrite /valid_addr /valid_off /addr2flat_z /=.
+  assert (valid_off KindInode off).
+  { rewrite /valid_off.
+    (intuition subst); reflexivity. }
+  split_and!; auto.
+  { (intuition subst); reflexivity. }
+  - lia.
+  - rewrite /valid_off /= in H.
+    rewrite block_bytes_eq in H0 |- *.
+    assert (int.Z off ≤ 8192).
+    { (intuition subst); rewrite word.unsigned_of_Z //. }
+    lia.
+Qed.
+
+Lemma bufDataT_in_block0_block off o (n: u64) :
+  block0_map !! off = Some o ->
+  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  bufDataT_in_block block0 KindBlock n off o.
+Proof.
+  rewrite /block0_map => H H0.
+  eapply lookup_singleton_Some in H. intuition subst.
+  assert (valid_off KindBlock (U64 0)).
+  { rewrite /valid_off.
+    replace (int.Z (U64 0)) with 0 by reflexivity.
+    rewrite Zmod_0_l. done. }
+  rewrite /bufDataT_in_block /=. intuition eauto.
+  + rewrite /is_bufData_at_off. intuition eauto.
+  + rewrite /valid_addr /addr2flat_z /=.
+    intuition try word.
+    pose proof (block_bytes_pos). word.
+Qed.
+
 Lemma bufDataT_in_block0 kind off o n :
   match kind with
   | KindBit => bit0_map
@@ -229,70 +328,11 @@ Lemma bufDataT_in_block0 kind off o n :
   int.Z n * block_bytes * 8 < 2 ^ 64 ->
   bufDataT_in_block block0 kind n off o.
 Proof.
-  intros. destruct kind.
-  - eapply lookup_gset_to_gmap_Some in H. intuition subst.
-    assert (valid_off KindBit off).
-    { apply valid_off_bit_trivial; eauto. }
-    rewrite /bufDataT_in_block /=.
-    apply elem_of_list_to_set in H1.
-    apply elem_of_list_lookup in H1 as [i ?].
-    fmap_Some in H1.
-    apply lookup_seqZ in H1 as [-> ?].
-    intuition eauto.
-    + rewrite /is_bufData_at_off. intuition eauto.
-      exists (U8 0).
-      rewrite !Z.add_0_l.
-      split.
-      * rewrite /extract_nth block0_to_vals.
-        rewrite take_replicate drop_replicate.
-        match goal with
-        | |- context[replicate ?n _] => replace n with 1%nat; [ reflexivity | ]
-        end.
-        rewrite block_bytes_eq in H1 |- *.
-        rewrite !Nat.mul_1_r.
-        rewrite Nat.min_l; [ lia | ].
-        admit. (* something about div mono *)
-      * rewrite /get_bit.
-        rewrite decide_False //.
-        intros Heq%(f_equal int.Z); move: Heq.
-        rewrite word.unsigned_and.
-        rewrite word.unsigned_sru.
-        { change (int.Z (U8 0)) with 0; simpl.
-          rewrite Z.shiftr_0_l //. }
-        rewrite /u8_from_u64.
-        rewrite /U8.
-        rewrite word.unsigned_of_Z word.unsigned_modu_nowrap //.
-        admit. (* seems not hard? *)
-    + rewrite /valid_addr /addr2flat_z /=.
-      admit.
-
-  - eapply lookup_gset_to_gmap_Some in H. intuition subst.
-    rewrite -> !elem_of_union, !elem_of_singleton, elem_of_empty in H1.
-    rewrite /bufDataT_in_block; simpl.
-    rewrite /is_bufData_at_off.
-    feed pose proof (extract_inode0 off) as Hextract.
-    { (intuition subst); reflexivity. }
-    rewrite /valid_addr /valid_off /addr2flat_z /=.
-    assert (valid_off KindInode off).
-    { rewrite /valid_off.
-      (intuition subst); reflexivity. }
-    split_and!; auto.
-    { (intuition subst); reflexivity. }
-    + admit.
-    + admit.
-
-  - rewrite /block0_map in H.
-    eapply lookup_singleton_Some in H. intuition subst.
-    assert (valid_off KindBlock (U64 0)).
-    { rewrite /valid_off.
-      replace (int.Z (U64 0)) with 0 by reflexivity.
-      rewrite Zmod_0_l. done. }
-    rewrite /bufDataT_in_block /=. intuition eauto.
-    + rewrite /is_bufData_at_off. intuition eauto.
-    + rewrite /valid_addr /addr2flat_z /=.
-      intuition try word.
-      pose proof (block_bytes_pos). word.
-Admitted.
+  intros. destruct kind;
+          auto using bufDataT_in_block0_bit,
+          bufDataT_in_block0_block,
+          bufDataT_in_block0_inode.
+Qed.
 
 (* sz is the number of blocks besides the log (so the size of the disk - 513) *)
 Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
