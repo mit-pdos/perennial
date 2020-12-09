@@ -210,6 +210,16 @@ Proof.
   inversion H; eauto.
 Qed.
 
+Lemma block0_to_vals : Block_to_vals block0 = replicate block_bytes (#(U8 0)).
+Proof. reflexivity. Qed.
+
+Lemma extract_inode0 (off: u64) :
+  int.Z off < 8*4096 → (* TODO: not sure what bound is *)
+  extract_nth block0 inode_bytes (int.nat off `div` (inode_bytes * 8)) =
+  inode_to_vals inode_buf0.
+Proof.
+Admitted.
+
 Lemma bufDataT_in_block0 kind off o n :
   match kind with
   | KindBit => bit0_map
@@ -223,20 +233,53 @@ Proof.
   - eapply lookup_gset_to_gmap_Some in H. intuition subst.
     assert (valid_off KindBit off).
     { apply valid_off_bit_trivial; eauto. }
-    rewrite /bufDataT_in_block /=. intuition eauto.
+    rewrite /bufDataT_in_block /=.
+    apply elem_of_list_to_set in H1.
+    apply elem_of_list_lookup in H1 as [i ?].
+    fmap_Some in H1.
+    apply lookup_seqZ in H1 as [-> ?].
+    intuition eauto.
     + rewrite /is_bufData_at_off. intuition eauto.
-      exists (U8 0). admit.
+      exists (U8 0).
+      rewrite !Z.add_0_l.
+      split.
+      * rewrite /extract_nth block0_to_vals.
+        rewrite take_replicate drop_replicate.
+        match goal with
+        | |- context[replicate ?n _] => replace n with 1%nat; [ reflexivity | ]
+        end.
+        rewrite block_bytes_eq in H1 |- *.
+        rewrite !Nat.mul_1_r.
+        rewrite Nat.min_l; [ lia | ].
+        admit. (* something about div mono *)
+      * rewrite /get_bit.
+        rewrite decide_False //.
+        intros Heq%(f_equal int.Z); move: Heq.
+        rewrite word.unsigned_and.
+        rewrite word.unsigned_sru.
+        { change (int.Z (U8 0)) with 0; simpl.
+          rewrite Z.shiftr_0_l //. }
+        rewrite /u8_from_u64.
+        rewrite /U8.
+        rewrite word.unsigned_of_Z word.unsigned_modu_nowrap //.
+        admit. (* seems not hard? *)
     + rewrite /valid_addr /addr2flat_z /=.
       admit.
 
   - eapply lookup_gset_to_gmap_Some in H. intuition subst.
+    rewrite -> !elem_of_union, !elem_of_singleton, elem_of_empty in H1.
+    rewrite /bufDataT_in_block; simpl.
+    rewrite /is_bufData_at_off.
+    feed pose proof (extract_inode0 off) as Hextract.
+    { (intuition subst); reflexivity. }
+    rewrite /valid_addr /valid_off /addr2flat_z /=.
     assert (valid_off KindInode off).
-    { admit. }
-    rewrite /bufDataT_in_block /=. intuition eauto.
-    + rewrite /is_bufData_at_off. intuition eauto.
-      admit.
-    + rewrite /valid_addr /addr2flat_z /=.
-      admit.
+    { rewrite /valid_off.
+      (intuition subst); reflexivity. }
+    split_and!; auto.
+    { (intuition subst); reflexivity. }
+    + admit.
+    + admit.
 
   - rewrite /block0_map in H.
     eapply lookup_singleton_Some in H. intuition subst.

@@ -59,6 +59,9 @@ Definition BlockSize {ext: ext_op}: val := #4096.
 Definition Block := vec byte block_bytes.
 Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
 
+Lemma block_bytes_eq : block_bytes = Z.to_nat 4096.
+Proof. reflexivity. Qed.
+
 Global Instance Block0: Inhabited Block := _.
 Global Instance Block_countable : Countable Block := _.
 
