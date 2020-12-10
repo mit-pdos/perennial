@@ -214,13 +214,36 @@ Qed.
 Lemma block0_to_vals : Block_to_vals block0 = replicate block_bytes (#(U8 0)).
 Proof. reflexivity. Qed.
 
+Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Lemma extract_inode0 (off: u64) :
   (* off is actually less than 8*8*128 *)
+  int.Z off `mod` 1024 = 0 →
   int.Z off < 8*4096 → (* TODO: not sure what bound is *)
   extract_nth block0 inode_bytes (int.nat off `div` (inode_bytes * 8)) =
   inode_to_vals inode_buf0.
 Proof.
-Admitted.
+  intros.
+  rewrite /extract_nth.
+  rewrite block0_to_vals.
+  rewrite take_replicate drop_replicate.
+  rewrite /inode_buf0.
+  rewrite /inode_to_vals.
+  rewrite vec_to_list_replicate.
+  rewrite fmap_replicate.
+  f_equal.
+  rewrite /inode_bytes block_bytes_eq.
+  rewrite Nat.min_l; try word.
+  change (Z.to_nat 128 * 8)%nat with 1024%nat.
+  change (Z.to_nat 4096) with 4096%nat.
+  change (Z.to_nat 128) with 128%nat.
+  assert (int.nat off < 8 * 4096)%nat by lia.
+  cut (int.nat off `div` 1024 < 32)%nat; try lia.
+  change (8*4096)%nat with (Z.to_nat 32768) in H1.
+  apply Nat2Z.inj_lt.
+  rewrite Nat2Z_inj_div.
+  lia.
+Qed.
 
 Lemma bufDataT_in_block0_bit off o (n: u64) :
   bit0_map !! off = Some o ->
@@ -292,22 +315,20 @@ Proof.
   set (off:=i * 8* 128).
   rewrite /bufDataT_in_block; simpl.
   rewrite /is_bufData_at_off.
-  feed pose proof (extract_inode0 off) as Hextract.
-  { word. }
+  feed pose proof (extract_inode0 off) as Hextract; [ word .. | ].
   rewrite /valid_addr /valid_off /addr2flat_z /=.
   assert (valid_off KindInode off).
   { rewrite /valid_off /=.
-    word_cleanup.
-    rewrite /off.
-    rewrite -assoc_L; change (8*128) with 1024.
-    admit. (* simple mod arith thing *) }
+    word. }
   split_and!; auto.
   { rewrite block_bytes_eq. word. }
   - lia.
   - rewrite /valid_off /= in H.
     rewrite block_bytes_eq in H0 |- *.
     word.
-Admitted.
+Qed.
+
+Ltac Zify.zify_post_hook ::= idtac.
 
 Lemma bufDataT_in_block0_block off o (n: u64) :
   block0_map !! off = Some o ->

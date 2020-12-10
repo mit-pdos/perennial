@@ -95,6 +95,30 @@ Proof.
   auto with f_equal lia.
 Qed.
 
+Lemma gmap_curry_union K1 K2 `{Countable K1} `{Countable K2} A
+      (m1 m2: gmap K1 (gmap K2 A)) :
+  m1 ##ₘ m2 →
+  gmap_curry (m1 ∪ m2) = gmap_curry m1 ∪ gmap_curry m2.
+Proof.
+  intros.
+  apply map_eq; intros.
+  rewrite lookup_union.
+  destruct i as [i1 i2].
+  rewrite !lookup_gmap_curry.
+  rewrite lookup_union.
+  destruct (m1 !! i1) eqn:?;
+           destruct (m2 !! i1) eqn:?;
+           simpl;
+    auto.
+  - apply map_disjoint_dom in H1.
+    apply elem_of_dom_2 in Heqo.
+    apply elem_of_dom_2 in Heqo0.
+    set_solver.
+  - destruct (g !! i2); simpl; auto.
+  - rewrite /union_with /=.
+    destruct (g !! i2); simpl; auto.
+Qed.
+
 Lemma gmap_curry_insert K1 K2 `{Countable K1} `{Countable K2} A
       k (m11: gmap K2 A) (m2: gmap K1 (gmap K2 A)) :
   m2 !! k = None →
@@ -117,20 +141,24 @@ Proof.
   iIntros (Hsz) "Hobjs".
   rewrite /fs_kinds.
   rewrite /kind_heap0.
-  rewrite union_singleton_l_insert.
-  rewrite fmap_insert.
-  rewrite fmap_gset_to_gmap.
 
-  replace (<[U64 513:=inode0_map]>
-           (gset_to_gmap block0_map (rangeSet 514 (sz - 514)))) with
-      (gmap_uncurry (gset_to_gmap (existT KindInode (bufInode inode_buf0))
-                                  (list_to_set $ (λ i, (U64 513, U64 (i*8*128)%Z)) <$> [0;1;2;3;4;5;6;7;8]))
-      ); last first.
-  { admit. }
-  rewrite gmap_curry_uncurry.
-  iEval (simpl) in "Hobjs".
-  rewrite !gset_to_gmap_union_singleton.
-  rewrite -> big_sepM_insert by (rewrite !lookup_insert_ne //).
+  rewrite map_fmap_union.
+  rewrite gmap_curry_union.
+  2: {
+    admit.
+  }
+  rewrite map_fmap_singleton.
+  rewrite fmap_gset_to_gmap.
+  rewrite big_sepM_union.
+  2: {
+    admit.
+  }
+  iDestruct "Hobjs" as "[Hinodes Hblocks]".
+  rewrite /covered_inodes.
+  iSplitL "Hinodes".
+  - rewrite /is_inode_enc.
+    admit.
+  - admit.
 Admitted.
 
 (* amazingly not in Coq 8.12 *)
