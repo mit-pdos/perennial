@@ -333,8 +333,11 @@ Proof.
       f_equal.
       word. }
   rewrite fst_imap.
-  admit. (* coercions hide that there's a u64 conversion - this only has no duplicates because 513 + length bs never overflows *)
-Admitted.
+  apply NoDup_fmap_2_strong; auto using NoDup_seq.
+  intros i1 i2.
+  rewrite !elem_of_seq => Hi1 Hi2 /(f_equal int.Z).
+  word.
+Qed.
 
 Close Scope Z_scope.
 
