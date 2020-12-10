@@ -147,21 +147,6 @@ Global Instance is_inode_Persistent l k P addr :
   Persistent (is_inode l k P addr).
 Proof. apply _. Qed.
 
-(* TODO: these are copied from the circ proof *)
-
-Definition block0: Block :=
-  list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
-
-Lemma replicate_zero_to_block0 :
-  replicate (int.nat 4096) (zero_val byteT) =
-  Block_to_vals block0.
-Proof.
-  change (zero_val byteT) with #(U8 0).
-  change (int.nat 4096) with (Z.to_nat 4096).
-  rewrite /Block_to_vals /block0.
-  reflexivity.
-Qed.
-
 (* to initialize the system, we use this theorem to turn a zero block into a
 valid post-crash inode state, which we can then recover with the usual [Open]
 recovery procedure. *)

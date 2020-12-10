@@ -13,20 +13,6 @@ Section goose.
   Context `{!heapG Σ}.
   Context `{!stagedG Σ}.
 
-  (* TODO: these are copied from the circ proof *)
-  Definition block0: Block :=
-    list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
-
-  Lemma replicate_zero_to_block0 :
-    replicate (int.nat 4096) (zero_val byteT) =
-    Block_to_vals block0.
-  Proof.
-    change (zero_val byteT) with #(U8 0).
-    change (int.nat 4096) with (Z.to_nat 4096).
-    rewrite /Block_to_vals /block0.
-    reflexivity.
-  Qed.
-
   Definition EBlk (addr: u64) :=
    (∃ v n, "Ha" ∷ int.Z addr d↦ v ∗ "%H0iseven" ∷ ⌜ Block_to_vals v !! O = Some #(U8 n) ∧ Z.even n ⌝)%I.
 

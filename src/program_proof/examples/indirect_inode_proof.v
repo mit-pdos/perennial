@@ -218,20 +218,6 @@ Proof.
   auto.
 Qed.
 
-(* TODO: these are copied from the circ proof *)
-Definition block0: Block :=
-  list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
-
-Lemma replicate_zero_to_block0 :
-  replicate (int.nat 4096) (zero_val byteT) =
-  Block_to_vals block0.
-Proof.
-  change (zero_val byteT) with #(U8 0).
-  change (int.nat 4096) with (Z.to_nat 4096).
-  rewrite /Block_to_vals /block0.
-  reflexivity.
-Qed.
-
 Lemma indirect_block_middle_full σ index :
   index < roundUpDiv (length σ.(inode.blocks) - maxDirect) indirectNumBlocks ->
   length (ind_blocks_at_index σ index) = Z.to_nat indirectNumBlocks.

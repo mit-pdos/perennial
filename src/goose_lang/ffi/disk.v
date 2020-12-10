@@ -58,6 +58,9 @@ Definition block_bytes: nat := Z.to_nat 4096.
 Definition BlockSize {ext: ext_op}: val := #4096.
 Definition Block := vec byte block_bytes.
 Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
+(* TODO: could use vreplicate; not sure how much easier it is to work with *)
+Definition block0 : Block := list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
+
 
 Lemma block_bytes_eq : block_bytes = Z.to_nat 4096.
 Proof. reflexivity. Qed.
@@ -86,6 +89,11 @@ Lemma length_Block_to_vals {ext: ext_op} b :
 Proof.
   rewrite /Block_to_vals fmap_length vec_to_list_length //.
 Qed.
+
+Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
+  replicate (int.nat 4096) (zero_val byteT) =
+  Block_to_vals block0.
+Proof. reflexivity. Qed.
 
 Class diskG Σ :=
   { diskG_gen_heapG :> gen_heap.gen_heapG Z Block Σ; }.

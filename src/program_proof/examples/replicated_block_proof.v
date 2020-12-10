@@ -92,9 +92,6 @@ Section goose.
     Persistent (is_rblock k' l addr).
   Proof. apply _. Qed.
 
-  Definition block0: Block :=
-    list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
-
   Theorem init_zero_cinv addr :
     int.Z addr d↦ block0 ∗ int.Z (word.add addr 1) d↦ block0 -∗
     rblock_cinv addr block0.
