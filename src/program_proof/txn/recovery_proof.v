@@ -57,9 +57,8 @@ Definition is_txn_durable γ dinit : iProp Σ :=
 
 
 Definition inode0_map : gmap u64 object :=
-  Eval compute [set_map list_to_set fmap list_fmap] in
   gset_to_gmap (existT _ (bufInode inode_buf0))
-               (list_to_set $ (λ i, U64 (i*8*128)%Z) <$> [0;1;2;3;4;5;6;7;8]).
+               (list_to_set $ (λ i, U64 (i*8*128)%Z) <$> (seqZ 0 32)).
 
 Definition bit0_map : gmap u64 object :=
   gset_to_gmap (existT _ (bufBit false))
@@ -187,9 +186,10 @@ Proof.
   intro H. assert (inode0_map !! (U64 0) = None).
   { rewrite -H. apply lookup_empty. }
   apply lookup_gset_to_gmap_None in H0.
-  apply not_elem_of_union in H0. destruct H0 as [H0 H1].
-  replace (U64 (0 * 8 * 128)) with (U64 0) in H0 by reflexivity.
-  apply H0. eapply elem_of_singleton. congruence.
+  apply H0.
+  apply elem_of_list_to_set.
+  apply elem_of_list_lookup.
+  exists 0%nat; auto.
 Qed.
 
 Lemma block0_map_not_empty : ∅ ≠ block0_map.
@@ -284,24 +284,30 @@ Lemma bufDataT_in_block0_inode off o (n: u64) :
 Proof.
   intros.
   eapply lookup_gset_to_gmap_Some in H. intuition subst.
-  rewrite -> !elem_of_union, !elem_of_singleton, elem_of_empty in H1.
+  apply elem_of_list_to_set in H1.
+  apply elem_of_list_lookup in H1 as [i Hlookup].
+  fmap_Some in Hlookup.
+  apply lookup_seqZ in Hlookup as [-> ?].
+  rewrite Z.add_0_l.
+  set (off:=i * 8* 128).
   rewrite /bufDataT_in_block; simpl.
   rewrite /is_bufData_at_off.
   feed pose proof (extract_inode0 off) as Hextract.
-  { (intuition subst); reflexivity. }
+  { word. }
   rewrite /valid_addr /valid_off /addr2flat_z /=.
   assert (valid_off KindInode off).
-  { rewrite /valid_off.
-    (intuition subst); reflexivity. }
+  { rewrite /valid_off /=.
+    word_cleanup.
+    rewrite /off.
+    rewrite -assoc_L; change (8*128) with 1024.
+    admit. (* simple mod arith thing *) }
   split_and!; auto.
-  { (intuition subst); reflexivity. }
+  { rewrite block_bytes_eq. word. }
   - lia.
   - rewrite /valid_off /= in H.
     rewrite block_bytes_eq in H0 |- *.
-    assert (int.Z off ≤ 8192).
-    { (intuition subst); rewrite word.unsigned_of_Z //. }
-    lia.
-Qed.
+    word.
+Admitted.
 
 Lemma bufDataT_in_block0_block off o (n: u64) :
   block0_map !! off = Some o ->

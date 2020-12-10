@@ -95,14 +95,59 @@ Proof.
   auto with f_equal lia.
 Qed.
 
+Lemma gmap_curry_insert K1 K2 `{Countable K1} `{Countable K2} A
+      k (m11: gmap K2 A) (m2: gmap K1 (gmap K2 A)) :
+  m2 !! k = None →
+  gmap_curry (<[k := m11]> m2) = map_fold (λ i2 x, <[(k,i2):=x]>) (gmap_curry m2) m11.
+Proof.
+  rewrite /gmap_curry => Hlookup.
+  simpl.
+
+  rewrite map_fold_insert_L //; last first.
+  intros.
+Admitted.
+
+Lemma zero_disk_to_inodes γ sz :
+  (513 + 1 + (32-2) ≤ sz < 2^49) →
+  ([∗ map] a ↦ o ∈ kind_heap0 (fs_kinds sz), durable_mapsto_own γ a o) -∗
+  ([∗ set] inum ∈ covered_inodes, is_inode_enc inum (U64 0) (U64 0) (durable_mapsto_own γ)) ∗
+  ([∗ list] _ ↦ a ∈ seqZ 513 (32-2), durable_mapsto_own γ (blk2addr (U64 a)) (existT _ (bufBlock block0)))
+.
+Proof.
+  iIntros (Hsz) "Hobjs".
+  rewrite /fs_kinds.
+  rewrite /kind_heap0.
+  rewrite union_singleton_l_insert.
+  rewrite fmap_insert.
+  rewrite fmap_gset_to_gmap.
+
+  replace (<[U64 513:=inode0_map]>
+           (gset_to_gmap block0_map (rangeSet 514 (sz - 514)))) with
+      (gmap_uncurry (gset_to_gmap (existT KindInode (bufInode inode_buf0))
+                                  (list_to_set $ (λ i, (U64 513, U64 (i*8*128)%Z)) <$> [0;1;2;3;4;5;6;7;8]))
+      ); last first.
+  { admit. }
+  rewrite gmap_curry_uncurry.
+  iEval (simpl) in "Hobjs".
+  rewrite !gset_to_gmap_union_singleton.
+  rewrite -> big_sepM_insert by (rewrite !lookup_insert_ne //).
+Admitted.
+
+(* amazingly not in Coq 8.12 *)
+Lemma repeat_app {A} n1 n2 (x:A) :
+  repeat x (n1+n2)%nat = repeat x n1 ++ repeat x n2.
+Proof. induction n1; simpl; congruence. Qed.
+
 (* sz is the actual size of the disk *)
 Lemma wpc_Mkfs (d:loc) sz :
   (513 + 1 + (32-2) ≤ sz < 2^49) →
-  {{{ 0 d↦∗ repeat block0 (Z.to_nat sz) }}}
+  {{{ 0 d↦∗ repeat block0 (Z.to_nat sz) ∗ P1 (gset_to_gmap [] (rangeSet 2 (NumInodes-2)))  }}}
     Mkfs #d @ 0; ⊤
-  {{{ γ (txn:loc), RET #txn;
+  {{{ γtxn γsrc (txn:loc), RET #txn;
       let logm0 := Build_async (kind_heap0 (fs_kinds sz)) [] in
-      is_txn_durable γ (fs_dinit sz) logm0 }}}
+      is_txn_durable γtxn (fs_dinit sz) logm0 ∗
+      is_source P1 γsrc
+    }}}
    {{{ True }}}.
 Proof.
   intros Hsz.
