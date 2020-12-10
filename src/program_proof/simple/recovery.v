@@ -50,7 +50,7 @@ Qed.
 
 End stable.
 
-Section heap.
+Section goose_lang.
 Context `{!heapG Σ}.
 Context `{!gen_heapPreG u64 bool Σ}.
 Context `{!simpleG Σ}.
@@ -58,6 +58,94 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Context (P1 : SimpleNFS.State → iProp Σ).
 Context (P2 : SimpleNFS.State → iProp Σ).
+
+Open Scope Z_scope.
+
+Definition fs_kinds sz : gmap u64 bufDataKind :=
+  {[U64 513 := KindInode]} ∪
+  gset_to_gmap KindBlock (rangeSet 514 (sz - 514)).
+
+Definition fs_dinit sz : gmap Z Block :=
+  gset_to_gmap block0 (list_to_set $ seqZ 513 (sz-513)).
+
+Lemma dom_fs_dinit:
+  ∀ sz : Z,
+    513 + 1 + (32 - 2) ≤ sz
+    → dom (gset Z) (fs_dinit sz) = list_to_set (seqZ 513 (sz - 513)).
+Proof.
+  intros sz Hsz.
+  rewrite /fs_dinit.
+  rewrite dom_gset_to_gmap.
+  auto with f_equal lia.
+Qed.
+
+Lemma dom_fs_kinds:
+  ∀ sz : Z,
+    513 + 1 + (32 - 2) ≤ sz
+    → dom (gset u64) (fs_kinds sz) = list_to_set (U64 <$> seqZ 513 (sz - 513)).
+Proof.
+  intros sz Hsz.
+  rewrite /fs_kinds.
+  rewrite dom_union_L dom_singleton_L.
+  rewrite dom_gset_to_gmap.
+  rewrite /rangeSet.
+  replace (seqZ 513 (sz - 513)) with ([513] ++ seqZ 514 (sz - 514)); auto.
+  change ([513]) with (seqZ 513 1).
+  rewrite <- seqZ_app by lia.
+  auto with f_equal lia.
+Qed.
+
+(* sz is the actual size of the disk *)
+Lemma wpc_Mkfs (d:loc) sz :
+  (513 + 1 + (32-2) ≤ sz < 2^49) →
+  {{{ 0 d↦∗ repeat block0 (Z.to_nat sz) }}}
+    Mkfs #d @ 0; ⊤
+  {{{ γ (txn:loc), RET #txn;
+      let logm0 := Build_async (kind_heap0 (fs_kinds sz)) [] in
+      is_txn_durable γ (fs_dinit sz) logm0 }}}
+   {{{ True }}}.
+Proof.
+  intros Hsz.
+  iIntros (Φ Φc) "Hd HΦ".
+  replace (Z.to_nat sz) with (513 + (Z.to_nat sz - 513))%nat by lia.
+  rewrite repeat_app disk_array_app.
+  iDestruct "Hd" as "[Hlog Hd]".
+  rewrite repeat_length.
+  change (0 + 513%nat) with 513.
+  replace (Z.to_nat sz - 513)%nat with (Z.to_nat $ sz - 513) by lia.
+  iMod (is_txn_durable_init (fs_dinit sz) (fs_kinds sz) _
+          with "[$Hlog $Hd]") as (γ) "(Htxn & #Hlb & Hmapstos)".
+  { rewrite -> Z2Nat.id by word.
+    apply dom_fs_dinit; lia. }
+  { rewrite -> Z2Nat.id by word.
+    apply dom_fs_kinds; lia. }
+  { rewrite /block_bytes.
+    rewrite -> !Z2Nat.id by word.
+    lia. }
+  rewrite /Mkfs.
+  wpc_pures.
+  { crash_case; auto. }
+  iCache (<disc> Φc)%I with "HΦ".
+  { crash_case; auto. }
+  wpc_apply (wpc_MkTxn (nroot.@"simple") with "[$Htxn]").
+  { solve_ndisj. }
+  { solve_ndisj. }
+  iSplit.
+  { iLeft in "HΦ".
+    iIntros "!> H".
+    iApply "HΦ"; auto. }
+  iNext.
+  iIntros (γ' txn_l) "Hpost".
+  iDestruct "Hpost" as "(#Htxn & #Htxn_system & Hcfupd & Hcinv)".
+  wpc_pures.
+  wpc_frame "HΦ".
+  wp_apply (wp_BufTxn__Begin with "[$Htxn $Htxn_system]").
+  iIntros (γtxn l).
+  iIntros "Hbuftxn".
+  wp_pures.
+  (* the interesting part, reasoning about [inodeInit]; will need to break apart
+     Hmapstos and turn it into a bunch of inodes in order to lift them *)
+Abort.
 
 Lemma is_source_later_upd P P' γsrc:
   (∀ σ, ▷ P σ -∗ |C={⊤ ∖ ↑N}_10=> ▷ P σ ∗ ▷ P' σ) -∗
@@ -233,4 +321,4 @@ Proof using All.
   iRight in "HΦ". iApply "HΦ". iFrame "# ∗".
 Qed.
 
-End heap.
+End goose_lang.
