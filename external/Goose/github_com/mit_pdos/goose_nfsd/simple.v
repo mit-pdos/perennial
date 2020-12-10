@@ -196,6 +196,51 @@ Definition inodeInit: val :=
       Inode__WriteInode "ip" "btxn";;
       Continue).
 
+(* mkfs.go *)
+
+Module Nfs.
+  Definition S := struct.decl [
+    "t" :: struct.ptrT txn.Txn.S;
+    "l" :: struct.ptrT lockmap.LockMap.S
+  ].
+End Nfs.
+
+Definition Mkfs: val :=
+  rec: "Mkfs" "d" :=
+    let: "txn" := txn.MkTxn "d" in
+    let: "btxn" := buftxn.Begin "txn" in
+    inodeInit "btxn";;
+    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
+    (if: ~ "ok"
+    then slice.nil
+    else "txn").
+
+Definition Recover: val :=
+  rec: "Recover" "d" :=
+    let: "txn" := txn.MkTxn "d" in
+    let: "lockmap" := lockmap.MkLockMap #() in
+    let: "nfs" := struct.new Nfs.S [
+      "t" ::= "txn";
+      "l" ::= "lockmap"
+    ] in
+    "nfs".
+
+Definition MakeNfs: val :=
+  rec: "MakeNfs" "d" :=
+    let: "txn" := txn.MkTxn "d" in
+    let: "btxn" := buftxn.Begin "txn" in
+    inodeInit "btxn";;
+    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
+    (if: ~ "ok"
+    then slice.nil
+    else
+      let: "lockmap" := lockmap.MkLockMap #() in
+      let: "nfs" := struct.new Nfs.S [
+        "t" ::= "txn";
+        "l" ::= "lockmap"
+      ] in
+      "nfs").
+
 (* mount.go *)
 
 Definition Nfs__MOUNTPROC3_NULL: val :=
@@ -240,13 +285,6 @@ Definition Nfs__MOUNTPROC3_EXPORT: val :=
     ].
 
 (* ops.go *)
-
-Module Nfs.
-  Definition S := struct.decl [
-    "t" :: struct.ptrT txn.Txn.S;
-    "l" :: struct.ptrT lockmap.LockMap.S
-  ].
-End Nfs.
 
 Definition fh2ino: val :=
   rec: "fh2ino" "fh3" :=
@@ -676,37 +714,9 @@ Definition exampleWorker: val :=
     ]);;
     #().
 
-Definition Recover: val :=
-  rec: "Recover" "d" :=
-    let: "txn" := txn.MkTxn "d" in
-    let: "lockmap" := lockmap.MkLockMap #() in
-    let: "nfs" := struct.new Nfs.S [
-      "t" ::= "txn";
-      "l" ::= "lockmap"
-    ] in
-    "nfs".
-
 Definition RecoverExample: val :=
   rec: "RecoverExample" "d" :=
     let: "nfs" := Recover "d" in
     Fork (exampleWorker "nfs" #3);;
     Fork (exampleWorker "nfs" #3);;
     Fork (exampleWorker "nfs" #4).
-
-(* start.go *)
-
-Definition MakeNfs: val :=
-  rec: "MakeNfs" "d" :=
-    let: "txn" := txn.MkTxn "d" in
-    let: "btxn" := buftxn.Begin "txn" in
-    inodeInit "btxn";;
-    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
-    (if: ~ "ok"
-    then slice.nil
-    else
-      let: "lockmap" := lockmap.MkLockMap #() in
-      let: "nfs" := struct.new Nfs.S [
-        "t" ::= "txn";
-        "l" ::= "lockmap"
-      ] in
-      "nfs").
