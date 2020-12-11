@@ -2,7 +2,7 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From Perennial.algebra Require Import auth_map fmcounter.
 From Perennial.program_proof Require Import proof_prelude.
-From iris.algebra Require Import gmap lib.mnat_auth.
+From iris.algebra Require Import gmap lib.mono_nat.
 From Perennial.program_proof.lockservice Require Import fmcounter_map rpc_base.
 
 Section rpc_durable.
@@ -70,7 +70,7 @@ Proof.
     - iNamed "Hbad". iCombine "Hbad Hlseq_one" as "Hbad".
       iDestruct (own_valid with "Hbad") as %Hbad.
       apply singleton_valid in Hbad.
-      apply mnat_auth_frac_op_valid in Hbad as [Hbad _].
+      apply mono_nat_auth_frac_op_valid in Hbad as [Hbad _].
       iExFalso; iPureIntro.
       by apply (Qp_not_add_le_r (3 / 4) 1).
     -
@@ -124,8 +124,8 @@ Proof.
       iCombine "H1/4 H3/4" as "Hfmptsto".
       iDestruct (own_valid with "Hfmptsto") as %Hvalid.
       apply singleton_valid in Hvalid.
-      apply mnat_auth_frac_op_valid in Hvalid as [_ <-].
-      rewrite mnat_auth_auth_frac_op.
+      apply mono_nat_auth_frac_op_valid in Hvalid as [_ <-].
+      rewrite mono_nat_auth_frac_op.
       replace (1/4 + 3/4)%Qp with 1%Qp; last by (symmetry; apply Qp_quarter_three_quarter).
       iSpecialize ("Hsrpc_lseq_rest" with "Hfmptsto").
       iMod ("HMClose" with "[HγPre Hpre Hunproc]") as "_"; last by iModIntro.

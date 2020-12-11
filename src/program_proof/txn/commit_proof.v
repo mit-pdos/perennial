@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From iris.base_logic.lib Require Import mnat.
+From iris.base_logic.lib Require Import mono_nat.
 
 From Perennial.Helpers Require Import Transitions NamedProps Map.
 From Perennial.program_proof Require Import proof_prelude.
@@ -1224,7 +1224,7 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (Pre
       if ok then
         (( ⌜bufamap ≠ ∅⌝ -∗ ∃ (txn_id : nat),
           Q txn_id ∗
-          ( ⌜wait=true⌝ -∗ @mnat_own_lb Σ _ γ.(txn_walnames).(wal_heap_durable_lb) txn_id ) ) ∗
+          ( ⌜wait=true⌝ -∗ @mono_nat_lb_own Σ _ γ.(txn_walnames).(wal_heap_durable_lb) txn_id ) ) ∗
         ( ⌜bufamap = ∅⌝ -∗ PreQ )) ∗
         [∗ map] a ↦ buf ∈ bufamap,
           mapsto_txn γ a (existT _ buf.(buf_).(bufData))

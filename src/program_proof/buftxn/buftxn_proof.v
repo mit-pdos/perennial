@@ -1,8 +1,8 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From iris.base_logic.lib Require Import mnat.
 From Perennial.algebra Require Import deletable_heap log_heap liftable.
+From iris.base_logic Require Import lib.mono_nat.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 
@@ -710,7 +710,7 @@ Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : 
       ((⌜anydirty=true⌝ ∗ ∃ txnid,
       Q txnid ∗
       ([∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v) ∗
-      (⌜wait = true⌝ -∗ mnat_own_lb γUnified.(txn_walnames).(wal_heap_durable_lb) txnid)) ∨
+      (⌜wait = true⌝ -∗ mono_nat_lb_own γUnified.(txn_walnames).(wal_heap_durable_lb) txnid)) ∨
       (⌜anydirty=false⌝ ∗ PreQ ∗
       [∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v))
     else
@@ -1016,7 +1016,7 @@ Theorem wpc_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait :
       ((⌜anydirty=true⌝ ∗ ∃ txnid,
       Q txnid ∗
       ([∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v) ∗
-      (⌜wait = true⌝ -∗ mnat_own_lb γUnified.(txn_walnames).(wal_heap_durable_lb) txnid)) ∨
+      (⌜wait = true⌝ -∗ mono_nat_lb_own γUnified.(txn_walnames).(wal_heap_durable_lb) txnid)) ∨
       (⌜anydirty=false⌝ ∗ PreQ ∗
       [∗ map] a ↦ v ∈ modified <$> mt, mapsto_txn γUnified a v))
     else
@@ -1046,7 +1046,7 @@ Proof using stagedG0.
                    ∗ (∃ txnid : nat,
                         Q txnid
                         ∗ ([∗ map] a↦v ∈ (modified <$> mt), mapsto_txn γUnified a v)
-                          ∗ (⌜wait = true⌝ -∗ mnat_own_lb γUnified.(txn_walnames).(wal_heap_durable_lb) txnid))
+                          ∗ (⌜wait = true⌝ -∗ mono_nat_lb_own γUnified.(txn_walnames).(wal_heap_durable_lb) txnid))
                    ∨ ⌜anydirty = false⌝ ∗ PreQ ∗ ([∗ map] a↦v ∈ (modified <$> mt), mapsto_txn γUnified a v)
                   else PreQ ∗ ([∗ map] a↦v ∈ (committed <$> mt), mapsto_txn γUnified a v)))}} {{ True }})%I with "[His_buftxn HQ_keep Hpend14 Hfull]" as "Hwpc";
     last first.

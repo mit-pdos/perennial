@@ -1,5 +1,6 @@
 From stdpp Require Import countable numbers gmap.
-From iris.algebra Require Import base.
+From iris.prelude Require Export prelude.
+From iris.prelude Require Import options.
 From Perennial.algebra Require Export blocks.
 
 Record loc := { loc_car : Z; loc_off : Z }.

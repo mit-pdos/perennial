@@ -7,7 +7,7 @@ Class AbsLaterable {PROP : bi} (P : PROP) := abs_laterable :
   ⊢ (∃ Q, □ (▷ Q ∗-∗ ◇ P)).
 Arguments AbsLaterable {_} _%I : simpl never.
 Arguments abs_laterable {_} _%I {_}.
-Hint Mode AbsLaterable + ! : typeclass_instances.
+Global Hint Mode AbsLaterable + ! : typeclass_instances.
 
 Section instances.
   Context {PROP : bi}.

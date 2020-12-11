@@ -1,8 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From iris.base_logic.lib Require Import mnat.
-
 From Perennial.Helpers Require Import Transitions NamedProps Map.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import auth_map log_heap.

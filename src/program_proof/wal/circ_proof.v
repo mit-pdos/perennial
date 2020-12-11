@@ -1,5 +1,5 @@
 From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Import mnat.
+From iris.base_logic.lib Require Import mono_nat.
 From Perennial.algebra Require Import deletable_heap.
 
 From RecordUpdate Require Import RecordSet.
@@ -44,12 +44,12 @@ Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t 
 Class circG Σ :=
   { circ_list_u64 :> ghost_varG Σ (list u64);
     circ_list_block :> ghost_varG Σ (list Block);
-    circ_mnat :> mnatG Σ;
+    circ_mono_nat :> mono_natG Σ;
     circ_stagedG :> stagedG Σ;
   }.
 
 Definition circΣ : gFunctors :=
-  #[ghost_varΣ (list u64); ghost_varΣ (list Block); mnatΣ; stagedΣ].
+  #[ghost_varΣ (list u64); ghost_varΣ (list Block); mono_natΣ; stagedΣ].
 
 Instance subG_circΣ Σ : subG circΣ Σ → circG Σ.
 Proof. solve_inG. Qed.
@@ -71,16 +71,16 @@ Global Instance circ_names_inhabited : Inhabited circ_names := populate!.
 Implicit Types (γ:circ_names).
 
 Definition start_at_least γ (startpos: u64) :=
-  mnat_own_lb γ.(start_name) (int.nat startpos).
+  mono_nat_lb_own γ.(start_name) (int.nat startpos).
 
 Definition start_is γ (q:Qp) (startpos: u64) :=
-  mnat_own_auth γ.(start_name) q (int.nat startpos).
+  mono_nat_auth_own γ.(start_name) q (int.nat startpos).
 
 Definition diskEnd_at_least γ (endpos: Z) :=
-  mnat_own_lb γ.(diskEnd_name) (Z.to_nat endpos).
+  mono_nat_lb_own γ.(diskEnd_name) (Z.to_nat endpos).
 
 Definition diskEnd_is γ (q:Qp) (endpos: Z): iProp Σ :=
-  ⌜0 <= endpos < 2^64⌝ ∗ mnat_own_auth γ.(diskEnd_name) q (Z.to_nat endpos) ∗
+  ⌜0 <= endpos < 2^64⌝ ∗ mono_nat_auth_own γ.(diskEnd_name) q (Z.to_nat endpos) ∗
   diskEnd_at_least γ endpos.
 
 Definition is_low_state (startpos endpos : u64) (addrs: list u64) (blocks : list Block) : iProp Σ :=
@@ -153,7 +153,7 @@ Theorem start_is_to_eq γ σ q startpos :
 Proof.
   iIntros "[Hstart1 _] Hstart2".
   rewrite /start_is.
-  iDestruct (mnat_own_auth_agree with "Hstart1 Hstart2") as %[_ Heq].
+  iDestruct (mono_nat_auth_own_agree with "Hstart1 Hstart2") as %[_ Heq].
   iPureIntro.
   word.
 Qed.
@@ -165,7 +165,7 @@ Theorem start_at_least_to_le γ σ startpos :
 Proof.
   iIntros "[Hstart1 _] Hstart2".
   rewrite /start_is.
-  iDestruct (mnat_own_lb_valid with "Hstart1 Hstart2") as %[_ Hlt].
+  iDestruct (mono_nat_lb_own_valid with "Hstart1 Hstart2") as %[_ Hlt].
   iPureIntro.
   word.
 Qed.
@@ -174,7 +174,7 @@ Theorem start_is_to_at_least (γ: circ_names) (x: u64) q :
   start_is γ q x -∗ start_at_least γ x.
 Proof.
   iIntros "H".
-  iDestruct (mnat_get_lb with "H") as "#Hlb".
+  iDestruct (mono_nat_lb_own_get with "H") as "#Hlb".
   auto with iFrame.
 Qed.
 
@@ -203,7 +203,7 @@ Proof.
   iIntros "[_ Hend1] Hend2".
   iDestruct "Hend1" as "[_ [Hend1 _]]".
   iDestruct "Hend2" as "[% [Hend2 _]]".
-  iDestruct (mnat_own_auth_agree with "Hend1 Hend2") as %[_ Heq].
+  iDestruct (mono_nat_auth_own_agree with "Hend1 Hend2") as %[_ Heq].
   iPureIntro.
   rewrite /circΣ.diskEnd in H, Heq |- *.
   word.
@@ -216,7 +216,7 @@ Theorem diskEnd_at_least_mono (γ: circ_names) (lb1 lb2: Z) :
 Proof.
   rewrite /diskEnd_at_least.
   iIntros (Hle) "Hlb".
-  iApply (mnat_own_lb_le with "Hlb").
+  iApply (mono_nat_lb_own_le with "Hlb").
   word.
 Qed.
 
@@ -236,7 +236,7 @@ Proof.
   iIntros "[_ Hend1] Hend_lb".
   iDestruct "Hend1" as "[% [Hend1 _]]".
   rewrite /diskEnd_is /diskEnd_at_least.
-  iDestruct (mnat_own_lb_valid with "Hend1 Hend_lb") as %[_ Hlt].
+  iDestruct (mono_nat_lb_own_valid with "Hend1 Hend_lb") as %[_ Hlt].
   iPureIntro.
   rewrite /circΣ.diskEnd in H, Hlt |- *.
   word.
@@ -291,16 +291,16 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
 Definition init_ghost_state γ :=
   ("Haddrs'" ∷ ghost_var γ.(addrs_name) 1 ([] : list u64) ∗
   "Hblocks'" ∷ ghost_var γ.(blocks_name) 1 ([] : list Block) ∗
-  "Hstart1" ∷ mnat_own_auth γ.(start_name) 1 0 ∗
-  "HdiskEnd1" ∷ mnat_own_auth γ.(diskEnd_name) 1 0)%I.
+  "Hstart1" ∷ mono_nat_auth_own γ.(start_name) 1 0 ∗
+  "HdiskEnd1" ∷ mono_nat_auth_own γ.(diskEnd_name) 1 0)%I.
 
 Lemma alloc_init_ghost_state :
   ⊢ |==> ∃ γnew, init_ghost_state γnew.
 Proof.
   iMod (ghost_var_alloc ([] : list u64)) as (addrs_name') "Haddrs'".
   iMod (ghost_var_alloc ([] : list Block)) as (blocks_name') "Hblocks'".
-  iMod (mnat_alloc O) as (start_name') "[Hstart1 _]".
-  iMod (mnat_alloc O) as (diskEnd_name') "[HdiskEnd1 _]".
+  iMod (mono_nat_own_alloc O) as (start_name') "[Hstart1 _]".
+  iMod (mono_nat_own_alloc O) as (diskEnd_name') "[HdiskEnd1 _]".
   set (γnew := {| addrs_name := addrs_name';
                 blocks_name := blocks_name';
                 start_name := start_name';
@@ -337,11 +337,10 @@ Proof.
 
   iMod (ghost_var_update addrs0 with "Haddrs'") as "[Haddrs' Hγaddrs]".
   iMod (ghost_var_update blocks0 with "Hblocks'") as "[Hblocks' Hγblocks]".
-  iMod (mnat_update (int.nat σ.(start)) with "Hstart1") as "[Hstart1 Hstart2]".
+  iMod (mono_nat_own_update (int.nat σ.(start)) with "Hstart1") as "[[Hstart1 Hstart2] _]".
   { lia. }
-  iMod (mnat_update (Z.to_nat (circΣ.diskEnd σ)) with "HdiskEnd1") as "[HdiskEnd1 HdiskEnd2]".
+  iMod (mono_nat_own_update (Z.to_nat (circΣ.diskEnd σ)) with "HdiskEnd1") as "[[HdiskEnd1 HdiskEnd2] #HdiskEnd_lb]".
   { lia. }
-  iDestruct (mnat_get_lb with "HdiskEnd1") as "#HdiskEnd_lb".
 
   iSplitL "Haddrs' Hblocks' Hstart1 HdiskEnd1 Hlow".
   { iModIntro.
@@ -379,7 +378,7 @@ Lemma diskEnd_is_agree γ q1 q2 endpos1 endpos2 :
   ⌜endpos1 = endpos2⌝.
 Proof.
   iIntros "[% [Hend1 _]] [% [Hend2 _]]".
-  iDestruct (mnat_own_auth_agree with "Hend1 Hend2") as %[_ Heq].
+  iDestruct (mono_nat_auth_own_agree with "Hend1 Hend2") as %[_ Heq].
   iPureIntro.
   word.
 Qed.
@@ -390,7 +389,7 @@ Lemma diskEnd_is_agree_2 γ q endpos lb :
   ⌜lb ≤ endpos ⌝.
 Proof.
   iIntros "[% [Hend _]] Hlb".
-  iDestruct (mnat_own_lb_valid with "Hend Hlb") as %[_ Hlb].
+  iDestruct (mono_nat_lb_own_valid with "Hend Hlb") as %[_ Hlb].
   iPureIntro.
   word.
 Qed.
@@ -401,7 +400,7 @@ Lemma start_is_agree γ q1 q2 startpos1 startpos2 :
   ⌜startpos1 = startpos2⌝.
 Proof.
   iIntros "Hstart1 Hstart2".
-  iDestruct (mnat_own_auth_agree with "Hstart1 Hstart2") as %[_ Heq].
+  iDestruct (mono_nat_auth_own_agree with "Hstart1 Hstart2") as %[_ Heq].
   iPureIntro.
   word.
 Qed.
@@ -412,7 +411,7 @@ Lemma start_is_agree_2 γ q startpos lb :
   ⌜int.Z lb ≤ int.Z startpos ⌝.
 Proof.
   iIntros "Hstart Hlb".
-  iDestruct (mnat_own_lb_valid with "Hstart Hlb") as %[_ Hlb].
+  iDestruct (mono_nat_lb_own_valid with "Hstart Hlb") as %[_ Hlb].
   iPureIntro.
   word.
 Qed.
@@ -420,13 +419,13 @@ Qed.
 Global Instance is_circular_state_timeless γ σ :
   Timeless (is_circular_state γ σ) := _.
 
-Global Instance mnat_own_auth_discretizable (γ: gname) q n :
-  Discretizable (mnat_own_auth γ q n).
-Proof. rewrite mnat_own_auth_eq. apply _. Qed.
+Global Instance mono_nat_auth_own_discretizable (γ: gname) q n :
+  Discretizable (mono_nat_auth_own γ q n).
+Proof. rewrite mono_nat_auth_own_eq. apply _. Qed.
 
-Global Instance mnat_own_lb_discretizable (γ: gname) n :
-  Discretizable (mnat_own_lb γ n).
-Proof. rewrite mnat_own_lb_eq. apply _. Qed.
+Global Instance mono_nat_lb_own_discretizable (γ: gname) n :
+  Discretizable (mono_nat_lb_own γ n).
+Proof. rewrite mono_nat_lb_own_eq. apply _. Qed.
 
 Global Instance is_circular_state_discretizable γ σ:
   Discretizable (is_circular_state γ σ).
@@ -586,9 +585,8 @@ Proof.
   rewrite /start_is /circ_positions.
   rewrite -> diskEnd_advance_unchanged by word.
   iCombine "Hstart1 Hstart2" as "Hstart".
-  iMod (mnat_update (int.nat newStart) with "Hstart")
-    as "[Hstart1 Hstart2]"; first by lia.
-  iDestruct (mnat_get_lb with "Hstart1") as "#Hstart_lb".
+  iMod (mono_nat_own_update (int.nat newStart) with "Hstart")
+    as "[[Hstart1 Hstart2] #Hstart_lb]"; first by lia.
   by iFrame.
 Qed.
 
@@ -1084,8 +1082,7 @@ Proof.
   iDestruct (diskEnd_is_agree with "Hend1 Hend2") as %Heq; rewrite Heq.
   iCombine "Hend1 Hend2" as "Hend".
   iDestruct "Hend" as "[% [Hend _]]".
-  iMod (mnat_update (int.nat endpos + length upds)%nat with "Hend") as "[Hend1 Hend2]"; first by len.
-  iDestruct (mnat_get_lb with "Hend1") as "#Hatleast".
+  iMod (mono_nat_own_update (int.nat endpos + length upds)%nat with "Hend") as "[[Hend1 Hend2] #Hatleast]"; first by len.
   iModIntro.
   iSplitR "Hend2".
   2: {
@@ -1274,8 +1271,8 @@ Proof.
   change (1 + 1) with 2.
   iMod (ghost_var_alloc (replicate (Z.to_nat LogSz) (U64 0))) as (addrs_name') "[Haddrs' Hγaddrs]".
   iMod (ghost_var_alloc logblocks) as (blocks_name') "[Hblocks' Hγblocks]".
-  iMod (mnat_alloc 0%nat) as (start_name') "[[Hstart1 Hstart2] #HstartLb]".
-  iMod (mnat_alloc 0%nat) as (diskEnd_name') "[[HdiskEnd1 HdiskEnd2] #HdiskEndLb]".
+  iMod (mono_nat_own_alloc 0%nat) as (start_name') "[[Hstart1 Hstart2] #HstartLb]".
+  iMod (mono_nat_own_alloc 0%nat) as (diskEnd_name') "[[HdiskEnd1 HdiskEnd2] #HdiskEndLb]".
   wp_call.
   wp_apply wp_new_slice; first by auto.
   iIntros (zero_s) "Hzero".

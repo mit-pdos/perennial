@@ -35,6 +35,8 @@ Lemma tac_wp_pure `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}
   envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_eq=> ??? HΔ'. rewrite into_laterN_env_sound /=.
+  (* We want [pure_exec_fill] to be available to TC search locally. *)
+  pose proof @pure_exec_fill.
   rewrite HΔ' -lifting.wp_pure_step_later //.
 Qed.
 
@@ -46,6 +48,8 @@ Lemma tac_wp_pure_no_later `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG
   envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_eq=> ?? HΔ'.
+  (* We want [pure_exec_fill] to be available to TC search locally. *)
+  pose proof @pure_exec_fill.
   rewrite HΔ' -lifting.wp_pure_step_later //.
   iIntros "$".
 Qed.

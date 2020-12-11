@@ -1,7 +1,7 @@
 Import EqNotations.
 From Perennial.Helpers Require Import Map.
-From iris.base_logic.lib Require Import mnat.
 From Perennial.algebra Require Import auth_map liftable log_heap async.
+From iris.base_logic Require Import lib.mono_nat.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
 From Perennial.program_logic Require Export ncinv.
@@ -73,7 +73,7 @@ Section goose_lang.
 
   Definition txn_durable γ txn_id :=
     (* oof, this leaks all the abstractions *)
-    mnat_own_lb γ.(buftxn_txn_names).(txn_walnames).(heapspec.wal_heap_durable_lb) txn_id.
+    mono_nat_lb_own γ.(buftxn_txn_names).(txn_walnames).(heapspec.wal_heap_durable_lb) txn_id.
 
 
   Definition txn_system_inv γ: iProp Σ :=

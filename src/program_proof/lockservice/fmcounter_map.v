@@ -1,16 +1,16 @@
-From iris.algebra Require Import gmap lib.mnat_auth.
+From iris.algebra Require Import gmap lib.mono_nat.
 From iris.proofmode Require Import base tactics classes.
 From iris.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import proof_prelude.
 
 Class fmcounter_mapG Σ :=
-   { fmcounter_map_inG :> inG Σ (gmapUR u64 mnat_authR) }.
+   { fmcounter_map_inG :> inG Σ (gmapUR u64 mono_natR) }.
 
 Definition fmcounter_map_own `{!fmcounter_mapG Σ} γ (k:u64) q n :=
-  own γ {[ k := mnat_auth_auth q n]}.
+  own γ {[ k := mono_nat_auth q n]}.
 Definition fmcounter_map_lb `{!fmcounter_mapG Σ} γ (k:u64) n :=
-  own γ {[ k := mnat_auth_frag n]}.
+  own γ {[ k := mono_nat_lb n]}.
 
 Notation "k fm[[ γ ]]↦{ q } n " := (fmcounter_map_own γ k q%Qp n)
 (at level 20, format "k  fm[[ γ ]]↦{ q }  n") : bi_scope.
@@ -27,10 +27,10 @@ Section fmcounter_map_props.
   Lemma fmcounter_map_alloc (n : nat) :
     ⊢ |==> ∃ γ, [∗ set] k ∈ (fin_to_set u64), k fm[[γ]]↦ n.
   Proof.
-    pose (m := gset_to_gmap (mnat_auth_auth 1 n) (fin_to_set u64)).
+    pose (m := gset_to_gmap (mono_nat_auth 1 n) (fin_to_set u64)).
     iMod (own_alloc m) as (γ) "Hown".
     { intros k. rewrite lookup_gset_to_gmap option_guard_True; last by apply elem_of_fin_to_set.
-      rewrite Some_valid. apply mnat_auth_auth_valid. }
+      rewrite Some_valid. apply mono_nat_auth_valid. }
     iExists γ.
     rewrite -(big_opM_singletons m).
     rewrite big_opM_own_1.
@@ -47,7 +47,7 @@ Section fmcounter_map_props.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb.
     rewrite -own_op singleton_op.
-    (* FIXME: needs Iris update (Iris MR 572) *)
+    (* FIXME: take advantage of Iris MR 572 *)
   Admitted.
 
   Lemma fmcounter_map_update (n' n:nat) γ k:
@@ -56,7 +56,7 @@ Section fmcounter_map_props.
   Proof.
     rewrite -fmcounter_map_get_lb /fmcounter_map_own=>Hn.
     iApply own_update. apply singleton_update.
-    apply mnat_auth_update. done.
+    apply mono_nat_update. done.
   Qed.
 
   Lemma fmcounter_map_agree_lb γ k q n1 n2 :
@@ -64,7 +64,7 @@ Section fmcounter_map_props.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros "H1 H2".
     iCombine "H1 H2" as "H".
-    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mnat_auth_both_frac_valid.
+    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mono_nat_both_frac_valid.
     eauto.
   Qed.
 
@@ -73,7 +73,7 @@ Section fmcounter_map_props.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros "H1 H2".
     iCombine "H1 H2" as "H".
-    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mnat_auth_both_frac_valid.
+    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mono_nat_both_frac_valid.
     eauto with lia.
   Qed.
 
@@ -83,8 +83,8 @@ Section fmcounter_map_props.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros (Hn).
     iApply own_mono. apply singleton_included. right.
-    (* FIXME: needs Iris update to get [mnat_auth_frag_mono] (Iris MR 572) *)
-  Admitted.
+    apply mono_nat_lb_mono; auto with lia.
+  Qed.
 
   Lemma fmcounter_map_sep γ q1 q2 k n:
     k fm[[γ]]↦{q1 + q2} n ⊣⊢ k fm[[γ]]↦{q1} n ∗ k fm[[γ]]↦{q2} n.
@@ -93,9 +93,9 @@ Section fmcounter_map_props.
   - iIntros "H".
     rewrite -own_op.
     rewrite singleton_op.
-    by rewrite mnat_auth_auth_frac_op.
+    by rewrite mono_nat_auth_frac_op.
   - iIntros "(Hm1&Hm2)". iCombine "Hm1 Hm2" as "Hm".
-    by rewrite mnat_auth_auth_frac_op.
+    by rewrite mono_nat_auth_frac_op.
   Qed.
 
   Global Instance fmcounter_map_fractional γ k n :

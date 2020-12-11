@@ -1,4 +1,4 @@
-From iris.base_logic.lib Require Import mnat.
+From iris.base_logic.lib Require Import mono_nat.
 From Perennial.Helpers Require Import Transitions NamedProps Map gset range_set.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
@@ -371,7 +371,7 @@ Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
   0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
  |={⊤}=> ∃ γ,
          "Htxn_durable" ∷ is_txn_durable γ dinit ∗
-         "#Hdurable_lb" ∷ mnat_own_lb γ.(txn_walnames).(wal_heap_durable_lb) 0 ∗
+         "#Hdurable_lb" ∷ mono_nat_lb_own γ.(txn_walnames).(wal_heap_durable_lb) 0 ∗
          "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (3/4) (Build_async (kind_heap0 kinds) []) ∗
          "Hmapsto_txns" ∷ ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
 Proof.
@@ -684,7 +684,7 @@ Definition txn_resources γ γ' logm : iProp Σ :=
   "Hlogm" ∷ ghost_var γ'.(txn_crashstates) (3/4) logm ∗
   "Holdlogm" ∷ ghost_var γ.(txn_crashstates) (1/4) logm0 ∗
   "Hmapsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ' a v) ∗
-  "Hdurable" ∷ mnat.mnat_own_lb γ'.(txn_walnames).(heapspec.wal_heap_durable_lb) txn_id ∗
+  "Hdurable" ∷ mono_nat_lb_own γ'.(txn_walnames).(heapspec.wal_heap_durable_lb) txn_id ∗
   "Hdurable_exchanger" ∷ heapspec_durable_exchanger γ.(txn_walnames) txn_id)%I.
 
 

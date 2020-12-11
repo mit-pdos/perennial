@@ -1,5 +1,5 @@
 From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Import mnat.
+From iris.base_logic.lib Require Import mono_nat.
 From Perennial.algebra Require Import deletable_heap.
 
 From RecordUpdate Require Import RecordSet.
@@ -136,8 +136,8 @@ Proof.
   rewrite split_513_blocks.
   iIntros "(Hhdr1 & Hhdr2 & Hlog)".
   iMod circ_own_init as (γaddrs γblocks Hlow_wf) "[[Haddrs1 Haddrs2] [Hblocks1 Hblocks2]]".
-  iMod (mnat_alloc 0) as (γstart) "[[Hstart1 Hstart2] #Hstart_lb]".
-  iMod (mnat_alloc 0) as (γend) "[[Hend1 Hend2] #Hend_lb]".
+  iMod (mono_nat_own_alloc 0) as (γstart) "[[Hstart1 Hstart2] #Hstart_lb]".
+  iMod (mono_nat_own_alloc 0) as (γend) "[[Hend1 Hend2] #Hend_lb]".
   iExists {| addrs_name := γaddrs; blocks_name := γblocks;
              start_name := γstart; diskEnd_name := γend;
           |}.
@@ -405,8 +405,8 @@ Proof.
 
     iMod (ghost_var_alloc addrs0) as (addrs_name') "[Haddrs' Hγaddrs]".
     iMod (ghost_var_alloc blocks0) as (blocks_name') "[Hblocks' Hγblocks]".
-    iMod (mnat_alloc (int.nat σ.(start))) as (start_name') "[[Hstart1 Hstart2] _]".
-    iMod (mnat_alloc (Z.to_nat (circΣ.diskEnd σ))) as (diskEnd_name') "[[HdiskEnd1 HdiskEnd2] #HdiskEndLb]".
+    iMod (mono_nat_own_alloc (int.nat σ.(start))) as (start_name') "[[Hstart1 Hstart2] _]".
+    iMod (mono_nat_own_alloc (Z.to_nat (circΣ.diskEnd σ))) as (diskEnd_name') "[[HdiskEnd1 HdiskEnd2] #HdiskEndLb]".
     set (γ' := {| addrs_name := addrs_name';
                   blocks_name := blocks_name';
                   start_name := start_name';

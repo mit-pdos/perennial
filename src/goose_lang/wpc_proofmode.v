@@ -53,6 +53,7 @@ Lemma tac_wpc_pure_ctx `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
   envs_entails Δ (WPC (fill K e1) @ s; k; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq=> ??? Hcrash HΔ'.
+  pose proof @pure_exec_fill.
   rewrite -wpc_pure_step_later //. apply and_intro; auto.
   rewrite into_laterN_env_sound /=.
   rewrite HΔ' //.
@@ -68,6 +69,7 @@ Lemma tac_wpc_pure_no_later_ctx `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
   envs_entails Δ (WPC (fill K e1) @ s; k; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq=> ?? Hcrash HΔ'.
+  pose proof @pure_exec_fill.
   specialize (HΔ' Hcrash).
   rewrite -wpc_pure_step_later //. apply and_intro; auto.
   - iIntros "Henv".

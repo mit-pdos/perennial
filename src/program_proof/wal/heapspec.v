@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordUpdate.
 
-From Perennial.algebra Require Import mnat.
+From Perennial.algebra Require Import mono_nat.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
@@ -18,7 +18,7 @@ Inductive heap_block :=
 Class walheapG (Σ: gFunctors) :=
   { walheap_u64_heap_block :> gen_heapPreG u64 heap_block Σ;
     walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
-    walheap_mnat :> mnatG Σ;
+    walheap_mono_nat :> mono_natG Σ;
     walheap_asyncCrashHeap :> ghost_varG Σ (async (gmap u64 Block));
     walheap_wal :> walG Σ
   }.
@@ -26,7 +26,7 @@ Class walheapG (Σ: gFunctors) :=
 Definition walheapΣ : gFunctors :=
   #[ gen_heapΣ u64 heap_block;
    ghost_varΣ (gmap Z Block * list (u64 * list update.t));
-   mnatΣ;
+   mono_natΣ;
    ghost_varΣ (async (gmap u64 Block));
    walΣ ].
 
@@ -90,11 +90,11 @@ Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
     "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ ghost_var γ.(wal_heap_txns) (1/2) (ls.(log_state.d), ls.(log_state.txns)) ∗
-    "Hinstalled" ∷ mnat_own_auth γ.(wal_heap_installed) 1 ls.(log_state.installed_lb) ∗
+    "Hinstalled" ∷ mono_nat_auth_own γ.(wal_heap_installed) 1 ls.(log_state.installed_lb) ∗
     "%Hwf" ∷ ⌜ wal_wf ls ⌝ ∗
     "Hcrash_heaps_own" ∷ ghost_var γ.(wal_heap_crash_heaps) (1/4) crash_heaps ∗
     "Hcrash_heaps" ∷ wal_heap_inv_crashes crash_heaps ls ∗
-    "Hcrash_heaps_lb" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb).
+    "Hcrash_heaps_lb" ∷ mono_nat_auth_own γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb).
 
 Record locked_walheap := {
   locked_wh_σd : disk;
@@ -107,9 +107,9 @@ Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
 Definition heapspec_init_ghost_state γ  : iProp Σ :=
   "wal_heap_h" ∷ gen_heap_ctx (hG:=γ.(wal_heap_h)) (∅: gmap u64 heap_block) ∗
   "wal_heap_crash_heaps" ∷ ghost_var γ.(wal_heap_crash_heaps) 1 (Build_async (∅ : gmap u64 Block) []) ∗
-  "wal_durable_lb" ∷ mnat_own_auth γ.(wal_heap_durable_lb) 1 0%nat ∗
+  "wal_durable_lb" ∷ mono_nat_auth_own γ.(wal_heap_durable_lb) 1 0%nat ∗
   "wal_heap_txns" ∷ ghost_var γ.(wal_heap_txns) 1 (∅ : disk, @nil (u64 * list update.t)) ∗
-  "wal_heap_installed" ∷ mnat_own_auth γ.(wal_heap_installed) 1 0%nat.
+  "wal_heap_installed" ∷ mono_nat_auth_own γ.(wal_heap_installed) 1 0%nat.
 
 Lemma alloc_heapspec_init_ghost_state γwal_names :
   ⊢ |==> ∃ γ', "%Hwal_names" ∷ ⌜γ'.(wal_heap_walnames) = γwal_names⌝ ∗
@@ -117,9 +117,9 @@ Lemma alloc_heapspec_init_ghost_state γwal_names :
 Proof.
   iMod (gen_heap_init (∅: gmap u64 heap_block)) as (wal_heap_h) "?".
   iMod (ghost_var_alloc (Build_async (∅ : gmap u64 Block) _)) as (wal_heap_crash_heaps) "?".
-  iMod (mnat_alloc 0) as (wal_heap_durable_lb) "[? _]".
+  iMod (mono_nat_own_alloc 0) as (wal_heap_durable_lb) "[? _]".
   iMod (ghost_var_alloc (∅ : disk, @nil (u64 * list update.t))) as (wal_heap_txns) "?".
-  iMod (mnat_alloc 0) as (wal_heap_installed) "[? _]".
+  iMod (mono_nat_own_alloc 0) as (wal_heap_installed) "[? _]".
 
   iModIntro.
   iExists (Build_wal_heap_gnames _ _ _ _ _ _); simpl.
@@ -240,7 +240,7 @@ Qed.
 Lemma wal_heap_inv_init (γwalnames: wal_names) bs :
   513 + Z.of_nat (length bs) < 2^64 →
   ⊢ |==> ∃ γheapnames, "%Hwalnames" ∷ ⌜γheapnames.(wal_heap_walnames) = γwalnames⌝ ∗
-                       "#Hheap_lb" ∷ mnat_own_lb γheapnames.(wal_heap_durable_lb) 0 ∗
+                       "#Hheap_lb" ∷ mono_nat_lb_own γheapnames.(wal_heap_durable_lb) 0 ∗
                        "Hheap_inv" ∷ wal_heap_inv γheapnames (log_state0 bs) ∗
                        "wal_heap_locked" ∷ is_locked_walheap γheapnames
                          {| locked_wh_σd := (log_state0 bs).(log_state.d);
@@ -269,7 +269,7 @@ Proof.
        as "H".
   iEval (rewrite -Qp_three_quarter_quarter) in "H".
   iDestruct (fractional.fractional_split with "H") as "[wal_heap_crash_heaps1 wal_heap_crash_heaps2]".
-  iDestruct (mnat_get_lb with "wal_durable_lb") as "#Hlb".
+  iDestruct (mono_nat_lb_own_get with "wal_durable_lb") as "#Hlb".
 
   iModIntro.
 
@@ -726,14 +726,14 @@ Definition crash_heaps_post_exchange γ : iProp Σ :=
       "Hcrash_heaps_old" ∷ ghost_var γ.(wal_heap_crash_heaps) (3/4) crash_heaps).
 
 Definition heapspec_durable_exchanger γ bnd : iProp Σ :=
-  (∃ q n (Hle: n ≤ bnd), mnat_own_auth γ.(wal_heap_durable_lb) q n).
+  (∃ q n (Hle: n ≤ bnd), mono_nat_auth_own γ.(wal_heap_durable_lb) q n).
 
 Definition heapspec_exchanger ls ls' γ γ' : iProp Σ :=
   "%Hwal_wf" ∷ ⌜ wal_wf ls' ⌝ ∗
     "%Hlb_mono" ∷ ⌜(ls.(log_state.durable_lb) ≤ ls'.(log_state.durable_lb))%nat⌝ ∗
     (* old durable_lb for purposes of exchanging lower-bounds in old generation *)
     "Hdurable_lb_old" ∷ heapspec_durable_exchanger γ ls.(log_state.durable_lb) ∗
-    "#Hdurable_lb_lb" ∷ mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
+    "#Hdurable_lb_lb" ∷ mono_nat_lb_own γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
     "Hcrash_heaps_exchange" ∷ (crash_heaps_pre_exchange γ γ' ls ls' ∨ crash_heaps_post_exchange γ).
 
 Global Instance heapspec_exchanger_discretizable ls ls' γ γ' : Discretizable (heapspec_exchanger ls ls' γ γ').
@@ -741,14 +741,14 @@ Proof. apply _. Qed.
 
 Lemma heapspec_exchange_durable_lb ls ls' γ γ' lb :
   heapspec_exchanger ls ls' γ γ' -∗
-  mnat_own_lb γ.(wal_heap_durable_lb) lb -∗
-  mnat_own_lb γ'.(wal_heap_durable_lb) lb.
+  mono_nat_lb_own γ.(wal_heap_durable_lb) lb -∗
+  mono_nat_lb_own γ'.(wal_heap_durable_lb) lb.
 Proof.
   iNamed 1.
   iIntros "#Hold_lb_lb".
   iDestruct "Hdurable_lb_old" as (q n Hle) "Hdurable_lb_old".
-  iDestruct (mnat_own_lb_valid with "Hdurable_lb_old [$]") as %[_ Hlb].
-  iApply (mnat_own_lb_le with "Hdurable_lb_lb").
+  iDestruct (mono_nat_lb_own_valid with "Hdurable_lb_old [$]") as %[_ Hlb].
+  iApply (mono_nat_lb_own_le with "Hdurable_lb_lb").
   lia.
 Qed.
 
@@ -763,12 +763,12 @@ Qed.
 
 Lemma heapspec_durable_exchanger_use γ n lb :
   heapspec_durable_exchanger γ n -∗
-  mnat_own_lb γ.(wal_heap_durable_lb) lb -∗
+  mono_nat_lb_own γ.(wal_heap_durable_lb) lb -∗
   ⌜ lb ≤ n ⌝.
 Proof.
   iIntros "H1 H2".
   iDestruct "H1" as (? ? ?) "H".
-  iDestruct (mnat_own_lb_valid with "[$] [$]") as %[_ Hlb].
+  iDestruct (mono_nat_lb_own_valid with "[$] [$]") as %[_ Hlb].
   iPureIntro; lia.
 Qed.
 
@@ -817,8 +817,8 @@ Lemma wal_heap_inv_crash_transform0 γ γ' ls ls' :
   heapspec_init_ghost_state γ' -∗
   |==> ⌜wal_wf ls'⌝ ∗
        wal_heap_inv γ' ls' ∗
-       mnat_own_auth γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
-       mnat_own_lb γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
+       mono_nat_auth_own γ.(wal_heap_durable_lb) 1 ls.(log_state.durable_lb) ∗
+       mono_nat_lb_own γ'.(wal_heap_durable_lb) ls'.(log_state.durable_lb) ∗
        crash_heaps_pre_exchange γ γ' ls ls' ∗
        is_locked_walheap γ' {| locked_wh_σd := ls'.(log_state.d);
                                locked_wh_σtxns := ls'.(log_state.txns);
@@ -858,8 +858,8 @@ Proof.
     as "H".
   iEval (rewrite -Qp_quarter_three_quarter) in "H".
   iDestruct (fractional.fractional_split_1 with "H") as "[Hcrash_heaps_own' Hcrash_heaps_own2]".
-  iMod (mnat_update_with_lb _ _ crash_txn with "wal_durable_lb") as "[Hcrash_heaps_lb' Hcrash_heaps_lb_lb]"; first lia.
-  iMod (mnat_update_with_lb _ _ ls.(log_state.installed_lb) with "wal_heap_installed")
+  iMod (mono_nat_own_update crash_txn with "wal_durable_lb") as "[Hcrash_heaps_lb' Hcrash_heaps_lb_lb]"; first lia.
+  iMod (mono_nat_own_update ls.(log_state.installed_lb) with "wal_heap_installed")
     as "{Hinstalled} [Hinstalled #Hinstalled_lb]"; first by lia.
 
   iModIntro.
@@ -1813,11 +1813,10 @@ Proof.
 
   - simpl in *; monad_inv.
 
-    iMod (mnat_update new_installed with "Hinstalled") as "Hinstalled".
+    iMod (mono_nat_own_update new_installed with "Hinstalled") as "[Hinstalled #Hinstalledfrag]".
     { intuition. }
 
-    iDestruct (mnat_get_lb with "Hinstalled") as "#Hinstalledfrag".
-    iMod (mnat_update new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+    iMod (mono_nat_own_update new_durable with "Hcrash_heaps_lb") as "[Hcrash_heaps_lb _]".
     { lia. }
 
     iMod (gen_heap_update _ _ _ (HB (latest_update installed (updates_since txn_id a σ)) nil) with "Hctx Ha") as "[Hctx Ha]".
@@ -2138,7 +2137,7 @@ Proof.
     intro Hne. apply n. word.
 Qed.
 
-Definition memappend_crash_pre γh (bs: list update.t) crash_heaps : iProp Σ :=
+Definition memappend_crash_pre γh (bs: list update.t) (crash_heaps: async (gmap u64 Block)) : iProp Σ :=
   "Hcrashheapsfrag" ∷ ghost_var γh.(wal_heap_crash_heaps) (3/4) crash_heaps.
 
 Definition memappend_crash γh (bs: list update.t) (crash_heaps : async (gmap u64 Block)) lwh' : iProp Σ :=
@@ -2166,7 +2165,7 @@ Proof.
   intuition eauto.
 Qed.
 
-Lemma ghost_var_update_parts {A} `{!ghost_varG Σ A} (b:A) (γ: gname) q1 q2 a1 a2 :
+Lemma ghost_var_update_parts {A} `{!ghost_varG Σ A} (b:A) (γ: gname) q1 q2 (a1 a2: A) :
   (q1 + q2 = 1)%Qp →
   ghost_var γ q1 a1 -∗
   ghost_var γ q2 a2 ==∗
@@ -2525,10 +2524,9 @@ Proof using walheapG0.
       simpl in *; monad_inv.
       simpl in *; monad_inv.
 
-      iMod (mnat_update new_installed with "Hinstalled") as "Hinstalled".
+      iMod (mono_nat_own_update new_installed with "Hinstalled") as "[Hinstalled #Hinstalledfrag]".
       { intuition idtac. }
-      iDestruct (mnat_get_lb with "Hinstalled") as "#Hinstalledfrag".
-      iMod (mnat_update new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+      iMod (mono_nat_own_update new_durable with "Hcrash_heaps_lb") as "[Hcrash_heaps_lb _]".
       { lia. }
 
       iModIntro.
@@ -2561,7 +2559,7 @@ Proof using walheapG0.
       rewrite <- H5 in Hb.
       rewrite <- H6 in Hb.
 
-      iDestruct (mnat_own_lb_valid with "Hinstalled Hinstalledfrag") as %[_ Hle].
+      iDestruct (mono_nat_lb_own_valid with "Hinstalled Hinstalledfrag") as %[_ Hle].
 
       rewrite no_updates_since_last_disk in Heqo; eauto.
       2: {
@@ -2645,7 +2643,7 @@ Theorem wp_Walog__Flush_heap l γ dinit (txn_id : nat) (pos : u64) :
   }}}
     wal.Walog__Flush #l #pos
   {{{ RET #();
-      mnat_own_lb γ.(wal_heap_durable_lb) txn_id
+      mono_nat_lb_own γ.(wal_heap_durable_lb) txn_id
   }}}.
 Proof using walheapG0.
   iIntros (Φ) "(#Hwal & Hpos) HΦ".
@@ -2657,10 +2655,9 @@ Proof using walheapG0.
   intuition idtac.
 
   iNamed "Hinv".
-  iMod (mnat_update new_durable with "Hcrash_heaps_lb") as "Hcrash_heaps_lb".
+  iMod (mono_nat_own_update new_durable with "Hcrash_heaps_lb") as "[Hcrash_heaps_lb #Hlb]".
   { lia. }
-  iDestruct (mnat_get_lb with "Hcrash_heaps_lb") as "#Hlb".
-  iDestruct (mnat_own_lb_le _ _ txn_id with "Hlb") as "#Hpost".
+  iDestruct (mono_nat_lb_own_le txn_id with "Hlb") as "#Hpost".
   { lia. }
   iFrame "Hpost".
 
