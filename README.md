@@ -10,23 +10,25 @@ layer, and persistent key-value stores like RocksDB.
 Perennial uses [Goose](https://github.com/tchajed/goose) to enable verification
 of programs written in (a subset of) Go.
 
+This repository also includes a proof of the transaction system in
+[goose-nfsd](https://github.com/mit-pdos/goose-nfsd), including a simple NFS
+server built on top.
+
 ## Compiling
 
 We develop Perennial using Coq master and maintain compatibility with Coq 8.12.
 
 This project uses git submodules to include several dependencies. You should run `git submodule update --init --recursive` to set that up.
 
-We compile with [coqc.py](etc/coqc.py), a Python wrapper around `coqc` to get
-timing information; due to limitations in the Makefile, this wrapper is required
-to pass the right flags to Coq even if not using the timing information. You'll
-need Python3 and the `argparse` library (`pip3 install argparse`) to run the
-wrapper.
-
 To compile just run `make` with Coq on your `$PATH`.
+
+We compile with [coqc.py](etc/coqc.py), a Python wrapper around `coqc` to get
+timing information. The wrapper requires Python3 and the `argparse` library. You
+can also compile without timing information with `make TIMED=false`.
 
 ## Compilation times
 
-Perennial takes about 60-70 CPU minutes to compile. Compiling in parallel with `make -j4` is significantly faster, and can cut the time down to 15-20 minutes.
+Perennial takes about 70-80 CPU minutes to compile. Compiling in parallel with `make -j4` is significantly faster, and can cut the time down to 20-25 minutes.
 
 Incremental builds are better, after Iris and some core libraries are compiled.
 
@@ -128,13 +130,12 @@ cycle. Note that technically `vok` checking isn't the same as regular compilatio
     implemented in the Goose repo at `internal/examples/append_log/` and
     extracted to `goose_lang/examples/append_log/`.
 
-    Additional proofs to establish refinement are in `append_log_hocap.v` and
-    `append_log_refinement.v`.
+  - `examples/` Examples we wrote for POPL
 
-  - `wal/`
+  - `wal/`, `txn/`, and `buftxn/` proof of the transaction system library in
+    goose-nfsd
 
-    Proofs about the write-ahead log package in `goose-nfsd`. This imports the
-    extracted code at `Goose/github_com/mit_pdos/goose_nfsd/wal.v`.
+  - `simple/` proof of a simple NFS server
 
 * `Helpers/`
 
@@ -158,11 +159,14 @@ structure here mirrors the way Go import paths work.
 
 ## Publications
 
-Perennial is described in our SOSP paper, "[Verifying concurrent, crash-safe
+Perennial 1 is described in our SOSP paper, "[Verifying concurrent, crash-safe
 systems with Perennial](https://www.chajed.io/papers/perennial:sosp2019.pdf)".
+The actual codebase was quite different at the time of this paper; it notably
+used a shallow embedding of Goose and did not have WPCs or any of the associated
+program logic infrastructure.
 
 Goose is briefly described in a CoqPL extended abstract and associated talk,
 "[Verifying concurrent Go code in Coq with
 Goose](https://www.chajed.io/papers/goose:coqpl2020.pdf)".
 
-The verified interpreter and test framework for Goose is described in a masters' thesis, "[Waddle: A proven interpreter and test framework for a subset of the Go semantics](https://pdos.csail.mit.edu/papers/gibsons-meng.pdf)".
+The verified interpreter and test framework for Goose is described in Sydney Gibson's masters thesis, "[Waddle: A proven interpreter and test framework for a subset of the Go semantics](https://pdos.csail.mit.edu/papers/gibsons-meng.pdf)".
