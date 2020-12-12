@@ -6,37 +6,6 @@ From Perennial.Helpers Require Import ListSubset.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 
-Section simulation.
-  Context `{!invG Σ}.
-  Context {state: Type} (wf: state -> Prop) (P: state -> iProp Σ).
-  Context (E: coPset).
-  (* TODO: if we can start using this everywhere I think we can start proving
-  generic theorems about simulation, like the one below *)
-  Definition simulation_fupd {T} (tr: transition state T) (Q: T -> iProp Σ): iProp Σ :=
-    (∀ σ σ' r,
-         ⌜wf σ⌝ -∗
-         ⌜relation.denote tr σ σ' r⌝ -∗
-        (P σ ={E}=∗ P σ' ∗ ⌜wf σ'⌝ ∗ Q r)).
-
-  Theorem simulation_bind_fupd {A B}
-          (tr1: transition state A)
-          (tr2: A -> transition state B)
-          (Q: B -> iProp Σ) :
-    simulation_fupd tr1 (fun x => simulation_fupd (tr2 x) Q) -∗
-    simulation_fupd (bind tr1 tr2) Q.
-  Proof.
-    iIntros "Hfupd".
-    iIntros (σ1 σ3 r Hwf Htr) "HP".
-    simpl in Htr.
-    inversion Htr; subst; clear Htr.
-    rename s2 into σ2.
-    iMod ("Hfupd" with "[] [] HP") as "(HP&%Hwf2&Hfupd2)"; eauto.
-    iMod ("Hfupd2" with "[] [] HP") as "(HP&%Hwf3&HQ)"; eauto.
-    iFrame.
-    auto.
-  Qed.
-End simulation.
-
 Section goose_lang.
 Context `{!heapG Σ}.
 Context `{!walG Σ}.
@@ -113,84 +82,6 @@ Ltac wp_start :=
 Lemma sliding_set_mutable_start f (σ: slidingM.t) :
   slidingM.start (set slidingM.mutable f σ) = slidingM.start σ.
 Proof. by destruct σ. Qed.
-
-(* TODO: move memWrite proofs to sliding.v *)
-Lemma memWrite_one_NoDup σ u :
-  NoDup (update.addr <$> σ.(slidingM.log)) →
-  int.Z σ.(slidingM.mutable) - int.Z σ.(slidingM.start) = 0 →
-  NoDup (update.addr <$> (memWrite_one σ u).(slidingM.log)).
-Proof.
-  intros Hnodup Hro_len.
-  rewrite /memWrite_one.
-  destruct (find_highest_index _) as [i|] eqn:Hlookup; simpl.
-  - rewrite Hro_len.
-    rewrite -> decide_True by word.
-    simpl.
-    rewrite list_fmap_insert.
-    rewrite list_insert_id //.
-    apply find_highest_index_ok' in Hlookup as [Hlookup _].
-    auto.
-  - rewrite fmap_app.
-    apply NoDup_app.
-    split_and!; auto.
-    + simpl.
-      intros x Hx ->%elem_of_list_singleton.
-      apply elem_of_list_lookup in Hx as [txn_id Hx].
-      eapply find_highest_index_none in Hlookup; eauto.
-    + simpl.
-      apply NoDup_singleton.
-Qed.
-
-Lemma memWrite_all_NoDup σ bufs:
-  NoDup (update.addr <$> σ.(slidingM.log)) →
-  int.Z σ.(slidingM.mutable) - int.Z σ.(slidingM.start) = 0 →
-  NoDup (update.addr <$> (memWrite σ bufs).(slidingM.log)).
-Proof.
-  generalize dependent σ.
-  induction bufs as [|u bufs]; simpl; intuition.
-  apply IHbufs.
-  - apply memWrite_one_NoDup; auto.
-  - rewrite memWrite_one_same_start memWrite_one_same_mutable //.
-Qed.
-
-Theorem wp_absorbBufs b_s q q_b (bufs: list update.t) :
-  {{{ updates_slice_frag' b_s q q_b bufs }}}
-    absorbBufs (slice_val b_s)
-  {{{ b_s' bufs', RET slice_val b_s';
-      "Habsorbed" ∷ updates_slice' q_b b_s' bufs' ∗
-      "%Hsame_upds" ∷ ⌜∀ d, apply_upds bufs d = apply_upds bufs' d⌝ ∗
-      "%Hnodup" ∷ ⌜NoDup (update.addr <$> bufs')⌝  }}}.
-Proof.
-  wp_start.
-  wp_call.
-  change slice.nil with (slice_val Slice.nil).
-  wp_apply (wp_mkSliding _ q_b []).
-  { simpl; word. }
-  { iSplitL.
-    - iExists []; simpl.
-      rewrite right_id.
-      by iApply is_slice_small_nil.
-    - iApply is_slice_cap_nil. }
-  iIntros (l) "Hsliding".
-  iDestruct (updates_slice_frag_len with "Hpre") as "%Hbufslen".
-  wp_apply (wp_sliding__memWrite with "[$Hsliding $Hpre]").
-  { iPureIntro.
-    rewrite /slidingM.memEnd /=. word. }
-  iIntros "Hsliding".
-  wp_pures.
-  wp_apply (wp_sliding__intoMutable with "Hsliding").
-  { rewrite /slidingM.numMutable /=.
-    rewrite memWrite_same_mutable memWrite_same_start /=.
-    reflexivity. }
-  iIntros (s) "Hs".
-  iApply "HΦ"; iFrame "Hs".
-
-  iPureIntro; intuition.
-  - intros; rewrite memWrite_apply_upds //.
-  - apply memWrite_all_NoDup; simpl.
-    + constructor.
-    + word.
-Qed.
 
 Lemma is_durable_txn_bound γ cs txns diskEnd_txn_id durable_lb :
   is_durable_txn (Σ:=Σ) γ cs txns diskEnd_txn_id durable_lb -∗

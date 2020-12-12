@@ -796,6 +796,45 @@ Proof.
   rewrite HnumMutable //.
 Qed.
 
+Theorem wp_absorbBufs b_s q q_b (bufs: list update.t) :
+  {{{ updates_slice_frag' b_s q q_b bufs }}}
+    absorbBufs (slice_val b_s)
+  {{{ b_s' bufs', RET slice_val b_s';
+      "Habsorbed" ∷ updates_slice' q_b b_s' bufs' ∗
+      "%Hsame_upds" ∷ ⌜∀ d, apply_upds bufs d = apply_upds bufs' d⌝ ∗
+      "%Hnodup" ∷ ⌜NoDup (update.addr <$> bufs')⌝  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  wp_call.
+  change slice.nil with (slice_val Slice.nil).
+  wp_apply (wp_mkSliding _ q_b []).
+  { simpl; word. }
+  { iSplitL.
+    - iExists []; simpl.
+      rewrite right_id.
+      by iApply is_slice_small_nil.
+    - iApply is_slice_cap_nil. }
+  iIntros (l) "Hsliding".
+  iDestruct (updates_slice_frag_len with "Hpre") as "%Hbufslen".
+  wp_apply (wp_sliding__memWrite with "[$Hsliding $Hpre]").
+  { iPureIntro.
+    rewrite /slidingM.memEnd /=. word. }
+  iIntros "Hsliding".
+  wp_pures.
+  wp_apply (wp_sliding__intoMutable with "Hsliding").
+  { rewrite /slidingM.numMutable /=.
+    rewrite memWrite_same_mutable memWrite_same_start /=.
+    reflexivity. }
+  iIntros (s) "Hs".
+  iApply "HΦ"; iFrame "Hs".
+
+  iPureIntro; intuition.
+  - intros; rewrite memWrite_apply_upds //.
+  - apply memWrite_all_NoDup; simpl.
+    + constructor.
+    + word.
+Qed.
+
 Hint Unfold slidingM.numMutable : word.
 
 Theorem wp_sliding__takeFrom l q_b σ (start: u64) :
@@ -904,6 +943,7 @@ Proof.
   iExactEq "Hupds".
   repeat (f_equal; try word).
 Qed.
+
 
 Theorem memLogMap_drop1_not_highest (σ: slidingM.t) (upd: update.t) i :
   slidingM.wf σ
