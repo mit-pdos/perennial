@@ -432,20 +432,6 @@ Qed.
 (* TODO: why do we need this here again? *)
 Opaque is_sliding.
 
-Lemma txns_are_unify γ txns start txns_sub1 txns_sub2 :
-  txns_ctx γ txns -∗
-  txns_are γ start txns_sub1 -∗
-  txns_are γ start txns_sub2 -∗
-  ⌜length txns_sub1 = length txns_sub2⌝ -∗
-  ⌜txns_sub1 = txns_sub2⌝.
-Proof.
-  iIntros "Htxns_ctx Htxns_sub1 Htxns_sub2 %Hlen".
-  iDestruct (txns_are_sound with "Htxns_ctx Htxns_sub1") as %<-.
-  iDestruct (txns_are_sound with "Htxns_ctx Htxns_sub2") as %<-.
-  rewrite <-Hlen.
-  eauto.
-Qed.
-
 Lemma readonly_struct_field_mapsto_agree E l d f v1 v2 :
   readonly (l ↦[d :: f] v1) -∗
   readonly (l ↦[d :: f] v2) -∗

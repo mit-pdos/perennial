@@ -72,6 +72,20 @@ Proof.
   iDestruct (alist_subseq_lookup with "Hctx Htxns_are") as "$".
 Qed.
 
+Lemma txns_are_unify γ txns start txns_sub1 txns_sub2 :
+  txns_ctx γ txns -∗
+  txns_are γ start txns_sub1 -∗
+  txns_are γ start txns_sub2 -∗
+  ⌜length txns_sub1 = length txns_sub2⌝ -∗
+  ⌜txns_sub1 = txns_sub2⌝.
+Proof.
+  iIntros "Htxns_ctx Htxns_sub1 Htxns_sub2 %Hlen".
+  iDestruct (txns_are_sound with "Htxns_ctx Htxns_sub1") as %<-.
+  iDestruct (txns_are_sound with "Htxns_ctx Htxns_sub2") as %<-.
+  rewrite <-Hlen.
+  eauto.
+Qed.
+
 Lemma txns_are_nil γ start : ⊢ txns_are γ start [].
 Proof.
   iApply list_subseq_nil.
@@ -150,4 +164,71 @@ Proof.
   rewrite /txns_ctx/list_ctx. apply _.
 Qed.
 
+(** * txns_ctx factory:
+
+a way to remember that some [txn_val]s are valid even after a crash *)
+
+(* the crux of this approach is this resource, which has an auth over the old
+transactions in [γ] and connects them to the transactions in [γ']. [txn_val]s in
+[γ] that are prior to the crash point can be used to get one in the new
+generation. *)
+Definition old_txn_factory γ crash_txn γ' : iProp Σ :=
+  ∃ txns, txns_ctx γ txns ∗
+  [∗ list] i↦txn ∈ (take (S crash_txn) txns), list_el γ' i txn.
+
+Lemma txns_ctx_make_factory γ txns crash_txn γ' :
+  txns_ctx γ txns -∗
+  txns_ctx γ' (take (S crash_txn) txns) -∗
+  old_txn_factory γ crash_txn γ' ∗ txns_ctx γ' (take (S crash_txn) txns).
+Proof.
+  rewrite {2 3}/txns_ctx /list_ctx /old_txn_factory.
+  iIntros "Htxn [Hctx #Hels]".
+  iFrame "#∗".
+  iExists _; iFrame "#∗".
+Qed.
+
+Lemma old_txn_get γ γ' crash_txn txn_id txn :
+  (txn_id ≤ crash_txn)%nat →
+  old_txn_factory γ crash_txn γ' -∗
+  txn_val γ txn_id txn -∗
+  txn_val γ' txn_id txn.
+Proof.
+  iIntros (?) "Hfactory Hel".
+  iDestruct "Hfactory" as (txns) "[Hctx Hels]".
+  iDestruct (alist_lookup with "Hctx Hel") as %Hloookup.
+  iDestruct (big_sepL_lookup with "Hels") as "$".
+  rewrite -> lookup_take by lia. done.
+Qed.
+
+Lemma old_txn_get_pos γ γ' crash_txn txn_id pos :
+  (txn_id ≤ crash_txn)%nat →
+  old_txn_factory γ crash_txn γ' -∗
+  txn_pos γ txn_id pos -∗
+  txn_pos γ' txn_id pos.
+Proof.
+  iIntros (?) "Hfactory Hel".
+  iDestruct "Hel" as (txn) "Hel".
+  iExists txn.
+  iApply (old_txn_get with "[$] [$]"); auto.
+Qed.
+
+Lemma old_txns_are_get γ γ' crash_txn start txns_sub :
+  (start + length txns_sub ≤ S crash_txn)%nat →
+  old_txn_factory γ crash_txn γ' -∗
+  txns_are γ start txns_sub -∗
+  txns_are γ' start txns_sub.
+Proof.
+  iIntros (Hbound) "Hfactory Htxns".
+  iInduction txns_sub as [|txn txns] "IH" forall (start Hbound).
+  - iApply txns_are_nil.
+  - rewrite /txns_are /list_subseq.
+    simpl in Hbound.
+    rewrite !big_sepL_cons.
+    iDestruct "Htxns" as "[Htxn Htxns]".
+    rewrite Nat.add_0_r.
+    iDestruct (old_txn_get with "Hfactory Htxn") as "#$"; first by lia.
+    setoid_rewrite <- Nat.add_succ_comm.
+    iApply ("IH" with "[%] [$] Htxns").
+    lia.
+Qed.
 End goose.
