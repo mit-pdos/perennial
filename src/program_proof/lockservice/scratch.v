@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import notation.
 From Perennial.program_proof Require Import proof_prelude.
 From stdpp Require Import gmap.
 From RecordUpdate Require Import RecordUpdate.
-From Perennial.algebra Require Import auth_map fmcounter.
+From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.Helpers Require Import NamedProps.
 From iris.algebra Require Import numbers.

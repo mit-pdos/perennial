@@ -1,7 +1,9 @@
-(** Crash instances for fmcounter. *)
+(** Crash instances for mono_nat. *)
 From iris.proofmode Require Import base tactics classes.
-From iris.base_logic.lib Require Import mono_nat.
+From iris.base_logic.lib Require Export mono_nat.
 From Perennial.goose_lang Require Import crash_modality lifting.
+
+Set Default Proof Using "Type".
 
 Section instances.
 Context `{ffi_semantics: ext_semantics}.

@@ -958,7 +958,7 @@ Context `{!txnG Σ}.
 Context `{!heapG Σ}.
 
 Existing Instance ghost_var_into_crash.
-Existing Instance fmcounter_into_crash.
+Existing Instance mono_nat_auth_own_into_crash.
 Existing Instance is_wal_inner_durable_stable.
 
 Global Instance is_txn_durable_stable γ dinit:

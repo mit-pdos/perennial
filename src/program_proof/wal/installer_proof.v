@@ -1,10 +1,10 @@
 From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import gset.
+From iris.base_logic.lib Require Import mono_nat.
 
 From Perennial.Helpers Require Import ListSubset.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
-From Perennial.algebra Require Import fmcounter.
 
 Section simulation.
   Context `{!invG Σ}.
@@ -343,7 +343,7 @@ Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
       "#Hwal" ∷ is_wal P l γ dinit ∗
       "%Hbufs" ∷ ⌜has_updates bufs subtxns⌝ ∗
       "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
-      "HownBeingInstalledStartTxn_installer" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
+      "HownBeingInstalledStartTxn_installer" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
       "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) (being_installed_start_txn_id + length subtxns)%nat ∗
       "#Hsubtxns" ∷ txns_are γ (S being_installed_start_txn_id) subtxns
   }}}
@@ -351,7 +351,7 @@ Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
   {{{ RET #();
       "#Hwal" ∷ is_wal P l γ dinit ∗
       "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.Z (update.addr u)) <$> bufs)) ∗
-      "HownBeingInstalledStartTxn_installer" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
+      "HownBeingInstalledStartTxn_installer" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
       "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) (being_installed_start_txn_id + length subtxns)%nat
   }}}.
 Proof.
@@ -385,7 +385,7 @@ Proof.
   wp_apply (slice.wp_forSlice (fun i =>
     ("Hupds" ∷ [∗ list] uv;upd ∈ bks;upds, is_update uv q upd) ∗
       "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) (take (int.nat i) ((λ u, int.Z (update.addr u)) <$> upds))) ∗
-      "HownBeingInstalledStartTxn_installer" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
+      "HownBeingInstalledStartTxn_installer" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
       "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) (being_installed_start_txn_id + length subtxns)%nat
     )%I with "[] [$Hbks_s Hupds $Halready_installed_installer $HownBeingInstalledStartTxn_installer $HownBeingInstalledEndTxn_installer]").
   {
@@ -424,7 +424,7 @@ Proof.
     iNamed "Howninstalled".
 
     iDestruct (ghost_var_agree with "Halready_installed_installer Halready_installed") as %<-.
-    iDestruct (fmcounter_agree_1 with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as %<-.
+    iDestruct (mono_nat_auth_own_agree with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as %[_ <-].
     iDestruct (ghost_var_agree with "HownBeingInstalledEndTxn_installer HownBeingInstalledEndTxn_walinv") as %<-.
     iMod (ghost_var_update_halves (list_to_set (C:=gset Z) (take (S (int.nat i)) ((λ u, int.Z (update.addr u)) <$> upds)))
       with "Halready_installed_installer Halready_installed") as
@@ -612,8 +612,8 @@ Proof.
   iNamed "Hdisk".
   iNamed "Hdurable".
 
-  iDestruct (fmcounter_agree_1 with "HownDiskEndMem_linv HownDiskEndMem_walinv") as %<-.
-  iDestruct (fmcounter_agree_1 with "HownDiskEndMemTxn_linv HownDiskEndMemTxn_walinv") as %<-.
+  iDestruct (mono_nat_auth_own_agree with "HownDiskEndMem_linv HownDiskEndMem_walinv") as %[_ <-].
+  iDestruct (mono_nat_auth_own_agree with "HownDiskEndMemTxn_linv HownDiskEndMemTxn_walinv") as %[_ <-].
   iMod (ghost_var_update_halves (int.nat diskEnd_pos) with
     "HownInstallerPos_installer HownInstallerPos_walinv"
   ) as "[HownInstallerPos_installer HownInstallerPos_walinv]".
@@ -767,22 +767,22 @@ Lemma unify_memLog_diskEnd_mem γ log diskEnd_pos diskEnd_txn_id installed_txn_i
                                 installed_txn_id_mem nextDiskEnd_txn_id txns
                                 logger_pos logger_txn_id
                                 installer_pos_mem installer_txn_id_mem -∗
-  "HownDiskEndMem" ∷ fmcounter γ.(diskEnd_mem_name) (1/2) diskEnd_pos_ext -∗
-  "HownDiskEndMemTxn" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id_ext -∗
+  "HownDiskEndMem" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) diskEnd_pos_ext -∗
+  "HownDiskEndMemTxn" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id_ext -∗
     "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 installed_txn_id_mem nextDiskEnd_txn_id txns
                                 logger_pos logger_txn_id
                                 installer_pos_mem installer_txn_id_mem ∗
-    "HownDiskEndMem" ∷ fmcounter γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd_pos) ∗
-    "HownDiskEndMemTxn" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownDiskEndMem" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd_pos) ∗
+    "HownDiskEndMemTxn" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
     "%HdiskEnd_pos_eq" ∷ ⌜int.nat diskEnd_pos = diskEnd_pos_ext⌝ ∗
     "%HdiskEnd_txn_id_eq" ∷ ⌜diskEnd_txn_id = diskEnd_txn_id_ext⌝.
 Proof.
   iIntros.
   iNamed.
   iNamed "Hlinv".
-  iDestruct (fmcounter_agree_1 with "HownDiskEndMem_linv HownDiskEndMem" ) as %HdiskEnd_pos_eq.
-  iDestruct (fmcounter_agree_1 with "HownDiskEndMemTxn_linv HownDiskEndMemTxn" ) as %HdiskEnd_txn_id_eq.
+  iDestruct (mono_nat_auth_own_agree with "HownDiskEndMem_linv HownDiskEndMem" ) as %[_ HdiskEnd_pos_eq].
+  iDestruct (mono_nat_auth_own_agree with "HownDiskEndMemTxn_linv HownDiskEndMemTxn" ) as %[_ HdiskEnd_txn_id_eq].
   rewrite -HdiskEnd_pos_eq -HdiskEnd_txn_id_eq.
   iFrame "∗ # %".
   eauto.
@@ -920,7 +920,7 @@ Proof.
   iNamed.
   iNamed "Howninstalled".
   iDestruct (ghost_var_agree with "Halready_installed_installer Halready_installed") as %<-.
-  iDestruct (fmcounter_agree_1 with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as %<-.
+  iDestruct (mono_nat_auth_own_agree with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as %[_ <-].
   iDestruct (ghost_var_agree with "HownBeingInstalledEndTxn_installer HownBeingInstalledEndTxn_walinv") as %->.
   iMod (ghost_var_update_halves σ.(locked_diskEnd_txn_id) with
     "HownBeingInstalledEndTxn_installer HownBeingInstalledEndTxn_walinv"
@@ -929,10 +929,9 @@ Proof.
   iDestruct (unify_memLog_diskEnd_mem with "Hlinv HownDiskEndMem_walinv HownDiskEndMemTxn_walinv")
     as "(Hlinv&HownDiskEndMem_walinv&HownDiskEndMemTxn_walinv&%HdiskEnd_pos_eq&%HdiskEnd_txn_id_eq)".
   subst diskEnd_mem diskEnd_mem_txn_id.
-  iMod (fmcounter_get_lb with "HownDiskEndMem_walinv") as
-    "[HownDiskEndMem_walinv #HownDiskEndMem_lb]".
-  iDestruct (fmcounter_agree_2 with "HownDiskEndMemTxn_walinv HdiskEndMem_lb_installer") as %HdiskEndMemTxn_lb.
-  iMod (fmcounter_get_lb with "HownDiskEndMemTxn_walinv") as "(HownDiskEndMemTxn_walinv&#HdiskEndMem_lb)".
+  iDestruct (mono_nat_lb_own_get with "HownDiskEndMem_walinv") as "#HownDiskEndMem_lb".
+  iDestruct (mono_nat_lb_own_valid with "HownDiskEndMemTxn_walinv HdiskEndMem_lb_installer") as %[_ HdiskEndMemTxn_lb].
+  iDestruct (mono_nat_lb_own_get with "HownDiskEndMemTxn_walinv") as "#HdiskEndMem_lb".
 
   pose proof (is_txn_bound _ _ _ HdiskEnd_txn) as HdiskEnd_mem_bound.
   rewrite /is_txn in HdiskEnd_txn.
@@ -1041,7 +1040,7 @@ Proof.
         ghost_var γ.(installer_txn_id_name) (1/2)
           σ.(locked_diskEnd_txn_id) ∗
       "HownBeingInstalledStartTxn_installer" ∷
-        fmcounter γ.(being_installed_start_txn_name) (1/2)
+        mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2)
           σ.(locked_diskEnd_txn_id) ∗
       "HownBeingInstalledEndTxn_installer" ∷
         ghost_var γ.(being_installed_end_txn_name) (1/2)
@@ -1078,15 +1077,13 @@ Proof.
     iNamed "Hdurable".
     iDestruct (ghost_var_agree with "HownInstallerPos_installer HownInstallerPos_walinv") as %<-.
     iDestruct (ghost_var_agree with "HownInstallerTxn_installer HownInstallerTxn_walinv") as %<-.
-    iDestruct (fmcounter_agree_1 with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as %<-.
+    iDestruct (mono_nat_auth_own_agree with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as %[_ <-].
     iDestruct (ghost_var_agree with "HownBeingInstalledEndTxn_installer HownBeingInstalledEndTxn_walinv") as %<-.
     iDestruct (ghost_var_agree with "Halready_installed_installer Halready_installed") as %<-.
-    iMod (fmcounter_update_halves _ _ _ σ.(locked_diskEnd_txn_id)
+    iMod (mono_nat_own_update_halves σ.(locked_diskEnd_txn_id)
       with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as
-          "(HownBeingInstalledStartTxn_installer&HownBeingInstalledStartTxn_walinv&_)".
+          "(HownBeingInstalledStartTxn_installer&HownBeingInstalledStartTxn_walinv&HinstalledTxn_lb')".
     1: lia.
-    iMod (fmcounter_get_lb with "HownBeingInstalledStartTxn_walinv")
-      as "(HownBeingInstalledStartTxn_walinv&HinstalledTxn_lb')".
     iMod (ghost_var_update_halves (∅: gset Z)
       with "Halready_installed_installer Halready_installed") as
           "[Halready_installed_installer Halready_installed]".
@@ -1270,9 +1267,8 @@ Proof.
   iDestruct (start_is_to_at_least with "Hstart_is") as "#Hstart_at_least'".
   iMod (thread_own_put with "Hstart_exactly Hinstalling Hstart_is")
     as "[Hstart_exactly HnotInstalling]".
-  iDestruct (fmcounter_agree_2 with "HownDiskEndMem_linv HownDiskEndMem_lb") as %HdiskEnd_lb.
-  iMod (fmcounter_get_lb with "HownBeingInstalledStartTxn_installer")
-    as "(HownBeingInstalledStartTxn_installer&#HinstalledTxn_lb)".
+  iDestruct (mono_nat_lb_own_valid with "HownDiskEndMem_linv HownDiskEndMem_lb") as %HdiskEnd_lb.
+  iDestruct (mono_nat_lb_own_get with "HownBeingInstalledStartTxn_installer") as "#HinstalledTxn_lb".
 
   wp_apply (wp_sliding__deleteFrom with "His_memLog").
   1: lia.

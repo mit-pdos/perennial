@@ -39,9 +39,9 @@ Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
     "installed_pos_mem" ∷ ghost_var γnew.(installed_pos_mem_name) 1 (U64 0) ∗
     "installed_txn_id_mem" ∷ ghost_var γnew.(installed_txn_id_mem_name) 1 0%nat ∗
 
-    "diskEnd_mem" ∷ fmcounter γnew.(diskEnd_mem_name) 1 0%nat ∗
-    "diskEnd_mem_txn_id" ∷ fmcounter γnew.(diskEnd_mem_txn_id_name) 1 0%nat ∗
-    "being_installed_start_txn" ∷ fmcounter γnew.(being_installed_start_txn_name) 1 0%nat ∗
+    "diskEnd_mem" ∷ mono_nat_auth_own γnew.(diskEnd_mem_name) 1 0%nat ∗
+    "diskEnd_mem_txn_id" ∷ mono_nat_auth_own γnew.(diskEnd_mem_txn_id_name) 1 0%nat ∗
+    "being_installed_start_txn" ∷ mono_nat_auth_own γnew.(being_installed_start_txn_name) 1 0%nat ∗
     "being_installed_end_txn" ∷ ghost_var γnew.(being_installed_end_txn_name) 1 0%nat ∗
     "already_installed" ∷ ghost_var γnew.(already_installed_name) 1 (∅ : gset Z)  ∗
     "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit) ∗
@@ -239,11 +239,11 @@ Proof.
   iMod (ghost_var_alloc (U64 0)) as (installed_pos_mem_name) "?".
   iMod (ghost_var_alloc 0%nat) as (installed_txn_id_mem_name) "?".
 
-  iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_name) "?".
-  iMod (fmcounter_alloc 0%nat) as (diskEnd_mem_txn_id_name) "?".
+  iMod (mono_nat_own_alloc 0%nat) as (diskEnd_mem_name) "[? _]".
+  iMod (mono_nat_own_alloc 0%nat) as (diskEnd_mem_txn_id_name) "[? _]".
 
   iMod (ghost_var_alloc (∅ : gset Z)) as (already_installed_name) "Halready_installed".
-  iMod (fmcounter_alloc 0%nat) as (being_installed_start_txn_name) "Hbeing_start".
+  iMod (mono_nat_own_alloc 0%nat) as (being_installed_start_txn_name) "[Hbeing_start _]".
   iMod (ghost_var_alloc 0%nat) as (being_installed_end_txn_name) "Hbeing_end".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
   iMod (alist_alloc (@nil (u64 * list update.t))) as (γtxns_ctx_name) "Htxns_ctx".
@@ -349,8 +349,8 @@ Definition memLog_linv_init_ghost_state γ : iProp Σ :=
     ∗ ghost_var γ.(logger_txn_id_name) (1 / 2) 0%nat
     ∗ ghost_var γ.(installer_pos_mem_name) (1 / 2) (U64 0)
     ∗ ghost_var γ.(installer_txn_id_mem_name) (1 / 2) 0%nat
-    ∗ fmcounter γ.(diskEnd_mem_name) (1 / 2) 0%nat
-    ∗ fmcounter γ.(diskEnd_mem_txn_id_name) (1 / 2) 0%nat
+    ∗ mono_nat_auth_own γ.(diskEnd_mem_name) (1 / 2) 0%nat
+    ∗ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1 / 2) 0%nat
     ∗ ghost_var γ.(installed_pos_mem_name) (1 / 2) (U64 0)
     ∗ ghost_var γ.(installed_txn_id_mem_name) (1 / 2) 0%nat
     ∗ map_ctx γ.(stable_txn_ids_name) (1/2) {[0%nat := ()]}).
@@ -358,7 +358,7 @@ Definition memLog_linv_init_ghost_state γ : iProp Σ :=
 Definition memLog_linv_init_pers_state γ : iProp Σ :=
   (0%nat [[γ.(stable_txn_ids_name)]]↦ro () ∗
   txn_pos γ 0 0 ∗
-  fmcounter_lb γ.(being_installed_start_txn_name) 0).
+  mono_nat_lb_own γ.(being_installed_start_txn_name) 0).
 
 Lemma memLog_linv_pers_core_init γ :
   memLog_linv_init_pers_state γ
@@ -557,10 +557,10 @@ Proof.
   iDestruct_2 "being_installed_start_txn".
   iDestruct_2 "being_installed_end_txn".
 
-  iMod (fmcounter_get_lb with "being_installed_start_txn")
-    as "[being_installed_start_txn #being_installed_start_txn_lb]".
-  iMod (fmcounter_get_lb with "diskEnd_mem_txn_id")
-    as "[diskEnd_mem_txn_id #diskEnd_mem_txn_id_lb]".
+  iDestruct (mono_nat_lb_own_get with "being_installed_start_txn")
+    as "#being_installed_start_txn_lb".
+  iDestruct (mono_nat_lb_own_get with "diskEnd_mem_txn_id")
+    as "#diskEnd_mem_txn_id_lb".
   iMod (alloc_txn_pos (U64 0) [] with "txns_ctx") as "[txns_ctx _]".
   simpl.
   iMod (thread_own_replace with "start_avail_ctx start_avail Hstart")
@@ -582,7 +582,7 @@ Proof.
   iSplitL "Hcirc stable_txn_ids cs
     HmemLog_ghost start_avail_ctx diskEnd_avail_ctx
     Hinstalled_ghost Hdata
-    installer_pos2 installer_txn_id2 diskEnd_mem diskEnd_mem_txn_id2".
+    installer_pos2 installer_txn_id2 diskEnd_mem diskEnd_mem_txn_id".
   2: {
     iFrame.
     iSplitL "logger_pos logger_txn_id".
@@ -639,7 +639,7 @@ Proof.
     }
     iApply (disk_array_to_big_opM with "Hdata").
   }
-  iSplitL "installer_pos2 installer_txn_id2 diskEnd_mem diskEnd_mem_txn_id2".
+  iSplitL "installer_pos2 installer_txn_id2 diskEnd_mem diskEnd_mem_txn_id".
   {
     iExists _, _, _, _.
     iFrame.
@@ -1042,7 +1042,7 @@ Proof.
     iMod (ghost_var_update installer_pos with "installer_pos") as "[installer_pos1 installer_pos2]".
     iMod (ghost_var_update installer_txn_id with "installer_txn_id") as "[installer_txn_id1 installer_txn_id2]".
     iMod (ghost_var_update ∅ with "already_installed") as "[already_installed1 already_installed2]".
-    iMod (fmcounter_update installed_txn_id with "being_installed_start_txn") as "[[being_installed_start_txn1 being_installed_start_txn2] #being_installed_start_txn_id_mem_lb]"; first by lia.
+    iMod (mono_nat_own_update installed_txn_id with "being_installed_start_txn") as "[[being_installed_start_txn1 being_installed_start_txn2] #being_installed_start_txn_id_mem_lb]"; first by lia.
     iMod (ghost_var_update being_installed_end_txn_id with "being_installed_end_txn") as "[being_installed_end_txn1 being_installed_end_txn2]".
     iMod (txns_ctx_app (take (S diskEnd_txn_id) σ.(log_state.txns)) with "txns_ctx") as "Htxns_ctx'".
     rewrite app_nil_l.
@@ -1101,8 +1101,8 @@ Proof.
     iMod (ghost_var_update cs0 with "cs")
         as "cs".
 
-    iMod (fmcounter_update (int.nat diskEnd) with "diskEnd_mem") as "[[diskEnd_mem1 diskEnd_mem2] #diskEnd_mem_lb]"; first by lia.
-    iMod (fmcounter_update diskEnd_txn_id with "diskEnd_mem_txn_id") as "[[diskEnd_mem_txn_id1 diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
+    iMod (mono_nat_own_update (int.nat diskEnd) with "diskEnd_mem") as "[[diskEnd_mem1 diskEnd_mem2] #diskEnd_mem_lb]"; first by lia.
+    iMod (mono_nat_own_update diskEnd_txn_id with "diskEnd_mem_txn_id") as "[[diskEnd_mem_txn_id1 diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
 
 
     iThaw "Hwand".
@@ -1281,7 +1281,7 @@ Proof.
     iThaw "#".
     iDestruct "diskEnd_mem_txn_lb" as "-#diskEnd_mem_txn_lb".
     iClear "#".
-    iDestruct (fmcounter_lb_mono _ being_installed_end_txn_id with "diskEnd_mem_txn_lb") as
+    iDestruct (mono_nat_lb_own_le being_installed_end_txn_id with "diskEnd_mem_txn_lb") as
         "diskEnd_mem_txn_lb"; first by word.
     iFrame "start_avail diskEnd_avail".
     rewrite Hcirc_name.
@@ -1615,8 +1615,8 @@ Proof.
   rewrite /IntoCrash. iApply post_crash_nodep.
 Qed.
 
-Local Instance fmcounter_into_crash `{fmcounterG Σ} (γ: gname) q (x: nat):
-  IntoCrash (fmcounter γ q x) (λ _, fmcounter γ q x).
+Local Instance mono_nat_auth_own_into_crash `{mono_natG Σ} (γ: gname) q (x: nat):
+  IntoCrash (mono_nat_auth_own γ q x) (λ _, mono_nat_auth_own γ q x).
 Proof.
   rewrite /IntoCrash. iApply post_crash_nodep.
 Qed.

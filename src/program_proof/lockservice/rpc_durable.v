@@ -1,6 +1,6 @@
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.algebra Require Import auth_map fmcounter.
+From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude.
 From iris.algebra Require Import gmap lib.mono_nat.
 From Perennial.program_proof.lockservice Require Import fmcounter_map rpc_base.

@@ -436,14 +436,14 @@ Proof.
     "Hinner" ∷ is_wal_inner l γ σs dinit -∗
     "Howntxns" ∷ ghost_var γ.(txns_name) (1/2) txns0 -∗
     "HdiskEnd_is" ∷ diskEnd_is γ.(circ_name) (1/2) (int.Z σ.(memLog).(slidingM.mutable)) -∗
-    "HownDiskEndMem_linv" ∷ fmcounter γ.(diskEnd_mem_name) (1/2) (int.nat σ0.(diskEnd)) -∗
-    "HownDiskEndMemTxn_linv" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1/2) σ0.(locked_diskEnd_txn_id) -∗
+    "HownDiskEndMem_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) (int.nat σ0.(diskEnd)) -∗
+    "HownDiskEndMemTxn_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) σ0.(locked_diskEnd_txn_id) -∗
     |NC={⊤ ∖ ↑walN.@"wal"}=>
     "Hinner" ∷ is_wal_inner l γ σs dinit ∗
     "Howntxns" ∷ ghost_var γ.(txns_name) (1/2) txns0 ∗
     "HdiskEnd_is" ∷ diskEnd_is γ.(circ_name) (1/2) (int.Z σ.(memLog).(slidingM.mutable)) ∗
-    "HownDiskEndMem_linv" ∷ fmcounter γ.(diskEnd_mem_name) (1/2) (int.nat (int.Z σ.(diskEnd) + int.Z s.(Slice.sz))) ∗
-    "HownDiskEndMemTxn_linv" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1/2) nextDiskEnd_txn_id
+    "HownDiskEndMem_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) (int.nat (int.Z σ.(diskEnd) + int.Z s.(Slice.sz))) ∗
+    "HownDiskEndMemTxn_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) nextDiskEnd_txn_id
   )%I as "HdiskEndMem_update".
   {
     iIntros; iNamed.
@@ -458,14 +458,13 @@ Proof.
     replace (int.nat (int.Z σ.(diskEnd) +
       (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat))
       with (int.nat σ.(memLog).(slidingM.mutable))%nat by word.
-    iDestruct (fmcounter_agree_1 with "HownDiskEndMem_walinv HownDiskEndMem_linv") as %->.
-    iDestruct (fmcounter_agree_1 with "HownDiskEndMemTxn_walinv HownDiskEndMemTxn_linv") as %->.
-    iMod (fmcounter_update_halves _ _ _
-        (int.nat σ.(memLog).(slidingM.mutable))
+    iDestruct (mono_nat_auth_own_agree with "HownDiskEndMem_walinv HownDiskEndMem_linv") as %[_ ->].
+    iDestruct (mono_nat_auth_own_agree with "HownDiskEndMemTxn_walinv HownDiskEndMemTxn_linv") as %[_ ->].
+    iMod (mono_nat_own_update_halves (int.nat σ.(memLog).(slidingM.mutable))
       with "HownDiskEndMem_walinv HownDiskEndMem_linv")
       as "(HownDiskEndMem_walinv&HownDiskEndMem_linv&_)".
     1: lia.
-    iMod (fmcounter_update_halves _ _ _ nextDiskEnd_txn_id
+    iMod (mono_nat_own_update_halves nextDiskEnd_txn_id
       with "HownDiskEndMemTxn_walinv HownDiskEndMemTxn_linv")
       as "(HownDiskEndMemTxn_walinv&HownDiskEndMemTxn_linv&_)".
     1: lia.

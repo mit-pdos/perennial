@@ -4,7 +4,7 @@ From iris.algebra Require Import gset.
 
 From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Map.
 
-From Perennial.algebra Require Export deletable_heap append_list auth_map fmcounter.
+From Perennial.algebra Require Export deletable_heap append_list auth_map mono_nat.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
 From Perennial.program_proof Require Export wal.circ_proof wal.sliding_proof.
@@ -28,8 +28,7 @@ Class walG Σ :=
     wal_stable_mapG  :> mapG Σ nat unit;
     wal_logger_pos   :> ghost_varG Σ u64;
     wal_base_disk    :> inG Σ (agreeR (leibnizO disk));
-    (* TODO: switch over to Iris mnat entirely *)
-    wal_fmcounter    :> fmcounterG Σ;
+    wal_mono_natG    :> mono_natG Σ;
   }.
 
 Definition walΣ : gFunctors :=
@@ -47,7 +46,7 @@ Definition walΣ : gFunctors :=
    mapΣ nat unit;
    ghost_varΣ u64;
    GFunctor (agreeR (leibnizO disk));
-   fmcounterΣ
+   mono_natΣ
    ].
 
 Instance subG_walΣ Σ : subG walΣ Σ → walG Σ.
@@ -261,7 +260,7 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t)
     "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt ∗
     "#HmemEnd_txn" ∷ txn_pos γ (length txns - 1)%nat (slidingM.endPos σ) ∗
     (* being_installed_start being used as a proxy for on-disk installed_txn *)
-    "#HinstalledTxn_lb" ∷ fmcounter_lb γ.(being_installed_start_txn_name) installed_txn_id_mem ∗
+    "#HinstalledTxn_lb" ∷ mono_nat_lb_own γ.(being_installed_start_txn_name) installed_txn_id_mem ∗
     (* Here we establish what the memLog contains, which is necessary for reads
     to work (they read through memLogMap, but the lock invariant establishes
     that this matches memLog). *)
@@ -297,8 +296,8 @@ Definition memLog_linv_core γ (σ: slidingM.t) (diskEnd: u64) (diskEnd_txn_id: 
     "HownLoggerTxn_linv" ∷ ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id ∗
     "HownInstallerPosMem_linv" ∷ ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem ∗
     "HownInstallerTxnMem_linv" ∷ ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem ∗
-    "HownDiskEndMem_linv" ∷ fmcounter γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
-    "HownDiskEndMemTxn_linv" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownDiskEndMem_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
+    "HownDiskEndMemTxn_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
     "HownInstalledPosMem_linv" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗
     "HownInstalledTxnMem_linv" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
   .
@@ -444,7 +443,7 @@ Definition is_dblock_with_txns d txns (being_installed_start_txn_id: nat) (being
      a d↦ b ∗ ⌜2 + LogSz ≤ a⌝.
 
 Definition is_installed_core_ghost γ (being_installed_start_txn_id being_installed_end_txn_id: nat) (already_installed: gset Z) : iProp Σ :=
-  "HownBeingInstalledStartTxn_walinv" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
+  "HownBeingInstalledStartTxn_walinv" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
   "HownBeingInstalledEndTxn_walinv" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
   "Halready_installed" ∷ ghost_var γ.(already_installed_name) (1/2) already_installed.
 
@@ -526,8 +525,8 @@ Definition is_durable γ cs txns installed_txn_id diskEnd_txn_id : iProp Σ :=
   ∃ (installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id: nat),
     "HownInstallerPos_walinv" ∷ ghost_var γ.(installer_pos_name) (1/2) installer_pos ∗
     "HownInstallerTxn_walinv" ∷ ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id ∗
-    "HownDiskEndMem_walinv" ∷ fmcounter γ.(diskEnd_mem_name) (1/2) diskEnd_mem ∗
-    "HownDiskEndMemTxn_walinv" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_mem_txn_id ∗
+    "HownDiskEndMem_walinv" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) diskEnd_mem ∗
+    "HownDiskEndMemTxn_walinv" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_mem_txn_id ∗
     "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id⌝.
 
 Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :=
@@ -627,9 +626,9 @@ Definition installer_inv γ: iProp Σ :=
     "HownInstallerPosMem_installer" ∷ (∃ (installer_pos_mem : u64), ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem) ∗
     "HownInstallerTxnMem_installer" ∷ (∃ (installer_txn_id_mem : nat), ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem) ∗
     "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
-    "HownBeingInstalledStartTxn_installer" ∷ fmcounter γ.(being_installed_start_txn_name) (1/2) installed_txn_id_mem ∗
+    "HownBeingInstalledStartTxn_installer" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) installed_txn_id_mem ∗
     "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
-    "#HdiskEndMem_lb_installer" ∷ fmcounter_lb γ.(diskEnd_mem_txn_id_name) being_installed_end_txn_id ∗
+    "#HdiskEndMem_lb_installer" ∷ mono_nat_lb_own γ.(diskEnd_mem_txn_id_name) being_installed_end_txn_id ∗
     "HownInstalledPosMem_installer" ∷ (∃ (installed_pos_mem : u64), ghost_var γ.(installed_pos_mem_name) (1/2) installed_pos_mem) ∗
     "HownInstalledTxnMem_installer" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
 .
@@ -974,8 +973,8 @@ Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id nextDiskEnd_
   ("Hsame_txns" ∷ ghost_var γ.(txns_name) (1/2) txns ∗
     "Hlp" ∷ ghost_var γ.(logger_pos_name) (1 / 2) logger_pos ∗
     "Hlt" ∷ ghost_var γ.(logger_txn_id_name) (1 / 2) logger_txn_id ∗
-    "HownDiskEndMem" ∷ fmcounter γ.(diskEnd_mem_name) (1 / 2) (int.nat diskEnd) ∗
-    "HownDiskEndMemTxn" ∷ fmcounter γ.(diskEnd_mem_txn_id_name) (1 / 2) diskEnd_txn_id ∗
+    "HownDiskEndMem" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1 / 2) (int.nat diskEnd) ∗
+    "HownDiskEndMemTxn" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1 / 2) diskEnd_txn_id ∗
     "Hip" ∷ ghost_var γ.(installer_pos_mem_name) (1 / 2) installer_pos_mem ∗
     "Hit" ∷ ghost_var γ.(installer_txn_id_mem_name) (1 / 2) installer_txn_id_mem ∗
     "HownInstalledPosMem" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗
@@ -989,6 +988,20 @@ Proof.
   repeat iExists _.
   iFrame "Hlinv_pers".
   iFrame "∗ # %".
+Qed.
+
+Lemma mono_nat_own_update_halves n' (γ: gname) n :
+  (n ≤ n')%nat →
+  mono_nat_auth_own γ (1/2) n -∗
+  mono_nat_auth_own γ (1/2) n -∗
+  |==> mono_nat_auth_own γ (1/2) n' ∗
+       mono_nat_auth_own γ (1/2) n' ∗
+       mono_nat_lb_own γ n'.
+Proof.
+  iIntros (Hle) "H1 H2".
+  iCombine "H1 H2" as "H".
+  iMod (mono_nat_own_update n' with "H") as "[[$ $] $]"; first by auto.
+  done.
 Qed.
 
 (** * WPs for field operations in terms of lock invariant *)

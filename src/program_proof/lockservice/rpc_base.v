@@ -1,4 +1,4 @@
-From Perennial.algebra Require Import auth_map fmcounter.
+From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.lockservice Require Import fmcounter_map.
 

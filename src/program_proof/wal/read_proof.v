@@ -289,8 +289,8 @@ Proof.
 
   iNamed "Howninstalled".
   iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
-  iDestruct (fmcounter_agree_2 with "HownBeingInstalledStartTxn_walinv HinstalledTxn_lb")
-    as %HinstalledTxn_lb.
+  iDestruct (mono_nat_lb_own_valid with "HownBeingInstalledStartTxn_walinv HinstalledTxn_lb")
+    as %[_ HinstalledTxn_lb].
 
   iAssert (⌜
     start cs = memLog.(slidingM.start) →

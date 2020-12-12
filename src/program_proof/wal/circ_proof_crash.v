@@ -1,6 +1,6 @@
 From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Import mono_nat.
 From Perennial.algebra Require Import deletable_heap.
+From Perennial.goose_lang Require Import mono_nat.
 
 From RecordUpdate Require Import RecordSet.
 
@@ -8,7 +8,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.program_logic Require Import staged_wpc.
 From Perennial.Helpers Require Import Transitions.
-From Perennial.goose_lang Require Import crash_modality fmcounter.
+From Perennial.goose_lang Require Import crash_modality.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
 From Perennial.program_proof Require Import wal.lib.
