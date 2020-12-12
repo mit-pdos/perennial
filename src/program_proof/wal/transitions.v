@@ -59,18 +59,6 @@ Qed.
 Definition suchThatMax {Σ} (pred: Σ -> nat -> Prop) : transition Σ nat :=
   suchThat (λ s x, pred s x ∧ ∀ y, pred s y -> y ≤ x).
 
-Definition is_txn (txns: list (u64 * list update.t)) (txn_id: nat) (pos: u64): Prop :=
-  fst <$> txns !! txn_id = Some pos.
-
-Theorem is_txn_bound txns txn_id pos :
-  is_txn txns txn_id pos ->
-  (txn_id < length txns)%nat.
-Proof.
-  rewrite /is_txn -list_lookup_fmap.
-  intros H%lookup_lt_Some.
-  autorewrite with len in H; lia.
-Qed.
-
 Definition log_flush (pos:u64) (txn_id: nat) : transition log_state.t unit :=
   assert (λ s, is_txn s.(log_state.txns) txn_id pos);;
   new_durable ← suchThat

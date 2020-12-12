@@ -1000,7 +1000,7 @@ Proof.
 
       iSplitR; first by (iPureIntro; lia).
       iSplitR.
-      1: rewrite subslice_zero_length /txns_are /list_subseq //=.
+      { rewrite subslice_zero_length. iApply txns_are_nil. }
       iApply (big_sepM_impl with "Hdata").
       iIntros "!> !> !>".
       iIntros (addr x Hx) "Hdata".

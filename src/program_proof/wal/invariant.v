@@ -6,9 +6,9 @@ From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Ma
 
 From Perennial.algebra Require Export deletable_heap append_list auth_map mono_nat.
 From Perennial.program_proof Require Export proof_prelude.
-From Perennial.program_proof Require Export wal.lib wal.highest wal.thread_owned.
-From Perennial.program_proof Require Export wal.circ_proof wal.sliding_proof.
-From Perennial.program_proof Require Export wal.transitions.
+From Perennial.program_proof.wal Require Export lib highest thread_owned txns_ctx.
+From Perennial.program_proof.wal Require Export circ_proof sliding_proof.
+From Perennial.program_proof.wal Require Export transitions.
 
 Transparent slice.T.
 Typeclasses Opaque struct_field_mapsto.
@@ -23,7 +23,7 @@ Class walG Σ :=
     wal_nat          :> ghost_varG Σ nat;
     wal_addr_set     :> ghost_varG Σ (gset Z);
     wal_thread_owned :> thread_ownG Σ;
-    wal_txns_alist   :> alistG Σ (u64 * list update.t);
+    wal_txns_ctx     :> txns_ctxG Σ;
     wal_stable_map   :> ghost_varG Σ (gmap nat unit);
     wal_stable_mapG  :> mapG Σ nat unit;
     wal_logger_pos   :> ghost_varG Σ u64;
@@ -41,7 +41,7 @@ Definition walΣ : gFunctors :=
    ghost_varΣ nat;
    ghost_varΣ (gset Z);
    thread_ownΣ;
-   alistΣ (u64 * list update.t);
+   txns_ctxΣ;
    ghost_varΣ (gmap nat unit);
    mapΣ nat unit;
    ghost_varΣ u64;
@@ -140,64 +140,6 @@ Definition locked_wf (σ: locked_state) :=
   int.Z σ.(memLog).(slidingM.start) ≤ int.Z σ.(diskEnd) ≤ int.Z σ.(memLog).(slidingM.mutable) ∧
   slidingM.wf σ.(memLog).
 
-(*
-txns: list (u64 * list update.t)
-txn_id is referenced by pos, log < pos contains updates through and including upds
-[txn_id: (pos, upds)]
-*)
-
-Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=
-  list_el γ.(txns_ctx_name) txn_id txn.
-
-Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
-  ∃ upds, txn_val γ txn_id (pos, upds).
-
-Definition txns_ctx γ txns : iProp Σ := list_ctx γ.(txns_ctx_name) 1 txns.
-
-Theorem txn_val_to_pos γ txn_id pos upds :
-  txn_val γ txn_id (pos, upds) -∗ txn_pos γ txn_id pos.
-Proof.
-  rewrite /txn_pos.
-  iIntros "Hval".
-  iExists _; iFrame.
-Qed.
-
-Lemma txns_ctx_app {γ} txns' txns : txns_ctx γ txns ==∗ txns_ctx γ (txns ++ txns').
-Proof.
-  rewrite /txns_ctx.
-  iIntros "Hctx".
-  by iMod (alist_app _ txns' with "Hctx") as "[$ _]".
-Qed.
-
-Global Instance txn_pos_timeless γ txn_id pos :
-  Timeless (txn_pos γ txn_id pos) := _.
-
-Global Instance txn_pos_persistent γ txn_id pos :
-  Persistent (txn_pos γ txn_id pos) := _.
-
-(** XXX THIS SEEMS IMPORTANT: *)
-Definition txns_are γ (start: nat) (txns_sub: list (u64*list update.t)) : iProp Σ :=
-  list_subseq γ.(txns_ctx_name) start txns_sub.
-
-(** XXX THIS SEEMS IMPORTANT: *)
-Global Instance txns_are_Persistent γ start txns_sub : Persistent (txns_are γ start txns_sub).
-Proof. apply _. Qed.
-
-(** XXX THIS SEEMS IMPORTANT: *)
-Theorem txns_are_sound γ txns start txns_sub :
-  txns_ctx γ txns -∗
-  txns_are γ start txns_sub -∗
-  ⌜subslice start (start + length txns_sub)%nat txns = txns_sub⌝.
-Proof.
-  iIntros "Hctx Htxns_are".
-  iDestruct (alist_subseq_lookup with "Hctx Htxns_are") as "$".
-Qed.
-
-Lemma txns_are_nil γ start : ⊢ txns_are γ start [].
-Proof.
-  iApply list_subseq_nil.
-Qed.
-
 Definition memLog_linv_txns (σ: slidingM.t)
            (installer_pos_mem diskEnd logger_pos: u64) txns
            installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id
@@ -248,6 +190,17 @@ Notation "x ≤ y ≤ z ≤ u ≤ v ≤ w" := (x ≤ y ∧ y ≤ z ∧ z ≤ u �
 Reserved Notation "x ≤ y ≤ z ≤ v ≤ w"
   (at level 70, y at next level, z at next level, v at next level).
 Notation "x ≤ y ≤ z ≤ v ≤ w" := (x ≤ y ∧ y ≤ z ∧ z ≤ v ∧ v ≤ w) : Z_scope.
+
+(* shadow these with versions that take a wal_names for backwards compatibility *)
+
+Definition txn_pos γ txn_id (pos: u64) : iProp Σ :=
+  txns_ctx.txn_pos γ.(txns_ctx_name) txn_id pos.
+
+Definition txns_ctx γ txns : iProp Σ :=
+  txns_ctx.txns_ctx γ.(txns_ctx_name) txns.
+
+Definition txns_are γ (start: nat) (txns_sub: list (u64*list update.t)) : iProp Σ :=
+  txns_ctx.txns_are γ.(txns_ctx_name) start txns_sub.
 
 Definition memLog_linv_pers_core γ (σ: slidingM.t)
   (diskEnd: u64) (diskEnd_txn_id installed_txn_id_mem nextDiskEnd_txn_id: nat)
@@ -743,85 +696,9 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-(** * some facts about txn_ctx *)
-Theorem txn_map_to_is_txn txns (txn_id: nat) (pos: u64) upds :
-  list_to_imap txns !! txn_id = Some (pos, upds) ->
-  is_txn txns txn_id pos.
-Proof.
-  rewrite /is_txn.
-  rewrite lookup_list_to_imap.
-  by intros ->.
-Qed.
-
 Definition wal_names_dummy {hG:gen_heapPreG nat (u64 * list update.t) Σ} : wal_names.
   constructor; try exact inhabitant.
 Defined.
-
-Theorem alloc_txns_ctx E txns :
-  ⊢ |={E}=> ∃ γtxns, txns_ctx (wal_names_dummy <|txns_ctx_name := γtxns|>) txns.
-Proof.
-  iMod (alist_alloc txns) as (γtxns) "Hctx".
-  iExists γtxns.
-  rewrite /txns_ctx //=.
-Qed.
-
-Theorem alloc_txn_pos pos upds γ txns E :
-  txns_ctx γ txns ={E}=∗
-  txns_ctx γ (txns ++ [(pos, upds)]) ∗ txn_val γ (length txns) (pos, upds).
-Proof.
-  iIntros "Hctx".
-  iMod (alist_app1 (pos,upds) with "Hctx") as "[Hctx Hval]".
-  by iFrame.
-Qed.
-
-Theorem txns_ctx_complete γ txns txn_id txn :
-  txns !! txn_id = Some txn ->
-  txns_ctx γ txns -∗ txn_val γ txn_id txn.
-Proof.
-  iIntros (Hlookup) "Hctx".
-  iDestruct (alist_lookup_el with "Hctx") as "Hel"; eauto.
-Qed.
-
-Theorem txns_ctx_complete' γ txns txn_id txn :
-  txns !! txn_id = Some txn ->
-  ▷ txns_ctx γ txns -∗ ▷ txn_val γ txn_id txn ∗ ▷ txns_ctx γ txns.
-Proof.
-  iIntros (Hlookup) "Hctx".
-  iDestruct (txns_ctx_complete with "Hctx") as "#Hel"; eauto.
-Qed.
-
-Theorem txns_ctx_txn_pos γ txns txn_id pos :
-  is_txn txns txn_id pos ->
-  txns_ctx γ txns -∗ txn_pos γ txn_id pos.
-Proof.
-  intros [txn [Hlookup ->]]%fmap_Some_1.
-  rewrite txns_ctx_complete; eauto.
-  iIntros "Htxn_val".
-  destruct txn as [pos upds].
-  iExists _; iFrame.
-Qed.
-
-Theorem txn_val_valid_general γ txns txn_id txn :
-  txns_ctx γ txns -∗
-  txn_val γ txn_id txn -∗
-  ⌜txns !! txn_id = Some txn⌝.
-Proof.
-  iIntros "Hctx Htxn".
-  iDestruct (alist_lookup with "Hctx Htxn") as %Hlookup.
-  eauto.
-Qed.
-
-Theorem txn_pos_valid_general γ txns txn_id pos :
-  txns_ctx γ txns -∗
-  txn_pos γ txn_id pos -∗
-  ⌜is_txn txns txn_id pos⌝.
-Proof.
-  iIntros "Hctx Htxn".
-  iDestruct "Htxn" as (upds) "Hval".
-  iDestruct (alist_lookup with "Hctx Hval") as %Hlookup.
-  iPureIntro.
-  rewrite /is_txn Hlookup //.
-Qed.
 
 Theorem is_wal_txns_lookup l γ σ dinit :
   is_wal_inner l γ σ dinit -∗

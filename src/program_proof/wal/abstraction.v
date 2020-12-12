@@ -24,6 +24,18 @@ Canonical Structure diskO := leibnizO disk.
 Definition txn_upds (txns: list (u64 * list update.t)) : list update.t :=
   concat (snd <$> txns).
 
+Definition is_txn (txns: list (u64 * list update.t)) (txn_id: nat) (pos: u64): Prop :=
+  fst <$> txns !! txn_id = Some pos.
+
+Theorem is_txn_bound txns txn_id pos :
+  is_txn txns txn_id pos ->
+  (txn_id < length txns)%nat.
+Proof.
+  rewrite /is_txn -list_lookup_fmap.
+  intros H%lookup_lt_Some.
+  autorewrite with len in H; lia.
+Qed.
+
 Module log_state.
   Record t :=
     mk {

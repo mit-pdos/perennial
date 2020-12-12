@@ -790,7 +790,7 @@ Lemma txns_ctx_make_factory γ txns crash_txn γ' :
   txns_ctx γ' (take (S crash_txn) txns) -∗
   old_txn_factory γ crash_txn γ' ∗ txns_ctx γ' (take (S crash_txn) txns).
 Proof.
-  rewrite {2 3}/txns_ctx /list_ctx /old_txn_factory.
+  rewrite {2 3}/txns_ctx /txns_ctx.txns_ctx /list_ctx /old_txn_factory.
   iIntros "Htxn [Hctx #Hels]".
   iFrame "#∗".
   iExists _; iFrame "#∗".
@@ -799,8 +799,8 @@ Qed.
 Lemma old_txn_get γ γ' crash_txn txn_id txn :
   (txn_id ≤ crash_txn)%nat →
   old_txn_factory γ crash_txn γ' -∗
-  txn_val γ txn_id txn -∗
-  txn_val γ' txn_id txn.
+  txn_val γ.(txns_ctx_name) txn_id txn -∗
+  txn_val γ'.(txns_ctx_name) txn_id txn.
 Proof.
   iIntros (?) "Hfactory Hel".
   iDestruct "Hfactory" as (txns) "[Hctx Hels]".
@@ -828,10 +828,10 @@ Lemma old_txns_are_get γ γ' crash_txn start txns_sub :
   txns_are γ' start txns_sub.
 Proof.
   iIntros (Hbound) "Hfactory Htxns".
-  rewrite /txns_are /list_subseq.
   iInduction txns_sub as [|txn txns] "IH" forall (start Hbound).
-  - rewrite !big_sepL_nil //.
-  - simpl in Hbound.
+  - iApply txns_are_nil.
+  - rewrite /txns_are /txns_ctx.txns_are /list_subseq.
+    simpl in Hbound.
     rewrite !big_sepL_cons.
     iDestruct "Htxns" as "[Htxn Htxns]".
     rewrite Nat.add_0_r.
@@ -1322,7 +1322,7 @@ Ltac show_crash2 :=
 Global Instance txns_ctx_disc γ x:
   Discretizable (txns_ctx γ x).
 Proof.
-  rewrite /txns_ctx/list_ctx. apply _.
+  rewrite /txns_ctx. apply _.
 Qed.
 
 Global Instance is_wal_inner_durable_disc γ s:
