@@ -1294,8 +1294,6 @@ Proof.
   rewrite list_to_block_to_vals //.
 Qed.
 
-Hint Rewrite @alter_length : len.
-
 (** states that [blk'] is like [blk] but with [buf_b] installed at [off'] *)
 Definition is_installed_block (blk: Block) (buf_b: buf) (off': u64) (blk': Block) : Prop :=
   ∀ off (d0: bufDataT buf_b.(bufKind)),

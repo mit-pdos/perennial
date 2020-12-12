@@ -1,4 +1,5 @@
 From stdpp Require Import base option fin_maps.
+From Perennial.Helpers Require Import Integers.
 
 Ltac solve_inhabited :=
   lazymatch goal with

@@ -13,9 +13,10 @@ Proof. reflexivity. Qed.
 
 Hint Rewrite @singleton_length @cons_length @nil_length : len.
 Hint Rewrite app_length @drop_length @take_length @fmap_length
-     @replicate_length : len.
+     @replicate_length @repeat_length : len.
 Hint Rewrite @vec_to_list_length : len.
 Hint Rewrite @insert_length : len.
+Hint Rewrite @alter_length : len.
 Hint Rewrite u64_le_length : len.
 Hint Rewrite u32_le_length : len.
 

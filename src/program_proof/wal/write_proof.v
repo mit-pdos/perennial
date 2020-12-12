@@ -107,12 +107,6 @@ Proof.
   by iNamed 1.
 Qed.
 
-Lemma length_singleton {A} (x: A) :
-  length [x] = 1%nat.
-Proof. reflexivity. Qed.
-
-Hint Rewrite @length_singleton : len.
-
 Lemma memWrite_one_length_bound σ u :
   length σ.(slidingM.log) ≤
   length (memWrite_one σ u).(slidingM.log) ≤
