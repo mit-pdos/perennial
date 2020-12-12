@@ -1,5 +1,6 @@
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import deletable_heap.
+
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
 From Perennial.goose_lang.lib Require Import wp_store.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
@@ -441,6 +442,10 @@ Qed.
 
 Definition NSHARD : Z := 43.
 
+Hint Unfold NSHARD : word.
+
+Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Definition covered_by_shard (shardnum : Z) (covered: gset u64) : gset u64 :=
   filter (λ x, Z.modulo (int.Z x) NSHARD = shardnum) covered.
 
@@ -452,11 +457,7 @@ Proof.
   rewrite /covered_by_shard.
   split; intros.
   + apply elem_of_filter; intuition.
-    rewrite /NSHARD.
-    word_cleanup.
-    rewrite Z2Nat.id.
-    - word.
-    - apply Z_mod_pos. lia.
+    word.
   + apply elem_of_filter in H; intuition.
 Qed.
 
@@ -471,7 +472,6 @@ Lemma covered_by_shard_insert x X :
   {[x]} ∪ covered_by_shard (int.Z (word.modu x (U64 NSHARD))) X.
 Proof.
   rewrite /covered_by_shard filter_union_L filter_singleton_L //.
-  rewrite /NSHARD.
   word.
 Qed.
 
@@ -493,10 +493,7 @@ Proof.
   intros.
   apply rangeSet_lookup; try word.
   word_cleanup.
-  2: word.
-  split.
-  { apply Z_mod_pos. lia. }
-  { apply Z_mod_lt. lia. }
+  word.
 Qed.
 
 Lemma covered_by_shard_split (P : u64 -> iProp Σ) covered :
@@ -528,7 +525,7 @@ Proof.
       iApply big_sepS_insert.
       { intro Hx. apply H. apply covered_by_shard_mod.
         rewrite Z2Nat.id; eauto.
-        rewrite /NSHARD. word_cleanup. apply Z_mod_pos. lia. }
+        word. }
       iFrame.
     + iApply (big_sepS_mono with "Hother").
       iIntros (x' Hx') "H".
@@ -545,8 +542,8 @@ Proof.
       word_cleanup.
 
       intros.
-      apply int_Z_inj; first by apply u64_instance.u64_word_ok.
-      rewrite -Heq. word.
+      apply int_Z_inj; first by apply _.
+      word.
 Qed.
 
 Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
@@ -634,7 +631,7 @@ Proof using gen_heapPreG0.
     { done. }
     iSplitL "Hcovered".
     { iDestruct (covered_by_shard_split with "Hcovered") as "Hsplit".
-      replace (int.Z 0%Z) with 0%Z by word.
+      change (int.Z 0%Z) with 0%Z.
       replace (NSHARD - 0)%Z with NSHARD by word.
       iFrame. }
     iApply big_sepL2_nil. done.
@@ -675,19 +672,8 @@ Proof.
 
   iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
 
-  edestruct (list_lookup_lt _ shards (int.nat (word.modu addr NSHARD))).
-  { rewrite Hlen /NSHARD. word_cleanup.
-    apply Z2Nat.inj_lt; word_cleanup.
-    { apply Z_mod_pos. lia. }
-    { apply Z_mod_lt. lia. }
-  }
-
-  edestruct (list_lookup_lt _ ghs (int.nat (word.modu addr NSHARD))).
-  { rewrite -Hlen2 Hlen /NSHARD. word_cleanup.
-    apply Z2Nat.inj_lt; word_cleanup.
-    { apply Z_mod_pos. lia. }
-    { apply Z_mod_lt. lia. }
-  }
+  list_elem shards (int.nat (word.modu addr NSHARD)) as shard.
+  list_elem ghs (int.nat (word.modu addr NSHARD)) as gh.
 
   wp_apply (wp_SliceGet _ _ _ _ _ shards with "[$Hslice_copy]").
   { eauto. }
@@ -703,7 +689,7 @@ Proof.
 
   iExists _. iFrame.
   iPureIntro.
-  rewrite -H1 /NSHARD. f_equal.
+  rewrite -Hgh_lookup /NSHARD. f_equal.
   word.
 Qed.
 
@@ -720,12 +706,7 @@ Proof.
 
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
 
-  edestruct (list_lookup_lt _ shards (int.nat (word.modu addr NSHARD))).
-  { rewrite Hlen /NSHARD. word_cleanup.
-    apply Z2Nat.inj_lt; word_cleanup.
-    { apply Z_mod_pos. lia. }
-    { apply Z_mod_lt. lia. }
-  }
+  list_elem shards (int.nat (word.modu addr NSHARD)) as shard.
 
   iDestruct "Hlocked" as (gh) "[% Hlocked]".
 
@@ -734,7 +715,7 @@ Proof.
   iIntros "Hslice_copy".
 
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
-  { erewrite <- H0. rewrite /NSHARD. f_equal. word. }
+  { erewrite <- H. rewrite /NSHARD. f_equal. word. }
 
   wp_apply (wp_lockShard__release with "[$Hshard $HP $Hlocked]").
   iApply "HΦ". done.
