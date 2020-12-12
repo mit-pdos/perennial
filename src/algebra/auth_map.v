@@ -268,9 +268,6 @@ Section auth_map.
     rewrite -map_fmap_compose map_fmap_id //.
   Qed.
 
-  (* TODO: prove a map_strong_init lemma that allocates a map_ctx with all the
-  ptsto_mut fragments *)
-
   Theorem map_alloc {γ m} k v :
     m !! k = None →
     map_ctx γ 1 m ==∗ map_ctx γ 1 (<[k:=v]> m) ∗ ptsto_mut γ k 1 v.

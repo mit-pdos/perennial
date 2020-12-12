@@ -39,11 +39,6 @@ Proof.
   by iFrame.
 Qed.
 
-(* Definitely missing the durable invariant of the heapspec layer, which should
-say something more complete about [γ.(txn_walnames)]. Otherwise there probably
-isn't enough to relate the state inside [is_txn_always] to that in
-[is_wal_inner_durable]. *)
-
 Definition is_txn_durable γ dinit : iProp Σ :=
   ∃ ls' logm crash_heaps,
   "%Hpostcrash" ∷ ⌜ wal_post_crash ls' ⌝ ∗
