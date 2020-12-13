@@ -90,6 +90,7 @@ clean:
 	@echo "CLEAN vo glob aux"
 	$(Q)find $(SRC_DIRS) \( -name "*.vo" -o -name "*.vo[sk]" \
 		-o -name ".*.aux" -o -name ".*.cache" -name "*.glob" \) -delete
+	$(Q)rm -f .lia.cache
 	$(Q)rm -f $(TIMING_DB)
 	rm -f .coqdeps.d
 
