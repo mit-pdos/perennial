@@ -64,6 +64,8 @@ SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/program_proof/wal/logger_proof.v\
 	src/program_proof/wal/installer_proof.v\
 	src/program_proof/wal/sliding_proof.v\
+	src/program_proof/wal/recovery_proof.v\
+	src/program_proof/txn/commit_proof.v\
 	src/program_proof/simple/setattr.v\
 	src/program_proof/simple/write.v\
 	src/program_proof/examples/inode_proof.v
