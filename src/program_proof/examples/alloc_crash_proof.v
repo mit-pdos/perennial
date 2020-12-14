@@ -725,6 +725,7 @@ Proof.
     iNamed "Hbk".
 
     iMod (gen_heap_update _ k _ block_reserved with "[$] [$]") as "(Hctx&Hmapsto)".
+    iCombine "Hfreeset_frag Hfreeset_auth" as "Hfreeset".
     iMod (ghost_var_update (alloc.free (<[k := block_reserved]>σ)) with "[$]")
          as "(Hfreeset_auth&Hfreeset_frag)".
 
@@ -985,6 +986,7 @@ Proof.
   iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %<-.
   iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
   iMod (gen_heap_update _ a _ block_free with "[$] [$]") as "(Hctx&Hmapsto)".
+  iCombine "Hfreeset_auth Hfreeset_frag" as "Hfreeset".
   iMod (ghost_var_update (alloc.free (<[a := block_free]>σ)) with "[$]")
     as "(Hfreeset_auth&Hfreeset_frag)".
   iMod (fupd_intro_mask' _ (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.

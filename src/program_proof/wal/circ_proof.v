@@ -183,6 +183,7 @@ Proof.
   intros p q.
   iSplit.
   - iIntros "[% [Hend #Hatleast]]".
+    pose proof (@into_sep_fractional (iPropI Σ)).
     iDestruct "Hend" as "[Hend1 Hend2]".
     iFrame "# % Hend1 Hend2".
   - iIntros "[[% [Hend1 #Hatleast]] [% [Hend2 #Hatleast2]]]".

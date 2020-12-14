@@ -22,3 +22,6 @@ Global Set Printing Projections.
 Existing Instance diskG0.
 
 Global Opaque load_ty store_ty.
+
+Global Remove Hints fractional.frame_fractional : typeclass_instances.
+Global Remove Hints fractional.into_sep_fractional : typeclass_instances.

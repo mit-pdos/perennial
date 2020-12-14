@@ -4,8 +4,6 @@ From iris.algebra Require Import auth.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 
-Remove Hints fractional.into_sep_fractional : typeclass_instances.
-
 Section goose_lang.
 Context `{!heapG Σ}.
 Context `{!walG Σ}.
