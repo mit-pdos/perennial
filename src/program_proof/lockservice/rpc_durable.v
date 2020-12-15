@@ -87,7 +87,7 @@ Proof.
     rewrite -Hlseq.
     iFrame.
     rewrite map_get_val.
-    iFrame "#∗".
+    iFrame "#". iFrame. (* XXX: relies on framing order *)
   }
   {
     iAssert (▷ req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq))%I with "[Hproc]" as "#>Hlseq_lb".
