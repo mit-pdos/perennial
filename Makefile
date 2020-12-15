@@ -36,9 +36,16 @@ ifeq ($(filter clean,$(MAKECMDGOALS)),)
 -include .coqdeps.d
 endif
 
+ifneq (,$(TIMING))
+TIMING_ARGS=-time
+TIMING_EXT?=ext
+TIMING_EXTRA = > $<.$(TIMING_EXT)
+endif
+
+
 %.vo: %.v _CoqProject
 	@echo "COQC $<"
-	$(Q)$(COQC) $(COQPROJECT_ARGS) $(COQ_ARGS) -o $@ $<
+	$(Q)$(COQC) $(COQPROJECT_ARGS) $(COQ_ARGS) $(TIMING_ARGS) -o $@ $< $(TIMING_EXTRA)
 
 %.vos: %.v _CoqProject
 	@echo "COQC -vos $<"
