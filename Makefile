@@ -13,7 +13,9 @@ Q:=@
 TIMED:=true
 TIMING_DB:=.timing.sqlite3
 
-ifeq ($(TIMED), true)
+ifneq (,$(TIMING))
+COQC := coqc
+else ifeq ($(TIMED), true)
 COQC := ./etc/coqc.py --timing-db $(TIMING_DB)
 else
 COQC := coqc
@@ -38,7 +40,7 @@ endif
 
 ifneq (,$(TIMING))
 TIMING_ARGS=-time
-TIMING_EXT?=ext
+TIMING_EXT?=timing
 TIMING_EXTRA = > $<.$(TIMING_EXT)
 endif
 
