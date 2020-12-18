@@ -24,6 +24,8 @@ jobs:
         cd external/iris
         git remote add upstream https://gitlab.mpi-sws.org/iris/iris.git
         git fetch upstream
+        git config user.name "GitHub Action"
+        git config user.email "github-action@users.noreply.github.com"
         git merge upstream/master -m "test merge"
     - uses: coq-community/docker-coq-action@v1
       with:
