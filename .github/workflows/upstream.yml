@@ -17,6 +17,13 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: true
+    - name: "Update dependencies"
+      run: |
+        git submodule foreach git pull
+        cd external/iris
+        git remote add upstream git-rts@gitlab.mpi-sws.org:iris/iris.git
+        git fetch upstream
+        git merge upstream/master -m "test merge"
     - uses: coq-community/docker-coq-action@v1
       with:
         coq_version: dev
@@ -30,15 +37,6 @@ jobs:
         before_script: |
           sudo chown -R coq:coq . # workaround a permission issue
         script: |
-          startGroup Update dependencies
-            git submodule update --init --remote
-          startGroup Merge upstream Iris
-            cd external/iris
-            git remote add upstream git-rts@gitlab.mpi-sws.org:iris/iris.git
-            git fetch upstream
-            git merge upstream/master -m "test merge"
-            cd ../..
-          endGroup
           startGroup Build
             make -j2 -k ci
           endGroup
