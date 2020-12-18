@@ -1,0 +1,49 @@
+name: Test updated dependencies
+
+on:
+  schedule:
+    # Wednesday 8am UTC (3am EST)
+    - cron: '0 8 * * WED'
+
+jobs:
+  build:
+    name: "update dependencies (dev)"
+    runs-on: ubuntu-20.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: coq-community/docker-coq-action@v1
+      with:
+        coq_version: dev
+        ocaml_version: '4.11-flambda'
+        install: |
+          startGroup Install dependencies
+            sudo apt-get update
+            sudo apt-get install -y python3 python3-pip sqlite3
+            pip3 install -r etc/requirements.txt
+          endGroup
+        before_script: |
+          sudo chown -R coq:coq . # workaround a permission issue
+        script: |
+          startGroup Update dependencies
+            git submodule update --init --remote
+          startGroup Merge upstream Iris
+            cd external/iris
+            git remote add upstream git-rts@gitlab.mpi-sws.org:iris/iris.git
+            git fetch upstream
+            git merge upstream/master -m "test merge"
+            cd ../..
+          endGroup
+          startGroup Build
+            make -j2 -k ci
+          endGroup
+        uninstall: |
+          make clean
+    - name: Revert permissions
+      # to avoid a warning at cleanup time
+      if: ${{ always() }}
+      run: sudo chown -R 1001:116 .
