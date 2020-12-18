@@ -19,7 +19,7 @@ jobs:
         submodules: true
     - name: "Update dependencies"
       run: |
-        git submodule foreach git pull
+        git submodule update --remote
         cd external/iris
         git remote add upstream git-rts@gitlab.mpi-sws.org:iris/iris.git
         git fetch upstream
