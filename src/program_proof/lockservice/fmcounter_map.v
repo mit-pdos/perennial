@@ -43,20 +43,21 @@ Section fmcounter_map_props.
   Qed.
 
   Lemma fmcounter_map_get_lb γ k q n :
-    k fm[[γ]]↦{q} n -∗ k fm[[γ]]↦{q} n ∗ k fm[[γ]]≥ n.
+    k fm[[γ]]↦{q} n -∗ k fm[[γ]]≥ n.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb.
-    rewrite -own_op singleton_op.
-    (* FIXME: take advantage of Iris MR 572 *)
-  Admitted.
+    apply own_mono. apply singleton_included. right.
+    apply mono_nat_included.
+  Qed.
 
   Lemma fmcounter_map_update (n' n:nat) γ k:
     (n ≤ n')%nat →
     k fm[[γ]]↦ n ==∗ k fm[[γ]]↦ n' ∗ k fm[[γ]]≥ n'.
   Proof.
-    rewrite -fmcounter_map_get_lb /fmcounter_map_own=>Hn.
-    iApply own_update. apply singleton_update.
-    apply mono_nat_update. done.
+    iIntros (Hn) "Hauth". iAssert (|==> k fm[[γ]]↦ n')%I with "[Hauth]" as ">Hauth".
+    { rewrite /fmcounter_map_own. iApply (own_update with "Hauth").
+      apply singleton_update. apply mono_nat_update. done. }
+    iDestruct (fmcounter_map_get_lb with "Hauth") as "#$". done.
   Qed.
 
   Lemma fmcounter_map_agree_lb γ k q n1 n2 :
