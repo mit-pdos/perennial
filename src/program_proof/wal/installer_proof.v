@@ -1,5 +1,5 @@
 From RecordUpdate Require Import RecordSet.
-From iris.algebra Require Import gset.
+From iris.algebra Require Import gset dfrac.
 From iris.base_logic.lib Require Import mono_nat.
 
 From Perennial.Helpers Require Import ListSubset.
@@ -105,7 +105,7 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ dinit a :
 Proof.
   iIntros (Φ) "(#Hwal & #Ha_valid & Hfupd) HΦ".
   wp_call.
-  wp_apply (wp_Read_ncfupd _ _ 1 (* q=1 *)).
+  wp_apply (wp_Read_ncfupd _ _ (DfracOwn 1) (* q=1 *)).
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
   iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.

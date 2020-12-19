@@ -304,7 +304,7 @@ Definition kvs_uninit_auth {Σ} {kvsG :kvsG Σ} :=
 (* precondition in spec --> assert have points-to facts (no state RA), gen_heap *)
 Definition kvs_auth {Σ} {kvs :kvsG Σ} (s: gmap u64 disk.Block) := gen_heap.gen_heap_interp s.
 Definition kvs_frag {Σ} {kvsG :kvsG Σ} (k : u64) (v : disk.Block) : iProp Σ :=
-   (gen_heap.mapsto (L:=u64) (V:=disk.Block) k 1 v)%I.
+   (gen_heap.mapsto (L:=u64) (V:=disk.Block) k (DfracOwn 1) v)%I.
 
 Section kvs_interp.
   Existing Instances kvs_op kvs_model kvs_val_ty.
@@ -435,9 +435,9 @@ Section kvs_lemmas.
   Qed.
 
   (* know that we're closed + know value at a particular key *)
-  Notation "l k↦ v" := (gen_heap.mapsto (L:=u64) (V:=disk.Block) l 1 v%V)
+  Notation "l k↦ v" := (gen_heap.mapsto (L:=u64) (V:=disk.Block) l (DfracOwn 1) v%V)
                               (at level 20, format "l  k↦ v") : bi_scope.
-  Notation "l k↦{ q } v" := (gen_heap.mapsto (L:=u64) (V:=disk.Block) l q v%V)
+  Notation "l k↦{ q } v" := (gen_heap.mapsto (L:=u64) (V:=disk.Block) l (DfracOwn q) v%V)
                               (at level 20, q at level 50, format "l  k↦{ q }  v") : bi_scope.
   Lemma kvs_ctx_unify_closed kvs (key: u64) (val: disk.Block):
     kvs_closed_frag -∗ key k↦ val -∗ kvs_ctx kvs -∗ ∃ s, ⌜s !! key = Some val ∧ kvs = Closed s ⌝.

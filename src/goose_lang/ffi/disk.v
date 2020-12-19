@@ -213,7 +213,7 @@ Section disk.
        ffi_get_update := fun _ _ => _;
        ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap.gen_heap_interp d;
        ffi_start := fun _ _ (d: @ffi_state disk_model) =>
-                      ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=Block) l 1 v))%I;
+                      ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=Block) l (DfracOwn 1) v))%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
     |}.
@@ -225,8 +225,10 @@ Section disk.
   Context `{!heapG Σ}.
   Instance diskG0 : diskG Σ := heapG_ffiG.
 
-  Notation "l d↦{ q } v" := (gen_heap.mapsto (L:=Z) (V:=Block) l q v%V)
-                             (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.
+  Notation "l d↦{ dq } v" := (gen_heap.mapsto (L:=Z) (V:=Block) l dq v%V)
+                             (at level 20, dq at level 50, format "l  d↦{ dq }  v") : bi_scope.
+  Notation "l d↦{# q } v" := (gen_heap.mapsto (L:=Z) (V:=Block) l (DfracOwn q) v%V)
+                             (at level 20, q at level 50, format "l  d↦{# q }  v") : bi_scope.
   Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
   Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
 
@@ -395,9 +397,9 @@ lemmas. *)
   Qed.
 
   Lemma wp_WriteOp s E (a: u64) b q l :
-    {{{ ▷ ∃ b0, int.Z a d↦{1} b0 ∗ mapsto_block l q b }}}
+    {{{ ▷ ∃ b0, int.Z a d↦{#1} b0 ∗ mapsto_block l q b }}}
       ExternalOp WriteOp (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
-    {{{ RET LitV LitUnit; int.Z a d↦{1} b ∗ mapsto_block l q b}}}.
+    {{{ RET LitV LitUnit; int.Z a d↦{#1} b ∗ mapsto_block l q b}}}.
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -426,7 +428,7 @@ lemmas. *)
     iApply ("Hϕ" with "[$]").
   Qed.
 
-  Definition disk_array (l: Z) (q: Qp) (vs: list Block): iProp Σ :=
+  Definition disk_array (l: Z) (q: dfrac) (vs: list Block): iProp Σ :=
     ([∗ list] i ↦ b ∈ vs, (l + i) d↦{q} b)%I.
 
   Theorem disk_array_cons l q b vs :
@@ -513,7 +515,7 @@ lemmas. *)
   Qed.
 
   Lemma disk_array_init_disk sz:
-    ([∗ map] i↦b ∈ init_disk ∅ sz, i d↦{1} b) -∗ disk_array 0 1 (replicate sz (inhabitant : Block)).
+    ([∗ map] i↦b ∈ init_disk ∅ sz, i d↦{#1} b) -∗ disk_array 0 (DfracOwn 1) (replicate sz (inhabitant : Block)).
   Proof.
     induction sz; rewrite /init_disk-/init_disk/disk_array.
     - rewrite big_sepM_empty big_sepL_nil //=.
@@ -533,9 +535,9 @@ Global Opaque Write Read Size.
 
 Notation "l d↦{ q } v" := (mapsto (L:=Z) (V:=Block) l q%Qp v%V)
                             (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.
-Notation "l d↦ v" := (mapsto (L:=Z) (V:=Block) l 1%Qp v%V)
+Notation "l d↦ v" := (mapsto (L:=Z) (V:=Block) l (DfracOwn 1) v%V)
                        (at level 20, format "l  d↦  v") : bi_scope.
-Notation "l d↦∗ vs" := (disk_array l 1%Qp vs%V)
+Notation "l d↦∗ vs" := (disk_array l (DfracOwn 1) vs%V)
                        (at level 20, format "l  d↦∗  vs") : bi_scope.
 
 From Perennial.goose_lang Require Import adequacy.
