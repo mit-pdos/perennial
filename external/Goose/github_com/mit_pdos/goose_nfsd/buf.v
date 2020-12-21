@@ -87,14 +87,6 @@ Definition Buf__Install: val :=
     util.DPrintf #20 (#(str"install -> %v
     ")) #().
 
-(* Load the bits of a disk block into buf, as specified by addr *)
-Definition Buf__Load: val :=
-  rec: "Buf__Load" "buf" "sz" "blk" :=
-    let: "bytefirst" := (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf")) `quot` #8 in
-    let: "bytelast" := (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf") + "sz" - #1) `quot` #8 in
-    struct.storeF Buf.S "Sz" "buf" "sz";;
-    struct.storeF Buf.S "Data" "buf" (SliceSubslice byteT "blk" "bytefirst" ("bytelast" + #1)).
-
 Definition Buf__IsDirty: val :=
   rec: "Buf__IsDirty" "buf" :=
     struct.loadF Buf.S "dirty" "buf".

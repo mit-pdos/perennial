@@ -10,6 +10,9 @@ From Perennial.goose_lang.examples Require Import goose_semantics.
 Example testAllocateDistinct_ok : testAllocateDistinct #() ~~> #true := t.
 Example testAllocateFull_ok : testAllocateFull #() ~~> #true := t.
 
+(* closures.go *)
+Example testClosureBasic_ok : testClosureBasic #() ~~> #true := t.
+
 (* comparisons.go *)
 Example testCompareAll_ok : testCompareAll #() ~~> #true := t.
 Example testCompareGT_ok : testCompareGT #() ~~> #true := t.
