@@ -149,7 +149,7 @@ Section recov.
       { iFrame "Hdurable". iFrame "Hsource". iExact "Hinodes". }
       eauto. }
     iModIntro.
-    iIntros (????) "H".
+    iIntros (?????) "H".
     iDestruct "H" as (???) "(Hdurable&Hsource&Hinodes)".
     iNext. iDestruct (is_source_into_crash P (λ _, P) with "[] [$]") as "Hsource".
     { eauto. }

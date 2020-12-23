@@ -18,18 +18,17 @@ Canonical Structure heap_namesO := leibnizO heap_names.
 
 Global Instance heapG_perennialG `{!heapG Σ} : perennialG goose_lang goose_crash_lang heap_namesO Σ :=
 {
-  perennial_irisG := λ Hinv Hcrash hnames,
-                     @heapG_irisG _ _ _ _ _ (heap_update _ _ Hinv Hcrash (@pbundleT _ _ hnames));
-  perennial_invG := λ _ _ _, eq_refl;
-  perennial_crashG := λ _ _ _, eq_refl
+  perennial_irisG := λ Hcrash hnames,
+                     @heapG_irisG _ _ _ _ _ (heap_update _ _ _ Hcrash (@pbundleT _ _ hnames));
+  perennial_crashG := λ _ _, eq_refl
 }.
 
 Definition wpr `{hG: !heapG Σ} `{hC: !crashG Σ} (s: stuckness) (k: nat) (E: coPset)
   (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapG Σ → iProp Σ) (Φr: heapG Σ → val → iProp Σ) :=
-  wpr s k (heapG_invG) hC ({| pbundleT := heap_get_names Σ _ |}) E e recv
+  wpr s k hC ({| pbundleT := heap_get_names Σ _ |}) E e recv
               Φ
-              (λ Hi Hc names, Φinv (heap_update _ _ Hi Hc (@pbundleT _ _ names)))
-              (λ Hi Hc names v, Φr (heap_update _ _ Hi Hc (@pbundleT _ _ names)) v).
+              (λ Hc names, Φinv (heap_update _ _ _ Hc (@pbundleT _ _ names)))
+              (λ Hc names v, Φr (heap_update _ _ _ Hc (@pbundleT _ _ names)) v).
 
 
 Section wpr.
@@ -61,18 +60,19 @@ Qed.
 
 Lemma idempotence_wpr `{!ffi_interp_adequacy} s k E1 e rec Φx Φinv Φrx Φcx:
   ⊢ WPC e @ s ; k ; E1 {{ Φx }} {{ Φcx hG }} -∗
-   (□ ∀ (hG: heapG Σ) σ σ' (HC: crash_prim_step (goose_crash_lang) σ σ'),
-        Φcx hG -∗ ▷ post_crash(λ hG', ffi_restart (heapG_ffiG) σ'.(world) -∗
+   (□ ∀ (hG': heapG Σ) (Hpf: @heapG_invG _ _ _ _ hG = @heapG_invG _ _ _ _ hG') σ σ'
+        (HC: crash_prim_step (goose_crash_lang) σ σ'),
+        Φcx hG' -∗ ▷ post_crash(λ hG', ffi_restart (heapG_ffiG) σ'.(world) -∗
         (Φinv hG' ∧ WPC rec @ s ; k; E1 {{ Φrx hG' }} {{ Φcx hG' }}))) -∗
     wpr s k E1 e rec Φx Φinv Φrx.
 Proof.
   iIntros "Hwpc #Hidemp".
   iApply (idempotence_wpr s k E1 e rec _ _ _
-                          (λ Hi Hc names, Φcx (heap_update _ _ Hi Hc (@pbundleT _ _ names)))
+                          (λ Hc names, Φcx (heap_update _ _ _ Hc (@pbundleT _ _ names)))
                                                     with "[Hwpc] [Hidemp]"); first auto.
   { rewrite //= heap_get_update' //=. }
-  { iModIntro. iIntros (??? σ_pre_crash σ_post_crash Hcrash κs ?) "H".
-    iSpecialize ("Hidemp" $! (heap_update _ _ _ _ _) with "[//] H").
+  { iModIntro. iIntros (?? σ_pre_crash σ_post_crash Hcrash κs ?) "H".
+    iSpecialize ("Hidemp" $! (heap_update _ _ _ _ _) with "[//] [//] H").
     {
       rewrite /state_interp.
       iIntros "(_&_&Hffi_old&Htrace_auth&Horacle_auth)".
@@ -86,8 +86,8 @@ Proof.
                         heap_ffi_names := ffi_names;
                         heap_trace_names := name_trace |}).
       iModIntro.
-      iNext. iIntros (Hi' Hc' ?) "HNC".
-      set (hG' := (heap_update _ _ Hi' Hc' hnames)).
+      iNext. iIntros (Hc' ?) "HNC".
+      set (hG' := (heap_update _ _ _ Hc' hnames)).
       iSpecialize ("Hidemp" $! σ_pre_crash.(world) σ_post_crash.(world) hG' with "[Hcrel] [Hc]").
       { rewrite //= ffi_update_update //=. }
       { rewrite //= ffi_update_update //=. }

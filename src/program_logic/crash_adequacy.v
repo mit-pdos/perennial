@@ -140,7 +140,7 @@ Lemma wptp0_strong_crash_adequacy Φ Φc κs' s k n e1 t1 κs t2 σ1 σ2 :
   WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
-  |={⊤}[∅]▷=>^(S n) |={⊤,∅}=> ▷ (∃ e2 t2',
+  |={⊤}[∅]▷=>^(S n) |={⊤}=> ▷ (∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     Φc ∗ state_interp σ2 κs' (length t2') ∗ C).
 Proof.
@@ -210,7 +210,7 @@ Lemma wptp_strong_crash_adequacy Φ Φc κs' s k n e1 t1 κs t2 σ1 σ2 :
   WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
-  |={⊤}[∅]▷=>^(S n) |={⊤,∅}=> ▷ (∃ e2 t2',
+  |={⊤}[∅]▷=>^(S n) |={⊤}=> ▷ (∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     Φc ∗ state_interp σ2 κs' (length t2') ∗ C).
 Proof.

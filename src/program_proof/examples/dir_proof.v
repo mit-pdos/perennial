@@ -1237,7 +1237,7 @@ Section recov.
     iIntros (Hsz) "Hstart".
     iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I (λ _, ∃ σ', dir_cinv (int.Z sz) σ' false)%I with "[Hstart] []").
     { wpc_apply (wpc_Open with "Hstart"); auto 10. }
-    iModIntro. iIntros (????) "H".
+    iModIntro. iIntros (?????) "H".
     iDestruct "H" as (σ'') "Hstart".
     iNext. iCrash.
     iIntros.

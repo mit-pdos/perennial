@@ -307,6 +307,10 @@ Proof.
   destruct hG as [??? [] [] []]; eauto.
 Qed.
 
+Lemma heap_update_invG Σ hG Hinv Hc names:
+  @iris_invG _ _ (@heapG_irisG _ (heap_update Σ hG Hinv Hc names)) = Hinv.
+Proof. rewrite //=. Qed.
+
 (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
 [head_step]. The tactic will discharge head-reductions starting from values, and
 simplifies hypothesis related to conversions from and to values, and finite map

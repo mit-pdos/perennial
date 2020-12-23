@@ -498,7 +498,7 @@ Section recov.
     iIntros "Hstart".
     iApply (idempotence_wpr _ (S (S O)) ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ)%I with "[Hstart]").
     { wpc_apply (wpc_Open with "Hstart"). eauto 10. }
-    iModIntro. iIntros (????) "H".
+    iModIntro. iIntros (?????) "H".
     iDestruct "H" as (σ'') "Hstart".
     iNext. iCrash.
     iIntros.
@@ -520,7 +520,7 @@ Section recov.
     iApply (idempotence_wpr _ 2 ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ ∗ True)%I with "[Hstart]").
     { wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart]").
       iSplit; eauto. iModIntro. iDestruct 1 as (?) "(H&_)". iExists _. iFrame. }
-    iModIntro. iIntros (????) "H".
+    iModIntro. iIntros (?????) "H".
     iDestruct "H" as (σ'') "(Hstart&_)".
     iNext. iCrash.
     iIntros (?).

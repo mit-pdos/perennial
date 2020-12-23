@@ -1628,7 +1628,7 @@ Section recov.
         { eapply log_crash_to_post_crash; eauto. }
       * eauto.
     }
-    iModIntro. iIntros (????) "H".
+    iModIntro. iIntros (?????) "H".
     iDestruct "H" as (σ'') "Hstart".
     iNext.
     iDestruct "Hstart" as (??) "(H1&Hres&_)".
