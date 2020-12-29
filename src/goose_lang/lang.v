@@ -122,6 +122,7 @@ Inductive expr :=
   | Case (e0 : expr) (e1 : expr) (e2 : expr)
   (* Concurrency *)
   | Fork (e : expr)
+  | Atomically (e : expr)
   (* Heap-based primitives *)
   | Primitive0 (op: prim_op args0)
   | Primitive1 (op: prim_op args1) (e : expr)
@@ -372,6 +373,7 @@ Proof using ext.
       | Case e0 e1 e2, Case e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | Fork e, Fork e' => cast_if (decide (e = e'))
+      | Atomically e, Atomically e' => cast_if (decide (e = e'))
       | ExternalOp op e, ExternalOp op' e' => cast_if_and (decide (op = op')) (decide (e = e'))
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
@@ -589,6 +591,7 @@ Proof using ext.
      | InjR e => GenNode 10 [go e]
      | Case e0 e1 e2 => GenNode 11 [go e0; go e1; go e2]
      | Fork e => GenNode 12 [go e]
+     | Atomically e => GenNode 13 [go e]
      | ExternalOp op e => GenNode 20 [GenLeaf $ externOp op; go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
      | NewProph => GenNode 18 []
@@ -625,6 +628,7 @@ Proof using ext.
      | GenNode 10 [e] => InjR (go e)
      | GenNode 11 [e0; e1; e2] => Case (go e0) (go e1) (go e2)
      | GenNode 12 [e] => Fork (go e)
+     | GenNode 13 [e] => Atomically (go e)
      | GenNode 20 [GenLeaf (externOp op); e] => ExternalOp op (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
      | GenNode 18 [] => NewProph
@@ -643,7 +647,7 @@ Proof using ext.
    for go).
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
-  - destruct e as [v| | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
+  - destruct e as [v| | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
       rewrite ?to_prim_op_correct;
       [exact (gov v)|done..].
  - destruct v; by f_equal.
@@ -745,6 +749,7 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | InjR e => InjR (subst x v e)
   | Case e0 e1 e2 => Case (subst x v e0) (subst x v e1) (subst x v e2)
   | Fork e => Fork (subst x v e)
+  | Atomically e => Atomically (subst x v e)
   | Primitive0 op => Primitive0 op
   | Primitive1 op e => Primitive1 op (subst x v e)
   | Primitive2 op e1 e2 => Primitive2 op (subst x v e1) (subst x v e2)
@@ -998,6 +1003,16 @@ Defined.
 Definition arbitraryInt: transition state u64 :=
   suchThat (fun _ _ => True).
 
+Fixpoint transition_repeat (n:nat) {Σ T} (t: T → transition Σ T) (init:T) : transition Σ T :=
+  match n with
+  | 0 => ret init
+  | S n => Transitions.bind (t init) (transition_repeat n t)
+  end.
+
+Definition transition_star {Σ T} (t : T → transition Σ T) (init:T) : transition Σ T :=
+  n ← suchThat (gen:=fun _ _ => None) (fun _ (_:nat) => True);
+  transition_repeat n t init.
+
 Fixpoint head_trans (e: expr) :
  transition state (list observation * expr * list expr) :=
   match e with
@@ -1015,6 +1030,11 @@ Fixpoint head_trans (e: expr) :
   | Case (Val (InjLV v)) e1 e2 => ret_expr $ App e1 (Val v)
   | Case (Val (InjRV v)) e1 e2 => ret_expr $ App e2 (Val v)
   | Fork e => ret ([], Val $ LitV LitUnit, [e])
+  (* TODO: this isn't well-founded *)
+  (* | Atomically e => transition_star (fun '(κ, e', es) =>
+                                       r ← head_trans e';
+                                       let '(κ', e'', es') := r in
+                                       ret (κ ++ κ', e'', es ++ es')) ([], e, []) *)
   | ArbitraryInt =>
     atomically
       (x ← arbitraryInt;

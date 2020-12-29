@@ -373,6 +373,8 @@ Section interpreter.
 
       | Fork e => mfail_bt "Fork operation not supported"
 
+      | Atomically e => mfail_bt "Atomically not supported"
+
       | Primitive0 p =>
         match p return StateT btstate Error val with
         | PanicOp s => mfail_bt ("Interpret panic: " ++ s)

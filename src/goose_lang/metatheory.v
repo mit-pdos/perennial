@@ -16,7 +16,7 @@ Fixpoint is_closed_expr (X : list string) (e : expr) : bool :=
   | Var x => bool_decide (x ∈ X)
   | Primitive0 _ => true
   | Rec f x e => is_closed_expr (f :b: x :b: X) e
-  | UnOp _ e | Fst e | Snd e | InjL e | InjR e | Fork e | Load e
+  | UnOp _ e | Fst e | Snd e | InjL e | InjR e | Fork e | Atomically e | Load e
   | ExternalOp _ e | Primitive1 _ e =>
      is_closed_expr X e
   | App e1 e2 | BinOp _ e1 e2 | Pair e1 e2 | AllocN e1 e2 | Primitive2 _ e1 e2 =>
@@ -197,6 +197,7 @@ Fixpoint subst_map (vs : gmap string val) (e : expr) : expr :=
   | InjR e => InjR (subst_map vs e)
   | Case e0 e1 e2 => Case (subst_map vs e0) (subst_map vs e1) (subst_map vs e2)
   | Fork e => Fork (subst_map vs e)
+  | Atomically e => Atomically (subst_map vs e)
   | Primitive0 op => Primitive0 op
   | Primitive1 op e => Primitive1 op (subst_map vs e)
   | Primitive2 op e1 e2 => Primitive2 op (subst_map vs e1) (subst_map vs e2)
