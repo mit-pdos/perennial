@@ -2,6 +2,9 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+From Perennial.program_proof Require Import grove_ffi.
+From Goose Require github_com.tchajed.marshal.
+
 (* 0_common.go *)
 
 Definition nondet: val :=
@@ -439,3 +442,208 @@ Definition MakeBankClerk: val :=
     struct.storeF BankClerk.S "acc1" "bck" "acc1";;
     struct.storeF BankClerk.S "acc2" "bck" "acc2";;
     "bck".
+
+(* 4_incrserver.go *)
+
+Module IncrServer.
+  Definition S := struct.decl [
+    "sv" :: struct.ptrT RPCServer.S;
+    "kvserver" :: struct.ptrT KVServer.S;
+    "kck" :: struct.ptrT KVClerk.S
+  ].
+End IncrServer.
+
+Definition IncrServer__increment_core_unsafe: val :=
+  rec: "IncrServer__increment_core_unsafe" "is" "seq" "args" :=
+    let: "key" := struct.get RPCVals.S "U64_1" "args" in
+    let: "oldv" := ref (zero_val uint64T) in
+    "oldv" <-[uint64T] KVClerk__Get (struct.loadF IncrServer.S "kck" "is") "key";;
+    KVClerk__Put (struct.loadF IncrServer.S "kck" "is") "key" (![uint64T] "oldv" + #1);;
+    #0.
+
+(* crash-safely increment counter and return the new value
+
+   Idea is this:
+   In the unsafe version, we ought to have the quadruples
+
+   { key [kv]-> a }
+    A
+   { key [kv]-> _ \ast v = a }
+   { key [kv]-> a }
+
+   { key [kv]-> _ \ast v = a \ast durable_oldv = a }
+    B
+   { key [kv]-> (a + 1) }
+   { key [kv]-> _ \ast durable_oldv = a }
+
+   By adding code between A and B that makes durable_oldv = v, we can ensure
+   that rerunning the function will result in B starting with the correct
+   durable_oldv.
+   TODO: test this
+   Probably won't try proving this version correct (first). *)
+Definition IncrServer__increment_core: val :=
+  rec: "IncrServer__increment_core" "is" "seq" "args" :=
+    let: "key" := struct.get RPCVals.S "U64_1" "args" in
+    let: "oldv" := ref (zero_val uint64T) in
+    let: "enc" := ref (zero_val (struct.t marshal.Enc.S)) in
+    let: "filename" := #(str"incr_request_") + grove_ffi.U64ToString "seq" + #(str"_oldv") in
+    let: "content" := grove_ffi.Read "filename" in
+    (if: slice.len "content" > #0
+    then "oldv" <-[uint64T] marshal.Dec__GetInt (marshal.NewDec (grove_ffi.Read "filename"))
+    else
+      "oldv" <-[uint64T] KVClerk__Get (struct.loadF IncrServer.S "kck" "is") "key";;
+      "enc" <-[struct.t marshal.Enc.S] marshal.NewEnc #8;;
+      marshal.Enc__PutInt (![struct.t marshal.Enc.S] "enc") (![uint64T] "oldv");;
+      grove_ffi.Write "filename" (marshal.Enc__Finish (![struct.t marshal.Enc.S] "enc")));;
+    KVClerk__Put (struct.loadF IncrServer.S "kck" "is") "key" (![uint64T] "oldv" + #1);;
+    #0.
+
+(* For now, there is only one kv server in the whole world *)
+Definition WriteDurableIncrServer: val :=
+  rec: "WriteDurableIncrServer" "ks" :=
+    #().
+
+Definition IncrServer__Increment: val :=
+  rec: "IncrServer__Increment" "is" "req" "reply" :=
+    lock.acquire (struct.loadF RPCServer.S "mu" (struct.loadF IncrServer.S "sv" "is"));;
+    (if: CheckReplyTable (struct.loadF RPCServer.S "lastSeq" (struct.loadF IncrServer.S "sv" "is")) (struct.loadF RPCServer.S "lastReply" (struct.loadF IncrServer.S "sv" "is")) (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCRequest.S "Seq" "req") "reply"
+    then #()
+    else
+      struct.storeF RPCReply.S "Ret" "reply" (IncrServer__increment_core "is" (struct.loadF RPCRequest.S "Seq" "req") (struct.loadF RPCRequest.S "Args" "req"));;
+      MapInsert (struct.loadF RPCServer.S "lastReply" (struct.loadF IncrServer.S "sv" "is")) (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCReply.S "Ret" "reply");;
+      WriteDurableIncrServer "is");;
+    lock.release (struct.loadF RPCServer.S "mu" (struct.loadF IncrServer.S "sv" "is"));;
+    #false.
+
+Definition ReadDurableIncrServer: val :=
+  rec: "ReadDurableIncrServer" <> :=
+    slice.nil.
+
+Definition MakeIncrServer: val :=
+  rec: "MakeIncrServer" "kvserver" :=
+    let: "is_old" := ReadDurableIncrServer #() in
+    (if: "is_old" ≠ #null
+    then "is_old"
+    else
+      let: "is" := struct.alloc IncrServer.S (zero_val (struct.t IncrServer.S)) in
+      struct.storeF IncrServer.S "sv" "is" (MakeRPCServer #());;
+      struct.storeF IncrServer.S "kvserver" "is" "kvserver";;
+      "is").
+
+(* 5_incrclient.go *)
+
+Module IncrClerk.
+  Definition S := struct.decl [
+    "primary" :: struct.ptrT IncrServer.S;
+    "client" :: struct.ptrT RPCClient.S;
+    "cid" :: uint64T;
+    "seq" :: uint64T
+  ].
+End IncrClerk.
+
+Definition MakeIncrClerk: val :=
+  rec: "MakeIncrClerk" "primary" "cid" :=
+    let: "ck" := struct.alloc IncrClerk.S (zero_val (struct.t IncrClerk.S)) in
+    struct.storeF IncrClerk.S "primary" "ck" "primary";;
+    struct.storeF IncrClerk.S "client" "ck" (MakeRPCClient "cid");;
+    "ck".
+
+Definition IncrClerk__Increment: val :=
+  rec: "IncrClerk__Increment" "ck" "key" :=
+    RPCClient__MakeRequest (struct.loadF IncrClerk.S "client" "ck") (IncrServer__Increment (struct.loadF IncrClerk.S "primary" "ck")) (struct.mk RPCVals.S [
+      "U64_1" ::= "key"
+    ]);;
+    #().
+
+(* 6_incrproxyserver.go *)
+
+Module IncrProxyServer.
+  Definition S := struct.decl [
+    "sv" :: struct.ptrT RPCServer.S;
+    "incrserver" :: struct.ptrT IncrServer.S;
+    "ick" :: struct.ptrT IncrClerk.S
+  ].
+End IncrProxyServer.
+
+Definition IncrProxyServer__proxy_increment_core_unsafe: val :=
+  rec: "IncrProxyServer__proxy_increment_core_unsafe" "is" "seq" "args" :=
+    let: "key" := struct.get RPCVals.S "U64_1" "args" in
+    IncrClerk__Increment (struct.loadF IncrProxyServer.S "ick" "is") "key";;
+    #0.
+
+(* Common code for RPC clients: tracking of CID and next sequence number. *)
+Module ShortTermIncrClerk.
+  Definition S := struct.decl [
+    "cid" :: uint64T;
+    "seq" :: uint64T;
+    "req" :: struct.t RPCRequest.S;
+    "incrserver" :: struct.ptrT IncrServer.S
+  ].
+End ShortTermIncrClerk.
+
+Definition ShortTermIncrClerk__PrepareRequest: val :=
+  rec: "ShortTermIncrClerk__PrepareRequest" "ck" "args" :=
+    overflow_guard_incr (struct.loadF ShortTermIncrClerk.S "seq" "ck");;
+    struct.storeF ShortTermIncrClerk.S "req" "ck" (struct.mk RPCRequest.S [
+      "Args" ::= "args";
+      "CID" ::= struct.loadF ShortTermIncrClerk.S "cid" "ck";
+      "Seq" ::= struct.loadF ShortTermIncrClerk.S "seq" "ck"
+    ]);;
+    struct.storeF ShortTermIncrClerk.S "seq" "ck" (struct.loadF ShortTermIncrClerk.S "seq" "ck" + #1).
+
+Definition ShortTermIncrClerk__MakePreparedRequest: val :=
+  rec: "ShortTermIncrClerk__MakePreparedRequest" "ck" :=
+    let: "errb" := ref_to boolT #false in
+    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      "errb" <-[boolT] RemoteProcedureCall (IncrServer__Increment (struct.loadF ShortTermIncrClerk.S "incrserver" "ck")) (struct.fieldRef ShortTermIncrClerk.S "req" "ck") "reply";;
+      (if: (![boolT] "errb" = #false)
+      then Break
+      else Continue));;
+    struct.loadF RPCReply.S "Ret" "reply".
+
+Definition DecodeShortTermIncrClerk: val :=
+  rec: "DecodeShortTermIncrClerk" "is" "content" :=
+    let: "d" := marshal.NewDec "content" in
+    let: "ck" := ref (zero_val (struct.t ShortTermIncrClerk.S)) in
+    struct.storeF ShortTermIncrClerk.S "incrserver" "ck" "is";;
+    struct.storeF ShortTermIncrClerk.S "cid" "ck" (marshal.Dec__GetInt "d");;
+    struct.storeF ShortTermIncrClerk.S "seq" "ck" (marshal.Dec__GetInt "d");;
+    struct.storeF RPCRequest.S "CID" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.get ShortTermIncrClerk.S "cid" (![struct.t ShortTermIncrClerk.S] "ck"));;
+    struct.storeF RPCRequest.S "Seq" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.get ShortTermIncrClerk.S "seq" (![struct.t ShortTermIncrClerk.S] "ck") - #1);;
+    struct.storeF RPCVals.S "U64_1" (struct.fieldRef RPCRequest.S "Args" (struct.fieldRef ShortTermIncrClerk.S "req" "ck")) (marshal.Dec__GetInt "d");;
+    struct.storeF RPCVals.S "U64_2" (struct.fieldRef RPCRequest.S "Args" (struct.fieldRef ShortTermIncrClerk.S "req" "ck")) (marshal.Dec__GetInt "d");;
+    ![struct.t ShortTermIncrClerk.S] "ck".
+
+Definition EncodeShortTermIncrClerk: val :=
+  rec: "EncodeShortTermIncrClerk" "ck" :=
+    let: "e" := marshal.NewEnc #32 in
+    marshal.Enc__PutInt "e" (struct.loadF ShortTermIncrClerk.S "cid" "ck");;
+    marshal.Enc__PutInt "e" (struct.loadF ShortTermIncrClerk.S "seq" "ck");;
+    marshal.Enc__PutInt "e" (struct.get RPCVals.S "U64_1" (struct.get RPCRequest.S "Args" (struct.loadF ShortTermIncrClerk.S "req" "ck")));;
+    marshal.Enc__PutInt "e" (struct.get RPCVals.S "U64_2" (struct.get RPCRequest.S "Args" (struct.loadF ShortTermIncrClerk.S "req" "ck")));;
+    marshal.Enc__Finish "e".
+
+Definition MakeFreshIncrClerk: val :=
+  rec: "MakeFreshIncrClerk" <> :=
+    let: "cid" := #0 in
+    let: "ck" := struct.mk ShortTermIncrClerk.S [
+      "cid" ::= "cid"
+    ] in
+    "ck".
+
+Definition IncrProxyServer__proxy_increment_core: val :=
+  rec: "IncrProxyServer__proxy_increment_core" "is" "seq" "args" :=
+    let: "filename" := #(str"procy_incr_request_") + grove_ffi.U64ToString "seq" in
+    let: "ck" := ref (zero_val (struct.t ShortTermIncrClerk.S)) in
+    let: "content" := grove_ffi.Read "filename" in
+    (if: slice.len "content" > #0
+    then "ck" <-[struct.t ShortTermIncrClerk.S] DecodeShortTermIncrClerk (struct.loadF IncrProxyServer.S "incrserver" "is") "content"
+    else
+      "ck" <-[struct.t ShortTermIncrClerk.S] MakeFreshIncrClerk #();;
+      ShortTermIncrClerk__PrepareRequest (![struct.t ShortTermIncrClerk.S] "ck") "args";;
+      let: "content" := EncodeShortTermIncrClerk "ck" in
+      grove_ffi.Write "filename" "content");;
+    ShortTermIncrClerk__MakePreparedRequest (![struct.t ShortTermIncrClerk.S] "ck");;
+    #0.
