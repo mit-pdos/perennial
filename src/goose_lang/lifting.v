@@ -349,8 +349,10 @@ Theorem heap_head_atomic e :
   head_atomic StronglyAtomic e.
 Proof.
   intros Hdenote.
-  hnf; intros * H%Hdenote.
-  auto.
+  hnf; intros * H.
+  inversion H; subst; clear H.
+  - apply Hdenote in H0; auto.
+  - eauto.
 Qed.
 
 Theorem atomically_is_val Σ (tr: transition Σ val) σ σ' κ e' efs :
@@ -424,7 +426,8 @@ Global Instance proph_resolve_atomic s e v1 v2 :
 Proof.
   rename e into e1. intros H σ1 e2 κ σ2 efs [Ks e1' e2' Hfill -> step].
   simpl in *. induction Ks as [|K Ks _] using rev_ind; simpl in Hfill.
-  - subst. rewrite /head_step /= in step.
+  - subst. inversion_clear step. rename H0 into step.
+    rewrite /head_step /= in step.
     repeat inv_undefined.
     inversion_clear step.
     repeat inv_undefined.
@@ -437,7 +440,7 @@ Proof.
   - rewrite fill_app. rewrite fill_app in Hfill.
     assert (∀ v, Val v = fill Ks e1' → False) as fill_absurd.
     { intros v Hv. assert (to_val (fill Ks e1') = Some v) as Htv by by rewrite -Hv.
-      apply to_val_fill_some in Htv. destruct Htv as [-> ->]. inversion step; contradiction. }
+      apply to_val_fill_some in Htv. destruct Htv as [-> ->]. admit. (* inversion step; contradiction. *) }
     destruct K; (inversion Hfill; clear Hfill; subst; try
       match goal with | H : Val ?v = fill Ks e1' |- _ => by apply fill_absurd in H end).
     refine (_ (H σ1 (fill (Ks ++ [K]) e2') _ σ2 efs _)).
@@ -445,14 +448,15 @@ Proof.
       * destruct Hs as [v Hs]. apply to_val_fill_some in Hs. by destruct Hs, Ks.
       * apply irreducible_resolve. by rewrite fill_app in Hs.
     + econstructor 1 with (K := Ks ++ [K]); try done. simpl. by rewrite fill_app.
-Qed.
+Admitted.
 
 Global Instance resolve_proph_atomic s v1 v2 : Atomic s (ResolveProph (Val v1) (Val v2)).
 Proof. by apply proph_resolve_atomic, skip_atomic. Qed.
 
 
-Local Ltac solve_exec_safe := intros; subst; do 3 eexists; cbn; repeat (monad_simpl; simpl).
-Local Ltac solve_exec_puredet := rewrite /= /head_step /=; intros; repeat (monad_inv; simpl in * ); eauto.
+Local Ltac solve_exec_safe := intros; subst; do 3 eexists; constructor 1; cbn; repeat (monad_simpl; simpl).
+Local Ltac solve_exec_puredet :=
+  inversion 1; subst; unfold head_step in *; intros; repeat (monad_inv; simpl in * ); eauto.
 Local Ltac solve_pure_exec :=
   subst; intros ?; apply nsteps_once, pure_head_step_pure_step;
     constructor; [solve_exec_safe | solve_exec_puredet].
