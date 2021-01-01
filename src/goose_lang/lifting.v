@@ -320,6 +320,8 @@ Ltac inv_head_step :=
   repeat match goal with
   | _ => progress simplify_map_eq/= (* simplify memory stuff *)
   | H : to_val _ = Some _ |- _ => apply of_to_val in H
+  | H : head_step_atomic ?e _ _ _ _ _ |- _ =>
+    apply head_step_atomic_inv in H; [ | solve [ inversion 1 ] ]
   | H : head_step ?e _ _ _ _ _ |- _ =>
     rewrite /head_step /= in H;
     monad_inv; repeat (simpl in H; monad_inv)
@@ -329,13 +331,14 @@ Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
 Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
 
 (* [simpl apply] is too stupid, so we need extern hints here. *)
+Local Hint Extern 1 (head_step_atomic _ _ _ _ _ _) => apply head_step_trans : core.
 Local Hint Extern 1 (head_step _ _ _ _ _ _) => rewrite /head_step /= : core.
 Local Hint Extern 1 (relation.bind _ _ _ _ _) => monad_simpl; simpl : core.
 Local Hint Extern 1 (relation.runF _ _ _ _) => monad_simpl; simpl : core.
 (* Local Hint Extern 0 (head_step (CmpXchg _ _ _) _ _ _ _ _) => eapply CmpXchgS : core. *)
-Local Hint Extern 0 (head_step (AllocN _ _) _ _ _ _ _) => apply alloc_fresh : core.
-Local Hint Extern 0 (head_step (ArbitraryInt) _ _ _ _ _) => apply arbitrary_int_step : core.
-Local Hint Extern 0 (head_step NewProph _ _ _ _ _) => apply new_proph_id_fresh : core.
+Local Hint Extern 0 (head_step_atomic (AllocN _ _) _ _ _ _ _) => apply alloc_fresh : core.
+Local Hint Extern 0 (head_step_atomic (ArbitraryInt) _ _ _ _ _) => apply arbitrary_int_step : core.
+Local Hint Extern 0 (head_step_atomic NewProph _ _ _ _ _) => apply new_proph_id_fresh : core.
 Local Hint Resolve to_of_val : core.
 
 Global Instance into_val_val v : IntoVal (Val v) v.
@@ -562,7 +565,7 @@ Lemma wp_ArbitraryInt stk E :
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 κ κs n) "(Hσ&?&?&?&?) !>"; iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
+  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step; iFrame.
   iModIntro. by iApply "HΦ".
 Qed.
 
@@ -998,6 +1001,7 @@ Qed.
 (* In the following, strong atomicity is required due to the fact that [e] must
 be able to make a head step for [Resolve e _ _] not to be (head) stuck. *)
 
+(*
 Lemma resolve_reducible e σ (p : proph_id) v :
   Atomic StronglyAtomic e → reducible e σ →
   reducible (Resolve e (Val (LitV (LitProphecy p))) (Val v)) σ.
@@ -1009,6 +1013,7 @@ Proof.
   { unfold Atomic in A. apply (A σ e' κ σ' efs) in H. unfold is_Some in H.
     destruct H as [w H]. exists w. simpl in H. by apply (of_to_val _ _ H). }
   simpl.
+  constructor.
   rewrite /head_step /=.
   econstructor.
   - by apply prim_step_to_val_is_head_step.
@@ -1120,6 +1125,7 @@ Proof.
   iApply (wp_cmpxchg_fail with "Hl"); [done..|]. iIntros "!> Hl".
   iIntros (pvs' ->) "Hp". iApply "HΦ". eauto with iFrame.
 Qed.
+*)
 
 End lifting.
 End goose_lang.

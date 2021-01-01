@@ -1131,6 +1131,16 @@ Inductive head_step_atomic: expr -> state -> list observation -> expr -> state -
      head_step_atomic (Atomically e) s κs (Val v') s' efs
 .
 
+Lemma head_step_atomic_inv e s κs e' s' efs :
+  head_step_atomic e s κs e' s' efs →
+  (∀ e'', e ≠ Atomically e'') →
+  head_step e s κs e' s' efs.
+Proof.
+  inversion 1; subst; eauto.
+  intros.
+  contradiction (H1 e0); auto.
+Qed.
+
 (** Basic properties about the language *)
 Global Instance fill_item_inj Ki : Inj (=) (=) (fill_item Ki).
 Proof. induction Ki; intros ???; simplify_eq/=; auto with f_equal. Qed.
@@ -1291,6 +1301,9 @@ Proof.
   apply to_val_fill_some in H3 as [-> ->]. subst e. done.
 Qed.
 
+(* TODO(tej): I'm not convinced this is even true, we probably don't handle
+Resolve (Atomically _) _ _ in a sensible way because it's stuck but Atomically _
+isn't. *)
 Lemma irreducible_resolve e v1 v2 σ :
   irreducible e σ → irreducible (Resolve e (Val v1) (Val v2)) σ.
 Proof.
