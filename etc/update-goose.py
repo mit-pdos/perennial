@@ -56,6 +56,12 @@ def main():
         metavar="PERENNIAL_EXAMPLES_PATH",
         default=None,
     )
+    parser.add_argument(
+        "--distributed-examples",
+        help="path to lockservice repo (skip translation if not provided)",
+        metavar="DISTRIBUTED_EXAMPLES_PATH",
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -63,6 +69,7 @@ def main():
     goose_nfsd_dir = args.nfsd
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     examples_dir = args.examples
+    distributed_dir = args.distributed_examples
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -70,6 +77,8 @@ def main():
         parser.error("goose-nfsd directory does not exist")
     if examples_dir is not None and not os.path.isdir(examples_dir):
         parser.error("perennial-examples directory does not exist")
+    if distributed_dir is not None and not os.path.isdir(distributed_dir):
+        parser.error("lockservice (distributed examples) directory does not exist")
 
     do_run = lambda cmd_args: run_command(
         cmd_args, dry_run=args.dry_run, verbose=args.verbose
@@ -81,7 +90,7 @@ def main():
         do_run(["go", "install", "./cmd/goose"])
         os.chdir(old_dir)
 
-    def run_goose(src_path, output, pkg=None):
+    def run_goose(src_path, output, pkg=None, importHeader=None, excludes=[]):
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
             gopath = path.join(path.expanduser("~"), "go")
@@ -89,6 +98,10 @@ def main():
         args = [goose_bin, "-out", output]
         if pkg is not None:
             args.extend(["-package", pkg])
+        if importHeader is not None:
+            args.extend(["-import-line", importHeader])
+        for e in excludes:
+            args.extend(["-exclude-import", e])
         args.append(src_path)
         do_run(args)
 
@@ -175,6 +188,14 @@ def main():
                 path.join(perennial_dir, "external/Goose"),
                 pkg="github.com/mit-pdos/perennial-examples/" + pkg,
             )
+    if distributed_dir is not None:
+        run_goose(
+            path.join(distributed_dir),
+            path.join(perennial_dir, "external/Goose"),
+            pkg="github.com/mit-pdos/lockservice/lockservice",
+            importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
+            excludes=["./grove_ffi"]
+        )
 
 
 if __name__ == "__main__":

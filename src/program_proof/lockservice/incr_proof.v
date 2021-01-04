@@ -1,12 +1,11 @@
 From Perennial.algebra Require Import auth_map.
-From Perennial.program_proof Require Import proof_prelude.
-From Perennial.program_proof.lockservice Require Import lockservice_crash nondet.
+From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
+From Perennial.program_proof.lockservice Require Import lockservice_crash rpc_proof rpc_durable nondet kv_proof fmcounter_map.
+Require Import Decimal Ascii String DecimalString.
 
 Section incr_proof.
 Context `{!heapG Σ}.
-
-Definition IncrCrashInvariant : iProp Σ := True.
 
 Class filesysG Σ := FileSysG {
   filesys_gname : gname ; (* Name of str -> []byte authmap used for filesys ffi *)
@@ -44,9 +43,6 @@ Axiom wp_Write : ∀ filename (q:Qp) content_old content (content_sl:Slice.t) q,
       typed_slice.is_slice content_sl byteT q content
   }}}.
 
-Require Import Decimal Ascii String DecimalString.
-Search "string_of_uint".
-
 (* Spec for U64ToString will be annoying *)
 Axiom wp_U64ToString : ∀ (u:u64),
   {{{
@@ -57,18 +53,43 @@ Axiom wp_U64ToString : ∀ (u:u64),
        RET #(str NilZero.string_of_int (Z.to_int (int.Z u))); True
   }}}.
 
-Lemma increment_core_indepotent (isrv:loc) (seq args:u64) :
+
+(* Proof for increment backed by kv service
+   requires taking
+ *)
+
+Definition IncrCrashInvariant (args:RPCValC) : iProp Σ := True.
+
+Lemma increment_core_indepotent (isrv:loc) (seq:u64) (args:RPCValC) :
   {{{
-       IncrCrashInvariant
+       IncrCrashInvariant args
   }}}
-    IncrServer__increment_core #isrv #seq #args @ 37 ; ⊤
+    IncrServer__increment_core #isrv #seq (into_val.to_val args) @ 37 ; ⊤
   {{{
       RET #(); True
   }}}
   {{{
-       IncrCrashInvariant
+       IncrCrashInvariant args
   }}}.
 Proof.
+  iIntros (Φ Φc) "Hpre Hpost".
+  wpc_call; first done.
+  { iFrame. }
+  iCache with "Hpre Hpost".
+  {
+    iDestruct "Hpost" as "[HΦc _]". iModIntro. by iApply "HΦc".
+  }
+  wpc_pures.
+
+  wpc_bind (ref #0)%E.
+  wpc_frame.
+  wp_apply (wp_alloc_untyped); first done.
+  iIntros (l) "Hl". iNamed 1.
+  wpc_pures.
+  wpc_bind (ref _)%E.
+
+  (* Use has_encoding data [] ∨ ... in invariant *)
+
 Admitted.
 
 End incr_proof.
