@@ -121,7 +121,7 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&?&>Htr_auth&?)".
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step. constructor 1.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -148,7 +148,7 @@ Proof.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step. constructor 1.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -263,8 +263,7 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
   iDestruct (@na_heap_read' with "Hσ Hl") as %([]&?&?&Hlock&Hle); try inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
-    constructor 1.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -302,8 +301,7 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
   iDestruct (@na_heap_read' with "Hσ Hl") as %([]&?&?&Hlock&Hle); try inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
-    constructor 1.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -345,8 +343,7 @@ Proof.
   destruct lk; inversion Hlock; subst.
   iMod (na_heap_write _ _ _ (Reading 0) with "Hσ Hl") as "(Hσ&Hl)"; first done.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
-    constructor 1.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -469,8 +466,7 @@ Proof.
   iMod (na_heap_write_finish_vs _ _ _ _ (Reading 0) with "Hl Hσ") as (lkw (?&Hlock)) "(Hσ&Hl)"; first done.
   destruct lkw; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
-    constructor 1.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_inv; simpl in *; monad_simpl).
     econstructor.
@@ -499,8 +495,7 @@ Proof.
   iMod (na_heap_write_prepare _ _ _ _ Writing with "Hσ Hl") as (lk1 (Hlookup&Hlock)) "(Hσ&?)"; first done.
   destruct lk1; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
-    constructor 1.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -622,8 +617,7 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
-    constructor 1.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_inv; simpl in *; monad_simpl).
   }
@@ -650,8 +644,7 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
-    constructor 1.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -772,8 +765,7 @@ Proof.
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&(Hrest1&Hrest2&Hrest3&Hrest4))".
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step. simpl.
-    constructor 1.
+  { apply head_prim_step_trans. simpl.
     econstructor; last (repeat econstructor).
     econstructor. { monad_simpl. }
     eexists _ (fresh_locs (dom (gset loc) _.(heap))); repeat econstructor.

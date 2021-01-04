@@ -1301,6 +1301,15 @@ Proof.
   apply to_val_fill_some in H3 as [-> ->]. subst e. done.
 Qed.
 
+Lemma head_prim_step_trans e σ κ e' σ' efs :
+  head_step e σ κ e' σ' efs →
+  ectx_language.prim_step e σ κ e' σ' efs.
+Proof.
+  intros.
+  apply head_prim_step. apply head_step_trans.
+  auto.
+Qed.
+
 (* TODO(tej): I'm not convinced this is even true, we probably don't handle
 Resolve (Atomically _) _ _ in a sensible way because it's stuck but Atomically _
 isn't. *)
