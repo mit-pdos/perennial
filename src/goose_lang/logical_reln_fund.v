@@ -838,7 +838,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. econstructor; eauto.
+      apply head_prim_step_trans. econstructor; eauto.
       { simpl. econstructor; eauto. }
       { econstructor; eauto. }
     }
@@ -857,7 +857,7 @@ Proof using spec_trans.
     }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. econstructor; eauto.
+      apply head_prim_step_trans. econstructor; eauto.
     }
     iPoseProof (ctx_has_semTy_subst with "[] []") as "H1".
     { iApply IHHtyping. }
@@ -878,7 +878,7 @@ Proof using spec_trans.
     }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. econstructor; eauto.
+      apply head_prim_step_trans. econstructor; eauto.
     }
     iEval (simpl; rewrite right_id) in "Hchild".
     iDestruct "Hchild" as (j') "Hj'".
@@ -909,7 +909,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. econstructor; eauto.
+        apply head_prim_step_trans. econstructor; eauto.
       }
       iApply wpc_wp.
       iApply (IHHtyping2 with "[//] [$] [$] [$] [$]"). eauto.
@@ -919,7 +919,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. econstructor; eauto.
+        apply head_prim_step_trans. econstructor; eauto.
       }
       iApply wpc_wp.
       iApply (IHHtyping3 with "[//] [$] [$] [$] [$]"). eauto.
@@ -940,7 +940,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
     iModIntro. iExists _. iFrame. iExists _. iPureIntro; eauto.
   - subst.
@@ -966,7 +966,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. repeat econstructor; eauto.
+        apply head_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
@@ -994,7 +994,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. repeat econstructor; eauto.
+        apply head_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
@@ -1022,7 +1022,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. repeat econstructor; eauto.
+        apply head_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
@@ -1050,7 +1050,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. repeat econstructor; eauto.
+        apply head_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
@@ -1069,7 +1069,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; eauto.
     iExists _. iFrame. eauto.
@@ -1092,7 +1092,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
 
     wp_pures; auto.
@@ -1126,7 +1126,7 @@ Proof using spec_trans.
       iDestruct "Hv1" as (?) "(%&%)"; subst;
       iDestruct "Hv2" as (?) "(%&%)"; subst;
       (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
-       [ intros; eexists; apply head_prim_step; repeat econstructor; eauto
+       [ intros; eexists; apply head_prim_step_trans; repeat econstructor; eauto
         | set_solver+ | wp_pures; eauto; iExists _; iFrame; eauto]).
 
   - subst.
@@ -1154,7 +1154,7 @@ Proof using spec_trans.
       iDestruct "Hv1" as (?) "(%&%)"; subst;
       iDestruct "Hv2" as (?) "(%&%)"; subst;
       (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
-       [ intros; eexists; apply head_prim_step; repeat econstructor; eauto
+       [ intros; eexists; apply head_prim_step_trans; repeat econstructor; eauto
         | set_solver+ | wp_pures; eauto; iExists _; iFrame; eauto]).
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1179,7 +1179,7 @@ Proof using spec_trans.
     iDestruct "Hv1" as (?) "(%&%)"; subst;
     iDestruct "Hv2" as (?) "(%&%)"; subst;
     (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
-     [ intros; eexists; apply head_prim_step; repeat econstructor; eauto
+     [ intros; eexists; apply head_prim_step_trans; repeat econstructor; eauto
       | set_solver+ | wp_pures; eauto; iExists _; iFrame; eauto]).
 
   (* data *)
@@ -1209,7 +1209,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; auto.
     iExists _. iFrame. iExists _, _, _, _. iFrame. eauto.
@@ -1230,7 +1230,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; eauto.
   - subst.
@@ -1250,7 +1250,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; eauto.
   - subst.
@@ -1270,7 +1270,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; auto.
     iExists _. iFrame. iLeft. iExists _, _; iFrame; eauto.
@@ -1291,7 +1291,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; auto.
     iExists _. iFrame. iRight. iExists _, _; iFrame; eauto.
@@ -1315,7 +1315,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. repeat econstructor; eauto.
+        apply head_prim_step_trans. repeat econstructor; eauto.
       }
       iApply wpc_wp.
       wpc_bind (subst_map _ e1').
@@ -1341,7 +1341,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. repeat econstructor; eauto.
+        apply head_prim_step_trans. repeat econstructor; eauto.
       }
       iApply (wpc_wp _ (sty_lvl_ops)).
       wpc_bind (subst_map _ e2').
@@ -1456,7 +1456,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { solve_ndisj. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. repeat econstructor; eauto.
+        apply head_prim_step_trans. repeat econstructor; eauto.
       }
       iModIntro. iExists _. iFrame. iRight.
       iExists _. rewrite /loc_add. rewrite addr_plus_plus. eauto.
@@ -1468,7 +1468,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { solve_ndisj. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
     iModIntro.
     iExists _. iFrame. iLeft.
@@ -1506,7 +1506,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { solve_ndisj. }
       { intros ?. eexists. simpl.
-        apply head_prim_step. repeat econstructor; eauto.
+        apply head_prim_step_trans. repeat econstructor; eauto.
       }
       iModIntro. iExists _. iFrame. iRight.
       iExists _. rewrite /loc_add. rewrite addr_plus_plus. eauto.
@@ -1518,7 +1518,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { solve_ndisj. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. repeat econstructor; eauto.
+      apply head_prim_step_trans. repeat econstructor; eauto.
     }
     iModIntro.
     iExists _. iFrame.
@@ -1641,7 +1641,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. econstructor. eauto.
+      apply head_prim_step_trans. simpl. econstructor. eauto.
     }
     simpl.
     clear Hctx'.
@@ -1653,7 +1653,7 @@ Proof using spec_trans.
     { simpl. iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. econstructor; eauto.
+      apply head_prim_step_trans. simpl. econstructor; eauto.
       * simpl. econstructor. econstructor.
       * econstructor. eauto.
     }
@@ -1665,7 +1665,7 @@ Proof using spec_trans.
     { simpl. iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. econstructor; eauto.
+      apply head_prim_step_trans. simpl. econstructor; eauto.
     }
     clear Hctx'.
 
@@ -1684,7 +1684,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. repeat econstructor; eauto.
+      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
 
@@ -1695,7 +1695,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. repeat econstructor; eauto.
+      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
@@ -1727,7 +1727,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. econstructor. eauto.
+      apply head_prim_step_trans. simpl. econstructor. eauto.
     }
     simpl.
     clear Hctx'.
@@ -1747,7 +1747,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. repeat econstructor; eauto.
+      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
 
@@ -1758,7 +1758,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. repeat econstructor; eauto.
+      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
@@ -1778,7 +1778,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. repeat econstructor; eauto.
+      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
 
@@ -1789,7 +1789,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. simpl. repeat econstructor; eauto.
+      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     wp_pures.
     iModIntro. iExists _. simpl. iFrame. eauto.
@@ -1996,7 +1996,7 @@ Proof using spec_trans.
     }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. econstructor; eauto.
+      apply head_prim_step_trans. econstructor; eauto.
     }
 
     iPoseProof (ctx_has_semTy_subst with "[] []") as "H1".

@@ -54,6 +54,10 @@ Section translate.
   | fork_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       Γ ⊢ Fork e1 -- Fork e2 : unitT
+  (* TODO: handle atomically *)
+  (* | atomically_transTy e1 e2 t :
+      Γ ⊢ e1 -- e2 : t ->
+      Γ ⊢ Atomically e1 -- Atomically e2 : t *)
 
   (** control flow *)
   | if_transTy cond cond' e1 e1' e2 e2' t :

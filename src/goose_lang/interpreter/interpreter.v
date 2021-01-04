@@ -172,7 +172,7 @@ Qed.
 
 (* Deals with monadic wrappers around head_trans. *)
 Ltac head_step :=
-  rewrite /= /head_step /=; repeat (Transitions.monad_simpl; simpl).
+  apply head_step_trans; rewrite /= /head_step /=; repeat (Transitions.monad_simpl; simpl).
 
 (* Suppose we want to show that [a -> b] in 1 step. Then, nsteps
 doesn't have a constructor for stepping just once. Instead we have to
@@ -372,6 +372,8 @@ Section interpreter.
           end
 
       | Fork e => mfail_bt "Fork operation not supported"
+
+      | Atomically e => mfail_bt "Atomically not supported"
 
       | Primitive0 p =>
         match p return StateT btstate Error val with

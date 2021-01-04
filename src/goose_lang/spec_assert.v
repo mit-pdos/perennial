@@ -121,7 +121,7 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&?&>Htr_auth&?)".
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -148,7 +148,7 @@ Proof.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -158,6 +158,28 @@ Proof.
   { iNext. iExists _. iFrame. rewrite //=. }
   iFrame. eauto.
 Qed.
+
+Lemma head_irreducible_not_atomically e σ :
+  (∀ e'', e ≠ Atomically e'') →
+  (∀ κ e' σ' efs, head_step e σ κ e' σ' efs → False) →
+  head_irreducible e σ.
+Proof.
+  intros ? Hno_step.
+  intros ???? Hstep%head_step_atomic_inv; [ | done ].
+  eauto.
+Qed.
+
+Ltac head_irreducible :=
+  apply head_irreducible_not_atomically;
+  [ by inversion 1
+  | rewrite /head_step /=; intros ???? Hstep;
+    repeat match goal with
+           | _ => progress (monad_inv; simpl in * )
+           | H: context[unwrap ?mx], Hnone: ?mx = None |- _ =>
+             rewrite -> Hnone in H; simpl in H
+           end;
+    auto
+  ].
 
 Lemma ghost_load_block_oob_stuck j K `{LanguageCtx _ K} E l n
   (Hoff: (addr_offset l < 0 ∨ n <= addr_offset l)%Z):
@@ -174,11 +196,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
-    match goal with
-      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
-    end.
-    simpl in *. monad_inv; eauto.
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -201,7 +219,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -224,11 +242,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
-    match goal with
-      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
-    end.
-    simpl in *. monad_inv; eauto.
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -249,7 +263,7 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
   iDestruct (@na_heap_read' with "Hσ Hl") as %([]&?&?&Hlock&Hle); try inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -287,7 +301,7 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
   iDestruct (@na_heap_read' with "Hσ Hl") as %([]&?&?&Hlock&Hle); try inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -329,7 +343,7 @@ Proof.
   destruct lk; inversion Hlock; subst.
   iMod (na_heap_write _ _ _ (Reading 0) with "Hσ Hl") as "(Hσ&Hl)"; first done.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -355,11 +369,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
-    match goal with
-      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
-    end.
-    simpl in *. monad_inv; eauto.
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e' ∨ of_val v1 = e' ∨ of_val v2 = e').
     { move: Heq. destruct Ki => //=; naive_solver congruence. }
@@ -382,11 +392,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
-    match goal with
-      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
-    end.
-    simpl in *. monad_inv; eauto.
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e' ∨ of_val v1 = e' ∨ of_val v2 = e').
     { move: Heq. destruct Ki => //=; naive_solver congruence. }
@@ -411,7 +417,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
+  * head_irreducible.
     destruct (decide (vals_compare_safe v1 v1)).
     ** destruct x; first by lia. monad_inv; eauto.
     ** monad_inv; eauto.
@@ -437,7 +443,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e' ∨ of_val v1 = e' ∨ of_val v2 = e').
     { move: Heq. destruct Ki => //=; naive_solver congruence. }
@@ -460,7 +466,7 @@ Proof.
   iMod (na_heap_write_finish_vs _ _ _ _ (Reading 0) with "Hl Hσ") as (lkw (?&Hlock)) "(Hσ&Hl)"; first done.
   destruct lkw; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_inv; simpl in *; monad_simpl).
     econstructor.
@@ -489,7 +495,7 @@ Proof.
   iMod (na_heap_write_prepare _ _ _ _ Writing with "Hσ Hl") as (lk1 (Hlookup&Hlock)) "(Hσ&?)"; first done.
   destruct lk1; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -514,7 +520,8 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ). destruct x; first by lia. monad_inv.
+  * head_irreducible.
+    destruct x; first by lia. simpl in *; monad_inv; auto.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -538,11 +545,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
-    match goal with
-      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
-    end.
-    simpl in *. monad_inv; eauto.
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -565,7 +568,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -588,11 +591,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
-    match goal with
-      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
-    end.
-    simpl in *. monad_inv; eauto.
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -618,7 +617,7 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_inv; simpl in *; monad_simpl).
   }
@@ -645,7 +644,7 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step.
+  { eapply head_prim_step_trans.
     rewrite /= /head_step /=.
     repeat (monad_simpl; simpl).
   }
@@ -670,11 +669,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
-    match goal with
-      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
-    end.
-    simpl in *. monad_inv; eauto.
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -697,7 +692,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -720,11 +715,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
-    match goal with
-      [ H: context [ heap _ !! _] |- _ ] => setoid_rewrite Hnone in H
-    end.
-    simpl in *. monad_inv; eauto.
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -745,8 +736,7 @@ Proof.
   {
   split; first done.
   apply prim_head_irreducible; auto.
-  * inversion 1; repeat (monad_inv; simpl in * ).
-    simpl in *. monad_inv; eauto.
+  * head_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #n = e' ∨ of_val v = e').
     { move: Heq. destruct Ki => //=; naive_solver congruence. }
@@ -775,7 +765,7 @@ Proof.
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&(Hrest1&Hrest2&Hrest3&Hrest4))".
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step. simpl.
+  { apply head_prim_step_trans. simpl.
     econstructor; last (repeat econstructor).
     econstructor. { monad_simpl. }
     eexists _ (fresh_locs (dom (gset loc) _.(heap))); repeat econstructor.

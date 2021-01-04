@@ -559,6 +559,7 @@ Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
   { eapply stuck_ExternalOp; first (by eauto).
+    apply head_irreducible_not_atomically; [ by inversion 1 | ].
     intros ?????.
     repeat (inv_head_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)); try congruence;
@@ -578,6 +579,7 @@ Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
   { eapply stuck_ExternalOp; first (by eauto).
+    apply head_irreducible_not_atomically; [ by inversion 1 | ].
     intros ?????.
     repeat (inv_head_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)); try congruence;
@@ -634,7 +636,7 @@ Proof.
   iEval (simpl) in "Hffi".
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-    { apply head_prim_step. simpl. econstructor.
+    { apply head_prim_step_trans. simpl. econstructor.
     * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
@@ -668,6 +670,7 @@ Proof.
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
     { eapply stuck_ExternalOp; first (by eauto).
+      apply head_irreducible_not_atomically; [ by inversion 1 | ].
       intros ?????. by repeat (inv_head_step; simpl in H3; repeat monad_inv).
     }
     { solve_ndisj. }
@@ -693,7 +696,7 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (log_ctx_unify_uninit with "[$] [$]") as %Heq.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step. simpl. econstructor.
+  { apply head_prim_step_trans. simpl. econstructor.
     * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
@@ -765,7 +768,7 @@ Proof.
     { solve_ndisj. }
     { congruence. }
   - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-    { apply head_prim_step. simpl. econstructor.
+    { apply head_prim_step_trans. simpl. econstructor.
       * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
         ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
@@ -796,7 +799,7 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (log_ctx_unify_closed with "[$] [$] [$]") as %Heq.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step. simpl. econstructor.
+  { apply head_prim_step_trans. simpl. econstructor.
     * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
@@ -833,7 +836,7 @@ Proof.
   iDestruct (log_ctx_unify_opened with "[$] [$]") as %Heq.
   destruct Heq as (vs'&Heq).
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step. repeat (eauto || monad_simpl || rewrite Heq || econstructor). }
+  { apply head_prim_step_trans. repeat (eauto || monad_simpl || rewrite Heq || econstructor). }
   { solve_ndisj. }
   simpl. rewrite Heq.
   iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
