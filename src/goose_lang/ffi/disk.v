@@ -296,13 +296,16 @@ lemmas. *)
     iSplit.
     { iPureIntro.
       eexists _, _, _, _; simpl.
+      constructor 1.
       rewrite /head_step /=.
       monad_simpl.
       simpl.
       monad_simpl.
       econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
       monad_simpl. }
-    iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+    iNext; iIntros (v2 σ2 efs Hstep).
+    apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
+    inv_head_step.
     monad_inv.
     rewrite /= in H0.
     monad_inv.
@@ -410,10 +413,12 @@ lemmas. *)
     iSplit.
     { iPureIntro.
       eexists _, _, _, _; cbn.
+      constructor 1; cbn.
       repeat (monad_simpl; cbn).
       econstructor; eauto; [ | monad_simpl ].
       econstructor; eauto. }
-    iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+    iNext; iIntros (v2 σ2 efs Hstep).
+    apply head_step_atomic_inv in Hstep; [ | by inversion 1 ]. inv_head_step.
     monad_inv.
     rewrite /= in H1; monad_inv.
     iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
