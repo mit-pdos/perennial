@@ -24,13 +24,17 @@ Notation "s f↦{ q } c" := (file_mapsto s c q)
 Notation "s f↦ c" := (s f↦{1} c)%I
 (at level 20, format "s  f↦ c") : bi_scope.
 
-Axiom wp_Read : ∀ filename (q:Qp) content,
+Axiom wpc_Read : ∀ filename (q:Qp) content,
   {{{
       filename f↦{q} content
   }}}
-    grove_ffi.Read #(str filename)
+    grove_ffi.Read #(str filename) @ 37 ; ⊤
   {{{
-       s, RET slice_val s; typed_slice.is_slice s byteT 1 content
+       s, RET slice_val s; typed_slice.is_slice s byteT 1 content ∗
+                           filename f↦{q} content
+  }}}
+  {{{
+      filename f↦{q} content
   }}}.
 
 Axiom wp_Write : ∀ filename (q:Qp) content_old content (content_sl:Slice.t) q,
@@ -44,6 +48,8 @@ Axiom wp_Write : ∀ filename (q:Qp) content_old content (content_sl:Slice.t) q,
       typed_slice.is_slice content_sl byteT q content
   }}}.
 
+Definition u64_to_string : u64 -> string := λ u, NilZero.string_of_int (Z.to_int (int.Z u)).
+
 (* Spec for U64ToString will be annoying *)
 Axiom wp_U64ToString : ∀ (u:u64),
   {{{
@@ -51,7 +57,7 @@ Axiom wp_U64ToString : ∀ (u:u64),
   }}}
     grove_ffi.U64ToString #u
   {{{
-       RET #(str NilZero.string_of_int (Z.to_int (int.Z u))); True
+       RET #(str u64_to_string u); True
   }}}.
 
 
@@ -59,24 +65,29 @@ Axiom wp_U64ToString : ∀ (u:u64),
    requires taking
  *)
 
-Definition IncrCrashInvariant (args:RPCValC) : iProp Σ := True.
+Definition IncrCrashInvariant (seq:u64) (args:RPCValC) : iProp Σ :=
+  "Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string seq) +:+ "_oldv") f↦ []
+.
 
 Lemma increment_core_indepotent (isrv:loc) (seq:u64) (args:RPCValC) :
   {{{
-       IncrCrashInvariant args
+       IncrCrashInvariant seq args
+      (* TODO: add ownership of kck so we can make RPCs with it *)
   }}}
     IncrServer__increment_core #isrv #seq (into_val.to_val args) @ 37 ; ⊤
   {{{
       RET #(); True
   }}}
   {{{
-       IncrCrashInvariant args
+       IncrCrashInvariant seq args
   }}}.
 Proof.
   iIntros (Φ Φc) "Hpre Hpost".
   wpc_call; first done.
   { iFrame. }
-  iCache with "Hpre Hpost".
+  unfold IncrCrashInvariant.
+  iNamed "Hpre".
+  iCache with "Hfown_oldv Hpost".
   {
     iDestruct "Hpost" as "[HΦc _]". iModIntro. by iApply "HΦc".
   }
@@ -87,7 +98,42 @@ Proof.
   wp_apply (wp_alloc_untyped); first done.
   iIntros (l) "Hl". iNamed 1.
   wpc_pures.
-  wpc_bind (ref _)%E.
+
+  wpc_bind (grove_ffi.U64ToString _).
+  wpc_frame.
+  wp_apply wp_U64ToString.
+  iNamed 1.
+  wpc_pures.
+
+  wpc_apply (wpc_Read with "Hfown_oldv").
+  iSplit.
+  { (* Show that the crash obligation of the function we're calling implies our crash obligation *)
+    iDestruct "Hpost" as "[Hpost _]".
+    iModIntro. done.
+  }
+  iNext.
+  iIntros (content) "[Hcontent_slice Hfown_oldv]".
+  wpc_pures.
+
+  wpc_bind (slice.len _).
+  wpc_frame.
+  wp_apply wp_slice_len.
+  iNamed 1.
+
+  wpc_pures.
+  Search "is_slice".
+  iDestruct (slice.is_slice_sz with "Hcontent_slice") as "%Hslice_len".
+  simpl in Hslice_len.
+  assert (int.Z content.(Slice.sz) = 0) as -> by word.
+  destruct bool_decide eqn:Hs.
+  {
+    apply bool_decide_eq_true in Hs.
+    iExFalso; iPureIntro.
+    done.
+  }
+
+  (* case that no durable oldv chosen *)
+  wpc_pures.
 
   (* Use has_encoding data [] ∨ ... in invariant *)
 
