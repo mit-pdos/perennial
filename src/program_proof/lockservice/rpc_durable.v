@@ -33,7 +33,7 @@ Local Definition RPCRequest_durable_inv (γrpc:durable_rpc_names) (γPost γPre:
                 own γPre (Excl ()) ∗ PreCond req.(Req_Args) (* Precondition is available *)
                ) ∨
 
-      (* Server has finished processing; two sub-states for wether client has taken PostCond out *)
+      (* Server has finished processing; two sub-states for whether client has taken PostCond out *)
       req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq)
       ∗ (∃ (last_reply:R), (req.(Req_CID), req.(Req_Seq)) [[γrpc.(rc)]]↦ro Some last_reply
         ∗ (own γPost (Excl ()) ∨ PostCond req.(Req_Args) last_reply)
