@@ -20,6 +20,7 @@ Section val_types.
   Inductive ty :=
   | baseT (t:base_ty)
   | prodT (t1 t2: ty)
+  | listT (t1: ty)
   | sumT (t1 t2: ty)
   | arrowT (t1 t2: ty)
   | arrayT (t: ty)
@@ -98,6 +99,7 @@ Section goose_lang.
     | baseT stringT => #(str"")
     | mapValT vt => MapNilV (zero_val vt)
     | prodT t1 t2 => (zero_val t1, zero_val t2)
+    | listT t => InjLV (LitV LitUnit)
     | sumT t1 t2 => InjLV (zero_val t1)
     | arrowT t1 t2 => (λ: <>, Val (zero_val t2))%V
     | arrayT t => #null
@@ -113,6 +115,7 @@ Section goose_lang.
     *)
     | mapValT t => False
     | prodT t1 t2 => has_zero t1 ∧ has_zero t2
+    | listT t => has_zero t
     | sumT t1 t2 => has_zero t1
     | arrowT _ t2 => has_zero t2
     | arrayT _ => True
@@ -120,6 +123,7 @@ Section goose_lang.
     | extT _ => False
     end.
 
+  (* TODO: list size is not well defined, but it shouldn't be going in structs anyway *)
   Fixpoint ty_size (t:ty) : Z :=
     match t with
     | prodT t1 t2 => ty_size t1 + ty_size t2
@@ -311,7 +315,7 @@ Section goose_lang.
       Γ ⊢ BinOp PlusOp e1 e2 : stringT
 
   (** data *)
- | pair_hasTy e1 e2 t1 t2 :
+  | pair_hasTy e1 e2 t1 t2 :
       Γ ⊢ e1 : t1 ->
       Γ ⊢ e2 : t2 ->
       Γ ⊢ Pair e1 e2 : prodT t1 t2
@@ -321,6 +325,10 @@ Section goose_lang.
   | snd_hasTy e t1 t2 :
       Γ ⊢ e : prodT t1 t2 ->
       Γ ⊢ Snd e : t2
+  | cons_hasTy ehd etl t :
+      Γ ⊢  ehd : t ->
+      Γ ⊢  etl : listT t ->
+      Γ ⊢  InjR (Pair ehd etl) : listT t
   (*
   | mapNil_hasTy def vt :
       Γ ⊢ def : vt ->
@@ -408,6 +416,12 @@ Section goose_lang.
       Γ ⊢v v1 : t1 ->
       Γ ⊢v v2 : t2 ->
       Γ ⊢v PairV v1 v2 : prodT t1 t2
+  | val_nil_hasTy t :
+      Γ ⊢v InjLV (LitV LitUnit) : listT t
+  | val_cons_hasTy vhd vtl t :
+      Γ ⊢v vhd : t ->
+      Γ ⊢v vtl : listT t ->
+      Γ ⊢v InjRV (PairV vhd vtl) : listT t
   | val_injL_hasTy v1 t1 t2 :
       Γ ⊢v v1 : t1 ->
       Γ ⊢v InjLV v1 : sumT t1 t2

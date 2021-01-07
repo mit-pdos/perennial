@@ -327,6 +327,7 @@ Proof.
     iDestruct ("IH" with "[$]") as %[Heq1 Heq2].
     iDestruct ("IH1" with "[$]") as %[Heq1' Heq2'].
     subst. iPureIntro. lia.
+  - (* not true, need to add a precondition about flattenable types *)
   - iDestruct "Hval" as "[Hval|Hval]"; iDestruct "Hval" as (?? (?&?)) "Hval";
       subst; eauto.
   - iDestruct "Hval" as (?????? (?&?)) "H1". subst; eauto.

@@ -125,6 +125,29 @@ Definition prodT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
                    ∗ val_interp t1 vs1 v1
                    ∗ val_interp t2 vs2 v2)%I.
 
+Fixpoint listT_interp_aux (val_interp : sval → ival → iProp Σ)
+         (lvs : list sval) (lv : list ival) : iProp Σ :=
+  (match lvs, lv with
+  | nil, nil => True%I
+  | vs :: lvs, v :: lv =>
+    val_interp vs v ∗ listT_interp_aux val_interp lvs lv
+  | _, _ => False%I
+  end)%I.
+
+Fixpoint listEnc {EXT : ext_op} (l: list (@val EXT)) : @val EXT :=
+  match l with
+  | nil => InjLV (LitV LitUnit)
+  | v :: l => InjRV (PairV v (listEnc l))
+  end.
+
+Definition listT_interp (t: sty) (val_interp : sty → sval → ival → iProp Σ) : sval → ival → iProp Σ :=
+  λ vs v, (∃ lvs lv, ⌜ vs = listEnc lvs ∧ v = listEnc lv ⌝ ∗ listT_interp_aux (val_interp t) lvs lv)%I.
+
+(*
+Definition listT_interp (t: sty) (val_list_interp : sty → list sval → list ival → iProp Σ) : sval → ival → iProp Σ :=
+  λ vs v, (∃ lvs lv, ⌜ vs = listEnc lvs ∧ v = listEnc lv ⌝ ∗ val_list_interp t lvs lv)%I.
+*)
+
 Definition sumT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
   λ vs v, ((∃ v' vs', ⌜ v = InjLV v' ∧
                                 vs = InjLV vs'⌝
@@ -175,6 +198,7 @@ Fixpoint val_interp (t: sty) {struct t} :=
   match t with
   | baseT bt => base_ty_interp bt
   | prodT t1 t2 => prodT_interp t1 t2 val_interp
+  | listT t => listT_interp t val_interp
   | sumT t1 t2 => sumT_interp t1 t2 val_interp
   | arrayT t => arrayT_interp t flatten_val_interp
   | arrowT t1 t2 => arrowT_interp t1 t2 val_interp
@@ -185,6 +209,7 @@ Fixpoint val_interp (t: sty) {struct t} :=
  flatten_val_interp (t: sty) {struct t} : list (sval → ival → iProp Σ) :=
     match t with
     | prodT t1 t2 => flatten_val_interp t1 ++ flatten_val_interp t2
+    | listT t => [listT_interp t val_interp]
     | baseT unitBT => []
     | baseT ty => [base_ty_interp ty]
     | sumT t1 t2 => [sumT_interp t1 t2 val_interp]
@@ -296,6 +321,22 @@ Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG
 Global Instance base_interp_pers Σ es e t:
       Persistent (base_ty_interp (Σ := Σ) t es e).
 Proof. destruct t; apply _. Qed.
+
+Instance listT_interp_aux_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} ls l
+       (vTy: sval → ival → iProp Σ) :
+       (∀ es' e', Persistent (vTy es' e')) →
+       Persistent (listT_interp_aux vTy ls l).
+Proof.
+  intros ?. revert l. induction ls; destruct l => //=; apply _.
+Qed.
+
+Instance listT_interp_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t
+       (vTy: sty → sval → ival → iProp Σ) :
+       (∀ t' es' e', Persistent (vTy t' es' e')) →
+       Persistent (listT_interp t vTy es e).
+Proof.
+  intros. rewrite /listT_interp. apply _.
+Qed.
 
 Global Instance val_interp_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t:
       Persistent (val_interp (hS := hS) t es e).

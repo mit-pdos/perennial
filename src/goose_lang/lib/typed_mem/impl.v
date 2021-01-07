@@ -60,6 +60,7 @@ Section goose_lang.
   | val_ty_pair v1 t1 v2 t2 : val_ty v1 t1 ->
                               val_ty v2 t2 ->
                               val_ty (PairV v1 v2) (prodT t1 t2)
+  | nil_ty t : val_ty (InjLV (LitV LitUnit)) (listT t)
   | sum_ty_l v1 t1 t2 : val_ty v1 t1 ->
                         val_ty (InjLV v1) (sumT t1 t2)
   | sum_ty_r v2 t1 t2 : val_ty v2 t2 ->
@@ -130,6 +131,7 @@ Section goose_lang.
       eapply IHval_ty1 in H5; eauto; subst.
       eapply IHval_ty2 in H8; eauto; subst.
       congruence.
+    - invc H; simpl in *; inv_lit_ty; try congruence.
     - invc H0; simpl in *; inv_lit_ty; try congruence.
     - invc H0; simpl in *; inv_lit_ty; try congruence.
     - invc H0; simpl in *; inv_lit_ty; try congruence.
