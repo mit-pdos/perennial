@@ -8,6 +8,7 @@ From Perennial.program_logic Require Import recovery_weakestpre recovery_adequac
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
 From Perennial.goose_lang Require Import metatheory.
+From Perennial.goose_lang.lib Require Import list.
 From Perennial.Helpers Require Import Qextra.
 From Perennial.Helpers Require List.
 
@@ -134,19 +135,8 @@ Fixpoint listT_interp_aux (val_interp : sval → ival → iProp Σ)
   | _, _ => False%I
   end)%I.
 
-Fixpoint listEnc {EXT : ext_op} (l: list (@val EXT)) : @val EXT :=
-  match l with
-  | nil => InjLV (LitV LitUnit)
-  | v :: l => InjRV (PairV v (listEnc l))
-  end.
-
 Definition listT_interp (t: sty) (val_interp : sty → sval → ival → iProp Σ) : sval → ival → iProp Σ :=
-  λ vs v, (∃ lvs lv, ⌜ vs = listEnc lvs ∧ v = listEnc lv ⌝ ∗ listT_interp_aux (val_interp t) lvs lv)%I.
-
-(*
-Definition listT_interp (t: sty) (val_list_interp : sty → list sval → list ival → iProp Σ) : sval → ival → iProp Σ :=
-  λ vs v, (∃ lvs lv, ⌜ vs = listEnc lvs ∧ v = listEnc lv ⌝ ∗ val_list_interp t lvs lv)%I.
-*)
+  λ vs v, (∃ lvs lv, ⌜ vs = val_of_list lvs ∧ v = val_of_list lv ⌝ ∗ listT_interp_aux (val_interp t) lvs lv)%I.
 
 Definition sumT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
   λ vs v, ((∃ v' vs', ⌜ v = InjLV v' ∧

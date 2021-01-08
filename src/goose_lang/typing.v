@@ -1,6 +1,6 @@
 From stdpp Require Import gmap.
 From Perennial.goose_lang Require Import lang notation.
-From Perennial.goose_lang.lib Require Import map.impl.
+From Perennial.goose_lang.lib Require Import map.impl list.impl.
 
 Set Default Proof Using "Type".
 
@@ -328,7 +328,12 @@ Section goose_lang.
   | cons_hasTy ehd etl t :
       Γ ⊢  ehd : t ->
       Γ ⊢  etl : listT t ->
-      Γ ⊢  InjR (Pair ehd etl) : listT t
+      Γ ⊢  ListCons ehd etl : listT t
+  | listmatch_hasTy el nilfun consfun tl tret :
+      Γ ⊢ el : listT tl ->
+      Γ ⊢ nilfun : arrowT unitT tret ->
+      Γ ⊢ consfun : arrowT (prodT tl (listT tl)) tret ->
+      Γ ⊢ ListMatch el nilfun consfun : tret
   (*
   | mapNil_hasTy def vt :
       Γ ⊢ def : vt ->
@@ -417,11 +422,11 @@ Section goose_lang.
       Γ ⊢v v2 : t2 ->
       Γ ⊢v PairV v1 v2 : prodT t1 t2
   | val_nil_hasTy t :
-      Γ ⊢v InjLV (LitV LitUnit) : listT t
+      Γ ⊢v ListNilV : listT t
   | val_cons_hasTy vhd vtl t :
       Γ ⊢v vhd : t ->
       Γ ⊢v vtl : listT t ->
-      Γ ⊢v InjRV (PairV vhd vtl) : listT t
+      Γ ⊢v ListConsV vhd vtl : listT t
   | val_injL_hasTy v1 t1 t2 :
       Γ ⊢v v1 : t1 ->
       Γ ⊢v InjLV v1 : sumT t1 t2
