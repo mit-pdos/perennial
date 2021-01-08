@@ -25,18 +25,14 @@ Section gen_heap_defs.
   }.
 
   Definition gen_heapG_update {Σ} (hG: gen_heapG L V Σ) (names: gen_heap_names) :=
-    GenHeapG _ _ _ _ _
+    @GenHeapG _ _ _ _ _
              (@gen_heap_inG _ _ _ _ _ hG)
-             (@gen_meta_inG _ _ _ _ _ hG)
-             (@gen_meta_data_inG _ _ _ _ _ hG)
              (gen_heap_heap_name names)
              (gen_heap_meta_name names).
 
   Definition gen_heapG_update_pre {Σ} (hG: gen_heapPreG L V Σ) (names: gen_heap_names) :=
-    GenHeapG _ _ _ _ _
-             (@gen_heap_preG_inG _ _ _ _ _ hG)
-             (@gen_meta_preG_inG _ _ _ _ _ hG)
-             (@gen_meta_data_preG_inG _ _ _ _ _ hG)
+    @GenHeapG _ _ _ _ _
+             hG
              (gen_heap_heap_name names)
              (gen_heap_meta_name names).
 
@@ -56,21 +52,12 @@ Section gen_heap_defs.
 
   Lemma gen_heap_name_strong_init `{!gen_heapPreG L V Σ} σ :
     ⊢ |==> ∃ names : gen_heap_names, let _ := gen_heapG_update_pre _ names in
-           gen_heap_interp (hG := gen_heapG_update_pre _ names) σ ∗
+           gen_heap_interp σ ∗
            [∗ map] i↦v ∈ σ, i ↦ v .
   Proof.
-    (** Cannot reuse [gen_heap_init] as that does not guarnatee that the same [inG] will remain in use *)
-    iMod (own_alloc (gmap_view_auth 1 (∅ : gmap L (leibnizO V)))) as (γh) "Hh".
-    { exact: gmap_view_auth_valid. }
-    iMod (own_alloc (gmap_view_auth 1 (∅ : gmap L gnameO))) as (γm) "Hm".
-    { exact: gmap_view_auth_valid. }
+    iMod (gen_heap_init_names) as (γh γm) "(Hinterp & Hh & Hm)".
     pose (names := {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}).
-    iExists names.
-    iAssert (gen_heap_interp (hG:=gen_heapG_update_pre _ names) ∅) with "[Hh Hm]" as "Hinterp".
-    { iExists ∅; simpl. iFrame "Hh Hm". by rewrite dom_empty_L. }
-    iMod (gen_heap_alloc_big _ σ with "Hinterp") as "(Hinterp & $ & _)".
-    { apply map_disjoint_empty_r. }
-    rewrite right_id_L. done.
+    iExists names. iFrame. done.
   Qed.
 
   Lemma gen_heap_name_init `{!gen_heapPreG L V Σ} σ :
@@ -79,16 +66,12 @@ Section gen_heap_defs.
     iMod (gen_heap_name_strong_init σ) as (n) "(H&_)". iExists n. eauto.
   Qed.
 
-  (* Cannot reuse original [gen_heap_init] because we have to make sure that the same [inG] instance remains in use. *)
   Lemma gen_heap_name_reinit {Σ} (hG: gen_heapG L V Σ) σ :
     ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update hG names) σ.
   Proof.
-    iMod (own_alloc (gmap_view_auth 1 (V:=leibnizO V) σ)) as (γh) "Hh".
-    { apply gmap_view_auth_valid. }
-    iMod (own_alloc (gmap_view_auth 1 (V:=gnameO) ∅)) as (γm) "Hm".
-    { apply gmap_view_auth_valid. }
-    iModIntro. iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
-    iExists ∅; simpl. iFrame "Hh Hm". by rewrite dom_empty_L.
+    iMod (gen_heap_init_names) as (γh γm) "(Hinterp & Hh & Hm)".
+    iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
+    iFrame. done.
   Qed.
 
   Global Instance mapsto_discretizable {Σ} (hG: gen_heapG L V Σ) l q v:
