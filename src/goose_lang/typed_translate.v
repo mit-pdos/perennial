@@ -151,6 +151,7 @@ Section translate.
 
   (** pointers *)
   | alloc_transTy n n' v v' t :
+      storable t →
       flatten_ty t ≠ [] →
       Γ ⊢ n -- n' : uint64T ->
       Γ ⊢ v -- v' : t ->

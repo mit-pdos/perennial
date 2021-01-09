@@ -314,20 +314,22 @@ Lemma sty_val_size:
 Proof. iIntros. by iDestruct (sty_val_flatten with "[$]") as %[-> ->]. Qed.
 
 Lemma length_flatten_well_typed vs v t:
+  storable t →
   val_interp (hS := hS) t vs v -∗
   ⌜ length (flatten_ty t) = length (flatten_struct vs) ∧
     length (flatten_ty t) = length (flatten_struct v) ⌝.
 Proof.
-  iIntros "Hval".
+  iIntros (Hstore) "Hval".
   iInduction t as [] "IH" forall (vs v).
   - destruct t; iDestruct "Hval" as %Hval;
     repeat destruct Hval as (?&Hval); subst; eauto.
   - iDestruct "Hval" as (???? (?&?)) "(H1&H2)". subst.
     rewrite /= ?app_length.
-    iDestruct ("IH" with "[$]") as %[Heq1 Heq2].
-    iDestruct ("IH1" with "[$]") as %[Heq1' Heq2'].
+    destruct Hstore as (?&?).
+    iDestruct ("IH" with "[//] [$]") as %[Heq1 Heq2].
+    iDestruct ("IH1" with "[//] [$]") as %[Heq1' Heq2'].
     subst. iPureIntro. lia.
-  - (* not true, need to add a precondition about flattenable types *)
+  - inversion Hstore.
   - iDestruct "Hval" as "[Hval|Hval]"; iDestruct "Hval" as (?? (?&?)) "Hval";
       subst; eauto.
   - iDestruct "Hval" as (?????? (?&?)) "H1". subst; eauto.
@@ -342,13 +344,14 @@ Proof.
 Qed.
 
 Lemma flatten_well_typed vs v t i vsi vi ti:
+    storable t →
     flatten_ty t !! i = Some ti →
     flatten_struct vs !! i = Some vsi →
     flatten_struct v !! i = Some vi →
     val_interp (hS := hS) t vs v -∗
     val_interp (hS := hS) ti vsi vi.
 Proof.
-  iIntros (Hlookup1 Hlookup2 Hlookup3) "Hval".
+  iIntros (Hstore Hlookup1 Hlookup2 Hlookup3) "Hval".
   iInduction t as [] "IH" forall (vs v i Hlookup1 Hlookup2 Hlookup3).
   - simpl in *.
     destruct t; destruct i; simpl in *; inversion Hlookup1; subst; eauto;
@@ -356,8 +359,9 @@ Proof.
     simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
   - iDestruct "Hval" as (???? (?&?)) "(H1&H2)". subst.
     simpl in Hlookup1, Hlookup2, Hlookup3.
-    iDestruct (length_flatten_well_typed with "H1") as %[Hlen1 Hlens1].
-    iDestruct (length_flatten_well_typed with "H2") as %[Hlen2 Hlens2].
+    destruct Hstore as (?&?).
+    iDestruct (length_flatten_well_typed with "H1") as %[Hlen1 Hlens1]; first done.
+    iDestruct (length_flatten_well_typed with "H2") as %[Hlen2 Hlens2]; first done.
     apply lookup_app_Some in Hlookup1 as [Hleft|Hright].
     { specialize (lookup_lt_Some _ _ _ Hleft) => Hlen.
       rewrite lookup_app_l in Hlookup2; last by lia.
@@ -372,6 +376,7 @@ Proof.
       { rewrite Hlen1; eauto. }
       { rewrite Hlens1; eauto. }
     }
+  - inversion Hstore.
   - iDestruct "Hval" as "[Hval|Hval]"; iDestruct "Hval" as (?? (?&?)) "Hval";
       subst; eauto.
     { simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
@@ -1384,7 +1389,7 @@ Proof using spec_trans.
       { eauto. }
       { solve_ndisj. }
     }
-    iDestruct (length_flatten_well_typed with "Hv2") as %(Hspecsize&Hsize).
+    iDestruct (length_flatten_well_typed with "Hv2") as %(Hspecsize&Hsize); first done.
     iApply wp_ncfupd.
     iApply wp_allocN_seq_sized_meta.
     { rewrite -Hsize. destruct (flatten_ty t) as [|]; try congruence; simpl; try lia. }

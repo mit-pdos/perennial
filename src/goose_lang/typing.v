@@ -107,6 +107,13 @@ Section goose_lang.
     | extT x => #() (* dummy value of wrong type *)
     end.
 
+  Fixpoint storable (t:ty): Prop :=
+    match t with
+    | listT _ => False
+    | prodT t1 t2 => storable t1 /\ storable t2
+    | _ => True
+    end.
+
   Fixpoint has_zero (t:ty): Prop :=
     match t with
     | baseT _ => True
@@ -363,6 +370,7 @@ Section goose_lang.
 
   (** pointers *)
   | alloc_hasTy n v t :
+      storable t →
       Γ ⊢ n : uint64T ->
       Γ ⊢ v : t ->
       Γ ⊢ AllocN n v : arrayT t
@@ -527,11 +535,12 @@ Section goose_lang.
   Qed.
 
   Theorem ref_hasTy t Γ ts e :
+    storable t ->
     Γ ⊢ e : t ->
     ts = flatten_ty t ->
     Γ ⊢ ref e : structRefT ts.
   Proof.
-    intros He ->.
+    intros ? He ->.
     eapply array_struct_hasTy.
     eauto.
   Qed.
