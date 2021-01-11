@@ -524,7 +524,7 @@ Local Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x
   [ try solve [ len ]
   | ].
 
-(* TODO: upstream to stdpp (which has drop_) *)
+(* TODO: upstream to stdpp (which has drop_); see std++ MR 209. *)
 Lemma take_0 {A} (l: list A) : take 0%nat l = [].
 Proof. reflexivity. Qed.
 

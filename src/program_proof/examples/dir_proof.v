@@ -1062,7 +1062,7 @@ Section goose.
       set_solver+.
   Qed.
 
-  (* TODO: move to helper file / upstream *)
+  (* TODO: move to helper file / upstream; see std++ MR 208. *)
   Lemma map_size_insert_overwrite `{Countable K} {A} (m: gmap K A) k x :
     is_Some (m !! k) →
     size (<[k := x]> m) = size m.

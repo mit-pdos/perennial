@@ -501,7 +501,7 @@ Ltac word_cleanup :=
 
 Ltac word := solve [ word_cleanup ].
 
-(* FIXME: move upstream to std++ *)
+(* FIXME: move upstream to std++; see std++ MR 211 *)
 Lemma elem_of_seq start sz x :
   x ∈ seq start sz ↔ (start ≤ x < start + sz)%nat.
 Proof.
@@ -509,7 +509,7 @@ Proof.
   auto.
 Qed.
 
-(* FIXME: move upstream to std++ *)
+(* FIXME: move upstream to std++; see std++ MR 211 *)
 Lemma elem_of_seqZ start sz x :
   x ∈ seqZ start sz ↔ start ≤ x < start + sz.
 Proof.
@@ -570,7 +570,7 @@ Proof.
   - word.
 Qed.
 
-(*TODO upstream these two lemmas*)
+(* TODO upstream these two lemmas; see std++ MR 211 *)
 Lemma seqZ_app (len1 len2 start: Z) :
   0 ≤ len1 →
   0 ≤ len2 →

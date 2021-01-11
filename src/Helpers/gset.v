@@ -1,23 +1,10 @@
 From stdpp Require Import gmap.
 From Coq Require Import ssreflect.
 
-(* TODO: upstream this *)
+(* TODO: upstream this, see std++ MR 210. *)
 Lemma gset_eq `{Countable A} (c1 c2: gset A) :
   (forall (x:A), x ∈ c1 ↔ x ∈ c2) → c1 = c2.
-Proof.
-  intros Hexteq.
-  destruct c1 as [c1], c2 as [c2].
-  f_equal.
-  apply map_eq.
-  unfold elem_of, gset_elem_of, mapset.mapset_elem_of in Hexteq.
-  simpl in Hexteq.
-  intros.
-  destruct (c1 !! i) eqn:Hc1;
-    destruct (c2 !! i) eqn:Hc2;
-    repeat match goal with u: unit |- _ => destruct u end; auto.
-  - apply Hexteq in Hc1; congruence.
-  - apply Hexteq in Hc2; congruence.
-Qed.
+Proof. apply elem_of_equiv_L. Qed.
 
 Lemma gset_elem_is_empty `{Countable A} (c:gset A) :
   (forall x, x ∉ c) →

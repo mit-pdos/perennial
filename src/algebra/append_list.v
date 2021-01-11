@@ -28,7 +28,7 @@ Definition list_subseq γ start xs: iProp Σ :=
   [∗ list] i↦x ∈ xs, list_el γ (start+i) x.
 
 Definition list_ctx γ q l: iProp Σ :=
-  "Hctx" ∷ map_ctx γ q (list_to_imap l) ∗
+  "Hctx" ∷ map_ctx γ q (map_seq 0 l) ∗
   "Hels" ∷ [∗ list] i↦x ∈ l, list_el γ i x.
 
 Global Instance list_ctx_timeless γ q l : Timeless (list_ctx γ q l).
@@ -40,20 +40,13 @@ Proof. apply _. Qed.
 Global Instance list_ctx_fractional γ l : Fractional (λ q, list_ctx γ q l).
 Proof. apply _. Qed.
 
-Lemma lookup_list_to_imap_length l :
-  list_to_imap l !! (length l) = None.
-Proof.
-  rewrite lookup_list_to_imap.
-  apply lookup_ge_None_2; lia.
-Qed.
-
 Theorem alist_alloc l :
   ⊢ |==> ∃ γ, list_ctx γ 1 l.
 Proof.
   (* the proof allocates each element individually to keep track of all of the
   initial [ptsto_ro] facts *)
   induction l as [|x l] using rev_ind.
-  - iMod (map_init (list_to_imap [])) as (γ) "Hctx".
+  - iMod (map_init ∅) as (γ) "Hctx".
     iModIntro.
     iExists _; iFrame.
     rewrite big_sepL_nil //.
@@ -61,9 +54,9 @@ Proof.
     iExists γ.
     iNamed "Hctx".
     iMod (map_alloc_ro (length l) x with "Hctx") as "[Hctx Hx]".
-    { rewrite lookup_list_to_imap_length //. }
+    { apply lookup_map_seq_None. right. lia. }
     iModIntro.
-    rewrite -list_to_imap_app1.
+    rewrite /list_ctx map_seq_snoc.
     iFrame "Hctx".
     rewrite big_sepL_app; iFrame.
     simpl.
@@ -115,7 +108,7 @@ Theorem alist_lookup {γ q} l i x :
 Proof.
   iIntros "Hctx Hel"; iNamed "Hctx".
   iDestruct (map_ro_valid with "Hctx Hel") as %Hlookup.
-  rewrite lookup_list_to_imap in Hlookup.
+  rewrite lookup_map_seq_0 in Hlookup.
   auto.
 Qed.
 
@@ -134,9 +127,9 @@ Theorem alist_app1 {γ l} x :
 Proof.
   iNamed 1.
   iMod (map_alloc_ro (length l) x with "Hctx") as "[Hctx #Hx]".
-  { rewrite lookup_list_to_imap_length //. }
+  { rewrite lookup_map_seq_None. right. lia. }
   iModIntro.
-  rewrite -list_to_imap_app1.
+  rewrite /list_ctx map_seq_snoc.
   iFrame "# ∗".
   simpl.
   rewrite Nat.add_0_r.

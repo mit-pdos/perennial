@@ -92,15 +92,6 @@ Proof.
 Qed.
 
 (** * some facts about txn_ctx *)
-Theorem txn_map_to_is_txn txns (txn_id: nat) (pos: u64) upds :
-  list_to_imap txns !! txn_id = Some (pos, upds) ->
-  is_txn txns txn_id pos.
-Proof.
-  rewrite /is_txn.
-  rewrite lookup_list_to_imap.
-  by intros ->.
-Qed.
-
 Theorem alloc_txn_pos pos upds γ txns E :
   txns_ctx γ txns ={E}=∗
   txns_ctx γ (txns ++ [(pos, upds)]) ∗ txn_val γ (length txns) (pos, upds).
