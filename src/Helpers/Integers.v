@@ -501,40 +501,6 @@ Ltac word_cleanup :=
 
 Ltac word := solve [ word_cleanup ].
 
-(* FIXME: move upstream to std++; see std++ MR 211 *)
-Lemma elem_of_seq start sz x :
-  x ∈ seq start sz ↔ (start ≤ x < start + sz)%nat.
-Proof.
-  rewrite elem_of_list_In, in_seq.
-  auto.
-Qed.
-
-(* FIXME: move upstream to std++; see std++ MR 211 *)
-Lemma elem_of_seqZ start sz x :
-  x ∈ seqZ start sz ↔ start ≤ x < start + sz.
-Proof.
-  rewrite elem_of_list_lookup.
-  setoid_rewrite lookup_seqZ.
-  split; intros.
-  - destruct H as [i ?]. lia.
-  - exists (Z.to_nat (x - start)). lia.
-Qed.
-
-(* FIXME: move upstream to std++ *)
-Lemma NoDup_fmap_2_strong {A B} (f : A → B) (l : list A) :
-  (∀ x y, x ∈ l → y ∈ l → f x = f y → x = y) →
-  NoDup l →
-  NoDup (f <$> l).
-Proof.
-  intros Hinj.
-  induction 1; simpl; constructor; cycle 1.
-  { apply IHNoDup. intros ????. apply Hinj; apply elem_of_list_further; done. }
-  rewrite elem_of_list_fmap. intros [y [Hxy ?]].
-  apply Hinj in Hxy; [by subst|..].
-  - apply elem_of_list_here.
-  - apply elem_of_list_further. done.
-Qed.
-
 Theorem Z_u32 z :
   0 <= z < 2 ^ 32 ->
   int.Z (U32 z) = z.
@@ -568,34 +534,6 @@ Proof.
   - by rewrite Heq.
   - word.
   - word.
-Qed.
-
-(* TODO upstream these two lemmas; see std++ MR 211 *)
-Lemma seqZ_app (len1 len2 start: Z) :
-  0 ≤ len1 →
-  0 ≤ len2 →
-  seqZ start (len1 + len2) = seqZ start len1 ++ seqZ (start + len1) len2.
-Proof.
-  intros.
-  unfold seqZ.
-  replace (Z.to_nat (len1 + len2)) with (Z.to_nat len1 + Z.to_nat len2)%nat
-    by lia.
-  rewrite seq_app, fmap_app.
-  f_equal.
-  replace (0 + Z.to_nat len1)%nat with (Z.to_nat len1 + 0)%nat by lia.
-  rewrite <- fmap_add_seq.
-  rewrite <- list_fmap_compose.
-  apply list_fmap_ext; auto.
-  intros. simpl. lia.
-Qed.
-
-Lemma seqZ_S : ∀ (n: nat) (j: Z), seqZ j (Z.of_nat (S n)) = seqZ j n ++ [(j+ n)%Z].
-Proof.
-  intros.
-  replace (Z.of_nat (S n)) with (Z.of_nat n + 1)%Z by word.
-  rewrite seqZ_app; try word.
-  unfold seqZ; simpl.
-  replace (0%nat + (j+n))%Z with (j + n)%Z by word; auto.
 Qed.
 
 Instance word_finite `(word: Interface.word width) {word_ok: word.ok word} : Finite word.

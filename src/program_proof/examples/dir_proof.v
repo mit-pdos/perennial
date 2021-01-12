@@ -1062,26 +1062,6 @@ Section goose.
       set_solver+.
   Qed.
 
-  (* TODO: move to helper file / upstream; see std++ MR 208. *)
-  Lemma map_size_insert_overwrite `{Countable K} {A} (m: gmap K A) k x :
-    is_Some (m !! k) →
-    size (<[k := x]> m) = size m.
-  Proof.
-    induction m using map_ind; intros [x' Hlookup].
-    - apply lookup_empty_Some in Hlookup; contradiction.
-    - destruct (decide (k = i)); subst.
-      + rewrite insert_insert.
-        rewrite lookup_insert in Hlookup; inversion Hlookup; subst.
-        rewrite !map_size_insert //.
-      + rewrite lookup_insert_ne // in Hlookup.
-        rewrite insert_commute //.
-        rewrite [size (insert i _ m)]map_size_insert //.
-        rewrite [size (insert i _ _)]map_size_insert; last first.
-        { rewrite lookup_insert_ne //. }
-        rewrite IHm //.
-        eauto.
-  Qed.
-
   (* FIXME: in case of failure, the resources put into "Hfupd" are lost! *)
   Theorem wpc_Dir__Append {k} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
     (2 + k < k')%nat →
@@ -1161,7 +1141,7 @@ Section goose.
       { iNext. iExists _. iFrame "Hused".
         (* Show that the domain bookeeping worked out. *)
         iPureIntro. split.
-        - rewrite map_size_insert_overwrite //.
+        - rewrite map_size_insert_Some //.
           eauto.
         - rewrite alloc_used_insert.
           apply alloc_insert_dom; auto.
