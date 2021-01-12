@@ -894,7 +894,7 @@ Proof.
       iLeft.
       iDestruct ("Hq" with "[]") as (txnid) "[Hq Hflush]".
       {
-        iPureIntro. intro Hempty. eapply map_fmap_empty_inv in Hempty.
+        iPureIntro. intro Hempty. eapply fmap_empty_inv in Hempty.
         assert (filter (λ b, (b.2).(bufDirty) = true) gBufmap = ∅); intuition try congruence.
         eapply map_empty; intros a.
         eapply map_filter_lookup_None.
@@ -951,7 +951,7 @@ Proof.
           { erewrite H1 in Hvo. inversion Hvo. }
           simpl. eauto.
         }
-        rewrite Hz. rewrite map_fmap_empty; auto.
+        rewrite Hz. rewrite fmap_empty; auto.
       }
 
       rewrite big_sepM_fmap.

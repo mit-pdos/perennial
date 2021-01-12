@@ -443,7 +443,7 @@ Proof.
   { rewrite /ephemeral_txn_val_range. iInduction Hle as [|i' Hle] "IH".
     - assert (S i-i = 1) as -> by lia. rewrite big_sepL_singleton.
       iDestruct "Hfromi" as "[$ _]".
-    - assert (S (S i') - i = S (S i'-i)) as -> by lia. rewrite seq_S_end_app.
+    - assert (S (S i') - i = S (S i'-i)) as -> by lia. rewrite seq_S.
       rewrite big_sepL_app. iSplit.
       { iApply ("IH" with "[] Hauth Hfromi"). iPureIntro. lia. }
       rewrite big_sepL_singleton.
