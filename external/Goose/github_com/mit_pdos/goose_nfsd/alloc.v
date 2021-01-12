@@ -14,6 +14,9 @@ Module Alloc.
   ].
 End Alloc.
 
+(* MkAlloc initializes with a bitmap.
+
+   0 bits correspond to free numbers and 1 bits correspond to in-use numbers. *)
 Definition MkAlloc: val :=
   rec: "MkAlloc" "bitmap" :=
     let: "a" := struct.new Alloc.S [
@@ -66,6 +69,14 @@ Definition Alloc__freeBit: val :=
     let: "byte" := "bn" `quot` #8 in
     let: "bit" := "bn" `rem` #8 in
     SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" `and` ~ (#(U8 1) ≪ "bit"));;
+    lock.release (struct.loadF Alloc.S "mu" "a").
+
+Definition Alloc__MarkUsed: val :=
+  rec: "Alloc__MarkUsed" "a" "bn" :=
+    lock.acquire (struct.loadF Alloc.S "mu" "a");;
+    let: "byte" := "bn" `quot` #8 in
+    let: "bit" := "bn" `rem` #8 in
+    SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" `or` #(U8 1) ≪ "bit");;
     lock.release (struct.loadF Alloc.S "mu" "a").
 
 Definition Alloc__AllocNum: val :=

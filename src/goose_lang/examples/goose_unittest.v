@@ -6,6 +6,8 @@ From Goose Require github_com.tchajed.marshal.
 
 (* comments.go *)
 
+(* unittest is a package full of many independent and small translation examples *)
+
 (* This struct is very important.
 
    This is despite it being empty. *)
@@ -552,6 +554,8 @@ Definition AssignOps: val :=
     "x" <-[uint64T] ![uint64T] "x" - #1.
 
 (* package.go *)
+
+(* unittest has two package comments *)
 
 Module wrapExternalStruct.
   Definition S := struct.decl [
