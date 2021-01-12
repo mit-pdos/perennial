@@ -159,5 +159,4 @@ Section recov.
       eauto. }
   Qed.
 
-  Print Assumptions wpr_RecoverExample.
 End recov.
