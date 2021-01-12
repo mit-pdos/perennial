@@ -20,7 +20,7 @@ From Perennial.program_proof Require
      buftxn.buftxn_proof
      buftxn.sep_buftxn_proof buftxn.sep_buftxn_recovery_proof
      buftxn_replication.buftxn_replication_proof
-     simple.proofs simple.example simple.print_assumptions
+     simple.proofs simple.example
      wp_to_wpc.
 From Perennial.program_proof.examples Require
      all_examples.

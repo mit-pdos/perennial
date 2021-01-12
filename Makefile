@@ -27,7 +27,7 @@ all: $(VFILES:.v=.vo)
 vos: src/ShouldBuild.vos
 vok: $(QUICK_CHECK_FILES:.v=.vok)
 interpreter: src/goose_lang/interpreter/generated_test.vos
-check-assumptions: src/program_proof/examples/print_assumptions.vo
+check-assumptions: src/program_proof/examples/print_assumptions.vo src/program_proof/simple/print_assumptions.vo
 
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
