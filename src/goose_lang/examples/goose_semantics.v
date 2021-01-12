@@ -380,6 +380,100 @@ Definition failing_testU32NewtypeLen: val :=
     let: "s" := NewSlice byteT #20 in
     (slice.len "s" = #(U32 20)).
 
+(* interfaces.go *)
+
+Module geometryInterface.
+  Definition S := struct.decl [
+    "Square" :: (unitT -> uint64T)%ht;
+    "Volume" :: (unitT -> uint64T)%ht
+  ].
+End geometryInterface.
+
+Definition measureArea: val :=
+  rec: "measureArea" "t" :=
+    struct.get geometryInterface.S "Square" "t".
+
+Definition measureVolumePlusNM: val :=
+  rec: "measureVolumePlusNM" "t" "n" "m" :=
+    struct.get geometryInterface.S "Volume" "t" + "n" + "m".
+
+Definition measureVolume: val :=
+  rec: "measureVolume" "t" :=
+    struct.get geometryInterface.S "Volume" "t".
+
+Module SquareStruct.
+  Definition S := struct.decl [
+    "Side" :: uint64T
+  ].
+End SquareStruct.
+
+Definition SquareStruct__Square: val :=
+  rec: "SquareStruct__Square" "t" :=
+    struct.get SquareStruct.S "Side" "t" * struct.get SquareStruct.S "Side" "t".
+
+Definition SquareStruct__Volume: val :=
+  rec: "SquareStruct__Volume" "t" :=
+    struct.get SquareStruct.S "Side" "t" * struct.get SquareStruct.S "Side" "t" * struct.get SquareStruct.S "Side" "t".
+
+Definition SquareStruct__to__geometryInterface: val :=
+  rec: "SquareStruct_to_geometryInterface" "t" :=
+    struct.mk geometryInterface.S [
+      "Square" ::= SquareStruct__Square "t";
+      "Volume" ::= SquareStruct__Volume "t"
+    ].
+
+Definition testBasicInterface: val :=
+  rec: "testBasicInterface" <> :=
+    let: "s" := struct.mk SquareStruct.S [
+      "Side" ::= #2
+    ] in
+    (measureArea (SquareStruct__to__geometryInterface "s") = #4).
+
+Definition testAssignInterface: val :=
+  rec: "testAssignInterface" <> :=
+    let: "s" := struct.mk SquareStruct.S [
+      "Side" ::= #3
+    ] in
+    let: "area" := measureArea (SquareStruct__to__geometryInterface "s") in
+    ("area" = #9).
+
+Definition testParamsInterface: val :=
+  rec: "testParamsInterface" <> :=
+    let: "s" := struct.mk SquareStruct.S [
+      "Side" ::= #3
+    ] in
+    let: "volume" := measureVolumePlusNM (SquareStruct__to__geometryInterface "s") #1 #2 in
+    ("volume" = #30).
+
+Definition testMultipleInterface: val :=
+  rec: "testMultipleInterface" <> :=
+    let: "s" := struct.mk SquareStruct.S [
+      "Side" ::= #3
+    ] in
+    let: "square1" := measureArea (SquareStruct__to__geometryInterface "s") in
+    let: "square2" := measureArea (SquareStruct__to__geometryInterface "s") in
+    ("square1" = "square2").
+
+Definition testBinaryExprInterface: val :=
+  rec: "testBinaryExprInterface" <> :=
+    let: "s" := struct.mk SquareStruct.S [
+      "Side" ::= #3
+    ] in
+    let: "square1" := measureArea (SquareStruct__to__geometryInterface "s") in
+    let: "square2" := measureVolume (SquareStruct__to__geometryInterface "s") in
+    ("square1" = measureArea (SquareStruct__to__geometryInterface "s")) && ("square2" = measureVolume (SquareStruct__to__geometryInterface "s")).
+
+Definition testIfStmtInterface: val :=
+  rec: "testIfStmtInterface" <> :=
+    let: "s" := struct.mk SquareStruct.S [
+      "Side" ::= #3
+    ] in
+    (if: (measureArea (SquareStruct__to__geometryInterface "s") = #9)
+    then #true
+    else #false).
+
+(* interfaces_failing.go *)
+
 (* lock.go *)
 
 (* We can't interpret multithreaded code, so this just checks that

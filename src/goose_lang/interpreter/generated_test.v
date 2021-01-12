@@ -42,6 +42,16 @@ Example testU64ToU32_ok : testU64ToU32 #() ~~> #true := t.
 Example testU32Len_ok : testU32Len #() ~~> #true := t.
 Fail Example testU32NewtypeLen_ok : failing_testU32NewtypeLen #() ~~> #true := t.
 
+(* interfaces.go *)
+Example testBasicInterface_ok : testBasicInterface #() ~~> #true := t.
+Example testAssignInterface_ok : testAssignInterface #() ~~> #true := t.
+Example testParamsInterface_ok : testParamsInterface #() ~~> #true := t.
+Example testMultipleInterface_ok : testMultipleInterface #() ~~> #true := t.
+Example testBinaryExprInterface_ok : testBinaryExprInterface #() ~~> #true := t.
+Example testIfStmtInterface_ok : testIfStmtInterface #() ~~> #true := t.
+
+(* interfaces_failing.go *)
+
 (* lock.go *)
 Example testsUseLocks_ok : testsUseLocks #() ~~> #true := t.
 
