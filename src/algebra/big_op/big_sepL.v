@@ -85,7 +85,7 @@ Section list2.
     iApply (IHl1 with "[$] [$]"); eauto.
   Qed.
 
-  (** XXX: shocked that this is not upstream? *)
+  (** XXX: shocked that this is not upstream? see Iris MR 620. *)
   Lemma big_sepL_merge_big_sepL2 (P: nat → A → PROP) (Q: nat → B → PROP) (l1: list A) (l2: list B):
     length l1 = length l2 →
     ([∗ list] k↦y1 ∈ l1, P k y1) -∗
@@ -165,6 +165,7 @@ Section list2.
         iApply ("IH" with "Hl").
   Qed.
 
+  (* TODO: upstream this; see Iris MR 620 *)
   Lemma big_sepL2_snoc Φ x1 x2 l1 l2 :
     ([∗ list] k↦y1;y2 ∈ (l1 ++ [x1]);(l2 ++ [x2]), Φ k y1 y2) ⊣⊢
     ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ∗ Φ (length l1) x1 x2.

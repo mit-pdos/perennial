@@ -400,18 +400,6 @@ Proof.
   auto.
 Qed.
 
-(* TODO: upstream to std++ *)
-Lemma insert_subseteq_l σ1 σ2 k v :
-  σ2 !! k = Some v →
-  σ1 ⊆ σ2 →
-  <[k:=v]> σ1 ⊆ σ2.
-Proof.
-  intros Hk Hincl.
-  replace σ2 with (<[k:=v]> σ2); last first.
-  { apply insert_id. done. }
-  apply insert_mono. done.
-Qed.
-
 Theorem ephemeral_val_from_agree_latest_map γ q σs i σ :
   async_ctx γ q σs -∗
   ([∗ map] k↦v ∈ σ, ephemeral_val_from γ i k v) -∗
@@ -467,30 +455,6 @@ Proof.
   rewrite /async_pre_ctx /=. iFrame.
 Qed.
 
-(** TODO: upstream to Iris *)
-Lemma gmap_view_alloc_big (m m' : gmap K nat) :
-  m' ##ₘ m →
-  gmap_view_auth 1 m ~~>
-  gmap_view_auth 1 (m' ∪ m) ⋅ ([^op map] k↦v ∈ m', gmap_view_frag k (DfracOwn 1) v).
-Proof.
-  revert m. induction m' as [|a v m'] using map_ind.
-  { intros m _. rewrite big_opM_empty left_id right_id. done. }
-  intros m Hdisj. etrans.
-  { apply IHm'. eapply map_disjoint_weaken_l; first done.
-    apply insert_subseteq. done. }
-  etrans.
-  - eapply cmra_update_op; last reflexivity.
-    eapply (gmap_view_alloc _ a) with (dq:=DfracOwn 1); last done.
-    apply lookup_union_None. split; first done.
-    eapply map_disjoint_Some_l; first done.
-    rewrite lookup_insert. done.
-  - (* Turn goal into "L ≡ R". *)
-    eapply cmra_update_proper; [reflexivity| |reflexivity].
-    rewrite -assoc. f_equiv.
-    + rewrite insert_union_l. done.
-    + rewrite big_opM_insert; last done. done.
-Qed.
-
 Theorem async_ctx_init γ σs :
   Forall (λ σ, dom (gset _) σ = dom (gset _) (latest σs)) (pending σs) →
   async_pre_ctx γ ==∗
@@ -504,7 +468,8 @@ Proof.
   { apply prefix_nil. }
   iFrame "Hlb".
   iMod (own_update with "Hmap") as "Hmap".
-  { eapply (gmap_view_alloc_big _ last). apply map_disjoint_empty_r. }
+  { eapply (gmap_view_alloc_big _ last (DfracOwn 1)); last done.
+    apply map_disjoint_empty_r. }
   iDestruct "Hmap" as "[Hmap Hfrag]".
   iModIntro. iSplitR "Hfrag"; first iSplit.
   - iExists last. rewrite right_id. iFrame.

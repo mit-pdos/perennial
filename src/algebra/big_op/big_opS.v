@@ -9,7 +9,7 @@ Local Existing Instances monoid_ne monoid_assoc monoid_comm
 
 Set Default Proof Using "Type".
 
-(* TODO: upstream this *)
+(* TODO: upstream this; see Iris MR 619 *)
 Section big_op.
 Context `{Monoid M o}.
 Implicit Types xs : list M.
@@ -19,7 +19,7 @@ Section gset.
   Implicit Types X : gset A.
   Implicit Types f : A → M.
 
-  Lemma set_map_union_singleton (h: A → B) X x:
+  Local Lemma set_map_union_singleton (h: A → B) X x:
     set_map h ({[x]} ∪ X) = ({[h x]} ∪ (set_map h X) : gset B).
   Proof. set_solver. Qed.
 
@@ -60,30 +60,3 @@ Lemma big_sepS_list {PROP:bi} `{Countable A} (Φ: A → PROP) (l: list A) :
   NoDup l →
   big_opS bi_sep Φ (list_to_set l) ⊣⊢ big_opL bi_sep (λ _ x, Φ x) l.
 Proof. apply big_opS_list. Qed.
-
-
-Section big_sepS.
-
-  Context {PROP:bi} `{!BiAffine PROP} `{!BiBUpd PROP}.
-
-  Lemma big_sepS_impl_bupd `{Countable A} (Φ Ψ: A -> PROP) (s : gset A) :
-    ([∗ set] a∈s, Φ a) -∗
-    □ (∀ x, ⌜x ∈ s⌝ -∗ Φ x ==∗ Ψ x)
-    ==∗
-    ([∗ set] a∈s, Ψ a).
-  Proof using BiAffine0.
-    iIntros "H #Hupd".
-    iInduction s as [|x X ? s] "IH" using set_ind_L.
-    { iModIntro. iApply big_sepS_empty. done. }
-    iApply big_sepS_union; first by set_solver.
-    iDestruct (big_sepS_union with "H") as "[Hx H]"; first by set_solver.
-    iMod ("IH" with "[Hupd] H") as "H".
-    { iModIntro. iIntros (y Hy). iApply "Hupd". iPureIntro. set_solver. }
-    rewrite !big_sepS_singleton.
-    iMod ("Hupd" with "[] Hx") as "Hx".
-    { iPureIntro. set_solver. }
-    iModIntro.
-    iFrame.
-  Qed.
-
-End big_sepS.

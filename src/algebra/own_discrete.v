@@ -5,7 +5,7 @@ From Perennial.Helpers Require Import ipm.
 From Perennial.algebra Require Import atleast big_sepL.
 Set Default Proof Using "Type".
 
-(* TODO: upstream *)
+(* TODO: upstream; see Iris MR 618. *)
 Lemma cmra_op_discrete' {M: ucmraT} (x1 x2: M) :
   ✓{0} (x1 ⋅ x2) → Discrete x1 → Discrete x2 → Discrete (x1 ⋅ x2).
 Proof.
