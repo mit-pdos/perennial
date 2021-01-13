@@ -3,7 +3,7 @@
 statements *)
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.examples Require
-     replicated_block_proof single_inode_proof dir_proof toy_proof.
+     replicated_block_proof (* single_inode_proof *) dir_proof toy_proof.
 
 Definition toy_theorems :=
   @toy_proof.wpc_TransferEvenBlock.
@@ -11,21 +11,21 @@ Definition toy_theorems :=
 Definition replicated_block_theorems :=
   (@replicated_block_proof.init_zero_cinv,  (* not used by [OpenRead] *)
    @replicated_block_proof.OpenRead_adequate).
-
+(*
 Definition single_inode_theorems :=
   (@single_inode_proof.init_single_inode,
    @single_inode_proof.wpc_Open,
    @single_inode_proof.is_single_inode_alloc,
    @single_inode_proof.wpc_Read,
    @single_inode_proof.wpc_Append).
-
+*)
 Definition dir_theorems :=
   (@dir_proof.init_dir,
    @dir_proof.wpc_Open,
    @dir_proof.is_dir_alloc,
-   @dir_proof.wpc_Read,
-   @dir_proof.wpc_Size,
-   @dir_proof.wpc_Append,
+   @dir_proof.wpc_Dir__Read,
+   @dir_proof.wpc_Dir__Size,
+   @dir_proof.wpc_Dir__Append,
    @dir_proof.wpr_Open).
 
 Goal True.
