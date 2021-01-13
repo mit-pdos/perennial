@@ -20,7 +20,7 @@ jobs:
       matrix:
         coq_version:
           - dev
-          - '8.12'
+          - '8.13'
       max-parallel: 4
       # don't cancel all in-progress jobs if one matrix job fails:
       fail-fast: false
