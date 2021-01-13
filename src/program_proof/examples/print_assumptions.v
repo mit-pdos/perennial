@@ -36,11 +36,11 @@ Print Assumptions toy_theorems.
 idtac "".
 idtac "replicated block:".
 Print Assumptions replicated_block_theorems.
-
+(*
 idtac "".
 idtac "single inode:".
 Print Assumptions single_inode_theorems.
-
+*)
 idtac "".
 idtac "directory:".
 Print Assumptions dir_theorems.
