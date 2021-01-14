@@ -218,6 +218,10 @@ Proof.
   - rewrite map_app IHt1 IHt2 //.
 Qed.
 
+Lemma val_interp_list_unfold t:
+  val_interp (listT t) = listT_interp t (val_interp).
+Proof. rewrite //=. Qed.
+
 Lemma val_interp_array_unfold t:
   val_interp (arrayT t) = arrayT_interp t (λ t, map val_interp (flatten_ty t)).
 Proof. rewrite //= /arrayT_interp flatten_val_interp_flatten_ty //=. Qed.
