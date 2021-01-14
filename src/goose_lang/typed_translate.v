@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import lang notation typing.
-From Perennial.goose_lang.lib Require Import map.impl.
+From Perennial.goose_lang.lib Require Import map.impl list.impl.
 
 
 (* Defines typed translation between two Goose lang extensions *)
@@ -122,6 +122,15 @@ Section translate.
   | snd_transTy e e' t1 t2 :
       Γ ⊢ e -- e' : prodT t1 t2 ->
       Γ ⊢ Snd e -- Snd e' : t2
+  | cons_transTy ehd ehd' etl etl' t :
+      Γ ⊢  ehd -- ehd' : t ->
+      Γ ⊢  etl -- etl' : listT t ->
+      Γ ⊢  ListCons ehd etl -- ListCons ehd' etl' : listT t
+  | listmatch_hasTy el el' nilfun nilfun' consfun consfun' tl tret :
+      Γ ⊢ el -- el' : listT tl ->
+      Γ ⊢ nilfun -- nilfun' : arrowT unitT tret ->
+      Γ ⊢ consfun -- consfun' : arrowT (prodT tl (listT tl)) tret ->
+      Γ ⊢ ListMatch el nilfun consfun -- ListMatch el' nilfun' consfun' : tret
   (*
   | mapNil_transTy def def' vt :
       Γ ⊢ def -- def' : vt ->
@@ -151,6 +160,7 @@ Section translate.
 
   (** pointers *)
   | alloc_transTy n n' v v' t :
+      storable t →
       flatten_ty t ≠ [] →
       Γ ⊢ n -- n' : uint64T ->
       Γ ⊢ v -- v' : t ->
@@ -211,6 +221,12 @@ Section translate.
       Γ ⊢v v1 -- v1' : t1 ->
       Γ ⊢v v2 -- v2' : t2 ->
       Γ ⊢v PairV v1 v2 -- PairV v1' v2' : prodT t1 t2
+  | val_nil_transTy t :
+      Γ ⊢v ListNilV -- ListNilV : listT t
+  | val_cons_hasTy vhd vhd' vtl vtl' t :
+      Γ ⊢v vhd -- vhd' : t ->
+      Γ ⊢v vtl -- vtl' : listT t ->
+      Γ ⊢v ListConsV vhd vtl -- ListConsV vhd' vtl' : listT t
   | val_injL_transTy v1 v1' t1 t2 :
       Γ ⊢v v1 -- v1' : t1 ->
       Γ ⊢v InjLV v1 -- InjLV v1' : sumT t1 t2

@@ -314,19 +314,22 @@ Lemma sty_val_size:
 Proof. iIntros. by iDestruct (sty_val_flatten with "[$]") as %[-> ->]. Qed.
 
 Lemma length_flatten_well_typed vs v t:
+  storable t →
   val_interp (hS := hS) t vs v -∗
   ⌜ length (flatten_ty t) = length (flatten_struct vs) ∧
     length (flatten_ty t) = length (flatten_struct v) ⌝.
 Proof.
-  iIntros "Hval".
+  iIntros (Hstore) "Hval".
   iInduction t as [] "IH" forall (vs v).
   - destruct t; iDestruct "Hval" as %Hval;
     repeat destruct Hval as (?&Hval); subst; eauto.
   - iDestruct "Hval" as (???? (?&?)) "(H1&H2)". subst.
     rewrite /= ?app_length.
-    iDestruct ("IH" with "[$]") as %[Heq1 Heq2].
-    iDestruct ("IH1" with "[$]") as %[Heq1' Heq2'].
+    destruct Hstore as (?&?).
+    iDestruct ("IH" with "[//] [$]") as %[Heq1 Heq2].
+    iDestruct ("IH1" with "[//] [$]") as %[Heq1' Heq2'].
     subst. iPureIntro. lia.
+  - inversion Hstore.
   - iDestruct "Hval" as "[Hval|Hval]"; iDestruct "Hval" as (?? (?&?)) "Hval";
       subst; eauto.
   - iDestruct "Hval" as (?????? (?&?)) "H1". subst; eauto.
@@ -341,13 +344,14 @@ Proof.
 Qed.
 
 Lemma flatten_well_typed vs v t i vsi vi ti:
+    storable t →
     flatten_ty t !! i = Some ti →
     flatten_struct vs !! i = Some vsi →
     flatten_struct v !! i = Some vi →
     val_interp (hS := hS) t vs v -∗
     val_interp (hS := hS) ti vsi vi.
 Proof.
-  iIntros (Hlookup1 Hlookup2 Hlookup3) "Hval".
+  iIntros (Hstore Hlookup1 Hlookup2 Hlookup3) "Hval".
   iInduction t as [] "IH" forall (vs v i Hlookup1 Hlookup2 Hlookup3).
   - simpl in *.
     destruct t; destruct i; simpl in *; inversion Hlookup1; subst; eauto;
@@ -355,8 +359,9 @@ Proof.
     simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
   - iDestruct "Hval" as (???? (?&?)) "(H1&H2)". subst.
     simpl in Hlookup1, Hlookup2, Hlookup3.
-    iDestruct (length_flatten_well_typed with "H1") as %[Hlen1 Hlens1].
-    iDestruct (length_flatten_well_typed with "H2") as %[Hlen2 Hlens2].
+    destruct Hstore as (?&?).
+    iDestruct (length_flatten_well_typed with "H1") as %[Hlen1 Hlens1]; first done.
+    iDestruct (length_flatten_well_typed with "H2") as %[Hlen2 Hlens2]; first done.
     apply lookup_app_Some in Hlookup1 as [Hleft|Hright].
     { specialize (lookup_lt_Some _ _ _ Hleft) => Hlen.
       rewrite lookup_app_l in Hlookup2; last by lia.
@@ -371,6 +376,7 @@ Proof.
       { rewrite Hlen1; eauto. }
       { rewrite Hlens1; eauto. }
     }
+  - inversion Hstore.
   - iDestruct "Hval" as "[Hval|Hval]"; iDestruct "Hval" as (?? (?&?)) "Hval";
       subst; eauto.
     { simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
@@ -1255,6 +1261,215 @@ Proof using spec_trans.
     wp_pures; eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H1"; eauto.
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H2"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) ehd').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) ehd) as Hctx'.
+    iSpecialize ("H1" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[H2] [] H1"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) etl').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) etl) as Hctx'.
+    iSpecialize ("H2" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[Hv1] [] H2"); last by auto.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    clear Hctx'.
+    simpl.
+
+    spec_bind (vs1, vs2)%E as Hctx'.
+    iApply wp_wpc.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step_trans. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+    simpl.
+
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step_trans. repeat econstructor; eauto.
+    }
+    wp_pures; auto.
+    iExists _. iFrame.
+    rewrite val_interp_list_unfold /listT_interp.
+    iDestruct "Hv2" as (lvs lv (->&->)) "H".
+    iExists (vs1 :: lvs), (v1 :: lv). iSplit; first by eauto.
+    simpl. iFrame.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H1"; eauto.
+    iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H2"; eauto.
+    iPoseProof (IHHtyping3 with "[//] [$] [$] [$] [$]") as "H3"; eauto.
+    rewrite /impl.ListMatch.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) consfun').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) consfun) as Hctx'.
+    iSpecialize ("H3" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[H1 H2] [] H3"); last by auto.
+    iIntros (vconsfun) "H". iDestruct "H" as (vsconsfun) "(Hj&Hvconsfun)".
+    clear Hctx'.
+    simpl.
+
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) nilfun').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) nilfun) as Hctx'.
+    iSpecialize ("H2" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[H1 Hvconsfun] [] H2"); last by auto.
+    iIntros (vnilfun) "H". iDestruct "H" as (vsnilfun) "(Hj&Hvnilfun)".
+    clear Hctx'.
+    simpl.
+
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) el').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) el) as Hctx'.
+    iSpecialize ("H1" $! j _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[Hvnilfun Hvconsfun] [] H1"); last by auto.
+    iIntros (vl) "H". iDestruct "H" as (vsl) "(Hj&Hvsl)".
+    clear Hctx'.
+    simpl.
+    iApply wp_wpc.
+
+    spec_bind (App _ vsl)%E as Hctx'.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step_trans. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+    simpl.
+
+    spec_bind (λ: _, _)%E as Hctx'.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step_trans. repeat econstructor; eauto.
+    }
+    simpl.
+
+    spec_bind (App _ vsnilfun)%E as Hctx'.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step_trans. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+    simpl.
+
+    spec_bind (λ: _, _)%E as Hctx'.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step_trans. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+    simpl.
+
+    spec_bind (App _ vsconsfun)%E as Hctx'.
+    iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+    { iFrame. iDestruct "Hspec" as "($&?)". }
+    { set_solver+. }
+    { intros ?. eexists. simpl.
+      apply head_prim_step_trans. repeat econstructor; eauto.
+    }
+    clear Hctx'.
+    simpl.
+
+    clear Hctx'0.
+    rewrite val_interp_list_unfold.
+    iDestruct "Hvsl" as (lvs lv (->&->)) "H".
+    destruct lvs as [|vs lvs];
+    destruct lv as [|v lv]; try (iDestruct "H" as %[]; done).
+
+    * simpl.
+
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step_trans. repeat econstructor; eauto.
+      }
+
+      spec_bind (Rec _ _ _)%E as Hctx'.
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step_trans. repeat econstructor; eauto.
+      }
+      simpl.
+      clear Hctx'.
+
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step_trans. repeat econstructor; eauto.
+      }
+
+      simpl.
+
+      wp_pures.
+      rewrite /val_interp -/val_interp.
+      rewrite /arrowT_interp.
+      iDestruct "Hvnilfun" as (f x e fs xs es (->&->)) "#Hwand".
+      iSpecialize ("Hwand" $! #() #() with "[] Hj").
+      { eauto. }
+      iApply (wpc_wp _ _ _ _ _ True%I).
+      iApply (wpc_mono' with "[] [] Hwand"); last by auto.
+      iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+      iExists _. iFrame.
+    * simpl.
+
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step_trans. repeat econstructor; eauto.
+      }
+
+      spec_bind (Rec _ _ _)%E as Hctx'.
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step_trans. repeat econstructor; eauto.
+      }
+      simpl.
+      clear Hctx'.
+
+      iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
+      { iFrame. iDestruct "Hspec" as "($&?)". }
+      { set_solver+. }
+      { intros ?. eexists. simpl.
+        apply head_prim_step_trans. repeat econstructor; eauto.
+      }
+
+      simpl.
+
+      wp_pures.
+      rewrite /val_interp -/val_interp.
+      rewrite /arrowT_interp.
+      iDestruct "Hvconsfun" as (f x e fs xs es (->&->)) "#Hwand".
+      iSpecialize ("Hwand" $! (v, list.val_of_list lv)%V (vs, list.val_of_list lvs)%V with "[H] Hj").
+      { rewrite /val_interp -/val_interp. iExists _, _, _, _. iSplit; first by eauto.
+        rewrite val_interp_list_unfold /listT_interp.
+        iDestruct "H" as "($&H)".
+        iExists _, _. iSplit; first eauto. iFrame.
+      }
+      iApply (wpc_wp _ _ _ _ _ True%I).
+      iApply (wpc_mono' with "[] [] Hwand"); last by auto.
+      iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+      iExists _. iFrame.
+  - subst.
+    iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').
     spec_bind (subst_map ((subst_sval <$> Γsubst)) e) as Hctx'.
@@ -1383,7 +1598,7 @@ Proof using spec_trans.
       { eauto. }
       { solve_ndisj. }
     }
-    iDestruct (length_flatten_well_typed with "Hv2") as %(Hspecsize&Hsize).
+    iDestruct (length_flatten_well_typed with "Hv2") as %(Hspecsize&Hsize); first done.
     iApply wp_ncfupd.
     iApply wp_allocN_seq_sized_meta.
     { rewrite -Hsize. destruct (flatten_ty t) as [|]; try congruence; simpl; try lia. }
@@ -1980,6 +2195,13 @@ Proof using spec_trans.
   - iPoseProof (IHHtyping with "[$] [$] [$]") as "Hv1"; eauto.
     iPoseProof (IHHtyping0 with "[$] [$] [$]") as "Hv2"; eauto.
     iExists _, _, _, _. iSplitL ""; first by eauto. iFrame.
+  - iExists [], []. simpl. eauto.
+  - iPoseProof (IHHtyping with "[$] [$] [$]") as "Hv1"; eauto.
+    iPoseProof (IHHtyping0 with "[$] [$] [$]") as "Hv2"; eauto.
+    rewrite val_interp_list_unfold.
+    iDestruct "Hv2" as (l l' (->&->)) "H".
+    iExists (vhd :: l), (vhd' :: l').
+    iSplit; first eauto. iFrame.
   - iLeft. iExists _, _.
     iSplitL ""; first by eauto. iApply (IHHtyping with "[$] [$] [$]").
   - iRight. iExists _, _.

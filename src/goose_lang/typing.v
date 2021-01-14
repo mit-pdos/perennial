@@ -1,6 +1,6 @@
 From stdpp Require Import gmap.
 From Perennial.goose_lang Require Import lang notation.
-From Perennial.goose_lang.lib Require Import map.impl.
+From Perennial.goose_lang.lib Require Import map.impl list.impl.
 
 Set Default Proof Using "Type".
 
@@ -20,6 +20,7 @@ Section val_types.
   Inductive ty :=
   | baseT (t:base_ty)
   | prodT (t1 t2: ty)
+  | listT (t1: ty)
   | sumT (t1 t2: ty)
   | arrowT (t1 t2: ty)
   | arrayT (t: ty)
@@ -98,11 +99,19 @@ Section goose_lang.
     | baseT stringT => #(str"")
     | mapValT vt => MapNilV (zero_val vt)
     | prodT t1 t2 => (zero_val t1, zero_val t2)
+    | listT t => InjLV (LitV LitUnit)
     | sumT t1 t2 => InjLV (zero_val t1)
     | arrowT t1 t2 => (λ: <>, Val (zero_val t2))%V
     | arrayT t => #null
     | structRefT ts => #null
     | extT x => #() (* dummy value of wrong type *)
+    end.
+
+  Fixpoint storable (t:ty): Prop :=
+    match t with
+    | listT _ => False
+    | prodT t1 t2 => storable t1 /\ storable t2
+    | _ => True
     end.
 
   Fixpoint has_zero (t:ty): Prop :=
@@ -113,6 +122,7 @@ Section goose_lang.
     *)
     | mapValT t => False
     | prodT t1 t2 => has_zero t1 ∧ has_zero t2
+    | listT t => has_zero t
     | sumT t1 t2 => has_zero t1
     | arrowT _ t2 => has_zero t2
     | arrayT _ => True
@@ -120,6 +130,7 @@ Section goose_lang.
     | extT _ => False
     end.
 
+  (* TODO: list size is not well defined, but it shouldn't be going in structs anyway *)
   Fixpoint ty_size (t:ty) : Z :=
     match t with
     | prodT t1 t2 => ty_size t1 + ty_size t2
@@ -311,7 +322,7 @@ Section goose_lang.
       Γ ⊢ BinOp PlusOp e1 e2 : stringT
 
   (** data *)
- | pair_hasTy e1 e2 t1 t2 :
+  | pair_hasTy e1 e2 t1 t2 :
       Γ ⊢ e1 : t1 ->
       Γ ⊢ e2 : t2 ->
       Γ ⊢ Pair e1 e2 : prodT t1 t2
@@ -321,6 +332,15 @@ Section goose_lang.
   | snd_hasTy e t1 t2 :
       Γ ⊢ e : prodT t1 t2 ->
       Γ ⊢ Snd e : t2
+  | cons_hasTy ehd etl t :
+      Γ ⊢  ehd : t ->
+      Γ ⊢  etl : listT t ->
+      Γ ⊢  ListCons ehd etl : listT t
+  | listmatch_hasTy el nilfun consfun tl tret :
+      Γ ⊢ el : listT tl ->
+      Γ ⊢ nilfun : arrowT unitT tret ->
+      Γ ⊢ consfun : arrowT (prodT tl (listT tl)) tret ->
+      Γ ⊢ ListMatch el nilfun consfun : tret
   (*
   | mapNil_hasTy def vt :
       Γ ⊢ def : vt ->
@@ -350,6 +370,7 @@ Section goose_lang.
 
   (** pointers *)
   | alloc_hasTy n v t :
+      storable t →
       Γ ⊢ n : uint64T ->
       Γ ⊢ v : t ->
       Γ ⊢ AllocN n v : arrayT t
@@ -408,6 +429,12 @@ Section goose_lang.
       Γ ⊢v v1 : t1 ->
       Γ ⊢v v2 : t2 ->
       Γ ⊢v PairV v1 v2 : prodT t1 t2
+  | val_nil_hasTy t :
+      Γ ⊢v ListNilV : listT t
+  | val_cons_hasTy vhd vtl t :
+      Γ ⊢v vhd : t ->
+      Γ ⊢v vtl : listT t ->
+      Γ ⊢v ListConsV vhd vtl : listT t
   | val_injL_hasTy v1 t1 t2 :
       Γ ⊢v v1 : t1 ->
       Γ ⊢v InjLV v1 : sumT t1 t2
@@ -508,11 +535,12 @@ Section goose_lang.
   Qed.
 
   Theorem ref_hasTy t Γ ts e :
+    storable t ->
     Γ ⊢ e : t ->
     ts = flatten_ty t ->
     Γ ⊢ ref e : structRefT ts.
   Proof.
-    intros He ->.
+    intros ? He ->.
     eapply array_struct_hasTy.
     eauto.
   Qed.

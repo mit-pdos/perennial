@@ -8,6 +8,7 @@ From Perennial.program_logic Require Import recovery_weakestpre recovery_adequac
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
 From Perennial.goose_lang Require Import metatheory.
+From Perennial.goose_lang.lib Require Import list.
 From Perennial.Helpers Require Import Qextra.
 From Perennial.Helpers Require List.
 
@@ -125,6 +126,18 @@ Definition prodT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
                    ∗ val_interp t1 vs1 v1
                    ∗ val_interp t2 vs2 v2)%I.
 
+Fixpoint listT_interp_aux (val_interp : sval → ival → iProp Σ)
+         (lvs : list sval) (lv : list ival) : iProp Σ :=
+  (match lvs, lv with
+  | nil, nil => True%I
+  | vs :: lvs, v :: lv =>
+    val_interp vs v ∗ listT_interp_aux val_interp lvs lv
+  | _, _ => False%I
+  end)%I.
+
+Definition listT_interp (t: sty) (val_interp : sty → sval → ival → iProp Σ) : sval → ival → iProp Σ :=
+  λ vs v, (∃ lvs lv, ⌜ vs = val_of_list lvs ∧ v = val_of_list lv ⌝ ∗ listT_interp_aux (val_interp t) lvs lv)%I.
+
 Definition sumT_interp (t1 t2: sty) val_interp : sval → ival → iProp Σ :=
   λ vs v, ((∃ v' vs', ⌜ v = InjLV v' ∧
                                 vs = InjLV vs'⌝
@@ -175,6 +188,7 @@ Fixpoint val_interp (t: sty) {struct t} :=
   match t with
   | baseT bt => base_ty_interp bt
   | prodT t1 t2 => prodT_interp t1 t2 val_interp
+  | listT t => listT_interp t val_interp
   | sumT t1 t2 => sumT_interp t1 t2 val_interp
   | arrayT t => arrayT_interp t flatten_val_interp
   | arrowT t1 t2 => arrowT_interp t1 t2 val_interp
@@ -185,6 +199,7 @@ Fixpoint val_interp (t: sty) {struct t} :=
  flatten_val_interp (t: sty) {struct t} : list (sval → ival → iProp Σ) :=
     match t with
     | prodT t1 t2 => flatten_val_interp t1 ++ flatten_val_interp t2
+    | listT t => [listT_interp t val_interp]
     | baseT unitBT => []
     | baseT ty => [base_ty_interp ty]
     | sumT t1 t2 => [sumT_interp t1 t2 val_interp]
@@ -202,6 +217,10 @@ Proof.
   - destruct t; eauto.
   - rewrite map_app IHt1 IHt2 //.
 Qed.
+
+Lemma val_interp_list_unfold t:
+  val_interp (listT t) = listT_interp t (val_interp).
+Proof. rewrite //=. Qed.
 
 Lemma val_interp_array_unfold t:
   val_interp (arrayT t) = arrayT_interp t (λ t, map val_interp (flatten_ty t)).
@@ -296,6 +315,22 @@ Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG
 Global Instance base_interp_pers Σ es e t:
       Persistent (base_ty_interp (Σ := Σ) t es e).
 Proof. destruct t; apply _. Qed.
+
+Instance listT_interp_aux_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} ls l
+       (vTy: sval → ival → iProp Σ) :
+       (∀ es' e', Persistent (vTy es' e')) →
+       Persistent (listT_interp_aux vTy ls l).
+Proof.
+  intros ?. revert l. induction ls; destruct l => //=; apply _.
+Qed.
+
+Instance listT_interp_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t
+       (vTy: sty → sval → ival → iProp Σ) :
+       (∀ t' es' e', Persistent (vTy t' es' e')) →
+       Persistent (listT_interp t vTy es e).
+Proof.
+  intros. rewrite /listT_interp. apply _.
+Qed.
 
 Global Instance val_interp_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t:
       Persistent (val_interp (hS := hS) t es e).
