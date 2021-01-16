@@ -49,7 +49,7 @@ Definition heap_update_pre Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (Hcrash: cr
      heapG_ffiG := ffi_update_pre Σ (heap_preG_ffi) (heap_ffi_names names);
      heapG_na_heapG := na_heapG_update_pre (heap_preG_heap) (heap_heap_names names);
      heapG_proph_mapG :=
-       {| proph_map_inG := proph_map_preG_inG;
+       {| proph_map_inG := heap_preG_proph;
           proph_map_name := (heap_proph_name names) |};
      heapG_traceG := traceG_update_pre Σ (heap_preG_trace) (heap_trace_names names)
  |}.

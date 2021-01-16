@@ -5,16 +5,6 @@ From Perennial.Helpers Require Import ipm.
 From Perennial.algebra Require Import atleast big_sepL.
 Set Default Proof Using "Type".
 
-(* TODO: upstream; see Iris MR 618. *)
-Lemma cmra_op_discrete' {M: ucmraT} (x1 x2: M) :
-  ✓{0} (x1 ⋅ x2) → Discrete x1 → Discrete x2 → Discrete (x1 ⋅ x2).
-Proof.
-  intros ??? z Hz.
-  destruct (cmra_extend 0 z x1 x2) as (y1&y2&Hz'&?&?); auto; simpl in *.
-  { by rewrite -?Hz. }
-  by rewrite Hz' (discrete x1 y1) // (discrete x2 y2).
-Qed.
-
 Lemma uPred_cmra_valid_elim_alt {M: ucmraT} (A: cmraT) (a: A):
   (✓ a : uPred M) ⊢ ⌜ ✓{0} a ⌝.
 Proof.
@@ -33,7 +23,7 @@ Lemma cmra_op_discrete_internal {M: ucmraT} {A: ucmraT} (x1 x2: A) :
   Discrete x1 → Discrete x2 → (✓ (x1 ⋅ x2) ⊢ ⌜ Discrete (x1 ⋅ x2) ⌝ : uPred M).
 Proof.
   iIntros (??) "Hval". iDestruct (uPred_cmra_valid_elim_alt with "Hval") as %Hval.
-  iPureIntro. by apply cmra_op_discrete'.
+  iPureIntro. by apply cmra_op_discrete.
 Qed.
 
 (* TODO: might have a version where the □ is replaced with a □?p ? *)

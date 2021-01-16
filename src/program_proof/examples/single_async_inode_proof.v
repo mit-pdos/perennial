@@ -200,7 +200,7 @@ Section goose.
       iFrame "Hδused".
       rewrite Hunused difference_empty_L.
       rewrite /rangeSet.
-      rewrite big_sepS_list; last first.
+      rewrite big_sepS_list_to_set; last first.
       { apply seq_U64_NoDup; word. }
       rewrite big_sepL_fmap.
       iApply (big_sepL_mono with "Hfree").
