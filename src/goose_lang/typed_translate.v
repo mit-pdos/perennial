@@ -24,13 +24,22 @@ Section translate.
   Notation iexpr := (@expr impl_op).
   Notation ival := (@val impl_op).
   Notation sty := (@ty (@val_tys _ spec_ty)).
+  Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
   (* The translation is not necessarily assumed to be a function, so in principle
      there could be many translations of a particular piece of code. In reality,
      you would want to prove that all well-typed programs have a valid translation *)
   Context (spec_trans : sval -> ival -> Prop).
 
-  Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
+  (* This is a typed relation for translating code expressions in atomic blocks *)
+  Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> Prop).
+
+  (* Not all variables in a context can be used in the body of an Atomically e expression.
+     For example, consider let x := (λ _, impure_code) in Atomically x. The following
+     relation is used to filter the context down to just types that can be transferred to the
+     spec_atomic_transTy relation when typing e. *)
+  Context (spec_atomic_convertible : sty -> Prop).
+
 
   Reserved Notation "Γ ⊢ e1 -- e2 : A" (at level 74, e1, e2, A at next level).
   Reserved Notation "Γ ⊢v v1 -- v2 : A" (at level 74, v1, v2, A at next level).
@@ -54,11 +63,10 @@ Section translate.
   | fork_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       Γ ⊢ Fork e1 -- Fork e2 : unitT
-  (* TODO: handle atomically *)
-  (* | atomically_transTy e1 e2 t :
-      Γ ⊢ e1 -- e2 : t ->
-      Γ ⊢ Atomically e1 -- Atomically e2 : t *)
-
+  | atomically_transTy Γ' e1 e2 t :
+      (∀ x ty, Γ' !! x = Some ty → Γ !! x = Some ty ∧ spec_atomic_convertible ty) ->
+      spec_atomic_transTy Γ' e1 e2 t ->
+      Γ ⊢ Atomically e1 -- e2 : t
   (** control flow *)
   | if_transTy cond cond' e1 e1' e2 e2' t :
       Γ ⊢ cond -- cond' : boolT ->

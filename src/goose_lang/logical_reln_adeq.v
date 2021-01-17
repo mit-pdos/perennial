@@ -40,8 +40,12 @@ Notation istate := (@state ext).
 Notation iexpr := (@expr ext).
 Notation ival := (@val ext).
 Notation sty := (@ty (@val_tys _ spec_ty)).
+Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
-Context `{hsT_model: !specTy_model spec_ty} (spec_trans: sval → ival → Prop).
+Context `{hsT_model: !specTy_model spec_ty}.
+Context (spec_trans: sval → ival → Prop).
+Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> Prop).
+Context (spec_atomic_convertible : sty -> Prop).
 Context (upd: specTy_update hsT_model).
 
 Existing Instance sty_inv_persistent.
@@ -70,24 +74,25 @@ Definition sty_derived_crash_condition :=
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new))%I.
 
 Lemma sty_inv_to_wpc hG hRG hS es e τ j:
-  expr_transTy _ _ _ spec_trans ∅ es e τ →
+  expr_transTy _ _ _ spec_trans spec_atomic_transTy spec_atomic_convertible ∅ es e τ →
   sty_crash_inv_obligation →
   sty_crash_obligation →
   sty_rules_obligation spec_trans →
+  sty_atomic_obligation spec_atomic_transTy spec_atomic_convertible →
   spec_ctx -∗
   trace_ctx -∗
   sty_init hS -∗
   j ⤇ es -∗
   WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_derived_crash_condition hG hRG}}.
 Proof.
-  iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules) "#Hspec #Htrace Hinit Hj".
+  iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules Hatomic) "#Hspec #Htrace Hinit Hj".
     rewrite /sty_crash_obligation in Hsty_crash.
   iAssert (|={⊤}=> sty_inv hS ∗ WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_crash_cond hS}})%I with "[-]" as ">(#Hinv&H)".
   {
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
     iApply (Hsty_crash_inv with "[$] [$] [Hj]").
     { iIntros "#Hinv'".
-      iPoseProof (sty_fundamental_lemma _ _ Hsty_rules ∅ _ _ _ Htype) as "H"; eauto.
+      iPoseProof (sty_fundamental_lemma _ _ _ _ Hsty_rules Hatomic ∅ _ _ _ Htype) as "H"; eauto.
       iSpecialize ("H" $! ∅ with "[] [$] [$] [$] []").
       { iPureIntro. apply: fmap_empty. }
       { by rewrite big_sepM_empty. }
@@ -120,13 +125,14 @@ Lemma sty_adequacy es σs e σ τ initP:
   sty_crash_inv_obligation →
   sty_crash_obligation →
   sty_rules_obligation spec_trans →
-  expr_transTy _ _ _ spec_trans ∅ es e τ →
+  sty_atomic_obligation spec_atomic_transTy spec_atomic_convertible →
+  expr_transTy _ _ _ spec_trans spec_atomic_transTy spec_atomic_convertible ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →
   trace_refines e e σ es es σs.
 Proof.
-  intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Htype Htrace Horacle Hinit.
+  intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Hatomic Htype Htrace Horacle Hinit.
   eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
            (Φ := λ _ _ _, True%I) (Φc := sty_derived_crash_condition)
            (k := sty_lvl_init) (initP := initP); eauto.

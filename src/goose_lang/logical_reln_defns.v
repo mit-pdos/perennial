@@ -36,6 +36,7 @@ Notation istate := (@state ext).
 Notation iexpr := (@expr ext).
 Notation ival := (@val ext).
 Notation sty := (@ty (@val_tys _ spec_ty)).
+Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
 Definition val_semTy `{!heapG Σ} `{refinement_heapG Σ} := sval → ival → iProp Σ.
 
@@ -247,6 +248,8 @@ Class specTy_update `(hsT_model: !specTy_model) :=
 Section reln_obligations.
 
 Context `{hsT_model: !specTy_model} (spec_trans: sval → ival → Prop).
+Context (spec_atomic_transTy : SCtx → sexpr → iexpr → sty → Prop).
+Context (spec_atomic_convertible : sty → Prop).
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 
@@ -301,7 +304,20 @@ Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
 Definition subst_ctx := gmap string subst_tuple.
 
-Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} 
+Definition sty_atomic_obligation :=
+  forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
+         (Γ' : SCtx) e1 e2 t (Γsubst: gmap string subst_tuple),
+  (∀ (x : string) (ty0 : sty),
+        Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0 ∧ spec_atomic_convertible ty0) ->
+  (spec_atomic_transTy Γ' e1 e2 t) ->
+  sty_inv hS -∗
+  spec_ctx -∗
+  trace_ctx -∗
+  ([∗ map] t0 ∈ Γsubst, val_interp (hS:=hS) (subst_ty t0) (subst_sval t0) (subst_ival t0)) -∗
+  has_semTy (subst_map (subst_sval <$> Γsubst) (Atomically e1)) (subst_map (subst_ival <$> Γsubst) e2)
+    (val_interp (hS := hS) t).
+
+Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
            (Γ: Ctx) es e τ : iProp Σ :=
   ∀ Γsubst (HPROJ: subst_ty <$> Γsubst = Γ),
   sty_inv hS -∗

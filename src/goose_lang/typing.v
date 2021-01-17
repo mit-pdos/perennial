@@ -67,7 +67,9 @@ Reserved Notation "Γ '⊢v' v : A" (at level 74, v, A at next level).
 
 Class ext_types (ext:ext_op) :=
   { val_tys :> val_types;
-    get_ext_tys: val -> ty * ty -> Prop; (* the argument type and return type *)
+    (* the argument type and return type *)
+    get_ext_tys: val -> ty * ty -> Prop;
+    (* the argument type and return type for things that can appear in atomic blocks *)
   }.
 
 Section goose_lang.
