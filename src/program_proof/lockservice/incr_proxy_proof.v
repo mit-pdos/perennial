@@ -17,13 +17,6 @@ Context `{!filesysG Σ}.
 Definition has_encoding_for_short_clerk data cid seq (args:RPCValC) :=
    has_encoding data [EncUInt64 cid ; EncUInt64 seq ; EncUInt64 args.1 ; EncUInt64 args.2.1].
 
-Definition ProxyIncrCrashInvariant (seq:u64) (args:RPCValC) : iProp Σ :=
-  ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string seq) f↦ []) ∨
-  ("Hfown_oldv" ∷ ∃ data cid sseq, ("procy_incr_request_" +:+ u64_to_string seq) f↦ data ∗
-   ⌜has_encoding_for_short_clerk data cid sseq args⌝
-   )
-.
-
 (* TODO: should probably make RPCValC to be nicer than (u64 * (u64 * ())); no need for the unit *)
 
 (* TODO: these definitions should ultimately refer to incr_proof.v *)
@@ -46,7 +39,7 @@ Definition ProxyIncrServer_core_own (srv:loc) : iProp Σ :=
   ∃ (kck incrserver:loc),
   "Hkvserver" ∷ srv ↦[IncrProxyServer.S :: "incrserver"] #incrserver ∗
   "Hkck" ∷ srv ↦[IncrProxyServer.S :: "ick"] #kck ∗
-  "His_kvserver" ∷ is_incrserver γ incrserver
+  "#His_incrserver" ∷ is_incrserver γ incrserver
   (* This is using the non-crash-safe version of kvserver in kv_proof.v *)
 .
 
@@ -122,7 +115,7 @@ is_incrserver γ isrv -∗
      v, RET #v; True
 }}}
 .
-Proof.
+Proof using Type*.
   iIntros "#Hs_inv" (Φ) "!# (Hown_ck & %Hseq_ineq & HreqInv) Hpost".
   wp_lam.
   wp_apply wp_ref_to; first eauto.
@@ -301,11 +294,19 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma increment_proxy_core_indepotent (isrv:loc) (seq:u64) (args:RPCValC) :
+Definition ProxyIncrCrashInvariant (seq:u64) (args:RPCValC) : iProp Σ :=
+  ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string seq) f↦ []) ∨
+  ("Hfown_oldv" ∷ ∃ data cid, ("procy_incr_request_" +:+ u64_to_string seq) f↦ data ∗
+   ⌜has_encoding_for_short_clerk data cid seq args⌝ ∗
+  ⌜(int.nat (word.sub seq 1%nat) > 0)%Z⌝ ∗
+  ∃ γPost, is_RPCRequest γ.(incr_rpcGN) γPost IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
+   )
+.
+
+Lemma increment_proxy_core_idempotent (isrv:loc) (seq:u64) (args:RPCValC) :
   {{{
        ProxyIncrCrashInvariant seq args ∗
        ProxyIncrServer_core_own isrv
-      (* TODO: add ownership of kck so we can make RPCs with it *)
   }}}
     IncrProxyServer__proxy_increment_core #isrv #seq (into_val.to_val args) @ 37 ; ⊤
   {{{
@@ -389,21 +390,21 @@ Proof.
     }
 
     iNamed "Hfown_oldv".
-    iDestruct "Hfown_oldv" as "[Hfown_oldv %Henc]".
+    iDestruct "Hfown_oldv" as "(Hfown_oldv & %Henc & #Hprepared)".
     wpc_apply (wpc_Read with "Hfown_oldv").
     iSplit.
     { (* crash obligation of called implies our crash obligation *)
       iDestruct "Hpost" as "[Hpost _]".
       iModIntro. iIntros. iApply "Hpost". iRight.
-      by iExists _, _, _; iFrame.
+      by iExists _, _; iFrame "#∗".
     }
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
 
-    iCache with "Hfown_oldv Hpost".
+    iCache with "Hfown_oldv Hprepared Hpost".
     { (* Prove crash obligation after destructing above; TODO: do this earlier *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iRight.
-      by iExists _, _, _; iFrame.
+      by iExists _, _; iFrame "#∗".
     }
     wpc_pures.
 
@@ -443,7 +444,14 @@ Proof.
       wp_load.
       iNamed 1.
 
-      (* TODO: spec for MakePreparedRequest *)
+      wpc_bind (ShortTermIncrClerk__MakePreparedRequest #_)%E.
+      wpc_frame.
+      wp_apply (wp_ShortTermIncrClerk__MakePreparedRequest with "His_incrserver [$Hown_ck $Hprepared]").
+      iIntros (v) "HmakeReqPost".
+      iNamed 1.
+
+      wpc_pures.
+      (* TODO: write spec for *)
       admit.
     }
     {
