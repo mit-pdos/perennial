@@ -14,10 +14,13 @@ Section incr_proof.
 Context `{!heapG Σ}.
 Context `{!filesysG Σ}.
 
+Definition has_encoding_for_short_clerk data cid seq (args:RPCValC) :=
+   has_encoding data [EncUInt64 cid ; EncUInt64 seq ; EncUInt64 args.1 ; EncUInt64 args.2.1].
+
 Definition ProxyIncrCrashInvariant (seq:u64) (args:RPCValC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string seq) f↦ []) ∨
   ("Hfown_oldv" ∷ ∃ data cid sseq, ("procy_incr_request_" +:+ u64_to_string seq) f↦ data ∗
-   ⌜has_encoding data [EncUInt64 cid ; EncUInt64 sseq ; EncUInt64 args.1 ; EncUInt64 args.2.1]⌝
+   ⌜has_encoding_for_short_clerk data cid sseq args⌝
    )
 .
 
@@ -48,7 +51,51 @@ Definition ProxyIncrServer_core_own (srv:loc) : iProp Σ :=
   "His_kvserver" ∷ is_incrserver γ incrserver ∗
   "Hkck_own" ∷ own_incrclerk γ kck incrserver
   (* This is using the non-crash-safe version of kvserver in kv_proof.v *)
-  .
+.
+
+Lemma wp_DecodeShortTermIncrClerk cid seq args (isrv:loc) (content:Slice.t) data :
+{{{
+     is_slice content byteT 1 data ∗
+     ⌜has_encoding_for_short_clerk data cid seq args⌝
+}}}
+  DecodeShortTermIncrClerk #isrv (slice_val content)
+{{{
+     c, RET #c; True
+}}}.
+Proof.
+  iIntros (Φ) "[Hslice %Henc] HΦ".
+  Opaque struct.t. (* TODO: put this here to avoid unfolding the struct defns all the way *)
+  Opaque struct.get.
+  wp_lam.
+  wp_pures.
+  iDestruct "Hslice" as "[Hsmall _]".
+  wp_apply (wp_new_dec with "Hsmall"); first done.
+  iIntros (decv) "His_dec".
+  wp_pures.
+  wp_apply (wp_ref_of_zero); first done.
+  iIntros (ck) "Hck".
+  wp_pures.
+  iDestruct (struct_fields_split with "Hck") as "Hck".
+  Transparent struct.t.
+  iSimpl in "Hck".
+  Opaque struct.t.
+  iNamed "Hck".
+  wp_storeField.
+
+  wp_apply (wp_Dec__GetInt with "His_dec").
+  iIntros "His_dec".
+  wp_storeField.
+
+  wp_apply (wp_Dec__GetInt with "His_dec").
+  iIntros "His_dec".
+  wp_storeField.
+  Search "wp_getField".
+  Check struct_fields_split.
+  iDestruct (struct_fields_split ck 1 ShortTermIncrClerk.S with "[cid seq req incrserver]") as "Hck"; eauto.
+  {
+    admit.
+  }
+Admitted.
 
 Lemma increment_proxy_core_indepotent (isrv:loc) (seq:u64) (args:RPCValC) :
   {{{
