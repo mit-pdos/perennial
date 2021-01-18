@@ -38,8 +38,6 @@ Axiom is_incrserver : incrservice_names → loc → iProp Σ.
 Instance is_incrserver_pers γ incrserver : Persistent (is_incrserver γ incrserver).
 Admitted.
 
-Axiom own_incrclerk : incrservice_names → loc → loc → iProp Σ.
-
 Variable γ:incrservice_names.
 
 Context `{!kvserviceG Σ}.
@@ -48,8 +46,7 @@ Definition ProxyIncrServer_core_own (srv:loc) : iProp Σ :=
   ∃ (kck incrserver:loc),
   "Hkvserver" ∷ srv ↦[IncrProxyServer.S :: "incrserver"] #incrserver ∗
   "Hkck" ∷ srv ↦[IncrProxyServer.S :: "ick"] #kck ∗
-  "His_kvserver" ∷ is_incrserver γ incrserver ∗
-  "Hkck_own" ∷ own_incrclerk γ kck incrserver
+  "His_kvserver" ∷ is_incrserver γ incrserver
   (* This is using the non-crash-safe version of kvserver in kv_proof.v *)
 .
 
@@ -76,14 +73,102 @@ Proof.
   iFrame. done.
 Qed.
 
-Definition own_short_incr_clerk ck isrv (cid seq:u64) (args:RPCValC) : iProp Σ :=
+Definition own_short_incr_clerk (ck isrv:loc) (cid seq:u64) (args:RPCValC) : iProp Σ :=
   "cid" ∷ ck ↦[ShortTermIncrClerk.S :: "cid"] #cid ∗
   "seq" ∷ ck ↦[ShortTermIncrClerk.S :: "seq"] #seq ∗
   "incrserver" ∷ ck ↦[ShortTermIncrClerk.S :: "incrserver"] #isrv ∗
-  "req" ∷ ck ↦[ShortTermIncrClerk.S :: "req"] (#cid,
+  "req" ∷ (* ck ↦[ShortTermIncrClerk.S :: "req"] req_ptr ∗
+  "Hread_req" ∷ read_request req_ptr {| Req_CID:=cid; Req_Seq:=seq; Req_Args:=args|} ∗ *)
+
+
+  (readonly (ck ↦[ShortTermIncrClerk.S :: "req"] (#cid,
                                               (#(word.sub seq 1:u64),
-                                              (#args.1, (#args.2.1, #()), #())))
+                                              (#args.1, (#args.2.1, #()), #())))))
 .
+
+Variable c:nat. (* Old value of the ghost counter *)
+Definition IncrPreCond : RPCValC → iProp Σ := (λ a, a.1 fm[[γ.(incr_mapGN)]]↦ c)%I.
+Definition IncrPostCond : RPCValC → u64 → iProp Σ := (λ a r, a.1 fm[[γ.(incr_mapGN)]]↦ (c+1))%I.
+
+Context `{!rpcG Σ (@RPCReply u64)}.
+
+(* TODO: will want to use merged rpc_base+rpc_durable *)
+Definition own_prepared_short_incr_clerk ck isrv cid seq args : iProp Σ :=
+  own_short_incr_clerk ck isrv cid seq args ∗
+  ⌜(int.nat (word.sub seq 1%nat) > 0)%Z⌝ ∗
+  ∃ γPost, is_RPCRequest γ.(incr_rpcGN) γPost IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
+.
+
+(* TODO: this should refer to a lemma in incr_proof.v *)
+
+Lemma IncrServer__Increment_is_rpcHandler (isrv:loc) :
+is_incrserver γ isrv -∗
+{{{
+     True
+}}}
+  IncrServer__Increment #isrv
+{{{ (f:goose_lang.val), RET f;
+        is_rpcHandler f γ.(incr_rpcGN) IncrPreCond IncrPostCond
+}}}.
+Admitted.
+
+Lemma wp_ShortTermIncrClerk__MakePreparedRequest ck isrv cid seq args :
+is_incrserver γ isrv -∗
+{{{
+     own_prepared_short_incr_clerk ck isrv cid seq args
+}}}
+    ShortTermIncrClerk__MakePreparedRequest #ck
+{{{
+     RET #(); True
+}}}
+.
+Proof.
+  iIntros "#Hs_inv" (Φ) "!# (Hown_ck & %Hseq_ineq & HreqInv) Hpost".
+  wp_lam.
+  wp_apply wp_ref_to; first eauto.
+  iIntros (errb) "Herrb".
+  wp_pures.
+  wp_apply (wp_allocStruct); first eauto.
+  iIntros (reply) "Hreply".
+  wp_pures.
+  iNamed "HreqInv".
+  iDestruct "HreqInv" as "#HreqInv".
+  iNamed "Hown_ck".
+  wp_forBreak.
+  wp_pures.
+
+  (* Transform the readonly struct field into a bunch of readonly ptsto for each field via fieldRef *)
+  iMod (readonly_load with "req") as (q) "req".
+  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  iIntros (req) "[%Hacc_req Hreq]".
+  iDestruct (struct_fields_split with "Hreq") as "Hreq".
+  iNamed "Hreq".
+  iMod (readonly_alloc (req ↦[RPCRequest.S :: "CID"] #cid) q with "[CID]") as "#CID"; first eauto.
+  iMod (readonly_alloc (req ↦[RPCRequest.S :: "Seq"] #(word.sub seq 1:u64)) q with "[Seq]") as "#Seq"; first eauto.
+  iMod (readonly_alloc (req ↦[RPCRequest.S :: "Args"] (into_val.to_val args)) q with "[Args]") as "#Args"; first eauto.
+
+  wp_loadField.
+  wp_apply (IncrServer__Increment_is_rpcHandler with "Hs_inv").
+  iIntros (f) "#His_rpcHandler".
+  wp_apply (RemoteProcedureCall_spec with "His_rpcHandler [$HreqInv $CID $Seq $Args Hreply]").
+  {
+    Opaque struct.t.
+    simpl.
+    Transparent struct.t.
+    Print own_reply.
+    iDestruct (struct_fields_split with "Hreply") as "Hreply".
+    iNamed "Hreply".
+    instantiate (1:={| Rep_Stale:=_; Rep_Ret:=_|}).
+    by iFrame.
+  }
+  iIntros (e) "HrpcPost".
+  iDestruct "HrpcPost" as (reply') "[Hown_reply [%He|HrpcPost]]".
+  - rewrite He. wp_store. wp_load. wp_binop. wp_pures.
+    iLeft.
+    iFrame.
+    (* Need to weaken "loop invariant" before wp_forBreak *)
+    admit.
+Admitted.
 
 Lemma wp_DecodeShortTermIncrClerk cid seq args (isrv:loc) (content:Slice.t) data :
 {{{
@@ -171,6 +256,7 @@ Proof.
   iDestruct (Hacc_req with "Hreq") as "req".
   clear Hacc_req req.
 
+  iApply wp_fupd.
   wp_apply (wp_Dec__GetInt with "His_dec").
   iIntros "His_dec".
 
@@ -194,8 +280,9 @@ Proof.
   iDestruct (Hacc_req with "Hreq") as "req".
   clear Hacc_req req.
 
+  iMod (readonly_alloc_1 with "req") as "req".
   iApply "HΦ".
-  iFrame.
+  by iFrame.
 Qed.
 
 Lemma increment_proxy_core_indepotent (isrv:loc) (seq:u64) (args:RPCValC) :
