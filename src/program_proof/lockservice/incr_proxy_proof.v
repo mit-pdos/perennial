@@ -77,7 +77,7 @@ Definition own_short_incr_clerk (ck isrv:loc) (cid seq:u64) (args:RPCValC) : iPr
   "cid" ∷ ck ↦[ShortTermIncrClerk.S :: "cid"] #cid ∗
   "seq" ∷ ck ↦[ShortTermIncrClerk.S :: "seq"] #seq ∗
   "incrserver" ∷ ck ↦[ShortTermIncrClerk.S :: "incrserver"] #isrv ∗
-  "req" ∷ (* ck ↦[ShortTermIncrClerk.S :: "req"] req_ptr ∗
+  "#req" ∷ (* ck ↦[ShortTermIncrClerk.S :: "req"] req_ptr ∗
   "Hread_req" ∷ read_request req_ptr {| Req_CID:=cid; Req_Seq:=seq; Req_Args:=args|} ∗ *)
 
 
@@ -119,27 +119,35 @@ is_incrserver γ isrv -∗
 }}}
     ShortTermIncrClerk__MakePreparedRequest #ck
 {{{
-     RET #(); True
+     v, RET #v; True
 }}}
 .
 Proof.
   iIntros "#Hs_inv" (Φ) "!# (Hown_ck & %Hseq_ineq & HreqInv) Hpost".
   wp_lam.
   wp_apply wp_ref_to; first eauto.
-  iIntros (errb) "Herrb".
+  iIntros (errb_ptr) "Herrb_ptr".
   wp_pures.
   wp_apply (wp_allocStruct); first eauto.
-  iIntros (reply) "Hreply".
+  iIntros (reply_ptr) "Hreply".
   wp_pures.
   iNamed "HreqInv".
   iDestruct "HreqInv" as "#HreqInv".
   iNamed "Hown_ck".
+
+  iAssert (∃ (err:bool), errb_ptr ↦[boolT] #err)%I with "[Herrb_ptr]" as "Herrb_ptr".
+  { iExists _. done. }
+  iAssert (∃ reply', own_reply reply_ptr reply')%I with "[Hreply]" as "Hreply".
+  { iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
+    iExists {| Rep_Ret:=_; Rep_Stale:=false |}. iFrame. }
+
   wp_forBreak.
+  iDestruct "Hreply" as (reply) "Hreply".
   wp_pures.
 
   (* Transform the readonly struct field into a bunch of readonly ptsto for each field via fieldRef *)
-  iMod (readonly_load with "req") as (q) "req".
-  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  iMod (readonly_load with "req") as (q) "req2".
+  wp_apply (wp_struct_fieldRef_mapsto with "req2"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
@@ -155,20 +163,28 @@ Proof.
     Opaque struct.t.
     simpl.
     Transparent struct.t.
-    Print own_reply.
-    iDestruct (struct_fields_split with "Hreply") as "Hreply".
-    iNamed "Hreply".
-    instantiate (1:={| Rep_Stale:=_; Rep_Ret:=_|}).
     by iFrame.
   }
   iIntros (e) "HrpcPost".
-  iDestruct "HrpcPost" as (reply') "[Hown_reply [%He|HrpcPost]]".
-  - rewrite He. wp_store. wp_load. wp_binop. wp_pures.
+  iDestruct "HrpcPost" as (reply') "[Hown_reply [%He|(%He & HrpcPost)]]".
+  - rewrite He. iNamed "Herrb_ptr". wp_store. wp_load. wp_binop. wp_pures.
     iLeft.
-    iFrame.
-    (* Need to weaken "loop invariant" before wp_forBreak *)
-    admit.
-Admitted.
+    iFrame "#∗".
+    iSplitL ""; first done.
+    iSplitL "Herrb_ptr".
+    { iExists _; iFrame. }
+    { iExists _; iFrame. }
+  - rewrite He.
+    iNamed "Herrb_ptr".
+    wp_store. wp_load. wp_binop. wp_pures.
+    iRight.
+    iSplitL ""; first done.
+    wp_pures.
+    iNamed "Hown_reply".
+    wp_loadField.
+    iApply "Hpost".
+    done.
+Qed.
 
 Lemma wp_DecodeShortTermIncrClerk cid seq args (isrv:loc) (content:Slice.t) data :
 {{{
