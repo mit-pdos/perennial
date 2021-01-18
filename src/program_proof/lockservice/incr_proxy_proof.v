@@ -213,6 +213,7 @@ Lemma increment_proxy_core_indepotent (isrv:loc) (seq:u64) (args:RPCValC) :
   }}}.
 Proof.
   Opaque struct.t. (* TODO: put this here to avoid unfolding the struct defns all the way *)
+  Opaque zero_val.
   iIntros (Φ Φc) "[HincrCrashInv Hisown] Hpost".
   wpc_call; first done.
   { iFrame. }
@@ -234,8 +235,10 @@ Proof.
   wpc_bind (ref _)%E.
   wpc_frame.
   wp_apply (wp_ref_of_zero); first done.
+  Transparent zero_val.
   iIntros (ck) "Hck".
   iNamed 1.
+  iSimpl in "Hck".
 
   wpc_pures.
 
@@ -317,7 +320,27 @@ Proof.
       wpc_frame.
       wp_loadField.
       iNamed 1.
-      (* TODO: spec for DecodeShortTermIncrClerk, and then MakePreparedRequest *)
+
+      wpc_bind (DecodeShortTermIncrClerk _ _)%E.
+      wpc_frame.
+      wp_apply (wp_DecodeShortTermIncrClerk with "[Hcontent_slice]").
+      { by iFrame. }
+      iIntros (ck_v) "Hown_ck".
+      iNamed 1.
+
+      wpc_bind (_ <-[_] _)%E.
+      wpc_frame.
+      wp_store.
+      iNamed 1.
+
+      wpc_pures.
+
+      wpc_bind (![_] _)%E.
+      wpc_frame.
+      wp_load.
+      iNamed 1.
+
+      (* TODO: spec for MakePreparedRequest *)
       admit.
     }
     {
