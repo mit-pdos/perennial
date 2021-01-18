@@ -32,13 +32,11 @@ Section translate.
   Context (spec_trans : sval -> ival -> Prop).
 
   (* This is a typed relation for translating code expressions in atomic blocks *)
-  Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> Prop).
-
   (* Not all variables in a context can be used in the body of an Atomically e expression.
-     For example, consider let x := (λ _, impure_code) in Atomically x. The following
-     relation is used to filter the context down to just types that can be transferred to the
-     spec_atomic_transTy relation when typing e. *)
-  Context (spec_atomic_convertible : sty -> Prop).
+     For example, consider let x := (λ _, impure_code) in Atomically x. So this relation
+     should filter out elements of SCtx that do not have appropriate types before
+     trying to type the body of the expression *)
+  Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> Prop).
 
 
   Reserved Notation "Γ ⊢ e1 -- e2 : A" (at level 74, e1, e2, A at next level).
@@ -63,9 +61,8 @@ Section translate.
   | fork_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       Γ ⊢ Fork e1 -- Fork e2 : unitT
-  | atomically_transTy Γ' e1 e2 t :
-      (∀ x ty, Γ' !! x = Some ty → Γ !! x = Some ty ∧ spec_atomic_convertible ty) ->
-      spec_atomic_transTy Γ' e1 e2 t ->
+  | atomically_transTy e1 e2 t :
+      spec_atomic_transTy Γ e1 e2 t ->
       Γ ⊢ Atomically e1 -- e2 : t
   (** control flow *)
   | if_transTy cond cond' e1 e1' e2 e2' t :

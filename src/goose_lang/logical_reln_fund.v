@@ -41,7 +41,6 @@ Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 Context `{hsT_model: !specTy_model spec_ty}.
 Context (spec_trans: sval → ival → Prop).
 Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> Prop).
-Context (spec_atomic_convertible : sty -> Prop).
 Context `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}.
 Lemma loc_paired_eq_iff ls l ls' l':
   loc_paired ls l -∗
@@ -275,7 +274,7 @@ Lemma comparableTy_val_eq t vs1 v1 vs2 v2:
   val_interp (hS := hS) t vs2 v2 -∗
   ⌜ v1 = v2 ↔ vs1 = vs2 ⌝.
 Proof.
-  clear spec_trans spec_atomic_convertible.
+  clear spec_trans.
   revert vs1 v1 vs2 v2.
   induction t => vs1 v1 vs2 v2; try (inversion 1; fail).
   - intros. destruct t; iPureIntro; naive_solver.
@@ -794,18 +793,18 @@ Local Hint Extern 1 (envs_entails _ (<disc> _)) => by iModIntro : core.
 
 Lemma sty_fundamental_lemma:
   sty_rules_obligation spec_trans →
-  sty_atomic_obligation spec_atomic_transTy spec_atomic_convertible →
-  ∀ Γ es e τ, expr_transTy _ _ _ spec_trans spec_atomic_transTy spec_atomic_convertible Γ es e τ →
+  sty_atomic_obligation spec_atomic_transTy →
+  ∀ Γ es e τ, expr_transTy _ _ _ spec_trans spec_atomic_transTy Γ es e τ →
     ⊢ ctx_has_semTy (hS := hS) Γ es e τ.
 Proof using spec_trans.
   iIntros (Hrules Hatomic ???? Htyping).
   induction Htyping using @expr_typing_ind with
       (spec_trans := spec_trans)
       (P := (λ Γ es e τ
-             (HTYPE: expr_transTy _ _ _ spec_trans spec_atomic_transTy spec_atomic_convertible Γ es e τ),
+             (HTYPE: expr_transTy _ _ _ spec_trans spec_atomic_transTy Γ es e τ),
                ⊢ ctx_has_semTy (hS := hS) Γ es e τ))
       (P0 := (λ Γ vs v τ
-             (HTYPE: val_transTy _ _ _ spec_trans spec_atomic_transTy spec_atomic_convertible Γ vs v τ),
+             (HTYPE: val_transTy _ _ _ spec_trans spec_atomic_transTy Γ vs v τ),
                ⊢ sty_inv hS -∗ spec_ctx -∗ trace_ctx -∗ val_interp (hS := hS) τ vs v));
     try (intros; iIntros (Γsubst HPROJ) "#Hinv #Hspec #Htrace #Hctx");
     try (intros; iIntros "#Hinv #Hspec #Htrace").
@@ -901,9 +900,8 @@ Proof using spec_trans.
     }
 
     iSplit; first (iModIntro; iApply "Hj"). iNext. iExists _; iFrame; eauto.
-  - iApply (Hatomic _ _ _ _ _ _ _ _ Γsubst with "[$] [$] [$] [$]").
+  - iApply (Hatomic _ _ _ _ _ _ _ Γsubst with "[$] [$] [$] [$]").
     { intros. rewrite HPROJ. eauto. }
-    { eauto. }
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.

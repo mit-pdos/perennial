@@ -249,7 +249,6 @@ Section reln_obligations.
 
 Context `{hsT_model: !specTy_model} (spec_trans: sval → ival → Prop).
 Context (spec_atomic_transTy : SCtx → sexpr → iexpr → sty → Prop).
-Context (spec_atomic_convertible : sty → Prop).
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 
@@ -306,10 +305,8 @@ Definition subst_ctx := gmap string subst_tuple.
 
 Definition sty_atomic_obligation :=
   forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
-         (Γ' : SCtx) e1 e2 t (Γsubst: gmap string subst_tuple),
-  (∀ (x : string) (ty0 : sty),
-        Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0 ∧ spec_atomic_convertible ty0) ->
-  (spec_atomic_transTy Γ' e1 e2 t) ->
+         e1 e2 t (Γsubst: gmap string subst_tuple),
+  (spec_atomic_transTy (subst_ty <$> Γsubst) e1 e2 t) ->
   sty_inv hS -∗
   spec_ctx -∗
   trace_ctx -∗

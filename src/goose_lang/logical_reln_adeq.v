@@ -45,7 +45,6 @@ Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 Context `{hsT_model: !specTy_model spec_ty}.
 Context (spec_trans: sval → ival → Prop).
 Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> Prop).
-Context (spec_atomic_convertible : sty -> Prop).
 Context (upd: specTy_update hsT_model).
 
 Existing Instance sty_inv_persistent.
@@ -74,11 +73,11 @@ Definition sty_derived_crash_condition :=
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new))%I.
 
 Lemma sty_inv_to_wpc hG hRG hS es e τ j:
-  expr_transTy _ _ _ spec_trans spec_atomic_transTy spec_atomic_convertible ∅ es e τ →
+  expr_transTy _ _ _ spec_trans spec_atomic_transTy ∅ es e τ →
   sty_crash_inv_obligation →
   sty_crash_obligation →
   sty_rules_obligation spec_trans →
-  sty_atomic_obligation spec_atomic_transTy spec_atomic_convertible →
+  sty_atomic_obligation spec_atomic_transTy →
   spec_ctx -∗
   trace_ctx -∗
   sty_init hS -∗
@@ -92,7 +91,7 @@ Proof.
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
     iApply (Hsty_crash_inv with "[$] [$] [Hj]").
     { iIntros "#Hinv'".
-      iPoseProof (sty_fundamental_lemma _ _ _ _ Hsty_rules Hatomic ∅ _ _ _ Htype) as "H"; eauto.
+      iPoseProof (sty_fundamental_lemma _ _ _ Hsty_rules Hatomic ∅ _ _ _ Htype) as "H"; eauto.
       iSpecialize ("H" $! ∅ with "[] [$] [$] [$] []").
       { iPureIntro. apply: fmap_empty. }
       { by rewrite big_sepM_empty. }
@@ -125,8 +124,8 @@ Lemma sty_adequacy es σs e σ τ initP:
   sty_crash_inv_obligation →
   sty_crash_obligation →
   sty_rules_obligation spec_trans →
-  sty_atomic_obligation spec_atomic_transTy spec_atomic_convertible →
-  expr_transTy _ _ _ spec_trans spec_atomic_transTy spec_atomic_convertible ∅ es e τ →
+  sty_atomic_obligation spec_atomic_transTy →
+  expr_transTy _ _ _ spec_trans spec_atomic_transTy ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →
