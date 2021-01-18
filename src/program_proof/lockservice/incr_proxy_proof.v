@@ -53,6 +53,38 @@ Definition ProxyIncrServer_core_own (srv:loc) : iProp Σ :=
   (* This is using the non-crash-safe version of kvserver in kv_proof.v *)
 .
 
+Lemma RPCRequest_merge req cid seq a1 a2:
+  req ↦[RPCRequest.S :: "CID"] #cid -∗
+  req ↦[RPCRequest.S :: "Seq"] #seq -∗
+  req ↦[RPCRequest.S :: "Args"] (#a1, (#a2, #())) -∗
+  req ↦[struct.t RPCRequest.S] (#cid, (#seq, ((#a1, (#a2, #())) , #())))
+  .
+Proof.
+  iIntros.
+  iApply struct_fields_split.
+  iFrame. done.
+Qed.
+
+Lemma RPCVals_merge vals a1 a2:
+  vals ↦[RPCVals.S :: "U64_1"] #a1 -∗
+  vals ↦[RPCVals.S :: "U64_2"] #a2 -∗
+  vals ↦[struct.t RPCVals.S] (#a1, (#a2, #()))
+  .
+Proof.
+  iIntros.
+  iApply struct_fields_split.
+  iFrame. done.
+Qed.
+
+Definition own_short_incr_clerk ck isrv (cid seq:u64) (args:RPCValC) : iProp Σ :=
+  "cid" ∷ ck ↦[ShortTermIncrClerk.S :: "cid"] #cid ∗
+  "seq" ∷ ck ↦[ShortTermIncrClerk.S :: "seq"] #seq ∗
+  "incrserver" ∷ ck ↦[ShortTermIncrClerk.S :: "incrserver"] #isrv ∗
+  "req" ∷ ck ↦[ShortTermIncrClerk.S :: "req"] (#cid,
+                                              (#(word.sub seq 1:u64),
+                                              (#args.1, (#args.2.1, #()), #())))
+.
+
 Lemma wp_DecodeShortTermIncrClerk cid seq args (isrv:loc) (content:Slice.t) data :
 {{{
      is_slice content byteT 1 data ∗
@@ -60,7 +92,7 @@ Lemma wp_DecodeShortTermIncrClerk cid seq args (isrv:loc) (content:Slice.t) data
 }}}
   DecodeShortTermIncrClerk #isrv (slice_val content)
 {{{
-     c, RET #c; True
+     (ck:loc), RET #ck; own_short_incr_clerk ck isrv cid seq args
 }}}.
 Proof.
   iIntros (Φ) "[Hslice %Henc] HΦ".
@@ -72,14 +104,14 @@ Proof.
   wp_apply (wp_new_dec with "Hsmall"); first done.
   iIntros (decv) "His_dec".
   wp_pures.
-  wp_apply (wp_ref_of_zero); first done.
+  wp_apply (wp_allocStruct); first by apply zero_val_ty'.
   iIntros (ck) "Hck".
-  wp_pures.
   iDestruct (struct_fields_split with "Hck") as "Hck".
   Transparent struct.t.
   iSimpl in "Hck".
-  Opaque struct.t.
   iNamed "Hck".
+  Opaque struct.t.
+  wp_pures.
   wp_storeField.
 
   wp_apply (wp_Dec__GetInt with "His_dec").
@@ -89,13 +121,82 @@ Proof.
   wp_apply (wp_Dec__GetInt with "His_dec").
   iIntros "His_dec".
   wp_storeField.
-  Search "wp_getField".
-  Check struct_fields_split.
-  iDestruct (struct_fields_split ck 1 ShortTermIncrClerk.S with "[cid seq req incrserver]") as "Hck"; eauto.
-  {
-    admit.
-  }
-Admitted.
+
+  wp_loadField.
+
+  (* This block of proof writes to a field in a struct contained as a field in another struct *)
+  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  iIntros (req) "[%Hacc_req Hreq]".
+  symmetry in Hacc_req.
+  iDestruct (struct_fields_split with "Hreq") as "Hreq".
+  iNamed "Hreq".
+  wp_storeField.
+  iDestruct (RPCRequest_merge with "CID Seq Args") as "Hreq".
+  iDestruct (Hacc_req with "Hreq") as "req".
+  clear Hacc_req req.
+
+  wp_loadField.
+  wp_binop.
+
+  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  iIntros (req) "[%Hacc_req Hreq]".
+  iDestruct (struct_fields_split with "Hreq") as "Hreq".
+  iNamed "Hreq".
+  wp_storeField.
+  iDestruct (RPCRequest_merge with "CID Seq Args") as "Hreq".
+  iDestruct (Hacc_req with "Hreq") as "req".
+  clear Hacc_req req.
+
+  wp_apply (wp_Dec__GetInt with "His_dec").
+  iIntros "His_dec".
+
+  (* TODO: too much copy-paste *)
+  (* Open ref to req field in ShortTermIncrClerk *)
+  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  iIntros (req) "[%Hacc_req Hreq]".
+  iDestruct (struct_fields_split with "Hreq") as "Hreq".
+  iNamed "Hreq".
+  (* Open ref to args field in RPCRequest *)
+  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  iIntros (Args) "[%Hacc_Args HArgs]".
+  iDestruct (struct_fields_split with "HArgs") as "HArgs".
+  iNamed "HArgs".
+  wp_storeField.
+  (* Close ref to args field in RPCRequest *)
+  iDestruct (RPCVals_merge with "U64_1 U64_2") as "HArgs".
+  iDestruct (Hacc_Args with "HArgs") as "Args".
+  clear Hacc_Args Args.
+  (* Close ref to req field in ShortTermIncrClerk *)
+  iDestruct (RPCRequest_merge with "CID Seq Args") as "Hreq".
+  iDestruct (Hacc_req with "Hreq") as "req".
+  clear Hacc_req req.
+
+  wp_apply (wp_Dec__GetInt with "His_dec").
+  iIntros "His_dec".
+
+  (* Open ref to req field in ShortTermIncrClerk *)
+  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  iIntros (req) "[%Hacc_req Hreq]".
+  iDestruct (struct_fields_split with "Hreq") as "Hreq".
+  iNamed "Hreq".
+  (* Open ref to args field in RPCRequest *)
+  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  iIntros (Args) "[%Hacc_Args HArgs]".
+  iDestruct (struct_fields_split with "HArgs") as "HArgs".
+  iNamed "HArgs".
+  wp_storeField.
+  (* Close ref to args field in RPCRequest *)
+  iDestruct (RPCVals_merge with "U64_1 U64_2") as "HArgs".
+  iDestruct (Hacc_Args with "HArgs") as "Args".
+  clear Hacc_Args Args.
+  (* Close ref to req field in ShortTermIncrClerk *)
+  iDestruct (RPCRequest_merge with "CID Seq Args") as "Hreq".
+  iDestruct (Hacc_req with "Hreq") as "req".
+  clear Hacc_req req.
+
+  iApply "HΦ".
+  iFrame.
+Qed.
 
 Lemma increment_proxy_core_indepotent (isrv:loc) (seq:u64) (args:RPCValC) :
   {{{

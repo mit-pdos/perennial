@@ -604,15 +604,15 @@ Definition ShortTermIncrClerk__MakePreparedRequest: val :=
 Definition DecodeShortTermIncrClerk: val :=
   rec: "DecodeShortTermIncrClerk" "is" "content" :=
     let: "d" := marshal.NewDec "content" in
-    let: "ck" := ref (zero_val (struct.t ShortTermIncrClerk.S)) in
+    let: "ck" := struct.alloc ShortTermIncrClerk.S (zero_val (struct.t ShortTermIncrClerk.S)) in
     struct.storeF ShortTermIncrClerk.S "incrserver" "ck" "is";;
     struct.storeF ShortTermIncrClerk.S "cid" "ck" (marshal.Dec__GetInt "d");;
     struct.storeF ShortTermIncrClerk.S "seq" "ck" (marshal.Dec__GetInt "d");;
-    struct.storeF RPCRequest.S "CID" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.get ShortTermIncrClerk.S "cid" (![struct.t ShortTermIncrClerk.S] "ck"));;
-    struct.storeF RPCRequest.S "Seq" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.get ShortTermIncrClerk.S "seq" (![struct.t ShortTermIncrClerk.S] "ck") - #1);;
+    struct.storeF RPCRequest.S "CID" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.loadF ShortTermIncrClerk.S "cid" "ck");;
+    struct.storeF RPCRequest.S "Seq" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.loadF ShortTermIncrClerk.S "seq" "ck" - #1);;
     struct.storeF RPCVals.S "U64_1" (struct.fieldRef RPCRequest.S "Args" (struct.fieldRef ShortTermIncrClerk.S "req" "ck")) (marshal.Dec__GetInt "d");;
     struct.storeF RPCVals.S "U64_2" (struct.fieldRef RPCRequest.S "Args" (struct.fieldRef ShortTermIncrClerk.S "req" "ck")) (marshal.Dec__GetInt "d");;
-    ![struct.t ShortTermIncrClerk.S] "ck".
+    "ck".
 
 Definition EncodeShortTermIncrClerk: val :=
   rec: "EncodeShortTermIncrClerk" "ck" :=
@@ -634,14 +634,14 @@ Definition MakeFreshIncrClerk: val :=
 Definition IncrProxyServer__proxy_increment_core: val :=
   rec: "IncrProxyServer__proxy_increment_core" "is" "seq" "args" :=
     let: "filename" := #(str"procy_incr_request_") + grove_ffi.U64ToString "seq" in
-    let: "ck" := ref (zero_val (struct.t ShortTermIncrClerk.S)) in
+    let: "ck" := ref (zero_val (refT (struct.t ShortTermIncrClerk.S))) in
     let: "content" := grove_ffi.Read "filename" in
     (if: slice.len "content" > #0
-    then "ck" <-[struct.t ShortTermIncrClerk.S] DecodeShortTermIncrClerk (struct.loadF IncrProxyServer.S "incrserver" "is") "content"
+    then "ck" <-[refT (struct.t ShortTermIncrClerk.S)] DecodeShortTermIncrClerk (struct.loadF IncrProxyServer.S "incrserver" "is") "content"
     else
-      "ck" <-[struct.t ShortTermIncrClerk.S] MakeFreshIncrClerk #();;
-      ShortTermIncrClerk__PrepareRequest (![struct.t ShortTermIncrClerk.S] "ck") "args";;
-      let: "content" := EncodeShortTermIncrClerk "ck" in
+      "ck" <-[refT (struct.t ShortTermIncrClerk.S)] MakeFreshIncrClerk #();;
+      ShortTermIncrClerk__PrepareRequest (![refT (struct.t ShortTermIncrClerk.S)] "ck") "args";;
+      let: "content" := EncodeShortTermIncrClerk (![refT (struct.t ShortTermIncrClerk.S)] "ck") in
       grove_ffi.Write "filename" "content");;
-    ShortTermIncrClerk__MakePreparedRequest (![struct.t ShortTermIncrClerk.S] "ck");;
+    ShortTermIncrClerk__MakePreparedRequest (![refT (struct.t ShortTermIncrClerk.S)] "ck");;
     #0.
