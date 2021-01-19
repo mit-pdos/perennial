@@ -155,6 +155,7 @@ def main():
             "wal",
             "buftxn_replication",
             "simple",
+            "twophase",
         ]
         for pkg in pkgs:
             if pkg == ".":
