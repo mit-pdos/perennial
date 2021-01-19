@@ -69,7 +69,6 @@ Class ext_types (ext:ext_op) :=
   { val_tys :> val_types;
     (* the argument type and return type *)
     get_ext_tys: val -> ty * ty -> Prop;
-    (* the argument type and return type for things that can appear in atomic blocks *)
   }.
 
 Section goose_lang.

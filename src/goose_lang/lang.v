@@ -1311,7 +1311,7 @@ Proof.
 Qed.
 
 (* TODO(tej): I'm not convinced this is even true, we probably don't handle
-Resolve (Atomically _) _ _ in a sensible way because it's stuck but Atomically _
+Resolve (Atomically _ _) _ _ in a sensible way because it's stuck but Atomically _ _
 isn't. *)
 Lemma irreducible_resolve e v1 v2 σ :
   irreducible e σ → irreducible (Resolve e (Val v1) (Val v2)) σ.
