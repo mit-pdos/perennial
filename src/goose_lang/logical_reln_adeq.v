@@ -44,7 +44,7 @@ Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
 Context `{hsT_model: !specTy_model spec_ty}.
 Context (spec_trans: sval → ival → Prop).
-Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> Prop).
+Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> sexpr -> iexpr -> sty -> Prop).
 Context (upd: specTy_update hsT_model).
 
 Existing Instance sty_inv_persistent.

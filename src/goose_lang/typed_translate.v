@@ -36,7 +36,7 @@ Section translate.
      For example, consider let x := (λ _, impure_code) in Atomically x. So this relation
      should filter out elements of SCtx that do not have appropriate types before
      trying to type the body of the expression *)
-  Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> Prop).
+  Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> sexpr -> iexpr -> sty -> Prop).
 
 
   Reserved Notation "Γ ⊢ e1 -- e2 : A" (at level 74, e1, e2, A at next level).
@@ -61,9 +61,10 @@ Section translate.
   | fork_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       Γ ⊢ Fork e1 -- Fork e2 : unitT
-  | atomically_transTy e1 e2 t :
-      spec_atomic_transTy Γ e1 e2 t ->
-      Γ ⊢ Atomically e1 -- e2 : t
+  | atomically_transTy el1 el2 tl e1 e2 t :
+      Γ ⊢ el1 -- el2 : tl ->
+      spec_atomic_transTy Γ el1 el2 tl e1 e2 t ->
+      Γ ⊢ Atomically el1 e1 -- e2 : t
   (** control flow *)
   | if_transTy cond cond' e1 e1' e2 e2' t :
       Γ ⊢ cond -- cond' : boolT ->

@@ -122,7 +122,7 @@ Inductive expr :=
   | Case (e0 : expr) (e1 : expr) (e2 : expr)
   (* Concurrency *)
   | Fork (e : expr)
-  | Atomically (e : expr)
+  | Atomically (e: expr) (e : expr)
   (* Heap-based primitives *)
   | Primitive0 (op: prim_op args0)
   | Primitive1 (op: prim_op args1) (e : expr)
@@ -373,7 +373,7 @@ Proof using ext.
       | Case e0 e1 e2, Case e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | Fork e, Fork e' => cast_if (decide (e = e'))
-      | Atomically e, Atomically e' => cast_if (decide (e = e'))
+      | Atomically el e, Atomically el' e' => cast_if_and (decide (el = el')) (decide (e = e'))
       | ExternalOp op e, ExternalOp op' e' => cast_if_and (decide (op = op')) (decide (e = e'))
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
@@ -591,7 +591,7 @@ Proof using ext.
      | InjR e => GenNode 10 [go e]
      | Case e0 e1 e2 => GenNode 11 [go e0; go e1; go e2]
      | Fork e => GenNode 12 [go e]
-     | Atomically e => GenNode 13 [go e]
+     | Atomically el e => GenNode 13 [go el; go e]
      | ExternalOp op e => GenNode 20 [GenLeaf $ externOp op; go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
      | NewProph => GenNode 18 []
@@ -628,7 +628,7 @@ Proof using ext.
      | GenNode 10 [e] => InjR (go e)
      | GenNode 11 [e0; e1; e2] => Case (go e0) (go e1) (go e2)
      | GenNode 12 [e] => Fork (go e)
-     | GenNode 13 [e] => Atomically (go e)
+     | GenNode 13 [el; e] => Atomically (go el) (go e)
      | GenNode 20 [GenLeaf (externOp op); e] => ExternalOp op (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
      | GenNode 18 [] => NewProph
@@ -749,7 +749,7 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | InjR e => InjR (subst x v e)
   | Case e0 e1 e2 => Case (subst x v e0) (subst x v e1) (subst x v e2)
   | Fork e => Fork (subst x v e)
-  | Atomically e => Atomically (subst x v e)
+  | Atomically el e => Atomically (subst x v el) (subst x v e)
   | Primitive0 op => Primitive0 op
   | Primitive1 op e => Primitive1 op (subst x v e)
   | Primitive2 op e1 e2 => Primitive2 op (subst x v e1) (subst x v e2)
@@ -1031,7 +1031,7 @@ Fixpoint head_trans (e: expr) :
   | Case (Val (InjRV v)) e1 e2 => ret_expr $ App e2 (Val v)
   | Fork e => ret ([], Val $ LitV LitUnit, [e])
   (* handled separately *)
-  | Atomically _ => undefined
+  | Atomically _ _ => undefined
   | ArbitraryInt =>
     atomically
       (x ← arbitraryInt;
@@ -1125,20 +1125,20 @@ Inductive head_step_atomic: expr -> state -> list observation -> expr -> state -
  | head_step_trans : ∀ e s κs e' s' efs,
      head_step e s κs e' s' efs →
      head_step_atomic e s κs e' s' efs
- | head_step_atomically : ∀ e s κs v' s' efs,
+ | head_step_atomically : ∀ el e s κs v' s' efs,
      Relation_Operators.clos_refl_trans_1n _
        (λ '(e, s) '(e', s'), head_step e s [] e' s' []) (e, s) (Val v', s') →
-     head_step_atomic (Atomically e) s κs (Val v') s' efs
+     head_step_atomic (Atomically el e) s κs (Val v') s' efs
 .
 
 Lemma head_step_atomic_inv e s κs e' s' efs :
   head_step_atomic e s κs e' s' efs →
-  (∀ e'', e ≠ Atomically e'') →
+  (∀ el e'', e ≠ Atomically el e'') →
   head_step e s κs e' s' efs.
 Proof.
   inversion 1; subst; eauto.
   intros.
-  contradiction (H1 e0); auto.
+  contradiction (H1 el e0); auto.
 Qed.
 
 (** Basic properties about the language *)

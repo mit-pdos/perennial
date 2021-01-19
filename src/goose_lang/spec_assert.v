@@ -160,7 +160,7 @@ Proof.
 Qed.
 
 Lemma head_irreducible_not_atomically e σ :
-  (∀ e'', e ≠ Atomically e'') →
+  (∀ el e'', e ≠ Atomically el e'') →
   (∀ κ e' σ' efs, head_step e σ κ e' σ' efs → False) →
   head_irreducible e σ.
 Proof.

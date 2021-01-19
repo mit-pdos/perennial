@@ -40,7 +40,7 @@ Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
 Context `{hsT_model: !specTy_model spec_ty}.
 Context (spec_trans: sval → ival → Prop).
-Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> Prop).
+Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> sexpr -> iexpr -> sty -> Prop).
 Context `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}.
 Lemma loc_paired_eq_iff ls l ls' l':
   loc_paired ls l -∗
@@ -900,8 +900,9 @@ Proof using spec_trans.
     }
 
     iSplit; first (iModIntro; iApply "Hj"). iNext. iExists _; iFrame; eauto.
-  - iApply (Hatomic _ _ _ _ _ _ _ Γsubst with "[$] [$] [$] [$]").
+  - iApply (Hatomic _ _ _ _ _ _ _ _ _ _ Γsubst with "[$] [$] [$] [$]").
     { intros. rewrite HPROJ. eauto. }
+    iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.

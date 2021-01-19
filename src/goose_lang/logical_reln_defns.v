@@ -248,7 +248,7 @@ Class specTy_update `(hsT_model: !specTy_model) :=
 Section reln_obligations.
 
 Context `{hsT_model: !specTy_model} (spec_trans: sval → ival → Prop).
-Context (spec_atomic_transTy : SCtx → sexpr → iexpr → sty → Prop).
+Context (spec_atomic_transTy : SCtx → sexpr → iexpr → sty → sexpr → iexpr → sty → Prop).
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 
@@ -291,7 +291,7 @@ Definition sty_rules_obligation :=
     has_semTy (es vs) (e v) (val_interp (hS := hS) t2).
 
 Definition sty_crash_inv_obligation :=
-  (forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ) 
+  (forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
      e (Φ: ival → iProp Σ),
     ⊢ sty_init hS -∗
     spec_ctx -∗
@@ -305,13 +305,15 @@ Definition subst_ctx := gmap string subst_tuple.
 
 Definition sty_atomic_obligation :=
   forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
-         e1 e2 t (Γsubst: gmap string subst_tuple),
-  (spec_atomic_transTy (subst_ty <$> Γsubst) e1 e2 t) ->
+         el1 el2 tl e1 e2 t (Γsubst: gmap string subst_tuple),
+  (spec_atomic_transTy (subst_ty <$> Γsubst) el1 el2 tl e1 e2 t) ->
   sty_inv hS -∗
   spec_ctx -∗
   trace_ctx -∗
   ([∗ map] t0 ∈ Γsubst, val_interp (hS:=hS) (subst_ty t0) (subst_sval t0) (subst_ival t0)) -∗
-  has_semTy (subst_map (subst_sval <$> Γsubst) (Atomically e1)) (subst_map (subst_ival <$> Γsubst) e2)
+  has_semTy (subst_map (subst_sval <$> Γsubst) el1) (subst_map (subst_ival <$> Γsubst) el2)
+    (val_interp (hS := hS) tl) -∗
+  has_semTy (subst_map (subst_sval <$> Γsubst) (Atomically el1 e1)) (subst_map (subst_ival <$> Γsubst) e2)
     (val_interp (hS := hS) t).
 
 Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
