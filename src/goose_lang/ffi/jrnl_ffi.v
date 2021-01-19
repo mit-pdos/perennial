@@ -3,6 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
 From Perennial.goose_lang Require ffi.disk.
+From Perennial.goose_lang.lib.list Require Import list.
 From Perennial.program_proof Require Import addr_proof.
 
 Section recoverable.
@@ -84,10 +85,11 @@ Instance jrnl_val_ty: val_types :=
 Section jrnl.
   Existing Instances jrnl_op jrnl_val_ty.
 
-  Definition addr : Type := u64 * u64.
   Definition addrT : ty := structRefT [ uint64T; uint64T ].
 
   Definition obj := list u8.
+
+  Definition val_of_obj (o : obj) := val_of_list ((λ u, LitV (LitByte u)) <$> o).
 
   Definition blkno := u64.
   Definition kind := { k : Z | k = 0 ∨ 3 <= k <= 15 }.
@@ -105,6 +107,8 @@ Section jrnl.
 
   Definition jrnlData (m : jrnl_map) := fst m.
   Definition jrnlKinds (m : jrnl_map) := snd m.
+
+  Definition updateData m a o := (<[a := o]> (jrnlData m), jrnlKinds m).
 
   Definition offsets_aligned (m : jrnl_map) :=
     (∀ a, a ∈ dom (gset _) (jrnlData m) →
@@ -135,12 +139,29 @@ Section jrnl.
     modify (set heap <[l := Free #()]>);;
     ret l.
 
+  Existing Instance fallback_genPred.
+
   Definition jrnl_step (op:JrnlOp) (v:val) : transition state val :=
     match op, v with
     | OpenOp, LitV LitUnit =>
-      s ← open;
+      j ← open;
       ret $ LitV $ LitUnit
-    (* TODO: other operations *)
+    | ReadBufOp, (#(LitInt blkno), #(LitInt off), #())%V =>
+      j ← openΣ;
+      d ← unwrap (jrnlData j !! (Build_addr blkno off));
+      k ← unwrap (jrnlKinds j !! blkno);
+      (* bit reads must be done with ReadBitOp *)
+      check (`k ≠ 0);;
+      ret $ val_of_obj d
+    | WriteBufOp, ((#(LitInt blkno), #(LitInt off), #()), ov)%V =>
+      j ← openΣ;
+      (* This only allows writing to addresses that already have defined contents *)
+      _ ← unwrap (jrnlData j !! (Build_addr blkno off));
+      k ← unwrap (jrnlKinds j !! blkno);
+      o ← suchThat (λ _ o, val_of_obj o = ov);
+      check ((length o : Z) = 2^(`k) ∧ `k ≠ 0);;
+      modifyΣ (λ j, updateData j (Build_addr blkno off) o);;
+      ret $ #()
     | _, _ => undefined
     end.
 
