@@ -3,6 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
 From Perennial.goose_lang Require ffi.disk.
+From Perennial.program_proof Require Import addr_proof.
 
 Section recoverable.
   Context {Σ:Type}.
@@ -88,9 +89,8 @@ Section jrnl.
 
   Definition obj := list u8.
 
-  (* TODO *)
-  Definition blkno := unit.
-  Inductive kinds :=.
+  Definition blkno := u64.
+  Definition kind := { k : Z | k = 0 ∨ 3 <= k <= 15 }.
 
   (* The only operation that can be called outside an atomically block is OpenOp *)
   Inductive jrnl_ext_tys : @val jrnl_op -> (ty * ty) -> Prop :=
@@ -101,9 +101,24 @@ Section jrnl.
     {| val_tys := jrnl_val_ty;
        get_ext_tys := jrnl_ext_tys |}.
 
-  Definition jrnl_state := RecoverableState (gmap addr obj * gmap blkno kinds).
+  Definition jrnl_map : Type := gmap addr obj * gmap blkno kind.
 
-  Instance jrnl_model : ffi_model := recoverable_model (gmap addr obj * gmap blkno kinds) (populate (∅, ∅)).
+  Definition jrnlData (m : jrnl_map) := fst m.
+  Definition jrnlKinds (m : jrnl_map) := snd m.
+
+  Definition offsets_aligned (m : jrnl_map) :=
+    (∀ a, a ∈ dom (gset _) (jrnlData m) →
+     ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (int.Z (addrOff a) `mod` 2^(`k) = 0)).
+
+  Definition sizes_correct (m : jrnl_map) :=
+    (∀ a o, jrnlData m !! a = Some o → ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (length o : Z) = 2^(`k)).
+
+  (* TODO: do we need to enforce that every valid offset in a block has some data? *)
+  Definition wf_jrnl (m : jrnl_map) := offsets_aligned m ∧ sizes_correct m.
+
+  Definition jrnl_state := RecoverableState (jrnl_map).
+
+  Instance jrnl_model : ffi_model := recoverable_model jrnl_map (populate (∅, ∅)).
 
   Existing Instances r_mbind r_fmap.
 
