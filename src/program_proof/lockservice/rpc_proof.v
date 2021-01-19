@@ -5,7 +5,7 @@ From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice common_proof.
-From Perennial.program_proof.lockservice Require Export rpc_base.
+From Perennial.program_proof.lockservice Require Export rpc.
 
 Section rpc_proof.
 Context `{!heapG Σ}.
@@ -78,8 +78,8 @@ Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ
 
 (* f is a rpcHandler if it satisfies this specification *)
 Definition is_rpcHandler (f:val) γrpc PreCond PostCond : iProp Σ :=
-  ∀ γPost req_ptr reply_ptr req reply,
-    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req
+  ∀ γreq req_ptr reply_ptr req reply,
+    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req
                     ∗ "#Hargs" ∷ read_request req_ptr req
                     ∗ "Hreply" ∷ own_reply reply_ptr reply
     }}} (* TODO: put this precondition into a defn *)
@@ -240,7 +240,11 @@ Proof.
   {
     iDestruct "Hcases" as "[Hcases | [% _]]"; last discriminate.
     iNamed "Hcases".
-    iMod (server_takes_request with "[] [Hsrpc]") as "[HcorePre Hprocessing]"; eauto.
+    iMod (server_takes_request with "[] [Hsrpc]") as "(Hγpre & HcorePre & Hprocessing)"; eauto.
+    {
+      apply Z.gt_lt.
+      done.
+    }
     wp_pures.
     repeat wp_loadField.
     wp_apply ("HfCoreSpec" with "[$Hlsown $HcorePre]").
@@ -251,7 +255,11 @@ Proof.
     wp_loadField.
     wp_loadField.
     wp_apply (wp_MapInsert _ _ lastReplyM _ retval (#retval) with "HlastReplyMap"); first eauto; iIntros "HlastReplyMap".
-    iMod (server_completes_request with "[] [] HcorePost Hprocessing") as "[#Hreceipt Hsrpc] /="; eauto.
+    iMod (server_completes_request with "[] [] Hγpre HcorePost Hprocessing") as "[#Hreceipt Hsrpc] /="; eauto.
+    {
+      apply Z.gt_lt.
+      done.
+    }
     wp_seq.
     wp_loadField.
     wp_apply (release_spec mutexN #mu_ptr _ with "[-HReplyOwnStale HReplyOwnRet HΦ]"); try iFrame "Hmu Hlocked".
@@ -396,7 +404,8 @@ Proof using Type*.
   iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
   {
     iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
-    simpl in bad. replace (int.nat (word.add cseqno 1)) with (int.nat cseqno + 1)%nat in bad by word. lia.
+    simpl in bad. replace (int.nat (word.add cseqno 1))%nat with (int.nat cseqno + 1)%nat in bad by word.
+    lia.
   }
   iMod (get_request_post with "Hreqinv_init Hrcptstoro HγP") as "HP"; first done.
   wp_pures.
@@ -426,12 +435,6 @@ Proof.
   by iPureIntro; word.
 Qed.
 
-(* TODO: need to take in γrpc as input (as opposed to allocating it ourselves) because
-  the server γ has to get allocated before this is called, in order to pass it into LockServer_core_own.
-
-  Should consider changing something to make it so this actually allocates the γrpc.
-  That might be non-sensical for the crash-safe version of this.
-*)
 Lemma MakeRPCServer_spec server_own_core γrpc :
   {{{ is_RPCServer γrpc ∗ RPCServer_own γrpc ∅ ∅ ∗ server_own_core }}}
     MakeRPCServer #()

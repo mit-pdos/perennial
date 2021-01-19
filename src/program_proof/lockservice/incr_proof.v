@@ -2,7 +2,7 @@ From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc_durable nondet kv_proof fmcounter_map.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map.
 Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 
