@@ -257,7 +257,7 @@ Proof.
 Qed.
 
 (* Opposite of above *)
-Lemma server_returns_request (req:RPCRequest) γrpc γreq PreCond PostCond lastSeqM lastReplyM (old_seq:u64) :
+Lemma server_returns_request (req:RPCRequest) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   own γreq.(pre) (Excl ()) -∗
