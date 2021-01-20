@@ -2,7 +2,7 @@ From Perennial.goose_lang Require Import lang notation typing.
 From Perennial.goose_lang.lib Require Import map.impl list.impl.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
-From Goose.github_com.mit_pdos.goose_nfsd Require Import twophase.
+From Goose.github_com.mit_pdos.goose_nfsd Require Import txn twophase.
 From Perennial.program_proof Require Import twophase.op_wrappers.
 
 Section translate.
@@ -45,7 +45,7 @@ Section translate.
   (* TODO: (1) add a parameter for the binder for buftxn that we'll insert
            (2) add the ext ops for ReadBuf/Overwrite *)
 
-  Inductive atomic_expr_transTy (Γ: SCtx) (tph : iexpr) : sexpr -> iexpr -> sty -> Prop :=
+  Inductive atomic_body_expr_transTy (Γ: SCtx) (tph : iexpr) : sexpr -> iexpr -> sty -> Prop :=
   | var_transTy x t :
       Γ !! x = Some t ->
       Γ @ tph ⊢ Var x -- Var x : t
@@ -54,7 +54,7 @@ Section translate.
       Γ @ tph ⊢ f1 -- f2 : arrowT t1 t2 ->
       Γ @ tph ⊢ App f1 x1 -- App f2 x2 : t2
   | val_expr_transTy v1 v2 t :
-      atomic_val_transTy Γ tph v1 v2 t ->
+      atomic_body_val_transTy Γ tph v1 v2 t ->
       Γ @ tph ⊢ Val v1 -- Val v2 : t
   | rec_expr_transTy f x e e' t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ Γ) @ tph ⊢ e -- e' : t2 ->
@@ -153,9 +153,9 @@ Section translate.
       Γ @ tph ⊢ e2 -- e2' : listT byteT ->
       Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteOp e1 e2 -- (TwoPhase__OverWrite' tph e1' e2') : unitT
 
-  where "Γ @ tph ⊢ e1 -- e2 : A" := (atomic_expr_transTy Γ tph e1 e2 A)
+  where "Γ @ tph ⊢ e1 -- e2 : A" := (atomic_body_expr_transTy Γ tph e1 e2 A)
 
-  with atomic_val_transTy (Γ: SCtx) (tph : iexpr) : sval -> ival -> sty -> Prop :=
+  with atomic_body_val_transTy (Γ: SCtx) (tph : iexpr) : sval -> ival -> sty -> Prop :=
   | val_base_lit_transTy v t :
       base_lit_hasTy v t ->
       Γ @ tph ⊢v (LitV v) -- (LitV v) : t
@@ -178,6 +178,20 @@ Section translate.
   | rec_val_transTy f x e e' t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ ∅) @ tph ⊢ e -- e' : t2 ->
       Γ @ tph ⊢v RecV f x e -- RecV f x e' : arrowT t1 t2
-  where "Γ @ tph ⊢v v1 -- v2 : A" := (atomic_val_transTy Γ tph v1 v2 A).
+  where "Γ @ tph ⊢v v1 -- v2 : A" := (atomic_body_val_transTy Γ tph v1 v2 A).
+
+  Inductive jrnl_trans : sval → ival → Prop :=
+  | jrnl_open_trans (x: string) :
+      jrnl_trans (λ: x, ExternalOp OpenOp (Var x)) (λ: "_", MkTxn #()).
+
+  Inductive jrnl_atomic_transTy : SCtx → sexpr → iexpr → sty → sexpr → iexpr → sty → Prop :=
+  | jrnl_atomic_transTy_core Γ Γ' etxn etxn' ebdy ebdy' t (tph: string) :
+      (∀ x ty, Γ' !! x = Some ty → Γ !! x = Some ty ∧ atomic_convertible ty) →
+      tph ∉ dom (gset _) Γ →
+      Γ' @ (Var tph) ⊢ ebdy -- ebdy' : t →
+      jrnl_atomic_transTy Γ etxn etxn' (extT JrnlT)
+                            ebdy
+                            (* This final argument is what Atomically etxn ebdy will get translated to *)
+                            (let: tph := Begin etxn' in ebdy';; TwoPhase__Commit (Var tph)) t.
 
 End translate.
