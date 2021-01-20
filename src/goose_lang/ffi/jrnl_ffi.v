@@ -3,6 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
 From Perennial.goose_lang Require ffi.disk.
+From Perennial.goose_lang.lib.struct Require Import struct.
 From Perennial.goose_lang.lib.list Require Import list.
 From Perennial.program_proof Require Import addr_proof.
 
@@ -56,8 +57,8 @@ Definition blockT_: ty_ := sliceT_ (λ val_ty, byteT).
 Inductive JrnlOp :=
   | ReadBufOp (* jrnl, addr *)
   | ReadBitOp (* jrnl, addr *)
-  | OvewriteOp (* jrnl, addr, data tuple *)
-  | OvewriteBitOp (* jrnl, addr, byte *)
+  | OverWriteOp (* jrnl, addr, data tuple *)
+  | OverWriteBitOp (* jrnl, addr, byte *)
   | OpenOp (* (no arguments) *)
 .
 
@@ -85,8 +86,6 @@ Instance jrnl_val_ty: val_types :=
 Section jrnl.
   Existing Instances jrnl_op jrnl_val_ty.
 
-  Definition addrT : ty := structRefT [ uint64T; uint64T ].
-
   Definition obj := list u8.
 
   Definition val_of_obj (o : obj) := val_of_list ((λ u, LitV (LitByte u)) <$> o).
@@ -102,6 +101,11 @@ Section jrnl.
   Instance jrnl_ty: ext_types jrnl_op :=
     {| val_tys := jrnl_val_ty;
        get_ext_tys := jrnl_ext_tys |}.
+
+  Definition addrT : ty := impl.struct.t (impl.struct.decl [
+    "Blkno" :: uint64T;
+    "Off" :: uint64T
+  ])%struct.
 
   Definition jrnl_map : Type := gmap addr obj * gmap blkno kind.
 
