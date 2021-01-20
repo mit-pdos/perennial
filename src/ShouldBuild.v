@@ -47,6 +47,7 @@ From Perennial.goose_lang.examples Require
 (* goose-nfsd *)
 From Goose.github_com.mit_pdos Require
      goose_nfsd.kvs
+     goose_nfsd.twophase
      goose_nfsd.simple.
 
 (* examples goose output *)
