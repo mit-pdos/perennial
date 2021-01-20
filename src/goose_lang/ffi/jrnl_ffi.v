@@ -150,12 +150,12 @@ Section jrnl.
     | OpenOp, LitV LitUnit =>
       j ← open;
       ret $ LitV $ LitUnit
-    | ReadBufOp, (#(LitInt blkno), #(LitInt off), #())%V =>
+    | ReadBufOp, PairV (#(LitInt blkno), #(LitInt off), #())%V #(LitInt sz) =>
       j ← openΣ;
       d ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
       (* bit reads must be done with ReadBitOp *)
-      check (`k ≠ 0);;
+      check (`k ≠ 0 ∧ 2^(`k) = int.Z sz);;
       ret $ val_of_obj d
     | WriteBufOp, ((#(LitInt blkno), #(LitInt off), #()), ov)%V =>
       j ← openΣ;

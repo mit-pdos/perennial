@@ -3,7 +3,7 @@ From Perennial.goose_lang.lib Require Import map.impl list.impl.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import twophase.
-
+From Perennial.program_proof Require Import twophase.op_wrappers.
 
 Section translate.
 
@@ -144,15 +144,14 @@ Section translate.
       Γ @ tph ⊢ Case cond e1 e2 -- Case cond' e1' e2' : t
 
   (* Journal operations *)
-  | readbuf_transTy e e' :
-      Γ @ tph ⊢ e -- e' : addrT ->
-     (* XXX: we want to call a wrapper around TwoPhase__ReadBuf that converts to a pure list *)
-      Γ @ tph ⊢ ExternalOp (ext := spec_op) ReadBufOp e -- (TwoPhase__ReadBuf tph e') : listT byteT
+  | readbuf_transTy e1 e1' e2 e2' :
+      Γ @ tph ⊢ e1 -- e1' : addrT ->
+      Γ @ tph ⊢ e2-- e2' : uint64T ->
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) ReadBufOp e1 e2 -- (TwoPhase__ReadBuf' tph e1' e2') : listT byteT
   | overwrite_transTy e1 e1' e2 e2' :
       Γ @ tph ⊢ e1 -- e1' : addrT ->
       Γ @ tph ⊢ e2 -- e2' : listT byteT ->
-     (* XXX: we want to call a wrapper around TwoPhase__OverWrite that converts to a pure list *)
-      Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteOp e1 e2 -- (TwoPhase__OverWrite tph e1' e2') : unitT
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteOp e1 e2 -- (TwoPhase__OverWrite' tph e1' e2') : unitT
 
   where "Γ @ tph ⊢ e1 -- e2 : A" := (atomic_expr_transTy Γ tph e1 e2 A)
 
