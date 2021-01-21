@@ -218,30 +218,6 @@ Context (PostCond:RPCValC -> u64 -> iProp Σ).
 Context (srv_ptr:loc).
 Context (sv_ptr:loc).
 
-
-(* TODO: core function might need core_own_ghost to read ghost state? *)
-Lemma wpc_coreFunction (args:RPCValC) server :
- {{{
-       "Hvol" ∷ core_own_vol srv_ptr server ∗
-       "Hpre" ∷ ▷(PreCond args)
- }}}
-    coreFunction (into_val.to_val args) @ 36; ⊤
- {{{
-      (* TODO: need the disc to proof work out *)
-      server' (r:u64) P', RET #r;
-            ⌜Discretizable P'⌝ ∗
-             (P') ∗
-            core_own_vol srv_ptr server' ∗
-            □ (P' -∗ PreCond args) ∗
-            (* TODO: putting this here because need to be discretizable *)
-            □ (▷ P' -∗ core_own_ghost server ==∗ PostCond args r ∗ core_own_ghost server')
- }}}
- {{{
-      (PreCond args)
- }}}
-.
-Admitted.
-
 Lemma wpc_makeDurable server rpc_server server' rpc_server' :
   {{{
      core_own_vol srv_ptr server' ∗
@@ -263,13 +239,50 @@ Admitted.
 (* The above two lemmas should be turned into requirements to apply wp_RPCServer__HandleRequest;
    HandleRequest should prove is_rpcHandler, instead of this wp directly *)
 Lemma RPCServer__HandleRequest_is_rpcHandler γrpc :
+(∀ (args : RPCValC) server,
+ {{{
+       "Hvol" ∷ core_own_vol srv_ptr server ∗
+       "Hpre" ∷ ▷(PreCond args)
+ }}}
+    coreFunction (into_val.to_val args) @ 36; ⊤
+ {{{
+      (* TODO: need the disc to proof work out *)
+      server' (r:u64) P', RET #r;
+            ⌜Discretizable P'⌝ ∗
+             (P') ∗
+            core_own_vol srv_ptr server' ∗
+            □ (P' -∗ PreCond args) ∗
+            (* TODO: putting this here because need to be discretizable *)
+            □ (▷ P' -∗ core_own_ghost server ==∗ PostCond args r ∗ core_own_ghost server')
+ }}}
+ {{{
+      (PreCond args)
+ }}}) -∗
+(∀ server rpc_server server' rpc_server', {{{
+     core_own_vol srv_ptr server' ∗
+     RPCServer_own_vol sv_ptr rpc_server' ∗
+     core_own_durable server rpc_server
+  }}}
+    makeDurable #() @ 36 ; ⊤
+  {{{
+       RET #();
+     core_own_vol srv_ptr server' ∗
+     RPCServer_own_vol sv_ptr rpc_server' ∗
+     core_own_durable server' rpc_server'
+  }}}
+  {{{
+    core_own_durable server rpc_server ∨ core_own_durable server' rpc_server'
+  }}})-∗
+
 {{{
   "#Hls" ∷ is_server srv_ptr sv_ptr γrpc
 }}}
   RPCServer__HandleRequest #sv_ptr coreFunction makeDurable
 {{{ f, RET f; is_rpcHandler f γrpc PreCond PostCond }}}.
 Proof.
-  iIntros (Φ) "Hpre HΦ".
+  iIntros "#HcoreSpec #HdurSpec".
+
+  iIntros (Φ) "!# Hpre HΦ".
   iNamed "Hpre".
   wp_lam.
   wp_pures.
@@ -366,7 +379,7 @@ Proof.
     wp_loadField;
     iNamed 1).
     iMod (server_takes_request with "[] Hsrpc") as "(HγPre & Hpre & Hsrpc_proc)"; eauto.
-    wpc_apply (wpc_coreFunction with "[$Hpre $Hcorevol]").
+    wpc_apply ("HcoreSpec" with "[$Hpre $Hcorevol]").
     iSplit.
     {
       iIntros "!> Hpre".
@@ -409,7 +422,7 @@ Proof.
     iNamed 1.
     wpc_pures.
     iApply wpc_fupd.
-    wpc_apply (wpc_makeDurable _ rpc_server _ {| lastSeqM := (<[req.(Req_CID):=req.(Req_Seq)]> rpc_server.(lastSeqM)) ;
+    wpc_apply ("HdurSpec" $! _ rpc_server _ {| lastSeqM := (<[req.(Req_CID):=req.(Req_Seq)]> rpc_server.(lastSeqM)) ;
                                                     lastReplyM := (<[req.(Req_CID):=retval]> rpc_server.(lastReplyM))
                                                  |}
                          with "[-HΦ Hcoreghost Hsrpc_proc HP' HγPre HReplyOwnRet HReplyOwnStale]").

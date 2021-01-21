@@ -69,9 +69,17 @@ Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
    "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
    "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN).
 
+
+Definition kv_core_mu srv γ : rpc_core_mu :=
+  {|
+  core_own_durable := λ server rpc_server, KVServer_core_own_durable server rpc_server;
+  core_own_ghost := λ server, KVServer_core_own_ghost γ server;
+  core_own_vol := λ srv_unused server, KVServer_core_own_vol srv server
+  |}.
+
 Lemma wpc_put_core γ (srv:loc) args kvserver :
 {{{
-     KVServer_core_own_vol srv kvserver ∗
+     (kv_core_mu srv γ).(core_own_vol) srv kvserver ∗
      Put_Pre γ args
 }}}
   KVServer__put_core #srv (into_val.to_val args) @ 36 ; ⊤
@@ -90,23 +98,16 @@ Lemma wpc_put_core γ (srv:loc) args kvserver :
 Proof.
 Admitted.
 
-Definition kv_core_mu (srv rpc_srv:loc) γ : rpc_core_mu :=
-  {|
-  core_own_durable := λ server rpc_server, KVServer_core_own_durable server rpc_server;
-  core_own_ghost := λ server, KVServer_core_own_ghost γ server;
-  core_own_vol := λ srv_unused server, KVServer_core_own_vol srv server
-  |}.
+Definition is_kvserver γ (srv rpc_srv:loc) := is_server KVServerC (kv_core_mu srv γ) srv rpc_srv γ.(ks_rpcGN).
 
-Definition is_kvserver γ (srv rpc_srv:loc) := is_server KVServerC (kv_core_mu srv rpc_srv γ) srv rpc_srv γ.(ks_rpcGN).
-
-Lemma KVServer__Get_spec srv rpc_srv va γ :
+Lemma KVServer__Put_spec srv rpc_srv γ :
 is_kvserver γ srv rpc_srv -∗
 {{{
     True
 }}}
-    KVServer__Get #srv
+    KVServer__Put #srv
 {{{ (f:goose_lang.val), RET f;
-        is_rpcHandler f γ.(ks_rpcGN) (Get_Pre γ va) (Get_Post γ va)
+        is_rpcHandler f γ.(ks_rpcGN) (Put_Pre γ) (Put_Post γ)
 }}}.
 Proof.
   iIntros "#Hks".
@@ -115,11 +116,38 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iApply is_rpcHandler_eta. simpl.
-  iModIntro.
-  iIntros (_ _).
-
-  iIntros (????? Φ) "!# Hpre HΦ".
-  iNamed "Hpre".
+  iIntros "!#" (_ _).
+  iNamed "Hks".
   wp_pures.
+  wp_loadField.
+  iApply (RPCServer__HandleRequest_is_rpcHandler KVServerC); last by eauto.
+  {
+    clear Φ.
+    iIntros (args server) "!#". iIntros (Φ Φc) "Hpre HΦ".
+    wpc_pures.
+    {
+      iDestruct "HΦ" as "[HΦc _]".
+      iNamed "Hpre".
+      iModIntro.
+      iApply "HΦc".
+      (* Need Put_Pre to be Discretizable *)
+      admit.
+    }
+
+    iApply (wpc_put_core γ with "[Hpre]").
+    { iFrame. }
+    iSplit.
+    {
+      by iDestruct "HΦ" as "[HΦc _]".
+    }
+    by iDestruct "HΦ" as "[_ HΦ]".
+  }
+  {
+    admit.
+  }
+  {
+    iExists _; iFrame "#".
+  }
 Admitted.
+
 End kv_durable_proof.
