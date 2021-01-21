@@ -175,8 +175,10 @@ Definition EncMap_invariant enc_v (r:Rec) sz map_sz (mtodo mdone:gmap u64 u64) :
     is_enc enc_v sz (r ++ [EncUInt64 map_sz] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l )) remaining
 .
 
+Definition marshalledMapSize (m:gmap u64 u64) : nat := 8 + 8 * 2 * (map_size m).
+
 Lemma wp_EncMap e mref m sz r remaining :
-8 < remaining →
+marshalledMapSize m < remaining →
 {{{
     "Hmap" ∷ is_map (V:=u64) mref m ∗
     "Henc" ∷ is_enc e sz r remaining
@@ -193,12 +195,17 @@ Proof.
 
   wp_apply (wp_MapLen with "Hmap").
   iIntros "Hmap".
+  unfold marshalledMapSize in Hrem.
   wp_apply (wp_Enc__PutInt with "Henc").
   { lia. }
   iIntros "Henc".
   wp_pures.
   wp_apply (wp_MapIter_2 _ _ _ _ (EncMap_invariant e r sz (map_size m)) with "Hmap [Henc] [] [HΦ]").
-  { iExists [] . iExists (remaining-8). simpl. iFrame. (* TODO: adjust size of enc *) admit. }
+  {
+    iExists [] . iExists (remaining-8). simpl. iFrame. (* TODO: adjust size of enc *)
+    iSplit; first done.
+    iPureIntro. lia.
+  }
   {
     clear Φ.
     iIntros (???? Φ) "!# [Hpre %Htodo] HΦ".
@@ -207,7 +214,9 @@ Proof.
 
     assert (map_size mtodo ≠ 0%nat).
     { apply map_size_non_empty_iff.
-      admit.
+      destruct (bool_decide (mtodo = ∅)) as [Hmtodo|Hmtodo] eqn:X.
+      { apply bool_decide_eq_true in X. rewrite X in Htodo. done. }
+      { by apply bool_decide_eq_false in X. }
     }
     wp_apply (wp_Enc__PutInt with "Henc").
     {
@@ -224,17 +233,26 @@ Proof.
     iApply "HΦ".
     iExists (l ++ [(k, v)]), (rem' - 8 - 8).
     iSplit.
-    { iPureIntro. admit. }
+    { iPureIntro.
+      rewrite -Hl.
+      admit.
+    }
     iSplit.
     { replace (map_size (delete k mtodo)) with (pred (map_size mtodo)).
-      { admit. }
+      { iPureIntro. lia. }
       { symmetry. apply map_size_delete. eauto. }.
     }
     (* TODO: flat_map of list append vs append to flat_map *)
-    admit.
+    rewrite flat_map_app.
+    simpl.
+    replace ([EncUInt64 k; EncUInt64 v]) with ([EncUInt64 k] ++ [EncUInt64 v]) by eauto.
+    iFrame.
+    rewrite -app_assoc.
+    rewrite -app_assoc.
+    iFrame.
   }
   iIntros.
-  iApply "HΦ".
+  by iApply "HΦ".
 Admitted.
 
 Definition is_kvserver γ (srv rpc_srv:loc) : iProp Σ :=
