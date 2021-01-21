@@ -161,14 +161,55 @@ Definition KVServer__get_core: val :=
   rec: "KVServer__get_core" "ks" "args" :=
     Fst (MapGet (struct.loadF KVServer.S "kvs" "ks") (struct.get RPCVals.S "U64_1" "args")).
 
-(* For now, there is only one kv server in the whole world *)
+(* requires (2n + 1) uint64s worth of space in the encoder *)
+Definition EncMap: val :=
+  rec: "EncMap" "e" "m" :=
+    marshal.Enc__PutInt "e" (MapLen "m");;
+    MapIter "m" (λ: "key" "value",
+      marshal.Enc__PutInt "e" "key";;
+      marshal.Enc__PutInt "e" "value").
+
+Definition DecMap: val :=
+  rec: "DecMap" "d" :=
+    let: "sz" := marshal.Dec__GetInt "d" in
+    let: "m" := NewMap uint64T in
+    let: "i" := ref_to uint64T #0 in
+    Skip;;
+    (for: (λ: <>, ![uint64T] "i" < "sz"); (λ: <>, Skip) := λ: <>,
+      let: "k" := marshal.Dec__GetInt "d" in
+      let: "v" := marshal.Dec__GetInt "d" in
+      MapInsert "m" "k" "v";;
+      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      Continue);;
+    "m".
+
+(* For now, there is only one kv server in the whole world
+   Assume it's in file "kvdur" *)
 Definition WriteDurableKVServer: val :=
   rec: "WriteDurableKVServer" "ks" :=
+    let: "num_bytes" := #8 * #2 * MapLen (struct.loadF RPCServer.S "lastSeq" (struct.loadF KVServer.S "sv" "ks")) + #2 * MapLen (struct.loadF RPCServer.S "lastSeq" (struct.loadF KVServer.S "sv" "ks")) + #2 * MapLen (struct.loadF KVServer.S "kvs" "ks") + #3 in
+    let: "e" := marshal.NewEnc "num_bytes" in
+    EncMap "e" (struct.loadF RPCServer.S "lastSeq" (struct.loadF KVServer.S "sv" "ks"));;
+    EncMap "e" (struct.loadF RPCServer.S "lastReply" (struct.loadF KVServer.S "sv" "ks"));;
+    EncMap "e" (struct.loadF KVServer.S "kvs" "ks");;
+    grove_ffi.Write #(str"kvdur") (marshal.Enc__Finish "e");;
     #().
 
 Definition ReadDurableKVServer: val :=
   rec: "ReadDurableKVServer" <> :=
-    slice.nil.
+    let: "content" := grove_ffi.Read #(str"kvdur") in
+    (if: (slice.len "content" = #0)
+    then slice.nil
+    else
+      let: "d" := marshal.NewDec "content" in
+      let: "ks" := struct.alloc KVServer.S (zero_val (struct.t KVServer.S)) in
+      let: "sv" := struct.alloc RPCServer.S (zero_val (struct.t RPCServer.S)) in
+      struct.storeF RPCServer.S "mu" "sv" (lock.new #());;
+      struct.storeF RPCServer.S "lastSeq" "sv" (DecMap "d");;
+      struct.storeF RPCServer.S "lastReply" "sv" (DecMap "d");;
+      struct.storeF KVServer.S "kvs" "ks" (DecMap "d");;
+      struct.storeF KVServer.S "sv" "ks" "sv";;
+      "ks").
 
 Definition KVServer__Put: val :=
   rec: "KVServer__Put" "ks" "req" "reply" :=
