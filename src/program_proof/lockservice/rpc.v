@@ -437,7 +437,7 @@ Lemma server_executes_durable_request' (req:RPCRequest) reply γrpc γreq PreCon
   RPCServer_own_processing γrpc req lastSeqM lastReplyM -∗
   own γreq.(pre) (Excl()) -∗
   SP -∗ (* strengthened precond *)
-  (▷ SP -∗ ctx ==∗ PostCond req.(Req_Args) reply ∗ ctx') -∗
+  (▷ SP -∗ ctx ={⊤ ∖ ↑rpcRequestInvN}=∗ PostCond req.(Req_Args) reply ∗ ctx') -∗
   ctx ={⊤}=∗
   (RPCReplyReceipt γrpc req reply ∗
   RPCServer_own γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM) ∗

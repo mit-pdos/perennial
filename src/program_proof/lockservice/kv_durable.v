@@ -93,7 +93,7 @@ Lemma wpc_put_core γ (srv:loc) args kvserver :
             KVServer_core_own_vol srv kvserver' ∗
             □ (P' -∗ Put_Pre γ args) ∗
             (* TODO: putting this here because need to be discretizable *)
-            □ (▷ P' -∗ KVServer_core_own_ghost γ kvserver ={⊤}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
+            □ (▷ P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
 }}}
 {{{
      Put_Pre γ args
