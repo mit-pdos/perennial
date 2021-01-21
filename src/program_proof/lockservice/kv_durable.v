@@ -98,7 +98,9 @@ Lemma wpc_put_core γ (srv:loc) args kvserver :
 Proof.
 Admitted.
 
-Definition is_kvserver γ (srv rpc_srv:loc) := is_server KVServerC (kv_core_mu srv γ) srv rpc_srv γ.(ks_rpcGN).
+Definition is_kvserver γ (srv rpc_srv:loc) : iProp Σ :=
+  "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #rpc_srv) ∗
+  "#His_server" ∷ is_server KVServerC (kv_core_mu srv γ) srv rpc_srv γ.(ks_rpcGN).
 
 Lemma KVServer__Put_spec srv rpc_srv γ :
 is_kvserver γ srv rpc_srv -∗
@@ -110,14 +112,13 @@ is_kvserver γ srv rpc_srv -∗
         is_rpcHandler f γ.(ks_rpcGN) (Put_Pre γ) (Put_Post γ)
 }}}.
 Proof.
-  iIntros "#Hks".
+  iNamed 1.
   iIntros (Φ) "!# Hpre HΦ".
   wp_lam.
   wp_pures.
   iApply "HΦ".
   iApply is_rpcHandler_eta. simpl.
   iIntros "!#" (_ _).
-  iNamed "Hks".
   wp_pures.
   wp_loadField.
   iApply (RPCServer__HandleRequest_is_rpcHandler KVServerC); last by eauto.
@@ -146,7 +147,7 @@ Proof.
     admit.
   }
   {
-    iExists _; iFrame "#".
+    iFrame "#".
   }
 Admitted.
 

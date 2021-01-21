@@ -93,7 +93,6 @@ Definition mutexN : namespace := nroot .@ "server_mutexN".
 
 Definition is_server (srv_ptr sv_ptr:loc) γrpc : iProp Σ :=
   ∃ (mu_ptr:loc),
-  "#Hsv" ∷ readonly (srv_ptr ↦[KVServer.S :: "sv"] #sv_ptr) ∗
   "#Hlinv" ∷ is_RPCServer γrpc ∗
   "#Hmu_ptr" ∷ readonly(sv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr) ∗
   "#Hmu" ∷ is_crash_lock mutexN 37 #mu_ptr (Server_mutex_inv srv_ptr sv_ptr γrpc)
