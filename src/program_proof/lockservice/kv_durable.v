@@ -14,6 +14,7 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map rpc_durable_proof.
+From Perennial.program_proof Require Import proof_prelude marshal_proof.
 
 Section kv_durable_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
@@ -93,7 +94,7 @@ Lemma wpc_put_core γ (srv:loc) args kvserver :
             KVServer_core_own_vol srv kvserver' ∗
             □ (P' -∗ Put_Pre γ args) ∗
             (* TODO: putting this here because need to be discretizable *)
-            □ (▷ P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
+            □ (P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
 }}}
 {{{
      Put_Pre γ args
@@ -130,7 +131,7 @@ Proof.
   { iExists _; iFrame. }
   iSplit; first eauto.
   iModIntro.
-  iIntros ">Hpre Hghost".
+  iIntros "Hpre Hghost".
   iDestruct "Hpre" as (v) "Hpre".
   iMod (map_update with "Hghost Hpre") as "[Hkvctx Hptsto]".
   iModIntro. iFrame.
@@ -156,6 +157,85 @@ readonly (srv ↦[lockservice.KVServer.S :: "sv"] #rpc_srv) -∗
 }}}.
 Admitted.
 
+Lemma wp_MapLen mref m:
+{{{
+    is_map (V:=u64) mref m
+}}}
+  (MapLen #mref)
+{{{
+  RET #(map_size m);
+    is_map mref m
+}}}.
+Admitted.
+
+Definition EncMap_invariant enc_v (r:Rec) sz map_sz (mtodo mdone:gmap u64 u64) : iProp Σ :=
+  ∃ (l:list (u64 * u64)) remaining,
+    ⌜(list_to_map l) = mdone⌝ ∗
+    ⌜remaining > 8 * 2 * (map_size mtodo)⌝ ∗
+    is_enc enc_v sz (r ++ [EncUInt64 map_sz] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l )) remaining
+.
+
+Lemma wp_EncMap e mref m sz r remaining :
+8 < remaining →
+{{{
+    "Hmap" ∷ is_map (V:=u64) mref m ∗
+    "Henc" ∷ is_enc e sz r remaining
+}}}
+  EncMap e #mref
+{{{
+     RET #(); True
+}}}.
+Proof.
+  intros Hrem.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam. wp_pures.
+
+  wp_apply (wp_MapLen with "Hmap").
+  iIntros "Hmap".
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { lia. }
+  iIntros "Henc".
+  wp_pures.
+  wp_apply (wp_MapIter_2 _ _ _ _ (EncMap_invariant e r sz (map_size m)) with "Hmap [Henc] [] [HΦ]").
+  { iExists [] . iExists (remaining-8). simpl. iFrame. (* TODO: adjust size of enc *) admit. }
+  {
+    clear Φ.
+    iIntros (???? Φ) "!# [Hpre %Htodo] HΦ".
+    wp_pures.
+    iDestruct "Hpre" as (l rem' Hl Hrem') "Henc".
+
+    assert (map_size mtodo ≠ 0%nat).
+    { apply map_size_non_empty_iff.
+      admit.
+    }
+    wp_apply (wp_Enc__PutInt with "Henc").
+    {
+      lia.
+    }
+    iIntros "Henc".
+    wp_pures.
+
+    wp_apply (wp_Enc__PutInt with "Henc").
+    {
+      lia.
+    }
+    iIntros "Henc".
+    iApply "HΦ".
+    iExists (l ++ [(k, v)]), (rem' - 8 - 8).
+    iSplit.
+    { iPureIntro. admit. }
+    iSplit.
+    { replace (map_size (delete k mtodo)) with (pred (map_size mtodo)).
+      { admit. }
+      { symmetry. apply map_size_delete. eauto. }.
+    }
+    (* TODO: flat_map of list append vs append to flat_map *)
+    admit.
+  }
+  iIntros.
+  iApply "HΦ".
+Admitted.
 
 Definition is_kvserver γ (srv rpc_srv:loc) : iProp Σ :=
   "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #rpc_srv) ∗

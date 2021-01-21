@@ -232,8 +232,7 @@ Lemma RPCServer__HandleRequest_is_rpcHandler γrpc :
              (P') ∗
             core_own_vol server' ∗
             □ (P' -∗ PreCond args) ∗
-            (* TODO: putting this here because need to be discretizable *)
-            □ (▷ P' -∗ core_own_ghost server ={⊤∖↑rpcRequestInvN}=∗ PostCond args r ∗ core_own_ghost server')
+            □ (P' -∗ core_own_ghost server ={⊤∖↑rpcRequestInvN}=∗ PostCond args r ∗ core_own_ghost server')
  }}}
  {{{
       (PreCond args)
