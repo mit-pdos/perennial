@@ -99,9 +99,44 @@ Lemma wpc_put_core γ (srv:loc) args kvserver :
      Put_Pre γ args
 }}}.
 Proof.
+  iIntros (Φ Φc) "[Hvol Hpre] HΦ".
+  iCache with "Hpre HΦ".
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. by iApply "HΦc". }
+  wpc_call; first done.
+
+  iCache with "Hpre HΦ".
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. by iApply "HΦc". }
+
+  wpc_pures.
+  iNamed "Hvol".
+
+  wpc_bind (struct.loadF _ _ _)%E.
+  wpc_frame.
+  wp_loadField.
+  iNamed 1.
+
+  wpc_bind (MapInsert _ _ _).
+  wpc_frame.
+
+  wp_apply (wp_MapInsert with "HkvsMap"); eauto; iIntros "HkvsMap".
+  iNamed 1.
+  wpc_pures.
+  iDestruct "HΦ" as "[_ HΦ]".
+  iApply ("HΦ" $! {| kvsM := <[args.1:=args.2.1]> kvserver.(kvsM) |} _ (Put_Pre γ args)).
+  iFrame.
+  iSplitL "".
+  { admit. }
+  iSplitR "".
+  { iExists _; iFrame. }
+  iSplit; first eauto.
+  iModIntro.
+  iIntros "Hpre Hghost".
+  (* TODO: can upgrade bupd to a fupd *)
+  unfold Put_Pre.
+  (* TODO: deal with later *)
+  (* iMod (map_update with "Hghost Hpre") as "[Hkvctx Hptsto]". *)
 Admitted.
 
-Print is_kvserver.
 Lemma wpc_WriteDurableKVServer γ (srv rpc_srv:loc) server rpc_server server' rpc_server':
 readonly (srv ↦[lockservice.KVServer.S :: "sv"] #rpc_srv) -∗
 {{{
