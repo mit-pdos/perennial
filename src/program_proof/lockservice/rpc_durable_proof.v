@@ -24,11 +24,22 @@ Record RPCServerC :=
   lastReplyM  : gmap u64 u64;
   }.
 
+(* Set of resources needed to make use of HandleRequest *)
+Record rpc_core_mu {serverC:Type} := mkcore_mu
+{
+ core_own_durable : serverC → RPCServerC -> iProp Σ ; (* This also owns the durable rpc server state *)
+ core_own_ghost : serverC → iProp Σ ;
+ core_own_vol: loc → serverC → iProp Σ
+}
+.
+
 Variable serverC : Type. (* Abstract state of the server, used by core_own_* functions *)
 
-Axiom core_own_durable : serverC → RPCServerC -> iProp Σ. (* This also owns the durable rpc server state *)
-Axiom core_own_ghost : serverC → iProp Σ.
-Axiom core_own_vol: loc → serverC → iProp Σ.
+Variable core : @rpc_core_mu serverC.
+
+Context (core_own_durable := core.(core_own_durable)).
+Context (core_own_vol := core.(core_own_vol)).
+Context (core_own_ghost := core.(core_own_ghost)).
 
 Definition Server_mutex_cinv γrpc : iProp Σ :=
   ∃ server rpc_server,
@@ -88,12 +99,6 @@ Definition is_server (srv_ptr sv_ptr:loc) γrpc : iProp Σ :=
   "#Hmu" ∷ is_crash_lock mutexN 37 #mu_ptr (Server_mutex_inv srv_ptr sv_ptr γrpc)
     (|={⊤}=> Server_mutex_cinv γrpc) (* FIXME:(US) get rid of this fupd *)
 .
-
-Definition own_clerk γ ck_ptr srv : iProp Σ :=
-  ∃ (cl_ptr:loc),
-   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
-   "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
-   "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN).
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
@@ -206,12 +211,13 @@ Proof.
   }
 Qed.
 
-Variable coreFunction:goose_lang.val.
-Variable makeDurable:goose_lang.val.
-Variable PreCond:RPCValC -> iProp Σ.
-Variable PostCond:RPCValC -> u64 -> iProp Σ.
-Variable srv_ptr:loc.
-Variable sv_ptr:loc.
+Context (coreFunction:goose_lang.val).
+Context (makeDurable:goose_lang.val).
+Context (PreCond:RPCValC -> iProp Σ).
+Context (PostCond:RPCValC -> u64 -> iProp Σ).
+Context (srv_ptr:loc).
+Context (sv_ptr:loc).
+
 
 (* TODO: core function might need core_own_ghost to read ghost state? *)
 Lemma wpc_coreFunction (args:RPCValC) server :
@@ -256,23 +262,21 @@ Admitted.
 
 (* The above two lemmas should be turned into requirements to apply wp_RPCServer__HandleRequest;
    HandleRequest should prove is_rpcHandler, instead of this wp directly *)
-Lemma wp_RPCServer__HandleRequest' (req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc γreq:
+Lemma RPCServer__HandleRequest_is_rpcHandler γrpc :
 {{{
   "#Hls" ∷ is_server srv_ptr sv_ptr γrpc
-  ∗ "#HreqInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req
-  ∗ "#Hreq" ∷ read_request req_ptr req
-  ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
-  RPCServer__HandleRequest #sv_ptr coreFunction makeDurable #req_ptr #reply_ptr
-{{{ RET #false; ∃ reply':Reply64, own_reply reply_ptr reply'
-    ∗ ((⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req)
-  ∨ RPCReplyReceipt γrpc req reply'.(Rep_Ret))
-}}}.
+  RPCServer__HandleRequest #sv_ptr coreFunction makeDurable
+{{{ f, RET f; is_rpcHandler f γrpc PreCond PostCond }}}.
 Proof.
-  iIntros (Φ) "Hpre Hpost".
+  iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_lam.
   wp_pures.
+  iApply "HΦ".
+  clear Φ.
+  iIntros (????? Φ) "!# Hpre HΦ".
+  iNamed "Hpre".
   iNamed "Hls".
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hmu"); first done.
@@ -292,7 +296,7 @@ Proof.
   iIntros ">Hlsown".
   iNamed "Hlsown".
   iNamed "Hrpc". (* Could just keep it unfolded in definition *)
-  iNamed "Hreq".
+  iNamed "Hargs".
 
   unfold RPCServer_own_ghost. iNamed "Hrpcghost".
   iCache with "Hcoredurable Hcoreghost Hsrpc".
@@ -349,7 +353,7 @@ Proof.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$Hlocked]"); first done.
     wp_pures.
-    iApply "Hpost".
+    iApply "HΦ".
     iExists _; iFrame.
   - (* Case of actually running core function and updating durable state *)
     wpc_pures.
@@ -368,7 +372,7 @@ Proof.
       iIntros "!> Hpre".
       iSplit; first done.
       iNext.
-      iMod (server_returns_request with "[HreqInv] HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
+      iMod (server_returns_request with "[HargsInv] HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
       by iExists _, _; iFrame.
     }
     iNext.
@@ -380,7 +384,7 @@ Proof.
       iSplit; first done.
       iDestruct ("HPimpliesPre" with "HP'") as "Hpre".
       iNext.
-      iMod (server_returns_request with "[HreqInv] HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
+      iMod (server_returns_request with "HargsInv HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
       iModIntro.
       by iExists _, _; iFrame.
     }
@@ -408,7 +412,7 @@ Proof.
     wpc_apply (wpc_makeDurable _ rpc_server _ {| lastSeqM := (<[req.(Req_CID):=req.(Req_Seq)]> rpc_server.(lastSeqM)) ;
                                                     lastReplyM := (<[req.(Req_CID):=retval]> rpc_server.(lastReplyM))
                                                  |}
-                         with "[-Hpost Hcoreghost Hsrpc_proc HP' HγPre HReplyOwnRet HReplyOwnStale]").
+                         with "[-HΦ Hcoreghost Hsrpc_proc HP' HγPre HReplyOwnRet HReplyOwnStale]").
     { iFrame. iExists _, _. iFrame. }
     iSplit.
     { (* show that crash condition of makeDurable maintains our crash condition *)
@@ -419,15 +423,15 @@ Proof.
       iDestruct "Hcoredurable" as "[Hcoredurable|Hcoredurable]".
       + iDestruct ("HPimpliesPre" with "HP'") as "Hpre".
         iNext.
-        iMod (server_returns_request with "[HreqInv] HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
+        iMod (server_returns_request with "HargsInv HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
         iModIntro. iExists _, _; iFrame.
-      + iNext. iMod (server_executes_durable_request' with "HreqInv Hlinv Hsrpc_proc HγPre HP' Hfupd Hcoreghost") as "HH"; eauto.
+      + iNext. iMod (server_executes_durable_request' with "HargsInv Hlinv Hsrpc_proc HγPre HP' Hfupd Hcoreghost") as "HH"; eauto.
         iDestruct "HH" as "(Hreceipt & Hsrpc & Hkvghost)".
         iExists _, _; iFrame "Hcoredurable".
         by iFrame.
     }
     iNext. iIntros "(Hcorevol & Hsrvown & Hcoredurable)".
-    iMod (server_executes_durable_request' with "HreqInv Hlinv Hsrpc_proc HγPre HP' Hfupd Hcoreghost") as "HH"; eauto.
+    iMod (server_executes_durable_request' with "HargsInv Hlinv Hsrpc_proc HγPre HP' Hfupd Hcoreghost") as "HH"; eauto.
 
     iDestruct "HH" as "(Hreceipt & Hsrpc & Hcoreghost)".
     iModIntro.
@@ -447,7 +451,7 @@ Proof.
     iApply wp_fupd.
     wp_apply (crash_lock.release_spec with "Hlocked"); first eauto.
     wp_pures.
-    iApply "Hpost".
+    iApply "HΦ".
     iModIntro.
     iExists {| Rep_Stale:=_ ; Rep_Ret:=retval |}; iFrame.
 Qed.

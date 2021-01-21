@@ -172,25 +172,19 @@ Definition ReadDurableKVServer: val :=
 
 Definition KVServer__Put: val :=
   rec: "KVServer__Put" "ks" "req" "reply" :=
-    let: "f" := (λ: "args",
+    RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") (λ: "args",
       KVServer__put_core "ks" "args"
-      ) in
-    let: "fdur" := (λ: <>,
+      ) (λ: <>,
       WriteDurableKVServer "ks"
-      ) in
-    let: "r" := RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") "f" "fdur" "req" "reply" in
-    "r".
+      ) "req" "reply".
 
 Definition KVServer__Get: val :=
   rec: "KVServer__Get" "ks" "req" "reply" :=
-    let: "f" := (λ: "args",
+    RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") (λ: "args",
       KVServer__get_core "ks" "args"
-      ) in
-    let: "fdur" := (λ: <>,
+      ) (λ: <>,
       WriteDurableKVServer "ks"
-      ) in
-    let: "r" := RPCServer__HandleRequest (struct.loadF KVServer.S "sv" "ks") "f" "fdur" "req" "reply" in
-    "r".
+      ) "req" "reply".
 
 Definition MakeKVServer: val :=
   rec: "MakeKVServer" <> :=
