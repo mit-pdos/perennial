@@ -28,6 +28,9 @@ Record KVServerC :=
   kvsM : gmap u64 u64;
   }.
 
+Global Instance PutPre_disc γ args : Discretizable (Put_Pre γ args) := _.
+Global Instance PutPre_timeless γ args : Timeless (Put_Pre γ args) := _.
+
 Axiom KVServer_core_own_durable : KVServerC → RPCServerC  -> iProp Σ.
 
 Definition KVServer_core_own_vol (srv:loc) kv_server : iProp Σ :=
@@ -74,12 +77,12 @@ Definition kv_core_mu srv γ : rpc_core_mu :=
   {|
   core_own_durable := λ server rpc_server, KVServer_core_own_durable server rpc_server;
   core_own_ghost := λ server, KVServer_core_own_ghost γ server;
-  core_own_vol := λ srv_unused server, KVServer_core_own_vol srv server
+  core_own_vol := λ server, KVServer_core_own_vol srv server
   |}.
 
 Lemma wpc_put_core γ (srv:loc) args kvserver :
 {{{
-     (kv_core_mu srv γ).(core_own_vol) srv kvserver ∗
+     (kv_core_mu srv γ).(core_own_vol) kvserver ∗
      Put_Pre γ args
 }}}
   KVServer__put_core #srv (into_val.to_val args) @ 36 ; ⊤
@@ -98,9 +101,31 @@ Lemma wpc_put_core γ (srv:loc) args kvserver :
 Proof.
 Admitted.
 
+Print is_kvserver.
+Lemma wpc_WriteDurableKVServer γ (srv rpc_srv:loc) server rpc_server server' rpc_server':
+readonly (srv ↦[lockservice.KVServer.S :: "sv"] #rpc_srv) -∗
+{{{
+    (kv_core_mu srv γ).(core_own_vol) server' ∗
+    RPCServer_own_vol rpc_srv rpc_server' ∗
+    (kv_core_mu srv γ).(core_own_durable) server rpc_server
+}}}
+  WriteDurableKVServer #srv @ 36 ; ⊤
+{{{
+      RET #();
+    (kv_core_mu srv γ).(core_own_vol) server' ∗
+    RPCServer_own_vol rpc_srv rpc_server' ∗
+    (kv_core_mu srv γ).(core_own_durable) server' rpc_server'
+}}}
+{{{
+     (kv_core_mu srv γ).(core_own_durable) server rpc_server ∨
+     (kv_core_mu srv γ).(core_own_durable) server' rpc_server'
+}}}.
+Admitted.
+
+
 Definition is_kvserver γ (srv rpc_srv:loc) : iProp Σ :=
   "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #rpc_srv) ∗
-  "#His_server" ∷ is_server KVServerC (kv_core_mu srv γ) srv rpc_srv γ.(ks_rpcGN).
+  "#His_server" ∷ is_server KVServerC (kv_core_mu srv γ) rpc_srv γ.(ks_rpcGN).
 
 Lemma KVServer__Put_spec srv rpc_srv γ :
 is_kvserver γ srv rpc_srv -∗
@@ -121,22 +146,20 @@ Proof.
   iIntros "!#" (_ _).
   wp_pures.
   wp_loadField.
+  clear Φ.
   iApply (RPCServer__HandleRequest_is_rpcHandler KVServerC); last by eauto.
   {
-    clear Φ.
     iIntros (args server) "!#". iIntros (Φ Φc) "Hpre HΦ".
+    iNamed "Hpre".
+    iMod "Hpre".
     wpc_pures.
     {
       iDestruct "HΦ" as "[HΦc _]".
-      iNamed "Hpre".
       iModIntro.
-      iApply "HΦc".
-      (* Need Put_Pre to be Discretizable *)
-      admit.
+      by iApply "HΦc".
     }
 
-    iApply (wpc_put_core γ with "[Hpre]").
-    { iFrame. }
+    iApply (wpc_put_core γ with "[$Hpre $Hvol]").
     iSplit.
     {
       by iDestruct "HΦ" as "[HΦc _]".
@@ -144,11 +167,26 @@ Proof.
     by iDestruct "HΦ" as "[_ HΦ]".
   }
   {
-    admit.
+    iIntros (server rpc_server server' rpc_server') "!#".
+    iIntros (Φ Φc) "Hpre HΦ".
+    wpc_pures.
+    {
+      iDestruct "Hpre" as "(_ & _ & Hdur)". (* Requires own_durable to be discretizable *)
+      iDestruct "HΦ" as "[HΦc _]".
+      iModIntro.
+      iApply "HΦc".
+      by iLeft.
+    }
+    wpc_apply (wpc_WriteDurableKVServer with "Hsv Hpre").
+    iSplit.
+    {
+      by iDestruct "HΦ" as "[HΦc _]".
+    }
+    iNext. by iDestruct "HΦ" as "[_ HΦ]".
   }
   {
     iFrame "#".
   }
-Admitted.
+Qed.
 
 End kv_durable_proof.

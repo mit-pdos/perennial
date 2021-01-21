@@ -29,7 +29,15 @@ Record rpc_core_mu {serverC:Type} := mkcore_mu
 {
  core_own_durable : serverC → RPCServerC -> iProp Σ ; (* This also owns the durable rpc server state *)
  core_own_ghost : serverC → iProp Σ ;
- core_own_vol: loc → serverC → iProp Σ
+ core_own_vol: serverC → iProp Σ ;
+
+ core_durable_timeless server rpc_server : Timeless (core_own_durable server rpc_server) ;
+ core_durable_disc server rpc_server : Discretizable (core_own_durable server rpc_server) ;
+
+ core_ghost_timeless server : Timeless (core_own_ghost server) ;
+ core_ghost_disc server : Discretizable (core_own_ghost server) ;
+
+ core_vol_timeless server : Timeless (core_own_vol server) ;
 }
 .
 
@@ -40,6 +48,13 @@ Variable core : @rpc_core_mu serverC.
 Context (core_own_durable := core.(core_own_durable)).
 Context (core_own_vol := core.(core_own_vol)).
 Context (core_own_ghost := core.(core_own_ghost)).
+
+Local Instance durable_timeless : Timeless (core_own_durable server rpc_server) := core.(core_durable_timeless).
+Local Instance vol_timeless : Timeless (core_own_vol server) := core.(core_vol_timeless).
+Local Instance ghost_timeless : Timeless (core_own_ghost server) := core.(core_ghost_timeless).
+
+Local Instance durable_disc : Discretizable (core_own_durable server rpc_server) := core.(core_durable_disc).
+Local Instance ghost_disc : Discretizable (core_own_ghost server) := core.(core_ghost_disc).
 
 Definition Server_mutex_cinv γrpc : iProp Σ :=
   ∃ server rpc_server,
@@ -66,36 +81,21 @@ Definition RPCServer_all_own γrpc (sv:loc) rpc_server : iProp Σ :=
   "Hrpcghost" ∷ RPCServer_own_ghost sv γrpc rpc_server
 .
 
-Instance durable_timeless server rpc_server : Timeless (core_own_durable server rpc_server).
-Admitted.
-
-Instance vol_timeless srv_ptr server : Timeless (core_own_vol srv_ptr server).
-Admitted.
-
-Instance ghost_timeless server : Timeless (core_own_ghost server).
-Admitted.
-
-Instance durable_disc server rpc_server : Discretizable (core_own_durable server rpc_server).
-Admitted.
-
-Instance ghost_disc server : Discretizable (core_own_ghost server).
-Admitted.
-
-Definition Server_mutex_inv srv_ptr sv_ptr γrpc : iProp Σ :=
+Definition Server_mutex_inv rpc_srv_ptr γrpc : iProp Σ :=
   ∃ server rpc_server,
-    "Hcorevol" ∷ core_own_vol srv_ptr server ∗
+    "Hcorevol" ∷ core_own_vol server ∗
     "Hcoreghost" ∷ core_own_ghost server ∗
     "Hcoredurable" ∷ core_own_durable server rpc_server ∗
-    "Hrpc" ∷ RPCServer_all_own γrpc sv_ptr rpc_server
+    "Hrpc" ∷ RPCServer_all_own γrpc rpc_srv_ptr rpc_server
 .
 
 Definition mutexN : namespace := nroot .@ "server_mutexN".
 
-Definition is_server (srv_ptr sv_ptr:loc) γrpc : iProp Σ :=
+Definition is_server rpc_srv_ptr γrpc : iProp Σ :=
   ∃ (mu_ptr:loc),
   "#Hlinv" ∷ is_RPCServer γrpc ∗
-  "#Hmu_ptr" ∷ readonly(sv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr) ∗
-  "#Hmu" ∷ is_crash_lock mutexN 37 #mu_ptr (Server_mutex_inv srv_ptr sv_ptr γrpc)
+  "#Hmu_ptr" ∷ readonly(rpc_srv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr) ∗
+  "#Hmu" ∷ is_crash_lock mutexN 37 #mu_ptr (Server_mutex_inv rpc_srv_ptr γrpc)
     (|={⊤}=> Server_mutex_cinv γrpc) (* FIXME:(US) get rid of this fupd *)
 .
 
@@ -214,33 +214,14 @@ Context (coreFunction:goose_lang.val).
 Context (makeDurable:goose_lang.val).
 Context (PreCond:RPCValC -> iProp Σ).
 Context (PostCond:RPCValC -> u64 -> iProp Σ).
-Context (srv_ptr:loc).
-Context (sv_ptr:loc).
-
-Lemma wpc_makeDurable server rpc_server server' rpc_server' :
-  {{{
-     core_own_vol srv_ptr server' ∗
-     RPCServer_own_vol sv_ptr rpc_server' ∗
-     core_own_durable server rpc_server
-  }}}
-    makeDurable #() @ 36 ; ⊤
-  {{{
-       RET #();
-     core_own_vol srv_ptr server' ∗
-     RPCServer_own_vol sv_ptr rpc_server' ∗
-     core_own_durable server' rpc_server'
-  }}}
-  {{{
-    core_own_durable server rpc_server ∨ core_own_durable server' rpc_server'
-  }}}.
-Admitted.
+Context (rpc_srv_ptr:loc).
 
 (* The above two lemmas should be turned into requirements to apply wp_RPCServer__HandleRequest;
    HandleRequest should prove is_rpcHandler, instead of this wp directly *)
 Lemma RPCServer__HandleRequest_is_rpcHandler γrpc :
 (∀ (args : RPCValC) server,
  {{{
-       "Hvol" ∷ core_own_vol srv_ptr server ∗
+       "Hvol" ∷ core_own_vol server ∗
        "Hpre" ∷ ▷(PreCond args)
  }}}
     coreFunction (into_val.to_val args) @ 36; ⊤
@@ -249,7 +230,7 @@ Lemma RPCServer__HandleRequest_is_rpcHandler γrpc :
       server' (r:u64) P', RET #r;
             ⌜Discretizable P'⌝ ∗
              (P') ∗
-            core_own_vol srv_ptr server' ∗
+            core_own_vol server' ∗
             □ (P' -∗ PreCond args) ∗
             (* TODO: putting this here because need to be discretizable *)
             □ (▷ P' -∗ core_own_ghost server ==∗ PostCond args r ∗ core_own_ghost server')
@@ -258,15 +239,15 @@ Lemma RPCServer__HandleRequest_is_rpcHandler γrpc :
       (PreCond args)
  }}}) -∗
 (∀ server rpc_server server' rpc_server', {{{
-     core_own_vol srv_ptr server' ∗
-     RPCServer_own_vol sv_ptr rpc_server' ∗
+     core_own_vol server' ∗
+     RPCServer_own_vol rpc_srv_ptr rpc_server' ∗
      core_own_durable server rpc_server
   }}}
     makeDurable #() @ 36 ; ⊤
   {{{
        RET #();
-     core_own_vol srv_ptr server' ∗
-     RPCServer_own_vol sv_ptr rpc_server' ∗
+     core_own_vol server' ∗
+     RPCServer_own_vol rpc_srv_ptr rpc_server' ∗
      core_own_durable server' rpc_server'
   }}}
   {{{
@@ -274,9 +255,9 @@ Lemma RPCServer__HandleRequest_is_rpcHandler γrpc :
   }}})-∗
 
 {{{
-  "#Hls" ∷ is_server srv_ptr sv_ptr γrpc
+  "#Hls" ∷ is_server rpc_srv_ptr γrpc
 }}}
-  RPCServer__HandleRequest #sv_ptr coreFunction makeDurable
+  RPCServer__HandleRequest #rpc_srv_ptr coreFunction makeDurable
 {{{ f, RET f; is_rpcHandler f γrpc PreCond PostCond }}}.
 Proof.
   iIntros "#HcoreSpec #HdurSpec".
