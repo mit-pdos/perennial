@@ -93,7 +93,7 @@ Lemma wpc_put_core γ (srv:loc) args kvserver :
             KVServer_core_own_vol srv kvserver' ∗
             □ (P' -∗ Put_Pre γ args) ∗
             (* TODO: putting this here because need to be discretizable *)
-            □ (▷ P' -∗ KVServer_core_own_ghost γ kvserver ==∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
+            □ (▷ P' -∗ KVServer_core_own_ghost γ kvserver ={⊤}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
 }}}
 {{{
      Put_Pre γ args
@@ -125,17 +125,16 @@ Proof.
   iApply ("HΦ" $! {| kvsM := <[args.1:=args.2.1]> kvserver.(kvsM) |} _ (Put_Pre γ args)).
   iFrame.
   iSplitL "".
-  { admit. }
+  { iPureIntro. by apply PutPre_disc. }
   iSplitR "".
   { iExists _; iFrame. }
   iSplit; first eauto.
   iModIntro.
-  iIntros "Hpre Hghost".
-  (* TODO: can upgrade bupd to a fupd *)
-  unfold Put_Pre.
-  (* TODO: deal with later *)
-  (* iMod (map_update with "Hghost Hpre") as "[Hkvctx Hptsto]". *)
-Admitted.
+  iIntros ">Hpre Hghost".
+  iDestruct "Hpre" as (v) "Hpre".
+  iMod (map_update with "Hghost Hpre") as "[Hkvctx Hptsto]".
+  iModIntro. iFrame.
+Qed.
 
 Lemma wpc_WriteDurableKVServer γ (srv rpc_srv:loc) server rpc_server server' rpc_server':
 readonly (srv ↦[lockservice.KVServer.S :: "sv"] #rpc_srv) -∗
