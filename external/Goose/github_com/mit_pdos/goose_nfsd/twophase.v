@@ -36,9 +36,7 @@ Definition TwoPhase__Acquire: val :=
     let: "already_acquired" := ref_to boolT #false in
     ForSlice uint64T <> "acq" (struct.loadF TwoPhase.S "acquired" "twophase")
       (if: ("bnum" = "acq")
-      then
-        "already_acquired" <-[boolT] #true;;
-        Break
+      then "already_acquired" <-[boolT] #true
       else #());;
     (if: ~ (![boolT] "already_acquired")
     then
