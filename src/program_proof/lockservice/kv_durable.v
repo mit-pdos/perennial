@@ -168,14 +168,28 @@ Lemma wp_MapLen mref m:
 }}}.
 Admitted.
 
-Definition EncMap_invariant enc_v (r:Rec) sz map_sz (mtodo mdone:gmap u64 u64) : iProp Σ :=
+Definition data_has_map_encoding data (m:gmap u64 u64) :=
+  ∃ l,
+  (list_to_map l) = m ∧
+  has_encoding data ([EncUInt64 (size m)] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l ))
+.
+
+Definition has_map_encoding (m:gmap u64 u64) (r:Rec) :=
+  ∃ l,
+  (list_to_map l) = m ∧
+  r = [EncUInt64 (size m)] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l)
+.
+
+Definition EncMap_invariant enc_v (r:Rec) sz map_sz original_remaining (mtodo mdone:gmap u64 u64) : iProp Σ :=
   ∃ (l:list (u64 * u64)) remaining,
     ⌜(list_to_map l) = mdone⌝ ∗
-    ⌜remaining > 8 * 2 * (map_size mtodo)⌝ ∗
+    ⌜remaining > 8 * 2 * (size mtodo)⌝ ∗
+    ⌜remaining = original_remaining - 8 * 2 * (size mdone)⌝ ∗
+    ⌜mtodo ##ₘ mdone ⌝ ∗
     is_enc enc_v sz (r ++ [EncUInt64 map_sz] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l )) remaining
 .
 
-Definition marshalledMapSize (m:gmap u64 u64) : nat := 8 + 8 * 2 * (map_size m).
+Definition marshalledMapSize (m:gmap u64 u64) : nat := 8 + 8 * 2 * (size m).
 
 Lemma wp_EncMap e mref m sz r remaining :
 marshalledMapSize m < remaining →
@@ -185,9 +199,12 @@ marshalledMapSize m < remaining →
 }}}
   EncMap e #mref
 {{{
-     RET #(); True
+     rmap, RET #();
+     ⌜has_map_encoding m rmap⌝ ∗
+     is_map (V:=u64) mref m ∗
+     is_enc e sz (r ++ rmap) (remaining - marshalledMapSize m)
 }}}.
-Proof.
+Proof using Type*.
   intros Hrem.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
@@ -200,21 +217,24 @@ Proof.
   { lia. }
   iIntros "Henc".
   wp_pures.
-  wp_apply (wp_MapIter_2 _ _ _ _ (EncMap_invariant e r sz (map_size m)) with "Hmap [Henc] [] [HΦ]").
+  wp_apply (wp_MapIter_2 _ _ _ _ (EncMap_invariant e r sz (size m) (remaining - 8)) with "Hmap [Henc] [] [HΦ]").
   {
-    iExists [] . iExists (remaining-8). simpl. iFrame. (* TODO: adjust size of enc *)
+    iExists [] . iExists (remaining-8). simpl. iFrame.
     iSplit; first done.
-    iPureIntro. lia.
+    iPureIntro. split; first by lia.
+    replace (size ∅) with (0%nat).
+    { split; first by lia. apply map_disjoint_empty_r. }
+    symmetry. by apply map_size_empty_iff.
   }
   {
     clear Φ.
     iIntros (???? Φ) "!# [Hpre %Htodo] HΦ".
     wp_pures.
-    iDestruct "Hpre" as (l rem' Hl Hrem') "Henc".
+    iDestruct "Hpre" as (l rem' Hl Hrem' Hremeq Hmdisjoint) "Henc".
 
-    assert (map_size mtodo ≠ 0%nat).
+    assert (size mtodo ≠ 0%nat).
     { apply map_size_non_empty_iff.
-      destruct (bool_decide (mtodo = ∅)) as [Hmtodo|Hmtodo] eqn:X.
+      destruct (bool_decide (mtodo = ∅)) as [|] eqn:X.
       { apply bool_decide_eq_true in X. rewrite X in Htodo. done. }
       { by apply bool_decide_eq_false in X. }
     }
@@ -235,10 +255,15 @@ Proof.
     iSplit.
     { iPureIntro.
       rewrite -Hl.
-      admit.
+      apply list_to_map_snoc.
+      (* XXX: had to put the M there because typeclass resolution was not working well *)
+      rewrite (not_elem_of_list_to_map (M:=(@gmap u64 u64_eq_dec u64_countable))).
+      rewrite Hl.
+      destruct (mdone !! k) eqn:Hcase; last done.
+      exfalso; by eapply map_disjoint_spec.
     }
     iSplit.
-    { replace (map_size (delete k mtodo)) with (pred (map_size mtodo)).
+    { replace (size (delete k mtodo)) with (pred (size mtodo)).
       { iPureIntro. lia. }
       { symmetry. apply map_size_delete. eauto. }.
     }
@@ -250,10 +275,27 @@ Proof.
     rewrite -app_assoc.
     rewrite -app_assoc.
     iFrame.
+    iPureIntro.
+
+    destruct (mdone !! k) eqn:X.
+    - exfalso. eapply map_disjoint_spec; eauto.
+    - split.
+      + rewrite map_size_insert; first lia. done.
+      + apply map_disjoint_insert_r_2.
+        { apply lookup_delete. }
+        by apply map_disjoint_delete_l.
   }
-  iIntros.
-  by iApply "HΦ".
-Admitted.
+  iIntros "[Hmap Henc]".
+  iDestruct "Henc" as (l rem' _ _ ? ?) "Henc".
+  iApply ("HΦ" $! (
+              [EncUInt64 (size m)] ++
+              flat_map (λ u : u64 * u64, [EncUInt64 u.1; EncUInt64 u.2]) l)
+         ).
+  iFrame "Hmap".
+  unfold marshalledMapSize.
+  replace (remaining - (8 + 8 * 2 * size m)%nat) with (rem') by lia.
+  iFrame.
+Qed.
 
 Definition is_kvserver γ (srv rpc_srv:loc) : iProp Σ :=
   "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #rpc_srv) ∗
