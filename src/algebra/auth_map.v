@@ -7,6 +7,27 @@ From iris.base_logic.lib Require Import own.
 
 From Perennial.algebra Require Import own_discrete.
 
+(** Ghost ownership with an authoritative map_ctx with a whole map and ownership
+    of fragments for individual elements of the map. This library also supports
+    persisting an element and getting a persistent points-to.
+
+    The resources exposed are `map_ctx m` (the authoritative element with the
+    entire map), `ptsto_mut` (a fragment for owning one element, with a
+    fraction), and `ptsto_ro` (a persistent read-only element).
+
+    The main API to look at is [map_init], [map_alloc], [map_update],
+    [map_delete], and [map_freeze] (these are the ghost updates); [ptsto_agree]
+    is the main fact we get from validity.
+
+    This ownership is quite similar to what GooseLang provides for its mapsto
+    predicate, but it always has an explicit ghost name since this is intended
+    for ghost state independent of the program's heap.
+
+    Implementation note: this library is slightly old. If it were developed
+    today, it would be based on gmap_view (upstream in Iris) and use discardable
+    fractions rather than this one-shot sum RA.
+*)
+
 Set Default Goal Selector "!".
 Set Default Proof Using "Type".
 
