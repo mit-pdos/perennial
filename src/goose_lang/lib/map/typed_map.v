@@ -182,6 +182,27 @@ Proof.
   iApply (is_map_retype with "Hm").
 Qed.
 
+Lemma map_size_untype m:
+  size m = size (Map.untype m).1.
+Proof.
+  unfold Map.untype.
+  by rewrite map_size_fmap.
+Qed.
+
+Theorem wp_MapLen stk E mref m :
+  {{{ is_map mref m }}}
+    MapLen #mref @ stk; E
+  {{{ RET #(size m); is_map mref m }}}.
+Proof.
+  iIntros (Φ) "Hm HΦ".
+  iDestruct (is_map_untype with "Hm") as "Hm".
+  wp_apply (map.wp_MapLen with "Hm").
+  iIntros "Hm".
+  rewrite map_size_untype.
+  iApply "HΦ".
+  iApply (is_map_retype with "Hm").
+Qed.
+
 Theorem bi_iff_1 {PROP:bi} (P Q: PROP) :
   P ≡ Q ->
   ⊢ P -∗ Q.

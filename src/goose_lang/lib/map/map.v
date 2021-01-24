@@ -253,6 +253,78 @@ Proof.
       rewrite delete_insert_ne; congruence.
 Qed.
 
+Theorem wp_MapLen' stk E(mv:val) (m:gmap u64 val * val) :
+  {{{
+      ⌜Some m = map_val mv⌝
+  }}}
+    MapLen' mv @ stk ; E
+  {{{
+    RET #(size m.1); True
+  }}}.
+Proof.
+  iIntros (Φ) "%Hmapval HΦ".
+  wp_lam.
+  wp_pure (Rec _ _ _).
+  iLöb as "IH" forall (m mv Hmapval Φ).
+  wp_pures.
+  destruct (map_val_split mv m).
+  { done. }
+  - destruct e as [def [Hmv Hmuntype]].
+    rewrite Hmv.
+    wp_match.
+    replace (size m.1) with 0%nat; last first.
+    { rewrite Hmuntype. simpl. done. }
+    iApply "HΦ".
+    done.
+  - destruct e as [k [v [mv' [m' [Hmcons [Hmv Hmuntype]]]]]].
+    rewrite Hmcons.
+    wp_match.
+    wp_pures.
+    wp_apply (wp_MapDelete' with "[]").
+    { eauto. }
+    iIntros (mv'' Hmv'').
+
+    wp_bind (App _ _)%E.
+    iApply "IH"; first done.
+
+    iIntros "_".
+    wp_binop.
+    unfold map_del.
+    replace ((let (m0, def) := m' in (delete k m0, def)%core).1) with (delete k m'.1); last first.
+    { destruct m'. done. }
+    replace (delete k m'.1) with (delete k m.1); last first.
+    { rewrite Hmuntype. by rewrite delete_insert_delete. }
+    rewrite map_size_delete; last first.
+    { exists v. rewrite Hmuntype. simpl. apply lookup_insert. }
+    replace (word.add 1 (Init.Nat.pred (size m.1))) with (size m.1:u64); last first.
+    {
+      set (s:=size m.1).
+      admit.
+    }
+    iApply "HΦ".
+    done.
+Admitted.
+
+Theorem wp_MapLen stk E mref m :
+  {{{
+      is_map mref m
+  }}}
+    (MapLen #mref) @ stk ; E
+  {{{
+    RET #(size m.1);
+      is_map mref m
+  }}}.
+Proof.
+  iIntros (Φ) "Hmap HΦ".
+  wp_lam.
+  iDestruct "Hmap" as (mv Hmapval) "Hmref".
+  wp_apply (wp_load with "Hmref").
+  iIntros "Hmref".
+  wp_apply (wp_MapLen'); first done.
+  iApply "HΦ".
+  iExists mv. eauto.
+Qed.
+
 Theorem wp_MapDelete stk E mref (m: gmap u64 val * val) k :
   {{{ is_map mref m }}}
     MapDelete #mref #k @ stk; E

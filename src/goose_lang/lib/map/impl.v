@@ -41,8 +41,8 @@ Definition MapDelete: val :=
   λ: "mref" "k",
   "mref" <- MapDelete' (!"mref") "k".
 
-Definition MapLen: val :=
-  λ: "mref",
+Definition MapLen': val :=
+  λ: "mv",
   (rec: "mapLen" "m" :=
      match: "m" with
        InjL <> => #0
@@ -50,7 +50,11 @@ Definition MapLen: val :=
        let: "kv" := Fst "kvm" in
        let: "m2" := Snd "kvm" in
        #1 + "mapLen" (MapDelete' "m2" (Fst "kv"))
-     end) (!"mref").
+     end) ("mv").
+
+Definition MapLen: val :=
+  λ: "mref", MapLen' (!"mref").
+
 
 Definition mapGetDef: val :=
   rec: "mapGetDef" "m" :=

@@ -157,23 +157,6 @@ readonly (srv ↦[lockservice.KVServer.S :: "sv"] #rpc_srv) -∗
 }}}.
 Admitted.
 
-Lemma wp_MapLen mref m:
-{{{
-    is_map (V:=u64) mref m
-}}}
-  (MapLen #mref)
-{{{
-  RET #(map_size m);
-    is_map mref m
-}}}.
-Admitted.
-
-Definition data_has_map_encoding data (m:gmap u64 u64) :=
-  ∃ l,
-  (list_to_map l) = m ∧
-  has_encoding data ([EncUInt64 (size m)] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l ))
-.
-
 Definition has_map_encoding (m:gmap u64 u64) (r:Rec) :=
   ∃ l,
   (list_to_map l) = m ∧
@@ -265,9 +248,8 @@ Proof using Type*.
     iSplit.
     { replace (size (delete k mtodo)) with (pred (size mtodo)).
       { iPureIntro. lia. }
-      { symmetry. apply map_size_delete. eauto. }.
+      { symmetry. apply map_size_delete. eauto. }
     }
-    (* TODO: flat_map of list append vs append to flat_map *)
     rewrite flat_map_app.
     simpl.
     replace ([EncUInt64 k; EncUInt64 v]) with ([EncUInt64 k] ++ [EncUInt64 v]) by eauto.
@@ -286,7 +268,7 @@ Proof using Type*.
         by apply map_disjoint_delete_l.
   }
   iIntros "[Hmap Henc]".
-  iDestruct "Henc" as (l rem' _ _ ? ?) "Henc".
+  iDestruct "Henc" as (l rem' Hl _ ? ?) "Henc".
   iApply ("HΦ" $! (
               [EncUInt64 (size m)] ++
               flat_map (λ u : u64 * u64, [EncUInt64 u.1; EncUInt64 u.2]) l)
@@ -295,6 +277,8 @@ Proof using Type*.
   unfold marshalledMapSize.
   replace (remaining - (8 + 8 * 2 * size m)%nat) with (rem') by lia.
   iFrame.
+  iPureIntro.
+  by exists l.
 Qed.
 
 Definition is_kvserver γ (srv rpc_srv:loc) : iProp Σ :=
