@@ -1,4 +1,5 @@
 From stdpp Require Import fin_maps gmap.
+From Perennial.goose_lang.lib Require Import control.impl.
 From Perennial.goose_lang Require Import lang notation.
 
 Notation MapConsV k v m := (InjRV (PairV (PairV (LitV (LitInt k)) v) m)).
@@ -49,7 +50,9 @@ Definition MapLen': val :=
      | InjR "kvm" =>
        let: "kv" := Fst "kvm" in
        let: "m2" := Snd "kvm" in
-       #1 + "mapLen" (MapDelete' "m2" (Fst "kv"))
+       let: "restSize" := ("mapLen" (MapDelete' "m2" (Fst "kv"))) in
+       Assume ("restSize" < #(2^64-1));;
+       #1 + "restSize"
      end) ("mv").
 
 Definition MapLen: val :=

@@ -1,6 +1,7 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.goose_lang Require Import notation proofmode.
 From Perennial.goose_lang.lib Require Import typed_mem.
+From Perennial.goose_lang.lib Require Import control.
 From Perennial.goose_lang.lib Require Export map.impl.
 Import uPred.
 
@@ -253,13 +254,20 @@ Proof.
       rewrite delete_insert_ne; congruence.
 Qed.
 
+(* Want this for u64 addition commutativity in wp_MapLen' *)
+Add Ring u64ring : (word.ring_theory (word := u64_instance.u64))
+                    (preprocess [autorewrite with rew_word_morphism],
+                      morphism (word.ring_morph (word := u64_instance.u64)),
+                      constants [word_cst]).
+
+(* The postcondition guarantees that the size of the map actually fits in a u64 *)
 Theorem wp_MapLen' stk E(mv:val) (m:gmap u64 val * val) :
   {{{
       ⌜Some m = map_val mv⌝
   }}}
     MapLen' mv @ stk ; E
   {{{
-    RET #(size m.1); True
+    RET #(U64 (size m.1)); ⌜size m.1 = int.nat (size m.1)⌝
   }}}.
 Proof.
   iIntros (Φ) "%Hmapval HΦ".
@@ -284,26 +292,58 @@ Proof.
     { eauto. }
     iIntros (mv'' Hmv'').
 
-    wp_bind (App _ _)%E.
-    iApply "IH"; first done.
+    wp_bind (_ mv'')%E.
+    wp_apply "IH"; first done.
+    iIntros (HsizeConversion).
 
-    iIntros "_".
-    wp_binop.
-    unfold map_del.
-    replace ((let (m0, def) := m' in (delete k m0, def)%core).1) with (delete k m'.1); last first.
-    { destruct m'. done. }
-    replace (delete k m'.1) with (delete k m.1); last first.
-    { rewrite Hmuntype. by rewrite delete_insert_delete. }
-    rewrite map_size_delete; last first.
-    { exists v. rewrite Hmuntype. simpl. apply lookup_insert. }
-    replace (word.add 1 (Init.Nat.pred (size m.1))) with (size m.1:u64); last first.
+    wp_pures.
+    wp_apply (wp_Assume).
+    iIntros (Hassume).
+    apply bool_decide_eq_true in Hassume.
+    wp_pures.
+    assert ((size (map_del m' k).1) = (Init.Nat.pred (size m.1))) as Hsize.
     {
-      set (s:=size m.1).
-      admit.
+      unfold map_del.
+      replace ((let (m0, def) := m' in (delete k m0, def)%core).1) with (delete k m'.1); last first.
+      { destruct m'. done. }
+      replace (delete k m'.1) with (delete k m.1); last first.
+      { rewrite Hmuntype. by rewrite delete_insert_delete. }
+      rewrite map_size_delete; last first.
+      { exists v. rewrite Hmuntype. simpl. apply lookup_insert. }
+      done.
     }
+    set (s:=size m.1) in *.
+    rewrite Hsize in Hassume HsizeConversion |-*.
+    assert (s = size m.1) by eauto.
+    destruct s. (* Get rid of -1 by destructing s, and ruling out s=0 *)
+    { exfalso.
+      rewrite Hmuntype in H.
+      simpl in H.
+      symmetry in H.
+      apply map_size_empty_iff in H.
+      by apply insert_non_empty in H.
+    }
+
+    simpl in *.
+    replace (word.add 1 s) with (word.add s 1) by ring.
+    replace (word.add s 1) with (word.add (int.nat s) 1); last first.
+    { by rewrite -HsizeConversion. }
+    rewrite u64_Z_through_nat.
+    replace (word.add (int.Z s) 1%Z) with (int.Z (s + 1):u64); last first.
+    { word. }
+    replace (S s) with (s + 1)%nat in *; last lia.
+
+    assert (Z.of_nat (s + 1) = (int.Z (s + 1))).
+    {
+      rewrite -u64_Z_through_nat.
+      word.
+    }
+    rewrite -H0.
     iApply "HΦ".
-    done.
-Admitted.
+    rewrite -u64_Z_through_nat in H0.
+    iPureIntro.
+    word.
+Qed.
 
 Theorem wp_MapLen stk E mref m :
   {{{
@@ -312,6 +352,7 @@ Theorem wp_MapLen stk E mref m :
     (MapLen #mref) @ stk ; E
   {{{
     RET #(size m.1);
+      ⌜size m.1 = int.nat (size m.1)⌝ ∗
       is_map mref m
   }}}.
 Proof.
@@ -321,7 +362,9 @@ Proof.
   wp_apply (wp_load with "Hmref").
   iIntros "Hmref".
   wp_apply (wp_MapLen'); first done.
+  iIntros (Hsize).
   iApply "HΦ".
+  iSplitL ""; first done.
   iExists mv. eauto.
 Qed.
 

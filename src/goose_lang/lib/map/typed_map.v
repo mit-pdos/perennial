@@ -192,15 +192,15 @@ Qed.
 Theorem wp_MapLen stk E mref m :
   {{{ is_map mref m }}}
     MapLen #mref @ stk; E
-  {{{ RET #(size m); is_map mref m }}}.
+  {{{ RET #(size m); ⌜size m = int.nat (size m)⌝ ∗ is_map mref m }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".
   wp_apply (map.wp_MapLen with "Hm").
-  iIntros "Hm".
+  iIntros "[%Hsize Hm]".
   rewrite map_size_untype.
   iApply "HΦ".
-  iApply (is_map_retype with "Hm").
+  by iSplit.
 Qed.
 
 Theorem bi_iff_1 {PROP:bi} (P Q: PROP) :

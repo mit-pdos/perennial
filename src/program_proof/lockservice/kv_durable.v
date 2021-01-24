@@ -157,6 +157,8 @@ readonly (srv ↦[lockservice.KVServer.S :: "sv"] #rpc_srv) -∗
 }}}.
 Admitted.
 
+
+(* TODO: This probably needs to be strengthened to remember that [int.nat (size m) = size m], or equivalently that [size m < 2 ^ 64] *)
 Definition has_map_encoding (m:gmap u64 u64) (r:Rec) :=
   ∃ l,
   (list_to_map l) = m ∧
