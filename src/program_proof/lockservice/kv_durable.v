@@ -179,7 +179,7 @@ Qed.
 
 Definition DecMap_invariant dec_v i_ptr m (r:Rec) mref s q data : iProp Σ :=
   ∃ (l:list (u64 * u64)) (mdone:gmap u64 u64),
-    ⌜NoDup l.*1⌝ ∗ (* TODO: add this to has_encoding *)
+    ⌜NoDup l.*1⌝ ∗
     ⌜(list_to_map l) ##ₘ mdone⌝ ∗
     ⌜(list_to_map l) ∪ mdone = m⌝ ∗
     i_ptr ↦[uint64T] #(size mdone) ∗

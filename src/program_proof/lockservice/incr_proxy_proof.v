@@ -31,17 +31,9 @@ Axiom is_incrserver : incrservice_names → loc → iProp Σ.
 Instance is_incrserver_pers γ incrserver : Persistent (is_incrserver γ incrserver).
 Admitted.
 
-Variable γ:incrservice_names.
+Variable γback:incrservice_names.
 
 Context `{!kvserviceG Σ}.
-
-Definition ProxyIncrServer_core_own (srv:loc) : iProp Σ :=
-  ∃ (kck incrserver:loc),
-  "Hkvserver" ∷ srv ↦[IncrProxyServer.S :: "incrserver"] #incrserver ∗
-  "Hkck" ∷ srv ↦[IncrProxyServer.S :: "ick"] #kck ∗
-  "#His_incrserver" ∷ is_incrserver γ incrserver
-  (* This is using the non-crash-safe version of kvserver in kv_proof.v *)
-.
 
 Lemma RPCRequest_merge req cid seq a1 a2:
   req ↦[RPCRequest.S :: "CID"] #cid -∗
@@ -80,38 +72,42 @@ Definition own_short_incr_clerk (ck isrv:loc) (cid seq:u64) (args:RPCValC) : iPr
 .
 
 Variable c:nat. (* Old value of the ghost counter *)
-Definition IncrPreCond : RPCValC → iProp Σ := (λ a, a.1 fm[[γ.(incr_mapGN)]]↦ c)%I.
-Definition IncrPostCond : RPCValC → u64 → iProp Σ := (λ a r, a.1 fm[[γ.(incr_mapGN)]]↦ (c+1))%I.
+Definition IncrPreCond : RPCValC → iProp Σ := (λ a, a.1 fm[[γback.(incr_mapGN)]]↦ c)%I.
+Definition IncrPostCond : RPCValC → u64 → iProp Σ := (λ a r, a.1 fm[[γback.(incr_mapGN)]]↦ (c+1))%I.
 
-Context `{!rpcG Σ (@RPCReply u64)}.
 
 Definition own_prepared_short_incr_clerk ck isrv cid seq args : iProp Σ :=
   own_short_incr_clerk ck isrv cid seq args ∗
   ⌜(int.nat (word.sub seq 1%nat) > 0)%Z⌝ ∗
-  ∃ γPost, is_RPCRequest γ.(incr_rpcGN) γPost IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
+  ∃ γPost, is_RPCRequest γback.(incr_rpcGN) γPost IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
 .
 
 (* TODO: this should refer to a lemma in incr_proof.v *)
 
 Lemma IncrServer__Increment_is_rpcHandler (isrv:loc) :
-is_incrserver γ isrv -∗
+is_incrserver γback isrv -∗
 {{{
      True
 }}}
   IncrServer__Increment #isrv
 {{{ (f:goose_lang.val), RET f;
-        is_rpcHandler f γ.(incr_rpcGN) IncrPreCond IncrPostCond
+        is_rpcHandler f γback.(incr_rpcGN) IncrPreCond IncrPostCond
 }}}.
 Admitted.
 
 Lemma wp_ShortTermIncrClerk__MakePreparedRequest ck isrv cid seq args :
-is_incrserver γ isrv -∗
+is_incrserver γback isrv -∗
 {{{
      own_prepared_short_incr_clerk ck isrv cid seq args
 }}}
     ShortTermIncrClerk__MakePreparedRequest #ck
 {{{
-     v, RET #v; True
+     (reply':@RPCReply u64), RET #(reply'.(Rep_Ret)); ⌜reply'.(Rep_Stale) = true⌝
+               ∗ RPCRequestStale γback.(incr_rpcGN)
+                   {| Req_CID := cid; Req_Seq := word.sub seq 1; Req_Args := args |}
+               ∨ RPCReplyReceipt γback.(incr_rpcGN)
+                   {| Req_CID := cid; Req_Seq := word.sub seq 1; Req_Args := args |}
+                   reply'.(Rep_Ret)
 }}}
 .
 Proof using Type*.
@@ -175,7 +171,7 @@ Proof using Type*.
     iNamed "Hown_reply".
     wp_loadField.
     iApply "Hpost".
-    done.
+    iFrame "HrpcPost".
 Qed.
 
 Lemma wp_DecodeShortTermIncrClerk cid seq args (isrv:loc) (content:Slice.t) data :
@@ -293,38 +289,76 @@ Proof.
   by iFrame.
 Qed.
 
-Definition ProxyIncrCrashInvariant (seq:u64) (args:RPCValC) : iProp Σ :=
-  ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string seq) f↦ []) ∨
-  ("Hfown_oldv" ∷ ∃ data cid, ("procy_incr_request_" +:+ u64_to_string seq) f↦ data ∗
-   ⌜has_encoding_for_short_clerk data cid seq args⌝ ∗
-  ⌜(int.nat (word.sub seq 1%nat) > 0)%Z⌝ ∗
-  ∃ γPost, is_RPCRequest γ.(incr_rpcGN) γPost IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
-   )
+Variable old_v:u64.
+Variable γ:incrservice_names.
+
+Record ProxyServerC :=
+  {
+  kvsM:gmap u64 u64
+  }.
+
+Implicit Types server : ProxyServerC.
+
+Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
+  ∃ (incrserver:loc),
+  "Hincrserver" ∷ srv ↦[IncrProxyServer.S :: "incrserver"] #incrserver ∗
+  "#His_incrserver" ∷ is_incrserver γback incrserver
 .
 
-Lemma increment_proxy_core_idempotent (isrv:loc) (seq:u64) (args:RPCValC) :
+(* Either the proxy server has the mapsto fact for the backend, or, if it
+   doesn't, then it has the  mapsto for γ, meaning backend mapsto is being used
+   for a request, and thus belongs to some request's invariant.
+ *)
+Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=
+  "Hctx" ∷ map_ctx γ.(incr_mapGN) 1 server.(kvsM) ∗
+  "Hback" ∷ [∗ map] k ↦ v ∈ server.(kvsM), (k [[γback.(incr_mapGN)]]↦ v ∨ k [[γ.(incr_mapGN)]]↦ v)
+.
+
+Print RPCClient_own.
+
+Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
+  ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
+   "Hmapsto" ∷ args.1 [[γ.(incr_mapGN)]]↦ old_v ) ∨
+  ("Hfown_oldv" ∷ ∃ data cid seq, ("procy_incr_request_" +:+ u64_to_string sseq) f↦ data ∗
+   ⌜has_encoding_for_short_clerk data cid seq args⌝ ∗
+   ⌜(int.nat (word.sub seq 1%nat) > 0)%Z⌝ ∗
+   RPCClient_own γback.(incr_rpcGN) cid seq ∗
+   ∃ γreq,
+     is_RPCRequest γback.(incr_rpcGN) γreq IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
+  )
+.
+
+Lemma increment_proxy_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValC) :
   {{{
        ProxyIncrCrashInvariant seq args ∗
-       ProxyIncrServer_core_own isrv
+       ProxyIncrServer_core_own_vol isrv server ∗
+       ProxyIncrServer_core_own_ghost server
   }}}
     IncrProxyServer__proxy_increment_core #isrv #seq (into_val.to_val args) @ 37 ; ⊤
   {{{
-      RET #(); True
+      RET #0;
+      (
+        args.1 [[γ.(incr_mapGN)]]↦ old_v ={⊤}=∗
+        args.1 [[γ.(incr_mapGN)]]↦ (U64(int.nat old_v + 1))
+      ) ∗
+      ProxyIncrCrashInvariant seq args
   }}}
   {{{
-       ProxyIncrCrashInvariant seq args
+       ProxyIncrCrashInvariant seq args ∗
+       ProxyIncrServer_core_own_ghost server
   }}}.
 Proof.
   Opaque struct.t. (* TODO: put this here to avoid unfolding the struct defns all the way *)
   Opaque zero_val.
-  iIntros (Φ Φc) "[HincrCrashInv Hisown] Hpost".
-  wpc_call; first done.
+  iIntros (Φ Φc) "[HincrCrashInv [Hvol Hghost]] Hpost".
+  wpc_call.
+  { iFrame. }
   { iFrame. }
   unfold ProxyIncrCrashInvariant.
-  iNamed "HincrCrashInv".
-  iCache with "HincrCrashInv Hpost".
+  iCache with "HincrCrashInv Hghost Hpost".
   {
-    iDestruct "Hpost" as "[HΦc _]". iModIntro. by iApply "HΦc".
+    iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc".
+    iFrame.
   }
   wpc_pures.
 
@@ -347,16 +381,18 @@ Proof.
 
   iDestruct "HincrCrashInv" as "[Hcase|Hcase]".
   - iNamed "Hcase".
-    iCache with "Hfown_oldv Hpost".
+    iCache with "Hfown_oldv Hmapsto Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
-      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". by iLeft.
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iLeft.
+      iFrame.
     }
 
     wpc_apply (wpc_Read with "Hfown_oldv").
     iSplit.
     { (* Show that the crash obligation of the function we're calling implies our crash obligation *)
       iDestruct "Hpost" as "[Hpost _]".
-      iModIntro. iIntros. iApply "Hpost". by iLeft.
+      iModIntro. iIntros. iApply "Hpost".
+      iFrame. iLeft. iFrame.
     }
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
@@ -380,30 +416,29 @@ Proof.
 
     (* case that no durable short-term clerk was found *)
     wpc_pures.
-    iNamed "Hisown".
     admit.
   - iNamed "Hcase".
-    iCache with "Hfown_oldv Hpost".
+    iCache with "Hfown_oldv Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
-      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". by iRight.
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame.
     }
 
     iNamed "Hfown_oldv".
-    iDestruct "Hfown_oldv" as "(Hfown_oldv & %Henc & #Hprepared)".
+    iDestruct "Hfown_oldv" as "(Hfown_oldv & %Henc & %Hpos & Hrpc_clientown & #Hprepared)".
     wpc_apply (wpc_Read with "Hfown_oldv").
     iSplit.
     { (* crash obligation of called implies our crash obligation *)
       iDestruct "Hpost" as "[Hpost _]".
-      iModIntro. iIntros. iApply "Hpost". iRight.
-      by iExists _, _; iFrame "#∗".
+      iModIntro. iIntros. iApply "Hpost". iFrame. iRight.
+      by iExists _, _, _; iFrame "#∗".
     }
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
 
-    iCache with "Hfown_oldv Hprepared Hpost".
+    iCache with "Hfown_oldv Hrpc_clientown Hghost Hprepared Hpost".
     { (* Prove crash obligation after destructing above; TODO: do this earlier *)
-      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iRight.
-      by iExists _, _; iFrame "#∗".
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iRight.
+      by iExists _,_, _; iFrame "#∗".
     }
     wpc_pures.
 
@@ -413,7 +448,7 @@ Proof.
     iNamed 1.
     wpc_pures.
 
-    iNamed "Hisown".
+    iNamed "Hvol".
 
     destruct bool_decide eqn:Hlen.
     { (* Case: found old short-term clerk *)
@@ -446,9 +481,12 @@ Proof.
       wpc_bind (ShortTermIncrClerk__MakePreparedRequest #_)%E.
       wpc_frame.
       wp_apply (wp_ShortTermIncrClerk__MakePreparedRequest with "His_incrserver [$Hown_ck $Hprepared]").
+      { done. }
       iIntros (v) "HmakeReqPost".
       iNamed 1.
 
+      (* TODO: rule out stale case; the word.sub will be annoying, just rewrite
+         the crach invariant to not have that *)
       wpc_pures.
       (* TODO: write spec for *)
       admit.
