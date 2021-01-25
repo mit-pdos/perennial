@@ -30,18 +30,20 @@ Definition Begin: val :=
     ")) #();;
     "trans".
 
+Definition TwoPhase__acquireNoCheck: val :=
+  rec: "TwoPhase__acquireNoCheck" "twophase" "bnum" :=
+    lockmap.LockMap__Acquire (struct.loadF TwoPhase.S "locks" "twophase") "bnum";;
+    struct.storeF TwoPhase.S "acquired" "twophase" (SliceAppend uint64T (struct.loadF TwoPhase.S "acquired" "twophase") "bnum").
+
 Definition TwoPhase__Acquire: val :=
-  rec: "TwoPhase__Acquire" "twophase" "addr" :=
-    let: "bnum" := struct.get addr.Addr.S "Blkno" "addr" in
+  rec: "TwoPhase__Acquire" "twophase" "bnum" :=
     let: "already_acquired" := ref_to boolT #false in
     ForSlice uint64T <> "acq" (struct.loadF TwoPhase.S "acquired" "twophase")
       (if: ("bnum" = "acq")
       then "already_acquired" <-[boolT] #true
       else #());;
     (if: ~ (![boolT] "already_acquired")
-    then
-      lockmap.LockMap__Acquire (struct.loadF TwoPhase.S "locks" "twophase") "bnum";;
-      struct.storeF TwoPhase.S "acquired" "twophase" (SliceAppend uint64T (struct.loadF TwoPhase.S "acquired" "twophase") "bnum")
+    then TwoPhase__acquireNoCheck "twophase" "bnum"
     else #()).
 
 Definition TwoPhase__Release: val :=
@@ -59,13 +61,13 @@ Definition TwoPhase__ReleaseAll: val :=
 
 Definition TwoPhase__ReadBuf: val :=
   rec: "TwoPhase__ReadBuf" "twophase" "addr" "sz" :=
-    TwoPhase__Acquire "twophase" "addr";;
+    TwoPhase__Acquire "twophase" (struct.get addr.Addr.S "Blkno" "addr");;
     buftxn.BufTxn__ReadBuf (struct.loadF TwoPhase.S "buftxn" "twophase") "addr" "sz".
 
 (* OverWrite writes an object to addr *)
 Definition TwoPhase__OverWrite: val :=
   rec: "TwoPhase__OverWrite" "twophase" "addr" "sz" "data" :=
-    TwoPhase__Acquire "twophase" "addr";;
+    TwoPhase__Acquire "twophase" (struct.get addr.Addr.S "Blkno" "addr");;
     buftxn.BufTxn__OverWrite (struct.loadF TwoPhase.S "buftxn" "twophase") "addr" "sz" "data".
 
 (* NDirty reports an upper bound on the size of this transaction when committed.

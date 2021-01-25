@@ -655,93 +655,25 @@ Proof.
   set_solver.
 Qed.
 
-Theorem wp_twophase__Acquire (l: loc) mt_buftxn γ dinit metamap a:
+Theorem wp_twophase__acquireNoCheck (l: loc) mt_buftxn γ dinit metamap a:
   {{{
     "Htwophase" ∷ is_twophase l mt_buftxn γ dinit metamap ∗
     "%Ha_wf" ∷ ⌜addr_wf dinit a⌝ ∗
     "%Ha_in_metamap" ∷ ⌜is_Some (metamap !! a)⌝ ∗
-    "%Ha_not_locked" ∷ ⌜addrBlock a ∉ get_addr_map_blknos mt_buftxn⌝
+    "%Ha_not_locked" ∷ ⌜a.(addrBlock) ∉ get_addr_map_blknos mt_buftxn⌝
   }}}
-    TwoPhase__Acquire #l (addr2val a)
+    TwoPhase__acquireNoCheck #l #a.(addrBlock)
   {{{
     RET #();
     ∃ mt_buftxn',
-      "%Hmt_buftxn'_blknos" ∷ ⌜get_addr_map_blknos mt_buftxn' = get_addr_map_blknos mt_buftxn ∪ {[addrBlock a]}⌝ ∗
+      "%Hmt_buftxn'_blknos" ∷ ⌜get_addr_map_blknos mt_buftxn' = get_addr_map_blknos mt_buftxn ∪ {[a.(addrBlock)]}⌝ ∗
       "Htwophase" ∷ is_twophase l mt_buftxn' γ dinit metamap
   }}}.
 Proof.
   wp_start.
   wp_call.
-  wp_apply wp_ref_to; first by auto.
-  iIntros (already_acquired_l) "Halready_acquired_l".
   iNamed "Htwophase".
   iNamed "Htwophase".
-  wp_loadField.
-  iDestruct (is_slice_small_read with "Hacquired_s") as "[Hacquired_s Hacquired_s_wrap]".
-  wp_apply (wp_forSlicePrefix (λ done todo,
-    let already_acquired_val := bool_decide (addrBlock a ∈ done) in
-    "Halready_acquired_l" ∷ already_acquired_l ↦[boolT] #already_acquired_val
-  )%I (V:=u64) with "[] [$Hacquired_s Halready_acquired_l]").
-  2: {
-    rewrite bool_decide_eq_false_2; first by iFrame.
-    apply not_elem_of_nil.
-  }
-  {
-    iIntros (i x done todo Harr Φ0).
-    iModIntro.
-    iNamed 1.
-    iIntros "HΦ".
-    wp_if_destruct.
-    {
-      wp_apply (wp_StoreAt with "[$Halready_acquired_l]").
-      1: auto.
-      iIntros "Halready_acquired_l".
-      iApply "HΦ".
-      rewrite bool_decide_eq_true_2; first by iFrame.
-      apply elem_of_app.
-      right.
-      apply (iffRL (elem_of_list_singleton _ _)).
-      reflexivity.
-    }
-    iApply "HΦ".
-    destruct (decide (addrBlock a ∈ done)).
-    - rewrite bool_decide_eq_true_2.
-      2: assumption.
-      rewrite bool_decide_eq_true_2; first by iFrame.
-      apply elem_of_app.
-      left.
-      assumption.
-    - rewrite bool_decide_eq_false_2.
-      2: assumption.
-      rewrite bool_decide_eq_false_2; first by iFrame.
-      apply not_elem_of_app.
-      split; first by assumption.
-      intro Hin.
-      apply elem_of_list_singleton in Hin.
-      apply Heqb.
-      f_equal.
-      f_equal.
-      apply Hin.
-  }
-  iIntros "[Hacquired_s ?]".
-  iNamed.
-  iApply "Hacquired_s_wrap" in "Hacquired_s".
-  wp_apply (wp_LoadAt with "[$Halready_acquired_l]").
-  iIntros "Halready_acquired_l".
-  wp_if_destruct.
-  2: {
-    iApply "HΦ".
-    iExists mt_buftxn.
-    apply (@elem_of_list_to_set _ (gset u64) _ _ _ _ _) in Heqb.
-    rewrite Hlocks_held in Heqb.
-    iSplit; first by set_solver.
-    iExists locks_held.
-    iSplit; first by (iPureIntro; assumption).
-    iExists _, _, _, _, _.
-    iFrame "∗ # %".
-  }
-  rewrite bool_decide_eq_false_2.
-  2: assumption.
   wp_loadField.
   apply addr_wf_wf' in Ha_wf.
   wp_apply (wp_LockMap__Acquire with "[$Hlocks]").
@@ -875,8 +807,9 @@ Proof.
       iSplitL "Hlocked_blknos Hlocked".
       {
         rewrite set_union_comm big_sepS_insert.
-        2: apply not_elem_of_list_to_set; assumption.
-        iFrame.
+        1: iFrame.
+        rewrite Hlocks_held.
+        assumption.
       }
       iPureIntro.
       split.
@@ -899,6 +832,8 @@ Proof.
       intros blkno Hin His.
       apply elem_of_list_singleton in His.
       subst blkno.
+      apply (iffRL (@elem_of_list_to_set _ (gset u64) _ _ _ _ _ _ _)) in Hin.
+      rewrite Hlocks_held in Hin.
       contradiction.
     }
     iPureIntro.
@@ -908,6 +843,112 @@ Proof.
   }
   iPureIntro.
   rewrite Hlocked_blknos Hlocks_held //.
+Qed.
+
+Theorem wp_twophase__Acquire (l: loc) mt_buftxn γ dinit metamap a:
+  {{{
+    "Htwophase" ∷ is_twophase l mt_buftxn γ dinit metamap ∗
+    "%Ha_wf" ∷ ⌜addr_wf dinit a⌝ ∗
+    "%Ha_in_metamap" ∷ ⌜is_Some (metamap !! a)⌝
+  }}}
+    TwoPhase__Acquire #l #a.(addrBlock)
+  {{{
+    RET #();
+    ∃ mt_buftxn',
+      "%Hmt_buftxn'_blknos" ∷ ⌜get_addr_map_blknos mt_buftxn' = get_addr_map_blknos mt_buftxn ∪ {[a.(addrBlock)]}⌝ ∗
+      "Htwophase" ∷ is_twophase l mt_buftxn' γ dinit metamap
+  }}}.
+Proof.
+  wp_start.
+  wp_call.
+  wp_apply wp_ref_to; first by auto.
+  iIntros (already_acquired_l) "Halready_acquired_l".
+  iNamed "Htwophase".
+  iNamed "Htwophase".
+  wp_loadField.
+  iDestruct (is_slice_small_read with "Hacquired_s") as "[Hacquired_s Hacquired_s_wrap]".
+  wp_apply (wp_forSlicePrefix (λ done todo,
+    let already_acquired_val := bool_decide (addrBlock a ∈ done) in
+    "Halready_acquired_l" ∷ already_acquired_l ↦[boolT] #already_acquired_val
+  )%I (V:=u64) with "[] [$Hacquired_s Halready_acquired_l]").
+  2: {
+    rewrite bool_decide_eq_false_2; first by iFrame.
+    apply not_elem_of_nil.
+  }
+  {
+    iIntros (i x done todo Harr Φ0).
+    iModIntro.
+    iNamed 1.
+    iIntros "HΦ".
+    wp_if_destruct.
+    {
+      wp_apply (wp_StoreAt with "[$Halready_acquired_l]").
+      1: auto.
+      iIntros "Halready_acquired_l".
+      iApply "HΦ".
+      rewrite bool_decide_eq_true_2; first by iFrame.
+      apply elem_of_app.
+      right.
+      apply (iffRL (elem_of_list_singleton _ _)).
+      reflexivity.
+    }
+    iApply "HΦ".
+    destruct (decide (addrBlock a ∈ done)).
+    - rewrite bool_decide_eq_true_2.
+      2: assumption.
+      rewrite bool_decide_eq_true_2; first by iFrame.
+      apply elem_of_app.
+      left.
+      assumption.
+    - rewrite bool_decide_eq_false_2.
+      2: assumption.
+      rewrite bool_decide_eq_false_2; first by iFrame.
+      apply not_elem_of_app.
+      split; first by assumption.
+      intro Hin.
+      apply elem_of_list_singleton in Hin.
+      apply Heqb.
+      f_equal.
+      f_equal.
+      apply Hin.
+  }
+  iIntros "[Hacquired_s ?]".
+  iNamed.
+  iApply "Hacquired_s_wrap" in "Hacquired_s".
+  wp_apply (wp_LoadAt with "[$Halready_acquired_l]").
+  iIntros "Halready_acquired_l".
+  wp_if_destruct.
+  2: {
+    iApply "HΦ".
+    iExists mt_buftxn.
+    apply (@elem_of_list_to_set _ (gset u64) _ _ _ _ _) in Heqb.
+    rewrite Hlocks_held in Heqb.
+    iSplit; first by (iPureIntro; set_solver).
+    iExists locks_held.
+    iSplit; first by (iPureIntro; assumption).
+    iExists _, _, _, _, _.
+    iFrame "∗ # %".
+  }
+  rewrite bool_decide_eq_false_2.
+  2: assumption.
+  wp_apply (wp_twophase__acquireNoCheck with "[
+    Htwophase.buftxn Htwophase.locks Htwophase.acquired
+    Hbuftxn Hlocked_blknos Hptstos Hacquired_s
+  ]").
+  {
+    apply (@not_elem_of_list_to_set _ (gset u64) _ _ _ _ _) in Heqb.
+    rewrite Hlocks_held in Heqb.
+    iFrame (Ha_wf Ha_in_metamap Heqb).
+    iExists locks_held.
+    iSplit; first by (iPureIntro; assumption).
+    iExists _, _, _, _, _.
+    iFrame "∗ # %".
+  }
+  iIntros "Hpost".
+  iNamed "Hpost".
+  iApply "HΦ".
+  iExists _.
+  iFrame (Hmt_buftxn'_blknos) "∗".
 Qed.
 
 Theorem wp_twophase__Release (l: loc) locked_blknos blkno γ dinit metamap:
