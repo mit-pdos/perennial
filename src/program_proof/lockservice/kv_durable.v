@@ -142,7 +142,7 @@ Proof using Type*.
     iSplit.
     { replace (size (delete k mtodo)) with (pred (size mtodo)).
       { iPureIntro. lia. }
-      { symmetry. apply map_size_delete. eauto. }
+      { symmetry. apply map_size_delete_Some. eauto. }
     }
     rewrite flat_map_app.
     simpl.
@@ -156,7 +156,7 @@ Proof using Type*.
     destruct (mdone !! k) eqn:X.
     - exfalso. eapply map_disjoint_spec; eauto.
     - split.
-      + rewrite map_size_insert; first lia. done.
+      + rewrite map_size_insert_None; first lia. done.
       + apply map_disjoint_insert_r_2.
         { apply lookup_delete. }
         by apply map_disjoint_delete_l.
@@ -280,7 +280,7 @@ Proof.
       rewrite insert_union_l.
       done.
     }
-    rewrite (map_size_insert); last first.
+    rewrite (map_size_insert_None); last first.
     { eapply map_disjoint_Some_l; eauto.
       simpl. apply lookup_insert. }
     replace (word.add (size mdone) 1) with (int.Z (size mdone) + 1:u64) by word.

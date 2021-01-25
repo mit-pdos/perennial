@@ -16,13 +16,13 @@ Import uPred.
 
    This is used for the physical heap in GooseLang. *)
 
-Definition lock_stateR : cmraT :=
+Definition lock_stateR : cmra :=
   csumR unitR natR.
 
-Definition na_heapUR (L V: Type) `{Countable L} : ucmraT :=
+Definition na_heapUR (L V: Type) `{Countable L} : ucmra :=
   gmapUR L (prodR (prodR fracR lock_stateR) (agreeR (leibnizO V))).
 
-Definition na_sizeUR (L: Type) `{Countable L} : ucmraT :=
+Definition na_sizeUR (L: Type) `{Countable L} : ucmra :=
   gmapUR L (agreeR (leibnizO Z)).
 
 Class na_heapG (L V: Type) Σ `{BlockAddr L} := Na_HeapG {

@@ -1,5 +1,5 @@
 From RecordUpdate Require Import RecordSet.
-From Perennial.Helpers Require Import ipm.
+From Perennial.Helpers Require Import ipm Map.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import dir.
 From Perennial.program_proof Require Import disk_lib.
@@ -752,15 +752,6 @@ Section goose.
     rewrite delete_below_delete; last by lia.
     iPureIntro. intros.
     rewrite -IH /=; last by lia. done.
-  Qed.
-
-  Lemma length_gmap_to_list `{Countable K} `(m: gmap K A) :
-    length (map_to_list m) = size m.
-  Proof.
-    induction m using map_ind.
-    - rewrite map_to_list_empty //.
-    - rewrite map_to_list_insert /= //.
-      rewrite map_size_insert /= //.
   Qed.
 
   Lemma unify_alloc_inodes_used γused γblocks s_alloc s_inodes :

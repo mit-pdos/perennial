@@ -4,7 +4,7 @@ From iris.bi.lib Require Import fractional.
 Set Default Proof Using "Type".
 
 (** XXX: TODO, upsteam, although this proof is a mess *)
-Lemma auth_frac_update {A: ucmraT} q (a b b': A) :
+Lemma auth_frac_update {A: ucmra} q (a b b': A) :
   (a,b) ~l~> (a,b') → ●{q} a ⋅ ◯ b ~~> ●{q} a ⋅ ◯ b'.
 Proof.
   intros Hup; apply cmra_total_update.
@@ -50,11 +50,11 @@ Proof.
     by rewrite left_id -assoc.
 Qed.
 
-Lemma auth_frac_update_alloc {A: ucmraT} (q: Qp) (a b': A):
+Lemma auth_frac_update_alloc {A: ucmra} (q: Qp) (a b': A):
   (a, ε) ~l~> (a,b') → (●{q} a ~~> ●{q} a ⋅ ◯ b').
 Proof. intros. rewrite -{1}(right_id _ _ (●{q} a)). by eapply auth_frac_update in H. Qed.
 
-Lemma auth_frac_update_core_id {A: ucmraT} q (a b: A) `{!CoreId b} :
+Lemma auth_frac_update_core_id {A: ucmra} q (a b: A) `{!CoreId b} :
   b ≼ a → ●{q} a ~~> ●{q} a ⋅ ◯ b.
 Proof.
   intros Hincl. apply: auth_frac_update_alloc.

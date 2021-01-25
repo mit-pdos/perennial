@@ -16,9 +16,9 @@ Port to gmap_view, once that supports deletion.
 Or better yet, port all users to [auth_map]. *)
 Module gen_heap.
 
-Definition gen_heapUR (L V : Type) `{Countable L} : ucmraT :=
+Definition gen_heapUR (L V : Type) `{Countable L} : ucmra :=
   gmapUR L (prodR fracR (agreeR (leibnizO V))).
-Definition gen_metaUR (L : Type) `{Countable L} : ucmraT :=
+Definition gen_metaUR (L : Type) `{Countable L} : ucmra :=
   gmapUR L (agreeR gnameO).
 
 Definition to_gen_heap {L V} `{Countable L} : gmap L V → gen_heapUR L V :=

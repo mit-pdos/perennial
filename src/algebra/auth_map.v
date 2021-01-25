@@ -31,7 +31,7 @@ From Perennial.algebra Require Import own_discrete.
 Set Default Goal Selector "!".
 Set Default Proof Using "Type".
 
-Definition mapUR (K V: Type) `{Countable K}: ucmraT :=
+Definition mapUR (K V: Type) `{Countable K}: ucmra :=
   gmapUR K (csumR (prodR fracR (agreeR (leibnizO V)))
                   (agreeR (leibnizO V))).
 
@@ -177,19 +177,19 @@ Section auth_map.
   Global Instance ptsto_ro_discretizable γ a v: Discretizable (ptsto_ro γ a v).
   Proof. unseal; apply _. Qed.
 
-  Lemma Cinl_valid (A B:cmraT) (x:A) :
+  Lemma Cinl_valid (A B:cmra) (x:A) :
     ✓ @Cinl A B x → ✓ x.
   Proof. auto. Qed.
 
-  Lemma Cinr_valid (A B:cmraT) (x:B) :
+  Lemma Cinr_valid (A B:cmra) (x:B) :
     ✓ @Cinr A B x → ✓ x.
   Proof. auto. Qed.
 
-  Lemma Cinl_Cinr_op (A B:cmraT) x y :
+  Lemma Cinl_Cinr_op (A B:cmra) x y :
     @Cinl A B x ⋅ @Cinr A B y = CsumBot.
   Proof. reflexivity. Qed.
 
-  Lemma Cinr_Cinl_op (A B:cmraT) x y :
+  Lemma Cinr_Cinl_op (A B:cmra) x y :
     @Cinr A B y ⋅ @Cinl A B x = CsumBot.
   Proof. reflexivity. Qed.
 
@@ -352,7 +352,7 @@ Section auth_map.
     rewrite fmap_delete; done.
   Qed.
 
-  Lemma Cinl_included_inv (A B: cmraT) (x:A) (y:csumR A B) :
+  Lemma Cinl_included_inv (A B: cmra) (x:A) (y:csumR A B) :
     Cinl x ≼ y →
     y = CsumBot ∨ ∃ x', y = Cinl x' ∧ x ≼ x'.
   Proof.
@@ -364,7 +364,7 @@ Section auth_map.
       inversion H0.
   Qed.
 
-  Lemma Cinr_included_inv (A B: cmraT) (x:B) (y:csumR A B) :
+  Lemma Cinr_included_inv (A B: cmra) (x:B) (y:csumR A B) :
     Cinr x ≼ y →
     y = CsumBot ∨ ∃ x', y = Cinr x' ∧ x ≼ x'.
   Proof.
@@ -376,7 +376,7 @@ Section auth_map.
       eauto.
   Qed.
 
-  Lemma Some_included_inv (A: cmraT) (x y:A) :
+  Lemma Some_included_inv (A: cmra) (x y:A) :
     Some x ≼ Some y → x ≡ y ∨ x ≼ y.
   Proof.
     rewrite option_included.
@@ -388,7 +388,7 @@ Section auth_map.
       eauto.
   Qed.
 
-  Lemma Some_Cinl_included (A B: cmraT) (x:A) (y: csumR A B) :
+  Lemma Some_Cinl_included (A B: cmra) (x:A) (y: csumR A B) :
     Some (Cinl x) ≼ Some y → y = CsumBot ∨ (∃ x', y = Cinl x' ∧ (x ≡ x' ∨ x ≼ x')).
   Proof.
     intros H%Some_included_inv.
@@ -400,7 +400,7 @@ Section auth_map.
       destruct H as [? (?&?)]; eauto.
   Qed.
 
-  Lemma Some_Cinr_included (A B: cmraT) (x:B) (y: csumR A B) :
+  Lemma Some_Cinr_included (A B: cmra) (x:B) (y: csumR A B) :
     Some (Cinr x) ≼ Some y → y = CsumBot ∨ (∃ x', y = Cinr x' ∧ (x ≡ x' ∨ x ≼ x')).
   Proof.
     intros H%Some_included_inv.

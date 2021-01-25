@@ -15,7 +15,7 @@ Context {Λ: language}.
 Context {CS: crash_semantics Λ}.
 Context `{INH: Inhabited (state Λspec)}.
 
-Corollary wp_recv_refinement_adequacy Σ (T: ofeT) (cfgT : _ → @cfgG Λspec Σ)
+Corollary wp_recv_refinement_adequacy Σ (T: ofe) (cfgT : _ → @cfgG Λspec Σ)
   `{!invPreG Σ} `{!crashPreG Σ} s k es e rs r σs σ φ φr Φinv (R: state Λspec -> state Λ -> Prop)
 :
   (∀ `{Hinv : !invG Σ} `{Hc: !crashG Σ} κs,

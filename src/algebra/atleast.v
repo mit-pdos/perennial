@@ -186,7 +186,7 @@ Proof. destruct mx; apply _. Qed.
 End PROP_laws.
 
 Section uPred_laws.
-Context {M: ucmraT}.
+Context {M: ucmra}.
 Implicit Types φ : Prop.
 Implicit Types P Q R : (uPred M).
 Implicit Types Ps : list (uPred M).
@@ -236,7 +236,7 @@ Proof.
   - apply exist_elim=> x. rewrite -(exist_intro x); auto.
 Qed.
 
-Global Instance eq_abs_timeless {A : ofeT} (a b : A) :
+Global Instance eq_abs_timeless {A : ofe} (a b : A) :
   Discrete a → AbsolutelyTimeless (PROP:=uPredI M) (a ≡ b).
 Proof. intros. rewrite /Discrete !discrete_eq => k. apply (abs_timeless _). Qed.
 
@@ -266,7 +266,7 @@ Abort.
 *)
 
 Import base_logic.bi.uPred.
-Global Instance valid_abs_timeless {A : cmraT} `{!CmraDiscrete A} (a : A) :
+Global Instance valid_abs_timeless {A : cmra} `{!CmraDiscrete A} (a : A) :
   AbsolutelyTimeless (✓ a : uPred M)%I.
 Proof. rewrite /AbsolutelyTimeless => k. rewrite !discrete_valid. apply (abs_timeless _). Qed.
 
@@ -303,7 +303,7 @@ Arguments KnownMakeAtLeast {_} _ _%I _%I.
 Hint Mode KnownMakeAtLeast + + ! - : typeclass_instances.
 
 Section class_instances_atleast.
-Context {M: ucmraT}.
+Context {M: ucmra}.
 Context (k: nat).
 Implicit Types P Q R : uPred M.
 
@@ -442,7 +442,7 @@ End class_instances_atleast.
 
 Section iprop_instances.
 
-  Global Instance own_abs_timeless {A: cmraT} `{inG Σ A} γ (a: A):
+  Global Instance own_abs_timeless {A: cmra} `{inG Σ A} γ (a: A):
     Discrete a →
     AbsolutelyTimeless (own γ a).
   Proof.

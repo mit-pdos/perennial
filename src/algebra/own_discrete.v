@@ -5,7 +5,7 @@ From Perennial.Helpers Require Import ipm.
 From Perennial.algebra Require Import atleast big_sepL.
 Set Default Proof Using "Type".
 
-Lemma uPred_cmra_valid_elim_alt {M: ucmraT} (A: cmraT) (a: A):
+Lemma uPred_cmra_valid_elim_alt {M: ucmra} (A: cmra) (a: A):
   (✓ a : uPred M) ⊢ ⌜ ✓{0} a ⌝.
 Proof.
   split.
@@ -19,7 +19,7 @@ Proof.
   eauto.
 Qed.
 
-Lemma cmra_op_discrete_internal {M: ucmraT} {A: ucmraT} (x1 x2: A) :
+Lemma cmra_op_discrete_internal {M: ucmra} {A: ucmra} (x1 x2: A) :
   Discrete x1 → Discrete x2 → (✓ (x1 ⋅ x2) ⊢ ⌜ Discrete (x1 ⋅ x2) ⌝ : uPred M).
 Proof.
   iIntros (??) "Hval". iDestruct (uPred_cmra_valid_elim_alt with "Hval") as %Hval.
@@ -27,7 +27,7 @@ Proof.
 Qed.
 
 (* TODO: might have a version where the □ is replaced with a □?p ? *)
-Lemma entailment_ownM_split {A: ucmraT} (P: uPred A) (a: A):
+Lemma entailment_ownM_split {A: ucmra} (P: uPred A) (a: A):
   □ (P -∗ uPred_ownM a) -∗ P -∗ ∃ (P': uPred A), (P' ∗ uPred_ownM a) ∧ □ ((P' ∗ uPred_ownM a) -∗ P).
 Proof.
   repeat (rewrite /bi_entails/bi_exist/bi_intuitionistically/bi_affinely
@@ -88,7 +88,7 @@ Qed.
 
 Section iProp.
 Context {Σ: gFunctors}.
-Lemma entailment_own_split {A: cmraT} `{inG Σ A} γ (a: A) P:
+Lemma entailment_own_split {A: cmra} `{inG Σ A} γ (a: A) P:
   □ (P -∗ own γ a) -∗ P -∗ ∃ P', (P' ∗ own γ a) ∧ □ ((P' ∗ own γ a) -∗ P).
 Proof.
   rewrite own.own_eq. iApply entailment_ownM_split.
@@ -97,7 +97,7 @@ Qed.
 (* An easy consequence of the above is that we get a generic accessor for any
    own γ a from an entailment proof. Perhaps worth developing a type class for
    such propositions *)
-Lemma entailment_own_accessor {A: cmraT} `{inG Σ A} γ (a: A) P:
+Lemma entailment_own_accessor {A: cmra} `{inG Σ A} γ (a: A) P:
   □ (P -∗ own γ a) -∗ P -∗ own γ a ∗ (own γ a -∗ P).
 Proof.
   iIntros "HPwand HP". iDestruct (entailment_own_split with "[$] [$]") as (P') "((HP'&Hown)&#Hwand)".
@@ -107,7 +107,7 @@ End iProp.
 
 
 Section modal.
-Context {M0: ucmraT}.
+Context {M0: ucmra}.
 Let PROP := uPred M0.
 Implicit Types P Q R : PROP.
 Implicit Types Ps : list PROP.
@@ -286,7 +286,7 @@ Arguments into_discrete {_} _%I _%I {_}.
 Hint Mode IntoDiscrete + ! - : typeclass_instances.
 
 Section instances.
-  Context {M: ucmraT}.
+  Context {M: ucmra}.
   Implicit Types P : uPred M.
 
   Global Instance Discretizable_proper : Proper ((≡) ==> iff) (@Discretizable M).
@@ -397,7 +397,7 @@ Section instances_iProp.
     Discretizable ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2).
   Proof. rewrite big_sepL2_alt. apply _. Qed.
 
-  Global Instance own_discretizable {A: cmraT} `{inG Σ A} γ (a: A):
+  Global Instance own_discretizable {A: cmra} `{inG Σ A} γ (a: A):
     Discrete a →
     Discretizable (own γ a).
   Proof.

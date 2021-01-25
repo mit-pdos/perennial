@@ -9,7 +9,7 @@ From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".
 Import uPred.
 
-Definition gen_dirUR (L1 L2 V : Type) `{Countable L1} `{Countable L2} : ucmraT :=
+Definition gen_dirUR (L1 L2 V : Type) `{Countable L1} `{Countable L2} : ucmra :=
   gmapUR L1 (gmapUR L2 (prodR fracR (agreeR (leibnizO V)))).
 Definition to_gen_dir {L1 L2 V} `{Countable L1} `{Countable L2} :
   gmap L1 (gmap L2 V) → gen_dirUR L1 L2 V :=

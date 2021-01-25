@@ -387,7 +387,7 @@ Proof.
   - constructor; naive_solver.
 Qed.
 
-Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofeT) `{!invPreG Σ} `{!crashPreG Σ} s k e r σ φ φr φinv Φinv :
+Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofe) `{!invPreG Σ} `{!crashPreG Σ} s k e r σ φ φr φinv Φinv :
   (∀ `{Hinv : !invG Σ} `{Hc: !crashG Σ} κs,
      ⊢ |={⊤}=> ∃ (t: pbundleG T Σ)
          (stateI : pbundleG T Σ→ state Λ → list (observation Λ) → iProp Σ)

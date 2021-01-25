@@ -21,7 +21,7 @@ Context {Λ: language}.
 Context {CS: crash_semantics Λ}.
 
 (** The CMRA for the heap of the specification. *)
-Definition tpoolUR : ucmraT := gmapUR nat (exclR (exprO Λ)).
+Definition tpoolUR : ucmra := gmapUR nat (exclR (exprO Λ)).
 Definition stateUR := optionUR (exclR (stateO Λ)).
 Definition cfgUR := prodUR tpoolUR stateUR.
 

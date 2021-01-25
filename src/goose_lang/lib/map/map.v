@@ -308,7 +308,7 @@ Proof.
       { destruct m'. done. }
       replace (delete k m'.1) with (delete k m.1); last first.
       { rewrite Hmuntype. by rewrite delete_insert_delete. }
-      rewrite map_size_delete; last first.
+      rewrite map_size_delete_Some; last first.
       { exists v. rewrite Hmuntype. simpl. apply lookup_insert. }
       done.
     }

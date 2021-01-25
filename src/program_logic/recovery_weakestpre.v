@@ -9,11 +9,11 @@ Set Default Proof Using "Type".
 
 (*** Recovery ***)
 
-Class pbundleG (T: ofeT) (Σ: gFunctors) := {
+Class pbundleG (T: ofe) (Σ: gFunctors) := {
   pbundleT : T;
 }.
 
-Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofeT) (Σ : gFunctors) := PerennialG {
+Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofe) (Σ : gFunctors) := PerennialG {
   perennial_irisG :> ∀ (Hcrash: crashG Σ), pbundleG T Σ → irisG Λ Σ;
   perennial_crashG: ∀ H2 t, @iris_crashG _ _ (perennial_irisG H2 t) = H2
 }.

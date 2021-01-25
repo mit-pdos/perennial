@@ -182,3 +182,12 @@ Proof.
   - eapply lookup_difference_Some; intuition eauto.
   - eapply lookup_difference_None; intuition eauto.
 Qed.
+
+Lemma length_gmap_to_list `{Countable K} `(m: gmap K A) :
+  length (map_to_list m) = size m.
+Proof.
+  induction m using map_ind.
+  - rewrite map_to_list_empty //.
+  - rewrite map_to_list_insert /= //.
+    rewrite map_size_insert_None /= //.
+Qed.

@@ -6,7 +6,7 @@ Import derived_laws_later.bi.
 Import base_logic.bi.uPred.
 
 Section uPred_laws.
-Context {M: ucmraT}.
+Context {M: ucmra}.
 Implicit Types φ : Prop.
 Implicit Types P Q R : (uPred M).
 Implicit Types Ps : list (uPred M).
