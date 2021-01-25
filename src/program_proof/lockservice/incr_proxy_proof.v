@@ -485,8 +485,31 @@ Proof.
       iIntros (v) "HmakeReqPost".
       iNamed 1.
 
+      iDestruct "HmakeReqPost" as "[[% Hstale]|HmakeReqPost]".
+      {
+        iDestruct (client_stale_seqno with "Hstale Hrpc_clientown") as %Hbad.
+        exfalso.
+        simpl in Hbad.
+        (* Hbad is impossible for *any* u64 *)
+        rewrite u64_Z_through_nat in Hbad.
+        rewrite Nat2Z.inj_add in Hbad.
+        replace (Z.of_nat (int.nat (word.sub seq0 1))) with (int.Z (word.sub seq0 1))%nat in Hbad; last first.
+        { by rewrite u64_Z_through_nat. }
+        rewrite u64_Z_through_nat in Hpos.
+
+        replace (Z.of_nat 1) with (1%Z) in * by eauto.
+        rewrite word.unsigned_sub in Hbad.
+        rewrite -unsigned_U64 in Hbad.
+        set (n:=int.Z seq0) in *.
+        assert (n=int.Z seq0) by eauto.
+        assert (n < 2 ^ 64)%Z by word.
+        replace (int.Z (1%Z)) with (1)%Z in Hbad by word.
+        replace (int.Z (n - 1))%Z with (n - 1%Z)%Z in Hbad by word.
+        lia.
+      }
+      i
       (* TODO: rule out stale case; the word.sub will be annoying, just rewrite
-         the crach invariant to not have that *)
+         the crash invariant to not have that *)
       wpc_pures.
       (* TODO: write spec for *)
       admit.
