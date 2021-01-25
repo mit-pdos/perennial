@@ -283,11 +283,12 @@ Proof using Type*.
   by exists l.
 Qed.
 
-Definition DecMap_invariant dec_v i_ptr (map_sz:nat) (r:Rec) mref s q data : iProp Σ :=
-  ∃ (l:list (u64 * u64)) (mtodo mdone:gmap u64 u64),
-    ⌜(list_to_map l) = mtodo⌝ ∗
-    ⌜mtodo ##ₘ mdone ⌝ ∗
-    i_ptr ↦[uint64T] #(map_sz - (length l)) ∗
+Definition DecMap_invariant dec_v i_ptr m (r:Rec) mref s q data : iProp Σ :=
+  ∃ (l:list (u64 * u64)) (mdone:gmap u64 u64),
+    ⌜NoDup l.*1⌝ ∗ (* TODO: add this to has_encoding *)
+    ⌜(list_to_map l) ##ₘ mdone⌝ ∗
+    ⌜(list_to_map l) ∪ mdone = m⌝ ∗
+    i_ptr ↦[uint64T] #(size mdone) ∗
     is_map mref mdone ∗
     is_dec dec_v ((flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l) ++ r) s q data
 .
@@ -319,32 +320,30 @@ Proof.
   wp_apply (wp_ref_to); first eauto.
   iIntros (i_ptr) "Hi".
 
-  iAssert (DecMap_invariant dec_v i_ptr (size m) r mref s q data) with "[Hi Hmref Hdec]" as "HloopInv".
+  iAssert (DecMap_invariant dec_v i_ptr m r mref s q data) with "[Hi Hmref Hdec]" as "HloopInv".
   {
-    iExists l, m, _.
+    iExists l, ∅.
     iFrame.
-    iSplitL ""; first done.
+    iSplit; first admit. (* add nodup to has_map_encoding *)
     iSplitL "".
     { iPureIntro. eapply (map_disjoint_empty_r (M:=gmap _)). }
-    rewrite -HlistMap.
-    rewrite /size /map_size.
-    rewrite map_to_list_to_map.
-    { replace (_ - _) with 0 by lia. iFrame "Hi". }
-    (* Need to know that l doesn't have duplicates *)
-    admit.
+    by rewrite right_id.
   }
   wp_pures.
 
+  assert (int.Z (size m) = size m) as Hsize by admit.
   wp_forBreak_cond.
   clear HlistMap Hmapencoded l.
-  iDestruct "HloopInv" as (l' mtodo mdone HlistToMap Hdisj) "(Hi & Hmref & Hdec)".
+  iDestruct "HloopInv" as (l' mdone Hnodup Hdisj Hunion) "(Hi & Hmref & Hdec)".
   wp_load.
   wp_pures.
   wp_if_destruct.
   { (* Start of loop iteration *)
     wp_pures.
     destruct l'.
-    { simpl in Heqb. exfalso. admit. }
+    { simpl in Heqb. exfalso.
+      simpl in *. rewrite left_id in Hunion.
+      rewrite Hunion in Heqb. lia. }
     destruct p as [k v].
     simpl.
     wp_apply (wp_Dec__GetInt with "Hdec").
@@ -360,23 +359,59 @@ Proof.
     iLeft.
     iSplitL ""; first done.
     iSplitL "HΦ"; first done.
-    iExists l', (list_to_map l'), _.
-    iSplitL ""; first done.
+    iExists l', _.
     iFrame "Hmref".
     iSplitL "".
-    { admit. }
-    replace (word.add (size m - S (length l')) 1) with (size m - length l':u64); last first.
-    { admit. (* u64 overflow reasoning *) }
+    { by apply NoDup_cons in Hnodup as [??]. }
+    assert ((list_to_map l' (M:=gmap _ _)) !! k = None) as Hnok.
+    { apply NoDup_cons in Hnodup as [HkNotInL Hnodup].
+        by apply not_elem_of_list_to_map_1. }
+    iSplitL "".
+    { iPureIntro. simpl in Hdisj.
+      rewrite map_disjoint_insert_r.
+      split; first done.
+      eapply map_disjoint_weaken; eauto.
+      simpl.
+      apply insert_subseteq.
+      done.
+    }
+    iSplitL "".
+    { iPureIntro. simpl in Hunion.
+      rewrite -insert_union_r; last done.
+      rewrite insert_union_l.
+      done.
+    }
+    rewrite (map_size_insert); last first.
+    { eapply map_disjoint_Some_l; eauto.
+      simpl. apply lookup_insert. }
+    replace (word.add (size mdone) 1) with (int.Z (size mdone) + 1:u64) by word.
+    rewrite Z_u64; last first.
+    { split; first lia.
+      word_cleanup.
+      rewrite Hsize in H1.
+      assert (size mdone ≤ size m)%nat.
+      { rewrite -Hunion. eapply subseteq_size.
+        (* TODO: Prove that A ⊆ A ∪ B *)
+        admit. }
+      lia.
+    }
+    replace (Z.of_nat (S (size mdone))) with (size mdone + 1)%Z by lia.
     iFrame.
   }
   iRight. iSplitL ""; first done.
   wp_pures.
   iApply "HΦ".
   iFrame.
-  replace (l') with ([]:list (u64 * u64)) in *; last first.
-  { admit. (* TODO: use the fact that (size m - length l' = size m) *) }
+  destruct l'; last first.
+  {
+    exfalso.
+    set (mtodo:=(list_to_map (p :: l'))) in *.
+    (* TODO: A ##ₘ B → size (A ∪ B) = (size A) + (size B) *)
+    rewrite -Hunion in Heqb.
+    admit. (* TODO: use the fact that mtodo ≠ ∅ *)
+  }
   replace (m) with (mdone); last first.
-  { rewrite -HlistToMap in Hdisj. admit. (* TODO: use the fact that mdone ∪ mtodo = m, and mtodo = ∅ *) }
+  { simpl in Hunion. by rewrite left_id in Hunion. }
   iFrame.
 Admitted.
 
