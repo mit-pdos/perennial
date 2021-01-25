@@ -446,7 +446,7 @@ Lemma wpc_WriteDurableKVServer γ (srv rpc_srv:loc) server rpc_server server' rp
       "Hrpcvol" ∷ RPCServer_own_vol rpc_srv rpc_server' ∗
       "Hdurable" ∷ (kv_core_mu srv γ).(core_own_durable) server rpc_server
   }}}
-    WriteDurableKVServer #srv @ 37 ; ⊤
+    WriteDurableKVServer #srv @ 36 ; ⊤
   {{{
         RET #();
       (kv_core_mu srv γ).(core_own_vol) server' ∗
@@ -596,7 +596,6 @@ Proof.
 
   wpc_bind (Write _ _)%E.
   iApply (wpc_Write with "[$Hslice $Hkvdur]"); eauto.
-  { exact (1%Qp). }
 
   rewrite -app_assoc in Hencoding.
   iSplit.

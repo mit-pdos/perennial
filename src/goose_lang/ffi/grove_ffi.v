@@ -28,11 +28,11 @@ Notation "s f↦{ q } c" := (file_mapsto s c q)
 Notation "s f↦ c" := (s f↦{1} c)%I
 (at level 20, format "s  f↦ c") : bi_scope.
 
-Axiom wpc_Read : ∀ filename (q:Qp) content,
+Axiom wpc_Read : ∀ {k} filename (q:Qp) content,
   {{{
       filename f↦{q} content
   }}}
-    grove_ffi.Read #(str filename) @ 37 ; ⊤
+    grove_ffi.Read #(str filename) @ k ; ⊤
   {{{
        s, RET slice_val s; typed_slice.is_slice s byteT 1 content ∗
                            filename f↦{q} content
@@ -41,7 +41,7 @@ Axiom wpc_Read : ∀ filename (q:Qp) content,
       filename f↦{q} content
   }}}.
 
-Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) q,
+Axiom wpc_Write : ∀ {k} filename content_old content (content_sl:Slice.t) q,
   {{{
       filename f↦ content_old ∗
       typed_slice.is_slice content_sl byteT q content
