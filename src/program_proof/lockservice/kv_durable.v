@@ -15,150 +15,13 @@ From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map rpc_durable_proof.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
+From Perennial.goose_lang Require Import ffi.grove_ffi.
 
 Section kv_durable_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
+Context `{!filesysG Σ}.
 
-Implicit Types (γ : kvservice_names).
-
-Local Notation "k [[ γ ]]↦ '_'" := (∃ v, k [[γ]]↦ v)%I
-(at level 20, format "k  [[ γ ]]↦ '_'") : bi_scope.
-
-Record KVServerC :=
-  {
-  kvsM : gmap u64 u64;
-  }.
-
-Global Instance PutPre_disc γ args : Discretizable (Put_Pre γ args) := _.
-Global Instance PutPre_timeless γ args : Timeless (Put_Pre γ args) := _.
-
-Axiom KVServer_core_own_durable : KVServerC → RPCServerC  -> iProp Σ.
-
-Definition KVServer_core_own_vol (srv:loc) kv_server : iProp Σ :=
-  ∃ (kvs_ptr:loc),
-  "HkvsOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr ∗
-  "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
-.
-
-Definition KVServer_core_own_ghost γ kv_server : iProp Σ :=
-  "Hkvctx" ∷ map_ctx γ.(ks_kvMapGN) 1 kv_server.(kvsM)
-.
-
-Definition RPCServer_own_vol (sv:loc) rpc_server : iProp Σ :=
-  ∃ (lastSeq_ptr lastReply_ptr:loc),
-    "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
-∗ "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
-∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) rpc_server.(lastSeqM)
-∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) rpc_server.(lastReplyM)
-.
-
-Definition RPCServer_own_ghost (sv:loc) γrpc rpc_server : iProp Σ :=
-  "Hsrpc" ∷ RPCServer_own γrpc rpc_server.(lastSeqM) rpc_server.(lastReplyM) (* TODO: Probably should get better naming for this *)
-.
-
-Definition RPCServer_phys_own γrpc (sv:loc) rpc_server : iProp Σ :=
-  "Hrpcvol" ∷ RPCServer_own_vol sv rpc_server ∗
-  "Hrpcghost" ∷ RPCServer_own_ghost sv γrpc rpc_server
-.
-
-Instance durable_timeless kv_server rpc_server: Timeless (KVServer_core_own_durable kv_server rpc_server).
-Admitted.
-
-Instance durable_disc kv_server rpc_server: Discretizable (KVServer_core_own_durable kv_server rpc_server).
-Admitted.
-
-Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
-  ∃ (cl_ptr:loc),
-   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
-   "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
-   "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN).
-
-
-Definition kv_core_mu srv γ : rpc_core_mu :=
-  {|
-  core_own_durable := λ server rpc_server, KVServer_core_own_durable server rpc_server;
-  core_own_ghost := λ server, KVServer_core_own_ghost γ server;
-  core_own_vol := λ server, KVServer_core_own_vol srv server
-  |}.
-
-Lemma wpc_put_core γ (srv:loc) args kvserver :
-{{{
-     (kv_core_mu srv γ).(core_own_vol) kvserver ∗
-     Put_Pre γ args
-}}}
-  KVServer__put_core #srv (into_val.to_val args) @ 36 ; ⊤
-{{{
-      kvserver' (r:u64) P', RET #r;
-            ⌜Discretizable P'⌝ ∗
-             (P') ∗
-            KVServer_core_own_vol srv kvserver' ∗
-            □ (P' -∗ Put_Pre γ args) ∗
-            (* TODO: putting this here because need to be discretizable *)
-            □ (P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
-}}}
-{{{
-     Put_Pre γ args
-}}}.
-Proof.
-  iIntros (Φ Φc) "[Hvol Hpre] HΦ".
-  iCache with "Hpre HΦ".
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. by iApply "HΦc". }
-  wpc_call; first done.
-
-  iCache with "Hpre HΦ".
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. by iApply "HΦc". }
-
-  wpc_pures.
-  iNamed "Hvol".
-
-  wpc_bind (struct.loadF _ _ _)%E.
-  wpc_frame.
-  wp_loadField.
-  iNamed 1.
-
-  wpc_bind (MapInsert _ _ _).
-  wpc_frame.
-
-  wp_apply (wp_MapInsert with "HkvsMap"); eauto; iIntros "HkvsMap".
-  iNamed 1.
-  wpc_pures.
-  iDestruct "HΦ" as "[_ HΦ]".
-  iApply ("HΦ" $! {| kvsM := <[args.1:=args.2.1]> kvserver.(kvsM) |} _ (Put_Pre γ args)).
-  iFrame.
-  iSplitL "".
-  { iPureIntro. by apply PutPre_disc. }
-  iSplitR "".
-  { iExists _; iFrame. }
-  iSplit; first eauto.
-  iModIntro.
-  iIntros "Hpre Hghost".
-  iDestruct "Hpre" as (v) "Hpre".
-  iMod (map_update with "Hghost Hpre") as "[Hkvctx Hptsto]".
-  iModIntro. iFrame.
-Qed.
-
-Lemma wpc_WriteDurableKVServer γ (srv rpc_srv:loc) server rpc_server server' rpc_server':
-readonly (srv ↦[lockservice.KVServer.S :: "sv"] #rpc_srv) -∗
-{{{
-    (kv_core_mu srv γ).(core_own_vol) server' ∗
-    RPCServer_own_vol rpc_srv rpc_server' ∗
-    (kv_core_mu srv γ).(core_own_durable) server rpc_server
-}}}
-  WriteDurableKVServer #srv @ 36 ; ⊤
-{{{
-      RET #();
-    (kv_core_mu srv γ).(core_own_vol) server' ∗
-    RPCServer_own_vol rpc_srv rpc_server' ∗
-    (kv_core_mu srv γ).(core_own_durable) server' rpc_server'
-}}}
-{{{
-     (kv_core_mu srv γ).(core_own_durable) server rpc_server ∨
-     (kv_core_mu srv γ).(core_own_durable) server' rpc_server'
-}}}.
-Admitted.
-
-
-(* TODO: This probably needs to be strengthened to remember that [int.nat (size m) = size m], or equivalently that [size m < 2 ^ 64] *)
+(* TODO: move to marshal_proof *)
 Definition has_map_encoding (m:gmap u64 u64) (r:Rec) :=
   ∃ l,
   (int.Z (size m) = size m) ∧
@@ -167,11 +30,11 @@ Definition has_map_encoding (m:gmap u64 u64) (r:Rec) :=
   r = [EncUInt64 (size m)] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l)
 .
 
-Definition EncMap_invariant enc_v (r:Rec) sz map_sz original_remaining (mtodo mdone:gmap u64 u64) : iProp Σ :=
-  ∃ (l:list (u64 * u64)) remaining,
+Definition EncMap_invariant enc_v (r:Rec) sz map_sz (original_remaining:Z) (mtodo mdone:gmap u64 u64) : iProp Σ :=
+  ∃ (l:list (u64 * u64)) (remaining:Z),
     ⌜ NoDup l.*1 ⌝ ∗
     ⌜(list_to_map l) = mdone⌝ ∗
-    ⌜remaining > 8 * 2 * (size mtodo)⌝ ∗
+    ⌜8 * 2 * (size mtodo) ≤ remaining⌝ ∗
     ⌜remaining = original_remaining - 8 * 2 * (size mdone)⌝ ∗
     ⌜mtodo ##ₘ mdone ⌝ ∗
     is_enc enc_v sz (r ++ [EncUInt64 map_sz] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l )) remaining
@@ -180,7 +43,7 @@ Definition EncMap_invariant enc_v (r:Rec) sz map_sz original_remaining (mtodo md
 Definition marshalledMapSize (m:gmap u64 u64) : nat := 8 + 8 * 2 * (size m).
 
 Lemma wp_EncMap e mref m sz r remaining :
-marshalledMapSize m < remaining →
+marshalledMapSize m <= remaining →
 {{{
     "Hmap" ∷ is_map (V:=u64) mref m ∗
     "Henc" ∷ is_enc e sz r remaining
@@ -450,6 +313,316 @@ Proof.
   replace (m) with (mdone); last first.
   { simpl in Hunion. by rewrite left_id in Hunion. }
   iFrame.
+Admitted.
+
+
+Implicit Types (γ : kvservice_names).
+
+Local Notation "k [[ γ ]]↦ '_'" := (∃ v, k [[γ]]↦ v)%I
+(at level 20, format "k  [[ γ ]]↦ '_'") : bi_scope.
+
+Record KVServerC :=
+  {
+  kvsM : gmap u64 u64;
+  }.
+
+Global Instance PutPre_disc γ args : Discretizable (Put_Pre γ args) := _.
+Global Instance PutPre_timeless γ args : Timeless (Put_Pre γ args) := _.
+
+Definition KVServer_core_own_durable server rpc_server : iProp Σ :=
+  ∃ rlastSeq rlastReply rkvs data,
+    "%" ∷ ⌜has_map_encoding server.(kvsM) rkvs⌝ ∗
+    "%" ∷ ⌜has_map_encoding rpc_server.(lastSeqM) rlastSeq⌝ ∗
+    "%" ∷ ⌜has_map_encoding rpc_server.(lastReplyM) rlastReply⌝ ∗
+    "%" ∷ ⌜has_encoding data (rlastSeq ++ rlastReply ++ rkvs)⌝ ∗
+    "Hkvdur" ∷ "kvdur" f↦ data
+.
+
+Definition KVServer_core_own_vol (srv:loc) kv_server : iProp Σ :=
+  ∃ (kvs_ptr:loc),
+  "HkvsOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr ∗
+  "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
+.
+
+Definition KVServer_core_own_ghost γ kv_server : iProp Σ :=
+  "Hkvctx" ∷ map_ctx γ.(ks_kvMapGN) 1 kv_server.(kvsM)
+.
+
+Definition RPCServer_own_vol (sv:loc) rpc_server : iProp Σ :=
+  ∃ (lastSeq_ptr lastReply_ptr:loc),
+    "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
+∗ "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
+∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) rpc_server.(lastSeqM)
+∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) rpc_server.(lastReplyM)
+.
+
+Definition RPCServer_own_ghost (sv:loc) γrpc rpc_server : iProp Σ :=
+  "Hsrpc" ∷ RPCServer_own γrpc rpc_server.(lastSeqM) rpc_server.(lastReplyM) (* TODO: Probably should get better naming for this *)
+.
+
+Definition RPCServer_phys_own γrpc (sv:loc) rpc_server : iProp Σ :=
+  "Hrpcvol" ∷ RPCServer_own_vol sv rpc_server ∗
+  "Hrpcghost" ∷ RPCServer_own_ghost sv γrpc rpc_server
+.
+
+Instance durable_timeless kv_server rpc_server: Timeless (KVServer_core_own_durable kv_server rpc_server) := _.
+
+Instance durable_disc kv_server rpc_server: Discretizable (KVServer_core_own_durable kv_server rpc_server) := _.
+
+Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
+  ∃ (cl_ptr:loc),
+   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
+   "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
+   "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN).
+
+
+Definition kv_core_mu srv γ : rpc_core_mu :=
+  {|
+  core_own_durable := λ server rpc_server, KVServer_core_own_durable server rpc_server;
+  core_own_ghost := λ server, KVServer_core_own_ghost γ server;
+  core_own_vol := λ server, KVServer_core_own_vol srv server
+  |}.
+
+Lemma wpc_put_core γ (srv:loc) args kvserver :
+{{{
+     (kv_core_mu srv γ).(core_own_vol) kvserver ∗
+     Put_Pre γ args
+}}}
+  KVServer__put_core #srv (into_val.to_val args) @ 36 ; ⊤
+{{{
+      kvserver' (r:u64) P', RET #r;
+            ⌜Discretizable P'⌝ ∗
+             (P') ∗
+            KVServer_core_own_vol srv kvserver' ∗
+            □ (P' -∗ Put_Pre γ args) ∗
+            (* TODO: putting this here because need to be discretizable *)
+            □ (P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
+}}}
+{{{
+     Put_Pre γ args
+}}}.
+Proof.
+  iIntros (Φ Φc) "[Hvol Hpre] HΦ".
+  iCache with "Hpre HΦ".
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. by iApply "HΦc". }
+  wpc_call; first done.
+
+  iCache with "Hpre HΦ".
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. by iApply "HΦc". }
+
+  wpc_pures.
+  iNamed "Hvol".
+
+  wpc_bind (struct.loadF _ _ _)%E.
+  wpc_frame.
+  wp_loadField.
+  iNamed 1.
+
+  wpc_bind (MapInsert _ _ _).
+  wpc_frame.
+
+  wp_apply (wp_MapInsert with "HkvsMap"); eauto; iIntros "HkvsMap".
+  iNamed 1.
+  wpc_pures.
+  iDestruct "HΦ" as "[_ HΦ]".
+  iApply ("HΦ" $! {| kvsM := <[args.1:=args.2.1]> kvserver.(kvsM) |} _ (Put_Pre γ args)).
+  iFrame.
+  iSplitL "".
+  { iPureIntro. by apply PutPre_disc. }
+  iSplitR "".
+  { iExists _; iFrame. }
+  iSplit; first eauto.
+  iModIntro.
+  iIntros "Hpre Hghost".
+  iDestruct "Hpre" as (v) "Hpre".
+  iMod (map_update with "Hghost Hpre") as "[Hkvctx Hptsto]".
+  iModIntro. iFrame.
+Qed.
+
+Lemma wpc_WriteDurableKVServer γ (srv rpc_srv:loc) server rpc_server server' rpc_server':
+  readonly (srv ↦[lockservice.KVServer.S :: "sv"] #rpc_srv) -∗
+  {{{
+      "Hvol" ∷ (kv_core_mu srv γ).(core_own_vol) server' ∗
+      "Hrpcvol" ∷ RPCServer_own_vol rpc_srv rpc_server' ∗
+      "Hdurable" ∷ (kv_core_mu srv γ).(core_own_durable) server rpc_server
+  }}}
+    WriteDurableKVServer #srv @ 37 ; ⊤
+  {{{
+        RET #();
+      (kv_core_mu srv γ).(core_own_vol) server' ∗
+      RPCServer_own_vol rpc_srv rpc_server' ∗
+      (kv_core_mu srv γ).(core_own_durable) server' rpc_server'
+  }}}
+  {{{
+      (kv_core_mu srv γ).(core_own_durable) server rpc_server ∨
+      (kv_core_mu srv γ).(core_own_durable) server' rpc_server'
+  }}}.
+Proof.
+  iIntros "#Hsv".
+  iIntros (Φ Φc) "!# Hpre HΦ".
+  iNamed "Hpre".
+
+  wpc_call.
+  { by iLeft. }
+  { eauto. }
+  iCache with "Hdurable HΦ".
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc". by iLeft. }
+
+  wp_pures.
+  iNamed "Hvol".
+  iNamed "Hrpcvol".
+
+  wpc_loadField.
+
+  (* Compute size of encoded data *)
+  repeat (wpc_bind (struct.loadF _ _ _)%E;
+  wpc_frame;
+  wp_loadField;
+  iNamed 1
+  ).
+
+  wpc_bind (MapLen _)%E.
+  wpc_frame.
+  wp_apply (wp_MapLen with "HlastSeqMap").
+  iIntros "[%HlastSeqSize HlastSeqMap]".
+  iNamed 1.
+
+  wpc_pures.
+
+  wpc_bind (struct.loadF _ _ _)%E.
+  wpc_frame.
+  wp_loadField.
+  wp_loadField.
+  iNamed 1.
+
+  wpc_bind (MapLen _)%E.
+  wpc_frame.
+  (* TODO: this should be lastReplyMap, unless we can make sure that lastSeq and lastReply have the same size *)
+  wp_apply (wp_MapLen with "HlastSeqMap").
+  iIntros "[%_ HlastSeqMap]".
+  iNamed 1.
+
+  wpc_pures.
+  wpc_bind (struct.loadF _ _ _)%E.
+  wpc_frame.
+  wp_loadField.
+  iNamed 1.
+
+  wpc_bind (MapLen _)%E.
+  wpc_frame.
+  wp_apply (wp_MapLen with "HkvsMap").
+  iIntros "[%HkvsSize HkvsMap]".
+  iNamed 1.
+
+  wpc_pures.
+
+  (* Done computing size of encoder *)
+
+  (* FIXME: add necessary overflow guards in code *)
+  replace (word.add (word.add (word.add (word.mul (word.mul 8 2)
+                (size rpc_server'.(lastSeqM)))
+            (word.mul 2 (size rpc_server'.(lastSeqM))))
+                              (word.mul 2 (size server'.(kvsM)))) 3) with
+      (U64 (8 * 2 * ((size rpc_server'.(lastSeqM)) + (size rpc_server'.(lastSeqM)) + (size server.(kvsM)) + 3))); last first.
+  {
+    admit.
+  }
+
+  wpc_bind (marshal.NewEnc _)%E.
+  wpc_frame.
+  wp_apply (wp_new_enc).
+  iIntros (enc_v) "Henc".
+  iNamed 1.
+
+  replace (int.Z (U64 (_))) with
+      ((8 * 2 * ((size rpc_server'.(lastSeqM)) + (size rpc_server'.(lastSeqM)) + (size server.(kvsM))+ 3))); last first.
+  { (* want to know that the entire expression has not overflowed *) admit. }
+
+
+  wpc_pures.
+
+  wpc_bind (struct.loadF _ _ _)%E.
+  wpc_frame.
+  wp_loadField.
+  wp_loadField.
+  iNamed 1.
+
+  wpc_bind (EncMap _ _)%E.
+  wpc_frame.
+  wp_apply (wp_EncMap with "[$Henc $HlastSeqMap]").
+  { unfold marshalledMapSize. Lia.lia. }
+  iIntros (rlastSeqMap) "(%HrlastSeqMap & HlastSeqMap & Henc)".
+  iNamed 1.
+
+  wpc_pures.
+  wpc_bind (struct.loadF _ _ _)%E.
+  wpc_frame.
+  wp_loadField.
+  wp_loadField.
+  iNamed 1.
+
+  wpc_bind (EncMap _ _)%E.
+  wpc_frame.
+  assert (size rpc_server'.(lastReplyM) = size rpc_server'.(lastSeqM)) by admit.
+  wp_apply (wp_EncMap with "[$Henc $HlastReplyMap]").
+  { unfold marshalledMapSize.
+    Lia.lia. }
+  iIntros (rlastReplyMap) "(%HrlastReplyMap & HlastReplyMap & Henc)".
+  iNamed 1.
+
+  wpc_pures.
+
+  wpc_bind (struct.loadF _ _ _)%E. wpc_frame. wp_loadField.
+  iNamed 1.
+
+  wpc_bind (EncMap _ _)%E.
+  wpc_frame.
+  wp_apply (wp_EncMap with "[$Henc $HkvsMap]").
+  { unfold marshalledMapSize.
+    rewrite H0.
+    admit. (* FIXME: size was incorrectly rewritten above *)
+  }
+  iIntros (rkvsMap) "(%HrkvsMap & HkvsMap & Henc)".
+  iNamed 1.
+  wpc_pures.
+
+  wpc_bind (marshal.Enc__Finish _)%E.
+  wpc_frame.
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (s data) "(%Hencoding & %Hlength & Hslice)".
+  iNamed 1.
+  Search (Write).
+  iNamed "Hdurable".
+
+  wpc_bind (Write _ _)%E.
+  iApply (wpc_Write with "[$Hslice $Hkvdur]"); eauto.
+  { exact (1%Qp). }
+
+  rewrite -app_assoc in Hencoding.
+  iSplit.
+  {
+    iDestruct "HΦ" as "[HΦc _]".
+    iModIntro.
+    iIntros "Hkvdur".
+    iApply "HΦc".
+    iDestruct "Hkvdur" as "[Hkvdur|Hkvdur]".
+    - iLeft. iExists _, _, _, data0. eauto.
+    - iRight. iExists rlastSeqMap, rlastReplyMap, rkvsMap, data. eauto.
+  }
+  iNext.
+  iIntros "[Hkvdur Hslice]".
+  wpc_pures.
+  {
+    iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc".
+    iRight. iExists rlastSeqMap, rlastReplyMap, rkvsMap, data. eauto.
+  }
+  iDestruct "HΦ" as "[_ HΦ]".
+  iApply "HΦ".
+  iSplitL "HkvsOwn HkvsMap".
+  { iExists _. iFrame. }
+  iSplitL "HlastSeqOwn HlastReplyOwn HlastSeqMap HlastReplyMap".
+  { iExists _, _. iFrame. }
+  iExists rlastSeqMap, rlastReplyMap, rkvsMap, data. eauto.
 Admitted.
 
 Definition is_kvserver γ (srv rpc_srv:loc) : iProp Σ :=

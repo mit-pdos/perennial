@@ -41,15 +41,19 @@ Axiom wpc_Read : ∀ filename (q:Qp) content,
       filename f↦{q} content
   }}}.
 
-Axiom wp_Write : ∀ filename (q:Qp) content_old content (content_sl:Slice.t) q,
+Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) q,
   {{{
       filename f↦ content_old ∗
       typed_slice.is_slice content_sl byteT q content
   }}}
-    grove_ffi.Write #(str filename) (slice_val content_sl)
+    grove_ffi.Write #(str filename) (slice_val content_sl) @ k ; ⊤
   {{{
        RET #(); filename f↦ content ∗
       typed_slice.is_slice content_sl byteT q content
+  }}}
+  {{{
+      filename f↦ content_old ∨
+      filename f↦ content
   }}}.
 
 Definition u64_to_string : u64 -> string := λ u, NilZero.string_of_int (Z.to_int (int.Z u)).
