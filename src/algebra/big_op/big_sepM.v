@@ -936,6 +936,14 @@ Section gmap_curry.
       rewrite H2 in H1; eauto. congruence.
   Qed.
 
+  Theorem gmap_uncurry_lookup (m : gmap (A * B) T) (k1 : A) (k2 : B) (offmap : gmap B T) :
+    gmap_uncurry m !! k1 = Some offmap →
+    m !! (k1, k2) = offmap !! k2.
+  Proof.
+    intros Hacc.
+    rewrite -lookup_gmap_uncurry Hacc //=.
+  Qed.
+
 End gmap_curry.
 
 (* TODO(joe): got halfway through this before I realized gmap_addr_by_block_big_sepM exists *)
