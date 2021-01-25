@@ -196,7 +196,7 @@ Proof using Type*.
   wp_lam. wp_pures.
 
   wp_apply (wp_MapLen with "Hmap").
-  iIntros "Hmap".
+  iIntros "[%Hsize Hmap]".
   unfold marshalledMapSize in Hrem.
   wp_apply (wp_Enc__PutInt with "Henc").
   { lia. }
@@ -282,6 +282,103 @@ Proof using Type*.
   iPureIntro.
   by exists l.
 Qed.
+
+Definition DecMap_invariant dec_v i_ptr (map_sz:nat) (r:Rec) mref s q data : iProp Σ :=
+  ∃ (l:list (u64 * u64)) (mtodo mdone:gmap u64 u64),
+    ⌜(list_to_map l) = mtodo⌝ ∗
+    ⌜mtodo ##ₘ mdone ⌝ ∗
+    i_ptr ↦[uint64T] #(map_sz - (length l)) ∗
+    is_map mref mdone ∗
+    is_dec dec_v ((flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l) ++ r) s q data
+.
+
+Lemma wp_DecMap dec_v m s r rmap data q :
+  {{{
+      "%Hmapencoded" ∷ ⌜has_map_encoding m rmap⌝ ∗
+      "Hdec" ∷ is_dec dec_v (rmap ++ r) s q data
+  }}}
+    DecMap dec_v
+  {{{
+      mref, RET #mref;
+      is_map mref m ∗
+      is_dec dec_v r s q data
+  }}}.
+Proof.
+  Opaque NewMap.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  destruct Hmapencoded as [l [HlistMap Hmapencoded]].
+  rewrite Hmapencoded.
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_pures.
+  wp_apply wp_NewMap.
+  iIntros (mref) "Hmref".
+  wp_pures.
+  wp_apply (wp_ref_to); first eauto.
+  iIntros (i_ptr) "Hi".
+
+  iAssert (DecMap_invariant dec_v i_ptr (size m) r mref s q data) with "[Hi Hmref Hdec]" as "HloopInv".
+  {
+    iExists l, m, _.
+    iFrame.
+    iSplitL ""; first done.
+    iSplitL "".
+    { iPureIntro. eapply (map_disjoint_empty_r (M:=gmap _)). }
+    rewrite -HlistMap.
+    rewrite /size /map_size.
+    rewrite map_to_list_to_map.
+    { replace (_ - _) with 0 by lia. iFrame "Hi". }
+    (* Need to know that l doesn't have duplicates *)
+    admit.
+  }
+  wp_pures.
+
+  wp_forBreak_cond.
+  clear HlistMap Hmapencoded l.
+  iDestruct "HloopInv" as (l' mtodo mdone HlistToMap Hdisj) "(Hi & Hmref & Hdec)".
+  wp_load.
+  wp_pures.
+  wp_if_destruct.
+  { (* Start of loop iteration *)
+    wp_pures.
+    destruct l'.
+    { simpl in Heqb. exfalso. admit. }
+    destruct p as [k v].
+    simpl.
+    wp_apply (wp_Dec__GetInt with "Hdec").
+    iIntros "Hdec".
+    wp_apply (wp_Dec__GetInt with "Hdec").
+    iIntros "Hdec".
+    wp_pures.
+    wp_apply (wp_MapInsert with "Hmref"); first done.
+    iIntros "Hmref".
+    wp_pures.
+    wp_load.
+    wp_store.
+    iLeft.
+    iSplitL ""; first done.
+    iSplitL "HΦ"; first done.
+    iExists l', (list_to_map l'), _.
+    iSplitL ""; first done.
+    iFrame "Hmref".
+    iSplitL "".
+    { admit. }
+    replace (word.add (size m - S (length l')) 1) with (size m - length l':u64); last first.
+    { admit. (* u64 overflow reasoning *) }
+    iFrame.
+  }
+  iRight. iSplitL ""; first done.
+  wp_pures.
+  iApply "HΦ".
+  iFrame.
+  replace (l') with ([]:list (u64 * u64)) in *; last first.
+  { admit. (* TODO: use the fact that (size m - length l' = size m) *) }
+  replace (m) with (mdone); last first.
+  { rewrite -HlistToMap in Hdisj. admit. (* TODO: use the fact that mdone ∪ mtodo = m, and mtodo = ∅ *) }
+  iFrame.
+Admitted.
 
 Definition is_kvserver γ (srv rpc_srv:loc) : iProp Σ :=
   "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #rpc_srv) ∗
