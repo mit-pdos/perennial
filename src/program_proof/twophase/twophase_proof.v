@@ -159,6 +159,16 @@ Proof.
   intuition.
 Qed.
 
+Lemma gmap_addr_by_block_filter_by_blk {A} (s: gset u64) (m: gmap addr A):
+  gmap_addr_by_block (filter_addr_map_by_blk s m) =
+  filter (λ x, x.1 ∈ s) (gmap_addr_by_block m).
+Proof.
+  pose proof (gmap_addr_by_block_filter m (λ x, x ∈ s)) as Hthm.
+  simpl in Hthm.
+  rewrite -Hthm.
+  reflexivity.
+Qed.
+
 Lemma gmap_addr_by_block_lookup_not_empty {A} (m: gmap addr A) blkno mblk :
   gmap_addr_by_block m !! blkno = Some mblk → mblk ≠ ∅.
 Proof.
@@ -655,18 +665,21 @@ Proof.
   set_solver.
 Qed.
 
-Theorem wp_twophase__acquireNoCheck (l: loc) mt_buftxn γ dinit metamap a:
+Theorem wp_twophase__acquireNoCheck (l: loc) mt_buftxn γ dinit metamap (blkno: u64):
   {{{
     "Htwophase" ∷ is_twophase l mt_buftxn γ dinit metamap ∗
-    "%Ha_wf" ∷ ⌜addr_wf dinit a⌝ ∗
-    "%Ha_in_metamap" ∷ ⌜is_Some (metamap !! a)⌝ ∗
-    "%Ha_not_locked" ∷ ⌜a.(addrBlock) ∉ get_addr_map_blknos mt_buftxn⌝
+    "%Hblkno_wf" ∷ ⌜blkno ∈ get_disk_blknos dinit⌝ ∗
+    "%Hblkno_in_metamap" ∷ ⌜blkno ∈ get_addr_map_blknos metamap⌝ ∗
+    "%Hblkno_not_locked" ∷ ⌜blkno ∉ get_addr_map_blknos mt_buftxn⌝
   }}}
-    TwoPhase__acquireNoCheck #l #a.(addrBlock)
+    TwoPhase__acquireNoCheck #l #blkno
   {{{
     RET #();
     ∃ mt_buftxn',
-      "%Hmt_buftxn'_blknos" ∷ ⌜get_addr_map_blknos mt_buftxn' = get_addr_map_blknos mt_buftxn ∪ {[a.(addrBlock)]}⌝ ∗
+      "%Hmt_buftxn'_blknos" ∷ ⌜
+        get_addr_map_blknos mt_buftxn' =
+        get_addr_map_blknos mt_buftxn ∪ {[blkno]}
+      ⌝ ∗
       "Htwophase" ∷ is_twophase l mt_buftxn' γ dinit metamap
   }}}.
 Proof.
@@ -675,9 +688,8 @@ Proof.
   iNamed "Htwophase".
   iNamed "Htwophase".
   wp_loadField.
-  apply addr_wf_wf' in Ha_wf.
   wp_apply (wp_LockMap__Acquire with "[$Hlocks]").
-  1: destruct Ha_wf; intuition.
+  1: iPureIntro; assumption.
   iIntros "[Hlinv Hlocked]".
   iNamed "Hlinv".
 
@@ -688,7 +700,7 @@ Proof.
   iNamed.
   replace ([∗ map] a↦γa;v ∈ _;mt_new, _)%I
     with ([∗ map] a↦γa;v ∈
-      filter_addr_map_by_blk {[addrBlock a]} metamap;
+      filter_addr_map_by_blk {[blkno]} metamap;
       committed <$> (obj_to_vobj <$> mt_new),
         "Hptsto" ∷ a [[γa]]↦ v
     )%I.
@@ -712,7 +724,7 @@ Proof.
     apply map_disjoint_dom_1.
     apply map_disjoint_alt.
     intros k.
-    destruct (decide (addrBlock k = addrBlock a)) as [Hk_blk|Hk_blk].
+    destruct (decide (addrBlock k = blkno)) as [Hk_blk|Hk_blk].
     - left.
       apply filter_by_key_lookup_notin.
       rewrite Hk_blk.
@@ -736,14 +748,12 @@ Proof.
   1: rewrite dom_union_L dom_union_L Hptstos_dom Hptstos_new_dom //.
   rewrite -filter_addr_map_by_blk_union /=.
   assert (
-    get_addr_map_blknos (obj_to_vobj <$> mt_new)
-      =
-    {[addrBlock a]}
+    get_addr_map_blknos (obj_to_vobj <$> mt_new) = {[blkno]}
   ) as Hmt_new_blknos.
   {
     rewrite /get_addr_map_blknos.
     eapply elem_of_equiv_L.
-    intros blkno.
+    intros blkno'.
     split.
     - intros Hin.
       apply elem_of_dom in Hin.
@@ -758,26 +768,22 @@ Proof.
     - intros Hin.
       apply elem_of_singleton_1 in Hin.
       subst blkno.
-      apply elem_of_dom.
-      assert (is_Some ((obj_to_vobj <$> mt_new) !! a)) as Hin_m.
-      {
-        apply elem_of_dom.
-        rewrite -Hptstos_new_dom.
-        apply elem_of_dom.
-        rewrite filter_addr_map_by_blk_lookup_in; first by assumption.
-        set_solver.
-      }
-      destruct Hin_m as [obj Hobj].
-      apply gmap_addr_by_block_lookup in Hobj.
-      destruct Hobj as [offmap [Hoffmap Hacc]].
+      rewrite -(gmap_addr_by_block_dom_eq Hptstos_new_dom)
+        gmap_addr_by_block_filter_by_blk.
+      apply map_filter_elem_of_dom.
+      rewrite /get_addr_map_blknos in Hblkno_in_metamap.
+      apply elem_of_dom in Hblkno_in_metamap.
+      destruct Hblkno_in_metamap as [metamap_blk Hmetamap_blk].
       eexists _.
-      eassumption.
+      split; first by eassumption.
+      simpl.
+      set_solver.
   }
   assert (
     get_addr_map_blknos (mt_buftxn ∪ (obj_to_vobj <$> mt_new))
       =
-    list_to_set locks_held ∪ {[addrBlock a]}
-  ) as Hlocked_blknos.
+    list_to_set locks_held ∪ {[blkno]}
+  ) as Hlocked_blknos'.
   {
     rewrite /get_addr_map_blknos gmap_addr_by_block_dom_union.
     f_equal.
@@ -814,7 +820,7 @@ Proof.
       iPureIntro.
       split.
       {
-        rewrite -Hlocked_blknos.
+        rewrite -Hlocked_blknos'.
         set_solver.
       }
       split.
@@ -822,14 +828,13 @@ Proof.
         apply union_least.
         1: assumption.
         apply elem_of_subseteq_singleton.
-        rewrite /addr_wf' in Ha_wf.
-        intuition.
+        assumption.
       }
       apply NoDup_app.
       split; first by assumption.
       split.
       2: apply NoDup_singleton.
-      intros blkno Hin His.
+      intros blkno' Hin His.
       apply elem_of_list_singleton in His.
       subst blkno.
       apply (iffRL (@elem_of_list_to_set _ (gset u64) _ _ _ _ _ _ _)) in Hin.
@@ -839,23 +844,26 @@ Proof.
     iPureIntro.
     rewrite list_to_set_app_L /= set_union_empty_r.
     symmetry.
-    apply Hlocked_blknos.
+    apply Hlocked_blknos'.
   }
   iPureIntro.
-  rewrite Hlocked_blknos Hlocks_held //.
+  rewrite Hlocked_blknos' Hlocks_held //.
 Qed.
 
-Theorem wp_twophase__Acquire (l: loc) mt_buftxn γ dinit metamap a:
+Theorem wp_twophase__Acquire (l: loc) mt_buftxn γ dinit metamap (blkno: u64):
   {{{
     "Htwophase" ∷ is_twophase l mt_buftxn γ dinit metamap ∗
-    "%Ha_wf" ∷ ⌜addr_wf dinit a⌝ ∗
-    "%Ha_in_metamap" ∷ ⌜is_Some (metamap !! a)⌝
+    "%Hblkno_wf" ∷ ⌜blkno ∈ get_disk_blknos dinit⌝ ∗
+    "%Hblkno_in_metamap" ∷ ⌜blkno ∈ get_addr_map_blknos metamap⌝
   }}}
-    TwoPhase__Acquire #l #a.(addrBlock)
+    TwoPhase__Acquire #l #blkno
   {{{
     RET #();
     ∃ mt_buftxn',
-      "%Hmt_buftxn'_blknos" ∷ ⌜get_addr_map_blknos mt_buftxn' = get_addr_map_blknos mt_buftxn ∪ {[a.(addrBlock)]}⌝ ∗
+      "%Hmt_buftxn'_blknos" ∷ ⌜
+        get_addr_map_blknos mt_buftxn' =
+        get_addr_map_blknos mt_buftxn ∪ {[blkno]}
+      ⌝ ∗
       "Htwophase" ∷ is_twophase l mt_buftxn' γ dinit metamap
   }}}.
 Proof.
@@ -868,7 +876,7 @@ Proof.
   wp_loadField.
   iDestruct (is_slice_small_read with "Hacquired_s") as "[Hacquired_s Hacquired_s_wrap]".
   wp_apply (wp_forSlicePrefix (λ done todo,
-    let already_acquired_val := bool_decide (addrBlock a ∈ done) in
+    let already_acquired_val := bool_decide (blkno ∈ done) in
     "Halready_acquired_l" ∷ already_acquired_l ↦[boolT] #already_acquired_val
   )%I (V:=u64) with "[] [$Hacquired_s Halready_acquired_l]").
   2: {
@@ -893,7 +901,7 @@ Proof.
       reflexivity.
     }
     iApply "HΦ".
-    destruct (decide (addrBlock a ∈ done)).
+    destruct (decide (blkno ∈ done)).
     - rewrite bool_decide_eq_true_2.
       2: assumption.
       rewrite bool_decide_eq_true_2; first by iFrame.
@@ -938,7 +946,7 @@ Proof.
   {
     apply (@not_elem_of_list_to_set _ (gset u64) _ _ _ _ _) in Heqb.
     rewrite Hlocks_held in Heqb.
-    iFrame (Ha_wf Ha_in_metamap Heqb).
+    iFrame (Hblkno_wf Hblkno_in_metamap Heqb).
     iExists locks_held.
     iSplit; first by (iPureIntro; assumption).
     iExists _, _, _, _, _.
