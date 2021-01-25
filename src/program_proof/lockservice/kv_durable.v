@@ -161,12 +161,15 @@ Admitted.
 (* TODO: This probably needs to be strengthened to remember that [int.nat (size m) = size m], or equivalently that [size m < 2 ^ 64] *)
 Definition has_map_encoding (m:gmap u64 u64) (r:Rec) :=
   ∃ l,
+  (int.Z (size m) = size m) ∧
+  NoDup l.*1 ∧
   (list_to_map l) = m ∧
   r = [EncUInt64 (size m)] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l)
 .
 
 Definition EncMap_invariant enc_v (r:Rec) sz map_sz original_remaining (mtodo mdone:gmap u64 u64) : iProp Σ :=
   ∃ (l:list (u64 * u64)) remaining,
+    ⌜ NoDup l.*1 ⌝ ∗
     ⌜(list_to_map l) = mdone⌝ ∗
     ⌜remaining > 8 * 2 * (size mtodo)⌝ ∗
     ⌜remaining = original_remaining - 8 * 2 * (size mdone)⌝ ∗
@@ -205,6 +208,8 @@ Proof using Type*.
   wp_apply (wp_MapIter_2 _ _ _ _ (EncMap_invariant e r sz (size m) (remaining - 8)) with "Hmap [Henc] [] [HΦ]").
   {
     iExists [] . iExists (remaining-8). simpl. iFrame.
+    iSplit.
+    { iPureIntro. apply NoDup_nil_2. }
     iSplit; first done.
     iPureIntro. split; first by lia.
     replace (size ∅) with (0%nat).
@@ -215,7 +220,7 @@ Proof using Type*.
     clear Φ.
     iIntros (???? Φ) "!# [Hpre %Htodo] HΦ".
     wp_pures.
-    iDestruct "Hpre" as (l rem' Hl Hrem' Hremeq Hmdisjoint) "Henc".
+    iDestruct "Hpre" as (l rem' Hnodup Hl Hrem' Hremeq Hmdisjoint) "Henc".
 
     assert (size mtodo ≠ 0%nat).
     { apply map_size_non_empty_iff.
@@ -237,6 +242,30 @@ Proof using Type*.
     iIntros "Henc".
     iApply "HΦ".
     iExists (l ++ [(k, v)]), (rem' - 8 - 8).
+    iSplit.
+    { iPureIntro.
+      rewrite fmap_app.
+      rewrite NoDup_app.
+      split; first done.
+      split.
+      { intros.
+        simpl.
+        rewrite not_elem_of_cons.
+        split; last apply not_elem_of_nil.
+        destruct (decide (x = k)) as [->|]; last done.
+        exfalso.
+        apply elem_of_list_fmap_2 in H1 as [ [k0 v0] [Hk Hp]].
+        simpl in Hk.
+        eapply (elem_of_list_to_map_1 (M:=gmap _)) in Hnodup; eauto.
+        replace (list_to_map l) with (mdone) in Hnodup by eauto.
+        eapply map_disjoint_spec; eauto.
+        by rewrite Hk.
+      }
+      { apply NoDup_cons_2.
+        - apply not_elem_of_nil.
+        - apply NoDup_nil_2.
+      }
+    }
     iSplit.
     { iPureIntro.
       rewrite -Hl.
@@ -270,7 +299,7 @@ Proof using Type*.
         by apply map_disjoint_delete_l.
   }
   iIntros "[Hmap Henc]".
-  iDestruct "Henc" as (l rem' Hl _ ? ?) "Henc".
+  iDestruct "Henc" as (l rem' Hnodup Hl _ ? ?) "Henc".
   iApply ("HΦ" $! (
               [EncUInt64 (size m)] ++
               flat_map (λ u : u64 * u64, [EncUInt64 u.1; EncUInt64 u.2]) l)
@@ -280,7 +309,9 @@ Proof using Type*.
   replace (remaining - (8 + 8 * 2 * size m)%nat) with (rem') by lia.
   iFrame.
   iPureIntro.
-  by exists l.
+  exists l.
+  rewrite -u64_Z_through_nat.
+  eauto.
 Qed.
 
 Definition DecMap_invariant dec_v i_ptr m (r:Rec) mref s q data : iProp Σ :=
@@ -292,6 +323,12 @@ Definition DecMap_invariant dec_v i_ptr m (r:Rec) mref s q data : iProp Σ :=
     is_map mref mdone ∗
     is_dec dec_v ((flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l) ++ r) s q data
 .
+
+(* FIXME: prove this *)
+Lemma gmap_size_union (A B:gmap u64 u64) :
+  A ##ₘ B → size (A ∪ B) = ((size A) + (size B))%nat.
+Proof.
+Admitted.
 
 Lemma wp_DecMap dec_v m s r rmap data q :
   {{{
@@ -309,7 +346,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_lam.
-  destruct Hmapencoded as [l [HlistMap Hmapencoded]].
+  destruct Hmapencoded as [l [Hsize [Hnodup [HlistMap Hmapencoded]]]].
   rewrite Hmapencoded.
   wp_apply (wp_Dec__GetInt with "Hdec").
   iIntros "Hdec".
@@ -324,16 +361,15 @@ Proof.
   {
     iExists l, ∅.
     iFrame.
-    iSplit; first admit. (* add nodup to has_map_encoding *)
+    iSplit; first done.
     iSplitL "".
     { iPureIntro. eapply (map_disjoint_empty_r (M:=gmap _)). }
     by rewrite right_id.
   }
   wp_pures.
 
-  assert (int.Z (size m) = size m) as Hsize by admit.
   wp_forBreak_cond.
-  clear HlistMap Hmapencoded l.
+  clear HlistMap Hnodup Hmapencoded l.
   iDestruct "HloopInv" as (l' mdone Hnodup Hdisj Hunion) "(Hi & Hmref & Hdec)".
   wp_load.
   wp_pures.
@@ -406,8 +442,9 @@ Proof.
   {
     exfalso.
     set (mtodo:=(list_to_map (p :: l'))) in *.
-    (* TODO: A ##ₘ B → size (A ∪ B) = (size A) + (size B) *)
     rewrite -Hunion in Heqb.
+    rewrite gmap_size_union in Heqb; eauto.
+    assert (size mtodo > 0) by admit.
     admit. (* TODO: use the fact that mtodo ≠ ∅ *)
   }
   replace (m) with (mdone); last first.
