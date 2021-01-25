@@ -217,13 +217,8 @@ Proof.
   iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
   iPureIntro.
   set cur_seq:=(default IntoVal_def (lastSeqM !! req.(Req_CID))) in Hrseq Hlseq_lb_ineq.
-  (* TODO: this integer/nat inequality reasoning is annoying.
-     This works fine if the input inequality is in terms of nat's instead of Z's:
-     lia.
-     Might be able to change lemmas higher up the stack to use int.nat instead of int.Z.
-   *)
-  admit.
-Admitted.
+  word.
+Qed.
 
 Lemma server_takes_request (req:RPCRequest) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
@@ -319,7 +314,15 @@ Proof using Type*.
     iDestruct (big_sepS_elem_of_acc_impl req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply elem_of_fin_to_set.
     iMod (fmcounter_map_update (int.nat req.(Req_Seq)) with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
     {
-      admit. (* TODO: nat/int ineq reasoning *)
+      (* Set Printing All*)
+      (* Need to unfold Map.t to get map lookups to match *)
+      unfold Map.t in H1.
+      simpl in H1.
+      rewrite -u64_Z_through_nat in H1.
+      replace (int.Z req.(Req_Seq)%Z) with (int.nat req.(Req_Seq):Z) in H1; last first.
+      { rewrite u64_Z_through_nat. done. }
+      apply Nat2Z.inj_lt in H1.
+      lia.
     }
     iMod ("HMClose" with "[Hpost]") as "_".
     { iNext. iFrame "#". iRight. iExists _; iFrame "#∗". }
@@ -334,7 +337,7 @@ Proof using Type*.
   { (* One-shot update of γrc already happened; this is impossible *)
     by iExFalso; iApply (new_seq_implies_unproc with "Hlseq_lb Hlseq_own").
   }
-Admitted.
+Qed.
 
 (** Server side: when a request [args] has a sequence number less than [lseq],
 then it is stale. *)
@@ -443,6 +446,8 @@ Lemma server_executes_durable_request' (req:RPCRequest) reply γrpc γreq PreCon
   RPCServer_own γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM) ∗
   ctx').
 Proof.
+  (* XXX: without [V:=u64], u64 gets unfolded here, which forces us to later unfold u64 more so we can match against Hrseq.*)
+  rewrite (map_get_val (V:=u64)).
   intros Hrseq.
   iIntros "#HreqInv #HsrvInv Hsrpc_proc HγPre HP Hfupd Hctx".
   iNamed "Hsrpc_proc".
@@ -465,7 +470,15 @@ Proof.
     iDestruct (big_sepS_elem_of_acc_impl req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
       first by apply elem_of_fin_to_set.
     iMod (fmcounter_map_update (int.nat req.(Req_Seq)) with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
-    { rewrite map_get_val in Hrseq. (* TODO: more annoying nat/int reasoning. *) admit. }
+    {
+      simpl in Hrseq.
+      replace (int.Z req.(Req_Seq)%Z) with (int.nat req.(Req_Seq):Z) in Hrseq; last first.
+      { rewrite u64_Z_through_nat. done. }
+      rewrite -u64_Z_through_nat in Hrseq.
+      unfold Map.t in Hrseq.
+      apply Nat2Z.inj_lt in Hrseq.
+      lia.
+    }
 
     iMod ("HMClose" with "[Hpost]") as "_".
     { iNext. iFrame "#". iRight. iExists _; iFrame "#". by iRight. }
@@ -478,6 +491,6 @@ Proof.
   }
   { by iDestruct (own_valid_2 with "HγPre HγPre2") as %Hbad. }
   { by iExFalso; iApply (new_seq_implies_unproc with "Hlseq_lb Hlseq_own"). }
-Admitted.
+Qed.
 
 End rpc.
