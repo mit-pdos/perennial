@@ -13,7 +13,7 @@
 [submodule "external/iris"]
 	path = external/iris
 	url = https://github.com/jtassarotti/iris-inv-hierarchy
-	branch = fupd-split-level
+	branch = master
 [submodule "external/coq-tactical"]
 	path = external/coq-tactical
 	url = https://github.com/tchajed/coq-tactical
