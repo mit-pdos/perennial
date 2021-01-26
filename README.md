@@ -1,6 +1,7 @@
 # Verifying concurrent, crash-safe systems with Perennial
 
 [![Build Status](https://github.com/mit-pdos/perennial/workflows/CI/badge.svg)](https://github.com/mit-pdos/perennial/actions?query=workflow%3ACI)
+![CI (updated dependencies)](https://github.com/mit-pdos/perennial/workflows/CI%20%28updated%20dependencies%29/badge.svg)
 
 Perennial is a system for verifying correctness for systems with both
 concurrency and crash-safety requirements, including recovery procedures. For
@@ -17,6 +18,9 @@ server built on top.
 ## Compiling
 
 We develop Perennial using Coq master and maintain compatibility with Coq 8.13.
+If CI (updated dependencies) is broken above Perennial should still compile but
+is currently incompatible with an upstream change to one of our dependencies.
+We try to avoid this situation.
 
 This project uses git submodules to include several dependencies. You should run `git submodule update --init --recursive` to set that up.
 
