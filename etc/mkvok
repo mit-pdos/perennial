@@ -1,8 +1,11 @@
 #!/bin/bash
-# Usage: ./nmkvok $MAKE_ARGS
+# Usage: ./etc/mkvok $MAKE_ARGS
 # Environment variables:
 #   FILE: Which file to build all dependencies of. Default: "src/ShouldBuild.v".
 #   FOLDER: Only .vok files in this folder will be built. Default: "src/".
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd "$DIR/.."
 
 if test -z "$FILE"; then
     FILE=src/ShouldBuild.v
