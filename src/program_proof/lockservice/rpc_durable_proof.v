@@ -49,12 +49,12 @@ Context (core_own_durable := core.(core_own_durable)).
 Context (core_own_vol := core.(core_own_vol)).
 Context (core_own_ghost := core.(core_own_ghost)).
 
-Local Instance durable_timeless : Timeless (core_own_durable server rpc_server) := core.(core_durable_timeless).
-Local Instance vol_timeless : Timeless (core_own_vol server) := core.(core_vol_timeless).
-Local Instance ghost_timeless : Timeless (core_own_ghost server) := core.(core_ghost_timeless).
+Local Instance durable_timeless server rpc_server : Timeless (core_own_durable server rpc_server) := core.(core_durable_timeless) server rpc_server.
+Local Instance vol_timeless server : Timeless (core_own_vol server) := core.(core_vol_timeless) server.
+Local Instance ghost_timeless server : Timeless (core_own_ghost server) := core.(core_ghost_timeless) server.
 
-Local Instance durable_disc : Discretizable (core_own_durable server rpc_server) := core.(core_durable_disc).
-Local Instance ghost_disc : Discretizable (core_own_ghost server) := core.(core_ghost_disc).
+Local Instance durable_disc server rpc_server : Discretizable (core_own_durable server rpc_server) := core.(core_durable_disc) server rpc_server.
+Local Instance ghost_disc server : Discretizable (core_own_ghost server) := core.(core_ghost_disc) server.
 
 Definition Server_mutex_cinv γrpc : iProp Σ :=
   ∃ server rpc_server,
