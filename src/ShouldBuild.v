@@ -25,7 +25,7 @@ From Perennial.program_proof Require
 From Perennial.program_proof.examples Require
      all_examples.
 From Perennial.program_proof.lockservice Require
-     rpc bank_proof.
+     rpc bank_proof kv_durable incr_proof incr_proxy_proof.
 From Perennial.goose_lang Require
      ffi.append_log_ffi
      ffi.kvs_ffi.

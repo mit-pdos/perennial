@@ -24,7 +24,7 @@ Variable γ:kvservice_names.
 Context `{!kvserviceG Σ}.
 
 (* This is the double-fupd crash obligation. *)
-Definition KVGetPreClientWeak (cid:u64) (γrpc:durable_rpc_names) (PreCond:iProp Σ): iProp Σ :=
+Definition KVGetPreClientWeak (cid:u64) (γrpc:rpc_names) (PreCond:iProp Σ): iProp Σ :=
   ∀ (seq:u64), cid fm[[γrpc.(cseq)]]↦ int.nat seq ={⊤}=∗ (
             cid fm[[γrpc.(cseq)]]↦ int.nat seq ∗
                    (own γrpc.(proc) (Excl ()) ∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq) ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ PreCond
@@ -38,13 +38,13 @@ Definition IdempotentPre γrpc (cid seq:u64) (PreCond : RPCValC → iProp Σ) : 
   λ (args:RPCValC),
         (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ PreCond args)%I.
 
-Lemma server_takes_idempotent_request γrpc γPost γPre (cid key va:u64) PreCond PostCond req lastSeqM lastReplyM:
+Lemma server_takes_idempotent_request γrpc γreq (cid key va:u64) PreCond PostCond req lastSeqM lastReplyM:
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
-  is_durable_RPCServer γrpc -∗
-  is_durable_RPCRequest γrpc γPost γPre (IdempotentPre γrpc req.(Req_CID) req.(Req_Seq) PreCond) (PostCond) req -∗
-  RPCServer_durable_own γrpc lastSeqM lastReplyM ={⊤}=∗
+  is_RPCServer γrpc -∗
+  is_RPCRequest γrpc γreq (IdempotentPre γrpc req.(Req_CID) req.(Req_Seq) PreCond) (PostCond) req -∗
+  RPCServer_own γrpc lastSeqM lastReplyM ={⊤}=∗
   PreCond req.(Req_Args) ∗
-  RPCServer_durable_own_processing γrpc req lastSeqM lastReplyM.
+  RPCServer_own_processing γrpc req lastSeqM lastReplyM.
 Proof.
   intros Hrseq.
   iIntros "HserverInv HreqInv Hsown".

@@ -314,8 +314,6 @@ Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=
   "Hback" ∷ [∗ map] k ↦ v ∈ server.(kvsM), (k [[γback.(incr_mapGN)]]↦ v ∨ k [[γ.(incr_mapGN)]]↦ v)
 .
 
-Print RPCClient_own.
-
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
    "Hmapsto" ∷ args.1 [[γ.(incr_mapGN)]]↦ old_v ) ∨
@@ -336,11 +334,15 @@ Lemma increment_proxy_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValC)
   }}}
     IncrProxyServer__proxy_increment_core #isrv #seq (into_val.to_val args) @ 37 ; ⊤
   {{{
-      RET #0;
-      (
-        args.1 [[γ.(incr_mapGN)]]↦ old_v ={⊤}=∗
+      SP server', RET #0;
+      ProxyIncrServer_core_own_vol isrv server' ∗
+      <disc> (
+        ProxyIncrServer_core_own_ghost server -∗
+        SP ={⊤}=∗
+        ProxyIncrServer_core_own_ghost server' ∗
         args.1 [[γ.(incr_mapGN)]]↦ (U64(int.nat old_v + 1))
       ) ∗
+      SP ∗
       ProxyIncrCrashInvariant seq args
   }}}
   {{{
@@ -507,11 +509,21 @@ Proof.
         replace (int.Z (n - 1))%Z with (n - 1%Z)%Z in Hbad by word.
         lia.
       }
-      i
-      (* TODO: rule out stale case; the word.sub will be annoying, just rewrite
-         the crash invariant to not have that *)
       wpc_pures.
-      (* TODO: write spec for *)
+      iDestruct "Hpost" as "[_ HΦ]".
+      iApply ("HΦ" $! (|={⊤}=> args.1 [[γback.(incr_mapGN)]]↦ old_v)%I
+              {| kvsM:= <[args.1:=(word.add old_v 1)]> server.(kvsM)|}
+             ).
+      iSplitL "Hincrserver".
+      { iExists _. iFrame "Hincrserver #". }
+      iSplitL "".
+      {
+        iModIntro.
+        iIntros "Hghost Holdmapsto".
+        iNamed "Hghost".
+        (* iDestruct (big_sepM_insert_acc with "Hback") as "Hback". *)
+        admit.
+      }
       admit.
     }
     {

@@ -591,7 +591,6 @@ Proof.
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (s data) "(%Hencoding & %Hlength & Hslice)".
   iNamed 1.
-  Search (Write).
   iNamed "Hdurable".
 
   wpc_bind (Write _ _)%E.
