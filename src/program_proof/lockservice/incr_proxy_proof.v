@@ -71,9 +71,9 @@ Definition own_short_incr_clerk (ck isrv:loc) (cid seq:u64) (args:RPCValC) : iPr
                                               (#args.1, (#args.2.1, #()), #())))))
 .
 
-Variable c:nat. (* Old value of the ghost counter *)
-Definition IncrPreCond : RPCValC → iProp Σ := (λ a, a.1 fm[[γback.(incr_mapGN)]]↦ c)%I.
-Definition IncrPostCond : RPCValC → u64 → iProp Σ := (λ a r, a.1 fm[[γback.(incr_mapGN)]]↦ (c+1))%I.
+Variable old_v:u64.
+Definition IncrPreCond : RPCValC → iProp Σ := (λ a, a.1 [[γback.(incr_mapGN)]]↦ old_v)%I.
+Definition IncrPostCond : RPCValC → u64 → iProp Σ := (λ a r, a.1 [[γback.(incr_mapGN)]]↦ (word.add old_v 1))%I.
 
 
 Definition own_prepared_short_incr_clerk ck isrv cid seq args : iProp Σ :=
@@ -289,7 +289,6 @@ Proof.
   by iFrame.
 Qed.
 
-Variable old_v:u64.
 Variable γ:incrservice_names.
 
 Record ProxyServerC :=
@@ -311,18 +310,19 @@ Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
  *)
 Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=
   "Hctx" ∷ map_ctx γ.(incr_mapGN) 1 server.(kvsM) ∗
-  "Hback" ∷ [∗ map] k ↦ v ∈ server.(kvsM), (k [[γback.(incr_mapGN)]]↦ v ∨ k [[γ.(incr_mapGN)]]↦ v)
+  "Hback" ∷ [∗ map] k ↦ v ∈ server.(kvsM), (k [[γback.(incr_mapGN)]]↦ v ∨ k [[γ.(incr_mapGN)]]↦{1/2} v)
 .
 
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
    "Hmapsto" ∷ args.1 [[γ.(incr_mapGN)]]↦ old_v ) ∨
-  ("Hfown_oldv" ∷ ∃ data cid seq, ("procy_incr_request_" +:+ u64_to_string sseq) f↦ data ∗
+  ("Hfown_oldv" ∷ ∃ data cid seq γreq, ("procy_incr_request_" +:+ u64_to_string sseq) f↦ data ∗
+   "Hmapsto" ∷ args.1 [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
    ⌜has_encoding_for_short_clerk data cid seq args⌝ ∗
    ⌜(int.nat (word.sub seq 1%nat) > 0)%Z⌝ ∗
    RPCClient_own γback.(incr_rpcGN) cid seq ∗
-   ∃ γreq,
-     is_RPCRequest γback.(incr_rpcGN) γreq IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
+   RPCRequest_token γreq ∗
+   is_RPCRequest γback.(incr_rpcGN) γreq IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
   )
 .
 
@@ -336,14 +336,13 @@ Lemma increment_proxy_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValC)
   {{{
       SP server', RET #0;
       ProxyIncrServer_core_own_vol isrv server' ∗
+      <disc> (SP ∧ ProxyIncrCrashInvariant seq args) ∗
       <disc> (
         ProxyIncrServer_core_own_ghost server -∗
         SP ={⊤}=∗
         ProxyIncrServer_core_own_ghost server' ∗
-        args.1 [[γ.(incr_mapGN)]]↦ (U64(int.nat old_v + 1))
-      ) ∗
-      SP ∗
-      ProxyIncrCrashInvariant seq args
+        args.1 [[γ.(incr_mapGN)]]↦ (word.add old_v 1)
+      )
   }}}
   {{{
        ProxyIncrCrashInvariant seq args ∗
@@ -426,21 +425,21 @@ Proof.
     }
 
     iNamed "Hfown_oldv".
-    iDestruct "Hfown_oldv" as "(Hfown_oldv & %Henc & %Hpos & Hrpc_clientown & #Hprepared)".
+    iDestruct "Hfown_oldv" as "(Hfown_oldv & Hmapsto & %Henc & %Hpos & Hrpc_clientown & HrpcToken & #Hisreq)".
     wpc_apply (wpc_Read with "Hfown_oldv").
     iSplit.
     { (* crash obligation of called implies our crash obligation *)
       iDestruct "Hpost" as "[Hpost _]".
       iModIntro. iIntros. iApply "Hpost". iFrame. iRight.
-      by iExists _, _, _; iFrame "#∗".
+      by iExists _, _, _, _; iFrame "#∗".
     }
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
 
-    iCache with "Hfown_oldv Hrpc_clientown Hghost Hprepared Hpost".
+    iCache with "Hfown_oldv Hrpc_clientown Hghost HrpcToken Hmapsto Hpost".
     { (* Prove crash obligation after destructing above; TODO: do this earlier *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iRight.
-      by iExists _,_, _; iFrame "#∗".
+      by iExists _,_,_, _; iFrame "#∗".
     }
     wpc_pures.
 
@@ -482,8 +481,8 @@ Proof.
 
       wpc_bind (ShortTermIncrClerk__MakePreparedRequest #_)%E.
       wpc_frame.
-      wp_apply (wp_ShortTermIncrClerk__MakePreparedRequest with "His_incrserver [$Hown_ck $Hprepared]").
-      { done. }
+      wp_apply (wp_ShortTermIncrClerk__MakePreparedRequest with "His_incrserver [$Hown_ck Hisreq]").
+      { iSplitL; first done. by iExists _. }
       iIntros (v) "HmakeReqPost".
       iNamed 1.
 
@@ -511,20 +510,42 @@ Proof.
       }
       wpc_pures.
       iDestruct "Hpost" as "[_ HΦ]".
-      iApply ("HΦ" $! (|={⊤}=> args.1 [[γback.(incr_mapGN)]]↦ old_v)%I
+      iApply ("HΦ" $! (|={⊤}=> args.1 [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
+                       args.1 [[γback.(incr_mapGN)]]↦ (word.add old_v 1)
+                      )%I
               {| kvsM:= <[args.1:=(word.add old_v 1)]> server.(kvsM)|}
              ).
       iSplitL "Hincrserver".
       { iExists _. iFrame "Hincrserver #". }
-      iSplitL "".
+      iSplitR "".
       {
-        iModIntro.
-        iIntros "Hghost Holdmapsto".
-        iNamed "Hghost".
-        (* iDestruct (big_sepM_insert_acc with "Hback") as "Hback". *)
-        admit.
+        iModIntro. iSplit.
+        { iFrame.
+          iMod (get_request_post with "Hisreq HmakeReqPost HrpcToken") as ">Hbackmapsto"; first done.
+          by iFrame.
+        }
+        { iRight. by iExists _,_,_,_; iFrame "#∗". }
       }
-      admit.
+
+      (* Prove the fupd *)
+      iModIntro.
+      iIntros "Hghost >[Hγmapsto Hγbackmapsto]".
+      iNamed "Hghost".
+      iDestruct (map_valid with "Hctx Hγmapsto") as %HkInMap.
+      iDestruct (big_sepM_insert_acc _ _ args.1 old_v with "Hback") as "[Hk Hback]".
+      { done. }
+      iDestruct "Hk" as "[Hk|Hk]".
+      { (* Impossible case: big_sepM has γback ptsto *)
+        iDestruct (ptsto_agree_frac_value with "Hγbackmapsto Hk") as %[_ Hbad].
+        by exfalso.
+      }
+      (* Take the ↦{1/2} from the big_sepM element that we accessesd *)
+      iCombine "Hγmapsto Hk" as "Hγmapsto".
+      iMod (map_update _ _ _ with "Hctx Hγmapsto") as "[Hctx Hγmapsto]".
+      iSpecialize ("Hback" $! (word.add old_v 1) with "[Hγbackmapsto]").
+      { by iLeft. }
+      iModIntro.
+      iFrame.
     }
     {
       (* TODO: Use has_encoding_length and is_slize_sz to get contradiction *)
