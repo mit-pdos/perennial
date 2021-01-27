@@ -64,7 +64,7 @@ Section translate.
   | atomically_transTy el1 el2 tl e1 e2 t :
       Γ ⊢ el1 -- el2 : tl ->
       spec_atomic_transTy Γ el1 el2 tl e1 e2 t ->
-      Γ ⊢ Atomically el1 e1 -- e2 : t
+      Γ ⊢ Atomically el1 e1 -- e2 : sumT unitT t
   (** control flow *)
   | if_transTy cond cond' e1 e1' e2 e2' t :
       Γ ⊢ cond -- cond' : boolT ->

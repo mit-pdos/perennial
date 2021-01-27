@@ -314,7 +314,7 @@ Definition sty_atomic_obligation :=
   has_semTy (subst_map (subst_sval <$> Γsubst) el1) (subst_map (subst_ival <$> Γsubst) el2)
     (val_interp (hS := hS) tl) -∗
   has_semTy (subst_map (subst_sval <$> Γsubst) (Atomically el1 e1)) (subst_map (subst_ival <$> Γsubst) e2)
-    (val_interp (hS := hS) t).
+    (val_interp (hS := hS) (sumT unitT t)).
 
 Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
            (Γ: Ctx) es e τ : iProp Σ :=
