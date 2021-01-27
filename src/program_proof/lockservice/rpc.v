@@ -31,31 +31,6 @@ Context `{!heapG Σ}.
 Context {A:Type} {R:Type}.
 Context `{!rpcG Σ R}.
 
-(* FIXME: move upstream (Iris MR 570) *)
-Section gset.
-  Context `{Countable T}.
-  Implicit Types X : gset T.
-  Implicit Types Φ : T → iProp Σ.
-
-  Lemma big_sepS_elem_of_acc_impl x Φ X :
-    x ∈ X →
-    ([∗ set] y ∈ X, Φ y) -∗ Φ x ∗
-      (∀ Ψ, Ψ x -∗ □ (∀ y, ⌜y ∈ X ∧ y ≠ x⌝ → Φ y -∗ Ψ y) -∗ ([∗ set] y ∈ X, Ψ y)).
-  Proof.
-    intros Helem. rewrite big_sepS_delete //. apply sep_mono_r.
-    apply forall_intro=>Ψ.
-    rewrite (big_sepS_impl Φ Ψ).
-    rewrite wand_curry comm -wand_curry. apply wand_intro_r.
-    assert (∀ a : T, a ∈ X ∧ a ≠ x ↔ a ∈ X ∖ {[x]}) as Hiff by set_solver.
-    setoid_rewrite Hiff.
-    rewrite wand_elim_l.
-    apply wand_intro_l.
-    rewrite -big_sepS_delete //.
-  Qed.
-
-End gset.
-
-
 Record RPCRequest :=
 {
   Req_CID : u64 ;
@@ -330,9 +305,9 @@ Proof using Type*.
 
     iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM req.(Req_CID) req.(Req_Seq) reply with "[Hreqeq_lb] Hrcagree") as "Hrcagree2"; eauto.
     iFrame "∗#".
-    iApply ("Hlseq_own" with "[Hlseq_one]"); simpl.
+    iApply ("Hlseq_own" with "[] [Hlseq_one]"); simpl.
+    - iIntros "!#" (y _ ?). rewrite lookup_insert_ne //. eauto.
     - rewrite lookup_insert. done.
-    - iIntros "!#" (y [_ ?]). rewrite lookup_insert_ne //. eauto.
   }
   { (* One-shot update of γrc already happened; this is impossible *)
     by iExFalso; iApply (new_seq_implies_unproc with "Hlseq_lb Hlseq_own").
@@ -485,9 +460,9 @@ Proof.
     iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM req.(Req_CID) req.(Req_Seq) reply with "[Hreqeq_lb] Hrcagree") as "Hrcagree2"; eauto.
     iModIntro.
     iFrame "∗#".
-    iApply ("Hlseq_own" with "[Hlseq_one]"); simpl.
+    iApply ("Hlseq_own" with "[] [Hlseq_one]"); simpl.
+    - iIntros "!#" (y _ ?). rewrite lookup_insert_ne //. eauto.
     - rewrite lookup_insert. done.
-    - iIntros "!#" (y [_ ?]). rewrite lookup_insert_ne //. eauto.
   }
   { by iDestruct (own_valid_2 with "HγPre HγPre2") as %Hbad. }
   { by iExFalso; iApply (new_seq_implies_unproc with "Hlseq_lb Hlseq_own"). }

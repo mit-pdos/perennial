@@ -326,15 +326,15 @@ Proof.
     destruct Hbinit as (b&Hbsome).
 
     (* we can't use is_installed_read_lookup since we need to change the already_installed set in the big_sepM *)
-    iDestruct (big_sepM.big_sepM_lookup_acc_impl _ (λ a _,
+    iDestruct (big_sepM_lookup_acc_impl _ _ Hbsome with "Hdata") as "[Hdata Hdataclose]".
+    iDestruct ("Hdataclose" $! (λ a _,
         is_dblock_with_txns σs.(log_state.d) σs.(log_state.txns)
         being_installed_start_txn_id (being_installed_start_txn_id + length subtxns)
         (list_to_set (take
             (S (int.nat i)) (* the only change here is incrementing this *)
             ((λ u : update.t,
             int.Z u.(update.addr)) <$>
-            upds))) a) _ _ _ Hbsome with "Hdata") as "Hdata".
-    iDestruct ("Hdata" with "[]") as "(Hdata_acc&Hdata)".
+            upds))) a)%I with "[]") as "Hdataclose".
     {
       (* show that new big_sepM condition holds for addresses not touched by the update *)
       iModIntro.
@@ -362,7 +362,7 @@ Proof.
         contradiction.
     }
 
-    iDestruct "Hdata_acc" as (b_disk txn_id') "(%Hb_disk&Haddr_i_mapsto&%Haddr_LogSz_bound)".
+    iDestruct "Hdata" as (b_disk txn_id') "(%Hb_disk&Haddr_i_mapsto&%Haddr_LogSz_bound)".
     iExists _.
     rewrite -Hupd.
     iFrame "Haddr_i_mapsto".
@@ -373,7 +373,7 @@ Proof.
       Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hdurable
       HownBeingInstalledStartTxn_walinv HownBeingInstalledEndTxn_walinv
       Halready_installed
-      HP Hdata Haddr_i_mapsto]") as "_".
+      HP Hdataclose Haddr_i_mapsto]") as "_".
     {
       iIntros "!>".
       iExists _.
@@ -384,7 +384,7 @@ Proof.
       iFrameNamed.
       iExists _, _.
       iFrame (Hinstalled_bounds) "∗ Hbeing_installed_txns".
-      iSpecialize ("Hdata" with "[Haddr_i_mapsto]").
+      iSpecialize ("Hdataclose" with "[Haddr_i_mapsto]").
       {
         (* show that the new big_sepM condition holds for address touched by the update *)
         iExists _, (being_installed_start_txn_id + length subtxns)%nat.

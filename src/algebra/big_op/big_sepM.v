@@ -228,36 +228,7 @@ Section map.
     iFrame.
   Qed.
 
-  Lemma big_sepM_lookup_acc_impl Φ Ψ m k x :
-    m !! k = Some x →
-    ([∗ map] k' ↦ x' ∈ m, Φ k' x') -∗
-    □ (∀ k' x', ⌜m !! k' = Some x'⌝ -∗ ⌜k' ≠ k⌝ -∗ Φ k' x' -∗ Ψ k' x') -∗
-    Φ k x ∗ (Ψ k x -∗ ([∗ map] k' ↦ x' ∈ m, Ψ k' x')).
-  Proof using BiAffine0.
-    iIntros (Hk) "Hm #Hmono".
-    iDestruct (big_sepM_delete _ _ _ _ Hk with "Hm") as "(HΦk&Hm)".
-    iDestruct (big_sepM_impl Φ Ψ with "Hm") as "Hm".
-    iSpecialize ("Hm" with "[Hmono]").
-    {
-      iModIntro.
-      iIntros (k' x' Hk').
-      apply lookup_delete_Some in Hk'.
-      iApply "Hmono"; intuition.
-    }
-    iFrame.
-    iIntros "HΨk".
-    iDestruct (big_sepM_insert with "[Hm HΨk]") as "Hm".
-    2: {
-      iFrame.
-      iFrame.
-    }
-    {
-      apply lookup_delete_None.
-      eauto.
-    }
-    rewrite insert_delete insert_id //.
-  Qed.
-
+  (* TODO: upstream to Iris *)
   Lemma big_sepM_filter Φ (R: K * A → Prop) {Hdec: ∀ k, Decision (R k)} m :
     ([∗ map] k ↦ x ∈ filter R m, Φ k x) ⊣⊢
     ([∗ map] k ↦ x ∈ m, if decide (R (k, x)) then Φ k x else emp).
@@ -280,18 +251,6 @@ Section map.
     iIntros (?) "HP H". iApply (big_sepM_mono_with_inv' with "[HP H]"); eauto.
     iFrame.
   Qed.
-
-  Lemma big_sepM_mono_with_pers (P: PROP) `{!BiAffine PROP} `{Persistent PROP P} Φ Ψ m :
-    (∀ k x, m !! k = Some x → P -∗ Φ k x -∗ Ψ k x) →
-    P -∗ ([∗ map] k ↦ x ∈ m, Φ k x) -∗ [∗ map] k ↦ x ∈ m, Ψ k x.
-  Proof using BiAffine0.
-    iIntros (Himpl) "#HP H". iDestruct (big_sepM_mono_with_inv with "HP H") as "(_&$)"; eauto.
-    iIntros (???) "(#HP&Φ)". iFrame "HP". by iApply Himpl.
-  Qed.
-
-  Lemma big_sepM_insert_delete Φ m i x :
-    ([∗ map] k↦y ∈ <[i:=x]> m, Φ k y) ⊣⊢ Φ i x ∗ [∗ map] k↦y ∈ delete i m, Φ k y.
-  Proof. rewrite -insert_delete big_sepM_insert ?lookup_delete //. Qed.
 
   Lemma big_sepM_mono_wand `{!BiAffine PROP} Φ Ψ m (I : PROP) :
     □ ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
@@ -338,6 +297,7 @@ Section map.
   Qed.
 
   (** * IntoPure/FromPure instances for big_sepM *)
+  (* TODO: upstream *)
   Global Instance big_sepM_IntoPure
            (Φ: K → A → PROP) (P: K → A → Prop)
            {ΦP: ∀ k v, IntoPure (Φ k v) (P k v)}
@@ -735,7 +695,7 @@ Section map2.
       eauto.
   Qed.
 
-  Lemma big_sepM_sepM2 Φ (m1 : gmap K A)
+  Lemma big_sepM_sepM2_exists Φ (m1 : gmap K A)
       (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
     ( [∗ map] k↦y1 ∈ m1, ∃ y2, Φ k y1 y2 ) -∗
     ∃ m2, ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ).
@@ -760,32 +720,8 @@ Section map2.
     [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 ∗ Ψ k y2.
   Proof using BiAffine0.
     iIntros (Hdom) "[Hm1 Hm2]".
-    iInduction m1 as [|i x m] "IH" using map_ind forall (m2 Hdom).
-    - rewrite dom_empty_L in Hdom. symmetry in Hdom. apply dom_empty_inv_L in Hdom.
-      subst. iApply big_sepM2_empty. done.
-    - destruct (m2 !! i) eqn:He.
-      2: {
-        apply (not_elem_of_dom (D:=gset K)) in He.
-        rewrite -Hdom in He.
-        exfalso. apply He.
-        apply elem_of_dom. rewrite lookup_insert. eauto.
-      }
-      iDestruct (big_sepM_insert with "Hm1") as "[Hi1 Hm1]"; eauto.
-      replace (m2) with (<[i:=b]> (delete i m2)).
-      2: {
-        rewrite insert_delete. rewrite insert_id; eauto.
-      }
-      iDestruct (big_sepM_insert with "Hm2") as "[Hi2 Hm2]"; eauto.
-      { rewrite lookup_delete; eauto. }
-      iApply big_sepM2_insert; eauto.
-      { rewrite lookup_delete; eauto. }
-      iFrame.
-      iSpecialize ("IH" $! (delete i m2) _ with "Hm1 Hm2"). iApply "IH".
-  Unshelve.
-    rewrite dom_delete_L -Hdom dom_insert_L.
-    assert (i ∉ dom (gset K) m).
-    { apply not_elem_of_dom. eauto. }
-    set_solver.
+    iApply big_sepM_sepM2; last by iFrame.
+    intros k. rewrite -!elem_of_dom Hdom. auto.
   Qed.
 
   Lemma big_sepM_sepM2_merge_ex (Φ : K -> A -> B -> PROP) (m1 : gmap K A) (m2 : gmap K B) :

@@ -73,29 +73,6 @@ Section list2.
   Context {A B : Type}.
   Implicit Types Φ Ψ : nat → A → B → PROP.
 
-  Lemma big_sepL_merge_big_sepL2_aux (P: nat → A → PROP) (Q: nat → B → PROP) (l1: list A) (l2: list B) off:
-    length l1 = length l2 →
-    ([∗ list] k↦y1 ∈ l1, P (k + off) y1) -∗
-    ([∗ list] k↦y2 ∈ l2, Q (k + off) y2) -∗
-    ([∗ list] k↦y1;y2 ∈ l1;l2, P (k + off) y1 ∗ Q (k + off) y2).
-  Proof.
-    revert l2 off. induction l1; intros [|] off => /= Hlen; try congruence; eauto.
-    iIntros "(HP&Hl1) (HQ&Hl2)".
-    iFrame. setoid_rewrite <-Nat.add_succ_r.
-    iApply (IHl1 with "[$] [$]"); eauto.
-  Qed.
-
-  (** XXX: shocked that this is not upstream? see Iris MR 620. *)
-  Lemma big_sepL_merge_big_sepL2 (P: nat → A → PROP) (Q: nat → B → PROP) (l1: list A) (l2: list B):
-    length l1 = length l2 →
-    ([∗ list] k↦y1 ∈ l1, P k y1) -∗
-    ([∗ list] k↦y2 ∈ l2, Q k y2) -∗
-    ([∗ list] k↦y1;y2 ∈ l1;l2, P k y1 ∗ Q k y2).
-  Proof.
-    intros. specialize (big_sepL_merge_big_sepL2_aux P Q l1 l2 O).
-    setoid_rewrite Nat.add_0_r; eauto.
-  Qed.
-
   Lemma big_sepL2_elim_big_sepL_aux `{!BiAffine PROP} {C} (P: nat → C → PROP) Φ (l1: list A) (l2: list B) (l: list C) n:
     length l = length l1 →
     □ (∀ k x y z, ⌜ l1 !! k = Some x ⌝ -∗
@@ -163,29 +140,6 @@ Section list2.
         iDestruct "HΦ" as (y) "[%Heq HΦ]".
         inversion Heq; subst; iFrame.
         iApply ("IH" with "Hl").
-  Qed.
-
-  (* TODO: upstream this; see Iris MR 620 *)
-  Lemma big_sepL2_snoc Φ x1 x2 l1 l2 :
-    ([∗ list] k↦y1;y2 ∈ (l1 ++ [x1]);(l2 ++ [x2]), Φ k y1 y2) ⊣⊢
-    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ∗ Φ (length l1) x1 x2.
-  Proof.
-    revert Φ l2.
-    induction l1 => Φ l2 //=.
-    - destruct l2 => //=.
-      * rewrite left_id right_id //=.
-      * iSplit.
-        ** iIntros "(_&Hfalse)".
-           iExFalso. iDestruct (big_sepL2_length with "Hfalse") as %Hlen.
-           rewrite app_length /= in Hlen. lia.
-        ** iIntros "([]&?)".
-    - destruct l2 => //=.
-      * iSplit.
-        ** iIntros "(_&Hfalse)".
-           iExFalso. iDestruct (big_sepL2_length with "Hfalse") as %Hlen.
-           rewrite app_length /= in Hlen. lia.
-        ** iIntros "([]&?)".
-      * rewrite -assoc. f_equiv. eapply (IHl1 (λ k y1 y2, Φ (S k) y1 y2)).
   Qed.
 
   Lemma big_sepL2_to_sepL_1 Φ l1 l2 :

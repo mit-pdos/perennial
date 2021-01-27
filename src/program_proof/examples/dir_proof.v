@@ -856,7 +856,7 @@ Section goose.
       rewrite big_sepL2_sep; iFrame.
       iAssert ([∗ list] k↦v ∈ inode_refs, emp)%I as "Hinode_refs".
       { iApply big_sepL_emp. done. }
-      iDestruct (big_sepL_merge_big_sepL2 with "Hinode_refs HPinodes") as "Hmerge"; eauto.
+      iDestruct (big_sepL_sepL2_2 with "Hinode_refs HPinodes") as "Hmerge"; eauto.
       iApply (big_sepL2_mono with "Hmerge").
       iIntros (?????) "[_ H]". iFrame.
     }
