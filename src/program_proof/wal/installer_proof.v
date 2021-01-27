@@ -326,7 +326,7 @@ Proof.
     destruct Hbinit as (b&Hbsome).
 
     (* we can't use is_installed_read_lookup since we need to change the already_installed set in the big_sepM *)
-    iDestruct (big_sepM_lookup_acc_impl _ (λ a _,
+    iDestruct (big_sepM.big_sepM_lookup_acc_impl _ (λ a _,
         is_dblock_with_txns σs.(log_state.d) σs.(log_state.txns)
         being_installed_start_txn_id (being_installed_start_txn_id + length subtxns)
         (list_to_set (take
