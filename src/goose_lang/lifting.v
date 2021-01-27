@@ -356,6 +356,7 @@ Proof.
   inversion H; subst; clear H.
   - apply Hdenote in H0; auto.
   - eauto.
+  - eauto.
 Qed.
 
 Theorem atomically_is_val Σ (tr: transition Σ val) σ σ' κ e' efs :
