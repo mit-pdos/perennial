@@ -228,7 +228,7 @@ Section map.
     iFrame.
   Qed.
 
-  (* TODO: upstream to Iris *)
+  (* TODO: upstream to Iris; see Iris MR 627 *)
   Lemma big_sepM_filter Φ (R: K * A → Prop) {Hdec: ∀ k, Decision (R k)} m :
     ([∗ map] k ↦ x ∈ filter R m, Φ k x) ⊣⊢
     ([∗ map] k ↦ x ∈ m, if decide (R (k, x)) then Φ k x else emp).
@@ -297,7 +297,7 @@ Section map.
   Qed.
 
   (** * IntoPure/FromPure instances for big_sepM *)
-  (* TODO: upstream *)
+  (* TODO: upstream; see Iris MR 626 *)
   Global Instance big_sepM_IntoPure
            (Φ: K → A → PROP) (P: K → A → Prop)
            {ΦP: ∀ k v, IntoPure (Φ k v) (P k v)}
@@ -314,46 +314,23 @@ Section map.
       rewrite -> map_Forall_insert by auto.
       auto.
   Qed.
-
-  Lemma big_sepM_from_Forall
-        (Φ: K → A → PROP) (P: K → A → Prop)
-        (m: gmap K A) :
-    (∀ k v, P k v → ⊢ Φ k v) →
-    map_Forall P m →
-    ⊢ [∗ map] k↦x ∈ m, Φ k x.
-  Proof using BiAffine0.
-    intros HfromP.
-    induction m using map_ind; simpl; intros.
-    - iApply big_sepM_empty; auto.
+  Global Instance from_pure_big_sepM
+         a (Φ : K → A → PROP) (φ : K → A → Prop) (m: gmap K A) :
+    (∀ k v, FromPure a (Φ k v) (φ k v)) →
+    TCOr (TCEq a true) (BiAffine PROP) →
+    FromPure a ([∗ map] k↦x ∈ m, Φ k x) (map_Forall φ m).
+  Proof.
+    rewrite /FromPure=>HΦ Haffine. induction m using map_ind; simpl; intros.
+    - rewrite bi.pure_True; last apply map_Forall_empty.
+      rewrite big_sepM_empty.
+      destruct a; simpl.
+      + apply bi.affinely_elim_emp.
+      + destruct Haffine as [Hne%TCEq_eq|?]; first done.
+        rewrite bi.True_emp. done.
     - rewrite -> big_sepM_insert by auto.
-      rewrite -> map_Forall_insert in H1 by auto.
-      intuition.
-      iSplitL.
-      + iApply HfromP; auto.
-      + auto.
-  Qed.
-
-  Global Instance big_sepM_FromPure_affine
-            (Φ: K → A → PROP) (P: K → A → Prop)
-            {ΦP: ∀ k v, FromPure true (Φ k v) (P k v)}
-            (m: gmap K A) :
-    FromPure true ([∗ map] k↦x ∈ m, Φ k x) (map_Forall P m).
-  Proof using BiAffine0.
-    hnf; simpl.
-    iIntros "%".
-    iApply big_sepM_from_Forall; eauto.
-  Qed.
-
-  Global Instance big_sepM_FromPure
-            `{BiAffine PROP}
-            (Φ: K → A → PROP) (P: K → A → Prop)
-            {ΦP: ∀ k v, FromPure false (Φ k v) (P k v)}
-            (m: gmap K A) :
-    FromPure false ([∗ map] k↦x ∈ m, Φ k x) (map_Forall P m).
-  Proof using BiAffine0.
-    hnf; simpl.
-    iIntros "%".
-    iApply big_sepM_from_Forall; eauto.
+      rewrite -> map_Forall_insert by auto.
+      rewrite bi.pure_and bi.affinely_if_and bi.persistent_and_sep_1 IHm.
+      apply bi.sep_mono_l. apply HΦ.
   Qed.
 
   Lemma big_sepM_lookup_holds
