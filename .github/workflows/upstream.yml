@@ -2,8 +2,8 @@ name: CI (updated dependencies)
 
 on:
   schedule:
-    # Wednesday 8am UTC (3am EST)
-    - cron: '0 8 * * WED'
+    # every day 8am UTC (3am EST)
+    - cron: "0 8 * * *"
   workflow_dispatch:
 
 jobs:
@@ -13,39 +13,39 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
-        fetch-depth: 0
-    - name: "Update dependencies"
-      run: |
-        git submodule update --remote
-        cd external/iris
-        git remote add upstream https://gitlab.mpi-sws.org/iris/iris.git
-        git fetch upstream
-        git config user.name "GitHub Action"
-        git config user.email "github-action@users.noreply.github.com"
-        git merge upstream/master -m "test merge"
-    - uses: coq-community/docker-coq-action@v1
-      with:
-        coq_version: dev
-        ocaml_version: '4.11-flambda'
-        install: |
-          startGroup Install dependencies
-            sudo apt-get update
-            sudo apt-get install -y python3 python3-pip sqlite3
-            pip3 install -r etc/requirements.txt
-          endGroup
-        before_script: |
-          sudo chown -R coq:coq . # workaround a permission issue
-        script: |
-          startGroup Build
-            make -j2 -k ci
-          endGroup
-        uninstall: |
-          make clean
-    - name: Revert permissions
-      # to avoid a warning at cleanup time
-      if: ${{ always() }}
-      run: sudo chown -R 1001:116 .
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+      - name: "Update dependencies"
+        run: |
+          git submodule update --remote
+          cd external/iris
+          git remote add upstream https://gitlab.mpi-sws.org/iris/iris.git
+          git fetch upstream
+          git config user.name "GitHub Action"
+          git config user.email "github-action@users.noreply.github.com"
+          git merge upstream/master -m "test merge"
+      - uses: coq-community/docker-coq-action@v1
+        with:
+          coq_version: dev
+          ocaml_version: "4.11-flambda"
+          install: |
+            startGroup Install dependencies
+              sudo apt-get update
+              sudo apt-get install -y python3 python3-pip sqlite3
+              pip3 install -r etc/requirements.txt
+            endGroup
+          before_script: |
+            sudo chown -R coq:coq . # workaround a permission issue
+          script: |
+            startGroup Build
+              make -j2 -k ci
+            endGroup
+          uninstall: |
+            make clean
+      - name: Revert permissions
+        # to avoid a warning at cleanup time
+        if: ${{ always() }}
+        run: sudo chown -R 1001:116 .
