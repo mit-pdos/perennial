@@ -783,7 +783,7 @@ Proof using txnG0 Σ.
       iDestruct (big_sepML_lookup_l_acc with "Hheapmatch") as (k v) "(% & Hlv & _)"; eauto.
       iDestruct "Hlv" as "[Hlv _]".
       iDestruct "Hlv" as (blockK v0) "(<- & _ & _ & _)".
-      eapply map_filter_lookup_Some_12 in H as H'.
+      eapply map_filter_lookup_Some_1_2 in H as H'.
       eauto.
     }
     iAssert (⌜∀ (blkno : u64),
@@ -862,13 +862,13 @@ Proof using txnG0 Σ.
       { eauto. }
 
       iDestruct "H" as (blockK meta) "(% & % & % & Hinblock)".
-      eapply map_filter_lookup_Some_12 in Hoffmap as Hbufamap_in.
+      eapply map_filter_lookup_Some_1_2 in Hoffmap as Hbufamap_in.
       eapply elem_of_dom in Hbufamap_in. destruct Hbufamap_in as [offmap' Hbufamap_in].
       iExists (((λ b, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> offmap') ∪ offmap).
       iSplit.
       { iPureIntro. eapply map_filter_lookup_Some_2.
         2: { simpl. eapply elem_of_dom. eauto. }
-        eapply map_filter_lookup_Some_11 in Hoffmap.
+        eapply map_filter_lookup_Some_1_1 in Hoffmap.
         eapply gmap_addr_by_block_union_lookup; eauto.
         rewrite gmap_addr_by_block_fmap lookup_fmap Hbufamap_in //.
       }
@@ -876,7 +876,7 @@ Proof using txnG0 Σ.
 
       assert (dom (gset _) offmap' ⊆ dom (gset _) offmap).
       {
-        eapply map_filter_lookup_Some_11 in Hoffmap.
+        eapply map_filter_lookup_Some_1_1 in Hoffmap.
         eapply elem_of_subseteq; intros off Hoff'.
         eapply elem_of_dom in Hoff'. destruct Hoff' as [x Hoff'].
         replace (offmap' !! off) with (bufamap !! ((lv.1).(update.addr), off)) in Hoff'.

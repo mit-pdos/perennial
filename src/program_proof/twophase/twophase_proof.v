@@ -115,9 +115,9 @@ Proof.
   intros k.
   destruct (filter P m !! k) eqn:Hfilter_acc.
   2: reflexivity.
-  pose proof (map_filter_lookup_Some_11 _ _ _ _ Hfilter_acc) as Hacc.
+  pose proof (map_filter_lookup_Some_1_1 _ _ _ _ Hfilter_acc) as Hacc.
   apply HP in Hacc.
-  apply map_filter_lookup_Some_12 in Hfilter_acc.
+  apply map_filter_lookup_Some_1_2 in Hfilter_acc.
   contradiction.
 Qed.
 
