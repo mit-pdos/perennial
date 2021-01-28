@@ -8,8 +8,8 @@ on:
       - master
   pull_request:
   schedule:
-    # weekly 8am UTC (3am EST)
-    - cron: "0 8 * * *"
+    # every day at 9am UTC (4am EST)
+    - cron: "0 9 * * *"
   workflow_dispatch:
 
 jobs:

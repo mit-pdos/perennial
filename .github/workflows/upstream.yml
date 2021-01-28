@@ -2,7 +2,7 @@ name: CI (updated dependencies)
 
 on:
   schedule:
-    # every day 8am UTC (3am EST)
+    # every day at 8am UTC (3am EST)
     - cron: "0 8 * * *"
   workflow_dispatch:
 
