@@ -58,14 +58,14 @@ Proof.
   iFrame. done.
 Qed.
 
-Definition own_short_incr_clerk (ck isrv:loc) (cid seq:u64) (args:RPCValC) : iProp Σ :=
+Definition own_short_incr_clerk (ck isrv:loc) (cid seq:u64) : iProp Σ :=
   "cid" ∷ ck ↦[ShortTermIncrClerk.S :: "cid"] #cid ∗
   "seq" ∷ ck ↦[ShortTermIncrClerk.S :: "seq"] #seq ∗
   "incrserver" ∷ ck ↦[ShortTermIncrClerk.S :: "incrserver"] #isrv ∗
 
-  "req" ∷ ((ck ↦[ShortTermIncrClerk.S :: "req"] (#cid,
-                                              (#(word.sub seq 1:u64),
-                                              (#args.1, (#args.2.1, #()), #()))))) ∗
+  "req" ∷ (∃ (c s1 a1 a2:u64), ((ck ↦[ShortTermIncrClerk.S :: "req"] (#c,
+                                              (#s1,
+                                              (#a1, (#a2, #()), #())))))) ∗
   "%Hlseq_ineq" ∷ ⌜(int.nat seq > 0)%Z⌝
 .
 
@@ -318,9 +318,9 @@ Proof.
   iPureIntro; lia.
 Qed.
 
-Lemma wp_PrepareRequest (ck isrv:loc) (args args_dummy:RPCValC) cid seq:
+Lemma wp_PrepareRequest (ck isrv:loc) (args:RPCValC) cid seq:
 {{{
-     own_short_incr_clerk ck isrv cid seq args_dummy
+     own_short_incr_clerk ck isrv cid seq
 }}}
   ShortTermIncrClerk__PrepareRequest #ck (into_val.to_val args)
 {{{
@@ -333,6 +333,7 @@ Proof.
   wp_lam.
   wp_pures.
   iNamed "Hpre".
+  iNamed "req".
   wp_loadField.
   wp_apply (overflow_guard_incr_spec).
   iIntros (Hoverflow).
@@ -340,7 +341,11 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_apply (wp_storeField with "req").
-  { admit. } (* TODO: Typecheck *)
+  { (* Typecheck *)
+    Transparent struct.t.
+    eauto.
+    Opaque struct.t.
+  }
   iIntros "req".
   wp_pures.
   wp_loadField.
@@ -358,16 +363,16 @@ Variable γ:incrservice_names.
 Record ProxyServerC :=
   {
   kvsM:gmap u64 u64 ;
-  lastCID:u64
+  lastCID:u64 ;
+  incrserver:loc (* This would normally be "IP address" or some such *)
   }.
 
 Implicit Types server : ProxyServerC.
 
 Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
-  ∃ (incrserver:loc),
-  "Hincrserver" ∷ srv ↦[IncrProxyServer.S :: "incrserver"] #incrserver ∗
+  "Hincrserver" ∷ srv ↦[IncrProxyServer.S :: "incrserver"] #server.(incrserver) ∗
   "HlastCID" ∷ srv ↦[IncrProxyServer.S :: "lastCID"] #(server.(lastCID)) ∗
-  "#His_incrserver" ∷ is_incrserver γback incrserver
+  "#His_incrserver" ∷ is_incrserver γback server.(incrserver)
 .
 
 (* Either the proxy server has the mapsto fact for the backend, or, if it
@@ -377,26 +382,40 @@ Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
 Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=
   "Hctx" ∷ map_ctx γ.(incr_mapGN) 1 server.(kvsM) ∗
   "Hback" ∷ ([∗ map] k ↦ v ∈ server.(kvsM), (k [[γback.(incr_mapGN)]]↦ v ∨ k [[γ.(incr_mapGN)]]↦{1/2} v)) ∗
-  "HownCIDs" ∷ ([∗ set] cid ∈ (fin_to_set u64), RPCClient_own γ.(incr_rpcGN) cid 0 ∨ ⌜int.Z cid < int.Z server.(lastCID)⌝%Z) ∗
+  "HownCIDs" ∷ ([∗ set] cid ∈ (fin_to_set u64), RPCClient_own γback.(incr_rpcGN) cid 0 ∨ ⌜int.Z cid < int.Z server.(lastCID)⌝%Z) ∗
   "Hfown_lastCID" ∷ (∃ data, "lastCID" f↦ data ∗ ⌜has_encoding data [EncUInt64 server.(lastCID)]⌝)
 .
 
 (* TODO: make this a wpc, since it owns ghost state *)
-Lemma wp_MakeFreshIncrClerk (isrv:loc) server :
+Lemma wpc_MakeFreshIncrClerk (isrv:loc) server :
   {{{
       ProxyIncrServer_core_own_vol isrv server ∗
       ProxyIncrServer_core_own_ghost server
   }}}
-    IncrProxyServer__MakeFreshIncrClerk #isrv
+    IncrProxyServer__MakeFreshIncrClerk #isrv @ 37 ; ⊤
   {{{
-      cid args seq (ck:loc), RET #ck; own_short_incr_clerk ck isrv cid seq args ∗
-      RPCClient_own γback.(incr_rpcGN) cid seq
+      cid seq (ck:loc), RET #ck; own_short_incr_clerk ck server.(incrserver) cid seq ∗
+      RPCClient_own γback.(incr_rpcGN) cid seq ∗
+      ProxyIncrServer_core_own_vol isrv server ∗
+      ProxyIncrServer_core_own_ghost server
+  }}}
+  {{{
+      ProxyIncrServer_core_own_ghost server
   }}}.
 Proof.
-  iIntros (Φ) "[Hvol Hghost] HΦ".
+  iIntros (Φ Φc) "[Hvol Hghost] HΦ".
   iNamed "Hvol".
   iNamed "Hghost".
-  wp_lam.
+  iCache with "HΦ Hctx Hback Hfown_lastCID HownCIDs".
+  { iDestruct "HΦ" as "[HΦc _]".
+    iModIntro.
+    iApply "HΦc".
+    by iFrame.
+  }
+
+  (*
+  wpc_call.
+
   wp_loadField.
   wp_pures.
   wp_loadField.
@@ -417,8 +436,7 @@ Proof.
   iIntros (content data) "(%Hencoding & %Hlength & Hcontent_slice)". simpl.
 
   wp_bind (Write _ _).
-  Check wpc_wp.
-  iApply (wpc_wp _ _ _ _ _ True).
+  iApply (wpc_wp _ 1 _ _ _ True).
   iApply (wpc_Write with "[$Hfown_lastCID $Hcontent_slice]").
   iSplit.
   { iModIntro. iIntros. done. }
@@ -426,8 +444,36 @@ Proof.
   iIntros "Hfown_lastCID".
 
   wp_pures.
-  wp_loadField.
+  wp_apply (wp_allocStruct).
+  { by apply zero_val_ty'. }
+  iIntros (l) "Hl".
   wp_pures.
+
+  iDestruct (struct_fields_split with "Hl") as "Hl".
+  iNamed "Hl". simpl.
+  wp_storeField.
+  wp_storeField.
+  wp_loadField.
+  iApply wp_fupd.
+  wp_storeField.
+
+  (* Get RPCClient_own *)
+  iDestruct (big_sepS_elem_of_acc _ _ (server.(lastCID)) with "HownCIDs") as "[HownCID HownCIDs_rest]".
+  { apply elem_of_fin_to_set. }
+  iDestruct "HownCID" as "[HownCID|%Hbad]"; last by lia.
+  iMod (fmcounter_map_update (int.nat 1) with "HownCID") as "[HownCID _]".
+  { word. }
+
+  iApply "HΦ".
+  iFrame.
+  Transparent struct.t.
+  simpl.
+  Opaque struct.t.
+
+  iModIntro. iSplitR ""; last done.
+  iExists _, _, _, _; iFrame.
+Qed.
+  *)
 Admitted.
 
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
@@ -535,11 +581,22 @@ Proof.
     }
     wpc_pures.
 
-    wpc_bind (App _ #_)%E. wpc_frame.
-    wp_apply (wp_MakeFreshIncrClerk).
-    iIntros (cid args_dummy seq_init ck_ptr) "[Hownclerk Hrpcclient_own]".
-    iNamed 1.
+    wpc_apply (wpc_MakeFreshIncrClerk with "[Hvol Hghost]").
+    { iFrame. }
+    iSplit.
+    { iDestruct "Hpost" as "[HΦc _]". iModIntro. iIntros.
+      iApply "HΦc". iFrame.
+      iLeft. by iFrame.
+    }
+
+    iNext. iIntros (cid seq_init ck_ptr) "(Hownclerk & Hrpcclient_own & Hvol & Hghost)".
     iNamed "Hownclerk". (* Need to know that seq_init > 0 from here *)
+
+    iCache with "Hfown_oldv Hmapsto Hghost Hpost".
+    { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iLeft.
+      by iFrame.
+    }
 
     wpc_bind (store_ty _ _); wpc_frame.
     wp_store. iNamed 1.
@@ -631,7 +688,7 @@ Proof.
     (* End commit to backend cid and seq *)
 
     iIntros "[Hfown Hslice]".
-    iCache with "Hfown Hback Hctx Hpost Hreqtok Hmapsto Hrpcclient_own".
+    iCache with "Hfown HownCIDs Hfown_lastCID Hback Hctx Hpost Hreqtok Hmapsto Hrpcclient_own".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame.
       iRight. iFrame.
@@ -749,8 +806,8 @@ Proof.
                       )%I
               {| kvsM:= <[args.1:=(word.add old_v 1)]> server.(kvsM)|}
              ).
-      iSplitL "Hincrserver".
-      { iExists _. iFrame "Hincrserver #". }
+      iSplitL "Hincrserver HlastCID".
+      { iFrame "HlastCID Hincrserver #". }
       iSplitR "".
       {
         iModIntro. iSplit.
