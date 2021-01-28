@@ -784,12 +784,11 @@ Definition IncrProxyServer__MakeFreshIncrClerk: val :=
     let: "e" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "e" (struct.loadF IncrProxyServer.S "lastCID" "is");;
     grove_ffi.Write #(str"lastCID") (marshal.Enc__Finish "e");;
-    let: "ck" := struct.mk ShortTermIncrClerk.S [
-      "cid" ::= "cid";
-      "seq" ::= #1;
-      "incrserver" ::= struct.loadF IncrProxyServer.S "incrserver" "is"
-    ] in
-    "ck".
+    let: "ck_ptr" := struct.alloc ShortTermIncrClerk.S (zero_val (struct.t ShortTermIncrClerk.S)) in
+    struct.storeF ShortTermIncrClerk.S "cid" "ck_ptr" "cid";;
+    struct.storeF ShortTermIncrClerk.S "seq" "ck_ptr" #1;;
+    struct.storeF ShortTermIncrClerk.S "incrserver" "ck_ptr" (struct.loadF IncrProxyServer.S "incrserver" "is");;
+    "ck_ptr".
 
 Definition IncrProxyServer__proxy_increment_core: val :=
   rec: "IncrProxyServer__proxy_increment_core" "is" "seq" "args" :=
