@@ -2,7 +2,7 @@ From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map common_proof.
 Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 
@@ -51,7 +51,7 @@ Lemma RPCVals_merge vals a1 a2:
   vals ↦[RPCVals.S :: "U64_1"] #a1 -∗
   vals ↦[RPCVals.S :: "U64_2"] #a2 -∗
   vals ↦[struct.t RPCVals.S] (#a1, (#a2, #()))
-  .
+.
 Proof.
   iIntros.
   iApply struct_fields_split.
@@ -62,24 +62,30 @@ Definition own_short_incr_clerk (ck isrv:loc) (cid seq:u64) (args:RPCValC) : iPr
   "cid" ∷ ck ↦[ShortTermIncrClerk.S :: "cid"] #cid ∗
   "seq" ∷ ck ↦[ShortTermIncrClerk.S :: "seq"] #seq ∗
   "incrserver" ∷ ck ↦[ShortTermIncrClerk.S :: "incrserver"] #isrv ∗
-  "#req" ∷ (* ck ↦[ShortTermIncrClerk.S :: "req"] req_ptr ∗
-  "Hread_req" ∷ read_request req_ptr {| Req_CID:=cid; Req_Seq:=seq; Req_Args:=args|} ∗ *)
 
-
-  (readonly (ck ↦[ShortTermIncrClerk.S :: "req"] (#cid,
+  "req" ∷ ((ck ↦[ShortTermIncrClerk.S :: "req"] (#cid,
                                               (#(word.sub seq 1:u64),
-                                              (#args.1, (#args.2.1, #()), #())))))
+                                              (#args.1, (#args.2.1, #()), #()))))) ∗
+  "%Hlseq_ineq" ∷ ⌜(int.nat seq > 0)%Z⌝
 .
 
 Variable old_v:u64.
 Definition IncrPreCond : RPCValC → iProp Σ := (λ a, a.1 [[γback.(incr_mapGN)]]↦ old_v)%I.
 Definition IncrPostCond : RPCValC → u64 → iProp Σ := (λ a r, a.1 [[γback.(incr_mapGN)]]↦ (word.add old_v 1))%I.
 
+Definition own_unalloc_prepared_short_incr_clerk ck isrv (cid seq:u64) (args:RPCValC) : iProp Σ :=
+  "cid" ∷ ck ↦[ShortTermIncrClerk.S :: "cid"] #cid ∗
+  "seq" ∷ ck ↦[ShortTermIncrClerk.S :: "seq"] #seq ∗
+  "incrserver" ∷ ck ↦[ShortTermIncrClerk.S :: "incrserver"] #isrv ∗
+  "#req" ∷ (readonly (ck ↦[ShortTermIncrClerk.S :: "req"] (#cid,
+                                              (#(word.sub seq 1:u64),
+                                              (#args.1, (#args.2.1, #()), #()))))) ∗
+  "%Hlseq_ineq" ∷ ⌜(int.nat (word.sub seq 1) > 0)%Z⌝
+.
 
-Definition own_prepared_short_incr_clerk ck isrv cid seq args : iProp Σ :=
-  own_short_incr_clerk ck isrv cid seq args ∗
-  ⌜(int.nat (word.sub seq 1%nat) > 0)%Z⌝ ∗
-  ∃ γPost, is_RPCRequest γback.(incr_rpcGN) γPost IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
+Definition own_alloc_prepared_short_incr_clerk ck isrv (cid seq:u64) (args:RPCValC) : iProp Σ :=
+  "Hown" ∷ own_unalloc_prepared_short_incr_clerk ck isrv cid seq args ∗
+  "#HreqInv" ∷ ∃ γPost, is_RPCRequest γback.(incr_rpcGN) γPost IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
 .
 
 (* TODO: this should refer to a lemma in incr_proof.v *)
@@ -98,7 +104,7 @@ Admitted.
 Lemma wp_ShortTermIncrClerk__MakePreparedRequest ck isrv cid seq args :
 is_incrserver γback isrv -∗
 {{{
-     own_prepared_short_incr_clerk ck isrv cid seq args
+     own_alloc_prepared_short_incr_clerk ck isrv cid seq args
 }}}
     ShortTermIncrClerk__MakePreparedRequest #ck
 {{{
@@ -111,7 +117,9 @@ is_incrserver γback isrv -∗
 }}}
 .
 Proof using Type*.
-  iIntros "#Hs_inv" (Φ) "!# (Hown_ck & %Hseq_ineq & HreqInv) Hpost".
+  iIntros "#Hs_inv" (Φ) "!# Hown_ck Hpost".
+  iNamed "Hown_ck".
+  iNamed "Hown".
   wp_lam.
   wp_apply wp_ref_to; first eauto.
   iIntros (errb_ptr) "Herrb_ptr".
@@ -121,7 +129,6 @@ Proof using Type*.
   wp_pures.
   iNamed "HreqInv".
   iDestruct "HreqInv" as "#HreqInv".
-  iNamed "Hown_ck".
 
   iAssert (∃ (err:bool), errb_ptr ↦[boolT] #err)%I with "[Herrb_ptr]" as "Herrb_ptr".
   { iExists _. done. }
@@ -174,17 +181,38 @@ Proof using Type*.
     iFrame "HrpcPost".
 Qed.
 
+Lemma wp_EncodeShortTermIncrClerk ck cid seq args (isrv:loc) :
+{{{
+     own_unalloc_prepared_short_incr_clerk ck isrv cid seq args
+}}}
+  EncodeShortTermIncrClerk #ck
+{{{
+     content data, RET (slice_val content);
+     is_slice content byteT 1 data ∗
+     ⌜has_encoding_for_short_clerk data cid seq args⌝ ∗
+     ⌜(int.nat seq > 0)%Z⌝
+     (* TODO: could put the > 0 in the has_encoding_for_short_clerk predicate *)
+}}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+
+  wp_lam.
+  (* TODO: finish encoding proof *)
+Admitted.
+
 Lemma wp_DecodeShortTermIncrClerk cid seq args (isrv:loc) (content:Slice.t) data :
 {{{
      is_slice content byteT 1 data ∗
-     ⌜has_encoding_for_short_clerk data cid seq args⌝
+     ⌜has_encoding_for_short_clerk data cid seq args⌝ ∗
+     ⌜(int.nat (word.sub seq 1) > 0)%Z⌝
 }}}
   DecodeShortTermIncrClerk #isrv (slice_val content)
 {{{
-     (ck:loc), RET #ck; own_short_incr_clerk ck isrv cid seq args
+     (ck:loc), RET #ck; own_unalloc_prepared_short_incr_clerk ck isrv cid seq args
 }}}.
 Proof.
-  iIntros (Φ) "[Hslice %Henc] HΦ".
+  iIntros (Φ) "(Hslice & %Henc & %Hlseq_ineq) HΦ".
   Opaque struct.t. (* TODO: put this here to avoid unfolding the struct defns all the way *)
   Opaque struct.get.
   wp_lam.
@@ -286,8 +314,55 @@ Proof.
 
   iMod (readonly_alloc_1 with "req") as "req".
   iApply "HΦ".
-  by iFrame.
+  iFrame.
+  iPureIntro; lia.
 Qed.
+
+Lemma wp_MakeFreshIncrClerk (isrv:loc) :
+{{{
+     True
+}}}
+  IncrProxyServer__MakeFreshIncrClerk #isrv
+{{{
+     cid args seq (ck:loc), RET #ck; own_short_incr_clerk ck isrv cid seq args ∗
+     RPCClient_own γback.(incr_rpcGN) cid seq
+}}}.
+Admitted.
+
+Lemma wp_PrepareRequest (ck isrv:loc) (args args_dummy:RPCValC) cid seq:
+{{{
+     own_short_incr_clerk ck isrv cid seq args_dummy
+}}}
+  ShortTermIncrClerk__PrepareRequest #ck (into_val.to_val args)
+{{{
+     RET #();
+     own_unalloc_prepared_short_incr_clerk ck isrv cid (word.add seq 1) args
+}}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iApply wp_fupd.
+  wp_lam.
+  wp_pures.
+  iNamed "Hpre".
+  wp_loadField.
+  wp_apply (overflow_guard_incr_spec).
+  iIntros (Hoverflow).
+  wp_pures.
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_storeField with "req").
+  { admit. } (* TODO: Typecheck *)
+  iIntros "req".
+  wp_pures.
+  wp_loadField.
+  wp_storeField.
+  iMod (readonly_alloc_1 with "req") as "#req".
+  iApply "HΦ".
+  iFrame "#∗".
+  replace (Z.of_nat 1%nat) with (1)%Z by lia.
+  replace (word.sub (word.add seq 1%Z) 1%Z) with (seq); last by rewrite word.word_sub_add_l_same_r.
+  by iFrame "req".
+Admitted.
 
 Variable γ:incrservice_names.
 
@@ -319,7 +394,7 @@ Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
   ("Hfown_oldv" ∷ ∃ data cid seq γreq, ("procy_incr_request_" +:+ u64_to_string sseq) f↦ data ∗
    "Hmapsto" ∷ args.1 [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
    ⌜has_encoding_for_short_clerk data cid seq args⌝ ∗
-   ⌜(int.nat (word.sub seq 1%nat) > 0)%Z⌝ ∗
+   ⌜(int.nat (word.sub seq 1) > 0)%Z⌝ ∗
    RPCClient_own γback.(incr_rpcGN) cid seq ∗
    RPCRequest_token γreq ∗
    is_RPCRequest γback.(incr_rpcGN) γreq IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=(word.sub seq 1:u64); Req_Args:=args |}
@@ -327,6 +402,7 @@ Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
 .
 
 Lemma increment_proxy_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValC) :
+is_RPCServer γback.(incr_rpcGN) -∗
   {{{
        ProxyIncrCrashInvariant seq args ∗
        ProxyIncrServer_core_own_vol isrv server ∗
@@ -345,21 +421,22 @@ Lemma increment_proxy_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValC)
       )
   }}}
   {{{
-       ProxyIncrCrashInvariant seq args ∗
+       |={⊤}=> ProxyIncrCrashInvariant seq args ∗
        ProxyIncrServer_core_own_ghost server
+       (* Need this fupd because we need to use an invariant right after destructing into cases and right when trying to prove crash condition *)
   }}}.
 Proof.
   Opaque struct.t. (* TODO: put this here to avoid unfolding the struct defns all the way *)
   Opaque zero_val.
-  iIntros (Φ Φc) "[HincrCrashInv [Hvol Hghost]] Hpost".
+  iIntros "#Hrpcsrv".
+  iIntros (Φ Φc) "!# [HincrCrashInv [Hvol Hghost]] Hpost".
   wpc_call.
-  { iFrame. }
-  { iFrame. }
-  unfold ProxyIncrCrashInvariant.
+  { by iFrame. }
+  { by iFrame. }
   iCache with "HincrCrashInv Hghost Hpost".
   {
     iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc".
-    iFrame.
+    by iFrame.
   }
   wpc_pures.
 
@@ -385,7 +462,7 @@ Proof.
     iCache with "Hfown_oldv Hmapsto Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iLeft.
-      iFrame.
+      by iFrame.
     }
 
     wpc_apply (wpc_Read with "Hfown_oldv").
@@ -393,7 +470,7 @@ Proof.
     { (* Show that the crash obligation of the function we're calling implies our crash obligation *)
       iDestruct "Hpost" as "[Hpost _]".
       iModIntro. iIntros. iApply "Hpost".
-      iFrame. iLeft. iFrame.
+      iFrame. iLeft. by iFrame.
     }
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
@@ -414,14 +491,121 @@ Proof.
       iExFalso; iPureIntro.
       done.
     }
-
-    (* case that no durable short-term clerk was found *)
     wpc_pures.
+
+    wpc_bind (App _ #_)%E. wpc_frame.
+    wp_apply (wp_MakeFreshIncrClerk).
+    iIntros (cid args_dummy seq_init ck_ptr) "[Hownclerk Hrpcclient_own]".
+    iNamed 1.
+    iNamed "Hownclerk". (* Need to know that seq_init > 0 from here *)
+
+    wpc_bind (store_ty _ _); wpc_frame.
+    wp_store. iNamed 1.
+
+    wpc_pures.
+
+    wpc_bind (load_ty _ _); wpc_frame.
+    wp_load. iNamed 1.
+
+    wpc_bind (App _ #ck_ptr _)%E.
+    wpc_frame.
+    wp_apply (wp_PrepareRequest with "[cid seq incrserver req]").
+    {
+      iFrame. done.
+    }
+    iIntros "Hownclerk".
+    iNamed 1.
+
+    wpc_pures.
+
+    wpc_bind (load_ty _ _); wpc_frame.
+    wp_load. iNamed 1.
+
+    wpc_bind (EncodeShortTermIncrClerk _). wpc_frame.
+    wp_apply (wp_EncodeShortTermIncrClerk with "[$Hownclerk]").
+
+    iIntros (content2 data2) "(Hcontent2_slice & %Henc)".
+    iNamed 1.
+
+    destruct Henc as [Henc Hineq].
+
+    wpc_pures.
+    wpc_apply (wpc_Write with "[$Hfown_oldv $Hcontent2_slice]").
+    iSplit.
+    { (* Prove that crash obligation of Write implies our crash obligation. *)
+      iDestruct "Hpost" as "[HΦc _]".
+      iModIntro.
+      iIntros "[Hfown|Hfown]".
+      - (* Write failed *)
+        iApply "HΦc".
+        iFrame "Hghost".
+        iLeft. by iFrame.
+      - (* Write succeeded  *)
+        iApply "HΦc".
+        iNamed "Hghost".
+        iDestruct (map_valid with "Hctx Hmapsto") as %Hsome.
+        iDestruct (big_sepM_lookup_acc with "Hback") as "[[Hbackend_one|Hbad] Hback_rest]"; first done.
+        2: {
+          iDestruct (ptsto_valid_2 with "Hbad Hmapsto") as %Hbad.
+          contradiction.
+        }
+        iDestruct "Hmapsto" as "[Hmapsto Hmapsto2]".
+        iSpecialize ("Hback_rest" with "[Hmapsto2]").
+        { by iRight. }
+        iMod (make_request {|Req_Seq:= _; Req_CID:=_; Req_Args:= args |} IncrPreCond IncrPostCond with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
+        {
+          simpl.
+          admit. (* Just make it so short lived clerks are one-shot clerks *)
+        }
+        iDestruct "Hreq" as (γreq) "[#His_req Hreqtok]".
+
+        iFrame.
+        iRight.
+        iExists data2,_,(word.add seq_init 1),_.
+        simpl.
+        rewrite word.word_sub_add_l_same_r.
+        iFrame "#∗".
+        done.
+    }
+    iNext.
+
+    (* TODO: this is copy pasted from above; commit to backend cid and seq *)
+        iNamed "Hghost".
+        iDestruct (map_valid with "Hctx Hmapsto") as %Hsome.
+        iDestruct (big_sepM_lookup_acc with "Hback") as "[[Hbackend_one|Hbad] Hback_rest]"; first done.
+        2: {
+          iDestruct (ptsto_valid_2 with "Hbad Hmapsto") as %Hbad.
+          contradiction.
+        }
+        iDestruct "Hmapsto" as "[Hmapsto Hmapsto2]".
+        iDestruct ("Hback_rest" with "[Hmapsto2]") as "Hback".
+        { by iRight. }
+        iMod (make_request {|Req_Seq:= _; Req_CID:=_; Req_Args:= args |} IncrPreCond IncrPostCond with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
+        {
+          simpl.
+          admit. (* Just make it so short lived clerks are one-shot clerks *)
+        }
+        iDestruct "Hreq" as (γreq) "[#His_req Hreqtok]".
+    (* End commit to backend cid and seq *)
+
+    iIntros "[Hfown Hslice]".
+    iCache with "Hfown Hback Hctx Hpost Hreqtok Hmapsto Hrpcclient_own".
+    { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame.
+      iRight. iFrame.
+      iExists _,_,_,_; iFrame "#∗".
+      rewrite word.word_sub_add_l_same_r.
+      by iFrame "His_req".
+    }
+    wpc_pures.
+
+    (* Merge with other case of proof. *)
     admit.
+
   - iNamed "Hcase".
     iCache with "Hfown_oldv Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
-      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame.
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". by iFrame.
     }
 
     iNamed "Hfown_oldv".
@@ -441,7 +625,7 @@ Proof.
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iRight.
       by iExists _,_,_, _; iFrame "#∗".
     }
-    wpc_pures.
+   wpc_pures.
 
     wpc_bind (slice.len _)%E.
     wpc_frame.
@@ -481,8 +665,16 @@ Proof.
 
       wpc_bind (ShortTermIncrClerk__MakePreparedRequest #_)%E.
       wpc_frame.
-      wp_apply (wp_ShortTermIncrClerk__MakePreparedRequest with "His_incrserver [$Hown_ck Hisreq]").
-      { iSplitL; first done. by iExists _. }
+      wp_apply (wp_ShortTermIncrClerk__MakePreparedRequest with "His_incrserver [Hown_ck Hisreq]").
+      { unfold own_alloc_prepared_short_incr_clerk.
+        unfold own_unalloc_prepared_short_incr_clerk.
+        iNamed "Hown_ck".
+        iFrame "#∗".
+        iSplit.
+        { done.  }
+        { iExists _; iFrame "Hisreq". }
+      }
+
       iIntros (v) "HmakeReqPost".
       iNamed 1.
 

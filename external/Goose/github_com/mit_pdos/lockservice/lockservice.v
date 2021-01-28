@@ -711,7 +711,8 @@ Module IncrProxyServer.
   Definition S := struct.decl [
     "sv" :: struct.ptrT RPCServer.S;
     "incrserver" :: struct.ptrT IncrServer.S;
-    "ick" :: struct.ptrT IncrClerk.S
+    "ick" :: struct.ptrT IncrClerk.S;
+    "lastCID" :: uint64T
   ].
 End IncrProxyServer.
 
@@ -775,11 +776,18 @@ Definition EncodeShortTermIncrClerk: val :=
     marshal.Enc__PutInt "e" (struct.get RPCVals.S "U64_2" (struct.get RPCRequest.S "Args" (struct.loadF ShortTermIncrClerk.S "req" "ck")));;
     marshal.Enc__Finish "e".
 
-Definition MakeFreshIncrClerk: val :=
-  rec: "MakeFreshIncrClerk" <> :=
-    let: "cid" := #0 in
+Definition IncrProxyServer__MakeFreshIncrClerk: val :=
+  rec: "IncrProxyServer__MakeFreshIncrClerk" "is" :=
+    let: "cid" := struct.loadF IncrProxyServer.S "lastCID" "is" in
+    overflow_guard_incr (struct.loadF IncrProxyServer.S "lastCID" "is");;
+    struct.storeF IncrProxyServer.S "lastCID" "is" (struct.loadF IncrProxyServer.S "lastCID" "is" + #1);;
+    let: "e" := marshal.NewEnc #8 in
+    marshal.Enc__PutInt "e" (struct.loadF IncrProxyServer.S "lastCID" "is");;
+    grove_ffi.Write #(str"lastCID") (marshal.Enc__Finish "e");;
     let: "ck" := struct.mk ShortTermIncrClerk.S [
-      "cid" ::= "cid"
+      "cid" ::= "cid";
+      "seq" ::= #1;
+      "incrserver" ::= struct.loadF IncrProxyServer.S "incrserver" "is"
     ] in
     "ck".
 
@@ -791,7 +799,7 @@ Definition IncrProxyServer__proxy_increment_core: val :=
     (if: slice.len "content" > #0
     then "ck" <-[refT (struct.t ShortTermIncrClerk.S)] DecodeShortTermIncrClerk (struct.loadF IncrProxyServer.S "incrserver" "is") "content"
     else
-      "ck" <-[refT (struct.t ShortTermIncrClerk.S)] MakeFreshIncrClerk #();;
+      "ck" <-[refT (struct.t ShortTermIncrClerk.S)] IncrProxyServer__MakeFreshIncrClerk "is";;
       ShortTermIncrClerk__PrepareRequest (![refT (struct.t ShortTermIncrClerk.S)] "ck") "args";;
       let: "content" := EncodeShortTermIncrClerk (![refT (struct.t ShortTermIncrClerk.S)] "ck") in
       grove_ffi.Write "filename" "content");;
