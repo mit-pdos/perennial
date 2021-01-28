@@ -318,17 +318,6 @@ Proof.
   iPureIntro; lia.
 Qed.
 
-Lemma wp_MakeFreshIncrClerk (isrv:loc) :
-{{{
-     True
-}}}
-  IncrProxyServer__MakeFreshIncrClerk #isrv
-{{{
-     cid args seq (ck:loc), RET #ck; own_short_incr_clerk ck isrv cid seq args ∗
-     RPCClient_own γback.(incr_rpcGN) cid seq
-}}}.
-Admitted.
-
 Lemma wp_PrepareRequest (ck isrv:loc) (args args_dummy:RPCValC) cid seq:
 {{{
      own_short_incr_clerk ck isrv cid seq args_dummy
@@ -368,7 +357,8 @@ Variable γ:incrservice_names.
 
 Record ProxyServerC :=
   {
-  kvsM:gmap u64 u64
+  kvsM:gmap u64 u64 ;
+  lastCID:u64
   }.
 
 Implicit Types server : ProxyServerC.
@@ -376,6 +366,7 @@ Implicit Types server : ProxyServerC.
 Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
   ∃ (incrserver:loc),
   "Hincrserver" ∷ srv ↦[IncrProxyServer.S :: "incrserver"] #incrserver ∗
+  "HlastCID" ∷ srv ↦[IncrProxyServer.S :: "lastCID"] #(server.(lastCID)) ∗
   "#His_incrserver" ∷ is_incrserver γback incrserver
 .
 
@@ -385,8 +376,59 @@ Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
  *)
 Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=
   "Hctx" ∷ map_ctx γ.(incr_mapGN) 1 server.(kvsM) ∗
-  "Hback" ∷ [∗ map] k ↦ v ∈ server.(kvsM), (k [[γback.(incr_mapGN)]]↦ v ∨ k [[γ.(incr_mapGN)]]↦{1/2} v)
+  "Hback" ∷ ([∗ map] k ↦ v ∈ server.(kvsM), (k [[γback.(incr_mapGN)]]↦ v ∨ k [[γ.(incr_mapGN)]]↦{1/2} v)) ∗
+  "HownCIDs" ∷ ([∗ set] cid ∈ (fin_to_set u64), RPCClient_own γ.(incr_rpcGN) cid 0 ∨ ⌜int.Z cid < int.Z server.(lastCID)⌝%Z) ∗
+  "Hfown_lastCID" ∷ (∃ data, "lastCID" f↦ data ∗ ⌜has_encoding data [EncUInt64 server.(lastCID)]⌝)
 .
+
+(* TODO: make this a wpc, since it owns ghost state *)
+Lemma wp_MakeFreshIncrClerk (isrv:loc) server :
+  {{{
+      ProxyIncrServer_core_own_vol isrv server ∗
+      ProxyIncrServer_core_own_ghost server
+  }}}
+    IncrProxyServer__MakeFreshIncrClerk #isrv
+  {{{
+      cid args seq (ck:loc), RET #ck; own_short_incr_clerk ck isrv cid seq args ∗
+      RPCClient_own γback.(incr_rpcGN) cid seq
+  }}}.
+Proof.
+  iIntros (Φ) "[Hvol Hghost] HΦ".
+  iNamed "Hvol".
+  iNamed "Hghost".
+  wp_lam.
+  wp_loadField.
+  wp_pures.
+  wp_loadField.
+  wp_apply (overflow_guard_incr_spec).
+  iIntros (HincrSafe).
+  wp_pures.
+  wp_loadField.
+  wp_storeField.
+  wp_apply (wp_new_enc).
+  iIntros (enc_v) "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc"); first done.
+  iIntros "Henc".
+  wp_pures.
+  iDestruct "Hfown_lastCID" as (old_data) "[Hfown_lastCID %Hold_encoding]".
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (content data) "(%Hencoding & %Hlength & Hcontent_slice)". simpl.
+
+  wp_bind (Write _ _).
+  Check wpc_wp.
+  iApply (wpc_wp _ _ _ _ _ True).
+  iApply (wpc_Write with "[$Hfown_lastCID $Hcontent_slice]").
+  iSplit.
+  { iModIntro. iIntros. done. }
+  iNext.
+  iIntros "Hfown_lastCID".
+
+  wp_pures.
+  wp_loadField.
+  wp_pures.
+Admitted.
 
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
