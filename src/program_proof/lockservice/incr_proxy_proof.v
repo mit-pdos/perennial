@@ -190,7 +190,7 @@ Lemma wp_EncodeShortTermIncrClerk ck cid seq args (isrv:loc) :
      content data, RET (slice_val content);
      is_slice content byteT 1 data ∗
      ⌜has_encoding_for_short_clerk data cid seq args⌝ ∗
-     ⌜(int.nat seq > 0)%Z⌝
+     ⌜(int.nat (word.sub seq 1) > 0)%Z⌝
      (* TODO: could put the > 0 in the has_encoding_for_short_clerk predicate *)
 }}}.
 Proof.
@@ -198,8 +198,37 @@ Proof.
   iNamed "Hpre".
 
   wp_lam.
-  (* TODO: finish encoding proof *)
-Admitted.
+
+  wp_apply (wp_new_enc).
+  iIntros (enc_v) "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc"); first done.
+  iIntros "Henc".
+
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc"); first done.
+  iIntros "Henc".
+
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc"); first done.
+  iIntros "Henc".
+
+  wp_pures.
+  wp_loadField.
+  wp_pures.
+  wp_apply (wp_Enc__PutInt with "Henc"); first done.
+  iIntros "Henc".
+
+  wp_pures.
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (content data) "(%Hencoding & %Hsize & Hslice)".
+  iApply "HΦ".
+  iFrame.
+  done.
+Qed.
 
 Lemma wp_DecodeShortTermIncrClerk cid seq args (isrv:loc) (content:Slice.t) data :
 {{{
@@ -356,7 +385,7 @@ Proof.
   replace (Z.of_nat 1%nat) with (1)%Z by lia.
   replace (word.sub (word.add seq 1%Z) 1%Z) with (seq); last by rewrite word.word_sub_add_l_same_r.
   by iFrame "req".
-Admitted.
+Qed.
 
 Variable γ:incrservice_names.
 
@@ -393,6 +422,7 @@ Lemma wpc_MakeFreshIncrClerk (isrv:loc) server :
       ProxyIncrServer_core_own_ghost server
   }}}
     IncrProxyServer__MakeFreshIncrClerk #isrv @ 37 ; ⊤
+    (* IncrProxyServer__proxy_increment_core #isrv @ 37 ; ⊤ *)
   {{{
       cid seq (ck:loc), RET #ck; own_short_incr_clerk ck server.(incrserver) cid seq ∗
       RPCClient_own γback.(incr_rpcGN) cid seq ∗
@@ -406,6 +436,9 @@ Proof.
   iIntros (Φ Φc) "[Hvol Hghost] HΦ".
   iNamed "Hvol".
   iNamed "Hghost".
+
+  (*
+  wpc_call.
   iCache with "HΦ Hctx Hback Hfown_lastCID HownCIDs".
   { iDestruct "HΦ" as "[HΦc _]".
     iModIntro.
@@ -413,7 +446,6 @@ Proof.
     by iFrame.
   }
 
-  (*
   wpc_call.
 
   wp_loadField.
@@ -623,10 +655,8 @@ Proof.
     wpc_bind (EncodeShortTermIncrClerk _). wpc_frame.
     wp_apply (wp_EncodeShortTermIncrClerk with "[$Hownclerk]").
 
-    iIntros (content2 data2) "(Hcontent2_slice & %Henc)".
+    iIntros (content2 data2) "(Hcontent2_slice & %Henc & %Hineq)".
     iNamed 1.
-
-    destruct Henc as [Henc Hineq].
 
     wpc_pures.
     wpc_apply (wpc_Write with "[$Hfown_oldv $Hcontent2_slice]").
@@ -839,9 +869,23 @@ Proof.
       iFrame.
     }
     {
-      (* TODO: Use has_encoding_length and is_slize_sz to get contradiction *)
       iExFalso.
-      admit.
+      iDestruct (is_slice_sz with "Hcontent_slice") as %Hbad.
+      apply bool_decide_eq_false in Hlen.
+      assert (int.Z content.(Slice.sz) = 0)%Z.
+      { apply Znot_lt_ge in Hlen.
+        replace (int.Z (U64 0)) with 0%Z in Hlen by word.
+        word.
+      }
+      assert (content.(Slice.sz) = 0)%Z by word.
+      rewrite H0 in Hbad.
+      replace (int.nat 0%Z) with (0) in Hbad by word.
+      apply length_zero_iff_nil in Hbad.
+      rewrite Hbad in Henc.
+      unfold has_encoding_for_short_clerk in Henc.
+      apply has_encoding_length in Henc.
+      simpl in Henc.
+      lia.
     }
 Admitted.
 
