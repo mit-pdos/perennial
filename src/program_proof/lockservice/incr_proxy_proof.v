@@ -406,6 +406,41 @@ Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=
   "Hfown_lastCID" ∷ (∃ data, "lastCID" f↦ data ∗ ⌜has_encoding data [EncUInt64 server.(lastCID)]⌝)
 .
 
+Tactic Notation "wpc_loadField" :=
+  lazymatch goal with
+  | |- envs_entails _ (wpc _ _ _ _ _ _) =>
+    wpc_bind (struct.loadF _ _ (Val _));
+    lazymatch goal with
+    | |- envs_entails ?env (wpc _ _ _
+                                (App (Val (struct.loadF ?d ?fname))
+                                     (Val (LitV (LitLoc ?l)))) _ _) =>
+      match env with
+      | context[Esnoc _ ?i (l ↦[d :: fname] _)%I] =>
+        wpc_frame_go i base.Right [i]; [idtac]
+      | _ => wpc_frame_go "" base.Right (@nil ident); [idtac]
+      | _ => fail 1 "wpc_loadField: could not frame automatically"
+      end;
+      wp_loadField;
+      iNamed 1
+    | _ => fail 1 "wpc_loadField: could not bind a struct.loadF"
+    end
+  | _ => fail 1 "wpc_loadField: not a wpc"
+  end.
+
+Tactic Notation "wpc_storeField" :=
+  wpc_bind (struct.storeF _ _ _ _);
+  wpc_frame;
+  wp_storeField;
+  iNamed 1.
+
+(* Hom(P, Hom(Q, R)) ≃ Hom(P ⊗ Q, R) ≃ Hom(Q, Hom(P, R)) *)
+Lemma wand_commute {P Q R:iProp Σ} :
+(P -∗ (Q -∗ R)) -∗ (Q -∗ (P -∗ R)).
+Proof.
+  iIntros "HR Q P".
+  by iSpecialize ("HR" with "P Q").
+Qed.
+
 (* TODO: make this a wpc, since it owns ghost state *)
 Lemma wpc_MakeFreshIncrClerk (isrv:loc) server :
   {{{
@@ -417,75 +452,144 @@ Lemma wpc_MakeFreshIncrClerk (isrv:loc) server :
   {{{
       cid (ck:loc), RET #ck; own_onetime_incr_clerk ck server.(incrserver) cid ∗
       RPCClient_own γback.(incr_rpcGN) cid 1 ∗
-      ProxyIncrServer_core_own_vol isrv server ∗
+      ProxyIncrServer_core_own_vol isrv {| kvsM:=server.(kvsM) ; incrserver:=server.(incrserver) ; lastCID:=(word.add server.(lastCID) 1)|} ∗
       ProxyIncrServer_core_own_ghost server
   }}}
   {{{
-      ProxyIncrServer_core_own_ghost server
+      ∃ lastCID', ProxyIncrServer_core_own_ghost {| kvsM:=server.(kvsM) ; incrserver:=server.(incrserver) ; lastCID:=lastCID' |}
   }}}.
 Proof.
   iIntros (Φ Φc) "[Hvol Hghost] HΦ".
   iNamed "Hvol".
   iNamed "Hghost".
 
-  (*
-  wpc_call.
   iCache with "HΦ Hctx Hback Hfown_lastCID HownCIDs".
   { iDestruct "HΦ" as "[HΦc _]".
     iModIntro.
     iApply "HΦc".
-    by iFrame.
+    by iExists _; iFrame.
   }
 
-  wpc_call.
+  wpc_rec Hcrash;
+  [ try iFromCache; crash_case .. | try wpc_pure1 Hcrash; [try iFromCache; crash_case ..  | repeat (wpc_pure1 Hcrash; []); clear Hcrash] ].
 
-  wp_loadField.
-  wp_pures.
-  wp_loadField.
-  wp_apply (overflow_guard_incr_spec).
-  iIntros (HincrSafe).
-  wp_pures.
-  wp_loadField.
-  wp_storeField.
-  wp_apply (wp_new_enc).
-  iIntros (enc_v) "Henc".
-  wp_pures.
-  wp_loadField.
-  wp_apply (wp_Enc__PutInt with "Henc"); first done.
-  iIntros "Henc".
-  wp_pures.
   iDestruct "Hfown_lastCID" as (old_data) "[Hfown_lastCID %Hold_encoding]".
-  wp_apply (wp_Enc__Finish with "Henc").
-  iIntros (content data) "(%Hencoding & %Hlength & Hcontent_slice)". simpl.
+  iCache with "HΦ Hctx Hback Hfown_lastCID HownCIDs".
+  { iDestruct "HΦ" as "[HΦc _]".
+    iModIntro.
+    iApply "HΦc".
+    iFrame.
+    iExists _; iFrame.
+    by iExists _; iFrame.
+  }
 
-  wp_bind (Write _ _).
-  iApply (wpc_wp _ 1 _ _ _ True).
-  iApply (wpc_Write with "[$Hfown_lastCID $Hcontent_slice]").
+  wpc_loadField.
+  wpc_pures.
+  wpc_loadField.
+
+  Tactic Notation "wpc_wpapply" open_constr(lem) :=
+  iPoseProofCore lem as false (fun H =>
+    lazymatch goal with
+    | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q ?Qc) =>
+      reshape_expr e ltac:(fun K e' =>
+        wpc_bind_core K; (wpc_frame; iApplyHyp H; try iNext; try wp_expr_simpl; solve_bi_true))
+    | _ => fail "wpc_wpapply: not a wpc"
+    end
+      ).
+
+  wpc_wpapply (overflow_guard_incr_spec).
+  iIntros (HincrSafe).
+  iNamed 1.
+
+  wpc_pures.
+  wpc_loadField.
+  wpc_pures.
+
+  wpc_storeField.
+  wpc_pures.
+
+  wpc_wpapply (wp_new_enc).
+  iIntros (enc_v) "Henc".
+  iNamed 1.
+
+  wpc_pures.
+  wpc_loadField.
+
+  wpc_wpapply (wp_Enc__PutInt with "Henc"); first done.
+  iIntros "Henc".
+  iNamed 1.
+
+  wpc_pures.
+  wpc_wpapply (wp_Enc__Finish with "Henc").
+  iIntros (content data) "(%Hencoding & %Hlength & Hcontent_slice)".
+  iNamed 1.
+
+  wpc_apply (wpc_Write with "[$Hfown_lastCID $Hcontent_slice]").
   iSplit.
-  { iModIntro. iIntros. done. }
-  iNext.
-  iIntros "Hfown_lastCID".
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "Hcases". iApply "HΦc".
+    iDestruct "Hcases" as "[Hcases|Hcases]".
+    { iExists _; iFrame. iExists _; iFrame. done. }
+    { (* Case that lastCID was updated on durable storage *)
+      iDestruct (big_sepS_impl _ (λ cid, RPCClient_own γback.(incr_rpcGN) cid 0 ∨
+                                         ⌜int.Z cid < int.Z server.(lastCID) + 1⌝%Z)%I with "HownCIDs []") as "HownCIDs".
+      {
+        iModIntro. iIntros (x Hxin) "[Hrpcclient_own|%Hineq]".
+        { iLeft. iFrame. }
+        { iRight. iPureIntro. lia. }
+      }
+      iExists (word.add server.(lastCID) 1).
+      rewrite HincrSafe. iFrame.
+      by iExists _; iFrame.
+    }
+  }
+  iNext. iIntros "[Hfown_lastCID Hcontent_slice]".
 
-  wp_pures.
-  wp_apply (wp_allocStruct).
+
+  (* Get RPCClient_own, and increase lastCID *)
+  iDestruct (big_sepS_elem_of_acc_impl (server.(lastCID)) with "HownCIDs") as "(HownCID & HownCIDs_rest)".
+  { apply elem_of_fin_to_set. }
+  iDestruct "HownCID" as "[HownCID|%Hbad]"; last by lia.
+  (* Weaken the big_sepS; after this, we won't be able to get RPCClient anymore, because lastCID will have increased *)
+  iDestruct ("HownCIDs_rest" $! (λ cid, RPCClient_own γback.(incr_rpcGN) cid 0 ∨
+                                     ⌜int.Z cid < int.Z server.(lastCID) + 1⌝%Z)%I with "[] []") as "HownCIDs".
+  {
+    iModIntro. iIntros (x Hxin Hdistinct) "[Hrpcclient_own|%Hineq]".
+    { iLeft. iFrame. }
+    { iRight. iPureIntro. lia. }
+  }
+  {
+    iRight. iPureIntro. lia.
+  }
+
+  (* Set RPCClient_own seq to 1*)
+  iMod (fmcounter_map_update (int.nat 1) with "HownCID") as "[HownCID _]".
+  { word. }
+
+  iCache with "HΦ Hctx Hback Hfown_lastCID HownCIDs".
+  { iDestruct "HΦ" as "[HΦc _]".
+    iModIntro.
+    iApply "HΦc".
+    iFrame.
+    iExists (word.add server.(lastCID) 1).
+    rewrite HincrSafe. iFrame.
+    by iExists _; iFrame.
+  }
+  wpc_pures.
+  wpc_wpapply (wp_allocStruct).
   { by apply zero_val_ty'. }
   iIntros (l) "Hl".
-  wp_pures.
+  iNamed 1.
+  wpc_pures.
 
   iDestruct (struct_fields_split with "Hl") as "Hl".
   iNamed "Hl". simpl.
-  wp_storeField.
-  wp_storeField.
-  wp_loadField.
-  iApply wp_fupd.
-  wp_storeField.
-
-  (* Get RPCClient_own *)
-  iDestruct (big_sepS_elem_of_acc _ _ (server.(lastCID)) with "HownCIDs") as "[HownCID HownCIDs_rest]".
-  { apply elem_of_fin_to_set. }
-  iDestruct "HownCID" as "[HownCID|%Hbad]"; last by lia.
-  iMod (fmcounter_map_update (int.nat 1) with "HownCID") as "[HownCID _]".
-  { word. }
+  wpc_storeField.
+  wpc_pures.
+  wpc_storeField.
+  wpc_pures.
+  wpc_loadField.
+  wpc_storeField.
+  wpc_pures.
 
   iApply "HΦ".
   iFrame.
@@ -493,10 +597,13 @@ Proof.
   simpl.
   Opaque struct.t.
 
-  iModIntro. iSplitR ""; last done.
-  iExists _, _, _, _; iFrame.
-Qed.
-  *)
+  iSplitL "req".
+  { iExists _, _, _, _; iFrame. }
+  iFrame "#∗".
+  (* TODO: Either add a read from durable and weaken _own_ghost to not expose lastCID, or
+     will need to actually use _own_ghost as precondition for recovering form
+     durable storage
+   *)
 Admitted.
 
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
@@ -532,7 +639,7 @@ is_RPCServer γback.(incr_rpcGN) -∗
   }}}
   {{{
        |={⊤}=> ProxyIncrCrashInvariant seq args ∗
-       ProxyIncrServer_core_own_ghost server
+      ∃ lastCID', ProxyIncrServer_core_own_ghost {| kvsM:=server.(kvsM) ; incrserver:=server.(incrserver) ; lastCID:=lastCID' |}
        (* Need this fupd because we need to use an invariant right after destructing into cases and right when trying to prove crash condition *)
   }}}.
 Proof.
@@ -541,12 +648,12 @@ Proof.
   iIntros "#Hrpcsrv".
   iIntros (Φ Φc) "!# [HincrCrashInv [Hvol Hghost]] Hpost".
   wpc_call.
-  { by iFrame. }
-  { by iFrame. }
+  { iFrame. by iExists _; iFrame. }
+  { iFrame. by iExists _; iFrame. }
   iCache with "HincrCrashInv Hghost Hpost".
   {
     iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc".
-    by iFrame.
+    iFrame. by iExists _; iFrame.
   }
   wpc_pures.
 
@@ -571,8 +678,9 @@ Proof.
   - iNamed "Hcase".
     iCache with "Hfown_oldv Hmapsto Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
-      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iLeft.
-      by iFrame.
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iSplitR "Hghost".
+      - iLeft. by iFrame.
+      - by iExists _; iFrame.
     }
 
     wpc_apply (wpc_Read with "Hfown_oldv").
@@ -580,7 +688,9 @@ Proof.
     { (* Show that the crash obligation of the function we're calling implies our crash obligation *)
       iDestruct "Hpost" as "[Hpost _]".
       iModIntro. iIntros. iApply "Hpost".
-      iFrame. iLeft. by iFrame.
+      iSplitR "Hghost".
+      - iLeft. by iFrame.
+      - by iExists _; iFrame.
     }
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
@@ -616,8 +726,9 @@ Proof.
 
     iCache with "Hfown_oldv Hmapsto Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
-      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iLeft.
-      by iFrame.
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iSplitR "Hghost".
+      - iLeft. by iFrame.
+      - by iExists _; iFrame.
     }
 
     wpc_bind (store_ty _ _); wpc_frame.
@@ -657,8 +768,9 @@ Proof.
       iIntros "[Hfown|Hfown]".
       - (* Write failed *)
         iApply "HΦc".
-        iFrame "Hghost".
-        iLeft. by iFrame.
+        iSplitR "Hghost".
+        + iLeft. by iFrame.
+        + by iExists _; iFrame.
       - (* Write succeeded  *)
         iApply "HΦc".
         iNamed "Hghost".
@@ -675,12 +787,16 @@ Proof.
 
         iDestruct "Hreq" as (γreq) "[#His_req Hreqtok]".
 
-        iFrame.
-        iRight.
-        iExists data2,_,_.
-        iFrame "#∗".
-        simpl.
-        done.
+        iSplitR "Hback_rest Hctx HownCIDs Hfown_lastCID".
+        { iRight.
+          iExists data2,_,_.
+          iFrame "#∗".
+          simpl.
+          done.
+        }
+        {
+          by iExists _; iFrame.
+        }
     }
     iNext.
 
@@ -702,10 +818,11 @@ Proof.
     iIntros "[Hfown Hslice]".
     iCache with "Hfown HownCIDs Hfown_lastCID Hback Hctx Hpost Hreqtok Hmapsto Hrpcclient_own".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
-      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame.
-      iRight. iFrame.
-      iExists _,_,_; iFrame "#∗".
-      done.
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc".
+      iSplitL "Hreqtok Hmapsto Hrpcclient_own Hfown".
+      - iRight. iFrame. iExists _,_,_; iFrame "#∗".
+        done.
+      - by iExists _; iFrame.
     }
     wpc_pures.
 
@@ -715,7 +832,9 @@ Proof.
   - iNamed "Hcase".
     iCache with "Hfown_oldv Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
-      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". by iFrame.
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iSplitR "Hghost".
+      - iRight. by iFrame.
+      - by iExists _; iFrame.
     }
 
     iNamed "Hfown_oldv".
@@ -723,17 +842,21 @@ Proof.
     wpc_apply (wpc_Read with "Hfown_oldv").
     iSplit.
     { (* crash obligation of called implies our crash obligation *)
-      iDestruct "Hpost" as "[Hpost _]".
-      iModIntro. iIntros. iApply "Hpost". iFrame. iRight.
-      by iExists _, _, _; iFrame "#∗".
+      iDestruct "Hpost" as "[HΦc _]".
+      iModIntro. iIntros. iApply "HΦc".
+      iSplitR "Hghost".
+      - iRight. by iExists _, _, _; iFrame "#∗".
+      - by iExists _; iFrame.
     }
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
 
     iCache with "Hfown_oldv Hrpc_clientown Hghost HrpcToken Hmapsto Hpost".
     { (* Prove crash obligation after destructing above; TODO: do this earlier *)
-      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iRight.
-      by iExists _,_, _; iFrame "#∗".
+      iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame.
+      iSplitR "Hghost".
+      - iRight. by iExists _,_, _; iFrame "#∗".
+      - eauto.
     }
    wpc_pures.
 
