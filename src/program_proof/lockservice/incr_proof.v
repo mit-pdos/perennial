@@ -15,11 +15,7 @@ Section incr_proof.
 Context `{!heapG Σ}.
 Context `{!filesysG Σ}.
 
-Definition IncrCrashInvariant (seq:u64) (args:RPCValC) : iProp Σ :=
-  "Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string seq) +:+ "_oldv") f↦ []
-.
-
-Variable γ:kvservice_names.
+Variable γback:kvservice_names.
 
 Context `{!kvserviceG Σ}.
 
@@ -37,6 +33,8 @@ Definition KVGetPreClientWeak (cid:u64) (γrpc:rpc_names) (PreCond:iProp Σ): iP
 Definition IdempotentPre γrpc (cid seq:u64) (PreCond : RPCValC → iProp Σ) : (RPCValC → iProp Σ) :=
   λ (args:RPCValC),
         (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ PreCond args)%I.
+
+Search fupd.
 
 Lemma server_takes_idempotent_request γrpc γreq (cid key va:u64) PreCond PostCond req lastSeqM lastReplyM:
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
@@ -76,40 +74,106 @@ Proof.
        This'll also mean the fupd where we go from PreCond -> PostCond must
        happen at the same time as the lseq update.
      *)
-Admitted.
+Abort.
 
+Record incrservice_names := IncrServiceGN {
+  incr_rpcGN : rpc_names;
+  (* fmcounter_map of key -> counter value *)
+  incr_mapGN : gname;
+}.
 
-Definition IncrServer_core_own (srv:loc) : iProp Σ :=
-  ∃ (kck kvserver:loc),
-  "Hkvserver" ∷ srv ↦[IncrServer.S :: "kvserver"] #kvserver ∗
+Variable γ:incrservice_names.
+Variable old_v:u64.
+Variable incr_cid:u64.
+(* This is constant for a particular IncrServer *)
+
+Record IncrServerC := mkIncrServserC
+{
+  incr_seq: u64 ;
+  incr_kvserver: loc ; (* This would be an IP address or some such *)
+}.
+
+Implicit Types server : IncrServerC.
+
+Definition IncrServer_core_own_vol (srv:loc) server : iProp Σ :=
+  ∃ (kck:loc),
+  "Hkvserver" ∷ srv ↦[IncrServer.S :: "kvserver"] #(server.(incr_kvserver)) ∗
   "Hkck" ∷ srv ↦[IncrServer.S :: "kck"] #kck ∗
-  "His_kvserver" ∷ is_kvserver γ kvserver ∗
-  "Hkck_own" ∷ own_kvclerk γ kck kvserver
+  "#His_kvserver" ∷ is_kvserver γback server.(incr_kvserver) ∗
+  "Hkck_own" ∷ own_kvclerk γback kck server.(incr_kvserver)
   (* This is using the non-crash-safe version of kvserver in kv_proof.v *)
   .
 
-Lemma increment_core_indepotent (isrv:loc) (seq:u64) (args:RPCValC) :
+Definition IncrServer_core_own_ghost server : iProp Σ :=
+  "#His_kvserver" ∷ is_kvserver γback server.(incr_kvserver) ∗
+  "Hrpcclient_own" ∷ RPCClient_own γback.(ks_rpcGN) (incr_cid) server.(incr_seq)
+  (* This is using the non-crash-safe version of kvserver in kv_proof.v *)
+.
+
+Definition idemp_fupd args : iProp Σ :=
+    <bdisc> (∀ seq, incr_cid fm[[γback.(ks_rpcGN).(cseq)]]↦ seq ={⊤}=∗
+      incr_cid fm[[γback.(ks_rpcGN).(cseq)]]↦ seq ∗
+    IdempotentPre γback.(ks_rpcGN) incr_cid seq (Get_Pre γback old_v) args)
+.
+
+Instance idemp_fupd_disc args : (Discretizable (idemp_fupd args)).
+Proof.
+  rewrite /Discretizable.
+  by rewrite -own_discrete_idemp.
+Defined.
+
+Definition IncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
+  (* Case 1: Before crash barrier *)
+  ("Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string sseq) +:+ "_oldv") f↦ [] ∗
+   "HidemPre" ∷ idemp_fupd args
+   ) ∨
+
+  (* Case 2: After crash barrier *)
+  ( ∃ data,
+  "Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string sseq) +:+ "_oldv") f↦ data ∗
+  "%Hencoding" ∷ ⌜has_encoding data [EncUInt64 old_v]⌝
+  )
+.
+
+
+Instance CrashInv_disc sseq  args : (Discretizable (IncrCrashInvariant sseq args)) := _.
+(*
+Proof.
+  rewrite /Discretizable.
+  iIntros "[H|H]".
+  - iNamed "H".
+    Search "bdisc".
+    rewrite own_discrete_idemp.
+    iModIntro.
+    iLeft. iFrame.
+  - iModIntro. iRight. iFrame.
+Defined.
+ *)
+
+Lemma increment_core_indepotent (isrv:loc) server (seq:u64) (args:RPCValC) :
   {{{
        IncrCrashInvariant seq args ∗
-                        IncrServer_core_own isrv
-      (* TODO: add ownership of kck so we can make RPCs with it *)
+       IncrServer_core_own_vol isrv server ∗
+       IncrServer_core_own_ghost server
   }}}
     IncrServer__increment_core #isrv #seq (into_val.to_val args) @ 37 ; ⊤
   {{{
       RET #(); True
   }}}
   {{{
-       IncrCrashInvariant seq args
+       IncrCrashInvariant seq args ∗
+       IncrServer_core_own_ghost server
   }}}.
 Proof.
-  iIntros (Φ Φc) "[HincrCrashInv Hisown] Hpost".
-  wpc_call; first done.
+  iIntros (Φ Φc) "(HincrCrashInv & Hvol & Hghost) HΦ".
+  wpc_call.
+  { iFrame. }
   { iFrame. }
   unfold IncrCrashInvariant.
-  iNamed "HincrCrashInv".
-  iCache with "Hfown_oldv Hpost".
+  iCache with "HincrCrashInv Hghost HΦ".
   {
-    iDestruct "Hpost" as "[HΦc _]". iModIntro. by iApply "HΦc".
+    iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc".
+    iFrame.
   }
   wpc_pures.
 
@@ -125,40 +189,67 @@ Proof.
   iNamed 1.
   wpc_pures.
 
-  wpc_apply (wpc_Read with "Hfown_oldv").
-  iSplit.
-  { (* Show that the crash obligation of the function we're calling implies our crash obligation *)
-    iDestruct "Hpost" as "[Hpost _]".
-    iModIntro. done.
-  }
-  iNext.
-  iIntros (content) "[Hcontent_slice Hfown_oldv]".
-  wpc_pures.
-
-  wpc_bind (slice.len _).
-  wpc_frame.
-  wp_apply wp_slice_len.
-  iNamed 1.
-
-  wpc_pures.
-  iDestruct (slice.is_slice_sz with "Hcontent_slice") as "%Hslice_len".
-  simpl in Hslice_len.
-  assert (int.Z content.(Slice.sz) = 0) as -> by word.
-  destruct bool_decide eqn:Hs.
+  iDestruct "HincrCrashInv" as "[Hcase|Hcase]"; iNamed "Hcase".
   {
-    apply bool_decide_eq_true in Hs.
-    iExFalso; iPureIntro.
-    done.
-  }
+    iCache with "Hfown_oldv HidemPre HΦ Hghost".
+    {
+      iDestruct "HΦ" as "[HΦc _]".
+      iDestruct (own_discrete_idemp with "HidemPre") as "HidemPre".
+      iModIntro. iApply "HΦc".
+      iFrame. iLeft. iFrame.
+    }
+    (* How to get rid of bdisc: iDestruct (own_discrete_elim with "HidemPre") as "HidemPre". *)
+    wpc_apply (wpc_Read with "Hfown_oldv").
+    iSplit.
+    { (* Show that the crash obligation of the function we're calling implies our crash obligation *)
+      iDestruct "HΦ" as "[HΦc _]".
+      iDestruct (own_discrete_idemp with "HidemPre") as "HidemPre".
+      iModIntro. iIntros.
+      iApply "HΦc".
+      iFrame. iLeft. iFrame.
+    }
+    iNext.
+    iIntros (content) "[Hcontent_slice Hfown_oldv]".
+    wpc_pures.
 
-  (* case that no durable oldv chosen *)
-  wpc_pures.
-  iNamed "Hisown".
+    wpc_bind (slice.len _).
+    wpc_frame.
+    wp_apply wp_slice_len.
+    iNamed 1.
 
-  wpc_bind (struct.loadF _ _ _).
-  wpc_frame.
-  wp_loadField.
-  iNamed 1.
+    wpc_pures.
+    iDestruct (slice.is_slice_sz with "Hcontent_slice") as "%Hslice_len".
+    simpl in Hslice_len.
+    assert (int.Z content.(Slice.sz) = 0) as -> by word.
+    destruct bool_decide eqn:Hs.
+    {
+      apply bool_decide_eq_true in Hs.
+      iExFalso; iPureIntro.
+      done.
+    }
+
+    (* case that no durable oldv chosen *)
+    wpc_pures.
+    iNamed "Hvol".
+
+    wpc_bind (struct.loadF _ _ _).
+    wpc_frame.
+    wp_loadField.
+    iNamed 1.
+
+    (* TODO: Move this to a new spec/proof for KVClerk__Get *)
+    iDestruct (own_discrete_elim with "HidemPre") as "HidemPre".
+    iNamed "Hkck_own".
+    iNamed "Hcl".
+
+    (* TODO: own_kvclerk needs to expose cid for this to work *)
+    replace (cid) with (incr_cid) in * by admit.
+    iMod ("HidemPre" with "Hcrpc") as "(Hcrpc & HidemPre)".
+
+    (* Use IdempotentPre (GetPre) to call KVClerk__Get
+       The crash condition of KVClerk__Get needs to be the
+       IdempotentPre-granting-fupd
+     *)
 
   (* Use has_encoding data [] ∨ ... in invariant *)
 
