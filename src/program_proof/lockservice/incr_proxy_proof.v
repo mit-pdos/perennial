@@ -453,7 +453,7 @@ Lemma wpc_MakeFreshIncrClerk (isrv:loc) server :
       cid (ck:loc), RET #ck; own_onetime_incr_clerk ck server.(incrserver) cid ∗
       RPCClient_own γback.(incr_rpcGN) cid 1 ∗
       ProxyIncrServer_core_own_vol isrv {| kvsM:=server.(kvsM) ; incrserver:=server.(incrserver) ; lastCID:=(word.add server.(lastCID) 1)|} ∗
-      ProxyIncrServer_core_own_ghost server
+      ProxyIncrServer_core_own_ghost {| kvsM:=server.(kvsM) ; incrserver:=server.(incrserver) ; lastCID:=(word.add server.(lastCID) 1) |}
   }}}
   {{{
       ∃ lastCID', ProxyIncrServer_core_own_ghost {| kvsM:=server.(kvsM) ; incrserver:=server.(incrserver) ; lastCID:=lastCID' |}
@@ -599,12 +599,10 @@ Proof.
 
   iSplitL "req".
   { iExists _, _, _, _; iFrame. }
+  rewrite HincrSafe.
   iFrame "#∗".
-  (* TODO: Either add a read from durable and weaken _own_ghost to not expose lastCID, or
-     will need to actually use _own_ghost as precondition for recovering form
-     durable storage
-   *)
-Admitted.
+  by iExists _; iFrame.
+Qed.
 
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
