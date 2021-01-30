@@ -34,8 +34,6 @@ Definition IdempotentPre γrpc (cid seq:u64) (PreCond : RPCValC → iProp Σ) : 
   λ (args:RPCValC),
         (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ PreCond args)%I.
 
-Search fupd.
-
 Lemma server_takes_idempotent_request γrpc γreq (cid key va:u64) PreCond PostCond req lastSeqM lastReplyM:
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
   is_RPCServer γrpc -∗
@@ -142,7 +140,6 @@ Proof.
   rewrite /Discretizable.
   iIntros "[H|H]".
   - iNamed "H".
-    Search "bdisc".
     rewrite own_discrete_idemp.
     iModIntro.
     iLeft. iFrame.
