@@ -174,3 +174,202 @@ Section jrnl.
        ext_crash := fun s s' => relation.denote close s s' tt; |}.
 End jrnl.
 
+
+From iris.algebra Require Import auth agree excl csum.
+From Perennial.algebra Require Import auth_map.
+Definition openR := csumR (prodR fracR (agreeR (leibnizO unitO))) (agreeR (leibnizO unitO)).
+Definition jrnl_opened : openR := Cinr (to_agree tt).
+
+Class jrnlG Σ :=
+  { jrnlG_open_inG :> inG Σ openR;
+    jrnlG_open_name : gname;
+    jrnlG_data_inG :> mapG Σ addr obj;
+    jrnlG_data_name: gname;
+    jrnlG_kinds_inG :> mapG Σ blkno kind;
+    jrnlG_kinds_name: gname;
+  }.
+
+Class jrnl_preG Σ :=
+  { jrnlG_preG_open_inG :> inG Σ openR;
+    jrnlG_preG_data_inG:> mapG Σ addr obj;
+    jrnlG_preG_kinds_inG:> mapG Σ blkno kind;
+  }.
+
+Definition jrnlΣ : gFunctors :=
+  #[GFunctor openR; mapΣ addr obj; mapΣ blkno kind].
+
+Instance subG_jrnlG Σ: subG jrnlΣ Σ → jrnl_preG Σ.
+Proof. solve_inG. Qed.
+
+Record jrnl_names :=
+  { jrnl_names_open: gname;
+    jrnl_names_data: gname;
+    jrnl_names_kinds: gname;
+  }.
+
+Definition jrnl_get_names {Σ} (jG: jrnlG Σ) :=
+  {| jrnl_names_open := jrnlG_open_name;
+     jrnl_names_data := jrnlG_data_name;
+     jrnl_names_kinds := jrnlG_kinds_name |}.
+
+Definition jrnl_update {Σ} (jG: jrnlG Σ) (names: jrnl_names) :=
+  {| jrnlG_open_inG := jrnlG_open_inG;
+     jrnlG_open_name := (jrnl_names_open names);
+     jrnlG_data_inG := jrnlG_data_inG;
+     jrnlG_data_name := (jrnl_names_data names);
+     jrnlG_kinds_inG := jrnlG_kinds_inG;
+     jrnlG_kinds_name := (jrnl_names_kinds names);
+  |}.
+
+Definition jrnl_update_pre {Σ} (jG: jrnl_preG Σ) (names: jrnl_names) :=
+  {| jrnlG_open_inG := jrnlG_preG_open_inG;
+     jrnlG_open_name := (jrnl_names_open names);
+     jrnlG_data_inG := jrnlG_preG_data_inG;
+     jrnlG_data_name := (jrnl_names_data names);
+     jrnlG_kinds_inG := jrnlG_preG_kinds_inG;
+     jrnlG_kinds_name := (jrnl_names_kinds names);
+  |}.
+
+Definition jrnl_open {Σ} {lG :jrnlG Σ} :=
+  own (jrnlG_open_name) (jrnl_opened).
+Definition jrnl_closed_frag {Σ} {lG :jrnlG Σ} :=
+  own (jrnlG_open_name) (Cinl ((1/2)%Qp, to_agree (tt : leibnizO unit))).
+Definition jrnl_closed_auth {Σ} {lG :jrnlG Σ} :=
+  own (jrnlG_open_name) (Cinl ((1/2)%Qp, to_agree (tt : leibnizO unit))).
+Definition jrnl_mapsto {Σ} {lG: jrnlG Σ} a q v : iProp Σ :=
+  ptsto_mut (jrnlG_data_name) a q v ∗
+  (∃ pf, ptsto_ro (jrnlG_kinds_name) (addrBlock a) ((exist _ (Z.of_nat (length v)) pf) : kind)).
+
+Section jrnl_interp.
+  Existing Instances jrnl_op jrnl_model jrnl_val_ty.
+
+  Definition jrnl_state_ctx {Σ} {jG: jrnlG Σ} (m: jrnl_map) : iProp Σ :=
+    ⌜ wf_jrnl m ⌝ ∗
+      map_ctx jrnlG_data_name 1 (jrnlData m) ∗
+      map_ctx jrnlG_kinds_name 1 (jrnlKinds m).
+
+  Definition jrnl_ctx {Σ} {jG: jrnlG Σ} (jrnl: @ffi_state jrnl_model) : iProp Σ :=
+    match jrnl with
+    | Opened s => jrnl_open ∗ jrnl_state_ctx s
+    | Closed s => jrnl_closed_auth ∗ jrnl_state_ctx s
+    end.
+
+  Definition jrnl_state_start {Σ} {jG: jrnlG Σ} (m: jrnl_map) : iProp Σ :=
+    [∗ map] a ↦ v ∈ jrnlData m, jrnl_mapsto a 1 v.
+
+  Definition jrnl_start {Σ} {jG: jrnlG Σ} (jrnl: @ffi_state jrnl_model) : iProp Σ :=
+    match jrnl with
+    | Opened s => jrnl_open ∗ jrnl_state_start s
+    | Closed s => jrnl_closed_frag ∗ jrnl_state_start s
+    end.
+
+  Definition jrnl_restart {Σ} (jG: jrnlG Σ) (jrnl: @ffi_state jrnl_model) : iProp Σ :=
+    match jrnl with
+    | Opened s => jrnl_open
+    | Closed s => jrnl_closed_frag
+    end.
+
+  Program Instance jrnl_interp : ffi_interp jrnl_model :=
+    {| ffiG := jrnlG;
+       ffi_names := jrnl_names;
+       ffi_get_names := @jrnl_get_names;
+       ffi_update := @jrnl_update;
+       ffi_get_update := _;
+       ffi_ctx := @jrnl_ctx;
+       ffi_start := @jrnl_start;
+       ffi_restart := @jrnl_restart;
+       ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @jrnlG_data_inG _ hF1 = @jrnlG_data_inG _ hF2 ∧
+                                             @jrnlG_kinds_inG _ hF1 = @jrnlG_kinds_inG _ hF2 ∧
+                                           jrnl_names_data (jrnl_get_names hF1) =
+                                           jrnl_names_data (jrnl_get_names hF2) ∧
+                                           jrnl_names_kinds (jrnl_get_names hF1) =
+                                           jrnl_names_kinds (jrnl_get_names hF2) ⌝%I;
+    |}.
+  Next Obligation. intros ? [] [] => //=. Qed.
+  Next Obligation. intros ? [] => //=. Qed.
+  Next Obligation. intros ? [] => //=. Qed.
+
+End jrnl_interp.
+
+
+Section jrnl_lemmas.
+  Context `{lG: jrnlG Σ}.
+
+  Global Instance jrnl_ctx_Timeless lg: Timeless (jrnl_ctx lg).
+  Proof. destruct lg; apply _. Qed.
+
+  Global Instance jrnl_start_Timeless lg: Timeless (jrnl_start lg).
+  Proof. destruct lg; apply _. Qed.
+
+  Global Instance jrnl_restart_Timeless lg: Timeless (jrnl_restart _ lg).
+  Proof. destruct lg; apply _. Qed.
+
+  Global Instance jrnl_open_Persistent : Persistent (jrnl_open).
+  Proof. rewrite /jrnl_open/jrnl_opened. apply own_core_persistent. rewrite /CoreId//=. Qed.
+
+  Lemma jrnl_closed_auth_opened :
+    jrnl_closed_auth -∗ jrnl_open -∗ False.
+  Proof.
+    iIntros "Huninit_auth Hopen".
+    iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+    inversion Hval.
+  Qed.
+
+  Lemma jrnl_closed_token_open :
+    jrnl_closed_auth -∗ jrnl_closed_frag ==∗ jrnl_open.
+  Proof.
+    iIntros "Hua Huf".
+    iCombine "Hua Huf" as "Huninit".
+    rewrite -Cinl_op.
+    iMod (own_update _ _ (jrnl_opened) with "Huninit") as "$"; last done.
+    { apply: cmra_update_exclusive.
+      { apply Cinl_exclusive. rewrite -pair_op frac_op' Qp_half_half.
+        simpl. apply pair_exclusive_l. apply _.
+      }
+      { econstructor. }
+    }
+  Qed.
+
+End jrnl_lemmas.
+
+From Perennial.goose_lang Require Import adequacy.
+
+Program Instance jrnl_interp_adequacy:
+  @ffi_interp_adequacy jrnl_model jrnl_interp jrnl_op jrnl_semantics :=
+  {| ffi_preG := jrnl_preG;
+     ffiΣ := jrnlΣ;
+     subG_ffiPreG := subG_jrnlG;
+     ffi_initP := λ σ, ∃ m, σ = Closed m ∧ wf_jrnl m;
+     ffi_update_pre := @jrnl_update_pre;
+  |}.
+Next Obligation. rewrite //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
+Next Obligation.
+  rewrite //=.
+  iIntros (Σ hPre σ (m&->&Hwf)). simpl.
+  iMod (own_alloc (Cinl (1%Qp, to_agree tt) : openR)) as (γ1) "H".
+  { repeat econstructor => //=. }
+  iMod (map_init (jrnlData m)) as (γdata) "Hdata_ctx".
+  iMod (map_init (jrnlKinds m)) as (γkinds) "Hkinds_ctx".
+  (* XXX: todo, need a 'strong init' for map_ctx that gives points tos for everything in the domain *)
+  iExists {| jrnl_names_open := γ1; jrnl_names_data := γdata; jrnl_names_kinds := γkinds |}.
+  iFrame. iModIntro. iFrame "%".
+Admitted.
+Next Obligation.
+Admitted.
+
+From Perennial.program_proof Require Import proof_prelude.
+From Perennial.goose_lang Require Import refinement_adequacy.
+Section spec.
+
+Instance jrnl_spec_ext : spec_ext_op := {| spec_ext_op_field := jrnl_op |}.
+Instance jrnl_spec_ffi_model : spec_ffi_model := {| spec_ffi_model_field := jrnl_model |}.
+Instance jrnl_spec_ext_semantics : spec_ext_semantics (jrnl_spec_ext) (jrnl_spec_ffi_model) :=
+  {| spec_ext_semantics_field := jrnl_semantics |}.
+Instance jrnl_spec_ffi_interp : spec_ffi_interp jrnl_spec_ffi_model :=
+  {| spec_ffi_interp_field := jrnl_interp |}.
+Instance jrnl_spec_ty : ext_types (spec_ext_op_field) := jrnl_ty.
+Instance jrnl_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := jrnl_spec_ffi_interp) :=
+  {| spec_ffi_interp_adequacy_field := jrnl_interp_adequacy |}.
+
+End spec.
