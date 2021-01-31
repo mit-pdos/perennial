@@ -15,7 +15,11 @@ Implicit Types A : Type.
 Notation "P ⊢ Q" := (P ⊢@{uPredI M} Q).
 Notation "P ⊣⊢ Q" := (P ⊣⊢@{uPredI M} Q).
 
-Lemma laterN_hold_minus n a x P: ✓{n} x →  a ≤ n → (▷^a P : uPred M)%I n x → P (n - a) x.
+Lemma laterN_hold_minus n a x (P: uPred M) :
+  ✓{n} x →
+  a ≤ n →
+  uPred_holds (▷^a P) n x →
+  uPred_holds P (n - a) x.
 Proof.
   revert x n.
   induction a.
@@ -39,7 +43,7 @@ Proof.
     uPred.unseal => //=.
 Qed.
 
-Lemma laterN_big n a x φ: ✓{n} x →  a ≤ n → (▷^a ⌜φ⌝ : uPred M)%I n x → φ.
+Lemma laterN_big n a x φ: ✓{n} x →  a ≤ n → uPred_holds (▷^a ⌜φ⌝ : uPred M)%I n x → φ.
 Proof.
   induction 2 as [| ?? IHle].
   - induction a; repeat (rewrite //= || uPred.unseal).
@@ -49,7 +53,7 @@ Proof.
     eapply uPred_mono; eauto using cmra_validN_S.
 Qed.
 
-Lemma laterN_small n a x P: ✓{n} x →  n < a → (▷^a P : uPred M)%I n x.
+Lemma laterN_small n a x P: ✓{n} x →  n < a → uPred_holds (▷^a P) n x.
 Proof.
   induction 2.
   - induction n as [| n IHn]; [| move: IHn];
@@ -62,7 +66,7 @@ Proof.
 Qed.
 
 Lemma laterN_exist_big_inhabited A (Φ: A → uPred M) k n x:
-  ✓{n} x →  k ≤ n → (▷^k uPred_exist_def (λ a : A, Φ a))%I n x →
+  ✓{n} x →  k ≤ n → uPred_holds (▷^k uPred_exist_def (λ a : A, Φ a)) n x →
   ∃ a : A, True.
 Proof.
   induction 2 as [| ?? IHle].

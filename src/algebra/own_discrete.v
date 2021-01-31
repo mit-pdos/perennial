@@ -11,7 +11,7 @@ Proof.
   split.
   intros n x Hvalx Hvala.
   move: Hvala. rewrite /bi_pure//=. uPred_primitive.unseal. red. simpl => Hval.
-  assert (uPred_cmra_valid_def a O x).
+  assert (uPred_holds (uPred_cmra_valid_def a) O x).
   { eapply uPred_mono; try eassumption.
     { reflexivity. }
     { lia. }
