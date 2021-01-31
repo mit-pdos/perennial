@@ -228,22 +228,6 @@ Section map.
     iFrame.
   Qed.
 
-  (* TODO: upstream to Iris; see Iris MR 627 *)
-  Lemma big_sepM_filter Φ (R: K * A → Prop) {Hdec: ∀ k, Decision (R k)} m :
-    ([∗ map] k ↦ x ∈ filter R m, Φ k x) ⊣⊢
-    ([∗ map] k ↦ x ∈ m, if decide (R (k, x)) then Φ k x else emp).
-  Proof.
-    induction m as [|k v m ? IH] using map_ind.
-    { by rewrite map_filter_empty !big_sepM_empty. }
-    destruct (decide (R (k, v))).
-    - rewrite map_filter_insert //.
-      rewrite !big_sepM_insert //.
-      * by rewrite decide_True // IH.
-      * apply map_filter_lookup_None; eauto.
-    - rewrite map_filter_insert_not' //; last by congruence.
-      rewrite !big_sepM_insert // decide_False // IH. rewrite left_id. eauto.
-  Qed.
-
   Lemma big_sepM_mono_with_inv P Φ Ψ m :
     (∀ k x, m !! k = Some x → P ∗ Φ k x ⊢ P ∗ Ψ k x) →
     P -∗ ([∗ map] k ↦ x ∈ m, Φ k x) -∗ P ∗ [∗ map] k ↦ x ∈ m, Ψ k x.

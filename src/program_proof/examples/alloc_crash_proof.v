@@ -501,7 +501,7 @@ Lemma free_big_sepS_to_all σ (Φ: u64 → iProp Σ):
   ([∗ set] k ∈ alloc.free σ, Φ k) ⊣⊢
   [∗ map] k↦v ∈ σ, match v with block_free => Φ k | _ => True end.
 Proof.
-  rewrite -big_opM_dom big_sepM_filter.
+  rewrite -big_opM_dom big_sepM_filter'.
   apply big_sepM_proper. intros ? []; eauto => //=;
   try (by rewrite decide_False);
   try (by rewrite decide_True).
@@ -585,7 +585,7 @@ Proof.
   rewrite /alloc.unused.
   rewrite -Hdom.
   iSplitR; first by auto.
-  rewrite -?big_sepM_dom big_sepM_filter.
+  rewrite -?big_sepM_dom big_sepM_filter'.
   iDestruct (big_sepM_mono_with_inv with "Hstatus Hset") as "(_&$)".
   iIntros (k x Hlookup) "(Hctx&Hfree)".
   rewrite /free_block_pending.
