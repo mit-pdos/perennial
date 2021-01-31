@@ -310,27 +310,6 @@ Section auth_map.
     rewrite fmap_insert //=.
   Qed.
 
-  Theorem map_alloc_many {γ m} m0 :
-    ( ∀ k, is_Some (m0 !! k) -> m !! k = None ) ->
-    map_ctx γ 1 m ==∗ map_ctx γ 1 (m0 ∪ m) ∗ [∗ map] a↦v ∈ m0, ptsto_mut γ a 1 v.
-  Proof.
-    iIntros (Hnone) "Hm".
-    iInduction m0 as [|l v m0'] "IH" using map_ind forall (m Hnone).
-    { rewrite left_id. iFrame. iModIntro. iApply big_sepM_empty. done. }
-    iMod ("IH" with "[] Hm") as "[Hm Hmany]".
-    { iPureIntro. intros k Hk. eapply Hnone.
-      destruct (decide (l = k)); subst.
-      { rewrite lookup_insert. eauto. }
-      rewrite lookup_insert_ne; eauto.
-    }
-    iMod (map_alloc l v with "Hm") as "[Hm Hl]".
-    { rewrite lookup_union_None; intuition.
-      eapply Hnone. rewrite lookup_insert. eauto. }
-    iModIntro.
-    rewrite insert_union_l; iFrame "Hm".
-    iApply big_sepM_insert; eauto. iFrame.
-  Qed.
-
   Theorem map_delete {γ m} k v :
     ptsto_mut γ k 1 v -∗ map_ctx γ 1 m ==∗ map_ctx γ 1 (delete k m).
   Proof.
@@ -590,6 +569,62 @@ Section auth_map.
     iMod (map_alloc k v with "Hm") as "[Hm Hk]"; auto.
     iMod (map_freeze with "Hm Hk") as "[$ $]".
     auto.
+  Qed.
+
+  Theorem map_alloc_many' {γ m} m0 Φ:
+    (∀ m k v, m !! k = None → map_ctx γ 1 m ==∗ map_ctx γ 1 (<[k:=v]> m) ∗ Φ k v) →
+    ( ∀ k, is_Some (m0 !! k) -> m !! k = None ) ->
+    map_ctx γ 1 m ==∗ map_ctx γ 1 (m0 ∪ m) ∗ [∗ map] a↦v ∈ m0, Φ a v.
+  Proof.
+    iIntros (Halloc Hnone) "Hm".
+    iInduction m0 as [|l v m0'] "IH" using map_ind forall (m Hnone).
+    { rewrite left_id. iFrame. iModIntro. iApply big_sepM_empty. done. }
+    iMod ("IH" with "[] Hm") as "[Hm Hmany]".
+    { iPureIntro. intros k Hk. eapply Hnone.
+      destruct (decide (l = k)); subst.
+      { rewrite lookup_insert. eauto. }
+      rewrite lookup_insert_ne; eauto.
+    }
+    iMod (Halloc _ l v with "Hm") as "[Hm Hl]".
+    { rewrite lookup_union_None; intuition.
+      eapply Hnone. rewrite lookup_insert. eauto. }
+    iModIntro.
+    rewrite insert_union_l; iFrame "Hm".
+    iApply big_sepM_insert; eauto. iFrame.
+  Qed.
+
+  Theorem map_alloc_many {γ m} m0 :
+    ( ∀ k, is_Some (m0 !! k) -> m !! k = None ) ->
+    map_ctx γ 1 m ==∗ map_ctx γ 1 (m0 ∪ m) ∗ [∗ map] a↦v ∈ m0, ptsto_mut γ a 1 v.
+  Proof.
+    intros. iApply (map_alloc_many' _ (λ a v, ptsto_mut γ a 1 v)); eauto.
+    intros. by apply map_alloc.
+  Qed.
+
+  Theorem map_alloc_many_ro {γ m} m0 :
+    ( ∀ k, is_Some (m0 !! k) -> m !! k = None ) ->
+    map_ctx γ 1 m ==∗ map_ctx γ 1 (m0 ∪ m) ∗ [∗ map] a↦v ∈ m0, ptsto_ro γ a v.
+  Proof.
+    intros. iApply (map_alloc_many' _ (λ a v, ptsto_ro γ a v)); eauto.
+    intros. by apply map_alloc_ro.
+  Qed.
+
+  Theorem map_init_many m :
+    ⊢ |==> ∃ γ, map_ctx γ 1 m ∗ ([∗ map] a ↦ v ∈ m, ptsto_mut γ a 1 v).
+  Proof.
+    iMod (map_init ∅) as (γ) "Hm".
+    iMod (map_alloc_many m with "Hm") as "[Hm Hlatest]".
+    { intros. apply lookup_empty. }
+    iModIntro. iExists γ. rewrite right_id. iFrame.
+  Qed.
+
+  Theorem map_init_many_ro m :
+    ⊢ |==> ∃ γ, map_ctx γ 1 m ∗ ([∗ map] a ↦ v ∈ m, ptsto_ro γ a v).
+  Proof.
+    iMod (map_init ∅) as (γ) "Hm".
+    iMod (map_alloc_many_ro m with "Hm") as "[Hm Hlatest]".
+    { intros. apply lookup_empty. }
+    iModIntro. iExists γ. rewrite right_id. iFrame.
   Qed.
 
 End auth_map.

@@ -1,3 +1,5 @@
+From iris.algebra Require Import auth agree excl csum.
+From Perennial.algebra Require Import auth_map.
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
@@ -175,8 +177,6 @@ Section jrnl.
 End jrnl.
 
 
-From iris.algebra Require Import auth agree excl csum.
-From Perennial.algebra Require Import auth_map.
 Definition openR := csumR (prodR fracR (agreeR (leibnizO unitO))) (agreeR (leibnizO unitO)).
 Definition jrnl_opened : openR := Cinr (to_agree tt).
 
@@ -238,7 +238,7 @@ Definition jrnl_closed_auth {Σ} {lG :jrnlG Σ} :=
   own (jrnlG_open_name) (Cinl ((1/2)%Qp, to_agree (tt : leibnizO unit))).
 Definition jrnl_mapsto {Σ} {lG: jrnlG Σ} a q v : iProp Σ :=
   ptsto_mut (jrnlG_data_name) a q v ∗
-  (∃ pf, ptsto_ro (jrnlG_kinds_name) (addrBlock a) ((exist _ (Z.of_nat (length v)) pf) : kind)).
+  (∃ (k : kind), ⌜ (length v : Z) = 2^(`k) ⌝ ∗ ptsto_ro (jrnlG_kinds_name) (addrBlock a) (k : kind)).
 
 Section jrnl_interp.
   Existing Instances jrnl_op jrnl_model jrnl_val_ty.
@@ -349,14 +349,53 @@ Next Obligation.
   iIntros (Σ hPre σ (m&->&Hwf)). simpl.
   iMod (own_alloc (Cinl (1%Qp, to_agree tt) : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
-  iMod (map_init (jrnlData m)) as (γdata) "Hdata_ctx".
-  iMod (map_init (jrnlKinds m)) as (γkinds) "Hkinds_ctx".
-  (* XXX: todo, need a 'strong init' for map_ctx that gives points tos for everything in the domain *)
+  iMod (map_init_many (jrnlData m)) as (γdata) "(Hdata_ctx&Hdata)".
+  iMod (map_init_many_ro (jrnlKinds m)) as (γkinds) "(Hkinds_ctx&#Hkinds)".
   iExists {| jrnl_names_open := γ1; jrnl_names_data := γdata; jrnl_names_kinds := γkinds |}.
   iFrame. iModIntro. iFrame "%".
-Admitted.
+  rewrite assoc.
+  iSplitL "H".
+  { by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp. }
+  rewrite /jrnl_state_start.
+  iDestruct (big_sepM.big_sepM_mono_with_inv with "Hkinds Hdata") as "(_&$)".
+  iIntros (a x Hlookup) "(#Hkinds&Hpt)". iFrame "Hkinds".
+  rewrite /jrnl_mapsto.
+  rewrite /wf_jrnl/offsets_aligned/sizes_correct in Hwf.
+  destruct Hwf as (Hoff&Hsize).
+  edestruct Hsize as (k&Hlookup_kind&Hlen); eauto. iFrame.
+  iExists k. iFrame "%".
+  iApply (big_sepM_lookup); eauto.
+Qed.
 Next Obligation.
-Admitted.
+  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  inversion Hcrash; subst.
+  monad_inv. inversion H. subst. inversion H1. subst.
+  destruct x; monad_inv.
+  - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
+    inversion H2. subst. inversion H4. subst.
+    (* XXX: monad_inv should handle *)
+    iMod (own_alloc (Cinl (1%Qp, to_agree tt) : openR)) as (γ1) "H".
+    { repeat econstructor => //=. }
+    iExists {| jrnl_names_open := γ1;
+               jrnl_names_data := jrnl_names_data (jrnl_get_names _);
+               jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) |}.
+    iDestruct "Hinterp" as "(?&?)". rewrite //=/jrnl_restart//=.
+    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    rewrite /jrnl_closed_auth/jrnl_closed_frag.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+  - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
+    inversion H2. subst. inversion H4. subst.
+    (* XXX: monad_inv should handle *)
+    iMod (own_alloc (Cinl (1%Qp, to_agree tt) : openR)) as (γ1) "H".
+    { repeat econstructor => //=. }
+    iExists {| jrnl_names_open := γ1;
+               jrnl_names_data := jrnl_names_data (jrnl_get_names _);
+               jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) |}.
+    iDestruct "Hinterp" as "(?&?)". rewrite //=/jrnl_restart//=.
+    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    rewrite /jrnl_closed_auth/jrnl_closed_frag.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+Qed.
 
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang Require Import refinement_adequacy.
