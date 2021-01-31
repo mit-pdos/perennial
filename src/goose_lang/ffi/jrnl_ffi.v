@@ -330,6 +330,23 @@ Section jrnl_lemmas.
     }
   Qed.
 
+  Lemma jrnl_ctx_unify_closed lg:
+    jrnl_closed_frag -∗ jrnl_ctx lg -∗ ⌜ ∃ vs, lg = Closed vs ⌝.
+  Proof.
+    destruct lg; try eauto; iIntros "Hclosed_frag Hctx".
+    iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+    iDestruct (jrnl_closed_auth_opened with "[$] [$]") as %[].
+  Qed.
+
+  Lemma jrnl_ctx_unify_opened lg:
+    jrnl_open -∗ jrnl_ctx lg -∗ ⌜ ∃ vs, lg = Opened vs ⌝.
+  Proof.
+    destruct lg; try eauto; iIntros "Hopen Hctx".
+    iDestruct "Hctx" as "(Huninit_auth&Hstate_auth)".
+    iDestruct (own_valid_2 with "Huninit_auth Hopen") as %Hval.
+    inversion Hval.
+  Qed.
+
 End jrnl_lemmas.
 
 From Perennial.goose_lang Require Import adequacy.
@@ -410,5 +427,123 @@ Instance jrnl_spec_ffi_interp : spec_ffi_interp jrnl_spec_ffi_model :=
 Instance jrnl_spec_ty : ext_types (spec_ext_op_field) := jrnl_ty.
 Instance jrnl_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := jrnl_spec_ffi_interp) :=
   {| spec_ffi_interp_adequacy_field := jrnl_interp_adequacy |}.
+
+Context `{invG Σ}.
+Context `{crashG Σ}.
+Context `{!refinement_heapG Σ}.
+
+Existing Instance spec_ffi_interp_field.
+Existing Instance spec_ext_semantics_field.
+Existing Instance spec_ext_op_field.
+Existing Instance spec_ffi_model_field.
+
+Implicit Types K: spec_lang.(language.expr) → spec_lang.(language.expr).
+Instance jrnlG0 : jrnlG Σ := refinement_spec_ffiG.
+
+  Ltac inv_head_step :=
+    repeat match goal with
+        | _ => progress simplify_map_eq/= (* simplify memory stuff *)
+        | H : to_val _ = Some _ |- _ => apply of_to_val in H
+        | H : head_step ?e _ _ _ _ _ |- _ =>
+          try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
+     and can thus better be avoided. *)
+          inversion H; subst; clear H
+        | H : ext_step _ _ _ _ _ |- _ =>
+          inversion H; subst; clear H
+        | [ H1: context[ match world ?σ with | _ => _ end ], Heq: world ?σ = _ |- _ ] =>
+          rewrite Heq in H1
+        end.
+
+Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:
+  nclose sN_inv ⊆ E →
+  (∀ vs, σ.(@world _ jrnl_spec_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()) -∗
+  source_ctx (CS := spec_crash_lang) -∗
+  source_state σ -∗
+  |NC={E}=> False.
+Proof.
+  iIntros (??) "Hj Hctx H".
+  iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
+  { eapply stuck_ExternalOp; first (by eauto).
+    apply head_irreducible_not_atomically; [ by inversion 1 | ].
+    intros ?????.
+    repeat (inv_head_step; simpl in *; repeat monad_inv).
+    destruct (σ.(world)) eqn:Heq; try congruence;
+    repeat (inv_head_step; simpl in *; repeat monad_inv); eauto.
+  }
+  { solve_ndisj. }
+Qed.
+
+Lemma jrnl_opened_open_false E j K {HCTX: LanguageCtx K}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  jrnl_open -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()) -∗ |NC={E}=>
+  False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  simpl.
+  iDestruct (jrnl_ctx_unify_opened with "[$] [$]") as %Heq; subst.
+  iMod (ghost_step_open_stuck with "[$] [$] [$]") as "[]".
+  { solve_ndisj. }
+  { destruct Heq as (?&Heq). by rewrite Heq. }
+Qed.
+
+Lemma jrnl_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()) -∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()) -∗ |NC={E}=>
+  False.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iEval (simpl) in "Hffi".
+  destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
+  - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+    { apply head_prim_step_trans. simpl. econstructor.
+      * eexists _ _; repeat econstructor.
+        ** simpl. rewrite Heq. repeat econstructor.
+      * repeat econstructor.
+    }
+    { solve_ndisj. }
+    iMod (ghost_step_open_stuck with "Hj' [$] [$]") as "[]".
+    { solve_ndisj. }
+    { simpl. congruence. }
+  - iMod (ghost_step_open_stuck with "Hj' [$] [$]") as "[]".
+    { solve_ndisj. }
+    { congruence. }
+Qed.
+
+Lemma ghost_step_jrnl_open E j K {HCTX: LanguageCtx K}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  jrnl_closed_frag -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #())
+  -∗ |NC={E}=>
+  j ⤇ K #() ∗ jrnl_open.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hj".
+  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iDestruct (jrnl_ctx_unify_closed with "[$] [$]") as %(vs&Heq).
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { apply head_prim_step_trans. simpl. econstructor.
+    * eexists _ _; repeat econstructor.
+      simpl. rewrite Heq. repeat econstructor.
+    * repeat econstructor.
+  }
+  { solve_ndisj. }
+  simpl. rewrite Heq.
+  iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
+  iMod (jrnl_closed_token_open  with "[$] [$]") as "#Hopen".
+  iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
+  { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
+  iModIntro. iFrame "# ∗".
+Qed.
+
 
 End spec.
