@@ -128,6 +128,11 @@ Section jrnl.
 
   Definition jrnl_state := RecoverableState (jrnl_map).
 
+  Definition get_jrnl (s: jrnl_state) :=
+    match s with
+      | Closed j | Opened j => j
+    end.
+
   Instance jrnl_model : ffi_model := recoverable_model jrnl_map (populate (∅, ∅)).
 
   Existing Instances r_mbind r_fmap.
@@ -454,6 +459,102 @@ Instance jrnlG0 : jrnlG Σ := refinement_spec_ffiG.
           rewrite Heq in H1
         end.
 
+Notation spec_ext := jrnl_spec_ext.
+Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
+Notation sval := (@val (@spec_ext_op_field spec_ext)).
+Notation shead_step := (@head_step (@spec_ext_op_field spec_ext)).
+Notation sworld := (@world (@spec_ext_op_field spec_ext) (@spec_ffi_model_field jrnl_spec_ffi_model)).
+
+Definition jrnl_sub_dom (σj1 σj2 : jrnl_map) : Prop :=
+  (dom (gset _) (jrnlData σj1) ⊆ dom _ (jrnlData σj2) ∧ jrnlKinds σj1 ⊆ jrnlKinds σj2).
+
+Definition jrnl_sub_state (σj : jrnl_map) (s: sstate) : Prop :=
+  (∃ sj, s.(world) = Opened sj ∧ jrnlData σj ⊆ jrnlData sj ∧ jrnlKinds σj ⊆ jrnlKinds sj).
+
+Definition jrnl_upd (σj: jrnl_map) (s: sstate) : sstate :=
+  set sworld (λ s, Opened (jrnlData σj ∪ (jrnlData $ get_jrnl s), jrnlKinds $ get_jrnl s)) s.
+
+Definition always_steps (e: sexpr) (σj: jrnl_map) (e': sexpr) (σj': jrnl_map) : Prop :=
+  (jrnlKinds σj = jrnlKinds σj') ∧
+  (jrnl_sub_dom σj σj') ∧
+  (∀ s, jrnl_sub_state σj s →
+           Relation_Operators.clos_refl_trans_1n _
+             (λ '(e, s) '(e', s'), head_step e s [] e' s' [])
+               (e, s) (e', jrnl_upd σj' s)).
+
+Lemma jrnl_upd_sub σj s :
+  jrnl_sub_state σj s →
+  jrnl_upd σj s = s.
+Proof.
+  intros (sj&Heq1&Hsub1&Hsub2).
+  rewrite /jrnl_upd.
+  destruct s. rewrite /set//=. f_equal.
+  rewrite /= in Heq1. rewrite Heq1. f_equal. destruct sj as (sjd, sjk).
+  f_equal => /=. apply map_subseteq_union; auto.
+Qed.
+
+Lemma jrnl_sub_state_upd σj1 σj2 s :
+  jrnl_sub_state σj1 s →
+  jrnlKinds σj1 = jrnlKinds σj2 →
+  jrnl_sub_state σj2 (jrnl_upd σj2 s).
+Proof.
+  intros (sj&Heq&Hsub_data&Hsub_kinds) Heq_kinds.
+  eexists; split; eauto => /=.
+  split.
+  - apply map_union_subseteq_l.
+  - rewrite Heq /= -Heq_kinds //.
+Qed.
+
+Lemma jrnl_upd_upd_sub_dom σj1 σj2 s :
+  jrnl_sub_dom σj1 σj2 →
+  jrnl_upd σj2 (jrnl_upd σj1 s) = jrnl_upd σj2 s.
+Proof.
+  intros (?&?).
+  rewrite /jrnl_upd/set //=. do 3 f_equal.
+  apply map_eq => i.
+  destruct (jrnlData σj2 !! i) eqn:Hlookup.
+  { erewrite lookup_union_Some_l; eauto.
+    erewrite lookup_union_Some_l; eauto. }
+  rewrite ?lookup_union_r //.
+  apply not_elem_of_dom. apply not_elem_of_dom in Hlookup. set_solver.
+Qed.
+
+Lemma always_steps_refl e σj :
+  always_steps e σj e σj.
+Proof.
+  split_and! => //= s Hsub.
+  rewrite jrnl_upd_sub //.
+  apply Relation_Operators.rt1n_refl.
+Qed.
+
+Lemma jrnl_sub_dom_trans σj1 σj2 σj3 :
+  jrnl_sub_dom σj1 σj2 →
+  jrnl_sub_dom σj2 σj3 →
+  jrnl_sub_dom σj1 σj3.
+Proof.
+  intros (?&?) (?&?); split; etransitivity; eauto.
+Qed.
+
+Lemma always_steps_trans e1 σj1 e2 σj2 e3 σj3 :
+  always_steps e1 σj1 e2 σj2 →
+  always_steps e2 σj2 e3 σj3 →
+  always_steps e1 σj1 e3 σj3.
+Proof.
+  intros (Hkinds1&Hsub1&Hsteps1) (Hkinds2&Hsub2&Hsteps2).
+  split_and!; first congruence.
+  { eapply jrnl_sub_dom_trans; eassumption. }
+  intros s Hsub.
+  eapply Operators_Properties.clos_rt_rt1n.
+  eapply Relation_Operators.rt_trans; eapply Operators_Properties.clos_rt1n_rt.
+  { eapply Hsteps1; eauto. }
+  { assert (jrnl_upd σj3 s = jrnl_upd σj3 (jrnl_upd σj2 s)) as ->.
+    { rewrite jrnl_upd_upd_sub_dom; eauto. }
+    eapply Hsteps2; eauto.
+    eapply jrnl_sub_state_upd; eauto.
+  }
+Qed.
+
 Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:
   nclose sN_inv ⊆ E →
   (∀ vs, σ.(@world _ jrnl_spec_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
@@ -544,6 +645,7 @@ Proof.
   { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
   iModIntro. iFrame "# ∗".
 Qed.
+
 
 
 End spec.
