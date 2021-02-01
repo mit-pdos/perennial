@@ -1121,13 +1121,20 @@ Definition head_step: expr -> state -> list observation -> expr -> state -> list
     fun e s κs e' s' efs =>
       relation.denote (head_trans e) s s' (κs, e', efs).
 
+Definition fill' (K : list (ectx_item)) (e : expr) : expr := foldl (flip fill_item) e K.
+
+Inductive prim_step' (e1 : expr) (σ1 : state) (κ : list (observation))
+    (e2 : expr) (σ2 : state) (efs : list (expr)) : Prop :=
+  Ectx_step' K e1' e2' :
+    e1 = fill' K e1' → e2 = fill' K e2' →
+    head_step e1' σ1 κ e2' σ2 efs → prim_step' e1 σ1 κ e2 σ2 efs.
+
 Inductive head_step_atomic: expr -> state -> list observation -> expr -> state -> list expr -> Prop :=
  | head_step_trans : ∀ e s κs e' s' efs,
      head_step e s κs e' s' efs →
      head_step_atomic e s κs e' s' efs
  | head_step_atomically : ∀ el e s κs v' s',
-     Relation_Operators.clos_refl_trans_1n _
-       (λ '(e, s) '(e', s'), head_step e s [] e' s' []) (e, s) (Val v', s') →
+     rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (Val v', s') →
      head_step_atomic (Atomically el e) s κs (Val (InjRV v')) s' []
  | head_step_atomically_fail : ∀ el e s κs,
      head_step_atomic (Atomically el e) s κs (Val (InjLV (LitV LitUnit))) s []

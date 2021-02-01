@@ -482,9 +482,7 @@ Definition always_steps (e: sexpr) (σj: jrnl_map) (e': sexpr) (σj': jrnl_map) 
   (jrnlKinds σj = jrnlKinds σj') ∧
   (jrnl_sub_dom σj σj') ∧
   (∀ s, jrnl_sub_state σj s →
-           Relation_Operators.clos_refl_trans_1n _
-             (λ '(e, s) '(e', s'), head_step e s [] e' s' [])
-               (e, s) (e', jrnl_upd σj' s)).
+           rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (e', jrnl_upd σj' s)).
 
 Lemma jrnl_upd_sub σj s :
   jrnl_sub_state σj s →
@@ -528,7 +526,6 @@ Lemma always_steps_refl e σj :
 Proof.
   split_and! => //= s Hsub.
   rewrite jrnl_upd_sub //.
-  apply Relation_Operators.rt1n_refl.
 Qed.
 
 Lemma jrnl_sub_dom_trans σj1 σj2 σj3 :
@@ -548,8 +545,7 @@ Proof.
   split_and!; first congruence.
   { eapply jrnl_sub_dom_trans; eassumption. }
   intros s Hsub.
-  eapply Operators_Properties.clos_rt_rt1n.
-  eapply Relation_Operators.rt_trans; eapply Operators_Properties.clos_rt1n_rt.
+  eapply rtc_transitive.
   { eapply Hsteps1; eauto. }
   { assert (jrnl_upd σj3 s = jrnl_upd σj3 (jrnl_upd σj2 s)) as ->.
     { rewrite jrnl_upd_upd_sub_dom; eauto. }
@@ -570,6 +566,14 @@ Proof.
   apply map_disjoint_dom_2.
   rewrite dom_singleton. set_solver.
 Qed.
+
+Lemma always_steps_bind `{LanguageCtx _ K} e1 e2 σj1 σj2 :
+  always_steps e1 σj1 e2 σj2 →
+  always_steps (K e1) σj1 (K e2) σj2.
+Proof.
+  rewrite /always_steps.
+  intros Halways. split_and!; eauto.
+Abort.
 
 Lemma insert_jrnl_sub_state a o σj s:
   jrnl_sub_state (<[a:=o]> (jrnlData σj), jrnlKinds σj) s →
