@@ -104,7 +104,7 @@ Lemma dom_filter_eq `{Countable K} `(m1 : gmap K A) `(m2 : gmap K B) (P : K -> P
   dom (gset K) (filter (λ x, P x.1) m1) = dom (gset K) (filter (λ x, P x.1) m2).
 Proof.
   intros.
-  apply elem_of_equiv_L.
+  apply set_eq.
   setoid_rewrite elem_of_dom.
   eapply filter_same_keys_0.
   setoid_rewrite <- elem_of_dom. rewrite H0. eauto.

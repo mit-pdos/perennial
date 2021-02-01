@@ -456,7 +456,7 @@ Section gmap_addr_by_block.
     dom (gset u64) (gmap_addr_by_block m1).
   Proof.
     rewrite /gmap_addr_by_block.
-    eapply elem_of_equiv_L; split; intros.
+    eapply set_eq; split; intros.
     - destruct (decide (x ∈ dom (gset u64) (gmap_uncurry m0))); try set_solver.
       destruct (decide (x ∈ dom (gset u64) (gmap_uncurry m1))); try set_solver.
       exfalso.

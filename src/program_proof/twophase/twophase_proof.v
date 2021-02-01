@@ -445,9 +445,9 @@ Qed.
 Lemma set_union_empty_r {A} `{Countable A} (s: gset A) :
   s ∪ ∅ = s.
 Proof.
-  pose proof (iffRL (elem_of_equiv (s ∪ ∅) s)) as equiv_thm.
+  pose proof (iffRL (set_equiv (s ∪ ∅) s)) as equiv_thm.
   apply leibniz_equiv.
-  apply (iffRL (elem_of_equiv (s ∪ ∅) s)).
+  apply (iffRL (set_equiv (s ∪ ∅) s)).
   set_solver.
 Qed.
 
@@ -752,7 +752,7 @@ Proof.
   ) as Hmt_new_blknos.
   {
     rewrite /get_addr_map_blknos.
-    eapply elem_of_equiv_L.
+    eapply set_eq.
     intros blkno'.
     split.
     - intros Hin.

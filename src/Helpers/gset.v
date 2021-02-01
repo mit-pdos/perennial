@@ -4,7 +4,7 @@ From Coq Require Import ssreflect.
 (* TODO: upstream this, see std++ MR 210. *)
 Lemma gset_eq `{Countable A} (c1 c2: gset A) :
   (forall (x:A), x ∈ c1 ↔ x ∈ c2) → c1 = c2.
-Proof. apply elem_of_equiv_L. Qed.
+Proof. apply set_eq. Qed.
 
 Lemma gset_elem_is_empty `{Countable A} (c:gset A) :
   (forall x, x ∉ c) →

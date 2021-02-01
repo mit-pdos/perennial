@@ -403,7 +403,7 @@ Lemma equiv_upds_addrs_eq (upds1 upds2: list update.t) :
   list_to_set (C:=gset Z) ((λ u : update.t, int.Z u.(update.addr)) <$> upds1).
 Proof.
   intros Hequiv.
-  apply (iffRL (set_equiv_spec_L _ _)).
+  apply (iffRL (set_eq_subseteq _ _)).
   split.
   - apply list_to_set_subseteq.
     apply equiv_upds_addrs_subseteq.
