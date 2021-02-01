@@ -120,6 +120,9 @@ Section jrnl.
     (∀ a, a ∈ dom (gset _) (jrnlData m) →
      ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (int.Z (addrOff a) `mod` 2^(`k) = 0)).
 
+  Definition size_consistent a (o: obj) (jk: gmap blkno kind) :=
+    ∃ k, jk !! (addrBlock a) = Some k ∧ (length o : Z) = 2^(`k).
+
   Definition sizes_correct (m : jrnl_map) :=
     (∀ a o, jrnlData m !! a = Some o → ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (length o : Z) = 2^(`k)).
 
@@ -553,6 +556,72 @@ Proof.
     eapply Hsteps2; eauto.
     eapply jrnl_sub_state_upd; eauto.
   }
+Qed.
+
+Lemma insert_jrnl_upd a o σj s :
+  a ∉ dom (gset _) (jrnlData σj) →
+  jrnl_upd (<[a := o]> (jrnlData σj), jrnlKinds σj) s =
+  jrnl_upd σj (jrnl_upd ({[ a := o]}, jrnlKinds σj) s).
+Proof.
+  intros.
+  rewrite /jrnl_upd/set/=. do 3 f_equal.
+  rewrite insert_union_singleton_l.
+  rewrite (map_union_comm ({[a := o]})) ?assoc //.
+  apply map_disjoint_dom_2.
+  rewrite dom_singleton. set_solver.
+Qed.
+
+Lemma insert_jrnl_sub_state a o σj s:
+  jrnl_sub_state (<[a:=o]> (jrnlData σj), jrnlKinds σj) s →
+  s = (jrnl_upd ({[ a := o]}, jrnlKinds σj) s).
+Proof.
+  rewrite /jrnl_sub_state /=.
+  intros (sj&Heq1&Hsub1&Hsub2).
+  rewrite /jrnl_upd/set. destruct s => //=. simpl in Heq1. f_equal.
+  rewrite Heq1. f_equal.
+  destruct sj; f_equal. apply map_eq.
+  intros i => /=.
+  destruct (decide (a = i)).
+  - subst.
+    transitivity (({[i := o]} : gmap addr obj) !! i).
+    { rewrite lookup_singleton.
+      eapply lookup_weaken; eauto. rewrite lookup_insert //=. }
+    rewrite lookup_singleton. symmetry.
+    apply lookup_union_Some_l.
+    apply lookup_singleton.
+  - rewrite lookup_union_r //.
+    rewrite lookup_singleton_ne //=.
+Qed.
+
+Lemma always_steps_extend e1 σj1 e2 σj2 a o :
+  (a ∉ dom (gset _) (jrnlData σj2)) →
+  size_consistent a o (jrnlKinds σj1) →
+  always_steps e1 σj1 e2 σj2 →
+  always_steps e1 (<[a := o]> $ jrnlData σj1, jrnlKinds σj1)
+               e2 (<[a := o]> $ jrnlData σj2, jrnlKinds σj2).
+Proof.
+  intros Hdom Hconsistent (?&Hsub&Hstep).
+  split_and!.
+  - simpl. congruence.
+  - destruct Hsub as (?&?). split_and! => //=.
+    rewrite ?dom_insert. set_solver.
+  - intros s Hsub_state.
+    rewrite insert_jrnl_upd //.
+    rewrite {1}(insert_jrnl_sub_state _ _ _ _ Hsub_state).
+    apply Hstep.
+    rewrite /jrnl_sub_state.
+    destruct Hsub_state as (sj&Hworld&Hsub_data&?).
+    rewrite /jrnl_upd/set//=. rewrite Hworld /=.
+    eexists; split_and!; eauto => /=.
+    intros i => /=.
+    specialize (Hsub_data i).
+    destruct Hsub as (Hsub_data'&?).
+    assert (a ∉ dom (gset _) (jrnlData σj1)) as Hdom' by set_solver.
+    destruct (decide (a = i)).
+    * subst. apply not_elem_of_dom in Hdom'.
+      rewrite Hdom' => //=. destruct (({[ i := o]} ∪ jrnlData sj) !! i) eqn:Heq; rewrite Heq //.
+    * rewrite lookup_union_r ?lookup_singleton_ne //.
+      rewrite lookup_insert_ne // in Hsub_data.
 Qed.
 
 Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:
