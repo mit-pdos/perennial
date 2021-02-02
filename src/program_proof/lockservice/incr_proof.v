@@ -2,7 +2,7 @@ From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map wpc_proofmode common_proof.
 Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 
@@ -27,7 +27,7 @@ Definition KVGetPreClientWeak (cid:u64) (γrpc:rpc_names) (PreCond:iProp Σ): iP
   ).
 (*
   Should use up previous γPost to prove this fupd.
-  We want to be able to show
+  We want to be able to show →
  *)
 
 Definition IdempotentPre γrpc (cid seq:u64) (PreCond : RPCValC → iProp Σ) : (RPCValC → iProp Σ) :=
@@ -114,7 +114,7 @@ Definition idemp_fupd args : iProp Σ :=
     IdempotentPre γback.(ks_rpcGN) incr_cid seq (Get_Pre γback old_v) args)
 .
 
-Instance idemp_fupd_disc args : (Discretizable (idemp_fupd args)).
+Global Instance idemp_fupd_disc args : (Discretizable (idemp_fupd args)).
 Proof.
   rewrite /Discretizable.
   by rewrite -own_discrete_idemp.
@@ -248,8 +248,258 @@ Proof.
        IdempotentPre-granting-fupd
      *)
 
-  (* Use has_encoding data [] ∨ ... in invariant *)
-
 Admitted.
 
 End incr_proof.
+
+Section rpc_proof.
+Context `{!heapG Σ}.
+Context `{!rpcG Σ u64}.
+
+(* TODO: come up with proper names for these things *)
+Definition IdempotentPre2 γrpc (cid seq:u64) (PreCond : RPCValC → iProp Σ) : (RPCValC → iProp Σ) :=
+  λ (args:RPCValC),
+        (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ PreCond args)%I.
+
+Definition idemp_fupd2 γrpc cid args PreCond : iProp Σ :=
+    <bdisc> (∀ seq, cid fm[[γrpc.(cseq)]]↦ seq ={⊤}=∗
+      cid fm[[γrpc.(cseq)]]↦ seq ∗
+    IdempotentPre2 γrpc cid seq PreCond args)
+.
+
+Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) (cid:u64) : iProp Σ
+  :=
+    ∃ (cseqno:u64),
+      "%" ∷ ⌜int.nat cseqno > 0⌝
+    ∗ "Hcid" ∷ cl_ptr ↦[RPCClient.S :: "cid"] #cid
+    ∗ "Hseq" ∷ cl_ptr ↦[RPCClient.S :: "seq"] #cseqno
+    ∗ "Hcrpc" ∷ RPCClient_own γrpc cid cseqno
+.
+
+Theorem wpc_forBreak_cond' (P: iProp Σ) stk k E (cond body: goose_lang.val) (Φ : goose_lang.val → iProp Σ) (Φc: iProp Σ) :
+  P -∗
+  (P -∗ <disc> Φc) -∗
+  □ (P -∗
+      WPC if: cond #() then body #() else #false @ stk; k; E
+      {{ v, ⌜v = #true⌝ ∗ P ∨ ⌜v = #false⌝ ∗ (Φ #() ∧ <disc> Φc) }} {{ Φc }} ) -∗
+  WPC (for: cond; (λ: <>, Skip)%V := body) @ stk; k ; E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "HP HΦc #Hbody".
+  rewrite /For.
+  iCache with "HP HΦc".
+  { by iApply "HΦc". }
+  wpc_pures.
+  iLöb as "IH".
+  wpc_bind_seq.
+  iDestruct ("Hbody" with "HP") as "Hbody1".
+  iApply (wpc_strong_mono with "Hbody1"); try auto.
+  iSplit; last first.
+  {
+    iModIntro. iIntros.
+    by iModIntro.
+  }
+  iIntros (v) "H".
+  iModIntro.
+  iDestruct "H" as "[[% H]|[% H]]"; subst.
+  - iCache with "HΦc H".
+    { iSpecialize ("HΦc" with "H"). done. }
+    wpc_pures.
+    wpc_pures.
+    iApply ("IH" with "[$] [$]").
+  - iCache with "H".
+    { by iRight in "H". }
+    wpc_pures.
+    wpc_pures.
+    by iLeft in "H".
+Qed.
+
+Lemma wpc_RPCClient__MakeRequest k E (f:goose_lang.val) cl_ptr cid args γrpc (PreCond:RPCValC -> iProp Σ) PostCond {_:Discretizable (PreCond args)}:
+  (∀ seqno, is_rpcHandler f γrpc (IdempotentPre2 γrpc cid seqno PreCond) PostCond) -∗
+  {{{
+    PreCond args ∗
+    own_rpcclient cl_ptr γrpc cid ∗
+    is_RPCServer γrpc
+  }}}
+    RPCClient__MakeRequest #cl_ptr f (into_val.to_val args) @ k ; E
+  {{{ (retv:u64), RET #retv; own_rpcclient cl_ptr γrpc cid ∗ PostCond args retv }}}
+  {{{ idemp_fupd2 γrpc cid args PreCond }}}.
+Proof using Type*.
+  iIntros "#Hfspec" (Φ Φc) "!# [Hprecond [Hclerk #Hlinv]] HΦ".
+  iNamed "Hclerk".
+
+  iCache with "Hprecond HΦ".
+  { (* Use PreCond to show idemp_fupd *)
+    iDestruct "HΦ" as "[HΦc _]".
+    iModIntro.
+    iApply "HΦc".
+    iModIntro.
+    iIntros.
+    iModIntro.
+    iFrame.
+    iIntros.
+    iModIntro; iFrame.
+  }
+  wpc_call.
+  { admit. }
+
+
+  iCache with "Hprecond HΦ".
+  { (* Use PreCond to show idemp_fupd *)
+    iDestruct "HΦ" as "[HΦc _]".
+    iModIntro. iApply "HΦc".
+    iModIntro. iIntros.
+    iModIntro. iFrame.
+    iIntros. iModIntro; iFrame.
+  }
+  wpc_pures.
+  wpc_loadField.
+  wpc_wpapply (overflow_guard_incr_spec).
+  iIntros (HincrSafe).
+  iNamed 1.
+
+  wpc_pures.
+  wpc_loadField.
+  wpc_loadField.
+
+  wpc_pures.
+  wpc_wpapply (wp_allocStruct); first eauto.
+  iIntros (req_ptr) "Hreq".
+  iNamed 1.
+  iDestruct (struct_fields_split with "Hreq") as "(HCID&HSeq&HArgs&_)".
+  iMod (readonly_alloc_1 with "HCID") as "#HCID".
+  iMod (readonly_alloc_1 with "HSeq") as "#HSeq".
+  iMod (readonly_alloc_1 with "HArgs") as "#HArgs".
+
+  wpc_pures.
+  wpc_loadField.
+  wpc_pures.
+  wpc_storeField.
+  wpc_pures.
+  wpc_wpapply wp_ref_to; first eauto.
+  iIntros (errb_ptr) "Herrb_ptr".
+  iNamed 1.
+
+  wpc_pures.
+  wpc_wpapply (wp_allocStruct); first eauto.
+  iIntros (reply_ptr) "Hreply".
+  iNamed 1.
+  wpc_pures.
+
+  iMod (make_request {| Req_Args:=args; Req_CID:=cid; Req_Seq:=cseqno|} PreCond PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
+  { admit. (* TODO: add assumption *) }
+  { simpl. word. }
+  iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
+  (* Prepare the loop invariant *)
+  iAssert (∃ (err:bool), errb_ptr ↦[boolT] #err)%I with "[Herrb_ptr]" as "Herrb_ptr".
+  { iExists _. done. }
+  iAssert (∃ reply', own_reply reply_ptr reply')%I with "[Hreply]" as "Hreply".
+  { iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
+    iExists {| Rep_Ret:=_; Rep_Stale:=false |}. iFrame. }
+
+  wpc_bind (For _ _ _). iApply (wpc_forBreak_cond' with "[-]").
+  { by iNamedAccu. }
+  {
+    iNamed 1.
+    admit.
+  }
+  {
+    iIntros "!# __CTX"; iNamed "__CTX".
+    admit.
+  }
+  (*
+  iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
+  wp_pures.
+  iDestruct "Hreply" as (lockReply) "Hreply".
+  wp_apply (RemoteProcedureCall_spec with "[] [Hreply]"); first done.
+  { by iFrame "# ∗". }
+
+  iIntros (err) "HCallTryLockPost".
+  iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [#Hre | [#Hre HCallPost]]]".
+  { (* No reply from CallTryLock *)
+    iDestruct "Hre" as %->.
+    wp_store.
+    wp_load.
+    wp_pures.
+    iLeft. iSplitR; first done.
+    iFrame; iFrame "#".
+    iSplitL "Herrb_ptr"; eauto.
+  }
+  (* Got a reply from CallTryLock; leaving the loop *)
+  iDestruct "Hre" as %->.
+  wp_store.
+  wp_load.
+  iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
+  {
+    iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
+    simpl in bad. replace (int.nat (word.add cseqno 1))%nat with (int.nat cseqno + 1)%nat in bad by word.
+    lia.
+  }
+  iMod (get_request_post with "Hreqinv_init Hrcptstoro HγP") as "HP"; first done.
+  wp_pures.
+  iNamed "Hreply".
+  iRight. iSplitR; first done.
+  wp_seq.
+  wp_loadField.
+  iApply "Hpost".
+  iFrame; iFrame "#".
+  iExists _, (word.add cseqno 1)%nat; iFrame.
+  simpl.
+  assert (int.nat cseqno + 1 = int.nat (word.add cseqno 1))%nat as <-; first by word.
+  iPureIntro. lia.
+Qed. *)
+Admitted.
+End rpc_proof.
+
+Section kv_proof.
+Context `{!heapG Σ}.
+Context `{!kvserviceG Σ}.
+Variable γ:kvservice_names.
+Variable old_v:u64.
+
+Definition own_kvclerk γ ck_ptr srv cid : iProp Σ :=
+  ∃ (cl_ptr:loc),
+   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
+   "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
+   "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN) cid.
+
+Lemma KVClerk__Get_spec k E (kck srv:loc) (cid key:u64) :
+  is_kvserver γ srv -∗
+  {{{
+       own_kvclerk γ kck srv cid ∗
+       (idemp_fupd γ old_v cid (key, (U64 0, ())))
+  }}}
+    KVClerk__Get #kck #key @ k; E
+  {{{
+      RET #old_v;
+      own_kvclerk γ kck srv cid ∗
+      (key [[γ.(ks_kvMapGN)]]↦ old_v )
+  }}}
+  {{{
+       (idemp_fupd γ old_v cid (key, (U64 0, ())))
+  }}}
+.
+Proof.
+  iIntros "His_kv !#" (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as "(Hclerk & Hidemp_fupd)".
+  iCache with "Hidemp_fupd HΦ".
+  {
+    iDestruct "HΦ" as "[HΦc _]".
+    Opaque idemp_fupd.
+    iModIntro.
+    iApply "HΦc".
+    done.
+  }
+  wpc_call.
+  { done. }
+  iCache with "Hidemp_fupd HΦ".
+  {
+    iDestruct "HΦ" as "[HΦc _]".
+    Opaque idemp_fupd.
+    iModIntro.
+    iApply "HΦc".
+    done.
+  }
+  wpc_pures.
+Admitted.
+
+End kv_proof.
