@@ -160,7 +160,7 @@ Section jrnl.
     | OpenOp, LitV LitUnit =>
       j ← open;
       ret $ LitV $ LitUnit
-    | ReadBufOp, PairV (#(LitInt blkno), #(LitInt off), #())%V #(LitInt sz) =>
+    | ReadBufOp, PairV (#(LitInt blkno), (#(LitInt off), #()))%V #(LitInt sz) =>
       j ← openΣ;
       d ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
@@ -521,6 +521,13 @@ Proof.
   apply not_elem_of_dom. apply not_elem_of_dom in Hlookup. set_solver.
 Qed.
 
+Lemma jrnl_upd_idemp σj s :
+  jrnl_upd σj (jrnl_upd σj s) = jrnl_upd σj s.
+Proof.
+  rewrite /jrnl_upd/set//=. do 3 f_equal.
+  rewrite map_union_assoc map_union_idemp //.
+Qed.
+
 Lemma always_steps_refl e σj :
   always_steps e σj e σj.
 Proof.
@@ -567,13 +574,30 @@ Proof.
   rewrite dom_singleton. set_solver.
 Qed.
 
-Lemma always_steps_bind `{LanguageCtx _ K} e1 e2 σj1 σj2 :
+Lemma always_steps_bind `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+                                             (ffi := (spec_ffi_model_field))
+                                             (ffi_semantics := (spec_ext_semantics_field))
+                                             K} e1 e2 σj1 σj2 :
   always_steps e1 σj1 e2 σj2 →
   always_steps (K e1) σj1 (K e2) σj2.
 Proof.
   rewrite /always_steps.
-  intros Halways. split_and!; eauto.
-Abort.
+  intros (?&?&Hstep). split_and!; eauto.
+  intros s Hsub. specialize (Hstep _ Hsub).
+  clear -Hstep Hctx.
+  remember (e1, s) as ρ1 eqn:Hρ1.
+  remember (e2, jrnl_upd σj2 s) as ρ2 eqn:Hρ2.
+  revert Hρ1 Hρ2.
+  generalize (jrnl_upd σj2 s) as s'.
+  revert e1 e2 s.
+  induction Hstep.
+  - intros. rewrite Hρ1 in Hρ2. inversion Hρ2. subst.
+    apply rtc_refl.
+  - intros. subst. destruct y as (e0'&s0').
+    eapply rtc_l; last first.
+    { eapply IHHstep; eauto. }
+    simpl. eapply fill_step'. eauto.
+Qed.
 
 Lemma insert_jrnl_sub_state a o σj s:
   jrnl_sub_state (<[a:=o]> (jrnlData σj), jrnlKinds σj) s →
@@ -626,6 +650,40 @@ Proof.
       rewrite Hdom' => //=. destruct (({[ i := o]} ∪ jrnlData sj) !! i) eqn:Heq; rewrite Heq //.
     * rewrite lookup_union_r ?lookup_singleton_ne //.
       rewrite lookup_insert_ne // in Hsub_data.
+Qed.
+
+Definition addr2val' (a : addr) : sval := (#(addrBlock a), (#(addrOff a), #()))%V.
+Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
+  jrnlData σj !! a = Some v →
+  jrnlKinds σj !! (addrBlock a) = Some k →
+  (`k ≠ 0 ∧ 2^(`k) = int.Z sz) →
+  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                           ReadBufOp
+                           (PairV (addr2val' a) #sz))
+               σj
+               (val_of_obj v)
+               σj.
+Proof.
+  intros Hlookup1 Hlookup2 Hk.
+  split_and!; eauto.
+  { split_and!; set_solver. }
+  intros s Hsub.
+  apply rtc_once.
+  eapply (Ectx_step' _ _ _ _ _ _ []) => //=.
+  rewrite jrnl_upd_sub // /head_step//=.
+  rewrite /jrnl_sub_state in Hsub.
+  destruct Hsub as (?&Heq&?&?).
+  destruct a as (ablk&aoff).
+  econstructor; last econstructor; eauto.
+  econstructor; repeat (econstructor; eauto).
+  { rewrite Heq. econstructor. eauto. }
+  { simpl in Hlookup1.
+    eapply lookup_weaken in Hlookup1; last eassumption.
+    rewrite Hlookup1. econstructor; eauto. }
+  { simpl in Hlookup2.
+    eapply lookup_weaken in Hlookup2; last eassumption.
+    rewrite Hlookup2. econstructor; eauto. }
+  { rewrite /check/ifThenElse. rewrite decide_True //=. }
 Qed.
 
 Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:

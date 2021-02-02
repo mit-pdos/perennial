@@ -1320,6 +1320,19 @@ Proof.
   auto.
 Qed.
 
+Class LanguageCtx' (K : expr → expr) : Prop :=
+  { fill_not_val' : ∀ e, to_val e = None → to_val (K e) = None;
+    fill_step' : ∀ e1 σ1 κ e2 σ2 efs,
+                  prim_step' e1 σ1 κ e2 σ2 efs → prim_step' (K e1) σ1 κ (K e2) σ2 efs }.
+
+Global Instance ectx_lang_ctx' K : LanguageCtx' (fill K).
+Proof.
+  split; simpl.
+  - intros. eapply fill_not_val; eauto.
+  - intros ?????? [K' e1' e2' Heq1 Heq2 Hstep].
+    by exists (comp_ectx K K') e1' e2'; rewrite ?Heq1 ?Heq2 ?fill_comp.
+Qed.
+
 (* TODO(tej): I'm not convinced this is even true, we probably don't handle
 Resolve (Atomically _ _) _ _ in a sensible way because it's stuck but Atomically _ _
 isn't. *)
