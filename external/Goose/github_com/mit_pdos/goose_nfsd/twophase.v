@@ -3,7 +3,6 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
-From Goose Require github_com.mit_pdos.goose_nfsd.buf.
 From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.lockmap.
@@ -35,14 +34,19 @@ Definition TwoPhase__acquireNoCheck: val :=
     lockmap.LockMap__Acquire (struct.loadF TwoPhase.S "locks" "twophase") "bnum";;
     struct.storeF TwoPhase.S "acquired" "twophase" (SliceAppend uint64T (struct.loadF TwoPhase.S "acquired" "twophase") "bnum").
 
-Definition TwoPhase__Acquire: val :=
-  rec: "TwoPhase__Acquire" "twophase" "bnum" :=
+Definition TwoPhase__isAlreadyAcquired: val :=
+  rec: "TwoPhase__isAlreadyAcquired" "twophase" "bnum" :=
     let: "already_acquired" := ref_to boolT #false in
     ForSlice uint64T <> "acq" (struct.loadF TwoPhase.S "acquired" "twophase")
       (if: ("bnum" = "acq")
       then "already_acquired" <-[boolT] #true
       else #());;
-    (if: ~ (![boolT] "already_acquired")
+    ![boolT] "already_acquired".
+
+Definition TwoPhase__Acquire: val :=
+  rec: "TwoPhase__Acquire" "twophase" "bnum" :=
+    let: "already_acquired" := TwoPhase__isAlreadyAcquired "twophase" "bnum" in
+    (if: ~ "already_acquired"
     then TwoPhase__acquireNoCheck "twophase" "bnum"
     else #()).
 
@@ -59,10 +63,15 @@ Definition TwoPhase__ReleaseAll: val :=
       TwoPhase__Release "twophase";;
       Continue).
 
+Definition TwoPhase__readBufNoAcquire: val :=
+  rec: "TwoPhase__readBufNoAcquire" "twophase" "addr" "sz" :=
+    let: "s" := util.CloneByteSlice (struct.loadF buf.Buf.S "Data" (buftxn.BufTxn__ReadBuf (struct.loadF TwoPhase.S "buftxn" "twophase") "addr" "sz")) in
+    "s".
+
 Definition TwoPhase__ReadBuf: val :=
   rec: "TwoPhase__ReadBuf" "twophase" "addr" "sz" :=
     TwoPhase__Acquire "twophase" (struct.get addr.Addr.S "Blkno" "addr");;
-    buftxn.BufTxn__ReadBuf (struct.loadF TwoPhase.S "buftxn" "twophase") "addr" "sz".
+    TwoPhase__readBufNoAcquire "twophase" "addr" "sz".
 
 (* OverWrite writes an object to addr *)
 Definition TwoPhase__OverWrite: val :=
@@ -88,10 +97,14 @@ Definition TwoPhase__LogSzBytes: val :=
   rec: "TwoPhase__LogSzBytes" "twophase" :=
     buftxn.BufTxn__LogSzBytes (struct.loadF TwoPhase.S "buftxn" "twophase").
 
-Definition TwoPhase__Commit: val :=
-  rec: "TwoPhase__Commit" "twophase" :=
+Definition TwoPhase__CommitNoRelease: val :=
+  rec: "TwoPhase__CommitNoRelease" "twophase" :=
     util.DPrintf #1 (#(str"tp Commit %p
     ")) #();;
-    let: "ok" := buftxn.BufTxn__CommitWait (struct.loadF TwoPhase.S "buftxn" "twophase") #true in
+    buftxn.BufTxn__CommitWait (struct.loadF TwoPhase.S "buftxn" "twophase") #true.
+
+Definition TwoPhase__Commit: val :=
+  rec: "TwoPhase__Commit" "twophase" :=
+    let: "ok" := TwoPhase__CommitNoRelease "twophase" in
     TwoPhase__ReleaseAll "twophase";;
     "ok".
