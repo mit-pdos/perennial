@@ -433,7 +433,7 @@ Proof.
   } *)
 Admitted.
 
-Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid args γrpc (PreCond:RPCValC -> iProp Σ) PostCond {_:Discretizable (PreCond args)}:
+Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid args γrpc (PreCond:RPCValC -> iProp Σ) PostCond {_:Discretizable (PreCond args)} {_:∀ reply, Discretizable (PostCond args reply)}:
   (∀ seqno, is_rpcHandler f γrpc (quiesce_fupd γrpc cid seqno PreCond PostCond) PostCond) -∗
   {{{
     PreCond args ∗
@@ -623,56 +623,22 @@ Proof using Type*.
     replace (RPCReply.S) with (lockservice_nocrash.RPCReply.S) by done.
     replace (lockservice_nocrash.RPCReply.S) with (RPCReply.S) by done.
 
-    (* TODO: why isn't this binding? *)
-    (*
-    wpc_bind (struct.loadF _ _ #(_))%E.
-    wpc_loadField.
+    iApply wpc_fupd.
+    wpc_frame.
+    wp_loadField.
+    iNamed 1.
 
     iMod (get_request_post with "Hreqinv_init Hrcptstoro HγP") as "HP"; first done.
     simpl.
-    iModIntro. *)
-
-  (*
-  iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
-  wp_pures.
-  iDestruct "Hreply" as (lockReply) "Hreply".
-  wp_apply (RemoteProcedureCall_spec with "[] [Hreply]"); first done.
-  { by iFrame "# ∗". }
-
-  iIntros (err) "HCallTryLockPost".
-  iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [#Hre | [#Hre HCallPost]]]".
-  { (* No reply from CallTryLock *)
-    iDestruct "Hre" as %->.
-    wp_store.
-    wp_load.
-    wp_pures.
-    iLeft. iSplitR; first done.
-    iFrame; iFrame "#".
-    iSplitL "Herrb_ptr"; eauto.
-  }
-  (* Got a reply from CallTryLock; leaving the loop *)
-  iDestruct "Hre" as %->.
-  wp_store.
-  wp_load.
-  iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
-  {
-    iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
-    simpl in bad. replace (int.nat (word.add cseqno 1))%nat with (int.nat cseqno + 1)%nat in bad by word.
-    lia.
-  }
-  iMod (get_request_post with "Hreqinv_init Hrcptstoro HγP") as "HP"; first done.
-  wp_pures.
-  iNamed "Hreply".
-  iRight. iSplitR; first done.
-  wp_seq.
-  wp_loadField.
-  iApply "Hpost".
-  iFrame; iFrame "#".
-  iExists _, (word.add cseqno 1)%nat; iFrame.
-  simpl.
-  assert (int.nat cseqno + 1 = int.nat (word.add cseqno 1))%nat as <-; first by word.
-  iPureIntro. lia.
-Qed. *)
+    assert (Timeless (PostCond args reply.(Rep_Ret))) by admit. (* Timeless post *)
+    iMod "HP".
+    iModIntro.
+    iRight in "HΦ".
+    iApply "HΦ".
+    iFrame.
+    iExists _; iFrame.
+    iPureIntro.
+    word.
 Admitted.
 End rpc_proof.
 
