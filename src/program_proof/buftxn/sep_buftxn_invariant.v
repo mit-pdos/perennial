@@ -204,6 +204,18 @@ Section goose_lang.
       "Hdurable" ∷ map_ctx γdurable (1/2) (mspec.committed <$> mT)
   .
 
+  (* To make work with 2PL:
+     Consider is_buftxn_mem' that has Hdurable removed and adds mT as an explicit parameter.
+     Right before commit, we
+     convert is_buftxn_mem' .. .. mT ∗ ([∗ map] a ↦ o ∈ mT durable_mapsto a o) into an is_buftxn. *)
+
+  (* Alternative is define is_buftxn_durable' mT which is just Hdurable and then prove that
+     from is_buftxn_mem ∗ ([∗ map] a ↦ o ∈ mT, durable_mapsto a o) ∗ is_buftxn_durable' mT
+     can be converted into an is_buftxn
+
+    This seems better.
+  *)
+
   Definition is_buftxn_durable γ γdurable (P0 : (_ -> _ -> iProp Σ) -> iProp Σ) : iProp Σ :=
     ∃ committed_mT,
       "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT ∗

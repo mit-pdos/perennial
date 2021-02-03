@@ -763,6 +763,22 @@ Proof.
   rewrite /jrnl_sub_state.
 Admitted.
 
+(*
+Lock Invariant for address a in 2PL:
+
+durable_mapsto γ a o
+
+Doesn't work: ∃ o, jrnl_mapsto a 1 o ∗  durable_mapsto_own γ a o
+
+durable_mapsto γ a o
+ephemeral_mapsto γ a o
+
+Lock invariant :
+∃ o, ephemeral_mapsto γ a o ∗
+     na_crash_inv (jrnl_mapsto a 1 o ∗ durable_mapsto γ a o)
+                  (∃ o', jrnl_mapsto a 1 o' ∗ durable_mapsto γ' a o')
+
+*)
 
 Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v: sval) σj' :
   always_steps e σj v σj' →
