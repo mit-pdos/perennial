@@ -1,4 +1,4 @@
-From Perennial.program_proof.lockservice Require Import lockservice.
+From Perennial.program_proof.lockservice Require Import lockservice_nocrash.
 From iris.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
