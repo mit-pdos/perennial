@@ -400,10 +400,16 @@ Section kv_proof.
 Context `{!heapG Σ}.
 Context `{!kvserviceG Σ}.
 Variable γ:kvservice_names.
-Variable old_v:u64.
 
-Global Instance quiesceable_pre_disc cid key : (Discretizable
+Global Instance quiesceable_pre_disc cid key old_v : (Discretizable
        (quiesceable_pre γ.(ks_rpcGN) cid (key, (U64 0, ())) (Get_Pre γ old_v) (Get_Post γ old_v))).
+Proof.
+  rewrite /Discretizable.
+  by rewrite -own_discrete_idemp.
+Defined.
+
+Global Instance quiesceable_put_disc cid args : (Discretizable
+       (quiesceable_pre γ.(ks_rpcGN) cid args (Put_Pre γ) (Put_Post γ))).
 Proof.
   rewrite /Discretizable.
   by rewrite -own_discrete_idemp.
@@ -415,7 +421,7 @@ Definition own_kvclerk γ ck_ptr srv cid : iProp Σ :=
    "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
    "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN) cid.
 
-Lemma wpc_KVClerk__Get k E (kck srv:loc) (cid key:u64) :
+Lemma wpc_KVClerk__Get k E (kck srv:loc) (cid key old_v:u64) :
   is_kvserver γ srv -∗
   {{{
        own_kvclerk γ kck srv cid ∗
@@ -456,6 +462,23 @@ Proof.
   iNamed "Hclerk".
   wpc_loadField.
   (* Need is_rpcHandler for KVServer__Get with quiesce_fupd pre *)
+Admitted.
+
+Lemma wpc_KVClerk__Put k E (kck srv:loc) (cid key value:u64) :
+  is_kvserver γ srv -∗
+  {{{
+       own_kvclerk γ kck srv cid ∗
+       quiesceable_pre γ.(ks_rpcGN) cid (key, (value, ())) (Put_Pre γ) (Put_Post γ)
+  }}}
+    KVClerk__Put #kck #key #value @ k; E
+  {{{
+      RET #();
+      own_kvclerk γ kck srv cid ∗
+      ((key [[γ.(ks_kvMapGN)]]↦ value ) ∧ quiesceable_pre γ.(ks_rpcGN) cid (key, (value, ())) (Put_Pre γ) (Put_Post γ))
+  }}}
+  {{{
+       quiesceable_pre γ.(ks_rpcGN) cid (key, (value, ())) (Put_Pre γ) (Put_Post γ)
+  }}}.
 Admitted.
 
 End kv_proof.
@@ -516,22 +539,14 @@ Definition IncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
   (* Case 2: After crash barrier *)
   ( ∃ data,
   "Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string sseq) +:+ "_oldv") f↦ data ∗
-  "%Hencoding" ∷ ⌜has_encoding data [EncUInt64 old_v]⌝
+  "%Hencoding" ∷ ⌜has_encoding data [EncUInt64 old_v]⌝ ∗
+   "Hq" ∷ quiesceable_pre γback.(ks_rpcGN) incr_cid (args.1, (word.add old_v 1, ())) (Put_Pre γback) (Put_Post γback)
   )
 .
 
-Instance CrashInv_disc sseq  args : (Discretizable (IncrCrashInvariant sseq args)) := _.
-(*
+Instance CrashInv_disc sseq args : (Discretizable (IncrCrashInvariant sseq args)).
 Proof.
-  rewrite /Discretizable.
-  iIntros "[H|H]".
-  - iNamed "H".
-    rewrite own_discrete_idemp.
-    iModIntro.
-    iLeft. iFrame.
-  - iModIntro. iRight. iFrame.
-Defined.
- *)
+Admitted.
 
 Lemma increment_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValC) :
   {{{
@@ -541,7 +556,7 @@ Lemma increment_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValC) :
   }}}
     IncrServer__increment_core #isrv #seq (into_val.to_val args) @ 37 ; ⊤
   {{{
-      RET #(); True
+      RET #0; True
   }}}
   {{{
        IncrCrashInvariant seq args ∗
@@ -577,7 +592,7 @@ Proof.
   wpc_pures.
 
   iDestruct "HincrCrashInv" as "[Hcase|Hcase]"; iNamed "Hcase".
-  {
+  { (* Case Get not done *)
     iCache with "Hfown_oldv Hq HΦ Hghost".
     {
       iDestruct "HΦ" as "[HΦc _]".
@@ -697,11 +712,13 @@ Proof.
         iRight.
         iExists _; iFrame.
         simpl in Hencoding.
-        done.
+        iSplitL ""; first done.
+        (* TODO: Put_Pre -> quiesceable_pre (Put_Pre) *)
+        admit.
       }
     }
     iNext.
-    iIntros "Hfown".
+    iIntros "[Hfown Hslice]".
 
     iCache with "Hfown HΦ Hghost Hkvptsto".
     {
@@ -718,7 +735,44 @@ Proof.
 
     wpc_loadField.
 
-    (* TODO: write idempotent spec for KVClerk__Put *)
+    wpc_apply (wpc_KVClerk__Put with "His_kvserver [$Hkck_own Hkvptsto]").
+    { admit. (* TODO: quiesceable_intro *) }
+    iSplit.
+    {
+      iLeft in "HΦ".
+      iModIntro.
+      iIntros.
+      iApply "HΦ".
+      iFrame.
+      iRight.
+      iExists _; iFrame.
+      done.
+    }
+    iNext.
+
+    iIntros "[Hkck_own HputPost]".
+
+    wpc_pures.
+    {
+      iRight in "HputPost".
+      iLeft in "HΦ".
+      Opaque quiesceable_pre.
+      iModIntro.
+      iApply "HΦ".
+      iFrame "Hghost".
+      iRight.
+      iExists _; iFrame.
+      done.
+    }
+
+    iRight in "HΦ".
+    iApply "HΦ".
+    done.
+  }
+  { (* Case get already done *)
+    (* TODO: Merge if/then/rest from above *)
+    admit.
+  }
 Admitted.
 
 End incr_proof.
