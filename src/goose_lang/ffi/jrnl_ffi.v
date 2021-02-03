@@ -755,13 +755,29 @@ Qed.
 Lemma jrnl_ctx_sub_state_valid σj s :
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
   ([∗ map] b ↦ k ∈ (jrnlKinds σj), jrnl_kinds_mapsto b k) -∗
-    jrnl_open -∗
-    jrnl_ctx s.(world) -∗
-    ⌜ jrnl_sub_state σj s ⌝.
+  jrnl_open -∗
+  jrnl_ctx s.(world) -∗
+  ⌜ jrnl_sub_state σj s ⌝.
 Proof.
   iIntros "Hpts #Hkinds #Hopen Hctx".
   rewrite /jrnl_sub_state.
-Admitted.
+  iDestruct (jrnl_ctx_unify_opened with "[$] [$]") as %[sj Heq].
+  iExists _. iSplit; first eauto.
+  iSplit.
+  - iIntros (a). destruct (jrnlData σj !! a) as [o|] eqn:Heq'.
+    { rewrite /=. iDestruct (big_sepM_lookup with "Hpts") as "H"; eauto.
+      rewrite /jrnl_ctx. rewrite Heq. iDestruct "Hctx" as "(_&_&Hctx1&Hctx2)".
+      iDestruct "H" as "(?&?)".
+      iDestruct (map_valid with "Hctx1 [$]") as %->; eauto.
+    }
+    { rewrite /=. destruct (jrnlData sj !! _); eauto. }
+  - iIntros (a). destruct (jrnlKinds σj !! a) as [o|] eqn:Heq'.
+    { rewrite /=. iDestruct (big_sepM_lookup with "Hkinds") as "H"; eauto.
+      rewrite /jrnl_ctx. rewrite Heq. iDestruct "Hctx" as "(_&_&Hctx1&Hctx2)".
+      iDestruct (map_ro_valid with "Hctx2 [$]") as %->; eauto.
+    }
+    { rewrite /=. destruct (jrnlKinds sj !! _); eauto. }
+Qed.
 
 (*
 Lock Invariant for address a in 2PL:
@@ -796,7 +812,8 @@ Proof.
   iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
-  iMod (ghost_step_lifting _ _ _ (Atomically l e) s [] (jrnl_upd σj' s) (SOMEV v) [] with "Hj Hctx H") as "(Hj&H&_)".
+  iMod (ghost_step_lifting _ _ _ (Atomically l e) s [] (jrnl_upd σj' s) (SOMEV v) []
+          with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step.
     apply head_step_atomically.
     eapply Hrtc.
