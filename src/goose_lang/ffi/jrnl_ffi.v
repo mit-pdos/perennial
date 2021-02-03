@@ -247,6 +247,8 @@ Definition jrnl_closed_auth {Σ} {lG :jrnlG Σ} :=
 Definition jrnl_mapsto {Σ} {lG: jrnlG Σ} a q v : iProp Σ :=
   ptsto_mut (jrnlG_data_name) a q v ∗
   (∃ (k : kind), ⌜ (length v : Z) = 2^(`k) ⌝ ∗ ptsto_ro (jrnlG_kinds_name) (addrBlock a) (k : kind)).
+Definition jrnl_kinds_mapsto {Σ} {lG: jrnlG Σ} blk k : iProp Σ :=
+  ptsto_ro (jrnlG_kinds_name) blk (k : kind).
 
 Section jrnl_interp.
   Existing Instances jrnl_op jrnl_model jrnl_val_ty.
@@ -752,13 +754,14 @@ Qed.
 
 Lemma jrnl_ctx_sub_state_valid σj s :
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
+  ([∗ map] b ↦ k ∈ (jrnlKinds σj), jrnl_kinds_mapsto b k) -∗
     jrnl_open -∗
     jrnl_ctx s.(world) -∗
     ⌜ jrnl_sub_state σj s ⌝.
 Proof.
-  iIntros "Hpts #Hopen Hctx".
+  iIntros "Hpts #Hkinds #Hopen Hctx".
   rewrite /jrnl_sub_state.
-Abort.
+Admitted.
 
 
 Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v: sval) σj' :
@@ -766,19 +769,22 @@ Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v:
   nclose sN ⊆ E →
   spec_ctx -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
+  ([∗ map] b ↦ k ∈ (jrnlKinds σj), jrnl_kinds_mapsto b k) -∗
+  jrnl_open -∗
   j ⤇ K (Atomically l e)
   -∗ |NC={E}=>
   j ⤇ K (SOMEV v) ∗ ([∗ map] a ↦ o ∈ (jrnlData σj'), jrnl_mapsto a 1 o).
 Proof.
-  iIntros (Hsteps ?) "(#Hctx&#Hstate) Hσj Hj".
+  iIntros (Hsteps ?) "(#Hctx&#Hstate) Hσj_data Hσj_kinds Hopen Hj".
   destruct Hsteps as (?&?&Hrtc).
   iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
   iMod (ghost_step_lifting _ _ _ (Atomically l e) s [] (jrnl_upd σj' s) (SOMEV v) [] with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step.
     apply head_step_atomically.
     eapply Hrtc.
-    admit.
+    auto.
   }
   { solve_ndisj. }
   simpl.
