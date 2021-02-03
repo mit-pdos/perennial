@@ -470,7 +470,7 @@ Notation shead_step := (@head_step (@spec_ext_op_field spec_ext)).
 Notation sworld := (@world (@spec_ext_op_field spec_ext) (@spec_ffi_model_field jrnl_spec_ffi_model)).
 
 Definition jrnl_sub_dom (σj1 σj2 : jrnl_map) : Prop :=
-  (dom (gset _) (jrnlData σj1) ⊆ dom _ (jrnlData σj2) ∧ jrnlKinds σj1 ⊆ jrnlKinds σj2).
+  (dom (gset _) (jrnlData σj1) = dom _ (jrnlData σj2) ∧ jrnlKinds σj1 ⊆ jrnlKinds σj2).
 
 Definition jrnl_sub_state (σj : jrnl_map) (s: sstate) : Prop :=
   (∃ sj, s.(world) = Opened sj ∧ jrnlData σj ⊆ jrnlData sj ∧ jrnlKinds σj ⊆ jrnlKinds sj).
@@ -518,7 +518,7 @@ Proof.
   { erewrite lookup_union_Some_l; eauto.
     erewrite lookup_union_Some_l; eauto. }
   rewrite ?lookup_union_r //.
-  apply not_elem_of_dom. apply not_elem_of_dom in Hlookup. set_solver.
+  apply not_elem_of_dom. apply not_elem_of_dom in Hlookup. rewrite H1. auto.
 Qed.
 
 Lemma jrnl_upd_idemp σj s :
@@ -632,7 +632,7 @@ Proof.
   split_and!.
   - simpl. congruence.
   - destruct Hsub as (?&?). split_and! => //=.
-    rewrite ?dom_insert. set_solver.
+    rewrite ?dom_insert_L H2. set_solver.
   - intros s Hsub_state.
     rewrite insert_jrnl_upd //.
     rewrite {1}(insert_jrnl_sub_state _ _ _ _ Hsub_state).
@@ -644,7 +644,7 @@ Proof.
     intros i => /=.
     specialize (Hsub_data i).
     destruct Hsub as (Hsub_data'&?).
-    assert (a ∉ dom (gset _) (jrnlData σj1)) as Hdom' by set_solver.
+    assert (a ∉ dom (gset _) (jrnlData σj1)) as Hdom' by (rewrite Hsub_data'; set_solver).
     destruct (decide (a = i)).
     * subst. apply not_elem_of_dom in Hdom'.
       rewrite Hdom' => //=. destruct (({[ i := o]} ∪ jrnlData sj) !! i) eqn:Heq; rewrite Heq //.
@@ -750,33 +750,44 @@ Proof.
     { congruence. }
 Qed.
 
-Lemma ghost_step_jrnl_open E j K {HCTX: LanguageCtx K}:
+Lemma jrnl_ctx_sub_state_valid σj s :
+  ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
+    jrnl_open -∗
+    jrnl_ctx s.(world) -∗
+    ⌜ jrnl_sub_state σj s ⌝.
+Proof.
+  iIntros "Hpts #Hopen Hctx".
+  rewrite /jrnl_sub_state.
+Abort.
+
+
+Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v: sval) σj' :
+  always_steps e σj v σj' →
   nclose sN ⊆ E →
   spec_ctx -∗
-  jrnl_closed_frag -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #())
+  ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
+  j ⤇ K (Atomically l e)
   -∗ |NC={E}=>
-  j ⤇ K #() ∗ jrnl_open.
+  j ⤇ K (SOMEV v) ∗ ([∗ map] a ↦ o ∈ (jrnlData σj'), jrnl_mapsto a 1 o).
 Proof.
-  iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hj".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iIntros (Hsteps ?) "(#Hctx&#Hstate) Hσj Hj".
+  destruct Hsteps as (?&?&Hrtc).
+  iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
-  iDestruct (jrnl_ctx_unify_closed with "[$] [$]") as %(vs&Heq).
-  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step_trans. simpl. econstructor.
-    * eexists _ _; repeat econstructor.
-      simpl. rewrite Heq. repeat econstructor.
-    * repeat econstructor.
+  iMod (ghost_step_lifting _ _ _ (Atomically l e) s [] (jrnl_upd σj' s) (SOMEV v) [] with "Hj Hctx H") as "(Hj&H&_)".
+  { apply head_prim_step.
+    apply head_step_atomically.
+    eapply Hrtc.
+    admit.
   }
   { solve_ndisj. }
-  simpl. rewrite Heq.
-  iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
-  iMod (jrnl_closed_token_open  with "[$] [$]") as "#Hopen".
+  simpl.
+  (*
   iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
   { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
   iModIntro. iFrame "# ∗".
-Qed.
-
+   *)
+Abort.
 
 
 End spec.
