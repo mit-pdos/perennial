@@ -327,8 +327,8 @@ Tactic Notation "wpc_bind" open_constr(efoc) :=
   iStartProof;
   lazymatch goal with
   | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q1 ?Q2) =>
-    reshape_expr e ltac:(fun K e' => unify e' efoc; wpc_bind_core K)
-    || fail "wpc_bind: cannot find" efoc "in" e
+    first [ reshape_expr e ltac:(fun K e' => unify e' efoc; wpc_bind_core K)
+      | fail 1 "wpc_bind: cannot find" efoc "in" e ]
   | |- envs_entails _ (wp ?s ?E ?e ?Q) => fail "wpc_bind: 'wp', not a 'wpc'"
   | _ => fail "wpc_bind: not a 'wpc'"
   end.
