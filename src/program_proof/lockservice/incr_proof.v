@@ -313,33 +313,40 @@ Proof.
     by iLeft in "H".
 Qed.
 
-Lemma quiesce_request E (req:RPCRequest) new_seq γrpc γreq PreCond PostCond :
+Lemma quiesce_request E (req:RPCRequest) (client_seq:u64) γrpc γreq PreCond PostCond :
   ↑rpcRequestInvN ⊆ E →
   ↑replyTableInvN ⊆ E →
-  (int.nat new_seq > int.nat req.(Req_Seq)) →
   is_RPCServer γrpc -∗
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
-  (RPCRequest_token γreq) ={E}=∗
-  IdempotentPre2 γrpc req.(Req_CID) new_seq PreCond PostCond req.(Req_Args).
+  (RPCRequest_token γreq) -∗
+  (∀ (new_seq:u64), RPCClient_own γrpc req.(Req_CID) new_seq ={E}=∗ (* Need this to get ineq new_seq >= client_seq *)
+   RPCClient_own γrpc req.(Req_CID) new_seq ∗
+   IdempotentPre2 γrpc req.(Req_CID) new_seq PreCond PostCond req.(Req_Args)).
 Proof.
-    iIntros (Hnamespace1 Hnamespace2 Hnew_seq) "#Hsrpc #His_req Hγpost".
+    iIntros (Hnamespace1 Hnamespace2) "#Hsrpc #His_req Hγpost".
+    (* iDestruct (fmcounter_map_get_lb with "Hcown") as "#Hcseq_lb". *)
+    iInv "His_req" as "[>#Hcseq_lb_strict HN]" "HNClose".
+    iMod ("HNClose" with "[$Hcseq_lb_strict $HN]") as "_".
+    (* iDestruct (fmcounter_map_agree_lb with "Hcown Hcseq_lb_strict") as %Hclient_seq_ineq. *)
+
+    iFrame.
+
+    iIntros (new_seq) "Hcown".
+    iDestruct (fmcounter_map_agree_lb with "Hcown Hcseq_lb_strict") as %Hnew_seq.
     iModIntro.
+    iFrame.
 
     iIntros "Hγproc #Hlseq_lb".
     iInv "His_req" as "HN" "HNClose".
-    iDestruct "HN" as "[#>Hcseq_lb_strict [HN|HN]]"; simpl. (* Is cseq_lb_strict relevant for this? *)
+    iDestruct "HN" as "[#>_ [HN|HN]]"; simpl. (* Is cseq_lb_strict relevant for this? *)
     {
       iDestruct "HN" as "[_ [>Hbad|HN]]".
       { iDestruct (own_valid_2 with "Hbad Hγproc") as %?; contradiction. }
 
-      (* iInv "Hsrpc" as ">HM" "HMClose".
-      iNamed "HM". *)
-
       iMod ("HNClose" with "[Hγpost]") as "_".
       { iNext. iFrame "Hcseq_lb_strict". iRight. iFrame.
-        iSplitR ""; last admit.
-        admit.
-        (* TODO: fmcounter reasoning *)
+        iDestruct (fmcounter_map_mono_lb (int.nat req.(Req_Seq)) with "Hlseq_lb") as "$".
+        lia.
       }
       iFrame.
       iModIntro.
@@ -348,8 +355,8 @@ Proof.
       iDestruct "HN" as "[_ $]".
     }
     {
-      iDestruct "HN" as "[_ HN]".
-      iDestruct "HN" as (last_reply) "[#>Hreply [>Hbad | HP]]".
+      iDestruct "HN" as "[#Hlseq_lb_req HN]".
+      iDestruct "HN" as "[>Hbad|Hreply_post]".
       { by iDestruct (own_valid_2 with "Hγpost Hbad") as %Hbad. }
       iMod ("HNClose" with "[Hγpost]") as "_".
       {
@@ -357,16 +364,14 @@ Proof.
         iFrame "Hcseq_lb_strict".
         iRight.
         iFrame "# ∗".
-        iSplitL "Hlseq_lb".
-        { admit. (* Use Hnew_seq and Hlseq_lb *) }
-        iExists _; iFrame "Hreply".
       }
+      iDestruct "Hreply_post" as (last_reply) "[#Hreply Hpost]".
       iModIntro.
       iFrame.
       iRight.
       iExists _; iFrame.
     }
-Admitted.
+Qed.
 
 Lemma wpc_RPCClient__MakeRequest k E (f:goose_lang.val) cl_ptr cid args γrpc (PreCond:RPCValC -> iProp Σ) PostCond {_:Discretizable (PreCond args)}:
   (∀ seqno, is_rpcHandler f γrpc (IdempotentPre2 γrpc cid seqno PreCond PostCond) PostCond) -∗

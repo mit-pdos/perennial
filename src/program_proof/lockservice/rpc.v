@@ -92,8 +92,9 @@ Local Definition RPCRequest_inv γrpc γreq (PreCond : A -> iProp Σ) (PostCond 
 
       (* Server has finished processing; two sub-states for whether client has taken PostCond out *)
       req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq) ∗
+        (own γreq.(post) (Excl ()) ∨
         (∃ (last_reply:R), (req.(Req_CID), req.(Req_Seq)) [[γrpc.(rc)]]↦ro Some last_reply ∗
-          (own γreq.(post) (Excl ()) ∨ PostCond req.(Req_Args) last_reply)
+          (PostCond req.(Req_Args) last_reply))
       )
     ).
 
@@ -300,7 +301,7 @@ Proof using Type*.
       lia.
     }
     iMod ("HMClose" with "[Hpost]") as "_".
-    { iNext. iFrame "#". iRight. iExists _; iFrame "#∗". }
+    { iNext. iFrame "#". iRight. iRight. iExists _; iFrame "#∗". }
     iModIntro.
 
     iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM req.(Req_CID) req.(Req_Seq) reply with "[Hreqeq_lb] Hrcagree") as "Hrcagree2"; eauto.
@@ -374,10 +375,11 @@ Proof using Type*.
   iInv rpcRequestInvN as "HMinner" "HMClose".
   iDestruct "HMinner" as "[#>Hlseqbound [[Hbad _] | [#Hlseq_lb HMinner]]]".
   { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">[_ []]". }
-  iDestruct "HMinner" as (last_reply) "[#Hreply [>Hbad | HP]]".
-  { by iDestruct (own_valid_2 with "HγP Hbad") as %Hbad. }
+  iDestruct "HMinner" as "[>Hγpost|Hreply_post]".
+  { by iDestruct (own_valid_2 with "HγP Hγpost") as %Hbad. }
+  iDestruct "Hreply_post" as (last_reply) "[#Hreply Hpost]".
   iMod ("HMClose" with "[HγP]") as "_".
-  { iNext. iFrame "#". iRight. iExists r. iFrame "#". iLeft. done. }
+  { iNext. iFrame "#". iRight. iLeft. done. }
   iModIntro. iModIntro.
   iDestruct (ptsto_ro_agree with "Hreply Hptstoro") as %Heq.
   by injection Heq as ->.
@@ -456,7 +458,7 @@ Proof.
     }
 
     iMod ("HMClose" with "[Hpost]") as "_".
-    { iNext. iFrame "#". iRight. iExists _; iFrame "#". by iRight. }
+    { iNext. iFrame "#". iRight. iRight. iExists _; iFrame "#∗". }
     iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM req.(Req_CID) req.(Req_Seq) reply with "[Hreqeq_lb] Hrcagree") as "Hrcagree2"; eauto.
     iModIntro.
     iFrame "∗#".
