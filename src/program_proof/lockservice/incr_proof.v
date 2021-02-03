@@ -256,15 +256,20 @@ Section rpc_proof.
 Context `{!heapG Σ}.
 Context `{!rpcG Σ u64}.
 
-(* TODO: come up with proper names for these things *)
-Definition IdempotentPre2 γrpc (cid seq:u64) (PreCond : RPCValC → iProp Σ) (PostCond:RPCValC → u64 → iProp Σ) : (RPCValC → iProp Σ) :=
+(* This is the fupd that the server uses to get the (PreCond ∨ PostCond) of an old request after increasing seqno to quiesce it *)
+Definition quiesce_fupd γrpc (cid seq:u64) (PreCond : RPCValC → iProp Σ) (PostCond:RPCValC → u64 → iProp Σ) : (RPCValC → iProp Σ) :=
   λ (args:RPCValC),
         (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ ▷ (PreCond args ∨ (∃ reply,PostCond args reply)))%I.
 
-Definition idemp_fupd2 γrpc cid args PreCond PostCond : iProp Σ :=
-    <bdisc> (∀ seq, cid fm[[γrpc.(cseq)]]↦ seq ={⊤}=∗
-      cid fm[[γrpc.(cseq)]]↦ seq ∗
-    IdempotentPre2 γrpc cid seq PreCond PostCond args)
+(* TODO: Want a quiesce_fupd that gives a user-chosen resource so long as one provides a proof that (PreCond ∨ PostCond ={⊤}=∗ user-chosen-resource) *)
+(* E.g. if we want to do a new Put() after giving up on a Get(), we should be able to quiesce the Get() and  *)
+
+(* This gives the quiesce_fupd for any sequence number that the client can take on
+   This is the precondition for ck.MakeRequest(args), where ck has the given cid *)
+Definition quiesceable_pre γrpc cid args PreCond PostCond : iProp Σ :=
+    <bdisc> (∀ seq, cid fm[[γrpc.(cseq)]]↦ int.nat seq ={⊤}=∗
+      cid fm[[γrpc.(cseq)]]↦ int.nat seq ∗
+   quiesce_fupd γrpc cid seq PreCond PostCond args)
 .
 
 Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) (cid:u64) : iProp Σ
@@ -313,25 +318,21 @@ Proof.
     by iLeft in "H".
 Qed.
 
-Lemma quiesce_request E (req:RPCRequest) (client_seq:u64) γrpc γreq PreCond PostCond :
-  ↑rpcRequestInvN ⊆ E →
-  ↑replyTableInvN ⊆ E →
+Lemma quiesce_request (req:RPCRequest) γrpc γreq PreCond PostCond :
   is_RPCServer γrpc -∗
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   (RPCRequest_token γreq) -∗
-  (∀ (new_seq:u64), RPCClient_own γrpc req.(Req_CID) new_seq ={E}=∗ (* Need this to get ineq new_seq >= client_seq *)
-   RPCClient_own γrpc req.(Req_CID) new_seq ∗
-   IdempotentPre2 γrpc req.(Req_CID) new_seq PreCond PostCond req.(Req_Args)).
+  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) PreCond PostCond.
 Proof.
-    iIntros (Hnamespace1 Hnamespace2) "#Hsrpc #His_req Hγpost".
+    iIntros "#Hsrpc #His_req Hγpost".
     (* iDestruct (fmcounter_map_get_lb with "Hcown") as "#Hcseq_lb". *)
-    iInv "His_req" as "[>#Hcseq_lb_strict HN]" "HNClose".
-    iMod ("HNClose" with "[$Hcseq_lb_strict $HN]") as "_".
-    (* iDestruct (fmcounter_map_agree_lb with "Hcown Hcseq_lb_strict") as %Hclient_seq_ineq. *)
-
-    iFrame.
+    iModIntro.
 
     iIntros (new_seq) "Hcown".
+
+    iInv "His_req" as "[>#Hcseq_lb_strict HN]" "HNClose".
+    iMod ("HNClose" with "[$Hcseq_lb_strict $HN]") as "_".
+
     iDestruct (fmcounter_map_agree_lb with "Hcown Hcseq_lb_strict") as %Hnew_seq.
     iModIntro.
     iFrame.
@@ -373,16 +374,75 @@ Proof.
     }
 Qed.
 
-Lemma wpc_RPCClient__MakeRequest k E (f:goose_lang.val) cl_ptr cid args γrpc (PreCond:RPCValC -> iProp Σ) PostCond {_:Discretizable (PreCond args)}:
-  (∀ seqno, is_rpcHandler f γrpc (IdempotentPre2 γrpc cid seqno PreCond PostCond) PostCond) -∗
+(* Need to have the fmcounter fact because the quiesce_fupd in the
+   quiesceable_pre is specialized to a particular seqno, while we need to know
+   that any seqno is good. The fmcounter fact is one way to get around this.
+   Alternatively, could also maybe make the RPCRequestInvariant contain
+   (quiesce_fupd ∧ quiesceable_pre).
+ *)
+Lemma quiesce_idemp_1 γrpc req seqno PreCond PostCond:
+  req.(Req_CID) fm[[γrpc.(cseq)]]≥ int.nat seqno -∗
+  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) (quiesce_fupd γrpc req.(Req_CID) seqno PreCond PostCond) PostCond -∗
+  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) PreCond PostCond.
+Proof.
+  iIntros "#Hseqno_lb Hqfupd".
+  iModIntro. iIntros (seq) "Hcown".
+  iDestruct (fmcounter_map_agree_lb with "Hcown Hseqno_lb") as %Hseqno_ineq.
+
+  iDestruct ("Hqfupd" $! seq with "Hcown") as ">[$ Hqfupd]".
+  iModIntro.
+
+  iIntros "Hγproc #Hlb".
+  iDestruct ("Hqfupd" with "Hγproc Hlb") as ">[Hγproc [Hqfupd|Hreply]]".
+  {
+    iAssert (quiesce_fupd γrpc req.(Req_CID) seqno PreCond PostCond req.(Req_Args))%I with "[Hqfupd]" as "Hqfupd".
+    { admit. } (* Need PreCond to be timeless for this to work out; too many laters *)
+    iSpecialize ("Hqfupd" with "Hγproc").
+    iDestruct (fmcounter_map_mono_lb (int.nat seqno) with "Hlb") as "#Hlseq_seqno_lb".
+    { lia. }
+    iSpecialize ("Hqfupd" with "Hlseq_seqno_lb").
+    iFrame.
+  }
+  {
+    iModIntro. iFrame.
+  }
+Admitted. (* timeless precond *)
+
+Lemma quiesce_idemp_2 γrpc req seqno PreCond PostCond:
+  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args)
+        (λ args, (quiesce_fupd γrpc req.(Req_CID) seqno PreCond PostCond args) ∧
+           (quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) PreCond PostCond)
+           )
+        PostCond -∗
+  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) PreCond PostCond.
+Proof.
+  iIntros "Hqfupd".
+  iModIntro. iIntros (seq) "Hcown".
+  iDestruct (fmcounter_map_get_lb with "Hcown") as "#Hlb".
+
+  iDestruct ("Hqfupd" $! seq with "Hcown") as ">[$ Hqfupd]".
+  iModIntro.
+  iIntros "Hγproc #Hlb2".
+  (* TODO: this would work out if quiesceable_pre required only an fm[[...]]≥ fact as input; luckily, we can do that! *)
+  (*
+  iSpecialize ("Hqfupd" with "Hγproc Hlb2").
+
+  iDestruct ("Hqfupd" with "Hγproc Hlb") as ">[Hγproc [Hqfupd|Hreply]]".
+  {
+    iRight in "Hqfupd".
+  } *)
+Admitted.
+
+Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid args γrpc (PreCond:RPCValC -> iProp Σ) PostCond {_:Discretizable (PreCond args)}:
+  (∀ seqno, is_rpcHandler f γrpc (quiesce_fupd γrpc cid seqno PreCond PostCond) PostCond) -∗
   {{{
     PreCond args ∗
     own_rpcclient cl_ptr γrpc cid ∗
     is_RPCServer γrpc
   }}}
-    RPCClient__MakeRequest #cl_ptr f (into_val.to_val args) @ k ; E
+    RPCClient__MakeRequest #cl_ptr f (into_val.to_val args) @ k ; ⊤
   {{{ (retv:u64), RET #retv; own_rpcclient cl_ptr γrpc cid ∗ PostCond args retv }}}
-  {{{ idemp_fupd2 γrpc cid args PreCond PostCond }}}.
+  {{{ quiesceable_pre γrpc cid args PreCond PostCond }}}.
 Proof using Type*.
   iIntros "#Hfspec" (Φ Φc) "!# [Hprecond [Hclerk #Hlinv]] HΦ".
   iNamed "Hclerk".
@@ -443,10 +503,12 @@ Proof using Type*.
   iIntros (reply_ptr) "Hreply".
   iNamed 1.
   wpc_pures.
+  iDestruct (fmcounter_map_get_lb with "Hcrpc") as "#Hcseqno_lb". (* Need this to apply quiesce_idemp_1 *)
 
-  iMod (make_request {| Req_Args:=args; Req_CID:=cid; Req_Seq:=cseqno|} PreCond PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
-  { admit. (* TODO: add assumption *) }
+  iMod (make_request {| Req_Args:=args; Req_CID:=cid; Req_Seq:=cseqno|} (quiesce_fupd γrpc cid cseqno PreCond PostCond) PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
+  (* { admit. (* TODO: add assumption *) } *)
   { simpl. word. }
+  { iIntros "??". iFrame. by iModIntro. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
   (* Prepare the loop invariant *)
   iAssert (∃ (err:bool), errb_ptr ↦[boolT] #err)%I with "[Herrb_ptr]" as "Herrb_ptr".
@@ -462,12 +524,114 @@ Proof using Type*.
     iDestruct "HΦ" as "[HΦc _]".
     iModIntro.
     iApply "HΦc".
-    admit. (* TODO: Use quiesce_request *)
+    simpl.
+    iDestruct (quiesce_request with "Hlinv Hreqinv_init HγP") as "Hquiesce_req".
+    iDestruct (quiesce_idemp_1 with "[] Hquiesce_req") as "HH".
+    { simpl. iFrame "#". }
+    iFrame.
   }
   {
     iIntros "!# __CTX"; iNamed "__CTX".
 
+    iCache with "HγP HΦ".
+    {
+      iDestruct "HΦ" as "[HΦc _]".
+      iModIntro. iApply "HΦc".
+      iDestruct (quiesce_request with "Hlinv Hreqinv_init HγP") as "Hq".
+      iDestruct (quiesce_idemp_1 with "[] Hq") as "Hq".
+      { simpl. iFrame "#". }
+      iFrame.
+    }
+
+    iDestruct "Hreply" as (reply') "Hreply".
     wpc_pures.
+    wpc_bind (RemoteProcedureCall _ _ _). wpc_frame.
+    wp_apply (RemoteProcedureCall_spec with "[] [Hreply]").
+    { iSpecialize ("Hfspec" $! cseqno). iFrame "Hfspec". }
+    {
+      iSplit; last first.
+      { unfold read_request.
+        instantiate (2:={|Req_CID:=_; Req_Seq := _; Req_Args := _ |}).
+        iFrame "#".
+        iFrame "Hreply".
+        simpl. iPureIntro. lia.
+      }
+      iFrame "Hreqinv_init".
+    }
+    iIntros (v) "Hrpc_post". iNamed 1.
+    iDestruct "Herrb_ptr" as (err') "Herrb_ptr".
+
+    iDestruct "Hrpc_post" as (reply) "[Hreply [#Hre | [#Hre HCallPost]]]".
+    {
+      iDestruct "Hre" as %->.
+
+      wpc_bind (store_ty _ _).
+      wpc_frame.
+      wp_store.
+      iNamed 1.
+      wpc_pures.
+      wpc_bind (load_ty _ _).
+      wpc_frame.
+      wp_load.
+      iNamed 1.
+      wpc_pures.
+      iLeft.
+      iFrame.
+      iSplitL ""; first done.
+      iSplitL "Herrb_ptr"; eauto.
+    }
+
+    iDestruct "Hre" as %->.
+
+    wpc_bind (store_ty _ _).
+    wpc_frame.
+    wp_store.
+    iNamed 1.
+
+    wpc_pures.
+
+    wpc_bind (load_ty _ _).
+    wpc_frame.
+    wp_load.
+    iNamed 1.
+
+    iApply wpc_fupd.
+    wpc_pures.
+    iRight.
+    iSplitL ""; first by iModIntro.
+
+    iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
+    {
+      iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
+      simpl in bad. replace (int.nat (word.add cseqno 1))%nat with (int.nat cseqno + 1)%nat in bad by word.
+      lia.
+    }
+
+    iModIntro.
+    iSplit; last first.
+    {
+      iLeft in "HΦ". iModIntro.
+      iApply "HΦ".
+      iDestruct (quiesce_request with "Hlinv Hreqinv_init HγP") as "Hq".
+      iDestruct (quiesce_idemp_1 with "[] Hq") as "Hq".
+      { simpl. iFrame "#". }
+      iFrame.
+    }
+
+    wpc_pures.
+    iNamed "Hreply".
+    replace (RPCReply.S) with (lockservice_nocrash.RPCReply.S) by done.
+    replace (lockservice_nocrash.RPCReply.S) with (RPCReply.S) by done.
+
+    (* TODO: why isn't this binding? *)
+    (*
+    wpc_bind (struct.loadF _ _ #(_))%E.
+    wpc_loadField.
+
+    iMod (get_request_post with "Hreqinv_init Hrcptstoro HγP") as "HP"; first done.
+    simpl.
+    iModIntro. *)
+
   (*
   iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
   wp_pures.
