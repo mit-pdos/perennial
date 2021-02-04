@@ -120,8 +120,8 @@ Section jrnl.
     (∀ a, a ∈ dom (gset _) (jrnlData m) →
      ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (int.Z (addrOff a) `mod` 2^(`k) = 0)).
 
-  Definition size_consistent a (o: obj) (jk: gmap blkno kind) :=
-    ∃ k, jk !! (addrBlock a) = Some k ∧ (length o : Z) = 2^(`k).
+  Definition size_consistent_and_aligned a (o: obj) (jk: gmap blkno kind) :=
+    ∃ k, jk !! (addrBlock a) = Some k ∧ (length o : Z) = 2^(`k) ∧ (int.Z (addrOff a) `mod` 2^(`k) = 0).
 
   Definition sizes_correct (m : jrnl_map) :=
     (∀ a o, jrnlData m !! a = Some o → ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (length o : Z) = 2^(`k)).
@@ -472,7 +472,8 @@ Notation shead_step := (@head_step (@spec_ext_op_field spec_ext)).
 Notation sworld := (@world (@spec_ext_op_field spec_ext) (@spec_ffi_model_field jrnl_spec_ffi_model)).
 
 Definition jrnl_sub_dom (σj1 σj2 : jrnl_map) : Prop :=
-  (dom (gset _) (jrnlData σj1) = dom _ (jrnlData σj2) ∧ jrnlKinds σj1 ⊆ jrnlKinds σj2).
+  (dom (gset _) (jrnlData σj1) = dom _ (jrnlData σj2) ∧ jrnlKinds σj1 ⊆ jrnlKinds σj2 ∧
+  wf_jrnl σj1 ∧ wf_jrnl σj2).
 
 Definition jrnl_sub_state (σj : jrnl_map) (s: sstate) : Prop :=
   (∃ sj, s.(world) = Opened sj ∧ jrnlData σj ⊆ jrnlData sj ∧ jrnlKinds σj ⊆ jrnlKinds sj).
@@ -531,9 +532,10 @@ Proof.
 Qed.
 
 Lemma always_steps_refl e σj :
+  wf_jrnl σj →
   always_steps e σj e σj.
 Proof.
-  split_and! => //= s Hsub.
+  intros. split_and! => //= s Hsub.
   rewrite jrnl_upd_sub //.
 Qed.
 
@@ -542,7 +544,9 @@ Lemma jrnl_sub_dom_trans σj1 σj2 σj3 :
   jrnl_sub_dom σj2 σj3 →
   jrnl_sub_dom σj1 σj3.
 Proof.
-  intros (?&?) (?&?); split; etransitivity; eauto.
+  intros (?&?&?&?) (?&?&?&?); split_and!; eauto.
+  - congruence.
+  - etransitivity; eauto.
 Qed.
 
 Lemma always_steps_trans e1 σj1 e2 σj2 e3 σj3 :
@@ -623,9 +627,27 @@ Proof.
     rewrite lookup_singleton_ne //=.
 Qed.
 
+Lemma wf_jrnl_extend σj a o:
+  size_consistent_and_aligned a o (jrnlKinds σj) →
+  wf_jrnl σj →
+  wf_jrnl (<[a := o]> (jrnlData σj), jrnlKinds σj).
+Proof.
+  intros Haligned Hwf. rewrite /wf_jrnl.
+  split.
+  - rewrite /offsets_aligned => a' Hin.
+    rewrite dom_insert_L in Hin. set_unfold in Hin. destruct Hin; subst.
+    * simpl. destruct Haligned. naive_solver.
+    * eapply Hwf; eauto.
+  - rewrite /sizes_correct => a' Hin Hlookup.
+    destruct (decide (a' = a)).
+    { subst. rewrite lookup_insert in Hlookup. destruct Haligned. naive_solver. }
+    rewrite lookup_insert_ne in Hlookup; auto.
+    eapply Hwf; eauto.
+Qed.
+
 Lemma always_steps_extend e1 σj1 e2 σj2 a o :
   (a ∉ dom (gset _) (jrnlData σj2)) →
-  size_consistent a o (jrnlKinds σj1) →
+  size_consistent_and_aligned a o (jrnlKinds σj1) →
   always_steps e1 σj1 e2 σj2 →
   always_steps e1 (<[a := o]> $ jrnlData σj1, jrnlKinds σj1)
                e2 (<[a := o]> $ jrnlData σj2, jrnlKinds σj2).
@@ -633,8 +655,10 @@ Proof.
   intros Hdom Hconsistent (?&Hsub&Hstep).
   split_and!.
   - simpl. congruence.
-  - destruct Hsub as (?&?). split_and! => //=.
-    rewrite ?dom_insert_L H2. set_solver.
+  - destruct Hsub as (?&?&?&?). split_and! => //=.
+    * rewrite ?dom_insert_L H2. set_solver.
+    * apply wf_jrnl_extend; auto.
+    * apply wf_jrnl_extend; auto. congruence.
   - intros s Hsub_state.
     rewrite insert_jrnl_upd //.
     rewrite {1}(insert_jrnl_sub_state _ _ _ _ Hsub_state).
@@ -656,6 +680,7 @@ Qed.
 
 Definition addr2val' (a : addr) : sval := (#(addrBlock a), (#(addrOff a), #()))%V.
 Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
+  wf_jrnl σj →
   jrnlData σj !! a = Some v →
   jrnlKinds σj !! (addrBlock a) = Some k →
   (`k ≠ 0 ∧ 2^(`k) = int.Z sz) →
@@ -666,9 +691,9 @@ Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
                (val_of_obj v)
                σj.
 Proof.
-  intros Hlookup1 Hlookup2 Hk.
+  intros Hwf Hlookup1 Hlookup2 Hk.
   split_and!; eauto.
-  { split_and!; set_solver. }
+  { split_and!; try set_solver. }
   intros s Hsub.
   apply rtc_once.
   eapply (Ectx_step' _ _ _ _ _ _ []) => //=.
