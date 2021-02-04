@@ -193,18 +193,18 @@ Class jrnlG Σ :=
     jrnlG_open_name : gname;
     jrnlG_data_inG :> mapG Σ addr obj;
     jrnlG_data_name: gname;
-    jrnlG_kinds_inG :> mapG Σ blkno kind;
+    jrnlG_kinds_inG :> inG Σ (agreeR (leibnizO (gmap blkno kind)));
     jrnlG_kinds_name: gname;
   }.
 
 Class jrnl_preG Σ :=
   { jrnlG_preG_open_inG :> inG Σ openR;
     jrnlG_preG_data_inG:> mapG Σ addr obj;
-    jrnlG_preG_kinds_inG:> mapG Σ blkno kind;
+    jrnlG_preG_kinds_inG:> inG Σ (agreeR (leibnizO (gmap blkno kind)));
   }.
 
 Definition jrnlΣ : gFunctors :=
-  #[GFunctor openR; mapΣ addr obj; mapΣ blkno kind].
+  #[GFunctor openR; mapΣ addr obj; GFunctor (agreeR (leibnizO (gmap blkno kind)))].
 
 Instance subG_jrnlG Σ: subG jrnlΣ Σ → jrnl_preG Σ.
 Proof. solve_inG. Qed.
@@ -244,11 +244,13 @@ Definition jrnl_closed_frag {Σ} {lG :jrnlG Σ} :=
   own (jrnlG_open_name) (Cinl ((1/2)%Qp, to_agree (tt : leibnizO unit))).
 Definition jrnl_closed_auth {Σ} {lG :jrnlG Σ} :=
   own (jrnlG_open_name) (Cinl ((1/2)%Qp, to_agree (tt : leibnizO unit))).
+Definition jrnl_kinds {Σ} {lG: jrnlG Σ} σj : iProp Σ :=
+ (own (jrnlG_kinds_name) (to_agree (σj : leibnizO (gmap blkno kind)))).
+Definition jrnl_kinds_lb {Σ} {lG: jrnlG Σ} (σj : gmap blkno kind) : iProp Σ :=
+ (∃ σj', ⌜ σj ⊆ σj' ⌝ ∧ own (jrnlG_kinds_name) (to_agree (σj' : leibnizO (gmap blkno kind)))).
 Definition jrnl_mapsto {Σ} {lG: jrnlG Σ} a q v : iProp Σ :=
   ptsto_mut (jrnlG_data_name) a q v ∗
-  (∃ (k : kind), ⌜ (length v : Z) = 2^(`k) ⌝ ∗ ptsto_ro (jrnlG_kinds_name) (addrBlock a) (k : kind)).
-Definition jrnl_kinds_mapsto {Σ} {lG: jrnlG Σ} blk k : iProp Σ :=
-  ptsto_ro (jrnlG_kinds_name) blk (k : kind).
+  (∃ σj,  ⌜ size_consistent_and_aligned a v σj ⌝ ∗ jrnl_kinds σj).
 
 Section jrnl_interp.
   Existing Instances jrnl_op jrnl_model jrnl_val_ty.
@@ -256,7 +258,7 @@ Section jrnl_interp.
   Definition jrnl_state_ctx {Σ} {jG: jrnlG Σ} (m: jrnl_map) : iProp Σ :=
     ⌜ wf_jrnl m ⌝ ∗
       map_ctx jrnlG_data_name 1 (jrnlData m) ∗
-      map_ctx jrnlG_kinds_name 1 (jrnlKinds m).
+      jrnl_kinds (jrnlKinds m).
 
   Definition jrnl_ctx {Σ} {jG: jrnlG Σ} (jrnl: @ffi_state jrnl_model) : iProp Σ :=
     match jrnl with
@@ -377,9 +379,10 @@ Next Obligation.
   iMod (own_alloc (Cinl (1%Qp, to_agree tt) : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
   iMod (map_init_many (jrnlData m)) as (γdata) "(Hdata_ctx&Hdata)".
-  iMod (map_init_many_ro (jrnlKinds m)) as (γkinds) "(Hkinds_ctx&#Hkinds)".
+  iMod (own_alloc (to_agree (jrnlKinds m : leibnizO (gmap blkno kind)))) as (γkinds) "#Hkinds".
+  { constructor. }
   iExists {| jrnl_names_open := γ1; jrnl_names_data := γdata; jrnl_names_kinds := γkinds |}.
-  iFrame. iModIntro. iFrame "%".
+  iFrame. iModIntro. iFrame "% #".
   rewrite assoc.
   iSplitL "H".
   { by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp. }
@@ -390,8 +393,12 @@ Next Obligation.
   rewrite /wf_jrnl/offsets_aligned/sizes_correct in Hwf.
   destruct Hwf as (Hoff&Hsize).
   edestruct Hsize as (k&Hlookup_kind&Hlen); eauto. iFrame.
-  iExists k. iFrame "%".
-  iApply (big_sepM_lookup); eauto.
+  iExists _. iFrame "% #".
+  iPureIntro. exists k.
+  split_and!; eauto.
+  edestruct (Hoff a); eauto.
+  { apply elem_of_dom. eauto. }
+  naive_solver.
 Qed.
 Next Obligation.
   iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
@@ -779,7 +786,7 @@ Qed.
 
 Lemma jrnl_ctx_sub_state_valid σj s :
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
-  ([∗ map] b ↦ k ∈ (jrnlKinds σj), jrnl_kinds_mapsto b k) -∗
+  jrnl_kinds_lb (jrnlKinds σj) -∗
   jrnl_open -∗
   jrnl_ctx s.(world) -∗
   ⌜ jrnl_sub_state σj s ⌝.
@@ -796,12 +803,10 @@ Proof.
       iDestruct (map_valid with "Hctx1 [$]") as %->; eauto.
     }
     { rewrite /=. destruct (jrnlData sj !! _); eauto. }
-  - iIntros (a). destruct (jrnlKinds σj !! a) as [o|] eqn:Heq'.
-    { rewrite /=. iDestruct (big_sepM_lookup with "Hkinds") as "H"; eauto.
-      rewrite /jrnl_ctx. rewrite Heq. iDestruct "Hctx" as "(_&_&Hctx1&Hctx2)".
-      iDestruct (map_ro_valid with "Hctx2 [$]") as %->; eauto.
-    }
-    { rewrite /=. destruct (jrnlKinds sj !! _); eauto. }
+  - iDestruct "Hkinds" as (σj' Hsub) "H".
+    rewrite Heq. iDestruct "Hctx" as "(_&_&Hctx1&Hctx2)".
+    iDestruct (own_valid_2 with "H Hctx2") as %Hval.
+    apply to_agree_op_valid in Hval. iPureIntro. set_solver.
 Qed.
 
 (*
@@ -826,7 +831,7 @@ Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v:
   nclose sN ⊆ E →
   spec_ctx -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
-  ([∗ map] b ↦ k ∈ (jrnlKinds σj), jrnl_kinds_mapsto b k) -∗
+  jrnl_kinds_lb (jrnlKinds σj) -∗
   jrnl_open -∗
   j ⤇ K (Atomically l e)
   -∗ |NC={E}=>
