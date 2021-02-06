@@ -809,6 +809,130 @@ Proof.
     apply to_agree_op_valid in Hval. iPureIntro. set_solver.
 Qed.
 
+Lemma offsets_aligned_delete i σjd σjk :
+  offsets_aligned (σjd, σjk) →
+  offsets_aligned (delete i σjd, σjk).
+Proof.
+  intros Hoa k Hin. eapply Hoa.
+  set_solver.
+Qed.
+
+Lemma sizes_correct_delete i σjd σjk :
+  sizes_correct (σjd, σjk) →
+  sizes_correct (delete i σjd, σjk).
+Proof.
+  intros Hoa k Hin Hlookup. eapply Hoa.
+  rewrite /=.
+  eapply lookup_delete_Some; eauto.
+Qed.
+
+Lemma wf_jrnl_delete i σjd σjk :
+  wf_jrnl (σjd, σjk) →
+  wf_jrnl (delete i σjd, σjk).
+Proof.
+  intros (?&?).
+  split; eauto using offsets_aligned_delete, sizes_correct_delete.
+Qed.
+
+Lemma offsets_aligned_mono_kinds σjd σjk σjk' :
+  σjk ⊆ σjk' →
+  offsets_aligned (σjd, σjk) →
+  offsets_aligned (σjd, σjk').
+Proof.
+  intros Hsub Hoa i Hin. edestruct Hoa as (k&?&?); eauto.
+  exists k; split_and!; eauto. rewrite /=.
+  eapply lookup_weaken; eauto.
+Qed.
+
+Lemma sizes_correct_mono_kinds σjd σjk σjk' :
+  σjk ⊆ σjk' →
+  sizes_correct (σjd, σjk) →
+  sizes_correct (σjd, σjk').
+Proof.
+  intros Hsub Hoa i ? Hin. edestruct Hoa as (k&?&?); eauto.
+  exists k; split_and!; eauto. rewrite /=.
+  eapply lookup_weaken; eauto.
+Qed.
+
+Lemma wf_jrnl_mono_kinds σjd σjk σjk' :
+  σjk ⊆ σjk' →
+  wf_jrnl (σjd, σjk) →
+  wf_jrnl (σjd, σjk').
+Proof.
+  intros ? (?&?).
+  split; eauto using offsets_aligned_mono_kinds, sizes_correct_mono_kinds.
+Qed.
+
+Lemma wf_jrnl_lookup_size_consistent_and_aligned σjd σjk i o :
+  σjd !! i = Some o →
+  wf_jrnl (σjd, σjk) →
+  size_consistent_and_aligned i o σjk.
+Proof.
+  intros Hlookup (Hoa&Hsizes).
+  edestruct Hsizes as (k&?&?); eauto.
+  exists k; split_and!; eauto.
+  edestruct (Hoa i) as (k'&?&?).
+  { apply elem_of_dom; eauto. }
+  congruence.
+Qed.
+
+Lemma jrnl_ctx_upd σj σjd' σjk s :
+  wf_jrnl (σjd', σjk) →
+  dom (gset _) (jrnlData σj) = dom (gset _) σjd' →
+  jrnl_open -∗
+  ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
+  jrnl_kinds_lb σjk -∗
+  jrnl_ctx s.(world) ==∗
+  ([∗ map] a ↦ o ∈ (σjd'), jrnl_mapsto a 1 o) ∗
+  jrnl_ctx (jrnl_upd (σjd', σjk) s).(world).
+Proof.
+  iIntros (Hwf Hdom) "#Hopen Hpts #Hkinds Hctx".
+  iDestruct (jrnl_ctx_unify_opened with "[$] [$]") as %[sj Heq].
+  iInduction (jrnlData σj) as [| i x m] "IH" using map_ind forall (σjd' Hwf Hdom).
+  - rewrite dom_empty_L in Hdom.
+    symmetry in Hdom. apply dom_empty_inv_L in Hdom.
+    rewrite ?Hdom big_sepM_empty. iFrame.
+    rewrite /=. rewrite left_id_L //=. rewrite Heq => //=.
+  - assert (Hin: i ∈ dom (gset _) σjd').
+    { rewrite -Hdom. rewrite dom_insert_L. set_solver. }
+    apply elem_of_dom in Hin.
+    destruct Hin as (o&Hin).
+    rewrite (big_sepM_delete _ σjd'); eauto.
+    rewrite big_sepM_insert; eauto.
+    iDestruct "Hpts" as "(Hmaps&Hpts)".
+    iMod ("IH" with "[] [] Hpts Hctx") as "($&Hctx)".
+    { iPureIntro. apply wf_jrnl_delete; auto. }
+    { iPureIntro. rewrite dom_insert_L in Hdom. rewrite dom_delete_L.
+      apply not_elem_of_dom in H1. set_solver. }
+    simpl.
+    iDestruct "Hctx" as "($&Hstate)".
+    rewrite /jrnl_state_ctx.
+    iDestruct "Hstate" as (Hwf') "(Hctx&Hkinds')".
+    iDestruct "Hmaps" as "(Hmaps&Hkind)".
+    iDestruct "Hkind" as (? Hconsistent) "Hkind".
+    iMod (map_update _ _ o with  "[$] [$]") as "(Hctx&?)".
+    iDestruct "Hkinds" as (? Hsub) "H".
+    iDestruct (own_valid_2 with "Hkind Hkinds'") as %Hval.
+    apply to_agree_op_valid, leibniz_equiv in Hval. rewrite /= in Hval.
+    iDestruct (own_valid_2 with "Hkinds' H") as %Hval2.
+    apply to_agree_op_valid, leibniz_equiv in Hval2. rewrite /= in Hval2.
+    subst.
+    iFrame. simpl.
+    rewrite insert_union_l.
+    rewrite insert_delete insert_id //.
+    iFrame.
+    assert (size_consistent_and_aligned i o (jrnlKinds (get_jrnl s.(world)))).
+    {
+      eapply wf_jrnl_lookup_size_consistent_and_aligned; eauto.
+      eapply wf_jrnl_mono_kinds; eauto.
+    }
+    iModIntro; iSplit; auto.
+    { iPureIntro. eapply wf_jrnl_extend in Hwf'; last eauto.
+      rewrite /= insert_union_l insert_delete insert_id in Hwf'; eauto.
+    }
+Qed.
+
+
 (*
 Lock Invariant for address a in 2PL:
 
@@ -826,6 +950,7 @@ Lock invariant :
 
 *)
 
+
 Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v: sval) σj' :
   always_steps e σj v σj' →
   nclose sN ⊆ E →
@@ -838,7 +963,7 @@ Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v:
   j ⤇ K (SOMEV v) ∗ ([∗ map] a ↦ o ∈ (jrnlData σj'), jrnl_mapsto a 1 o).
 Proof.
   iIntros (Hsteps ?) "(#Hctx&#Hstate) Hσj_data Hσj_kinds Hopen Hj".
-  destruct Hsteps as (?&?&Hrtc).
+  destruct Hsteps as (Heq_kinds&Hwf&Hrtc).
   iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
@@ -850,13 +975,12 @@ Proof.
     auto.
   }
   { solve_ndisj. }
-  simpl.
-  (*
-  iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
-  { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". }
-  iModIntro. iFrame "# ∗".
-   *)
-Abort.
-
+  iMod (jrnl_ctx_upd _ (jrnlData σj') with "[$] [$] [$] [$]") as "(Hσj'_data&Hffi)".
+  { destruct Hwf as (?&?&?&?). rewrite Heq_kinds; eauto. }
+  { destruct Hwf as (?&?&?&?). eauto. }
+  iMod ("Hclo" with "[Hσ Hrest H Hffi]") as "_".
+  { iNext. iExists _. iFrame "H". iFrame. }
+  iModIntro. iFrame.
+Qed.
 
 End spec.
