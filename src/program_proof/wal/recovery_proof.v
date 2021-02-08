@@ -935,7 +935,7 @@ Proof.
 
   iExists γ'. rewrite /is_wal.
   iFrame "His_circular".
-  iMod (ncinv_cinv_alloc (N.@"wal") ⊤ E
+  iMod (ncinv_cinv_alloc (N.@"wal") 0 ⊤ E
          ((∃ σ, is_wal_inner l γ σ dinit ∗ P σ) ∗
                 wal_init_ghost_state γ' ∗ Pcirc_tok)
          (∃ σ σ',

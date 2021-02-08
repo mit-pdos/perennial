@@ -242,10 +242,10 @@ Implicit Types P : iProp Σ.
   Definition own_ncinv_cinv N P Pcrash Prec :=
     (∃ γ1 γ2, inv N ((P ∗ staged_pending 1 γ1) ∨ (C ∗ Pcrash ∗ (Prec ∨ staged_done γ2) ∗ staged_done γ1)))%I.
 
-  Lemma ncinv_cinv_alloc N E1 E2 P Pcrash Prec :
+  Lemma ncinv_cinv_alloc N k E1 E2 P Pcrash Prec :
     ↑N ⊆ E2 →
-    □ (▷ P -∗ (C -∗ |0={E2 ∖ ↑N}=> ▷ Pcrash ∗ ▷ Prec)) -∗
-    ▷ P ={E1}=∗ ncinv N P ∗ (<bdisc> (C -∗ |0={E2}=> ▷ Prec)) ∗ □ (C -∗ |0={E2}=> inv N Pcrash).
+    □ (▷ P -∗ (|C={E2 ∖ ↑N}_k=> ▷ Pcrash ∗ ▷ Prec)) -∗
+    ▷ P ={E1}=∗ ncinv N P ∗ (<bdisc> (|C={E2}_k=> ▷ Prec)) ∗ □ (|C={E2}_k=> inv N Pcrash).
   Proof using stagedG0.
     iIntros (?) "#Hwand HP".
     rewrite ncinv_eq /ncinv_def.
@@ -313,14 +313,14 @@ Implicit Types P : iProp Σ.
   Qed.
 
   (* Slight variant of above, where instead of wrapping Pcrash in an invariant, direct ownership is given *)
-  Lemma ncinv_cinv_alloc' N E1 E2 P Pcrash Prec :
+  Lemma ncinv_cinv_alloc' N k E1 E2 P Pcrash Prec :
     ↑N ⊆ E2 →
-    □ (▷ P -∗ (C -∗ |0={E2 ∖ ↑N}=> ▷ Pcrash ∗ ▷ Prec)) -∗
-    ▷ P ={E1}=∗ ncinv N P ∗ (<bdisc> (C -∗ |0={E2}=> ▷ Prec)) ∗ (<bdisc> (C -∗ |0={E2}=> ▷ Pcrash)).
+    □ (▷ P -∗ (|C={E2 ∖ ↑N}_k=> ▷ Pcrash ∗ ▷ Prec)) -∗
+    ▷ P ={E1}=∗ ncinv N P ∗ (<bdisc> (|C={E2}_k=> ▷ Prec)) ∗ (<bdisc> (|C={E2}_k=> ▷ Pcrash)).
   Proof using stagedG0.
     iIntros (?) "#Hwand HP".
     iMod (pending_alloc) as (γ) "Hpending".
-    iMod (ncinv_cinv_alloc N E1 E2 P (staged_done γ ∨ Pcrash)%I Prec with "[] HP") as "($&$&#H)".
+    iMod (ncinv_cinv_alloc N k E1 E2 P (staged_done γ ∨ Pcrash)%I Prec with "[] HP") as "($&$&#H)".
     { auto. }
     { iIntros "!> HP HC". iMod ("Hwand" with "[$] [$]") as "($&$)"; eauto. }
     iIntros "!> !> HC". iMod ("H" with "[$]") as "Hinv".

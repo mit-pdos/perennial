@@ -890,7 +890,7 @@ Proof.
     iNamed 1.
     rewrite /wal_cfupd_cancel.
     iDestruct (own_discrete_laterable with "Hwal_cfupd") as (Pwal_tok) "(HPwal_tok&#HPwal_tok_wand)".
-    iMod (ncinv_cinv_alloc' invN _ E
+    iMod (ncinv_cinv_alloc' invN _ _ E
             (is_txn_always γ ∗ Pwal_tok ∗ txn_init_ghost_state γ')
             (∃ logm',
                 txn_resources γ ((γ' <| txn_walnames; wal_heap_walnames := γ'' |>)) logm')%I

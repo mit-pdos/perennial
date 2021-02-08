@@ -177,7 +177,7 @@ Section goose_lang.
         iMod (async_pre_ctx_init) as (γasync') "Hasync_init_ctx'".
         iDestruct (async_ctx_to_lb with "Hasync_ctx") as "#Hasync_lb".
         set (γ' := {| buftxn_txn_names := γtxn_names'; buftxn_async_name := γasync' |}).
-        iMod (ncinv_cinv_alloc N _ ⊤
+        iMod (ncinv_cinv_alloc N _ _ ⊤
                 (txn_system_inv γ ∗ (async_pre_ctx γasync' ∗ Ptxn_tok ∗ Ptxn_cancel_tok))
                 (sep_txn_exchanger γ γ')
                 (∃ logm', is_txn_durable γ' dinit logm')%I

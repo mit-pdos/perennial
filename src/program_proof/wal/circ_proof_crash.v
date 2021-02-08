@@ -491,16 +491,16 @@ Lemma circ_buf_crash_obligation_alt E Prec Pcrash γ σ:
   □ (∀ σ, ▷ P σ -∗ |0={E ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
   P σ -∗
   |={⊤}=> ∃ γ', is_circular N P γ ∗
-                            (<bdisc> (C -∗ |0={E}=> ∃ σ, is_circular_state γ' σ ∗
+                            (<bdisc> (|C={E}_0=> ∃ σ, is_circular_state γ' σ ∗
                                                     circ_resources γ' σ ∗
                                                     ▷ Prec σ))
-                            ∗ □ (C -∗ |0={E}=> inv N (∃ σ, is_circular_state_crash γ σ ∗
+                            ∗ □ (|C={E}_0=> inv N (∃ σ, is_circular_state_crash γ σ ∗
                                                            circular_crash_ghost_exchange γ γ' ∗
                                                            Pcrash σ)).
 Proof.
   iIntros (?) "Hcs #HPwand HP".
   iMod (alloc_init_ghost_state) as (γ') "Hinit".
-  iMod (ncinv_cinv_alloc N ⊤ E
+  iMod (ncinv_cinv_alloc N 0 ⊤ E
          ((∃ σ, is_circular_state γ σ ∗ P σ) ∗ init_ghost_state γ')
          (∃ σ, is_circular_state_crash γ σ ∗
                circular_crash_ghost_exchange γ γ' ∗
