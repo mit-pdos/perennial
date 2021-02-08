@@ -2,7 +2,7 @@ From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map wpc_proofmode common_proof.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map wpc_proofmode common_proof rpc_durable_proof.
 Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 
@@ -476,13 +476,52 @@ Definition own_kvclerk γ ck_ptr srv cid : iProp Σ :=
    "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
    "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN) cid.
 
-Lemma wpc_KVClerk__Get k E (kck srv:loc) (cid key old_v:u64) :
+Lemma KVServer__Get_is_rpcHandler {E} srv old_v key cid :
+is_kvserver γ srv -∗
+{{{
+    True
+}}}
+    KVServer__Get #srv @ E
+{{{ (f:goose_lang.val), RET f;
+□ ∀ seqno Q, □(Q -∗ (quiesce_fupd_raw γ.(ks_rpcGN) cid seqno (Get_Pre γ old_v) (Get_Post γ old_v) (key, (U64 0, ()))))-∗
+        is_rpcHandler f γ.(ks_rpcGN) (λ _, Q) (Get_Post γ old_v)
+}}}.
+Proof.
+  iIntros "#His_kv !#" (Φ) "_ HΦ".
+  wp_lam.
+  wp_pures.
+  iApply "HΦ".
+  iIntros "!#" (seqno Q) "#HwandQ".
+  iApply is_rpcHandler_eta.
+  iIntros "!#" (reply req).
+  simpl.
+  iAssert (is_kvserver γ srv) with "His_kv" as "His_kv2".
+  iNamed "His_kv2".
+  wp_loadField.
+  wp_apply (RPCServer__HandleRequest_is_rpcHandler with "[] [] [His_kv]").
+  {
+    (* TODO: write core spec using HwandQ *)
+    admit.
+  }
+  {
+    (* TODO: use wpc_WriteDurableKVServer *)
+    admit.
+  }
+  {
+    (* TODO: use durable is_kvserver *)
+    admit.
+  }
+  iIntros (f) "His_rpcHandler".
+  iFrame.
+Admitted.
+
+Lemma wpc_KVClerk__Get k (kck srv:loc) (cid key old_v:u64) :
   is_kvserver γ srv -∗
   {{{
        own_kvclerk γ kck srv cid ∗
        quiesceable_pre γ.(ks_rpcGN) cid (key, (U64 0, ())) (Get_Pre γ old_v) (Get_Post γ old_v)
   }}}
-    KVClerk__Get #kck #key @ k; E
+    KVClerk__Get #kck #key @ k; ⊤
   {{{
       RET #old_v;
       own_kvclerk γ kck srv cid ∗
@@ -493,7 +532,7 @@ Lemma wpc_KVClerk__Get k E (kck srv:loc) (cid key old_v:u64) :
   }}}
 .
 Proof.
-  iIntros "His_kv !#" (Φ Φc) "Hpre HΦ".
+  iIntros "#His_kv !#" (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as "(Hclerk & Hq)".
   iCache with "Hq HΦ".
   {
@@ -516,8 +555,33 @@ Proof.
   wpc_pures.
   iNamed "Hclerk".
   wpc_loadField.
-  (* Need is_rpcHandler for KVServer__Get with quiesce_fupd pre *)
-Admitted.
+
+  wpc_bind (KVServer__Get _).
+  wpc_frame.
+  wp_apply (KVServer__Get_is_rpcHandler _ old_v key cid with "His_kv").
+  iIntros (f) "#Hfspec".
+  iNamed 1.
+
+  wpc_loadField.
+  pose (args:=(key, (0:u64, ()))).
+  replace (#key, (#0, #()))%V with (into_val.to_val args) by done.
+  iApply wpc_fupd.
+  wpc_apply (wpc_RPCClient__MakeRequest with "Hfspec [$Hq $Hcl His_kv]").
+  { iNamed "His_kv". iFrame. iNamed "His_rpc".
+    iFrame "#". }
+  iSplit.
+  {
+    by iLeft in "HΦ".
+  }
+  iNext.
+  iIntros (retv) "[Hcl >Hpost]".
+  iRight in "HΦ". iModIntro.
+  unfold Get_Post.
+  iDestruct "Hpost" as (->) "Hptsto".
+  iApply "HΦ".
+  iFrame "Hptsto".
+  iExists _; iFrame.
+Qed.
 
 Lemma wpc_KVClerk__Put k E (kck srv:loc) (cid key value:u64) :
   is_kvserver γ srv -∗
