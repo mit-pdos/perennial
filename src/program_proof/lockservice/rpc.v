@@ -146,7 +146,7 @@ Lemma make_request (req:RPCRequest) PreCond PostCond E γrpc :
   ((int.nat req.(Req_Seq)) + 1)%nat = int.nat (word.add req.(Req_Seq) 1) →
   is_RPCServer γrpc -∗
   RPCClient_own γrpc req.(Req_CID) req.(Req_Seq) -∗
-  PreCond req.(Req_Args) ={E}=∗
+  ▷ PreCond req.(Req_Args) ={E}=∗
     RPCClient_own γrpc req.(Req_CID) (word.add req.(Req_Seq) 1)
     ∗ (∃ γreq, is_RPCRequest γrpc γreq PreCond PostCond req ∗ RPCRequest_token γreq).
 Proof using Type*.

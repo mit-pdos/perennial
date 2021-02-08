@@ -10,21 +10,18 @@ Section rpc_proof.
 Context `{!heapG Σ}.
 Context `{!rpcG Σ u64}.
 
-(* This is the fupd that the server uses to get the (PreCond ∨ PostCond) of an old request after increasing seqno to quiesce it *)
-Definition quiesce_fupd γrpc (cid seq:u64) (PreCond : RPCValC → iProp Σ) (PostCond:RPCValC → u64 → iProp Σ) : (RPCValC → iProp Σ) :=
-  λ (args:RPCValC),
-        (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ ▷ (PreCond args ∨ (∃ reply,PostCond args reply)))%I.
+Definition rpc_atomic_pre_fupd γrpc (cid seq:u64) R :=
+  (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ R)%I.
+
+(* This gives the rpc_atomic_pre_fupd for any sequence number that the client can take on
+   This is the precondition for ck.MakeRequest(args), where ck has the given cid *)
+Definition rpc_atomic_pre γrpc cid R : iProp Σ :=
+    <bdisc> (∀ seq, cid fm[[γrpc.(cseq)]]↦ int.nat seq ={⊤}=∗
+    cid fm[[γrpc.(cseq)]]↦ int.nat seq ∗
+   (laterable.make_laterable (rpc_atomic_pre_fupd γrpc cid seq R))).
 
 (* TODO: Want a quiesce_fupd that gives a user-chosen resource so long as one provides a proof that (PreCond ∨ PostCond ={⊤}=∗ user-chosen-resource) *)
 (* E.g. if we want to do a new Put() after giving up on a Get(), we should be able to quiesce the Get() and  *)
-
-(* This gives the quiesce_fupd for any sequence number that the client can take on
-   This is the precondition for ck.MakeRequest(args), where ck has the given cid *)
-Definition quiesceable_pre γrpc cid args PreCond PostCond : iProp Σ :=
-    <bdisc> (∀ seq, cid fm[[γrpc.(cseq)]]↦ int.nat seq ={⊤}=∗
-      cid fm[[γrpc.(cseq)]]↦ int.nat seq ∗
-   quiesce_fupd γrpc cid seq PreCond PostCond args)
-.
 
 Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) (cid:u64) : iProp Σ
   :=
@@ -72,24 +69,85 @@ Proof.
     by iLeft in "H".
 Qed.
 
-Lemma quiesce_request (req:RPCRequest) γrpc γreq PreCond PostCond :
+Lemma rpc_atomic_pre_fupd_mono_strong γrpc cid seq P Q:
+  (P -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq -∗
+     own γrpc.(proc) (Excl ())={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ Q) -∗
+  rpc_atomic_pre_fupd γrpc cid seq P -∗
+  rpc_atomic_pre_fupd γrpc cid seq Q.
+Proof.
+  iIntros "HPQ HP Hγproc #Hlb".
+  iMod ("HP" with "Hγproc Hlb") as "[Hγproc HP]".
+  iSpecialize ("HPQ" with "HP Hlb Hγproc").
+  iFrame.
+Qed.
+
+Lemma rpc_atomic_pre_mono_strong cid γrpc P Q :
+  <bdisc> (P -∗ own γrpc.(proc) (Excl ()) ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ Q) -∗
+  rpc_atomic_pre γrpc cid P -∗
+  rpc_atomic_pre γrpc cid Q.
+Proof.
+  iIntros "HPQ HatomicP".
+  iModIntro.
+  iIntros (seq) "Hcown".
+  iMod ("HatomicP" $! seq with "Hcown") as "[Hcown HatomicP]".
+  iFrame.
+  (*
+  iApply (rpc_atomic_pre_fupd_mono_strong with "[HPQ] HatomicP").
+  iIntros "HP #Hlb Hγproc". iApply ("HPQ" with "HP Hγproc").
+Qed.
+*)
+Admitted.
+
+(*
+Lemma rpc_atomic_pre_fupd_mono γrpc cid seq P Q:
+  (P -∗ Q) -∗
+  rpc_atomic_pre_fupd γrpc cid seq P -∗
+  rpc_atomic_pre_fupd γrpc cid seq Q.
+Proof.
+  iIntros "HPQ".
+  iApply rpc_atomic_pre_fupd_mono_strong.
+  iIntros "HP _ $".
+  by iApply "HPQ".
+Qed.
+
+Lemma rpc_atomic_pre_mono cid γrpc P Q :
+  <bdisc>(P -∗ Q) -∗
+  rpc_atomic_pre γrpc cid P -∗
+  rpc_atomic_pre γrpc cid Q.
+Proof.
+  iIntros "HPQ HatomicP".
+  iModIntro.
+  iIntros (seq) "Hcown".
+  iMod ("HatomicP" $! seq with "Hcown") as "[Hcown HatomicP]".
+  iFrame.
+  iApply (rpc_atomic_pre_fupd_mono with "HPQ HatomicP").
+Qed.
+*)
+
+Lemma quiesce_request (req:RPCRequest) γrpc γreq (PreCond:RPCValC → iProp Σ) PostCond  :
   is_RPCServer γrpc -∗
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   (RPCRequest_token γreq) -∗
-  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) PreCond PostCond.
+  rpc_atomic_pre γrpc req.(Req_CID) (▷ PreCond req.(Req_Args) ∨ ▷(∃ ret, PostCond req.(Req_Args) ret)).
 Proof.
     iIntros "#Hsrpc #His_req Hγpost".
     (* iDestruct (fmcounter_map_get_lb with "Hcown") as "#Hcseq_lb". *)
+    (* iExists (RPCRequest_token γreq). *)
+    iFrame "#∗".
+
     iModIntro.
 
     iIntros (new_seq) "Hcown".
-
     iInv "His_req" as "[>#Hcseq_lb_strict HN]" "HNClose".
     iMod ("HNClose" with "[$Hcseq_lb_strict $HN]") as "_".
 
     iDestruct (fmcounter_map_agree_lb with "Hcown Hcseq_lb_strict") as %Hnew_seq.
-    iModIntro.
     iFrame.
+    iModIntro.
+    iExists (RPCRequest_token γreq).
+    iFrame.
+    iModIntro.
+    iIntros ">Hγpost".
 
     iIntros "Hγproc #Hlseq_lb".
     iInv "His_req" as "HN" "HNClose".
@@ -105,8 +163,8 @@ Proof.
       }
       iFrame.
       iModIntro.
-      iNext.
       iLeft.
+      iNext.
       iDestruct "HN" as "[_ $]".
     }
     {
@@ -128,64 +186,236 @@ Proof.
     }
 Qed.
 
+(*
+(* Want resources R in invariant with the property that ▷ R -∗ (rpc_atomic_pre_fupd blah)
+   Want ∃ R, ⌜Timeless(R)⌝ ∗ invariant
+ *)
+
+
+Print laterable.make_laterable.
+Search "except_0".
+Search Timeless.
+
+Print inv_def.
+
+Definition tinv {invG0 : invG Σ} (N : namespace) (P : iProp Σ) :=
+  (□ (∀ E : coPset, ⌜↑N ⊆ E⌝ → |0={E,E ∖ ↑N}=> P ∗ (P -∗ |0={E ∖ ↑N,E}=> True)))%I.
+
+Definition latered P : iProp Σ := ∃(Q:iProp Σ), Q ∗ □(▷ Q -∗ ◇P).
 (* Need to have the fmcounter fact because the quiesce_fupd in the
    quiesceable_pre is specialized to a particular seqno, while we need to know
    that any seqno is good. The fmcounter fact is one way to get around this.
    Alternatively, could also maybe make the RPCRequestInvariant contain
    (quiesce_fupd ∧ quiesceable_pre).
  *)
-Lemma quiesce_idemp_1 γrpc req seqno PreCond PostCond:
-  req.(Req_CID) fm[[γrpc.(cseq)]]≥ int.nat seqno -∗
-  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) (quiesce_fupd γrpc req.(Req_CID) seqno PreCond PostCond) PostCond -∗
-  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) PreCond PostCond.
+
+Definition sem_invariant_try P N :
+  latered P ={⊤}=∗ tinv N (P).
 Proof.
-  iIntros "#Hseqno_lb Hqfupd".
-  iModIntro. iIntros (seq) "Hcown".
-  iDestruct (fmcounter_map_agree_lb with "Hcown Hseqno_lb") as %Hseqno_ineq.
-
-  iDestruct ("Hqfupd" $! seq with "Hcown") as ">[$ Hqfupd]".
-  iModIntro.
-
-  iIntros "Hγproc #Hlb".
-  iDestruct ("Hqfupd" with "Hγproc Hlb") as ">[Hγproc [Hqfupd|Hreply]]".
+  iIntros "HP".
+  iDestruct "HP" as (Q) "[HQ #Hwand]".
+  iMod (inv_alloc N ⊤ (Q ∧ ◇ P)%I with "[HQ]") as "#Hinv".
   {
-    iAssert (quiesce_fupd γrpc req.(Req_CID) seqno PreCond PostCond req.(Req_Args))%I with "[Hqfupd]" as "Hqfupd".
-    { admit. } (* Need PreCond to be timeless for this to work out; too many laters *)
-    iSpecialize ("Hqfupd" with "Hγproc").
-    iDestruct (fmcounter_map_mono_lb (int.nat seqno) with "Hlb") as "#Hlseq_seqno_lb".
-    { lia. }
-    iSpecialize ("Hqfupd" with "Hlseq_seqno_lb").
+    iNext. iSplit.
+    { iFrame. }
+    { iApply "Hwand". iFrame. }
+  }
+  iModIntro.
+  iIntros (E) "!# %HE".
+  iInv "Hinv" as "HN" "HNClose".
+  iLeft in "HN".
+  iDestruct ("Hwand" with "HN") as "HN".
+  iMod "HN".
+  iModIntro.
+  iFrame.
+  iIntros "HP".
+  iMod ("HNClose" with "[HP]").
+  {
+    iNext. iSplit.
+    { admit. } (* This can't work *)
+    iModIntro.
     iFrame.
   }
-  {
-    iModIntro. iFrame.
-  }
-Admitted. (* timeless precond *)
+  done.
+Abort.
 
-Lemma quiesce_idemp_2 γrpc req seqno PreCond PostCond:
-  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args)
-        (λ args, (quiesce_fupd γrpc req.(Req_CID) seqno PreCond PostCond args) ∧
-           (quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) PreCond PostCond)
-           )
-        PostCond -∗
-  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) PreCond PostCond.
+Definition tinv_laterable {invG0 : invG Σ} (N : namespace) (P : iProp Σ) :=
+  (□ (∀ E : coPset, ⌜↑N ⊆ E⌝ → |0={E,E ∖ ↑N}=>
+        ∃ Q, (Q ∧ ◇ P) ∗ (Q -∗ |0={E ∖ ↑N,E}=> True)))%I.
+
+Lemma sem_invariant_try P N :
+  latered P ={⊤}=∗ tinv_laterable N (P).
 Proof.
-  iIntros "Hqfupd".
-  iModIntro. iIntros (seq) "Hcown".
-  iDestruct (fmcounter_map_get_lb with "Hcown") as "#Hlb".
+  iIntros "HP".
+  iDestruct "HP" as (Q) "[HQ #Hwand]".
+  iMod (inv_alloc N ⊤ (Q)%I with "HQ") as "#Hinv".
 
-  iDestruct ("Hqfupd" $! seq with "Hcown") as ">[$ Hqfupd]".
   iModIntro.
-  iIntros "Hγproc #Hlb2".
-  (* TODO: this would work out if quiesceable_pre required only an fm[[...]]≥ fact as input; luckily, we can do that! *)
-  (*
-  iSpecialize ("Hqfupd" with "Hγproc Hlb2").
-
-  iDestruct ("Hqfupd" with "Hγproc Hlb") as ">[Hγproc [Hqfupd|Hreply]]".
+  iIntros (E) "!# %HE".
+  iInv "Hinv" as "HN" "HNClose".
+  iModIntro.
+  iExists (▷ Q)%I.
+  iSplitL "HN".
   {
-    iRight in "Hqfupd".
-  } *)
-Admitted.
+    iSplit.
+    { iFrame. }
+    iApply "Hwand".
+    iFrame.
+  }
+  iIntros "HQ".
+  iMod ("HNClose" with "HQ").
+  iModIntro.
+  done.
+Qed.
+
+(*
+  Want to have tinv (P ∨ R), where R is timeless and P is laterable.
+  |={E, E∖↑N}=> ∃ Q, ((Q ∧ P) ∨ R) ∗ ((Q ∨ R) -∗ |={E∖↑N,E}=> ⊤)
+
+  |={⊤}=>
+*)
+
+Definition tinv_laterable2 (N : namespace) (P:iProp Σ) (F : iProp Σ → iProp Σ) :=
+  (□ (∀ E : coPset, ⌜↑N ⊆ E⌝ → |0={E,E ∖ ↑N}=>
+        ∃ Q, F(Q ∧ ◇ P) ∗ (F(Q) -∗ |0={E ∖ ↑N,E}=> True)))%I.
+
+Lemma sem_invariant_try2 P R N :
+  (latered P) ∨ R ={⊤}=∗ tinv_laterable2 N P (λ A, A ∨ ▷ R).
+Proof.
+  iIntros "HPR".
+  iDestruct "HPR" as "[HP|HR]".
+  {
+    iDestruct "HP" as (Q) "[HQ #Hwand]".
+    iMod (inv_alloc N ⊤ (Q ∨ R)%I with "[HQ]") as "#Hinv".
+    { iLeft. done. }
+    iModIntro.
+    iIntros (E) "!# %HE".
+    iInv "Hinv" as "HN" "HNClose".
+    iModIntro.
+    iExists (▷ Q)%I.
+    iSplitL "HN".
+    {
+      iDestruct "HN" as "[HQ|HR]".
+      {
+        iLeft. iSplit; first done.
+        iApply "Hwand"; done.
+      }
+      { iRight. iFrame. }
+    }
+    iIntros "HQR".
+    iMod ("HNClose" with "[HQR]") as "$"; last by iModIntro.
+    rewrite later_or.
+    done.
+  }
+Abort.
+*)
+
+Lemma quiesce_idemp_1 γrpc cid seqno R Q Rpost :
+  cid fm[[γrpc.(cseq)]]≥ int.nat seqno -∗
+  □(▷Rpost -∗ R) -∗
+  □(▷Q -∗ (rpc_atomic_pre_fupd γrpc cid seqno R)) -∗
+  rpc_atomic_pre γrpc cid (▷ Q ∨ ▷ Rpost) -∗
+  rpc_atomic_pre γrpc cid (▷ R).
+Proof.
+  iIntros "#Hseqno_lb #HwandR #Hwand Hatomic_pre".
+  iModIntro.
+  iIntros (seq) "Hcown".
+  iDestruct (fmcounter_map_agree_lb with "Hcown Hseqno_lb") as %Hseqno_ineq.
+
+  iDestruct ("Hatomic_pre" $! seq with "Hcown") as ">[Hcown Hfupd]".
+  iFrame.
+  unfold laterable.make_laterable.
+  iDestruct "Hfupd" as (S) "[HS #Hfupd]".
+  iExists S.
+  iModIntro.
+  iFrame "HS".
+  iModIntro.
+  iIntros "HS".
+  iSpecialize ("Hfupd" with "HS").
+  iApply (rpc_atomic_pre_fupd_mono_strong with "[Hwand] Hfupd").
+  iIntros "HQR #Hlb Hγproc".
+  iDestruct (fmcounter_map_mono_lb (int.nat seqno) with "Hlb") as "#Hlb_seqno".
+  { lia. }
+  iDestruct "HQR" as "[HQ | HRpost]".
+  {
+    iDestruct ("Hwand" with "HQ") as "Hfupd".
+    iMod ("Hfupd" with "Hγproc Hlb_seqno") as "[$ $]".
+    by iModIntro.
+  }
+  { iSpecialize ("HwandR" with "HRpost"). iModIntro. iFrame. }
+Qed.
+
+(*
+Lemma quiesce_idemp_2 γrpc cid seqno R Rpost {H:Timeless R}:
+  cid fm[[γrpc.(cseq)]]≥ int.nat seqno -∗
+  <bdisc> (Rpost -∗ R) -∗
+  rpc_atomic_pre γrpc cid (▷ latered (rpc_atomic_pre_fupd γrpc cid seqno R)) -∗
+  rpc_atomic_pre γrpc cid R.
+Proof.
+  iIntros "#Hseqno_lb Hwand Hatomic_pre".
+  iModIntro.
+  iIntros (seq) "Hcown".
+  iDestruct (fmcounter_map_agree_lb with "Hcown Hseqno_lb") as %Hseqno_ineq.
+
+  iDestruct ("Hatomic_pre" $! seq with "Hcown") as ">[Hcown Hfupd]".
+  iFrame.
+  iApply (rpc_atomic_pre_fupd_mono_strong with "[Hwand] Hfupd").
+  iIntros "Hfupd #Hlb Hγproc".
+  iDestruct (fmcounter_map_mono_lb (int.nat seqno) with "Hlb") as "#Hlb_seqno".
+  { lia. }
+  iDestruct "Hfupd" as (P) "[HP #Hfupd]".
+
+  iAssert (□ ▷(P -∗ ◇ rpc_atomic_pre_fupd γrpc cid seqno R) )%I as "#Hfupd2".
+  { iApply later_intuitionistically. done. }
+  iDestruct (later_wand with "Hfupd2") as "Hfupd3".
+  iDestruct ("Hfupd3" with "HP") as "Hatomic_fupd".
+  unfold rpc_atomic_pre_fupd.
+
+  iDestruct (later_wand with "Hatomic_fupd") as "Hatomic_fupd".
+  iAssert
+
+  iMod ("Hfupd" with "Hγproc Hlb_seqno") as "[$ [$|HRpost]]".
+  { by iModIntro. }
+  iApply "Hwand". by iModIntro.
+
+
+
+Lemma quiesce_idemp_2 γrpc cid seqno R Rpost {H:Timeless R}:
+  cid fm[[γrpc.(cseq)]]≥ int.nat seqno -∗
+  <bdisc> (Rpost -∗ R) -∗
+  rpc_atomic_pre γrpc cid ((rpc_atomic_pre_fupd γrpc cid seqno R) ∨ Rpost) -∗
+  rpc_atomic_pre γrpc cid R.
+Proof.
+  iIntros "#Hseqno_lb Hwand Hatomic_pre".
+  Search later.
+  iModIntro.
+  iIntros (seq) "Hcown".
+  iDestruct (fmcounter_map_agree_lb with "Hcown Hseqno_lb") as %Hseqno_ineq.
+
+  iDestruct ("Hatomic_pre" $! seq with "Hcown") as ">[Hcown Hfupd]".
+  iFrame.
+  iApply (rpc_atomic_pre_fupd_mono_strong with "[Hwand] Hfupd").
+  iIntros "Hfupd #Hlb Hγproc".
+  iDestruct (fmcounter_map_mono_lb (int.nat seqno) with "Hlb") as "#Hlb_seqno".
+  { lia. }
+  iDestruct "Hfupd" as "[Hfupd|HRpost]".
+  {
+    Search "laterable".
+    unfold rpc_atomic_pre_fupd.
+    iDestruct ("Hfupd" with "[Hγproc] [Hlb_seqno]") as "HH".
+    { iNext. done. }
+    { iNext. done. }
+    iModIntro.
+  }
+  { iFrame. iApply "Hwand". by iModIntro. }
+Qed.
+*)
+
+Definition quiesce_fupd γrpc cid seqno PreCond PostCond (args:RPCValC) : iProp Σ :=
+  laterable.make_laterable (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond args ∨ ▷ ∃ ret:u64, PostCond args ret))%I.
+
+Definition quiesceable_pre γrpc cid (args:RPCValC) PreCond PostCond : iProp Σ :=
+  rpc_atomic_pre γrpc cid (▷ PreCond args ∨ ▷ ∃ ret:u64, PostCond args ret)%I.
 
 Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid args γrpc (PreCond:RPCValC -> iProp Σ) PostCond {_:Discretizable (PreCond args)} {_:∀ reply, Discretizable (PostCond args reply)}:
   (∀ seqno, is_rpcHandler f γrpc (quiesce_fupd γrpc cid seqno PreCond PostCond) PostCond) -∗
@@ -211,18 +441,25 @@ Proof using Type*.
     iModIntro.
     iFrame.
     iIntros.
+    iExists (PreCond args)%I.
+    iFrame.
     iModIntro; iFrame.
+    iIntros.
+    iIntros "Hγproc #Hlb".
+    iFrame.
+    by iModIntro.
   }
   wpc_rec _.
   { iFromCache. }
 
   iCache with "Hprecond HΦ".
   { (* Use PreCond to show idemp_fupd *)
+    (* repeat crash proof *)
     iDestruct "HΦ" as "[HΦc _]".
     iModIntro. iApply "HΦc".
     iModIntro. iIntros.
     iModIntro. iFrame.
-    iIntros. iModIntro; iFrame.
+    iIntros. admit.
   }
   wpc_pures.
   wpc_loadField.
@@ -258,11 +495,22 @@ Proof using Type*.
   iNamed 1.
   wpc_pures.
   iDestruct (fmcounter_map_get_lb with "Hcrpc") as "#Hcseqno_lb". (* Need this to apply quiesce_idemp_1 *)
-
-  iMod (make_request {| Req_Args:=args; Req_CID:=cid; Req_Seq:=cseqno|} (quiesce_fupd γrpc cid cseqno PreCond PostCond) PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
+  iAssert (quiesce_fupd γrpc cid cseqno PreCond PostCond args)%I with "[Hprecond]" as "Hq".
+  { (* TODO: Use lemma for Precond -> quiesce_fupd PreCond *)
+    iExists (PreCond args)%I.
+    iFrame.
+    iModIntro; iFrame.
+    iIntros.
+    iIntros "Hγproc #Hlb".
+    iFrame.
+    by iModIntro.
+  }
+  unfold quiesce_fupd.
+  unfold laterable.make_laterable.
+  iDestruct "Hq" as (Q) "[HQ #Hwand]".
+  iMod (make_request {| Req_Args:=args; Req_CID:=cid; Req_Seq:=cseqno|} (λ _, Q) PostCond with "[Hlinv] [Hcrpc] [HQ]") as "[Hcseq_own HallocPost]"; eauto.
   (* { admit. (* TODO: add assumption *) } *)
   { simpl. word. }
-  { iIntros "??". iFrame. by iModIntro. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
   (* Prepare the loop invariant *)
   iAssert (∃ (err:bool), errb_ptr ↦[boolT] #err)%I with "[Herrb_ptr]" as "Herrb_ptr".
@@ -280,8 +528,17 @@ Proof using Type*.
     iApply "HΦc".
     simpl.
     iDestruct (quiesce_request with "Hlinv Hreqinv_init HγP") as "Hquiesce_req".
-    iDestruct (quiesce_idemp_1 with "[] Hquiesce_req") as "HH".
+    simpl.
+    iDestruct (quiesce_idemp_1 γrpc cid _ _ Q (∃ ret : u64, PostCond args ret)%I with "[] [] [Hwand] Hquiesce_req") as "HH".
     { simpl. iFrame "#". }
+    { iModIntro. admit. (* timeless postcond *) }
+    { admit. (* timeless postcond *) }
+    unfold quiesceable_pre.
+    iRevert "HH".
+    iApply (rpc_atomic_pre_mono_strong).
+    iModIntro.
+    iIntros.
+    iModIntro.
     iFrame.
   }
   {
@@ -292,9 +549,7 @@ Proof using Type*.
       iDestruct "HΦ" as "[HΦc _]".
       iModIntro. iApply "HΦc".
       iDestruct (quiesce_request with "Hlinv Hreqinv_init HγP") as "Hq".
-      iDestruct (quiesce_idemp_1 with "[] Hq") as "Hq".
-      { simpl. iFrame "#". }
-      iFrame.
+      admit. (* repeat above *)
     }
 
     iDestruct "Hreply" as (reply') "Hreply".
@@ -310,6 +565,7 @@ Proof using Type*.
         iFrame "Hreply".
         simpl. iPureIntro. lia.
       }
+      (*
       iFrame "Hreqinv_init".
     }
     iIntros (v) "Hrpc_post". iNamed 1.
@@ -393,6 +649,7 @@ Proof using Type*.
     iExists _; iFrame.
     iPureIntro.
     word.
+*)
 Admitted.
 End rpc_proof.
 
