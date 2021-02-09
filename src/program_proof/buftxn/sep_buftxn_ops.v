@@ -47,10 +47,14 @@ Section goose_lang.
   Implicit Types (l: loc) (γ: buftxn_names Σ) (γtxn: gname).
   Implicit Types (obj: object).
 
-  Theorem wp_BufTxn__Begin (l_txn: loc) γ dinit :
+  Theorem wp_BufTxn__Begin' (l_txn: loc) γ dinit :
     {{{ is_txn l_txn γ.(buftxn_txn_names) dinit ∗ is_txn_system N γ }}}
       Begin #l_txn
-    {{{ γtxn l, RET #l; is_buftxn N l γ dinit γtxn (λ _, emp) }}}.
+    {{{
+      γtxn γdurable l, RET #l;
+      "Hbuftxn_mem" ∷ is_buftxn_mem N l γ dinit γtxn γdurable ∗
+      "Hdurable_frag" ∷ map_ctx γdurable (1/2) ∅
+    }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ".
     iDestruct "Hpre" as "[#His_txn #Htxn_inv]".
@@ -61,19 +65,29 @@ Section goose_lang.
     iMod (map_init ∅) as (γdurable) "[Hdurable Hdurable_frag]".
     iModIntro.
     iApply "HΦ".
-    iExists γdurable. iSplitR "Hdurable_frag".
-    {
-      iExists ∅, false.
-      rewrite !fmap_empty. iFrame "Hctx".
-      iFrame "∗#".
-      auto with iFrame.
-    }
-    {
-      iExists ∅.
-      rewrite !big_sepM_empty.
-      iFrame "∗#".
-      auto with iFrame.
-    }
+    iFrame "Hdurable_frag".
+    iExists ∅, false.
+    rewrite !fmap_empty. iFrame "Hctx".
+    iFrame "∗#".
+    auto with iFrame.
+  Qed.
+
+  Theorem wp_BufTxn__Begin (l_txn: loc) γ dinit :
+    {{{ is_txn l_txn γ.(buftxn_txn_names) dinit ∗ is_txn_system N γ }}}
+      Begin #l_txn
+    {{{ γtxn l, RET #l; is_buftxn N l γ dinit γtxn (λ _, emp) }}}.
+  Proof.
+    iIntros (Φ) "Hpre HΦ".
+    wp_apply (wp_BufTxn__Begin' with "Hpre").
+    iIntros (???) "[? ?]".
+    iNamed.
+    iApply "HΦ".
+    iExists γdurable.
+    iFrame.
+    iExists ∅.
+    rewrite !big_sepM_empty.
+    iFrame "∗#".
+    auto with iFrame.
   Qed.
 
   Definition is_object l a obj: iProp Σ :=
@@ -509,6 +523,58 @@ Section goose_lang.
       iExists _; iFrame.
       Unshelve.
       apply _.
+  Qed.
+
+  Theorem wpc_BufTxn__CommitWait' {l γ γ' dinit γtxn γdurable committed_mT m} klevel :
+    N ## invariant.walN →
+    N ## invN →
+    N ## mspec.wpwpcN →
+    {{{
+      "Hbuftxn_mem" ∷ is_buftxn_mem N l γ dinit γtxn γdurable ∗
+      "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT ∗
+      "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) ∗
+      "Hbuftxn_maps_to" ∷ ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
+      "#Htxn_cinv" ∷ txn_cinv N γ γ'
+    }}}
+      BufTxn__CommitWait #l #true @ S klevel; ⊤
+    {{{
+      (ok:bool), RET #ok;
+      if ok then
+        ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v)
+      else
+        ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ a v)
+    }}}
+    {{{
+      ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ' a v) ∨
+      ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v)
+    }}}.
+  Proof.
+    iIntros (HwalN HinvN HwpwpcN Φ Φc) "(?&?&?&?&?) HΦ".
+    iNamed.
+    wpc_apply (
+      wpc_BufTxn__CommitWait
+        (λ mapsto, [∗ map] a↦v ∈ committed_mT, mapsto a v)%I
+        (λ mapsto, [∗ map] a↦v ∈ m, mapsto a v)%I
+        _ HwalN HinvN HwpwpcN
+      with "[Hbuftxn_mem Hdurable_frag Hold_vals Hbuftxn_maps_to]"
+    ).
+    {
+      iFrame "Hbuftxn_maps_to Htxn_cinv".
+      iExists _.
+      iFrame "Hbuftxn_mem".
+      iExists _.
+      iFrame.
+      iModIntro.
+      auto.
+    }
+    iSplit.
+    {
+      iDestruct "HΦ" as "[HΦc _]".
+      intuition.
+    }
+    iIntros (ok) "!> H".
+    iApply "HΦ".
+    iFrame.
   Qed.
 
   Theorem is_buftxn_mem_durable l γ dinit γtxn P0 γdurable :

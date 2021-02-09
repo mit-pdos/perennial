@@ -382,18 +382,25 @@ Section goose_lang.
     done.
   Qed.
 
-  Theorem lift_into_txn E l γ dinit γtxn P0 a obj :
+  Theorem lift_into_txn' E l γ dinit γtxn γdurable committed_mT a obj :
     ↑N ⊆ E →
     ↑invN ⊆ E →
     N ## invN →
-    is_buftxn l γ dinit γtxn P0 -∗
-    durable_mapsto_own γ a obj
+    "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable -∗
+    "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT -∗
+    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) -∗
+    "Hdurable_maps_to" ∷ durable_mapsto_own γ a obj
     -∗ |NC={E}=>
-    buftxn_maps_to γtxn a obj ∗
-    is_buftxn l γ dinit γtxn (λ mapsto, mapsto a obj ∗ P0 mapsto).
+    "Hbuftxn_maps_to" ∷ buftxn_maps_to γtxn a obj ∗
+    "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable ∗
+    "Hdurable_frag" ∷ map_ctx γdurable (1/2) (<[a:=obj]>committed_mT) ∗
+    "Hold_vals" ∷ (
+      [∗ map] a↦v ∈ <[a:=obj]>committed_mT, durable_mapsto γ a v
+    ) ∗
+    "%Hnew" ∷ ⌜committed_mT !! a = None⌝.
   Proof.
-    iIntros (???) "Hctx [Ha Ha_i]".
-    iNamed "Hctx".
+    iIntros (HN HinvN HNdisj) "? ? ? [Ha Ha_i]".
+    iNamed.
     iNamed "Hbuftxn_mem".
 
     iDestruct "Ha" as (obj0) "Ha".
@@ -409,7 +416,6 @@ Section goose_lang.
     iMod (mspec.BufTxn_lift_one _ _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hbuftxn"; auto.
     iMod (map_alloc a obj with "Htxn_ctx") as "[Htxn_ctx Ha]"; eauto.
 
-    iNamed "Hbuftxn_durable".
     iDestruct (map_ctx_agree with "Hdurable Hdurable_frag") as %<-.
     iCombine "Hdurable Hdurable_frag" as "Hdurable".
     iMod (map_alloc a obj with "Hdurable") as "[Hdurable _]"; eauto.
@@ -417,7 +423,7 @@ Section goose_lang.
 
     iModIntro.
     iFrame "Ha".
-    iExists _. iSplitR "Hdurable_frag Hold_vals Ha_i".
+    iSplitR "Hdurable_frag Hold_vals Ha_i".
     {
       iExists (<[a:=object_to_versioned obj]> mT), anydirty.
       iFrame "Htxn_system".
@@ -425,14 +431,82 @@ Section goose_lang.
       iFrame.
       iPureIntro. destruct anydirty; intuition congruence.
     }
-    {
-      iExists _. iFrame "Hdurable_frag".
-      rewrite !big_sepM_insert //. iFrame.
+    iFrame "Hdurable_frag".
+    rewrite !big_sepM_insert //. iFrame "∗ %".
+  Qed.
+
+  Theorem lift_into_txn E l γ dinit γtxn P0 a obj :
+    ↑N ⊆ E →
+    ↑invN ⊆ E →
+    N ## invN →
+    is_buftxn l γ dinit γtxn P0 -∗
+    durable_mapsto_own γ a obj
+    -∗ |NC={E}=>
+    buftxn_maps_to γtxn a obj ∗
+    is_buftxn l γ dinit γtxn (λ mapsto, mapsto a obj ∗ P0 mapsto).
+  Proof.
+    iIntros (HN HinvN HNdisj) "Hctx Hnew".
+    iNamed "Hctx".
+    iNamed "Hbuftxn_durable".
+    iDestruct (
+      lift_into_txn' _ _ _ _ _ _ _ _ _ HN HinvN HNdisj
+      with "Hbuftxn_mem Hdurable_frag Hold_vals Hnew"
+    ) as "> (?&?&?&?&?)".
+    iNamed.
+    iFrame "Hbuftxn_maps_to".
+    iExists _.
+    iFrame.
+    iExists _.
+    iFrame.
+
+    iModIntro.
+    iModIntro.
+    iIntros (mapsto) "H".
+    iDestruct (big_sepM_insert with "H") as "[Ha H]"; eauto. iFrame.
+    iApply "HrestoreP0"; iFrame.
+  Qed.
+
+  Theorem lift_map_into_txn' E l γ dinit γtxn γdurable committed_mT m :
+    ↑invN ⊆ E →
+    ↑N ⊆ E →
+    N ## invN →
+    "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable -∗
+    "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT -∗
+    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) -∗
+    "Hm" ∷ ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v)
+    -∗ |NC={E}=>
+    "Hbuftxn_maps_to" ∷ ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
+    "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable ∗
+    "Hdurable_frag" ∷ map_ctx γdurable (1/2) (m ∪ committed_mT) ∗
+    "Hold_vals" ∷ ([∗ map] a↦v ∈ (m ∪ committed_mT), durable_mapsto γ a v) ∗
+    "%Hall_new" ∷ ⌜m ##ₘ committed_mT⌝.
+  Proof.
+    iIntros (???) "????".
+    iNamed.
+    iInduction m as [|a v m] "IH" using map_ind forall (committed_mT).
+    - setoid_rewrite big_sepM_empty.
+      rewrite !left_id.
       iModIntro.
-      iIntros (mapsto) "H".
-      iDestruct (big_sepM_insert with "H") as "[Ha H]"; eauto. iFrame.
-      iApply "HrestoreP0"; iFrame.
-    }
+      iFrame.
+      iPureIntro.
+      apply map_disjoint_empty_l.
+    - rewrite !big_sepM_insert //.
+      iDestruct "Hm" as "[[Ha_mod Ha_dur] Hm]".
+      iAssert (durable_mapsto_own γ a v) with "[Ha_mod Ha_dur]" as "Ha".
+      { iFrame. }
+      iMod (lift_into_txn' with "Hbuftxn_mem Hdurable_frag Hold_vals Ha")
+        as "(?&?&?&?&?)"; [ solve_ndisj .. | ].
+      iNamed.
+      iMod ("IH" with "Hbuftxn_mem Hdurable_frag Hold_vals Hm") as "(?&?&?&?&?)".
+      iNamed.
+      iModIntro.
+      rewrite -insert_union_r.
+      2: assumption.
+      rewrite insert_union_l.
+      iFrame.
+      iPureIntro.
+      apply map_disjoint_insert_r in Hall_new.
+      apply map_disjoint_insert_l_2; intuition.
   Qed.
 
   Theorem lift_map_into_txn E l γ dinit γtxn P0 m :
@@ -440,30 +514,34 @@ Section goose_lang.
     ↑N ⊆ E →
     N ## invN →
     is_buftxn l γ dinit γtxn P0 -∗
-    ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v) -∗ |NC={E}=>
+    ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v)
+    -∗ |NC={E}=>
     ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
-                      is_buftxn l γ dinit γtxn
-                        (λ mapsto,
-                         ([∗ map] a↦v ∈ m, mapsto a v) ∗
-                         P0 mapsto).
+    is_buftxn l γ dinit γtxn (λ mapsto,
+      ([∗ map] a↦v ∈ m, mapsto a v) ∗ P0 mapsto
+    ).
   Proof.
     iIntros (???) "Hctx Hm".
-    iInduction m as [|a v m] "IH" using map_ind forall (P0).
-    - setoid_rewrite big_sepM_empty.
-      rewrite !left_id.
-      setoid_rewrite (@left_id _ _ _ _ emp_sep).
-      by iFrame.
-    - rewrite !big_sepM_insert //.
-      iDestruct "Hm" as "[[Ha_mod Ha_dur] Hm]".
-      iAssert (durable_mapsto_own γ a v) with "[Ha_mod Ha_dur]" as "Ha".
-      { iFrame. }
-      iMod (lift_into_txn with "Hctx Ha") as "[Ha Hctx]"; [ solve_ndisj .. | ].
-      iMod ("IH" with "Hctx Hm") as "[Hm Hctx]".
-      iModIntro.
-      iFrame.
-      iApply (is_buftxn_mono with "Hctx"); auto.
-      iIntros (mapsto) "(H0 & H1 & $)".
-      iApply big_sepM_insert; eauto. iFrame.
+    iNamed "Hctx".
+    iNamed "Hbuftxn_durable".
+    Check lift_map_into_txn'.
+    iMod (lift_map_into_txn' with "Hbuftxn_mem Hdurable_frag Hold_vals Hm")
+      as "(?&?&?&?&?)"; [ solve_ndisj.. | ].
+    iNamed.
+    iModIntro.
+    iFrame "Hbuftxn_maps_to".
+    iExists _.
+    iFrame "Hbuftxn_mem".
+    iExists _.
+    iFrame.
+
+    iModIntro.
+    iIntros (?) "Hmapsto".
+    iDestruct (big_sepM_union with "Hmapsto") as "[Hnew Hold]".
+    1: assumption.
+    iFrame.
+    iApply "HrestoreP0".
+    iFrame.
   Qed.
 
   Lemma conflicting_exists {PROP:bi} (A L V : Type) (P : A → L → V → PROP) :
