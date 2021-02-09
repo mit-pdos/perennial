@@ -69,7 +69,7 @@ Lemma rangeSet_append_one:
 Proof.
   intros start sz Hbound i Hibound Hilower_bound.
   replace (int.Z (word.add start sz)) with (int.Z start + int.Z sz) in Hibound by word.
-  apply gset_eq; intros.
+  apply set_eq; intros.
   rewrite elem_of_union.
   rewrite elem_of_singleton.
   rewrite !rangeSet_lookup; try word.

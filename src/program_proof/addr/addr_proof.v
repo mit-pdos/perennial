@@ -593,7 +593,7 @@ Lemma gmap_addr_by_block_dom_eq {T0 T1} (m0 : gmap addr T0) (m1 : gmap addr T1) 
   dom (gset u64) (gmap_addr_by_block m0) = dom (gset u64) (gmap_addr_by_block m1).
 Proof.
   intros.
-  eapply gset.gset_eq; intros x.
+  eapply set_eq; intros x.
   rewrite /gmap_addr_by_block.
   rewrite !elem_of_dom.
   destruct (gmap_uncurry m0 !! x) eqn:He0;
@@ -621,7 +621,7 @@ Lemma gmap_addr_by_block_dom_eq2 {T0 T1} (m0 : gmap addr T0) (m1 : gmap addr T1)
   dom (gset u64) mb0 = dom (gset u64) mb1.
 Proof.
   intros.
-  eapply gset.gset_eq; intros x.
+  eapply set_eq; intros x.
   split; intros Hx.
   - eapply gmap_addr_by_block_elem_of_1 in Hx; eauto. rewrite H in Hx.
     eapply gmap_addr_by_block_elem_of_2 in Hx; eauto.

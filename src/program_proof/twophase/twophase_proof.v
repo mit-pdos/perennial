@@ -507,7 +507,7 @@ Qed.
 Lemma map_zip_dom {K A B} `{Countable K} (m1: gmap K A) (m2: gmap K B) :
   dom (gset K) (map_zip m1 m2) = dom (gset K) m1 ∩ dom (gset K) m2.
 Proof.
-  apply gset.gset_eq.
+  apply set_eq.
   intros k.
   split.
   - intros Hin.

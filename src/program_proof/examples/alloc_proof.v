@@ -214,7 +214,7 @@ Lemma gset_difference_difference `{Countable K} (A B C: gset K) :
 Proof using.
   clear.
   intros.
-  apply gset_eq; intros k.
+  apply set_eq; intros k.
   rewrite !elem_of_difference.
   intuition.
   - destruct (decide (k ∈ C)); set_solver.

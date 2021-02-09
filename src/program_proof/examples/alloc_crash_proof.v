@@ -53,7 +53,7 @@ Module alloc.
     unused σ ∪ used σ = domain σ.
   Proof.
     rewrite /unused /used /domain.
-    apply gset_eq => a.
+    apply set_eq => a.
     rewrite elem_of_union.
     rewrite !elem_of_dom.
     split.
@@ -255,7 +255,7 @@ Proof.
       rewrite /alloc.unused elem_of_filter_dom.
       eexists; eauto. }
     apply elem_of_filter_dom in H1 as [? [? Heq]]; simpl in Heq; congruence.
-  - apply gset_eq; intros.
+  - apply set_eq; intros.
     rewrite /alloc.free /alloc.unused.
     rewrite !elem_of_filter_dom.
     split; intros.
@@ -308,7 +308,7 @@ Proof.
   rewrite /alloc.domain /alloc_post_crash.
   assert (alloc.used σ = used).
   { subst σ; rewrite /new_alloc_state /alloc.used.
-    apply gset_eq; intros.
+    apply set_eq; intros.
     rewrite elem_of_filter_dom /=.
     setoid_rewrite lookup_union_Some_raw.
     setoid_rewrite lookup_gset_to_gmap_Some.
@@ -919,7 +919,7 @@ Lemma gset_difference_difference `{Countable K} (A B C: gset K) :
 Proof using.
   clear.
   intros.
-  apply gset_eq; intros k.
+  apply set_eq; intros k.
   rewrite !elem_of_difference.
   intuition.
   - destruct (decide (k ∈ C)); set_solver.

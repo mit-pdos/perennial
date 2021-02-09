@@ -282,7 +282,7 @@ Proof.
   { iPureIntro.
     rewrite dom_blocks_to_map_u64.
     rewrite dom_blocks_to_map_Z.
-    apply gset_eq; intros.
+    apply set_eq; intros.
     rewrite elem_of_map.
     rewrite elem_of_list_to_set.
     rewrite elem_of_seqZ.
@@ -568,7 +568,7 @@ Lemma apply_upds_dom_eq upds d :
   dom (gset Z) (apply_upds upds d) =
   list_to_set ((λ u, int.Z u.(update.addr)) <$> upds) ∪ dom (gset Z) d.
 Proof.
-  apply gset_eq.
+  apply set_eq.
   intros.
   rewrite elem_of_union.
   rewrite elem_of_list_to_set.
