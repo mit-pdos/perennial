@@ -114,7 +114,7 @@ is_kvserver γ srv -∗
 }}}
     KVServer__Get #srv
 {{{ (f:goose_lang.val), RET f;
-        ∀ key, is_rpcHandler f γ.(ks_rpcGN) key (Get_Pre γ va key) (Get_Post γ va key)
+        ∀ args req, is_rpcHandler f γ.(ks_rpcGN) args req (Get_Pre γ va args) (Get_Post γ va args)
 }}}.
 Proof.
   iIntros "#Hls".
@@ -122,7 +122,7 @@ Proof.
   wp_lam.
   wp_pures.
   iApply "Hpost".
-  iIntros (key).
+  iIntros (args req).
   iApply is_rpcHandler_eta; simpl.
   iIntros "!#" (_ _).
   iNamed "Hls". wp_pures.
@@ -171,7 +171,7 @@ is_kvserver γ srv -∗
 }}}
     KVServer__Put #srv
 {{{ (f:goose_lang.val), RET f;
-    ∀ args, is_rpcHandler f γ.(ks_rpcGN) args (Put_Pre γ args) (Put_Post γ args)
+    ∀ args req, is_rpcHandler f γ.(ks_rpcGN) args req (Put_Pre γ args) (Put_Post γ args)
 }}}.
 Proof.
   iIntros "#Hls".
@@ -179,7 +179,7 @@ Proof.
   wp_lam.
   wp_pures.
   iApply "Hpost".
-  iIntros (args).
+  iIntros (args req).
   iApply is_rpcHandler_eta; simpl.
   iIntros "!#" (_ _).
   iNamed "Hls". wp_pures.

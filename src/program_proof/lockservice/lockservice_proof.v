@@ -239,7 +239,7 @@ is_lockserver γ srv -∗
 }}}
     LockServer__TryLock #srv
 {{{ (f:goose_lang.val), RET f;
-        ∀ args, is_rpcHandler f γ.(ls_rpcGN) args (TryLock_Pre γ args) (TryLock_Post args)
+        ∀ args req, is_rpcHandler f γ.(ls_rpcGN) args req (TryLock_Pre γ args) (TryLock_Post args)
 }}}.
 Proof.
   iIntros "#Hls".
@@ -247,7 +247,7 @@ Proof.
   wp_lam.
   wp_pures.
   iApply "Hpost".
-  iIntros (args).
+  iIntros (args req).
   iApply is_rpcHandler_eta; simpl.
   iIntros "!#" (_ _).
   iNamed "Hls". wp_pures.
@@ -302,7 +302,7 @@ is_lockserver γ srv -∗
 }}}
     LockServer__Unlock #srv
 {{{ (f:goose_lang.val), RET f;
-        ∀ args, is_rpcHandler f γ.(ls_rpcGN) args (Unlock_Pre γ args) (Unlock_Post args)
+        ∀ args req, is_rpcHandler f γ.(ls_rpcGN) args req (Unlock_Pre γ args) (Unlock_Post args)
 }}}.
 Proof.
   iIntros "#Hls".
@@ -310,7 +310,7 @@ Proof.
   wp_lam.
   wp_pures.
   iApply "Hpost".
-  iIntros (args).
+  iIntros (args req).
   iApply is_rpcHandler_eta; simpl.
   iIntros "!#" (_ _).
   iNamed "Hls". wp_pures.

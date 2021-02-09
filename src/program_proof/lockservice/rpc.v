@@ -105,10 +105,10 @@ Local Definition ReplyTable_inv γrpc: iProp Σ :=
 .
 
 Definition replyTableInvN : namespace := nroot .@ "replyTableInvN".
-Definition rpcRequestInvN := nroot .@ "rpcRequestInvN".
+Definition rpcRequestInvN req := nroot .@ "rpcRequestInvN" .@ (req.(Req_Seq)).
 
 Definition is_RPCRequest γrpc γreq (PreCond : iProp Σ) (PostCond : R -> iProp Σ) (req:RPCRequestID) : iProp Σ :=
-  inv rpcRequestInvN (RPCRequest_inv γrpc γreq PreCond PostCond req).
+  inv (rpcRequestInvN req) (RPCRequest_inv γrpc γreq PreCond PostCond req).
 
 Definition is_RPCServer γrpc : iProp Σ :=
   inv replyTableInvN (ReplyTable_inv γrpc).
@@ -168,7 +168,7 @@ Proof using Type*.
   iMod (fmcounter_map_update (int.nat req.(Req_Seq) + 1) with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
   { simpl. lia. }
   iDestruct (big_sepM_insert _ _ _ None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
-  iMod (inv_alloc rpcRequestInvN _ (RPCRequest_inv γrpc γreq PreCond PostCond req) with "[Hrcptsto HPreCond Hγpre]") as "#Hreqinv_init".
+  iMod (inv_alloc (rpcRequestInvN req) _ (RPCRequest_inv γrpc γreq PreCond PostCond req) with "[Hrcptsto HPreCond Hγpre]") as "#Hreqinv_init".
   {
     iNext. iFrame; iFrame "#". iLeft. iFrame. iRight. iFrame.
   }
@@ -195,15 +195,16 @@ Proof.
   word.
 Qed.
 
-Lemma server_takes_request (req:RPCRequestID) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
+Lemma server_takes_request E (req:RPCRequestID) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
+  ↑(rpcRequestInvN req) ⊆ E →
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   RPCServer_own γrpc lastSeqM lastReplyM
-  ={⊤}=∗
+  ={E}=∗
   own γreq.(pre) (Excl ()) ∗ ▷ PreCond ∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM.
 Proof.
-  intros Hrseq.
+  intros ? Hrseq.
   iIntros "HreqInv Hsown"; iNamed "Hsown".
   iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
 
@@ -227,16 +228,17 @@ Proof.
 Qed.
 
 (* Opposite of above *)
-Lemma server_returns_request (req:RPCRequestID) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
+Lemma server_returns_request E (req:RPCRequestID) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
+  ↑(rpcRequestInvN req) ⊆ E →
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   own γreq.(pre) (Excl ()) -∗
   PreCond -∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM
-  ={⊤}=∗
+  ={E}=∗
   RPCServer_own γrpc lastSeqM lastReplyM.
 Proof.
-  intros Hrseq.
+  intros ? Hrseq.
   iIntros "HreqInv HγPre Hpre Hsrpc_proc".
   iNamed "Hsrpc_proc".
   iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
@@ -259,7 +261,7 @@ Lemma server_completes_request E (PreCond : iProp Σ) (PostCond : R -> iProp Σ)
     (req:RPCRequestID) (γrpc:rpc_names) (reply:R)
     (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γreq :
   ↑replyTableInvN ⊆ E →
-  ↑rpcRequestInvN ⊆ E →
+  (↑rpcRequestInvN req ⊆ E) →
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
   is_RPCServer γrpc -∗
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
@@ -363,7 +365,7 @@ Qed.
 
 (** Client side: get the postcondition out of a reply using the "escrow" token. *)
 Lemma get_request_post E (req:RPCRequestID) (r:R) γrpc γreq PreCond PostCond :
-  ↑rpcRequestInvN ⊆ E →
+  ↑rpcRequestInvN req ⊆ E →
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   RPCReplyReceipt γrpc req r -∗
   (RPCRequest_token γreq) ={E}=∗
@@ -371,7 +373,7 @@ Lemma get_request_post E (req:RPCRequestID) (r:R) γrpc γreq PreCond PostCond :
 Proof using Type*.
   assert (Inhabited R) by exact (populate r).
   iIntros (?) "#Hinv #Hptstoro HγP".
-  iInv rpcRequestInvN as "HMinner" "HMClose".
+  iInv "Hinv" as "HMinner" "HMClose".
   iDestruct "HMinner" as "[#>Hlseqbound [[Hbad _] | [#Hlseq_lb HMinner]]]".
   { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">[_ []]". }
   iDestruct "HMinner" as "[>Hγpost|Hreply_post]".
@@ -408,15 +410,16 @@ Proof.
 Qed.
 
 (* TODO: I think this SP will be annoying *)
-Lemma server_executes_durable_request' (req:RPCRequestID) reply γrpc γreq PreCond PostCond lastSeqM lastReplyM ctx ctx' SP:
+Lemma server_executes_durable_request (req:RPCRequestID) reply γrpc γreq PreCond PostCond lastSeqM lastReplyM ctx ctx' SP:
   (* TODO: get rid of this requirement by putting γPre in the postcondition case *)
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   is_RPCServer γrpc -∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM -∗
   own γreq.(pre) (Excl()) -∗
-  (|={⊤∖↑rpcRequestInvN}=> SP) -∗ (* strengthened precond *)
-  (SP -∗ ctx ={⊤ ∖ ↑rpcRequestInvN}=∗ PostCond reply ∗ ctx') -∗
+  (SP) -∗ (* strengthened precond *)
+  (SP -∗ own γrpc.(proc) (Excl ()) -∗ req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq) -∗ ctx
+      ={⊤ ∖ ↑rpcRequestInvN req}=∗ PostCond reply ∗ own γrpc.(proc) (Excl ()) ∗ ctx') -∗
   ctx ={⊤}=∗
   (RPCReplyReceipt γrpc req reply ∗
   RPCServer_own γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM) ∗
@@ -430,8 +433,7 @@ Proof.
   iInv "HreqInv" as "[#>Hreqeq_lb Hcases]" "HMClose".
   iDestruct "Hcases" as "[[>Hrcptsto [>Hproc_tok|[>HγPre2 _]]]|[>#Hlseq_lb _]]".
   {
-    iMod ("Hfupd" with "HP Hctx") as "[Hpost Hctx']".
-    
+
     iInv replyTableInvN as ">HNinner" "HNClose".
     iNamed "HNinner".
 
@@ -455,6 +457,9 @@ Proof.
       apply Nat2Z.inj_lt in Hrseq.
       lia.
     }
+
+    (* COMMIT POINT *)
+    iMod ("Hfupd" with "HP Hproc_tok Hlseq_new_lb Hctx") as "(Hpost & Hγproc & Hctx')".
 
     iMod ("HMClose" with "[Hpost]") as "_".
     { iNext. iFrame "#". iRight. iRight. iExists _; iFrame "#∗". }

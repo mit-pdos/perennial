@@ -18,8 +18,8 @@ Section kv_logatom_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
 Context `{!filesysG Σ}.
 
-Lemma wpc_put_logatom_core γ (srv:loc) args kvserver Q cid seqno:
-□(Q -∗ (rpc_atomic_pre_fupd γ.(ks_rpcGN) cid seqno (Put_Pre γ args))) -∗
+Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q cid seqno:
+□(Q -∗ (rpc_atomic_pre_fupd γ.(ks_rpcGN) req.(Req_CID) req.(Req_Seq) (Put_Pre γ args))) -∗
 {{{
      (kv_core_mu srv γ).(core_own_vol) kvserver ∗
      <disc> Q
@@ -30,8 +30,10 @@ Lemma wpc_put_logatom_core γ (srv:loc) args kvserver Q cid seqno:
             (<disc> P') ∗
             KVServer_core_own_vol srv kvserver' ∗
             □ (P' -∗ Q) ∗
-            (* TODO: putting this here because need to be discretizable *)
-            □ (P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
+            □ (P' -∗ KVServer_core_own_ghost γ kvserver -∗
+               own γ.(ks_rpcGN).(proc) (Excl ()) -∗
+               cid fm[[γ.(ks_rpcGN).(lseq)]]≥ int.nat seqno
+               ={⊤∖↑rpcRequestInvN}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
 }}}
 {{{
      Q
@@ -66,9 +68,17 @@ Proof.
 
   (* The commit point fupd *)
   iModIntro.
-  iIntros "HQ Hghost".
+  iIntros "HQ Hghost Hγproc #Hlb".
   iDestruct ("Hwand" with "HQ") as "Hfupd".
   unfold rpc_atomic_pre_fupd.
+  iSpecialize ("Hfupd" with "Hγproc Hlb").
+  (* own γproc ={⊤, ⊤ ∖ ↑oldRequestInvN}=∗ blah ∗ (blah ={⊤ ∖ ↑oldRequestInvN, ⊤}=∗ RESOURCES ∗ own γproc)
+     |={⊤, ⊤ ∖ ↑newRequestInvN}=> (own γproc ∗ (POST ∨ PRE ={⊤ ∖ ↑newRequestInvN, ⊤}=∗ own γproc)
+
+     (PRE ∗ ctx ==∗ POST ∗ ctx')
+
+   *)
+  iMod "Hfupd".
   (* TODO: strengthen fupd postcond to have γproc and cid ≥ fact *)
 Admitted.
 

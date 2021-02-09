@@ -10,8 +10,8 @@ Section rpc_proof.
 Context `{!heapG Σ}.
 Context `{!rpcG Σ u64}.
 
-Definition rpc_atomic_pre_fupd γrpc (cid seq:u64) R :=
-  (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ R)%I.
+Definition rpc_atomic_pre_fupd γrpc (cid seq:u64) R : iProp Σ :=
+  ∃ prevSeq, ⌜int.nat prevSeq < int.nat seq⌝ ∗ (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=prevSeq |}}=∗ own γrpc.(proc) (Excl ()) ∗ R)%I.
 
 (* This gives the rpc_atomic_pre_fupd for any sequence number that the client can take on
    This is the precondition for ck.MakeRequest(args), where ck has the given cid *)
@@ -71,14 +71,16 @@ Qed.
 
 Lemma rpc_atomic_pre_fupd_mono_strong γrpc cid seq P Q:
   (P -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq -∗
-     own γrpc.(proc) (Excl ())={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ Q) -∗
+     own γrpc.(proc) (Excl ())={↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq|}}=∗ own γrpc.(proc) (Excl ()) ∗ Q) -∗
   rpc_atomic_pre_fupd γrpc cid seq P -∗
   rpc_atomic_pre_fupd γrpc cid seq Q.
 Proof.
-  iIntros "HPQ HP Hγproc #Hlb".
+  iIntros "HPQ Hfupd".
   iMod ("HP" with "Hγproc Hlb") as "[Hγproc HP]".
   iSpecialize ("HPQ" with "HP Hlb Hγproc").
+  iMod "HPQ".
   iFrame.
+  by iModIntro.
 Qed.
 
 Lemma rpc_atomic_pre_mono_strong cid γrpc P Q :
@@ -98,8 +100,8 @@ Proof.
   iModIntro.
   iIntros "HR". iSpecialize ("HatomicP" with "HR").
   iApply (rpc_atomic_pre_fupd_mono_strong with "[HPQ] HatomicP").
-  iIntros "HP #Hlb Hγproc". iApply ("HPQ" with "HP Hγproc").
-Qed.
+  iIntros "HP #Hlb Hγproc". (* iApply ("HPQ" with "HP Hγproc"). *)
+Admitted.
 
 (*
 Lemma rpc_atomic_pre_fupd_mono γrpc cid seq P Q:
@@ -165,6 +167,7 @@ Proof.
 
     iIntros "Hγproc #Hlseq_lb".
     iInv "His_req" as "HN" "HNClose".
+    {  }
     iDestruct "HN" as "[#>_ [HN|HN]]"; simpl. (* Is cseq_lb_strict relevant for this? *)
     {
       iDestruct "HN" as "[_ [>Hbad|HN]]".
@@ -263,7 +266,7 @@ Proof.
 Qed.
 
 Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid γrpc args (PreCond:iProp Σ) PostCond {_:Discretizable (PreCond)} {_:∀ reply, Discretizable (PostCond reply)}:
-  □(∀ seqno Q, (□(Q -∗ quiesce_fupd_raw γrpc cid seqno PreCond PostCond) -∗ is_rpcHandler f γrpc args Q PostCond)) -∗
+  □(∀ seqno Q, (□(Q -∗ quiesce_fupd_raw γrpc cid seqno PreCond PostCond) -∗ is_rpcHandler f γrpc args {| Red_CID:=cid; Req_Seq:=seqno |}  Q PostCond)) -∗
   {{{
     quiesceable_pre γrpc cid PreCond PostCond ∗
     own_rpcclient cl_ptr γrpc cid ∗

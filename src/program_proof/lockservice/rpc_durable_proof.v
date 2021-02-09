@@ -218,7 +218,7 @@ Context (rpc_srv_ptr:loc).
 
 (* The above two lemmas should be turned into requirements to apply wp_RPCServer__HandleRequest;
    HandleRequest should prove is_rpcHandler, instead of this wp directly *)
-Lemma RPCServer__HandleRequest_is_rpcHandler γrpc args :
+Lemma RPCServer__HandleRequest_is_rpcHandler γrpc args req :
 (∀  server,
  {{{
        "Hvol" ∷ core_own_vol server ∗
@@ -226,12 +226,12 @@ Lemma RPCServer__HandleRequest_is_rpcHandler γrpc args :
  }}}
     coreFunction (into_val.to_val args) @ 36; ⊤
  {{{
-      (* TODO: need the disc to proof work out *)
       server' (r:u64) P', RET #r;
             (<disc> P') ∗
             core_own_vol server' ∗
             □ (P' -∗ PreCond) ∗
-            □ (P' -∗ core_own_ghost server ={⊤∖↑rpcRequestInvN}=∗ PostCond r ∗ core_own_ghost server')
+            □ (P' -∗ own γrpc.(proc) (Excl ()) -∗ (req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq)) -∗ core_own_ghost server
+               ={⊤∖↑rpcRequestInvN req}=∗ PostCond r ∗ own γrpc.(proc) (Excl ()) ∗ core_own_ghost server')
  }}}
  {{{
       (PreCond)
@@ -256,7 +256,7 @@ Lemma RPCServer__HandleRequest_is_rpcHandler γrpc args :
   "#Hls" ∷ is_server rpc_srv_ptr γrpc
 }}}
   RPCServer__HandleRequest #rpc_srv_ptr coreFunction makeDurable
-{{{ f, RET f; is_rpcHandler f γrpc args PreCond PostCond }}}.
+{{{ f, RET f; is_rpcHandler f γrpc args req PreCond PostCond }}}.
 Proof.
   iIntros "#HcoreSpec #HdurSpec".
 
@@ -266,7 +266,7 @@ Proof.
   wp_pures.
   iApply "HΦ".
   clear Φ.
-  iIntros (????? Φ) "!# Hpre HΦ".
+  iIntros (???? Φ) "!# Hpre HΦ".
   iNamed "Hpre".
   iNamed "Hls".
   wp_loadField.
@@ -416,15 +416,17 @@ Proof.
         iNext.
         iMod (server_returns_request with "HargsInv HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
         iModIntro. iExists _, _; iFrame.
-      + iNext. iMod (server_executes_durable_request' with "HargsInv Hlinv Hsrpc_proc HγPre HP' Hfupd Hcoreghost") as "HH"; eauto.
+      + iNext. iMod (server_executes_durable_request with "HargsInv Hlinv Hsrpc_proc HγPre HP' Hfupd Hcoreghost") as "HH"; eauto.
         iDestruct "HH" as "(Hreceipt & Hsrpc & Hkvghost)".
         iExists _, _; iFrame "Hcoredurable".
         by iFrame.
     }
     iNext. iIntros "(Hcorevol & Hsrvown & Hcoredurable)".
-    iMod (server_executes_durable_request' with "HargsInv Hlinv Hsrpc_proc HγPre [HP'] Hfupd Hcoreghost") as "HH"; eauto.
+    iMod (server_executes_durable_request with "HargsInv Hlinv Hsrpc_proc HγPre HP' [Hfupd] Hcoreghost") as "HH"; eauto.
     {
-      iDestruct (own_disc_fupd_elim with "HP'") as "$".
+      iIntros "HP' Hghost".
+      iDestruct (own_disc_fupd_elim with "HP'") as ">HP'".
+      iApply ("Hfupd" with "HP' Hghost").
     }
     iDestruct "HH" as "(Hreceipt & Hsrpc & Hcoreghost)".
     iModIntro.

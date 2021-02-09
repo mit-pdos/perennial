@@ -95,7 +95,7 @@ is_incrserver γback isrv -∗
 }}}
   IncrServer__Increment #isrv
 {{{ (f:goose_lang.val), RET f;
-        ∀ args, is_rpcHandler f γback.(incr_rpcGN) args (IncrPreCond args) (IncrPostCond args)
+        ∀ args req, is_rpcHandler f γback.(incr_rpcGN) args req (IncrPreCond args) (IncrPostCond args)
 }}}.
 Admitted.
 

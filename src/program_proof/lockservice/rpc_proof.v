@@ -75,8 +75,8 @@ Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ
 .
 
 (* f is a rpcHandler if it satisfies this specification *)
-Definition is_rpcHandler (f:val) γrpc args PreCond PostCond : iProp Σ :=
-  ∀ γreq req_ptr reply_ptr req reply,
+Definition is_rpcHandler (f:val) γrpc args req PreCond PostCond : iProp Σ :=
+  ∀ γreq req_ptr reply_ptr reply,
     {{{ "#HargsInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req
                     ∗ "#Hargs" ∷ read_request req_ptr req args
                     ∗ "Hreply" ∷ own_reply reply_ptr reply
@@ -89,14 +89,14 @@ Definition is_rpcHandler (f:val) γrpc args PreCond PostCond : iProp Σ :=
     }}}
     .
 
-Lemma is_rpcHandler_eta (e:expr) γrpc args PreCond PostCond :
+Lemma is_rpcHandler_eta (e:expr) γrpc args req PreCond PostCond :
   □ (∀ v1 v2,
-    WP subst "reply" v1 (subst "req" v2 e) {{ v, is_rpcHandler v γrpc args PreCond PostCond }}) -∗
+    WP subst "reply" v1 (subst "req" v2 e) {{ v, is_rpcHandler v γrpc args req PreCond PostCond }}) -∗
   is_rpcHandler
     (λ: "req" "reply", e (Var "req") (Var "reply"))
-    γrpc args PreCond PostCond.
+    γrpc args req PreCond PostCond.
 Proof.
-  iIntros "#He" (????? Φ) "!# Hpre HΦ".
+  iIntros "#He" (???? Φ) "!# Hpre HΦ".
   wp_pures. wp_bind (subst _ _ _).
   iApply (wp_wand with "He"). iIntros (f) "Hfhandler".
   iApply ("Hfhandler" with "Hpre"). done.
@@ -194,18 +194,18 @@ Proof.
 Qed.
 
 (* This will alow handler functions using RPCServer__HandleRequest to establish is_rpcHandler *)
-Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc server_own_core args PreCond PostCond :
+Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc server_own_core args req PreCond PostCond :
 ({{{ server_own_core ∗ PreCond }}}
   coreFunction (into_val.to_val args)%V
 {{{ (r:u64), RET #r; server_own_core ∗ PostCond r }}}) -∗
 {{{ is_rpcserver sv γrpc server_own_core }}}
   RPCServer__HandleRequest #sv coreFunction
-{{{ f, RET f; is_rpcHandler f γrpc args PreCond PostCond }}}.
+{{{ f, RET f; is_rpcHandler f γrpc args req PreCond PostCond }}}.
 Proof.
   iIntros "#HfCoreSpec" (Φ) "!# #Hls Hpost".
   wp_lam.
   wp_pures. iApply "Hpost". clear Φ.
-  iIntros (????? Φ) "!# Hpre HΦ".
+  iIntros (???? Φ) "!# Hpre HΦ".
   iNamed "Hpre". iNamed "Hls".
   wp_loadField.
   wp_apply (acquire_spec mutexN #mu_ptr _ with "Hmu").
@@ -268,7 +268,7 @@ Proof.
 Qed.
 
 Lemma RemoteProcedureCall_spec (req_ptr reply_ptr:loc) (req:RPCRequestID) args (reply:Reply64) (f:val) PreCond PostCond γrpc γPost :
-is_rpcHandler f γrpc args PreCond PostCond -∗
+is_rpcHandler f γrpc args req PreCond PostCond -∗
 {{{
   "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req ∗
   "#Hargs" ∷ read_request req_ptr req args ∗
@@ -332,7 +332,7 @@ Proof.
 Qed.
 
 Lemma RPCClient__MakeRequest_spec (f:val) cl_ptr args γrpc PreCond PostCond :
-is_rpcHandler f γrpc args PreCond PostCond -∗
+(∀ req, is_rpcHandler f γrpc args req PreCond PostCond) -∗
 {{{
   PreCond ∗
   own_rpcclient cl_ptr γrpc ∗
