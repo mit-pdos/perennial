@@ -263,7 +263,6 @@ Proof.
   iModIntro. iFrame.
 Qed.
 
-Print is_rpcHandler.
 Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid args γrpc (PreCond:RPCValC -> iProp Σ) PostCond {_:Discretizable (PreCond args)} {_:∀ reply, Discretizable (PostCond args reply)}:
   □(∀ seqno Q, (□(Q -∗ quiesce_fupd_raw γrpc cid seqno PreCond PostCond args) -∗ is_rpcHandler f γrpc (λ _, Q) PostCond)) -∗
   {{{
