@@ -14,8 +14,8 @@ Section incr_proof.
 Context `{!heapG Σ}.
 Context `{!filesysG Σ}.
 
-Definition has_encoding_for_onetime_clerk data cid (args:RPCValC) :=
-   has_encoding data [EncUInt64 cid ; EncUInt64 2 ; EncUInt64 args.1 ; EncUInt64 args.2.1].
+Definition has_encoding_for_onetime_clerk data cid (args:RPCValsC) :=
+   has_encoding data [EncUInt64 cid ; EncUInt64 2 ; EncUInt64 args.(U64_1) ; EncUInt64 args.(U64_2)].
 
 (* TODO: should probably make RPCValC to be nicer than (u64 * (u64 * ())); no need for the unit *)
 
@@ -69,21 +69,21 @@ Definition own_onetime_incr_clerk (ck isrv:loc) (cid:u64) : iProp Σ :=
 .
 
 Variable old_v:u64.
-Definition IncrPreCond : RPCValC → iProp Σ := (λ a, a.1 [[γback.(incr_mapGN)]]↦ old_v)%I.
-Definition IncrPostCond : RPCValC → u64 → iProp Σ := (λ a r, a.1 [[γback.(incr_mapGN)]]↦ (word.add old_v 1))%I.
+Definition IncrPreCond : RPCValsC → iProp Σ := (λ a, a.(U64_1) [[γback.(incr_mapGN)]]↦ old_v)%I.
+Definition IncrPostCond : RPCValsC → u64 → iProp Σ := (λ a r, a.(U64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1))%I.
 
-Definition own_unalloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCValC) : iProp Σ :=
+Definition own_unalloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCValsC) : iProp Σ :=
   "cid" ∷ ck ↦[ShortTermIncrClerk.S :: "cid"] #cid ∗
   "seq" ∷ ck ↦[ShortTermIncrClerk.S :: "seq"] #2 ∗
   "incrserver" ∷ ck ↦[ShortTermIncrClerk.S :: "incrserver"] #isrv ∗
   "#req" ∷ (readonly (ck ↦[ShortTermIncrClerk.S :: "req"] (#cid,
                                               (#1,
-                                              (#args.1, (#args.2.1, #()), #())))))
+                                              (#args.(U64_1), (#args.(U64_2), #()), #())))))
 .
 
-Definition own_alloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCValC) : iProp Σ :=
+Definition own_alloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCValsC) : iProp Σ :=
   "Hown" ∷ own_unalloc_prepared_onetime_incr_clerk ck isrv cid args ∗
-  "#HreqInv" ∷ ∃ γPost, is_RPCRequest γback.(incr_rpcGN) γPost IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=1; Req_Args:=args |}
+  "#HreqInv" ∷ ∃ γPost, is_RPCRequest γback.(incr_rpcGN) γPost (IncrPreCond args) (IncrPostCond args) {| Req_CID:=cid; Req_Seq:=1; |}
 .
 
 (* TODO: this should refer to a lemma in incr_proof.v *)
@@ -95,7 +95,7 @@ is_incrserver γback isrv -∗
 }}}
   IncrServer__Increment #isrv
 {{{ (f:goose_lang.val), RET f;
-        is_rpcHandler f γback.(incr_rpcGN) IncrPreCond IncrPostCond
+        ∀ args, is_rpcHandler f γback.(incr_rpcGN) args (IncrPreCond args) (IncrPostCond args)
 }}}.
 Admitted.
 
@@ -108,9 +108,9 @@ is_incrserver γback isrv -∗
 {{{
      (reply':@RPCReply u64), RET #(reply'.(Rep_Ret)); ⌜reply'.(Rep_Stale) = true⌝
                ∗ RPCRequestStale γback.(incr_rpcGN)
-                   {| Req_CID := cid; Req_Seq := 1; Req_Args := args |}
+                   {| Req_CID := cid; Req_Seq := 1; |}
                ∨ RPCReplyReceipt γback.(incr_rpcGN)
-                   {| Req_CID := cid; Req_Seq := 1; Req_Args := args |}
+                   {| Req_CID := cid; Req_Seq := 1; |}
                    reply'.(Rep_Ret)
 }}}
 .
@@ -341,7 +341,7 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma wp_PrepareRequest (ck isrv:loc) (args:RPCValC) cid:
+Lemma wp_PrepareRequest (ck isrv:loc) (args:RPCValsC) cid:
 {{{
      own_onetime_incr_clerk ck isrv cid
 }}}
@@ -604,19 +604,19 @@ Proof.
   by iExists _; iFrame.
 Qed.
 
-Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
+Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValsC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
-   "Hmapsto" ∷ args.1 [[γ.(incr_mapGN)]]↦ old_v ) ∨
+   "Hmapsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦ old_v ) ∨
   ("Hfown_oldv" ∷ ∃ data cid γreq, ("procy_incr_request_" +:+ u64_to_string sseq) f↦ data ∗
-   "Hmapsto" ∷ args.1 [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
+   "Hmapsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
    ⌜has_encoding_for_onetime_clerk data cid args⌝ ∗
    RPCClient_own γback.(incr_rpcGN) cid 2 ∗
    RPCRequest_token γreq ∗
-   is_RPCRequest γback.(incr_rpcGN) γreq IncrPreCond IncrPostCond {| Req_CID:=cid; Req_Seq:=1; Req_Args:=args |}
+   is_RPCRequest γback.(incr_rpcGN) γreq (IncrPreCond args) (IncrPostCond args) {| Req_CID:=cid; Req_Seq:=1; |}
   )
 .
 
-Lemma increment_proxy_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValC) :
+Lemma increment_proxy_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValsC) :
 is_RPCServer γback.(incr_rpcGN) -∗
   {{{
        ProxyIncrCrashInvariant seq args ∗
@@ -632,7 +632,7 @@ is_RPCServer γback.(incr_rpcGN) -∗
         ProxyIncrServer_core_own_ghost server -∗
         SP ={⊤}=∗
         ProxyIncrServer_core_own_ghost server' ∗
-        args.1 [[γ.(incr_mapGN)]]↦ (word.add old_v 1)
+        args.(U64_1) [[γ.(incr_mapGN)]]↦ (word.add old_v 1)
       )
   }}}
   {{{
@@ -781,7 +781,7 @@ Proof.
         iDestruct "Hmapsto" as "[Hmapsto Hmapsto2]".
         iSpecialize ("Hback_rest" with "[Hmapsto2]").
         { by iRight. }
-        iMod (make_request {|Req_Seq:= _; Req_CID:=_; Req_Args:= args |} IncrPreCond IncrPostCond with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
+        iMod (make_request {|Req_Seq:= _; Req_CID:=_; |} (IncrPreCond args) (IncrPostCond args) with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
 
         iDestruct "Hreq" as (γreq) "[#His_req Hreqtok]".
 
@@ -809,7 +809,7 @@ Proof.
         iDestruct "Hmapsto" as "[Hmapsto Hmapsto2]".
         iDestruct ("Hback_rest" with "[Hmapsto2]") as "Hback".
         { by iRight. }
-        iMod (make_request {|Req_Seq:= _; Req_CID:=_; Req_Args:= args |} IncrPreCond IncrPostCond with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
+        iMod (make_request {|Req_Seq:= _; Req_CID:=_; |} (IncrPreCond args) (IncrPostCond args) with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
         iDestruct "Hreq" as (γreq) "[#His_req Hreqtok]".
     (* End commit to backend cid and seq *)
 
@@ -916,10 +916,10 @@ Proof.
       }
       wpc_pures.
       iDestruct "Hpost" as "[_ HΦ]".
-      iApply ("HΦ" $! (|={⊤}=> args.1 [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
-                       args.1 [[γback.(incr_mapGN)]]↦ (word.add old_v 1)
+      iApply ("HΦ" $! (|={⊤}=> args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
+                       args.(U64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1)
                       )%I
-              {| kvsM:= <[args.1:=(word.add old_v 1)]> server.(kvsM)|}
+              {| kvsM:= <[args.(U64_1):=(word.add old_v 1)]> server.(kvsM)|}
              ).
       iSplitL "Hincrserver HlastCID".
       { iFrame "HlastCID Hincrserver #". }
@@ -938,7 +938,7 @@ Proof.
       iIntros "Hghost >[Hγmapsto Hγbackmapsto]".
       iNamed "Hghost".
       iDestruct (map_valid with "Hctx Hγmapsto") as %HkInMap.
-      iDestruct (big_sepM_insert_acc _ _ args.1 old_v with "Hback") as "[Hk Hback]".
+      iDestruct (big_sepM_insert_acc _ _ args.(U64_1) old_v with "Hback") as "[Hk Hback]".
       { done. }
       iDestruct "Hk" as "[Hk|Hk]".
       { (* Impossible case: big_sepM has γback ptsto *)
