@@ -391,8 +391,7 @@ Lemma wpc_put_core γ (srv:loc) args kvserver :
   KVServer__put_core #srv (into_val.to_val args) @ 36 ; ⊤
 {{{
       kvserver' (r:u64) P', RET #r;
-            ⌜Discretizable P'⌝ ∗
-             (P') ∗
+            (<disc> P') ∗
             KVServer_core_own_vol srv kvserver' ∗
             □ (P' -∗ Put_Pre γ args) ∗
             (* TODO: putting this here because need to be discretizable *)
@@ -425,10 +424,12 @@ Proof.
   iNamed 1.
   wpc_pures.
   iDestruct "HΦ" as "[_ HΦ]".
-  iApply ("HΦ" $! {| kvsM := <[args.1:=args.2.1]> kvserver.(kvsM) |} _ (Put_Pre γ args)).
+  iApply ("HΦ" $! {| kvsM := <[args.(U64_1):=args.(U64_2)]> kvserver.(kvsM) |} _ (Put_Pre γ args)).
   iFrame.
-  iSplitL "".
-  { iPureIntro. by apply PutPre_disc. }
+  iSplitL "Hpre".
+  {
+    iModIntro. iFrame.
+  }
   iSplitR "".
   { iExists _; iFrame. }
   iSplit; first eauto.
@@ -634,7 +635,7 @@ is_kvserver γ srv rpc_srv -∗
 }}}
     KVServer__Put #srv
 {{{ (f:goose_lang.val), RET f;
-        is_rpcHandler f γ.(ks_rpcGN) (Put_Pre γ) (Put_Post γ)
+        ∀ args, is_rpcHandler f γ.(ks_rpcGN) args (Put_Pre γ args) (Put_Post γ args)
 }}}.
 Proof.
   iNamed 1.
@@ -642,6 +643,7 @@ Proof.
   wp_lam.
   wp_pures.
   iApply "HΦ".
+  iIntros (args).
   iApply is_rpcHandler_eta. simpl.
   iIntros "!#" (_ _).
   wp_pures.
@@ -649,7 +651,7 @@ Proof.
   clear Φ.
   iApply (RPCServer__HandleRequest_is_rpcHandler KVServerC); last by eauto.
   {
-    iIntros (args server) "!#". iIntros (Φ Φc) "Hpre HΦ".
+    iIntros (server) "!#". iIntros (Φ Φc) "Hpre HΦ".
     iNamed "Hpre".
     iMod "Hpre".
     wpc_pures.

@@ -869,7 +869,6 @@ Proof.
       iRight.
       iExists _; iFrame.
       replace ((Z.of_nat 1)) with (1)%Z by eauto.
-      Set Printing Coercions.
       done.
     }
     iNext.
