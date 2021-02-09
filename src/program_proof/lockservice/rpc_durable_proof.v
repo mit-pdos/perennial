@@ -99,7 +99,7 @@ Definition is_server rpc_srv_ptr γrpc : iProp Σ :=
     (|={⊤}=> Server_mutex_cinv γrpc) (* FIXME:(US) get rid of this fupd *)
 .
 
-Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
+Lemma CheckReplyTable_spec (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
      "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝
     ∗ "#Hrinv" ∷ is_RPCServer γrpc
@@ -212,30 +212,29 @@ Qed.
 
 Context (coreFunction:goose_lang.val).
 Context (makeDurable:goose_lang.val).
-Context (PreCond:RPCValC -> iProp Σ).
-Context (PostCond:RPCValC -> u64 -> iProp Σ).
+Context (PreCond:iProp Σ).
+Context (PostCond:u64 -> iProp Σ).
 Context (rpc_srv_ptr:loc).
 
 (* The above two lemmas should be turned into requirements to apply wp_RPCServer__HandleRequest;
    HandleRequest should prove is_rpcHandler, instead of this wp directly *)
-Lemma RPCServer__HandleRequest_is_rpcHandler γrpc :
-(∀ (args : RPCValC) server,
+Lemma RPCServer__HandleRequest_is_rpcHandler γrpc args :
+(∀  server,
  {{{
        "Hvol" ∷ core_own_vol server ∗
-       "Hpre" ∷ ▷(PreCond args)
+       "Hpre" ∷ ▷(PreCond)
  }}}
     coreFunction (into_val.to_val args) @ 36; ⊤
  {{{
       (* TODO: need the disc to proof work out *)
       server' (r:u64) P', RET #r;
-            ⌜Discretizable P'⌝ ∗
-             (P') ∗
+            (<disc> P') ∗
             core_own_vol server' ∗
-            □ (P' -∗ PreCond args) ∗
-            □ (P' -∗ core_own_ghost server ={⊤∖↑rpcRequestInvN}=∗ PostCond args r ∗ core_own_ghost server')
+            □ (P' -∗ PreCond) ∗
+            □ (P' -∗ core_own_ghost server ={⊤∖↑rpcRequestInvN}=∗ PostCond r ∗ core_own_ghost server')
  }}}
  {{{
-      (PreCond args)
+      (PreCond)
  }}}) -∗
 (∀ server rpc_server server' rpc_server', {{{
      core_own_vol server' ∗
@@ -257,7 +256,7 @@ Lemma RPCServer__HandleRequest_is_rpcHandler γrpc :
   "#Hls" ∷ is_server rpc_srv_ptr γrpc
 }}}
   RPCServer__HandleRequest #rpc_srv_ptr coreFunction makeDurable
-{{{ f, RET f; is_rpcHandler f γrpc PreCond PostCond }}}.
+{{{ f, RET f; is_rpcHandler f γrpc args PreCond PostCond }}}.
 Proof.
   iIntros "#HcoreSpec #HdurSpec".
 
@@ -369,7 +368,7 @@ Proof.
     }
     iNext.
     iIntros (kvserver' retval P').
-    iIntros "(% & HP' & Hkvvol & #HPimpliesPre & #Hfupd)".
+    iIntros "(HP' & Hkvvol & #HPimpliesPre & #Hfupd)".
     iCache with "Hcoredurable HγPre HP' Hsrpc_proc Hcoreghost".
     {
       iModIntro.
@@ -423,8 +422,10 @@ Proof.
         by iFrame.
     }
     iNext. iIntros "(Hcorevol & Hsrvown & Hcoredurable)".
-    iMod (server_executes_durable_request' with "HargsInv Hlinv Hsrpc_proc HγPre HP' Hfupd Hcoreghost") as "HH"; eauto.
-
+    iMod (server_executes_durable_request' with "HargsInv Hlinv Hsrpc_proc HγPre [HP'] Hfupd Hcoreghost") as "HH"; eauto.
+    {
+      iDestruct (own_disc_fupd_elim with "HP'") as "$".
+    }
     iDestruct "HH" as "(Hreceipt & Hsrpc & Hcoreghost)".
     iModIntro.
     iSplitR "Hsrvown Hcorevol Hcoredurable Hcoreghost Hsrpc"; last first.

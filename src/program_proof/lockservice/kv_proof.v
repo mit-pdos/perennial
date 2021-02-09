@@ -22,11 +22,11 @@ Implicit Types (γ : kvservice_names).
 Local Notation "k [[ γ ]]↦ '_'" := (∃ v, k [[γ]]↦ v)%I
 (at level 20, format "k  [[ γ ]]↦ '_'") : bi_scope.
 
-Definition Get_Pre γ va : RPCValC -> iProp Σ := (λ args, args.1 [[γ.(ks_kvMapGN)]]↦ va)%I.
-Definition Get_Post γ va : RPCValC -> u64 -> iProp Σ := λ args v, (⌜v = va⌝ ∗ args.1 [[γ.(ks_kvMapGN)]]↦ v)%I.
+Definition Get_Pre γ va : RPCValsC -> iProp Σ := (λ args, args.(U64_1) [[γ.(ks_kvMapGN)]]↦ va)%I.
+Definition Get_Post γ va : RPCValsC -> u64 -> iProp Σ := λ args v, (⌜v = va⌝ ∗ args.(U64_1) [[γ.(ks_kvMapGN)]]↦ v)%I.
 
-Definition Put_Pre γ : RPCValC -> iProp Σ := (λ args, args.1 [[γ.(ks_kvMapGN)]]↦ _)%I.
-Definition Put_Post γ : RPCValC -> u64 -> iProp Σ := (λ args _, args.1 [[γ.(ks_kvMapGN)]]↦ args.2.1)%I.
+Definition Put_Pre γ : RPCValsC -> iProp Σ := (λ args, args.(U64_1) [[γ.(ks_kvMapGN)]]↦ _)%I.
+Definition Put_Post γ : RPCValsC -> u64 -> iProp Σ := (λ args _, args.(U64_1) [[γ.(ks_kvMapGN)]]↦ args.(U64_2))%I.
 
 Definition KVServer_own_core γ (srv:loc) : iProp Σ :=
   ∃ (kvs_ptr:loc) (kvsM:gmap u64 u64),
@@ -114,7 +114,7 @@ is_kvserver γ srv -∗
 }}}
     KVServer__Get #srv
 {{{ (f:goose_lang.val), RET f;
-        is_rpcHandler f γ.(ks_rpcGN) (Get_Pre γ va) (Get_Post γ va)
+        ∀ key, is_rpcHandler f γ.(ks_rpcGN) key (Get_Pre γ va key) (Get_Post γ va key)
 }}}.
 Proof.
   iIntros "#Hls".
@@ -122,12 +122,13 @@ Proof.
   wp_lam.
   wp_pures.
   iApply "Hpost".
+  iIntros (key).
   iApply is_rpcHandler_eta; simpl.
   iIntros "!#" (_ _).
   iNamed "Hls". wp_pures.
   wp_loadField.
   iApply (RPCServer__HandleRequest_spec with "[] His_rpc"); last by eauto.
-  clear Φ. iIntros (req) "!#". iIntros (Φ) "Hpre HΦ".
+  clear Φ. iIntros "!#" (Φ) "Hpre HΦ".
   wp_pures.
   iApply (get_core_spec with "Hpre"); last by eauto.
 Qed.
@@ -150,7 +151,7 @@ Proof.
   wp_apply KVServer__Get_spec; first eauto.
   iIntros (f) "#Hfspec".
   wp_loadField.
-  wp_apply (RPCClient__MakeRequest_spec _ cl_ptr (key, (U64(0), ())) γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
+  wp_apply (RPCClient__MakeRequest_spec _ cl_ptr {|U64_1:=_ ; U64_2:= _ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
   {
     iNamed "Hserver". iNamed "His_rpc". iFrame "# ∗".
   }
@@ -170,7 +171,7 @@ is_kvserver γ srv -∗
 }}}
     KVServer__Put #srv
 {{{ (f:goose_lang.val), RET f;
-        is_rpcHandler f γ.(ks_rpcGN) (Put_Pre γ) (Put_Post γ)
+    ∀ args, is_rpcHandler f γ.(ks_rpcGN) args (Put_Pre γ args) (Put_Post γ args)
 }}}.
 Proof.
   iIntros "#Hls".
@@ -178,17 +179,17 @@ Proof.
   wp_lam.
   wp_pures.
   iApply "Hpost".
+  iIntros (args).
   iApply is_rpcHandler_eta; simpl.
   iIntros "!#" (_ _).
   iNamed "Hls". wp_pures.
   wp_loadField.
   iApply (RPCServer__HandleRequest_spec with "[] His_rpc"); last by eauto.
-  clear Φ. iIntros (req) "!#". iIntros (Φ) "Hpre HΦ".
+  clear Φ. iIntros "!#" (Φ) "Hpre HΦ".
   wp_pures.
   iApply (put_core_spec with "Hpre"); last by eauto.
 Qed.
 (* TODO: see if any more repetition can be removed *)
-
 
 Lemma KVClerk__Put_spec (kck srv:loc) (key va:u64) γ :
 is_kvserver γ srv -∗
@@ -209,7 +210,7 @@ Proof.
   wp_apply KVServer__Put_spec; first eauto.
   iIntros (f) "#Hfspec".
   wp_loadField.
-  wp_apply (RPCClient__MakeRequest_spec _ cl_ptr (key, (va, ())) γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
+  wp_apply (RPCClient__MakeRequest_spec _ cl_ptr {| U64_1:= _; U64_2:=_ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
   {
     iNamed "Hserver". iNamed "His_rpc". iFrame "# ∗".
   }
@@ -253,7 +254,6 @@ Proof.
 Qed.
 (* TODO: return all of the ptsto's here; update KVServer_own_core so it has map_ctx bigger than the physical map *)
 
-
 Lemma MakeKVClerk_spec γ (srv : loc) (cid : u64) :
   {{{ is_kvserver γ srv ∗ kvserver_cid_token γ cid }}}
     MakeKVClerk #srv #cid
@@ -273,6 +273,5 @@ Proof.
   iApply "HΦ". iExists _.
   by iFrame.
 Qed.
-
 
 End kv_proof.

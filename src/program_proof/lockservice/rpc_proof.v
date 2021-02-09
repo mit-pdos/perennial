@@ -11,31 +11,30 @@ Section rpc_proof.
 Context `{!heapG Σ}.
 Context `{!rpcG Σ u64}.
 
-#[refine] Global Instance u64_pair_val : into_val.IntoVal (u64*(u64 * unit)) :=
+Record RPCValsC := mkRPCValsC
+{
+  U64_1:u64 ;
+  U64_2:u64 ;
+}.
+
+#[refine] Global Instance RPCValC_into_val : into_val.IntoVal (RPCValsC) :=
   {
-  to_val := λ x, (#x.1, (#x.2.1, #()))%V ;
-  IntoVal_def := (U64(0), (U64(0), ())) ;
+  to_val := λ x, (#x.(U64_1), (#x.(U64_2), #()))%V ;
+  IntoVal_def := {| U64_1 := 0; U64_2 := 0 |} ;
   IntoVal_inj := _
   }.
 Proof.
   intros x1 x2 [=].
   destruct x1. destruct x2.
-  simpl in *. subst. 
-  destruct p.
-  destruct p0.
-  simpl in *.
-  subst.
-  by destruct u3, u1.
+  simpl in *. subst.
+  done.
 Defined.
-(* TODO: fix this messy proof *)
 
-Definition RPCValC:Type := u64 * (u64 * unit).
-
-Definition read_request (args_ptr:loc) (a : @RPCRequest (RPCValC)) : iProp Σ :=
-    "#HSeqPositive" ∷ ⌜int.nat a.(Req_Seq) > 0⌝
-  ∗ "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Args"] (into_val.to_val a.(Req_Args)))
-  ∗ "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest.S :: "CID"] #a.(Req_CID))
-  ∗ "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Seq"] #a.(Req_Seq))
+Definition read_request (args_ptr:loc) (req : RPCRequestID) (args:RPCValsC) : iProp Σ :=
+    "#HSeqPositive" ∷ ⌜int.nat req.(Req_Seq) > 0⌝ ∗
+    "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Args"] (into_val.to_val args)) ∗
+    "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest.S :: "CID"] #req.(Req_CID)) ∗
+    "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Seq"] #req.(Req_Seq))
 .
 
 Definition own_reply (reply_ptr:loc) (r : @RPCReply (u64)) : iProp Σ :=
@@ -64,7 +63,6 @@ Definition is_rpcserver (sv_ptr:loc) γrpc server_own_core: iProp Σ :=
     ∗ "Hmu" ∷ is_lock mutexN #mu_ptr (RPCServer_mutex_inv sv_ptr γrpc server_own_core)
 .
 
-Definition Request64 := @RPCRequest (RPCValC). (* TODO: rename these *)
 Definition Reply64 := @RPCReply (u64).
 
 Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ
@@ -77,10 +75,10 @@ Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ
 .
 
 (* f is a rpcHandler if it satisfies this specification *)
-Definition is_rpcHandler (f:val) γrpc PreCond PostCond : iProp Σ :=
+Definition is_rpcHandler (f:val) γrpc args PreCond PostCond : iProp Σ :=
   ∀ γreq req_ptr reply_ptr req reply,
     {{{ "#HargsInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req
-                    ∗ "#Hargs" ∷ read_request req_ptr req
+                    ∗ "#Hargs" ∷ read_request req_ptr req args
                     ∗ "Hreply" ∷ own_reply reply_ptr reply
     }}} (* TODO: put this precondition into a defn *)
       f #req_ptr #reply_ptr
@@ -91,12 +89,12 @@ Definition is_rpcHandler (f:val) γrpc PreCond PostCond : iProp Σ :=
     }}}
     .
 
-Lemma is_rpcHandler_eta (e:expr) γrpc PreCond PostCond :
+Lemma is_rpcHandler_eta (e:expr) γrpc args PreCond PostCond :
   □ (∀ v1 v2,
-    WP subst "reply" v1 (subst "req" v2 e) {{ v, is_rpcHandler v γrpc PreCond PostCond }}) -∗
+    WP subst "reply" v1 (subst "req" v2 e) {{ v, is_rpcHandler v γrpc args PreCond PostCond }}) -∗
   is_rpcHandler
     (λ: "req" "reply", e (Var "req") (Var "reply"))
-    γrpc PreCond PostCond.
+    γrpc args PreCond PostCond.
 Proof.
   iIntros "#He" (????? Φ) "!# Hpre HΦ".
   wp_pures. wp_bind (subst _ _ _).
@@ -104,7 +102,7 @@ Proof.
   iApply ("Hfhandler" with "Hpre"). done.
 Qed.
 
-Lemma CheckReplyTable_spec (reply_ptr:loc) (req:Request64) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
+Lemma CheckReplyTable_spec (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
      "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝
     ∗ "#Hrinv" ∷ is_RPCServer γrpc
@@ -196,14 +194,13 @@ Proof.
 Qed.
 
 (* This will alow handler functions using RPCServer__HandleRequest to establish is_rpcHandler *)
-Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc server_own_core PreCond PostCond :
-(∀ req : RPCRequest,
-{{{ server_own_core ∗ PreCond req.(Req_Args) }}}
-  coreFunction (into_val.to_val req.(Req_Args))%V
-{{{ (r:u64), RET #r; server_own_core ∗ PostCond req.(Req_Args) r }}}) -∗
+Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc server_own_core args PreCond PostCond :
+({{{ server_own_core ∗ PreCond }}}
+  coreFunction (into_val.to_val args)%V
+{{{ (r:u64), RET #r; server_own_core ∗ PostCond r }}}) -∗
 {{{ is_rpcserver sv γrpc server_own_core }}}
   RPCServer__HandleRequest #sv coreFunction
-{{{ f, RET f; is_rpcHandler f γrpc PreCond PostCond }}}.
+{{{ f, RET f; is_rpcHandler f γrpc args PreCond PostCond }}}.
 Proof.
   iIntros "#HfCoreSpec" (Φ) "!# #Hls Hpost".
   wp_lam.
@@ -270,11 +267,11 @@ Proof.
   }
 Qed.
 
-Lemma RemoteProcedureCall_spec (req_ptr reply_ptr:loc) (req:Request64) (reply:Reply64) (f:val) PreCond PostCond γrpc γPost :
-is_rpcHandler f γrpc PreCond PostCond -∗
+Lemma RemoteProcedureCall_spec (req_ptr reply_ptr:loc) (req:RPCRequestID) args (reply:Reply64) (f:val) PreCond PostCond γrpc γPost :
+is_rpcHandler f γrpc args PreCond PostCond -∗
 {{{
   "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req ∗
-  "#Hargs" ∷ read_request req_ptr req ∗
+  "#Hargs" ∷ read_request req_ptr req args ∗
   "Hreply" ∷ own_reply reply_ptr reply
 }}}
   RemoteProcedureCall f #req_ptr #reply_ptr
@@ -335,14 +332,14 @@ Proof.
 Qed.
 
 Lemma RPCClient__MakeRequest_spec (f:val) cl_ptr args γrpc PreCond PostCond :
-is_rpcHandler f γrpc PreCond PostCond -∗
+is_rpcHandler f γrpc args PreCond PostCond -∗
 {{{
-  PreCond args ∗
+  PreCond ∗
   own_rpcclient cl_ptr γrpc ∗
   is_RPCServer γrpc
 }}}
   RPCClient__MakeRequest #cl_ptr f (into_val.to_val args)
-{{{ (retv:u64), RET #retv; own_rpcclient cl_ptr γrpc ∗ PostCond args retv }}}.
+{{{ (retv:u64), RET #retv; own_rpcclient cl_ptr γrpc ∗ PostCond retv }}}.
 Proof using Type*.
   iIntros "#Hfspec" (Φ) "!# [Hprecond [Hclerk #Hlinv]] Hpost".
   iNamed "Hclerk".
@@ -370,7 +367,7 @@ Proof using Type*.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (reply_ptr) "Hreply".
   wp_pures.
-  iMod (make_request {| Req_Args:=args; Req_CID:=cid; Req_Seq:=cseqno|} PreCond PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
+  iMod (make_request {| Req_CID:=cid; Req_Seq:=cseqno|} PreCond PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
   { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
   (* Prepare the loop invariant *)

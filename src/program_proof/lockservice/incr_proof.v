@@ -127,24 +127,24 @@ Proof.
 Qed.
 *)
 
-Definition quiesce_fupd γrpc cid seqno PreCond PostCond (args:RPCValC) : iProp Σ :=
-  laterable.make_laterable (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond args ∨ ▷ ∃ ret:u64, PostCond args ret))%I.
+Definition quiesce_fupd γrpc cid seqno PreCond PostCond : iProp Σ :=
+  laterable.make_laterable (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret))%I.
 
-Definition quiesceable_pre γrpc cid (args:RPCValC) PreCond PostCond : iProp Σ :=
-  rpc_atomic_pre γrpc cid (▷ PreCond args ∨ ▷ ∃ ret:u64, PostCond args ret)%I.
+Definition quiesceable_pre γrpc cid PreCond PostCond : iProp Σ :=
+  rpc_atomic_pre γrpc cid (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret)%I.
 
-Global Instance quiesceable_pre_disc γrpc cid args PreCond PostCond : (Discretizable
-       (quiesceable_pre γrpc cid args PreCond PostCond)).
+Global Instance quiesceable_pre_disc γrpc cid PreCond PostCond : (Discretizable
+       (quiesceable_pre γrpc cid PreCond PostCond)).
 Proof.
   rewrite /Discretizable.
   by rewrite -own_discrete_idemp.
 Defined.
 
-Lemma quiesce_request (req:RPCRequest) γrpc γreq (PreCond:RPCValC → iProp Σ) PostCond  :
+Lemma quiesce_request (req:RPCRequestID) γrpc γreq (PreCond:iProp Σ) PostCond  :
   is_RPCServer γrpc -∗
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   (RPCRequest_token γreq) -∗
-  quiesceable_pre γrpc req.(Req_CID) req.(Req_Args) PreCond PostCond.
+  quiesceable_pre γrpc req.(Req_CID) PreCond PostCond.
 Proof.
     iIntros "#Hsrpc #His_req Hγpost".
     iFrame "#∗".
@@ -200,12 +200,11 @@ Proof.
     }
 Qed.
 
-(* TODO: get rid explicitly passing args around everywhere *)
-Lemma quiesce_idemp γrpc cid seqno Q args PreCond PostCond :
+Lemma quiesce_idemp γrpc cid seqno Q PreCond PostCond :
   cid fm[[γrpc.(cseq)]]≥ int.nat seqno -∗
-  □(▷Q -∗ (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond args ∨ ▷ ∃ ret:u64, PostCond args ret))) -∗
-  quiesceable_pre γrpc cid args (λ _, Q) (PostCond) -∗
-  quiesceable_pre γrpc cid args PreCond PostCond.
+  □(▷Q -∗ (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret))) -∗
+  quiesceable_pre γrpc cid Q (PostCond) -∗
+  quiesceable_pre γrpc cid PreCond PostCond.
 Proof.
   iIntros "#Hseqno_lb #Hwand Hatomic_pre".
   iModIntro.
@@ -235,11 +234,11 @@ Proof.
   { iFrame. by iModIntro. }
 Qed.
 
-Lemma quiesce_intro γrpc cid seqno args PreCond PostCond :
-  PreCond args -∗ (quiesce_fupd γrpc cid seqno PreCond PostCond args).
+Lemma quiesce_intro γrpc cid seqno PreCond PostCond :
+  PreCond -∗ (quiesce_fupd γrpc cid seqno PreCond PostCond).
 Proof.
   iIntros.
-  iExists (PreCond args)%I.
+  iExists (PreCond)%I.
   iFrame.
   iModIntro; iFrame.
   iIntros.
@@ -248,14 +247,14 @@ Proof.
     by iModIntro.
 Qed.
 
-Definition quiesce_fupd_raw γrpc cid seqno PreCond PostCond (args:RPCValC) : iProp Σ :=
-  (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond args ∨ ▷ ∃ ret:u64, PostCond args ret))%I.
+Definition quiesce_fupd_raw γrpc cid seqno PreCond PostCond : iProp Σ :=
+  (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret))%I.
 
-Lemma quiesceable_pre_instantiate γrpc cid seqno args PreCond PostCond :
+Lemma quiesceable_pre_instantiate γrpc cid seqno PreCond PostCond :
   RPCClient_own γrpc cid seqno -∗
-  quiesceable_pre γrpc cid args PreCond PostCond ={⊤}=∗
+  quiesceable_pre γrpc cid PreCond PostCond ={⊤}=∗
   RPCClient_own γrpc cid seqno ∗
-  (quiesce_fupd γrpc cid seqno PreCond PostCond args).
+  (quiesce_fupd γrpc cid seqno PreCond PostCond).
 Proof.
   iIntros "Hcrpc Hqpre".
   iDestruct (own_discrete_elim with "Hqpre") as "Hqpre".
@@ -263,16 +262,16 @@ Proof.
   iModIntro. iFrame.
 Qed.
 
-Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid args γrpc (PreCond:RPCValC -> iProp Σ) PostCond {_:Discretizable (PreCond args)} {_:∀ reply, Discretizable (PostCond args reply)}:
-  □(∀ seqno Q, (□(Q -∗ quiesce_fupd_raw γrpc cid seqno PreCond PostCond args) -∗ is_rpcHandler f γrpc (λ _, Q) PostCond)) -∗
+Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid γrpc args (PreCond:iProp Σ) PostCond {_:Discretizable (PreCond)} {_:∀ reply, Discretizable (PostCond reply)}:
+  □(∀ seqno Q, (□(Q -∗ quiesce_fupd_raw γrpc cid seqno PreCond PostCond) -∗ is_rpcHandler f γrpc args Q PostCond)) -∗
   {{{
-    quiesceable_pre γrpc cid args PreCond PostCond ∗
+    quiesceable_pre γrpc cid PreCond PostCond ∗
     own_rpcclient cl_ptr γrpc cid ∗
     is_RPCServer γrpc
   }}}
     RPCClient__MakeRequest #cl_ptr f (into_val.to_val args) @ k ; ⊤
-  {{{ (retv:u64), RET #retv; own_rpcclient cl_ptr γrpc cid ∗ ▷ PostCond args retv }}}
-  {{{ quiesceable_pre γrpc cid args PreCond PostCond }}}.
+  {{{ (retv:u64), RET #retv; own_rpcclient cl_ptr γrpc cid ∗ ▷ PostCond retv }}}
+  {{{ quiesceable_pre γrpc cid PreCond PostCond }}}.
 Proof using Type*.
   iIntros "#Hfspec" (Φ Φc) "!# [Hpre [Hclerk #Hlinv]] HΦ".
   iNamed "Hclerk".
@@ -332,7 +331,7 @@ Proof using Type*.
   iMod (quiesceable_pre_instantiate with "Hcrpc Hpre") as "[Hcrpc Hqfupd]".
   unfold quiesce_fupd, laterable.make_laterable.
   iDestruct "Hqfupd" as (Q) "[HQ #Hqwand]".
-  iMod (make_request {| Req_Args:=args; Req_CID:=cid; Req_Seq:=cseqno|} (λ _, Q) PostCond with "[Hlinv] [Hcrpc] [HQ]") as "[Hcseq_own HallocPost]"; eauto.
+  iMod (make_request {| Req_CID:=cid; Req_Seq:=cseqno|} Q PostCond with "[Hlinv] [Hcrpc] [HQ]") as "[Hcseq_own HallocPost]"; eauto.
   { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
   (* Prepare the loop invariant *)
@@ -376,7 +375,7 @@ Proof using Type*.
     {
       iSplit; last first.
       { unfold read_request.
-        instantiate (2:={|Req_CID:=_; Req_Seq := _; Req_Args := _ |}).
+        instantiate (2:={|Req_CID:=_; Req_Seq := _; |}).
         iFrame "#".
         iFrame "Hreply".
         simpl. iPureIntro. lia.
@@ -475,22 +474,22 @@ Definition own_kvclerk γ ck_ptr srv cid : iProp Σ :=
    "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
    "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN) cid.
 
-Lemma KVServer__Get_is_rpcHandler {E} srv old_v key cid :
+Lemma KVServer__Get_is_rpcHandler {E} srv old_v cid :
 is_kvserver γ srv -∗
 {{{
     True
 }}}
     KVServer__Get #srv @ E
 {{{ (f:goose_lang.val), RET f;
-□ ∀ seqno Q, □(Q -∗ (quiesce_fupd_raw γ.(ks_rpcGN) cid seqno (Get_Pre γ old_v) (Get_Post γ old_v) (key, (U64 0, ()))))-∗
-        is_rpcHandler f γ.(ks_rpcGN) (λ _, Q) (Get_Post γ old_v)
+    ∀ args, (□ ∀ seqno Q, □(Q -∗ (quiesce_fupd_raw γ.(ks_rpcGN) cid seqno (Get_Pre γ old_v args) (Get_Post γ old_v args)))-∗
+        is_rpcHandler f γ.(ks_rpcGN) args Q (Get_Post γ old_v args))
 }}}.
 Proof.
   iIntros "#His_kv !#" (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
   iApply "HΦ".
-  iIntros "!#" (seqno Q) "#HwandQ".
+  iIntros (args) "!#". iIntros (seqno Q) "#HwandQ".
   iApply is_rpcHandler_eta.
   iIntros "!#" (reply req).
   simpl.
@@ -514,11 +513,13 @@ Proof.
   iFrame.
 Admitted.
 
-Lemma wpc_KVClerk__Get k (kck srv:loc) (cid key old_v:u64) :
+Definition arg_of_key key := {|U64_1:= key; U64_2:=0 |}.
+
+Lemma wpc_KVClerk__Get k (kck srv:loc) (cid old_v:u64) (key:u64) :
   is_kvserver γ srv -∗
   {{{
        own_kvclerk γ kck srv cid ∗
-       quiesceable_pre γ.(ks_rpcGN) cid (key, (U64 0, ())) (Get_Pre γ old_v) (Get_Post γ old_v)
+       quiesceable_pre γ.(ks_rpcGN) cid (Get_Pre γ old_v (arg_of_key key)) (Get_Post γ old_v (arg_of_key key))
   }}}
     KVClerk__Get #kck #key @ k; ⊤
   {{{
@@ -527,7 +528,7 @@ Lemma wpc_KVClerk__Get k (kck srv:loc) (cid key old_v:u64) :
       (key [[γ.(ks_kvMapGN)]]↦ old_v )
   }}}
   {{{
-       quiesceable_pre γ.(ks_rpcGN) cid (key, (U64 0, ())) (Get_Pre γ old_v) (Get_Post γ old_v)
+       quiesceable_pre γ.(ks_rpcGN) cid (Get_Pre γ old_v (arg_of_key key)) (Get_Post γ old_v (arg_of_key key))
   }}}
 .
 Proof.
@@ -557,17 +558,19 @@ Proof.
 
   wpc_bind (KVServer__Get _).
   wpc_frame.
-  wp_apply (KVServer__Get_is_rpcHandler _ old_v key cid with "His_kv").
+  wp_apply (KVServer__Get_is_rpcHandler _ old_v cid with "His_kv").
   iIntros (f) "#Hfspec".
   iNamed 1.
 
   wpc_loadField.
-  pose (args:=(key, (0:u64, ()))).
+  pose (args:=arg_of_key key).
   replace (#key, (#0, #()))%V with (into_val.to_val args) by done.
+
   iApply wpc_fupd.
   wpc_apply (wpc_RPCClient__MakeRequest with "Hfspec [$Hq $Hcl His_kv]").
   { iNamed "His_kv". iFrame. iNamed "His_rpc".
-    iFrame "#". }
+    iFrame "#".
+  }
   iSplit.
   {
     by iLeft in "HΦ".
@@ -586,16 +589,17 @@ Lemma wpc_KVClerk__Put k E (kck srv:loc) (cid key value:u64) :
   is_kvserver γ srv -∗
   {{{
        own_kvclerk γ kck srv cid ∗
-       quiesceable_pre γ.(ks_rpcGN) cid (key, (value, ())) (Put_Pre γ) (Put_Post γ)
+       quiesceable_pre γ.(ks_rpcGN) cid (Put_Pre γ (mkRPCValsC key value)) (Put_Post γ (mkRPCValsC key value))
   }}}
     KVClerk__Put #kck #key #value @ k; E
   {{{
       RET #();
       own_kvclerk γ kck srv cid ∗
-      ((key [[γ.(ks_kvMapGN)]]↦ value ) ∧ quiesceable_pre γ.(ks_rpcGN) cid (key, (value, ())) (Put_Pre γ) (Put_Post γ))
+      ((key [[γ.(ks_kvMapGN)]]↦ value ) ∧
+       quiesceable_pre γ.(ks_rpcGN) cid (Put_Pre γ (mkRPCValsC key value)) (Put_Post γ (mkRPCValsC key value)))
   }}}
   {{{
-       quiesceable_pre γ.(ks_rpcGN) cid (key, (value, ())) (Put_Pre γ) (Put_Post γ)
+       quiesceable_pre γ.(ks_rpcGN) cid (Put_Pre γ (mkRPCValsC key value)) (Put_Post γ (mkRPCValsC key value))
   }}}.
 Admitted.
 
@@ -648,17 +652,17 @@ Definition IncrServer_core_own_ghost server : iProp Σ :=
   (* This is using the non-crash-safe version of kvserver in kv_proof.v *)
 .
 
-Definition IncrCrashInvariant (sseq:u64) (args:RPCValC) : iProp Σ :=
+Definition IncrCrashInvariant (sseq:u64) (args:RPCValsC) : iProp Σ :=
   (* Case 1: Before crash barrier *)
   ("Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string sseq) +:+ "_oldv") f↦ [] ∗
-   "Hq" ∷ quiesceable_pre γback.(ks_rpcGN) incr_cid args (Get_Pre γback old_v) (Get_Post γback old_v)
+   "Hq" ∷ quiesceable_pre γback.(ks_rpcGN) incr_cid (Get_Pre γback old_v args) (Get_Post γback old_v args)
    ) ∨
 
   (* Case 2: After crash barrier *)
   ( ∃ data,
   "Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string sseq) +:+ "_oldv") f↦ data ∗
   "%Hencoding" ∷ ⌜has_encoding data [EncUInt64 old_v]⌝ ∗
-   "Hq" ∷ quiesceable_pre γback.(ks_rpcGN) incr_cid (args.1, (word.add old_v 1, ())) (Put_Pre γback) (Put_Post γback)
+   "Hq" ∷ quiesceable_pre γback.(ks_rpcGN) incr_cid (Put_Pre γback ({|U64_1:=args.(U64_1) ; U64_2:=(word.add old_v 1)|}) ) (Put_Post γback ({|U64_1:=args.(U64_1) ; U64_2:=(word.add old_v 1)|}) )
   )
 .
 
@@ -666,7 +670,7 @@ Instance CrashInv_disc sseq args : (Discretizable (IncrCrashInvariant sseq args)
 Proof.
 Admitted.
 
-Lemma increment_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValC) :
+Lemma increment_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValsC) :
   {{{
        IncrCrashInvariant seq args ∗
        IncrServer_core_own_vol isrv server ∗
@@ -864,6 +868,8 @@ Proof.
       iFrame.
       iRight.
       iExists _; iFrame.
+      replace ((Z.of_nat 1)) with (1)%Z by eauto.
+      Set Printing Coercions.
       done.
     }
     iNext.
