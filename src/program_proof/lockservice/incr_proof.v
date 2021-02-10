@@ -15,7 +15,11 @@ Admitted.
 (* big union *)
 
 Lemma rpcReqInvUpToN_prop cid seq :
- ∀ seq', int.nat seq' < int.nat seq ↔ (↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |}) ⊆ rpcReqInvUpToN seq.
+ ∀ seq', int.nat seq' < int.nat seq → (↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |}) ⊆ rpcReqInvUpToN seq.
+Admitted.
+
+Lemma rpcReqInvUpToN_prop_2 cid seq :
+ ∀ seq', int.nat seq' ≥ int.nat seq → ↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |} ## rpcReqInvUpToN seq.
 Admitted.
 
 (* Need this fupd to be OK to fire with any sequence number larger than the *)

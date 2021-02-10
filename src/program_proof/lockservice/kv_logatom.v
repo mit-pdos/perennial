@@ -30,10 +30,12 @@ Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q:
             (<disc> P') ∗
             KVServer_core_own_vol srv kvserver' ∗
             □ (P' -∗ Q) ∗
-            □ (P' -∗ KVServer_core_own_ghost γ kvserver -∗
+            □ (P' -∗
                own γ.(ks_rpcGN).(proc) (Excl ()) -∗
-               req.(Req_CID) fm[[γ.(ks_rpcGN).(lseq)]]≥ int.nat req.(Req_Seq)
-               ={⊤∖↑rpcRequestInvN req}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
+               req.(Req_CID) fm[[γ.(ks_rpcGN).(lseq)]]≥ int.nat req.(Req_Seq) -∗
+               KVServer_core_own_ghost γ kvserver
+               ={⊤∖↑rpcRequestInvN req}=∗ Put_Post γ args r ∗ own γ.(ks_rpcGN).(proc) (Excl ()) ∗
+                                          KVServer_core_own_ghost γ kvserver')
 }}}
 {{{
      Q
@@ -68,7 +70,7 @@ Proof.
 
   (* The commit point fupd *)
   iModIntro.
-  iIntros "HQ Hghost Hγproc #Hlb".
+  iIntros "HQ Hγproc #Hlb Hghost".
   iDestruct ("Hwand" with "HQ") as "Hfupd".
   unfold rpc_atomic_pre_fupd.
   iSpecialize ("Hfupd" with "Hγproc Hlb").
@@ -78,14 +80,112 @@ Proof.
      (PRE ∗ ctx ==∗ POST ∗ ctx')
 
    *)
-  iDestruct (fupd_mask_weaken _ (rpcReqInvUpToN req.(Req_Seq)) with "Hfupd") as ">Hfupd".
+
+  iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "Hfupd" as "[$ Hpre]".
   {
-    apply subseteq_difference_r.
-    - admit. (* Use defining property of rpcReqInvUpToN *)
-    - set_solver.
+    apply subseteq_difference_r; last set_solver.
+    destruct req; simpl.
+    symmetry.
+    apply rpcReqInvUpToN_prop_2.
+    lia.
   }
-  iMod "Hfupd".
-  (* TODO: strengthen fupd postcond to have γproc and cid ≥ fact *)
-Admitted.
+  iMod "Hclose" as "_".
+
+  iDestruct "Hpre" as (v) "Hpre".
+  iMod (map_update with "Hghost Hpre") as "[Hkvctx Hptsto]".
+
+  iModIntro.
+  iFrame.
+Qed.
+
+Lemma KVServer__Put_is_rpcHandler {E} γ srv rpc_srv cid :
+is_kvserver γ srv rpc_srv -∗
+{{{
+    True
+}}}
+    KVServer__Put #srv @ E
+{{{ (f:goose_lang.val), RET f;
+    ∀ args, (□ ∀ seqno Q, □(Q -∗ (quiesce_fupd_raw γ.(ks_rpcGN) cid seqno (Put_Pre γ args) (Put_Post γ args)))-∗
+        □(Q -∗ <disc> Q) -∗
+        □(▷ Q -∗ ◇Q) -∗
+        is_rpcHandler f γ.(ks_rpcGN) args {|Req_CID:=cid; Req_Seq:=seqno|} (Q) (Put_Post γ args))
+}}}.
+Proof.
+  iIntros "#His_kv !#" (Φ) "_ HΦ".
+  wp_lam.
+  wp_pures.
+  iApply "HΦ".
+  iIntros (args req) "!#". iIntros (Q) "#HwandQ #HQdisc #HQtmless".
+  iApply is_rpcHandler_eta.
+  iIntros "!#" (replyv reqv).
+  simpl.
+  iAssert (_) with "His_kv" as "His_kv2".
+  iNamed "His_kv2".
+  wp_loadField.
+  wp_apply (RPCServer__HandleRequest_is_rpcHandler KVServerC with "[] [] [His_kv]").
+  {
+    clear Φ.
+    iIntros (server) "!#". iIntros (Φ Φc) "Hpre HΦ".
+    iNamed "Hpre".
+    iMod ("HQtmless" with "Hpre") as "HQ".
+    iDestruct ("HQdisc" with "HQ") as "HQ".
+    wpc_pures.
+    {
+      iDestruct "HΦ" as "[HΦc _]".
+      iModIntro.
+      by iApply "HΦc".
+    }
+
+    iApply (wpc_put_logatom_core γ _ _ {|Req_CID:=_; Req_Seq:= _ |} with "[] [HQ Hvol]").
+    { (* Prove fupd; TODO: this should happen at a higher level, and this should just talk about rpc_atomic_pre_fupd *)
+      iModIntro. simpl. unfold quiesce_fupd_raw.
+      iIntros "HQ".
+      iDestruct ("HwandQ" with "HQ") as "Hfupd".
+      iApply (rpc_atomic_pre_fupd_mono_strong with "[] Hfupd").
+      iIntros "[>$|>Hcase] _ $".
+      { by iModIntro. }
+      { iModIntro. iNamed "Hcase". iExists _. iFrame "Hcase". }
+    }
+    {
+      iFrame "HQ".
+      iFrame "Hvol".
+    }
+    iSplit.
+    {
+      iLeft in "HΦ".
+      done.
+    }
+    iNext.
+    iIntros (server' r P') "(HP' & Hvol & Hpre & Hfupd)".
+    iRight in "HΦ".
+    iApply "HΦ".
+    iFrame "HP' Hpre Hvol".
+    iFrame "Hfupd".
+  }
+  {
+    iIntros (server rpc_server server' rpc_server') "!#".
+    clear Φ.
+    iIntros (Φ Φc) "Hpre HΦ".
+    wpc_pures.
+    {
+      iDestruct "Hpre" as "(_ & _ & Hdur)". (* Requires own_durable to be discretizable *)
+      iDestruct "HΦ" as "[HΦc _]".
+      iModIntro.
+      iApply "HΦc".
+      by iLeft.
+    }
+    wpc_apply (wpc_WriteDurableKVServer with "Hsv Hpre").
+    iSplit.
+    {
+      by iDestruct "HΦ" as "[HΦc _]".
+    }
+    iNext. by iDestruct "HΦ" as "[_ HΦ]".
+  }
+  {
+    iFrame "His_server".
+  }
+  iIntros (f) "His_rpcHandler".
+  iFrame.
+Qed.
 
 End kv_logatom_proof.
