@@ -65,7 +65,7 @@ Notation "|RN={ γrpc , cid , seq }=> R" :=
 (* This gives the rpc_atomic_pre_fupd for any sequence number that the client can take on
    This is the precondition for ck.MakeRequest(args), where ck has the given cid *)
 Definition rpc_atomic_pre_def γrpc cid R : iProp Σ :=
-   (∀ seq, cid fm[[γrpc.(cseq)]]↦ int.nat seq ={⊤}=∗
+   (∀ seq, cid fm[[γrpc.(cseq)]]↦ int.nat seq -∗
     cid fm[[γrpc.(cseq)]]↦ int.nat seq ∗
     (laterable.make_laterable (|RN={γrpc , cid , seq}=> R))).
 
@@ -158,9 +158,9 @@ Proof.
 Admitted.
 
 Global Instance into_wand_rpc_atomic γrpc cid seq p q R P Q :
-  IntoWand p false R P Q → IntoWand p q R (|RN={γrpc,cid,seq}=> P) (|RN={γrpc,cid,seq}=> Q).
+  IntoWand p false R P Q → IntoWand' p q R (|RN={γrpc,cid,seq}=> P) (|RN={γrpc,cid,seq}=> Q).
 Proof.
-  rewrite /IntoWand /=.
+  rewrite /IntoWand' /IntoWand /=.
   intros.
   iIntros "HR HmodP".
   iDestruct (H with "HR") as "HwandQ".
@@ -187,26 +187,24 @@ Proof.
 Qed.
 
 Lemma rpc_atomic_pre_mono_strong cid γrpc P Q :
-  □(∀ seq, P -∗ |RN={γrpc,cid,seq}=> Q) -∗
+  (∀ seq, RPCClient_own γrpc cid seq -∗ RPCClient_own γrpc cid seq ∗ □(P -∗ |RN={γrpc,cid,seq}=> Q )) -∗
   |PN={γrpc,cid}=> P -∗
   |PN={γrpc,cid}=> Q.
 Proof.
-  iIntros "#HPQ HatomicP".
+  iIntros "HPQ HatomicP".
   rewrite rpc_atomic_pre_eq.
   iIntros (seq) "Hcown".
-  iMod ("HatomicP" $! seq with "Hcown") as "[Hcown HatomicP]".
-  iFrame.
+  iDestruct ("HatomicP" $! seq with "Hcown") as "[Hcown HatomicP]".
+  iDestruct ("HPQ" with "Hcown") as "[$ #HPmodQ]".
   unfold laterable.make_laterable.
   iDestruct "HatomicP" as (R) "[HR #HatomicP]".
   iExists (R). iFrame.
   iModIntro.
-  iModIntro.
   iIntros "HR".
   iMod ("HatomicP" with "HR") as "HP".
-  iDestruct ("HPQ" with "HP") as "$".
+  iDestruct ("HPmodQ" with "HP") as "$".
 Qed.
 
-Locate "|PN={".
 End rpc_atomic_pre.
 
 Notation "|RN={ γrpc , cid , seq }=> R" :=
@@ -218,6 +216,7 @@ Notation "|PN={ γrpc , cid }=> R" :=
  (rpc_atomic_pre γrpc cid R)
  (at level 20, right associativity)
   : bi_scope.
+
 Section rpc_neutralization.
 
 Context `{!heapG Σ}.
@@ -225,45 +224,32 @@ Context `{!rpcG Σ u64}.
 Definition neutralized_pre γrpc cid PreCond PostCond : iProp Σ :=
   |PN={γrpc,cid}=> (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret)%I.
 
-(*
-Global Instance quiesceable_pre_disc γrpc cid PreCond PostCond : (Discretizable
-       (neutralized_pre γrpc cid PreCond PostCond)).
-Proof.
-  rewrite /Discretizable.
-  by rewrite -own_discrete_idemp.
-Defined.
-*)
-
-Section rpc_atomic_pre.
-Lemma quiesce_request (req:RPCRequestID) γrpc γreq (PreCond:iProp Σ) PostCond  :
+Lemma neutralize_request (req:RPCRequestID) γrpc γreq (PreCond:iProp Σ) PostCond  :
   is_RPCServer γrpc -∗
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
-  (RPCRequest_token γreq) -∗
+  (RPCRequest_token γreq) ={⊤}=∗
   <disc> neutralized_pre γrpc req.(Req_CID) PreCond PostCond.
 Proof.
     iIntros "#Hsrpc #His_req Hγpost".
     iFrame "#∗".
 
-    iModIntro.
 
+    iInv "His_req" as "[>#Hcseq_lb_strict HN]" "HNClose".
+    iMod ("HNClose" with "[$Hcseq_lb_strict $HN]") as "_".
+
+    iModIntro.
+    iModIntro.
     rewrite /neutralized_pre rpc_atomic_pre_eq.
     iIntros (new_seq) "Hcown".
     unfold is_RPCRequest.
 
-    (* slow:
-       iInv (rpcRequestInvN req) as "HN" "HNClose". *)
-    iMod (inv_acc with "His_req") as "[[#Hcseq_lb_strict HN] HNClose]".
-    { done. }
-
-    (* the below is also slow: *)
-    iDestruct ("HNClose" with "[]") as "HH".
-
     iDestruct (fmcounter_map_agree_lb with "Hcown Hcseq_lb_strict") as %Hnew_seq.
     iFrame.
-    iModIntro.
+
     iExists (RPCRequest_token γreq).
     iFrame.
     iModIntro.
+    rewrite rpc_atomic_pre_fupd_eq.
     iIntros ">Hγpost".
 
     iIntros "Hγproc #Hlseq_lb".
@@ -304,68 +290,38 @@ Proof.
     }
 Qed.
 
-Lemma quiesce_idemp γrpc cid seqno Q PreCond PostCond :
+Lemma neutralize_idemp γrpc cid seqno Q PreCond PostCond :
   cid fm[[γrpc.(cseq)]]≥ int.nat seqno -∗
   □(▷Q -∗ (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret))) -∗
-  quiesceable_pre γrpc cid Q (PostCond) -∗
-  quiesceable_pre γrpc cid PreCond PostCond.
+  neutralized_pre γrpc cid Q (PostCond) -∗
+  neutralized_pre γrpc cid PreCond PostCond.
 Proof.
   iIntros "#Hseqno_lb #Hwand Hatomic_pre".
-  iModIntro.
-  iIntros (seq) "Hcown".
+  iApply rpc_atomic_pre_mono_strong; last done.
+  iIntros (seq).
+  iIntros "Hcown".
   iDestruct (fmcounter_map_agree_lb with "Hcown Hseqno_lb") as %Hseqno_ineq.
-
-  iDestruct ("Hatomic_pre" $! seq with "Hcown") as ">[Hcown Hfupd]".
   iFrame.
-  unfold laterable.make_laterable.
-  iDestruct "Hfupd" as (S) "[HS #Hfupd]".
-  iExists S.
   iModIntro.
-  iFrame "HS".
-  iModIntro.
-  iIntros "HS".
-  iSpecialize ("Hfupd" with "HS").
-  iApply (rpc_atomic_pre_fupd_mono_strong with "[Hwand] Hfupd").
-  iIntros "HQR #Hlb Hγproc".
-  iDestruct (fmcounter_map_mono_lb (int.nat seqno) with "Hlb") as "#Hlb_seqno".
-  { lia. }
-  iDestruct "HQR" as "[HQ | HRpost]".
-  {
-    iDestruct ("Hwand" with "HQ") as "Hfupd".
-    iDestruct ("Hfupd" with "Hγproc Hlb_seqno") as "HH".
-    (* TODO: Show that mask of seqno is in mask of seq *)
-    (* by iModIntro. *)
-    admit.
-  }
-  { iFrame. by iModIntro. }
-Admitted.
-
-Lemma quiesce_intro γrpc cid seqno PreCond PostCond :
-  PreCond -∗ (quiesce_fupd γrpc cid seqno PreCond PostCond).
-Proof.
-  iIntros.
-  iExists (PreCond)%I.
-  iFrame.
-  iModIntro; iFrame.
-  iIntros.
-  iIntros "Hγproc #Hlb".
-  iFrame.
-    by iModIntro.
+  iIntros "[HQ|Hpost]".
+  { iMod ("Hwand" with "HQ") as "HQ". by iModIntro. }
+  { iModIntro. by iRight. }
 Qed.
 
-Definition quiesce_fupd_raw γrpc cid seqno PreCond PostCond : iProp Σ :=
-  (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret))%I.
+Definition neutralized_fupd γrpc cid seqno PreCond PostCond : iProp Σ :=
+  |RN={γrpc,cid,seqno}=> (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret)%I.
 
-Lemma quiesceable_pre_instantiate γrpc cid seqno PreCond PostCond :
+Lemma post_neutralize_instantiate γrpc cid seqno P :
   RPCClient_own γrpc cid seqno -∗
-  quiesceable_pre γrpc cid PreCond PostCond ={⊤}=∗
+  |PN={γrpc,cid}=> P ={⊤}=∗
   RPCClient_own γrpc cid seqno ∗
-  (quiesce_fupd γrpc cid seqno PreCond PostCond).
+  |RN={γrpc,cid,seqno}=> P.
 Proof.
   iIntros "Hcrpc Hqpre".
-  iDestruct (own_discrete_elim with "Hqpre") as "Hqpre".
-  iMod ("Hqpre" $! seqno with "Hcrpc") as "[Hcrpc Hfupd]".
-  iModIntro. iFrame.
+  rewrite rpc_atomic_pre_eq.
+  iDestruct ("Hqpre" $! seqno with "Hcrpc") as "[$ Hp]".
+  iModIntro.
+  iApply (laterable.make_laterable_elim with "Hp").
 Qed.
 
-End rpc_logatom_proof.
+End rpc_neutralization.
