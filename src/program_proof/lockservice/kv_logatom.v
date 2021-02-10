@@ -18,7 +18,7 @@ Section kv_logatom_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
 Context `{!filesysG Σ}.
 
-Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q cid seqno:
+Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q:
 □(Q -∗ (rpc_atomic_pre_fupd γ.(ks_rpcGN) req.(Req_CID) req.(Req_Seq) (Put_Pre γ args))) -∗
 {{{
      (kv_core_mu srv γ).(core_own_vol) kvserver ∗
@@ -32,8 +32,8 @@ Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q cid seqno:
             □ (P' -∗ Q) ∗
             □ (P' -∗ KVServer_core_own_ghost γ kvserver -∗
                own γ.(ks_rpcGN).(proc) (Excl ()) -∗
-               cid fm[[γ.(ks_rpcGN).(lseq)]]≥ int.nat seqno
-               ={⊤∖↑rpcRequestInvN}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
+               req.(Req_CID) fm[[γ.(ks_rpcGN).(lseq)]]≥ int.nat req.(Req_Seq)
+               ={⊤∖↑rpcRequestInvN req}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
 }}}
 {{{
      Q
@@ -78,6 +78,12 @@ Proof.
      (PRE ∗ ctx ==∗ POST ∗ ctx')
 
    *)
+  iDestruct (fupd_mask_weaken _ (rpcReqInvUpToN req.(Req_Seq)) with "Hfupd") as ">Hfupd".
+  {
+    apply subseteq_difference_r.
+    - admit. (* Use defining property of rpcReqInvUpToN *)
+    - set_solver.
+  }
   iMod "Hfupd".
   (* TODO: strengthen fupd postcond to have γproc and cid ≥ fact *)
 Admitted.

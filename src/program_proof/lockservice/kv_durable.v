@@ -383,7 +383,7 @@ Definition kv_core_mu srv γ : rpc_core_mu :=
   core_own_vol := λ server, KVServer_core_own_vol srv server
   |}.
 
-Lemma wpc_put_core γ (srv:loc) args kvserver :
+Lemma wpc_put_core γ (srv:loc) args kvserver req :
 {{{
      (kv_core_mu srv γ).(core_own_vol) kvserver ∗
      Put_Pre γ args
@@ -395,7 +395,7 @@ Lemma wpc_put_core γ (srv:loc) args kvserver :
             KVServer_core_own_vol srv kvserver' ∗
             □ (P' -∗ Put_Pre γ args) ∗
             (* TODO: putting this here because need to be discretizable *)
-            □ (P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
+            □ (P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN req}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
 }}}
 {{{
      Put_Pre γ args
@@ -635,7 +635,7 @@ is_kvserver γ srv rpc_srv -∗
 }}}
     KVServer__Put #srv
 {{{ (f:goose_lang.val), RET f;
-        ∀ args, is_rpcHandler f γ.(ks_rpcGN) args (Put_Pre γ args) (Put_Post γ args)
+        ∀ args req, is_rpcHandler f γ.(ks_rpcGN) args req (Put_Pre γ args) (Put_Post γ args)
 }}}.
 Proof.
   iNamed 1.

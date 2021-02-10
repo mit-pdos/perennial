@@ -10,8 +10,17 @@ Section rpc_proof.
 Context `{!heapG Σ}.
 Context `{!rpcG Σ u64}.
 
+Definition rpcReqInvUpToN (seqno:u64) : coPset.
+Admitted.
+(* big union *)
+
+Lemma rpcReqInvUpToN_prop cid seq :
+ ∀ seq', int.nat seq' < int.nat seq ↔ (↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |}) ⊆ rpcReqInvUpToN seq.
+Admitted.
+
+(* Need this fupd to be OK to fire with any sequence number larger than the *)
 Definition rpc_atomic_pre_fupd γrpc (cid seq:u64) R : iProp Σ :=
-  ∃ prevSeq, ⌜int.nat prevSeq < int.nat seq⌝ ∗ (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=prevSeq |}}=∗ own γrpc.(proc) (Excl ()) ∗ R)%I.
+  (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={rpcReqInvUpToN seq}=∗ own γrpc.(proc) (Excl ()) ∗ R)%I.
 
 (* This gives the rpc_atomic_pre_fupd for any sequence number that the client can take on
    This is the precondition for ck.MakeRequest(args), where ck has the given cid *)
@@ -71,12 +80,12 @@ Qed.
 
 Lemma rpc_atomic_pre_fupd_mono_strong γrpc cid seq P Q:
   (P -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq -∗
-     own γrpc.(proc) (Excl ())={↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq|}}=∗ own γrpc.(proc) (Excl ()) ∗ Q) -∗
+     own γrpc.(proc) (Excl ())={rpcReqInvUpToN seq}=∗ own γrpc.(proc) (Excl ()) ∗ Q) -∗
   rpc_atomic_pre_fupd γrpc cid seq P -∗
   rpc_atomic_pre_fupd γrpc cid seq Q.
 Proof.
-  iIntros "HPQ Hfupd".
-  iMod ("HP" with "Hγproc Hlb") as "[Hγproc HP]".
+  iIntros "HPQ HfupdP Hγproc #Hlb".
+  iMod ("HfupdP" with "Hγproc Hlb") as "[Hγproc HP]".
   iSpecialize ("HPQ" with "HP Hlb Hγproc").
   iMod "HPQ".
   iFrame.
@@ -84,7 +93,7 @@ Proof.
 Qed.
 
 Lemma rpc_atomic_pre_mono_strong cid γrpc P Q :
-  □(P -∗ own γrpc.(proc) (Excl ()) ={⊤}=∗ own γrpc.(proc) (Excl ()) ∗ Q) -∗
+  □(∀ seq, cid fm[[γrpc.(lseq)]]≥ int.nat seq → P -∗ own γrpc.(proc) (Excl ())={rpcReqInvUpToN seq}=∗ own γrpc.(proc) (Excl ()) ∗ Q) -∗
   rpc_atomic_pre γrpc cid P -∗
   rpc_atomic_pre γrpc cid Q.
 Proof.
@@ -100,8 +109,9 @@ Proof.
   iModIntro.
   iIntros "HR". iSpecialize ("HatomicP" with "HR").
   iApply (rpc_atomic_pre_fupd_mono_strong with "[HPQ] HatomicP").
-  iIntros "HP #Hlb Hγproc". (* iApply ("HPQ" with "HP Hγproc"). *)
-Admitted.
+  iIntros "HP #Hlb Hγproc".
+  iDestruct ("HPQ" $! seq with "Hlb HP Hγproc") as "$".
+Qed.
 
 (*
 Lemma rpc_atomic_pre_fupd_mono γrpc cid seq P Q:
@@ -167,7 +177,7 @@ Proof.
 
     iIntros "Hγproc #Hlseq_lb".
     iInv "His_req" as "HN" "HNClose".
-    {  }
+    { apply (rpcReqInvUpToN_prop req.(Req_CID)). destruct req. simpl in *. word. }
     iDestruct "HN" as "[#>_ [HN|HN]]"; simpl. (* Is cseq_lb_strict relevant for this? *)
     {
       iDestruct "HN" as "[_ [>Hbad|HN]]".
@@ -231,11 +241,13 @@ Proof.
   iDestruct "HQR" as "[HQ | HRpost]".
   {
     iDestruct ("Hwand" with "HQ") as "Hfupd".
-    iMod ("Hfupd" with "Hγproc Hlb_seqno") as "[$ $]".
-    by iModIntro.
+    iDestruct ("Hfupd" with "Hγproc Hlb_seqno") as "HH".
+    (* TODO: Show that mask of seqno is in mask of seq *)
+    (* by iModIntro. *)
+    admit.
   }
   { iFrame. by iModIntro. }
-Qed.
+Admitted.
 
 Lemma quiesce_intro γrpc cid seqno PreCond PostCond :
   PreCond -∗ (quiesce_fupd γrpc cid seqno PreCond PostCond).
@@ -266,7 +278,7 @@ Proof.
 Qed.
 
 Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid γrpc args (PreCond:iProp Σ) PostCond {_:Discretizable (PreCond)} {_:∀ reply, Discretizable (PostCond reply)}:
-  □(∀ seqno Q, (□(Q -∗ quiesce_fupd_raw γrpc cid seqno PreCond PostCond) -∗ is_rpcHandler f γrpc args {| Red_CID:=cid; Req_Seq:=seqno |}  Q PostCond)) -∗
+  □(∀ seqno Q, (□(Q -∗ quiesce_fupd_raw γrpc cid seqno PreCond PostCond) -∗ is_rpcHandler f γrpc args {| Req_CID:=cid; Req_Seq:=seqno |}  Q PostCond)) -∗
   {{{
     quiesceable_pre γrpc cid PreCond PostCond ∗
     own_rpcclient cl_ptr γrpc cid ∗
@@ -368,7 +380,7 @@ Proof using Type*.
     iDestruct "Hreply" as (reply') "Hreply".
     wpc_pures.
     wpc_bind (RemoteProcedureCall _ _ _). wpc_frame.
-    wp_apply (RemoteProcedureCall_spec with "[] [Hreply]").
+    wp_apply (RemoteProcedureCall_spec with "[] [$Hreply]").
     { iSpecialize ("Hfspec" $! cseqno Q with "[Hqwand]").
       { iModIntro. iIntros "HQ".
         iSpecialize ("Hqwand" with "HQ").
@@ -378,9 +390,7 @@ Proof using Type*.
     {
       iSplit; last first.
       { unfold read_request.
-        instantiate (2:={|Req_CID:=_; Req_Seq := _; |}).
-        iFrame "#".
-        iFrame "Hreply".
+        iFrame "#∗".
         simpl. iPureIntro. lia.
       }
       iFrame "Hreqinv_init".
@@ -485,16 +495,16 @@ is_kvserver γ srv -∗
     KVServer__Get #srv @ E
 {{{ (f:goose_lang.val), RET f;
     ∀ args, (□ ∀ seqno Q, □(Q -∗ (quiesce_fupd_raw γ.(ks_rpcGN) cid seqno (Get_Pre γ old_v args) (Get_Post γ old_v args)))-∗
-        is_rpcHandler f γ.(ks_rpcGN) args Q (Get_Post γ old_v args))
+        is_rpcHandler f γ.(ks_rpcGN) args {|Req_CID:=cid; Req_Seq:=seqno|} Q (Get_Post γ old_v args))
 }}}.
 Proof.
   iIntros "#His_kv !#" (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
   iApply "HΦ".
-  iIntros (args) "!#". iIntros (seqno Q) "#HwandQ".
+  iIntros (args req) "!#". iIntros (Q) "#HwandQ".
   iApply is_rpcHandler_eta.
-  iIntros "!#" (reply req).
+  iIntros "!#" (replyv reqv).
   simpl.
   iAssert (is_kvserver γ srv) with "His_kv" as "His_kv2".
   iNamed "His_kv2".
@@ -568,9 +578,9 @@ Proof.
   wpc_loadField.
   pose (args:=arg_of_key key).
   replace (#key, (#0, #()))%V with (into_val.to_val args) by done.
-
+  iDestruct ("Hfspec" $! args) as "#Hfspec2".
   iApply wpc_fupd.
-  wpc_apply (wpc_RPCClient__MakeRequest with "Hfspec [$Hq $Hcl His_kv]").
+  wpc_apply (wpc_RPCClient__MakeRequest with "Hfspec2 [Hq Hcl His_kv]").
   { iNamed "His_kv". iFrame. iNamed "His_rpc".
     iFrame "#".
   }
