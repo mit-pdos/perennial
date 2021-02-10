@@ -6,10 +6,7 @@ From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_
 Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 
-Section rpc_logatom_proof.
-Context `{!heapG Σ}.
-Context `{!rpcG Σ u64}.
-
+Section rpc_namespace.
 
 Definition rpcReqInvUpToN_list (seqno:u64) : list coPset :=
  ((λ (n:nat), ↑rpcRequestInvN {| Req_CID:= 0; Req_Seq:=(U64 n) |} ) <$> (seq 0 (int.nat seqno))).
@@ -45,22 +42,41 @@ Lemma rpcReqInvUpToN_prop_2 cid seq :
  ∀ seq', int.nat seq' ≥ int.nat seq → ↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |} ## rpcReqInvUpToN seq.
 Admitted.
 
+End rpc_namespace.
+
+Section rpc_atomic_pre.
+Context `{!heapG Σ}.
+Context `{!rpcG Σ u64}.
 
 (* Need this fupd to be OK to fire with any sequence number larger than the *)
-Definition rpc_atomic_pre_fupd γrpc (cid seq:u64) R : iProp Σ :=
+Definition rpc_atomic_pre_fupd_def γrpc (cid seq:u64) R : iProp Σ :=
   (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={rpcReqInvUpToN seq}=∗ own γrpc.(proc) (Excl ()) ∗ R)%I.
+
+Definition rpc_atomic_pre_fupd_aux : seal (@rpc_atomic_pre_fupd_def). Proof. by eexists. Qed.
+Definition rpc_atomic_pre_fupd := rpc_atomic_pre_fupd_aux.(unseal).
+Local Definition rpc_atomic_pre_fupd_eq : @rpc_atomic_pre_fupd = @rpc_atomic_pre_fupd_def := rpc_atomic_pre_fupd_aux.(seal_eq).
 
 Notation "|RN={ γrpc , cid , seq }=> R" :=
  (rpc_atomic_pre_fupd γrpc cid seq R)
  (at level 20, right associativity)
   : bi_scope.
 
+
 (* This gives the rpc_atomic_pre_fupd for any sequence number that the client can take on
    This is the precondition for ck.MakeRequest(args), where ck has the given cid *)
-Definition rpc_atomic_pre γrpc cid R : iProp Σ :=
-    <bdisc> (∀ seq, cid fm[[γrpc.(cseq)]]↦ int.nat seq ={⊤}=∗
+Definition rpc_atomic_pre_def γrpc cid R : iProp Σ :=
+   (∀ seq, cid fm[[γrpc.(cseq)]]↦ int.nat seq ={⊤}=∗
     cid fm[[γrpc.(cseq)]]↦ int.nat seq ∗
-   (laterable.make_laterable (|RN={γrpc , cid , seq}=> R))).
+    (laterable.make_laterable (|RN={γrpc , cid , seq}=> R))).
+
+Definition rpc_atomic_pre_aux : seal (@rpc_atomic_pre_def). Proof. by eexists. Qed.
+Definition rpc_atomic_pre := rpc_atomic_pre_aux.(unseal).
+Local Definition rpc_atomic_pre_eq : @rpc_atomic_pre = @rpc_atomic_pre_def := rpc_atomic_pre_aux.(seal_eq).
+
+Notation "|PN={ γrpc , cid }=> R" :=
+ (rpc_atomic_pre γrpc cid R)
+ (at level 20, right associativity)
+  : bi_scope.
 
 Lemma rpc_atomic_pre_fupd_mono_strong γrpc cid seq P Q:
   (P -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq -∗
@@ -68,6 +84,7 @@ Lemma rpc_atomic_pre_fupd_mono_strong γrpc cid seq P Q:
   |RN={γrpc,cid,seq}=> P -∗
   |RN={γrpc,cid,seq}=> Q.
 Proof.
+  rewrite rpc_atomic_pre_fupd_eq.
   iIntros "HPQ HfupdP Hγproc #Hlb".
   iMod ("HfupdP" with "Hγproc Hlb") as "[Hγproc HP]".
   iSpecialize ("HPQ" with "HP Hlb Hγproc").
@@ -80,19 +97,15 @@ Lemma modality_rpc_atomic_mixin γrpc cid seq :
   modality_mixin (rpc_atomic_pre_fupd γrpc cid seq ) MIEnvId MIEnvId.
 Proof.
   split; simpl; eauto.
-  {
-    iIntros (P) "#HP".
-    iIntros "$ _ !#".
-    done.
-  }
-  {
-    iIntros (P) "HP".
-    by iIntros "$ _ !>".
-  }
-  {
-    iIntros. iIntros "$ _".
-    by iModIntro.
-  }
+  { iIntros (P) "#HP".
+    rewrite rpc_atomic_pre_fupd_eq.
+    iIntros "$ _ !#". done. }
+  { iIntros (P) "HP".
+    rewrite rpc_atomic_pre_fupd_eq.
+      by iIntros "$ _ !>". }
+  { iIntros.
+    rewrite rpc_atomic_pre_fupd_eq.
+    iIntros "$ _". by iModIntro. }
   {
     iIntros (P Q).
     intros HPQ.
@@ -103,26 +116,30 @@ Proof.
   }
   {
     iIntros (P Q) "[HP HQ]".
+    rewrite rpc_atomic_pre_fupd_eq.
     iIntros "Hγproc #Hlb".
     iDestruct ("HP" with "Hγproc Hlb") as ">[Hγproc $]".
     iDestruct ("HQ" with "Hγproc Hlb") as ">[$ $]".
     by iModIntro.
   }
 Qed.
+
 Definition modality_rpc_atomic γrpc cid seq :=
   Modality _ (modality_rpc_atomic_mixin γrpc cid seq).
 
-(** FromModal *)
+(* IPM typeclasses for rnfupd *)
 Global Instance from_modal_rpc_atomic γrpc cid seq P :
   FromModal (modality_rpc_atomic γrpc cid seq) (|RN={γrpc,cid,seq}=> P) (|RN={γrpc,cid,seq}=> P) P | 2.
 Proof. by rewrite /FromModal. Qed.
 
-Global Instance elim_modal_rpc_atomic γrpc cid seq' seq P Q :
-  ElimModal (int.nat seq' ≤ int.nat seq) false false (|RN={γrpc,cid,seq'}=> P) P (|RN={γrpc,cid,seq}=> Q) (|RN={γrpc,cid,seq}=> Q).
+Global Instance elim_modal_rpc_atomic γrpc p cid seq' seq P Q :
+  ElimModal (int.nat seq' ≤ int.nat seq) p false (|RN={γrpc,cid,seq'}=> P) P (|RN={γrpc,cid,seq}=> Q) (|RN={γrpc,cid,seq}=> Q).
 Proof.
   rewrite /ElimModal.
   simpl.
+  rewrite rpc_atomic_pre_fupd_eq.
   iIntros (Hineq) "[HmodP HwandQ] Hγproc #Hlb".
+  iDestruct (intuitionistically_if_elim with "HmodP") as "HmodP".
   iDestruct ("HmodP" with "Hγproc [Hlb]") as "HmodP".
   {
     iApply (fmcounter_map_mono_lb); last done.
@@ -140,13 +157,42 @@ Proof.
   by iModIntro.
 Admitted.
 
+Global Instance into_wand_rpc_atomic γrpc cid seq p q R P Q :
+  IntoWand p false R P Q → IntoWand p q R (|RN={γrpc,cid,seq}=> P) (|RN={γrpc,cid,seq}=> Q).
+Proof.
+  rewrite /IntoWand /=.
+  intros.
+  iIntros "HR HmodP".
+  iDestruct (H with "HR") as "HwandQ".
+  iDestruct (intuitionistically_if_elim with "HmodP") as "HmodP".
+  iMod "HmodP".
+  iModIntro.
+  by iApply "HwandQ".
+Qed.
+
+Global Instance from_sep_rpc_atomic γrpc cid seq P Q1 Q2 :
+  FromSep P Q1 Q2 → FromSep (|RN={γrpc,cid,seq}=> P) (|RN={γrpc,cid,seq}=> Q1) (|RN={γrpc,cid,seq}=> Q2).
+Proof.
+  rewrite /FromSep.
+  intros Hsep.
+  iIntros "[H1 H2]".
+  iApply Hsep.
+  (* Make a lemma for this. *)
+
+  rewrite rpc_atomic_pre_fupd_eq.
+  iIntros "Hγproc #Hlb".
+  iDestruct ("H1" with "Hγproc Hlb") as ">[Hγproc $]".
+  iDestruct ("H2" with "Hγproc Hlb") as ">[$ $]".
+    by iModIntro.
+Qed.
+
 Lemma rpc_atomic_pre_mono_strong cid γrpc P Q :
   □(∀ seq, P -∗ |RN={γrpc,cid,seq}=> Q) -∗
-  rpc_atomic_pre γrpc cid P -∗
-  rpc_atomic_pre γrpc cid Q.
+  |PN={γrpc,cid}=> P -∗
+  |PN={γrpc,cid}=> Q.
 Proof.
   iIntros "#HPQ HatomicP".
-  iModIntro.
+  rewrite rpc_atomic_pre_eq.
   iIntros (seq) "Hcown".
   iMod ("HatomicP" $! seq with "Hcown") as "[Hcown HatomicP]".
   iFrame.
@@ -160,59 +206,57 @@ Proof.
   iDestruct ("HPQ" with "HP") as "$".
 Qed.
 
+Locate "|PN={".
+End rpc_atomic_pre.
+
+Notation "|RN={ γrpc , cid , seq }=> R" :=
+ (rpc_atomic_pre_fupd γrpc cid seq R)
+ (at level 20, right associativity)
+  : bi_scope.
+
+Notation "|PN={ γrpc , cid }=> R" :=
+ (rpc_atomic_pre γrpc cid R)
+ (at level 20, right associativity)
+  : bi_scope.
+Section rpc_neutralization.
+
+Context `{!heapG Σ}.
+Context `{!rpcG Σ u64}.
+Definition neutralized_pre γrpc cid PreCond PostCond : iProp Σ :=
+  |PN={γrpc,cid}=> (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret)%I.
+
 (*
-Lemma rpc_atomic_pre_fupd_mono γrpc cid seq P Q:
-  (P -∗ Q) -∗
-  rpc_atomic_pre_fupd γrpc cid seq P -∗
-  rpc_atomic_pre_fupd γrpc cid seq Q.
-Proof.
-  iIntros "HPQ".
-  iApply rpc_atomic_pre_fupd_mono_strong.
-  iIntros "HP _ $".
-  by iApply "HPQ".
-Qed.
-
-Lemma rpc_atomic_pre_mono cid γrpc P Q :
-  <bdisc>(P -∗ Q) -∗
-  rpc_atomic_pre γrpc cid P -∗
-  rpc_atomic_pre γrpc cid Q.
-Proof.
-  iIntros "HPQ HatomicP".
-  iModIntro.
-  iIntros (seq) "Hcown".
-  iMod ("HatomicP" $! seq with "Hcown") as "[Hcown HatomicP]".
-  iFrame.
-  iApply (rpc_atomic_pre_fupd_mono with "HPQ HatomicP").
-Qed.
-*)
-
-Definition quiesce_fupd γrpc cid seqno PreCond PostCond : iProp Σ :=
-  laterable.make_laterable (rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret))%I.
-
-Definition quiesceable_pre γrpc cid PreCond PostCond : iProp Σ :=
-  rpc_atomic_pre γrpc cid (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret)%I.
-
 Global Instance quiesceable_pre_disc γrpc cid PreCond PostCond : (Discretizable
-       (quiesceable_pre γrpc cid PreCond PostCond)).
+       (neutralized_pre γrpc cid PreCond PostCond)).
 Proof.
   rewrite /Discretizable.
   by rewrite -own_discrete_idemp.
 Defined.
+*)
 
+Section rpc_atomic_pre.
 Lemma quiesce_request (req:RPCRequestID) γrpc γreq (PreCond:iProp Σ) PostCond  :
   is_RPCServer γrpc -∗
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   (RPCRequest_token γreq) -∗
-  quiesceable_pre γrpc req.(Req_CID) PreCond PostCond.
+  <disc> neutralized_pre γrpc req.(Req_CID) PreCond PostCond.
 Proof.
     iIntros "#Hsrpc #His_req Hγpost".
     iFrame "#∗".
 
     iModIntro.
 
+    rewrite /neutralized_pre rpc_atomic_pre_eq.
     iIntros (new_seq) "Hcown".
-    iInv "His_req" as "[>#Hcseq_lb_strict HN]" "HNClose".
-    iMod ("HNClose" with "[$Hcseq_lb_strict $HN]") as "_".
+    unfold is_RPCRequest.
+
+    (* slow:
+       iInv (rpcRequestInvN req) as "HN" "HNClose". *)
+    iMod (inv_acc with "His_req") as "[[#Hcseq_lb_strict HN] HNClose]".
+    { done. }
+
+    (* the below is also slow: *)
+    iDestruct ("HNClose" with "[]") as "HH".
 
     iDestruct (fmcounter_map_agree_lb with "Hcown Hcseq_lb_strict") as %Hnew_seq.
     iFrame.
