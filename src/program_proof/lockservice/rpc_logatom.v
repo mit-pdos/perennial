@@ -186,6 +186,46 @@ Proof.
     by iModIntro.
 Qed.
 
+(* IPM typeclasses for pnfupd *)
+
+Global Instance elim_modal_rpc_atomic γrpc p cid P Q :
+  ElimModal True p false (|PN={γrpc,cid}=> P) (P) (|PN={γrpc,cid}=> Q) (|PN={γrpc,cid}=> Q).
+Proof.
+  rewrite /ElimModal.
+  simpl.
+  intros _.
+  iIntros "[HmodP HPmodQ]".
+  iDestruct (intuitionistically_if_elim with "HmodP") as "HmodP".
+  rewrite rpc_atomic_pre_eq.
+  iIntros (seq) "Hcown".
+  iDestruct ("HmodP" with "Hcown") as "[Hcown HmodP]".
+  unfold laterable.make_laterable.
+  iDestruct "HmodP" as (R) "[HR HRwandModP]".
+  iApply sep_exist_l.
+  iExists R. iFrame.
+  iModIntro.
+
+  iDestruct "HmodP".
+  iFrame.
+
+  iDestruct ("HmodP" with "Hγproc [Hlb]") as "HmodP".
+  {
+    iApply (fmcounter_map_mono_lb); last done.
+    word.
+  }
+
+  iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "HmodP" as "[Hγproc HP]".
+  {
+    admit. (* property of masks *)
+  }
+  iDestruct ("HwandQ" with "HP") as "HmodQ".
+  iMod "Hclose" as "_".
+  iDestruct ("HmodQ" with "Hγproc Hlb") as ">HmodQ".
+  iFrame.
+  by iModIntro.
+Admitted.
+
+
 Lemma rpc_atomic_pre_mono_strong cid γrpc P Q :
   (∀ seq, RPCClient_own γrpc cid seq -∗ RPCClient_own γrpc cid seq ∗ □(P -∗ |RN={γrpc,cid,seq}=> Q )) -∗
   |PN={γrpc,cid}=> P -∗

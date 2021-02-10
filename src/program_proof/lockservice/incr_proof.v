@@ -19,62 +19,29 @@ Definition own_rpcclient (cl_ptr:loc) (γrpc:rpc_names) (cid:u64) : iProp Σ
     ∗ "Hcrpc" ∷ RPCClient_own γrpc cid cseqno
 .
 
-Theorem wpc_forBreak_cond' (P: iProp Σ) stk k E (cond body: goose_lang.val) (Φ : goose_lang.val → iProp Σ) (Φc: iProp Σ) :
-  P -∗
-  (P -∗ <disc> Φc) -∗
-  □ (P -∗
-      WPC if: cond #() then body #() else #false @ stk; k; E
-      {{ v, ⌜v = #true⌝ ∗ P ∨ ⌜v = #false⌝ ∗ (Φ #() ∧ <disc> Φc) }} {{ Φc }} ) -∗
-  WPC (for: cond; (λ: <>, Skip)%V := body) @ stk; k ; E {{ Φ }} {{ Φc }}.
-Proof.
-  iIntros "HP HΦc #Hbody".
-  rewrite /For.
-  iCache with "HP HΦc".
-  { by iApply "HΦc". }
-  wpc_pures.
-  iLöb as "IH".
-  wpc_bind_seq.
-  iDestruct ("Hbody" with "HP") as "Hbody1".
-  iApply (wpc_strong_mono with "Hbody1"); try auto.
-  iSplit; last first.
-  {
-    iModIntro. iIntros.
-    by iModIntro.
-  }
-  iIntros (v) "H".
-  iModIntro.
-  iDestruct "H" as "[[% H]|[% H]]"; subst.
-  - iCache with "HΦc H".
-    { iSpecialize ("HΦc" with "H"). done. }
-    wpc_pures.
-    wpc_pures.
-    iApply ("IH" with "[$] [$]").
-  - iCache with "H".
-    { by iRight in "H". }
-    wpc_pures.
-    wpc_pures.
-    by iLeft in "H".
-Qed.
+Definition is_rn_rpcHandler f γrpc cid args PreCond PostCond : iProp Σ :=
+  □(∀ seqno Q, (□(Q -∗ |RN={γrpc,cid,seqno}=> PreCond) -∗ is_rpcHandler f γrpc args {| Req_CID:=cid; Req_Seq:=seqno |} Q PostCond)).
+
 Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid γrpc args (PreCond:iProp Σ) PostCond {_:Discretizable (PreCond)} {_:∀ reply, Discretizable (PostCond reply)}:
-  □(∀ seqno Q, (□(Q -∗ quiesce_fupd_raw γrpc cid seqno PreCond PostCond) -∗ is_rpcHandler f γrpc args {| Req_CID:=cid; Req_Seq:=seqno |}  Q PostCond)) -∗
+  is_rn_rpcHandler f γrpc cid args PreCond PostCond -∗
   {{{
-    quiesceable_pre γrpc cid PreCond PostCond ∗
+    <disc>|PN={γrpc,cid}=> PreCond ∗
     own_rpcclient cl_ptr γrpc cid ∗
     is_RPCServer γrpc
   }}}
     RPCClient__MakeRequest #cl_ptr f (into_val.to_val args) @ k ; ⊤
   {{{ (retv:u64), RET #retv; own_rpcclient cl_ptr γrpc cid ∗ ▷ PostCond retv }}}
-  {{{ quiesceable_pre γrpc cid PreCond PostCond }}}.
+  {{{ |PN={γrpc,cid}=> (▷ PreCond ∨ ∃ ret, ▷ PostCond ret) }}}.
 Proof using Type*.
   iIntros "#Hfspec" (Φ Φc) "!# [Hpre [Hclerk #Hlinv]] HΦ".
   iNamed "Hclerk".
 
-  Opaque quiesceable_pre.
   iCache with "Hpre HΦ".
   { (* Use PreCond to show idemp_fupd *)
     iDestruct "HΦ" as "[HΦc _]".
     iModIntro.
     iApply "HΦc".
+    iMod "Hpre". iModIntro.
     iFrame.
   }
   wpc_rec _.

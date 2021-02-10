@@ -212,6 +212,43 @@ Proof.
   iSplit; iModIntro; eauto.
 Qed.
 
+Theorem wpc_forBreak_cond_2 (P: iProp Σ) stk k E (cond body: goose_lang.val) (Φ : goose_lang.val → iProp Σ) (Φc: iProp Σ) :
+  P -∗
+  (P -∗ <disc> Φc) -∗
+  □ (P -∗
+      WPC if: cond #() then body #() else #false @ stk; k; E
+      {{ v, ⌜v = #true⌝ ∗ P ∨ ⌜v = #false⌝ ∗ (Φ #() ∧ <disc> Φc) }} {{ Φc }} ) -∗
+  WPC (for: cond; (λ: <>, Skip)%V := body) @ stk; k ; E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "HP HΦc #Hbody".
+  rewrite /For.
+  iCache with "HP HΦc".
+  { by iApply "HΦc". }
+  wpc_pures.
+  iLöb as "IH".
+  wpc_bind_seq.
+  iDestruct ("Hbody" with "HP") as "Hbody1".
+  iApply (wpc_strong_mono with "Hbody1"); try auto.
+  iSplit; last first.
+  {
+    iModIntro. iIntros.
+    by iModIntro.
+  }
+  iIntros (v) "H".
+  iModIntro.
+  iDestruct "H" as "[[% H]|[% H]]"; subst.
+  - iCache with "HΦc H".
+    { iSpecialize ("HΦc" with "H"). done. }
+    wpc_pures.
+    wpc_pures.
+    iApply ("IH" with "[$] [$]").
+  - iCache with "H".
+    { by iRight in "H". }
+    wpc_pures.
+    wpc_pures.
+    by iLeft in "H".
+Qed.
+
 Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 (start max:u64) (l:loc) (body: val) :
   int.Z start <= int.Z max ->
   (∀ (i:u64), ⌜int.Z start ≤ int.Z i ≤ int.Z max⌝ -∗ I i -∗ <disc> I' i) →
