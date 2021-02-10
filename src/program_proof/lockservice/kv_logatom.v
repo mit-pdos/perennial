@@ -12,11 +12,19 @@ From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet fmcounter_map rpc_durable_proof kv_proof kv_durable incr_proof wpc_proofmode.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet fmcounter_map rpc_durable_proof kv_proof kv_durable incr_proof wpc_proofmode.
 
 Section kv_logatom_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
 Context `{!filesysG Σ}.
+
+Definition rpc_commit_fupd {serverC:Type} γrpc (core_mu:(@rpc_core_mu _ serverC)) req P Q server server' : iProp Σ :=
+(P -∗
+    own γrpc.(proc) (Excl ()) -∗
+    req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq) -∗
+    core_mu.(core_own_ghost) server
+    ={⊤∖↑rpcRequestInvN req}=∗ Q ∗ own γrpc.(proc) (Excl ()) ∗
+                              core_mu.(core_own_ghost) server').
 
 Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q:
 □(Q -∗ (rpc_atomic_pre_fupd γ.(ks_rpcGN) req.(Req_CID) req.(Req_Seq) (Put_Pre γ args))) -∗
@@ -30,12 +38,7 @@ Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q:
             (<disc> P') ∗
             KVServer_core_own_vol srv kvserver' ∗
             □ (P' -∗ Q) ∗
-            □ (P' -∗
-               own γ.(ks_rpcGN).(proc) (Excl ()) -∗
-               req.(Req_CID) fm[[γ.(ks_rpcGN).(lseq)]]≥ int.nat req.(Req_Seq) -∗
-               KVServer_core_own_ghost γ kvserver
-               ={⊤∖↑rpcRequestInvN req}=∗ Put_Post γ args r ∗ own γ.(ks_rpcGN).(proc) (Excl ()) ∗
-                                          KVServer_core_own_ghost γ kvserver')
+            □ (rpc_commit_fupd γ.(ks_rpcGN) (kv_core_mu srv γ) req P' (Put_Post γ args r) kvserver kvserver')
 }}}
 {{{
      Q
