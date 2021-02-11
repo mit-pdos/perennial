@@ -12,7 +12,7 @@ From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet fmcounter_map rpc_durable_proof kv_proof kv_durable wpc_proofmode.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet fmcounter_map rpc_logatom_proof rpc_durable_proof kv_proof kv_durable wpc_proofmode.
 
 Section kv_logatom_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
@@ -74,13 +74,6 @@ Proof.
   iModIntro.
   iFrame.
 Qed.
-
-Definition is_rpcHandler' f γrpc cid args PreCond PostCond : iProp Σ :=
-  □(∀ seqno Q,
-        □(Q -∗ <disc> Q) -∗
-        □(▷ Q -∗ ◇Q) -∗
-        □(Q -∗ |RN={γrpc,cid,seqno}=> PreCond) -∗
-        is_rpcHandler f γrpc args {| Req_CID:=cid; Req_Seq:=seqno |} Q PostCond).
 
 Lemma KVServer__Put_is_rpcHandler {E} γ srv rpc_srv cid :
 is_kvserver γ srv rpc_srv -∗
