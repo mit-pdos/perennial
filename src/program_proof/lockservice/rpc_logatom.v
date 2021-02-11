@@ -2,7 +2,7 @@ From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map wpc_proofmode common_proof rpc_durable_proof.
+From Perennial.program_proof.lockservice Require Import rpc fmcounter_map.
 Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 
@@ -302,7 +302,7 @@ Definition neutralized_pre γrpc cid PreCond PostCond : iProp Σ :=
   |PN={γrpc,cid}=> (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret)%I.
 
 Lemma neutralize_request (req:RPCRequestID) γrpc γreq (PreCond:iProp Σ) PostCond  :
-  int.nat (word.add req.(Req_Seq) 1) = int.nat req.(Req_Seq) + 1 →
+  (int.nat (word.add req.(Req_Seq) 1) = int.nat req.(Req_Seq) + 1)%nat →
   is_RPCServer γrpc -∗
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   (RPCRequest_token γreq) ={⊤}=∗

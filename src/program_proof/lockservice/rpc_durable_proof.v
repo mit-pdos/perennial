@@ -13,7 +13,7 @@ From Perennial.goose_lang.lib Require Import crash_lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc rpc_logatom nondet kv_proof fmcounter_map.
 
 Section rpc_durable_proof.
 Context `{!heapG Σ, !rpcG Σ u64, !stagedG Σ}.
@@ -216,6 +216,12 @@ Context (PreCond:iProp Σ).
 Context (PostCond:u64 -> iProp Σ).
 Context (rpc_srv_ptr:loc).
 
+Definition rpc_commit_fupd γrpc req P Q server server' : iProp Σ :=
+  P -∗
+  core_own_ghost server -∗
+  (|RN={γrpc,req.(Req_CID),req.(Req_Seq)}=>
+    |={⊤∖↑rpcRequestInvN req}=> Q ∗ core_own_ghost server')%I.
+
 (* The above two lemmas should be turned into requirements to apply wp_RPCServer__HandleRequest;
    HandleRequest should prove is_rpcHandler, instead of this wp directly *)
 Lemma RPCServer__HandleRequest_is_rpcHandler γrpc args req :
@@ -227,11 +233,9 @@ Lemma RPCServer__HandleRequest_is_rpcHandler γrpc args req :
     coreFunction (into_val.to_val args) @ 36; ⊤
  {{{
       server' (r:u64) P', RET #r;
-            (<disc> P') ∗
+            <disc> (P' ∧ PreCond) ∗
             core_own_vol server' ∗
-            □ (P' -∗ PreCond) ∗
-            □ (P' -∗ own γrpc.(proc) (Excl ()) -∗ (req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq)) -∗ core_own_ghost server
-               ={⊤∖↑rpcRequestInvN req}=∗ PostCond r ∗ own γrpc.(proc) (Excl ()) ∗ core_own_ghost server')
+            <disc> (rpc_commit_fupd γrpc req P' (PostCond r) server server')
  }}}
  {{{
       (PreCond)
@@ -368,14 +372,14 @@ Proof.
     }
     iNext.
     iIntros (kvserver' retval P').
-    iIntros "(HP' & Hkvvol & #HPimpliesPre & #Hfupd)".
+    iIntros "(HP' & Hkvvol & Hfupd)".
     iCache with "Hcoredurable HγPre HP' Hsrpc_proc Hcoreghost".
     {
       iModIntro.
+      iRight in "HP'".
       iSplit; first done.
-      iDestruct ("HPimpliesPre" with "HP'") as "Hpre".
       iNext.
-      iMod (server_returns_request with "HargsInv HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
+      iMod (server_returns_request with "HargsInv HγPre HP' Hsrpc_proc") as "Hsrpc"; eauto.
       iModIntro.
       by iExists _, _; iFrame.
     }
@@ -403,7 +407,7 @@ Proof.
     wpc_apply ("HdurSpec" $! _ rpc_server _ {| lastSeqM := (<[req.(Req_CID):=req.(Req_Seq)]> rpc_server.(lastSeqM)) ;
                                                     lastReplyM := (<[req.(Req_CID):=retval]> rpc_server.(lastReplyM))
                                                  |}
-                         with "[-HΦ Hcoreghost Hsrpc_proc HP' HγPre HReplyOwnRet HReplyOwnStale]").
+                         with "[-HΦ Hcoreghost Hsrpc_proc HP' HγPre HReplyOwnRet HReplyOwnStale Hfupd]").
     { iFrame. iExists _, _. iFrame. }
     iSplit.
     { (* show that crash condition of makeDurable maintains our crash condition *)
@@ -412,11 +416,29 @@ Proof.
       iSplit; first done.
 
       iDestruct "Hcoredurable" as "[Hcoredurable|Hcoredurable]".
-      + iDestruct ("HPimpliesPre" with "HP'") as "Hpre".
-        iNext.
-        iMod (server_returns_request with "HargsInv HγPre Hpre Hsrpc_proc") as "Hsrpc"; eauto.
+      + iNext.
+        iRight in "HP'".
+        iMod (server_returns_request with "HargsInv HγPre HP' Hsrpc_proc") as "Hsrpc"; eauto.
         iModIntro. iExists _, _; iFrame.
-      + iNext. iMod (server_executes_durable_request with "HargsInv Hlinv Hsrpc_proc HγPre HP' Hfupd Hcoreghost") as "HH"; eauto.
+      + iNext. iLeft in "HP'". iMod (server_executes_durable_request with "HargsInv Hlinv Hsrpc_proc HγPre HP' [Hfupd] Hcoreghost") as "HH".
+        { eauto. }
+        { iIntros "HP' Hγproc #Hlb Hghost".
+          unfold rpc_commit_fupd.
+          (* TODO: avoid this unfolding *)
+          rewrite rpc_logatom.rpc_atomic_pre_fupd_eq.
+          iDestruct ("Hfupd" with "HP' Hghost Hγproc Hlb") as "Hfupd".
+          iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "Hfupd" as "[$ Hpre]".
+          {
+            apply subseteq_difference_r; last set_solver.
+            destruct req; simpl.
+            symmetry.
+            apply rpcReqInvUpToN_prop_2.
+            lia.
+          }
+          iMod "Hclose" as "_".
+
+          iFrame.
+        }
         iDestruct "HH" as "(Hreceipt & Hsrpc & Hkvghost)".
         iExists _, _; iFrame "Hcoredurable".
         by iFrame.
@@ -424,9 +446,25 @@ Proof.
     iNext. iIntros "(Hcorevol & Hsrvown & Hcoredurable)".
     iMod (server_executes_durable_request with "HargsInv Hlinv Hsrpc_proc HγPre HP' [Hfupd] Hcoreghost") as "HH"; eauto.
     {
-      iIntros "HP' Hghost".
+      iIntros "HP' Hγproc #Hlb Hghost".
       iDestruct (own_disc_fupd_elim with "HP'") as ">HP'".
-      iApply ("Hfupd" with "HP' Hghost").
+      iLeft in "HP'".
+      iDestruct (own_disc_fupd_elim with "Hfupd") as ">Hfupd".
+
+      unfold rpc_commit_fupd.
+      (* TODO: avoid this unfolding *)
+      rewrite rpc_logatom.rpc_atomic_pre_fupd_eq.
+      iDestruct ("Hfupd" with "HP' Hghost Hγproc Hlb") as "Hfupd".
+      iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "Hfupd" as "[$ Hpre]".
+      {
+        apply subseteq_difference_r; last set_solver.
+        destruct req; simpl.
+        symmetry.
+        apply rpcReqInvUpToN_prop_2.
+        lia.
+      }
+      iMod "Hclose" as "_".
+      iFrame.
     }
     iDestruct "HH" as "(Hreceipt & Hsrpc & Hcoreghost)".
     iModIntro.

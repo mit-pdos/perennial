@@ -12,22 +12,14 @@ From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet fmcounter_map rpc_durable_proof kv_proof kv_durable incr_proof wpc_proofmode.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet fmcounter_map rpc_durable_proof kv_proof kv_durable wpc_proofmode.
 
 Section kv_logatom_proof.
 Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
 Context `{!filesysG Σ}.
 
-Definition rpc_commit_fupd {serverC:Type} γrpc (core_mu:(@rpc_core_mu _ serverC)) req P Q server server' : iProp Σ :=
-(P -∗
-    own γrpc.(proc) (Excl ()) -∗
-    req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq) -∗
-    core_mu.(core_own_ghost) server
-    ={⊤∖↑rpcRequestInvN req}=∗ Q ∗ own γrpc.(proc) (Excl ()) ∗
-                              core_mu.(core_own_ghost) server').
-
 Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q:
-□(Q -∗ (rpc_atomic_pre_fupd γ.(ks_rpcGN) req.(Req_CID) req.(Req_Seq) (Put_Pre γ args))) -∗
+□(Q -∗ |RN={γ.(ks_rpcGN),req.(Req_CID),req.(Req_Seq)}=> Put_Pre γ args) -∗
 {{{
      (kv_core_mu srv γ).(core_own_vol) kvserver ∗
      <disc> Q
@@ -35,10 +27,9 @@ Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q:
   KVServer__put_core #srv (into_val.to_val args) @ 36 ; ⊤
 {{{
       kvserver' (r:u64) P', RET #r;
-            (<disc> P') ∗
+            <disc> (P' ∧ Q) ∗
             KVServer_core_own_vol srv kvserver' ∗
-            □ (P' -∗ Q) ∗
-            □ (rpc_commit_fupd γ.(ks_rpcGN) (kv_core_mu srv γ) req P' (Put_Post γ args r) kvserver kvserver')
+            <disc> (rpc_commit_fupd KVServerC (kv_core_mu srv γ) γ.(ks_rpcGN) req P' (Put_Post γ args r) kvserver kvserver')
 }}}
 {{{
      Q
@@ -65,34 +56,17 @@ Proof.
   wpc_pures.
   iDestruct "HΦ" as "[_ HΦ]".
   iApply ("HΦ" $! {| kvsM := <[args.(U64_1):=args.(U64_2)]> kvserver.(kvsM) |} _ (Q)).
-  iFrame.
-  iSplitR "".
-  { iExists _; iFrame. }
+  iSplitL "Hpre".
+  { iModIntro. iFrame. }
 
-  iSplit; first eauto.
+  iSplitR "".
+  { iExists _. iFrame. }
 
   (* The commit point fupd *)
   iModIntro.
-  iIntros "HQ Hγproc #Hlb Hghost".
-  iDestruct ("Hwand" with "HQ") as "Hfupd".
-  unfold rpc_atomic_pre_fupd.
-  iSpecialize ("Hfupd" with "Hγproc Hlb").
-  (* own γproc ={⊤, ⊤ ∖ ↑oldRequestInvN}=∗ blah ∗ (blah ={⊤ ∖ ↑oldRequestInvN, ⊤}=∗ RESOURCES ∗ own γproc)
-     |={⊤, ⊤ ∖ ↑newRequestInvN}=> (own γproc ∗ (POST ∨ PRE ={⊤ ∖ ↑newRequestInvN, ⊤}=∗ own γproc)
-
-     (PRE ∗ ctx ==∗ POST ∗ ctx')
-
-   *)
-
-  iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "Hfupd" as "[$ Hpre]".
-  {
-    apply subseteq_difference_r; last set_solver.
-    destruct req; simpl.
-    symmetry.
-    apply rpcReqInvUpToN_prop_2.
-    lia.
-  }
-  iMod "Hclose" as "_".
+  iIntros "HQ Hghost".
+  iMod ("Hwand" with "HQ") as "Hpre".
+  iModIntro.
 
   iDestruct "Hpre" as (v) "Hpre".
   iMod (map_update with "Hghost Hpre") as "[Hkvctx Hptsto]".
@@ -101,6 +75,13 @@ Proof.
   iFrame.
 Qed.
 
+Definition is_rpcHandler' f γrpc cid args PreCond PostCond : iProp Σ :=
+  □(∀ seqno Q,
+        □(Q -∗ <disc> Q) -∗
+        □(▷ Q -∗ ◇Q) -∗
+        □(Q -∗ |RN={γrpc,cid,seqno}=> PreCond) -∗
+        is_rpcHandler f γrpc args {| Req_CID:=cid; Req_Seq:=seqno |} Q PostCond).
+
 Lemma KVServer__Put_is_rpcHandler {E} γ srv rpc_srv cid :
 is_kvserver γ srv rpc_srv -∗
 {{{
@@ -108,17 +89,14 @@ is_kvserver γ srv rpc_srv -∗
 }}}
     KVServer__Put #srv @ E
 {{{ (f:goose_lang.val), RET f;
-    ∀ args, (□ ∀ seqno Q, □(Q -∗ (quiesce_fupd_raw γ.(ks_rpcGN) cid seqno (Put_Pre γ args) (Put_Post γ args)))-∗
-        □(Q -∗ <disc> Q) -∗
-        □(▷ Q -∗ ◇Q) -∗
-        is_rpcHandler f γ.(ks_rpcGN) args {|Req_CID:=cid; Req_Seq:=seqno|} (Q) (Put_Post γ args))
+    ∀ args, is_rpcHandler' f γ.(ks_rpcGN) cid args (Put_Pre γ args) (Put_Post γ args)
 }}}.
 Proof.
   iIntros "#His_kv !#" (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
   iApply "HΦ".
-  iIntros (args req) "!#". iIntros (Q) "#HwandQ #HQdisc #HQtmless".
+  iIntros (args req) "!#". iIntros (Q) "#HQdisc #HQtmless #HwandQ".
   iApply is_rpcHandler_eta.
   iIntros "!#" (replyv reqv).
   simpl.
@@ -139,30 +117,17 @@ Proof.
       by iApply "HΦc".
     }
 
-    iApply (wpc_put_logatom_core γ _ _ {|Req_CID:=_; Req_Seq:= _ |} with "[] [HQ Hvol]").
-    { (* Prove fupd; TODO: this should happen at a higher level, and this should just talk about rpc_atomic_pre_fupd *)
-      iModIntro. simpl. unfold quiesce_fupd_raw.
-      iIntros "HQ".
-      iDestruct ("HwandQ" with "HQ") as "Hfupd".
-      iApply (rpc_atomic_pre_fupd_mono_strong with "[] Hfupd").
-      iIntros "[>$|>Hcase] _ $".
-      { by iModIntro. }
-      { iModIntro. iNamed "Hcase". iExists _. iFrame "Hcase". }
-    }
-    {
-      iFrame "HQ".
-      iFrame "Hvol".
-    }
+    iApply (wpc_put_logatom_core γ _ _ {|Req_CID:=_; Req_Seq:= _ |} with "HwandQ [$HQ $Hvol]").
     iSplit.
     {
       iLeft in "HΦ".
       done.
     }
     iNext.
-    iIntros (server' r P') "(HP' & Hvol & Hpre & Hfupd)".
+    iIntros (server' r P') "(HP' & Hvol & Hfupd)".
     iRight in "HΦ".
     iApply "HΦ".
-    iFrame "HP' Hpre Hvol".
+    iFrame "HP' Hvol".
     iFrame "Hfupd".
   }
   {
