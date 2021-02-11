@@ -64,9 +64,9 @@ Notation "|RN={ γrpc , cid , seq }=> R" :=
 (* This gives the rpc_atomic_pre_fupd for any sequence number that the client can take on
    This is the precondition for ck.MakeRequest(args), where ck has the given cid *)
 Definition rpc_atomic_pre_def γrpc cid R : iProp Σ :=
-  ∃ seq,
+  cid fm[[γrpc.(cseq)]]≥ 0 -∗ (∃ seq,
     cid fm[[γrpc.(cseq)]]≥ int.nat seq ∗
-        <disc> (|RN={γrpc,cid,seq}=> R).
+        <disc> (|RN={γrpc,cid,seq}=> R)).
 (*   (∀ seq, cid fm[[γrpc.(cseq)]]↦ int.nat seq -∗
     cid fm[[γrpc.(cseq)]]↦ int.nat seq ∗
     (laterable.make_laterable (|RN={γrpc , cid , seq}=> R))).
@@ -191,21 +191,6 @@ Qed.
 
 (* IPM typeclasses for pnfupd *)
 
-Lemma pnfupd_elim γrpc cid P Q:
-  <disc> (P -∗ |PN={γrpc,cid}=> Q) -∗ (|PN={γrpc,cid}=> P -∗ |PN={γrpc,cid}=> Q).
-Proof.
-  iIntros "HPmodQ HmodP".
-  rewrite rpc_atomic_pre_eq.
-  iDestruct "HmodP" as (seq) "[#Hlb HmodP]".
-  iExists _.
-  iSplitL ""; first admit.
-  iModIntro.
-  iMod "HmodP".
-  iDestruct ("HPmodQ" with "HmodP") as "HmodQ".
-  iDestruct "HmodQ" as (seq2) "[#Hlb2 HmodQ]".
-  iDestruct (own_disc_fupd_elim with "HmodQ") as "HQ".
-Admitted.
-
 Lemma rpc_atomic_pre_mono_strong cid γrpc P Q :
   (∃ seq, cid fm[[γrpc.(cseq)]]≥ int.nat seq ∗ <disc>(P -∗ |RN={γrpc,cid,seq}=> Q )) -∗
   |PN={γrpc,cid}=> P -∗
@@ -213,6 +198,8 @@ Lemma rpc_atomic_pre_mono_strong cid γrpc P Q :
 Proof.
   iIntros "HPQ HatomicP".
   rewrite rpc_atomic_pre_eq.
+  iIntros "Htype".
+  iSpecialize ("HatomicP" with "Htype").
   iDestruct "HatomicP" as (seq) "[#Hlb HmodP]".
   iDestruct ("HPQ") as (seq2) "[#Hlb2 HPQ]".
   destruct (decide (int.nat seq < int.nat seq2)).
@@ -225,6 +212,75 @@ Proof.
     iMod "HPQ"; first by word.
     by iModIntro.
 Qed.
+
+Lemma pnfupd_wand γrpc cid P Q:
+  <disc> (P -∗ Q) -∗ (|PN={γrpc,cid}=> P -∗ |PN={γrpc,cid}=> Q).
+Proof.
+  iIntros "HPmodQ HmodP".
+  rewrite rpc_atomic_pre_eq.
+  iIntros "Htype".
+  iSpecialize ("HmodP" with "Htype").
+  iDestruct "HmodP" as (seq) "[#Hlb HmodP]".
+  iExists seq. iFrame "#".
+  iModIntro.
+  iMod "HmodP".
+  iDestruct ("HPmodQ" with "HmodP") as "HmodQ".
+  by iModIntro.
+Qed.
+
+Lemma modality_pnfupd_mixin γrpc cid :
+    modality_mixin (rpc_atomic_pre γrpc cid)
+                   (MIEnvId)
+                   (MIEnvTransform (IntoDiscrete)).
+  Proof.
+    split; simpl; eauto.
+    - rewrite rpc_atomic_pre_eq.
+      iIntros (P) "#HP #Htype".
+      iExists (U64 0).
+      replace (int.nat 0%Z) with (0) by word.
+      iFrame "#".
+      iModIntro. iModIntro. done.
+    - rewrite /IntoDiscrete//=.
+      rewrite rpc_atomic_pre_eq.
+      iIntros (P Q HPQ) "HP Htype".
+      iExists (U64 0).
+      replace (int.nat 0%Z) with (0) by word.
+      iFrame "Htype".
+      iDestruct (HPQ with "HP") as "HQ".
+      iModIntro. by iModIntro.
+    - iIntros (_).
+      rewrite rpc_atomic_pre_eq.
+      iIntros "Htype". iExists (U64 0).
+      replace (int.nat 0%Z) with (0) by word.
+      iFrame "Htype".
+      by repeat iModIntro.
+    - iIntros (?? HPQ). iApply pnfupd_wand. iModIntro. iApply HPQ.
+    - iIntros (??).
+      iIntros "[HP HQ]".
+      rewrite rpc_atomic_pre_eq.
+      iIntros "#Htype".
+      iSpecialize ("HP" with "Htype").
+      iSpecialize ("HQ" with "Htype").
+      iDestruct "HP" as (seq1) "[#Hlb1 HP]".
+      iDestruct "HQ" as (seq2) "[#Hlb2 HQ]".
+      destruct (decide (int.nat seq1 < int.nat seq2)).
+      + iExists seq2. iFrame "#". iModIntro.
+        iMod "HP"; first by word.
+        iMod "HQ".
+        iModIntro. iFrame.
+      + iExists seq1. iFrame "#". iModIntro.
+        iMod "HQ"; first by word.
+        iMod "HP".
+        iModIntro. iFrame.
+Qed.
+
+Definition modality_pnfupd γrpc cid :=
+  Modality _ (modality_pnfupd_mixin γrpc cid).
+
+(* IPM typeclasses for rnfupd *)
+Global Instance from_modal_pnfupd γrpc cid P :
+  FromModal (modality_pnfupd γrpc cid) (|PN={γrpc,cid}=> P) (|PN={γrpc,cid}=> P) P | 2.
+Proof. by rewrite /FromModal. Qed.
 
 End rpc_atomic_pre.
 
@@ -262,6 +318,7 @@ Proof.
     iModIntro.
     iModIntro.
     rewrite /neutralized_pre rpc_atomic_pre_eq.
+    iIntros "_".
     iExists (word.add req.(Req_Seq) 1). (* Needs to be one larger *)
     iSplitL "Hcseq_lb_strict".
     { iApply (fmcounter_map_mono_lb with "Hcseq_lb_strict"). word. }
@@ -335,6 +392,9 @@ Lemma post_neutralize_instantiate γrpc cid seqno P :
 Proof.
   iIntros "Hcrpc HmodP".
   rewrite rpc_atomic_pre_eq.
+  iDestruct (fmcounter_map_get_lb with "Hcrpc") as "#Htype".
+  iSpecialize ("HmodP" with "[Htype]").
+  { iApply (fmcounter_map_mono_lb with "Htype"). word. }
   iDestruct ("HmodP") as (seq) "[#Hlb HmodP]".
   iDestruct (fmcounter_map_agree_lb with "Hcrpc Hlb") as %Hineq.
   iFrame.
