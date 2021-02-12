@@ -335,7 +335,7 @@ Section jrnl_lemmas.
     rewrite -Cinl_op.
     iMod (own_update _ _ (jrnl_opened) with "Huninit") as "$"; last done.
     { apply: cmra_update_exclusive.
-      { apply Cinl_exclusive. rewrite -pair_op frac_op' Qp_half_half.
+      { apply Cinl_exclusive. rewrite -pair_op frac_op Qp_half_half.
         simpl. apply pair_exclusive_l. apply _.
       }
       { econstructor. }
@@ -385,7 +385,7 @@ Next Obligation.
   iFrame. iModIntro. iFrame "% #".
   rewrite assoc.
   iSplitL "H".
-  { by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp. }
+  { by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp. }
   rewrite /jrnl_state_start.
   iDestruct (big_sepM.big_sepM_mono_with_inv with "Hkinds Hdata") as "(_&$)".
   iIntros (a x Hlookup) "(#Hkinds&Hpt)". iFrame "Hkinds".
@@ -416,7 +416,7 @@ Next Obligation.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/jrnl_restart//=.
     iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
-    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
     inversion H2. subst. inversion H4. subst.
     (* XXX: monad_inv should handle *)
@@ -428,7 +428,7 @@ Next Obligation.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/jrnl_restart//=.
     iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
-    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
 Qed.
 
 From Perennial.program_proof Require Import proof_prelude.

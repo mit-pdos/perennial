@@ -126,7 +126,7 @@ Proof.
   iDestruct (gen_heap_valid with "Hctx Hl2") as %Hin2.
   iAssert (⌜l1 ≠ l2⌝)%I with "[-]" as %Hneq.
   { iIntros (?). subst. iDestruct (mapsto_valid_2 with "[$] [$]") as %Hval.
-    rewrite frac_valid' in Hval * => Hlt. by apply Qp_not_plus_q_ge_1 in Hlt.
+    rewrite frac_valid in Hval * => Hlt. by apply Qp_not_plus_q_ge_1 in Hlt.
   }
   iPureIntro. split; auto. eapply Hdisj; eauto.
 Qed.

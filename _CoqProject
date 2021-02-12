@@ -6,6 +6,8 @@
 -arg -w -arg -notation-overridden,-redundant-canonical-projection
 -Q external/stdpp/theories stdpp
 -Q external/iris/iris iris
+-Q external/iris/iris_deprecated iris.deprecated
+-Q external/iris/iris_staging iris.staging
 -Q external/iris/iris_heap_lang iris.heap_lang
 -Q external/string-ident/theories iris_string_ident
 -Q external/coqutil/src/coqutil coqutil

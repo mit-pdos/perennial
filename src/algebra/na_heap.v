@@ -269,7 +269,7 @@ Section na_heap.
   Proof.
     rewrite /na_heap_mapsto_st.
     rewrite own_valid discrete_valid.
-    rewrite auth_frag_valid singleton_valid ?pair_valid frac_valid'.
+    rewrite auth_frag_valid singleton_valid ?pair_valid frac_valid.
     iPureIntro. naive_solver.
   Qed.
 
@@ -283,7 +283,7 @@ Section na_heap.
   Proof.
     iIntros "Hown1 Hown2". iCombine "Hown1 Hown2" as "Hown".
     rewrite /na_heap_mapsto_st own_valid discrete_valid.
-    rewrite auth_frag_valid singleton_valid ?pair_valid frac_valid'.
+    rewrite auth_frag_valid singleton_valid ?pair_valid frac_valid.
     iDestruct "Hown" as %Hpure.
     iPureIntro. naive_solver.
   Qed.
@@ -294,7 +294,7 @@ Section na_heap.
     na_heap_mapsto_st (RSt n') l (q') v.
   Proof.
     rewrite /na_heap_mapsto_st.
-    rewrite -own_op -auth_frag_op singleton_op -?pair_op -Cinr_op ?agree_idemp nat_op_plus //=.
+    rewrite -own_op -auth_frag_op singleton_op -?pair_op -Cinr_op ?agree_idemp nat_op //=.
   Qed.
 
   (** General properties of [meta] and [meta_token] *)

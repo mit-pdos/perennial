@@ -76,7 +76,7 @@ Section movers.
     own γgdiff (● net_ghost ⋅ ◯ (net_phys ∖ {[ m ]})) ∗ own γgdiff (◯ {[ m ]}).
   Proof.
     iIntros (?) "[Hauth Hfrag]". rewrite own_op. iFrame "Hauth".
-    rewrite -own_op -auth_frag_op gmultiset_op_disj_union.
+    rewrite -own_op -auth_frag_op gmultiset_op.
     replace (net_phys ∖ {[m]} ⊎ {[m]}) with net_phys; first done.
     rewrite [_ ⊎ _]comm -gmultiset_disj_union_difference' //.
   Qed.
@@ -106,7 +106,7 @@ Section movers.
     ⌜m ∈ net_ghost⌝ ∗ own γgdiff (● (net_ghost ∖ {[ m ]}) ⋅ ◯ net_phys).
   Proof.
     iIntros "Hboth Hfrag". iCombine "Hboth Hfrag" as "Hboth".
-    rewrite -assoc -auth_frag_op gmultiset_op_disj_union.
+    rewrite -assoc -auth_frag_op gmultiset_op.
     iDestruct (own_valid with "Hboth") as
       %[Hincl%gmultiset_included _]%auth_both_valid_discrete.
     assert (m ∈ net_ghost).
@@ -139,7 +139,7 @@ Section movers.
     own γgdiff (● net_ghost ⋅ ◯ net_phys) ==∗
     own γgdiff (● (net_ghost ⊎ ({[ m ]} : gmultiset val)) ⋅ ◯ net_phys) ∗ own γgdiff (◯ ({[ m ]} : gmultiset val)).
   Proof.
-    iIntros "Hboth". rewrite -own_op -assoc -auth_frag_op gmultiset_op_disj_union.
+    iIntros "Hboth". rewrite -own_op -assoc -auth_frag_op gmultiset_op.
     iMod (own_update with "Hboth") as "$"; last done.
     apply auth_update, gmultiset_local_update.
     multiset_solver.
@@ -166,7 +166,7 @@ Section movers.
     own γgdiff (● net_ghost ⋅ ◯ (net_phys ⊎ {[ m ]})).
   Proof.
     iIntros "Hboth Hfrag". iCombine "Hboth Hfrag" as "Hboth".
-    rewrite -assoc -auth_frag_op gmultiset_op_disj_union. done.
+    rewrite -assoc -auth_frag_op gmultiset_op. done.
   Qed.
 
   Lemma send_phys (m : val) :

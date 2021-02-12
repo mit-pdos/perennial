@@ -56,10 +56,10 @@ Section frac_count.
     iIntros "own". rewrite -own_op.
     iMod (@own_update _ _ with "own") as "$"; [|done].
     apply auth_update_alloc.
-    rewrite Pos.add_comm Qp_add_comm -pos_op_plus /= -frac_op' pair_op Some_op.
+    rewrite Pos.add_comm Qp_add_comm -pos_op_plus /= -frac_op pair_op Some_op.
     rewrite -{2}(right_id None op (Some ((q' /2)%Qp, _))).
     apply op_local_update_discrete => _ /=. split; simpl; [|done].
-    apply frac_valid'. rewrite -Hqq' comm.
+    apply frac_valid. rewrite -Hqq' comm.
     apply Qp_add_le_mono; first done.
     rewrite -[X in (_ ≤ X)%Qp]Qp_div_2.
     apply Qp_le_add_r.
@@ -110,7 +110,7 @@ Section frac_count.
     rewrite -own_op. iIntros "own".
     iMod (@own_update _ _ with "own") as "$"; [|done].
     apply auth_update_dealloc.
-    rewrite -frac_op' -pos_op_plus /= (cmra_comm_L q) pair_op Some_op.
+    rewrite -frac_op -pos_op_plus /= (cmra_comm_L q) pair_op Some_op.
     by apply (cancel_local_update_unit (Some _)), _.
   Qed.
 

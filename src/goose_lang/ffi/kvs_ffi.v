@@ -379,7 +379,7 @@ Section misc_lemmas.
     f_equiv.
     apply Cinl_equiv.
     apply pair_proper; simpl.
-    - rewrite frac_op' //.
+    - rewrite frac_op //.
     - rewrite agree_idemp //.
   Qed.
 End misc_lemmas.
@@ -522,7 +522,7 @@ Section kvs_lemmas.
     rewrite -Cinl_op.
     iMod (own_update _ _ (Kvs_Opened l) with "Huninit") as "$"; last done.
     { apply: cmra_update_exclusive.
-      { apply Cinl_exclusive. rewrite -pair_op frac_op' Qp_half_half.
+      { apply Cinl_exclusive. rewrite -pair_op frac_op Qp_half_half.
         simpl. apply pair_exclusive_l. apply _.
       }
       { econstructor. }
@@ -538,7 +538,7 @@ Section kvs_lemmas.
     (*Print cmra_update. can transform facts to another fact that is compatible w/others' facts*)
     iMod (own_update _ _ (Kvs_Opened l) with "Huninit") as "$"; last done.
     { apply: cmra_update_exclusive.
-      { apply Cinl_exclusive. rewrite -pair_op frac_op' Qp_half_half.
+      { apply Cinl_exclusive. rewrite -pair_op frac_op Qp_half_half.
         simpl. apply pair_exclusive_l. apply _.
       }
       { econstructor. }
@@ -588,7 +588,7 @@ Next Obligation.
   iExists {| kvs_names_open := γ1; kvs_names_state := names |}.
   iPoseProof (openR_frac_split γ1 (1/2) (1/2) (to_agree UnInit')) as "HOpen".
   iEval (rewrite -Qp_half_half) in "H".
-  iEval (rewrite -frac_op') in "H".
+  iEval (rewrite -frac_op) in "H".
   iDestruct "HOpen" as "[H1 H2]".
   iDestruct ("H1" with "H") as "[H1' H2']".
   iSplitR "H1'"; auto.
@@ -614,7 +614,7 @@ Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiG, ffi_upda
       unfold gen_heapG_get_names; simpl.
       auto.
     * rewrite /kvs_uninit_auth/kvs_uninit_frag/kvs_frag/kvs_auth.
-    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
     inversion H2. subst. inversion H4. subst.
     (* XXX: monad_inv should handle *)
@@ -629,7 +629,7 @@ Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiG, ffi_upda
       auto.
   *
     rewrite /kvs_uninit_auth/kvs_uninit_frag/kvs_frag/kvs_auth.
-    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
     inversion H2. subst. inversion H4. subst.
     (* XXX: monad_inv should handle *)
@@ -644,7 +644,7 @@ Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiG, ffi_upda
       auto.
    *
     rewrite /kvs_uninit_auth/kvs_uninit_frag/kvs_frag/kvs_auth.
-    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op' Qp_half_half agree_idemp.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
 Qed.
 
 From Perennial.program_proof Require Import proof_prelude.

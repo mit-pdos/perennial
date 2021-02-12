@@ -172,19 +172,19 @@ Qed.
 
 Lemma pending_split γ:
   staged_pending 1 γ ⊢ staged_pending (1/2)%Qp γ ∗ staged_pending (1/2)%Qp γ.
-Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op' Qp_div_2. Qed.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp_div_2. Qed.
 
 Lemma pending_split34 γ:
   staged_pending 1 γ ⊢ staged_pending (3/4)%Qp γ ∗ staged_pending (1/4)%Qp γ.
-Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op' Qp_three_quarter_quarter. Qed.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp_three_quarter_quarter. Qed.
 
 Lemma pending_join γ:
  staged_pending (1/2)%Qp γ ∗ staged_pending (1/2)%Qp γ ⊢  staged_pending 1 γ.
-Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op' Qp_div_2. Qed.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp_div_2. Qed.
 
 Lemma pending_join34 γ:
  staged_pending (3/4)%Qp γ ∗ staged_pending (1/4)%Qp γ ⊢  staged_pending 1 γ.
-Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op' Qp_three_quarter_quarter. Qed.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp_three_quarter_quarter. Qed.
 
 Lemma pending34_pending34 γ:
  staged_pending (3/4)%Qp γ -∗ staged_pending (3/4)%Qp γ -∗ False.

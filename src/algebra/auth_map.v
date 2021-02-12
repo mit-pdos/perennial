@@ -204,7 +204,7 @@ Section auth_map.
     unseal; rewrite /ptsto_def.
     iIntros "H1 H2". iCombine "H1 H2" as "H".
     destruct mq1, mq2.
-    - rewrite -Cinl_op -pair_op frac_op'.
+    - rewrite -Cinl_op -pair_op frac_op.
       iDestruct (own_valid with "H") as %Hvalid.
       iPureIntro.
       (* unification doesn't work with apply *)
@@ -265,7 +265,7 @@ Section auth_map.
   Proof.
     iIntros "H1 H2".
     iDestruct (ptsto_valid_2 with "H1 H2") as %?.
-    apply (iffLR (frac_valid' _)) in H.
+    apply (iffLR (frac_valid _)) in H.
     contradiction H.
     auto.
   Qed.
