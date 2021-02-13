@@ -82,11 +82,11 @@ Lemma sty_inv_to_wpc hG hRG hS es e τ j:
   trace_ctx -∗
   sty_init hS -∗
   j ⤇ es -∗
-  WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_derived_crash_condition hG hRG}}.
+  WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_derived_crash_condition hG hRG ∗ sty_crash_tok}}.
 Proof.
   iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules Hatomic) "#Hspec #Htrace Hinit Hj".
     rewrite /sty_crash_obligation in Hsty_crash.
-  iAssert (|={⊤}=> sty_inv hS ∗ WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_crash_cond hS}})%I with "[-]" as ">(#Hinv&H)".
+  iAssert (|={⊤}=> sty_inv hS ∗ WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_crash_cond hS ∗ sty_crash_tok}})%I with "[-]" as ">(#Hinv&H)".
   {
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
     iApply (Hsty_crash_inv with "[$] [$] [Hj]").
@@ -106,12 +106,12 @@ Proof.
   iSplit.
   - eauto.
   - iModIntro.
-    iIntros.
+    iIntros "(?&?)".
     iIntros "Hc".
     iMod (fupd_level_intro_mask' _ (styN)) as "Hclo"; eauto.
     iMod (Hsty_crash with "[$] [$]") as "H".
     iMod "Hclo".
-    iModIntro. iExists _. iFrame.
+    iModIntro. iFrame. iExists _. iFrame.
 Qed.
 End pre_assumptions.
 
@@ -139,6 +139,8 @@ Proof.
   { apply _. }
   { apply _. }
   { apply _. }
+  { intros. apply sty_crash_tok_timeless. }
+  { intros. rewrite /excl_crash_token. iIntros. iApply (sty_crash_tok_excl with "[$] [$]"). }
   { clear dependent σ σs. rewrite /wpc_init. iIntros (hG hRG σ σs Hinit) "Hffi Hffi_spec".
     rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.

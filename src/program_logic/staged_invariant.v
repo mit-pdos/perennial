@@ -194,6 +194,14 @@ Proof.
   { by iDestruct (own_valid_2 with "H H'") as %?. }
 Qed.
 
+Lemma pending_pending γ:
+ staged_pending 1%Qp γ -∗ staged_pending 1%Qp γ -∗ False.
+Proof.
+  rewrite /staged_pending.
+  iIntros "H H'".
+  { by iDestruct (own_valid_2 with "H H'") as %?. }
+Qed.
+
 Lemma staged_inv_alloc k E E' P Q Qr:
   ▷ Q ∗ □ (▷ Q -∗ |C={E'}_k=> ▷ P ∗ ▷ Qr) -∗ |(S k)={E}=>
   ∃ γ, staged_inv (S k) E' γ P ∗ staged_value (S k) k O E' γ Q Qr P ∗ staged_pending 1%Qp γ.

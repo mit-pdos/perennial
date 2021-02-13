@@ -53,6 +53,10 @@ Class specTy_model :=
     sty_inv : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, styG Σ → iProp Σ;
     sty_init : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, styG Σ → iProp Σ;
     sty_crash_cond : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, styG Σ → iProp Σ;
+    sty_crash_tok : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, iProp Σ;
+    sty_crash_tok_excl : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ},
+        sty_crash_tok -∗ sty_crash_tok -∗ False;
+    sty_crash_tok_timeless : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, Timeless sty_crash_tok;
     styN: coPset;
     styN_disjoint : ↑ sN ## styN;
     sty_val_interp : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ} (hS: styG Σ),
@@ -297,7 +301,7 @@ Definition sty_crash_inv_obligation :=
     spec_ctx -∗
     (sty_inv hS -∗ (WPC e @ sty_lvl_ops; ⊤ {{ Φ }} {{ True%I }})) -∗
     |={⊤}=> sty_inv hS ∗
-    WPC e @ sty_lvl_init; ⊤ {{ Φ }} {{ sty_crash_cond hS }}).
+    WPC e @ sty_lvl_init; ⊤ {{ Φ }} {{ sty_crash_cond hS ∗ sty_crash_tok }}).
 
 Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.

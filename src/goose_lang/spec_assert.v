@@ -44,6 +44,7 @@ Class refinement_heapG Σ := refinement_HeapG {
   refinement_cfgG :> @cfgG spec_lang Σ;
   refinement_na_heapG :> na_heapG loc (@val spec_ext_op_field) Σ;
   refinement_frac_countG :> frac_countG Σ;
+  refinement_crash_name : gname;
   (* TODO: do we need prophecies at the spec level? *)
   (*
   refinement_proph_mapG :> proph_mapG proph_id (val * val) Σ;
@@ -56,9 +57,11 @@ Context {hR: refinement_heapG Σ}.
 Context `{invG Σ}.
 Context `{crashG Σ}.
 
+Definition refinement_ctok := staged_pending 1 (refinement_crash_name).
+
 Definition spec_interp σ : iProp Σ :=
     (na_heap_ctx tls σ.(heap) ∗ (* proph_map_ctx κs σ.(used_proph_id) ∗ *) ffi_ctx refinement_spec_ffiG σ.(world)
-      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle) ∗ ⌜ null_non_alloc σ.(heap) ⌝)%I.
+      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle) ∗ ⌜ null_non_alloc σ.(heap) ⌝ ∗ refinement_ctok)%I.
 
 Definition spec_stateN := nroot .@ "source".@  "state".
 
@@ -68,7 +71,18 @@ Definition spec_ctx : iProp Σ :=
 Definition spec_ctx' r ρ : iProp Σ :=
   source_ctx' (CS := spec_crash_lang) r ρ ∗ ncinv spec_stateN (∃ σ, source_state σ ∗ spec_interp σ)%I.
 
+Definition spec_crash_ctx P : iProp Σ :=
+  source_crash_ctx (CS := spec_crash_lang) refinement_ctok ∗
+  □ (|C={↑spec_stateN}_0=> inv spec_stateN (P ∨ (∃ σ, source_state σ ∗ spec_interp σ)))%I.
+
+Definition spec_crash_ctx' r ρ P : iProp Σ :=
+  source_crash_ctx' (CS := spec_crash_lang) r ρ refinement_ctok ∗
+  □ (|C={↑spec_stateN}_0=> inv spec_stateN (P ∨ (∃ σ, source_state σ ∗ spec_interp σ)))%I.
+
 Global Instance spec_ctx_persistent : Persistent (spec_ctx).
+Proof. apply _. Qed.
+
+Global Instance spec_crash_ctx_persistent P : Persistent (spec_crash_ctx P).
 Proof. apply _. Qed.
 
 (** Override the notations so that scopes and coercions work out *)
@@ -101,7 +115,7 @@ Lemma spec_interp_null σ l:
   ▷ ⌜ heap σ !! l = None ⌝.
 Proof.
   iIntros (Hl) "Hinterp !>".
-  iDestruct "Hinterp" as "(_&_&?&?&H)".
+  iDestruct "Hinterp" as "(_&_&?&?&H&_)".
   iDestruct "H" as %Hnonnull. iPureIntro.
   rewrite (addr_plus_off_decode l) Hl. eapply Hnonnull.
 Qed.
@@ -763,7 +777,7 @@ Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
 Proof.
   iIntros (Hlen Hn Φ) "(#Hctx&Hstate) Hj".
   iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
-  iDestruct "Hinterp" as "(>Hσ&(Hrest1&Hrest2&Hrest3&Hrest4))".
+  iDestruct "Hinterp" as "(>Hσ&(Hrest1&Hrest2&Hrest3&Hrest4&Hrest5))".
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step_trans. simpl.
     econstructor; last (repeat econstructor).
@@ -788,7 +802,7 @@ Proof.
     by rewrite (loc_add_0) in Hfresh.
   }
   { eauto. }
-  iMod ("Hclo" with "[Hσ H Hrest1 Hrest2 Hrest3 Hrest4]").
+  iMod ("Hclo" with "[Hσ H Hrest1 Hrest2 Hrest3 Hrest4 Hrest5]").
   { iNext. iExists _. iFrame "H". iFrame.
     iDestruct "Hrest4" as %Hnon_null.
     iPureIntro. intros off.

@@ -29,8 +29,7 @@ Definition cfgUR := prodUR tpoolUR stateUR.
 Class cfgPreG (Σ : gFunctors) :=
   { cfg_preG_inG :> inG Σ (authR cfgUR) ;
     cfg_preG_stagedG :> stagedG Σ}.
-Class cfgG Σ := { cfg_inG :> inG Σ (authR cfgUR);
-                  cfg_stagedG :> stagedG Σ;
+Class cfgG Σ := { cfg_inG :> cfgPreG Σ;
                   cfg_name : gname }.
 
 Definition cfgΣ : gFunctors :=
@@ -78,6 +77,12 @@ Section ghost_spec.
   Definition source_ctx : iProp Σ :=
     (∃ r ρ, source_ctx' r ρ)%I.
 
+  Definition source_crash_ctx' r ρ P : iProp Σ :=
+    □ (|C={↑sN_inv}_0=> inv sN_inv (P ∨ source_inv r (fst ρ) (snd ρ))).
+
+  Definition source_crash_ctx P : iProp Σ :=
+    (∃ r ρ, source_crash_ctx' r ρ P)%I.
+
   Global Instance tpool_mapsto_timeless j e : Timeless (tpool_mapsto j e).
   Proof. apply _. Qed.
   Global Instance source_state_timeless σ : Timeless (source_state σ).
@@ -85,6 +90,10 @@ Section ghost_spec.
   Global Instance source_ctx'_persistent r ρ : Persistent (source_ctx' r ρ).
   Proof. apply _. Qed.
   Global Instance source_ctx_persistent : Persistent (source_ctx).
+  Proof. apply _. Qed.
+  Global Instance source_crash_ctx'_persistent r ρ P : Persistent (source_crash_ctx' r ρ P).
+  Proof. apply _. Qed.
+  Global Instance source_crash_ctx_persistent P : Persistent (source_crash_ctx P).
   Proof. apply _. Qed.
 
 End ghost_spec.
@@ -235,13 +244,14 @@ Section ghost_step.
     * by left.
   Qed.
 
-  Lemma source_cfg_init1 `{cfgPreG Σ} r tp0 σ0 tp σ s:
+  Lemma source_cfg_init_names1 `{cfgPreG Σ} r tp0 σ0 tp σ P s:
     erased_rsteps (CS := CS) r (tp0, σ0) (tp, σ) s →
     crash_safe (CS := CS) r (tp0, σ0) →
-    ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp0, σ0) ∗
+    ⊢ |={⊤}=> ∃ γ, let _ : cfgG Σ := {| cfg_name := γ |} in
+                            source_ctx' r (tp0, σ0) ∗
                             source_pool_map (tpool_to_map tp) ∗
                             source_state σ ∗
-                            <disc> |C={⊤}_0=> (source_inv r tp0 σ0).
+                            source_crash_ctx' r (tp0, σ0) P.
   Proof using H1.
     intros Herased Hno_err.
     iMod (own_alloc (● (tpool_to_res tp, Some (Excl σ))
@@ -255,8 +265,11 @@ Section ghost_step.
       - rewrite //=.
     }
     set (IN := {| cfg_name := γ |}).
-    iExists IN.
-    iMod (ncinv_alloc sN_inv ⊤ (source_inv r tp0 σ0) with "[Hauth]") as "(#Hinv&Hcfupd)".
+    iExists γ.
+    iMod (ncinv_cinv_alloc sN_inv 0 ⊤ (↑sN_inv) (source_inv r tp0 σ0) (P ∨ source_inv r tp0 σ0)%I True%I
+            with "[] [Hauth]") as "(#Hinv&_&#Hcfupd)".
+    { set_solver. }
+    { iModIntro. iIntros ">H _". iModIntro; eauto. }
     { rewrite /source_inv. iNext. iExists s,tp, σ. iFrame "Hauth".
       iPureIntro; split; eauto. }
     iModIntro. iFrame.
@@ -264,15 +277,38 @@ Section ghost_step.
     iDestruct "Hfrag" as "($&$)". iFrame "Hinv".
     iModIntro.
     iMod (cfupd_weaken_all with "[Hcfupd]") as "H"; eauto.
-    iDestruct "H" as ">$". eauto.
   Qed.
 
-  Lemma source_cfg_init2 `{cfgPreG Σ} r tp σ :
+  Lemma source_cfg_init_names2 `{cfgPreG Σ} r tp σ P :
+    crash_safe (CS := CS) r (tp, σ) →
+    ⊢ |={⊤}=> ∃ γ, let _ : cfgG Σ := {| cfg_name := γ |} in
+                            source_ctx' r (tp, σ) ∗
+                            source_pool_map (tpool_to_map tp) ∗
+                            source_state σ ∗
+                            source_crash_ctx' r (tp, σ) P.
+  Proof using H1.
+    intros Hno_err.
+    iApply source_cfg_init_names1; eauto.
+    { econstructor. econstructor. }
+  Qed.
+
+  Lemma source_cfg_init1 `{cfgPreG Σ} r tp0 σ0 tp σ P s:
+    erased_rsteps (CS := CS) r (tp0, σ0) (tp, σ) s →
+    crash_safe (CS := CS) r (tp0, σ0) →
+    ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp0, σ0) ∗
+                            source_pool_map (tpool_to_map tp) ∗
+                            source_state σ ∗
+                            source_crash_ctx' r (tp0, σ0) P.
+  Proof using H1.
+    iIntros. iMod (source_cfg_init_names1) as (?) "H"; eauto.
+  Qed.
+
+  Lemma source_cfg_init2 `{cfgPreG Σ} r tp σ P :
     crash_safe (CS := CS) r (tp, σ) →
     ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp, σ) ∗
                             source_pool_map (tpool_to_map tp) ∗
                             source_state σ ∗
-                            <disc> |C={⊤}_0=> (source_inv r tp σ).
+                            source_crash_ctx' r (tp, σ) P.
   Proof using H1.
     intros Hno_err.
     iApply source_cfg_init1; eauto.
@@ -414,6 +450,50 @@ Section ghost_step.
     iModIntro; iFrame.
   Qed.
 
+  Lemma ghost_step_crash_lifting' E P Q r ρ j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
+    language.prim_step e1 σ1 κ e2 σ2 efs →
+    nclose sN_inv ⊆ E →
+    □ (Q ∗ ▷ P -∗ |0={∅}=> False) -∗
+    source_crash_ctx' r ρ P ∗ Q ∗ j ⤇ K e1 ∗ source_state σ1
+      -∗ |C={E}_0=> Q ∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
+  Proof.
+    iIntros (Hstep ?) "#Hwand (#Hctx&HQ&Hj&Hstate)". rewrite /source_ctx/source_inv.
+    iMod (cfupd_weaken_all with "Hctx") as "#Hinv"; eauto.
+    iIntros "HC".
+    iInv "Hinv" as "[HP|Hrest]" "Hclose".
+    { iMod (fupd_level_intro_mask' _ ∅); first by solve_ndisj.
+      iMod ("Hwand" with "[$]") as %[]. }
+    iDestruct "Hrest" as (s' tp' σ') ">[Hauth %]".
+
+    (* Reconcile view based on authoritative element *)
+    iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
+    iDestruct (source_state_reconcile with "Hstate Hauth") as %Heq_state.
+    setoid_subst.
+
+    (* Update authoritative resources to simulate step *)
+    iMod (source_thread_update (K e2) with "Hj Hauth") as "[Hj Hauth]".
+    iMod (source_threads_fork efs with "Hauth") as "[Hj' Hauth]".
+    iMod (source_state_update σ2 with "Hstate Hauth") as "[Hstate Hauth]".
+
+    (* Restore the invariant *)
+    iMod ("Hclose" with "[Hauth]").
+    { iNext. iRight. iExists s', (<[j := K e2]>tp' ++ efs), σ2.
+      iFrame. intuition. iPureIntro; split; auto.
+      eapply erased_rsteps_r_1; eauto.
+      eapply fill_step in Hstep.
+      econstructor. econstructor; eauto.
+      - f_equal. symmetry. eapply take_drop_middle; eauto.
+      - f_equal. rewrite app_comm_cons assoc; f_equal.
+        erewrite <-take_drop_middle at 1; f_equal.
+        { apply take_insert; reflexivity. }
+        { f_equal. apply drop_insert_gt; lia. }
+        rewrite list_lookup_insert //=.
+        apply lookup_lt_is_Some_1; eauto.
+      }
+    iModIntro; iFrame.
+  Qed.
+
+
   (* Curried form is more useful, I think *)
   Lemma ghost_step_lifting E j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
     language.prim_step e1 σ1 κ e2 σ2 efs →
@@ -424,6 +504,19 @@ Section ghost_step.
     iIntros (??) "Hj Hsrc ?".
     iDestruct "Hsrc" as (??) "Hsrc".
     iApply ghost_step_lifting'; eauto. iFrame.
+  Qed.
+
+  Lemma ghost_step_crash_lifting E P Q j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
+    language.prim_step e1 σ1 κ e2 σ2 efs →
+    nclose sN_inv ⊆ E →
+    □ (Q ∗ ▷ P -∗ |0={∅}=> False) -∗
+    Q -∗
+    j ⤇ K e1 -∗ source_crash_ctx P -∗ source_state σ1
+      -∗ |C={E}_0=> Q ∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
+  Proof.
+    iIntros (??) "#Hwand HQ Hj Hsrc ?".
+    iDestruct "Hsrc" as (??) "Hsrc".
+    iApply ghost_step_crash_lifting'; eauto. iFrame.
   Qed.
 
   Lemma ghost_step_stuck E j K `{LanguageCtx Λ K} e σ:
