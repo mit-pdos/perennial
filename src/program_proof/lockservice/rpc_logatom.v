@@ -190,6 +190,28 @@ Proof.
   by iModIntro.
 Qed.
 
+(* If it can be eliminated with a fupd with the specified mask, it can be eliminated with the rnfupd *)
+Global Instance elim_modal_fupd_rpc_atomic_forwarding γrpc cid seq p q φ P P' R E:
+  (∀ Q, ElimModal φ p q P P' (|={E, rpcReqInvUpToN seq}=> Q) (|={E, rpcReqInvUpToN seq}=> Q))→
+  ElimModal (φ ∧ E ⊆ rpcReqInvUpToN seq)  p q P P' (|RN={γrpc,cid,seq}=> R)
+            (|RN={γrpc,cid,seq}=> R).
+Proof.
+  intros Helim.
+  rewrite rpc_atomic_pre_fupd_eq.
+  rewrite /ElimModal.
+  iIntros (Hφ) "[HP Hwand]".
+  iIntros "Hγproc Hlb".
+  iMod (fupd_intro_mask' _ E) as "Hclose".
+  {
+    naive_solver.
+  }
+
+  iApply Helim; first naive_solver.
+  iFrame "HP". iIntros "HP'".
+  iSpecialize ("Hwand" with "HP' Hγproc Hlb").
+  by iMod "Hclose".
+Qed.
+
 Global Instance into_wand_rpc_atomic γrpc cid seq p q R P Q :
   IntoWand p false R P Q → IntoWand' p q R (|RN={γrpc,cid,seq}=> P) (|RN={γrpc,cid,seq}=> Q).
 Proof.
@@ -432,7 +454,7 @@ Proof.
   iExists seqno; iFrame "#".
   iModIntro.
   iIntros "[HQ|Hpost]".
-  { iDestruct ("Hwand" with "HQ") as "HQ". last by iModIntro. }
+  { by iDestruct ("Hwand" with "HQ") as ">HQ". }
   { iModIntro. by iRight. }
 Qed.
 
