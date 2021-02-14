@@ -393,9 +393,9 @@ Lemma wpc_put_core γ (srv:loc) args kvserver req :
       kvserver' (r:u64) P', RET #r;
             (<disc> P') ∗
             KVServer_core_own_vol srv kvserver' ∗
-            □ (P' -∗ Put_Pre γ args) ∗
+            <disc> (P' -∗ Put_Pre γ args) ∗
             (* TODO: putting this here because need to be discretizable *)
-            □ (P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN req}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
+            <disc> (P' -∗ KVServer_core_own_ghost γ kvserver ={⊤∖↑rpcRequestInvN req}=∗ Put_Post γ args r ∗ KVServer_core_own_ghost γ kvserver')
 }}}
 {{{
      Put_Pre γ args
@@ -432,7 +432,7 @@ Proof.
   }
   iSplitR "".
   { iExists _; iFrame. }
-  iSplit; first eauto.
+  iSplitL ""; first eauto.
   iModIntro.
   iIntros "Hpre Hghost".
   iDestruct "Hpre" as (v) "Hpre".
@@ -624,12 +624,14 @@ Proof.
   iExists rlastSeqMap, rlastReplyMap, rkvsMap, data. eauto.
 Admitted.
 
-Definition is_kvserver γ (srv rpc_srv:loc) : iProp Σ :=
+Definition is_kvserver γ (srv:loc) : iProp Σ :=
+  ∃ (rpc_srv:loc),
   "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #rpc_srv) ∗
   "#His_server" ∷ is_server KVServerC (kv_core_mu srv γ) rpc_srv γ.(ks_rpcGN).
 
-Lemma KVServer__Put_spec srv rpc_srv γ :
-is_kvserver γ srv rpc_srv -∗
+
+Lemma KVServer__Put_spec srv γ :
+is_kvserver γ srv -∗
 {{{
     True
 }}}
@@ -643,7 +645,7 @@ Proof.
   wp_lam.
   wp_pures.
   iApply "HΦ".
-  iIntros (args).
+  iIntros (args req).
   iApply is_rpcHandler_eta. simpl.
   iIntros "!#" (_ _).
   wp_pures.
@@ -666,7 +668,11 @@ Proof.
     {
       by iDestruct "HΦ" as "[HΦc _]".
     }
-    by iDestruct "HΦ" as "[_ HΦ]".
+    iNext.
+    iDestruct "HΦ" as "[_ HΦ]".
+    iFrame.
+    (* TODO: match up the core postcondition *)
+    admit.
   }
   {
     iIntros (server rpc_server server' rpc_server') "!#".
@@ -689,6 +695,6 @@ Proof.
   {
     iFrame "#".
   }
-Qed.
+Admitted.
 
 End kv_durable_proof.

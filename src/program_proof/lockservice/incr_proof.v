@@ -2,7 +2,7 @@ From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet kv_proof fmcounter_map wpc_proofmode common_proof rpc_durable_proof.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet kv_proof kv_durable fmcounter_map wpc_proofmode common_proof rpc_durable_proof kv_logatom.
 Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 
@@ -13,6 +13,7 @@ Section incr_proof.
 
 Context `{!heapG Σ}.
 Context `{!filesysG Σ}.
+Context `{!stagedG Σ}.
 
 Variable γback:kvservice_names.
 
@@ -42,7 +43,7 @@ Definition IncrServer_core_own_vol (srv:loc) server : iProp Σ :=
   "Hkvserver" ∷ srv ↦[IncrServer.S :: "kvserver"] #(server.(incr_kvserver)) ∗
   "Hkck" ∷ srv ↦[IncrServer.S :: "kck"] #kck ∗
   "#His_kvserver" ∷ is_kvserver γback server.(incr_kvserver) ∗
-  "Hkck_own" ∷ own_kvclerk γback kck server.(incr_kvserver) incr_cid
+  "Hkck_own" ∷ own_kvclerk_cid γback kck server.(incr_kvserver) incr_cid
   (* This is using the non-crash-safe version of kvserver in kv_proof.v *)
   .
 
@@ -55,20 +56,18 @@ Definition IncrServer_core_own_ghost server : iProp Σ :=
 Definition IncrCrashInvariant (sseq:u64) (args:RPCValsC) : iProp Σ :=
   (* Case 1: Before crash barrier *)
   ("Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string sseq) +:+ "_oldv") f↦ [] ∗
-   "Hq" ∷ quiesceable_pre γback.(ks_rpcGN) incr_cid (Get_Pre γback old_v args) (Get_Post γback old_v args)
+   "Hptsto" ∷ |PN={γback.(ks_rpcGN),incr_cid}=> args.(U64_1) [[γback.(ks_kvMapGN)]]↦ old_v
    ) ∨
 
   (* Case 2: After crash barrier *)
   ( ∃ data,
   "Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string sseq) +:+ "_oldv") f↦ data ∗
   "%Hencoding" ∷ ⌜has_encoding data [EncUInt64 old_v]⌝ ∗
-   "Hq" ∷ quiesceable_pre γback.(ks_rpcGN) incr_cid (Put_Pre γback ({|U64_1:=args.(U64_1) ; U64_2:=(word.add old_v 1)|}) ) (Put_Post γback ({|U64_1:=args.(U64_1) ; U64_2:=(word.add old_v 1)|}) )
+   "Hptsto" ∷ |PN={γback.(ks_rpcGN),incr_cid}=> (∃ v', args.(U64_1) [[γback.(ks_kvMapGN)]]↦ v')
   )
 .
 
-Instance CrashInv_disc sseq args : (Discretizable (IncrCrashInvariant sseq args)).
-Proof.
-Admitted.
+Instance CrashInv_disc sseq args : (Discretizable (IncrCrashInvariant sseq args)) := _.
 
 Lemma increment_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValsC) :
   {{{
@@ -81,19 +80,19 @@ Lemma increment_core_idempotent (isrv:loc) server (seq:u64) (args:RPCValsC) :
       RET #0; True
   }}}
   {{{
-       IncrCrashInvariant seq args ∗
+       |={⊤}=> IncrCrashInvariant seq args ∗
        IncrServer_core_own_ghost server
   }}}.
 Proof.
   iIntros (Φ Φc) "(HincrCrashInv & Hvol & Hghost) HΦ".
   wpc_call.
-  { iFrame. }
-  { iFrame. }
+  { iFrame. by iModIntro. }
+  { iFrame. by iModIntro. }
   unfold IncrCrashInvariant.
   iCache with "HincrCrashInv Hghost HΦ".
   {
     iDestruct "HΦ" as "[HΦc _]". iModIntro. iApply "HΦc".
-    iFrame.
+    iFrame. by iModIntro.
   }
   wpc_pures.
 
@@ -115,22 +114,21 @@ Proof.
 
   iDestruct "HincrCrashInv" as "[Hcase|Hcase]"; iNamed "Hcase".
   { (* Case Get not done *)
-    iCache with "Hfown_oldv Hq HΦ Hghost".
+    iCache with "Hfown_oldv Hptsto HΦ Hghost".
     {
       iDestruct "HΦ" as "[HΦc _]".
-      iDestruct (own_discrete_idemp with "Hq") as "Hq".
       iModIntro. iApply "HΦc".
       iFrame. iLeft. iFrame.
+      by iModIntro.
     }
     (* How to get rid of bdisc: iDestruct (own_discrete_elim with "Hq") as "Hq". *)
     wpc_apply (wpc_Read with "Hfown_oldv").
     iSplit.
     { (* Show that the crash obligation of the function we're calling implies our crash obligation *)
       iDestruct "HΦ" as "[HΦc _]".
-      iDestruct (own_discrete_idemp with "Hq") as "Hq".
       iModIntro. iIntros.
       iApply "HΦc".
-      iFrame. iLeft. iFrame.
+      iFrame "Hghost". iLeft. iFrame. by iModIntro.
     }
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
@@ -161,8 +159,7 @@ Proof.
     wp_loadField.
     iNamed 1.
 
-
-    wpc_apply (wpc_KVClerk__Get with "His_kvserver [$Hkck_own $Hq]").
+    wpc_apply (wpc_KVClerk__Get with "His_kvserver [$Hkck_own $Hptsto]").
     iSplit.
     {
       iLeft in "HΦ".
@@ -170,7 +167,7 @@ Proof.
       iApply "HΦ".
       iFrame.
       iLeft.
-      iFrame.
+      iFrame "Hfown_oldv ∗".
     }
     iNext.
     iIntros "[Hkck_own Hkvptsto]".
@@ -183,8 +180,10 @@ Proof.
       iFrame "Hghost".
       iLeft.
       iFrame.
-      (* TODO: Make a lemma that PreCond -∗ quiesceable_pre ... (PreCond) ...*)
-      admit.
+      iModIntro.
+      iModIntro.
+      iModIntro.
+      iFrame.
     }
     wpc_bind (store_ty _ _).
     wpc_frame.
@@ -226,7 +225,8 @@ Proof.
         iApply "HΦ".
         iFrame.
         iLeft; iFrame.
-        admit. (* TODO: MakeRequest should return `PostCond ∧ quiesceable_pre`! *)
+        repeat iModIntro.
+        iFrame.
       }
       { (* Wrote oldv *)
         iApply "HΦ".
@@ -235,8 +235,8 @@ Proof.
         iExists _; iFrame.
         simpl in Hencoding.
         iSplitL ""; first done.
-        (* TODO: Put_Pre -> quiesceable_pre (Put_Pre) *)
-        admit.
+        repeat iModIntro.
+        iExists old_v. iFrame.
       }
     }
     iNext.
@@ -258,7 +258,7 @@ Proof.
     wpc_loadField.
 
     wpc_apply (wpc_KVClerk__Put with "His_kvserver [$Hkck_own Hkvptsto]").
-    { admit. (* TODO: quiesceable_intro *) }
+    { iModIntro. iModIntro. iExists _; iFrame. }
     iSplit.
     {
       iLeft in "HΦ".
@@ -269,6 +269,7 @@ Proof.
       iRight.
       iExists _; iFrame.
       replace ((Z.of_nat 1)) with (1)%Z by eauto.
+      iSplitL ""; first done.
       done.
     }
     iNext.
@@ -277,15 +278,17 @@ Proof.
 
     wpc_pures.
     {
-      iRight in "HputPost".
       iLeft in "HΦ".
-      Opaque quiesceable_pre.
       iModIntro.
       iApply "HΦ".
       iFrame "Hghost".
       iRight.
       iExists _; iFrame.
-      done.
+      iModIntro.
+      iSplit; first eauto.
+      iModIntro.
+      iModIntro.
+      iExists _; iFrame.
     }
 
     iRight in "HΦ".

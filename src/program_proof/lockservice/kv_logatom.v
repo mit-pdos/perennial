@@ -141,8 +141,8 @@ Proof.
   done.
 Qed.
 
-Lemma KVServer__Put_is_rpcHandler {E s} γ srv rpc_srv cid :
-is_kvserver γ srv rpc_srv -∗
+Lemma KVServer__Put_is_rpcHandler {E s} γ srv cid :
+is_kvserver γ srv -∗
 {{{
     True
 }}}
@@ -204,8 +204,8 @@ Proof.
   iFrame.
 Qed.
 
-Lemma KVServer__Get_is_rpcHandler {E s} γ srv rpc_srv cid old_v :
-is_kvserver γ srv rpc_srv -∗
+Lemma KVServer__Get_is_rpcHandler {E s} γ srv cid old_v :
+is_kvserver γ srv -∗
 {{{
     True
 }}}
@@ -273,11 +273,11 @@ Definition own_kvclerk_cid γ ck_ptr srv cid : iProp Σ :=
    "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
    "Hcl" ∷ own_rpcclient_cid cl_ptr γ.(ks_rpcGN) cid.
 
-Local Notation "k [[ γ ]]↦ '_'" := (∃ v, k [[γ]]↦ v)%I
+Notation "k [[ γ ]]↦ '_'" := (∃ v, k [[γ]]↦ v)%I
 (at level 20, format "k  [[ γ ]]↦ '_'") : bi_scope.
 
-Lemma wpc_KVClerk__Put k γ (kck srv rpc_srv:loc) (cid:u64) (key value:u64) :
-  is_kvserver γ srv rpc_srv -∗
+Lemma wpc_KVClerk__Put k γ (kck srv:loc) (cid:u64) (key value:u64) :
+  is_kvserver γ srv -∗
   {{{
        own_kvclerk_cid γ kck srv cid ∗
        |PN={γ.(ks_rpcGN),cid}=> (key [[γ.(ks_kvMapGN)]]↦ _)
@@ -361,8 +361,8 @@ Proof.
   iFrame. iExists _; iFrame.
 Qed.
 
-Lemma wpc_KVClerk__Get k γ (kck srv rpc_srv:loc) (old_v cid:u64) (key:u64) :
-  is_kvserver γ srv rpc_srv -∗
+Lemma wpc_KVClerk__Get k γ (kck srv:loc) (old_v cid:u64) (key:u64) :
+  is_kvserver γ srv -∗
   {{{
        own_kvclerk_cid γ kck srv cid ∗
        |PN={γ.(ks_rpcGN),cid}=> (key [[γ.(ks_kvMapGN)]]↦ old_v)
