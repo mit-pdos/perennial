@@ -10,12 +10,11 @@ Section rpc_proof.
 Context `{!heapG Σ}.
 Context `{!rpcG Σ u64}.
 
-
 Definition is_rpcHandler' f γrpc cid args PreCond PostCond : iProp Σ :=
   □(∀ seqno Q,
+        □(▷ Q -∗ ◇ Q) -∗
         □(Q -∗ <disc> Q) -∗
-        □(▷ Q -∗ ◇Q) -∗
-        □(Q -∗ |RN={γrpc,cid,seqno}=> PreCond) -∗
+        □(▷ Q -∗ |RN={γrpc,cid,seqno}=> PreCond) -∗
         is_rpcHandler f γrpc args {| Req_CID:=cid; Req_Seq:=seqno |} Q PostCond).
 
 Definition own_rpcclient_cid (cl_ptr:loc) (γrpc:rpc_names) (cid:u64) : iProp Σ
@@ -36,7 +35,7 @@ Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid γrpc args (Pre
   }}}
     RPCClient__MakeRequest #cl_ptr f (into_val.to_val args) @ k ; ⊤
   {{{ (retv:u64), RET #retv; own_rpcclient_cid cl_ptr γrpc cid ∗ ▷ PostCond retv }}}
-  {{{ |PN={γrpc,cid}=> (▷ PreCond ∨ ∃ ret, ▷ PostCond ret) }}}.
+  {{{ |={⊤}=> |PN={γrpc,cid}=> (▷ PreCond ∨ ▷ (∃ ret, PostCond ret)) }}}.
 Proof using Type*.
   iIntros "#Hfspec" (Φ Φc) "!# [Hpre [Hclerk #Hlinv]] HΦ".
   iNamed "Hclerk".
@@ -46,6 +45,7 @@ Proof using Type*.
     iDestruct "HΦ" as "[HΦc _]".
     iModIntro.
     iApply "HΦc".
+    iModIntro.
     iModIntro.
     iFrame.
   }
@@ -57,6 +57,7 @@ Proof using Type*.
     iDestruct "HΦ" as "[HΦc _]".
     iModIntro.
     iApply "HΦc".
+    iModIntro.
     iModIntro.
     iFrame.
   }
@@ -96,23 +97,7 @@ Proof using Type*.
   iDestruct (fmcounter_map_get_lb with "Hcrpc") as "#Hcseqno_lb".
   iDestruct (post_neutralize_instantiate with "Hcrpc Hpre") as ">[Hcrpc Hrnfupd]".
 
-  iEval (rewrite own_discrete_fupd_eq /own_discrete_fupd_def) in "Hrnfupd".
-  iDestruct (own_discrete_laterable with "Hrnfupd") as "HH".
-
-  iDestruct "HH" as (Q) "[HQ #Hqwand]".
-  iAssert (□(▷ Q -∗ ◇ (|RN={ γrpc, cid, cseqno }=> PreCond)))%I as "HH".
-  {
-    iModIntro. iIntros "HQ". iSpecialize ("Hqwand" with "HQ").
-    iModIntro. iMod "Hqwand".
-    iMod "Hqwand".
-
-    iMod (fupd_intro_mask' _ _) as "Hclose".
-    {
-      done.
-    }
-
-    iMod "Hqwand".
-  }
+  iDestruct (rnfupd_disc_laterable with "Hrnfupd") as (Q) "(HQ&#HQtmlss&#HQdisc&#HQwand)".
   iMod (make_request {| Req_CID:=cid; Req_Seq:=cseqno|} Q PostCond with "[Hlinv] [Hcrpc] [HQ]") as "[Hcseq_own HallocPost]"; eauto.
   { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
@@ -123,15 +108,18 @@ Proof using Type*.
   { iDestruct (struct_fields_split with "Hreply") as "(?& ? & _)".
     iExists {| Rep_Ret:=_; Rep_Stale:=false |}. iFrame. }
 
-  wpc_bind (For _ _ _). iApply (wpc_forBreak_cond' with "[-]").
+  wpc_bind (For _ _ _). iApply (wpc_forBreak_cond_2 with "[-]").
   { by iNamedAccu. }
   {
     iNamed 1.
     iDestruct "HΦ" as "[HΦc _]".
     iModIntro.
     iApply "HΦc".
-    iDestruct (quiesce_request with "Hlinv Hreqinv_init HγP") as "Hquiesce_req".
-    iDestruct (quiesce_idemp γrpc cid with "Hcseqno_lb Hqwand Hquiesce_req") as "$".
+    iDestruct (neutralize_request with "Hlinv Hreqinv_init HγP") as ">Hpnfupd".
+    { simpl. word. }
+    iDestruct (own_disc_fupd_elim with "Hpnfupd") as ">Hpnfupd".
+    iModIntro.
+    iDestruct (neutralize_idemp γrpc cid with "Hcseqno_lb HQwand Hpnfupd") as "$".
   }
   {
     iIntros "!# __CTX"; iNamed "__CTX".
@@ -140,20 +128,18 @@ Proof using Type*.
     {
       iDestruct "HΦ" as "[HΦc _]".
       iModIntro. iApply "HΦc".
-      iDestruct (quiesce_request with "Hlinv Hreqinv_init HγP") as "Hquiesce_req".
-      iDestruct (quiesce_idemp γrpc cid with "Hcseqno_lb Hqwand Hquiesce_req") as "$".
+      iDestruct (neutralize_request with "Hlinv Hreqinv_init HγP") as ">Hpnfupd".
+      { simpl. word. }
+      iDestruct (own_disc_fupd_elim with "Hpnfupd") as ">Hpnfupd".
+      iModIntro.
+      iDestruct (neutralize_idemp γrpc cid with "Hcseqno_lb HQwand Hpnfupd") as "$".
     }
 
     iDestruct "Hreply" as (reply') "Hreply".
     wpc_pures.
     wpc_bind (RemoteProcedureCall _ _ _). wpc_frame.
     wp_apply (RemoteProcedureCall_spec with "[] [$Hreply]").
-    { iSpecialize ("Hfspec" $! cseqno Q with "[Hqwand]").
-      { iModIntro. iIntros "HQ".
-        iSpecialize ("Hqwand" with "HQ").
-        iFrame.
-      }
-      iFrame "Hfspec". }
+    { iDestruct ("Hfspec" $! cseqno Q with "HQtmlss HQdisc HQwand") as "$". }
     {
       iSplit; last first.
       { unfold read_request.
@@ -216,8 +202,11 @@ Proof using Type*.
     {
       iLeft in "HΦ". iModIntro.
       iApply "HΦ".
-      iDestruct (quiesce_request with "Hlinv Hreqinv_init HγP") as "Hquiesce_req".
-      iDestruct (quiesce_idemp γrpc cid with "Hcseqno_lb Hqwand Hquiesce_req") as "$".
+      iDestruct (neutralize_request with "Hlinv Hreqinv_init HγP") as ">Hpnfupd".
+      { simpl. word. }
+      iDestruct (own_disc_fupd_elim with "Hpnfupd") as ">Hpnfupd".
+      iModIntro.
+      iDestruct (neutralize_idemp γrpc cid with "Hcseqno_lb HQwand Hpnfupd") as "$".
     }
 
     wpc_pures.

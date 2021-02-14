@@ -48,7 +48,7 @@ Section rpc_atomic_pre.
 Context `{!heapG Σ}.
 Context `{!rpcG Σ u64}.
 
-(* Need this fupd to be OK to fire with any sequence number larger than the *)
+(* This fupd grants resources R post-neutralization of the given sequence number *)
 Definition rpc_atomic_pre_fupd_def γrpc (cid seq:u64) R : iProp Σ :=
   (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={rpcReqInvUpToN seq}=∗ own γrpc.(proc) (Excl ()) ∗ R)%I.
 
@@ -61,8 +61,13 @@ Notation "|RN={ γrpc , cid , seq }=> R" :=
  (at level 20, right associativity)
   : bi_scope.
 
-(* This gives the rpc_atomic_pre_fupd for any sequence number that the client can take on
-   This is the precondition for ck.MakeRequest(args), where ck has the given cid *)
+(* This says that R is available under an rnfupd with some sequence number that
+   lower-bounds the client sequence number.
+
+   This additionally has a <disc> in front of it, so it can be kept after crashes.
+   The precondition fm[[...]]≥ 0 is simply there to make it possible to
+   introduce this in front of arbitrary resources.
+   *)
 Definition rpc_atomic_pre_def γrpc cid R : iProp Σ :=
   <disc> (cid fm[[γrpc.(cseq)]]≥ 0 -∗ (∃ seq,
     cid fm[[γrpc.(cseq)]]≥ int.nat seq ∗
@@ -268,7 +273,7 @@ Proof.
 Qed.
 
 Lemma pnfupd_wand γrpc cid P Q:
-  <disc> (P -∗ Q) -∗ (|PN={γrpc,cid}=> P -∗ |PN={γrpc,cid}=> Q).
+  <disc> (P -∗ ◇ Q) -∗ (|PN={γrpc,cid}=> P -∗ |PN={γrpc,cid}=> Q).
 Proof.
   iIntros "HPmodQ HmodP".
   iDestruct (own_disc_fupd_idemp with "HPmodQ") as "HPmodQ".
@@ -280,7 +285,7 @@ Proof.
   iExists seq. iFrame "#".
   iModIntro.
   iMod "HmodP".
-  iDestruct ("HPmodQ" with "HmodP") as "HmodQ".
+  iDestruct ("HPmodQ" with "HmodP") as ">HmodQ".
   by iModIntro.
 Qed.
 
@@ -292,7 +297,7 @@ Arguments into_post_neutralize _ _ _%I _%I {_}.
 Hint Mode IntoPostNeutralize + + ! - : typeclass_instances.
 
 Global Instance IntoDiscretePostNeutralize γrpc cid (P Q : iProp Σ) :
- IntoDiscrete P Q → IntoPostNeutralize γrpc cid P Q.
+ IntoDiscrete P Q → IntoPostNeutralize γrpc cid P (Q).
 Proof.
   intros HPQ.
   rewrite /IntoPostNeutralize.
@@ -329,7 +334,7 @@ Lemma modality_pnfupd_mixin γrpc cid :
       iModIntro. iIntros "Htype". iExists (U64 0).
       iFrame "Htype".
       by repeat iModIntro.
-    - iIntros (?? HPQ). iApply pnfupd_wand. iModIntro. iApply HPQ.
+    - iIntros (?? HPQ). iApply pnfupd_wand. iModIntro. iIntros. iModIntro. iApply HPQ. done.
     - iIntros (??).
       iIntros "[HP HQ]".
       rewrite rpc_atomic_pre_eq.
@@ -354,9 +359,23 @@ Definition modality_pnfupd γrpc cid :=
   Modality _ (modality_pnfupd_mixin γrpc cid).
 
 (* IPM typeclasses for rnfupd *)
+(* Want to keep diamond around to eliminate laters on timeless resources; if we could iMod away pnfupds, then we could also make it so that laters could be iMod'd away *)
 Global Instance from_modal_pnfupd γrpc cid P :
-  FromModal (modality_pnfupd γrpc cid) (|PN={γrpc,cid}=> P) (|PN={γrpc,cid}=> P) P | 2.
-Proof. by rewrite /FromModal. Qed.
+  FromModal (modality_pnfupd γrpc cid) (|PN={γrpc,cid}=> P) (|PN={γrpc,cid}=> P) (◇ P) | 2.
+Proof.
+  rewrite /FromModal //=.
+  iIntros "HP".
+  rewrite rpc_atomic_pre_eq.
+  iModIntro.
+  iIntros "#Htype".
+  iDestruct ("HP" with "Htype") as (seq) "[#Hlb HP]".
+  iExists seq.
+  iFrame "#".
+  iModIntro.
+  iMod "HP".
+  iMod "HP".
+  by iModIntro.
+Qed.
 
 End rpc_atomic_pre.
 
@@ -445,7 +464,7 @@ Qed.
 
 Lemma neutralize_idemp γrpc cid seqno Q PreCond PostCond :
   cid fm[[γrpc.(cseq)]]≥ int.nat seqno -∗
-  □(▷Q -∗ ◇(rpc_atomic_pre_fupd γrpc cid seqno (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret))) -∗
+  □(▷Q -∗ |RN={γrpc,cid,seqno}=> PreCond) -∗
   neutralized_pre γrpc cid Q (PostCond) -∗
   neutralized_pre γrpc cid PreCond PostCond.
 Proof.
@@ -454,7 +473,7 @@ Proof.
   iExists seqno; iFrame "#".
   iModIntro.
   iIntros "[HQ|Hpost]".
-  { by iDestruct ("Hwand" with "HQ") as ">HQ". }
+  { iDestruct ("Hwand" with "HQ") as ">HQ". iModIntro. iLeft. iNext. done. }
   { iModIntro. by iRight. }
 Qed.
 
@@ -479,6 +498,34 @@ Proof.
   iFrame.
   iModIntro.
   iMod "HmodP"; first by word.
+  by iModIntro.
+Qed.
+
+Lemma rnfupd_disc_laterable γrpc cid seqno P :
+  <disc> |RN={γrpc,cid,seqno}=> P -∗
+  ∃ Q, Q ∗ □(▷ Q -∗ ◇ Q) ∗ □(Q -∗ <disc> Q) ∗ □(▷ Q -∗ |RN={γrpc,cid,seqno}=> P).
+Proof.
+  iIntros "HrnfupdP".
+  iEval (rewrite own_discrete_fupd_eq /own_discrete_fupd_def) in "HrnfupdP".
+  rewrite own_discrete_eq /own_discrete_def.
+  iDestruct "HrnfupdP" as (a Ha) "[Hown #Hwand]".
+
+  iExists (uPred_ownM a)%I.
+  iFrame.
+  iSplit.
+  { iModIntro. iIntros ">$". }
+  iSplit.
+  { iModIntro. iIntros. iModIntro. done. }
+  iModIntro.
+  iIntros ">Hown".
+  iDestruct ("Hwand" with "Hown") as "Hrnfupd".
+  rewrite rpc_atomic_pre_fupd_eq.
+  iIntros "Hγproc #Hlb".
+  iDestruct (fupd_level_fupd with "Hrnfupd") as "Hrnfupd".
+  iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "Hrnfupd".
+  { set_solver. }
+  iMod "Hclose".
+  iDestruct ("Hrnfupd" with "Hγproc Hlb") as ">[$ $]".
   by iModIntro.
 Qed.
 

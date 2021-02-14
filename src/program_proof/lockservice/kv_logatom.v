@@ -19,7 +19,7 @@ Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
 Context `{!filesysG Σ}.
 
 Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q:
-□(Q -∗ |RN={γ.(ks_rpcGN),req.(Req_CID),req.(Req_Seq)}=> Put_Pre γ args) -∗
+□(▷ Q -∗ |RN={γ.(ks_rpcGN),req.(Req_CID),req.(Req_Seq)}=> Put_Pre γ args) -∗
 {{{
      (kv_core_mu srv γ).(core_own_vol) kvserver ∗
      <disc> Q
@@ -55,7 +55,7 @@ Proof.
   iNamed 1.
   wpc_pures.
   iDestruct "HΦ" as "[_ HΦ]".
-  iApply ("HΦ" $! {| kvsM := <[args.(U64_1):=args.(U64_2)]> kvserver.(kvsM) |} _ (Q)).
+  iApply ("HΦ" $! {| kvsM := <[args.(U64_1):=args.(U64_2)]> kvserver.(kvsM) |} _ (▷ Q)%I).
   iSplitL "Hpre".
   { iModIntro. iFrame. }
 
@@ -75,12 +75,12 @@ Proof.
   iFrame.
 Qed.
 
-Lemma KVServer__Put_is_rpcHandler {E} γ srv rpc_srv cid :
+Lemma KVServer__Put_is_rpcHandler {E s} γ srv rpc_srv cid :
 is_kvserver γ srv rpc_srv -∗
 {{{
     True
 }}}
-    KVServer__Put #srv @ E
+    KVServer__Put #srv @ s; E
 {{{ (f:goose_lang.val), RET f;
     ∀ args, is_rpcHandler' f γ.(ks_rpcGN) cid args (Put_Pre γ args) (Put_Post γ args)
 }}}.
@@ -89,7 +89,7 @@ Proof.
   wp_lam.
   wp_pures.
   iApply "HΦ".
-  iIntros (args req) "!#". iIntros (Q) "#HQdisc #HQtmless #HwandQ".
+  iIntros (args req) "!#". iIntros (Q) "#HQtmless #HQdisc #HwandQ".
   iApply is_rpcHandler_eta.
   iIntros "!#" (replyv reqv).
   simpl.
@@ -114,6 +114,7 @@ Proof.
     iSplit.
     {
       iLeft in "HΦ".
+      iModIntro.
       done.
     }
     iNext.
@@ -147,6 +148,101 @@ Proof.
   }
   iIntros (f) "His_rpcHandler".
   iFrame.
+Qed.
+
+
+Definition own_kvclerk_cid γ ck_ptr srv cid : iProp Σ :=
+  ∃ (cl_ptr:loc),
+   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
+   "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
+   "Hcl" ∷ own_rpcclient_cid cl_ptr γ.(ks_rpcGN) cid.
+
+Local Notation "k [[ γ ]]↦ '_'" := (∃ v, k [[γ]]↦ v)%I
+(at level 20, format "k  [[ γ ]]↦ '_'") : bi_scope.
+
+Lemma wpc_KVClerk__Put k γ (kck srv rpc_srv:loc) (cid:u64) (key value:u64) :
+  is_kvserver γ srv rpc_srv -∗
+  {{{
+       own_kvclerk_cid γ kck srv cid ∗
+       |PN={γ.(ks_rpcGN),cid}=> (key [[γ.(ks_kvMapGN)]]↦ _)
+  }}}
+    KVClerk__Put #kck #key #value @ k; ⊤
+  {{{
+      RET #();
+      own_kvclerk_cid γ kck srv cid ∗
+      (key [[γ.(ks_kvMapGN)]]↦ value )
+  }}}
+  {{{
+       |={⊤}=> |PN={γ.(ks_rpcGN),cid}=> (key [[γ.(ks_kvMapGN)]]↦ _)
+  }}}
+.
+Proof.
+  iIntros "#His_kv !#" (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as "(Hclerk & Hq)".
+  iCache with "Hq HΦ".
+  {
+    iDestruct "HΦ" as "[HΦc _]".
+    iModIntro.
+    iApply "HΦc".
+    done.
+  }
+  wpc_call.
+  { done. }
+  iCache with "Hq HΦ".
+  {
+    iDestruct "HΦ" as "[HΦc _]".
+    iModIntro.
+    iApply "HΦc".
+    done.
+  }
+  wpc_pures.
+  iNamed "Hclerk".
+  wpc_loadField.
+
+  wpc_bind (KVServer__Put _).
+  wpc_frame.
+  wp_apply (KVServer__Put_is_rpcHandler  with "His_kv").
+  iIntros (f) "#Hfspec".
+  iNamed 1.
+
+  wpc_loadField.
+  pose (args:={|U64_1:=key; U64_2:=value |}).
+  replace (#key, (#value, #()))%V with (into_val.to_val args) by done.
+  iDestruct ("Hfspec" $! args) as "#Hfspec2".
+  iApply wpc_fupd.
+  wpc_apply (wpc_RPCClient__MakeRequest with "Hfspec2 [Hq Hcl His_kv]").
+  { iNamed "His_kv". iFrame. iNamed "His_server". iNamed "Hlinv".
+    iFrame "#".
+  }
+  iSplit.
+  {
+    iLeft in "HΦ".
+    iModIntro.
+    iIntros "Hpnfupd".
+    iApply "HΦ".
+    iMod "Hpnfupd".
+    iModIntro.
+    iModIntro.
+    iDestruct "Hpnfupd" as "[>Hpre|>Hpost]".
+    { iModIntro. done. }
+    { iModIntro. (* Idempotence of puts is proved here *)
+      unfold Put_Post.
+      iDestruct "Hpost" as (_) "Hpost".
+      iExists _; iFrame.
+    }
+  }
+  iNext.
+  iIntros (retv) "[Hcl >Hpost]".
+  wpc_pures.
+  {
+    iLeft in "HΦ". iModIntro.
+    iApply "HΦ".
+    iModIntro. iModIntro. iModIntro.
+    iExists _; iFrame "Hpost".
+  }
+  iRight in "HΦ". iModIntro.
+  iApply "HΦ".
+  iFrame. iExists _; iFrame.
 Qed.
 
 End kv_logatom_proof.
