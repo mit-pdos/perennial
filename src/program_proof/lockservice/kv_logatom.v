@@ -75,6 +75,72 @@ Proof.
   iFrame.
 Qed.
 
+Lemma wpc_get_logatom_core γ (srv:loc) old_v args req kvserver Q:
+□(▷ Q -∗ |RN={γ.(ks_rpcGN),req.(Req_CID),req.(Req_Seq)}=> Get_Pre γ old_v args) -∗
+{{{
+     (kv_core_mu srv γ).(core_own_vol) kvserver ∗
+     <disc> Q
+}}}
+  KVServer__get_core #srv (into_val.to_val args) @ 36 ; ⊤
+{{{
+      kvserver' (r:u64) P', RET #r;
+            <disc> (P' ∧ Q) ∗
+            KVServer_core_own_vol srv kvserver' ∗
+            <disc> (rpc_commit_fupd KVServerC (kv_core_mu srv γ) γ.(ks_rpcGN) req P' (Get_Post γ old_v args r) kvserver kvserver')
+}}}
+{{{
+     Q
+}}}.
+Proof.
+  iIntros "#Hwand !#".
+  iIntros (Φ Φc) "[Hvol Hpre] HΦ".
+  iCache with "Hpre HΦ".
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. by iApply "HΦc". }
+  wpc_call; first done.
+
+  iCache with "Hpre HΦ".
+  { iDestruct "HΦ" as "[HΦc _]". iModIntro. by iApply "HΦc". }
+
+  wpc_pures.
+  iNamed "Hvol".
+  wpc_loadField.
+
+  wpc_bind (MapGet _ _).
+  wpc_frame.
+
+  wp_apply (wp_MapGet with "HkvsMap").
+  iIntros (v ok) "[%Hmapget HkvsMap]".
+  iNamed 1.
+
+  wpc_pures.
+  iDestruct "HΦ" as "[_ HΦ]".
+  iApply ("HΦ" $! kvserver _ (▷ Q)%I).
+  iSplitL "Hpre".
+  { iModIntro. iFrame. }
+
+  iSplitR "".
+  { iExists _. iFrame. }
+
+  (* The commit point fupd *)
+  iModIntro.
+  iIntros "HQ Hghost".
+  iMod ("Hwand" with "HQ") as "Hpre".
+  iModIntro.
+
+  iDestruct (map_valid with "Hghost Hpre") as %Hvalid.
+
+  iModIntro.
+  iFrame.
+  assert (old_v = v) as ->.
+  {
+    unfold map_get in *.
+    rewrite Hvalid in Hmapget.
+    naive_solver.
+  }
+  iFrame.
+  done.
+Qed.
+
 Lemma KVServer__Put_is_rpcHandler {E s} γ srv rpc_srv cid :
 is_kvserver γ srv rpc_srv -∗
 {{{
@@ -104,25 +170,13 @@ Proof.
     iMod ("HQtmless" with "Hpre") as "HQ".
     iDestruct ("HQdisc" with "HQ") as "HQ".
     wpc_pures.
-    {
-      iDestruct "HΦ" as "[HΦc _]".
-      iModIntro.
-      by iApply "HΦc".
-    }
+    { iLeft in "HΦ". iModIntro. by iApply "HΦ". }
 
     iApply (wpc_put_logatom_core γ _ _ {|Req_CID:=_; Req_Seq:= _ |} with "HwandQ [$HQ $Hvol]").
     iSplit.
-    {
-      iLeft in "HΦ".
-      iModIntro.
-      done.
-    }
+    { by iLeft in "HΦ". }
     iNext.
-    iIntros (server' r P') "(HP' & Hvol & Hfupd)".
-    iRight in "HΦ".
-    iApply "HΦ".
-    iFrame "HP' Hvol".
-    iFrame "Hfupd".
+    by iRight in "HΦ".
   }
   {
     iIntros (server rpc_server server' rpc_server') "!#".
@@ -150,6 +204,68 @@ Proof.
   iFrame.
 Qed.
 
+Lemma KVServer__Get_is_rpcHandler {E s} γ srv rpc_srv cid old_v :
+is_kvserver γ srv rpc_srv -∗
+{{{
+    True
+}}}
+    KVServer__Get #srv @ s; E
+{{{ (f:goose_lang.val), RET f;
+    ∀ args, is_rpcHandler' f γ.(ks_rpcGN) cid args (Get_Pre γ old_v args) (Get_Post γ old_v args)
+}}}.
+Proof.
+  iIntros "#His_kv !#" (Φ) "_ HΦ".
+  wp_lam.
+  wp_pures.
+  iApply "HΦ".
+  iIntros (args req) "!#". iIntros (Q) "#HQtmless #HQdisc #HwandQ".
+  iApply is_rpcHandler_eta.
+  iIntros "!#" (replyv reqv).
+  simpl.
+  iAssert (_) with "His_kv" as "His_kv2".
+  iNamed "His_kv2".
+  wp_loadField.
+  wp_apply (RPCServer__HandleRequest_is_rpcHandler KVServerC with "[] [] [His_kv]").
+  {
+    clear Φ.
+    iIntros (server) "!#". iIntros (Φ Φc) "Hpre HΦ".
+    iNamed "Hpre".
+    iMod ("HQtmless" with "Hpre") as "HQ".
+    iDestruct ("HQdisc" with "HQ") as "HQ".
+    wpc_pures.
+    { iLeft in "HΦ". iModIntro. by iApply "HΦ". }
+
+    iApply (wpc_get_logatom_core γ _ _ _ {|Req_CID:=_; Req_Seq:= _ |} with "HwandQ [$HQ $Hvol]").
+    iSplit.
+    { by iLeft in "HΦ". }
+    iNext.
+    by iRight in "HΦ".
+  }
+  {
+    iIntros (server rpc_server server' rpc_server') "!#".
+    clear Φ.
+    iIntros (Φ Φc) "Hpre HΦ".
+    wpc_pures.
+    {
+      iDestruct "Hpre" as "(_ & _ & Hdur)". (* Requires own_durable to be discretizable *)
+      iDestruct "HΦ" as "[HΦc _]".
+      iModIntro.
+      iApply "HΦc".
+      by iLeft.
+    }
+    wpc_apply (wpc_WriteDurableKVServer with "Hsv Hpre").
+    iSplit.
+    {
+      by iDestruct "HΦ" as "[HΦc _]".
+    }
+    iNext. by iDestruct "HΦ" as "[_ HΦ]".
+  }
+  {
+    iFrame "His_server".
+  }
+  iIntros (f) "His_rpcHandler".
+  iFrame.
+Qed.
 
 Definition own_kvclerk_cid γ ck_ptr srv cid : iProp Σ :=
   ∃ (cl_ptr:loc),
@@ -240,6 +356,83 @@ Proof.
     iModIntro. iModIntro. iModIntro.
     iExists _; iFrame "Hpost".
   }
+  iRight in "HΦ". iModIntro.
+  iApply "HΦ".
+  iFrame. iExists _; iFrame.
+Qed.
+
+Lemma wpc_KVClerk__Get k γ (kck srv rpc_srv:loc) (old_v cid:u64) (key:u64) :
+  is_kvserver γ srv rpc_srv -∗
+  {{{
+       own_kvclerk_cid γ kck srv cid ∗
+       |PN={γ.(ks_rpcGN),cid}=> (key [[γ.(ks_kvMapGN)]]↦ old_v)
+  }}}
+    KVClerk__Get #kck #key @ k; ⊤
+  {{{
+      RET #old_v;
+      own_kvclerk_cid γ kck srv cid ∗
+      (key [[γ.(ks_kvMapGN)]]↦ old_v )
+  }}}
+  {{{
+       |={⊤}=> |PN={γ.(ks_rpcGN),cid}=> (key [[γ.(ks_kvMapGN)]]↦ old_v)
+  }}}
+.
+Proof.
+  iIntros "#His_kv !#" (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as "(Hclerk & Hq)".
+  iCache with "Hq HΦ".
+  {
+    iDestruct "HΦ" as "[HΦc _]".
+    iModIntro.
+    iApply "HΦc".
+    done.
+  }
+  wpc_call.
+  { done. }
+  iCache with "Hq HΦ".
+  {
+    iDestruct "HΦ" as "[HΦc _]".
+    iModIntro.
+    iApply "HΦc".
+    done.
+  }
+  wpc_pures.
+  iNamed "Hclerk".
+  wpc_loadField.
+
+  wpc_bind (KVServer__Get _).
+  wpc_frame.
+  wp_apply (KVServer__Get_is_rpcHandler  with "His_kv").
+  iIntros (f) "#Hfspec".
+  iNamed 1.
+
+  wpc_loadField.
+  pose (args:={|U64_1:=key; U64_2:=0 |}).
+  replace (#key, (#0, #()))%V with (into_val.to_val args) by done.
+  iDestruct ("Hfspec" $! args) as "#Hfspec2".
+  iApply wpc_fupd.
+  wpc_apply (wpc_RPCClient__MakeRequest with "Hfspec2 [Hq Hcl His_kv]").
+  { iNamed "His_kv". iFrame. iNamed "His_server". iNamed "Hlinv".
+    iFrame "#".
+  }
+  iSplit.
+  {
+    iLeft in "HΦ".
+    iModIntro.
+    iIntros "Hpnfupd".
+    iApply "HΦ".
+    iMod "Hpnfupd".
+    iModIntro.
+    iModIntro.
+    iDestruct "Hpnfupd" as "[>Hpre|>Hpost]".
+    { iModIntro. done. }
+    { iModIntro. (* Idempotence of puts is proved here *)
+      iDestruct "Hpost" as (ret ->) "$".
+    }
+  }
+  iNext.
+  iIntros (retv) "[Hcl >[%Hre Hptsto]]".
+  rewrite Hre.
   iRight in "HΦ". iModIntro.
   iApply "HΦ".
   iFrame. iExists _; iFrame.
