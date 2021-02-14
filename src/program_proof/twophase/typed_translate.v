@@ -7,8 +7,6 @@ From Perennial.program_proof Require Import twophase.op_wrappers.
 
 Section translate.
 
-  (* TODO: specialize to txn spec and disk ffi *)
-
   (* Records defining spec language extensions *)
   Notation spec_op := jrnl_op.
   Notation spec_ffi := jrnl_model.
