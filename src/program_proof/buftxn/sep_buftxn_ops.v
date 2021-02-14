@@ -395,28 +395,34 @@ Section goose_lang.
       iExists _; iFrame.
   Qed.
 
-  Theorem wpc_BufTxn__CommitWait {l γ γ' dinit γtxn} P0 P `{!Liftable P} klevel :
+  Theorem wpc_BufTxn__CommitWait' {l γ γ' dinit γtxn γdurable committed_mT m} klevel :
     N ## invariant.walN →
     N ## invN →
-    N ## mspec.wpwpcN ->
-    {{{ "Hbuftxn" ∷ is_buftxn N l γ dinit γtxn P0 ∗
-        "HP" ∷ P (buftxn_maps_to γtxn) ∗
-        "#Htxn_cinv" ∷ txn_cinv N γ γ'
+    N ## mspec.wpwpcN →
+    {{{
+      "Hbuftxn_mem" ∷ is_buftxn_mem N l γ dinit γtxn γdurable ∗
+      "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT ∗
+      "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) ∗
+      "Hstable" ∷ ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
+      "#Htxn_cinv" ∷ txn_cinv N γ γ'
     }}}
       BufTxn__CommitWait #l #true @ S klevel; ⊤
-    {{{ (ok:bool), RET #ok;
-        if ok then
-            P (λ a v, durable_mapsto_own γ a v)
-        else P0 (λ a v, durable_mapsto_own γ a v) }}}
-    {{{ P0 (durable_mapsto_own γ') ∨
-         P (durable_mapsto_own γ') }}}.
+    {{{
+      (ok:bool), RET #ok;
+      if ok then
+        ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v)
+      else
+        ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ a v)
+    }}}
+    {{{
+      ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ' a v) ∨
+      ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v)
+    }}}.
   Proof.
-    iIntros (??? Φ Φc) "Hpre HΦ". iNamed "Hpre".
-    iNamed "Hbuftxn".
+    iIntros (HwalN HinvN HwpwpcN Φ Φc) "(?&?&?&?&?) HΦ".
+    iNamed.
     iNamed "Hbuftxn_mem".
-    iNamed "Hbuftxn_durable".
     iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->.
-    iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable #HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
 
     iApply wpc_cfupd.
@@ -478,11 +484,11 @@ Section goose_lang.
         iModIntro.
         iApply "HΦc".
         iDestruct "H" as "[H|H]".
-        - iLeft. iApply "HrestoreP0". iApply "H".
-        - iRight. iApply "HPrestore". iDestruct (big_sepM_subseteq with "H") as "H"; eauto.
+        - iLeft. iApply "H".
+        - iRight. iDestruct (big_sepM_subseteq with "H") as "H"; eauto.
       }
       { iMod (exchange_durable_mapsto with "[$Htxn_cinv $H]") as "H".
-        iModIntro. iApply "HΦc". iLeft. iApply "HrestoreP0". iFrame. }
+        iModIntro. iApply "HΦc". iLeft. iFrame. }
     }
     iModIntro.
     iIntros (ok) "Hpost".
@@ -493,7 +499,6 @@ Section goose_lang.
         iAssert (txn_durable γ txn_id) as "#Hdurable_txn_id {Hlower_bound}".
         { iApply "Hlower_bound". done. }
         iApply "HΦ".
-        iApply "HPrestore".
         iApply big_sepM_subseteq; eauto.
         iApply big_sepM_sep; iFrame.
         rewrite /durable_mapsto.
@@ -507,7 +512,6 @@ Section goose_lang.
       + iDestruct "Hpost" as "[%Hanydirty_false Hpost]".
         iDestruct "Hpost" as "(Hpreq & Hmod_tokens)".
         iApply "HΦ".
-        iApply "HPrestore".
         iApply big_sepM_subseteq; eauto.
         iApply big_sepM_sep; iFrame.
         iSplitR "Hpreq".
@@ -516,7 +520,6 @@ Section goose_lang.
         rewrite Hanydirty; eauto.
     - iDestruct "Hpost" as "[Heph Hmod_tokens]".
       iApply "HΦ".
-      iApply "HrestoreP0".
       iApply big_sepM_sep; iFrame.
       iApply (big_sepM_mono with "Hmod_tokens").
       iIntros (k x Hkx) "H".
@@ -525,56 +528,54 @@ Section goose_lang.
       apply _.
   Qed.
 
-  Theorem wpc_BufTxn__CommitWait' {l γ γ' dinit γtxn γdurable committed_mT m} klevel :
+  Theorem wpc_BufTxn__CommitWait {l γ γ' dinit γtxn} P0 P `{!Liftable P} klevel :
     N ## invariant.walN →
     N ## invN →
-    N ## mspec.wpwpcN →
-    {{{
-      "Hbuftxn_mem" ∷ is_buftxn_mem N l γ dinit γtxn γdurable ∗
-      "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT ∗
-      "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) ∗
-      "Hbuftxn_maps_to" ∷ ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
-      "#Htxn_cinv" ∷ txn_cinv N γ γ'
+    N ## mspec.wpwpcN ->
+    {{{ "Hbuftxn" ∷ is_buftxn N l γ dinit γtxn P0 ∗
+        "HP" ∷ P (buftxn_maps_to γtxn) ∗
+        "#Htxn_cinv" ∷ txn_cinv N γ γ'
     }}}
       BufTxn__CommitWait #l #true @ S klevel; ⊤
-    {{{
-      (ok:bool), RET #ok;
-      if ok then
-        ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v)
-      else
-        ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ a v)
-    }}}
-    {{{
-      ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ' a v) ∨
-      ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v)
-    }}}.
+    {{{ (ok:bool), RET #ok;
+        if ok then
+            P (λ a v, durable_mapsto_own γ a v)
+        else P0 (λ a v, durable_mapsto_own γ a v) }}}
+    {{{ P0 (durable_mapsto_own γ') ∨
+         P (durable_mapsto_own γ') }}}.
   Proof.
-    iIntros (HwalN HinvN HwpwpcN Φ Φc) "(?&?&?&?&?) HΦ".
-    iNamed.
+    iIntros (??? Φ Φc) "Hpre HΦ". iNamed "Hpre".
+    iNamed "Hbuftxn".
+    (* iNamed "Hbuftxn_mem". *)
+    iNamed "Hbuftxn_durable".
+    (* iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->. *)
+    iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable #HPrestore]".
+
     wpc_apply (
-      wpc_BufTxn__CommitWait
-        (λ mapsto, [∗ map] a↦v ∈ committed_mT, mapsto a v)%I
-        (λ mapsto, [∗ map] a↦v ∈ m, mapsto a v)%I
-        _ HwalN HinvN HwpwpcN
-      with "[Hbuftxn_mem Hdurable_frag Hold_vals Hbuftxn_maps_to]"
+      wpc_BufTxn__CommitWait'
+      with "[$Hbuftxn_mem Hdurable_frag Hold_vals Hstable Htxn_cinv]"
     ).
-    {
-      iFrame "Hbuftxn_maps_to Htxn_cinv".
-      iExists _.
-      iFrame "Hbuftxn_mem".
-      iExists _.
-      iFrame.
-      iModIntro.
-      auto.
-    }
+    1-3: solve_ndisj.
+    1: iFrame "∗ #".
     iSplit.
     {
       iDestruct "HΦ" as "[HΦc _]".
-      intuition.
+      iModIntro.
+      iDestruct 1 as "[H|H]"; iApply "HΦc".
+      - iLeft.
+        iApply "HrestoreP0".
+        iApply "H".
+      - iRight.
+        iApply "HPrestore".
+        iApply "H".
     }
     iIntros (ok) "!> H".
     iApply "HΦ".
-    iFrame.
+    destruct ok.
+    - iApply "HPrestore".
+      iApply "H".
+    - iApply "HrestoreP0".
+      iApply "H".
   Qed.
 
   Theorem is_buftxn_mem_durable l γ dinit γtxn P0 γdurable :
