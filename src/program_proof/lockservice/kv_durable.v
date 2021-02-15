@@ -300,7 +300,6 @@ Proof.
   iRight. iSplitL ""; first done.
   wp_pures.
   iApply "HΦ".
-  iFrame.
   destruct l'; last first.
   {
     exfalso.
