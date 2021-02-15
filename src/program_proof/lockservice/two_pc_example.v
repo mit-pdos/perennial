@@ -219,16 +219,33 @@ Proof.
   done.
 Defined.
 
+Instance unit_IntoVal : into_val.IntoVal ().
+Proof.
+  refine {| into_val.to_val := λ _, #();
+            into_val.IntoVal_def := ();
+         |}.
+  intros [] [] _; auto.
+Defined.
+
 Definition ps_mu_inv (ps:loc) γ γtpc pid : iProp Σ :=
-  ∃ (kvs_ptr txns_ptr lockMap_ptr:loc) (kvsM:gmap u64 u64) (txnsM:gmap u64 TransactionC),
+  ∃ (kvs_ptr txns_ptr finishedTxns_ptr lockMap_ptr:loc) (kvsM:gmap u64 u64) (txnsM:gmap u64 TransactionC)
+    (finishedTxnsM:gmap u64 unit),
+
     "Hkvs" ∷ ps ↦[ParticipantServer.S :: "kvs"] #kvs_ptr ∗
     "Htxns" ∷ ps ↦[ParticipantServer.S :: "txns"] #txns_ptr ∗
+    "HfinishedTxns" ∷ ps ↦[ParticipantServer.S :: "finishedTxns"] #finishedTxns_ptr ∗
+
     "HlockMap_ptr" ∷ ps ↦[ParticipantServer.S :: "lockmap"] #lockMap_ptr ∗
     "HkvsMap" ∷ is_map (kvs_ptr) kvsM ∗
     "HtxnsMap" ∷ is_map (txns_ptr) txnsM ∗
+    "HfinishedTxnsMap" ∷ is_map (finishedTxns_ptr) finishedTxnsM ∗
+
     "Hkvs_ctx" ∷ map_ctx γ.(ps_kvs) 1 kvsM ∗
     "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ x, x [[γ.(ps_kvs)]]↦{1/2} (map_get kvsM x).1) ∗
-    "#Htxnx_prepared" ∷ [∗ map] tid ↦ txn ∈ txnsM, (prepared γtpc tid pid)
+
+    "#Htxnx_prepared" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (prepared γtpc tid pid)) ∗
+    "Hfinish_tok" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜is_Some (finishedTxnsM !! tid)⌝ ∨ finish_token γtpc tid pid)) ∗
+    "%" ∷ ⌜(dom (gset u64) txnsM) ## dom (gset u64) finishedTxnsM⌝
 .
 
 Definition participantN := nroot .@ "participant".
@@ -240,14 +257,14 @@ Definition is_participant (ps:loc) γ γtpc pid : iProp Σ :=
 .
 
 (* TODO: One participant shouldn't know the resources that other participants are contributing *)
-Lemma wp_PrepareIncrease (ps:loc) tid γ γtpc (key key' amnt:u64) :
+Lemma wp_PrepareIncrease (ps:loc) tid pid γ γtpc (key key' amnt:u64) :
   {{{
-       is_txn tid γtpc (∃ v:u64, key [[γ.(ps_kvs)]]↦{1/2} v) (∃ v:u64, key' [[γ.(ps_kvs)]]↦{1/2} v) ∗
-       is_participant ps γ γtpc 0
+       is_txn_single γtpc tid pid (∃ v:u64, key [[γ.(ps_kvs)]]↦{1/2} v) (∃ v:u64, key' [[γ.(ps_kvs)]]↦{1/2} v) ∗
+       is_participant ps γ γtpc pid
   }}}
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
   {{{
-       (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid 0
+       (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid pid
   }}}.
 Proof.
   iIntros (Φ) "[#Htxn #Hps] HΦ".
@@ -296,32 +313,18 @@ Proof.
 
   (* FIXME: lock release missing *)
 
-  (* Get prepared token *)
-  iInv "Htxn" as ">Ht" "Htclose".
-  iDestruct "Ht" as "[Ht Ht2]".
-  iDestruct "Ht" as "[Ht|Ht]".
-  {
-    iDestruct "Ht" as "(Hundecided & [Hprep | Hptsto2] & Hirrelevant)"; last first.
-    {
-      iNamed "Hptsto2".
-      (* TODO: Need to add token to rule out this case *)
-      admit.
-    }
-    iMod ("Htclose" with "[Hirrelevant Hptsto Hundecided]") as "_".
-    {
-      iNext.
-      iLeft.
-      iFrame. iRight.
-      iExists _; iFrame.
-    }
-    iModIntro.
-    iRight.
-    iFrame. done.
-  }
-  { (* Impossible case; commit already decided *)
-    admit.
-  }
-
+  iRight.
+  iDestruct (big_sepS_elem_of_acc _ _ tid with "Hfinish_tok") as "[Hfinish_tok Hfinish_rest]".
+  { set_solver. }
+  iDestruct "Hfinish_tok" as "[%Hbad|Hfinish_tok]".
+  { admit. (* FIXME: add lookup *) }
+  iMod (participant_prepare with "Htxn Hfinish_tok [Hptsto]") as "[#Hprep Hfinish_tok]".
+  { done. }
+  { iExists _; iFrame. }
+  iSpecialize ("Hfinish_rest" with "[Hfinish_tok]").
+  { by iRight. }
+  iFrame "Hprep".
+  by iModIntro.
 Admitted.
 
 End tpc_example.
