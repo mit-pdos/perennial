@@ -46,17 +46,11 @@ Definition tpc_inv_single γtpc tid pid R R' : iProp Σ :=
   aborted γtpc tid ∗ finish_token γtpc tid pid
 .
 
-Definition tpc_inv γtpc tid R0 R1 : iProp Σ :=
-  tpc_inv_single γtpc tid 0 R0 R0 ∗
-  tpc_inv_single γtpc tid 1 R1 R1
-.
-
-Definition tpcN := nroot .@ "tpc".
-Definition is_txn_single γtpc (tid pid:u64) R R': iProp Σ := inv tpcN (tpc_inv_single γtpc tid pid R R').
-Definition is_txn γtpc (tid:u64) R0 R1 : iProp Σ := inv tpcN (tpc_inv γtpc tid R0 R1).
+Definition txnSingleN (pid:u64) := nroot .@ "tpc" .@ pid.
+Definition is_txn_single γtpc (tid pid:u64) R R': iProp Σ := inv (txnSingleN pid) (tpc_inv_single γtpc tid pid R R').
 
 Lemma participant_prepare E γtpc tid pid R R':
-  ↑tpcN ⊆ E →
+  ↑(txnSingleN pid) ⊆ E →
   is_txn_single γtpc tid pid R R' -∗ finish_token γtpc tid pid-∗ R ={E}=∗ prepared γtpc tid pid ∗ finish_token γtpc tid pid.
 Proof.
   intros ?.
@@ -97,7 +91,7 @@ Proof.
 Admitted.
 
 Lemma prepared_participant_abort E γtpc tid pid R R':
-  ↑tpcN ⊆ E →
+  ↑(txnSingleN pid) ⊆ E →
   is_txn_single γtpc tid pid R R' -∗ prepared γtpc tid pid -∗ aborted γtpc tid -∗ finish_token γtpc tid pid ={E}=∗
   ▷ R.
 Proof.
@@ -128,7 +122,7 @@ Qed.
 
 (* Need to know that committed implies prepared *)
 Lemma prepared_participant_finish_commit E γtpc tid pid R R':
-  ↑tpcN ⊆ E →
+  ↑(txnSingleN pid) ⊆ E →
   is_txn_single γtpc tid pid R R' -∗ committed_witness γtpc tid pid -∗ committed γtpc tid -∗ finish_token γtpc tid pid ={E}=∗
   ▷ R'.
 Proof.
@@ -163,6 +157,43 @@ Proof.
     naive_solver.
   }
 Qed.
+
+Lemma start_commit_txn_single E γtpc tid pid R R':
+  ↑(txnSingleN pid) ⊆ E →
+  is_txn_single γtpc tid pid R R' -∗ prepared γtpc tid pid -∗ undecided γtpc tid ={E,E∖↑txnSingleN pid}=∗
+  undecided γtpc tid ∗ committed_witness γtpc tid pid ∗ (▷ R) ∗ (R' -∗ committed γtpc tid ={E ∖ ↑txnSingleN pid,E}=∗ emp).
+Proof.
+  intros Hnamespace.
+  iIntros "#His_txn #Hprep Hundecided".
+  iInv "His_txn" as "Ht" "Htclose".
+  iDestruct "Ht" as "[>[Hunprep _]|Ht]".
+  { (* Unprepared *)
+    iDestruct (ptsto_agree_frac_value with "Hprep Hunprep") as %[_ Hbad].
+    contradiction.
+  }
+  iDestruct "Ht" as "[(_ & $ & >Huncommit)|Ht]".
+  {
+    iMod (map_freeze with "[] Huncommit") as "[_ #Hcommit_witness]".
+    { admit. }
+    iFrame "#∗".
+    iModIntro.
+    iIntros "HR' #Hcommitted".
+    iApply "Htclose".
+    iNext.
+    iRight. iRight. iLeft.
+    iFrame "#∗".
+  }
+  iDestruct "Ht" as "[[>#Hcom _]|Ht]".
+  {
+    iDestruct (ptsto_agree_frac_value with "Hundecided Hcom") as %[Hbad _].
+    naive_solver.
+  }
+  iDestruct "Ht" as "[>#Habort _]".
+  {
+    iDestruct (ptsto_agree_frac_value with "Hundecided Habort") as %[Hbad _].
+    naive_solver.
+  }
+Admitted.
 
 Record TransactionC :=
 mkTransactionC {
