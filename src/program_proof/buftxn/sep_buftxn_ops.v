@@ -409,10 +409,7 @@ Section goose_lang.
       BufTxn__CommitWait #l #true @ S klevel; ⊤
     {{{
       (ok:bool), RET #ok;
-      if ok then
-        ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v)
-      else
-        ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ a v)
+      ([∗ map] a↦v ∈ (if ok then m else committed_mT), durable_mapsto_own γ a v)
     }}}
     {{{
       ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ' a v) ∨
