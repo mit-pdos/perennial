@@ -999,8 +999,8 @@ Approach 3:
 ===========
 Lock invariant :
 ∃ o, modify_token γ a ∗
-     na_crash_inv (jrnl_mapsto a 1 o ∗ durable_mapsto γ a o)
-                  (∃ o', jrnl_mapsto a 1 o' ∗ durable_mapsto γ' a o')
+     na_crash_inv (jrnl_mapsto a 1 o ∗ durable_mapsto γ a o ∗ jrnl_crash_tok a)
+                  (∃ o', jrnl_mapsto a 1 o' ∗ durable_mapsto γ' a o' ∗ jrnl_crash_tok a)
 
 With this approach, as soon as the 2PL code acquires a lock as part of an operation,
 it immediately opens the na_crash_inv to lift the durable_mapsto and modify token into a buftxn_maps_to, then re-closes the na_crash_inv. Only during Commit are all of these na_crash_inv opened and held open across the duration of Commit.
