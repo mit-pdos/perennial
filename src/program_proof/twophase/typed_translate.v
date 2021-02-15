@@ -178,6 +178,7 @@ Section translate.
       Γ @ tph ⊢v RecV f x e -- RecV f x e' : arrowT t1 t2
   where "Γ @ tph ⊢v v1 -- v2 : A" := (atomic_body_val_transTy Γ tph v1 v2 A).
 
+  (* XXX: todo: this should call a wrapped version of MkTxn that also allocates the lockmap and returns a struct containing both *)
   Inductive jrnl_trans : sval → ival → Prop :=
   | jrnl_open_trans (x: string) :
       jrnl_trans (λ: x, ExternalOp OpenOp (Var x)) (λ: "_", MkTxn #()).
