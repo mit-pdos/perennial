@@ -315,7 +315,10 @@ Tactic Notation "wpc_let" simple_intropattern(H) := wpc_pure (Rec BAnon (BNamed 
 Ltac wpc_call :=
   let Hcrash := fresh "Hcrash" in
   wpc_rec Hcrash;
-  [ try iFromCache; crash_case .. | wpc_pure1 Hcrash; [try iFromCache; crash_case ..  | repeat (wpc_pure1 Hcrash; []); clear Hcrash] ].
+  [ try iFromCache; crash_case .. |
+    try wpc_pure1 Hcrash;
+      [try iFromCache; crash_case .. |
+       repeat (wpc_pure_no_later wp_pure_filter as Hcrash; []); clear Hcrash] ].
 
 Ltac wpc_bind_core K :=
   lazymatch eval hnf in K with

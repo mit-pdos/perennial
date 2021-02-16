@@ -1679,8 +1679,7 @@ Proof.
   iNamed "Hlocked_mapstos".
   iNamed "Hbuftxn".
   iApply wpc_cfupd.
-  rewrite /TwoPhase__CommitNoRelease.
-  wpc_pures.
+  wpc_call.
   {
     iDestruct "HΦ" as "[HΦc _]".
     iModIntro.
