@@ -1042,16 +1042,7 @@ Fixpoint head_trans (e: expr) :
        l ← allocateN (int.Z n * length (flatten_struct v));
        modify (state_init_heap l (int.Z n) v);;
        ret $ LitV $ LitLoc l)
-  | PrepareWrite (Val (LitV (LitLoc l))) =>
-    atomically
-      (v ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
-        match v with
-        | (Reading 0, v) =>
-          modify (set heap <[l:=(Writing, v)]>);;
-          ret $ LitV $ LitUnit
-        | _ => undefined
-        end)
-   | StartRead (Val (LitV (LitLoc l))) =>
+   | StartRead (Val (LitV (LitLoc l))) => (* non-atomic load part 1 (used for map accesses) *)
      atomically
        (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
         match nav with
@@ -1060,7 +1051,7 @@ Fixpoint head_trans (e: expr) :
           ret v
         | _ => undefined
         end)
-   | FinishRead (Val (LitV (LitLoc l))) =>
+   | FinishRead (Val (LitV (LitLoc l))) => (* non-atomic load part 2 *)
      atomically
        (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
         match nav with
@@ -1069,14 +1060,23 @@ Fixpoint head_trans (e: expr) :
                  ret $ LitV $ LitUnit
         | _ => undefined
         end)
-   | Load (Val (LitV (LitLoc l))) =>
+   | Load (Val (LitV (LitLoc l))) => (* atomic load (used for most normal Go loads) *)
      atomically
        (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
         match nav with
         | (Reading _, v) => ret v
         | _ => undefined
         end)
-  | FinishStore (Val (LitV (LitLoc l))) (Val v) =>
+  | PrepareWrite (Val (LitV (LitLoc l))) => (* non-atomic write part 1 *)
+    atomically
+      (v ← (reads (λ σ, σ.(heap) !! l) ≫= unwrap);
+        match v with
+        | (Reading 0, v) =>
+          modify (set heap <[l:=(Writing, v)]>);;
+          ret $ LitV $ LitUnit
+        | _ => undefined
+        end)
+  | FinishStore (Val (LitV (LitLoc l))) (Val v) => (* non-atomic write part 2 *)
     atomically
       (nav ← reads (λ σ, σ.(heap) !! l);
        check (is_Writing nav);;

@@ -542,6 +542,9 @@ Section test.
 
 End test.
 
+(** A variant of own_discrete with better support for things that already have ▷
+in front of them.  See fupd_level_later_to_disc in crash_weakestpre.v for the
+key lemma. *)
 Definition own_discrete_fupd_def `{!invG Σ} (P: iProp Σ) := own_discrete (|0={∅}=> P).
 Definition own_discrete_fupd_aux `{!invG Σ} : seal own_discrete_fupd_def. Proof. by eexists. Qed.
 Definition own_discrete_fupd `{!invG Σ} := own_discrete_fupd_aux.(unseal).
@@ -620,22 +623,6 @@ Section own_disc_fupd_props.
     - iIntros "H". iModIntro. iMod "H". rewrite own_discrete_elim //=.
   Qed.
 
-  (*
-  Lemma later_to_own_disc_fupd E P:
-    ▷ P -∗ |0={E}=> (<disc> ▷ P).
-  Proof.
-    iIntros "HP".
-    iMod (pending_alloc) as (γcancel) "Hc".
-    iMod (inv_alloc' O N _ (P ∨ staged_done γcancel) with "[HP]") as "#Hinv".
-    { by iLeft. }
-    iModIntro. iModIntro. iInv "Hinv" as "H" "Hclo".
-    iDestruct "H" as "[H|>Hfalse]"; last first.
-    { iDestruct (pending_done with "[$] [$]") as %[]. }
-    iMod (pending_upd_done with "Hc") as "Hd".
-    iMod ("Hclo" with "[Hd]"); first by iRight.
-    iModIntro; eauto.
-  Qed.
-  *)
   Lemma modality_own_discrete_fupd_mixin :
     modality_mixin (@own_discrete_fupd Σ _)
                    (MIEnvId)

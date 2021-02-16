@@ -267,6 +267,12 @@ Proof.
   iSplit; first auto. iIntros "!> ?"; eauto.
 Qed.
 
+(** This key rule is the reason why there is a <disc> in the definition of WPC:
+We need to put the WPC with crash condition [Φc ∗ ▷ P] into a (staged)
+invariant, and still be able to get it out without a ▷ in the non-crash
+case. This relies on [own_discrete_elim_conj] to put "only the discrete part" of
+the WPC into the invariant, and keep the other resources backing this WPC
+locally to ourselves. *)
 Lemma wpc_staged_inv_open' γ s k k' k'' k2 mj E1 E1' e Φ Φc {HL: AbsLaterable Φc} Q Qrest Qnew P :
   E1 ⊆ E1' →
   k'' ≤ k' →
