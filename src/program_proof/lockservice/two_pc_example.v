@@ -78,7 +78,8 @@ Context `{!mapG Σ u64 u64}.
 Context `{!mapG Σ u64 ()}.
 Context `{!mapG Σ u64 (option bool)}.
 Context `{!mapG Σ (u64*u64) ()}.
-Context `{resMapG Σ (u64*u64) }.
+(* Context `{resMapG Σ (u64*u64) }. *)
+Context `{!mapG Σ (u64*u64) (option (u64*u64))}.
 
 Record tpc_names :=
 mk_tpc_names  {
@@ -86,8 +87,7 @@ mk_tpc_names  {
   prepared_gn : gname ;  (* (tid, pid) -> () *)
   finish_token_gn : gname ;
   uncommit_token_gn : gname ;
-  abort_res_gn : gname ; (* (tid,pid) -> iProp *)
-  commit_res_gn : gname ; (* (tid,pid) -> iProp *)
+  txn_data_gn : gname ; (* (tid,pid) -> (key, oldv) *)
 }.
 
 Implicit Type γtpc : tpc_names.
@@ -98,31 +98,29 @@ Definition finish_token γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(fin
 Definition uncommit_token γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(uncommit_token_gn)]]↦ ().
 Definition committed_witness γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(uncommit_token_gn)]]↦ro ().
 
-Definition undecided γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ None.
+Definition undecided γtpc (tid:u64) : iProp Σ := tid [[γtpc.(committed_gn)]]↦ None.
 Definition aborted γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ro Some false.
 Definition committed γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ro Some true.
 
-Definition tpc_inv_single γtpc tid pid : iProp Σ :=
-  unprepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗
-      ((tid,pid) r[[γtpc.(abort_res_gn)]]↦?) ∗
-      ((tid,pid) r[[γtpc.(commit_res_gn)]]↦?) ∨
-  prepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗ (∃ R, R ∗ (tid, pid) r[[γtpc.(abort_res_gn)]]↦ R) ∨
-  committed γtpc tid ∗ prepared γtpc tid pid ∗ ((∃ R, R ∗ (tid, pid) r[[γtpc.(commit_res_gn)]]↦ R) ∨ finish_token γtpc tid pid) ∨
+Definition tpc_inv_single γtpc tid pid R R' : iProp Σ :=
+  unprepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∨
+  prepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗ (∃ x:u64*u64, (R x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨
+  committed γtpc tid ∗ prepared γtpc tid pid ∗ ((∃ x:u64*u64, (R' x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨ finish_token γtpc tid pid) ∨
   aborted γtpc tid ∗ finish_token γtpc tid pid
 .
 
 Definition txnSingleN (pid:u64) := nroot .@ "tpc" .@ pid.
-Definition is_txn_single γtpc (tid pid:u64): iProp Σ := inv (txnSingleN pid) (tpc_inv_single γtpc tid pid).
+Definition is_txn_single γtpc (tid pid:u64) R R' : iProp Σ := inv (txnSingleN pid) (tpc_inv_single γtpc tid pid R R').
 
-Lemma participant_prepare E γtpc tid pid R R':
+Lemma participant_prepare x E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid -∗ finish_token γtpc tid pid -∗ R ={E}=∗
+  is_txn_single γtpc tid pid R R' -∗ finish_token γtpc tid pid -∗ R x -∗
+  ((tid,pid) [[γtpc.(txn_data_gn)]]↦ None) ={E}=∗
   prepared γtpc tid pid ∗ finish_token γtpc tid pid ∗
-  ((tid,pid) r[[γtpc.(abort_res_gn)]]↦ R) ∗
-  ((tid,pid) r[[γtpc.(commit_res_gn)]]↦ R').
+  ((tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some x).
 Proof.
   intros ?.
-  iIntros "His_txn Hfinish_tok HR".
+  iIntros "His_txn Hfinish_tok HR Hdata".
   iInv "His_txn" as "[>[Hunprep Huncommit]|[[>#Hprep Hrest]|[Hcommitted|Haborted]]]" "Htclose".
   {
     (* TODO: don't use auth_map; want just mapUR *)
@@ -130,9 +128,11 @@ Proof.
     { admit. }
 
     iFrame "Hprep Hfinish_tok".
-    iDestruct "Huncommit" as "(Huncommit & Habort & Hcommit)".
-    iMod (rptsto_choose R' with "Hcommit") as "#Hcommit".
-    iMod (rptsto_choose R with "Habort") as "#Habort".
+    iMod (map_update _ _ (Some x) with "[] Hdata") as "[_ Hdata]".
+    { admit. }
+    iMod (map_freeze with "[] Hdata") as "[_ #Hdata]".
+    { admit. }
+    Locate viewR.
     iFrame "#".
     iMod ("Htclose" with "[HR Huncommit]"); last done.
     iNext.
@@ -141,20 +141,15 @@ Proof.
     iFrame "#∗".
     iExists _; iFrame "#∗".
   }
-  { (* Already prepared *)
-    iFrame "Hfinish_tok".
-    iMod ("Htclose" with "[HR Hrest]"); last done.
-    iRight. iLeft. iFrame "#∗".
+  { (* Already prepared; contradiction *)
+    iDestruct "Hrest" as "[_ Hrest]".
+    iDestruct "Hrest" as (x2) "[_ >Hdata2]".
+    iDestruct (ptsto_agree_frac_value with "Hdata Hdata2") as %[_ Hbad].
+    contradiction.
   }
-  { (* Committed *)
+  { (* Committed; contradiction with Hescrow a nd Hfinish_tok ∨ Hdata *)
     iDestruct "Hcommitted" as "(>Hcom & >#Hprep & Hescrow)".
-    iFrame "#∗".
-    iMod ("Htclose" with "[Hcom $Hprep Hescrow]"); last done.
-    iNext.
-    iRight.
-    iRight.
-    iLeft.
-    iFrame.
+    admit.
   }
   { (* Aborted *)
     iDestruct "Haborted" as "[_ >Hfinish_tok2]".
@@ -163,13 +158,13 @@ Proof.
   }
 Admitted.
 
-Lemma prepared_participant_abort E γtpc tid pid R R':
+Lemma prepared_participant_abort E γtpc tid pid R R' x:
   ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ prepared γtpc tid pid -∗ aborted γtpc tid -∗ finish_token γtpc tid pid ={E}=∗
-  ▷ R.
+  is_txn_single γtpc tid pid R R' -∗ prepared γtpc tid pid -∗ (tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some x -∗ aborted γtpc tid -∗ finish_token γtpc tid pid ={E}=∗
+  ▷ R x.
 Proof.
   intros Hnamespace.
-  iIntros "#His_txn #Hprep #Habort Hfinish_tok".
+  iIntros "#His_txn #Hprep #Hdata #Habort Hfinish_tok".
 
   iInv "His_txn" as "Ht" "Htclose".
   iDestruct "Ht" as "[>[Hunprep _]|Ht]".
@@ -177,8 +172,11 @@ Proof.
     iDestruct (ptsto_agree_frac_value with "Hprep Hunprep") as %[_ Hbad].
     contradiction.
   }
-  iDestruct "Ht" as "[(_ & $ &_)|Ht]".
+  iDestruct "Ht" as "[(_ & _ & HR)|Ht]".
   { (* Prepared *)
+    iDestruct "HR" as (x') "[HR >Hdata2]".
+    iDestruct (ptsto_agree_frac_value with "Hdata Hdata2") as %[H  _].
+    replace (x') with (x) by naive_solver.
     iMod ("Htclose" with "[Hfinish_tok $Habort]"); eauto.
   }
   iDestruct "Ht" as "[[>#Hcom _]|Ht]".
@@ -194,28 +192,31 @@ Proof.
 Qed.
 
 (* Need to know that committed implies prepared *)
-Lemma prepared_participant_finish_commit E γtpc tid pid R R':
+Lemma prepared_participant_finish_commit E γtpc tid pid R R' x:
   ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ committed_witness γtpc tid pid -∗ committed γtpc tid -∗ finish_token γtpc tid pid ={E}=∗
-  ▷ R'.
+  is_txn_single γtpc tid pid R R' -∗ committed_witness γtpc tid pid -∗ committed γtpc tid -∗  (tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some x -∗ finish_token γtpc tid pid ={E}=∗
+  ▷ R' x.
 Proof.
   intros Hnamespace.
-  iIntros "#His_txn #Hcommit_tok #Hcom Hfinish_tok".
+  iIntros "#His_txn #Hcommit_tok #Hcom #Hdata Hfinish_tok".
   iInv "His_txn" as "Ht" "Htclose".
   iDestruct "Ht" as "[>[_ Huncommit]|Ht]".
   { (* Unprepared *)
     iDestruct (ptsto_agree_frac_value with "Huncommit Hcommit_tok") as %[_ Hbad].
     contradiction.
   }
-  iDestruct "Ht" as "[(_ & _ & >Huncommit)|Ht]".
+  iDestruct "Ht" as "[(_ & >Huncommit & _)|Ht]".
   { (* Prepared *)
     iDestruct (ptsto_agree_frac_value with "Huncommit Hcommit_tok") as %[_ Hbad].
     contradiction.
   }
   iDestruct "Ht" as "[(_ & #Hprep & HR')|Ht]".
   {
-    iDestruct "HR'" as "[$|>Hfinish_tok2]".
+    iDestruct "HR'" as "[HR|>Hfinish_tok2]".
     {
+      iDestruct "HR" as (x') "[HR' >Hdata2]".
+      iDestruct (ptsto_agree_frac_value with "Hdata Hdata2") as %[H  _].
+      replace (x') with (x) by naive_solver.
       iMod ("Htclose" with "[$Hcom $Hprep Hfinish_tok]"); last by iModIntro.
       iNext. eauto.
     }
@@ -234,7 +235,7 @@ Qed.
 Lemma start_commit_txn_single E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
   is_txn_single γtpc tid pid R R' -∗ prepared γtpc tid pid -∗ undecided γtpc tid ={E,E∖↑txnSingleN pid}=∗
-  undecided γtpc tid ∗ committed_witness γtpc tid pid ∗ (▷ R) ∗ (R' -∗ committed γtpc tid ={E ∖ ↑txnSingleN pid,E}=∗ emp).
+  undecided γtpc tid ∗ committed_witness γtpc tid pid ∗ (∃ x, ▷ R x ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x ∗ (R' x -∗ committed γtpc tid ={E ∖ ↑txnSingleN pid,E}=∗ emp)).
 Proof.
   intros Hnamespace.
   iIntros "#His_txn #Hprep Hundecided".
@@ -244,16 +245,20 @@ Proof.
     iDestruct (ptsto_agree_frac_value with "Hprep Hunprep") as %[_ Hbad].
     contradiction.
   }
-  iDestruct "Ht" as "[(_ & $ & >Huncommit)|Ht]".
+  iDestruct "Ht" as "[(_ & >Huncommit & HR)|Ht]".
   {
     iMod (map_freeze with "[] Huncommit") as "[_ #Hcommit_witness]".
     { admit. }
     iFrame "#∗".
+    iDestruct "HR" as (x) "[HR >#Hdata]".
+    iExists _; iFrame "#∗".
     iModIntro.
     iIntros "HR' #Hcommitted".
     iApply "Htclose".
     iNext.
     iRight. iRight. iLeft.
+    iFrame "#∗".
+    iLeft. iExists x.
     iFrame "#∗".
   }
   iDestruct "Ht" as "[[>#Hcom _]|Ht]".
