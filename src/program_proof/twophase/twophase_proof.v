@@ -317,7 +317,7 @@ Lemma filter_addr_map_by_blk_union {A} (s1 s2: gset u64) (m: gmap addr A) :
     filter_addr_map_by_blk s1 m ∪ filter_addr_map_by_blk s2 m.
 Proof.
   rewrite -filter_by_key_union_or.
-  apply map_filter_iff.
+  apply map_filter_ext.
   set_solver.
 Qed.
 

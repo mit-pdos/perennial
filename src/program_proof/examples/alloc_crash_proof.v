@@ -421,7 +421,7 @@ Proof.
   clear.
   rewrite /alloc_post_crash /revert_reserved /alloc.free /alloc.unused.
   rewrite !map_filter_fmap /= !dom_fmap_L.
-  f_equal. apply map_filter_iff. intros [i x]. simpl. destruct x.
+  f_equal. apply map_filter_ext. intros i x. simpl. destruct x.
   - rewrite decide_False //; auto.
   - rewrite decide_True //; discriminate.
   - rewrite decide_False //; auto.
@@ -433,7 +433,7 @@ Proof.
   clear.
   rewrite /alloc.unused /revert_reserved.
   rewrite map_filter_fmap /= dom_fmap_L.
-  f_equal. apply map_filter_iff. intros [i x]. simpl. destruct x.
+  f_equal. apply map_filter_ext. intros i x. simpl. destruct x.
   - rewrite decide_False //; auto.
   - rewrite decide_True //; discriminate.
   - rewrite decide_False //; auto.
@@ -452,7 +452,7 @@ Proof.
   clear.
   rewrite /alloc.used /revert_reserved.
   rewrite map_filter_fmap /= dom_fmap_L.
-  f_equal. apply map_filter_iff. intros [i x]. simpl. destruct x.
+  f_equal. apply map_filter_ext. intros i x. simpl. destruct x.
   - rewrite decide_False //; auto.
   - rewrite decide_True //; discriminate.
   - rewrite decide_False //; auto.
