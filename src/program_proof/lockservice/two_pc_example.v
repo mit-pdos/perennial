@@ -307,6 +307,7 @@ Record participant_names :=
 mk_participant_names  {
     ps_ghs:list (deletable_heap.gen_heapG u64 bool Σ) ;
     ps_kvs:gname ;
+    ps_kvs_phys:gname ;
 }.
 
 Implicit Type γ : participant_names.
@@ -320,7 +321,8 @@ Proof.
 Defined.
 
 Definition kv_ctx γ (kvsM:gmap u64 u64) k : iProp Σ :=
-  k [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM k).1 ∨ (Locked γ.(ps_ghs) k).
+  k [[γ.(ps_kvs_phys)]]↦ (map_get kvsM k).1 ∗ k [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM k).1 ∨
+  (Locked γ.(ps_ghs) k) ∗ k [[γ.(ps_kvs_phys)]]↦{1/2} (map_get kvsM k).1.
 
 Definition ps_mu_inv (ps:loc) γ γtpc pid : iProp Σ :=
   ∃ (kvs_ptr txns_ptr finishedTxns_ptr lockMap_ptr:loc) (kvsM:gmap u64 u64) (txnsM:gmap u64 TransactionC)
@@ -338,8 +340,8 @@ Definition ps_mu_inv (ps:loc) γ γtpc pid : iProp Σ :=
     "Hkvs_ctx" ∷ ([∗ set] k ∈ (fin_to_set u64), kv_ctx γ kvsM k) ∗
     "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ _, True) ∗
 
-    "#Htxns_prepared" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (prepared γtpc tid pid)) ∗
-    "#Htxns_data" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (tid, pid)[[γtpc.(txn_data_gn)]]↦ro Some txn) ∗
+    "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (prepared γtpc tid pid) ∗ (tid, pid)[[γtpc.(txn_data_gn)]]↦ro Some txn)∗
+    "Htxns_own" ∷ ([∗ map] tid ↦ txn ∈ txnsM,  txn.(heldResource) [[γ.(ps_kvs_phys)]]↦{1/2} (word.add txn.(oldValue) txn.(amount))) ∗
     "Hfinish_tok" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜is_Some (finishedTxnsM !! tid)⌝ ∨ finish_token γtpc tid pid)) ∗
     "Hdata_unused" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM ∪ dom (gset u64) txnsM⌝ ∨ (tid,pid) [[γtpc.(txn_data_gn)]]↦ None)) ∗
     "%" ∷ ⌜(dom (gset u64) txnsM) ## dom (gset u64) finishedTxnsM⌝
@@ -387,7 +389,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* Transaction already finished *)
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok Hdata_unused]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Htxns_own Hfinish_tok Hdata_unused]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -415,7 +417,7 @@ Proof.
     (* Unsafe increase *)
     wp_loadField. wp_apply (wp_LockMap__Release with "[$HlockMap $Hkeylocked $Hkph]").
     wp_pures.
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok Hdata_unused]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Htxns_own Hfinish_tok Hdata_unused]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -445,9 +447,12 @@ Proof.
 
   iDestruct (big_sepS_elem_of_acc_impl key with "Hkvs_ctx") as "[Hptsto Hkvs_ctx]".
   { set_solver. }
-  iDestruct "Hptsto" as "[Hptsto|Hbad]"; last first.
+  iDestruct "Hptsto" as "[[Hphysptsto Hptsto]|Hbad]"; last first.
   { admit. (* conflict Hbad Hkeylocked *) }
-  iSpecialize ("Hkvs_ctx" $! (λ k, kv_ctx γ (typed_map.map_insert kvsM key (word.add old_v4 amnt)) k)%I with "[] [Hkeylocked]").
+  iMod (map_update _ _ (word.add old_v4 amnt) with "[] Hphysptsto") as "[_ Hphysptsto]".
+  { admit. }
+  iDestruct "Hphysptsto" as "[Hphysptsto Hphysptsto2]".
+  iSpecialize ("Hkvs_ctx" $! (λ k, kv_ctx γ (typed_map.map_insert kvsM key (word.add old_v4 amnt)) k)%I with "[] [Hkeylocked Hphysptsto2]").
   { iModIntro. iIntros.
     unfold kv_ctx.
     rewrite map_get_val.
@@ -459,6 +464,8 @@ Proof.
   {
     unfold kv_ctx.
     iRight.
+    unfold map_get, typed_map.map_insert.
+    rewrite lookup_insert.
     iFrame.
   }
 
@@ -482,7 +489,7 @@ Proof.
   iSpecialize ("Hfinish_rest" with "[Hfinish_tok]").
   { by iRight. }
 
-  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_rest Hdata_rest]").
+  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_rest Hdata_rest Htxns_own Hphysptsto]").
   {
     iNext. iExists _, _, _,_,_,_,_; iFrame "HkvsMap HtxnsMap #∗".
     (* TODO: combine into one big_sepM *)
@@ -492,11 +499,14 @@ Proof.
       { apply map_get_false in Hmapget. naive_solver. }
       iFrame "#".
     }
-    iSplitL "".
+    iSplitL "Htxns_own Hphysptsto".
     {
-      iApply big_sepM_insert.
-      { apply map_get_false in Hmapget. naive_solver. }
-      iFrame "#".
+      rewrite /typed_map.map_insert.
+      iApply (big_sepM_insert_2 with "[Hphysptsto] Htxns_own").
+      simpl.
+      replace (old_v4) with (old_v3); first iFrame.
+      rewrite Hmapget_v3 in Hmapget_oldv4.
+      naive_solver.
     }
     iSplitL "Hdata_rest".
     {
@@ -554,7 +564,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* No pending transaction with that TID *)
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok Hdata_unused]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok Hdata_unused Htxns_own]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -574,7 +584,9 @@ Proof.
     apply elem_of_dom in H0.
     set_solver.
   }
-  iDestruct (big_sepM_lookup_acc _ _ tid with "Htxns_data") as "[Hdata _]".
+  iDestruct (big_sepM_lookup_acc _ _ tid with "Htxns_prop_pers") as "[[_ Hdata] _]".
+  { apply map_get_true in Hmapget_txn. done. }
+  iDestruct (big_sepM_delete _ _ tid with "Htxns_own") as "[Hphysptsto2 Htxns_own]".
   { apply map_get_true in Hmapget_txn. done. }
   iMod (prepared_participant_finish_commit with "His_txn Hcomwit Hcom Hdata Hfinish_tok") as ">Hptsto".
   { done. }
@@ -582,17 +594,19 @@ Proof.
   iDestruct (big_sepS_elem_of_acc _ _ txn1.(heldResource) with "Hkvs_ctx") as "[Hkv Hkvs_rest]".
   { set_solver. }
   unfold kv_ctx.
-  iDestruct "Hkv" as "[Hbad|Hkvlocked]".
+  iDestruct "Hkv" as "[[_ Hbad]|[Hkvlocked Hphysptsto]]".
   {
     iDestruct (ptsto_mut_agree_frac_value with "Hbad Hptsto") as %[_ Hbad].
     exfalso.
     contradiction.
   }
-  iSpecialize ("Hkvs_rest" with "[Hptsto]").
+  iSpecialize ("Hkvs_rest" with "[Hptsto Hphysptsto2 Hphysptsto]").
   {
     iLeft.
-    (* TODO: need to know that the map_get of txn1.(heldResource) is txn1.(oldValue) + txn1.(amount) *)
-    admit.
+    iFrame.
+    iDestruct (ptsto_agree_frac_value with "Hphysptsto Hphysptsto2") as %[<- _].
+    iCombine "Hphysptsto Hphysptsto2" as "Hphsptsto".
+    iFrame.
   }
 
   wp_apply (wp_LockMap__Release with "[$HlockMap $Hkvlocked]").
@@ -605,19 +619,13 @@ Proof.
   { done. }
   iIntros "HfinishedTxnsMap".
   wp_pures.
-  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_rest Hfinish_rest Hdata_unused]").
+  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_rest Hfinish_rest Hdata_unused Htxns_own]").
   {
     iNext. iExists _, _, _,_,_,_,_; iFrame "HtxnsMap HfinishedTxnsMap ∗#".
     iSplitL "".
     {
       rewrite /map_del.
-      iDestruct (big_sepM_delete _ _ tid with "Htxns_prepared") as "[_ $]".
-      by apply map_get_true.
-    }
-    iSplitL "".
-    {
-      rewrite /map_del.
-      iDestruct (big_sepM_delete _ _ tid with "Htxns_data") as "[_ $]".
+      iDestruct (big_sepM_delete _ _ tid with "Htxns_prop_pers") as "[_ $]".
       by apply map_get_true.
     }
     iSplitL "Hfinish_rest".
@@ -635,7 +643,15 @@ Proof.
     }
     iSplitL "Hdata_unused".
     {
-      (* TODO: dom finishedTxnsM ∪ dom txnsM are the same as before *)
+      unfold typed_map.map_insert.
+      unfold map_del.
+      replace (dom (gset u64) (<[tid:=true]> finishedTxnsM) ∪ dom (gset u64) (delete tid txnsM))
+        with (dom (gset u64) finishedTxnsM ∪ dom (gset u64) txnsM).
+      { iFrame. }
+      replace (dom (gset u64) (<[tid:=true]> finishedTxnsM)) with
+      ({[ tid ]} ∪ (dom (gset u64) finishedTxnsM)); last first.
+      { admit. }
+      (* TODO: annoying gmap domain proof *)
       admit.
     }
     iPureIntro.
