@@ -13,6 +13,7 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl agree auth gmap csum.
 From iris.bi.lib Require Import fractional.
 From iris.base_logic.lib Require Import own.
+From iris_string_ident Require Import ltac2_string_ident.
 
 Section res_map.
 
@@ -79,7 +80,35 @@ Context `{!mapG Σ u64 ()}.
 Context `{!mapG Σ u64 (option bool)}.
 Context `{!mapG Σ (u64*u64) ()}.
 (* Context `{resMapG Σ (u64*u64) }. *)
-Context `{!mapG Σ (u64*u64) (option (u64*u64))}.
+
+Record TransactionC :=
+mkTransactionC {
+    heldResource:u64;
+    oldValue:u64;
+    operation:u64;
+    amount:u64
+}.
+
+Global Instance TransactionC_Inhabited : Inhabited TransactionC :=
+  {| inhabitant := mkTransactionC 0 0 0 0 |}.
+
+#[refine] Instance TransactionC_IntoVal : into_val.IntoVal (TransactionC) :=
+  {
+  to_val := λ x, (#x.(heldResource), (
+          (#x.(oldValue),
+          (#x.(operation),
+          (#x.(amount), #())))))%V ;
+  IntoVal_def := mkTransactionC 0 0 0 0 ;
+  IntoVal_inj := _
+  }.
+Proof.
+  intros x1 x2 [=].
+  destruct x1. destruct x2.
+  simpl in *. subst.
+  done.
+Defined.
+
+Context `{!mapG Σ (u64*u64) (option (TransactionC))}.
 
 Record tpc_names :=
 mk_tpc_names  {
@@ -104,8 +133,8 @@ Definition committed γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ro S
 
 Definition tpc_inv_single γtpc tid pid R R' : iProp Σ :=
   unprepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∨
-  prepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗ (∃ x:u64*u64, (R x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨
-  committed γtpc tid ∗ prepared γtpc tid pid ∗ ((∃ x:u64*u64, (R' x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨ finish_token γtpc tid pid) ∨
+  prepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗ (∃ x:TransactionC, (R x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨
+  committed γtpc tid ∗ prepared γtpc tid pid ∗ ((∃ x:TransactionC, (R' x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨ finish_token γtpc tid pid) ∨
   aborted γtpc tid ∗ finish_token γtpc tid pid
 .
 
@@ -278,35 +307,9 @@ Record participant_names :=
 mk_participant_names  {
     ps_ghs:list (deletable_heap.gen_heapG u64 bool Σ) ;
     ps_kvs:gname ;
-    ps_kvs_phys:gname ;
-    ps_kph:gname
 }.
 
 Implicit Type γ : participant_names.
-
-Record TransactionC :=
-mkTransactionC {
-    heldResource:u64;
-    oldValue:u64;
-    operation:u64;
-    amount:u64
-}.
-
-#[refine] Instance TransactionC_IntoVal : into_val.IntoVal (TransactionC) :=
-  {
-  to_val := λ x, (#x.(heldResource), (
-          (#x.(oldValue),
-          (#x.(operation),
-          (#x.(amount), #())))))%V ;
-  IntoVal_def := mkTransactionC 0 0 0 0 ;
-  IntoVal_inj := _
-  }.
-Proof.
-  intros x1 x2 [=].
-  destruct x1. destruct x2.
-  simpl in *. subst.
-  done.
-Defined.
 
 Instance unit_IntoVal : into_val.IntoVal ().
 Proof.
@@ -317,7 +320,7 @@ Proof.
 Defined.
 
 Definition kv_ctx γ (kvsM:gmap u64 u64) k : iProp Σ :=
-  k [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM k).1 ∗ k [[γ.(ps_kvs_phys)]]↦ (map_get kvsM k).1 ∨ k [[γ.(ps_kph)]]↦ () ∗ k [[γ.(ps_kvs_phys)]]↦{1/2} (map_get kvsM k).1.
+  k [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM k).1 ∨ (Locked γ.(ps_ghs) k).
 
 Definition ps_mu_inv (ps:loc) γ γtpc pid : iProp Σ :=
   ∃ (kvs_ptr txns_ptr finishedTxns_ptr lockMap_ptr:loc) (kvsM:gmap u64 u64) (txnsM:gmap u64 TransactionC)
@@ -333,10 +336,12 @@ Definition ps_mu_inv (ps:loc) γ γtpc pid : iProp Σ :=
     "HfinishedTxnsMap" ∷ is_map (finishedTxns_ptr) finishedTxnsM ∗
 
     "Hkvs_ctx" ∷ ([∗ set] k ∈ (fin_to_set u64), kv_ctx γ kvsM k) ∗
-    "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ k, k [[γ.(ps_kph)]]↦ ()) ∗
+    "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ _, True) ∗
 
-    "#Htxnx_prepared" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (prepared γtpc tid pid)) ∗
+    "#Htxns_prepared" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (prepared γtpc tid pid)) ∗
+    "#Htxns_data" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (tid, pid)[[γtpc.(txn_data_gn)]]↦ro Some txn) ∗
     "Hfinish_tok" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜is_Some (finishedTxnsM !! tid)⌝ ∨ finish_token γtpc tid pid)) ∗
+    "Hdata_unused" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM ∪ dom (gset u64) txnsM⌝ ∨ (tid,pid) [[γtpc.(txn_data_gn)]]↦ None)) ∗
     "%" ∷ ⌜(dom (gset u64) txnsM) ## dom (gset u64) finishedTxnsM⌝
 .
 
@@ -350,7 +355,7 @@ Definition is_participant (ps:loc) γ γtpc pid : iProp Σ :=
 
 Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ γtpc (key amnt:u64) :
   {{{
-       is_txn_single γtpc tid pid (∃ v:u64, key [[γ.(ps_kvs)]]↦{3/4} v ∗ key [[γ.(ps_kvs_phys)]]↦{1/2} (word.add v amnt)) (∃ v:u64, key [[γ.(ps_kvs)]]↦{3/4} v ∗ key [[γ.(ps_kvs_phys)]]↦{1/2} v) ∗
+       is_txn_single γtpc tid pid (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) amnt)) ∗
        is_participant ps γ γtpc pid
   }}}
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
@@ -382,7 +387,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* Transaction already finished *)
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok Hdata_unused]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -410,7 +415,7 @@ Proof.
     (* Unsafe increase *)
     wp_loadField. wp_apply (wp_LockMap__Release with "[$HlockMap $Hkeylocked $Hkph]").
     wp_pures.
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok Hdata_unused]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -440,13 +445,9 @@ Proof.
 
   iDestruct (big_sepS_elem_of_acc_impl key with "Hkvs_ctx") as "[Hptsto Hkvs_ctx]".
   { set_solver. }
-  iDestruct "Hptsto" as "[Hptsto|[Hbad _]]"; last first.
-  { iDestruct (ptsto_conflict with "Hbad Hkph") as %Hbad. contradiction. }
-  iDestruct "Hptsto" as "[Hlogptsto Hphysptsto]".
-  iMod (map_update _ _ (word.add old_v4 amnt) with "[] Hphysptsto") as "[_ Hphysptsto]".
-  { admit. }
-  iDestruct "Hphysptsto" as "[Hphysptsto Hphysptsto2]".
-  iSpecialize ("Hkvs_ctx" $! (kv_ctx γ (map_insert kvsM key (word.add old_v4 amnt)))%I with "[] [Hphysptsto2 Hkph]").
+  iDestruct "Hptsto" as "[Hptsto|Hbad]"; last first.
+  { admit. (* conflict Hbad Hkeylocked *) }
+  iSpecialize ("Hkvs_ctx" $! (λ k, kv_ctx γ (typed_map.map_insert kvsM key (word.add old_v4 amnt)) k)%I with "[] [Hkeylocked]").
   { iModIntro. iIntros.
     unfold kv_ctx.
     rewrite map_get_val.
@@ -459,36 +460,62 @@ Proof.
     unfold kv_ctx.
     iRight.
     iFrame.
-    unfold map_insert.
-    unfold map_get.
-    rewrite lookup_insert /=.
-    iFrame.
   }
+
+  (* Get finish token *)
   iDestruct (big_sepS_elem_of_acc _ _ tid with "Hfinish_tok") as "[Hfinish_tok Hfinish_rest]".
   { set_solver. }
   iDestruct "Hfinish_tok" as "[%Hbad|Hfinish_tok]".
   { exfalso. admit. (* use Hmapget_finished and Hbad *) }
-  iMod (participant_prepare with "Htxn Hfinish_tok [Hlogptsto Hphysptsto]") as "[#Hprep Hfinish_tok]".
+
+  (* Get unused data token *)
+  iDestruct (big_sepS_elem_of_acc_impl tid with "Hdata_unused") as "[Hdata Hdata_rest]".
+  { set_solver. }
+  iDestruct  "Hdata" as "[%Hbad|Hdata]".
+  { exfalso. admit. (* tid can't be in either txnsM or finishedTxnsM *) }
+  iMod (participant_prepare (mkTransactionC key old_v3 (U64 1) amnt) with "Htxn Hfinish_tok [Hptsto] Hdata") as "(#Hprep & Hfinish_tok & #Hdata)".
   { done. }
-  { iExists _; iFrame.
-    rewrite Hmapget_oldv4 /=.
+  {
+    rewrite Hmapget_v3 /=.
     iFrame.
   }
   iSpecialize ("Hfinish_rest" with "[Hfinish_tok]").
   { by iRight. }
 
-  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_rest]").
+  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_rest Hdata_rest]").
   {
-    iNext. iExists _, _, _,_,_,_,_; iFrame "HkvsMap #∗".
-    iSplitL.
+    iNext. iExists _, _, _,_,_,_,_; iFrame "HkvsMap HtxnsMap #∗".
+    (* TODO: combine into one big_sepM *)
+    iSplitL "".
+    { (* Need to have all prepared tokens *)
+      iApply big_sepM_insert.
+      { apply map_get_false in Hmapget. naive_solver. }
+      iFrame "#".
+    }
+    iSplitL "".
     {
       iApply big_sepM_insert.
       { apply map_get_false in Hmapget. naive_solver. }
       iFrame "#".
     }
+    iSplitL "Hdata_rest".
+    {
+      iApply "Hdata_rest".
+      {
+        iModIntro.
+        iIntros (???) "[%Hcase|Hcase]".
+        - iLeft. iPureIntro. unfold typed_map.map_insert.
+          rewrite dom_insert. set_solver.
+        - iRight. iFrame.
+      }
+      {
+        iLeft. iPureIntro. unfold typed_map.map_insert.
+        rewrite dom_insert. set_solver.
+      }
+    }
+
     iPureIntro.
     rewrite dom_insert.
-    Search "not_elem_of_dom".
     apply map_get_false in Hmapget_finished.
     assert (tid ∉ dom (gset u64) finishedTxnsM).
     { apply not_elem_of_dom. naive_solver. }
