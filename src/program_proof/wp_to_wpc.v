@@ -167,7 +167,7 @@ Proof using stagedG0.
   iDestruct "HQ" as "(HQ&_)".
   iMod ("Hwand2" with "[$]") as "Hfupd".
   iLeft in "Hfupd".
-  iMod fupd_intro_mask' as "HcloseM"; last iMod ("Hfupd" with "[$] [$]") as "((HP&HΦ)&HNC)"; first by solve_ndisj.
+  iMod fupd_mask_subseteq as "HcloseM"; last iMod ("Hfupd" with "[$] [$]") as "((HP&HΦ)&HNC)"; first by solve_ndisj.
   iMod "HcloseM".
   iEval (rewrite bi.and_comm) in "HΦ".
   iClear "Hwand1 Hwand2".

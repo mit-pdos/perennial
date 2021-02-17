@@ -384,7 +384,7 @@ Proof.
   wp_pures.
   destruct ok.
   - iDestruct "Hb" as (b) "[Hb %HmemLog_lookup]".
-    iMod (ncfupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
+    iMod (ncfupd_mask_subseteq (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
     iMod (simulate_read_cache_hit HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
       as "([Hinner HP]&?&?)"; iNamed.
     iMod "HinnerN" as "_".
@@ -398,7 +398,7 @@ Proof.
     iApply "HΦ".
     iExists _; iFrame.
   - iDestruct "Hb" as "[-> %HmemLog_lookup]".
-    iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
+    iMod (fupd_mask_subseteq (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
     iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
       as "(Hinv&?&?)"; iNamed.
     iMod "HinnerN" as "_".

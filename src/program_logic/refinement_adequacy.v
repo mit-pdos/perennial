@@ -59,7 +59,7 @@ Proof.
     iInv "Hsource" as "H" "_".
     iDestruct "H" as (???) ">(Hauth&Hsteps)".
     iDestruct "Hsteps" as %(Hsteps_spec&Hsafe).
-    iMod (fupd_intro_mask' _ (⊤ ∖ ↑sN)).
+    iMod (fupd_mask_subseteq (⊤ ∖ ↑sN)).
     { solve_ndisj. }
     iMod ("HP" with "[$]") as (σs') "(H&%)".
     iDestruct (source_state_reconcile with "[$] [$]") as %Heq.
@@ -73,7 +73,7 @@ Proof.
     iInv "Hsource" as "H" "_".
     iDestruct "H" as (???) ">(Hauth&Hsteps)".
     iDestruct "Hsteps" as %(Hsteps_spec&Hsafe).
-    iMod (fupd_intro_mask' _ (⊤ ∖ ↑sN)).
+    iMod (fupd_mask_subseteq (⊤ ∖ ↑sN)).
     { solve_ndisj. }
     iMod ("HP" with "[$]") as (σs') "(H&%)".
     iDestruct (source_state_reconcile with "[$] [$]") as %Heq.

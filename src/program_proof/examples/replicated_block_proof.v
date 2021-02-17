@@ -550,9 +550,9 @@ Proof.
   iIntros (?) "Hstart _ _".
   iModIntro.
   iSplitL "".
-  { iModIntro; iIntros. iMod (fupd_intro_mask' _ ∅); eauto. }
+  { iModIntro; iIntros. iMod (fupd_mask_subseteq ∅); eauto. }
   iSplitL "".
-  { iModIntro; iIntros. iModIntro. iMod (fupd_intro_mask' _ ∅); eauto. }
+  { iModIntro; iIntros. iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
   iApply wpr_OpenRead.
   rewrite /ffi_start//=.
   rewrite /rblock_cinv.

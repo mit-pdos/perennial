@@ -358,7 +358,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
   iDestruct "Hlog_inv" as (γ2) "#Hinv".
   iApply wpc_step_fupdN_inner3; first done.
   iInv "Hinv" as "Hinner" "Hclo".
-  iMod (fupd_intro_mask' _ ∅) as "Hclo'"; first by set_solver+.
+  iMod (fupd_mask_subseteq ∅) as "Hclo'"; first by set_solver+.
   do 2 iModIntro. iNext. iMod "Hclo'" as "_".
   rewrite /log_inv_inner.
   iDestruct "Hinner" as (s) "(Hstate_to_inv&Hauth_state)".

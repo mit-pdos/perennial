@@ -794,7 +794,7 @@ Proof.
         iDestruct (ghost_var_agree with "γtxns Howntxns") as %Htxnseq; subst.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd_txn.
-        iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
+        iMod (fupd_mask_subseteq (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
         iDestruct (memLog_linv_txns_to_is_mem_memLog with "Htxns") as "%His_mem_memLog"; eauto; try lia.
         iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σs)
                 with "[% //] [%] [$HP]") as "(%Haddrs & HP & HQ)".

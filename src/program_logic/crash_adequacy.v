@@ -164,7 +164,7 @@ Proof.
   iModIntro.
   iSpecialize ("H" with "[$]").
   iMod (fupd_split_level_fupd with "H") as "H".
-  iApply fupd_mask_weaken; first by set_solver.
+  iApply fupd_mask_intro_discard; first by set_solver.
   iNext.
   iExists _, _. iSplitL ""; first done. iFrame "# ∗".
 Qed.

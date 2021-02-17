@@ -466,7 +466,7 @@ Section goose.
     iDestruct "Hinner" as ([durable_blocks buffered_blocks]) "[>Hsinv >HP]".
     iNamed "HP".
     simpl.
-    iMod fupd_intro_mask' as "HcloseM"; last
+    iMod fupd_mask_subseteq as "HcloseM"; last
       iMod ("Hfupd" with "Hfm_all_blocks") as "(Hcurr&HQ)".
     { solve_ndisj. }
     rewrite {2}/s_inode_inv. iNamed "Hsinv".
@@ -603,7 +603,7 @@ Section goose.
       iMod (ghost_var_update_halves (σ.(inode.buffered_blocks) ++ [b0])
               with "Hδbuffered_blocks Hown_buf_blocks") as "[Hδbuffered_blocks Hown_buf_blocks]".
       iNamed "HP".
-      iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+      iMod fupd_mask_subseteq as "HcloseM"; (* adjust mask *)
         last iMod ("Hfupd" with "[$Hfm_all_blocks]") as "[Hfm_all_blocks HQ]".
       { solve_ndisj. }
       iMod "HcloseM" as "_".
@@ -684,7 +684,7 @@ Section goose.
              iDestruct (ghost_var_agree with "Hδdurable_blocks Hown_dur_blocks") as %->.
              iDestruct (ghost_var_agree with "Hδbuffered_blocks Hown_buf_blocks") as %->.
              iNamed "HP". simpl. rewrite app_nil_r.
-             iMod fupd_intro_mask' as "HcloseM";
+             iMod fupd_mask_subseteq as "HcloseM";
                last iMod ("Hfupd" with "[$]") as "(Hfm_all_blocks&Hfm_dur_blocks&Hfupd)".
              { solve_ndisj. }
              iMod "HcloseM" as "_".

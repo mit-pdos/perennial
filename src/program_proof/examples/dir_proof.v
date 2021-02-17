@@ -919,7 +919,7 @@ Section goose.
     destruct (Hdom _ Hidx) as [σI' HσI'].
     iDestruct (inode_blocks_lookup with "Hownblocks Hγblocks") as %Hblock.
     simplify_eq.
-    iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+    iMod fupd_mask_subseteq as "HcloseM"; (* adjust mask *)
         last iMod ("Hfupd" with "[] HPD") as "[HPD HQ]".
     { solve_ndisj. }
     { iPureIntro. eauto. }
@@ -980,7 +980,7 @@ Section goose.
     destruct (Hdom _ Hidx) as [σI' HσI'].
     iDestruct (inode_blocks_lookup with "Hownblocks Hγblocks") as %Hblock.
     simplify_eq.
-    iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+    iMod fupd_mask_subseteq as "HcloseM"; (* adjust mask *)
         last iMod ("Hfupd" with "[] HPD") as "[HPD HQ]".
     { solve_ndisj. }
     { iPureIntro. eauto. }
@@ -1114,7 +1114,7 @@ Section goose.
       iMod (inode_blocks_update  _ (σ.(inode.blocks) ++ [b0]) with "Hownblocks Hγblocks") as
           "[Hownblocks Hγblocks]".
       iSpecialize ("Hfupd" $! {| dir.inodes := σ0 |}). rewrite Heq2.
-      iMod fupd_intro_mask' as "HcloseM"; last (* adjust mask *)
+      iMod fupd_mask_subseteq as "HcloseM"; last (* adjust mask *)
         iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
       { solve_ndisj. }
       iMod "HcloseM" as "_".

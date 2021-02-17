@@ -489,7 +489,7 @@ Proof.
         iMod (fc_auth_first_tok with "Hfc") as "(Hfc&Htok)".
         iMod ("Hclo" with "[Hspts1 Hfc Hval]").
         { iNext. iExists mem_vs, mem_v. iRight. iRight. iFrame. }
-        iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+        iApply "HΦ". iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
         iExists _, _, _, _, _. iFrame "Hlocinv". iFrame.
         eauto.
       }
@@ -566,7 +566,7 @@ Proof.
     iMod (fc_auth_drop_last with "[$]") as "Hfc".
     iMod ("Hclo" with "[-Hj HΦ]").
     { iNext. iExists _, _. iLeft. iFrame. }
-    iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+    iApply "HΦ". iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
     eauto.
   }
 Qed.
@@ -625,7 +625,7 @@ Proof.
           { apply addr_base_non_null; eauto. }
           { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
         }
-        iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+        iApply "HΦ". iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
         iExists _, _, _, _, _. iFrame. iFrame "Hlocinv Hval". iPureIntro; split_and!; eauto;
         eapply addr_base_non_null; eauto.
       }
@@ -658,7 +658,7 @@ Proof.
           { apply addr_base_non_null; eauto. }
           { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
         }
-        iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+        iApply "HΦ". iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
         iExists _, _, _, _, _. iFrame. iFrame "#".
         iSplitL "".
         { iPureIntro; split_and!; eauto; eapply addr_base_non_null; eauto. }
@@ -746,7 +746,7 @@ Proof.
         iEval (rewrite comm Hq_sum) in "Hspts".
         eauto.
       }
-      iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+      iApply "HΦ". iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
       eauto.
     - destruct Hmore as (n''&->).
       iDestruct (fc_auth_non_last_agree with "[$] [$]") as %(q'&Hq).
@@ -773,7 +773,7 @@ Proof.
         iApply na_mapsto_to_heap; auto.
         rewrite na_heap_mapsto_eq. iFrame.
       }
-      iApply "HΦ". iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+      iApply "HΦ". iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
       eauto.
   }
   {
@@ -1802,7 +1802,7 @@ Proof using spec_trans.
           { solve_ndisj. }
           iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
           { iNext. iExists _, _. iLeft. iFrame. iFrame "Hval". }
-          iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+          iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
           iIntros " !>". iExists _. iFrame. iFrame "Hval".
         }
         {
@@ -1815,7 +1815,7 @@ Proof using spec_trans.
           { solve_ndisj. }
           iMod ("Hclo" with "[Hpts Hspts Hspts_clo Hfc Hval]").
           { iNext. iExists _, _. iRight. iLeft. iExists _, _, _. iFrame. iFrame "Hval". eauto. }
-          iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+          iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
           iIntros " !>". iExists _. iFrame. iFrame "Hval".
         }
         {
@@ -2078,7 +2078,7 @@ Proof using spec_trans.
             { solve_ndisj. }
             iMod ("Hclo" with "[Hpts Hspts Hfc Hval Hvs2_done]").
             { iNext. iExists _, _. iLeft. iFrame. }
-            iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+            iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
             iIntros "!>". iExists _. iFrame. iExists _, _, _, _. iFrame. iSplitL ""; first eauto.
             iFrame "Hval". eauto.
           * iApply wp_ncfupd.
@@ -2091,7 +2091,7 @@ Proof using spec_trans.
             { solve_ndisj. }
             iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
             { iNext. iExists _, _. iLeft. iFrame. eauto. }
-            iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+            iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
             iIntros "!>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _. 
             iFrame. iSplitL ""; first eauto. iFrame "Hval". eauto.
         }
@@ -2115,7 +2115,7 @@ Proof using spec_trans.
             { solve_ndisj. }
             iMod ("Hclo" with "[Hpts Hspts Hfc Hval Hspts_clo]").
             { iNext. iExists _, _. iRight. iLeft. iExists _, _, _. iFrame. iFrame "%". eauto. }
-            iApply fupd_ncfupd. iApply fupd_intro_mask; first by set_solver+.
+            iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
             iIntros "!>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _.
             iFrame. iSplitL ""; first eauto. iFrame "Hval". eauto.
         }

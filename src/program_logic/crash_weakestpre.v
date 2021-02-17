@@ -74,7 +74,7 @@ Section cfupd.
     iInduction k as [|k] "IH".
     - simpl; auto.
     - simpl.
-      iMod (fupd_intro_mask' _ E2) as "Hclo"; auto.
+      iMod (fupd_mask_subseteq E2) as "Hclo"; auto.
       iModIntro.
       iModIntro.
       iMod "Hclo" as "_".
@@ -86,7 +86,7 @@ Section cfupd.
     ▷^k P -∗ |={E1,E1}_(k)=> P.
   Proof.
     iIntros "HP".
-    iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver.
+    iMod (fupd_mask_subseteq ∅) as "Hclo"; first by set_solver.
     iModIntro.
     iApply step_fupd_iter_intro; first by set_solver.
     iModIntro.
@@ -100,10 +100,10 @@ Section cfupd.
   Proof.
     iIntros (?) "HP".
     iApply step_fupd_iter_intro; first by set_solver.
-    iMod (fupd_intro_mask' _ ∅) as "Hclo"; first by set_solver.
+    iMod (fupd_mask_subseteq ∅) as "Hclo"; first by set_solver.
     iModIntro. iModIntro.
     iMod "Hclo" as "_".
-    iApply fupd_mask_weaken; auto.
+    iApply fupd_mask_intro_discard; auto.
   Qed.
 
   Global Instance from_modal_cfupd k E1 P :
@@ -169,7 +169,7 @@ Section cfupd.
     iIntros "HP".
     iMod "HP".
     iSpecialize ("HQ" with "HP").
-    iApply fupd_mask_weaken; auto.
+    iApply fupd_mask_intro_discard; auto.
   Qed.
 
   Lemma step_fupdN_fupd E1 E2 k P :
@@ -180,7 +180,7 @@ Section cfupd.
     destruct k; simpl.
     - iSplit; iIntros "H".
       + iMod "H".
-        iApply fupd_intro_mask; auto.
+        iApply fupd_mask_intro_subseteq; auto.
       + iMod "H"; auto.
     - iSplit; iIntros "H".
       + by iFrame.
@@ -219,7 +219,7 @@ Section cfupd.
     |={E1,E1}_k=> P.
   Proof.
     iIntros (?) "HP".
-    iMod (fupd_intro_mask' _ E1') as "Hclo"; first auto.
+    iMod (fupd_mask_subseteq E1') as "Hclo"; first auto.
     iApply (elim_modal_step_fupdN_mono with "HP").
     iIntros "HP".
     iMod "HP".
@@ -258,7 +258,7 @@ Section cfupd.
     simpl.
     iSpecialize ("HQ" with "HP").
     iMod "HQ".
-    iApply fupd_intro_mask; first set_solver; auto.
+    iApply fupd_mask_intro_subseteq; first set_solver; auto.
   Qed.
 
   Global Instance elim_modal_cfupd k p E1 P Q :
@@ -283,7 +283,7 @@ Section cfupd.
     iIntros "#HC".
     iSpecialize ("Hfupd" with "HC").
     iMod (fupd_level_le with "Hfupd") as "Hfupd"; auto.
-    iMod (fupd_level_intro_mask' _ ∅) as "Hclo"; first set_solver.
+    iMod (fupd_level_mask_subseteq ∅) as "Hclo"; first set_solver.
     iMod (fupd_level_le with "Hfupd"); auto.
     iMod "Hclo". iApply ("HQ" with "[$] [$]").
   Qed.
@@ -627,14 +627,14 @@ Proof.
   - destruct (to_val e) as [v|] eqn:?.
     {
       iDestruct "HΦ" as "(HΦ&_)". iDestruct "H" as "(H&_)".
-      iMod (fupd_intro_mask' _ E1) as "Hclo"; first by auto.
+      iMod (fupd_mask_subseteq E1) as "Hclo"; first by auto.
       iIntros.
       iMod ("H" with "[$]") as "(?&?)". iMod "Hclo" as "_".
       rewrite ncfupd_eq /ncfupd_def.
       iMod ("HΦ" with "[$] [$]"). iFrame. eauto.
     }
     iIntros (q σ1 κ κs n) "Hσ HNC".
-    iMod (fupd_intro_mask' E2 E1) as "Hclo"; first done.
+    iMod (fupd_mask_subseteq E1) as "Hclo"; first done.
     iDestruct "H" as "(H&_)".
     iMod ("H" with "[$] [$]") as "(%&H)".
     iModIntro.
@@ -646,7 +646,7 @@ Proof.
     ** iApply ("IH" with "[] H [HΦ]"); auto.
     ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
        iIntros "H". eauto. iApply ("IH" with "[] H"); auto.
-       { iSplit; first auto. iIntros "!> _". iIntros "HC". by iApply fupd_level_mask_weaken; first set_solver+. }
+       { iSplit; first auto. iIntros "!> _". iIntros "HC". by iApply fupd_level_mask_intro_discard; first set_solver+. }
   - iDestruct "H" as "(_&H)". iDestruct "HΦ" as "(_&HΦ)".
     iModIntro.
     iIntros "#HC".
@@ -674,7 +674,7 @@ Proof.
   iSplit.
   - rewrite Hval.
     iIntros (q σ1 κ κs n) "Hσ HNC".
-    iMod (fupd_intro_mask' E2 E1) as "Hclo"; first done.
+    iMod (fupd_mask_subseteq E1) as "Hclo"; first done.
     iDestruct "H" as "(H&_)".
     iMod ("H" with "[$] [$]") as "(%&H)".
     iModIntro.
@@ -686,7 +686,7 @@ Proof.
     ** iApply (wpc0_strong_mono with "[H] [HΦ]"); eauto.
     ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
        iIntros "H".  iApply (wpc0_strong_mono with "H []"); eauto.
-       { iSplit; first auto. iIntros "!> _". iIntros "HC". by iApply fupd_level_mask_weaken; first set_solver+. }
+       { iSplit; first auto. iIntros "!> _". iIntros "HC". by iApply fupd_level_mask_intro_discard; first set_solver+. }
   - iDestruct "H" as "(_&H)". iDestruct "HΦ" as "(_&HΦ)".
     iModIntro.
     iIntros "#HC".
@@ -806,12 +806,12 @@ Proof.
   - destruct (to_val e) as [v|] eqn:?; eauto.
     {
       iDestruct "H" as "(H&_)".
-      iMod (fupd_intro_mask' _ E1) as "Hclo"; first by auto.
+      iMod (fupd_mask_subseteq E1) as "Hclo"; first by auto.
       iIntros. iMod ("H" with "[$]"). iMod "Hclo" as "_".
       iModIntro; eauto. do 2 iFrame.
     }
     iIntros (q σ1 κ κs n) "Hσ HNC".
-    iMod (fupd_intro_mask' E2 E1) as "Hclo"; first done.
+    iMod (fupd_mask_subseteq E1) as "Hclo"; first done.
     iDestruct "H" as "(H&_)".
     iMod ("H" with "[$] [$]") as "(%&H)".
     iModIntro.
@@ -853,12 +853,12 @@ Proof.
   - destruct (to_val e) as [v|] eqn:?; eauto.
     {
       iDestruct "H" as "(H&_)".
-      iMod (fupd_intro_mask' _ E1) as "Hclo"; first by auto.
+      iMod (fupd_mask_subseteq E1) as "Hclo"; first by auto.
       iIntros. iMod ("H" with "[$]"). iMod "Hclo" as "_".
       iModIntro; eauto. do 2 iFrame.
     }
     iIntros (q σ1 κ κs n) "Hσ HNC".
-    iMod (fupd_intro_mask' E2 E1) as "Hclo"; first done.
+    iMod (fupd_mask_subseteq E1) as "Hclo"; first done.
     iDestruct "H" as "(H&_)".
     iMod ("H" with "[$] [$]") as "(%&H)".
     iModIntro.
@@ -933,7 +933,7 @@ Proof.
   - iIntros (v) "HΦ".
     iApply ("HΦ'" with "HΦ").
   - iIntros "!> HΦc".
-    iApply fupd_level_mask_weaken; [ set_solver+ | ].
+    iApply fupd_level_mask_intro_discard; [ set_solver+ | ].
     iApply ("HΦc'" with "HΦc").
 Qed.
 
@@ -990,7 +990,7 @@ Proof.
   iApply (wpc_strong_mono' s s k k E1 E1 _ with "H"); try set_solver.
   iSplit; auto.
   iIntros "!> HΦc".
-  iMod (fupd_level_intro_mask' _ (↑N)); auto.
+  iMod (fupd_level_mask_subseteq (↑N)); auto.
   iInv N as "H" "Hclo".
   replace (↑N ∖ ↑N) with (∅: coPset) by set_solver.
   iModIntro. iNext. iApply ("Hwand" with "[$] [$]").
@@ -1230,7 +1230,7 @@ Proof.
   iIntros "Hc_wp".
   iApply wpc_atomic.
   iSplit.
-  - iDestruct "Hc_wp" as "(?&_)". iModIntro. iApply fupd_level_mask_weaken; [ set_solver+ | ].
+  - iDestruct "Hc_wp" as "(?&_)". iModIntro. iApply fupd_level_mask_intro_discard; [ set_solver+ | ].
     eauto.
   - iDestruct "Hc_wp" as "[_ Hwp]".
     iApply wp_mono; iFrame.
@@ -1239,7 +1239,7 @@ Proof.
     + iDestruct "HΦ" as "[_  >HΦc]". eauto.
     + iDestruct "HΦ" as "[HΦ _]". iModIntro.
       iMod "HΦ" as "HΦ".
-      iApply fupd_level_mask_weaken; [ set_solver+ | ]; iFrame.
+      iApply fupd_level_mask_intro_discard; [ set_solver+ | ]; iFrame.
 Qed.
 
 Lemma wpc_step_fupd s k E1 E2 e P P' Φ Φc :
@@ -1419,7 +1419,7 @@ Proof.
   iSplit; last by (iDestruct "H" as "(_&$)").
   iDestruct "H" as "(H&_)".
   iIntros (σ1 κ κs n) "Hσ". iMod "H".
-  iMod fupd_intro_mask' as "Hclose"; last iModIntro; first by set_solver. iSplit.
+  iMod fupd_mask_subseteq as "Hclose"; last iModIntro; first by set_solver. iSplit.
   { iPureIntro. destruct s; done. }
   iNext. iIntros (e2 σ2 efs ?).
   destruct (Hstep κ σ1 e2 σ2 efs) as (-> & <- & ->); auto.
@@ -1552,7 +1552,7 @@ Proof.
     iApply wp_wpc; eauto. }
   iSplit.
   - iIntros (?). rewrite wand_elim_r. iIntros; eauto.
-  - iModIntro. iIntros "(H&?)". iApply (fupd_level_mask_weaken); eauto.
+  - iModIntro. iIntros "(H&?)". iApply (fupd_level_mask_intro_discard); eauto.
 Qed.
 
 Lemma wp_wpc_step_frame' s k E1 e Φ Φc R :

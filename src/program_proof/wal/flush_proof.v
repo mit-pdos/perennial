@@ -48,7 +48,7 @@ Proof.
   iNamed "Hdisk".
   iNamed "circ.end".
   pose proof (is_txn_bound _ _ _ Hend_txn) as Hend_bound.
-  iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
+  iMod (fupd_mask_subseteq (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, diskEnd_txn_id) σ)
           with "[% //] [%] [$HP]") as "[HP HQ]".
   { simpl.
@@ -100,7 +100,7 @@ Proof.
   pose proof (is_txn_bound _ _ _ Hend_txn).
   pose proof (wal_wf_txns_mono_pos Hwf His_txn Hend_txn).
 
-  iMod (fupd_intro_mask' _ (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
+  iMod (fupd_mask_subseteq (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
   iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, Nat.max σ.(log_state.durable_lb) txn_id) σ) with "[% //] [%] HP") as "[HP HQ]".
   { simpl; monad_simpl.
     repeat (econstructor; monad_simpl; eauto).

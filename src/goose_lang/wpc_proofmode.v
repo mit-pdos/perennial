@@ -17,7 +17,7 @@ Proof.
   iSplit; last first.
   {  iDestruct "HΦ" as "(HΦc&_)". iModIntro. by iModIntro. }
   iIntros (σ1 κ κs n) "Hσ".
-  iMod (fupd_intro_mask' _ ∅) as "Hclose"; first by set_solver+.
+  iMod (fupd_mask_subseteq ∅) as "Hclose"; first by set_solver+.
   iModIntro. iSplit.
   { iPureIntro; econstructor; do 3 eexists. constructor. constructor. eauto. }
   iNext; iIntros (v2 σ2 efs Hstep). apply head_step_atomic_inv in Hstep; [ | by inversion 1 ]. rewrite /head_step /= in Hstep.

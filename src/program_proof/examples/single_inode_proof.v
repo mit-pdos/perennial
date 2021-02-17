@@ -340,7 +340,7 @@ Section goose.
     iIntros "!>" (σ mb) "[ -> >HPinode]".
     iInv "Hinv" as "Hinner".
     iDestruct "Hinner" as ([σ']) "[>Hsinv HP]".
-    iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+    iMod fupd_mask_subseteq as "HcloseM"; (* adjust mask *)
       last iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
     { solve_ndisj. }
     rewrite {2}/s_inode_inv. iNamed "Hsinv".
@@ -440,7 +440,7 @@ Section goose.
       iDestruct (ghost_var_agree with "Hinner Hownblocks") as %?; simplify_eq/=.
       iMod (ghost_var_update ((σ.(inode.blocks) ++ [b0]))
               with "[$Hinner $Hownblocks //]") as "[Hγblocks Hownblocks]".
-      iMod fupd_intro_mask' as "HcloseM"; (* adjust mask *)
+      iMod fupd_mask_subseteq as "HcloseM"; (* adjust mask *)
         last iMod ("Hfupd" with "[% //] [$HP]") as "[HP HQ]".
       { solve_ndisj. }
       iMod "HcloseM" as "_".

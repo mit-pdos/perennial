@@ -524,7 +524,6 @@ Section goose_lang.
     iIntros (???) "Hctx Hm".
     iNamed "Hctx".
     iNamed "Hbuftxn_durable".
-    Check lift_map_into_txn'.
     iMod (lift_map_into_txn' with "Hbuftxn_mem Hdurable_frag Hold_vals Hm")
       as "(?&?&?&?&?)"; [ solve_ndisj.. | ].
     iNamed.

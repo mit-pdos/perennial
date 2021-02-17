@@ -58,7 +58,7 @@ Proof using HAff.
   iIntros (Hle).
   iInduction k as [| k] "IH".
   - eauto.
-  - iIntros. rewrite Nat_iter_S. iMod (fupd_intro_mask' _ E2) as "Hclo".
+  - iIntros. rewrite Nat_iter_S. iMod (fupd_mask_subseteq E2) as "Hclo".
     { set_solver. }
     iModIntro. iModIntro. iMod "Hclo". iModIntro. by iApply "IH".
 Qed.
@@ -69,8 +69,8 @@ Proof using HAff.
   iInduction k as [| k] "IH".
   - rewrite //=. iIntros "HP".
     iMod "HP".
-    iApply fupd_intro_mask; eauto; first set_solver.
-  - iIntros. iMod (fupd_intro_mask' _ ∅) as "Hclo".
+    iApply fupd_mask_intro_subseteq; eauto; first set_solver.
+  - iIntros. iMod (fupd_mask_subseteq ∅) as "Hclo".
     { set_solver. }
     rewrite Nat_iter_S.
     iModIntro. iModIntro. iNext. iMod "Hclo". by iApply "IH".
@@ -82,7 +82,7 @@ Lemma step_fupdN_inner_later E1 E2 k (P: PROP):
 Proof using HAff.
   iIntros (Hle) "H".
   iApply step_fupdN_inner_later'.
-  iNext. iMod (fupd_intro_mask' _ E2) as "?"; eauto.
+  iNext. iMod (fupd_mask_subseteq E2) as "?"; eauto.
 Qed.
 
 Lemma step_fupdN_inner_fupd E1 E2 k (P: PROP):
@@ -119,7 +119,7 @@ Lemma step_fupdN_inner_wand E1 E2 k1 k2 (P Q: PROP):
   |={E1,∅}=> |={∅}▷=>^k1 |={∅,E1}=> Q.
 Proof.
   iIntros (??) "HP HPQ".
-  iMod (fupd_intro_mask' _ E2) as "Hclo"; auto.
+  iMod (fupd_mask_subseteq E2) as "Hclo"; auto.
   iMod "HP". iModIntro.
   iApply (step_fupdN_le k2 _); auto.
   iApply (step_fupdN_wand with "HP").
@@ -172,11 +172,11 @@ Lemma step_fupdN_inner_wand' E1 E1' E2 E2' k1 k2 (P Q: PROP):
   |={E1,∅}=> |={∅}▷=>^k1 |={∅,E1'}=> Q.
 Proof using HAff.
   iIntros (???) "HP HPQ".
-  iMod (fupd_intro_mask' _ E2) as "Hclo"; auto.
+  iMod (fupd_mask_subseteq E2) as "Hclo"; auto.
   iMod "HP". iModIntro.
   iApply (step_fupdN_le k2 _); auto.
   iApply (step_fupdN_wand with "HP").
-  iIntros "HP". iMod "HP". iApply fupd_mask_weaken; auto.
+  iIntros "HP". iMod "HP". iApply fupd_mask_intro_discard; auto.
   by iApply "HPQ".
 Qed.
 

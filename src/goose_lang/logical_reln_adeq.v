@@ -108,7 +108,7 @@ Proof.
   - iModIntro.
     iIntros "(?&?)".
     iIntros "Hc".
-    iMod (fupd_level_intro_mask' _ (styN)) as "Hclo"; eauto.
+    iMod (fupd_level_mask_subseteq (styN)) as "Hclo"; eauto.
     iMod (Hsty_crash with "[$] [$]") as "H".
     iMod "Hclo".
     iModIntro. iFrame. iExists _. iFrame.

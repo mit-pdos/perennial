@@ -591,7 +591,7 @@ Section own_disc_fupd_props.
     <disc> P -∗ |k={E}=> P.
   Proof.
     rewrite own_discrete_fupd_eq /own_discrete_fupd_def /= own_discrete_elim.
-    iIntros "H". iMod (fupd_level_intro_mask' _ ∅) as "Hclo"; first set_solver.
+    iIntros "H". iMod (fupd_level_mask_subseteq ∅) as "Hclo"; first set_solver.
     iMod (fupd_level_le with "H"); first lia. iMod "Hclo". eauto.
   Qed.
 
@@ -607,7 +607,7 @@ Section own_disc_fupd_props.
     f_equiv.
     iSplit.
     - iIntros "H".
-      iMod (fupd_level_intro_mask' _ ∅) as "Hclo"; first set_solver.
+      iMod (fupd_level_mask_subseteq ∅) as "Hclo"; first set_solver.
       iMod (fupd_level_le with "H"); first lia.
       iMod "Hclo". eauto.
     - iIntros "H". iModIntro; eauto.

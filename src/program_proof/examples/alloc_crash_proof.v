@@ -716,7 +716,7 @@ Proof.
 
     iNamed "H".
     iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %<-.
-    iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
+    iMod (fupd_mask_subseteq (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iMod ("Hfupd" $! σ _ (Some k) with "[] [$]") as "(HP&HQ)".
     { iPureIntro; split; last by reflexivity. eauto. }
     iMod "Hrestore_mask" as "_".
@@ -748,7 +748,7 @@ Proof.
     { iExists _. eauto. }
   - iNamed "H".
     iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %<-.
-    iMod (fupd_intro_mask' _ (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
+    iMod (fupd_mask_subseteq (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iMod ("Hfupd" $! σ _ None with "[] [$]") as "(HP&HQ)".
     { iPureIntro; split; first by reflexivity. congruence. }
     iMod "Hrestore_mask" as "_".
@@ -898,7 +898,7 @@ Proof.
   iInv "Hinv" as "H" "Hclo".
   iModIntro. iNext. iNamed "H".
   iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
-  iMod (ncfupd_intro_mask' _ (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
+  iMod (ncfupd_mask_subseteq (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
   iMod ("Hfupd" with "[//] [$]") as "(HP&HQ)".
   iMod "Hrestore_mask" as "_".
   iMod (gen_heap_update _ a _ block_used with "[$] [$]") as "(Hctx&Hmapsto)".
@@ -989,7 +989,7 @@ Proof.
   iCombine "Hfreeset_auth Hfreeset_frag" as "Hfreeset".
   iMod (ghost_var_update (alloc.free (<[a := block_free]>σ)) with "[$]")
     as "(Hfreeset_auth&Hfreeset_frag)".
-  iMod (fupd_intro_mask' _ (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
+  iMod (fupd_mask_subseteq (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
   iMod ("Hfupd" $! σ with "[%//] HP") as "[HP HQ]".
   iMod "Hrestore_mask" as "_".
   iMod ("Hclo" with "[HP Hctx Hfreeset_auth]") as "_".

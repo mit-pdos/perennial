@@ -226,11 +226,11 @@ Proof.
   iApply (step_fupdN_wand _ _ (S n') with "H").
   iIntros "H".
   iMod "H".
-  iMod (fupd_intro_mask' _ ∅) as "Hclo"; first set_solver. do 2 iModIntro. iNext.
+  iMod (fupd_mask_subseteq ∅) as "Hclo"; first set_solver. do 2 iModIntro. iNext.
   iDestruct "H" as (e2 t2' ?) "(H&Hσ&HC)".
   iMod ("Hclo") as "_".
   iMod ("H" with "[//] Hσ") as "H".
-  iMod (fupd_intro_mask' _ ∅) as "Hclo"; first set_solver. do 2 iModIntro. iNext.
+  iMod (fupd_mask_subseteq ∅) as "Hclo"; first set_solver. do 2 iModIntro. iNext.
   iModIntro.
   iMod ("Hclo") as "_".
   iModIntro.

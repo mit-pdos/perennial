@@ -123,7 +123,7 @@ Proof.
   iSpecialize ("Hinstalled" with "Hb").
   iNamed "circ.start".
   fold innerN.
-  iMod (fupd_intro_mask' _ (⊤∖↑N)) as "HinnerN".
+  iMod (fupd_mask_subseteq (⊤∖↑N)) as "HinnerN".
   { solve_ndisj. }
   iDestruct (is_durable_txn_bound with "circ.end") as %Hdurable_bound.
 

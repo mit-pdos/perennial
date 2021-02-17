@@ -165,7 +165,7 @@ Proof.
     word.
   }
 
-  iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "HmodP" as "[Hγproc HP]".
+  iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "HmodP" as "[Hγproc HP]".
   {
     admit. (* property of masks *)
   }
@@ -185,7 +185,7 @@ Proof.
   iIntros (Hineq) "[HmodP HwandQ] Hγproc #Hlb".
   iDestruct (intuitionistically_if_elim with "HmodP") as "HmodP".
 
-  iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "HmodP".
+  iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "HmodP".
   {
     done.
   }
@@ -206,7 +206,7 @@ Proof.
   rewrite /ElimModal.
   iIntros (Hφ) "[HP Hwand]".
   iIntros "Hγproc Hlb".
-  iMod (fupd_intro_mask' _ E) as "Hclose".
+  iMod (fupd_mask_subseteq E) as "Hclose".
   {
     naive_solver.
   }
@@ -522,7 +522,7 @@ Proof.
   rewrite rpc_atomic_pre_fupd_eq.
   iIntros "Hγproc #Hlb".
   iDestruct (fupd_level_fupd with "Hrnfupd") as "Hrnfupd".
-  iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "Hrnfupd".
+  iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "Hrnfupd".
   { set_solver. }
   iMod "Hclose".
   iDestruct ("Hrnfupd" with "Hγproc Hlb") as ">[$ $]".

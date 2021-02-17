@@ -427,7 +427,7 @@ Proof.
           (* TODO: avoid this unfolding *)
           rewrite rpc_logatom.rpc_atomic_pre_fupd_eq.
           iDestruct ("Hfupd" with "HP' Hghost Hγproc Hlb") as "Hfupd".
-          iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "Hfupd" as "[$ Hpre]".
+          iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "Hfupd" as "[$ Hpre]".
           {
             apply subseteq_difference_r; last set_solver.
             destruct req; simpl.
@@ -455,7 +455,7 @@ Proof.
       (* TODO: avoid this unfolding *)
       rewrite rpc_logatom.rpc_atomic_pre_fupd_eq.
       iDestruct ("Hfupd" with "HP' Hghost Hγproc Hlb") as "Hfupd".
-      iMod (fupd_intro_mask' _ _) as "Hclose"; last iMod "Hfupd" as "[$ Hpre]".
+      iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "Hfupd" as "[$ Hpre]".
       {
         apply subseteq_difference_r; last set_solver.
         destruct req; simpl.

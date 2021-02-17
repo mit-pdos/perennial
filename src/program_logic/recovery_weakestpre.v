@@ -100,7 +100,7 @@ Proof.
   rewrite wpr_unfold. rewrite /wpr_pre.
   iApply (wpc_strong_mono' with "He"); [ auto | auto | auto | ].
   iSplit; first auto. iIntros "!> Hcx".
-  iApply @fupd_level_mask_weaken.
+  iApply @fupd_level_mask_intro_discard.
   { set_solver +. }
   iIntros. iMod ("Hidemp" with "[ ] [$] [$]") as "H".
   { eauto. }

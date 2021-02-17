@@ -102,7 +102,7 @@ Implicit Types P : iProp Σ.
     rewrite ncinv_eq. iIntros (??) "#HncinvP #HncinvQ !>"; iIntros (E ?).
     iMod ("HncinvP" with "[%]") as "[$ HcloseP]"; first set_solver.
     iMod ("HncinvQ" with "[%]") as "[$ HcloseQ]"; first set_solver.
-    iMod (ncfupd_intro_mask' _ (E ∖ ↑N)) as "Hclose"; first set_solver.
+    iMod (ncfupd_mask_subseteq (E ∖ ↑N)) as "Hclose"; first set_solver.
     iIntros "!> [HP HQ]".
     iMod "Hclose" as %_. iMod ("HcloseQ" with "HQ") as %_. by iApply "HcloseP".
   Qed.

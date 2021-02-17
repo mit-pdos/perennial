@@ -461,7 +461,7 @@ Section ghost_step.
     iMod (cfupd_weaken_all with "Hctx") as "#Hinv"; eauto.
     iIntros "HC".
     iInv "Hinv" as "[HP|Hrest]" "Hclose".
-    { iMod (fupd_level_intro_mask' _ ∅); first by solve_ndisj.
+    { iMod (fupd_level_mask_subseteq ∅); first by solve_ndisj.
       iMod ("Hwand" with "[$]") as %[]. }
     iDestruct "Hrest" as (s' tp' σ') ">[Hauth %]".
 
