@@ -355,7 +355,7 @@ Definition is_participant (ps:loc) γ γtpc pid : iProp Σ :=
 
 Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ γtpc (key amnt:u64) :
   {{{
-       is_txn_single γtpc tid pid (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) amnt)) ∗
+       is_txn_single γtpc tid pid (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) data.(amount))) ∗
        is_participant ps γ γtpc pid
   }}}
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
@@ -527,9 +527,9 @@ Proof.
   by iRight.
 Admitted.
 
-Lemma wp_Participant__Commit (ps:loc) tid pid γ γtpc key amnt:
+Lemma wp_Participant__Commit (ps:loc) tid pid γ γtpc :
   {{{
-       is_txn_single γtpc tid pid (∃ v:u64, key [[γ.(ps_kvs)]]↦{3/4} v ∗ key [[γ.(ps_kvs_phys)]]↦{1/2} (word.add v amnt)) (∃ v:u64, key [[γ.(ps_kvs)]]↦{3/4} v ∗ key [[γ.(ps_kvs_phys)]]↦{1/2} v) ∗
+       is_txn_single γtpc tid pid (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) data.(amount))) ∗
        is_participant ps γ γtpc pid ∗
        committed_witness γtpc tid pid ∗
        committed γtpc tid
@@ -554,7 +554,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* No pending transaction with that TID *)
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok Hdata_unused]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -574,33 +574,78 @@ Proof.
     apply elem_of_dom in H0.
     set_solver.
   }
-  iMod (prepared_participant_finish_commit with "His_txn Hcomwit Hcom Hfinish_tok") as ">Hptstos".
+  iDestruct (big_sepM_lookup_acc _ _ tid with "Htxns_data") as "[Hdata _]".
+  { apply map_get_true in Hmapget_txn. done. }
+  iMod (prepared_participant_finish_commit with "His_txn Hcomwit Hcom Hdata Hfinish_tok") as ">Hptsto".
   { done. }
-  iDestruct "Hptstos" as (v) "[Hlogptsto Hphysptsto]".
 
-  iDestruct (big_sepS_elem_of_acc _ _ key with "Hkvs_ctx") as "[Hkv Hkvs_rest]".
+  iDestruct (big_sepS_elem_of_acc _ _ txn1.(heldResource) with "Hkvs_ctx") as "[Hkv Hkvs_rest]".
   { set_solver. }
   unfold kv_ctx.
-  iDestruct "Hkv" as "[[Hbad _]|Hkv]".
+  iDestruct "Hkv" as "[Hbad|Hkvlocked]".
   {
-    iDestruct (ptsto_mut_agree_frac_value with "Hbad Hlogptsto") as %[_ Hbad].
+    iDestruct (ptsto_mut_agree_frac_value with "Hbad Hptsto") as %[_ Hbad].
     exfalso.
     contradiction.
   }
-  iDestruct "Hkv" as "[Hkph Hphys2]".
-  iDestruct (ptsto_agree with "Hphys2 Hphysptsto") as %->.
-  iCombine "Hphys2 Hphysptsto" as "Hphysptsto".
-  iSpecialize ("Hkvs_rest" with "[Hphysptsto Hlogptsto]").
+  iSpecialize ("Hkvs_rest" with "[Hptsto]").
   {
-    iLeft. iFrame.
-  }
-
-  wp_apply (wp_LockMap__Release with "[$HlockMap Hkph]").
-  {
-    (* TODO: need to know that the key the participant remembered correctly which key it was holding for this transaction *)
-    iFrame.
+    iLeft.
+    (* TODO: need to know that the map_get of txn1.(heldResource) is txn1.(oldValue) + txn1.(amount) *)
     admit.
   }
+
+  wp_apply (wp_LockMap__Release with "[$HlockMap $Hkvlocked]").
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_MapDelete with "HtxnsMap").
+  iIntros "HtxnsMap".
+  wp_loadField.
+  wp_apply (wp_MapInsert with "HfinishedTxnsMap").
+  { done. }
+  iIntros "HfinishedTxnsMap".
+  wp_pures.
+  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_rest Hfinish_rest Hdata_unused]").
+  {
+    iNext. iExists _, _, _,_,_,_,_; iFrame "HtxnsMap HfinishedTxnsMap ∗#".
+    iSplitL "".
+    {
+      rewrite /map_del.
+      iDestruct (big_sepM_delete _ _ tid with "Htxns_prepared") as "[_ $]".
+      by apply map_get_true.
+    }
+    iSplitL "".
+    {
+      rewrite /map_del.
+      iDestruct (big_sepM_delete _ _ tid with "Htxns_data") as "[_ $]".
+      by apply map_get_true.
+    }
+    iSplitL "Hfinish_rest".
+    {
+      iApply "Hfinish_rest".
+      {
+        iModIntro.
+        iIntros (???) "[%Hcase|Hcase]".
+        - iLeft. iPureIntro. unfold typed_map.map_insert.
+          rewrite lookup_insert_ne; done.
+        - iRight. iFrame.
+      }
+      iLeft. iPureIntro. unfold typed_map.map_insert.
+      rewrite lookup_insert. eauto.
+    }
+    iSplitL "Hdata_unused".
+    {
+      (* TODO: dom finishedTxnsM ∪ dom txnsM are the same as before *)
+      admit.
+    }
+    iPureIntro.
+    unfold typed_map.map_insert.
+    rewrite dom_insert.
+    unfold typed_map.map_del.
+    rewrite dom_delete.
+    set_solver.
+  }
+  by iApply "HΦ".
 Admitted.
 
 End tpc_example.
