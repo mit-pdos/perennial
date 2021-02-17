@@ -194,6 +194,7 @@ Record participant_names :=
 mk_participant_names  {
     ps_ghs:list (deletable_heap.gen_heapG u64 bool Σ) ;
     ps_kvs:gname ;
+    ps_kvs_phys:gname ;
     ps_kph:gname
 }.
 
@@ -231,6 +232,9 @@ Proof.
   intros [] [] _; auto.
 Defined.
 
+Definition kv_ctx γ (kvsM:gmap u64 u64) k : iProp Σ :=
+  k [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM k).1 ∗ k [[γ.(ps_kvs_phys)]]↦ (map_get kvsM k).1 ∨ k [[γ.(ps_kph)]]↦ () ∗ k [[γ.(ps_kvs_phys)]]↦{1/2} (map_get kvsM k).1.
+
 Definition ps_mu_inv (ps:loc) γ γtpc pid : iProp Σ :=
   ∃ (kvs_ptr txns_ptr finishedTxns_ptr lockMap_ptr:loc) (kvsM:gmap u64 u64) (txnsM:gmap u64 TransactionC)
     (finishedTxnsM:gmap u64 bool),
@@ -244,7 +248,7 @@ Definition ps_mu_inv (ps:loc) γ γtpc pid : iProp Σ :=
     "HtxnsMap" ∷ is_map (txns_ptr) txnsM ∗
     "HfinishedTxnsMap" ∷ is_map (finishedTxns_ptr) finishedTxnsM ∗
 
-    "Hkvs_ctx" ∷ ([∗ set] k ∈ (fin_to_set u64), k [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM k).1 ∨ k [[γ.(ps_kph)]]↦ ()) ∗
+    "Hkvs_ctx" ∷ ([∗ set] k ∈ (fin_to_set u64), kv_ctx γ kvsM k) ∗
     "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ k, k [[γ.(ps_kph)]]↦ ()) ∗
 
     "#Htxnx_prepared" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (prepared γtpc tid pid)) ∗
@@ -260,9 +264,9 @@ Definition is_participant (ps:loc) γ γtpc pid : iProp Σ :=
   "#Hmu_inv" ∷ is_lock participantN #mu (ps_mu_inv ps γ γtpc pid)
 .
 
-Lemma wp_PrepareIncrease (ps:loc) tid pid γ γtpc (key key' amnt:u64) :
+Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ γtpc (key amnt:u64) :
   {{{
-       is_txn_single γtpc tid pid (∃ v:u64, key [[γ.(ps_kvs)]]↦{3/4} v) (∃ v:u64, key' [[γ.(ps_kvs)]]↦{3/4} v) ∗
+       is_txn_single γtpc tid pid (∃ v:u64, key [[γ.(ps_kvs)]]↦{3/4} v ∗ key [[γ.(ps_kvs_phys)]]↦{1/2} (word.add v amnt)) (∃ v:u64, key [[γ.(ps_kvs)]]↦{3/4} v ∗ key [[γ.(ps_kvs_phys)]]↦{1/2} v) ∗
        is_participant ps γ γtpc pid
   }}}
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
@@ -342,7 +346,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "HkvsMap").
-  iIntros (old_v4 ok4) "[Hmapget_oldv4 HkvsMap]".
+  iIntros (old_v4 ok4) "[%Hmapget_oldv4 HkvsMap]".
   wp_pures.
   wp_loadField.
   wp_apply (wp_MapInsert with "HkvsMap").
@@ -352,23 +356,40 @@ Proof.
 
   iDestruct (big_sepS_elem_of_acc_impl key with "Hkvs_ctx") as "[Hptsto Hkvs_ctx]".
   { set_solver. }
-  iDestruct "Hptsto" as "[Hptsto|Hbad]"; last first.
+  iDestruct "Hptsto" as "[Hptsto|[Hbad _]]"; last first.
   { iDestruct (ptsto_conflict with "Hbad Hkph") as %Hbad. contradiction. }
-  iSpecialize ("Hkvs_ctx" $! (λ k, k [[γ.(ps_kvs)]]↦{3 / 4} (map_get (map_insert kvsM key (word.add old_v4 amnt)) k).1 ∨ k [[γ.(ps_kph)]]↦ ())%I with "[] [$Hkph]").
+  iDestruct "Hptsto" as "[Hlogptsto Hphysptsto]".
+  iMod (map_update _ _ (word.add old_v4 amnt) with "[] Hphysptsto") as "[_ Hphysptsto]".
+  { admit. }
+  iDestruct "Hphysptsto" as "[Hphysptsto Hphysptsto2]".
+  iSpecialize ("Hkvs_ctx" $! (kv_ctx γ (map_insert kvsM key (word.add old_v4 amnt)))%I with "[] [Hphysptsto2 Hkph]").
   { iModIntro. iIntros.
+    unfold kv_ctx.
     rewrite map_get_val.
     rewrite map_get_val.
     unfold map_insert.
     rewrite lookup_insert_ne; last by done.
     iFrame.
   }
+  {
+    unfold kv_ctx.
+    iRight.
+    iFrame.
+    unfold map_insert.
+    unfold map_get.
+    rewrite lookup_insert /=.
+    iFrame.
+  }
   iDestruct (big_sepS_elem_of_acc _ _ tid with "Hfinish_tok") as "[Hfinish_tok Hfinish_rest]".
   { set_solver. }
   iDestruct "Hfinish_tok" as "[%Hbad|Hfinish_tok]".
   { exfalso. admit. (* use Hmapget_finished and Hbad *) }
-  iMod (participant_prepare with "Htxn Hfinish_tok [Hptsto]") as "[#Hprep Hfinish_tok]".
+  iMod (participant_prepare with "Htxn Hfinish_tok [Hlogptsto Hphysptsto]") as "[#Hprep Hfinish_tok]".
   { done. }
-  { iExists _; iFrame. }
+  { iExists _; iFrame.
+    rewrite Hmapget_oldv4 /=.
+    iFrame.
+  }
   iSpecialize ("Hfinish_rest" with "[Hfinish_tok]").
   { by iRight. }
 
@@ -393,6 +414,82 @@ Proof.
   iApply "HΦ".
   iFrame "Hprep".
   by iRight.
+Admitted.
+
+Lemma wp_Participant__Commit (ps:loc) tid pid γ γtpc key amnt:
+  {{{
+       is_txn_single γtpc tid pid (∃ v:u64, key [[γ.(ps_kvs)]]↦{3/4} v ∗ key [[γ.(ps_kvs_phys)]]↦{1/2} (word.add v amnt)) (∃ v:u64, key [[γ.(ps_kvs)]]↦{3/4} v ∗ key [[γ.(ps_kvs_phys)]]↦{1/2} v) ∗
+       is_participant ps γ γtpc pid ∗
+       committed_witness γtpc tid pid ∗
+       committed γtpc tid
+  }}}
+    ParticipantServer__Commit #ps #tid
+  {{{
+       RET #(); True
+  }}}.
+Proof.
+  iIntros (Φ) "(#His_txn & #His_part & #Hcomwit & #Hcom) HΦ".
+  wp_lam.
+  wp_pures.
+  iNamed "His_part".
+  wp_loadField.
+  wp_apply (acquire_spec with "Hmu_inv").
+  iIntros "[Hmulocked Hps]".
+  iNamed "Hps".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_MapGet with "HtxnsMap").
+  iIntros (txn1 ok1) "[%Hmapget_txn HtxnsMap]".
+  wp_pures.
+  wp_if_destruct.
+  { (* No pending transaction with that TID *)
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfinish_tok]").
+    {
+      iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
+      done.
+    }
+    wp_pures.
+    by iApply "HΦ".
+  }
+  (* Found a transaction with that ID *)
+  wp_loadField.
+  iDestruct (big_sepS_elem_of_acc_impl tid with "Hfinish_tok") as "[Hfinish_tok Hfinish_rest]".
+  { set_solver. }
+  iDestruct "Hfinish_tok" as "[%Hbad|Hfinish_tok]".
+  {
+    exfalso. apply map_get_true in Hmapget_txn.
+    apply elem_of_dom in Hbad.
+    assert (is_Some (txnsM !! tid)) by eauto.
+    apply elem_of_dom in H0.
+    set_solver.
+  }
+  iMod (prepared_participant_finish_commit with "His_txn Hcomwit Hcom Hfinish_tok") as ">Hptstos".
+  { done. }
+  iDestruct "Hptstos" as (v) "[Hlogptsto Hphysptsto]".
+
+  iDestruct (big_sepS_elem_of_acc _ _ key with "Hkvs_ctx") as "[Hkv Hkvs_rest]".
+  { set_solver. }
+  unfold kv_ctx.
+  iDestruct "Hkv" as "[[Hbad _]|Hkv]".
+  {
+    iDestruct (ptsto_mut_agree_frac_value with "Hbad Hlogptsto") as %[_ Hbad].
+    exfalso.
+    contradiction.
+  }
+  iDestruct "Hkv" as "[Hkph Hphys2]".
+  iDestruct (ptsto_agree with "Hphys2 Hphysptsto") as %->.
+  iCombine "Hphys2 Hphysptsto" as "Hphysptsto".
+  iSpecialize ("Hkvs_rest" with "[Hphysptsto Hlogptsto]").
+  {
+    iLeft. iFrame.
+  }
+
+  wp_apply (wp_LockMap__Release with "[$HlockMap Hkph]").
+  {
+    (* TODO: need to know that the key the participant remembered correctly which key it was holding for this transaction *)
+    iFrame.
+    admit.
+  }
 Admitted.
 
 End tpc_example.
