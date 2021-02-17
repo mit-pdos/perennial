@@ -5,6 +5,72 @@ Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof Require Import lockmap_proof.
 
+From iris.algebra Require Import excl agree auth gmap csum.
+
+From Perennial.Helpers Require Import Map gset ipm.
+
+From iris.proofmode Require Import tactics.
+From iris.algebra Require Import excl agree auth gmap csum.
+From iris.bi.lib Require Import fractional.
+From iris.base_logic.lib Require Import own.
+
+Section res_map.
+
+Context `{!heapG Σ}.
+
+Definition oneShotResMapUR Σ (K:Type) `{Countable K}: ucmra :=
+  gmapUR K (csumR (fracR) (agreeR (laterO (iPropO Σ)))).
+
+Class resMapG Σ K `{Countable K} :=
+  { resMap_inG :> inG Σ (oneShotResMapUR Σ K); }.
+
+Context {K:Type} `{Countable K}.
+Context `{!resMapG Σ K}.
+
+Definition res_unshot γ (k:K) q :=
+  own γ {[ k := Cinl q ]}.
+
+Definition res_ro γ (k:K) (R:iProp Σ) :=
+  own γ {[ k := Cinr (to_agree (Next R)) ]}.
+
+Notation "k r[[ γ ]]↦{ q } ?" := (res_unshot γ k q%Qp)
+  (at level 20, q at level 50, format "k r[[ γ ]]↦{ q } ?") : bi_scope.
+Notation "k r[[ γ ]]↦ ?" := (k r[[γ]]↦{1} ?)%I
+  (at level 20, format "k r[[ γ ]]↦ ?") : bi_scope.
+Notation "k r[[ γ ]]↦ P" := (res_ro γ k P)
+  (at level 20, format "k  r[[ γ ]]↦ P") : bi_scope.
+
+Lemma rptsto_choose R γ k :
+  k r[[γ]]↦? ==∗ k r[[γ]]↦ R.
+Proof.
+Admitted.
+
+Lemma rptsto_agree γ k P Q:
+  k r[[γ]]↦ P -∗ k r[[γ]]↦ Q -∗ ▷(P ≡ Q).
+Proof.
+  iIntros "HP HQ".
+  iCombine "HP HQ" as "HPQ".
+  iDestruct (own_valid with "HPQ") as "#Hvalid".
+  rewrite -Cinr_op.
+  rewrite singleton_validI.
+  iAssert (✓ (to_agree (Next P) ⋅ to_agree (Next Q)))%I as "#Hvalid2".
+  { admit. }
+  iDestruct (wsat.agree_op_invI with "Hvalid2") as "#Hvalid3".
+  iEval (rewrite agree_equivI) in "Hvalid3".
+  Search Next.
+  by iApply later_equivI_1.
+Admitted.
+
+(* TODO: put in helper lemmas *)
+End res_map.
+
+Notation "k r[[ γ ]]↦{ q } ?" := (res_unshot γ k q)
+  (at level 20, q at level 50, format "k r[[ γ ]]↦{ q } ?") : bi_scope.
+Notation "k r[[ γ ]]↦?" := (res_unshot γ k 1%Qp)
+  (at level 20, format "k r[[ γ ]]↦?") : bi_scope.
+Notation "k r[[ γ ]]↦ P" := (res_ro γ k P)
+  (at level 20, format "k  r[[ γ ]]↦ P") : bi_scope.
+
 Section tpc_example.
 
 Context `{!heapG Σ}.
@@ -12,6 +78,7 @@ Context `{!mapG Σ u64 u64}.
 Context `{!mapG Σ u64 ()}.
 Context `{!mapG Σ u64 (option bool)}.
 Context `{!mapG Σ (u64*u64) ()}.
+Context `{resMapG Σ (u64*u64) }.
 
 Record tpc_names :=
 mk_tpc_names  {
@@ -19,6 +86,8 @@ mk_tpc_names  {
   prepared_gn : gname ;  (* (tid, pid) -> () *)
   finish_token_gn : gname ;
   uncommit_token_gn : gname ;
+  abort_res_gn : gname ; (* (tid,pid) -> iProp *)
+  commit_res_gn : gname ; (* (tid,pid) -> iProp *)
 }.
 
 Implicit Type γtpc : tpc_names.
@@ -33,19 +102,24 @@ Definition undecided γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ Non
 Definition aborted γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ro Some false.
 Definition committed γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ro Some true.
 
-Definition tpc_inv_single γtpc tid pid R R' : iProp Σ :=
-  unprepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∨
-  prepared γtpc tid pid ∗ R ∗ uncommit_token γtpc tid pid ∨
-  committed γtpc tid ∗ prepared γtpc tid pid ∗ (R' ∨ finish_token γtpc tid pid) ∨
+Definition tpc_inv_single γtpc tid pid : iProp Σ :=
+  unprepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗
+      ((tid,pid) r[[γtpc.(abort_res_gn)]]↦?) ∗
+      ((tid,pid) r[[γtpc.(commit_res_gn)]]↦?) ∨
+  prepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗ (∃ R, R ∗ (tid, pid) r[[γtpc.(abort_res_gn)]]↦ R) ∨
+  committed γtpc tid ∗ prepared γtpc tid pid ∗ ((∃ R, R ∗ (tid, pid) r[[γtpc.(commit_res_gn)]]↦ R) ∨ finish_token γtpc tid pid) ∨
   aborted γtpc tid ∗ finish_token γtpc tid pid
 .
 
 Definition txnSingleN (pid:u64) := nroot .@ "tpc" .@ pid.
-Definition is_txn_single γtpc (tid pid:u64) R R': iProp Σ := inv (txnSingleN pid) (tpc_inv_single γtpc tid pid R R').
+Definition is_txn_single γtpc (tid pid:u64): iProp Σ := inv (txnSingleN pid) (tpc_inv_single γtpc tid pid).
 
 Lemma participant_prepare E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ finish_token γtpc tid pid-∗ R ={E}=∗ prepared γtpc tid pid ∗ finish_token γtpc tid pid.
+  is_txn_single γtpc tid pid -∗ finish_token γtpc tid pid -∗ R ={E}=∗
+  prepared γtpc tid pid ∗ finish_token γtpc tid pid ∗
+  ((tid,pid) r[[γtpc.(abort_res_gn)]]↦ R) ∗
+  ((tid,pid) r[[γtpc.(commit_res_gn)]]↦ R').
 Proof.
   intros ?.
   iIntros "His_txn Hfinish_tok HR".
@@ -56,11 +130,16 @@ Proof.
     { admit. }
 
     iFrame "Hprep Hfinish_tok".
+    iDestruct "Huncommit" as "(Huncommit & Habort & Hcommit)".
+    iMod (rptsto_choose R' with "Hcommit") as "#Hcommit".
+    iMod (rptsto_choose R with "Habort") as "#Habort".
+    iFrame "#".
     iMod ("Htclose" with "[HR Huncommit]"); last done.
     iNext.
     iRight.
     iLeft.
     iFrame "#∗".
+    iExists _; iFrame "#∗".
   }
   { (* Already prepared *)
     iFrame "Hfinish_tok".
