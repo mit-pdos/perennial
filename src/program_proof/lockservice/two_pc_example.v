@@ -138,6 +138,11 @@ Definition tpc_inv_single γtpc tid pid R R' : iProp Σ :=
   aborted γtpc tid ∗ finish_token γtpc tid pid
 .
 
+Definition fresh_tid γtpc (tid:u64) : iProp Σ :=
+  "Htokens" ∷ ([∗ set] pid ∈ (fin_to_set u64), (tid,pid:u64) [[γtpc.(prepared_gn)]]↦ () ∗
+                                    (tid,pid) [[γtpc.(uncommit_token_gn)]]↦ ()) ∗
+  "Hundec" ∷ undecided γtpc tid.
+
 Definition txnSingleN (pid:u64) := nroot .@ "tpc" .@ pid.
 Definition is_txn_single γtpc (tid pid:u64) R R' : iProp Σ := inv (txnSingleN pid) (tpc_inv_single γtpc tid pid R R').
 
@@ -662,6 +667,93 @@ Proof.
     set_solver.
   }
   by iApply "HΦ".
+Admitted.
+
+Variable s0:loc.
+Variable s1:loc.
+Variables γ1:participant_names.
+Variables γ2:participant_names.
+
+Definition TransactionCoordinator_own (tc:loc) γtpc : iProp Σ :=
+
+  "#His_part1" ∷ is_participant s0 γ1 γtpc 0 ∗
+  "#His_part2" ∷ is_participant s1 γ2 γtpc 1 ∗
+  "Hs0" ∷ tc ↦[TransactionCoordinator.S :: "s0"] #s0 ∗
+  "Hs1" ∷ tc ↦[TransactionCoordinator.S :: "s1"] #s1
+.
+
+Lemma wp_Participant__PrepareDecrease (ps:loc) tid pid γ γtpc (key amnt:u64) :
+  {{{
+       is_txn_single γtpc tid pid (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} (word.sub data.(oldValue) data.(amount))) ∗
+       is_participant ps γ γtpc pid
+  }}}
+    ParticipantServer__PrepareDecrease #ps #tid #key #amnt
+  {{{
+       (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid pid
+  }}}.
+Proof.
+Admitted.
+
+Lemma txn_single_alloc γtpc tid pid R R' :
+  (tid, pid) [[γtpc.(prepared_gn)]]↦ () ∗ (tid, pid) [[γtpc.(uncommit_token_gn)]]↦ ()
+  ={⊤}=∗
+  is_txn_single γtpc tid pid R R'.
+Proof.
+  (* Just alloc the invariant *)
+Admitted.
+
+Lemma wp_TransactionCoordinator__doTransfer (tc:loc) γtpc (tid acc1 acc2 amount:u64) :
+  {{{
+       TransactionCoordinator_own tc γtpc ∗
+       fresh_tid γtpc tid
+  }}}
+    TransactionCoordinator__doTransfer #tc #tid #acc1 #acc2 #amount
+  {{{
+       RET #(); True
+  }}}.
+Proof.
+  iIntros (Φ) "[Hown Hfresh] HΦ".
+  iNamed "Hown".
+  iNamed "Hfresh".
+
+  iDestruct (big_sepS_delete _ _ (U64 0) with "Htokens") as "[Hs0_res Htokens]".
+  { set_solver. }
+  iDestruct (big_sepS_delete _ _ (U64 1) with "Htokens") as "[Hs1_res Htokens]".
+  { set_solver. }
+  iMod (txn_single_alloc  with "Hs0_res") as "#Htxn1".
+  iMod (txn_single_alloc  with "Hs1_res") as "#Htxn2".
+  wp_lam.
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Participant__PrepareIncrease with "[]").
+  { iFrame "His_part1".
+    iFrame "Htxn1".
+  }
+  iIntros (prepared1) "Hprep1".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Participant__PrepareDecrease with "[$His_part2 $Htxn2]").
+  iIntros (prepared2) "Hprep2".
+  wp_pures.
+  wp_apply (wp_and).
+  { wp_pures. done. }
+  { iIntros. wp_pures. done. }
+  wp_if_destruct.
+  - (* Both prepared *)
+    iDestruct "Hprep1" as "[%Hbad|[_ Hprep1]]".
+    { exfalso. naive_solver. }
+    iDestruct "Hprep2" as "[%Hbad|[_ Hprep2]]".
+    { exfalso. naive_solver. }
+    wp_loadField.
+
+    (* Commit point *)
+    iApply fupd_wp.
+    iMod (start_commit_txn_single with "Htxn1 Hprep1 Hundec") as "(Hundec & Hcom1 & HR1)"; first done.
+    iDestruct "HR1" as (txn1) "(Hptsto1 & Hdata1 & Hclose1)".
+    iMod (start_commit_txn_single with "Htxn2 Hprep2 Hundec") as "(Hundec & Hcom2 & HR2)".
+    { admit. } (* namespaces *)
+    iDestruct "HR2" as (txn2) "(Hptsto2 & Hdata2 & Hclose2)".
+    (* TODO: combine with logically atomic pre to get 1/4 ptsto and do the update *)
 Admitted.
 
 End tpc_example.
