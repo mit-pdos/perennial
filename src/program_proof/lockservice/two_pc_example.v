@@ -694,6 +694,7 @@ Lemma wp_Participant__PrepareDecrease (ps:loc) tid pid γ γtpc (key amnt:u64) :
        is_txn_single γtpc tid pid (λ data, key [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, key [[γ.(ps_kvs)]]↦{3/4} (word.sub data.(oldValue) data.(amount))) ∗
        is_participant ps γ γtpc pid
   }}}
+
     ParticipantServer__PrepareDecrease #ps #tid #key #amnt
   {{{
        (a op oldValue:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid pid ∗
@@ -710,21 +711,21 @@ Proof.
   (* Just alloc the invariant *)
 Admitted.
 
-Lemma wp_TransactionCoordinator__doTransfer (tc:loc) γtpc (tid acc1 acc2 amount v1 v2:u64) :
+Lemma wp_TransactionCoordinator__doTransfer {Eo Ei} (tc:loc) γtpc (tid acc1 acc2 amount v1 v2:u64) :
+Eo ⊆ ⊤ ∖ ↑txnSingleN 0 ∖ ↑txnSingleN 1 →
   {{{
        TransactionCoordinator_own tc γtpc ∗
        fresh_tid γtpc tid ∗ (* TODO: make this logically-atomic *)
-       acc1 [[γ1.(ps_kvs)]]↦{1/4} v1 ∗
-       acc2 [[γ2.(ps_kvs)]]↦{1/4} v2
+
+       |={Eo,Ei}=> (acc1 [[γ1.(ps_kvs)]]↦{1/4} v1 ∗ acc2 [[γ2.(ps_kvs)]]↦{1/4} v2) ∗
+        ((acc1 [[γ1.(ps_kvs)]]↦{1/4} (word.add v1 amount) ∗ acc2 [[γ2.(ps_kvs)]]↦{1/4} (word.sub v2 amount)) ={Ei,Eo}=∗ emp)
   }}}
     TransactionCoordinator__doTransfer #tc #tid #acc1 #acc2 #amount
   {{{
-       RET #();
-       acc1 [[γ1.(ps_kvs)]]↦{1/4} (word.add v1 amount) ∗
-       acc2 [[γ2.(ps_kvs)]]↦{1/4} (word.sub v2 amount)
+       RET #(); True
   }}}.
 Proof.
-  iIntros (Φ) "(Hown & Hfresh & Hacc1 & Hacc2) HΦ".
+  iIntros (? Φ) "(Hown & Hfresh & Hacc_pre) HΦ".
   iNamed "Hown".
   iNamed "Hfresh".
 
@@ -775,6 +776,9 @@ Proof.
     iDestruct (ptsto_agree_frac_value with "Hdata2 Hdata2'") as %[Hdata2_same _].
     assert (txn2 = mkTransactionC acc2 _ _ _) as -> by naive_solver. simpl.
 
+    iMod (fupd_mask_subseteq) as "Hmask_close"; last iMod "Hacc_pre".
+    { done. }
+    iDestruct "Hacc_pre" as "((Hacc1 & Hacc2) & Hacc_close)".
     iDestruct (ptsto_agree_frac_value with "Hptsto1 Hacc1") as %[-> _].
     iDestruct (ptsto_agree_frac_value with "Hptsto2 Hacc2") as %[-> _].
     iCombine "Hptsto1 Hacc1" as "Hacc1".
@@ -796,6 +800,9 @@ Proof.
     iMod (map_update _ _ (Some true) with "[] Hundec") as "[_ Hundec]"; first admit.
     iMod (map_freeze with "[] Hundec") as "[_ #Hcom]"; first admit.
 
+    rewrite Qp_three_quarter_quarter.
+    iMod ("Hacc_close" with "[$Hacc1 $Hacc2]").
+    iMod "Hmask_close".
     iMod ("Hclose2" with "Hptsto2 Hcom") as "_".
     iMod ("Hclose1" with "Hptsto1 Hcom") as "_".
 
@@ -807,9 +814,7 @@ Proof.
     {
       admit. (* TODO: commit is only designed for adding, not subtracting *)
     }
-    iApply "HΦ".
-    rewrite Qp_three_quarter_quarter.
-    by iFrame "Hacc1 Hacc2".
+    by iApply "HΦ".
   - (* TODO: Abort case *)
     admit.
 Admitted.
