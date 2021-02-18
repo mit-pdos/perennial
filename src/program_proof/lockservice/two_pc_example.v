@@ -362,12 +362,13 @@ Definition is_participant (ps:loc) γ γtpc pid : iProp Σ :=
 
 Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ γtpc (key amnt:u64) :
   {{{
-       is_txn_single γtpc tid pid (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) data.(amount))) ∗
+       is_txn_single γtpc tid pid (λ data, key [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, key [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) amnt)) ∗
        is_participant ps γ γtpc pid
   }}}
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
   {{{
-       (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid pid
+       (a op oldValue:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid pid ∗
+       (tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some (mkTransactionC key oldValue op amnt)
   }}}.
 Proof.
   iIntros (Φ) "[#Htxn #Hps] HΦ".
@@ -539,22 +540,25 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iFrame "Hprep".
-  by iRight.
+  iRight.
+  iSplitL ""; first done.
+  iFrame "#".
 Admitted.
 
-Lemma wp_Participant__Commit (ps:loc) tid pid γ γtpc :
+Lemma wp_Participant__Commit (ps:loc) tid pid key oldv op amnt γ γtpc :
   {{{
-       is_txn_single γtpc tid pid (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) data.(amount))) ∗
+       is_txn_single γtpc tid pid (λ data, key [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, key [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) amnt)) ∗
        is_participant ps γ γtpc pid ∗
        committed_witness γtpc tid pid ∗
-       committed γtpc tid
+       committed γtpc tid ∗
+       (tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some (mkTransactionC key oldv op amnt)
   }}}
     ParticipantServer__Commit #ps #tid
   {{{
        RET #(); True
   }}}.
 Proof.
-  iIntros (Φ) "(#His_txn & #His_part & #Hcomwit & #Hcom) HΦ".
+  iIntros (Φ) "(#His_txn & #His_part & #Hcomwit & #Hcom & #Hdata_key) HΦ".
   wp_lam.
   wp_pures.
   iNamed "His_part".
@@ -599,6 +603,9 @@ Proof.
   iDestruct (big_sepS_elem_of_acc _ _ txn1.(heldResource) with "Hkvs_ctx") as "[Hkv Hkvs_rest]".
   { set_solver. }
   unfold kv_ctx.
+  (* Match txn_data held by participant with txn_data passed in by coordinator *)
+  iDestruct (ptsto_agree_frac_value with "Hdata Hdata_key") as %[HR _].
+  assert (txn1 = mkTransactionC key _ _ _) as -> by naive_solver. simpl.
   iDestruct "Hkv" as "[[_ Hbad]|[Hkvlocked Hphysptsto]]".
   {
     iDestruct (ptsto_mut_agree_frac_value with "Hbad Hptsto") as %[_ Hbad].
@@ -684,12 +691,13 @@ Definition TransactionCoordinator_own (tc:loc) γtpc : iProp Σ :=
 
 Lemma wp_Participant__PrepareDecrease (ps:loc) tid pid γ γtpc (key amnt:u64) :
   {{{
-       is_txn_single γtpc tid pid (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} (word.sub data.(oldValue) data.(amount))) ∗
+       is_txn_single γtpc tid pid (λ data, key [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, key [[γ.(ps_kvs)]]↦{3/4} (word.sub data.(oldValue) data.(amount))) ∗
        is_participant ps γ γtpc pid
   }}}
     ParticipantServer__PrepareDecrease #ps #tid #key #amnt
   {{{
-       (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid pid
+       (a op oldValue:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid pid ∗
+       (tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some (mkTransactionC key oldValue op amnt)
   }}}.
 Proof.
 Admitted.
@@ -702,17 +710,21 @@ Proof.
   (* Just alloc the invariant *)
 Admitted.
 
-Lemma wp_TransactionCoordinator__doTransfer (tc:loc) γtpc (tid acc1 acc2 amount:u64) :
+Lemma wp_TransactionCoordinator__doTransfer (tc:loc) γtpc (tid acc1 acc2 amount v1 v2:u64) :
   {{{
        TransactionCoordinator_own tc γtpc ∗
-       fresh_tid γtpc tid
+       fresh_tid γtpc tid ∗ (* TODO: make this logically-atomic *)
+       acc1 [[γ1.(ps_kvs)]]↦{1/4} v1 ∗
+       acc2 [[γ2.(ps_kvs)]]↦{1/4} v2
   }}}
     TransactionCoordinator__doTransfer #tc #tid #acc1 #acc2 #amount
   {{{
-       RET #(); True
+       RET #();
+       acc1 [[γ1.(ps_kvs)]]↦{1/4} (word.add v1 amount) ∗
+       acc2 [[γ2.(ps_kvs)]]↦{1/4} (word.sub v2 amount)
   }}}.
 Proof.
-  iIntros (Φ) "[Hown Hfresh] HΦ".
+  iIntros (Φ) "(Hown & Hfresh & Hacc1 & Hacc2) HΦ".
   iNamed "Hown".
   iNamed "Hfresh".
 
@@ -729,11 +741,11 @@ Proof.
   { iFrame "His_part1".
     iFrame "Htxn1".
   }
-  iIntros (prepared1) "Hprep1".
+  iIntros (prepared1 ??) "Hprep1".
   wp_pures.
   wp_loadField.
   wp_apply (wp_Participant__PrepareDecrease with "[$His_part2 $Htxn2]").
-  iIntros (prepared2) "Hprep2".
+  iIntros (prepared2 ??) "Hprep2".
   wp_pures.
   wp_apply (wp_and).
   { wp_pures. done. }
@@ -746,14 +758,60 @@ Proof.
     { exfalso. naive_solver. }
     wp_loadField.
 
-    (* Commit point *)
+    iDestruct "Hprep1" as "[Hprep1 Hdata1]".
+    iDestruct "Hprep2" as "[Hprep2 Hdata2]".
+    (* Start the commit point *)
     iApply fupd_wp.
-    iMod (start_commit_txn_single with "Htxn1 Hprep1 Hundec") as "(Hundec & Hcom1 & HR1)"; first done.
-    iDestruct "HR1" as (txn1) "(Hptsto1 & Hdata1 & Hclose1)".
-    iMod (start_commit_txn_single with "Htxn2 Hprep2 Hundec") as "(Hundec & Hcom2 & HR2)".
+    iMod (start_commit_txn_single with "Htxn1 Hprep1 Hundec") as "(Hundec & #Hcom1 & HR1)"; first done.
+    iDestruct "HR1" as (txn1) "(>Hptsto1 & Hdata1' & Hclose1)".
+    iMod (start_commit_txn_single with "Htxn2 Hprep2 Hundec") as "(Hundec & #Hcom2 & HR2)".
     { admit. } (* namespaces *)
-    iDestruct "HR2" as (txn2) "(Hptsto2 & Hdata2 & Hclose2)".
-    (* TODO: combine with logically atomic pre to get 1/4 ptsto and do the update *)
+    iDestruct "HR2" as (txn2) "(>Hptsto2 & Hdata2' & Hclose2)".
+
+    (* Match up keys *)
+    iDestruct (ptsto_agree_frac_value with "Hdata1 Hdata1'") as %[Hdata1_same _].
+    assert (txn1 = mkTransactionC acc1 _ _ _) as -> by naive_solver. simpl.
+
+    iDestruct (ptsto_agree_frac_value with "Hdata2 Hdata2'") as %[Hdata2_same _].
+    assert (txn2 = mkTransactionC acc2 _ _ _) as -> by naive_solver. simpl.
+
+    iDestruct (ptsto_agree_frac_value with "Hptsto1 Hacc1") as %[-> _].
+    iDestruct (ptsto_agree_frac_value with "Hptsto2 Hacc2") as %[-> _].
+    iCombine "Hptsto1 Hacc1" as "Hacc1".
+    iCombine "Hptsto2 Hacc2" as "Hacc2".
+
+    (***************************)
+    (* COMMIT POINT *)
+    (***************************)
+    rewrite Qp_three_quarter_quarter.
+    iMod (map_update _ _ (word.add v1 amount) with "[] Hacc1") as "[_ Hacc1]".
+    { admit. } (* map_ctx *)
+    iMod (map_update _ _ (word.sub v2 amount) with "[] Hacc2") as "[_ Hacc2]".
+    { admit. }
+
+    rewrite -Qp_three_quarter_quarter.
+    iDestruct (fractional_split_1 with "Hacc1") as "[Hptsto1 Hacc1]".
+    iDestruct (fractional_split_1 with "Hacc2") as "[Hptsto2 Hacc2]".
+
+    iMod (map_update _ _ (Some true) with "[] Hundec") as "[_ Hundec]"; first admit.
+    iMod (map_freeze with "[] Hundec") as "[_ #Hcom]"; first admit.
+
+    iMod ("Hclose2" with "Hptsto2 Hcom") as "_".
+    iMod ("Hclose1" with "Hptsto1 Hcom") as "_".
+
+    iModIntro.
+    wp_apply (wp_Participant__Commit with "[$His_part1 $Hcom $Hcom1 $Htxn1 $Hdata1]").
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_Participant__Commit with "[$His_part2 $Hcom Hcom2 Htxn2 Hdata2]").
+    {
+      admit. (* TODO: commit is only designed for adding, not subtracting *)
+    }
+    iApply "HΦ".
+    rewrite Qp_three_quarter_quarter.
+    by iFrame "Hacc1 Hacc2".
+  - (* TODO: Abort case *)
+    admit.
 Admitted.
 
 End tpc_example.
