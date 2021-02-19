@@ -115,6 +115,37 @@ Proof.
     * iModIntro. eauto.
 Qed.
 
+(* A stronger version of this is provable that would allow a level k fupd instead of a bupd
+   in going from ▷ Q to ▷ Q' and R *)
+Lemma na_crash_inv_open_modify_ncfupd k E P Q Q' R:
+  na_crash_inv (S k) Q P -∗
+  (▷ Q ==∗ □ (▷ Q' -∗ |C={⊤}_k=> ▷ P) ∗ ▷ Q' ∗ R) -∗
+  |NC={E}=> R ∗ na_crash_inv (S k) Q' P.
+Proof.
+  iIntros "Hna Hwand".
+  rewrite ncfupd_eq /ncfupd_def. iIntros (q) "HNC".
+  iApply fupd_level_fupd.
+  crash_unseal.
+  iDestruct "Hna" as (???) "(Hstaged&Hw1&#Hw2)".
+  iMod (staged_inv_open_modify_ae _ _ _ _ _ 0 _ _ _ _ _ _ True%I
+                                  (□ (▷ Q' -∗ |C={⊤}_k=> ▷ P) ∗ R) with "[Hstaged] [Hw1 Hwand]")
+       as "Hres";
+    [ | | iExact "Hstaged" |..].
+  { eauto. }
+  { reflexivity. }
+  { iIntros "HQ0".
+    iMod ("Hwand" with "[Hw1 HQ0]") as "(#Hw1&HQ'&HR)".
+    { iNext. iApply "Hw1"; eauto. }
+    iModIntro. iFrame "# ∗".
+    iModIntro. iIntros.
+    iApply (fupd_level_split_level); first by reflexivity.
+    iMod ("Hw1" with "[$] [$]") as "$". eauto.
+  }
+  iDestruct "Hres" as "[((#Hw&HR)&Hval)|(_&HC)]".
+  { iFrame. iModIntro. iExists _, _, _. iFrame "# ∗". eauto. }
+  { iDestruct (NC_C with "[$] [$]") as %[]. }
+Qed.
+
 (* TODO, follows the pattern of staged_inv, the swap has to be atomic now *)
 (*
 Lemma na_crash_inv_open_modify N k' k E E' P Q R:
