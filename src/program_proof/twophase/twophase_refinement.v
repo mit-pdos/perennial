@@ -159,7 +159,6 @@ Existing Instances jrnl_semantics.
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 (* XXX: might need to change typed_translate / refinement to use the spec_ wrappers around type classes *)
 
-Check typed_translate.expr_transTy.
 Lemma jrnl_refinement (es: @expr jrnl_op) σs e σ (τ: @ty jrnl_ty.(@val_tys jrnl_op)):
   typed_translate.expr_transTy _ _ _ jrnl_trans jrnl_atomic_transTy ∅ es e τ →
   σ.(trace) = σs.(trace) →
