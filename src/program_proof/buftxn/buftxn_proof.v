@@ -540,6 +540,61 @@ Opaque struct.t.
     eapply insert_non_empty in Hx. exfalso; eauto.
 Qed.
 
+Theorem BufTxn_lift_one' buftx mt γUnified dinit a v E anydirty k q :
+  ↑invN ⊆ E ->
+  (
+    is_buftxn buftx mt γUnified dinit anydirty ∗
+    mapsto_txn γUnified a v
+  ) -∗
+    NC q -∗
+    |k={E}=>
+  (
+    is_buftxn buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified dinit anydirty
+  ) ∗
+    NC q
+  .
+Proof.
+  iIntros (HNE) "[Htxn Ha]".
+  iNamed "Htxn".
+
+  iAssert (⌜ mt !! a = None ⌝)%I as %Hnone.
+  {
+    destruct (mt !! a) eqn:He; eauto.
+    iDestruct (big_sepM_lookup with "Hctxelem") as "[Ha2 %]"; eauto.
+    destruct (gBufmap !! a); rewrite /=.
+    { iDestruct (mapsto_txn_2 with "Ha Ha2") as %[]. }
+    { iDestruct (mapsto_txn_2 with "Ha Ha2") as %[]. }
+  }
+
+  iAssert (⌜ gBufmap !! a = None ⌝)%I as %Hgnone.
+  {
+    destruct (gBufmap !! a) eqn:He; eauto.
+    eapply map_subseteq_spec in Hbufmapelem as Ha'.
+    { erewrite lookup_fmap in Ha'. erewrite Hnone in Ha'. simpl in Ha'. congruence. }
+    rewrite lookup_fmap. erewrite He. rewrite /=. reflexivity.
+  }
+
+  iPoseProof "Histxn" as "Histxn0".
+  iNamed "Histxn".
+  iIntros "HNC".
+  iMod (mapsto_txn_valid' with "Histxna [Ha Histxna] [$]") as "[Ha [%Havalid HNC]]"; eauto.
+
+  iModIntro. iFrame "HNC".
+  iExists _, _, _.
+  iFrame. iFrame "#%".
+
+  iSplit.
+  { iPureIntro. rewrite ?fmap_insert /=. destruct v.
+    etransitivity. 2: apply insert_subseteq; rewrite lookup_fmap Hnone; done.
+    eauto.
+  }
+  iSplit.
+  { iApply big_sepM_insert; eauto. iFrame "#". intuition. }
+  iApply big_sepM_insert; eauto. iFrame.
+  rewrite /committed Hgnone /=. destruct v. iFrame.
+  rewrite /modified /=. intuition.
+Qed.
+
 Theorem BufTxn_lift_one buftx mt γUnified dinit a v E anydirty :
   ↑invN ⊆ E ->
   (

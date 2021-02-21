@@ -7,7 +7,7 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Definition ncinv_def `{!invG Σ, !crashG Σ} N P : iProp Σ :=
-  □ ∀ E, ⌜↑N ⊆ E⌝ → |NC={E,E ∖ ↑N}=> ▷ P ∗ (▷ P -∗ |NC={E ∖ ↑N,E}=> True).
+  □ ∀ E, ⌜↑N ⊆ E⌝ → ∀ q, NC q -∗ |0={E,E ∖ ↑N}=> ▷ P ∗ NC q ∗ (▷ P -∗ ∀ q', NC q' -∗ |0={E ∖ ↑N,E}=> NC q').
 Definition ncinv_aux : seal (@ncinv_def). Proof. by eexists. Qed.
 Definition ncinv := ncinv_aux.(unseal).
 Arguments ncinv {Σ _ _} N P%bi_scope.
@@ -43,9 +43,9 @@ Implicit Types P : iProp Σ.
 
   Lemma ncinv_alter N P Q : ncinv N P -∗ ▷ □ (P -∗ Q ∗ (Q -∗ P)) -∗ ncinv N Q.
   Proof.
-    rewrite ncinv_eq. iIntros "#HI #HPQ !>" (E H).
-    iMod ("HI" $! E H) as "[HP Hclose]".
-    iDestruct ("HPQ" with "HP") as "[$ HQP]".
+    rewrite ncinv_eq. iIntros "#HI #HPQ !>" (E H q) "HNC".
+    iMod ("HI" $! E H q with "[$]") as "[HP [HNC Hclose]]".
+    iDestruct ("HPQ" with "HP") as "[$ HQP]". iFrame.
     iIntros "!> HQ". iApply "Hclose". iApply "HQP". done.
   Qed.
 
@@ -91,7 +91,25 @@ Implicit Types P : iProp Σ.
   Proof.
     rewrite ncinv_eq /ncinv_def.
     iIntros (?) "#Hi".
-    by iMod ("Hi" $! E with "[//]") as "($&$)".
+    rewrite ncfupd_eq.
+    iIntros (q) "HNC".
+    iApply fupd_level_fupd.
+    iMod ("Hi" $! E with "[//] [$]") as "($&HNC&H)". iFrame.
+    iModIntro. iIntros. iIntros (q') "HNC".
+    iApply fupd_level_fupd.
+    iMod ("H" with "[$] [$]") as "$". eauto.
+  Qed.
+
+  Lemma ncinv_acc_k E N P k q :
+    ↑N ⊆ E → ncinv N P -∗ NC q -∗ |k={E,E∖↑N}=> ▷ P ∗ NC q ∗ (▷ P -∗ ∀ q', NC q' -∗ |k={E∖↑N,E}=> NC q').
+  Proof.
+    rewrite ncinv_eq /ncinv_def.
+    iIntros (?) "#Hi HNC".
+    iApply (fupd_level_le _ _ 0); try lia.
+    iMod ("Hi" $! E with "[//] [$]") as "($&$&H)".
+    iModIntro. iIntros.
+    iApply (fupd_level_le _ _ 0); try lia.
+    iApply ("H" with "[$]"); eauto.
   Qed.
 
   Lemma ncinv_combine N1 N2 N P Q :
@@ -99,24 +117,29 @@ Implicit Types P : iProp Σ.
     ↑N1 ∪ ↑N2 ⊆@{coPset} ↑N →
     ncinv N1 P -∗ ncinv N2 Q -∗ ncinv N (P ∗ Q).
   Proof.
-    rewrite ncinv_eq. iIntros (??) "#HncinvP #HncinvQ !>"; iIntros (E ?).
-    iMod ("HncinvP" with "[%]") as "[$ HcloseP]"; first set_solver.
-    iMod ("HncinvQ" with "[%]") as "[$ HcloseQ]"; first set_solver.
-    iMod (ncfupd_mask_subseteq (E ∖ ↑N)) as "Hclose"; first set_solver.
-    iIntros "!> [HP HQ]".
-    iMod "Hclose" as %_. iMod ("HcloseQ" with "HQ") as %_. by iApply "HcloseP".
+    rewrite ncinv_eq. iIntros (??) "#HncinvP #HncinvQ !>"; iIntros (E ? q) "HNC".
+    iMod ("HncinvP" with "[%] [$]") as "[$ [HNC HcloseP]]"; first set_solver.
+    iMod ("HncinvQ" with "[%] [$]") as "[$ [HNC HcloseQ]]"; first set_solver.
+    iMod (fupd_level_mask_subseteq (E ∖ ↑N)) as "Hclose"; first set_solver.
+    iFrame. iIntros "!> [HP HQ]".
+    iMod "Hclose" as %_. iIntros (?) "HNC".
+    iMod ("HcloseQ" with "HQ HNC") as "HNC".
+    iMod ("HcloseP" with "HP HNC") as "$".
+    auto.
   Qed.
 
   Lemma ncinv_combine_dup_l N P Q :
     □ (P -∗ P ∗ P) -∗
     ncinv N P -∗ ncinv N Q -∗ ncinv N (P ∗ Q).
   Proof.
-    rewrite ncinv_eq. iIntros "#HPdup #HncinvP #HncinvQ !>" (E ?).
-    iMod ("HncinvP" with "[//]") as "[HP HcloseP]".
+    rewrite ncinv_eq. iIntros "#HPdup #HncinvP #HncinvQ !>" (E ? q) "HNC".
+    iMod ("HncinvP" with "[//] HNC") as "[HP [HNC HcloseP]]".
     iDestruct ("HPdup" with "HP") as "[$ HP]".
-    iMod ("HcloseP" with "HP") as %_.
-    iMod ("HncinvQ" with "[//]") as "[$ HcloseQ]".
-    iIntros "!> [HP HQ]". by iApply "HcloseQ".
+    iMod ("HcloseP" with "HP HNC") as "HNC".
+    iMod ("HncinvQ" with "[//] HNC") as "[$ [$ HcloseQ]]".
+    iIntros "!> [HP HQ]" (q') "HNC".
+    iMod ("HcloseQ" with "HQ HNC") as "$".
+    auto.
   Qed.
 
   (** ** Proof mode integration *)
@@ -174,7 +197,8 @@ Implicit Types P : iProp Σ.
   Proof.
     iIntros "#H". rewrite ncinv_eq /ncinv_def.
     iIntros "!>" (E Hsub). iInv "H" as "HP" "Hclo".
-    iModIntro. iFrame. iIntros "HP". iApply fupd_ncfupd.
+    iIntros (?) "HNC".
+    iModIntro. iFrame. iIntros "HP" (?) "HNC". iFrame.
     by iMod ("Hclo" with "[$]").
   Qed.
 
@@ -222,9 +246,8 @@ Implicit Types P : iProp Σ.
     iSplitL "".
     - iIntros "!> !>" (E' Hsub).
       iInv "Hinv" as "[H|(>Hfalse&_)]" "Hclo".
-      * iModIntro. iFrame. iIntros "HP". iMod ("Hclo" with "[HP]"); eauto.
-      * rewrite ncfupd_eq /ncfupd_def. iIntros (?) "HNC".
-        iDestruct (NC_C with "[$] [$]") as %[].
+      * iIntros (?) "HNC". iModIntro. iFrame. iIntros "HP". iMod ("Hclo" with "[HP]"); eauto.
+      * iIntros (?) "HNC". iDestruct (NC_C with "[$] [$]") as %[].
     - iModIntro. iModIntro. iIntros "HC". iInv "Hinv" as "H" "Hclo".
       iDestruct "H" as "[HP|(_&>Hfalse)]".
       * iFrame. iMod (pending_upd_done with "Hpending") as "Hdone".
@@ -258,10 +281,9 @@ Implicit Types P : iProp Σ.
     iSplitL ""; [| iSplitL "Hpending2"].
     - iIntros "!> !>" (E' Hsub).
       iInv "Hinv" as "[(HP&Hpend)|(>Hfalse&_)]" "Hclo".
-      * iModIntro. iFrame. iIntros "HP". iMod ("Hclo" with "[HP Hpend]"); eauto.
+      * iIntros (?) "HNC". iModIntro. iFrame. iIntros "HP". iMod ("Hclo" with "[HP Hpend]"); eauto.
         iLeft. iFrame.
-      * rewrite ncfupd_eq /ncfupd_def. iIntros (?) "HNC".
-        iDestruct (NC_C with "[$] [$]") as %[].
+      * iIntros (?) "HNC". iDestruct (NC_C with "[$] [$]") as %[].
     - do 2 iModIntro.
       iIntros "#HC". iInv "Hinv" as "H" "Hclo".
       iDestruct "H" as "[(HP&>Hpending1)|(C&Hcrash&Hcase&Hdone1)]".

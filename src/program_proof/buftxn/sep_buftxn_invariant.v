@@ -339,20 +339,24 @@ Section goose_lang.
     mspec.modified (object_to_versioned obj) = obj.
   Proof. destruct obj; reflexivity. Qed.
 
-  Lemma durable_mapsto_mapsto_txn_agree E γ a obj1 obj2 :
+  Lemma durable_mapsto_mapsto_txn_agree' E γ a obj1 obj2 k q :
     ↑N ⊆ E →
     ↑invN ⊆ E →
     N ## invN →
     is_txn_system γ -∗
     durable_mapsto γ a obj1 -∗
     mapsto_txn γ.(buftxn_txn_names) a obj2 -∗
-    |NC={E}=> ⌜obj1 = obj2⌝ ∗ durable_mapsto γ a obj1 ∗ mapsto_txn γ.(buftxn_txn_names) a obj2.
+    NC q -∗
+    |k={E}=> (⌜obj1 = obj2⌝ ∗ durable_mapsto γ a obj1 ∗ mapsto_txn γ.(buftxn_txn_names) a obj2) ∗ NC q.
   Proof.
-    iIntros (???) "#Hinv Ha_i Ha". iNamed "Hinv".
-    iInv "His_txn" as ">Hinner1".
-    iInv "Htxn_inv" as ">Hinner2".
+    iIntros (???) "#Hinv Ha_i Ha HNC".
+    iNamed "Hinv".
+    iMod (ncinv_acc_k with "His_txn [$]") as "(>Hinner1&HNC&Hclose1)"; first by auto.
+    iMod (ncinv_acc_k with "Htxn_inv [$]") as "(>Hinner2&HNC&Hclose2)"; first by set_solver.
     iAssert (⌜obj1 = obj2⌝)%I as %?; last first.
-    { iFrame. auto. }
+    { iMod ("Hclose2" with "[$] [$]") as "HNC".
+      iMod ("Hclose1" with "[$] [$]") as "HNC".
+      iFrame. auto. }
     iNamed "Hinner1".
     iClear "Hheapmatch Hcrashheapsmatch Hmetactx".
     iNamed "Hinner2".
@@ -363,6 +367,21 @@ Section goose_lang.
     iDestruct (log_heap_valid_cur with "Hlogheapctx [$]") as %Hlookup_obj0.
     iPureIntro.
     congruence.
+  Qed.
+
+  Lemma durable_mapsto_mapsto_txn_agree E γ a obj1 obj2 :
+    ↑N ⊆ E →
+    ↑invN ⊆ E →
+    N ## invN →
+    is_txn_system γ -∗
+    durable_mapsto γ a obj1 -∗
+    mapsto_txn γ.(buftxn_txn_names) a obj2 -∗
+    |NC={E}=> ⌜obj1 = obj2⌝ ∗ durable_mapsto γ a obj1 ∗ mapsto_txn γ.(buftxn_txn_names) a obj2.
+  Proof.
+    iIntros (???) "#Hinv Ha_i Ha".
+    rewrite ncfupd_eq /ncfupd_def.
+    iIntros. iApply (fupd_level_fupd _ _ _ O).
+    iMod (durable_mapsto_mapsto_txn_agree' with "[$] [$] [$] [$]"); auto.
   Qed.
 
   Theorem is_buftxn_durable_not_in_map γ a obj γdurable P0 committed_mT :
@@ -382,6 +401,58 @@ Section goose_lang.
     done.
   Qed.
 
+  Theorem lift_into_txn'' E l γ dinit γtxn γdurable committed_mT a obj k q :
+    ↑N ⊆ E →
+    ↑invN ⊆ E →
+    N ## invN →
+    "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable -∗
+    "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT -∗
+    "Hdurable_maps_to" ∷ durable_mapsto_own γ a obj -∗
+    "HNC" ∷ NC q
+    -∗ |k={E}=>
+    "Hbuftxn_maps_to" ∷ buftxn_maps_to γtxn a obj ∗
+    "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable ∗
+    "Hdurable_frag" ∷ map_ctx γdurable (1/2) (<[a:=obj]>committed_mT) ∗
+    "Hdurable_maps_to" ∷ durable_mapsto γ a obj ∗
+    "%Hnew" ∷ ⌜committed_mT !! a = None⌝ ∗
+    "HNC" ∷ NC q.
+  Proof.
+    iIntros (HN HinvN HNdisj) "? ? [Ha Ha_i] HNC".
+    iNamed.
+    iNamed "Hbuftxn_mem".
+
+    iDestruct "Ha" as (obj0) "Ha".
+
+    iMod (durable_mapsto_mapsto_txn_agree' with "[$] Ha_i Ha HNC") as "((%Heq & Ha_i & Ha)&HNC)";
+      [ solve_ndisj.. | subst obj0 ].
+
+    iDestruct (mspec.is_buftxn_not_in_map with "Hbuftxn Ha") as %Hnotin.
+    assert ((mspec.modified <$> mT) !! a = None).
+    { rewrite lookup_fmap Hnotin //. }
+    assert ((mspec.committed <$> mT) !! a = None).
+    { rewrite lookup_fmap Hnotin //. }
+    iMod (mspec.BufTxn_lift_one' _ _ _ _ _ _ E with "[$Ha $Hbuftxn] [$]") as "(Hbuftxn&HNC)"; auto.
+    iMod (map_alloc a obj with "Htxn_ctx") as "[Htxn_ctx Ha]"; eauto.
+
+    iDestruct (map_ctx_agree with "Hdurable Hdurable_frag") as %<-.
+    iCombine "Hdurable Hdurable_frag" as "Hdurable".
+    iMod (map_alloc a obj with "Hdurable") as "[Hdurable _]"; eauto.
+    iDestruct "Hdurable" as "[Hdurable Hdurable_frag]".
+
+    iModIntro.
+    iFrame "Ha HNC".
+    iSplitR "Hdurable_frag Ha_i".
+    {
+      iExists (<[a:=object_to_versioned obj]> mT), anydirty.
+      iFrame "Htxn_system".
+      rewrite !fmap_insert committed_to_versioned modified_to_versioned.
+      iFrame.
+      iPureIntro. destruct anydirty; intuition congruence.
+    }
+    iFrame "Hdurable_frag".
+    iFrame "∗ %".
+  Qed.
+
   Theorem lift_into_txn' E l γ dinit γtxn γdurable committed_mT a obj :
     ↑N ⊆ E →
     ↑invN ⊆ E →
@@ -397,39 +468,10 @@ Section goose_lang.
     "%Hnew" ∷ ⌜committed_mT !! a = None⌝.
   Proof.
     iIntros (HN HinvN HNdisj) "? ? [Ha Ha_i]".
-    iNamed.
-    iNamed "Hbuftxn_mem".
-
-    iDestruct "Ha" as (obj0) "Ha".
-
-    iMod (durable_mapsto_mapsto_txn_agree with "[$] Ha_i Ha") as "(%Heq & Ha_i & Ha)";
-      [ solve_ndisj.. | subst obj0 ].
-
-    iDestruct (mspec.is_buftxn_not_in_map with "Hbuftxn Ha") as %Hnotin.
-    assert ((mspec.modified <$> mT) !! a = None).
-    { rewrite lookup_fmap Hnotin //. }
-    assert ((mspec.committed <$> mT) !! a = None).
-    { rewrite lookup_fmap Hnotin //. }
-    iMod (mspec.BufTxn_lift_one _ _ _ _ _ _ E with "[$Ha $Hbuftxn]") as "Hbuftxn"; auto.
-    iMod (map_alloc a obj with "Htxn_ctx") as "[Htxn_ctx Ha]"; eauto.
-
-    iDestruct (map_ctx_agree with "Hdurable Hdurable_frag") as %<-.
-    iCombine "Hdurable Hdurable_frag" as "Hdurable".
-    iMod (map_alloc a obj with "Hdurable") as "[Hdurable _]"; eauto.
-    iDestruct "Hdurable" as "[Hdurable Hdurable_frag]".
-
-    iModIntro.
-    iFrame "Ha".
-    iSplitR "Hdurable_frag Ha_i".
-    {
-      iExists (<[a:=object_to_versioned obj]> mT), anydirty.
-      iFrame "Htxn_system".
-      rewrite !fmap_insert committed_to_versioned modified_to_versioned.
-      iFrame.
-      iPureIntro. destruct anydirty; intuition congruence.
-    }
-    iFrame "Hdurable_frag".
-    iFrame "∗ %".
+    rewrite ncfupd_eq /ncfupd_def. iIntros (q) "HNC".
+    iApply (fupd_level_fupd _ _ _ O).
+    iMod (lift_into_txn'' with "[$] [$] [$] [$]") as "H"; auto.
+    iNamed "H". iFrame. eauto.
   Qed.
 
   Theorem lift_into_txn E l γ dinit γtxn P0 a obj :
