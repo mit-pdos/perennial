@@ -38,8 +38,8 @@ Section proof.
       "#HlockMap" ∷ is_lockMap locksl ghs objs_dom_blknos (twophase_linv γ objs_dom) ∗
       "#Htxn_cinv" ∷ txn_cinv N γ γ'.
 
-  Definition is_twophase_started N l γ γ' dinit objs_dom e1 e2 : iProp Σ :=
-    ∃ (txnl locksl : loc) ghs σj1 σj2,
+  Definition is_twophase_started N l γ γ' dinit objs_dom j e1 e2 : iProp Σ :=
+    ∃ (txnl locksl : loc) ls ghs σj1 σj2,
     let objs_dom_blknos := get_addr_set_blknos objs_dom in
     "Htwophase.txn" ∷ readonly (l ↦[TwoPhase.S :: "txn"] #txnl) ∗
     "Htwophase.locks" ∷ readonly (l ↦[TwoPhase.S :: "locks"] #locksl) ∗
@@ -48,6 +48,8 @@ Section proof.
     "#Histxn" ∷ is_txn txnl γ.(buftxn_txn_names) dinit ∗
     "#HlockMap" ∷ is_lockMap locksl ghs objs_dom_blknos (twophase_linv γ objs_dom) ∗
     "#Htxn_cinv" ∷ txn_cinv N γ γ' ∗
+    "#Hspec_ctx" ∷ spec_ctx ∗
+    "Hj" ∷ j ⤇ Atomically ls e1 ∗
     (* TODO: this should be at least all the na_crash_invs in σj1 and the ephemeral values
        for σj2 *)
     "Hlock_resources" ∷ True.
@@ -62,7 +64,7 @@ Section proof.
     "#HlockMap" ∷ is_lockMap locksl ghs objs_dom_blknos (twophase_linv γ objs_dom) ∗
     "#Htxn_cinv" ∷ txn_cinv N γ γ' ∗
     (* TODO: this should be at least all the na_crash_invs in σj1 and the ephemeral values
-       for σj2 *)
+       for σj *)
     "Hlock_resources" ∷ True.
 
   Theorem wpc_Init' N (d: loc) γ dinit logm objs_dom k :
@@ -74,17 +76,17 @@ Section proof.
        (⌜ γ' = γ ⌝ ∨ txn_cinv N γ γ') }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__Begin' N l γ γ' dinit objs_dom e1 a sz :
-    {{{ is_twophase_pre N l γ γ' dinit objs_dom}}}
+  Theorem wp_TwoPhase__Begin' N l ls γ γ' dinit objs_dom j e1 a sz :
+    {{{ is_twophase_pre N l γ γ' dinit objs_dom ∗
+        j ⤇ Atomically ls e1 }}}
       TwoPhase__Begin' #l (addr2val a) #sz
     {{{ tph, RET #tph;
         is_twophase_started N tph γ γ' dinit objs_dom
-                            e1 e1 }}}.
+                            j e1 e1 }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__CommitNoRelease' N l γ γ' dinit objs_dom  e1 e2 (j : nat) :
-    {{{ is_twophase_started N l γ γ' dinit objs_dom e1 e2 ∗
-        j ⤇ e1 }}}
+  Theorem wp_TwoPhase__CommitNoRelease' N l γ γ' dinit objs_dom j e1 e2 :
+    {{{ is_twophase_started N l γ γ' dinit objs_dom j e1 e2 }}}
       TwoPhase__CommitNoRelease #l
     {{{ (ok:bool), RET #ok;
         if ok then
@@ -92,8 +94,7 @@ Section proof.
           j ⤇ e2
         else
           is_twophase_started N l γ γ' dinit objs_dom
-                              e1 e2 ∗
-          j ⤇ e1
+                              j e1 e2
     }}}.
   Proof. Admitted.
 
@@ -105,25 +106,25 @@ Section proof.
 
   (* Among other things, this and the next spec are missing an assumption that
      the kind/size is correct, so they cannot be proven as is. *)
-  Theorem wp_TwoPhase__ReadBuf' N l γ γ' dinit objs_dom K {HCTX: LanguageCtx K} e1 a sz :
-    {{{ is_twophase_started N l γ γ' dinit objs_dom
+  Theorem wp_TwoPhase__ReadBuf' N l γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} e1 a sz :
+    {{{ is_twophase_started N l γ γ' dinit objs_dom j
                             e1
                             (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                                            ReadBufOp (PairV (addr2val' a) #sz))) }}}
       TwoPhase__ReadBuf' #l (addr2val a) #sz
     {{{ v, RET (val_of_obj v);
-        is_twophase_started N l γ γ' dinit objs_dom
+        is_twophase_started N l γ γ' dinit objs_dom j
                             e1 (K (val_of_obj' v)) }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__OverWrite' N l γ γ' dinit objs_dom K {HCTX: LanguageCtx K} e1 a ov :
-    {{{ is_twophase_started N l γ γ' dinit objs_dom
+  Theorem wp_TwoPhase__OverWrite' N l γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} e1 a ov :
+    {{{ is_twophase_started N l γ γ' dinit objs_dom j
                             e1
                             (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                                            OverWriteOp (addr2val' a, val_of_obj' ov))) }}}
       TwoPhase__OverWrite' #l (addr2val a) (val_of_obj ov)
     {{{  RET #();
-        is_twophase_started N l γ γ' dinit objs_dom
+        is_twophase_started N l γ γ' dinit objs_dom j
                             e1 (K #()) }}}.
   Proof. Admitted.
 
