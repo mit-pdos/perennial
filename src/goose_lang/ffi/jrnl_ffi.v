@@ -90,7 +90,7 @@ Section jrnl.
 
   Definition obj := list u8.
 
-  Definition val_of_obj (o : obj) := val_of_list ((λ u, LitV (LitByte u)) <$> o).
+  Definition val_of_obj' (o : obj) := val_of_list ((λ u, LitV (LitByte u)) <$> o).
 
   Definition blkno := u64.
   Definition kind := { k : Z | k = 0 ∨ 3 <= k <= 15 }.
@@ -166,13 +166,13 @@ Section jrnl.
       k ← unwrap (jrnlKinds j !! blkno);
       (* bit reads must be done with ReadBitOp *)
       check (`k ≠ 0 ∧ 2^(`k) = int.Z sz);;
-      ret $ val_of_obj d
-    | WriteBufOp, ((#(LitInt blkno), #(LitInt off), #()), ov)%V =>
+      ret $ val_of_obj' d
+    | OverWriteOp, ((#(LitInt blkno), #(LitInt off), #()), ov)%V =>
       j ← openΣ;
       (* This only allows writing to addresses that already have defined contents *)
       _ ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
-      o ← suchThat (λ _ o, val_of_obj o = ov);
+      o ← suchThat (λ _ o, val_of_obj' o = ov);
       check ((length o : Z) = 2^(`k) ∧ `k ≠ 0);;
       modifyΣ (λ j, updateData j (Build_addr blkno off) o);;
       ret $ #()
@@ -730,7 +730,7 @@ Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
                            ReadBufOp
                            (PairV (addr2val' a) #sz))
                σj
-               (val_of_obj v)
+               (val_of_obj' v)
                σj.
 Proof.
   intros Hwf Hlookup1 Hlookup2 Hk.
