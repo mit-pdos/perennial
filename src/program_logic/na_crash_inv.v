@@ -117,32 +117,42 @@ Qed.
 
 Lemma na_crash_inv_open_modify_ncfupd k E P Q Q' R:
   na_crash_inv (S k) Q P -∗
-  (∀ q, ▷ Q -∗ NC q -∗ |k={E}=> □ (▷ Q' -∗ |C={⊤}_k=> ▷ P) ∗ ▷ Q' ∗ R ∗ NC q) -∗
+  (▷ Q -∗ |NC={E}=> □ (▷ Q' -∗ |C={⊤}_k=> ▷ P) ∗ ▷ Q' ∗ R) -∗
   |NC={E}=> R ∗ na_crash_inv (S k) Q' P.
 Proof.
   iIntros "Hna Hwand".
   rewrite ncfupd_eq /ncfupd_def. iIntros (q) "HNC".
-  iApply fupd_level_fupd.
   crash_unseal.
   iDestruct "Hna" as (???) "(Hstaged&Hw1&#Hw2)".
   iDestruct (NC_split with "HNC") as "(HNC1&HNC2)".
-  iMod (staged_inv_open_modify_ae _ _ _ k 0 0 _ _ _ _ _ _ True%I
-                                  (□ (▷ Q' -∗ |C={⊤}_k=> ▷ P) ∗ R ∗ NC (q/2)) with "[Hstaged] [HNC1 Hw1 Hwand]")
+  iMod (staged_inv_open_modify_ae _ _ _ k 0 0 _ _ _ _ _ (NC (q/2)) True%I
+                                  (▷ Q) with "[Hstaged] [HNC1 Hw1]")
        as "Hres";
     [ | | iExact "Hstaged" |..].
   { eauto. }
   { lia. }
   { iIntros "HQ0".
-    rewrite uPred_fupd_level_eq /uPred_fupd_level_def.
-    iApply (fupd_split_level_le _ _ k _ None); first by right.
-    iMod ("Hwand" with "[Hw1 HQ0] HNC1") as "(#Hw1&HQ'&HR)".
-    { iNext. iApply "Hw1"; eauto. }
-    iModIntro. iFrame "# ∗".
-    iModIntro. iIntros.
+    iModIntro. iFrame.
+    iSplitL "".
+    { iModIntro. iIntros ">? ?". iDestruct (NC_C with "[$] [$]") as %[]. }
+    iNext. by iApply "Hw1".
+  }
+  iDestruct "Hres" as "[(HQ&Hval)|(_&HC)]"; last first.
+  { iDestruct (NC_C with "[$] [$]") as %[]. }
+  iMod ("Hwand" with "[$] [$]") as "((#Hw1&HQ'&HR)&HNC)".
+  iMod (staged_inv_open_modify_ae _ _ _ k 0 0 _ _ _ _ _ (Q') True%I
+                                  (▷ NC (q/2)) with "[Hval] [HQ']")
+       as "Hres";
+    [ | | iExact "Hval" |..].
+  { eauto. }
+  { lia. }
+  { iIntros "HQ0".
+    iModIntro. iFrame.
+    iModIntro. iIntros "? ?".
     iApply (fupd_level_split_level); first by reflexivity.
     iMod ("Hw1" with "[$] [$]") as "$". eauto.
   }
-  iDestruct "Hres" as "[((#Hw&HR&HNC)&Hval)|(_&HC)]".
+  iDestruct "Hres" as "[(>HNC2&Hval)|(_&HC)]".
   { iFrame. iModIntro.
     iDestruct (NC_join with "[$]") as "$".
     iExists _, _, _. simpl. iFrame "# ∗". eauto. }
