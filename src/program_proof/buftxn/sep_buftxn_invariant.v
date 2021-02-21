@@ -388,18 +388,15 @@ Section goose_lang.
     N ## invN →
     "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable -∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT -∗
-    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) -∗
     "Hdurable_maps_to" ∷ durable_mapsto_own γ a obj
     -∗ |NC={E}=>
     "Hbuftxn_maps_to" ∷ buftxn_maps_to γtxn a obj ∗
     "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable ∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) (<[a:=obj]>committed_mT) ∗
-    "Hold_vals" ∷ (
-      [∗ map] a↦v ∈ <[a:=obj]>committed_mT, durable_mapsto γ a v
-    ) ∗
+    "Hdurable_maps_to" ∷ durable_mapsto γ a obj ∗
     "%Hnew" ∷ ⌜committed_mT !! a = None⌝.
   Proof.
-    iIntros (HN HinvN HNdisj) "? ? ? [Ha Ha_i]".
+    iIntros (HN HinvN HNdisj) "? ? [Ha Ha_i]".
     iNamed.
     iNamed "Hbuftxn_mem".
 
@@ -423,7 +420,7 @@ Section goose_lang.
 
     iModIntro.
     iFrame "Ha".
-    iSplitR "Hdurable_frag Hold_vals Ha_i".
+    iSplitR "Hdurable_frag Ha_i".
     {
       iExists (<[a:=object_to_versioned obj]> mT), anydirty.
       iFrame "Htxn_system".
@@ -432,7 +429,7 @@ Section goose_lang.
       iPureIntro. destruct anydirty; intuition congruence.
     }
     iFrame "Hdurable_frag".
-    rewrite !big_sepM_insert //. iFrame "∗ %".
+    iFrame "∗ %".
   Qed.
 
   Theorem lift_into_txn E l γ dinit γtxn P0 a obj :
@@ -450,7 +447,7 @@ Section goose_lang.
     iNamed "Hbuftxn_durable".
     iDestruct (
       lift_into_txn' _ _ _ _ _ _ _ _ _ HN HinvN HNdisj
-      with "Hbuftxn_mem Hdurable_frag Hold_vals Hnew"
+      with "Hbuftxn_mem Hdurable_frag Hnew"
     ) as "> (?&?&?&?&?)".
     iNamed.
     iFrame "Hbuftxn_maps_to".
@@ -460,6 +457,11 @@ Section goose_lang.
     iFrame.
 
     iModIntro.
+    iSplit.
+    {
+      iApply big_sepM_insert; first by assumption.
+      iFrame.
+    }
     iModIntro.
     iIntros (mapsto) "H".
     iDestruct (big_sepM_insert with "H") as "[Ha H]"; eauto. iFrame.
@@ -472,16 +474,15 @@ Section goose_lang.
     N ## invN →
     "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable -∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT -∗
-    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) -∗
     "Hm" ∷ ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v)
     -∗ |NC={E}=>
     "Hbuftxn_maps_to" ∷ ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
     "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable ∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) (m ∪ committed_mT) ∗
-    "Hold_vals" ∷ ([∗ map] a↦v ∈ (m ∪ committed_mT), durable_mapsto γ a v) ∗
+    "Hdurable_mapstos" ∷ ([∗ map] a↦v ∈ m, durable_mapsto γ a v) ∗
     "%Hall_new" ∷ ⌜m ##ₘ committed_mT⌝.
   Proof.
-    iIntros (???) "????".
+    iIntros (???) "???".
     iNamed.
     iInduction m as [|a v m] "IH" using map_ind forall (committed_mT).
     - setoid_rewrite big_sepM_empty.
@@ -494,10 +495,10 @@ Section goose_lang.
       iDestruct "Hm" as "[[Ha_mod Ha_dur] Hm]".
       iAssert (durable_mapsto_own γ a v) with "[Ha_mod Ha_dur]" as "Ha".
       { iFrame. }
-      iMod (lift_into_txn' with "Hbuftxn_mem Hdurable_frag Hold_vals Ha")
+      iMod (lift_into_txn' with "Hbuftxn_mem Hdurable_frag Ha")
         as "(?&?&?&?&?)"; [ solve_ndisj .. | ].
       iNamed.
-      iMod ("IH" with "Hbuftxn_mem Hdurable_frag Hold_vals Hm") as "(?&?&?&?&?)".
+      iMod ("IH" with "Hbuftxn_mem Hdurable_frag Hm") as "(?&?&?&?&?)".
       iNamed.
       iModIntro.
       rewrite -insert_union_r.
@@ -524,7 +525,7 @@ Section goose_lang.
     iIntros (???) "Hctx Hm".
     iNamed "Hctx".
     iNamed "Hbuftxn_durable".
-    iMod (lift_map_into_txn' with "Hbuftxn_mem Hdurable_frag Hold_vals Hm")
+    iMod (lift_map_into_txn' with "Hbuftxn_mem Hdurable_frag Hm")
       as "(?&?&?&?&?)"; [ solve_ndisj.. | ].
     iNamed.
     iModIntro.
@@ -532,7 +533,12 @@ Section goose_lang.
     iExists _.
     iFrame "Hbuftxn_mem".
     iExists _.
-    iFrame.
+    iFrame "Hdurable_frag".
+    iSplit.
+    {
+      iApply big_sepM_union; first by assumption.
+      iFrame.
+    }
 
     iModIntro.
     iIntros (?) "Hmapsto".
