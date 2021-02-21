@@ -30,24 +30,26 @@ Definition Begin: val :=
     "trans".
 
 Definition TwoPhase__acquireNoCheck: val :=
-  rec: "TwoPhase__acquireNoCheck" "twophase" "bnum" :=
-    lockmap.LockMap__Acquire (struct.loadF TwoPhase.S "locks" "twophase") "bnum";;
-    struct.storeF TwoPhase.S "acquired" "twophase" (SliceAppend uint64T (struct.loadF TwoPhase.S "acquired" "twophase") "bnum").
+  rec: "TwoPhase__acquireNoCheck" "twophase" "addr" :=
+    let: "flatAddr" := addr.Addr__Flatid "addr" in
+    lockmap.LockMap__Acquire (struct.loadF TwoPhase.S "locks" "twophase") "flatAddr";;
+    struct.storeF TwoPhase.S "acquired" "twophase" (SliceAppend uint64T (struct.loadF TwoPhase.S "acquired" "twophase") "flatAddr").
 
 Definition TwoPhase__isAlreadyAcquired: val :=
-  rec: "TwoPhase__isAlreadyAcquired" "twophase" "bnum" :=
+  rec: "TwoPhase__isAlreadyAcquired" "twophase" "addr" :=
+    let: "flatAddr" := addr.Addr__Flatid "addr" in
     let: "already_acquired" := ref_to boolT #false in
     ForSlice uint64T <> "acq" (struct.loadF TwoPhase.S "acquired" "twophase")
-      (if: ("bnum" = "acq")
+      (if: ("flatAddr" = "acq")
       then "already_acquired" <-[boolT] #true
       else #());;
     ![boolT] "already_acquired".
 
 Definition TwoPhase__Acquire: val :=
-  rec: "TwoPhase__Acquire" "twophase" "bnum" :=
-    let: "already_acquired" := TwoPhase__isAlreadyAcquired "twophase" "bnum" in
+  rec: "TwoPhase__Acquire" "twophase" "addr" :=
+    let: "already_acquired" := TwoPhase__isAlreadyAcquired "twophase" "addr" in
     (if: ~ "already_acquired"
-    then TwoPhase__acquireNoCheck "twophase" "bnum"
+    then TwoPhase__acquireNoCheck "twophase" "addr"
     else #()).
 
 Definition TwoPhase__Release: val :=
@@ -70,13 +72,13 @@ Definition TwoPhase__readBufNoAcquire: val :=
 
 Definition TwoPhase__ReadBuf: val :=
   rec: "TwoPhase__ReadBuf" "twophase" "addr" "sz" :=
-    TwoPhase__Acquire "twophase" (struct.get addr.Addr.S "Blkno" "addr");;
+    TwoPhase__Acquire "twophase" "addr";;
     TwoPhase__readBufNoAcquire "twophase" "addr" "sz".
 
 (* OverWrite writes an object to addr *)
 Definition TwoPhase__OverWrite: val :=
   rec: "TwoPhase__OverWrite" "twophase" "addr" "sz" "data" :=
-    TwoPhase__Acquire "twophase" (struct.get addr.Addr.S "Blkno" "addr");;
+    TwoPhase__Acquire "twophase" "addr";;
     buftxn.BufTxn__OverWrite (struct.loadF TwoPhase.S "buftxn" "twophase") "addr" "sz" "data".
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
