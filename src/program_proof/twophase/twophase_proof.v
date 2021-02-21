@@ -11,6 +11,7 @@ From Perennial.Helpers Require Import PropRestore.
 From Perennial.algebra Require Import auth_map.
 From Perennial.program_logic Require Import na_crash_inv.
 
+Section proof.
 Context `{!buftxnG Σ}.
 Context `{!heapG Σ}.
 Definition Nbuftxn := nroot .@ "buftxn".
@@ -1908,3 +1909,4 @@ Proof.
   iExists _, _.
   iFrame.
 Qed.
+End proof.
