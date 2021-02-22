@@ -195,6 +195,8 @@ Class jrnlG Σ :=
     jrnlG_data_name: gname;
     jrnlG_kinds_inG :> inG Σ (agreeR (leibnizO (gmap blkno kind)));
     jrnlG_kinds_name: gname;
+    jrnlG_dom_inG :> inG Σ (agreeR (leibnizO (gset addr)));
+    jrnlG_dom_name: gname;
     jrnlG_crash_toks_inG :> mapG Σ addr unit;
     jrnlG_crash_toks_name: gname;
   }.
@@ -203,11 +205,14 @@ Class jrnl_preG Σ :=
   { jrnlG_preG_open_inG :> inG Σ openR;
     jrnlG_preG_data_inG:> mapG Σ addr obj;
     jrnlG_preG_kinds_inG:> inG Σ (agreeR (leibnizO (gmap blkno kind)));
+    jrnlG_preG_dom_inG:> inG Σ (agreeR (leibnizO (gset addr)));
     jrnlG_preG_crash_toks_inG:> mapG Σ addr unit;
   }.
 
 Definition jrnlΣ : gFunctors :=
-  #[GFunctor openR; mapΣ addr obj; GFunctor (agreeR (leibnizO (gmap blkno kind))); mapΣ addr unit].
+  #[GFunctor openR; mapΣ addr obj; GFunctor (agreeR (leibnizO (gmap blkno kind)));
+    GFunctor (agreeR (leibnizO (gset addr)));
+    mapΣ addr unit].
 
 Instance subG_jrnlG Σ: subG jrnlΣ Σ → jrnl_preG Σ.
 Proof. solve_inG. Qed.
@@ -216,6 +221,7 @@ Record jrnl_names :=
   { jrnl_names_open: gname;
     jrnl_names_data: gname;
     jrnl_names_kinds: gname;
+    jrnl_names_dom: gname;
     jrnl_names_crash: gname;
   }.
 
@@ -223,6 +229,7 @@ Definition jrnl_get_names {Σ} (jG: jrnlG Σ) :=
   {| jrnl_names_open := jrnlG_open_name;
      jrnl_names_data := jrnlG_data_name;
      jrnl_names_kinds := jrnlG_kinds_name;
+     jrnl_names_dom := jrnlG_dom_name;
      jrnl_names_crash := jrnlG_crash_toks_name |}.
 
 Definition jrnl_update {Σ} (jG: jrnlG Σ) (names: jrnl_names) :=
@@ -232,6 +239,8 @@ Definition jrnl_update {Σ} (jG: jrnlG Σ) (names: jrnl_names) :=
      jrnlG_data_name := (jrnl_names_data names);
      jrnlG_kinds_inG := jrnlG_kinds_inG;
      jrnlG_kinds_name := (jrnl_names_kinds names);
+     jrnlG_dom_inG := jrnlG_dom_inG;
+     jrnlG_dom_name := (jrnl_names_dom names);
      jrnlG_crash_toks_inG := jrnlG_crash_toks_inG;
      jrnlG_crash_toks_name := (jrnl_names_crash names);
   |}.
@@ -243,6 +252,8 @@ Definition jrnl_update_pre {Σ} (jG: jrnl_preG Σ) (names: jrnl_names) :=
      jrnlG_data_name := (jrnl_names_data names);
      jrnlG_kinds_inG := jrnlG_preG_kinds_inG;
      jrnlG_kinds_name := (jrnl_names_kinds names);
+     jrnlG_dom_inG := jrnlG_preG_dom_inG;
+     jrnlG_dom_name := (jrnl_names_dom names);
      jrnlG_crash_toks_inG := jrnlG_preG_crash_toks_inG;
      jrnlG_crash_toks_name := (jrnl_names_crash names);
   |}.
@@ -262,6 +273,8 @@ Definition jrnl_mapsto {Σ} {lG: jrnlG Σ} a q v : iProp Σ :=
   (∃ σj,  ⌜ size_consistent_and_aligned a v σj ⌝ ∗ jrnl_kinds σj).
 Definition jrnl_crash_tok {Σ} {lG: jrnlG Σ} a : iProp Σ :=
   ptsto_mut (jrnlG_crash_toks_name) a 1 tt.
+Definition jrnl_dom {Σ} {lG: jrnlG Σ} (σ: gset addr) : iProp Σ :=
+  own (jrnlG_dom_name) (to_agree (σ: leibnizO (gset addr))).
 
 Section jrnl_interp.
   Existing Instances jrnl_op jrnl_model jrnl_val_ty.
@@ -269,7 +282,8 @@ Section jrnl_interp.
   Definition jrnl_state_ctx {Σ} {jG: jrnlG Σ} (m: jrnl_map) : iProp Σ :=
     ⌜ wf_jrnl m ⌝ ∗
       map_ctx jrnlG_data_name 1 (jrnlData m) ∗
-      jrnl_kinds (jrnlKinds m).
+      jrnl_kinds (jrnlKinds m) ∗
+      jrnl_dom (dom (gset _) (jrnlData m)).
 
   Definition jrnl_ctx {Σ} {jG: jrnlG Σ} (jrnl: @ffi_state jrnl_model) : iProp Σ :=
     match jrnl with
@@ -283,7 +297,9 @@ Section jrnl_interp.
 
   Definition jrnl_state_start {Σ} {jG: jrnlG Σ} (m: jrnl_map) : iProp Σ :=
     ([∗ map] a ↦ v ∈ jrnlData m, jrnl_mapsto a 1 v) ∗
-    ([∗ map] a ↦ v ∈ jrnlData m, jrnl_crash_tok a).
+    ([∗ map] a ↦ v ∈ jrnlData m, jrnl_crash_tok a) ∗
+    jrnl_dom (dom (gset _) (jrnlData m)).
+
 
   Definition jrnl_state_restart {Σ} {jG: jrnlG Σ} (m: jrnl_map) : iProp Σ :=
     ([∗ map] a ↦ v ∈ jrnlData m, jrnl_crash_tok a).
@@ -311,10 +327,13 @@ Section jrnl_interp.
        ffi_restart := @jrnl_restart;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @jrnlG_data_inG _ hF1 = @jrnlG_data_inG _ hF2 ∧
                                              @jrnlG_kinds_inG _ hF1 = @jrnlG_kinds_inG _ hF2 ∧
+                                             @jrnlG_dom_inG _ hF1 = @jrnlG_dom_inG _ hF2 ∧
                                            jrnl_names_data (jrnl_get_names hF1) =
                                            jrnl_names_data (jrnl_get_names hF2) ∧
                                            jrnl_names_kinds (jrnl_get_names hF1) =
-                                           jrnl_names_kinds (jrnl_get_names hF2) ⌝%I;
+                                           jrnl_names_kinds (jrnl_get_names hF2) ∧
+                                           jrnl_names_dom (jrnl_get_names hF1) =
+                                           jrnl_names_dom (jrnl_get_names hF2) ⌝%I;
     |}.
   Next Obligation. intros ? [] [] => //=. Qed.
   Next Obligation. intros ? [] => //=. Qed.
@@ -378,6 +397,14 @@ Section jrnl_lemmas.
     inversion Hval.
   Qed.
 
+  Lemma jrnl_dom_agree σ1 σ2:
+    jrnl_dom σ1 -∗ jrnl_dom σ2 -∗ ⌜ σ1 = σ2 ⌝.
+  Proof.
+    iIntros "H1 H2".
+    iDestruct (own_valid_2 with "H1 H2") as %Hval.
+    apply to_agree_op_valid in Hval. iPureIntro. set_solver.
+  Qed.
+
 End jrnl_lemmas.
 
 From Perennial.goose_lang Require Import adequacy.
@@ -401,7 +428,10 @@ Next Obligation.
   iMod (map_init_many ((λ _, tt) <$> jrnlData m)) as (γcrash) "(Hcrash_ctx&Hcrash)".
   iMod (own_alloc (to_agree (jrnlKinds m : leibnizO (gmap blkno kind)))) as (γkinds) "#Hkinds".
   { constructor. }
+  iMod (own_alloc (to_agree (dom (gset _) (jrnlData m) : leibnizO (gset addr)))) as (γdom) "#Hdom".
+  { constructor. }
   iExists {| jrnl_names_open := γ1; jrnl_names_data := γdata; jrnl_names_kinds := γkinds;
+             jrnl_names_dom := γdom;
              jrnl_names_crash := γcrash |}.
   iFrame. iModIntro. iFrame "% #".
   rewrite assoc.
@@ -839,7 +869,7 @@ Proof.
     }
     { rewrite /=. destruct (jrnlData sj !! _); eauto. }
   - iDestruct "Hkinds" as (σj' Hsub) "H".
-    rewrite Heq. iDestruct "Hctx" as "(_&_&Hctx1&Hctx2)".
+    rewrite Heq. iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom)".
     iDestruct (own_valid_2 with "H Hctx2") as %Hval.
     apply to_agree_op_valid in Hval. iPureIntro. set_solver.
 Qed.
@@ -923,11 +953,29 @@ Lemma jrnl_ctx_upd σj σjd' σjk s :
 Proof.
   iIntros (Hwf Hdom) "#Hopen Hpts #Hkinds Hctx".
   iDestruct (jrnl_ctx_unify_opened with "[$] [$]") as %[sj Heq].
+  iDestruct (jrnl_ctx_sub_state_valid (jrnlData σj, σjk) with "Hpts Hkinds [$] [$]") as %Hval.
+  rewrite /jrnl_ctx. rewrite Heq.
+  iDestruct "Hctx" as "(_&Hstate)".
+  iDestruct "Hstate" as (Hwf0) "(Hctx&Hkinds'&Hdom')". simpl.
+  assert (Hdom_sub: dom (gset _) (jrnlData σj) ⊆ dom (gset _) (jrnlData sj)).
+  { rewrite /jrnl_sub_state/sworld in Hval.
+    destruct Hval as (?&Heq'&?&?). rewrite /world in Heq. rewrite Heq in Heq'.
+    inversion Heq'; subst.
+    apply subseteq_dom. eauto. }
+  clear Hval.
+  rewrite /jrnl_state_ctx/=.
+  iAssert (jrnl_dom (dom (gset addr) (σjd' ∪ jrnlData (get_jrnl s.(world))))) with "[Hdom']" as "$".
+  { rewrite Heq /= dom_union_L.
+    assert (dom (gset addr) σjd' ∪ dom (gset addr) (jrnlData sj) =
+            dom (gset addr) (jrnlData sj)) as ->.
+    { rewrite -Hdom. set_solver. }
+    eauto. }
+  clear Hdom_sub.
   iInduction (jrnlData σj) as [| i x m] "IH" using map_ind forall (σjd' Hwf Hdom).
   - rewrite dom_empty_L in Hdom.
     symmetry in Hdom. apply dom_empty_inv_L in Hdom.
     rewrite ?Hdom big_sepM_empty. iFrame.
-    rewrite /=. rewrite left_id_L //=. rewrite Heq => //=.
+    rewrite /=. rewrite left_id_L //=. rewrite Heq => //=. iFrame. eauto.
   - assert (Hin: i ∈ dom (gset _) σjd').
     { rewrite -Hdom. rewrite dom_insert_L. set_solver. }
     apply elem_of_dom in Hin.
@@ -935,13 +983,11 @@ Proof.
     rewrite (big_sepM_delete _ σjd'); eauto.
     rewrite big_sepM_insert; eauto.
     iDestruct "Hpts" as "(Hmaps&Hpts)".
-    iMod ("IH" with "[] [] Hpts Hctx") as "($&Hctx)".
+    iMod ("IH" with "[] [] Hpts [$] [$]") as "($&Hctx)".
     { iPureIntro. apply wf_jrnl_delete; auto. }
     { iPureIntro. rewrite dom_insert_L in Hdom. rewrite dom_delete_L.
       apply not_elem_of_dom in H1. set_solver. }
-    simpl.
     iDestruct "Hctx" as "($&Hstate)".
-    rewrite /jrnl_state_ctx.
     iDestruct "Hstate" as (Hwf') "(Hctx&Hkinds')".
     iDestruct "Hmaps" as "(Hmaps&Hkind)".
     iDestruct "Hkind" as (? Hconsistent) "Hkind".
