@@ -72,13 +72,168 @@ Notation "k r[[ γ ]]↦?" := (res_unshot γ k 1%Qp)
 Notation "k r[[ γ ]]↦ P" := (res_ro γ k P)
   (at level 20, format "k  r[[ γ ]]↦ P") : bi_scope.
 
+Section tpc_ra.
+Context `{!heapG Σ}.
+
+Inductive tpc_state :=
+  | Invalid : tpc_state
+  | Unprepared : tpc_state
+  | Prepared : tpc_state
+  | Uncommitted : tpc_state
+  | Committed : tpc_state
+.
+
+Definition action := option (excl ()).
+
+Definition tpc_action : Type := (action * action).
+
+Canonical Structure tpcActionR := prodR (optionR (exclR unitO)) (optionR (exclR unitO)).
+
+Definition DoPrep : tpcActionR := ((Some (Excl ())),None).
+Definition DoCommit : tpcActionR := (None,(Some (Excl ()))).
+
+Local Instance tpc_state_valid_instance : Valid tpc_state := λ x, (x ≠ Invalid).
+
+Local Instance tpc_state_pcore_instance : PCore tpc_state := λ x,
+  match x with
+  | Prepared => Some Prepared
+  | Uncommitted => Some Prepared
+  | Committed => Some Committed
+  | Invalid => Some Invalid
+  | _ => None
+  end
+.
+
+Local Instance tpc_state_op_instance : Op tpc_state := λ x y,
+  match x, y with
+  | Prepared, Committed => Committed
+  | Committed, Prepared => Committed
+  | Committed, Committed => Committed
+  | Prepared, Prepared => Prepared
+  | Uncommitted, Prepared => Uncommitted
+  | Prepared, Uncommitted => Uncommitted
+  | _, _ => Invalid
+  end
+.
+
+Canonical Structure tpc_stateO := leibnizO tpc_state.
+Definition tpc_state_ra_mixin : RAMixin tpc_state.
+Proof.
+  split; try apply _; try done.
+  - intros. exists cx. split; try done. by rewrite -H.
+  - by intros [] [] [].
+  - by intros [][].
+  - by intros [][].
+  - by intros [][].
+  - intros [][][] H; try done; eauto; try ( destruct H; destruct x; try done || eexists _; split; try done ).
+    { by exists Prepared. }
+    { by exists Invalid. }
+    { by exists Invalid. }
+    { by exists Invalid. }
+    { by exists Invalid. }
+    { by exists Prepared. }
+  - intros a b. destruct a,b; try done.
+Qed.
+
+Canonical Structure tpc_stateR := discreteR tpc_state tpc_state_ra_mixin.
+
+Global Instance tpc_state_cmra_discrete : CmraDiscrete tpc_stateR.
+Proof. split; first apply _. by intros []. Qed.
+
+Context `{inG Σ tpc_stateR}.
+
+Lemma prepare γ :
+  own γ Unprepared ==∗ own γ Prepared.
+Proof.
+  iApply own_update.
+  by intros ? [].
+Qed.
+
+Global Instance prepared_pers γ : Persistent (own γ Prepared).
+Proof.
+  apply own_core_persistent.
+  by rewrite /CoreId.
+Qed.
+
+Lemma prepared_duplicate γ :
+  own γ Prepared -∗ own γ Prepared ∗ own γ Prepared.
+Proof.
+  iIntros "#H".
+  iFrame "#".
+Qed.
+
+Definition tpc_car : Type := (option tpc_state) * tpcActionR.
+
+Local Instance tpc_valid_instance : Valid tpc_car := λ x,
+  match x with
+  | (Some s,a) => (✓ s) ∧ (✓ a) ∧
+    match s with
+    | Prepared => ✓ (a ⋅ DoPrep)
+    | Uncommitted => ✓ (a ⋅ DoPrep)
+    | Committed => ✓ (a ⋅ DoCommit)
+    | _ => True
+    end
+  | (None,a) => (✓ a)
+  end
+.
+
+Local Instance tpc_pcore_instance : PCore tpc_car := λ x,
+  match x with
+  | (None, a) =>
+    match (pcore a) with
+    | Some a' => Some (None, a')
+    | _ => None
+    end
+  | (Some s, a) =>
+    match (pcore s, pcore a) with
+    | (Some s', Some a') => Some (Some s', a')
+    | _ => None
+    end
+  end
+.
+
+Local Instance tpc_op_instance : Op tpc_car := λ x y,
+  match x, y with
+  | (Some s, a), (Some t, b) => (Some (s⋅t), a⋅b)
+  | (Some s, a), (None, b) => (Some s, a⋅b)
+  | (None, a), (Some t, b) => (Some t, a⋅b)
+  | (None, a), (None, b) => (None, a⋅b)
+  end
+.
+
+Canonical Structure tpc_carO := leibnizO tpc_car.
+
+Definition tpc_ra_mixin : RAMixin tpc_car.
+  split; try apply _; try done; last first.
+  - intros x y. destruct x,y; try done; admit.
+Admitted.
+
+Canonical Structure tpcR := discreteR tpc_car tpc_ra_mixin.
+
+Context `{inG Σ tpcR}.
+
+Lemma prepare_with_token γ :
+  own γ ((Some Unprepared,DoPrep):tpc_car) ==∗
+  own γ ((Some Prepared,(None,None)):tpc_car).
+Proof.
+  iApply own_update.
+  intros ? []; try done.
+  unfold opM.
+  (* Just check all the cases... don't know clean automation to do make this work *)
+  destruct c.
+  destruct c, o; try destruct c,c0; vm_compute; naive_solver.
+Qed.
+
+End tpc_ra.
+
 Section tpc_example.
 
 Context `{!heapG Σ}.
+(* Context `{!inG Σ tpcR}. *)
 Context `{!mapG Σ u64 u64}.
 Context `{!mapG Σ u64 ()}.
 Context `{!mapG Σ u64 (option bool)}.
-Context `{!mapG Σ (u64*u64) ()}.
+Context `{!mapG Σ u64 ()}.
 (* Context `{resMapG Σ (u64*u64) }. *)
 
 Record TransactionC :=
@@ -108,24 +263,17 @@ Proof.
   done.
 Defined.
 
-Context `{!mapG Σ (u64*u64) (option (TransactionC))}.
+Context `{!mapG Σ (u64*u64) (option (u64))}.
 
 Record tpc_names :=
 mk_tpc_names  {
-  committed_gn : gname ; (* tid -> option bool *)
-  prepared_gn : gname ;  (* (tid, pid) -> () *)
   finish_token_gn : gname ;
-  uncommit_token_gn : gname ;
   txn_data_gn : gname ; (* (tid,pid) -> (key, oldv) *)
 }.
 
 Implicit Type γtpc : tpc_names.
 
-Definition unprepared γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(prepared_gn)]]↦ ().
-Definition prepared γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(prepared_gn)]]↦ro ().
-Definition finish_token γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(finish_token_gn)]]↦ ().
-Definition uncommit_token γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(uncommit_token_gn)]]↦ ().
-Definition committed_witness γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(uncommit_token_gn)]]↦ro ().
+(* Definition finish_token γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(finish_token_gn)]]↦ (). *)
 
 Definition undecided γtpc (tid:u64) : iProp Σ := tid [[γtpc.(committed_gn)]]↦ None.
 Definition aborted γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ro Some false.
@@ -133,8 +281,8 @@ Definition committed γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ro S
 
 Definition tpc_inv_single γtpc tid pid R R' : iProp Σ :=
   unprepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∨
-  prepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗ (∃ x:TransactionC, (R x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨
-  committed γtpc tid ∗ prepared γtpc tid pid ∗ ((∃ x:TransactionC, (R' x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨ finish_token γtpc tid pid) ∨
+  prepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗ (∃ x:u64, (R x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨
+  committed γtpc tid ∗ prepared γtpc tid pid ∗ ((∃ x:u64, (R' x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨ finish_token γtpc tid pid) ∨
   aborted γtpc tid ∗ finish_token γtpc tid pid
 .
 
@@ -345,8 +493,9 @@ Definition ps_mu_inv (ps:loc) γ γtpc pid : iProp Σ :=
     "Hkvs_ctx" ∷ ([∗ set] k ∈ (fin_to_set u64), kv_ctx γ kvsM k) ∗
     "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ _, True) ∗
 
-    "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (prepared γtpc tid pid) ∗ (tid, pid)[[γtpc.(txn_data_gn)]]↦ro Some txn)∗
-    "Htxns_own" ∷ ([∗ map] tid ↦ txn ∈ txnsM,  txn.(heldResource) [[γ.(ps_kvs_phys)]]↦{1/2} (word.add txn.(oldValue) txn.(amount))) ∗
+    "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, (prepared γtpc tid pid) ∗ (tid, pid)[[γtpc.(txn_data_gn)]]↦ro Some txn.(oldValue))∗
+    "Htxns_own" ∷ ([∗ map] tid ↦ txn ∈ txnsM, txn.(heldResource) [[γ.(ps_kvs_phys)]]↦{1/2} (word.add txn.(oldValue) txn.(amount))) ∗
+    (* TODO: need phys value to be correct *) "Htxns_own" ∷ ([∗ map] tid ↦ txn ∈ txnsM,  txn.(heldResource) [[γ.(ps_kvs_phys)]]↦{1/2} (word.add txn.(oldValue) txn.(amount))) ∗
     "Hfinish_tok" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜is_Some (finishedTxnsM !! tid)⌝ ∨ finish_token γtpc tid pid)) ∗
     "Hdata_unused" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM ∪ dom (gset u64) txnsM⌝ ∨ (tid,pid) [[γtpc.(txn_data_gn)]]↦ None)) ∗
     "%" ∷ ⌜(dom (gset u64) txnsM) ## dom (gset u64) finishedTxnsM⌝
@@ -362,7 +511,7 @@ Definition is_participant (ps:loc) γ γtpc pid : iProp Σ :=
 
 Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ γtpc (key amnt:u64) :
   {{{
-       is_txn_single γtpc tid pid (λ data, key [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, key [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) amnt)) ∗
+       is_txn_single γtpc tid pid (λ data, data.(heldResource) [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, key [[γ.(ps_kvs)]]↦{3/4} (word.add data.(oldValue) amnt)) ∗
        is_participant ps γ γtpc pid
   }}}
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
