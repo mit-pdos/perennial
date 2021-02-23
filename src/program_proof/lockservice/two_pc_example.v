@@ -72,8 +72,78 @@ Notation "k r[[ γ ]]↦?" := (res_unshot γ k 1%Qp)
 Notation "k r[[ γ ]]↦ P" := (res_ro γ k P)
   (at level 20, format "k  r[[ γ ]]↦ P") : bi_scope.
 
+Section ra_coprod.
+
+Implicit Types A B:cmra.
+Definition coprodR_car A B : Type := (A + B + A * B).
+
+Local Instance coprodR_valid A B: Valid (coprodR_car A B) := λ x,
+  match x with
+ | inl (inl a) => ✓ a
+ | inl (inr a) => ✓ a
+ | inr (a,b) => ✓ a ∧ ✓ b
+  end
+.
+
+Local Instance coprodR_validN A B: ValidN (coprodR_car A B) := λ n x,
+  match x with
+ | inl (inl a) => ✓{n} a
+ | inl (inr a) => ✓{n} a
+ | inr (a,b) => ✓{n} a ∧ ✓{n} b
+  end
+.
+
+Local Instance coprodR_op A B: Op (coprodR_car A B) := λ x y,
+  match x,y with
+ | inl (inl a), inl (inl a') => inl (inl (a ⋅ a'))
+ | inl (inl a), inl (inr b) => inr (a,b)
+ | inl (inl a), inr (a',b) => inr (a⋅a',b)
+
+ | inl (inr b), inl (inl a) => inr (a,b)
+ | inl (inr b), inl (inr b') => inl (inr (b ⋅ b'))
+ | inl (inr b), inr (a',b') => inr (a',b⋅b')
+
+ | inr (a,b), inr (a',b') => inr (a⋅a',b⋅b')
+ | inr (a,b), inl (inl a') => inr (a⋅a',b)
+ | inr (a,b), inl (inr b') => inr (a,b⋅b')
+  end
+.
+
+Local Instance coprodR_core A B: PCore (coprodR_car A B):= λ x, None.
+
+Definition coprodR_cmra_mixin A B: CmraMixin (coprodR_car A B).
+Proof.
+  split; try apply _; try done.
+  - intros x n. destruct x; try destruct s; try done.
+    {
+      rewrite /Proper.
+      intros y z ?. destruct y,z; try destruct s,s0; try naive_solver.
+Admitted.
+
+Definition coprodR_ofe_mixin A B: OfeMixin (coprodR_car A B).
+Admitted.
+
+Canonical Structure coprodR A B:= Cmra' (coprodR_car A B) (coprodR_ofe_mixin A B) (coprodR_cmra_mixin A B).
+
+Definition inL {A B} : A -> (coprodR A B) := inl ∘ inl.
+Definition inR {A B} : B -> (coprodR A B) := inl ∘ inr.
+Notation "a ⊗ b" := (inr (a, b))
+  (at level 50, format "a ⊗ b") : bi_scope.
+
+(* Definition lift_coprodR (T:cmra) (f:A → T) (g:B → T) {_:CmraMorphism f} {_:CmraMorphism g} : (coprodR → T).
+Admitted. *)
+
+Lemma coprod_update_l {A B} (a a':A) :
+  a ~~> a' → inL (B:=B) a ~~> inL a'.
+Proof. Admitted.
+
+Lemma coprod_update_r {A B} (b b':B) :
+  b ~~> b' → inR (A:=A) b ~~> inR b'.
+Proof. Admitted.
+
+End ra_coprod.
+
 Section tpc_ra.
-Context `{!heapG Σ}.
 
 Inductive tpc_state :=
   | Invalid : tpc_state
@@ -87,10 +157,10 @@ Definition action := option (excl ()).
 
 Definition tpc_action : Type := (action * action).
 
-Canonical Structure tpcActionR := prodR (optionR (exclR unitO)) (optionR (exclR unitO)).
+Canonical Structure tpc_actionR := prodR (optionR (exclR unitO)) (optionR (exclR unitO)).
 
-Definition DoPrep : tpcActionR := ((Some (Excl ())),None).
-Definition DoCommit : tpcActionR := (None,(Some (Excl ()))).
+Definition DoPrep : tpc_actionR := ((Some (Excl ())),None).
+Definition DoCommit : tpc_actionR := (None,(Some (Excl ()))).
 
 Local Instance tpc_state_valid_instance : Valid tpc_state := λ x, (x ≠ Invalid).
 
@@ -140,6 +210,30 @@ Canonical Structure tpc_stateR := discreteR tpc_state tpc_state_ra_mixin.
 Global Instance tpc_state_cmra_discrete : CmraDiscrete tpc_stateR.
 Proof. split; first apply _. by intros []. Qed.
 
+Definition tpcR := coprodR tpc_stateR tpc_actionR.
+
+Context `{inG Σ tpcR}.
+
+Lemma prepare γ :
+  own γ (inL Unprepared) ==∗ own γ (inL Prepared).
+Proof.
+  iApply own_update.
+  apply coprod_update_l.
+  by intros ? [].
+Qed.
+
+Notation "a ⊗ b" := (inr (a, b):coprodR_car tpc_stateR tpc_actionR)
+  (at level 50, format "a ⊗ b") : bi_scope.
+
+Example coprod_op_test γ :
+  own γ (inL Unprepared) ∗ own γ (inR DoPrep) -∗
+      own γ (Unprepared ⊗ DoPrep).
+Proof.
+  iIntros "H".
+  iDestruct (own_op with "H") as "$".
+Qed.
+
+(* Want to take a quotient of coprodR by making *)
 Context `{inG Σ tpc_stateR}.
 
 Lemma prepare γ :
@@ -161,8 +255,6 @@ Proof.
   iIntros "#H".
   iFrame "#".
 Qed.
-
-Definition tpc_car : Type := (option tpc_state) * tpcActionR.
 
 Local Instance tpc_valid_instance : Valid tpc_car := λ x,
   match x with
