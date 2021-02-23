@@ -1824,7 +1824,7 @@ Lemma wpc_na_crash_inv_open_modify_sepM {A} `{Countable K} Qnew  k k' k'' E1 e �
   S k ≤ k' →
   (* This assumption shouldn't be needed, but I (JDT) don't see how to prove it without it
      given some limitations of the current rules *)
-  (□ (∀ i x, ⌜ m !! i = Some x ⌝ → ▷ Q i x -∗ |C={E1}_(S k)=> ▷ P i x)) -∗
+  (□ (∀ i x, ⌜ m !! i = Some x ⌝ → ▷ Q i x -∗ |C={E1}_(S k'')=> ▷ P i x)) -∗
   ([∗ map] i ↦ v ∈ m, na_crash_inv (S k') (Q i v) (P i v)) -∗
   (<disc> Φc ∧
    (▷ ([∗ map] i ↦ v ∈ m, Q i v) -∗
@@ -1834,7 +1834,8 @@ Lemma wpc_na_crash_inv_open_modify_sepM {A} `{Countable K} Qnew  k k' k'' E1 e �
           (* This assumption is weaker than the analogous version for 1 na_crash_inv, where we get |C={⊤}_k'
              given some limitations of the current rules *)
           ([∗ map] i ↦ v ∈ m, □ (▷ Qnew retv i v -∗ |C={E1}_k''=> ▷ P i v)) ∗
-         (<disc> (|C={E1}_k''=> Φc) ∧ (([∗ map] i ↦ v ∈ m, na_crash_inv (S k') (Qnew retv i v) (P i v)) -∗ (Φ retv)))
+         (<disc> (|C={E1}_k''=> Φc) ∧
+          (([∗ map] i ↦ v ∈ m, na_crash_inv (S k') (Qnew retv i v) (P i v)) -∗ (Φ retv)))
       }}
       {{Φc ∗ ▷ ([∗ map] i ↦ v ∈ m, P i v)}}) -∗
   WPC e @ NotStuck; (S k); E1 {{ Φ }} {{ Φc }}).
@@ -1863,17 +1864,29 @@ Proof.
   iSplit.
   { iDestruct "Hwpc" as "[H _]". iModIntro. iFrame. }
   iIntros "HQ".
-  iDestruct "Hwpc" as "[_ Hwpc]".
   iApply wpc_fupd.
-  iApply ("IH" $! k'' _ (Φc ∗ ▷ P i x)%I with "[] [//] [//] [//] [] Hcrash_invs [HQ Hwpc]").
+  iApply (wpc_strong_mono _ _ _ _ _ _ _ _ _
+                          (Φc ∗ ▷ (P i x ∨ Q i x))%I with "[-] []"); auto; last first.
+  { iSplit.
+   { iIntros (?) "H". iModIntro. iExact "H". }
+   iModIntro. iIntros "($&Hsep)".
+   iDestruct "Hsep" as "[HP|HQ]"; first auto.
+   iApply "Hstatuses".
+   { rewrite lookup_insert //=. }
+   eauto.
+  }
+  iMod (fupd_later_to_disc with "HQ") as "HQ".
+  iApply ("IH" $! k'' _ (Φc ∗ ▷ (P i x ∨ Q i x))%I with "[] [//] [//] [//] [] Hcrash_invs [HQ Hwpc]").
   { iPureIntro. apply _. }
   { iModIntro. iIntros. iApply "Hstatuses".
     - iPureIntro. rewrite lookup_insert_ne; congruence.
     - eauto. }
   {
     iSplit.
-    { admit. }
+    { iLeft in "Hwpc". iModIntro. iFrame. }
+    iRight in "Hwpc".
     iIntros "HQs".
+    iMod (own_disc_fupd_elim with "HQ") as "HQ".
     iDestruct ("Hwpc" with "[HQs HQ]") as "Hwpc".
     {
       iApply big_sepM_insert; first by assumption.
@@ -1891,7 +1904,7 @@ Proof.
       iModIntro.
       iSplit.
       { iLeft in "HΦc". iModIntro.
-        iMod "HΦc". iFrame. iApply "Hstatus". eauto.
+        iMod "HΦc". iFrame. iMod ("Hstatus" with "[$]"). iFrame. eauto.
       }
       iIntros "Hcrashes".
       iMod (own_disc_fupd_elim with "HnewQ") as "HnewQ".
@@ -1911,123 +1924,8 @@ Proof.
     iModIntro. iIntros "($&H)".
     iModIntro. iDestruct (big_sepM_insert with "H") as "($&$)". auto.
   }
-Admitted.
+Qed.
 
-(*
-Lemma wpc_na_crash_inv_open_modify_sepM' {A} `{Countable K} Qnew s k k' k'' E1 e Φ Φc
-      {HL: AbsLaterable Φc} Q P `{!∀ i x, Discretizable (Q i x)} (m: gmap K A) :
-  k'' ≤ k' →
-  k'' ≤ (S k) →
-  S k ≤ k' →
-  (* This assumption shouldn't be needed, but I (JDT) don't see how to prove it without it
-     given some limitations of the current rules *)
-  (□ (∀ i x, ⌜ m !! i = Some x ⌝ → ▷ Q i x -∗ |C={E1}_(S k)=> ▷ P i x)) -∗
-  ([∗ map] i ↦ v ∈ m, na_crash_inv (S k') (Q i v) (P i v)) -∗
-  (<disc> Φc ∧
-   (▷ ([∗ map] i ↦ v ∈ m, Q i v) -∗
-      WPC e @ k''; E1
-      {{λ retv,
-        ▷ ([∗ map] i ↦ v ∈ m, Qnew retv i v) ∗
-          (* This assumption is weaker than the analogous version for 1 na_crash_inv, where we get |C={⊤}_k'
-             given some limitations of the current rules *)
-          ([∗ map] i ↦ v ∈ m, □ (▷ Qnew retv i v -∗ |C={E1}_k=> ▷ P i v)) ∗
-          (([∗ map] i ↦ v ∈ m, na_crash_inv (S k') (Qnew retv i v) (P i v)) -∗ (<disc> Φc ∧ Φ retv))
-      }}
-      {{Φc ∗ ▷ ([∗ map] i ↦ v ∈ m, P i v)}}) -∗
-  WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}).
-Proof.
-  iInduction m as [|i x m] "IH" using map_ind forall (k'').
-  {
-    iIntros (Hk''_leq_k' Hk''_leq_Sk HSk_leq_k') "_ _ Hwpc".
-    iDestruct "Hwpc" as "[_ Hwpc]".
-    iDestruct ("Hwpc" with "[]") as "Hwpc"; first by auto.
-    iDestruct (wpc_subscript_mono _ s _ _ _ E1 with "Hwpc") as "Hwpc";
-      [auto|apply Hk''_leq_Sk|auto|].
-    iApply (wpc_mono with "Hwpc").
-    {
-      iIntros (v) "/= (_&_&Hcrash)".
-      iDestruct ("Hcrash" with "[//]") as "[_ $]".
-    }
-    iIntros "[$ _]".
-  }
-  iIntros (Hk''_leq_k' Hk''_leq_Sk HSk_leq_k') "#Hstatuses Hcrash_invs Hwpc".
-  iDestruct (big_sepM_insert with "Hcrash_invs")
-    as "[Hcrash_inv Hcrash_invs]";
-    first by assumption.
-  iApply ("IH" $! (S k) with "[//] [//] [//] [] Hcrash_invs").
-  { iModIntro. iIntros. iApply "Hstatuses".
-    - iPureIntro. rewrite lookup_insert_ne; congruence.
-    - eauto. }
-  iSplit; first by iDestruct "Hwpc" as "[$ _]".
-  iIntros "HsepM".
-  iMod (fupd_later_to_disc with "HsepM") as "HsepM".
-  iApply (wpc_strong_mono _ _ _ _ _ _ _ _ _
-                          (Φc ∗ ▷ ([∗ map] i0↦v ∈ m, P i0 v ∨ Q i0 v))%I with "[-] []"); auto; last first.
-  { iSplit.
-   { iIntros (?) "H". iModIntro. iExact "H". }
-   iModIntro. iIntros "($&HsepM)". iFrame.
-   
-setoid_rewrite big_sepM_later.
-   iApply (big_sepM_impl_cfupd with "HsepM").
-   iModIntro. iIntros (?? Hlookup) "[HP|HQ]".
-   { iModIntro. eauto. }
-   iApply "Hstatuses"; eauto.
-   iPureIntro. rewrite lookup_insert_ne; congruence.
-  }
-  iApply (
-    wpc_na_crash_inv_open_modify' _ _ _ _ k''
-    with "Hcrash_inv [Hwpc HsepM]"
-  ).
-  1-3: assumption.
-  iSplit.
-  { iDestruct "Hwpc" as "[H _]". iModIntro. iFrame. iNext. iApply (big_sepM_mono with "HsepM"). eauto. }
-  iIntros "HQ".
-  iDestruct "Hwpc" as "[_ Hwpc]".
-  iMod (own_disc_fupd_elim with "HsepM") as "HsepM".
-  iDestruct ("Hwpc" with "[HsepM HQ]") as "Hwpc".
-  {
-    iApply big_sepM_insert; first by assumption.
-    iFrame.
-  }
-  iApply (wpc_mono with "Hwpc").
-  {
-    iIntros (v) "/= (HQnew&#Hstatuses&Hcrash)".
-    iDestruct (big_sepM_insert with "Hstatuses")
-      as "[Hstatus Hstatuses']"; first by assumption.
-    iDestruct (big_sepM_insert with "HQnew") as "[HQnew HQnews]";
-      first by assumption.
-    iFrame "HQnew".
-    iSplit.
-    {
-      iIntros "!> HQnew".
-      iApply "Hstatus" in "HQnew".
-      iFrame.
-      iMod (cfupd_weaken_all with "HQnew"); eauto.
-    }
-    iIntros "Hcrash_inv".
-    iMod (fupd_later_to_disc with "HQnews") as "HQnews".
-    iModIntro.
-    iSplit.
-    {
-      iDestruct ("Hcrash" with "Hcrash
-      iModIntro.
-      admit.
-    }
-    iFrame "∗ #".
-    iIntros "Hcrash_invs".
-    iApply "Hcrash".
-    iApply big_sepM_insert; first by assumption.
-    iFrame.
-  }
-  iIntros "[HΦc HPs]".
-  iFrame.
-  iDestruct (big_sepM_insert with "HPs") as "[HP HPs]";
-    first by assumption.
-  iFrame.
-  iNext.
-  iApply (big_sepM_mono with "HPs"); eauto.
-Admitted.
-*)
 
 Theorem wpc_TwoPhase__CommitNoRelease_raw l γ γ' dinit ex_mapsto k tracked_addrs mt_changed :
   {{{
