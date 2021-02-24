@@ -1129,6 +1129,11 @@ Inductive prim_step' (e1 : expr) (σ1 : state) (κ : list (observation))
     e1 = fill' K e1' → e2 = fill' K e2' →
     head_step e1' σ1 κ e2' σ2 efs → prim_step' e1 σ1 κ e2 σ2 efs.
 
+Definition irreducible' (e : expr) (σ : state) :=
+  ∀ κ e' σ' efs, ¬prim_step' e σ κ e' σ' efs.
+Definition stuck' (e : expr) (σ : state) :=
+  to_val e = None ∧ irreducible' e σ.
+
 Inductive head_step_atomic: expr -> state -> list observation -> expr -> state -> list expr -> Prop :=
  | head_step_trans : ∀ e s κs e' s' efs,
      head_step e s κs e' s' efs →
@@ -1137,6 +1142,10 @@ Inductive head_step_atomic: expr -> state -> list observation -> expr -> state -
      rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (Val v', s') →
      head_step_atomic (Atomically el e) s κs (Val (InjRV v')) s' []
  | head_step_atomically_fail : ∀ el e s κs,
+     (* An atomically block can non-deterministically fail _ONLY_ if the block would not trigger UB *)
+     (∀ e' s',
+        rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (e, s') →
+        ¬ stuck' e' s') →
      head_step_atomic (Atomically el e) s κs (Val (InjLV (LitV LitUnit))) s []
 .
 
@@ -1147,7 +1156,7 @@ Lemma head_step_atomic_inv e s κs e' s' efs :
 Proof.
   inversion 1; subst; eauto.
   - intros. contradiction (H1 el e0); auto.
-  - intros. contradiction (H0 el e0); auto.
+  - intros. contradiction (H1 el e0); auto.
 Qed.
 
 (** Basic properties about the language *)
@@ -1206,7 +1215,7 @@ Lemma head_ctx_step_atomic_val Ki e σ1 κ e2 σ2 efs :
 Proof.
   inversion 1; subst; eauto using head_ctx_step_val.
   - destruct Ki; simpl in H0; solve [ inversion H0 ].
-  - destruct Ki; simpl in H1; solve [ inversion H1 ].
+  - destruct Ki; simpl in H0; solve [ inversion H0 ].
 Qed.
 
 Lemma fill_item_no_val_inj Ki1 Ki2 e1 e2 :
