@@ -166,6 +166,18 @@ Lemma coprod_update_r {A B} (b b':B) :
   b ~~> b' → coprod_R (A:=A) b ~~> coprod_R b'.
 Proof. Admitted.
 
+Lemma coprod_update_b {A B} (a a':A) (b b':B):
+  a ~~> a' → b ~~> b' →
+  a ⊗ b ~~> a' ⊗ b'.
+Proof.
+  intros.
+  replace (a⊗b) with (coprod_L a ⋅ coprod_R b) by naive_solver.
+  replace (a'⊗b') with (coprod_L a' ⋅ coprod_R b') by naive_solver.
+  apply cmra_update_op.
+  - by apply coprod_update_l.
+  - by apply coprod_update_r.
+Qed.
+
 End ra_coprod.
 
 Section tpc_ra.
