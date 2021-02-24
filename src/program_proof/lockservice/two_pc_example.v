@@ -75,70 +75,95 @@ Notation "k r[[ γ ]]↦ P" := (res_ro γ k P)
 Section ra_coprod.
 
 Implicit Types A B:cmra.
-Definition coprodR_car A B : Type := (A + B + A * B).
+Inductive coprod A B : Type :=
+  | coprod_L : A -> coprod A B
+  | coprod_R : B -> coprod A B
+  | coprod_B : A → B -> coprod A B
+.
 
-Local Instance coprodR_valid A B: Valid (coprodR_car A B) := λ x,
+Arguments coprod_L {A B}%type_scope _.
+Arguments coprod_R {A B}%type_scope _.
+Arguments coprod_B {A B}%type_scope _ _.
+
+Notation "a ⊗ b" := (coprod_B a b)
+  (at level 25, format "a ⊗ b").
+
+Local Instance coprod_valid A B: Valid (coprod A B) := λ x,
   match x with
- | inl (inl a) => ✓ a
- | inl (inr a) => ✓ a
- | inr (a,b) => ✓ a ∧ ✓ b
+ | coprod_L a => ✓ a
+ | coprod_R b => ✓ b
+ | (a ⊗ b) => ✓ a ∧ ✓ b
   end
 .
 
-Local Instance coprodR_validN A B: ValidN (coprodR_car A B) := λ n x,
+Local Instance coprodR_validN A B: ValidN (coprod A B) := λ n x,
   match x with
- | inl (inl a) => ✓{n} a
- | inl (inr a) => ✓{n} a
- | inr (a,b) => ✓{n} a ∧ ✓{n} b
+ | coprod_L a => ✓{n} a
+ | coprod_R b => ✓{n} b
+ | (a ⊗ b) => ✓{n} a ∧ ✓{n} b
   end
 .
 
-Local Instance coprodR_op A B: Op (coprodR_car A B) := λ x y,
+Local Instance coprodR_op A B: Op (coprod A B) := λ x y,
   match x,y with
- | inl (inl a), inl (inl a') => inl (inl (a ⋅ a'))
- | inl (inl a), inl (inr b) => inr (a,b)
- | inl (inl a), inr (a',b) => inr (a⋅a',b)
 
- | inl (inr b), inl (inl a) => inr (a,b)
- | inl (inr b), inl (inr b') => inl (inr (b ⋅ b'))
- | inl (inr b), inr (a',b') => inr (a',b⋅b')
+ | coprod_L a, coprod_L a' => coprod_L (a⋅a')
+ | coprod_L a, coprod_R b' => a ⊗ b'
+ | coprod_L a, a' ⊗ b' => (a⋅a') ⊗ b'
 
- | inr (a,b), inr (a',b') => inr (a⋅a',b⋅b')
- | inr (a,b), inl (inl a') => inr (a⋅a',b)
- | inr (a,b), inl (inr b') => inr (a,b⋅b')
+ | coprod_R b, coprod_R b' => coprod_R (b⋅b')
+ | coprod_R b, coprod_L a' => a' ⊗ b
+ | coprod_R b, a' ⊗ b' => a' ⊗ (b⋅b')
+
+ | a ⊗ b, coprod_L a' => (a⋅a') ⊗ b
+ | a ⊗ b, coprod_R b' => a ⊗ (b⋅b')
+ | a ⊗ b, a' ⊗ b' => (a⋅a') ⊗ (b⋅b')
   end
 .
 
-Local Instance coprodR_core A B: PCore (coprodR_car A B):= λ x, None.
+(* TODO *)
+Local Instance coprodR_core A B: PCore (coprod A B):= λ x, None
+.
 
-Definition coprodR_cmra_mixin A B: CmraMixin (coprodR_car A B).
+Local Instance coprod_equiv A B : Equiv (coprod A B) := (λ x y, x = y).
+Local Instance coprod_dist A B : Dist (coprod A B) := (λ _ x y, x = y).
+
+Definition coprodR_ofe_mixin A B: OfeMixin (coprod A B).
+Admitted.
+
+Definition coprodR_cmra_mixin A B: CmraMixin (coprod A B).
 Proof.
   split; try apply _; try done.
-  - intros x n. destruct x; try destruct s; try done.
-    {
-      rewrite /Proper.
-      intros y z ?. destruct y,z; try destruct s,s0; try naive_solver.
 Admitted.
 
-Definition coprodR_ofe_mixin A B: OfeMixin (coprodR_car A B).
-Admitted.
-
-Canonical Structure coprodR A B:= Cmra' (coprodR_car A B) (coprodR_ofe_mixin A B) (coprodR_cmra_mixin A B).
-
-Definition inL {A B} : A -> (coprodR_car A B) := inl ∘ inl.
-Definition inR {A B} : B -> (coprodR_car A B) := inl ∘ inr.
-Notation "a ⊗ b" := (inr (a, b))
-  (at level 50, format "a ⊗ b") : bi_scope.
-
-(* Definition lift_coprodR (T:cmra) (f:A → T) (g:B → T) {_:CmraMorphism f} {_:CmraMorphism g} : (coprodR → T).
-Admitted. *)
+Canonical Structure coprodR A B:= Cmra' (coprod A B) (coprodR_ofe_mixin A B) (coprodR_cmra_mixin A B).
 
 Lemma coprod_update_l {A B} (a a':A) :
-  a ~~> a' → inL (B:=B) a ~~> inL a'.
-Proof. Admitted.
+  a ~~> a' → coprod_L (B:=B) a ~~> coprod_L a'.
+Proof.
+  intros.
+  rewrite /cmra_update in H.
+  rewrite /cmra_update.
+  intros.
+  destruct mz.
+  {
+    destruct c.
+    { specialize H with n (Some c). naive_solver. }
+    { simpl in *. destruct H0 as [H1 H2]. split; last done.
+      specialize H with n None. naive_solver.
+    }
+    { destruct H0 as [H1 H2]. split; last done.
+      specialize H with n (Some c). naive_solver.
+    }
+  }
+  {
+    specialize H with n None. simpl in *.
+    naive_solver.
+  }
+Qed.
 
 Lemma coprod_update_r {A B} (b b':B) :
-  b ~~> b' → inR (A:=A) b ~~> inR b'.
+  b ~~> b' → coprod_R (A:=A) b ~~> coprod_R b'.
 Proof. Admitted.
 
 End ra_coprod.
