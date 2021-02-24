@@ -125,8 +125,8 @@ Admitted.
 
 Canonical Structure coprodR A B:= Cmra' (coprodR_car A B) (coprodR_ofe_mixin A B) (coprodR_cmra_mixin A B).
 
-Definition inL {A B} : A -> (coprodR A B) := inl ∘ inl.
-Definition inR {A B} : B -> (coprodR A B) := inl ∘ inr.
+Definition inL {A B} : A -> (coprodR_car A B) := inl ∘ inl.
+Definition inR {A B} : B -> (coprodR_car A B) := inl ∘ inr.
 Notation "a ⊗ b" := (inr (a, b))
   (at level 50, format "a ⊗ b") : bi_scope.
 
@@ -152,15 +152,6 @@ Inductive tpc_state :=
   | Uncommitted : tpc_state
   | Committed : tpc_state
 .
-
-Definition action := option (excl ()).
-
-Definition tpc_action : Type := (action * action).
-
-Canonical Structure tpc_actionR := prodR (optionR (exclR unitO)) (optionR (exclR unitO)).
-
-Definition DoPrep : tpc_actionR := ((Some (Excl ())),None).
-Definition DoCommit : tpc_actionR := (None,(Some (Excl ()))).
 
 Local Instance tpc_state_valid_instance : Valid tpc_state := λ x, (x ≠ Invalid).
 
@@ -189,20 +180,19 @@ Local Instance tpc_state_op_instance : Op tpc_state := λ x y,
 Canonical Structure tpc_stateO := leibnizO tpc_state.
 Definition tpc_state_ra_mixin : RAMixin tpc_state.
 Proof.
-  split; try apply _; try done.
-  - intros. exists cx. split; try done. by rewrite -H.
+  split; try apply _; try naive_solver.
   - by intros [] [] [].
   - by intros [][].
   - by intros [][].
   - by intros [][].
-  - intros [][][] H; try done; eauto; try ( destruct H; destruct x; try done || eexists _; split; try done ).
+  - intros [][][] H; try done; eauto; try ( destruct H; destruct x; try done || eexists _; split; try naive_solver ).
     { by exists Prepared. }
     { by exists Invalid. }
     { by exists Invalid. }
     { by exists Invalid. }
     { by exists Invalid. }
     { by exists Prepared. }
-  - intros a b. destruct a,b; try done.
+  - by intros [] [].
 Qed.
 
 Canonical Structure tpc_stateR := discreteR tpc_state tpc_state_ra_mixin.
@@ -210,8 +200,17 @@ Canonical Structure tpc_stateR := discreteR tpc_state tpc_state_ra_mixin.
 Global Instance tpc_state_cmra_discrete : CmraDiscrete tpc_stateR.
 Proof. split; first apply _. by intros []. Qed.
 
+Definition actionR :=  (exclR unitO).
+
+Canonical Structure tpc_actionR := coprodR actionR actionR.
+(* Canonical Structure tpc_actionR := prodR (optionR (exclR unitO)) (optionR (exclR unitO)). *)
+
+Definition DoPrep : tpc_actionR := inL (Excl ()).
+Definition DoCommit : tpc_actionR := inR (Excl ()).
+
 Definition tpcR := coprodR tpc_stateR tpc_actionR.
 
+Section tpcR_test.
 Context `{inG Σ tpcR}.
 
 Lemma prepare γ :
@@ -232,8 +231,98 @@ Proof.
   iIntros "H".
   iDestruct (own_op with "H") as "$".
 Qed.
+End tpcR_test.
 
-(* Want to take a quotient of coprodR by making *)
+Local Instance tpc2R_valid_instance : Valid (coprodR tpc_stateR tpc_actionR) := λ x,
+  match x with
+  | (inr (Prepared, DoPrep)) => False
+  | _ => ✓ x
+  end
+.
+
+Local Instance tpc2R_validN_instance : ValidN (coprodR tpc_stateR tpc_actionR) := λ n x,
+  match x with
+  | (inr (Prepared, DoPrep)) => False
+  | _ => ✓{n} x
+  end
+.
+
+Definition tpcR_cmra_mixin : CmraMixin (coprodR_car tpc_stateR tpc_actionR).
+Proof.
+Admitted.
+
+(*
+  quotients:
+  A -(f)-> B -> coker f
+
+  Say B is like A, except fewer elements are valid.
+  If only one invalid in each RA, then we can consider B to be A/∼ for the
+  appropriate eq rel.
+
+  Say we have an epimorphism B -(g)-> A of commutative semigroups.
+  Say A has the structure of a ResAlg. Then, we claim that we can lift such a
+  structure to B. We want to do this by defining b1⋅b2 ∈ = g⁻¹(g(b1)⋅g(b2)).
+*)
+
+(*
+Csum is not coproduct:
+T = {a1, a2, b, c1, c2, invalid}
+a1 ⋅ b = c1,
+a2 ⋅ b = c2,
+rest are invalid.
+
+Let A = {a1, a2, invalid} and B = {b, invalid}.
+h:A -> T and k:B -> T are inclusion maps.
+
+Let ai ∈ A. Suppose we have eta : csum A B -> T that respects h and k.
+Then, h(ai) ⋅ k(b) = eta(inl ai ⋅ inr b) = eta(invalid), so
+h(a1)⋅k(b) = h(a2)⋅k(b), but in T, that is not the case.
+*)
+
+(* If we make (a⋅a) and (a ⊗ b) invalid, then b ~~> b' implies (a ⊗ b) ~~> inR b'.
+   ✓ inL a ⋅ (a ⊗ b) → ✓ (a ⊗ b') means that a ⋅ (a ⊗ B) must be invalid.
+   However, inR b ~~> inR b' is no longer true because (a ⊗ b) ~~> (a ⊗ b)
+
+   How do we make more things invalid?
+ *)
+
+Definition tpc_try1R := csumR (exclR unitO) (prodR (agreeR unitO) (csumR (exclR unitO) (agreeR unitO))).
+(* ex + (ag × (ex + ag)) *)
+
+Definition tpc_try1S := tpc_try1R.(cmra_car).
+Definition unprepared : tpc_try1R := (Cinl (Excl ())).
+(* Definition prepared : tpc_try1R := (Cinr (???)). *)
+
+(* Want something closer to
+  ex + (ag ⨿ (ex + ag))
+  That allows us to have a persistent Cinr without knowing whether we've
+  comitted or not. However, this still doesn't allow us to know have a token
+  that we haven't committed until we switch to the Cinr branch.
+
+  What about:
+  ex ⨿ (ag ⨿ (ex + ag))
+  This doesn't work because we could have "Cinl" and "Cinr" simultaneously.
+
+  What about:
+  (ex + ag) ⨿ (ex + ag)
+  As is, we could commit before prepare, so no good. But, if we make
+  (ex1 ⊗ ex2) and (ex1 ⊗ ag2) illegal, then we might be fine.
+
+  Restricting validity isn't perse a quotient.  To restrict validity, seems like
+we might not want coequalizer, but equalizer.
+*)
+
+Canonical Structure tpc2R := Cmra' (coprodR_car tpc_stateR tpc_actionR) (coprodR_ofe_mixin _ _) (tpcR_cmra_mixin).
+
+Context `{!inG Σ tpc2R}.
+
+Lemma prepare_2 γ :
+  own γ (inL Unprepared:tpc2R) ==∗ own γ (inL Prepared:tpc2R).
+Proof.
+  iApply own_update.
+  (* Should be impossible *)
+Abort.
+
 Context `{inG Σ tpc_stateR}.
 
 Lemma prepare γ :
