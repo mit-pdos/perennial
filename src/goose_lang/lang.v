@@ -1134,18 +1134,21 @@ Definition irreducible' (e : expr) (σ : state) :=
 Definition stuck' (e : expr) (σ : state) :=
   to_val e = None ∧ irreducible' e σ.
 
+Definition prim_step'_safe e s :=
+  (∀ e' s', rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (e', s') →
+            ¬ stuck' e' s').
+
 Inductive head_step_atomic: expr -> state -> list observation -> expr -> state -> list expr -> Prop :=
  | head_step_trans : ∀ e s κs e' s' efs,
      head_step e s κs e' s' efs →
      head_step_atomic e s κs e' s' efs
  | head_step_atomically : ∀ el e s κs v' s',
-     rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (Val v', s') →
+     rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (Val (InjRV v'), s') →
+     prim_step'_safe e s →
      head_step_atomic (Atomically el e) s κs (Val (InjRV v')) s' []
  | head_step_atomically_fail : ∀ el e s κs,
      (* An atomically block can non-deterministically fail _ONLY_ if the block would not trigger UB *)
-     (∀ e' s',
-        rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (e, s') →
-        ¬ stuck' e' s') →
+     prim_step'_safe e s →
      head_step_atomic (Atomically el e) s κs (Val (InjLV (LitV LitUnit))) s []
 .
 
@@ -1155,7 +1158,7 @@ Lemma head_step_atomic_inv e s κs e' s' efs :
   head_step e s κs e' s' efs.
 Proof.
   inversion 1; subst; eauto.
-  - intros. contradiction (H1 el e0); auto.
+  - intros. contradiction (H2 el e0); auto.
   - intros. contradiction (H1 el e0); auto.
 Qed.
 
@@ -1187,6 +1190,7 @@ Lemma val_head_atomic_stuck e1 σ1 κ e2 σ2 efs : head_step_atomic e1 σ1 κ e2
 Proof.
   inversion 1; subst; eauto using val_head_stuck.
 Qed.
+
 
 Ltac inv_undefined :=
   match goal with
@@ -1429,6 +1433,30 @@ Proof.
     inversion H0; auto.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     apply Panic_fill_item_inv in Heq; subst; auto; by exfalso.
+Qed.
+
+Lemma atomically_not_stuck_body_safe (l: val) e s :
+  ¬ stuck (Atomically (of_val l) e) s →
+  prim_step'_safe e s.
+Proof.
+  intros Hnstuck ?? Hrtc Hstuck.
+  apply Hnstuck.
+  split; first done.
+  apply prim_head_irreducible; last first.
+  { intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e0' Heq.
+    assert (of_val l = e0').
+    { move: Heq. destruct Ki => //=; congruence. }
+    naive_solver.
+  }
+  intros ???? Hstep.
+  inversion Hstep; subst.
+  * inversion H; eauto.
+  * match goal with
+    | [ H: prim_step'_safe _ _ |- _ ] => eapply H
+    end; try eapply Hrtc; eauto.
+  * match goal with
+    | [ H: prim_step'_safe _ _ |- _ ] => eapply H
+    end; eauto.
 Qed.
 
 Definition null_non_alloc {V} (h : gmap loc V) :=

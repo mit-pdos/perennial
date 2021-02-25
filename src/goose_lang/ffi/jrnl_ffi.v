@@ -849,6 +849,46 @@ Proof.
     { congruence. }
 Qed.
 
+Lemma jrnl_ctx_sub_state_valid' σj s :
+  (∀ sj, (s.(world) : @ffi_state jrnl_model) ≠ Closed sj) →
+  ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
+  jrnl_kinds_lb (jrnlKinds σj) -∗
+  jrnl_ctx s.(world) -∗
+  ⌜ jrnl_sub_state σj s ⌝.
+Proof.
+  iIntros (?) "Hpts #Hkinds Hctx".
+  rewrite /jrnl_sub_state.
+  destruct (s.(world)) as [|sj] eqn:Heq_world; first by congruence.
+  iExists _. iSplit; first eauto.
+  iSplit.
+  - iIntros (a). destruct (jrnlData σj !! a) as [o|] eqn:Heq'.
+    { rewrite /=. iDestruct (big_sepM_lookup with "Hpts") as "H"; eauto.
+      rewrite /jrnl_ctx. rewrite /jrnl_state_ctx. iDestruct "Hctx" as "(_&_&Hctx1&Hctx2)".
+      iDestruct "H" as "(?&?)".
+      iDestruct (map_valid with "Hctx1 [$]") as %->; eauto.
+    }
+    { rewrite /=. destruct (jrnlData sj !! _); eauto. }
+  - iDestruct "Hkinds" as (σj' Hsub) "H".
+    iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom)".
+    iDestruct (own_valid_2 with "H Hctx2") as %Hval.
+    apply to_agree_op_valid in Hval. iPureIntro. set_solver.
+Qed.
+
+Lemma jrnl_ctx_dom_eq σj (s: sstate) :
+  jrnl_dom (σj) -∗
+  jrnl_ctx s.(world) -∗
+  ⌜ dom (gset addr) (jrnlData (get_jrnl s.(world))) = σj ⌝.
+Proof.
+  iIntros "#Hdom Hctx".
+  rewrite /jrnl_sub_state.
+  rewrite /jrnl_ctx.
+  destruct (s.(world)) as [sj|sj] eqn:Heq_world.
+  - iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom')".
+    iDestruct (jrnl_dom_agree with "[$] [$]") as %Heq; eauto.
+  - iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom')".
+    iDestruct (jrnl_dom_agree with "[$] [$]") as %Heq; eauto.
+Qed.
+
 Lemma jrnl_ctx_sub_state_valid σj s :
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
   jrnl_kinds_lb (jrnlKinds σj) -∗
@@ -857,21 +897,9 @@ Lemma jrnl_ctx_sub_state_valid σj s :
   ⌜ jrnl_sub_state σj s ⌝.
 Proof.
   iIntros "Hpts #Hkinds #Hopen Hctx".
-  rewrite /jrnl_sub_state.
   iDestruct (jrnl_ctx_unify_opened with "[$] [$]") as %[sj Heq].
-  iExists _. iSplit; first eauto.
-  iSplit.
-  - iIntros (a). destruct (jrnlData σj !! a) as [o|] eqn:Heq'.
-    { rewrite /=. iDestruct (big_sepM_lookup with "Hpts") as "H"; eauto.
-      rewrite /jrnl_ctx. rewrite Heq. iDestruct "Hctx" as "(_&_&Hctx1&Hctx2)".
-      iDestruct "H" as "(?&?)".
-      iDestruct (map_valid with "Hctx1 [$]") as %->; eauto.
-    }
-    { rewrite /=. destruct (jrnlData sj !! _); eauto. }
-  - iDestruct "Hkinds" as (σj' Hsub) "H".
-    rewrite Heq. iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom)".
-    iDestruct (own_valid_2 with "H Hctx2") as %Hval.
-    apply to_agree_op_valid in Hval. iPureIntro. set_solver.
+  iApply (jrnl_ctx_sub_state_valid' with "[$] [$] [$]").
+  congruence.
 Qed.
 
 Lemma offsets_aligned_delete i σjd σjk :
@@ -1055,7 +1083,7 @@ it immediately opens the na_crash_inv to lift the durable_mapsto and modify toke
 
 
 Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v: sval) σj' :
-  always_steps e σj v σj' →
+  always_steps e σj (SOMEV v) σj' →
   nclose sN ⊆ E →
   spec_ctx -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
@@ -1070,12 +1098,12 @@ Proof.
   iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
+  iMod (ghost_step_stuck' with "[$] [$] [$]") as (Hnstuck) "(Hj&H)"; first by solve_ndisj.
   iMod (ghost_step_lifting _ _ _ (Atomically l e) s [] (jrnl_upd σj' s) (SOMEV v) []
           with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step.
-    apply head_step_atomically.
-    eapply Hrtc.
-    auto.
+    apply head_step_atomically; eauto.
+    eapply atomically_not_stuck_body_safe; eauto.
   }
   { solve_ndisj. }
   iMod (jrnl_ctx_upd _ (jrnlData σj') with "[$] [$] [$] [$]") as "(Hσj'_data&Hffi)".
@@ -1087,7 +1115,7 @@ Proof.
 Qed.
 
 Lemma ghost_step_jrnl_atomically_crash E j K {HCTX: LanguageCtx K} (l: sval) e σj (v: sval) σj' :
-  always_steps e σj v σj' →
+  always_steps e σj (SOMEV v) σj' →
   nclose sN ⊆ E →
   spec_crash_ctx (jrnl_crash_ctx) -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
@@ -1122,22 +1150,91 @@ Proof.
   iDestruct "Hrest" as (s) "(>H&Hinterp)".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&?&?&?&>Hctok)".
   iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
-  iIntros "HC".
+  iIntros "#HC".
+  iMod (ghost_step_crash_stuck' with "[] Hctx Hctok Hj [$] [$]") as (Hnstuck) "(Hj&H&Hctok)"; first by solve_ndisj.
+  { iModIntro. iIntros "(h1&>h2)". iDestruct (pending_pending with "[$] [$]") as %[]. }
   iMod (ghost_step_crash_lifting _ _ _ _ _ (Atomically l e) s [] (jrnl_upd σj' s) (SOMEV v) []
           with "[] Hctok Hj Hctx H HC") as "(Hctok&Hj&H&_)".
   { apply head_prim_step.
-    apply head_step_atomically.
-    eapply Hrtc.
-    auto.
+    apply head_step_atomically; eauto.
+    eapply atomically_not_stuck_body_safe; eauto.
   }
   { solve_ndisj. }
-  { iModIntro. iIntros "(H1&>H2)". iDestruct (pending_pending with "[$] [$]") as %[]. }
+  { iModIntro. iIntros "(h1&>h2)". iDestruct (pending_pending with "[$] [$]") as %[]. }
   iMod (jrnl_ctx_upd _ (jrnlData σj') with "[$] [$] [$] [$]") as "(Hσj'_data&Hffi)".
   { destruct Hwf as (?&?&?&?). rewrite Heq_kinds; eauto. }
   { destruct Hwf as (?&?&?&?). eauto. }
   iMod ("Hclo" with "[-Hσj_crash_toks Hσj'_data]") as "_".
   { iNext. iRight. iExists _. iFrame "H". iFrame. }
   iModIntro. iFrame.
+Qed.
+
+Lemma ghost_step_jrnl_atomically_ub E j K {HCTX: LanguageCtx K} (l: sval) e1 σj e2 σj' σdom :
+  (∀ s, jrnl_sub_state σj' s →
+        dom (gset _) (jrnlData (get_jrnl s.(world))) = σdom →
+        stuck' e2 s) →
+  always_steps e1 σj e2 σj' →
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
+  jrnl_kinds_lb (jrnlKinds σj) -∗
+  jrnl_dom σdom -∗
+  jrnl_open -∗
+  j ⤇ K (Atomically l e1)
+  -∗ |NC={E}=> False.
+Proof.
+  iIntros (Hub Hsteps ?) "(#Hctx&#Hstate) Hσj_data Hσj_kinds Hdom Hopen Hj".
+  destruct Hsteps as (Heq_kinds&Hwf&Hrtc).
+  iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
+  iDestruct (jrnl_ctx_dom_eq _ s with "[$] [$]") as %Hdom.
+  iMod (ghost_step_stuck with "Hj Hctx H") as %[]; last by solve_ndisj.
+  rewrite /stuck.
+  split; first done.
+  apply prim_head_irreducible; last first.
+  { intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    assert (of_val l = e').
+    { move: Heq. destruct Ki => //=; congruence. }
+    naive_solver.
+  }
+  rewrite /irreducible. intros ???? Hnostep.
+  inversion Hnostep; subst.
+  {
+    inversion H2; eauto.
+  }
+  {
+    match goal with
+    | [ H: prim_step'_safe _ _ |- _ ] => eapply H; first eapply Hrtc; eauto
+    end.
+    eapply Hub.
+    { eapply jrnl_sub_state_upd; eauto. }
+    { rewrite /jrnl_sub_dom in Hwf.
+      rewrite //= dom_union_L /addr. destruct Hwf as (Heq&?). rewrite -Heq.
+      destruct Hsub as (?&?&Hsub&_).
+      eapply subseteq_dom in Hsub.
+      match goal with
+      | [ H: sworld _ = _ |- _ ] => rewrite H
+      end.
+      set_solver.
+    }
+  }
+  {
+    match goal with
+    | [ H: prim_step'_safe _ _ |- _ ] => eapply H; first eapply Hrtc; eauto
+    end.
+    eapply Hub.
+    { eapply jrnl_sub_state_upd; eauto. }
+    { rewrite /jrnl_sub_dom in Hwf.
+      rewrite //= dom_union_L /addr. destruct Hwf as (Heq&?). rewrite -Heq.
+      destruct Hsub as (?&?&Hsub&_).
+      eapply subseteq_dom in Hsub.
+      match goal with
+      | [ H: sworld _ = _ |- _ ] => rewrite H
+      end.
+      set_solver.
+    }
+  }
 Qed.
 
 End spec.

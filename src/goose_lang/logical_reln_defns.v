@@ -310,7 +310,7 @@ Definition subst_ctx := gmap string subst_tuple.
 Definition sty_atomic_obligation :=
   forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
          el1 el2 tl e1 e2 t (Γsubst: gmap string subst_tuple),
-  (spec_atomic_transTy (subst_ty <$> Γsubst) el1 el2 tl e1 e2 t) ->
+  (spec_atomic_transTy (subst_ty <$> Γsubst) el1 el2 tl e1 e2 (sumT unitT t)) ->
   sty_inv hS -∗
   spec_ctx -∗
   trace_ctx -∗

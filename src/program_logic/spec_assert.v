@@ -450,6 +450,43 @@ Section ghost_step.
     iModIntro; iFrame.
   Qed.
 
+  Lemma ghost_step_crash_stuck' E P Q j K `{LanguageCtx Λ K} e σ:
+    nclose sN_inv ⊆ E →
+    □ (Q ∗ ▷ P -∗ |0={∅}=> False) -∗
+    source_crash_ctx P -∗ Q -∗ j ⤇ K e -∗ source_state σ -∗ |C={E}_0=>
+    ⌜ ¬ stuck e σ ⌝ ∗ j ⤇ K e ∗ source_state σ ∗ Q.
+  Proof.
+    iIntros (?) "#Hwand #Hctx HQ Hj Hstate ". rewrite /source_ctx/source_inv.
+    iDestruct "Hctx" as (??) "Hctx".
+    iMod (cfupd_weaken_all with "Hctx") as "#Hinv"; eauto.
+    iIntros "HC".
+    iInv "Hinv" as "[HP|Hrest]" "Hclose".
+    { iMod (fupd_level_mask_subseteq ∅); first by solve_ndisj.
+      iMod ("Hwand" with "[$]") as %[]. }
+    iDestruct "Hrest" as (? tp' σ') ">[Hauth Hpure]".
+    iDestruct "Hpure" as %(Hstep&Hnoerr).
+    iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
+    iDestruct (source_state_reconcile with "Hstate Hauth") as %Heq_state.
+    subst.
+    assert (¬ stuck e σ').
+    {
+      intros Hstuck.
+      assert (stuck (K e) σ') as Hstuck'.
+      { destruct Hstuck as (?&?). split.
+        - apply fill_not_val; auto.
+        - apply irreducible_fill; auto.
+      }
+      rewrite /crash_safe in Hnoerr.
+      eapply not_not_stuck in Hstuck'.
+      eapply Hstuck', Hnoerr; eauto.
+        by eapply elem_of_list_lookup_2.
+    }
+    iFrame.
+    iMod ("Hclose" with "[-]").
+    { iNext. iRight. iExists _, _, _. iFrame. eauto. }
+    eauto.
+  Qed.
+
   Lemma ghost_step_crash_lifting' E P Q r ρ j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
     language.prim_step e1 σ1 κ e2 σ2 efs →
     nclose sN_inv ⊆ E →
@@ -519,18 +556,12 @@ Section ghost_step.
     iApply ghost_step_crash_lifting'; eauto. iFrame.
   Qed.
 
-  Lemma ghost_step_stuck E j K `{LanguageCtx Λ K} e σ:
-    stuck e σ →
+  Lemma ghost_step_stuck' E j K `{LanguageCtx Λ K} e σ:
     nclose sN_inv ⊆ E →
-    j ⤇ K e -∗ source_ctx -∗ source_state σ -∗ |NC={E}=> False.
+    j ⤇ K e -∗ source_ctx -∗ source_state σ -∗ |NC={E}=>
+    ⌜ ¬ stuck e σ ⌝ ∗ j ⤇ K e ∗ source_state σ.
   Proof.
-    iIntros (Hstuck ?) "Hj Hctx Hstate".
-    assert (stuck (K e) σ) as Hstuck'.
-    { destruct Hstuck as (?&?). split.
-      - apply fill_not_val; auto.
-      - apply irreducible_fill; auto.
-    }
-    clear Hstuck.
+    iIntros (?) "Hj Hctx Hstate".
     rewrite /source_ctx/source_inv.
     iDestruct "Hctx" as (? ρ) "#Hctx".
     iInv "Hctx" as (? tp' σ') ">[Hauth Hpure]" "Hclose".
@@ -538,10 +569,32 @@ Section ghost_step.
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
     iDestruct (source_state_reconcile with "Hstate Hauth") as %Heq_state.
     subst.
-    exfalso. rewrite /crash_safe in Hnoerr.
-    eapply not_not_stuck in Hstuck'.
-    eapply Hstuck', Hnoerr; eauto.
-    by eapply elem_of_list_lookup_2.
+    assert (¬ stuck e σ').
+    {
+      intros Hstuck.
+      assert (stuck (K e) σ') as Hstuck'.
+      { destruct Hstuck as (?&?). split.
+        - apply fill_not_val; auto.
+        - apply irreducible_fill; auto.
+      }
+      rewrite /crash_safe in Hnoerr.
+      eapply not_not_stuck in Hstuck'.
+      eapply Hstuck', Hnoerr; eauto.
+        by eapply elem_of_list_lookup_2.
+    }
+    iFrame.
+    iMod ("Hclose" with "[-]").
+    { iNext. iExists _, _, _. iFrame. eauto. }
+    eauto.
+  Qed.
+
+  Lemma ghost_step_stuck E j K `{LanguageCtx Λ K} e σ:
+    stuck e σ →
+    nclose sN_inv ⊆ E →
+    j ⤇ K e -∗ source_ctx -∗ source_state σ -∗ |NC={E}=> False.
+  Proof.
+    iIntros (Hstuck ?) "Hj Hctx Hstate".
+    iMod (ghost_step_stuck' with "[$] [$] [$]") as (Hnotstuck) "_"; auto.
   Qed.
 
   Lemma ghost_step_stuck_det E j K `{LanguageCtx Λ K} e:
