@@ -1,7 +1,7 @@
 From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude marshal_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
-From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
+From Goose.github_com.mit_pdos.lockservice Require Import lockservice grove_common.
 From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map common_proof.
 Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
@@ -151,6 +151,7 @@ Proof using Type*.
   wp_loadField.
   wp_apply (IncrServer__Increment_is_rpcHandler with "Hs_inv").
   iIntros (f) "#His_rpcHandler".
+*)
   wp_apply (RemoteProcedureCall_spec with "His_rpcHandler [$HreqInv $CID $Seq $Args Hreply]").
   {
     Opaque struct.t.

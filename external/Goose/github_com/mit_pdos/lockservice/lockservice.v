@@ -3,6 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.lockmap.
+From Goose Require github_com.mit_pdos.lockservice.grove_common.
 From Goose Require github_com.tchajed.marshal.
 
 (* 0_common.go *)
@@ -21,46 +22,22 @@ Definition overflow_guard_incr: val :=
 
 (* 0_rpc.go *)
 
-Module RPCVals.
-  Definition S := struct.decl [
-    "U64_1" :: uint64T;
-    "U64_2" :: uint64T
-  ].
-End RPCVals.
-
-Module RPCRequest.
-  Definition S := struct.decl [
-    "CID" :: uint64T;
-    "Seq" :: uint64T;
-    "Args" :: struct.t RPCVals.S
-  ].
-End RPCRequest.
-
-Module RPCReply.
-  Definition S := struct.decl [
-    "Stale" :: boolT;
-    "Ret" :: uint64T
-  ].
-End RPCReply.
-
-Definition RpcFunc: ty := (struct.ptrT RPCRequest.S -> struct.ptrT RPCReply.S -> boolT)%ht.
-
-Definition RpcCoreHandler: ty := (struct.t RPCVals.S -> uint64T)%ht.
+Definition RpcCoreHandler: ty := (struct.t grove_common.RPCVals.S -> uint64T)%ht.
 
 Definition RpcCorePersister: ty := (unitT -> unitT)%ht.
 
 Definition CheckReplyTable: val :=
   rec: "CheckReplyTable" "lastSeq" "lastReply" "CID" "Seq" "reply" :=
     let: ("last", "ok") := MapGet "lastSeq" "CID" in
-    struct.storeF RPCReply.S "Stale" "reply" #false;;
+    struct.storeF grove_common.RPCReply.S "Stale" "reply" #false;;
     (if: "ok" && ("Seq" ≤ "last")
     then
       (if: "Seq" < "last"
       then
-        struct.storeF RPCReply.S "Stale" "reply" #true;;
+        struct.storeF grove_common.RPCReply.S "Stale" "reply" #true;;
         #true
       else
-        struct.storeF RPCReply.S "Ret" "reply" (Fst (MapGet "lastReply" "CID"));;
+        struct.storeF grove_common.RPCReply.S "Ret" "reply" (Fst (MapGet "lastReply" "CID"));;
         #true)
     else
       MapInsert "lastSeq" "CID" "Seq";;
@@ -70,14 +47,17 @@ Definition CheckReplyTable: val :=
    Returns true iff server reported error or request "timed out".
    For the "real thing", this should instead submit a request via the network. *)
 Definition RemoteProcedureCall: val :=
-  rec: "RemoteProcedureCall" "rpc" "req" "reply" :=
-    Fork (let: "dummy_reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
+  rec: "RemoteProcedureCall" "host" "rpcid" "req" "reply" :=
+    Fork (let: "dummy_reply" := struct.alloc grove_common.RPCReply.S (zero_val (struct.t grove_common.RPCReply.S)) in
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+            let: "rpc" := grove_ffi.GetServer "host" "rpcid" in
             "rpc" "req" "dummy_reply";;
             Continue));;
     (if: nondet #()
-    then "rpc" "req" "reply"
+    then
+      let: "rpc" := grove_ffi.GetServer "host" "rpcid" in
+      "rpc" "req" "reply"
     else #true).
 
 (* Common code for RPC clients: tracking of CID and next sequence number. *)
@@ -96,23 +76,23 @@ Definition MakeRPCClient: val :=
     ].
 
 Definition RPCClient__MakeRequest: val :=
-  rec: "RPCClient__MakeRequest" "cl" "rpc" "args" :=
+  rec: "RPCClient__MakeRequest" "cl" "host" "rpcid" "args" :=
     overflow_guard_incr (struct.loadF RPCClient.S "seq" "cl");;
-    let: "req" := struct.new RPCRequest.S [
+    let: "req" := struct.new grove_common.RPCRequest.S [
       "Args" ::= "args";
       "CID" ::= struct.loadF RPCClient.S "cid" "cl";
       "Seq" ::= struct.loadF RPCClient.S "seq" "cl"
     ] in
     struct.storeF RPCClient.S "seq" "cl" (struct.loadF RPCClient.S "seq" "cl" + #1);;
     let: "errb" := ref_to boolT #false in
-    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
+    let: "reply" := struct.alloc grove_common.RPCReply.S (zero_val (struct.t grove_common.RPCReply.S)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] RemoteProcedureCall "rpc" "req" "reply";;
+      "errb" <-[boolT] RemoteProcedureCall "host" "rpcid" "req" "reply";;
       (if: (![boolT] "errb" = #false)
       then Break
       else Continue));;
-    struct.loadF RPCReply.S "Ret" "reply".
+    struct.loadF grove_common.RPCReply.S "Ret" "reply".
 
 (* Common code for RPC servers: locking and handling of stale and redundant requests through
    the reply table. *)
@@ -135,11 +115,11 @@ Definition MakeRPCServer: val :=
 Definition RPCServer__HandleRequest: val :=
   rec: "RPCServer__HandleRequest" "sv" "core" "makeDurable" "req" "reply" :=
     lock.acquire (struct.loadF RPCServer.S "mu" "sv");;
-    (if: CheckReplyTable (struct.loadF RPCServer.S "lastSeq" "sv") (struct.loadF RPCServer.S "lastReply" "sv") (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCRequest.S "Seq" "req") "reply"
+    (if: CheckReplyTable (struct.loadF RPCServer.S "lastSeq" "sv") (struct.loadF RPCServer.S "lastReply" "sv") (struct.loadF grove_common.RPCRequest.S "CID" "req") (struct.loadF grove_common.RPCRequest.S "Seq" "req") "reply"
     then #()
     else
-      struct.storeF RPCReply.S "Ret" "reply" ("core" (struct.loadF RPCRequest.S "Args" "req"));;
-      MapInsert (struct.loadF RPCServer.S "lastReply" "sv") (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCReply.S "Ret" "reply");;
+      struct.storeF grove_common.RPCReply.S "Ret" "reply" ("core" (struct.loadF grove_common.RPCRequest.S "Args" "req"));;
+      MapInsert (struct.loadF RPCServer.S "lastReply" "sv") (struct.loadF grove_common.RPCRequest.S "CID" "req") (struct.loadF grove_common.RPCReply.S "Ret" "reply");;
       "makeDurable" #());;
     lock.release (struct.loadF RPCServer.S "mu" "sv");;
     #false.
@@ -296,12 +276,12 @@ End KVServer.
 
 Definition KVServer__put_core: val :=
   rec: "KVServer__put_core" "ks" "args" :=
-    MapInsert (struct.loadF KVServer.S "kvs" "ks") (struct.get RPCVals.S "U64_1" "args") (struct.get RPCVals.S "U64_2" "args");;
+    MapInsert (struct.loadF KVServer.S "kvs" "ks") (struct.get grove_common.RPCVals.S "U64_1" "args") (struct.get grove_common.RPCVals.S "U64_2" "args");;
     #0.
 
 Definition KVServer__get_core: val :=
   rec: "KVServer__get_core" "ks" "args" :=
-    Fst (MapGet (struct.loadF KVServer.S "kvs" "ks") (struct.get RPCVals.S "U64_1" "args")).
+    Fst (MapGet (struct.loadF KVServer.S "kvs" "ks") (struct.get grove_common.RPCVals.S "U64_1" "args")).
 
 (* requires (2n + 1) uint64s worth of space in the encoder *)
 Definition EncMap: val :=
@@ -391,7 +371,7 @@ End LockServer.
 
 Definition LockServer__tryLock_core: val :=
   rec: "LockServer__tryLock_core" "ls" "args" :=
-    let: "lockname" := struct.get RPCVals.S "U64_1" "args" in
+    let: "lockname" := struct.get grove_common.RPCVals.S "U64_1" "args" in
     let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") "lockname" in
     (if: "locked"
     then #0
@@ -401,7 +381,7 @@ Definition LockServer__tryLock_core: val :=
 
 Definition LockServer__unlock_core: val :=
   rec: "LockServer__unlock_core" "ls" "args" :=
-    let: "lockname" := struct.get RPCVals.S "U64_1" "args" in
+    let: "lockname" := struct.get grove_common.RPCVals.S "U64_1" "args" in
     let: ("locked", <>) := MapGet (struct.loadF LockServer.S "locks" "ls") "lockname" in
     (if: "locked"
     then
@@ -463,12 +443,16 @@ Definition MakeLockServer: val :=
    and maintains a little state. *)
 Module KVClerk.
   Definition S := struct.decl [
-    "primary" :: struct.ptrT KVServer.S;
+    "primary" :: uint64T;
     "client" :: struct.ptrT RPCClient.S;
     "cid" :: uint64T;
     "seq" :: uint64T
   ].
 End KVClerk.
+
+Definition KV_PUT : expr := #1.
+
+Definition KV_GET : expr := #2.
 
 Definition MakeKVClerk: val :=
   rec: "MakeKVClerk" "primary" "cid" :=
@@ -479,7 +463,7 @@ Definition MakeKVClerk: val :=
 
 Definition KVClerk__Put: val :=
   rec: "KVClerk__Put" "ck" "key" "val" :=
-    RPCClient__MakeRequest (struct.loadF KVClerk.S "client" "ck") (KVServer__Put (struct.loadF KVClerk.S "primary" "ck")) (struct.mk RPCVals.S [
+    RPCClient__MakeRequest (struct.loadF KVClerk.S "client" "ck") (struct.loadF KVClerk.S "primary" "ck") KV_PUT (struct.mk grove_common.RPCVals.S [
       "U64_1" ::= "key";
       "U64_2" ::= "val"
     ]);;
@@ -487,7 +471,7 @@ Definition KVClerk__Put: val :=
 
 Definition KVClerk__Get: val :=
   rec: "KVClerk__Get" "ck" "key" :=
-    RPCClient__MakeRequest (struct.loadF KVClerk.S "client" "ck") (KVServer__Get (struct.loadF KVClerk.S "primary" "ck")) (struct.mk RPCVals.S [
+    RPCClient__MakeRequest (struct.loadF KVClerk.S "client" "ck") (struct.loadF KVClerk.S "primary" "ck") KV_GET (struct.mk grove_common.RPCVals.S [
       "U64_1" ::= "key"
     ]).
 
@@ -497,10 +481,14 @@ Definition KVClerk__Get: val :=
    and maintains a little state. *)
 Module Clerk.
   Definition S := struct.decl [
-    "primary" :: struct.ptrT LockServer.S;
+    "primary" :: uint64T;
     "client" :: struct.ptrT RPCClient.S
   ].
 End Clerk.
+
+Definition LOCK_TRYLOCK : expr := #1.
+
+Definition LOCK_UNLOCK : expr := #2.
 
 Definition MakeClerk: val :=
   rec: "MakeClerk" "primary" "cid" :=
@@ -511,7 +499,7 @@ Definition MakeClerk: val :=
 
 Definition Clerk__TryLock: val :=
   rec: "Clerk__TryLock" "ck" "lockname" :=
-    RPCClient__MakeRequest (struct.loadF Clerk.S "client" "ck") (LockServer__TryLock (struct.loadF Clerk.S "primary" "ck")) (struct.mk RPCVals.S [
+    RPCClient__MakeRequest (struct.loadF Clerk.S "client" "ck") (struct.loadF Clerk.S "primary" "ck") LOCK_TRYLOCK (struct.mk grove_common.RPCVals.S [
       "U64_1" ::= "lockname"
     ]) ≠ #0.
 
@@ -520,7 +508,7 @@ Definition Clerk__TryLock: val :=
    false otherwise. *)
 Definition Clerk__Unlock: val :=
   rec: "Clerk__Unlock" "ck" "lockname" :=
-    RPCClient__MakeRequest (struct.loadF Clerk.S "client" "ck") (LockServer__Unlock (struct.loadF Clerk.S "primary" "ck")) (struct.mk RPCVals.S [
+    RPCClient__MakeRequest (struct.loadF Clerk.S "client" "ck") (struct.loadF Clerk.S "primary" "ck") LOCK_UNLOCK (struct.mk grove_common.RPCVals.S [
       "U64_1" ::= "lockname"
     ]) ≠ #0.
 
@@ -538,8 +526,8 @@ Definition Clerk__Lock: val :=
 
 Module Bank.
   Definition S := struct.decl [
-    "ls" :: struct.ptrT LockServer.S;
-    "ks" :: struct.ptrT KVServer.S
+    "ls" :: uint64T;
+    "ks" :: uint64T
   ].
 End Bank.
 
@@ -605,9 +593,17 @@ Definition MakeBank: val :=
     let: "ls" := MakeLockServer #() in
     let: "ks" := MakeKVServer #() in
     MapInsert (struct.loadF KVServer.S "kvs" "ks") "acc" "balance";;
+    let: "ls_handlers" := NewMap grove_common.RpcFunc in
+    MapInsert "ls_handlers" LOCK_TRYLOCK (LockServer__TryLock "ls");;
+    MapInsert "ls_handlers" LOCK_UNLOCK (LockServer__Unlock "ls");;
+    let: "lsid" := grove_ffi.AllocServer "ls_handlers" in
+    let: "ks_handlers" := NewMap grove_common.RpcFunc in
+    MapInsert "ks_handlers" KV_PUT (KVServer__Put "ks");;
+    MapInsert "ks_handlers" KV_GET (KVServer__Get "ks");;
+    let: "ksid" := grove_ffi.AllocServer "ks_handlers" in
     struct.mk Bank.S [
-      "ls" ::= "ls";
-      "ks" ::= "ks"
+      "ls" ::= "lsid";
+      "ks" ::= "ksid"
     ].
 
 Definition MakeBankClerk: val :=
@@ -631,7 +627,7 @@ End IncrServer.
 
 Definition IncrServer__increment_core_unsafe: val :=
   rec: "IncrServer__increment_core_unsafe" "is" "seq" "args" :=
-    let: "key" := struct.get RPCVals.S "U64_1" "args" in
+    let: "key" := struct.get grove_common.RPCVals.S "U64_1" "args" in
     let: "oldv" := ref (zero_val uint64T) in
     "oldv" <-[uint64T] KVClerk__Get (struct.loadF IncrServer.S "kck" "is") "key";;
     KVClerk__Put (struct.loadF IncrServer.S "kck" "is") "key" (![uint64T] "oldv" + #1);;
@@ -659,7 +655,7 @@ Definition IncrServer__increment_core_unsafe: val :=
    Probably won't try proving this version correct (first). *)
 Definition IncrServer__increment_core: val :=
   rec: "IncrServer__increment_core" "is" "seq" "args" :=
-    let: "key" := struct.get RPCVals.S "U64_1" "args" in
+    let: "key" := struct.get grove_common.RPCVals.S "U64_1" "args" in
     let: "oldv" := ref (zero_val uint64T) in
     let: "filename" := #(str"incr_request_") + grove_ffi.U64ToString "seq" + #(str"_oldv") in
     let: "content" := grove_ffi.Read "filename" in
@@ -681,11 +677,11 @@ Definition WriteDurableIncrServer: val :=
 Definition IncrServer__Increment: val :=
   rec: "IncrServer__Increment" "is" "req" "reply" :=
     lock.acquire (struct.loadF RPCServer.S "mu" (struct.loadF IncrServer.S "sv" "is"));;
-    (if: CheckReplyTable (struct.loadF RPCServer.S "lastSeq" (struct.loadF IncrServer.S "sv" "is")) (struct.loadF RPCServer.S "lastReply" (struct.loadF IncrServer.S "sv" "is")) (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCRequest.S "Seq" "req") "reply"
+    (if: CheckReplyTable (struct.loadF RPCServer.S "lastSeq" (struct.loadF IncrServer.S "sv" "is")) (struct.loadF RPCServer.S "lastReply" (struct.loadF IncrServer.S "sv" "is")) (struct.loadF grove_common.RPCRequest.S "CID" "req") (struct.loadF grove_common.RPCRequest.S "Seq" "req") "reply"
     then #()
     else
-      struct.storeF RPCReply.S "Ret" "reply" (IncrServer__increment_core "is" (struct.loadF RPCRequest.S "Seq" "req") (struct.loadF RPCRequest.S "Args" "req"));;
-      MapInsert (struct.loadF RPCServer.S "lastReply" (struct.loadF IncrServer.S "sv" "is")) (struct.loadF RPCRequest.S "CID" "req") (struct.loadF RPCReply.S "Ret" "reply");;
+      struct.storeF grove_common.RPCReply.S "Ret" "reply" (IncrServer__increment_core "is" (struct.loadF grove_common.RPCRequest.S "Seq" "req") (struct.loadF grove_common.RPCRequest.S "Args" "req"));;
+      MapInsert (struct.loadF RPCServer.S "lastReply" (struct.loadF IncrServer.S "sv" "is")) (struct.loadF grove_common.RPCRequest.S "CID" "req") (struct.loadF grove_common.RPCReply.S "Ret" "reply");;
       WriteDurableIncrServer "is");;
     lock.release (struct.loadF RPCServer.S "mu" (struct.loadF IncrServer.S "sv" "is"));;
     #false.
@@ -709,12 +705,14 @@ Definition MakeIncrServer: val :=
 
 Module IncrClerk.
   Definition S := struct.decl [
-    "primary" :: struct.ptrT IncrServer.S;
+    "primary" :: uint64T;
     "client" :: struct.ptrT RPCClient.S;
     "cid" :: uint64T;
     "seq" :: uint64T
   ].
 End IncrClerk.
+
+Definition INCR_INCREMENT : expr := #1.
 
 Definition MakeIncrClerk: val :=
   rec: "MakeIncrClerk" "primary" "cid" :=
@@ -725,7 +723,7 @@ Definition MakeIncrClerk: val :=
 
 Definition IncrClerk__Increment: val :=
   rec: "IncrClerk__Increment" "ck" "key" :=
-    RPCClient__MakeRequest (struct.loadF IncrClerk.S "client" "ck") (IncrServer__Increment (struct.loadF IncrClerk.S "primary" "ck")) (struct.mk RPCVals.S [
+    RPCClient__MakeRequest (struct.loadF IncrClerk.S "client" "ck") (struct.loadF IncrClerk.S "primary" "ck") INCR_INCREMENT (struct.mk grove_common.RPCVals.S [
       "U64_1" ::= "key"
     ]);;
     #().
@@ -735,7 +733,7 @@ Definition IncrClerk__Increment: val :=
 Module IncrProxyServer.
   Definition S := struct.decl [
     "sv" :: struct.ptrT RPCServer.S;
-    "incrserver" :: struct.ptrT IncrServer.S;
+    "incrserver" :: uint64T;
     "ick" :: struct.ptrT IncrClerk.S;
     "lastCID" :: uint64T
   ].
@@ -743,7 +741,7 @@ End IncrProxyServer.
 
 Definition IncrProxyServer__proxy_increment_core_unsafe: val :=
   rec: "IncrProxyServer__proxy_increment_core_unsafe" "is" "seq" "args" :=
-    let: "key" := struct.get RPCVals.S "U64_1" "args" in
+    let: "key" := struct.get grove_common.RPCVals.S "U64_1" "args" in
     IncrClerk__Increment (struct.loadF IncrProxyServer.S "ick" "is") "key";;
     #0.
 
@@ -752,15 +750,15 @@ Module ShortTermIncrClerk.
   Definition S := struct.decl [
     "cid" :: uint64T;
     "seq" :: uint64T;
-    "req" :: struct.t RPCRequest.S;
-    "incrserver" :: struct.ptrT IncrServer.S
+    "req" :: struct.t grove_common.RPCRequest.S;
+    "incrserver" :: uint64T
   ].
 End ShortTermIncrClerk.
 
 Definition ShortTermIncrClerk__PrepareRequest: val :=
   rec: "ShortTermIncrClerk__PrepareRequest" "ck" "args" :=
     overflow_guard_incr (struct.loadF ShortTermIncrClerk.S "seq" "ck");;
-    struct.storeF ShortTermIncrClerk.S "req" "ck" (struct.mk RPCRequest.S [
+    struct.storeF ShortTermIncrClerk.S "req" "ck" (struct.mk grove_common.RPCRequest.S [
       "Args" ::= "args";
       "CID" ::= struct.loadF ShortTermIncrClerk.S "cid" "ck";
       "Seq" ::= struct.loadF ShortTermIncrClerk.S "seq" "ck"
@@ -770,14 +768,14 @@ Definition ShortTermIncrClerk__PrepareRequest: val :=
 Definition ShortTermIncrClerk__MakePreparedRequest: val :=
   rec: "ShortTermIncrClerk__MakePreparedRequest" "ck" :=
     let: "errb" := ref_to boolT #false in
-    let: "reply" := struct.alloc RPCReply.S (zero_val (struct.t RPCReply.S)) in
+    let: "reply" := struct.alloc grove_common.RPCReply.S (zero_val (struct.t grove_common.RPCReply.S)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] RemoteProcedureCall (IncrServer__Increment (struct.loadF ShortTermIncrClerk.S "incrserver" "ck")) (struct.fieldRef ShortTermIncrClerk.S "req" "ck") "reply";;
+      "errb" <-[boolT] RemoteProcedureCall (struct.loadF ShortTermIncrClerk.S "incrserver" "ck") INCR_INCREMENT (struct.fieldRef ShortTermIncrClerk.S "req" "ck") "reply";;
       (if: (![boolT] "errb" = #false)
       then Break
       else Continue));;
-    struct.loadF RPCReply.S "Ret" "reply".
+    struct.loadF grove_common.RPCReply.S "Ret" "reply".
 
 Definition DecodeShortTermIncrClerk: val :=
   rec: "DecodeShortTermIncrClerk" "is" "content" :=
@@ -786,10 +784,10 @@ Definition DecodeShortTermIncrClerk: val :=
     struct.storeF ShortTermIncrClerk.S "incrserver" "ck" "is";;
     struct.storeF ShortTermIncrClerk.S "cid" "ck" (marshal.Dec__GetInt "d");;
     struct.storeF ShortTermIncrClerk.S "seq" "ck" (marshal.Dec__GetInt "d");;
-    struct.storeF RPCRequest.S "CID" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.loadF ShortTermIncrClerk.S "cid" "ck");;
-    struct.storeF RPCRequest.S "Seq" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.loadF ShortTermIncrClerk.S "seq" "ck" - #1);;
-    struct.storeF RPCVals.S "U64_1" (struct.fieldRef RPCRequest.S "Args" (struct.fieldRef ShortTermIncrClerk.S "req" "ck")) (marshal.Dec__GetInt "d");;
-    struct.storeF RPCVals.S "U64_2" (struct.fieldRef RPCRequest.S "Args" (struct.fieldRef ShortTermIncrClerk.S "req" "ck")) (marshal.Dec__GetInt "d");;
+    struct.storeF grove_common.RPCRequest.S "CID" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.loadF ShortTermIncrClerk.S "cid" "ck");;
+    struct.storeF grove_common.RPCRequest.S "Seq" (struct.fieldRef ShortTermIncrClerk.S "req" "ck") (struct.loadF ShortTermIncrClerk.S "seq" "ck" - #1);;
+    struct.storeF grove_common.RPCVals.S "U64_1" (struct.fieldRef grove_common.RPCRequest.S "Args" (struct.fieldRef ShortTermIncrClerk.S "req" "ck")) (marshal.Dec__GetInt "d");;
+    struct.storeF grove_common.RPCVals.S "U64_2" (struct.fieldRef grove_common.RPCRequest.S "Args" (struct.fieldRef ShortTermIncrClerk.S "req" "ck")) (marshal.Dec__GetInt "d");;
     "ck".
 
 Definition EncodeShortTermIncrClerk: val :=
@@ -797,8 +795,8 @@ Definition EncodeShortTermIncrClerk: val :=
     let: "e" := marshal.NewEnc #32 in
     marshal.Enc__PutInt "e" (struct.loadF ShortTermIncrClerk.S "cid" "ck");;
     marshal.Enc__PutInt "e" (struct.loadF ShortTermIncrClerk.S "seq" "ck");;
-    marshal.Enc__PutInt "e" (struct.get RPCVals.S "U64_1" (struct.get RPCRequest.S "Args" (struct.loadF ShortTermIncrClerk.S "req" "ck")));;
-    marshal.Enc__PutInt "e" (struct.get RPCVals.S "U64_2" (struct.get RPCRequest.S "Args" (struct.loadF ShortTermIncrClerk.S "req" "ck")));;
+    marshal.Enc__PutInt "e" (struct.get grove_common.RPCVals.S "U64_1" (struct.get grove_common.RPCRequest.S "Args" (struct.loadF ShortTermIncrClerk.S "req" "ck")));;
+    marshal.Enc__PutInt "e" (struct.get grove_common.RPCVals.S "U64_2" (struct.get grove_common.RPCRequest.S "Args" (struct.loadF ShortTermIncrClerk.S "req" "ck")));;
     marshal.Enc__Finish "e".
 
 Definition IncrProxyServer__MakeFreshIncrClerk: val :=

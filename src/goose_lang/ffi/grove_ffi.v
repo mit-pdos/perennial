@@ -8,6 +8,8 @@ Require Import Decimal Ascii String DecimalString.
 Axiom Read : val.
 Axiom Write : val.
 Axiom U64ToString : val.
+Axiom GetServer : val.
+Axiom AllocServer : val.
 
 Section grove_ffi.
 Context `{!heapG Σ}.
