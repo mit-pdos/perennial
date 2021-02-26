@@ -3,13 +3,16 @@ From iris.algebra Require Import numbers.
 From iris.program_logic Require Export weakestpre.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
+From Perennial.goose_lang.ffi Require Import grove_ffi.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice_nocrash common_proof.
 From Perennial.program_proof.lockservice Require Export rpc.
+From Goose.github_com.mit_pdos.lockservice Require Import lockservice grove_common.
 
 Section rpc_proof.
 Context `{!heapG Σ}.
 Context `{!rpcG Σ u64}.
+Context `{!rpcregG Σ}.
 
 Record RPCValsC := mkRPCValsC
 {
@@ -88,6 +91,12 @@ Definition is_rpcHandler (f:val) γrpc args req PreCond PostCond : iProp Σ :=
            RPCReplyReceipt γrpc req reply'.(Rep_Ret))
     }}}
     .
+
+Definition is_rpcHandlerHost (host:u64) (rpcid:u64) γrpc args req PreCond PostCond : iProp Σ :=
+  ∃ (handlers : gmap u64 val) (f : val),
+    "#Hhost" ∷ host [[rpcreg_gname]]↦ro handlers ∗
+    "%Hrpcid" ∷ ⌜handlers !! rpcid = Some f⌝ ∗
+    "#Hhandler" ∷ is_rpcHandler f γrpc args req PreCond PostCond.
 
 Lemma is_rpcHandler_eta (e:expr) γrpc args req PreCond PostCond :
   □ (∀ v1 v2,
@@ -199,7 +208,7 @@ Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc server_own
   coreFunction (into_val.to_val args)%V
 {{{ (r:u64), RET #r; server_own_core ∗ PostCond r }}}) -∗
 {{{ is_rpcserver sv γrpc server_own_core }}}
-  RPCServer__HandleRequest #sv coreFunction
+  lockservice_nocrash.RPCServer__HandleRequest #sv coreFunction
 {{{ f, RET f; is_rpcHandler f γrpc args req PreCond PostCond }}}.
 Proof.
   iIntros "#HfCoreSpec" (Φ) "!# #Hls Hpost".
@@ -267,14 +276,16 @@ Proof.
   }
 Qed.
 
-Lemma RemoteProcedureCall_spec (req_ptr reply_ptr:loc) (req:RPCRequestID) args (reply:Reply64) (f:val) PreCond PostCond γrpc γPost :
-is_rpcHandler f γrpc args req PreCond PostCond -∗
+Lemma RemoteProcedureCall_spec (req_ptr reply_ptr:loc) (req:RPCRequestID)
+                               args (reply:Reply64) (host:u64) (rpcid:u64)
+                               PreCond PostCond γrpc γPost :
+is_rpcHandlerHost host rpcid γrpc args req PreCond PostCond -∗
 {{{
   "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req ∗
   "#Hargs" ∷ read_request req_ptr req args ∗
   "Hreply" ∷ own_reply reply_ptr reply
 }}}
-  RemoteProcedureCall f #req_ptr #reply_ptr
+  RemoteProcedureCall #host #rpcid #req_ptr #reply_ptr
 {{{ e, RET e;
     (∃ reply',
     own_reply reply_ptr reply' 
@@ -302,7 +313,11 @@ Proof.
     { iExists {| Rep_Stale:=false; Rep_Ret:=_ |}. iFrame. }
     wp_forBreak. wp_pures.
     iDestruct "Hreply" as (reply') "Hreply".
-    wp_apply ("Hspec" with "[-]").
+
+    iNamed "Hspec".
+    wp_apply (wp_GetServer with "[$Hhost]"); eauto.
+    wp_let.
+    wp_apply ("Hhandler" with "[-]").
     { iFrame "#∗". }
     iIntros "fPost".
     wp_seq. iLeft. iSplitR; first done.
@@ -314,7 +329,11 @@ Proof.
   iIntros (choice) "[Hv|Hv]"; iDestruct "Hv" as %->.
   {
     wp_pures.
-    wp_apply ("Hspec" with "[$Hreply]"); eauto; try iFrame "#".
+
+    iNamed "Hspec".
+    wp_apply (wp_GetServer with "[$Hhost]"); eauto.
+    wp_let.
+    wp_apply ("Hhandler" with "[$Hreply]"); eauto; try iFrame "#".
     iDestruct 1 as (reply') "[Hreply fPost]".
     iApply "Hpost".
     iFrame.
@@ -331,14 +350,14 @@ Proof.
   }
 Qed.
 
-Lemma RPCClient__MakeRequest_spec (f:val) cl_ptr args γrpc PreCond PostCond :
-(∀ req, is_rpcHandler f γrpc args req PreCond PostCond) -∗
+Lemma RPCClient__MakeRequest_spec (host:u64) (rpcid:u64) cl_ptr args γrpc PreCond PostCond :
+(∀ req, is_rpcHandlerHost host rpcid γrpc args req PreCond PostCond) -∗
 {{{
   PreCond ∗
   own_rpcclient cl_ptr γrpc ∗
   is_RPCServer γrpc
 }}}
-  RPCClient__MakeRequest #cl_ptr f (into_val.to_val args)
+  RPCClient__MakeRequest #cl_ptr #host #rpcid (into_val.to_val args)
 {{{ (retv:u64), RET #retv; own_rpcclient cl_ptr γrpc ∗ PostCond retv }}}.
 Proof using Type*.
   iIntros "#Hfspec" (Φ) "!# [Hprecond [Hclerk #Hlinv]] Hpost".
