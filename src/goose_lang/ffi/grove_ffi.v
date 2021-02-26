@@ -70,6 +70,34 @@ Axiom wp_U64ToString : ∀ (u:u64),
        RET #(str u64_to_string u); True
   }}}.
 
+Class rpcregG Σ := RpcRegG {
+  rpcreg_gname : gname ;
+  rpcreg_inG :> mapG Σ u64 (gmap u64 val)
+}.
+
+Context `{!rpcregG Σ}.
+
+Axiom wp_GetServer : ∀ (host : u64) (rpcid : u64) (handlers : gmap u64 val) (rpcf : val) k,
+  {{{
+      host [[rpcreg_gname]]↦ro handlers ∗
+      ⌜ handlers !! rpcid = Some rpcf ⌝
+  }}}
+    grove_ffi.GetServer #host #rpcid @ k ; ⊤
+  {{{
+      RET rpcf; True
+  }}}.
+
+Axiom wp_AllocServer : ∀ (handlers : gmap u64 val) (mref : loc) (def : val) k,
+  {{{
+      map.is_map mref (handlers, def)
+  }}}
+    grove_ffi.AllocServer #mref @ k ; ⊤
+  {{{
+      (host : u64),
+      RET #host;
+      host [[rpcreg_gname]]↦ro handlers
+  }}}.
+
 End grove_ffi.
 
 Notation "s f↦{ q } c" := (file_mapsto s c q)
