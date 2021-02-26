@@ -18,70 +18,71 @@ From iris_string_ident Require Import ltac2_string_ident.
 Section tpc_example.
 
 (* Protocol:
-   Exclusive: Uncommitted, Finished
-   Idempotents: Committed, Aborted
+   Exclusive: Unprepared, DoPrepare, Undecided, Finished
+   Idempotents: Prepared, Committed, Aborted
 
-   Uncommitted -> Committed
-   Uncommitted -> Aborted
+   Prepared ⋅ Uncomitted = Uncomitted    <--- Glue
+   Unprepared ⋅ Undecided = Invalid    <--- Glue (implied by above)
+   Committed ⋅ Undecided = Invalid
+   Committed ⋅ DoDecide = Invalid      <---- this is where we would have glued if tokens were separate from state
+   Aborted ⋅ DoDecide = Invalid
+
+   Unprepared ∗ DoPrepare ==∗ Uncomitted (== Prepared ∗ Uncommitted)
+   Uncommitted ∗ DoDecide ==∗ Committed
+   DoDecide ==∗ Aborted
 
    Participant owns Finished for any tid ∉ finishedTxns
-   Coordinator owns Uncommitted for any fresh tid
+   Participant owns DoPrepare for any tid ∉ (finishedTxns ∪ txnsM)
+   Coordinator owns Unprepared for any fresh tid
+   Coordinator owns DoDecide for any fresh tid
 
-   Paricipant__Prepare
-      returns inv (R ∨ Committed ∗ (R' ∨ Finished) ∨ Aborted ∗ (R ∨) Finished))
+   is_participant := inv (Unprepared ∨ Undecided ∗ R ∨ Committed ∗ R' ∨ Aborted ∗ Finished)
+
+   { is_participant }
+     Paricipant__Prepare
+   { Prepared }
+
+   { is_participant ∗ Committed }
    Participant__Commit
-      requires Committed
+   { emp }
+   { is_participant ∗ Aborted }
    Participant__Abort
-      requires Aborted
  *)
 
 
 Context `{!heapG Σ}.
-
-Record TxnResourcesC :=
-mkTxnResourcesC {
-    key:u64;
-    oldValue:u64;
-}.
-
-Global Instance TransactionC_Inhabited : Inhabited TxnResourcesC :=
-  {| inhabitant := mkTxnResourcesC 0 0 |}.
-
-#[refine] Instance TransactionC_IntoVal : into_val.IntoVal (TxnResourcesC) :=
-  {
-  to_val := λ x, (#x.(key), (
-          (#x.(oldValue), #()))) %V ;
-  IntoVal_def := mkTxnResourcesC 0 0 ;
-  IntoVal_inj := _
-  }.
-Proof.
-  intros x1 x2 [=].
-  destruct x1. destruct x2.
-  simpl in *. subst.
-  done.
-Defined.
-
-Definition tpcR := csumR fracR (agreeR boolO).
-Context `{!inG Σ (gmapUR u64 tpcR)}.
+Definition one_shot_decideR := csumR fracR (agreeR boolO).
+Definition one_shotR := csumR fracR (agreeR unitO).
+Context `{!inG Σ (gmapUR u64 one_shotR)}.
+Context `{!inG Σ (gmapUR u64 one_shot_decideR)}.
 Context `{!inG Σ (gmapUR u64 (exclR unitO))}.
 
 Record tpc_names :=
 mk_tpc_names  {
-  tpc_state_gn : gname ;
-  finish_token_gn : gname ;
+  prep_gn: gname ;
+  commit_gn: gname ;
+  finish_gn : gname ;
 }.
 
 Implicit Type γtpc : tpc_names.
 
-Definition undecided_half γtpc (tid:u64) : iProp Σ := own γtpc.(tpc_state_gn) {[ tid := (Cinl (1/2)%Qp) ]}.
-Definition aborted γtpc (tid:u64) : iProp Σ := own γtpc.(tpc_state_gn) {[ tid := (Cinr (to_agree false)) ]}.
-Definition committed γtpc (tid:u64) : iProp Σ := own γtpc.(tpc_state_gn) {[ tid := (Cinr (to_agree true)) ]}.
-Definition finish_token γtpc (tid:u64) : iProp Σ := own γtpc.(finish_token_gn) {[ tid := Excl ()]}.
+Definition prepared γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid := Cinr (to_agree ()) ]}.
+
+Definition undecided γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinl (1/2)%Qp) ]} ∗ prepared γtpc tid.
+Definition do_decide γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinl (1/2)%Qp) ]}.
+Definition aborted γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinr (to_agree false)) ]}.
+Definition committed γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinr (to_agree true)) ]}.
+
+Definition unprepared γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid := (Cinl (1/2)%Qp) ]} ∗ undecided γtpc tid.
+Definition do_prepare γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid := (Cinl (1/2)%Qp) ]}.
+
+Definition finish_tok γtpc (tid:u64) : iProp Σ := own γtpc.(finish_gn) {[ tid := (Excl ()) ]}.
 
 Definition tpc_inv_single γtpc tid R R' : iProp Σ :=
-  undecided_half γtpc tid ∗ R ∨
-  committed γtpc tid ∗ (R' ∨ finish_token γtpc tid) ∨
-  aborted γtpc tid ∗ (R ∨ finish_token γtpc tid)
+  unprepared γtpc tid ∨
+  undecided γtpc tid ∗ R ∨
+  committed γtpc tid ∗ (R' ∨ finish_tok γtpc tid) ∨
+  aborted γtpc tid ∗ (R ∨ finish_tok γtpc tid)
 .
 
 Definition txnSingleN (pid:u64) := nroot .@ "tpc" .@ pid.
@@ -257,6 +258,30 @@ Defined.
 
 Context `{!mapG Σ u64 u64}.
 
+Record TxnResourcesC :=
+mkTxnResourcesC {
+    key:u64;
+    oldValue:u64;
+}.
+
+Global Instance TransactionC_Inhabited : Inhabited TxnResourcesC :=
+  {| inhabitant := mkTxnResourcesC 0 0 |}.
+
+#[refine] Instance TransactionC_IntoVal : into_val.IntoVal (TxnResourcesC) :=
+  {
+  to_val := λ x, (#x.(key), (
+          (#x.(oldValue), #()))) %V ;
+  IntoVal_def := mkTxnResourcesC 0 0 ;
+  IntoVal_inj := _
+  }.
+Proof.
+  intros x1 x2 [=].
+  destruct x1. destruct x2.
+  simpl in *. subst.
+  done.
+Defined.
+
+
 Definition kv_ctx γ (kvsM:gmap u64 u64) k : iProp Σ :=
   k [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM k).1 ∨
   (Locked γ.(ps_ghs) k).
@@ -298,7 +323,7 @@ Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ (key amnt:u64) :
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
   {{{
        (a oldv:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗
-        is_prepared γ.(ps_tpc) tid pid (key [[γ.(ps_kvs)]]↦{3/4} oldv) (key [[γ.(ps_kvs)]]↦{3/4} (word.add oldv amnt))
+       is_prepared γ.(ps_tpc) tid pid (key [[γ.(ps_kvs)]]↦{3/4} oldv) (key [[γ.(ps_kvs)]]↦{3/4} (word.add oldv amnt))
   }}}.
 Proof.
   iIntros (Φ) "#Hps HΦ".
