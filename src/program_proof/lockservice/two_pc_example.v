@@ -15,444 +15,29 @@ From iris.bi.lib Require Import fractional.
 From iris.base_logic.lib Require Import own.
 From iris_string_ident Require Import ltac2_string_ident.
 
-Section res_map.
-
-Context `{!heapG Σ}.
-
-Definition oneShotResMapUR Σ (K:Type) `{Countable K}: ucmra :=
-  gmapUR K (csumR (fracR) (agreeR (laterO (iPropO Σ)))).
-
-Class resMapG Σ K `{Countable K} :=
-  { resMap_inG :> inG Σ (oneShotResMapUR Σ K); }.
-
-Context {K:Type} `{Countable K}.
-Context `{!resMapG Σ K}.
-
-Definition res_unshot γ (k:K) q :=
-  own γ {[ k := Cinl q ]}.
-
-Definition res_ro γ (k:K) (R:iProp Σ) :=
-  own γ {[ k := Cinr (to_agree (Next R)) ]}.
-
-Notation "k r[[ γ ]]↦{ q } ?" := (res_unshot γ k q%Qp)
-  (at level 20, q at level 50, format "k r[[ γ ]]↦{ q } ?") : bi_scope.
-Notation "k r[[ γ ]]↦ ?" := (k r[[γ]]↦{1} ?)%I
-  (at level 20, format "k r[[ γ ]]↦ ?") : bi_scope.
-Notation "k r[[ γ ]]↦ P" := (res_ro γ k P)
-  (at level 20, format "k  r[[ γ ]]↦ P") : bi_scope.
-
-Lemma rptsto_choose R γ k :
-  k r[[γ]]↦? ==∗ k r[[γ]]↦ R.
-Proof.
-Admitted.
-
-Lemma rptsto_agree γ k P Q:
-  k r[[γ]]↦ P -∗ k r[[γ]]↦ Q -∗ ▷(P ≡ Q).
-Proof.
-  iIntros "HP HQ".
-  iCombine "HP HQ" as "HPQ".
-  iDestruct (own_valid with "HPQ") as "#Hvalid".
-  rewrite -Cinr_op.
-  rewrite singleton_validI.
-  iAssert (✓ (to_agree (Next P) ⋅ to_agree (Next Q)))%I as "#Hvalid2".
-  { admit. }
-  iDestruct (wsat.agree_op_invI with "Hvalid2") as "#Hvalid3".
-  iEval (rewrite agree_equivI) in "Hvalid3".
-  Search Next.
-  by iApply later_equivI_1.
-Admitted.
-
-(* TODO: put in helper lemmas *)
-End res_map.
-
-Notation "k r[[ γ ]]↦{ q } ?" := (res_unshot γ k q)
-  (at level 20, q at level 50, format "k r[[ γ ]]↦{ q } ?") : bi_scope.
-Notation "k r[[ γ ]]↦?" := (res_unshot γ k 1%Qp)
-  (at level 20, format "k r[[ γ ]]↦?") : bi_scope.
-Notation "k r[[ γ ]]↦ P" := (res_ro γ k P)
-  (at level 20, format "k  r[[ γ ]]↦ P") : bi_scope.
-
-Section ra_coprod.
-
-Implicit Types A B:cmra.
-Inductive coprod A B : Type :=
-  | coprod_L : A -> coprod A B
-  | coprod_R : B -> coprod A B
-  | coprod_B : A → B -> coprod A B
-.
-
-Arguments coprod_L {A B}%type_scope _.
-Arguments coprod_R {A B}%type_scope _.
-Arguments coprod_B {A B}%type_scope _ _.
-
-Notation "a ⊗ b" := (coprod_B a b)
-  (at level 25, format "a ⊗ b").
-
-Local Instance coprod_valid A B: Valid (coprod A B) := λ x,
-  match x with
- | coprod_L a => ✓ a
- | coprod_R b => ✓ b
- | (a ⊗ b) => ✓ a ∧ ✓ b
-  end
-.
-
-Local Instance coprodR_validN A B: ValidN (coprod A B) := λ n x,
-  match x with
- | coprod_L a => ✓{n} a
- | coprod_R b => ✓{n} b
- | (a ⊗ b) => ✓{n} a ∧ ✓{n} b
-  end
-.
-
-Local Instance coprodR_op A B: Op (coprod A B) := λ x y,
-  match x,y with
-
- | coprod_L a, coprod_L a' => coprod_L (a⋅a')
- | coprod_L a, coprod_R b' => a ⊗ b'
- | coprod_L a, a' ⊗ b' => (a⋅a') ⊗ b'
-
- | coprod_R b, coprod_R b' => coprod_R (b⋅b')
- | coprod_R b, coprod_L a' => a' ⊗ b
- | coprod_R b, a' ⊗ b' => a' ⊗ (b⋅b')
-
- | a ⊗ b, coprod_L a' => (a⋅a') ⊗ b
- | a ⊗ b, coprod_R b' => a ⊗ (b⋅b')
- | a ⊗ b, a' ⊗ b' => (a⋅a') ⊗ (b⋅b')
-  end
-.
-
-(* TODO *)
-Local Instance coprodR_core A B: PCore (coprod A B):= λ x, None
-.
-
-Local Instance coprod_equiv A B : Equiv (coprod A B) := (λ x y, x = y).
-Local Instance coprod_dist A B : Dist (coprod A B) := (λ _ x y, x = y).
-
-Definition coprodR_ofe_mixin A B: OfeMixin (coprod A B).
-Admitted.
-
-Definition coprodR_cmra_mixin A B: CmraMixin (coprod A B).
-Proof.
-  split; try apply _; try done.
-Admitted.
-
-Canonical Structure coprodR A B:= Cmra' (coprod A B) (coprodR_ofe_mixin A B) (coprodR_cmra_mixin A B).
-
-Lemma coprod_update_l {A B} (a a':A) :
-  a ~~> a' → coprod_L (B:=B) a ~~> coprod_L a'.
-Proof.
-  intros.
-  rewrite /cmra_update in H.
-  rewrite /cmra_update.
-  intros.
-  destruct mz.
-  {
-    destruct c.
-    { specialize H with n (Some c). naive_solver. }
-    { simpl in *. destruct H0 as [H1 H2]. split; last done.
-      specialize H with n None. naive_solver.
-    }
-    { destruct H0 as [H1 H2]. split; last done.
-      specialize H with n (Some c). naive_solver.
-    }
-  }
-  {
-    specialize H with n None. simpl in *.
-    naive_solver.
-  }
-Qed.
-
-Lemma coprod_update_r {A B} (b b':B) :
-  b ~~> b' → coprod_R (A:=A) b ~~> coprod_R b'.
-Proof. Admitted.
-
-Lemma coprod_update_b {A B} (a a':A) (b b':B):
-  a ~~> a' → b ~~> b' →
-  a ⊗ b ~~> a' ⊗ b'.
-Proof.
-  intros.
-  replace (a⊗b) with (coprod_L a ⋅ coprod_R b) by naive_solver.
-  replace (a'⊗b') with (coprod_L a' ⋅ coprod_R b') by naive_solver.
-  apply cmra_update_op.
-  - by apply coprod_update_l.
-  - by apply coprod_update_r.
-Qed.
-
-End ra_coprod.
-
-Section tpc_ra.
-
-Inductive tpc_state :=
-  | Invalid : tpc_state
-  | Unprepared : tpc_state
-  | Prepared : tpc_state
-  | Uncommitted : tpc_state
-  | Committed : tpc_state
-.
-
-Local Instance tpc_state_valid_instance : Valid tpc_state := λ x, (x ≠ Invalid).
-
-Local Instance tpc_state_pcore_instance : PCore tpc_state := λ x,
-  match x with
-  | Prepared => Some Prepared
-  | Uncommitted => Some Prepared
-  | Committed => Some Committed
-  | Invalid => Some Invalid
-  | _ => None
-  end
-.
-
-Local Instance tpc_state_op_instance : Op tpc_state := λ x y,
-  match x, y with
-  | Prepared, Committed => Committed
-  | Committed, Prepared => Committed
-  | Committed, Committed => Committed
-  | Prepared, Prepared => Prepared
-  | Uncommitted, Prepared => Uncommitted
-  | Prepared, Uncommitted => Uncommitted
-  | _, _ => Invalid
-  end
-.
-
-Canonical Structure tpc_stateO := leibnizO tpc_state.
-Definition tpc_state_ra_mixin : RAMixin tpc_state.
-Proof.
-  split; try apply _; try naive_solver.
-  - by intros [] [] [].
-  - by intros [][].
-  - by intros [][].
-  - by intros [][].
-  - intros [][][] H; try done; eauto; try ( destruct H; destruct x; try done || eexists _; split; try naive_solver ).
-    { by exists Prepared. }
-    { by exists Invalid. }
-    { by exists Invalid. }
-    { by exists Invalid. }
-    { by exists Invalid. }
-    { by exists Prepared. }
-  - by intros [] [].
-Qed.
-
-Canonical Structure tpc_stateR := discreteR tpc_state tpc_state_ra_mixin.
-
-Global Instance tpc_state_cmra_discrete : CmraDiscrete tpc_stateR.
-Proof. split; first apply _. by intros []. Qed.
-
-Definition actionR :=  (exclR unitO).
-
-Canonical Structure tpc_actionR := coprodR actionR actionR.
-(* Canonical Structure tpc_actionR := prodR (optionR (exclR unitO)) (optionR (exclR unitO)). *)
-
-Definition DoPrep : tpc_actionR := inL (Excl ()).
-Definition DoCommit : tpc_actionR := inR (Excl ()).
-
-Definition tpcR := coprodR tpc_stateR tpc_actionR.
-
-Section tpcR_test.
-Context `{inG Σ tpcR}.
-
-Lemma prepare γ :
-  own γ (inL Unprepared) ==∗ own γ (inL Prepared).
-Proof.
-  iApply own_update.
-  apply coprod_update_l.
-  by intros ? [].
-Qed.
-
-Notation "a ⊗ b" := (inr (a, b):coprodR_car tpc_stateR tpc_actionR)
-  (at level 50, format "a ⊗ b") : bi_scope.
-
-Example coprod_op_test γ :
-  own γ (inL Unprepared) ∗ own γ (inR DoPrep) -∗
-      own γ (Unprepared ⊗ DoPrep).
-Proof.
-  iIntros "H".
-  iDestruct (own_op with "H") as "$".
-Qed.
-End tpcR_test.
-
-Local Instance tpc2R_valid_instance : Valid (coprodR tpc_stateR tpc_actionR) := λ x,
-  match x with
-  | (inr (Prepared, DoPrep)) => False
-  | _ => ✓ x
-  end
-.
-
-Local Instance tpc2R_validN_instance : ValidN (coprodR tpc_stateR tpc_actionR) := λ n x,
-  match x with
-  | (inr (Prepared, DoPrep)) => False
-  | _ => ✓{n} x
-  end
-.
-
-Definition tpcR_cmra_mixin : CmraMixin (coprodR_car tpc_stateR tpc_actionR).
-Proof.
-Admitted.
-
-(*
-  quotients:
-  A -(f)-> B -> coker f
-
-  Say B is like A, except fewer elements are valid.
-  If only one invalid in each RA, then we can consider B to be A/∼ for the
-  appropriate eq rel.
-
-  Say we have an epimorphism B -(g)-> A of commutative semigroups.
-  Say A has the structure of a ResAlg. Then, we claim that we can lift such a
-  structure to B. We want to do this by defining b1⋅b2 ∈ = g⁻¹(g(b1)⋅g(b2)).
-*)
-
-(*
-Csum is not coproduct:
-T = {a1, a2, b, c1, c2, invalid}
-a1 ⋅ b = c1,
-a2 ⋅ b = c2,
-rest are invalid.
-
-Let A = {a1, a2, invalid} and B = {b, invalid}.
-h:A -> T and k:B -> T are inclusion maps.
-
-Let ai ∈ A. Suppose we have eta : csum A B -> T that respects h and k.
-Then, h(ai) ⋅ k(b) = eta(inl ai ⋅ inr b) = eta(invalid), so
-h(a1)⋅k(b) = h(a2)⋅k(b), but in T, that is not the case.
-*)
-
-(* If we make (a⋅a) and (a ⊗ b) invalid, then b ~~> b' implies (a ⊗ b) ~~> inR b'.
-   ✓ inL a ⋅ (a ⊗ b) → ✓ (a ⊗ b') means that a ⋅ (a ⊗ B) must be invalid.
-   However, inR b ~~> inR b' is no longer true because (a ⊗ b) ~~> (a ⊗ b)
-
-   How do we make more things invalid?
- *)
-
-Definition tpc_try1R := csumR (exclR unitO) (prodR (agreeR unitO) (csumR (exclR unitO) (agreeR unitO))).
-(* ex + (ag × (ex + ag)) *)
-
-Definition tpc_try1S := tpc_try1R.(cmra_car).
-Definition unprepared : tpc_try1R := (Cinl (Excl ())).
-(* Definition prepared : tpc_try1R := (Cinr (???)). *)
-
-(* Want something closer to
-  ex + (ag ⨿ (ex + ag))
-  That allows us to have a persistent Cinr without knowing whether we've
-  comitted or not. However, this still doesn't allow us to know have a token
-  that we haven't committed until we switch to the Cinr branch.
-
-  What about:
-  ex ⨿ (ag ⨿ (ex + ag))
-  This doesn't work because we could have "Cinl" and "Cinr" simultaneously.
-
-  What about:
-  (ex + ag) ⨿ (ex + ag)
-  As is, we could commit before prepare, so no good. But, if we make
-  (ex1 ⊗ ex2) and (ex1 ⊗ ag2) illegal, then we might be fine.
-
-  Restricting validity isn't perse a quotient.  To restrict validity, seems like
-we might not want coequalizer, but equalizer.
-*)
-
-Canonical Structure tpc2R := Cmra' (coprodR_car tpc_stateR tpc_actionR) (coprodR_ofe_mixin _ _) (tpcR_cmra_mixin).
-
-Context `{!inG Σ tpc2R}.
-
-Lemma prepare_2 γ :
-  own γ (inL Unprepared:tpc2R) ==∗ own γ (inL Prepared:tpc2R).
-Proof.
-  iApply own_update.
-  (* Should be impossible *)
-Abort.
-
-Context `{inG Σ tpc_stateR}.
-
-Lemma prepare γ :
-  own γ Unprepared ==∗ own γ Prepared.
-Proof.
-  iApply own_update.
-  by intros ? [].
-Qed.
-
-Global Instance prepared_pers γ : Persistent (own γ Prepared).
-Proof.
-  apply own_core_persistent.
-  by rewrite /CoreId.
-Qed.
-
-Lemma prepared_duplicate γ :
-  own γ Prepared -∗ own γ Prepared ∗ own γ Prepared.
-Proof.
-  iIntros "#H".
-  iFrame "#".
-Qed.
-
-Local Instance tpc_valid_instance : Valid tpc_car := λ x,
-  match x with
-  | (Some s,a) => (✓ s) ∧ (✓ a) ∧
-    match s with
-    | Prepared => ✓ (a ⋅ DoPrep)
-    | Uncommitted => ✓ (a ⋅ DoPrep)
-    | Committed => ✓ (a ⋅ DoCommit)
-    | _ => True
-    end
-  | (None,a) => (✓ a)
-  end
-.
-
-Local Instance tpc_pcore_instance : PCore tpc_car := λ x,
-  match x with
-  | (None, a) =>
-    match (pcore a) with
-    | Some a' => Some (None, a')
-    | _ => None
-    end
-  | (Some s, a) =>
-    match (pcore s, pcore a) with
-    | (Some s', Some a') => Some (Some s', a')
-    | _ => None
-    end
-  end
-.
-
-Local Instance tpc_op_instance : Op tpc_car := λ x y,
-  match x, y with
-  | (Some s, a), (Some t, b) => (Some (s⋅t), a⋅b)
-  | (Some s, a), (None, b) => (Some s, a⋅b)
-  | (None, a), (Some t, b) => (Some t, a⋅b)
-  | (None, a), (None, b) => (None, a⋅b)
-  end
-.
-
-Canonical Structure tpc_carO := leibnizO tpc_car.
-
-Definition tpc_ra_mixin : RAMixin tpc_car.
-  split; try apply _; try done; last first.
-  - intros x y. destruct x,y; try done; admit.
-Admitted.
-
-Canonical Structure tpcR := discreteR tpc_car tpc_ra_mixin.
-
-Context `{inG Σ tpcR}.
-
-Lemma prepare_with_token γ :
-  own γ ((Some Unprepared,DoPrep):tpc_car) ==∗
-  own γ ((Some Prepared,(None,None)):tpc_car).
-Proof.
-  iApply own_update.
-  intros ? []; try done.
-  unfold opM.
-  (* Just check all the cases... don't know clean automation to do make this work *)
-  destruct c.
-  destruct c, o; try destruct c,c0; vm_compute; naive_solver.
-Qed.
-
-End tpc_ra.
-
 Section tpc_example.
 
+(* Protocol:
+   Exclusive: Uncommitted, Finished
+   Idempotents: Committed, Aborted
+
+   Uncommitted -> Committed
+   Uncommitted -> Aborted
+
+   Participant owns Finished for any tid ∉ finishedTxns
+   Coordinator owns Uncommitted for any fresh tid
+
+   Paricipant__Prepare
+      returns inv (R ∨ Committed ∗ (R' ∨ Finished) ∨ Aborted ∗ (R ∨) Finished))
+   Participant__Commit
+      requires Committed
+   Participant__Abort
+      requires Aborted
+ *)
+
+
 Context `{!heapG Σ}.
-(* Context `{!inG Σ tpcR}. *)
 Context `{!mapG Σ u64 u64}.
-Context `{!mapG Σ u64 ()}.
-Context `{!mapG Σ u64 (option bool)}.
-Context `{!mapG Σ u64 ()}.
-(* Context `{resMapG Σ (u64*u64) }. *)
 
 Record TransactionC :=
 mkTransactionC {
@@ -483,195 +68,201 @@ Defined.
 
 Context `{!mapG Σ (u64*u64) (option (u64))}.
 
+Definition tpcR := csumR fracR (agreeR boolO).
+Context `{!inG Σ (gmapUR u64 tpcR)}.
+Context `{!inG Σ (gmapUR u64 (exclR unitO))}.
+
 Record tpc_names :=
 mk_tpc_names  {
+  tpc_state_gn : gname ;
   finish_token_gn : gname ;
-  txn_data_gn : gname ; (* (tid,pid) -> (key, oldv) *)
 }.
+
+Print gmapUR.
 
 Implicit Type γtpc : tpc_names.
 
-(* Definition finish_token γtpc (tid pid:u64) : iProp Σ := (tid, pid)[[γtpc.(finish_token_gn)]]↦ (). *)
+Definition undecided_half γtpc (tid:u64) : iProp Σ := own γtpc.(tpc_state_gn) {[ tid := (Cinl (1/2)%Qp) ]}.
+Definition aborted γtpc (tid:u64) : iProp Σ := own γtpc.(tpc_state_gn) {[ tid := (Cinr (to_agree false)) ]}.
+Definition committed γtpc (tid:u64) : iProp Σ := own γtpc.(tpc_state_gn) {[ tid := (Cinr (to_agree true)) ]}.
+Definition finish_token γtpc (tid:u64) : iProp Σ := own γtpc.(finish_token_gn) {[ tid := Excl ()]}.
 
-Definition undecided γtpc (tid:u64) : iProp Σ := tid [[γtpc.(committed_gn)]]↦ None.
-Definition aborted γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ro Some false.
-Definition committed γtpc tid : iProp Σ := tid [[γtpc.(committed_gn)]]↦ro Some true.
-
-Definition tpc_inv_single γtpc tid pid R R' : iProp Σ :=
-  unprepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∨
-  prepared γtpc tid pid ∗ uncommit_token γtpc tid pid ∗ (∃ x:u64, (R x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨
-  committed γtpc tid ∗ prepared γtpc tid pid ∗ ((∃ x:u64, (R' x) ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x) ∨ finish_token γtpc tid pid) ∨
-  aborted γtpc tid ∗ finish_token γtpc tid pid
+Definition tpc_inv_single γtpc tid R R' : iProp Σ :=
+  undecided_half γtpc tid ∗ R ∨
+  committed γtpc tid ∗ (R' ∨ finish_token γtpc tid) ∨
+  aborted γtpc tid ∗ (R ∨ finish_token γtpc tid)
 .
 
 Definition fresh_tid γtpc (tid:u64) : iProp Σ :=
-  "Htokens" ∷ ([∗ set] pid ∈ (fin_to_set u64), (tid,pid:u64) [[γtpc.(prepared_gn)]]↦ () ∗
-                                    (tid,pid) [[γtpc.(uncommit_token_gn)]]↦ ()) ∗
-  "Hundec" ∷ undecided γtpc tid.
+  "Hundec" ∷ undecided_half γtpc tid.
 
 Definition txnSingleN (pid:u64) := nroot .@ "tpc" .@ pid.
-Definition is_txn_single γtpc (tid pid:u64) R R' : iProp Σ := inv (txnSingleN pid) (tpc_inv_single γtpc tid pid R R').
+Definition is_prepared γtpc (tid pid:u64) R R' : iProp Σ := inv (txnSingleN pid) (tpc_inv_single γtpc tid R R').
 
-Lemma participant_prepare x E γtpc tid pid R R':
+Lemma participant_prepare E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ finish_token γtpc tid pid -∗ R x -∗
-  ((tid,pid) [[γtpc.(txn_data_gn)]]↦ None) ={E}=∗
-  prepared γtpc tid pid ∗ finish_token γtpc tid pid ∗
-  ((tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some x).
+  undecided_half γtpc tid -∗ R ={E}=∗ is_prepared γtpc tid pid R R'
+.
 Proof.
-  intros ?.
-  iIntros "His_txn Hfinish_tok HR Hdata".
-  iInv "His_txn" as "[>[Hunprep Huncommit]|[[>#Hprep Hrest]|[Hcommitted|Haborted]]]" "Htclose".
-  {
-    (* TODO: don't use auth_map; want just mapUR *)
-    iMod (map_freeze with "[] Hunprep") as "[_ #Hprep]".
-    { admit. }
+  iIntros.
+  iMod (inv_alloc with "[-]") as "$"; last by iModIntro.
+  iNext. iLeft. iFrame.
+Qed.
 
-    iFrame "Hprep Hfinish_tok".
-    iMod (map_update _ _ (Some x) with "[] Hdata") as "[_ Hdata]".
-    { admit. }
-    iMod (map_freeze with "[] Hdata") as "[_ #Hdata]".
-    { admit. }
-    Locate viewR.
-    iFrame "#".
-    iMod ("Htclose" with "[HR Huncommit]"); last done.
-    iNext.
-    iRight.
-    iLeft.
-    iFrame "#∗".
-    iExists _; iFrame "#∗".
-  }
-  { (* Already prepared; contradiction *)
-    iDestruct "Hrest" as "[_ Hrest]".
-    iDestruct "Hrest" as (x2) "[_ >Hdata2]".
-    iDestruct (ptsto_agree_frac_value with "Hdata Hdata2") as %[_ Hbad].
-    contradiction.
-  }
-  { (* Committed; contradiction with Hescrow a nd Hfinish_tok ∨ Hdata *)
-    iDestruct "Hcommitted" as "(>Hcom & >#Hprep & Hescrow)".
-    admit.
-  }
-  { (* Aborted *)
-    iDestruct "Haborted" as "[_ >Hfinish_tok2]".
-    iDestruct (ptsto_valid_2 with "Hfinish_tok2 Hfinish_tok") as %Hval.
-    contradiction.
-  }
-Admitted.
-
-Lemma prepared_participant_abort E γtpc tid pid R R' x:
+Lemma prepared_participant_abort E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ prepared γtpc tid pid -∗ (tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some x -∗ aborted γtpc tid -∗ finish_token γtpc tid pid ={E}=∗
-  ▷ R x.
+  is_prepared γtpc tid pid R R' -∗
+  undecided_half γtpc tid ={E}=∗
+  aborted γtpc tid.
 Proof.
   intros Hnamespace.
-  iIntros "#His_txn #Hprep #Hdata #Habort Hfinish_tok".
-
-  iInv "His_txn" as "Ht" "Htclose".
-  iDestruct "Ht" as "[>[Hunprep _]|Ht]".
-  { (* Unprepared *)
-    iDestruct (ptsto_agree_frac_value with "Hprep Hunprep") as %[_ Hbad].
-    contradiction.
-  }
-  iDestruct "Ht" as "[(_ & _ & HR)|Ht]".
-  { (* Prepared *)
-    iDestruct "HR" as (x') "[HR >Hdata2]".
-    iDestruct (ptsto_agree_frac_value with "Hdata Hdata2") as %[H  _].
-    replace (x') with (x) by naive_solver.
-    iMod ("Htclose" with "[Hfinish_tok $Habort]"); eauto.
-  }
-  iDestruct "Ht" as "[[>#Hcom _]|Ht]".
+  iIntros "#His_prep Hundec".
+  iInv "His_prep" as "Hp" "Hpclose".
+  iDestruct "Hp" as "[[>Hundec2 HR]|Hbad]".
   {
-    iDestruct (ptsto_agree_frac_value with "Hcom Habort") as %[Hbad _].
+    iCombine "Hundec Hundec2" as "Hundec".
+    iMod (own_update _ _ {[ tid := (Cinr (to_agree false)) ]} with "Hundec") as "#Habort".
+    {
+      apply singleton_update.
+      rewrite -Cinl_op.
+      rewrite frac_op.
+      rewrite Qp_half_half.
+      by apply cmra_update_exclusive.
+    }
+    iFrame "Habort".
+    iMod ("Hpclose" with "[-]") as "_"; last by iModIntro.
+    iRight; iRight.
+    iFrame "#∗".
+  }
+  iDestruct "Hbad" as "[[>Hbad _]|[>Hbad _]]".
+  {
+    iDestruct (own_valid_2 with "Hundec Hbad") as %Hbad.
+    exfalso. rewrite singleton_op in Hbad.
+    setoid_rewrite singleton_valid in Hbad.
     naive_solver.
   }
-  iDestruct "Ht" as "[_ >Hfinish_tok2]".
   {
-    iDestruct (ptsto_conflict with "Hfinish_tok Hfinish_tok2") as %Hbad.
-    contradiction.
+    iDestruct (own_valid_2 with "Hundec Hbad") as %Hbad.
+    exfalso. rewrite singleton_op in Hbad.
+    setoid_rewrite singleton_valid in Hbad.
+    naive_solver.
   }
 Qed.
 
-(* Need to know that committed implies prepared *)
-Lemma prepared_participant_finish_commit E γtpc tid pid R R' x:
+Lemma commit_abort_false γtpc tid :
+  committed γtpc tid -∗ aborted γtpc tid -∗ False.
+Proof.
+  iIntros "Hcommit Habort".
+  iDestruct (own_valid_2 with "Hcommit Habort") as %Hbad.
+  exfalso. rewrite singleton_op in Hbad.
+  setoid_rewrite singleton_valid in Hbad.
+  rewrite -Cinr_op in Hbad.
+  setoid_rewrite Cinr_valid in Hbad.
+  setoid_rewrite to_agree_op_valid in Hbad.
+  done.
+Qed.
+
+Lemma undecided_commit_false γtpc tid :
+  committed γtpc tid -∗ undecided_half γtpc tid -∗ False.
+Proof.
+  iIntros "Hcommit Hundecided".
+  iDestruct (own_valid_2 with "Hcommit Hundecided") as %Hbad.
+  exfalso. rewrite singleton_op in Hbad.
+  setoid_rewrite singleton_valid in Hbad.
+  contradiction.
+Qed.
+
+Lemma undecided_abort_false γtpc tid :
+  aborted γtpc tid -∗ undecided_half γtpc tid -∗ False.
+Proof.
+  iIntros "Habort Hundecided".
+  iDestruct (own_valid_2 with "Habort Hundecided") as %Hbad.
+  exfalso. rewrite singleton_op in Hbad.
+  setoid_rewrite singleton_valid in Hbad.
+  contradiction.
+Qed.
+
+Lemma undecided_commit γtpc tid :
+  undecided_half γtpc tid -∗ undecided_half γtpc tid ==∗ committed γtpc tid.
+Proof.
+  iIntros "Hundec1 Hundec2". iCombine "Hundec1 Hundec2" as "Hundec".
+  iMod (own_update _ _ {[ tid := (Cinr (to_agree true)) ]} with "Hundec") as "$".
+  {
+    apply singleton_update. rewrite -Cinl_op. rewrite frac_op.
+    rewrite Qp_half_half. by apply cmra_update_exclusive.
+  }
+  by iModIntro.
+Qed.
+
+Lemma undecided_abort γtpc tid :
+  undecided_half γtpc tid -∗ undecided_half γtpc tid ==∗ aborted γtpc tid.
+Proof.
+  iIntros "Hundec1 Hundec2". iCombine "Hundec1 Hundec2" as "Hundec".
+  iMod (own_update _ _ {[ tid := (Cinr (to_agree false)) ]} with "Hundec") as "$".
+  {
+    apply singleton_update. rewrite -Cinl_op. rewrite frac_op.
+    rewrite Qp_half_half. by apply cmra_update_exclusive.
+  }
+  by iModIntro.
+Qed.
+
+Lemma finish_finish_false γtpc tid :
+  finish_token γtpc tid -∗ finish_token γtpc tid -∗ False.
+Proof.
+  iIntros "Hfinish_tok Hfinish_tok2".
+  iDestruct (own_valid_2 with "Hfinish_tok Hfinish_tok2") as %Hbad.
+  exfalso. rewrite singleton_op in Hbad. setoid_rewrite singleton_valid in Hbad.
+  contradiction.
+Qed.
+
+Lemma prepared_participant_finish_commit E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ committed_witness γtpc tid pid -∗ committed γtpc tid -∗  (tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some x -∗ finish_token γtpc tid pid ={E}=∗
-  ▷ R' x.
+  is_prepared γtpc tid pid R R' -∗ committed γtpc tid -∗ finish_token γtpc tid ={E}=∗
+  ▷ R'.
 Proof.
   intros Hnamespace.
-  iIntros "#His_txn #Hcommit_tok #Hcom #Hdata Hfinish_tok".
-  iInv "His_txn" as "Ht" "Htclose".
-  iDestruct "Ht" as "[>[_ Huncommit]|Ht]".
-  { (* Unprepared *)
-    iDestruct (ptsto_agree_frac_value with "Huncommit Hcommit_tok") as %[_ Hbad].
-    contradiction.
+  iIntros "#His_prep #Hcommit Hfinish_tok".
+  iInv "His_prep" as "Hp" "Hpclose".
+  iDestruct "Hp" as "[[>Huncommit _]|Hp]".
+  { (* Undecided *)
+    iExFalso. iApply undecided_commit_false; eauto.
   }
-  iDestruct "Ht" as "[(_ & >Huncommit & _)|Ht]".
-  { (* Prepared *)
-    iDestruct (ptsto_agree_frac_value with "Huncommit Hcommit_tok") as %[_ Hbad].
-    contradiction.
-  }
-  iDestruct "Ht" as "[(_ & #Hprep & HR')|Ht]".
+  iDestruct "Hp" as "[[_ HRfinish]|Hp]".
   {
-    iDestruct "HR'" as "[HR|>Hfinish_tok2]".
-    {
-      iDestruct "HR" as (x') "[HR' >Hdata2]".
-      iDestruct (ptsto_agree_frac_value with "Hdata Hdata2") as %[H  _].
-      replace (x') with (x) by naive_solver.
-      iMod ("Htclose" with "[$Hcom $Hprep Hfinish_tok]"); last by iModIntro.
-      iNext. eauto.
-    }
-    {
-      iDestruct (ptsto_conflict with "Hfinish_tok Hfinish_tok2") as %Hbad.
-      contradiction.
-    }
+    iDestruct "HRfinish" as "[HR | >HRfinish]"; last first.
+    { iExFalso. iApply (finish_finish_false with "Hfinish_tok HRfinish"). }
+    iFrame "HR".
+    iMod ("Hpclose" with  "[Hfinish_tok]"); last by iModIntro.
+    iRight; iLeft; iFrame "#∗".
   }
-  iDestruct "Ht" as "[>#Habort _]".
+  iDestruct "Hp" as "[>Habort _]".
   { (* aborted *)
-    iDestruct (ptsto_agree_frac_value with "Hcom Habort") as %[Hbad _].
-    naive_solver.
+    iExFalso. iApply commit_abort_false; eauto.
   }
 Qed.
 
-Lemma start_commit_txn_single E γtpc tid pid R R':
+Lemma prepared_participant_start_commit E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ prepared γtpc tid pid -∗ undecided γtpc tid ={E,E∖↑txnSingleN pid}=∗
-  undecided γtpc tid ∗ committed_witness γtpc tid pid ∗ (∃ x, ▷ R x ∗ (tid, pid) [[γtpc.(txn_data_gn)]]↦ro Some x ∗ (R' x -∗ committed γtpc tid ={E ∖ ↑txnSingleN pid,E}=∗ emp)).
+  is_prepared γtpc tid pid R R' -∗ undecided_half γtpc tid ={E,E∖↑txnSingleN pid}=∗
+  committed γtpc tid ∗ ▷ R ∗ (▷ R' ={E ∖ ↑txnSingleN pid,E}=∗ emp).
 Proof.
   intros Hnamespace.
-  iIntros "#His_txn #Hprep Hundecided".
-  iInv "His_txn" as "Ht" "Htclose".
-  iDestruct "Ht" as "[>[Hunprep _]|Ht]".
-  { (* Unprepared *)
-    iDestruct (ptsto_agree_frac_value with "Hprep Hunprep") as %[_ Hbad].
-    contradiction.
-  }
-  iDestruct "Ht" as "[(_ & >Huncommit & HR)|Ht]".
+  iIntros "#His_prep Hundec".
+  iInv "His_prep" as "Hp" "Hpclose".
+  iDestruct "Hp" as "[[>Hundec2 $]|Hp]".
   {
-    iMod (map_freeze with "[] Huncommit") as "[_ #Hcommit_witness]".
-    { admit. }
-    iFrame "#∗".
-    iDestruct "HR" as (x) "[HR >#Hdata]".
-    iExists _; iFrame "#∗".
-    iModIntro.
-    iIntros "HR' #Hcommitted".
-    iApply "Htclose".
-    iNext.
-    iRight. iRight. iLeft.
-    iFrame "#∗".
-    iLeft. iExists x.
-    iFrame "#∗".
+    iMod (undecided_commit with "Hundec Hundec2") as "#$".
+    iIntros "!> HR'".
+    iApply "Hpclose".
+    iNext. iRight. iLeft. iFrame "#". iLeft. iFrame.
   }
-  iDestruct "Ht" as "[[>#Hcom _]|Ht]".
+  iDestruct "Hp" as "[[#>Hcommitted _]|Hp]".
   {
-    iDestruct (ptsto_agree_frac_value with "Hundecided Hcom") as %[Hbad _].
-    naive_solver.
+    iExFalso. iApply undecided_commit_false; eauto.
   }
-  iDestruct "Ht" as "[>#Habort _]".
-  {
-    iDestruct (ptsto_agree_frac_value with "Hundecided Habort") as %[Hbad _].
-    naive_solver.
-  }
-Admitted.
+  iDestruct "Hp" as "[>#Habort _]".
+  { iExFalso. iApply undecided_abort_false; eauto. }
+Qed.
 
 (* Proof of participant code *)
 Record participant_names :=
