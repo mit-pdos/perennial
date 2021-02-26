@@ -123,6 +123,10 @@ Definition RPCServer__HandleRequest: val :=
 
 (* 1_kvserver.go *)
 
+Definition KV_PUT : expr := #1.
+
+Definition KV_GET : expr := #2.
+
 Module KVServer.
   Definition S := struct.decl [
     "sv" :: struct.ptrT RPCServer.S;
@@ -157,6 +161,14 @@ Definition MakeKVServer: val :=
     struct.storeF KVServer.S "kvs" "ks" (NewMap uint64T);;
     struct.storeF KVServer.S "sv" "ks" (MakeRPCServer #());;
     "ks".
+
+Definition KVServer__AllocServer: val :=
+  rec: "KVServer__AllocServer" "ks" :=
+    let: "handlers" := NewMap grove_common.RpcFunc in
+    MapInsert "handlers" KV_PUT (KVServer__Put "ks");;
+    MapInsert "handlers" KV_GET (KVServer__Get "ks");;
+    let: "host" := grove_ffi.AllocServer "handlers" in
+    "host".
 
 (* 1_lockserver.go *)
 
@@ -222,10 +234,6 @@ Module KVClerk.
     "seq" :: uint64T
   ].
 End KVClerk.
-
-Definition KV_PUT : expr := #1.
-
-Definition KV_GET : expr := #2.
 
 Definition MakeKVClerk: val :=
   rec: "MakeKVClerk" "primary" "cid" :=
