@@ -195,7 +195,7 @@ def main():
             path.join(perennial_dir, "external/Goose"),
             pkg="github.com/mit-pdos/lockservice/lockservice",
             importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
-            excludes=["./grove_ffi"]
+            excludes=["github.com/mit-pdos/lockservice/grove_ffi"]
         )
 
 
