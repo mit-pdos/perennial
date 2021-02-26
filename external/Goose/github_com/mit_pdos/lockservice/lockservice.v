@@ -146,25 +146,19 @@ Definition RPCServer__HandleRequest: val :=
 
 (* 1_2pc.go *)
 
-Definition OpDecrease : expr := #0.
-
-Definition OpIncrease : expr := #1.
-
-Module Transaction.
+Module TxnResources.
   Definition S := struct.decl [
-    "heldResource" :: uint64T;
-    "oldValue" :: uint64T;
-    "operation" :: uint64T;
-    "amount" :: uint64T
+    "key" :: uint64T;
+    "oldValue" :: uint64T
   ].
-End Transaction.
+End TxnResources.
 
 Module ParticipantServer.
   Definition S := struct.decl [
     "mu" :: lockRefT;
     "lockmap" :: struct.ptrT lockmap.LockMap.S;
     "kvs" :: mapT uint64T;
-    "txns" :: mapT (struct.t Transaction.S);
+    "txns" :: mapT (struct.t TxnResources.S);
     "finishedTxns" :: mapT boolT
   ].
 End ParticipantServer.
@@ -194,11 +188,9 @@ Definition ParticipantServer__PrepareIncrease: val :=
           lock.release (struct.loadF ParticipantServer.S "mu" "ps");;
           #1
         else
-          MapInsert (struct.loadF ParticipantServer.S "txns" "ps") "tid" (struct.mk Transaction.S [
-            "heldResource" ::= "key";
-            "oldValue" ::= Fst (MapGet (struct.loadF ParticipantServer.S "kvs" "ps") "key");
-            "operation" ::= OpIncrease;
-            "amount" ::= "amount"
+          MapInsert (struct.loadF ParticipantServer.S "txns" "ps") "tid" (struct.mk TxnResources.S [
+            "key" ::= "key";
+            "oldValue" ::= Fst (MapGet (struct.loadF ParticipantServer.S "kvs" "ps") "key")
           ]);;
           MapInsert (struct.loadF ParticipantServer.S "kvs" "ps") "key" (Fst (MapGet (struct.loadF ParticipantServer.S "kvs" "ps") "key") + "amount");;
           lock.release (struct.loadF ParticipantServer.S "mu" "ps");;
@@ -226,11 +218,9 @@ Definition ParticipantServer__PrepareDecrease: val :=
           lock.release (struct.loadF ParticipantServer.S "mu" "ps");;
           #1
         else
-          MapInsert (struct.loadF ParticipantServer.S "txns" "ps") "tid" (struct.mk Transaction.S [
-            "heldResource" ::= "key";
-            "oldValue" ::= Fst (MapGet (struct.loadF ParticipantServer.S "kvs" "ps") "key");
-            "operation" ::= OpDecrease;
-            "amount" ::= "amount"
+          MapInsert (struct.loadF ParticipantServer.S "txns" "ps") "tid" (struct.mk TxnResources.S [
+            "key" ::= "key";
+            "oldValue" ::= Fst (MapGet (struct.loadF ParticipantServer.S "kvs" "ps") "key")
           ]);;
           MapInsert (struct.loadF ParticipantServer.S "kvs" "ps") "key" (Fst (MapGet (struct.loadF ParticipantServer.S "kvs" "ps") "key") - "amount");;
           lock.release (struct.loadF ParticipantServer.S "mu" "ps");;
@@ -245,7 +235,7 @@ Definition ParticipantServer__Commit: val :=
       lock.release (struct.loadF ParticipantServer.S "mu" "ps");;
       #()
     else
-      lockmap.LockMap__Release (struct.loadF ParticipantServer.S "lockmap" "ps") (struct.get Transaction.S "heldResource" "t");;
+      lockmap.LockMap__Release (struct.loadF ParticipantServer.S "lockmap" "ps") (struct.get TxnResources.S "key" "t");;
       MapDelete (struct.loadF ParticipantServer.S "txns" "ps") "tid";;
       MapInsert (struct.loadF ParticipantServer.S "finishedTxns" "ps") "tid" #true;;
       lock.release (struct.loadF ParticipantServer.S "mu" "ps")).
@@ -259,8 +249,8 @@ Definition ParticipantServer__Abort: val :=
       lock.release (struct.loadF ParticipantServer.S "mu" "ps");;
       #()
     else
-      MapInsert (struct.loadF ParticipantServer.S "kvs" "ps") (struct.get Transaction.S "heldResource" "t") (struct.get Transaction.S "oldValue" "t");;
-      lockmap.LockMap__Release (struct.loadF ParticipantServer.S "lockmap" "ps") (struct.get Transaction.S "heldResource" "t");;
+      MapInsert (struct.loadF ParticipantServer.S "kvs" "ps") (struct.get TxnResources.S "key" "t") (struct.get TxnResources.S "oldValue" "t");;
+      lockmap.LockMap__Release (struct.loadF ParticipantServer.S "lockmap" "ps") (struct.get TxnResources.S "key" "t");;
       MapDelete (struct.loadF ParticipantServer.S "txns" "ps") "tid";;
       MapInsert (struct.loadF ParticipantServer.S "finishedTxns" "ps") "tid" #true;;
       lock.release (struct.loadF ParticipantServer.S "mu" "ps")).
@@ -271,7 +261,7 @@ Definition MakeParticipantServer: val :=
     struct.storeF ParticipantServer.S "mu" "s" (lock.new #());;
     struct.storeF ParticipantServer.S "lockmap" "s" (lockmap.MkLockMap #());;
     struct.storeF ParticipantServer.S "kvs" "s" (NewMap uint64T);;
-    struct.storeF ParticipantServer.S "txns" "s" (NewMap (struct.t Transaction.S));;
+    struct.storeF ParticipantServer.S "txns" "s" (NewMap (struct.t TxnResources.S));;
     struct.storeF ParticipantServer.S "finishedTxns" "s" (NewMap boolT).
 
 Module TransactionCoordinator.
