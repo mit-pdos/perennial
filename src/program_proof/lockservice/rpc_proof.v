@@ -7,7 +7,7 @@ From Perennial.goose_lang.ffi Require Import grove_ffi.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice_nocrash common_proof.
 From Perennial.program_proof.lockservice Require Export rpc.
-From Goose.github_com.mit_pdos.lockservice Require Import lockservice grove_common.
+From Goose.github_com.mit_pdos.lockservice Require Import grove_common.
 
 Section rpc_proof.
 Context `{!heapG Σ}.
@@ -208,7 +208,7 @@ Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc server_own
   coreFunction (into_val.to_val args)%V
 {{{ (r:u64), RET #r; server_own_core ∗ PostCond r }}}) -∗
 {{{ is_rpcserver sv γrpc server_own_core }}}
-  lockservice_nocrash.RPCServer__HandleRequest #sv coreFunction
+  RPCServer__HandleRequest #sv coreFunction
 {{{ f, RET f; is_rpcHandler f γrpc args req PreCond PostCond }}}.
 Proof.
   iIntros "#HfCoreSpec" (Φ) "!# #Hls Hpost".
