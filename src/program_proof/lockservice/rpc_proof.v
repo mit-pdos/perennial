@@ -1,6 +1,5 @@
 From stdpp Require Import gmap.
 From iris.algebra Require Import numbers.
-From iris.program_logic Require Export weakestpre.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.goose_lang.ffi Require Import grove_ffi.
