@@ -669,6 +669,131 @@ Proof.
   assumption.
 Qed.
 
+Lemma big_sepS_set_map `{Countable A, Countable B} (h : A → B) (s : gset A) (f : B → iProp Σ) :
+  (∀ x y, x ∈ s → y ∈ s → h x = h y → x = y) →
+  ([∗ set] x ∈ s, f (h x)) -∗ ([∗ set] x ∈ set_map h s, f x).
+Proof.
+  intros Hinj.
+  induction s as [|x s ? IH] using set_ind_L.
+  { by rewrite set_map_empty !big_opS_empty. }
+  rewrite set_map_union_L set_map_singleton_L.
+  rewrite !big_opS_union; [|set_solver..].
+  rewrite !big_opS_singleton IH //.
+  intros x' y' Hx_in Hy_in Heq.
+  apply Hinj.
+  1-2: set_solver.
+  assumption.
+Qed.
+
+Lemma na_crash_inv_alloc_map `{Countable A} {B} k E (P: A → B → iProp Σ) Q `{∀ a obj, Timeless (Q a obj)} m:
+  ▷ (
+    [∗ map] a ↦ obj ∈ m,
+      Q a obj
+  ) -∗
+  (
+    [∗ map] a ↦ obj ∈ m,
+      □ (▷ (Q a obj) -∗ |C={⊤}_k=> ▷ (P a obj))
+  ) -∗
+  |(S k)={E}=>
+  (
+    [∗ map] a ↦ obj ∈ m,
+      na_crash_inv (S k) (Q a obj) (P a obj)
+  ) ∗
+  <disc> |C={⊤}_(S k)=> ▷ (
+    [∗ map] a ↦ obj ∈ m,
+      P a obj
+  ).
+Proof.
+  iIntros "HQs #Hstatuses".
+  iInduction m as [|i x m] "IH" using map_ind;
+    first by (rewrite !big_sepM_empty; iSplitL; iModIntro; auto).
+  iMod "HQs".
+  iDestruct (big_sepM_insert with "HQs") as "[HQ HQs]";
+    first by assumption.
+  iDestruct (big_sepM_insert with "Hstatuses") as "[Hstatus Hstatuses']";
+    first by assumption.
+  iDestruct ("IH" with "Hstatuses' HQs") as "> [Hcrash_invs Hcrash_Ps]".
+  iDestruct (na_crash_inv_alloc with "HQ Hstatus")
+    as "> [Hcrash_inv Hcrash_P]".
+  iModIntro.
+  iSplitL "Hcrash_invs Hcrash_inv".
+  {
+    iApply big_sepM_insert; first by assumption.
+    iFrame.
+  }
+  iModIntro.
+  iMod "Hcrash_Ps".
+  iMod "Hcrash_P".
+  iIntros "!> !>".
+  iApply big_sepM_insert; first by assumption.
+  iFrame.
+Qed.
+
+Theorem twophase_init_locks {E} k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} mt γ :
+  "Hmapstos" ∷ (
+    [∗ map] a ↦ obj ∈ mt,
+      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
+      "Hex_mapsto" ∷ ex_mapsto a obj
+  ) ∗
+  "%Haddrs_valid" ∷ ⌜set_Forall valid_addr (dom (gset addr) mt)⌝
+  ={E}=∗
+  "Hlinvs" ∷ (
+    [∗ set] a ∈ set_map addr2flat (dom (gset addr) mt),
+      "Hlinv" ∷ twophase_linv_flat k ex_mapsto (objKind <$> mt) γ a
+  ).
+Proof.
+  iNamed 1.
+  iApply big_sepS_set_map.
+  {
+    intros a1 a2 Hin_a1 Hin_a2 Heq.
+    apply Haddrs_valid in Hin_a1.
+    apply Haddrs_valid in Hin_a2.
+    apply addr2flat_eq; assumption.
+  }
+  iApply big_sepM_dom.
+  iDestruct (big_sepM_sep with "Hmapstos")
+    as "[Hdurable_mapstos Hex_mapstos]".
+  iDestruct (big_sepM_sep with "Hdurable_mapstos")
+    as "[Htokens Hdurable_mapstos]".
+  iMod (
+    na_crash_inv_alloc_map _ _
+    (λ a _,
+      ∃ γ' obj',
+        twophase_crash_inv_pred ex_mapsto (objKind <$> mt) γ' a obj'
+    )%I
+    (twophase_crash_inv_pred ex_mapsto (objKind <$> mt) γ)
+    with "[Hdurable_mapstos Hex_mapstos] []"
+  ) as "[Hcrash_invs Hcrash]".
+  {
+    iModIntro.
+    iDestruct (big_sepM_sep with "[$Hdurable_mapstos $Hex_mapstos]")
+      as "Hmapstos".
+    iApply (big_sepM_mono with "Hmapstos").
+    iIntros (a obj Hacc) "[Hdurable_mapsto Hex_mapsto]".
+    iFrame.
+    iPureIntro.
+    apply lookup_fmap_Some.
+    eauto.
+  }
+  {
+    iApply big_sepM_forall.
+    iIntros (a obj Hacc) "!> Hpreds !> !>".
+    iExists _, _.
+    iFrame.
+  }
+  iDestruct (big_sepM_sep with "[$Hcrash_invs $Htokens]")
+    as "Hlinvs".
+  iApply (big_sepM_mono with "Hlinvs").
+  iIntros (a obj Hacc) "[Hcrash_inv Htoken]".
+  iExists _.
+  iSplit; last by auto.
+  iExists _.
+  iFrame.
+  iPureIntro.
+  apply lookup_fmap_Some.
+  eauto.
+Qed.
+
 Theorem wp_TwoPhase__Begin_raw (txnl locksl: loc) γ dinit k ex_mapsto ghs objs_spec :
   set_Forall valid_addr (dom (gset addr) objs_spec) →
   {{{
