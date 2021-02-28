@@ -281,7 +281,7 @@ Proof.
                ⊢ ctx_has_semTy Γ es e τ))
       (P0 := (λ Γ tph' vs v τ
              (HTYPE: atomic_body_val_transTy Γ tph' vs v τ), tph' = of_val #tph →
-               ⊢ atomically_val_interp τ vs v)); intros ->;
+               ⊢ spec_ctx -∗ atomically_val_interp τ vs v)); intros ->;
       try (iIntros (Γsubst HPROJ) "#Hspec #Hctx";
            iIntros (j e0 K Hctx) "Hj").
   - subst.
@@ -952,13 +952,54 @@ Proof.
   - admit.
   - admit.
   (* Value typing *)
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - iIntros "Hctx".
+    inversion a; subst; eauto.
+  - iIntros "#Hctx".
+    iPoseProof (IHHtyping with "[$]") as "Hv1"; eauto.
+    iPoseProof (IHHtyping0 with "[$]") as "Hv2"; eauto.
+    iExists _, _, _, _. iSplitL ""; first by eauto. iFrame.
+  - iIntros "#Hctx". iExists [], []. simpl. eauto.
+  - iIntros "#Hctx".
+    iPoseProof (IHHtyping with "[$]") as "Hv1"; eauto.
+    iPoseProof (IHHtyping0 with "[$]") as "Hv2"; eauto.
+    iDestruct "Hv2" as (l l' (->&->)) "H".
+    iExists (vhd :: l), (vhd' :: l').
+    iSplit; first eauto. iFrame.
+  - iIntros "#Hctx".
+    iLeft. iExists _, _.
+    iSplitL ""; first by eauto. iApply (IHHtyping with "[$]").
+    eauto.
+  - iIntros "#Hctx".
+    iRight. iExists _, _.
+    iSplitR ""; first by eauto. iApply (IHHtyping with "[$]").
+    eauto.
+  - iLöb as "IH".
+    rewrite /atomically_val_interp -/atomically_val_interp.
+    rewrite /atomically_arrowT_interp.
+    iIntros "#Hspec".
+    iExists _, _, _, _, _, _.
+    iSplitL ""; first by eauto. iModIntro.
+    iIntros (varg vsarg) "Hvarg".
+    iIntros (j e0 K Hctx) "Hj". simpl.
+    wpc_pures; first (iClear "# ∗"; auto).
+    iApply wp_wpc.
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
+                                             _ with "Hj") as "Hj".
+    { intros ?.
+      apply head_prim_step_trans'. repeat econstructor; eauto.
+    }
+
+    iPoseProof (ctx_has_semTy_subst with "[] []") as "H1".
+    { iApply IHHtyping. eauto. }
+    { simpl. iApply "IH". iApply "Hspec". }
+    iPoseProof (ctx_has_semTy_subst with "[] Hvarg") as "H2".
+    { iApply "H1". }
+    iSpecialize ("H2" $! ∅ with "[] [] [] [//] [Hj]").
+    { iPureIntro. apply: fmap_empty. }
+    { eauto. }
+    { iApply big_sepM_empty. eauto. }
+    { rewrite fmap_empty subst_map_empty. iFrame. }
+    rewrite fmap_empty subst_map_empty. iApply wpc_wp. eauto.
 Admitted.
 
 End reln_defs.

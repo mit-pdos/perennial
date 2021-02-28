@@ -40,8 +40,13 @@ Section translate.
   Local Reserved Notation "Γ @ t ⊢ e1 -- e2 : A" (at level 74, t, e1, e2, A at next level).
   Local Reserved Notation "Γ @ t ⊢v v1 -- v2 : A" (at level 74, t, v1, v2, A at next level).
 
-  (* TODO: (1) add a parameter for the binder for buftxn that we'll insert
-           (2) add the ext ops for ReadBuf/Overwrite *)
+  Inductive atomically_base_lit_hasTy : base_lit -> ty -> Prop :=
+  | uint64_hasTy x : atomically_base_lit_hasTy (LitInt x) uint64T
+  | uint32_hasTy x : atomically_base_lit_hasTy (LitInt32 x) uint32T
+  | byte_hasTy x : atomically_base_lit_hasTy (LitByte x) byteT
+  | bool_hasTy x : atomically_base_lit_hasTy (LitBool x) boolT
+  | unit_hasTy : atomically_base_lit_hasTy (LitUnit) unitT
+  | string_hasTy s : atomically_base_lit_hasTy (LitString s) stringT.
 
   Inductive atomic_body_expr_transTy (Γ: SCtx) (tph : iexpr) : sexpr -> iexpr -> sty -> Prop :=
   | var_transTy x t :
@@ -155,7 +160,7 @@ Section translate.
 
   with atomic_body_val_transTy (Γ: SCtx) (tph : iexpr) : sval -> ival -> sty -> Prop :=
   | val_base_lit_transTy v t :
-      base_lit_hasTy v t ->
+      atomically_base_lit_hasTy v t ->
       Γ @ tph ⊢v (LitV v) -- (LitV v) : t
   | val_pair_transTy v1 v1' v2 v2' t1 t2 :
       Γ @ tph ⊢v v1 -- v1' : t1 ->
