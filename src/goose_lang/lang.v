@@ -1333,6 +1333,40 @@ Proof.
   auto.
 Qed.
 
+Lemma head_prim_step_trans' e σ κ e' σ' efs :
+  head_step e σ κ e' σ' efs →
+  prim_step' e σ κ e' σ' efs.
+Proof. apply Ectx_step' with empty_ectx; by rewrite ?fill_empty. Qed.
+
+Definition head_reducible' (e : expr) (σ : state) :=
+  ∃ κ e' σ' efs, head_step e σ κ e' σ' efs.
+Definition head_irreducible' (e : expr) (σ : state) :=
+  ∀ κ e' σ' efs, ¬head_step e σ κ e' σ' efs.
+Definition reducible' (e : expr) (σ : state) :=
+  ∃ κ e' σ' efs, prim_step' e σ κ e' σ' efs.
+
+Lemma prim_head_reducible' e σ :
+  reducible' e σ → sub_redexes_are_values e → head_reducible' e σ.
+Proof.
+  intros (κ&e'&σ'&efs&[K e1' e2' -> -> Hstep]) Hsub.
+  assert (K = empty_ectx).
+  { apply val_head_stuck in Hstep.
+    eapply Hsub; eauto.
+  }
+  subst. rewrite //= /head_reducible. econstructor; eauto.
+Qed.
+
+Lemma not_reducible' e σ : ¬reducible' e σ ↔ irreducible' e σ.
+Proof. unfold reducible', irreducible'. naive_solver. Qed.
+Lemma not_head_reducible' e σ : ¬head_reducible' e σ ↔ head_irreducible' e σ.
+Proof. unfold head_reducible', head_irreducible'. naive_solver. Qed.
+
+Lemma prim_head_irreducible' e σ :
+  head_irreducible' e σ → sub_redexes_are_values e → irreducible' e σ.
+Proof.
+  rewrite -not_reducible' -not_head_reducible'; eauto using prim_head_reducible'.
+Qed.
+
 Class LanguageCtx' (K : expr → expr) : Prop :=
   { fill_not_val' : ∀ e, to_val e = None → to_val (K e) = None;
     fill_step' : ∀ e1 σ1 κ e2 σ2 efs,
@@ -1344,6 +1378,17 @@ Proof.
   - intros. eapply fill_not_val; eauto.
   - intros ?????? [K' e1' e2' Heq1 Heq2 Hstep].
     by exists (comp_ectx K K') e1' e2'; rewrite ?Heq1 ?Heq2 ?fill_comp.
+Qed.
+
+Instance comp_ctx' K K':
+  LanguageCtx' K →
+  LanguageCtx' K' →
+  LanguageCtx' (λ x, K' (K x)).
+Proof.
+  intros Hctx Hctx'.
+  split; intros.
+  - by do 2 apply fill_not_val'.
+  - by do 2 apply fill_step'.
 Qed.
 
 (* TODO(tej): I'm not convinced this is even true, we probably don't handle
@@ -1415,6 +1460,15 @@ Proof.
   apply ExternalOp_fill_item_inv in Heq; subst; auto.
 Qed.
 
+Lemma stuck_ExternalOp' σ o e:
+  is_Some (to_val e) →
+  head_irreducible' (ExternalOp o e) σ →
+  stuck' (ExternalOp o e) σ.
+Proof.
+  intros Hval Hirred. split; first done.
+  apply prim_head_irreducible'; auto. apply ExternalOp_sub_redexes; eauto.
+Qed.
+
 Lemma stuck_ExternalOp σ o e:
   is_Some (to_val e) →
   head_irreducible (ExternalOp o e) σ →
@@ -1422,6 +1476,16 @@ Lemma stuck_ExternalOp σ o e:
 Proof.
   intros Hval Hirred. split; first done.
   apply prim_head_irreducible; auto. apply ExternalOp_sub_redexes; eauto.
+Qed.
+
+Lemma stuck_Panic' σ msg:
+  stuck' (Primitive0 (PanicOp msg)) σ.
+Proof.
+  split; first done.
+  apply prim_head_irreducible'; auto.
+  * inversion 1; subst; eauto.
+  * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    apply Panic_fill_item_inv in Heq; subst; auto; by exfalso.
 Qed.
 
 Lemma stuck_Panic σ msg:

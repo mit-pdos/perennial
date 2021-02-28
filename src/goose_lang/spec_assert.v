@@ -941,6 +941,15 @@ Lemma tac_refine_bind (K: sexpr → sexpr) `{LanguageCtx _ K} (K' : list (ectxi_
   LanguageCtx (λ x, K (ectx_language.fill K' x)).
 Proof. rewrite //=. intros ->. split; auto. apply comp_ctx; auto. apply ectx_lang_ctx. Qed.
 
+Lemma tac_refine_bind' (K: sexpr → sexpr) {Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+                                             (ffi := (spec_ffi_model_field))
+                                             (ffi_semantics := (spec_ext_semantics_field))
+                                             K} (K' : list (ectxi_language.ectx_item _)) (e e': sexpr):
+  ectx_language.fill K' e' = e →
+  (K e = (λ x, K (ectx_language.fill K' x)) e') ∧
+  LanguageCtx' (λ x, K (ectx_language.fill K' x)).
+Proof. rewrite //=. intros ->. split; auto. apply comp_ctx'; auto. apply ectx_lang_ctx'. Qed.
+
 End tacs.
 
 (* Some duplication here with reshape_expr that is used in wp... the need for the duplication is

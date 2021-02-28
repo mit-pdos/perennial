@@ -28,25 +28,31 @@ Section proof.
 
   Definition val_of_obj (o : obj) := val_of_list ((λ u, LitV (LitByte u)) <$> o).
 
-  Definition is_twophase_pre N l γ γ' dinit objs_dom : iProp Σ :=
-    ∃ (txnl locksl : loc) ghs,
+  Parameter ex_mapsto : addr → object → iProp Σ.
+
+  (* XXX: seems like objs_spec should really be switched to a gmap in twophase_linv_flat ? *)
+  Definition is_twophase_pre N l (γ γ' : buftxn_names Σ) dinit objs_dom : iProp Σ :=
+    ∃ (txnl locksl : loc) ghs objs_spec,
       let objs_dom_blknos := get_addr_set_blknos objs_dom in
       "Histwophase_txnl" ∷ readonly (l ↦[TwoPhasePre.S :: "txn"] #txnl) ∗
       "Histwophase_locksl" ∷ readonly (l ↦[TwoPhasePre.S :: "locks"] #locksl) ∗
       "#Histxn_system" ∷ is_txn_system N γ ∗
       "#Histxn" ∷ is_txn txnl γ.(buftxn_txn_names) dinit ∗
-      "#HlockMap" ∷ is_lockMap locksl ghs objs_dom_blknos (twophase_linv γ objs_dom) ∗
-      "#Htxn_cinv" ∷ txn_cinv N γ γ'.
+      "#HlockMap" ∷ is_lockMap locksl ghs
+      (set_map addr2flat (dom (gset addr) objs_spec))
+      (twophase_linv_flat 0 ex_mapsto objs_spec γ).
 
   Definition is_twophase_started N l γ γ' dinit objs_dom j e1 e2 : iProp Σ :=
-    ∃ (txnl locksl : loc) ls ghs σj1 σj2,
+    ∃ (txnl locksl : loc) ls ghs σj1 σj2 objs_spec,
     let objs_dom_blknos := get_addr_set_blknos objs_dom in
     "Htwophase.txn" ∷ readonly (l ↦[TwoPhase.S :: "txn"] #txnl) ∗
     "Htwophase.locks" ∷ readonly (l ↦[TwoPhase.S :: "locks"] #locksl) ∗
     "%Halways_steps" ∷ ⌜ always_steps e1 σj1 e2 σj2 ⌝ ∗
     "#Histxn_system" ∷ is_txn_system N γ ∗
     "#Histxn" ∷ is_txn txnl γ.(buftxn_txn_names) dinit ∗
-    "#HlockMap" ∷ is_lockMap locksl ghs objs_dom_blknos (twophase_linv γ objs_dom) ∗
+    "#HlockMap" ∷ is_lockMap locksl ghs
+      (set_map addr2flat (dom (gset addr) objs_spec))
+      (twophase_linv_flat 0 ex_mapsto objs_spec γ) ∗
     "#Htxn_cinv" ∷ txn_cinv N γ γ' ∗
     "#Hspec_ctx" ∷ spec_ctx ∗
     "Hj" ∷ j ⤇ Atomically ls e1 ∗
@@ -55,13 +61,15 @@ Section proof.
     "Hlock_resources" ∷ True.
 
   Definition is_twophase_committed N l γ γ' dinit objs_dom : iProp Σ :=
-    ∃ (txnl locksl : loc) ghs (σj : gmap addr obj),
+    ∃ (txnl locksl : loc) ghs (σj : gmap addr obj) objs_spec,
     let objs_dom_blknos := get_addr_set_blknos objs_dom in
     "Htwophase.txn" ∷ readonly (l ↦[TwoPhase.S :: "txn"] #txnl) ∗
     "Htwophase.locks" ∷ readonly (l ↦[TwoPhase.S :: "locks"] #locksl) ∗
     "#Histxn_system" ∷ is_txn_system N γ ∗
     "#Histxn" ∷ is_txn txnl γ.(buftxn_txn_names) dinit ∗
-    "#HlockMap" ∷ is_lockMap locksl ghs objs_dom_blknos (twophase_linv γ objs_dom) ∗
+    "#HlockMap" ∷ is_lockMap locksl ghs
+      (set_map addr2flat (dom (gset addr) objs_spec))
+      (twophase_linv_flat 0 ex_mapsto objs_spec γ) ∗
     "#Htxn_cinv" ∷ txn_cinv N γ γ' ∗
     (* TODO: this should be at least all the na_crash_invs in σj1 and the ephemeral values
        for σj *)
@@ -106,7 +114,11 @@ Section proof.
 
   (* Among other things, this and the next spec are missing an assumption that
      the kind/size is correct, so they cannot be proven as is. *)
-  Theorem wp_TwoPhase__ReadBuf' N l γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} e1 a sz :
+  Theorem wp_TwoPhase__ReadBuf' N l γ γ' dinit objs_dom j K
+          {Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+                              (ffi := (spec_ffi_model_field))
+                              (ffi_semantics := (spec_ext_semantics_field))
+                              K} e1 a sz :
     {{{ is_twophase_started N l γ γ' dinit objs_dom j
                             e1
                             (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
@@ -117,7 +129,11 @@ Section proof.
                             e1 (K (val_of_obj' v)) }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__OverWrite' N l γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} e1 a ov :
+  Theorem wp_TwoPhase__OverWrite' N l γ γ' dinit objs_dom j K
+          {Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+                                             (ffi := (spec_ffi_model_field))
+                                             (ffi_semantics := (spec_ext_semantics_field))
+                                             K}  e1 a ov :
     {{{ is_twophase_started N l γ γ' dinit objs_dom j
                             e1
                             (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
@@ -126,6 +142,27 @@ Section proof.
     {{{  RET #();
         is_twophase_started N l γ γ' dinit objs_dom j
                             e1 (K #()) }}}.
+  Proof. Admitted.
+
+  Lemma twophase_started_step_puredet N l γ γ' dinit objs_dom j K
+        `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+                                             (ffi := (spec_ffi_model_field))
+                                             (ffi_semantics := (spec_ext_semantics_field))
+                                             K} e0 e1 e2:
+    (∀ σ, prim_step' e1 σ [] e2 σ []) →
+    is_twophase_started N l γ γ' dinit objs_dom j e0 (K e1) -∗
+    is_twophase_started N l γ γ' dinit objs_dom j e0 (K e2).
+  Proof. Admitted.
+
+  Lemma twophase_started_ub_det N l γ γ' dinit objs_dom E j K
+        `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+                                             (ffi := (spec_ffi_model_field))
+                                             (ffi_semantics := (spec_ext_semantics_field))
+                                             K} e0 e :
+    nclose sN ⊆ E →
+    (∀ s, stuck' e s) →
+    is_twophase_started N l γ γ' dinit objs_dom j e0 (K e)
+    -∗ |NC={E}=> False.
   Proof. Admitted.
 
 End proof.

@@ -751,6 +751,27 @@ Proof.
 Qed.
 
 Definition addr2val' (a : addr) : sval := (#(addrBlock a), (#(addrOff a), #()))%V.
+
+Lemma always_steps_lifting_puredet K `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+                                             (ffi := (spec_ffi_model_field))
+                                             (ffi_semantics := (spec_ext_semantics_field))
+                                             K}:
+  ∀ e0 σ0 e1 σ1 e2,
+  (∀ σ, prim_step' e1 σ [] e2 σ []) →
+  always_steps e0 σ0 (K e1) σ1 →
+  always_steps e0 σ0 (K e2) σ1.
+Proof.
+  intros e0 σ0 e1 σ1 e2 Hdet Hsteps.
+  split_and!; eauto.
+  { eapply Hsteps. }
+  { eapply Hsteps. }
+  intros s Hsub.
+  destruct Hsteps as (?&?&Hrtc).
+  specialize (Hrtc _ Hsub).
+  eapply rtc_r; eauto.
+  simpl. eapply fill_step'. eapply Hdet.
+Qed.
+
 Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
   wf_jrnl σj →
   jrnlData σj !! a = Some v →
