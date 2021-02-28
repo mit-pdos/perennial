@@ -16,7 +16,7 @@ From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Perennial.program_proof Require Import addr.addr_proof.
 From Perennial.program_proof Require Import twophase.typed_translate.
-From Perennial.program_proof Require Import twophase.twophase_refinement.
+From Perennial.program_proof Require Import twophase.twophase_refinement_defs.
 From Perennial.program_proof Require Import twophase.wrapper_proof.
 From Perennial.program_proof Require buftxn.sep_buftxn_proof.
 
@@ -69,7 +69,7 @@ Context `{hG: !heapG Σ}.
 Context `{!buftxnG Σ}.
 Context {hRG: refinement_heapG Σ}.
 Context (N: namespace).
-Context (SIZE: nat).
+Context (PARAMS: jrnlInit_params).
 Context (dinit : abstraction.disk).
 Context (objs_dom : gset addr_proof.addr).
 Context (γ γ': sep_buftxn_invariant.buftxn_names Σ).
@@ -81,7 +81,7 @@ Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semanti
 Definition atomically_has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) e0 (K: sexpr → sexpr) (CTX: LanguageCtx' K),
       is_twophase_started N tph γ γ' dinit objs_dom j e0 (K es) -∗
-      WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := jrnlTy_model SIZE)); ⊤
+      WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := jrnlTy_model)); ⊤
                     {{ v, ∃ vs, is_twophase_started N tph γ γ' dinit objs_dom j e0 (K (of_val vs)) ∗
                                 vty vs v }} {{ True }})%I.
 

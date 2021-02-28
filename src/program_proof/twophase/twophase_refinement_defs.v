@@ -1,10 +1,7 @@
 From Perennial.goose_lang.lib Require Import encoding crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
-(*
-From Perennial.program_proof Require Import twophase_proof.
-*)
-From Perennial.program_proof Require Import twophase.typed_translate.
+From Perennial.program_proof Require Import twophase.typed_translate twophase.wrapper_proof.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert.
 From Perennial.program_logic Require Import ghost_var.
@@ -13,15 +10,20 @@ From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 
 Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp jrnl_spec_interp_adequacy.
 
-Section refinement.
+Class jrnlInit_params :=
+  {
+    SIZE : nat;
+    SIZE_nonzero : 0 < SIZE;
+    SIZE_bounds: int.nat SIZE = SIZE
+  }.
+
+Section refinement_defs.
 Context `{!heapG Σ}.
 Context `{!refinement_heapG Σ}.
 Context `{stagedG Σ}.
 
 Existing Instance jrnlG0.
-Context (SIZE: nat).
-Context (SIZE_nonzero: 0 < SIZE).
-Context (SIZE_bounds: int.nat SIZE = SIZE).
+Context {PARAMS: jrnlInit_params}.
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
@@ -55,7 +57,7 @@ Definition jrnl_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG 
   λ vspec vimpl, False%I.
 
 Instance jrnlTy_model : specTy_model jrnl_ty.
-Proof using SIZE.
+Proof using PARAMS.
  refine
   {| styG := jrnlG;
      sty_names := jrnl_names;
@@ -132,8 +134,7 @@ Admitted.
 
 Lemma jrnl_crash_inv_obligation:
   @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model.
-Proof using SIZE.
-  clear SIZE_bounds SIZE_nonzero.
+Proof using PARAMS.
   rewrite /sty_crash_inv_obligation//=.
   iIntros (? hG hRG hJrnl e Φ) "Hinit Hspec Hwand".
   rewrite /jrnl_inv/jrnl_init/jrnl_inv.
@@ -141,16 +142,14 @@ Admitted.
 
 Lemma jrnl_crash_obligation:
   @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model.
-Proof using SIZE.
-  clear SIZE_bounds.
+Proof using PARAMS.
   rewrite /sty_crash_obligation//=.
   iIntros (? hG hRG hJrnl) "Hinv Hcrash_cond".
 Admitted.
 
 Lemma jrnl_atomic_obligation:
   @sty_atomic_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model jrnl_atomic_transTy.
-Proof using SIZE.
-  clear SIZE_bounds.
+Proof using PARAMS.
   rewrite /sty_atomic_obligation//=.
   iIntros (? hG hRG hJrnl el1 el2 tl e1 e2 t Γsubst Htrans) "Hinv Hspec Htrace HΓ HhasTy".
 Admitted.
@@ -171,5 +170,4 @@ Proof.
                                  jrnl_crash_inv_obligation, jrnl_crash_obligation,
                                  jrnl_rules_obligation, jrnl_atomic_obligation.
 Qed.
-
-End refinement.
+End refinement_defs.
