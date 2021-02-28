@@ -112,8 +112,6 @@ Section proof.
     {{{ RET #(); True }}}.
   Proof. Admitted.
 
-  (* Among other things, this and the next spec are missing an assumption that
-     the kind/size is correct, so they cannot be proven as is. *)
   Theorem wp_TwoPhase__ReadBuf' N l γ γ' dinit objs_dom j K
           {Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
                               (ffi := (spec_ffi_model_field))
@@ -123,7 +121,7 @@ Section proof.
                             e1
                             (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                                            ReadBufOp (PairV (addr2val' a) #sz))) }}}
-      TwoPhase__ReadBuf' #l (addr2val a) #sz
+      TwoPhase__ReadBuf' #l (addr2val a, #sz)
     {{{ v, RET (val_of_obj v);
         is_twophase_started N l γ γ' dinit objs_dom j
                             e1 (K (val_of_obj' v)) }}}.
@@ -137,8 +135,8 @@ Section proof.
     {{{ is_twophase_started N l γ γ' dinit objs_dom j
                             e1
                             (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
-                                           OverWriteOp (addr2val' a, val_of_obj' ov))) }}}
-      TwoPhase__OverWrite' #l (addr2val a) (val_of_obj ov)
+                                           OverWriteOp (PairV (addr2val' a) (val_of_obj' ov)))) }}}
+      TwoPhase__OverWrite' #l (addr2val a, val_of_obj ov)
     {{{  RET #();
         is_twophase_started N l γ γ' dinit objs_dom j
                             e1 (K #()) }}}.

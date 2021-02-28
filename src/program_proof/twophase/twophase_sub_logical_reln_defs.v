@@ -14,6 +14,7 @@ From Perennial.Helpers Require List.
 
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
+From Perennial.program_proof Require Import addr.addr_proof.
 From Perennial.program_proof Require Import twophase.typed_translate.
 From Perennial.program_proof Require Import twophase.twophase_refinement.
 From Perennial.program_proof Require Import twophase.wrapper_proof.
@@ -184,6 +185,43 @@ Proof.
   apply big_sepM_persistent => ??. apply atomically_val_interp_pers.
 Qed.
 
+Lemma atomically_listT_interp_refl_obj v :
+  ⊢ atomically_listT_interp byteT atomically_val_interp (val_of_obj' v) (val_of_obj v).
+Proof.
+  induction v => //=.
+  - rewrite /atomically_listT_interp. iExists [], []. eauto.
+  - rewrite /atomically_listT_interp.
+    iDestruct IHv as (lvs lv (Heq1&Heq2)) "H".
+    simpl.
+    rewrite /val_of_obj/val_of_obj' ?fmap_cons //= -/val_of_obj/val_of_obj'.
+    iExists (_ :: lvs), (_ :: lv). rewrite //=.
+    iSplit.
+    { iPureIntro. rewrite /val_of_obj'/val_of_obj in Heq1 Heq2. split; f_equal; f_equal; eauto. }
+    eauto.
+Qed.
+
+Lemma atomically_listT_interp_obj_inv vs v :
+  atomically_listT_interp byteT atomically_val_interp vs v -∗
+  ⌜ ∃ o, vs = val_of_obj' o ∧ v = val_of_obj o ⌝.
+Proof.
+  iIntros "H".
+  iDestruct "H" as (lvs lv) "H". iDestruct "H" as ((Heq1&Heq2)) "H".
+  subst.
+  iInduction lvs as [| a lvs] "IH" forall (lv).
+  { destruct lv as [| a lv].
+    - iExists []. eauto.
+    - rewrite /atomically_listT_interp_aux. iDestruct "H" as %[].
+  }
+  destruct lv as [| a' lv].
+  { rewrite /atomically_listT_interp_aux. iDestruct "H" as %[]. }
+  rewrite /atomically_listT_interp_aux -/atomically_listT_interp_aux.
+  iDestruct "H" as "(Heq&H)".
+  iDestruct ("IH" with "[$]") as %[o (Heq1&Heq2)].
+  iDestruct "Heq" as %[? [-> ->]].
+  iExists (_ :: o).
+  rewrite //= /val_of_obj/val_of_obj' ?fmap_cons //=.
+  iPureIntro. rewrite /val_of_obj'/val_of_obj in Heq1 Heq2. split; f_equal; f_equal; eauto.
+Qed.
 
 (*
 Arguments val_interp {ext ffi ffi_semantics interp spec_ext spec_ffi spec_ffi_semantics spec_interp _ Σ hG hRG
@@ -949,8 +987,77 @@ Proof.
       iExists _. iFrame.
     }
   (* Journal operations *)
-  - admit.
-  - admit.
+  - subst. simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
+    iSpecialize ("H" $! j _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    iPoseProof (IHHtyping2 with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e2').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e2) as Hctx'.
+    iSpecialize ("H" $! j _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    clear Hctx'.
+    simpl.
+    iDestruct "Hv2" as %[? [Heq1 Heq2]].
+    subst.
+    iDestruct "Hv1" as %(?&?&?&?&(Heq1&Heq2)&(a&Heqa&Heqa')&Hrest).
+    destruct Hrest as (?&?&?&?&(->&->)&Hrest). subst.
+    destruct Hrest as ((o&?&?)&?&?). subst.
+    replace (#a, (#o, #()))%V with (addr2val (a,o)) by auto.
+    replace (#a, (#o, #()))%V with (addr2val' (a,o)) by auto.
+    iApply wp_wpc.
+    spec_bind (addr2val' (a, o)%core, #x)%E as Hctx'.
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
+                 (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) with "Hj") as "Hj".
+    { intros ?.
+      apply head_prim_step_trans'. repeat econstructor; eauto.
+    }
+    iPoseProof (wp_TwoPhase__ReadBuf' _ tph _ _ _ _ _ _ _ (a, o) x with "Hj") as "H".
+    iApply "H".
+    iNext. iIntros (v) "H". iExists _. iFrame.
+    iApply atomically_listT_interp_refl_obj.
+  - subst. simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
+    iSpecialize ("H" $! j _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    iPoseProof (IHHtyping2 with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e2').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e2) as Hctx'.
+    iSpecialize ("H" $! j _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    clear Hctx'.
+    simpl.
+    iDestruct "Hv1" as %(?&?&?&?&(Heq1&Heq2)&(a&Heqa&Heqa')&Hrest).
+    destruct Hrest as (?&?&?&?&(->&->)&Hrest). subst.
+    destruct Hrest as ((o&?&?)&?&?). subst.
+    replace (#a, (#o, #()))%V with (addr2val (a,o)) by auto.
+    replace (#a, (#o, #()))%V with (addr2val' (a,o)) by auto.
+    iApply wp_wpc.
+    iDestruct (atomically_listT_interp_obj_inv with "Hv2") as %[v [-> ->]].
+    spec_bind (addr2val' (a, o)%core, (val_of_obj' v))%E as Hctx'.
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
+                 (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) with "Hj") as "Hj".
+    { intros ?.
+      apply head_prim_step_trans'. repeat econstructor; eauto.
+    }
+    iPoseProof (wp_TwoPhase__OverWrite' _ tph _ _ _ _ _ _ _ (a, o) v with "Hj") as "H".
+    iApply "H".
+    iNext. iIntros "H". iExists _. iFrame.
+    eauto.
   (* Value typing *)
   - iIntros "Hctx".
     inversion a; subst; eauto.
@@ -1000,7 +1107,7 @@ Proof.
     { iApply big_sepM_empty. eauto. }
     { rewrite fmap_empty subst_map_empty. iFrame. }
     rewrite fmap_empty subst_map_empty. iApply wpc_wp. eauto.
-Admitted.
+Qed.
 
 End reln_defs.
 End reln.

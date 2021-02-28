@@ -24,12 +24,12 @@ Module TwoPhasePre.
 End TwoPhasePre.
 
 Definition TwoPhase__ReadBuf' : val :=
-  λ: "twophase" "addr" "sz", SliceToList byteT (TwoPhase__ReadBuf "twophase" "addr" "sz").
+  λ: "twophase" "az", SliceToList byteT (TwoPhase__ReadBuf "twophase" (Fst "az") (Snd "az")).
 
 Definition TwoPhase__OverWrite' : val :=
-  λ: "twophase" "addr" "data",
-  let: "s" := ListToSlice byteT "data" in
-  TwoPhase__OverWrite "twophase" "addr" "s" (slice.len "s").
+  λ: "twophase" "ad",
+  let: "s" := ListToSlice byteT (Snd "ad") in
+  TwoPhase__OverWrite "twophase" (Fst "ad") "s" (slice.len "s").
 
 (* XXX: todo: this should call a wrapped version of MkTxn that also allocates
 the lockmap and returns a struct containing both *)

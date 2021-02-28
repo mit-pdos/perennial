@@ -150,11 +150,11 @@ Section translate.
   | readbuf_transTy e1 e1' e2 e2' :
       Γ @ tph ⊢ e1 -- e1' : addrT ->
       Γ @ tph ⊢ e2-- e2' : uint64T ->
-      Γ @ tph ⊢ ExternalOp (ext := spec_op) ReadBufOp e1 e2 -- (TwoPhase__ReadBuf' tph e1' e2') : listT byteT
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) ReadBufOp (e1, e2) -- (TwoPhase__ReadBuf' tph (e1', e2')%E) : listT byteT
   | overwrite_transTy e1 e1' e2 e2' :
       Γ @ tph ⊢ e1 -- e1' : addrT ->
       Γ @ tph ⊢ e2 -- e2' : listT byteT ->
-      Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteOp e1 e2 -- (TwoPhase__OverWrite' tph e1' e2') : unitT
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteOp (e1, e2) -- (TwoPhase__OverWrite' tph (e1', e2')%E) : unitT
 
   where "Γ @ tph ⊢ e1 -- e2 : A" := (atomic_body_expr_transTy Γ tph e1 e2 A)
 
