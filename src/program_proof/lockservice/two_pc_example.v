@@ -358,7 +358,7 @@ Definition ps_mu_inv (ps:loc) γ : iProp Σ :=
     "Hkvs_ctx" ∷ ([∗ set] k ∈ (fin_to_set u64), kv_ctx γ kvsM k) ∗
     "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ k, kv_tok γ k) ∗
 
-    "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, prepared γ.(ps_tpc) tid ) ∗
+    "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, prepared γ.(ps_tpc) tid ∗ (∃ x, txn_unknown_is γ.(ps_tpc) tid x)) ∗
     (* TODO: need to add post-abort resources *)
     "Htxns_postcommit" ∷ ([∗ map] tid ↦ txn ∈ txnsM, kv_tok γ txn.(key) ∗ (committed γ.(ps_tpc) tid ={⊤}=∗ (txn.(key) [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM txn.(key)).1))) ∗
     "Hfreshtxns" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ ⌜tid ∈ dom (gset u64) txnsM⌝ ∨ (do_prepare γ.(ps_tpc) tid ∗ unfinished γ.(ps_tpc) tid ∗ txn_unknown γ.(ps_tpc) tid))) ∗
@@ -372,6 +372,54 @@ Definition is_participant (ps:loc) γ : iProp Σ :=
   "#Hmu" ∷ readonly (ps ↦[ParticipantServer.S :: "mu"] #mu) ∗
   "#Hmu_inv" ∷ is_lock participantN #mu (ps_mu_inv ps γ)
 .
+
+Lemma txn_single_forget_unknown γ tid pid R R' x :
+  is_txn_single_unknown γ.(ps_tpc) tid pid R R' -∗
+  txn_unknown_is γ.(ps_tpc) tid x -∗
+  is_txn_single γ.(ps_tpc) tid pid (R x) (R' x)
+.
+Proof.
+  iIntros "? #Hunknown".
+  iApply (inv_alter with "[$]").
+  repeat iModIntro.
+  iIntros "Hi".
+  iSplitR "".
+  {
+    iDestruct "Hi" as "[Hunprep|Hi]".
+    { iLeft. iFrame. }
+    iDestruct "Hi" as "[Hundec|Hi]".
+    { iRight. iLeft. iDestruct "Hundec" as "[$ [Hundec|$]]".
+      iLeft.
+      iDestruct "Hundec" as (?) "[HR #Hunknown2]".
+      iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %Hre.
+      rewrite Hre.
+      iFrame.
+    }
+    iDestruct "Hi" as "[Hcom|$]".
+    {
+      iRight. iRight. iLeft.
+      iDestruct "Hcom" as "[$ [HR'|$]]".
+      iLeft.
+      iDestruct "HR'" as (?) "[HR' #Hunknown2]".
+      iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %->.
+      iFrame.
+    }
+  }
+  {
+    iIntros "Hi".
+    iDestruct "Hi" as "[$|Hi]".
+    iDestruct "Hi" as "[Hundec|Hi]".
+    {
+      iRight; iLeft. iDestruct "Hundec" as "[$ [HR|$]]".
+      iLeft. iExists _; iFrame "#∗".
+    }
+    iDestruct "Hi" as "[Hcom|$]".
+    {
+      iRight; iRight; iLeft. iDestruct "Hcom" as "[$ [HR|$]]".
+      iLeft. iExists _; iFrame "#∗".
+    }
+  }
+Qed.
 
 Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ (key amnt:u64) :
   {{{
@@ -400,8 +448,21 @@ Proof.
   wp_pures.
   wp_if_destruct.
   {
-    (* Use Htxns_prepared *)
-    admit.
+    apply map_get_true in Hmapget.
+    iDestruct (big_sepM_lookup_acc with "Htxns_prop_pers") as "[[Hprep Hunknown] _]".
+    { done. }
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
+    {
+      iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
+      done.
+    }
+    wp_pures.
+    iApply "HΦ".
+    iRight. iFrame "#".
+    iSplitL ""; first done.
+    iDestruct "Hunknown" as (x) "Hunknown".
+    iExists x.
+    iApply (txn_single_forget_unknown with "Htxn Hunknown").
   }
   wp_loadField.
   wp_apply (wp_MapGet with "HfinishedTxnsMap").
@@ -468,7 +529,9 @@ Proof.
   iDestruct (big_sepS_elem_of_acc_impl key with "Hkvs_ctx") as "[Hptsto Hkvs_ctx]".
   { set_solver. }
   iDestruct "Hptsto" as "[Hptsto|Hbad]"; last first.
-  { admit. (* conflict Hbad Hkeylocked *) }
+  { iExFalso.
+    rewrite /Locked.
+    admit. (* conflict Hbad Hkeylocked *) }
   iSpecialize ("Hkvs_ctx" $! (λ k, kv_ctx γ (typed_map.map_insert kvsM key (word.add old_v4 amnt)) k)%I with "[] [Hkeylocked]").
   { iModIntro. iIntros.
     unfold kv_ctx.
@@ -508,6 +571,8 @@ Proof.
       rewrite Hmapget_v3.
       simpl.
       iFrame "His_prep".
+      iSplitL "".
+      { iExists _; iFrame "#". }
       iApply (big_sepM_impl with "Htxns_prop_pers").
       iModIntro. iIntros.
       iFrame "#".
@@ -583,48 +648,8 @@ Proof.
   iRight.
   iSplitL ""; first done.
   iExists ((map_get kvsM key).1).
-
-  (* TODO: make this a lemma *)
-  iApply (inv_alter with "Htxn").
-  repeat iModIntro.
-  iIntros "Hi".
-  iSplitR "".
-  {
-    iDestruct "Hi" as "[Hunprep|Hi]".
-    { iLeft. iFrame. }
-    iDestruct "Hi" as "[Hundec|Hi]".
-    { iRight. iLeft. iDestruct "Hundec" as "[$ [Hundec|$]]".
-      iLeft.
-      iDestruct "Hundec" as (?) "[HR #Hunknown2]".
-      iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %Hre.
-      rewrite Hre.
-      iFrame.
-    }
-    iDestruct "Hi" as "[Hcom|$]".
-    {
-      iRight. iRight. iLeft.
-      iDestruct "Hcom" as "[$ [HR'|$]]".
-      iLeft.
-      iDestruct "HR'" as (?) "[HR' #Hunknown2]".
-      iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %->.
-      iFrame.
-    }
-  }
-  {
-    iIntros "Hi".
-    iDestruct "Hi" as "[$|Hi]".
-    iDestruct "Hi" as "[Hundec|Hi]".
-    {
-      iRight; iLeft. iDestruct "Hundec" as "[$ [HR|$]]".
-      iLeft. iExists _; iFrame "#∗".
-    }
-    iDestruct "Hi" as "[Hcom|$]".
-    {
-      iRight; iRight; iLeft. iDestruct "Hcom" as "[$ [HR|$]]".
-      iLeft. iExists _; iFrame "#∗".
-    }
-  }
-Admitted.
+  iApply (txn_single_forget_unknown with "Htxn Hunknown").
+Qed.
 
 Lemma wp_Participant__Commit (ps:loc) tid pid key oldv op amnt γ γtpc :
   {{{
