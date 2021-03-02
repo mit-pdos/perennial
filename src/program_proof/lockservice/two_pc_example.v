@@ -283,6 +283,10 @@ Definition is_txn_single_unknown γtpc (tid pid:u64) R R' : iProp Σ := is_txn_s
   (∃ x, R' x ∗ txn_unknown_is γtpc tid x)%I
 .
 
+Lemma txn_unknown_is_agree γtpc tid x y:
+  txn_unknown_is γtpc tid x -∗ txn_unknown_is γtpc tid y -∗ ⌜x = y⌝.
+Admitted.
+
 (* Proof of participant code *)
 Instance unit_IntoVal : into_val.IntoVal ().
 Proof.
@@ -355,9 +359,9 @@ Definition ps_mu_inv (ps:loc) γ : iProp Σ :=
     "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ k, kv_tok γ k) ∗
 
     "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, prepared γ.(ps_tpc) tid ) ∗
-    "Htxns_postcommit" ∷ ([∗ map] tid ↦ txn ∈ txnsM, kv_tok γ txn.(key) ∗ (committed γ.(ps_tpc) tid -∗ (txn.(key) [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM txn.(key)).1))) ∗
-    "Hunfinisheds" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ unfinished γ.(ps_tpc) tid)) ∗
-    "Hdopreps" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ ⌜tid ∈ dom (gset u64) txnsM⌝ ∨ (do_prepare γ.(ps_tpc) tid ∗ txn_unknown γ.(ps_tpc) tid))) ∗
+    (* TODO: need to add post-abort resources *)
+    "Htxns_postcommit" ∷ ([∗ map] tid ↦ txn ∈ txnsM, kv_tok γ txn.(key) ∗ (committed γ.(ps_tpc) tid ={⊤}=∗ (txn.(key) [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM txn.(key)).1))) ∗
+    "Hfreshtxns" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ ⌜tid ∈ dom (gset u64) txnsM⌝ ∨ (do_prepare γ.(ps_tpc) tid ∗ unfinished γ.(ps_tpc) tid ∗ txn_unknown γ.(ps_tpc) tid))) ∗
     "%" ∷ ⌜(dom (gset u64) txnsM) ## dom (gset u64) finishedTxnsM⌝
 .
 
@@ -376,7 +380,9 @@ Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ (key amnt:u64) :
   }}}
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
   {{{
-       (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γ.(ps_tpc) tid
+       (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ (⌜a = 0⌝ ∗ prepared γ.(ps_tpc) tid ∗
+       ∃ ov, is_txn_single γ.(ps_tpc) tid pid (key [[γ.(ps_kvs)]]↦{3/4} ov) (key [[γ.(ps_kvs)]]↦{3/4} (word.add ov amnt))
+       )
   }}}.
 Proof.
   iIntros (Φ) "[#Hps #Htxn] HΦ".
@@ -403,7 +409,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* Transaction already finished *)
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hdopreps Hunfinisheds Htxns_postcommit]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -431,7 +437,7 @@ Proof.
     (* Unsafe increase *)
     wp_loadField. wp_apply (wp_LockMap__Release with "[$HlockMap $Hkeylocked $Hktok]").
     wp_pures.
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hdopreps Hunfinisheds Htxns_postcommit]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -479,28 +485,20 @@ Proof.
   }
 
   (* Get unused unfinished token *)
-  iDestruct (big_sepS_elem_of_acc _ _ tid with "Hunfinisheds") as "[Hunfinish Hunfinished_rest]".
+  iDestruct (big_sepS_elem_of_acc_impl tid with "Hfreshtxns") as "[Hfreshtxn Hfreshtxns]".
   { set_solver. }
-  iDestruct "Hunfinish" as "[%Hbad|Hunfinish]".
+  iDestruct "Hfreshtxn" as "[%Hbad|Hfreshtxn]".
   { exfalso. apply map_get_false in Hmapget_finished as [Hbad2 _].
     apply (not_elem_of_dom finishedTxnsM) in Hbad2. set_solver. }
-
-  iDestruct (big_sepS_elem_of_acc_impl tid with "Hdopreps") as "[Hdoprep Hdopreps]".
-  { set_solver. }
-  iDestruct "Hdoprep" as "[%Hbad|Hdoprep]".
-  { exfalso. apply map_get_false in Hmapget_finished as [Hbad2 _].
-    apply (not_elem_of_dom finishedTxnsM) in Hbad2. set_solver. }
-  iDestruct "Hdoprep" as "[%Hbad|Hdoprep]".
+  iDestruct "Hfreshtxn" as "[%Hbad|Hfreshtxn]".
   { exfalso. apply map_get_false in Hmapget as [Hbad2 _].
     apply (not_elem_of_dom txnsM) in Hbad2. set_solver. }
-  iDestruct "Hdoprep" as "[Hdoprep Hunknown]".
+  iDestruct "Hfreshtxn" as "(Hdoprep & Hunfinish & Hunknown)".
   iMod (txn_unknown_choose with "Hunknown") as "#Hunknown".
   iMod (participant_prepare with "Htxn [Hptsto] Hdoprep Hunfinish") as "[#His_prep Hunfinish]".
   { done. }
   { iNext. iExists _; iFrame "Hptsto". iFrame "Hunknown". }
-  iDestruct ("Hunfinished_rest" with "[Hunfinish]") as "Hunfinisheds".
-  { iRight. iFrame. }
-  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hdopreps Hunfinisheds Hktok Htxns_postcommit]").
+  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Hktok Htxns_postcommit Hunfinish]").
   {
     iNext. iExists _, _, _,_,_,_,_; iFrame "HkvsMap HtxnsMap #∗".
     iSplitL "".
@@ -514,7 +512,7 @@ Proof.
       iModIntro. iIntros.
       iFrame "#".
     }
-    iSplitL "Htxns_postcommit Hktok".
+    iSplitL "Htxns_postcommit Hktok Hunfinish".
     { (* Need to have local lock on key and post-commit resources for all in-progress txns *)
       iAssert (∀ tid txn, ⌜txnsM !! tid = Some txn⌝ → ⌜txn.(tpc_example.key) = key⌝ → False)%I with "[Hktok Htxns_postcommit]" as %Hnewkey.
       {
@@ -525,15 +523,24 @@ Proof.
         iApply (kv_tok_2_false with "[$] [$]").
       }
       rewrite /typed_map.map_insert.
-      iApply (big_sepM_insert_2 with "[Hktok] [Htxns_postcommit]").
+      iApply (big_sepM_insert_2 with "[Hktok Hunfinish] [Htxns_postcommit]").
       {
+        rewrite Hmapget_v3.
         simpl.
         iFrame.
         replace (old_v4) with (old_v3); last first.
         { rewrite Hmapget_v3 in Hmapget_oldv4.
           naive_solver. }
+        iIntros.
         (* make the wand a fupd *)
-        admit.
+        iMod (prepared_participant_finish_commit with "Htxn [$] Hunfinish") as "HR'".
+        { done. }
+        iMod "HR'".
+        iDestruct "HR'" as (?) "[Hkey #Hunknown2]".
+        rewrite lookup_insert /=.
+        iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %->.
+        iFrame.
+        by iModIntro.
       }
       {
         iApply (big_sepM_impl with "Htxns_postcommit").
@@ -544,9 +551,9 @@ Proof.
         iFrame.
       }
     }
-    iSplitL "Hdopreps".
+    iSplitL "Hfreshtxns".
     {
-      iApply "Hdopreps".
+      iApply "Hfreshtxns".
       {
         iModIntro.
         iIntros (???) "[%Hcase|[%Hcase|Hcase]]".
@@ -569,11 +576,54 @@ Proof.
     { apply not_elem_of_dom. naive_solver. }
     set_solver.
   }
+  iApply wp_fupd.
   wp_pures.
   iApply "HΦ".
   iFrame "His_prep".
   iRight.
-  done.
+  iSplitL ""; first done.
+  iExists ((map_get kvsM key).1).
+
+  (* TODO: make this a lemma *)
+  iApply (inv_alter with "Htxn").
+  repeat iModIntro.
+  iIntros "Hi".
+  iSplitR "".
+  {
+    iDestruct "Hi" as "[Hunprep|Hi]".
+    { iLeft. iFrame. }
+    iDestruct "Hi" as "[Hundec|Hi]".
+    { iRight. iLeft. iDestruct "Hundec" as "[$ [Hundec|$]]".
+      iLeft.
+      iDestruct "Hundec" as (?) "[HR #Hunknown2]".
+      iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %Hre.
+      rewrite Hre.
+      iFrame.
+    }
+    iDestruct "Hi" as "[Hcom|$]".
+    {
+      iRight. iRight. iLeft.
+      iDestruct "Hcom" as "[$ [HR'|$]]".
+      iLeft.
+      iDestruct "HR'" as (?) "[HR' #Hunknown2]".
+      iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %->.
+      iFrame.
+    }
+  }
+  {
+    iIntros "Hi".
+    iDestruct "Hi" as "[$|Hi]".
+    iDestruct "Hi" as "[Hundec|Hi]".
+    {
+      iRight; iLeft. iDestruct "Hundec" as "[$ [HR|$]]".
+      iLeft. iExists _; iFrame "#∗".
+    }
+    iDestruct "Hi" as "[Hcom|$]".
+    {
+      iRight; iRight; iLeft. iDestruct "Hcom" as "[$ [HR|$]]".
+      iLeft. iExists _; iFrame "#∗".
+    }
+  }
 Admitted.
 
 Lemma wp_Participant__Commit (ps:loc) tid pid key oldv op amnt γ γtpc :
