@@ -44,7 +44,7 @@ Proof.
   specialize (Hwand n' y Hle Hvalprod' HP).
   destruct (Hcore_incl) as (z&Heqz).
   destruct (Hwand) as (a0&Heqa).
-  rewrite Heqa in Heqz * => Heqz.
+  revert Heqz; rewrite Heqa => Heqz.
   exists (uPred_ownM (a0 ⋅ z)).
   split; last first.
   {

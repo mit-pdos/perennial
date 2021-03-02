@@ -532,7 +532,7 @@ Section na_heap.
       { apply lookup_union_None. split; last first.
         { replace off with (off + O)%Z by lia. eapply Hrange_empty. lia. }
         destruct (_ !! addr_plus_off l off) as [(lk'&?)|] eqn:Hlookup; auto.
-        rewrite heap_array_lookup in Hlookup * => Heq.
+        revert Hlookup; rewrite heap_array_lookup => Heq.
         destruct Heq as (j&Hnonneg&Hplus&Hlookup).
         rewrite addr_plus_plus in Hplus.
         apply (inj (addr_plus_off l)) in Hplus. lia.
@@ -542,7 +542,7 @@ Section na_heap.
         apply lookup_union_None. split; last first.
         { eauto. }
         destruct (heap_array (addr_plus_off l (off + 1)) _ !! addr_base l) as [(lk'&?)|] eqn:Hlookup; auto.
-        rewrite heap_array_lookup in Hlookup * => Heq.
+        revert Hlookup; rewrite heap_array_lookup => Heq.
         destruct Heq as (j&Hnonneg&Hplus&Hlookup).
         rewrite addr_plus_plus in Hplus.
         apply (f_equal addr_offset) in Hplus.
@@ -580,7 +580,7 @@ Section na_heap.
       { simpl; lia. }
       { intros. apply lookup_union_None; split.
         * destruct (heap_array (addr_plus_off l 1) _ !! addr_plus_off l z') as [(lk'&?)|] eqn:Heq; last auto.
-          rewrite heap_array_lookup in Heq * => Heq.
+          revert Heq; rewrite heap_array_lookup => Heq.
           destruct Heq as (j&Hnonneg&Hplus&Hlookup).
           rewrite addr_plus_plus in Hplus.
           apply (inj (addr_plus_off l)) in Hplus.
@@ -591,7 +591,7 @@ Section na_heap.
       }
       { intros. apply lookup_union_None; split.
         * destruct (heap_array (addr_plus_off l 1) _ !! l) as [(lk'&?)|] eqn:Heq; last auto.
-          rewrite heap_array_lookup in Heq * => Heq.
+          revert Heq; rewrite heap_array_lookup => Heq.
           destruct Heq as (j&Hnonneg&Hplus&Hlookup).
           rewrite addr_plus_plus in Hplus.
           apply (f_equal addr_offset) in Hplus.
@@ -693,7 +693,7 @@ Section na_heap.
     iDestruct "Hwf" as %Hwf.
     iPureIntro. move: Hl=> /singleton_included_l [H' [Hlook Hincl]].
     move: Hlook. rewrite /to_na_heap lookup_fmap fmap_Some_equiv.
-    intros (z&Hlook&Hequiv). rewrite Hequiv in Hincl *.
+    intros (z&Hlook&Hequiv). revert Hincl; rewrite Hequiv.
     move=> /Some_included_total/to_agree_included. inversion 1; subst.
     destruct Hwf as (Hwf1&Hwf2).
     destruct (decide (l ∈ dom (gset L) σ)).
