@@ -9,6 +9,44 @@ Set Default Proof Using "Type".
 
 Section goose_lang.
   Context `{ffi_semantics: ext_semantics}.
+
+Definition binder_vars (b: binder) : gset string :=
+  match b with
+  | BNamed x => {[x]}
+  | BAnon => ∅
+  end.
+
+(* This returns all variables, bound and free, occurring in an expression *)
+Fixpoint expr_vars (e : expr) : gset string :=
+  match e with
+  | Val v => val_vars v
+  | Var x => {[x]}
+  | Primitive0 _ => ∅
+  | Rec f x e => binder_vars f ∪ binder_vars x ∪ expr_vars e
+  | UnOp _ e | Fst e | Snd e | InjL e | InjR e | Fork e | Load e
+  | ExternalOp _ e | Primitive1 _ e =>
+     expr_vars e
+  | App e1 e2 | BinOp _ e1 e2 | Pair e1 e2 | AllocN e1 e2 | Atomically e1 e2 | Primitive2 _ e1 e2 =>
+     expr_vars e1 ∪ expr_vars e2
+  | If e0 e1 e2 | Case e0 e1 e2 | CmpXchg e0 e1 e2 | Resolve e0 e1 e2 =>
+     expr_vars e0 ∪ expr_vars e1 ∪ expr_vars e2
+  | NewProph => ∅
+  end
+with val_vars (v : val) : gset string :=
+  match v with
+  | LitV _  => ∅
+  | RecV f x e => binder_vars f ∪ binder_vars x ∪ expr_vars e
+  | PairV v1 v2 => val_vars v1 ∪ val_vars v2
+  | InjLV v | InjRV v => val_vars v
+  end.
+
+Lemma expr_vars_subst e x es : x ∉ expr_vars e → subst x es e = e.
+Proof.
+  induction e; rewrite /=; try (destruct op); rewrite ?bool_decide_spec ?andb_True=> ?;
+    repeat case_decide; simplify_eq/=; f_equal; intuition eauto with set_solver.
+  set_solver.
+Qed.
+
 (* Closed expressions and values. *)
 Fixpoint is_closed_expr (X : list string) (e : expr) : bool :=
   match e with
@@ -247,6 +285,15 @@ Proof.
     + rewrite !Hins // IHe //.
     + by rewrite /= delete_insert_delete.
     + by rewrite /= Hins // delete_insert_delete.
+Qed.
+Lemma subst_map_subst_comm x v vs e:
+  x ∉ dom (gset string) vs →
+  subst x v (subst_map vs e) = subst_map vs (subst x v e).
+Proof.
+  intros Hnin.
+  rewrite -subst_map_insert'. rewrite subst_map_insert. f_equal.
+  f_equal. rewrite delete_notin //.
+  apply not_elem_of_dom; eauto.
 Qed.
 Lemma subst_map_binder_insert b v vs e :
   subst_map (binder_insert b v vs) e =

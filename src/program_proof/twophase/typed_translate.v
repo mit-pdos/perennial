@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Import lang notation typing.
+From Perennial.goose_lang Require Import lang notation typing metatheory.
 From Perennial.goose_lang.lib Require Import map.impl list.impl.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
@@ -178,9 +178,11 @@ Section translate.
   | val_injR_transTy v2 v2' t1 t2 :
       Γ @ tph ⊢v v2 -- v2' : t2 ->
       Γ @ tph ⊢v InjRV v2 -- InjRV v2' : sumT t1 t2
+  (* We can't allow RecV's we can't properly substitute the tph in later on *)
+  (*
   | rec_val_transTy f x e e' t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ ∅) @ tph ⊢ e -- e' : t2 ->
-      Γ @ tph ⊢v RecV f x e -- RecV f x e' : arrowT t1 t2
+      Γ @ tph ⊢v RecV f x e -- RecV f x e' : arrowT t1 t2 *)
   where "Γ @ tph ⊢v v1 -- v2 : A" := (atomic_body_val_transTy Γ tph v1 v2 A).
 
   Inductive jrnl_trans : sval → ival → Prop :=
@@ -191,10 +193,11 @@ Section translate.
   | jrnl_atomic_transTy_core Γ Γ' etxn etxn' ebdy ebdy' t (tph: string) :
       (∀ x ty, Γ' !! x = Some ty → Γ !! x = Some ty ∧ atomic_convertible ty) →
       tph ∉ dom (gset _) Γ →
+      tph ∉ expr_vars ebdy →
       Γ' @ (Var tph) ⊢ ebdy -- ebdy' : t →
       jrnl_atomic_transTy Γ etxn etxn' (extT JrnlT)
                             ebdy
                             (* This final argument is what Atomically etxn ebdy will get translated to *)
-                            (let: tph := Begin etxn' in ebdy';; TwoPhase__Commit (Var tph)) t.
+                            (let: tph := TwoPhase__Begin' etxn' in ebdy';; TwoPhase__Commit (Var tph)) t.
 
 End translate.

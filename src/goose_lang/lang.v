@@ -692,7 +692,8 @@ Inductive ectx_item :=
   | CmpXchgRCtx (v1 : val) (v2 : val)
   | ResolveLCtx (ctx : ectx_item) (v1 : val) (v2 : val)
   | ResolveMCtx (e0 : expr) (v2 : val)
-  | ResolveRCtx (e0 : expr) (e1 : expr).
+  | ResolveRCtx (e0 : expr) (e1 : expr)
+  | AtomicallyCtx (e0 : expr).
 
 (** Contextual closure will only reduce [e] in [Resolve e (Val _) (Val _)] if
 the local context of [e] is non-empty. As a consequence, the first argument of
@@ -729,6 +730,7 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | ResolveLCtx K v1 v2 => Resolve (fill_item K e) (Val v1) (Val v2)
   | ResolveMCtx ex v2 => Resolve ex e (Val v2)
   | ResolveRCtx ex e1 => Resolve ex e1 e
+  | AtomicallyCtx e1 => Atomically e e1
   end.
 
 (** Substitution *)
@@ -1142,14 +1144,14 @@ Inductive head_step_atomic: expr -> state -> list observation -> expr -> state -
  | head_step_trans : ∀ e s κs e' s' efs,
      head_step e s κs e' s' efs →
      head_step_atomic e s κs e' s' efs
- | head_step_atomically : ∀ el e s κs v' s',
+ | head_step_atomically : ∀ (vl : val) e s κs v' s',
      rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (Val (InjRV v'), s') →
      prim_step'_safe e s →
-     head_step_atomic (Atomically el e) s κs (Val (InjRV v')) s' []
- | head_step_atomically_fail : ∀ el e s κs,
+     head_step_atomic (Atomically (of_val vl) e) s κs (Val (InjRV v')) s' []
+ | head_step_atomically_fail : ∀ vl e s κs,
      (* An atomically block can non-deterministically fail _ONLY_ if the block would not trigger UB *)
      prim_step'_safe e s →
-     head_step_atomic (Atomically el e) s κs (Val (InjLV (LitV LitUnit))) s []
+     head_step_atomic (Atomically (of_val vl) e) s κs (Val (InjLV (LitV LitUnit))) s []
 .
 
 Lemma head_step_atomic_inv e s κs e' s' efs :
@@ -1158,8 +1160,8 @@ Lemma head_step_atomic_inv e s κs e' s' efs :
   head_step e s κs e' s' efs.
 Proof.
   inversion 1; subst; eauto.
-  - intros. contradiction (H2 el e0); auto.
-  - intros. contradiction (H1 el e0); auto.
+  - intros. contradiction (H2 (of_val vl) e0); auto.
+  - intros. contradiction (H1 (of_val vl) e0); auto.
 Qed.
 
 (** Basic properties about the language *)
@@ -1205,21 +1207,24 @@ Proof.
   induction Ki; intros;
     rewrite /head_step /= in H;
     repeat inv_undefined; eauto.
-  inversion H; subst; clear H.
-  destruct x as [[κ' e'] ts'].
-  repeat inv_undefined.
-  rewrite /head_step in IHKi.
-  simpl in H1.
-  monad_inv.
-  eapply IHKi; eauto.
+  - inversion H; subst; clear H.
+    destruct x as [[κ' e'] ts'].
+    repeat inv_undefined.
+    rewrite /head_step in IHKi.
+    simpl in H1.
+    monad_inv.
+    eapply IHKi; eauto.
+  - inversion H; subst; clear H. exfalso; eauto.
 Qed.
 
 Lemma head_ctx_step_atomic_val Ki e σ1 κ e2 σ2 efs :
   head_step_atomic (fill_item Ki e) σ1 κ e2 σ2 efs → is_Some (to_val e).
 Proof.
   inversion 1; subst; eauto using head_ctx_step_val.
-  - destruct Ki; simpl in H0; solve [ inversion H0 ].
-  - destruct Ki; simpl in H0; solve [ inversion H0 ].
+  - destruct Ki; simpl in H0; try solve [ inversion H0 ].
+    inversion H0. subst. eauto.
+  - destruct Ki; simpl in H0; try solve [ inversion H0 ].
+    inversion H0. subst. eauto.
 Qed.
 
 Lemma fill_item_no_val_inj Ki1 Ki2 e1 e2 :

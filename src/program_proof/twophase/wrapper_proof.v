@@ -42,7 +42,7 @@ Section proof.
       (set_map addr2flat (dom (gset addr) objs_spec))
       (twophase_linv_flat 0 ex_mapsto objs_spec γ).
 
-  Definition is_twophase_started N l γ γ' dinit objs_dom j e1 e2 : iProp Σ :=
+  Definition is_twophase_started N l γ γ' dinit objs_dom j K e1 e2 : iProp Σ :=
     ∃ (txnl locksl : loc) ls ghs σj1 σj2 objs_spec,
     let objs_dom_blknos := get_addr_set_blknos objs_dom in
     "Htwophase.txn" ∷ readonly (l ↦[TwoPhase.S :: "txn"] #txnl) ∗
@@ -55,7 +55,7 @@ Section proof.
       (twophase_linv_flat 0 ex_mapsto objs_spec γ) ∗
     "#Htxn_cinv" ∷ txn_cinv N γ γ' ∗
     "#Hspec_ctx" ∷ spec_ctx ∗
-    "Hj" ∷ j ⤇ Atomically ls e1 ∗
+    "Hj" ∷ j ⤇ K (Atomically ls e1) ∗
     (* TODO: this should be at least all the na_crash_invs in σj1 and the ephemeral values
        for σj2 *)
     "Hlock_resources" ∷ True.
@@ -84,25 +84,25 @@ Section proof.
        (⌜ γ' = γ ⌝ ∨ txn_cinv N γ γ') }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__Begin' N l ls γ γ' dinit objs_dom j e1 a sz :
+  Theorem wp_TwoPhase__Begin' N l ls γ γ' dinit objs_dom j K e1 :
     {{{ is_twophase_pre N l γ γ' dinit objs_dom ∗
-        j ⤇ Atomically ls e1 }}}
-      TwoPhase__Begin' #l (addr2val a) #sz
+        j ⤇ K (Atomically ls e1) }}}
+      TwoPhase__Begin' #l
     {{{ tph, RET #tph;
         is_twophase_started N tph γ γ' dinit objs_dom
-                            j e1 e1 }}}.
+                            j K e1 e1 }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__CommitNoRelease' N l γ γ' dinit objs_dom j e1 e2 :
-    {{{ is_twophase_started N l γ γ' dinit objs_dom j e1 e2 }}}
+  Theorem wp_TwoPhase__CommitNoRelease' N l γ γ' dinit objs_dom j K e1 e2 :
+    {{{ is_twophase_started N l γ γ' dinit objs_dom j K e1 e2 }}}
       TwoPhase__CommitNoRelease #l
     {{{ (ok:bool), RET #ok;
         if ok then
           is_twophase_committed N l γ γ' dinit objs_dom ∗
-          j ⤇ e2
+          j ⤇ K (e2)
         else
           is_twophase_started N l γ γ' dinit objs_dom
-                              j e1 e2
+                              j K e1 e2
     }}}.
   Proof. Admitted.
 
@@ -112,54 +112,54 @@ Section proof.
     {{{ RET #(); True }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__ReadBuf' N l γ γ' dinit objs_dom j K
+  Theorem wp_TwoPhase__ReadBuf' N l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
                               (ffi := (spec_ffi_model_field))
                               (ffi_semantics := (spec_ext_semantics_field))
                               K} e1 a sz :
-    {{{ is_twophase_started N l γ γ' dinit objs_dom j
+    {{{ is_twophase_started N l γ γ' dinit objs_dom j K0
                             e1
                             (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                                            ReadBufOp (PairV (addr2val' a) #sz))) }}}
       TwoPhase__ReadBuf' #l (addr2val a, #sz)
     {{{ v, RET (val_of_obj v);
-        is_twophase_started N l γ γ' dinit objs_dom j
+        is_twophase_started N l γ γ' dinit objs_dom j K0
                             e1 (K (val_of_obj' v)) }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__OverWrite' N l γ γ' dinit objs_dom j K
+  Theorem wp_TwoPhase__OverWrite' N l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
                                              (ffi := (spec_ffi_model_field))
                                              (ffi_semantics := (spec_ext_semantics_field))
                                              K}  e1 a ov :
-    {{{ is_twophase_started N l γ γ' dinit objs_dom j
+    {{{ is_twophase_started N l γ γ' dinit objs_dom j K0
                             e1
                             (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                                            OverWriteOp (PairV (addr2val' a) (val_of_obj' ov)))) }}}
       TwoPhase__OverWrite' #l (addr2val a, val_of_obj ov)
     {{{  RET #();
-        is_twophase_started N l γ γ' dinit objs_dom j
+        is_twophase_started N l γ γ' dinit objs_dom j K0
                             e1 (K #()) }}}.
   Proof. Admitted.
 
-  Lemma twophase_started_step_puredet N l γ γ' dinit objs_dom j K
+  Lemma twophase_started_step_puredet N l γ γ' dinit objs_dom j K0 K
         `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
                                              (ffi := (spec_ffi_model_field))
                                              (ffi_semantics := (spec_ext_semantics_field))
                                              K} e0 e1 e2:
     (∀ σ, prim_step' e1 σ [] e2 σ []) →
-    is_twophase_started N l γ γ' dinit objs_dom j e0 (K e1) -∗
-    is_twophase_started N l γ γ' dinit objs_dom j e0 (K e2).
+    is_twophase_started N l γ γ' dinit objs_dom j K0 e0 (K e1) -∗
+    is_twophase_started N l γ γ' dinit objs_dom j K0 e0 (K e2).
   Proof. Admitted.
 
-  Lemma twophase_started_ub_det N l γ γ' dinit objs_dom E j K
+  Lemma twophase_started_ub_det N l γ γ' dinit objs_dom E j K0 K
         `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
                                              (ffi := (spec_ffi_model_field))
                                              (ffi_semantics := (spec_ext_semantics_field))
                                              K} e0 e :
     nclose sN ⊆ E →
     (∀ s, stuck' e s) →
-    is_twophase_started N l γ γ' dinit objs_dom j e0 (K e)
+    is_twophase_started N l γ γ' dinit objs_dom j K0 e0 (K e)
     -∗ |NC={E}=> False.
   Proof. Admitted.
 

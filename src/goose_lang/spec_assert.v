@@ -983,6 +983,7 @@ Ltac refine_reshape_expr e tac :=
     | CmpXchg (Val ?v0) (Val ?v1) ?e2 => add_item (CmpXchgRCtx v0 v1) K e2
     | CmpXchg (Val ?v0) ?e1 ?e2       => add_item (CmpXchgMCtx v0 e2) K e1
     | CmpXchg ?e0 ?e1 ?e2             => add_item (CmpXchgLCtx e1 e2) K e0
+    | Atomically ?e0 ?e1             => add_item (AtomicallyCtx e1) K e0
     end
   with add_item Ki K e :=
     go (Ki :: K) e
