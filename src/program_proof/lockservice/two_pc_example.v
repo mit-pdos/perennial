@@ -62,6 +62,7 @@ Context `{!inG Σ (gmapUR u64 (exclR unitO))}.
 Record tpc_names :=
 mk_tpc_names  {
   prep_gn: gname ;
+  start_gn : gname ;
   commit_gn: gname ;
   finish_gn : gname ;
   unknown_gn : gname ;
@@ -80,15 +81,13 @@ Definition unprepared γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid :
 Definition do_prepare γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid := (Cinl (1/2)%Qp) ]}.
 
 Definition unfinished γtpc (tid:u64) : iProp Σ := own γtpc.(finish_gn) {[ tid := (Excl ()) ]}.
+Definition unstarted γtpc (tid:u64) : iProp Σ := own γtpc.(start_gn) {[ tid := (Excl ()) ]}.
 Definition coordinator_aborted γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinr (to_agree false)) ]}.
 
-Definition txn_unknown γtpc (tid:u64) : iProp Σ := own γtpc.(unknown_gn) {[ tid := (Excl ()) ]}.
-Definition txn_unknown_is γtpc (tid x:u64) : iProp Σ := True.
-
 Definition tpc_inv_single γtpc tid R R' : iProp Σ :=
-  unprepared γtpc tid ∗ txn_unknown γtpc tid ∨
-  undecided γtpc tid ∗ (∃ x, R x ∗ txn_unknown_is γtpc tid x) ∨
-  committed γtpc tid ∗ (∃ x, R' x ∗ txn_unknown_is γtpc tid x ∨ unfinished γtpc tid) ∨
+  unprepared γtpc tid ∨
+  undecided γtpc tid ∗ (R ∨ unstarted γtpc tid) ∨
+  committed γtpc tid ∗ (R' ∨ unfinished γtpc tid) ∨
   aborted γtpc tid
 .
 
@@ -115,28 +114,23 @@ Lemma unfinished_aborted_false γtpc tid :
   unfinished γtpc tid -∗ aborted γtpc tid -∗ False.
 Admitted.
 
-Lemma txn_unknown_choose x γtpc tid:
-  txn_unknown γtpc tid ==∗ txn_unknown_is γtpc tid x.
-Admitted.
-
 Lemma unfinished_coord_aborted_abort γtpc tid :
   unfinished γtpc tid -∗ coordinator_aborted γtpc tid ==∗ aborted γtpc tid.
 Admitted.
 
-Lemma participant_prepare E γtpc tid pid R R' x:
+Lemma participant_prepare E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ (▷ R x) -∗ do_prepare γtpc tid -∗ unfinished γtpc tid ={E}=∗
-  prepared γtpc tid ∗ unfinished γtpc tid ∗ txn_unknown_is γtpc tid x.
+  is_txn_single γtpc tid pid R R' -∗ ▷R -∗ do_prepare γtpc tid -∗ unfinished γtpc tid ={E}=∗
+  prepared γtpc tid ∗ unfinished γtpc tid.
 Proof.
   iIntros (?) "#His_txn HR Hdoprep Hunfinished".
   iInv "His_txn" as "Ht" "Htclose".
-  iDestruct "Ht" as "[>[Hunprep Hunknown]|Ht]".
+  iDestruct "Ht" as "[>Hunprep|Ht]".
   {
     iDestruct (do_prepare_unprepared with "Hdoprep Hunprep") as ">Hundec".
     iDestruct (undecided_is_prepared with "Hundec") as "#$".
-    iDestruct (txn_unknown_choose x with "Hunknown") as ">#?".
     iMod ("Htclose" with "[HR Hundec]"); last by iFrame.
-    iRight. iLeft. iFrame. iExists _; iFrame.
+    iRight. iLeft. iFrame.
   }
   iDestruct "Ht" as "[[>Hundec _]|Ht]".
   { iExFalso. iApply (do_prepare_undecided_false with "[$] [$]"). }
@@ -154,24 +148,28 @@ Lemma committed_coordinator_aborted γtpc tid :
   committed γtpc tid -∗ coordinator_aborted γtpc tid -∗ False.
 Admitted.
 
+Lemma coordinator_aborted_unstarted_false γtpc tid :
+  coordinator_aborted γtpc tid -∗ unstarted γtpc tid -∗ False.
+Admitted.
+
 Lemma prepared_participant_abort E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
   is_txn_single γtpc tid pid R R' -∗
   unfinished γtpc tid -∗ coordinator_aborted γtpc tid -∗ prepared γtpc tid ={E}=∗
-  (∃ x, ▷ R x ∗ txn_unknown_is γtpc tid x).
+  ▷ R.
 Proof.
   intros Hnamespace.
   iIntros "#His_prep Hunfinished #Hcoordabort #Hprepared".
   iInv "His_prep" as "Hp" "Hpclose".
-  iDestruct "Hp" as "[[>Hunprep _]|Hp]".
+  iDestruct "Hp" as "[>Hunprep|Hp]".
   { iExFalso. iApply (unprepared_prepared_false with "Hunprep Hprepared"). }
   iDestruct "Hp" as "[[>_ HR]|Hp]".
   {
     iMod (unfinished_coord_aborted_abort with "Hunfinished Hcoordabort") as "#?".
     iMod ("Hpclose" with "[]") as "_".
     { iRight; iRight. iRight. iFrame "#∗". }
-    iDestruct "HR" as (x) "[HR >$]".
-    iExists _; iFrame "∗". by iModIntro.
+    iDestruct "HR" as "[$|>?]"; first by iModIntro.
+    iExFalso. iApply coordinator_aborted_unstarted_false; eauto.
   }
   iDestruct "Hp" as "[[>#Hcommit _]|Hp]".
   { iExFalso. iApply committed_coordinator_aborted; eauto. }
@@ -187,7 +185,6 @@ Lemma undecided_committed_false γtpc tid :
   undecided γtpc tid -∗ committed γtpc tid -∗ False.
 Admitted.
 
-
 Lemma unfinished_unfinished_false γtpc tid :
   unfinished γtpc tid -∗ unfinished γtpc tid -∗ False.
 Admitted.
@@ -195,126 +192,98 @@ Admitted.
 Lemma prepared_participant_finish_commit E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
   is_txn_single γtpc tid pid R R' -∗ committed γtpc tid -∗ unfinished γtpc tid ={E}=∗
-  (∃ x, ▷ R' x ∗ txn_unknown_is γtpc tid x).
+  ▷ R'.
 Proof.
   intros Hnamespace.
   iIntros "#His_txn #Hcommit Hunfinished".
   iInv "His_txn" as "Ht" "Htclose".
-  iDestruct "Ht" as "[[>Hunprep _]|Ht]".
+  iDestruct "Ht" as "[>Hunprep|Ht]".
   { iExFalso. iApply (unprepared_committed_false with "[$] [$]"). }
   iDestruct "Ht" as "[[>Hundec _]|Ht]".
   { iExFalso. iApply (undecided_committed_false with "[$] [$]"). }
   iDestruct "Ht" as "[[_ HRfinish]|Ht]".
   {
-    iDestruct "HRfinish" as (x) "[[HR' >#?]| >HRfinish]"; last first.
+    iDestruct "HRfinish" as "[HR' | >HRfinish]"; last first.
     { iExFalso. iApply (unfinished_unfinished_false with "Hunfinished HRfinish"). }
-    iExists _. iFrame "HR'".
+    iFrame.
     iMod ("Htclose" with  "[Hunfinished]"); last by iModIntro.
-    iRight; iRight; iLeft; iFrame "#∗". done.
+    iRight; iRight; iLeft; iFrame "#∗".
   }
   iDestruct "Ht" as ">#Habort".
   { iExFalso. iApply (unfinished_aborted_false with "[$] [$]"). }
 Qed.
 
-Lemma commit_abort_false γtpc tid :
-  committed γtpc tid -∗ aborted γtpc tid -∗ False.
-Proof.
-  iIntros "Hcommit Habort".
-  iDestruct (own_valid_2 with "Hcommit Habort") as %Hbad.
-  exfalso. rewrite singleton_op in Hbad.
-  setoid_rewrite singleton_valid in Hbad.
-  rewrite -Cinr_op in Hbad.
-  setoid_rewrite Cinr_valid in Hbad.
-  setoid_rewrite to_agree_op_valid in Hbad.
-  done.
-Qed.
+Lemma do_commit γtpc tid :
+  do_decide γtpc tid -∗ undecided γtpc tid ==∗ committed γtpc tid.
+Admitted.
 
-Lemma undecided_commit_false γtpc tid :
-  committed γtpc tid -∗ undecided_half γtpc tid -∗ False.
-Proof.
-  iIntros "Hcommit Hundecided".
-  iDestruct (own_valid_2 with "Hcommit Hundecided") as %Hbad.
-  exfalso. rewrite singleton_op in Hbad.
-  setoid_rewrite singleton_valid in Hbad.
-  contradiction.
-Qed.
+Lemma do_decide_committed_false γtpc tid :
+  do_decide γtpc tid -∗ committed γtpc tid -∗ False.
+Admitted.
 
-Lemma undecided_abort_false γtpc tid :
-  aborted γtpc tid -∗ undecided_half γtpc tid -∗ False.
-Proof.
-  iIntros "Habort Hundecided".
-  iDestruct (own_valid_2 with "Habort Hundecided") as %Hbad.
-  exfalso. rewrite singleton_op in Hbad.
-  setoid_rewrite singleton_valid in Hbad.
-  contradiction.
-Qed.
+Lemma do_decide_aborted_false γtpc tid :
+  do_decide γtpc tid -∗ aborted γtpc tid -∗ False.
+Admitted.
 
-Lemma undecided_commit γtpc tid :
-  undecided_half γtpc tid -∗ undecided_half γtpc tid ==∗ committed γtpc tid.
-Proof.
-  iIntros "Hundec1 Hundec2". iCombine "Hundec1 Hundec2" as "Hundec".
-  iMod (own_update _ _ {[ tid := (Cinr (to_agree true)) ]} with "Hundec") as "$".
-  {
-    apply singleton_update. rewrite -Cinl_op. rewrite frac_op.
-    rewrite Qp_half_half. by apply cmra_update_exclusive.
-  }
-  by iModIntro.
-Qed.
-
-Lemma undecided_abort γtpc tid :
-  undecided_half γtpc tid -∗ undecided_half γtpc tid ==∗ aborted γtpc tid.
-Proof.
-  iIntros "Hundec1 Hundec2". iCombine "Hundec1 Hundec2" as "Hundec".
-  iMod (own_update _ _ {[ tid := (Cinr (to_agree false)) ]} with "Hundec") as "$".
-  {
-    apply singleton_update. rewrite -Cinl_op. rewrite frac_op.
-    rewrite Qp_half_half. by apply cmra_update_exclusive.
-  }
-  by iModIntro.
-Qed.
-
-Lemma finish_finish_false γtpc tid :
-  finish_token γtpc tid -∗ finish_token γtpc tid -∗ False.
-Proof.
-  iIntros "Hfinish_tok Hfinish_tok2".
-  iDestruct (own_valid_2 with "Hfinish_tok Hfinish_tok2") as %Hbad.
-  exfalso. rewrite singleton_op in Hbad. setoid_rewrite singleton_valid in Hbad.
-  contradiction.
-Qed.
+Lemma unstarted_unstarted_false γtpc tid :
+  unstarted γtpc tid -∗ unstarted γtpc tid -∗ False.
+Admitted.
 
 Lemma prepared_participant_start_commit E γtpc tid pid R R':
   ↑(txnSingleN pid) ⊆ E →
-  is_prepared γtpc tid pid R R' -∗ undecided_half γtpc tid ={E,E∖↑txnSingleN pid}=∗
-  committed γtpc tid ∗ ▷ R ∗ (▷ R' ={E ∖ ↑txnSingleN pid,E}=∗ emp).
+  is_txn_single γtpc tid pid R R' -∗ prepared γtpc tid -∗ do_decide γtpc tid -∗ unstarted γtpc tid ={E}=∗
+  ▷ R ∗ (▷ R' ={E}=∗ committed γtpc tid).
 Proof.
   intros Hnamespace.
-  iIntros "#His_prep Hundec".
-  iInv "His_prep" as "Hp" "Hpclose".
-  iDestruct "Hp" as "[[>Hundec2 $]|Hp]".
+  iIntros "#His_txn #Hprep Hdodec Hunstarted".
+  iInv "His_txn" as "Ht" "Htclose".
+  iDestruct "Ht" as "[>Hunprep|Ht]".
+  { iExFalso. iApply (unprepared_prepared_false with "[$] [$]"). }
+  iDestruct "Ht" as "[[>Hundec HR]|Ht]".
   {
-    iMod (undecided_commit with "Hundec Hundec2") as "#$".
-    iIntros "!> HR'".
-    iApply "Hpclose".
-    iNext. iRight. iLeft. iFrame "#". iLeft. iFrame.
+    iDestruct "HR" as "[$|>Hunstarted2]".
+    {
+      iMod ("Htclose" with "[Hundec Hunstarted]").
+      {
+        iNext. iRight. iLeft. iFrame "Hundec". iRight. iFrame.
+      }
+      iModIntro.
+      iIntros "HR'".
+      iInv "His_txn" as "Ht" "Htclose".
+      iDestruct "Ht" as "[>Hunprep|Ht]".
+      { iExFalso. iApply (unprepared_prepared_false with "[$] [$]"). }
+      iDestruct "Ht" as "[[>Hundec HR]|Ht]".
+      {
+        iMod (do_commit with "Hdodec Hundec") as "#$".
+        iMod ("Htclose" with "[HR']"); last by iModIntro.
+        iRight; iRight; iLeft. iFrame "#∗".
+      }
+      iDestruct "Ht" as "[[#>Hcommitted _]|Ht]".
+      { iExFalso. iApply (do_decide_committed_false with "[$] [$]"). }
+      iDestruct "Ht" as ">#Habort".
+      { iExFalso. iApply (do_decide_aborted_false with "[$] [$]"). }
+    }
+    { iExFalso. iApply (unstarted_unstarted_false with "[$] [$]"). }
   }
-  iDestruct "Hp" as "[[#>Hcommitted _]|Hp]".
-  {
-    iExFalso. iApply undecided_commit_false; eauto.
-  }
-  iDestruct "Hp" as "[>#Habort _]".
-  { iExFalso. iApply undecided_abort_false; eauto. }
+  iDestruct "Ht" as "[[#>Hcommitted _]|Ht]".
+  { iExFalso. iApply (do_decide_committed_false with "[$] [$]"). }
+  iDestruct "Ht" as ">#Habort".
+  { iExFalso. iApply (do_decide_aborted_false with "[$] [$]"). }
 Qed.
 
+Definition txn_unknown γtpc (tid:u64) : iProp Σ := own γtpc.(unknown_gn) {[ tid := Cinl (1)%Qp ]}.
+Definition txn_unknown_is γtpc (tid x:u64) : iProp Σ := own γtpc.(unknown_gn) {[ tid := Cinr (to_agree ()) ]}.
+
+Lemma txn_unknown_choose x γtpc tid:
+  txn_unknown γtpc tid ==∗ txn_unknown_is γtpc tid x.
+Admitted.
+
+Definition is_txn_single_unknown γtpc (tid pid:u64) R R' : iProp Σ := is_txn_single γtpc tid pid
+  (∃ x, R x ∗ txn_unknown_is γtpc tid x)%I
+  (∃ x, R' x ∗ txn_unknown_is γtpc tid x)%I
+.
+
 (* Proof of participant code *)
-Record participant_names :=
-mk_participant_names  {
-    ps_tpc:tpc_names ;
-    ps_ghs:list (deletable_heap.gen_heapG u64 bool Σ) ;
-    ps_kvs:gname ;
-}.
-
-Implicit Type γ : participant_names.
-
 Instance unit_IntoVal : into_val.IntoVal ().
 Proof.
   refine {| into_val.to_val := λ _, #();
@@ -348,12 +317,28 @@ Proof.
   done.
 Defined.
 
+Record participant_names :=
+mk_participant_names  {
+    ps_tpc:tpc_names ;
+    ps_ghs:list (deletable_heap.gen_heapG u64 bool Σ) ;
+    ps_kvs:gname ;
+    ps_kv_toks:gname
+}.
+
+Implicit Type γ : participant_names.
 
 Definition kv_ctx γ (kvsM:gmap u64 u64) k : iProp Σ :=
   k [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM k).1 ∨
   (Locked γ.(ps_ghs) k).
 
-Definition ps_mu_inv (ps:loc) γ pid : iProp Σ :=
+Definition kv_tok γ (k:u64) : iProp Σ :=
+  own γ.(ps_kv_toks) {[ k := Excl() ]}.
+
+Lemma kv_tok_2_false γ k:
+  kv_tok γ k -∗ kv_tok γ k -∗ False.
+Admitted.
+
+Definition ps_mu_inv (ps:loc) γ : iProp Σ :=
   ∃ (kvs_ptr txns_ptr finishedTxns_ptr lockMap_ptr:loc) (kvsM:gmap u64 u64) (txnsM:gmap u64 TxnResourcesC)
     (finishedTxnsM:gmap u64 bool),
 
@@ -367,33 +352,34 @@ Definition ps_mu_inv (ps:loc) γ pid : iProp Σ :=
     "HfinishedTxnsMap" ∷ is_map (finishedTxns_ptr) finishedTxnsM ∗
 
     "Hkvs_ctx" ∷ ([∗ set] k ∈ (fin_to_set u64), kv_ctx γ kvsM k) ∗
-    "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ _, True) ∗
+    "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ k, kv_tok γ k) ∗
 
-    "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, is_prepared γ.(ps_tpc) tid pid (txn.(key) [[γ.(ps_kvs)]]↦{3/4} txn.(oldValue)) (txn.(key) [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM txn.(key)).1) ) ∗
-    "Hundec_tok" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ ⌜tid ∈ dom (gset u64) txnsM⌝ ∨ undecided_half γ.(ps_tpc) tid)) ∗
-    "Hfinish_tok" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ finish_token γ.(ps_tpc) tid)) ∗
+    "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, prepared γ.(ps_tpc) tid ) ∗
+    "Htxns_postcommit" ∷ ([∗ map] tid ↦ txn ∈ txnsM, kv_tok γ txn.(key) ∗ (committed γ.(ps_tpc) tid -∗ (txn.(key) [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM txn.(key)).1))) ∗
+    "Hunfinisheds" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ unfinished γ.(ps_tpc) tid)) ∗
+    "Hdopreps" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ ⌜tid ∈ dom (gset u64) txnsM⌝ ∨ (do_prepare γ.(ps_tpc) tid ∗ txn_unknown γ.(ps_tpc) tid))) ∗
     "%" ∷ ⌜(dom (gset u64) txnsM) ## dom (gset u64) finishedTxnsM⌝
 .
 
 Definition participantN := nroot .@ "participant".
 
-Definition is_participant (ps:loc) γ pid : iProp Σ :=
+Definition is_participant (ps:loc) γ : iProp Σ :=
   ∃ (mu:loc),
   "#Hmu" ∷ readonly (ps ↦[ParticipantServer.S :: "mu"] #mu) ∗
-  "#Hmu_inv" ∷ is_lock participantN #mu (ps_mu_inv ps γ pid)
+  "#Hmu_inv" ∷ is_lock participantN #mu (ps_mu_inv ps γ)
 .
 
 Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ (key amnt:u64) :
   {{{
-       is_participant ps γ pid
+       is_participant ps γ ∗
+       is_txn_single_unknown γ.(ps_tpc) tid pid (λ ov, key [[γ.(ps_kvs)]]↦{3/4} ov) (λ ov, key [[γ.(ps_kvs)]]↦{3/4} (word.add ov amnt))
   }}}
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
   {{{
-       (a oldv:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗
-       is_prepared γ.(ps_tpc) tid pid (key [[γ.(ps_kvs)]]↦{3/4} oldv) (key [[γ.(ps_kvs)]]↦{3/4} (word.add oldv amnt))
+       (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γ.(ps_tpc) tid
   }}}.
 Proof.
-  iIntros (Φ) "#Hps HΦ".
+  iIntros (Φ) "[#Hps #Htxn] HΦ".
   iNamed "Hps".
   wp_lam.
   wp_pures.
@@ -417,7 +403,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* Transaction already finished *)
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hundec_tok Hfinish_tok]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hdopreps Hunfinisheds Htxns_postcommit]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -430,7 +416,7 @@ Proof.
   wp_loadField.
   wp_apply (wp_LockMap__Acquire with "[$HlockMap]").
   { iPureIntro. set_solver. }
-  iIntros "[Hkph Hkeylocked]".
+  iIntros "[Hktok Hkeylocked]".
   wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "HkvsMap").
@@ -443,9 +429,9 @@ Proof.
   wp_if_destruct.
   {
     (* Unsafe increase *)
-    wp_loadField. wp_apply (wp_LockMap__Release with "[$HlockMap $Hkeylocked $Hkph]").
+    wp_loadField. wp_apply (wp_LockMap__Release with "[$HlockMap $Hkeylocked $Hktok]").
     wp_pures.
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hundec_tok Hfinish_tok]").
+    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hdopreps Hunfinisheds Htxns_postcommit]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
       done.
@@ -492,22 +478,33 @@ Proof.
     iFrame.
   }
 
-  (* Get unused undecided_half token *)
-  iDestruct (big_sepS_elem_of_acc_impl tid with "Hundec_tok") as "[Hundec Hundec_rest]".
+  (* Get unused unfinished token *)
+  iDestruct (big_sepS_elem_of_acc _ _ tid with "Hunfinisheds") as "[Hunfinish Hunfinished_rest]".
   { set_solver. }
-  iDestruct "Hundec" as "[%Hbad|[%Hbad|Hundec]]".
+  iDestruct "Hunfinish" as "[%Hbad|Hunfinish]".
   { exfalso. apply map_get_false in Hmapget_finished as [Hbad2 _].
     apply (not_elem_of_dom finishedTxnsM) in Hbad2. set_solver. }
+
+  iDestruct (big_sepS_elem_of_acc_impl tid with "Hdopreps") as "[Hdoprep Hdopreps]".
+  { set_solver. }
+  iDestruct "Hdoprep" as "[%Hbad|Hdoprep]".
+  { exfalso. apply map_get_false in Hmapget_finished as [Hbad2 _].
+    apply (not_elem_of_dom finishedTxnsM) in Hbad2. set_solver. }
+  iDestruct "Hdoprep" as "[%Hbad|Hdoprep]".
   { exfalso. apply map_get_false in Hmapget as [Hbad2 _].
     apply (not_elem_of_dom txnsM) in Hbad2. set_solver. }
-  iMod (participant_prepare with "Hundec Hptsto") as "#His_prep".
+  iDestruct "Hdoprep" as "[Hdoprep Hunknown]".
+  iMod (txn_unknown_choose with "Hunknown") as "#Hunknown".
+  iMod (participant_prepare with "Htxn [Hptsto] Hdoprep Hunfinish") as "[#His_prep Hunfinish]".
   { done. }
-
-  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hundec_rest Hfinish_tok]").
+  { iNext. iExists _; iFrame "Hptsto". iFrame "Hunknown". }
+  iDestruct ("Hunfinished_rest" with "[Hunfinish]") as "Hunfinisheds".
+  { iRight. iFrame. }
+  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hdopreps Hunfinisheds Hktok Htxns_postcommit]").
   {
     iNext. iExists _, _, _,_,_,_,_; iFrame "HkvsMap HtxnsMap #∗".
     iSplitL "".
-    { (* Need to have all prepared tokens *)
+    { (* Need to have all prepared witnesses *)
       iApply big_sepM_insert.
       { apply map_get_false in Hmapget. naive_solver. }
       rewrite Hmapget_v3.
@@ -515,28 +512,52 @@ Proof.
       iFrame "His_prep".
       iApply (big_sepM_impl with "Htxns_prop_pers").
       iModIntro. iIntros.
+      iFrame "#".
     }
-    iSplitL "Htxns_own Hphysptsto".
-    {
-      rewrite /typed_map.map_insert.
-      iApply (big_sepM_insert_2 with "[Hphysptsto] Htxns_own").
-      simpl.
-      replace (old_v4) with (old_v3); first iFrame.
-      rewrite Hmapget_v3 in Hmapget_oldv4.
-      naive_solver.
-    }
-    iSplitL "Hdata_rest".
-    {
-      iApply "Hdata_rest".
+    iSplitL "Htxns_postcommit Hktok".
+    { (* Need to have local lock on key and post-commit resources for all in-progress txns *)
+      iAssert (∀ tid txn, ⌜txnsM !! tid = Some txn⌝ → ⌜txn.(tpc_example.key) = key⌝ → False)%I with "[Hktok Htxns_postcommit]" as %Hnewkey.
       {
-        iModIntro.
-        iIntros (???) "[%Hcase|Hcase]".
-        - iLeft. iPureIntro. unfold typed_map.map_insert.
-          rewrite dom_insert. set_solver.
-        - iRight. iFrame.
+        iIntros (tid2 txn2 ? ?).
+        iDestruct (big_sepM_lookup_acc _ _ tid2 with "Htxns_postcommit") as "[[Hktok2 _] _]".
+        { done. }
+        rewrite H1.
+        iApply (kv_tok_2_false with "[$] [$]").
+      }
+      rewrite /typed_map.map_insert.
+      iApply (big_sepM_insert_2 with "[Hktok] [Htxns_postcommit]").
+      {
+        simpl.
+        iFrame.
+        replace (old_v4) with (old_v3); last first.
+        { rewrite Hmapget_v3 in Hmapget_oldv4.
+          naive_solver. }
+        (* make the wand a fupd *)
+        admit.
       }
       {
-        iLeft. iPureIntro. unfold typed_map.map_insert.
+        iApply (big_sepM_impl with "Htxns_postcommit").
+        iModIntro. iIntros.
+        rewrite /map_get. simpl.
+        rewrite lookup_insert_ne; last first.
+        { set_solver. }
+        iFrame.
+      }
+    }
+    iSplitL "Hdopreps".
+    {
+      iApply "Hdopreps".
+      {
+        iModIntro.
+        iIntros (???) "[%Hcase|[%Hcase|Hcase]]".
+        - iLeft. iPureIntro. done.
+        - iRight; iLeft. iPureIntro.
+          unfold typed_map.map_insert.
+          rewrite dom_insert. set_solver.
+        - iRight; iRight. iFrame.
+      }
+      {
+        iRight; iLeft. iPureIntro. unfold typed_map.map_insert.
         rewrite dom_insert. set_solver.
       }
     }
@@ -550,10 +571,9 @@ Proof.
   }
   wp_pures.
   iApply "HΦ".
-  iFrame "Hprep".
+  iFrame "His_prep".
   iRight.
-  iSplitL ""; first done.
-  iFrame "#".
+  done.
 Admitted.
 
 Lemma wp_Participant__Commit (ps:loc) tid pid key oldv op amnt γ γtpc :
