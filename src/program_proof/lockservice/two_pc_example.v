@@ -91,8 +91,8 @@ Definition tpc_inv_single γtpc tid R R' : iProp Σ :=
   aborted γtpc tid
 .
 
-Definition txnSingleN (pid:u64) := nroot .@ "tpc" .@ pid.
-Definition is_txn_single γtpc (tid pid:u64) R R' : iProp Σ := inv (txnSingleN pid) (tpc_inv_single γtpc tid R R').
+Definition txnSingleN := nroot .@ "tpc".
+Definition is_txn_single γtpc (tid:u64) R R' : iProp Σ := inv (txnSingleN) (tpc_inv_single γtpc tid R R').
 
 Lemma do_prepare_unprepared γtpc tid :
   do_prepare γtpc tid -∗ unprepared γtpc tid ==∗ undecided γtpc tid.
@@ -118,9 +118,9 @@ Lemma unfinished_coord_aborted_abort γtpc tid :
   unfinished γtpc tid -∗ coordinator_aborted γtpc tid ==∗ aborted γtpc tid.
 Admitted.
 
-Lemma participant_prepare E γtpc tid pid R R':
-  ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ ▷R -∗ do_prepare γtpc tid -∗ unfinished γtpc tid ={E}=∗
+Lemma participant_prepare E γtpc tid R R':
+  ↑(txnSingleN) ⊆ E →
+  is_txn_single γtpc tid R R' -∗ ▷R -∗ do_prepare γtpc tid -∗ unfinished γtpc tid ={E}=∗
   prepared γtpc tid ∗ unfinished γtpc tid.
 Proof.
   iIntros (?) "#His_txn HR Hdoprep Hunfinished".
@@ -152,9 +152,9 @@ Lemma coordinator_aborted_unstarted_false γtpc tid :
   coordinator_aborted γtpc tid -∗ unstarted γtpc tid -∗ False.
 Admitted.
 
-Lemma prepared_participant_abort E γtpc tid pid R R':
-  ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗
+Lemma prepared_participant_abort E γtpc tid R R':
+  ↑(txnSingleN) ⊆ E →
+  is_txn_single γtpc tid R R' -∗
   unfinished γtpc tid -∗ coordinator_aborted γtpc tid -∗ prepared γtpc tid ={E}=∗
   ▷ R.
 Proof.
@@ -189,9 +189,9 @@ Lemma unfinished_unfinished_false γtpc tid :
   unfinished γtpc tid -∗ unfinished γtpc tid -∗ False.
 Admitted.
 
-Lemma prepared_participant_finish_commit E γtpc tid pid R R':
-  ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ committed γtpc tid -∗ unfinished γtpc tid ={E}=∗
+Lemma prepared_participant_finish_commit E γtpc tid R R':
+  ↑(txnSingleN) ⊆ E →
+  is_txn_single γtpc tid R R' -∗ committed γtpc tid -∗ unfinished γtpc tid ={E}=∗
   ▷ R'.
 Proof.
   intros Hnamespace.
@@ -229,9 +229,9 @@ Lemma unstarted_unstarted_false γtpc tid :
   unstarted γtpc tid -∗ unstarted γtpc tid -∗ False.
 Admitted.
 
-Lemma prepared_participant_start_commit E γtpc tid pid R R':
-  ↑(txnSingleN pid) ⊆ E →
-  is_txn_single γtpc tid pid R R' -∗ prepared γtpc tid -∗ do_decide γtpc tid -∗ unstarted γtpc tid ={E}=∗
+Lemma prepared_participant_start_commit E γtpc tid R R':
+  ↑(txnSingleN) ⊆ E →
+  is_txn_single γtpc tid R R' -∗ prepared γtpc tid -∗ do_decide γtpc tid -∗ unstarted γtpc tid ={E}=∗
   ▷ R ∗ (▷ R' ={E}=∗ committed γtpc tid).
 Proof.
   intros Hnamespace.
@@ -278,7 +278,7 @@ Lemma txn_unknown_choose x γtpc tid:
   txn_unknown γtpc tid ==∗ txn_unknown_is γtpc tid x.
 Admitted.
 
-Definition is_txn_single_unknown γtpc (tid pid:u64) R R' : iProp Σ := is_txn_single γtpc tid pid
+Definition is_txn_single_unknown γtpc (tid:u64) R R' : iProp Σ := is_txn_single γtpc tid
   (∃ x, R x ∗ txn_unknown_is γtpc tid x)%I
   (∃ x, R' x ∗ txn_unknown_is γtpc tid x)%I
 .
@@ -373,10 +373,10 @@ Definition is_participant (ps:loc) γ : iProp Σ :=
   "#Hmu_inv" ∷ is_lock participantN #mu (ps_mu_inv ps γ)
 .
 
-Lemma txn_single_forget_unknown γ tid pid R R' x :
-  is_txn_single_unknown γ.(ps_tpc) tid pid R R' -∗
+Lemma txn_single_forget_unknown γ tid R R' x :
+  is_txn_single_unknown γ.(ps_tpc) tid R R' -∗
   txn_unknown_is γ.(ps_tpc) tid x -∗
-  is_txn_single γ.(ps_tpc) tid pid (R x) (R' x)
+  is_txn_single γ.(ps_tpc) tid (R x) (R' x)
 .
 Proof.
   iIntros "? #Hunknown".
@@ -436,15 +436,15 @@ Proof.
   done.
 Qed.
 
-Lemma wp_Participant__PrepareIncrease (ps:loc) tid pid γ (key amnt:u64) :
+Lemma wp_Participant__PrepareIncrease (ps:loc) tid γ (key amnt:u64) :
   {{{
        is_participant ps γ ∗
-       is_txn_single_unknown γ.(ps_tpc) tid pid (λ ov, key [[γ.(ps_kvs)]]↦{3/4} ov) (λ ov, key [[γ.(ps_kvs)]]↦{3/4} (word.add ov amnt))
+       is_txn_single_unknown γ.(ps_tpc) tid (λ ov, key [[γ.(ps_kvs)]]↦{3/4} ov) (λ ov, key [[γ.(ps_kvs)]]↦{3/4} (word.add ov amnt))
   }}}
     ParticipantServer__PrepareIncrease #ps #tid #key #amnt
   {{{
        (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ (⌜a = 0⌝ ∗ prepared γ.(ps_tpc) tid ∗
-       ∃ ov, is_txn_single γ.(ps_tpc) tid pid (key [[γ.(ps_kvs)]]↦{3/4} ov) (key [[γ.(ps_kvs)]]↦{3/4} (word.add ov amnt))
+       ∃ ov, is_txn_single γ.(ps_tpc) tid (key [[γ.(ps_kvs)]]↦{3/4} ov) (key [[γ.(ps_kvs)]]↦{3/4} (word.add ov amnt))
        )
   }}}.
 Proof.
@@ -946,35 +946,39 @@ Variable s1:loc.
 Variables γ1:participant_names.
 Variables γ2:participant_names.
 
-Definition TransactionCoordinator_own (tc:loc) γtpc : iProp Σ :=
+Definition TransactionCoordinator_own (tc:loc) : iProp Σ :=
 
-  "#His_part1" ∷ is_participant s0 γ1 γtpc 0 ∗
-  "#His_part2" ∷ is_participant s1 γ2 γtpc 1 ∗
+  "#His_part1" ∷ is_participant s0 γ1 ∗
+  "#His_part2" ∷ is_participant s1 γ2 ∗
   "Hs0" ∷ tc ↦[TransactionCoordinator.S :: "s0"] #s0 ∗
   "Hs1" ∷ tc ↦[TransactionCoordinator.S :: "s1"] #s1
 .
 
-Lemma wp_Participant__PrepareDecrease (ps:loc) tid pid γ γtpc (key amnt:u64) :
+Lemma wp_Participant__PrepareDecrease (ps:loc) tid γ γtpc (key amnt:u64) :
   {{{
-       is_txn_single γtpc tid pid (λ data, key [[γ.(ps_kvs)]]↦{3/4} data.(oldValue)) (λ data, key [[γ.(ps_kvs)]]↦{3/4} (word.sub data.(oldValue) data.(amount))) ∗
-       is_participant ps γ γtpc pid
+       is_txn_single_unknown γtpc tid (λ ov, key [[γ.(ps_kvs)]]↦{3/4} ov) (λ ov, key [[γ.(ps_kvs)]]↦{3/4} (word.sub ov amnt)) ∗
+       is_participant ps γ
   }}}
 
     ParticipantServer__PrepareDecrease #ps #tid #key #amnt
   {{{
-       (a op oldValue:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid pid ∗
-       (tid,pid) [[γtpc.(txn_data_gn)]]↦ro Some (mkTransactionC key oldValue op amnt)
+       (a:u64), RET #a; ⌜a ≠ 0⌝ ∨ ⌜a = 0⌝ ∗ prepared γtpc tid ∗
+       ∃ ov, is_txn_single γ.(ps_tpc) tid (key [[γ.(ps_kvs)]]↦{3/4} ov) (key [[γ.(ps_kvs)]]↦{3/4} (word.sub ov amnt))
   }}}.
 Proof.
+  (* Copy/paste proof from above... *)
 Admitted.
 
-Lemma txn_single_alloc γtpc tid pid R R' :
-  (tid, pid) [[γtpc.(prepared_gn)]]↦ () ∗ (tid, pid) [[γtpc.(uncommit_token_gn)]]↦ ()
+Lemma txn_single_alloc γtpc tid R R' :
+  unprepared γtpc tid
   ={⊤}=∗
-  is_txn_single γtpc tid pid R R'.
+  is_txn_single_unknown γtpc tid R R'.
 Proof.
-  (* Just alloc the invariant *)
-Admitted.
+  iIntros.
+  iApply (inv_alloc).
+  iLeft. iFrame.
+Qed.
+
 
 Lemma wp_TransactionCoordinator__doTransfer {Eo Ei} (tc:loc) γtpc (tid acc1 acc2 amount v1 v2:u64) :
 Eo ⊆ ⊤ ∖ ↑txnSingleN 0 ∖ ↑txnSingleN 1 →
