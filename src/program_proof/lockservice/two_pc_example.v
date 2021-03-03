@@ -360,7 +360,7 @@ Definition ps_mu_inv (ps:loc) γ : iProp Σ :=
 
     "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, prepared γ.(ps_tpc) tid ∗ (∃ x, txn_unknown_is γ.(ps_tpc) tid x)) ∗
     (* TODO: need to add post-abort resources *)
-    "Htxns_postcommit" ∷ ([∗ map] tid ↦ txn ∈ txnsM, kv_tok γ txn.(key) ∗ (committed γ.(ps_tpc) tid ={⊤}=∗ (txn.(key) [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM txn.(key)).1))) ∗
+    "Htxns_postcommit" ∷ ([∗ map] tid ↦ txn ∈ txnsM, kv_tok γ txn.(key) ∗ ((committed γ.(ps_tpc) tid ={⊤}=∗ (txn.(key) [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM txn.(key)).1)) ∧ (coordinator_aborted γ.(ps_tpc) tid ={⊤}=∗ (txn.(key) [[γ.(ps_kvs)]]↦{3/4} txn.(oldValue))))) ∗
     "Hfreshtxns" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ ⌜tid ∈ dom (gset u64) txnsM⌝ ∨ (do_prepare γ.(ps_tpc) tid ∗ unfinished γ.(ps_tpc) tid ∗ txn_unknown γ.(ps_tpc) tid))) ∗
     "%" ∷ ⌜(dom (gset u64) txnsM) ## dom (gset u64) finishedTxnsM⌝
 .
@@ -611,15 +611,26 @@ Proof.
         { rewrite Hmapget_v3 in Hmapget_oldv4.
           naive_solver. }
         iIntros.
-        (* make the wand a fupd *)
-        iMod (prepared_participant_finish_commit with "Htxn [$] Hunfinish") as "HR'".
-        { done. }
-        iMod "HR'".
-        iDestruct "HR'" as (?) "[Hkey #Hunknown2]".
-        rewrite lookup_insert /=.
-        iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %->.
-        iFrame.
-        by iModIntro.
+        iSplit.
+        { (* prove post-commit resources *)
+          rewrite lookup_insert /=.
+          iIntros.
+          iMod (prepared_participant_finish_commit with "Htxn [$] Hunfinish") as "HR'".
+          { done. }
+          iMod "HR'".
+          iDestruct "HR'" as (?) "[Hkey #Hunknown2]".
+          iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %->.
+          iFrame. by iModIntro.
+        }
+        { (* prove post-abort resources *)
+          iIntros.
+          iMod (prepared_participant_abort with "Htxn Hunfinish [$] [$]") as "HR'".
+          { done. }
+          iMod "HR'".
+          iDestruct "HR'" as (?) "[Hkey #Hunknown2]".
+          iDestruct (txn_unknown_is_agree with "Hunknown Hunknown2") as %->.
+          iFrame. by iModIntro.
+        }
       }
       {
         iApply (big_sepM_impl with "Htxns_postcommit").
@@ -748,6 +759,154 @@ Proof.
       rewrite /map_del.
       iDestruct (big_sepM_delete _ _ tid with "Htxns_prop_pers") as "[_ $]".
       done.
+    }
+    iSplitL "Hfreshtxns".
+    {
+      iApply (big_sepS_impl with "Hfreshtxns").
+      iModIntro. iIntros (??) "H".
+      unfold typed_map.map_insert.
+      unfold map_del.
+      iDestruct "H" as "[%Hcase|H]".
+      { iLeft. iPureIntro. rewrite dom_insert. set_solver. }
+      iDestruct "H" as "[%Hcase|H]".
+      {
+        enough (x ∈ dom (gset u64) (<[tid:=true]> finishedTxnsM)
+        ∨ x ∈ dom (gset u64) (delete tid txnsM)).
+        { naive_solver. }
+        rewrite dom_insert dom_delete.
+        destruct (bool_decide (x = tid)) as [|] eqn:X.
+        {
+          apply bool_decide_eq_true in X.
+          set_solver.
+        }
+        {
+          apply bool_decide_eq_false in X.
+          set_solver.
+        }
+      }
+      iRight; iRight. iFrame.
+    }
+    iPureIntro.
+    rewrite dom_insert dom_delete.
+    set_solver.
+  }
+  by iApply "HΦ".
+Qed.
+
+Lemma wp_Participant__Abort (ps:loc) tid γ :
+  {{{
+       is_participant ps γ ∗
+       coordinator_aborted γ.(ps_tpc) tid
+  }}}
+    ParticipantServer__Abort #ps #tid
+  {{{
+       RET #(); True
+  }}}.
+Proof.
+  iIntros (Φ) "(#His_part & #Habort) HΦ".
+  wp_lam.
+  wp_pures.
+  iNamed "His_part".
+  wp_loadField.
+  wp_apply (acquire_spec with "Hmu_inv").
+  iIntros "[Hmulocked Hps]".
+  iNamed "Hps".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_MapGet with "HtxnsMap").
+  iIntros (txn1 ok1) "[%Hmapget_txn HtxnsMap]".
+  wp_pures.
+  wp_if_destruct.
+  { (* No pending transaction with that TID *)
+    wp_loadField. wp_apply (release_spec with "[- HΦ]").
+    {
+      iFrame "#∗".
+      iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
+      done.
+    }
+    wp_pures.
+    by iApply "HΦ".
+  }
+  (* Found a transaction with that ID *)
+  wp_loadField.
+
+  apply map_get_true in Hmapget_txn.
+  iDestruct (big_sepM_delete with "Htxns_postcommit") as "[Hpostcommit Htxns_postcommit]".
+  { done. }
+  iDestruct "Hpostcommit" as "[Hktok Hfupd]".
+  iDestruct (big_sepM_lookup_acc _ _ tid with "Htxns_prop_pers") as "[[_ Hdata] _]".
+  { done. }
+  iMod ("Hfupd" with "Habort") as "Hptsto".
+
+  iDestruct (big_sepS_elem_of_acc_impl txn1.(key) with "Hkvs_ctx") as "[Hkv Hkvs_rest]".
+  { set_solver. }
+  unfold kv_ctx.
+  iDestruct "Hkv" as "[Hbad|Hkvlocked]".
+  {
+    iDestruct (ptsto_mut_agree_frac_value with "Hbad Hptsto") as %[_ Hbad].
+    exfalso.
+    contradiction.
+  }
+
+
+  iAssert (∀ tid' txn, ⌜delete tid txnsM !! tid' = Some txn⌝ → ⌜txn.(tpc_example.key) = txn1.(key)⌝ → False)%I with "[Hktok Htxns_postcommit]" as %Hnewkey.
+  {
+    iIntros (tid2 txn2 ? ?).
+    iDestruct (big_sepM_lookup_acc _ _ tid2 with "Htxns_postcommit") as "[[Hktok2 _] _]".
+    { done. }
+    rewrite H1.
+    iApply (kv_tok_2_false with "[$] [$]").
+  }
+
+  wp_apply (wp_MapInsert with "HkvsMap").
+  { done. }
+  iIntros "HkvsMap".
+  wp_pures.
+
+  wp_loadField.
+
+  wp_apply (wp_LockMap__Release with "[$HlockMap $Hkvlocked $Hktok]").
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_MapDelete with "HtxnsMap").
+  iIntros "HtxnsMap".
+  wp_loadField.
+  wp_apply (wp_MapInsert with "HfinishedTxnsMap").
+  { done. }
+  iIntros "HfinishedTxnsMap".
+  wp_pures.
+  wp_loadField. wp_apply (release_spec with "[- HΦ]").
+  {
+    iFrame "Hmu_inv Hmulocked".
+    iNext. iExists _, _, _,_,_,_,_; iFrame "HtxnsMap HfinishedTxnsMap ∗#".
+    iSplitL "Hptsto Hkvs_rest".
+    {
+      iApply "Hkvs_rest"; last first.
+      {
+        iLeft. rewrite /typed_map.map_insert. rewrite /map_get. simpl. rewrite lookup_insert.
+        simpl. iFrame.
+      }
+      iModIntro.
+      iIntros (???) "[H|$]".
+      iLeft.
+      rewrite /map_get. rewrite lookup_insert_ne; last done. iFrame.
+    }
+    iSplitL "".
+    {
+      rewrite /map_del.
+      iDestruct (big_sepM_delete _ _ tid with "Htxns_prop_pers") as "[_ $]".
+      done.
+    }
+    iSplitL "Htxns_postcommit".
+    {
+      rewrite /map_del.
+      iApply (big_sepM_impl with "Htxns_postcommit").
+      iModIntro.
+      iIntros.
+      rewrite /map_get.
+      rewrite lookup_insert_ne; last first.
+      { naive_solver. }
+      iFrame.
     }
     iSplitL "Hfreshtxns".
     {
