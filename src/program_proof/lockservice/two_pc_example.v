@@ -979,13 +979,14 @@ Proof.
   iLeft. iFrame.
 Qed.
 
+Definition fresh_tid γtpc tid: iProp Σ := unprepared γtpc tid ∗ do_decide γtpc tid ∗ unstarted γtpc tid.
 
-Lemma wp_TransactionCoordinator__doTransfer {Eo Ei} (tc:loc) γtpc (tid acc1 acc2 amount v1 v2:u64) :
-Eo ⊆ ⊤ ∖ ↑txnSingleN 0 ∖ ↑txnSingleN 1 →
+Lemma wp_TransactionCoordinator__doTransfer {Eo Ei} (tc:loc) (tid acc1 acc2 amount v1 v2:u64) :
+Eo ⊆ ⊤ ∖ ↑txnSingleN →
   {{{
-       TransactionCoordinator_own tc γtpc ∗
-       fresh_tid γtpc tid ∗ (* TODO: make this logically-atomic *)
-
+       TransactionCoordinator_own tc ∗
+       fresh_tid γ1.(ps_tpc) tid ∗
+       fresh_tid γ2.(ps_tpc) tid ∗
        |={Eo,Ei}=> (acc1 [[γ1.(ps_kvs)]]↦{1/4} v1 ∗ acc2 [[γ2.(ps_kvs)]]↦{1/4} v2) ∗
         ((acc1 [[γ1.(ps_kvs)]]↦{1/4} (word.add v1 amount) ∗ acc2 [[γ2.(ps_kvs)]]↦{1/4} (word.sub v2 amount)) ={Ei,Eo}=∗ emp)
   }}}
@@ -994,16 +995,13 @@ Eo ⊆ ⊤ ∖ ↑txnSingleN 0 ∖ ↑txnSingleN 1 →
        RET #(); True
   }}}.
 Proof.
-  iIntros (? Φ) "(Hown & Hfresh & Hacc_pre) HΦ".
+  iIntros (? Φ) "(Hown & Hfresh1 & Hfresh2 & Hacc_pre) HΦ".
   iNamed "Hown".
-  iNamed "Hfresh".
 
-  iDestruct (big_sepS_delete _ _ (U64 0) with "Htokens") as "[Hs0_res Htokens]".
-  { set_solver. }
-  iDestruct (big_sepS_delete _ _ (U64 1) with "Htokens") as "[Hs1_res Htokens]".
-  { set_solver. }
-  iMod (txn_single_alloc  with "Hs0_res") as "#Htxn1".
-  iMod (txn_single_alloc  with "Hs1_res") as "#Htxn2".
+  iDestruct "Hfresh1" as "(Hunprep1 & Hdodec1 & Hunstart1)".
+  iMod (txn_single_alloc  with "Hunprep1") as "#Htxn1".
+  iDestruct "Hfresh2" as "(Hunprep2 & Hdodec2 & Hunstart2)".
+  iMod (txn_single_alloc  with "Hunprep2") as "#Htxn2".
   wp_lam.
   wp_pures.
   wp_loadField.
@@ -1011,11 +1009,11 @@ Proof.
   { iFrame "His_part1".
     iFrame "Htxn1".
   }
-  iIntros (prepared1 ??) "Hprep1".
+  iIntros (prepared1) "Hprep1".
   wp_pures.
   wp_loadField.
   wp_apply (wp_Participant__PrepareDecrease with "[$His_part2 $Htxn2]").
-  iIntros (prepared2 ??) "Hprep2".
+  iIntros (prepared2) "Hprep2".
   wp_pures.
   wp_apply (wp_and).
   { wp_pures. done. }
@@ -1028,22 +1026,18 @@ Proof.
     { exfalso. naive_solver. }
     wp_loadField.
 
-    iDestruct "Hprep1" as "[Hprep1 Hdata1]".
-    iDestruct "Hprep2" as "[Hprep2 Hdata2]".
+    iDestruct "Hprep1" as "[Hprep1 Htxn1']".
+    iDestruct "Htxn1'" as (?) "#Htxn1'".
+    iDestruct "Hprep2" as "[Hprep2 Htxn2']".
+    iDestruct "Htxn2'" as (?) "#Htxn2'".
+
     (* Start the commit point *)
     iApply fupd_wp.
-    iMod (start_commit_txn_single with "Htxn1 Hprep1 Hundec") as "(Hundec & #Hcom1 & HR1)"; first done.
-    iDestruct "HR1" as (txn1) "(>Hptsto1 & Hdata1' & Hclose1)".
-    iMod (start_commit_txn_single with "Htxn2 Hprep2 Hundec") as "(Hundec & #Hcom2 & HR2)".
-    { admit. } (* namespaces *)
-    iDestruct "HR2" as (txn2) "(>Hptsto2 & Hdata2' & Hclose2)".
-
-    (* Match up keys *)
-    iDestruct (ptsto_agree_frac_value with "Hdata1 Hdata1'") as %[Hdata1_same _].
-    assert (txn1 = mkTransactionC acc1 _ _ _) as -> by naive_solver. simpl.
-
-    iDestruct (ptsto_agree_frac_value with "Hdata2 Hdata2'") as %[Hdata2_same _].
-    assert (txn2 = mkTransactionC acc2 _ _ _) as -> by naive_solver. simpl.
+    Search "start_commit".
+    iMod (prepared_participant_start_commit with "Htxn1' Hprep1 Hdodec1 Hunstart1") as "[>Hptsto1 Hfupd1]".
+    { done. }
+    iMod (prepared_participant_start_commit with "Htxn2' Hprep2 Hdodec2 Hunstart2") as "[>Hptsto2 Hfupd2]".
+    { done. }
 
     iMod (fupd_mask_subseteq) as "Hmask_close"; last iMod "Hacc_pre".
     { done. }
@@ -1052,11 +1046,11 @@ Proof.
     iDestruct (ptsto_agree_frac_value with "Hptsto2 Hacc2") as %[-> _].
     iCombine "Hptsto1 Hacc1" as "Hacc1".
     iCombine "Hptsto2 Hacc2" as "Hacc2".
+    rewrite Qp_three_quarter_quarter.
 
     (***************************)
     (* COMMIT POINT *)
     (***************************)
-    rewrite Qp_three_quarter_quarter.
     iMod (map_update _ _ (word.add v1 amount) with "[] Hacc1") as "[_ Hacc1]".
     { admit. } (* map_ctx *)
     iMod (map_update _ _ (word.sub v2 amount) with "[] Hacc2") as "[_ Hacc2]".
@@ -1065,24 +1059,18 @@ Proof.
     rewrite -Qp_three_quarter_quarter.
     iDestruct (fractional_split_1 with "Hacc1") as "[Hptsto1 Hacc1]".
     iDestruct (fractional_split_1 with "Hacc2") as "[Hptsto2 Hacc2]".
-
-    iMod (map_update _ _ (Some true) with "[] Hundec") as "[_ Hundec]"; first admit.
-    iMod (map_freeze with "[] Hundec") as "[_ #Hcom]"; first admit.
-
     rewrite Qp_three_quarter_quarter.
     iMod ("Hacc_close" with "[$Hacc1 $Hacc2]").
     iMod "Hmask_close".
-    iMod ("Hclose2" with "Hptsto2 Hcom") as "_".
-    iMod ("Hclose1" with "Hptsto1 Hcom") as "_".
+
+    iMod ("Hfupd1" with "Hptsto1") as "#Hcom1".
+    iMod ("Hfupd2" with "Hptsto2") as "#Hcom2".
 
     iModIntro.
-    wp_apply (wp_Participant__Commit with "[$His_part1 $Hcom $Hcom1 $Htxn1 $Hdata1]").
+    wp_apply (wp_Participant__Commit with "[$His_part1 $Hcom1]").
     wp_pures.
     wp_loadField.
-    wp_apply (wp_Participant__Commit with "[$His_part2 $Hcom Hcom2 Htxn2 Hdata2]").
-    {
-      admit. (* TODO: commit is only designed for adding, not subtracting *)
-    }
+    wp_apply (wp_Participant__Commit with "[$His_part2 $Hcom2]").
     by iApply "HΦ".
   - (* TODO: Abort case *)
     admit.
