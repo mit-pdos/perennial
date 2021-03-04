@@ -981,6 +981,10 @@ Qed.
 
 Definition fresh_tid γtpc tid: iProp Σ := unprepared γtpc tid ∗ do_decide γtpc tid ∗ unstarted γtpc tid.
 
+Lemma do_abort γtpc tid :
+  do_decide γtpc tid ==∗ coordinator_aborted γtpc tid.
+Admitted.
+
 Lemma wp_TransactionCoordinator__doTransfer {Eo Ei} (tc:loc) (tid acc1 acc2 amount v1 v2:u64) :
 Eo ⊆ ⊤ ∖ ↑txnSingleN →
   {{{
@@ -1073,7 +1077,13 @@ Proof.
     wp_apply (wp_Participant__Commit with "[$His_part2 $Hcom2]").
     by iApply "HΦ".
   - (* TODO: Abort case *)
-    admit.
+    iMod (do_abort with "Hdodec1") as "#Habort1".
+    iMod (do_abort with "Hdodec2") as "#Habort2".
+    wp_loadField.
+    wp_apply (wp_Participant__Abort with "[$His_part1 $Habort1]").
+    wp_loadField.
+    wp_apply (wp_Participant__Abort with "[$His_part2 $Habort2]").
+    by iApply "HΦ".
 Admitted.
 
 End tpc_example.
