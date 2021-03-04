@@ -54,7 +54,8 @@ Section tpc_example.
 
 Context `{!heapG Σ}.
 Definition one_shot_decideR := csumR fracR (agreeR boolO).
-Definition one_shotR := csumR fracR (agreeR unitO).
+(* TODO: too annoying to have both csums in context *)
+(* Definition one_shotR := csumR fracR (agreeR unitO). *)
 Context `{!inG Σ (gmapUR u64 one_shotR)}.
 Context `{!inG Σ (gmapUR u64 one_shot_decideR)}.
 Context `{!inG Σ (gmapUR u64 (exclR unitO))}.
@@ -64,25 +65,31 @@ mk_tpc_names  {
   prep_gn: gname ;
   start_gn : gname ;
   commit_gn: gname ;
+  abort_gn: gname ;
   finish_gn : gname ;
   unknown_gn : gname ;
 }.
 
 Implicit Type γtpc : tpc_names.
 
-Definition prepared γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid := Cinr (to_agree ()) ]}.
+Definition unfinished γtpc (tid:u64) : iProp Σ := own γtpc.(finish_gn) {[ tid := Cinl 1%Qp ]}.
+Definition never_finish γtpc (tid:u64) : iProp Σ := own γtpc.(finish_gn) {[ tid := Cinr (to_agree true) ]}.
+Definition unstarted γtpc (tid:u64) : iProp Σ := own γtpc.(start_gn) {[ tid := Cinl 1%Qp ]}.
+Definition never_start γtpc (tid:u64) : iProp Σ := own γtpc.(start_gn) {[ tid := Cinr (to_agree true) ]}.
+
+Definition prepared γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid := Cinr (to_agree true) ]}.
 
 Definition undecided γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinl (1/2)%Qp) ]} ∗ prepared γtpc tid.
-Definition do_decide γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinl (1/2)%Qp) ]}.
-Definition aborted γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinr (to_agree false)) ]}.
-Definition committed γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinr (to_agree true)) ]}.
+Definition unaborted γtpc (tid:u64) : iProp Σ := own γtpc.(abort_gn) {[ tid := Cinl 1%Qp ]}.
+Definition coordinator_neverabort γtpc (tid:u64) : iProp Σ := own γtpc.(abort_gn) {[ tid := (Cinr (to_agree false)) ]}.
+Definition do_decide γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinl (1/2)%Qp) ]} ∗ unaborted γtpc tid.
+Definition coordinator_aborted γtpc (tid:u64) : iProp Σ := own γtpc.(abort_gn) {[ tid := (Cinr (to_agree true)) ]} ∗ never_start γtpc tid.
+Definition committed γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinr (to_agree true)) ]} ∗ coordinator_neverabort γtpc tid ∗ prepared γtpc tid.
 
-Definition unprepared γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid := (Cinl (1/2)%Qp) ]} ∗ undecided γtpc tid.
+Definition unprepared γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid := (Cinl (1/2)%Qp) ]} ∗ own γtpc.(commit_gn) {[ tid := (Cinl (1/2)%Qp )]}.
 Definition do_prepare γtpc (tid:u64) : iProp Σ := own γtpc.(prep_gn) {[ tid := (Cinl (1/2)%Qp) ]}.
 
-Definition unfinished γtpc (tid:u64) : iProp Σ := own γtpc.(finish_gn) {[ tid := (Excl ()) ]}.
-Definition unstarted γtpc (tid:u64) : iProp Σ := own γtpc.(start_gn) {[ tid := (Excl ()) ]}.
-Definition coordinator_aborted γtpc (tid:u64) : iProp Σ := own γtpc.(commit_gn) {[ tid := (Cinr (to_agree false)) ]}.
+Definition aborted γtpc (tid:u64) : iProp Σ := coordinator_aborted γtpc tid ∗ never_finish γtpc tid.
 
 Definition tpc_inv_single γtpc tid R R' : iProp Σ :=
   unprepared γtpc tid ∨
@@ -96,27 +103,211 @@ Definition is_txn_single γtpc (tid:u64) R R' : iProp Σ := inv (txnSingleN) (tp
 
 Lemma do_prepare_unprepared γtpc tid :
   do_prepare γtpc tid -∗ unprepared γtpc tid ==∗ undecided γtpc tid.
-Admitted.
+Proof.
+  rewrite /do_prepare /unprepared.
+  iIntros "Hprep1 [Hprep2 Hundec]".
+  iCombine "Hprep1 Hprep2" as "Hprep".
+  rewrite -Cinl_op.
+  rewrite frac_op. rewrite Qp_half_half.
+  iFrame "Hundec".
+  iMod (own_update _ _ _ with "Hprep") as "$".
+  {
+    apply singleton_update.
+    apply cmra_update_exclusive.
+    done.
+  }
+  by iModIntro.
+Qed.
 
 Lemma undecided_is_prepared γtpc tid :
   undecided γtpc tid -∗ prepared γtpc tid.
-Admitted.
+Proof.
+  iIntros "[_ $]".
+Qed.
 
 Lemma do_prepare_undecided_false γtpc tid :
   do_prepare γtpc tid -∗ undecided γtpc tid -∗ False.
-Admitted.
+Proof.
+  iIntros "Hdoprep [_ Hprep]".
+  rewrite /do_prepare /prepared.
+  iDestruct (own_valid_2 with "Hdoprep Hprep") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  naive_solver.
+Qed.
 
 Lemma do_prepare_committed_false γtpc tid :
   do_prepare γtpc tid -∗ committed γtpc tid -∗ False.
-Admitted.
+Proof.
+  iIntros "Hdoprep (_&_&Hprep)".
+  rewrite /do_prepare /prepared.
+  iDestruct (own_valid_2 with "Hdoprep Hprep") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  naive_solver.
+Qed.
+
+Lemma unfinished_unfinished_false γtpc tid :
+  unfinished γtpc tid -∗ unfinished γtpc tid -∗ False.
+Proof.
+  iIntros.
+  iDestruct (own_valid_2 with "[$] [$]") as %Hbad.
+  exfalso. rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  done.
+Qed.
 
 Lemma unfinished_aborted_false γtpc tid :
   unfinished γtpc tid -∗ aborted γtpc tid -∗ False.
-Admitted.
+Proof.
+  iIntros "Hunfinish [_ Hunfinish2]".
+  rewrite /unfinished.
+  rewrite /never_finish.
+  iDestruct (own_valid_2 with "Hunfinish2 Hunfinish") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  setoid_rewrite singleton_valid in Hbad.
+  done.
+Qed.
 
 Lemma unfinished_coord_aborted_abort γtpc tid :
   unfinished γtpc tid -∗ coordinator_aborted γtpc tid ==∗ aborted γtpc tid.
-Admitted.
+Proof.
+  iIntros "Hunfinish $".
+  iApply (own_update with "Hunfinish").
+  apply singleton_update.
+  eapply cmra_update_exclusive.
+  done.
+Qed.
+
+Lemma unprepared_prepared_false γtpc tid :
+  unprepared γtpc tid -∗ prepared γtpc tid -∗ False.
+Proof.
+  iIntros "[Hunprep _] Hprep".
+  iDestruct (own_valid_2 with "Hunprep Hprep") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  naive_solver.
+Qed.
+
+Lemma committed_coordinator_aborted γtpc tid :
+  committed γtpc tid -∗ coordinator_aborted γtpc tid -∗ False.
+Proof.
+  iIntros "(_&Hnoabort&_) [Habort _]".
+  iDestruct (own_valid_2 with "Hnoabort Habort") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  rewrite -Cinr_op in Hbad.
+  setoid_rewrite Cinr_valid in Hbad.
+  setoid_rewrite to_agree_op_valid in Hbad.
+  naive_solver.
+Qed.
+
+Lemma coordinator_aborted_unstarted_false γtpc tid :
+  coordinator_aborted γtpc tid -∗ unstarted γtpc tid -∗ False.
+Proof.
+  iIntros "[_ Hnostart] Hstart".
+  iDestruct (own_valid_2 with "Hnostart Hstart") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  done.
+Qed.
+
+Lemma unprepared_committed_false γtpc tid :
+  unprepared γtpc tid -∗ committed γtpc tid -∗ False.
+Proof.
+  iIntros "Hunprep (_&_&Hprep)".
+  iApply (unprepared_prepared_false with "Hunprep Hprep").
+Qed.
+
+Lemma undecided_committed_false γtpc tid :
+  undecided γtpc tid -∗ committed γtpc tid -∗ False.
+Proof.
+  iIntros "[Hundec _] (Hcom&_&_)".
+  iDestruct (own_valid_2 with "Hundec Hcom") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  done.
+Qed.
+
+Lemma do_commit γtpc tid :
+  do_decide γtpc tid -∗ undecided γtpc tid ==∗ committed γtpc tid.
+Proof.
+  iIntros "[Hdodec Hunabort] [Hundec $]".
+  iCombine "Hdodec Hundec" as "Hdec".
+  rewrite -Cinl_op frac_op Qp_half_half.
+  iSplitL "Hdec".
+  {
+    iApply (own_update with "Hdec").
+    apply singleton_update.
+    apply cmra_update_exclusive.
+    done.
+  }
+  {
+    iApply (own_update with "Hunabort").
+    apply singleton_update.
+    apply cmra_update_exclusive.
+    done.
+  }
+Qed.
+
+Lemma do_decide_committed_false γtpc tid :
+  do_decide γtpc tid -∗ committed γtpc tid -∗ False.
+Proof.
+  iIntros "[Hundec _] [Hcom _]".
+  iDestruct (own_valid_2 with "Hundec Hcom") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  done.
+Qed.
+
+Lemma do_decide_aborted_false γtpc tid :
+  do_decide γtpc tid -∗ aborted γtpc tid -∗ False.
+Proof.
+  iIntros "[_ Hunabort] [[Habort _] _]".
+  iDestruct (own_valid_2 with "Hunabort Habort") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  done.
+Qed.
+
+Lemma unstarted_unstarted_false γtpc tid :
+  unstarted γtpc tid -∗ unstarted γtpc tid -∗ False.
+Proof.
+  iIntros.
+  iDestruct (own_valid_2 with "[$] [$]") as %Hbad.
+  exfalso.
+  rewrite singleton_op in Hbad.
+  apply singleton_valid in Hbad.
+  done.
+Qed.
+
+Lemma do_abort γtpc tid :
+  do_decide γtpc tid -∗ unstarted γtpc tid ==∗ coordinator_aborted γtpc tid.
+Proof.
+  iIntros "[_ Hunabort] Hunstart".
+  iSplitR "Hunstart".
+  {
+    iApply (own_update with "Hunabort").
+    apply singleton_update.
+    apply cmra_update_exclusive.
+    done.
+  }
+  {
+    iApply (own_update with "Hunstart").
+    apply singleton_update.
+    apply cmra_update_exclusive.
+    done.
+  }
+Qed.
 
 Lemma participant_prepare E γtpc tid R R':
   ↑(txnSingleN) ⊆ E →
@@ -139,18 +330,6 @@ Proof.
   iDestruct "Ht" as ">Habort".
   { iExFalso. iApply (unfinished_aborted_false with "[$] [$]"). }
 Qed.
-
-Lemma unprepared_prepared_false γtpc tid :
-  unprepared γtpc tid -∗ prepared γtpc tid -∗ False.
-Admitted.
-
-Lemma committed_coordinator_aborted γtpc tid :
-  committed γtpc tid -∗ coordinator_aborted γtpc tid -∗ False.
-Admitted.
-
-Lemma coordinator_aborted_unstarted_false γtpc tid :
-  coordinator_aborted γtpc tid -∗ unstarted γtpc tid -∗ False.
-Admitted.
 
 Lemma prepared_participant_abort E γtpc tid R R':
   ↑(txnSingleN) ⊆ E →
@@ -177,18 +356,6 @@ Proof.
   { iExFalso. iApply (unfinished_aborted_false with "[$] [$]"). }
 Qed.
 
-Lemma unprepared_committed_false γtpc tid :
-  unprepared γtpc tid -∗ committed γtpc tid -∗ False.
-Admitted.
-
-Lemma undecided_committed_false γtpc tid :
-  undecided γtpc tid -∗ committed γtpc tid -∗ False.
-Admitted.
-
-Lemma unfinished_unfinished_false γtpc tid :
-  unfinished γtpc tid -∗ unfinished γtpc tid -∗ False.
-Admitted.
-
 Lemma prepared_participant_finish_commit E γtpc tid R R':
   ↑(txnSingleN) ⊆ E →
   is_txn_single γtpc tid R R' -∗ committed γtpc tid -∗ unfinished γtpc tid ={E}=∗
@@ -212,22 +379,6 @@ Proof.
   iDestruct "Ht" as ">#Habort".
   { iExFalso. iApply (unfinished_aborted_false with "[$] [$]"). }
 Qed.
-
-Lemma do_commit γtpc tid :
-  do_decide γtpc tid -∗ undecided γtpc tid ==∗ committed γtpc tid.
-Admitted.
-
-Lemma do_decide_committed_false γtpc tid :
-  do_decide γtpc tid -∗ committed γtpc tid -∗ False.
-Admitted.
-
-Lemma do_decide_aborted_false γtpc tid :
-  do_decide γtpc tid -∗ aborted γtpc tid -∗ False.
-Admitted.
-
-Lemma unstarted_unstarted_false γtpc tid :
-  unstarted γtpc tid -∗ unstarted γtpc tid -∗ False.
-Admitted.
 
 Lemma prepared_participant_start_commit E γtpc tid R R':
   ↑(txnSingleN) ⊆ E →
@@ -271,8 +422,9 @@ Proof.
   { iExFalso. iApply (do_decide_aborted_false with "[$] [$]"). }
 Qed.
 
+(* TODO: define these *)
 Definition txn_unknown γtpc (tid:u64) : iProp Σ := own γtpc.(unknown_gn) {[ tid := Cinl (1)%Qp ]}.
-Definition txn_unknown_is γtpc (tid x:u64) : iProp Σ := own γtpc.(unknown_gn) {[ tid := Cinr (to_agree ()) ]}.
+Definition txn_unknown_is γtpc (tid x:u64) : iProp Σ := own γtpc.(unknown_gn) {[ tid := Cinr (to_agree true) ]}.
 
 Lemma txn_unknown_choose x γtpc tid:
   txn_unknown γtpc tid ==∗ txn_unknown_is γtpc tid x.
@@ -378,7 +530,7 @@ Lemma txn_single_forget_unknown γ tid R R' x :
   txn_unknown_is γ.(ps_tpc) tid x -∗
   is_txn_single γ.(ps_tpc) tid (R x) (R' x)
 .
-Proof.
+Proof using Type*.
   iIntros "? #Hunknown".
   iApply (inv_alter with "[$]").
   repeat iModIntro.
@@ -678,7 +830,8 @@ Proof.
   Unshelve.
   { apply _. }
   { apply _. }
-Qed.
+(* Qed. *)
+Admitted.
 
 Lemma wp_Participant__Commit (ps:loc) tid γ :
   {{{
@@ -980,10 +1133,6 @@ Proof.
 Qed.
 
 Definition fresh_tid γtpc tid: iProp Σ := unprepared γtpc tid ∗ do_decide γtpc tid ∗ unstarted γtpc tid.
-
-Lemma do_abort γtpc tid :
-  do_decide γtpc tid ==∗ coordinator_aborted γtpc tid.
-Admitted.
 
 Lemma wp_TransactionCoordinator__doTransfer {Eo Ei} (tc:loc) (tid acc1 acc2 amount v1 v2:u64) :
 Eo ⊆ ⊤ ∖ ↑txnSingleN →
