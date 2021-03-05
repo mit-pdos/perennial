@@ -198,6 +198,7 @@ Section translate.
       jrnl_atomic_transTy Γ etxn etxn' (extT JrnlT)
                             ebdy
                             (* This final argument is what Atomically etxn ebdy will get translated to *)
-                            (let: tph := TwoPhase__Begin' etxn' in ebdy';; TwoPhase__Commit (Var tph)) t.
+                            (let: tph := TwoPhase__Begin' etxn' in
+                             TwoPhase__ConditionalCommit' (Var tph) ebdy') t.
 
 End translate.

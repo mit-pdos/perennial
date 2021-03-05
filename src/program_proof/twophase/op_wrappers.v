@@ -31,6 +31,17 @@ Definition TwoPhase__OverWrite' : val :=
   let: "s" := ListToSlice byteT (Snd "ad") in
   TwoPhase__OverWrite "twophase" (Fst "ad") "s" (slice.len "s").
 
+Definition TwoPhase__ConditionalCommit' : val :=
+  λ: "twophase" "v",
+  match: "v" with
+      NONE => TwoPhase__ReleaseAll "twophase";; "v"
+    | SOME "_" =>
+    if: TwoPhase__Commit "twophase" then
+      "v"
+    else
+      NONEV
+  end.
+
 (* XXX: todo: this should call a wrapped version of MkTxn that also allocates
 the lockmap and returns a struct containing both *)
 Definition TwoPhase__Init' : val :=
