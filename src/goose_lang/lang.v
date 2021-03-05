@@ -1385,6 +1385,9 @@ Proof.
     by exists (comp_ectx K K') e1' e2'; rewrite ?Heq1 ?Heq2 ?fill_comp.
 Qed.
 
+Instance id_ctx' : LanguageCtx' (fun x => x).
+Proof. split; intuition eauto. Qed.
+
 Instance comp_ctx' K K':
   LanguageCtx' K →
   LanguageCtx' K' →

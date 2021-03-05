@@ -135,11 +135,104 @@ Proof.
     * eapply IHHtyping0; eauto; unfold_expr_vars; set_solver.
 Qed.
 
+Definition subst_tuple_conv (x : (@subst_tuple disk_op (jrnl_spec_ext) jrnl_ty)) :
+                               twophase_sub_logical_reln_defs.subst_tuple :=
+  {| twophase_sub_logical_reln_defs.subst_ty := subst_ty x;
+     twophase_sub_logical_reln_defs.subst_sval := subst_sval x;
+     twophase_sub_logical_reln_defs.subst_ival := subst_ival x |}.
+
+Definition filtered_subst (Γsubst : gmap string (@subst_tuple disk_op (jrnl_spec_ext) jrnl_ty )) (Γ': Ctx) :=
+  subst_tuple_conv <$>
+    (filter (λ x: string * ((@subst_tuple disk_op jrnl_spec_ext jrnl_ty)), is_Some (Γ' !! fst x)) Γsubst).
+
+Lemma  filtered_subst_lookup1 (Γ' : Ctx) (Γsubst : gmap string (@subst_tuple disk_op (jrnl_spec_ext) jrnl_ty )) i :
+  is_Some (Γ' !! i) →
+  filter (λ x : string * ty, is_Some (Γ' !! x.1))
+         (subst_ty <$> Γsubst) !! i = (subst_ty <$> Γsubst) !! i.
+Proof.
+  intros Hsome.
+  destruct ((subst_ty <$> Γsubst) !! i) eqn:Heq.
+  { apply map_filter_lookup_Some_2; eauto. }
+  apply map_filter_lookup_None_2; eauto.
+Qed.
+
+Notation spec_ty := jrnl_ty.
+Notation sty := (@ty (@val_tys _ spec_ty)).
+
+Lemma atomic_convertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
+      {buftxnG0 : sep_buftxn_invariant.buftxnG Σ} (t : sty) es e dinit objs_dom γ γ' tph_val :
+  atomic_convertible t →
+  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG jrnlTy_model hS t es e -∗
+  atomically_val_interp N PARAMS dinit objs_dom γ γ' tph_val t es e.
+Proof.
+  revert es e.
+  induction t => es e; eauto.
+  - iIntros ((?&?)) "H".
+    rewrite /val_interp -/val_interp.
+    iDestruct "H" as (v1 v2 vs1 vs2 (Heq&Heqs)) "H".
+    subst. iDestruct "H" as "(Hv1&Hv2)".
+    rewrite /=.
+    iExists _, _, _, _. iSplit; first eauto.
+    iSplitL "Hv1".
+    { iApply IHt1; eauto. }
+    { iApply IHt2; eauto. }
+  - inversion 1.
+  - iIntros ((?&?)) "H".
+    rewrite /val_interp -/val_interp.
+    iDestruct "H" as "[H|H]"; iDestruct "H" as (v vs (Heq&Heqs)) "H"; subst; rewrite /=; [ iLeft | iRight ].
+    { iExists _, _. iSplit; first eauto. by iApply IHt1. }
+    { iExists _, _. iSplit; first eauto. by iApply IHt2. }
+  - inversion 1.
+Qed.
+
+Set Nested Proofs Allowed.
+Lemma filtered_subst_projection1 Γsubst Γ' :
+  (∀ (x : string) (ty0 : ty),
+      Γ' !! x = Some ty0 →
+      (subst_ty <$> Γsubst) !! x = Some ty0 ∧ atomic_convertible ty0) →
+  twophase_sub_logical_reln_defs.subst_ty <$> filtered_subst Γsubst Γ' = Γ'.
+Proof.
+  intros Hlookup.
+  apply map_eq => i.
+  specialize (Hlookup i).
+  rewrite /filtered_subst.
+  rewrite -map_fmap_compose //=.
+  destruct (Γ' !! i) eqn:Heq.
+  {
+    transitivity (filter (λ x : string * _, is_Some (Γ' !! x.1)) (subst_ty <$> Γsubst) !! i).
+    {symmetry. rewrite map_filter_fmap //=. }
+    replace (Γ' !! i) with ((subst_ty <$> Γsubst) !! i); last first.
+    { edestruct Hlookup as (Heq'&_); eauto. rewrite Heq'. eauto. }
+    apply filtered_subst_lookup1; eauto.
+  }
+  rewrite Heq.
+  rewrite lookup_fmap.
+  apply fmap_None.
+  apply map_filter_lookup_None_2; right. intros => //=.
+  intros (?&Heq'). clear -Heq Heq'. rewrite Heq in Heq'. discriminate.
+Qed.
+
+Lemma subst_map_subtyping_sval Γsubst Γ' e1 x ebdy t :
+  (∀ (x : string) (ty0 : sty),
+    Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0 ∧ atomic_convertible ty0) →
+  atomic_body_expr_transTy Γ' x e1 ebdy t →
+  (subst_map (subst_sval <$> Γsubst) e1) =
+  (subst_map (twophase_sub_logical_reln_defs.subst_sval <$> filtered_subst Γsubst Γ') e1).
+Proof. Admitted.
+
+Lemma subst_map_subtyping_ival Γsubst Γ' e1 ebdy tph tph_val t :
+  (∀ (x : string) (ty0 : sty),
+    Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0 ∧ atomic_convertible ty0) →
+  atomic_body_expr_transTy Γ' (of_val tph_val) e1 (subst tph tph_val ebdy) t →
+  (subst_map (subst_ival <$> Γsubst) (subst tph tph_val ebdy)) =
+  (subst_map (twophase_sub_logical_reln_defs.subst_ival <$> filtered_subst Γsubst Γ') (subst tph tph_val ebdy)).
+Proof. Admitted.
+
 Lemma jrnl_atomic_obligation:
   @sty_atomic_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model jrnl_atomic_transTy.
 Proof.
   rewrite /sty_atomic_obligation//=.
-  iIntros (? hG hRG hJrnl el1 el2 tl e1 e2 t Γsubst Htrans) "Hinv Hspec Htrace HΓ HhasTy".
+  iIntros (? hG hRG hJrnl el1 el2 tl e1 e2 t Γsubst Htrans) "Hinv #Hspec #Htrace #HΓ HhasTy".
   iIntros (j K Hctx) "Hj".
   inversion Htrans; subst.
   simpl.
@@ -173,7 +266,32 @@ Proof.
   wp_bind (subst _ _ _).
   rewrite subst_map_subst_comm //; last first.
   { rewrite dom_fmap. rewrite dom_fmap in H0 *. eauto. }
-  (* Apply the fundamental lemma here *)
+  iDestruct (atomically_fundamental_lemma N PARAMS dinit objs_dom γ γ' tph_val Γ') as "Hhas_semTy".
+  { eauto. }
+  rewrite /twophase_sub_logical_reln_defs.ctx_has_semTy.
+  iDestruct ("Hhas_semTy" $! (filtered_subst Γsubst Γ') with "[] [$] [] [] [Hstarted]") as "H".
+  { iPureIntro. apply filtered_subst_projection1; auto. }
+  { rewrite /filtered_subst.
+    iApply big_sepM_fmap => /=.
+    iApply big_sepM_filter.
+    iApply (big_sepM_mono with "HΓ").
+    iIntros (k x Hlookup) "Hval Hfilter".
+    iDestruct "Hfilter" as %(?&Heq).
+    iApply (atomic_convertible_val_interp with "Hval").
+    eapply H in Heq. destruct Heq as (Heq&Hconv).
+    rewrite /= lookup_fmap Hlookup /= in Heq.
+    inversion Heq; subst. eauto.
+  }
+  { iPureIntro. apply id_ctx'. }
+  { simpl.
+    erewrite <-subst_map_subtyping_sval; eauto.
+  }
+  erewrite <-subst_map_subtyping_ival; eauto.
+  iDestruct (wpc_wp with "H") as "H".
+  iApply (wp_wand with "H [-]").
+  iIntros (v') "Hv".
+  iDestruct "Hv" as (vs') "(Hstarted&Hinterp)".
+  wp_pures.
 Admitted.
 
 Existing Instances jrnl_semantics.
