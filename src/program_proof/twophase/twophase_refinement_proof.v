@@ -291,7 +291,22 @@ Proof.
   iApply (wp_wand with "H [-]").
   iIntros (v') "Hv".
   iDestruct "Hv" as (vs') "(Hstarted&Hinterp)".
+  rewrite /op_wrappers.TwoPhase__ConditionalCommit'.
   wp_pures.
+  rewrite /=.
+  iDestruct "Hinterp" as "[Hnone|Hsome]".
+  {
+    iDestruct "Hnone" as (vsnone vnone (->&->)) "Hunit".
+    iDestruct "Hunit" as %(->&->).
+    wp_pures.
+    iMod (twophase_started_abort with "Hstarted") as "(Hrel&Hj)".
+    wp_apply (wp_TwoPhase__ReleaseAll' with "Hrel").
+    wp_pures. iExists _. iFrame. iLeft. eauto.
+  }
+  {
+    iDestruct "Hsome" as (vssome vsnone (->&->)) "Hv".
+    wp_pures.
+
 Admitted.
 
 Existing Instances jrnl_semantics.

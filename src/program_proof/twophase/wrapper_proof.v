@@ -60,7 +60,7 @@ Section proof.
        for σj2 *)
     "Hlock_resources" ∷ True.
 
-  Definition is_twophase_committed N l γ γ' dinit objs_dom : iProp Σ :=
+  Definition is_twophase_releasable N l γ γ' dinit objs_dom : iProp Σ :=
     ∃ (txnl locksl : loc) ghs (σj : gmap addr obj) objs_spec,
     let objs_dom_blknos := get_addr_set_blknos objs_dom in
     "Htwophase.txn" ∷ readonly (l ↦[TwoPhase.S :: "txn"] #txnl) ∗
@@ -93,22 +93,28 @@ Section proof.
                             j K e1 e1 }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__CommitNoRelease' N l γ γ' dinit objs_dom j K e1 e2 :
-    {{{ is_twophase_started N l γ γ' dinit objs_dom j K e1 e2 }}}
+  Theorem wp_TwoPhase__CommitNoRelease' N l γ γ' dinit objs_dom j K e1 v :
+    {{{ is_twophase_started N l γ γ' dinit objs_dom j K e1 (SOMEV v) }}}
       TwoPhase__CommitNoRelease #l
     {{{ (ok:bool), RET #ok;
         if ok then
-          is_twophase_committed N l γ γ' dinit objs_dom ∗
-          j ⤇ K (e2)
+          is_twophase_releasable N l γ γ' dinit objs_dom ∗
+          j ⤇ K (SOMEV v)
         else
           is_twophase_started N l γ γ' dinit objs_dom
-                              j K e1 e2
+                              j K e1 (SOMEV v)
     }}}.
   Proof. Admitted.
 
-  Theorem wp_TwoPhase__Release' N l γ γ' dinit objs_dom :
-    {{{ is_twophase_committed N l γ γ' dinit objs_dom }}}
-      TwoPhase__Release #l
+  Theorem twophase_started_abort N l γ γ' dinit objs_dom j K e1 e2 :
+    is_twophase_started N l γ γ' dinit objs_dom j K e1 e2 -∗
+    |NC={⊤}=> is_twophase_releasable N l γ γ' dinit objs_dom ∗
+              j ⤇ K NONEV.
+  Proof. Admitted.
+
+  Theorem wp_TwoPhase__ReleaseAll' N l γ γ' dinit objs_dom :
+    {{{ is_twophase_releasable N l γ γ' dinit objs_dom }}}
+      TwoPhase__ReleaseAll #l
     {{{ RET #(); True }}}.
   Proof. Admitted.
 
