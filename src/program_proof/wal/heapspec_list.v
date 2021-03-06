@@ -1289,7 +1289,7 @@ Proof using walheapG0.
       destruct Hprefix as (disks2&Hprefix). rewrite Hprefix.
       iDestruct (wal_heap_inv_crashes_list_at_ids with "Hcrash_heaps") as %Hdisk_at.
       iDestruct (own_valid_2 with "Hinstalled Hownlb") as %Hval.
-        apply auth_both_frac_valid_discrete in Hval as (_&Hle%max_nat_included&_).
+        apply auth_both_dfrac_valid_discrete in Hval as (_&Hle%max_nat_included&_).
         simpl in Hle.
       destruct (decide (txn_id < length (disks1 ++ [curr]))).
       * iMod ("Hfupd" $! disks2 0 curr with "[$Hcrash_all_auth]") as (b' Hlookup) "(Hcrash_all_auth&HQ)".

@@ -79,7 +79,7 @@ Section auth_map.
   Definition map_ctx γ q m : iProp Σ :=
     ∃ ro_m,
       ⌜m = fmap fst ro_m⌝ ∗
-      own γ (●{q} to_mapUR ro_m).
+      own γ (●{#q} to_mapUR ro_m).
 
   Global Instance map_ctx_discretizable γ q m : Discretizable (map_ctx γ q m).
   Proof. apply _. Qed.
@@ -97,7 +97,7 @@ Section auth_map.
     - iIntros "[H1 H2]".
       iDestruct "H1" as (ro_m1) "[-> H1]".
       iDestruct "H2" as (ro_m2) "[-> H2]".
-      iDestruct (own_valid_2 with "H1 H2") as %Hvalid%auth_auth_frac_op_inv.
+      iDestruct (own_valid_2 with "H1 H2") as %Hvalid%auth_auth_dfrac_op_inv.
       rewrite Hvalid.
       iExists _; by iFrame.
   Qed.
@@ -113,7 +113,7 @@ Section auth_map.
   Proof.
     iDestruct 1 as (ro_m1) "[-> H1]".
     iDestruct 1 as (ro_m2) "[-> H2]".
-    iDestruct (own_valid_2 with "H1 H2") as %Hvalid%auth_auth_frac_op_inv.
+    iDestruct (own_valid_2 with "H1 H2") as %Hvalid%auth_auth_dfrac_op_inv.
     iPureIntro.
     apply map_eq => k.
     rewrite !lookup_fmap.
@@ -445,11 +445,11 @@ Section auth_map.
     rewrite lookup_fmap.
     destruct mq.
     - iDestruct (own_valid_2 with "Hm Hk") as
-          %(_ & Hlookup%map_ptsto_included & _)%auth_both_frac_valid_discrete.
+          %(_ & Hlookup%map_ptsto_included & _)%auth_both_dfrac_valid_discrete.
       iPureIntro.
       rewrite Hlookup //.
     - iDestruct (own_valid_2 with "Hm Hk") as
-          %(_ & Hlookup%map_ptsto_ro_included & _)%auth_both_frac_valid_discrete.
+          %(_ & Hlookup%map_ptsto_ro_included & _)%auth_both_dfrac_valid_discrete.
       iPureIntro.
       rewrite Hlookup //.
   Qed.
