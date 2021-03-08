@@ -708,7 +708,7 @@ Proof.
     iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
     rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
     iDestruct (na_heap_mapsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
-    exfalso. rewrite comm in Hval *. eapply Qp_not_add_le_l.
+    exfalso. revert Hval; rewrite (comm _ q 1%Qp). eapply Qp_not_add_le_l.
   }
   {
     iDestruct "Hreaders" as (q1 q2 n') "(>Hq_sum&>Hfc&>Hspts'&Hspts'_clo&>Hpts'&Hvty)".

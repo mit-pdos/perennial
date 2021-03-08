@@ -90,7 +90,7 @@ Section frac_count.
     - inversion Hcase1 as (?&Hpos_equiv). inversion Hpos_equiv; destruct n; simpl in *; lia.
     - apply prod_included in Hcase2 as (Hq_incl&_).
       inversion Hq_incl as (q0&Heq). inversion Heq as [Heq']. simpl in Heq'.
-      rewrite (comm _ _ q0) in Heq' * => ->. eauto.
+      rewrite -> (comm _ _ q0) in Heq'; subst; eauto.
   Qed.
 
   Lemma fc_auth_drop_last γ q:
