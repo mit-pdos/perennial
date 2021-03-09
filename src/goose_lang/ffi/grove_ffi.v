@@ -7,6 +7,7 @@ Require Import Decimal Ascii String DecimalString.
 
 Axiom Read : val.
 Axiom Write : val.
+Axiom AtomicAppend : val.
 Axiom U64ToString : val.
 
 Section grove_ffi.
@@ -54,6 +55,21 @@ Axiom wpc_Write : ∀ {k} filename content_old content (content_sl:Slice.t) q,
   {{{
       filename f↦ content_old ∨
       filename f↦ content
+  }}}.
+
+Axiom wpc_AtomicAppend : ∀ {k} filename content_old content (content_sl:Slice.t) q,
+  {{{
+      filename f↦ content_old ∗
+      typed_slice.is_slice content_sl byteT q content
+  }}}
+    grove_ffi.AtomicAppend #(str filename) (slice_val content_sl) @ k ; ⊤
+  {{{
+       RET #(); filename f↦ (content_old ++ content) ∗
+      typed_slice.is_slice content_sl byteT q (content_old ++ content)
+  }}}
+  {{{
+      filename f↦ content_old ∨
+      filename f↦ (content_old ++ content)
   }}}.
 
 Definition u64_to_string : u64 -> string := λ u, NilZero.string_of_int (Z.to_int (int.Z u)).

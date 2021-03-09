@@ -62,6 +62,12 @@ def main():
         metavar="DISTRIBUTED_EXAMPLES_PATH",
         default=None,
     )
+    parser.add_argument(
+        "--gokv",
+        help="path to gokv repo (skip translation if not provided)",
+        metavar="GOKV_PATH",
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -70,6 +76,7 @@ def main():
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     examples_dir = args.examples
     distributed_dir = args.distributed_examples
+    gokv_dir = args.gokv
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -79,6 +86,8 @@ def main():
         parser.error("perennial-examples directory does not exist")
     if distributed_dir is not None and not os.path.isdir(distributed_dir):
         parser.error("lockservice (distributed examples) directory does not exist")
+    if gokv_dir is not None and not os.path.isdir(gokv_dir):
+        parser.error("gokv directory does not exist")
 
     do_run = lambda cmd_args: run_command(
         cmd_args, dry_run=args.dry_run, verbose=args.verbose
@@ -197,6 +206,25 @@ def main():
             importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
             excludes=["github.com/mit-pdos/lockservice/grove_ffi"]
         )
+    if gokv_dir is not None:
+        pkgs = [
+            "aof",
+            "goosekv"
+        ]
+
+        for pkg in pkgs:
+            run_goose(
+                path.join(gokv_dir, pkg),
+                path.join(perennial_dir, "external/Goose"),
+                pkg="github.com/mit-pdos/gokv/" + pkg,
+                importHeader="""From Perennial.goose_lang Require Import ffi.grove_prelude.
+From Goose Require github_com.mit_pdos.lockservice.lockservice.
+                """,
+                excludes=["github.com/mit-pdos/lockservice/grove_ffi", "github.com/mit-pdos/lockservice"]
+                # XXX: need to change the Coq import statement for lockservice/ from
+                # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
+                # "From Goose Require github_com.mit_pdos.lockservice."
+            )
 
 
 if __name__ == "__main__":
