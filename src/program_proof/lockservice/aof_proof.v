@@ -22,10 +22,12 @@ Record aof_vol_names := {
 Context `{!aofG Σ}.
 Context `{!inG Σ mono_natUR}.
 Context `{!mapG Σ u64 unit}.
+Context `{!inG Σ (exclR unitO)}.
 
 Implicit Types γ : aof_vol_names.
 Implicit Types aof_ctx : (list u8) → iProp Σ.
 
+Definition aof_lenN := nroot .@ "aof_len".
 Definition aof_len_invariant γ : iProp Σ :=
   ∃ (l:u64),
     own γ.(len) (mono_nat_auth (1/2) (int.nat l)) ∗
@@ -56,7 +58,8 @@ Definition is_aof aof_ptr γ (aof_ctx : (list u8) → iProp Σ) : iProp Σ :=
   "#HdurableCond" ∷ readonly (aof_ptr ↦[AppendOnlyFile.S :: "durableCond"] #durCond_ptr) ∗
   "#HlenCond" ∷ is_cond lenCond_ptr mu_ptr ∗
   "#HdurCond" ∷ is_cond durCond_ptr mu_ptr ∗
-  "#Hmu_inv" ∷ is_lock aofN mu_ptr (aof_mu_invariant aof_ptr γ aof_ctx)
+  "#Hmu_inv" ∷ is_lock aofN mu_ptr (aof_mu_invariant aof_ptr γ aof_ctx) ∗
+  "#Haof_len_inv" ∷ inv aof_lenN (aof_len_invariant γ)
 .
 
 (* TODO: upgrade to WPC *)
@@ -113,8 +116,8 @@ Admitted.
 Definition aof_log_own γ data :=
   fmlist γ.(logdata) (1/2)%Qp data.
 
-Definition aof_length_lb γ (l:u64) : iProp Σ.
-Admitted.
+Definition aof_length_lb γ (l:u64) : iProp Σ :=
+  own γ.(len) (mono_nat_lb (int.nat l)).
 
 Lemma wp_AppendOnlyFile__Append aof_ptr γ data_sl aof_ctx (oldData newData:list u8) Q :
 is_aof aof_ptr γ aof_ctx -∗
@@ -169,13 +172,76 @@ Proof.
 
   iDestruct "Haof_log" as "[Hlogdata Haof_log]".
 
+  rewrite -app_assoc.
+  (* Want to prove membuf_fupd, and the postcondition *)
+  set (membufC' := membufC ++ newData) in *.
+  iAssert (|={⊤}=> (
+  aof_ctx predurableC
+                   ={⊤}=∗ aof_ctx (predurableC ++ membufC')
+                          ∗ (own γ.(len) (mono_nat_auth (1 / 2) (length predurableC))
+                             ={⊤}=∗ own γ.(len)
+                                      (mono_nat_auth (1 / 2)
+                                         (length (predurableC ++ membufC'))))
+  ) ∗ (aof_length_lb γ (U64 (length (predurableC ++ membufC'))) ={⊤}=∗ ▷ Q))%I with "[Hmembuf_fupd Hfupd]" as "HH".
+  {
+    (* allocate invariant to escrow Q *)
+    iMod (own_alloc (Excl ())) as "HQtok".
+    { done. }
+    iDestruct "HQtok" as (γtok) "Htok".
+    iMod (own_alloc (Excl ())) as "HQexcl".
+    { done. }
+    iDestruct "HQexcl" as (γq) "HQexcl".
+    iMod (inv_alloc aofN _ (own γtok (Excl ()) ∨ (U64 (length (predurableC ++ membufC')) [[γ.(len_toks)]]↦ ()) ∨ Q ∗ own γq (Excl ())) with "[]") as "#HQinv".
+    {
+      iRight. iLeft. (* TODO: get the len_tok over here *)
+      admit.
+    }
+    iSplitR "Htok"; last first.
+    {
+      iModIntro.
+      iIntros "Haof_lb".
+      iInv "HQinv" as "Hq" "Hqclose".
+      iDestruct "Hq" as "[>Htok2|Hq]".
+      { iDestruct (own_valid_2 with "Htok Htok2") as %Hbad. contradiction. }
+      iDestruct "Hq" as "[>Hlentok|Hq]".
+      {
+        iInv "Haof_len_inv" as ">Ha" "Haclose".
+        unfold aof_len_invariant.
+        iDestruct "Ha" as (l) "[Hlen Ha]".
+        iDestruct (own_valid_2 with "Hlen Haof_lb") as %Hineq.
+        apply mono_nat_both_frac_valid in Hineq as [_ Hineq].
+        iDestruct (big_sepS_elem_of_acc _ _ (U64 (length (predurableC ++ membufC'))) with "Ha") as "[Ha Harest]".
+        { set_solver. }
+        iDestruct "Ha" as "[Hlentok2|%Hbad]"; last first.
+        { exfalso. lia. }
+        iDestruct (ptsto_conflict with "Hlentok Hlentok2") as %Hbad.
+        done.
+      }
+      iMod ("Hqclose" with "[$Htok]").
+      iDestruct "Hq" as "[$ _]".
+      by iModIntro.
+    }
+
+    iModIntro.
+    iIntros "Hctx".
+    iMod ("Hmembuf_fupd" with "Hctx") as "[Hctx Hmembuf_fupd]".
+    iMod ("Hfupd" with "Hctx") as "[$ HQ]".
+    iModIntro.
+
+    (* length stuff *)
+    iIntros "Hlen".
+    iMod ("Hmembuf_fupd" with "Hlen") as "Hlen".
+    iInv "HQinv" as "Hq" "Hqclose".
+    (* get tokens out of HQinv *)
+    admit.
+  }
+
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Haof_log]").
   {
     iFrame "#∗".
     iNext.
     iExists _, _, _, _.
-    rewrite -app_assoc.
     iFrame.
 
     iIntros "Haof_ctx".
