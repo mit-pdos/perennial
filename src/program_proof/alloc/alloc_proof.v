@@ -225,4 +225,64 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+(* TODO: identical to freeBit proof, would be nice to share some of this *)
+Lemma wp_MarkUsed max l (bn: u64) :
+  int.Z bn < int.Z max →
+  {{{ is_alloc max l }}}
+    Alloc__MarkUsed #l #bn
+  {{{ RET #(); True }}}.
+Proof.
+  intros Hbound.
+  iIntros (Φ) "H HΦ". iNamed "H".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "[$]").
+  iIntros "[Hlocked Hlinv]".
+  wp_pures.
+  iNamed "Hlinv".
+  wp_loadField.
+  destruct (bits_lookup_byte max bits bn) as [b Hlookup]; [ done | done | ].
+  wp_apply (wp_SliceGet with "[$Hbits]"); first by eauto.
+  iIntros "[Hbits _]".
+  wp_loadField.
+  wp_apply (wp_SliceSet with "[$Hbits]").
+  { iSplit; iPureIntro; auto.
+    rewrite Hlookup; eauto. }
+  iIntros "Hbits".
+  wp_pures.
+  wp_loadField.
+  wp_apply (release_spec with "[$His_lock $Hlocked next bitmap Hbits]").
+  { rewrite -list_fmap_insert.
+    iExists _, _, _; iFrame "∗%".
+    rewrite insert_length.
+    iFrame "%". }
+  by iApply "HΦ".
+Qed.
+
+Lemma wp_AllocNum max l :
+  {{{ is_alloc max l }}}
+    Alloc__allocBit #l
+  {{{ (n: u64), RET #n; ⌜int.Z n < int.Z max⌝ }}}.
+Proof.
+  iIntros (Φ) "H HΦ".
+  wp_apply (wp_allocBit with "H").
+  done.
+Qed.
+
+Lemma wp_FreeNum max l (num: u64) :
+  int.Z num < int.Z max →
+  int.Z num ≠ 0 →
+  {{{ is_alloc max l }}}
+    Alloc__FreeNum #l #num
+  {{{ RET #(); True }}}.
+Proof.
+  intros Hnum Hnonzero.
+  iIntros (Φ) "H HΦ".
+  wp_call.
+  wp_if_destruct.
+  { contradiction Hnonzero. word. }
+  wp_apply (wp_freeBit with "H"); eauto.
+  by iApply "HΦ".
+Qed.
+
 End proof.
