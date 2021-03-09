@@ -35,7 +35,8 @@ Definition CreateAppendOnlyFile: val :=
               grove_ffi.AtomicAppend "fname" "l";;
               lock.acquire (struct.loadF AppendOnlyFile.S "mu" "a");;
               struct.storeF AppendOnlyFile.S "durableLength" "a" (struct.loadF AppendOnlyFile.S "durableLength" "a" + slice.len "l");;
-              lock.condBroadcast (struct.loadF AppendOnlyFile.S "durableCond" "a"))));;
+              lock.condBroadcast (struct.loadF AppendOnlyFile.S "durableCond" "a");;
+              Continue)));;
     "a".
 
 Definition AppendOnlyFile__Append: val :=

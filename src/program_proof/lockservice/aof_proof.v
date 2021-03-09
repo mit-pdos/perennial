@@ -103,18 +103,127 @@ Proof.
   iIntros (durableCond) "[Hmu_free HdurableCond]".
   wp_storeField.
 
-  (* Interesting part of proof;
-     One option is to keep the filemapsto, and also keep a ctx.
-     Alternatively, we could give the filemapsto back, and require fupds giving
-     us filemapsto as part of mu. I think keeping the ctx in the loop would be
-     more "hocap" style.
-   *)
-  (*
-    Going to go with hocap-style approach: seems easier to not lose any information in membuf_fupd.
-    Otherwise, the membuf_fupd would say "|={Eo,Ei}=> fileptsto old ∗ fileptsto new ={Ei,Eo}=∗ emp",
-    which isn't enough to chain with a new fupd.
-   *)
-  admit.
+  iAssert ((|={⊤}=> ∃ γ, is_aof l γ aof_ctx ∗ fmlist γ.(predurabledata) (1 / 2) data
+            ∗ l ↦[AppendOnlyFile.S :: "durableLength"]{1 / 2} #(U64 (length data))
+            ∗ own γ.(len) (mono_nat_auth (1/2) (length data)))
+          )%I with "[-Hpre HΦ]" as ">HH".
+  {
+    (* need to allocate ghost state and freeze stuff *)
+    admit.
+  }
+  iDestruct "HH" as (γ) "(#His_aof & Hpredur & HdurLen & Hlen)".
+  wp_apply (wp_fork with "[-HΦ]").
+  {
+    iNext.
+    iNamed "His_aof".
+    wp_loadField.
+    wp_apply (acquire_spec with "Hmu_inv").
+    iIntros "[Hlocked Haof_own]".
+    wp_pures.
+    iAssert (∃ data', fname f↦ data' ∗ aof_ctx data' ∗ fmlist γ.(predurabledata) (1/2) data'
+            ∗ l ↦[AppendOnlyFile.S :: "durableLength"]{1 / 2} #(U64 (length data'))
+            ∗ own γ.(len) (mono_nat_auth (1/2) (length data'))
+            )%I with "[Hpre Hpredur HdurLen Hlen]" as "Hfile_ctx".
+    { iExists _; iFrame. }
+    wp_forBreak.
+    wp_pures.
+
+    iNamed "Haof_own".
+    wp_loadField.
+    wp_apply (wp_slice_len).
+    wp_pures.
+    wp_if_destruct.
+    {
+      wp_loadField.
+      wp_apply (wp_condWait with "[- Hfile_ctx]").
+      { iFrame "#∗". iExists _, _, _, _; iFrame "∗#". }
+      iIntros "[Hlocked Haof_own]".
+      wp_pures.
+      iLeft.
+      iFrame.
+      done.
+    }
+
+    wp_loadField.
+    wp_pures.
+    wp_apply (wp_new_slice).
+    { done. }
+    iIntros (empty_membuf_sl) "Hmembuf_empty".
+    wp_apply (wp_storeField with "Hmembuf").
+    { unfold AppendOnlyFile.S. unfold field_ty. simpl. apply slice_val_ty. }
+    iIntros "Hmembuf".
+
+    wp_pures.
+    wp_loadField.
+
+    iDestruct "Hfile_ctx" as (data') "(Hfile & Hctx & Hpredur & HdurLen & Hlen)".
+
+    iDestruct (fmlist_agree_1 with "Hpredur Hpredurable") as %->.
+    iCombine "Hpredur Hpredurable" as "Hpredur".
+    iMod (fmlist_update (predurableC ++ membufC) with "Hpredur") as "[Hpredur _]".
+    { admit. } (* list prefix *)
+    iDestruct "Hpredur" as "[Hpredur Hpredurable]".
+    wp_apply (release_spec with "[-Hfile Hctx Hpredur Hmembuf_fupd Hmembuf_sl HdurLen Hlen]").
+    { iFrame "#∗". iNext. iExists _, [], (predurableC ++ membufC), _. iFrame "∗#".
+      rewrite app_nil_r.
+      iFrame.
+      iIntros "$ !> $ !>".
+      done.
+    }
+
+    wp_pures.
+
+    iDestruct (typed_slice.is_slice_sz with "Hmembuf_sl") as %Hsz.
+    wp_bind (AtomicAppend _ _).
+    iApply wpc_wp.
+    wpc_apply (wpc_AtomicAppend with "[$Hfile $Hmembuf_sl]").
+    iSplit.
+    { iModIntro. iIntros. instantiate (1:=(True)%I). done. }
+    iNext.
+    iIntros "[Hfile _]".
+    iMod ("Hmembuf_fupd" with "Hctx") as "[Hctx Hlen_fupd]".
+    wp_pures.
+
+    wp_loadField.
+    wp_apply (acquire_spec with "Hmu_inv").
+    iIntros "[Hlocked Haof_own]".
+    iRename "Hdurlen_lb" into "Hdurlen_lb_old".
+    iNamed "Haof_own".
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_slice_len).
+    wp_pures.
+    iDestruct (struct_field_mapsto_agree with "HdurLen HdurableLength") as %Heq.
+    rewrite Heq.
+    iCombine "HdurLen HdurableLength" as "HdurLen".
+    wp_storeField.
+
+    wp_loadField.
+    iMod ("Hlen_fupd" with "Hlen") as "Hlen".
+    (* TODO: get lower bound witness *)
+
+    wp_apply (wp_condBroadcast).
+    { iFrame "#". }
+    wp_pures.
+    iLeft.
+    iFrame.
+    iSplitL ""; first done.
+    iDestruct "HdurLen" as "[HdurableLength HdurLen]".
+    iSplitR "Hpredur HdurLen Hlen Hfile Hctx".
+    {
+      iExists _, _, _, _; iFrame "∗#".
+      (* need to get lb witness above. *)
+      admit.
+    }
+    {
+      iExists _; iFrame.
+      (* a bit of overflow reasoning *)
+      admit.
+    }
+  }
+  wp_pures.
+  iApply "HΦ".
+  iFrame "#".
 Admitted.
 
 Definition aof_log_own γ data :=
