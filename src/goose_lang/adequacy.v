@@ -100,13 +100,13 @@ Definition heap_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adeq
                   WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
   adequate s e σ (λ v _, φ v).
 Proof.
-  intros Hwp; eapply (wp_adequacy _ _); iIntros (???) "".
+  intros Hwp; eapply (wp_adequacy' _ _); iIntros (???) "".
   unshelve (iMod (na_heap_init (LK := naMode) tls σ.(heap)) as (?) "Hh").
   iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
   iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&?&Hor&?)".
   iModIntro. iExists
-    (λ σ κs, (na_heap_ctx tls σ.(heap) ∗ proph_map_interp κs σ.(used_proph_id) ∗ ffi_ctx (ffi_update_pre _ _ HffiG) σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
-    (λ _, True%I).
-  iFrame. by iApply (Hwp (HeapG _ _ _ _ _ _ HtraceG) with "[$] [$] [$]").
+    (λ σ ns κs nt, (na_heap_ctx tls σ.(heap) ∗ proph_map_interp κs σ.(used_proph_id) ∗ ffi_ctx (ffi_update_pre _ _ HffiG) σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
+    (λ _, True%I), _.
+  iFrame. iApply (Hwp (HeapG _ _ _ _ _ _ HtraceG) with "[$] [$] [$]").
 Qed.

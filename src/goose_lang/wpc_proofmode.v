@@ -16,11 +16,11 @@ Proof.
   iIntros "He HΦ". iApply wpc_lift_head_step; [done|].
   iSplit; last first.
   {  iDestruct "HΦ" as "(HΦc&_)". iModIntro. by iModIntro. }
-  iIntros (σ1 κ κs n) "Hσ".
+  iIntros (σ1 ns κ κs n) "Hσ".
   iMod (fupd_mask_subseteq ∅) as "Hclose"; first by set_solver+.
-  iModIntro. iSplit.
+  iModIntro. iNext. iSplit.
   { iPureIntro; econstructor; do 3 eexists. constructor. constructor. eauto. }
-  iNext; iIntros (v2 σ2 efs Hstep). apply head_step_atomic_inv in Hstep; [ | by inversion 1 ]. rewrite /head_step /= in Hstep.
+   iIntros (v2 σ2 efs Hstep). apply head_step_atomic_inv in Hstep; [ | by inversion 1 ]. rewrite /head_step /= in Hstep.
   inversion Hstep as [??? Heq]. inversion Heq; subst.
   iMod "Hclose". iFrame. iModIntro => //=. rewrite right_id.
   iApply wpc_value; iSplit.

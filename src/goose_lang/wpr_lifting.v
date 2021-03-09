@@ -16,12 +16,14 @@ Context `{!ffi_interp ffi}.
 
 Canonical Structure heap_namesO := leibnizO heap_names.
 
-Global Instance heapG_perennialG `{!heapG Σ} : perennialG goose_lang goose_crash_lang heap_namesO Σ :=
+Program Global Instance heapG_perennialG `{!heapG Σ} : perennialG goose_lang goose_crash_lang heap_namesO Σ :=
 {
   perennial_irisG := λ Hcrash hnames,
                      @heapG_irisG _ _ _ _ _ (heap_update _ _ _ Hcrash (@pbundleT _ _ hnames));
-  perennial_crashG := λ _ _, eq_refl
+  perennial_crashG := λ _ _, eq_refl;
+  perennial_num_laters_per_step := λ n, n
 }.
+Next Obligation. eauto. Qed.
 
 Definition wpr `{hG: !heapG Σ} `{hC: !crashG Σ} (s: stuckness) (k: nat) (E: coPset)
   (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapG Σ → iProp Σ) (Φr: heapG Σ → val → iProp Σ) :=
@@ -71,7 +73,7 @@ Proof.
                           (λ Hc names, Φcx (heap_update _ _ _ Hc (@pbundleT _ _ names)))
                                                     with "[Hwpc] [Hidemp]"); first auto.
   { rewrite //= heap_get_update' //=. }
-  { iModIntro. iIntros (?? σ_pre_crash σ_post_crash Hcrash κs ?) "H".
+  { iModIntro. iIntros (?? σ_pre_crash σ_post_crash Hcrash ns κs ?) "H".
     iSpecialize ("Hidemp" $! (heap_update _ _ _ _ _) with "[//] [//] H").
     {
       rewrite /state_interp.

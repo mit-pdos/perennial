@@ -15,7 +15,10 @@ Class pbundleG (T: ofe) (Σ: gFunctors) := {
 
 Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofe) (Σ : gFunctors) := PerennialG {
   perennial_irisG :> ∀ (Hcrash: crashG Σ), pbundleG T Σ → irisG Λ Σ;
-  perennial_crashG: ∀ H2 t, @iris_crashG _ _ (perennial_irisG H2 t) = H2
+  perennial_crashG: ∀ H2 t, @iris_crashG _ _ (perennial_irisG H2 t) = H2;
+  perennial_num_laters_per_step: nat → nat;
+  perennial_num_laters_per_step_spec:
+    ∀ Hc Ht, (@num_laters_per_step _ _ (@perennial_irisG Hc Ht)) = perennial_num_laters_per_step;
 }.
 
 Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
@@ -28,8 +31,8 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
   λ H2 t E e rec Φ Φinv Φr,
   (WPC e @ s ; k; E
      {{ Φ }}
-     {{ ∀ σ σ' (HC: crash_prim_step CS σ σ') κs n,
-        state_interp σ κs n ={E}=∗  ▷ ∀ H2 q, NC q ={E}=∗ ∃ t, state_interp σ' κs 0 ∗ (Φinv H2 t ∧ wpr H2 t E rec rec (λ v, Φr H2 t v) Φinv Φr) ∗ NC q}})%I.
+     {{ ∀ σ σ' (HC: crash_prim_step CS σ σ') ns κs n,
+        state_interp σ ns κs n ={E}=∗  ▷ ∀ H2 q, NC q ={E}=∗ ∃ t, state_interp σ' (S ns) κs 0 ∗ (Φinv H2 t ∧ wpr H2 t E rec rec (λ v, Φr H2 t v) Φinv Φr) ∗ NC q}})%I.
 
 Local Instance wpr_pre_contractive `{!perennialG Λ CS T Σ} s k: Contractive (wpr_pre s k).
 Proof.
@@ -75,7 +78,7 @@ Proof.
   iDestruct "HΦ" as "(_&HΦ)".
   rewrite own_discrete_idemp.
   iIntros "!> H".
-  iModIntro. iIntros (?????) "Hinterp". iMod ("H" with "[//] Hinterp") as "H".
+  iModIntro. iIntros (??????) "Hinterp". iMod ("H" with "[//] Hinterp") as "H".
   iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (?) "(?&H&HNC)".
   iModIntro. iExists _. iFrame.
   iSplit.
@@ -90,9 +93,9 @@ Qed.
    where the crash condition implies the precondition for a crash wp for rec *)
 Lemma idempotence_wpr s k E1 e rec Φx Φinv Φrx (Φcx: crashG Σ → _ → iProp Σ) Hc t:
   ⊢ WPC e @ s ; k ; E1 {{ Φx t }} {{ Φcx _ t }} -∗
-   (□ ∀ (Hc: crashG Σ) (t: pbundleG T Σ) σ σ' (HC: crash_prim_step CS σ σ') κs n,
-        Φcx Hc t -∗ state_interp σ κs n ={E1}=∗
-        ▷ ∀ (Hc': crashG Σ) q, NC q ={E1}=∗ ∃ t', state_interp σ' κs 0 ∗ (Φinv Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx Hc' t' }} {{ Φcx Hc' t' }}) ∗ NC q) -∗
+   (□ ∀ (Hc: crashG Σ) (t: pbundleG T Σ) σ σ' (HC: crash_prim_step CS σ σ') ns κs n,
+        Φcx Hc t -∗ state_interp σ ns κs n ={E1}=∗
+        ▷ ∀ (Hc': crashG Σ) q, NC q ={E1}=∗ ∃ t', state_interp σ' (S ns) κs 0 ∗ (Φinv Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx Hc' t' }} {{ Φcx Hc' t' }}) ∗ NC q) -∗
     wpr s k Hc t E1 e rec (Φx t) Φinv Φrx.
 Proof.
   iLöb as "IH" forall (E1 e Hc t Φx).
