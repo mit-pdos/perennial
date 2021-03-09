@@ -97,6 +97,24 @@ Proof.
       revert Heqb; word.
 Qed.
 
+Lemma bits_lookup_byte (max: u64) (bits: list u8) (num: u64) :
+  int.Z max = 8 * length bits →
+  int.Z num < int.Z max →
+  ∃ (b:u8), (b2val <$> bits) !! int.nat (word.divu num 8) = Some (b2val b).
+Proof.
+  intros Hmax Hnum.
+  assert (int.Z num / 8 < length bits).
+  { apply Zdiv_lt_upper_bound; lia. }
+  destruct (list_lookup_lt _ bits (Z.to_nat (int.Z num / 8)%Z)) as [b Hlookup].
+  { apply Nat2Z.inj_lt.
+    word. }
+  exists b.
+  rewrite list_lookup_fmap.
+  apply fmap_Some.
+  eexists; split; eauto.
+  rewrite word.unsigned_divu_nowrap; auto.
+Qed.
+
 Lemma wp_allocBit (max: u64) (l: loc) :
   {{{ is_alloc max l }}}
     Alloc__allocBit #l
@@ -132,17 +150,7 @@ Proof.
     wp_pures.
     iNamed "Hlinv".
     wp_loadField.
-    assert (int.Z num / 8 < length bits).
-    { apply Zdiv_lt_upper_bound; lia. }
-    destruct (list_lookup_lt _ bits (Z.to_nat (int.Z num / 8)%Z)) as [b Hlookup].
-    { apply Nat2Z.inj_lt.
-      lia. }
-    (* prove this separately since we need it twice *)
-    assert ((b2val <$> bits) !! int.nat (word.divu num 8) = Some (b2val b)) as Hlookup'.
-    { rewrite list_lookup_fmap.
-      apply fmap_Some.
-      eexists; split; eauto.
-      rewrite word.unsigned_divu_nowrap; auto. }
+    destruct (bits_lookup_byte max bits num) as [b Hlookup]; [ done | done | ].
     wp_apply (wp_SliceGet _ _ _ _ _ _ _ (b2val b) with "[$Hbits]"); first done.
     iIntros "[Hbits _]".
     wp_pures.
@@ -153,7 +161,7 @@ Proof.
       wp_loadField.
       wp_apply (wp_SliceSet with "[$Hbits]").
       { iSplit; iPureIntro; auto.
-        rewrite Hlookup'.
+        rewrite Hlookup.
         eauto. }
       iIntros "Hbits".
       wp_pures.
@@ -182,6 +190,39 @@ Proof.
     wp_load.
     iApply "HΦ".
     iPureIntro; done.
+Qed.
+
+Lemma wp_freeBit max l (bn: u64) :
+  int.Z bn < int.Z max →
+  {{{ is_alloc max l }}}
+    Alloc__freeBit #l #bn
+  {{{ RET #(); True }}}.
+Proof.
+  intros Hbound.
+  iIntros (Φ) "H HΦ". iNamed "H".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "[$]").
+  iIntros "[Hlocked Hlinv]".
+  wp_pures.
+  iNamed "Hlinv".
+  wp_loadField.
+  destruct (bits_lookup_byte max bits bn) as [b Hlookup]; [ done | done | ].
+  wp_apply (wp_SliceGet with "[$Hbits]"); first by eauto.
+  iIntros "[Hbits _]".
+  wp_loadField.
+  wp_apply (wp_SliceSet with "[$Hbits]").
+  { iSplit; iPureIntro; auto.
+    rewrite Hlookup; eauto. }
+  iIntros "Hbits".
+  wp_pures.
+  wp_loadField.
+  wp_apply (release_spec with "[$His_lock $Hlocked next bitmap Hbits]").
+  { rewrite -list_fmap_insert.
+    iExists _, _, _; iFrame "∗%".
+    rewrite insert_length.
+    iFrame "%". }
+  by iApply "HΦ".
 Qed.
 
 End proof.
