@@ -34,6 +34,9 @@ Definition aof_len_invariant γ : iProp Σ :=
     [∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜int.nat x > int.nat l⌝
 .
 
+Definition aof_length_lb γ (l:u64) : iProp Σ :=
+  own γ.(len) (mono_nat_lb (int.nat l)).
+
 Definition aof_mu_invariant (aof_ptr:loc) γ aof_ctx : iProp Σ :=
   ∃ membuf_sl membufC predurableC (durlen:u64),
   "Hmembuf" ∷ aof_ptr ↦[AppendOnlyFile.S :: "membuf"] (slice_val membuf_sl) ∗
@@ -41,12 +44,13 @@ Definition aof_mu_invariant (aof_ptr:loc) γ aof_ctx : iProp Σ :=
   "Hmembuf_sl" ∷ typed_slice.is_slice membuf_sl byteT 1 membufC ∗
   "Hpredurable" ∷ fmlist γ.(predurabledata) (1/2) predurableC ∗
   "Hlogdata" ∷ fmlist γ.(logdata) (1/2)%Qp (predurableC ++ membufC) ∗
-  "Hlen_toks" ∷ ([∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜int.nat x < length (predurableC ++ membufC)⌝) ∗
+  "Hlen_toks" ∷ ([∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜int.nat x ≤ length (predurableC ++ membufC)⌝) ∗
   "Hmembuf_fupd" ∷ (aof_ctx predurableC ={⊤}=∗ aof_ctx (predurableC ++ membufC)
      ∗ (own γ.(len) (mono_nat_auth (1/2) (length predurableC)) ={⊤}=∗
         own γ.(len) (mono_nat_auth (1/2) (length (predurableC ++ membufC)))
        )
-  )
+  ) ∗
+  "#Hdurlen_lb" ∷ aof_length_lb γ durlen
 .
 
 Definition aofN := nroot .@ "aof".
@@ -116,9 +120,6 @@ Admitted.
 Definition aof_log_own γ data :=
   fmlist γ.(logdata) (1/2)%Qp data.
 
-Definition aof_length_lb γ (l:u64) : iProp Σ :=
-  own γ.(len) (mono_nat_lb (int.nat l)).
-
 Lemma wp_AppendOnlyFile__Append aof_ptr γ data_sl aof_ctx (oldData newData:list u8) Q :
 is_aof aof_ptr γ aof_ctx -∗
   {{{
@@ -128,7 +129,7 @@ is_aof aof_ptr γ aof_ctx -∗
     AppendOnlyFile__Append #aof_ptr (slice_val data_sl)
   {{{
        (l:u64), RET #l; aof_log_own γ (oldData ++ newData) ∗
-                        (aof_length_lb γ l ={⊤}=∗ Q)
+                        (aof_length_lb γ l ={⊤}=∗ ▷ Q)
   }}}.
 Proof.
   iIntros "#Haof" (Φ) "!# Hpre HΦ".
@@ -175,6 +176,56 @@ Proof.
   rewrite -app_assoc.
   (* Want to prove membuf_fupd, and the postcondition *)
   set (membufC' := membufC ++ newData) in *.
+
+  iAssert (([∗ set] x ∈ fin_to_set u64, x [[γ.(len_toks)]]↦ () ∨
+                      ⌜int.nat x <= length (predurableC ++ membufC)⌝ ∨
+                      ⌜length (predurableC ++ membufC') < int.nat x⌝
+          ) ∗
+          ([∗ set] x ∈ fin_to_set u64, x [[γ.(len_toks)]]↦ () ∨
+                      ⌜int.nat x ≤ length (predurableC ++ membufC')⌝
+          ))%I
+    with "[Hlen_toks]"
+    as "HH".
+  {
+    iApply big_sepS_sep.
+    iApply (big_sepS_impl with "Hlen_toks").
+    iModIntro.
+    iIntros (x ?) "Hx".
+    iDestruct "Hx" as "[Hx|%Hineq]".
+    {
+      destruct (bool_decide (length (predurableC ++ membufC') < int.nat x)) as [|] eqn:Hineq.
+      {
+        apply bool_decide_eq_true in Hineq.
+        iSplitR "Hx".
+        { iRight; iRight. done. }
+        iLeft. iFrame.
+      }
+      {
+        apply bool_decide_eq_false in Hineq.
+        iSplitL "Hx".
+        { iFrame. }
+        iRight.
+        iPureIntro.
+        word.
+      }
+    }
+    {
+      iSplitL.
+      {
+        iRight; iLeft. done.
+      }
+      iRight. iPureIntro.
+      replace (membufC') with (membufC ++ newData) by done.
+      rewrite app_assoc.
+      rewrite app_length.
+      word.
+    }
+  }
+  iDestruct "HH" as "[Htoks Hlen_toks]".
+
+  assert (int.nat (U64 (length (predurableC ++ membufC'))) = (length (predurableC ++ membufC'))) as Hsafesize.
+  { admit. (* TODO: This is where we need an overflow check. *) }
+
   iAssert (|={⊤}=> (
   aof_ctx predurableC
                    ={⊤}=∗ aof_ctx (predurableC ++ membufC')
@@ -182,7 +233,7 @@ Proof.
                              ={⊤}=∗ own γ.(len)
                                       (mono_nat_auth (1 / 2)
                                          (length (predurableC ++ membufC'))))
-  ) ∗ (aof_length_lb γ (U64 (length (predurableC ++ membufC'))) ={⊤}=∗ ▷ Q))%I with "[Hmembuf_fupd Hfupd]" as "HH".
+  ) ∗ (aof_length_lb γ (U64 (length (predurableC ++ membufC'))) ={⊤}=∗ ▷ Q))%I with "[Hmembuf_fupd Hfupd Htoks]" as "HH".
   {
     (* allocate invariant to escrow Q *)
     iMod (own_alloc (Excl ())) as "HQtok".
@@ -191,10 +242,23 @@ Proof.
     iMod (own_alloc (Excl ())) as "HQexcl".
     { done. }
     iDestruct "HQexcl" as (γq) "HQexcl".
-    iMod (inv_alloc aofN _ (own γtok (Excl ()) ∨ (U64 (length (predurableC ++ membufC')) [[γ.(len_toks)]]↦ ()) ∨ Q ∗ own γq (Excl ())) with "[]") as "#HQinv".
+    iDestruct (big_sepS_elem_of_acc _ _ (U64 (length (predurableC ++ membufC'))) with "Htoks") as "[Hlen_tok Hlen_toks_rest]".
+    { set_solver. }
+    iDestruct "Hlen_tok" as "[Hlen_tok|%Hbad]"; last first.
     {
-      iRight. iLeft. (* TODO: get the len_tok over here *)
+      exfalso.
+      rewrite Hsafesize in Hbad.
+      rewrite app_length in Hbad.
+      rewrite app_length in Hbad.
+      rewrite app_length in Hbad.
+      enough ((length newData) > 0) by word.
+      (* TODO: Just add this to the precondition to simplify life. *)
       admit.
+    }
+    iMod (inv_alloc aofN _ (own γtok (Excl ()) ∨ (U64 (length (predurableC ++ membufC')) [[γ.(len_toks)]]↦ ()) ∨ Q ∗ own γq (Excl ())) with "[Hlen_tok]") as "#HQinv".
+    {
+      iRight. iLeft.
+      iFrame.
     }
     iSplitR "Htok"; last first.
     {
@@ -232,6 +296,7 @@ Proof.
     iIntros "Hlen".
     iMod ("Hmembuf_fupd" with "Hlen") as "Hlen".
     iInv "HQinv" as "Hq" "Hqclose".
+    iDestruct "Hq" as "[[_ HQexcl2]|Hq]".
     (* get tokens out of HQinv *)
     admit.
   }
