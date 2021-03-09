@@ -374,7 +374,75 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iFrame.
-
 Admitted.
+
+Lemma wp_AppendOnlyFile__WaitAppend aof_ptr γ (l:u64) aof_ctx :
+is_aof aof_ptr γ aof_ctx -∗
+  {{{
+       True
+  }}}
+    AppendOnlyFile__WaitAppend #aof_ptr #l
+  {{{
+       RET #(); aof_length_lb γ l
+  }}}.
+Proof.
+  iIntros "#Haof" (Φ) "!# _ HΦ".
+  wp_lam.
+  wp_pures.
+  iNamed "Haof".
+  wp_loadField.
+  wp_apply (acquire_spec with "Hmu_inv").
+  iIntros "[Hlocked Haof_own]".
+  wp_pures.
+  wp_apply (wp_forBreak_cond' with "[-]").
+  {
+    iNamedAccu.
+  }
+  iModIntro.
+  iNamed 1.
+
+  wp_pures.
+  iNamed "Haof_own".
+  wp_loadField.
+  wp_pures.
+  wp_if_destruct.
+  {
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_condWait with "[- HΦ]").
+    {
+      iFrame "#∗".
+      iExists _, _, _, _. iFrame "#∗".
+    }
+    iIntros "[Hlocked Haof_own]".
+    wp_pures.
+    iLeft.
+    iFrame.
+    done.
+  }
+  iSpecialize ("HΦ" with "[Hdurlen_lb]").
+  {
+    assert (int.nat l ≤ int.nat durlen) as Hineq.
+    {
+      rewrite Nat2Z.inj_le.
+      word.
+    }
+    unfold aof_length_lb.
+    replace (int.nat durlen) with ((int.nat durlen) `max` int.nat l) by word.
+    rewrite -mono_nat_lb_op.
+    iDestruct "Hdurlen_lb" as "[_ $]".
+  }
+  iRight.
+  iSplitL ""; first done.
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (release_spec with "[- HΦ]").
+  {
+    iFrame "#∗".
+    iExists _, _, _, _. iFrame "#∗".
+  }
+  iFrame.
+Qed.
 
 End aof_proof.
