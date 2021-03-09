@@ -225,6 +225,8 @@ Proof.
 
   assert (int.nat (U64 (length (predurableC ++ membufC'))) = (length (predurableC ++ membufC'))) as Hsafesize.
   { admit. (* TODO: This is where we need an overflow check. *) }
+  assert ((length newData) > 0) by admit.
+  (* TODO: add this to precondition *)
 
   iAssert (|={⊤}=> (
   aof_ctx predurableC
@@ -251,11 +253,9 @@ Proof.
       rewrite app_length in Hbad.
       rewrite app_length in Hbad.
       rewrite app_length in Hbad.
-      enough ((length newData) > 0) by word.
-      (* TODO: Just add this to the precondition to simplify life. *)
-      admit.
+      word.
     }
-    iMod (inv_alloc aofN _ (own γtok (Excl ()) ∨ (U64 (length (predurableC ++ membufC')) [[γ.(len_toks)]]↦ ()) ∨ Q ∗ own γq (Excl ())) with "[Hlen_tok]") as "#HQinv".
+    iMod (inv_alloc aofN _ (own γtok (Excl ()) ∗ aof_length_lb γ (U64 (length (predurableC ++ membufC'))) ∨ (U64 (length (predurableC ++ membufC')) [[γ.(len_toks)]]↦ ()) ∨ Q ∗ own γq (Excl ())) with "[Hlen_tok]") as "#HQinv".
     {
       iRight. iLeft.
       iFrame.
@@ -265,7 +265,7 @@ Proof.
       iModIntro.
       iIntros "Haof_lb".
       iInv "HQinv" as "Hq" "Hqclose".
-      iDestruct "Hq" as "[>Htok2|Hq]".
+      iDestruct "Hq" as "[>[Htok2 _]|Hq]".
       { iDestruct (own_valid_2 with "Htok Htok2") as %Hbad. contradiction. }
       iDestruct "Hq" as "[>Hlentok|Hq]".
       {
@@ -281,7 +281,8 @@ Proof.
         iDestruct (ptsto_conflict with "Hlentok Hlentok2") as %Hbad.
         done.
       }
-      iMod ("Hqclose" with "[$Htok]").
+      iMod ("Hqclose" with "[Htok Haof_lb]").
+      { iLeft. iNext. iFrame. }
       iDestruct "Hq" as "[$ _]".
       by iModIntro.
     }
@@ -294,33 +295,86 @@ Proof.
 
     (* length stuff *)
     iIntros "Hlen".
-    iMod ("Hmembuf_fupd" with "Hlen") as "Hlen".
     iInv "HQinv" as "Hq" "Hqclose".
-    iDestruct "Hq" as "[[_ HQexcl2]|Hq]".
-    (* get tokens out of HQinv *)
-    admit.
+    iDestruct "Hq" as "[[_ >Hlb]|Hq]".
+    {
+      iDestruct (own_valid_2 with "Hlen Hlb") as %Hbad.
+      exfalso.
+      apply mono_nat_both_frac_valid in Hbad as [_ Hbad].
+      rewrite Hsafesize in Hbad.
+      rewrite app_length in Hbad.
+      rewrite app_length in Hbad.
+      lia.
+    }
+    iDestruct "Hq" as "[>Hlen_tok|[_ >HQexcl2]]"; last first.
+    { iDestruct (own_valid_2 with "HQexcl HQexcl2") as %Hbad. contradiction. }
+
+    iDestruct ("Hlen_toks_rest" with "[$Hlen_tok]") as "Hlen_toks".
+    iMod ("Hqclose" with "[HQexcl HQ]") as "_".
+    { iRight; iRight; iFrame. }
+
+    iMod ("Hmembuf_fupd" with "Hlen") as "Hlen".
+
+    (* Use tokens to update mono_nat counter *)
+    iInv "Haof_len_inv" as ">Ha" "Haclose".
+    iDestruct "Ha" as (len) "[Hlen2 Ha]".
+    iDestruct (own_valid_2 with "Hlen Hlen2") as %Hleneq.
+    apply mono_nat_auth_frac_op_valid in Hleneq as [_ <-].
+    iCombine "Hlen Hlen2" as "Hlen".
+    rewrite mono_nat_auth_frac_op.
+    rewrite Qp_half_half.
+    iMod (own_update _ _ (mono_nat_auth 1 (length (predurableC ++ membufC'))) with "Hlen") as "Hlen".
+    {
+      apply mono_nat_update.
+      repeat rewrite app_length.
+      lia.
+    }
+    iEval (rewrite -Qp_half_half) in "Hlen".
+    rewrite -mono_nat_auth_frac_op.
+    iDestruct "Hlen" as "[Hlen Hlen2]".
+
+    iMod ("Haclose" with "[Ha Hlen_toks Hlen2]") as "_".
+    {
+      iNext. iExists _. rewrite -Hsafesize.
+      iFrame.
+      iApply (big_sepS_impl with "[Ha Hlen_toks]").
+      { iApply big_sepS_sep. iFrame. }
+
+      iModIntro.
+      iIntros (x ?) "Hx".
+      destruct (bool_decide (int.nat (length (predurableC ++ membufC')) < int.nat x)) as [|] eqn:Hineq.
+      {
+        apply bool_decide_eq_true in Hineq.
+        iRight.
+        done.
+      }
+      {
+        apply bool_decide_eq_false in Hineq.
+        iLeft.
+        iDestruct "Hx" as "[[$|%Hbad] [$|%Hineq2]]".
+        exfalso.
+        word.
+      }
+    }
+    iFrame.
+    by iModIntro.
   }
 
+  iMod "HH" as "[Hmembuf_fupd HfupdQ]".
+
+  iDestruct (typed_slice.is_slice_sz with "Hmembuf_sl") as %Hsz.
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Haof_log]").
+  wp_apply (release_spec with "[-HΦ Haof_log HfupdQ]").
   {
     iFrame "#∗".
     iNext.
     iExists _, _, _, _.
-    iFrame.
-
-    iIntros "Haof_ctx".
-    (* TODO: need to do this before, so we can also deal with the Q *)
-    iMod ("Hmembuf_fupd" with "Haof_ctx") as "Haof_ctx".
-    iMod ("Hfupd" with "Haof_ctx") as "[Haof_ctx HQ]".
-    iModIntro.
-    iFrame.
+    iFrame "#∗".
   }
   wp_pures.
   iApply "HΦ".
   iFrame.
 
-  (* Need to set up mnat, tokens, and some invariants to prove this. *)
 Admitted.
 
 End aof_proof.
