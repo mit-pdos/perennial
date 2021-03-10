@@ -41,7 +41,10 @@ Definition GoKVServer__put_inner: val :=
   rec: "GoKVServer__put_inner" "s" "args" "reply" :=
     (if: lockservice.CheckReplyTable (struct.loadF GoKVServer.S "lastSeq" "s") (struct.loadF GoKVServer.S "lastReply" "s") (struct.loadF lockservice.RPCRequest.S "CID" "args") (struct.loadF lockservice.RPCRequest.S "Seq" "args") "reply"
     then #()
-    else MapInsert (struct.loadF GoKVServer.S "kvs" "s") (struct.get lockservice.RPCVals.S "U64_1" (struct.loadF lockservice.RPCRequest.S "Args" "args")) (struct.get lockservice.RPCVals.S "U64_2" (struct.loadF lockservice.RPCRequest.S "Args" "args"))).
+    else
+      MapInsert (struct.loadF GoKVServer.S "kvs" "s") (struct.get lockservice.RPCVals.S "U64_1" (struct.loadF lockservice.RPCRequest.S "Args" "args")) (struct.get lockservice.RPCVals.S "U64_2" (struct.loadF lockservice.RPCRequest.S "Args" "args"));;
+      struct.storeF lockservice.RPCReply.S "Ret" "reply" #0;;
+      MapInsert (struct.loadF GoKVServer.S "lastReply" "s") (struct.loadF lockservice.RPCRequest.S "CID" "args") #0).
 
 Definition GoKVServer__Put: val :=
   rec: "GoKVServer__Put" "s" "args" "reply" :=
