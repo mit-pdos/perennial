@@ -109,7 +109,9 @@ Definition reply_res γrpc req (reply:@RPCReply u64) : iProp Σ :=
   ∨ RPCReplyReceipt γrpc req reply.(Rep_Ret)
 .
 
-Lemma wp_CheckReplyTable (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
+Lemma wp_CheckReplyTable :
+  ∀ lastSeqM lastReplyM req, ∃ b,
+    ∀ (reply_ptr:loc) (reply:Reply64) (lastSeq_ptr lastReply_ptr:loc),
 {{{
      "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝
     ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
@@ -118,7 +120,7 @@ Lemma wp_CheckReplyTable (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) (las
 }}}
     lockservice.CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply_ptr
 {{{
-     (b:bool) (reply':Reply64), RET #b;
+     (reply':Reply64), RET #b;
     "Hreply" ∷ own_reply reply_ptr reply' ∗ (
     "Hcases" ∷ ("%" ∷ ⌜b = false⌝ ∗
     "%" ∷ ⌜(int.Z req.(Req_Seq) > int.Z (map_get lastSeqM req.(Req_CID)).1)%Z⌝ ∗
@@ -149,7 +151,7 @@ Proof.
 Admitted.
 
 Lemma wp_GoKVServer__put_inner s req_ptr reply_ptr rid args gkv reply :
-  True -∗ (∃ gkv',
+  ∃ gkv',
   {{{
        read_request req_ptr rid args ∗
        own_reply reply_ptr reply ∗
@@ -164,14 +166,13 @@ Lemma wp_GoKVServer__put_inner s req_ptr reply_ptr rid args gkv reply :
                               gokv_aof_ctx γ.(rpc_gn) γ.(kvs_gn) (data ++ req_data) ∗ reply_res γ.(rpc_gn) rid reply' (* this should be resources for the reply' *)
             ) ∗
        own_reply reply_ptr reply'
-  }}})%I
+  }}}
 .
 Proof.
-  iStartProof.
-  iIntros "_".
-  iExists _.
+  destruct (wp_CheckReplyTable gkv.(lastSeqM) gkv.(lastReplyM) rid) as [b H].
+  eexists (if b then _ else _).
   iLöb as "IH" forall (s req_ptr reply_ptr reply).
-  iIntros (Φ) "!# Hpre HΦ".
+  iIntros (Φ) "Hpre HΦ".
   wp_lam.
   wp_pures.
   iDestruct "Hpre" as "(#Hargs & Hreply & Hcore)".
@@ -180,9 +181,11 @@ Proof.
   iNamed "Hargs".
 
   repeat wp_loadField.
-  wp_apply (wp_CheckReplyTable with "[$HlastSeqMap $Hreply $HlastReplyMap]").
+  specialize (H reply_ptr reply lastSeq_ptr lastReply_ptr).
+  wp_bind (lockservice.CheckReplyTable _ _ _ _ _).
+  wp_apply (H with "[$HlastSeqMap $Hreply $HlastReplyMap]").
   { iDestruct "HSeqPositive" as %?. iPureIntro. word. }
-  iIntros (b reply').
+  iIntros (reply').
   iIntros "HcheckPost".
   wp_if_destruct.
   {
@@ -204,7 +207,7 @@ Proof.
       iExists gkv.
       iFrame.
       iModIntro.
-      iApply (has_gokv_encoding_append $! H0 with "Henc").
+      iApply (has_gokv_encoding_append $! H1 with "Henc").
       unfold apply_op_req.
       iIntros.
       iIntros (?) "!# Hpre HΦ".
@@ -215,6 +218,57 @@ Proof.
       iApply "HΦ".
       iDestruct "HH" as "($ & _ & $)".
     }
+  }
+  (* case that we need to actually do an operation *)
+
+  iDestruct "HcheckPost" as "(Hreply & [Hcheck|Hbad] & HlastReply)"; last first.
+  {
+    iNamed "Hbad". exfalso. done.
+  }
+  iNamed "Hcheck".
+  iNamed "Hcases".
+
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+
+  wp_apply (wp_MapInsert with "HkvsMap").
+  { done. }
+  iIntros "HkvsMap".
+
+  iApply "HΦ".
+  iSplitR "Hreply".
+  {
+    instantiate (1:= mkGoKVServerC _ _ _).
+    iExists _, _, _, _.
+    Opaque typed_map.map_insert.
+    Opaque map_insert.
+    iFrame "HlastSeqOwn HlastReplyOwn HkvsOwn ∗".
+  }
+  {
+    iFrame. iIntros (???) "#Henc1". iIntros (?) "Hctx".
+    iNamed "Hctx".
+    iDestruct (has_gokv_encoding_injective with "Henc1 Henc") as %<-.
+    rewrite sep_exist_r.
+    iExists _.
+    rewrite -sep_assoc.
+    iSplitL "".
+    {
+      iModIntro. iApply (has_gokv_encoding_append $! H3 with "Henc").
+
+      unfold apply_op_req.
+      iIntros.
+      iIntros (?) "!# Hpre HΦ".
+      (* Apply IH to get has_gokv_encoding *)
+      wp_apply ("IH" with "[$Hpre]").
+
+      iIntros (?) "HH".
+      iApply "HΦ".
+      iDestruct "HH" as "($ & _ & $)".
+    }
+    iSimpl.
+    (* TODO: want rpc request invariant here*)
+    admit.
   }
 Admitted.
 
