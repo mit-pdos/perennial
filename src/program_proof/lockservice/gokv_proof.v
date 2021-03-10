@@ -24,38 +24,77 @@ Implicit Types γ : gokv_names.
 Definition goKVN := nroot .@ "gokv".
 
 Record GoKVServerC :=
-{
+mkGoKVServerC {
   kvsM : gmap u64 u64;
   lastReplyM : gmap u64 u64;
   lastSeqM : gmap u64 u64;
 }.
 
-Definition has_gokv_encoding (data:list u8) (gkv:GoKVServerC) : Prop.
-Admitted.
+Record KVReq := mkKVReq {
+  optype : u64 ; (* 0 = put, 1 = get *)
+  rid : RPCRequestID ;
+  args : RPCValsC ;
+}.
 
-Lemma has_gokv_encoding_injective (data:list u8) (gkv1 gkv2:GoKVServerC) :
-  has_gokv_encoding data gkv1 →
-  has_gokv_encoding data gkv2 →
-  gkv1 = gkv2.
-Admitted.
-
-Definition gokv_aof_ctx γrpc γkv (data:list u8) : iProp Σ :=
-  ∃ gkv,
-    "%Henc" ∷ ⌜has_gokv_encoding data gkv⌝ ∗
-    "Hghost" ∷ map_ctx γkv 1 gkv.(kvsM) ∗
-    "Hsrpc" ∷ RPCServer_own γrpc gkv.(lastSeqM) gkv.(lastReplyM)
-.
-
-Definition gokv_inv s γ : iProp Σ :=
-  ∃ (kvs_ptr lastSeq_ptr aof_ptr lastReply_ptr:loc) gkv,
+Definition gokv_core s gkv : iProp Σ :=
+  ∃ (kvs_ptr lastSeq_ptr aof_ptr lastReply_ptr:loc),
    "HlastSeqOwn" ∷ s ↦[GoKVServer.S :: "lastSeq"] #lastSeq_ptr ∗
    "HlastReplyOwn" ∷ s ↦[GoKVServer.S :: "lastReply"] #lastReply_ptr ∗
    "HlastSeqMap" ∷ is_map (lastSeq_ptr) gkv.(lastSeqM) ∗
    "HlastReplyMap" ∷ is_map (lastReply_ptr) gkv.(lastReplyM) ∗
    "HkvsOwn" ∷ s ↦[GoKVServer.S :: "kvs"] #kvs_ptr ∗
-   "HkvsMap" ∷ is_map (kvs_ptr) gkv.(kvsM) ∗
+   "HkvsMap" ∷ is_map (kvs_ptr) gkv.(kvsM)
+.
+
+Definition apply_op_req (gkv:GoKVServerC) (rid:RPCRequestID) (args:RPCValsC) (gkv':GoKVServerC) : iProp Σ :=
+  ∀ s req_ptr reply_ptr reply,
+  {{{
+       read_request req_ptr rid args ∗
+       own_reply reply_ptr reply ∗
+       gokv_core s gkv
+  }}}
+    GoKVServer__put_inner #s #req_ptr #reply_ptr
+  {{{
+       reply', RET #(); gokv_core s gkv' ∗
+       own_reply reply_ptr reply'
+  }}}.
+
+Definition unknown (data:list u8) (gkv:GoKVServerC) : iProp Σ.
+Admitted.
+
+Definition has_gokv_encoding (data:list u8) (gkv:GoKVServerC) : iProp Σ :=
+  ∃ (ops:list KVReq),
+    □ (unknown data gkv).
+
+Lemma has_gokv_encoding_injective (data:list u8) (gkv1 gkv2:GoKVServerC) :
+  has_gokv_encoding data gkv1 -∗
+  has_gokv_encoding data gkv2 -∗
+  ⌜gkv1 = gkv2⌝.
+Admitted.
+
+Definition has_req_encoding_put data rid args :=
+has_encoding data [EncUInt64 0; EncUInt64 rid.(Req_CID); EncUInt64 rid.(Req_Seq) ; EncUInt64 args.(U64_1) ; EncUInt64 args.(U64_2) ].
+
+Lemma has_gokv_encoding_append (data req_data:list u8) (gkv gkv':GoKVServerC) :
+  ∀ rid args,
+    ⌜has_req_encoding_put req_data rid args⌝ -∗
+     has_gokv_encoding data gkv -∗
+     apply_op_req gkv rid args gkv' -∗
+     has_gokv_encoding (data ++ req_data) gkv'.
+Admitted.
+
+Definition gokv_aof_ctx γrpc γkv (data:list u8) : iProp Σ :=
+  ∃ gkv,
+    "#Henc" ∷ has_gokv_encoding data gkv ∗
+    "Hghost" ∷ map_ctx γkv 1 gkv.(kvsM) ∗
+    "Hsrpc" ∷ RPCServer_own γrpc gkv.(lastSeqM) gkv.(lastReplyM)
+.
+
+Definition gokv_inv s γ : iProp Σ :=
+  ∃ (aof_ptr:loc) gkv,
+   "Hcore" ∷ gokv_core s gkv ∗
    "#HaofOwn" ∷ readonly (s ↦[GoKVServer.S :: "opLog"] #aof_ptr) ∗
-   "Haof_log" ∷ (∃ data, aof_log_own γ.(aof_gn) data ∗ ⌜has_gokv_encoding data gkv⌝) ∗
+   "Haof_log" ∷ (∃ data, aof_log_own γ.(aof_gn) data ∗ has_gokv_encoding data gkv) ∗
    "#His_aof" ∷ is_aof aof_ptr γ.(aof_gn) (gokv_aof_ctx γ.(rpc_gn) γ.(kvs_gn))
 .
 
@@ -65,7 +104,12 @@ Definition is_gokvserver s γ : iProp Σ :=
   "#Hmu_inv" ∷ is_lock goKVN mu (gokv_inv s γ)
 .
 
-Lemma wp_CheckReplyTable (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM γrpc :
+Definition reply_res γrpc req (reply:@RPCReply u64) : iProp Σ :=
+  ⌜reply.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req
+  ∨ RPCReplyReceipt γrpc req reply.(Rep_Ret)
+.
+
+Lemma wp_CheckReplyTable (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
      "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝
     ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
@@ -83,8 +127,7 @@ Lemma wp_CheckReplyTable (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) (las
     ∨
     "%" ∷ ⌜b = true⌝ ∗
     "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
-    (⌜reply'.(Rep_Stale) = true⌝ ∗ (RPCServer_own γrpc lastSeqM lastReplyM -∗ RPCRequestStale γrpc req)
-      ∨ (RPCServer_own γrpc lastSeqM lastReplyM -∗ RPCReplyReceipt γrpc req reply'.(Rep_Ret)))
+    "Hwand" ∷ (∀ γrpc, RPCServer_own γrpc lastSeqM lastReplyM -∗ reply_res γrpc req reply')
     ) ∗
     "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
 }}}
@@ -99,10 +142,80 @@ Lemma wp_encodeReq_put req_ptr rid args :
   {{{
        sl (data:list u8), RET (slice_val sl);
        typed_slice.is_slice sl byteT 1 data ∗
-       ⌜has_encoding data [EncUInt64 0; EncUInt64 rid.(Req_CID); EncUInt64 rid.(Req_Seq) ; EncUInt64 args.(U64_1) ; EncUInt64 args.(U64_2) ]⌝
+       ⌜has_req_encoding_put data rid args⌝
   }}}
 .
 Proof.
+Admitted.
+
+Lemma wp_GoKVServer__put_inner s req_ptr reply_ptr rid args gkv reply :
+  True -∗ (∃ gkv',
+  {{{
+       read_request req_ptr rid args ∗
+       own_reply reply_ptr reply ∗
+       gokv_core s gkv
+  }}}
+    GoKVServer__put_inner #s #req_ptr #reply_ptr
+  {{{
+       reply', RET #(); gokv_core s gkv' ∗
+            (∀ data req_data γ, has_gokv_encoding data gkv →
+                              ⌜has_req_encoding_put req_data rid args⌝ →
+                              gokv_aof_ctx γ.(rpc_gn) γ.(kvs_gn) (data) ={⊤}=∗
+                              gokv_aof_ctx γ.(rpc_gn) γ.(kvs_gn) (data ++ req_data) ∗ reply_res γ.(rpc_gn) rid reply' (* this should be resources for the reply' *)
+            ) ∗
+       own_reply reply_ptr reply'
+  }}})%I
+.
+Proof.
+  iStartProof.
+  iIntros "_".
+  iExists _.
+  iLöb as "IH" forall (s req_ptr reply_ptr reply).
+  iIntros (Φ) "!# Hpre HΦ".
+  wp_lam.
+  wp_pures.
+  iDestruct "Hpre" as "(#Hargs & Hreply & Hcore)".
+
+  iNamed "Hcore".
+  iNamed "Hargs".
+
+  repeat wp_loadField.
+  wp_apply (wp_CheckReplyTable with "[$HlastSeqMap $Hreply $HlastReplyMap]").
+  { iDestruct "HSeqPositive" as %?. iPureIntro. word. }
+  iIntros (b reply').
+  iIntros "HcheckPost".
+  wp_if_destruct.
+  {
+    iNamed "HcheckPost".
+    iDestruct "HcheckPost" as "[[Hbad|HcheckPost] HlastReplyMap]".
+    { iNamed "Hbad". iNamed "Hcases". done. }
+    iNamed "HcheckPost".
+    iApply "HΦ".
+    iSplitR "Hwand Hreply".
+    {
+      iExists _, _, _, _. iFrame "#∗".
+    }
+    {
+      iFrame. iIntros (???) "#Henc1". iIntros (?) "Hctx".
+      iNamed "Hctx".
+      iDestruct (has_gokv_encoding_injective with "Henc1 Henc") as %<-.
+      iDestruct ("Hwand" with "Hsrpc") as "#Hres".
+      iFrame "#".
+      iExists gkv.
+      iFrame.
+      iModIntro.
+      iApply (has_gokv_encoding_append $! H0 with "Henc").
+      unfold apply_op_req.
+      iIntros.
+      iIntros (?) "!# Hpre HΦ".
+      (* Apply IH to get has_gokv_encoding *)
+      wp_apply ("IH" with "[$Hpre]").
+
+      iIntros (?) "HH".
+      iApply "HΦ".
+      iDestruct "HH" as "($ & _ & $)".
+    }
+  }
 Admitted.
 
 Lemma wp_GoKVServer__Put (s:loc) va γ :
@@ -131,66 +244,44 @@ Proof.
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
 
-  iNamed "Hargs".
   wp_pures.
-  repeat wp_loadField.
 
-  wp_apply (wp_CheckReplyTable with "[$HlastSeqMap $Hreply $HlastReplyMap]").
-  { iDestruct "HSeqPositive" as %?. iPureIntro. word. }
-  iIntros (b reply').
-  iIntros "HcheckPost".
-  wp_if_destruct.
+  wp_apply (wp_GoKVServer__put_inner with "[$Hargs $Hreply $Hcore]").
+  iIntros (gkv' reply') "(Hcore & HcommitFupd & Hreply)".
+  wp_pures.
+
+  wp_apply (wp_encodeReq_put with "[$Hargs]").
+  iIntros (req_sl req_data) "[Hreq_sl %Hreq_enc]".
+  wp_loadField.
+  iDestruct "Haof_log" as (?) "[Haof_log %]".
+  wp_apply (wp_AppendOnlyFile__Append with "His_aof [$Hreq_sl $Haof_log HcommitFupd]").
   {
-    iNamed "HcheckPost".
-    iDestruct "HcheckPost" as "[[Hbad|HcheckPost] HlastReplyMap]".
-    { iNamed "Hbad". iNamed "Hcases". done. }
-    iNamed "HcheckPost".
-    wp_pures.
-    wp_apply (wp_encodeReq_put with "[$]").
-    iIntros (req_sl req_data) "[Hreq_sl %Hreq_enc]".
-    wp_loadField.
-    iDestruct "Haof_log" as (data) "[Haof_log %Hdata_enc]".
-    iDestruct "HcheckPost" as "[Hcheck|Hcheck]".
-    {
-      iDestruct "Hcheck" as "(%Hstale & Hwand)".
-      wp_apply (wp_AppendOnlyFile__Append with "His_aof [$Hreq_sl $Haof_log Hwand]").
-      {
-        iNamed 1.
-        replace (gkv0) with (gkv); last first.
-        { apply (has_gokv_encoding_injective data); done. }
-        iDestruct ("Hwand" with "Hsrpc") as "#Hstale".
-        instantiate (1:=RPCRequestStale γ.(rpc_gn) req).
-        iFrame "#".
-        iExists gkv.
-        iFrame.
-        iPureIntro.
-        (* Pure fact about adding operation to log *)
-        admit.
-      }
-      iIntros (l) "[Haof_log Hwand]".
-      wp_pures.
+    iIntros "Hctx".
+    iMod ("HcommitFupd" $! data req_data γ with "[] [] Hctx") as "Hfupd".
+    { done. }
+    { done. }
+    iFrame.
+    by iModIntro.
+  }
 
-      wp_loadField.
-      wp_apply (release_spec with "[- HΦ Hwand Hreply]").
-      {
-        iFrame "#∗".
-        iNext. iExists _, _, _, _, _. iFrame.
-        iFrame "#∗".
-        iExists _; iFrame.
-        (* same pure fact as above *)
-        admit.
-      }
-      wp_pures.
-      wp_loadField.
-      wp_apply (wp_AppendOnlyFile__WaitAppend with "His_aof").
-      iIntros "Haof_lb".
-      iMod ("Hwand" with "Haof_lb") as ">Hstale".
-      wp_pures.
-      iApply "HΦ".
-      iExists _; iFrame "∗#".
-      iLeft. iFrame. done.
-    } (* end of stale case *)
+  iIntros (l) "[Haof_log Hwand]".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (release_spec with "[- HΦ Hwand Hreply]").
+  {
+    iFrame "#∗".
+    iNext. iExists _, _. iFrame "∗#".
+    iExists _; iFrame.
+    (* This should be true by virtue of the fact that the wp above worked *)
     admit.
   }
-  admit.
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_AppendOnlyFile__WaitAppend with "His_aof").
+  iIntros "Haof_lb".
+  iMod ("Hwand" with "Haof_lb") as "Hreply_res".
+  wp_pures.
+  iApply "HΦ".
+  iExists _; iFrame "∗#".
 Admitted.

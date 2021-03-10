@@ -37,12 +37,16 @@ Definition encodeReq: val :=
     marshal.Enc__PutInt "e" (struct.get lockservice.RPCVals.S "U64_2" (struct.loadF lockservice.RPCRequest.S "Args" "args"));;
     marshal.Enc__Finish "e".
 
+Definition GoKVServer__put_inner: val :=
+  rec: "GoKVServer__put_inner" "s" "args" "reply" :=
+    (if: lockservice.CheckReplyTable (struct.loadF GoKVServer.S "lastSeq" "s") (struct.loadF GoKVServer.S "lastReply" "s") (struct.loadF lockservice.RPCRequest.S "CID" "args") (struct.loadF lockservice.RPCRequest.S "Seq" "args") "reply"
+    then #()
+    else MapInsert (struct.loadF GoKVServer.S "kvs" "s") (struct.get lockservice.RPCVals.S "U64_1" (struct.loadF lockservice.RPCRequest.S "Args" "args")) (struct.get lockservice.RPCVals.S "U64_2" (struct.loadF lockservice.RPCRequest.S "Args" "args"))).
+
 Definition GoKVServer__Put: val :=
   rec: "GoKVServer__Put" "s" "args" "reply" :=
     lock.acquire (struct.loadF GoKVServer.S "mu" "s");;
-    (if: lockservice.CheckReplyTable (struct.loadF GoKVServer.S "lastSeq" "s") (struct.loadF GoKVServer.S "lastReply" "s") (struct.loadF lockservice.RPCRequest.S "CID" "args") (struct.loadF lockservice.RPCRequest.S "Seq" "args") "reply"
-    then #()
-    else MapInsert (struct.loadF GoKVServer.S "kvs" "s") (struct.get lockservice.RPCVals.S "U64_1" (struct.loadF lockservice.RPCRequest.S "Args" "args")) (struct.get lockservice.RPCVals.S "U64_2" (struct.loadF lockservice.RPCRequest.S "Args" "args")));;
+    GoKVServer__put_inner "s" "args" "reply";;
     let: "l" := aof.AppendOnlyFile__Append (struct.loadF GoKVServer.S "opLog" "s") (encodeReq #0 "args") in
     lock.release (struct.loadF GoKVServer.S "mu" "s");;
     aof.AppendOnlyFile__WaitAppend (struct.loadF GoKVServer.S "opLog" "s") "l";;
