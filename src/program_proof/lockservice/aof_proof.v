@@ -9,7 +9,10 @@ Context `{!heapG Σ}.
 Context `{!filesysG Σ}.
 
 Class aofG Σ := AofG {
-  aof_flistG :> fmlistG u8 Σ
+  aof_flistG :> fmlistG u8 Σ ;
+  aof_mnatG :> inG Σ mono_natUR ;
+  aof_mapG :> mapG Σ u64 unit ;
+  aof_tokG :> inG Σ (exclR unitO) ;
 }.
 
 Record aof_vol_names := {
@@ -20,9 +23,6 @@ Record aof_vol_names := {
 }.
 
 Context `{!aofG Σ}.
-Context `{!inG Σ mono_natUR}.
-Context `{!mapG Σ u64 unit}.
-Context `{!inG Σ (exclR unitO)}.
 
 Implicit Types γ : aof_vol_names.
 Implicit Types aof_ctx : (list u8) → iProp Σ.
