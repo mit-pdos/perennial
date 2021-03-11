@@ -230,13 +230,13 @@ Proof using Hrpre Hhpre Hcpre.
   iDestruct (source_pool_singleton with "Hpool") as "Hpool".
   iSpecialize ("Hwp" with "[$] [$] [$]").
   iModIntro. iFrame "Hwp". iSplit.
-  - iModIntro. iIntros (???) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
+  - iModIntro. iIntros (????) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
     iMod (trace_inv_open with "[$] [$] [$] [$]").
     iApply ncfupd_mask_weaken; eauto.
   - iModIntro. iIntros (??) "H".
     iDestruct ("H1" with "H") as (?) "(#Hspec_ctx&#Htrace_ctx)".
     iClear "H1". iModIntro.
-    iIntros (???) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
+    iIntros (????) "(Hheap_ctx&Hproh_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
     iMod (@trace_inv_open with "[$] [$] [$] [$]").
     iApply ncfupd_mask_weaken; eauto.
 Qed.
@@ -441,7 +441,7 @@ Proof using Hrpre Hhpre Hcpre.
     iApply (wpc_trace_inv_open with "[] Hspec Htrace Hcfupd1 Hcfupd3 H").
     { iApply Hexcl. }
   - iModIntro. iClear "Hspec Htrace".
-    iIntros (?? σ_pre_crash σ_post_crash Hcrash κs ?).
+    iIntros (?? σ_pre_crash σ_post_crash Hcrash ns κs ?).
     iIntros "H". iDestruct "H" as (?? es' σs' stat Hexec Hsafe)
                                     "(Hspec_ffi&Htrace_frag&Horacle_frag&HΦc)".
     iIntros "(_&_&Hffi_old&Htrace_auth&Horacle_auth)".

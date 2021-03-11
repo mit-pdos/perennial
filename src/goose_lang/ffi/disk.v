@@ -290,7 +290,7 @@ lemmas. *)
                                   mapsto_block l 1 b }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd&Htr) !>".
+    iIntros (σ1 ns κ κs n) "(Hσ&Hκs&Hd&Htr) !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iSplit.
@@ -406,7 +406,7 @@ lemmas. *)
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 κ κs n) "(Hσ&Hκs&Hd&Htr) !>".
+    iIntros (σ1 ns κ κs n) "(Hσ&Hκs&Hd&Htr) !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iDestruct (heap_valid_block with "Hσ Hl") as %?.
