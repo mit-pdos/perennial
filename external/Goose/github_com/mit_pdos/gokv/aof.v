@@ -11,6 +11,7 @@ Module AppendOnlyFile.
     "durableCond" :: condvarRefT;
     "lengthCond" :: condvarRefT;
     "membuf" :: slice.T byteT;
+    "length" :: uint64T;
     "durableLength" :: uint64T
   ].
 End AppendOnlyFile.
@@ -30,11 +31,12 @@ Definition CreateAppendOnlyFile: val :=
               Continue
             else
               let: "l" := struct.loadF AppendOnlyFile.S "membuf" "a" in
+              let: "newLength" := struct.loadF AppendOnlyFile.S "length" "a" in
               struct.storeF AppendOnlyFile.S "membuf" "a" (NewSlice byteT #0);;
               lock.release (struct.loadF AppendOnlyFile.S "mu" "a");;
               grove_ffi.AtomicAppend "fname" "l";;
               lock.acquire (struct.loadF AppendOnlyFile.S "mu" "a");;
-              struct.storeF AppendOnlyFile.S "durableLength" "a" (struct.loadF AppendOnlyFile.S "durableLength" "a" + slice.len "l");;
+              struct.storeF AppendOnlyFile.S "durableLength" "a" "newLength";;
               lock.condBroadcast (struct.loadF AppendOnlyFile.S "durableCond" "a");;
               Continue)));;
     "a".
@@ -43,7 +45,11 @@ Definition AppendOnlyFile__Append: val :=
   rec: "AppendOnlyFile__Append" "a" "data" :=
     lock.acquire (struct.loadF AppendOnlyFile.S "mu" "a");;
     struct.storeF AppendOnlyFile.S "membuf" "a" (SliceAppendSlice byteT (struct.loadF AppendOnlyFile.S "membuf" "a") "data");;
-    let: "r" := struct.loadF AppendOnlyFile.S "durableLength" "a" + slice.len (struct.loadF AppendOnlyFile.S "membuf" "a") in
+    Skip;;
+    (for: (λ: <>, struct.loadF AppendOnlyFile.S "length" "a" + slice.len "data" < struct.loadF AppendOnlyFile.S "length" "a"); (λ: <>, Skip) := λ: <>,
+      Continue);;
+    struct.storeF AppendOnlyFile.S "length" "a" (struct.loadF AppendOnlyFile.S "length" "a" + slice.len "data");;
+    let: "r" := struct.loadF AppendOnlyFile.S "length" "a" in
     lock.condSignal (struct.loadF AppendOnlyFile.S "lengthCond" "a");;
     lock.release (struct.loadF AppendOnlyFile.S "mu" "a");;
     "r".
