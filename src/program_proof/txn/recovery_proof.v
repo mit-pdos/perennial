@@ -2,6 +2,7 @@ From Perennial.base_logic.lib Require Import mono_nat.
 From Perennial.Helpers Require Import Transitions NamedProps Map gset range_set.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
+From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
@@ -568,14 +569,14 @@ Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
     "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 ∅ ∗
     "Hcrash_heaps0" ∷ ([∗ map] a↦b ∈ latest crash_heaps, ∃ hb,
      ⌜hb_latest_update hb = b⌝ ∗
-     mapsto (hG:=γ.(txn_walnames).(wal_heap_h)) a 1 hb) ∗
+     a ↪[γ.(txn_walnames).(wal_heap_h)] hb) ∗
     "Hcrashheapsmatch" ∷ crash_heaps_match γ logm crash_heaps ==∗
     ∃ metam,
     map_ctx γ.(txn_metaheap) 1 metam ∗
     "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
       ∃ installed bs blockK,
         "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
-        "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
+        "Htxn_hb" ∷ blkno ↪[γ.(txn_walnames).(wal_heap_h)] (HB installed bs) ∗
         "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
     "Hmapsto_txns" ∷ ([∗ map] addr↦bufData ∈ latest logm, ∃ γm, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true).
 Proof.
@@ -640,10 +641,10 @@ Lemma wal_heap_inv_wf names ls:
   ⌜ wal_wf ls ⌝.
 Proof. iNamed 1. eauto. Qed.
 
-Lemma latest_wal_heap_h_mapsto_split (γ: gen_heapG u64 heap_block Σ) gh :
-  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ mapsto (hG:=γ) a 1 hb) ⊣⊢
-  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ mapsto (hG:=γ) a (1/2) hb) ∗
-  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ mapsto (hG:=γ) a (1/2) hb).
+Lemma latest_wal_heap_h_mapsto_split (γ: gname) gh :
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] hb) ⊣⊢
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ]{#1/2} hb) ∗
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ]{#1/2} hb).
 Proof.
   rewrite -big_sepM_sep.
   repeat f_equiv.
@@ -653,7 +654,7 @@ Proof.
   - iDestruct 1 as "[H1 H2]".
     iDestruct "H1" as (hb <-) "H1".
     iDestruct "H2" as (hb' <-) "H2".
-    iDestruct (mapsto_agree with "H1 H2") as %<-.
+    iDestruct (ghost_map_elem_agree with "H1 H2") as %<-.
     iCombine "H1 H2" as "H".
     eauto.
 Qed.

@@ -9,7 +9,7 @@ From Perennial.algebra Require Import mlist.
 From Perennial.Helpers Require Import Transitions List.
 From Perennial.program_proof Require Import proof_prelude wal.abstraction wal.specs.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
-From Perennial.algebra Require Import deletable_heap log_heap.
+From Perennial.algebra Require Import log_heap.
 From Perennial.Helpers Require Import NamedProps.
 
 Inductive heap_block :=

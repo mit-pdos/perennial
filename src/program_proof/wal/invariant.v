@@ -4,7 +4,8 @@ From iris.algebra Require Import gset.
 
 From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Map.
 
-From Perennial.algebra Require Export deletable_heap append_list auth_map mono_nat.
+From Perennial.algebra Require Export append_list auth_map mono_nat.
+From Perennial.base_logic Require Import lib.ghost_map.
 From Perennial.program_proof Require Export proof_prelude.
 From Perennial.program_proof.wal Require Export lib highest thread_owned txns_ctx.
 From Perennial.program_proof.wal Require Export circ_proof sliding_proof.
@@ -15,7 +16,7 @@ Typeclasses Opaque struct_field_mapsto.
 
 Class walG Σ :=
   { wal_circ         :> circG Σ;
-    wal_txns_map     :> gen_heapPreG nat (u64 * list update.t) Σ;
+    wal_txns_map     :> ghost_mapG Σ nat (u64 * list update.t);
     wal_circ_state   :> ghost_varG Σ circΣ.t;
     wal_txn_id       :> ghost_varG Σ (u64 * nat);
     wal_list_update  :> ghost_varG Σ (list update.t);
@@ -33,7 +34,7 @@ Class walG Σ :=
 
 Definition walΣ : gFunctors :=
   #[ circΣ;
-   gen_heapΣ nat (u64 * list update.t);
+   ghost_mapΣ nat (u64 * list update.t);
    ghost_varΣ circΣ.t;
    ghost_varΣ (u64 * nat);
    ghost_varΣ (list update.t);
@@ -696,7 +697,7 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Definition wal_names_dummy {hG:gen_heapPreG nat (u64 * list update.t) Σ} : wal_names.
+Definition wal_names_dummy : wal_names.
   constructor; try exact inhabitant.
 Defined.
 

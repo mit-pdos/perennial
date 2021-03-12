@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From Perennial.algebra Require Import deletable_heap log_heap liftable.
+From Perennial.algebra Require Import log_heap liftable.
 From Perennial.base_logic Require Import lib.mono_nat.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
@@ -58,11 +58,10 @@ Proof. reflexivity. Qed.
 
 Class buftxnG Σ :=
   { buftxn_txn   :> txnG Σ;
-    buftxn_bufs  :> gen_heapPreG addr object Σ;
   }.
 
 Definition buftxnΣ : gFunctors :=
-  #[ txnΣ; gen_heapΣ addr object ].
+  #[ txnΣ ].
 
 Instance subG_buftxnΣ Σ : subG buftxnΣ Σ → buftxnG Σ.
 Proof. solve_inG. Qed.

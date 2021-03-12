@@ -8,7 +8,8 @@ From Perennial.Helpers Require Import Transitions List range_set gset.
 From Perennial.program_proof Require Import wal.abstraction wal.specs.
 From Perennial.program_proof Require Import wal.heapspec_lib.
 From Perennial.program_proof Require Import proof_prelude disk_lib.
-From Perennial.algebra Require Import deletable_heap log_heap.
+From Perennial.algebra Require Import log_heap.
+From Perennial.base_logic Require Import ghost_map.
 From Perennial.Helpers Require Import NamedProps.
 
 Inductive heap_block :=
@@ -16,7 +17,7 @@ Inductive heap_block :=
 .
 
 Class walheapG (Σ: gFunctors) :=
-  { walheap_u64_heap_block :> gen_heapPreG u64 heap_block Σ;
+  { walheap_u64_heap_block :> ghost_mapG Σ u64 heap_block;
     walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
     walheap_mono_nat :> mono_natG Σ;
     walheap_asyncCrashHeap :> ghost_varG Σ (async (gmap u64 Block));
@@ -24,7 +25,7 @@ Class walheapG (Σ: gFunctors) :=
   }.
 
 Definition walheapΣ : gFunctors :=
-  #[ gen_heapΣ u64 heap_block;
+  #[ ghost_mapΣ u64 heap_block;
    ghost_varΣ (gmap Z Block * list (u64 * list update.t));
    mono_natΣ;
    ghost_varΣ (async (gmap u64 Block));
@@ -57,7 +58,7 @@ Definition hb_latest_update (hb : heap_block) :=
   end.
 
 Record wal_heap_gnames := {
-  wal_heap_h : gen_heapG u64 heap_block Σ;
+  wal_heap_h : gname;
     (* current heap *)
   wal_heap_crash_heaps : gname;
     (* possible crashes; latest has the same contents as current heap *)
@@ -87,7 +88,7 @@ Definition wal_heap_inv_crashes (heaps : async (gmap u64 Block)) (ls : log_state
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (gh : gmap u64 heap_block) (crash_heaps : async (gmap u64 Block)),
     "%Hgh_complete" ∷ ⌜set_map int.Z (dom (gset u64) gh) = dom (gset _) ls.(log_state.d)⌝ ∗
-    "Hctx" ∷ gen_heap_ctx (hG := γ.(wal_heap_h)) gh ∗
+    "Hctx" ∷ ghost_map_auth γ.(wal_heap_h) 1 gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ ghost_var γ.(wal_heap_txns) (1/2) (ls.(log_state.d), ls.(log_state.txns)) ∗
     "Hinstalled" ∷ mono_nat_auth_own γ.(wal_heap_installed) 1 ls.(log_state.installed_lb) ∗
@@ -104,8 +105,8 @@ Record locked_walheap := {
 Definition is_locked_walheap γ (lwh : locked_walheap) : iProp Σ :=
   ghost_var γ.(wal_heap_txns) (1/2) (lwh.(locked_wh_σd), lwh.(locked_wh_σtxns)).
 
-Definition heapspec_init_ghost_state γ  : iProp Σ :=
-  "wal_heap_h" ∷ gen_heap_ctx (hG:=γ.(wal_heap_h)) (∅: gmap u64 heap_block) ∗
+Definition heapspec_init_ghost_state γ : iProp Σ :=
+  "wal_heap_h" ∷ ghost_map_auth γ.(wal_heap_h) 1 (∅: gmap u64 heap_block) ∗
   "wal_heap_crash_heaps" ∷ ghost_var γ.(wal_heap_crash_heaps) 1 (Build_async (∅ : gmap u64 Block) []) ∗
   "wal_durable_lb" ∷ mono_nat_auth_own γ.(wal_heap_durable_lb) 1 0%nat ∗
   "wal_heap_txns" ∷ ghost_var γ.(wal_heap_txns) 1 (∅ : disk, @nil (u64 * list update.t)) ∗
@@ -115,7 +116,7 @@ Lemma alloc_heapspec_init_ghost_state γwal_names :
   ⊢ |==> ∃ γ', "%Hwal_names" ∷ ⌜γ'.(wal_heap_walnames) = γwal_names⌝ ∗
                "Hinit" ∷ heapspec_init_ghost_state γ'.
 Proof.
-  iMod (gen_heap_init (∅: gmap u64 heap_block)) as (wal_heap_h) "?".
+  iMod (ghost_map_alloc (∅: gmap u64 heap_block)) as (wal_heap_h) "[? _]".
   iMod (ghost_var_alloc (Build_async (∅ : gmap u64 Block) _)) as (wal_heap_crash_heaps) "?".
   iMod (mono_nat_own_alloc 0) as (wal_heap_durable_lb) "[? _]".
   iMod (ghost_var_alloc (∅ : disk, @nil (u64 * list update.t))) as (wal_heap_txns) "?".
@@ -246,7 +247,7 @@ Lemma wal_heap_inv_init (γwalnames: wal_names) bs :
                          {| locked_wh_σd := (log_state0 bs).(log_state.d);
                             locked_wh_σtxns := [(U64 0, [])]|} ∗
                        "wal_heap_h_mapsto" ∷ ([∗ map] l↦v ∈ gh_heapblock0 bs,
-                          mapsto (hG:=γheapnames.(wal_heap_h)) l 1 v) ∗
+                          l ↪[γheapnames.(wal_heap_h)] v) ∗
                        "wal_heap_crash_heaps" ∷ ghost_var γheapnames.(wal_heap_crash_heaps)
                               (3 / 4) (Build_async (crash_heap0 bs) [])
 .
@@ -260,7 +261,7 @@ Proof.
   iMod (alloc_heapspec_init_ghost_state γwalnames) as (γheapnames Heq1) "?"; iNamed.
   iNamed "Hinit".
 
-  iMod (gen_heap_alloc_gen _ gh with "wal_heap_h") as "(wal_heap_h & wal_heap_mapsto)".
+  iMod (ghost_map_insert_big gh with "wal_heap_h") as "(wal_heap_h & wal_heap_mapsto)".
   { apply map_disjoint_empty_r. }
   rewrite right_id_L.
   iMod (ghost_var_update (list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs), [(U64 0, [])])
@@ -510,19 +511,19 @@ Proof.
   auto.
 Qed.
 
-Lemma wal_heap_gh_crash (γ: gen_heapG _ _ _) crash_txn (gh: gmap u64 heap_block) ls :
+Lemma wal_heap_gh_crash (γ: gname) crash_txn (gh: gmap u64 heap_block) ls :
   ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns) →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
                 <| log_state.durable_lb := crash_txn |> in
-  gen_heap_ctx (hG:=γ) ∅ -∗
+  ghost_map_auth γ 1 ∅ -∗
   ([∗ map] a↦b ∈ gh, wal_heap_inv_addr ls a b) -∗
   |==> ∃ gh',
       ⌜dom (gset _) gh' = dom (gset _) gh⌝ ∗
-      gen_heap_ctx (hG:=γ) gh' ∗
+      ghost_map_auth γ 1 gh' ∗
       (* TODO: something has been lost along the way about how these values
       relate to the old ones; probably the exchanger is the only thing that can
       contain that information *)
-      [∗ map] a↦b ∈ gh', wal_heap_inv_addr ls' a b ∗ mapsto (hG:=γ) a 1 b.
+      [∗ map] a↦b ∈ gh', wal_heap_inv_addr ls' a b ∗ a ↪[γ] b.
 Proof using walheapG0.
   intros Hbound.
   cbn zeta.
@@ -542,7 +543,7 @@ Proof using walheapG0.
     { apply not_elem_of_dom.
       rewrite Hdom.
       apply not_elem_of_dom; done. }
-    iMod (gen_heap_alloc _ a b' with "Hctx") as "[Hctx Hmapsto]"; first by auto.
+    iMod (ghost_map_insert a b' with "Hctx") as "[Hctx Hmapsto]"; first by auto.
     iModIntro.
     iExists (<[a:=b']> gh').
     iFrame.
@@ -666,11 +667,11 @@ Lemma wal_heap_h_latest_updates γwal_heap_h crash_heaps gh ls :
   set_map int.Z (dom (gset u64) gh) = dom (gset _) ls.(log_state.d) →
   ([∗ map] a↦hb ∈ gh,
    wal_heap_inv_addr ls a hb ∗
-   mapsto (hG:=γwal_heap_h) a 1 hb) -∗
+   a ↪[γwal_heap_h] hb) -∗
   wal_heap_inv_crashes crash_heaps ls -∗
   ([∗ map] a↦b ∈ latest crash_heaps, ∃ hb,
     ⌜hb_latest_update hb = b⌝ ∗
-    mapsto (hG:=γwal_heap_h) a 1 hb).
+    a ↪[γwal_heap_h] hb).
 Proof.
   iIntros (Hwf Hgh_complete) "Haddr #Hcrash".
   iNamed "Hcrash".
@@ -719,7 +720,7 @@ Definition crash_heaps_pre_exchange γ γ' ls ls' : iProp Σ :=
       "Hcrash_heaps" ∷ ghost_var γ'.(wal_heap_crash_heaps) (3/4) crash_heaps' ∗
       ([∗ map] a↦b ∈ latest crash_heaps', ∃ hb,
         ⌜hb_latest_update hb = b⌝ ∗
-        mapsto (hG:=γ'.(wal_heap_h)) a 1 hb)).
+        a ↪[γ'.(wal_heap_h)] hb)).
 
 Definition crash_heaps_post_exchange γ : iProp Σ :=
   (∃ (crash_heaps: async (gmap u64 Block)),
@@ -782,7 +783,7 @@ Lemma heapspec_exchange_crash_heaps ls ls' γ γ' crash_heaps :
    "Hcrash_heaps" ∷ ghost_var γ'.(wal_heap_crash_heaps) (3/4) crash_heaps' ∗
    ([∗ map] a↦b ∈ latest crash_heaps', ∃ hb,
      ⌜hb_latest_update hb = b⌝ ∗
-     mapsto (hG:=γ'.(wal_heap_h)) a 1 hb)).
+     a ↪[γ'.(wal_heap_h)] hb)).
 Proof.
   iIntros "Hexch Hcrash_heaps_old34".
   iNamed "Hexch".
@@ -1761,10 +1762,10 @@ Definition readmem_q γh (a : u64) (installed : Block) (bs : list Block) (res : 
   (
     match res with
     | Some resb =>
-      mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
+      a ↪[γh.(wal_heap_h)] (HB installed bs) ∗
       ⌜ resb = latest_update installed bs ⌝
     | None =>
-      mapsto (hG := γh.(wal_heap_h)) a 1 (HB (latest_update installed bs) nil)
+      a ↪[γh.(wal_heap_h)] (HB (latest_update installed bs) nil)
     end
   )%I.
 
@@ -1774,7 +1775,7 @@ Lemma union_singleton_l_id `{Countable A} (a:A) (x: gset A) :
 Proof. set_solver. Qed.
 
 Theorem wal_heap_readmem E γh a (Q : option Block -> iProp Σ) :
-  ( |NC={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
+  ( |NC={⊤ ∖ ↑walN, E}=> ∃ installed bs, a ↪[γh.(wal_heap_h)] (HB installed bs) ∗
         ( ∀ mb, readmem_q γh a installed bs mb -∗ |NC={E, ⊤ ∖ ↑walN}=> Q mb ) ) -∗
   ( ∀ σ σ' mb,
       ⌜wal_wf σ⌝ -∗
@@ -1786,7 +1787,7 @@ Proof.
   iNamed "Hinv".
 
   iMod "Ha" as (installed bs) "[Ha Hfupd]".
-  iDestruct (gen_heap_valid with "Hctx Ha") as "%".
+  iDestruct (ghost_map_lookup with "Hctx Ha") as "%".
   iDestruct (big_sepM_lookup with "Hgh") as "%"; eauto.
 
   destruct H2 as [? Htxn_id].
@@ -1819,7 +1820,7 @@ Proof.
     iMod (mono_nat_own_update new_durable with "Hcrash_heaps_lb") as "[Hcrash_heaps_lb _]".
     { lia. }
 
-    iMod (gen_heap_update _ _ _ (HB (latest_update installed (updates_since txn_id a σ)) nil) with "Hctx Ha") as "[Hctx Ha]".
+    iMod (ghost_map_update (HB (latest_update installed (updates_since txn_id a σ)) nil) with "Hctx Ha") as "[Hctx Ha]".
     iMod ("Hfupd" $! None with "[Ha]").
     {
       rewrite /readmem_q.
@@ -1873,12 +1874,12 @@ Qed.
 
 Definition readinstalled_q γh (a : u64) (installed : Block) (bs : list Block) (res : Block) : iProp Σ :=
   (
-    mapsto (hG := γh) a 1 (HB installed bs) ∗
+    a ↪[γh] (HB installed bs) ∗
     ⌜ res ∈ installed :: bs ⌝
   )%I.
 
 Theorem wal_heap_readinstalled E γh a (Q : Block -> iProp Σ) :
-  ( |NC={⊤ ∖ ↑walN, E}=> ∃ installed bs, mapsto (hG := γh.(wal_heap_h)) a 1 (HB installed bs) ∗
+  ( |NC={⊤ ∖ ↑walN, E}=> ∃ installed bs, a ↪[γh.(wal_heap_h)] (HB installed bs) ∗
         ( ∀ b, readinstalled_q γh.(wal_heap_h) a installed bs b -∗ |NC={E, ⊤ ∖ ↑walN}=> Q b ) ) -∗
   ( ∀ σ σ' b',
       ⌜wal_wf σ⌝ -∗
@@ -1890,7 +1891,7 @@ Proof using walheapG0 Σ.
   iNamed "Hinv".
 
   iMod "Ha" as (installed bs) "[Ha Hfupd]".
-  iDestruct (gen_heap_valid with "Hctx Ha") as "%".
+  iDestruct (ghost_map_lookup with "Hctx Ha") as "%".
   iDestruct (big_sepM_lookup with "Hgh") as "%"; eauto.
 
   simpl in *; monad_inv.
@@ -1922,12 +1923,12 @@ Proof using walheapG0 Σ.
 Qed.
 
 Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
-  [∗ list] _ ↦ u; old ∈ bs; olds,
-    mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old)).
+  ([∗ list] _ ↦ u; old ∈ bs; olds,
+    u.(update.addr) ↪[γh] (HB (fst old) (snd old)))%I.
 
 Definition memappend_q γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
-  [∗ list] _ ↦ u; old ∈ bs; olds,
-    mapsto (hG := γh) u.(update.addr) 1 (HB (fst old) (snd old ++ [u.(update.b)])).
+  ([∗ list] _ ↦ u; old ∈ bs; olds,
+    u.(update.addr) ↪[γh] (HB (fst old) (snd old ++ [u.(update.b)])))%I.
 
 Fixpoint memappend_gh (gh : gmap u64 heap_block) bs olds :=
   match bs, olds with
@@ -1937,7 +1938,7 @@ Fixpoint memappend_gh (gh : gmap u64 heap_block) bs olds :=
   end.
 
 Theorem memappend_pre_in_gh γh (gh : gmap u64 heap_block) bs olds :
-  gen_heap_ctx gh -∗
+  ghost_map_auth γh 1 gh -∗
   memappend_pre γh bs olds -∗
   ⌜ ∀ u i,
       bs !! i = Some u ->
@@ -1949,15 +1950,15 @@ Proof.
   iDestruct (big_sepL2_lookup_1_some with "Hmem") as %Hv; eauto.
   destruct Hv.
   iDestruct (big_sepL2_lookup_acc with "Hmem") as "[Hx Hmem]"; eauto.
-  iDestruct (gen_heap_valid with "Hctx Hx") as %Hv.
+  iDestruct (ghost_map_lookup with "Hctx Hx") as %Hv.
   eauto.
 Qed.
 
 Lemma wal_heap_memappend_pre_to_q gh γh bs olds :
-  ( gen_heap_ctx gh ∗
+  ( ghost_map_auth γh 1 gh ∗
     memappend_pre γh bs olds )
   ==∗
-  ( gen_heap_ctx (memappend_gh gh bs olds) ∗
+  ( ghost_map_auth γh 1 (memappend_gh gh bs olds) ∗
     memappend_q γh bs olds ).
 Proof.
   iIntros "(Hctx & Hpre)".
@@ -1973,9 +1974,9 @@ Proof.
 
   destruct olds; simpl in *; try congruence.
   iDestruct "Hpre" as "[Ha Hpre]".
-  iDestruct (gen_heap_valid with "Hctx Ha") as "%".
+  iDestruct (ghost_map_lookup with "Hctx Ha") as "%".
 
-  iMod (gen_heap_update _ _ _ (HB p.1 (p.2 ++ [b.(update.b)])) with "Hctx Ha") as "[Hctx Ha]".
+  iMod (ghost_map_update (HB p.1 (p.2 ++ [b.(update.b)])) with "Hctx Ha") as "[Hctx Ha]".
 
   iDestruct ("Ibs" $! _ olds with "[] Hctx Hpre") as "Hx".
   { iPureIntro. lia. }
@@ -2009,7 +2010,7 @@ Proof.
         destruct (decide (a.(update.addr) = a0.(update.addr))).
         {
           rewrite e.
-          iDestruct (mapsto_valid_2 with "Ha Ha0") as %Hd.
+          iDestruct (ghost_map_elem_valid_2 with "Ha Ha0") as %Hd.
           exfalso. apply Hd. simpl. auto.
         }
         iPureIntro.
@@ -2092,13 +2093,16 @@ Proof.
     intro Hne. apply H. apply elem_of_list_further. eauto.
 Qed.
 
-Lemma apply_upds_u64_split heapdisk bs (γ: gen_heapG _ _ _) unmodified :
+(*
+RJ:Lemma was unused; ghost map used here has a different type than
+the one in the main ghost state...
+Lemma apply_upds_u64_split heapdisk bs (γ: gname) (unmodified : gmap u64 heap_block) :
   NoDup (map update.addr bs) ->
   ( ∀ u, u ∈ bs -> unmodified !! u.(update.addr) = None ) ->
   ( ∀ l v, unmodified !! l = Some v → heapdisk !! l = Some v ) ->
-  ⊢ ([∗ map] l↦v ∈ apply_upds_u64 heapdisk bs, mapsto (hG := γ) l 1 v) -∗
-    ([∗ map] l↦v ∈ unmodified, mapsto (hG := γ) l 1 v) ∗
-    ([∗ list] u ∈ bs, mapsto (hG := γ) u.(update.addr) 1 u.(update.b)) : iProp Σ.
+  ⊢ ([∗ map] l↦v ∈ apply_upds_u64 heapdisk bs, l ↪[γ] v) -∗
+    ([∗ map] l↦v ∈ unmodified, l ↪[γ] v) ∗
+    ([∗ list] u ∈ bs, u.(update.addr) ↪[γ] u.(update.b)) : iProp Σ.
 Proof.
   iIntros (Hnodup Hdisjoint Hinheapdisk) "Happly".
   iInduction bs as [|] "Hbs" forall (heapdisk Hinheapdisk); simpl.
@@ -2118,6 +2122,7 @@ Proof.
       apply elem_of_list_here.
     + rewrite lookup_delete_ne; eauto.
 Qed.
+*)
 
 Lemma apply_upds_u64_apply_upds bs :
   ∀ heapdisk d,
@@ -2145,9 +2150,9 @@ Definition memappend_crash γh (bs: list update.t) (crash_heaps : async (gmap u6
   is_locked_walheap γh lwh' ∗
   ghost_var γh.(wal_heap_crash_heaps) (3/4) (async_put (new_crash_heap) crash_heaps).
 
-Lemma memappend_pre_addrs_wf (γ: gen_heapG _ _ _) bs olds gh σ :
+Lemma memappend_pre_addrs_wf (γ: gname) bs olds gh σ :
   memappend_pre γ bs olds -∗
-  gen_heap_ctx (hG := γ) gh -∗
+  ghost_map_auth γ 1 gh -∗
   ([∗ map] a↦b ∈ gh, wal_heap_inv_addr σ a b) -∗
   ⌜addrs_wf bs σ.(log_state.d)⌝.
 Proof.
@@ -2160,7 +2165,7 @@ Proof.
   rewrite /memappend_pre.
   iDestruct (big_sepL2_lookup_1_some with "Hpre") as (o) "%Holds"; eauto.
   iDestruct (big_sepL2_lookup with "Hpre") as "Hp"; eauto.
-  iDestruct (gen_heap_valid with "Hctx Hp") as "%Hv".
+  iDestruct (ghost_map_lookup with "Hctx Hp") as "%Hv".
   iDestruct (big_sepM_lookup with "Hinv") as "%Hinv"; eauto.
   intuition eauto.
 Qed.
@@ -2404,11 +2409,11 @@ Proof.
   eapply in_drop_ge; [ | eauto ]; lia.
 Qed.
 
-Lemma wal_heap_inv_mapsto_in_bounds γ walptr wn dinit a v E :
+Lemma wal_heap_inv_mapsto_in_bounds γ dq walptr wn dinit a v E :
   ↑walN.@"wal" ⊆ E ->
   is_wal (wal_heap_inv γ) walptr wn dinit -∗
-  mapsto (hG := γ.(wal_heap_h)) a 1 v -∗ |NC={E}=>
-  mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
+  a ↪[γ.(wal_heap_h)]{dq} v -∗ |NC={E}=>
+  a ↪[γ.(wal_heap_h)]{dq} v ∗
   in_bounds wn a.
 Proof.
   iIntros (HE) "#Hwal Hmapsto".
@@ -2418,7 +2423,7 @@ Proof.
   { iDestruct "Hwal_open" as (σ) "[Hwalinner >Hheapinv]".
     iDestruct (is_wal_inner_base_disk with "Hwalinner") as "#>Hbasedisk".
     iNamed "Hheapinv".
-    iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
+    iDestruct (ghost_map_lookup with "Hctx Hmapsto") as "%Hvalid".
     iDestruct (big_sepM_lookup with "Hgh") as "%Ha"; eauto.
     iExists _. iFrame "Hbasedisk". iPureIntro.
     destruct Ha as [Ha _]. destruct Ha as [_ Ha]. destruct Ha as [b Ha].
@@ -2599,17 +2604,17 @@ Proof using walheapG0.
   }
 Qed.
 
-Theorem wal_heap_mapsto_latest_helper γ lwh (a : u64) (v : heap_block) σ :
+Theorem wal_heap_mapsto_latest_helper γ dq lwh (a : u64) (v : heap_block) σ :
   wal_heap_inv γ σ ∗
   is_locked_walheap γ lwh ∗
-  mapsto (hG := γ.(wal_heap_h)) a 1 v -∗
+  a ↪[γ.(wal_heap_h)]{dq} v -∗
   ⌜ locked_wh_disk lwh !! int.Z a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros "(Hheap & Htxnsfrag & Hmapsto)".
   iNamed "Hheap".
   iDestruct (ghost_var_agree with "Htxns Htxnsfrag") as "%Hagree".
   inversion Hagree; clear Hagree; subst.
-  iDestruct (gen_heap_valid with "Hctx Hmapsto") as "%Hvalid".
+  iDestruct (ghost_map_lookup with "Hctx Hmapsto") as "%Hvalid".
   iDestruct (big_sepM_lookup with "Hgh") as "%Hvalid_gh"; eauto.
   destruct v.
   destruct Hvalid_gh as [wf_addr Hvalid_gh].
@@ -2624,9 +2629,9 @@ Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit :
   ↑walN ⊆ E ->
   is_wal (wal_heap_inv γ) l wn dinit ∗
   is_locked_walheap γ lwh ∗
-  mapsto (hG := γ.(wal_heap_h)) a 1 v -∗ |NC={E}=>
+  a ↪[γ.(wal_heap_h)] v -∗ |NC={E}=>
     is_locked_walheap γ lwh ∗
-    mapsto (hG := γ.(wal_heap_h)) a 1 v ∗
+    a ↪[γ.(wal_heap_h)] v ∗
     ⌜ locked_wh_disk lwh !! int.Z a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros (HNE) "(#Hwal & Htxnsfrag & Hmapsto)".

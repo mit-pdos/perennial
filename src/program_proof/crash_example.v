@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From Perennial.algebra Require Import deletable_heap liftable log_heap.
+From Perennial.algebra Require Import liftable log_heap.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import wal.specs wal.heapspec.

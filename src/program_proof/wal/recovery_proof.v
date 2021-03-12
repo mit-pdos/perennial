@@ -1239,7 +1239,7 @@ Qed.
 Lemma txns_ctx_gname_eq γ γ' txns :
   txns_ctx_name γ = txns_ctx_name γ' →
   txns_ctx γ txns = txns_ctx γ' txns.
-Proof. rewrite /txns_ctx/gen_heap_ctx/txn_val => -> //=. Qed.
+Proof. rewrite /txns_ctx/txn_val => -> //=. Qed.
 
 Ltac show_crash1 := crash_case; eauto.
 

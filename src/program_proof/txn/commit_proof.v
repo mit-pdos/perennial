@@ -6,6 +6,7 @@ From Perennial.base_logic.lib Require Import mono_nat.
 From Perennial.Helpers Require Import Transitions NamedProps Map.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
+From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
@@ -598,7 +599,7 @@ Proof.
   done.
 Qed.
 
-Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
+Theorem wp_txn__doCommit l q γ dinit bufs buflist (bufamap : gmap addr _) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
@@ -612,7 +613,8 @@ Theorem wp_txn__doCommit l q γ dinit bufs buflist bufamap E (PreQ: iProp Σ) (Q
         ∃ (σl : async (gmap addr {K & bufDataT K})),
           "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (3/4) σl ∗
           "Hcrashstates_fupd" ∷ (
-            let σ := ((λ b, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
+            let σ : gmap addr {K & bufDataT K} :=
+               ((λ b, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
             ghost_var γ.(txn_crashstates) (3/4) (async_put σ σl)
            -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN}=> Q (length (possible σl)) ))
   }}}
@@ -747,7 +749,7 @@ Proof using txnG0 Σ.
             ⌜gmap_addr_by_block metam !! lv.(update.addr) = Some v0⌝ ∗
             ⌜γ.(txn_kinds) !! lv.(update.addr) = Some blockK⌝ ∗
             bufDataTs_in_block (fst installed_bs) (snd installed_bs) lv.(update.addr) blockK v v0 ) ∗
-          mapsto lv.(update.addr) 1 (HB (fst installed_bs) (snd installed_bs))
+          lv.(update.addr) ↪[_] (HB (fst installed_bs) (snd installed_bs))
       )%I with "Hheapmatch []") as "Hheapmatch".
     {
       iIntros (k v lv). iPureIntro.

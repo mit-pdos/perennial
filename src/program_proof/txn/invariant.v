@@ -4,6 +4,7 @@ Import RecordSetNotations.
 From Perennial.Helpers Require Import Transitions NamedProps Map.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
+From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
@@ -35,7 +36,7 @@ Proof. solve_inG. Qed.
 Record txn_names {Σ} := {
   txn_logheap : log_heapG addr object Σ;
   txn_metaheap : gname;
-  txn_walnames : @wal_heap_gnames Σ;
+  txn_walnames : wal_heap_gnames;
   txn_crashstates : gname;
   txn_kinds : gmap u64 bufDataKind;
 }.
@@ -110,7 +111,7 @@ Definition is_txn_state (γ:txn_names)
     "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
       ∃ installed bs blockK,
         "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
-        "Htxn_hb" ∷ mapsto (hG := γ.(txn_walnames).(wal_heap_h)) blkno 1 (HB installed bs) ∗
+        "Htxn_hb" ∷ blkno ↪[γ.(txn_walnames).(wal_heap_h)] (HB installed bs) ∗
         "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
     "Hcrashheaps" ∷ ghost_var γ.(txn_walnames).(wal_heap_crash_heaps) (3/4) crash_heaps ∗
     "Hcrashheapsmatch" ∷ ( [∗ list] logmap;walheap ∈ possible logm;possible crash_heaps,
