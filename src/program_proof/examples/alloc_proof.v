@@ -2,14 +2,14 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import Map.
 
 From Perennial.goose_lang Require Import crash_modality.
-From Perennial.algebra Require Import deletable_heap.
+From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.examples Require Import alloc_addrset.
 
 Class allocG Σ :=
-  { alloc_used_preG :> gen_heapPreG u64 () Σ; }.
+  { alloc_used_preG :> ghost_mapG Σ u64 (); }.
 
 (* state representation types (defined here since modules can't be in sections) *)
 Module alloc.
@@ -31,7 +31,7 @@ Context `{!allocG Σ}.
 Let allocN := nroot.@"allocator".
 
 Record alloc_names :=
-  { alloc_used_name: gen_heapG u64 unit Σ;
+  { alloc_used_name: gname;
   }.
 
 Instance alloc_names_eta : Settable _ := settable! Build_alloc_names <alloc_used_name>.
@@ -50,7 +50,7 @@ Definition allocator_linv γ (mref: loc) σ : iProp Σ :=
   "%Hwf" ∷ ⌜alloc.wf σ⌝ ∗
   "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
   "Hdurable" ∷ allocator_durable σ ∗
-  "Hallocated" ∷ gen_heap_ctx (hG:=γ.(alloc_used_name))
+  "Hallocated" ∷ ghost_map_auth γ.(alloc_used_name) 1
                    (gset_to_gmap () (alloc.used σ))
 .
 
@@ -63,7 +63,7 @@ Definition is_allocator (l: loc) γ : iProp Σ :=
 .
 
 Definition alloc_used γ a : iProp Σ :=
-  mapsto (hG:=γ.(alloc_used_name)) a 1 ().
+  a ↪[γ.(alloc_used_name)] ().
 
 Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
 Instance allocator_post_crash γ mref σ :
@@ -102,7 +102,7 @@ Proof using allocG0.
   iDestruct (struct_fields_split with "Hallocator") as "(m&free&_)".
   iMod (readonly_alloc_1 with "m") as "#m".
   iMod (readonly_alloc_1 with "free") as "#free".
-  iMod (gen_heap_init (gset_to_gmap () used)) as (γ2) "Husedctx".
+  iMod (ghost_map_alloc (gset_to_gmap () used)) as (γ2) "[Husedctx _]".
   set (γ:={| alloc_used_name := γ2 |}).
   iMod (alloc_lock allocN ⊤ _
                    (∃ σ, "Hlockinv" ∷ allocator_linv γ mref' σ ∗ "HP" ∷ P σ)%I
@@ -182,7 +182,7 @@ Proof.
     iNamed "Hdurable".
     iDestruct (big_sepS_delete with "Hblocks") as "[Hbk Hblocks]"; eauto.
 
-    iMod (gen_heap_alloc _ k () with "Hallocated") as "[Hallocated His_used]".
+    iMod (ghost_map_insert k () with "Hallocated") as "[Hallocated His_used]".
     { apply lookup_gset_to_gmap_None.
       rewrite /alloc.free in Hk; set_solver. }
 
@@ -233,13 +233,13 @@ Proof.
 Qed.
 
 Lemma alloc_used_valid γ a used :
-  gen_heap_ctx (hG:=γ.(alloc_used_name)) (gset_to_gmap () used) -∗
+  ghost_map_auth γ.(alloc_used_name) 1 (gset_to_gmap () used) -∗
   alloc_used γ a -∗
   ⌜a ∈ used⌝.
 Proof.
   rewrite /alloc_used.
   iIntros "Hctx Hused".
-  iDestruct (gen_heap_valid with "Hctx Hused") as %Hlookup.
+  iDestruct (ghost_map_lookup with "Hctx Hused") as %Hlookup.
   iPureIntro.
   apply lookup_gset_to_gmap_Some in Hlookup as [? _]; auto.
 Qed.
@@ -279,7 +279,7 @@ Proof.
   assert (a ∈ σ.(alloc.domain)) by set_solver.
   assert (alloc.wf (set alloc.used (λ used : gset u64, used ∖ {[a]}) σ)) as Hwf''.
   { set_solver. }
-  iMod (gen_heap_delete with "[$Hallocated $Hused]") as "Hallocated".
+  iMod (ghost_map_delete with "Hallocated Hused") as "Hallocated".
   wp_apply (release_spec with "[$His_lock $Hlocked Hb Hdurable Hfreemap Hallocated HP]").
   { iNamed "Hdurable".
     iExists _; iFrame "HP".

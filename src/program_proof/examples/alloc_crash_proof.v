@@ -2,7 +2,7 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import Map gset.
 
 From Perennial.goose_lang Require Import crash_modality.
-From Perennial.algebra Require Import deletable_heap.
+From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
 From Perennial.program_logic Require Export na_crash_inv ncinv.
@@ -23,7 +23,7 @@ Proof.
 Qed.
 
 Class allocG Σ :=
-  { alloc_used_preG :> gen_heapPreG u64 block_status Σ;
+  { alloc_used_preG :> ghost_mapG Σ u64 block_status;
     alloc_freeset :> ghost_varG Σ (gset u64);
  }.
 
@@ -131,7 +131,7 @@ Context `{!allocG Σ}.
 Context `{!stagedG Σ}.
 
 Record alloc_names :=
-  { alloc_status_name: gen_heapG u64 block_status Σ;
+  { alloc_status_name: gname;
     alloc_free_name : gname;
   }.
 
@@ -150,32 +150,32 @@ Definition Ninv := N.@"inv".
 Definition allocator_inv γ (d: gset u64) : iProp Σ :=
   ∃ σ,
     "%Hdom" ∷ ⌜ dom _ σ = d ⌝ ∗
-    "Hstatus" ∷ gen_heap_ctx (hG:=γ.(alloc_status_name)) σ ∗
+    "Hstatus" ∷ ghost_map_auth γ.(alloc_status_name) 1 σ ∗
     "Hfreeset_auth" ∷ ghost_var (γ.(alloc_free_name)) (1/2) (alloc.free σ) ∗
     "HP" ∷ P σ
 .
 
 Definition block_cinv γ addr : iProp Σ :=
-  Ψ addr ∨ mapsto (hG := alloc_status_name γ) addr 1 block_used.
+  Ψ addr ∨ addr ↪[alloc_status_name γ] block_used.
 
 Definition free_block γ n k : iProp Σ :=
   "Hcrashinv" ∷ (na_crash_inv (S n) (Ψ k) (block_cinv γ k)) ∗
-  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_free).
+  "Hmapsto" ∷ (k ↪[alloc_status_name γ] block_free).
 
 Definition free_block_pending γ n k : iProp Σ :=
   (|C={⊤}_((S n))=> block_cinv γ k).
 
 Definition reserved_block γ n k P : iProp Σ :=
   "Hcrashinv" ∷ (na_crash_inv n P (block_cinv γ k)) ∗
-  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
+  "Hmapsto" ∷ (k ↪[alloc_status_name γ] block_reserved) ∗
   "Halloc_inv" ∷ ∃ d, ncinv Ninv (allocator_inv γ d).
 
 Definition reserved_block_in_prep γ (n: nat) k : iProp Σ :=
-  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_reserved) ∗
+  "Hmapsto" ∷ (k ↪[alloc_status_name γ] block_reserved) ∗
   "Halloc_inv" ∷ ∃ d, ncinv Ninv (allocator_inv γ d).
 
 Definition used_block γ k : iProp Σ :=
-  "Hmapsto" ∷ (mapsto (hG := alloc_status_name γ) k 1 block_used).
+  "Hmapsto" ∷ (k ↪[alloc_status_name γ] block_used).
 
 (*
 Definition block_status_interp γ k st : iProp Σ :=
@@ -510,7 +510,7 @@ Qed.
 Lemma free_block_init γ n σ E `{∀ a, Timeless (Ψ a)}:
   alloc_post_crash σ →
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
-  ([∗ map] k↦v ∈ σ, mapsto (hG := alloc_status_name γ) k 1 v) -∗
+  ([∗ map] k↦v ∈ σ, k ↪[alloc_status_name γ] v) -∗
   |={E}=> ([∗ set] k ∈ dom (gset _) σ, <disc> |C={⊤}_S n=> free_block_pending γ n k) ∗
           ([∗ set] k ∈ alloc.free σ, free_block γ n k).
 Proof.
@@ -530,7 +530,7 @@ Proof.
     iModIntro. iModIntro. iMod "Hpend" as ">$". iModIntro. iModIntro. done.
   - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   - (* TODO: should they all be in the same na_crash_inv? *)
-    iMod (na_crash_inv_alloc _ _ (block_cinv γ k) (mapsto k 1 block_used) with "[$] []") as
+    iMod (na_crash_inv_alloc _ _ (block_cinv γ k) (k ↪[_] block_used)%I with "[$] []") as
         "(Hbund&Hpend)".
     { iIntros "!> H !>". iRight. eauto. }
     iModIntro. iFrame. iModIntro. iMod "Hpend" as ">Hpend".
@@ -547,7 +547,7 @@ Theorem is_allocator_alloc n l σ `{∀ a, Timeless (Ψ a)} :
 Proof.
   clear Hitemcrash.
   iIntros "Hunused HP". iNamed 1.
-  iMod (gen_heap_strong_init σ) as (γheap Hpf) "(Hctx&Hpts)".
+  iMod (ghost_map_alloc σ) as (γheap) "(Hctx&Hpts)".
   iMod (ghost_var_alloc (alloc.free σ)) as (γfree) "(Hfree&Hfree_frag)".
   set (γ := {| alloc_status_name := γheap;
                alloc_free_name := γfree |}).
@@ -591,7 +591,7 @@ Proof.
   rewrite /free_block_pending.
   iDestruct "Hfree" as "[HΨ|Hused]".
   - iFrame. destruct (decide _); eauto.
-  - iDestruct (gen_heap_valid with "[$] Hused") as %Hlookup'.
+  - iDestruct (ghost_map_lookup with "[$] Hused") as %Hlookup'.
     iFrame. rewrite decide_False //= => Heq. congruence.
 Qed.
 
@@ -724,7 +724,7 @@ Proof.
     iDestruct (big_sepS_delete with "Hblocks") as "[Hbk Hblocks]"; eauto.
     iNamed "Hbk".
 
-    iMod (gen_heap_update _ k _ block_reserved with "[$] [$]") as "(Hctx&Hmapsto)".
+    iMod (ghost_map_update block_reserved with "[$] Hmapsto") as "(Hctx&Hmapsto)".
     iCombine "Hfreeset_frag Hfreeset_auth" as "Hfreeset".
     iMod (ghost_var_update (alloc.free (<[k := block_reserved]>σ)) with "[$]")
          as "(Hfreeset_auth&Hfreeset_frag)".
@@ -897,11 +897,11 @@ Proof.
   iDestruct "Halloc_inv" as (d) "#Hinv".
   iInv "Hinv" as "H" "Hclo".
   iModIntro. iNext. iNamed "H".
-  iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
+  iDestruct (ghost_map_lookup with "[$] Hmapsto") as %Hlookup'.
   iMod (ncfupd_mask_subseteq (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
   iMod ("Hfupd" with "[//] [$]") as "(HP&HQ)".
   iMod "Hrestore_mask" as "_".
-  iMod (gen_heap_update _ a _ block_used with "[$] [$]") as "(Hctx&Hmapsto)".
+  iMod (ghost_map_update block_used with "[$] Hmapsto") as "(Hctx&Hmapsto)".
   iMod ("Hclo" with "[HP Hctx Hfreeset_auth]").
   { iNext. iExists _. iFrame "HP Hctx".
     rewrite (dom_update_status σ a block_reserved) //=.
@@ -938,13 +938,13 @@ Proof.
 Qed.
 
 Lemma alloc_used_valid γ a used :
-  gen_heap_ctx (hG:=γ.(alloc_status_name)) (gset_to_gmap () used) -∗
+  ghost_map_auth (γ.(alloc_status_name)) 1 (gset_to_gmap () used) -∗
   alloc_used γ a -∗
   ⌜a ∈ used⌝.
 Proof.
   rewrite /alloc_used.
   iIntros "Hctx Hused".
-  iDestruct (gen_heap_valid with "Hctx Hused") as %Hlookup.
+  iDestruct (ghost_map_lookup with "Hctx Hused") as %Hlookup.
   iPureIntro.
   apply lookup_gset_to_gmap_Some in Hlookup as [? _]; auto.
 Qed.
@@ -984,8 +984,8 @@ Proof.
   Halloc_inv from is_allocator *)
   iDestruct "Hreserved" as "(Hcrashinv&Hmapsto&Halloc_inv_block)".
   iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %<-.
-  iDestruct (gen_heap_valid with "[$] Hmapsto") as %Hlookup'.
-  iMod (gen_heap_update _ a _ block_free with "[$] [$]") as "(Hctx&Hmapsto)".
+  iDestruct (ghost_map_lookup with "[$] Hmapsto") as %Hlookup'.
+  iMod (ghost_map_update block_free with "[$] Hmapsto") as "(Hctx&Hmapsto)".
   iCombine "Hfreeset_auth Hfreeset_frag" as "Hfreeset".
   iMod (ghost_var_update (alloc.free (<[a := block_free]>σ)) with "[$]")
     as "(Hfreeset_auth&Hfreeset_frag)".
