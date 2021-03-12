@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordUpdate.
 
-From Perennial.algebra Require Import deletable_heap liftable auth_map.
+From Perennial.algebra Require Import liftable auth_map.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 
@@ -18,12 +18,15 @@ Class simpleG Σ :=
   { simple_fs_stateG :> ghost_varG Σ (gmap u64 (list u8));
     simple_mapG :> mapG Σ u64 (list u8);
     simple_buftxnG :> buftxnG Σ;
+    simple_lockmapG :> lockmapG Σ;
   }.
 
 Definition simpleΣ :=
   #[ ghost_varΣ (gmap u64 (list u8));
    mapΣ u64 (list u8);
-   buftxnΣ ].
+   buftxnΣ;
+   lockmapΣ
+  ].
 
 Instance subG_simpleΣ Σ : subG simpleΣ Σ → simpleG Σ.
 Proof. solve_inG. Qed.
@@ -37,7 +40,7 @@ Record simple_names := {
   simple_buftxn : buftxn_names Σ;
   simple_buftxn_next : buftxn_names Σ;
   simple_src : gname;
-  simple_lockmapghs : list (gen_heapG u64 bool Σ);
+  simple_lockmapghs : list gname;
 }.
 
 Variable P : SimpleNFS.State -> iProp Σ.

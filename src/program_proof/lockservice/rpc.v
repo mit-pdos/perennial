@@ -1,8 +1,8 @@
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import proof_prelude.
 From iris.algebra Require Import gmap lib.mono_nat.
+From Perennial.base_logic Require Import lib.ghost_map.
 From Perennial.program_proof.lockservice Require Import fmcounter_map.
 
 (** RPC layer ghost names. *)
@@ -22,7 +22,7 @@ Record rpc_request_names := RpcRequestNames {
 Class rpcG Σ (R : Type) := RpcG {
   rpc_fmcounterG :> fmcounter_mapG Σ;
   rpc_escrowG :> inG Σ (exclR unitO);
-  rpc_mapG :> mapG Σ (u64*u64) (option R);
+  rpc_mapG :> ghost_mapG Σ (u64*u64) (option R);
 }.
 (* FIXME: add subΣ instance. *)
 
@@ -57,19 +57,19 @@ Definition RPCServer_lseq γrpc (lastSeqM:gmap u64 u64) : iProp Σ :=
 
 Definition RPCServer_own γrpc (lastSeqM:gmap u64 u64) lastReplyM : iProp Σ :=
     "Hlseq_own" ∷ RPCServer_lseq γrpc lastSeqM
-  ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) [[γrpc.(rc)]]↦ro Some r)
+  ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) ↪[γrpc.(rc)]□ Some r)
   ∗ "Hproc_own" ∷ own γrpc.(proc) (Excl ())
 .
 
 Definition RPCServer_own_processing γrpc (req:RPCRequestID) lastSeqM lastReplyM : iProp Σ :=
     "Hlseq_own" ∷ RPCServer_lseq γrpc lastSeqM
-  ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) [[γrpc.(rc)]]↦ro Some r).
+  ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) ↪[γrpc.(rc)]□ Some r).
 
 Definition RPCRequest_token γreq : iProp Σ :=
   (own γreq.(post) (Excl ())).
 
 Definition RPCReplyReceipt γrpc (req:RPCRequestID) (r:R) : iProp Σ :=
-  (req.(Req_CID), req.(Req_Seq)) [[γrpc.(rc)]]↦ro Some r
+  (req.(Req_CID), req.(Req_Seq)) ↪[γrpc.(rc)]□ Some r
 .
 
 Definition RPCRequestStale γrpc (req:RPCRequestID) : iProp Σ :=
@@ -85,7 +85,7 @@ dead: The client took out ownership of the reply. *)
 Local Definition RPCRequest_inv γrpc γreq (PreCond : iProp Σ) (PostCond : R -> iProp Σ) (req:RPCRequestID) : iProp Σ :=
    "#Hlseq_bound" ∷ req.(Req_CID) fm[[γrpc.(cseq)]]> int.nat req.(Req_Seq) ∗
     ( (* Initialized, but server has not started processing *)
-      "Hreply" ∷ (req.(Req_CID), req.(Req_Seq)) [[γrpc.(rc)]]↦ None ∗
+      "Hreply" ∷ (req.(Req_CID), req.(Req_Seq)) ↪[γrpc.(rc)] None ∗
                (own γrpc.(proc) (Excl ()) ∨ (* Server is processing this req *)
                 own γreq.(pre) (Excl ()) ∗ PreCond (* Precondition is available *)
                ) ∨
@@ -93,14 +93,14 @@ Local Definition RPCRequest_inv γrpc γreq (PreCond : iProp Σ) (PostCond : R -
       (* Server has finished processing; two sub-states for whether client has taken PostCond out *)
       req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq) ∗
         (own γreq.(post) (Excl ()) ∨
-        (∃ (last_reply:R), (req.(Req_CID), req.(Req_Seq)) [[γrpc.(rc)]]↦ro Some last_reply ∗
+        (∃ (last_reply:R), (req.(Req_CID), req.(Req_Seq)) ↪[γrpc.(rc)]□ Some last_reply ∗
           (PostCond last_reply))
       )
     ).
 
 Local Definition ReplyTable_inv γrpc: iProp Σ :=
   ∃ replyHistory:gmap (u64 * u64) (option R),
-      ("Hrcctx" ∷ map_ctx γrpc.(rc) 1 replyHistory)
+      ("Hrcctx" ∷ ghost_map_auth γrpc.(rc) 1 replyHistory)
     ∗ ("#Hcseq_lb" ∷ [∗ map] cid_seq ↦ _ ∈ replyHistory, cid_seq.1 fm[[γrpc.(cseq)]]> int.nat cid_seq.2)
 .
 
@@ -126,7 +126,7 @@ Proof.
   iIntros (?).
   iMod fmcounter_map_alloc as (γcseq) "Hcseq".
   iMod fmcounter_map_alloc as (γlseq) "Hlseq".
-  iMod (map_init (∅ : gmap (u64*u64) (option R))) as (γrc) "Hrc".
+  iMod (ghost_map_alloc (∅ : gmap (u64*u64) (option R))) as (γrc) "[Hrc _]".
   iMod (own_alloc (Excl ())) as (γproc) "Hγproc"; first done.
   pose (γrpc := RpcNames γrc γlseq γcseq γproc).
   iExists γrpc.
@@ -161,7 +161,7 @@ Proof using Type*.
     iPureIntro. simpl in Hbad.
     lia.
   }
-  iMod (map_alloc (req.(Req_CID), req.(Req_Seq)) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
+  iMod (ghost_map_insert (req.(Req_CID), req.(Req_Seq)) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
   iMod (own_alloc (Excl ())) as (γpost) "Hγpost"; first done.
   iMod (own_alloc (Excl ())) as (γpre) "Hγpre"; first done.
   pose (γreq := RpcRequestNames γpre γpost).
@@ -282,8 +282,8 @@ Proof using Type*.
   {
     iInv replyTableInvN as ">HNinner" "HNClose".
     iNamed "HNinner".
-    iDestruct (map_update _ _ (Some reply) with "Hrcctx Hunproc") as ">[Hrcctx Hrcptsto]".
-    iDestruct (map_freeze with "Hrcctx Hrcptsto") as ">[Hrcctx #Hrcptsoro]".
+    iMod (ghost_map_update (Some reply) with "Hrcctx Hunproc") as "[Hrcctx Hrcptsto]".
+    iMod (ghost_map_elem_persist with "Hrcptsto") as "#Hrcptsoro".
     iDestruct (big_sepM_insert_2 _ _ (req.(Req_CID), req.(Req_Seq)) (Some reply) with "[Hreqeq_lb] Hcseq_lb") as "Hcseq_lb2"; eauto.
     iMod ("HNClose" with "[Hrcctx Hcseq_lb2]") as "_".
     { iNext. iExists _; iFrame; iFrame "#". }
@@ -337,7 +337,7 @@ Proof.
     rewrite <- Hdomeq. done. }
   destruct HlastReplyIn as [r HlastReplyIn].
   iDestruct (big_sepM2_delete _ _ _ _ lseq r with "Hsepm") as "[Hptstoro _]"; eauto.
-  iDestruct (map_ro_valid with "Hrcctx Hptstoro") as %HinReplyHistory.
+  iDestruct (ghost_map_lookup with "Hrcctx Hptstoro") as %HinReplyHistory.
   iDestruct (big_sepM_delete with "Hcseq_lb") as "[Hcseq_lb_one _] /="; eauto.
   iDestruct (fmcounter_map_mono_lb (int.nat req.(Req_Seq) + 2) with "Hcseq_lb_one") as "#HStaleFact".
   { replace (int.Z req.(Req_Seq)) with (Z.of_nat (int.nat req.(Req_Seq))) in Hineq; last by apply u64_Z_through_nat.
@@ -374,15 +374,15 @@ Proof using Type*.
   assert (Inhabited R) by exact (populate r).
   iIntros (?) "#Hinv #Hptstoro HγP".
   iInv "Hinv" as "HMinner" "HMClose".
-  iDestruct "HMinner" as "[#>Hlseqbound [[Hbad _] | [#Hlseq_lb HMinner]]]".
-  { iDestruct (ptsto_agree_frac_value with "Hbad [$Hptstoro]") as ">[_ []]". }
+  iDestruct "HMinner" as "[#>Hlseqbound [[>Hbad _] | [#Hlseq_lb HMinner]]]".
+  { iDestruct (ghost_map_elem_valid_2 with "Hbad [$Hptstoro]") as "[%%]". done. }
   iDestruct "HMinner" as "[>Hγpost|Hreply_post]".
   { by iDestruct (own_valid_2 with "HγP Hγpost") as %Hbad. }
   iDestruct "Hreply_post" as (last_reply) "[#Hreply Hpost]".
   iMod ("HMClose" with "[HγP]") as "_".
   { iNext. iFrame "#". iRight. iLeft. done. }
   iModIntro. iModIntro.
-  iDestruct (ptsto_ro_agree with "Hreply Hptstoro") as %Heq.
+  iDestruct (ghost_map_elem_agree with "Hreply Hptstoro") as %Heq.
   by injection Heq as ->.
 Qed.
 
@@ -437,8 +437,8 @@ Proof.
     iInv replyTableInvN as ">HNinner" "HNClose".
     iNamed "HNinner".
 
-    iDestruct (map_update _ _ (Some reply) with "Hrcctx Hrcptsto") as ">[Hrcctx Hrcptsto]".
-    iDestruct (map_freeze with "Hrcctx Hrcptsto") as ">[Hrcctx #Hrcptsoro]".
+    iMod (ghost_map_update (Some reply) with "Hrcctx Hrcptsto") as "[Hrcctx Hrcptsto]".
+    iMod (ghost_map_elem_persist with "Hrcptsto") as "#Hrcptsoro".
     iDestruct (big_sepM_insert_2 _ _ (req.(Req_CID), req.(Req_Seq)) (Some reply) with "[Hreqeq_lb] Hcseq_lb") as "Hcseq_lb2"; eauto.
     iMod ("HNClose" with "[Hrcctx Hcseq_lb2]") as "_".
     {

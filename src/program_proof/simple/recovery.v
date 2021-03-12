@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From Perennial.algebra Require Import deletable_heap liftable auth_map.
+From Perennial.algebra Require Import liftable auth_map.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 
@@ -19,7 +19,6 @@ From Perennial.goose_lang Require Import crash_modality.
 
 Section stable.
 Context `{!heapG Σ}.
-Context `{!gen_heapPreG u64 bool Σ}.
 Context `{!simpleG Σ}.
 
 Global Instance is_inode_stable_set_stable γsrc γ':
@@ -52,7 +51,6 @@ End stable.
 
 Section goose_lang.
 Context `{!heapG Σ}.
-Context `{!gen_heapPreG u64 bool Σ}.
 Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 

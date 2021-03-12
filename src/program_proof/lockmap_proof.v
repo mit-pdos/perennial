@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.algebra Require Import deletable_heap.
+From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
 From Perennial.goose_lang.lib Require Import wp_store.
@@ -15,9 +15,14 @@ Ltac word := try lazymatch goal with
 
 Ltac len := autorewrite with len; try word.
 
+Class lockmapG Σ := lockmap_inG :> ghost_mapG Σ u64 bool.
+Definition lockmapΣ := ghost_mapΣ u64 bool.
+Instance subG_lockmapΣ Σ : subG lockmapΣ Σ → lockmapG Σ.
+Proof. solve_inG. Qed.
+
 Section heap.
 Context `{!heapG Σ}.
-Context `{!gen_heapPreG u64 bool Σ}.
+Context `{!lockmapG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
@@ -25,8 +30,8 @@ Implicit Types (stk:stuckness) (E: coPset).
 Definition lockN : namespace := nroot .@ "lockShard".
 Definition lockshardN : namespace := nroot .@ "lockShardMem".
 
-Definition locked (hm : gen_heapG u64 bool Σ) (addr : u64) : iProp Σ :=
-  ( mapsto (hG := hm) addr 1 true )%I.
+Definition locked (hm : gname) (addr : u64) : iProp Σ :=
+  ( addr ↪[hm] true )%I.
 
 Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
            (lockStatePtr : loc) (covered : gset u64) (P : u64 -> iProp Σ) :=
@@ -37,21 +42,21 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
       "#Hcond" ∷ lock.is_cond cond #shardlock ∗
       "%Hcovered" ∷ ⌜ addr ∈ covered ⌝ ∗
       "Hwaiters" ∷ ( ⌜ gheld = true ⌝ ∨
-        ( ⌜ gheld = false ⌝ ∗ mapsto (hG := gh) addr 1 false ∗ P addr ) )
+        ( ⌜ gheld = false ⌝ ∗ addr ↪[gh] false ∗ P addr ) )
   )%I.
 
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
-           (ghostHeap : gen_heapG u64 bool Σ) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
+           (ghostHeap : gname) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (m: Map.t loc) ghostMap,
       is_map mptr m ∗
-      gen_heap_ctx (hG := ghostHeap) ghostMap ∗
+      ghost_map_auth ghostHeap 1 ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap shardlock addr gheld lockStatePtrV covered P ) ∗
       ( [∗ set] addr ∈ covered,
           ⌜m !! addr = None⌝ → P addr )
   )%I.
 
-Definition is_lockShard (ls : loc) (ghostHeap : gen_heapG u64 bool Σ) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
+Definition is_lockShard (ls : loc) (ghostHeap : gname) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (shardlock mptr : loc),
       "#Hls_mu" ∷ readonly (ls ↦[lockShard.S :: "mu"] #shardlock) ∗
       "#Hls_state" ∷ readonly (ls ↦[lockShard.S :: "state"] #mptr) ∗
@@ -67,7 +72,7 @@ Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
   {{{ [∗ set] a ∈ covered, P a }}}
     mkLockShard #()
   {{{ ls gh, RET #ls; is_lockShard ls gh covered P }}}.
-Proof using gen_heapPreG0 heapG0 Σ.
+Proof.
   iIntros (Φ) "Hinit HΦ".
   rewrite /mkLockShard.
   wp_pures.
@@ -85,7 +90,7 @@ Proof using gen_heapPreG0 heapG0 Σ.
   wp_apply wp_allocStruct; first by eauto.
   iIntros (ls) "Hls".
 
-  iMod (gen_heap_init (∅: gmap u64 bool)) as (hG) "Hheapctx".
+  iMod (ghost_map_alloc (∅: gmap u64 bool)) as (hG) "[Hheapctx _]".
   rewrite -wp_fupd.
 
   wp_pures.
@@ -223,7 +228,7 @@ Proof.
         wp_pures.
 
         iDestruct "Hwaiters" as "[% | [_ [Haddr Hp]]]"; try congruence.
-        iMod (gen_heap_update _ _ _ true with "Hghctx Haddr") as "[Hghctx Haddr]".
+        iMod (ghost_map_update true with "Hghctx Haddr") as "[Hghctx Haddr]".
 
         iEval (rewrite struct_mapsto_eq) in "Hacquired".
         iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
@@ -269,7 +274,7 @@ Proof.
       apply map_get_false in H0.
       iDestruct (big_sepM2_lookup_2_none with "Haddrs") as %Hgaddr; intuition eauto.
 
-      iMod (gen_heap_alloc _ addr true with "Hghctx") as "(Hghctx & Haddrlocked)"; [auto|].  
+      iMod (ghost_map_insert addr true with "Hghctx") as "(Hghctx & Haddrlocked)"; [auto|].  
 
       iEval (rewrite struct_mapsto_eq) in "Hacquired".
       iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
@@ -348,7 +353,7 @@ Proof.
   wp_pures.
 
   rewrite /locked.
-  iDestruct (gen_heap_valid with "Hghctx Haddrlocked") as %Hsome.
+  iDestruct (ghost_map_lookup with "Hghctx Haddrlocked") as %Hsome.
   iDestruct (big_sepM2_lookup_1_some with "Haddrs") as %Hsome2; eauto.
   destruct Hsome2.
 
@@ -370,7 +375,7 @@ Proof.
     wp_loadField.
     wp_apply (lock.wp_condSignal with "[$Hcond]").
 
-    iMod (gen_heap_update _ _ _ false with "Hghctx Haddrlocked") as "[Hghctx Haddrlocked]".
+    iMod (ghost_map_update false with "Hghctx Haddrlocked") as "[Hghctx Haddrlocked]".
 
     wp_loadField.
     wp_apply (release_spec with "[-HΦ]").
@@ -405,7 +410,7 @@ Proof.
     wp_apply (wp_MapDelete with "[$Hmptr]").
     iIntros "Hmptr".
 
-    iMod (gen_heap_delete with "[$Haddrlocked $Hghctx]") as "Hghctx".
+    iMod (ghost_map_delete with "Hghctx Haddrlocked") as "Hghctx".
 
     wp_loadField.
     wp_apply (release_spec with "[-HΦ]").
@@ -546,7 +551,7 @@ Proof.
       word.
 Qed.
 
-Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
+Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap.S :: "shards"] (slice_val shardslice)) ∗
     "#Hslice" ∷ readonly (is_slice_small shardslice (struct.ptrT lockShard.S) 1 shards) ∗
@@ -554,7 +559,7 @@ Definition is_lockMap (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gse
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P.
 
-Definition Locked (ghs : list (gen_heapG u64 bool Σ)) (addr : u64) : iProp Σ :=
+Definition Locked (ghs : list gname) (addr : u64) : iProp Σ :=
   ∃ gh,
     ⌜ ghs !! (Z.to_nat (Z.modulo (int.Z addr) NSHARD)) = Some gh ⌝ ∗
     locked gh addr.
@@ -568,7 +573,7 @@ Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
   {{{ [∗ set] a ∈ covered, P a }}}
     MkLockMap #()
   {{{ l ghs, RET #l; is_lockMap l ghs covered P }}}.
-Proof using gen_heapPreG0.
+Proof.
   iIntros (Φ) "Hcovered HΦ".
   wp_call.
   wp_apply wp_ref_of_zero; eauto.

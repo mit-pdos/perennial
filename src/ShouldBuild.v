@@ -28,7 +28,7 @@ From Perennial.program_proof.examples Require
      all_examples.
 
 From Perennial.program_proof.lockservice Require
-     bank_proof incr_proof incr_proxy_proof.
+     bank_proof incr_proof incr_proxy_proof two_pc_example.
 
 From Perennial.goose_lang Require
      ffi.append_log_ffi

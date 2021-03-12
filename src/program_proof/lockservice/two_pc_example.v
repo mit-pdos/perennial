@@ -12,7 +12,7 @@ From Perennial.Helpers Require Import Map gset ipm.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl agree auth gmap csum.
 From iris.bi.lib Require Import fractional.
-From Perennial.base_logic.lib Require Import own.
+From Perennial.base_logic.lib Require Import own ghost_map.
 From iris_string_ident Require Import ltac2_string_ident.
 
 Section tpc_example.
@@ -52,7 +52,7 @@ Section tpc_example.
  *)
 
 
-Context `{!heapG Σ}.
+Context `{!heapG Σ, !lockmapG Σ}.
 Definition one_shot_decideR := csumR fracR (agreeR boolO).
 (* TODO: too annoying to have both csums in context *)
 (* Definition one_shotR := csumR fracR (agreeR unitO). *)
@@ -476,7 +476,7 @@ Defined.
 Record participant_names :=
 mk_participant_names  {
     ps_tpc:tpc_names ;
-    ps_ghs:list (deletable_heap.gen_heapG u64 bool Σ) ;
+    ps_ghs:list gname ;
     ps_kvs:gname ;
     ps_kv_toks:gname
 }.
@@ -573,7 +573,7 @@ Proof using Type*.
   }
 Qed.
 
-Lemma lockmap_locked_locked_false (ghs:list (deletable_heap.gen_heapG u64 bool Σ)) k :
+Lemma lockmap_locked_locked_false (ghs:list gname) k :
   Locked ghs k -∗ Locked ghs k -∗ False.
 Proof.
   iIntros "P Q".
@@ -584,7 +584,7 @@ Proof.
   replace (gh) with (gh0) by naive_solver.
   rewrite /lockmap_proof.locked.
   iCombine "P Q" as "P".
-  iDestruct (deletable_heap.mapsto_valid with "P") as %Hbad.
+  iDestruct (ghost_map_elem_valid with "P") as %Hbad.
   done.
 Qed.
 

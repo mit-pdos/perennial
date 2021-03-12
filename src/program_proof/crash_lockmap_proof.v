@@ -1,26 +1,26 @@
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.algebra Require Import deletable_heap.
+From Perennial.base_logic Require Import lib.ghost_map.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
 From Perennial.goose_lang.lib Require Import wp_store.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 From Perennial.Helpers Require Import NamedProps range_set.
-From Perennial.program_proof Require Import lockmap_proof.
+From Perennial.program_proof Require Export lockmap_proof.
 From Perennial.program_logic Require Export na_crash_inv.
 From Perennial.goose_lang Require Import proofmode wpc_proofmode notation.
 
 Section proof.
   Context `{!heapG Σ, stagedG Σ}.
-  Context `{!gen_heapPreG u64 bool Σ}.
+  Context `{!lockmapG Σ}.
 
   Implicit Types s : Slice.t.
   Implicit Types (stk:stuckness) (E: coPset).
 
-  Definition is_crash_lockMap k (l: loc) (ghs: list (gen_heapG u64 bool Σ)) (covered: gset u64)
+  Definition is_crash_lockMap k (l: loc) (ghs: list gname) (covered: gset u64)
              (P Pcrash: u64 -> iProp Σ) : iProp Σ :=
     is_lockMap l ghs covered (fun i => na_crash_inv k (P i) (Pcrash i)).
 
-  Definition CrashLocked k lk (ghs : list (gen_heapG u64 bool Σ)) (addr : u64) P Pcrash : iProp Σ :=
+  Definition CrashLocked k lk (ghs : list gname) (addr : u64) P Pcrash : iProp Σ :=
     ∃ covered,
     na_crash_inv k (P addr) (Pcrash addr) ∗
     is_lockMap lk ghs covered (fun i => na_crash_inv k (P i) (Pcrash i)) ∗
@@ -32,7 +32,7 @@ Section proof.
     {{{ l ghs, RET #l; is_crash_lockMap (S k) l ghs covered P Pcrash ∗
                        <disc> (|C={⊤}_(S k)=> [∗ set] a ∈ covered, ▷ Pcrash a) }}}
     {{{ [∗ set] a ∈ covered, ▷ Pcrash a }}}.
-  Proof using gen_heapPreG0.
+  Proof.
     iIntros (Φ Φc) "HP HΦ".
     iAssert (|={⊤}=> [∗ set] a ∈ covered, na_crash_inv (S k) (P a) (Pcrash a) ∗
                                           <disc> (|C={⊤}_S k=> ▷ Pcrash a))%I
@@ -53,7 +53,7 @@ Section proof.
     2: lia.
     iPoseProof (wp_wpc_step_frame' _ _ _ _ _
                 (([∗ set] a ∈ covered, ▷ Pcrash a) -∗ Φc)%I
-                (∀ (l : loc) (ghs : list (gen_heapG u64 bool Σ)),
+                (∀ (l : loc) (ghs : list gname),
                     is_crash_lockMap (S k) l ghs covered P Pcrash
                                      ∗ <disc> (|C={⊤}_S k=> [∗ set] a ∈ covered, ▷ Pcrash a) -∗ Φ #l)%I
                   with "[HΦ Hna]") as "H".
@@ -106,7 +106,7 @@ Section proof.
       iSplit.
       * iIntros (?) "(Hclose&?)". iModIntro. iFrame. iFrame "#".
         iIntros. iApply "Hclose". iFrame; eauto.
-      * iIntros.  iIntros "!> $". eauto.
+      * iIntros. iIntros "!> $". eauto.
   Qed.
 
   Theorem wp_LockMap__Release k l ghs (addr : u64) (P Pcrash : u64 -> iProp Σ) :
