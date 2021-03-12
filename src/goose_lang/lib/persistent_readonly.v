@@ -3,7 +3,6 @@ From Perennial.Helpers Require Import Qextra.
 From Perennial.base_logic.lib Require Import ae_invariants.
 From iris.bi.lib Require Import fractional.
 From Perennial.Helpers Require Import iris.
-From Perennial.algebra Require Import deletable_heap.
 From Perennial.goose_lang Require Import notation.
 From Perennial.goose_lang Require Import lifting.
 From Perennial.goose_lang Require Import proofmode.
@@ -131,12 +130,6 @@ End goose_lang.
 Instance heap_mapsto_AsMapsTo `{ext: !ext_op} `{!na_heapG loc val Σ}
          (l: loc) (v: val) :
   AsMapsTo (l ↦ v) (λ q, l ↦{q} v)%I.
-Proof.
-  split; [done|apply _|apply _].
-Qed.
-
-Instance mapsto_AsMapsTo `{ffi_sem: ext_semantics} `(hG: gen_heapG Σ) l v :
-  AsMapsTo (mapsto (hG:=hG) l 1 v) (λ q, mapsto (hG:=hG) l q v).
 Proof.
   split; [done|apply _|apply _].
 Qed.
