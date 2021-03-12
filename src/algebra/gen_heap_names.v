@@ -3,6 +3,7 @@ From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap lib.gmap_view.
 From Perennial.base_logic.lib Require Export gen_heap.
+From Perennial.base_logic.lib Require Import ghost_map.
 From Perennial.algebra Require Export own_discrete atleast.
 Set Default Proof Using "Type".
 Import uPred.

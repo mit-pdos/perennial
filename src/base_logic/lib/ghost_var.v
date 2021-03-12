@@ -2,8 +2,7 @@
 From iris.base_logic Require Export lib.ghost_var.
 
 (* Add some Perennial-specific stuff *)
-From Perennial.algebra Require Import own_discrete.
-From iris.proofmode Require Import tactics.
+From Perennial.algebra Require Import own_discrete atleast.
 
 Set Default Proof Using "Type".
 
@@ -12,6 +11,9 @@ Section lemmas.
   Implicit Types (a : A) (q : Qp).
 
   Global Instance ghost_var_discrete γ q a : Discretizable (ghost_var γ q a).
+  Proof. rewrite ghost_var_eq. apply _. Qed.
+
+  Global Instance ghost_var_abs_timeless γ q a : AbsolutelyTimeless (ghost_var γ q a).
   Proof. rewrite ghost_var_eq. apply _. Qed.
 
 End lemmas.

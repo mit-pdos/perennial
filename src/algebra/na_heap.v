@@ -1,7 +1,7 @@
 From stdpp Require Export namespaces.
 From Coq Require Import Min.
 From stdpp Require Import coPset.
-From iris.algebra Require Import big_op gmap frac agree namespace_map.
+From iris.algebra Require Import big_op gmap frac agree reservation_map.
 From iris.algebra Require Import csum excl auth cmra_big_op numbers lib.gmap_view.
 From iris.bi Require Import fractional.
 From Perennial.base_logic Require Export lib.own.
@@ -29,7 +29,7 @@ Class na_heapG (L V: Type) Σ `{BlockAddr L} := Na_HeapG {
   na_heap_inG :> inG Σ (authR (na_heapUR L V));
   na_size_inG :> inG Σ (authR (na_sizeUR Z));
   na_meta_inG :> inG Σ (gmap_viewR L gnameO);
-  na_meta_data_inG :> inG Σ (namespace_mapR (agreeR positiveO));
+  na_meta_data_inG :> inG Σ (reservation_mapR (agreeR positiveO));
   na_heap_name : gname;
   na_size_name : gname;
   na_meta_name : gname
@@ -43,14 +43,14 @@ Class na_heapPreG (L V : Type) (Σ : gFunctors) `{BlockAddr L} := {
   na_heap_preG_inG :> inG Σ (authR (na_heapUR L V));
   na_size_preG_inG :> inG Σ (authR (na_sizeUR Z));
   na_meta_preG_inG :> inG Σ (gmap_viewR L gnameO);
-  na_meta_data_preG_inG :> inG Σ (namespace_mapR (agreeR positiveO));
+  na_meta_data_preG_inG :> inG Σ (reservation_mapR (agreeR positiveO));
 }.
 
 Definition na_heapΣ (L V : Type) `{BlockAddr L} : gFunctors := #[
   GFunctor (authR (na_heapUR L V));
   GFunctor (authR (na_sizeUR Z));
   GFunctor (gmap_viewR L gnameO);
-  GFunctor (namespace_mapR (agreeR positiveO))
+  GFunctor (reservation_mapR (agreeR positiveO))
 ].
 
 Ltac solve_inG_deep :=
@@ -115,14 +115,14 @@ Section definitions.
 
   Definition meta_token_def (l : L) (E : coPset) : iProp Σ :=
     (∃ γm, own (na_meta_name hG) (gmap_view_frag l DfracDiscarded γm) ∗
-           own γm (namespace_map_token E))%I.
+           own γm (reservation_map_token E))%I.
   Definition meta_token_aux : seal (@meta_token_def). Proof. by eexists. Qed.
   Definition meta_token := meta_token_aux.(unseal).
   Definition meta_token_eq : @meta_token = @meta_token_def := meta_token_aux.(seal_eq).
 
   Definition meta_def `{Countable A} (l : L) (N : namespace) (x : A) : iProp Σ :=
     (∃ γm, own (na_meta_name hG) (gmap_view_frag l DfracDiscarded γm) ∗
-           own γm (namespace_map_data N (to_agree (encode x))))%I.
+           own γm (reservation_map_data (positives_flatten N) (to_agree (encode x))))%I.
   Definition meta_aux : seal (@meta_def). Proof. by eexists. Qed.
   Definition meta {A dA cA} := meta_aux.(unseal) A dA cA.
   Definition meta_eq : @meta = @meta_def := meta_aux.(seal_eq).
@@ -314,7 +314,7 @@ Section na_heap.
     E1 ## E2 → meta_token l (E1 ∪ E2) -∗ meta_token l E1 ∗ meta_token l E2.
   Proof.
     rewrite meta_token_eq /meta_token_def. intros ?. iDestruct 1 as (γm1) "[#Hγm Hm]".
-    rewrite namespace_map_token_union //. iDestruct "Hm" as "[Hm1 Hm2]".
+    rewrite reservation_map_token_union //. iDestruct "Hm" as "[Hm1 Hm2]".
     iSplitL "Hm1"; eauto.
   Qed.
   Lemma meta_token_union_2 l E1 E2 :
@@ -325,8 +325,8 @@ Section na_heap.
     iAssert ⌜ γm1 = γm2 ⌝%I as %->.
     { iDestruct (own_valid_2 with "Hγm1 Hγm2") as %Hγ; iPureIntro.
       move: Hγ. apply gmap_view_frag_op_valid_L. }
-    iDestruct (own_valid_2 with "Hm1 Hm2") as %?%namespace_map_token_valid_op.
-    iExists γm2. iFrame "Hγm2". rewrite namespace_map_token_union //. by iSplitL "Hm1".
+    iDestruct (own_valid_2 with "Hm1 Hm2") as %?%reservation_map_token_valid_op.
+    iExists γm2. iFrame "Hγm2". rewrite reservation_map_token_union //. by iSplitL "Hm1".
   Qed.
   Lemma meta_token_union l E1 E2 :
     E1 ## E2 → meta_token l (E1 ∪ E2) ⊣⊢ meta_token l E1 ∗ meta_token l E2.
@@ -351,7 +351,7 @@ Section na_heap.
     { iDestruct (own_valid_2 with "Hγm1 Hγm2") as %Hγ; iPureIntro.
       move: Hγ. apply gmap_view_frag_op_valid_L.  }
     iDestruct (own_valid_2 with "Hm1 Hm2") as %Hγ; iPureIntro.
-    move: Hγ. rewrite -namespace_map_data_op namespace_map_data_valid.
+    move: Hγ. rewrite -reservation_map_data_op reservation_map_data_valid.
     move=> /to_agree_op_inv_L. naive_solver.
   Qed.
   Lemma meta_set `{Countable A} E l (x : A) N :
@@ -359,7 +359,11 @@ Section na_heap.
   Proof.
     rewrite meta_token_eq meta_eq /meta_token_def /meta_def.
     iDestruct 1 as (γm) "[Hγm Hm]". iExists γm. iFrame "Hγm".
-    iApply (own_update with "Hm"). by apply namespace_map_alloc_update.
+    iApply (own_update with "Hm").
+    apply reservation_map_alloc; last done.
+    cut (positives_flatten N ∈@{coPset} ↑N); first by set_solver.
+    rewrite nclose_eq. apply elem_coPset_suffixes.
+    exists 1%positive. by rewrite left_id_L.
   Qed.
 
   Lemma na_heap_alloc tls σ l v lk :
@@ -375,8 +379,8 @@ Section na_heap.
     { eapply auth_update_alloc,
         (alloc_singleton_local_update _ _ (1%Qp, Cinr 0%nat, to_agree (v:leibnizO _)))=> //.
       apply lookup_to_na_heap_None, Hσl. }
-    iMod (own_alloc (namespace_map_token ⊤)) as (γm) "Hγm".
-    { apply namespace_map_token_valid. }
+    iMod (own_alloc (reservation_map_token ⊤)) as (γm) "Hγm".
+    { apply reservation_map_token_valid. }
     iMod (own_update with "Hm") as "[Hm Hlm]".
     { eapply (gmap_view_alloc _ l DfracDiscarded); last done.
       move: Hσl. rewrite -!(not_elem_of_dom (D:=gset L)). set_solver. }
@@ -423,8 +427,8 @@ Section na_heap.
     { eapply auth_update_alloc,
         (alloc_singleton_local_update _ _ (1%Qp, Cinr 0%nat, to_agree (v:leibnizO _)))=> //.
       by apply lookup_to_na_heap_None. }
-    iMod (own_alloc (namespace_map_token ⊤)) as (γm) "Hγm".
-    { apply namespace_map_token_valid. }
+    iMod (own_alloc (reservation_map_token ⊤)) as (γm) "Hγm".
+    { apply reservation_map_token_valid. }
     iMod (own_update with "Hm") as "[Hm Hlm]".
     { eapply (gmap_view_alloc _ l DfracDiscarded); last done.
       move: Hσl. rewrite -!(not_elem_of_dom (D:=gset L)). set_solver. }
