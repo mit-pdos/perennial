@@ -1,7 +1,7 @@
 Import EqNotations.
 From Perennial.Helpers Require Import Map.
 From Perennial.algebra Require Import auth_map liftable log_heap async.
-From iris.base_logic Require Import lib.mono_nat.
+From Perennial.base_logic Require Import lib.mono_nat.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
 From Perennial.program_logic Require Export ncinv.

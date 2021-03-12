@@ -1,5 +1,5 @@
 From iris.proofmode Require Import coq_tactics reduction.
-From iris.base_logic.lib Require Import invariants.
+From Perennial.base_logic.lib Require Import invariants.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang.lib Require Export
      typed_mem persistent_readonly struct.impl.

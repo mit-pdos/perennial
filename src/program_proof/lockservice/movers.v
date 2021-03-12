@@ -1,6 +1,6 @@
 From iris.algebra Require Import excl agree gmap lib.excl_auth gmultiset.
-From iris.program_logic Require Export weakestpre.
-From iris.base_logic.lib Require Export invariants ghost_var.
+From Perennial.program_logic Require Export weakestpre.
+From Perennial.base_logic.lib Require Export invariants ghost_var.
 From iris.heap_lang Require Export notation lang.
 From iris.heap_lang Require Import proofmode.
 From iris.proofmode Require Export tactics.

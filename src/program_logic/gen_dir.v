@@ -3,7 +3,7 @@
    however the names come from the directory use case *)
 
 From iris.algebra Require Import auth gmap agree.
-From iris.base_logic.lib Require Export own gen_heap.
+From Perennial.base_logic.lib Require Export own gen_heap.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type".

@@ -2,7 +2,7 @@ From Perennial.Helpers Require Import ListLen.
 
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
-From iris.program_logic Require Export weakestpre.
+From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export
      lang notation array typing struct
      tactics lifting proofmode.

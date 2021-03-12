@@ -1,8 +1,8 @@
 From iris.algebra Require Import auth frac agree gmap excl.
-From iris.base_logic.lib Require Import invariants.
+From Perennial.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
-From iris.program_logic Require Export language.
-From iris.program_logic Require Import lifting.
+From Perennial.program_logic Require Export language.
+From Perennial.program_logic Require Import lifting.
 From Perennial.algebra Require Export frac_count.
 From Perennial.Helpers Require Export Transitions.
 From Perennial.program_logic Require Export spec_assert language_ctx.

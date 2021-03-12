@@ -2,7 +2,7 @@ From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
 From Perennial.algebra Require Import deletable_heap log_heap liftable.
-From iris.base_logic Require Import lib.mono_nat.
+From Perennial.base_logic Require Import lib.mono_nat.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import proof_prelude.
 

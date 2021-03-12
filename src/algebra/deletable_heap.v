@@ -1,8 +1,8 @@
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap frac agree namespace_map.
-From iris.base_logic.lib Require Import own.
-From iris.base_logic.lib Require gen_heap.
+From Perennial.base_logic.lib Require Import own.
+From Perennial.base_logic.lib Require gen_heap.
 From Perennial.algebra Require Export own_discrete.
 
 Set Default Proof Using "Type".

@@ -1,4 +1,4 @@
-From iris.program_logic Require Export language.
+From Perennial.program_logic Require Export language.
 Set Default Proof Using "Type".
 
 Structure crash_semantics (Λ: language) :=

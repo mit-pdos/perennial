@@ -2,7 +2,7 @@ From stdpp Require Import nat_cancel.
 From iris.proofmode Require Import base tactics modality_instances classes.
 From iris.bi Require Export derived_laws derived_connectives.
 From iris.algebra Require Import monoid cmra.
-From iris.base_logic Require Import upred bi own.
+From Perennial.base_logic Require Import own.
 From Perennial.algebra Require Export laterN.
 Import interface.bi.
 Import derived_laws.bi.

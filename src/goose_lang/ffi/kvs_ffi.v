@@ -5,6 +5,9 @@ From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
 From Perennial.goose_lang Require ffi.disk.
 From Perennial.algebra Require Import gen_heap_names.
 
+From iris.algebra Require Import auth agree excl csum.
+From Perennial.base_logic Require Import ghost_var.
+
 Set Default Proof Using "Type".
 
 (* TODO: move this out, it's completely general *)
@@ -236,8 +239,6 @@ Section kvs.
        ext_crash := fun s s' => relation.denote close s s' tt; |}. (* everything is durable *)
 End kvs.
 
-From iris.algebra Require Import auth agree excl csum.
-From Perennial.program_logic Require Import ghost_var.
 Inductive kvs_unopen_status := UnInit' | Closed'.
 
 (* resource alg: append log has two: *)

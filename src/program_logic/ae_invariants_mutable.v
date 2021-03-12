@@ -1,9 +1,9 @@
 From stdpp Require Export namespaces.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import gmap.
-From iris.base_logic.lib Require Export fancy_updates fupd_level.
-From iris.base_logic.lib Require Import wsat.
-From iris.base_logic.lib Require Import ae_invariants.
+From Perennial.base_logic.lib Require Export fancy_updates fupd_level.
+From Perennial.base_logic.lib Require Import wsat.
+From Perennial.base_logic.lib Require Import ae_invariants.
 Set Default Proof Using "Type".
 Import uPred.
 

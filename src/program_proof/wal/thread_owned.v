@@ -1,8 +1,7 @@
 From iris.proofmode Require Import tactics.
 From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Import iprop own.
+From Perennial.base_logic.lib Require Import own ghost_var.
 From Perennial.algebra Require Import own_discrete.
-From Perennial.program_logic Require Import ghost_var.
 Set Default Proof Using "Type".
 
 (** resources for locking a resource but then retrieving it temporarily from a

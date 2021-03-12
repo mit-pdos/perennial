@@ -1,5 +1,5 @@
 From Coq.QArith Require Import Qcanon.
-From iris.base_logic.lib Require Import invariants.
+From Perennial.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
 From iris.bi Require Import fractional.
 From iris.algebra Require Import excl csum frac auth agree numbers.

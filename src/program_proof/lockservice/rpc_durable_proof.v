@@ -1,7 +1,7 @@
 From Coq.Structures Require Import OrdersTac.
 From stdpp Require Import gmap.
 From iris.algebra Require Import numbers.
-From iris.program_logic Require Export weakestpre.
+From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Perennial.goose_lang Require Import notation.

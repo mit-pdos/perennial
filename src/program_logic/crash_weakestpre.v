@@ -1,8 +1,8 @@
 From iris.algebra Require Import auth agree excl csum.
-From iris.base_logic Require Import ae_invariants.
+From Perennial.base_logic Require Import ae_invariants.
 From iris.proofmode Require Import base tactics classes.
-From iris.base_logic Require Export invariants fupd_level.
-From iris.program_logic Require Export weakestpre.
+From Perennial.base_logic Require Export invariants fupd_level.
+From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import step_fupd_extra ae_invariants_mutable.
 From Perennial.algebra Require Export own_discrete.
 Set Default Proof Using "Type".
@@ -1968,7 +1968,7 @@ End proofmode_classes.
 
 Hint Extern 1 (environments.envs_entails _ (|C={_}_ _ => _)) => iModIntro : core.
 
-From iris.program_logic Require Import ectx_language.
+From Perennial.program_logic Require Import ectx_language.
 
 Section wpc_ectx_lifting.
 Context {Λ : ectxLanguage} `{!irisG Λ Σ} {Hinh : Inhabited (state Λ)}.

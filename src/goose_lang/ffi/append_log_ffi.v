@@ -4,6 +4,9 @@ From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
 From Perennial.goose_lang Require ffi.disk.
 
+From iris.algebra Require Import auth agree excl csum.
+From Perennial.base_logic Require Import ghost_var.
+
 (* TODO: move this out, it's completely general *)
 Section recoverable.
   Context {Σ:Type}.
@@ -181,8 +184,6 @@ Section log.
        ext_crash := fun s s' => relation.denote close s s' tt; |}.
 End log.
 
-From iris.algebra Require Import auth agree excl csum.
-From Perennial.program_logic Require Import ghost_var.
 Inductive log_unopen_status := UnInit' | Closed'.
 Definition openR := csumR (prodR fracR (agreeR (leibnizO log_unopen_status))) (agreeR (leibnizO loc)).
 Definition Log_Opened (l: loc) : openR := Cinr (to_agree l).

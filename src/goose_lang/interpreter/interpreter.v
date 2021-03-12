@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 From stdpp Require Export binders strings gmap pretty.
-From iris.program_logic Require Export language ectx_language ectxi_language.
+From Perennial.program_logic Require Export language ectx_language ectxi_language.
 From Perennial.Helpers Require Import Integers.
 From Perennial.goose_lang Require Export locations lang notation.
 From Perennial.goose_lang Require Import interpret_types.

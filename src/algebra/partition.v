@@ -1,7 +1,7 @@
 From stdpp Require Export namespaces.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap frac agree namespace_map gset.
-From iris.base_logic.lib Require Export own.
+From Perennial.base_logic.lib Require Export own.
 From Perennial.algebra Require Import gen_heap_names.
 Set Default Proof Using "Type".
 Import uPred.

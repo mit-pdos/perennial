@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import gset dfrac.
-From iris.base_logic.lib Require Import mono_nat.
+From Perennial.base_logic.lib Require Import mono_nat.
 
 From Perennial.Helpers Require Import ListSubset.
 From Perennial.program_proof Require Import disk_lib.

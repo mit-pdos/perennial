@@ -1,7 +1,7 @@
 From iris.algebra Require Import gmap auth agree gset coPset excl csum.
-From iris.base_logic.lib Require Export fancy_updates.
+From Perennial.base_logic.lib Require Export fancy_updates.
 From stdpp Require Export namespaces.
-From iris.base_logic.lib Require Import wsat invariants ae_invariants saved_prop.
+From Perennial.base_logic.lib Require Import wsat invariants ae_invariants saved_prop.
 From iris.algebra Require Import gmap.
 From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Export step_fupd_extra crash_weakestpre ae_invariants_mutable.

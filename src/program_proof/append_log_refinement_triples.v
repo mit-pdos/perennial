@@ -1,11 +1,11 @@
 From Perennial.goose_lang.examples Require Import append_log.
 From Perennial.goose_lang.lib Require Import encoding crash_lock.
+From Perennial.base_logic Require Import ghost_var.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import append_log_hocap.
 From Perennial.goose_lang.ffi Require Import append_log_ffi.
 From Perennial.goose_lang Require Import spec_assert refinement_adequacy.
-From Perennial.program_logic Require Import ghost_var.
 
 Existing Instances log_spec_ext log_spec_ffi_model log_spec_ext_semantics log_spec_ffi_interp log_spec_interp_adequacy.
 

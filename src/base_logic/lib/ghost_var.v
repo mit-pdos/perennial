@@ -1,5 +1,7 @@
-From iris.algebra Require Import frac_agree.
-From iris.base_logic Require Export ghost_var.
+(* Just reexport Iris mdoule *)
+From iris.base_logic Require Export lib.ghost_var.
+
+(* Add some Perennial-specific stuff *)
 From Perennial.algebra Require Import own_discrete.
 From iris.proofmode Require Import tactics.
 

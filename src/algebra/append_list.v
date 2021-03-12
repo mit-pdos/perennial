@@ -4,7 +4,7 @@ From Perennial.Helpers Require Import NamedProps.
 
 From iris.proofmode Require Import tactics.
 From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Import own.
+From Perennial.base_logic.lib Require Import own.
 From Perennial.algebra Require Import auth_map.
 
 Set Default Goal Selector "!".

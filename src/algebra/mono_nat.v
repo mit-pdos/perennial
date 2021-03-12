@@ -1,4 +1,4 @@
-From iris.base_logic.lib Require Export mono_nat.
+From Perennial.base_logic.lib Require Export mono_nat.
 From Perennial.algebra Require Import own_discrete.
 
 Global Instance mono_nat_own_auth_discretizable Σ `{mono_natG Σ} γ q n

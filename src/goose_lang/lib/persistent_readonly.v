@@ -1,6 +1,6 @@
 From Coq.QArith Require Import Qcanon.
 From Perennial.Helpers Require Import Qextra.
-From iris.base_logic.lib Require Import ae_invariants.
+From Perennial.base_logic.lib Require Import ae_invariants.
 From iris.bi.lib Require Import fractional.
 From Perennial.Helpers Require Import iris.
 From Perennial.algebra Require Import deletable_heap.

@@ -1,8 +1,8 @@
 From iris.algebra Require Import auth frac agree gmap list excl.
-From iris.base_logic.lib Require Import invariants.
+From Perennial.base_logic.lib Require Import invariants.
 From iris.proofmode Require Import tactics.
-From iris.program_logic Require Export language.
-From iris.program_logic Require Import lifting.
+From Perennial.program_logic Require Export language.
+From Perennial.program_logic Require Import lifting.
 From Perennial.program_logic Require Export crash_lang ncinv staged_invariant.
 
 Set Default Proof Using "Type".

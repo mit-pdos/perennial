@@ -1,4 +1,4 @@
-From iris.program_logic Require Export language.
+From Perennial.program_logic Require Export language.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Import tactics notation lifting.

@@ -1,6 +1,6 @@
 From Perennial.program_logic Require Import invariants_mutable.
 From Perennial.program_proof Require Import proof_prelude.
-From iris.base_logic.lib Require Import wsat.
+From Perennial.base_logic.lib Require Import wsat.
 
 (* This file explores ways to promote a HOCAP wp spec that relies on Perennial 1 style
    for crash safety into a Peony/Perennial 2 HOCAP spec.

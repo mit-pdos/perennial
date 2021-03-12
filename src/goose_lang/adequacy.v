@@ -1,7 +1,7 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth.
-From iris.base_logic.lib Require Import proph_map.
-From iris.program_logic Require Export weakestpre adequacy.
+From Perennial.base_logic.lib Require Import proph_map.
+From Perennial.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import gen_heap_names.
 From Perennial.goose_lang Require Import proofmode notation.
 Set Default Proof Using "Type".

@@ -1,5 +1,5 @@
 From iris.proofmode Require Import base tactics.
-From iris.base_logic Require Import upred bi.
+From Perennial.base_logic Require Import base_logic.
 Import interface.bi.
 Import derived_laws.bi.
 Import derived_laws_later.bi.

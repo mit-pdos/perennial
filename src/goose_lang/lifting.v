@@ -2,9 +2,9 @@ From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap excl.
 From iris.bi Require Import fractional.
-From iris.base_logic.lib Require Export proph_map.
-From iris.program_logic Require Export weakestpre.
-From iris.program_logic Require Import ectx_lifting total_ectx_lifting.
+From Perennial.base_logic.lib Require Export proph_map.
+From Perennial.program_logic Require Export weakestpre.
+From Perennial.program_logic Require Import ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.

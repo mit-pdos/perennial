@@ -1,4 +1,4 @@
-From iris.program_logic Require Import language.
+From Perennial.program_logic Require Import language.
 From Perennial.goose_lang Require Export lang.
 Set Default Proof Using "Type".
 

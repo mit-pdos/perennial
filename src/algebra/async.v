@@ -1,7 +1,7 @@
 From stdpp Require Import countable.
 From iris.algebra Require Import gmap_view view.
 From Perennial.algebra Require Import mlist.
-From iris.base_logic Require Import lib.iprop.
+From Perennial.base_logic Require Import lib.iprop.
 From iris.bi Require Import lib.fractional.
 From iris.proofmode Require Import tactics.
 From Perennial.algebra Require Import log_heap own_discrete.

@@ -4,7 +4,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import gen_heap_names.
 From iris.proofmode Require Import tactics.
-From iris.program_logic Require Import ectx_lifting.
+From Perennial.program_logic Require Import ectx_lifting.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing.

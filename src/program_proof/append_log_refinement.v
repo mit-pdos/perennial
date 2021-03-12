@@ -6,7 +6,7 @@ From Perennial.program_proof Require Import append_log_hocap.
 From Perennial.program_proof Require Import append_log_refinement_triples.
 From Perennial.goose_lang.ffi Require Import append_log_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert.
-From Perennial.program_logic Require Import ghost_var.
+From Perennial.base_logic Require Import ghost_var.
 
 Existing Instances log_spec_ext log_spec_ffi_model log_spec_ext_semantics log_spec_ffi_interp log_spec_interp_adequacy.
 

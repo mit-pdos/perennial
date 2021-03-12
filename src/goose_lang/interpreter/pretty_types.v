@@ -1,6 +1,6 @@
 From stdpp Require Import strings.
 From stdpp Require Export pretty.
-From iris.program_logic Require Import language ectx_language ectxi_language.
+From Perennial.program_logic Require Import language ectx_language ectxi_language.
 From Perennial.Helpers Require Import Integers Transitions.
 From Perennial.goose_lang Require Import locations lang.
 

@@ -2,12 +2,12 @@ From stdpp Require Import gmap.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap lib.gmap_view.
-From iris.base_logic.lib Require Export gen_heap.
+From Perennial.base_logic.lib Require Export gen_heap.
 From Perennial.algebra Require Export own_discrete atleast.
 Set Default Proof Using "Type".
 Import uPred.
 
-(** Adds support to iris.base_logic.lib.gen_heap for extracting and changing the
+(** Adds support to Perennial.base_logic.lib.gen_heap for extracting and changing the
 names of ghost variables, to use as part of a crash "generation" and support
 updating the generation of a heap.
 

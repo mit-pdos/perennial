@@ -1,8 +1,8 @@
 (* Multi-generational heaps *)
 From iris.algebra Require Import auth gmap frac agree functions.
 From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Export own invariants.
-From iris.base_logic.lib Require Import gen_heap.
+From Perennial.base_logic.lib Require Export own invariants.
+From Perennial.base_logic.lib Require Import gen_heap.
 From iris.proofmode Require Import tactics.
 
 From Perennial.algebra Require Import auth_map.

@@ -1,8 +1,8 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export environments.
 From Perennial.Helpers Require Export ipm.
-From iris.program_logic Require Export weakestpre.
-From iris.program_logic Require Import atomic.
+From Perennial.program_logic Require Export weakestpre.
+From Perennial.program_logic Require Import atomic.
 From Perennial.goose_lang Require Export lifting.
 From Perennial.goose_lang Require Export typing.
 Set Default Proof Using "Type".
@@ -369,6 +369,7 @@ Tactic Notation "wp_apply_core" open_constr(lem) tactic(tac) :=
     end).
 Tactic Notation "wp_apply" open_constr(lem) :=
   wp_apply_core lem (fun H => iApplyHyp H; try iNext; try wp_expr_simpl; solve_bi_true).
+(*
 (** Tactic tailored for atomic triples: the first, simple one just runs
 [iAuIntro] on the goal, as atomic triples always have an atomic update as their
 premise.  The second one additionaly does some framing: it gets rid of [Hs] from
@@ -379,6 +380,7 @@ Tactic Notation "awp_apply" open_constr(lem) :=
   wp_apply_core lem (fun H => iApplyHyp H; last iAuIntro).
 Tactic Notation "awp_apply" open_constr(lem) "without" constr(Hs) :=
   wp_apply_core lem (fun H => iApply wp_frame_wand_l; iSplitL Hs; [iAccu|iApplyHyp H; last iAuIntro]).
+*)
 
 Tactic Notation "wp_untyped_load" :=
   let solve_mapsto _ :=

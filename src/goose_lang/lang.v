@@ -3,7 +3,7 @@ From RecordUpdate Require Import RecordSet.
 From stdpp Require Export binders strings.
 From stdpp Require Import gmap.
 From iris.algebra Require Export ofe.
-From iris.program_logic Require Export language ectx_language ectxi_language.
+From Perennial.program_logic Require Export language ectx_language ectxi_language.
 From Perennial.Helpers Require Import CountableTactics.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_logic Require Export crash_lang.

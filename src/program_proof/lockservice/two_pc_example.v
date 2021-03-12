@@ -12,7 +12,7 @@ From Perennial.Helpers Require Import Map gset ipm.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl agree auth gmap csum.
 From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Import own.
+From Perennial.base_logic.lib Require Import own.
 From iris_string_ident Require Import ltac2_string_ident.
 
 Section tpc_example.

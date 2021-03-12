@@ -2,8 +2,8 @@ From iris.proofmode Require Import base tactics classes.
 From Perennial.Helpers Require Import ipm.
 From iris.algebra Require Import excl numbers.
 From iris.bi Require Export laterable.
-From iris.base_logic Require Export invariants.
-From iris.program_logic Require Export weakestpre.
+From Perennial.base_logic Require Export invariants.
+From Perennial.program_logic Require Export weakestpre.
 From Perennial.algebra Require Export abs_laterable.
 From Perennial.program_logic Require Import staged_invariant crash_weakestpre.
 Set Default Proof Using "Type".

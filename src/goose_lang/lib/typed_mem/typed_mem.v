@@ -1,7 +1,7 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Import tactics.
 From iris.proofmode Require Import environments.
-From iris.program_logic Require Import weakestpre total_weakestpre.
+From Perennial.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang.lib Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Export typed_mem.impl.

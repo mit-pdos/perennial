@@ -4,7 +4,7 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import twophase.typed_translate twophase.wrapper_proof twophase.twophase_refinement_defs twophase.twophase_sub_logical_reln_defs.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert metatheory.
-From Perennial.program_logic Require Import ghost_var.
+From Perennial.base_logic Require Import ghost_var.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 
