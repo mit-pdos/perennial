@@ -169,6 +169,7 @@ Section goose_lang.
       - iNext. iIntros (γtxn_names' l) "(#Histxn&Hcancel&Hmapstos)".
         iRight in "HΦ".
         rewrite /txn_cfupd_res.
+        iDestruct "Hmapstos" as "[%Heq_kinds Hmapstos]".
         iDestruct (own_discrete_laterable with "Hmapstos") as (Ptxn_tok) "(HPtxn_tok&#HPtxn_tok_wand)".
         iDestruct (own_discrete_laterable with "Hcancel") as
             (Ptxn_cancel_tok) "(HPtxn_cancel_tok&#HPtxn_cancel_tok_wand)".

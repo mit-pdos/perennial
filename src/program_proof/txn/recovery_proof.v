@@ -791,6 +791,7 @@ Qed.
     (<bdisc> (|C={E}_k=> ▷ is_txn_durable γ' dinit)).
 
 Definition txn_cfupd_res E γ γ' : iProp Σ :=
+  ⌜γ'.(txn_kinds) = γ.(txn_kinds)⌝ ∗
   (<bdisc> (|C={E}_0=> ▷ ∃ logm, txn_resources γ γ' logm)).
 
 Theorem wpc_MkTxn E (d:loc) dinit (γ:txn_names) k :
@@ -941,6 +942,7 @@ Proof.
     iFrame.
     Unshelve.
     (* XXX: track this down. *)
+    { simpl. eauto. }
     { exact (Build_async (∅: gmap addr object) []). }
     { exact (Build_async (∅: gmap addr object) []). }
     { exact (U64 0). }

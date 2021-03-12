@@ -160,6 +160,8 @@ Section goose_lang.
        "Hexchanger" ∷ addr_exchangers crash_txn γ γ' (latest logm)
   .
 
+  (* TODO: note that we don't promise γ'.(buftxn_txn_names).(txn_kinds) =
+  γ.(buftxn_txn_names).(txn_kinds), even though txn_cfupd_res has this fact *)
   Definition txn_cinv γ γ' : iProp Σ :=
     □ |C={⊤}_0=> inv N (sep_txn_exchanger γ γ').
 
