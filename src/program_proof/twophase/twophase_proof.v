@@ -13,6 +13,7 @@ From Perennial.program_logic Require Import na_crash_inv.
 Section proof.
 Context `{!buftxnG Σ}.
 Context `{!heapG Σ}.
+Context `{!lockmapG Σ}.
 Definition Nbuftxn := nroot .@ "buftxn".
 
 Definition get_addr_set_blknos (s: gset addr): gset u64 :=
