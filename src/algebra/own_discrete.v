@@ -1,7 +1,7 @@
 From iris.bi Require Export bi.
 From Perennial.base_logic Require Export base_logic own fupd_level.
 From Perennial.Helpers Require Import ipm.
-From Perennial.algebra Require Import atleast big_sepL.
+From Perennial.algebra Require Import atleast big_sepL mlist.
 Set Default Proof Using "Type".
 
 Lemma uPred_cmra_valid_elim_alt {M: ucmra} (A: cmra) (a: A):
@@ -732,3 +732,20 @@ Section test.
   Proof using HP HQ. iIntros. iModIntro. iFrame. Qed.
 
 End test.
+
+(* These instances are here to avoid cyclic dependencies (and since we
+transitively depend on mlist anyway) *)
+
+Section mlist_ext.
+Context `{fmlistG A Σ}.
+Implicit Types l : list A.
+
+
+Global Instance fmlist_discretizable γ q l:
+  Discretizable (fmlist γ q l).
+Proof. rewrite /fmlist. apply _. Qed.
+Global Instance fmlist_lb_discretizable γ l:
+  Discretizable (fmlist_lb γ l).
+Proof. rewrite /fmlist_lb. apply _. Qed.
+
+End mlist_ext.

@@ -1,5 +1,6 @@
 From iris.algebra Require Import gmap auth agree gset coPset.
-From iris.bi Require Import big_op_extra.
+From iris.proofmode Require Import tactics.
+From Perennial.algebra Require Import big_op.big_sepL.
 From Perennial.base_logic.lib Require Import wsat.
 From Perennial.program_logic Require Export weakestpre.
 From iris.prelude Require Import options.

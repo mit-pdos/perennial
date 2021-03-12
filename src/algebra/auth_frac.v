@@ -1,7 +1,7 @@
 From iris.algebra Require Import auth updates local_updates.
 From iris.proofmode Require Import tactics.
 From iris.bi.lib Require Import fractional.
-Set Default Proof Using "Type".
+From iris.prelude Require Import options.
 
 (** XXX: TODO, upsteam, although this proof is a mess *)
 Lemma auth_frac_update {A: ucmra} q (a b b': A) :
@@ -30,7 +30,7 @@ Proof.
       - econstructor. rewrite Heqa1 comm. by symmetry.
     }
     move: Ha; rewrite !left_id -assoc => Ha.
-    destruct (Hup n (Some (bf1 ⋅ bf2))). simpl.
+    destruct (Hup n (Some (bf1 ⋅ bf2))); simpl.
     { by rewrite Heqa. }
     { simpl. by rewrite Heqa. }
     simpl in H1.
@@ -50,12 +50,12 @@ Proof.
     by rewrite left_id -assoc.
 Qed.
 
-Lemma auth_frac_update_alloc {A: ucmra} (q: Qp) (a b': A):
-  (a, ε) ~l~> (a,b') → (●{q} a ~~> ●{q} a ⋅ ◯ b').
-Proof. intros. rewrite -{1}(right_id _ _ (●{q} a)). by eapply auth_frac_update in H. Qed.
+Lemma auth_frac_update_alloc {A: ucmra} (dq: dfrac) (a b': A):
+  (a, ε) ~l~> (a,b') → (●{dq} a ~~> ●{dq} a ⋅ ◯ b').
+Proof. intros. rewrite -{1}(right_id _ _ (●{dq} a)). by eapply auth_frac_update in H. Qed.
 
-Lemma auth_frac_update_core_id {A: ucmra} q (a b: A) `{!CoreId b} :
-  b ≼ a → ●{q} a ~~> ●{q} a ⋅ ◯ b.
+Lemma auth_frac_update_core_id {A: ucmra} dq (a b: A) `{!CoreId b} :
+  b ≼ a → ●{dq} a ~~> ●{dq} a ⋅ ◯ b.
 Proof.
   intros Hincl. apply: auth_frac_update_alloc.
   rewrite -(left_id ε _ b). apply: core_id_local_update. done.
