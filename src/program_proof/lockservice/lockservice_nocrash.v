@@ -3,6 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 From Goose Require github_com.mit_pdos.lockservice.grove_common.
+From Goose Require github_com.tchajed.marshal.
 
 (* 0_common.go *)
 
@@ -39,21 +40,66 @@ Definition CheckReplyTable: val :=
       MapInsert "lastSeq" "CID" "Seq";;
       #false).
 
+Definition rpcReqEncode: val :=
+  rec: "rpcReqEncode" "req" :=
+    let: "e" := marshal.NewEnc (#4 * #8) in
+    marshal.Enc__PutInt "e" (struct.loadF grove_common.RPCRequest.S "CID" "req");;
+    marshal.Enc__PutInt "e" (struct.loadF grove_common.RPCRequest.S "Seq" "req");;
+    marshal.Enc__PutInt "e" (struct.get grove_common.RPCVals.S "U64_1" (struct.loadF grove_common.RPCRequest.S "Args" "req"));;
+    marshal.Enc__PutInt "e" (struct.get grove_common.RPCVals.S "U64_2" (struct.loadF grove_common.RPCRequest.S "Args" "req"));;
+    let: "res" := marshal.Enc__Finish "e" in
+    Linearize;;
+    "res".
+
+Definition rpcReqDecode: val :=
+  rec: "rpcReqDecode" "data" "req" :=
+    let: "d" := marshal.NewDec "data" in
+    struct.storeF grove_common.RPCRequest.S "CID" "req" (marshal.Dec__GetInt "d");;
+    struct.storeF grove_common.RPCRequest.S "Seq" "req" (marshal.Dec__GetInt "d");;
+    struct.storeF grove_common.RPCVals.S "U64_1" (struct.fieldRef grove_common.RPCRequest.S "Args" "req") (marshal.Dec__GetInt "d");;
+    struct.storeF grove_common.RPCVals.S "U64_2" (struct.fieldRef grove_common.RPCRequest.S "Args" "req") (marshal.Dec__GetInt "d");;
+    Linearize.
+
+Definition rpcReplyEncode: val :=
+  rec: "rpcReplyEncode" "reply" :=
+    let: "e" := marshal.NewEnc (#2 * #8) in
+    marshal.Enc__PutBool "e" (struct.loadF grove_common.RPCReply.S "Stale" "reply");;
+    marshal.Enc__PutInt "e" (struct.loadF grove_common.RPCReply.S "Ret" "reply");;
+    let: "res" := marshal.Enc__Finish "e" in
+    Linearize;;
+    "res".
+
+Definition rpcReplyDecode: val :=
+  rec: "rpcReplyDecode" "data" "reply" :=
+    let: "d" := marshal.NewDec "data" in
+    struct.storeF grove_common.RPCReply.S "Stale" "reply" (marshal.Dec__GetBool "d");;
+    struct.storeF grove_common.RPCReply.S "Ret" "reply" (marshal.Dec__GetInt "d");;
+    Linearize.
+
 (* Emulate an RPC call over a lossy network.
    Returns true iff server reported error or request "timed out".
    For the "real thing", this should instead submit a request via the network. *)
 Definition RemoteProcedureCall: val :=
   rec: "RemoteProcedureCall" "host" "rpcid" "req" "reply" :=
+    let: "reqdata" := rpcReqEncode "req" in
     Fork (let: "dummy_reply" := struct.alloc grove_common.RPCReply.S (zero_val (struct.t grove_common.RPCReply.S)) in
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             let: "rpc" := grove_ffi.GetServer "host" "rpcid" in
-            "rpc" "req" "dummy_reply";;
+            let: "decodedReq" := struct.alloc grove_common.RPCRequest.S (zero_val (struct.t grove_common.RPCRequest.S)) in
+            rpcReqDecode "reqdata" "decodedReq";;
+            "rpc" "decodedReq" "dummy_reply";;
             Continue));;
     (if: nondet #()
     then
       let: "rpc" := grove_ffi.GetServer "host" "rpcid" in
-      "rpc" "req" "reply"
+      let: "decodedReq" := struct.alloc grove_common.RPCRequest.S (zero_val (struct.t grove_common.RPCRequest.S)) in
+      rpcReqDecode "reqdata" "decodedReq";;
+      let: "serverReply" := struct.alloc grove_common.RPCReply.S (zero_val (struct.t grove_common.RPCReply.S)) in
+      let: "ok" := "rpc" "req" "serverReply" in
+      let: "replydata" := rpcReplyEncode "serverReply" in
+      rpcReplyDecode "replydata" "reply";;
+      "ok"
     else #true).
 
 (* Common code for RPC clients: tracking of CID and next sequence number. *)
