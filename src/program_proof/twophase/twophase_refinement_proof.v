@@ -177,13 +177,62 @@ Proof.
     iSplitL "Hv1".
     { iApply IHt1; eauto. }
     { iApply IHt2; eauto. }
-  - inversion 1.
+  - iIntros (Hdeconv) "H".
+    rewrite /val_interp -/val_interp.
+    rewrite atomically_val_interp_list_unfold.
+    iDestruct "H" as (?? Heq) "H".
+    rewrite /listT_interp. iExists _, _; iSplit; first eauto.
+    clear Heq.
+    iInduction lvs as [| v lvs] "IH" forall (lv).
+    * simpl. destruct lv; eauto.
+    * simpl. destruct lv; eauto.
+      iDestruct "H" as "(Hhd&Htl)".
+      iSplitL "Hhd".
+      { by iApply IHt. }
+      iApply "IH"; eauto.
   - iIntros ((?&?)) "H".
     rewrite /val_interp -/val_interp.
     iDestruct "H" as "[H|H]"; iDestruct "H" as (v vs (Heq&Heqs)) "H"; subst; rewrite /=; [ iLeft | iRight ].
     { iExists _, _. iSplit; first eauto. by iApply IHt1. }
     { iExists _, _. iSplit; first eauto. by iApply IHt2. }
   - inversion 1.
+Qed.
+
+Lemma atomically_deconvertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
+      {buftxnG0 : sep_buftxn_invariant.buftxnG Σ} {hL: lockmapG Σ} (t : sty) es e dinit objs_dom γ γ' tph_val :
+  atomic_deconvertible t →
+  atomically_val_interp N PARAMS dinit objs_dom γ γ' tph_val t es e -∗
+  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG jrnlTy_model hS t es e.
+Proof.
+  revert es e.
+  induction t => es e; try (inversion 1; done).
+  - iIntros ((?&?)) "H".
+    rewrite /val_interp -/val_interp.
+    iDestruct "H" as (v1 v2 vs1 vs2 (Heq&Heqs)) "H".
+    subst. iDestruct "H" as "(Hv1&Hv2)".
+    rewrite /=.
+    iExists _, _, _, _. iSplit; first eauto.
+    iSplitL "Hv1".
+    { iApply IHt1; eauto. }
+    { iApply IHt2; eauto. }
+  - iIntros (Hdeconv) "H".
+    rewrite /val_interp -/val_interp.
+    rewrite atomically_val_interp_list_unfold.
+    iDestruct "H" as (?? Heq) "H".
+    rewrite /listT_interp. iExists _, _; iSplit; first eauto.
+    clear Heq.
+    iInduction lvs as [| v lvs] "IH" forall (lv).
+    * simpl. destruct lv; eauto.
+    * simpl. destruct lv; eauto.
+      iDestruct "H" as "(Hhd&Htl)".
+      iSplitL "Hhd".
+      { by iApply IHt. }
+      iApply "IH"; eauto.
+  - iIntros ((?&?)) "H".
+    rewrite /val_interp -/val_interp.
+    iDestruct "H" as "[H|H]"; iDestruct "H" as (v vs (Heq&Heqs)) "H"; subst; rewrite /=; [ iLeft | iRight ].
+    { iExists _, _. iSplit; first eauto. by iApply IHt1. }
+    { iExists _, _. iSplit; first eauto. by iApply IHt2. }
 Qed.
 
 Set Nested Proofs Allowed.
@@ -305,9 +354,27 @@ Proof.
     wp_pures. iExists _. iFrame. iLeft. eauto.
   }
   {
-    iDestruct "Hsome" as (vssome vsnone (->&->)) "Hv".
+    iDestruct "Hsome" as (vssome vsome (->&->)) "Hv".
     wp_pures.
-
+    rewrite /twophase.TwoPhase__Commit.
+    wp_pures.
+    wp_apply (wp_TwoPhase__CommitNoRelease' with "[$]").
+    iIntros (ok) "H".
+    destruct ok.
+    - iDestruct "H" as "(Hrel&Hj)".
+      wp_pures.
+      wp_apply (wp_TwoPhase__ReleaseAll' with "[$]").
+      wp_pures. iExists _. iFrame.
+      rewrite /val_interp -/val_interp.
+      iRight. iExists _, _. iSplit; first eauto. simpl; auto.
+      iApply (atomically_deconvertible_val_interp with "[$]"); eauto.
+      naive_solver.
+    - wp_pures.
+      iMod (twophase_started_abort with "H") as "(H&Hj)".
+      wp_apply (wp_TwoPhase__ReleaseAll' with "[$]").
+      wp_pures. iExists _. iFrame.
+      rewrite /val_interp -/val_interp.
+      iLeft. iExists _, _. iSplit; first eauto. simpl; auto.
 Admitted.
 
 Existing Instances jrnl_semantics.

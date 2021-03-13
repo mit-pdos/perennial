@@ -32,7 +32,18 @@ Section translate.
     | baseT _ => True
     | prodT t1 t2 => atomic_convertible t1 ∧ atomic_convertible t2
     | sumT t1 t2 => atomic_convertible t1 ∧ atomic_convertible t2
+    | listT t => atomic_convertible t
     (* TODO: fix this once the ext types are defined *)
+    | extT x => False
+    | _ => False
+    end.
+
+  Fixpoint atomic_deconvertible (s: sty) : Prop :=
+    match s with
+    | baseT _ => True
+    | prodT t1 t2 => atomic_deconvertible t1 ∧ atomic_deconvertible t2
+    | sumT t1 t2 => atomic_deconvertible t1 ∧ atomic_deconvertible t2
+    | listT t => atomic_deconvertible t
     | extT x => False
     | _ => False
     end.
@@ -195,6 +206,7 @@ Section translate.
       tph ∉ dom (gset _) Γ →
       tph ∉ expr_vars ebdy →
       Γ' @ (Var tph) ⊢ ebdy -- ebdy' : t →
+      atomic_deconvertible t →
       jrnl_atomic_transTy Γ etxn etxn' (extT JrnlT)
                             ebdy
                             (* This final argument is what Atomically etxn ebdy will get translated to *)
