@@ -296,7 +296,7 @@ Proof using All.
 
   iSplit.
   { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
-    iDestruct "H" as (γ' logm') "(%Hkinds & Htxndurable)".
+    iDestruct "H" as (γ' logm') "Htxndurable".
     iDestruct "Htxndurable" as "(Hdurable&[%Heq|#Hexch])".
     { subst.
       iMod (is_source_later_upd P1 P2 with "[$] Hsrc") as "Hsrc".

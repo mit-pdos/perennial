@@ -161,7 +161,8 @@ Section goose_lang.
   (* TODO: note that we don't promise γ'.(buftxn_txn_names).(txn_kinds) =
   γ.(buftxn_txn_names).(txn_kinds), even though txn_cfupd_res has this fact *)
   Definition txn_cinv γ γ' : iProp Σ :=
-    □ |C={⊤}_0=> inv N (sep_txn_exchanger γ γ').
+    (□ |C={⊤}_0=> inv N (sep_txn_exchanger γ γ')) ∗
+    ⌜γ.(buftxn_txn_names).(txn_kinds) = γ'.(buftxn_txn_names).(txn_kinds)⌝.
 
   (* this is for the entire txn manager, and relates it to some ghost state *)
 
@@ -667,7 +668,8 @@ Section goose_lang.
     |C={⊤}_S k => ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
   Proof.
     iNamed 1.
-    iMod ("Htxn_cinv") as "#Hinv"; first lia.
+    iDestruct "Htxn_cinv" as "[#Hinv %kinds]".
+    iMod ("Hinv"); first lia.
     iIntros "HC".
     iInv ("Hinv") as ">H" "Hclo".
     iNamed "H".
@@ -720,7 +722,8 @@ Section goose_lang.
                   ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
   Proof.
     iIntros (Hdom1) "H". iNamed "H".
-    iMod ("Htxn_cinv") as "#Hinv"; first lia.
+    iDestruct "Htxn_cinv" as "[#Hinv %kinds]".
+    iMod ("Hinv"); first lia.
     iIntros "HC".
     iInv ("Hinv") as ">H" "Hclo".
     iNamed "H".

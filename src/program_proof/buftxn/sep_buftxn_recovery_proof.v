@@ -135,7 +135,7 @@ Section goose_lang.
         is_txn_system N γ ∗
         txn_cfupd_cancel dinit γ' ∗
         txn_cinv N γ γ' }}}
-    {{{ ∃ γ' logm', ⌜ γ'.(buftxn_txn_names).(txn_kinds) = γ.(buftxn_txn_names).(txn_kinds) ⌝ ∗
+    {{{ ∃ γ' logm',
         is_txn_durable γ' dinit logm' ∗
        (⌜ γ' = γ ⌝ ∨ (* sep_txn_exchanger γ γ' *)
         txn_cinv N γ γ') }}}.
@@ -163,8 +163,10 @@ Section goose_lang.
         iExists {| buftxn_txn_names := γ'; buftxn_async_name := γasync' |}, logm''.
         iMod (inv_alloc' with "H1") as "#Hinv".
         iModIntro.
-        iFrame "H2". iSplit; first eauto.
-        iRight. rewrite /txn_cinv. do 2 iModIntro.
+        iFrame "H2".
+        iRight.
+        iSplit; last by auto.
+        do 2 iModIntro.
         iFrame "Hinv".
       - iNext. iIntros (γtxn_names' l) "(#Histxn&Hcancel&Hmapstos)".
         iRight in "HΦ".
@@ -211,6 +213,7 @@ Section goose_lang.
         rewrite /txn_cfupd_cancel.
         rewrite /txn_cinv.
         iFrame.
+        auto.
     }
     { set_solver+. }
     { set_solver+. }
