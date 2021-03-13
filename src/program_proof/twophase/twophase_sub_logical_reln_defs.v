@@ -11,6 +11,7 @@ From Perennial.goose_lang Require Import metatheory.
 From Perennial.goose_lang.lib Require Import list.
 From Perennial.Helpers Require Import Qextra.
 From Perennial.Helpers Require List.
+From Perennial.program_proof Require Import lockmap_proof.
 
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
@@ -74,6 +75,7 @@ Context (dinit : abstraction.disk).
 Context (objs_dom : gset addr_proof.addr).
 Context (γ γ': sep_buftxn_invariant.buftxn_names).
 Context (tph: loc).
+Context `{!lockmapG Σ}.
 
 
 Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.

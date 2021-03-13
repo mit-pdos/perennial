@@ -5,6 +5,7 @@ From Perennial.program_proof Require Import twophase.typed_translate twophase.wr
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert metatheory.
 From Perennial.base_logic Require Import ghost_var.
+From Perennial.program_proof Require Import lockmap_proof.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 
@@ -60,11 +61,11 @@ Proof.
 Admitted.
 
 Lemma jrnl_inv_twophase_pre `{hBuf: sep_buftxn_invariant.buftxnG Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}
-      {hJrnl : twophase_refinement_defs.jrnlG Σ} vs v:
+      {hJrnl : twophase_refinement_defs.jrnlG Σ} {hL: lockmapG Σ} vs v:
     jrnl_inv -∗
     val_interp (smodel := jrnlTy_model) (hS := hJrnl) (@extT jrnl_val_ty JrnlT) vs v -∗
     ∃ (l : loc) γ γ' objs_dom dinit, ⌜ v = #l ⌝ ∗ is_twophase_pre N l γ γ' dinit objs_dom.
-  Admitted.
+Admitted.
 
 Ltac unfold_expr_vars :=
     match goal with
@@ -160,7 +161,7 @@ Notation spec_ty := jrnl_ty.
 Notation sty := (@ty (@val_tys _ spec_ty)).
 
 Lemma atomic_convertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
-      {buftxnG0 : sep_buftxn_invariant.buftxnG Σ} (t : sty) es e dinit objs_dom γ γ' tph_val :
+      {buftxnG0 : sep_buftxn_invariant.buftxnG Σ} {hL: lockmapG Σ} (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_convertible t →
   @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG jrnlTy_model hS t es e -∗
   atomically_val_interp N PARAMS dinit objs_dom γ γ' tph_val t es e.

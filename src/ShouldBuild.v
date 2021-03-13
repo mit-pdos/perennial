@@ -22,6 +22,7 @@ From Perennial.program_proof Require
      buftxn_replication.buftxn_replication_proof
      alloc_proof
      twophase.twophase_proof
+     twophase.twophase_refinement_proof
      simple.proofs simple.example
      wp_to_wpc.
 From Perennial.program_proof.examples Require
