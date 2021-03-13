@@ -17,7 +17,7 @@ Class txnG (Σ: gFunctors) :=
   {
     txn_boolG :> ghost_varG Σ bool;
     txn_walheapG :> walheapG Σ;
-    txn_logheapG :> log_heapPreG addr object Σ;
+    txn_logheapG :> ghost_mapG Σ addr object;
     txn_metaheapG :> mapG Σ addr gname;
     txn_crashstatesG :> ghost_varG Σ (async (gmap addr object));
   }.
@@ -25,7 +25,7 @@ Class txnG (Σ: gFunctors) :=
 Definition txnΣ : gFunctors :=
   #[ ghost_varΣ bool;
    walheapΣ;
-   log_heapΣ addr object;
+   ghost_mapΣ addr object;
    mapΣ addr gname;
    ghost_varΣ (async (gmap addr object))
    ].
@@ -33,16 +33,16 @@ Definition txnΣ : gFunctors :=
 Instance subG_txnΣ Σ : subG txnΣ Σ → txnG Σ.
 Proof. solve_inG. Qed.
 
-Record txn_names {Σ} := {
-  txn_logheap : log_heapG addr object Σ;
+Record txn_names := {
+  txn_logheap : gname;
   txn_metaheap : gname;
   txn_walnames : wal_heap_gnames;
   txn_crashstates : gname;
   txn_kinds : gmap u64 bufDataKind;
 }.
 
-Global Instance txn_names_eta {Σ} : Settable _ :=
-  settable! (@Build_txn_names Σ) <txn_logheap;txn_metaheap;txn_walnames;txn_crashstates;txn_kinds>.
+Global Instance txn_names_eta : Settable _ :=
+  settable! (@Build_txn_names) <txn_logheap;txn_metaheap;txn_walnames;txn_crashstates;txn_kinds>.
 
 Section goose_lang.
 Context `{!txnG Σ}.
@@ -56,7 +56,7 @@ Definition invN : namespace := nroot .@ "txninv".
 
 Definition mapsto_txn (γ : txn_names) (l : addr) (v : object) : iProp Σ :=
   ∃ γm,
-    "Hmapsto_log" ∷ mapsto_cur (hG := γ.(txn_logheap)) l v ∗
+    "Hmapsto_log" ∷ l ↪[γ.(txn_logheap)] v ∗
     "Hmapsto_meta" ∷ ptsto_mut γ.(txn_metaheap) l 1 γm ∗
     "Hmod_frag" ∷ ghost_var γm (1/2) true.
 
@@ -105,7 +105,7 @@ Definition is_txn_state (γ:txn_names)
            (logm : async (gmap addr object))
            (crash_heaps: async (gmap u64 Block)) : iProp Σ :=
   ∃ (metam : gmap addr gname),
-    "Hlogheapctx" ∷ log_heap_ctx (hG := γ.(txn_logheap)) logm ∗
+    "Hlogheapctx" ∷ ghost_map_auth γ.(txn_logheap) 1 (latest logm) ∗
     "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (1/4) logm ∗
     "Hmetactx" ∷ map_ctx γ.(txn_metaheap) 1 metam ∗
     "Hheapmatch" ∷ ( [∗ map] blkno ↦ offmap;metamap ∈ gmap_addr_by_block (latest logm);gmap_addr_by_block metam,
@@ -165,7 +165,7 @@ Proof.
   iNamed "H".
   iNamed "Halways".
 
-  iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
+  iDestruct (ghost_map_lookup with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
   iDestruct (map_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
 
   eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
@@ -200,8 +200,8 @@ Qed.
 
 Theorem mapsto_txn_cur γ (a : addr) (v : {K & bufDataT K}) :
   mapsto_txn γ a v -∗
-  mapsto_cur (hG := γ.(txn_logheap)) a v ∗
-  (∀ v', mapsto_cur (hG := γ.(txn_logheap)) a v' -∗ mapsto_txn γ a v').
+  a ↪[γ.(txn_logheap)] v ∗
+  (∀ v', a ↪[γ.(txn_logheap)] v' -∗ mapsto_txn γ a v').
 Proof.
   rewrite /mapsto_txn.
   iIntros "H". iNamed "H".
@@ -211,19 +211,19 @@ Qed.
 
 Theorem mapsto_txn_cur_map {A} γ (m : gmap addr A) (f : A -> {K & bufDataT K}) (xform : A -> A):
   ( [∗ map] a↦v ∈ m, mapsto_txn γ a (f v) ) -∗
-  ( [∗ map] a↦v ∈ m, mapsto_cur (hG := γ.(txn_logheap)) a (f v)) ∗
-  ( ([∗ map] a↦v ∈ xform <$> m, mapsto_cur (hG := γ.(txn_logheap)) a (f v)) -∗
+  ( [∗ map] a↦v ∈ m, a ↪[γ.(txn_logheap)] (f v)) ∗
+  ( ([∗ map] a↦v ∈ xform <$> m, a ↪[γ.(txn_logheap)] (f v)) -∗
     [∗ map] a↦v ∈ xform <$> m, mapsto_txn γ a (f v) ).
 Proof.
   iIntros "Hm".
-  iDestruct (big_sepM_mono _ (λ a v, mapsto_cur (hG := γ.(txn_logheap)) a (f v) ∗
-                                    (mapsto_cur (hG := γ.(txn_logheap)) a (f (xform v)) -∗ mapsto_txn γ a (f (xform v))))%I with "Hm") as "Hm".
+  iDestruct (big_sepM_mono _ (λ a v, a ↪[γ.(txn_logheap)] (f v) ∗
+                                    (a ↪[γ.(txn_logheap)] (f (xform v)) -∗ mapsto_txn γ a (f (xform v))))%I with "Hm") as "Hm".
   2: iDestruct (big_sepM_sep with "Hm") as "[$ Hm1]".
   { iIntros (k x Hkx) "H". iDestruct (mapsto_txn_cur with "H") as "[$ H]".
     iIntros "H'". iApply "H". iFrame. }
   iIntros "Hm0".
   iDestruct (bi_iff_2 with "[Hm1]") as "Hm1".
-  1: iApply (big_sepM_fmap _ (λ k x, mapsto_cur k (f x) -∗ mapsto_txn γ k (f x))%I).
+  1: iApply (big_sepM_fmap _ (λ k x, k ↪[_] (f x) -∗ mapsto_txn γ k (f x))%I).
   2: iDestruct (big_sepM_sep with "[$Hm0 $Hm1]") as "Hm".
   1: iFrame.
   iApply (big_sepM_mono with "Hm").

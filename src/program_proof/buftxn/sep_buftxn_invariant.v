@@ -1,7 +1,7 @@
 Import EqNotations.
 From Perennial.Helpers Require Import Map.
 From Perennial.algebra Require Import auth_map liftable log_heap async.
-From Perennial.base_logic Require Import lib.mono_nat.
+From Perennial.base_logic Require Import lib.mono_nat lib.ghost_map.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
 From Perennial.program_logic Require Export ncinv.
@@ -55,12 +55,10 @@ Definition buftxnΣ : gFunctors :=
 Instance subG_buftxnΣ Σ : subG buftxnΣ Σ → buftxnG Σ.
 Proof. solve_inG. Qed.
 
-Record buftxn_names {Σ} :=
-  { buftxn_txn_names : @txn_names Σ;
+Record buftxn_names :=
+  { buftxn_txn_names : txn_names;
     buftxn_async_name : async_gname;
   }.
-
-Arguments buftxn_names Σ : assert, clear implicits.
 
 Section goose_lang.
   Context `{!buftxnG Σ}.
@@ -68,7 +66,7 @@ Section goose_lang.
 
   Context (N:namespace).
 
-  Implicit Types (l: loc) (γ: buftxn_names Σ) (γtxn: gname).
+  Implicit Types (l: loc) (γ: buftxn_names) (γtxn: gname).
   Implicit Types (obj: object).
 
   Definition txn_durable γ txn_id :=
@@ -366,7 +364,7 @@ Section goose_lang.
     iDestruct (mapsto_txn_cur with "Ha") as "[Ha _]".
     iDestruct "Ha_i" as (i) "[Ha_i _]".
     iDestruct (ephemeral_val_from_agree_latest with "H●latest Ha_i") as %Hlookup_obj.
-    iDestruct (log_heap_valid_cur with "Hlogheapctx [$]") as %Hlookup_obj0.
+    iDestruct (ghost_map_lookup with "Hlogheapctx [$]") as %Hlookup_obj0.
     iPureIntro.
     congruence.
   Qed.

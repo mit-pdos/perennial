@@ -17,6 +17,7 @@ From Perennial.program_proof Require Import proof_prelude.
 Section proof.
   Context `{!buftxnG Σ}.
   Context `{!heapG Σ}.
+  Context `{!lockmapG Σ}.
   Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp
            jrnl_spec_interp_adequacy.
   Context `{!refinement_heapG Σ}.
@@ -31,7 +32,7 @@ Section proof.
   Parameter ex_mapsto : addr → object → iProp Σ.
 
   (* XXX: seems like objs_spec should really be switched to a gmap in twophase_linv_flat ? *)
-  Definition is_twophase_pre N l (γ γ' : buftxn_names Σ) dinit objs_dom : iProp Σ :=
+  Definition is_twophase_pre N l (γ γ' : buftxn_names) dinit objs_dom : iProp Σ :=
     ∃ (txnl locksl : loc) ghs objs_spec,
       let objs_dom_blknos := get_addr_set_blknos objs_dom in
       "Histwophase_txnl" ∷ readonly (l ↦[TwoPhasePre.S :: "txn"] #txnl) ∗

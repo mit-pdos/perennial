@@ -87,7 +87,7 @@ Definition appendΣ := #[stagedΣ;
                           GFunctor ((authR (optionUR (exclR (leibnizO (nat * (spec_lang.(language.expr) →
                                                                        spec_lang.(language.expr))))))))].
 
-Instance subG_appendPreG: ∀ Σ, subG appendΣ Σ → appendG Σ.
+Instance subG_appendG: ∀ Σ, subG appendΣ Σ → appendG Σ.
 Proof. solve_inG. Qed.
 Definition append_initP (σimpl: @state disk_op disk_model) (σspec : @state log_op log_model) : Prop :=
   (null_non_alloc σspec.(heap)) ∧
@@ -98,7 +98,7 @@ Definition append_update_pre (Σ: gFunctors) (hG: appendG Σ) (n: append_names) 
 Program Instance appendTy_update_model : specTy_update appendTy_model :=
   {| sty_preG := appendG;
             styΣ := appendΣ;
-            subG_styPreG := subG_appendPreG;
+            subG_styPreG := subG_appendG;
             sty_update_pre := @append_update_pre |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.

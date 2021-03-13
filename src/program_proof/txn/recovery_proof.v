@@ -17,11 +17,11 @@ Section goose_lang.
 Context `{!txnG Σ}.
 Context `{!heapG Σ}.
 
-Implicit Types (γ: @txn_names Σ).
+Implicit Types (γ: txn_names).
 
 Definition txn_init_ghost_state γ : iProp Σ :=
   let logm0 := Build_async (∅: gmap addr object) [] in
-  "logheap" ∷ log_heap_ctx (hG:=γ.(txn_logheap)) logm0 ∗
+  "logheap" ∷ ghost_map_auth γ.(txn_logheap) 1 (latest logm0) ∗
   "crashstates" ∷ ghost_var γ.(txn_crashstates) 1 logm0 ∗
   "metaheap" ∷ map_ctx γ.(txn_metaheap) 1 (∅ : gmap addr gname).
 
@@ -31,11 +31,11 @@ Lemma alloc_txn_init_ghost_state (γtxn_walnames: wal_heap_gnames) kinds :
               txn_init_ghost_state γ.
 Proof.
   set (logm:=Build_async (∅: gmap addr object) []).
-  iMod (seq_heap_init logm) as (txn_logheap) "[? _]".
+  iMod (ghost_map_alloc (latest logm)) as (txn_logheap) "[? _]".
   iMod (ghost_var_alloc logm) as (txn_crashstates) "?".
   iMod (map_init (∅ : gmap addr gname)) as (txn_metaheap) "?".
   iModIntro.
-  iExists (Build_txn_names _ _ _ _ _ _).
+  iExists (Build_txn_names _ _ _ _ _).
   rewrite /txn_init_ghost_state /=.
   by iFrame.
 Qed.
@@ -386,7 +386,8 @@ Proof.
 
   iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Hinit".
   iNamed "Hinit".
-  iMod (log_heap_set (kind_heap0 kinds) with "logheap") as "[logheap logheap_mapsto_curs]".
+  iMod (ghost_map_insert_big (kind_heap0 kinds) with "logheap") as "[logheap logheap_mapsto_curs]".
+  { simpl. apply map_disjoint_empty_r. }
   iMod (ghost_var_update (Build_async (kind_heap0 kinds) [])
           with "crashstates") as "H".
   iEval (rewrite -Qp_quarter_three_quarter) in "H".
@@ -418,7 +419,7 @@ Proof.
   rewrite /is_txn_state.
   iExists metamap.
   rewrite Heq2.
-  simpl.
+  simpl. rewrite right_id.
   iFrame "wal_heap_crash_heaps logheap crashstates1 metaheap".
 
   iSplitL "Hmetas1 wal_heap_h_mapsto".
@@ -729,9 +730,9 @@ Proof.
   iDestruct (crash_heaps_match_transfer_gname _ γ' with "Hcrashheapsmatch'") as "#Hcrashheapsmatch_new".
   { auto. }
 
-  iMod (map_alloc_many (async_take (length ls2.(log_state.txns)) logm1).(latest) with "logheap")
+  iMod (ghost_map_insert_big (async_take (length ls2.(log_state.txns)) logm1).(latest) with "logheap")
     as "[logheap Hlatest]".
-  { intros. apply lookup_empty. }
+  { apply map_disjoint_empty_r. }
 
   iMod (crash_heaps_match_heapmatch_latest γ' with "[$Hcrashheapsmatch_new $metaheap $Hcrash_heaps0]") as
      (metam_new) "(metaheap&Heapmatch_new&Hpts)".
@@ -784,7 +785,7 @@ Proof.
   iFrame.
   iExists metam_new.
   iFrame "# ∗".
-  rewrite /log_heap_ctx /=. iEval (rewrite right_id) in "logheap". iFrame "logheap".
+  simpl. iEval (rewrite right_id) in "logheap". iFrame "logheap".
   eauto.
 Qed.
 

@@ -44,7 +44,7 @@ Section goose_lang.
 
   Context (N:namespace).
 
-  Implicit Types (l: loc) (γ: buftxn_names Σ) (γtxn: gname).
+  Implicit Types (l: loc) (γ: buftxn_names) (γtxn: gname).
   Implicit Types (obj: object).
 
   Theorem wp_BufTxn__Begin' (l_txn: loc) γ dinit :

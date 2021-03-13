@@ -4,6 +4,7 @@ From Perennial.algebra Require Import mlist.
 From Perennial.base_logic Require Import lib.iprop.
 From iris.bi Require Import lib.fractional.
 From iris.proofmode Require Import tactics.
+From Perennial.Helpers Require Import Map.
 From Perennial.algebra Require Import log_heap own_discrete.
 From iris_string_ident Require Import ltac2_string_ident.
 
@@ -407,7 +408,7 @@ Theorem ephemeral_val_from_agree_latest_map γ q σs i σ :
 Proof.
   iIntros "Hctx Hvals".
   iInduction σ as [|a v σ] "IH" using map_ind.
-  { iPureIntro. apply Map.map_empty_subseteq. }
+  { iPureIntro. apply map_empty_subseteq. }
   rewrite big_sepM_insert; last done.
   iDestruct "Hvals" as "[Hval Hvals]".
   iDestruct (ephemeral_val_from_agree_latest with "Hctx Hval") as %?.

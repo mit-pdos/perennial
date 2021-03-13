@@ -37,8 +37,8 @@ Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Record simple_names := {
-  simple_buftxn : buftxn_names Σ;
-  simple_buftxn_next : buftxn_names Σ;
+  simple_buftxn : buftxn_names;
+  simple_buftxn_next : buftxn_names;
   simple_src : gname;
   simple_lockmapghs : list gname;
 }.

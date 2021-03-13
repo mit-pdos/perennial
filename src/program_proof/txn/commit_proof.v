@@ -20,7 +20,7 @@ Section goose_lang.
 Context `{!txnG Σ}.
 Context `{!heapG Σ}.
 
-Implicit Types (s : Slice.t) (γ: @txn_names Σ).
+Implicit Types (s : Slice.t) (γ: txn_names).
 
 Record buf_and_prev_data := {
   buf_ : buf;
@@ -587,14 +587,14 @@ Proof.
 Qed.
 
 Definition txn_crashstates_matches_mapsto σl γ σl' a v :
-  ( ( log_heap_ctx (hG := γ.(txn_logheap)) σl ∗ ghost_var γ.(txn_crashstates) (1/4) σl ) ∗
+  ( ( ghost_map_auth γ.(txn_logheap) 1 (latest σl) ∗ ghost_var γ.(txn_crashstates) (1/4) σl ) ∗
     ghost_var γ.(txn_crashstates) (3/4) σl' ∗
     mapsto_txn γ a v ) -∗
   ⌜σl'.(latest) !! a = Some v⌝.
 Proof.
   iIntros "[[Hctx H0] [H1 Hmapsto]]".
   iNamed "Hmapsto".
-  iDestruct (log_heap_valid_cur with "Hctx Hmapsto_log") as %Heq.
+  iDestruct (ghost_map_lookup with "Hctx Hmapsto_log") as %Heq.
   iDestruct (ghost_var_agree with "H0 H1") as %->.
   done.
 Qed.
@@ -692,7 +692,7 @@ Proof using txnG0 Σ.
       eapply elem_of_dom in Ha. destruct Ha.
       iDestruct (big_sepM_lookup with "Hmapstos") as "Ha"; eauto.
       iNamed "Ha".
-      iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as %Hvalid.
+      iDestruct (ghost_map_lookup with "Hlogheapctx Hmapsto_log") as %Hvalid.
       iPureIntro.
       apply elem_of_dom. rewrite Hvalid. eauto.
     }
@@ -715,7 +715,7 @@ Proof using txnG0 Σ.
       iDestruct (big_sepM_lookup_acc with "Ha") as "[H Ha]".
       { apply lookup_insert. }
       iNamed "H".
-      iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as %Hvalid.
+      iDestruct (ghost_map_lookup with "Hlogheapctx Hmapsto_log") as %Hvalid.
       eapply gmap_addr_by_block_lookup in Hvalid as Hvalidblock; destruct Hvalidblock; intuition idtac.
       iPureIntro.
       apply elem_of_dom. rewrite H0. eauto.
@@ -1022,12 +1022,14 @@ Proof using txnG0 Σ.
     iDestruct (mapsto_txn_cur_map _ _ _
       (λ b, Build_buf_and_prev_data (b.(buf_)) (b.(buf_).(bufData)))
       with "Hmapstos") as "[Hmapsto_cur Hmapstos]".
-    iMod (log_heap_append _ (((λ b : buf_and_prev_data, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap)) with "Hlogheapctx [Hmapsto_cur]") as "[Hlogheapctx Hnewmapsto]".
+    set σmod := ((λ b : buf_and_prev_data, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap).
+    iMod (ghost_map_update_big_exist σmod with "Hlogheapctx [Hmapsto_cur]") as "[Hlogheapctx Hnewmapsto]".
     { iApply (big_sepM_mono_dom with "[] Hmapsto_cur").
       { rewrite dom_fmap_L. done. }
       iModIntro. iIntros (k x Hkx) "Hmapsto_cur".
       iExists _. rewrite lookup_fmap Hkx /=. iSplit; first by done.
       iExists _. iFrame. }
+    change (σmod ∪ σl.(latest)) with (latest $ async_put (σmod ∪ σl.(latest)) σl).
     iDestruct ("Hmapstos" with "[Hnewmapsto]") as "Hmapstos".
     { rewrite ?big_sepM_fmap /=. iFrame. }
 
@@ -1203,7 +1205,7 @@ Unshelve.
   all: eauto.
 Qed.
 
-Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
+Theorem wp_txn_CommitWait l q γ dinit bufs buflist (bufamap : gmap addr _) (wait : bool) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   {{{ is_txn l γ dinit ∗
       is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
@@ -1217,7 +1219,7 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist bufamap (wait : bool) E (Pre
         ∃ (σl : async (gmap addr {K & bufDataT K})),
           "Hcrashstates_frag" ∷ ghost_var γ.(txn_crashstates) (3/4) σl ∗
           "Hcrashstates_fupd" ∷ (
-            let σ := ((λ b, existT _ b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
+            let σ : gmap addr {K & bufDataT K} := ((λ b, existT _ b.(buf_).(bufData)) <$> bufamap) ∪ latest σl in
             ghost_var γ.(txn_crashstates) (3/4) (async_put σ σl)
             -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN}=> Q (length (possible σl))  ))
   }}}

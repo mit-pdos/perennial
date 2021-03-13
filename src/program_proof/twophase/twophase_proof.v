@@ -511,7 +511,7 @@ Proof.
   inversion Hy.
 Qed.
 
-Implicit Types γ : @buftxn_names Σ.
+Implicit Types γ : buftxn_names.
 Implicit Types dinit : disk.
 Implicit Types objs_spec : gmap addr bufDataKind.
 Implicit Types sz : u64.

@@ -6,6 +6,7 @@ From iris.algebra Require Import numbers.
 From Perennial.Helpers Require Import Transitions NamedProps Map.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
+From Perennial.base_logic.lib Require Import ghost_map.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
@@ -19,19 +20,19 @@ Section goose_lang.
 Context `{!txnG Σ}.
 Context `{!heapG Σ}.
 
-Implicit Types (s : Slice.t) (γ: @txn_names Σ).
+Implicit Types (s : Slice.t) (γ: txn_names).
 
 Lemma wal_heap_inv_mapsto_in_bounds γ walptr dinit a v :
   is_wal (wal_heap_inv γ.(txn_walnames)) walptr γ.(txn_walnames).(wal_heap_walnames) dinit -∗
   ncinv invN (is_txn_always γ) -∗
-  mapsto_cur (hG := γ.(txn_logheap)) a v -∗ |NC={⊤}=>
-  mapsto_cur (hG := γ.(txn_logheap)) a v ∗
+  a ↪[γ.(txn_logheap)] v -∗ |NC={⊤}=>
+  a ↪[γ.(txn_logheap)] v ∗
   in_bounds γ.(txn_walnames).(wal_heap_walnames) (addrBlock a).
 Proof.
   iIntros "#Hwal #Htxn Hmapsto".
   iInv "Htxn" as ">Htxn_open" "Htxn_close".
   iNamed "Htxn_open".
-  iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto") as "%Hmapsto".
+  iDestruct (ghost_map_lookup with "Hlogheapctx Hmapsto") as "%Hmapsto".
   iFrame "Hmapsto".
   eapply gmap_addr_by_block_lookup in Hmapsto.
   destruct Hmapsto as [offmap [Hmapsto_block Hoff]].
@@ -69,7 +70,7 @@ Proof using txnG0 Σ.
   wp_call.
 
   wp_apply (wp_Walog__ReadMem _ (λ mb,
-    "Hmapsto_log" ∷ mapsto_cur a v ∗
+    "Hmapsto_log" ∷ a ↪[_] v ∗
     "Hmapsto_meta" ∷ ptsto_mut γ.(txn_metaheap) a 1 γm ∗
     match mb with
     | Some b =>
@@ -85,7 +86,7 @@ Proof using txnG0 Σ.
     iNamed "Hinv_inner".
     iModIntro.
 
-    iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
+    iDestruct (ghost_map_lookup with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
     iDestruct (map_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
 
     eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.
@@ -185,7 +186,7 @@ Proof using txnG0 Σ.
 
   wp_apply (wp_Walog__ReadInstalled _
     (λ b,
-      "Hmapsto_log" ∷ mapsto_cur a v ∗
+      "Hmapsto_log" ∷ a ↪[_] v ∗
       "Hmapsto_meta" ∷ ptsto_mut γ.(txn_metaheap) a 1 γm ∗
       "%Hv" ∷ ⌜ is_bufData_at_off b a.(addrOff) (projT2 v) ∧ valid_addr a ⌝ ∗
       "Hmod_frag" ∷ ghost_var γm (1/2) true
@@ -200,7 +201,7 @@ Proof using txnG0 Σ.
     iNamed "Hinv_inner".
     iModIntro.
 
-    iDestruct (log_heap_valid_cur with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
+    iDestruct (ghost_map_lookup with "Hlogheapctx Hmapsto_log") as "%Hlogvalid".
     iDestruct (map_valid with "Hmetactx Hmapsto_meta") as "%Hmetavalid".
 
     eapply gmap_addr_by_block_lookup in Hlogvalid; destruct Hlogvalid.

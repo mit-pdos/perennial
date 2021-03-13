@@ -72,7 +72,7 @@ Context (N: namespace).
 Context (PARAMS: jrnlInit_params).
 Context (dinit : abstraction.disk).
 Context (objs_dom : gset addr_proof.addr).
-Context (γ γ': sep_buftxn_invariant.buftxn_names Σ).
+Context (γ γ': sep_buftxn_invariant.buftxn_names).
 Context (tph: loc).
 
 

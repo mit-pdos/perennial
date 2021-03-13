@@ -20,7 +20,7 @@ Section goose_lang.
   Context (Hdisj1: (↑N : coPset) ## ↑invN).
   Context (Hdisj2: (↑N : coPset) ## ↑invariant.walN).
 
-  Implicit Types (l: loc) (γ: buftxn_names Σ) (γtxn: gname).
+  Implicit Types (l: loc) (γ: buftxn_names) (γtxn: gname).
   Implicit Types (obj: object).
 
   Definition txn_init_ghost_state γ : iProp Σ :=

@@ -85,7 +85,7 @@ Existing Instances subG_stagedG.
 
 Definition jrnlΣ := #[stagedΣ].
 
-Instance subG_jrnlPreG: ∀ Σ, subG jrnlΣ Σ → jrnlG Σ.
+Instance subG_jrnlG: ∀ Σ, subG jrnlΣ Σ → jrnlG Σ.
 Proof. solve_inG. Qed.
 Parameter init_jrnl_map : jrnl_map.
 Definition jrnl_initP (σimpl: @state disk_op disk_model) (σspec : @state jrnl_op jrnl_model) : Prop :=
@@ -97,7 +97,7 @@ Definition jrnl_update_pre (Σ: gFunctors) (hG: jrnlG Σ) (n: jrnl_names) : jrnl
 Program Instance jrnlTy_update_model : specTy_update jrnlTy_model :=
   {| sty_preG := jrnlG;
             styΣ := jrnlΣ;
-            subG_styPreG := subG_jrnlPreG;
+            subG_styPreG := subG_jrnlG;
             sty_update_pre := @jrnl_update_pre |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
