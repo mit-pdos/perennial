@@ -311,7 +311,7 @@ Proof.
   wp_pures.
   apply (atomic_body_expr_subst _ _ _ _ _ #tph_val) in H2; swap 1 3.
   { eauto. }
-  { intros Hin. eapply H0. rewrite elem_of_dom in Hin *.
+  { intros Hin. eapply H0. revert Hin. rewrite elem_of_dom.
     intros (v&?). apply: elem_of_dom_2. eapply H; eauto. }
   wp_bind (subst _ _ _).
   rewrite subst_map_subst_comm //; last first.
