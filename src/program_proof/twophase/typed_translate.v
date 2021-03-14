@@ -198,7 +198,7 @@ Section translate.
 
   Inductive jrnl_trans : sval → ival → Prop :=
   | jrnl_open_trans (x: string) :
-      jrnl_trans (λ: x, ExternalOp OpenOp (Var x)) TwoPhase__Init'.
+      jrnl_trans (λ: x, ExternalOp OpenOp (Var x)) Init.
 
   Inductive jrnl_atomic_transTy : SCtx → sexpr → iexpr → sty → sexpr → iexpr → sty → Prop :=
   | jrnl_atomic_transTy_core Γ Γ' etxn etxn' ebdy ebdy' t (tph: string) :
@@ -210,7 +210,7 @@ Section translate.
       jrnl_atomic_transTy Γ etxn etxn' (extT JrnlT)
                             ebdy
                             (* This final argument is what Atomically etxn ebdy will get translated to *)
-                            (let: tph := TwoPhase__Begin' etxn' in
+                            (let: tph := Begin etxn' in
                              TwoPhase__ConditionalCommit' (Var tph) ebdy') t.
 
 End translate.

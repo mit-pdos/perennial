@@ -44,7 +44,7 @@ Section proof.
       end
     ) (map_zip (jrnlData σj1) (jrnlData σj2)).
 
-  Definition is_twophase_pre l (γ γ' : buftxn_names Σ) dinit (objs_dom: gset addr) : iProp Σ :=
+  Definition is_twophase_pre l (γ γ' : buftxn_names) dinit (objs_dom: gset addr) : iProp Σ :=
     ∃ (txnl locksl : loc) ghs,
       "#Hpre.txn" ∷ readonly (l ↦[TwoPhasePre.S :: "txn"] #txnl) ∗
       "#Hpre.locks" ∷ readonly (l ↦[TwoPhasePre.S :: "locks"] #locksl) ∗

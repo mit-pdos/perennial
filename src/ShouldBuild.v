@@ -23,7 +23,6 @@ From Perennial.program_proof Require
      alloc_proof
      twophase.twophase_proof
      twophase.twophase_refinement_proof
-     (* twophase.wrapper_proof *)
      simple.proofs simple.example
      wp_to_wpc.
 From Perennial.program_proof.examples Require
