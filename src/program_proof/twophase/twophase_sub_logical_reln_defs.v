@@ -67,15 +67,14 @@ Definition val_semTy `{!heapG Σ} `{refinement_heapG Σ} := sval → ival → iP
 Import sep_buftxn_invariant.
 Section reln_defs.
 Context `{hG: !heapG Σ}.
-Context `{!buftxnG Σ}.
 Context {hRG: refinement_heapG Σ}.
+Context {htpG: twophaseG Σ}.
 Context (N: namespace).
-Context (PARAMS: jrnlInit_params).
+Context (PARAMS: twophaseInit_params).
 Context (dinit : abstraction.disk).
 Context (objs_dom : gset addr_proof.addr).
 Context (γ γ': sep_buftxn_invariant.buftxn_names).
 Context (tph: loc).
-Context `{!lockmapG Σ}.
 
 
 Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
@@ -83,7 +82,7 @@ Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semanti
 Definition atomically_has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) K0 e0 (K: sexpr → sexpr) (CTX: LanguageCtx' K),
       is_twophase_started N tph γ γ' dinit objs_dom j K0 e0 (K es) -∗
-      WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := jrnlTy_model)); ⊤
+      WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := twophaseTy_model)); ⊤
                     {{ v, ∃ vs, is_twophase_started N tph γ γ' dinit objs_dom j K0 e0 (K (of_val vs)) ∗
                                 vty vs v }} {{ True }})%I.
 

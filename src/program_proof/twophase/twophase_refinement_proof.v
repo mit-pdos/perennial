@@ -12,31 +12,31 @@ From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp jrnl_spec_interp_adequacy.
 
 Section refinement.
-Context {PARAMS : jrnlInit_params}.
+Context {PARAMS : twophaseInit_params}.
 Context (N : namespace).
 
 Notation jrnl_nat_K :=
 (leibnizO (nat * ((@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)
                            → (@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)))).
 
-Lemma jrnl_init_obligation1: sty_init_obligation1 jrnlTy_update_model jrnl_initP.
+Lemma jrnl_init_obligation1: sty_init_obligation1 twophaseTy_update_model twophase_initP.
 Proof.
   rewrite /sty_init_obligation1//=.
   iIntros (? hG hRG hJrnl σs σi Hinit) "Hdisk".
-  rewrite /jrnl_start /jrnl_init/jrnl_init.
+  rewrite /jrnl_start /twophase_init.
   inversion Hinit as [Hnn [Heqi Heqs]]. rewrite Heqs Heqi.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
   eauto.
 Qed.
 
-Lemma jrnl_init_obligation2: sty_init_obligation2 jrnl_initP.
+Lemma jrnl_init_obligation2: sty_init_obligation2 twophase_initP.
 Proof.
   intros ?? (?&?&?). rewrite //=. split_and!; eauto. eexists; split; eauto.
   admit.
 Admitted.
 
 Lemma jrnl_rules_obligation:
-  @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model jrnl_trans.
+  @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model jrnl_trans.
 Proof.
   intros vs0 vs v0 v0' t1 t2 Htype0 Htrans.
   inversion Htype0 as [op Heq]; subst.
@@ -46,24 +46,24 @@ Proof.
 Admitted.
 
 Lemma jrnl_crash_inv_obligation:
-  @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model.
+  @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model.
 Proof.
   rewrite /sty_crash_inv_obligation//=.
   iIntros (? hG hRG hJrnl e Φ) "Hinit Hspec Hwand".
-  rewrite /jrnl_inv/jrnl_init/jrnl_inv.
+  rewrite /twophase_init/twophase_inv.
 Admitted.
 
 Lemma jrnl_crash_obligation:
-  @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model.
+  @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model.
 Proof.
   rewrite /sty_crash_obligation//=.
   iIntros (? hG hRG hJrnl) "Hinv Hcrash_cond".
 Admitted.
 
-Lemma jrnl_inv_twophase_pre `{hBuf: sep_buftxn_invariant.buftxnG Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}
-      {hJrnl : twophase_refinement_defs.jrnlG Σ} {hL: lockmapG Σ} vs v:
-    jrnl_inv -∗
-    val_interp (smodel := jrnlTy_model) (hS := hJrnl) (@extT jrnl_val_ty JrnlT) vs v -∗
+Lemma jrnl_inv_twophase_pre {Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}
+      {hJrnl : twophaseG Σ} vs v:
+    twophase_inv -∗
+    val_interp (smodel := twophaseTy_model) (hS := hJrnl) (@extT jrnl_val_ty JrnlT) vs v -∗
     ∃ (l : loc) γ γ' objs_dom dinit, ⌜ v = #l ⌝ ∗ is_twophase_pre N l γ γ' dinit objs_dom.
 Admitted.
 
@@ -160,14 +160,20 @@ Qed.
 Notation spec_ty := jrnl_ty.
 Notation sty := (@ty (@val_tys _ spec_ty)).
 
-Lemma atomic_convertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
-      {buftxnG0 : sep_buftxn_invariant.buftxnG Σ} {hL: lockmapG Σ} (t : sty) es e dinit objs_dom γ γ' tph_val :
+Global Instance styG_twophaseG Σ: (styG (specTy_model := twophaseTy_model)) Σ → twophaseG Σ.
+Proof. rewrite /styG//=. Defined.
+
+Lemma atomic_convertible_val_interp {Σ} {hG: heapG Σ} {hRG : refinement_heapG Σ}
+     {hS: (styG (specTy_model := twophaseTy_model)) Σ}
+    (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_convertible t →
-  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG jrnlTy_model hS t es e -∗
-  atomically_val_interp N PARAMS dinit objs_dom γ γ' tph_val t es e.
+  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG twophaseTy_model hS t es e -∗
+  atomically_val_interp (htpG := hS) N PARAMS dinit objs_dom γ γ' tph_val t es e.
 Proof.
   revert es e.
-  induction t => es e; eauto.
+  rewrite /styG in hS * => //=.
+  rewrite /twophaseTy_model in hS *.
+  induction t => es e; try (inversion 1; done).
   - iIntros ((?&?)) "H".
     rewrite /val_interp -/val_interp.
     iDestruct "H" as (v1 v2 vs1 vs2 (Heq&Heqs)) "H".
@@ -195,14 +201,13 @@ Proof.
     iDestruct "H" as "[H|H]"; iDestruct "H" as (v vs (Heq&Heqs)) "H"; subst; rewrite /=; [ iLeft | iRight ].
     { iExists _, _. iSplit; first eauto. by iApply IHt1. }
     { iExists _, _. iSplit; first eauto. by iApply IHt2. }
-  - inversion 1.
 Qed.
 
 Lemma atomically_deconvertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
-      {buftxnG0 : sep_buftxn_invariant.buftxnG Σ} {hL: lockmapG Σ} (t : sty) es e dinit objs_dom γ γ' tph_val :
+      (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_deconvertible t →
-  atomically_val_interp N PARAMS dinit objs_dom γ γ' tph_val t es e -∗
-  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG jrnlTy_model hS t es e.
+  atomically_val_interp (htpG := (styG_twophaseG _ hS)) N PARAMS dinit objs_dom γ γ' tph_val t es e -∗
+  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG twophaseTy_model hS t es e.
 Proof.
   revert es e.
   induction t => es e; try (inversion 1; done).
@@ -235,7 +240,6 @@ Proof.
     { iExists _, _. iSplit; first eauto. by iApply IHt2. }
 Qed.
 
-Set Nested Proofs Allowed.
 Lemma filtered_subst_projection1 Γsubst Γ' :
   (∀ (x : string) (ty0 : ty),
       Γ' !! x = Some ty0 →
@@ -279,8 +283,8 @@ Lemma subst_map_subtyping_ival Γsubst Γ' e1 ebdy tph tph_val t :
 Proof. Admitted.
 
 Lemma jrnl_atomic_obligation:
-  @sty_atomic_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model jrnl_atomic_transTy.
-Proof.
+  @sty_atomic_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model jrnl_atomic_transTy.
+Proof using N PARAMS.
   rewrite /sty_atomic_obligation//=.
   iIntros (? hG hRG hJrnl el1 el2 tl e1 e2 t Γsubst Htrans) "Hinv #Hspec #Htrace #HΓ HhasTy".
   iIntros (j K Hctx) "Hj".
@@ -327,10 +331,10 @@ Proof.
     iApply (big_sepM_mono with "HΓ").
     iIntros (k x Hlookup) "Hval Hfilter".
     iDestruct "Hfilter" as %(?&Heq).
-    iApply (atomic_convertible_val_interp with "Hval").
-    eapply H in Heq. destruct Heq as (Heq&Hconv).
-    rewrite /= lookup_fmap Hlookup /= in Heq.
-    inversion Heq; subst. eauto.
+    iApply (@atomic_convertible_val_interp with "Hval").
+    { eapply H in Heq. destruct Heq as (Heq&Hconv).
+      rewrite /= lookup_fmap Hlookup /= in Heq.
+      inversion Heq; subst. eauto. }
   }
   { iPureIntro. apply id_ctx'. }
   { simpl.
@@ -375,7 +379,8 @@ Proof.
       wp_pures. iExists _. iFrame.
       rewrite /val_interp -/val_interp.
       iLeft. iExists _, _. iSplit; first eauto. simpl; auto.
-Admitted.
+  }
+Qed.
 
 Existing Instances jrnl_semantics.
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
@@ -385,9 +390,9 @@ Lemma jrnl_refinement (es: @expr jrnl_op) σs e σ (τ: @ty jrnl_ty.(@val_tys jr
   typed_translate.expr_transTy _ _ _ jrnl_trans jrnl_atomic_transTy ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
-  jrnl_initP σ σs →
+  twophase_initP σ σs →
   refinement.trace_refines e e σ es es σs.
-Proof.
+Proof using N PARAMS.
   intros. intros ?.
   efeed pose proof sty_adequacy; eauto using jrnl_init_obligation1, jrnl_init_obligation2,
                                  jrnl_crash_inv_obligation, jrnl_crash_obligation,
