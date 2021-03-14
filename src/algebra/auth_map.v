@@ -532,7 +532,7 @@ Section auth_map.
       iFrame.
       iExactEq "Hctx".
       f_equal.
-      rewrite -union_singleton_l_insert.
+      rewrite insert_union_singleton_l.
       rewrite assoc.
       f_equal.
       rewrite map_union_comm //.

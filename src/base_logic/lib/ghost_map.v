@@ -61,7 +61,7 @@ Section lemmas.
       subst.
       rewrite big_sepM_union // big_sepM_singleton.
       iFrame. iClear "#".
-      rewrite -union_singleton_l_insert.
+      rewrite insert_union_singleton_l.
       rewrite !assoc [m1' ∪ _]map_union_comm //.
   Qed.
 

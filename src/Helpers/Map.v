@@ -32,20 +32,6 @@ Section map.
     intros []%lookup_empty_Some.
   Qed.
 
-  Lemma union_singleton_l_insert k v m :
-    {[k := v]} ∪ m = <[k := v]> m.
-  Proof.
-    apply map_eq => k'.
-    apply option_eq => v'.
-    destruct (decide (k = k')); subst.
-    - rewrite lookup_insert.
-      erewrite lookup_union_Some_l; eauto.
-      rewrite lookup_singleton_Some //.
-    - rewrite lookup_insert_ne //.
-      erewrite lookup_union_r; eauto.
-      rewrite lookup_singleton_None //.
-  Qed.
-
 Lemma dom_union_inv m (d1 d2: gset K) :
   d1 ## d2 →
   dom (gset K) m = d1 ∪ d2 →
