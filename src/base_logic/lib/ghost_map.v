@@ -12,7 +12,7 @@ Section lemmas.
   Context `{ghost_mapG Σ K V}.
   Implicit Types (k : K) (v : V) (dq : dfrac) (q : Qp) (m : gmap K V).
 
-  (* FIXME upstream *)
+  (* TODO upstream, see Iris MR 649 *)
   Lemma ghost_map_insert_big {γ σ} σ' :
     σ' ##ₘ σ →
     ghost_map_auth γ 1 σ ==∗
@@ -27,7 +27,7 @@ Section lemmas.
       first by apply lookup_union_None.
   Qed.
 
-  (* FIXME upstream *)
+  (* TODO upstream, see Iris MR 649 *)
   Theorem ghost_map_update_big {γ m m0} m1 :
     dom (gset _) m0 = dom _ m1 →
     ghost_map_auth γ 1 m -∗

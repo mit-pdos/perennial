@@ -13,6 +13,7 @@ Section map.
   Notation gmap := (gmap K V).
   Implicit Types (m:gmap).
 
+  (* TODO: upstream (std++ MR 234 *)
   Theorem delete_insert_union m1 m2 k v :
     m1 !! k = Some v ->
     delete k m1 ∪ <[k := v]> m2 = m1 ∪ m2.
@@ -26,12 +27,14 @@ Section map.
     eauto.
   Qed.
 
+  (* TODO: upstream (std++ MR 234 *)
   Theorem map_empty_subseteq m : ∅ ⊆ m.
   Proof.
     rewrite map_subseteq_spec => k v.
     intros []%lookup_empty_Some.
   Qed.
 
+(* TODO: upstream (std++ MR 234 *)
 Lemma dom_union_inv m (d1 d2: gset K) :
   d1 ## d2 →
   dom (gset K) m = d1 ∪ d2 →
@@ -79,6 +82,7 @@ Proof.
     rewrite -IHm //.
 Qed.
 
+(* TODO: upstream (std++ MR 234 *)
 Lemma dom_singleton_inv m a :
   dom (gset _) m = {[a]} →
   ∃ v, m = {[a := v]}.
@@ -139,6 +143,7 @@ Proof.
       eapply Hfneq; eauto.
 Qed.
 
+(* TODO: upstream (std++ MR 234 *)
 Lemma map_difference_delete `{Countable K} {V} (a b : gmap K V) (k : K) (v : V) :
   a !! k = Some v ->
   a ∖ delete k b = <[k := v]> (a ∖ b).
@@ -160,6 +165,7 @@ Proof.
   intuition eauto. rewrite lookup_delete_ne; eauto.
 Qed.
 
+(* TODO: upstream (std++ MR 234 *)
 Lemma map_difference_empty `{Countable K} {V} (m : gmap K V) :
   m ∖ ∅ = m.
 Proof.
