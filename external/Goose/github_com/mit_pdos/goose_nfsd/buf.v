@@ -74,7 +74,7 @@ Definition installBytes: val :=
 (* Install the bits from buf into blk.  Two cases: a bit or an inode *)
 Definition Buf__Install: val :=
   rec: "Buf__Install" "buf" "blk" :=
-    util.DPrintf #1 (#(str"%v: install
+    util.DPrintf #5 (#(str"%v: install
     ")) #();;
     (if: (struct.loadF Buf.S "Sz" "buf" = #1)
     then installBit (struct.loadF Buf.S "Data" "buf") "blk" (struct.get addr.Addr.S "Off" (struct.loadF Buf.S "Addr" "buf"))

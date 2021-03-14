@@ -48,7 +48,7 @@ Definition Begin: val :=
       "txn" ::= "txn";
       "bufs" ::= buf.MkBufMap #()
     ] in
-    util.DPrintf #1 (#(str"Begin: %v
+    util.DPrintf #3 (#(str"Begin: %v
     ")) #();;
     "trans".
 
@@ -111,7 +111,7 @@ Definition BufTxn__LogSzBytes: val :=
    Flush. *)
 Definition BufTxn__CommitWait: val :=
   rec: "BufTxn__CommitWait" "buftxn" "wait" :=
-    util.DPrintf #1 (#(str"Commit %p w %v
+    util.DPrintf #3 (#(str"Commit %p w %v
     ")) #();;
     let: "ok" := txn.Txn__CommitWait (struct.loadF BufTxn.S "txn" "buftxn") (buf.BufMap__DirtyBufs (struct.loadF BufTxn.S "bufs" "buftxn")) "wait" in
     "ok".

@@ -9,6 +9,13 @@ From Goose Require github_com.mit_pdos.goose_nfsd.lockmap.
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 
+Module TwoPhasePre.
+  Definition S := struct.decl [
+    "txn" :: struct.ptrT txn.Txn.S;
+    "locks" :: struct.ptrT lockmap.LockMap.S
+  ].
+End TwoPhasePre.
+
 Module TwoPhase.
   Definition S := struct.decl [
     "buftxn" :: struct.ptrT buftxn.BufTxn.S;
@@ -17,15 +24,23 @@ Module TwoPhase.
   ].
 End TwoPhase.
 
+Definition Init: val :=
+  rec: "Init" "d" :=
+    let: "twophasePre" := struct.new TwoPhasePre.S [
+      "txn" ::= txn.MkTxn "d";
+      "locks" ::= lockmap.MkLockMap #()
+    ] in
+    "twophasePre".
+
 (* Start a local transaction with no writes from a global Txn manager. *)
 Definition Begin: val :=
-  rec: "Begin" "txn" "l" :=
+  rec: "Begin" "twophasePre" :=
     let: "trans" := struct.new TwoPhase.S [
-      "buftxn" ::= buftxn.Begin "txn";
-      "locks" ::= "l";
+      "buftxn" ::= buftxn.Begin (struct.loadF TwoPhasePre.S "txn" "twophasePre");
+      "locks" ::= struct.loadF TwoPhasePre.S "locks" "twophasePre";
       "acquired" ::= NewSlice uint64T #0
     ] in
-    util.DPrintf #1 (#(str"tp Begin: %v
+    util.DPrintf #5 (#(str"tp Begin: %v
     ")) #();;
     "trans".
 
@@ -101,7 +116,7 @@ Definition TwoPhase__LogSzBytes: val :=
 
 Definition TwoPhase__CommitNoRelease: val :=
   rec: "TwoPhase__CommitNoRelease" "twophase" :=
-    util.DPrintf #1 (#(str"tp Commit %p
+    util.DPrintf #5 (#(str"tp Commit %p
     ")) #();;
     buftxn.BufTxn__CommitWait (struct.loadF TwoPhase.S "buftxn" "twophase") #true.
 

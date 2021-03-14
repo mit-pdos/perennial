@@ -41,12 +41,3 @@ Definition TwoPhase__ConditionalCommit' : val :=
     else
       NONEV
   end.
-
-(* XXX: todo: this should call a wrapped version of MkTxn that also allocates
-the lockmap and returns a struct containing both *)
-Definition TwoPhase__Init' : val :=
-  (λ: "_", MkTxn #()).
-
-(* XXX: todo: this should be a version that takes a struct instead of the two arg version *)
-Definition TwoPhase__Begin' : val :=
-  (λ: "l", Begin "l").

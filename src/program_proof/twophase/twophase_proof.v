@@ -766,21 +766,21 @@ Qed.
 Theorem twophase_init_locks {E} k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} mt γ :
   ↑Nbuftxn ⊆ E →
   ↑invN ⊆ E →
-  "#Htxn_system" ∷ is_txn_system Nbuftxn γ ∗
+  set_Forall valid_addr (dom (gset addr) mt) →
+  "#Htxn_system" ∷ is_txn_system Nbuftxn γ -∗
   "Hmapstos" ∷ (
     [∗ map] a ↦ obj ∈ mt,
       "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
       "Hex_mapsto" ∷ ex_mapsto a obj
-  ) ∗
-  "%Haddrs_valid" ∷ ⌜set_Forall valid_addr (dom (gset addr) mt)⌝
+  )
   -∗ |NC={E}=>
   "Hlinvs" ∷ (
     [∗ set] a ∈ set_map addr2flat (dom (gset addr) mt),
       "Hlinv" ∷ twophase_linv_flat k ex_mapsto γ a
   ).
 Proof.
-  intros HNbuftxn NinvN.
-  iNamed 1.
+  iIntros (HNbuftxn NinvN Haddrs_valid) "??".
+  iNamed.
   iApply big_sepS_set_map.
   {
     intros a1 a2 Hin_a1 Hin_a2 Heq.
@@ -854,9 +854,11 @@ Proof.
   assumption.
 Qed.
 
-Theorem wp_TwoPhase__Begin_raw (txnl locksl: loc) γ dinit k ex_mapsto ghs objs_dom :
+Theorem wp_TwoPhase__Begin_raw (prel txnl locksl: loc) γ dinit k ex_mapsto ghs objs_dom :
   set_Forall valid_addr objs_dom →
   {{{
+    "#Hpre.txn_ro" ∷ readonly (prel ↦[TwoPhasePre.S :: "txn"] #txnl) ∗
+    "#Hpre.locks_ro" ∷ readonly (prel ↦[TwoPhasePre.S :: "locks"] #locksl) ∗
     "#Htxn" ∷ (
       invariant.is_txn txnl γ.(buftxn_txn_names) dinit ∗
       is_txn_system Nbuftxn γ
@@ -865,7 +867,7 @@ Theorem wp_TwoPhase__Begin_raw (txnl locksl: loc) γ dinit k ex_mapsto ghs objs_
       (set_map addr2flat objs_dom)
       (twophase_linv_flat k ex_mapsto γ)
   }}}
-    Begin #txnl #locksl
+    Begin #prel
   {{{
     (l : loc), RET #l;
       "Htwophase_raw" ∷
@@ -875,9 +877,15 @@ Proof.
   intros Htracked_addrs_wf.
   wp_start.
   wp_call.
+  iMod (readonly_load with "Hpre.txn_ro") as "Hpre.txn".
+  iMod (readonly_load with "Hpre.locks_ro") as "Hpre.locks".
+  iDestruct "Hpre.txn" as (qtxn) "Hpre.txn".
+  iDestruct "Hpre.locks" as (qlocks) "Hpre.locks".
+  wp_loadField.
   wp_apply (wp_BufTxn__Begin' with "Htxn").
   iIntros (? ? buftxnl) "(?&?)".
   iNamed.
+  wp_loadField.
   wp_apply (wp_NewSlice _ _ uint64T).
   iIntros (acquired_s) "Hacquired_s".
   wp_apply wp_allocStruct; first by auto.

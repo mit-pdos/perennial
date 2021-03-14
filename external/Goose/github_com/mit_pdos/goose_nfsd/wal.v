@@ -594,7 +594,7 @@ Definition Walog__MemAppend: val :=
    txn to on-disk log. *)
 Definition Walog__Flush: val :=
   rec: "Walog__Flush" "l" "pos" :=
-    util.DPrintf #1 (#(str"Flush: commit till txn %d
+    util.DPrintf #2 (#(str"Flush: commit till txn %d
     ")) #();;
     lock.acquire (struct.loadF Walog.S "memLock" "l");;
     lock.condBroadcast (struct.loadF Walog.S "condLogger" "l");;
