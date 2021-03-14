@@ -54,6 +54,7 @@ Proof.
   all: word.
 Qed.
 
+(*
 Section map_filter.
   Context {K A} (P : K * A → Prop) `{!∀ x, Decision (P x)}.
 
@@ -259,7 +260,9 @@ Proof.
   specialize (HP k).
   intuition.
 Qed.
+*)
 
+(*
 Definition filter_addr_set_by_blk (s_blk: gset u64) (s: gset addr) :=
   filter (λ a, addrBlock a ∈ s_blk) s.
 
@@ -510,6 +513,7 @@ Proof.
   destruct Hm_acc as [y Hy].
   inversion Hy.
 Qed.
+ *)
 
 Implicit Types γ : buftxn_names.
 Implicit Types dinit : disk.
@@ -528,6 +532,7 @@ Implicit Types locked_by_map : gmap u64 (option nat).
 Definition modified := mspec.modified.
 Definition committed := mspec.committed.
 
+(*
 Definition get_lockset_opt locked_by_map inst_opt :=
   dom (gset u64) (filter (λ x, x.2 = inst_opt) locked_by_map).
 
@@ -567,6 +572,7 @@ Proof.
   1: assumption.
   auto.
 Qed.
+*)
 
 (*
   ex_mapsto is the upper layer ex_mapsto fact used for unification,
@@ -662,6 +668,7 @@ Ltac wp_start :=
   | _ => idtac
   end.
 
+(*
 Definition set_max `{FinSet nat Ct} (s: Ct) := list_max (elements s).
 
 Lemma set_in_le_max `{FinSet nat Ct} (s: Ct) x:
@@ -676,6 +683,7 @@ Proof.
   2: apply elem_of_elements; eassumption.
   assumption.
 Qed.
+ *)
 
 Lemma big_sepS_set_map `{Countable A, Countable B} (h : A → B) (s : gset A) (f : B → iProp Σ) :
   (∀ x y, x ∈ s → y ∈ s → h x = h y → x = y) →
@@ -917,6 +925,7 @@ Proof.
     dom_empty_L list_to_set_nil set_map_empty //.
 Qed.
 
+(*
 Section map_zip.
   Context {K A B: Type} `{Countable K} (m1: gmap K A) (m2: gmap K B).
 
@@ -1122,6 +1131,7 @@ Proof.
   iDestruct (big_sepM2_dom with "Hsep") as "%Hdom".
   rewrite -big_sepM_zip_sepM2_equiv //.
 Qed.
+*)
 
 Lemma set_union_comm {A} `{Countable A} (s1 s2: gset A) :
   s1 ∪ s2 = s2 ∪ s1.
@@ -1135,6 +1145,7 @@ Proof.
   set_solver.
 Qed.
 
+(*
 Lemma map_union_least {K A} `{Countable K} `{FinMap K M} (m1 m2 m3: M A) :
   m1 ⊆ m3 ∧ m2 ⊆ m3 → m1 ∪ m2 ⊆ m3.
 Proof.
@@ -1182,6 +1193,7 @@ Lemma subseteq_trans `{FinSet K Ct} (s1 s2 s3: Ct) :
 Proof.
   set_solver.
 Qed.
+ *)
 
 Lemma twophase_linv_get_addr_valid k ex_mapsto γ a :
   "Hlinv" ∷ twophase_linv k ex_mapsto γ a -∗
