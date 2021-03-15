@@ -82,9 +82,9 @@ Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semanti
 
 Definition atomically_has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) K0 e0 (K: sexpr → sexpr) (CTX: LanguageCtx' K),
-      is_twophase_started N tph γ γ' dinit objs_dom j K0 e0 (K es) -∗
+      is_twophase_started tph γ dinit objs_dom j K0 e0 (K es) -∗
       WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := jrnlTy_model)); ⊤
-                    {{ v, ∃ vs, is_twophase_started N tph γ γ' dinit objs_dom j K0 e0 (K (of_val vs)) ∗
+                    {{ v, ∃ vs, is_twophase_started tph γ dinit objs_dom j K0 e0 (K (of_val vs)) ∗
                                 vty vs v }} {{ True }})%I.
 
 Definition atomically_base_ty_interp (t: base_ty) :=
