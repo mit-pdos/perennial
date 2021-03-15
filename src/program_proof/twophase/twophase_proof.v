@@ -2021,18 +2021,30 @@ Theorem wp_TwoPhase__CommitNoRelease_raw l γ γ' dinit k ex_mapsto `{!∀ a obj
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ dinit k ex_mapsto objs_dom mt_changed ∗
-    "#Htxn_cinv" ∷ txn_cinv Nbuftxn γ γ' ∗
-    "#Hfupd" ∷ □ (
-      "Hcommitted" ∷ (
-        [∗ map] a ↦ vobj ∈ mt_changed,
-          ex_mapsto a (committed vobj)
+    "Hfupd" ∷ (
+      <disc> (
+        "Hcommitted" ∷ (
+          [∗ map] a ↦ vobj ∈ mt_changed,
+            ex_mapsto a (committed vobj)
+        )
+        -∗ |C={⊤}_S k=>
+        "Hmodified" ∷ (
+          [∗ map] a ↦ vobj ∈ mt_changed,
+            ex_mapsto a (modified vobj)
+        )
+      ) ∧ ▷ (
+        "Hcommitted" ∷ (
+          [∗ map] a ↦ vobj ∈ mt_changed,
+            ex_mapsto a (committed vobj)
+        )
+        -∗ |NC={⊤}=>
+        "Hmodified" ∷ (
+          [∗ map] a ↦ vobj ∈ mt_changed,
+            ex_mapsto a (modified vobj)
+        )
       )
-      ==∗
-      "Hmodified" ∷ (
-        [∗ map] a ↦ vobj ∈ mt_changed,
-          ex_mapsto a (modified vobj)
-      )
-    )
+    ) ∗
+    "#Htxn_cinv" ∷ txn_cinv Nbuftxn γ γ'
   }}}
     TwoPhase__CommitNoRelease #l
   {{{
@@ -2089,6 +2101,7 @@ Proof.
   1-3: solve_ndisj.
   iSplit.
   {
+    iDestruct "Hfupd" as "[Hfupd _]".
     iModIntro.
     iIntros "Hdurable_mapstos HC".
     iApply fupd_level_sep.
@@ -2109,7 +2122,8 @@ Proof.
       apply Hwfs in Hacc.
       eapply exchange_mapsto_valid; eassumption.
     }
-    iMod ("Hfupd" with "Hex_mapstos") as "Hex_mapstos".
+    iDestruct "HC" as "#HC".
+    iMod ("Hfupd" with "Hex_mapstos HC") as "Hex_mapstos".
     iIntros "!> !>".
     iApply (big_sepM_fmap modified) in "Hdurable_mapstos".
     iDestruct (big_sepM_sep with "[$Hex_mapstos $Hdurable_mapstos]")
@@ -2124,6 +2138,7 @@ Proof.
     apply Hwfs in Hacc.
     eapply exchange_mapsto_valid; eassumption.
   }
+  iDestruct "Hfupd" as "[_ Hfupd]".
   iModIntro.
   iIntros (ok) "Hdurable_mapstos".
   iDestruct (big_sepM_sep with "Hdurable_mapstos") as
@@ -2135,9 +2150,9 @@ Proof.
     big_sepM_fmap (if ok then modified else committed)
   ) in "Hdurable_mapstos".
   iAssert (
-    |==> [∗ map] a ↦ vobj ∈ mt_changed,
+    |NC={⊤}=> [∗ map] a ↦ vobj ∈ mt_changed,
       ex_mapsto a ((if ok then modified else committed) vobj)
-  )%I with "[Hex_mapstos]" as "Hex_mapstos".
+  )%I with "[Hex_mapstos Hfupd]" as "Hex_mapstos".
   {
     destruct ok; last by iFrame.
     iMod ("Hfupd" with "Hex_mapstos") as "Hex_mapstos".
