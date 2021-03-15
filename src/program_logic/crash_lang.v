@@ -1,6 +1,8 @@
 From Perennial.program_logic Require Export language.
 Set Default Proof Using "Type".
 
+(** For now, we assume that a crash transition *only affects the local machine*,
+and leaves [global_state Λ] unaffected. *)
 Structure crash_semantics (Λ: language) :=
   CrashSemantics {
       crash_prim_step : state Λ → state Λ → Prop;
@@ -27,8 +29,8 @@ Section crash_language.
       nrsteps r [n] ρ1 κs ρ2 Normal
   | nrsteps_crash n1 ns ρ1 ρ2 ρ3 σ κs1 κs2 s:
       nsteps n1 ρ1 κs1 ρ2 →
-      crash_prim_step CS (ρ2.2) σ →
-      nrsteps r ns ([r], σ) κs2 ρ3 s →
+      crash_prim_step CS (ρ2.2.1) σ →
+      nrsteps r ns ([r], (σ, ρ2.2.2)) κs2 ρ3 s →
       nrsteps r (n1 :: ns) ρ1 (κs1 ++ κs2) ρ3 Crashed.
 
   Inductive erased_rsteps (r: expr Λ) : cfg Λ → cfg Λ → status → Prop :=
@@ -37,14 +39,14 @@ Section crash_language.
       erased_rsteps r ρ1 ρ2 Normal
   | erased_rsteps_crash ρ1 ρ2 ρ3 σ s:
       rtc erased_step ρ1 ρ2 →
-      crash_prim_step CS (ρ2.2) σ →
-      erased_rsteps r ([r], σ) ρ3 s →
+      crash_prim_step CS (ρ2.2.1) σ →
+      erased_rsteps r ([r], (σ, ρ2.2.2)) ρ3 s →
       erased_rsteps r ρ1 ρ3 Crashed.
 
   Lemma erased_rsteps_r r ρ ρ' ρ'' σ s:
     erased_rsteps r ρ ρ' s →
-    crash_prim_step CS (ρ'.2) σ →
-    rtc erased_step ([r], σ) ρ'' →
+    crash_prim_step CS (ρ'.2.1) σ →
+    rtc erased_step ([r], (σ, ρ'.2.2)) ρ'' →
     erased_rsteps r ρ ρ'' Crashed.
   Proof.
     intros Hsteps. revert σ ρ''.
@@ -58,8 +60,8 @@ Section crash_language.
     erased_rsteps r ρ ρ'' Crashed →
     ∃ ρ' σ' s,
       erased_rsteps r ρ ρ' s ∧
-      crash_prim_step CS (ρ'.2) σ' ∧
-      rtc erased_step ([r], σ') ρ''.
+      crash_prim_step CS (ρ'.2.1) σ' ∧
+      rtc erased_step ([r], (σ', ρ'.2.2)) ρ''.
   Proof.
     intros Hsteps. remember Crashed as s eqn:Heq. revert Heq.
     induction Hsteps.
@@ -96,6 +98,8 @@ Section crash_language.
     eapply rtc_once; eauto.
   Qed.
 
+(*
+FIXME: needs adjustment to global_state, but seems unused?
   Inductive erased_steps_list: cfg Λ → cfg Λ → list (state Λ) → Prop :=
   | eslist_refl ρ σ:
       ρ.2 = σ →
@@ -127,10 +131,11 @@ Section crash_language.
       econstructor; auto.
     - intros. rewrite app_comm_cons. econstructor; eauto.
   Qed.
+*)
 
   Definition crash_safe r (ρ: cfg Λ) :=
-    ∀ t2 σ2 e2 s, erased_rsteps r ρ (t2, σ2) s →
-                  e2 ∈ t2 → not_stuck e2 σ2.
+    ∀ t2 σ2 g2 e2 s, erased_rsteps r ρ (t2, (σ2, g2)) s →
+                  e2 ∈ t2 → not_stuck e2 σ2 g2.
 
   Lemma nrsteps_normal_empty_prefix r ns n ρ1 κ ρ2:
     nrsteps r (ns ++ [n]) ρ1 κ ρ2 Normal →

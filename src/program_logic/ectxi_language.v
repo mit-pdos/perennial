@@ -27,16 +27,16 @@ Below you can find the relevant parts:
 *)
 
 Section ectxi_language_mixin.
-  Context {expr val ectx_item state observation : Type}.
+  Context {expr val ectx_item state global_state observation : Type}.
   Context (of_val : val → expr).
   Context (to_val : expr → option val).
   Context (fill_item : ectx_item → expr → expr).
-  Context (head_step : expr → state → list observation → expr → state → list expr → Prop).
+  Context (head_step : expr → state → global_state → list observation → expr → state → global_state → list expr → Prop).
 
   Record EctxiLanguageMixin := {
     mixin_to_of_val v : to_val (of_val v) = Some v;
     mixin_of_to_val e v : to_val e = Some v → of_val v = e;
-    mixin_val_stuck e1 σ1 κ e2 σ2 efs : head_step e1 σ1 κ e2 σ2 efs → to_val e1 = None;
+    mixin_val_stuck e1 σ1 g1 κ e2 σ2 g2 efs : head_step e1 σ1 g1 κ e2 σ2 g2 efs → to_val e1 = None;
 
     mixin_fill_item_val Ki e : is_Some (to_val (fill_item Ki e)) → is_Some (to_val e);
     (** [fill_item] is always injective on the expression for a fixed
@@ -52,8 +52,8 @@ Section ectxi_language_mixin.
         [ectx_language], an empty context is impossible here).  In other words,
         if [e] is not a value then wrapping it in a context does not add new
         head redex positions. *)
-    mixin_head_ctx_step_val Ki e σ1 κ e2 σ2 efs :
-      head_step (fill_item Ki e) σ1 κ e2 σ2 efs → is_Some (to_val e);
+    mixin_head_ctx_step_val Ki e σ1 g1 κ e2 σ2 g2 efs :
+      head_step (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e);
   }.
 End ectxi_language_mixin.
 
@@ -62,12 +62,13 @@ Structure ectxiLanguage := EctxiLanguage {
   val : Type;
   ectx_item : Type;
   state : Type;
+  global_state : Type;
   observation : Type;
 
   of_val : val → expr;
   to_val : expr → option val;
   fill_item : ectx_item → expr → expr;
-  head_step : expr → state → list observation → expr → state → list expr → Prop;
+  head_step : expr → state → global_state → list observation → expr → state → global_state → list expr → Prop;
 
   ectxi_language_mixin :
     EctxiLanguageMixin of_val to_val fill_item head_step
@@ -76,7 +77,7 @@ Structure ectxiLanguage := EctxiLanguage {
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
 
-Global Arguments EctxiLanguage {_ _ _ _ _ _ _ _ _} _.
+Global Arguments EctxiLanguage {_ _ _ _ _ _ _ _ _ _} _.
 Global Arguments of_val {_} _.
 Global Arguments to_val {_} _.
 Global Arguments fill_item {_} _ _.
@@ -96,8 +97,8 @@ Section ectxi_language.
     to_val e1 = None → to_val e2 = None →
     fill_item Ki1 e1 = fill_item Ki2 e2 → Ki1 = Ki2.
   Proof. apply ectxi_language_mixin. Qed.
-  Lemma head_ctx_step_val Ki e σ1 κ e2 σ2 efs :
-    head_step (fill_item Ki e) σ1 κ e2 σ2 efs → is_Some (to_val e).
+  Lemma head_ctx_step_val Ki e σ1 g1 κ e2 σ2 g2 efs :
+    head_step (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e).
   Proof. apply ectxi_language_mixin. Qed.
 
   Definition fill (K : ectx) (e : expr Λ) : expr Λ := foldl (flip fill_item) e K.
@@ -120,7 +121,7 @@ Section ectxi_language.
     - intros K1 K2 e. by rewrite /fill /= foldl_app.
     - intros K; induction K as [|Ki K IH]; rewrite /Inj; naive_solver.
     - done.
-    - intros K K' e1 κ e1' σ1 e2 σ2 efs Hfill Hred Hstep; revert K' Hfill.
+    - intros K K' e1 κ e1' σ1 g1 e2 σ2 g2 efs Hfill Hred Hstep; revert K' Hfill.
       induction K as [|Ki K IH] using rev_ind=> /= K' Hfill; eauto using app_nil_r.
       destruct K' as [|Ki' K' _] using @rev_ind; simplify_eq/=.
       { rewrite fill_app in Hstep. apply head_ctx_step_val in Hstep.
@@ -131,7 +132,7 @@ Section ectxi_language.
         apply fill_not_val. revert Hstep. apply ectxi_language_mixin. }
       simplify_eq. destruct (IH K') as [K'' ->]; auto.
       exists K''. by rewrite assoc.
-    - intros K e1 σ1 κ e2 σ2 efs.
+    - intros K e1 σ1 g1 κ e2 σ2 g2 efs.
       destruct K as [|Ki K _] using rev_ind; simpl; first by auto.
       rewrite fill_app /=.
       intros ?%head_ctx_step_val; eauto using fill_val.
@@ -161,6 +162,6 @@ Coercion ectxi_lang_ectx : ectxiLanguage >-> ectxLanguage.
 Coercion ectxi_lang : ectxiLanguage >-> language.
 
 Definition EctxLanguageOfEctxi (Λ : ectxiLanguage) : ectxLanguage :=
-  let '@EctxiLanguage E V C St K of_val to_val fill head mix := Λ in
-  @EctxLanguage E V (list C) St K of_val to_val _ _ _ _
-    (@ectxi_lang_ectx_mixin (@EctxiLanguage E V C St K of_val to_val fill head mix)).
+  let '@EctxiLanguage E V C St GSt K of_val to_val fill head mix := Λ in
+  @EctxLanguage E V (list C) St GSt K of_val to_val _ _ _ _
+    (@ectxi_lang_ectx_mixin (@EctxiLanguage E V C St GSt K of_val to_val fill head mix)).
