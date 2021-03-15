@@ -245,7 +245,7 @@ Proof. auto. Qed.
 Tactic Notation "spec_bind" open_constr(efoc) " as " ident(H) :=
   iStartProof;
   lazymatch goal with
-  | |- context[ (is_twophase_started _ _ _ _ _ _ _ _ _ (?Kinit ?e))%I ] =>
+  | |- context[ (is_twophase_started _ _ _ _ _ _ _ (?Kinit ?e))%I ] =>
     let H' := fresh H in
     refine_reshape_expr e ltac:(fun K' e' => unify e' efoc; destruct (tac_refine_bind' Kinit K' e e') as (->&H'); [split; eauto|])
     || fail "spec_bind: cannot find" efoc "in" e
