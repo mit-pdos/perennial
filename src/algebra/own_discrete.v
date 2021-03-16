@@ -690,6 +690,12 @@ Section own_disc_fupd_props.
     iIntros (?) "HP". rewrite (into_discrete P). iModIntro. auto.
   Qed.
 
+  Global Instance from_pure_own_discrete a P φ :
+    FromPure a P φ → FromPure a (<disc> P) φ.
+  Proof.
+    rewrite /FromPure=> <-. destruct a; simpl; iIntros (?); iModIntro; done.
+  Qed.
+
   Lemma big_sepL_own_disc_fupd {A} (Φ: nat → A → iProp Σ) (l: list A) :
     ([∗ list] k↦x∈l, <disc> Φ k x) -∗ <disc> ([∗ list] k↦x∈l, Φ k x).
   Proof.

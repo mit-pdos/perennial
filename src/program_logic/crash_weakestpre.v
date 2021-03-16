@@ -2,11 +2,54 @@ From iris.algebra Require Import auth agree excl csum.
 From Perennial.base_logic Require Import ae_invariants.
 From iris.proofmode Require Import base tactics classes.
 From Perennial.base_logic Require Export invariants fupd_level.
-From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import step_fupd_extra ae_invariants_mutable.
 From Perennial.algebra Require Export own_discrete.
-Set Default Proof Using "Type".
+From Perennial.base_logic.lib Require Export ncfupd.
+From Perennial.program_logic Require Export language weakestpre_notation.
+From Perennial.program_logic Require ectx_language.
+From iris.prelude Require Import options.
 Import uPred.
+
+Class irisG (Λ : language) (Σ : gFunctors) := IrisG {
+  iris_invG :> invG Σ;
+  iris_crashG :> crashG Σ;
+
+  (** The state interpretation is an invariant that should hold in
+  between each step of reduction. Here [Λstate] is the global state,
+  the first [nat] is the number of steps already performed by the
+  program, [list Λobservation] are the remaining observations, and the
+  last [nat] is the number of forked-off threads (not the total number
+  of threads, which is one higher because there is always a main
+  thread). *)
+  state_interp : state Λ → global_state Λ → nat → list (observation Λ) → nat → iProp Σ;
+
+  (** A fixed postcondition for any forked-off thread. For most languages, e.g.
+  heap_lang, this will simply be [True]. However, it is useful if one wants to
+  keep track of resources precisely, as in e.g. Iron. *)
+  fork_post : val Λ → iProp Σ;
+
+  (** Number of additional logical steps (i.e., later modality in the
+  definition of WP) per physical step, depending on the physical steps
+  counter. In addition to these steps, the definition of WP adds one
+  extra later per physical step to make sure that there is at least
+  one later for each physical step. *)
+  num_laters_per_step : nat → nat;
+
+  (** When performing pure steps, the state interpretation needs to be
+  adapted for the change in the [ns] parameter.
+
+  Note that we use an empty-mask fancy update here. We could also use
+  a basic update or a bare magic wand, the expressiveness of the
+  framework would be the same. If we removed the modality here, then
+  the client would have to include the modality it needs as part of
+  the definition of [state_interp]. Since adding the modality as part
+  of the definition [state_interp_mono] does not significantly
+  complicate the formalization in Iris, we prefer simplifying the
+  client. *)
+  state_interp_mono σ g ns κs nt:
+    state_interp σ g ns κs nt ={∅}=∗ state_interp σ g (S ns) κs nt
+}.
+Global Opaque iris_invG.
 
 (* Define a weakestpre with an explicit crash invariant (i.e. there is a postcondition and a crash condition *)
 
@@ -345,6 +388,12 @@ Section cfupd.
     apply _.
   Qed.
 
+  Global Instance from_pure_cfupd a k E P φ :
+    FromPure a P φ → FromPure a (cfupd k E P) φ.
+  Proof.
+    rewrite /FromPure=> HP. iIntros "? !>". by iApply HP.
+  Qed.
+
 End cfupd.
 
 (* Open to alternative notation for this. *)
@@ -352,17 +401,19 @@ Notation "|C={ E1 }_ k => P" := (cfupd k E1 P)
       (at level 99, E1 at level 50, P at level 200,
        format "|C={ E1 }_ k =>  P").
 
+Global Hint Extern 1 (environments.envs_entails _ (|C={_}_ _ => _)) => iModIntro : core.
+
 Definition wpc_pre `{!irisG Λ Σ} (s : stuckness) (k : nat) (mj: nat)
     (wpc : coPset -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> iPropO Σ -d> iPropO Σ) :
     coPset -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> iPropO Σ -d> iPropO Σ := λ E1 e1 Φ Φc,
   (|={E1}=>
   ((match to_val e1 with
    | Some v => ∀ q, NC q -∗ |={E1}=> Φ v ∗ NC q
-   | None => ∀ q σ1 ns κ κs nt,
-      state_interp σ1 ns (κ ++ κs) nt -∗ NC q ={E1,∅}=∗ |={∅}▷=>^(S $ num_laters_per_step ns)
-        (⌜if s is NotStuck then reducible e1 σ1 else True⌝ ∗
-        ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ ={∅,E1}=∗
-          (state_interp σ2 (S ns) κs (length efs + nt) ∗
+   | None => ∀ q σ1 g1 ns κ κs nt,
+      state_interp σ1 g1 ns (κ ++ κs) nt -∗ NC q ={E1,∅}=∗ |={∅}▷=>^(S $ num_laters_per_step ns)
+        (⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
+        ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ ={∅,E1}=∗
+          (state_interp σ2 g2 (S ns) κs (length efs + nt) ∗
           wpc E1 e2 Φ Φc ∗
           ([∗ list] i ↦ ef ∈ efs, wpc ⊤ ef fork_post True) ∗
           NC q))
@@ -373,7 +424,7 @@ Definition wpc_pre `{!irisG Λ Σ} (s : stuckness) (k : nat) (mj: nat)
 Local Instance wpc_pre_contractive `{!irisG Λ Σ} s k mj : Contractive (wpc_pre s k mj).
 Proof.
   rewrite /wpc_pre=> n wp wp' Hwp E1 e1 Φ Φc.
-  do 18 (f_contractive || f_equiv).
+  do 20 (f_contractive || f_equiv).
   induction num_laters_per_step as [|k' IH]; simpl.
   - repeat (f_contractive || f_equiv); apply Hwp.
   - simpl in IH. rewrite -IH. eauto.
@@ -509,6 +560,17 @@ Notation "'{{{' P } } } e ? {{{ 'RET' pat ; Q } } }" :=
   (∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e ?{{ Φ }}) : stdpp_scope.
 *)
 
+(** Defining WP in terms of WPC (needs to be here since WP is used in this file)
+*)
+Definition wp_def `{!irisG Λ Σ} : Wp Λ (iProp Σ) stuckness :=
+  λ s E e Φ, (WPC e @ s ; 0 ; E {{ Φ }} {{ True }})%I.
+Definition wp_aux : seal (@wp_def). Proof. by eexists. Qed.
+Definition wp' := wp_aux.(unseal).
+Global Arguments wp' {Λ Σ _}.
+Existing Instance wp'.
+Lemma wp_eq `{!irisG Λ Σ} : wp = @wp_def Λ Σ _.
+Proof. rewrite -wp_aux.(seal_eq) //. Qed.
+
 Section wpc.
 Context `{!irisG Λ Σ}.
 Implicit Types s : stuckness.
@@ -537,7 +599,7 @@ Proof.
   rewrite /cfupd.
   do 5 (apply step_fupdN_ne || f_contractive || f_equiv); auto.
   { repeat f_equiv. }
-  do 13 (apply step_fupdN_ne || f_contractive || f_equiv).
+  do 15 (apply step_fupdN_ne || f_contractive || f_equiv).
   induction num_laters_per_step as [|k' IHk]; simpl; last first.
   { simpl in IHk. by rewrite IHk. }
   f_equiv. f_contractive.
@@ -564,61 +626,6 @@ Lemma wpc0_wpc s k E1 e Φ Φc mj:
   wpc0 s k mj E1 e Φ Φc.
 Proof. rewrite wpc0_unfold wpc_unfold. iIntros "H". iApply "H". Qed.
 
-Lemma wp_wpc0 s k mj E1 e Φ:
-  WP e @ s ; E1 {{ Φ }} ⊢ wpc0 s k mj E1 e Φ True.
-Proof.
-  iIntros "H". iLöb as "IH" forall (E1 e Φ).
-  rewrite wp_unfold wpc0_unfold /wp_pre /wpc_pre.
-  iModIntro.
-  iSplit; last first.
-  - iIntros "!> HC !> //".
-  - destruct (to_val e) as [v|]=>//.
-    iIntros (q σ1 ns κ κs nt) "Hσ".
-    iIntros "HNC".
-    iMod ("H" with "Hσ [$]") as "H".
-    iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
-    iApply (step_fupdN_wand with "H"). iIntros "[$ H]".
-    iIntros (e2 σ2 efs) "Hstep". iSpecialize ("H" with "Hstep").
-    iMod "H" as "(Hσ & H & Hfork & HNC)". iModIntro. iFrame.
-    iSplitL "H".
-    { by iApply "IH". }
-    iApply (@big_sepL_impl with "Hfork").
-    iIntros "!#" (? ef _) "H". by iApply "IH".
-Qed.
-
-Lemma wp_wpc s k E1 e Φ:
-  WP e @ s ; E1 {{ Φ }} ⊢ WPC e @ s ; k ; E1 {{ Φ }} {{ True }}.
-Proof. rewrite wpc_eq. iIntros "H" (?). by iApply wp_wpc0. Qed.
-
-Lemma wpc0_wp s k mj E1 e Φ Φc:
-  wpc0 s k mj E1 e Φ Φc ⊢ WP e @ s ; E1 {{ Φ }}.
-Proof.
-  iIntros "H". iLöb as "IH" forall (E1 e Φ Φc).
-  iApply fupd_wp.
-  rewrite wp_unfold wpc0_unfold /wp_pre /wpc_pre.
-  iMod "H".
-  iModIntro.
-  iDestruct "H" as "(H&_)".
-  destruct (to_val e) as [v|]=>//.
-  iIntros (q1 σ ns κ κs nt) "Hσ HNC".
-  iMod ("H" with "Hσ [$]") as "H".
-  iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
-  iApply (step_fupdN_wand with "H"). iIntros "[% H]".
-  iSplitR.
-  { destruct s; last done. eauto using reducible_no_obs_reducible. }
-  iIntros (e2 σ2 efs) "Hstep". iSpecialize ("H" with "Hstep").
-  simpl.
-  iMod "H" as "(Hσ & H & Hfork & HNC)". iModIntro. iFrame.
-  iSplitL "H".
-  { by iApply "IH". }
-  iApply (@big_sepL_impl with "Hfork").
-  iIntros "!#" (? ef _) "H". by iApply "IH".
-Qed.
-
-Lemma wpc_wp s k E1 e Φ Φc:
-  WPC e @ s ; k ; E1 {{ Φ }} {{ Φc }} ⊢ WP e @ s ; E1 {{ Φ }}.
-Proof. rewrite wpc_eq. iIntros "H". by iApply (wpc0_wp _ k O). Qed.
-
 Lemma wpc0_strong_mono s1 s2 k1 k2 mj1 mj2 E1 E2 e Φ Ψ Φc Ψc :
   s1 ⊑ s2 → k1 ≤ k2 → omega_le (Some mj1) (Some mj2) → E1 ⊆ E2 →
   wpc0 s1 k1 mj1 E1 e Φ Φc -∗
@@ -640,13 +647,13 @@ Proof.
       rewrite ncfupd_eq /ncfupd_def.
       iMod ("HΦ" with "[$] [$]"). iFrame. eauto.
     }
-    iIntros (q σ1 ns κ κs n) "Hσ HNC".
+    iIntros (q σ1 g1 ns κ κs n) "Hσ HNC".
     iMod (fupd_mask_subseteq E1) as "Hclo"; first done.
     iDestruct "H" as "(H&_)".
     iMod ("H" with "[$] [$]") as "H".
     iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
     iApply (step_fupdN_wand with "H"). iIntros "[% H]".
-    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 efs Hstep).
+    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 g2 efs Hstep).
     iSpecialize ("H" with "[//]"). simpl. iMod "H".
     iDestruct "H" as "(Hσ & H & Hefs & HNC)". iMod "Hclo" as "_". iModIntro.
     iFrame.
@@ -654,7 +661,6 @@ Proof.
     ** iApply ("IH" with "[] H [HΦ]"); auto.
     ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
        iIntros "H". eauto. iApply ("IH" with "[] H"); auto.
-       { iSplit; first auto. iIntros "!> _". iIntros "HC". by iApply fupd_level_mask_intro_discard; first set_solver+. }
   - iDestruct "H" as "(_&H)". iDestruct "HΦ" as "(_&HΦ)".
     iModIntro.
     iIntros "#HC".
@@ -681,21 +687,20 @@ Proof.
   iModIntro.
   iSplit.
   - rewrite Hval.
-    iIntros (q σ1 ns κ κs n) "Hσ HNC".
+    iIntros (q σ1 g1 ns κ κs n) "Hσ HNC".
     iMod (fupd_mask_subseteq E1) as "Hclo"; first done.
     iDestruct "H" as "(H&_)".
     iMod ("H" with "[$] [$]") as "H".
     iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
     iApply (step_fupdN_wand with "H").
     iIntros "[% H]".
-    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 efs Hstep).
+    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 g2 efs Hstep).
     iMod ("H" with "[//]") as "(Hσ & H & Hefs & HNC)". iMod "Hclo" as "_". iModIntro.
     iFrame.
     iSplitR "Hefs".
     ** iApply (wpc0_strong_mono with "[H] [HΦ]"); eauto.
     ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
        iIntros "H".  iApply (wpc0_strong_mono with "H []"); eauto.
-       { iSplit; first auto. iIntros "!> _". iIntros "HC". by iApply fupd_level_mask_intro_discard; first set_solver+. }
   - iDestruct "H" as "(_&H)". iDestruct "HΦ" as "(_&HΦ)".
     iModIntro.
     iIntros "#HC".
@@ -708,6 +713,39 @@ Proof.
     iMod (fupd_level_split_level with "HΦ"); auto.
 Qed.
 
+Lemma wpc0_change_k s k1 k2 mj E1 e Φ:
+  wpc0 s k1 mj E1 e Φ True ⊢ wpc0 s k2 mj E1 e Φ True.
+Proof.
+  iIntros "H". iLöb as "IH" forall (E1 e Φ).
+  rewrite !wpc0_unfold /wpc_pre.
+  iMod "H". iModIntro.
+  iSplit; last first.
+  - iIntros "!> HC !> //".
+  - destruct (to_val e) as [v|]; first by iDestruct "H" as "[H _]".
+    iIntros (q σ1 g1 ns κ κs nt) "Hσ".
+    iIntros "HNC".
+    iMod ("H" with "Hσ [$]") as "H".
+    iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
+    iApply (step_fupdN_wand with "H"). iIntros "[$ H]".
+    iIntros (e2 σ2 g2 efs) "Hstep". iSpecialize ("H" with "Hstep").
+    iMod "H" as "(Hσ & H & Hfork & HNC)". iModIntro. iFrame.
+    iSplitL "H".
+    { by iApply "IH". }
+    iApply (@big_sepL_impl with "Hfork").
+    iIntros "!#" (? ef _) "H". by iApply "IH".
+Qed.
+
+Lemma wp_wpc s k E1 e Φ:
+  WP e @ s ; E1 {{ Φ }} ⊢ WPC e @ s ; k ; E1 {{ Φ }} {{ True }}.
+Proof. rewrite wp_eq /wp_def wpc_eq. iIntros "H" (?). by iApply wpc0_change_k. Qed.
+
+Lemma wpc_wp s k E1 e Φ Φc:
+  WPC e @ s ; k ; E1 {{ Φ }} {{ Φc }} ⊢ WP e @ s ; E1 {{ Φ }}.
+Proof.
+  rewrite wp_eq /wp_def wpc_eq. iIntros "H" (?).
+  iApply wpc0_change_k.
+  iApply (wpc0_strong_mono with "H"); auto. by apply omega_le_refl.
+Qed.
 
 Lemma wpc_strong_mono s1 s2 k1 k2 E1 E2 e Φ Ψ Φc Ψc :
   s1 ⊑ s2 → k1 ≤ k2 → E1 ⊆ E2 →
@@ -753,9 +791,6 @@ Lemma wpc_subscript_mono s1 s2 k1 k2 E1 E2 e Φ Φc :
 Proof.
   iIntros (???) "H".
   iApply (wpc_strong_mono with "[$] [-]"); auto.
-  iSplit.
-  - eauto.
-  - iIntros "!> ?". by iModIntro.
 Qed.
 
 Lemma wpc_idx_mono k1 k2 s E1 e Φ Φc :
@@ -819,21 +854,20 @@ Proof.
       iIntros. iMod ("H" with "[$]"). iMod "Hclo" as "_".
       iModIntro; eauto. do 2 iFrame.
     }
-    iIntros (q σ1 ns κ κs n) "Hσ HNC".
+    iIntros (q σ1 g1 ns κ κs n) "Hσ HNC".
     iMod (fupd_mask_subseteq E1) as "Hclo"; first done.
     iDestruct "H" as "(H&_)".
     iMod ("H" with "[$] [$]") as "H".
     iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
     iApply (step_fupdN_wand with "H").
     iIntros "[% H]".
-    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 efs Hstep).
+    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 g2 efs Hstep).
     iMod ("H" with "[//]") as "(Hσ & H & Hefs & HNC)". iMod "Hclo" as "_". iModIntro.
     iFrame.
     iSplitR "Hefs".
     ** iApply ("IH" with "[] [] H [HΦ]"); auto.
     ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
        iIntros "H". eauto. iApply (wpc0_strong_mono with "H"); eauto; first naive_solver.
-       iSplit; eauto. iIntros. by iIntros "!> _ !>".
   - iDestruct "H" as "(_&H)". iIntros "!> #HC".
     iSpecialize ("H" with "[$]").
     rewrite /cfupd.
@@ -867,21 +901,20 @@ Proof.
       iIntros. iMod ("H" with "[$]"). iMod "Hclo" as "_".
       iModIntro; eauto. do 2 iFrame.
     }
-    iIntros (q σ1 ns κ κs n) "Hσ HNC".
+    iIntros (q σ1 g1 ns κ κs n) "Hσ HNC".
     iMod (fupd_mask_subseteq E1) as "Hclo"; first done.
     iDestruct "H" as "(H&_)".
     iMod ("H" with "[$] [$]") as "H".
     iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
     iApply (step_fupdN_wand with "H").
     iIntros "[% H]".
-    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 efs Hstep).
+    iSplit; [by destruct s1, s2|]. iIntros (e2 σ2 g2 efs Hstep).
     iMod ("H" with "[//]") as "(Hσ & H & Hefs & HNC)". iMod "Hclo" as "_". iModIntro.
     iFrame.
     iSplitR "Hefs".
     ** iApply ("IH" with "[] [] H [HΦ]"); auto.
     ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
        iIntros "H". eauto. iApply (wpc0_strong_mono with "H"); eauto; first naive_solver.
-       iSplit; eauto. iIntros. by iIntros "!> _ !>".
   - iDestruct "H" as "(_&H)". iIntros "!> #HC".
     iSpecialize ("H" with "[$]").
     rewrite /cfupd.
@@ -1085,7 +1118,7 @@ Proof.
   iSplit.
   - destruct (to_val e).
     * iIntros (?) "HNC". iDestruct (NC_C with "[$] [$]") as "[]".
-    * iIntros (??????) "_ HNC". iDestruct (NC_C with "[$] [$]") as "[]".
+    * iIntros (???????) "_ HNC". iDestruct (NC_C with "[$] [$]") as "[]".
   - by iIntros "!> _ !>".
 Qed.
 
@@ -1105,9 +1138,6 @@ Lemma wpc_ncfupd s k E1 e Φ Φc:
   ( WPC e @ s; k; E1 {{ v, |NC={E1}=> Φ v }} {{ Φc }}) ⊢ WPC e @ s; k; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "H". iApply (wpc_strong_mono with "H"); rewrite ?difference_diag_L; auto.
-  iSplit.
-  - eauto.
-  - by iIntros "!> H !>".
 Qed.
 
 Lemma wpc_cfupd s k E1 e Φ Φc:
@@ -1147,7 +1177,7 @@ Proof.
       iModIntro. by iApply cfupd_split_level_cfupd.
   }
   iSplit.
-  { iDestruct "H" as "(_&H)". iIntros (q ?????) "Hσ HNC".
+  { iDestruct "H" as "(_&H)". iIntros (q ??????) "Hσ HNC".
     iSpecialize ("H" $! q).
     rewrite wpc_unfold /wpc_pre.
     iMod ("H" with "[$]") as "(H&HNC)".
@@ -1167,11 +1197,14 @@ Lemma wpc_atomic_crash_modality s k E1 e Φ Φc `{!Atomic StronglyAtomic e} :
   <disc> (cfupd k E1 (Φc)) ∧ (WP e @ s; E1 {{ v, |={E1}=> (|={E1}=>Φ v) ∧ <disc> cfupd k E1 (Φc) }}) ⊢
   WPC e @ s; k; E1 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros "H". iEval (rewrite !wpc_unfold /wpc_pre). setoid_rewrite wp_unfold. rewrite /wp_pre.
+  iIntros "H". iEval (rewrite !wpc_unfold /wpc_pre).
+  rewrite wp_eq /wp_def. rewrite wpc_unfold /wpc_pre.
   iIntros (mj).
   destruct (to_val e) as [v|] eqn:He.
   { iModIntro. iSplit.
     - iDestruct "H" as "(_&H)". iIntros (?) "HNC".
+      iSpecialize ("H" $! mj).
+      iMod "H" as "[H _]".
       iMod ("H" with "[$]") as "(H&$)".
       iMod "H". iDestruct "H" as "($&_)".
     - iDestruct "H" as "(H&_)"; eauto.
@@ -1179,20 +1212,22 @@ Proof.
   }
   iModIntro. iSplit.
   {
-    iIntros (q σ1 ns κ κs n) "Hσ HNC".
+    iIntros (q σ1 g1 ns κ κs n) "Hσ HNC".
     iDestruct "H" as "(_&H)".
+    iSpecialize ("H" $! mj).
+    iMod "H" as "[H _]".
     iMod ("H" with "[$] [$]") as "H".
     iModIntro.
     iApply (step_fupdN_wand with "H").
     iIntros "[$ H]".
-    iIntros (e2 σ2 efs Hstep).
+    iIntros (e2 σ2 g2 efs Hstep).
     iMod ("H" with "[//]") as "(Hσ&H&Hefs&HNC)".
     iFrame "Hσ".
-    rewrite wp_unfold /wpc_pre /wp_pre.
+    rewrite wpc0_unfold /wpc_pre.
     destruct (to_val e2) as [v2|] eqn:He2.
-    **
-       iMod ("H" with "[$]") as "(H&HNC)".
-       iSplitL "H".
+    - iMod "H" as "[H _]".
+      iMod ("H" with "[$]") as "(H&HNC)".
+      iSplitL "H".
        { rewrite wpc0_unfold /wpc_pre.
          rewrite He2. iMod "H". iModIntro. iModIntro. iSplit.
          * iIntros. iDestruct "H" as "(H&_)". iMod "H". by iFrame.
@@ -1200,13 +1235,12 @@ Proof.
            iModIntro. by iApply cfupd_split_level_cfupd.
        }
        iFrame.
-       iApply big_sepL_mono; last eauto. iIntros. by iApply wp_wpc0.
-      ** edestruct (atomic _ _ _ _ _ Hstep); congruence.
+       iApply big_sepL_mono; last eauto. iIntros. by iApply wpc0_change_k.
+    - edestruct (atomic _ _ _ _ _ _ _ Hstep); congruence.
   }
   iDestruct "H" as "(H&_)"; eauto.
   iModIntro. by iApply cfupd_split_level_cfupd.
 Qed.
-
 
 (* XXX this is the same as crash_elim *)
 Lemma wpc_crash_elim s k E1 e Φ Φc:
@@ -1221,40 +1255,6 @@ Proof. iIntros "H HC". iMod "H". iModIntro. auto. Qed.
 Lemma intro_cfupd k E1 P:
   P -∗ cfupd k E1 P.
 Proof. iIntros "HP". iModIntro. eauto. Qed.
-
-Lemma wpc_atomic s k E1 e Φ Φc `{!Atomic StronglyAtomic e} :
-  <disc> (|k={E1}=> Φc) ∧ WP e @ s; E1 {{ v, (|={E1}=> Φ v) ∧ <disc> |k={E1}=> Φc }} ⊢
-  WPC e @ s; k; E1 {{ Φ }} {{ Φc }}.
-Proof.
-  iIntros "H". iApply (wpc_atomic_crash_modality); iApply (and_mono with "H").
-  { f_equiv. iIntros "H HC". eauto. }
-  iIntros "H".
-  iApply (wp_mono with "H"). iIntros (?).
-  iIntros "H". iModIntro.
-  iApply (and_mono with "H"); auto.
-  { f_equiv. iIntros "H HC". eauto. }
-Qed.
-
-(* note that this also reverses the postcondition and crash condition, so we
-prove the crash condition first *)
-Lemma wpc_atomic_no_mask s k E1 e Φ Φc `{!Atomic StronglyAtomic e} :
-  <disc> Φc ∧ WP e @ s; E1 {{ v, <disc> (|k={E1}=> Φc) ∧ (|={E1}=> Φ v) }} ⊢
-  WPC e @ s; k; E1 {{ Φ }} {{ Φc }}.
-Proof.
-  iIntros "Hc_wp".
-  iApply wpc_atomic.
-  iSplit.
-  - iDestruct "Hc_wp" as "(?&_)". iModIntro. iApply fupd_level_mask_intro_discard; [ set_solver+ | ].
-    eauto.
-  - iDestruct "Hc_wp" as "[_ Hwp]".
-    iApply wp_mono; iFrame.
-    iIntros (x) "HΦ".
-    iSplit.
-    + iDestruct "HΦ" as "[_  >HΦc]". eauto.
-    + iDestruct "HΦ" as "[HΦ _]". iModIntro.
-      iMod "HΦ" as "HΦ".
-      iApply fupd_level_mask_intro_discard; [ set_solver+ | ]; iFrame.
-Qed.
 
 Lemma wpc_step_fupd s k E1 E2 e P P' Φ Φc :
   to_val e = None → E2 ⊆ E1 →
@@ -1277,13 +1277,13 @@ Proof.
     iMod (fupd_split_level_mask_mono with "H") as "H"; auto.
     iModIntro. iApply "H". eauto.
   - iDestruct "H" as "(H&_)".
-    iIntros (q σ1 ns κ κs n) "Hσ HNC".
+    iIntros (q σ1 g1 ns κ κs n) "Hσ HNC".
     iDestruct "HR" as "(HR&_)". iMod "HR".
     iMod ("H" with "[$] [$]") as "H".
     iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
     iApply (step_fupdN_wand with "H").
     iIntros "[$ H]".
-    iIntros (e2 σ2 efs Hstep).
+    iIntros (e2 σ2 g2 efs Hstep).
     iMod ("H" with "[//]") as "(Hσ & H & Hefs & HNC)".
     iMod "HR". iModIntro. iFrame "Hσ Hefs". iFrame.
     iApply (wpc0_strong_mono s s k k mj mj E2 with "H"); auto.
@@ -1346,16 +1346,16 @@ Proof.
   iMod "H". iModIntro.
   iSplit; last by (iDestruct "H" as "(_&$)").
   iDestruct "H" as "(H&_)".
-  iIntros (q σ1 ns κ κs nt) "Hσ HNC". iMod ("H" with "[$] [$]") as "H".
+  iIntros (q σ1 g1 ns κ κs nt) "Hσ HNC". iMod ("H" with "[$] [$]") as "H".
   iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
   iApply (step_fupdN_wand with "H").
   iIntros "[% H]".
   iSplit.
   { iPureIntro. destruct s; last done.
     unfold reducible in *. naive_solver eauto using fill_step. }
-  iIntros (e2 σ2 efs Hstep).
-  destruct (fill_step_inv e σ1 κ e2 σ2 efs) as (e2'&->&?); auto.
-  iSpecialize ("H" $! e2' σ2 efs with "[//]").
+  iIntros (e2 σ2 g2 efs Hstep).
+  destruct (fill_step_inv e σ1 g1 κ e2 σ2 g2 efs) as (e2'&->&?); auto.
+  iSpecialize ("H" $! e2' σ2 g2 efs with "[//]").
   simpl. iMod "H". iModIntro.
   iDestruct "H" as "(Hσ&H&Hefs&$)".
   iFrame "Hσ Hefs". by iApply "IH".
@@ -1380,10 +1380,10 @@ Qed.
 
 Lemma wpc_lift_step_fupd s k E Φ Φc e1 :
   to_val e1 = None →
-  ((∀ σ1 ns κ κs n, state_interp σ1 ns (κ ++ κs) n -∗ |={E,∅}=> ▷
-   ((⌜if s is NotStuck then reducible e1 σ1 else True⌝ ∗
-    ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ -∗ |={∅,E}=>
-      (state_interp σ2 (S ns) κs (length efs + n) ∗
+  ((∀ σ1 g1 ns κ κs n, state_interp σ1 g1 ns (κ ++ κs) n -∗ |={E,∅}=> ▷
+   ((⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
+    ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E}=>
+      (state_interp σ2 g2 (S ns) κs (length efs + n) ∗
        WPC e2 @ s; k; E {{ Φ }} {{ Φc }} ∗
        [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }}))))
   ∧ <disc> |C={E}_k=> Φc)%I
@@ -1395,7 +1395,7 @@ Proof.
   iSplit; last first.
   { iIntros. iDestruct "H" as "(_&H)". iIntros "!>".
     iApply cfupd_split_level_cfupd; eauto. }
-  iDestruct "H" as "(H&_)". iIntros (q σ1 ns κ κs n) "Hσ HNC".
+  iDestruct "H" as "(H&_)". iIntros (q σ1 g1 ns κ κs n) "Hσ HNC".
   iMod ("H" with "Hσ") as "H".
   iModIntro. simpl. iModIntro. iNext. iModIntro.
   iDestruct "H" as "(%&H)".
@@ -1410,10 +1410,10 @@ Qed.
 
 Lemma wpc_lift_step s k E1 Φ Φc e1 :
   to_val e1 = None →
-  (∀ σ1 ns κ κs n, state_interp σ1 ns (κ ++ κs) n -∗ |={E1,∅}=> ▷
-    (⌜if s is NotStuck then reducible e1 σ1 else True⌝ ∗
-     ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ -∗ |={∅,E1}=>
-      state_interp σ2 (S ns) κs (length efs + n) ∗
+  (∀ σ1 g1 ns κ κs n, state_interp σ1 g1 ns (κ ++ κs) n -∗ |={E1,∅}=> ▷
+    (⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
+     ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E1}=>
+      state_interp σ2 g2 (S ns) κs (length efs + n) ∗
       WPC e2 @ s; k; E1 {{ Φ }} {{ Φc }} ∗
       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }}))
   ∧ <disc> Φc
@@ -1422,37 +1422,38 @@ Proof.
   iIntros (?) "H". iApply wpc_lift_step_fupd; [done|].
   iSplit; last first.
   { iDestruct "H" as "(_&H)". by do 2 iModIntro. }
-  iIntros (?????) "Hσ".
+  iIntros (??????) "Hσ".
   iMod ("H" with "Hσ") as "[$ H]".
   iIntros "!> !> * %". by iApply "H".
 Qed.
 
-Lemma wpc_lift_pure_step_no_fork `{!Inhabited (state Λ)} s k E1 E1' Φ Φc e1 :
-  (∀ σ1, if s is NotStuck then reducible e1 σ1 else to_val e1 = None) →
-  (∀ κ σ1 e2 σ2 efs, prim_step e1 σ1 κ e2 σ2 efs → κ = [] ∧ σ2 = σ1 ∧ efs = []) →
+Lemma wpc_lift_pure_step_no_fork `{!Inhabited (state Λ)} `{!Inhabited (global_state Λ)} s k E1 E1' Φ Φc e1 :
+  (∀ σ1 g1, if s is NotStuck then reducible e1 σ1 g1 else to_val e1 = None) →
+  (∀ κ σ1 g1 e2 σ2 g2 efs, prim_step e1 σ1 g1 κ e2 σ2 g2 efs → κ = [] ∧ σ2 = σ1 ∧ g2 = g1 ∧ efs = []) →
   (|={E1,E1'}=> ▷ |={E1', E1}=>
-                    ∀ κ e2 efs σ, ⌜prim_step e1 σ κ e2 σ efs⌝ → WPC e2 @ s; k; E1 {{ Φ }} {{ Φc }}) ∧
+          ∀ κ e2 efs σ g, ⌜prim_step e1 σ g κ e2 σ g efs⌝ → WPC e2 @ s; k; E1 {{ Φ }} {{ Φc }}) ∧
                      <disc> Φc
   ⊢ WPC e1 @ s; k; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hsafe Hstep) "H". iApply wpc_lift_step.
-  { specialize (Hsafe inhabitant). destruct s; eauto using reducible_not_val. }
+  { specialize (Hsafe inhabitant inhabitant). destruct s; eauto using reducible_not_val. }
   iSplit; last by (iDestruct "H" as "(_&$)").
   iDestruct "H" as "(H&_)".
-  iIntros (σ1 ns κ κs n) "Hσ". iMod "H".
+  iIntros (σ1 g1 ns κ κs n) "Hσ". iMod "H".
   iMod fupd_mask_subseteq as "Hclose"; last iModIntro; first by set_solver. iSplit.
   { iPureIntro. destruct s; done. }
-  iNext. iIntros (e2 σ2 efs ?).
-  destruct (Hstep κ σ1 e2 σ2 efs) as (-> & <- & ->); auto.
+  iNext. iIntros (e2 σ2 g2 efs ?).
+  destruct (Hstep κ σ1 g1 e2 σ2 g2 efs) as (-> & <- & <- & ->); auto.
   iMod (state_interp_mono with "Hσ") as "$".
   iMod "Hclose" as "_". iMod "H". iModIntro.
   iDestruct ("H" with "[//]") as "H". simpl. iFrame.
 Qed.
 
-Lemma wpc_lift_pure_det_step_no_fork `{!Inhabited (state Λ)} {s k E1 E1' Φ Φc} e1 e2 :
-  (∀ σ1, if s is NotStuck then reducible e1 σ1 else to_val e1 = None) →
-  (∀ σ1 κ e2' σ2 efs', prim_step e1 σ1 κ e2' σ2 efs' →
-    κ = [] ∧ σ2 = σ1 ∧ e2' = e2 ∧ efs' = []) →
+Lemma wpc_lift_pure_det_step_no_fork `{!Inhabited (state Λ)} `{!Inhabited (global_state Λ)}
+      {s k E1 E1' Φ Φc} e1 e2 :
+  (∀ σ1 g1, if s is NotStuck then reducible e1 σ1 g1 else to_val e1 = None) →
+  (∀ σ1 g1 κ e2' σ2 g2 efs', prim_step e1 σ1 g1 κ e2' σ2 g2 efs' →
+    κ = [] ∧ σ2 = σ1 ∧ g2 = g1 ∧ e2' = e2 ∧ efs' = []) →
   (|={E1,E1'}=> ▷ |={E1', E1}=>
                     WPC e2 @ s; k; E1 {{ Φ }} {{ Φc }}) ∧ <disc> Φc
   ⊢ WPC e1 @ s; k; E1 {{ Φ }} {{ Φc }}.
@@ -1462,11 +1463,11 @@ Proof.
   iSplit; last by (iDestruct "H" as "(_&$)").
   iDestruct "H" as "(H&_)".
   iMod "H". iModIntro. iNext. iMod "H". iModIntro.
-  iIntros (κ e' efs' σ (_&?&->&?)%Hpuredet); auto.
+  iIntros (κ e' efs' σ g). iIntros ((_&?&?&->&?)%Hpuredet); auto.
 Qed.
 
 (* Note: compared to wp_pure_step_fupd, we have n = 1 *)
-Lemma wpc_pure_step_fupd `{!Inhabited (state Λ)} s k E1 e1 e2 φ Φ Φc :
+Lemma wpc_pure_step_fupd `{!Inhabited (state Λ), !Inhabited (global_state Λ)} s k E1 e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
   (|={E1,∅}=> ▷ |={∅,E1}=> WPC e2 @ s; k; E1 {{ Φ }} {{ Φc }}) ∧ <disc> Φc
@@ -1476,12 +1477,12 @@ Proof.
   inversion Hexec as [|? e1' e2' e3' [Hsafe ?] Hrest]. subst.
   inversion Hrest; subst.
   iApply wpc_lift_pure_det_step_no_fork; last eauto.
-  - intros σ. specialize (Hsafe σ). destruct s;
+  - intros σ g. specialize (Hsafe σ g). destruct s;
     eauto using reducible_not_val, reducible_no_obs_reducible.
   - done.
 Qed.
 
-Lemma wpc_pure_step_later `{!Inhabited (state Λ)} s k E1 e1 e2 φ Φ Φc :
+Lemma wpc_pure_step_later `{!Inhabited (state Λ), !Inhabited (global_state Λ)} s k E1 e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
   ▷ WPC e2 @ s; k ; E1 {{ Φ }} {{ Φc }} ∧ <disc> Φc
@@ -1559,6 +1560,43 @@ Proof.
   iSplit.
   - iIntros (v) "?". by iApply "H1".
   - iIntros "!> ? !>". by iApply "H2".
+Qed.
+
+Lemma wp_mono s E e Φ Ψ : (∀ v, Φ v ⊢ Ψ v) → WP e @ s; E {{ Φ }} ⊢ WP e @ s; E {{ Ψ }}.
+Proof. intros Hpost. rewrite wp_eq. apply wpc_mono; done. Qed.
+
+Lemma wpc_atomic s k E1 e Φ Φc `{!Atomic StronglyAtomic e} :
+  <disc> (|k={E1}=> Φc) ∧ WP e @ s; E1 {{ v, (|={E1}=> Φ v) ∧ <disc> |k={E1}=> Φc }} ⊢
+  WPC e @ s; k; E1 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "H". iApply (wpc_atomic_crash_modality); iApply (and_mono with "H").
+  { f_equiv. iIntros "H HC". eauto. }
+  iIntros "H".
+  iApply (wp_mono with "H"). iIntros (?).
+  iIntros "H". iModIntro.
+  iApply (and_mono with "H"); auto.
+  { f_equiv. iIntros "H HC". eauto. }
+Qed.
+
+(* note that this also reverses the postcondition and crash condition, so we
+prove the crash condition first *)
+Lemma wpc_atomic_no_mask s k E1 e Φ Φc `{!Atomic StronglyAtomic e} :
+  <disc> Φc ∧ WP e @ s; E1 {{ v, <disc> (|k={E1}=> Φc) ∧ (|={E1}=> Φ v) }} ⊢
+  WPC e @ s; k; E1 {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "Hc_wp".
+  iApply wpc_atomic.
+  iSplit.
+  - iDestruct "Hc_wp" as "(?&_)". iModIntro. iApply fupd_level_mask_intro_discard; [ set_solver+ | ].
+    eauto.
+  - iDestruct "Hc_wp" as "[_ Hwp]".
+    iApply (wp_mono with "Hwp").
+    iIntros (x) "HΦ".
+    iSplit.
+    + iDestruct "HΦ" as "[_  >HΦc]". eauto.
+    + iDestruct "HΦ" as "[HΦ _]". iModIntro.
+      iMod "HΦ" as "HΦ".
+      iApply fupd_level_mask_intro_discard; [ set_solver+ | ]; iFrame.
 Qed.
 
 Lemma wp_wpc_frame' s k E1 e Φ Φc R :
@@ -1966,11 +2004,8 @@ Section proofmode_classes.
   *)
 End proofmode_classes.
 
-Hint Extern 1 (environments.envs_entails _ (|C={_}_ _ => _)) => iModIntro : core.
-
-From Perennial.program_logic Require Import ectx_language.
-
 Section wpc_ectx_lifting.
+Import ectx_language.
 Context {Λ : ectxLanguage} `{!irisG Λ Σ} {Hinh : Inhabited (state Λ)}.
 Hint Resolve head_prim_reducible head_reducible_prim_step : core.
 Local Definition reducible_not_val_inhabitant_state e := reducible_not_val e inhabitant.
@@ -1979,37 +2014,37 @@ Hint Resolve head_stuck_stuck : core.
 
 Lemma wpc_lift_head_step_fupd s k E Φ Φc e1 :
   to_val e1 = None →
-  ((∀ σ1 ns κ κs n, state_interp σ1 ns (κ ++ κs) n -∗ |={E,∅}=> ▷
-    (⌜head_reducible e1 σ1⌝ ∗
-    ∀ e2 σ2 efs, ⌜head_step e1 σ1 κ e2 σ2 efs⌝ -∗ |={∅,E}=>
-      (state_interp σ2 (S ns) κs (length efs + n) ∗
+  ((∀ σ1 g1 ns κ κs n, state_interp σ1 g1 ns (κ ++ κs) n -∗ |={E,∅}=> ▷
+    (⌜head_reducible e1 σ1 g1⌝ ∗
+    ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E}=>
+      (state_interp σ2 g2 (S ns) κs (length efs + n) ∗
        WPC e2 @ s; k; E {{ Φ }} {{ Φc }} ∗
        [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})))
   ∧ <disc> |C={E}_k=> Φc)%I
  ⊢ WPC e1 @ s; k; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (?) "H". iApply wpc_lift_step_fupd=>//. iSplit.
-  - iDestruct "H" as "(H&_)". iIntros (σ1 ns κ κs Qs) "Hσ".
+  - iDestruct "H" as "(H&_)". iIntros (σ1 g1 ns κ κs Qs) "Hσ".
     iMod ("H" with "Hσ") as "[>% H]"; iModIntro.
-    iSplit; first by destruct s; eauto. iIntros (e2 σ2 efs ?).
+    iSplit; first by destruct s; eauto. iIntros (e2 σ2 g2 efs ?).
     iApply "H"; eauto.
   - iDestruct "H" as "(_&$)".
 Qed.
 
 Lemma wpc_lift_head_step s k E1 Φ Φc e1 :
   to_val e1 = None →
-  ((∀ σ1 ns κ κs n, state_interp σ1 ns (κ ++ κs) n -∗ |={E1,∅}=> ▷
-    (⌜head_reducible e1 σ1⌝ ∗
-     ∀ e2 σ2 efs, ⌜head_step e1 σ1 κ e2 σ2 efs⌝ -∗ |={∅,E1}=>
-      state_interp σ2 (S ns) κs (length efs + n) ∗
+  ((∀ σ1 g1 ns κ κs n, state_interp σ1 g1 ns (κ ++ κs) n -∗ |={E1,∅}=> ▷
+    (⌜head_reducible e1 σ1 g1⌝ ∗
+     ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E1}=>
+      state_interp σ2 g2 (S ns) κs (length efs + n) ∗
       WPC e2 @ s; k; E1 {{ Φ }} {{ Φc }} ∗
       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }}))
   ∧ <disc> |C={E1}_k=> Φc)%I
   ⊢ WPC e1 @ s; k; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (?) "H". iApply wpc_lift_head_step_fupd; [done|]. iSplit.
-  - iDestruct "H" as "(H&_)". iIntros (?????) "?".
-    iMod ("H" with "[$]") as "[$ H]". iIntros "!> !>" (e2 σ2 efs ?). by iApply "H".
+  - iDestruct "H" as "(H&_)". iIntros (??????) "?".
+    iMod ("H" with "[$]") as "[$ H]". iIntros "!> !>" (e2 σ2 g2 efs ?). by iApply "H".
   - iDestruct "H" as "(_&$)".
 Qed.
 

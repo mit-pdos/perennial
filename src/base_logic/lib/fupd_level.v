@@ -75,6 +75,9 @@ Definition omega_le (mj1 mj2: option nat) : Prop :=
   | _, _ => False
   end.
 
+Lemma omega_le_refl mj : omega_le mj mj.
+Proof. destruct mj; simpl; done. Qed.
+
 Lemma nomega_omege_le N mj1 mj2 :
   omega_le mj1 mj2 →
   nomega N mj1 ⊆ nomega N mj2.
