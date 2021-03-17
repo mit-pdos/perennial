@@ -621,21 +621,23 @@ Lemma MakeRPCClient_spec γrpc (host : string) (cid : u64) :
     MakeRPCClient #(str host) #cid
   {{{ cl, RET #cl; RPCClient_own cl host γrpc }}}.
 Proof.
-  iIntros (Φ) "Hclient_own Hpost". wp_lam.
+  iIntros (Φ) "Hclient_own HΦ". wp_lam.
   wp_pures.
   wp_apply (wp_MakeRPCClient).
+  iIntros (cl_ptr) "HrawClOwn".
   wp_apply wp_allocStruct; first by eauto.
   iIntros (l) "Hl".
-  iDestruct (struct_fields_split with "Hl") as "(l_cid & l_seq & _)".
-  iApply "Hpost".
+  iDestruct (struct_fields_split with "Hl") as "(l_cid & l_seq & l_rawCl & _)".
+  iApply "HΦ".
   iExists _, _. iFrame.
+  iExists _; iFrame.
   by iPureIntro; word.
 Qed.
 
-Lemma MakeRPCServer_spec server_own_core γrpc :
-  {{{ is_RPCServer γrpc ∗ RPCServer_own γrpc ∅ ∅ ∗ server_own_core }}}
+Lemma MakeRPCServer_spec γrpc :
+  {{{ is_RPCServer γrpc ∗ RPCServer_own_ghost γrpc ∅ ∅ }}}
     MakeRPCServer #()
-  {{{ sv, RET #sv; is_rpcserver sv γrpc server_own_core }}}
+  {{{ sv, RET #sv; RPCServer_own_vol sv γrpc ∅ ∅ }}}
 .
 Proof.
   iIntros (Φ) "[#Hrpcinv Hpre] Hpost".
@@ -643,23 +645,16 @@ Proof.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (l) "Hl".
   wp_pures.
-  iDestruct (struct_fields_split with "Hl") as "(l_mu & l_lastSeq & l_lastReply & _)".
+  iDestruct (struct_fields_split with "Hl") as "(l_lastSeq & l_lastReply & _)".
 
   iApply wp_fupd.
   wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastSeq) "HlastSeq".
   wp_storeField.
   wp_apply (wp_NewMap u64 (t:=uint64T)). iIntros (lastReply) "HlastReply".
   wp_storeField.
-  wp_apply (newlock_spec _ _ (RPCServer_mutex_inv _ _ server_own_core) with "[-Hpost l_mu]").
-  { iNext.
-    iExists _, _, _, _. iFrame "l_lastSeq l_lastReply".
-    iFrame. }
-  iIntros (lk) "Hlock".
-  iDestruct (is_lock_flat with "Hlock") as %[lock ->].
-  wp_storeField.
-  iMod (readonly_alloc_1 with "l_mu") as "l_mu".
   iApply "Hpost".
-  by iExists _; iFrame "# ∗".
+  iExists _, _; iFrame "l_lastSeq ∗#".
+  done.
 Qed.
 
 End rpc_proof.
