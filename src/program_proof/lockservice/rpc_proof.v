@@ -4,7 +4,8 @@ From Perennial.program_logic Require Export weakestpre.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.program_proof.lockservice Require Import lockservice_nocrash common_proof.
+From Goose.github_com.mit_pdos.lockservice Require Import grove_common lockservice.
+From Perennial.program_proof.lockservice Require Import common_proof.
 From Perennial.program_proof.lockservice Require Export rpc.
 
 Section rpc_proof.
@@ -31,7 +32,7 @@ Proof.
 Defined.
 
 Definition RPCRequest_own_ro (args_ptr:loc) (req : RPCRequestID) (args:RPCValsC) : iProp Σ :=
-    "#HSeqPositive" ∷ ⌜int.nat req.(Req_Seq) > 0⌝ ∗
+    "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝ ∗
     "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Args"] (into_val.to_val args)) ∗
     "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest.S :: "CID"] #req.(Req_CID)) ∗
     "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Seq"] #req.(Req_Seq))
@@ -42,13 +43,13 @@ Definition RPCReply_own (reply_ptr:loc) (r : @RPCReply (u64)) : iProp Σ :=
   ∗ "HReplyOwnRet" ∷ reply_ptr ↦[RPCReply.S :: "Ret"] (into_val.to_val r.(Rep_Ret))
 .
 
-Definition RPCServer_own_vol (sv:loc) (γrpc:rpc_names) (server_own_core:iProp Σ): iProp Σ :=
-  ∃ (lastSeq_ptr lastReply_ptr:loc) (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 u64),
+Definition RPCServer_own_vol (sv:loc) (γrpc:rpc_names) (lastSeqM lastReplyM:gmap u64 u64) : iProp Σ :=
+  ∃ (lastSeq_ptr lastReply_ptr:loc),
       "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr ∗
       "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr ∗
       "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
       "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM ∗
-      "Hlinv" ∷ is_RPCServer γrpc
+      "#Hlinv" ∷ is_RPCServer γrpc
 .
 
 Definition Reply64 := @RPCReply (u64).
@@ -59,21 +60,6 @@ Definition RPCClient_own_vol (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ :=
       "Hcid" ∷ cl_ptr ↦[RPCClient.S :: "cid"] #cid ∗
       "Hseq" ∷ cl_ptr ↦[RPCClient.S :: "seq"] #cseqno
 .
-
-(* f is a rpcHandler if it satisfies this specification *)
-Definition is_rpcHandler2 (f:val) γrpc args req PreCond PostCond : iProp Σ :=
-  ∀ γreq req_ptr reply_ptr reply,
-    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req ∗
-        "#Hargs" ∷ RPCRequest_own_ro req_ptr req args ∗
-        "Hreply" ∷ RPCReply_own reply_ptr reply
-    }}} (* TODO: put this precondition into a defn *)
-      f #req_ptr #reply_ptr
-    {{{ RET #false; ∃ reply',
-        RPCReply_own reply_ptr reply' ∗
-        (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
-           RPCReplyReceipt γrpc req reply'.(Rep_Ret))
-    }}}
-    .
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 int.nat req.(Req_Seq) > 0 →
@@ -93,8 +79,8 @@ is_RPCServer γrpc -∗
          ∨ 
          "%" ∷ ⌜b = true⌝ ∗
            "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
-           ((⌜reply'.(Rep_Stale) = true⌝ ∗ (RPCServer_own_ghost γrpc lastSeqM lastReplyM ={⊤}=∗ RPCRequestStale γrpc req)) ∨
-             (RPCServer_own_ghost γrpc lastSeqM lastReplyM ={⊤}=∗ RPCReplyReceipt γrpc req reply'.(Rep_Ret)))) ∗
+           ((⌜reply'.(Rep_Stale) = true⌝ ∗ (RPCServer_own_ghost γrpc lastSeqM lastReplyM ={⊤}=∗ RPCRequestStale γrpc req ∗ RPCServer_own_ghost γrpc lastSeqM lastReplyM )) ∨
+             (RPCServer_own_ghost γrpc lastSeqM lastReplyM ={⊤}=∗ RPCReplyReceipt γrpc req reply'.(Rep_Ret) ∗ RPCServer_own_ghost γrpc lastSeqM lastReplyM ))) ∗
 
     "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
 }}}
@@ -173,58 +159,104 @@ Proof.
   }
 Qed.
 
+(* f is a rpcHandler with 2 u64 args if it satisfies this specification *)
+Definition is_rpcHandler2 (f:val) γrpc args req PreCond PostCond : iProp Σ :=
+  ∀ γreq req_ptr reply_ptr reply,
+    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req ∗
+        "#Hargs" ∷ RPCRequest_own_ro req_ptr req args ∗
+        "Hreply" ∷ RPCReply_own reply_ptr reply
+    }}} (* TODO: put this precondition into a defn *)
+      f #req_ptr #reply_ptr
+    {{{ RET #false; ∃ reply',
+        RPCReply_own reply_ptr reply' ∗
+        (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
+           RPCReplyReceipt γrpc req reply'.(Rep_Ret))
+    }}}
+    .
+
 (* This will alow handler functions using RPCServer__HandleRequest to establish is_rpcHandler *)
-Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc server_own_core args req PreCond PostCond :
-({{{ server_own_core ∗ PreCond }}}
-  coreFunction (into_val.to_val args)%V
-{{{ (r:u64), RET #r; server_own_core ∗ PostCond r }}}) -∗
-{{{ is_rpcserver sv γrpc server_own_core }}}
-  RPCServer__HandleRequest #sv coreFunction
-{{{ f, RET f; is_rpcHandler f γrpc args req PreCond PostCond }}}.
+Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc γreq server_ctx server_ctx' rid args req_ptr rep_ptr PreCond PostCond lastSeqM lastReplyM :
+
+(
+  {{{
+       server_ctx ∗ ▷ PreCond
+  }}}
+    coreFunction (into_val.to_val args)%V
+  {{{
+       (r:u64), RET #r; server_ctx' ∗ ▷ PostCond r
+  }}}
+  ) -∗
+
+{{{
+     "#His_req" ∷ is_RPCRequest γrpc γreq PreCond PostCond rid ∗
+     "#Hread_req" ∷ RPCRequest_own_ro req_ptr rid args ∗
+     "Hrpc_vol" ∷ RPCServer_own_vol sv γrpc lastSeqM lastReplyM ∗
+     "Hrpc_ghost" ∷ RPCServer_own_ghost γrpc lastSeqM lastReplyM ∗
+     "Hreply" ∷ (∃ rep, RPCReply_own rep_ptr rep) ∗
+     "Hctx" ∷ server_ctx
+}}}
+  RPCServer__HandleRequest #sv coreFunction #req_ptr #rep_ptr
+{{{
+     reply, RET #();
+     ∃ lastSeqM lastReplyM,
+     RPCServer_own_vol sv γrpc lastSeqM lastReplyM ∗
+     RPCServer_own_ghost γrpc lastSeqM lastReplyM ∗
+
+     RPCReply_own rep_ptr reply ∗
+     (⌜reply.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc rid ∨ RPCReplyReceipt γrpc rid reply.(Rep_Ret)) ∗
+
+     (server_ctx ∨ server_ctx') (* If desired, could tie this to the update of the reply table *)
+}}}.
 Proof.
-  iIntros "#HfCoreSpec" (Φ) "!# #Hls Hpost".
+  iIntros "#HfCoreSpec !#" (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  iDestruct "Hreply" as (dummyReply) "Hreply".
   wp_lam.
-  wp_pures. iApply "Hpost". clear Φ.
-  iIntros (???? Φ) "!# Hpre HΦ".
-  iNamed "Hpre". iNamed "Hls".
-  wp_loadField.
-  wp_apply (acquire_spec mutexN #mu_ptr _ with "Hmu").
-  iIntros "(Hlocked & Hlsown)".
-  iNamed "Hargs"; iNamed "Hreply".
-  wp_seq.
+  wp_pures.
+  iNamed "Hrpc_vol".
+  iNamed "Hread_req".
   repeat wp_loadField.
-  iNamed "Hlsown".
-  iDestruct "HSeqPositive" as %HSeqPositive.
-  repeat wp_loadField.
-  wp_apply (CheckReplyTable_spec with "[-HΦ Hlocked Hlsown HlastSeqOwn HlastReplyOwn HfCoreSpec]"); first iFrame.
-  { iFrame "#". done. }
-  iIntros (runCore) "HcheckCachePost".
-  iDestruct "HcheckCachePost" as (b reply' ->) "HcachePost".
-  iNamed "HcachePost".
-  destruct b.
+  wp_apply (CheckReplyTable_spec with "Hlinv [$HlastSeqMap $HlastReplyMap $Hreply]").
+  { done. }
+  iIntros (b reply) "HcheckTablePost".
+  iNamed "HcheckTablePost".
+  wp_if_destruct.
   {
+    iApply wp_fupd.
     wp_pures.
-    wp_loadField.
-    iDestruct "Hcases" as "[[% _]|Hcases]"; first done.
-    iNamed "Hcases".
-    wp_apply (release_spec mutexN #mu_ptr _ with "[-Hreply HΦ Hcases]"); try iFrame "Hmu Hlocked"; eauto.
-    { iNext. iFrame. iExists _, _, _, _. iFrame. }
-    wp_seq.
     iApply "HΦ".
-    iExists reply'.
-    iFrame.
+    iDestruct "Hcases" as "[[% _]|Hcases]"; first by exfalso.
+    iNamed "Hcases".
+    iExists _, _.
+    iSplitL "HlastReplyMap HlastSeqMap HlastSeqOwn HlastReplyOwn".
+    { iExists _, _. iFrame "∗#". done. }
+
+    iFrame "Hreply".
+    iDestruct "Hcases" as "[[% Hfupd]|Hfupd]".
+    { (* Stale *)
+      iMod ("Hfupd" with "Hrpc_ghost") as "[#Hstale $]".
+      iFrame.
+      iLeft.
+      eauto.
+    }
+    { (* Receipt *)
+      iMod ("Hfupd" with "Hrpc_ghost") as "[#Hreceipt $]".
+      iFrame.
+      iRight.
+      eauto.
+    }
   }
   {
     iDestruct "Hcases" as "[Hcases | [% _]]"; last discriminate.
     iNamed "Hcases".
-    iMod (server_takes_request with "[] [Hsrpc]") as "(Hγpre & HcorePre & Hprocessing)"; eauto.
+    iMod (server_takes_request with "[] Hrpc_ghost") as "(Hγpre & HcorePre & Hprocessing)"; eauto.
     {
       apply Z.gt_lt.
       done.
     }
     wp_pures.
     repeat wp_loadField.
-    wp_apply ("HfCoreSpec" with "[$Hlsown $HcorePre]").
+    wp_apply ("HfCoreSpec" with "[$HcorePre $Hctx]").
     iIntros (retval) "[Hsrv HcorePost]".
     iNamed "Hreply".
     wp_storeField.
@@ -237,13 +269,16 @@ Proof.
       apply Z.gt_lt.
       done.
     }
-    wp_seq.
-    wp_loadField.
-    wp_apply (release_spec mutexN #mu_ptr _ with "[-HReplyOwnStale HReplyOwnRet HΦ]"); try iFrame "Hmu Hlocked".
-    { iNext. iFrame. iExists _, _, _, _. iFrame. }
-    wp_seq.
-    iApply "HΦ".
-    iExists {|Rep_Stale:=false; Rep_Ret:=retval |}. rewrite H1. iFrame; iFrame "#".
+    wp_pures.
+    iApply ("HΦ" $! (Build_RPCReply _ _)).
+    iExists _, _.
+    iFrame "Hsrpc".
+    iSplitL "HlastReplyMap HlastSeqMap HlastSeqOwn HlastReplyOwn".
+    { iExists _, _. iFrame "∗#". }
+    iFrame "HReplyOwnStale HReplyOwnRet".
+    iFrame "Hsrv".
+    iRight.
+    iFrame "#".
   }
 Qed.
 
