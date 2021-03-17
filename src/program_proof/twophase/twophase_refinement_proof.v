@@ -64,7 +64,7 @@ Lemma jrnl_inv_twophase_pre {Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}
       {hJrnl : twophaseG Σ} vs v:
     twophase_inv -∗
     val_interp (smodel := twophaseTy_model) (hS := hJrnl) (@extT jrnl_val_ty JrnlT) vs v -∗
-    ∃ (l : loc) γ γ' objs_dom dinit, ⌜ v = #l ⌝ ∗ is_twophase_pre N l γ γ' dinit objs_dom.
+    ∃ (l : loc) γ γ' objs_dom dinit, ⌜ v = #l ⌝ ∗ is_twophase_pre l γ γ' dinit objs_dom.
 Admitted.
 
 Ltac unfold_expr_vars :=
@@ -165,10 +165,10 @@ Proof. rewrite /styG//=. Defined.
 
 Lemma atomic_convertible_val_interp {Σ} {hG: heapG Σ} {hRG : refinement_heapG Σ}
      {hS: (styG (specTy_model := twophaseTy_model)) Σ}
-    (t : sty) es e dinit objs_dom γ γ' tph_val :
+    (t : sty) es e dinit objs_dom γ tph_val :
   atomic_convertible t →
   @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG twophaseTy_model hS t es e -∗
-  atomically_val_interp (htpG := hS) N PARAMS dinit objs_dom γ γ' tph_val t es e.
+  atomically_val_interp (htpG := hS) PARAMS dinit objs_dom γ tph_val t es e.
 Proof.
   revert es e.
   rewrite /styG in hS * => //=.
@@ -204,9 +204,9 @@ Proof.
 Qed.
 
 Lemma atomically_deconvertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
-      (t : sty) es e dinit objs_dom γ γ' tph_val :
+      (t : sty) es e dinit objs_dom γ tph_val :
   atomic_deconvertible t →
-  atomically_val_interp (htpG := (styG_twophaseG _ hS)) N PARAMS dinit objs_dom γ γ' tph_val t es e -∗
+  atomically_val_interp (htpG := (styG_twophaseG _ hS)) PARAMS dinit objs_dom γ tph_val t es e -∗
   @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG twophaseTy_model hS t es e.
 Proof.
   revert es e.
@@ -302,12 +302,12 @@ Proof using N PARAMS.
   iApply (wpc_strong_mono with "H"); auto.
   iSplit; last by (iModIntro; eauto).
   iIntros (v) "Hv". iModIntro.
-  wpc_bind (op_wrappers.TwoPhase__Begin' v).
+  wpc_bind (twophase.Begin v).
   iApply wp_wpc.
   iDestruct "Hv" as (vs) "(Hj&Hinterp)".
   iDestruct (jrnl_inv_twophase_pre with "[$] [$]") as "H".
   iDestruct "H" as (l γ γ' ?? ->) "H".
-  wp_apply (wp_TwoPhase__Begin' with "[$]").
+  wp_apply (wp_TwoPhase__Begin' N  with "[$]").
   iIntros (tph_val) "Hstarted".
   iApply wp_wpc.
   wp_pures.
@@ -320,7 +320,7 @@ Proof using N PARAMS.
   wp_bind (subst _ _ _).
   rewrite subst_map_subst_comm //; last first.
   { rewrite dom_fmap. rewrite dom_fmap in H0 *. eauto. }
-  iDestruct (atomically_fundamental_lemma N PARAMS dinit objs_dom γ γ' tph_val Γ') as "Hhas_semTy".
+  iDestruct (atomically_fundamental_lemma PARAMS dinit objs_dom γ tph_val Γ') as "Hhas_semTy".
   { eauto. }
   rewrite /twophase_sub_logical_reln_defs.ctx_has_semTy.
   iDestruct ("Hhas_semTy" $! (filtered_subst Γsubst Γ') with "[] [$] [] [] [Hstarted]") as "H".

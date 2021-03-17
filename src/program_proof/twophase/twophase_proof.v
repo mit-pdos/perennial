@@ -54,6 +54,7 @@ Proof.
   all: word.
 Qed.
 
+(*
 Section map_filter.
   Context {K A} (P : K * A → Prop) `{!∀ x, Decision (P x)}.
 
@@ -259,7 +260,9 @@ Proof.
   specialize (HP k).
   intuition.
 Qed.
+*)
 
+(*
 Definition filter_addr_set_by_blk (s_blk: gset u64) (s: gset addr) :=
   filter (λ a, addrBlock a ∈ s_blk) s.
 
@@ -510,6 +513,7 @@ Proof.
   destruct Hm_acc as [y Hy].
   inversion Hy.
 Qed.
+ *)
 
 Implicit Types γ : buftxn_names.
 Implicit Types dinit : disk.
@@ -528,6 +532,7 @@ Implicit Types locked_by_map : gmap u64 (option nat).
 Definition modified := mspec.modified.
 Definition committed := mspec.committed.
 
+(*
 Definition get_lockset_opt locked_by_map inst_opt :=
   dom (gset u64) (filter (λ x, x.2 = inst_opt) locked_by_map).
 
@@ -567,6 +572,7 @@ Proof.
   1: assumption.
   auto.
 Qed.
+*)
 
 (*
   ex_mapsto is the upper layer ex_mapsto fact used for unification,
@@ -662,6 +668,7 @@ Ltac wp_start :=
   | _ => idtac
   end.
 
+(*
 Definition set_max `{FinSet nat Ct} (s: Ct) := list_max (elements s).
 
 Lemma set_in_le_max `{FinSet nat Ct} (s: Ct) x:
@@ -676,6 +683,7 @@ Proof.
   2: apply elem_of_elements; eassumption.
   assumption.
 Qed.
+ *)
 
 Lemma big_sepS_set_map `{Countable A, Countable B} (h : A → B) (s : gset A) (f : B → iProp Σ) :
   (∀ x y, x ∈ s → y ∈ s → h x = h y → x = y) →
@@ -917,6 +925,7 @@ Proof.
     dom_empty_L list_to_set_nil set_map_empty //.
 Qed.
 
+(*
 Section map_zip.
   Context {K A B: Type} `{Countable K} (m1: gmap K A) (m2: gmap K B).
 
@@ -1122,6 +1131,7 @@ Proof.
   iDestruct (big_sepM2_dom with "Hsep") as "%Hdom".
   rewrite -big_sepM_zip_sepM2_equiv //.
 Qed.
+*)
 
 Lemma set_union_comm {A} `{Countable A} (s1 s2: gset A) :
   s1 ∪ s2 = s2 ∪ s1.
@@ -1135,6 +1145,7 @@ Proof.
   set_solver.
 Qed.
 
+(*
 Lemma map_union_least {K A} `{Countable K} `{FinMap K M} (m1 m2 m3: M A) :
   m1 ⊆ m3 ∧ m2 ⊆ m3 → m1 ∪ m2 ⊆ m3.
 Proof.
@@ -1182,6 +1193,7 @@ Lemma subseteq_trans `{FinSet K Ct} (s1 s2 s3: Ct) :
 Proof.
   set_solver.
 Qed.
+ *)
 
 Lemma twophase_linv_get_addr_valid k ex_mapsto γ a :
   "Hlinv" ∷ twophase_linv k ex_mapsto γ a -∗
@@ -2009,18 +2021,30 @@ Theorem wp_TwoPhase__CommitNoRelease_raw l γ γ' dinit k ex_mapsto `{!∀ a obj
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ dinit k ex_mapsto objs_dom mt_changed ∗
-    "#Htxn_cinv" ∷ txn_cinv Nbuftxn γ γ' ∗
-    "#Hfupd" ∷ □ (
-      "Hcommitted" ∷ (
-        [∗ map] a ↦ vobj ∈ mt_changed,
-          ex_mapsto a (committed vobj)
+    "Hfupd" ∷ (
+      <disc> (
+        "Hcommitted" ∷ (
+          [∗ map] a ↦ vobj ∈ mt_changed,
+            ex_mapsto a (committed vobj)
+        )
+        -∗ |C={⊤}_S k=>
+        "Hmodified" ∷ (
+          [∗ map] a ↦ vobj ∈ mt_changed,
+            ex_mapsto a (modified vobj)
+        )
+      ) ∧ ▷ (
+        "Hcommitted" ∷ (
+          [∗ map] a ↦ vobj ∈ mt_changed,
+            ex_mapsto a (committed vobj)
+        )
+        -∗ |NC={⊤}=>
+        "Hmodified" ∷ (
+          [∗ map] a ↦ vobj ∈ mt_changed,
+            ex_mapsto a (modified vobj)
+        )
       )
-      ==∗
-      "Hmodified" ∷ (
-        [∗ map] a ↦ vobj ∈ mt_changed,
-          ex_mapsto a (modified vobj)
-      )
-    )
+    ) ∗
+    "#Htxn_cinv" ∷ txn_cinv Nbuftxn γ γ'
   }}}
     TwoPhase__CommitNoRelease #l
   {{{
@@ -2077,6 +2101,7 @@ Proof.
   1-3: solve_ndisj.
   iSplit.
   {
+    iDestruct "Hfupd" as "[Hfupd _]".
     iModIntro.
     iIntros "Hdurable_mapstos HC".
     iApply fupd_level_sep.
@@ -2097,7 +2122,8 @@ Proof.
       apply Hwfs in Hacc.
       eapply exchange_mapsto_valid; eassumption.
     }
-    iMod ("Hfupd" with "Hex_mapstos") as "Hex_mapstos".
+    iDestruct "HC" as "#HC".
+    iMod ("Hfupd" with "Hex_mapstos HC") as "Hex_mapstos".
     iIntros "!> !>".
     iApply (big_sepM_fmap modified) in "Hdurable_mapstos".
     iDestruct (big_sepM_sep with "[$Hex_mapstos $Hdurable_mapstos]")
@@ -2112,6 +2138,7 @@ Proof.
     apply Hwfs in Hacc.
     eapply exchange_mapsto_valid; eassumption.
   }
+  iDestruct "Hfupd" as "[_ Hfupd]".
   iModIntro.
   iIntros (ok) "Hdurable_mapstos".
   iDestruct (big_sepM_sep with "Hdurable_mapstos") as
@@ -2123,9 +2150,9 @@ Proof.
     big_sepM_fmap (if ok then modified else committed)
   ) in "Hdurable_mapstos".
   iAssert (
-    |==> [∗ map] a ↦ vobj ∈ mt_changed,
+    |NC={⊤}=> [∗ map] a ↦ vobj ∈ mt_changed,
       ex_mapsto a ((if ok then modified else committed) vobj)
-  )%I with "[Hex_mapstos]" as "Hex_mapstos".
+  )%I with "[Hex_mapstos Hfupd]" as "Hex_mapstos".
   {
     destruct ok; last by iFrame.
     iMod ("Hfupd" with "Hex_mapstos") as "Hex_mapstos".
