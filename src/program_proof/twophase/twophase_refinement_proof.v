@@ -165,10 +165,10 @@ Proof. rewrite /styG//=. Defined.
 
 Lemma atomic_convertible_val_interp {Σ} {hG: heapG Σ} {hRG : refinement_heapG Σ}
      {hS: (styG (specTy_model := twophaseTy_model)) Σ}
-    (t : sty) es e dinit objs_dom γ tph_val :
+    (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_convertible t →
   @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG twophaseTy_model hS t es e -∗
-  atomically_val_interp (htpG := hS) PARAMS dinit objs_dom γ tph_val t es e.
+  atomically_val_interp (htpG := hS) PARAMS dinit objs_dom γ γ' tph_val t es e.
 Proof.
   revert es e.
   rewrite /styG in hS * => //=.
@@ -204,9 +204,9 @@ Proof.
 Qed.
 
 Lemma atomically_deconvertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
-      (t : sty) es e dinit objs_dom γ tph_val :
+      (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_deconvertible t →
-  atomically_val_interp (htpG := (styG_twophaseG _ hS)) PARAMS dinit objs_dom γ tph_val t es e -∗
+  atomically_val_interp (htpG := (styG_twophaseG _ hS)) PARAMS dinit objs_dom γ γ' tph_val t es e -∗
   @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG twophaseTy_model hS t es e.
 Proof.
   revert es e.
@@ -320,7 +320,7 @@ Proof using N PARAMS.
   wp_bind (subst _ _ _).
   rewrite subst_map_subst_comm //; last first.
   { rewrite dom_fmap. rewrite dom_fmap in H0 *. eauto. }
-  iDestruct (atomically_fundamental_lemma PARAMS dinit objs_dom γ tph_val Γ') as "Hhas_semTy".
+  iDestruct (atomically_fundamental_lemma PARAMS dinit objs_dom γ γ' tph_val Γ') as "Hhas_semTy".
   { eauto. }
   rewrite /twophase_sub_logical_reln_defs.ctx_has_semTy.
   iDestruct ("Hhas_semTy" $! (filtered_subst Γsubst Γ') with "[] [$] [] [] [Hstarted]") as "H".
@@ -374,13 +374,16 @@ Proof using N PARAMS.
       iApply (atomically_deconvertible_val_interp with "[$]"); eauto.
       naive_solver.
     - wp_pures.
+      admit.
+      (*
       iMod (twophase_started_abort with "H") as "(H&Hj)".
       wp_apply (wp_TwoPhase__ReleaseAll' with "[$]").
       wp_pures. iExists _. iFrame.
       rewrite /val_interp -/val_interp.
       iLeft. iExists _, _. iSplit; first eauto. simpl; auto.
+      *)
   }
-Qed.
+Admitted.
 
 Existing Instances jrnl_semantics.
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.

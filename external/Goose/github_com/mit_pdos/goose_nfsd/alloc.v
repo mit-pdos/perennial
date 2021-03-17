@@ -92,3 +92,23 @@ Definition Alloc__FreeNum: val :=
       #()
     else #());;
     Alloc__freeBit "a" "num".
+
+Definition popCnt: val :=
+  rec: "popCnt" "b" :=
+    let: "count" := ref (zero_val uint64T) in
+    let: "x" := ref_to byteT "b" in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, ![uint64T] "i" < #8); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      "count" <-[uint64T] ![uint64T] "count" + to_u64 ("b" `and` #(U8 1));;
+      "x" <-[byteT] ![byteT] "x" ≫ #1;;
+      Continue);;
+    ![uint64T] "count".
+
+Definition Alloc__NumFree: val :=
+  rec: "Alloc__NumFree" "a" :=
+    lock.acquire (struct.loadF Alloc.S "mu" "a");;
+    let: "count" := ref (zero_val uint64T) in
+    ForSlice byteT <> "b" (struct.loadF Alloc.S "bitmap" "a")
+      ("count" <-[uint64T] ![uint64T] "count" + popCnt "b");;
+    lock.release (struct.loadF Alloc.S "mu" "a");;
+    ![uint64T] "count".
