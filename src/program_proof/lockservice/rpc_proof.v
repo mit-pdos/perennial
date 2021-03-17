@@ -159,21 +159,6 @@ Proof.
   }
 Qed.
 
-(* f is a rpcHandler with 2 u64 args if it satisfies this specification *)
-Definition is_rpcHandler2 (f:val) γrpc args req PreCond PostCond : iProp Σ :=
-  ∀ γreq req_ptr reply_ptr reply,
-    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req ∗
-        "#Hargs" ∷ RPCRequest_own_ro req_ptr req args ∗
-        "Hreply" ∷ RPCReply_own reply_ptr reply
-    }}} (* TODO: put this precondition into a defn *)
-      f #req_ptr #reply_ptr
-    {{{ RET #false; ∃ reply',
-        RPCReply_own reply_ptr reply' ∗
-        (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
-           RPCReplyReceipt γrpc req reply'.(Rep_Ret))
-    }}}
-    .
-
 (* This will alow handler functions using RPCServer__HandleRequest to establish is_rpcHandler *)
 Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc γreq server_ctx server_ctx' rid args req_ptr rep_ptr PreCond PostCond lastSeqM lastReplyM :
 
@@ -282,14 +267,28 @@ Proof.
   }
 Qed.
 
-Lemma RemoteProcedureCall_spec (req_ptr reply_ptr:loc) (req:RPCRequestID) args (reply:Reply64) (f:val) PreCond PostCond γrpc γPost :
-is_rpcHandler f γrpc args req PreCond PostCond -∗
+(* f is a rpcHandler with 2 u64 args if it satisfies this specification *)
+Definition is_rpcHandler2 (f:val) γrpc args req PreCond PostCond : iProp Σ :=
+  ∀ γreq req_ptr reply_ptr reply,
+    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req ∗
+        "#Hargs" ∷ RPCRequest_own_ro req_ptr req args ∗
+        "Hreply" ∷ RPCReply_own reply_ptr reply
+    }}} (* TODO: put this precondition into a defn *)
+      f #req_ptr #reply_ptr
+    {{{ RET #false; ∃ reply',
+        RPCReply_own reply_ptr reply' ∗
+        (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
+           RPCReplyReceipt γrpc req reply'.(Rep_Ret))
+    }}}
+.
+
+Lemma RemoteProcedureCall2_spec (req_ptr reply_ptr:loc) (req:RPCRequestID) args (reply:Reply64) (f:val) PreCond PostCond γrpc γPost :
 {{{
   "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req ∗
   "#Hargs" ∷ RPCRequest_own_ro req_ptr req args ∗
   "Hreply" ∷ RPCReply_own reply_ptr reply
 }}}
-  RemoteProcedureCall f #req_ptr #reply_ptr
+  RemoteProcedureCall2 f #req_ptr #reply_ptr
 {{{ e, RET e;
     (∃ reply',
     RPCReply_own reply_ptr reply'
