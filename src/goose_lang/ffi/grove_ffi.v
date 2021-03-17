@@ -10,6 +10,8 @@ Axiom Read : val.
 Axiom Write : val.
 Axiom AtomicAppend : val.
 Axiom U64ToString : val.
+Axiom GetServer : val.
+Axiom AllocServer : val.
 
 Module RPCClient.
   Axiom S : descriptor.

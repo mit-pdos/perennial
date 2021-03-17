@@ -1,6 +1,7 @@
 From stdpp Require Import gmap.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
+From Perennial.goose_lang.ffi Require Import grove_ffi.
 From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof.lockservice Require Import rpc_proof nondet.
@@ -16,7 +17,7 @@ Class kvserviceG Σ := KVserviceG {
 }.
 
 Section kv_proof.
-Context `{!heapG Σ, !kvserviceG Σ}.
+Context `{!heapG Σ, !kvserviceG Σ, !rpcregG Σ}.
 
 Implicit Types (γ : kvservice_names).
 
@@ -37,7 +38,7 @@ Definition KVServer_own_core γ (srv:loc) : iProp Σ :=
 .
 
 (* FIXME: this is currently just a placeholder *)
-Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
+Definition own_kvclerk γ ck_ptr (srv : u64) : iProp Σ :=
   ∃ (cl_ptr:loc),
    "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
    "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
@@ -108,14 +109,14 @@ Proof.
   iSplit; last done. iExists _, _; iFrame.
 Qed.
 
-Lemma KVServer__Get_spec srv va γ :
+Lemma KVServer__Get_spec srv γ :
 is_kvserver γ srv -∗
 {{{
     True
 }}}
     KVServer__Get #srv
 {{{ (f:goose_lang.val), RET f;
-        ∀ args req, is_rpcHandler f γ.(ks_rpcGN) args req (Get_Pre γ va args) (Get_Post γ va args)
+        ∀ args req va, is_rpcHandler f γ.(ks_rpcGN) args req (Get_Pre γ va args) (Get_Post γ va args)
 }}}.
 Proof.
   iIntros "#Hls".
@@ -132,37 +133,6 @@ Proof.
   clear Φ. iIntros "!#" (Φ) "Hpre HΦ".
   wp_pures.
   iApply (get_core_spec with "Hpre"); last by eauto.
-Qed.
-
-Lemma KVClerk__Get_spec (kck ksrv:loc) (key va:u64) γ  :
-is_kvserver γ ksrv -∗
-{{{
-     own_kvclerk γ kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ va)
-}}}
-  KVClerk__Get #kck #key
-{{{
-     v, RET #v; ⌜v = va⌝ ∗ own_kvclerk γ kck ksrv ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
-}}}.
-Proof.
-  iIntros "#Hserver" (Φ) "!# (Hclerk & Hpre) Hpost".
-  wp_lam.
-  wp_pures. 
-  iNamed "Hclerk".
-  repeat wp_loadField.
-  wp_apply KVServer__Get_spec; first eauto.
-  iIntros (f) "#Hfspec".
-  wp_loadField.
-  wp_apply (RPCClient__MakeRequest_spec _ cl_ptr {|U64_1:=_ ; U64_2:= _ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
-  {
-    iNamed "Hserver". iNamed "His_rpc". iFrame "# ∗".
-  }
-  iIntros (v) "Hretv".
-  iDestruct "Hretv" as "[Hrpcclient HcorePost]".
-  iApply "Hpost".
-  iDestruct "HcorePost" as (->) "Hkv".
-  iSplit; first done.
-  iFrame "Hkv".
-  iExists _; iFrame.
 Qed.
 
 Lemma KVServer__Put_spec srv γ :
@@ -192,8 +162,52 @@ Proof.
 Qed.
 (* TODO: see if any more repetition can be removed *)
 
-Lemma KVClerk__Put_spec (kck srv:loc) (key va:u64) γ :
-is_kvserver γ srv -∗
+Definition is_kvserver_host γ (host:u64) : iProp Σ :=
+  ∃ handlers (fget fput : val),
+    "#Hhost" ∷ host [[rpcreg_gname]]↦ro handlers ∗
+    "%Hhandler_get" ∷ ⌜handlers !! (U64 2) = Some fget⌝ ∗
+    "%Hhandler_put" ∷ ⌜handlers !! (U64 1) = Some fput⌝ ∗
+    "#Hgetspec" ∷ (∀ args req va,
+      is_rpcHandlerHost host (U64 2) γ.(ks_rpcGN) args req (Get_Pre γ va args) (Get_Post γ va args)) ∗
+    "#Hputspec" ∷ (∀ args req,
+      is_rpcHandlerHost host (U64 1) γ.(ks_rpcGN) args req (Put_Pre γ args) (Put_Post γ args)) ∗
+    "#Hisrpcserver" ∷ is_RPCServer γ.(ks_rpcGN).
+
+Lemma KVClerk__Get_spec (kck:loc) (srv:u64) (key va:u64) γ  :
+is_kvserver_host γ srv -∗
+{{{
+     own_kvclerk γ kck srv ∗ (key [[γ.(ks_kvMapGN)]]↦ va)
+}}}
+  KVClerk__Get #kck #key
+{{{
+     v, RET #v; ⌜v = va⌝ ∗ own_kvclerk γ kck srv ∗ (key [[γ.(ks_kvMapGN)]]↦ va )
+}}}.
+Proof.
+  iIntros "#Hserver" (Φ) "!# (Hclerk & Hpre) Hpost".
+  wp_lam.
+  wp_pures. 
+  iNamed "Hclerk".
+  repeat wp_loadField.
+  wp_apply (RPCClient__MakeRequest_spec _ _ _ {|U64_1:=_ ; U64_2:= _ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
+  {
+    iIntros (req).
+    iNamed "Hserver".
+    iApply "Hgetspec".
+  }
+  {
+    iNamed "Hserver". iFrame "∗#".
+  }
+  iIntros (v) "Hretv".
+  iDestruct "Hretv" as "[Hrpcclient HcorePost]".
+  iApply "Hpost".
+  iDestruct "HcorePost" as (->) "Hkv".
+  iSplit; first done.
+  iFrame "Hkv".
+  iExists _; iFrame.
+Qed.
+
+Lemma KVClerk__Put_spec (kck:loc) (srv:u64) (key va:u64) γ :
+is_kvserver_host γ srv -∗
 {{{
      own_kvclerk γ kck srv ∗ (key [[γ.(ks_kvMapGN)]]↦ _ )
 }}}
@@ -208,12 +222,13 @@ Proof.
   wp_pures. 
   iNamed "Hclerk".
   repeat wp_loadField.
-  wp_apply KVServer__Put_spec; first eauto.
-  iIntros (f) "#Hfspec".
-  wp_loadField.
-  wp_apply (RPCClient__MakeRequest_spec _ cl_ptr {| U64_1:= _; U64_2:=_ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
+  wp_apply (RPCClient__MakeRequest_spec _ _ _ {| U64_1:= _; U64_2:=_ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
   {
-    iNamed "Hserver". iNamed "His_rpc". iFrame "# ∗".
+    iIntros (req).
+    iNamed "Hserver". iApply "Hputspec".
+  }
+  {
+    iNamed "Hserver". iFrame "∗#".
   }
   iIntros (v) "Hretv".
   iDestruct "Hretv" as "[Hrpcclient HcorePost]".
@@ -255,8 +270,62 @@ Proof.
 Qed.
 (* TODO: return all of the ptsto's here; update KVServer_own_core so it has map_ctx bigger than the physical map *)
 
-Lemma MakeKVClerk_spec γ (srv : loc) (cid : u64) :
-  {{{ is_kvserver γ srv ∗ kvserver_cid_token γ cid }}}
+Opaque zero_val.
+Lemma KVServer_AllocServer_spec γ srv :
+  {{{ is_kvserver γ srv }}}
+    KVServer__AllocServer #srv
+  {{{ (host:u64), RET #host;
+    is_kvserver_host γ host
+  }}}.
+Proof.
+  iIntros (Φ) "#Hsrv HΦ".
+  wp_lam.
+  wp_apply map.wp_NewMap.
+  iIntros (mref) "Hm".
+  wp_pures.
+  wp_apply KVServer__Put_spec; first eauto.
+  iIntros (fput) "#Hfput".
+  wp_apply (map.wp_MapInsert with "Hm").
+  iIntros "Hm".
+  wp_pures.
+  wp_apply KVServer__Get_spec; first eauto.
+  iIntros (fget) "#Hfget".
+  wp_apply (map.wp_MapInsert with "Hm").
+  iIntros "Hm".
+  wp_apply (wp_AllocServer with "Hm").
+  iIntros (host) "#Hhost".
+  wp_pures.
+  iApply "HΦ".
+
+  iExists _, _, _.
+  iFrame "Hhost".
+  iSplitR.
+  { rewrite lookup_insert. eauto. }
+  iSplitR.
+  { rewrite lookup_insert_ne; eauto. rewrite lookup_insert. eauto. }
+  iSplit.
+  {
+    iIntros (args req va).
+    iExists _, _. iFrame "Hhost".
+    iSplitR.
+    { rewrite lookup_insert. eauto. }
+    iApply "Hfget".
+  }
+  iSplit.
+  {
+    iIntros (args req).
+    iExists _, _. iFrame "Hhost".
+    iSplitR.
+    { rewrite lookup_insert_ne; eauto. rewrite lookup_insert. eauto. }
+    iApply "Hfput".
+  }
+  iNamed "Hsrv".
+  iNamed "His_rpc".
+  iFrame "#".
+Qed.
+
+Lemma MakeKVClerk_spec γ (srv : u64) (cid : u64) :
+  {{{ is_kvserver_host γ srv ∗ kvserver_cid_token γ cid }}}
     MakeKVClerk #srv #cid
   {{{ ck, RET #ck; own_kvclerk γ ck srv }}}.
 Proof.
