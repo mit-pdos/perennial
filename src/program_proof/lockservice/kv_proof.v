@@ -2,7 +2,8 @@ From stdpp Require Import gmap.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.program_proof.lockservice Require Import lockservice_nocrash rpc_proof nondet.
+From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
+From Perennial.program_proof.lockservice Require Import rpc_proof nondet.
 
 Record kvservice_names := KVserviceGN {
   ks_rpcGN : rpc_names;
@@ -123,8 +124,8 @@ Proof.
   wp_pures.
   iApply "Hpost".
   iIntros (args req).
-  iApply is_rpcHandler_eta; simpl.
-  iIntros "!#" (_ _).
+  iIntros (????).
+  iIntros (_ _).
   iNamed "Hls". wp_pures.
   wp_loadField.
   iApply (RPCServer__HandleRequest_spec with "[] His_rpc"); last by eauto.

@@ -2,7 +2,7 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From Perennial.program_proof Require Import proof_prelude.
 From iris.algebra Require Import gmap lib.mono_nat.
-From Perennial.base_logic Require Import lib.ghost_map.
+From Perennial.base_logic Require Export lib.ghost_map.
 From Perennial.program_proof.lockservice Require Import fmcounter_map.
 
 (** RPC layer ghost names. *)
@@ -44,7 +44,7 @@ Record RPCReply :=
   Rep_Ret : R ;
 }.
 
-Definition RPCClient_own (γrpc:rpc_names) (cid cseqno:u64) : iProp Σ :=
+Definition RPCClient_own_ghost (γrpc:rpc_names) (cid cseqno:u64) : iProp Σ :=
   "Hcseq_own" ∷ (cid fm[[γrpc.(cseq)]]↦ int.nat cseqno)
 .
 
@@ -55,7 +55,7 @@ Implicit Types γreq : rpc_request_names.
 Definition RPCServer_lseq γrpc (lastSeqM:gmap u64 u64) : iProp Σ :=
   ([∗ set] cid ∈ (fin_to_set u64), cid fm[[γrpc.(lseq)]]↦ int.nat (default (U64 0) (lastSeqM !! cid)))%I.
 
-Definition RPCServer_own γrpc (lastSeqM:gmap u64 u64) lastReplyM : iProp Σ :=
+Definition RPCServer_own_ghost γrpc (lastSeqM:gmap u64 u64) lastReplyM : iProp Σ :=
     "Hlseq_own" ∷ RPCServer_lseq γrpc lastSeqM
   ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) ↪[γrpc.(rc)]□ Some r)
   ∗ "Hproc_own" ∷ own γrpc.(proc) (Excl ())
@@ -120,8 +120,8 @@ Lemma make_rpc_server E :
   ↑replyTableInvN ⊆ E →
   ⊢ |={E}=> ∃ γrpc,
     is_RPCServer γrpc ∗ (* server-side invariant *)
-    RPCServer_own γrpc ∅ ∅ ∗ (* server mutex invariant *)
-    [∗ set] cid ∈ fin_to_set u64, RPCClient_own γrpc cid 1. (* SEQ counters for all possible clients *)
+    RPCServer_own_ghost γrpc ∅ ∅ ∗ (* server mutex invariant *)
+    [∗ set] cid ∈ fin_to_set u64, RPCClient_own_ghost γrpc cid 1. (* SEQ counters for all possible clients *)
 Proof.
   iIntros (?).
   iMod fmcounter_map_alloc as (γcseq) "Hcseq".
@@ -130,7 +130,7 @@ Proof.
   iMod (own_alloc (Excl ())) as (γproc) "Hγproc"; first done.
   pose (γrpc := RpcNames γrc γlseq γcseq γproc).
   iExists γrpc.
-  rewrite /is_RPCServer /RPCServer_own /RPCClient_own /=.
+  rewrite /is_RPCServer /RPCServer_own_ghost /RPCClient_own_ghost /=.
   iMod (inv_alloc _ _ (ReplyTable_inv γrpc) with "[Hrc]") as "$".
   { iExists ∅. iFrame. iNext. iApply big_sepM_empty. done. }
   iFrame "Hcseq". iFrame. iSplitL; last by iApply big_sepM2_empty.
@@ -144,9 +144,9 @@ Lemma make_request (req:RPCRequestID) PreCond PostCond E γrpc :
   ↑replyTableInvN ⊆ E →
   ((int.nat req.(Req_Seq)) + 1)%nat = int.nat (word.add req.(Req_Seq) 1) →
   is_RPCServer γrpc -∗
-  RPCClient_own γrpc req.(Req_CID) req.(Req_Seq) -∗
+  RPCClient_own_ghost γrpc req.(Req_CID) req.(Req_Seq) -∗
   ▷ PreCond ={E}=∗
-    RPCClient_own γrpc req.(Req_CID) (word.add req.(Req_Seq) 1)
+    RPCClient_own_ghost γrpc req.(Req_CID) (word.add req.(Req_Seq) 1)
     ∗ (∃ γreq, is_RPCRequest γrpc γreq PreCond PostCond req ∗ RPCRequest_token γreq).
 Proof using Type*.
   iIntros (? Hsafeincr) "Hinv Hcseq_own HPreCond".
@@ -199,7 +199,7 @@ Lemma server_takes_request E (req:RPCRequestID) γrpc γreq PreCond PostCond las
   ↑(rpcRequestInvN req) ⊆ E →
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
-  RPCServer_own γrpc lastSeqM lastReplyM
+  RPCServer_own_ghost γrpc lastSeqM lastReplyM
   ={E}=∗
   own γreq.(pre) (Excl ()) ∗ ▷ PreCond ∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM.
@@ -236,7 +236,7 @@ Lemma server_returns_request E (req:RPCRequestID) γrpc γreq PreCond PostCond l
   PreCond -∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM
   ={E}=∗
-  RPCServer_own γrpc lastSeqM lastReplyM.
+  RPCServer_own_ghost γrpc lastSeqM lastReplyM.
 Proof.
   intros ? Hrseq.
   iIntros "HreqInv HγPre Hpre Hsrpc_proc".
@@ -269,7 +269,7 @@ Lemma server_completes_request E (PreCond : iProp Σ) (PostCond : R -> iProp Σ)
   ▷ PostCond reply -∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM ={E}=∗
     RPCReplyReceipt γrpc req reply ∗
-    RPCServer_own γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM).
+    RPCServer_own_ghost γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM).
 Proof using Type*.
   rewrite map_get_val.
   intros.
@@ -323,8 +323,8 @@ Lemma smaller_seqno_stale_fact E (req:RPCRequestID) (lseq:u64) (γrpc:rpc_names)
   lastSeqM !! req.(Req_CID) = Some lseq →
   (int.Z req.(Req_Seq) < int.Z lseq)%Z →
   is_RPCServer γrpc -∗
-  RPCServer_own γrpc lastSeqM lastReplyM ={E}=∗
-    RPCServer_own γrpc lastSeqM lastReplyM ∗
+  RPCServer_own_ghost γrpc lastSeqM lastReplyM ={E}=∗
+    RPCServer_own_ghost γrpc lastSeqM lastReplyM ∗
     RPCRequestStale γrpc req.
 Proof.
   intros ? HlastSeqSome Hineq.
@@ -355,7 +355,7 @@ Qed.
 (** Client side: bounding the sequence number of a stale request. *)
 Lemma client_stale_seqno γrpc req seq :
   RPCRequestStale γrpc req -∗
-  RPCClient_own γrpc req.(Req_CID) seq -∗
+  RPCClient_own_ghost γrpc req.(Req_CID) seq -∗
     ⌜int.nat seq > (int.nat req.(Req_Seq) + 1)%nat⌝%Z.
 Proof.
   iIntros "Hreq Hcl".
@@ -393,9 +393,9 @@ Lemma server_replies_to_request E `{into_val.IntoVal R} (req:RPCRequestID) (γrp
   (lastSeqM !! req.(Req_CID) = Some req.(Req_Seq)) →
   (∃ ok, map_get lastReplyM req.(Req_CID) = (reply, ok)) →
   is_RPCServer γrpc -∗
-  RPCServer_own γrpc lastSeqM lastReplyM ={E}=∗
+  RPCServer_own_ghost γrpc lastSeqM lastReplyM ={E}=∗
     RPCReplyReceipt γrpc req reply ∗
-    RPCServer_own γrpc (lastSeqM) (lastReplyM).
+    RPCServer_own_ghost γrpc (lastSeqM) (lastReplyM).
 Proof.
   intros ? Hsome [ok Hreplymapget].
   iIntros "Hlinv Hsown"; iNamed "Hsown".
@@ -422,7 +422,7 @@ Lemma server_executes_durable_request (req:RPCRequestID) reply γrpc γreq PreCo
       ={⊤ ∖ ↑rpcRequestInvN req}=∗ PostCond reply ∗ own γrpc.(proc) (Excl ()) ∗ ctx') -∗
   ctx ={⊤}=∗
   (RPCReplyReceipt γrpc req reply ∗
-  RPCServer_own γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM) ∗
+  RPCServer_own_ghost γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM) ∗
   ctx').
 Proof.
   (* XXX: without [V:=u64], u64 gets unfolded here, which forces us to later unfold u64 more so we can match against Hrseq.*)
