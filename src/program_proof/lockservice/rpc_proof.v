@@ -58,11 +58,19 @@ Definition RPCServer_own_vol (sv:loc) (γrpc:rpc_names) (lastSeqM lastReplyM:gma
 
 Definition Reply64 := @RPCReply (u64).
 
-Definition RPCClient_own_vol (cl_ptr:loc) (γrpc:rpc_names) : iProp Σ :=
-  ∃ (cid cseqno : u64),
-      "%" ∷ ⌜int.nat cseqno > 0⌝ ∗
-      "Hcid" ∷ cl_ptr ↦[RPCClient.S :: "cid"] #cid ∗
-      "Hseq" ∷ cl_ptr ↦[RPCClient.S :: "seq"] #cseqno
+Definition RPCClient_own_vol (cl_ptr:loc) (cid seqno:u64) (host:string) : iProp Σ :=
+  ∃ (rawCl:loc),
+    "%" ∷ ⌜int.nat seqno > 0⌝ ∗
+    "Hcid" ∷ cl_ptr ↦[RPCClient.S :: "cid"] #cid ∗
+    "Hseq" ∷ cl_ptr ↦[RPCClient.S :: "seq"] #seqno ∗
+    "HrawCl" ∷ cl_ptr ↦[RPCClient.S :: "rawCl"] #rawCl ∗
+    "HrawClOwn" ∷ grove_ffi.RPCClient_own rawCl host
+.
+
+Definition RPCClient_own (cl_ptr:loc) (host:string) γrpc : iProp Σ :=
+  ∃ cid seqno,
+    RPCClient_own_vol cl_ptr cid seqno host ∗
+    RPCClient_own_ghost γrpc cid seqno
 .
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
@@ -439,18 +447,19 @@ Definition handler_is2 (host:string) (rpcid:u64) γrpc PreCond PostCond : iProp 
                                     RPCReplyReceipt γrpc req reply.(Rep_Ret)))%I
 .
 
-Lemma wp_RemoteProcedureCall2 (cl_ptr req_ptr reply_ptr:loc) (host:string) (rpcid:u64) (req:RPCRequestID) args (reply:Reply64) (f:val) PreCond PostCond γrpc γPost :
+Lemma wp_RemoteProcedureCall2 (cl_ptr req_ptr reply_ptr:loc) (host:string) (rpcid:u64) (req:RPCRequestID) args (reply:Reply64) PreCond PostCond γrpc γPost :
 handler_is2 host rpcid γrpc PreCond PostCond -∗
 {{{
   "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req ∗
   "#Hargs" ∷ RPCRequest_own_ro req_ptr req args ∗
   "Hreply" ∷ RPCReply_own reply_ptr reply ∗
-  "HrpcOwn" ∷ RPCClient_own cl_ptr host
+  "HrpcOwn" ∷ grove_ffi.RPCClient_own cl_ptr host
 }}}
   RemoteProcedureCall2 #cl_ptr #rpcid #req_ptr #reply_ptr
 {{{ e, RET e;
     (∃ reply',
-    RPCReply_own reply_ptr reply'
+    RPCReply_own reply_ptr reply' ∗
+    grove_ffi.RPCClient_own cl_ptr host
     ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝
         ∗ (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req
                ∨ RPCReplyReceipt γrpc req reply'.(Rep_Ret)
@@ -479,10 +488,12 @@ Proof.
   }
   iIntros (errb repData) "(HrpcOwn & Hreq_sl & Hrep_sl & Hpost)".
   wp_pures.
-  iDestruct "Hpost" as "[Herr|Hpost]".
+  iDestruct "Hpost" as "[->|Hpost]".
   {
-    admit.
-    (* TODO: add branch to code *)
+    wp_pures.
+    iApply "HΦ".
+    iExists _; iFrame.
+    by iLeft.
   }
   iDestruct "Hpost" as "(-> & Hpost)".
   iMod "Hpost". iNamed "Hpost".
@@ -516,18 +527,18 @@ Proof.
 Admitted.
 
 Lemma RPCClient__MakeRequest_spec (host:string) (rpcid:u64) cl_ptr args γrpc PreCond PostCond :
-(∀ req, handler_is2 host rpcid γrpc PreCond PostCond) -∗
+handler_is2 host rpcid γrpc PreCond PostCond -∗
 {{{
   PreCond ∗
-  RPCClient_own_vol cl_ptr γrpc ∗
-  RPCClient_own_ghost γrpc ∗
+  RPCClient_own cl_ptr host γrpc ∗
   is_RPCServer γrpc
 }}}
-  RPCClient__MakeRequest #cl_ptr #host #rpcid (into_val.to_val args)
-{{{ (retv:u64), RET #retv; RPCClient_own_vol cl_ptr γrpc ∗ PostCond retv }}}.
+  RPCClient__MakeRequest #cl_ptr #rpcid (into_val.to_val args)
+{{{ (retv:u64), RET #retv; RPCClient_own cl_ptr host γrpc ∗ PostCond retv }}}.
 Proof using Type*.
   iIntros "#Hfspec" (Φ) "!# [Hprecond [Hclerk #Hlinv]] Hpost".
-  iNamed "Hclerk".
+  iDestruct "Hclerk" as (??) "[Hclerk_vol Hclerk_ghost]".
+  iNamed "Hclerk_vol".
   wp_lam.
   wp_pures.
   wp_loadField.
@@ -543,19 +554,19 @@ Proof using Type*.
   iMod (readonly_alloc_1 with "HSeq") as "#HSeq".
   iMod (readonly_alloc_1 with "HArgs") as "#HArgs".
   wp_pures.
-  wp_loadField.
-  wp_binop.
-  wp_storeField.
-  wp_apply wp_ref_to; first eauto.
-  iIntros (errb_ptr) "Herrb_ptr".
-  wp_let.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (reply_ptr) "Hreply".
   wp_pures.
-  iMod (make_request {| Req_CID:=cid; Req_Seq:=cseqno|} PreCond PostCond with "[Hlinv] [Hcrpc] [Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
+  iMod (make_request {| Req_CID:=cid; Req_Seq:=seqno|} PreCond PostCond with "Hlinv Hclerk_ghost [$Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
   { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
   (* Prepare the loop invariant *)
+  wp_loadField.
+  wp_storeField.
+  wp_apply (wp_ref_to).
+  { naive_solver. }
+  iIntros (errb_ptr) "Herrb_ptr".
+  wp_pures.
   iAssert (∃ (err:bool), errb_ptr ↦[boolT] #err)%I with "[Herrb_ptr]" as "Herrb_ptr".
   { iExists _. done. }
   iAssert (∃ reply', RPCReply_own reply_ptr reply')%I with "[Hreply]" as "Hreply".
@@ -565,11 +576,12 @@ Proof using Type*.
   iDestruct "Herrb_ptr" as (err_old) "Herrb_ptr".
   wp_pures.
   iDestruct "Hreply" as (lockReply) "Hreply".
-  wp_apply (RemoteProcedureCall_spec with "[] [Hreply]"); first done.
-  { by iFrame "# ∗". }
+  wp_loadField.
+  wp_apply (wp_RemoteProcedureCall2 with "Hfspec [$HrawClOwn $Hreply $Hreqinv_init $HCID $HSeq $HArgs]").
+  { done. }
 
   iIntros (err) "HCallTryLockPost".
-  iDestruct "HCallTryLockPost" as (lockReply') "[Hreply [#Hre | [#Hre HCallPost]]]".
+  iDestruct "HCallTryLockPost" as (lockReply') "(Hreply & HrawClOwn & [#Hre | [#Hre HCallPost]])".
   { (* No reply from CallTryLock *)
     iDestruct "Hre" as %->.
     wp_store.
@@ -586,7 +598,7 @@ Proof using Type*.
   iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
   {
     iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
-    simpl in bad. replace (int.nat (word.add cseqno 1))%nat with (int.nat cseqno + 1)%nat in bad by word.
+    simpl in bad. replace (int.nat (word.add seqno 1))%nat with (int.nat seqno + 1)%nat in bad by word.
     lia.
   }
   iMod (get_request_post with "Hreqinv_init Hrcptstoro HγP") as "HP"; first done.
@@ -597,18 +609,21 @@ Proof using Type*.
   wp_loadField.
   iApply "Hpost".
   iFrame; iFrame "#".
-  iExists _, (word.add cseqno 1)%nat; iFrame.
+  iExists _, (word.add seqno 1)%nat; iFrame.
+  iExists _; iFrame.
   simpl.
-  assert (int.nat cseqno + 1 = int.nat (word.add cseqno 1))%nat as <-; first by word.
+  assert (int.nat seqno + 1 = int.nat (word.add seqno 1))%nat as <-; first by word.
   iPureIntro. lia.
 Qed.
 
-Lemma MakeRPCClient_spec γrpc (cid : u64) :
-  {{{ RPCClient_own γrpc cid 1 }}}
-    MakeRPCClient #cid
-  {{{ cl, RET #cl; own_rpcclient cl γrpc }}}.
+Lemma MakeRPCClient_spec γrpc (host : string) (cid : u64) :
+  {{{ RPCClient_own_ghost γrpc cid 1 }}}
+    MakeRPCClient #(str host) #cid
+  {{{ cl, RET #cl; RPCClient_own cl host γrpc }}}.
 Proof.
   iIntros (Φ) "Hclient_own Hpost". wp_lam.
+  wp_pures.
+  wp_apply (wp_MakeRPCClient).
   wp_apply wp_allocStruct; first by eauto.
   iIntros (l) "Hl".
   iDestruct (struct_fields_split with "Hl") as "(l_cid & l_seq & _)".

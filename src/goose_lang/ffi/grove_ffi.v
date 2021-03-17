@@ -116,6 +116,15 @@ Definition handler_is (host:string) (rpcid:u64) (Pre:list u8 → iProp Σ) (Post
 
 Axiom RPCClient_own : ∀ (cl_ptr:loc) (host:string), iProp Σ.
 
+Axiom wp_MakeRPCClient : ∀ (host:string) ,
+  {{{
+       True
+  }}}
+    MakeRPCClient #(str host)
+  {{{
+       (cl_ptr:loc), RET #cl_ptr; RPCClient_own cl_ptr host
+  }}}.
+
 Axiom wp_RPCClient__RemoteProcedureCall : ∀ (cl_ptr:loc) (rpcid:u64) (host:string) req reply (reqData:list u8) Pre Post k,
   {{{
       is_slice req byteT 1 reqData ∗

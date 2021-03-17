@@ -109,7 +109,11 @@ Definition RemoteProcedureCall2: val :=
     let: "rawReq" := rpcReqEncode "req" in
     let: "rawRep" := NewSlice byteT #0 in
     let: "errb" := grove_ffi.RPCClient__RemoteProcedureCall "cl" "rpcid" "rawReq" "rawRep" in
-    rpcReplyDecode "rawRep" "reply";;
+    (if: ("errb" = #false)
+    then
+      rpcReplyDecode "rawRep" "reply";;
+      #()
+    else #());;
     "errb".
 
 Definition RPCClient__MakeRequest: val :=
@@ -120,18 +124,15 @@ Definition RPCClient__MakeRequest: val :=
       "CID" ::= struct.loadF RPCClient.S "cid" "cl";
       "Seq" ::= struct.loadF RPCClient.S "seq" "cl"
     ] in
+    let: "reply" := struct.alloc grove_common.RPCReply.S (zero_val (struct.t grove_common.RPCReply.S)) in
     struct.storeF RPCClient.S "seq" "cl" (struct.loadF RPCClient.S "seq" "cl" + #1);;
-    let: "rawReq" := rpcReqEncode "req" in
-    let: "rawRep" := NewSlice byteT #0 in
     let: "errb" := ref_to boolT #false in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "errb" <-[boolT] grove_ffi.RPCClient__RemoteProcedureCall (struct.loadF RPCClient.S "rawCl" "cl") "rpcid" "rawReq" "rawRep";;
+      "errb" <-[boolT] RemoteProcedureCall2 (struct.loadF RPCClient.S "rawCl" "cl") "rpcid" "req" "reply";;
       (if: (![boolT] "errb" = #false)
       then Break
       else Continue));;
-    let: "reply" := struct.alloc grove_common.RPCReply.S (zero_val (struct.t grove_common.RPCReply.S)) in
-    rpcReplyDecode "rawRep" "reply";;
     struct.loadF grove_common.RPCReply.S "Ret" "reply".
 
 (* Common code for RPC servers: handling of stale and redundant requests through
