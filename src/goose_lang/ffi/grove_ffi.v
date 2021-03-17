@@ -114,20 +114,24 @@ Context `{!rpcregG Σ}.
 Definition handler_is (host:string) (rpcid:u64) (Pre:list u8 → iProp Σ) (Post:list u8 → list u8 → iProp Σ) : iProp Σ :=
   (host,rpcid) ↪[rpcreg_gname]□ (λ d, Next (Pre d), λ reqData repData, Next (Post reqData repData)).
 
+Axiom RPCClient_own : ∀ (cl_ptr:loc) (host:string), iProp Σ.
+
 Axiom wp_RPCClient__RemoteProcedureCall : ∀ (cl_ptr:loc) (rpcid:u64) (host:string) req reply (reqData:list u8) Pre Post k,
   {{{
       is_slice req byteT 1 reqData ∗
       (∃ repData, is_slice reply byteT 1 repData) ∗
       handler_is host rpcid Pre Post ∗
+      RPCClient_own cl_ptr host ∗
       □(▷ Pre reqData)
   }}}
     (* TODO: should be a pointer to a byte slice for reply *)
     grove_ffi.RPCClient__RemoteProcedureCall #cl_ptr #rpcid (slice_val req) (slice_val reply) @ k ; ⊤
   {{{
        (b:bool) (repData:list u8), RET #b;
+       RPCClient_own cl_ptr host ∗
        is_slice req byteT 1 reqData ∗
        is_slice reply byteT 1 repData ∗
-       ⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post reqData repData)
+       (⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post reqData repData))
   }}}.
 
 Definition is_rpcHandler (f:val) Pre Post : iProp Σ :=
