@@ -44,6 +44,7 @@ Global Arguments to_val {_} _.
 Global Arguments prim_step {_} _ _ _ _ _ _.
 
 Canonical Structure stateO Λ := leibnizO (state Λ).
+Canonical Structure global_stateO Λ := leibnizO (global_state Λ).
 Canonical Structure valO Λ := leibnizO (val Λ).
 Canonical Structure exprO Λ := leibnizO (expr Λ).
 
