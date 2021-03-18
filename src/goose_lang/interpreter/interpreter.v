@@ -130,43 +130,44 @@ Qed.
 
 (* If we know a step is valid outside of the context, then it is valid
 within a context. *)
-Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ1 σ2 l:
-@language.nsteps Λ n ([e1], σ1) l ([e2], σ2) →
-@language.nsteps Λ n ([K e1], σ1) l ([K e2], σ2).
+Lemma nsteps_ctx `{!@LanguageCtx Λ K} n e1 e2 σ1 g1 σ2 g2 l:
+@language.nsteps Λ n ([e1], (σ1, g1)) l ([e2], (σ2, g2)) →
+@language.nsteps Λ n ([K e1], (σ1, g1)) l ([K e2], (σ2, g2)).
 Proof.
-  generalize e1 e2 σ1 σ2 l.
+  generalize e1 e2 σ1 g1 σ2 g2 l.
   induction n.
   { (* n = 0 *)
-    intros e e' σ σ' l' nstep_ooc; inversion nstep_ooc. (* nsteps hypothesis out-of-context *)
+    intros e e' σ g σ' g' l' nstep_ooc; inversion nstep_ooc. (* nsteps hypothesis out-of-context *)
     apply language.nsteps_refl. }
   { (* S n *)
-    intros e e' σ σ' l' nstep_ooc.
+    intros e e' σ g σ' g' l' nstep_ooc.
     inversion nstep_ooc as [|n' ρ1 ρ2 ρ3 κ κs step_ooc nstep_ooc_rest].
     pose proof (nsteps_no_thread_destroy _ _ _ _ _ nstep_ooc_rest) as intermediate_cfg_has_one_thread.
-    inversion intermediate_cfg_has_one_thread as (e'' & (σ'' & P)).
+    inversion intermediate_cfg_has_one_thread as (e'' & ([σ'' g''] & P)).
     rewrite P in nstep_ooc_rest.
-    pose proof (IHn _ _ _ _ _ nstep_ooc_rest) as nstep_ic_rest. (* nsteps in-context *)
+    pose proof (IHn _ _ _ _ _ _ _ nstep_ooc_rest) as nstep_ic_rest. (* nsteps in-context *)
     rewrite P in step_ooc.
-    inversion step_ooc as [e_s σ_s e''_s σ''_s spawned_threads t1 t2 Pes Pe''s prim_step_e_e''].
+    inversion step_ooc as [e_s σ_s gs e''_s σ''_s g''_s spawned_threads t1 t2 Pes Pe''s prim_step_e_e''].
     inversion Pes as [Pe].
-    rewrite <- H4.
-    rewrite <- H4 in prim_step_e_e''.
+    rewrite <- H4, <-H5.
+    rewrite <- H4, <-H5 in prim_step_e_e''.
     pose proof (list_empty_surroundings _ _ _ _ _ Pe).
-    inversion H5.
-    inversion H7.
-    rewrite <- H9 in prim_step_e_e''.
-    inversion Pe''s as [Pe''].
+    inversion H6.
+    inversion H8.
     rewrite <- H10 in prim_step_e_e''.
+    inversion Pe''s as [Pe''].
+    rewrite <- H11 in prim_step_e_e''.
     pose proof (list_empty_surroundings _ _ _ _ _ Pe'').
-    inversion H11.
     inversion H13.
-    pose proof (app_eq_nil t2 spawned_threads H14).
-    inversion H16.
-    rewrite <- H15 in prim_step_e_e''.
-    rewrite H18 in prim_step_e_e''.
-    pose proof (fill_step _ _ _ _ _ _ prim_step_e_e'') as prim_step_ic.
+    inversion H15.
+    pose proof (app_eq_nil t2 spawned_threads H16).
+    inversion H18.
+    rewrite <- H17 in prim_step_e_e''.
+    rewrite H20 in prim_step_e_e''.
+    pose proof (fill_step _ _ _ _ _ _ _ _ prim_step_e_e'') as prim_step_ic.
     eapply language.nsteps_l; [|exact nstep_ic_rest].
     eapply step_atomic with (t3 := []) (t4 := []); [| |exact prim_step_ic]; eauto.
+    simpl. subst. done.
   }
 Qed.
 
@@ -210,8 +211,9 @@ Section interpreter.
   Canonical Structure goose_ectx_lang := (EctxLanguageOfEctxi goose_ectxi_lang).
   Canonical Structure goose_lang := (LanguageOfEctx goose_ectx_lang).
 
+  (* "backtrace" of functions executed so far *)
   Definition btval := list string.
-  Definition btstate := prod state btval.
+  Definition btstate := prod (state*global_state) btval.
 
   (* The analog of ext_semantics for an interpretable external
      operation. An ext_op transition isn't strong enough to let us interpret
@@ -219,9 +221,9 @@ Section interpreter.
   Class ext_interpretable :=
     {
       ext_interpret_step : external -> val -> StateT btstate Error expr;
-      ext_interpret_ok : forall (eop : external) (arg : val) (result : expr) (σ σ': state) (ws ws':btval),
-          (runStateT (ext_interpret_step eop arg) (σ,ws) = Works _ (result, (σ',ws'))) ->
-          exists m l, @language.nsteps goose_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ');
+      ext_interpret_ok : forall (eop : external) (arg : val) (result : expr) (σ σ': state) (g g' : global_state) (ws ws':btval),
+          (runStateT (ext_interpret_step eop arg) ((σ,g),ws) = Works _ (result, ((σ',g'),ws'))) ->
+          exists m l, @language.nsteps goose_lang m ([ExternalOp eop (Val arg)], (σ,g)) l ([result], (σ',g'));
     }.
 
   Context {ext_interpretable : ext_interpretable}.
@@ -388,10 +390,10 @@ Section interpreter.
             match addrv with
             | LitV (LitLoc l) =>
               sbt <- mget;
-                let s := fst sbt in
+                let '(s,g) := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("Load failed for location " ++ (pretty l));
                 match nav with
-                | (Reading 0, v) => _ <- mupdate (fun sbt => ((set heap <[l:=(Writing, v)]>) $ fst sbt, snd sbt));
+                | (Reading 0, v) => _ <- mupdate (fun '((s,g),bt) => (((set heap <[l:=(Writing, v)]>) $ s, g), bt));
                                   mret (LitV LitUnit)
                 | _ => mfail_bt ("Race occurred during write at location " ++ (pretty l))
                 end
@@ -407,7 +409,7 @@ Section interpreter.
                  we can lift from the option monad into the StateT option
                  monad here (we mfail_bt "NotImpl" if v is None). *)
               sbt <- mget;
-                let s := fst sbt in
+                let '(s,g) := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("Load failed at location " ++ (pretty l));
                 match nav with
                 | (Reading _, v) => mret v
@@ -420,9 +422,9 @@ Section interpreter.
             match v with
             | LitV (LitInt selv) =>
               sbt <- mget;
-                let σ := fst sbt in
+                let '(σ,g) := fst sbt in
                 let x := σ.(oracle) σ.(trace) selv in
-                _ <- mupdate (fun sbt => ((set trace (fun tr => [In_ev selv (LitInt x)] ++ tr)) $ fst sbt, snd sbt));
+                _ <- mupdate (fun '((s,g),bt) => (((set trace (fun tr => [In_ev selv (LitInt x)] ++ tr)) $ s, g), bt));
                   mret (LitV (LitInt x))
             | _ => mfail_bt ("Attempted InputOp with non-literal selector of type " ++ (pretty v))
             end
@@ -430,7 +432,7 @@ Section interpreter.
           v <- interpret n e;
             match v with
             | LitV v =>
-              _ <- mupdate (fun sbt => ((set trace (fun tr => [Out_ev v] ++ tr)) $ fst sbt, snd sbt));
+              _ <- mupdate (fun '((s,g),bt) => (((set trace (fun tr => [Out_ev v] ++ tr)) $ s, g), bt));
                 mret (LitV LitUnit)
             | _ => mfail_bt ("Attempted Output with non-literal value of type " ++ (pretty v))
             end
@@ -439,10 +441,10 @@ Section interpreter.
             match addrv with
             | LitV (LitLoc l) =>
               sbt <- mget;
-                let s := fst sbt in
+                let '(s,g) := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("StartReadOp failed at location " ++ (pretty l));
                 match nav with
-                | (Reading n, v) => _ <- mupdate (fun sbt => ((set heap <[l:=(Reading (S n), v)]>) $ fst sbt, snd sbt));
+                | (Reading n, v) => _ <- mupdate (fun '((s,g),bt) => (((set heap <[l:=(Reading (S n), v)]>) $ s, g), bt));
                                   mret v
                 | _ => mfail_bt ("Race detected during StartReadOp at location " ++ (pretty l))
                 end
@@ -453,10 +455,10 @@ Section interpreter.
             match addrv with
             | LitV (LitLoc l) =>
               sbt <- mget;
-                let s := fst sbt in
+                let '(s,g) := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("FinishReadOp failed at location " ++ (pretty l));
                 match nav with
-                | (Reading (S n), v) => _ <- mupdate (fun sbt => ((set heap <[l:=(Reading n, v)]>) $ fst sbt, snd sbt));
+                | (Reading (S n), v) => _ <- mupdate (fun '((s,g),bt) => (((set heap <[l:=(Reading n, v)]>) $ s, g), bt));
                                       mret (LitV LitUnit)
                 | (Reading 0, v) => mfail_bt ("FinishReadOp attempted with no reads occurring at location " ++ (pretty l))
                 | _ => mfail_bt ("Attempted FinishReadOp while writing at location " ++ (pretty l))
@@ -496,7 +498,7 @@ Section interpreter.
             match addrv with
             | LitV (LitLoc l) =>
               sbt <- mget;
-                let s := fst sbt in
+                let '(s,g) := fst sbt in
                 nav <- mlift_bt (s.(heap) !! l) ("CmpXchg load failed at location " ++ (pretty l));
                 match nav with
                 | (Reading n, vl) =>
@@ -509,7 +511,7 @@ Section interpreter.
                   | LitV (LitBool true) =>
                     match n with
                       | S _ => mfail_bt ("CmpXchg load failed at location " ++ (pretty l) ++ "because of a race with non-atomic read")
-                      | O => _ <- mput ((set heap <[l:=Free v2]> s), snd sbt);
+                      | O => _ <- mput ((set heap <[l:=Free v2]> s, g), snd sbt);
                            mret (PairV vl #true)
                     end
                   | LitV (LitBool false) => mret (PairV vl #false)
@@ -532,7 +534,7 @@ Section interpreter.
   apply the inductive hypothesis from interpret_ok, passed in as IHn. *)
   Ltac run_next_interpret IHn :=
     match goal with
-    | [H : runStateT (mbind (fun x => @?F x) (interpret ?n ?e)) (?σ, ?ws) = _ |- _] =>
+    | [H : runStateT (mbind (fun x => @?F x) (interpret ?n ?e)) ((?σ,?g), ?ws) = _ |- _] =>
       let interp_e := fresh "interp_e" in
       let IHe := fresh "IHe" in
       let e_to_v := fresh "nsteps_interp" in
@@ -540,11 +542,12 @@ Section interpreter.
       let m := fresh "m" in
       let l := fresh "l" in
       let v := fresh "v" in
-      let s := fresh "s" in
+      let σ' := fresh "s" in
+      let g' := fresh "g'" in
       let ws' := fresh "ws'" in
-      destruct (runStateT (interpret n e) (σ, ws)) as [v0|] eqn:interp_e; [|runStateT_bind];
-      destruct v0 as (v & (s & ws'));
-      pose (IHn e σ v s ws ws' interp_e) as IHe;
+      destruct (runStateT (interpret n e) ((σ,g), ws)) as [v0|] eqn:interp_e; [|runStateT_bind];
+      destruct v0 as (v & ((σ' & g') & ws'));
+      pose (IHn e σ g v σ' g' ws ws' interp_e) as IHe;
       destruct IHe as (m & l & e_to_v);
       runStateT_bind
     | _ => fail
@@ -555,12 +558,12 @@ Section interpreter.
   lemma to dispatch the goal. *)
   Ltac ctx_step ctx_expr :=
     repeat match goal with
-    | [ nsteps_interp : language.nsteps _ ([?e], ?s) _ (_, _) |- _ ] =>
+    | [ nsteps_interp : language.nsteps _ ([?e], (?s, ?g)) _ (_, _) |- _ ] =>
       let r := eval simpl in (ctx_expr e) in
           match goal with
-          | [ |- language.nsteps _ ([r], s) _ _ ] =>
+          | [ |- language.nsteps _ ([r], (s, g)) _ _ ] =>
             let H := fresh "nsteps_interp_ctx" in
-            pose proof (@nsteps_ctx _ ctx_expr _ _ _ _ _ _ _ nsteps_interp) as H;
+            pose proof (@nsteps_ctx _ ctx_expr _ _ _ _ _ _ _ _ _ nsteps_interp) as H;
             simpl in H;
             exact H
           | _ => fail
@@ -610,14 +613,14 @@ Ltac runStateT_inv :=
   (* For any expression e that we can successfully interpret to a
   value v, there exists some number m of steps in the heap transition
   function that steps e to v. *)
-  Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (v: val) (σ': state) (ws ws':btval),
-      (((runStateT (interpret n e) (σ, ws)) = Works _ (v, (σ', ws'))) ->
-       exists m l, @language.nsteps goose_lang m ([e], σ) l ([Val v], σ')).
+  Theorem interpret_ok : forall (n: nat) (e: expr) (σ: state) (g: global_state) (v: val) (σ': state) (g':global_state) (ws ws':btval),
+      (((runStateT (interpret n e) ((σ,g), ws)) = Works _ (v, ((σ',g'), ws'))) ->
+       exists m l, @language.nsteps goose_lang m ([e], (σ, g)) l ([Val v], (σ',g'))).
   Proof using Type.
     intros n. induction n.
     { by intros []. }
 
-    intros e σ v σ' ws ws' interp. destruct e; simpl; inversion interp; simpl.
+    intros e σ g v σ' g' ws ws' interp. destruct e; simpl; inversion interp; simpl.
     
     (* Val *)
     { eexists. eexists. apply language.nsteps_refl. }
@@ -629,12 +632,12 @@ Ltac runStateT_inv :=
     }
     
     (* App *)
-    { 
+    {
       run_next_interpret IHn.
       run_next_interpret IHn.
       runStateT_inv.
       {
-        pose proof (IHn _ _ _ _ _ _ H0) as IHapp.
+        pose proof (IHn _ _ _ _ _ _ _ _ H0) as IHapp.
         destruct IHapp as (k & l' & app_to_v).
         do 2 eexists.
         (* [App e1 e2] -> [App e1 v1] *)
@@ -644,8 +647,8 @@ Ltac runStateT_inv :=
         eapply nsteps_transitive; [single_step | exact app_to_v].
       }
       { (* Named case, need to deal with modifying bt *)
-        assert (runStateT (interpret n (subst' x v1 (subst s1 (rec: s1 x := e) e))) (s0, s1 :: ws'1) = Works (val * btstate) (v, (σ', ws'))) as H0 by (unfold runStateT; exact Heqe0).
-        pose proof (IHn _ _ _ _ _ _ H0) as IHapp.
+        assert (runStateT (interpret n (subst' x v1 (subst s1 (rec: s1 x := e) e))) ((s0, g'1), s1 :: ws'1) = Works (val * btstate) (v, ((σ', g'), ws'))) as H0 by (unfold runStateT; exact Heqe0).
+        pose proof (IHn _ _ _ _ _ _ _ _ H0) as IHapp.
         destruct IHapp as (k & l' & app_to_v).
         do 2 eexists.
         (* [App e1 e2] -> [App e1 v1] *)
@@ -684,7 +687,7 @@ Ltac runStateT_inv :=
     { run_next_interpret IHn.
       runStateT_inv;
       ( (* v1 = true or false *)
-        pose proof (IHn _ _ _ _ _ _ H0) as IH';
+        pose proof (IHn _ _ _ _ _ _ _ _ H0) as IH';
         destruct IH' as (m' & l' & er_to_v);
         do 2 eexists;
         (* [If e1 e2 e3] -> [If #val e2 e3] *)
@@ -751,7 +754,7 @@ Ltac runStateT_inv :=
     { run_next_interpret IHn.
       runStateT_inv.
       { (* InjL *)
-        pose proof (IHn _ _ _ _ _ _ H0) as IHe2.
+        pose proof (IHn _ _ _ _ _ _ _ _ H0) as IHe2.
         destruct IHe2 as (m' & l' & e2_to_v).
         do 2 eexists.
         (* [Case e1 e2 e3] -> [Case (InjLV v0) e2 e3] *)
@@ -759,7 +762,7 @@ Ltac runStateT_inv :=
         eapply nsteps_transitive; [single_step | exact e2_to_v].
       }
       { (* InjR *)
-        pose proof (IHn _ _ _ _ _ _ H0) as IHe3.
+        pose proof (IHn _ _ _ _ _ _ _ _ H0) as IHe3.
         destruct IHe3 as (m' & l' & e3_to_v).
         do 2 eexists.
         (* [Case e1 e2 e3] -> [Case (InjRV v0) e2 e3] *)
@@ -883,12 +886,12 @@ Ltac runStateT_inv :=
 
     (* ExternalOp *)
     { run_next_interpret IHn.
-      destruct (runStateT (ext_interpret_step op v1) (s, ws'0)) as [e_result|] eqn:ext_interp_v1; [|runStateT_bind].
-      destruct e_result as (e' & (s' & ws'1)).
-      pose proof (ext_interpret_ok _ _ _ _ _ _ _ ext_interp_v1) as ei_ok.
+      destruct (runStateT (ext_interpret_step op v1) ((s,g'0), ws'0)) as [e_result|] eqn:ext_interp_v1; [|runStateT_bind].
+      destruct e_result as (e' & ([s' g''] & ws'1)).
+      pose proof (ext_interpret_ok _ _ _ _ _ _ _ _ _ ext_interp_v1) as ei_ok.
       destruct ei_ok as (m' & (l' & nstep_ext_interp)).
       runStateT_bind.
-      pose proof (IHn _ _ _ _ _ _ H0).
+      pose proof (IHn _ _ _ _ _ _ _ _ H0).
       destruct H as (m'' & (l'' & rest_nstep)).
       do 2 eexists.
       eapply nsteps_transitive; [ctx_step (fill ([ExternalOpCtx op]))|].

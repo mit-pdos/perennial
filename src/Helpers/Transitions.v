@@ -508,22 +508,26 @@ Ltac monad_inv :=
            apply relation.bind_bind in H
          | [ H: relation.bind (relation.suchThat ?pred) _ ?s1 ?s2 ?v |- _ ] =>
            let pred := (eval hnf in pred) in
-           lazymatch pred with
-           | fun _ x => _ =>
-             let x := fresh x in
-             let H' := fresh in
-             apply relation.inv_bind_suchThat in H;
-             destruct H as [x [H' H]]
-           end
+           let x := lazymatch pred with
+                    | fun _ x => _ => x
+                    (* Hacky support for closures that use patterns on their first arg, see Coq bug #13959 *)
+                    | fun '(_,_) x => _ => x
+                    end in
+           let x := fresh x in
+           let H' := fresh in
+           apply relation.inv_bind_suchThat in H;
+           destruct H as [x [H' H]]
          | [ H: relation.bind (relation.suchThatBool ?b) _ ?s1 ?s2 ?v |- _ ] =>
-           let b := (eval hnf in b) in
-           lazymatch b with
-           | fun _ x => _ =>
-             let x := fresh x in
-             let H' := fresh in
-             apply relation.inv_bind_suchThatBool in H;
-             destruct H as [x [H' H]]
-           end
+           let pred := (eval hnf in pred) in
+           let x := lazymatch pred with
+                    | fun _ x => _ => x
+                    (* Hacky support for closures that use patterns on their first arg, see Coq bug #13959 *)
+                    | fun '(_,_) x => _ => x
+                    end in
+           let x := fresh x in
+           let H' := fresh in
+           apply relation.inv_bind_suchThatBool in H;
+           destruct H as [x [H' H]]
          | [ H: ?mx = Some ?x, H': context[unwrap ?mx] |- _ ] =>
            rewrite H in H'; cbn [fst snd unwrap] in H'
          | [ H: context[relation.denote (check ?P)] |- _ ] =>

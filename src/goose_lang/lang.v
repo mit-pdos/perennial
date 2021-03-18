@@ -37,6 +37,7 @@ Class ext_op :=
       external_countable :> Countable external;
     }.
 
+(* TODO(RJ): add [ffi_global_state] and make that part of the [global_state]. *)
 Class ffi_model :=
   mkFfiModel {
       ffi_state : Type;
@@ -203,6 +204,7 @@ Record state : Type := {
   trace: Trace;
   oracle: Oracle;
 }.
+Definition global_state : Type := ().
 
 Global Instance eta_state : Settable _ := settable! Build_state <heap; used_proph_id; world; trace; oracle>.
 
@@ -221,7 +223,7 @@ we produce a val to make external operations atomic
  *)
 Class ext_semantics :=
   {
-    ext_step : external -> val -> transition state val;
+    ext_step : external -> val -> transition (state*global_state) val;
     ext_crash : ffi_state -> ffi_state -> Prop;
   }.
 Context {ffi_semantics: ext_semantics}.
@@ -918,8 +920,8 @@ Definition ret_expr {state} (e:expr): transition state (list observation * expr 
 Definition atomically {state} (tr: transition state val): transition state (list observation * expr * list expr) :=
   (λ v, ([], Val v, [])) <$> tr.
 
-Definition isFresh (σ: state) (l: loc) :=
-  (forall i, l +ₗ i ≠ null ∧ σ.(heap) !! (l +ₗ i) = None)%Z ∧
+Definition isFresh (σg: state*global_state) (l: loc) :=
+  (forall i, l +ₗ i ≠ null ∧ σg.1.(heap) !! (l +ₗ i) = None)%Z ∧
   (addr_offset l = 0).
 
 Lemma addr_base_non_null_offset l:
@@ -966,8 +968,8 @@ Proof.
   intros Hbound **. eapply addr_offset_0_is_base, isFresh_offset0; eauto.
 Qed.
 
-Theorem fresh_locs_isFresh σ :
-  isFresh σ (fresh_locs (dom (gset loc) σ.(heap))).
+Theorem fresh_locs_isFresh σg :
+  isFresh σg (fresh_locs (dom (gset loc) σg.1.(heap))).
 Proof.
   split.
   - split.
@@ -977,32 +979,32 @@ Proof.
   - auto.
 Qed.
 
-Definition gen_isFresh σ : {l: loc | isFresh σ l}.
+Definition gen_isFresh σg : {l: loc | isFresh σg l}.
 Proof.
-  refine (exist _ (fresh_locs (dom (gset loc) σ.(heap))) _).
+  refine (exist _ (fresh_locs (dom (gset loc) σg.1.(heap))) _).
   by apply fresh_locs_isFresh.
 Defined.
 
-Global Instance alloc_gen : GenPred loc state (isFresh) :=
+Global Instance alloc_gen : GenPred loc (state*global_state) (isFresh) :=
   fun _ σ => Some (gen_isFresh σ).
 
-Definition allocateN (bound:Z): transition state loc :=
+Definition allocateN (bound:Z): transition (state*global_state) loc :=
   suchThat (isFresh).
 
-Global Instance newProphId_gen: GenPred proph_id state (fun σ p => p ∉ σ.(used_proph_id)).
+Global Instance newProphId_gen: GenPred proph_id (state*global_state) (fun '(σ,g) p => p ∉ σ.(used_proph_id)).
 Proof.
-  refine (fun _ σ => Some (exist _ (fresh σ.(used_proph_id)) _)).
+  refine (fun _ '(σ,g) => Some (exist _ (fresh σ.(used_proph_id)) _)).
   apply is_fresh.
 Defined.
 
-Definition newProphId: transition state proph_id :=
-  suchThat (fun σ p => p ∉ σ.(used_proph_id)).
+Definition newProphId: transition (state*global_state) proph_id :=
+  suchThat (fun '(σ,g) p => p ∉ σ.(used_proph_id)).
 
 Instance gen_anyInt Σ: GenPred u64 Σ (fun _ _ => True).
   refine (fun z _ => Some (U64 z ↾ _)); auto.
 Defined.
 
-Definition arbitraryInt: transition state u64 :=
+Definition arbitraryInt {state}: transition state u64 :=
   suchThat (fun _ _ => True).
 
 Fixpoint transition_repeat (n:nat) {Σ T} (t: T → transition Σ T) (init:T) : transition Σ T :=
@@ -1015,8 +1017,11 @@ Definition transition_star {Σ T} (t : T → transition Σ T) (init:T) : transit
   n ← suchThat (gen:=fun _ _ => None) (fun _ (_:nat) => True);
   transition_repeat n t init.
 
+Definition modifyσ (f : state → state) : transition (state*global_state) () :=
+  modify (λ '(σ, g), (f σ, g)).
+
 Fixpoint head_trans (e: expr) :
- transition state (list observation * expr * list expr) :=
+ transition (state * global_state) (list observation * expr * list expr) :=
   match e with
   | Rec f x e => atomically $ ret $ RecV f x e
   | Pair (Val v1) (Val v2) => atomically $ ret $ PairV v1 v2
@@ -1042,72 +1047,72 @@ Fixpoint head_trans (e: expr) :
     atomically
       (check (0 < int.Z n)%Z;;
        l ← allocateN (int.Z n * length (flatten_struct v));
-       modify (state_init_heap l (int.Z n) v);;
+       modifyσ (state_init_heap l (int.Z n) v);;
        ret $ LitV $ LitLoc l)
    | StartRead (Val (LitV (LitLoc l))) => (* non-atomic load part 1 (used for map accesses) *)
      atomically
-       (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
+       (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
         match nav with
         | (Reading n, v) =>
-          modify (set heap <[l:=(Reading (S n), v)]>);;
+          modifyσ (set heap <[l:=(Reading (S n), v)]>);;
           ret v
         | _ => undefined
         end)
    | FinishRead (Val (LitV (LitLoc l))) => (* non-atomic load part 2 *)
      atomically
-       (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
+       (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
         match nav with
         | (Reading (S n), v) =>
-          modify (set heap <[l:=(Reading n, v)]>);;
+          modifyσ (set heap <[l:=(Reading n, v)]>);;
                  ret $ LitV $ LitUnit
         | _ => undefined
         end)
    | Load (Val (LitV (LitLoc l))) => (* atomic load (used for most normal Go loads) *)
      atomically
-       (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
+       (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
         match nav with
         | (Reading _, v) => ret v
         | _ => undefined
         end)
   | PrepareWrite (Val (LitV (LitLoc l))) => (* non-atomic write part 1 *)
     atomically
-      (v ← (reads (λ σ, σ.(heap) !! l) ≫= unwrap);
+      (v ← (reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap);
         match v with
         | (Reading 0, v) =>
-          modify (set heap <[l:=(Writing, v)]>);;
+          modifyσ (set heap <[l:=(Writing, v)]>);;
           ret $ LitV $ LitUnit
         | _ => undefined
         end)
   | FinishStore (Val (LitV (LitLoc l))) (Val v) => (* non-atomic write part 2 *)
     atomically
-      (nav ← reads (λ σ, σ.(heap) !! l);
+      (nav ← reads (λ '(σ,g), σ.(heap) !! l);
        check (is_Writing nav);;
-       modify (set heap <[l:=Free v]>);;
+       modifyσ (set heap <[l:=Free v]>);;
        ret $ LitV $ LitUnit)
   | ExternalOp op (Val v) => atomically $ ext_step op v
   | Input (Val (LitV (LitInt selv))) =>
     atomically
-      (x ← reads (λ σ, σ.(oracle) σ.(trace) selv);
-      modify (set trace (add_event (In_ev (LitInt selv) (LitInt x))));;
+      (x ← reads (λ '(σ,g), σ.(oracle) σ.(trace) selv);
+      modifyσ (set trace (add_event (In_ev (LitInt selv) (LitInt x))));;
       ret $ LitV $ LitInt $ x)
   | Output (Val (LitV v)) =>
     atomically
-      (modify (set trace (add_event (Out_ev v)));;
+      (modifyσ (set trace (add_event (Out_ev v)));;
        ret $ LitV $ LitUnit)
   | CmpXchg (Val (LitV (LitLoc l))) (Val v1) (Val v2) =>
     atomically
-      (nav ← reads (λ σ, σ.(heap) !! l) ≫= unwrap;
+      (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
       match nav with
       | (Reading n, vl) =>
         check (vals_compare_safe vl v1);;
-        when (vl = v1) (check (n = 0);; modify (set heap <[l:=Free v2]>));;
+        when (vl = v1) (check (n = 0);; modifyσ (set heap <[l:=Free v2]>));;
         ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
       | _ => undefined
       end)
   | NewProph =>
     atomically
       (p ← newProphId;
-       modify (set used_proph_id ({[ p ]} ∪.));;
+       modifyσ (set used_proph_id ({[ p ]} ∪.));;
        ret $ LitV $ LitProphecy p)
   | Resolve e (Val (LitV (LitProphecy p))) (Val w) =>
     bind (head_trans e)
@@ -1119,45 +1124,47 @@ Fixpoint head_trans (e: expr) :
   | _ => undefined
   end.
 
-Definition head_step: expr -> state -> list observation -> expr -> state -> list expr -> Prop :=
-    fun e s κs e' s' efs =>
-      relation.denote (head_trans e) s s' (κs, e', efs).
+Definition head_step:
+    expr -> state -> global_state -> list observation -> expr -> state -> global_state -> list expr -> Prop :=
+  fun e s g κs e' s' g' efs =>
+      relation.denote (head_trans e) (s,g) (s',g') (κs, e', efs).
 
 Definition fill' (K : list (ectx_item)) (e : expr) : expr := foldl (flip fill_item) e K.
 
-Inductive prim_step' (e1 : expr) (σ1 : state) (κ : list (observation))
-    (e2 : expr) (σ2 : state) (efs : list (expr)) : Prop :=
+Inductive prim_step' (e1 : expr) (σ1 : state) (g1 : global_state) (κ : list (observation))
+    (e2 : expr) (σ2 : state) (g2 : global_state) (efs : list (expr)) : Prop :=
   Ectx_step' K e1' e2' :
     e1 = fill' K e1' → e2 = fill' K e2' →
-    head_step e1' σ1 κ e2' σ2 efs → prim_step' e1 σ1 κ e2 σ2 efs.
+    head_step e1' σ1 g1 κ e2' σ2 g2 efs → prim_step' e1 σ1 g1 κ e2 σ2 g2 efs.
 
-Definition irreducible' (e : expr) (σ : state) :=
-  ∀ κ e' σ' efs, ¬prim_step' e σ κ e' σ' efs.
-Definition stuck' (e : expr) (σ : state) :=
-  to_val e = None ∧ irreducible' e σ.
+Definition irreducible' (e : expr) (σ : state) (g : global_state) :=
+  ∀ κ e' σ' g' efs, ¬prim_step' e σ g κ e' σ' g' efs.
+Definition stuck' (e : expr) (σ : state) (g : global_state) :=
+  to_val e = None ∧ irreducible' e σ g.
 
-Definition prim_step'_safe e s :=
-  (∀ e' s', rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (e', s') →
-            ¬ stuck' e' s').
+Definition prim_step'_safe e s g :=
+  (∀ e' s' g', rtc (λ '(e, s, g) '(e', s', g'), prim_step' e s g [] e' s' g' []) (e, s, g) (e', s', g') →
+            ¬ stuck' e' s' g').
 
-Inductive head_step_atomic: expr -> state -> list observation -> expr -> state -> list expr -> Prop :=
- | head_step_trans : ∀ e s κs e' s' efs,
-     head_step e s κs e' s' efs →
-     head_step_atomic e s κs e' s' efs
- | head_step_atomically : ∀ (vl : val) e s κs v' s',
-     rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (Val (InjRV v'), s') →
-     prim_step'_safe e s →
-     head_step_atomic (Atomically (of_val vl) e) s κs (Val (InjRV v')) s' []
- | head_step_atomically_fail : ∀ vl e s κs,
+Inductive head_step_atomic:
+    expr -> state -> global_state -> list observation -> expr -> state -> global_state -> list expr -> Prop :=
+ | head_step_trans : ∀ e s g κs e' s' g' efs,
+     head_step e s g κs e' s' g' efs →
+     head_step_atomic e s g κs e' s' g' efs
+ | head_step_atomically : ∀ (vl : val) e s g κs v' s' g',
+     rtc (λ '(e, s, g) '(e', s', g'), prim_step' e s g [] e' s' g' []) (e, s, g) (Val (InjRV v'), s', g') →
+     prim_step'_safe e s g →
+     head_step_atomic (Atomically (of_val vl) e) s g κs (Val (InjRV v')) s' g' []
+ | head_step_atomically_fail : ∀ vl e s g κs,
      (* An atomically block can non-deterministically fail _ONLY_ if the block would not trigger UB *)
-     prim_step'_safe e s →
-     head_step_atomic (Atomically (of_val vl) e) s κs (Val (InjLV (LitV LitUnit))) s []
+     prim_step'_safe e s g →
+     head_step_atomic (Atomically (of_val vl) e) s g κs (Val (InjLV (LitV LitUnit))) s g []
 .
 
-Lemma head_step_atomic_inv e s κs e' s' efs :
-  head_step_atomic e s κs e' s' efs →
+Lemma head_step_atomic_inv e s g κs e' s' g' efs :
+  head_step_atomic e s g κs e' s' g' efs →
   (∀ el e'', e ≠ Atomically el e'') →
-  head_step e s κs e' s' efs.
+  head_step e s g κs e' s' g' efs.
 Proof.
   inversion 1; subst; eauto.
   - intros. contradiction (H2 (of_val vl) e0); auto.
@@ -1180,7 +1187,8 @@ Qed.
 
 Hint Resolve suchThat_false : core.
 
-Lemma val_head_stuck e1 σ1 κ e2 σ2 efs : head_step e1 σ1 κ e2 σ2 efs → to_val e1 = None.
+Lemma val_head_stuck e1 σ1 g1 κ e2 σ2 g2 efs :
+  head_step e1 σ1 g1 κ e2 σ2 g2 efs → to_val e1 = None.
 Proof.
   rewrite /head_step; intros.
   destruct e1; auto; simpl.
@@ -1188,7 +1196,8 @@ Proof.
   simpl in H; eapply suchThat_false; eauto.
 Qed.
 
-Lemma val_head_atomic_stuck e1 σ1 κ e2 σ2 efs : head_step_atomic e1 σ1 κ e2 σ2 efs → to_val e1 = None.
+Lemma val_head_atomic_stuck e1 σ1 g1 κ e2 σ2 g2 efs :
+  head_step_atomic e1 σ1 g1 κ e2 σ2 g2 efs → to_val e1 = None.
 Proof.
   inversion 1; subst; eauto using val_head_stuck.
 Qed.
@@ -1200,8 +1209,8 @@ Ltac inv_undefined :=
     destruct e; try (apply suchThat_false in H; contradiction)
   end.
 
-Lemma head_ctx_step_val Ki e σ1 κ e2 σ2 efs :
-  head_step (fill_item Ki e) σ1 κ e2 σ2 efs → is_Some (to_val e).
+Lemma head_ctx_step_val Ki e σ1 g1 κ e2 σ2 g2 efs :
+  head_step (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e).
 Proof.
   revert κ e2.
   induction Ki; intros;
@@ -1217,8 +1226,8 @@ Proof.
   - inversion H; subst; clear H. exfalso; eauto.
 Qed.
 
-Lemma head_ctx_step_atomic_val Ki e σ1 κ e2 σ2 efs :
-  head_step_atomic (fill_item Ki e) σ1 κ e2 σ2 efs → is_Some (to_val e).
+Lemma head_ctx_step_atomic_val Ki e σ1 g1 κ e2 σ2 g2 efs :
+  head_step_atomic (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e).
 Proof.
   inversion 1; subst; eauto using head_ctx_step_val.
   - destruct Ki; simpl in H0; try solve [ inversion H0 ].
@@ -1235,26 +1244,26 @@ Proof using ext.
   revert Ki1. induction Ki2, Ki1; naive_solver eauto with f_equal.
 Qed.
 
-Lemma alloc_fresh v (n: u64) σ :
+Lemma alloc_fresh v (n: u64) σ g :
   let l := fresh_locs (dom (gset loc) σ.(heap)) in
   (0 < int.Z n)%Z →
-  head_step_atomic (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ []
-            (Val $ LitV $ LitLoc l) (state_init_heap l (int.Z n) v σ) [].
+  head_step_atomic (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ g []
+            (Val $ LitV $ LitLoc l) (state_init_heap l (int.Z n) v σ) g [].
 Proof.
   intros.
   constructor 1.
   rewrite /head_step /=.
   monad_simpl.
-  eapply relation.bind_runs with σ l.
+  eapply relation.bind_runs with (σ,g) l.
   { econstructor.
     apply fresh_locs_isFresh.
   }
   monad_simpl.
 Qed.
 
-Lemma arbitrary_int_step σ :
-  head_step_atomic (ArbitraryInt) σ []
-            (Val $ LitV $ LitInt $ U64 0) σ [].
+Lemma arbitrary_int_step σ g :
+  head_step_atomic (ArbitraryInt) σ g []
+            (Val $ LitV $ LitInt $ U64 0) σ g [].
 Proof.
   intros.
   constructor 1.
@@ -1264,15 +1273,15 @@ Proof.
   constructor; auto.
 Qed.
 
-Lemma new_proph_id_fresh σ :
+Lemma new_proph_id_fresh σ g :
   let p := fresh σ.(used_proph_id) in
-  head_step_atomic NewProph σ [] (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ) [].
+  head_step_atomic NewProph σ g [] (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ) g [].
 Proof.
   intro p.
   constructor 1.
   rewrite /head_step /=.
   monad_simpl.
-  eapply relation.bind_runs with σ p.
+  eapply relation.bind_runs with (σ,g) p.
   { econstructor.
     apply is_fresh. }
   monad_simpl.
@@ -1321,39 +1330,39 @@ Proof.
   by simplify_eq.
 Qed.
 
-Lemma prim_step_to_val_is_head_step e σ1 κs w σ2 efs :
-  prim_step e σ1 κs (Val w) σ2 efs → head_step_atomic (ffi_semantics:=ffi_semantics) e σ1 κs (Val w) σ2 efs.
+Lemma prim_step_to_val_is_head_step e σ1 g1 κs w σ2 g2 efs :
+  prim_step e σ1 g1 κs (Val w) σ2 g2 efs → head_step_atomic (ffi_semantics:=ffi_semantics) e σ1 g1 κs (Val w) σ2 g2 efs.
 Proof.
   intro H. destruct H as [K e1 e2 H1 H2].
   assert (to_val (fill K e2) = Some w) as H3; first by rewrite -H2.
   apply to_val_fill_some in H3 as [-> ->]. subst e. done.
 Qed.
 
-Lemma head_prim_step_trans e σ κ e' σ' efs :
-  head_step e σ κ e' σ' efs →
-  ectx_language.prim_step e σ κ e' σ' efs.
+Lemma head_prim_step_trans e σ g κ e' σ' g' efs :
+  head_step e σ g κ e' σ' g' efs →
+  ectx_language.prim_step e σ g κ e' σ' g' efs.
 Proof.
   intros.
   apply head_prim_step. apply head_step_trans.
   auto.
 Qed.
 
-Lemma head_prim_step_trans' e σ κ e' σ' efs :
-  head_step e σ κ e' σ' efs →
-  prim_step' e σ κ e' σ' efs.
+Lemma head_prim_step_trans' e σ g κ e' σ' g' efs :
+  head_step e σ g κ e' σ' g' efs →
+  prim_step' e σ g κ e' σ' g' efs.
 Proof. apply Ectx_step' with empty_ectx; by rewrite ?fill_empty. Qed.
 
-Definition head_reducible' (e : expr) (σ : state) :=
-  ∃ κ e' σ' efs, head_step e σ κ e' σ' efs.
-Definition head_irreducible' (e : expr) (σ : state) :=
-  ∀ κ e' σ' efs, ¬head_step e σ κ e' σ' efs.
-Definition reducible' (e : expr) (σ : state) :=
-  ∃ κ e' σ' efs, prim_step' e σ κ e' σ' efs.
+Definition head_reducible' (e : expr) (σ : state) (g : global_state) :=
+  ∃ κ e' σ' g' efs, head_step e σ g κ e' σ' g' efs.
+Definition head_irreducible' (e : expr) (σ : state) (g : global_state) :=
+  ∀ κ e' σ' g' efs, ¬head_step e σ g κ e' σ' g' efs.
+Definition reducible' (e : expr) (σ : state) (g : global_state) :=
+  ∃ κ e' σ' g' efs, prim_step' e σ g κ e' σ' g' efs.
 
-Lemma prim_head_reducible' e σ :
-  reducible' e σ → sub_redexes_are_values e → head_reducible' e σ.
+Lemma prim_head_reducible' e σ g :
+  reducible' e σ g → sub_redexes_are_values e → head_reducible' e σ g.
 Proof.
-  intros (κ&e'&σ'&efs&[K e1' e2' -> -> Hstep]) Hsub.
+  intros (κ&e'&σ'&g'&efs&[K e1' e2' -> -> Hstep]) Hsub.
   assert (K = empty_ectx).
   { apply val_head_stuck in Hstep.
     eapply Hsub; eauto.
@@ -1361,27 +1370,27 @@ Proof.
   subst. rewrite //= /head_reducible. econstructor; eauto.
 Qed.
 
-Lemma not_reducible' e σ : ¬reducible' e σ ↔ irreducible' e σ.
+Lemma not_reducible' e σ g : ¬reducible' e σ g ↔ irreducible' e σ g.
 Proof. unfold reducible', irreducible'. naive_solver. Qed.
-Lemma not_head_reducible' e σ : ¬head_reducible' e σ ↔ head_irreducible' e σ.
+Lemma not_head_reducible' e σ g : ¬head_reducible' e σ g ↔ head_irreducible' e σ g.
 Proof. unfold head_reducible', head_irreducible'. naive_solver. Qed.
 
-Lemma prim_head_irreducible' e σ :
-  head_irreducible' e σ → sub_redexes_are_values e → irreducible' e σ.
+Lemma prim_head_irreducible' e σ g :
+  head_irreducible' e σ g → sub_redexes_are_values e → irreducible' e σ g.
 Proof.
   rewrite -not_reducible' -not_head_reducible'; eauto using prim_head_reducible'.
 Qed.
 
 Class LanguageCtx' (K : expr → expr) : Prop :=
   { fill_not_val' : ∀ e, to_val e = None → to_val (K e) = None;
-    fill_step' : ∀ e1 σ1 κ e2 σ2 efs,
-                  prim_step' e1 σ1 κ e2 σ2 efs → prim_step' (K e1) σ1 κ (K e2) σ2 efs }.
+    fill_step' : ∀ e1 σ1 g1 κ e2 σ2 g2 efs,
+                  prim_step' e1 σ1 g1 κ e2 σ2 g2 efs → prim_step' (K e1) σ1 g1 κ (K e2) σ2 g2 efs }.
 
 Global Instance ectx_lang_ctx' K : LanguageCtx' (fill K).
 Proof.
   split; simpl.
   - intros. eapply fill_not_val; eauto.
-  - intros ?????? [K' e1' e2' Heq1 Heq2 Hstep].
+  - intros ???????? [K' e1' e2' Heq1 Heq2 Hstep].
     by exists (comp_ectx K K') e1' e2'; rewrite ?Heq1 ?Heq2 ?fill_comp.
 Qed.
 
@@ -1402,8 +1411,8 @@ Qed.
 (* TODO(tej): I'm not convinced this is even true, we probably don't handle
 Resolve (Atomically _ _) _ _ in a sensible way because it's stuck but Atomically _ _
 isn't. *)
-Lemma irreducible_resolve e v1 v2 σ :
-  irreducible e σ → irreducible (Resolve e (Val v1) (Val v2)) σ.
+Lemma irreducible_resolve e v1 v2 σ g :
+  irreducible e σ g → irreducible (Resolve e (Val v1) (Val v2)) σ g.
 Proof.
   intros H κs ** [Ks e1' e2' Hfill -> step]. simpl in *.
   induction Ks as [|K Ks _] using rev_ind; simpl in Hfill.
@@ -1414,6 +1423,7 @@ Proof.
     destruct v1; try (eapply suchThat_false in step; contradiction).
     destruct l; try (eapply suchThat_false in step; contradiction).
     inversion step; subst; clear step.
+    destruct s2 as [σ2 g2].
     destruct x as [[κs' e'] efs'].
     eapply H. apply head_prim_step; eauto. constructor 1. eauto.
   - rewrite fill_app /= in Hfill.
@@ -1424,13 +1434,13 @@ Proof.
           (assert (to_val (fill Ks e) = Some v) as HEq by rewrite -H //);
           apply to_val_fill_some in HEq; destruct HEq as [-> ->]; inversion step
         end); try contradiction.
-      apply (H κs (fill_item K (foldl (flip fill_item) e2' Ks)) σ' efs).
+      apply (H κs (fill_item K (foldl (flip fill_item) e2' Ks)) σ' g' efs).
       econstructor 1 with (K := Ks ++ [K]); last (constructor 1; done); simpl; by rewrite fill_app.
     + admit.
-Admitted.
+Abort.
 
-Definition trace_observable e r σ tr :=
-  ∃ σ2 t2 stat, erased_rsteps (CS:=goose_crash_lang) r ([e], σ) (t2, σ2) stat ∧ σ2.(trace) = tr.
+Definition trace_observable e r σ g tr :=
+  ∃ σ2 g2 t2 stat, erased_rsteps (CS:=goose_crash_lang) r ([e], (σ, g)) (t2, (σ2, g2)) stat ∧ σ2.(trace) = tr.
 
 Definition trace_prefix (tr: Trace) (tr': Trace) : Prop :=
   prefix tr tr'.
@@ -1468,26 +1478,26 @@ Proof.
   apply ExternalOp_fill_item_inv in Heq; subst; auto.
 Qed.
 
-Lemma stuck_ExternalOp' σ o e:
+Lemma stuck_ExternalOp' σ g o e:
   is_Some (to_val e) →
-  head_irreducible' (ExternalOp o e) σ →
-  stuck' (ExternalOp o e) σ.
+  head_irreducible' (ExternalOp o e) σ g →
+  stuck' (ExternalOp o e) σ g.
 Proof.
   intros Hval Hirred. split; first done.
   apply prim_head_irreducible'; auto. apply ExternalOp_sub_redexes; eauto.
 Qed.
 
-Lemma stuck_ExternalOp σ o e:
+Lemma stuck_ExternalOp σ g o e:
   is_Some (to_val e) →
-  head_irreducible (ExternalOp o e) σ →
-  stuck (ExternalOp o e) σ.
+  head_irreducible (ExternalOp o e) σ g →
+  stuck (ExternalOp o e) σ g.
 Proof.
   intros Hval Hirred. split; first done.
   apply prim_head_irreducible; auto. apply ExternalOp_sub_redexes; eauto.
 Qed.
 
-Lemma stuck_Panic' σ msg:
-  stuck' (Primitive0 (PanicOp msg)) σ.
+Lemma stuck_Panic' σ g msg:
+  stuck' (Primitive0 (PanicOp msg)) σ g.
 Proof.
   split; first done.
   apply prim_head_irreducible'; auto.
@@ -1496,8 +1506,8 @@ Proof.
     apply Panic_fill_item_inv in Heq; subst; auto; by exfalso.
 Qed.
 
-Lemma stuck_Panic σ msg:
-  stuck (Primitive0 (PanicOp msg)) σ.
+Lemma stuck_Panic σ g msg:
+  stuck (Primitive0 (PanicOp msg)) σ g.
 Proof.
   split; first done.
   apply prim_head_irreducible; auto.
@@ -1507,11 +1517,11 @@ Proof.
     apply Panic_fill_item_inv in Heq; subst; auto; by exfalso.
 Qed.
 
-Lemma atomically_not_stuck_body_safe (l: val) e s :
-  ¬ stuck (Atomically (of_val l) e) s →
-  prim_step'_safe e s.
+Lemma atomically_not_stuck_body_safe (l: val) e σ g :
+  ¬ stuck (Atomically (of_val l) e) σ g →
+  prim_step'_safe e σ g.
 Proof.
-  intros Hnstuck ?? Hrtc Hstuck.
+  intros Hnstuck ??? Hrtc Hstuck.
   apply Hnstuck.
   split; first done.
   apply prim_head_irreducible; last first.
@@ -1520,14 +1530,14 @@ Proof.
     { move: Heq. destruct Ki => //=; congruence. }
     naive_solver.
   }
-  intros ???? Hstep.
+  intros ????? Hstep.
   inversion Hstep; subst.
   * inversion H; eauto.
   * match goal with
-    | [ H: prim_step'_safe _ _ |- _ ] => eapply H
+    | [ H: prim_step'_safe _ _ _ |- _ ] => eapply H
     end; try eapply Hrtc; eauto.
   * match goal with
-    | [ H: prim_step'_safe _ _ |- _ ] => eapply H
+    | [ H: prim_step'_safe _ _ _ |- _ ] => eapply H
     end; eauto.
 Qed.
 
@@ -1542,11 +1552,11 @@ Proof.
   - rewrite /null_non_alloc => Hn off. etransitivity; last eapply (Hn off).
     rewrite lookup_insert_ne; first done.
     eapply plus_off_preserves_non_null, addr_base_non_null_offset; eauto.
-    eapply isFresh_not_null, fresh_locs_isFresh.
+    eapply isFresh_not_null. eapply (fresh_locs_isFresh (_,inhabitant)).
   - rewrite /null_non_alloc => Hn off. etransitivity; last eapply (Hn off).
     rewrite lookup_insert_ne; first done.
     eapply plus_off_preserves_non_null, addr_base_non_null_offset; eauto.
-    eapply isFresh_not_null, fresh_locs_isFresh.
+    eapply isFresh_not_null. eapply (fresh_locs_isFresh (_,inhabitant)).
 Qed.
 
 Lemma upd_equiv_null_non_alloc σ l v:

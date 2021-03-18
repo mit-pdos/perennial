@@ -298,6 +298,7 @@ Global Program Instance heapG_irisG `{!heapG Σ}:
   state_interp σ ns κs _ :=
     (na_heap_ctx tls σ.(heap) ∗ proph_map_interp κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)
       ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
+  global_state_interp g := True%I;
   fork_post _ := True%I;
 }.
 Next Obligation. intros. eauto. Qed.
@@ -322,25 +323,25 @@ Ltac inv_head_step :=
   repeat match goal with
   | _ => progress simplify_map_eq/= (* simplify memory stuff *)
   | H : to_val _ = Some _ |- _ => apply of_to_val in H
-  | H : head_step_atomic ?e _ _ _ _ _ |- _ =>
+  | H : head_step_atomic ?e _ _ _ _ _ _ _ |- _ =>
     apply head_step_atomic_inv in H; [ | solve [ inversion 1 ] ]
-  | H : head_step ?e _ _ _ _ _ |- _ =>
+  | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
     rewrite /head_step /= in H;
     monad_inv; repeat (simpl in H; monad_inv)
   end.
 
-Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
-Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
+Local Hint Extern 0 (head_reducible _ _ _) => eexists _, _, _, _, _; simpl : core.
+Local Hint Extern 0 (head_reducible_no_obs _ _ _) => eexists _, _, _, _; simpl : core.
 
 (* [simpl apply] is too stupid, so we need extern hints here. *)
-Local Hint Extern 1 (head_step_atomic _ _ _ _ _ _) => apply head_step_trans : core.
-Local Hint Extern 1 (head_step _ _ _ _ _ _) => rewrite /head_step /= : core.
+Local Hint Extern 1 (head_step_atomic _ _ _ _ _ _ _ _) => apply head_step_trans : core.
+Local Hint Extern 1 (head_step _ _ _ _ _ _ _ _) => rewrite /head_step /= : core.
 Local Hint Extern 1 (relation.bind _ _ _ _ _) => monad_simpl; simpl : core.
 Local Hint Extern 1 (relation.runF _ _ _ _) => monad_simpl; simpl : core.
 (* Local Hint Extern 0 (head_step (CmpXchg _ _ _) _ _ _ _ _) => eapply CmpXchgS : core. *)
-Local Hint Extern 0 (head_step_atomic (AllocN _ _) _ _ _ _ _) => apply alloc_fresh : core.
-Local Hint Extern 0 (head_step_atomic (ArbitraryInt) _ _ _ _ _) => apply arbitrary_int_step : core.
-Local Hint Extern 0 (head_step_atomic NewProph _ _ _ _ _) => apply new_proph_id_fresh : core.
+Local Hint Extern 0 (head_step_atomic (AllocN _ _) _ _ _ _ _ _ _) => apply alloc_fresh : core.
+Local Hint Extern 0 (head_step_atomic (ArbitraryInt) _ _ _ _ _ _ _) => apply arbitrary_int_step : core.
+Local Hint Extern 0 (head_step_atomic NewProph _ _ _ _ _ _ _) => apply new_proph_id_fresh : core.
 Local Hint Resolve to_of_val : core.
 
 Global Instance into_val_val v : IntoVal (Val v) v.
@@ -430,7 +431,7 @@ Proof. solve_atomic. Qed.
 Global Instance proph_resolve_atomic s e v1 v2 :
   Atomic s e → Atomic s (Resolve e (Val v1) (Val v2)).
 Proof.
-  rename e into e1. intros H σ1 e2 κ σ2 efs [Ks e1' e2' Hfill -> step].
+  rename e into e1. intros H σ1 g1 e2 κ σ2 g2 efs [Ks e1' e2' Hfill -> step].
   simpl in *. induction Ks as [|K Ks _] using rev_ind; simpl in Hfill.
   - subst. inversion_clear step. rename H0 into step.
     rewrite /head_step /= in step.
@@ -449,18 +450,18 @@ Proof.
       apply to_val_fill_some in Htv. destruct Htv as [-> ->]. admit. (* inversion step; contradiction. *) }
     destruct K; (inversion Hfill; clear Hfill; subst; try
       match goal with | H : Val ?v = fill Ks e1' |- _ => by apply fill_absurd in H end).
-    refine (_ (H σ1 (fill (Ks ++ [K]) e2') _ σ2 efs _)).
+    refine (_ (H σ1 g1 (fill (Ks ++ [K]) e2') _ σ2 g2 efs _)).
     + destruct s; intro Hs; simpl in *.
       * destruct Hs as [v Hs]. apply to_val_fill_some in Hs. by destruct Hs, Ks.
-      * apply irreducible_resolve. by rewrite fill_app in Hs.
+      * admit. (*apply irreducible_resolve. by rewrite fill_app in Hs.*)
     + econstructor 1 with (K := Ks ++ [K]); try done. simpl. by rewrite fill_app.
-Admitted.
-
+Abort.
+(*
 Global Instance resolve_proph_atomic s v1 v2 : Atomic s (ResolveProph (Val v1) (Val v2)).
 Proof. by apply proph_resolve_atomic, skip_atomic. Qed.
+*)
 
-
-Local Ltac solve_exec_safe := intros; subst; do 3 eexists; constructor 1; cbn; repeat (monad_simpl; simpl).
+Local Ltac solve_exec_safe := intros; subst; do 4 eexists; constructor 1; cbn; repeat (monad_simpl; simpl).
 Local Ltac solve_exec_puredet :=
   inversion 1; subst; unfold head_step in *; intros; repeat (monad_inv; simpl in * ); eauto.
 Local Ltac solve_pure_exec :=
@@ -567,8 +568,8 @@ Lemma wp_ArbitraryInt stk E :
   {{{ (x:u64), RET #x; True }}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 ns κ κs n) "(Hσ&?&?&?&?) !>"; iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step; iFrame.
+  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&?&?&?) Hg !>"; iSplit; first by eauto.
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step; iFrame.
   iModIntro. by iApply "HΦ".
 Qed.
 
@@ -578,8 +579,8 @@ Lemma wp_output s E tr lit :
   {{{ RET (LitV LitUnit); trace_frag (add_event (Out_ev lit) tr)}}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 ns κ κs n) "(Hσ&?&?&Htr_auth&?) !>"; iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. iFrame.
+  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&?&Htr_auth&?) Hg !>"; iSplit; first by eauto.
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step. iFrame.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iMod (trace_update with "[$] [$]") as "(?&?)".
   iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
@@ -591,9 +592,9 @@ Lemma wp_input s E tr (sel: u64) Or :
   {{{ RET (LitV (LitInt (Or tr sel))); trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr) ∗ oracle_frag Or}}}.
 Proof.
   iIntros (Φ) "(Htr&Hor) HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 ns κ κs n) "(Hσ&?&?&Htr_auth&Hor_auth) !>"; iSplit.
+  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&?&Htr_auth&Hor_auth) Hg !>"; iSplit.
   { iPureIntro. unshelve (by eauto); apply (U64 0). }
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
   iFrame. iMod (trace_update with "[$] [$]") as "(?&?)".
@@ -605,8 +606,8 @@ Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ (LitV LitUnit) -∗ WP Fork e @ s; E {{ Φ }}.
 Proof.
   iIntros "He HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 ns κ κs n) "Hσ !>"; iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step. by iFrame.
+  iIntros (σ1 g1 ns κ κs n) "Hσ Hg !>"; iSplit; first by eauto.
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step. by iFrame.
 Qed.
 
 (** Heap *)
@@ -717,26 +718,26 @@ Proof.
 Qed.
 
 Lemma alloc_list_loc_not_null:
-  ∀ v (n : u64) σ1 l,
-    isFresh σ1 l
+  ∀ v (n : u64) σg1 l,
+    isFresh σg1 l
     → ∀ l0 (x : val),
       heap_array l (concat_replicate (int.nat n) (flatten_struct v)) !! l0 = Some x
       → l0 ≠ null.
 Proof.
-  intros v n σ1 l H l0 x Heq.
+  intros v n σg1 l H l0 x Heq.
   apply heap_array_lookup in Heq.
   destruct Heq as [l' (?&->&Heq)].
   apply H; eauto.
 Qed.
 
 Lemma allocN_loc_not_null:
-  ∀ v (n : u64) σ1 l,
-    isFresh σ1 l
+  ∀ v (n : u64) σg1 l,
+    isFresh σg1 l
     → ∀ l0 (x : val),
       heap_array l (concat_replicate (int.nat n) (flatten_struct v)) !! l0 = Some x
       → l0 ≠ null.
 Proof.
-  intros v n σ1 l H l0 x Heq.
+  intros v n σg1 l H l0 x Heq.
   apply heap_array_lookup in Heq.
   destruct Heq as [l' (?&->&Heq)].
   apply H; eauto.
@@ -760,8 +761,8 @@ Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
                               }}}.
 Proof.
   iIntros (Hlen Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iIntros (σ1 g1 ns κ κs k) "[Hσ Hκs] Hg !>"; iSplit; first by auto with lia.
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iMod (na_heap_alloc_list tls (heap σ1) l
                            (concat_replicate (int.nat n) (flatten_struct v))
                            (Reading O) with "Hσ")
@@ -804,8 +805,8 @@ Lemma wp_allocN_seq0 s E v (n: u64) :
   {{{ l, RET LitV (LitLoc l); True }}}.
 Proof.
   iIntros (Hlen Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs k) "[Hσ Hκs] !>"; iSplit; first by auto with lia.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iIntros (σ1 g1 ns κ κs k) "[Hσ Hκs] Hg !>"; iSplit; first by auto with lia.
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   assert (concat_replicate (int.nat n) (flatten_struct v) = []) as ->.
   { apply nil_length_inv. rewrite concat_replicate_length. lia. }
   rewrite fmap_nil //= left_id. iFrame. iSplitL ""; eauto. by iApply "HΦ".
@@ -852,12 +853,12 @@ Lemma wp_load s E l q v :
   {{{ ▷ l ↦{q} v }}} Load (Val $ LitV $ LitLoc l) @ s; E {{{ RET v; l ↦{q} v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs n) "[Hσ Hκs] !>".
+  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg !>".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iDestruct (na_heap_read with "Hσ Hl") as %([|]&?&Heq&Hlock).
   { simpl in Hlock. congruence. }
   iSplit; first by eauto 8.
-  iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iModIntro; iSplit=> //. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
 Qed.
@@ -877,11 +878,11 @@ Lemma wp_prepare_write s E l v :
 Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs n) "[Hσ Hκs]".
+  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iMod (na_heap_write_prepare _ _ _ _ Writing with "Hσ Hl") as (lk1 (Hlookup&Hlock)) "(?&?)"; first done.
   destruct lk1; inversion Hlock; subst. iModIntro.
-  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
@@ -891,10 +892,10 @@ Lemma wp_finish_store s E l v v' :
 Proof.
   iIntros (Φ) "[>Hl Hl_rest] HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs n) "[Hσ Hκs]".
+  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
   iMod (na_heap_write_finish_vs _ _ _ _ (Reading 0) with "Hl Hσ") as (lkw (?&Hlock)) "(Hσ&Hl)"; first done.
   destruct lkw; inversion Hlock; subst. iModIntro.
-  iSplit; first by eauto. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
 Qed.
@@ -905,7 +906,7 @@ Lemma wp_start_read s E l q v :
 Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs n) "[Hσ Hκs]".
+  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iMod (na_heap_read_prepare _ (fun m => match m with | Reading n => Reading (S n) | _ => m end) with "Hσ Hl") as (lk1 n1 (Hlookup&Hlock)) "[Hσ Hl]".
   1: {
@@ -913,7 +914,7 @@ Proof.
     rewrite /= //.
   }
   destruct lk1; inversion Hlock; subst. iModIntro.
-  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
@@ -924,14 +925,14 @@ Lemma wp_finish_read s E l q v :
 Proof.
   iIntros (Φ) "[>Hl Hl_rest] HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs n) "[Hσ Hκs]".
+  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
   iMod (na_heap_read_finish_vs _ (fun m => match m with | Reading (S n) => Reading n | _ => m end) with "Hl Hσ") as (lk1 n1 (Hlookup&Hlock)) "[Hσ Hl]".
   1: {
     intros lk lkn Hlk. destruct lk; inversion Hlk; subst.
     rewrite /= //.
   }
   destruct lk1; inversion Hlock; subst. iModIntro.
-  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 8. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ". iApply "Hl_rest". iApply "Hl".
 Qed.
 
@@ -961,11 +962,11 @@ Lemma wp_cmpxchg_fail s E l q v' v1 v2 :
   {{{ RET PairV v' (LitV $ LitBool false); l ↦{q} v' }}}.
 Proof.
   iIntros (?? Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs n) "[Hσ Hκs] !>".
+  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg !>".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iDestruct (@na_heap_read with "Hσ Hl") as %(lk&?&?&?Hlock).
   destruct lk; inversion Hlock; subst.
-  iSplit; first by eauto 8. iNext; iIntros (v2' σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 8. iNext; iIntros (v2' σ2 g2 efs Hstep); inv_head_step.
   rewrite bool_decide_false //.
   iModIntro; iSplit=> //. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
@@ -977,13 +978,13 @@ Lemma wp_cmpxchg_suc s E l v1 v2 v' :
   {{{ RET PairV v' (LitV $ LitBool true); l ↦ v2 }}}.
 Proof.
   iIntros (?? Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs n) "[Hσ Hκs]".
+  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
   destruct lk; inversion Hlock; subst.
   iMod (na_heap_write _ _ _ (Reading 0) with "Hσ Hl") as "(?&?)"; first done.
   iModIntro.
-  iSplit; first by eauto 8. iNext; iIntros (v2' σ2 efs Hstep); inv_head_step.
+  iSplit; first by eauto 8. iNext; iIntros (v2' σ2 g2 efs Hstep); inv_head_step.
   rewrite bool_decide_true //.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "[$]").
@@ -995,8 +996,8 @@ Lemma wp_new_proph s E :
   {{{ pvs p, RET (LitV (LitProphecy p)); proph p pvs }}}.
 Proof.
   iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 ns κ κs n) "(Hσ&HR&Hffi) !>". iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 efs Hstep). inv_head_step.
+  iIntros (σ1 g1 ns κ κs n) "(Hσ&HR&Hffi) Hg !>". iSplit; first by eauto.
+  iNext; iIntros (v2 σ2 g2 efs Hstep). inv_head_step.
   iMod (proph_map_new_proph p with "HR") as "[HR Hp]"; first done.
   iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
 Qed.
