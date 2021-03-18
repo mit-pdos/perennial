@@ -437,14 +437,24 @@ Proof.
   iSplitL "Stale"; iFrame.
 Qed.
 
+Definition EncodedPre2 PreCond PostCond γrpc : (list u8 → iProp Σ) :=
+ (λ reqData, ∃ γreq req args, ⌜reqEncoded req args reqData⌝ ∗ is_RPCRequest γrpc γreq PreCond PostCond req)%I
+.
+
+Definition EncodedPost2 γrpc : (list u8 → list u8 → iProp Σ) :=
+  (λ reqData repData,
+    ∃ req args reply, ⌜reqEncoded req args reqData⌝ ∗
+                      ⌜replyEncoded reply repData⌝ ∗
+                      (⌜reply.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
+                      RPCReplyReceipt γrpc req reply.(Rep_Ret)))%I
+.
+
 Definition handler_is2 (host:string) (rpcid:u64) γrpc PreCond PostCond : iProp Σ :=
-  handler_is host rpcid (λ reqData,
-                   ∃ γreq req args, ⌜reqEncoded req args reqData⌝ ∗ is_RPCRequest γrpc γreq PreCond PostCond req)%I
-                (λ reqData repData,
-                 ∃ req args reply, ⌜reqEncoded req args reqData⌝ ∗
-                                   ⌜replyEncoded reply repData⌝ ∗
-                                   (⌜reply.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
-                                    RPCReplyReceipt γrpc req reply.(Rep_Ret)))%I
+  handler_is host rpcid (EncodedPre2 PreCond PostCond γrpc) (EncodedPost2 γrpc)
+.
+
+Definition is_rpcHandler2 f γrpc PreCond PostCond : iProp Σ :=
+  is_rpcHandler f (EncodedPre2 PreCond PostCond γrpc) (EncodedPost2 γrpc)
 .
 
 Lemma wp_RemoteProcedureCall2 (cl_ptr req_ptr reply_ptr:loc) (host:string) (rpcid:u64) (req:RPCRequestID) args (reply:Reply64) PreCond PostCond γrpc γPost :
@@ -656,5 +666,67 @@ Proof.
   iExists _, _; iFrame "l_lastSeq ∗#".
   done.
 Qed.
+
+Definition is_rpcHandlerEncoded (f:val) γrpc PreCond PostCond : iProp Σ :=
+  ∀ γreq args req req_ptr reply_ptr reply,
+    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req ∗
+        "#Hargs" ∷ RPCRequest_own_ro req_ptr req args ∗
+        "Hreply" ∷ RPCReply_own reply_ptr reply
+    }}} (* TODO: put this precondition into a defn *)
+      f #req_ptr #reply_ptr
+    {{{ RET #false; ∃ reply',
+        RPCReply_own reply_ptr reply' ∗
+        (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
+           RPCReplyReceipt γrpc req reply'.(Rep_Ret))
+    }}}
+.
+
+Lemma wp_ConjugateRpcFunc (g:val) γrpc PreCond PostCond :
+is_rpcHandlerEncoded g γrpc PreCond PostCond -∗
+  {{{
+       True
+  }}}
+    ConjugateRpcFunc g
+  {{{
+        (f:val), RET f; is_rpcHandler2 f γrpc PreCond PostCond
+  }}}
+.
+Proof.
+  iIntros "#Hgspec" (Φ) "!# Hpre HΦ".
+  wp_lam.
+  wp_pures.
+  iApply "HΦ".
+  clear Φ.
+  iIntros (???? Φ) "!# Hpre HΦ".
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { naive_solver. }
+  iIntros (req_ptr) "Hreq".
+  wp_apply (wp_allocStruct).
+  { naive_solver. }
+  iIntros (reply_ptr) "Hreply".
+  wp_pures.
+  iDestruct "Hpre" as "(Hreq_sl & Hrep_sl & Hpre)".
+  iDestruct (is_slice_small_acc with "Hreq_sl") as "[Hreq_sl_small Hreq_close]".
+  iDestruct "Hpre" as (???) "[% #His_req]".
+  wp_apply (wp_rpcReqDecode with "[$Hreq_sl_small $Hreq]").
+  { done. }
+  iIntros "#Hreq_own".
+  wp_pures.
+  wp_apply ("Hgspec" $! _ _ _ _ _ (Build_RPCReply _ _) with "[$His_req $Hreq_own Hreply]").
+  {
+    iDestruct (struct_fields_split with "Hreply") as "Hreply".
+    iNamed "Hreply".
+    iFrame.
+  }
+  iIntros "Hpost".
+  iDestruct "Hpost" as (reply) "[Hreply Hpost]".
+  wp_pures.
+  wp_apply (wp_rpcReplyEncode with "Hreply").
+  iDestruct "Hrep_sl" as (?) "Hrep_old".
+  iIntros (rep_sl replyData) "Hrep_sl".
+  wp_pures.
+  wp_apply (wp_StoreAt with "[Hrep_old]").
+Admitted.
 
 End rpc_proof.

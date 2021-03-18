@@ -147,12 +147,12 @@ Definition is_rpcHandler (f:val) Pre Post : iProp Σ :=
   ∀ req rep (reqData repData:list u8),
   {{{
       is_slice req byteT 1 reqData ∗
-      (∃ repData, is_slice req byteT 1 repData) ∗
+      (∃ repData, is_slice rep byteT 1 repData) ∗
       ▷ Pre reqData
   }}}
     f (slice_val req) (slice_val rep)
   {{{
-      RET #(); is_slice req byteT 1 repData ∗
+      RET #(); is_slice rep byteT 1 repData ∗
                         ▷ Post reqData repData
   }}}.
 
