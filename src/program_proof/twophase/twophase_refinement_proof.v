@@ -146,6 +146,35 @@ Definition filtered_subst (Γsubst : gmap string (@subst_tuple disk_op (jrnl_spe
   subst_tuple_conv <$>
     (filter (λ x: string * ((@subst_tuple disk_op jrnl_spec_ext jrnl_ty)), is_Some (Γ' !! fst x)) Γsubst).
 
+Lemma binder_delete_filtered_subst Γsubst Γ x :
+  binder_delete x (filtered_subst Γsubst Γ) = filtered_subst Γsubst (binder_delete x Γ).
+Proof.
+  rewrite /filtered_subst. rewrite -binder_delete_fmap.
+  f_equal. destruct x.
+  - rewrite //=.
+  - rewrite //=.
+    apply map_eq => i.
+    destruct (decide (s = i)).
+    * subst. rewrite lookup_delete.
+      symmetry. apply map_filter_lookup_None_2; eauto.
+      right. intros. rewrite lookup_delete //=.
+    * rewrite lookup_delete_ne //.
+      destruct (decide (is_Some (Γ !! i))).
+      ** rewrite ?(map_filter_lookup_key_in _ (λ i, is_Some (Γ !! i))) //.
+         rewrite ?(map_filter_lookup_key_in _ (λ i, is_Some (delete s Γ !! i))) //.
+         rewrite lookup_delete_ne //.
+      ** rewrite ?(map_filter_lookup_key_notin _ (λ i, is_Some (Γ !! i))) //.
+         rewrite ?(map_filter_lookup_key_notin _ (λ i, is_Some (delete s Γ !! i))) //.
+         rewrite lookup_delete_ne //.
+Qed.
+
+Lemma binder_delete_filtered_subst2 Γsubst Γ x :
+  binder_delete x (filtered_subst Γsubst Γ) = filtered_subst (binder_delete x Γsubst) Γ.
+Proof.
+  destruct x => /=; auto.
+  rewrite /filtered_subst -fmap_delete map_filter_delete //.
+Qed.
+
 Lemma  filtered_subst_lookup1 (Γ' : Ctx) (Γsubst : gmap string (@subst_tuple disk_op (jrnl_spec_ext) jrnl_ty )) i :
   is_Some (Γ' !! i) →
   filter (λ x : string * ty, is_Some (Γ' !! x.1))
@@ -266,13 +295,147 @@ Proof.
   intros (?&Heq'). clear -Heq Heq'. rewrite Heq in Heq'. discriminate.
 Qed.
 
+Lemma lookup_binder_insert_ne  x y v (m : Ctx) :
+  x ≠ BNamed y →
+  <[x := v]> m !! y = m !! y.
+Proof.
+  intros Hneq. destruct x; rewrite //= ?lookup_insert_ne //=; congruence.
+Qed.
+
+Lemma lookup_binder_delete_ne {A} x y (m : gmap _ A) :
+  x ≠ BNamed y →
+  binder_delete x m !! y = m !! y.
+Proof.
+  intros Hneq. destruct x; rewrite //= ?lookup_delete_ne //=; congruence.
+Qed.
+
+Lemma filtered_subst_insert_filter Γsubst Γ (x : binder) v :
+  match x with
+  | BAnon => True
+  | BNamed x => Γsubst !! x = None
+  end →
+  filtered_subst Γsubst (<[x := v]> Γ) = filtered_subst Γsubst Γ.
+Proof.
+  intros Hnone. apply map_eq=>i.
+  rewrite /filtered_subst.
+  rewrite ?lookup_fmap. f_equal.
+  f_equal.
+  apply map_filter_ext.
+  intros i' x' Hlookup.
+  rewrite /=. destruct x => //=. rewrite lookup_insert_ne //=.
+  congruence.
+Qed.
+
+Lemma subst_map_subtyping_sval' Γsubst Γ' e1 x ebdy t :
+  (∀ (x : string) (ty0 : sty) ty0',
+    Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0' → ty0 = ty0' ∧ atomic_convertible ty0) →
+  atomic_body_expr_transTy Γ' x e1 ebdy t →
+  (subst_map (subst_sval <$> Γsubst) e1) =
+  (subst_map (twophase_sub_logical_reln_defs.subst_sval <$> filtered_subst Γsubst Γ') e1).
+Proof.
+  intros Hmap Htrans. revert Γsubst Hmap.
+  induction Htrans => Γsubst Hmap; try (rewrite /= ?IHHtrans ?IHHtrans1 ?IHHtrans2 ?IHHtrans3 //=).
+  - rewrite //=.
+    rewrite ?lookup_fmap //=.
+    destruct (Γsubst !! x) eqn:Heq.
+    * rewrite /=. edestruct Hmap as (Heq'&Hconv); eauto.
+      { rewrite ?lookup_fmap Heq. eauto. }
+      rewrite ?lookup_fmap //=.
+      erewrite map_filter_lookup_Some_2; eauto.
+    * rewrite /=. erewrite map_filter_lookup_None_2; eauto.
+  - f_equal.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite binder_delete_filtered_subst2.
+    rewrite binder_delete_filtered_subst2.
+    rewrite IHHtrans; last first.
+    { intros y ty ty' Hlookup.
+      rewrite lookup_fmap.
+      destruct (decide (x = BNamed y)).
+      { subst. rewrite //= lookup_delete; naive_solver. }
+      rewrite lookup_binder_delete_ne //.
+      destruct (decide (f = BNamed y)).
+      { subst. rewrite lookup_delete; naive_solver. }
+      rewrite lookup_binder_delete_ne //.
+      rewrite ?lookup_binder_insert_ne // in Hlookup.
+      intros. eapply Hmap; eauto.
+      rewrite lookup_fmap //.
+    }
+    rewrite ?filtered_subst_insert_filter //=.
+    { destruct x; auto => //=. rewrite lookup_delete //. }
+    { destruct f; auto => //=.
+      destruct x.
+      * rewrite /= lookup_delete //.
+      * rewrite /=. destruct (decide (s0 = s)); subst.
+        ** rewrite lookup_delete //.
+        ** rewrite lookup_delete_ne // lookup_delete //.
+    }
+Qed.
+
 Lemma subst_map_subtyping_sval Γsubst Γ' e1 x ebdy t :
   (∀ (x : string) (ty0 : sty),
     Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0 ∧ atomic_convertible ty0) →
   atomic_body_expr_transTy Γ' x e1 ebdy t →
   (subst_map (subst_sval <$> Γsubst) e1) =
   (subst_map (twophase_sub_logical_reln_defs.subst_sval <$> filtered_subst Γsubst Γ') e1).
-Proof. Admitted.
+Proof.
+  intros. eapply subst_map_subtyping_sval'; eauto.
+  naive_solver.
+Qed.
+
+Lemma subst_map_subtyping_ival' Γsubst Γ' e1 (v : val) ebdy t :
+  (∀ (x : string) (ty0 : sty) ty0',
+    Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0' → ty0 = ty0' ∧ atomic_convertible ty0) →
+  atomic_body_expr_transTy Γ' v e1 ebdy t →
+  (subst_map (subst_ival <$> Γsubst) ebdy) =
+  (subst_map (twophase_sub_logical_reln_defs.subst_ival <$> filtered_subst Γsubst Γ') ebdy).
+Proof.
+  intros Hmap Htrans. revert Γsubst Hmap.
+  remember (of_val v) as tph eqn:Heq0. rewrite -Heq0 in Htrans.
+  induction Htrans => Γsubst Hmap; try (rewrite /= ?IHHtrans ?IHHtrans1 ?IHHtrans2 ?IHHtrans3 //=).
+  - rewrite //=.
+    rewrite ?lookup_fmap //=.
+    destruct (Γsubst !! x) eqn:Heq.
+    * rewrite /=. edestruct Hmap as (Heq'&Hconv); eauto.
+      { rewrite ?lookup_fmap Heq. eauto. }
+      rewrite ?lookup_fmap //=.
+      erewrite map_filter_lookup_Some_2; eauto.
+    * rewrite /=. erewrite map_filter_lookup_None_2; eauto.
+  - f_equal.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite binder_delete_filtered_subst2.
+    rewrite binder_delete_filtered_subst2.
+    rewrite IHHtrans; last first.
+    { intros y ty ty' Hlookup.
+      rewrite lookup_fmap.
+      destruct (decide (x = BNamed y)).
+      { subst. rewrite //= lookup_delete; naive_solver. }
+      rewrite lookup_binder_delete_ne //.
+      destruct (decide (f = BNamed y)).
+      { subst. rewrite lookup_delete; naive_solver. }
+      rewrite lookup_binder_delete_ne //.
+      rewrite ?lookup_binder_insert_ne // in Hlookup.
+      intros. eapply Hmap; eauto.
+      rewrite lookup_fmap //.
+    }
+    { eauto. }
+    rewrite ?filtered_subst_insert_filter //=.
+    { destruct x; auto => //=. rewrite lookup_delete //. }
+    { destruct f; auto => //=.
+      destruct x.
+      * rewrite /= lookup_delete //.
+      * rewrite /=. destruct (decide (s0 = s)); subst.
+        ** rewrite lookup_delete //.
+        ** rewrite lookup_delete_ne // lookup_delete //.
+    }
+  - rewrite Heq0. f_equal.
+  - rewrite Heq0. f_equal.
+Qed.
 
 Lemma subst_map_subtyping_ival Γsubst Γ' e1 ebdy tph tph_val t :
   (∀ (x : string) (ty0 : sty),
@@ -280,7 +443,10 @@ Lemma subst_map_subtyping_ival Γsubst Γ' e1 ebdy tph tph_val t :
   atomic_body_expr_transTy Γ' (of_val tph_val) e1 (subst tph tph_val ebdy) t →
   (subst_map (subst_ival <$> Γsubst) (subst tph tph_val ebdy)) =
   (subst_map (twophase_sub_logical_reln_defs.subst_ival <$> filtered_subst Γsubst Γ') (subst tph tph_val ebdy)).
-Proof. Admitted.
+Proof.
+  intros. eapply subst_map_subtyping_ival'; eauto.
+  naive_solver.
+Qed.
 
 Lemma jrnl_atomic_obligation:
   @sty_atomic_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model jrnl_atomic_transTy.
