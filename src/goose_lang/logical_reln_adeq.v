@@ -117,7 +117,7 @@ End pre_assumptions.
 Existing Instances subG_cfgG subG_refinement_heapPreG subG_crashG.
 Definition logical_relnΣ := #[styΣ; heapΣ; @cfgΣ spec_lang; refinement_heapΣ; crashΣ].
 
-Lemma sty_adequacy es σs e σ τ initP:
+Lemma sty_adequacy es σs gs e σ g τ initP:
   sty_init_obligation1 upd initP →
   sty_init_obligation2 initP →
   sty_crash_inv_obligation →
@@ -128,7 +128,7 @@ Lemma sty_adequacy es σs e σ τ initP:
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →
-  trace_refines e e σ es es σs.
+  trace_refines e e σ g es es σs gs.
 Proof.
   intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Hatomic Htype Htrace Horacle Hinit.
   eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
