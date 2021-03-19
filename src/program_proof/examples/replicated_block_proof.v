@@ -126,7 +126,7 @@ Section goose.
   (* Open is the replicated block's recovery procedure, which constructs the
   in-memory state as well as recovering the synchronization between primary and
   backup, going from the crash invariant to the lock invariant. *)
-  Theorem wpc_Open {k } (d_ref: loc) addr σ :
+  Theorem wpc_Open {k} (d_ref: loc) addr σ :
     {{{ rblock_cinv addr σ }}}
       Open #d_ref #addr @ (S k); ⊤
     {{{ (l:loc), RET #l; is_pre_rblock l addr σ }}}
@@ -535,16 +535,16 @@ From Perennial.program_logic Require Import recovery_adequacy.
 From Perennial.goose_lang Require Export adequacy recovery_adequacy.
 Definition repΣ := #[stagedΣ; heapΣ; crashΣ].
 
-Theorem OpenRead_adequate σ dref addr :
+Theorem OpenRead_adequate σ g dref addr :
   (* We assume the addresses we replicate are in the disk domain *)
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   recv_adequate (CS := goose_crash_lang) NotStuck (OpenRead dref addr) (OpenRead dref addr)
-                σ (λ v _, True) (λ v _, True) (λ _, True).
+                σ g (λ v _ _, True) (λ v _ _, True) (λ _ _, True).
 Proof.
   rewrite ?elem_of_dom.
   intros (d1&Hin1) (d2&Hin2).
-  apply (heap_recv_adequacy (repΣ) _ 2 _ _ _ _ _ _ (λ _, True)%I).
+  apply (heap_recv_adequacy (repΣ) _ 2 _ _ _ _ _ _ _ (λ _, True)%I).
   { simpl. auto. }
   iIntros (?) "Hstart _ _".
   iModIntro.

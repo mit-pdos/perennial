@@ -202,38 +202,38 @@ Definition disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr
   match (op, v) with
   | (ReadOp, (LitV (LitInt _))) =>
     bts <- mget;
-      let σ := fst bts in
-      t <- mlift (Transitions.interpret [] (ext_step ReadOp v) σ) "Transitions.interpret failed in ReadOp";
+      let 'σg := fst bts in
+      t <- mlift (Transitions.interpret [] (ext_step ReadOp v) σg) "Transitions.interpret failed in ReadOp";
       match t with
-      | (hints, σ', v') => _ <- mput (σ', snd bts); mret (Val v')
+      | (hints, σg', v') => _ <- mput (σg', snd bts); mret (Val v')
       end
   | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
     bts <- mget;
-      let σ := fst bts in
+      let '(σ,g) := fst bts in
       _ <- mlift (σ.(world) !! int.Z a) ("Disk WriteOp failed: No block at write address " ++ (pretty a));
       b <- mlift (read_block_from_heap σ l) ("Disk WriteOp failed: Read from heap failed at location " ++ (pretty l));
-      _ <- mput ((set world <[ int.Z a := b ]> σ), snd bts);
+      _ <- mput ((set world <[ int.Z a := b ]> σ, g), snd bts);
       mret (Val $ LitV (LitUnit))
   | (SizeOp, LitV LitUnit) =>
     bts <- mget;
-    let σ := fst bts in
+    let '(σ,g) := fst bts in
       mret (Val $ LitV $ LitInt (U64 (disk_size σ.(world))))
   | _ => mfail ("DiskOp failed: Invalid argument types for " ++ (pretty op))
   end.
 
-Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state) (ws ws': btval),
-    (runStateT (disk_interpret_step eop arg) (σ, ws) = Works _ (result, (σ', ws'))) ->
-    exists m l, @language.nsteps goose_lang m ([ExternalOp eop (Val arg)], σ) l ([result], σ').
+Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state) (g g': global_state) (ws ws': btval),
+    (runStateT (disk_interpret_step eop arg) ((σ,g), ws) = Works _ (result, ((σ',g'), ws'))) ->
+    exists m l, @language.nsteps goose_lang m ([ExternalOp eop (Val arg)], (σ,g)) l ([result], (σ',g')).
 Proof.
-  intros eop arg result σ σ' ws ws' H.
+  intros eop arg result σ σ' g g' ws ws' H.
   destruct eop; [| inversion H | inversion H].
   { (* ReadOp *)
     unfold disk_interpret_step in H.
     destruct arg; try by inversion H.
     destruct l; try by inversion H.
-    assert (runStateT mget (σ, ws) = Works _ ((σ, ws), (σ, ws))) by eauto.
+    assert (runStateT mget ((σ,g), ws) = Works _ (((σ,g), ws), ((σ,g), ws))) by eauto.
     rewrite (runStateT_Error_bind _ _ _ _ _ _ _ H0) in H.
-    destruct (Transitions.interpret [] (ext_step ReadOp #n) (σ, ws).1) eqn:interp_res; simpl in H; try by inversion H.
+    destruct (Transitions.interpret [] (ext_step ReadOp #n) ((σ,g), ws).1) eqn:interp_res; simpl in H; try by inversion H.
     destruct p as ((l & s) & b).
     simpl in H.
     inversion H.
@@ -270,7 +270,7 @@ Proof.
     destruct arg2; try by inversion H1.
     destruct l; try by inversion H1.
     simpl in H1.
-    destruct (world σ !! int.Z n) eqn:disk_at_n; rewrite disk_at_n in H1; try by inversion H1.
+    destruct (world σ !! int.Z n) eqn:disk_at_n; rewrite disk_at_n in H1; last by inversion H1.
     destruct (read_block_from_heap σ l) eqn:block_at_l; try by inversion H1.
     simpl in H1.
     inversion H1.
