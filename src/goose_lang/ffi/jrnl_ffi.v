@@ -24,18 +24,18 @@ Section recoverable.
 
   Context {ext:ext_op}.
 
-  Definition openΣ : transition state Σ :=
-    bind (reads id) (λ rs, match rs.(world) with
+  Definition openΣ : transition (state*global_state) Σ :=
+    bind (reads id) (λ '(rs,g), match rs.(world) with
                            | Opened s => ret s
                            | _ => undefined
                            end).
 
-  Definition modifyΣ (f:Σ -> Σ) : transition state unit :=
-    bind openΣ (λ s, modify (set world (λ _, Opened (f s)))).
+  Definition modifyΣ (f:Σ -> Σ) : transition (state*global_state) unit :=
+    bind openΣ (λ s, modify (prod_map (set world (λ _, Opened (f s))) id)).
 
-  Definition open : transition state Σ :=
-    bind (reads id) (λ rs, match rs.(world) with
-                           | Closed s => bind (modify (set world (fun _ => Opened s)))
+  Definition open : transition (state*global_state) Σ :=
+    bind (reads id) (λ '(rs,g), match rs.(world) with
+                           | Closed s => bind (modify (prod_map (set world (fun _ => Opened s)) id))
                                              (fun _ => ret s)
                            | _ => undefined
                            end).
@@ -157,14 +157,14 @@ Section jrnl.
              ret (b :: bs)
     end.
 
-  Definition allocIdent: transition state loc :=
+  Definition allocIdent: transition (state*global_state) loc :=
     l ← allocateN 1;
-    modify (set heap <[l := Free #()]>);;
+    modify (prod_map (set heap <[l := Free #()]>) id);;
     ret l.
 
   Existing Instance fallback_genPred.
 
-  Definition jrnl_step (op:JrnlOp) (v:val) : transition state val :=
+  Definition jrnl_step (op:JrnlOp) (v:val) : transition (state*global_state) val :=
     match op, v with
     | OpenOp, LitV LitUnit =>
       j ← open;
@@ -538,7 +538,7 @@ Instance jrnlG0 : jrnlG Σ := refinement_spec_ffiG.
     repeat match goal with
         | _ => progress simplify_map_eq/= (* simplify memory stuff *)
         | H : to_val _ = Some _ |- _ => apply of_to_val in H
-        | H : head_step ?e _ _ _ _ _ |- _ =>
+        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
@@ -568,8 +568,8 @@ Definition jrnl_upd (σj: jrnl_map) (s: sstate) : sstate :=
 Definition always_steps (e: sexpr) (σj: jrnl_map) (e': sexpr) (σj': jrnl_map) : Prop :=
   (jrnlKinds σj = jrnlKinds σj') ∧
   (jrnl_sub_dom σj σj') ∧
-  (∀ s, jrnl_sub_state σj s →
-           rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (e', jrnl_upd σj' s)).
+  (∀ s g, jrnl_sub_state σj s →
+           rtc (λ '(e, (s,g)) '(e', (s',g')), prim_step' e s g [] e' s' g' []) (e, (s,g)) (e', (jrnl_upd σj' s, g))).
 
 Lemma jrnl_upd_sub σj s :
   jrnl_sub_state σj s →
@@ -619,7 +619,7 @@ Lemma always_steps_refl e σj :
   wf_jrnl σj →
   always_steps e σj e σj.
 Proof.
-  intros. split_and! => //= s Hsub.
+  intros. split_and! => //= s g Hsub.
   rewrite jrnl_upd_sub //.
 Qed.
 
@@ -641,7 +641,7 @@ Proof.
   intros (Hkinds1&Hsub1&Hsteps1) (Hkinds2&Hsub2&Hsteps2).
   split_and!; first congruence.
   { eapply jrnl_sub_dom_trans; eassumption. }
-  intros s Hsub.
+  intros s g Hsub.
   eapply rtc_transitive.
   { eapply Hsteps1; eauto. }
   { assert (jrnl_upd σj3 s = jrnl_upd σj3 (jrnl_upd σj2 s)) as ->.
@@ -673,17 +673,17 @@ Lemma always_steps_bind `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
 Proof.
   rewrite /always_steps.
   intros (?&?&Hstep). split_and!; eauto.
-  intros s Hsub. specialize (Hstep _ Hsub).
+  intros s g Hsub. specialize (Hstep _ g Hsub).
   clear -Hstep Hctx.
-  remember (e1, s) as ρ1 eqn:Hρ1.
-  remember (e2, jrnl_upd σj2 s) as ρ2 eqn:Hρ2.
+  remember (e1, (s,g)) as ρ1 eqn:Hρ1.
+  remember (e2, (jrnl_upd σj2 s,g)) as ρ2 eqn:Hρ2.
   revert Hρ1 Hρ2.
   generalize (jrnl_upd σj2 s) as s'.
-  revert e1 e2 s.
+  revert e1 e2 s g.
   induction Hstep.
   - intros. rewrite Hρ1 in Hρ2. inversion Hρ2. subst.
     apply rtc_refl.
-  - intros. subst. destruct y as (e0'&s0').
+  - intros. subst. destruct y as (e0'&s0'&g0').
     eapply rtc_l; last first.
     { eapply IHHstep; eauto. }
     simpl. eapply fill_step'. eauto.
