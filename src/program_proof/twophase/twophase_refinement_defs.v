@@ -5,12 +5,14 @@ From Perennial.program_proof Require Import twophase.typed_translate twophase.wr
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert.
 From Perennial.base_logic Require Import ghost_var.
+From Perennial.program_proof Require Import lockmap_proof.
+From Perennial.program_proof Require buftxn.sep_buftxn_invariant.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 
 Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp jrnl_spec_interp_adequacy.
 
-Class jrnlInit_params :=
+Class twophaseInit_params :=
   {
     SIZE : nat;
     SIZE_nonzero : 0 < SIZE;
@@ -20,10 +22,9 @@ Class jrnlInit_params :=
 Section refinement_defs.
 Context `{!heapG Σ}.
 Context `{!refinement_heapG Σ}.
-Context `{stagedG Σ}.
 
 Existing Instance jrnlG0.
-Context {PARAMS: jrnlInit_params}.
+Context {PARAMS: twophaseInit_params}.
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
@@ -31,51 +32,53 @@ Notation sstate := (@state (@spec_ext_op_field jrnl_spec_ext) (spec_ffi_model_fi
 Notation sexpr := (@expr (@spec_ext_op_field jrnl_spec_ext)).
 Notation sval := (@val (@spec_ext_op_field jrnl_spec_ext)).
 
-Class jrnlG (Σ: gFunctors) :=
-  { jrnl_stagedG :> stagedG Σ; }.
+Class twophaseG (Σ: gFunctors) :=
+  { twophase_stagedG :> stagedG Σ;
+    twophase_lockmapG :> lockmapG Σ;
+    twophase_buftxnG :> sep_buftxn_invariant.buftxnG Σ
+  }.
 
-Definition jrnl_names := unit.
-Definition jrnl_get_names (Σ: gFunctors) (hG: jrnlG Σ) := tt.
-Definition jrnl_update (Σ: gFunctors) (hG: jrnlG Σ) (n: jrnl_names) := hG.
+Definition twophase_names := unit.
+Definition twophase_get_names (Σ: gFunctors) (hG: twophaseG Σ) := tt.
+Definition twophase_update (Σ: gFunctors) (hG: twophaseG Σ) (n: twophase_names) := hG.
 
 Definition LVL_INIT : nat := 100.
 Definition LVL_INV : nat := 75.
 Definition LVL_OPS : nat := 50.
-Existing Instance jrnlG0.
 
-Definition jrnl_inv {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : jrnlG Σ} : iProp Σ
+Definition twophase_inv {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := True%I.
-Definition jrnl_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : jrnlG Σ} : iProp Σ
+Definition twophase_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := True%I.
-Definition jrnl_crash_cond {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : jrnlG Σ} : iProp Σ
+Definition twophase_crash_cond {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := True.
-Definition jrnl_crash_tok {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} : iProp Σ
+Definition twophase_crash_tok {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} : iProp Σ
   := False.
-Definition jrnlN : coPset := (∅ : coPset).
-Definition jrnl_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : jrnlG Σ}
+Definition twophaseN : coPset := (∅ : coPset).
+Definition twophase_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}
            (ty: @ext_tys (@val_tys _ jrnl_ty)) : val_semTy :=
   λ vspec vimpl, False%I.
 
-Instance jrnlTy_model : specTy_model jrnl_ty.
+Instance twophaseTy_model : specTy_model jrnl_ty.
 Proof using PARAMS.
  refine
-  {| styG := jrnlG;
-     sty_names := jrnl_names;
-     sty_get_names := jrnl_get_names;
-     sty_update := jrnl_update;
-     sty_inv := @jrnl_inv;
-     sty_init := @jrnl_init;
-     sty_crash_cond := @jrnl_crash_cond;
-     sty_crash_tok := @jrnl_crash_tok;
-     styN := jrnlN;
+  {| styG := twophaseG;
+     sty_names := twophase_names;
+     sty_get_names := twophase_get_names;
+     sty_update := twophase_update;
+     sty_inv := @twophase_inv;
+     sty_init := @twophase_init;
+     sty_crash_cond := @twophase_crash_cond;
+     sty_crash_tok := @twophase_crash_tok;
+     styN := twophaseN;
      sty_lvl_init := LVL_INIT;
      sty_lvl_ops := LVL_OPS;
-     sty_val_interp := @jrnl_val_interp |}.
+     sty_val_interp := @twophase_val_interp |}.
  - intros ? [] [] => //=.
  - intros ? [] => //=.
  - intros ?? [] [] => //=.
  - auto.
- - rewrite /sN/jrnlN. apply disjoint_empty_r.
+ - rewrite /sN/twophaseN. apply disjoint_empty_r.
  - auto.
 Defined.
 (* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
@@ -83,22 +86,22 @@ Defined.
 
 Existing Instances subG_stagedG.
 
-Definition jrnlΣ := #[stagedΣ].
+Definition twophaseΣ := #[stagedΣ; lockmapΣ; sep_buftxn_invariant.buftxnΣ].
 
-Instance subG_jrnlG: ∀ Σ, subG jrnlΣ Σ → jrnlG Σ.
+Instance subG_twophaseG: ∀ Σ, subG twophaseΣ Σ → twophaseG Σ.
 Proof. solve_inG. Qed.
 Parameter init_jrnl_map : jrnl_map.
-Definition jrnl_initP (σimpl: @state disk_op disk_model) (σspec : @state jrnl_op jrnl_model) : Prop :=
+Definition twophase_initP (σimpl: @state disk_op disk_model) (σspec : @state jrnl_op jrnl_model) : Prop :=
   (null_non_alloc σspec.(heap)) ∧
   (σimpl.(world) = init_disk ∅ SIZE) ∧
   (σspec.(world) = Closed init_jrnl_map).
-Definition jrnl_update_pre (Σ: gFunctors) (hG: jrnlG Σ) (n: jrnl_names) : jrnlG Σ := hG.
+Definition twophase_update_pre (Σ: gFunctors) (hG: twophaseG Σ) (n: twophase_names) : twophaseG Σ := hG.
 
-Program Instance jrnlTy_update_model : specTy_update jrnlTy_model :=
-  {| sty_preG := jrnlG;
-            styΣ := jrnlΣ;
-            subG_styPreG := subG_jrnlG;
-            sty_update_pre := @jrnl_update_pre |}.
+Program Instance twophaseTy_update_model : specTy_update twophaseTy_model :=
+  {| sty_preG := twophaseG;
+            styΣ := twophaseΣ;
+            subG_styPreG := subG_twophaseG;
+            sty_update_pre := @twophase_update_pre |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 

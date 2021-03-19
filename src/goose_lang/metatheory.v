@@ -215,6 +215,9 @@ Definition binder_insert {A} (x : binder) (v : A) (vs : gmap string A) : gmap st
 Lemma binder_insert_fmap {A B : Type} (f : A → B) (x : A) b vs :
   f <$> binder_insert b x vs = binder_insert b (f x) (f <$> vs).
 Proof. destruct b; rewrite ?fmap_insert //. Qed.
+Lemma binder_delete_fmap {A B : Type} (f : A → B) b vs :
+  f <$> binder_delete b vs = binder_delete b (f <$> vs).
+Proof. destruct b; rewrite ?fmap_delete //. Qed.
 Lemma lookup_binder_delete_None {A : Type} (vs : gmap string A) x y :
   binder_delete x vs !! y = None ↔ x = BNamed y ∨ vs !! y = None.
 Proof. destruct x; rewrite /= ?lookup_delete_None; naive_solver. Qed.

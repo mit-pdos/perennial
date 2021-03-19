@@ -16,7 +16,7 @@ Class aofG Σ := AofG {
   aof_tokG :> inG Σ (exclR unitO) ;
 }.
 
-Record aof_vol_names := {
+Record aof_vol_names := mk_aof_vol_names {
   logdata : gname ;
   predurabledata : gname ;
   len : gname ;
@@ -41,18 +41,18 @@ Definition aof_length_lb γ (l:u64) : iProp Σ :=
 Definition list_safe_size (l:list u8) := int.nat (length l) = length l.
 
 Definition aof_mu_invariant (aof_ptr:loc) γ aof_ctx : iProp Σ :=
-  ∃ membuf_sl membufC predurableC (durlen:u64),
+  ∃ membuf_sl membufC predurableC (durlen genlength:u64),
   "Hmembuf" ∷ aof_ptr ↦[AppendOnlyFile.S :: "membuf"] (slice_val membuf_sl) ∗
   "HdurableLength" ∷ aof_ptr ↦[AppendOnlyFile.S :: "durableLength"]{1/2} #durlen ∗
   "Hmembuf_sl" ∷ typed_slice.is_slice membuf_sl byteT 1 membufC ∗
   "Hpredurable" ∷ fmlist γ.(predurabledata) (1/2) predurableC ∗
   "Hlogdata" ∷ fmlist γ.(logdata) (1/2)%Qp (predurableC ++ membufC) ∗
-  "Hlength" ∷ aof_ptr ↦[AppendOnlyFile.S :: "length"] #(U64 (length (predurableC ++ membufC))) ∗
+  "Hlength" ∷ aof_ptr ↦[AppendOnlyFile.S :: "length"] #genlength ∗
   "%Hlengthsafe" ∷ ⌜list_safe_size (predurableC ++ membufC)⌝ ∗
-  "Hlen_toks" ∷ ([∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜int.nat x ≤ length (predurableC ++ membufC)⌝) ∗
+  "Hlen_toks" ∷ ([∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜int.nat x ≤ int.nat genlength⌝) ∗
   "Hmembuf_fupd" ∷ (aof_ctx predurableC ={⊤}=∗ aof_ctx (predurableC ++ membufC)
-     ∗ (own γ.(len) (mono_nat_auth (1/2) (length predurableC)) ={⊤}=∗
-        own γ.(len) (mono_nat_auth (1/2) (length (predurableC ++ membufC)))
+     ∗ (∀ oldlen, own γ.(len) (mono_nat_auth (1/2) oldlen) ={⊤}=∗
+        own γ.(len) (mono_nat_auth (1/2) (int.nat genlength))
        )
   ) ∗
   "#Hdurlen_lb" ∷ aof_length_lb γ durlen
@@ -109,11 +109,12 @@ Proof.
   wp_storeField.
 
   iAssert ((|={⊤}=> ∃ γ, is_aof l γ aof_ctx ∗ fmlist γ.(predurabledata) (1 / 2) data
-            ∗ l ↦[AppendOnlyFile.S :: "durableLength"]{1 / 2} #(U64 (length data))
-            ∗ own γ.(len) (mono_nat_auth (1/2) (length data)))
+            ∗ l ↦[AppendOnlyFile.S :: "durableLength"]{1 / 2} #0
+            ∗ own γ.(len) (mono_nat_auth (1/2) 0))
           )%I with "[-Hpre HΦ]" as ">HH".
   {
     (* need to allocate ghost state and freeze stuff *)
+    iExists (mk_aof_vol_names _ _ _ _).
     admit.
   }
   iDestruct "HH" as (γ) "(#His_aof & Hpredur & HdurLen & Hlen)".
@@ -125,11 +126,11 @@ Proof.
     wp_apply (acquire_spec with "Hmu_inv").
     iIntros "[Hlocked Haof_own]".
     wp_pures.
-    iAssert (∃ data', fname f↦ data' ∗ aof_ctx data' ∗ fmlist γ.(predurabledata) (1/2) data'
+    iAssert (∃ data', fname f↦ (data++data') ∗ aof_ctx (data++data') ∗ fmlist γ.(predurabledata) (1/2) (data ++ data')
             ∗ l ↦[AppendOnlyFile.S :: "durableLength"]{1 / 2} #(U64 (length data'))
-            ∗ own γ.(len) (mono_nat_auth (1/2) (length data'))
+            ∗ own γ.(len) (mono_nat_auth (1/2) (length (data')))
             )%I with "[Hpre Hpredur HdurLen Hlen]" as "Hfile_ctx".
-    { iExists _; iFrame. }
+    { iExists []; iFrame. rewrite app_nil_r. iFrame. }
     wp_forBreak.
     wp_pures.
 
@@ -166,7 +167,8 @@ Proof.
 
     iDestruct "Hfile_ctx" as (data') "(Hfile & Hctx & Hpredur & HdurLen & Hlen)".
 
-    iDestruct (fmlist_agree_1 with "Hpredur Hpredurable") as %->.
+    iDestruct (fmlist_agree_1 with "Hpredur Hpredurable") as %Hpredur.
+    rewrite Hpredur.
     iCombine "Hpredur Hpredurable" as "Hpredur".
     iMod (fmlist_update (predurableC ++ membufC) with "Hpredur") as "[Hpredur _]".
     { by apply prefix_app_r. }
@@ -226,6 +228,8 @@ Proof.
       iFrame "#".
     }
     {
+      rewrite -Hpredur.
+      repeat rewrite -app_assoc.
       iExists _; iFrame.
     }
   }

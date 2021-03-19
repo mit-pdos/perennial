@@ -40,6 +40,14 @@ Definition Enc__PutBytes: val :=
     let: "n" := SliceCopy byteT (SliceSkip byteT (struct.get Enc.S "b" "enc") "off") "b" in
     struct.get Enc.S "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc.S "off" "enc") + "n".
 
+Definition Enc__PutBool: val :=
+  rec: "Enc__PutBool" "enc" "b" :=
+    let: "off" := ![uint64T] (struct.get Enc.S "off" "enc") in
+    (if: ~ "b"
+    then SliceSet byteT (struct.get Enc.S "b" "enc") "off" (#(U8 0))
+    else SliceSet byteT (struct.get Enc.S "b" "enc") "off" (#(U8 1)));;
+    struct.get Enc.S "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc.S "off" "enc") + #1.
+
 Definition Enc__Finish: val :=
   rec: "Enc__Finish" "enc" :=
     struct.get Enc.S "b" "enc".
@@ -87,3 +95,11 @@ Definition Dec__GetBytes: val :=
     let: "b" := SliceSubslice byteT (struct.get Dec.S "b" "dec") "off" ("off" + "num") in
     struct.get Dec.S "off" "dec" <-[uint64T] ![uint64T] (struct.get Dec.S "off" "dec") + "num";;
     "b".
+
+Definition Dec__GetBool: val :=
+  rec: "Dec__GetBool" "dec" :=
+    let: "off" := ![uint64T] (struct.get Dec.S "off" "dec") in
+    struct.get Dec.S "off" "dec" <-[uint64T] ![uint64T] (struct.get Dec.S "off" "dec") + #1;;
+    (if: (SliceGet byteT (struct.get Dec.S "b" "dec") "off" = #(U8 0))
+    then #false
+    else #true).

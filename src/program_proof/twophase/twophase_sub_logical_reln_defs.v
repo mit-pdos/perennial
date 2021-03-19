@@ -67,24 +67,23 @@ Definition val_semTy `{!heapG Σ} `{refinement_heapG Σ} := sval → ival → iP
 Import sep_buftxn_invariant.
 Section reln_defs.
 Context `{hG: !heapG Σ}.
-Context `{!buftxnG Σ}.
 Context {hRG: refinement_heapG Σ}.
+Context {htpG: twophaseG Σ}.
 Context (N: namespace).
-Context (PARAMS: jrnlInit_params).
+Context (PARAMS: twophaseInit_params).
 Context (dinit : abstraction.disk).
 Context (objs_dom : gset addr_proof.addr).
 Context (γ γ': sep_buftxn_invariant.buftxn_names).
 Context (tph: loc).
-Context `{!lockmapG Σ}.
 
 
 Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
 Definition atomically_has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) K0 e0 (K: sexpr → sexpr) (CTX: LanguageCtx' K),
-      is_twophase_started tph γ dinit objs_dom j K0 e0 (K es) -∗
-      WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := jrnlTy_model)); ⊤
-                    {{ v, ∃ vs, is_twophase_started tph γ dinit objs_dom j K0 e0 (K (of_val vs)) ∗
+      is_twophase_started tph γ γ' dinit objs_dom j K0 e0 (K es) -∗
+      WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := twophaseTy_model)); ⊤
+                    {{ v, ∃ vs, is_twophase_started tph γ γ' dinit objs_dom j K0 e0 (K (of_val vs)) ∗
                                 vty vs v }} {{ True }})%I.
 
 Definition atomically_base_ty_interp (t: base_ty) :=
@@ -245,7 +244,7 @@ Proof. auto. Qed.
 Tactic Notation "spec_bind" open_constr(efoc) " as " ident(H) :=
   iStartProof;
   lazymatch goal with
-  | |- context[ (is_twophase_started _ _ _ _ _ _ _ (?Kinit ?e))%I ] =>
+  | |- context[ (is_twophase_started _ _ _ _ _ _ _ _ (?Kinit ?e))%I ] =>
     let H' := fresh H in
     refine_reshape_expr e ltac:(fun K' e' => unify e' efoc; destruct (tac_refine_bind' Kinit K' e e') as (->&H'); [split; eauto|])
     || fail "spec_bind: cannot find" efoc "in" e
@@ -723,7 +722,7 @@ Proof.
     simpl.
 
     spec_bind (vs1, vs2)%E as Hctx'.
-    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _ (λ x : sexpr, K (ectx_language.fill [InjRCtx] x))
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ (λ x : sexpr, K (ectx_language.fill [InjRCtx] x))
                  with "Hj") as "Hj".
     { intros ?.
       apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -773,7 +772,7 @@ Proof.
     iApply wp_wpc.
 
     spec_bind (App _ vsl)%E as Hctx'.
-    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x, K (ectx_language.fill [AppLCtx vsnilfun; AppLCtx vsconsfun] x))  with "Hj") as "Hj".
     { intros ?.
       apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -783,7 +782,7 @@ Proof.
     simpl.
 
     spec_bind (λ: _, _)%E as Hctx'.
-    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x, K (ectx_language.fill [AppLCtx vsnilfun; AppLCtx vsconsfun] x))  with "Hj") as "Hj".
     { intros ?.
       apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -792,7 +791,7 @@ Proof.
     clear Hctx'.
 
     spec_bind (App _ vsnilfun)%E as Hctx'.
-    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x, K (ectx_language.fill [AppLCtx vsconsfun] x))  with "Hj") as "Hj".
     { intros ?.
       apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -801,7 +800,7 @@ Proof.
     simpl.
 
     spec_bind (λ: _, _)%E as Hctx'.
-    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x, K (ectx_language.fill [AppLCtx vsconsfun] x))  with "Hj") as "Hj".
     { intros ?.
       apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -828,7 +827,7 @@ Proof.
       }
 
       spec_bind (Rec BAnon _ (vsnilfun (LitV LitUnit)))%E as Hctx'.
-      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                    (λ x, K (ectx_language.fill [AppLCtx #()] x)) with "Hj") as "Hj".
       { intros ?.
         apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -836,7 +835,7 @@ Proof.
       simpl.
       clear Hctx'.
 
-      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _ _
                    _ with "Hj") as "Hj".
       { intros ?.
         apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -854,7 +853,7 @@ Proof.
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       iExists _. iFrame.
     * simpl.
-      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _ _
                    _ with "Hj") as "Hj".
       { intros ?.
         apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -862,7 +861,7 @@ Proof.
 
       spec_bind (Rec _ _ ((vsconsfun
                       (Var "p"))))%E as Hctx'.
-      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                    (λ x : sexpr, K (ectx_language.fill [AppLCtx (vs, val_of_list lvs)] x)) with "Hj") as "Hj".
       { intros ?.
         apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -870,7 +869,7 @@ Proof.
       simpl.
       clear Hctx'.
 
-      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+      iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _ _
                    _ with "Hj") as "Hj".
       { intros ?.
         apply head_prim_step_trans'. repeat econstructor; eauto.
@@ -1016,12 +1015,12 @@ Proof.
     replace (#a, (#o, #()))%V with (addr2val' (a,o)) by auto.
     iApply wp_wpc.
     spec_bind (addr2val' (a, o)%core, #x)%E as Hctx'.
-    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) with "Hj") as "Hj".
     { intros ?.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
-    iPoseProof (wp_TwoPhase__ReadBuf' _ tph _ _ _ _ _ _ _ _ (a, o) x with "Hj") as "H".
+    iPoseProof (wp_TwoPhase__ReadBuf' tph _ _ _ _ _ _ _ _ (a, o) x with "Hj") as "H".
     iApply "H".
     iNext. iIntros (v) "H". iExists _. iFrame.
     iApply atomically_listT_interp_refl_obj.
@@ -1051,12 +1050,12 @@ Proof.
     iApply wp_wpc.
     iDestruct (atomically_listT_interp_obj_inv with "Hv2") as %[v [-> ->]].
     spec_bind (addr2val' (a, o)%core, (val_of_obj' v))%E as Hctx'.
-    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) with "Hj") as "Hj".
     { intros ?.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
-    iPoseProof (wp_TwoPhase__OverWrite' _ tph _ _ _ _ _ _ _ _ (a, o) v with "Hj") as "H".
+    iPoseProof (wp_TwoPhase__OverWrite' tph _ _ _ _ _ _ _ _ (a, o) v with "Hj") as "H".
     iApply "H".
     iNext. iIntros "H". iExists _. iFrame.
     eauto.

@@ -7,7 +7,7 @@ From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
 From Perennial.goose_lang Require ffi.disk.
 From Perennial.goose_lang.lib.struct Require Import struct.
 From Perennial.goose_lang.lib.list Require Import list.
-From Perennial.program_proof Require Import addr_proof.
+From Perennial.program_proof Require Import addr_proof buf.buf_proof.
 
 Section recoverable.
   Context {Σ:Type}.
@@ -93,7 +93,16 @@ Section jrnl.
   Definition val_of_obj' (o : obj) := val_of_list ((λ u, LitV (LitByte u)) <$> o).
 
   Definition blkno := u64.
-  Definition kind := { k : Z | k = 0 ∨ 3 <= k <= 15 }.
+  Definition kind := bufDataKind.
+
+  Definition kindSz_log2 k :=
+    match k with
+    | KindBit => 0
+    | KindInode => 10
+    | KindBlock => 15
+    end.
+
+  Definition kindSz k := 2^(kindSz_log2 k).
 
   (* The only operation that can be called outside an atomically block is OpenOp *)
   Inductive jrnl_ext_tys : @val jrnl_op -> (ty * ty) -> Prop :=
@@ -118,13 +127,13 @@ Section jrnl.
 
   Definition offsets_aligned (m : jrnl_map) :=
     (∀ a, a ∈ dom (gset _) (jrnlData m) →
-     ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (int.Z (addrOff a) `mod` 2^(`k) = 0)).
+     ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (int.Z (addrOff a) `mod` (kindSz k) = 0)).
 
   Definition size_consistent_and_aligned a (o: obj) (jk: gmap blkno kind) :=
-    ∃ k, jk !! (addrBlock a) = Some k ∧ (length o : Z) = 2^(`k) ∧ (int.Z (addrOff a) `mod` 2^(`k) = 0).
+    ∃ k, jk !! (addrBlock a) = Some k ∧ (length o : Z) = (kindSz k) ∧ (int.Z (addrOff a) `mod` (kindSz k) = 0).
 
   Definition sizes_correct (m : jrnl_map) :=
-    (∀ a o, jrnlData m !! a = Some o → ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (length o : Z) = 2^(`k)).
+    (∀ a o, jrnlData m !! a = Some o → ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (length o : Z) = kindSz k).
 
   (* TODO: do we need to enforce that every valid offset in a block has some data? *)
   Definition wf_jrnl (m : jrnl_map) := offsets_aligned m ∧ sizes_correct m.
@@ -165,7 +174,7 @@ Section jrnl.
       d ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
       (* bit reads must be done with ReadBitOp *)
-      check (`k ≠ 0 ∧ 2^(`k) = int.Z sz);;
+      check (k ≠ KindBit ∧ kindSz k = int.Z sz);;
       ret $ val_of_obj' d
     | OverWriteOp, ((#(LitInt blkno), #(LitInt off), #()), ov)%V =>
       j ← openΣ;
@@ -173,7 +182,7 @@ Section jrnl.
       _ ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
       o ← suchThat (λ _ o, val_of_obj' o = ov);
-      check ((length o : Z) = 2^(`k) ∧ `k ≠ 0);;
+      check ((length o : Z) = kindSz k ∧ k ≠ KindBit);;
       modifyΣ (λ j, updateData j (Build_addr blkno off) o);;
       ret $ #()
     | _, _ => undefined
@@ -356,6 +365,9 @@ Section jrnl_lemmas.
 
   Global Instance jrnl_open_Persistent : Persistent (jrnl_open).
   Proof. rewrite /jrnl_open/jrnl_opened. apply own_core_persistent. rewrite /CoreId//=. Qed.
+
+  Global Instance jrnl_kinds_lb_Persistent kmap : Persistent (jrnl_kinds_lb kmap).
+  Proof. refine _. Qed.
 
   Lemma jrnl_closed_auth_opened :
     jrnl_closed_auth -∗ jrnl_open -∗ False.
@@ -776,7 +788,7 @@ Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
   wf_jrnl σj →
   jrnlData σj !! a = Some v →
   jrnlKinds σj !! (addrBlock a) = Some k →
-  (`k ≠ 0 ∧ 2^(`k) = int.Z sz) →
+  (k ≠ KindBit ∧ kindSz k = int.Z sz) →
   always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                            ReadBufOp
                            (PairV (addr2val' a) #sz))
@@ -1102,6 +1114,26 @@ it immediately opens the na_crash_inv to lift the durable_mapsto and modify toke
 
 *)
 
+Lemma ghost_step_jrnl_atomically_abort E j K {HCTX: LanguageCtx K} (l: sval) e :
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  jrnl_open -∗
+  j ⤇ K (Atomically l e)
+  -∗ |NC={E}=>
+  j ⤇ K NONEV.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hopen Hj".
+  iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iMod (ghost_step_stuck' with "[$] [$] [$]") as (Hnstuck) "(Hj&H)"; first by solve_ndisj.
+  iMod (ghost_step_lifting _ _ _ _ _ [] _ _ [] with "[$] [$] [$]") as "($&Hstate'&_)".
+  { apply head_prim_step. eapply head_step_atomically_fail.
+    eapply atomically_not_stuck_body_safe; eauto. }
+  { solve_ndisj. }
+  iMod ("Hclo" with "[-]") as "_".
+  { iNext. iExists _. iFrame. }
+  iModIntro. eauto.
+Qed.
 
 Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v: sval) σj' :
   always_steps e σj (SOMEV v) σj' →

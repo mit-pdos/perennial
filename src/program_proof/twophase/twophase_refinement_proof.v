@@ -12,31 +12,31 @@ From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp jrnl_spec_interp_adequacy.
 
 Section refinement.
-Context {PARAMS : jrnlInit_params}.
+Context {PARAMS : twophaseInit_params}.
 Context (N : namespace).
 
 Notation jrnl_nat_K :=
 (leibnizO (nat * ((@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)
                            → (@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)))).
 
-Lemma jrnl_init_obligation1: sty_init_obligation1 jrnlTy_update_model jrnl_initP.
+Lemma jrnl_init_obligation1: sty_init_obligation1 twophaseTy_update_model twophase_initP.
 Proof.
   rewrite /sty_init_obligation1//=.
   iIntros (? hG hRG hJrnl σs σi Hinit) "Hdisk".
-  rewrite /jrnl_start /jrnl_init/jrnl_init.
+  rewrite /jrnl_start /twophase_init.
   inversion Hinit as [Hnn [Heqi Heqs]]. rewrite Heqs Heqi.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
   eauto.
 Qed.
 
-Lemma jrnl_init_obligation2: sty_init_obligation2 jrnl_initP.
+Lemma jrnl_init_obligation2: sty_init_obligation2 twophase_initP.
 Proof.
   intros ?? (?&?&?). rewrite //=. split_and!; eauto. eexists; split; eauto.
   admit.
 Admitted.
 
 Lemma jrnl_rules_obligation:
-  @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model jrnl_trans.
+  @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model jrnl_trans.
 Proof.
   intros vs0 vs v0 v0' t1 t2 Htype0 Htrans.
   inversion Htype0 as [op Heq]; subst.
@@ -46,25 +46,25 @@ Proof.
 Admitted.
 
 Lemma jrnl_crash_inv_obligation:
-  @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model.
+  @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model.
 Proof.
   rewrite /sty_crash_inv_obligation//=.
   iIntros (? hG hRG hJrnl e Φ) "Hinit Hspec Hwand".
-  rewrite /jrnl_inv/jrnl_init/jrnl_inv.
+  rewrite /twophase_init/twophase_inv.
 Admitted.
 
 Lemma jrnl_crash_obligation:
-  @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model.
+  @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model.
 Proof.
   rewrite /sty_crash_obligation//=.
   iIntros (? hG hRG hJrnl) "Hinv Hcrash_cond".
 Admitted.
 
-Lemma jrnl_inv_twophase_pre `{hBuf: sep_buftxn_invariant.buftxnG Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}
-      {hJrnl : twophase_refinement_defs.jrnlG Σ} {hL: lockmapG Σ} vs v:
-    jrnl_inv -∗
-    val_interp (smodel := jrnlTy_model) (hS := hJrnl) (@extT jrnl_val_ty JrnlT) vs v -∗
-    ∃ (l : loc) γ γ' objs_dom dinit, ⌜ v = #l ⌝ ∗ is_twophase_pre N l γ γ' dinit objs_dom.
+Lemma jrnl_inv_twophase_pre {Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}
+      {hJrnl : twophaseG Σ} vs v:
+    twophase_inv -∗
+    val_interp (smodel := twophaseTy_model) (hS := hJrnl) (@extT jrnl_val_ty JrnlT) vs v -∗
+    ∃ (l : loc) γ γ' objs_dom dinit, ⌜ v = #l ⌝ ∗ is_twophase_pre l γ γ' dinit objs_dom.
 Admitted.
 
 Ltac unfold_expr_vars :=
@@ -146,6 +146,35 @@ Definition filtered_subst (Γsubst : gmap string (@subst_tuple disk_op (jrnl_spe
   subst_tuple_conv <$>
     (filter (λ x: string * ((@subst_tuple disk_op jrnl_spec_ext jrnl_ty)), is_Some (Γ' !! fst x)) Γsubst).
 
+Lemma binder_delete_filtered_subst Γsubst Γ x :
+  binder_delete x (filtered_subst Γsubst Γ) = filtered_subst Γsubst (binder_delete x Γ).
+Proof.
+  rewrite /filtered_subst. rewrite -binder_delete_fmap.
+  f_equal. destruct x.
+  - rewrite //=.
+  - rewrite //=.
+    apply map_eq => i.
+    destruct (decide (s = i)).
+    * subst. rewrite lookup_delete.
+      symmetry. apply map_filter_lookup_None_2; eauto.
+      right. intros. rewrite lookup_delete //=.
+    * rewrite lookup_delete_ne //.
+      destruct (decide (is_Some (Γ !! i))).
+      ** rewrite ?(map_filter_lookup_key_in _ (λ i, is_Some (Γ !! i))) //.
+         rewrite ?(map_filter_lookup_key_in _ (λ i, is_Some (delete s Γ !! i))) //.
+         rewrite lookup_delete_ne //.
+      ** rewrite ?(map_filter_lookup_key_notin _ (λ i, is_Some (Γ !! i))) //.
+         rewrite ?(map_filter_lookup_key_notin _ (λ i, is_Some (delete s Γ !! i))) //.
+         rewrite lookup_delete_ne //.
+Qed.
+
+Lemma binder_delete_filtered_subst2 Γsubst Γ x :
+  binder_delete x (filtered_subst Γsubst Γ) = filtered_subst (binder_delete x Γsubst) Γ.
+Proof.
+  destruct x => /=; auto.
+  rewrite /filtered_subst -fmap_delete map_filter_delete //.
+Qed.
+
 Lemma  filtered_subst_lookup1 (Γ' : Ctx) (Γsubst : gmap string (@subst_tuple disk_op (jrnl_spec_ext) jrnl_ty )) i :
   is_Some (Γ' !! i) →
   filter (λ x : string * ty, is_Some (Γ' !! x.1))
@@ -160,14 +189,20 @@ Qed.
 Notation spec_ty := jrnl_ty.
 Notation sty := (@ty (@val_tys _ spec_ty)).
 
-Lemma atomic_convertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
-      {buftxnG0 : sep_buftxn_invariant.buftxnG Σ} {hL: lockmapG Σ} (t : sty) es e dinit objs_dom γ γ' tph_val :
+Global Instance styG_twophaseG Σ: (styG (specTy_model := twophaseTy_model)) Σ → twophaseG Σ.
+Proof. rewrite /styG//=. Defined.
+
+Lemma atomic_convertible_val_interp {Σ} {hG: heapG Σ} {hRG : refinement_heapG Σ}
+     {hS: (styG (specTy_model := twophaseTy_model)) Σ}
+    (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_convertible t →
-  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG jrnlTy_model hS t es e -∗
-  atomically_val_interp N PARAMS dinit objs_dom γ γ' tph_val t es e.
+  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG twophaseTy_model hS t es e -∗
+  atomically_val_interp (htpG := hS) PARAMS dinit objs_dom γ γ' tph_val t es e.
 Proof.
   revert es e.
-  induction t => es e; eauto.
+  rewrite /styG in hS * => //=.
+  rewrite /twophaseTy_model in hS *.
+  induction t => es e; try (inversion 1; done).
   - iIntros ((?&?)) "H".
     rewrite /val_interp -/val_interp.
     iDestruct "H" as (v1 v2 vs1 vs2 (Heq&Heqs)) "H".
@@ -195,14 +230,13 @@ Proof.
     iDestruct "H" as "[H|H]"; iDestruct "H" as (v vs (Heq&Heqs)) "H"; subst; rewrite /=; [ iLeft | iRight ].
     { iExists _, _. iSplit; first eauto. by iApply IHt1. }
     { iExists _, _. iSplit; first eauto. by iApply IHt2. }
-  - inversion 1.
 Qed.
 
 Lemma atomically_deconvertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
-      {buftxnG0 : sep_buftxn_invariant.buftxnG Σ} {hL: lockmapG Σ} (t : sty) es e dinit objs_dom γ γ' tph_val :
+      (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_deconvertible t →
-  atomically_val_interp N PARAMS dinit objs_dom γ γ' tph_val t es e -∗
-  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG jrnlTy_model hS t es e.
+  atomically_val_interp (htpG := (styG_twophaseG _ hS)) PARAMS dinit objs_dom γ γ' tph_val t es e -∗
+  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG twophaseTy_model hS t es e.
 Proof.
   revert es e.
   induction t => es e; try (inversion 1; done).
@@ -235,7 +269,6 @@ Proof.
     { iExists _, _. iSplit; first eauto. by iApply IHt2. }
 Qed.
 
-Set Nested Proofs Allowed.
 Lemma filtered_subst_projection1 Γsubst Γ' :
   (∀ (x : string) (ty0 : ty),
       Γ' !! x = Some ty0 →
@@ -262,13 +295,147 @@ Proof.
   intros (?&Heq'). clear -Heq Heq'. rewrite Heq in Heq'. discriminate.
 Qed.
 
+Lemma lookup_binder_insert_ne  x y v (m : Ctx) :
+  x ≠ BNamed y →
+  <[x := v]> m !! y = m !! y.
+Proof.
+  intros Hneq. destruct x; rewrite //= ?lookup_insert_ne //=; congruence.
+Qed.
+
+Lemma lookup_binder_delete_ne {A} x y (m : gmap _ A) :
+  x ≠ BNamed y →
+  binder_delete x m !! y = m !! y.
+Proof.
+  intros Hneq. destruct x; rewrite //= ?lookup_delete_ne //=; congruence.
+Qed.
+
+Lemma filtered_subst_insert_filter Γsubst Γ (x : binder) v :
+  match x with
+  | BAnon => True
+  | BNamed x => Γsubst !! x = None
+  end →
+  filtered_subst Γsubst (<[x := v]> Γ) = filtered_subst Γsubst Γ.
+Proof.
+  intros Hnone. apply map_eq=>i.
+  rewrite /filtered_subst.
+  rewrite ?lookup_fmap. f_equal.
+  f_equal.
+  apply map_filter_ext.
+  intros i' x' Hlookup.
+  rewrite /=. destruct x => //=. rewrite lookup_insert_ne //=.
+  congruence.
+Qed.
+
+Lemma subst_map_subtyping_sval' Γsubst Γ' e1 x ebdy t :
+  (∀ (x : string) (ty0 : sty) ty0',
+    Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0' → ty0 = ty0' ∧ atomic_convertible ty0) →
+  atomic_body_expr_transTy Γ' x e1 ebdy t →
+  (subst_map (subst_sval <$> Γsubst) e1) =
+  (subst_map (twophase_sub_logical_reln_defs.subst_sval <$> filtered_subst Γsubst Γ') e1).
+Proof.
+  intros Hmap Htrans. revert Γsubst Hmap.
+  induction Htrans => Γsubst Hmap; try (rewrite /= ?IHHtrans ?IHHtrans1 ?IHHtrans2 ?IHHtrans3 //=).
+  - rewrite //=.
+    rewrite ?lookup_fmap //=.
+    destruct (Γsubst !! x) eqn:Heq.
+    * rewrite /=. edestruct Hmap as (Heq'&Hconv); eauto.
+      { rewrite ?lookup_fmap Heq. eauto. }
+      rewrite ?lookup_fmap //=.
+      erewrite map_filter_lookup_Some_2; eauto.
+    * rewrite /=. erewrite map_filter_lookup_None_2; eauto.
+  - f_equal.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite binder_delete_filtered_subst2.
+    rewrite binder_delete_filtered_subst2.
+    rewrite IHHtrans; last first.
+    { intros y ty ty' Hlookup.
+      rewrite lookup_fmap.
+      destruct (decide (x = BNamed y)).
+      { subst. rewrite //= lookup_delete; naive_solver. }
+      rewrite lookup_binder_delete_ne //.
+      destruct (decide (f = BNamed y)).
+      { subst. rewrite lookup_delete; naive_solver. }
+      rewrite lookup_binder_delete_ne //.
+      rewrite ?lookup_binder_insert_ne // in Hlookup.
+      intros. eapply Hmap; eauto.
+      rewrite lookup_fmap //.
+    }
+    rewrite ?filtered_subst_insert_filter //=.
+    { destruct x; auto => //=. rewrite lookup_delete //. }
+    { destruct f; auto => //=.
+      destruct x.
+      * rewrite /= lookup_delete //.
+      * rewrite /=. destruct (decide (s0 = s)); subst.
+        ** rewrite lookup_delete //.
+        ** rewrite lookup_delete_ne // lookup_delete //.
+    }
+Qed.
+
 Lemma subst_map_subtyping_sval Γsubst Γ' e1 x ebdy t :
   (∀ (x : string) (ty0 : sty),
     Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0 ∧ atomic_convertible ty0) →
   atomic_body_expr_transTy Γ' x e1 ebdy t →
   (subst_map (subst_sval <$> Γsubst) e1) =
   (subst_map (twophase_sub_logical_reln_defs.subst_sval <$> filtered_subst Γsubst Γ') e1).
-Proof. Admitted.
+Proof.
+  intros. eapply subst_map_subtyping_sval'; eauto.
+  naive_solver.
+Qed.
+
+Lemma subst_map_subtyping_ival' Γsubst Γ' e1 (v : val) ebdy t :
+  (∀ (x : string) (ty0 : sty) ty0',
+    Γ' !! x = Some ty0 → (subst_ty <$> Γsubst) !! x = Some ty0' → ty0 = ty0' ∧ atomic_convertible ty0) →
+  atomic_body_expr_transTy Γ' v e1 ebdy t →
+  (subst_map (subst_ival <$> Γsubst) ebdy) =
+  (subst_map (twophase_sub_logical_reln_defs.subst_ival <$> filtered_subst Γsubst Γ') ebdy).
+Proof.
+  intros Hmap Htrans. revert Γsubst Hmap.
+  remember (of_val v) as tph eqn:Heq0. rewrite -Heq0 in Htrans.
+  induction Htrans => Γsubst Hmap; try (rewrite /= ?IHHtrans ?IHHtrans1 ?IHHtrans2 ?IHHtrans3 //=).
+  - rewrite //=.
+    rewrite ?lookup_fmap //=.
+    destruct (Γsubst !! x) eqn:Heq.
+    * rewrite /=. edestruct Hmap as (Heq'&Hconv); eauto.
+      { rewrite ?lookup_fmap Heq. eauto. }
+      rewrite ?lookup_fmap //=.
+      erewrite map_filter_lookup_Some_2; eauto.
+    * rewrite /=. erewrite map_filter_lookup_None_2; eauto.
+  - f_equal.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite -binder_delete_fmap.
+    rewrite binder_delete_filtered_subst2.
+    rewrite binder_delete_filtered_subst2.
+    rewrite IHHtrans; last first.
+    { intros y ty ty' Hlookup.
+      rewrite lookup_fmap.
+      destruct (decide (x = BNamed y)).
+      { subst. rewrite //= lookup_delete; naive_solver. }
+      rewrite lookup_binder_delete_ne //.
+      destruct (decide (f = BNamed y)).
+      { subst. rewrite lookup_delete; naive_solver. }
+      rewrite lookup_binder_delete_ne //.
+      rewrite ?lookup_binder_insert_ne // in Hlookup.
+      intros. eapply Hmap; eauto.
+      rewrite lookup_fmap //.
+    }
+    { eauto. }
+    rewrite ?filtered_subst_insert_filter //=.
+    { destruct x; auto => //=. rewrite lookup_delete //. }
+    { destruct f; auto => //=.
+      destruct x.
+      * rewrite /= lookup_delete //.
+      * rewrite /=. destruct (decide (s0 = s)); subst.
+        ** rewrite lookup_delete //.
+        ** rewrite lookup_delete_ne // lookup_delete //.
+    }
+  - rewrite Heq0. f_equal.
+  - rewrite Heq0. f_equal.
+Qed.
 
 Lemma subst_map_subtyping_ival Γsubst Γ' e1 ebdy tph tph_val t :
   (∀ (x : string) (ty0 : sty),
@@ -276,11 +443,14 @@ Lemma subst_map_subtyping_ival Γsubst Γ' e1 ebdy tph tph_val t :
   atomic_body_expr_transTy Γ' (of_val tph_val) e1 (subst tph tph_val ebdy) t →
   (subst_map (subst_ival <$> Γsubst) (subst tph tph_val ebdy)) =
   (subst_map (twophase_sub_logical_reln_defs.subst_ival <$> filtered_subst Γsubst Γ') (subst tph tph_val ebdy)).
-Proof. Admitted.
+Proof.
+  intros. eapply subst_map_subtyping_ival'; eauto.
+  naive_solver.
+Qed.
 
 Lemma jrnl_atomic_obligation:
-  @sty_atomic_obligation _ _ disk_semantics _ _ _ _ _ _ jrnlTy_model jrnl_atomic_transTy.
-Proof.
+  @sty_atomic_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model jrnl_atomic_transTy.
+Proof using N PARAMS.
   rewrite /sty_atomic_obligation//=.
   iIntros (? hG hRG hJrnl el1 el2 tl e1 e2 t Γsubst Htrans) "Hinv #Hspec #Htrace #HΓ HhasTy".
   iIntros (j K Hctx) "Hj".
@@ -298,12 +468,12 @@ Proof.
   iApply (wpc_strong_mono with "H"); auto.
   iSplit; last by (iModIntro; eauto).
   iIntros (v) "Hv". iModIntro.
-  wpc_bind (op_wrappers.TwoPhase__Begin' v).
+  wpc_bind (twophase.Begin v).
   iApply wp_wpc.
   iDestruct "Hv" as (vs) "(Hj&Hinterp)".
   iDestruct (jrnl_inv_twophase_pre with "[$] [$]") as "H".
   iDestruct "H" as (l γ γ' ?? ->) "H".
-  wp_apply (wp_TwoPhase__Begin' with "[$]").
+  wp_apply (wp_TwoPhase__Begin' N  with "[$]").
   iIntros (tph_val) "Hstarted".
   iApply wp_wpc.
   wp_pures.
@@ -316,7 +486,7 @@ Proof.
   wp_bind (subst _ _ _).
   rewrite subst_map_subst_comm //; last first.
   { rewrite dom_fmap. rewrite dom_fmap in H0 *. eauto. }
-  iDestruct (atomically_fundamental_lemma N PARAMS dinit objs_dom γ γ' tph_val Γ') as "Hhas_semTy".
+  iDestruct (atomically_fundamental_lemma PARAMS dinit objs_dom γ γ' tph_val Γ') as "Hhas_semTy".
   { eauto. }
   rewrite /twophase_sub_logical_reln_defs.ctx_has_semTy.
   iDestruct ("Hhas_semTy" $! (filtered_subst Γsubst Γ') with "[] [$] [] [] [Hstarted]") as "H".
@@ -327,10 +497,10 @@ Proof.
     iApply (big_sepM_mono with "HΓ").
     iIntros (k x Hlookup) "Hval Hfilter".
     iDestruct "Hfilter" as %(?&Heq).
-    iApply (atomic_convertible_val_interp with "Hval").
-    eapply H in Heq. destruct Heq as (Heq&Hconv).
-    rewrite /= lookup_fmap Hlookup /= in Heq.
-    inversion Heq; subst. eauto.
+    iApply (@atomic_convertible_val_interp with "Hval").
+    { eapply H in Heq. destruct Heq as (Heq&Hconv).
+      rewrite /= lookup_fmap Hlookup /= in Heq.
+      inversion Heq; subst. eauto. }
   }
   { iPureIntro. apply id_ctx'. }
   { simpl.
@@ -369,13 +539,14 @@ Proof.
       iRight. iExists _, _. iSplit; first eauto. simpl; auto.
       iApply (atomically_deconvertible_val_interp with "[$]"); eauto.
       naive_solver.
-    - wp_pures.
-      iMod (twophase_started_abort with "H") as "(H&Hj)".
+    - iDestruct "H" as "(Hrel&Hj)".
+      wp_pures.
       wp_apply (wp_TwoPhase__ReleaseAll' with "[$]").
       wp_pures. iExists _. iFrame.
       rewrite /val_interp -/val_interp.
       iLeft. iExists _, _. iSplit; first eauto. simpl; auto.
-Admitted.
+  }
+Qed.
 
 Existing Instances jrnl_semantics.
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
@@ -385,9 +556,9 @@ Lemma jrnl_refinement (es: @expr jrnl_op) σs e σ (τ: @ty jrnl_ty.(@val_tys jr
   typed_translate.expr_transTy _ _ _ jrnl_trans jrnl_atomic_transTy ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
-  jrnl_initP σ σs →
+  twophase_initP σ σs →
   refinement.trace_refines e e σ es es σs.
-Proof.
+Proof using N PARAMS.
   intros. intros ?.
   efeed pose proof sty_adequacy; eauto using jrnl_init_obligation1, jrnl_init_obligation2,
                                  jrnl_crash_inv_obligation, jrnl_crash_obligation,

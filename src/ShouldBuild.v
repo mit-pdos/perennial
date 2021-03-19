@@ -22,14 +22,15 @@ From Perennial.program_proof Require
      buftxn_replication.buftxn_replication_proof
      alloc_proof
      twophase.twophase_proof
-     (* twophase.twophase_refinement_proof *)
+     twophase.twophase_refinement_proof
      simple.proofs simple.example
      wp_to_wpc.
 From Perennial.program_proof.examples Require
      all_examples.
 
+(* TODO: refactoring in progress
 From Perennial.program_proof.lockservice Require
-     bank_proof incr_proof incr_proxy_proof two_pc_example.
+     bank_proof incr_proof incr_proxy_proof two_pc_example. *)
 
 From Perennial.goose_lang Require
      ffi.append_log_ffi

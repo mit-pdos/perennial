@@ -199,13 +199,28 @@ def main():
                 pkg="github.com/mit-pdos/perennial-examples/" + pkg,
             )
     if distributed_dir is not None:
-        run_goose(
-            path.join(distributed_dir),
-            path.join(perennial_dir, "external/Goose"),
-            pkg="github.com/mit-pdos/lockservice/lockservice",
-            importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
-            excludes=["github.com/mit-pdos/lockservice/grove_ffi"]
-        )
+        pkgs = [
+            "grove_common",
+            "."
+        ]
+        for pkg in pkgs:
+            if pkg == ".":
+                run_goose(
+                    path.join(distributed_dir),
+                    path.join(perennial_dir, "external/Goose"),
+                    pkg="github.com/mit-pdos/lockservice/",
+                    importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
+                    excludes=["github.com/mit-pdos/lockservice/grove_ffi"]
+                )
+            else:
+                run_goose(
+                    path.join(distributed_dir, pkg),
+                    path.join(perennial_dir, "external/Goose"),
+                    pkg="github.com/mit-pdos/lockservice/" + pkg,
+                    importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
+                    excludes=["github.com/mit-pdos/lockservice/grove_ffi"]
+                )
+
     if gokv_dir is not None:
         pkgs = [
             "aof",

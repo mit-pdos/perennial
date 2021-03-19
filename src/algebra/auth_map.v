@@ -517,12 +517,12 @@ Section auth_map.
       apply elem_of_dom in H0 as [v' Hlookup].
       iMod (map_update _ _ v' with "Hctx Hl") as "[Hctx Hl]".
       iSpecialize ("IH" $! (<[l:=v']> m)).
-      apply dom_union_inv in Hdom as (m1&m2 & ? & -> & ? & ?); last first.
+      apply dom_union_inv_L in Hdom as (m1&m2 & -> & ? & ? & ?); last first.
       { apply disjoint_singleton_l, not_elem_of_dom; auto. }
       iMod ("IH" $! m2 with "[%] Hctx Hm0") as "[Hctx Hm0]"; auto.
       iModIntro.
       assert (m1 = {[l := v']}).
-      { apply dom_singleton_inv in H1 as [v'' ->].
+      { apply dom_singleton_inv_L in H1 as [v'' ->].
         f_equal.
         erewrite lookup_union_Some_l in Hlookup; last first.
         { rewrite lookup_singleton_Some //. }
