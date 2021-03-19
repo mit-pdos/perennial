@@ -1,7 +1,6 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth.
 From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.
@@ -9,17 +8,17 @@ From Perennial.goose_lang Require Export wpr_lifting.
 From Perennial.goose_lang Require Import typing adequacy lang.
 Set Default Proof Using "Type".
 
-Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !heapPreG Σ} s k e r σ φ φr φinv Φinv (HINIT: ffi_initP σ.(world)) :
+Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !heapPreG Σ} s k e r σ g φ φr φinv Φinv (HINIT: ffi_initP σ.(world)) :
   (∀ `{Hheap : !heapG Σ},
      ⊢ (ffi_start (heapG_ffiG) σ.(world) -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) ={⊤}=∗
        □ (∀ n ns σ κ, state_interp σ ns κ n -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
        □ (∀ hG (Hpf: @heapG_invG _ _ _ _ Hheap = @heapG_invG _ _ _ _ hG),
                      Φinv hG -∗ □ ∀ σ ns κ n, state_interp σ ns κ n -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
         wpr s k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝))) →
-  recv_adequate (CS := goose_crash_lang) s e r σ (λ v _, φ v) (λ v _, φr v) φinv.
+  recv_adequate (CS := goose_crash_lang) s e r σ g (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, φinv σ).
 Proof.
   intros Hwp.
-  eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ (λ Hinv Hc names, Φinv (heap_update_pre _ _ Hinv Hc (@pbundleT _ _ names))) (λ n, n)).
+  eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ _ (λ Hinv Hc names, Φinv (heap_update_pre _ _ Hinv Hc (@pbundleT _ _ names))) (λ n, n)).
   iIntros (???) "".
   iMod (na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
   iMod (proph_map_name_init _ κs σ.(used_proph_id)) as (name_proph_map) "Hp".
@@ -41,11 +40,12 @@ Proof.
                                                    pbundleT) σ0 κs0). *)
   iExists _.
   iExists _.
+  iExists _.
   iMod (Hwp hG with "[$] [$] [$]") as "(#H1&#H2&Hwp)".
   iModIntro.
   iSplitR.
-  { iModIntro. iIntros (????) "H". rewrite heap_update_pre_update.
-    by iApply "H1".
+  { iModIntro. iIntros (????) "Hσ". rewrite heap_update_pre_update.
+    iApply ("H1" with "Hσ").
   }
   iSplitR.
   {
@@ -56,6 +56,7 @@ Proof.
   }
   iFrame. rewrite /hG//=.
   rewrite ffi_update_pre_update //=. iFrame.
+  iSplitR; first done. (* proving initial global_state_interp *)
   rewrite /wpr. rewrite /hG//=.
   rewrite heap_update_pre_get.
   rewrite //=.

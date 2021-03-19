@@ -1,10 +1,13 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth.
 From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.program_logic Require Export weakestpre adequacy.
+From Perennial.program_logic Require Export weakestpre.
 From Perennial.algebra Require Import gen_heap_names.
 From Perennial.goose_lang Require Import proofmode notation.
 Set Default Proof Using "Type".
+
+(** No actual adequacy theorm here, just definitions that are shared between
+recovery_adequacy and (in the future) distrib_adequacy. *)
 
 Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi} :=
   { ffi_preG: gFunctors -> Type;
@@ -92,21 +95,4 @@ Definition heapΣ `{ext: ext_op} `{ffi_interp_adequacy} : gFunctors := #[invΣ; 
 Instance subG_heapPreG `{ext: ext_op} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} : subG heapΣ Σ → heapPreG Σ.
 Proof.
   solve_inG_deep.
-Qed.
-
-Definition heap_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{!heapPreG Σ} s e σ φ (HINIT: ffi_initP σ.(world)) :
-  (∀ `{!heapG Σ}, ffi_start (heapG_ffiG) σ.(world) -∗
-                  trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗
-                  WP e @ s; ⊤ {{ v, ⌜φ v⌝ }}%I) →
-  adequate s e σ (λ v _, φ v).
-Proof.
-  intros Hwp; eapply (wp_adequacy' _ _); iIntros (???) "".
-  unshelve (iMod (na_heap_init (LK := naMode) tls σ.(heap)) as (?) "Hh").
-  iMod (proph_map_init κs σ.(used_proph_id)) as (?) "Hp".
-  iMod (ffi_name_init _ _ σ.(world)) as (HffiG) "(Hw&Hstart)"; first auto.
-  iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(Htr&?&Hor&?)".
-  iModIntro. iExists
-    (λ σ ns κs nt, (na_heap_ctx tls σ.(heap) ∗ proph_map_interp κs σ.(used_proph_id) ∗ ffi_ctx (ffi_update_pre _ _ HffiG) σ.(world) ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I),
-    (λ _, True%I), _.
-  iFrame. iApply (Hwp (HeapG _ _ _ _ _ _ HtraceG) with "[$] [$] [$]").
 Qed.

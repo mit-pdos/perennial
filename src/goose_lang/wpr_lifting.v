@@ -1,7 +1,6 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth.
 From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.
@@ -73,11 +72,11 @@ Proof.
                           (λ Hc names, Φcx (heap_update _ _ _ Hc (@pbundleT _ _ names)))
                                                     with "[Hwpc] [Hidemp]"); first auto.
   { rewrite //= heap_get_update' //=. }
-  { iModIntro. iIntros (?? σ_pre_crash σ_post_crash Hcrash ns κs ?) "H".
+  { iModIntro. iIntros (?? σ_pre_crash g σ_post_crash Hcrash ns κs ?) "H".
     iSpecialize ("Hidemp" $! (heap_update _ _ _ _ _) with "[//] [//] H").
     {
       rewrite /state_interp.
-      iIntros "(_&_&Hffi_old&Htrace_auth&Horacle_auth)".
+      iIntros "(_&_&Hffi_old&Htrace_auth&Horacle_auth) Hg".
       iMod (na_heap.na_heap_reinit _ tls σ_post_crash.(heap)) as (name_na_heap) "Hh".
       iMod (proph_map.proph_map_reinit _ κs σ_post_crash.(used_proph_id)) as (name_proph_map) "Hp".
       iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi_old") as (ffi_names) "(Hw&Hcrel&Hc)".
