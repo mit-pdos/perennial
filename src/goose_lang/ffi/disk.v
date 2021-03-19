@@ -175,26 +175,26 @@ Section disk.
   Definition disk_size (d: gmap Z Block): Z :=
     1 + highest_addr (dom _ d).
 
-  Definition ext_step (op: DiskOp) (v: val): transition state val :=
+  Definition ext_step (op: DiskOp) (v: val): transition (state*global_state) val :=
     match op, v with
     | ReadOp, LitV (LitInt a) =>
-      b ← reads (λ σ, σ.(world) !! int.Z a) ≫= unwrap;
+      b ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
       l ← allocateN 4096;
-      modify (state_insert_list l (Block_to_vals b));;
+      modify (λ '(σ,g), (state_insert_list l (Block_to_vals b) σ, g));;
       ret $ #(LitLoc l)
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
-      _ ← reads (λ σ, σ.(world) !! int.Z a) ≫= unwrap;
+      _ ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
         (* TODO: use Sydney's executable version from disk_interpreter.v as
         the generator here *)
-      b ← suchThat (gen:=fun _ _ => None) (λ σ b, (forall (i:Z), 0 <= i -> i < 4096 ->
+      b ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) b, (forall (i:Z), 0 <= i -> i < 4096 ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading _, v) => Block_to_vals b !! Z.to_nat i = Some v
                 | _ => False
                 end));
-      modify (set world <[ int.Z a := b ]>);;
+      modify (λ '(σ,g), (set world <[ int.Z a := b ]> σ, g));;
       ret #()
     | SizeOp, LitV LitUnit =>
-      sz ← reads (λ σ, disk_size σ.(world));
+      sz ← reads (λ '(σ,g), disk_size σ.(world));
       ret $ LitV $ LitInt (word.of_Z sz)
     | _, _ => undefined
     end.
@@ -241,7 +241,7 @@ lemmas. *)
     repeat match goal with
         | _ => progress simplify_map_eq/= (* simplify memory stuff *)
         | H : to_val _ = Some _ |- _ => apply of_to_val in H
-        | H : head_step ?e _ _ _ _ _ |- _ =>
+        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
@@ -249,10 +249,10 @@ lemmas. *)
           inversion H; subst; clear H
         end.
 
-  Theorem read_fresh : forall σ a b,
+  Theorem read_fresh : forall σ g a b,
       let l := fresh_locs (dom (gset loc) (heap σ)) in
       σ.(world) !! int.Z a = Some b ->
-      relation.denote (ext_step ReadOp (LitV $ LitInt a)) σ (state_insert_list l (Block_to_vals b) σ) (LitV $ LitLoc $ l).
+      relation.denote (ext_step ReadOp (LitV $ LitInt a)) (σ,g) (state_insert_list l (Block_to_vals b) σ,g) (LitV $ LitLoc $ l).
   Proof.
     intros.
     simpl.
@@ -290,12 +290,12 @@ lemmas. *)
                                   mapsto_block l 1 b }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 ns κ κs n) "(Hσ&Hκs&Hd&Htr) !>".
+    iIntros (σ1 g1 ns κ κs n) "(Hσ&Hκs&Hd&Htr) Hg !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iSplit.
     { iPureIntro.
-      eexists _, _, _, _; simpl.
+      eexists _, _, _, _, _; simpl.
       constructor 1.
       rewrite /head_step /=.
       monad_simpl.
@@ -303,7 +303,7 @@ lemmas. *)
       monad_simpl.
       econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
       monad_simpl. }
-    iNext; iIntros (v2 σ2 efs Hstep).
+    iNext; iIntros (v2 σ2 g2 efs Hstep).
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
     inv_head_step.
     monad_inv.
@@ -406,18 +406,17 @@ lemmas. *)
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 ns κ κs n) "(Hσ&Hκs&Hd&Htr) !>".
+    iIntros (σ1 g1 ns κ κs n) "(Hσ&Hκs&Hd&Htr) Hg !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iDestruct (heap_valid_block with "Hσ Hl") as %?.
     iSplit.
     { iPureIntro.
-      eexists _, _, _, _; cbn.
+      eexists _, _, _, _, _; cbn.
       constructor 1; cbn.
       repeat (monad_simpl; cbn).
-      econstructor; eauto; [ | monad_simpl ].
-      econstructor; eauto. }
-    iNext; iIntros (v2 σ2 efs Hstep).
+      econstructor; eauto; [ econstructor; eauto| monad_simpl ]. }
+    iNext; iIntros (v2 σ2 g2 efs Hstep).
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ]. inv_head_step.
     monad_inv.
     rewrite /= in H1; monad_inv.
