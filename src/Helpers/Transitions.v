@@ -509,22 +509,24 @@ Ltac monad_inv :=
          | [ H: relation.bind (relation.suchThat ?pred) _ ?s1 ?s2 ?v |- _ ] =>
            let pred := (eval hnf in pred) in
            let x := lazymatch pred with
-                    | fun _ x => _ => x
+                    | fun _ x => _ => fresh x
                     (* Hacky support for closures that use patterns on their first arg, see Coq bug #13959 *)
-                    | fun '(_,_) x => _ => x
+                    | fun '(_,_) x => _ => fresh x
+                    (* fallback to a "random" name *)
+                    | _ => fresh
                     end in
-           let x := fresh x in
            let H' := fresh in
            apply relation.inv_bind_suchThat in H;
            destruct H as [x [H' H]]
          | [ H: relation.bind (relation.suchThatBool ?b) _ ?s1 ?s2 ?v |- _ ] =>
            let pred := (eval hnf in pred) in
            let x := lazymatch pred with
-                    | fun _ x => _ => x
+                    | fun _ x => _ => fresh x
                     (* Hacky support for closures that use patterns on their first arg, see Coq bug #13959 *)
-                    | fun '(_,_) x => _ => x
+                    | fun '(_,_) x => _ => fresh x
+                    (* fallback to a "random" name *)
+                    | _ => fresh
                     end in
-           let x := fresh x in
            let H' := fresh in
            apply relation.inv_bind_suchThatBool in H;
            destruct H as [x [H' H]]
