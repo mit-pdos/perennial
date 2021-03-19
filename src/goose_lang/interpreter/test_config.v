@@ -18,7 +18,7 @@ Proof.
 Defined.
 
 Definition startstate : btstate := let p := inhabitant in
-                                   (set world (fun d => ffi_is_disk' $ init_disk (ffi_is_disk d) 30) (fst p), snd p).
+                         ((set world (fun d => ffi_is_disk' $ init_disk (ffi_is_disk d) 30) (fst p), ()), snd p).
 
 (* testing infrastructure *)
 Definition run (p: expr): Error val :=

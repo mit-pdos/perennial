@@ -29,25 +29,25 @@ Section recoverable.
 
   Context {ext:ext_op}.
 
-  Definition openΣ : transition state (Σ*loc) :=
-    bind (reads id) (λ rs, match rs.(world) with
+  Definition openΣ : transition (state*global_state) (Σ*loc) :=
+    bind (reads id) (λ '(rs,g), match rs.(world) with
                            | Opened s l => ret (s,l)
                            | _ => undefined
                            end).
 
-  Definition modifyΣ (f:Σ -> Σ) : transition state unit :=
-    bind openΣ (λ '(s, l), modify (set world (λ _, Opened (f s) l))).
+  Definition modifyΣ (f:Σ -> Σ) : transition (state*global_state) unit :=
+    bind openΣ (λ '(s, l), modify (λ '(σ,g), (set world (λ _, Opened (f s) l) σ, g))).
 
   (* TODO: generalize to a transition to construct the initial value, using a zoom *)
-  Definition initTo (init:Σ) (l:loc) : transition state unit :=
-    bind (reads id) (λ rs, match rs.(world) with
-                           | UnInit => modify (set world (fun _ => Opened init l))
+  Definition initTo (init:Σ) (l:loc) : transition (state*global_state) unit :=
+    bind (reads id) (λ '(rs,g), match rs.(world) with
+                           | UnInit => modify (λ '(σ,g), (set world (fun _ => Opened init l) σ, g))
                            | _ => undefined
                            end).
 
-  Definition open (l:loc) : transition state Σ :=
-    bind (reads id) (λ rs, match rs.(world) with
-                           | Closed s => bind (modify (set world (fun _ => Opened s l)))
+  Definition open (l:loc) : transition (state*global_state) Σ :=
+    bind (reads id) (λ '(rs,g), match rs.(world) with
+                           | Closed s => bind (modify (λ '(σ,g), (set world (fun _ => Opened s l) σ, g)))
                                              (fun _ => ret s)
                            | _ => undefined
                            end).
@@ -143,7 +143,7 @@ Section kvs.
 
   Existing Instances r_mbind r_fmap.
 
-  Definition mark_slice (t:ty) (v:val): transition state () :=
+  Definition mark_slice {state} (t:ty) (v:val): transition state () :=
     match v with
     | PairV (#(LitLoc l)) (PairV #(LitInt sz) #(LitInt cap)) =>
       (* TODO: implement , mark as being read *)
@@ -151,7 +151,7 @@ Section kvs.
     | _ => undefined
     end.
 
-  Definition read_slice (t:ty) (v:val): transition state (list val) :=
+  Definition read_slice {state} (t:ty) (v:val): transition state (list val) :=
     match v with
     | PairV (#(LitLoc l)) (PairV #(LitInt sz) #(LitInt cap)) =>
       (* TODO: implement , return contents *)
@@ -159,13 +159,13 @@ Section kvs.
     | _ => undefined
     end.
 
-  Definition read_kvpair_key (t:ty) (v:val): transition state u64:=
+  Definition read_kvpair_key {state} (t:ty) (v:val): transition state u64:=
     match v with
     | PairV #(LitInt key) #(LitLoc _) => ret key
     | _ => undefined
     end.
 
-  Definition read_kvpair_dataslice (t:ty) (v:val): transition state val :=
+  Definition read_kvpair_dataslice {state} (t:ty) (v:val): transition state val :=
     match v with
     | PairV #(LitInt _) #(LitLoc dataloc) =>ret #(LitLoc dataloc)
     | _ => undefined
@@ -191,12 +191,12 @@ Section kvs.
   (* TODO: implement *)
   Definition to_block (l: list val): option disk.Block := None.
 
-  Definition allocIdent: transition state loc :=
+  Definition allocIdent: transition (state*global_state) loc :=
     l ← allocateN 1;
-    modify (set heap <[l := Free #()]>);;
+    modify (λ '(σ, g), (set heap <[l := Free #()]> σ, g));;
            ret l.
 
-  Definition kvs_step (op:KvsOp) (v:val) : transition state val :=
+  Definition kvs_step (op:KvsOp) (v:val) : transition (state*global_state) val :=
     match op, v with
     | InitOp, LitV LitUnit =>
       kvsPtr ← allocIdent;
@@ -211,8 +211,8 @@ Section kvs.
       check (kvsPtr = kvsPtr_);;
       b ← unwrap (kvs !! key);
       l ← allocateN 4096;
-      modify (state_insert_list l (disk.Block_to_vals b));;
-             ret $ (PairV #(LitLoc l) #true) (*This could return false?*)
+      modify (λ '(σ,g), (state_insert_list l (disk.Block_to_vals b) σ, g));;
+             ret $ (PairV #(LitLoc l) #true) (*This could return false?*) 
     | MultiPutMarkOp, PairV (LitV (LitLoc kvsPtr)) v => mark_slice KVPairT v;; ret $ #()
     | MultiPutCommitOp, PairV (LitV (LitLoc kvsPtr)) v =>
       (*convert goose representations of kvpair to coq pair of key and value, *)
@@ -678,7 +678,7 @@ Instance kvsG0 : kvsG Σ := refinement_spec_ffiG.
     repeat match goal with
         | _ => progress simplify_map_eq/= (* simplify memory stuff *)
         | H : to_val _ = Some _ |- _ => apply of_to_val in H
-        | H : head_step ?e _ _ _ _ _ |- _ =>
+        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
@@ -688,19 +688,19 @@ Instance kvsG0 : kvsG Σ := refinement_spec_ffiG.
           rewrite Heq in H1
         end.
 
-Lemma ghost_step_init_stuck E j K {HCTX: LanguageCtx K} σ:
+Lemma ghost_step_init_stuck E j K {HCTX: LanguageCtx K} σ g:
   nclose sN_inv ⊆ E →
   (σ.(@world _ kvs_spec_ffi_model.(@spec_ffi_model_field)) ≠ UnInit) →
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
-  source_state σ -∗
+  source_state σ g -∗
   |NC={E}=> False.
 Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
   { eapply stuck_ExternalOp; first (by eauto).
     apply head_irreducible_not_atomically; [ by inversion 1 | ].
-    intros ???? Hstep.
+    intros ????? Hstep.
     repeat (inv_head_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)); try congruence;
     repeat (inv_head_step; simpl in *; repeat monad_inv).
@@ -708,19 +708,19 @@ Proof.
   { solve_ndisj. }
 Qed.
 
-Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:
+Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ g:
   nclose sN_inv ⊆ E →
   (∀ vs, σ.(@world _ kvs_spec_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
-  source_state σ -∗
+  source_state σ g -∗
   |NC={E}=> False.
 Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
   { eapply stuck_ExternalOp; first (by eauto).
     apply head_irreducible_not_atomically; [ by inversion 1 | ].
-    intros ?????.
+    intros ??????.
     repeat (inv_head_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)); try congruence;
     repeat (inv_head_step; simpl in *; repeat monad_inv); eauto.
@@ -737,7 +737,7 @@ Lemma kvs_closed_init_false E j K {HCTX: LanguageCtx K}:
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hj".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (kvs_ctx_unify_closed' with "[$] [$]") as %Heq; subst.
   iMod (ghost_step_init_stuck with "[$] [$] [$]") as "[]".
@@ -753,7 +753,7 @@ Lemma kvs_opened_init_false l E j K {HCTX: LanguageCtx K}:
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (kvs_ctx_unify_opened with "[$] [$]") as %Heq; subst.
   iMod (ghost_step_init_stuck with "[$] [$] [$]") as "[]".
@@ -769,7 +769,7 @@ Lemma kvs_init_init_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx 
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iEval (simpl) in "Hffi".
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
@@ -802,14 +802,14 @@ Lemma kvs_init_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx 
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iEval (simpl) in "Hffi".
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
     { eapply stuck_ExternalOp; first (by eauto).
       apply head_irreducible_not_atomically; [ by inversion 1 | ].
-      intros ?????. by repeat (inv_head_step; simpl in *; repeat monad_inv).
+      intros ??????. by repeat (inv_head_step; simpl in *; repeat monad_inv).
     }
     { solve_ndisj. }
   - iMod (ghost_step_init_stuck with "Hj [$] [$]") as "[]".
@@ -829,7 +829,7 @@ Lemma ghost_step_kvs_init E j K {HCTX: LanguageCtx K}:
   ∃ (l: loc), j ⤇ K (#l)%V ∗ kvs_open l.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hvals Hj".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (kvs_ctx_unify_uninit with "[$] [$]") as %Heq.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
@@ -853,7 +853,7 @@ Proof.
   iMod (gen_heap_alloc_big ∅ kvs_init_s with "Hvals_auth") as "Hgh".
   { apply map_disjoint_empty_r. }
   { iMod ("Hclo" with "[Hσ H Hrest Hgh]") as "_".
-    - iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen".
+    - iNext. iExists _, _. iFrame "H".  iFrame. iFrame "Hopen".
       iDestruct "Hgh" as "[Hgh Hmap]". simpl in *.
       rewrite right_id; auto. rewrite fresh_alloc_equiv_null_non_alloc; iFrame.
     - iModIntro. iExists _. iFrame "Hopen". iFrame.
@@ -868,7 +868,7 @@ Lemma kvs_uninit_open_false E j K {HCTX: LanguageCtx K}:
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hj".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (kvs_ctx_unify_uninit with "[$] [$]") as %Heq; subst.
   iMod (ghost_step_open_stuck with "[$] [$] [$]") as "[]".
@@ -884,7 +884,7 @@ Lemma kvs_opened_open_false l E j K {HCTX: LanguageCtx K}:
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   simpl.
   iDestruct (kvs_ctx_unify_opened with "[$] [$]") as %Heq; subst.
@@ -901,7 +901,7 @@ Lemma kvs_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx 
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iEval (simpl) in "Hffi".
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
@@ -935,7 +935,7 @@ Lemma ghost_step_kvs_open E j K {HCTX: LanguageCtx K}:
   ∃ (l: loc), j ⤇ K #l%V ∗ kvs_open l.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hj".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (kvs_ctx_unify_closed' with "[$] [$]") as %Heq.
   destruct Heq as [s Heq].
@@ -958,7 +958,7 @@ Proof.
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { auto. }
   iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
-  { iNext. iExists _. iFrame "H".  iFrame. iFrame "Hopen". rewrite fresh_alloc_equiv_null_non_alloc. iFrame. }
+  { iNext. iExists _, _. iFrame "H".  iFrame. iFrame "Hopen". rewrite fresh_alloc_equiv_null_non_alloc. iFrame. }
   iModIntro. iExists _. iFrame "Hopen". iFrame.
 Qed.
 
