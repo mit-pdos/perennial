@@ -539,17 +539,14 @@ Proof using N PARAMS.
       iRight. iExists _, _. iSplit; first eauto. simpl; auto.
       iApply (atomically_deconvertible_val_interp with "[$]"); eauto.
       naive_solver.
-    - wp_pures.
-      admit.
-      (*
-      iMod (twophase_started_abort with "H") as "(H&Hj)".
+    - iDestruct "H" as "(Hrel&Hj)".
+      wp_pures.
       wp_apply (wp_TwoPhase__ReleaseAll' with "[$]").
       wp_pures. iExists _. iFrame.
       rewrite /val_interp -/val_interp.
       iLeft. iExists _, _. iSplit; first eauto. simpl; auto.
-      *)
   }
-Admitted.
+Qed.
 
 Existing Instances jrnl_semantics.
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.

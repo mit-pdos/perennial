@@ -1114,6 +1114,26 @@ it immediately opens the na_crash_inv to lift the durable_mapsto and modify toke
 
 *)
 
+Lemma ghost_step_jrnl_atomically_abort E j K {HCTX: LanguageCtx K} (l: sval) e :
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  jrnl_open -∗
+  j ⤇ K (Atomically l e)
+  -∗ |NC={E}=>
+  j ⤇ K NONEV.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hopen Hj".
+  iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iMod (ghost_step_stuck' with "[$] [$] [$]") as (Hnstuck) "(Hj&H)"; first by solve_ndisj.
+  iMod (ghost_step_lifting _ _ _ _ _ [] _ _ [] with "[$] [$] [$]") as "($&Hstate'&_)".
+  { apply head_prim_step. eapply head_step_atomically_fail.
+    eapply atomically_not_stuck_body_safe; eauto. }
+  { solve_ndisj. }
+  iMod ("Hclo" with "[-]") as "_".
+  { iNext. iExists _. iFrame. }
+  iModIntro. eauto.
+Qed.
 
 Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v: sval) σj' :
   always_steps e σj (SOMEV v) σj' →

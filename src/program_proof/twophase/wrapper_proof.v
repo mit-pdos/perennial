@@ -286,19 +286,19 @@ Section proof.
           if ok then
             j ⤇ K (SOMEV v)
           else
-            (* j ⤇ K NONEV *)
-            ∃ ls e1, j ⤇ K (Atomically ls e1)
+            j ⤇ K NONEV
         )
     }}}.
   Proof.
     iIntros (Φ) "Htwophase HΦ".
     iNamed "Htwophase".
     iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
+    iApply wp_ncfupd.
     unshelve (wp_apply (
       wp_TwoPhase__CommitNoRelease_raw
       _ _ _ _ _ _ _ _
       (j ⤇ K (SOMEV v))%I
-      (j ⤇ K (Atomically ls e1))%I
+      (|NC={⊤}=> j ⤇ K NONEV)%I
       with "[$Htwophase Hj]"
     )).
     1-2: refine _.
@@ -342,6 +342,8 @@ Section proof.
         iSplit.
         2: {
           iFrame.
+          iSplitR "Hj"; last first.
+          { iMod (ghost_step_jrnl_atomically_abort with "[$] [$] [$]") as "$"; auto. }
           iApply big_sepM_sep.
           destruct Hjrnl_maps_mt as [<- _].
           rewrite !big_sepM_fmap.
@@ -384,15 +386,48 @@ Section proof.
       apply addr2flat_eq; intuition.
     }
     destruct ok; first by iFrame.
-    iExists _, _.
-    iFrame.
+    iMod "HQ"; eauto.
   Qed.
 
-  Theorem twophase_started_abort l γ γ' dinit objs_dom j K e1 e2 :
+  Theorem twophase_started_abort l γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} e1 e2 :
     is_twophase_started l γ γ' dinit objs_dom j K e1 e2 -∗
     |NC={⊤}=> is_twophase_releasable l γ γ' objs_dom ∗
               j ⤇ K NONEV.
-  Proof. Admitted.
+  Proof.
+    iIntros "Htwophase".
+    iNamed "Htwophase".
+    iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
+    rewrite /is_twophase_raw/is_twophase_releasable.
+    iNamed "Htwophase".
+    iMod (ghost_step_jrnl_atomically_abort with "[$] [$] [$]") as "$"; auto.
+    iExists _, _, _, _.
+    iDestruct (is_twophase_locks_get_pures with "Hlocks")
+      as "#Hlocks_pures".
+    iNamed "Hlocks_pures".
+    iFrame "∗ %".
+    rewrite -big_sepS_list_to_set; last by assumption.
+    rewrite -Hlocks_held.
+    iModIntro.
+    iApply big_sepS_set_map.
+    {
+      intros a1 a2 Hacc1 Hacc2 Heq.
+      apply elem_of_dom in Hacc1.
+      apply elem_of_dom in Hacc2.
+      destruct Hacc1 as [vo1 Hacc1].
+      destruct Hacc2 as [vo2 Hacc2].
+      apply Hvalids in Hacc1.
+      apply Hvalids in Hacc2.
+      rewrite /mapsto_valid in Hacc1.
+      rewrite /mapsto_valid in Hacc2.
+      apply addr2flat_eq; intuition.
+    }
+    rewrite /twophase_linv_flat.
+    iApply big_sepM_dom.
+    iApply (big_sepM_mono with "Hcrash_invs").
+    iIntros. iExists _. rewrite /twophase_linv. iSplit; last done.
+    iExists _. iFrame. iSplit; last eauto.
+    (* How do we get the modify token? *)
+  Admitted.
 
   Theorem wp_TwoPhase__ReleaseAll' l γ γ' objs_dom :
     {{{ is_twophase_releasable l γ γ' objs_dom }}}
