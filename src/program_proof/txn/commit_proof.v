@@ -198,7 +198,7 @@ Opaque struct.t.
       iSplitR.
       { rewrite -app_assoc. simpl. done. }
       iSplitR.
-      { iPureIntro. erewrite map_difference_delete; eauto.
+      { iPureIntro. erewrite difference_delete; eauto.
         eapply lookup_weaken; eauto. }
       iFrame "Hblks".
       iFrame "Hbufamap_todo".
@@ -335,7 +335,7 @@ Opaque struct.t.
       iSplitR.
       { rewrite -app_assoc. done. }
       iSplitR.
-      { iPureIntro. erewrite map_difference_delete; eauto.
+      { iPureIntro. erewrite difference_delete; eauto.
         erewrite lookup_weaken; eauto. }
       iSplitR.
       { iPureIntro. etransitivity; first by apply delete_subseteq. eauto. }
@@ -485,7 +485,7 @@ Proof.
     iExists _, _, (delete k offmaps_todo), (<[k := x]> offmaps_done).
     iFrame "Hblks_var Hblks' Hmtodo".
     iSplitR.
-    { iPureIntro. rewrite H0. rewrite delete_insert_union; eauto. }
+    { iPureIntro. rewrite H0. rewrite union_delete_insert; eauto. }
     iSplitR.
     { iPureIntro. set_solver. }
     iApply big_sepML_insert_app.

@@ -485,7 +485,7 @@ Proof using.
       iExists _, _, (delete a mtodo), (<[a:=vbuf]> mdone), (delete a amtodo).
       iSplitR.
       { iPureIntro. split.
-        { rewrite Map.delete_insert_union; eauto. }
+        { rewrite union_delete_insert; eauto. }
         set_solver. }
       iSplitR.
       { iPureIntro. split.
@@ -515,7 +515,7 @@ Proof using.
       iExists _, _, (delete a mtodo), (<[a:=vbuf]> mdone), (delete a amtodo).
       iSplitR.
       { iPureIntro. split.
-        { rewrite Map.delete_insert_union; eauto. }
+        { rewrite union_delete_insert; eauto. }
         set_solver. }
       iSplitR.
       { iPureIntro. split.

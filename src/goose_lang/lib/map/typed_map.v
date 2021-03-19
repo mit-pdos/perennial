@@ -337,7 +337,7 @@ Proof using.
     iApply "HΦ". iFrame "HI".
     iPureIntro; split.
     2: set_solver.
-    rewrite delete_insert_union; intuition eauto. }
+    rewrite union_delete_insert; intuition eauto. }
   iIntros "(Hm & HI & %)".
   iApply "HΦ". iFrame.
 Qed.

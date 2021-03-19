@@ -48,12 +48,12 @@ Section lemmas.
       apply elem_of_dom in Hindom as [v' Hlookup].
       iMod (ghost_map_update v' with "Hauth Hl") as "[Hauth Hl]".
       iSpecialize ("IH" $! (<[l:=v']> m)).
-      apply dom_union_inv in Hdom as (m1l&m1' & ? & -> & Hm1ldom & ?); last first.
+      apply dom_union_inv_L in Hdom as (m1l & m1' & -> & ? & Hm1ldom & ?); last first.
       { apply disjoint_singleton_l, not_elem_of_dom; auto. }
       iMod ("IH" $! m1' with "[%] Hauth Hm0") as "[Hauth Hm0]"; auto.
       iModIntro.
       assert (m1l = {[l := v']}).
-      { apply dom_singleton_inv in Hm1ldom as [v'' ->].
+      { apply dom_singleton_inv_L in Hm1ldom as [v'' ->].
         f_equal.
         erewrite lookup_union_Some_l in Hlookup; last first.
         { rewrite lookup_singleton_Some //. }
