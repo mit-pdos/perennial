@@ -9,9 +9,21 @@ Set Default Proof Using "Type".
 
 (*** Recovery ***)
 
+(* An irisG instance usually depends on some implicit ghost names as part of
+   state interpretation. Some of these names need to be changed as a result of a
+   crash.  A pbundleG T instance is a way to declare a dependence on some type T
+   which can encode this set of names *)
+
 Class pbundleG (T: ofe) (Σ: gFunctors) := {
   pbundleT : T;
 }.
+
+(* A perennialG instance generates an irisG instance given an element t of the designated type T and
+   a crashG instance. We require some properties of the generated irisG instances, such as that
+   they all use the same num_laters_per_step function.
+
+   TODO: for the distributed version, we also need to similarly add fields requiring that for every t,
+   the invG Σ instance is the same, and the global_state_interp function is the same *)
 
 Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofe) (Σ : gFunctors) := PerennialG {
   perennial_irisG :> ∀ (Hcrash: crashG Σ), pbundleG T Σ → irisG Λ Σ;
@@ -32,6 +44,7 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
   (WPC e @ s ; k; E
      {{ Φ }}
      {{ ∀ σ σ' (HC: crash_prim_step CS σ σ') ns κs n,
+        (* TODO: we can probably give access to global_interp g1 for some g1 here *)
         state_interp σ ns κs n ={E}=∗  ▷ ∀ H2 q, NC q ={E}=∗ ∃ t, state_interp σ' (S ns) κs 0 ∗ (Φinv H2 t ∧ wpr H2 t E rec rec (λ v, Φr H2 t v) Φinv Φr) ∗ NC q}})%I.
 
 Local Instance wpr_pre_contractive `{!perennialG Λ CS T Σ} s k: Contractive (wpr_pre s k).
