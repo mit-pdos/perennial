@@ -357,7 +357,7 @@ Proof.
   - subst. simpl.
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. econstructor; eauto.
       { simpl. econstructor; eauto. }
       { econstructor; eauto. }
@@ -373,7 +373,7 @@ Proof.
     { iClear "∗ #". auto. }
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. econstructor; eauto.
     }
     iPoseProof (ctx_has_semTy_subst with "[] []") as "H1".
@@ -401,7 +401,7 @@ Proof.
     * wpc_pures; first by (iClear "∗ #"; auto). simpl.
       iApply wp_wpc.
       iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. econstructor; eauto.
       }
       iApply wpc_wp.
@@ -409,7 +409,7 @@ Proof.
     * wpc_pures; first by (iClear "∗ #"; auto). simpl.
       iApply wp_wpc.
       iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. econstructor; eauto.
       }
       iApply wpc_wp.
@@ -426,7 +426,7 @@ Proof.
     iNext.
     iIntros.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     iModIntro. iExists _. iFrame. iExists _. iPureIntro; eauto.
@@ -449,7 +449,7 @@ Proof.
     destruct Hres as (x&Heq1&Heq2).
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
     }
@@ -473,7 +473,7 @@ Proof.
     destruct Hres as (x&Heq1&Heq2).
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
     }
@@ -497,7 +497,7 @@ Proof.
     destruct Hres as (x&Heq1&Heq2).
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
     }
@@ -521,7 +521,7 @@ Proof.
     destruct Hres as (x&Heq1&Heq2).
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
     }
@@ -536,7 +536,7 @@ Proof.
     iDestruct "Hv1" as (?) "(%&%)"; subst.
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     wp_pures; eauto.
@@ -555,7 +555,7 @@ Proof.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     wp_pures; auto.
@@ -587,7 +587,7 @@ Proof.
       iDestruct "Hv1" as (?) "(%&%)"; subst;
       iDestruct "Hv2" as (?) "(%&%)"; subst;
     (iDestruct (twophase_started_step_puredet with "Hj") as "Hj";
-        [ intros ?; apply head_prim_step_trans'; repeat econstructor; eauto
+        [ intros ??; apply head_prim_step_trans'; repeat econstructor; eauto
         | wp_pures; eauto; iExists _; iFrame; eauto]).
   - subst. simpl.
     wpc_bind (subst_map _ e1').
@@ -613,7 +613,7 @@ Proof.
       iDestruct "Hv1" as (?) "(%&%)"; subst;
       iDestruct "Hv2" as (?) "(%&%)"; subst;
     (iDestruct (twophase_started_step_puredet with "Hj") as "Hj";
-        [ intros ?; apply head_prim_step_trans'; repeat econstructor; eauto
+        [ intros ??; apply head_prim_step_trans'; repeat econstructor; eauto
         | wp_pures; eauto; iExists _; iFrame; eauto]).
   - subst. simpl.
     wpc_bind (subst_map _ e1').
@@ -638,7 +638,7 @@ Proof.
       iDestruct "Hv1" as (?) "(%&%)"; subst;
       iDestruct "Hv2" as (?) "(%&%)"; subst;
     (iDestruct (twophase_started_step_puredet with "Hj") as "Hj";
-        [ intros ?; apply head_prim_step_trans'; repeat econstructor; eauto
+        [ intros ??; apply head_prim_step_trans'; repeat econstructor; eauto
         | wp_pures; eauto; iExists _; iFrame; eauto]).
   (* data *)
   - subst. simpl.
@@ -663,7 +663,7 @@ Proof.
     spec_bind (_ ,_)%E as Hctx'.
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     wp_pures; auto.
@@ -681,7 +681,7 @@ Proof.
 
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     wp_pures; eauto.
@@ -698,7 +698,7 @@ Proof.
 
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     wp_pures; eauto.
@@ -724,14 +724,14 @@ Proof.
     spec_bind (vs1, vs2)%E as Hctx'.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ (λ x : sexpr, K (ectx_language.fill [InjRCtx] x))
                  with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
 
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     iApply wp_wpc.
@@ -774,7 +774,7 @@ Proof.
     spec_bind (App _ vsl)%E as Hctx'.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x, K (ectx_language.fill [AppLCtx vsnilfun; AppLCtx vsconsfun] x))  with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     wp_pures; eauto.
@@ -784,7 +784,7 @@ Proof.
     spec_bind (λ: _, _)%E as Hctx'.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x, K (ectx_language.fill [AppLCtx vsnilfun; AppLCtx vsconsfun] x))  with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     simpl.
@@ -793,7 +793,7 @@ Proof.
     spec_bind (App _ vsnilfun)%E as Hctx'.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x, K (ectx_language.fill [AppLCtx vsconsfun] x))  with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     clear Hctx'.
@@ -802,7 +802,7 @@ Proof.
     spec_bind (λ: _, _)%E as Hctx'.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x, K (ectx_language.fill [AppLCtx vsconsfun] x))  with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     clear Hctx'.
@@ -810,7 +810,7 @@ Proof.
 
     spec_bind (App _ vsconsfun)%E as Hctx'.
     iDestruct (twophase_started_step_puredet  with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     clear Hctx'.
@@ -822,14 +822,14 @@ Proof.
 
     * simpl.
       iDestruct (twophase_started_step_puredet  with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. repeat econstructor; eauto.
       }
 
       spec_bind (Rec BAnon _ (vsnilfun (LitV LitUnit)))%E as Hctx'.
       iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                    (λ x, K (ectx_language.fill [AppLCtx #()] x)) with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. repeat econstructor; eauto.
       }
       simpl.
@@ -837,7 +837,7 @@ Proof.
 
       iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _ _
                    _ with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. repeat econstructor; eauto.
       }
 
@@ -855,7 +855,7 @@ Proof.
     * simpl.
       iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _ _
                    _ with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. repeat econstructor; eauto.
       }
 
@@ -863,7 +863,7 @@ Proof.
                       (Var "p"))))%E as Hctx'.
       iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                    (λ x : sexpr, K (ectx_language.fill [AppLCtx (vs, val_of_list lvs)] x)) with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. repeat econstructor; eauto.
       }
       simpl.
@@ -871,7 +871,7 @@ Proof.
 
       iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _ _
                    _ with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. repeat econstructor; eauto.
       }
       simpl.
@@ -902,7 +902,7 @@ Proof.
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
                  _ with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     simpl.
@@ -922,7 +922,7 @@ Proof.
     iApply wp_wpc.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
                  _ with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     wp_pures; auto.
@@ -944,7 +944,7 @@ Proof.
       iApply wp_wpc.
       iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
                                                _ with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. repeat econstructor; eauto.
       }
       iApply wpc_wp.
@@ -969,7 +969,7 @@ Proof.
       iApply wp_wpc.
       iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _ _
                                                _ with "Hj") as "Hj".
-      { intros ?.
+      { intros ??.
         apply head_prim_step_trans'. repeat econstructor; eauto.
       }
       iApply (wpc_wp _ _).
@@ -1017,7 +1017,7 @@ Proof.
     spec_bind (addr2val' (a, o)%core, #x)%E as Hctx'.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     iPoseProof (wp_TwoPhase__ReadBuf' tph _ _ _ _ _ _ _ _ (a, o) x with "Hj") as "H".
@@ -1052,7 +1052,7 @@ Proof.
     spec_bind (addr2val' (a, o)%core, (val_of_obj' v))%E as Hctx'.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) with "Hj") as "Hj".
-    { intros ?.
+    { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     iPoseProof (wp_TwoPhase__OverWrite' tph _ _ _ _ _ _ _ _ (a, o) v with "Hj") as "H".

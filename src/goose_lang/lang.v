@@ -1143,7 +1143,7 @@ Definition stuck' (e : expr) (σ : state) (g : global_state) :=
   to_val e = None ∧ irreducible' e σ g.
 
 Definition prim_step'_safe e s g :=
-  (∀ e' s' g', rtc (λ '(e, s, g) '(e', s', g'), prim_step' e s g [] e' s' g' []) (e, s, g) (e', s', g') →
+  (∀ e' s' g', rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' []) (e, (s, g)) (e', (s', g')) →
             ¬ stuck' e' s' g').
 
 Inductive head_step_atomic:
@@ -1152,7 +1152,7 @@ Inductive head_step_atomic:
      head_step e s g κs e' s' g' efs →
      head_step_atomic e s g κs e' s' g' efs
  | head_step_atomically : ∀ (vl : val) e s g κs v' s' g',
-     rtc (λ '(e, s, g) '(e', s', g'), prim_step' e s g [] e' s' g' []) (e, s, g) (Val (InjRV v'), s', g') →
+     rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' []) (e, (s, g)) (Val (InjRV v'), (s', g')) →
      prim_step'_safe e s g →
      head_step_atomic (Atomically (of_val vl) e) s g κs (Val (InjRV v')) s' g' []
  | head_step_atomically_fail : ∀ vl e s g κs,

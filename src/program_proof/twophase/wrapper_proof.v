@@ -477,7 +477,7 @@ Section proof.
           (ffi := (spec_ffi_model_field))
           (ffi_semantics := (spec_ext_semantics_field))
           K} e0 e1 e2:
-    (∀ σ, prim_step' e1 σ [] e2 σ []) →
+    (∀ σ g, prim_step' e1 σ g [] e2 σ g []) →
     is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e1) -∗
     is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e2).
   Proof. Admitted.
@@ -489,7 +489,7 @@ Section proof.
           (ffi_semantics := (spec_ext_semantics_field))
           K} e0 e :
     nclose sN ⊆ E →
-    (∀ s, stuck' e s) →
+    (∀ s g, stuck' e s g) →
     is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e)
     -∗ |NC={E}=> False.
   Proof. Admitted.

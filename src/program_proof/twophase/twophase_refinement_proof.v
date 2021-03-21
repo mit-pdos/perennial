@@ -552,12 +552,12 @@ Existing Instances jrnl_semantics.
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 (* XXX: might need to change typed_translate / refinement to use the spec_ wrappers around type classes *)
 
-Lemma jrnl_refinement (es: @expr jrnl_op) σs e σ (τ: @ty jrnl_ty.(@val_tys jrnl_op)):
+Lemma jrnl_refinement (es: @expr jrnl_op) σs gs e σ g (τ: @ty jrnl_ty.(@val_tys jrnl_op)):
   typed_translate.expr_transTy _ _ _ jrnl_trans jrnl_atomic_transTy ∅ es e τ →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   twophase_initP σ σs →
-  refinement.trace_refines e e σ es es σs.
+  refinement.trace_refines e e σ g es es σs gs.
 Proof using N PARAMS.
   intros. intros ?.
   efeed pose proof sty_adequacy; eauto using jrnl_init_obligation1, jrnl_init_obligation2,
