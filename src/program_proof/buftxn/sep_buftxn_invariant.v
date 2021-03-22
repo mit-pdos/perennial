@@ -301,19 +301,32 @@ Section goose_lang.
     iApply "HrestoreP0". iFrame.
   Qed.
 
-  Theorem is_buftxn_to_old_pred l γ dinit γtxn P0 :
-    is_buftxn l γ dinit γtxn P0 -∗ P0 (durable_mapsto_own γ).
+  Theorem is_buftxn_to_old_pred' l γ dinit γtxn γdurable committed_mT :
+    "Hbuftxn_mem" ∷ is_buftxn_mem l γ dinit γtxn γdurable -∗
+    "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT -∗
+    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) -∗
+    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ a v).
   Proof.
-    iNamed 1.
+    iIntros "???".
+    iNamed.
     iNamed "Hbuftxn_mem".
-    iNamed "Hbuftxn_durable".
     iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->.
-    iApply "HrestoreP0".
     iApply big_sepM_sep. iFrame.
     iDestruct (mspec.is_buftxn_to_committed_mapsto_txn with "Hbuftxn") as "Hmod".
     iApply (big_sepM_mono with "Hmod").
     iIntros (k x Hkx) "H".
     iExists _; iFrame.
+  Qed.
+
+  Theorem is_buftxn_to_old_pred l γ dinit γtxn P0 :
+    is_buftxn l γ dinit γtxn P0 -∗ P0 (durable_mapsto_own γ).
+  Proof.
+    iNamed 1.
+    iNamed "Hbuftxn_durable".
+    iApply "HrestoreP0".
+    iApply (
+      is_buftxn_to_old_pred' with "Hbuftxn_mem Hdurable_frag Hold_vals"
+    ).
   Qed.
 
   Definition buftxn_maps_to γtxn (a: addr) obj : iProp Σ :=

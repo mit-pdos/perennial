@@ -8,6 +8,7 @@ From Perennial.program_proof Require Import twophase.op_wrappers.
 From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
 From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
 From Perennial.program_proof Require Import twophase.twophase_proof.
+From Perennial.program_logic Require Import na_crash_inv.
 From Perennial.goose_lang.lib.list Require Import list.
 From Perennial.goose_lang Require Import spec_assert.
 
@@ -389,6 +390,113 @@ Section proof.
     iMod "HQ"; eauto.
   Qed.
 
+  Lemma na_crash_inv_open_modify_ncfupd_sepM `{Countable A} {B} k E (P: A → B → iProp Σ) Q Q' R m:
+    ([∗ map] i ↦ x ∈ m,
+      na_crash_inv (S k) (Q i x) (P i x)
+    ) -∗
+    (
+      ([∗ map] i ↦ x ∈ m,
+        ▷ (Q i x)
+      ) -∗
+      |NC={E}=> □ ([∗ map] i ↦ x ∈ m,
+        (
+          ▷ (Q' i x) -∗
+          |C={⊤}_k=> ▷ (P i x)
+        )
+      ) ∗
+      ([∗ map] i ↦ x ∈ m,
+        ▷ (Q' i x)
+      ) ∗
+      R
+    ) -∗
+    |NC={E}=>
+    R ∗
+    ([∗ map] i ↦ x ∈ m,
+      na_crash_inv (S k) (Q' i x) (P i x)
+    ).
+  Proof.
+    revert R.
+    induction m as [|i x m] using map_ind.
+    {
+      iIntros (?) "_ Hrestore".
+      iDestruct ("Hrestore" with "[]") as "> (_&_&$)";
+        first by (iApply big_sepM_empty; trivial).
+      iApply big_sepM_empty; trivial.
+    }
+    iIntros (?) "Hcrash_invs Hrestores".
+    iDestruct (big_sepM_insert with "Hcrash_invs")
+      as "[Hcrash_inv Hcrash_invs]";
+      first by assumption.
+    iDestruct (
+      IHm
+      (
+        na_crash_inv (S k) (Q' i x) (P i x) ∗
+        R
+      )%I
+      with "Hcrash_invs [Hrestores Hcrash_inv]"
+    ) as "> [[Hcrash_inv HR] Hcrash_invs]".
+    {
+      iIntros "HQs".
+      iDestruct (
+        na_crash_inv_open_modify_ncfupd _ _ _ _ _
+        (
+          ([∗ map] i↦x ∈ m, ▷ Q' i x) ∗
+          □ ([∗ map] i↦x ∈ m, (▷ Q' i x -∗ |C={⊤}_k=> ▷ P i x)) ∗
+          R
+        )%I
+        with "Hcrash_inv [Hrestores HQs]"
+      ) as "> [(HQ's&#Hstatuses&HR) Hcrash_inv]".
+      {
+        iIntros "HQ".
+        iDestruct ("Hrestores" with "[HQs HQ]") as "> (#Hstatuses&HQ's&HR)".
+        {
+          iApply big_sepM_insert; first by assumption.
+          iFrame.
+        }
+        iDestruct (big_sepM_insert with "HQ's")
+          as "[HQ' HQ's]";
+          first by assumption.
+        iDestruct (big_sepM_insert with "Hstatuses")
+          as "[Hstatus Hstatuses']";
+          first by assumption.
+        iFrame "∗ #".
+        trivial.
+      }
+      iFrame.
+      trivial.
+    }
+    iModIntro.
+    iFrame.
+    iApply big_sepM_insert; first by assumption.
+    iFrame.
+  Qed.
+
+  Lemma na_crash_inv_status_wand_sepM {A} `{Countable K} (m: gmap K A) k Q P :
+    ([∗ map] i ↦ x ∈ m, na_crash_inv k (Q i x) (P i x)) -∗
+    □ (
+      [∗ map] i ↦ x ∈ m,
+      ▷ Q i x -∗
+     |C={⊤}_Init.Nat.pred k=>
+      ▷ P i x
+    ).
+  Proof.
+    iInduction m as [|i x m] "IH" using map_ind.
+    {
+      iIntros "_ !>".
+      iApply big_sepM_empty.
+      trivial.
+    }
+    iIntros "Hcrash_invs".
+    iDestruct (big_sepM_insert with "Hcrash_invs")
+      as "[Hcrash_inv Hcrash_invs]";
+      first by assumption.
+    iDestruct ("IH" with "Hcrash_invs") as "#Hstatuses".
+    iDestruct (na_crash_inv_status_wand with "Hcrash_inv") as "#Hstatus".
+    iModIntro.
+    iApply big_sepM_insert; first by assumption.
+    iFrame "#".
+  Qed.
+
   Theorem twophase_started_abort l γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} e1 e2 :
     is_twophase_started l γ γ' dinit objs_dom j K e1 e2 -∗
     |NC={⊤}=> is_twophase_releasable l γ γ' objs_dom ∗
@@ -396,8 +504,6 @@ Section proof.
   Proof.
     iIntros "Htwophase".
     iNamed "Htwophase".
-    iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
-    rewrite /is_twophase_raw/is_twophase_releasable.
     iNamed "Htwophase".
     iMod (ghost_step_jrnl_atomically_abort with "[$] [$] [$]") as "$"; auto.
     iExists _, _, _, _.
@@ -407,6 +513,49 @@ Section proof.
     iFrame "∗ %".
     rewrite -big_sepS_list_to_set; last by assumption.
     rewrite -Hlocks_held.
+    iNamed "Hbuftxn".
+    iDestruct (na_crash_inv_status_wand_sepM with "Hcrash_invs") as
+      "#Hstatuses".
+    iDestruct (
+      na_crash_inv_open_modify_ncfupd_sepM _ _ _ _
+      (λ a vobj,
+        twophase_crash_inv_pred jrnl_mapsto_own γ a (committed vobj)
+      )
+      (
+        [∗ map] a ↦ vobj ∈ mt_changed,
+          modify_token γ a
+      )%I
+      with
+      "Hcrash_invs [Hbuftxn_mem Hbuftxn_durable_frag]"
+    ) as "> [Htoks Hcrash_invs]".
+    {
+      iIntros "Hpreds".
+      iApply big_sepM_later_2 in "Hpreds".
+      iMod "Hpreds".
+      iDestruct (big_sepM_sep with "Hpreds") as "[Hjrnl_mapstos Hpreds]".
+      iDestruct (big_sepM_sep with "Hpreds")
+        as "[Hdurable_mapstos %Hcommitted_valids]".
+      iApply big_sepM_fmap in "Hdurable_mapstos".
+      iDestruct (
+        is_buftxn_to_old_pred' with
+        "Hbuftxn_mem Hbuftxn_durable_frag Hdurable_mapstos"
+      ) as "?".
+      iNamed.
+      iApply (big_sepM_fmap committed) in "Hold_vals".
+      iDestruct (big_sepM_sep with "Hold_vals")
+        as "[Htokens Hdurable_mapstos]".
+      iModIntro.
+      iFrame "∗ #".
+      iDestruct (big_sepM_sep with "[$Hdurable_mapstos $Hjrnl_mapstos]")
+        as "Hpreds".
+      iApply (big_sepM_impl with "Hpreds").
+      iIntros (a vobj) "!> %Hacc [Hdurable_mapsto Hjrnl_mapsto] !>".
+      iFrame.
+      iPureIntro.
+      apply Hcommitted_valids.
+      assumption.
+    }
+    iDestruct (big_sepM_sep with "[$Htoks $Hcrash_invs]") as "Hcrash_invs".
     iModIntro.
     iApply big_sepS_set_map.
     {
@@ -421,13 +570,18 @@ Section proof.
       rewrite /mapsto_valid in Hacc2.
       apply addr2flat_eq; intuition.
     }
-    rewrite /twophase_linv_flat.
     iApply big_sepM_dom.
     iApply (big_sepM_mono with "Hcrash_invs").
-    iIntros. iExists _. rewrite /twophase_linv. iSplit; last done.
-    iExists _. iFrame. iSplit; last eauto.
-    (* How do we get the modify token? *)
-  Admitted.
+    iIntros (a vobj Hacc) "[Htok Hcrash_inv]".
+    iExists _.
+    iSplit; last by trivial.
+    iExists _.
+    iFrame.
+    iPureIntro.
+    apply Hvalids in Hacc.
+    rewrite /mapsto_valid in Hacc.
+    rewrite /mapsto_valid //.
+  Qed.
 
   Theorem wp_TwoPhase__ReleaseAll' l γ γ' objs_dom :
     {{{ is_twophase_releasable l γ γ' objs_dom }}}

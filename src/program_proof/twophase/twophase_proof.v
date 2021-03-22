@@ -1890,32 +1890,6 @@ Proof.
   auto.
 Qed.
 
-Lemma na_crash_inv_status_wand_sepM {A} `{Countable K} (m: gmap K A) k Q P :
-  ([∗ map] i ↦ x ∈ m, na_crash_inv k (Q i x) (P i x)) -∗
-  □ (
-    ▷ ([∗ map] i ↦ x ∈ m, Q i x) -∗
-   |C={⊤}_Init.Nat.pred k=>
-    ▷ ([∗ map] i ↦ x ∈ m, P i x)
-  ).
-Proof.
-  iInduction m as [|i x m] "IH" using map_ind;
-    first by (iIntros "_ !> _ !>"; auto).
-  iIntros "Hcrash_invs".
-  iDestruct (big_sepM_insert with "Hcrash_invs")
-    as "[Hcrash_inv Hcrash_invs]";
-    first by assumption.
-  iDestruct ("IH" with "Hcrash_invs") as "#Hstatuses".
-  iDestruct (na_crash_inv_status_wand with "Hcrash_inv") as "#Hstatus".
-  iIntros "!> HQs".
-  iDestruct (big_sepM_insert with "HQs")
-    as "[HQ HQs]"; first by assumption.
-  iMod ("Hstatus" with "HQ") as "HP".
-  iMod ("Hstatuses" with "HQs") as "HPs".
-  iIntros "!> !>".
-  iApply (big_sepM_insert with "[HP HPs]"); first by assumption.
-  iFrame.
-Qed.
-
 Lemma wpc_na_crash_inv_open_modify_sepM {A} `{Countable K} Qnew  k k' k'' E1 e Φ Φc
       {HL: AbsLaterable Φc} Q P `{!∀ i x, Discretizable (Q i x)} (m: gmap K A) :
   (S k'') ≤ k' →
