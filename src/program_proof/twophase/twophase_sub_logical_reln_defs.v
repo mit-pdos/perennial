@@ -187,7 +187,7 @@ Proof.
 Qed.
 
 Lemma atomically_listT_interp_refl_obj v :
-  ⊢ atomically_listT_interp byteT atomically_val_interp (val_of_obj' v) (val_of_obj v).
+  ⊢ atomically_listT_interp byteT atomically_val_interp (val_of_obj' (objBytes v)) (val_of_obj (objBytes v)).
 Proof.
   induction v => //=.
   - rewrite /atomically_listT_interp. iExists [], []. eauto.
@@ -203,7 +203,7 @@ Qed.
 
 Lemma atomically_listT_interp_obj_inv vs v :
   atomically_listT_interp byteT atomically_val_interp vs v -∗
-  ⌜ ∃ o, vs = val_of_obj' o ∧ v = val_of_obj o ⌝.
+  ⌜ ∃ o, vs = val_of_obj' (objBytes o) ∧ v = val_of_obj (objBytes o) ⌝.
 Proof.
   iIntros "H".
   iDestruct "H" as (lvs lv) "H". iDestruct "H" as ((Heq1&Heq2)) "H".
@@ -1021,6 +1021,7 @@ Proof.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     iPoseProof (wp_TwoPhase__ReadBuf' tph _ _ _ _ _ _ _ _ (a, o) x with "Hj") as "H".
+    1-4: admit. (* need to make sure that a and sz are valid *)
     iApply "H".
     iNext. iIntros (v) "H". iExists _. iFrame.
     iApply atomically_listT_interp_refl_obj.

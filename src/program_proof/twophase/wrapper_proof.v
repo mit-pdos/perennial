@@ -735,9 +735,9 @@ Section proof.
           ReadBufOp (PairV (addr2val' a) #sz)))
     }}}
       TwoPhase__ReadBuf' #l (addr2val a, #sz)
-    {{{ v, RET (val_of_obj v);
+    {{{ data, RET (val_of_obj (objBytes data));
         is_twophase_started l γ γ' dinit objs_dom j K0 e1
-          (K (val_of_obj' v))
+          (K (val_of_obj' (objBytes data)))
     }}}.
   Proof.
     iIntros (Ha_in_dom Hk Hk_not_bit Hsz Φ) "Htwophase HΦ".
@@ -759,7 +759,12 @@ Section proof.
     subst k.
     erewrite <- val_of_obj_data_not_bit; last by eassumption.
     2: assumption.
+    erewrite <- data_has_obj_not_bit.
+    2-3: eassumption.
+
     iApply "HΦ".
+    erewrite data_has_obj_not_bit; last by eassumption.
+    2: trivial.
     subst mt_changed'.
     destruct (mt_changed !! a) as [vobj'|] eqn:Hacc.
     - rewrite Hvobj in Hacc.
