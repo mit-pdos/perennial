@@ -88,21 +88,24 @@ Instance jrnl_val_ty: val_types :=
 Section jrnl.
   Existing Instances jrnl_op jrnl_val_ty.
 
-  Definition obj := list u8.
+  Inductive obj :=
+    objBit (b: bool)
+    | objBytes (data: list u8).
 
-  Definition val_of_obj' (o : obj) := val_of_list ((λ u, LitV (LitByte u)) <$> o).
+  Definition val_of_obj' o :=
+    match o with
+    | objBit b => #b
+    | objBytes o => val_of_list ((λ u, LitV (LitByte u)) <$> o)
+    end.
 
   Definition blkno := u64.
   Definition kind := bufDataKind.
 
-  Definition kindSz_log2 k :=
-    match k with
-    | KindBit => 0
-    | KindInode => 10
-    | KindBlock => 15
+  Definition objSz o : nat :=
+    match o with
+    | objBit b => 1
+    | objBytes o => 8 * (length o)
     end.
-
-  Definition kindSz k := 2^(kindSz_log2 k).
 
   (* The only operation that can be called outside an atomically block is OpenOp *)
   Inductive jrnl_ext_tys : @val jrnl_op -> (ty * ty) -> Prop :=
@@ -127,13 +130,16 @@ Section jrnl.
 
   Definition offsets_aligned (m : jrnl_map) :=
     (∀ a, a ∈ dom (gset _) (jrnlData m) →
-     ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (int.Z (addrOff a) `mod` (kindSz k) = 0)).
+     ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ valid_off k (addrOff a)).
 
   Definition size_consistent_and_aligned a (o: obj) (jk: gmap blkno kind) :=
-    ∃ k, jk !! (addrBlock a) = Some k ∧ (length o : Z) = (kindSz k) ∧ (int.Z (addrOff a) `mod` (kindSz k) = 0).
+    ∃ k,
+      jk !! (addrBlock a) = Some k ∧
+      objSz o = bufSz k ∧
+      valid_off k (addrOff a).
 
   Definition sizes_correct (m : jrnl_map) :=
-    (∀ a o, jrnlData m !! a = Some o → ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ (length o : Z) = kindSz k).
+    (∀ a o, jrnlData m !! a = Some o → ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ objSz o = bufSz k).
 
   (* TODO: do we need to enforce that every valid offset in a block has some data? *)
   Definition wf_jrnl (m : jrnl_map) := offsets_aligned m ∧ sizes_correct m.
@@ -174,7 +180,7 @@ Section jrnl.
       d ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
       (* bit reads must be done with ReadBitOp *)
-      check (k ≠ KindBit ∧ kindSz k = int.Z sz);;
+      check (k ≠ KindBit ∧ bufSz k = int.nat sz);;
       ret $ val_of_obj' d
     | OverWriteOp, ((#(LitInt blkno), #(LitInt off), #()), ov)%V =>
       j ← openΣ;
@@ -182,7 +188,7 @@ Section jrnl.
       _ ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
       o ← suchThat (λ _ o, val_of_obj' o = ov);
-      check ((length o : Z) = kindSz k ∧ k ≠ KindBit);;
+      check (objSz o = bufSz k ∧ k ≠ KindBit);;
       modifyΣ (λ j, updateData j (Build_addr blkno off) o);;
       ret $ #()
     | _, _ => undefined
@@ -788,7 +794,7 @@ Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
   wf_jrnl σj →
   jrnlData σj !! a = Some v →
   jrnlKinds σj !! (addrBlock a) = Some k →
-  (k ≠ KindBit ∧ kindSz k = int.Z sz) →
+  (k ≠ KindBit ∧ bufSz k = int.nat sz) →
   always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                            ReadBufOp
                            (PairV (addr2val' a) #sz))

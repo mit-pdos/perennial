@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import lang notation typing.
-From Perennial.goose_lang.lib Require Import map.impl list.impl list.list_slice.
+From Perennial.goose_lang.lib Require Import map.impl list.impl list.list_slice slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn twophase.
@@ -29,15 +29,16 @@ Section proof.
 
   Implicit Types (N: namespace).
 
-  Definition is_twophase_system N γ :=
-    is_txn_system N γ.
-
-  Definition val_of_obj (o : obj) := val_of_list ((λ u, LitV (LitByte u)) <$> o).
+  Definition val_of_obj o :=
+    match o with
+    | objBit b => #b
+    | objBytes o => val_of_list ((λ u, LitV (LitByte u)) <$> o)
+    end.
 
   Definition bufObj_to_obj bufObj : obj :=
     match objData bufObj with
-    | bufBit b => [U8 (if b then 1 else 0)]
-    | bufInode data | bufBlock data => data
+    | bufBit b => objBit b
+    | bufInode data | bufBlock data => objBytes data
     end.
 
   Definition jrnl_mapsto_own a bufObj : iProp Σ :=
@@ -103,6 +104,82 @@ Section proof.
       ⌝ ∗
       "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
       "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝.
+
+  Lemma length_bufObj_to_obj o :
+    objSz (bufObj_to_obj o) = bufSz (objKind o).
+  Proof.
+    rewrite /bufObj_to_obj.
+    destruct (objData o).
+    - reflexivity.
+    - rewrite /objSz vec_to_list_length //.
+    - rewrite /objSz vec_to_list_length //.
+  Qed.
+
+  Lemma is_twophase_wf_jrnl l γ γ' dinit k objs_dom mt_changed σj1 σj2 :
+    jrnl_maps_kinds_valid γ σj1 σj2 →
+    jrnl_maps_have_mt mt_changed σj1 σj2 →
+    "Htwophase" ∷ is_twophase_raw
+      l γ γ' dinit k jrnl_mapsto_own objs_dom mt_changed -∗
+    "%Hwf_jrnl1" ∷ ⌜wf_jrnl σj1⌝ ∗
+    "%Hwf_jrnl1" ∷ ⌜wf_jrnl σj2⌝.
+  Proof.
+    iIntros (Hjrnl_maps_kinds Hjrnl_maps_mt) "?".
+    iNamed.
+    iDestruct (is_twophase_raw_get_mt_in_spec with "Htwophase")
+      as "%Hmt_in_dom".
+    iNamed "Htwophase".
+    iPureIntro.
+    rewrite /wf_jrnl /offsets_aligned /sizes_correct.
+    destruct Hjrnl_maps_kinds as [-> ->].
+    destruct Hjrnl_maps_mt as [<- <-].
+    split.
+    - split.
+      + intros a Hin.
+        apply elem_of_dom in Hin.
+        destruct Hin as [obj Hin].
+        rewrite !lookup_fmap in Hin.
+        destruct (mt_changed !! a) as [vobj|] eqn:Hacc;
+          last by inversion Hin.
+        apply Hvalids in Hacc.
+        destruct Hacc as (Haddr&Hoff&Hγ).
+        eexists _.
+        split; first by eassumption.
+        assumption.
+      + intros a obj Hin.
+        rewrite !lookup_fmap in Hin.
+        destruct (mt_changed !! a) as [vobj|] eqn:Hacc;
+          last by inversion Hin.
+        apply Hvalids in Hacc.
+        destruct Hacc as (Haddr&Hoff&Hγ).
+        inversion Hin as [Hobj].
+        rewrite Hγ.
+        eexists _.
+        split; first by reflexivity.
+        rewrite length_bufObj_to_obj //.
+    - split.
+      + intros a Hin.
+        apply elem_of_dom in Hin.
+        destruct Hin as [obj Hin].
+        rewrite !lookup_fmap in Hin.
+        destruct (mt_changed !! a) as [vobj|] eqn:Hacc;
+          last by inversion Hin.
+        apply Hvalids in Hacc.
+        destruct Hacc as (Haddr&Hoff&Hγ).
+        eexists _.
+        split; first by eassumption.
+        assumption.
+      + intros a obj Hin.
+        rewrite !lookup_fmap in Hin.
+        destruct (mt_changed !! a) as [vobj|] eqn:Hacc;
+          last by inversion Hin.
+        apply Hvalids in Hacc.
+        destruct Hacc as (Haddr&Hoff&Hγ).
+        inversion Hin as [Hobj].
+        rewrite Hγ.
+        eexists _.
+        split; first by reflexivity.
+        rewrite length_bufObj_to_obj //.
+  Qed.
 
   Theorem wpc_Init N (d: loc) γ dinit logm mt k :
     N ## invN →
@@ -587,14 +664,71 @@ Section proof.
     {{{ is_twophase_releasable l γ γ' objs_dom }}}
       TwoPhase__ReleaseAll #l
     {{{ RET #(); True }}}.
-  Proof. Admitted.
+  Proof.
+    iIntros (Φ) "Htwophase HΦ".
+    iNamed "Htwophase".
+    wp_apply (wp_TwoPhase__ReleaseAll with "[$]").
+    iApply "HΦ".
+    trivial.
+  Qed.
+
+  Lemma wp_SliceToList data_s t q data :
+    {{{
+      "Hslice" ∷ is_slice data_s t q data
+    }}}
+      SliceToList t (slice_val data_s)
+    {{{ RET (val_of_list data);
+      True
+    }}}.
+  Proof.
+  Admitted.
+
+  Lemma wp_ListToSlice t data :
+    {{{
+      True
+    }}}
+      ListToSlice t (val_of_list data)
+    {{{ data_s, RET (slice_val data_s);
+      "Hslice" ∷ is_slice data_s t 1 data
+    }}}.
+  Proof.
+  Admitted.
+
+  Lemma data_has_obj_not_bit data a bufObj :
+    objKind bufObj ≠ KindBit →
+    data_has_obj data a bufObj →
+    objBytes data = bufObj_to_obj bufObj.
+  Proof.
+    intros Hnot_bit Hdata.
+    destruct bufObj as [k [b|data'|data']].
+    - contradiction.
+    - rewrite /data_has_obj /= in Hdata.
+      rewrite -Hdata //.
+    - rewrite /data_has_obj /= in Hdata.
+      rewrite -Hdata //.
+  Qed.
+
+  Lemma val_of_obj_data_not_bit data a o :
+    objKind o ≠ KindBit →
+    data_has_obj data a o →
+    val_of_obj (bufObj_to_obj o) = val_of_list (list.untype data).
+  Proof.
+    intros Hnot_bit Hdata.
+    erewrite <- data_has_obj_not_bit.
+    2-3: eassumption.
+    reflexivity.
+  Qed.
 
   Theorem wp_TwoPhase__ReadBuf' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
             (ext := @spec_ext_op_field _)
             (ffi := (spec_ffi_model_field))
             (ffi_semantics := (spec_ext_semantics_field))
-            K} e1 a sz :
+            K} e1 a (sz: u64) k :
+    a ∈ objs_dom →
+    γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some k →
+    k ≠ KindBit →
+    bufSz k = int.nat sz →
     {{{
       is_twophase_started l γ γ' dinit objs_dom j K0 e1
         (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
@@ -605,25 +739,274 @@ Section proof.
         is_twophase_started l γ γ' dinit objs_dom j K0 e1
           (K (val_of_obj' v))
     }}}.
-  Proof. Admitted.
+  Proof.
+    iIntros (Ha_in_dom Hk Hk_not_bit Hsz Φ) "Htwophase HΦ".
+    iNamed "Htwophase".
+    iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
+      [eassumption|eassumption|].
+    rewrite /TwoPhase__ReadBuf'.
+    wp_apply (wp_TwoPhase__ReadBuf_raw with "Htwophase");
+      [assumption|rewrite Hk -Hsz //|].
+    iIntros (????) "Hpost".
+    iNamed "Hpost".
+    wp_apply (wp_SliceToList with "Hdata_s").
+    iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
+    apply fmap_Some_1 in Hobj as [vobj [Hvobj ->]].
+    apply Hvalids in Hvobj as Hvobj_valid.
+    destruct Hvobj_valid as (Hvalid_addr&Hvalid_off&Hvalid_γ).
+    rewrite Hvalid_γ in Hk.
+    inversion Hk.
+    subst k.
+    erewrite <- val_of_obj_data_not_bit; last by eassumption.
+    2: assumption.
+    iApply "HΦ".
+    subst mt_changed'.
+    destruct (mt_changed !! a) as [vobj'|] eqn:Hacc.
+    - rewrite Hvobj in Hacc.
+      inversion Hacc.
+      subst vobj'.
+      iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl'";
+        [eassumption|eassumption|].
+      iExists _, _, _, _.
+      iFrame "∗ #".
+      iFrame (Hjrnl_maps_kinds Hjrnl_maps_mt).
+      iPureIntro.
+      eapply always_steps_trans; first by eapply Halways_steps.
+      apply always_steps_bind.
+      eapply always_steps_ReadBufOp; first by intuition.
+      {
+        destruct Hjrnl_maps_mt as [_ <-].
+        rewrite !lookup_fmap Hvobj //.
+      }
+      {
+        destruct Hjrnl_maps_kinds as [_ ->].
+        eassumption.
+      }
+      split; first by assumption.
+      rewrite -Hsz //.
+    - rewrite lookup_insert in Hvobj.
+      assert (committed vobj = modified vobj) as Hvobj'.
+      {
+        inversion Hvobj as [Hvobj'].
+        destruct vobj as [k [oc om]].
+        reflexivity.
+      }
+      remember (
+        <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj1), jrnlKinds σj1
+      ) as σj1'.
+      remember (
+        <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj2), jrnlKinds σj2
+      ) as σj2'.
+      assert (jrnl_maps_kinds_valid γ σj1' σj2') as Hjrnl_maps_kinds'
+        by rewrite Heqσj1' Heqσj2' //.
+      assert (
+        jrnl_maps_have_mt
+          (<[a:=object_to_versioned (modified vobj)]> mt_changed)
+          σj1' σj2'
+      ) as Hjrnl_maps_mt'.
+      {
+        rewrite Heqσj1' Heqσj2' /jrnl_maps_have_mt !fmap_insert
+          /modified /committed
+          modified_to_versioned committed_to_versioned /=.
+        destruct Hjrnl_maps_mt as [<- <-].
+        intuition.
+      }
+      iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl'";
+        [eassumption|eassumption|].
+      iExists σj1', σj2', _, _.
+      iFrame "∗ #".
+      iPureIntro.
+      split; last by intuition.
+      subst σj1' σj2'.
+      eapply always_steps_trans.
+      {
+        apply always_steps_extend; last by apply Halways_steps.
+        - destruct Hjrnl_maps_mt as [_ <-].
+          rewrite !dom_fmap.
+          apply not_elem_of_dom.
+          assumption.
+        - eexists _.
+          destruct Hjrnl_maps_kinds as [-> _].
+          rewrite Hvalid_γ length_bufObj_to_obj.
+          intuition.
+      }
+      apply always_steps_bind.
+      eapply always_steps_ReadBufOp; first by intuition.
+      {
+        destruct Hjrnl_maps_mt as [_ <-].
+        rewrite /= -!fmap_insert !lookup_fmap lookup_insert //.
+      }
+      {
+        destruct Hjrnl_maps_kinds as [_ ->].
+        rewrite Hvalid_γ //.
+      }
+      intuition.
+  Qed.
+
+  Lemma obj_to_bufObj_exists o k :
+    objSz o = bufSz k →
+    ∃ bufObj, o = bufObj_to_obj bufObj ∧ objKind bufObj = k.
+  Proof.
+    intros Hsz.
+    rewrite /objSz /bufSz in Hsz.
+    destruct k.
+    - destruct o as [b|data]; last by lia.
+      exists (existT _ (bufBit b)).
+      intuition.
+    - destruct o as [b|data]; first by lia.
+      exists (existT _ (bufInode (list_to_inode_buf data))).
+      rewrite /bufObj_to_obj /= list_to_inode_buf_to_list //.
+      lia.
+    - destruct o as [b|data]; first by lia.
+      exists (existT _ (bufBlock (disk_lib.list_to_block data))).
+      rewrite /bufObj_to_obj /= disk_lib.list_to_block_to_list //.
+      rewrite /block_bytes in Hsz.
+      lia.
+  Qed.
+
+  Lemma data_has_obj_exists_not_bit bufObj :
+    objKind bufObj ≠ KindBit →
+    ∃ data a, data_has_obj data a bufObj.
+  Proof.
+    intros Hnot_bit.
+    destruct bufObj as [k [b|data|data]].
+    - contradiction.
+    - eexists data, (U64 0, U64 0).
+      rewrite /data_has_obj //.
+    - eexists data, (U64 0, U64 0).
+      rewrite /data_has_obj //.
+  Qed.
+
+  Lemma data_has_obj_wf data a o :
+    data_has_obj data a o →
+    length data ≤ block_bytes.
+  Proof.
+    intros Hdata.
+    destruct o as [k [b|data'|data']].
+    - rewrite /data_has_obj /= in Hdata.
+      destruct Hdata as [bit [-> Hbit]].
+      rewrite /= /block_bytes.
+      lia.
+    - rewrite /data_has_obj /= in Hdata.
+      rewrite -Hdata vec_to_list_length /inode_bytes /block_bytes.
+      lia.
+    - rewrite /data_has_obj /= in Hdata.
+      rewrite -Hdata vec_to_list_length.
+      lia.
+  Qed.
+
+  Lemma data_has_obj_change_addr_not_bit data a a' o :
+    objKind o ≠ KindBit →
+    data_has_obj data a o →
+    data_has_obj data a' o.
+  Proof.
+    intros Hnot_bit Hdata.
+    destruct o as [k [b|data'|data']].
+    - contradiction.
+    - trivial.
+    - trivial.
+  Qed.
 
   Theorem wp_TwoPhase__OverWrite' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
             (ext := @spec_ext_op_field _)
             (ffi := (spec_ffi_model_field))
             (ffi_semantics := (spec_ext_semantics_field))
-            K}  e1 a ov :
+            K}  e1 a ov k :
+    a ∈ objs_dom →
+    γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some k →
+    k ≠ KindBit →
+    objSz ov = bufSz k →
     {{{
       is_twophase_started l γ γ' dinit objs_dom j K0
         e1
         (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
-          OverWriteOp (PairV (addr2val' a) (val_of_obj' ov)))) }}}
+          OverWriteOp (PairV (addr2val' a) (val_of_obj' ov))))
+    }}}
       TwoPhase__OverWrite' #l (addr2val a, val_of_obj ov)
     {{{ RET #();
         is_twophase_started l γ γ' dinit objs_dom j K0
                             e1 (K #())
     }}}.
-  Proof. Admitted.
+  Proof.
+    iIntros (Ha_in_dom Hk Hnot_bit Hov_len Φ) "Htwophase HΦ".
+    iNamed "Htwophase".
+    iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
+      [eassumption|eassumption|].
+    rewrite /TwoPhase__OverWrite'.
+    apply obj_to_bufObj_exists in Hov_len as [bufObj [-> <-]].
+    apply data_has_obj_exists_not_bit in Hnot_bit as Hdata.
+    destruct Hdata as (data&a'&Hdata).
+    erewrite val_of_obj_data_not_bit; [|eassumption|eassumption].
+    wp_apply wp_ListToSlice.
+    iIntros (data_s) "?".
+    iNamed.
+    wp_apply wp_slice_len.
+    wp_pures.
+    iDestruct (is_slice_to_small with "Hslice") as "Hslice".
+    iDestruct (is_slice_small_sz with "Hslice") as "%Hsz".
+    rewrite list_untype_length in Hsz.
+    wp_apply (wp_TwoPhase__OverWrite_raw with "[$Htwophase $Hslice]");
+      first by assumption.
+    1: rewrite Hk //.
+    {
+      apply data_has_obj_wf in Hdata as Hdata_wf.
+      rewrite /block_bytes in Hdata_wf.
+      assert (
+        Z.of_nat (length data) = int.Z data_s.(Slice.sz)
+      ) as Hsz' by word.
+      replace (int.nat (word.mul data_s.(Slice.sz) 8))
+        with ((int.nat data_s.(Slice.sz)) * 8)%nat;
+        last by (rewrite word.unsigned_mul; word).
+      rewrite -Hsz -length_bufObj_to_obj.
+      erewrite <- data_has_obj_not_bit.
+      2-3: eassumption.
+      rewrite /objSz.
+      lia.
+    }
+    1: eapply data_has_obj_change_addr_not_bit; eassumption.
+    iIntros (?) "Hpost".
+    iNamed "Hpost".
+    subst bufObj.
+
+    iApply "HΦ".
+    iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
+    remember (
+      <[a:=bufObj_to_obj (committed vobj)]>(jrnlData σj1), jrnlKinds σj1
+    ) as σj1'.
+    remember (
+      <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj2), jrnlKinds σj2
+    ) as σj2'.
+    assert (jrnl_maps_kinds_valid γ σj1' σj2') as Hjrnl_maps_kinds'
+      by rewrite Heqσj1' Heqσj2' //.
+    assert (
+      jrnl_maps_have_mt
+        (<[a:=vobj]> mt_changed)
+        σj1' σj2'
+    ) as Hjrnl_maps_mt'.
+    {
+      rewrite Heqσj1' Heqσj2' /jrnl_maps_have_mt !fmap_insert /=.
+      destruct Hjrnl_maps_mt as [<- <-].
+      intuition.
+    }
+    iExists σj1', σj2', _, _.
+    iFrame "∗ #".
+    iPureIntro.
+    split; last by intuition.
+    subst σj1' σj2'.
+    destruct (mt_changed !! a) as [vobj_old|] eqn:Hacc.
+    - eapply always_steps_trans.
+      {
+        destruct Hjrnl_maps_mt as [Hσj1_data _].
+        rewrite -Hσj1_data insert_id;
+          last by rewrite !lookup_fmap Hacc Hvobj_committed //.
+        rewrite Hσj1_data.
+        apply Halways_steps.
+      }
+      apply always_steps_bind.
+      admit. (* need theorem for OverWriteOp *)
+    - admit. (* need theorem for OverWriteOp *)
+  Admitted.
 
   Lemma twophase_started_step_puredet l γ γ' dinit objs_dom j K0 K
         `{Hctx: LanguageCtx'
@@ -634,7 +1017,15 @@ Section proof.
     (∀ σ, prim_step' e1 σ [] e2 σ []) →
     is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e1) -∗
     is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e2).
-  Proof. Admitted.
+  Proof.
+    iIntros (Hstep) "Htwophase".
+    iNamed "Htwophase".
+    iExists _, _, _, _.
+    iFrame "∗ #".
+    iPureIntro.
+    split; last by intuition.
+    eapply always_steps_lifting_puredet; trivial.
+  Qed.
 
   Lemma twophase_started_ub_det l γ γ' dinit objs_dom E j K0 K
         `{Hctx: LanguageCtx'
@@ -646,6 +1037,8 @@ Section proof.
     (∀ s, stuck' e s) →
     is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e)
     -∗ |NC={E}=> False.
-  Proof. Admitted.
+  Proof.
+    (* need to add "not stuck" to is_twophase_started? *)
+  Admitted.
 
 End proof.

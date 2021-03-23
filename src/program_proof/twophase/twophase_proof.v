@@ -2385,7 +2385,13 @@ Theorem wp_TwoPhase__OverWrite_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Time
     vobj, RET #();
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit k ex_mapsto objs_dom (<[a:=vobj]>mt_changed) ∗
-    "Hvobj_modified" ∷ ⌜modified vobj = obj'⌝
+    "%Hvobj_committed" ∷ ⌜
+      match mt_changed !! a with
+      | Some vobj' => committed vobj = committed vobj'
+      | None => True
+      end
+    ⌝ ∗
+    "%Hvobj_modified" ∷ ⌜modified vobj = obj'⌝
   }}}.
 Proof.
   intros Ha_in_dom Hobj' Hsz Hdata.

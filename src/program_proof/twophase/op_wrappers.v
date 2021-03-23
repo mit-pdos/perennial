@@ -15,21 +15,13 @@ From Goose Require github_com.mit_pdos.goose_nfsd.lockmap.
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 
-(* XXX: replace with the actual Goose generated version later *)
-Module TwoPhasePre.
-  Definition S := struct.decl [
-    "txn" :: struct.ptrT txn.Txn.S;
-    "locks" :: struct.ptrT lockmap.LockMap.S
-  ].
-End TwoPhasePre.
-
 Definition TwoPhase__ReadBuf' : val :=
   λ: "twophase" "az", SliceToList byteT (TwoPhase__ReadBuf "twophase" (Fst "az") (Snd "az")).
 
 Definition TwoPhase__OverWrite' : val :=
   λ: "twophase" "ad",
   let: "s" := ListToSlice byteT (Snd "ad") in
-  TwoPhase__OverWrite "twophase" (Fst "ad") "s" (slice.len "s").
+  TwoPhase__OverWrite "twophase" (Fst "ad") (slice.len "s" * #8) "s".
 
 Definition TwoPhase__ConditionalCommit' : val :=
   λ: "twophase" "v",
