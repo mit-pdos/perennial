@@ -115,6 +115,24 @@ Section proof.
     - rewrite /objSz vec_to_list_length //.
   Qed.
 
+  Lemma data_has_obj_wf data a o :
+    data_has_obj data a o →
+    length data ≤ block_bytes.
+  Proof.
+    intros Hdata.
+    destruct o as [k [b|data'|data']].
+    - rewrite /data_has_obj /= in Hdata.
+      destruct Hdata as [bit [-> Hbit]].
+      rewrite /= /block_bytes.
+      lia.
+    - rewrite /data_has_obj /= in Hdata.
+      rewrite -Hdata vec_to_list_length /inode_bytes /block_bytes.
+      lia.
+    - rewrite /data_has_obj /= in Hdata.
+      rewrite -Hdata vec_to_list_length.
+      lia.
+  Qed.
+
   Lemma is_twophase_wf_jrnl l γ γ' dinit k objs_dom mt_changed σj1 σj2 :
     jrnl_maps_kinds_valid γ σj1 σj2 →
     jrnl_maps_have_mt mt_changed σj1 σj2 →
@@ -672,7 +690,58 @@ Section proof.
     trivial.
   Qed.
 
+  Lemma wp_SliceToListFrom data_s t q data (from: nat) :
+    from ≤ length data →
+    length data < 2^64 →
+    {{{
+      "Hslice" ∷ is_slice data_s t q data
+    }}}
+      SliceToListFrom t (slice_val data_s) #from
+    {{{ RET (val_of_list (drop from data));
+      True
+    }}}.
+  Proof.
+    iLöb as "IH" forall (from).
+    iIntros (Hbound Hwf Φ) "Hpre HΦ".
+    iNamed "Hpre".
+    wp_call.
+    wp_apply wp_slice_len.
+    iDestruct (is_slice_sz with "Hslice") as "%Hsz".
+    wp_let.
+    wp_if_destruct.
+    2: {
+      assert (from = length data)%nat as -> by (revert Heqb; word).
+      rewrite drop_all /=.
+      iApply "HΦ".
+      trivial.
+    }
+    assert (from < length data)%nat as Hbound' by (revert Heqb; word).
+    apply list_lookup_lt in Hbound' as Hacc.
+    destruct Hacc as [x Hacc].
+    iDestruct (is_slice_small_read with "Hslice") as "[Hslice Hrestore]".
+    wp_apply (wp_SliceGet with "[$Hslice]").
+    {
+      iPureIntro.
+      word_cleanup.
+      rewrite Nat2Z.id.
+      apply Hacc.
+    }
+    iIntros "[Hslice %Hty]".
+    iApply "Hrestore" in "Hslice".
+    wp_pures.
+    replace (LitInt (word.add from 1)) with (LitInt (S from))%nat
+      by (f_equal; word).
+    wp_apply ("IH" with "[] [] Hslice");
+      [iPureIntro; lia|trivial|].
+    wp_pures.
+    apply drop_S in Hacc.
+    rewrite Hacc /=.
+    iApply "HΦ".
+    trivial.
+  Qed.
+
   Lemma wp_SliceToList data_s t q data :
+    length data < 2^64 →
     {{{
       "Hslice" ∷ is_slice data_s t q data
     }}}
@@ -681,9 +750,64 @@ Section proof.
       True
     }}}.
   Proof.
-  Admitted.
+    iIntros (Hwf Φ) "Hpre HΦ".
+    iNamed "Hpre".
+    wp_call.
+    wp_apply (wp_SliceToListFrom with "Hslice");
+      [lia|assumption|].
+    iApply "HΦ".
+    trivial.
+  Qed.
+
+  Lemma wp_ListToSliceApp data1_s t data1 data2 :
+    has_zero t →
+    length data1 + length data2 < 2^64 →
+    Forall (λ v, val_ty v t) data2 →
+    {{{
+      "Hslice" ∷ is_slice data1_s t 1 data1
+    }}}
+      ListToSliceApp t (val_of_list data2) (slice_val data1_s)
+    {{{ data_s, RET (slice_val data_s);
+      "Hslice" ∷ is_slice data_s t 1 (data1 ++ data2)
+    }}}.
+  Proof.
+    iLöb as "IH" forall (data1_s data1 data2).
+    iIntros (Ht Hwf Hty Φ) "Hpre HΦ".
+    iNamed "Hpre".
+    wp_call.
+    destruct data2 as [|x data2].
+    {
+      rewrite app_nil_r /ListMatch.
+      wp_pures.
+      iApply "HΦ".
+      iFrame.
+    }
+    simpl in Hwf.
+    rewrite /ListMatch.
+    wp_pures.
+    wp_apply (wp_SliceAppend with "[$Hslice]"); first by assumption.
+    {
+      apply Forall_cons_1 in Hty as [Hty _].
+      iPureIntro.
+      assumption.
+    }
+    iIntros (s') "Hslice".
+    wp_pures.
+    wp_apply ("IH" with "[] [] [] Hslice").
+    1: iPureIntro; assumption.
+    1: iPureIntro; rewrite app_length /=; lia.
+    1: iPureIntro; apply Forall_cons_1 in Hty as [_ Hty]; assumption.
+    iIntros (?) "?".
+    iNamed.
+    iApply "HΦ".
+    rewrite -app_assoc /=.
+    iFrame.
+  Qed.
 
   Lemma wp_ListToSlice t data :
+    has_zero t →
+    length data < 2^64 →
+    Forall (λ v, val_ty v t) data →
     {{{
       True
     }}}
@@ -692,7 +816,17 @@ Section proof.
       "Hslice" ∷ is_slice data_s t 1 data
     }}}.
   Proof.
-  Admitted.
+    iIntros (Ht Hwf Hty Φ) "_ HΦ".
+    wp_call.
+    wp_apply wp_new_slice; first by assumption.
+    iIntros (s) "Hslice".
+    wp_apply (wp_ListToSliceApp with "Hslice");
+      [assumption|rewrite replicate_length; word|assumption|].
+    iIntros (?) "?".
+    iNamed.
+    iApply "HΦ".
+    rewrite replicate_0 app_nil_l //.
+  Qed.
 
   Lemma data_has_obj_not_bit data a bufObj :
     objKind bufObj ≠ KindBit →
@@ -749,7 +883,10 @@ Section proof.
       [assumption|rewrite Hk -Hsz //|].
     iIntros (????) "Hpost".
     iNamed "Hpost".
-    wp_apply (wp_SliceToList with "Hdata_s").
+    apply data_has_obj_wf in Hdata as Hwf.
+    rewrite /block_bytes in Hwf.
+    wp_apply (wp_SliceToList with "Hdata_s");
+      first by (rewrite list_untype_length; lia).
     iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
     apply fmap_Some_1 in Hobj as [vobj [Hvobj ->]].
     apply Hvalids in Hvobj as Hvobj_valid.
@@ -882,24 +1019,6 @@ Section proof.
       rewrite /data_has_obj //.
   Qed.
 
-  Lemma data_has_obj_wf data a o :
-    data_has_obj data a o →
-    length data ≤ block_bytes.
-  Proof.
-    intros Hdata.
-    destruct o as [k [b|data'|data']].
-    - rewrite /data_has_obj /= in Hdata.
-      destruct Hdata as [bit [-> Hbit]].
-      rewrite /= /block_bytes.
-      lia.
-    - rewrite /data_has_obj /= in Hdata.
-      rewrite -Hdata vec_to_list_length /inode_bytes /block_bytes.
-      lia.
-    - rewrite /data_has_obj /= in Hdata.
-      rewrite -Hdata vec_to_list_length.
-      lia.
-  Qed.
-
   Lemma data_has_obj_change_addr_not_bit data a a' o :
     objKind o ≠ KindBit →
     data_has_obj data a o →
@@ -943,7 +1062,17 @@ Section proof.
     apply data_has_obj_exists_not_bit in Hnot_bit as Hdata.
     destruct Hdata as (data&a'&Hdata).
     erewrite val_of_obj_data_not_bit; [|eassumption|eassumption].
+    apply data_has_obj_wf in Hdata as Hdata_wf.
+    rewrite /block_bytes in Hdata_wf.
     wp_apply wp_ListToSlice.
+    1: auto.
+    1: rewrite list_untype_length; lia.
+    {
+      apply Forall_forall.
+      intros x Hin.
+      apply elem_of_list_fmap_2 in Hin as [b [-> Hin]].
+      auto.
+    }
     iIntros (data_s) "?".
     iNamed.
     wp_apply wp_slice_len.
@@ -955,8 +1084,6 @@ Section proof.
       first by assumption.
     1: rewrite Hk //.
     {
-      apply data_has_obj_wf in Hdata as Hdata_wf.
-      rewrite /block_bytes in Hdata_wf.
       assert (
         Z.of_nat (length data) = int.Z data_s.(Slice.sz)
       ) as Hsz' by word.
