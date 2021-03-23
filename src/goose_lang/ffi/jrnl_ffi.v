@@ -18,7 +18,7 @@ Section recoverable.
   .
 
   Definition recoverable_model : ffi_model :=
-    mkFfiModel (RecoverableState) (populate (Closed (inhabitant INH))).
+    mkFfiModel (RecoverableState) () (populate (Closed (inhabitant INH))) _.
 
   Local Existing Instance recoverable_model.
 
@@ -332,7 +332,8 @@ Section jrnl_interp.
        ffi_update := @jrnl_update;
        ffi_get_update := _;
        ffi_ctx := @jrnl_ctx;
-       ffi_start := @jrnl_start;
+       ffi_global_ctx _ _ _ := True%I;
+       ffi_start Σ G w _ := @jrnl_start Σ G w;
        ffi_restart := @jrnl_restart;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @jrnlG_data_inG _ hF1 = @jrnlG_data_inG _ hF2 ∧
                                              @jrnlG_kinds_inG _ hF1 = @jrnlG_kinds_inG _ hF2 ∧
@@ -426,14 +427,14 @@ Program Instance jrnl_interp_adequacy:
   {| ffi_preG := jrnl_preG;
      ffiΣ := jrnlΣ;
      subG_ffiPreG := subG_jrnlG;
-     ffi_initP := λ σ, ∃ m, σ = Closed m ∧ wf_jrnl m;
+     ffi_initP := λ σ _, ∃ m, σ = Closed m ∧ wf_jrnl m;
      ffi_update_pre := @jrnl_update_pre;
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ (m&->&Hwf)). simpl.
+  iIntros (Σ hPre σ g (m&->&Hwf)). simpl.
   iMod (own_alloc (Cinl (1%Qp, to_agree tt) : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
   iMod (map_init_many (jrnlData m)) as (γdata) "(Hdata_ctx&Hdata)".
@@ -466,7 +467,7 @@ Next Obligation.
   naive_solver.
 Qed.
 Next Obligation.
-  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  iIntros (Σ σ σ' g Hcrash Hold) "Hinterp _".
   inversion Hcrash; subst.
   monad_inv. inversion H. subst. inversion H1. subst.
   destruct x; monad_inv.
@@ -481,7 +482,7 @@ Next Obligation.
                jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) ;
                jrnl_names_crash := γcrash |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/jrnl_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
     rewrite big_sepM_fmap.
     rewrite /jrnl_state_restart.
@@ -499,7 +500,7 @@ Next Obligation.
                jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) ;
                jrnl_names_crash := γcrash |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/jrnl_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
     rewrite big_sepM_fmap.
     rewrite /jrnl_state_restart.
@@ -1201,7 +1202,7 @@ Proof.
     iDestruct (ptsto_conflict with "[$] [$]") as %[].
   }
   iDestruct "Hrest" as (s g) "(>H&Hinterp)".
-  iDestruct "Hinterp" as "(>Hσ&>Hffi&?&?&?&>Hctok)".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&?&?&?&?&>Hctok)".
   iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
   iIntros "#HC".
   iMod (ghost_step_crash_stuck' with "[] Hctx Hctok Hj [$] [$]") as (Hnstuck) "(Hj&H&Hctok)"; first by solve_ndisj.

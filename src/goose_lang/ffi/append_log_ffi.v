@@ -19,7 +19,7 @@ Section recoverable.
   .
 
   Definition recoverable_model : ffi_model :=
-    mkFfiModel (RecoverableState) (populate UnInit).
+    mkFfiModel (RecoverableState) () (populate UnInit) _.
 
   Local Existing Instance recoverable_model.
 
@@ -277,7 +277,8 @@ Section log_interp.
        ffi_update := @log_update;
        ffi_get_update := _;
        ffi_ctx := @log_ctx;
-       ffi_start := @log_start;
+       ffi_global_ctx _ _ _ := True%I;
+       ffi_start Σ G w _ := @log_start Σ G w;
        ffi_restart := @log_restart;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @logG_state_inG _ hF1 = @logG_state_inG _ hF2 ∧
                                            log_names_state (log_get_names hF1) =
@@ -457,14 +458,14 @@ Program Instance log_interp_adequacy:
   {| ffi_preG := log_preG;
      ffiΣ := logΣ;
      subG_ffiPreG := subG_logG;
-     ffi_initP := λ σ, σ = UnInit;
+     ffi_initP := λ σ _, σ = UnInit;
      ffi_update_pre := @log_update_pre;
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ ->). simpl.
+  iIntros (Σ hPre σ ? ->). simpl.
   rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
   iMod (own_alloc (Cinl (1%Qp, to_agree UnInit') : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
@@ -473,7 +474,7 @@ Next Obligation.
   iFrame. iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
 Qed.
 Next Obligation.
-  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  iIntros (Σ σ σ' g Hcrash Hold) "Hinterp _".
   inversion Hcrash; subst.
   monad_inv. inversion H. subst. inversion H1. subst.
   destruct x; monad_inv.
@@ -484,7 +485,7 @@ Next Obligation.
     { repeat econstructor => //=. }
     iExists {| log_names_open := γ1; log_names_state := log_names_state (log_get_names _) |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/log_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id. rewrite comm -assoc. iSplitR; first eauto.
     rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
@@ -494,7 +495,7 @@ Next Obligation.
     { repeat econstructor => //=. }
     iExists {| log_names_open := γ1; log_names_state := log_names_state (log_get_names _) |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/log_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
@@ -504,7 +505,7 @@ Next Obligation.
     { repeat econstructor => //=. }
     iExists {| log_names_open := γ1; log_names_state := log_names_state (log_get_names _) |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/log_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
 Qed.

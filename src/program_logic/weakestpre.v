@@ -110,7 +110,7 @@ Qed.
 (* FIXME(RJ) we should probably have such a lemma for WPC and apply that here *)
 Lemma wp_step_fupdN_strong n s E1 E2 e P Φ :
   TCEq (to_val e) None → E2 ⊆ E1 →
-  (∀ σ g ns κs nt, state_interp σ ns κs nt -∗ global_state_interp g
+  (∀ σ g ns κs nt, state_interp σ nt -∗ global_state_interp g ns κs
        ={E1,∅}=∗ ⌜n ≤ S (num_laters_per_step ns)⌝) ∧
   ((|={E1,E2}=> |={∅}▷=>^n |={E2,E1}=> P) ∗
     WP e @ s; E2 {{ v, P ={E1}=∗ Φ v }}) -∗
@@ -215,7 +215,7 @@ Qed.
    a premise. *)
 Lemma wp_step_fupdN n s E1 E2 e P Φ :
   TCEq (to_val e) None → E2 ⊆ E1 →
-  (∀ σ g ns κs nt, state_interp σ ns κs nt -∗ global_state_interp g
+  (∀ σ g ns κs nt, state_interp σ nt -∗ global_state_interp g ns κs
        ={E1,∅}=∗ ⌜n ≤ S (num_laters_per_step ns)⌝) ∧
   ((|={E1∖E2,∅}=> |={∅}▷=>^n |={∅,E1∖E2}=> P) ∗
     WP e @ s; E2 {{ v, P ={E1}=∗ Φ v }}) -∗

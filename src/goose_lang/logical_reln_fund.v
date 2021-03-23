@@ -2239,5 +2239,3 @@ Proof using spec_trans.
     rewrite fmap_empty subst_map_empty. iApply wpc_wp. eauto.
 Qed.
 End pfs.
-
-

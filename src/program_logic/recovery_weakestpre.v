@@ -44,8 +44,8 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
   (WPC e @ s ; k; E
      {{ Φ }}
      {{ ∀ σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
-        state_interp σ ns κs n -∗ global_state_interp g ={E}=∗  ▷ ∀ H2 q, NC q ={E}=∗
-          ∃ t, state_interp σ' (S ns) κs 0 ∗ global_state_interp g ∗ (Φinv H2 t ∧ wpr H2 t E rec rec (λ v, Φr H2 t v) Φinv Φr) ∗ NC q}})%I.
+        state_interp σ n -∗ global_state_interp g ns κs ={E}=∗  ▷ ∀ H2 q, NC q ={E}=∗
+          ∃ t, state_interp σ' 0 ∗ global_state_interp g (S ns) κs ∗ (Φinv H2 t ∧ wpr H2 t E rec rec (λ v, Φr H2 t v) Φinv Φr) ∗ NC q}})%I.
 
 Local Instance wpr_pre_contractive `{!perennialG Λ CS T Σ} s k: Contractive (wpr_pre s k).
 Proof.
@@ -107,9 +107,9 @@ Qed.
 Lemma idempotence_wpr s k E1 e rec Φx Φinv Φrx (Φcx: crashG Σ → _ → iProp Σ) Hc t:
   ⊢ WPC e @ s ; k ; E1 {{ Φx t }} {{ Φcx _ t }} -∗
    (□ ∀ (Hc: crashG Σ) (t: pbundleG T Σ) σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
-        Φcx Hc t -∗ state_interp σ ns κs n -∗ global_state_interp g ={E1}=∗
+        Φcx Hc t -∗ state_interp σ n -∗ global_state_interp g ns κs ={E1}=∗
         ▷ ∀ (Hc': crashG Σ) q, NC q ={E1}=∗
-          ∃ t', state_interp σ' (S ns) κs 0 ∗ global_state_interp g ∗ (Φinv Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx Hc' t' }} {{ Φcx Hc' t' }}) ∗ NC q) -∗
+          ∃ t', state_interp σ' 0 ∗ global_state_interp g (S ns) κs ∗ (Φinv Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx Hc' t' }} {{ Φcx Hc' t' }}) ∗ NC q) -∗
     wpr s k Hc t E1 e rec (Φx t) Φinv Φrx.
 Proof.
   iLöb as "IH" forall (E1 e Hc t Φx).

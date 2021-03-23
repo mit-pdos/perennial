@@ -76,14 +76,12 @@ Proof.
     iSpecialize ("Hidemp" $! (heap_update _ _ _ _ _) with "[//] [//] H").
     {
       rewrite /state_interp.
-      iIntros "(_&_&Hffi_old&Htrace_auth&Horacle_auth) Hg".
+      iIntros "(_&Hffi_old&Htrace_auth&Horacle_auth) Hg".
       iMod (na_heap.na_heap_reinit _ tls σ_post_crash.(heap)) as (name_na_heap) "Hh".
-      iMod (proph_map.proph_map_reinit _ κs σ_post_crash.(used_proph_id)) as (name_proph_map) "Hp".
-      iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi_old") as (ffi_names) "(Hw&Hcrel&Hc)".
+      iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi_old Hg") as (ffi_names) "(Hw&Hg&Hcrel&Hc)".
       { inversion Hcrash; subst; eauto. }
       iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
       set (hnames := {| heap_heap_names := name_na_heap;
-                        heap_proph_name := name_proph_map;
                         heap_ffi_names := ffi_names;
                         heap_trace_names := name_trace |}).
       iModIntro.

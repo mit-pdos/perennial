@@ -22,7 +22,7 @@ Notation jrnl_nat_K :=
 Lemma jrnl_init_obligation1: sty_init_obligation1 twophaseTy_update_model twophase_initP.
 Proof.
   rewrite /sty_init_obligation1//=.
-  iIntros (? hG hRG hJrnl σs σi Hinit) "Hdisk".
+  iIntros (? hG hRG hJrnl σs gs σi gi Hinit) "Hdisk".
   rewrite /jrnl_start /twophase_init.
   inversion Hinit as [Hnn [Heqi Heqs]]. rewrite Heqs Heqi.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
@@ -31,7 +31,7 @@ Qed.
 
 Lemma jrnl_init_obligation2: sty_init_obligation2 twophase_initP.
 Proof.
-  intros ?? (?&?&?). rewrite //=. split_and!; eauto. eexists; split; eauto.
+  intros ???? (?&?&?). rewrite //=. split_and!; eauto. eexists; split; eauto.
   admit.
 Admitted.
 

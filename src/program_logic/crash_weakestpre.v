@@ -14,15 +14,16 @@ Class irisG (Λ : language) (Σ : gFunctors) := IrisG {
   iris_invG :> invG Σ;
   iris_crashG :> crashG Σ;
 
-  (** The state interpretation is an invariant that should hold in
-  between each step of reduction. Here [Λstate] is the global state,
-  the first [nat] is the number of steps already performed by the
-  program, [list Λobservation] are the remaining observations, and the
-  last [nat] is the number of forked-off threads (not the total number
-  of threads, which is one higher because there is always a main
-  thread). *)
-  state_interp : state Λ → nat → list (observation Λ) → nat → iProp Σ;
-  global_state_interp : global_state Λ → iProp Σ;
+  (** The state interpretation is a per-machine invariant that should hold in
+  between each step of reduction. Here [state Λ] is the global state, and the
+  [nat] is the number of forked-off threads (not the total number of threads,
+  which is one higher because there is always a main thread). *)
+  state_interp : state Λ → nat → iProp Σ;
+  (** The global state interpretation is a whole-system invariant that should
+  hold in between each step of reduction. Here [global_state Λ] is the global
+  state, the [nat] is the number of steps already performed by the system, and
+  [list Λobservation] are the remaining observations. *)
+  global_state_interp : global_state Λ → nat → list (observation Λ) → iProp Σ;
 
   (** A fixed postcondition for any forked-off thread. For most languages, e.g.
   heap_lang, this will simply be [True]. However, it is useful if one wants to
@@ -43,12 +44,12 @@ Class irisG (Λ : language) (Σ : gFunctors) := IrisG {
   a basic update or a bare magic wand, the expressiveness of the
   framework would be the same. If we removed the modality here, then
   the client would have to include the modality it needs as part of
-  the definition of [state_interp]. Since adding the modality as part
-  of the definition [state_interp_mono] does not significantly
+  the definition of [global_state_interp]. Since adding the modality as part
+  of the definition [global_state_interp_mono] does not significantly
   complicate the formalization in Iris, we prefer simplifying the
   client. *)
-  state_interp_mono σ ns κs nt:
-    state_interp σ ns κs nt ={∅}=∗ state_interp σ (S ns) κs nt
+  global_state_interp_mono g ns κs:
+    global_state_interp g ns κs ={∅}=∗ global_state_interp g (S ns) κs
 }.
 Global Opaque iris_invG.
 
@@ -411,11 +412,11 @@ Definition wpc_pre `{!irisG Λ Σ} (s : stuckness) (k : nat) (mj: nat)
   ((match to_val e1 with
    | Some v => ∀ q, NC q -∗ |={E1}=> Φ v ∗ NC q
    | None => ∀ q σ1 g1 ns κ κs nt,
-      state_interp σ1 ns (κ ++ κs) nt -∗ global_state_interp g1 -∗ NC q ={E1,∅}=∗ |={∅}▷=>^(S $ num_laters_per_step ns)
+      state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) -∗ NC q ={E1,∅}=∗ |={∅}▷=>^(S $ num_laters_per_step ns)
         (⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
         ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ ={∅,E1}=∗
-          (state_interp σ2 (S ns) κs (length efs + nt) ∗
-          global_state_interp g2 ∗
+          (state_interp σ2 (length efs + nt) ∗
+          global_state_interp g2 (S ns) κs ∗
           wpc E1 e2 Φ Φc ∗
           ([∗ list] i ↦ ef ∈ efs, wpc ⊤ ef fork_post True) ∗
           NC q))
@@ -1381,11 +1382,11 @@ Qed.
 
 Lemma wpc_lift_step_fupd s k E Φ Φc e1 :
   to_val e1 = None →
-  ((∀ σ1 g1 ns κ κs n, state_interp σ1 ns (κ ++ κs) n -∗ global_state_interp g1 -∗ |={E,∅}=> ▷
+  ((∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) -∗ |={E,∅}=> ▷
    ((⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
     ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E}=>
-      (state_interp σ2 (S ns) κs (length efs + n) ∗
-       global_state_interp g2 ∗
+      (state_interp σ2 (length efs + nt) ∗
+       global_state_interp g2 (S ns) κs ∗
        WPC e2 @ s; k; E {{ Φ }} {{ Φc }} ∗
        [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }}))))
   ∧ <disc> |C={E}_k=> Φc)%I
@@ -1397,7 +1398,7 @@ Proof.
   iSplit; last first.
   { iIntros. iDestruct "H" as "(_&H)". iIntros "!>".
     iApply cfupd_split_level_cfupd; eauto. }
-  iDestruct "H" as "(H&_)". iIntros (q σ1 g1 ns κ κs n) "Hσ Hg HNC".
+  iDestruct "H" as "(H&_)". iIntros (q σ1 g1 ns κ κs nt) "Hσ Hg HNC".
   iMod ("H" with "Hσ Hg") as "H".
   iModIntro. simpl. iModIntro. iNext. iModIntro.
   iDestruct "H" as "(%&H)".
@@ -1412,11 +1413,11 @@ Qed.
 
 Lemma wpc_lift_step s k E1 Φ Φc e1 :
   to_val e1 = None →
-  (∀ σ1 g1 ns κ κs n, state_interp σ1 ns (κ ++ κs) n -∗ global_state_interp g1 -∗ |={E1,∅}=> ▷
+  (∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) -∗ |={E1,∅}=> ▷
     (⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
      ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E1}=>
-      state_interp σ2 (S ns) κs (length efs + n) ∗
-      global_state_interp g2 ∗
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (S ns) κs ∗
       WPC e2 @ s; k; E1 {{ Φ }} {{ Φc }} ∗
       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }}))
   ∧ <disc> Φc
@@ -1447,7 +1448,7 @@ Proof.
   { iPureIntro. destruct s; done. }
   iNext. iIntros (e2 σ2 g2 efs ?).
   destruct (Hstep κ σ1 g1 e2 σ2 g2 efs) as (-> & <- & <- & ->); auto.
-  iMod (state_interp_mono with "Hσ") as "$".
+  iMod (global_state_interp_mono with "Hg") as "$". iFrame "Hσ".
   iMod "Hclose" as "_". iMod "H". iModIntro.
   iDestruct ("H" with "[//]") as "H". simpl. iFrame.
 Qed.
@@ -2017,18 +2018,18 @@ Hint Resolve head_stuck_stuck : core.
 
 Lemma wpc_lift_head_step_fupd s k E Φ Φc e1 :
   to_val e1 = None →
-  ((∀ σ1 g1 ns κ κs n, state_interp σ1 ns (κ ++ κs) n -∗ global_state_interp g1 -∗ |={E,∅}=> ▷
+  ((∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) -∗ |={E,∅}=> ▷
     (⌜head_reducible e1 σ1 g1⌝ ∗
     ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E}=>
-      (state_interp σ2 (S ns) κs (length efs + n) ∗
-       global_state_interp g2 ∗
+      (state_interp σ2 (length efs + nt) ∗
+       global_state_interp g2 (S ns) κs ∗
        WPC e2 @ s; k; E {{ Φ }} {{ Φc }} ∗
        [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})))
   ∧ <disc> |C={E}_k=> Φc)%I
  ⊢ WPC e1 @ s; k; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (?) "H". iApply wpc_lift_step_fupd=>//. iSplit.
-  - iDestruct "H" as "(H&_)". iIntros (σ1 g1 ns κ κs Qs) "Hσ Hg".
+  - iDestruct "H" as "(H&_)". iIntros (σ1 g1 ns κ κs nt) "Hσ Hg".
     iMod ("H" with "Hσ Hg") as "[>% H]"; iModIntro.
     iSplit; first by destruct s; eauto. iIntros (e2 σ2 g2 efs ?).
     iApply "H"; eauto.
@@ -2037,11 +2038,11 @@ Qed.
 
 Lemma wpc_lift_head_step s k E1 Φ Φc e1 :
   to_val e1 = None →
-  ((∀ σ1 g1 ns κ κs n, state_interp σ1 ns (κ ++ κs) n -∗ global_state_interp g1 -∗ |={E1,∅}=> ▷
+  ((∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) -∗ |={E1,∅}=> ▷
     (⌜head_reducible e1 σ1 g1⌝ ∗
      ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E1}=>
-      state_interp σ2 (S ns) κs (length efs + n) ∗
-      global_state_interp g2 ∗
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (S ns) κs ∗
       WPC e2 @ s; k; E1 {{ Φ }} {{ Φc }} ∗
       [∗ list] ef ∈ efs, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }}))
   ∧ <disc> |C={E1}_k=> Φc)%I

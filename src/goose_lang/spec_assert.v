@@ -59,25 +59,25 @@ Context `{crashG Σ}.
 
 Definition refinement_ctok := staged_pending 1 (refinement_crash_name).
 
-Definition spec_interp σ : iProp Σ :=
-    (na_heap_ctx tls σ.(heap) ∗ (* proph_map_ctx κs σ.(used_proph_id) ∗ *) ffi_ctx refinement_spec_ffiG σ.(world)
-      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle) ∗ ⌜ null_non_alloc σ.(heap) ⌝ ∗ refinement_ctok)%I.
+Definition spec_interp σ g : iProp Σ :=
+    (na_heap_ctx tls σ.(heap) ∗ (* proph_map_ctx κs σ.(used_proph_id) ∗ *) ffi_ctx refinement_spec_ffiG σ.(world) ∗ ffi_global_ctx refinement_spec_ffiG g ∗
+     trace_auth σ.(trace) ∗ oracle_auth σ.(oracle) ∗ ⌜ null_non_alloc σ.(heap) ⌝ ∗ refinement_ctok)%I.
 
 Definition spec_stateN := nroot .@ "source".@  "state".
 
 (* TODO: these names are terrible *)
 Definition spec_ctx : iProp Σ :=
-  source_ctx (CS := spec_crash_lang) ∗ ncinv spec_stateN (∃ σ g, source_state σ g ∗ spec_interp σ)%I.
+  source_ctx (CS := spec_crash_lang) ∗ ncinv spec_stateN (∃ σ g, source_state σ g ∗ spec_interp σ g)%I.
 Definition spec_ctx' r ρ : iProp Σ :=
-  source_ctx' (CS := spec_crash_lang) r ρ ∗ ncinv spec_stateN (∃ σ g, source_state σ g ∗ spec_interp σ)%I.
+  source_ctx' (CS := spec_crash_lang) r ρ ∗ ncinv spec_stateN (∃ σ g, source_state σ g ∗ spec_interp σ g)%I.
 
 Definition spec_crash_ctx P : iProp Σ :=
   source_crash_ctx (CS := spec_crash_lang) refinement_ctok ∗
-  □ (|C={↑spec_stateN}_0=> inv spec_stateN (P ∨ (∃ σ g, source_state σ g ∗ spec_interp σ)))%I.
+  □ (|C={↑spec_stateN}_0=> inv spec_stateN (P ∨ (∃ σ g, source_state σ g ∗ spec_interp σ g)))%I.
 
 Definition spec_crash_ctx' r ρ P : iProp Σ :=
   source_crash_ctx' (CS := spec_crash_lang) r ρ refinement_ctok ∗
-  □ (|C={↑spec_stateN}_0=> inv spec_stateN (P ∨ (∃ σ g, source_state σ g ∗ spec_interp σ)))%I.
+  □ (|C={↑spec_stateN}_0=> inv spec_stateN (P ∨ (∃ σ g, source_state σ g ∗ spec_interp σ g)))%I.
 
 Global Instance spec_ctx_persistent : Persistent (spec_ctx).
 Proof. apply _. Qed.
@@ -109,13 +109,13 @@ Proof.
   set_solver.
 Qed.
 
-Lemma spec_interp_null σ l:
+Lemma spec_interp_null σ g l:
   addr_base l = null →
-  ▷ spec_interp σ -∗
+  ▷ spec_interp σ g -∗
   ▷ ⌜ heap σ !! l = None ⌝.
 Proof.
   iIntros (Hl) "Hinterp !>".
-  iDestruct "Hinterp" as "(_&_&?&?&H&_)".
+  iDestruct "Hinterp" as "(_&_&_&?&?&H&_)".
   iDestruct "H" as %Hnonnull. iPureIntro.
   rewrite (addr_plus_off_decode l) Hl. eapply Hnonnull.
 Qed.
@@ -132,7 +132,7 @@ Lemma ghost_output j K `{LanguageCtx _ K} E tr lit :
 Proof.
   iIntros (??) "(#Hctx&#Hstate) Htr_frag Hj".
   iInv "Hstate" as (??) "(>H&Hinterp)" "Hclo".
-  iDestruct "Hinterp" as "(>Hσ&?&>Htr_auth&?)".
+  iDestruct "Hinterp" as "(>Hσ&?&?&>Htr_auth&?)".
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { eapply head_prim_step_trans.
@@ -158,7 +158,7 @@ Lemma ghost_input j K `{LanguageCtx _ K} E tr (sel: u64) Or :
 Proof.
   iIntros (??) "(#Hctx&#Hstate) Htr_frag Hor_frag Hj".
   iInv "Hstate" as (??) "(>H&Hinterp)" "Hclo".
-  iDestruct "Hinterp" as "(>Hσ&?&>Htr_auth&>Hor_auth&?)".
+  iDestruct "Hinterp" as "(>Hσ&?&?&>Htr_auth&>Hor_auth&?)".
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
@@ -250,7 +250,7 @@ Lemma ghost_load_null_stuck j K `{LanguageCtx _ K} E l:
 Proof.
   iIntros (Hnull ?) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (??) "(>H&Hinterp)" "Hclo".
-  iDestruct (spec_interp_null _ l with "Hinterp") as ">Hnone"; eauto.
+  iDestruct (spec_interp_null _ _ l with "Hinterp") as ">Hnone"; eauto.
   iDestruct "Hnone" as %Hnone.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
@@ -401,7 +401,7 @@ Lemma ghost_cmpxchg_null_stuck j K `{LanguageCtx _ K} E l (v1 v2: val):
 Proof.
   iIntros (??) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (??) "(>H&Hinterp)" "Hclo".
-  iDestruct (spec_interp_null _ l with "Hinterp") as ">Hnone"; eauto.
+  iDestruct (spec_interp_null _ _ l with "Hinterp") as ">Hnone"; eauto.
   iDestruct "Hnone" as %Hnone.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
@@ -601,7 +601,7 @@ Lemma ghost_prepare_write_null_stuck j K `{LanguageCtx _ K} E l:
 Proof.
   iIntros (Hnull ?) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (??) "(>H&Hinterp)" "Hclo".
-  iDestruct (spec_interp_null _ l with "Hinterp") as ">Hnone"; eauto.
+  iDestruct (spec_interp_null _ _ l with "Hinterp") as ">Hnone"; eauto.
   iDestruct "Hnone" as %Hnone.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
@@ -727,7 +727,7 @@ Lemma ghost_start_read_null_stuck j K `{LanguageCtx _ K} E l:
 Proof.
   iIntros (Hnull ?) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (??) "(>H&Hinterp)" "Hclo".
-  iDestruct (spec_interp_null _ l with "Hinterp") as ">Hnone"; eauto.
+  iDestruct (spec_interp_null _ _ l with "Hinterp") as ">Hnone"; eauto.
   iDestruct "Hnone" as %Hnone.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
@@ -781,7 +781,7 @@ Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
 Proof.
   iIntros (Hlen Hn Φ) "(#Hctx&Hstate) Hj".
   iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
-  iDestruct "Hinterp" as "(>Hσ&(Hrest1&Hrest2&Hrest3&Hrest4&Hrest5))".
+  iDestruct "Hinterp" as "(>Hσ&(Hrest1&Hrest2&Hrest2'&Hrest3&Hrest4&Hrest5))".
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step_trans. simpl.
     econstructor; last (repeat econstructor).
@@ -806,7 +806,7 @@ Proof.
     by rewrite (loc_add_0) in Hfresh.
   }
   { eauto. }
-  iMod ("Hclo" with "[Hσ H Hrest1 Hrest2 Hrest3 Hrest4 Hrest5]").
+  iMod ("Hclo" with "[Hσ H Hrest1 Hrest2 Hrest2' Hrest3 Hrest4 Hrest5]").
   { iNext. iExists _, _. iFrame "H". iFrame.
     iDestruct "Hrest4" as %Hnon_null.
     iPureIntro. intros off.

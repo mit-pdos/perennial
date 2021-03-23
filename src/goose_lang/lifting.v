@@ -2,7 +2,6 @@ From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth gmap excl.
 From iris.bi Require Import fractional.
-From Perennial.base_logic.lib Require Export proph_map.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
@@ -113,15 +112,17 @@ Class ffi_interp (ffi: ffi_model) :=
     ffi_update_update: ∀ Σ hF names1 names2, ffi_update Σ (ffi_update Σ hF names1) names2
                                      = ffi_update Σ hF names2;
     ffi_ctx: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
-    ffi_start: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
+    ffi_global_ctx: ∀ `{ffiG Σ}, ffi_global_state -> iProp Σ;
+    ffi_start: ∀ `{ffiG Σ}, ffi_state -> ffi_global_state -> iProp Σ;
     ffi_restart: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
     ffi_crash_rel: ∀ Σ, ffiG Σ → ffi_state → ffiG Σ → ffi_state → iProp Σ;
     ffi_crash_rel_pers: ∀ Σ (Hold Hnew: ffiG Σ) σ σ', Persistent (ffi_crash_rel Σ Hold σ Hnew σ')
   }.
 
-Arguments ffi_ctx {ffi FfiInterp Σ} fG : rename.
-Arguments ffi_start {ffi FfiInterp Σ} fG : rename.
-Arguments ffi_restart {ffi FfiInterp Σ} fG : rename.
+Arguments ffi_ctx {ffi FfiInterp Σ} : rename.
+Arguments ffi_global_ctx {ffi FfiInterp Σ} : rename.
+Arguments ffi_start {ffi FfiInterp Σ} : rename.
+Arguments ffi_restart {ffi FfiInterp Σ} : rename.
 
 Section goose_lang.
 Context `{ffi_semantics: ext_semantics}.
@@ -233,7 +234,6 @@ Class heapG Σ := HeapG {
   heapG_crashG : crashG Σ;
   heapG_ffiG : ffiG Σ;
   heapG_na_heapG :> na_heapG loc val Σ;
-  heapG_proph_mapG :> proph_mapG proph_id (val * val) Σ;
   heapG_traceG :> traceG Σ;
 }.
 
@@ -241,7 +241,6 @@ Class heapG Σ := HeapG {
 (* The word 'heap' is really overloaded... *)
 Record heap_names := {
   heap_heap_names : na_heap_names;
-  heap_proph_name : gname;
   heap_ffi_names : ffi_names;
   heap_trace_names : tr_names;
 }.
@@ -251,9 +250,6 @@ Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
      heapG_crashG := heapG_crashG;
      heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
      heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
-     heapG_proph_mapG :=
-       {| proph_map_inG := proph_map_inG;
-          proph_map_name := (heap_proph_name names) |};
      heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
  |}.
 
@@ -262,15 +258,11 @@ Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (Hcrash : crashG Σ) (
      heapG_crashG := Hcrash;
      heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
      heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
-     heapG_proph_mapG :=
-       {| proph_map_inG := proph_map_inG;
-          proph_map_name := (heap_proph_name names) |};
      heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
  |}.
 
 Definition heap_get_names Σ (hG : heapG Σ) : heap_names :=
   {| heap_heap_names := na_heapG_get_names (heapG_na_heapG);
-     heap_proph_name := proph_map_name (heapG_proph_mapG);
      heap_ffi_names := ffi_get_names Σ (heapG_ffiG);
      heap_trace_names := trace_tr_names;
  |}.
@@ -279,7 +271,7 @@ Lemma heap_get_update Σ hG :
   heap_update_names Σ hG (heap_get_names _ hG) = hG.
 Proof.
   rewrite /heap_update_names/heap_get_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
-  destruct hG as [??? [] [] []]; eauto.
+  destruct hG as [??? [] []]; eauto.
 Qed.
 
 Definition tls (na: naMode) : lock_state :=
@@ -295,10 +287,10 @@ Global Program Instance heapG_irisG `{!heapG Σ}:
   iris_invG := heapG_invG;
   iris_crashG := heapG_crashG;
   num_laters_per_step := λ n, n;
-  state_interp σ ns κs _ :=
-    (na_heap_ctx tls σ.(heap) ∗ proph_map_interp κs σ.(used_proph_id) ∗ ffi_ctx heapG_ffiG σ.(world)
+  state_interp σ nt :=
+    (na_heap_ctx tls σ.(heap) ∗ ffi_ctx heapG_ffiG σ.(world)
       ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
-  global_state_interp g := True%I;
+  global_state_interp g ns κs := ffi_global_ctx heapG_ffiG g;
   fork_post _ := True%I;
 }.
 Next Obligation. intros. eauto. Qed.
@@ -307,7 +299,7 @@ Lemma heap_get_update' Σ hG :
   heap_update Σ hG (iris_invG) (iris_crashG) (heap_get_names _ hG) = hG.
 Proof.
   rewrite /heap_update/heap_get_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
-  destruct hG as [??? [] [] []]; eauto.
+  destruct hG as [??? [] []]; eauto.
 Qed.
 
 Lemma heap_update_invG Σ hG Hinv Hc names:
@@ -341,7 +333,6 @@ Local Hint Extern 1 (relation.runF _ _ _ _) => monad_simpl; simpl : core.
 (* Local Hint Extern 0 (head_step (CmpXchg _ _ _) _ _ _ _ _) => eapply CmpXchgS : core. *)
 Local Hint Extern 0 (head_step_atomic (AllocN _ _) _ _ _ _ _ _ _) => apply alloc_fresh : core.
 Local Hint Extern 0 (head_step_atomic (ArbitraryInt) _ _ _ _ _ _ _) => apply arbitrary_int_step : core.
-Local Hint Extern 0 (head_step_atomic NewProph _ _ _ _ _ _ _) => apply new_proph_id_fresh : core.
 Local Hint Resolve to_of_val : core.
 
 Global Instance into_val_val v : IntoVal (Val v) v.
@@ -417,8 +408,6 @@ Proof. solve_atomic.
 Qed.
 Global Instance linearize_atomic s : Atomic s Linearize.
 Proof. rewrite /Linearize. apply _. Qed.
-Global Instance new_proph_atomic s : Atomic s NewProph.
-Proof. solve_atomic. Qed.
 Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 Global Instance ext_atomic s op v : Atomic s (ExternalOp op (Val v)).
@@ -427,39 +416,6 @@ Global Instance input_atomic s v : Atomic s (Input (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance output_atomic s v : Atomic s (Output (Val v)).
 Proof. solve_atomic. Qed.
-
-Global Instance proph_resolve_atomic s e v1 v2 :
-  Atomic s e → Atomic s (Resolve e (Val v1) (Val v2)).
-Proof.
-  rename e into e1. intros H σ1 g1 e2 κ σ2 g2 efs [Ks e1' e2' Hfill -> step].
-  simpl in *. induction Ks as [|K Ks _] using rev_ind; simpl in Hfill.
-  - subst. inversion_clear step. rename H0 into step.
-    rewrite /head_step /= in step.
-    repeat inv_undefined.
-    inversion_clear step.
-    repeat inv_undefined.
-    inversion_clear H1.
-    inversion_clear H2.
-    destruct s.
-    + eexists; eauto.
-    + eapply val_irreducible; simpl.
-      eexists; eauto.
-  - rewrite fill_app. rewrite fill_app in Hfill.
-    assert (∀ v, Val v = fill Ks e1' → False) as fill_absurd.
-    { intros v Hv. assert (to_val (fill Ks e1') = Some v) as Htv by by rewrite -Hv.
-      apply to_val_fill_some in Htv. destruct Htv as [-> ->]. admit. (* inversion step; contradiction. *) }
-    destruct K; (inversion Hfill; clear Hfill; subst; try
-      match goal with | H : Val ?v = fill Ks e1' |- _ => by apply fill_absurd in H end).
-    refine (_ (H σ1 g1 (fill (Ks ++ [K]) e2') _ σ2 g2 efs _)).
-    + destruct s; intro Hs; simpl in *.
-      * destruct Hs as [v Hs]. apply to_val_fill_some in Hs. by destruct Hs, Ks.
-      * admit. (*apply irreducible_resolve. by rewrite fill_app in Hs.*)
-    + econstructor 1 with (K := Ks ++ [K]); try done. simpl. by rewrite fill_app.
-Abort.
-(*
-Global Instance resolve_proph_atomic s v1 v2 : Atomic s (ResolveProph (Val v1) (Val v2)).
-Proof. by apply proph_resolve_atomic, skip_atomic. Qed.
-*)
 
 Local Ltac solve_exec_safe := intros; subst; do 4 eexists; constructor 1; cbn; repeat (monad_simpl; simpl).
 Local Ltac solve_exec_puredet :=
@@ -568,7 +524,7 @@ Lemma wp_ArbitraryInt stk E :
   {{{ (x:u64), RET #x; True }}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&?&?&?) Hg !>"; iSplit; first by eauto.
+  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&?&?) Hg !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step; iFrame.
   iModIntro. by iApply "HΦ".
 Qed.
@@ -579,7 +535,7 @@ Lemma wp_output s E tr lit :
   {{{ RET (LitV LitUnit); trace_frag (add_event (Out_ev lit) tr)}}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&?&Htr_auth&?) Hg !>"; iSplit; first by eauto.
+  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&Htr_auth&?) Hg !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step. iFrame.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iMod (trace_update with "[$] [$]") as "(?&?)".
@@ -592,7 +548,7 @@ Lemma wp_input s E tr (sel: u64) Or :
   {{{ RET (LitV (LitInt (Or tr sel))); trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr) ∗ oracle_frag Or}}}.
 Proof.
   iIntros (Φ) "(Htr&Hor) HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&?&Htr_auth&Hor_auth) Hg !>"; iSplit.
+  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&Htr_auth&Hor_auth) Hg !>"; iSplit.
   { iPureIntro. unshelve (by eauto); apply (U64 0). }
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
@@ -988,18 +944,6 @@ Proof.
   rewrite bool_decide_true //.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "[$]").
-Qed.
-
-Lemma wp_new_proph s E :
-  {{{ True }}}
-    NewProph @ s; E
-  {{{ pvs p, RET (LitV (LitProphecy p)); proph p pvs }}}.
-Proof.
-  iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs n) "(Hσ&HR&Hffi) Hg !>". iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 g2 efs Hstep). inv_head_step.
-  iMod (proph_map_new_proph p with "HR") as "[HR Hp]"; first done.
-  iModIntro; iSplit=> //. iFrame. by iApply "HΦ".
 Qed.
 
 (* In the following, strong atomicity is required due to the fact that [e] must

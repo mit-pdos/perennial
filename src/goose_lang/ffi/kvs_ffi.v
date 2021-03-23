@@ -23,7 +23,7 @@ Section recoverable.
   .
 
   Definition recoverable_model : ffi_model :=
-    mkFfiModel (RecoverableState) (populate UnInit).
+    mkFfiModel (RecoverableState) () (populate UnInit) _.
 
   Local Existing Instance recoverable_model.
 
@@ -345,7 +345,8 @@ Section kvs_interp.
        ffi_update := @kvs_update;
        ffi_get_update := _;
        ffi_ctx := @kvs_ctx;
-       ffi_start := @kvs_start;
+       ffi_global_ctx _ _ _ := True%I;
+       ffi_start Σ G w _ := @kvs_start Σ G w;
        ffi_restart := @kvs_restart;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @kvsG_state_inG _ hF1 = @kvsG_state_inG _ hF2 ∧
                                            kvs_names_state (kvs_get_names hF1) =
@@ -564,7 +565,7 @@ From Perennial.goose_lang Require Import adequacy.
   {| ffi_preG := kvs_preG;
      ffiΣ := kvsΣ;
      subG_ffiPreG := subG_kvsG;
-     ffi_initP := λ σ, σ = UnInit;
+     ffi_initP := λ σ _, σ = UnInit;
      ffi_update_pre := @kvs_update_pre;
   |}.
 Next Obligation. rewrite //=. Qed.
@@ -580,7 +581,7 @@ Next Obligation.
   (*if in uninit state, can initialize algebra and give ffi start, show that ffi start can be created*)
   (* first part: status *)
   rewrite //=.
-  iIntros (Σ hPre σ ->). simpl.
+  iIntros (Σ hPre σ g ->). simpl.
   rewrite /kvs_uninit_auth/kvs_uninit_frag/kvs_frag/kvs_auth.
   iMod (own_alloc (Cinl (1%Qp, to_agree UnInit') : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
@@ -597,7 +598,7 @@ Next Obligation.
 Qed.
 
 Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiG, ffi_update plugs in new names *)
-  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  iIntros (Σ σ σ' g Hcrash Hold) "Hinterp _".
   inversion Hcrash; subst.
   monad_inv. inversion H. subst. inversion H1. subst.
   destruct x; monad_inv.
@@ -609,7 +610,7 @@ Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiG, ffi_upda
     { repeat econstructor => //=. }
     iExists {| kvs_names_open := γ1; kvs_names_state := kvs_names_state (kvs_get_names _) |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/kvs_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     * destruct kvsG_state_inG; simpl.
       unfold gen_heapG_update; simpl.
       unfold gen_heapG_get_names; simpl.
@@ -623,7 +624,7 @@ Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiG, ffi_upda
     { repeat econstructor => //=. }
     iExists {| kvs_names_open := γ1; kvs_names_state := kvs_names_state (kvs_get_names _) |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/kvs_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
    * destruct kvsG_state_inG; simpl.
       unfold gen_heapG_update; simpl.
       unfold gen_heapG_get_names; simpl.
@@ -638,7 +639,7 @@ Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiG, ffi_upda
     { repeat econstructor => //=. }
     iExists {| kvs_names_open := γ1; kvs_names_state := kvs_names_state (kvs_get_names _) |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/kvs_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
    * destruct kvsG_state_inG; simpl.
       unfold gen_heapG_update; simpl.
       unfold gen_heapG_get_names; simpl.

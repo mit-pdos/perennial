@@ -8,12 +8,12 @@ From Perennial.goose_lang Require Export wpr_lifting.
 From Perennial.goose_lang Require Import typing adequacy lang.
 Set Default Proof Using "Type".
 
-Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !heapPreG Σ} s k e r σ g φ φr φinv Φinv (HINIT: ffi_initP σ.(world)) :
+Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !heapPreG Σ} s k e r σ g φ φr φinv Φinv (HINIT: ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heapG Σ},
-     ⊢ (ffi_start (heapG_ffiG) σ.(world) -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) ={⊤}=∗
-       □ (∀ n ns σ κ, state_interp σ ns κ n -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
+     ⊢ (ffi_start (heapG_ffiG) σ.(world) g -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) ={⊤}=∗
+       □ (∀ σ nt, state_interp σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
        □ (∀ hG (Hpf: @heapG_invG _ _ _ _ Hheap = @heapG_invG _ _ _ _ hG),
-                     Φinv hG -∗ □ ∀ σ ns κ n, state_interp σ ns κ n -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
+                     Φinv hG -∗ □ ∀ σ nt, state_interp σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
         wpr s k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝))) →
   recv_adequate (CS := goose_crash_lang) s e r σ g (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, φinv σ).
 Proof.
@@ -21,19 +21,18 @@ Proof.
   eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ _ (λ Hinv Hc names, Φinv (heap_update_pre _ _ Hinv Hc (@pbundleT _ _ names))) (λ n, n)).
   iIntros (???) "".
   iMod (na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
-  iMod (proph_map_name_init _ κs σ.(used_proph_id)) as (name_proph_map) "Hp".
-  iMod (ffi_name_init _ _ σ.(world)) as (ffi_names) "(Hw&Hstart)"; first auto.
+  iMod (ffi_name_init _ _ σ.(world) g) as (ffi_names) "(Hw&Hgw&Hstart)"; first auto.
   iMod (trace_name_init σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   set (hnames := {| heap_heap_names := name_na_heap;
-                      heap_proph_name := name_proph_map;
                       heap_ffi_names := ffi_names;
                       heap_trace_names := name_trace |}).
   set (hG := heap_update_pre _ hPre Hinv Hc hnames).
   iExists ({| pbundleT := hnames |}).
   iExists
-    (λ t σ ns κs nt, let _ := heap_update Σ hG Hinv Hc (@pbundleT _ _ t) in
-               state_interp σ ns κs nt)%I,
-    (λ t _, True%I).
+    (λ t σ nt, let _ := heap_update Σ hG Hinv Hc (@pbundleT _ _ t) in
+               state_interp σ nt)%I,
+    (λ t g ns κs, let _ := heap_update Σ hG Hinv Hc (@pbundleT _ _ t) in
+                  global_state_interp g ns κs).
   iExists _. (* (λ Hc t, λ (σ0 : state) (_ : nat) (κs0 : list observation) (_ : nat),
                                               lifting.heapG_irisG_obligation_1 Σ
                                                 (heap_update Σ (heap_update_pre Σ hPre Hinv Hc hnames) Hinv Hc
@@ -44,19 +43,18 @@ Proof.
   iMod (Hwp hG with "[$] [$] [$]") as "(#H1&#H2&Hwp)".
   iModIntro.
   iSplitR.
-  { iModIntro. iIntros (????) "Hσ". rewrite heap_update_pre_update.
+  { iModIntro. iIntros (??) "Hσ". rewrite heap_update_pre_update.
     iApply ("H1" with "Hσ").
   }
   iSplitR.
   {
     iModIntro. iIntros (Hc' names') "H". rewrite ?heap_update_pre_update.
     iDestruct ("H2" $! _ _ with "H") as "#H3".
-    iModIntro. iIntros (????) "H". iSpecialize ("H3" with "H").
+    iModIntro. iIntros (??) "H". iSpecialize ("H3" with "H").
     eauto.
   }
   iFrame. rewrite /hG//=.
   rewrite ffi_update_pre_update //=. iFrame.
-  iSplitR; first done. (* proving initial global_state_interp *)
   rewrite /wpr. rewrite /hG//=.
   rewrite heap_update_pre_get.
   rewrite //=.
@@ -65,8 +63,6 @@ Proof.
   iIntros. rewrite heap_update_pre_update. eauto.
   Unshelve.
   - eauto.
-  - (* TODO: where is this coming from? *)
-    exact O.
   - (* TODO: where is this coming from? *)
     exact O.
 Qed.

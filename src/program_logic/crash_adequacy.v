@@ -31,12 +31,12 @@ Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤ {{ fork_post }} 
 
 Lemma wpc_step s k e1 σ1 g1 ns κ κs e2 σ2 g2 efs m Φ Φc :
   prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
-  state_interp σ1 ns (κ ++ κs) m -∗
-  global_state_interp g1 -∗
+  state_interp σ1 m -∗
+  global_state_interp g1 ns (κ ++ κs) -∗
   WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗ NC 1 -∗
   |={⊤,∅}=> |={∅}▷=>^(S $ num_laters_per_step ns) |={∅,⊤}=>
-  state_interp σ2 (S ns) κs (length efs + m) ∗
-  global_state_interp g2 ∗
+  state_interp σ2 (length efs + m) ∗
+  global_state_interp g2 (S ns) κs ∗
   WPC e2 @ s; k; ⊤ {{ Φ }} {{ Φc }} ∗
   wptp s k efs ∗
   NC 1.
@@ -53,13 +53,13 @@ Qed.
 
 Lemma wptp_step s k e1 t1 t2 κ κs σ1 g1 ns σ2 g2 Φ Φc :
   step (e1 :: t1,(σ1,g1)) κ (t2, (σ2,g2)) →
-  state_interp σ1 ns (κ ++ κs) (length t1) -∗
-  global_state_interp g1 -∗
+  state_interp σ1 (length t1) -∗
+  global_state_interp g1 ns (κ ++ κs) -∗
   WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }}-∗ wptp s k t1 -∗ NC 1 ==∗
   ∃ e2 t2', ⌜t2 = e2 :: t2'⌝ ∗
   |={⊤,∅}=> |={∅}▷=>^(S $ num_laters_per_step ns) |={∅,⊤}=>
-  state_interp σ2 (S ns) κs (pred (length t2)) ∗
-  global_state_interp g2 ∗
+  state_interp σ2 (pred (length t2)) ∗
+  global_state_interp g2 (S ns) κs ∗
   WPC e2 @ s; k; ⊤ {{ Φ }} {{ Φc}} ∗ wptp s k t2' ∗ NC 1.
 Proof.
   iIntros (Hstep) "Hσ Hg He Ht HNC".
@@ -87,13 +87,13 @@ Local Fixpoint steps_sum (num_laters_per_step : nat → nat) (start ns : nat) : 
 
 Lemma wptp_steps s k n e1 t1 κs κs' t2 σ1 g1 ns σ2 g2 Φ Φc :
   nsteps n (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) →
-  state_interp σ1 ns (κs ++ κs') (length t1) -∗
-  global_state_interp g1 -∗
+  state_interp σ1 (length t1) -∗
+  global_state_interp g1 ns (κs ++ κs') -∗
   WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗ wptp s k t1 -∗ NC 1 -∗
   (|={⊤, ∅}=> |={∅}▷=>^(steps_sum num_laters_per_step ns n) |={∅,⊤}=> ∃ e2 t2',
     ⌜t2 = e2 :: t2'⌝ ∗
-    state_interp σ2 (n + ns) κs' (pred (length t2)) ∗
-    global_state_interp g2 ∗
+    state_interp σ2 (pred (length t2)) ∗
+    global_state_interp g2 (n + ns) κs' ∗
     WPC e2 @ s; k; ⊤ {{ Φ }} {{ Φc }} ∗ wptp s k t2' ∗
     NC 1).
 Proof.
@@ -113,8 +113,8 @@ Proof.
 Qed.
 
 Lemma wpc_safe k κs m e σ g ns Φ Φc :
-  state_interp σ ns κs m -∗
-  global_state_interp g -∗
+  state_interp σ m -∗
+  global_state_interp g ns κs -∗
   WPC e @ k ; ⊤  {{ Φ }} {{ Φc }} -∗ |NC={⊤}=>
   ▷^(S (S (num_laters_per_step ns))) ⌜is_Some (to_val e) ∨ reducible e σ g⌝.
 Proof.
@@ -130,16 +130,16 @@ Qed.
 
 Lemma wptp0_strong_adequacy Φ Φc k κs' s n e1 t1 κs t2 σ1 g1 ns σ2 g2 :
   nsteps n (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) →
-  state_interp σ1 ns (κs ++ κs') (length t1) -∗
-  global_state_interp g1 -∗
+  state_interp σ1 (length t1) -∗
+  global_state_interp g1 ns (κs ++ κs') -∗
   WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
   |={⊤,∅}=> |={∅}▷=>^(steps_sum num_laters_per_step ns n) |={∅, ⊤}=> (∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ▷^(S (S (num_laters_per_step (n + ns)))) (⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → not_stuck e2 σ2 g2 ⌝) ∗
-    state_interp σ2 (n + ns) κs' (length t2') ∗
-    global_state_interp g2 ∗
+    state_interp σ2 (length t2') ∗
+    global_state_interp g2 (n + ns) κs' ∗
     from_option Φ True (to_val e2) ∗
     ([∗ list] v ∈ omap to_val t2', fork_post v) ∗
     NC 1).
@@ -150,8 +150,8 @@ Proof.
   iMod 1 as (e2' t2' ?) "(Hσ & Hg & Hwp & Ht & HNC)"; simplify_eq/=.
   iMod (fupd_plain_keep_l ⊤
     (▷^(S (S (num_laters_per_step (n + ns)))) ⌜ ∀ e2, s = NotStuck → e2 ∈ (e2' :: t2') → not_stuck e2 σ2 g2 ⌝)%I
-    (state_interp σ2 (n + ns) κs' (length t2') ∗
-    (global_state_interp g2) ∗
+    (state_interp σ2 (length t2') ∗
+    (global_state_interp g2 (n + ns) κs') ∗
      wpc0 s k mj ⊤ e2' Φ Φc ∗ wptp s k t2' ∗ NC 1)%I
     with "[$Hσ $Hg $Hwp $Ht $HNC]") as "(Hsafe&Hσ&Hg&Hwp&Hvs&HNC)".
   { iIntros "(Hσ & Hg & Hwp & Ht & HNC)" (e' -> He').
@@ -174,15 +174,15 @@ Qed.
 
 Lemma wptp0_strong_crash_adequacy Φ Φc κs' s k n e1 t1 κs t2 σ1 g1 ns σ2 g2 :
   nsteps n (e1 :: t1, (σ1, g1)) κs (t2, (σ2, g2)) →
-  state_interp σ1 ns (κs ++ κs') (length t1) -∗
-  global_state_interp g1 -∗
+  state_interp σ1 (length t1) -∗
+  global_state_interp g1 ns (κs ++ κs') -∗
   WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
   |={⊤,∅}=> |={∅}▷=>^(steps_sum num_laters_per_step ns n) |={∅, ⊤}=>
   ▷ (∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
-    Φc ∗ state_interp σ2 (n + ns) κs' (length t2') ∗ global_state_interp g2 ∗ C).
+    Φc ∗ state_interp σ2 (length t2') ∗ global_state_interp g2 (n + ns) κs' ∗ C).
 Proof.
   iIntros (Hstep) "Hσ Hg He Ht HNC".
   iDestruct (wptp_steps with "Hσ Hg He Ht HNC") as "Hwp"; first done.
@@ -190,8 +190,8 @@ Proof.
   iMod 1 as (e2' t2' ?) "(Hσ & Hg & Hwp & Ht & HNC)"; simplify_eq/=.
   iMod (fupd_plain_keep_l ⊤
     (▷^(S (S (num_laters_per_step (n + ns)))) ⌜ ∀ e2, s = NotStuck → e2 ∈ (e2' :: t2') → not_stuck e2 σ2 g2 ⌝)%I
-    (state_interp σ2 (n + ns) κs' (length t2') ∗
-    (global_state_interp g2) ∗
+    (state_interp σ2 (length t2') ∗
+    (global_state_interp g2 (n + ns) κs') ∗
      wpc0 s k mj ⊤ e2' Φ Φc ∗ wptp s k t2' ∗ NC 1)%I
     with "[$Hσ $Hg $Hwp $Ht $HNC]") as "(Hsafe&Hσ&Hg&Hwp&Hvs&HNC)".
   { iIntros "(Hσ & Hg & Hwp & Ht & HNC)" (e' -> He').
@@ -228,16 +228,16 @@ Implicit Types Φs : list (val Λ → iProp Σ).
 Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})%I.
 Lemma wptp_strong_adequacy Φ Φc k κs' s n e1 t1 κs t2 σ1 g1 ns σ2 g2 :
   nsteps n (e1 :: t1, (σ1, g1)) κs (t2, (σ2, g2)) →
-  state_interp σ1 ns (κs ++ κs') (length t1) -∗
-  global_state_interp g1 -∗
+  state_interp σ1 (length t1) -∗
+  global_state_interp g1 ns (κs ++ κs') -∗
   WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
   |={⊤,∅}=> |={∅}▷=>^(steps_sum num_laters_per_step ns n) |={∅, ⊤}=> (∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ▷^(S (S (num_laters_per_step (n + ns)))) (⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → not_stuck e2 σ2 g2 ⌝) ∗
-    state_interp σ2 (n + ns) κs' (length t2') ∗
-    global_state_interp g2 ∗
+    state_interp σ2 (length t2') ∗
+    global_state_interp g2 (n + ns) κs' ∗
     from_option Φ True (to_val e2) ∗
     ([∗ list] v ∈ omap to_val t2', fork_post v) ∗
     NC 1).
@@ -252,15 +252,15 @@ Qed.
 
 Lemma wptp_strong_crash_adequacy Φ Φc κs' s k n e1 t1 κs t2 σ1 g1 ns σ2 g2 :
   nsteps n (e1 :: t1, (σ1, g1)) κs (t2, (σ2, g2)) →
-  state_interp σ1 ns (κs ++ κs') (length t1) -∗
-  global_state_interp g1 -∗
+  state_interp σ1 (length t1) -∗
+  global_state_interp g1 ns (κs ++ κs') -∗
   WPC e1 @ s; k; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp s k t1 -∗
   NC 1 -∗
   |={⊤,∅}=> |={∅}▷=>^(steps_sum num_laters_per_step ns n) |={∅, ⊤}=>
   ▷ (∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
-    Φc ∗ state_interp σ2 (n + ns) κs' (length t2') ∗ global_state_interp g2 ∗ C).
+    Φc ∗ state_interp σ2 (length t2') ∗ global_state_interp g2 (n + ns) κs' ∗ C).
 Proof.
   iIntros (?) "?? Hwpc Hwptp Hnc".
   iApply (wptp0_strong_crash_adequacy 0 with "[$] [$] [Hwpc] [Hwptp] [$]"); first eassumption.

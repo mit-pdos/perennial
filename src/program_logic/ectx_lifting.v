@@ -17,11 +17,11 @@ Local Hint Resolve head_stuck_stuck : core.
 
 Lemma wp_lift_head_step_fupd {s E Φ} e1 :
   to_val e1 = None →
-  (∀ σ1 g1 ns κ κs nt, state_interp σ1 ns (κ ++ κs) nt -∗ global_state_interp g1 ={E,∅}=∗ ▷
+  (∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) ={E,∅}=∗ ▷
     (⌜head_reducible e1 σ1 g1⌝ ∗
     ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ ={∅,E}=∗
-      state_interp σ2 (S ns) κs (length efs + nt) ∗
-      global_state_interp g2 ∗
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (S ns) κs ∗
       WP e2 @ s; E {{ Φ }} ∗
       [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }}))
   ⊢ WP e1 @ s; E {{ Φ }}.
@@ -35,11 +35,11 @@ Qed.
 
 Lemma wp_lift_head_step {s E Φ} e1 :
   to_val e1 = None →
-  (∀ σ1 g1 ns κ κs nt, state_interp σ1 ns (κ ++ κs) nt -∗ global_state_interp g1 ={E,∅}=∗
+  (∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) ={E,∅}=∗
     ⌜head_reducible e1 σ1 g1⌝ ∗
     ▷ ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ ={∅,E}=∗
-      state_interp σ2 (S ns) κs (length efs + nt) ∗
-      global_state_interp g2 ∗
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (S ns) κs ∗
       WP e2 @ s; E {{ Φ }} ∗
       [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }})
   ⊢ WP e1 @ s; E {{ Φ }}.
@@ -90,11 +90,11 @@ Qed.
 
 Lemma wp_lift_atomic_head_step {s E Φ} e1 :
   to_val e1 = None →
-  (∀ σ1 g1 ns κ κs nt, state_interp σ1 ns (κ ++ κs) nt -∗ global_state_interp g1 ={E}=∗
+  (∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) ={E}=∗
     ⌜head_reducible e1 σ1 g1⌝ ∗
     ▷ ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ ={E}=∗
-      state_interp σ2 (S ns) κs (length efs + nt) ∗
-      global_state_interp g2 ∗
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (S ns) κs ∗
       from_option Φ False (to_val e2) ∗
       [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }})
   ⊢ WP e1 @ s; E {{ Φ }}.
@@ -124,10 +124,10 @@ Qed.
 
 Lemma wp_lift_atomic_head_step_no_fork {s E Φ} e1 :
   to_val e1 = None →
-  (∀ σ1 g1 ns κ κs nt, state_interp σ1 ns (κ ++ κs) nt -∗ global_state_interp g1 ={E}=∗
+  (∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) ={E}=∗
     ⌜head_reducible e1 σ1 g1⌝ ∗
     ▷ ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ ={E}=∗
-      ⌜efs = []⌝ ∗ state_interp σ2 (S ns) κs nt ∗ global_state_interp g2 ∗
+      ⌜efs = []⌝ ∗ state_interp σ2 nt ∗ global_state_interp g2 (S ns) κs ∗
       from_option Φ False (to_val e2))
   ⊢ WP e1 @ s; E {{ Φ }}.
 Proof.

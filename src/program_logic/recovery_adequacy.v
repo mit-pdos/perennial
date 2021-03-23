@@ -126,16 +126,16 @@ Fixpoint fresh_later_count f ncurr (ns: list nat) :=
 
 Lemma wptp_recv_strong_normal_adequacy Φ Φinv Φr κs' s k Hc t n ns ncurr r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
   nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) Normal →
-  state_interp σ1 ncurr (κs ++ κs') (length t1) -∗
-  global_state_interp g1 -∗
+  state_interp σ1 (length t1) -∗
+  global_state_interp g1 ncurr (κs ++ κs') -∗
   wpr s k Hc t ⊤ e1 r1 Φ Φinv Φr -∗
   wptp s k t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns Hc t (λ Hc' t',
     ⌜ Hc' = Hc ∧ t' = t ⌝ ∗
     (|={⊤,⊤}_(steps_sum num_laters_per_step ncurr n)=> ∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ▷^(S (S (num_laters_per_step (n + ncurr)))) (⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → not_stuck e2 σ2 g2 ⌝) ∗
-    state_interp σ2 (n + ncurr) κs' (length t2') ∗
-    global_state_interp g2 ∗
+    state_interp σ2 (length t2') ∗
+    global_state_interp g2 (n + ncurr) κs' ∗
     from_option Φ True (to_val e2) ∗
     ([∗ list] v ∈ omap to_val t2', fork_post v) ∗
     NC 1)).
@@ -163,8 +163,8 @@ Fixpoint sum_crash_steps ns :=
 
 Lemma wptp_recv_strong_crash_adequacy Φ Φinv Φinv' Φr κs' s k Hc t ncurr ns n r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
   nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) Crashed →
-  state_interp σ1 ncurr (κs ++ κs') (length t1) -∗
-  global_state_interp g1 -∗
+  state_interp σ1 (length t1) -∗
+  global_state_interp g1 ncurr (κs ++ κs') -∗
   wpr s k Hc t ⊤ e1 r1 Φ Φinv Φr -∗
   □ (∀ Hc' t', Φinv Hc' t' -∗ □ Φinv' Hc' t') -∗
   wptp s k t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns Hc t (λ Hc' t',
@@ -174,8 +174,8 @@ Lemma wptp_recv_strong_crash_adequacy Φ Φinv Φinv' Φr κs' s k Hc t ncurr ns
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ▷^(S (S (num_laters_per_step $ n + sum_crash_steps ns + ncurr)))
         (⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → not_stuck e2 σ2 g2⌝) ∗
-    state_interp σ2 (n + sum_crash_steps ns + ncurr) κs' (length t2') ∗
-    global_state_interp g2 ∗
+    state_interp σ2 (length t2') ∗
+    global_state_interp g2 (n + sum_crash_steps ns + ncurr) κs' ∗
     from_option (Φr Hc' t') True (to_val e2) ∗
     □ Φinv' Hc' t' ∗
     ([∗ list] v ∈ omap to_val t2', fork_post v) ∗
@@ -254,8 +254,8 @@ Qed.
 
 Lemma wptp_recv_strong_adequacy Φ Φinv Φinv' Φr κs' s k Hc t ns n r1 e1 t1 κs t2 σ1 g1 ncurr σ2 g2 stat :
   nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) stat →
-  state_interp σ1 ncurr (κs ++ κs') (length t1) -∗
-  global_state_interp g1 -∗
+  state_interp σ1 (length t1) -∗
+  global_state_interp g1 ncurr (κs ++ κs') -∗
   wpr s k Hc t ⊤ e1 r1 Φ Φinv Φr -∗
   □ (∀ Hc' t', Φinv Hc' t' -∗ □ Φinv' Hc' t') -∗
   wptp s k t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns Hc t (λ Hc' t',
@@ -265,8 +265,8 @@ Lemma wptp_recv_strong_adequacy Φ Φinv Φinv' Φr κs' s k Hc t ns n r1 e1 t1 
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ▷^(S (S (num_laters_per_step $ n + sum_crash_steps ns + ncurr)))
         (⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → not_stuck e2 σ2 g2 ⌝) ∗
-    state_interp σ2 (n + sum_crash_steps ns + ncurr) κs' (length t2') ∗
-    global_state_interp g2 ∗
+    state_interp σ2 (length t2') ∗
+    global_state_interp g2 (n + sum_crash_steps ns + ncurr) κs' ∗
     (match stat with
      | Normal => ⌜ Hc' = Hc ∧ t' = t ⌝ ∗ from_option Φ True (to_val e2)
      | Crashed => from_option (Φr Hc' t') True (to_val e2) ∗ □ Φinv' Hc' t'
@@ -414,17 +414,17 @@ Qed.
 Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofe) `{!invPreG Σ} `{!crashPreG Σ} s k e r σ g φ φr φinv Φinv f:
   (∀ `{Hinv : !invG Σ} `{Hc: !crashG Σ} κs,
      ⊢ |={⊤}=> ∃ (t: pbundleG T Σ)
-         (stateI : pbundleG T Σ → state Λ → nat → list (observation Λ) → nat → iProp Σ)
-         (global_stateI : pbundleG T Σ → global_state Λ → iProp Σ)
+         (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
+         (global_stateI : pbundleG T Σ → global_state Λ → nat → list (observation Λ) → iProp Σ)
          (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf1 Hpf2 Hpf3,
         let _ : perennialG Λ CS _ Σ :=
             PerennialG _ _ T Σ
               (λ Hc t,
                IrisG Λ Σ Hinv Hc (stateI t) (global_stateI t) (fork_post t) f (Hpf1 Hc t)) Hpf2 f Hpf3
                in
-       □ (∀ σ ns κ nt, stateI t σ ns κ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
-       □ (∀ Hc t, Φinv Hinv Hc t -∗ □ ∀ σ ns κ nt, stateI t σ ns κ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
-       stateI t σ 0 κs 0 ∗ global_stateI t g ∗
+       □ (∀ σ nt, stateI t σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
+       □ (∀ Hc t, Φinv Hinv Hc t -∗ □ ∀ σ nt, stateI t σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
+       stateI t σ 0 ∗ global_stateI t g 0 κs ∗
        wpr s k Hc t ⊤ e r (λ v, ⌜φ v⌝) (Φinv Hinv) (λ _ _ v, ⌜φr v⌝)) →
   recv_adequate (CS := CS) s e r σ g (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, φinv σ).
 Proof.
@@ -444,7 +444,7 @@ Proof.
             Hpf2 f Hpf3).
   iExists pG.
   iDestruct (wptp_recv_strong_adequacy
-                _ _ (λ Hc t, (∀ σ ns κ nt, stateI t σ ns κ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝))%I
+                _ _ (λ Hc t, (∀ σ nt, stateI t σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝))%I
                _ [] with "[Hσ] [Hg] [H] [] [] HNC") as "H"; eauto.
   { rewrite app_nil_r. eauto. }
   iExists _.

@@ -18,13 +18,13 @@ Local Hint Resolve reducible_no_obs_reducible : core.
 
 Lemma wp_lift_step_fupdN s E Φ e1 :
   to_val e1 = None →
-  (∀ σ1 g1 ns κ κs nt, state_interp σ1 ns (κ ++ κs) nt -∗ global_state_interp g1 ={E,∅}=∗
+  (∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) ={E,∅}=∗
     |={∅}▷=>^(S $ num_laters_per_step ns)
     ⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
     ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝
        ={∅,E}=∗
-      state_interp σ2 (S ns) κs (length efs + nt) ∗
-      global_state_interp g2 ∗
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (S ns) κs ∗
       WP e2 @ s; E {{ Φ }} ∗
       [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }})
   ⊢ WP e1 @ s; E {{ Φ }}.
@@ -43,11 +43,11 @@ Qed.
 
 Lemma wp_lift_step_fupd s E Φ e1 :
   to_val e1 = None →
-  (∀ σ1 g1 ns κ κs nt, state_interp σ1 ns (κ ++ κs) nt -∗ global_state_interp g1 ={E,∅}=∗ ▷
+  (∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) ={E,∅}=∗ ▷
     (⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
     ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ ={∅,E}=∗
-      state_interp σ2 (S ns) κs (length efs + nt) ∗
-      global_state_interp g2 ∗
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (S ns) κs ∗
       WP e2 @ s; E {{ Φ }} ∗
       [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }}))
   ⊢ WP e1 @ s; E {{ Φ }}.
@@ -75,11 +75,11 @@ Qed.
 (** Derived lifting lemmas. *)
 Lemma wp_lift_step s E Φ e1 :
   to_val e1 = None →
-  (∀ σ1 g1 ns κ κs nt, state_interp σ1 ns (κ ++ κs) nt -∗ global_state_interp g1 ={E,∅}=∗
+  (∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) ={E,∅}=∗
     ⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
     ▷ ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ ={∅,E}=∗
-      state_interp σ2 (S ns) κs (length efs + nt) ∗
-      global_state_interp g2 ∗
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (S ns) κs ∗
       WP e2 @ s; E {{ Φ }} ∗
       [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }})
   ⊢ WP e1 @ s; E {{ Φ }}.
@@ -101,8 +101,7 @@ Proof.
   { iPureIntro. destruct s; done. }
   iNext. iIntros (e2 σ2 g2 efs ?).
   destruct (Hstep κ σ1 g1 e2 σ2 g2 efs) as (-> & <- & <- & ->); auto.
-  iFrame "Hg".
-  iMod (state_interp_mono with "Hσ") as "$".
+  iFrame "Hσ". iMod (global_state_interp_mono with "Hg") as "$".
   iMod "Hclose" as "_". iMod "H". iModIntro.
   by iDestruct ("H" with "[//]") as "$".
 Qed.
@@ -150,11 +149,11 @@ Qed.
 
 Lemma wp_lift_atomic_step {s E Φ} e1 :
   to_val e1 = None →
-  (∀ σ1 g1 ns κ κs nt, state_interp σ1 ns (κ ++ κs) nt -∗ global_state_interp g1 ={E}=∗
+  (∀ σ1 g1 ns κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) ={E}=∗
     ⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
     ▷ ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ ={E}=∗
-      state_interp σ2 (S ns) κs (length efs + nt) ∗
-      global_state_interp g2 ∗
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (S ns) κs ∗
       from_option Φ False (to_val e2) ∗
       [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }})
   ⊢ WP e1 @ s; E {{ Φ }}.

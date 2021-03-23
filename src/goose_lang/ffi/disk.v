@@ -72,7 +72,7 @@ Definition disk_state := gmap Z Block.
 
 Definition disk_model : ffi_model.
 Proof.
-  refine (mkFfiModel disk_state _).
+  refine (mkFfiModel disk_state () _ _).
 Defined.
 
 Fixpoint init_disk (d: disk_state) (sz: nat) : disk_state :=
@@ -212,7 +212,8 @@ Section disk.
                        {| diskG_gen_heapG := gen_heapG_update (@diskG_gen_heapG _ hD) names |};
        ffi_get_update := fun _ _ => _;
        ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap.gen_heap_interp d;
-       ffi_start := fun _ _ (d: @ffi_state disk_model) =>
+       ffi_global_ctx := fun _ _ _ => True%I;
+       ffi_start := fun _ _ (d: @ffi_state disk_model) _ =>
                       ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=Block) l (DfracOwn 1) v))%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
@@ -290,7 +291,7 @@ lemmas. *)
                                   mapsto_block l 1 b }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns κ κs n) "(Hσ&Hκs&Hd&Htr) Hg !>".
+    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iSplit.
@@ -406,7 +407,7 @@ lemmas. *)
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns κ κs n) "(Hσ&Hκs&Hd&Htr) Hg !>".
+    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     cbv [ffi_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iDestruct (heap_valid_block with "Hσ Hl") as %?.
@@ -551,18 +552,18 @@ Program Instance disk_interp_adequacy:
   {| ffi_preG := disk_preG;
      ffiΣ := diskΣ;
      subG_ffiPreG := subG_diskG;
-     ffi_initP := λ _, True;
+     ffi_initP := λ _ _, True;
      ffi_update_pre := @disk_update_pre;
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ ?). iMod (gen_heap_name_strong_init σ) as (names) "(Hctx&Hpts)".
+  iIntros (Σ hPre σ ??). iMod (gen_heap_name_strong_init σ) as (names) "(Hctx&Hpts)".
   iExists names. by iFrame.
 Qed.
 Next Obligation.
-  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  iIntros (Σ σ σ' g Hcrash Hold) "Hinterp Hg".
   iExists (ffi_get_names _ Hold) => //=.
   inversion Hcrash; subst.
   iFrame. iPureIntro; split_and!; auto.

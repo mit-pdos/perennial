@@ -37,11 +37,12 @@ Class ext_op :=
       external_countable :> Countable external;
     }.
 
-(* TODO(RJ): add [ffi_global_state] and make that part of the [global_state]. *)
 Class ffi_model :=
   mkFfiModel {
       ffi_state : Type;
+      ffi_global_state : Type;
       ffi_state_inhabited :> Inhabited ffi_state;
+      ffi_global_state_inhabited :> Inhabited ffi_global_state;
     }.
 
 Section external.
@@ -199,14 +200,13 @@ Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0)
 (** The state: heaps of vals. *)
 Record state : Type := {
   heap: gmap loc (nonAtomic val);
-  used_proph_id: gset proph_id;
   world: ffi_state;
   trace: Trace;
   oracle: Oracle;
 }.
-Definition global_state : Type := ().
+Definition global_state : Type := ffi_global_state.
 
-Global Instance eta_state : Settable _ := settable! Build_state <heap; used_proph_id; world; trace; oracle>.
+Global Instance eta_state : Settable _ := settable! Build_state <heap; world; trace; oracle>.
 
 (* Note that ext_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
@@ -219,8 +219,10 @@ since external operations can read and modify the heap.
 (this makes sense because the FFI semantics has to pull out arguments from a
 GooseLangh val, and it must produce a return value in expr)
 
-we produce a val to make external operations atomic
- *)
+We produce a val to make external operations atomic.
+
+[global_state] cannot be affected by a crash.
+*)
 Class ext_semantics :=
   {
     ext_step : external -> val -> transition (state*global_state) val;
@@ -658,7 +660,7 @@ Global Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
 Global Instance state_inhabited : Inhabited state :=
-  populate {| heap := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; used_proph_id := inhabitant |}.
+  populate {| heap := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 
@@ -991,6 +993,7 @@ Global Instance alloc_gen : GenPred loc (state*global_state) (isFresh) :=
 Definition allocateN (bound:Z): transition (state*global_state) loc :=
   suchThat (isFresh).
 
+(*
 Global Instance newProphId_gen: GenPred proph_id (state*global_state) (fun '(σ,g) p => p ∉ σ.(used_proph_id)).
 Proof.
   refine (fun _ '(σ,g) => Some (exist _ (fresh σ.(used_proph_id)) _)).
@@ -999,6 +1002,7 @@ Defined.
 
 Definition newProphId: transition (state*global_state) proph_id :=
   suchThat (fun '(σ,g) p => p ∉ σ.(used_proph_id)).
+*)
 
 Instance gen_anyInt Σ: GenPred u64 Σ (fun _ _ => True).
   refine (fun z _ => Some (U64 z ↾ _)); auto.
@@ -1020,7 +1024,7 @@ Definition transition_star {Σ T} (t : T → transition Σ T) (init:T) : transit
 Definition modifyσ (f : state → state) : transition (state*global_state) () :=
   modify (λ '(σ, g), (f σ, g)).
 
-Fixpoint head_trans (e: expr) :
+Definition head_trans (e: expr) :
  transition (state * global_state) (list observation * expr * list expr) :=
   match e with
   | Rec f x e => atomically $ ret $ RecV f x e
@@ -1109,18 +1113,6 @@ Fixpoint head_trans (e: expr) :
         ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
       | _ => undefined
       end)
-  | NewProph =>
-    atomically
-      (p ← newProphId;
-       modifyσ (set used_proph_id ({[ p ]} ∪.));;
-       ret $ LitV $ LitProphecy p)
-  | Resolve e (Val (LitV (LitProphecy p))) (Val w) =>
-    bind (head_trans e)
-         (fun '(κs,e',ts) =>
-            match e' with
-            | Val v => ret (κs ++ [(p, (v, w))], Val v, ts)
-            | _ => undefined
-            end)
   | _ => undefined
   end.
 
@@ -1216,13 +1208,9 @@ Proof.
   induction Ki; intros;
     rewrite /head_step /= in H;
     repeat inv_undefined; eauto.
-  - inversion H; subst; clear H.
-    destruct x as [[κ' e'] ts'].
-    repeat inv_undefined.
-    rewrite /head_step in IHKi.
-    simpl in H1.
-    monad_inv.
-    eapply IHKi; eauto.
+  - inversion H; subst; clear H. done.
+  - inversion H; subst; clear H. done.
+  - inversion H; subst; clear H. done.
   - inversion H; subst; clear H. exfalso; eauto.
 Qed.
 
@@ -1273,6 +1261,7 @@ Proof.
   constructor; auto.
 Qed.
 
+(*
 Lemma new_proph_id_fresh σ g :
   let p := fresh σ.(used_proph_id) in
   head_step_atomic NewProph σ g [] (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ) g [].
@@ -1286,6 +1275,7 @@ Proof.
     apply is_fresh. }
   monad_simpl.
 Qed.
+*)
 
 Lemma goose_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step_atomic.
 Proof.
@@ -1407,37 +1397,6 @@ Proof.
   - by do 2 apply fill_not_val'.
   - by do 2 apply fill_step'.
 Qed.
-
-(* TODO(tej): I'm not convinced this is even true, we probably don't handle
-Resolve (Atomically _ _) _ _ in a sensible way because it's stuck but Atomically _ _
-isn't. *)
-Lemma irreducible_resolve e v1 v2 σ g :
-  irreducible e σ g → irreducible (Resolve e (Val v1) (Val v2)) σ g.
-Proof.
-  intros H κs ** [Ks e1' e2' Hfill -> step]. simpl in *.
-  induction Ks as [|K Ks _] using rev_ind; simpl in Hfill.
-  - subst e1'.
-    inversion step; subst.
-    clear step; rename H0 into step.
-    rewrite /head_step /= in step.
-    destruct v1; try (eapply suchThat_false in step; contradiction).
-    destruct l; try (eapply suchThat_false in step; contradiction).
-    inversion step; subst; clear step.
-    destruct s2 as [σ2 g2].
-    destruct x as [[κs' e'] efs'].
-    eapply H. apply head_prim_step; eauto. constructor 1. eauto.
-  - rewrite fill_app /= in Hfill.
-    inversion step; subst.
-    + clear step; rename H0 into step.
-      destruct K; (inversion Hfill; subst; clear Hfill; try
-        match goal with | H : Val ?v = fill Ks ?e |- _ =>
-          (assert (to_val (fill Ks e) = Some v) as HEq by rewrite -H //);
-          apply to_val_fill_some in HEq; destruct HEq as [-> ->]; inversion step
-        end); try contradiction.
-      apply (H κs (fill_item K (foldl (flip fill_item) e2' Ks)) σ' g' efs).
-      econstructor 1 with (K := Ks ++ [K]); last (constructor 1; done); simpl; by rewrite fill_app.
-    + admit.
-Abort.
 
 Definition trace_observable e r σ g tr :=
   ∃ σ2 g2 t2 stat, erased_rsteps (CS:=goose_crash_lang) r ([e], (σ, g)) (t2, (σ2, g2)) stat ∧ σ2.(trace) = tr.

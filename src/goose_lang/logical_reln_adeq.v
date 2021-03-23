@@ -140,7 +140,7 @@ Proof.
   { apply _. }
   { intros. apply sty_crash_tok_timeless. }
   { intros. rewrite /excl_crash_token. iIntros. iApply (sty_crash_tok_excl with "[$] [$]"). }
-  { clear dependent σ σs. rewrite /wpc_init. iIntros (hG hRG σ σs Hinit) "Hffi Hffi_spec".
+  { clear dependent σ σs g gs. rewrite /wpc_init. iIntros (hG hRG σ g σs gs Hinit) "Hffi Hffi_spec".
     rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.
     iIntros "Hj #Hspec #Htrace".
@@ -172,6 +172,5 @@ Proof.
   Unshelve.
   apply subG_styPreG, _.
 Qed.
-
 
 End adeq.

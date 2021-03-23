@@ -18,10 +18,10 @@ Section go_refinement.
 
   Notation sexpr := (@expr spec_op).
   Notation sstate := (@state spec_op spec_ffi).
-  Notation sgstate := global_state.
+  Notation sgstate := (@global_state spec_ffi).
   Notation iexpr := (@expr impl_op).
   Notation istate := (@state impl_op impl_ffi).
-  Notation igstate := global_state.
+  Notation igstate := (@global_state impl_ffi).
 
   Canonical Structure spec_lang : language :=
     @goose_lang (spec_op) (spec_ffi) (spec_semantics).

@@ -82,12 +82,12 @@ Qed.
 Definition wpc_no_fupd s k mj E1 e1 Φ Φc :=
   ((match to_val e1 with
    | Some v => ∀ q, NC q -∗ |={E1}=> Φ v ∗ NC q
-   | None => ∀ q σ1 g1 ns κ κs n,
-      state_interp σ1 ns (κ ++ κs) n -∗ global_state_interp g1 -∗ NC q -∗ |={E1,∅}=> |={∅}▷=>^(S $ num_laters_per_step ns)
+   | None => ∀ q σ1 g1 ns κ κs nt,
+      state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) -∗ NC q -∗ |={E1,∅}=> |={∅}▷=>^(S $ num_laters_per_step ns)
         (⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
         ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E1}=>
-          (state_interp σ2 (S ns) κs (length efs + n) ∗
-          global_state_interp g2 ∗
+          (state_interp σ2 (length efs + nt) ∗
+          global_state_interp g2 (S ns) κs ∗
           wpc0 s k mj E1 e2 Φ Φc ∗
           ([∗ list] i ↦ ef ∈ efs, wpc0 s k mj ⊤ ef fork_post True) ∗
           NC q))
