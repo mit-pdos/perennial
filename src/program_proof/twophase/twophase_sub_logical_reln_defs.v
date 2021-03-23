@@ -1050,13 +1050,14 @@ Proof.
     replace (#a, (#o, #()))%V with (addr2val' (a,o)) by auto.
     iApply wp_wpc.
     iDestruct (atomically_listT_interp_obj_inv with "Hv2") as %[v [-> ->]].
-    spec_bind (addr2val' (a, o)%core, (val_of_obj' v))%E as Hctx'.
+    spec_bind (addr2val' (a, o)%core, (val_of_obj' (objBytes v)))%E as Hctx'.
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) with "Hj") as "Hj".
     { intros ?.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
-    iPoseProof (wp_TwoPhase__OverWrite' tph _ _ _ _ _ _ _ _ (a, o) v with "Hj") as "H".
+    iPoseProof (wp_TwoPhase__OverWrite' tph _ _ _ _ _ _ _ _ (a, o) (objBytes v) with "Hj") as "H".
+    1-4: admit. (* need to make sure that a and sz are valid *)
     iApply "H".
     iNext. iIntros "H". iExists _. iFrame.
     eauto.
@@ -1082,7 +1083,7 @@ Proof.
     iRight. iExists _, _.
     iSplitR ""; first by eauto. iApply (IHHtyping with "[$]").
     eauto.
-Qed.
+Admitted.
 
 End reln_defs.
 End reln.
