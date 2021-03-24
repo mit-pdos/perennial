@@ -1,7 +1,6 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth excl.
 From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map frac_count big_op.
 From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert language_ctx.
@@ -118,7 +117,7 @@ End pre_assumptions.
 Existing Instances subG_cfgG subG_refinement_heapPreG subG_crashG.
 Definition logical_relnΣ := #[styΣ; heapΣ; @cfgΣ spec_lang; refinement_heapΣ; crashΣ].
 
-Lemma sty_adequacy es σs e σ τ initP:
+Lemma sty_adequacy es σs gs e σ g τ initP:
   sty_init_obligation1 upd initP →
   sty_init_obligation2 initP →
   sty_crash_inv_obligation →
@@ -129,7 +128,7 @@ Lemma sty_adequacy es σs e σ τ initP:
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →
-  trace_refines e e σ es es σs.
+  trace_refines e e σ g es es σs gs.
 Proof.
   intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Hatomic Htype Htrace Horacle Hinit.
   eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
@@ -141,7 +140,7 @@ Proof.
   { apply _. }
   { intros. apply sty_crash_tok_timeless. }
   { intros. rewrite /excl_crash_token. iIntros. iApply (sty_crash_tok_excl with "[$] [$]"). }
-  { clear dependent σ σs. rewrite /wpc_init. iIntros (hG hRG σ σs Hinit) "Hffi Hffi_spec".
+  { clear dependent σ σs g gs. rewrite /wpc_init. iIntros (hG hRG σ g σs gs Hinit) "Hffi Hffi_spec".
     rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.
     iIntros "Hj #Hspec #Htrace".
@@ -173,6 +172,5 @@ Proof.
   Unshelve.
   apply subG_styPreG, _.
 Qed.
-
 
 End adeq.

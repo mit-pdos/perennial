@@ -1,7 +1,6 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth excl.
 From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map frac_count big_op.
 From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert language_ctx.
@@ -260,14 +259,14 @@ Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_fie
 Context (upd: specTy_update hsT_model).
 
 Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
-      forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hPre: sty_preG Σ) σs σ
+      forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hPre: sty_preG Σ) σs gs σ g
       (HINIT: sty_initP σ σs),
-        ⊢ ffi_start (heapG_ffiG) σ.(world) -∗
-         ffi_start (refinement_spec_ffiG) σs.(world) -∗
+        ⊢ ffi_start (heapG_ffiG) σ.(world) g -∗
+         ffi_start (refinement_spec_ffiG) σs.(world) gs -∗
          |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0.
 
 Definition sty_init_obligation2 (sty_initP: istate → sstate → Prop) :=
-  ∀ σ σs, sty_initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) ∧ ffi_initP σs.(world).
+  ∀ σ g σs gs, sty_initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs.
 
 Definition sty_crash_obligation :=
   forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
@@ -377,4 +376,3 @@ Arguments ctx_has_semTy {ext ffi ffi_semantics interp spec_ext spec_ffi spec_ffi
   hsT_model Σ hG hRG hS} _ (_ _)%expr_scope _%heap_type.
 
 Arguments specTy_model {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec_interp} spec_ty.
-

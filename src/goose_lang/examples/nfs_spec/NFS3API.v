@@ -1301,7 +1301,7 @@ Proof.
                   repeat (simpl in H1; monad_inv).
                   destruct (fhs s !! f) eqn:Hes;
                   repeat (simpl in H1; monad_inv); auto.
-                  destruct x1; repeat (simpl in H1; monad_inv); auto.
+                  destruct H5; repeat (simpl in H1; monad_inv); auto.
                 } subst.
                 destruct x0 as [x0 | x0]; repeat (simpl in *; monad_inv); auto.
               }

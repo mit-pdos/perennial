@@ -82,11 +82,12 @@ Qed.
 Definition wpc_no_fupd s k mj E1 e1 Φ Φc :=
   ((match to_val e1 with
    | Some v => ∀ q, NC q -∗ |={E1}=> Φ v ∗ NC q
-   | None => ∀ q σ1 ns κ κs n,
-      state_interp σ1 ns (κ ++ κs) n -∗ NC q -∗ |={E1,∅}=> |={∅}▷=>^(S $ num_laters_per_step ns)
-        (⌜if s is NotStuck then reducible e1 σ1 else True⌝ ∗
-        ∀ e2 σ2 efs, ⌜prim_step e1 σ1 κ e2 σ2 efs⌝ -∗ |={∅,E1}=>
-          (state_interp σ2 (S ns) κs (length efs + n) ∗
+   | None => ∀ q σ1 g1 ns κ κs nt,
+      state_interp σ1 nt -∗ global_state_interp g1 ns (κ ++ κs) -∗ NC q -∗ |={E1,∅}=> |={∅}▷=>^(S $ num_laters_per_step ns)
+        (⌜if s is NotStuck then reducible e1 σ1 g1 else True⌝ ∗
+        ∀ e2 σ2 g2 efs, ⌜prim_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E1}=>
+          (state_interp σ2 (length efs + nt) ∗
+          global_state_interp g2 (S ns) κs ∗
           wpc0 s k mj E1 e2 Φ Φc ∗
           ([∗ list] i ↦ ef ∈ efs, wpc0 s k mj ⊤ ef fork_post True) ∗
           NC q))
@@ -195,7 +196,7 @@ Proof.
     iMod (fupd_split_level_le with "H"); first (naive_solver lia).
     by iDestruct ("HΦcwand" with "[$]") as ">$".
   }
-  iIntros (??????) "Hinterp HNC".
+  iIntros (???????) "Hσ Hg HNC".
   iDestruct (NC_split with "HNC") as "(HNC1&HNC2)".
   iPoseProof (staged_inv_later_open' E1 _ _ _ _ _ _ _ _ _ (NC (q0/2)) True%I
                                        (wpc_no_fupd NotStuck k'' _ E1 e
@@ -213,14 +214,14 @@ Proof.
   }
   iDestruct "Hwp" as "(H&_)".
   rewrite Hval.
-  iMod ("H" with "[$] [$]") as "H".
+  iMod ("H" with "[$] [$] [$]") as "H".
   iModIntro.
   simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
   iApply (step_fupdN_wand with "H"). iIntros "(%&H)".
   iSplitL "".
   { by destruct s; auto. }
   iIntros. iMod ("H" with "[//]") as "H".
-  iDestruct "H" as "(Hσ&H&Hefs&HNC)".
+  iDestruct "H" as "(Hσ&Hg&H&Hefs&HNC)".
   iEval (rewrite wpc0_unfold /wpc_pre) in "H". iMod "H".
   rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
   iDestruct (own_discrete_elim_conj with "H") as (Q_keep Q_inv) "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
@@ -268,7 +269,6 @@ Proof.
   iApply (big_sepL_mono with "Hefs").
   iIntros. iApply (wpc0_strong_mono with "[$]"); eauto.
   { naive_solver lia. }
-  iSplit; first auto. iIntros "!> ?"; eauto.
 Qed.
 
 (** This key rule is the reason why there is a <disc> in the definition of WPC:
@@ -349,7 +349,7 @@ Proof.
     iDestruct "Hwp" as "(Hwp&_)". iModIntro. iIntros. by iModIntro.
   }
   rewrite Hval.
-  iIntros (??????) "Hstate HNC".
+  iIntros (???????) "Hσ Hg HNC".
   iDestruct (NC_split with "HNC") as "(Hnc1&Hnc2)".
 
   iPoseProof (staged_inv_open_modify_ae E1 _ _ _ _ _ _ _ _ _ _ (NC (q/2)) True%I (▷Q)%I
@@ -368,14 +368,14 @@ Proof.
   rewrite Hval.
   iSpecialize ("Hwp" with "[$]").
   iMod ("Hwp" $! (S j')) as "(H&_)".
-  iMod ("H" with "[$] [$]") as "H".
+  iMod ("H" with "[$] [$] [$]") as "H".
   simpl. iMod "H". iModIntro. iModIntro. iNext. iMod "H". iModIntro.
   iApply (step_fupdN_wand with "H"). iIntros "(%&H)".
   iSplitL "".
   { destruct s; eauto. }
   iIntros.
   iMod ("H" with "[//]") as "H".
-  iDestruct "H" as "(Hσ&H&Hefs&HNC)".
+  iDestruct "H" as "(Hσ&Hg&H&Hefs&HNC)".
   iEval (rewrite wpc0_unfold /wpc_pre) in "H". iMod "H".
   rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
   iDestruct (own_discrete_elim_conj with "H") as (Q_keep Q_inv) "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
@@ -399,7 +399,7 @@ Proof.
   iMod (fupd_level_fupd with "H") as "[(HNC2&Hval)|(_&Hfalse)]"; last first.
   { iDestruct (NC_C with "[$] [$]") as %[]. }
   iDestruct (NC_join with "[$]") as "HNC".
-  iFrame "Hσ".
+  iFrame "Hσ Hg".
   iPoseProof (wpc_staged_inv_open_aux' γ s k k' k'' k2 j' mj E1 E1'
                 e2 Φ Φc P Qnew with "[Hval HQ_keep HNC]") as "H"; try assumption.
 
@@ -420,7 +420,6 @@ Proof.
   iApply (big_sepL_mono with "Hefs").
   iIntros. iApply (wpc0_strong_mono with "[$]"); eauto.
   - naive_solver lia.
-  - iSplit; first auto. iModIntro. iIntros "H". by iModIntro.
 Qed.
 
 Lemma big_sepS_impl_cfupd `{Countable A} (Φ Ψ: A -> iProp Σ) (s : gset A) E k :

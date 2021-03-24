@@ -18,24 +18,24 @@ Section recoverable.
   .
 
   Definition recoverable_model : ffi_model :=
-    mkFfiModel (RecoverableState) (populate (Closed (inhabitant INH))).
+    mkFfiModel (RecoverableState) () (populate (Closed (inhabitant INH))) _.
 
   Local Existing Instance recoverable_model.
 
   Context {ext:ext_op}.
 
-  Definition openΣ : transition state Σ :=
-    bind (reads id) (λ rs, match rs.(world) with
+  Definition openΣ : transition (state*global_state) Σ :=
+    bind (reads id) (λ '(rs,g), match rs.(world) with
                            | Opened s => ret s
                            | _ => undefined
                            end).
 
-  Definition modifyΣ (f:Σ -> Σ) : transition state unit :=
-    bind openΣ (λ s, modify (set world (λ _, Opened (f s)))).
+  Definition modifyΣ (f:Σ -> Σ) : transition (state*global_state) unit :=
+    bind openΣ (λ s, modify (prod_map (set world (λ _, Opened (f s))) id)).
 
-  Definition open : transition state Σ :=
-    bind (reads id) (λ rs, match rs.(world) with
-                           | Closed s => bind (modify (set world (fun _ => Opened s)))
+  Definition open : transition (state*global_state) Σ :=
+    bind (reads id) (λ '(rs,g), match rs.(world) with
+                           | Closed s => bind (modify (prod_map (set world (fun _ => Opened s)) id))
                                              (fun _ => ret s)
                            | _ => undefined
                            end).
@@ -163,14 +163,14 @@ Section jrnl.
              ret (b :: bs)
     end.
 
-  Definition allocIdent: transition state loc :=
+  Definition allocIdent: transition (state*global_state) loc :=
     l ← allocateN 1;
-    modify (set heap <[l := Free #()]>);;
+    modify (prod_map (set heap <[l := Free #()]>) id);;
     ret l.
 
   Existing Instance fallback_genPred.
 
-  Definition jrnl_step (op:JrnlOp) (v:val) : transition state val :=
+  Definition jrnl_step (op:JrnlOp) (v:val) : transition (state*global_state) val :=
     match op, v with
     | OpenOp, LitV LitUnit =>
       j ← open;
@@ -338,7 +338,8 @@ Section jrnl_interp.
        ffi_update := @jrnl_update;
        ffi_get_update := _;
        ffi_ctx := @jrnl_ctx;
-       ffi_start := @jrnl_start;
+       ffi_global_ctx _ _ _ := True%I;
+       ffi_start Σ G w _ := @jrnl_start Σ G w;
        ffi_restart := @jrnl_restart;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @jrnlG_data_inG _ hF1 = @jrnlG_data_inG _ hF2 ∧
                                              @jrnlG_kinds_inG _ hF1 = @jrnlG_kinds_inG _ hF2 ∧
@@ -432,14 +433,14 @@ Program Instance jrnl_interp_adequacy:
   {| ffi_preG := jrnl_preG;
      ffiΣ := jrnlΣ;
      subG_ffiPreG := subG_jrnlG;
-     ffi_initP := λ σ, ∃ m, σ = Closed m ∧ wf_jrnl m;
+     ffi_initP := λ σ _, ∃ m, σ = Closed m ∧ wf_jrnl m;
      ffi_update_pre := @jrnl_update_pre;
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ (m&->&Hwf)). simpl.
+  iIntros (Σ hPre σ g (m&->&Hwf)). simpl.
   iMod (own_alloc (Cinl (1%Qp, to_agree tt) : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
   iMod (map_init_many (jrnlData m)) as (γdata) "(Hdata_ctx&Hdata)".
@@ -472,7 +473,7 @@ Next Obligation.
   naive_solver.
 Qed.
 Next Obligation.
-  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  iIntros (Σ σ σ' g Hcrash Hold) "Hinterp _".
   inversion Hcrash; subst.
   monad_inv. inversion H. subst. inversion H1. subst.
   destruct x; monad_inv.
@@ -487,7 +488,7 @@ Next Obligation.
                jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) ;
                jrnl_names_crash := γcrash |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/jrnl_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
     rewrite big_sepM_fmap.
     rewrite /jrnl_state_restart.
@@ -505,7 +506,7 @@ Next Obligation.
                jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) ;
                jrnl_names_crash := γcrash |}.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/jrnl_restart//=.
-    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
     rewrite big_sepM_fmap.
     rewrite /jrnl_state_restart.
@@ -544,7 +545,7 @@ Instance jrnlG0 : jrnlG Σ := refinement_spec_ffiG.
     repeat match goal with
         | _ => progress simplify_map_eq/= (* simplify memory stuff *)
         | H : to_val _ = Some _ |- _ => apply of_to_val in H
-        | H : head_step ?e _ _ _ _ _ |- _ =>
+        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
@@ -574,8 +575,8 @@ Definition jrnl_upd (σj: jrnl_map) (s: sstate) : sstate :=
 Definition always_steps (e: sexpr) (σj: jrnl_map) (e': sexpr) (σj': jrnl_map) : Prop :=
   (jrnlKinds σj = jrnlKinds σj') ∧
   (jrnl_sub_dom σj σj') ∧
-  (∀ s, jrnl_sub_state σj s →
-           rtc (λ '(e, s) '(e', s'), prim_step' e s [] e' s' []) (e, s) (e', jrnl_upd σj' s)).
+  (∀ s g, jrnl_sub_state σj s →
+           rtc (λ '(e, (s,g)) '(e', (s',g')), prim_step' e s g [] e' s' g' []) (e, (s,g)) (e', (jrnl_upd σj' s, g))).
 
 Lemma jrnl_upd_sub σj s :
   jrnl_sub_state σj s →
@@ -625,7 +626,7 @@ Lemma always_steps_refl e σj :
   wf_jrnl σj →
   always_steps e σj e σj.
 Proof.
-  intros. split_and! => //= s Hsub.
+  intros. split_and! => //= s g Hsub.
   rewrite jrnl_upd_sub //.
 Qed.
 
@@ -647,7 +648,7 @@ Proof.
   intros (Hkinds1&Hsub1&Hsteps1) (Hkinds2&Hsub2&Hsteps2).
   split_and!; first congruence.
   { eapply jrnl_sub_dom_trans; eassumption. }
-  intros s Hsub.
+  intros s g Hsub.
   eapply rtc_transitive.
   { eapply Hsteps1; eauto. }
   { assert (jrnl_upd σj3 s = jrnl_upd σj3 (jrnl_upd σj2 s)) as ->.
@@ -679,17 +680,17 @@ Lemma always_steps_bind `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
 Proof.
   rewrite /always_steps.
   intros (?&?&Hstep). split_and!; eauto.
-  intros s Hsub. specialize (Hstep _ Hsub).
+  intros s g Hsub. specialize (Hstep _ g Hsub).
   clear -Hstep Hctx.
-  remember (e1, s) as ρ1 eqn:Hρ1.
-  remember (e2, jrnl_upd σj2 s) as ρ2 eqn:Hρ2.
-  revert Hρ1 Hρ2.
+  remember (e1, (s,g)) as ρ1 eqn:Hρ1.
+  remember (e2, (jrnl_upd σj2 s,g)) as ρ2 eqn:Hρ2.
+  revert Hρ1 Hρ2. destruct g.
   generalize (jrnl_upd σj2 s) as s'.
   revert e1 e2 s.
   induction Hstep.
   - intros. rewrite Hρ1 in Hρ2. inversion Hρ2. subst.
     apply rtc_refl.
-  - intros. subst. destruct y as (e0'&s0').
+  - intros. subst. destruct y as (e0'&s0'&[]).
     eapply rtc_l; last first.
     { eapply IHHstep; eauto. }
     simpl. eapply fill_step'. eauto.
@@ -749,7 +750,7 @@ Proof.
     * rewrite ?dom_insert_L H2. set_solver.
     * apply wf_jrnl_extend; auto.
     * apply wf_jrnl_extend; auto. congruence.
-  - intros s Hsub_state.
+  - intros s g Hsub_state.
     rewrite insert_jrnl_upd //.
     rewrite {1}(insert_jrnl_sub_state _ _ _ _ Hsub_state).
     apply Hstep.
@@ -775,7 +776,7 @@ Lemma always_steps_lifting_puredet K `{Hctx: LanguageCtx' (ext := @spec_ext_op_f
                                              (ffi_semantics := (spec_ext_semantics_field))
                                              K}:
   ∀ e0 σ0 e1 σ1 e2,
-  (∀ σ, prim_step' e1 σ [] e2 σ []) →
+  (∀ σ g, prim_step' e1 σ g [] e2 σ g []) →
   always_steps e0 σ0 (K e1) σ1 →
   always_steps e0 σ0 (K e2) σ1.
 Proof.
@@ -783,9 +784,9 @@ Proof.
   split_and!; eauto.
   { eapply Hsteps. }
   { eapply Hsteps. }
-  intros s Hsub.
+  intros s g Hsub.
   destruct Hsteps as (?&?&Hrtc).
-  specialize (Hrtc _ Hsub).
+  specialize (Hrtc _ g Hsub).
   eapply rtc_r; eauto.
   simpl. eapply fill_step'. eapply Hdet.
 Qed.
@@ -805,16 +806,16 @@ Proof.
   intros Hwf Hlookup1 Hlookup2 Hk.
   split_and!; eauto.
   { split_and!; try set_solver. }
-  intros s Hsub.
+  intros s g Hsub.
   apply rtc_once.
-  eapply (Ectx_step' _ _ _ _ _ _ []) => //=.
+  eapply (Ectx_step' _ _ _ _ _ _ _ _ []) => //=.
   rewrite jrnl_upd_sub // /head_step//=.
   rewrite /jrnl_sub_state in Hsub.
   destruct Hsub as (?&Heq&?&?).
   destruct a as (ablk&aoff).
   econstructor; last econstructor; eauto.
   econstructor; repeat (econstructor; eauto).
-  { rewrite Heq. econstructor. eauto. }
+  { simpl. rewrite Heq. econstructor. eauto. }
   { simpl in Hlookup1.
     eapply lookup_weaken in Hlookup1; last eassumption.
     rewrite Hlookup1. econstructor; eauto. }
@@ -824,19 +825,19 @@ Proof.
   { rewrite /check/ifThenElse. rewrite decide_True //=. }
 Qed.
 
-Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ:
+Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ g:
   nclose sN_inv ⊆ E →
   (∀ vs, σ.(@world _ jrnl_spec_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
-  source_state σ -∗
+  source_state σ g -∗
   |NC={E}=> False.
 Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
   { eapply stuck_ExternalOp; first (by eauto).
     apply head_irreducible_not_atomically; [ by inversion 1 | ].
-    intros ?????.
+    intros ??????.
     repeat (inv_head_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)) eqn:Heq; try congruence;
     repeat (inv_head_step; simpl in *; repeat monad_inv); eauto.
@@ -852,7 +853,7 @@ Lemma jrnl_opened_open_false E j K {HCTX: LanguageCtx K}:
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   simpl.
   iDestruct (jrnl_ctx_unify_opened with "[$] [$]") as %Heq; subst.
@@ -869,7 +870,7 @@ Lemma jrnl_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
-  iInv "Hstate" as (σ) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iEval (simpl) in "Hffi".
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
@@ -1129,15 +1130,15 @@ Lemma ghost_step_jrnl_atomically_abort E j K {HCTX: LanguageCtx K} (l: sval) e :
   j ⤇ K NONEV.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopen Hj".
-  iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (s g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iMod (ghost_step_stuck' with "[$] [$] [$]") as (Hnstuck) "(Hj&H)"; first by solve_ndisj.
-  iMod (ghost_step_lifting _ _ _ _ _ [] _ _ [] with "[$] [$] [$]") as "($&Hstate'&_)".
+  iMod (ghost_step_lifting _ _ _ _ _ _ [] _ _ _ [] with "[$] [$] [$]") as "($&Hstate'&_)".
   { apply head_prim_step. eapply head_step_atomically_fail.
     eapply atomically_not_stuck_body_safe; eauto. }
   { solve_ndisj. }
   iMod ("Hclo" with "[-]") as "_".
-  { iNext. iExists _. iFrame. }
+  { iNext. iExists _, _. iFrame. }
   iModIntro. eauto.
 Qed.
 
@@ -1154,13 +1155,13 @@ Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v:
 Proof.
   iIntros (Hsteps ?) "(#Hctx&#Hstate) Hσj_data Hσj_kinds Hopen Hj".
   destruct Hsteps as (Heq_kinds&Hwf&Hrtc).
-  iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (s g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
   iMod (ghost_step_stuck' with "[$] [$] [$]") as (Hnstuck) "(Hj&H)"; first by solve_ndisj.
-  iMod (ghost_step_lifting _ _ _ (Atomically l e) s [] (jrnl_upd σj' s) (SOMEV v) []
+  iMod (ghost_step_lifting _ _ _ (Atomically l e) s g [] (jrnl_upd σj' s) g (SOMEV v) []
           with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step.
+  { destruct g. apply head_prim_step.
     apply head_step_atomically; eauto.
     eapply atomically_not_stuck_body_safe; eauto.
   }
@@ -1169,7 +1170,7 @@ Proof.
   { destruct Hwf as (?&?&?&?). rewrite Heq_kinds; eauto. }
   { destruct Hwf as (?&?&?&?). eauto. }
   iMod ("Hclo" with "[Hσ Hrest H Hffi]") as "_".
-  { iNext. iExists _. iFrame "H". iFrame. }
+  { iNext. iExists _, _. iFrame "H". iFrame. }
   iModIntro. iFrame.
 Qed.
 
@@ -1206,13 +1207,13 @@ Proof.
     iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htok") as "(H1&_)"; eauto.
     iDestruct (ptsto_conflict with "[$] [$]") as %[].
   }
-  iDestruct "Hrest" as (s) "(>H&Hinterp)".
-  iDestruct "Hinterp" as "(>Hσ&>Hffi&?&?&?&>Hctok)".
+  iDestruct "Hrest" as (s g) "(>H&Hinterp)".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&?&?&?&?&>Hctok)".
   iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
   iIntros "#HC".
   iMod (ghost_step_crash_stuck' with "[] Hctx Hctok Hj [$] [$]") as (Hnstuck) "(Hj&H&Hctok)"; first by solve_ndisj.
   { iModIntro. iIntros "(h1&>h2)". iDestruct (pending_pending with "[$] [$]") as %[]. }
-  iMod (ghost_step_crash_lifting _ _ _ _ _ (Atomically l e) s [] (jrnl_upd σj' s) (SOMEV v) []
+  iMod (ghost_step_crash_lifting _ _ _ _ _ (Atomically l e) s g [] (jrnl_upd σj' s) g (SOMEV v) []
           with "[] Hctok Hj Hctx H HC") as "(Hctok&Hj&H&_)".
   { apply head_prim_step.
     apply head_step_atomically; eauto.
@@ -1224,14 +1225,14 @@ Proof.
   { destruct Hwf as (?&?&?&?). rewrite Heq_kinds; eauto. }
   { destruct Hwf as (?&?&?&?). eauto. }
   iMod ("Hclo" with "[-Hσj_crash_toks Hσj'_data]") as "_".
-  { iNext. iRight. iExists _. iFrame "H". iFrame. }
+  { iNext. iRight. iExists _, _. iFrame "H". iFrame. }
   iModIntro. iFrame.
 Qed.
 
 Lemma ghost_step_jrnl_atomically_ub E j K {HCTX: LanguageCtx K} (l: sval) e1 σj e2 σj' σdom :
-  (∀ s, jrnl_sub_state σj' s →
+  (∀ s g, jrnl_sub_state σj' s →
         dom (gset _) (jrnlData (get_jrnl s.(world))) = σdom →
-        stuck' e2 s) →
+        stuck' e2 s g) →
   always_steps e1 σj e2 σj' →
   nclose sN ⊆ E →
   spec_ctx -∗
@@ -1244,7 +1245,7 @@ Lemma ghost_step_jrnl_atomically_ub E j K {HCTX: LanguageCtx K} (l: sval) e1 σj
 Proof.
   iIntros (Hub Hsteps ?) "(#Hctx&#Hstate) Hσj_data Hσj_kinds Hdom Hopen Hj".
   destruct Hsteps as (Heq_kinds&Hwf&Hrtc).
-  iInv "Hstate" as (s) "(>H&Hinterp)" "Hclo".
+  iInv "Hstate" as (s g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
   iDestruct (jrnl_ctx_dom_eq _ s with "[$] [$]") as %Hdom.
@@ -1257,14 +1258,14 @@ Proof.
     { move: Heq. destruct Ki => //=; congruence. }
     naive_solver.
   }
-  rewrite /irreducible. intros ???? Hnostep.
+  rewrite /irreducible. intros ????? Hnostep.
   inversion Hnostep; subst.
   {
     inversion H2; eauto.
   }
   {
     match goal with
-    | [ H: prim_step'_safe _ _ |- _ ] => eapply H; first eapply Hrtc; eauto
+    | [ H: prim_step'_safe _ _ _ |- _ ] => eapply H; first eapply Hrtc; eauto
     end.
     eapply Hub.
     { eapply jrnl_sub_state_upd; eauto. }
@@ -1280,7 +1281,7 @@ Proof.
   }
   {
     match goal with
-    | [ H: prim_step'_safe _ _ |- _ ] => eapply H; first eapply Hrtc; eauto
+    | [ H: prim_step'_safe _ _ _ |- _ ] => eapply H; first eapply Hrtc; eauto
     end.
     eapply Hub.
     { eapply jrnl_sub_state_upd; eauto. }

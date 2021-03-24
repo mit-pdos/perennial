@@ -66,10 +66,6 @@ From Perennial.goose_lang.interpreter Require
      disk_interpreter
      generated_test.
 
-(* NFS spec *)
-From Perennial.goose_lang.examples.nfs_spec Require
-     NFS3API.
-
 (* ensures this file itself works for Coq's CI and catches any oversight where
 something in the lite build isn't listed here *)
 From Perennial Require LiteBuild.

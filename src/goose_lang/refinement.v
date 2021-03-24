@@ -18,8 +18,10 @@ Section go_refinement.
 
   Notation sexpr := (@expr spec_op).
   Notation sstate := (@state spec_op spec_ffi).
+  Notation sgstate := (@global_state spec_ffi).
   Notation iexpr := (@expr impl_op).
   Notation istate := (@state impl_op impl_ffi).
+  Notation igstate := (@global_state impl_ffi).
 
   Canonical Structure spec_lang : language :=
     @goose_lang (spec_op) (spec_ffi) (spec_semantics).
@@ -31,9 +33,9 @@ Section go_refinement.
   Canonical Structure impl_crash_lang : crash_semantics impl_lang :=
     @goose_crash_lang (impl_op) (impl_ffi) (impl_semantics).
 
-  Definition trace_refines (e r: iexpr) (σ: istate) (e' r': sexpr) (σ': sstate) :=
-    @crash_safe spec_lang spec_crash_lang r' ([e'], σ') →
-    @crash_safe impl_lang impl_crash_lang r ([e], σ) ∧
-    (∀ tr, trace_observable e r σ tr → ∃ tr', trace_observable e' r' σ' tr' ∧ trace_prefix tr tr').
+  Definition trace_refines (e r: iexpr) (σ: istate) (g: igstate) (e' r': sexpr) (σ': sstate) (g': sgstate):=
+    @crash_safe spec_lang spec_crash_lang r' ([e'], (σ',g')) →
+    @crash_safe impl_lang impl_crash_lang r ([e], (σ,g)) ∧
+    (∀ tr, trace_observable e r σ g tr → ∃ tr', trace_observable e' r' σ' g' tr' ∧ trace_prefix tr tr').
 
 End go_refinement.

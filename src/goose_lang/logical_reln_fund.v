@@ -1,7 +1,6 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth excl.
 From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.program_logic Require Export weakestpre adequacy.
 From Perennial.algebra Require Import proph_map frac_count big_op.
 From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert language_ctx.
@@ -2240,5 +2239,3 @@ Proof using spec_trans.
     rewrite fmap_empty subst_map_empty. iApply wpc_wp. eauto.
 Qed.
 End pfs.
-
-

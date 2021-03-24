@@ -22,7 +22,7 @@ Context {CS: crash_semantics Λ}.
 
 (** The CMRA for the heap of the specification. *)
 Definition tpoolUR : ucmra := gmapUR nat (exclR (exprO Λ)).
-Definition stateUR := optionUR (exclR (stateO Λ)).
+Definition stateUR := optionUR (exclR (prodO (stateO Λ) (global_stateO Λ))).
 Definition cfgUR := prodUR tpoolUR stateUR.
 
 
@@ -57,35 +57,35 @@ Section ghost_spec.
     own cfg_name (◯ ({[ j := Excl e]}, ε)).
 
   (* ownership of this does not mean there aren't other threads not in (fst ρ) *)
-  Definition source_cfg (ρ: (list (language.expr Λ)) * language.state Λ) : iProp Σ :=
+  Definition source_cfg (ρ: (list (language.expr Λ)) * (language.state Λ * language.global_state Λ)) : iProp Σ :=
     own cfg_name (◯ (tpool_to_res (fst ρ), Some (Excl (snd ρ)))).
 
-  Definition source_state (σ: language.state Λ) : iProp Σ :=
-    own cfg_name (◯ (∅ : tpoolUR, Some (Excl σ))).
+  Definition source_state (σ: language.state Λ) (g: language.global_state Λ) : iProp Σ :=
+    own cfg_name (◯ (∅ : tpoolUR, Some (Excl (σ, g)))).
 
   Definition source_pool_map (tp: gmap nat (language.expr Λ)) : iProp Σ :=
     own cfg_name (◯ (Excl <$> tp : tpoolUR, ε)).
 
-  Definition source_inv r tp σ : iProp Σ :=
-    (∃ s tp' σ', own cfg_name (● (tpool_to_res tp', Some (Excl σ'))) ∗
-                   ⌜ erased_rsteps (CS := CS) r (tp, σ) (tp', σ') s
-                     ∧ crash_safe (CS := CS) r (tp, σ) ⌝)%I.
+  Definition source_inv r tp σ g : iProp Σ :=
+    (∃ s tp' σ' g', own cfg_name (● (tpool_to_res tp', Some (Excl (σ', g')))) ∗
+                   ⌜ erased_rsteps (CS := CS) r (tp, (σ, g)) (tp', (σ', g')) s
+                     ∧ crash_safe (CS := CS) r (tp, (σ, g)) ⌝)%I.
 
-  Definition source_ctx' r ρ : iProp Σ :=
-    ncinv sN_inv (source_inv r (fst ρ) (snd ρ)).
+  Definition source_ctx' r (ρ : cfg Λ) : iProp Σ :=
+    ncinv sN_inv (source_inv r (fst ρ) (ρ.2.1) (ρ.2.2)).
 
   Definition source_ctx : iProp Σ :=
     (∃ r ρ, source_ctx' r ρ)%I.
 
-  Definition source_crash_ctx' r ρ P : iProp Σ :=
-    □ (|C={↑sN_inv}_0=> inv sN_inv (P ∨ source_inv r (fst ρ) (snd ρ))).
+  Definition source_crash_ctx' r (ρ : cfg Λ) P : iProp Σ :=
+    □ (|C={↑sN_inv}_0=> inv sN_inv (P ∨ source_inv r (fst ρ) (ρ.2.1) (ρ.2.2))).
 
   Definition source_crash_ctx P : iProp Σ :=
     (∃ r ρ, source_crash_ctx' r ρ P)%I.
 
   Global Instance tpool_mapsto_timeless j e : Timeless (tpool_mapsto j e).
   Proof. apply _. Qed.
-  Global Instance source_state_timeless σ : Timeless (source_state σ).
+  Global Instance source_state_timeless σ g : Timeless (source_state σ g).
   Proof. apply _. Qed.
   Global Instance source_ctx'_persistent r ρ : Persistent (source_ctx' r ρ).
   Proof. apply _. Qed.
@@ -102,6 +102,7 @@ Notation "j ⤇ e" := (tpool_mapsto j e) (at level 20) : bi_scope.
 
 Section ghost_step.
   Context `{invG Σ, crashG Σ, stagedG Σ}.
+  Implicit Types (σ : state Λ) (g : global_state Λ).
 
   Lemma tpool_to_map_lookup_aux tp id j e:
     tpool_to_map_aux tp id !! (id + j) = Some e ↔ tp !! j = Some e.
@@ -244,18 +245,18 @@ Section ghost_step.
     * by left.
   Qed.
 
-  Lemma source_cfg_init_names1 `{cfgPreG Σ} r tp0 σ0 tp σ P s:
-    erased_rsteps (CS := CS) r (tp0, σ0) (tp, σ) s →
-    crash_safe (CS := CS) r (tp0, σ0) →
+  Lemma source_cfg_init_names1 `{cfgPreG Σ} r tp0 σ0 g0 tp σ g P s:
+    erased_rsteps (CS := CS) r (tp0, (σ0, g0)) (tp, (σ, g)) s →
+    crash_safe (CS := CS) r (tp0, (σ0, g0)) →
     ⊢ |={⊤}=> ∃ γ, let _ : cfgG Σ := {| cfg_name := γ |} in
-                            source_ctx' r (tp0, σ0) ∗
+                            source_ctx' r (tp0, (σ0, g0)) ∗
                             source_pool_map (tpool_to_map tp) ∗
-                            source_state σ ∗
-                            source_crash_ctx' r (tp0, σ0) P.
+                            source_state σ g ∗
+                            source_crash_ctx' r (tp0, (σ0, g0)) P.
   Proof using H1.
     intros Herased Hno_err.
-    iMod (own_alloc (● (tpool_to_res tp, Some (Excl σ))
-                       ⋅ ◯ (tpool_to_res tp, Some (Excl σ)))) as (γ) "(Hauth&Hfrag)".
+    iMod (own_alloc (● (tpool_to_res tp, Some (Excl (σ,g)))
+                       ⋅ ◯ (tpool_to_res tp, Some (Excl (σ,g))))) as (γ) "(Hauth&Hfrag)".
     { apply @auth_both_valid_discrete; first by apply _. split; [| split].
       { reflexivity. }
       - rewrite //=. intros i.
@@ -266,11 +267,11 @@ Section ghost_step.
     }
     set (IN := {| cfg_name := γ |}).
     iExists γ.
-    iMod (ncinv_cinv_alloc sN_inv 0 ⊤ (↑sN_inv) (source_inv r tp0 σ0) (P ∨ source_inv r tp0 σ0)%I True%I
+    iMod (ncinv_cinv_alloc sN_inv 0 ⊤ (↑sN_inv) (source_inv r tp0 σ0 g0) (P ∨ source_inv r tp0 σ0 g0)%I True%I
             with "[] [Hauth]") as "(#Hinv&_&#Hcfupd)".
     { set_solver. }
     { iModIntro. iIntros ">H _". iModIntro; eauto. }
-    { rewrite /source_inv. iNext. iExists s,tp, σ. iFrame "Hauth".
+    { rewrite /source_inv. iNext. iExists s, tp, σ, g. iFrame "Hauth".
       iPureIntro; split; eauto. }
     iModIntro. iFrame.
     rewrite pair_split.
@@ -279,36 +280,36 @@ Section ghost_step.
     iMod (cfupd_weaken_all with "[Hcfupd]") as "H"; eauto.
   Qed.
 
-  Lemma source_cfg_init_names2 `{cfgPreG Σ} r tp σ P :
-    crash_safe (CS := CS) r (tp, σ) →
+  Lemma source_cfg_init_names2 `{cfgPreG Σ} r tp σ g P :
+    crash_safe (CS := CS) r (tp, (σ, g)) →
     ⊢ |={⊤}=> ∃ γ, let _ : cfgG Σ := {| cfg_name := γ |} in
-                            source_ctx' r (tp, σ) ∗
+                            source_ctx' r (tp, (σ, g)) ∗
                             source_pool_map (tpool_to_map tp) ∗
-                            source_state σ ∗
-                            source_crash_ctx' r (tp, σ) P.
+                            source_state σ g ∗
+                            source_crash_ctx' r (tp, (σ, g)) P.
   Proof using H1.
     intros Hno_err.
     iApply source_cfg_init_names1; eauto.
     { econstructor. econstructor. }
   Qed.
 
-  Lemma source_cfg_init1 `{cfgPreG Σ} r tp0 σ0 tp σ P s:
-    erased_rsteps (CS := CS) r (tp0, σ0) (tp, σ) s →
-    crash_safe (CS := CS) r (tp0, σ0) →
-    ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp0, σ0) ∗
+  Lemma source_cfg_init1 `{cfgPreG Σ} r tp0 σ0 g0 tp σ g P s:
+    erased_rsteps (CS := CS) r (tp0, (σ0, g0)) (tp, (σ, g)) s →
+    crash_safe (CS := CS) r (tp0, (σ0, g0)) →
+    ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp0, (σ0, g0)) ∗
                             source_pool_map (tpool_to_map tp) ∗
-                            source_state σ ∗
-                            source_crash_ctx' r (tp0, σ0) P.
+                            source_state σ g ∗
+                            source_crash_ctx' r (tp0, (σ0, g0)) P.
   Proof using H1.
     iIntros. iMod (source_cfg_init_names1) as (?) "H"; eauto.
   Qed.
 
-  Lemma source_cfg_init2 `{cfgPreG Σ} r tp σ P :
-    crash_safe (CS := CS) r (tp, σ) →
-    ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp, σ) ∗
+  Lemma source_cfg_init2 `{cfgPreG Σ} r tp σ g P :
+    crash_safe (CS := CS) r (tp, (σ, g)) →
+    ⊢ |={⊤}=> ∃ _ : cfgG Σ, source_ctx' r (tp, (σ, g)) ∗
                             source_pool_map (tpool_to_map tp) ∗
-                            source_state σ ∗
-                            source_crash_ctx' r (tp, σ) P.
+                            source_state σ g ∗
+                            source_crash_ctx' r (tp, (σ, g)) P.
   Proof using H1.
     intros Hno_err.
     iApply source_cfg_init1; eauto.
@@ -317,8 +318,9 @@ Section ghost_step.
 
   Context `{cfgG Σ}.
   Context `{Hstate_inhabited: Inhabited (state Λ)}.
+  Context `{Hgstate_inhabited: Inhabited (global_state Λ)}.
 
-  Set Default Proof Using "Hstate_inhabited".
+  Set Default Proof Using "Hstate_inhabited Hgstate_inhabited".
 
   Lemma source_pool_singleton e:
     source_pool_map (tpool_to_map [e]) -∗ 0 ⤇ e.
@@ -327,9 +329,9 @@ Section ghost_step.
     by rewrite fmap_insert fmap_empty insert_empty.
   Qed.
 
-  Lemma source_thread_update e' tp j e σ :
-    j ⤇ e -∗ own cfg_name (● (tpool_to_res tp, Excl' σ))
-      ==∗ j ⤇ e' ∗ own cfg_name (● (tpool_to_res (<[j := e']>tp), Excl' σ)).
+  Lemma source_thread_update e' tp j e σ g :
+    j ⤇ e -∗ own cfg_name (● (tpool_to_res tp, Excl' (σ, g)))
+      ==∗ j ⤇ e' ∗ own cfg_name (● (tpool_to_res (<[j := e']>tp), Excl' (σ, g))).
   Proof.
     iIntros "Hj Hauth".
     iDestruct (own_valid_2 with "Hauth Hj") as %Hval_pool.
@@ -347,10 +349,10 @@ Section ghost_step.
     { eapply tpool_to_res_length; eauto. }
   Qed.
 
-  Lemma source_threads_fork efs tp σ :
-    own cfg_name (● (tpool_to_res tp, Excl' σ))
+  Lemma source_threads_fork efs tp σ g :
+    own cfg_name (● (tpool_to_res tp, Excl' (σ, g)))
       ==∗ ([∗ list] ef ∈ efs, ∃ j', j' ⤇ ef)
-        ∗ own cfg_name (● (tpool_to_res (tp ++ efs), Excl' σ)).
+        ∗ own cfg_name (● (tpool_to_res (tp ++ efs), Excl' (σ, g))).
   Proof.
     iInduction efs as [| ef efs] "IH" forall (tp).
     - rewrite /= app_nil_r /=; auto.
@@ -369,9 +371,9 @@ Section ghost_step.
       rewrite tpool_to_res_insert_snoc; eauto.
   Qed.
 
-  Lemma source_state_update σ' tp σ1 σ2 :
-    source_state σ1 -∗ own cfg_name (● (tpool_to_res tp, Excl' σ2))
-      ==∗ source_state σ' ∗ own cfg_name (● (tpool_to_res tp, Excl' σ')).
+  Lemma source_state_update σ' g' tp σ1 g1 σ2 g2 :
+    source_state σ1 g1 -∗ own cfg_name (● (tpool_to_res tp, Excl' (σ2, g2)))
+      ==∗ source_state σ' g' ∗ own cfg_name (● (tpool_to_res tp, Excl' (σ', g'))).
   Proof.
     iIntros "Hstate Hauth".
     iDestruct (own_valid_2 with "Hauth Hstate") as %Hval_state.
@@ -380,7 +382,7 @@ Section ghost_step.
     iMod (own_update_2 with "Hauth Hstate") as "[Hauth Hstate]".
     {
       eapply auth_update, prod_local_update_2.
-      apply option_local_update, (exclusive_local_update _ (Excl σ')); econstructor.
+      apply option_local_update, (exclusive_local_update _ (Excl (σ', g'))); econstructor.
     }
     by iFrame.
   Qed.
@@ -404,8 +406,8 @@ Section ghost_step.
     iPureIntro. eapply tpool_map_included1; eauto.
   Qed.
 
-  Lemma source_state_reconcile σ σ' x:
-    source_state σ -∗ own cfg_name (● (x, Excl' σ')) -∗ ⌜ σ = σ' ⌝.
+  Lemma source_state_reconcile σ g σ' g' x:
+    source_state σ g -∗ own cfg_name (● (x, Excl' (σ', g'))) -∗ ⌜ σ = σ' ∧ g = g' ⌝.
   Proof.
     iIntros "Hstate Hauth".
     iDestruct (own_valid_2 with "Hauth Hstate") as %Hval_state.
@@ -413,14 +415,14 @@ Section ghost_step.
     apply Excl_included in Hstate; setoid_subst; auto.
   Qed.
 
-  Lemma ghost_step_lifting' E r ρ j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
-    language.prim_step e1 σ1 κ e2 σ2 efs →
+  Lemma ghost_step_lifting' E r ρ j K `{LanguageCtx Λ K} e1 σ1 g1 κ σ2 g2 e2 efs:
+    language.prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
     nclose sN_inv ⊆ E →
-    source_ctx' r ρ ∗ j ⤇ K e1 ∗ source_state σ1
-      -∗ |NC={E}=> j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
-  Proof.
+    source_ctx' r ρ ∗ j ⤇ K e1 ∗ source_state σ1 g1
+      -∗ |NC={E}=> j ⤇ K e2 ∗ source_state σ2 g2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
+  Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (Hstep ?) "(#Hctx&Hj&Hstate)". rewrite /source_ctx/source_inv.
-    iInv "Hctx" as (s' tp' σ') ">[Hauth %]" "Hclose".
+    iInv "Hctx" as (s' tp' σ' g') ">[Hauth %]" "Hclose".
 
     (* Reconcile view based on authoritative element *)
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
@@ -434,12 +436,12 @@ Section ghost_step.
 
     (* Restore the invariant *)
     iMod ("Hclose" with "[Hauth]").
-    { iNext. iExists s', (<[j := K e2]>tp' ++ efs), σ2.
+    { iNext. iExists s', (<[j := K e2]>tp' ++ efs), σ2, g2.
       iFrame. intuition. iPureIntro; split; auto.
       eapply erased_rsteps_r_1; eauto.
       eapply fill_step in Hstep.
       econstructor. econstructor; eauto.
-      - f_equal. symmetry. eapply take_drop_middle; eauto.
+      - subst. f_equal. symmetry. eapply take_drop_middle; eauto.
       - f_equal. rewrite app_comm_cons assoc; f_equal.
         erewrite <-take_drop_middle at 1; f_equal.
         { apply take_insert; reflexivity. }
@@ -450,12 +452,12 @@ Section ghost_step.
     iModIntro; iFrame.
   Qed.
 
-  Lemma ghost_step_crash_stuck' E P Q j K `{LanguageCtx Λ K} e σ:
+  Lemma ghost_step_crash_stuck' E P Q j K `{LanguageCtx Λ K} e σ g:
     nclose sN_inv ⊆ E →
     □ (Q ∗ ▷ P -∗ |0={∅}=> False) -∗
-    source_crash_ctx P -∗ Q -∗ j ⤇ K e -∗ source_state σ -∗ |C={E}_0=>
-    ⌜ ¬ stuck e σ ⌝ ∗ j ⤇ K e ∗ source_state σ ∗ Q.
-  Proof.
+    source_crash_ctx P -∗ Q -∗ j ⤇ K e -∗ source_state σ g -∗ |C={E}_0=>
+    ⌜ ¬ stuck e σ g ⌝ ∗ j ⤇ K e ∗ source_state σ g ∗ Q.
+  Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (?) "#Hwand #Hctx HQ Hj Hstate ". rewrite /source_ctx/source_inv.
     iDestruct "Hctx" as (??) "Hctx".
     iMod (cfupd_weaken_all with "Hctx") as "#Hinv"; eauto.
@@ -463,15 +465,15 @@ Section ghost_step.
     iInv "Hinv" as "[HP|Hrest]" "Hclose".
     { iMod (fupd_level_mask_subseteq ∅); first by solve_ndisj.
       iMod ("Hwand" with "[$]") as %[]. }
-    iDestruct "Hrest" as (? tp' σ') ">[Hauth Hpure]".
+    iDestruct "Hrest" as (? tp' σ' g') ">[Hauth Hpure]".
     iDestruct "Hpure" as %(Hstep&Hnoerr).
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
-    iDestruct (source_state_reconcile with "Hstate Hauth") as %Heq_state.
+    iDestruct (source_state_reconcile with "Hstate Hauth") as %[Heq_σ Heq_g].
     subst.
-    assert (¬ stuck e σ').
+    assert (¬ stuck e σ' g').
     {
       intros Hstuck.
-      assert (stuck (K e) σ') as Hstuck'.
+      assert (stuck (K e) σ' g') as Hstuck'.
       { destruct Hstuck as (?&?). split.
         - apply fill_not_val; auto.
         - apply irreducible_fill; auto.
@@ -483,24 +485,24 @@ Section ghost_step.
     }
     iFrame.
     iMod ("Hclose" with "[-]").
-    { iNext. iRight. iExists _, _, _. iFrame. eauto. }
+    { iNext. iRight. iExists _, _, _, _. iFrame. eauto. }
     eauto.
   Qed.
 
-  Lemma ghost_step_crash_lifting' E P Q r ρ j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
-    language.prim_step e1 σ1 κ e2 σ2 efs →
+  Lemma ghost_step_crash_lifting' E P Q r ρ j K `{LanguageCtx Λ K} e1 σ1 g1 κ σ2 g2 e2 efs:
+    language.prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
     nclose sN_inv ⊆ E →
     □ (Q ∗ ▷ P -∗ |0={∅}=> False) -∗
-    source_crash_ctx' r ρ P ∗ Q ∗ j ⤇ K e1 ∗ source_state σ1
-      -∗ |C={E}_0=> Q ∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
-  Proof.
+    source_crash_ctx' r ρ P ∗ Q ∗ j ⤇ K e1 ∗ source_state σ1 g1
+      -∗ |C={E}_0=> Q ∗ j ⤇ K e2 ∗ source_state σ2 g2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
+  Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (Hstep ?) "#Hwand (#Hctx&HQ&Hj&Hstate)". rewrite /source_ctx/source_inv.
     iMod (cfupd_weaken_all with "Hctx") as "#Hinv"; eauto.
     iIntros "HC".
     iInv "Hinv" as "[HP|Hrest]" "Hclose".
     { iMod (fupd_level_mask_subseteq ∅); first by solve_ndisj.
       iMod ("Hwand" with "[$]") as %[]. }
-    iDestruct "Hrest" as (s' tp' σ') ">[Hauth %]".
+    iDestruct "Hrest" as (s' tp' σ' g') ">[Hauth %]".
 
     (* Reconcile view based on authoritative element *)
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
@@ -514,12 +516,12 @@ Section ghost_step.
 
     (* Restore the invariant *)
     iMod ("Hclose" with "[Hauth]").
-    { iNext. iRight. iExists s', (<[j := K e2]>tp' ++ efs), σ2.
+    { iNext. iRight. iExists s', (<[j := K e2]>tp' ++ efs), σ2, g2.
       iFrame. intuition. iPureIntro; split; auto.
       eapply erased_rsteps_r_1; eauto.
       eapply fill_step in Hstep.
       econstructor. econstructor; eauto.
-      - f_equal. symmetry. eapply take_drop_middle; eauto.
+      - subst. f_equal. symmetry. eapply take_drop_middle; eauto.
       - f_equal. rewrite app_comm_cons assoc; f_equal.
         erewrite <-take_drop_middle at 1; f_equal.
         { apply take_insert; reflexivity. }
@@ -530,49 +532,48 @@ Section ghost_step.
     iModIntro; iFrame.
   Qed.
 
-
   (* Curried form is more useful, I think *)
-  Lemma ghost_step_lifting E j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
-    language.prim_step e1 σ1 κ e2 σ2 efs →
+  Lemma ghost_step_lifting E j K `{LanguageCtx Λ K} e1 σ1 g1 κ σ2 g2 e2 efs:
+    language.prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
     nclose sN_inv ⊆ E →
-    j ⤇ K e1 -∗ source_ctx -∗ source_state σ1
-      -∗ |NC={E}=> j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
-  Proof.
+    j ⤇ K e1 -∗ source_ctx -∗ source_state σ1 g1
+      -∗ |NC={E}=> j ⤇ K e2 ∗ source_state σ2 g2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
+  Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (??) "Hj Hsrc ?".
     iDestruct "Hsrc" as (??) "Hsrc".
     iApply ghost_step_lifting'; eauto. iFrame.
   Qed.
 
-  Lemma ghost_step_crash_lifting E P Q j K `{LanguageCtx Λ K} e1 σ1 κ σ2 e2 efs:
-    language.prim_step e1 σ1 κ e2 σ2 efs →
+  Lemma ghost_step_crash_lifting E P Q j K `{LanguageCtx Λ K} e1 σ1 g1 κ σ2 g2 e2 efs:
+    language.prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
     nclose sN_inv ⊆ E →
     □ (Q ∗ ▷ P -∗ |0={∅}=> False) -∗
     Q -∗
-    j ⤇ K e1 -∗ source_crash_ctx P -∗ source_state σ1
-      -∗ |C={E}_0=> Q ∗ j ⤇ K e2 ∗ source_state σ2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
-  Proof.
+    j ⤇ K e1 -∗ source_crash_ctx P -∗ source_state σ1 g1
+      -∗ |C={E}_0=> Q ∗ j ⤇ K e2 ∗ source_state σ2 g2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
+  Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (??) "#Hwand HQ Hj Hsrc ?".
     iDestruct "Hsrc" as (??) "Hsrc".
     iApply ghost_step_crash_lifting'; eauto. iFrame.
   Qed.
 
-  Lemma ghost_step_stuck' E j K `{LanguageCtx Λ K} e σ:
+  Lemma ghost_step_stuck' E j K `{LanguageCtx Λ K} e σ g:
     nclose sN_inv ⊆ E →
-    j ⤇ K e -∗ source_ctx -∗ source_state σ -∗ |NC={E}=>
-    ⌜ ¬ stuck e σ ⌝ ∗ j ⤇ K e ∗ source_state σ.
-  Proof.
+    j ⤇ K e -∗ source_ctx -∗ source_state σ g -∗ |NC={E}=>
+    ⌜ ¬ stuck e σ g ⌝ ∗ j ⤇ K e ∗ source_state σ g.
+  Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (?) "Hj Hctx Hstate".
     rewrite /source_ctx/source_inv.
     iDestruct "Hctx" as (? ρ) "#Hctx".
-    iInv "Hctx" as (? tp' σ') ">[Hauth Hpure]" "Hclose".
+    iInv "Hctx" as (? tp' σ' g') ">[Hauth Hpure]" "Hclose".
     iDestruct "Hpure" as %(Hstep&Hnoerr).
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
-    iDestruct (source_state_reconcile with "Hstate Hauth") as %Heq_state.
+    iDestruct (source_state_reconcile with "Hstate Hauth") as %[Heq_σ Heq_g].
     subst.
-    assert (¬ stuck e σ').
+    assert (¬ stuck e σ' g').
     {
       intros Hstuck.
-      assert (stuck (K e) σ') as Hstuck'.
+      assert (stuck (K e) σ' g') as Hstuck'.
       { destruct Hstuck as (?&?). split.
         - apply fill_not_val; auto.
         - apply irreducible_fill; auto.
@@ -584,34 +585,34 @@ Section ghost_step.
     }
     iFrame.
     iMod ("Hclose" with "[-]").
-    { iNext. iExists _, _, _. iFrame. eauto. }
+    { iNext. iExists _, _, _, _. iFrame. eauto. }
     eauto.
   Qed.
 
-  Lemma ghost_step_stuck E j K `{LanguageCtx Λ K} e σ:
-    stuck e σ →
+  Lemma ghost_step_stuck E j K `{LanguageCtx Λ K} e σ g:
+    stuck e σ g →
     nclose sN_inv ⊆ E →
-    j ⤇ K e -∗ source_ctx -∗ source_state σ -∗ |NC={E}=> False.
-  Proof.
+    j ⤇ K e -∗ source_ctx -∗ source_state σ g -∗ |NC={E}=> False.
+  Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (Hstuck ?) "Hj Hctx Hstate".
     iMod (ghost_step_stuck' with "[$] [$] [$]") as (Hnotstuck) "_"; auto.
   Qed.
 
   Lemma ghost_step_stuck_det E j K `{LanguageCtx Λ K} e:
-    (∀ σ, stuck e σ) →
+    (∀ σ g, stuck e σ g) →
     nclose sN_inv ⊆ E →
     j ⤇ K e -∗ source_ctx -∗ |NC={E}=> False.
-  Proof.
+  Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (Hstuck ?) "Hj Hctx".
-    assert (∀ σ, stuck (K e) σ) as Hstuck'.
-    { intros σ. edestruct Hstuck as (?&?). split.
+    assert (∀ σ g, stuck (K e) σ g) as Hstuck'.
+    { intros σ g. edestruct Hstuck as (?&?). split.
       - apply fill_not_val; auto.
       - apply irreducible_fill; eauto.
     }
     clear Hstuck.
     rewrite /source_ctx/source_inv.
     iDestruct "Hctx" as (? ρ) "#Hctx".
-    iInv "Hctx" as (? tp' σ') ">[Hauth Hpure]" "Hclose".
+    iInv "Hctx" as (? tp' σ' g') ">[Hauth Hpure]" "Hclose".
     iDestruct "Hpure" as %(Hstep&Hnoerr).
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
     subst.
@@ -622,13 +623,13 @@ Section ghost_step.
   Qed.
 
   Lemma ghost_step_lifting_puredet E j K `{LanguageCtx Λ K} e1 e2 efs:
-    (∀ σ1, ∃ κ, language.prim_step e1 σ1 κ e2 σ1 efs) →
+    (∀ σ1 g1, ∃ κ, language.prim_step e1 σ1 g1 κ e2 σ1 g1 efs) →
     nclose sN_inv ⊆ E →
     source_ctx ∗ j ⤇ K e1
       -∗ |NC={E}=> j ⤇ K e2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
-  Proof.
+  Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (Hstep ?) "(#Hctx&Hj)". iDestruct "Hctx" as (??) "Hctx". rewrite /source_ctx/source_inv.
-    iInv "Hctx" as (? tp' σ') ">[Hauth %]" "Hclose".
+    iInv "Hctx" as (? tp' σ' g') ">[Hauth %]" "Hclose".
 
     (* Reconcile view based on authoritative element *)
     iDestruct (source_thread_reconcile with "Hj Hauth") as %Heq_thread.
@@ -640,7 +641,7 @@ Section ghost_step.
 
 
     iMod ("Hclose" with "[Hauth]").
-    { iNext. iExists _, (<[j := K e2]>tp' ++ efs), _.
+    { iNext. iExists _, (<[j := K e2]>tp' ++ efs), _, _.
       iFrame. intuition. iPureIntro; split; auto.
       eapply erased_rsteps_r_1; eauto.
       edestruct Hstep as (?&Hstep').

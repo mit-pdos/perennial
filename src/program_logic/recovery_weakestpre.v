@@ -9,9 +9,21 @@ Set Default Proof Using "Type".
 
 (*** Recovery ***)
 
+(* An irisG instance usually depends on some implicit ghost names as part of
+   state interpretation. Some of these names need to be changed as a result of a
+   crash.  A pbundleG T instance is a way to declare a dependence on some type T
+   which can encode this set of names *)
+
 Class pbundleG (T: ofe) (Σ: gFunctors) := {
   pbundleT : T;
 }.
+
+(* A perennialG instance generates an irisG instance given an element t of the designated type T and
+   a crashG instance. We require some properties of the generated irisG instances, such as that
+   they all use the same num_laters_per_step function.
+
+   TODO: for the distributed version, we also need to similarly add fields requiring that for every t,
+   the invG Σ instance is the same, and the global_state_interp function is the same *)
 
 Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofe) (Σ : gFunctors) := PerennialG {
   perennial_irisG :> ∀ (Hcrash: crashG Σ), pbundleG T Σ → irisG Λ Σ;
@@ -31,8 +43,9 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
   λ H2 t E e rec Φ Φinv Φr,
   (WPC e @ s ; k; E
      {{ Φ }}
-     {{ ∀ σ σ' (HC: crash_prim_step CS σ σ') ns κs n,
-        state_interp σ ns κs n ={E}=∗  ▷ ∀ H2 q, NC q ={E}=∗ ∃ t, state_interp σ' (S ns) κs 0 ∗ (Φinv H2 t ∧ wpr H2 t E rec rec (λ v, Φr H2 t v) Φinv Φr) ∗ NC q}})%I.
+     {{ ∀ σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
+        state_interp σ n -∗ global_state_interp g ns κs ={E}=∗  ▷ ∀ H2 q, NC q ={E}=∗
+          ∃ t, state_interp σ' 0 ∗ global_state_interp g (S ns) κs ∗ (Φinv H2 t ∧ wpr H2 t E rec rec (λ v, Φr H2 t v) Φinv Φr) ∗ NC q}})%I.
 
 Local Instance wpr_pre_contractive `{!perennialG Λ CS T Σ} s k: Contractive (wpr_pre s k).
 Proof.
@@ -78,8 +91,8 @@ Proof.
   iDestruct "HΦ" as "(_&HΦ)".
   rewrite own_discrete_idemp.
   iIntros "!> H".
-  iModIntro. iIntros (??????) "Hinterp". iMod ("H" with "[//] Hinterp") as "H".
-  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (?) "(?&H&HNC)".
+  iModIntro. iIntros (???????) "Hσ Hg". iMod ("H" with "[//] Hσ Hg") as "H".
+  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (?) "(?&?&H&HNC)".
   iModIntro. iExists _. iFrame.
   iSplit.
   - iDestruct "H" as "(H&_)". rewrite own_discrete_elim. iDestruct "HΦ" as "(HΦ&_)". by iApply "HΦ".
@@ -93,9 +106,10 @@ Qed.
    where the crash condition implies the precondition for a crash wp for rec *)
 Lemma idempotence_wpr s k E1 e rec Φx Φinv Φrx (Φcx: crashG Σ → _ → iProp Σ) Hc t:
   ⊢ WPC e @ s ; k ; E1 {{ Φx t }} {{ Φcx _ t }} -∗
-   (□ ∀ (Hc: crashG Σ) (t: pbundleG T Σ) σ σ' (HC: crash_prim_step CS σ σ') ns κs n,
-        Φcx Hc t -∗ state_interp σ ns κs n ={E1}=∗
-        ▷ ∀ (Hc': crashG Σ) q, NC q ={E1}=∗ ∃ t', state_interp σ' (S ns) κs 0 ∗ (Φinv Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx Hc' t' }} {{ Φcx Hc' t' }}) ∗ NC q) -∗
+   (□ ∀ (Hc: crashG Σ) (t: pbundleG T Σ) σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
+        Φcx Hc t -∗ state_interp σ n -∗ global_state_interp g ns κs ={E1}=∗
+        ▷ ∀ (Hc': crashG Σ) q, NC q ={E1}=∗
+          ∃ t', state_interp σ' 0 ∗ global_state_interp g (S ns) κs ∗ (Φinv Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx Hc' t' }} {{ Φcx Hc' t' }}) ∗ NC q) -∗
     wpr s k Hc t E1 e rec (Φx t) Φinv Φrx.
 Proof.
   iLöb as "IH" forall (E1 e Hc t Φx).
@@ -105,9 +119,9 @@ Proof.
   iSplit; first auto. iIntros "!> Hcx".
   iApply @fupd_level_mask_intro_discard.
   { set_solver +. }
-  iIntros. iMod ("Hidemp" with "[ ] [$] [$]") as "H".
+  iIntros. iMod ("Hidemp" with "[ ] [$] [$] [$]") as "H".
   { eauto. }
-  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (t') "(?&Hc&HNC)".
+  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (t') "(?&?&Hc&HNC)".
   iExists _. iFrame. iModIntro.
   iSplit.
   { iDestruct "Hc" as "($&_)". }
