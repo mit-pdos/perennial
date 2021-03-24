@@ -182,7 +182,7 @@ Section jrnl.
       (* bit reads must be done with ReadBitOp *)
       check (k ≠ KindBit ∧ bufSz k = int.nat sz);;
       ret $ val_of_obj' d
-    | OverWriteOp, ((#(LitInt blkno), #(LitInt off), #()), ov)%V =>
+    | OverWriteOp, PairV (#(LitInt blkno), (#(LitInt off), #()))%V ov =>
       j ← openΣ;
       (* This only allows writing to addresses that already have defined contents *)
       _ ← unwrap (jrnlData j !! (Build_addr blkno off));
@@ -823,6 +823,78 @@ Proof.
     eapply lookup_weaken in Hlookup2; last eassumption.
     rewrite Hlookup2. econstructor; eauto. }
   { rewrite /check/ifThenElse. rewrite decide_True //=. }
+Qed.
+
+Lemma val_of_obj'_bytes vs: val_of_obj' (objBytes vs) = val_of_list ((λ u : u8, #u) <$> vs).
+Proof. rewrite //=. Qed.
+
+Lemma wf_jrnl_updateData σj a vs vs_old k :
+  wf_jrnl σj →
+  jrnlData σj !! a = Some vs_old →
+  jrnlKinds σj !! addrBlock a = Some k →
+  objSz vs = bufSz k →
+  wf_jrnl (updateData σj a vs).
+Proof.
+  intros Hwf Hlookup1 Hlookup2 Hsize.
+  split.
+  - rewrite /offsets_aligned => a' Hin.
+    eapply Hwf. move: Hin. rewrite dom_insert_L.
+    cut (a ∈ dom (gset _) (jrnlData σj)); first by set_solver.
+    apply elem_of_dom. eauto.
+  - rewrite /sizes_correct//= => a' o Hlookup'.
+    destruct (decide (a' = a)).
+    * subst. eexists; split; eauto. rewrite lookup_insert in Hlookup'. congruence.
+    * eapply Hwf. rewrite lookup_insert_ne in Hlookup'; eauto.
+Qed.
+
+Lemma always_steps_OverWriteOp a vs_old vs (sz: u64) k σj:
+  wf_jrnl σj →
+  jrnlData σj !! a = Some vs_old  →
+  jrnlKinds σj !! (addrBlock a) = Some k →
+  (objSz (objBytes vs) = bufSz k ∧ k ≠ KindBit) →
+  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                           OverWriteOp
+                           (PairV (addr2val' a) (val_of_obj' (objBytes vs))))
+               σj
+               #()
+               (updateData σj a (objBytes vs)).
+Proof.
+  intros Hwf Hlookup1 Hlookup2 Hk.
+  split_and!; eauto.
+  { split_and!; try set_solver.
+    - rewrite //=. rewrite dom_insert_L.
+      cut (a ∈ dom (gset _) (jrnlData σj)); first by set_solver.
+      apply elem_of_dom. eauto.
+    - eapply wf_jrnl_updateData; eauto. naive_solver.
+  }
+  intros s g Hsub.
+  apply rtc_once.
+  eapply (Ectx_step' _ _ _ _ _ _ _ _ []) => //=.
+  rewrite /jrnl_sub_state in Hsub.
+  destruct Hsub as (?&Heq&?&?).
+  destruct a as (ablk&aoff).
+  econstructor; last econstructor; eauto.
+  econstructor; repeat (econstructor; eauto).
+  { simpl. rewrite Heq. econstructor. eauto. }
+  { simpl in Hlookup1.
+    eapply lookup_weaken in Hlookup1; last eassumption.
+    rewrite Hlookup1. econstructor; eauto. }
+  { simpl in Hlookup2.
+    eapply lookup_weaken in Hlookup2; last eassumption.
+    rewrite Hlookup2. econstructor; eauto. }
+  { eapply val_of_obj'_bytes. }
+  { rewrite /check/ifThenElse.
+    rewrite decide_True; auto.
+    { repeat econstructor. }
+  }
+  { rewrite //= Heq. repeat econstructor. }
+  { rewrite //=. do 2 f_equal.
+    rewrite /jrnl_upd //=. rewrite /set. destruct s => //=.
+    do 2 f_equal. rewrite /updateData. rewrite /= in Heq.
+    subst => //=. repeat f_equal.
+    rewrite -insert_union_l.
+    rewrite map_subseteq_union //.
+  }
 Qed.
 
 Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ g:
