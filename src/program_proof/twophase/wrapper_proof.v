@@ -1136,7 +1136,24 @@ Section proof.
         apply Halways_steps.
       }
       apply always_steps_bind.
-      admit. (* need theorem for OverWriteOp *)
+      assert (bufObj_to_obj (modified vobj) = objBytes data) as ->.
+      {
+        rewrite /data_has_obj in Hdata. rewrite /bufObj_to_obj.
+        destruct (objData (modified vobj)); try congruence; eauto.
+      }
+      eapply (always_steps_OverWriteOp a (data) _ (objKind (modified vobj)) σj2); eauto.
+      { naive_solver. }
+      { rewrite /jrnl_maps_have_mt in Hjrnl_maps_mt.
+        destruct (Hjrnl_maps_mt) as (_&<-).
+        rewrite ?lookup_fmap Hacc //=. eauto.
+      }
+      { rewrite /jrnl_maps_kinds_valid in Hjrnl_maps_kinds.
+        rewrite -Hk. destruct Hjrnl_maps_kinds as (_&->). eauto. }
+      { split; last naive_solver.
+        rewrite /data_has_obj in Hdata. destruct (objData _); try congruence; eauto.
+        - subst. (* we need to argue that if this was the wrong size, it would have triggered UB *)
+          admit.
+        - admit. }
     - admit. (* need theorem for OverWriteOp *)
   Admitted.
 

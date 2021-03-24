@@ -847,9 +847,9 @@ Proof.
     * eapply Hwf. rewrite lookup_insert_ne in Hlookup'; eauto.
 Qed.
 
-Lemma always_steps_OverWriteOp a vs_old vs (sz: u64) k σj:
+Lemma always_steps_OverWriteOp a vs (sz: u64) k σj:
   wf_jrnl σj →
-  jrnlData σj !! a = Some vs_old  →
+  is_Some (jrnlData σj !! a)  →
   jrnlKinds σj !! (addrBlock a) = Some k →
   (objSz (objBytes vs) = bufSz k ∧ k ≠ KindBit) →
   always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
@@ -859,7 +859,7 @@ Lemma always_steps_OverWriteOp a vs_old vs (sz: u64) k σj:
                #()
                (updateData σj a (objBytes vs)).
 Proof.
-  intros Hwf Hlookup1 Hlookup2 Hk.
+  intros Hwf (vs_old&Hlookup1) Hlookup2 Hk.
   split_and!; eauto.
   { split_and!; try set_solver.
     - rewrite //=. rewrite dom_insert_L.
