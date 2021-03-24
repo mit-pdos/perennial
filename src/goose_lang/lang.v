@@ -1374,7 +1374,19 @@ Qed.
 Class LanguageCtx' (K : expr → expr) : Prop :=
   { fill_not_val' : ∀ e, to_val e = None → to_val (K e) = None;
     fill_step' : ∀ e1 σ1 g1 κ e2 σ2 g2 efs,
-                  prim_step' e1 σ1 g1 κ e2 σ2 g2 efs → prim_step' (K e1) σ1 g1 κ (K e2) σ2 g2 efs }.
+                  prim_step' e1 σ1 g1 κ e2 σ2 g2 efs → prim_step' (K e1) σ1 g1 κ (K e2) σ2 g2 efs;
+    fill_step_inv' e1' σ1 g1 κ e2 σ2 g2 efs :
+      to_val e1' = None → prim_step' (K e1') σ1 g1 κ e2 σ2 g2 efs →
+      ∃ e2', e2 = K e2' ∧ prim_step' e1' σ1 g1 κ e2' σ2 g2 efs
+  }.
+
+Lemma fill_comp' K1 K2 e : fill' K1 (fill' K2 e) = fill' (comp_ectx K1 K2) e.
+Proof.
+  rewrite /fill'.
+  pose proof (fill_comp (Λ := goose_ectx_lang)).
+  rewrite /ectx_language.fill//=/fill in H.
+  eapply H.
+Qed.
 
 Global Instance ectx_lang_ctx' K : LanguageCtx' (fill K).
 Proof.
@@ -1382,6 +1394,12 @@ Proof.
   - intros. eapply fill_not_val; eauto.
   - intros ???????? [K' e1' e2' Heq1 Heq2 Hstep].
     by exists (comp_ectx K K') e1' e2'; rewrite ?Heq1 ?Heq2 ?fill_comp.
+  - intros e1 σ1 g1 κ e2 σ2 g2 efs Hnval [K'' e1'' e2'' Heq1 -> Hstep].
+    destruct (step_by_val K K'' e1 e1'' σ1 g1 κ e2'' σ2 g2 efs) as [K' ->]; eauto.
+    { econstructor. eauto. }
+    rewrite -fill_comp' in Heq1; apply (inj (fill _)) in Heq1.
+    exists (fill K' e2''); rewrite -fill_comp'; split; auto.
+    econstructor; eauto.
 Qed.
 
 Instance id_ctx' : LanguageCtx' (fun x => x).
@@ -1396,6 +1414,25 @@ Proof.
   split; intros.
   - by do 2 apply fill_not_val'.
   - by do 2 apply fill_step'.
+  - edestruct (@fill_step_inv' _ Hctx' (K e1')); eauto; intuition.
+    { apply fill_not_val'; auto. }
+    subst.
+    edestruct (@fill_step_inv' _ Hctx); eauto; intuition.
+    subst.
+    eauto.
+Qed.
+
+Lemma stuck'_fill K `{Hctx: LanguageCtx' K}  e σ g :
+  stuck' e σ g → stuck' (K e) σ g.
+Proof.
+  intros (Hnval&Hirred). split.
+  - by apply fill_not_val'.
+  - move:Hirred. rewrite -!not_reducible'.
+    intros Hnred Hred.
+    apply Hnred.
+    destruct Hred as (e'&σ'&g'&k&efs&Hstep); unfold reducible'.
+    apply fill_step_inv' in Hstep; eauto.
+    naive_solver.
 Qed.
 
 Definition trace_observable e r σ g tr :=

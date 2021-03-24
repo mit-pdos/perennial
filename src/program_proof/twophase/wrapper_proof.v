@@ -73,6 +73,7 @@ Section proof.
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds_lb γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
       "#Htxn_cinv" ∷ txn_cinv Nbuftxn γ γ' ∗
       "%Haddrs_valid" ∷ ⌜set_Forall valid_addr objs_dom⌝.
 
@@ -86,6 +87,7 @@ Section proof.
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds_lb γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
       "%Halways_steps" ∷ ⌜always_steps e1 σj1 e2 σj2⌝ ∗
       "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
       "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝.
@@ -212,7 +214,8 @@ Section proof.
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
-      "#Hjrnl_kinds_lb" ∷ jrnl_kinds_lb γ.(buftxn_txn_names).(txn_kinds)
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds_lb γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_dom" ∷ jrnl_dom (dom _ mt)
     }}}
       Init #d @ k; ⊤
     {{{
@@ -1031,6 +1034,68 @@ Section proof.
     - trivial.
   Qed.
 
+  Lemma twophase_started_ub_det' l γ γ' dinit objs_dom E j K0 K
+        `{Hctx: LanguageCtx'
+          (ext := @spec_ext_op_field _)
+          (ffi := (spec_ffi_model_field))
+          (ffi_semantics := (spec_ext_semantics_field))
+          K} e0 e :
+    nclose sN ⊆ E →
+    is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e)
+    -∗ |NC={E}=>
+      ∃ σj1 σj2 mt_changed (ls: sval),
+        "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
+        "Htwophase" ∷ is_twophase_raw
+          l γ γ' dinit 0 jrnl_mapsto_own objs_dom mt_changed ∗
+        "#Hspec_ctx" ∷ spec_ctx ∗
+        "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
+        "#Hjrnl_open" ∷ jrnl_open ∗
+        "#Hjrnl_kinds_lb" ∷ jrnl_kinds_lb γ.(buftxn_txn_names).(txn_kinds) ∗
+        "%Halways_steps" ∷ ⌜always_steps e0 σj1 (K e) σj2⌝ ∗
+        "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
+        "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝ ∗
+        "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
+        "%Hnotstuck" ∷ ⌜ (∃ s g, jrnl_sub_state σj2 s ∧
+         dom (gset _) (jrnlData (get_jrnl s.(world))) = objs_dom ∧
+         ¬ stuck' (K e) s g) ⌝.
+  Proof.
+    iIntros (?). iNamed 1.
+    iNamed "Htwophase".
+    (* Need to open up all of the ncinvs to get the points tos out :( *)
+    iMod (ghost_step_jrnl_atomically_ub' with "[$] [] [] [$] [$] [$]") as (Hub) "(Hj&Hσ)".
+    { admit. }
+    { eauto. }
+    { eauto. }
+    { admit. }
+    { destruct Hjrnl_maps_kinds as (->&_); eauto. }
+    iModIntro. iExists _, _, _, _. iFrame "# ∗".
+    iSplitR "".
+    { admit. }
+    iFrame "%".
+  Admitted.
+
+
+  Lemma twophase_started_ub_det l γ γ' dinit objs_dom E j K0 K
+        `{Hctx: LanguageCtx'
+          (ext := @spec_ext_op_field _)
+          (ffi := (spec_ffi_model_field))
+          (ffi_semantics := (spec_ext_semantics_field))
+          K} e0 e :
+    nclose sN ⊆ E →
+    (∀ s g, stuck' e s g) →
+    is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e)
+    -∗ |NC={E}=> False.
+  Proof.
+    iIntros. iMod (twophase_started_ub_det' with "[$]") as "H".
+    { eauto. }
+    iNamed "H".
+    iExFalso.
+    iPureIntro.
+    destruct Hnotstuck as (s&g&Hsub&Hdom&Hnstuck).
+    eapply Hnstuck.
+    eapply stuck'_fill; eauto.
+  Qed.
+
   Theorem wp_TwoPhase__OverWrite' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
             (ext := @spec_ext_op_field _)
@@ -1054,6 +1119,8 @@ Section proof.
     }}}.
   Proof.
     iIntros (Ha_in_dom Hk Hnot_bit Hov_len Φ) "Htwophase HΦ".
+    iMod (twophase_started_ub_det' with "[$]") as "Htwophase".
+    { auto. }
     iNamed "Htwophase".
     iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
       [eassumption|eassumption|].
@@ -1080,6 +1147,7 @@ Section proof.
     iDestruct (is_slice_to_small with "Hslice") as "Hslice".
     iDestruct (is_slice_small_sz with "Hslice") as "%Hsz".
     rewrite list_untype_length in Hsz.
+
     wp_apply (wp_TwoPhase__OverWrite_raw with "[$Htwophase $Hslice]");
       first by assumption.
     1: rewrite Hk //.
@@ -1150,10 +1218,10 @@ Section proof.
       { rewrite /jrnl_maps_kinds_valid in Hjrnl_maps_kinds.
         rewrite -Hk. destruct Hjrnl_maps_kinds as (_&->). eauto. }
       { split; last naive_solver.
-        rewrite /data_has_obj in Hdata. destruct (objData _); try congruence; eauto.
-        - subst. (* we need to argue that if this was the wrong size, it would have triggered UB *)
-          admit.
-        - admit. }
+        rewrite /data_has_obj in Hdata.
+        (* we need to argue that if this was the wrong size, it would have triggered UB, contradicting
+           Hnotstuck *)
+          admit. }
     - admit. (* need theorem for OverWriteOp *)
   Admitted.
 
@@ -1176,18 +1244,5 @@ Section proof.
     eapply always_steps_lifting_puredet; trivial.
   Qed.
 
-  Lemma twophase_started_ub_det l γ γ' dinit objs_dom E j K0 K
-        `{Hctx: LanguageCtx'
-          (ext := @spec_ext_op_field _)
-          (ffi := (spec_ffi_model_field))
-          (ffi_semantics := (spec_ext_semantics_field))
-          K} e0 e :
-    nclose sN ⊆ E →
-    (∀ s g, stuck' e s g) →
-    is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e)
-    -∗ |NC={E}=> False.
-  Proof.
-    (* need to add "not stuck" to is_twophase_started? *)
-  Admitted.
 
 End proof.

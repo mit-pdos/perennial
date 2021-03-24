@@ -1301,6 +1301,69 @@ Proof.
   iModIntro. iFrame.
 Qed.
 
+Lemma ghost_step_jrnl_atomically_ub' E j K {HCTX: LanguageCtx K} (l: sval) e1 σj e2 σj' σdom :
+  always_steps e1 σj e2 σj' →
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
+  jrnl_kinds_lb (jrnlKinds σj) -∗
+  jrnl_dom σdom -∗
+  jrnl_open -∗
+  j ⤇ K (Atomically l e1)
+  -∗ |NC={E}=>
+   ⌜ (∃ s g, jrnl_sub_state σj' s ∧
+        dom (gset _) (jrnlData (get_jrnl s.(world))) = σdom ∧
+        ¬ stuck' e2 s g) ⌝ ∗
+  j ⤇ K (Atomically l e1) ∗
+  ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o).
+Proof.
+  iIntros (Hsteps ?) "(#Hctx&#Hstate) Hσj_data Hσj_kinds Hdom Hopen Hj".
+  destruct Hsteps as (Heq_kinds&Hwf&Hrtc).
+  iInv "Hstate" as (s g) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$]") as %Hsub.
+  iDestruct (jrnl_ctx_dom_eq _ s with "[$] [$]") as %Hdom.
+  iMod (ghost_step_stuck' with "Hj Hctx H") as (Hnstuck) "(Hj&H)"; first by solve_ndisj.
+  iMod ("Hclo" with "[-Hj Hσj_data]").
+  { iNext. iExists _, _. iFrame. }
+  iModIntro. iFrame.  iPureIntro.
+  exists (jrnl_upd σj' s), g.
+  split_and!.
+  - eapply jrnl_sub_state_upd; eauto.
+  - rewrite //= dom_union_L /addr. destruct Hwf as (Heq&?). rewrite -Heq.
+    destruct Hsub as (?&?&Hsub&_).
+    eapply subseteq_dom in Hsub.
+    rewrite /=.
+    rewrite /addr in Hsub Hdom.  rewrite -Hdom.
+    match goal with
+    | [ H: sworld _ = _ |- _ ] => rewrite H
+    end.
+    set_solver.
+  - intros Hnstuck'. apply Hnstuck.
+  split; first done.
+  apply prim_head_irreducible; last first.
+  { intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+    assert (of_val l = e').
+    { move: Heq. destruct Ki => //=; congruence. }
+    naive_solver.
+  }
+  rewrite /irreducible. intros ????? Hnostep.
+  inversion Hnostep; subst.
+  {
+    inversion H2; eauto.
+  }
+  {
+    match goal with
+    | [ H: prim_step'_safe _ _ _ |- _ ] => eapply H; first eapply Hrtc; eauto
+    end.
+  }
+  {
+    match goal with
+    | [ H: prim_step'_safe _ _ _ |- _ ] => eapply H; first eapply Hrtc; eauto
+    end.
+  }
+Qed.
+
 Lemma ghost_step_jrnl_atomically_ub E j K {HCTX: LanguageCtx K} (l: sval) e1 σj e2 σj' σdom :
   (∀ s g, jrnl_sub_state σj' s →
         dom (gset _) (jrnlData (get_jrnl s.(world))) = σdom →
