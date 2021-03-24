@@ -1,7 +1,6 @@
 From Perennial.Helpers Require Import Transitions.
 From Perennial.base_logic Require Import base_logic lib.invariants.
 From iris.proofmode Require Import tactics.
-From iris_string_ident Require Import ltac2_string_ident.
 From iris.prelude Require Import options.
 
 Section simulation.

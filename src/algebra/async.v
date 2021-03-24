@@ -6,7 +6,6 @@ From iris.bi Require Import lib.fractional.
 From iris.proofmode Require Import tactics.
 From Perennial.Helpers Require Import Map.
 From Perennial.algebra Require Import log_heap own_discrete.
-From iris_string_ident Require Import ltac2_string_ident.
 
 Set Default Proof Using "Type".
 

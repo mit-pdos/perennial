@@ -5,7 +5,6 @@ From Perennial.goose_lang.lib Require Import control.
 From Perennial.goose_lang.lib Require Export map.impl.
 Import uPred.
 
-From iris_string_ident Require Import ltac2_string_ident.
 
 Set Default Proof Using "Type".
 

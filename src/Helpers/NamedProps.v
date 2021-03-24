@@ -1,5 +1,4 @@
 From iris.proofmode Require Import tactics environments intro_patterns.
-From iris_string_ident Require Import ltac2_string_ident.
 
 Set Default Proof Using "Type".
 
@@ -112,12 +111,6 @@ Ltac to_pm_ident H :=
   | ident => constr:(H)
   end.
 
-Ltac string_to_ident s :=
-  let ident_fun := constr:(ltac:(ltac_tactics.string_to_ident_hook s)) in
-  lazymatch ident_fun with
-  | λ (x:_), _ => x
-  end.
-
 Local Ltac iDeex_as i x :=
   let x' := fresh x in
   iDestructHyp i as (x') i.
@@ -220,7 +213,7 @@ Local Ltac iNameIntuitionistic i i' :=
   ].
 
 Local Ltac iNamePure i name :=
-  let id := string_to_ident name in
+  let id := string_ident.string_to_ident name in
   let id := fresh id in
   iPure i as id.
 
@@ -357,7 +350,7 @@ Ltac iFrameNamed :=
              | IIdent ?name => iFrame name
              | IIntuitionistic (IIdent ?name) => iFrame name
              | IPure (IGallinaNamed ?name) =>
-               let name := string_to_ident name in
+               let name := string_ident.string_to_ident name in
                iFrame (name)
              end
            end

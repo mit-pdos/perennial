@@ -12,7 +12,6 @@ From Perennial.goose_lang.lib Require Export
 From Perennial.goose_lang Require Export ffi.disk.
 From Perennial.goose_lang Require Export ffi.disk_prelude.
 
-From iris_string_ident Require Export ltac2_string_ident.
 
 Export uPred.
 

@@ -1,7 +1,6 @@
 From Perennial.iris_lib Require Export conflicting.
 From Perennial.algebra.big_op Require Import big_sepM.
 From iris.proofmode Require Import tactics.
-From iris_string_ident Require Import ltac2_string_ident.
 
 Set Default Proof Using "Type*".
 

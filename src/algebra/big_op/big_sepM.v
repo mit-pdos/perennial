@@ -1,7 +1,6 @@
 From iris.algebra Require Export big_op.
 From iris.proofmode Require Import tactics.
 From Perennial.base_logic Require Import ncfupd.
-From iris_string_ident Require Import ltac2_string_ident.
 
 Set Default Proof Using "Type".
 

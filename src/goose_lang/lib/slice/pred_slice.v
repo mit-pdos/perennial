@@ -2,7 +2,6 @@ From Perennial.Helpers Require Import List.
 From Perennial.goose_lang Require Import proofmode array.
 From Perennial.goose_lang.lib Require Import slice into_val.
 
-From iris_string_ident Require Import ltac2_string_ident.
 Set Default Proof Using "Type".
 
 Theorem big_sepL2_lookup_2 {PROP:bi} {A B:Type} {Φ: nat → A → B → PROP} {l1: list A} {l2: list B} i (v2: B) :

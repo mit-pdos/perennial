@@ -9,7 +9,6 @@
 -Q external/iris/iris_deprecated iris.deprecated
 -Q external/iris/iris_staging iris.staging
 -Q external/iris/iris_heap_lang iris.heap_lang
--Q external/string-ident/theories iris_string_ident
 -Q external/coqutil/src/coqutil coqutil
 -Q external/Goose Goose
 -Q external/record-update/src RecordUpdate

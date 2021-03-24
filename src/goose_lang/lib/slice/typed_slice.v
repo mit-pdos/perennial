@@ -4,7 +4,6 @@ From Perennial.goose_lang.lib Require Import typed_mem persistent_readonly.
 From Perennial.goose_lang.lib Require Import slice.impl slice.slice.
 From Perennial.goose_lang.lib Require Import into_val.
 
-From iris_string_ident Require Import ltac2_string_ident.
 
 Set Default Proof Using "Type".
 

@@ -5,7 +5,6 @@ From Perennial.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang.lib Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Export typed_mem.impl.
-From iris_string_ident Require Import ltac2_string_ident.
 
 Set Default Proof Using "Type".
 

@@ -10,7 +10,6 @@ From Perennial.program_proof Require Import buf.buf_proof.
 From Perennial.program_proof Require Import txn.txn_proof.
 From Perennial.program_proof Require Import buftxn.buftxn_proof.
 From Perennial.goose_lang Require Import spec_assert.
-From iris_string_ident Require Import ltac2_string_ident.
 
 
 Module state.

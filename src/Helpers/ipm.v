@@ -1,7 +1,6 @@
 From iris.proofmode Require Export tactics.
 From iris.proofmode Require Import reduction coq_tactics intro_patterns.
 
-From iris_string_ident Require Export ltac2_string_ident.
 
 Tactic Notation "iApply" open_constr(lem) "in" constr(i) :=
   iDestruct (lem with i) as i.
