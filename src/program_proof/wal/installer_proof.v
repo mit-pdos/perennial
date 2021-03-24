@@ -52,7 +52,9 @@ Proof.
   iNamedRestorable "Hbs".
   iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Hdata") as "[Hb Hdata]".
   iApply restore_intro in "Hb".
-  iDestruct "Hb" as (b txn_id') "((%Hin_bounds&%Halready_installed&%Happly_upds) &Hb & %Ha_bound &Hb')".
+  (* FIXME: Due to missing [IntoAnd] instances for [Restore], we cannot out [Ha_bound] into the Coq context immediately. *)
+  iDestruct "Hb" as (b txn_id') "((%Hin_bounds&%Halready_installed&%Happly_upds) &Hb & Ha_bound & Hb')".
+  iDestruct "Ha_bound" as "%Ha_bound".
   iDestruct (restore_elim with "Hb'") as "#Hb_restore"; iClear "Hb'".
   iExists _, txn_id'.
   iFrame "Hb".
