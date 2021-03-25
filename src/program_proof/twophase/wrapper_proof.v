@@ -1061,17 +1061,68 @@ Section proof.
   Proof.
     iIntros (?). iNamed 1.
     iNamed "Htwophase".
-    (* Need to open up all of the ncinvs to get the points tos out :( *)
-    iMod (ghost_step_jrnl_atomically_ub' with "[$] [] [] [$] [$] [$]") as (Hub) "(Hj&Hσ)".
-    { admit. }
-    { eauto. }
-    { eauto. }
-    { admit. }
-    { destruct Hjrnl_maps_kinds as (->&_); eauto. }
-    iModIntro. iExists _, _, _, _. iFrame "# ∗".
-    iSplitR "".
-    { admit. }
-    iFrame "%".
+    iDestruct (na_crash_inv_status_wand_sepM with "Hcrash_invs") as
+      "#Hstatuses".
+    iDestruct (
+      na_crash_inv_open_modify_ncfupd_sepM _ _ _ _
+      (λ a vobj,
+        twophase_crash_inv_pred jrnl_mapsto_own γ a (committed vobj)
+      )
+      (
+        "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
+        "%Hnot_stuck" ∷ ⌜∃ s g,
+          jrnl_sub_state σj2 s ∧
+          dom (gset addr) (jrnlData (get_jrnl s.(world))) =
+            objs_dom ∧ ¬ stuck' (K e) s g
+        ⌝
+      )%I
+      with
+      "Hcrash_invs [Hj]"
+    ) as "> [HR Hcrash_invs]".
+    {
+      iIntros "Hpreds".
+      iApply big_sepM_later_2 in "Hpreds".
+      iMod "Hpreds".
+      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_mapstos&Hpreds)".
+      iDestruct (big_sepM_sep with "Hpreds") as "(Hdurables&%Hvalids_c)".
+      iDestruct (big_sepM_sep with "Hjrnl_mapstos")
+        as "(Hjrnl_mapstos&Htoks)".
+      iMod (
+        ghost_step_jrnl_atomically_ub'
+        with "Hspec_ctx [Hjrnl_mapstos] [] [$] Hjrnl_open Hj"
+      ) as "(%Hnot_stuck&Hj&Hjrnl_mapstos)".
+      2-3: eassumption.
+      1: admit.
+      {
+        destruct Hjrnl_maps_mt as [<- _].
+        rewrite !big_sepM_fmap //.
+      }
+      { destruct Hjrnl_maps_kinds as (->&_); eauto. }
+      iModIntro.
+      iFrame "∗ # %".
+      destruct Hjrnl_maps_mt as [<- _].
+      rewrite !big_sepM_fmap //.
+      iDestruct (big_sepM_sep with "[$Htoks $Hdurables]") as "Hpreds".
+      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_mapstos]") as "Hpreds".
+      iApply (big_sepM_mono with "Hpreds").
+      iIntros (a vobj Hacc) "[[Htok Hdurable] Hcrash_inv] !>".
+      iFrame.
+      iPureIntro.
+      apply Hvalids in Hacc.
+      rewrite /mapsto_valid in Hacc.
+      rewrite /mapsto_valid //.
+    }
+    iNamed "HR".
+
+    iModIntro.
+    iExists _, _, _, _.
+    iFrame "Hj".
+    iSplit.
+    {
+      iExists _.
+      iFrame "∗ # %".
+    }
+    by iFrame "# %".
   Admitted.
 
 
