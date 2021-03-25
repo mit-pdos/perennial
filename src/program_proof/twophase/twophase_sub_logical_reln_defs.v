@@ -1057,7 +1057,6 @@ Proof.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     iPoseProof (wp_TwoPhase__OverWrite' tph _ _ _ _ _ _ _ _ (a, o) (objBytes v) with "Hj") as "H".
-    1-4: admit. (* need to make sure that a and sz are valid *)
     iApply "H".
     iNext. iIntros "H". iExists _. iFrame.
     eauto.

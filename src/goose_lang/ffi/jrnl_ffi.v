@@ -130,6 +130,17 @@ Section jrnl.
     | objBytes o => 8 * (length o)
     end.
 
+  Lemma val_of_obj'_inj2 o1 o k:
+    val_of_obj' (objBytes o1) = val_of_obj' o →
+    objSz (objBytes o1) = bufSz k →
+    k ≠ KindBit →
+    o = objBytes o1.
+  Proof.
+    destruct o.
+    - rewrite /val_of_obj'; destruct o1 => //=.
+    - intros ?%val_of_obj'_inj; eauto. congruence.
+  Qed.
+
   (* The only operation that can be called outside an atomically block is OpenOp *)
   Inductive jrnl_ext_tys : @val jrnl_op -> (ty * ty) -> Prop :=
   | JrnlOpType :
@@ -590,7 +601,7 @@ Definition jrnl_sub_dom (σj1 σj2 : jrnl_map) : Prop :=
   wf_jrnl σj1 ∧ wf_jrnl σj2).
 
 Definition jrnl_sub_state (σj : jrnl_map) (s: sstate) : Prop :=
-  (∃ sj, s.(world) = Opened sj ∧ jrnlData σj ⊆ jrnlData sj ∧ jrnlKinds σj ⊆ jrnlKinds sj).
+  (∃ sj, s.(world) = Opened sj ∧ jrnlData σj ⊆ jrnlData sj ∧ jrnlKinds σj = jrnlKinds sj).
 
 Definition jrnl_upd (σj: jrnl_map) (s: sstate) : sstate :=
   set sworld (λ s, Opened (jrnlData σj ∪ (jrnlData $ get_jrnl s), jrnlKinds $ get_jrnl s)) s.
@@ -843,8 +854,8 @@ Proof.
     eapply lookup_weaken in Hlookup1; last eassumption.
     rewrite Hlookup1. econstructor; eauto. }
   { simpl in Hlookup2.
-    eapply lookup_weaken in Hlookup2; last eassumption.
-    rewrite Hlookup2. econstructor; eauto. }
+    rewrite -H2. rewrite Hlookup2; eauto.
+    econstructor; eauto. }
   { rewrite /check/ifThenElse. rewrite decide_True //=. }
 Qed.
 
@@ -903,7 +914,7 @@ Proof.
     eapply lookup_weaken in Hlookup1; last eassumption.
     rewrite Hlookup1. econstructor; eauto. }
   { simpl in Hlookup2.
-    eapply lookup_weaken in Hlookup2; last eassumption.
+    rewrite H2 in Hlookup2.
     rewrite Hlookup2. econstructor; eauto. }
   { eapply val_of_obj'_bytes. }
   { rewrite /check/ifThenElse.
@@ -987,7 +998,7 @@ Qed.
 Lemma jrnl_ctx_sub_state_valid' σj s :
   (∀ sj, (s.(world) : @ffi_state jrnl_model) ≠ Closed sj) →
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
-  jrnl_kinds_lb (jrnlKinds σj) -∗
+  jrnl_kinds (jrnlKinds σj) -∗
   jrnl_ctx s.(world) -∗
   ⌜ jrnl_sub_state σj s ⌝.
 Proof.
@@ -1003,9 +1014,8 @@ Proof.
       iDestruct (map_valid with "Hctx1 [$]") as %->; eauto.
     }
     { rewrite /=. destruct (jrnlData sj !! _); eauto. }
-  - iDestruct "Hkinds" as (σj' Hsub) "H".
-    iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom)".
-    iDestruct (own_valid_2 with "H Hctx2") as %Hval.
+  - iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom)".
+    iDestruct (own_valid_2 with "Hkinds Hctx2") as %Hval.
     apply to_agree_op_valid in Hval. iPureIntro. set_solver.
 Qed.
 
@@ -1026,7 +1036,7 @@ Qed.
 
 Lemma jrnl_ctx_sub_state_valid σj s :
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
-  jrnl_kinds_lb (jrnlKinds σj) -∗
+  jrnl_kinds (jrnlKinds σj) -∗
   jrnl_open -∗
   jrnl_ctx s.(world) -∗
   ⌜ jrnl_sub_state σj s ⌝.
@@ -1109,7 +1119,7 @@ Lemma jrnl_ctx_upd σj σjd' σjk s :
   dom (gset _) (jrnlData σj) = dom (gset _) σjd' →
   jrnl_open -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
-  jrnl_kinds_lb σjk -∗
+  jrnl_kinds σjk -∗
   jrnl_ctx s.(world) ==∗
   ([∗ map] a ↦ o ∈ (σjd'), jrnl_mapsto a 1 o) ∗
   jrnl_ctx (jrnl_upd (σjd', σjk) s).(world).
@@ -1155,10 +1165,9 @@ Proof.
     iDestruct "Hmaps" as "(Hmaps&Hkind)".
     iDestruct "Hkind" as (? Hconsistent) "Hkind".
     iMod (map_update _ _ o with  "[$] [$]") as "(Hctx&?)".
-    iDestruct "Hkinds" as (? Hsub) "H".
     iDestruct (own_valid_2 with "Hkind Hkinds'") as %Hval.
     apply to_agree_op_valid, leibniz_equiv in Hval. rewrite /= in Hval.
-    iDestruct (own_valid_2 with "Hkinds' H") as %Hval2.
+    iDestruct (own_valid_2 with "Hkinds' Hkinds") as %Hval2.
     apply to_agree_op_valid, leibniz_equiv in Hval2. rewrite /= in Hval2.
     subst.
     iFrame. simpl.
@@ -1168,7 +1177,6 @@ Proof.
     assert (size_consistent_and_aligned i o (jrnlKinds (get_jrnl s.(world)))).
     {
       eapply wf_jrnl_lookup_size_consistent_and_aligned; eauto.
-      eapply wf_jrnl_mono_kinds; eauto.
     }
     iModIntro; iSplit; auto.
     { iPureIntro. eapply wf_jrnl_extend in Hwf'; last eauto.
@@ -1242,7 +1250,7 @@ Lemma ghost_step_jrnl_atomically E j K {HCTX: LanguageCtx K} (l: sval) e σj (v:
   nclose sN ⊆ E →
   spec_ctx -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
-  jrnl_kinds_lb (jrnlKinds σj) -∗
+  jrnl_kinds (jrnlKinds σj) -∗
   jrnl_open -∗
   j ⤇ K (Atomically l e)
   -∗ |NC={E}=>
@@ -1275,7 +1283,7 @@ Lemma ghost_step_jrnl_atomically_crash E j K {HCTX: LanguageCtx K} (l: sval) e �
   spec_crash_ctx (jrnl_crash_ctx) -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
   ([∗ map] a ↦ _ ∈ (jrnlData σj), jrnl_crash_tok a) -∗
-  jrnl_kinds_lb (jrnlKinds σj) -∗
+  jrnl_kinds (jrnlKinds σj) -∗
   jrnl_open -∗
   j ⤇ K (Atomically l e)
   -∗ |C={E}_0=>
@@ -1329,7 +1337,7 @@ Lemma ghost_step_jrnl_atomically_ub' E j K {HCTX: LanguageCtx K} (l: sval) e1 σ
   nclose sN ⊆ E →
   spec_ctx -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
-  jrnl_kinds_lb (jrnlKinds σj) -∗
+  jrnl_kinds (jrnlKinds σj) -∗
   jrnl_dom σdom -∗
   jrnl_open -∗
   j ⤇ K (Atomically l e1)
@@ -1395,7 +1403,7 @@ Lemma ghost_step_jrnl_atomically_ub E j K {HCTX: LanguageCtx K} (l: sval) e1 σj
   nclose sN ⊆ E →
   spec_ctx -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
-  jrnl_kinds_lb (jrnlKinds σj) -∗
+  jrnl_kinds (jrnlKinds σj) -∗
   jrnl_dom σdom -∗
   jrnl_open -∗
   j ⤇ K (Atomically l e1)

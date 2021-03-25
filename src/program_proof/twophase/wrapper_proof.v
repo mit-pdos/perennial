@@ -72,7 +72,7 @@ Section proof.
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
-      "#Hjrnl_kinds_lb" ∷ jrnl_kinds_lb γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
       "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
       "#Htxn_cinv" ∷ txn_cinv Nbuftxn γ γ' ∗
       "%Haddrs_valid" ∷ ⌜set_Forall valid_addr objs_dom⌝.
@@ -86,7 +86,7 @@ Section proof.
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
-      "#Hjrnl_kinds_lb" ∷ jrnl_kinds_lb γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
       "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
       "%Halways_steps" ∷ ⌜always_steps e1 σj1 e2 σj2⌝ ∗
       "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
@@ -214,7 +214,7 @@ Section proof.
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
-      "#Hjrnl_kinds_lb" ∷ jrnl_kinds_lb γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
       "#Hjrnl_dom" ∷ jrnl_dom (dom _ mt)
     }}}
       Init #d @ k; ⊤
@@ -1050,7 +1050,7 @@ Section proof.
         "#Hspec_ctx" ∷ spec_ctx ∗
         "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
         "#Hjrnl_open" ∷ jrnl_open ∗
-        "#Hjrnl_kinds_lb" ∷ jrnl_kinds_lb γ.(buftxn_txn_names).(txn_kinds) ∗
+        "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
         "%Halways_steps" ∷ ⌜always_steps e0 σj1 (K e) σj2⌝ ∗
         "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
         "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝ ∗
@@ -1101,11 +1101,7 @@ Section proof.
             (ext := @spec_ext_op_field _)
             (ffi := (spec_ffi_model_field))
             (ffi_semantics := (spec_ext_semantics_field))
-            K}  e1 a ov k :
-    a ∈ objs_dom →
-    γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some k →
-    k ≠ KindBit →
-    objSz ov = bufSz k →
+            K}  e1 a ov :
     {{{
       is_twophase_started l γ γ' dinit objs_dom j K0
         e1
@@ -1118,14 +1114,31 @@ Section proof.
                             e1 (K #())
     }}}.
   Proof.
-    iIntros (Ha_in_dom Hk Hnot_bit Hov_len Φ) "Htwophase HΦ".
+    iIntros (Φ) "Htwophase HΦ".
     iMod (twophase_started_ub_det' with "[$]") as "Htwophase".
     { auto. }
     iNamed "Htwophase".
     iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
       [eassumption|eassumption|].
     rewrite /TwoPhase__OverWrite'.
-    apply obj_to_bufObj_exists in Hov_len as [bufObj [-> <-]].
+
+    destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
+    apply not_stuck'_OverWrite_inv in Hnotstuck as (σj&k&o&Hopen&Hlookup1&Hlookup2&Hhval&Hov_len&Hnot_bit);
+      last done.
+    eapply val_of_obj'_inj2 in Hhval; eauto.
+    assert (Ha_in_dom: a ∈ objs_dom).
+    { rewrite -Hdom. apply elem_of_dom. rewrite Hopen => //=. }
+    subst.
+    assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some k).
+    { destruct Hjrnl_maps_kinds as (_&<-).
+      destruct Hsub as (?&Hs_eq&?&?).
+      rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
+      eauto.
+    }
+
+    assert (∃ bufObj, objBytes o = bufObj_to_obj bufObj ∧ objBytes o = bufObj_to_obj bufObj ∧ objKind bufObj = k)
+    as (bufObj&Heq0&->&<-).
+    {apply obj_to_bufObj_exists in Hov_len as [bufObj [-> <-]]. eauto. }
     apply data_has_obj_exists_not_bit in Hnot_bit as Hdata.
     destruct Hdata as (data&a'&Hdata).
     erewrite val_of_obj_data_not_bit; [|eassumption|eassumption].
@@ -1209,8 +1222,10 @@ Section proof.
         rewrite /data_has_obj in Hdata. rewrite /bufObj_to_obj.
         destruct (objData (modified vobj)); try congruence; eauto.
       }
+      assert (o = data) as ->.
+      { rewrite Heq_bufObj_conv in Heq0. congruence. }
       rewrite Heq_bufObj_conv.
-      eapply (always_steps_OverWriteOp a (data) (objKind (modified vobj)) σj2); eauto.
+      efeed pose proof (always_steps_OverWriteOp a (data) (objKind (modified vobj)) σj2); eauto.
       { naive_solver. }
       { rewrite /jrnl_maps_have_mt in Hjrnl_maps_mt.
         destruct (Hjrnl_maps_mt) as (_&<-).
@@ -1218,23 +1233,6 @@ Section proof.
       }
       { rewrite /jrnl_maps_kinds_valid in Hjrnl_maps_kinds.
         rewrite -Hk. destruct Hjrnl_maps_kinds as (_&->). eauto. }
-      { split; last naive_solver.
-        destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
-        apply not_stuck'_OverWrite_inv in Hnotstuck as (σj&k&o&Hopen&Hlookup1&Hlookup2&Hhval&Hsize&Hnbit);
-          last done.
-        assert (objKind (modified vobj) = k)as ->.
-        { rewrite /jrnl_maps_kinds_valid in Hjrnl_maps_kinds.
-          destruct (Hjrnl_maps_kinds) as (_&Heq_kinds2).
-          rewrite -Heq_kinds2 in Hk.
-          rewrite /jrnl_sub_state in Hsub.
-          destruct Hsub as (σj'&Heq&Hdata_sub&Hkinds_sub).
-          assert (σj' = σj) as -> by congruence.
-          eapply lookup_weaken in Hk; last eassumption.
-          rewrite Hlookup2 in Hk. congruence.
-        }
-        rewrite Heq_bufObj_conv in Hhval.
-        eapply val_of_obj'_inj in Hhval. subst. congruence.
-      }
     - admit. (* need theorem for OverWriteOp *)
   Admitted.
 
