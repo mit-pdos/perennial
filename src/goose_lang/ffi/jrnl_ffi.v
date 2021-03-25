@@ -116,8 +116,8 @@ Section jrnl.
     o1 = o2.
   Proof.
     rewrite /=.
-    intros ?%val_of_list_inj.
-    apply fmap_inj in H; eauto.
+    intros Hval%val_of_list_inj.
+    apply fmap_inj in Hval; eauto.
     intros ??. inversion 1; eauto.
   Qed.
 
