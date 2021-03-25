@@ -107,7 +107,7 @@ Section proof.
       "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
       "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝.
 
-  Lemma length_bufObj_to_obj o :
+  Lemma objSz_bufObj_to_obj o :
     objSz (bufObj_to_obj o) = bufSz (objKind o).
   Proof.
     rewrite /bufObj_to_obj.
@@ -175,7 +175,7 @@ Section proof.
         rewrite Hγ.
         eexists _.
         split; first by reflexivity.
-        rewrite length_bufObj_to_obj //.
+        rewrite objSz_bufObj_to_obj //.
     - split.
       + intros a Hin.
         apply elem_of_dom in Hin.
@@ -198,7 +198,7 @@ Section proof.
         rewrite Hγ.
         eexists _.
         split; first by reflexivity.
-        rewrite length_bufObj_to_obj //.
+        rewrite objSz_bufObj_to_obj //.
   Qed.
 
   Theorem wpc_Init N (d: loc) γ dinit logm mt k :
@@ -972,7 +972,7 @@ Section proof.
           assumption.
         - eexists _.
           destruct Hjrnl_maps_kinds as [-> _].
-          rewrite Hvalid_γ length_bufObj_to_obj.
+          rewrite Hvalid_γ objSz_bufObj_to_obj.
           intuition.
       }
       apply always_steps_bind.
@@ -1070,7 +1070,7 @@ Section proof.
       )
       (
         "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
-        "%Hnot_stuck" ∷ ⌜∃ s g,
+        "%Hnotstuck" ∷ ⌜∃ s g,
           jrnl_sub_state σj2 s ∧
           dom (gset addr) (jrnlData (get_jrnl s.(world))) =
             objs_dom ∧ ¬ stuck' (K e) s g
@@ -1090,7 +1090,7 @@ Section proof.
       iMod (
         ghost_step_jrnl_atomically_ub'
         with "Hspec_ctx [Hjrnl_mapstos] [] [$] Hjrnl_open Hj"
-      ) as "(%Hnot_stuck&Hj&Hjrnl_mapstos)".
+      ) as "(%Hnotstuck&Hj&Hjrnl_mapstos)".
       2-3: eassumption.
       1: admit.
       {
@@ -1171,10 +1171,12 @@ Section proof.
     iNamed "Htwophase".
     iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
       [eassumption|eassumption|].
+    destruct Hwf_jrnl as [Hwf_jrnl1 Hwf_jrnl2].
     rewrite /TwoPhase__OverWrite'.
 
     destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
-    apply not_stuck'_OverWrite_inv in Hnotstuck as (σj&k&o&Hopen&Hlookup1&Hlookup2&Hhval&Hov_len&Hnot_bit);
+    apply not_stuck'_OverWrite_inv in Hnotstuck
+      as (σj&k&o&Hopen&Hlookup1&Hlookup2&Hhval&Hov_len&Hnot_bit);
       last done.
     eapply val_of_obj'_inj2 in Hhval; eauto.
     assert (Ha_in_dom: a ∈ objs_dom).
@@ -1187,9 +1189,9 @@ Section proof.
       eauto.
     }
 
-    assert (∃ bufObj, objBytes o = bufObj_to_obj bufObj ∧ objBytes o = bufObj_to_obj bufObj ∧ objKind bufObj = k)
-    as (bufObj&Heq0&->&<-).
-    {apply obj_to_bufObj_exists in Hov_len as [bufObj [-> <-]]. eauto. }
+    apply obj_to_bufObj_exists in Hov_len as [bufObj [Ho <-]].
+    rewrite Ho in Halways_steps.
+    rewrite Ho.
     apply data_has_obj_exists_not_bit in Hnot_bit as Hdata.
     destruct Hdata as (data&a'&Hdata).
     erewrite val_of_obj_data_not_bit; [|eassumption|eassumption].
@@ -1222,7 +1224,7 @@ Section proof.
       replace (int.nat (word.mul data_s.(Slice.sz) 8))
         with ((int.nat data_s.(Slice.sz)) * 8)%nat;
         last by (rewrite word.unsigned_mul; word).
-      rewrite -Hsz -length_bufObj_to_obj.
+      rewrite -Hsz -objSz_bufObj_to_obj.
       erewrite <- data_has_obj_not_bit.
       2-3: eassumption.
       rewrite /objSz.
@@ -1258,6 +1260,7 @@ Section proof.
     iPureIntro.
     split; last by intuition.
     subst σj1' σj2'.
+    apply data_has_obj_not_bit in Hdata; last by assumption.
     destruct (mt_changed !! a) as [vobj_old|] eqn:Hacc.
     - eapply always_steps_trans.
       {
@@ -1268,24 +1271,119 @@ Section proof.
         apply Halways_steps.
       }
       apply always_steps_bind.
-      assert (bufObj_to_obj (modified vobj) = objBytes data) as Heq_bufObj_conv.
+      efeed pose proof always_steps_OverWriteOp as Halways_steps'.
+      1: apply Hwf_jrnl2.
       {
-        rewrite /data_has_obj in Hdata. rewrite /bufObj_to_obj.
-        destruct (objData (modified vobj)); try congruence; eauto.
+        destruct Hjrnl_maps_mt as (_&<-).
+        rewrite !lookup_fmap.
+        erewrite Hacc.
+        eauto.
       }
-      assert (o = data) as ->.
-      { rewrite Heq_bufObj_conv in Heq0. congruence. }
-      rewrite Heq_bufObj_conv.
-      efeed pose proof (always_steps_OverWriteOp a (data) (objKind (modified vobj)) σj2); eauto.
-      { naive_solver. }
-      { rewrite /jrnl_maps_have_mt in Hjrnl_maps_mt.
-        destruct (Hjrnl_maps_mt) as (_&<-).
-        rewrite ?lookup_fmap Hacc //=. eauto.
+      {
+        destruct Hjrnl_maps_kinds as (_&->).
+        eauto.
       }
-      { rewrite /jrnl_maps_kinds_valid in Hjrnl_maps_kinds.
-        rewrite -Hk. destruct Hjrnl_maps_kinds as (_&->). eauto. }
-    - admit. (* need theorem for OverWriteOp *)
-  Admitted.
+      {
+        erewrite Hdata.
+        split; last by assumption.
+        apply objSz_bufObj_to_obj.
+      }
+      rewrite /updateData Hdata in Halways_steps'.
+      apply Halways_steps'.
+    - simpl in Hk.
+      eapply (
+        always_steps_extend _ _ _ _ _ (bufObj_to_obj (committed vobj))
+      ) in Halways_steps.
+      2: {
+        destruct Hjrnl_maps_mt as (_&<-).
+        rewrite !dom_fmap.
+        eapply not_elem_of_dom.
+        eassumption.
+      }
+      2: {
+        eexists _.
+        destruct Hjrnl_maps_kinds as (->&_).
+        split; first by eassumption.
+        split; first by apply objSz_bufObj_to_obj.
+        efeed pose proof Hvalids as Hvalid;
+          first by apply lookup_insert.
+        simpl in Hvalid.
+        destruct Hvalid as (_&Hvalid_off&_).
+        assumption.
+      }
+      eapply always_steps_trans; first by apply Halways_steps.
+      apply always_steps_bind.
+      remember (
+        <[a:=bufObj_to_obj (committed vobj)]> (jrnlData σj2), jrnlKinds σj2
+      ) as σj'.
+      efeed pose proof (always_steps_OverWriteOp a data (projT1 vobj) σj')
+        as Halways_steps'.
+      {
+        subst σj'.
+        split.
+        - intros a'' Hin.
+          simpl in Hin.
+          simpl.
+          destruct Hjrnl_maps_kinds as (_&->).
+          destruct Hjrnl_maps_mt' as (_&Hσj2'_mt).
+          apply dom_insert in Hin.
+          apply elem_of_union in Hin as [Ha''|Hin].
+          + apply elem_of_singleton_1 in Ha''.
+            subst a''.
+            eexists _.
+            split; first by eassumption.
+            apply map_Forall_insert_1_1 in Hvalids as (_&Hvalid_off&_).
+            assumption.
+          + destruct Hjrnl_maps_mt as (_&Hσj2_mt).
+            rewrite -Hσj2_mt in Hin.
+            apply dom_fmap in Hin.
+            apply dom_fmap in Hin.
+            apply elem_of_dom in Hin as [vobj'' Hin].
+            apply map_Forall_insert_1_2 in Hvalids; last by assumption.
+            apply Hvalids in Hin as (_&Hvalid_off&Hvalid_γ).
+            eauto.
+        - intros a'' o'' Hacc''.
+          simpl in Hacc''.
+          simpl.
+          destruct Hjrnl_maps_kinds as (_&->).
+          destruct (decide (a'' = a)) as [->|Ha''].
+          + rewrite lookup_insert in Hacc''.
+            inversion Hacc''.
+            subst o''.
+            eexists _.
+            split; first by eassumption.
+            apply objSz_bufObj_to_obj.
+          + rewrite lookup_insert_ne in Hacc''; last by trivial.
+            destruct Hjrnl_maps_mt as (_&Hσj2_mt).
+            rewrite -Hσj2_mt !lookup_fmap in Hacc''.
+            apply fmap_Some_1 in Hacc'' as [obj [Hobj ->]].
+            apply fmap_Some_1 in Hobj as [vobj' [Hvobj' ->]].
+            apply map_Forall_insert_1_2 in Hvalids; last by assumption.
+            apply Hvalids in Hvobj' as (_&_&Hvalid_γ).
+            rewrite Hvalid_γ.
+            eexists _.
+            split; first by reflexivity.
+            apply objSz_bufObj_to_obj.
+      }
+      {
+        rewrite Heqσj' /= lookup_insert.
+        eauto.
+      }
+      {
+        rewrite Heqσj' /=.
+        destruct Hjrnl_maps_kinds as (_&->).
+        assumption.
+      }
+      {
+        rewrite Hdata.
+        split; last by assumption.
+        apply objSz_bufObj_to_obj.
+      }
+      rewrite /updateData Hdata in Halways_steps'.
+      subst σj'.
+      rewrite /= insert_insert in Halways_steps'.
+      apply Halways_steps'.
+  Qed.
 
   Lemma twophase_started_step_puredet l γ γ' dinit objs_dom j K0 K
         `{Hctx: LanguageCtx'
