@@ -1204,12 +1204,13 @@ Section proof.
         apply Halways_steps.
       }
       apply always_steps_bind.
-      assert (bufObj_to_obj (modified vobj) = objBytes data) as ->.
+      assert (bufObj_to_obj (modified vobj) = objBytes data) as Heq_bufObj_conv.
       {
         rewrite /data_has_obj in Hdata. rewrite /bufObj_to_obj.
         destruct (objData (modified vobj)); try congruence; eauto.
       }
-      eapply (always_steps_OverWriteOp a (data) _ (objKind (modified vobj)) σj2); eauto.
+      rewrite Heq_bufObj_conv.
+      eapply (always_steps_OverWriteOp a (data) (objKind (modified vobj)) σj2); eauto.
       { naive_solver. }
       { rewrite /jrnl_maps_have_mt in Hjrnl_maps_mt.
         destruct (Hjrnl_maps_mt) as (_&<-).
@@ -1218,10 +1219,22 @@ Section proof.
       { rewrite /jrnl_maps_kinds_valid in Hjrnl_maps_kinds.
         rewrite -Hk. destruct Hjrnl_maps_kinds as (_&->). eauto. }
       { split; last naive_solver.
-        rewrite /data_has_obj in Hdata.
-        (* we need to argue that if this was the wrong size, it would have triggered UB, contradicting
-           Hnotstuck *)
-          admit. }
+        destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
+        apply not_stuck'_OverWrite_inv in Hnotstuck as (σj&k&o&Hopen&Hlookup1&Hlookup2&Hhval&Hsize&Hnbit);
+          last done.
+        assert (objKind (modified vobj) = k)as ->.
+        { rewrite /jrnl_maps_kinds_valid in Hjrnl_maps_kinds.
+          destruct (Hjrnl_maps_kinds) as (_&Heq_kinds2).
+          rewrite -Heq_kinds2 in Hk.
+          rewrite /jrnl_sub_state in Hsub.
+          destruct Hsub as (σj'&Heq&Hdata_sub&Hkinds_sub).
+          assert (σj' = σj) as -> by congruence.
+          eapply lookup_weaken in Hk; last eassumption.
+          rewrite Hlookup2 in Hk. congruence.
+        }
+        rewrite Heq_bufObj_conv in Hhval.
+        eapply val_of_obj'_inj in Hhval. subst. congruence.
+      }
     - admit. (* need theorem for OverWriteOp *)
   Admitted.
 

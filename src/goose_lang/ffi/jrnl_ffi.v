@@ -1,6 +1,7 @@
 From iris.algebra Require Import auth frac agree excl csum.
 From Perennial.algebra Require Import auth_map.
 From RecordUpdate Require Import RecordSet.
+Require Import Coq.Logic.Classical_Prop.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing spec_assert.
@@ -97,6 +98,28 @@ Section jrnl.
     | objBit b => #b
     | objBytes o => val_of_list ((λ u, LitV (LitByte u)) <$> o)
     end.
+
+  Lemma val_of_list_inj o1 o2:
+    val_of_list o1 = val_of_list o2 →
+    o1 = o2.
+  Proof.
+    revert o2.
+    induction o1 => o2.
+    - rewrite //=. destruct o2; try congruence.
+      inversion 1.
+    - rewrite //=. destruct o2; try inversion 1.
+      subst. naive_solver.
+  Qed.
+
+  Lemma val_of_obj'_inj o1 o2:
+    val_of_obj' (objBytes o1) = val_of_obj' (objBytes o2) →
+    o1 = o2.
+  Proof.
+    rewrite /=.
+    intros ?%val_of_list_inj.
+    apply fmap_inj in H; eauto.
+    intros ??. inversion 1; eauto.
+  Qed.
 
   Definition blkno := u64.
   Definition kind := bufDataKind.
@@ -847,7 +870,7 @@ Proof.
     * eapply Hwf. rewrite lookup_insert_ne in Hlookup'; eauto.
 Qed.
 
-Lemma always_steps_OverWriteOp a vs (sz: u64) k σj:
+Lemma always_steps_OverWriteOp a vs k σj:
   wf_jrnl σj →
   is_Some (jrnlData σj !! a)  →
   jrnlKinds σj !! (addrBlock a) = Some k →
@@ -1430,6 +1453,47 @@ Proof.
       set_solver.
     }
   }
+Qed.
+
+Lemma objSize_non_bit_inv o b:
+  objSz o = bufSz b ∧ b ≠ KindBit →
+  ∃ vs, o = objBytes vs.
+Proof.
+  destruct o.
+  - intros (Hsize&?). destruct b; try congruence; rewrite /objSz/bufSz in Hsize; lia.
+  - eauto.
+Qed.
+
+Lemma not_stuck'_OverWrite_inv K `{!LanguageCtx' K} a (ov : sval) s g:
+  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                        OverWriteOp (addr2val' a, ov)%V)) s g →
+  ∃ σj k o, world s = Opened σj ∧
+  is_Some (jrnlData σj !! a) ∧
+  jrnlKinds σj !! (addrBlock a) = Some k ∧
+  val_of_obj' (objBytes o) = ov ∧
+  objSz (objBytes o) = bufSz k ∧ k ≠ KindBit.
+Proof.
+  intros Hnstuck. eapply NNPP.
+  intros Hneg. apply Hnstuck.
+  apply stuck'_fill; eauto.
+  apply stuck_ExternalOp'; eauto.
+  intros ????? Hstep.
+  inversion Hstep; subst.
+  simpl in H1.
+  repeat (simpl in *; monad_inv).
+  destruct (s.(world)) eqn:Heq; rewrite Heq in H1.
+  { inversion H1. subst. monad_inv. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlData _ !! _) eqn:Heq2; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlKinds _ !! _) eqn:Heq3; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (decide (objSz o0 = bufSz b ∧ b ≠ KindBit)); last first.
+  { repeat (simpl in *; monad_inv). eauto. }
+  edestruct (objSize_non_bit_inv) as (vs&Heq_vs); eauto.
+  eapply Hneg. naive_solver.
 Qed.
 
 End spec.
