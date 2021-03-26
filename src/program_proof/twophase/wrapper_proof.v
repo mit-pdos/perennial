@@ -90,7 +90,8 @@ Section proof.
       "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
       "%Halways_steps" ∷ ⌜always_steps e1 σj1 e2 σj2⌝ ∗
       "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
-      "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝.
+      "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝ ∗
+      "%HLCtxt"∷ ⌜ LanguageCtx K ⌝.
 
   Definition is_twophase_releasable l γ γ' (objs_dom: gset addr) : iProp Σ :=
     ∃ locks_held mt_changed σj1 σj2,
@@ -347,7 +348,7 @@ Section proof.
     assumption.
   Qed.
 
-  Theorem wp_TwoPhase__Begin' N prel γ γ' dinit objs_dom j K (ls: sval) e1 :
+  Theorem wp_TwoPhase__Begin' N prel γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} (ls: sval) e1 :
     {{{
       "Htwophase" ∷ is_twophase_pre prel γ γ' dinit objs_dom ∗
       "Hatom" ∷ j ⤇ K (Atomically ls e1)
@@ -376,7 +377,7 @@ Section proof.
     rewrite /wf_jrnl /offsets_aligned dom_empty_L //.
   Qed.
 
-  Theorem wp_TwoPhase__CommitNoRelease' l γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} e1 v :
+  Theorem wp_TwoPhase__CommitNoRelease' l γ γ' dinit objs_dom j K e1 v :
     {{{ is_twophase_started l γ γ' dinit objs_dom j K e1 (SOMEV v) }}}
       TwoPhase__CommitNoRelease #l
     {{{ (ok:bool), RET #ok;
@@ -595,7 +596,7 @@ Section proof.
     iFrame "#".
   Qed.
 
-  Theorem twophase_started_abort l γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} e1 e2 :
+  Theorem twophase_started_abort l γ γ' dinit objs_dom j K e1 e2 :
     is_twophase_started l γ γ' dinit objs_dom j K e1 e2 -∗
     |NC={⊤}=> is_twophase_releasable l γ γ' objs_dom ∗
               j ⤇ K NONEV.
@@ -923,6 +924,7 @@ Section proof.
         "%Halways_steps" ∷ ⌜always_steps e0 σj1 (K e) σj2⌝ ∗
         "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
         "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝ ∗
+        "%HLCtxt"∷ ⌜ LanguageCtx K0 ⌝ ∗
         "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
         "%Hnotstuck" ∷ ⌜ (∃ s g, jrnl_sub_state σj2 s ∧
          dom (gset _) (jrnlData (get_jrnl s.(world))) = objs_dom ∧
@@ -960,8 +962,7 @@ Section proof.
         ghost_step_jrnl_atomically_ub'
         with "Hspec_ctx [Hjrnl_mapstos] [] [$] Hjrnl_open Hj"
       ) as "(%Hnotstuck&Hj&Hjrnl_mapstos)".
-      2-3: eassumption.
-      1: admit.
+      1-2: eassumption.
       {
         destruct Hjrnl_maps_mt as [<- _].
         rewrite !big_sepM_fmap //.
@@ -992,7 +993,7 @@ Section proof.
       iFrame "∗ # %".
     }
     by iFrame "# %".
-  Admitted.
+  Qed.
 
 
   Lemma twophase_started_ub_det l γ γ' dinit objs_dom E j K0 K
@@ -1089,7 +1090,7 @@ Section proof.
       iExists _, _, _, _.
       iFrame "∗ #".
       iFrame (Hjrnl_maps_kinds Hjrnl_maps_mt).
-      iPureIntro.
+      iPureIntro; split; last assumption.
       eapply always_steps_trans; first by eapply Halways_steps.
       apply always_steps_bind.
       eapply always_steps_ReadBufOp; first by intuition.
