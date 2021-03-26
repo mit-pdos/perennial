@@ -1021,7 +1021,6 @@ Proof.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     iPoseProof (wp_TwoPhase__ReadBuf' tph _ _ _ _ _ _ _ _ (a, o) x with "Hj") as "H".
-    1-4: admit. (* need to make sure that a and sz are valid *)
     iApply "H".
     iNext. iIntros (v) "H". iExists _. iFrame.
     iApply atomically_listT_interp_refl_obj.
@@ -1082,7 +1081,7 @@ Proof.
     iRight. iExists _, _.
     iSplitR ""; first by eauto. iApply (IHHtyping with "[$]").
     eauto.
-Admitted.
+Qed.
 
 End reln_defs.
 End reln.

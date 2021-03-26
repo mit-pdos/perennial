@@ -1504,4 +1504,34 @@ Proof.
   eapply Hneg. naive_solver.
 Qed.
 
+Lemma not_stuck'_ReadBuf_inv K `{!LanguageCtx' K} a (sz : u64) s g:
+  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                        ReadBufOp (addr2val' a, #sz)%V)) s g →
+  ∃ σj k, world s = Opened σj ∧
+  is_Some (jrnlData σj !! a) ∧
+  jrnlKinds σj !! (addrBlock a) = Some k ∧
+  bufSz k = int.nat sz ∧ k ≠ KindBit.
+Proof.
+  intros Hnstuck. eapply NNPP.
+  intros Hneg. apply Hnstuck.
+  apply stuck'_fill; eauto.
+  apply stuck_ExternalOp'; eauto.
+  intros ????? Hstep.
+  inversion Hstep; subst.
+  simpl in H1.
+  repeat (simpl in *; monad_inv).
+  destruct (s.(world)) eqn:Heq; rewrite Heq in H1.
+  { inversion H1. subst. monad_inv. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlData _ !! _) eqn:Heq2; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlKinds _ !! _) eqn:Heq3; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (decide (b ≠ KindBit ∧ bufSz b = int.nat sz)); last first.
+  { repeat (simpl in *; monad_inv). eauto. }
+  eapply Hneg. naive_solver.
+Qed.
+
 End spec.
