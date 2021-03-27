@@ -207,6 +207,22 @@ Section map.
   Implicit Types m : gmap K A.
   Implicit Types Φ Ψ : K → A → PROP.
 
+  Lemma big_sepS_exists_sepM Φ (s : gset K) :
+    ([∗ set] k ∈ s, ∃ v, Φ k v) -∗ ∃ m, ⌜ dom (gset _) m = s ⌝ ∗ ([∗ map] k ↦ v ∈ m, Φ k v).
+  Proof using BiAffine0.
+    iIntros "Hs".
+    iInduction s as [| k s'] "IH" using set_ind_L.
+    - iExists ∅. rewrite dom_empty_L; eauto.
+    - rewrite big_sepS_union; last by set_solver.
+      iDestruct "Hs" as "(Hsingle&Hs)".
+      iDestruct ("IH" with "Hs") as (m Hdom) "H".
+      rewrite big_sepS_singleton. iDestruct "Hsingle" as (v) "HΦ".
+      iExists (<[k:=v]> m). iSplit.
+      * rewrite dom_insert_L. iPureIntro. set_solver.
+      * rewrite big_sepM_insert; first by iFrame.
+        apply not_elem_of_dom. set_solver.
+  Qed.
+
   Lemma big_sepM_mono_with_inv' P Φ Ψ m :
     (∀ k x, m !! k = Some x → P ∗ Φ k x ⊢ P ∗ Ψ k x) →
     P ∗ ([∗ map] k ↦ x ∈ m, Φ k x) ⊢ P ∗ [∗ map] k ↦ x ∈ m, Ψ k x.

@@ -204,6 +204,12 @@ Section proof.
         rewrite objSz_bufObj_to_obj //.
   Qed.
 
+  Global Instance log_heap_async_inhabited:
+    Inhabited (log_heap.async (gmap addr object)).
+  Proof.
+    econstructor. refine (log_heap.Build_async ∅ []).
+  Qed.
+
   Theorem wpc_Init N (d: loc) γ dinit logm mt :
     N ## invN →
     N ## invariant.walN →
@@ -225,7 +231,7 @@ Section proof.
       γ' (l: loc), RET #l;
       "Htwophase" ∷ is_twophase_pre l γ γ' dinit (dom (gset addr) mt)
     }}}
-    {{{ ∃ γ' logm' mt',
+    {{{ ∃ γ' logm' mt', ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
       is_txn_durable γ' dinit logm' ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
         "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
@@ -238,7 +244,7 @@ Section proof.
     wpc_call.
     {
       iExists _, _, mt.
-      iFrame.
+      by iFrame.
     }
     iApply wpc_cfupd.
     wpc_apply (wpc_MkTxn Nbuftxn with "Htxn_durable").
@@ -249,35 +255,19 @@ Section proof.
       iModIntro.
       iIntros "H". iDestruct "H" as (γ' logm') "(Hdur&Hcase)".
       iDestruct "Hcase" as "[%|Hcinv]".
-      { subst. iModIntro. iApply "HΦ". iExists _, _, mt. iFrame. }
+      { subst. iModIntro. iApply "HΦ". iExists _, _, mt. by iFrame. }
       iDestruct (big_sepM_sep with "Hmapstos") as "(Hm1&Hm2)".
       rewrite /named.
       iMod (exchange_durable_mapsto with "[$Hcinv Hm1]") as "Hm1".
       { iApply (big_sepM_mono with "Hm1"). iIntros (???) "H".
         iDestruct "H" as "(?&?)". iFrame. }
       iModIntro. iApply "HΦ". iExists _, _, mt. iFrame.
+      iSplit; first eauto.
       iApply big_sepM_sep. iFrame.
     }
     iModIntro.
     iIntros (? txnl) "
       (#Histxn&#Histxn_system&Htxn_cancel&#Htxn_cinv)".
-    (*
-    iCache with "HΦ Htxn_cancel Hmapstos".
-    {
-      iDestruct "HΦ" as "[HΦ _]".
-      iModIntro.
-      iMod "Htxn_cancel"; first by lia.
-      iDestruct (big_sepM_sep with "Hmapstos") as "(Hm1&Hm2)".
-      rewrite /named.
-      iMod (exchange_durable_mapsto with "[Hm1]") as "Hm1".
-      { iFrame "Htxn_cinv %". iApply (big_sepM_mono with "Hm1"). iIntros (???) "H".
-        iDestruct "H" as "(?&?)". iFrame. }
-      iIntros "HC". iDestruct "Htxn_cancel" as ">Htxn_cancel".
-      iDestruct "Htxn_cancel" as (?) "Htxn_cancel".
-      iModIntro. iApply "HΦ". iExists _, _. iFrame "Htxn_cancel".
-      iApply big_sepM_sep. iFrame.
-    }
-     *)
     iApply ncfupd_wpc.
     iSplit.
     {
@@ -292,6 +282,7 @@ Section proof.
       iIntros "HC". iDestruct "Htxn_cancel" as ">Htxn_cancel".
       iDestruct "Htxn_cancel" as (?) "Htxn_cancel".
       iModIntro. iApply "HΦ". iExists _, _, mt. iFrame "Htxn_cancel".
+      iSplit; first eauto.
       iApply big_sepM_sep. iFrame.
     }
     iMod (twophase_init_locks with "Histxn_system Htxn_cinv Hmapstos") as "(Hlinvs&Hcrash)".
@@ -314,15 +305,13 @@ Section proof.
       iMod "Hcrash".
       eauto.
       iIntros "#HC".
-      Set Nested Proofs Allowed.
-      Global Instance log_heap_async_inhabited:
-        Inhabited (log_heap.async (gmap addr object)).
-      { econstructor. refine (log_heap.Build_async ∅ []). }
-      Qed.
       iDestruct "Htxn_cancel" as (?) ">Htxn_cancel".
       iModIntro.
-      iApply "HΦ". iExists _, _. iFrame "Htxn_cancel".
-      admit.
+      iApply "HΦ".
+      iDestruct (big_sepM_dom with "Hcrash") as "H".
+      iDestruct (big_sepS_exists_sepM with "H") as (mt' Hdom) "H".
+      iExists _, _, mt'. iFrame "Htxn_cancel".
+      iFrame. eauto.
     }
     wpc_frame.
     wp_apply (
@@ -354,7 +343,7 @@ Section proof.
     apply Hvalids in Hacc.
     destruct Hacc as (Hvalid&_&_).
     assumption.
-  Admitted.
+  Qed.
 
   Lemma map_Forall_exists {A B} `{Countable K} (m: gmap K A) P :
     map_Forall (λ a x, ∃ y, P a x y) m →
