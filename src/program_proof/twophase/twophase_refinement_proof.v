@@ -48,25 +48,50 @@ Proof.
     admit.
 Admitted.
 
+Lemma fmap_unit_jrnl_dom_equal (jd jd': gmap addr_proof.addr obj) :
+  dom (gset _) jd = dom (gset _) jd' →
+  (λ _, ()) <$> jd = (λ _, ()) <$> jd'.
+Proof.
+  intros Hdom.
+  apply map_eq => i.
+  destruct (decide (i ∈ dom (gset (u64 * u64)) jd)) as [Hin|Hnin].
+  { assert (Hin': i ∈ dom (gset (u64 * u64)) jd').
+    { rewrite -Hdom; eauto. }
+    rewrite ?lookup_fmap.
+    apply elem_of_dom in Hin as (?&->).
+    apply elem_of_dom in Hin' as (?&->).
+    rewrite //=.
+  }
+  { assert (Hnin': ¬ i ∈ dom (gset (u64 * u64)) jd').
+    { rewrite -Hdom; eauto. }
+    rewrite ?lookup_fmap.
+    apply not_elem_of_dom in Hnin as ->.
+    apply not_elem_of_dom in Hnin' as ->.
+    rewrite //=.
+  }
+Qed.
+
 Lemma jrnl_crash_inv_obligation:
   @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model.
 Proof.
   rewrite /sty_crash_inv_obligation//=.
   iIntros (? hG hRG hJrnl e Φ) "H Hspec #Hspec_crash_ctx Hwand".
   iDestruct "H" as (????) "(Hcrash_cond&Hauth&Htok&Hclosed_frag)".
+  iAssert (jrnl_dom (dom _ mt)) with "[Hcrash_cond]" as "#Hdom".
+  { iDestruct "Hcrash_cond" as "(H1&$&H2)". }
   rewrite /twophase_init/twophase_inv.
   iMod (na_crash_inv_alloc (pred LVL_INIT) _
-                           (∃ γ dinit logm mt', ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
+                           (∃ γ dinit logm mt',
                                   twophase_crash_cond_full γ dinit logm mt')%I
-                           (∃ γ dinit logm mt', ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
+                           (∃ γ dinit logm mt',
                                   twophase_crash_cond_full γ dinit logm mt')%I
           with "[Hcrash_cond] []") as "(Hna_crash_inv&Hcancel)".
-  { iNext. iExists _, _, _, _. iSplit; last by iExact "Hcrash_cond". eauto. }
+  { iNext. iExists _, _, _, _. iExact "Hcrash_cond". }
   { iModIntro. iIntros "H !>". iExact "H". }
   iMod (ghost_var_alloc (0, id)) as (γghost) "Hghost".
   iMod (inv_alloc twophaseInitN _ (twophase_inv_inner γghost) with
             "[Hclosed_frag Hna_crash_inv Hghost]") as "#Hinv".
-  { iNext. iLeft. iExists _. iFrame. }
+  { iNext. iLeft. iFrame. }
   iModIntro. iSplitL "".
   { iExists _. iFrame "Hinv Hspec_crash_ctx". }
   { iSpecialize ("Hwand" with "[]").
@@ -76,39 +101,25 @@ Proof.
     { iSplit; first eauto.
       iModIntro. iIntros. iMod "Hcancel" as ">Hcancel".
       iIntros "_ !>". iNamed "Hcancel".
-      iDestruct "Hcancel" as (Hdom) "Hcancel".
+      iDestruct "Hcancel" as "Hcancel".
+      iRename "Hdom" into "Hdom'".
       iNamed "Hcancel".
+      iDestruct "Hdom" as "#Hdom".
+      iDestruct (jrnl_dom_agree with "[$Hdom] [$Hdom']") as %Hdom.
       rewrite /twophase_crash_cond.
       rewrite /twophase_crash_tok.
       rewrite /jrnl_mapsto_own.
       iEval (setoid_rewrite sep_assoc) in "Hmapstos".
       iDestruct (big_sepM_sep with "Hmapstos") as "(H1&H2)".
       iSplitL "H1 Htxn_durable".
-      { iExists _, _, _, _. iFrame. }
+      { iExists _, _, _, _. iFrame. eauto. }
       iFrame.
       iExists ((bufObj_to_obj <$> _, ∅)).
       iSplitL "H2".
       { iApply big_sepM_fmap. iExact "H2". }
       rewrite /=.
-      assert (((λ _ : obj, ()) <$> (bufObj_to_obj <$> mt)) =
-              ((λ _ : obj, ()) <$> (bufObj_to_obj <$> mt'))) as ->.
-      { apply map_eq => i.
-        destruct (decide (i ∈ dom (gset (u64 * u64)) mt)) as [Hin|Hnin].
-        { assert (Hin': i ∈ dom (gset (u64 * u64)) mt').
-          { rewrite Hdom; eauto. }
-          rewrite ?lookup_fmap.
-          apply elem_of_dom in Hin as (?&->).
-          apply elem_of_dom in Hin' as (?&->).
-          rewrite //=.
-        }
-        { assert (Hnin': ¬ i ∈ dom (gset (u64 * u64)) mt').
-          { rewrite Hdom; eauto. }
-          rewrite ?lookup_fmap.
-          apply not_elem_of_dom in Hnin as ->.
-          apply not_elem_of_dom in Hnin' as ->.
-          rewrite //=.
-        }
-      }
+      erewrite (fmap_unit_jrnl_dom_equal (bufObj_to_obj <$> mt) (bufObj_to_obj <$> mt')); last first.
+      { rewrite !dom_fmap_L //=. }
       eauto.
     }
   }
@@ -149,7 +160,9 @@ Proof.
   rewrite /twophase_crash_cond.
   rewrite /twophase_update.
   iDestruct "Hcrash_cond" as (????) "H".
+  iRename "Hdom" into "Hdom'".
   iNamed "H".
+  iDestruct "Hdom" as "#Hdom".
   iExists γ, dinit, logm, mt. rewrite /twophase_crash_cond_full.
   rewrite -sep_assoc.
   iSplitL "Htxn_durable".
@@ -162,22 +175,38 @@ Proof.
     rewrite /post_crash. iApply ("H" $! _ _ hG').
     eauto.
   }
-  iSplitL "Hmapstos Hcrash_toks".
-  {
-  iApply (big_sepM_mono with "Hmapstos").
-  { iIntros (???) "($&Hjrnl)".
-    rewrite /jrnl_mapsto_own.
-    iNamed "Hjrnl".
-    iNamed "Hjrnl_mapsto".
-    rewrite /jrnlG0//=.
-    destruct Heq as (Heq_data&Heq_kinds&Hdom&Heq_data_name&Heq_kinds_name&_).
+  iAssert (⌜ dom (gset _) mt = dom (gset _) (jrnlData s)⌝)%I with "[]" as %Hdomeq.
+  { rewrite /jrnl_dom.
+    destruct Heq as (Heq_data&Heq_kinds&Heq_dom&Heq_data_name&Heq_kinds_name&Heq_dom_name).
     rewrite /jrnl_mapsto/jrnl_kinds.
-    rewrite Heq_data Heq_data_name Heq_kinds Heq_kinds_name.
-    iFrame.
-    rewrite /jrnl_crash_tok.
-    admit.
+    rewrite Heq_dom Heq_dom_name.
+    iDestruct (jrnl_dom_agree with "Hdom Hdom'") as %Hdom; eauto.
   }
-Admitted.
+  rewrite Hdomeq. iFrame "Hdom'".
+  iDestruct (big_sepM_dom with "Hcrash_toks") as "Hcrash_toks".
+  rewrite -Hdomeq.
+  iDestruct (big_sepM_dom with "Hcrash_toks") as "Hcrash_toks".
+  iCombine "Hmapstos Hcrash_toks" as "Hmapstos".
+  rewrite -big_sepM_sep.
+  iSplitL "Hmapstos".
+  {
+    iApply (big_sepM_mono with "Hmapstos").
+    { iIntros (???) "(($&Hjrnl)&Htok)".
+      rewrite /jrnl_mapsto_own.
+      iNamed "Hjrnl".
+      iNamed "Hjrnl_mapsto".
+      rewrite /jrnlG0//=.
+      destruct Heq as (Heq_data&Heq_kinds&Hdom&Heq_data_name&Heq_kinds_name&_).
+      rewrite /jrnl_mapsto/jrnl_kinds.
+      rewrite Heq_data Heq_data_name Heq_kinds Heq_kinds_name.
+      iFrame.
+    }
+  }
+  iExactEq "Hcrash_ctx".
+  f_equal.
+  eapply fmap_unit_jrnl_dom_equal; eauto => //=.
+  rewrite dom_fmap_L //=.
+Qed.
 
 
 Lemma jrnl_inv_twophase_pre {Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}

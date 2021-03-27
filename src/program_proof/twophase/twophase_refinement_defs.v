@@ -57,6 +57,7 @@ Definition LVL_OPS : nat := 100.
 Definition twophase_crash_cond_full
            {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
   := ("Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
+     "Hdom" ∷ jrnl_dom (dom _ mt) ∗
      "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
      "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj))%I.
@@ -64,6 +65,7 @@ Definition twophase_crash_cond_full
 Definition twophase_crash_cond_partial
            {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
   := ("Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
+     "Hdom" ∷ jrnl_dom (dom _ mt) ∗
      "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
      "Hjrnl_mapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj obj)))%I.
@@ -73,14 +75,14 @@ Definition twophase_crash_cond
   := ∃ γ dinit logm mt, twophase_crash_cond_partial γ dinit logm mt.
 
 Definition twophase_na_crash_inv
-           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} objs_dom : iProp Σ
-  := na_crash_inv (LVL_INIT) (∃ γ dinit logm mt', ⌜ dom (gset _) mt' = objs_dom ⌝ ∗
+           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
+  := na_crash_inv (LVL_INIT) (∃ γ dinit logm mt',
                                   twophase_crash_cond_full γ dinit logm mt')%I
-                             (∃ γ dinit logm mt', ⌜ dom (gset _) mt' = objs_dom ⌝ ∗
+                             (∃ γ dinit logm mt',
                                   twophase_crash_cond_full γ dinit logm mt')%I.
 
 Definition twophase_inv_inner {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} γ : iProp Σ
-  := (∃ d, twophase_na_crash_inv d ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨
+  := (twophase_na_crash_inv ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨
      (∃ j K, ghost_var γ (1/2)%Qp (j, K) ∗
              j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #())) ∨
      (jrnl_open).
