@@ -724,6 +724,17 @@ Section goose_lang.
     iModIntro. eauto.
   Qed.
 
+  Lemma exchange_durable_mapsto1 γ γ' k a v :
+    ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
+     "Hm" ∷ durable_mapsto γ a v) -∗
+    |C={⊤}_S k => durable_mapsto_own γ' a v.
+  Proof.
+    iIntros "H".
+    iMod (exchange_durable_mapsto γ γ' {[ a := v ]} k with "[-]").
+    { iNamed "H". iFrame "Htxn_cinv". rewrite big_sepM_singleton. eauto. }
+    iModIntro. rewrite big_sepM_singleton. eauto.
+  Qed.
+
   Lemma exchange_mapsto_commit γ γ' m0 m txn_id k :
     dom (gset _) m0 ⊆ dom (gset _) m →
     ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
