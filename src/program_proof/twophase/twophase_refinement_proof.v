@@ -2,6 +2,7 @@ From Perennial.goose_lang.lib Require Import encoding crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import twophase.typed_translate twophase.wrapper_proof twophase.twophase_refinement_defs twophase.twophase_sub_logical_reln_defs.
+From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert metatheory.
 From Perennial.base_logic Require Import ghost_var.
@@ -51,16 +52,98 @@ Lemma jrnl_crash_inv_obligation:
   @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model.
 Proof.
   rewrite /sty_crash_inv_obligation//=.
-  iIntros (? hG hRG hJrnl e Φ) "Hinit Hspec Hwand".
+  iIntros (? hG hRG hJrnl e Φ) "(Hcrash_cond&Hcrash_tok&Hclosed_frag) Hspec Hwand".
   rewrite /twophase_init/twophase_inv.
-Admitted.
+  iMod (na_crash_inv_alloc (pred LVL_INIT) _ (twophase_crash_cond) (twophase_crash_cond)
+          with "[Hcrash_cond] []") as "(Hna_crash_inv&Hcancel)".
+  { iNext. iExact "Hcrash_cond". }
+  { iModIntro. iIntros "H !>". iExact "H". }
+  iMod (ghost_var_alloc (0, id)) as (γ) "Hghost".
+  iMod (inv_alloc twophaseInitN _ (twophase_inv_inner γ) with
+            "[Hclosed_frag Hna_crash_inv Hghost]") as "#Hinv".
+  { iNext. iLeft. iFrame. }
+  iModIntro. iSplitL "".
+  { iExists _. iFrame "Hinv". }
+  { iSpecialize ("Hwand" with "[]").
+    { iExists _; eauto. }
+    iApply (wpc_strong_mono with "Hwand"); auto.
+    { rewrite /LVL_OPS/LVL_INIT. lia. }
+    { iSplit; first eauto.
+      iModIntro. iIntros. iMod "Hcancel" as ">Hcancel".
+      iIntros "_ !>". iFrame. }
+  }
+Qed.
 
 Lemma jrnl_crash_obligation:
   @sty_crash_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model.
 Proof.
   rewrite /sty_crash_obligation//=.
   iIntros (? hG hRG hJrnl) "Hinv Hcrash_cond".
+  iModIntro. iNext.
+  iIntros (hG'). iModIntro.
+  iIntros (σs) "H". iDestruct "H" as (??) "(_&H)".
+  iDestruct "H" as %[Heq1 Heq2].
+  iIntros "Hctx".
+  iExists
+    (RecordSet.set trace add_crash
+       (RecordSet.set world (λ w : @ffi_state jrnl_model, match w with
+                                                | Closed s => Closed s
+                                                | Opened s => Closed s
+                                              end : @ffi_state jrnl_model)
+          (RecordSet.set heap (λ _ : gmap loc (nonAtomic val), ∅) σs))).
+  unshelve (iExists _).
+  { econstructor.
+    { reflexivity. }
+    rewrite //=. repeat econstructor. destruct σs.(world) => //=. }
+  iFrame "Hctx".
+  iIntros (hRG' Heq) "Hrestart". rewrite //=.
+  assert (∃ s, σs.(world) = Closed s ∨ σs.(world) = Opened s) as (s&Hcase).
+  { destruct σs.(world); eauto. }
+  iAssert (jrnl_restart _ (Closed s))%I with "[Hrestart]" as "Hrestart".
+  { destruct Hcase as [Hcase|Hcase]; rewrite Hcase; eauto. }
+  rewrite //=.
+  rewrite /jrnl_state_restart.
+  iDestruct "Hrestart" as "(Hclosed&Hcrash_toks&#Hkinds&#Hdom&Hfull)".
+  iModIntro. iExists tt.
+  rewrite /twophase_init.  iFrame "Hfull Hclosed".
+  rewrite /twophase_crash_cond.
+  rewrite /twophase_update.
+  assert (hRG
+              .(@refinement_spec_ffiG jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics
+                  jrnl_spec_ffi_interp Σ).(@jrnlG_crash_toks_name Σ) =
+              hRG'
+              .(@refinement_spec_ffiG jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics
+                  jrnl_spec_ffi_interp Σ).(@jrnlG_crash_toks_name Σ)).
+  { admit. }
+  iClear "Hcrash_toks".
+  iDestruct "Hcrash_cond" as (????) "H".
+  iNamed "H".
+  iExists γ, dinit, logm, mt. rewrite /twophase_crash_cond_inner.
+  iSplitL "Htxn_durable".
+  {
+    rewrite /sep_buftxn_recovery_proof.is_txn_durable.
+    iNamed "Htxn_durable". iFrame "Hlogm Hasync_ctx".
+    specialize (@recovery_proof.is_txn_durable_stable) => Hcrash.
+    rewrite /IntoCrash in Hcrash.
+    iPoseProof (Hcrash _ _ hG _ with "Hlower_durable") as "H".
+    rewrite /post_crash. iApply ("H" $! _ _ hG').
+    eauto.
+  }
+  iApply (big_sepM_mono with "Hmapstos").
+  { iIntros (???) "($&Hjrnl)".
+    rewrite /jrnl_mapsto_own.
+    iNamed "Hjrnl".
+    iNamed "Hjrnl_mapsto".
+    rewrite /jrnlG0//=.
+    destruct Heq as (Heq_data&Heq_kinds&Hdom&Heq_data_name&Heq_kinds_name&_).
+    rewrite /jrnl_mapsto/jrnl_kinds.
+    rewrite Heq_data Heq_data_name Heq_kinds Heq_kinds_name.
+    iFrame.
+    rewrite /jrnl_crash_tok.
+    admit.
+  }
 Admitted.
+
 
 Lemma jrnl_inv_twophase_pre {Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}
       {hJrnl : twophaseG Σ} vs v:

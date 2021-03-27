@@ -70,9 +70,8 @@ Definition twophase_na_crash_inv
   := na_crash_inv (LVL_INIT) (twophase_crash_cond) (twophase_crash_cond).
 
 Definition twophase_inv_inner {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} γ : iProp Σ
-  := (twophase_na_crash_inv ∗ jrnl_closed_auth ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨
-     (∃ j K, jrnl_closed_auth ∗
-             ghost_var γ (1/2)%Qp (j, K) ∗
+  := (twophase_na_crash_inv ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨
+     (∃ j K, ghost_var γ (1/2)%Qp (j, K) ∗
              j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #())) ∨
      (jrnl_open).
 
@@ -81,11 +80,11 @@ Definition twophaseInitN := nroot.@"init".
 Definition twophase_inv {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := ∃ γ, inv twophaseInitN (twophase_inv_inner γ).
 
-Definition twophase_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
-  := twophase_crash_cond.
-
 Definition twophase_crash_tok {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} : iProp Σ
   := jrnl_full_crash_tok.
+
+Definition twophase_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
+  := twophase_crash_cond ∗ twophase_crash_tok ∗ jrnl_closed_frag.
 
 Definition twophaseN : coPset := (∅ : coPset).
 
