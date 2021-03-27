@@ -298,6 +298,7 @@ Definition sty_crash_inv_obligation :=
      e (Φ: ival → iProp Σ),
     ⊢ sty_init hS -∗
     spec_ctx -∗
+    spec_crash_ctx (sty_crash_tok) -∗
     (sty_inv hS -∗ (WPC e @ sty_lvl_ops; ⊤ {{ Φ }} {{ True%I }})) -∗
     |={⊤}=> sty_inv hS ∗
     WPC e @ sty_lvl_init; ⊤ {{ Φ }} {{ sty_crash_cond hS ∗ sty_crash_tok }}).

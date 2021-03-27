@@ -271,8 +271,8 @@ Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_fie
    where it has to be shown to hold: from an initial state, and from post-crash
    (assuming Φc on the previous generation) *)
 
-Definition wpc_obligation k E e es Φ Φc (hG: heapG Σ) (hRG: refinement_heapG Σ) : iProp Σ :=
-     (O ⤇ es -∗ spec_ctx -∗ trace_ctx -∗ WPC e @ NotStuck; k; E {{ Φ hG hRG }} {{ Φc hG hRG }})%I.
+Definition wpc_obligation k E e es Φ Φc (hG: heapG Σ) (hRG: refinement_heapG Σ) P : iProp Σ :=
+     (O ⤇ es -∗ spec_ctx -∗ spec_crash_ctx P  -∗ trace_ctx -∗ WPC e @ NotStuck; k; E {{ Φ hG hRG }} {{ Φc hG hRG }})%I.
 
 Implicit Types initP: @state ext ffi → @state (spec_ext_op_field) (spec_ffi_model_field) → Prop.
 
@@ -281,7 +281,7 @@ Definition wpc_init k E e es Φ Φc initP P : iProp Σ :=
       ⌜ initP σ σs ⌝ →
       ffi_start (heapG_ffiG) σ.(world) g -∗
       ffi_start (refinement_spec_ffiG) σs.(world) gs -∗
-      wpc_obligation k E e es Φ (λ hG hRG, Φc hG hRG ∗ P hG hRG) hG hRG)%I.
+      wpc_obligation k E e es Φ (λ hG hRG, Φc hG hRG ∗ P hG hRG) hG hRG (P hG hRG))%I.
 
 (* XXX: ffi_restart seems unnecessary, given ffi_crash_rel *)
 (* This is very complicated to allow the choice of simulated spec crash step
@@ -301,7 +301,7 @@ Definition wpc_post_crash k E e es Φ Φc P : iProp Σ :=
                       (refinement_spec_ffiG (hRG := hRG)) σs.(world)
                       (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
       ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
-      wpc_obligation k E e es Φ (λ hG hRG, Φc hG hRG ∗ P hG hRG) hG' hRG')%I.
+      wpc_obligation k E e es Φ (λ hG hRG, Φc hG hRG ∗ P hG hRG) hG' hRG' (P hG' hRG'))%I.
 
 Lemma difference_difference_remainder_L (E1 E2: coPset) :
   E1 ⊆ E2 → (E2 ∖ (E2 ∖ E1)) = E1.
@@ -425,7 +425,7 @@ Proof using Hrpre Hhpre Hcpre.
   { eapply Hinit_wf; eauto. }
   { eapply Hinit_wf; eauto. }
   iIntros (Hheap Href).
-  iModIntro. iIntros "#Hspec #Htrace Hcfupd1 Hcfupd3".
+  iModIntro. iIntros "#Hspec #Htrace #Hcfupd1 Hcfupd3".
   iSplit.
   { iModIntro. iIntros (?) "H". iApply "H". }
   iIntros "Hstart Hstart_spec Hj".
@@ -438,10 +438,15 @@ Proof using Hrpre Hhpre Hcpre.
                                 trace_frag (trace σs') ∗ oracle_frag (oracle σs')
                 (* spec_ctx' es ([es], σs) ∗ trace_ctx *) ∗  Φc hG hRef)%I with "[-]")%I.
   - rewrite /wpc_init/wpc_obligation in Hwp_init.
-    iPoseProof (Hwp_init with "[//] [$] [$] [$] [] [$]") as "H".
+    iPoseProof (Hwp_init with "[//] [$] [$] [$] [] [] [$]") as "H".
     { rewrite /spec_ctx/spec_ctx'.
       iDestruct "Hspec" as "(H1&$)".
       iExists _, _. iFrame "H1".
+    }
+    { rewrite /spec_crash_ctx/spec_crash_ctx'/source_crash_ctx.
+      iSplitL.
+      { iExists _, _. iDestruct "Hcfupd1" as "($&_)". }
+      iDestruct "Hcfupd1" as "(_&$)".
     }
     rewrite /perennial_irisG. simpl.
     rewrite heap_get_update'.
@@ -483,7 +488,7 @@ Proof using Hrpre Hhpre Hcpre.
     iClear "Htrace_auth Horacle_auth Htrace_frag Horacle_frag".
     iExists ({| pbundleT := hnames |}).
     iMod (goose_spec_crash_init _ _ σs gs _ σs' gs' σs_post_crash _ (trace σ_post_crash) (oracle σ_post_crash)
-            with "[$] [$] Hspec_ffi Hspec_gffi") as (HrG) "(#Hspec&Hpool&Hcrash_rel&Hrs&#Htrace&Hcfupd1&Hcfupd3)";
+            with "[$] [$] Hspec_ffi Hspec_gffi") as (HrG) "(#Hspec&Hpool&Hcrash_rel&Hrs&#Htrace&#Hcfupd1'&Hcfupd3)";
       eauto.
     { eapply trace_equiv_preserve_crash; eauto. }
     { eapply oracle_equiv_preserve_crash; eauto. }
@@ -493,12 +498,19 @@ Proof using Hrpre Hhpre Hcpre.
     iSplit.
     * iClear "∗". eauto.
     * iDestruct (source_pool_singleton with "Hpool") as "Hpool".
-      iDestruct ("Hwpc" with "[$] [$] [$] [] [$]") as "H".
+      iDestruct ("Hwpc" with "[$] [$] [$] [] [] [$]") as "H".
       { rewrite /spec_ctx/spec_ctx'.
         iDestruct "Hspec" as "(H1&$)".
         iExists _, _. iFrame "H1".
       }
-      iPoseProof (wpc_trace_inv_open k _ _ _ e _ _ Φ Φc with "[] Hspec Htrace Hcfupd1 Hcfupd3 H") as "H".
+      { rewrite /spec_crash_ctx/spec_crash_ctx'/source_crash_ctx.
+        iSplitL.
+        {
+          rewrite /heap_update/heap_get_names//=.
+          iExists _, _. iDestruct "Hcfupd1'" as "($&_)". }
+        iDestruct "Hcfupd1'" as "(_&$)".
+      }
+      iPoseProof (wpc_trace_inv_open k _ _ _ e _ _ Φ Φc with "[] Hspec Htrace Hcfupd1' Hcfupd3 H") as "H".
       { iApply Hexcl. }
       rewrite /hG//=.
       rewrite /heap_update/heap_get_names//= ffi_update_update.

@@ -78,17 +78,18 @@ Lemma sty_inv_to_wpc hG hRG hS es e τ j:
   sty_rules_obligation spec_trans →
   sty_atomic_obligation spec_atomic_transTy →
   spec_ctx -∗
+  spec_crash_ctx (sty_crash_tok) -∗
   trace_ctx -∗
   sty_init hS -∗
   j ⤇ es -∗
   WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_derived_crash_condition hG hRG ∗ sty_crash_tok}}.
 Proof.
-  iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules Hatomic) "#Hspec #Htrace Hinit Hj".
+  iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules Hatomic) "#Hspec #Hspec_crash #Htrace Hinit Hj".
     rewrite /sty_crash_obligation in Hsty_crash.
   iAssert (|={⊤}=> sty_inv hS ∗ WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_crash_cond hS ∗ sty_crash_tok}})%I with "[-]" as ">(#Hinv&H)".
   {
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
-    iApply (Hsty_crash_inv with "[$] [$] [Hj]").
+    iApply (Hsty_crash_inv with "[$] [$] [$] [Hj]").
     { iIntros "#Hinv'".
       iPoseProof (sty_fundamental_lemma _ _ _ Hsty_rules Hatomic ∅ _ _ _ Htype) as "H"; eauto.
       iSpecialize ("H" $! ∅ with "[] [$] [$] [$] []").
@@ -143,13 +144,13 @@ Proof.
   { clear dependent σ σs g gs. rewrite /wpc_init. iIntros (hG hRG σ g σs gs Hinit) "Hffi Hffi_spec".
     rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.
-    iIntros "Hj #Hspec #Htrace".
+    iIntros "Hj #Hspec #Hcrash_spec #Htrace".
     iApply fupd_wpc.
     iPoseProof (Hsty_init1 _ _ _ _  with "[$] [$]") as "H"; first auto.
     iApply (fupd_mask_mono styN); first by set_solver+.
     iMod "H" as (names) "Hinit".
     iModIntro.
-    iApply (sty_inv_to_wpc with "[$] [$] [$]"); eauto.
+    iApply (sty_inv_to_wpc with "[$] [$] [$] [$]"); eauto.
   }
   { clear dependent σ σs.
     rewrite /wpc_post_crash.
@@ -160,12 +161,12 @@ Proof.
     iExists σs', Hcrash. iFrame. iIntros (hRG') "Hcrash_rel Hrestart".
     iSpecialize ("Hrest" $! hRG' with "[$] [$]").
     rewrite /wpc_obligation.
-    iIntros "Hj #Hspec #Htrace".
+    iIntros "Hj #Hspec #Hspec_crash #Htrace".
     iApply fupd_wpc.
     iApply (fupd_mask_mono styN); first by set_solver+.
     iMod "Hrest" as (names) "Hinv".
     iModIntro.
-    iApply (sty_inv_to_wpc _ _ (sty_update logical_relnΣ hS' names) with "[$] [$] [$]"); eauto.
+    iApply (sty_inv_to_wpc _ _ (sty_update logical_relnΣ hS' names) with "[$] [$] [$] [$]"); eauto.
   }
   (* BUG: Coq v8.11 requires Grab Existential Variables and not Unshelve to get
   this obligation *)

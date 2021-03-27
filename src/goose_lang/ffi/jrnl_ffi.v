@@ -357,11 +357,13 @@ Section jrnl_interp.
 
   Definition jrnl_crash_ctx {Σ} {jG: jrnlG Σ} : iProp Σ :=
     ∃ m, ([∗ map] a ↦ v ∈ jrnlData m, jrnl_crash_tok a) ∗
-          map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> jrnlData m).
+          map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> jrnlData m) ∗
+          jrnl_full_crash_tok.
 
   Definition jrnl_state_start {Σ} {jG: jrnlG Σ} (m: jrnl_map) : iProp Σ :=
     ([∗ map] a ↦ v ∈ jrnlData m, jrnl_mapsto a 1 v) ∗
     ([∗ map] a ↦ v ∈ jrnlData m, jrnl_crash_tok a) ∗
+    map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> jrnlData m) ∗
     jrnl_kinds (jrnlKinds m) ∗
     jrnl_dom (dom (gset _) (jrnlData m)) ∗
     jrnl_full_crash_tok.
@@ -369,6 +371,7 @@ Section jrnl_interp.
 
   Definition jrnl_state_restart {Σ} {jG: jrnlG Σ} (m: jrnl_map) : iProp Σ :=
     ([∗ map] a ↦ v ∈ jrnlData m, jrnl_crash_tok a) ∗
+    map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> jrnlData m) ∗
     jrnl_kinds (jrnlKinds m) ∗
     jrnl_dom (dom (gset _) (jrnlData m)) ∗
     jrnl_full_crash_tok.
@@ -1344,7 +1347,7 @@ Proof.
   iInv "Hstate'" as "[>Hbad|Hrest]" "Hclo".
   { iIntros "HC".
     destruct Hwf as (Hdom&?).
-    iDestruct "Hbad" as (?) "(Htok&Hcrash_ctx)".
+    iDestruct "Hbad" as (?) "(Htok&Hcrash_ctx&Hfull_tok)".
     induction (jrnlData σj) as [| x v' ? ? _] using map_ind.
     { rewrite dom_empty_L in Hdom. symmetry in Hdom. apply dom_empty_inv_L in Hdom. rewrite Hdom.
       rewrite ?big_sepM_empty. iMod ("Hclo" with "[-]").

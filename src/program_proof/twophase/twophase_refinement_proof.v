@@ -52,25 +52,65 @@ Lemma jrnl_crash_inv_obligation:
   @sty_crash_inv_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model.
 Proof.
   rewrite /sty_crash_inv_obligation//=.
-  iIntros (? hG hRG hJrnl e Φ) "(Hcrash_cond&Hcrash_tok&Hclosed_frag) Hspec Hwand".
+  iIntros (? hG hRG hJrnl e Φ) "H Hspec #Hspec_crash_ctx Hwand".
+  iDestruct "H" as (????) "(Hcrash_cond&Hauth&Htok&Hclosed_frag)".
   rewrite /twophase_init/twophase_inv.
-  iMod (na_crash_inv_alloc (pred LVL_INIT) _ (twophase_crash_cond) (twophase_crash_cond)
+  iMod (na_crash_inv_alloc (pred LVL_INIT) _
+                           (∃ γ dinit logm mt', ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
+                                  twophase_crash_cond_full γ dinit logm mt')%I
+                           (∃ γ dinit logm mt', ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
+                                  twophase_crash_cond_full γ dinit logm mt')%I
           with "[Hcrash_cond] []") as "(Hna_crash_inv&Hcancel)".
-  { iNext. iExact "Hcrash_cond". }
+  { iNext. iExists _, _, _, _. iSplit; last by iExact "Hcrash_cond". eauto. }
   { iModIntro. iIntros "H !>". iExact "H". }
-  iMod (ghost_var_alloc (0, id)) as (γ) "Hghost".
-  iMod (inv_alloc twophaseInitN _ (twophase_inv_inner γ) with
+  iMod (ghost_var_alloc (0, id)) as (γghost) "Hghost".
+  iMod (inv_alloc twophaseInitN _ (twophase_inv_inner γghost) with
             "[Hclosed_frag Hna_crash_inv Hghost]") as "#Hinv".
-  { iNext. iLeft. iFrame. }
+  { iNext. iLeft. iExists _. iFrame. }
   iModIntro. iSplitL "".
-  { iExists _. iFrame "Hinv". }
+  { iExists _. iFrame "Hinv Hspec_crash_ctx". }
   { iSpecialize ("Hwand" with "[]").
     { iExists _; eauto. }
     iApply (wpc_strong_mono with "Hwand"); auto.
     { rewrite /LVL_OPS/LVL_INIT. lia. }
     { iSplit; first eauto.
       iModIntro. iIntros. iMod "Hcancel" as ">Hcancel".
-      iIntros "_ !>". iFrame. }
+      iIntros "_ !>". iNamed "Hcancel".
+      iDestruct "Hcancel" as (Hdom) "Hcancel".
+      iNamed "Hcancel".
+      rewrite /twophase_crash_cond.
+      rewrite /twophase_crash_tok.
+      rewrite /jrnl_mapsto_own.
+      iEval (setoid_rewrite sep_assoc) in "Hmapstos".
+      iDestruct (big_sepM_sep with "Hmapstos") as "(H1&H2)".
+      iSplitL "H1 Htxn_durable".
+      { iExists _, _, _, _. iFrame. }
+      iFrame.
+      iExists ((bufObj_to_obj <$> _, ∅)).
+      iSplitL "H2".
+      { iApply big_sepM_fmap. iExact "H2". }
+      rewrite /=.
+      assert (((λ _ : obj, ()) <$> (bufObj_to_obj <$> mt)) =
+              ((λ _ : obj, ()) <$> (bufObj_to_obj <$> mt'))) as ->.
+      { apply map_eq => i.
+        destruct (decide (i ∈ dom (gset (u64 * u64)) mt)) as [Hin|Hnin].
+        { assert (Hin': i ∈ dom (gset (u64 * u64)) mt').
+          { rewrite Hdom; eauto. }
+          rewrite ?lookup_fmap.
+          apply elem_of_dom in Hin as (?&->).
+          apply elem_of_dom in Hin' as (?&->).
+          rewrite //=.
+        }
+        { assert (Hnin': ¬ i ∈ dom (gset (u64 * u64)) mt').
+          { rewrite Hdom; eauto. }
+          rewrite ?lookup_fmap.
+          apply not_elem_of_dom in Hnin as ->.
+          apply not_elem_of_dom in Hnin' as ->.
+          rewrite //=.
+        }
+      }
+      eauto.
+    }
   }
 Qed.
 
@@ -103,22 +143,15 @@ Proof.
   { destruct Hcase as [Hcase|Hcase]; rewrite Hcase; eauto. }
   rewrite //=.
   rewrite /jrnl_state_restart.
-  iDestruct "Hrestart" as "(Hclosed&Hcrash_toks&#Hkinds&#Hdom&Hfull)".
+  iDestruct "Hrestart" as "(Hclosed&Hcrash_toks&Hcrash_ctx&#Hkinds&#Hdom&Hfull)".
   iModIntro. iExists tt.
   rewrite /twophase_init.  iFrame "Hfull Hclosed".
   rewrite /twophase_crash_cond.
   rewrite /twophase_update.
-  assert (hRG
-              .(@refinement_spec_ffiG jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics
-                  jrnl_spec_ffi_interp Σ).(@jrnlG_crash_toks_name Σ) =
-              hRG'
-              .(@refinement_spec_ffiG jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics
-                  jrnl_spec_ffi_interp Σ).(@jrnlG_crash_toks_name Σ)).
-  { admit. }
-  iClear "Hcrash_toks".
   iDestruct "Hcrash_cond" as (????) "H".
   iNamed "H".
-  iExists γ, dinit, logm, mt. rewrite /twophase_crash_cond_inner.
+  iExists γ, dinit, logm, mt. rewrite /twophase_crash_cond_full.
+  rewrite -sep_assoc.
   iSplitL "Htxn_durable".
   {
     rewrite /sep_buftxn_recovery_proof.is_txn_durable.
@@ -129,6 +162,8 @@ Proof.
     rewrite /post_crash. iApply ("H" $! _ _ hG').
     eauto.
   }
+  iSplitL "Hmapstos Hcrash_toks".
+  {
   iApply (big_sepM_mono with "Hmapstos").
   { iIntros (???) "($&Hjrnl)".
     rewrite /jrnl_mapsto_own.

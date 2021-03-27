@@ -54,23 +54,33 @@ Definition LVL_INIT : nat := 150.
 Definition LVL_INV : nat := 125.
 Definition LVL_OPS : nat := 100.
 
-Definition twophase_crash_cond_inner
+Definition twophase_crash_cond_full
            {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
   := ("Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
      "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
      "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj))%I.
 
+Definition twophase_crash_cond_partial
+           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
+  := ("Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
+     "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
+     "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
+     "Hjrnl_mapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj obj)))%I.
+
 Definition twophase_crash_cond
            {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
-  := ∃ γ dinit logm mt, twophase_crash_cond_inner γ dinit logm mt.
+  := ∃ γ dinit logm mt, twophase_crash_cond_partial γ dinit logm mt.
 
 Definition twophase_na_crash_inv
-           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
-  := na_crash_inv (LVL_INIT) (twophase_crash_cond) (twophase_crash_cond).
+           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} objs_dom : iProp Σ
+  := na_crash_inv (LVL_INIT) (∃ γ dinit logm mt', ⌜ dom (gset _) mt' = objs_dom ⌝ ∗
+                                  twophase_crash_cond_full γ dinit logm mt')%I
+                             (∃ γ dinit logm mt', ⌜ dom (gset _) mt' = objs_dom ⌝ ∗
+                                  twophase_crash_cond_full γ dinit logm mt')%I.
 
 Definition twophase_inv_inner {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} γ : iProp Σ
-  := (twophase_na_crash_inv ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨
+  := (∃ d, twophase_na_crash_inv d ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨
      (∃ j K, ghost_var γ (1/2)%Qp (j, K) ∗
              j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #())) ∨
      (jrnl_open).
@@ -78,13 +88,15 @@ Definition twophase_inv_inner {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_hea
 Definition twophaseInitN := nroot.@"init".
 
 Definition twophase_inv {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
-  := ∃ γ, inv twophaseInitN (twophase_inv_inner γ).
+  := ∃ γ, inv twophaseInitN (twophase_inv_inner γ) ∗ spec_crash_ctx (jrnl_crash_ctx).
 
 Definition twophase_crash_tok {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} : iProp Σ
-  := jrnl_full_crash_tok.
+  := jrnl_crash_ctx.
 
 Definition twophase_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
-  := twophase_crash_cond ∗ twophase_crash_tok ∗ jrnl_closed_frag.
+  := (∃ γ dinit logm mt, twophase_crash_cond_full γ dinit logm mt ∗
+          auth_map.map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> jrnlData (bufObj_to_obj <$> mt, ∅)) ∗
+          jrnl_full_crash_tok ∗ jrnl_closed_frag).
 
 Definition twophaseN : coPset := (∅ : coPset).
 
@@ -111,11 +123,14 @@ Proof using PARAMS.
  - intros ? [] [] => //=.
  - intros ? [] => //=.
  - intros ?? [] [] => //=.
- - intros. apply jrnl_full_crash_tok_excl.
+ - intros.
+   iDestruct 1 as (m) "(?&?&?)".
+   iDestruct 1 as (m') "(?&?&?)".
+   iApply (jrnl_full_crash_tok_excl with "[$] [$]").
  - rewrite /sN/twophaseN. apply disjoint_empty_r.
  - iIntros (? hG hRG hG' hS τ vs v).
    iDestruct 1 as (l γ γ' dinit objs_dom -> ->) "(H1&H2)".
-   iPureIntro. split; eauto. 
+   iPureIntro. split; eauto.
 Defined.
 (* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
   perhaps specTy_model should be split into two typeclasses? *)
