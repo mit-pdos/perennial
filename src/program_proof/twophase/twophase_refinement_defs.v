@@ -7,6 +7,9 @@ From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq sp
 From Perennial.base_logic Require Import ghost_var.
 From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.program_proof Require buftxn.sep_buftxn_invariant.
+From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
+From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import twophase.twophase_proof.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 
@@ -32,32 +35,64 @@ Notation sstate := (@state (@spec_ext_op_field jrnl_spec_ext) (spec_ffi_model_fi
 Notation sexpr := (@expr (@spec_ext_op_field jrnl_spec_ext)).
 Notation sval := (@val (@spec_ext_op_field jrnl_spec_ext)).
 
+Notation jrnl_nat_K :=
+(leibnizO (nat * ((@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)
+                           → (@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)))).
+
 Class twophaseG (Σ: gFunctors) :=
   { twophase_stagedG :> stagedG Σ;
     twophase_lockmapG :> lockmapG Σ;
-    twophase_buftxnG :> sep_buftxn_invariant.buftxnG Σ
+    twophase_buftxnG :> sep_buftxn_invariant.buftxnG Σ;
+    twophase_nat_ctx :> ghost_varG Σ (nat * (spec_lang.(language.expr) → spec_lang.(language.expr)))%type;
   }.
 
 Definition twophase_names := unit.
 Definition twophase_get_names (Σ: gFunctors) (hG: twophaseG Σ) := tt.
 Definition twophase_update (Σ: gFunctors) (hG: twophaseG Σ) (n: twophase_names) := hG.
 
-Definition LVL_INIT : nat := 100.
-Definition LVL_INV : nat := 75.
-Definition LVL_OPS : nat := 50.
+Definition LVL_INIT : nat := 150.
+Definition LVL_INV : nat := 125.
+Definition LVL_OPS : nat := 100.
+
+Definition twophase_crash_cond_inner
+           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
+  := ("Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
+     "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
+     "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
+     "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj))%I.
+
+Definition twophase_crash_cond
+           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
+  := ∃ γ dinit logm mt, twophase_crash_cond_inner γ dinit logm mt.
+
+Definition twophase_na_crash_inv
+           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
+  := na_crash_inv (LVL_INIT) (twophase_crash_cond) (twophase_crash_cond).
+
+Definition twophase_inv_inner {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} γ : iProp Σ
+  := (twophase_na_crash_inv ∗ jrnl_closed_auth ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨
+     (∃ j K, jrnl_closed_auth ∗
+             ghost_var γ (1/2)%Qp (j, K) ∗
+             j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #())) ∨
+     (jrnl_open).
+
+Definition twophaseInitN := nroot.@"init".
 
 Definition twophase_inv {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
-  := True%I.
+  := ∃ γ, inv twophaseInitN (twophase_inv_inner γ).
+
 Definition twophase_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
-  := True%I.
-Definition twophase_crash_cond {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
-  := True.
+  := twophase_crash_cond.
+
 Definition twophase_crash_tok {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} : iProp Σ
-  := False.
+  := jrnl_full_crash_tok.
+
 Definition twophaseN : coPset := (∅ : coPset).
+
 Definition twophase_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}
            (ty: @ext_tys (@val_tys _ jrnl_ty)) : val_semTy :=
-  λ vspec vimpl, False%I.
+  λ vspec vimpl, (∃ (l: loc) γ γ' dinit objs_dom,
+                     ⌜ vimpl = #l ⌝ ∗ ⌜ vspec = #true ⌝ ∗ is_twophase_pre l γ γ' dinit objs_dom ∗ jrnl_open)%I.
 
 Instance twophaseTy_model : specTy_model jrnl_ty.
 Proof using PARAMS.
@@ -77,24 +112,28 @@ Proof using PARAMS.
  - intros ? [] [] => //=.
  - intros ? [] => //=.
  - intros ?? [] [] => //=.
- - auto.
+ - intros. apply jrnl_full_crash_tok_excl.
  - rewrite /sN/twophaseN. apply disjoint_empty_r.
- - auto.
+ - iIntros (? hG hRG hG' hS τ vs v).
+   iDestruct 1 as (l γ γ' dinit objs_dom -> ->) "(H1&H2)".
+   iPureIntro. split; eauto. 
 Defined.
 (* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
   perhaps specTy_model should be split into two typeclasses? *)
 
 Existing Instances subG_stagedG.
 
-Definition twophaseΣ := #[stagedΣ; lockmapΣ; sep_buftxn_invariant.buftxnΣ].
+Definition twophaseΣ := #[stagedΣ; lockmapΣ; sep_buftxn_invariant.buftxnΣ;
+                         ghost_varΣ (nat * (spec_lang.(language.expr) → spec_lang.(language.expr)))].
 
 Instance subG_twophaseG: ∀ Σ, subG twophaseΣ Σ → twophaseG Σ.
 Proof. solve_inG. Qed.
 Parameter init_jrnl_map : jrnl_map.
-Definition twophase_initP (σimpl: @state disk_op disk_model) (σspec : @state jrnl_op jrnl_model) : Prop :=
+Definition twophase_initP (σimpl: @goose_lang.state disk_op disk_model) (σspec : @goose_lang.state jrnl_op jrnl_model) : Prop :=
   (null_non_alloc σspec.(heap)) ∧
   (σimpl.(world) = init_disk ∅ SIZE) ∧
-  (σspec.(world) = Closed init_jrnl_map).
+  (σspec.(world) = Closed init_jrnl_map) ∧
+  wf_jrnl init_jrnl_map.
 Definition twophase_update_pre (Σ: gFunctors) (hG: twophaseG Σ) (n: twophase_names) : twophaseG Σ := hG.
 
 Program Instance twophaseTy_update_model : specTy_update twophaseTy_model :=

@@ -24,16 +24,18 @@ Proof.
   rewrite /sty_init_obligation1//=.
   iIntros (? hG hRG hJrnl σs gs σi gi Hinit) "Hdisk".
   rewrite /jrnl_start /twophase_init.
-  inversion Hinit as [Hnn [Heqi Heqs]]. rewrite Heqs Heqi.
+  inversion Hinit as [Hnn [Heqi [Heqs Hwf]]]. rewrite Heqs Heqi.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
   eauto.
-Qed.
+  iExists tt.
+  rewrite /twophase_crash_cond.
+  rewrite /twophase_names.
+Admitted.
 
 Lemma jrnl_init_obligation2: sty_init_obligation2 twophase_initP.
 Proof.
-  intros ???? (?&?&?). rewrite //=. split_and!; eauto. eexists; split; eauto.
-  admit.
-Admitted.
+  intros ???? (?&?&?&?). rewrite //=. split_and!; eauto.
+Qed.
 
 Lemma jrnl_rules_obligation:
   @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model jrnl_trans.
@@ -65,7 +67,12 @@ Lemma jrnl_inv_twophase_pre {Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}
     twophase_inv -∗
     val_interp (smodel := twophaseTy_model) (hS := hJrnl) (@extT jrnl_val_ty JrnlT) vs v -∗
     ∃ (l : loc) γ γ' objs_dom dinit, ⌜ v = #l ⌝ ∗ is_twophase_pre l γ γ' dinit objs_dom.
-Admitted.
+Proof.
+  iIntros "H1 H2".
+  iDestruct "H2" as (l γ γ' dinit objs_dom -> ->) "(H&?)".
+  iExists l, γ, γ', objs_dom, dinit. iSplit; first eauto.
+  iExact "H".
+Qed.
 
 Ltac unfold_expr_vars :=
     match goal with
@@ -218,7 +225,7 @@ Proof.
     iDestruct "H" as (?? Heq) "H".
     rewrite /listT_interp. iExists _, _; iSplit; first eauto.
     clear Heq.
-    iInduction lvs as [| v lvs] "IH" forall (lv).
+    iInduction lvs as [| v lvs] "IH" forall (lv IHt).
     * simpl. destruct lv; eauto.
     * simpl. destruct lv; eauto.
       iDestruct "H" as "(Hhd&Htl)".
