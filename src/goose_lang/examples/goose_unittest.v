@@ -521,7 +521,7 @@ Definition LogicalAndEqualityOperators: val :=
 
 Definition ArithmeticShifts: val :=
   rec: "ArithmeticShifts" "x" "y" :=
-    to_u64 ("x" ≪ #3) + "y" ≪ to_u64 "x" + "y" ≪ #1.
+    to_u64 ("x" ≪ #3) + "y" ≪ (to_u64 "x") + "y" ≪ #1.
 
 Definition BitwiseOps: val :=
   rec: "BitwiseOps" "x" "y" :=

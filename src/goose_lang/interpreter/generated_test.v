@@ -98,6 +98,7 @@ Example testArithmeticShifts_ok : testArithmeticShifts #() ~~> #true := t.
 Example testOrCompareSimple_ok : testOrCompareSimple #() ~~> #true := t.
 Example testOrCompare_ok : testOrCompare #() ~~> #true := t.
 Example testAndCompare_ok : testAndCompare #() ~~> #true := t.
+Example testShiftMod_ok : testShiftMod #() ~~> #true := t.
 
 (* prims.go *)
 Example testLinearize_ok : testLinearize #() ~~> #true := t.
