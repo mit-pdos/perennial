@@ -56,9 +56,7 @@ cycle. Note that technically `vok` checking isn't the same as regular compilatio
 This repo has committed versions of the output of Goose, to avoid making Go and
 Goose a dependency for compilation. You can update these using the
 `./etc/update-goose.py` script, which records exactly how to generate the output
-for the various Goose projects we have. Note that on Go 1.16 running this script
-requires you to set the environment variable `GO111MODULE=auto`, since `goose` is
-not (yet) module-aware when it translates packages. Use `./etc/update-goose.py --help` to get all the options. The script only translates the projects you pass
+for the various Goose projects we have. Use `./etc/update-goose.py --help` to get all the options. The script only translates the projects you pass
 a path to.
 
 ## Source organization

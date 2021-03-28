@@ -91,6 +91,13 @@ def main():
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
 
+    # Goose is not module-aware, so we revert to the pre-1.16 behavior of
+    # detecting whether to use modules or not.
+    if not args.dry_run:
+        os.environ["GO111MODULE"] = "auto"
+    if args.dry_run or args.verbose:
+        print("set GO111MODULE=auto")
+
     do_run = lambda cmd_args: run_command(
         cmd_args, dry_run=args.dry_run, verbose=args.verbose
     )
