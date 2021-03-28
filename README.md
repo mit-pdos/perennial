@@ -51,6 +51,16 @@ is complete. This allows checking individual files completely and in parallel.
 Using `vos` and `vok` files can significantly speed up the edit-compile-debug
 cycle. Note that technically `vok` checking isn't the same as regular compilation - it doesn't check universe constraints in the same way.
 
+## Updating Goose output
+
+This repo has committed versions of the output of Goose, to avoid making Go and
+Goose a dependency for compilation. You can update these using the
+`./etc/update-goose.py` script, which records exactly how to generate the output
+for the various Goose projects we have. Note that on Go 1.16 running this script
+requires you to set the environment variable `GO111MODULE=auto`, since `goose` is
+not (yet) module-aware when it translates packages. Use `./etc/update-goose.py --help` to get all the options. The script only translates the projects you pass
+a path to.
+
 ## Source organization
 
 `src/`
