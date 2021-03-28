@@ -805,7 +805,8 @@ Theorem twophase_init_locks {E} k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a 
       "Hcrash" ∷ <bdisc>
                  (|C={⊤}_(S (S k))=> ([∗ map] a↦_ ∈ mt, ∃ (obj : object),
                                      "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
-                                     "Hex_mapsto" ∷ ex_mapsto a obj))
+                                     "Hex_mapsto" ∷ ex_mapsto a obj ∗
+                                     "%Hvalid" ∷ ⌜ mapsto_valid γ' a obj ⌝))
   ).
 Proof.
   iIntros (HNbuftxn NinvN Haddrs_valid) "???".

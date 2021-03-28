@@ -34,6 +34,7 @@ Section proof.
    (<bdisc> (|C={⊤}_(S (S LVL))=> ∃ mt',
        ⌜ dom (gset _) mt' = d ⌝ ∗
        ⌜γ.(buftxn_txn_names).(txn_kinds) = γ'.(buftxn_txn_names).(txn_kinds)⌝ ∗
+       ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
        "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
          "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
          "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj)))%I.
@@ -62,8 +63,10 @@ Section proof.
       "Hcancel_txn" ∷ txn_cfupd_cancel dinit γ' ∗
       "Hcancel_obj" ∷ twophase_obj_cfupd_cancel γ γ' (dom (gset addr) mt)
     }}}
-    {{{ ∃ γ' logm' mt', ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
+    {{{ ∃ γ' logm' mt',
+       ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
        ⌜γ.(buftxn_txn_names).(txn_kinds) = γ'.(buftxn_txn_names).(txn_kinds)⌝ ∗
+       ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
       is_txn_durable γ' dinit logm' ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
         "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
@@ -90,8 +93,11 @@ Section proof.
         iDestruct "H" as "(?&?)". iFrame. }
       iModIntro. iApply "HΦ". iExists _, _, mt. iFrame.
       iSplit; first eauto.
-      iDestruct "Hcinv" as "(?&?)".
+      iDestruct "Hcinv" as "(?&%)".
       iSplit; first eauto.
+      iSplit; first eauto.
+      { iPureIntro. eapply map_Forall_impl; try eassumption.
+        intros. eapply exchange_mapsto_valid; try eassumption. }
       iApply big_sepM_sep. iFrame.
     }
     iModIntro.
@@ -112,8 +118,11 @@ Section proof.
       iDestruct "Htxn_cancel" as (?) "Htxn_cancel".
       iModIntro. iApply "HΦ". iExists _, _, mt. iFrame "Htxn_cancel".
       iSplit; first eauto.
-      iDestruct "Htxn_cinv" as "(?&?)".
+      iDestruct "Htxn_cinv" as "(?&%)".
       iSplit; first eauto.
+      iSplit; first eauto.
+      { iPureIntro. eapply map_Forall_impl; try eassumption.
+        intros. eapply exchange_mapsto_valid; try eassumption. }
       iApply big_sepM_sep. iFrame.
     }
     iMod (twophase_init_locks with "Histxn_system Htxn_cinv Hmapstos") as "(Hlinvs&Hcrash)".
@@ -142,8 +151,14 @@ Section proof.
       iDestruct (big_sepM_dom with "Hcrash") as "H".
       iDestruct (big_sepS_exists_sepM with "H") as (mt' Hdom) "H".
       iExists _, _, mt'. iFrame "Htxn_cancel".
-      iFrame. iSplit; first eauto.
-      iDestruct "Htxn_cinv" as "(?&$)".
+      iDestruct "Htxn_cinv" as "(?&%)".
+      iSplit; first eauto.
+      iSplit; first eauto.
+      iSplit.
+      { iIntros (i o Hin).
+        iDestruct (big_sepM_lookup with "[$]") as "(?&?&$)"; eauto. }
+      iApply (big_sepM_mono with "H").
+      iIntros (???) "($&$&_)".
     }
     wpc_frame.
     wp_apply (
@@ -186,17 +201,19 @@ Section proof.
     iDestruct (big_sepM_dom with "Hcrash") as "H".
     iDestruct (big_sepS_exists_sepM with "H") as (mt' Hdom) "H".
     iExists mt'.
+    iDestruct "Htxn_cinv" as "(_&%)".
     iSplit; first eauto.
-    iDestruct "Htxn_cinv" as "(_&$)".
-    iFrame.
+    iSplit; first eauto.
+    iSplit.
+    { iIntros (i o Hin).
+      iDestruct (big_sepM_lookup with "[$]") as "(?&?&$)"; eauto. }
+    iApply (big_sepM_mono with "H").
+      iIntros (???) "($&$&_)".
   Qed.
 
   Theorem wp_Init N (d: loc) j K `{LanguageCtx _ K} :
     N ## invN →
     N ## invariant.walN →
-    (*
-    map_Forall (mapsto_valid γ) mt →
-     *)
     {{{
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Htwophase_inv" ∷ twophase_inv ∗
@@ -239,7 +256,6 @@ Section proof.
     iSplit; first done.
     iIntros ">H". iNamed "H".
     wpc_apply (wpc_Init _ _ γ dinit logm with "[Htxn_durable Hmapstos] [HΦ]"); try eassumption.
-    { admit. }
     { iSplitL "Htxn_durable".
       { iExact "Htxn_durable". }
       iFrame "Hmapstos".
@@ -248,10 +264,11 @@ Section proof.
     iSplit.
     * iModIntro. iIntros "H".
       iSplit; first done.
-      iDestruct "H" as (??? Heq Heq') "(Hdurable&Hmapstos)".
+      iDestruct "H" as (??? Heq Heq' Hforall) "(Hdurable&Hmapstos)".
       iNamed. iNext.
       iExists _, _, _, _. iFrame.
       rewrite Heq Heq'. iFrame "#".
+      eauto.
     * iNext. iIntros (γ' l) "H". iNamed "H".
       rewrite /txn_cfupd_cancel.
       iDestruct (own_discrete_laterable with "Hcancel_txn") as (Ptxn) "(HPtxn&#HPtxn_spec)".
@@ -266,13 +283,14 @@ Section proof.
         iMod "Hobj"; first by (rewrite /LVL; lia).
         iModIntro. iNext.
         iDestruct "Htxn" as (logm') "Htxn".
-        iDestruct "Hobj" as (mt'' Hdom Heqkinds) "Hmapstos".
+        iDestruct "Hobj" as (mt'' Hdom Heqkinds Hforall) "Hmapstos".
         iExists _, _, _, _. iFrame.
         rewrite Hdom Heqkinds. iFrame "#Hdom".
+        eauto.
       }
       iIntros.
       iSplit; first done.
       iApply "HΦ".
       iExists _, _, _, _. iFrame.
-  Admitted.
+  Qed.
 End proof.
