@@ -45,10 +45,31 @@ Lemma jrnl_rules_obligation:
 Proof.
   intros vs0 vs v0 v0' t1 t2 Htype0 Htrans.
   inversion Htype0 as [op Heq]; subst.
-  - iIntros (????) "#Hinv #Hspec #Hval".
-    iIntros (j K Hctx) "Hj".
-    admit.
-Admitted.
+  iIntros (????) "#Hinv #Hspec #Hval".
+  iIntros (j K Hctx) "Hj".
+  rewrite val_interp_struct_unfold //=.
+  iAssert (⌜∃ l : loc, v0' = #l⌝)%I with "[-]" as %(l&->).
+  { rewrite /structRefT_interp//=.
+    iDestruct "Hval" as "[H1|H2]".
+    { iDestruct "H1" as (????? (?&->&_)) "H". eauto. }
+    { iDestruct "H2" as %(?&_&->). eauto. }
+  }
+  iClear "Hval".
+  inversion Htrans. subst.
+  iApply wp_wpc.
+  iMod (ghost_step_lifting_puredet with "[$Hj]") as "(Hj&_)".
+  { econstructor. apply head_prim_step_trans. econstructor. eauto. }
+  { solve_ndisj. }
+  { iDestruct "Hspec" as "(?&?)". eauto. }
+  wp_apply (wp_Init (nroot.@"H") with "[Hj]").
+  { solve_ndisj. }
+  { solve_ndisj. }
+  { iFrame "# ∗". }
+  iIntros (l') "(Hj&Hopen&H)". iNamed "H".
+  iExists _. iFrame "Hj". rewrite /val_interp//=/twophase_val_interp.
+  iExists _, _, _, _, _.
+  iFrame "Htwophase Hopen". eauto.
+Qed.
 
 Lemma fmap_unit_jrnl_dom_equal (jd jd': gmap addr_proof.addr obj) :
   dom (gset _) jd = dom (gset _) jd' →
@@ -80,7 +101,7 @@ Proof.
   iIntros (? hG hRG hJrnl e Φ) "H Hspec #Hspec_crash_ctx Hwand".
   iDestruct "H" as (????) "(Hcrash_cond&Hauth&Htok&Hclosed_frag)".
   iAssert (jrnl_dom (dom _ mt)) with "[Hcrash_cond]" as "#Hdom".
-  { iDestruct "Hcrash_cond" as "(H1&$&H2)". }
+  { iDestruct "Hcrash_cond" as "(H1&?&?&H2)". iFrame. }
   rewrite /twophase_init/twophase_inv.
   iMod (na_crash_inv_alloc (pred LVL_INIT) _
                            (∃ γ dinit logm mt',
@@ -166,6 +187,8 @@ Proof.
   iNamed "H".
   iDestruct "Hdom" as "#Hdom".
   iExists γ, dinit, logm, mt. rewrite /twophase_crash_cond_full.
+  rewrite -sep_assoc.
+  iSplit; first eauto.
   rewrite -sep_assoc.
   iSplitL "Htxn_durable".
   {

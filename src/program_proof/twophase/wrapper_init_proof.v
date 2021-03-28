@@ -211,17 +211,19 @@ Section proof.
       iIntros (???) "($&$&_)".
   Qed.
 
-  Theorem wp_Init N (d: loc) j K `{LanguageCtx _ K} :
+  Theorem wp_Init N (d: loc) j K `{LanguageCtx _ K} (vs: sval) :
     N ## invN →
     N ## invariant.walN →
     {{{
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Htwophase_inv" ∷ twophase_inv ∗
-      "Hj" ∷ j ⤇ (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()))
+      "Hj" ∷ j ⤇ (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp vs))
     }}}
       Init #d @ NotStuck; ⊤
     {{{
       (l: loc), RET #l;
+      j ⤇ (K #true) ∗
+      jrnl_open ∗
       ∃ γ γ' dinit (mt : gmap addr object),
        "Htwophase" ∷ is_twophase_pre l γ γ' dinit (dom (gset addr) mt)
     }}}.
@@ -255,7 +257,7 @@ Section proof.
     { rewrite /LVL. lia. }
     iSplit; first done.
     iIntros ">H". iNamed "H".
-    wpc_apply (wpc_Init _ _ γ dinit logm with "[Htxn_durable Hmapstos] [HΦ]"); try eassumption.
+    wpc_apply (wpc_Init _ _ γ dinit logm with "[Htxn_durable Hmapstos] [HΦ Hj]"); try eassumption.
     { iSplitL "Htxn_durable".
       { iExact "Htxn_durable". }
       iFrame "Hmapstos".
@@ -291,6 +293,8 @@ Section proof.
       iIntros.
       iSplit; first done.
       iApply "HΦ".
+      iFrame "Hj".
+      iSplit; first by iFrame "Hopen".
       iExists _, _, _, _. iFrame.
   Qed.
 End proof.

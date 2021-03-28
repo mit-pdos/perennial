@@ -144,8 +144,8 @@ Section jrnl.
 
   (* The only operation that can be called outside an atomically block is OpenOp *)
   Inductive jrnl_ext_tys : @val jrnl_op -> (ty * ty) -> Prop :=
-  | JrnlOpType :
-      jrnl_ext_tys (λ: "v", ExternalOp OpenOp (Var "v"))%V (unitT, extT JrnlT).
+  | JrnlOpType t :
+      jrnl_ext_tys (λ: "v", ExternalOp OpenOp (Var "v"))%V (refT t, extT JrnlT).
 
   Instance jrnl_ty: ext_types jrnl_op :=
     {| val_tys := jrnl_val_ty;
@@ -207,7 +207,7 @@ Section jrnl.
 
   Definition jrnl_step (op:JrnlOp) (v:val) : transition (state*global_state) val :=
     match op, v with
-    | OpenOp, LitV LitUnit =>
+    | OpenOp, _ =>
       j ← open;
       ret $ LitV $ LitBool $ true
     | ReadBufOp, PairV (#(LitInt blkno), (#(LitInt off), #()))%V #(LitInt sz) =>
@@ -981,10 +981,10 @@ Proof.
   }
 Qed.
 
-Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ g:
+Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ g (v : sval):
   nclose sN_inv ⊆ E →
   (∀ vs, σ.(@world _ jrnl_spec_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()) -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ g -∗
   |NC={E}=> False.
@@ -1001,11 +1001,11 @@ Proof.
   { solve_ndisj. }
 Qed.
 
-Lemma jrnl_opened_open_false E j K {HCTX: LanguageCtx K}:
+Lemma jrnl_opened_open_false E j K {HCTX: LanguageCtx K} (v : sval):
   nclose sN ⊆ E →
   spec_ctx -∗
   jrnl_open -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
@@ -1018,11 +1018,11 @@ Proof.
   { destruct Heq as (?&Heq). by rewrite Heq. }
 Qed.
 
-Lemma jrnl_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
+Lemma jrnl_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'} (v: sval) :
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #()) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v) -∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -1045,11 +1045,11 @@ Proof.
     { congruence. }
 Qed.
 
-Lemma ghost_step_jrnl_open E j K {HCTX: LanguageCtx K}:
+Lemma ghost_step_jrnl_open E j K {HCTX: LanguageCtx K} (v: sval):
   nclose sN ⊆ E →
   spec_ctx -∗
   jrnl_closed_frag -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #())
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v)
   -∗ |NC={E}=> j ⤇ K #true%V ∗ jrnl_open.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hj".
