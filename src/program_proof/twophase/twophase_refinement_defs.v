@@ -84,10 +84,7 @@ Definition twophase_na_crash_inv
                                   twophase_crash_cond_full γ dinit logm mt')%I.
 
 Definition twophase_inv_inner {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} γ : iProp Σ
-  := (twophase_na_crash_inv ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨
-     (∃ j K, ghost_var γ (1/2)%Qp (j, K) ∗
-             j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #())) ∨
-     (jrnl_open).
+  := (twophase_na_crash_inv ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨ jrnl_open.
 
 Definition twophaseInitN := nroot.@"init".
 
