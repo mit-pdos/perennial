@@ -319,7 +319,7 @@ Proof.
   iIntros (Hoff_valid Φ) "_ HΦ".
   rewrite /struct.fieldRef /struct.fieldRef_f.
   destruct (field_offset d f0) as [[off t]|] eqn:Hoff; [|by destruct Hoff_valid]; wp_pures.
-  iSpecialize ("HΦ" with "[//]").
+  iModIntro. iSpecialize ("HΦ" with "[//]").
   iExactEq "HΦ".
   f_equal. f_equal.
   change (int.Z 1) with 1.

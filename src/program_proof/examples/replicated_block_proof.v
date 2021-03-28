@@ -268,7 +268,7 @@ Section goose.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
     wp_pures.
-    iNamed 1.
+    iModIntro. iNamed 1.
     iRight in "HQ".
     iApply "HQ"; iFrame.
   Qed.

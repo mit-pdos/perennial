@@ -706,7 +706,7 @@ Proof.
   wp_if_destruct.
   - wp_pures.
     iApply "HΦ".
-    iDestruct "Hfupd" as "[_ $]".
+    by iDestruct "Hfupd" as "[_ $]".
   - wp_apply wp_ref_to; [ by val_ty | iIntros (txn_l) "txn" ].
     wp_apply wp_ref_to; [ by val_ty | iIntros (ok_l) "ok" ].
     iMod (is_wal_read_mem with "Hwal") as "#Hmem".
@@ -761,7 +761,7 @@ Proof.
         iExists _, _; iFrame.
         rewrite right_id.
         iDestruct "Hsim" as "[_ $]".
-        iExists _; iFrame "# ∗". }
+        iExists _; by iFrame "# ∗". }
       wp_apply wp_slice_len.
       wp_apply (wp_WalogState__memLogHasSpace with "Hfields").
       { revert Heqb0; word. }
@@ -930,7 +930,7 @@ Proof.
     wp_load. wp_load.
     wp_pures.
     iApply "HΦ".
-    destruct ok; iFrame.
+    destruct ok; by iFrame.
 Qed.
 
 End goose_lang.

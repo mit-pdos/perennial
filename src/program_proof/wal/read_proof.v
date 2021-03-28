@@ -127,7 +127,7 @@ Proof.
     iExists _; by iFrame.
   - wp_pures.
     change (slice.nil) with (slice_val Slice.nil).
-    iApply "HΦ".
+    iApply "HΦ". iModIntro.
     iFrame "HmemLog_inv".
     iSplit.
     { iPureIntro.
@@ -396,7 +396,7 @@ Proof.
     { iExists _; iFrame. }
     wp_pures.
     iApply "HΦ".
-    iExists _; iFrame.
+    iExists _; by iFrame.
   - iDestruct "Hb" as "[-> %HmemLog_lookup]".
     iMod (fupd_mask_subseteq (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
     iMod (simulate_read_cache_miss HmemLog_lookup with "[$Hinner $HP] HmemLog_linv Hfupd")
@@ -409,7 +409,7 @@ Proof.
     { iExists _; iFrame. }
     wp_pures.
     iApply "HΦ".
-    iFrame.
+    by iFrame.
 Qed.
 
 End goose_lang.

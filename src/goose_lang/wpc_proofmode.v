@@ -78,7 +78,29 @@ Proof.
 Qed.
 
 Lemma tac_wpc_value `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
-      `{!heapG Σ, !crashG Σ} Δ s k E1 Φ Φc v :
+      `{!heapG Σ} Δ s k E1 Φ Φc v :
+  envs_entails Δ (|NC={E1}=> Φ v) →
+  envs_entails Δ (<disc> Φc) →
+  envs_entails Δ (WPC (Val v) @ s; k; E1 {{ Φ }} {{ Φc }}).
+Proof.
+  rewrite envs_entails_eq -wpc_value => H1 H2.
+  apply and_intro.
+  - rewrite H1. eauto.
+  - rewrite H2. iIntros. do 2 iModIntro; auto.
+Qed.
+Lemma tac_wpc_value_fupd `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+      `{!heapG Σ} Δ s k E1 Φ Φc v :
+  envs_entails Δ (|NC={E1}=> Φ v) →
+  envs_entails Δ (<disc> Φc) →
+  envs_entails Δ (WPC (Val v) @ s; k; E1 {{ v, |={E1}=> Φ v }} {{ Φc }})%I.
+Proof.
+  rewrite envs_entails_eq -wpc_value => H1 H2.
+  apply and_intro.
+  - rewrite H1. iIntros ">?". eauto.
+  - rewrite H2. iIntros. do 2 iModIntro; auto.
+Qed.
+Lemma tac_wpc_value_noncfupd `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+      `{!heapG Σ} Δ s k E1 Φ Φc v :
   envs_entails Δ (Φ v) →
   envs_entails Δ (<disc> Φc) →
   envs_entails Δ (WPC (Val v) @ s; k; E1 {{ Φ }} {{ Φc }}).
@@ -91,8 +113,22 @@ Qed.
 
 Ltac wpc_expr_simpl := wpc_expr_eval simpl.
 
+(** Simplify the goal if it is [WPC] of a value.
+  If the postcondition already allows a [ncfupd], do not add a second one.
+  If it is a [fupd], upgrade that to an [ncfupd].
+  But otherwise, *do* add a [ncfupd]. This ensures that all the lemmas applied
+  here are bidirectional, so we never will make a goal unprovable. *)
 Ltac wpc_value_head :=
-  first [eapply tac_wpc_value ].
+  lazymatch goal with
+  | |- envs_entails _ (wpc ?s ?k ?E (Val _) (λ _, ncfupd ?E _ _) _) =>
+      eapply tac_wpc_value_noncfupd
+  | |- envs_entails _ (wpc ?s ?k ?E (Val _) (λ _, wpc _ _ ?E _ _ _) _) =>
+      eapply tac_wpc_value_noncfupd
+  | |- envs_entails _ (wpc ?s ?k ?E (Val _) (λ _, fupd ?E _ _) _) =>
+      eapply tac_wpc_value_fupd
+  | |- envs_entails _ (wpc ?s ?k ?E (Val _) _ _) =>
+      eapply tac_wpc_value
+  end.
 
 Ltac wpc_finish H :=
   wpc_expr_simpl;      (* simplify occurences of subst/fill *)

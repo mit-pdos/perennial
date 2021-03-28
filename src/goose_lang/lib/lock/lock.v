@@ -149,7 +149,7 @@ Section proof.
   Proof.
     iIntros (? Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_acquire_spec with "Hl"); auto. iIntros ([]).
-    - iIntros "[Hlked HR]". wp_if. iApply "HΦ"; iFrame.
+    - iIntros "[Hlked HR]". wp_if. iApply "HΦ"; by iFrame.
     - iIntros "_". wp_if. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
@@ -205,7 +205,7 @@ Section proof.
     Alloc (so the goal needs to still be a WP) *)
     iMod (readonly_alloc_1 with "Hc") as "Hcond".
     wp_pures.
-    iApply "HΦ". iFrame.
+    iApply "HΦ". by iFrame.
   Qed.
 
   Theorem wp_newCond lk R :

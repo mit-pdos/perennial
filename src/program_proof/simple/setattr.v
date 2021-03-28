@@ -220,7 +220,7 @@ Proof using Ptimeless.
         wp_if_destruct.
         {
           iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
-          wp_storeField. wp_load. iNamed 1.
+          wp_storeField. wp_load. iModIntro. iNamed 1.
 
           iApply fupd_wpc.
           iInv "Hsrc" as ">Hopen" "Hclose".
@@ -236,7 +236,7 @@ Proof using Ptimeless.
 
         {
           wp_store.
-          wp_load.
+          wp_load. iModIntro.
 
           iNamed 1.
           wpc_pures.
@@ -519,7 +519,7 @@ Proof using Ptimeless.
         { iModIntro. iExists _. iFrame "∗%#". }
         iModIntro.
 
-        wp_load.
+        wp_load. iModIntro.
 
         iNamed 1.
         wpc_pures.
@@ -530,7 +530,7 @@ Proof using Ptimeless.
 
         iSplitR "Hinode_state Hold".
         2: { iModIntro. iExists _. iFrame. }
-        iIntros "Hcrashlocked".
+        iIntros "!> Hcrashlocked".
         iSplit.
         { iModIntro. done. }
 
@@ -555,7 +555,7 @@ Proof using Ptimeless.
       iIntros "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
       wp_pures.
       wp_store.
-      wp_load.
+      wp_load. iModIntro.
 
       iNamed 1.
       wpc_pures.
@@ -771,7 +771,7 @@ Proof using Ptimeless.
   }
 
   wp_store.
-  wp_load.
+  wp_load. iModIntro.
 
   iNamed 1.
   wpc_pures.

@@ -192,7 +192,7 @@ Proof.
   change (u64_le_bytes x) with (into_val.to_val (V:=u8) <$> u64_le x).
   rewrite -!fmap_app.
   iSplitR; first eauto.
-  iFrame "Hs".
+  iFrame "Hs". iModIntro.
   rewrite encoded_length_app1.
   change (length (encode1 (EncUInt64 x))) with 8%nat.
   iSplitR; first by iPureIntro; len.
@@ -239,7 +239,7 @@ Proof.
   change (u32_le_bytes x) with (into_val.to_val <$> u32_le x).
   rewrite -!fmap_app.
   iSplitR; first eauto.
-  iFrame "Hs".
+  iFrame "Hs". iModIntro.
   rewrite encoded_length_app1.
   change (length (encode1 _)) with 4%nat.
   iSplitR; first by iPureIntro; len.
@@ -287,7 +287,7 @@ Proof.
     rewrite /named; f_equal; len.
     rewrite app_nil_r //.
   - iIntros "(Hs&HI)"; iNamed "HI".
-    iApply "HΦ"; iFrame.
+    iApply "HΦ"; by iFrame.
 Qed.
 
 Hint Rewrite encoded_length_app1 : len.
@@ -312,7 +312,7 @@ Proof.
   wp_pures.
   wp_load; wp_store.
   iApply "HΦ".
-  iFrame.
+  iFrame. iModIntro.
   iExists _, _, _; iFrame.
   iSplitR; first by eauto.
   iSplitR.
@@ -359,7 +359,7 @@ Proof.
     iIntros "Hs".
     wp_pures.
     wp_load. wp_store.
-    iApply "HΦ".
+    iApply "HΦ". iModIntro.
     iExists _, _, _. iFrame.
     iSplit; eauto.
     rewrite insert_length.
@@ -398,7 +398,7 @@ Theorem wp_Enc__Finish stk E enc_v r sz remaining :
 Proof.
   iIntros (Φ) "Henc HΦ"; iNamed "Henc"; subst.
   wp_call.
-  iApply "HΦ"; iFrame "∗ %".
+  iApply "HΦ"; by iFrame "∗ %".
 Qed.
 
 Definition is_dec (dec_v:val) (r:Rec) (s:Slice.t) (q:Qp) (data: list u8): iProp Σ :=
@@ -542,7 +542,7 @@ Proof.
   iIntros (s') "Hbs".
   wp_pures.
   wp_load; wp_store.
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
   apply has_encoding_inv in Henc as [extra [Hdataeq _]].
   rewrite encode_cons /= -app_assoc in Hdataeq.
   iSplitL "Hbs".
@@ -622,7 +622,7 @@ Proof.
     wp_load.
     iApply "HΦ"; iFrame.
     rewrite -> take_ge, drop_ge by len.
-    iFrame.
+    by iFrame.
 Qed.
 
 (* special case where GetInts is the last thing and there are no more remaining

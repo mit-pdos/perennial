@@ -383,7 +383,7 @@ Proof.
     rewrite replicate_length.
     simpl.
     word. }
-  simpl.
+  simpl. iModIntro.
   iExactEq "Hextra"; word_eq.
 Qed.
 
@@ -944,7 +944,7 @@ Proof.
   wp_if_destruct.
   - change (int.nat 0) with 0%nat.
     iEval (rewrite firstn_O array_nil) in "HΦ" .
-    iApply "HΦ"; iFrame.
+    iApply "HΦ"; by iFrame.
   - apply u64_val_ne in Heqb.
     change (int.Z 0) with 0 in *.
     destruct vs1, vs2; simpl in Hvs1, Hvs2; try word.
@@ -1098,7 +1098,7 @@ Proof.
     { iPureIntro.
       revert Hextralen. repeat word_cleanup.
     }
-    rewrite ?loc_add_assoc.
+    rewrite ?loc_add_assoc. iModIntro.
     iExactEq "Hfree". f_equal. f_equal.
     repeat word_cleanup.
 
@@ -1166,7 +1166,7 @@ Proof.
       * rewrite array_app array_singleton.
         replace (length vs1) with (int.nat n) by done.
         replace (int.nat n : Z) with (int.Z n) by word.
-        iFrame.
+        iFrame. iModIntro.
         rewrite loc_add_assoc.
         iExactEq "Hlast"; word_eq.
         replace (int.Z n) with (int.nat n : Z) by word.
@@ -1185,7 +1185,7 @@ Proof.
       iPureIntro.
       simpl.
       word_cleanup. word_cleanup. }
-    simpl.
+    simpl. iModIntro.
     iExactEq "HnewFree".
     rewrite loc_add_assoc.
     word_eq.

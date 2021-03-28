@@ -388,7 +388,7 @@ Ltac crash_lock_open H :=
   iDestruct (is_slice_sz with "Haddrs") as %Hlen2.
   autorewrite with len in Hlen2.
   wp_apply wp_slice_len.
-  wp_pures.
+  wp_pures. iModIntro.
   iNamed 1.
   wpc_if_destruct.
   - iApply ncfupd_wpc.
@@ -402,7 +402,7 @@ Ltac crash_lock_open H :=
       rewrite lookup_ge_None_2 //.
       lia. }
     iMod (fupd_later_to_disc with "HP") as "HP".
-    iApply wpc_fupd. iModIntro.
+    iModIntro.
     iEval (rewrite ->(left_id True bi_wand)%I) in "HQ".
     wpc_pures.
     { iLeft in "HQ". eauto 12 with iFrame. }
@@ -417,12 +417,11 @@ Ltac crash_lock_open H :=
     wpc_frame "HQ".
     wp_loadField.
     wp_apply (crash_lock.release_spec with "His_locked"); auto.
-    wp_pures.
+    wp_pures. iModIntro.
     iNamed 1.
     iRight in "HQ".
     change slice.nil with (slice_val Slice.nil).
-    iApply "HQ"; iFrame.
-    auto.
+    iApply "HQ"; by iFrame.
   - destruct (list_lookup_lt _ addrs (int.nat off)) as [addr' Hlookup].
     { word. }
     iDestruct (is_slice_split with "Haddrs") as "[Haddrs_small Haddrs]".
@@ -466,13 +465,13 @@ Ltac crash_lock_open H :=
     wpc_frame.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "His_locked"); auto.
-    wp_pures.
+    wp_pures. iModIntro.
     iNamed 1.
     iApply "HQ".
     iFrame.
     rewrite Hlookup2.
     iDestruct (slice.is_slice_to_small with "Hb") as "Hb".
-    iFrame.
+    by iFrame.
 Qed.
 
 Theorem wpc_Inode__Read_triple {k} {l k' P addr} {off: u64} Q :
@@ -573,7 +572,7 @@ Proof.
   wp_loadField.
   wp_apply (crash_lock.release_spec with "His_locked"); auto.
   wp_pures.
-  iNamed 1.
+  iModIntro. iNamed 1.
   iRight in "HQ". by iApply "HQ".
 Qed.
 
@@ -791,14 +790,14 @@ Proof.
     wpc_frame.
     wp_loadField.
     wp_apply wp_slice_len; wp_pures.
-    iNamed 1.
+    iModIntro. iNamed 1.
     wpc_if_destruct.
-    + iApply wpc_fupd. wpc_pures.
+    + wpc_pures.
       iSplitR "HP Hdurable addrs Haddrs"; last first.
       { iExists _; iFrame.
-        iMod (own_disc_fupd_elim with "HP"). do 2 iModIntro. iNext.
+        iMod (own_disc_fupd_elim with "HP"). do 2 iModIntro.
         iFrame. iExists _, _; iFrame "∗ %". }
-      do 2 iModIntro.
+      iModIntro.
       iIntros "His_locked".
       iSplit; first iFromCache.
       wpc_pures.
@@ -820,7 +819,7 @@ Proof.
         auto. }
       iIntros "_".
       wp_pures.
-      iNamed 1.
+      iModIntro. iNamed 1.
       wpc_pures.
       iRight in "Hfupd".
       by iLeft in "Hfupd".
@@ -915,7 +914,7 @@ Proof.
 
       wpc_pures.
       { iLeft in "HQ". iModIntro. iFrame. iExists _. iFrame. iExists _; iFrame. }
-      iSplitR "Hused"; last (iFromCache).
+      iModIntro. iSplitR "Hused"; last (iFromCache).
       iSplit.
       { iLeft in "HQ". iModIntro. iFrame. iExists _. iFrame. iExists _; iFrame. }
       iSplitR "HP Haddrs addrs Hdurable"; last first.

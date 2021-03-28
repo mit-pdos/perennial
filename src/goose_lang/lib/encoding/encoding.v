@@ -616,7 +616,7 @@ Proof.
   rewrite decode_encode.
   iApply "HΦ".
   subst; simpl.
-  iFrame.
+  by iFrame.
 Qed.
 
 Theorem wp_DecodeUInt64 (l: loc) q (x: u64) s E :
@@ -643,7 +643,7 @@ Proof.
   rewrite decode_encode64.
   iApply "HΦ".
   subst; simpl.
-  iFrame.
+  by iFrame.
 Qed.
 
 Theorem wp_UInt64Get stk E s q (x: u64) vs :
@@ -745,7 +745,7 @@ Proof.
   iDestruct (array_app with "[$Hptr1 $Hptr2]") as "Hptr".
   rewrite take_drop.
   iApply "HΦ".
-  iFrame "∗ %".
+  by iFrame "∗ %".
 Qed.
 
 End heap.

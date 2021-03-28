@@ -319,7 +319,7 @@ Proof.
   wp_pures.
   replace (Slice.sz sl) with (U64 (length vs)) by word.
   iApply "HΦ".
-  iFrame.
+  iFrame. iModIntro.
   iSplit.
   { iPureIntro.
     rewrite fmap_length; word. }

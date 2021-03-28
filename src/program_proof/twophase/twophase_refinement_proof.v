@@ -785,7 +785,7 @@ Proof using N PARAMS.
     - iDestruct "H" as "(Hrel&Hj)".
       wp_pures.
       wp_apply (wp_TwoPhase__ReleaseAll' with "[$]").
-      wp_pures. iExists _. iFrame.
+      wp_pures. iExists _. iFrame. iModIntro.
       rewrite /val_interp -/val_interp.
       iRight. iExists _, _. iSplit; first eauto. simpl; auto.
       iApply (atomically_deconvertible_val_interp with "[$]"); eauto.
@@ -793,7 +793,7 @@ Proof using N PARAMS.
     - iDestruct "H" as "(Hrel&Hj)".
       wp_pures.
       wp_apply (wp_TwoPhase__ReleaseAll' with "[$]").
-      wp_pures. iExists _. iFrame.
+      wp_pures. iExists _. iFrame. iModIntro.
       rewrite /val_interp -/val_interp.
       iLeft. iExists _, _. iSplit; first eauto. simpl; auto.
   }

@@ -1390,7 +1390,7 @@ Proof.
   iMod (readonly_alloc_1 with "condLogger") as "#condLogger".
   iMod (readonly_alloc_1 with "condInstall") as "#condInstall".
   iMod (readonly_alloc_1 with "condShut") as "#condShut".
-  wp_pures.
+  wp_pures. iModIntro.
   iNamed 1. iRight in "HΦ".
   iApply ("HΦ").
   iMod (alloc_lock walN _ _ (wal_linv st γ)
@@ -1529,8 +1529,8 @@ Proof.
   { iNext.
     by wp_apply (wp_Walog__installer with "[$]").
   }
-  wp_pures. iIntros "H Hcfupd".
-  iApply "H". iFrame "# ∗".
+  wp_pures. iIntros "!> H Hcfupd".
+  iApply "H". by iFrame "# ∗".
 Qed.
 
 End goose_lang.

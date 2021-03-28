@@ -309,7 +309,7 @@ Proof.
   wpc_bind (load_ty _ _).
   wpc_frame.
   wp_load.
-  iIntros "H". iNamed "H".
+  iIntros "!> H". iNamed "H".
   wpc_pures.
   wpc_bind (If _ _ _).
   wpc_if_destruct; wpc_pures; auto; try (by (iDestruct (Himpl with "[$]") as "?"; eauto)).
@@ -329,7 +329,7 @@ Proof.
     wpc_frame_seq.
     wp_load.
     wp_store.
-    iNamed 1.
+    iModIntro. iNamed 1.
     wpc_pure1 Hcrash.
     { iFromCache. }
     wpc_pure1 Hcrash.

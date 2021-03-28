@@ -141,7 +141,7 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iExists _, _, _.
-  iFrame.
+  iFrame. iModIntro.
   rewrite big_sepM_empty. iFrame "Htxn ∗".
   iSplit; first by done.
   rewrite left_id.
@@ -306,7 +306,7 @@ Proof.
     subst.
 
     iDestruct "Hbufptr" as "[Hbufptr Hisbufmap]".
-    iApply "HΦ".
+    iApply "HΦ". iModIntro.
     iFrame "Hbufptr".
 
     iIntros (v' dirty') "[% Hbufptr]".

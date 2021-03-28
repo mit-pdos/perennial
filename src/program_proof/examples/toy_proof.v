@@ -85,7 +85,7 @@ Section goose.
     { iPureIntro. rewrite //=. }
     iNext. iIntros "(H1&%Hval)".
     wp_pures.
-    iNamed 1.
+    iModIntro. iNamed 1.
     iApply "HΦ". iExists _, _. iFrame. eauto.
   Qed.
 

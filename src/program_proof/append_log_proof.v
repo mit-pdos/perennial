@@ -249,7 +249,7 @@ Proof.
       iFrame. }
     iIntros (s) "[Hdi Hs]".
     wp_steps.
-    iApply "HΦ".
+    iApply "HΦ". iModIntro.
     iApply slice.is_slice_to_small in "Hs".
     iSplitR "Hsz Hdisk_sz Hupd Hdi"; eauto.
     iExists _; iFrame.
@@ -266,7 +266,7 @@ Proof.
     { iPureIntro.
       apply lookup_ge_None.
       lia. }
-    iExists _, _; iFrame.
+    iExists _, _; by iFrame.
 Qed.
 
 (* TODO: prove this based on [wp_Log__get] *)
@@ -352,8 +352,8 @@ Proof.
   iIntros "HΦ".
   rewrite /slice.len.
   wpc_pures.
-  { iDestruct "HΦ" as "[$ _]". }
-  { iDestruct "HΦ" as "[_ $]". }
+  { by iDestruct "HΦ" as "[$ _]". }
+  { by iDestruct "HΦ" as "[_ $]". }
 Qed.
 
 Lemma wpc_SliceGet {stk k E1} `{!into_val.IntoVal V} s t q (vs: list V) (i: u64) (v0: V) :
@@ -556,7 +556,7 @@ Proof.
     wp_apply wp_new_free_lock; iIntros (ml) "_".
     wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     wp_pures.
-    iIntros "(Hdisk&HΦ)".
+    iIntros "!> (Hdisk&HΦ)".
     iApply "HΦ". iFrame. iPureIntro. word.
   - destruct vs.
     { simpl in *.
@@ -594,7 +594,7 @@ Proof.
     iSplitL "".
     { eauto. }
     iSplitR "Hm Hlock"; last first.
-    { iExists _. iFrame. }
+    { iExists _. by iFrame. }
     iExists _, _; iFrame.
     rewrite disk_array_emp.
     iSplitR; first by auto.
@@ -660,7 +660,7 @@ Proof.
     iApply "HΦ".
     iFrame.
     rewrite /ptsto_log.
-    iExists _, _; iFrame.
+    iExists _, _; by iFrame.
   - wpc_pures.
     { crash_case. iApply (is_log_crash_l with "Hlog"). }
     iDestruct "Hlog" as "(Hhdr & Hlog & % & Hfree)".
@@ -736,7 +736,7 @@ Proof.
           iExists _, _.
           iApply (is_log'_append with "[$] [$] [$] [$] [%]"); [len]. }
 
-        iApply "HΦ".
+        iApply "HΦ". iModIntro.
         rewrite /ptsto_log.
         iSplitR "Hbs"; [ | iFrame ].
         iExists _, _; iFrame "Hsz Hdisk_sz".

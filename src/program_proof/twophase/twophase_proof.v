@@ -930,7 +930,7 @@ Proof.
   wp_pures.
   wp_apply util_proof.wp_DPrintf.
   wp_pures.
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
 
   iExists [].
   iDestruct (struct_fields_split with "Hl") as "(?&?&?&_)".
@@ -949,7 +949,7 @@ Proof.
   {
     iExists _, _, _.
     rewrite fmap_empty big_sepM_empty.
-    iFrame.
+    by iFrame.
   }
   iFrame "#".
   rewrite big_sepM_empty
@@ -1444,7 +1444,7 @@ Proof.
   2: {
     iApply "HΦ".
     rewrite !(decide_True _ _ Heqb).
-    iFrame.
+    by iFrame.
   }
   wp_apply (wp_TwoPhase__acquireNoCheck with "Hlocks");
     [assumption|assumption|assumption|].
@@ -1845,7 +1845,7 @@ Proof.
     iDestruct (is_slice_sz with "Hacquired_s") as "%Hlocked_blknos_len".
     wp_if_destruct.
     2: {
-      iApply "HΦ'".
+      iApply "HΦ'". iModIntro.
       iExists 0%nat.
       rewrite Heqb in Hlocked_blknos_len.
       replace (int.nat 0) with 0%nat in Hlocked_blknos_len by word.
@@ -2281,7 +2281,7 @@ Proof.
     as "[Hbuftxn_mem Hbuftxn_maps_to]";
     [by (iExists _; iFrame)|by intuition|].
   wp_pures.
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
   iFrame (Hdata) "Hclone".
   destruct vobj.
   simpl.
@@ -2294,7 +2294,7 @@ Proof.
   iSplitL "
     Htwophase.buftxn Hbuftxn_mem Hbuftxn_durable_frag Hbuftxn_maps_tos
   "; first by (iExists _, _, _; iFrame).
-  iFrame "# %".
+  by iFrame "# %".
 Qed.
 
 Theorem wp_TwoPhase__ReadBuf_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a sz :

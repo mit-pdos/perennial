@@ -66,7 +66,7 @@ Proof.
   wp_loadField.
   rewrite /slice.len; wp_pures. (* XXX: wp_apply wp_slice_len doesn't work for some reason *)
   replace logSlice.(Slice.sz) with (U64 $ length σ.(slidingM.log)) by word.
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
   iSplit; auto.
   iExists _, _; iFrame "# ∗".
 Qed.
@@ -328,7 +328,7 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
   replace (word.add σ.(slidingM.start) logSlice.(Slice.sz)) with (slidingM.endPos σ) by word.
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
   iSplit; auto.
   iExists _, _; iFrame "# ∗".
 Qed.
@@ -397,7 +397,7 @@ Proof.
   wp_apply (wp_MapGet with "is_addrPos").
   iIntros (pos ok) "(%Hmapget&is_addrPos)".
   wp_pures.
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
   iSplitL.
   { iFrame "% ∗".
     iExists _, _; iFrame "# ∗". }
@@ -661,7 +661,7 @@ Proof.
     iSpecialize ("HΦ" with "[-]").
     { iFrame "% ∗".
       iExists _, _; iFrame "# ∗". }
-    iExactEq "HΦ".
+    iModIntro. iExactEq "HΦ".
     erewrite bool_decide_iff; eauto.
     intuition auto.
   - simpl.
@@ -744,10 +744,10 @@ Proof.
       wp_pures.
       wp_load.
       wp_store.
-      iApply "HΦ".
+      iApply "HΦ". iModIntro.
       iFrame.
       iSplitL "pos".
-      { iExists _; iFrame. }
+      { iExists _; by iFrame. }
       iExactEq "Hs".
       rewrite /named.
       f_equal.
@@ -1150,7 +1150,7 @@ Proof.
 
     wp_if_destruct.
     2: {
-      iApply "HΦ".
+      iApply "HΦ". iModIntro.
       iFrame.
       erewrite memLogMap_drop1_not_highest.
       - iFrame.

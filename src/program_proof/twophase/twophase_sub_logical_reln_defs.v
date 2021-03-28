@@ -363,7 +363,7 @@ Proof.
       { econstructor; eauto. }
     }
     wp_pures; eauto.
-    iExists _; iFrame.
+    iExists _; iFrame. iModIntro.
     iExists _, _, _, _, _, _; iSplit; first eauto.
     iLöb as "IH".
     iModIntro. iIntros (v vs) "Hval".
@@ -736,7 +736,7 @@ Proof.
     }
     iApply wp_wpc.
     wp_pures; auto.
-    iExists _. iFrame.
+    iExists _. iFrame. iModIntro.
     rewrite /atomically_listT_interp.
     iDestruct "Hv2" as (lvs lv (->&->)) "H".
     iExists (vs1 :: lvs), (v1 :: lv). iSplit; first by eauto.

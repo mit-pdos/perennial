@@ -518,7 +518,7 @@ Section goose.
       { crash_case. iLeft. iFrame. }
       iCache with "HΦ Hpre_inodes Hinode_cinvs".
       { crash_case. iLeft. iFrame. }
-      wpc_bind (load_ty _ _). wpc_frame. wp_load. iNamed 1.
+      wpc_bind (load_ty _ _). wpc_frame. wp_load. iModIntro. iNamed 1.
       wpc_bind (inode.Open _ _).
       change (int.Z (U64 5)) with (Z.of_nat num_inodes) in Hbound.
       list_elem s_inodes n as s_inode.
@@ -541,7 +541,7 @@ Section goose.
       wp_load.
       wp_apply (wp_SliceAppend' with "Hinode_slice").
       iIntros (inode_s') "Hinode_slice".
-      wp_store.
+      wp_store. iModIntro.
       iNamed 1.
       iRight in "HΦ"; iApply "HΦ".
       iFrame.
@@ -595,7 +595,7 @@ Section goose.
     rewrite -> drop_ge by word.
     wpc_frame_compl "Hinodes".
     { crash_case. eauto. }
-    wp_load.
+    wp_load. iModIntro.
     iNamed 1.
     iRight in "HΦ"; iApply "HΦ".
     iFrame.

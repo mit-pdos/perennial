@@ -749,7 +749,7 @@ Proof.
     iExists _.
     iFrame "∗ #".
     iExists _.
-    iFrame (Hlocked_wf) "∗".
+    by iFrame (Hlocked_wf) "∗".
   }
 
   iDestruct (updates_slice_frag_len with "Htxn_slice") as %Hs_len.
@@ -1166,17 +1166,17 @@ Proof.
     HownInstallerPos_installer HownInstallerTxn_installer
     HnotInstalling".
   2: {
-    iExists _, _.
+    iExists _, _. iModIntro.
     iFrame "HdiskEndMem_lb ∗".
     iSplitL "HownInstallerPos_installer".
-    1: iExists _; iFrame.
+    1: iExists _; by iFrame.
     iSplitL "HownInstallerTxn_installer".
-    1: iExists _; iFrame.
+    1: iExists _; by iFrame.
     iSplitL "HownInstallerPosMem_installer".
-    1: iExists _; iFrame.
+    1: iExists _; by iFrame.
     iSplitL "HownInstallerTxnMem_installer".
-    1: iExists _; iFrame.
-    1: iExists _; iFrame.
+    1: iExists _; by iFrame.
+    1: iExists _; by iFrame.
   }
   iExists {|
     diskEnd := σ'.(diskEnd);
@@ -1203,7 +1203,7 @@ Proof.
   }
   iFrame "HdiskEnd_circ Hstart_exactly Hstart_at_least'".
   iExists _, _, _, _, _, _, _.
-  iFrame.
+  iFrame. iModIntro.
   iSplit.
   {
     iPureIntro.
@@ -1357,7 +1357,7 @@ Proof.
   wp_apply (wp_condSignal with "[$cond_shut]").
   wp_loadField.
   wp_apply (release_spec with "[$lk $Hlocked $Hlockinv]").
-  iApply ("HΦ" with "[$]").
+  by iApply ("HΦ" with "[$]").
 Qed.
 
 End goose_lang.

@@ -402,7 +402,7 @@ Proof using.
     iApply "HΦ".
     iFrame.
 
-    iIntros (b') "Hbuf".
+    iIntros "!>" (b') "Hbuf".
     iExists _, _, _.
     iFrame.
     iSplitR; first eauto.
@@ -509,7 +509,7 @@ Proof using.
         apply (not_elem_of_dom (D:=gset addr)).
         assert (is_Some (mtodo !! a)) as Hsome by eauto.
         apply (elem_of_dom (D:=gset addr)) in Hsome. set_solver. }
-      iFrame.
+      by iFrame.
     }
     { iApply "HΦ".
       iExists _, _, (delete a mtodo), (<[a:=vbuf]> mdone), (delete a amtodo).
@@ -536,7 +536,7 @@ Proof using.
       rewrite map_filter_insert_not_delete.
       2: { simpl. congruence. }
       rewrite delete_notin.
-      { iFrame. }
+      { by iFrame. }
       apply (not_elem_of_dom (D:=gset addr)).
       assert (is_Some (mtodo !! a)) as Hsome by eauto.
       apply (elem_of_dom (D:=gset addr)) in Hsome. set_solver.
@@ -549,7 +549,7 @@ Proof using.
   iApply "HΦ". iFrame.
   intuition subst.
   rewrite (dom_empty_inv_L (D:=gset addr) mtodo).
-  { rewrite left_id. iFrame. }
+  { rewrite left_id. by iFrame. }
 
   rewrite -H3.
   apply flatid_addr_empty_1 in H2; subst.
@@ -676,7 +676,7 @@ Proof using.
 
   iIntros (b) "Hb".
   wp_pures.
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
   iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
 
   iDestruct (buf_mapsto_non_null with "[$]") as %Hnotnull.
@@ -1139,6 +1139,7 @@ Proof.
       destruct (default false (byte_to_bits src !! int.nat bit)) eqn:?.
       { apply masks_different in Heqb0; auto; contradiction. }
       destruct (default false (byte_to_bits dst !! int.nat bit)) eqn:?; last contradiction.
+      iModIntro.
       iExactEq "HΦ"; do 3 f_equal.
       rewrite /install_one_bit.
       rewrite Heqb1.
@@ -1148,13 +1149,14 @@ Proof.
     + destruct (default false (byte_to_bits src !! int.nat bit)) eqn:?; last contradiction.
       destruct (default false (byte_to_bits dst !! int.nat bit)) eqn:?; first contradiction.
       wp_load. wp_store. wp_load.
+      iModIntro.
       iExactEq "HΦ"; do 3 f_equal.
       rewrite /install_one_bit.
       rewrite Heqb1.
       apply (inj byte_to_bits).
       rewrite bits_to_byte_to_bits; [|len].
       bit_cases bit; byte_cases dst; vm_refl.
-  - wp_load.
+  - wp_load. iModIntro.
     iExactEq "HΦ"; do 3 f_equal.
     rewrite install_one_bit_id //.
     { lia. }
@@ -1259,7 +1261,7 @@ Proof.
   iDestruct (is_slice_combine with "Hsrc1 Hsrc2")
     as "Hsrc"; first by word.
   rewrite take_drop.
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
   iFrame "Hsrc".
   iExactEq "Hdst".
   f_equal.

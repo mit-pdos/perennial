@@ -16,10 +16,10 @@ Proof.
   iIntros (Hlt) "HΦ".
   wp_call.
   wp_if_destruct.
-  - iFrame.
+  - by iFrame.
   - assert (int.Z n = int.Z m) by word.
     apply word.unsigned_inj in H; subst.
-    iFrame.
+    by iFrame.
 Qed.
 
 Theorem wp_Min_r stk E (n m: u64) Φ :
@@ -31,8 +31,8 @@ Proof.
   wp_if_destruct.
   - assert (int.Z n = int.Z m) by word.
     apply word.unsigned_inj in H; subst.
-    iFrame.
-  - iFrame.
+    by iFrame.
+  - by iFrame.
 Qed.
 
 Theorem wp_DPrintf stk E (level: u64) (msg arg: val) :

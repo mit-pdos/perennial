@@ -194,7 +194,7 @@ Proof using Ptimeless.
     iIntros "Resok".
     rewrite Hfl; clear Hfl fl.
 
-    wp_pures.
+    wp_pures. iModIntro.
     iNamed 1.
     wpc_pures.
 
@@ -413,7 +413,7 @@ Proof using Ptimeless.
   {
     iDestruct "Hok" as "(Hinode_mem & Hinode_enc & Hinode_data & %Hok)". intuition subst.
     iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
-    wp_storeField.
+    wp_storeField. iModIntro.
     iNamed 1.
 
     iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
@@ -457,7 +457,7 @@ Proof using Ptimeless.
       iModIntro.
       iExists _; iFrame.
     }
-    iIntros "Hcrashlocked".
+    iIntros "!> Hcrashlocked".
     iSplit.
     { iModIntro. done. }
 

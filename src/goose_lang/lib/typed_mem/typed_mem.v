@@ -304,7 +304,7 @@ Section goose_lang.
       erewrite val_ty_flatten_length by eauto.
       setoid_rewrite ty_size_offset.
       rewrite Z.mul_1_r.
-      iFrame.
+      by iFrame.
     - wp_apply (wp_load with "[$]"); auto.
     - wp_apply (wp_load with "[$]"); auto.
     - wp_apply (wp_load with "[$]"); auto.

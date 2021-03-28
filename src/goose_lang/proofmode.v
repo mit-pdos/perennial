@@ -54,14 +54,37 @@ Proof.
   iIntros "$".
 Qed.
 
-Lemma tac_wp_value `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E Φ v :
+Lemma tac_wp_value_noncfupd `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E Φ v :
   envs_entails Δ (Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ Φ }}).
 Proof. rewrite envs_entails_eq=> ->. by apply wp_value. Qed.
+Lemma tac_wp_value_fupd `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E Φ v :
+  envs_entails Δ (|NC={E}=> Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ v, |={E}=> Φ v }})%I.
+Proof.
+  rewrite envs_entails_eq=> ->. rewrite wp_value_fupd.
+  iIntros ">HΦ". done.
+Qed.
+Lemma tac_wp_value `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ} Δ s E Φ v :
+  envs_entails Δ (|NC={E}=> Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ Φ }}).
+Proof. rewrite envs_entails_eq=> ->. rewrite wp_value_fupd //. Qed.
 
 Ltac wp_expr_simpl := wp_expr_eval simpl.
 
+(** Simplify the goal if it is [WP] of a value.
+  If the postcondition already allows a [ncfupd], do not add a second one.
+  If it is a [fupd], upgrade that to an [ncfupd].
+  But otherwise, *do* add a [ncfupd]. This ensures that all the lemmas applied
+  here are bidirectional, so we never will make a goal unprovable. *)
 Ltac wp_value_head :=
-  eapply tac_wp_value.
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E (Val _) (λ _, ncfupd ?E _ _)) =>
+      eapply tac_wp_value_noncfupd
+  | |- envs_entails _ (wp ?s ?E (Val _) (λ _, wp _ ?E _ _)) =>
+      eapply tac_wp_value_noncfupd
+  | |- envs_entails _ (wp ?s ?E (Val _) (λ _, fupd ?E _ _)) =>
+      eapply tac_wp_value_fupd
+  | |- envs_entails _ (wp ?s ?E (Val _) _) =>
+      eapply tac_wp_value
+  end.
 
 Lemma tac_wp_true_elim Σ Δ (P: iProp Σ) :
   envs_entails Δ P ->

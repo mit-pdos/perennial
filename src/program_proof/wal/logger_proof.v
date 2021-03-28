@@ -75,7 +75,7 @@ Proof.
       iNamed "Hlkinv".
       iExists _; iFrame "# ∗".
       iPureIntro; inversion 1.
-    - iApply "HΦ"; iFrame.
+    - iApply "HΦ"; iFrame. iModIntro.
       iExists _; iFrame "∗ #".
       iSplit.
       { iExists _; by iFrame "# ∗". }
@@ -186,8 +186,8 @@ Proof.
     iFrame "Hlocked".
     iSplitR "HnotLogging Happender HownLoggerPos_logger HownLoggerTxn_logger".
     - iExists _; iFrame.
-      iExists _; iFrame "% ∗".
-    - iFrame.
+      iExists _; by iFrame "% ∗".
+    - by iFrame.
   }
   wp_pures.
   iNamed "HdiskEnd_circ".
@@ -595,11 +595,11 @@ Proof.
            (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat)
         with (int.Z σ.(memLog).(slidingM.mutable)) by word.
       replace (U64 (int.Z σ.(memLog).(slidingM.mutable))) with σ.(memLog).(slidingM.mutable) by word.
-      iFrame "∗ #".
+      by iFrame "∗ #".
     }
 
     iExists _, nextDiskEnd_txn_id0, _, _, _, _, _.
-    iFrame.
+    iFrame. iModIntro.
     iClear "HinstalledTxn_lb".
     iNamed "Hlinv_pers".
     iNamed "Htxns".
@@ -645,8 +645,8 @@ Proof.
     eauto.
   - iFrame.
     iSplitL "HownLoggerPos_logger".
-    + iExists _; iFrame.
-    + iExists _; iFrame.
+    + iExists _; by iFrame.
+    + iExists _; by iFrame.
 Qed.
 
 Theorem wp_Walog__logger l circ_l γ dinit :
@@ -696,7 +696,7 @@ Proof.
   wp_apply (wp_condSignal with "cond_shut").
   wp_loadField.
   wp_apply (release_spec with "[$lk $Hlk_held $Hlkinv]").
-  iApply ("HΦ" with "[//]").
+  by iApply ("HΦ" with "[//]").
 Qed.
 
 End goose_lang.

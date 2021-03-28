@@ -163,7 +163,7 @@ Proof.
     wp_apply (wp_SliceSet (V:=u8) with "[$Hbufdata]"); eauto.
     iIntros "Hbufdata".
     wp_pures.
-    iApply "HΦ'". iFrame.
+    iApply "HΦ'". iModIntro. iFrame.
 
     assert ((int.nat (word.add offset count')) < block_bytes) as fin.
     {
@@ -269,7 +269,7 @@ Proof.
     { iFrame. iFrame "%". }
     iIntros "(Hbuftxn & Hienc & Hmem)".
     wp_pures.
-    iApply "HΦ". iFrame "Hbuftxn". iLeft.
+    iApply "HΦ". iModIntro. iFrame "Hbuftxn". iLeft.
     rewrite Z.max_r.
     2: { revert Heqb2. word. }
     iFrame.
@@ -307,7 +307,7 @@ Proof.
     rewrite Hcount. revert Heqb2. word.
   }
   { wp_pures.
-    iApply "HΦ". iFrame "Hbuftxn". iLeft.
+    iApply "HΦ". iModIntro. iFrame "Hbuftxn". iLeft.
     rewrite Z.max_l.
     2: { revert Heqb2. word. }
     replace (U64 (int.Z len)) with (len) by word.

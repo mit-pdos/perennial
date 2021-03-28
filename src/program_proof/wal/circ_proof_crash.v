@@ -300,7 +300,7 @@ Proof.
 
     wpc_bind (load_ty _ _).
     wpc_frame.
-    wp_load.
+    wp_load. iModIntro.
     iNamed 1.
 
     wpc_pures.
@@ -333,14 +333,14 @@ Proof.
 
     wpc_bind (load_ty _ _).
     wpc_frame.
-    wp_load.
+    wp_load. iModIntro.
     iNamed 1.
 
     wpc_frame.
     wp_apply (wp_SliceAppend_updates (uv:=(a, b_s)) with "[$Hupds Hb_s]").
     { iApply slice.is_slice_to_small in "Hb_s". iFrame. }
     iIntros (bufSlice') "Hupds'".
-    wp_store.
+    wp_store. iModIntro.
 
     iNamed 1.
 
@@ -412,7 +412,7 @@ Proof.
                   diskEnd_name := diskEnd_name'; |}).
 
     *)
-    wp_pures.
+    wp_pures. iModIntro.
     iNamed 1.
     iDestruct "HΦ" as "(_&HΦ)".
     iApply ("HΦ").

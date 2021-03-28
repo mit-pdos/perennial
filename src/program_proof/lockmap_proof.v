@@ -221,7 +221,7 @@ Proof.
           wp_pures.
           iApply "HΦloop".
           iFrame.
-          iExists _, _. iFrame.
+          iExists _, _. by iFrame.
 
       + wp_untyped_load.
         wp_storeField.
@@ -242,7 +242,7 @@ Proof.
         iExists _, _. iFrame.
 
         erewrite <- (insert_id m) at 1; eauto.
-        iApply "Haddrs".
+        iApply "Haddrs". iModIntro.
         iExists _, _. iFrame "∗ Hcond".
         iSplit; try done.
         iLeft; done.
@@ -311,6 +311,7 @@ Proof.
       iApply (big_sepS_insert).
       { set_solver. }
 
+      iModIntro.
       iSplitR. { rewrite lookup_insert; iIntros (Hx). congruence. }
 
       iApply big_sepS_mono; iFrame.
@@ -330,7 +331,7 @@ Proof.
   }
 
   iApply "HΦ".
-  iFrame.
+  by iFrame.
 Qed.
 
 Theorem wp_lockShard__release ls (addr : u64) (P : u64 -> iProp Σ) covered gh :
@@ -392,7 +393,7 @@ Proof.
         iFrame "∗ Hcond".
         iSplitR; auto.
         iRight.
-        iFrame. done.
+        by iFrame.
       }
 
       rewrite insert_delete.
@@ -620,12 +621,12 @@ Proof.
     iSplitL "Hpp".
     { replace (int.Z (word.add i 1))%Z with (int.Z i + 1)%Z by word.
       replace (NSHARD - (int.Z i + 1))%Z with (NSHARD - int.Z i - 1)%Z by word.
-      iFrame. }
+      by iFrame. }
     iApply (big_sepL2_app with "Hshards").
     iApply big_sepL2_singleton.
     rewrite Hlen.
     replace (Z.of_nat (int.nat i + 0)) with (int.Z (U64 (int.Z i))) by word.
-    iFrame.
+    by iFrame.
   }
   {
     iExists _, nil, nil.

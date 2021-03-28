@@ -851,7 +851,7 @@ Proof using spec_trans.
       { simpl. econstructor; eauto. }
       { econstructor; eauto. }
     }
-    wp_pures; eauto.
+    wp_pures; eauto. iModIntro.
     iExists _; iFrame.
     iExists _, _, _, _, _, _; iSplit; first eauto.
     iLöb as "IH".
@@ -1305,7 +1305,7 @@ Proof using spec_trans.
     wp_pures; auto.
     iExists _. iFrame.
     rewrite val_interp_list_unfold /listT_interp.
-    iDestruct "Hv2" as (lvs lv (->&->)) "H".
+    iDestruct "Hv2" as (lvs lv (->&->)) "H". iModIntro.
     iExists (vs1 :: lvs), (v1 :: lv). iSplit; first by eauto.
     simpl. iFrame.
   - subst.

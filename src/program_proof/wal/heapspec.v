@@ -2590,7 +2590,7 @@ Proof using walheapG0.
     iDestruct "Hbl" as (b') "(Hbl & Hlatestfrag & ->)".
     wp_pures.
     iApply "HΦ".
-    iFrame.
+    by iFrame.
   }
   {
     wp_pures.
@@ -2600,7 +2600,7 @@ Proof using walheapG0.
     { iFrame "#". }
     iIntros (bli) "Hbli".
     iDestruct "Hbli" as (b0) "(Hb0 & Hlatestfrag & ->)".
-    iApply "HΦ". iFrame.
+    iApply "HΦ". by iFrame.
   }
 Qed.
 
@@ -2639,7 +2639,7 @@ Proof.
   iDestruct (wal_heap_mapsto_latest_helper with "[$Hheap $Htxnsfrag $Hmapsto]") as %Hx.
   iMod ("Hclose" with "Hheap").
   iModIntro.
-  iFrame. done.
+  by iFrame.
 Qed.
 
 Theorem wp_Walog__Flush_heap l γ dinit (txn_id : nat) (pos : u64) :
@@ -2692,7 +2692,7 @@ Proof.
   destruct σ; simpl.
   iDestruct (ghost_var_agree with "Hlwh Htxns") as "%Hlwh".
   inversion Hlwh; clear Hlwh; subst.
-  iExists _, _. iFrame.
+  iExists _, _. by iFrame.
 Qed.
 
 End heap.

@@ -386,7 +386,7 @@ Opaque struct.t.
 
   iDestruct (big_sepML_empty_m with "Hbufamap_todo") as "%Hbufamap_todo_empty"; subst.
   rewrite map_difference_empty.
-  iApply "HΦ". iFrame.
+  iApply "HΦ". by iFrame.
 Qed.
 
 Theorem wp_MkBlockData blkno dataslice :
@@ -503,7 +503,7 @@ Proof.
   iDestruct (big_sepM2_empty_r with "Hmtodo") as "->".
   rewrite left_id in H. subst.
   iApply "HΦ".
-  iFrame.
+  by iFrame.
 Qed.
 
 Theorem bi_iff_1 {PROP:bi} (P Q: PROP) :
@@ -1191,7 +1191,7 @@ Proof using txnG0 Σ.
     wp_pures.
     iApply "HΦ".
     iFrame.
-    iExists txn_id. iFrame.
+    iExists txn_id. by iFrame.
   }
   {
     iNamed "Hnpos".
@@ -1199,7 +1199,7 @@ Proof using txnG0 Σ.
     { iExists _, _, _. iFrame. }
 
     wp_pures.
-    iApply "HΦ". iFrame.
+    iApply "HΦ". by iFrame.
   }
 Unshelve.
   all: eauto.
@@ -1277,7 +1277,7 @@ Proof.
         wp_apply (wp_Walog__Flush_heap with "[$Hiswal $Hpos]").
         iIntros "HQ".
         wp_load.
-        iApply "HΦ". iFrame.
+        iApply "HΦ". iModIntro. iFrame.
         iSplitL.
         2: { iIntros "%H". congruence. }
         iIntros (?). iExists txn_id. iFrame.
@@ -1285,7 +1285,7 @@ Proof.
 
       * wp_pures.
         wp_load.
-        iApply "HΦ". iFrame.
+        iApply "HΦ". iModIntro. iFrame.
         iSplitL.
         2: { iIntros "%H". congruence. }
         iIntros (?). iExists txn_id. iFrame.
@@ -1295,7 +1295,7 @@ Proof.
       wp_store.
       wp_load.
       iApply "HΦ".
-      iFrame.
+      by iFrame.
 
   - wp_apply util_proof.wp_DPrintf.
 
@@ -1315,6 +1315,7 @@ Proof.
     rewrite fmap_length in H0.
     apply length_zero_iff_nil in H0; subst.
 
+    iModIntro.
     iSplit; last by iApply big_sepM_empty.
     iSplitR.
     { iIntros; congruence. }

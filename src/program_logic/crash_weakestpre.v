@@ -1065,13 +1065,14 @@ Qed.
 *)
 
 Lemma wpc_value s k E1 Φ Φc v :
-  (|={E1}=> Φ v) ∧ (<disc> |C={E1}_k=> Φc) ⊢ WPC of_val v @ s; k; E1 {{ Φ }} {{ Φc }}.
+  (|NC={E1}=> Φ v) ∧ (<disc> |C={E1}_k=> Φc) ⊢ WPC of_val v @ s; k; E1 {{ Φ }} {{ Φc }}.
 Proof.
   rewrite wpc_unfold /wpc_pre to_of_val. iIntros "H".
   iIntros (mj).
   iModIntro.
   iSplit.
-  - iDestruct "H" as "(H&_)". iIntros. iMod "H". iFrame. eauto.
+  - iDestruct "H" as "(H&_)". rewrite ncfupd_eq /ncfupd_def.
+    iIntros (q) "HNC". iMod ("H" with "HNC"). by iFrame.
   - iDestruct "H" as "(_&H)". iIntros. iModIntro.
     by iApply cfupd_split_level_cfupd.
 Qed.

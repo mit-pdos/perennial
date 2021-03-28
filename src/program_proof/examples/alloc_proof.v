@@ -198,14 +198,14 @@ Proof.
         simpl.
         rewrite -gset_to_gmap_union_singleton //. }
     wp_pures.
-    iApply "HΦ"; iFrame.
+    iApply "HΦ"; by iFrame.
   - wp_apply (release_spec with "[-HΦ HQ $His_lock $His_locked]").
     { iExists _; iFrame "∗ %". iNext.
       iExactEq "Hfreemap"; rewrite /named.
       f_equal.
       set_solver. }
     wp_pures.
-    iApply "HΦ"; iFrame.
+    iApply "HΦ"; by iFrame.
 Qed.
 
 Lemma gset_difference_difference `{Countable K} (A B C: gset K) :

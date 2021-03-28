@@ -699,7 +699,7 @@ Section proof.
       rewrite app_nil_r /ListMatch.
       wp_pures.
       iApply "HΦ".
-      iFrame.
+      by iFrame.
     }
     simpl in Hwf.
     rewrite /ListMatch.

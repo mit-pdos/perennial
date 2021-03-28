@@ -292,7 +292,7 @@ Proof.
         iExists _; by iFrame "∗ #". }
       iIntros "(Hlocked&Hlockin)".
       wp_pures.
-      iApply "HΦ"; iFrame.
+      iApply "HΦ"; by iFrame.
     - iApply "HΦ".
       iFrame "Hlocked".
       iNamed "HdiskEnd_circ".

@@ -22,8 +22,8 @@ Proof.
   iIntros "HΦ".
   rewrite /slice.len.
   wpc_pures.
-  { iDestruct "HΦ" as "[$ _]". }
-  { iDestruct "HΦ" as "[_ $]". }
+  { by iDestruct "HΦ" as "[$ _]". }
+  { by iDestruct "HΦ" as "[_ $]". }
 Qed.
 
 Lemma wpc_SliceGet stk k E1 s t q vs (i: u64) v0 :

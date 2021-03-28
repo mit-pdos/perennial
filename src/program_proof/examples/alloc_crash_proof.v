@@ -760,7 +760,7 @@ Proof.
     wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hfreemap $His_locked $His_lock]"); first assumption.
     { iExists _; iFrame. rewrite Hk set_empty_difference. iFrame. }
     wp_pures.
-    iApply "HΦ"; iFrame.
+    iApply "HΦ"; by iFrame.
 Qed.
 
 (* NOTE: we used to have a proof of this (with nearly the same proof script as
@@ -834,7 +834,7 @@ Proof.
       iIntros. iApply "Hclose". iSplitR "Hprep".
       ** by iFrame.
       ** iIntros. eauto.
-    * iIntros. iIntros "!> (?&?) !>"; iFrame.
+    * iIntros. iIntros "!> (?&?) !>"; by iFrame.
 Qed.
 
 Lemma prepare_reserved_block E1 R n n' γ e a Φ Φc `{AbsLaterable _ Φc}:
@@ -863,7 +863,7 @@ Proof.
       iSplitL "".
       ** eauto.
       ** eauto.
-    * iIntros. iIntros "!> (?&?) !>"; iFrame.
+    * iIntros. iIntros "!> (?&?) !>"; by iFrame.
 Qed.
 
 Lemma free_mark_used_non_free σ a:
@@ -909,7 +909,7 @@ Proof.
     rewrite (free_mark_used_non_free) //=.
     intros Heq; subst; eauto. rewrite Heq in Hlookup'. congruence.
   }
-  iModIntro. iFrame.
+  iModIntro. by iFrame.
 Qed.
 
 (*

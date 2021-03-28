@@ -175,7 +175,7 @@ Proof using txnG0 Σ.
     rewrite /=.
     iSplitR; first done.
     destruct v. iSplitR; first done.
-    iExists _. iFrame.
+    iExists _. by iFrame.
   }
 
   (* Case 2: missed in cache *)
@@ -257,7 +257,7 @@ Proof using txnG0 Σ.
   iSplitR; first done.
   destruct v.
   iSplitR; first done.
-  iExists _. iFrame.
+  iExists _. by iFrame.
 Qed.
 
 End goose_lang.

@@ -388,7 +388,7 @@ Proof using All.
 
   iAssert (is_fs P1 (Build_simple_names γ γ' γsrc ghs) nfs dinit) with "[]" as "Hfs".
   { iExists _, _. iFrame "Ht Hl Histxn Htxnsys Htxncrash Hlm Hsrc". }
-  wp_pures. iNamed 1.
+  wp_pures. iModIntro. iNamed 1.
   iRight in "HΦ". iApply "HΦ". iFrame "# ∗".
 Qed.
 

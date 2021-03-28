@@ -45,7 +45,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_pures.
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
   iSplit.
   { iFrame. }
   iPureIntro; simpl. eauto.

@@ -177,7 +177,7 @@ Section proof.
     iMod (readonly_alloc_1 with "txn") as "#Hpre.txn".
     iMod (readonly_alloc_1 with "locks") as "#Hpre.locks".
     wp_pures.
-    iIntros "[? H2]".
+    iIntros "!> [? H2]".
     iNamed.
     iNamed "H2".
 
@@ -295,6 +295,6 @@ Section proof.
       iApply "HΦ".
       iFrame "Hj".
       iSplit; first by iFrame "Hopen".
-      iExists _, _, _, _. iFrame.
+      iExists _, _, _, _. by iFrame.
   Qed.
 End proof.

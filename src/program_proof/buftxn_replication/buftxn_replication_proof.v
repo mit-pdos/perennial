@@ -136,7 +136,7 @@ Section goose_lang.
         iFrame "∗#". }
       wp_pures.
       iApply "HΦ".
-      iFrame.
+      by iFrame.
     - iRename "Hpost" into "rb_rep".
       iDestruct "rb_rep" as "[rb_rep _]".
       wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
@@ -145,7 +145,7 @@ Section goose_lang.
         iFrame "∗#". }
       wp_pures.
       iApply "HΦ".
-      iFrame.
+      by iFrame.
   Qed.
 
 End goose_lang.
