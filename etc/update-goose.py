@@ -9,7 +9,7 @@ def run_command(args, dry_run=False, verbose=False):
     if dry_run or verbose:
         print(" ".join(args))
     if not dry_run:
-        subprocess.run(args)
+        subprocess.run(args, check=True)
 
 
 def main():
