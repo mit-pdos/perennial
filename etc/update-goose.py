@@ -85,7 +85,9 @@ def main():
     if examples_dir is not None and not os.path.isdir(examples_dir):
         parser.error("perennial-examples directory does not exist")
     if distributed_dir is not None and not os.path.isdir(distributed_dir):
-        parser.error("lockservice (distributed examples) directory does not exist")
+        parser.error(
+            "lockservice (distributed examples) directory does not exist"
+        )
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
 
@@ -199,10 +201,7 @@ def main():
                 pkg="github.com/mit-pdos/perennial-examples/" + pkg,
             )
     if distributed_dir is not None:
-        pkgs = [
-            "grove_common",
-            "."
-        ]
+        pkgs = ["grove_common", "."]
         for pkg in pkgs:
             if pkg == ".":
                 run_goose(
@@ -210,7 +209,7 @@ def main():
                     path.join(perennial_dir, "external/Goose"),
                     pkg="github.com/mit-pdos/lockservice/",
                     importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
-                    excludes=["github.com/mit-pdos/lockservice/grove_ffi"]
+                    excludes=["github.com/mit-pdos/lockservice/grove_ffi"],
                 )
             else:
                 run_goose(
@@ -218,14 +217,11 @@ def main():
                     path.join(perennial_dir, "external/Goose"),
                     pkg="github.com/mit-pdos/lockservice/" + pkg,
                     importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
-                    excludes=["github.com/mit-pdos/lockservice/grove_ffi"]
+                    excludes=["github.com/mit-pdos/lockservice/grove_ffi"],
                 )
 
     if gokv_dir is not None:
-        pkgs = [
-            "aof",
-            "goosekv"
-        ]
+        pkgs = ["aof", "goosekv"]
 
         for pkg in pkgs:
             run_goose(
@@ -235,7 +231,10 @@ def main():
                 importHeader="""From Perennial.goose_lang Require Import ffi.grove_prelude.
 From Goose Require github_com.mit_pdos.lockservice.lockservice.
                 """,
-                excludes=["github.com/mit-pdos/lockservice/grove_ffi", "github.com/mit-pdos/lockservice"]
+                excludes=[
+                    "github.com/mit-pdos/lockservice/grove_ffi",
+                    "github.com/mit-pdos/lockservice",
+                ]
                 # XXX: need to change the Coq import statement for lockservice/ from
                 # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
                 # "From Goose Require github_com.mit_pdos.lockservice."
