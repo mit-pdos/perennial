@@ -717,23 +717,23 @@ Proof.
   assumption.
 Qed.
 
-Lemma na_crash_inv_alloc_map `{Countable A} {B} k E (P: A → B → iProp Σ) Q `{∀ a obj, Timeless (Q a obj)} m:
+Lemma na_crash_inv_alloc_map_bdisc `{Countable A} {B} k E (P: A → B → iProp Σ) Q `{∀ a obj, Timeless (Q a obj)} m:
   ▷ ([∗ map] a ↦ obj ∈ m, Q a obj) -∗
   ([∗ map] a ↦ obj ∈ m, □ (▷ (Q a obj) -∗ |C={⊤}_k=> ▷ (P a obj))) -∗
   |(S k)={E}=>
      ([∗ map] a ↦ obj ∈ m, na_crash_inv (S k) (Q a obj) (P a obj)) ∗
-     <disc> |C={⊤}_(S k)=> ▷ ([∗ map] a ↦ obj ∈ m, P a obj).
+     <bdisc> |C={⊤}_(S k)=> ▷ ([∗ map] a ↦ obj ∈ m, P a obj).
 Proof.
   iIntros "HQs #Hstatuses".
-  iInduction m as [|i x m] "IH" using map_ind;
-    first by (rewrite !big_sepM_empty; iSplitL; iModIntro; auto).
+  iInduction m as [|i x m] "IH" using map_ind.
+   { rewrite !big_sepM_empty. iSplitL; eauto. repeat iModIntro. auto. }
   iMod "HQs".
   iDestruct (big_sepM_insert with "HQs") as "[HQ HQs]";
     first by assumption.
   iDestruct (big_sepM_insert with "Hstatuses") as "[Hstatus Hstatuses']";
     first by assumption.
   iDestruct ("IH" with "Hstatuses' HQs") as "> [Hcrash_invs Hcrash_Ps]".
-  iDestruct (na_crash_inv_alloc with "HQ Hstatus")
+  iDestruct (na_crash_inv_alloc_bdisc with "HQ Hstatus")
     as "> [Hcrash_inv Hcrash_P]".
   iModIntro.
   iSplitL "Hcrash_invs Hcrash_inv".
@@ -802,7 +802,7 @@ Theorem twophase_init_locks {E} k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a 
   "Hlinvs" ∷ (
     ([∗ set] a ∈ set_map addr2flat (dom (gset addr) mt),
       "Hlinv" ∷ twophase_linv_flat k ex_mapsto γ γ' a) ∗
-      "Hcrash" ∷ <disc>
+      "Hcrash" ∷ <bdisc>
                  (|C={⊤}_(S (S k))=> ([∗ map] a↦_ ∈ mt, ∃ (obj : object),
                                      "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
                                      "Hex_mapsto" ∷ ex_mapsto a obj))
@@ -836,7 +836,7 @@ Proof.
     as "[Htokens Hdurable_mapstos]".
   iApply fupd_ncfupd.
   iMod (
-    na_crash_inv_alloc_map _ _
+    na_crash_inv_alloc_map_bdisc _ _
     (λ a _,
       (∃ obj', twophase_crash_inv_pred ex_mapsto γ' a obj'))%I
     (twophase_pre_crash_inv_pred ex_mapsto γ)

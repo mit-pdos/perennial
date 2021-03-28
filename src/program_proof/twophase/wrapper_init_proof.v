@@ -31,7 +31,7 @@ Section proof.
 
   Implicit Types (N: namespace).
   Definition twophase_obj_cfupd_cancel γ' d :=
-   (<disc> (|C={⊤}_(S (S LVL))=> ∃ mt',
+   (<bdisc> (|C={⊤}_(S (S LVL))=> ∃ mt',
        ⌜ dom (gset _) mt' = d ⌝ ∗
        "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
          "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
@@ -225,9 +225,9 @@ Section proof.
     iClear "Htwophase_inv".
 
     iApply (wpc_wp _ (S (S LVL)) _ _ _ True%I).
-    iApply (wpc_na_crash_inv_open_modify
-              (λ _, ∃ γ' dinit mt',
-                  txn_cfupd_cancel dinit γ' ∗ twophase_obj_cfupd_cancel γ' (dom (gset addr) mt'))%I
+    iApply (wpc_na_crash_inv_open_modify_defer
+              (* (λ _, ∃ γ' dinit mt',
+                  txn_cfupd_cancel dinit γ' ∗ twophase_obj_cfupd_cancel γ' (dom (gset addr) mt') )%I *)
               with "Hna").
     2:{ reflexivity. }
     { rewrite /LVL. lia. }
@@ -250,10 +250,24 @@ Section proof.
       rewrite Heq. iFrame "#".
       admit.
     * iNext. iIntros (γ' l) "H". iNamed "H".
-      iSplitL "Hcancel_txn Hcancel_obj".
-      { iCombine "Hcancel_txn Hcancel_obj" as "H". iNext. iExists _, _, _. iFrame. }
+      rewrite /txn_cfupd_cancel.
+      iDestruct (own_discrete_laterable with "Hcancel_txn") as (Ptxn) "(HPtxn&#HPtxn_spec)".
+      iDestruct (own_discrete_laterable with "Hcancel_obj") as (Pobj) "(HPobj&#HPobj_spec)".
+      iExists (Ptxn ∗ Pobj)%I.
+      iFrame "HPtxn HPobj".
       iSplitL "".
-      { iModIntro. iIntros "H". admit. }
+      { iModIntro. iIntros "(HPtxn&HPobj)".
+        iMod ("HPtxn_spec" with "[$]") as "Htxn".
+        iMod ("HPobj_spec" with "[$]") as "Hobj".
+        iMod "Htxn"; first by lia.
+        iMod "Hobj"; first by (rewrite /LVL; lia).
+        iModIntro. iNext.
+        iDestruct "Htxn" as (logm') "Htxn".
+        iDestruct "Hobj" as (mt'' Hdom) "Hmapstos".
+        iExists _, _, _, _. iFrame.
+        rewrite Hdom. iFrame "#Hdom".
+        (* admit ; missing fact about γ' txn kinds being equal *)
+        admit. }
       iIntros.
       iSplit; first done.
       iApply "HΦ".
