@@ -1,7 +1,9 @@
 From Perennial.goose_lang.lib Require Import encoding crash_lock.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import twophase.typed_translate twophase.wrapper_proof twophase.twophase_refinement_defs twophase.twophase_sub_logical_reln_defs.
+From Perennial.program_proof Require Import
+     twophase.typed_translate twophase.wrapper_proof twophase.wrapper_init_proof
+     twophase.twophase_refinement_defs twophase.twophase_sub_logical_reln_defs.
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert metatheory.
@@ -188,6 +190,14 @@ Proof.
   iDestruct (big_sepM_dom with "Hcrash_toks") as "Hcrash_toks".
   iCombine "Hmapstos Hcrash_toks" as "Hmapstos".
   rewrite -big_sepM_sep.
+  rewrite -sep_assoc.
+  iSplitL "".
+  {
+    destruct Heq as (Heq_data&Heq_kinds&Hdom&Heq_data_name&Heq_kinds_name&_).
+    rewrite /jrnl_mapsto/jrnl_kinds.
+    rewrite Heq_kinds Heq_kinds_name.
+    iFrame "#".
+  }
   iSplitL "Hmapstos".
   {
     iApply (big_sepM_mono with "Hmapstos").

@@ -209,7 +209,7 @@ Section jrnl.
     match op, v with
     | OpenOp, LitV LitUnit =>
       j ← open;
-      ret $ LitV $ LitUnit
+      ret $ LitV $ LitBool $ true
     | ReadBufOp, PairV (#(LitInt blkno), (#(LitInt off), #()))%V #(LitInt sz) =>
       j ← openΣ;
       d ← unwrap (jrnlData j !! (Build_addr blkno off));
@@ -1043,6 +1043,33 @@ Proof.
   - iMod (ghost_step_open_stuck with "Hj' [$] [$]") as "[]".
     { solve_ndisj. }
     { congruence. }
+Qed.
+
+Lemma ghost_step_jrnl_open E j K {HCTX: LanguageCtx K}:
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  jrnl_closed_frag -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp #())
+  -∗ |NC={E}=> j ⤇ K #true%V ∗ jrnl_open.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hj".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iDestruct (jrnl_ctx_unify_closed with "[$] [$]") as %(σj&Heq).
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { apply head_prim_step_trans. simpl. econstructor.
+    * repeat econstructor => //=.
+      rewrite Heq.
+      repeat econstructor.
+    * repeat econstructor.
+  }
+  { solve_ndisj. }
+  simpl. rewrite Heq.
+  iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
+  iMod (jrnl_closed_token_open with "[$] [$]") as "#Hopen".
+  iMod ("Hclo" with "[Hσ Hvals_auth H Hrest]") as "_".
+  { iNext. iExists _, _. iFrame "H".  iFrame. iFrame "Hopen". }
+  iModIntro. iFrame "Hopen". iFrame.
 Qed.
 
 Lemma jrnl_ctx_sub_state_valid' σj s :

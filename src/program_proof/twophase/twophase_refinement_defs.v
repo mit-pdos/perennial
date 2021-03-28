@@ -57,7 +57,8 @@ Definition LVL_OPS : nat := 100.
 Definition twophase_crash_cond_full
            {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
   := ("Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
-     "Hdom" ∷ jrnl_dom (dom _ mt) ∗
+     "#Hdom" ∷ jrnl_dom (dom _ mt) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
      "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
      "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj))%I.
@@ -65,7 +66,8 @@ Definition twophase_crash_cond_full
 Definition twophase_crash_cond_partial
            {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
   := ("Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
-     "Hdom" ∷ jrnl_dom (dom _ mt) ∗
+     "#Hdom" ∷ jrnl_dom (dom _ mt) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
      "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
      "Hjrnl_mapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj obj)))%I.
