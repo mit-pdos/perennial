@@ -101,7 +101,11 @@ def main():
         do_run(["go", "install", "./cmd/goose"])
         os.chdir(old_dir)
 
-    def run_goose(src_path, output, pkg=None, importHeader=None, excludes=[]):
+    def run_goose(
+        src_path, output, pkg=None, import_header=None, excludes=None
+    ):
+        if excludes is None:
+            excludes = []
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
             gopath = path.join(path.expanduser("~"), "go")
@@ -109,8 +113,8 @@ def main():
         args = [goose_bin, "-out", output]
         if pkg is not None:
             args.extend(["-package", pkg])
-        if importHeader is not None:
-            args.extend(["-import-line", importHeader])
+        if import_header is not None:
+            args.extend(["-import-line", import_header])
         for e in excludes:
             args.extend(["-exclude-import", e])
         args.append(src_path)
@@ -208,7 +212,7 @@ def main():
                     path.join(distributed_dir),
                     path.join(perennial_dir, "external/Goose"),
                     pkg="github.com/mit-pdos/lockservice/",
-                    importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
+                    import_header="From Perennial.goose_lang Require Import ffi.grove_prelude.",
                     excludes=["github.com/mit-pdos/lockservice/grove_ffi"],
                 )
             else:
@@ -216,7 +220,7 @@ def main():
                     path.join(distributed_dir, pkg),
                     path.join(perennial_dir, "external/Goose"),
                     pkg="github.com/mit-pdos/lockservice/" + pkg,
-                    importHeader="From Perennial.goose_lang Require Import ffi.grove_prelude.",
+                    import_header="From Perennial.goose_lang Require Import ffi.grove_prelude.",
                     excludes=["github.com/mit-pdos/lockservice/grove_ffi"],
                 )
 
@@ -228,7 +232,7 @@ def main():
                 path.join(gokv_dir, pkg),
                 path.join(perennial_dir, "external/Goose"),
                 pkg="github.com/mit-pdos/gokv/" + pkg,
-                importHeader="""From Perennial.goose_lang Require Import ffi.grove_prelude.
+                import_header="""From Perennial.goose_lang Require Import ffi.grove_prelude.
 From Goose Require github_com.mit_pdos.lockservice.lockservice.
                 """,
                 excludes=[
