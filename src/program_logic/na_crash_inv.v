@@ -29,6 +29,21 @@ Ltac crash_unseal :=
   rewrite ?na_crash_inv_eq;
   rewrite /na_crash_inv_def.
 
+Lemma na_crash_inv_alloc_bdisc k E P Q:
+  ▷ Q -∗ □ (▷ Q -∗ |C={⊤}_k=> ▷ P) -∗ |(S k)={E}=> na_crash_inv (S k) Q P ∗ <bdisc> |C={⊤}_(S k)=> ▷ P.
+Proof.
+  crash_unseal.
+  iIntros "HQ #HQP".
+  iMod (staged_inv_alloc (k) E ⊤
+                         P Q True%I with "[HQ]") as (i') "(#Hinv&Hval&Hpend)".
+  { iFrame "#". iFrame. iModIntro; iIntros; eauto.
+    iMod ("HQP" with "[$]"); eauto. }
+  iModIntro.
+  iSplitL "Hval".
+  { iExists _, Q, _. iFrame. iFrame "#". simpl. iFrame. auto. }
+  iApply (staged_inv_init_bdisc_cfupd with "[Hpend]"); eauto.
+Qed.
+
 Lemma na_crash_inv_alloc k E P Q:
   ▷ Q -∗ □ (▷ Q -∗ |C={⊤}_k=> ▷ P) -∗ |(S k)={E}=> na_crash_inv (S k) Q P ∗ <disc> |C={⊤}_(S k)=> ▷ P.
 Proof.
@@ -77,7 +92,7 @@ Proof.
   crash_unseal.
   iIntros (???) "Hbundle Hwp".
   iDestruct "Hbundle" as (???) "(Hval&HQ0&HQP)".
-  unshelve (iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ Qnew _ with "[-]"); try iFrame "Hval"; eauto).
+  unshelve (iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ with "[-]"); try iFrame "Hval"; eauto).
   { apply _. }
   iSplit.
   { iDestruct "Hwp" as "($&_)". }
@@ -87,12 +102,48 @@ Proof.
   iApply (wpc_strong_mono with "Hwp"); auto.
   iSplit.
   - iIntros (?) "(HQ&#Hwand'&HQrest)".
+    iExists (Qnew v).
     iFrame "HQ Hwand'". iModIntro. iIntros "Hval'".
     iMod ("HQrest" with "[-]"); last eauto.
      iExists _, _, _. iFrame "∗ #". eauto.
   - by iIntros "!> H !>".
 Qed.
 
+Lemma wpc_na_crash_inv_open_modify_defer s k k' k'' E1 e Φ Φc {HL: AbsLaterable Φc} Q P :
+  k'' ≤ k' →
+  k'' ≤ (S k) →
+  S k ≤ k' →
+  na_crash_inv (S k') Q P -∗
+  (<disc> Φc ∧ (▷ Q -∗ WPC e @ k''; E1
+                    {{λ v, ∃ Qnew, ▷ Qnew ∗
+                           □ (▷ Qnew -∗ |C={⊤}_k'=> ▷ P)
+                           ∗ (na_crash_inv (S k') (Qnew) P -∗ (<disc> Φc ∧ Φ v))}}
+                    {{ Φc ∗ ▷ P }})) -∗
+  WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}.
+Proof.
+  crash_unseal.
+  iIntros (???) "Hbundle Hwp".
+  iDestruct "Hbundle" as (???) "(Hval&HQ0&HQP)".
+  unshelve (iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ with "[-]"); try iFrame "Hval"; eauto).
+  { apply _. }
+  iSplit.
+  { iDestruct "Hwp" as "($&_)". }
+  iDestruct "Hwp" as "(_&Hwp)". iIntros "HQ".
+  iSpecialize ("Hwp" with "[HQ0 HQ]").
+  { iNext. iApply "HQ0". eauto. }
+  iApply (wpc_strong_mono with "Hwp"); auto.
+  iSplit.
+  - iIntros (?) "(%Qnew&HQ&#Hwand'&HQrest)".
+    iModIntro. iExists Qnew. iFrame "HQ Hwand'". iIntros "Hval'".
+    iModIntro.
+    iSpecialize ("HQrest" with "[-]"); last first.
+    { iSplit; last by (iDestruct "HQrest" as "(_&$)"). iDestruct "HQrest" as "(H&_)".
+      do 2 iModIntro; eauto. }
+    iExists _, _, _. iFrame "∗ #". eauto.
+  - by iIntros "!> H !>".
+Qed.
+
+(* TODO: this is subsumed by previous, mostly exists for compatibility reasons *)
 Lemma wpc_na_crash_inv_open_modify Qnew s k k' k'' E1 e Φ Φc {HL: AbsLaterable Φc} Q P :
   k'' ≤ k' →
   k'' ≤ (S k) →
@@ -108,7 +159,7 @@ Proof.
   crash_unseal.
   iIntros (???) "Hbundle Hwp".
   iDestruct "Hbundle" as (???) "(Hval&HQ0&HQP)".
-  unshelve (iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ Qnew _ with "[-]"); try iFrame "Hval"; eauto).
+  unshelve (iApply (wpc_staged_inv_open' _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ with "[-]"); try iFrame "Hval"; eauto).
   { apply _. }
   iSplit.
   { iDestruct "Hwp" as "($&_)". }
@@ -118,7 +169,7 @@ Proof.
   iApply (wpc_strong_mono with "Hwp"); auto.
   iSplit.
   - iIntros (?) "(HQ&#Hwand'&HQrest)".
-    iModIntro. iFrame "HQ Hwand'". iIntros "Hval'".
+    iModIntro. iExists (Qnew v). iFrame "HQ Hwand'". iIntros "Hval'".
     iModIntro.
     iSpecialize ("HQrest" with "[-]"); last first.
     { iSplit; last by (iDestruct "HQrest" as "(_&$)"). iDestruct "HQrest" as "(H&_)".

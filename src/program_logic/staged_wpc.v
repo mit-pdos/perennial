@@ -20,6 +20,19 @@ Implicit Types Φc : iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
+Lemma staged_inv_init_bdisc_cfupd γ k k' E1 P:
+  k' ≤ k →
+  staged_inv (S k') E1 γ P ∗
+  staged_pending 1%Qp γ -∗
+  (<bdisc> |C={E1}_(S k)=> ▷P).
+Proof.
+  iIntros (Hle)  "(#Hinv&Hpending)".
+  iModIntro. iIntros "HC".
+  iPoseProof (staged_inv_weak_open E1 k' (E1) with "[Hinv $Hpending $HC]") as "H"; auto.
+  iMod (fupd_level_le with "H") as "HP"; first by lia.
+  do 2 iModIntro. auto.
+Qed.
+
 Lemma staged_inv_init_cfupd' γ k k' E1 P:
   k' ≤ k →
   staged_inv (S k') E1 γ P ∗
@@ -117,7 +130,7 @@ Proof.
     iModIntro. iRight. iFrame. }
 Qed.
 
-Lemma wpc_staged_inv_open_aux' γ s k k' k'' k0post j jpost E1 E1' e Φ Φc {HL: AbsLaterable Φc} P Q q:
+Lemma wpc_staged_inv_open_aux' γ s k k' k'' k0post j jpost E1 E1' e Φ Φc {HL: AbsLaterable Φc} P q:
   E1 ⊆ E1' →
   (* The level we move to (k'') must be < (S k'), the level of the staged invariant.
      However, it may be the same as (S k), the wpc we were originally proving. Thus,
@@ -129,8 +142,8 @@ Lemma wpc_staged_inv_open_aux' γ s k k' k'' k0post j jpost E1 E1' e Φ Φc {HL:
   NC q ∗
   staged_value_later (S k') k'' j E1' E1 γ
                (wpc_no_fupd NotStuck k'' (S j) E1 e
-                   (λ v, ▷ Q v ∗ □ (▷ Q v -∗ |C={E1'}_k0post=> ▷ P) ∗ (staged_value (S k') k0post jpost E1' γ
-                                                                (Q v) True (P) -∗ |={E1}=> <disc> (|C={E1}_k=> Φc) ∧ Φ v))%I
+                   (λ v, ∃ Q, ▷ Q ∗ □ (▷ Q -∗ |C={E1'}_k0post=> ▷ P) ∗ (staged_value (S k') k0post jpost E1' γ
+                                                                Q True (P) -∗ |={E1}=> <disc> (|C={E1}_k=> Φc) ∧ Φ v))%I
                    (Φc ∗ ▷ P))
                 Φc
                 (P)%I
@@ -143,8 +156,8 @@ Proof.
     iDestruct (NC_split with "HNC") as "(HNC1&HNC2)".
     iPoseProof (staged_inv_later_open' E1 _ _ _ _ _ _ _ _ _ (NC (q/2)) True%I
                                        (wpc_no_fupd NotStuck k'' _ E1 e
-                                                    (λ v0, ▷ Q v0 ∗  □ (▷ Q v0 -∗ |C={E1'}_k0post=> ▷ P)
-                                                             ∗ (staged_value (S k') _ _ E1' γ (Q v0) True P
+                                                    (λ v0, ∃ Q, ▷ Q ∗  □ (▷ Q -∗ |C={E1'}_k0post=> ▷ P)
+                                                             ∗ (staged_value (S k') _ _ E1' γ Q True P
                                                                              -∗ |={E1}=> <disc> (|C={E1}_k=> Φc)
                                                                                          ∧ Φ v0))%I
                                                     (Φc ∗ ▷ P)%I)
@@ -157,8 +170,8 @@ Proof.
       rewrite wpc0_unfold /wpc_pre.
       rewrite Hval.
       iDestruct "H" as "(H&_)".
-      iMod ("H" with "[$]") as "((HQ&#HQP&HΦ)&HNC)".
-      iPoseProof (staged_inv_open_modify_ae E1 _ _ k0post j jpost _ _ _ _ _ (Q v) True%I (NC (q/2))
+      iMod ("H" with "[$]") as "((%Q&HQ&#HQP&HΦ)&HNC)".
+      iPoseProof (staged_inv_open_modify_ae E1 _ _ k0post j jpost _ _ _ _ _ Q True%I (NC (q/2))
                   with "Hval [HQ]") as "H"; try lia.
       { iIntros ">$". iModIntro. iFrame. iModIntro.
         iIntros "HQ HC".
@@ -200,8 +213,8 @@ Proof.
   iDestruct (NC_split with "HNC") as "(HNC1&HNC2)".
   iPoseProof (staged_inv_later_open' E1 _ _ _ _ _ _ _ _ _ (NC (q0/2)) True%I
                                        (wpc_no_fupd NotStuck k'' _ E1 e
-                                                    (λ v0, ▷ Q v0 ∗ □ (▷ Q v0 -∗ |C={E1'}__=> ▷ P)
-                                                             ∗ (staged_value (S k') _ _ E1' γ (Q v0) True P
+                                                    (λ v0, ∃ Q, ▷ Q ∗ □ (▷ Q -∗ |C={E1'}__=> ▷ P)
+                                                             ∗ (staged_value (S k') _ _ E1' γ Q True P
                                                                              -∗ |={E1}=> <disc> (|C={E1}_k=> Φc) ∧ Φ v0))%I
                                                     (Φc ∗ ▷ P))
                 with "Hwp [HNC1]") as "H"; first lia.
@@ -277,7 +290,7 @@ invariant, and still be able to get it out without a ▷ in the non-crash
 case. This relies on [own_discrete_elim_conj] to put "only the discrete part" of
 the WPC into the invariant, and keep the other resources backing this WPC
 locally to ourselves. *)
-Lemma wpc_staged_inv_open' γ s k k' k'' k2 mj E1 E1' e Φ Φc {HL: AbsLaterable Φc} Q Qrest Qnew P :
+Lemma wpc_staged_inv_open' γ s k k' k'' k2 mj E1 E1' e Φ Φc {HL: AbsLaterable Φc} Q Qrest P :
   E1 ⊆ E1' →
   k'' ≤ k' →
   k'' ≤ (S k) →
@@ -288,9 +301,9 @@ Lemma wpc_staged_inv_open' γ s k k' k'' k2 mj E1 E1' e Φ Φc {HL: AbsLaterable
   (<disc> Φc ∧
   (▷ Q -∗
    WPC e @ NotStuck; k''; E1
-      {{λ v, ▷ Qnew v ∗
-             □ (▷ Qnew v -∗ |C={E1'}_k2=> ▷ P) ∗
-            (staged_value (S k') k2 mj E1' γ (Qnew v) True P -∗ |={E1}=> (<disc> (|C={E1}_k=> Φc) ∧ Φ v))}}
+      {{λ v, ∃ Qnew, ▷ Qnew ∗
+             □ (▷ Qnew -∗ |C={E1'}_k2=> ▷ P) ∗
+            (staged_value (S k') k2 mj E1' γ Qnew True P -∗ |={E1}=> (<disc> (|C={E1}_k=> Φc) ∧ Φ v))}}
       {{ Φc ∗ ▷ P }}))
   ⊢
   WPC e @ s; (S k); E1 {{ Φ }} {{ Φc }}.
@@ -323,8 +336,8 @@ Proof.
       rewrite Hval.
       iSpecialize ("Hwp" with "[$]").
       iMod ("Hwp" $! (S j')) as "(H&_)".
-      iMod ("H" $! _ with "[$]") as "((HQ&#HQP&Hwand)&Hnc)".
-      iPoseProof (staged_inv_open_modify_ae E1 _ _ k2 mj mj _ _ _ _ _ (Qnew v) True%I (NC (q/2))%I
+      iMod ("H" $! _ with "[$]") as "((%Qnew&HQ&#HQP&Hwand)&Hnc)".
+      iPoseProof (staged_inv_open_modify_ae E1 _ _ k2 mj mj _ _ _ _ _ (Qnew) True%I (NC (q/2))%I
                   with "Hclo' [HQ]") as "H"; try auto.
       {
         iIntros ">$". iFrame. iModIntro. iIntros "!> HQ HC".
@@ -401,7 +414,7 @@ Proof.
   iDestruct (NC_join with "[$]") as "HNC".
   iFrame "Hσ Hg".
   iPoseProof (wpc_staged_inv_open_aux' γ s k k' k'' k2 j' mj E1 E1'
-                e2 Φ Φc P Qnew with "[Hval HQ_keep HNC]") as "H"; try assumption.
+                e2 Φ Φc P with "[Hval HQ_keep HNC]") as "H"; try assumption.
 
   { iFrame. iExists _, _. iFrame "Hval".  iSplitL "HQ_keep"; [ | iSplitL ""].
     - iIntros "HQ". iMod ("Hwand2" with "[$]") as "H".
