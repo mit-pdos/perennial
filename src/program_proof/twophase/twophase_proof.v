@@ -2382,6 +2382,97 @@ Proof.
     /object_to_versioned /modified /mspec.modified //=.
 Qed.
 
+Theorem inv_litbyte {ext:ext_op} l1 l2 : LitByte l1 = LitByte l2 -> l1 = l2.
+Proof.
+  inversion 1; auto.
+Qed.
+
+Lemma u8_val_ne (x1 x2:u8) :
+  #x1 ≠ #x2 -> int.Z x1 ≠ int.Z x2.
+Proof.
+  intros Hne.
+  intros Heq%word.unsigned_inj.
+  congruence.
+Qed.
+
+Theorem wp_TwoPhase__ReadBufBit l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a :
+  a ∈ objs_dom →
+  γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit →
+  {{{
+    "Htwophase" ∷ is_twophase_raw
+      l γ γ' dinit k ex_mapsto objs_dom mt_changed
+  }}}
+    TwoPhase__ReadBufBit #l (addr2val a)
+  {{{
+    b mt_changed', RET #b;
+    "Htwophase" ∷ is_twophase_raw
+      l γ γ' dinit k ex_mapsto objs_dom mt_changed' ∗
+    "%Hobj" ∷ ⌜
+      modified <$> (mt_changed' !! a) = Some (existT _ (bufBit b))
+    ⌝ ∗
+    "%Hmt_changed'" ∷ ⌜
+      mt_changed' =
+        match mt_changed !! a with
+        | Some _ => mt_changed
+        | None =>
+          <[a:=object_to_versioned (existT _ (bufBit b))]>mt_changed
+        end
+    ⌝
+  }}}.
+Proof.
+  intros Ha_in_dom Hkind.
+  wp_start.
+  wp_call.
+  wp_apply (wp_TwoPhase__ReadBuf_raw with "Htwophase").
+  1: eassumption.
+  1: rewrite Hkind //.
+  iIntros (????) "Hpost".
+  iNamed "Hpost".
+  iDestruct (is_slice_small_read with "Hdata_s")
+    as "[Hslice Hslice_restore]".
+  iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
+  apply fmap_Some_1 in Hobj as [vobj [Hacc_vobj ->]].
+  apply Hvalids in Hacc_vobj as Hvalid.
+  destruct Hvalid as (Hvalid_addr&Hvalid_off&Hvalid_γ).
+  rewrite Hvalid_γ in Hkind.
+  rewrite /data_has_obj in Hdata.
+  destruct vobj as [vobj_kind [vobj_c vobj_m]].
+  simpl in Hkind.
+  simpl in Hdata.
+  destruct vobj_m as [b|data'|data'].
+  2-3: inversion Hkind.
+  destruct Hdata as [data_b [-> Hb]].
+  wp_apply (wp_SliceGet (V:=u8) with "[$Hslice]").
+  1: trivial.
+  iIntros "Hslice".
+  wp_pures.
+  match goal with
+  | |- context[bool_decide ?cond] =>
+    replace (bool_decide cond) with b
+  end.
+  2: {
+    subst b.
+    match goal with
+    | |- context[bool_decide ?cond] =>
+      destruct (decide cond) as [Hcond|Hcond]
+    end.
+    - rewrite bool_decide_eq_true_2; last by assumption.
+      rewrite /get_bit -bool_decide_decide bool_decide_eq_true_2;
+        first by reflexivity.
+      congruence.
+    - rewrite bool_decide_eq_false_2; last by assumption.
+      rewrite /get_bit -bool_decide_decide bool_decide_eq_false_2;
+        first by reflexivity.
+      congruence.
+  }
+  iApply "HΦ".
+  iFrame "Htwophase".
+  iPureIntro.
+  split.
+  - rewrite Hacc_vobj //.
+  - rewrite Hmt_changed' //.
+Qed.
+
 Theorem wp_TwoPhase__OverWrite_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a sz data_s data obj' :
   a ∈ objs_dom →
   γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some (objKind obj') →
@@ -2540,6 +2631,187 @@ Proof.
     split; last by assumption.
     apply map_Forall_insert_2; first by rewrite /mapsto_valid //.
     apply map_Forall_insert_1_2 in Hvalids; assumption.
+Qed.
+
+Lemma unsigned_U8 z : int.Z (U8 z) = word.wrap (word:=u8_instance.u8) z.
+Proof.
+  unfold U8; rewrite word.unsigned_of_Z; auto.
+Qed.
+
+Theorem wp_bitToByte (off: u64) (b: bool) :
+  (0 ≤ int.Z off < 8)%Z →
+  {{{
+    True
+  }}}
+    bitToByte #off #b
+  {{{
+    RET #(U8 (if b then (1 ≪ int.Z off) else 0));
+    True
+  }}}.
+Proof.
+  intros Hoff.
+  wp_start.
+  wp_call.
+  wp_if_destruct.
+  2: {
+    iApply "HΦ".
+    trivial.
+  }
+  wp_pures.
+  assert (
+    int.Z (word.slu (U8 1) (u8_from_u64 off)) = int.Z (U8 (1 ≪ int.Z off))
+  ) as Harith.
+  {
+    rewrite /u8_from_u64 word.unsigned_slu.
+    2: rewrite unsigned_U8 /word.wrap !Z.mod_small; lia.
+    rewrite !unsigned_U8 /word.wrap !(Z.mod_small 1); last by lia.
+    rewrite !(Z.mod_small (int.Z off)); last by lia.
+    reflexivity.
+  }
+  apply word.unsigned_inj in Harith.
+  rewrite Harith.
+  iApply "HΦ".
+  trivial.
+Qed.
+
+Lemma Z_mod_pos_bound_weak a b bound :
+  (0 < b)%Z → (b ≤ bound)%Z → (0 ≤ a `mod` b)%Z ∧ (a `mod` b < bound)%Z.
+Proof.
+  intros Hb Hbound.
+  epose proof (Z.mod_pos_bound _ b Hb) as [Hge Hlt].
+  split; first by apply Hge.
+  lia.
+Qed.
+
+Theorem wp_TwoPhase__OverWriteBit l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a b :
+  a ∈ objs_dom →
+  γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit →
+  {{{
+    "Htwophase" ∷ is_twophase_raw
+      l γ γ' dinit k ex_mapsto objs_dom mt_changed
+  }}}
+    TwoPhase__OverWriteBit #l (addr2val a) #b
+  {{{
+    vobj, RET #();
+    "Htwophase" ∷ is_twophase_raw
+      l γ γ' dinit k ex_mapsto objs_dom (<[a:=vobj]>mt_changed) ∗
+    "%Hvobj_committed" ∷ ⌜
+      match mt_changed !! a with
+      | Some vobj' => committed vobj = committed vobj'
+      | None => True
+      end
+    ⌝ ∗
+    "%Hvobj_modified" ∷ ⌜modified vobj = existT _ (bufBit b)⌝
+  }}}.
+Proof.
+  intros Ha_in_dom Hkind.
+  wp_start.
+  wp_call.
+  wp_apply (wp_NewSlice (V:=u8)).
+  iIntros (sl) "Hslice".
+  rewrite unsigned_U64 /word.wrap Z.mod_small //=.
+  iDestruct (is_slice_small_read with "Hslice")
+    as "[Hslice Hslice_restore]".
+  wp_apply wp_bitToByte.
+  {
+    rewrite word.unsigned_modu_nowrap; last by word.
+    rewrite unsigned_U64 /word.wrap (Z.mod_small 8); last by lia.
+    apply Z.mod_pos_bound.
+    lia.
+  }
+  wp_apply (wp_SliceSet (V:=u8) with "[$Hslice]").
+  {
+    iPureIntro.
+    rewrite unsigned_U64 /word.wrap Z.mod_small //=.
+    eauto.
+  }
+  iIntros "Hslice".
+  rewrite unsigned_U64 /word.wrap Z.mod_small //=.
+  unshelve (wp_apply (
+    wp_TwoPhase__OverWrite_raw _ _ _ _ _ _ _ _ _ _ _ _
+    (existT _ (bufBit b))
+    with "[$Htwophase $Hslice]"
+  )).
+  1: assumption.
+  1: assumption.
+  1: eassumption.
+  1: rewrite //=.
+  {
+    eexists _.
+    split; first by reflexivity.
+    rewrite word.unsigned_modu; last by word.
+    rewrite (unsigned_U64 8) (wrap_small 8); last by lia.
+    rewrite wrap_small;
+      last by (apply Z_mod_pos_bound_weak; lia).
+    rewrite /get_bit -bool_decide_decide.
+    unshelve (erewrite bool_decide_iff).
+    4: {
+      split.
+      - intros Heq.
+        apply (f_equal word.unsigned) in Heq.
+        apply Heq.
+      - intros Heq.
+        apply word.unsigned_inj in Heq.
+        assumption.
+    }
+    1: refine _.
+    unshelve (erewrite bool_decide_iff).
+    4: {
+      rewrite word.unsigned_and /u8_from_u64 word.unsigned_modu;
+        last by word.
+      rewrite unsigned_U64 (wrap_small 8); last by lia.
+      unfold word.wrap at 2.
+      rewrite (Z.mod_small _ (2^64));
+        last by (apply Z_mod_pos_bound_weak; lia).
+      rewrite unsigned_U8 wrap_small; last by lia.
+      rewrite word.unsigned_sru.
+      2: {
+        rewrite unsigned_U8 wrap_small;
+          last by (apply Z_mod_pos_bound_weak; lia).
+        apply Z.mod_pos_bound.
+        lia.
+      }
+      rewrite !unsigned_U8.
+      rewrite (wrap_small (_ `mod` _));
+        last by (apply Z_mod_pos_bound_weak; lia).
+      apply Logic.iff_refl.
+    }
+    1: refine _.
+    destruct b.
+    2: {
+      rewrite bool_decide_eq_false_2; first by reflexivity.
+      rewrite (wrap_small 0); last by lia.
+      rewrite Z.shiftr_0_l.
+      rewrite (wrap_small 0); last by lia.
+      lia.
+    }
+    rewrite bool_decide_eq_true_2; first by reflexivity.
+    rewrite Z.shiftl_1_l Z.shiftr_div_pow2;
+      last by apply Z.mod_pos_bound.
+    rewrite (wrap_small (2^_)).
+    2: {
+      split; first by (apply Z.pow_nonneg; lia).
+      apply Z.pow_lt_mono_r; [lia|lia|].
+      apply Z.mod_pos_bound.
+      lia.
+    }
+    rewrite Z_div_same.
+    2: {
+      match goal with
+      | |- context[(?a ^ ?b)%Z] =>
+        unshelve (epose proof (Z.pow_le_mono_r a 0 b _ _) as Hle)
+      end.
+      1: lia.
+      1: apply Z.mod_pos_bound; lia.
+      lia.
+    }
+    rewrite (wrap_small 1); last by lia.
+    reflexivity.
+  }
+  iIntros (?) "Hpost".
+  iNamed "Hpost".
+  iApply "HΦ".
+  iFrame "∗ %".
 Qed.
 
 End proof.

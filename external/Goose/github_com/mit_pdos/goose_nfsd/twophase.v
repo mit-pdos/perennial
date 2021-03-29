@@ -99,17 +99,19 @@ Definition TwoPhase__OverWrite: val :=
 Definition TwoPhase__ReadBufBit: val :=
   rec: "TwoPhase__ReadBufBit" "twophase" "addr" :=
     let: "dataByte" := SliceGet byteT (TwoPhase__ReadBuf "twophase" "addr" #1) #0 in
-    ("dataByte" ≫ ((struct.get addr.Addr.S "Off" "addr") `rem` #8) = #(U8 1)).
+    (#(U8 1) = ("dataByte" ≫ ((struct.get addr.Addr.S "Off" "addr") `rem` #8) `and` #(U8 1))).
+
+Definition bitToByte: val :=
+  rec: "bitToByte" "off" "data" :=
+    (if: "data"
+    then (#(U8 1)) ≪ "off"
+    else #(U8 0)).
 
 Definition TwoPhase__OverWriteBit: val :=
   rec: "TwoPhase__OverWriteBit" "twophase" "addr" "data" :=
-    let: "dataByte" := ref (zero_val byteT) in
-    (if: "data"
-    then
-      "dataByte" <-[byteT] (#(U8 1)) ≪ ((struct.get addr.Addr.S "Off" "addr") `rem` #8);;
-      #()
-    else #());;
-    TwoPhase__OverWrite "twophase" "addr" #1 (SliceSingleton (![byteT] "dataByte")).
+    let: "dataBytes" := NewSlice byteT #1 in
+    SliceSet byteT "dataBytes" #0 (bitToByte ((struct.get addr.Addr.S "Off" "addr") `rem` #8) "data");;
+    TwoPhase__OverWrite "twophase" "addr" #1 "dataBytes".
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
 
