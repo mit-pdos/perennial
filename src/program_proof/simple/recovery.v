@@ -185,7 +185,7 @@ Proof.
   change (0 + 513%nat) with 513.
   replace (Z.to_nat sz - 513)%nat with (Z.to_nat $ sz - 513) by lia.
   iMod (is_txn_durable_init (fs_dinit sz) (fs_kinds sz) _
-          with "[$Hlog $Hd]") as (γ) "(Htxn & #Hlb & Hmapstos)".
+          with "[$Hlog $Hd]") as (γ Hkinds) "(Htxn & #Hlb & Hmapstos)".
   { rewrite -> Z2Nat.id by word.
     apply dom_fs_dinit; lia. }
   { rewrite -> Z2Nat.id by word.

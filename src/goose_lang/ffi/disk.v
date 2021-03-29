@@ -78,7 +78,7 @@ Defined.
 Fixpoint init_disk (d: disk_state) (sz: nat) : disk_state :=
   match sz with
   | O => d
-  | S n => <[(Z.of_nat n) := (inhabitant: Block)]> (init_disk d n)
+  | S n => <[(Z.of_nat n) := block0]> (init_disk d n)
   end.
 
 Definition Block_to_vals {ext: ext_op} (bl:Block) : list val :=
@@ -520,7 +520,7 @@ lemmas. *)
   Qed.
 
   Lemma disk_array_init_disk sz:
-    ([∗ map] i↦b ∈ init_disk ∅ sz, i d↦{#1} b) -∗ disk_array 0 (DfracOwn 1) (replicate sz (inhabitant : Block)).
+    ([∗ map] i↦b ∈ init_disk ∅ sz, i d↦{#1} b) -∗ disk_array 0 (DfracOwn 1) (replicate sz (block0 : Block)).
   Proof.
     induction sz; rewrite /init_disk-/init_disk/disk_array.
     - rewrite big_sepM_empty big_sepL_nil //=.

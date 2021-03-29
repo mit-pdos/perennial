@@ -38,10 +38,11 @@ Section goose_lang.
     dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
     (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
     0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
-  |={⊤}=> ∃ γ, let logm0 := Build_async (kind_heap0 kinds) [] in
-               is_txn_durable γ dinit logm0 ∗
-               txn_durable γ 0 ∗
-               ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_mapsto_own γ a o)
+  |==> ∃ γ, let logm0 := Build_async (kind_heap0 kinds) [] in
+            ⌜ γ.(buftxn_txn_names).(txn_kinds) = kinds ⌝ ∗
+              is_txn_durable γ dinit logm0 ∗
+              txn_durable γ 0 ∗
+              ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_mapsto_own γ a o)
   .
   Proof.
     iIntros (Hdom1 Hdom2 Hlt) "Hpre".
@@ -64,6 +65,7 @@ Section goose_lang.
     iFrame "Htxn_durable ∗".
     iFrame "Hdurable_lb".
     iDestruct (big_sepM_sep with "[$Hmapsto_txns $Hephemeral_val_froms]") as "H".
+    iSplit; first eauto.
     iApply (big_sepM_impl with "H"); simpl.
     iIntros "!>" (a o Hlookup) "[Hmapsto Heph]".
     rewrite /durable_mapsto_own.

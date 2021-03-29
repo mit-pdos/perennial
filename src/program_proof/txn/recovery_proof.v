@@ -365,7 +365,8 @@ Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
   dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
   (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
   0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
- |={⊤}=> ∃ γ,
+ |==> ∃ γ,
+         "%Hγkinds" ∷ ⌜ γ.(invariant.txn_kinds) = kinds ⌝ ∗
          "Htxn_durable" ∷ is_txn_durable γ dinit ∗
          "#Hdurable_lb" ∷ mono_nat_lb_own γ.(txn_walnames).(wal_heap_durable_lb) 0 ∗
          "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (3/4) (Build_async (kind_heap0 kinds) []) ∗
@@ -399,6 +400,8 @@ Proof.
   rewrite Heq2.
   iFrame "Hheap_lb crashstates2".
   rewrite /is_txn_durable.
+  iSplit.
+  { eauto. }
   iSplitR "Hmetas2 logheap_mapsto_curs".
   2: {
     iDestruct (big_sepM2_sepM_1 with "Hmetas2") as "Hmetas2".

@@ -145,12 +145,6 @@ Definition twophaseΣ := #[stagedΣ; lockmapΣ; sep_buftxn_invariant.buftxnΣ;
 
 Instance subG_twophaseG: ∀ Σ, subG twophaseΣ Σ → twophaseG Σ.
 Proof. solve_inG. Qed.
-Parameter init_jrnl_map : jrnl_map.
-Definition twophase_initP (σimpl: @goose_lang.state disk_op disk_model) (σspec : @goose_lang.state jrnl_op jrnl_model) : Prop :=
-  (null_non_alloc σspec.(heap)) ∧
-  (σimpl.(world) = init_disk ∅ SIZE) ∧
-  (σspec.(world) = Closed init_jrnl_map) ∧
-  wf_jrnl init_jrnl_map.
 Definition twophase_update_pre (Σ: gFunctors) (hG: twophaseG Σ) (n: twophase_names) : twophaseG Σ := hG.
 
 Program Instance twophaseTy_update_model : specTy_update twophaseTy_model :=

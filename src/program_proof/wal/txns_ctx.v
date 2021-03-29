@@ -92,8 +92,8 @@ Proof.
 Qed.
 
 (** * some facts about txn_ctx *)
-Theorem alloc_txn_pos pos upds γ txns E :
-  txns_ctx γ txns ={E}=∗
+Theorem alloc_txn_pos pos upds γ txns :
+  txns_ctx γ txns ==∗
   txns_ctx γ (txns ++ [(pos, upds)]) ∗ txn_val γ (length txns) (pos, upds).
 Proof.
   iIntros "Hctx".

@@ -525,7 +525,7 @@ Qed.
 Lemma is_wal_inner_durable_init (bs: list Block) :
   dom (gset _) dinit = list_to_set (seqZ 513 (length bs)) →
   0 d↦∗ repeat block0 513 ∗
-  513 d↦∗ bs ={⊤}=∗
+  513 d↦∗ bs ==∗
   let σ := log_state0 bs in
   ∃ γ, is_wal_inner_durable γ σ dinit ∗ wal_resources γ.
 Proof.

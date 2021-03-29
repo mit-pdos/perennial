@@ -18,26 +18,90 @@ Section refinement.
 Context {PARAMS : twophaseInit_params}.
 Context (N : namespace).
 
-Notation jrnl_nat_K :=
-(leibnizO (nat * ((@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)
-                           → (@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)))).
+
+Definition kinds_mapsto_valid (kinds : gmap u64 defs.bufDataKind)
+           (a : addr_proof.addr) (obj : {K : defs.bufDataKind & defs.bufDataT K}) :=
+  addr_proof.valid_addr a
+  ∧ defs.valid_off (buf_proof.objKind obj) (addr_proof.addrOff a)
+    ∧ kinds !! addr_proof.addrBlock a = Some (buf_proof.objKind obj).
+
+Definition twophase_initP (σimpl: @goose_lang.state disk_op disk_model) (σspec : @goose_lang.state jrnl_op jrnl_model) : Prop :=
+  ∃ sz kinds,
+  let σj : jrnl_map :=  (bufObj_to_obj <$> recovery_proof.kind_heap0 kinds, kinds) in
+  513 < sz ∧
+  ((513 + Z.of_nat sz) * block_bytes * 8 < 2^64)%Z ∧
+  (null_non_alloc σspec.(heap)) ∧
+  (σimpl.(world) = init_disk ∅ (513 + sz)) ∧
+  (σspec.(world) = Closed σj) ∧
+  dom (gset _) (jrnlKinds σj) = list_to_set (U64 <$> (seqZ 513 sz)) ∧
+  (* TODO: These next two assumptions may be interprovable, or entirely redundant *)
+  map_Forall  (kinds_mapsto_valid kinds) (recovery_proof.kind_heap0 kinds) ∧
+  wf_jrnl σj.
+
+Definition dinit0 sz : gmap Z Block :=
+  gset_to_gmap block0 (list_to_set $ seqZ 513 (sz-513)).
+
+Lemma dom_dinit0:
+  ∀ sz : Z,
+    dom (gset Z) (dinit0 sz) = list_to_set (seqZ 513 (sz - 513)).
+Proof.
+  intros sz.
+  rewrite /dinit0.
+  rewrite dom_gset_to_gmap.
+  auto with f_equal lia.
+Qed.
 
 Lemma jrnl_init_obligation1: sty_init_obligation1 twophaseTy_update_model twophase_initP.
 Proof.
   rewrite /sty_init_obligation1//=.
   iIntros (? hG hRG hJrnl σs gs σi gi Hinit) "Hdisk".
   rewrite /jrnl_start /twophase_init.
-  inversion Hinit as [Hnn [Heqi [Heqs Hwf]]]. rewrite Heqs Heqi.
+  destruct Hinit as (sz&kinds&Hsize1&Hsize2&Hnn&Heqi&Heqs&Hdom&Hwf1&Hwf2).
+  rewrite Heqs Heqi.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
-  eauto.
-  iExists tt.
-  rewrite /twophase_crash_cond.
-  rewrite /twophase_names.
-Admitted.
+  iDestruct "Hjrnl_frag" as "(Hsmapstos&Hcrashtoks&Hcrash_ctx&Hkinds&Hdom&Hfull)".
+  rewrite /twophase_crash_cond_full.
+  iMod (sep_buftxn_recovery_proof.is_txn_durable_init
+          (dinit0 (sz + 513)) kinds sz with "[Hdisk]") as "H".
+  { rewrite dom_dinit0. repeat f_equal. lia. }
+  { eauto. }
+  { lia. }
+  { iDestruct (disk_array_init_disk with "Hdisk") as "Hdisk".
+    rewrite -recovery_proof.repeat_to_replicate.
+    rewrite repeat_app disk_array_app.
+    iDestruct "Hdisk" as "[Hlog Hd]".
+    rewrite repeat_length.
+    replace (0 + (Z.of_nat 513))%Z with 513%Z by lia.
+    iSplitL "Hlog"; first by iExact "Hlog".
+    iExactEq "Hd". f_equal.
+  }
+  iDestruct "H" as (γ) "(%Hγ&His_txn_durable&#Hlb&Himapstos)".
+  iExists tt, γ, _, _, (recovery_proof.kind_heap0 kinds).
+  iFrame "His_txn_durable".
+  iModIntro.
+  rewrite -?sep_assoc.
+  iSplit.
+  {
+    iPureIntro. eauto. clear -Hγ Hwf1.
+    naive_solver. }
+  iSplit.
+  { rewrite /named. iExactEq "Hdom". f_equal. rewrite dom_fmap_L //. }
+  iSplit.
+  { rewrite /named. iExactEq "Hkinds". f_equal. rewrite //=. }
+  iFrame "Hfull Hclosed_frag Hcrash_ctx".
+  rewrite /=.
+  iEval (rewrite big_sepM_fmap) in "Hsmapstos".
+  iEval (rewrite big_sepM_fmap) in "Hcrashtoks".
+  iDestruct (big_sepM_sep with "[$Hsmapstos $Hcrashtoks]") as "H".
+  iDestruct (big_sepM_sep with "[$H $Himapstos]") as "H".
+  iApply (big_sepM_mono with "H").
+  { iIntros (?? Hlookup) "(Hkind&Hmod&Hdurable)".
+    iFrame. }
+Qed.
 
 Lemma jrnl_init_obligation2: sty_init_obligation2 twophase_initP.
 Proof.
-  intros ???? (?&?&?&?). rewrite //=. split_and!; eauto.
+  intros ???? (?&?&?&?&?&?&?&?&?&?). rewrite //=. split_and!; eauto.
 Qed.
 
 Lemma jrnl_rules_obligation:
