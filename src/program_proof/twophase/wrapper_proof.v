@@ -1078,6 +1078,143 @@ Section proof.
       intuition.
   Qed.
 
+  Theorem wp_TwoPhase__ReadBufBit' l γ γ' dinit objs_dom j K0 K
+          {Hctx: LanguageCtx'
+            (ext := @spec_ext_op_field _)
+            (ffi := (spec_ffi_model_field))
+            (ffi_semantics := (spec_ext_semantics_field))
+            K} e1 a :
+    {{{
+      is_twophase_started l γ γ' dinit objs_dom j K0 e1
+        (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+          ReadBitOp (addr2val' a)))
+    }}}
+      TwoPhase__ReadBufBit #l (addr2val a)
+    {{{ data, RET (val_of_obj (objBit data));
+        is_twophase_started l γ γ' dinit objs_dom j K0 e1
+          (K (val_of_obj' (objBit data)))
+    }}}.
+  Proof.
+    iIntros (Φ) "Htwophase HΦ".
+    iMod (twophase_started_ub_det' with "[$]") as "Htwophase".
+    { auto. }
+    iNamed "Htwophase".
+    iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
+      [eassumption|eassumption|].
+    rewrite /TwoPhase__ReadBuf'.
+
+
+    destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
+    apply not_stuck'_ReadBit_inv in Hnotstuck
+      as (σj&Hopen&Hlookup1&Hlookup2);
+      last eauto.
+    assert (Ha_in_dom: a ∈ objs_dom).
+    { rewrite -Hdom. apply elem_of_dom. rewrite Hopen => //=. }
+    assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit).
+    { destruct Hjrnl_maps_kinds as (_&<-).
+      destruct Hsub as (?&Hs_eq&?&?).
+      rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
+      eauto.
+    }
+
+
+    wp_apply (wp_TwoPhase__ReadBufBit with "Htwophase");
+      [assumption|rewrite Hk //|].
+    iIntros (??) "Hpost".
+    iNamed "Hpost".
+    iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
+    apply fmap_Some_1 in Hobj as [vobj [Hvobj Heq]].
+    apply Hvalids in Hvobj as Hvobj_valid.
+    destruct Hvobj_valid as (Hvalid_addr&Hvalid_off&Hvalid_γ).
+    rewrite Hvalid_γ in Hk.
+    inversion Hk.
+
+    iApply "HΦ".
+    subst mt_changed'.
+    destruct (mt_changed !! a) as [vobj'|] eqn:Hacc.
+    - rewrite Hvobj in Hacc.
+      inversion Hacc.
+      subst vobj'.
+      iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl'";
+        [eassumption|eassumption|].
+      iExists _, _, _, _.
+      iFrame "∗ #".
+      iFrame (Hjrnl_maps_kinds Hjrnl_maps_mt).
+      iPureIntro; split; last assumption.
+      eapply always_steps_trans; first by eapply Halways_steps.
+      apply always_steps_bind.
+      eapply always_steps_ReadBitOp; first by intuition.
+      {
+        destruct Hjrnl_maps_mt as [_ <-].
+        rewrite !lookup_fmap Hvobj //.
+        rewrite /= -Heq //.
+      }
+      {
+        destruct Hjrnl_maps_kinds as [_ ->].
+        rewrite Hvalid_γ. subst. eauto.
+      }
+    - rewrite lookup_insert in Hvobj.
+      assert (committed vobj = modified vobj) as Hvobj'.
+      {
+        inversion Hvobj as [Hvobj'].
+        destruct vobj as [k [oc om]].
+        reflexivity.
+      }
+      remember (
+        <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj1), jrnlKinds σj1
+      ) as σj1'.
+      remember (
+        <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj2), jrnlKinds σj2
+      ) as σj2'.
+      assert (jrnl_maps_kinds_valid γ σj1' σj2') as Hjrnl_maps_kinds'
+        by rewrite Heqσj1' Heqσj2' //.
+      assert (
+        jrnl_maps_have_mt
+          (<[a:=object_to_versioned (modified vobj)]> mt_changed)
+          σj1' σj2'
+      ) as Hjrnl_maps_mt'.
+      {
+        rewrite Heqσj1' Heqσj2' /jrnl_maps_have_mt !fmap_insert
+          /modified /committed
+          modified_to_versioned committed_to_versioned /=.
+        destruct Hjrnl_maps_mt as [<- <-].
+        intuition.
+      }
+      iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl'";
+        [eassumption| |].
+      { inversion Hvobj. subst. eauto. }
+      iExists σj1', σj2', _, _.
+      iFrame "∗ #".
+      iPureIntro.
+      split; last first.
+      { split_and!; intuition.
+        inversion Hvobj. subst. eauto. }
+      subst σj1' σj2'.
+      eapply always_steps_trans.
+      {
+        apply always_steps_extend; last by apply Halways_steps.
+        - destruct Hjrnl_maps_mt as [_ <-].
+          rewrite !dom_fmap.
+          apply not_elem_of_dom.
+          assumption.
+        - eexists _.
+          destruct Hjrnl_maps_kinds as [-> _].
+          rewrite Hvalid_γ objSz_bufObj_to_obj.
+          intuition.
+      }
+      apply always_steps_bind.
+      eapply always_steps_ReadBitOp; first by intuition.
+      {
+        destruct Hjrnl_maps_mt as [_ <-].
+        rewrite /= -!fmap_insert !lookup_fmap lookup_insert //.
+        rewrite /= -Heq //.
+      }
+      {
+        destruct Hjrnl_maps_kinds as [_ ->].
+        rewrite Hvalid_γ //.
+      }
+  Qed.
+
   Theorem wp_TwoPhase__OverWrite' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
             (ext := @spec_ext_op_field _)
@@ -1314,6 +1451,206 @@ Section proof.
       subst σj'.
       rewrite /= insert_insert in Halways_steps'.
       apply Halways_steps'.
+  Qed.
+
+  Theorem wp_TwoPhase__OverWriteBit' l γ γ' dinit objs_dom j K0 K
+          {Hctx: LanguageCtx'
+            (ext := @spec_ext_op_field _)
+            (ffi := (spec_ffi_model_field))
+            (ffi_semantics := (spec_ext_semantics_field))
+            K}  e1 a ov :
+    {{{
+      is_twophase_started l γ γ' dinit objs_dom j K0
+        e1
+        (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+          OverWriteBitOp (PairV (addr2val' a) (val_of_obj' ov))))
+    }}}
+      TwoPhase__OverWriteBit' #l (addr2val a, val_of_obj ov)
+    {{{ RET #();
+        is_twophase_started l γ γ' dinit objs_dom j K0
+                            e1 (K #())
+    }}}.
+  Proof.
+    iIntros (Φ) "Htwophase HΦ".
+    iMod (twophase_started_ub_det' with "[$]") as "Htwophase".
+    { auto. }
+    iNamed "Htwophase".
+    iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
+      [eassumption|eassumption|].
+    destruct Hwf_jrnl as [Hwf_jrnl1 Hwf_jrnl2].
+    rewrite /TwoPhase__OverWrite'.
+
+    destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
+    apply not_stuck'_OverWriteBit_inv in Hnotstuck
+      as (σj&o&Hopen&Hlookup1&Hlookup2&Hhval);
+      last done.
+    eapply val_of_obj'_inj3 in Hhval.
+    assert (Ha_in_dom: a ∈ objs_dom).
+    { rewrite -Hdom. apply elem_of_dom. rewrite Hopen => //=. }
+    subst.
+    assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit).
+    { destruct Hjrnl_maps_kinds as (_&<-).
+      destruct Hsub as (?&Hs_eq&?&?).
+      rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
+      eauto.
+    }
+
+
+    rewrite /TwoPhase__OverWriteBit'.
+    wp_pures.
+    wp_apply (wp_TwoPhase__OverWriteBit with "[$Htwophase]");
+      first by assumption.
+    1: rewrite Hk //.
+    iIntros (?) "Hpost".
+    iNamed "Hpost".
+
+    iApply "HΦ".
+    iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
+    remember (
+      <[a:=bufObj_to_obj (committed vobj)]>(jrnlData σj1), jrnlKinds σj1
+    ) as σj1'.
+    remember (
+      <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj2), jrnlKinds σj2
+    ) as σj2'.
+    assert (jrnl_maps_kinds_valid γ σj1' σj2') as Hjrnl_maps_kinds'
+      by rewrite Heqσj1' Heqσj2' //.
+    assert (
+      jrnl_maps_have_mt
+        (<[a:=vobj]> mt_changed)
+        σj1' σj2'
+    ) as Hjrnl_maps_mt'.
+    {
+      rewrite Heqσj1' Heqσj2' /jrnl_maps_have_mt !fmap_insert /=.
+      destruct Hjrnl_maps_mt as [<- <-].
+      intuition.
+    }
+    iExists σj1', σj2', _, _.
+    iFrame "∗ #".
+    iPureIntro.
+    split; last by intuition.
+    subst σj1' σj2'.
+    destruct (mt_changed !! a) as [vobj_old|] eqn:Hacc.
+    - eapply always_steps_trans.
+      {
+        destruct Hjrnl_maps_mt as [Hσj1_data _].
+        rewrite -Hσj1_data insert_id;
+          last by rewrite !lookup_fmap Hacc Hvobj_committed //.
+        rewrite Hσj1_data.
+        apply Halways_steps.
+      }
+      apply always_steps_bind.
+      efeed pose proof always_steps_OverWriteBitOp as Halways_steps'.
+      1: apply Hwf_jrnl2.
+      {
+        destruct Hjrnl_maps_mt as (_&<-).
+        rewrite !lookup_fmap.
+        erewrite Hacc.
+        eauto.
+      }
+      {
+        destruct Hjrnl_maps_kinds as (_&->).
+        eauto.
+      }
+      {
+        rewrite //=.
+      }
+      rewrite /updateData in Halways_steps'.
+      rewrite Hvobj_modified /= /bufObj_to_obj //=.
+    - simpl in Hk.
+      eapply (
+        always_steps_extend _ _ _ _ _ (bufObj_to_obj (committed vobj))
+      ) in Halways_steps.
+      2: {
+        destruct Hjrnl_maps_mt as (_&<-).
+        rewrite !dom_fmap.
+        eapply not_elem_of_dom.
+        eassumption.
+      }
+      2: {
+        eexists _.
+        destruct Hjrnl_maps_kinds as (->&_).
+        split; first by eassumption.
+        efeed pose proof Hvalids as Hvalid;
+          first by apply lookup_insert.
+        simpl in Hvalid.
+        destruct Hvalid as (_&Hvalid_off&_).
+        rewrite objSz_bufObj_to_obj.
+        inversion Hvobj_modified as [Heq]. rewrite Heq.
+        rewrite Hvobj_modified /= in Hvalid_off. split; auto.
+        rewrite /committed//= Heq //=.
+      }
+      eapply always_steps_trans; first by apply Halways_steps.
+      apply always_steps_bind.
+      remember (
+        <[a:=bufObj_to_obj (committed vobj)]> (jrnlData σj2), jrnlKinds σj2
+      ) as σj'.
+      efeed pose proof (always_steps_OverWriteBitOp a o (projT1 vobj) σj')
+        as Halways_steps'.
+      {
+        subst σj'.
+        split.
+        - intros a'' Hin.
+          simpl in Hin.
+          simpl.
+          destruct Hjrnl_maps_kinds as (_&->).
+          destruct Hjrnl_maps_mt' as (_&Hσj2'_mt).
+          apply dom_insert in Hin.
+          apply elem_of_union in Hin as [Ha''|Hin].
+          + apply elem_of_singleton_1 in Ha''.
+            subst a''.
+            eexists _.
+            split; first by eassumption.
+            apply map_Forall_insert_1_1 in Hvalids as (_&Hvalid_off&_).
+            rewrite Hvobj_modified in Hvalid_off; assumption.
+          + destruct Hjrnl_maps_mt as (_&Hσj2_mt).
+            rewrite -Hσj2_mt in Hin.
+            apply dom_fmap in Hin.
+            apply dom_fmap in Hin.
+            apply elem_of_dom in Hin as [vobj'' Hin].
+            apply map_Forall_insert_1_2 in Hvalids; last by assumption.
+            apply Hvalids in Hin as (_&Hvalid_off&Hvalid_γ).
+            eauto.
+        - intros a'' o'' Hacc''.
+          simpl in Hacc''.
+          simpl.
+          destruct Hjrnl_maps_kinds as (_&->).
+          destruct (decide (a'' = a)) as [->|Ha''].
+          + rewrite lookup_insert in Hacc''.
+            inversion Hacc''.
+            subst o''.
+            eexists _.
+            split; first by eassumption.
+            rewrite objSz_bufObj_to_obj.
+            inversion Hvobj_modified as [Heq]. rewrite Heq.
+            rewrite /committed//= Heq //=.
+          + rewrite lookup_insert_ne in Hacc''; last by trivial.
+            destruct Hjrnl_maps_mt as (_&Hσj2_mt).
+            rewrite -Hσj2_mt !lookup_fmap in Hacc''.
+            apply fmap_Some_1 in Hacc'' as [obj [Hobj ->]].
+            apply fmap_Some_1 in Hobj as [vobj' [Hvobj' ->]].
+            apply map_Forall_insert_1_2 in Hvalids; last by assumption.
+            apply Hvalids in Hvobj' as (_&_&Hvalid_γ).
+            rewrite Hvalid_γ.
+            eexists _.
+            split; first by reflexivity.
+            apply objSz_bufObj_to_obj.
+      }
+      {
+        rewrite Heqσj' /= lookup_insert.
+        eauto.
+      }
+      {
+        rewrite Heqσj' /=.
+        destruct Hjrnl_maps_kinds as (_&->).
+        inversion Hvobj_modified as [Heq1]; subst. rewrite Heq1. eauto.
+      }
+      {
+        inversion Hvobj_modified as [Heq1]; subst. rewrite Heq1. eauto.
+      }
+      rewrite /updateData in Halways_steps'.
+      subst σj'.
+      rewrite /= insert_insert in Halways_steps'.
+      rewrite Hvobj_modified //=.
   Qed.
 
   Lemma twophase_started_step_puredet l γ γ' dinit objs_dom j K0 K

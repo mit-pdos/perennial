@@ -23,6 +23,10 @@ Definition TwoPhase__OverWrite' : val :=
   let: "s" := ListToSlice byteT (Snd "ad") in
   TwoPhase__OverWrite "twophase" (Fst "ad") (slice.len "s" * #8) "s".
 
+Definition TwoPhase__OverWriteBit' : val :=
+  λ: "twophase" "ad",
+  TwoPhase__OverWriteBit "twophase" (Fst "ad") (Snd "ad").
+
 Definition TwoPhase__ConditionalCommit' : val :=
   λ: "twophase" "v",
   match: "v" with

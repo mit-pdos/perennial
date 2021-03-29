@@ -62,7 +62,7 @@ Inductive JrnlOp :=
   | ReadBufOp (* jrnl, addr *)
   | ReadBitOp (* jrnl, addr *)
   | OverWriteOp (* jrnl, addr, data tuple *)
-  | OverWriteBitOp (* jrnl, addr, byte *)
+  | OverWriteBitOp (* jrnl, addr, bool *)
   | OpenOp (* (no arguments) *)
 .
 
@@ -142,6 +142,16 @@ Section jrnl.
     - intros ?%val_of_obj'_inj; eauto. congruence.
   Qed.
 
+  Lemma val_of_obj'_inj3 o1 o:
+    val_of_obj' (objBit o1) = val_of_obj' o →
+    o = objBit o1.
+  Proof.
+    destruct o.
+    - rewrite /val_of_obj'; destruct o1 => //=; congruence.
+    - rewrite //=.
+      rewrite /val_of_list; destruct data => //=.
+  Qed.
+
   (* The only operation that can be called outside an atomically block is OpenOp *)
   Inductive jrnl_ext_tys : @val jrnl_op -> (ty * ty) -> Prop :=
   | JrnlOpType t :
@@ -217,6 +227,13 @@ Section jrnl.
       (* bit reads must be done with ReadBitOp *)
       check (k ≠ KindBit ∧ bufSz k = int.nat sz);;
       ret $ val_of_obj' d
+    | ReadBitOp, (#(LitInt blkno), (#(LitInt off), #()))%V =>
+      j ← openΣ;
+      d ← unwrap (jrnlData j !! (Build_addr blkno off));
+      k ← unwrap (jrnlKinds j !! blkno);
+      (* bit reads must be done with ReadBitOp *)
+      check (k = KindBit);;
+      ret $ val_of_obj' d
     | OverWriteOp, PairV (#(LitInt blkno), (#(LitInt off), #()))%V ov =>
       j ← openΣ;
       (* This only allows writing to addresses that already have defined contents *)
@@ -224,6 +241,15 @@ Section jrnl.
       k ← unwrap (jrnlKinds j !! blkno);
       o ← suchThat (λ _ o, val_of_obj' o = ov);
       check (objSz o = bufSz k ∧ k ≠ KindBit);;
+      modifyΣ (λ j, updateData j (Build_addr blkno off) o);;
+      ret $ #()
+    | OverWriteBitOp, PairV (#(LitInt blkno), (#(LitInt off), #()))%V ov =>
+      j ← openΣ;
+      (* This only allows writing to addresses that already have defined contents *)
+      _ ← unwrap (jrnlData j !! (Build_addr blkno off));
+      k ← unwrap (jrnlKinds j !! blkno);
+      o ← suchThat (λ _ o, val_of_obj' o = ov);
+      check (objSz o = bufSz k ∧ k = KindBit);;
       modifyΣ (λ j, updateData j (Build_addr blkno off) o);;
       ret $ #()
     | _, _ => undefined
@@ -909,7 +935,43 @@ Proof.
   { rewrite /check/ifThenElse. rewrite decide_True //=. }
 Qed.
 
+Lemma always_steps_ReadBitOp a v σj:
+  wf_jrnl σj →
+  jrnlData σj !! a = Some v →
+  jrnlKinds σj !! (addrBlock a) = Some KindBit →
+  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                           ReadBitOp
+                           (addr2val' a))
+               σj
+               (val_of_obj' v)
+               σj.
+Proof.
+  intros Hwf Hlookup1 Hlookup2.
+  split_and!; eauto.
+  { split_and!; try set_solver. }
+  intros s g Hsub.
+  apply rtc_once.
+  eapply (Ectx_step' _ _ _ _ _ _ _ _ []) => //=.
+  rewrite jrnl_upd_sub // /head_step//=.
+  rewrite /jrnl_sub_state in Hsub.
+  destruct Hsub as (?&Heq&?&?).
+  destruct a as (ablk&aoff).
+  econstructor; last econstructor; eauto.
+  econstructor; repeat (econstructor; eauto).
+  { simpl. rewrite Heq. econstructor. eauto. }
+  { simpl in Hlookup1.
+    eapply lookup_weaken in Hlookup1; last eassumption.
+    rewrite Hlookup1. econstructor; eauto. }
+  { simpl in Hlookup2.
+    rewrite -H2. rewrite Hlookup2; eauto.
+    econstructor; eauto. }
+  { rewrite /check/ifThenElse. rewrite //=. }
+Qed.
+
 Lemma val_of_obj'_bytes vs: val_of_obj' (objBytes vs) = val_of_list ((λ u : u8, #u) <$> vs).
+Proof. rewrite //=. Qed.
+
+Lemma val_of_obj'_bit (vs : bool) : val_of_obj' (objBit vs) = #vs.
 Proof. rewrite //=. Qed.
 
 Lemma wf_jrnl_updateData σj a vs vs_old k :
@@ -967,6 +1029,57 @@ Proof.
     rewrite H2 in Hlookup2.
     rewrite Hlookup2. econstructor; eauto. }
   { eapply val_of_obj'_bytes. }
+  { rewrite /check/ifThenElse.
+    rewrite decide_True; auto.
+    { repeat econstructor. }
+  }
+  { rewrite //= Heq. repeat econstructor. }
+  { rewrite //=. do 2 f_equal.
+    rewrite /jrnl_upd //=. rewrite /set. destruct s => //=.
+    do 2 f_equal. rewrite /updateData. rewrite /= in Heq.
+    subst => //=. repeat f_equal.
+    rewrite -insert_union_l.
+    rewrite map_subseteq_union //.
+  }
+Qed.
+
+Lemma always_steps_OverWriteBitOp a b k σj:
+  wf_jrnl σj →
+  is_Some (jrnlData σj !! a)  →
+  jrnlKinds σj !! (addrBlock a) = Some k →
+  (objSz (objBit b) = bufSz k ∧ k = KindBit) →
+  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                           OverWriteBitOp
+                           (PairV (addr2val' a) (val_of_obj' (objBit b))))
+               σj
+               #()
+               (updateData σj a (objBit b)).
+Proof.
+  intros Hwf (vs_old&Hlookup1) Hlookup2 Hk.
+  split_and!; eauto.
+  { split_and!; try set_solver.
+    - rewrite //=. rewrite dom_insert_L.
+      cut (a ∈ dom (gset _) (jrnlData σj)); first by set_solver.
+      apply elem_of_dom. eauto.
+    - eapply wf_jrnl_updateData; eauto. naive_solver.
+  }
+  intros s g Hsub.
+  apply rtc_once.
+  eapply (Ectx_step' _ _ _ _ _ _ _ _ []) => //=.
+  rewrite /jrnl_sub_state in Hsub.
+  destruct Hsub as (?&Heq&?&?).
+  destruct a as (ablk&aoff).
+  econstructor; last econstructor; eauto.
+  econstructor; repeat (econstructor; eauto).
+  { simpl. rewrite Heq. econstructor. eauto. }
+  { simpl in Hlookup1.
+    eapply lookup_weaken in Hlookup1; last eassumption.
+    rewrite Hlookup1. econstructor; eauto. }
+  { simpl in Hlookup2.
+    rewrite H2 in Hlookup2.
+    rewrite Hlookup2. econstructor; eauto. }
+  {
+    eapply val_of_obj'_bit. }
   { rewrite /check/ifThenElse.
     rewrite decide_True; auto.
     { repeat econstructor. }
@@ -1549,6 +1662,46 @@ Proof.
   - eauto.
 Qed.
 
+Lemma objSize_bit_inv o b:
+  objSz o = bufSz b ∧ b = KindBit →
+  ∃ vs, o = objBit vs.
+Proof.
+  destruct o.
+  - intros (Hsize&?). eauto.
+  - intros (Hsize&?). subst. rewrite //= in Hsize. lia.
+Qed.
+
+Lemma not_stuck'_OverWriteBit_inv K `{!LanguageCtx' K} a (ov : sval) s g:
+  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                        OverWriteBitOp (addr2val' a, ov)%V)) s g →
+  ∃ σj o, world s = Opened σj ∧
+  is_Some (jrnlData σj !! a) ∧
+  jrnlKinds σj !! (addrBlock a) = Some KindBit ∧
+  val_of_obj' (objBit o) = ov.
+Proof.
+  intros Hnstuck. eapply NNPP.
+  intros Hneg. apply Hnstuck.
+  apply stuck'_fill; eauto.
+  apply stuck_ExternalOp'; eauto.
+  intros ????? Hstep.
+  inversion Hstep; subst.
+  simpl in H1.
+  repeat (simpl in *; monad_inv).
+  destruct (s.(world)) eqn:Heq; rewrite Heq in H1.
+  { inversion H1. subst. monad_inv. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlData _ !! _) eqn:Heq2; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlKinds _ !! _) eqn:Heq3; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (decide (objSz o0 = bufSz b ∧ b = KindBit)); last first.
+  { repeat (simpl in *; monad_inv). eauto. }
+  edestruct (objSize_bit_inv) as (vs&Heq_vs); eauto.
+  eapply Hneg. naive_solver.
+Qed.
+
 Lemma not_stuck'_OverWrite_inv K `{!LanguageCtx' K} a (ov : sval) s g:
   ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                         OverWriteOp (addr2val' a, ov)%V)) s g →
@@ -1607,6 +1760,35 @@ Proof.
   { inversion H1. inversion H2. eauto. }
   repeat (simpl in *; monad_inv).
   destruct (decide (b ≠ KindBit ∧ bufSz b = int.nat sz)); last first.
+  { repeat (simpl in *; monad_inv). eauto. }
+  eapply Hneg. naive_solver.
+Qed.
+
+Lemma not_stuck'_ReadBit_inv K `{!LanguageCtx' K} a s g:
+  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                        ReadBitOp (addr2val' a)%V)) s g →
+  ∃ σj, world s = Opened σj ∧
+  is_Some (jrnlData σj !! a) ∧
+  jrnlKinds σj !! (addrBlock a) = Some (KindBit).
+Proof.
+  intros Hnstuck. eapply NNPP.
+  intros Hneg. apply Hnstuck.
+  apply stuck'_fill; eauto.
+  apply stuck_ExternalOp'; eauto.
+  intros ????? Hstep.
+  inversion Hstep; subst.
+  simpl in H1.
+  repeat (simpl in *; monad_inv).
+  destruct (s.(world)) eqn:Heq; rewrite Heq in H1.
+  { inversion H1. subst. monad_inv. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlData _ !! _) eqn:Heq2; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlKinds _ !! _) eqn:Heq3; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (decide (b = KindBit)); last first.
   { repeat (simpl in *; monad_inv). eauto. }
   eapply Hneg. naive_solver.
 Qed.

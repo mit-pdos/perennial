@@ -1025,6 +1025,26 @@ Proof.
     iNext. iIntros (v) "H". iExists _. iFrame.
     iApply atomically_listT_interp_refl_obj.
   - subst. simpl.
+    iPoseProof (IHHtyping with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
+    iSpecialize ("H" $! j _ _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    iDestruct "Hv1" as %(?&?&?&?&(Heq1&Heq2)&(a&Heqa&Heqa')&Hrest).
+    destruct Hrest as (?&?&?&?&(->&->)&Hrest). subst.
+    destruct Hrest as ((o&?&?)&?&?). subst.
+    replace (#a, (#o, #()))%V with (addr2val (a,o)) by auto.
+    replace (#a, (#o, #()))%V with (addr2val' (a,o)) by auto.
+    iApply wp_wpc.
+    iPoseProof (wp_TwoPhase__ReadBufBit' tph _ _ _ _ _ _ _ _ (a, o) with "Hj") as "H".
+    iApply "H".
+    iNext. iIntros (v) "H". iExists _. iFrame.
+    iExists _. eauto.
+  - subst. simpl.
     iPoseProof (IHHtyping1 with "[//] [$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
     spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
@@ -1056,6 +1076,43 @@ Proof.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
     iPoseProof (wp_TwoPhase__OverWrite' tph _ _ _ _ _ _ _ _ (a, o) (objBytes v) with "Hj") as "H".
+    iApply "H".
+    iNext. iIntros "H". iExists _. iFrame.
+    eauto.
+  - subst. simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
+    iSpecialize ("H" $! j _ _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    iPoseProof (IHHtyping2 with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e2').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e2) as Hctx'.
+    iSpecialize ("H" $! j _ _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    clear Hctx'.
+    simpl.
+    iDestruct "Hv1" as %(?&?&?&?&(Heq1&Heq2)&(a&Heqa&Heqa')&Hrest).
+    destruct Hrest as (?&?&?&?&(->&->)&Hrest). subst.
+    destruct Hrest as ((o&?&?)&?&?). subst.
+    replace (#a, (#o, #()))%V with (addr2val (a,o)) by auto.
+    replace (#a, (#o, #()))%V with (addr2val' (a,o)) by auto.
+    iApply wp_wpc.
+    iDestruct "Hv2" as (b) "(->&->)".
+    replace (#b) with (val_of_obj (objBit b)); auto.
+    replace (#b) with (val_of_obj' (objBit b)); auto.
+    spec_bind (addr2val' (a, o)%core, (val_of_obj' (objBit b)))%E as Hctx'.
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
+                 (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) with "Hj") as "Hj".
+    { intros ??.
+      apply head_prim_step_trans'. repeat econstructor; eauto.
+    }
+    iPoseProof (wp_TwoPhase__OverWriteBit' tph _ _ _ _ _ _ _ _ (a, o) (objBit b) with "Hj") as "H".
     iApply "H".
     iNext. iIntros "H". iExists _. iFrame.
     eauto.

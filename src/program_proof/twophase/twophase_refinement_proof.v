@@ -375,6 +375,15 @@ Proof.
   - intros; subst; simpl.
     rewrite decide_True //.
     econstructor.
+    * eapply IHHtyping; eauto; unfold_expr_vars; set_solver.
+  - intros; subst; simpl.
+    rewrite decide_True //.
+    econstructor.
+    * eapply IHHtyping1; eauto; unfold_expr_vars; set_solver.
+    * eapply IHHtyping2; eauto; unfold_expr_vars; set_solver.
+  - intros; subst; simpl.
+    rewrite decide_True //.
+    econstructor.
     * eapply IHHtyping1; eauto; unfold_expr_vars; set_solver.
     * eapply IHHtyping2; eauto; unfold_expr_vars; set_solver.
   - intros; subst; simpl.
@@ -684,6 +693,8 @@ Proof.
         ** rewrite lookup_delete //.
         ** rewrite lookup_delete_ne // lookup_delete //.
     }
+  - rewrite Heq0. f_equal.
+  - rewrite Heq0. f_equal.
   - rewrite Heq0. f_equal.
   - rewrite Heq0. f_equal.
 Qed.
