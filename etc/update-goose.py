@@ -175,6 +175,7 @@ def main():
             "txn",
             "util",
             "wal",
+            "fh",
             "buftxn_replication",
             "simple",
             "twophase",
