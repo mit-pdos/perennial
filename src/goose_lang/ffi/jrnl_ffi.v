@@ -166,12 +166,15 @@ Section jrnl.
     "Off" :: uint64T
   ])%struct.
 
-  Definition jrnl_map : Type := gmap addr obj * gmap blkno kind.
+  Record jrnl_map : Type :=
+    { jrnlData : gmap addr obj;
+      jrnlKinds : gmap blkno kind;
+      jrnlAllocs : gmap loc u64 }.
 
-  Definition jrnlData (m : jrnl_map) := fst m.
-  Definition jrnlKinds (m : jrnl_map) := snd m.
-
-  Definition updateData m a o := (<[a := o]> (jrnlData m), jrnlKinds m).
+  Definition updateData m a o :=
+    {| jrnlData := <[a := o]> (jrnlData m);
+       jrnlKinds := jrnlKinds m;
+       jrnlAllocs := jrnlAllocs m |}.
 
   Definition offsets_aligned (m : jrnl_map) :=
     (∀ a, a ∈ dom (gset _) (jrnlData m) →
@@ -196,7 +199,9 @@ Section jrnl.
       | Closed j | Opened j => j
     end.
 
-  Instance jrnl_model : ffi_model := recoverable_model jrnl_map (populate (∅, ∅)).
+  Instance jrnl_model : ffi_model := recoverable_model jrnl_map (populate {| jrnlData := ∅;
+                                                                             jrnlKinds := ∅;
+                                                                             jrnlAllocs := ∅ |}).
 
   Existing Instances r_mbind r_fmap.
 
@@ -680,7 +685,9 @@ Definition jrnl_sub_state (σj : jrnl_map) (s: sstate) : Prop :=
   (∃ sj, s.(world) = Opened sj ∧ jrnlData σj ⊆ jrnlData sj ∧ jrnlKinds σj = jrnlKinds sj).
 
 Definition jrnl_upd (σj: jrnl_map) (s: sstate) : sstate :=
-  set sworld (λ s, Opened (jrnlData σj ∪ (jrnlData $ get_jrnl s), jrnlKinds $ get_jrnl s)) s.
+  set sworld (λ s, Opened {| jrnlData := jrnlData σj ∪ (jrnlData $ get_jrnl s);
+                             jrnlKinds := jrnlKinds $ get_jrnl s;
+                             jrnlAllocs := jrnlAllocs $ (get_jrnl s) |}) s.
 
 Definition always_steps (e: sexpr) (σj: jrnl_map) (e': sexpr) (σj': jrnl_map) : Prop :=
   (jrnlKinds σj = jrnlKinds σj') ∧
@@ -695,7 +702,7 @@ Proof.
   intros (sj&Heq1&Hsub1&Hsub2).
   rewrite /jrnl_upd.
   destruct s. rewrite /set//=. f_equal.
-  rewrite /= in Heq1. rewrite Heq1. f_equal. destruct sj as (sjd, sjk).
+  rewrite /= in Heq1. rewrite Heq1. f_equal. destruct sj as [sjd [sjk sja]].
   f_equal => /=. apply map_subseteq_union; auto.
 Qed.
 
@@ -770,8 +777,10 @@ Qed.
 
 Lemma insert_jrnl_upd a o σj s :
   a ∉ dom (gset _) (jrnlData σj) →
-  jrnl_upd (<[a := o]> (jrnlData σj), jrnlKinds σj) s =
-  jrnl_upd σj (jrnl_upd ({[ a := o]}, jrnlKinds σj) s).
+  jrnl_upd (updateData σj a o) s =
+  jrnl_upd σj (jrnl_upd ({| jrnlData := {[ a := o]};
+                           jrnlKinds := jrnlKinds σj;
+                           jrnlAllocs := jrnlAllocs σj|}) s).
 Proof.
   intros.
   rewrite /jrnl_upd/set/=. do 3 f_equal.
@@ -807,8 +816,10 @@ Proof.
 Qed.
 
 Lemma insert_jrnl_sub_state a o σj s:
-  jrnl_sub_state (<[a:=o]> (jrnlData σj), jrnlKinds σj) s →
-  s = (jrnl_upd ({[ a := o]}, jrnlKinds σj) s).
+  jrnl_sub_state (updateData σj a o ) s →
+  s = (jrnl_upd ({| jrnlData := {[ a := o]};
+                           jrnlKinds := jrnlKinds σj;
+                           jrnlAllocs := jrnlAllocs σj|}) s).
 Proof.
   rewrite /jrnl_sub_state /=.
   intros (sj&Heq1&Hsub1&Hsub2).
@@ -831,7 +842,7 @@ Qed.
 Lemma wf_jrnl_extend σj a o:
   size_consistent_and_aligned a o (jrnlKinds σj) →
   wf_jrnl σj →
-  wf_jrnl (<[a := o]> (jrnlData σj), jrnlKinds σj).
+  wf_jrnl (updateData σj a o).
 Proof.
   intros Haligned Hwf. rewrite /wf_jrnl.
   split.
@@ -850,8 +861,8 @@ Lemma always_steps_extend e1 σj1 e2 σj2 a o :
   (a ∉ dom (gset _) (jrnlData σj2)) →
   size_consistent_and_aligned a o (jrnlKinds σj1) →
   always_steps e1 σj1 e2 σj2 →
-  always_steps e1 (<[a := o]> $ jrnlData σj1, jrnlKinds σj1)
-               e2 (<[a := o]> $ jrnlData σj2, jrnlKinds σj2).
+  always_steps e1 (updateData σj1 a o)
+               e2 (updateData σj2 a o).
 Proof.
   intros Hdom Hconsistent (?&Hsub&Hstep).
   split_and!.
@@ -874,7 +885,7 @@ Proof.
     assert (a ∉ dom (gset _) (jrnlData σj1)) as Hdom' by (rewrite Hsub_data'; set_solver).
     destruct (decide (a = i)).
     * subst. apply not_elem_of_dom in Hdom'.
-      rewrite Hdom' => //=. destruct (({[ i := o]} ∪ jrnlData sj) !! i) eqn:Heq; rewrite Heq //.
+      rewrite Hdom' => //=. destruct (({[ i := o]} ∪ jrnlData sj) !! i) eqn:Heq; auto.
     * rewrite lookup_union_r ?lookup_singleton_ne //.
       rewrite lookup_insert_ne // in Hsub_data.
 Qed.
@@ -1237,63 +1248,63 @@ Proof.
   congruence.
 Qed.
 
-Lemma offsets_aligned_delete i σjd σjk :
-  offsets_aligned (σjd, σjk) →
-  offsets_aligned (delete i σjd, σjk).
+Lemma offsets_aligned_delete i σjd σjk σja :
+  offsets_aligned {| jrnlData := σjd; jrnlKinds := σjk; jrnlAllocs := σja |} →
+  offsets_aligned {| jrnlData := (delete i σjd); jrnlKinds := σjk; jrnlAllocs := σja |}.
 Proof.
   intros Hoa k Hin. eapply Hoa.
   set_solver.
 Qed.
 
-Lemma sizes_correct_delete i σjd σjk :
-  sizes_correct (σjd, σjk) →
-  sizes_correct (delete i σjd, σjk).
+Lemma sizes_correct_delete i σjd σjk σja :
+  sizes_correct {| jrnlData := σjd; jrnlKinds := σjk; jrnlAllocs := σja |} →
+  sizes_correct {| jrnlData := (delete i σjd); jrnlKinds := σjk; jrnlAllocs := σja |}.
 Proof.
   intros Hoa k Hin Hlookup. eapply Hoa.
   rewrite /=.
   eapply lookup_delete_Some; eauto.
 Qed.
 
-Lemma wf_jrnl_delete i σjd σjk :
-  wf_jrnl (σjd, σjk) →
-  wf_jrnl (delete i σjd, σjk).
+Lemma wf_jrnl_delete i σjd σjk σja :
+  wf_jrnl {| jrnlData := σjd; jrnlKinds := σjk; jrnlAllocs := σja |} →
+  wf_jrnl {| jrnlData := (delete i σjd); jrnlKinds := σjk; jrnlAllocs := σja |}.
 Proof.
   intros (?&?).
   split; eauto using offsets_aligned_delete, sizes_correct_delete.
 Qed.
 
-Lemma offsets_aligned_mono_kinds σjd σjk σjk' :
+Lemma offsets_aligned_mono_kinds σjd σjk σjk' σja :
   σjk ⊆ σjk' →
-  offsets_aligned (σjd, σjk) →
-  offsets_aligned (σjd, σjk').
+  offsets_aligned {| jrnlData := σjd; jrnlKinds := σjk; jrnlAllocs := σja |} →
+  offsets_aligned {| jrnlData := σjd; jrnlKinds := σjk'; jrnlAllocs := σja |}.
 Proof.
   intros Hsub Hoa i Hin. edestruct Hoa as (k&?&?); eauto.
   exists k; split_and!; eauto. rewrite /=.
   eapply lookup_weaken; eauto.
 Qed.
 
-Lemma sizes_correct_mono_kinds σjd σjk σjk' :
+Lemma sizes_correct_mono_kinds σjd σjk σjk' σja :
   σjk ⊆ σjk' →
-  sizes_correct (σjd, σjk) →
-  sizes_correct (σjd, σjk').
+  sizes_correct {| jrnlData := σjd; jrnlKinds := σjk; jrnlAllocs := σja |} →
+  sizes_correct {| jrnlData := σjd; jrnlKinds := σjk'; jrnlAllocs := σja |}.
 Proof.
   intros Hsub Hoa i ? Hin. edestruct Hoa as (k&?&?); eauto.
   exists k; split_and!; eauto. rewrite /=.
   eapply lookup_weaken; eauto.
 Qed.
 
-Lemma wf_jrnl_mono_kinds σjd σjk σjk' :
+Lemma wf_jrnl_mono_kinds σjd σjk σjk' σja :
   σjk ⊆ σjk' →
-  wf_jrnl (σjd, σjk) →
-  wf_jrnl (σjd, σjk').
+  wf_jrnl {| jrnlData := σjd; jrnlKinds := σjk; jrnlAllocs := σja |} →
+  wf_jrnl {| jrnlData := σjd; jrnlKinds := σjk'; jrnlAllocs := σja |}.
 Proof.
   intros ? (?&?).
   split; eauto using offsets_aligned_mono_kinds, sizes_correct_mono_kinds.
 Qed.
 
-Lemma wf_jrnl_lookup_size_consistent_and_aligned σjd σjk i o :
+Lemma wf_jrnl_lookup_size_consistent_and_aligned σjd σjk σja i o :
   σjd !! i = Some o →
-  wf_jrnl (σjd, σjk) →
+  wf_jrnl {| jrnlData := σjd; jrnlKinds := σjk; jrnlAllocs := σja |} →
   size_consistent_and_aligned i o σjk.
 Proof.
   intros Hlookup (Hoa&Hsizes).
@@ -1304,19 +1315,20 @@ Proof.
   congruence.
 Qed.
 
-Lemma jrnl_ctx_upd σj σjd' σjk s :
-  wf_jrnl (σjd', σjk) →
+Lemma jrnl_ctx_upd σj σjd' σjk σja s :
+  wf_jrnl {| jrnlData := σjd'; jrnlKinds := σjk; jrnlAllocs := σja |} →
   dom (gset _) (jrnlData σj) = dom (gset _) σjd' →
   jrnl_open -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
   jrnl_kinds σjk -∗
   jrnl_ctx s.(world) ==∗
   ([∗ map] a ↦ o ∈ (σjd'), jrnl_mapsto a 1 o) ∗
-  jrnl_ctx (jrnl_upd (σjd', σjk) s).(world).
+  jrnl_ctx (jrnl_upd {| jrnlData := σjd'; jrnlKinds := σjk; jrnlAllocs := σja |} s).(world).
 Proof.
   iIntros (Hwf Hdom) "#Hopen Hpts #Hkinds Hctx".
   iDestruct (jrnl_ctx_unify_opened with "[$] [$]") as %[sj Heq].
-  iDestruct (jrnl_ctx_sub_state_valid (jrnlData σj, σjk) with "Hpts Hkinds [$] [$]") as %Hval.
+  iDestruct (jrnl_ctx_sub_state_valid {| jrnlData := jrnlData σj; jrnlKinds := σjk; jrnlAllocs := σja |}
+     with "Hpts Hkinds [$] [$]") as %Hval.
   rewrite /jrnl_ctx. rewrite Heq.
   iDestruct "Hctx" as "(_&Hstate)".
   iDestruct "Hstate" as (Hwf0) "(Hctx&Hkinds'&Hdom')". simpl.
@@ -1370,6 +1382,7 @@ Proof.
     }
     iModIntro; iSplit; auto.
     { iPureIntro. eapply wf_jrnl_extend in Hwf'; last eauto.
+      rewrite /updateData//= in Hwf'.
       rewrite /= insert_union_l insert_delete insert_id in Hwf'; eauto.
     }
 Qed.
@@ -1459,7 +1472,7 @@ Proof.
     eapply atomically_not_stuck_body_safe; eauto.
   }
   { solve_ndisj. }
-  iMod (jrnl_ctx_upd _ (jrnlData σj') with "[$] [$] [$] [$]") as "(Hσj'_data&Hffi)".
+  iMod (jrnl_ctx_upd _ (jrnlData σj') _ (jrnlAllocs σj') with "[$] [$] [$] [$]") as "(Hσj'_data&Hffi)".
   { destruct Hwf as (?&?&?&?). rewrite Heq_kinds; eauto. }
   { destruct Hwf as (?&?&?&?). eauto. }
   iMod ("Hclo" with "[Hσ Hrest H Hffi]") as "_".
@@ -1514,7 +1527,7 @@ Proof.
   }
   { solve_ndisj. }
   { iModIntro. iIntros "(h1&>h2)". iDestruct (pending_pending with "[$] [$]") as %[]. }
-  iMod (jrnl_ctx_upd _ (jrnlData σj') with "[$] [$] [$] [$]") as "(Hσj'_data&Hffi)".
+  iMod (jrnl_ctx_upd _ (jrnlData σj') _ (jrnlAllocs σj') with "[$] [$] [$] [$]") as "(Hσj'_data&Hffi)".
   { destruct Hwf as (?&?&?&?). rewrite Heq_kinds; eauto. }
   { destruct Hwf as (?&?&?&?). eauto. }
   iMod ("Hclo" with "[-Hσj_crash_toks Hσj'_data]") as "_".

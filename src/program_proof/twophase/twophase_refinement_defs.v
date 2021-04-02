@@ -98,7 +98,7 @@ Definition twophase_crash_tok {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_hea
 
 Definition twophase_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := (∃ γ dinit logm mt, twophase_crash_cond_full γ dinit logm mt ∗
-          auth_map.map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> jrnlData (bufObj_to_obj <$> mt, ∅)) ∗
+          auth_map.map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> (bufObj_to_obj <$> mt)) ∗
           jrnl_full_crash_tok ∗ jrnl_closed_frag).
 
 Definition twophaseN : coPset := (∅ : coPset).

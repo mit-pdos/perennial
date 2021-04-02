@@ -27,7 +27,10 @@ Definition kinds_mapsto_valid (kinds : gmap u64 defs.bufDataKind)
 
 Definition twophase_initP (σimpl: @goose_lang.state disk_op disk_model) (σspec : @goose_lang.state jrnl_op jrnl_model) : Prop :=
   ∃ sz kinds,
-  let σj : jrnl_map :=  (bufObj_to_obj <$> recovery_proof.kind_heap0 kinds, kinds) in
+    let σj := {| jrnlData := (bufObj_to_obj <$> recovery_proof.kind_heap0 kinds);
+                 jrnlKinds := kinds;
+                 jrnlAllocs := ∅
+              |} in
   513 < sz ∧
   ((513 + Z.of_nat sz) * block_bytes * 8 < 2^64)%Z ∧
   (null_non_alloc σspec.(heap)) ∧
@@ -201,7 +204,7 @@ Proof.
       iSplitL "H1 Htxn_durable".
       { iExists _, _, _, _. iFrame. eauto. }
       iFrame.
-      iExists ((bufObj_to_obj <$> _, ∅)).
+      iExists {| jrnlData := (bufObj_to_obj <$> _); jrnlKinds := ∅; jrnlAllocs := ∅ |}.
       iSplitL "H2".
       { iApply big_sepM_fmap. iExact "H2". }
       rewrite /=.

@@ -277,7 +277,8 @@ Section proof.
     iNamed.
 
     iApply "HΦ".
-    iExists (∅, _), (∅, _), _, _.
+    iExists {| jrnlData := ∅; jrnlKinds := _; jrnlAllocs := ∅ |},
+           {| jrnlData := ∅; jrnlKinds := _; jrnlAllocs := ∅ |}, _, _.
     iFrame "∗ #".
     iPureIntro.
     split.
@@ -1026,12 +1027,8 @@ Section proof.
         destruct vobj as [k [oc om]].
         reflexivity.
       }
-      remember (
-        <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj1), jrnlKinds σj1
-      ) as σj1'.
-      remember (
-        <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj2), jrnlKinds σj2
-      ) as σj2'.
+      remember (updateData σj1 a (bufObj_to_obj (modified vobj))) as σj1'.
+      remember (updateData σj2 a (bufObj_to_obj (modified vobj))) as σj2'.
       assert (jrnl_maps_kinds_valid γ σj1' σj2') as Hjrnl_maps_kinds'
         by rewrite Heqσj1' Heqσj2' //.
       assert (
@@ -1068,10 +1065,12 @@ Section proof.
       apply always_steps_bind.
       eapply always_steps_ReadBufOp; first by intuition.
       {
+        rewrite /updateData.
         destruct Hjrnl_maps_mt as [_ <-].
         rewrite /= -!fmap_insert !lookup_fmap lookup_insert //.
       }
       {
+        rewrite /updateData.
         destruct Hjrnl_maps_kinds as [_ ->].
         rewrite Hvalid_γ //.
       }
@@ -1160,12 +1159,8 @@ Section proof.
         destruct vobj as [k [oc om]].
         reflexivity.
       }
-      remember (
-        <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj1), jrnlKinds σj1
-      ) as σj1'.
-      remember (
-        <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj2), jrnlKinds σj2
-      ) as σj2'.
+      remember (updateData σj1 a (bufObj_to_obj (modified vobj))) as σj1'.
+      remember (updateData σj2 a (bufObj_to_obj (modified vobj))) as σj2'.
       assert (jrnl_maps_kinds_valid γ σj1' σj2') as Hjrnl_maps_kinds'
         by rewrite Heqσj1' Heqσj2' //.
       assert (
@@ -1205,11 +1200,13 @@ Section proof.
       apply always_steps_bind.
       eapply always_steps_ReadBitOp; first by intuition.
       {
+        rewrite /updateData.
         destruct Hjrnl_maps_mt as [_ <-].
         rewrite /= -!fmap_insert !lookup_fmap lookup_insert //.
         rewrite /= -Heq //.
       }
       {
+        rewrite /updateData.
         destruct Hjrnl_maps_kinds as [_ ->].
         rewrite Hvalid_γ //.
       }
@@ -1305,12 +1302,8 @@ Section proof.
 
     iApply "HΦ".
     iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
-    remember (
-      <[a:=bufObj_to_obj (committed vobj)]>(jrnlData σj1), jrnlKinds σj1
-    ) as σj1'.
-    remember (
-      <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj2), jrnlKinds σj2
-    ) as σj2'.
+    remember (updateData σj1 a (bufObj_to_obj (committed vobj))) as σj1'.
+    remember (updateData σj2 a (bufObj_to_obj (modified vobj))) as σj2'.
     assert (jrnl_maps_kinds_valid γ σj1' σj2') as Hjrnl_maps_kinds'
       by rewrite Heqσj1' Heqσj2' //.
     assert (
@@ -1333,6 +1326,7 @@ Section proof.
     - eapply always_steps_trans.
       {
         destruct Hjrnl_maps_mt as [Hσj1_data _].
+        rewrite /updateData.
         rewrite -Hσj1_data insert_id;
           last by rewrite !lookup_fmap Hacc Hvobj_committed //.
         rewrite Hσj1_data.
@@ -1381,9 +1375,7 @@ Section proof.
       }
       eapply always_steps_trans; first by apply Halways_steps.
       apply always_steps_bind.
-      remember (
-        <[a:=bufObj_to_obj (committed vobj)]> (jrnlData σj2), jrnlKinds σj2
-      ) as σj'.
+      remember (updateData σj2 a (bufObj_to_obj (committed vobj))) as σj'.
       efeed pose proof (always_steps_OverWriteOp a data (projT1 vobj) σj')
         as Halways_steps'.
       {
@@ -1506,12 +1498,8 @@ Section proof.
 
     iApply "HΦ".
     iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
-    remember (
-      <[a:=bufObj_to_obj (committed vobj)]>(jrnlData σj1), jrnlKinds σj1
-    ) as σj1'.
-    remember (
-      <[a:=bufObj_to_obj (modified vobj)]>(jrnlData σj2), jrnlKinds σj2
-    ) as σj2'.
+    remember (updateData σj1 a (bufObj_to_obj (committed vobj))) as σj1'.
+    remember (updateData σj2 a (bufObj_to_obj (modified vobj))) as σj2'.
     assert (jrnl_maps_kinds_valid γ σj1' σj2') as Hjrnl_maps_kinds'
       by rewrite Heqσj1' Heqσj2' //.
     assert (
@@ -1533,6 +1521,7 @@ Section proof.
     - eapply always_steps_trans.
       {
         destruct Hjrnl_maps_mt as [Hσj1_data _].
+        rewrite /updateData.
         rewrite -Hσj1_data insert_id;
           last by rewrite !lookup_fmap Hacc Hvobj_committed //.
         rewrite Hσj1_data.
@@ -1581,9 +1570,7 @@ Section proof.
       }
       eapply always_steps_trans; first by apply Halways_steps.
       apply always_steps_bind.
-      remember (
-        <[a:=bufObj_to_obj (committed vobj)]> (jrnlData σj2), jrnlKinds σj2
-      ) as σj'.
+      remember (updateData σj2 a (bufObj_to_obj (committed vobj))) as σj'.
       efeed pose proof (always_steps_OverWriteBitOp a o (projT1 vobj) σj')
         as Halways_steps'.
       {
