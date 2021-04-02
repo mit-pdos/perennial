@@ -64,6 +64,10 @@ Inductive JrnlOp :=
   | OverWriteOp (* jrnl, addr, data tuple *)
   | OverWriteBitOp (* jrnl, addr, bool *)
   | OpenOp (* (no arguments) *)
+  | MkAllocOp (* max *)
+  | MarkUsedOp (* alloc, idx *)
+  | FreeNumOp (* alloc, idx *)
+  | AllocOp (* alloc *)
 .
 
 Instance eq_JrnlOp : EqDecision JrnlOp.
@@ -73,7 +77,7 @@ Defined.
 
 Instance JrnlOp_fin : Countable JrnlOp.
 Proof.
-  solve_countable JrnlOp_rec 5%nat.
+  solve_countable JrnlOp_rec 8%nat.
 Qed.
 
 Definition jrnl_op : ext_op.
@@ -82,7 +86,9 @@ Proof.
 Defined.
 
 (* Should addrs be opaque? I think not *)
-Inductive Jrnl_ty := JrnlT.
+Inductive Jrnl_ty :=
+ | JrnlT
+ | AllocT.
 
 Instance jrnl_val_ty: val_types :=
   {| ext_tys := Jrnl_ty; |}.
@@ -176,6 +182,11 @@ Section jrnl.
        jrnlKinds := jrnlKinds m;
        jrnlAllocs := jrnlAllocs m |}.
 
+  Definition updateAllocs m l max :=
+    {| jrnlData := jrnlData m;
+       jrnlKinds := jrnlKinds m;
+       jrnlAllocs := <[l := max]> (jrnlAllocs m) |}.
+
   Definition offsets_aligned (m : jrnl_map) :=
     (∀ a, a ∈ dom (gset _) (jrnlData m) →
      ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ valid_off k (addrOff a)).
@@ -220,6 +231,43 @@ Section jrnl.
 
   Existing Instance fallback_genPred.
 
+  Definition isFreshAlloc (σja: gmap loc u64) (l: loc) :=
+    σja !! l = None.
+
+  Theorem fresh_locs_isFreshAlloc σja :
+    isFreshAlloc σja (fresh_locs (dom (gset loc) σja)).
+  Proof.
+    * apply (not_elem_of_dom (D := gset loc)).
+        by apply fresh_locs_fresh.
+  Qed.
+
+  Definition gen_isFreshAlloc σja : {l: loc | isFreshAlloc σja l}.
+  Proof.
+    refine (exist _ (fresh_locs (dom (gset loc) σja)) _).
+      by apply fresh_locs_isFreshAlloc.
+  Defined.
+
+  Global Instance mkalloc_gen σja : GenPred loc (state*global_state) (λ _, isFreshAlloc σja) :=
+    fun _ σ => Some (gen_isFreshAlloc σja).
+
+  Definition checkPf (Σ : Type) (P : Prop) {D: Decision P} : transition Σ P :=
+    match decide P with
+    | left Hpf => ret Hpf
+    | _ => undefined
+    end.
+
+  Definition gen_lt (max: u64) (Hpf: 0 < int.Z max) : {n: u64 | int.Z n < int.Z max }.
+  Proof.
+    exists (U64 0).
+    auto.
+  Defined.
+
+  Global Instance allocnum_gen (max : u64) Hpf : GenPred u64 (state*global_state) (λ _ n, int.Z n < int.Z max) :=
+    fun _ σ => Some (gen_lt max Hpf).
+
+  Global Instance decide_gt0 (m : u64) : Decision (0 < int.Z m).
+  Proof. apply _. Qed.
+
   Definition jrnl_step (op:JrnlOp) (v:val) : transition (state*global_state) val :=
     match op, v with
     | OpenOp, _ =>
@@ -257,8 +305,31 @@ Section jrnl.
       check (objSz o = bufSz k ∧ k = KindBit);;
       modifyΣ (λ j, updateData j (Build_addr blkno off) o);;
       ret $ #()
+    | MkAllocOp, #(LitInt max) =>
+      j ← openΣ;
+      l ← suchThat (λ _, isFreshAlloc (jrnlAllocs j));
+      check (0 < int.Z max ) ;;
+      modifyΣ (λ j, updateAllocs j l max);;
+      ret $ (LitV $ LitLoc $ l)
+    | MarkUsedOp, PairV #(LitLoc l) #(LitInt n) =>
+      j ← openΣ;
+      max ← unwrap (jrnlAllocs j !! l);
+      check (int.Z n < int.Z max) ;;
+      ret $ #()
+    | FreeNumOp, PairV #(LitLoc l) #(LitInt n) =>
+      j ← openΣ;
+      max ← unwrap (jrnlAllocs j !! l);
+      check (int.Z n ≠ 0 ∧ int.Z n < int.Z max) ;;
+      ret $ #()
+    | AllocOp, #(LitLoc l) =>
+      j ← openΣ;
+      max ← unwrap (jrnlAllocs j !! l);
+      Hpf ← @checkPf _ (0 < int.Z max) (decide_gt0 max);
+      n ← @suchThat _ _ (λ _ n, int.Z n < int.Z max) (allocnum_gen _ Hpf);
+      ret $ #()
     | _, _ => undefined
     end.
+
 
   Instance jrnl_semantics : ext_semantics jrnl_op jrnl_model :=
     {| ext_step := jrnl_step;
