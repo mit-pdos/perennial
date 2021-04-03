@@ -2,7 +2,7 @@ From Perennial.goose_lang Require Import lang notation typing.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list_slice.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
-From Goose.github_com.mit_pdos.goose_nfsd Require Import txn twophase.
+From Goose.github_com.mit_pdos.goose_nfsd Require Import txn twophase alloc.
 
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
@@ -37,3 +37,11 @@ Definition TwoPhase__ConditionalCommit' : val :=
     else
       NONEV
   end.
+
+Definition Alloc__MarkUsed' : val :=
+  λ: "ln",
+  Alloc__MarkUsed (Fst "ln") (Snd "ln").
+
+Definition Alloc__FreeNum' : val :=
+  λ: "ln",
+  Alloc__FreeNum (Fst "ln") (Snd "ln").

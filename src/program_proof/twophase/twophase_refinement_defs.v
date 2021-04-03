@@ -105,8 +105,12 @@ Definition twophaseN : coPset := (∅ : coPset).
 
 Definition twophase_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}
            (ty: @ext_tys (@val_tys _ jrnl_ty)) : val_semTy :=
-  λ vspec vimpl, (∃ (l: loc) γ γ' dinit objs_dom,
-                     ⌜ vimpl = #l ⌝ ∗ ⌜ vspec = #true ⌝ ∗ is_twophase_pre l γ γ' dinit objs_dom ∗ jrnl_open)%I.
+  λ vspec vimpl,
+  match ty with
+  | JrnlT => (∃ (l: loc) γ γ' dinit objs_dom,
+                 ⌜ vimpl = #l ⌝ ∗ ⌜ vspec = #true ⌝ ∗ is_twophase_pre l γ γ' dinit objs_dom ∗ jrnl_open)%I
+  | AllocT => False%I
+  end.
 
 Instance twophaseTy_model : specTy_model jrnl_ty.
 Proof using PARAMS.
@@ -132,8 +136,12 @@ Proof using PARAMS.
    iApply (jrnl_full_crash_tok_excl with "[$] [$]").
  - rewrite /sN/twophaseN. apply disjoint_empty_r.
  - iIntros (? hG hRG hG' hS τ vs v).
-   iDestruct 1 as (l γ γ' dinit objs_dom -> ->) "(H1&H2)".
-   iPureIntro. split; eauto.
+   induction τ; eauto => //=; apply _.
+ - iIntros (? hG hRG hG' hS τ vs v).
+   destruct τ.
+   * iDestruct 1 as (l γ γ' dinit objs_dom -> ->) "(H1&H2)".
+     iPureIntro. split; eauto.
+   * iDestruct 1 as %[].
 Defined.
 (* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
   perhaps specTy_model should be split into two typeclasses? *)

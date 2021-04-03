@@ -140,6 +140,7 @@ Fixpoint atomically_val_interp (t: sty) {struct t} :=
   | listT t => atomically_listT_interp t atomically_val_interp
   | sumT t1 t2 => atomically_sumT_interp t1 t2 atomically_val_interp
   | arrowT t1 t2 => atomically_arrowT_interp t1 t2 atomically_val_interp
+  | extT AllocT => λ _ _, False%I
   | _ => λ _ _, False%I
   end.
 
@@ -178,7 +179,7 @@ Proof. intros. rewrite /atomically_listT_interp. apply _. Qed.
 
 Global Instance atomically_val_interp_pers es e t:
       Persistent (atomically_val_interp t es e).
-Proof. revert es e. induction t => ?? //=; try apply _. Qed.
+Proof. revert es e. induction t => ?? //=; try apply _. destruct x; apply _. Qed.
 
 Global Instance sty_ctx_prop_pers (Γsubst: gmap string subst_tuple) :
       Persistent ([∗ map] t ∈ Γsubst, atomically_val_interp (subst_ty t) (subst_sval t) (subst_ival t))%I.
@@ -1117,6 +1118,9 @@ Proof.
     iNext. iIntros "H". iExists _. iFrame.
     eauto.
   (* Value typing *)
+  - admit.
+  - admit.
+  - admit.
   - iIntros "Hctx".
     inversion a; subst; eauto.
   - iIntros "#Hctx".
@@ -1138,7 +1142,7 @@ Proof.
     iRight. iExists _, _.
     iSplitR ""; first by eauto. iApply (IHHtyping with "[$]").
     eauto.
-Qed.
+Admitted.
 
 End reln_defs.
 End reln.

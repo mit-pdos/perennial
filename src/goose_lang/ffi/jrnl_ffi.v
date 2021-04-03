@@ -158,10 +158,12 @@ Section jrnl.
       rewrite /val_of_list; destruct data => //=.
   Qed.
 
-  (* The only operation that can be called outside an atomically block is OpenOp *)
+  (* The only operations that can be called outside an atomically block are OpenOp and MkAlloc *)
   Inductive jrnl_ext_tys : @val jrnl_op -> (ty * ty) -> Prop :=
-  | JrnlOpType t :
-      jrnl_ext_tys (λ: "v", ExternalOp OpenOp (Var "v"))%V (refT t, extT JrnlT).
+  | JrnlOpenOpType t :
+      jrnl_ext_tys (λ: "v", ExternalOp OpenOp (Var "v"))%V (refT t, extT JrnlT)
+  | JrnlMkAllocOpType :
+      jrnl_ext_tys (λ: "v", ExternalOp AllocOp (Var "v"))%V (baseT uint64BT, extT AllocT).
 
   Instance jrnl_ty: ext_types jrnl_op :=
     {| val_tys := jrnl_val_ty;

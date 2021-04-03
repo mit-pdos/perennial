@@ -111,32 +111,33 @@ Lemma jrnl_rules_obligation:
   @sty_rules_obligation _ _ disk_semantics _ _ _ _ _ _ twophaseTy_model jrnl_trans.
 Proof.
   intros vs0 vs v0 v0' t1 t2 Htype0 Htrans.
-  inversion Htype0 as [op Heq]; subst.
-  iIntros (????) "#Hinv #Hspec #Hval".
-  iIntros (j K Hctx) "Hj".
-  rewrite val_interp_struct_unfold //=.
-  iAssert (⌜∃ l : loc, v0' = #l⌝)%I with "[-]" as %(l&->).
-  { rewrite /structRefT_interp//=.
-    iDestruct "Hval" as "[H1|H2]".
-    { iDestruct "H1" as (????? (?&->&_)) "H". eauto. }
-    { iDestruct "H2" as %(?&_&->). eauto. }
-  }
-  iClear "Hval".
-  inversion Htrans. subst.
-  iApply wp_wpc.
-  iMod (ghost_step_lifting_puredet with "[$Hj]") as "(Hj&_)".
-  { econstructor. apply head_prim_step_trans. econstructor. eauto. }
-  { solve_ndisj. }
-  { iDestruct "Hspec" as "(?&?)". eauto. }
-  wp_apply (wp_Init (nroot.@"H") with "[Hj]").
-  { solve_ndisj. }
-  { solve_ndisj. }
-  { iFrame "# ∗". }
-  iIntros (l') "(Hj&Hopen&H)". iNamed "H".
-  iExists _. iFrame "Hj". rewrite /val_interp//=/twophase_val_interp.
-  iExists _, _, _, _, _.
-  iFrame "Htwophase Hopen". eauto.
-Qed.
+  inversion Htype0 as [op Heq|op Heq]; subst.
+  - iIntros (????) "#Hinv #Hspec #Hval".
+    iIntros (j K Hctx) "Hj".
+    rewrite val_interp_struct_unfold //=.
+    iAssert (⌜∃ l : loc, v0' = #l⌝)%I with "[-]" as %(l&->).
+    { rewrite /structRefT_interp//=.
+      iDestruct "Hval" as "[H1|H2]".
+      { iDestruct "H1" as (????? (?&->&_)) "H". eauto. }
+      { iDestruct "H2" as %(?&_&->). eauto. }
+    }
+    iClear "Hval".
+    inversion Htrans. subst.
+    iApply wp_wpc.
+    iMod (ghost_step_lifting_puredet with "[$Hj]") as "(Hj&_)".
+    { econstructor. apply head_prim_step_trans. econstructor. eauto. }
+    { solve_ndisj. }
+    { iDestruct "Hspec" as "(?&?)". eauto. }
+    wp_apply (wp_Init (nroot.@"H") with "[Hj]").
+    { solve_ndisj. }
+    { solve_ndisj. }
+    { iFrame "# ∗". }
+    iIntros (l') "(Hj&Hopen&H)". iNamed "H".
+    iExists _. iFrame "Hj". rewrite /val_interp//=/twophase_val_interp.
+    iExists _, _, _, _, _.
+    iFrame "Htwophase Hopen". eauto.
+  - admit.
+Admitted.
 
 Lemma fmap_unit_jrnl_dom_equal (jd jd': gmap addr_proof.addr obj) :
   dom (gset _) jd = dom (gset _) jd' →
@@ -493,6 +494,8 @@ Proof.
     iDestruct "H" as "[H|H]"; iDestruct "H" as (v vs (Heq&Heqs)) "H"; subst; rewrite /=; [ iLeft | iRight ].
     { iExists _, _. iSplit; first eauto. by iApply IHt1. }
     { iExists _, _. iSplit; first eauto. by iApply IHt2. }
+  - rewrite //= /val_interp/twophase_val_interp //=.
+    destruct x; eauto.
 Qed.
 
 Lemma atomically_deconvertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
@@ -530,6 +533,9 @@ Proof.
     iDestruct "H" as "[H|H]"; iDestruct "H" as (v vs (Heq&Heqs)) "H"; subst; rewrite /=; [ iLeft | iRight ].
     { iExists _, _. iSplit; first eauto. by iApply IHt1. }
     { iExists _, _. iSplit; first eauto. by iApply IHt2. }
+  - rewrite //= /val_interp/twophase_val_interp //=.
+    destruct x; eauto.
+    intros [].
 Qed.
 
 Lemma filtered_subst_projection1 Γsubst Γ' :

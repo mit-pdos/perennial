@@ -2,7 +2,7 @@ From Perennial.goose_lang Require Import lang notation typing metatheory.
 From Perennial.goose_lang.lib Require Import map.impl list.impl.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
-From Goose.github_com.mit_pdos.goose_nfsd Require Import txn twophase.
+From Goose.github_com.mit_pdos.goose_nfsd Require Import txn twophase alloc.
 From Perennial.program_proof Require Import twophase.op_wrappers.
 
 Section translate.
@@ -33,8 +33,7 @@ Section translate.
     | prodT t1 t2 => atomic_convertible t1 ∧ atomic_convertible t2
     | sumT t1 t2 => atomic_convertible t1 ∧ atomic_convertible t2
     | listT t => atomic_convertible t
-    (* TODO: fix this once the ext types are defined *)
-    | extT x => False
+    | extT AllocT => True
     | _ => False
     end.
 
@@ -44,7 +43,7 @@ Section translate.
     | prodT t1 t2 => atomic_deconvertible t1 ∧ atomic_deconvertible t2
     | sumT t1 t2 => atomic_deconvertible t1 ∧ atomic_deconvertible t2
     | listT t => atomic_deconvertible t
-    | extT x => False
+    | extT AllocT => True
     | _ => False
     end.
 
@@ -173,6 +172,21 @@ Section translate.
       Γ @ tph ⊢ e1 -- e1' : addrT ->
       Γ @ tph ⊢ e2 -- e2' : boolT ->
       Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteBitOp (e1, e2) -- (TwoPhase__OverWriteBit' tph (e1', e2')%E) : unitT
+ (* Alloc operations *)
+  | markused_transTy e1 e1' e2 e2' :
+      Γ @ tph ⊢ e1 -- e1' : extT AllocT ->
+      Γ @ tph ⊢ e2 -- e2' : baseT uint64BT ->
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) MarkUsedOp (e1, e2) --
+               (Alloc__MarkUsed' (e1', e2')%E) : unitT
+  | freenum_transTy e1 e1' e2 e2' :
+      Γ @ tph ⊢ e1 -- e1' : extT AllocT ->
+      Γ @ tph ⊢ e2 -- e2' : baseT uint64BT ->
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) FreeNumOp (e1, e2) --
+               (Alloc__FreeNum' (e1', e2')%E) : unitT
+  | alloc_transTy e1 e1' :
+      Γ @ tph ⊢ e1 -- e1' : extT AllocT ->
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) AllocOp e1 --
+               (Alloc__allocBit e1') : baseT uint64BT
 
   where "Γ @ tph ⊢ e1 -- e2 : A" := (atomic_body_expr_transTy Γ tph e1 e2 A)
 
