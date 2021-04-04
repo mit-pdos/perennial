@@ -229,8 +229,8 @@ Proof.
   iExists
     (RecordSet.set trace add_crash
        (RecordSet.set world (λ w : @ffi_state jrnl_model, match w with
-                                                | Closed s => Closed s
-                                                | Opened s => Closed s
+                                                | Closed s => Closed (clearAllocs s)
+                                                | Opened s => Closed (clearAllocs s)
                                               end : @ffi_state jrnl_model)
           (RecordSet.set heap (λ _ : gmap loc (nonAtomic val), ∅) σs))).
   unshelve (iExists _).

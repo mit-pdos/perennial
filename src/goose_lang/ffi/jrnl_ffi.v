@@ -189,6 +189,11 @@ Section jrnl.
        jrnlKinds := jrnlKinds m;
        jrnlAllocs := <[l := max]> (jrnlAllocs m) |}.
 
+  Definition clearAllocs m :=
+    {| jrnlData := jrnlData m;
+       jrnlKinds := jrnlKinds m;
+       jrnlAllocs := ∅ |}.
+
   Definition offsets_aligned (m : jrnl_map) :=
     (∀ a, a ∈ dom (gset _) (jrnlData m) →
      ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ valid_off k (addrOff a)).
@@ -333,9 +338,15 @@ Section jrnl.
     end.
 
 
+  Definition crash_step : transition (ffi_state) unit :=
+    bind (reads id) (fun s => match s with
+                           | Opened s | Closed s => modify (fun _ => Closed (clearAllocs s))
+                           end).
+
   Instance jrnl_semantics : ext_semantics jrnl_op jrnl_model :=
     {| ext_step := jrnl_step;
-       ext_crash := fun s s' => relation.denote close s s' tt; |}.
+       ext_crash := fun s s' =>
+                      relation.denote crash_step s s' tt; |}.
 End jrnl.
 
 
