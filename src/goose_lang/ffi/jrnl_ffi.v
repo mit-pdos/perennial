@@ -366,6 +366,8 @@ Class jrnlG Σ :=
     jrnlG_crash_toks_name: gname;
     jrnlG_full_crash_tok_inG :> ghost_varG Σ unit;
     jrnlG_full_crash_tok_name: gname;
+    jrnlG_allocs_inG :> mapG Σ loc u64;
+    jrnlG_allocs_name : gname;
   }.
 
 Class jrnl_preG Σ :=
@@ -375,6 +377,7 @@ Class jrnl_preG Σ :=
     jrnlG_preG_dom_inG:> inG Σ (agreeR (leibnizO (gset addr)));
     jrnlG_preG_crash_toks_inG:> mapG Σ addr unit;
     jrnlG_preG_full_crash_tok_inG :> ghost_varG Σ unit;
+    jrnlG_preG_allocs_inG :> mapG Σ loc u64;
   }.
 
 Definition jrnlΣ : gFunctors :=
@@ -382,7 +385,8 @@ Definition jrnlΣ : gFunctors :=
     GFunctor (agreeR (leibnizO (gmap blkno kind)));
     GFunctor (agreeR (leibnizO (gset addr)));
     mapΣ addr unit;
-    ghost_varΣ unit
+    ghost_varΣ unit;
+    mapΣ loc u64
    ].
 
 Instance subG_jrnlG Σ: subG jrnlΣ Σ → jrnl_preG Σ.
@@ -395,6 +399,7 @@ Record jrnl_names :=
     jrnl_names_dom: gname;
     jrnl_names_crash: gname;
     jrnl_names_full_crash: gname;
+    jrnl_names_allocs: gname;
   }.
 
 Definition jrnl_get_names {Σ} (jG: jrnlG Σ) :=
@@ -403,7 +408,9 @@ Definition jrnl_get_names {Σ} (jG: jrnlG Σ) :=
      jrnl_names_kinds := jrnlG_kinds_name;
      jrnl_names_dom := jrnlG_dom_name;
      jrnl_names_crash := jrnlG_crash_toks_name;
-     jrnl_names_full_crash := jrnlG_full_crash_tok_name |}.
+     jrnl_names_full_crash := jrnlG_full_crash_tok_name;
+     jrnl_names_allocs := jrnlG_allocs_name;
+|}.
 
 Definition jrnl_update {Σ} (jG: jrnlG Σ) (names: jrnl_names) :=
   {| jrnlG_open_inG := jrnlG_open_inG;
@@ -418,6 +425,8 @@ Definition jrnl_update {Σ} (jG: jrnlG Σ) (names: jrnl_names) :=
      jrnlG_crash_toks_name := (jrnl_names_crash names);
      jrnlG_full_crash_tok_inG := jrnlG_full_crash_tok_inG;
      jrnlG_full_crash_tok_name := (jrnl_names_full_crash names);
+     jrnlG_allocs_inG := jrnlG_allocs_inG;
+     jrnlG_allocs_name := (jrnl_names_allocs names);
   |}.
 
 Definition jrnl_update_pre {Σ} (jG: jrnl_preG Σ) (names: jrnl_names) :=
@@ -433,6 +442,8 @@ Definition jrnl_update_pre {Σ} (jG: jrnl_preG Σ) (names: jrnl_names) :=
      jrnlG_crash_toks_name := (jrnl_names_crash names);
      jrnlG_full_crash_tok_inG := jrnlG_preG_full_crash_tok_inG;
      jrnlG_full_crash_tok_name := (jrnl_names_full_crash names);
+     jrnlG_allocs_inG := jrnlG_preG_allocs_inG;
+     jrnlG_allocs_name := (jrnl_names_allocs names);
   |}.
 
 Definition jrnl_open {Σ} {lG :jrnlG Σ} :=
@@ -454,6 +465,8 @@ Definition jrnl_dom {Σ} {lG: jrnlG Σ} (σ: gset addr) : iProp Σ :=
   own (jrnlG_dom_name) (to_agree (σ: leibnizO (gset addr))).
 Definition jrnl_full_crash_tok {Σ} {lG: jrnlG Σ} : iProp Σ :=
   ghost_var (jrnlG_full_crash_tok_name) 1 tt.
+Definition jrnl_alloc {Σ} {lG: jrnlG Σ} (l: loc) (v : u64) : iProp Σ :=
+  ptsto_ro (jrnlG_allocs_name) l v.
 
 Section jrnl_interp.
   Existing Instances jrnl_op jrnl_model jrnl_val_ty.
@@ -462,7 +475,8 @@ Section jrnl_interp.
     ⌜ wf_jrnl m ⌝ ∗
       map_ctx jrnlG_data_name 1 (jrnlData m) ∗
       jrnl_kinds (jrnlKinds m) ∗
-      jrnl_dom (dom (gset _) (jrnlData m)).
+      jrnl_dom (dom (gset _) (jrnlData m)) ∗
+      map_ctx jrnlG_allocs_name 1 (jrnlAllocs m).
 
   Definition jrnl_ctx {Σ} {jG: jrnlG Σ} (jrnl: @ffi_state jrnl_model) : iProp Σ :=
     match jrnl with
@@ -609,7 +623,7 @@ Section jrnl_lemmas.
     ⌜ wf_jrnl m ⌝ ∗
       jrnl_kinds (jrnlKinds m) ∗
       jrnl_dom (dom (gset _) (jrnlData m)).
-  Proof. iDestruct 1 as "($&?&$&$)". Qed.
+  Proof. iDestruct 1 as "($&?&$&$&?)". Qed.
 
 End jrnl_lemmas.
 
@@ -637,10 +651,13 @@ Next Obligation.
   iMod (own_alloc (to_agree (dom (gset _) (jrnlData m) : leibnizO (gset addr)))) as (γdom) "#Hdom".
   { constructor. }
   iMod (ghost_var_alloc ()) as (γfull) "Hfull".
+  iMod (map_init_many (jrnlAllocs m)) as (γallocs) "(Hallocs_ctx&_)".
   iExists {| jrnl_names_open := γ1; jrnl_names_data := γdata; jrnl_names_kinds := γkinds;
              jrnl_names_dom := γdom;
              jrnl_names_crash := γcrash;
-             jrnl_names_full_crash := γfull |}.
+             jrnl_names_full_crash := γfull;
+             jrnl_names_allocs := γallocs;
+          |}.
   iFrame. iModIntro. iFrame "% #".
   rewrite assoc.
   iSplitL "H".
@@ -673,14 +690,17 @@ Next Obligation.
     { repeat econstructor => //=. }
     iMod (map_init_many ((λ _, tt) <$> jrnlData s)) as (γcrash) "(Hcrash_ctx&Hcrash)".
     iMod (ghost_var_alloc ()) as (γfull) "Hfull".
+    iMod (map_init_many ∅) as (γallocs) "(Hallocs_ctx&_)".
     iExists {| jrnl_names_open := γ1;
                jrnl_names_data := jrnl_names_data (jrnl_get_names _);
                jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) ;
                jrnl_names_crash := γcrash;
                jrnl_names_full_crash := γfull;
+               jrnl_names_allocs := γallocs;
             |}.
     iDestruct "Hinterp" as "(?&Hstate)".
     iDestruct (jrnl_state_ctx_extract_pers with "Hstate") as "(%&#?&#?)".
+    iDestruct "Hstate" as "(?&?&?&?&?)".
     rewrite //=/jrnl_restart//=.
     iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
@@ -688,7 +708,7 @@ Next Obligation.
     rewrite /jrnl_state_restart.
     rewrite /jrnl_crash_tok.
     rewrite /jrnl_full_crash_tok.
-    rewrite //=. iFrame "# ∗".
+    rewrite //= /=. iFrame "# ∗".
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
     inversion H2. subst. inversion H4. subst.
@@ -697,13 +717,17 @@ Next Obligation.
     { repeat econstructor => //=. }
     iMod (map_init_many ((λ _, tt) <$> jrnlData s)) as (γcrash) "(Hcrash_ctx&Hcrash)".
     iMod (ghost_var_alloc ()) as (γfull) "Hfull".
+    iMod (map_init_many ∅) as (γallocs) "(Hallocs_ctx&_)".
     iExists {| jrnl_names_open := γ1;
                jrnl_names_data := jrnl_names_data (jrnl_get_names _);
                jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) ;
-               jrnl_names_crash := γcrash |}.
+               jrnl_names_crash := γcrash;
+               jrnl_names_allocs := γallocs;
+            |}.
     iDestruct "Hinterp" as "(?&Hstate)".
     iDestruct (jrnl_state_ctx_extract_pers with "Hstate") as "(%&#?&#?)".
     rewrite //=/jrnl_restart//=.
+    iDestruct "Hstate" as "(?&?&?&?&?)".
     iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
     rewrite big_sepM_fmap.
@@ -1313,9 +1337,9 @@ Proof.
   rewrite /jrnl_sub_state.
   rewrite /jrnl_ctx.
   destruct (s.(world)) as [sj|sj] eqn:Heq_world.
-  - iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom')".
+  - iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom'&?)".
     iDestruct (jrnl_dom_agree with "[$] [$]") as %Heq; eauto.
-  - iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom')".
+  - iDestruct "Hctx" as "(_&_&Hctx1&Hctx2&Hdom'&?)".
     iDestruct (jrnl_dom_agree with "[$] [$]") as %Heq; eauto.
 Qed.
 
@@ -1415,7 +1439,7 @@ Proof.
      with "Hpts Hkinds [$] [$]") as %Hval.
   rewrite /jrnl_ctx. rewrite Heq.
   iDestruct "Hctx" as "(_&Hstate)".
-  iDestruct "Hstate" as (Hwf0) "(Hctx&Hkinds'&Hdom')". simpl.
+  iDestruct "Hstate" as (Hwf0) "(Hctx&Hkinds'&Hdom'&Hallocs)". simpl.
   assert (Hdom_sub: dom (gset _) (jrnlData σj) ⊆ dom (gset _) (jrnlData sj)).
   { rewrite /jrnl_sub_state/sworld in Hval.
     destruct Hval as (?&Heq'&?&?). rewrite /world in Heq. rewrite Heq in Heq'.
@@ -1442,12 +1466,12 @@ Proof.
     rewrite (big_sepM_delete _ σjd'); eauto.
     rewrite big_sepM_insert; eauto.
     iDestruct "Hpts" as "(Hmaps&Hpts)".
-    iMod ("IH" with "[] [] Hpts [$] [$]") as "($&Hctx)".
+    iMod ("IH" with "[] [] Hpts [$] [$] [$]") as "($&Hctx)".
     { iPureIntro. apply wf_jrnl_delete; auto. }
     { iPureIntro. rewrite dom_insert_L in Hdom. rewrite dom_delete_L.
       apply not_elem_of_dom in H1. set_solver. }
     iDestruct "Hctx" as "($&Hstate)".
-    iDestruct "Hstate" as (Hwf') "(Hctx&Hkinds')".
+    iDestruct "Hstate" as (Hwf') "(Hctx&Hkinds'&Hallocs)".
     iDestruct "Hmaps" as "(Hmaps&Hkind)".
     iDestruct "Hkind" as (? Hconsistent) "Hkind".
     iMod (map_update _ _ o with  "[$] [$]") as "(Hctx&?)".
@@ -1592,10 +1616,10 @@ Proof.
       eauto. }
     iEval (rewrite big_sepM_insert //) in "Hσj_crash_toks".
     iDestruct "Hσj_crash_toks" as "(Hcrash1&_)".
-    iDestruct (map_valid with "[$] Hcrash1") as %Hlookup.
+    iDestruct (map_valid with "Hcrash_ctx Hcrash1") as %Hlookup.
     apply lookup_fmap_Some in Hlookup as (?&_&Hlookup).
     iDestruct (big_sepM_lookup_acc _ _ _ _ Hlookup with "Htok") as "(H1&_)"; eauto.
-    iDestruct (ptsto_conflict with "[$] [$]") as %[].
+    iDestruct (ptsto_conflict with "Hcrash1 H1") as %[].
   }
   iDestruct "Hrest" as (s g) "(>H&Hinterp)".
   iDestruct "Hinterp" as "(>Hσ&>Hffi&?&?&?&?&>Hctok)".
