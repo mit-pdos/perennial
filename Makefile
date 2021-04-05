@@ -3,9 +3,8 @@ ALL_VFILES := $(shell find $(SRC_DIRS) -name "*.v")
 VFILES := $(shell find 'src' -name "*.v")
 QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
 
-# note this needs to be = since _CoqProject might not exist (if this is a clean
-# build)
-COQPROJECT_ARGS = $(shell sed -E -e '/^\#/d' -e 's/-arg ([^ ]*)/\1/g' _CoqProject)
+# extract any global arguments for Coq from _CoqProject
+COQPROJECT_ARGS := $(shell sed -E -e '/^\#/d' -e 's/-arg ([^ ]*)/\1/g' _CoqProject)
 COQ_ARGS := -noglob
 
 # user configurable
