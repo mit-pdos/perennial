@@ -89,6 +89,7 @@ Section proof.
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_allocs" ∷ jrnl_alloc_map (jrnlAllocs σj1) ∗
       "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
       "%Halways_steps" ∷ ⌜always_steps e1 σj1 e2 σj2⌝ ∗
       "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
@@ -280,6 +281,8 @@ Section proof.
     iExists {| jrnlData := ∅; jrnlKinds := _; jrnlAllocs := ∅ |},
            {| jrnlData := ∅; jrnlKinds := _; jrnlAllocs := ∅ |}, _, _.
     iFrame "∗ #".
+    iSplit.
+    { rewrite /= /jrnl_alloc_map big_sepM_empty //. }
     iPureIntro.
     split.
     2: {
@@ -332,7 +335,7 @@ Section proof.
         destruct Hjrnl_maps_kinds as [<- _].
         iDestruct (
           ghost_step_jrnl_atomically_crash
-          with "Hspec_crash_ctx Hmapstos Htoks Hjrnl_kinds_lb Hjrnl_open Hj"
+          with "Hspec_crash_ctx Hmapstos Htoks Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
         ) as "H"; (* "> [Hmapstos Htoks]" *) [eassumption|set_solver|].
         iMod (cfupd_weaken_all with "H") as "[Hmapstos Htoks]".
         { lia. }
@@ -367,7 +370,7 @@ Section proof.
         }
         iDestruct (
           ghost_step_jrnl_atomically
-          with "Hspec_ctx Hmapstos Hjrnl_kinds_lb Hjrnl_open Hj"
+          with "Hspec_ctx Hmapstos Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
         ) as "> [Hj Hmapstos]"; [eassumption|set_solver|].
         iModIntro.
         iFrame.
@@ -837,6 +840,7 @@ Section proof.
         "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
         "#Hjrnl_open" ∷ jrnl_open ∗
         "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+        "#Hjrnl_allocs" ∷ jrnl_alloc_map (jrnlAllocs σj1) ∗
         "%Halways_steps" ∷ ⌜always_steps e0 σj1 (K e) σj2⌝ ∗
         "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
         "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝ ∗
@@ -876,7 +880,7 @@ Section proof.
         as "(Hjrnl_mapstos&Htoks)".
       iMod (
         ghost_step_jrnl_atomically_ub'
-        with "Hspec_ctx [Hjrnl_mapstos] [] [$] Hjrnl_open Hj"
+        with "Hspec_ctx [Hjrnl_mapstos] [] Hjrnl_allocs [$] Hjrnl_open Hj"
       ) as "(%Hnotstuck&Hj&Hjrnl_mapstos)".
       1-2: eassumption.
       {
@@ -967,7 +971,7 @@ Section proof.
     { rewrite -Hdom. apply elem_of_dom. rewrite Hopen => //=. }
     assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some k).
     { destruct Hjrnl_maps_kinds as (_&<-).
-      destruct Hsub as (?&Hs_eq&?&?).
+      destruct Hsub as (?&Hs_eq&?&?&?).
       rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
       eauto.
     }
@@ -1047,6 +1051,8 @@ Section proof.
         [eassumption|eassumption|].
       iExists σj1', σj2', _, _.
       iFrame "∗ #".
+      iSplit.
+      { rewrite Heqσj1' /=. eauto. }
       iPureIntro.
       split; last by intuition.
       subst σj1' σj2'.
@@ -1111,7 +1117,7 @@ Section proof.
     { rewrite -Hdom. apply elem_of_dom. rewrite Hopen => //=. }
     assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit).
     { destruct Hjrnl_maps_kinds as (_&<-).
-      destruct Hsub as (?&Hs_eq&?&?).
+      destruct Hsub as (?&Hs_eq&?&?&?).
       rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
       eauto.
     }
@@ -1180,6 +1186,8 @@ Section proof.
       { inversion Hvobj. subst. eauto. }
       iExists σj1', σj2', _, _.
       iFrame "∗ #".
+      iSplit.
+      { rewrite Heqσj1' /=. eauto. }
       iPureIntro.
       split; last first.
       { split_and!; intuition.
@@ -1249,7 +1257,7 @@ Section proof.
     subst.
     assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some k).
     { destruct Hjrnl_maps_kinds as (_&<-).
-      destruct Hsub as (?&Hs_eq&?&?).
+      destruct Hsub as (?&Hs_eq&?&?&?).
       rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
       eauto.
     }
@@ -1318,6 +1326,8 @@ Section proof.
     }
     iExists σj1', σj2', _, _.
     iFrame "∗ #".
+    iSplit.
+    { rewrite Heqσj1' /=; eauto. }
     iPureIntro.
     split; last by intuition.
     subst σj1' σj2'.
@@ -1482,7 +1492,7 @@ Section proof.
     subst.
     assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit).
     { destruct Hjrnl_maps_kinds as (_&<-).
-      destruct Hsub as (?&Hs_eq&?&?).
+      destruct Hsub as (?&Hs_eq&?&?&?).
       rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
       eauto.
     }
@@ -1514,6 +1524,8 @@ Section proof.
     }
     iExists σj1', σj2', _, _.
     iFrame "∗ #".
+    iSplit.
+    { rewrite Heqσj1' /=. eauto. }
     iPureIntro.
     split; last by intuition.
     subst σj1' σj2'.
