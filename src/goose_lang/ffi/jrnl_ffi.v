@@ -333,7 +333,7 @@ Section jrnl.
       max ← unwrap (jrnlAllocs j !! l);
       Hpf ← @checkPf _ (0 < int.Z max) (decide_gt0 max);
       n ← @suchThat _ _ (λ _ n, int.Z n < int.Z max) (allocnum_gen _ Hpf);
-      ret $ #()
+      ret $ #(LitInt n)
     | _, _ => undefined
     end.
 
@@ -813,6 +813,11 @@ Definition jrnl_upd (σj: jrnl_map) (s: sstate) : sstate :=
                              jrnlKinds := jrnlKinds $ get_jrnl s;
                              jrnlAllocs := jrnlAllocs $ (get_jrnl s) |}) s.
 
+Definition jrnl_upd_allocs (σj: jrnl_map) (s: sstate) : sstate :=
+  set sworld (λ s, Opened {| jrnlData := jrnlData σj;
+                             jrnlKinds := jrnlKinds $ get_jrnl s;
+                             jrnlAllocs := jrnlAllocs σj ∪ (jrnlAllocs $ get_jrnl s) |}) s.
+
 Definition always_steps (e: sexpr) (σj: jrnl_map) (e': sexpr) (σj': jrnl_map) : Prop :=
   (jrnlKinds σj = jrnlKinds σj') ∧
   (jrnl_sub_dom σj σj') ∧
@@ -919,6 +924,21 @@ Proof.
   rewrite dom_singleton. set_solver.
 Qed.
 
+Lemma insert_jrnl_upd_allocs a o σj s :
+  a ∉ dom (gset _) (jrnlAllocs σj) →
+  jrnl_upd_allocs (updateAllocs σj a o) s =
+  jrnl_upd_allocs σj (jrnl_upd_allocs ({| jrnlData := jrnlData σj;
+                           jrnlKinds := jrnlKinds σj;
+                           jrnlAllocs := {[ a := o ]}|}) s).
+Proof.
+  intros.
+  rewrite /jrnl_upd_allocs/set/=. do 3 f_equal.
+  rewrite insert_union_singleton_l.
+  rewrite (map_union_comm ({[a := o]})) ?assoc //.
+  apply map_disjoint_dom_2.
+  rewrite dom_singleton. set_solver.
+Qed.
+
 Lemma always_steps_bind `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
                                              (ffi := (spec_ffi_model_field))
                                              (ffi_semantics := (spec_ext_semantics_field))
@@ -1019,6 +1039,37 @@ Proof.
       rewrite lookup_insert_ne // in Hsub_data.
 Qed.
 
+Lemma always_steps_extend_allocs e1 σj1 e2 σj2 l u :
+  (l ∉ dom (gset _) (jrnlAllocs σj2)) →
+  always_steps e1 σj1 e2 σj2 →
+  always_steps e1 (updateAllocs σj1 l u)
+               e2 (updateAllocs σj2 l u).
+Proof.
+  intros Hdom (?&Hsub&Hstep).
+  split_and!.
+  - simpl. congruence.
+  - destruct Hsub as (?&?&Ha&?&?). split_and! => //=.
+    * rewrite ?dom_insert_L Ha. set_solver.
+  - intros s g Hsub_state.
+    assert (jrnl_upd (updateAllocs σj2 l u) s =
+            jrnl_upd σj2 s) as ->.
+    { rewrite /jrnl_upd/updateAllocs //=. }
+    apply Hstep.
+    rewrite /jrnl_sub_state.
+    destruct Hsub_state as (sj&Hworld&Hsub_data&?&Hsub_allocs).
+    rewrite /jrnl_upd/set//=. rewrite Hworld /=.
+    eexists; split_and!; eauto => /=.
+    intros i => /=.
+    specialize (Hsub_allocs i).
+    destruct Hsub as (Hsub_data'&?&Hsub_alloc'&?).
+    assert (l ∉ dom (gset _) (jrnlAllocs σj1)) as Hdom' by (rewrite Hsub_alloc'; set_solver).
+    destruct (decide (l = i)).
+    * subst. apply not_elem_of_dom in Hdom'.
+      rewrite Hdom' => //=. destruct ((jrnlAllocs sj) !! i) eqn:Heq; auto.
+    * subst. rewrite /updateAllocs /= in Hsub_allocs.
+      rewrite lookup_insert_ne // in Hsub_allocs.
+Qed.
+
 Definition addr2val' (a : addr) : sval := (#(addrBlock a), (#(addrOff a), #()))%V.
 
 Lemma always_steps_lifting_puredet K `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
@@ -1039,6 +1090,93 @@ Proof.
   specialize (Hrtc _ g Hsub).
   eapply rtc_r; eauto.
   simpl. eapply fill_step'. eapply Hdet.
+Qed.
+
+Lemma always_steps_MarkUsedOp l n max σj:
+  wf_jrnl σj →
+  jrnlAllocs σj !! l = Some max →
+  (int.Z n < int.Z max) →
+  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                           MarkUsedOp
+                           (PairV #(LitLoc l) #(LitInt n)))
+               σj
+               #()
+               σj.
+Proof.
+  intros Hwf Hlookup Hmax.
+  split_and!; eauto.
+  { split_and!; try set_solver. }
+  intros s g Hsub.
+  apply rtc_once.
+  eapply (Ectx_step' _ _ _ _ _ _ _ _ []) => //=.
+  rewrite jrnl_upd_sub // /head_step//=.
+  rewrite /jrnl_sub_state in Hsub.
+  destruct Hsub as (?&Heq&?&?&?).
+  econstructor; last econstructor; eauto.
+  econstructor; repeat (econstructor; eauto).
+  { simpl. rewrite Heq. econstructor. eauto. }
+  { simpl in Hlookup.
+    eapply lookup_weaken in Hlookup; last eassumption.
+    rewrite Hlookup. econstructor; eauto. }
+  { rewrite /check/ifThenElse. rewrite decide_True //=. }
+Qed.
+
+Lemma always_steps_FreeNumOp l n max σj:
+  wf_jrnl σj →
+  jrnlAllocs σj !! l = Some max →
+  (int.Z n ≠ 0 ∧ int.Z n < int.Z max) →
+  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                           FreeNumOp
+                           (PairV #(LitLoc l) #(LitInt n)))
+               σj
+               #()
+               σj.
+Proof.
+  intros Hwf Hlookup Hmax.
+  split_and!; eauto.
+  { split_and!; try set_solver. }
+  intros s g Hsub.
+  apply rtc_once.
+  eapply (Ectx_step' _ _ _ _ _ _ _ _ []) => //=.
+  rewrite jrnl_upd_sub // /head_step//=.
+  rewrite /jrnl_sub_state in Hsub.
+  destruct Hsub as (?&Heq&?&?&?).
+  econstructor; last econstructor; eauto.
+  econstructor; repeat (econstructor; eauto).
+  { simpl. rewrite Heq. econstructor. eauto. }
+  { simpl in Hlookup.
+    eapply lookup_weaken in Hlookup; last eassumption.
+    rewrite Hlookup. econstructor; eauto. }
+  { rewrite /check/ifThenElse. rewrite decide_True //=. }
+Qed.
+
+Lemma always_steps_AllocOp l n max σj:
+  wf_jrnl σj →
+  jrnlAllocs σj !! l = Some max →
+  (0 < int.Z max ∧ int.Z n < int.Z max) →
+  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                           AllocOp
+                           #(LitLoc l))
+               σj
+               #(LitInt n)
+               σj.
+Proof.
+  intros Hwf Hlookup (Hgt0&Hmax).
+  split_and!; eauto.
+  { split_and!; try set_solver. }
+  intros s g Hsub.
+  apply rtc_once.
+  eapply (Ectx_step' _ _ _ _ _ _ _ _ []) => //=.
+  rewrite jrnl_upd_sub // /head_step//=.
+  rewrite /jrnl_sub_state in Hsub.
+  destruct Hsub as (?&Heq&?&?&?).
+  econstructor; last econstructor; eauto.
+  econstructor; repeat (econstructor; eauto).
+  { simpl. rewrite Heq. econstructor. eauto. }
+  { simpl in Hlookup.
+    eapply lookup_weaken in Hlookup; last eassumption.
+    rewrite Hlookup. econstructor; eauto. }
+  { rewrite /checkPf. rewrite decide_left //=. }
 Qed.
 
 Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
