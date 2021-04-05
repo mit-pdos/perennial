@@ -823,6 +823,115 @@ Section proof.
     - trivial.
   Qed.
 
+  Lemma twophase_started_ub_det_with_alloc' la u l γ γ' dinit objs_dom E j K0 K
+        `{Hctx: LanguageCtx'
+          (ext := @spec_ext_op_field _)
+          (ffi := (spec_ffi_model_field))
+          (ffi_semantics := (spec_ext_semantics_field))
+          K} e0 e :
+    nclose sN ⊆ E →
+    jrnl_alloc la u -∗
+    is_twophase_started l γ γ' dinit objs_dom j K0 e0 (K e)
+    -∗ |NC={E}=>
+      ∃ σj1 σj2 mt_changed (ls: sval),
+        "%Hin" ∷ ⌜ (jrnlAllocs σj1 !! la = Some u) ⌝ ∗
+        "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
+        "Htwophase" ∷ is_twophase_raw
+          l γ γ' dinit LVL jrnl_mapsto_own objs_dom mt_changed ∗
+        "#Hspec_ctx" ∷ spec_ctx ∗
+        "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
+        "#Hjrnl_open" ∷ jrnl_open ∗
+        "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+        "#Hjrnl_allocs" ∷ jrnl_alloc_map (jrnlAllocs σj1) ∗
+        "%Halways_steps" ∷ ⌜always_steps e0 σj1 (K e) σj2⌝ ∗
+        "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
+        "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝ ∗
+        "%HLCtxt"∷ ⌜ LanguageCtx K0 ⌝ ∗
+        "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
+        "%Hnotstuck" ∷ ⌜ (∃ s g, jrnl_sub_state σj2 s ∧
+         dom (gset _) (jrnlData (get_jrnl s.(world))) = objs_dom ∧
+         ¬ stuck' (K e) s g) ⌝.
+  Proof.
+    iIntros (?) "#Hjrnl_alloc1". iNamed 1.
+    iNamed "Htwophase".
+    iDestruct (na_crash_inv_status_wand_sepM with "Hcrash_invs") as
+      "#Hstatuses".
+    iDestruct (jrnl_ctx_allocs_agree2 with "[$] [$]") as %Hlookup'.
+    efeed pose proof (always_steps_extend_allocs2); eauto.
+    { destruct Hlookup'; eauto. left. apply not_elem_of_dom; eauto. }
+    clear Halways_steps.
+    iDestruct (jrnl_ctx_allocs_extend with "[$] [$]") as "#Hjrnl_allocs'".
+    assert (jrnlData (updateAllocs σj1 la u) = jrnlData σj1) as Heq_data_update.
+    { destruct σj1; eauto. }
+    assert (jrnlKinds (updateAllocs σj1 la u) = jrnlKinds σj1) as Heq_kinds_update.
+    { destruct σj1; eauto. }
+    iDestruct (
+      na_crash_inv_open_modify_ncfupd_sepM _ _ _ _
+      (λ a vobj,
+        twophase_pre_crash_inv_pred jrnl_mapsto_own γ a (committed vobj)
+      )
+      (
+        "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
+        "%Hnotstuck" ∷ ⌜∃ s g,
+          jrnl_sub_state (updateAllocs σj2 la u) s ∧
+          dom (gset addr) (jrnlData (get_jrnl s.(world))) =
+            objs_dom ∧ ¬ stuck' (K e) s g
+        ⌝
+      )%I
+      with
+      "Hcrash_invs [Hj]"
+    ) as "> [HR Hcrash_invs]".
+    {
+      iIntros "Hpreds".
+      iApply big_sepM_later_2 in "Hpreds".
+      iMod "Hpreds".
+      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_mapstos&Hpreds)".
+      iDestruct (big_sepM_sep with "Hpreds") as "(Hdurables&%Hvalids_c)".
+      iDestruct (big_sepM_sep with "Hjrnl_mapstos")
+        as "(Hjrnl_mapstos&Htoks)".
+      iMod (
+        ghost_step_jrnl_atomically_ub'
+        with "Hspec_ctx [Hjrnl_mapstos] [] Hjrnl_allocs' [$] Hjrnl_open Hj"
+      ) as "(%Hnotstuck&Hj&Hjrnl_mapstos)".
+      1-2: eassumption.
+      {
+        rewrite Heq_data_update.
+        destruct Hjrnl_maps_mt as [<- _].
+        rewrite !big_sepM_fmap //.
+      }
+      {
+        rewrite Heq_kinds_update.
+        destruct Hjrnl_maps_kinds as (->&_); eauto. }
+      iModIntro.
+      iFrame "∗ # %".
+      rewrite Heq_data_update.
+      destruct Hjrnl_maps_mt as [<- _].
+      rewrite !big_sepM_fmap //.
+      iDestruct (big_sepM_sep with "[$Htoks $Hdurables]") as "Hpreds".
+      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_mapstos]") as "Hpreds".
+      iApply (big_sepM_mono with "Hpreds").
+      iIntros (a vobj Hacc) "[[Htok Hdurable] Hcrash_inv] !>".
+      iFrame.
+      iPureIntro.
+      apply Hvalids in Hacc.
+      rewrite /mapsto_valid in Hacc.
+      rewrite /mapsto_valid //.
+    }
+    iNamed "HR".
+
+    iModIntro.
+    iExists (updateAllocs σj1 la u), (updateAllocs σj2 la u), _, _.
+    iFrame "Hj".
+    iSplit.
+    { iPureIntro. rewrite //= lookup_insert //=. }
+    iSplit.
+    {
+      iExists _.
+      iFrame "∗ # %".
+    }
+    iFrame "# %".
+  Qed.
+
   Lemma twophase_started_ub_det' l γ γ' dinit objs_dom E j K0 K
         `{Hctx: LanguageCtx'
           (ext := @spec_ext_op_field _)

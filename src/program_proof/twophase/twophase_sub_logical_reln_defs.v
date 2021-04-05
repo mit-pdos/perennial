@@ -19,6 +19,7 @@ From Perennial.program_proof Require Import addr.addr_proof.
 From Perennial.program_proof Require Import twophase.typed_translate.
 From Perennial.program_proof Require Import twophase.twophase_refinement_defs.
 From Perennial.program_proof Require Import twophase.wrapper_proof.
+From Perennial.program_proof Require Import alloc.alloc_proof.
 From Perennial.program_proof Require buftxn.sep_buftxn_proof.
 
 Set Default Proof Using "Type".
@@ -75,6 +76,7 @@ Context (dinit : abstraction.disk).
 Context (objs_dom : gset addr_proof.addr).
 Context (γ γ': sep_buftxn_invariant.buftxn_names).
 Context (tph: loc).
+Existing Instance jrnlG0.
 
 
 Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
@@ -140,7 +142,9 @@ Fixpoint atomically_val_interp (t: sty) {struct t} :=
   | listT t => atomically_listT_interp t atomically_val_interp
   | sumT t1 t2 => atomically_sumT_interp t1 t2 atomically_val_interp
   | arrowT t1 t2 => atomically_arrowT_interp t1 t2 atomically_val_interp
-  | extT AllocT => λ _ _, False%I
+  | extT AllocT => λ vspec vimpl,
+    (∃ (ls li: loc) (max : u64),
+                 ⌜ vimpl = #li ⌝ ∗ ⌜ vspec = #ls ⌝ ∗ ⌜ (0 < int.Z max)%Z ⌝ ∗ is_alloc max li ∗ jrnl_alloc ls max)%I
   | _ => λ _ _, False%I
   end.
 
@@ -1117,10 +1121,66 @@ Proof.
     iApply "H".
     iNext. iIntros "H". iExists _. iFrame.
     eauto.
+  - subst. simpl.
+    iPoseProof (IHHtyping1 with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
+    iSpecialize ("H" $! j _ _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+
+    iPoseProof (IHHtyping2 with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e2').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e2) as Hctx'.
+    iSpecialize ("H" $! j _ _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
+    iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
+    clear Hctx'.
+    simpl.
+    iDestruct "Hv1" as (ls li max -> -> Hgt0) "(His_alloc&Hjrnl_alloc)".
+    iDestruct "Hv2" as %(n&->&->).
+    iApply wp_wpc.
+    rewrite /op_wrappers.Alloc__MarkUsed'.
+    wp_pures.
+    iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
+                 (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) with "Hj") as "Hj".
+    { intros ??.
+      apply head_prim_step_trans'. repeat econstructor; eauto.
+    }
+    iMod (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
+    { set_solver. }
+    iNamed "H".
+    destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
+    apply not_stuck'_MarkUsedOp_inv in Hnotstuck
+      as (σj&max'&Hopen&Hlookup1&Hlt_max); last auto.
+    assert (max = max').
+    { destruct Halways_steps as (?&Hsub'&?).
+      destruct Hsub' as (?&?&Heq_allocs&?). rewrite Heq_allocs in Hin.
+      destruct Hsub as (?&Hopen'&?&?&Hsub_alloc).
+      rewrite Hopen in Hopen'. inversion Hopen'. subst.
+      eapply map_subseteq_spec in Hsub_alloc; eauto. rewrite Hlookup1 in Hsub_alloc. congruence.
+    }
+    iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl'";
+      [eassumption|eassumption|].
+    subst.
+    wp_apply (wp_MarkUsed with "[$]").
+    { lia. }
+    iExists (#()). iSplit; last eauto.
+    iExists _, _, _, _. iFrame "# ∗ %".
+    iPureIntro.
+    eapply always_steps_trans; first by eapply Halways_steps.
+    eapply always_steps_bind.
+    eapply always_steps_MarkUsedOp; eauto.
+    { intuition. }
+    { destruct Halways_steps as (?&Hsub'&?).
+      destruct Hsub' as (?&?&Heq_allocs&?). rewrite Heq_allocs in Hin.
+      eauto.
+    }
+  - admit.
+  - admit.
   (* Value typing *)
-  - admit.
-  - admit.
-  - admit.
   - iIntros "Hctx".
     inversion a; subst; eauto.
   - iIntros "#Hctx".

@@ -10,6 +10,7 @@ From Perennial.program_proof Require buftxn.sep_buftxn_invariant.
 From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
 From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
 From Perennial.program_proof Require Import twophase.twophase_proof.
+From Perennial.program_proof Require Import alloc.alloc_proof.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 
@@ -109,7 +110,8 @@ Definition twophase_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_he
   match ty with
   | JrnlT => (∃ (l: loc) γ γ' dinit objs_dom,
                  ⌜ vimpl = #l ⌝ ∗ ⌜ vspec = #true ⌝ ∗ is_twophase_pre l γ γ' dinit objs_dom ∗ jrnl_open)%I
-  | AllocT => False%I
+  | AllocT => (∃ (ls li: loc) (max : u64),
+                 ⌜ vimpl = #li ⌝ ∗ ⌜ vspec = #ls ⌝ ∗ ⌜ (0 < int.Z max)%Z ⌝ ∗ is_alloc max li ∗ jrnl_alloc ls max)%I
   end.
 
 Instance twophaseTy_model : specTy_model jrnl_ty.
@@ -141,7 +143,7 @@ Proof using PARAMS.
    destruct τ.
    * iDestruct 1 as (l γ γ' dinit objs_dom -> ->) "(H1&H2)".
      iPureIntro. split; eauto.
-   * iDestruct 1 as %[].
+   * iDestruct 1 as (??? -> ->) "H"; eauto.
 Defined.
 (* XXX: some of the fields should be opaque/abstract here, because they're enormous proof terms.
   perhaps specTy_model should be split into two typeclasses? *)

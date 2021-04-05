@@ -633,6 +633,27 @@ Section jrnl_lemmas.
     iDestruct (map_ro_valid with "[$] [$]") as %?; eauto.
   Qed.
 
+  Lemma jrnl_ctx_allocs_agree2 σja l u:
+    jrnl_alloc_map σja -∗ jrnl_alloc l u -∗ ⌜ σja !! l = None ∨ σja !! l = Some u ⌝.
+  Proof.
+    iIntros "Hjrnl_allocs Hjrnl_alloc1".
+    destruct (σja !! l) as [u'|] eqn:Hlookup'; last eauto.
+    iDestruct (big_sepM_lookup with "Hjrnl_allocs") as "H"; eauto.
+    iDestruct (auth_map.ptsto_ro_agree with "H Hjrnl_alloc1") as %->; eauto.
+  Qed.
+
+  Lemma jrnl_ctx_allocs_extend σ l u:
+    jrnl_alloc_map (jrnlAllocs σ) -∗ jrnl_alloc l u -∗ jrnl_alloc_map (jrnlAllocs (updateAllocs σ l u)).
+  Proof.
+    iIntros "Hjrnl_allocs Hjrnl_alloc1".
+    rewrite /updateAllocs. destruct σ => //=.
+    iDestruct (jrnl_ctx_allocs_agree2 with "[$] [$]") as %Hlookup.
+    rewrite /jrnl_alloc_map.
+    destruct Hlookup.
+    - rewrite big_sepM_insert; auto.
+    - rewrite insert_id //=.
+  Qed.
+
   Lemma jrnl_state_ctx_extract_pers m :
     jrnl_state_ctx m -∗
     ⌜ wf_jrnl m ⌝ ∗
@@ -1039,7 +1060,7 @@ Proof.
       rewrite lookup_insert_ne // in Hsub_data.
 Qed.
 
-Lemma always_steps_extend_allocs e1 σj1 e2 σj2 l u :
+Lemma always_steps_extend_allocs1 e1 σj1 e2 σj2 l u :
   (l ∉ dom (gset _) (jrnlAllocs σj2)) →
   always_steps e1 σj1 e2 σj2 →
   always_steps e1 (updateAllocs σj1 l u)
@@ -1068,6 +1089,31 @@ Proof.
       rewrite Hdom' => //=. destruct ((jrnlAllocs sj) !! i) eqn:Heq; auto.
     * subst. rewrite /updateAllocs /= in Hsub_allocs.
       rewrite lookup_insert_ne // in Hsub_allocs.
+Qed.
+
+Lemma always_steps_extend_allocs2 e1 σj1 e2 σj2 l u :
+  (l ∉ dom (gset _) (jrnlAllocs σj1) ∨ jrnlAllocs σj1 !! l = Some u) →
+  always_steps e1 σj1 e2 σj2 →
+  always_steps e1 (updateAllocs σj1 l u)
+               e2 (updateAllocs σj2 l u).
+Proof.
+  intros [Hdom|Hlookup] Halways_steps. (* (?&Hsub&Hstep). *)
+  { eapply always_steps_extend_allocs1; eauto.
+    destruct Halways_steps as (?&Hsub&?).
+    destruct Hsub as (?&?&<-&?); eauto.
+  }
+  assert (updateAllocs σj1 l u = σj1) as ->.
+  { rewrite /updateAllocs//=; destruct σj1 => //=; f_equal.
+    rewrite insert_id //. }
+  assert (updateAllocs σj2 l u = σj2) as ->.
+  {
+    destruct Halways_steps as (?&Hsub&?).
+    destruct Hsub as (?&?&HeqAllocs&?); eauto.
+    rewrite HeqAllocs in Hlookup.
+    rewrite /updateAllocs//=; destruct σj2 => //=; f_equal.
+    rewrite insert_id //.
+  }
+  eauto.
 Qed.
 
 Definition addr2val' (a : addr) : sval := (#(addrBlock a), (#(addrOff a), #()))%V.
