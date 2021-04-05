@@ -2041,4 +2041,72 @@ Proof.
   eapply Hneg. naive_solver.
 Qed.
 
+Lemma not_stuck'_MkAllocOp_inv K `{!LanguageCtx' K} max s g:
+  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                        MkAllocOp #(LitInt max)%V)) s g →
+  0 < int.Z max.
+Proof.
+  intros Hnstuck. eapply NNPP.
+  intros Hneg. apply Hnstuck.
+  apply stuck'_fill; eauto.
+  apply stuck_ExternalOp'; eauto.
+  intros ????? Hstep.
+  inversion Hstep; subst.
+  simpl in H1.
+  repeat (simpl in *; monad_inv).
+  destruct (s.(world)) eqn:Heq; rewrite Heq in H1.
+  { inversion H1. subst. monad_inv. }
+  repeat (simpl in *; monad_inv); eauto.
+Qed.
+
+Lemma not_stuck'_MarkUsedOp_inv K `{!LanguageCtx' K} l n s g:
+  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                        MarkUsedOp (PairV #(LitLoc l) #(LitInt n)%V))) s g →
+  ∃ σj max, world s = Opened σj ∧
+  jrnlAllocs σj !! l = Some max ∧ int.Z n < int.Z max.
+Proof.
+  intros Hnstuck. eapply NNPP.
+  intros Hneg. apply Hnstuck.
+  apply stuck'_fill; eauto.
+  apply stuck_ExternalOp'; eauto.
+  intros ????? Hstep.
+  inversion Hstep; subst.
+  simpl in H1.
+  repeat (simpl in *; monad_inv).
+  destruct (s.(world)) eqn:Heq; rewrite Heq in H1.
+  { inversion H1. subst. monad_inv. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlAllocs _ !! _) eqn:Heq2; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (decide (int.Z n < int.Z r)); last first.
+  { repeat (simpl in *; monad_inv). eauto. }
+  eapply Hneg. naive_solver.
+Qed.
+
+Lemma not_stuck'_FreeNumOp_inv K `{!LanguageCtx' K} l n s g:
+  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+                        FreeNumOp (PairV #(LitLoc l) #(LitInt n)%V))) s g →
+  ∃ σj max, world s = Opened σj ∧
+  jrnlAllocs σj !! l = Some max ∧ int.Z n ≠ 0 ∧ int.Z n < int.Z max.
+Proof.
+  intros Hnstuck. eapply NNPP.
+  intros Hneg. apply Hnstuck.
+  apply stuck'_fill; eauto.
+  apply stuck_ExternalOp'; eauto.
+  intros ????? Hstep.
+  inversion Hstep; subst.
+  simpl in H1.
+  repeat (simpl in *; monad_inv).
+  destruct (s.(world)) eqn:Heq; rewrite Heq in H1.
+  { inversion H1. subst. monad_inv. }
+  repeat (simpl in *; monad_inv).
+  destruct (jrnlAllocs _ !! _) eqn:Heq2; last first.
+  { inversion H1. inversion H2. eauto. }
+  repeat (simpl in *; monad_inv).
+  destruct (decide (int.Z n ≠ 0 ∧ int.Z n < int.Z r)); last first.
+  { repeat (simpl in *; monad_inv). eauto. }
+  eapply Hneg. naive_solver.
+Qed.
+
 End spec.
