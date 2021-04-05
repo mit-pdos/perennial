@@ -20,7 +20,7 @@ From Perennial.program_proof Require
      buftxn.buftxn_proof
      buftxn.sep_buftxn_proof buftxn.sep_buftxn_recovery_proof
      buftxn_replication.buftxn_replication_proof
-     alloc_proof
+     alloc.alloc_proof
      twophase.twophase_proof
      twophase.twophase_refinement_proof
      simple.proofs simple.example

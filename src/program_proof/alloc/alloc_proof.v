@@ -167,6 +167,7 @@ Proof.
       wp_pures.
       iApply "HΦ".
       iExists _; iFrame.
+      iModIntro.
       iSplit; first by (iPureIntro; word).
       rewrite -list_fmap_insert.
       iExists _, _, _; iFrame "∗%".
@@ -180,9 +181,9 @@ Proof.
       wp_if_destruct.
       { wp_store.
         iApply "HΦ".
-        iExists _; iFrame "∗%". }
+        iExists _; iFrame "∗%". eauto. }
       iApply "HΦ".
-      iExists _; iFrame "∗%".
+      iExists _; iFrame "∗%"; eauto.
   - iNamed 1.
     wp_pures.
     wp_loadField.
