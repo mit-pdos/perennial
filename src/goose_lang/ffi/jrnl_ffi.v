@@ -1520,46 +1520,6 @@ Proof.
     }
 Qed.
 
-
-(*
-Lock Invariant for address a in 2PL:
-
-Approach 1 :
-===========
-
-Lock invariant: ∃ o, jrnl_mapsto a 1 o ∗  durable_mapsto_own γ a o
-
-Doesn't work, can't guarantee invariant at crash time.
-
-Approach 2 :
-===========
-
-Introduce a new "ephemeral_mapsto γ a o" (probably definable from the raw building blocks of sep_buftxn), and then have:
-
-Lock invariant :
-∃ o, ephemeral_mapsto γ a o ∗
-     na_crash_inv (jrnl_mapsto a 1 o ∗ durable_mapsto γ a o)
-                  (∃ o', jrnl_mapsto a 1 o' ∗ durable_mapsto γ' a o')
-
-With this approach, ReadBuf etc. would require ownership of ephemeral_mapsto but
-NOT durable_mapsto. Only at the CommitWait stage would we open the
-"na_crash_inv" for each address that the txn accesses.
-
-The issue with this approach is that sep_buftxn does not define such a notion of
-an ephemeral_mapsto directly.
-
-Approach 3:
-===========
-Lock invariant :
-∃ o, modify_token γ a ∗
-     na_crash_inv (jrnl_mapsto a 1 o ∗ durable_mapsto γ a o ∗ jrnl_crash_tok a)
-                  (∃ o', jrnl_mapsto a 1 o' ∗ durable_mapsto γ' a o' ∗ jrnl_crash_tok a)
-
-With this approach, as soon as the 2PL code acquires a lock as part of an operation,
-it immediately opens the na_crash_inv to lift the durable_mapsto and modify token into a buftxn_maps_to, then re-closes the na_crash_inv. Only during Commit are all of these na_crash_inv opened and held open across the duration of Commit.
-
-*)
-
 Lemma ghost_step_jrnl_atomically_abort E j K {HCTX: LanguageCtx K} (l: sval) e :
   nclose sN ⊆ E →
   spec_ctx -∗
