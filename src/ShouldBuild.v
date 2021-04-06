@@ -1,6 +1,8 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
 default using make as well as in CI on Travis). *)
 
+From Perennial.program_logic Require
+     dist_lang.
 From Perennial.goose_lang Require
      adequacy recovery_adequacy
      spec_assert
