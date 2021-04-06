@@ -219,7 +219,9 @@ Section translate.
 
   Inductive jrnl_trans : sval → ival → Prop :=
   | jrnl_open_trans (x: string) :
-      jrnl_trans (λ: x, ExternalOp OpenOp (Var x)) Init.
+      jrnl_trans (λ: x, ExternalOp OpenOp (Var x)) Init
+  | jrnl_mkalloc_trans (x: string) :
+      jrnl_trans (λ: x, ExternalOp MkAllocOp (Var x)) MkAlloc.
 
   Inductive jrnl_atomic_transTy : SCtx → sexpr → iexpr → sty → sexpr → iexpr → sty → Prop :=
   | jrnl_atomic_transTy_core Γ Γ' etxn etxn' ebdy ebdy' t (tph: string) :

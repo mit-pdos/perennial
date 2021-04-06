@@ -163,7 +163,7 @@ Section jrnl.
   | JrnlOpenOpType t :
       jrnl_ext_tys (λ: "v", ExternalOp OpenOp (Var "v"))%V (refT t, extT JrnlT)
   | JrnlMkAllocOpType :
-      jrnl_ext_tys (λ: "v", ExternalOp AllocOp (Var "v"))%V (baseT uint64BT, extT AllocT).
+      jrnl_ext_tys (λ: "v", ExternalOp MkAllocOp (Var "v"))%V (baseT uint64BT, extT AllocT).
 
   Instance jrnl_ty: ext_types jrnl_op :=
     {| val_tys := jrnl_val_ty;
@@ -2087,21 +2087,22 @@ Proof.
   eapply Hneg. naive_solver.
 Qed.
 
-Lemma not_stuck'_MkAllocOp_inv K `{!LanguageCtx' K} max s g:
-  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+Lemma not_stuck_MkAllocOp_inv max s g:
+  ¬ stuck ((ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                         MkAllocOp #(LitInt max)%V)) s g →
-  0 < int.Z max.
+  ∃ σj, world s = Opened σj ∧ 0 < int.Z max.
 Proof.
   intros Hnstuck. eapply NNPP.
   intros Hneg. apply Hnstuck.
-  apply stuck'_fill; eauto.
-  apply stuck_ExternalOp'; eauto.
+  apply stuck_ExternalOp; eauto.
   intros ????? Hstep.
   inversion Hstep; subst.
   simpl in H1.
   repeat (simpl in *; monad_inv).
-  destruct (s.(world)) eqn:Heq; rewrite Heq in H1.
-  { inversion H1. subst. monad_inv. }
+  inversion H1. subst.
+  repeat (simpl in *; monad_inv).
+  destruct (s.(world)) eqn:Heq; rewrite Heq in H2.
+  { inversion H2. subst. monad_inv. }
   repeat (simpl in *; monad_inv); eauto.
 Qed.
 
@@ -2153,6 +2154,38 @@ Proof.
   destruct (decide (int.Z n ≠ 0 ∧ int.Z n < int.Z r)); last first.
   { repeat (simpl in *; monad_inv). eauto. }
   eapply Hneg. naive_solver.
+Qed.
+
+Lemma ghost_step_jrnl_mkalloc E j K {HCTX: LanguageCtx K} (n: u64):
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) MkAllocOp #n)
+  -∗ |NC={E}=> ∃ (l: loc), ⌜ 0 < int.Z n ⌝ ∗ j ⤇ K #l ∗ jrnl_alloc l n.
+Proof.
+  iIntros (?) "(#Hctx&#Hstate) Hj".
+  iInv "Hstate" as (s g) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
+  iEval (simpl) in "Hj".
+  iMod (ghost_step_stuck' with "[$] [$] [$]") as (Hnstuck) "(Hj&H)"; first by solve_ndisj.
+  eapply not_stuck_MkAllocOp_inv in Hnstuck as (σj&Hopen&Hngt0); eauto.
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { apply head_prim_step_trans. simpl. econstructor.
+    * repeat econstructor => //=.
+      { rewrite Hopen. econstructor. eauto. }
+      { refine (proj2_sig _). apply gen_isFreshAlloc. }
+      { rewrite /check/ifThenElse decide_True //=. }
+      { rewrite //= Hopen //=. }
+    * repeat econstructor.
+  }
+  { solve_ndisj. }
+  rewrite Hopen.
+  iDestruct "Hffi" as "(Hopen&Hstate_ctx)".
+  iDestruct "Hstate_ctx" as "(?&?&?&?&Hallocs)".
+  iMod (map_alloc_ro (` (gen_isFreshAlloc σj.(jrnlAllocs))) with "Hallocs") as "(Hallocs&Halloc1)".
+  { destruct (gen_isFreshAlloc _); eauto. }
+  iMod ("Hclo" with "[-Hj Halloc1]") as "_".
+  { iNext. iExists _, _. iFrame "H". iFrame. }
+  iModIntro. iExists _. iFrame "∗ %".
 Qed.
 
 End spec.

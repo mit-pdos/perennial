@@ -3,7 +3,8 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import
      twophase.typed_translate twophase.wrapper_proof twophase.wrapper_init_proof
-     twophase.twophase_refinement_defs twophase.twophase_sub_logical_reln_defs.
+     twophase.twophase_refinement_defs twophase.twophase_sub_logical_reln_defs
+     alloc.alloc_proof.
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert metatheory.
@@ -136,8 +137,24 @@ Proof.
     iExists _. iFrame "Hj". rewrite /val_interp//=/twophase_val_interp.
     iExists _, _, _, _, _.
     iFrame "Htwophase Hopen". eauto.
-  - admit.
-Admitted.
+  - iIntros (????) "#Hinv #Hspec #Hval".
+    iIntros (j K Hctx) "Hj".
+    iDestruct "Hval" as %(n&->&->).
+    inversion Htrans. subst.
+    iApply wp_wpc.
+    iMod (ghost_step_lifting_puredet with "[$Hj]") as "(Hj&_)".
+    { econstructor. apply head_prim_step_trans. econstructor. eauto. }
+    { solve_ndisj. }
+    { iDestruct "Hspec" as "(?&?)". eauto. }
+    iMod (ghost_step_jrnl_mkalloc with "[$] [$Hj]") as "H".
+    { solve_ndisj. }
+    iDestruct "H" as (l Hgt0) "(Hj&Halloc)".
+    wp_apply (wp_MkAlloc').
+    { eauto. }
+    iIntros (l') "Halloc'".
+    iExists _. iFrame "Hj".
+    iExists _, _, _. iFrame. eauto.
+Qed.
 
 Lemma fmap_unit_jrnl_dom_equal (jd jd': gmap addr_proof.addr obj) :
   dom (gset _) jd = dom (gset _) jd' →
