@@ -1288,7 +1288,7 @@ Proof.
     iRight. iExists _, _.
     iSplitR ""; first by eauto. iApply (IHHtyping with "[$]").
     eauto.
-Admitted.
+Qed.
 
 End reln_defs.
 End reln.
