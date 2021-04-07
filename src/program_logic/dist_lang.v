@@ -3,7 +3,7 @@ derived notions/lemmas. *)
 From Perennial.program_logic Require Export language crash_lang.
 From iris.prelude Require Import options.
 
-Section dist_language.
+Module dist_language1.
   Context {Λ: language}.
   Context {CS: crash_semantics Λ}.
 
@@ -25,5 +25,32 @@ Section dist_language.
       ρ2.2 = ρ1.2 →
       crash_prim_step CS σ1 σ2 →
       dist_step nm boot ρ1 κs ρ2.
+
+End dist_language1.
+
+
+Section dist_language.
+  Context {Λ: language}.
+  Context {CS: crash_semantics Λ}.
+
+  Record dist_node :=
+    { boot : expr Λ;
+      tpool : list (expr Λ);
+      local_state : state Λ }.
+
+  Definition dist_cfg : Type := list dist_node * global_state Λ.
+
+  Inductive dist_step : dist_cfg → list (observation Λ) → dist_cfg → Prop :=
+  | dist_step_machine ρ1 κs ρ2 m eb e1 σ1 e2 σ2 efs t1 t2 :
+      ρ1.1 !! m = Some {| boot := eb; tpool := (t1 ++ e1 :: t2); local_state := σ1 |} →
+      ρ2.1 = <[ m := {| boot := eb; tpool := (t1 ++ e2 :: t2 ++ efs); local_state := σ2|}]> ρ1.1 →
+      prim_step e1 σ1 ρ1.2 κs e2 σ2 ρ2.2 efs →
+      dist_step ρ1 κs ρ2
+  | dist_step_crash ρ1 κs ρ2 m eb σ1 σ2 tp :
+      ρ1.1 !! m = Some {| boot := eb; tpool := tp; local_state := σ1 |} →
+      ρ2.1 = <[ m := {| boot := eb; tpool := [eb]; local_state := σ2 |}]> ρ1.1 →
+      ρ2.2 = ρ1.2 →
+      crash_prim_step CS σ1 σ2 →
+      dist_step ρ1 κs ρ2.
 
 End dist_language.
