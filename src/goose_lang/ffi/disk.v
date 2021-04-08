@@ -206,9 +206,11 @@ Section disk.
 
   Program Instance disk_interp: ffi_interp disk_model :=
     {| ffiG := diskG;
-       ffi_names := gen_heap_names;
-       ffi_get_names := fun _ hD => gen_heapG_get_names (diskG_gen_heapG);
-       ffi_update := fun _ hD names =>
+       ffi_local_names := gen_heap_names;
+       ffi_global_names := unit;
+       ffi_get_local_names := fun _ hD => gen_heapG_get_names (diskG_gen_heapG);
+       ffi_get_global_names := fun _ hD => tt;
+       ffi_update_local := fun _ hD names =>
                        {| diskG_gen_heapG := gen_heapG_update (@diskG_gen_heapG _ hD) names |};
        ffi_get_update := fun _ _ => _;
        ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap.gen_heap_interp d;
@@ -219,6 +221,8 @@ Section disk.
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
     |}.
   Next Obligation. intros ? [[]] [] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
 
@@ -553,10 +557,11 @@ Program Instance disk_interp_adequacy:
      ffiΣ := diskΣ;
      subG_ffiPreG := subG_diskG;
      ffi_initP := λ _ _, True;
-     ffi_update_pre := @disk_update_pre;
+     ffi_update_pre := (λ _ hP names _, @disk_update_pre _ hP names)
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ ??). iMod (gen_heap_name_strong_init σ) as (names) "(Hctx&Hpts)".
@@ -564,7 +569,7 @@ Next Obligation.
 Qed.
 Next Obligation.
   iIntros (Σ σ σ' g Hcrash Hold) "Hinterp Hg".
-  iExists (ffi_get_names _ Hold) => //=.
+  iExists (ffi_get_local_names _ Hold) => //=.
   inversion Hcrash; subst.
   iFrame. iPureIntro; split_and!; auto.
   destruct Hold as [[]] => //=.

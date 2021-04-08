@@ -68,9 +68,9 @@ Proof using Hrpre Hcpre.
   { rewrite //=. }
   iMod (source_cfg_init_names1 r tp0 σ0 g0 tp σ g (own γ (Cinl 1%Qp))) as (Hcfg_γ) "(Hsource_ctx&Hpool&Hstate&Hcfupd)"; eauto.
   iMod (na_heap_init tls σ.(heap)) as (Hrheap) "Hrh".
-  iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world) g) as (HffiG) "(Hrw&Hrg&Hrs)"; first auto.
+  iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world) g) as (HffiG namesg) "(Hrw&Hrg&Hrs)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
-  set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG) HtraceG
+  set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG namesg) HtraceG
                                   {| cfg_name := Hcfg_γ |} Hrheap) _ γ).
   iExists HrhG.
   iFrame "Hsource_ctx Hpool Hrs Hcfupd".
@@ -134,7 +134,7 @@ Proof using Hrpre Hcpre.
     as (ffi_names) "(Hrw&Hrg&Hcrash_rel&Hrs)".
   { inversion Hcrash. subst. eauto. }
   iMod (trace_init σ_post_crash.(trace) σ_post_crash.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
-  set (HrhG := (refinement_HeapG _ (ffi_update Σ (refinement_spec_ffiG) ffi_names) HtraceG
+  set (HrhG := (refinement_HeapG _ (ffi_update_local Σ (refinement_spec_ffiG) ffi_names) HtraceG
                                  {| cfg_name := Hcfg_γ |} Hrheap) _ γ).
   iExists HrhG.
   rewrite /spec_ctx'.  iFrame "Hsource_ctx Hpool Hrs Hcfupd Hcrash_rel".
@@ -467,7 +467,8 @@ Proof using Hrpre Hhpre Hcpre.
     { inversion Hcrash; subst; eauto. }
     iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
     set (hnames := {| heap_heap_names := name_na_heap;
-                      heap_ffi_names := ffi_names;
+                      heap_ffi_local_names := ffi_names;
+                      heap_ffi_global_names := ffi_get_global_names Σ heapG_ffiG;
                       heap_trace_names := name_trace |}).
     set (hG := (heap_update _ _ _ _ hnames)).
     iSpecialize ("H" $! hG).
@@ -487,6 +488,8 @@ Proof using Hrpre Hhpre Hcpre.
     iDestruct "H" as (σs_post_crash Hspec_crash) "(Hspec_ffi&Hwpc)".
     iClear "Htrace_auth Horacle_auth Htrace_frag Horacle_frag".
     iExists ({| pbundleT := hnames |}).
+    unshelve (iExists _).
+    { rewrite //=. rewrite ?ffi_global_ctx_nolocal //=. }
     iMod (goose_spec_crash_init _ _ σs gs _ σs' gs' σs_post_crash _ (trace σ_post_crash) (oracle σ_post_crash)
             with "[$] [$] Hspec_ffi Hspec_gffi") as (HrG) "(#Hspec&Hpool&Hcrash_rel&Hrs&#Htrace&#Hcfupd1'&Hcfupd3)";
       eauto.
@@ -516,7 +519,7 @@ Proof using Hrpre Hhpre Hcpre.
       rewrite /heap_update/heap_get_names//= ffi_update_update.
       rewrite /traceG_update//=.
       rewrite /gen_heap_names.gen_heapG_update//=.
-      rewrite ?ffi_update_get //=.
+      rewrite ffi_update_get_local //=.
 Qed.
 
 End refinement_wpc.

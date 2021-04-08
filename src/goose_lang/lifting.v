@@ -104,19 +104,25 @@ Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
 
 Class ffi_interp (ffi: ffi_model) :=
   { ffiG: gFunctors -> Set;
-    ffi_names : Set;
-    ffi_get_names : ∀ Σ, ffiG Σ → ffi_names;
-    ffi_update : ∀ Σ, ffiG Σ → ffi_names → ffiG Σ;
-    ffi_update_get: ∀ Σ hF names, ffi_get_names Σ (ffi_update _ hF names) = names;
-    ffi_get_update: ∀ Σ hF, ffi_update Σ hF (ffi_get_names _ hF) = hF;
-    ffi_update_update: ∀ Σ hF names1 names2, ffi_update Σ (ffi_update Σ hF names1) names2
-                                     = ffi_update Σ hF names2;
+    ffi_local_names : Set;
+    ffi_global_names : Set;
+    ffi_get_local_names : ∀ Σ, ffiG Σ → ffi_local_names;
+    ffi_get_global_names : ∀ Σ, ffiG Σ → ffi_global_names;
+    ffi_update_local : ∀ Σ, ffiG Σ → ffi_local_names → ffiG Σ;
+    ffi_update_get_local: ∀ Σ hF names, ffi_get_local_names Σ (ffi_update_local _ hF names) = names;
+    ffi_update_get_global: ∀ Σ hF names, ffi_get_global_names Σ (ffi_update_local _ hF names) =
+                                         ffi_get_global_names Σ hF;
+    ffi_get_update: ∀ Σ hF, ffi_update_local Σ hF (ffi_get_local_names _ hF) = hF;
+    ffi_update_update: ∀ Σ hF names1 names2, ffi_update_local Σ (ffi_update_local Σ hF names1) names2
+                                     = ffi_update_local Σ hF names2;
     ffi_ctx: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
     ffi_global_ctx: ∀ `{ffiG Σ}, ffi_global_state -> iProp Σ;
+    ffi_global_ctx_nolocal : ∀ Σ hF names,
+        @ffi_global_ctx Σ (ffi_update_local Σ hF names) = @ffi_global_ctx Σ hF;
     ffi_start: ∀ `{ffiG Σ}, ffi_state -> ffi_global_state -> iProp Σ;
     ffi_restart: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
     ffi_crash_rel: ∀ Σ, ffiG Σ → ffi_state → ffiG Σ → ffi_state → iProp Σ;
-    ffi_crash_rel_pers: ∀ Σ (Hold Hnew: ffiG Σ) σ σ', Persistent (ffi_crash_rel Σ Hold σ Hnew σ')
+    ffi_crash_rel_pers: ∀ Σ (Hold Hnew: ffiG Σ) σ σ', Persistent (ffi_crash_rel Σ Hold σ Hnew σ');
   }.
 
 Arguments ffi_ctx {ffi FfiInterp Σ} : rename.
@@ -241,14 +247,15 @@ Class heapG Σ := HeapG {
 (* The word 'heap' is really overloaded... *)
 Record heap_names := {
   heap_heap_names : na_heap_names;
-  heap_ffi_names : ffi_names;
+  heap_ffi_local_names : ffi_local_names;
+  heap_ffi_global_names : ffi_global_names;
   heap_trace_names : tr_names;
 }.
 
 Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
   {| heapG_invG := heapG_invG;
      heapG_crashG := heapG_crashG;
-     heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
+     heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_ffi_local_names names);
      heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
      heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
  |}.
@@ -256,14 +263,15 @@ Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
 Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (Hcrash : crashG Σ) (names: heap_names) :=
   {| heapG_invG := Hinv;
      heapG_crashG := Hcrash;
-     heapG_ffiG := ffi_update Σ (heapG_ffiG) (heap_ffi_names names);
+     heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_ffi_local_names names);
      heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
      heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
  |}.
 
 Definition heap_get_names Σ (hG : heapG Σ) : heap_names :=
   {| heap_heap_names := na_heapG_get_names (heapG_na_heapG);
-     heap_ffi_names := ffi_get_names Σ (heapG_ffiG);
+     heap_ffi_local_names := ffi_get_local_names Σ (heapG_ffiG);
+     heap_ffi_global_names := ffi_get_global_names Σ (heapG_ffiG);
      heap_trace_names := trace_tr_names;
  |}.
 

@@ -18,13 +18,14 @@ Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_ad
   recv_adequate (CS := goose_crash_lang) s e r σ g (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, φinv σ).
 Proof.
   intros Hwp.
-  eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ _ (λ Hinv Hc names, Φinv (heap_update_pre _ _ Hinv Hc (@pbundleT _ _ names))) (λ n, n)).
+  eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ _ (λ names0 Hinv Hc names, Φinv (heap_update _ (heap_update_pre _ _ Hinv Hc (@pbundleT _ _ names0)) Hinv Hc (@pbundleT _ _ names))) (λ n, n)).
   iIntros (???) "".
   iMod (na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
-  iMod (ffi_name_init _ _ σ.(world) g) as (ffi_names) "(Hw&Hgw&Hstart)"; first auto.
+  iMod (ffi_name_init _ _ σ.(world) g) as (ffi_names ffi_namesg) "(Hw&Hgw&Hstart)"; first auto.
   iMod (trace_name_init σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   set (hnames := {| heap_heap_names := name_na_heap;
-                      heap_ffi_names := ffi_names;
+                      heap_ffi_local_names := ffi_names;
+                      heap_ffi_global_names := ffi_namesg;
                       heap_trace_names := name_trace |}).
   set (hG := heap_update_pre _ hPre Hinv Hc hnames).
   iExists ({| pbundleT := hnames |}).
@@ -43,26 +44,27 @@ Proof.
   iMod (Hwp hG with "[$] [$] [$]") as "(#H1&#H2&Hwp)".
   iModIntro.
   iSplitR.
-  { iModIntro. iIntros (??) "Hσ". rewrite heap_update_pre_update.
-    iApply ("H1" with "Hσ").
+  { iModIntro. iIntros (??) "Hσ".
+    iApply ("H1" with "[Hσ]").
+    iExactEq "Hσ". do 2 f_equal.
+    rewrite /heap_update/hG/heap_update_pre//=. f_equal.
+    rewrite ffi_update_pre_update. eauto.
   }
   iSplitR.
   {
-    iModIntro. iIntros (Hc' names') "H". rewrite ?heap_update_pre_update.
-    iDestruct ("H2" $! _ _ with "H") as "#H3".
-    iModIntro. iIntros (??) "H". iSpecialize ("H3" with "H").
-    eauto.
+    iModIntro. iIntros (Hc' names') "H".
+    iDestruct ("H2" $! _ _ with "[H]") as "#H3".
+    { iExactEq "H".
+      f_equal.
+    }
+    iModIntro. iIntros (??) "H". iSpecialize ("H3" with "H"); eauto.
   }
   iFrame. rewrite /hG//=.
   rewrite ffi_update_pre_update //=. iFrame.
   rewrite /wpr. rewrite /hG//=.
   rewrite heap_update_pre_get.
   rewrite //=.
-  iApply (recovery_weakestpre.wpr_strong_mono with "Hwp").
-  repeat iSplit; [| iModIntro; iSplit]; eauto.
-  iIntros. rewrite heap_update_pre_update. eauto.
   Unshelve.
   - eauto.
-  - (* TODO: where is this coming from? *)
-    exact O.
+  - exact O.
 Qed.

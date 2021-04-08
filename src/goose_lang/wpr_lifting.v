@@ -82,7 +82,8 @@ Proof.
       { inversion Hcrash; subst; eauto. }
       iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
       set (hnames := {| heap_heap_names := name_na_heap;
-                        heap_ffi_names := ffi_names;
+                        heap_ffi_local_names := ffi_names;
+                        heap_ffi_global_names := ffi_get_global_names _  (heapG_ffiG);
                         heap_trace_names := name_trace |}).
       iModIntro.
       iNext. iIntros (Hc' ?) "HNC".
@@ -94,6 +95,8 @@ Proof.
       iModIntro.
       rewrite /state_interp//=.
       rewrite ffi_update_update. iFrame.
+      unshelve (iExists _); auto.
+      rewrite ?ffi_global_ctx_nolocal //.
     }
   }
 Qed.

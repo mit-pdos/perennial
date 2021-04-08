@@ -272,9 +272,11 @@ Section log_interp.
 
   Program Instance log_interp : ffi_interp log_model :=
     {| ffiG := logG;
-       ffi_names := log_names;
-       ffi_get_names := @log_get_names;
-       ffi_update := @log_update;
+       ffi_local_names := log_names;
+       ffi_global_names := unit;
+       ffi_get_local_names := @log_get_names;
+       ffi_get_global_names := (λ _ _, tt);
+       ffi_update_local := @log_update;
        ffi_get_update := _;
        ffi_ctx := @log_ctx;
        ffi_global_ctx _ _ _ := True%I;
@@ -285,6 +287,8 @@ Section log_interp.
                                            log_names_state (log_get_names hF2) ⌝%I;
     |}.
   Next Obligation. intros ? [[]] [] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
 
@@ -459,10 +463,11 @@ Program Instance log_interp_adequacy:
      ffiΣ := logΣ;
      subG_ffiPreG := subG_logG;
      ffi_initP := λ σ _, σ = UnInit;
-     ffi_update_pre := @log_update_pre;
+     ffi_update_pre := (λ _ hP names _, @log_update_pre _ hP names)
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ ? ->). simpl.
@@ -470,7 +475,7 @@ Next Obligation.
   iMod (own_alloc (Cinl (1%Qp, to_agree UnInit') : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
   iMod (ghost_var_alloc ([]: leibnizO (list disk.Block))) as (γ2) "(H2a&H2b)".
-  iExists {| log_names_open := γ1; log_names_state := γ2 |}.
+  iExists {| log_names_open := γ1; log_names_state := γ2 |}, tt.
   iFrame. iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
 Qed.
 Next Obligation.

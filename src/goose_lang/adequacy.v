@@ -15,22 +15,25 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi}
     (* modeled after subG_gen_heapPreG and gen_heap_init *)
     subG_ffiPreG : forall Σ, subG ffiΣ Σ -> ffi_preG Σ;
     ffi_initP: ffi_state → ffi_global_state → Prop;
-    ffi_update_pre: ∀ Σ, ffi_preG Σ -> ffi_names -> ffiG Σ;
-    ffi_update_pre_update: ∀ Σ (hPre: ffi_preG Σ) names1 names2,
-        ffi_update Σ (ffi_update_pre _ hPre names1) names2 =
-        ffi_update_pre _ hPre names2;
-    ffi_update_pre_get: ∀ Σ (hPre: ffi_preG Σ) names,
-        ffi_get_names _ (ffi_update_pre _ hPre names) = names;
+    ffi_update_pre: ∀ Σ, ffi_preG Σ -> ffi_local_names -> ffi_global_names -> ffiG Σ;
+    ffi_update_pre_update: ∀ Σ (hPre: ffi_preG Σ) names1 names2 namesg,
+        ffi_update_local Σ (ffi_update_pre _ hPre names1 namesg) names2 =
+        ffi_update_pre _ hPre names2 namesg;
+    ffi_update_pre_get_local: ∀ Σ (hPre: ffi_preG Σ) names namesg,
+        ffi_get_local_names _ (ffi_update_pre _ hPre names namesg) = names;
+    ffi_update_pre_get_global: ∀ Σ (hPre: ffi_preG Σ) names namesg,
+        ffi_get_global_names _ (ffi_update_pre _ hPre names namesg) = namesg;
     ffi_name_init : forall Σ (hPre: ffi_preG Σ) (σ:ffi_state) (g:ffi_global_state), ffi_initP σ g →
-          ⊢ |==> ∃ (names: ffi_names), let H0 := ffi_update_pre _ hPre names in
+          ⊢ |==> ∃ (names: ffi_local_names) (namesg: ffi_global_names),
+              let H0 := ffi_update_pre _ hPre names namesg in
                    ffi_ctx H0 σ ∗ ffi_global_ctx H0 g ∗ ffi_start H0 σ g;
     ffi_crash : forall Σ,
           ∀ (σ σ': ffi_state) (g: ffi_global_state) (CRASH: ext_crash σ σ') (Hold: ffiG Σ),
            ⊢ ffi_ctx Hold σ -∗ ffi_global_ctx Hold g ==∗
-             ∃ (new: ffi_names), ffi_ctx (ffi_update Σ Hold new) σ' ∗
-                                 ffi_global_ctx (ffi_update Σ Hold new) g ∗
-                                 ffi_crash_rel Σ Hold σ (ffi_update Σ Hold new) σ' ∗
-                                 ffi_restart (ffi_update Σ Hold new) σ';
+             ∃ (new: ffi_local_names), ffi_ctx (ffi_update_local Σ Hold new) σ' ∗
+                                 ffi_global_ctx (ffi_update_local Σ Hold new) g ∗
+                                 ffi_crash_rel Σ Hold σ (ffi_update_local Σ Hold new) σ' ∗
+                                 ffi_restart (ffi_update_local Σ Hold new) σ';
   }.
 
 (* this is the magic that lets subG_ffiPreG solve for an ffi_preG using only
@@ -51,7 +54,7 @@ Class heapPreG `{ext: ext_op} `{EXT_SEM: !ext_semantics ext ffi}
 Definition heap_update_pre Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (Hcrash: crashG Σ) (names: heap_names) :=
   {| heapG_invG := Hinv;
      heapG_crashG := Hcrash;
-     heapG_ffiG := ffi_update_pre Σ (heap_preG_ffi) (heap_ffi_names names);
+     heapG_ffiG := ffi_update_pre Σ (heap_preG_ffi) (heap_ffi_local_names names) (heap_ffi_global_names names);
      heapG_na_heapG := na_heapG_update_pre (heap_preG_heap) (heap_heap_names names);
      heapG_traceG := traceG_update_pre Σ (heap_preG_trace) (heap_trace_names names)
  |}.
@@ -59,10 +62,12 @@ Definition heap_update_pre Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (Hcrash: cr
 Lemma heap_update_pre_get Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (Hcrash: crashG Σ) (names: heap_names) :
   heap_get_names _ (heap_update_pre Σ hpreG Hinv Hcrash names) = names.
 Proof.
-  rewrite /heap_get_names/heap_update_pre ffi_update_pre_get na_heapG_update_pre_get //=.
+  rewrite /heap_get_names/heap_update_pre ffi_update_pre_get_local ffi_update_pre_get_global.
+  rewrite  na_heapG_update_pre_get //=.
   destruct names => //=.
 Qed.
 
+(*
 Lemma heap_update_pre_update Σ `(hpreG : heapPreG Σ) (Hinv1 Hinv2: invG Σ) (Hcrash1 Hcrash2: crashG Σ)
       (names1 names2: heap_names) :
   heap_update _ (heap_update_pre Σ hpreG Hinv1 Hcrash1 names1) Hinv2 Hcrash2 names2 =
@@ -70,6 +75,7 @@ Lemma heap_update_pre_update Σ `(hpreG : heapPreG Σ) (Hinv1 Hinv2: invG Σ) (H
 Proof.
   rewrite /heap_update ffi_update_pre_update/traceG_update/gen_heapG_update//=.
 Qed.
+*)
 
 Hint Resolve heap_preG_ffi : typeclass_instances.
 

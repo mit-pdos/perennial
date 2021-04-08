@@ -340,9 +340,11 @@ Section kvs_interp.
   (*how to interpret physical state as ghost resources*)
   Program Instance kvs_interp : ffi_interp kvs_model :=
     {| ffiG := kvsG;
-       ffi_names := kvs_names;
-       ffi_get_names := @kvs_get_names;
-       ffi_update := @kvs_update;
+       ffi_local_names := kvs_names;
+       ffi_global_names := unit;
+       ffi_get_local_names := @kvs_get_names;
+       ffi_get_global_names := (λ _ _, tt);
+       ffi_update_local := @kvs_update;
        ffi_get_update := _;
        ffi_ctx := @kvs_ctx;
        ffi_global_ctx _ _ _ := True%I;
@@ -361,6 +363,7 @@ Section kvs_interp.
     unfold gen_heapG_get_names; simpl.
     destruct kvs_names_state0; simpl; auto.
     Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
   Next Obligation. intros ? [[]] => //=.
                    unfold kvs_update; simpl.
                    destruct kvsG_state_inG0; simpl.
@@ -368,6 +371,7 @@ Section kvs_interp.
                    unfold gen_heapG_get_names; simpl.
                    auto.
   Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
   Next Obligation. intros ? [[]] => //=. Qed.
 End kvs_interp.
 
@@ -566,9 +570,10 @@ From Perennial.goose_lang Require Import adequacy.
      ffiΣ := kvsΣ;
      subG_ffiPreG := subG_kvsG;
      ffi_initP := λ σ _, σ = UnInit;
-     ffi_update_pre := @kvs_update_pre;
+     ffi_update_pre := (λ _ hP names _, @kvs_update_pre _ hP names)
   |}.
 Next Obligation. rewrite //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
 Next Obligation.
   intros.
   unfold ffi_get_names; simpl.

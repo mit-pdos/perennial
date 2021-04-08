@@ -521,9 +521,11 @@ Section jrnl_interp.
 
   Program Instance jrnl_interp : ffi_interp jrnl_model :=
     {| ffiG := jrnlG;
-       ffi_names := jrnl_names;
-       ffi_get_names := @jrnl_get_names;
-       ffi_update := @jrnl_update;
+       ffi_local_names := jrnl_names;
+       ffi_global_names := unit;
+       ffi_get_local_names := @jrnl_get_names;
+       ffi_get_global_names := (λ _ _, tt);
+       ffi_update_local := @jrnl_update;
        ffi_get_update := _;
        ffi_ctx := @jrnl_ctx;
        ffi_global_ctx _ _ _ := True%I;
@@ -540,6 +542,8 @@ Section jrnl_interp.
                                            jrnl_names_dom (jrnl_get_names hF2) ⌝%I;
     |}.
   Next Obligation. intros ? [] [] => //=. Qed.
+  Next Obligation. intros ? [] => //=. Qed.
+  Next Obligation. intros ? [] => //=. Qed.
   Next Obligation. intros ? [] => //=. Qed.
   Next Obligation. intros ? [] => //=. Qed.
 
@@ -671,10 +675,11 @@ Program Instance jrnl_interp_adequacy:
      ffiΣ := jrnlΣ;
      subG_ffiPreG := subG_jrnlG;
      ffi_initP := λ σ _, ∃ m, σ = Closed m ∧ wf_jrnl m;
-     ffi_update_pre := @jrnl_update_pre;
+     ffi_update_pre := (λ _ hP names _, @jrnl_update_pre _ hP names)
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ g (m&->&Hwf)). simpl.
@@ -693,7 +698,7 @@ Next Obligation.
              jrnl_names_crash := γcrash;
              jrnl_names_full_crash := γfull;
              jrnl_names_allocs := γallocs;
-          |}.
+          |}, tt.
   iFrame. iModIntro. iFrame "% #".
   rewrite assoc.
   iSplitL "H".

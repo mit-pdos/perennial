@@ -216,7 +216,7 @@ Proof.
   iModIntro.
   destruct s0.
   - iIntros (Hc') "HNC". iSpecialize ("H" $! Hc' with "[$]").
-    iMod "H" as (t') "(Hσ&Hg&Hr&HNC)".
+    iMod "H" as (t' Heq') "(Hσ&Hg&Hr&HNC)".
     iDestruct "Hr" as "(_&Hr)".
     simpl in *.
     iPoseProof (IH with "[Hσ] [Hg] Hr [] [] HNC") as "H"; eauto.
@@ -229,7 +229,7 @@ Proof.
     assert ((S (n' + ncurr + sum_crash_steps ns')) =
         (ncurr + S (n' + sum_crash_steps ns'))) as -> by lia. auto.
   - iIntros (Hc') "HNC".
-    iMod ("H" $! Hc' with "[$]") as (t') "(Hσ&Hg&Hr&HNC)".
+    iMod ("H" $! Hc' with "[$]") as (t' Heq') "(Hσ&Hg&Hr&HNC)".
     iExists t'.
     iAssert (□Φinv' Hc' t')%I as "#Hinv'".
     { iDestruct "Hr" as "(Hr&_)".
@@ -333,7 +333,7 @@ Proof.
   - rewrite /step_fupdN_fresh.
     simpl. iApply step_fupdN_inner_plain'.
     iMod "H". iModIntro. rewrite Nat_iter_add. iApply (step_fupdN_wand with "H").
-    iIntros "H". 
+    iIntros "H".
     iApply step_fupdN_later; auto.
   - iMod NC_alloc as (Hc') "HNC".
     rewrite /step_fupdN_fresh -/step_fupdN_fresh.
@@ -349,7 +349,7 @@ Proof.
     }
     rewrite step_fupdN_inner_plus.
     iPoseProof (step_fupdN_inner_plain' with "H") as "H".
-    simpl. 
+    simpl.
     rewrite ?Hpf1.
     rewrite ?Hpf2.
     iMod "H". iModIntro.
@@ -423,9 +423,9 @@ Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofe) `{!invPreG Σ} `{!crashPreG Σ}
                IrisG Λ Σ Hinv Hc (stateI t) (global_stateI t) (fork_post t) f (Hpf1 Hc t)) Hpf2 f Hpf3
                in
        □ (∀ σ nt, stateI t σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
-       □ (∀ Hc t, Φinv Hinv Hc t -∗ □ ∀ σ nt, stateI t σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
+       □ (∀ Hc t', Φinv t Hinv Hc t' -∗ □ ∀ σ nt, stateI t' σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
        stateI t σ 0 ∗ global_stateI t g 0 κs ∗
-       wpr s k Hc t ⊤ e r (λ v, ⌜φ v⌝) (Φinv Hinv) (λ _ _ v, ⌜φr v⌝)) →
+       wpr s k Hc t ⊤ e r (λ v, ⌜φ v⌝) (Φinv t Hinv) (λ _ _ v, ⌜φr v⌝)) →
   recv_adequate (CS := CS) s e r σ g (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, φinv σ).
 Proof.
   intros Hwp.
