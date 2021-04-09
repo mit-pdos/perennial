@@ -148,8 +148,9 @@ Proof.
     { iDestruct "Hspec" as "(?&?)". eauto. }
     iMod (ghost_step_jrnl_mkalloc with "[$] [$Hj]") as "H".
     { solve_ndisj. }
-    iDestruct "H" as (l Hgt0) "(Hj&Halloc)".
-    wp_apply (wp_MkAlloc').
+    iDestruct "H" as (l [Hgt0 Hmod8]) "(Hj&Halloc)".
+    wp_apply (wp_MkMaxAlloc).
+    { eauto. }
     { eauto. }
     iIntros (l') "Halloc'".
     iExists _. iFrame "Hj".

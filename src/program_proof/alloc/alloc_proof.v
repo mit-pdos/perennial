@@ -152,15 +152,6 @@ Proof.
   word.
 Qed.
 
-(* TODO: this is false as written, but the idea is to define a wrapper around
-   MkAlloc that does satisfy this spec *)
-Lemma wp_MkAlloc' (max: u64) :
-  0 < int.Z max →
-  {{{ True }}}
-    MkAlloc #max
-  {{{ l, RET #l; is_alloc max l }}}.
-Proof. Admitted.
-
 Lemma wp_incNext (max: u64) (l: loc) :
   0 < int.Z max →
   {{{ alloc_linv max l }}}

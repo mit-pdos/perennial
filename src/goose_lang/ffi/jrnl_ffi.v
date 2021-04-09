@@ -315,7 +315,7 @@ Section jrnl.
     | MkAllocOp, #(LitInt max) =>
       j ← openΣ;
       l ← suchThat (λ _, isFreshAlloc (jrnlAllocs j));
-      check (0 < int.Z max ) ;;
+      check (0 < int.Z max ∧ int.Z max `mod` 8 = 0) ;;
       modifyΣ (λ j, updateAllocs j l max);;
       ret $ (LitV $ LitLoc $ l)
     | MarkUsedOp, PairV #(LitLoc l) #(LitInt n) =>
@@ -2095,7 +2095,7 @@ Qed.
 Lemma not_stuck_MkAllocOp_inv max s g:
   ¬ stuck ((ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
                         MkAllocOp #(LitInt max)%V)) s g →
-  ∃ σj, world s = Opened σj ∧ 0 < int.Z max.
+  ∃ σj, world s = Opened σj ∧ 0 < int.Z max ∧ int.Z max `mod` 8 = 0.
 Proof.
   intros Hnstuck. eapply NNPP.
   intros Hneg. apply Hnstuck.
@@ -2165,7 +2165,7 @@ Lemma ghost_step_jrnl_mkalloc E j K {HCTX: LanguageCtx K} (n: u64):
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) MkAllocOp #n)
-  -∗ |NC={E}=> ∃ (l: loc), ⌜ 0 < int.Z n ⌝ ∗ j ⤇ K #l ∗ jrnl_alloc l n.
+  -∗ |NC={E}=> ∃ (l: loc), ⌜ 0 < int.Z n ∧ int.Z n `mod` 8 = 0 ⌝ ∗ j ⤇ K #l ∗ jrnl_alloc l n.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (s g) "(>H&Hinterp)" "Hclo".
