@@ -26,6 +26,30 @@ Definition MkAlloc: val :=
     ] in
     "a".
 
+Definition Alloc__MarkUsed: val :=
+  rec: "Alloc__MarkUsed" "a" "bn" :=
+    lock.acquire (struct.loadF Alloc.S "mu" "a");;
+    let: "byte" := "bn" `quot` #8 in
+    let: "bit" := "bn" `rem` #8 in
+    SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" `or` (#(U8 1)) ≪ "bit");;
+    lock.release (struct.loadF Alloc.S "mu" "a").
+
+(* MkMaxAlloc initializes an allocator to be fully free with a range of (0,
+   max).
+
+   Requires 0 < max and max % 8 == 0. *)
+Definition MkMaxAlloc: val :=
+  rec: "MkMaxAlloc" "max" :=
+    (if: ~ (#0 < "max") && ("max" `rem` #8 = #0)
+    then
+      Panic ("invalid max, must be at least 0 and divisible by 8");;
+      #()
+    else #());;
+    let: "bitmap" := NewSlice byteT ("max" `quot` #8) in
+    let: "a" := MkAlloc "bitmap" in
+    Alloc__MarkUsed "a" #0;;
+    "a".
+
 Definition Alloc__incNext: val :=
   rec: "Alloc__incNext" "a" :=
     struct.storeF Alloc.S "next" "a" (struct.loadF Alloc.S "next" "a" + #1);;
@@ -69,14 +93,6 @@ Definition Alloc__freeBit: val :=
     let: "byte" := "bn" `quot` #8 in
     let: "bit" := "bn" `rem` #8 in
     SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" `and` ~ ((#(U8 1)) ≪ "bit"));;
-    lock.release (struct.loadF Alloc.S "mu" "a").
-
-Definition Alloc__MarkUsed: val :=
-  rec: "Alloc__MarkUsed" "a" "bn" :=
-    lock.acquire (struct.loadF Alloc.S "mu" "a");;
-    let: "byte" := "bn" `quot` #8 in
-    let: "bit" := "bn" `rem` #8 in
-    SliceSet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc.S "bitmap" "a") "byte" `or` (#(U8 1)) ≪ "bit");;
     lock.release (struct.loadF Alloc.S "mu" "a").
 
 Definition Alloc__AllocNum: val :=
