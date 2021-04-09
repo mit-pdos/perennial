@@ -139,3 +139,52 @@ Proof.
 Qed.
 
 End wpr.
+
+Definition wpr0_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat) (mj: nat)
+    (wpr : crashG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
+                     (crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
+                     (crashG Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ) :
+  crashG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
+  (crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
+  (crashG Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ :=
+  λ Hc0 t0 E e rec Φ Φinv Φr,
+  (wpc0 s k mj E e
+     Φ
+     (∀ σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
+        state_interp σ n -∗ global_state_interp g ns κs ={E}=∗  ▷ ∀ Hc1 q, NC q ={E}=∗
+          ∃ t1 (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc1 t1) =
+                                     @global_state_interp _ _ (perennial_irisG Hc0 t0)),
+          state_interp σ' 0 ∗
+          global_state_interp g (S ns) κs ∗
+          (Φinv Hc1 t1 ∧ wpr Hc1 t1 E rec rec (λ v, Φr Hc1 t1 v) Φinv Φr) ∗ NC q))%I.
+
+Local Instance wpr0_pre_contractive `{!perennialG Λ CS T Σ} s k mj: Contractive (wpr0_pre s k mj).
+Proof.
+  rewrite /wpr_pre=> n wp wp' Hwp H2crash t E1 e1 rec Φ Φinv Φc.
+  apply wpc0_ne; eauto;
+  repeat (f_contractive || f_equiv). apply Hwp.
+Qed.
+
+Definition wpr0_def `{!perennialG Λ CS T Σ} (s : stuckness) k (mj : nat) :
+  crashG Σ → pbundleG T Σ → coPset → expr Λ → expr Λ → (val Λ → iProp Σ) →
+  (crashG Σ → pbundleG T Σ → iProp Σ) →
+  (crashG Σ → pbundleG T Σ → val Λ → iProp Σ) → iProp Σ := fixpoint (wpr0_pre s k mj).
+Definition wpr0_aux `{!perennialG Λ CS T Σ} : seal (@wpr0_def Λ CS T Σ _). by eexists. Qed.
+Definition wpr0 `{!perennialG Λ CS T Σ} := wpr0_aux.(unseal).
+Definition wpr0_eq `{!perennialG Λ CS T Σ} : wpr0 = @wpr0_def Λ CS T Σ _ := wpr0_aux.(seal_eq).
+
+Section wpr0.
+Context `{!perennialG Λ CS T Σ}.
+Implicit Types s : stuckness.
+Implicit Types k : nat.
+Implicit Types P : iProp Σ.
+Implicit Types Φ : val Λ → iProp Σ.
+Implicit Types Φc : crashG Σ → pbundleG T Σ → val Λ → iProp Σ.
+Implicit Types v : val Λ.
+Implicit Types e : expr Λ.
+
+Lemma wpr0_unfold s k mj Hc t E e rec Φ Φinv Φc :
+  wpr0 s k mj Hc t E e rec Φ Φinv Φc ⊣⊢ wpr0_pre s k mj (wpr0 s k mj) Hc t E e rec Φ Φinv Φc.
+Proof. rewrite wpr0_eq. apply (fixpoint_unfold (wpr0_pre s k mj)). Qed.
+
+End wpr0.

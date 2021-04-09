@@ -226,6 +226,7 @@ Implicit Types Φs : list (val Λ → iProp Σ).
 (* Now we prove a version where we use normal wpc instead of wpc0. *)
 
 Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})%I.
+
 Lemma wptp_strong_adequacy Φ Φc k κs' s n e1 t1 κs t2 σ1 g1 ns σ2 g2 :
   nsteps n (e1 :: t1, (σ1, g1)) κs (t2, (σ2, g2)) →
   state_interp σ1 (length t1) -∗

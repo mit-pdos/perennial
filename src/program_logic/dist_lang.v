@@ -41,10 +41,10 @@ Section dist_language.
   Definition dist_cfg : Type := list dist_node * global_state Λ.
 
   Inductive dist_step : dist_cfg → list (observation Λ) → dist_cfg → Prop :=
-  | dist_step_machine ρ1 κs ρ2 m eb e1 σ1 e2 σ2 efs t1 t2 :
-      ρ1.1 !! m = Some {| boot := eb; tpool := (t1 ++ e1 :: t2); local_state := σ1 |} →
-      ρ2.1 = <[ m := {| boot := eb; tpool := (t1 ++ e2 :: t2 ++ efs); local_state := σ2|}]> ρ1.1 →
-      prim_step e1 σ1 ρ1.2 κs e2 σ2 ρ2.2 efs →
+  | dist_step_machine ρ1 κs ρ2 m eb t1 σ1 t2 σ2 :
+      ρ1.1 !! m = Some {| boot := eb; tpool := t1; local_state := σ1 |} →
+      ρ2.1 = <[ m := {| boot := eb; tpool := t2; local_state := σ2|}]> ρ1.1 →
+      step (t1, (σ1,ρ1.2)) κs (t2, (σ2,ρ2.2)) →
       dist_step ρ1 κs ρ2
   | dist_step_crash ρ1 κs ρ2 m eb σ1 σ2 tp :
       ρ1.1 !! m = Some {| boot := eb; tpool := tp; local_state := σ1 |} →
