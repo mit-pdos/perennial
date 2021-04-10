@@ -46,11 +46,11 @@ Section dist_language.
       ρ2.1 = <[ m := {| boot := eb; tpool := t2; local_state := σ2|}]> ρ1.1 →
       step (t1, (σ1,ρ1.2)) κs (t2, (σ2,ρ2.2)) →
       dist_step ρ1 κs ρ2
-  | dist_step_crash ρ1 κs ρ2 m eb σ1 σ2 tp :
+  | dist_step_crash ρ1 ρ2 m eb σ1 σ2 tp :
       ρ1.1 !! m = Some {| boot := eb; tpool := tp; local_state := σ1 |} →
       ρ2.1 = <[ m := {| boot := eb; tpool := [eb]; local_state := σ2 |}]> ρ1.1 →
       ρ2.2 = ρ1.2 →
       crash_prim_step CS σ1 σ2 →
-      dist_step ρ1 κs ρ2.
+      dist_step ρ1 [] ρ2.
 
 End dist_language.
