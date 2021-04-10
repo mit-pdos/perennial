@@ -88,13 +88,13 @@ Proof.
   rewrite wpr0_unfold/wpr0_pre. eauto.
 Qed.
 
-Lemma stwpnode_crash ct k eb t1 σ1 g σ2 κ κs ns:
+Lemma stwpnode_crash ct k eb t1 σ1 g σ2 κs ns:
   crash_prim_step CS σ1 σ2 →
-  grove_global_state_interp g ns (κ ++ κs) -∗
+  grove_global_state_interp g ns κs -∗
   stwpnode ct k {| boot := eb; tpool := t1; local_state := σ1 |} -∗
-  |={⊤}=> ▷ |={⊤}=>
+  |={⊤}=> ▷ |={⊤}=> ∃ ct',
   grove_global_state_interp g (S ns) κs ∗
-  stwpnode ct k {| boot := eb; tpool := [eb]; local_state := σ2 |}.
+  stwpnode ct' k {| boot := eb; tpool := [eb]; local_state := σ2 |}.
 Proof.
   iIntros (Hstep) "Hg Hnode".
   destruct ct as (Hc&t).
@@ -112,14 +112,24 @@ Proof.
   iMod (fupd_split_level_fupd with "H") as "H".
   iMod ("H" with "[//] [$] [$]") as "H".
   iModIntro. iNext. iClear "HC".
-  iMod NC_alloc as (Hc') "HNC".
-  rewrite Hinv.
+  unshelve (iMod NC_alloc as (Hc') "HNC").
+  { destruct Hc. constructor. apply _. }
   iSpecialize ("H" with "HNC").
-  (* Need to change def of perennialG and wpr0 to ensure that
-     (1) iris_invG cannot depend on the Hc instance
-     Might be easiest to make a perennial_invG field of perennialG that
-    iris_invG must be equal to. However, that didn't work so well for global_state_interp *)
-Abort.
+  rewrite (perennial_inv_crashG Hc' Hc) Hinv.
+  iMod "H".
+  iDestruct "H" as (t' Heq1 Heq2) "(Hσ&Hg&(_&Hwpr)&HNC)".
+  rewrite -Heq1 -Heq2.
+  iModIntro.
+  iFrame.
+  iExists (Hc', t'). iFrame.
+  rewrite /wpnode/=.
+  iSplit.
+  { iPureIntro. split_and!; eauto.
+    - rewrite Heq1. eauto.
+    - rewrite -Hnum ?perennial_num_laters_per_step_spec //.
+  }
+  iExists _, _, _. iFrame. rewrite /wptp. rewrite big_sepL_nil. eauto.
+Qed.
 
 Lemma stwpnodes_step k dns1 g1 ns dns2 g2 κ κs :
   dist_step (CS := CS) (dns1, g1) κ (dns2, g2) →
@@ -130,7 +140,8 @@ Lemma stwpnodes_step k dns1 g1 ns dns2 g2 κ κs :
   stwpnodes k dns2.
 Proof.
   iIntros (Hstep) "Hg Hnodes".
-  inversion Hstep as [ρ1 κs' ρ2 m eb t1 σ1 t2 σ2 Hlookup1 Hlookup2 Hprim |].
+  inversion Hstep as [ρ1 κs' ρ2 m eb t1 σ1 t2 σ2 Hlookup1 Hlookup2 Hprim |
+                      ρ1 ρ2 m eb σ1 σ2 tp Hlookup1 Heq1 Heq2 Hcrash].
   - subst. rewrite /stwpnodes.
     iDestruct (big_sepL_insert_acc with "Hnodes") as "(Hdn&Hnodes)"; first eassumption.
     iDestruct "Hdn" as (ct) "Hdn".
@@ -139,7 +150,17 @@ Proof.
     iIntros "($&Hnode)".
     simpl in Hlookup2. rewrite Hlookup2.
     iApply "Hnodes". iExists _. eauto.
-  -
-Abort.
+  - subst. rewrite /stwpnodes.
+    iDestruct (big_sepL_insert_acc with "Hnodes") as "(Hdn&Hnodes)"; first eassumption.
+    iDestruct "Hdn" as (ct) "Hdn".
+    iDestruct (stwpnode_crash with "[$] [$]") as "H"; first eassumption.
+    iMod "H".
+    iApply step_fupdN_inner_later'. iNext. iNext.
+    iMod "H" as (ct') "(Hg&Hnode)". rewrite app_nil_l.
+    simpl in Heq2. rewrite Heq2. iFrame.
+    iModIntro.
+    simpl in Heq1. rewrite Heq1.
+    iApply "Hnodes". iExists _. eauto.
+Qed.
 
 End distributed_adequacy.
