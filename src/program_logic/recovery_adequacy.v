@@ -416,11 +416,11 @@ Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofe) `{!invPreG Σ} `{!crashPreG Σ}
      ⊢ |={⊤}=> ∃ (t: pbundleG T Σ)
          (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
          (global_stateI : pbundleG T Σ → global_state Λ → nat → list (observation Λ) → iProp Σ)
-         (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf1 Hpf2 Hpf3,
+         (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf1 Hpf1' Hpf2 Hpf3,
         let _ : perennialG Λ CS _ Σ :=
             PerennialG _ _ T Σ
               (λ Hc t,
-               IrisG Λ Σ Hinv Hc (stateI t) (global_stateI t) (fork_post t) f (Hpf1 Hc t)) Hpf2 f Hpf3
+               IrisG Λ Σ Hinv Hc (stateI t) (global_stateI t) (fork_post t) f (Hpf1 Hc t)) Hpf1' Hpf2 f Hpf3
                in
        □ (∀ σ nt, stateI t σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
        □ (∀ Hc t', Φinv t Hinv Hc t' -∗ □ ∀ σ nt, stateI t' σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
@@ -436,11 +436,11 @@ Proof.
               (crash_adequacy.steps_sum f (sum_crash_steps ns') n')
               (S $ S $ (f (n' + sum_crash_steps ns' + 0))))=> Hinv Hc.
   iIntros "HNC".
-  iMod (Hwp Hinv Hc κs) as (t stateI global_stateI Hfork_post Hpf1 Hpf2 Hpf3) "(#Hinv1&#Hinv2&Hσ&Hg&H)".
+  iMod (Hwp Hinv Hc κs) as (t stateI global_stateI Hfork_post Hpf1 Hpf1' Hpf2 Hpf3) "(#Hinv1&#Hinv2&Hσ&Hg&H)".
   iModIntro.
   set (pG :=
           PerennialG _ _ T Σ
-            (λ Hc t, IrisG Λ Σ Hinv Hc (stateI t) (global_stateI t) (Hfork_post t) f (Hpf1 Hc t))
+            (λ Hc t, IrisG Λ Σ Hinv Hc (stateI t) (global_stateI t) (Hfork_post t) f (Hpf1 Hc t)) Hpf1'
             Hpf2 f Hpf3).
   iExists pG.
   iDestruct (wptp_recv_strong_adequacy

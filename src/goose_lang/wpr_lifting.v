@@ -23,6 +23,7 @@ Program Global Instance heapG_perennialG `{!heapG Σ} : perennialG goose_lang go
   perennial_num_laters_per_step := λ n, n
 }.
 Next Obligation. eauto. Qed.
+Next Obligation. eauto. Qed.
 
 Definition wpr `{hG: !heapG Σ} `{hC: !crashG Σ} (s: stuckness) (k: nat) (E: coPset)
   (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapG Σ → iProp Σ) (Φr: heapG Σ → val → iProp Σ) :=

@@ -117,7 +117,6 @@ Proof.
   iSpecialize ("H" with "HNC").
   (* Need to change def of perennialG and wpr0 to ensure that
      (1) iris_invG cannot depend on the Hc instance
-     (2) iris_invG instance is the same after the crash.
      Might be easiest to make a perennial_invG field of perennialG that
     iris_invG must be equal to. However, that didn't work so well for global_state_interp *)
 Abort.

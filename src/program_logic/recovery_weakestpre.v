@@ -28,6 +28,8 @@ Class pbundleG (T: ofe) (Σ: gFunctors) := {
 Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofe) (Σ : gFunctors) := PerennialG {
   perennial_irisG :> ∀ (Hcrash: crashG Σ), pbundleG T Σ → irisG Λ Σ;
   perennial_crashG: ∀ H2 t, @iris_crashG _ _ (perennial_irisG H2 t) = H2;
+  perennial_inv_crashG: ∀ H1 H2 t, @iris_invG _ _ (perennial_irisG H1 t) =
+                                   @iris_invG _ _ (perennial_irisG H2 t);
   perennial_num_laters_per_step: nat → nat;
   perennial_num_laters_per_step_spec:
     ∀ Hc Ht, (@num_laters_per_step _ _ (@perennial_irisG Hc Ht)) = perennial_num_laters_per_step;
