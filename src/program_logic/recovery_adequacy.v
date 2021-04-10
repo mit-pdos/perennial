@@ -216,7 +216,7 @@ Proof.
   iModIntro.
   destruct s0.
   - iIntros (Hc') "HNC". iSpecialize ("H" $! Hc' with "[$]").
-    iMod "H" as (t' Heq') "(Hσ&Hg&Hr&HNC)".
+    iMod "H" as (t' Heq' Heqpf') "(Hσ&Hg&Hr&HNC)".
     iDestruct "Hr" as "(_&Hr)".
     simpl in *.
     iPoseProof (IH with "[Hσ] [Hg] Hr [] [] HNC") as "H"; eauto.
@@ -229,7 +229,7 @@ Proof.
     assert ((S (n' + ncurr + sum_crash_steps ns')) =
         (ncurr + S (n' + sum_crash_steps ns'))) as -> by lia. auto.
   - iIntros (Hc') "HNC".
-    iMod ("H" $! Hc' with "[$]") as (t' Heq') "(Hσ&Hg&Hr&HNC)".
+    iMod ("H" $! Hc' with "[$]") as (t' Heq' Heqpf') "(Hσ&Hg&Hr&HNC)".
     iExists t'.
     iAssert (□Φinv' Hc' t')%I as "#Hinv'".
     { iDestruct "Hr" as "(Hr&_)".

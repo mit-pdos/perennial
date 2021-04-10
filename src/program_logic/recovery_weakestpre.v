@@ -45,8 +45,12 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
      {{ Φ }}
      {{ ∀ σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
         state_interp σ n -∗ global_state_interp g ns κs ={E}=∗  ▷ ∀ Hc1 q, NC q ={E}=∗
-          ∃ t1 (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc1 t1) =
-                                     @global_state_interp _ _ (perennial_irisG Hc0 t0)),
+          ∃ t1
+            (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc1 t1) =
+                                  @global_state_interp _ _ (perennial_irisG Hc0 t0))
+            (Hsame_inv: @iris_invG _ _ (perennial_irisG Hc1 t1) =
+                        @iris_invG _ _ (perennial_irisG Hc0 t0))
+          ,
           state_interp σ' 0 ∗
           global_state_interp g (S ns) κs ∗
           (Φinv Hc1 t1 ∧ wpr Hc1 t1 E rec rec (λ v, Φr Hc1 t1 v) Φinv Φr) ∗ NC q}})%I.
@@ -96,8 +100,8 @@ Proof.
   rewrite own_discrete_idemp.
   iIntros "!> H".
   iModIntro. iIntros (???????) "Hσ Hg". iMod ("H" with "[//] Hσ Hg") as "H".
-  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (? Heqpf) "(?&?&H&HNC)".
-  iModIntro. iExists _, Heqpf. iFrame.
+  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (? Heqpf Heqpf') "(?&?&H&HNC)".
+  iModIntro. iExists _, Heqpf, Heqpf'. iFrame.
   iSplit.
   - iDestruct "H" as "(H&_)". rewrite own_discrete_elim. iDestruct "HΦ" as "(HΦ&_)". by iApply "HΦ".
   - iDestruct "H" as "(_&H)".
@@ -113,10 +117,13 @@ Lemma idempotence_wpr s k E1 e rec Φx Φinv Φrx (Φcx: crashG Σ → _ → iPr
    (□ ∀ (Hc: crashG Σ) (t: pbundleG T Σ) σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
         Φcx Hc t -∗ state_interp σ n -∗ global_state_interp g ns κs ={E1}=∗
         ▷ ∀ (Hc': crashG Σ) q, NC q ={E1}=∗
-          ∃ t' (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc' t') =
-                                     @global_state_interp _ _ (perennial_irisG Hc t)),
-                 state_interp σ' 0 ∗ global_state_interp g (S ns) κs ∗
-                (Φinv Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx Hc' t' }} {{ Φcx Hc' t' }}) ∗ NC q) -∗
+          ∃ t'
+            (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc' t') =
+                                  @global_state_interp _ _ (perennial_irisG Hc t))
+            (Hsame_inv: @iris_invG _ _ (perennial_irisG Hc' t') =
+                        @iris_invG _ _ (perennial_irisG Hc t)),
+            state_interp σ' 0 ∗ global_state_interp g (S ns) κs ∗
+            (Φinv Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx Hc' t' }} {{ Φcx Hc' t' }}) ∗ NC q) -∗
     wpr s k Hc t E1 e rec (Φx t) Φinv Φrx.
 Proof.
   iLöb as "IH" forall (E1 e Hc t Φx).
@@ -128,8 +135,8 @@ Proof.
   { set_solver +. }
   iIntros. iMod ("Hidemp" with "[ ] [$] [$] [$]") as "H".
   { eauto. }
-  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (t' Heq') "(?&?&Hc&HNC)".
-  iExists _, Heq'. iFrame. iModIntro.
+  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (t' Heq' Heqinv') "(?&?&Hc&HNC)".
+  iExists _, Heq', Heqinv'. iFrame. iModIntro.
   iSplit.
   { iDestruct "Hc" as "($&_)". }
   iDestruct "Hc" as "(_&Hc)".
@@ -152,8 +159,12 @@ Definition wpr0_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat) (mj: nat)
      Φ
      (∀ σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
         state_interp σ n -∗ global_state_interp g ns κs ={E}=∗  ▷ ∀ Hc1 q, NC q ={E}=∗
-          ∃ t1 (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc1 t1) =
-                                     @global_state_interp _ _ (perennial_irisG Hc0 t0)),
+          ∃ t1
+            (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc1 t1) =
+                                  @global_state_interp _ _ (perennial_irisG Hc0 t0))
+            (Hsame_inv: @iris_invG _ _ (perennial_irisG Hc1 t1) =
+                        @iris_invG _ _ (perennial_irisG Hc0 t0))
+          ,
           state_interp σ' 0 ∗
           global_state_interp g (S ns) κs ∗
           (Φinv Hc1 t1 ∧ wpr Hc1 t1 E rec rec (λ v, Φr Hc1 t1 v) Φinv Φr) ∗ NC q))%I.

@@ -490,6 +490,8 @@ Proof using Hrpre Hhpre Hcpre.
     iExists ({| pbundleT := hnames |}).
     unshelve (iExists _).
     { rewrite //=. rewrite ?ffi_global_ctx_nolocal //=. }
+    unshelve (iExists _).
+    { rewrite //=. }
     iMod (goose_spec_crash_init _ _ σs gs _ σs' gs' σs_post_crash _ (trace σ_post_crash) (oracle σ_post_crash)
             with "[$] [$] Hspec_ffi Hspec_gffi") as (HrG) "(#Hspec&Hpool&Hcrash_rel&Hrs&#Htrace&#Hcfupd1'&Hcfupd3)";
       eauto.
