@@ -163,4 +163,79 @@ Proof.
     iApply "Hnodes". iExists _. eauto.
 Qed.
 
+Local Fixpoint steps_sum (num_laters_per_step : nat → nat) (start ns : nat) : nat :=
+  match ns with
+  | O => 0
+  | S ns =>
+    S $ num_laters_per_step start + steps_sum num_laters_per_step (S start) ns
+  end.
+
+Lemma stwpnodes_steps n k dns1 g1 ns dns2 g2 κs κs' :
+  dist_nsteps (CS := CS) n (dns1, g1) κs (dns2, g2) →
+  grove_global_state_interp g1 ns (κs ++ κs') -∗
+  stwpnodes k dns1 -∗
+  |={⊤,∅}=> |={∅}▷=>^(steps_sum grove_num_laters_per_step ns n) |={∅, ⊤}=>
+  grove_global_state_interp g2 (n + ns) κs' ∗
+  stwpnodes k dns2.
+Proof.
+  revert dns1 dns2 κs κs' g1 ns g2.
+  induction n as [|n IH]=> dns1 dns2 κs κs' g1 ns g2 /=.
+  { inversion_clear 1; iIntros "? ?" => /=.
+    iFrame. by iApply fupd_mask_subseteq. }
+  iIntros (Hsteps) "Hσ He". inversion_clear Hsteps as [|?? [t1' σ1']].
+  rewrite -(assoc_L (++)) Nat_iter_add plus_n_Sm.
+  iDestruct (stwpnodes_step with "Hσ He") as ">H"; first eauto; simplify_eq.
+  iModIntro. iApply step_fupdN_S_fupd. iApply (step_fupdN_wand with "H").
+  iIntros ">(Hσ & He)". iMod (IH with "Hσ He") as "IH"; first done. iModIntro.
+  iApply (step_fupdN_wand with "IH"). iIntros ">IH".
+  iDestruct "IH" as "[??]".
+  by eauto with iFrame.
+Qed.
+
+Lemma stwpnodes_strong_adequacy n k dns1 g1 ns dns2 g2 κs κs' :
+  dist_nsteps (CS := CS) n (dns1, g1) κs (dns2, g2) →
+  grove_global_state_interp g1 ns (κs ++ κs') -∗
+  stwpnodes k dns1 -∗
+  |={⊤,∅}=> |={∅}▷=>^(steps_sum grove_num_laters_per_step ns n) |={∅, ⊤}=>
+  (▷^(S (S (grove_num_laters_per_step (n + ns))))
+      (⌜ ∀ dn e, dn ∈ dns2 → e ∈ tpool dn → not_stuck e (local_state dn) g2 ⌝)) ∗
+  grove_global_state_interp g2 (n + ns) κs' ∗
+  stwpnodes k dns2.
+Proof.
+  iIntros (Hstep) "Hg Ht".
+  iMod (stwpnodes_steps with "Hg Ht") as "Hgt"; first done.
+  iModIntro. iApply (step_fupdN_wand with "Hgt").
+  iMod 1 as "(Hg & Ht)".
+  iMod (fupd_plain_keep_l ⊤
+    (▷^(S (S (grove_num_laters_per_step (n + ns))))
+      (⌜ ∀ dn e, dn ∈ dns2 → e ∈ tpool dn → not_stuck e (local_state dn) g2 ⌝))%I
+    (grove_global_state_interp g2 (n + ns) κs' ∗
+    stwpnodes k dns2)%I
+    with "[$Hg $Ht]") as "(Hsafe&Hg&Ht)".
+  { iIntros "(Hg & Ht)" (dn e' Hin1 Hin2).
+    rewrite /stwpnodes.
+    eapply elem_of_list_lookup_1 in Hin1 as (i&Hlookup1).
+    iDestruct (big_sepL_lookup with "Ht") as "Hdn"; first eassumption.
+    iDestruct "Hdn" as (ct) "Hnode".
+    rewrite /stwpnode.
+    iDestruct "Hnode" as "((Hσ&HNC)&(%Heq&Hwptp))".
+    rewrite /wpnode. destruct (tpool dn) as [| hd tp]; first done.
+    iDestruct "Hwptp" as (???) "(Hwpr&Ht)".
+    apply elem_of_cons in Hin2 as [<-|(t1''&t2''&->)%elem_of_list_split].
+    - rewrite wpr0_unfold/wpr0_pre.
+      destruct Heq as (Heq1&Heq2&Heq3). rewrite -Heq1 -Heq2 -Heq3.
+      iPoseProof (wpc_safe with "Hσ Hg Hwpr") as "H".
+      rewrite ncfupd_eq.
+      iMod ("H" with "[HNC]") as "($&_)"; last done.
+      { rewrite perennial_crashG. iFrame. }
+    - iDestruct "Ht" as "(_ & He' & _)".
+      destruct Heq as (Heq1&Heq2&Heq3). rewrite -Heq1 -Heq2 -Heq3.
+      iPoseProof (wpc_safe with "Hσ Hg He'") as "H".
+      rewrite ncfupd_eq.
+       iMod ("H" with "[HNC]") as "($&_)"; last done.
+      { rewrite perennial_crashG. iFrame. }
+  }
+  iModIntro. iFrame.
+Qed.
+
 End distributed_adequacy.

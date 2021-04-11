@@ -53,4 +53,13 @@ Section dist_language.
       crash_prim_step CS σ1 σ2 →
       dist_step ρ1 [] ρ2.
 
+  Inductive dist_nsteps : nat → dist_cfg → list (observation Λ) → dist_cfg → Prop :=
+    | dist_nsteps_refl ρ :
+       dist_nsteps 0 ρ [] ρ
+    | dist_nsteps_l n ρ1 ρ2 ρ3 κ κs :
+       dist_step ρ1 κ ρ2 →
+       dist_nsteps n ρ2 κs ρ3 →
+       dist_nsteps (S n) ρ1 (κ ++ κs) ρ3.
+  Local Hint Constructors dist_nsteps : core.
+
 End dist_language.
