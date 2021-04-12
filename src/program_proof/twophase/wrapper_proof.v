@@ -4,7 +4,7 @@ From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn twophase.
 From Perennial.program_proof Require Import lockmap_proof.
-From Perennial.program_proof Require Import twophase.op_wrappers.
+From Perennial.program_proof Require Import twophase.op_wrappers typed_translate.
 From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
 From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
 From Perennial.program_proof Require Import twophase.twophase_proof.
@@ -36,12 +36,6 @@ Section proof.
     end.
 
   Definition LVL := 100%nat.
-
-  Definition bufObj_to_obj bufObj : obj :=
-    match objData bufObj with
-    | bufBit b => objBit b
-    | bufInode data | bufBlock data => objBytes data
-    end.
 
   Definition jrnl_mapsto_own a bufObj : iProp Σ :=
     "Hmapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj bufObj) ∗

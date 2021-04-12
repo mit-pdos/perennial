@@ -4,6 +4,7 @@ From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import txn twophase alloc.
 From Perennial.program_proof Require Import twophase.op_wrappers.
+From Perennial.program_proof Require buftxn.sep_buftxn_proof buf.defs.
 
 Section translate.
 
@@ -237,3 +238,36 @@ Section translate.
                              TwoPhase__ConditionalCommit' (Var tph) ebdy') t.
 
 End translate.
+
+
+Section initP.
+
+Definition kinds_mapsto_valid (kinds : gmap u64 defs.bufDataKind)
+           (a : addr_proof.addr) (obj : {K : defs.bufDataKind & defs.bufDataT K}) :=
+  addr_proof.valid_addr a
+  ∧ defs.valid_off (buf_proof.objKind obj) (addr_proof.addrOff a)
+    ∧ kinds !! addr_proof.addrBlock a = Some (buf_proof.objKind obj).
+
+Definition bufObj_to_obj bufObj : obj :=
+  match sep_buftxn_invariant.objData bufObj with
+  | buf.defs.bufBit b => objBit b
+  | buf.defs.bufInode data | buf.defs.bufBlock data => objBytes data
+  end.
+
+Definition twophase_initP (σimpl: @goose_lang.state disk_op disk_model) (σspec : @goose_lang.state jrnl_op jrnl_model) : Prop :=
+  ∃ sz kinds,
+    let σj := {| jrnlData := (bufObj_to_obj <$> recovery_proof.kind_heap0 kinds);
+                 jrnlKinds := kinds;
+                 jrnlAllocs := ∅
+              |} in
+  (513 < sz)%nat ∧
+  ((513 + Z.of_nat sz) * block_bytes * 8 < 2^64)%Z ∧
+  (null_non_alloc σspec.(heap)) ∧
+  (σimpl.(world) = init_disk ∅ (513 + sz)) ∧
+  (σspec.(world) = Closed σj) ∧
+  dom (gset _) (jrnlKinds σj) = list_to_set (U64 <$> (seqZ 513 sz)) ∧
+  (* TODO: These next two assumptions may be interprovable, or entirely redundant *)
+  map_Forall  (kinds_mapsto_valid kinds) (recovery_proof.kind_heap0 kinds) ∧
+  wf_jrnl σj.
+
+End initP.
