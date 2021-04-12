@@ -200,4 +200,24 @@ Lemma wpr0_unfold s k mj Hc t E e rec Φ Φinv Φc :
   wpr0 s k mj Hc t E e rec Φ Φinv Φc ⊣⊢ wpr0_pre s k mj (wpr0 s k mj) Hc t E e rec Φ Φinv Φc.
 Proof. rewrite wpr0_eq. apply (fixpoint_unfold (wpr0_pre s k mj)). Qed.
 
+Lemma wpr0_wpr s k mj Hc t E e rec Φ Φinv Φc :
+  wpr s k Hc t E e rec Φ Φinv Φc -∗
+  wpr0 s k mj Hc t E e rec Φ Φinv Φc.
+Proof.
+  iIntros "Hwpr".
+  iLöb as "IH" forall (Hc t e Φ).
+  iEval (rewrite wpr0_unfold /wpr0_pre).
+  iEval (rewrite wpr_unfold /wpr_pre) in "Hwpr".
+  iApply wpc0_wpc.
+  iApply (wpc_strong_mono with "Hwpr"); [auto|auto|auto |].
+  iSplit; first eauto.
+  iIntros "!> H !>". iIntros (σ g σ' Hcrash ns κs n) "Hσ Hg".
+  iMod ("H" with "[//] [$] [$]") as "H".
+  do 2 iModIntro. iIntros (??) "HNC".
+  iMod ("H" with "[$]") as (He1 He2 He3) "(Hσ&Hg&H&HNC)".
+  iModIntro. iExists He1, He2, He3. iFrame. iSplit.
+  { iDestruct "H" as "($&_)". }
+  { iApply "IH". iDestruct "H" as "(_&$)". }
+Qed.
+
 End wpr0.

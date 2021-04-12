@@ -62,4 +62,23 @@ Section dist_language.
        dist_nsteps (S n) ρ1 (κ ++ κs) ρ3.
   Local Hint Constructors dist_nsteps : core.
 
+  Definition erased_dist_step (ρ1 ρ2 : dist_cfg) := ∃ κ, dist_step ρ1 κ ρ2.
+
+  Lemma erased_dist_steps_nsteps ρ1 ρ2 :
+    rtc erased_dist_step ρ1 ρ2 ↔ ∃ n κs, dist_nsteps n ρ1 κs ρ2.
+  Proof.
+    split.
+    - induction 1; firstorder eauto.
+    - intros (n & κs & Hsteps). unfold erased_dist_step.
+      induction Hsteps; eauto using rtc_refl, rtc_l.
+  Qed.
+
+  Definition not_stuck_node (dn: dist_node) (g: global_state Λ) :=
+    ∀ e, e ∈ tpool dn → not_stuck e (local_state dn) g.
+
+  (* Generate a dist_cfg from a list of boot programs and initial local states and a global state.
+     Starting thread pool on each node is a single thread running boot code *)
+  Definition starting_dist_cfg (eσs : list (expr Λ * state Λ)) g : dist_cfg :=
+    (map (λ eσ, {| boot := fst eσ; local_state := snd eσ; tpool := [fst eσ] |}) eσs, g).
+
 End dist_language.
