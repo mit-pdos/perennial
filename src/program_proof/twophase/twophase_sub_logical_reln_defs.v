@@ -71,7 +71,6 @@ Context `{hG: !heapG Σ}.
 Context {hRG: refinement_heapG Σ}.
 Context {htpG: twophaseG Σ}.
 Context (N: namespace).
-Context (PARAMS: twophaseInit_params).
 Context (dinit : abstraction.disk).
 Context (objs_dom : gset addr_proof.addr).
 Context (γ γ': sep_buftxn_invariant.buftxn_names).

@@ -16,19 +16,11 @@ From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 
 Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp jrnl_spec_interp_adequacy.
 
-Class twophaseInit_params :=
-  {
-    SIZE : nat;
-    SIZE_nonzero : 0 < SIZE;
-    SIZE_bounds: int.nat SIZE = SIZE
-  }.
-
 Section refinement_defs.
 Context `{!heapG Σ}.
 Context `{!refinement_heapG Σ}.
 
 Existing Instance jrnlG0.
-Context {PARAMS: twophaseInit_params}.
 
 Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
@@ -115,7 +107,7 @@ Definition twophase_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_he
   end.
 
 Instance twophaseTy_model : specTy_model jrnl_ty.
-Proof using PARAMS.
+Proof.
  refine
   {| styG := twophaseG;
      sty_names := twophase_names;
