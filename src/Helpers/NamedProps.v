@@ -1,3 +1,4 @@
+From iris.proofmode Require Import string_ident.
 From iris.proofmode Require Import tactics environments intro_patterns.
 
 Set Default Proof Using "Type".
@@ -212,8 +213,19 @@ Local Ltac iNameIntuitionistic i i' :=
   | reduction.pm_reduce
   ].
 
+(* BUG: we implement [string_to_ident] ourselves since Iris doesn't have the
+[clear] *)
+Ltac string_to_ident s :=
+  let s := (eval cbv in s) in
+  let x := constr:(ltac:(clear;
+                         StringToIdent.intros_by_string s;
+                         exact tt) : unit -> unit) in
+  match x with
+  | (fun (name:_) => _) => name
+  end.
+
 Local Ltac iNamePure i name :=
-  let id := string_ident.string_to_ident name in
+  let id := string_to_ident name in
   let id := fresh id in
   iPure i as id.
 
@@ -350,7 +362,7 @@ Ltac iFrameNamed :=
              | IIdent ?name => iFrame name
              | IIntuitionistic (IIdent ?name) => iFrame name
              | IPure (IGallinaNamed ?name) =>
-               let name := string_ident.string_to_ident name in
+               let name := string_to_ident name in
                iFrame (name)
              end
            end
