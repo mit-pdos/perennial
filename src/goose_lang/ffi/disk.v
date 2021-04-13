@@ -557,11 +557,13 @@ Program Instance disk_interp_adequacy:
      ffiΣ := diskΣ;
      subG_ffiPreG := subG_diskG;
      ffi_initP := λ _ _, True;
-     ffi_update_pre := (λ _ hP names _, @disk_update_pre _ hP names)
+     ffi_update_pre := (λ _ hP names _, @disk_update_pre _ hP names);
+     ffi_pre_global_ctx := (λ _ hP names _, True%I);
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
+Next Obligation. rewrite //=. Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ ??). iMod (gen_heap_name_strong_init σ) as (names) "(Hctx&Hpts)".

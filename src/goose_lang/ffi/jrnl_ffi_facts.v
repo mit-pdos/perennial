@@ -388,11 +388,13 @@ Program Instance jrnl_interp_adequacy:
      ffiΣ := jrnlΣ;
      subG_ffiPreG := subG_jrnlG;
      ffi_initP := λ σ _, ∃ m, σ = Closed m ∧ wf_jrnl m;
-     ffi_update_pre := (λ _ hP names _, @jrnl_update_pre _ hP names)
+     ffi_update_pre := (λ _ hP names _, @jrnl_update_pre _ hP names);
+     ffi_pre_global_ctx := (λ _ hP names _, True%I);
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
+Next Obligation. rewrite //=. Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ g (m&->&Hwf)). simpl.
