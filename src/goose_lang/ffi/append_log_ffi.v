@@ -463,11 +463,13 @@ Program Instance log_interp_adequacy:
      ffiΣ := logΣ;
      subG_ffiPreG := subG_logG;
      ffi_initP := λ σ _, σ = UnInit;
-     ffi_update_pre := (λ _ hP names _, @log_update_pre _ hP names)
+     ffi_update_pre := (λ _ hP names _, @log_update_pre _ hP names);
+     ffi_pre_global_ctx := (λ _ hP names _, True%I);
   |}.
 Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
+Next Obligation. rewrite //=. Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ ? ->). simpl.
