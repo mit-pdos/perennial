@@ -221,9 +221,7 @@ Proof using Hrpre Hhpre Hcpre.
     - intros tr Hobs. destruct Hobs as (?&?&?&?&Hexec&Htr).
       eapply (recv_adequate_inv _ _ _ _ _ _ _ _ Hrecv) in Hexec.
       subst. destruct Hexec as (t2s&σ2s&g2s&?&Hexecs&Htrs).
-      exists (trace σ2s); split; eauto.
-      * do 3 eexists; eauto.
-      * rewrite Htrs. by exists []; rewrite app_nil_r.
+      do 3 eexists; eauto.
   }
   eapply (heap_recv_adequacy _ _ _ _ _ _ _ _ _ _ Φinv); auto.
   iIntros (hG) "???".

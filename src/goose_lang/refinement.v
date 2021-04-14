@@ -36,6 +36,6 @@ Section go_refinement.
   Definition trace_refines (e r: iexpr) (σ: istate) (g: igstate) (e' r': sexpr) (σ': sstate) (g': sgstate):=
     @crash_safe spec_lang spec_crash_lang r' ([e'], (σ',g')) →
     @crash_safe impl_lang impl_crash_lang r ([e], (σ,g)) ∧
-    (∀ tr, trace_observable e r σ g tr → ∃ tr', trace_observable e' r' σ' g' tr' ∧ trace_prefix tr tr').
+    (∀ tr, trace_observable e r σ g tr → trace_observable e' r' σ' g' tr).
 
 End go_refinement.
