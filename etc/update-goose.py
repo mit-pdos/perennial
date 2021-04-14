@@ -241,7 +241,7 @@ def main():
                 )
 
     if gokv_dir is not None:
-        pkgs = ["aof", "goosekv"]
+        pkgs = ["aof", "goosekv", "memkv"]
 
         for pkg in pkgs:
             run_goose(

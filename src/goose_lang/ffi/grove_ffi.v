@@ -18,7 +18,7 @@ Module RPCClient.
 End RPCClient.
 
 Axiom MakeRPCClient : val.
-Axiom RPCClient__RemoteProcedureCall : val.
+Axiom RPCClient__Call : val.
 Axiom StartRPCServer : val.
 
 Section grove_ffi.
@@ -149,7 +149,7 @@ handler_is host rpcid spec -∗
 .
 *)
 
-Axiom wp_RPCClient__RemoteProcedureCall : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:string) req rep_ptr dummy_sl_val (reqData:list u8) Pre Post k,
+Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:string) req rep_ptr dummy_sl_val (reqData:list u8) Pre Post k,
   {{{
       is_slice req byteT 1 reqData ∗
       rep_ptr ↦[slice.T byteT] dummy_sl_val ∗
@@ -157,7 +157,7 @@ Axiom wp_RPCClient__RemoteProcedureCall : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid
       RPCClient_own cl_ptr host ∗
       □(▷ Pre x reqData)
   }}}
-    grove_ffi.RPCClient__RemoteProcedureCall #cl_ptr #rpcid (slice_val req) #rep_ptr @ k ; ⊤
+    grove_ffi.RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_ptr @ k ; ⊤
   {{{
        (b:bool) rep_sl (repData:list u8), RET #b;
        rep_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
