@@ -261,8 +261,8 @@ Context (upd: specTy_update hsT_model).
 Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
       forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hPre: sty_preG Σ) σs gs σ g
       (HINIT: sty_initP σ σs),
-        ⊢ ffi_start (heapG_ffiG) σ.(world) g -∗
-         ffi_start (refinement_spec_ffiG) σs.(world) gs -∗
+        ⊢ ffi_local_start (heapG_ffiG) σ.(world) g -∗
+         ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
          |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0.
 
 Definition sty_init_obligation2 (sty_initP: istate → sstate → Prop) :=

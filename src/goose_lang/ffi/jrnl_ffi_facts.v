@@ -242,7 +242,7 @@ Section jrnl_interp.
        ffi_get_update := _;
        ffi_ctx := @jrnl_ctx;
        ffi_global_ctx _ _ _ := True%I;
-       ffi_start Σ G w _ := @jrnl_start Σ G w;
+       ffi_local_start Σ G w _ := @jrnl_start Σ G w;
        ffi_restart := @jrnl_restart;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @jrnlG_data_inG _ hF1 = @jrnlG_data_inG _ hF2 ∧
                                              @jrnlG_kinds_inG _ hF1 = @jrnlG_kinds_inG _ hF2 ∧
@@ -389,6 +389,7 @@ Program Instance jrnl_interp_adequacy:
      subG_ffiPreG := subG_jrnlG;
      ffi_initP := λ σ _, ∃ m, σ = Closed m ∧ wf_jrnl m;
      ffi_update_pre := (λ _ hP names _, @jrnl_update_pre _ hP names);
+     ffi_pre_global_start := (λ _ hP names _, True%I);
      ffi_pre_global_ctx := (λ _ hP names _, True%I);
   |}.
 Next Obligation. rewrite //=. Qed.

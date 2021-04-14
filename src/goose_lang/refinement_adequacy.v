@@ -58,7 +58,7 @@ Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 g0 tp σ g s tr or P:
   crash_safe (CS := spec_crash_lang) r (tp0, (σ0,g0)) →
   ⊢ trace_frag tr -∗ oracle_frag or -∗
    |={⊤}=> ∃ hR : refinement_heapG Σ, spec_ctx' r (tp0, (σ0,g0)) ∗ source_pool_map (tpool_to_map tp)
-                                      ∗ ffi_start (refinement_spec_ffiG) σ.(world) g
+                                      ∗ ffi_local_start (refinement_spec_ffiG) σ.(world) g
                                       ∗ trace_ctx
                                       ∗ spec_crash_ctx' r (tp0, (σ0,g0)) (P hR)
                                       ∗ <disc> (|C={⊤}_0=> trace_inv).
@@ -68,7 +68,7 @@ Proof using Hrpre Hcpre.
   { rewrite //=. }
   iMod (source_cfg_init_names1 r tp0 σ0 g0 tp σ g (own γ (Cinl 1%Qp))) as (Hcfg_γ) "(Hsource_ctx&Hpool&Hstate&Hcfupd)"; eauto.
   iMod (na_heap_init tls σ.(heap)) as (Hrheap) "Hrh".
-  iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world) g) as (HffiG namesg) "(Hrw&Hrg&Hrs)"; first auto.
+  iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world) g) as (HffiG namesg) "(Hrw&Hrg&_&Hrs)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
   set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG namesg) HtraceG
                                   {| cfg_name := Hcfg_γ |} Hrheap) _ γ).
@@ -97,7 +97,7 @@ Lemma goose_spec_init2 {hG: heapG Σ} r tp σ g tr or P:
   crash_safe (CS := spec_crash_lang) r (tp, (σ,g)) →
   ⊢ trace_frag tr -∗ oracle_frag or -∗
    |={⊤}=> ∃ hR : refinement_heapG Σ, spec_ctx' r (tp, (σ,g)) ∗ source_pool_map (tpool_to_map tp)
-                                     ∗ ffi_start (refinement_spec_ffiG) σ.(world) g
+                                     ∗ ffi_local_start (refinement_spec_ffiG) σ.(world) g
                                      ∗ trace_ctx
                                      ∗ spec_crash_ctx' r (tp, (σ,g)) (P hR)
                                      ∗ <disc> (|C={⊤}_0=> trace_inv).
@@ -206,7 +206,7 @@ Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: hea
         <disc> (|C={⊤}_0=> trace_inv) -∗
        □ (∀ hG, Φinv hG -∗
                        ∃ Href', spec_ctx' (hR := Href') rs ([es], (σs,gs)) ∗ trace_ctx (hR := Href')) ∗
-        (ffi_start (heapG_ffiG) σ.(world) g -∗ ffi_start (refinement_spec_ffiG) σs.(world) gs -∗ O ⤇ es -∗ wpr NotStuck k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝)))) →
+        (ffi_local_start (heapG_ffiG) σ.(world) g -∗ ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗ O ⤇ es -∗ wpr NotStuck k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝)))) →
   trace_refines e r σ g es rs σs gs.
 Proof using Hrpre Hhpre Hcpre.
   intros ????? Hwp Hsafe.
@@ -279,8 +279,8 @@ Implicit Types initP: @state ext ffi → @state (spec_ext_op_field) (spec_ffi_mo
 Definition wpc_init k E e es Φ Φc initP P : iProp Σ :=
   (∀ (hG: heapG Σ) (hRG: refinement_heapG Σ) σ g σs gs,
       ⌜ initP σ σs ⌝ →
-      ffi_start (heapG_ffiG) σ.(world) g -∗
-      ffi_start (refinement_spec_ffiG) σs.(world) gs -∗
+      ffi_local_start (heapG_ffiG) σ.(world) g -∗
+      ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
       wpc_obligation k E e es Φ (λ hG hRG, Φc hG hRG ∗ P hG hRG) hG hRG (P hG hRG))%I.
 
 (* XXX: ffi_restart seems unnecessary, given ffi_crash_rel *)

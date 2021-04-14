@@ -17,7 +17,7 @@ Context `{@ffi_interp_adequacy ffi interp ext ffi_semantics}.
 Class heap_globalG Σ := {
   heap_globalG_preG :> heapPreG Σ;
   heap_globalG_names : ffi_global_names;
-  heap_globalG_invG : invG Σ;
+  heap_globalG_invG :> invG Σ;
 }.
 
 Program Global Instance heapG_groveG `{!heap_globalG Σ} : groveG goose_lang goose_crash_lang Σ :=

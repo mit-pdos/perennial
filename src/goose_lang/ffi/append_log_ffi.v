@@ -280,7 +280,7 @@ Section log_interp.
        ffi_get_update := _;
        ffi_ctx := @log_ctx;
        ffi_global_ctx _ _ _ := True%I;
-       ffi_start Σ G w _ := @log_start Σ G w;
+       ffi_local_start Σ G w _ := @log_start Σ G w;
        ffi_restart := @log_restart;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @logG_state_inG _ hF1 = @logG_state_inG _ hF2 ∧
                                            log_names_state (log_get_names hF1) =
@@ -464,6 +464,7 @@ Program Instance log_interp_adequacy:
      subG_ffiPreG := subG_logG;
      ffi_initP := λ σ _, σ = UnInit;
      ffi_update_pre := (λ _ hP names _, @log_update_pre _ hP names);
+     ffi_pre_global_start := (λ _ hP names _, True%I);
      ffi_pre_global_ctx := (λ _ hP names _, True%I);
   |}.
 Next Obligation. rewrite //=. Qed.

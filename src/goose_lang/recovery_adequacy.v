@@ -10,7 +10,7 @@ Set Default Proof Using "Type".
 
 Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !heapPreG Σ} s k e r σ g φ φr φinv Φinv (HINIT: ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heapG Σ},
-     ⊢ (ffi_start (heapG_ffiG) σ.(world) g -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) ={⊤}=∗
+     ⊢ (ffi_local_start (heapG_ffiG) σ.(world) g -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) ={⊤}=∗
        □ (∀ σ nt, state_interp σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
        □ (∀ hG (Hpf: @heapG_invG _ _ _ _ Hheap = @heapG_invG _ _ _ _ hG),
                      Φinv hG -∗ □ ∀ σ nt, state_interp σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
@@ -21,7 +21,7 @@ Proof.
   eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ _ (λ names0 Hinv Hc names, Φinv (heap_update _ (heap_update_pre _ _ Hinv Hc (@pbundleT _ _ names0)) Hinv Hc (@pbundleT _ _ names))) (λ n, n)).
   iIntros (???) "".
   iMod (na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
-  iMod (ffi_name_init _ _ σ.(world) g) as (ffi_names ffi_namesg) "(Hw&Hgw&Hstart)"; first auto.
+  iMod (ffi_name_init _ _ σ.(world) g) as (ffi_names ffi_namesg) "(Hw&Hgw&_&Hstart)"; first auto.
   iMod (trace_name_init σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   set (hnames := {| heap_heap_names := name_na_heap;
                       heap_ffi_local_names := ffi_names;

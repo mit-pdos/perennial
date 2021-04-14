@@ -553,7 +553,7 @@ Proof.
   iSplitL "".
   { iModIntro; iIntros. iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
   iApply wpr_OpenRead.
-  rewrite /ffi_start//=.
+  rewrite /ffi_local_start//=.
   rewrite /rblock_cinv.
   iDestruct (big_sepM_delete _ _ (int.Z addr) with "Hstart") as "(Hd1&Hmap)"; first eapply Hin1.
   iDestruct (big_sepM_delete _ _ (int.Z (word.add addr 1)) with "Hmap") as "(Hd2&Hmap)".

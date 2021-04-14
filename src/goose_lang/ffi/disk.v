@@ -215,7 +215,7 @@ Section disk.
        ffi_get_update := fun _ _ => _;
        ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap.gen_heap_interp d;
        ffi_global_ctx := fun _ _ _ => True%I;
-       ffi_start := fun _ _ (d: @ffi_state disk_model) _ =>
+       ffi_local_start := fun _ _ (d: @ffi_state disk_model) _ =>
                       ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=Block) l (DfracOwn 1) v))%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
@@ -558,6 +558,7 @@ Program Instance disk_interp_adequacy:
      subG_ffiPreG := subG_diskG;
      ffi_initP := λ _ _, True;
      ffi_update_pre := (λ _ hP names _, @disk_update_pre _ hP names);
+     ffi_pre_global_start := (λ _ hP names _, True%I);
      ffi_pre_global_ctx := (λ _ hP names _, True%I);
   |}.
 Next Obligation. rewrite //=. Qed.
