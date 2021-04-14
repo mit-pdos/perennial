@@ -5,13 +5,13 @@ From Perennial.program_proof.lockservice Require Import rpc.
 
 Section memkv_shard_clerk_proof.
 
-Record GetRequestC := {
+Record GetRequestC := mkGetRequestC {
   GR_CID : u64;
   GR_Seq : u64;
   GR_Key : u64
 }.
 
-Record GetReplyC := {
+Record GetReplyC := mkGetReplyC {
   GR_Err : u64;
   GR_Value : list u8
 }.
@@ -58,37 +58,34 @@ Implicit Type γ : memkv_shard_names.
 
 Axiom kvptsto : gname → u64 → list u8 → iProp Σ.
 
+Global Instance kvptst_tmlss γkv k v : Timeless (kvptsto γkv k v).
+Admitted.
+
 Definition uKV_GET := 2.
-Definition is_shard_server host γ : iProp Σ :=
-  "HgetSpec" ∷ handler_is (list u8 * rpc_request_names) host uKV_GET
-             (λ x reqData, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
-                                   is_RPCRequest γ.(rpc_gn) x.2 (kvptsto γ.(kv_gn) req.(GR_Key) x.1) (λ rep,
-                                                                                           ⌜rep.(GR_Value) = x.1⌝ ∗
-                                                                                           kvptsto γ.(kv_gn) req.(GR_Key) x.1) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
-             ) (* pre *)
-             (λ x reqData repData, ∃ req rep, ⌜has_encoding_GetReply repData rep⌝ ∗
-                                              ⌜has_encoding_GetRequest reqData req⌝
-                                              (* RPCReplyReceipt γ.(rpc_gn) req.CID req.Seq *)
-             ) (* post *)
+
+Definition PreShardGet γ (x:list u8 * rpc_request_names) (reqData:list u8) : iProp Σ :=
+  ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
+          is_RPCRequest γ.(rpc_gn) x.2 (kvptsto γ.(kv_gn) req.(GR_Key) x.1)
+                                   (λ rep, ⌜rep.(GR_Value) = x.1⌝ ∗ kvptsto γ.(kv_gn) req.(GR_Key) x.1) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
 .
 
-(*
-Escrow setup:
+Definition PostShardGet γ (key:u64) (v:list u8) (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (kvptsto γ.(kv_gn) key v) ∨
+                                                          ⌜rep.(GR_Err) = 0⌝ ∗ (kvptsto γ.(kv_gn) key v) ∗ ⌜rep.(GR_Value) = v⌝.
 
-server_proc (cid,seq)
-server_tok (cid,seq)
-client_tok (cid,seq)
-
-inv (server_proc id ∨ kvptsto k v)
-inv (RPCFreshReply id ∨ server_done id ∗ RPCReplyReceipt id v ∗ kvptsto k v)
-
-□(server_start id ={⊤}=∗ PreCond)
-□(∀ rep, server_tok id -∗ PostCond rep ={⊤}=∗ RPCReplyReceipt rep)
-
-Meanwhile, client keeps a fupd
-(RPCReplyReceipt rep ={⊤}=∗ PostCond rep)
-
-*)
+Definition is_shard_server host γ : iProp Σ :=
+  "#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
+  "#HgetSpec" ∷ handler_is (list u8 * rpc_request_names) host uKV_GET
+             (λ x reqData, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
+                                   is_RPCRequest γ.(rpc_gn) x.2 (kvptsto γ.(kv_gn) req.(GR_Key) x.1)
+                                                            (PostShardGet γ req.(GR_Key) x.1)
+                                                            {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
+             ) (* pre *)
+             (λ x reqData repData, ∃ req rep, ⌜has_encoding_GetReply repData rep⌝ ∗
+                                              ⌜has_encoding_GetRequest reqData req⌝ ∗
+                                              (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} ∨
+                                              RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} rep)
+             ) (* post *)
+.
 
 Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
   ∃ (cid seq:u64) (cl:loc) (host:string),
@@ -108,7 +105,12 @@ Lemma wp_MemKVShardClerk__Get γ (ck:loc) (key:u64) (v:list u8) (value_ptr:loc) 
   }}}
     MemKVShardClerk__Get #ck #key #value_ptr
   {{{
-       (e:u64), RET #e; True
+       (e:u64), RET #e;
+       own_MemKVShardClerk ck γ ∗ (
+       ⌜e ≠ 0⌝ ∗ (kvptsto γ.(kv_gn) key v) ∗ (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
+                         ⌜e = 0⌝ ∗ (kvptsto γ.(kv_gn) key v) ∗ ∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl) ∗
+                                                                                    typed_slice.is_slice some_sl byteT 1%Qp v
+        )
   }}}
 .
 Proof.
@@ -134,8 +136,15 @@ Proof.
     iExists _; iFrame.
     admit.
   }
-  iAssert (True)%I with "[Hkvptsto]" as "_".
+  assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
+  { simpl. admit. } (* FIXME: overflow guard *)
+  iNamed "His_shard".
+  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} _ (PostShardGet γ key v) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
+  { done. }
+  { iNext. iAccu. }
+  iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
+
   wp_forBreak_cond.
   iNamed "HrawRep".
   wp_pures.
@@ -145,9 +154,15 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_RPCClient__Call with "[$His_shard $Hreq_sl $HrawRep $Hcl_own]").
+  wp_apply (wp_RPCClient__Call with "[$HgetSpec $Hreq_sl $HrawRep $Hcl_own]").
   {
-    admit.
+    iModIntro.
+    iModIntro.
+    iExists (mkGetRequestC _ _ _).
+    iSplitL ""; first done.
+    instantiate (1:= (_,_)).
+    simpl.
+    iFrame "HreqInv".
   }
   iIntros (b rep_sl' repData) "HcallPost".
   wp_if_destruct.
@@ -169,17 +184,39 @@ Proof.
     { exfalso. naive_solver. }
     iDestruct "HcallPost" as "(_ & >Hpost)".
     wp_load.
-    iDestruct "Hpost" as (??) "[% %]".
+    iDestruct "Hpost" as (??) "(% & % & Hreceipt)".
     wp_apply (wp_decodeGetReply with "[$Hrep_sl]").
     { done. }
     iIntros (??) "(HrepErr & HrepValue & HrepValue_sl)".
+    replace (req) with ({| GR_CID := cid; GR_Seq := seq; GR_Key := key |}); last first.
+    { (* encoding injectivity *) admit. }
     wp_pures.
     wp_loadField.
     iNamed "Hval".
     wp_store.
+    iDestruct "Hreceipt" as "[Hbad|Hreceipt]".
+    {
+      iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
+      exfalso.
+      simpl in Hbad.
+      word.
+    }
+    iMod (get_request_post with "HreqInv Hreceipt Htok") as ">Hpost".
+    { done. }
     wp_loadField.
     iApply "HΦ".
-    done.
+    iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
+    { iExists _, _, _, _. iFrame "#∗". }
+    iDestruct "Hpost" as "[Hpost|Hpost]".
+    {
+      iLeft. iDestruct "Hpost" as "[$ $]".
+      iExists _; iFrame.
+    }
+    {
+      iRight.
+      iDestruct "Hpost" as "($&$&->)".
+      iExists _; iFrame.
+    }
   }
 Admitted.
 
