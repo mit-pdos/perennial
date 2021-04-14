@@ -105,13 +105,13 @@ Definition MakeRPCClient: val :=
 
 (* 2 refers to the number of u64s in args *)
 Definition RemoteProcedureCall2: val :=
-  rec: "RemoteProcedureCall2" "cl" "rpcid" "req" "reply" :=
+  rec: "RemoteProcedureCall2" "cl" "rpcid" "req" "rep" :=
     let: "rawReq" := rpcReqEncode "req" in
-    let: "rawRep" := NewSlice byteT #0 in
+    let: "rawRep" := ref (zero_val (slice.T byteT)) in
     let: "errb" := grove_ffi.RPCClient__RemoteProcedureCall "cl" "rpcid" "rawReq" "rawRep" in
     (if: ("errb" = #false)
     then
-      rpcReplyDecode "rawRep" "reply";;
+      rpcReplyDecode (![slice.T byteT] "rawRep") "rep";;
       #()
     else #());;
     "errb".

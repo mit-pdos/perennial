@@ -173,6 +173,7 @@ Qed.
 
 (* This will alow handler functions using RPCServer__HandleRequest to establish is_rpcHandler *)
 Lemma RPCServer__HandleRequest_spec (coreFunction:val) (sv:loc) γrpc γreq server_ctx server_ctx' rid args req_ptr rep_ptr PreCond PostCond lastSeqM lastReplyM :
+    (* ∀ Ψ, (∀ (r:u64), ▷ PostCond r -∗ Ψ #r) (WP coreFunction (into_val.to_val args)%V {{ Ψ }}). *)
 
 (
   {{{
@@ -437,43 +438,44 @@ Proof.
   iSplitL "Stale"; iFrame.
 Qed.
 
-Definition EncodedPre2 PreCond PostCond γrpc : (list u8 → iProp Σ) :=
- (λ reqData, ∃ γreq req args, ⌜reqEncoded req args reqData⌝ ∗ is_RPCRequest γrpc γreq PreCond PostCond req)%I
+(* TODO: add args to PreCond and PostCond here *)
+Definition EncodedPre2 {X:Type} Pre : (X → list u8 → iProp Σ) :=
+ (λ x reqData, ∃ req args, ⌜reqEncoded req args reqData⌝ ∗ Pre x req args)%I
 .
 
-Definition EncodedPost2 γrpc : (list u8 → list u8 → iProp Σ) :=
-  (λ reqData repData,
+Definition EncodedPost2 {X:Type} Post : (X → list u8 → list u8 → iProp Σ) :=
+  (λ x reqData repData,
     ∃ req args reply, ⌜reqEncoded req args reqData⌝ ∗
                       ⌜replyEncoded reply repData⌝ ∗
-                      (⌜reply.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
-                      RPCReplyReceipt γrpc req reply.(Rep_Ret)))%I
+                      Post x req args reply
+                      )%I
 .
 
-Definition handler_is2 (host:string) (rpcid:u64) γrpc PreCond PostCond : iProp Σ :=
-  handler_is host rpcid (EncodedPre2 PreCond PostCond γrpc) (EncodedPost2 γrpc)
+(* This says an rpc handler has the given PreCond and PostCond; it does NOT say
+   that the handler sits behind a reply table with the given Pre/Post. *)
+Definition handler_is2 (X:Type) (host:string) (rpcid:u64) PreCond PostCond : iProp Σ :=
+  handler_is X host rpcid (EncodedPre2 PreCond) (EncodedPost2 PostCond)
 .
 
-Definition is_rpcHandler2 f γrpc PreCond PostCond : iProp Σ :=
-  is_rpcHandler f (EncodedPre2 PreCond PostCond γrpc) (EncodedPost2 γrpc)
+Definition is_rpcHandler2 {X:Type} f Pre Post : iProp Σ :=
+  is_rpcHandler (X:=X) f (EncodedPre2 Pre) (EncodedPost2 Post)
 .
 
-Lemma wp_RemoteProcedureCall2 (cl_ptr req_ptr reply_ptr:loc) (host:string) (rpcid:u64) (req:RPCRequestID) args (reply:Reply64) PreCond PostCond γrpc γPost :
-handler_is2 host rpcid γrpc PreCond PostCond -∗
+Lemma wp_RemoteProcedureCall2 (cl_ptr req_ptr reply_ptr:loc) (host:string) (rpcid:u64) (req:RPCRequestID) args (reply:Reply64) X PreCond PostCond x:
+handler_is2 X host rpcid PreCond PostCond -∗
 {{{
-  "#HargsInv" ∷ is_RPCRequest γrpc γPost PreCond PostCond req ∗
+  "#HargsPre" ∷ □ PreCond x req args ∗
   "#Hargs" ∷ RPCRequest_own_ro req_ptr req args ∗
   "Hreply" ∷ RPCReply_own reply_ptr reply ∗
   "HrpcOwn" ∷ grove_ffi.RPCClient_own cl_ptr host
 }}}
   RemoteProcedureCall2 #cl_ptr #rpcid #req_ptr #reply_ptr
-{{{ e, RET e;
+{{{ e, RET #e;
     (∃ reply',
     RPCReply_own reply_ptr reply' ∗
     grove_ffi.RPCClient_own cl_ptr host
-    ∗ (⌜e = #true⌝ ∨ ⌜e = #false⌝
-        ∗ (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req
-               ∨ RPCReplyReceipt γrpc req reply'.(Rep_Ret)
-             )))
+    ∗ (⌜e = true⌝ ∨ ⌜e = false⌝
+        ∗ PostCond x req args reply'))
 }}}.
 Proof.
   iIntros "#Hspec" (Φ) "!# Hpre HΦ".
@@ -483,20 +485,19 @@ Proof.
   wp_apply (wp_rpcReqEncode with "Hargs").
   iIntros (reqSlice reqBs) "[HreqSlice %Hreqenc]".
   wp_pures.
-  wp_apply (wp_NewSlice (V:=u8)).
-  iIntros (rep_sl) "Hrep_sl".
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep_ptr) "Hrep_ptr".
   wp_pures.
-  wp_apply (wp_RPCClient__RemoteProcedureCall with "[$HreqSlice Hrep_sl $HrpcOwn]").
+  wp_apply (wp_RPCClient__RemoteProcedureCall with "[$HreqSlice $Hrep_ptr $HrpcOwn]").
   {
-    iSplitR "".
-    { iExists []; iFrame. }
     iFrame "Hspec".
     iModIntro.
     iModIntro.
-    iExists _,_,_; iFrame "HargsInv".
+    iExists _,_; iFrame "HargsPre".
     done.
   }
-  iIntros (errb repData) "(HrpcOwn & Hreq_sl & Hrep_sl & Hpost)".
+  iIntros (errb rep_sl repData) "(Hrep_ptr & HrpcOwn & Hreq_sl & Hrep_sl & Hpost)".
   wp_pures.
   iDestruct "Hpost" as "[->|Hpost]".
   {
@@ -506,9 +507,15 @@ Proof.
     by iLeft.
   }
   iDestruct "Hpost" as "(-> & Hpost)".
-  iMod "Hpost". iNamed "Hpost".
-  iDestruct "Hpost" as "(% & % & Hpost)".
+  (* iMod "Hpost". *)
+  iMod (later_exist_except_0 with "Hpost") as (req1) "Hpost".
+  iMod (later_exist_except_0 with "Hpost") as (args1) "Hpost".
+  iMod (later_exist_except_0 with "Hpost") as (reply1) "Hpost".
+  iDestruct "Hpost" as "(>% & >% & Hpost)".
+
   iDestruct (is_slice_small_acc with "Hrep_sl") as "[Hrep_sl_small Hclose]".
+  wp_pures.
+  wp_load.
   wp_apply (wp_rpcReplyDecode with "[Hrep_sl_small Hreply]").
   {
     iFrame.
@@ -523,10 +530,16 @@ Proof.
   iIntros "Hreply".
   wp_pures.
   iApply "HΦ".
-  iExists reply0.
+  iExists reply1.
   iFrame.
   iRight.
-  replace (req) with (req0); last first.
+  replace (req) with (req1); last first.
+  {
+    unfold reqEncoded in *.
+    (* TODO: injectivity *)
+    admit.
+  }
+  replace (args) with (args1); last first.
   {
     unfold reqEncoded in *.
     (* TODO: injectivity *)
@@ -536,17 +549,19 @@ Proof.
   done.
 Admitted.
 
-Lemma RPCClient__MakeRequest_spec (host:string) (rpcid:u64) cl_ptr args γrpc PreCond PostCond :
-handler_is2 host rpcid γrpc PreCond PostCond -∗
+Lemma RPCClient__MakeRequest_spec {X:Type} (host:string) (rpcid:u64) cl_ptr args γrpc X PreCond PostCond (x:X):
+  ∀ RawPreCond, handler_is2 X host rpcid RawPreCond (λ y req args reply, RPCRequestStale γrpc req ∨ RPCReplyReceipt γrpc req reply.(Rep_Ret)) -∗
+□(∀ y req γreq, is_RPCRequest γrpc γreq (PreCond x args) (PostCond x args) req -∗ RawPreCond y req args) -∗
 {{{
-  PreCond ∗
+  PreCond x args ∗
   RPCClient_own cl_ptr host γrpc ∗
   is_RPCServer γrpc
 }}}
   RPCClient__MakeRequest #cl_ptr #rpcid (into_val.to_val args)
-{{{ (retv:u64), RET #retv; RPCClient_own cl_ptr host γrpc ∗ PostCond retv }}}.
+{{{ (retv:u64), RET #retv; RPCClient_own cl_ptr host γrpc ∗ PostCond x args retv }}}.
 Proof using Type*.
-  iIntros "#Hfspec" (Φ) "!# [Hprecond [Hclerk #Hlinv]] Hpost".
+  iIntros (?) "#Hfspec #HfspecWand".
+  iIntros (Φ) "!# [Hprecond [Hclerk #Hlinv]] Hpost".
   iDestruct "Hclerk" as (??) "[Hclerk_vol Hclerk_ghost]".
   iNamed "Hclerk_vol".
   wp_lam.
@@ -567,7 +582,7 @@ Proof using Type*.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (reply_ptr) "Hreply".
   wp_pures.
-  iMod (make_request {| Req_CID:=cid; Req_Seq:=seqno|} PreCond PostCond with "Hlinv Hclerk_ghost [$Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
+  iMod (make_request {| Req_CID:=cid; Req_Seq:=seqno|} (PreCond x args) (PostCond x args) with "Hlinv Hclerk_ghost [$Hprecond]") as "[Hcseq_own HallocPost]"; eauto.
   { simpl. word. }
   iDestruct "HallocPost" as (γP) "[#Hreqinv_init HγP]".
   (* Prepare the loop invariant *)
@@ -587,8 +602,15 @@ Proof using Type*.
   wp_pures.
   iDestruct "Hreply" as (lockReply) "Hreply".
   wp_loadField.
-  wp_apply (wp_RemoteProcedureCall2 with "Hfspec [$HrawClOwn $Hreply $Hreqinv_init $HCID $HSeq $HArgs]").
-  { done. }
+  wp_apply (wp_RemoteProcedureCall2 with "Hfspec [$HrawClOwn $Hreply Hreqinv_init $HArgs]").
+  {
+    instantiate (1:=(Build_RPCRequestID _ _)).
+    iFrame "HSeq HCID".
+    iSplitR ""; last done.
+    iModIntro.
+    iApply "HfspecWand".
+    iFrame "#".
+  }
 
   iIntros (err) "HCallTryLockPost".
   iDestruct "HCallTryLockPost" as (lockReply') "(Hreply & HrawClOwn & [#Hre | [#Hre HCallPost]])".
@@ -605,7 +627,7 @@ Proof using Type*.
   iDestruct "Hre" as %->.
   wp_store.
   wp_load.
-  iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
+  iDestruct "HCallPost" as "[Hbad | #Hrcptstoro]"; simpl.
   {
     iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
     simpl in bad. replace (int.nat (word.add seqno 1))%nat with (int.nat seqno + 1)%nat in bad by word.
@@ -645,12 +667,12 @@ Proof.
 Qed.
 
 Lemma MakeRPCServer_spec γrpc :
-  {{{ is_RPCServer γrpc ∗ RPCServer_own_ghost γrpc ∅ ∅ }}}
+  {{{ is_RPCServer γrpc }}}
     MakeRPCServer #()
   {{{ sv, RET #sv; RPCServer_own_vol sv γrpc ∅ ∅ }}}
 .
 Proof.
-  iIntros (Φ) "[#Hrpcinv Hpre] Hpost".
+  iIntros (Φ) "#Hrpcinv Hpost".
   wp_lam.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (l) "Hl".
@@ -667,28 +689,27 @@ Proof.
   done.
 Qed.
 
-Definition is_rpcHandlerEncoded (f:val) γrpc PreCond PostCond : iProp Σ :=
-  ∀ γreq args req req_ptr reply_ptr reply,
-    {{{ "#HargsInv" ∷ is_RPCRequest γrpc γreq PreCond PostCond req ∗
+Definition is_rpcHandlerEncoded {X:Type} (f:val) PreCond PostCond : iProp Σ :=
+  ∀ (x:X) args req req_ptr reply_ptr reply,
+    {{{ "#HargsInv" ∷ (PreCond x args) ∗
         "#Hargs" ∷ RPCRequest_own_ro req_ptr req args ∗
         "Hreply" ∷ RPCReply_own reply_ptr reply
     }}} (* TODO: put this precondition into a defn *)
       f #req_ptr #reply_ptr
-    {{{ RET #false; ∃ reply',
+    {{{ RET #(); ∃ reply',
         RPCReply_own reply_ptr reply' ∗
-        (⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req ∨
-           RPCReplyReceipt γrpc req reply'.(Rep_Ret))
+        (⌜reply'.(Rep_Stale) = true⌝ ∗ PostCond x args reply'.(Rep_Ret))
     }}}
 .
 
-Lemma wp_ConjugateRpcFunc (g:val) γrpc PreCond PostCond :
-is_rpcHandlerEncoded g γrpc PreCond PostCond -∗
+Lemma wp_ConjugateRpcFunc X (g:val) γrpc PreCond PostCond :
+is_rpcHandlerEncoded (X:=X) g PreCond PostCond -∗
   {{{
        True
   }}}
     ConjugateRpcFunc g
   {{{
-        (f:val), RET f; is_rpcHandler2 f γrpc PreCond PostCond
+        (f:val), RET f; is_rpcHandler2 (X:=X) f PreCond PostCond
   }}}
 .
 Proof.
@@ -723,10 +744,24 @@ Proof.
   iDestruct "Hpost" as (reply) "[Hreply Hpost]".
   wp_pures.
   wp_apply (wp_rpcReplyEncode with "Hreply").
-  iDestruct "Hrep_sl" as (?) "Hrep_old".
-  iIntros (rep_sl replyData) "Hrep_sl".
-  wp_pures.
-  wp_apply (wp_StoreAt with "[Hrep_old]").
-Admitted.
+  iIntros (rep_sl' repData) "[Hrep_sl' %HrepEnc]".
+  wp_store.
+  iApply "HΦ".
+  iFrame "Hrep_sl Hrep_sl'".
+  iNext.
+  iExists _, _, _; iFrame.
+  iPureIntro.
+  naive_solver.
+Qed.
+
+(* This tells us that it's safe to register the function as rpc with the desired spec *)
+Lemma is_rpcHandler2_registration f host rpcid γrpc PreCond PostCond :
+  is_rpcHandler2 f γrpc PreCond PostCond -∗
+  handler_is2 host rpcid γrpc PreCond PostCond -∗
+  (∃ Pre Post, handler_is host rpcid Pre Post ∗ is_rpcHandler f Pre Post).
+Proof.
+  iIntros.
+  iExists _, _. iFrame "#".
+Qed.
 
 End rpc_proof.

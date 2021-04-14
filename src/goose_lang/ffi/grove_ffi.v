@@ -111,8 +111,14 @@ Class rpcregG Σ := RpcRegG {
 
 Context `{!rpcregG Σ}.
 
-Definition handler_is (host:string) (rpcid:u64) (Pre:list u8 → iProp Σ) (Post:list u8 → list u8 → iProp Σ) : iProp Σ :=
-  (host,rpcid) ↪[rpcreg_gname]□ (λ d, Next (Pre d), λ reqData repData, Next (Post reqData repData)).
+Axiom handler_is : ∀ (X:Type) (host:string) (rpcid:u64) (Pre:X → list u8 → iProp Σ)
+                     (Post:X → list u8 → list u8 → iProp Σ), iProp Σ.
+
+Axiom handler_is_pers : ∀ X host rpcid pre post, Persistent (handler_is X host rpcid pre post).
+
+Global Instance handler_is_pers_instance X host rpcid pre post : Persistent (handler_is X host rpcid pre post).
+apply handler_is_pers.
+Defined.
 
 Axiom RPCClient_own : ∀ (cl_ptr:loc) (host:string), iProp Σ.
 
@@ -125,41 +131,60 @@ Axiom wp_MakeRPCClient : ∀ (host:string) ,
        (cl_ptr:loc), RET #cl_ptr; RPCClient_own cl_ptr host
   }}}.
 
-Axiom wp_RPCClient__RemoteProcedureCall : ∀ (cl_ptr:loc) (rpcid:u64) (host:string) req reply (reqData:list u8) Pre Post k,
-  {{{
-      is_slice req byteT 1 reqData ∗
-      (∃ repData, is_slice reply byteT 1 repData) ∗
-      handler_is host rpcid Pre Post ∗
-      RPCClient_own cl_ptr host ∗
-      □(▷ Pre reqData)
-  }}}
-    (* TODO: should be a pointer to a byte slice for reply *)
-    grove_ffi.RPCClient__RemoteProcedureCall #cl_ptr #rpcid (slice_val req) (slice_val reply) @ k ; ⊤
-  {{{
-       (b:bool) (repData:list u8), RET #b;
+
+(*
+Axiom wp_RPCClient__RemoteProcedureCall : ∀ (cl_ptr:loc) (rpcid:u64) (host:string) req rep_ptr dummy_rep_sl (reqData:list u8) spec,
+handler_is host rpcid spec -∗
+∀ Φ,
+(is_slice req byteT 1 reqData ∗
+ rep_ptr ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
+ RPCClient_own cl_ptr host) ∗
+ (spec reqData (λ repData, ∃ rep_sl,
+       rep_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
        RPCClient_own cl_ptr host ∗
        is_slice req byteT 1 reqData ∗
-       is_slice reply byteT 1 repData ∗
-       (⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post reqData repData))
-  }}}.
+       is_slice rep_sl byteT 1 repData -∗
+            Φ #())) -∗
+  WP grove_ffi.RPCClient__RemoteProcedureCall #cl_ptr #rpcid (slice_val req) #rep_ptr {{ Φ }}
+.
+*)
 
-Definition is_rpcHandler (f:val) Pre Post : iProp Σ :=
-  ∀ req rep (reqData repData:list u8),
+Axiom wp_RPCClient__RemoteProcedureCall : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:string) req rep_ptr dummy_sl_val (reqData:list u8) Pre Post k,
   {{{
       is_slice req byteT 1 reqData ∗
-      (∃ repData, is_slice rep byteT 1 repData) ∗
-      ▷ Pre reqData
+      rep_ptr ↦[slice.T byteT] dummy_sl_val ∗
+      handler_is X host rpcid Pre Post ∗
+      RPCClient_own cl_ptr host ∗
+      □(▷ Pre x reqData)
   }}}
-    f (slice_val req) (slice_val rep)
+    grove_ffi.RPCClient__RemoteProcedureCall #cl_ptr #rpcid (slice_val req) #rep_ptr @ k ; ⊤
   {{{
-      RET #(); is_slice rep byteT 1 repData ∗
-                        ▷ Post reqData repData
+       (b:bool) rep_sl (repData:list u8), RET #b;
+       rep_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
+       RPCClient_own cl_ptr host ∗
+       is_slice req byteT 1 reqData ∗
+       is_slice rep_sl byteT 1 repData ∗
+       (⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post x reqData repData))
+  }}}.
+
+Definition is_rpcHandler {X:Type} (f:val) Pre Post : iProp Σ :=
+  ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
+  {{{
+      is_slice req byteT 1 reqData ∗
+      rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
+      ▷ Pre x reqData
+  }}}
+    f (slice_val req) #rep
+  {{{
+       rep_sl (repData:list u8), RET #(); rep ↦[slice.T byteT] (slice_val rep_sl) ∗
+         is_slice rep_sl byteT 1 repData ∗
+         ▷ Post x reqData repData
   }}}.
 
 Axiom wp_StartRPCServer : ∀ host (handlers : gmap u64 val) (mref : loc) (def : val) k,
   {{{
       map.is_map mref (handlers, def) ∗
-      [∗ map] rpcid ↦ handler ∈ handlers, (∃ Pre Post, handler_is host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
+      [∗ map] rpcid ↦ handler ∈ handlers, (∃ X Pre Post, handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
   }}}
     grove_ffi.StartRPCServer @ k ; ⊤
   {{{
