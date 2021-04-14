@@ -189,7 +189,7 @@ Definition add_event (ev: event) (ts: Trace) : Trace := cons ev ts.
 
 Definition add_crash (ts: Trace) : Trace :=
   match ts with
-  | Crash_ev::ts' => ts'
+  | Crash_ev::ts' => ts
   | _ => add_event Crash_ev ts
   end.
 
