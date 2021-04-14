@@ -471,14 +471,15 @@ Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
 Next Obligation. rewrite //=. Qed.
+Next Obligation. rewrite //=. eauto. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ ? ->). simpl.
+  iIntros (Σ hPre σ ?? ->) "_". simpl.
   rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
   iMod (own_alloc (Cinl (1%Qp, to_agree UnInit') : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
   iMod (ghost_var_alloc ([]: leibnizO (list disk.Block))) as (γ2) "(H2a&H2b)".
-  iExists {| log_names_open := γ1; log_names_state := γ2 |}, tt.
+  iExists {| log_names_open := γ1; log_names_state := γ2 |}.
   iFrame. iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
 Qed.
 Next Obligation.

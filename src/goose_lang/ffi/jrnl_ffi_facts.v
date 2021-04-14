@@ -396,9 +396,10 @@ Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
 Next Obligation. rewrite //=. Qed.
+Next Obligation. rewrite //=. eauto. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ g (m&->&Hwf)). simpl.
+  iIntros (Σ hPre σ g _ (m&->&Hwf)) "_". simpl.
   iMod (own_alloc (Cinl (1%Qp, to_agree tt) : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
   iMod (map_init_many (jrnlData m)) as (γdata) "(Hdata_ctx&Hdata)".
@@ -414,7 +415,7 @@ Next Obligation.
              jrnl_names_crash := γcrash;
              jrnl_names_full_crash := γfull;
              jrnl_names_allocs := γallocs;
-          |}, tt.
+          |}.
   iFrame. iModIntro. iFrame "% #".
   rewrite assoc.
   iSplitL "H".

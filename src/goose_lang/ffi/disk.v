@@ -565,9 +565,10 @@ Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
 Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
 Next Obligation. rewrite //=. Qed.
+Next Obligation. rewrite //=. iIntros (Σ hPre g). eauto. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ ??). iMod (gen_heap_name_strong_init σ) as (names) "(Hctx&Hpts)".
+  iIntros (Σ hPre σ ???) "_". iMod (gen_heap_name_strong_init σ) as (names) "(Hctx&Hpts)".
   iExists names. by iFrame.
 Qed.
 Next Obligation.

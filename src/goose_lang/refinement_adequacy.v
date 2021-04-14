@@ -68,9 +68,11 @@ Proof using Hrpre Hcpre.
   { rewrite //=. }
   iMod (source_cfg_init_names1 r tp0 σ0 g0 tp σ g (own γ (Cinl 1%Qp))) as (Hcfg_γ) "(Hsource_ctx&Hpool&Hstate&Hcfupd)"; eauto.
   iMod (na_heap_init tls σ.(heap)) as (Hrheap) "Hrh".
-  iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world) g) as (HffiG namesg) "(Hrw&Hrg&_&Hrs)"; first auto.
+  iMod (ffi_name_global_init _ (refinement_heap_preG_ffi) g) as (ffi_namesg) "(Hgw&_)"; first auto.
+  iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world) g with "Hgw")
+    as (HffiG) "(Hrw&Hrg&Hrs)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
-  set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG namesg) HtraceG
+  set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG ffi_namesg) HtraceG
                                   {| cfg_name := Hcfg_γ |} Hrheap) _ γ).
   iExists HrhG.
   iFrame "Hsource_ctx Hpool Hrs Hcfupd".

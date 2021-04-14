@@ -29,11 +29,15 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi}
       ∀ Σ hPre hFFI g,
         ffi_global_ctx hFFI g =
         ffi_pre_global_ctx Σ hPre (ffi_get_global_names Σ hFFI) g;
-    ffi_name_init : forall Σ (hPre: ffi_preG Σ) (σ:ffi_state) (g:ffi_global_state), ffi_initP σ g →
-          ⊢ |==> ∃ (names: ffi_local_names) (namesg: ffi_global_names),
+    ffi_name_global_init : forall Σ (hPre: ffi_preG Σ) (g:ffi_global_state),
+          ⊢ |==> ∃ (namesg: ffi_global_names),
+              ffi_pre_global_ctx Σ hPre namesg g ∗
+              ffi_pre_global_start Σ hPre namesg g;
+    ffi_name_init : forall Σ (hPre: ffi_preG Σ) (σ:ffi_state) (g:ffi_global_state) (namesg: ffi_global_names),
+        ffi_initP σ g →
+          ⊢ ffi_pre_global_ctx Σ hPre namesg g ==∗ ∃ (names: ffi_local_names),
               let H0 := ffi_update_pre _ hPre names namesg in
-                   ffi_ctx H0 σ ∗ ffi_global_ctx H0 g ∗ ffi_pre_global_start Σ hPre namesg g ∗
-                           ffi_local_start H0 σ g;
+                   ffi_ctx H0 σ ∗ ffi_global_ctx H0 g ∗ ffi_local_start H0 σ g;
     ffi_crash : forall Σ,
           ∀ (σ σ': ffi_state) (g: ffi_global_state) (CRASH: ext_crash σ σ') (Hold: ffiG Σ),
            ⊢ ffi_ctx Hold σ -∗ ffi_global_ctx Hold g ==∗

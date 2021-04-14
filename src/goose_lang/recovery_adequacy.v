@@ -21,7 +21,8 @@ Proof.
   eapply (wp_recv_adequacy_inv _ _ _ heap_namesO _ _ _ _ _ _ _ _ _ (λ names0 Hinv Hc names, Φinv (heap_update _ (heap_update_pre _ _ Hinv Hc (@pbundleT _ _ names0)) Hinv Hc (@pbundleT _ _ names))) (λ n, n)).
   iIntros (???) "".
   iMod (na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
-  iMod (ffi_name_init _ _ σ.(world) g) as (ffi_names ffi_namesg) "(Hw&Hgw&_&Hstart)"; first auto.
+  iMod (ffi_name_global_init _ _ g) as (ffi_namesg) "(Hgw&_)"; first auto.
+  iMod (ffi_name_init _ _ σ.(world) g with "Hgw") as (ffi_names) "(Hw&Hgw&Hstart)"; first auto.
   iMod (trace_name_init σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   set (hnames := {| heap_heap_names := name_na_heap;
                       heap_ffi_local_names := ffi_names;
