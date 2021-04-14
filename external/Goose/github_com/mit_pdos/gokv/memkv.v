@@ -197,9 +197,9 @@ Definition MakeFreshKVClerk: val :=
   rec: "MakeFreshKVClerk" "host" :=
     let: "ck" := struct.alloc MemKVShardClerk.S (zero_val (struct.t MemKVShardClerk.S)) in
     struct.storeF MemKVShardClerk.S "cl" "ck" (grove_ffi.MakeRPCClient (Fst (MapGet (struct.loadF MemKVShardClerk.S "config" "ck") "host")));;
-    let: "rawRep" := NewSlice byteT #0 in
+    let: "rawRep" := ref (zero_val (slice.T byteT)) in
     grove_ffi.RPCClient__Call (struct.loadF MemKVShardClerk.S "cl" "ck") KV_FRESHCID (NewSlice byteT #0) "rawRep";;
-    struct.storeF MemKVShardClerk.S "cid" "ck" (decodeCID "rawRep");;
+    struct.storeF MemKVShardClerk.S "cid" "ck" (decodeCID (![slice.T byteT] "rawRep"));;
     struct.storeF MemKVShardClerk.S "seq" "ck" #1;;
     "ck".
 
@@ -228,11 +228,11 @@ Definition MemKVShardClerk__Put: val :=
       "Value" ::= "value"
     ] in
     struct.storeF MemKVShardClerk.S "seq" "ck" (struct.loadF MemKVShardClerk.S "seq" "ck" + #1);;
-    let: "rawRep" := NewSlice byteT #0 in
+    let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, (grove_ffi.RPCClient__Call (struct.loadF MemKVShardClerk.S "cl" "ck") KV_PUT (encodePutRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
       Continue);;
-    struct.loadF PutReply.S "Err" (decodePutReply "rawRep").
+    struct.loadF PutReply.S "Err" (decodePutReply (![slice.T byteT] "rawRep")).
 
 Definition MemKVShardClerk__Get: val :=
   rec: "MemKVShardClerk__Get" "ck" "key" "value" :=
@@ -242,11 +242,11 @@ Definition MemKVShardClerk__Get: val :=
       "Key" ::= "key"
     ] in
     struct.storeF MemKVShardClerk.S "seq" "ck" (struct.loadF MemKVShardClerk.S "seq" "ck" + #1);;
-    let: "rawRep" := NewSlice byteT #0 in
+    let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, (grove_ffi.RPCClient__Call (struct.loadF MemKVShardClerk.S "cl" "ck") KV_GET (encodeGetRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
       Continue);;
-    let: "rep" := decodeGetReply "rawRep" in
+    let: "rep" := decodeGetReply (![slice.T byteT] "rawRep") in
     "value" <-[slice.T byteT] struct.loadF GetReply.S "Value" "rep";;
     struct.loadF GetReply.S "Err" "rep".
 
@@ -259,7 +259,7 @@ Definition MemKVShardClerk__InstallShard: val :=
       "Kvs" ::= "kvs"
     ] in
     struct.storeF MemKVShardClerk.S "seq" "ck" (struct.loadF MemKVShardClerk.S "seq" "ck" + #1);;
-    let: "rawRep" := NewSlice byteT #0 in
+    let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, (grove_ffi.RPCClient__Call (struct.loadF MemKVShardClerk.S "cl" "ck") KV_INS_SHARD (encodeInstallShardRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
       Continue).
