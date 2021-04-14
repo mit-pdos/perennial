@@ -252,6 +252,12 @@ Record heap_names := {
   heap_trace_names : tr_names;
 }.
 
+Record heap_local_names := {
+  heap_local_heap_names : na_heap_names;
+  heap_local_ffi_local_names : ffi_local_names;
+  heap_local_trace_names : tr_names;
+}.
+
 Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
   {| heapG_invG := heapG_invG;
      heapG_crashG := heapG_crashG;
