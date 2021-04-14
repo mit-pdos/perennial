@@ -213,17 +213,6 @@ Local Ltac iNameIntuitionistic i i' :=
   | reduction.pm_reduce
   ].
 
-(* BUG: we implement [string_to_ident] ourselves since Iris doesn't have the
-[clear] *)
-Ltac string_to_ident s :=
-  let s := (eval cbv in s) in
-  let x := constr:(ltac:(clear;
-                         StringToIdent.intros_by_string s;
-                         exact tt) : unit -> unit) in
-  match x with
-  | (fun (name:_) => _) => name
-  end.
-
 Local Ltac iNamePure i name :=
   let id := string_to_ident name in
   let id := fresh id in
