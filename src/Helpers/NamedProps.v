@@ -65,13 +65,13 @@ Section named.
     match Γ with
     | Enil => acc
     | Esnoc Γ (INamed name) P => env_to_named_prop_go (named name P ∗ acc)%I Γ
-    | Esnoc Γ _ P => env_to_named_prop_go (P ∗ acc)%I Γ
+    | Esnoc Γ _ P => env_to_named_prop_go (named "?" P ∗ acc)%I Γ
     end.
   Definition env_to_named_prop (Γ : env PROP) : PROP :=
     match Γ with
     | Enil => emp%I
     | Esnoc Γ (INamed name) P => env_to_named_prop_go (named name P) Γ
-    | Esnoc Γ _ P => env_to_named_prop_go P Γ
+    | Esnoc Γ _ P => env_to_named_prop_go (named "?" P) Γ
     end.
 
   Theorem env_to_named_prop_go_unname (acc: PROP) Γ :
@@ -674,6 +674,28 @@ Module tests.
     Proof.
       iIntros "I". iNamed "I".
       iFrameNamed.
+    Qed.
+
+    Lemma env_modus_ponens (Γ: envs PROP) (Q Q': PROP) :
+      envs_entails Γ Q' →
+      (Q' ⊢ Q) →
+      envs_entails Γ Q.
+    Proof. intros H <- => //. Qed.
+
+    Example test_inamedaccu_serialize P1 P2 :
+      P1 ∗
+      P1 ∗ P2 ∗
+      P2 ∗
+      P1 ∗ P2 -∗
+      P1 ∗ P1 ∗ P1 ∗ P2 ∗ P2 ∗ P2.
+    Proof.
+      iIntros "(H1&?&?&H2&?&?)".
+      eapply env_modus_ponens.
+      - iNamedAccu.
+      - iNamed 1.
+        (* should recover the same context (modulo renaming of anonymous
+        hypotheses) *)
+        iFrame.
     Qed.
 
   End tests.
