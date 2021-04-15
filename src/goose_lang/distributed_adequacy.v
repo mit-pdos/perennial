@@ -13,7 +13,7 @@ Theorem heap_dist_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_ad
         g φinv (HINIT: ∀ σ, σ ∈ snd <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ} (cts : list (crashG Σ * heap_local_names)),
       ⊢
-        ffi_pre_global_start Σ (heap_preG_ffi) (heap_globalG_names) g -∗
+        ffi_pre_global_start Σ (heap_preG_ffi) (heap_globalG_names) g ={⊤}=∗
         ([∗ list] i ↦ ct; σ ∈ cts; snd <$> ebσs,
               let hG := heap_globalG_heapG Hheap (fst ct) (snd ct) in
               ffi_local_start (heapG_ffiG) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)) ={⊤}=∗
@@ -66,7 +66,7 @@ Proof.
     (λ g ns κs, ffi_pre_global_ctx Σ heap_preG_ffi ffi_namesg g).
   iExists (λ _ _, True)%I.
   unshelve (iExists _, _, _, _); eauto.
-  iMod (Hwp hgG with "[$] [$]") as "(H1&Hwp)".
+  iMod (Hwp hgG with "[$] [$]") as ">(H1&Hwp)".
   iModIntro.
   iSplitL "H1".
   {  iIntros (???) "Hσ".
@@ -106,4 +106,45 @@ Proof.
     iIntros. rewrite ffi_pre_global_ctx_spec; eauto.
     rewrite ffi_update_pre_get_global //=.
     eauto.
+Qed.
+
+(* This version might be more useful. Rather than assembling a wpd explicitly
+  (which would require tracking and connecting the cts parameter of the wpd) it
+  takes as input a list of proofs that, given initial local resources, we can
+  construct a wpr for each node. *)
+Theorem heap_dist_adequacy_alt `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
+        Σ `{hPre: !heapPreG Σ} k (ebσs : list (expr * state))
+        g φinv (HINIT: ∀ σ, σ ∈ snd <$> ebσs → ffi_initP σ.(world) g) :
+  (∀ `{Hheap : !heap_globalG Σ},
+      ⊢
+        ffi_pre_global_start Σ (heap_preG_ffi) (heap_globalG_names) g ={⊤}=∗
+        ([∗ list] ebσ ∈ ebσs,
+              let eb := fst ebσ in
+              let σ := snd ebσ in
+              ∀ Hcrash local_names,
+              let hG := heap_globalG_heapG Hheap Hcrash local_names in
+              ffi_local_start (heapG_ffiG) σ.(world) g ∗
+              trace_frag σ.(trace) ∗ oracle_frag σ.(oracle) ={⊤}=∗
+              ∃ Φ Φinv Φrx, wpr NotStuck k ⊤ eb eb Φ Φinv Φrx) ∗
+        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (heap_globalG_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
+  dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
+Proof.
+  intros Hwp.
+  eapply (heap_dist_adequacy _ k); eauto.
+  iIntros (??) "H".
+  iMod (Hwp with "[$]") as "(Hwprs&Hinv)".
+  iModIntro. iIntros "H". iFrame "Hinv".
+  rewrite /wpd.
+  rewrite ?big_sepL2_fmap_r.
+  iDestruct (big_sepL2_length with "[$]") as %Hlength.
+  iApply big_sepL.big_sepL2_to_sepL_2'; first auto.
+  iDestruct (big_sepL.big_sepL2_to_sepL_2' with "H") as "H"; first auto.
+  iDestruct (big_sepL_sep with "[$Hwprs $H]") as "H".
+  iApply big_sepL_fupd.
+  iApply (big_sepL_mono with "H").
+  iIntros (i (eb&σ) Hlookup) "(Hwand&Hres)".
+  iDestruct "Hres" as (ct Hlookup2) "Hres".
+  iMod ("Hwand" $! (fst ct) (snd ct) with "[$]") as "H".
+  iModIntro. iExists _; iSplit; eauto.
+  rewrite //=. iDestruct "H" as (???) "H". iExists _, _, _. iFrame.
 Qed.
