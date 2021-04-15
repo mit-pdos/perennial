@@ -76,7 +76,7 @@ Proof.
   iFrame "Hgw".
   iSplitL "Hres1".
   { rewrite ?big_sepL2_fmap_r ?big_sepL2_fmap_l. eauto. }
-  rewrite /wpd/distributed_weakestpre.wpd.
+  rewrite /wpd/dist_weakestpre.wpd.
   iSplit.
   { iModIntro. iIntros (ct Hin). iSplit; first eauto.
     iIntros (g' ns' κs'). rewrite //=. eauto. }
