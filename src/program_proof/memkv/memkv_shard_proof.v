@@ -33,6 +33,7 @@ Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
                                 kvptsto γkv k (default [] (m !! k))
 .
 
+Search big_sepM2.
 Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
   ∃ (lastReply_ptr lastSeq_ptr peers_ptr:loc) (kvss_sl shardMap_sl:Slice.t)
     (lastReplyM:gmap u64 GetReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc),
@@ -53,7 +54,8 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
                   (∃ (kvs_ptr:loc) (m:gmap u64 (list u8)) (mv:gmap u64 goose_lang.val),
                       own_shard γ.(kv_gn) sid m ∗ (* own shard *)
                       ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
-                      map.is_map kvs_ptr (mv, (slice_val Slice.nil))
+                      map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
+                      ([∗ map] k ↦ x;v ∈ m;mv, (∃ vsl, ⌜v = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT 1%Qp x) )
                   )
                  )
 .
@@ -87,6 +89,17 @@ Definition is_shard_server host γ : iProp Σ :=
                                               RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} rep)
              ) (* post *)
 .
+
+Lemma wp_shardOf key :
+  {{{
+       True
+  }}}
+    shardOf #key
+  {{{
+       RET #(shardOfC key); True
+  }}}.
+Proof.
+Admitted.
 
 Lemma wp_GetRPC (s args_ptr reply_ptr:loc) args γ Eo Ei γreq Q :
   is_MemKVShardServer s γ -∗
@@ -148,13 +161,14 @@ Proof.
 
     wp_pures.
     wp_loadField.
-    wp_lam. (* TODO: hide this away *)
+    wp_apply (wp_shardOf).
     wp_pures.
     wp_loadField.
 
     iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_sl_close]".
+    set (sid:=shardOfC args.(GR_Key)) in *.
 
-    assert (∃ b, shardMapping !! int.nat (word.modu args.(GR_Key) 65536%Z) = Some b) as [? ?].
+    assert (∃ b, shardMapping !! int.nat sid = Some b) as [? ?].
     {
       eapply list_lookup_lt.
       rewrite HshardMapLength.
@@ -171,15 +185,64 @@ Proof.
       wp_loadField.
       wp_loadField.
       iDestruct (is_slice_split with "Hkvss_sl") as "[Hkvss_sl Hkvss_sl_close]".
-      wp_apply (wp_SliceGet with "[Hkvss_sl]").
+      iDestruct (big_sepS_elem_of_acc _ _ sid with "HownShards") as "[HownShard HownShards]".
+      { set_solver. }
+      iDestruct "HownShard" as "[%Hbad|HownShard]".
+      { exfalso. done. }
+      iDestruct "HownShard" as (kvs_ptr m mv) "(HshardGhost & %Hkvs_lookup & HkvsMap & HvalSlices)".
+      wp_apply (wp_SliceGet _ _ _ _ _ _ _ (#kvs_ptr) with "[Hkvss_sl]").
       {
         iFrame "Hkvss_sl".
+        iPureIntro.
+        rewrite list_lookup_fmap.
+        rewrite Hkvs_lookup.
+        done.
       }
-    }
+      iIntros "[Hkvss_sl %Hkvs_ty]".
 
+      wp_apply (map.wp_MapGet with "[$HkvsMap]").
+      iIntros (value okValue) "[%HlookupVal HkvsMap]".
+      wp_pures.
+      wp_apply (typed_slice.wp_NewSlice (V:=u8)).
+      iIntros (val_sl') "Hval_sl".
+      destruct okValue.
+      {
+        apply map.map_get_true in HlookupVal.
+        Search big_sepM2.
+        iDestruct (big_sepM2_lookup_iff with "HvalSlices") as %HvalSlicesIff.
+        assert (∃ x, m !! args.(GR_Key) = Some x) as [? HlookupValM].
+        {
+          specialize (HvalSlicesIff args.(GR_Key)).
+          apply HvalSlicesIff.
+          naive_solver.
+        }
+        iDestruct (big_sepM2_lookup_acc _ _ _ args.(GR_Key)  with "HvalSlices") as "[HvalSlice HvalSlices]".
+        { done. }
+        { done. }
+        iDestruct "HvalSlice" as (?) "[%HvalSliceRe Hvsl]".
+        iEval (rewrite replicate_0) in "Hval_sl".
+        rewrite HvalSliceRe.
+        wp_apply (typed_slice.wp_SliceAppendSlice (V:=u8) with "[$Hval_sl $Hvsl]").
+        rewrite app_nil_l.
+        iIntros (val_sl'') "Hval_sl".
+
+        (* fill in reply struct *)
+        wp_apply (wp_storeField with "HValue").
+        { apply slice_val_ty. }
+        iIntros "HValue".
+        wp_pures.
+        wp_storeField.
+
+        (* save reply in reply table *)
+        Search "loadStruct".
+        Transparent struct.load.
+        unfold struct.load.
+        admit.
+      }
+      admit.
     }
+    admit.
   }
-  wp_apply.
 Admitted.
 
 End memkv_shard_proof.
