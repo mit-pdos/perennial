@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Import memkv_marshal_get_proof.
+From Perennial.program_proof.memkv Require Import memkv_marshal_get_proof common_proof.
 
 Section memkv_shard_proof.
 
@@ -24,19 +24,38 @@ Record memkv_shard_names := {
 Implicit Type γ : memkv_shard_names.
 
 (* FIXME: lastReplyMap type *)
+Print into_val.IntoVal.
+
+Axiom shardOfC : u64 → u64.
+
+Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
+  [∗ set] k ∈ (fin_to_set u64), ⌜shardOfC k ≠ sid⌝ ∨
+                                kvptsto γkv k (default [] (m !! k))
+.
+
 Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
-  ∃ (lastReply_ptr lastSeq_ptr kvss_ptr peers_ptr:loc) (shardMap_sl:Slice.t) (kvs_sl:Slice.t)
-    (lastReplyM:gmap u64 u64) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc),
+  ∃ (lastReply_ptr lastSeq_ptr peers_ptr:loc) (kvss_sl shardMap_sl:Slice.t)
+    (lastReplyM:gmap u64 GetReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc),
   "HlastReply" ∷ s ↦[MemKVShardServer.S :: "lastReply"] #lastReply_ptr ∗
-  "HlastReplyMap" ∷ is_map lastReply_ptr lastReplyM ∗
+  "HlastReplyMap" ∷ map.is_map lastReply_ptr (lastReplyMV, #0) ∗ (* TODO: default *)
   "HlastSeq" ∷ s ↦[MemKVShardServer.S :: "lastSeq"] #lastSeq_ptr ∗
   "HlastSeqMap" ∷ is_map lastSeq_ptr lastSeqM ∗
   "HnextCID" ∷ s ↦[MemKVShardServer.S :: "nextCID"] #nextCID ∗
   "HshardMap" ∷ s ↦[MemKVShardServer.S :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl boolT 1%Qp shardMapping ∗
-  "Hkvss" ∷ s ↦[MemKVShardServer.S :: "kvss"] #kvss_ptr ∗
-  "Hkvss_sl" ∷ typed_slice.is_slice kvs_sl (refT (mapT (slice.T (byteT)))) 1%Qp kvs_ptrs ∗
-  "Hpeers" ∷ s ↦[MemKVShardServer.S :: "peers"] #peers_ptr
+  "Hkvss" ∷ s ↦[MemKVShardServer.S :: "kvss"] (slice_val kvss_sl) ∗
+  "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
+  "Hpeers" ∷ s ↦[MemKVShardServer.S :: "peers"] #peers_ptr ∗
+  "Hrpc" ∷ RPCServer_own_ghost γ.(rpc_gn) lastSeqM lastReplyM ∗
+  "%HshardMapLength" ∷ ⌜length shardMapping = uNSHARD⌝ ∗
+  "HownShards" ∷ ([∗ set] sid ∈ (fin_to_set u64),
+                  ⌜(shardMapping !! (int.nat sid)) ≠ Some true⌝ ∨
+                  (∃ (kvs_ptr:loc) (m:gmap u64 (list u8)) (mv:gmap u64 goose_lang.val),
+                      own_shard γ.(kv_gn) sid m ∗ (* own shard *)
+                      ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
+                      map.is_map kvs_ptr (mv, (slice_val Slice.nil))
+                  )
+                 )
 .
 
 Definition memKVN := nroot .@ "memkv".
@@ -132,10 +151,32 @@ Proof.
     wp_lam. (* TODO: hide this away *)
     wp_pures.
     wp_loadField.
+
     iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_sl_close]".
-    wp_apply (wp_SliceGet with "[$HshardMap_sl]").
+
+    assert (∃ b, shardMapping !! int.nat (word.modu args.(GR_Key) 65536%Z) = Some b) as [? ?].
     {
-      iFrame.
+      eapply list_lookup_lt.
+      rewrite HshardMapLength.
+      admit. (* annoying mod ineq *)
+    }
+    wp_apply (typed_slice.wp_SliceGet with "[$HshardMap_sl]").
+    {
+      iPureIntro. done.
+    }
+    iIntros "HshardMap_sl".
+    wp_pures.
+    wp_if_destruct.
+    { (* have the shard *)
+      wp_loadField.
+      wp_loadField.
+      iDestruct (is_slice_split with "Hkvss_sl") as "[Hkvss_sl Hkvss_sl_close]".
+      wp_apply (wp_SliceGet with "[Hkvss_sl]").
+      {
+        iFrame "Hkvss_sl".
+      }
+    }
+
     }
   }
   wp_apply.
