@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.Helpers Require Import ModArith.
-From Perennial.goose_lang Require Import crash_modality wpr_lifting wpd_lifting.
+From Perennial.goose_lang Require Import crash_modality wpr_lifting dist_lifting.
 From Perennial.program_logic Require Import atomic.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import replicated_block.
@@ -9,6 +9,9 @@ From Perennial.algebra Require Import own_discrete.
 From Perennial.goose_lang.lib Require Import lock.crash_lock.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
+
+From Perennial.program_logic Require Import recovery_adequacy dist_adequacy.
+From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequacy.
 
 (** * Replicated block example
 
@@ -531,8 +534,6 @@ End recov.
 
 Existing Instances subG_stagedG.
 
-From Perennial.program_logic Require Import recovery_adequacy distributed_adequacy.
-From Perennial.goose_lang Require Export adequacy recovery_adequacy distributed_adequacy.
 Definition repΣ := #[stagedΣ; heapΣ; crashΣ].
 
 Lemma ffi_start_OpenRead σ addr g dref {hG: heapG repΣ} :

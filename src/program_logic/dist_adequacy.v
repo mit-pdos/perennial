@@ -2,7 +2,7 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import gmap auth agree gset coPset.
 From Perennial.base_logic.lib Require Import wsat.
 From Perennial.program_logic Require Export weakestpre.
-From Perennial.program_logic Require Export crash_lang recovery_weakestpre distributed_weakestpre.
+From Perennial.program_logic Require Export crash_lang recovery_weakestpre dist_weakestpre.
 From Perennial.program_logic Require Import crash_adequacy.
 Import uPred.
 

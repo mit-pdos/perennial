@@ -2,11 +2,10 @@
 default using make as well as in CI on Travis). *)
 
 From Perennial.program_logic Require
-     dist_lang
-     distributed_weakestpre
-     distributed_adequacy.
+     dist_weakestpre
+     dist_adequacy.
 From Perennial.goose_lang Require
-     adequacy recovery_adequacy distributed_adequacy
+     adequacy recovery_adequacy dist_adequacy
      spec_assert
      metatheory
      refinement refinement_adequacy
