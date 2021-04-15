@@ -24,7 +24,6 @@ Record memkv_shard_names := {
 Implicit Type γ : memkv_shard_names.
 
 (* FIXME: lastReplyMap type *)
-Print into_val.IntoVal.
 
 Axiom shardOfC : u64 → u64.
 
@@ -33,7 +32,6 @@ Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
                                 kvptsto γkv k (default [] (m !! k))
 .
 
-Search big_sepM2.
 Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
   ∃ (lastReply_ptr lastSeq_ptr peers_ptr:loc) (kvss_sl shardMap_sl:Slice.t)
     (lastReplyM:gmap u64 GetReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc),
@@ -208,7 +206,6 @@ Proof.
       destruct okValue.
       {
         apply map.map_get_true in HlookupVal.
-        Search big_sepM2.
         iDestruct (big_sepM2_lookup_iff with "HvalSlices") as %HvalSlicesIff.
         assert (∃ x, m !! args.(GR_Key) = Some x) as [? HlookupValM].
         {
@@ -234,7 +231,6 @@ Proof.
         wp_storeField.
 
         (* save reply in reply table *)
-        Search "loadStruct".
         Transparent struct.load.
         unfold struct.load.
         admit.
