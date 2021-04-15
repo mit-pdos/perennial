@@ -2,88 +2,11 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
+From Perennial.program_proof.memkv Require Import memkv_shard_proof.
 
 Section memkv_shard_clerk_proof.
 
-Record GetRequestC := mkGetRequestC {
-  GR_CID : u64;
-  GR_Seq : u64;
-  GR_Key : u64
-}.
-
-Record GetReplyC := mkGetReplyC {
-  GR_Err : u64;
-  GR_Value : list u8
-}.
-
-Axiom has_encoding_GetRequest : (list u8) → GetRequestC → Prop.
-Axiom has_encoding_GetReply : (list u8) → GetReplyC → Prop.
-
 Context `{!heapG Σ, rpcG Σ GetReplyC}.
-
-Lemma wp_encodeGetRequest (cid seq key:u64) :
-  {{{
-       True
-  }}}
-    encodeGetRequest (#cid, (#seq, (#key, #())))%V
-  {{{
-       (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_GetRequest reqData {| GR_CID:=cid; GR_Seq:=seq; GR_Key:=key |}⌝ ∗
-                                               typed_slice.is_slice req_sl byteT 1%Qp reqData
-  }}}.
-Proof.
-Admitted.
-
-Lemma wp_decodeGetReply rep rep_sl repData :
-  {{{
-       typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
-       ⌜has_encoding_GetReply repData rep ⌝
-  }}}
-    decodeGetReply (slice_val rep_sl)
-  {{{
-       (rep_ptr:loc) val_sl, RET #rep_ptr;
-       rep_ptr ↦[GetReply.S :: "Err"] #rep.(GR_Err) ∗
-       rep_ptr ↦[GetReply.S :: "Value"] (slice_val val_sl) ∗
-       typed_slice.is_slice val_sl byteT 1%Qp rep.(GR_Value)
-  }}}.
-Proof.
-Admitted.
-
-Record memkv_shard_names := {
- rpc_gn : rpc_names ;
- kv_gn : gname
-}
-.
-
-Implicit Type γ : memkv_shard_names.
-
-Axiom kvptsto : gname → u64 → list u8 → iProp Σ.
-
-Global Instance kvptst_tmlss γkv k v : Timeless (kvptsto γkv k v).
-Admitted.
-
-Definition uKV_GET := 2.
-
-Definition PreShardGet Eo Ei γ key Q : iProp Σ :=
-  |={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v))
-.
-
-Definition PostShardGet Eo Ei γ (key:u64) Q (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (PreShardGet Eo Ei γ key Q) ∨
-                                                        ⌜rep.(GR_Err) = 0⌝ ∗ (Q rep.(GR_Value)).
-
-Definition is_shard_server host γ : iProp Σ :=
-  "#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
-  "#HgetSpec" ∷ handler_is (coPset * coPset * (list u8 → iProp Σ) * rpc_request_names) host uKV_GET
-             (λ x reqData, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
-                                   is_RPCRequest γ.(rpc_gn) x.2 (PreShardGet x.1.1.1 x.1.1.2 γ req.(GR_Key) x.1.2)
-                                                            (PostShardGet x.1.1.1 x.1.1.2 γ req.(GR_Key) x.1.2)
-                                                            {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
-             ) (* pre *)
-             (λ x reqData repData, ∃ req rep, ⌜has_encoding_GetReply repData rep⌝ ∗
-                                              ⌜has_encoding_GetRequest reqData req⌝ ∗
-                                              (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} ∨
-                                              RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} rep)
-             ) (* post *)
-.
 
 Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
   ∃ (cid seq:u64) (cl:loc) (host:string),
@@ -94,12 +17,6 @@ Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
     "Hcl_own" ∷ grove_ffi.RPCClient_own cl host ∗
     "#His_shard" ∷ is_shard_server host γ
 .
-
-(*
-Pre: |={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v) ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v)
-Post: (Q v), where v is the value in the reply back
- *)
-
 
 Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
   {{{
@@ -142,8 +59,8 @@ Proof.
 
   iAssert (∃ rep_sl, rawRep ↦[slice.T byteT] (slice_val rep_sl) )%I with "[HrawRep]" as "HrawRep".
   {
+    rewrite (zero_slice_val).
     iExists _; iFrame.
-    admit.
   }
   assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
   { simpl. admit. } (* FIXME: overflow guard *)
@@ -198,7 +115,7 @@ Proof.
     { done. }
     iIntros (??) "(HrepErr & HrepValue & HrepValue_sl)".
     replace (req) with ({| GR_CID := cid; GR_Seq := seq; GR_Key := key |}); last first.
-    { (* encoding injectivity *) admit. }
+    { eapply has_encoding_GetRequest_inj; done. }
 
     iDestruct "Hreceipt" as "[Hbad|Hreceipt]".
     {
