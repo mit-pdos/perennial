@@ -520,8 +520,6 @@ Definition ShardClerkSet__getClerk: val :=
    safe for concurrent use *)
 Module MemKVClerk.
   Definition S := struct.decl [
-    "seq" :: uint64T;
-    "cid" :: uint64T;
     "shardClerks" :: struct.ptrT ShardClerkSet.S;
     "coordCk" :: struct.t MemKVCoordClerk.S;
     "shardMap" :: slice.T HostName
@@ -537,13 +535,11 @@ Definition MemKVClerk__Get: val :=
       let: "shardServer" := SliceGet uint64T (struct.loadF MemKVClerk.S "shardMap" "ck") "sid" in
       let: "shardCk" := ShardClerkSet__getClerk (struct.loadF MemKVClerk.S "shardClerks" "ck") "shardServer" in
       let: "err" := MemKVShardClerk__Get "shardCk" "key" "val" in
-      (if: ("err" = EDontHaveShard)
-      then struct.storeF MemKVClerk.S "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk.S "coordCk" "ck"))
+      (if: ("err" = ENone)
+      then Break
       else
-        (if: ("err" = ENone)
-        then Break
-        else #()));;
-      Continue);;
+        struct.storeF MemKVClerk.S "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk.S "coordCk" "ck"));;
+        Continue));;
     ![slice.T byteT] "val".
 
 Definition MemKVClerk__Put: val :=
@@ -554,11 +550,9 @@ Definition MemKVClerk__Put: val :=
       let: "shardServer" := SliceGet uint64T (struct.loadF MemKVClerk.S "shardMap" "ck") "sid" in
       let: "shardCk" := ShardClerkSet__getClerk (struct.loadF MemKVClerk.S "shardClerks" "ck") "shardServer" in
       let: "err" := MemKVShardClerk__Put "shardCk" "key" "value" in
-      (if: ("err" = EDontHaveShard)
-      then struct.storeF MemKVClerk.S "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk.S "coordCk" "ck"))
+      (if: ("err" = ENone)
+      then Break
       else
-        (if: ("err" = ENone)
-        then Break
-        else #()));;
-      Continue);;
+        struct.storeF MemKVClerk.S "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk.S "coordCk" "ck"));;
+        Continue));;
     #().

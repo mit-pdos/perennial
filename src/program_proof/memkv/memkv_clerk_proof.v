@@ -25,7 +25,7 @@ Lemma KVClerk__Get Eo Ei (ck:loc) (γ:gname) (key:u64) :
   (|={Eo,Ei}=> (∃ v, kvptsto γ key v ∗ (kvptsto γ key v ={Ei,Eo}=∗ (∀ val_sl, typed_slice.is_slice val_sl byteT 1%Qp v -∗ (Φ (slice_val val_sl)))))) -∗
     WP MemKVClerk__Get #ck #key {{ Φ }}
 .
-Proof.
+Proof using Type*.
   iIntros (Φ) "Hown Hatomic".
   wp_lam.
   wp_pures.
@@ -36,8 +36,8 @@ Proof.
 
   iAssert (∃ rep_sl, rep_ptr ↦[slice.T byteT] (slice_val rep_sl) )%I with "[Hrep]" as "Hrep".
   {
+    rewrite zero_slice_val.
     iExists _; iFrame.
-    admit.
   }
 
   wp_forBreak.
@@ -76,11 +76,23 @@ Proof.
   wp_pures.
   wp_if_destruct.
   {
+    iRight.
+    iModIntro.
+    iSplitL ""; first done.
+    wp_pures.
+    iDestruct "HshardGetPost" as "(HshardCk & [[%Hbad _]|[_ Hpost]])".
+    { by exfalso. }
+    iNamed "Hpost".
+    iDestruct "Hpost" as "(Hrep & Hval_sl & HΦ)".
+    wp_load.
+    iModIntro.
+    iApply "HΦ".
+    iFrame.
+  }
+  {
     wp_loadField.
     iDestruct "HshardGetPost" as "(HshardCk & [Hatomic|[%Hbad _]])"; last first.
-    {
-      exfalso. done.
-    }
+    { exfalso. naive_solver. }
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_MemKVCoordClerk__GetShardMap with "[$HcoordCk_own]").
     iIntros (shardMap_sl' shardMapping') "[HcoordCk_own HshardMap_sl]".
@@ -92,14 +104,10 @@ Proof.
     iModIntro.
 
     iSplitL ""; first done.
+    rewrite Hre.
     iDestruct "Hatomic" as "[_ $]".
     iExists _,_,_,_; iFrame.
   }
-  {
-    wp_pures.
-    wp_if_destruct.
-    {
-      wp_pures.
-Admitted.
+Qed.
 
 End memkv_clerk_proof.
