@@ -63,21 +63,19 @@ Admitted.
 
 Definition uKV_GET := 2.
 
-Definition PreShardGet γ (x:list u8 * rpc_request_names) (reqData:list u8) : iProp Σ :=
-  ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
-          is_RPCRequest γ.(rpc_gn) x.2 (kvptsto γ.(kv_gn) req.(GR_Key) x.1)
-                                   (λ rep, ⌜rep.(GR_Value) = x.1⌝ ∗ kvptsto γ.(kv_gn) req.(GR_Key) x.1) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
+Definition PreShardGet Eo Ei γ key Q : iProp Σ :=
+  |={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v))
 .
 
-Definition PostShardGet γ (key:u64) (v:list u8) (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (kvptsto γ.(kv_gn) key v) ∨
-                                                          ⌜rep.(GR_Err) = 0⌝ ∗ (kvptsto γ.(kv_gn) key v) ∗ ⌜rep.(GR_Value) = v⌝.
+Definition PostShardGet Eo Ei γ (key:u64) Q (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (PreShardGet Eo Ei γ key Q) ∨
+                                                        ⌜rep.(GR_Err) = 0⌝ ∗ (Q rep.(GR_Value)).
 
 Definition is_shard_server host γ : iProp Σ :=
   "#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
-  "#HgetSpec" ∷ handler_is (list u8 * rpc_request_names) host uKV_GET
+  "#HgetSpec" ∷ handler_is (coPset * coPset * (list u8 → iProp Σ) * rpc_request_names) host uKV_GET
              (λ x reqData, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
-                                   is_RPCRequest γ.(rpc_gn) x.2 (kvptsto γ.(kv_gn) req.(GR_Key) x.1)
-                                                            (PostShardGet γ req.(GR_Key) x.1)
+                                   is_RPCRequest γ.(rpc_gn) x.2 (PreShardGet x.1.1.1 x.1.1.2 γ req.(GR_Key) x.1.2)
+                                                            (PostShardGet x.1.1.1 x.1.1.2 γ req.(GR_Key) x.1.2)
                                                             {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
              ) (* pre *)
              (λ x reqData repData, ∃ req rep, ⌜has_encoding_GetReply repData rep⌝ ∗
@@ -97,9 +95,15 @@ Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
     "#His_shard" ∷ is_shard_server host γ
 .
 
-Lemma wp_MemKVShardClerk__Get γ (ck:loc) (key:u64) (v:list u8) (value_ptr:loc) :
+(*
+Pre: |={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v) ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v)
+Post: (Q v), where v is the value in the reply back
+ *)
+
+
+Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
   {{{
-       kvptsto γ.(kv_gn) key v ∗
+       (|={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v))) ∗
        own_MemKVShardClerk ck γ ∗
        (∃ dummy_sl, value_ptr ↦[slice.T byteT] (slice_val dummy_sl))
   }}}
@@ -107,9 +111,14 @@ Lemma wp_MemKVShardClerk__Get γ (ck:loc) (key:u64) (v:list u8) (value_ptr:loc) 
   {{{
        (e:u64), RET #e;
        own_MemKVShardClerk ck γ ∗ (
-       ⌜e ≠ 0⌝ ∗ (kvptsto γ.(kv_gn) key v) ∗ (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
-                         ⌜e = 0⌝ ∗ (kvptsto γ.(kv_gn) key v) ∗ ∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl) ∗
-                                                                                    typed_slice.is_slice some_sl byteT 1%Qp v
+       ⌜e ≠ 0⌝ ∗
+        (|={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v))) ∗
+        (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
+
+        ⌜e = 0⌝ ∗
+              ∃ some_sl v, value_ptr ↦[slice.T byteT] (slice_val some_sl) ∗
+                                     typed_slice.is_slice some_sl byteT 1%Qp v ∗
+                                     Q v
         )
   }}}
 .
@@ -139,7 +148,7 @@ Proof.
   assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
   { simpl. admit. } (* FIXME: overflow guard *)
   iNamed "His_shard".
-  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} _ (PostShardGet γ key v) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
+  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet Eo Ei γ key Q) (PostShardGet Eo Ei γ key Q) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
   { done. }
   { iNext. iAccu. }
@@ -160,7 +169,7 @@ Proof.
     iModIntro.
     iExists (mkGetRequestC _ _ _).
     iSplitL ""; first done.
-    instantiate (1:= (_,_)).
+    instantiate (1:= (Eo,Ei,Q,γreq)).
     simpl.
     iFrame "HreqInv".
   }
@@ -190,10 +199,7 @@ Proof.
     iIntros (??) "(HrepErr & HrepValue & HrepValue_sl)".
     replace (req) with ({| GR_CID := cid; GR_Seq := seq; GR_Key := key |}); last first.
     { (* encoding injectivity *) admit. }
-    wp_pures.
-    wp_loadField.
-    iNamed "Hval".
-    wp_store.
+
     iDestruct "Hreceipt" as "[Hbad|Hreceipt]".
     {
       iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
@@ -201,8 +207,14 @@ Proof.
       simpl in Hbad.
       word.
     }
-    iMod (get_request_post with "HreqInv Hreceipt Htok") as ">Hpost".
+    iMod (get_request_post with "HreqInv Hreceipt Htok") as "Hpost".
     { done. }
+    (* Doing get_request_post here so we can strip off a ▷ *)
+
+    wp_pures.
+    wp_loadField.
+    iNamed "Hval".
+    wp_store.
     wp_loadField.
     iApply "HΦ".
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
@@ -214,7 +226,8 @@ Proof.
     }
     {
       iRight.
-      iDestruct "Hpost" as "($&$&->)".
+      iDestruct "Hpost" as "($&HQ)".
+      iExists _; iFrame.
       iExists _; iFrame.
     }
   }
