@@ -325,7 +325,7 @@ Lemma wpc_trace_inv_open k es σs gs e Hheap Href Φ Φc
                         ∗ ▷ ffi_global_ctx refinement_spec_ffiG (gs')
                         ∗ trace_frag (trace σs')
                         ∗ oracle_frag (oracle σs')
-                        ∗ Φc (heap_update Σ Hheap _ hC (heap_get_names Σ Hheap)) hRef}}.
+                        ∗ Φc (heap_update_local Σ Hheap _ hC (heap_get_local_names Σ Hheap)) hRef}}.
 Proof.
   iIntros "#Hexcl #Hspec #Htrace #Hcfupd1 Hcfupd2 H".
   iApply (@wpc_strong_mono with "H"); eauto.
@@ -411,7 +411,6 @@ Theorem heap_wpc_refinement_adequacy `{crashPreG Σ} k es e
   (⊢ wpc_post_crash k ⊤ e es Φ Φc P) →
   trace_refines e e σ g es es σs gs.
 Proof using Hrpre Hhpre Hcpre.
-  Set Printing Implicit.
   intros Heq1 Heq2 Hinit Hinit_wf Hexcl Hwp_init Hwp_crash.
   eapply heap_recv_refinement_adequacy with
       (k0 := k)
@@ -430,7 +429,7 @@ Proof using Hrpre Hhpre Hcpre.
   { iModIntro. iIntros (?) "H". iApply "H". }
   iIntros "Hstart Hstart_spec Hj".
   iApply (recovery_weakestpre.idempotence_wpr _ _ ⊤ _ _ (λ _ _, _) _ _ (λ Hc0 t,
-   ∃ hC hRef, let hG := heap_update Σ Hheap _ hC pbundleT in
+   ∃ hC hRef, let hG := heap_update_local Σ Hheap _ hC pbundleT in
                  ∃ es' σs' gs' stat, ⌜ erased_rsteps es ([es], (σs,gs)) (es', (σs',gs')) stat ⌝ ∗
                                  ⌜ crash_safe es ([es], (σs,gs)) ⌝ ∗
                                 ▷ ffi_ctx (refinement_spec_ffiG) σs'.(world) ∗
@@ -466,11 +465,16 @@ Proof using Hrpre Hhpre Hcpre.
     iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) g_pre_crash with "Hffi_old Hg") as (ffi_names) "(Hw&Hg&Hcrel&Hc)".
     { inversion Hcrash; subst; eauto. }
     iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
+    set (hnames := {| heap_local_heap_names := name_na_heap;
+                      heap_local_ffi_local_names := ffi_names;
+                      heap_local_trace_names := name_trace |}).
+    (*
     set (hnames := {| heap_heap_names := name_na_heap;
                       heap_ffi_local_names := ffi_names;
                       heap_ffi_global_names := ffi_get_global_names Σ heapG_ffiG;
                       heap_trace_names := name_trace |}).
-    set (hG := (heap_update _ _ _ _ hnames)).
+     *)
+    set (hG := (heap_update_local _ _ _ _ hnames)).
     iSpecialize ("H" $! hG).
     simpl.
     rewrite /hG.
@@ -511,14 +515,14 @@ Proof using Hrpre Hhpre Hcpre.
       { rewrite /spec_crash_ctx/spec_crash_ctx'/source_crash_ctx.
         iSplitL.
         {
-          rewrite /heap_update/heap_get_names//=.
+          rewrite /heap_update_local/heap_get_names//=.
           iExists _, _. iDestruct "Hcfupd1'" as "($&_)". }
         iDestruct "Hcfupd1'" as "(_&$)".
       }
       iPoseProof (wpc_trace_inv_open k _ _ _ e _ _ Φ Φc with "[] Hspec Htrace Hcfupd1' Hcfupd3 H") as "H".
       { iApply Hexcl. }
       rewrite /hG//=.
-      rewrite /heap_update/heap_get_names//= ffi_update_update.
+      rewrite /heap_update_local/heap_get_names//= ffi_update_update.
       rewrite /traceG_update//=.
       rewrite /gen_heap_names.gen_heapG_update//=.
       rewrite ffi_update_get_local //=.

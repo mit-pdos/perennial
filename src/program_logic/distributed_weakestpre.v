@@ -25,13 +25,14 @@ Definition equal_global_interp ct1 ct2 :=
   @global_state_interp _ _(perennial_irisG (fst ct2) (snd ct2)).
 *)
 
-Definition equal_global_inG ct :=
-  @global_state_interp _ _(perennial_irisG (fst ct) (snd ct)) = grove_global_state_interp ∧
-  @num_laters_per_step _ _(perennial_irisG (fst ct) (snd ct)) = grove_num_laters_per_step ∧
-  @iris_invG _ _ (perennial_irisG (fst ct) (snd ct)) = grove_invG.
+Definition equal_global_inG ct : iProp Σ :=
+  ⌜ @num_laters_per_step _ _(perennial_irisG (fst ct) (snd ct)) = grove_num_laters_per_step ∧
+    @iris_invG _ _ (perennial_irisG (fst ct) (snd ct)) = grove_invG ⌝ ∗
+  (∀ g ns κs, @global_state_interp _ _(perennial_irisG (fst ct) (snd ct)) g ns κs ∗-∗
+               grove_global_state_interp g ns κs).
 
 Definition wpd (k : nat) (E: coPset) (cts: list (crashG Σ * pbundleG T Σ)) (es: list (expr Λ)) :=
- (⌜ ∀ ct, ct ∈ cts → equal_global_inG ct ⌝ ∧
+ (□ (∀ ct, ⌜ ct ∈ cts ⌝ → equal_global_inG ct) ∧
  [∗ list] i↦ct;e ∈ cts;es, ∃ Φ Φrx Φinv, wpr NotStuck k (fst ct) (snd ct) E e e Φ Φinv Φrx)%I.
 
 End wpd.

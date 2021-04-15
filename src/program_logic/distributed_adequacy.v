@@ -37,7 +37,7 @@ Definition wptp (ct : crashG Σ * pbundleG T Σ) s k tpool :=
   ([∗ list] ef ∈ tpool, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})%I.
 
 Definition wpnode (ct : crashG Σ * pbundleG T Σ) k (dn: dist_node) :=
-  (⌜ equal_global_inG ct ⌝ ∗
+  (□ equal_global_inG ct ∗
   match tpool dn with
   | [] => False%I
   | e :: tp =>
@@ -68,12 +68,13 @@ Lemma stwpnode_step ct k eb t1 σ1 g1 t2 σ2 g2 κ κs ns:
 Proof.
   iIntros (Hstep) "Hg Hnode".
   destruct ct as (Hc&t).
-  iDestruct "Hnode" as "((Hσ&HNC)&(%Hequal&Hwptp))".
-  destruct Hequal as (Hglobal&Hnum&Hinv).
+  iDestruct "Hnode" as "((Hσ&HNC)&(#Hequal&Hwptp))".
+  iDestruct "Hequal" as ((Hnum&Hinv)) "Hglobal".
   destruct t1; first done. simpl.
-  rewrite -Hglobal -Hnum -Hinv.
+  rewrite -Hnum -Hinv.
   iDestruct "Hwptp" as (Φ Φinv Φr) "(Hwpr&Hwptp)".
-  iPoseProof (crash_adequacy.wptp_step with "[$Hσ] [$Hg] [Hwpr] [Hwptp] [HNC]") as "H"; eauto.
+  iPoseProof (crash_adequacy.wptp_step with "[$Hσ] [Hg] [Hwpr] [Hwptp] [HNC]") as "H"; eauto.
+  { iApply "Hglobal". eauto. }
   { rewrite wpr0_unfold/wpr0_pre. eauto. }
   { rewrite perennial_crashG. iFrame. }
   iMod "H" as (e2 t2' ->) "H".
@@ -81,9 +82,12 @@ Proof.
   iApply (step_fupdN_wand with "H"). iIntros "H".
   iMod "H" as "(Hσ&Hg&Hwpr&Hwptp&HNC)".
   iFrame. iModIntro.
+  iSplitL "Hg".
+  { iApply "Hglobal". eauto. }
   iSplitL "HNC".
   { rewrite perennial_crashG. iFrame. }
-  iSplit; first done.
+  iSplit.
+  { iModIntro. iSplit; first done. eauto. }
   simpl. iExists Φ, Φinv, Φr.
   rewrite wpr0_unfold/wpr0_pre. eauto.
 Qed.
@@ -98,10 +102,10 @@ Lemma stwpnode_crash ct k eb t1 σ1 g σ2 κs ns:
 Proof.
   iIntros (Hstep) "Hg Hnode".
   destruct ct as (Hc&t).
-  iDestruct "Hnode" as "((Hσ&HNC)&(%Hequal&Hwptp))".
-  destruct Hequal as (Hglobal&Hnum&Hinv).
+  iDestruct "Hnode" as "((Hσ&HNC)&(#Hequal&Hwptp))".
+  iDestruct "Hequal" as ((Hnum&Hinv)) "Hglobal".
   destruct t1; first done. simpl.
-  rewrite -Hglobal -Hinv.
+  rewrite -Hinv.
   iDestruct "Hwptp" as (Φ Φinv Φr) "(Hwpr&Hwptp)".
   iMod (NC_upd_C with "HNC") as "#HC".
   rewrite wpr0_unfold/wpr0_pre.
@@ -110,23 +114,30 @@ Proof.
   iSpecialize ("H" with "[HC]").
   { rewrite perennial_crashG. iFrame "#". }
   iMod (fupd_split_level_fupd with "H") as "H".
-  iMod ("H" with "[//] [$] [$]") as "H".
+  iMod ("H" with "[//] [$] [Hg]") as "H".
+  { iApply "Hglobal". eauto. }
   iModIntro. iNext. iClear "HC".
   unshelve (iMod NC_alloc as (Hc') "HNC").
   { destruct Hc. constructor. apply _. }
   iSpecialize ("H" with "HNC").
   rewrite (perennial_inv_crashG Hc' Hc) Hinv.
   iMod "H".
-  iDestruct "H" as (t' Heq1 Heq2) "(Hσ&Hg&(_&Hwpr)&HNC)".
-  rewrite -Heq1 -Heq2.
+  iDestruct "H" as (t' Heq1) "(#Heq&Hσ&Hg&(_&Hwpr)&HNC)".
+  rewrite -Heq1.
   iModIntro.
   iFrame.
   iExists (Hc', t'). iFrame.
+  iSplitL "Hg".
+  { iApply "Hglobal". iApply "Heq". eauto. }
   rewrite /wpnode/=.
   iSplit.
-  { iPureIntro. split_and!; eauto.
-    - rewrite Heq1. eauto.
-    - rewrite -Hnum ?perennial_num_laters_per_step_spec //.
+  { iModIntro. iSplit.
+    { iPureIntro. split_and!; eauto.
+     rewrite -Hnum ?perennial_num_laters_per_step_spec //. }
+    { iIntros. iSplit.
+      - iIntros. iApply "Hglobal". iApply "Heq". eauto.
+      - iIntros. iApply "Heq". iApply "Hglobal". eauto.
+    }
   }
   iExists _, _, _. iFrame. rewrite /wptp. rewrite big_sepL_nil. eauto.
 Qed.
@@ -218,21 +229,25 @@ Proof.
     iDestruct (big_sepL_lookup with "Ht") as "Hdn"; first eassumption.
     iDestruct "Hdn" as (ct) "Hnode".
     rewrite /stwpnode.
-    iDestruct "Hnode" as "((Hσ&HNC)&(%Heq&Hwptp))".
+    iDestruct "Hnode" as "((Hσ&HNC)&(#Heq&Hwptp))".
     rewrite /wpnode. destruct (tpool dn) as [| hd tp]; first done.
     iDestruct "Hwptp" as (???) "(Hwpr&Ht)".
     apply elem_of_cons in Hin2 as [<-|(t1''&t2''&->)%elem_of_list_split].
     - rewrite wpr0_unfold/wpr0_pre.
-      destruct Heq as (Heq1&Heq2&Heq3). rewrite -Heq1 -Heq2 -Heq3.
-      iPoseProof (wpc_safe with "Hσ Hg Hwpr") as "H".
+      iDestruct "Heq" as ((Hnum&Hinv)) "Hglobal".
+      rewrite -Hnum -Hinv.
+      iPoseProof (wpc_safe with "Hσ [Hg] Hwpr") as "H".
+      { iApply "Hglobal". eauto. }
       rewrite ncfupd_eq.
       iMod ("H" with "[HNC]") as "($&_)"; last done.
       { rewrite perennial_crashG. iFrame. }
     - iDestruct "Ht" as "(_ & He' & _)".
-      destruct Heq as (Heq1&Heq2&Heq3). rewrite -Heq1 -Heq2 -Heq3.
-      iPoseProof (wpc_safe with "Hσ Hg He'") as "H".
+      iDestruct "Heq" as ((Hnum&Hinv)) "Hglobal".
+      rewrite -Hnum -Hinv.
+      iPoseProof (wpc_safe with "Hσ [Hg] He'") as "H".
+      { iApply "Hglobal". eauto. }
       rewrite ncfupd_eq.
-       iMod ("H" with "[HNC]") as "($&_)"; last done.
+      iMod ("H" with "[HNC]") as "($&_)"; last done.
       { rewrite perennial_crashG. iFrame. }
   }
   iModIntro. iFrame.
@@ -280,19 +295,19 @@ Proof.
     with "[Hg] [Hσs Hwp]") as "H"; first done.
   { rewrite app_nil_r /=. iExact "Hg". }
   { rewrite /stwpnodes/wpd.
-    iDestruct "Hwp" as "(%Heq_global&Hwp)".
+    iDestruct "Hwp" as "(Heq_global&Hwp)".
     iCombine "Hσs Hwp" as "H".
     rewrite ?big_sepL2_fmap_r.
     iDestruct (big_sepL2_sep with "H") as "H".
     iApply big_sepL_fmap.
     iDestruct (big_sepL.big_sepL2_to_sepL_2 with "H") as "H".
-    iApply (big_sepL_mono with "H").
-    iIntros (i (e&σ) Hlookup) "H".
+    iApply (big_sepL.big_sepL_mono_with_pers with "Heq_global H").
+    iIntros (i (e&σ) Hlookup) "#Heq_global H".
     iDestruct "H" as (ct Hlookup') "((HNC&Hσ)&Hwp)". iExists ct.
     simpl. rewrite /stwpnode.
     rewrite /=. iFrame "HNC Hσ".
     rewrite /wpnode/=. iSplit.
-    { eauto. }
+    { iModIntro. iApply "Heq_global". iPureIntro. eapply elem_of_list_lookup_2; eauto. }
     iDestruct "Hwp" as (Φ Φrx Φinv) "H".
     iExists Φ, Φinv, Φrx.
     rewrite /wptp big_sepL_nil right_id.

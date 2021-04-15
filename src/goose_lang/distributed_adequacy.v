@@ -22,7 +22,7 @@ Theorem heap_dist_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_ad
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
   intros Hwp.
-  eapply (wpd_dist_adequacy_inv _ _ _ heap_namesO).
+  eapply (wpd_dist_adequacy_inv _ _ _ heap_local_namesO).
   iIntros (Hinv ?) "".
   iMod (ffi_name_global_init _ _ g) as (ffi_namesg) "(Hgw&Hgstart)"; first auto.
   set (hgG := {| heap_globalG_preG := _; heap_globalG_names := ffi_namesg;
@@ -55,23 +55,17 @@ Proof.
     }
   }
   iMod "H" as (cts) "(Hgw&Hres1&Hres2)".
-  iExists ((λ x, (fst x, {| pbundleT := (hgG_extend_local_names hgG (snd x))|})) <$> cts).
+  iExists ((λ x, (fst x, {| pbundleT := snd x |})) <$> cts).
   (* XXX: we need an Hc floating about below because heap_update_pre expects one, but it is
           not really needed. *)
   iMod (NC_alloc) as (Hc) "_".
   iExists
-    (λ t σ nt, let _ := heap_update_pre Σ hPre Hinv Hc (@pbundleT _ _ t) in
+    (λ t σ nt, let _ := heap_globalG_heapG hgG Hc (@pbundleT _ _ t) in
                state_interp σ nt)%I.
   iExists
     (λ g ns κs, ffi_pre_global_ctx Σ heap_preG_ffi ffi_namesg g).
-  iExists _. (* (λ Hc t, λ (σ0 : state) (_ : nat) (κs0 : list observation) (_ : nat),
-                                              lifting.heapG_irisG_obligation_1 Σ
-                                                (heap_update Σ (heap_update_pre Σ hPre Hinv Hc hnames) Hinv Hc
-                                                   pbundleT) σ0 κs0). *)
-  iExists _.
-  iExists _.
-  iExists _.
-  iExists _.
+  iExists (λ _ _, True)%I.
+  unshelve (iExists _, _, _, _); eauto.
   iMod (Hwp hgG with "[$] [$]") as "(H1&Hwp)".
   iModIntro.
   iSplitL "H1".
@@ -84,26 +78,32 @@ Proof.
   { rewrite ?big_sepL2_fmap_r ?big_sepL2_fmap_l. eauto. }
   rewrite /wpd/distributed_weakestpre.wpd.
   iSplit.
-  { iPureIntro. intros ct.
-    rewrite /equal_global_inG.
-    rewrite elem_of_list_fmap. intros ((?&?)&Heq&Hin).
-    rewrite Heq //=.
-  }
+  { iModIntro. iIntros (ct Hin). iSplit; first eauto.
+    iIntros (g' ns' κs'). rewrite //=. eauto. }
   rewrite ?big_sepL2_fmap_r ?big_sepL2_fmap_l.
   iApply (big_sepL2_mono with "Hwp").
   iIntros (k' (Hc'&Hnames) (e&σ) Hin1 Hin2) "H".
   iDestruct "H" as (Φ Φrx Φinv) "Hwpr".
-  iExists Φ, (λ Hc names v, Φrx (heap_update_pre _ _ _ Hc (@pbundleT _ _ names)) v),
-    (λ Hc names, Φinv (heap_update_pre _ _ _ Hc (@pbundleT _ _ names))).
+  set (hG := heap_globalG_heapG hgG Hc Hnames).
+  iExists Φ, (λ Hc names v, Φrx (heap_update_local _ hG _ Hc (@pbundleT _ _ names)) v),
+    (λ Hc names, Φinv (heap_update_local _ hG _ Hc (@pbundleT _ _ names))).
   rewrite /wpr//=.
-  assert (Build_pbundleG _ Σ (heap_get_names Σ (heap_globalG_heapG hgG Hc' Hnames)) =
-          Build_pbundleG _ Σ (hgG_extend_local_names hgG Hnames)) as ->.
-  { f_equal.
-    rewrite /hgG_extend_local_names.
-    rewrite /heap_globalG_heapG.
-    rewrite heap_update_pre_get //=. }
-  iExactEq "Hwpr". f_equal.
-  { admit. }
+  assert (heap_get_local_names Σ (heap_globalG_heapG hgG Hc' Hnames) = Hnames) as Heqnames.
   { rewrite /heap_globalG_heapG.
-    rewrite /hgG_extend_local_names//=. admit. }
-Abort.
+    rewrite /heap_get_local_names/heap_update_pre//=.
+    destruct Hnames => //=. rewrite /na_heapG_get_names/na_heapG_update_pre//=.
+    rewrite ffi_update_pre_get_local; eauto. destruct heap_local_heap_names; eauto. }
+  rewrite Heqnames.
+  iDestruct (wpr_proper_irisG_equiv with "Hwpr") as "Hwpr"; last first.
+  { iApply (@recovery_weakestpre.wpr_strong_mono with "Hwpr []").
+    iSplit; eauto.
+    iModIntro. iSplit; eauto. }
+  clear.
+  intros Hcnew tnew.
+  split_and!; eauto.
+  - rewrite //= ffi_update_pre_update. eauto.
+  - rewrite //= ffi_update_pre_update.
+    iIntros. rewrite ffi_pre_global_ctx_spec; eauto.
+    rewrite ffi_update_pre_get_global //=.
+    eauto.
+Qed.

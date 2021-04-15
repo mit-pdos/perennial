@@ -6,7 +6,7 @@ From Perennial.program_logic Require
      distributed_weakestpre
      distributed_adequacy.
 From Perennial.goose_lang Require
-     adequacy recovery_adequacy
+     adequacy recovery_adequacy distributed_adequacy
      spec_assert
      metatheory
      refinement refinement_adequacy

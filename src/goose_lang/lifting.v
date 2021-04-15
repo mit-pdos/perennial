@@ -258,20 +258,20 @@ Record heap_local_names := {
   heap_local_trace_names : tr_names;
 }.
 
-Definition heap_update_names Σ (hG : heapG Σ) (names: heap_names) :=
+Definition heap_update_local_names Σ (hG : heapG Σ) (names: heap_local_names) :=
   {| heapG_invG := heapG_invG;
      heapG_crashG := heapG_crashG;
-     heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_ffi_local_names names);
-     heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
-     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
+     heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_local_ffi_local_names names);
+     heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_local_heap_names names);
+     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names)
  |}.
 
-Definition heap_update Σ (hG : heapG Σ) (Hinv: invG Σ) (Hcrash : crashG Σ) (names: heap_names) :=
+Definition heap_update_local Σ (hG : heapG Σ) (Hinv: invG Σ) (Hcrash : crashG Σ) (names: heap_local_names) :=
   {| heapG_invG := Hinv;
      heapG_crashG := Hcrash;
-     heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_ffi_local_names names);
-     heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_heap_names names);
-     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_trace_names names)
+     heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_local_ffi_local_names names);
+     heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_local_heap_names names);
+     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names)
  |}.
 
 Definition heap_get_names Σ (hG : heapG Σ) : heap_names :=
@@ -281,10 +281,22 @@ Definition heap_get_names Σ (hG : heapG Σ) : heap_names :=
      heap_trace_names := trace_tr_names;
  |}.
 
+Definition heap_get_local_names Σ (hG : heapG Σ) : heap_local_names :=
+  {| heap_local_heap_names := na_heapG_get_names (heapG_na_heapG);
+     heap_local_ffi_local_names := ffi_get_local_names Σ (heapG_ffiG);
+     heap_local_trace_names := trace_tr_names;
+ |}.
+
+Definition heap_extend_local_names (names : heap_local_names) (namesg: ffi_global_names) : heap_names :=
+  {| heap_heap_names := heap_local_heap_names names;
+     heap_ffi_local_names := heap_local_ffi_local_names names;
+     heap_trace_names := heap_local_trace_names names;
+     heap_ffi_global_names := namesg |}.
+
 Lemma heap_get_update Σ hG :
-  heap_update_names Σ hG (heap_get_names _ hG) = hG.
+  heap_update_local_names Σ hG (heap_get_local_names _ hG) = hG.
 Proof.
-  rewrite /heap_update_names/heap_get_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
+  rewrite /heap_update_local_names/heap_get_local_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
   destruct hG as [??? [] []]; eauto.
 Qed.
 
@@ -310,14 +322,14 @@ Global Program Instance heapG_irisG `{!heapG Σ}:
 Next Obligation. intros. eauto. Qed.
 
 Lemma heap_get_update' Σ hG :
-  heap_update Σ hG (iris_invG) (iris_crashG) (heap_get_names _ hG) = hG.
+  heap_update_local Σ hG (iris_invG) (iris_crashG) (heap_get_local_names _ hG) = hG.
 Proof.
-  rewrite /heap_update/heap_get_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
+  rewrite /heap_update_local/heap_get_local_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
   destruct hG as [??? [] []]; eauto.
 Qed.
 
 Lemma heap_update_invG Σ hG Hinv Hc names:
-  @iris_invG _ _ (@heapG_irisG _ (heap_update Σ hG Hinv Hc names)) = Hinv.
+  @iris_invG _ _ (@heapG_irisG _ (heap_update_local Σ hG Hinv Hc names)) = Hinv.
 Proof. rewrite //=. Qed.
 
 (** The tactic [inv_head_step] performs inversion on hypotheses of the shape

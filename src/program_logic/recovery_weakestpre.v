@@ -35,6 +35,10 @@ Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofe) (Σ : gFuncto
     ∀ Hc Ht, (@num_laters_per_step _ _ (@perennial_irisG Hc Ht)) = perennial_num_laters_per_step;
 }.
 
+Definition perennialG_equiv {Λ CS T Σ} (I1 I2: perennialG Λ CS T Σ) :=
+  (∀ Hcrash t, irisG_equiv (@perennial_irisG _ _ _ _ I1 Hcrash t)
+                           (@perennial_irisG _ _ _ _ I2 Hcrash t)).
+
 Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
     (wpr : crashG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
                      (crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
@@ -48,11 +52,10 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
      {{ ∀ σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
         state_interp σ n -∗ global_state_interp g ns κs ={E}=∗  ▷ ∀ Hc1 q, NC q ={E}=∗
           ∃ t1
-            (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc1 t1) =
-                                  @global_state_interp _ _ (perennial_irisG Hc0 t0))
             (Hsame_inv: @iris_invG _ _ (perennial_irisG Hc1 t1) =
-                        @iris_invG _ _ (perennial_irisG Hc0 t0))
-          ,
+                        @iris_invG _ _ (perennial_irisG Hc0 t0)),
+          □ (∀ g ns κs, @global_state_interp _ _ (perennial_irisG Hc1 t1) g ns κs ∗-∗
+                        @global_state_interp _ _ (perennial_irisG Hc0 t0) g ns κs) ∗
           state_interp σ' 0 ∗
           global_state_interp g (S ns) κs ∗
           (Φinv Hc1 t1 ∧ wpr Hc1 t1 E rec rec (λ v, Φr Hc1 t1 v) Φinv Φr) ∗ NC q}})%I.
@@ -102,8 +105,8 @@ Proof.
   rewrite own_discrete_idemp.
   iIntros "!> H".
   iModIntro. iIntros (???????) "Hσ Hg". iMod ("H" with "[//] Hσ Hg") as "H".
-  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (? Heqpf Heqpf') "(?&?&H&HNC)".
-  iModIntro. iExists _, Heqpf, Heqpf'. iFrame.
+  iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (? Heqpf') "(Heq&?&?&H&HNC)".
+  iModIntro. iExists _, Heqpf'. iFrame.
   iSplit.
   - iDestruct "H" as "(H&_)". rewrite own_discrete_elim. iDestruct "HΦ" as "(HΦ&_)". by iApply "HΦ".
   - iDestruct "H" as "(_&H)".
@@ -138,7 +141,9 @@ Proof.
   iIntros. iMod ("Hidemp" with "[ ] [$] [$] [$]") as "H".
   { eauto. }
   iModIntro. iNext. iIntros (Hc' ?) "HNC". iMod ("H" $! Hc' with "[$]") as (t' Heq' Heqinv') "(?&?&Hc&HNC)".
-  iExists _, Heq', Heqinv'. iFrame. iModIntro.
+  iExists _, Heqinv'. iFrame. iModIntro.
+  iSplit.
+  { rewrite Heq'. iModIntro. iIntros; eauto. }
   iSplit.
   { iDestruct "Hc" as "($&_)". }
   iDestruct "Hc" as "(_&Hc)".
@@ -148,6 +153,45 @@ Proof.
 Qed.
 
 End wpr.
+
+Lemma wpr_proper_irisG_equiv {Λ CS T Σ} (I1 I2 : perennialG Λ CS T Σ) s k Hc t E Φ Φinv Φr (e r : expr Λ) :
+  perennialG_equiv I1 I2 →
+  @wpr _ _ _ _ I1 s k Hc t E e r Φ Φinv Φr -∗
+  @wpr _ _ _ _ I2 s k Hc t E e r Φ Φinv Φr.
+Proof.
+  iIntros (Hequiv) "Hwp".
+  iLöb as "IH" forall (e E Φ Hc t).
+  iEval (rewrite wpr_unfold /wpr_pre).
+  iEval (rewrite wpr_unfold /wpr_pre) in "Hwp".
+  rewrite ?wpc_eq.
+  iDestruct (wpc_proper_irisG_equiv with "Hwp") as "Hwp"; last first.
+  { rewrite -?wpc_eq. iApply (wpc_strong_mono with "Hwp"); auto.
+    iSplit.
+    - iIntros. eauto.
+    - iIntros "!> H". iModIntro.
+      iIntros (σ g σ' Hcrash ns κs n) "Hσ Hg".
+      destruct (Hequiv Hc t) as (Heqinv&Heqcrash&Heqstate&Heqglobal&Heqfork&?).
+      iSpecialize ("H" with "[//] [Hσ] [Hg]").
+      { rewrite ?Heqstate. iApply "Hσ". }
+      { rewrite ?Heqglobal. iApply "Hg". }
+      rewrite ?Heqinv. iMod "H". iModIntro. iNext. iIntros (??) "HNC".
+      iSpecialize ("H" with "[$]").
+      destruct (Hequiv Hc1 t) as (Heqinv'&Heqcrash'&Heqstate'&Heqglobal'&Heqfork'&?).
+      rewrite ?Heqinv'. iMod "H". iModIntro.
+      iDestruct "H" as (t' Heq') "(#Heq&Hσ&Hg&H&HNC)".
+      destruct (Hequiv Hc1 t') as (Heqinv''&Heqcrash''&Heqstate''&Heqglobal''&Heqfork''&?).
+      unshelve (iExists t', _).
+      { rewrite -Heq'. rewrite Heqinv''. eauto. }
+      iSplit.
+      { iModIntro. iIntros. rewrite -Heqglobal -Heqglobal''. eauto. }
+      rewrite ?Heqcrash'' ?Heqstate'' ?Heqglobal''; iFrame.
+      iSplit.
+      { iDestruct "H" as "($&_)". }
+      iApply "IH".
+      iDestruct "H" as "(_&$)".
+  }
+  { eauto. }
+Qed.
 
 Definition wpr0_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat) (mj: nat)
     (wpr : crashG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
@@ -162,11 +206,10 @@ Definition wpr0_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat) (mj: nat)
      (∀ σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
         state_interp σ n -∗ global_state_interp g ns κs ={E}=∗  ▷ ∀ Hc1 q, NC q ={E}=∗
           ∃ t1
-            (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc1 t1) =
-                                  @global_state_interp _ _ (perennial_irisG Hc0 t0))
             (Hsame_inv: @iris_invG _ _ (perennial_irisG Hc1 t1) =
-                        @iris_invG _ _ (perennial_irisG Hc0 t0))
-          ,
+                        @iris_invG _ _ (perennial_irisG Hc0 t0)),
+          □ (∀ g ns κs, @global_state_interp _ _ (perennial_irisG Hc1 t1) g ns κs ∗-∗
+                        @global_state_interp _ _ (perennial_irisG Hc0 t0) g ns κs) ∗
           state_interp σ' 0 ∗
           global_state_interp g (S ns) κs ∗
           (Φinv Hc1 t1 ∧ wpr Hc1 t1 E rec rec (λ v, Φr Hc1 t1 v) Φinv Φr) ∗ NC q))%I.
@@ -214,8 +257,8 @@ Proof.
   iIntros "!> H !>". iIntros (σ g σ' Hcrash ns κs n) "Hσ Hg".
   iMod ("H" with "[//] [$] [$]") as "H".
   do 2 iModIntro. iIntros (??) "HNC".
-  iMod ("H" with "[$]") as (He1 He2 He3) "(Hσ&Hg&H&HNC)".
-  iModIntro. iExists He1, He2, He3. iFrame. iSplit.
+  iMod ("H" with "[$]") as (He1 He2) "(Heq&Hσ&Hg&H&HNC)".
+  iModIntro. iExists He1, He2. iFrame. iSplit.
   { iDestruct "H" as "($&_)". }
   { iApply "IH". iDestruct "H" as "(_&$)". }
 Qed.

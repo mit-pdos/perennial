@@ -78,6 +78,7 @@ Proof.
   destruct names => //=.
 Qed.
 
+(*
 Lemma heap_update_pre_update Σ `(hpreG : heapPreG Σ) (Hinv1 Hinv2: invG Σ) (Hcrash1 Hcrash2: crashG Σ)
       (names1 names2: heap_names) :
   heap_update _ (heap_update_pre Σ hpreG Hinv1 Hcrash1 names2) Hinv2 Hcrash2 names2 =
@@ -85,6 +86,7 @@ Lemma heap_update_pre_update Σ `(hpreG : heapPreG Σ) (Hinv1 Hinv2: invG Σ) (H
 Proof.
   rewrite /heap_update/heap_update_pre ffi_update_pre_update/traceG_update/gen_heapG_update//=.
 Qed.
+*)
 
 Hint Resolve heap_preG_ffi : typeclass_instances.
 

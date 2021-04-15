@@ -53,6 +53,14 @@ Class irisG (Λ : language) (Σ : gFunctors) := IrisG {
 }.
 Global Opaque iris_invG.
 
+Definition irisG_equiv {Λ Σ} (I1 I2: irisG Λ Σ) :=
+  @iris_invG _ _ I1 = @iris_invG _ _ I2 ∧
+  @iris_crashG _ _ I1 = @iris_crashG _ _ I2 ∧
+  (∀ σ n, @state_interp _ _ I1 σ n ≡ @state_interp _ _ I2 σ n) ∧
+  (∀ g n κs, @global_state_interp _ _ I1 g n κs ≡ @global_state_interp _ _ I2 g n κs) ∧
+  (∀ v, @fork_post _ _ I1 v ≡ @fork_post _ _ I2 v) ∧
+  (∀ n, @num_laters_per_step _ _ I1 n ≡ @num_laters_per_step _ _ I2 n).
+
 (* Define a weakestpre with an explicit crash invariant (i.e. there is a postcondition and a crash condition *)
 
 (* first, define a modality for establishing crash conditions *)
@@ -2056,3 +2064,54 @@ Proof.
 Qed.
 
 End wpc_ectx_lifting.
+
+
+Lemma wpc0_proper_irisG_equiv {Λ Σ} (I1 I2 : irisG Λ Σ) s k mj E Φ Φc (e : expr Λ) :
+  irisG_equiv I1 I2 →
+  @wpc0 _ _ I1 s k mj E e Φ Φc -∗
+  @wpc0 _ _ I2 s k mj E e Φ Φc.
+Proof.
+  iIntros (Hequiv) "Hwp".
+  iLöb as "IH" forall (e E Φ Φc).
+  iEval (rewrite ?wpc0_unfold /wpc_pre).
+  iEval (rewrite ?wpc0_unfold /wpc_pre) in "Hwp".
+  destruct Hequiv as (Heqinv&Heqcrash&Heqstate&Heqglobal&Heqfork&Heqnum).
+  rewrite Heqinv.
+  iMod "Hwp". iModIntro.
+  destruct (to_val e).
+  - rewrite ?Heqinv ?Heqcrash. eauto.
+  - iSplit; last first.
+    { iDestruct "Hwp" as "(_&Hwp)". rewrite ?Heqinv ?Heqcrash. eauto. }
+    iDestruct "Hwp" as "(Hwp&_)".
+    rewrite ?Heqinv ?Heqfork.
+    iIntros (???????) "Hσ Hg HNC".
+    iMod ("Hwp" with "[Hσ] [Hg] [HNC]") as "H".
+    { rewrite ?Heqstate. iApply "Hσ". }
+    { rewrite ?Heqglobal. iApply "Hg". }
+    { rewrite ?Heqcrash. iApply "HNC". }
+    iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
+    rewrite ?Heqinv ?Heqnum. iApply (@step_fupdN_wand with "H").
+    iIntros "($&H)".
+    iIntros (????) "Hstep".
+    iMod ("H" with "[$]") as "(Hσ&Hg&Hwpc&Hefs&HNC)".
+    rewrite ?Heqstate ?Heqglobal ?Heqcrash. iFrame.
+    iModIntro.
+    iSplitL "Hwpc".
+    { iApply "IH". eauto. }
+    iRevert "IH". iIntros "H".
+    iApply (big_sepL.big_sepL_mono_with_pers with "H Hefs").
+    { iIntros (?? Hlookup) "#IH". iIntros "H". iApply "IH".
+      iApply (wpc0_strong_mono with "H"); eauto.
+      { naive_solver. }
+      { iSplit; eauto. iIntros. rewrite Heqfork; eauto. }
+    }
+Qed.
+
+Lemma wpc_proper_irisG_equiv {Λ Σ} (I1 I2 : irisG Λ Σ) s k E Φ Φc (e : expr Λ) :
+  irisG_equiv I1 I2 →
+  @wpc_def _ _ I1 s k E e Φ Φc -∗
+  @wpc_def _ _ I2 s k E e Φ Φc.
+Proof.
+  intros Hequiv. rewrite /wpc_def.
+  iIntros "H" (mj). iApply wpc0_proper_irisG_equiv; try eassumption; eauto.
+Qed.
