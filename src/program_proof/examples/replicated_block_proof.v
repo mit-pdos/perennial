@@ -13,6 +13,9 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_logic Require Import recovery_adequacy dist_adequacy.
 From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequacy.
 
+(* make sure to use expr and val for GooseLang *)
+Import goose_lang.
+
 (** * Replicated block example
 
     Replicates single-block writes across two underlying disk blocks, and
