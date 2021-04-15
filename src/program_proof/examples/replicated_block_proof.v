@@ -1,8 +1,10 @@
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.Helpers Require Import ModArith.
-From Perennial.goose_lang Require Import crash_modality wpr_lifting dist_lifting.
 From Perennial.program_logic Require Import atomic.
+From Perennial.program_logic Require Import recovery_adequacy dist_adequacy.
+From Perennial.goose_lang Require Import crash_modality wpr_lifting dist_lifting.
+From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequacy.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import replicated_block.
 From Perennial.algebra Require Import own_discrete.
@@ -10,11 +12,6 @@ From Perennial.goose_lang.lib Require Import lock.crash_lock.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import proof_prelude.
 
-From Perennial.program_logic Require Import recovery_adequacy dist_adequacy.
-From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequacy.
-
-(* make sure to use expr and val for GooseLang *)
-Import goose_lang.
 
 (** * Replicated block example
 
