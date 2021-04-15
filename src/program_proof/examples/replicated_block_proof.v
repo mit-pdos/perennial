@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.Helpers Require Import ModArith.
-From Perennial.goose_lang Require Import crash_modality wpr_lifting.
+From Perennial.goose_lang Require Import crash_modality wpr_lifting wpd_lifting.
 From Perennial.program_logic Require Import atomic.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import replicated_block.
@@ -531,27 +531,20 @@ End recov.
 
 Existing Instances subG_stagedG.
 
-From Perennial.program_logic Require Import recovery_adequacy.
-From Perennial.goose_lang Require Export adequacy recovery_adequacy.
+From Perennial.program_logic Require Import recovery_adequacy distributed_adequacy.
+From Perennial.goose_lang Require Export adequacy recovery_adequacy distributed_adequacy.
 Definition repΣ := #[stagedΣ; heapΣ; crashΣ].
 
-Theorem OpenRead_adequate σ g dref addr :
-  (* We assume the addresses we replicate are in the disk domain *)
+Lemma ffi_start_OpenRead σ addr g dref {hG: heapG repΣ} :
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
-  recv_adequate (CS := goose_crash_lang) NotStuck (OpenRead dref addr) (OpenRead dref addr)
-                σ g (λ v _ _, True) (λ v _ _, True) (λ _ _, True).
+  ffi_local_start heapG_ffiG σ.(world) g
+  -∗ wpr NotStuck 2 ⊤ (OpenRead dref addr) (OpenRead dref addr) (λ _ : goose_lang.val, True)
+       (λ _, True) (λ _ _, True).
 Proof.
   rewrite ?elem_of_dom.
   intros (d1&Hin1) (d2&Hin2).
-  apply (heap_recv_adequacy (repΣ) _ 2 _ _ _ _ _ _ _ (λ _, True)%I).
-  { simpl. auto. }
-  iIntros (?) "Hstart _ _".
-  iModIntro.
-  iSplitL "".
-  { iModIntro; iIntros. iMod (fupd_mask_subseteq ∅); eauto. }
-  iSplitL "".
-  { iModIntro; iIntros. iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
+  iIntros "Hstart".
   iApply wpr_OpenRead.
   rewrite /ffi_local_start//=.
   rewrite /rblock_cinv.
@@ -560,4 +553,49 @@ Proof.
   { rewrite lookup_delete_ne //=.
     apply word_add1_neq. }
   iFrame. iExists _. iFrame.
+Qed.
+
+Theorem OpenRead_adequate σ g dref addr :
+  (* We assume the addresses we replicate are in the disk domain *)
+  int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
+  int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
+  recv_adequate (CS := goose_crash_lang) NotStuck (OpenRead dref addr) (OpenRead dref addr)
+                σ g (λ v _ _, True) (λ v _ _, True) (λ _ _, True).
+Proof.
+  intros.
+  apply (heap_recv_adequacy (repΣ) _ 2 _ _ _ _ _ _ _ (λ _, True)%I).
+  { simpl. auto. }
+  iIntros (?) "Hstart _ _".
+  iModIntro.
+  iSplitL "".
+  { iModIntro; iIntros. iMod (fupd_mask_subseteq ∅); eauto. }
+  iSplitL "".
+  { iModIntro; iIntros. iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
+  iApply (ffi_start_OpenRead); eauto.
+Qed.
+
+(* Trivial example showing we can run OpenRead on two nodes safely.
+   (Unsurprisingly, since there's no interaction... *)
+Theorem OpenRead_dist_adequate σ g dref addr :
+  (* We assume the addresses we replicate are in the disk domain *)
+  int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
+  int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
+  dist_adequate (CS := goose_crash_lang)
+                [(OpenRead dref addr, σ);
+                 (OpenRead dref addr, σ)]
+                g (λ _, True).
+Proof.
+  intros.
+  apply (heap_dist_adequacy_alt (repΣ) 2 _ _ _).
+  { simpl. auto. }
+  iIntros (?) "_". iModIntro.
+  iSplitL ""; last first.
+  { iMod (fupd_mask_subseteq ∅); eauto. }
+  rewrite ?big_sepL_cons big_sepL_nil.
+  iSplitL "".
+  { iIntros (??) "(H&_&_)". iModIntro. iExists _, _, _.
+    iApply (ffi_start_OpenRead with "[-]"); eauto. }
+  iSplitL ""; last done.
+  { iIntros (??) "(H&_&_)". iModIntro. iExists _, _, _.
+    iApply (ffi_start_OpenRead with "[-]"); eauto. }
 Qed.
