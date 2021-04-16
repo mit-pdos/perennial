@@ -459,7 +459,8 @@ Proof.
         {
           iPureIntro.
           simpl.
-          admit. (* TODO: pure gmap dom fact *)
+          rewrite !dom_insert_L.
+          congruence.
         }
         iSplitL "HlastReply_structs Hsrv_rep_val_sl".
         {
@@ -541,7 +542,10 @@ Proof.
         iExists _,_,_, _, _, _, _, _.
         iExists _, _, _.
         iFrame.
-        iSplitL ""; first admit. (* TODO: same pure gmap dom fact as before *)
+        iSplitL "".
+        { iPureIntro.
+          rewrite !dom_insert_L /=.
+          congruence. }
         iSplitL "HlastReply_structs Hsrv_rep_val_sl".
         {
           iApply (big_sepM2_insert_2 with "[Hsrv_rep_val_sl] HlastReply_structs").
