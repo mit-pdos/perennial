@@ -244,9 +244,9 @@ Proof.
 Qed.
 
 Lemma wp_SliceAppendSlice stk E s1 s2 t q `{!IntoValForType IntoVal0 t} (vs1 vs2: list V) :
-  {{{ is_slice s1 t 1 vs1 ∗ is_slice s2 t q vs2 }}}
+  {{{ is_slice s1 t 1 vs1 ∗ is_slice_small s2 t q vs2 }}}
     SliceAppendSlice t (slice_val s1) (slice_val s2) @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' t 1 (vs1 ++ vs2) ∗ is_slice s2 t q vs2 }}}.
+  {{{ s', RET slice_val s'; is_slice s' t 1 (vs1 ++ vs2) ∗ is_slice_small s2 t q vs2 }}}.
 Proof.
   iIntros (Φ) "[Hs1 Hs2] HΦ".
 Admitted.
