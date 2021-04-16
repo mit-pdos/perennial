@@ -12,6 +12,11 @@ Section dist_language.
       tpool : list (expr Λ);
       local_state : state Λ }.
 
+  Record node_init_cfg :=
+    { init_restart : expr Λ;
+      init_thread : expr Λ;
+      init_local_state : state Λ }.
+
   Definition dist_cfg : Type := list dist_node * global_state Λ.
 
   Inductive dist_step : dist_cfg → list (observation Λ) → dist_cfg → Prop :=
@@ -50,9 +55,13 @@ Section dist_language.
   Definition not_stuck_node (dn: dist_node) (g: global_state Λ) :=
     ∀ e, e ∈ tpool dn → not_stuck e (local_state dn) g.
 
-  (* Generate a dist_cfg from a list of boot programs and initial local states and a global state.
-     Starting thread pool on each node is a single thread running boot code *)
-  Definition starting_dist_cfg (eσs : list (expr Λ * state Λ)) g : dist_cfg :=
-    (map (λ eσ, {| boot := fst eσ; local_state := snd eσ; tpool := [fst eσ] |}) eσs, g).
+  (* Generate a dist_cfg from:
+     (1) a list of init program, boot program, and initial local state for each node
+     (2) a global state.
+     Starting thread pool on each node is a single thread running the initial program *)
+  Definition starting_dist_cfg (eσs : list node_init_cfg) g : dist_cfg :=
+    (map (λ ρ, {| boot := init_restart ρ;
+                  local_state := init_local_state ρ;
+                  tpool := [init_thread ρ] |}) eσs, g).
 
 End dist_language.

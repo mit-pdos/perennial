@@ -577,13 +577,20 @@ Qed.
 
 (* Trivial example showing we can run OpenRead on two nodes safely.
    (Unsurprisingly, since there's no interaction... *)
+
+
+Definition OpenRead_init_cfg dref addr σ :=
+  {| init_thread := OpenRead dref addr;
+     init_restart := OpenRead dref addr;
+     init_local_state := σ |}.
+
 Theorem OpenRead_dist_adequate σ g dref addr :
   (* We assume the addresses we replicate are in the disk domain *)
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   dist_adequate (CS := goose_crash_lang)
-                [(OpenRead dref addr, σ);
-                 (OpenRead dref addr, σ)]
+                [OpenRead_init_cfg dref addr σ;
+                 OpenRead_init_cfg dref addr σ]
                 g (λ _, True).
 Proof.
   intros.

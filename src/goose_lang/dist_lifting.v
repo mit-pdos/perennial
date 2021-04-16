@@ -37,17 +37,9 @@ Definition heap_globalG_heapG {Σ} (hgG: heap_globalG Σ) (Hc: crashG Σ) (names
   heap_update_pre Σ (heap_globalG_preG) (heap_globalG_invG) Hc (hgG_extend_local_names hgG names).
 
 Definition wpd `{hgG: !heap_globalG Σ} (k: nat) (E: coPset)
-           (cts: list (crashG Σ * heap_local_names)) (es: list expr) :=
-  ([∗ list] i↦ct;e ∈ cts;es, ∃ Φ Φrx Φinv,
+           (cts: list (crashG Σ * heap_local_names)) (ers: list (expr * expr)) :=
+  ([∗ list] i↦ct;er ∈ cts;ers, ∃ Φ Φrx Φinv,
     let hG := heap_globalG_heapG hgG (fst ct) (snd ct) in
-    wpr NotStuck k E e e Φ Φinv Φrx)%I.
-
-(*
-Definition wpd `{hgG: !heap_globalG Σ} (k: nat) (E: coPset)
-           (cts: list (crashG Σ * heap_local_names)) (es: list expr) :=
-  wpd (CS := goose_crash_lang) (gG:= heapG_groveG) (pG := heapG_perennialG)
-      k E (map (λ ctn, (fst ctn, {| pbundleT := hgG_extend_local_names hgG (snd ctn) |})) cts) es.
-*)
-
+    wpr NotStuck k E (fst er) (snd er) Φ Φinv Φrx)%I.
 
 End wpd_definitions.

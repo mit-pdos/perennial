@@ -6,19 +6,20 @@ From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre dist_weakestpre dist_adequacy.
 From Perennial.goose_lang Require Export wpr_lifting dist_lifting.
 From Perennial.goose_lang Require Import typing adequacy lang.
+From Perennial.goose_lang Require Import crash_modality.
 Set Default Proof Using "Type".
 
 Theorem heap_dist_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
-        Σ `{hPre: !heapPreG Σ} k (ebσs : list (expr * state))
-        g φinv (HINIT: ∀ σ, σ ∈ snd <$> ebσs → ffi_initP σ.(world) g) :
+        Σ `{hPre: !heapPreG Σ} k (ebσs : list node_init_cfg)
+        g φinv (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ} (cts : list (crashG Σ * heap_local_names)),
       ⊢
         ffi_pre_global_start Σ (heap_preG_ffi) (heap_globalG_names) g ={⊤}=∗
-        ([∗ list] i ↦ ct; σ ∈ cts; snd <$> ebσs,
+        ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
               let hG := heap_globalG_heapG Hheap (fst ct) (snd ct) in
               ffi_local_start (heapG_ffiG) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)) ={⊤}=∗
         (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (heap_globalG_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝) ∗
-        wpd k ⊤ cts (fst <$> ebσs)) →
+        wpd k ⊤ cts ((λ x, (init_thread x, init_restart x)) <$> ebσs)) →
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
   intros Hwp.
@@ -28,15 +29,15 @@ Proof.
   set (hgG := {| heap_globalG_preG := _; heap_globalG_names := ffi_namesg;
                      heap_globalG_invG := Hinv |}).
   iAssert (|==> ∃ cts, ffi_pre_global_ctx Σ heap_preG_ffi ffi_namesg g ∗
-              ([∗ list] i ↦ ct; σ ∈ cts; snd <$> ebσs,
+              ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
               let hG := heap_globalG_heapG hgG (fst ct) (snd ct) in
               NC 1 ∗ state_interp σ 0) ∗
-              ([∗ list] i ↦ ct; σ ∈ cts; snd <$> ebσs,
+              ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
               let hG := heap_globalG_heapG hgG (fst ct) (snd ct) in
               ffi_local_start (heapG_ffiG) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)))%I
 
     with "[Hgw]" as "H".
-  { clear -HINIT. remember (snd <$> ebσs) as σs eqn:Heq. rewrite -Heq. clear Heq.
+  { clear -HINIT. remember (init_local_state <$> ebσs) as σs eqn:Heq. clear Heq.
     iInduction σs as [| σ σs] "IH".
     { iExists []; eauto. }
     { iMod ("IH" with "[] [$]") as (cts) "(Hpre&H1&H2)".
@@ -82,7 +83,7 @@ Proof.
     iIntros (g' ns' κs'). rewrite //=. eauto. }
   rewrite ?big_sepL2_fmap_r ?big_sepL2_fmap_l.
   iApply (big_sepL2_mono with "Hwp").
-  iIntros (k' (Hc'&Hnames) (e&σ) Hin1 Hin2) "H".
+  iIntros (k' (Hc'&Hnames) ρ Hin1 Hin2) "H".
   iDestruct "H" as (Φ Φrx Φinv) "Hwpr".
   set (hG := heap_globalG_heapG hgG Hc Hnames).
   iExists Φ, (λ Hc names v, Φrx (heap_update_local _ hG _ Hc (@pbundleT _ _ names)) v),
@@ -113,19 +114,20 @@ Qed.
   takes as input a list of proofs that, given initial local resources, we can
   construct a wpr for each node. *)
 Theorem heap_dist_adequacy_alt `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
-        Σ `{hPre: !heapPreG Σ} k (ebσs : list (expr * state))
-        g φinv (HINIT: ∀ σ, σ ∈ snd <$> ebσs → ffi_initP σ.(world) g) :
+        Σ `{hPre: !heapPreG Σ} k (ebσs : list node_init_cfg)
+        g φinv (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ},
       ⊢
         ffi_pre_global_start Σ (heap_preG_ffi) (heap_globalG_names) g ={⊤}=∗
         ([∗ list] ebσ ∈ ebσs,
-              let eb := fst ebσ in
-              let σ := snd ebσ in
+              let e := init_thread ebσ in
+              let r := init_restart ebσ in
+              let σ := init_local_state ebσ in
               ∀ Hcrash local_names,
               let hG := heap_globalG_heapG Hheap Hcrash local_names in
               ffi_local_start (heapG_ffiG) σ.(world) g ∗
               trace_frag σ.(trace) ∗ oracle_frag σ.(oracle) ={⊤}=∗
-              ∃ Φ Φinv Φrx, wpr NotStuck k ⊤ eb eb Φ Φinv Φrx) ∗
+              ∃ Φ Φinv Φrx, wpr NotStuck k ⊤ e r Φ Φinv Φrx) ∗
         (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (heap_globalG_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
@@ -142,9 +144,68 @@ Proof.
   iDestruct (big_sepL_sep with "[$Hwprs $H]") as "H".
   iApply big_sepL_fupd.
   iApply (big_sepL_mono with "H").
-  iIntros (i (eb&σ) Hlookup) "(Hwand&Hres)".
+  iIntros (i ρ Hlookup) "(Hwand&Hres)".
   iDestruct "Hres" as (ct Hlookup2) "Hres".
   iMod ("Hwand" $! (fst ct) (snd ct) with "[$]") as "H".
   iModIntro. iExists _; iSplit; eauto.
   rewrite //=. iDestruct "H" as (???) "H". iExists _, _, _. iFrame.
 Qed.
+
+Section failstop.
+
+Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}.
+
+(* We can model failstop execution by just having the restart thread be a trivial program that just halts.
+   Thus, a node "restarts" after a crash but it does not do anything. *)
+Definition dist_adequate_failstop (ebσs: list (expr * state)) (g: global_state) :=
+  let ρs := fmap (λ ebσ, {| init_thread := fst ebσ;
+                           init_restart := of_val #();
+                           init_local_state := snd ebσ |})
+               ebσs in
+  dist_adequate (CS := goose_crash_lang) ρs g.
+
+(* Like above, but, for failstop execution one only needs to prove a wp about initial threads, not a wpr *)
+Theorem heap_dist_adequacy_failstop
+        Σ `{hPre: !heapPreG Σ} (ebσs : list (expr * state))
+        g φinv (HINIT: ∀ σ, σ ∈ snd  <$> ebσs → ffi_initP σ.(world) g) :
+  (∀ `{Hheap : !heap_globalG Σ},
+      ⊢
+        ffi_pre_global_start Σ (heap_preG_ffi) (heap_globalG_names) g ={⊤}=∗
+        ([∗ list] ebσ ∈ ebσs,
+              let e := fst ebσ in
+              let σ := snd ebσ in
+              ∀ Hcrash local_names,
+              let hG := heap_globalG_heapG Hheap Hcrash local_names in
+              ffi_local_start (heapG_ffiG) σ.(world) g ∗
+              trace_frag σ.(trace) ∗ oracle_frag σ.(oracle) ={⊤}=∗
+              ∃ Φ, wp NotStuck ⊤ e Φ) ∗
+        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (heap_globalG_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
+  dist_adequate_failstop ebσs g (λ g, φinv g).
+Proof.
+  intros Hwp. rewrite /dist_adequate_failstop.
+  eapply (heap_dist_adequacy_alt _ 0).
+  { intros σ (?&->&Hin)%elem_of_list_fmap. eapply HINIT; eauto.
+    apply elem_of_list_fmap in Hin as (?&->&?) => //=.
+    eapply elem_of_list_fmap. eauto. }
+  { iIntros (Hheap) "Hg".
+    iMod (Hwp with "[$]") as "(Hwp&$)". iModIntro.
+    iApply big_sepL_fmap.
+    iApply (big_sepL_mono with "Hwp").
+    iIntros (i (e&σ) Hlookup) "H".
+    iIntros (??) "Hres". iMod ("H" with "[$]") as "Hwp".
+    iDestruct "Hwp" as (Φ) "H".
+    simpl.
+    iModIntro. iExists Φ, (λ _, True%I), (λ _ _, True%I).
+    unshelve (iApply (idempotence_wpr _ _ _ _ _ _ _ _ (λ _, True%I) with "[H] []")).
+    { exact Hffi_adequacy. }
+    { iApply wp_wpc. eauto. }
+    { iModIntro. iIntros (?????) "_".
+      iModIntro.
+      rewrite /post_crash.
+      iIntros (???) "_ _". iSplit; first auto.
+      iApply wpc_value; eauto.
+    }
+  }
+Qed.
+
+End failstop.

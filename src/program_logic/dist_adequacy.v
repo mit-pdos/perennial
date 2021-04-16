@@ -269,9 +269,9 @@ Theorem wpd_strong_adequacy Σ Λ CS T `{!invPreG Σ} k ebσs g1 n κs dns2 g2 �
                IrisG Λ Σ Hinv Hc (stateI t) (global_stateI) (fork_post t) f (Hpf1 Hc t)) Hpf1' Hpf2 f Hpf3
                in
        global_stateI g1 0 κs ∗
-       ([∗ list] i ↦ ct; σ ∈ cts; snd <$> ebσs,
+       ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
                                   let _ := fst ct in NC 1 ∗ stateI (snd ct) σ 0) ∗
-       wpd k ⊤ cts (fst <$> ebσs) ∗
+       wpd k ⊤ cts ((λ x, (init_thread x, init_restart x)) <$> ebσs) ∗
        (⌜ ∀ dn, dn ∈ dns2 → not_stuck_node dn g2 ⌝ -∗
          global_stateI g2 n [] -∗
          (* Under these assumptions, and while opening all invariants, we
@@ -302,7 +302,7 @@ Proof.
     iApply big_sepL_fmap.
     iDestruct (big_sepL.big_sepL2_to_sepL_2 with "H") as "H".
     iApply (big_sepL.big_sepL_mono_with_pers with "Heq_global H").
-    iIntros (i (e&σ) Hlookup) "#Heq_global H".
+    iIntros (i ρ Hlookup) "#Heq_global H".
     iDestruct "H" as (ct Hlookup') "((HNC&Hσ)&Hwp)". iExists ct.
     simpl. rewrite /stwpnode.
     rewrite /=. iFrame "HNC Hσ".
@@ -329,13 +329,13 @@ Proof.
   { iPureIntro. intros dn Hin e Hin'. eapply Hnotstuck; eauto. }
 Qed.
 
-Record dist_adequate {Λ CS} (ebσ: list (expr Λ * state Λ)) (g : global_state Λ)
+Record dist_adequate {Λ CS} (ρs: list (@node_init_cfg Λ)) (g : global_state Λ)
     (φinv: global_state Λ → Prop)  := {
   dist_adequate_not_stuck dns' g' dn :
-   rtc (erased_dist_step (CS := CS)) (starting_dist_cfg ebσ g) (dns', g') →
+   rtc (erased_dist_step (CS := CS)) (starting_dist_cfg ρs g) (dns', g') →
    dn ∈ dns' → not_stuck_node dn g';
   dist_adequate_inv dns' g' :
-   rtc (erased_dist_step (CS := CS)) (starting_dist_cfg ebσ g) (dns', g') →
+   rtc (erased_dist_step (CS := CS)) (starting_dist_cfg ρs g) (dns', g') →
    φinv g'
 }.
 
@@ -364,9 +364,9 @@ Corollary wpd_dist_adequacy_inv Σ Λ CS (T: ofe) `{!invPreG Σ} `{!crashPreG Σ
                IrisG Λ Σ Hinv Hc (stateI t) (global_stateI) (fork_post t) f (Hpf1 Hc t)) Hpf1' Hpf2 f Hpf3
                in
        (∀ g κs ns, global_stateI g κs ns -∗ |={⊤, ∅}=> ⌜ φinv g ⌝) ∗
-       ([∗ list] i ↦ ct; σ ∈ cts; snd <$> ebσs, let _ := fst ct in NC 1 ∗ stateI (snd ct) σ 0) ∗
+       ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs, let _ := fst ct in NC 1 ∗ stateI (snd ct) σ 0) ∗
        global_stateI g 0 κs ∗
-       wpd k ⊤ cts (fst <$> ebσs)) →
+       wpd k ⊤ cts ((λ x, (init_thread x, init_restart x)) <$> ebσs)) →
   dist_adequate (CS := CS) ebσs g (λ g, φinv g).
 Proof.
   intros Hwp.
