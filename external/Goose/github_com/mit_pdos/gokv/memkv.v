@@ -221,12 +221,11 @@ Definition MakeKVClerkWithRPCClient: val :=
 
 Definition MemKVShardClerk__Put: val :=
   rec: "MemKVShardClerk__Put" "ck" "key" "value" :=
-    let: "args" := struct.mk PutRequest.S [
-      "CID" ::= struct.loadF MemKVShardClerk.S "cid" "ck";
-      "Seq" ::= struct.loadF MemKVShardClerk.S "seq" "ck";
-      "Key" ::= "key";
-      "Value" ::= "value"
-    ] in
+    let: "args" := struct.alloc PutRequest.S (zero_val (struct.t PutRequest.S)) in
+    struct.storeF PutRequest.S "CID" "args" (struct.loadF MemKVShardClerk.S "cid" "ck");;
+    struct.storeF PutRequest.S "Seq" "args" (struct.loadF MemKVShardClerk.S "seq" "ck");;
+    struct.storeF PutRequest.S "Key" "args" "key";;
+    struct.storeF PutRequest.S "Value" "args" "value";;
     struct.storeF MemKVShardClerk.S "seq" "ck" (struct.loadF MemKVShardClerk.S "seq" "ck" + #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
@@ -236,11 +235,10 @@ Definition MemKVShardClerk__Put: val :=
 
 Definition MemKVShardClerk__Get: val :=
   rec: "MemKVShardClerk__Get" "ck" "key" "value" :=
-    let: "args" := struct.mk GetRequest.S [
-      "CID" ::= struct.loadF MemKVShardClerk.S "cid" "ck";
-      "Seq" ::= struct.loadF MemKVShardClerk.S "seq" "ck";
-      "Key" ::= "key"
-    ] in
+    let: "args" := struct.alloc GetRequest.S (zero_val (struct.t GetRequest.S)) in
+    struct.storeF GetRequest.S "CID" "args" (struct.loadF MemKVShardClerk.S "cid" "ck");;
+    struct.storeF GetRequest.S "Seq" "args" (struct.loadF MemKVShardClerk.S "seq" "ck");;
+    struct.storeF GetRequest.S "Key" "args" "key";;
     struct.storeF MemKVShardClerk.S "seq" "ck" (struct.loadF MemKVShardClerk.S "seq" "ck" + #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
