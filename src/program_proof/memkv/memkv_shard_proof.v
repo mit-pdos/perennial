@@ -56,7 +56,7 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
                       ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
                       map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
-                       ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl q, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (m !! k))) )
+                       ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (m !! k))) )
                   )
                  )
 .
@@ -381,12 +381,15 @@ Proof.
       iDestruct "Hsrv_val_sl" as "[%Hbad|Hsrv_val_sl]".
       { exfalso. done. }
 
-      iDestruct "Hsrv_val_sl" as (??) "[%HvalSliceRe Hsrv_val_sl]".
+      iDestruct "Hsrv_val_sl" as (?) "[%HvalSliceRe Hsrv_val_sl]".
       rewrite HvalSliceRe.
-      wp_apply (typed_slice.wp_SliceAppendSlice (V:=u8) with "[$Hval_sl $Hsrv_val_sl]").
+      iDestruct (typed_slice.is_slice_small_acc with "Hsrv_val_sl") as "[Hsrv_val_sl_small Hsrv_val_sl]".
+      wp_apply (typed_slice.wp_SliceAppendSlice (V:=u8) with "[$Hval_sl $Hsrv_val_sl_small]").
 
       rewrite app_nil_l.
-      iIntros (val_sl'') "[Hval_sl Hsrv_val_sl]".
+      iIntros (val_sl'') "[Hval_sl Hsrv_val_sl_small]".
+
+      iSpecialize ("Hsrv_val_sl" with "Hsrv_val_sl_small").
 
       (* fill in reply struct *)
       wp_apply (wp_storeField with "HValue").
@@ -474,7 +477,7 @@ Proof.
         iFrame.
         iSpecialize ("HvalSlices" with "[Hsrv_val_sl]").
         {
-          iRight. iExists _, _; iFrame. done.
+          iRight. iExists _; iFrame. done.
         }
         iFrame "HvalSlices".
         done.
