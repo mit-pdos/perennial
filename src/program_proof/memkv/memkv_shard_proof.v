@@ -37,6 +37,7 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
     (lastReplyM:gmap u64 GetReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc),
   "HlastReply" ∷ s ↦[MemKVShardServer.S :: "lastReply"] #lastReply_ptr ∗
   "HlastReplyMap" ∷ map.is_map lastReply_ptr (lastReplyMV, #0) ∗ (* TODO: default *)
+  "HreplyRecipts" ∷
   "HlastSeq" ∷ s ↦[MemKVShardServer.S :: "lastSeq"] #lastSeq_ptr ∗
   "HlastSeqMap" ∷ is_map lastSeq_ptr lastSeqM ∗
   "HnextCID" ∷ s ↦[MemKVShardServer.S :: "nextCID"] #nextCID ∗
@@ -163,7 +164,76 @@ Proof.
   { (* reply table *)
     wp_loadField.
     wp_loadField.
-    admit.
+    wp_apply (map.wp_MapGet with "HlastReplyMap").
+    iIntros (reply replyOk) "[%HlookupReply HlastReplyMap]".
+    wp_pures.
+    Transparent struct.store.
+    unfold struct.store.
+    Opaque struct.store.
+    Opaque struct.t.
+    wp_pures.
+
+    iAssert (reply_ptr ↦[struct.t GetReply.S] (#_, (slice_val val_sl, #())) )%I with "[HValue HErr]" as "Hrep".
+    {
+      iApply struct_fields_split.
+      iFrame.
+      done.
+    }
+
+    wp_apply (wp_StoreAt with "Hrep").
+    { admit. } (* TODO: need to keep this info with HlastReplyMap, since it's untyped; alternatively, make a IntoVal instance for it *)
+    iIntros "Hrep".
+    wp_pures.
+
+    destruct ok; last first.
+    { exfalso. naive_solver. }
+    apply map_get_true in HseqGet.
+    destruct Heqb as [_ HseqLe].
+    destruct (Z.lt_ge_cases (int.Z args.(GR_Seq)) (int.Z v)) as [Hcase|Hcase].
+    { (* Stale *)
+      iMod (smaller_seqno_stale_fact _ {| Req_CID:=_; Req_Seq:=_ |} v with "His_srv Hrpc") as "HH".
+      { done. }
+      { done. }
+      { done. }
+      iDestruct "HH" as "[Hrpc #Hstale]".
+      wp_loadField.
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep]").
+      {
+        iFrame "#∗".
+        iNext.
+        iExists _,_,_, _, _, _, _, _.
+        iExists _, _, _.
+        iFrame.
+        done.
+      }
+      iApply "HΦ".
+      admit. (* same TODO as non-stale case *)
+    }
+    { (* Not stale *)
+      assert (v = args.(GR_Seq)) by word.
+      rewrite H0 in HseqGet.
+      iMod (server_replies_to_request _ {| Req_CID:=_; Req_Seq:=_ |} with "His_srv Hrpc") as "HH".
+      { done. }
+      { done. }
+      { eexists _. naive_solver. }
+      iDestruct "HH" as "[Hreceipt Hrpc]".
+      wp_loadField.
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep]").
+      {
+        iFrame "#∗".
+        iNext.
+        iExists _,_,_, _, _, _, _, _.
+        iExists _, _, _.
+        iFrame.
+        done.
+      }
+      iApply "HΦ".
+      iDestruct (struct_fields_split with "Hrep") as "HH".
+      iNamed "HH".
+      (* TODO: need to know what reply looks like, and need to have read-only
+         access to value slice *)
+      admit.
+    }
   }
   {
     wp_loadField.
