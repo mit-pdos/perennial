@@ -194,6 +194,26 @@ Proof.
     }
     iIntros "HshardMap_sl".
     wp_pures.
+
+    (* get resources out of escrow before splitting into cases *)
+    iMod (server_takes_request with "HreqInv Hrpc") as "HH".
+    { done. }
+    {
+      rewrite HseqGet.
+      simpl.
+      destruct ok.
+      {
+        apply map_get_true in HseqGet.
+        admit. (* negate Heqb *)
+      }
+      {
+        apply map_get_false in HseqGet as [_ HseqGet].
+        rewrite HseqGet.
+        admit. (* FIXME: add precondition that GR_Seq > 0 *)
+      }
+    }
+    iDestruct "HH" as "(Hγpre & Hpre & Hproc)".
+
     wp_if_destruct.
     { (* have the shard *)
       wp_loadField.
@@ -258,25 +278,8 @@ Proof.
       wp_apply (map.wp_MapInsert with "HlastReplyMap").
       iIntros "HlastReplyMap".
 
-      (* commit point (sorta) *)
-      iMod (server_takes_request with "HreqInv Hrpc") as "HH".
-      { done. }
-      {
-        rewrite HseqGet.
-        simpl.
-        destruct ok.
-        {
-          apply map_get_true in HseqGet.
-          admit. (* negate Heqb *)
-        }
-        {
-          apply map_get_false in HseqGet as [_ HseqGet].
-          rewrite HseqGet.
-          admit. (* FIXME: add precondition that GR_Seq > 0 *)
-        }
-      }
-      iDestruct "HH" as "(Hγpre & Hpre & Hproc)".
       wp_pures.
+      (* commit *)
       unfold PreShardGet.
       iApply fupd_wp.
       iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
@@ -337,11 +340,63 @@ Proof.
       iFrame "#".
     }
     { (* don't have shard *)
-      admit.
+      wp_storeField.
+
+      iMod (server_completes_request with "His_srv HreqInv Hγpre [Hpre] Hproc") as "HH".
+      { done. }
+      { done. }
+      { simpl. admit. (* same as above *) }
+      {
+        iNext.
+        iLeft.
+        instantiate (1:=mkGetReplyC 1 dummy_rep.(GR_Value)).
+        iFrame "Hpre".
+        simpl.
+        done.
+      }
+      iDestruct "HH" as "(#Hreceipt & Hrpc)".
+
+      Transparent struct.load.
+      unfold struct.load.
+      iAssert (reply_ptr ↦[struct.t GetReply.S] (#1, (slice_val val_sl, #())) )%I with "[HValue HErr]" as "Hrep".
+      {
+        iApply struct_fields_split.
+        iFrame.
+        done.
+      }
+      wp_load.
+      wp_loadField.
+      wp_loadField.
+
+      wp_apply (map.wp_MapInsert with "HlastReplyMap").
+      iIntros "HlastReplyMap".
+      wp_pures.
+
+      wp_loadField.
+      iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep]").
+      {
+        iFrame "HmuInv Hlocked".
+        iNext.
+        iExists _,_,_, _, _, _, _, _.
+        iExists _, _, _.
+        iFrame.
+        done.
+      }
+      iApply "HΦ".
+      iDestruct (struct_fields_split with "Hrep") as "HH".
+      iNamed "HH".
+      iSplitL "Err Value HValue_sl".
+      {
+        iExists _.
+        instantiate (1:=mkGetReplyC _ _).
+        iFrame.
+      }
+      iSimpl.
+      iRight.
+      iFrame "#".
     }
   }
-Admitted.
-Proof.
 Admitted.
 
 End memkv_shard_proof.
