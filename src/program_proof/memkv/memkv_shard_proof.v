@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Import memkv_marshal_get_proof common_proof.
+From Perennial.program_proof.memkv Require Export memkv_marshal_get_proof common_proof.
 
 Section memkv_shard_proof.
 
@@ -571,19 +571,6 @@ Proof.
       iFrame "#".
     }
   }
-Admitted.
-
-Lemma wp_encodeGetReply rep_ptr rep :
-  {{{
-       own_GetReply rep_ptr rep
-  }}}
-    encodeGetReply #rep_ptr
-  {{{
-       repData rep_sl , RET (slice_val rep_sl);
-       typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
-       ⌜has_encoding_GetReply repData rep ⌝
-  }}}.
-Proof.
 Admitted.
 
 Lemma wp_MemKVShardServer__Start (s:loc) host γ :

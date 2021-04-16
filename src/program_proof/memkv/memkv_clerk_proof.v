@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Import common_proof memkv_coord_clerk_proof memkv_shard_clerk_proof.
+From Perennial.program_proof.memkv Require Export common_proof memkv_coord_clerk_proof memkv_shard_clerk_proof.
 
 Section memkv_clerk_proof.
 
@@ -22,7 +22,7 @@ Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
 Lemma KVClerk__Get Eo Ei (ck:loc) (γ:gname) (key:u64) :
   ∀ Φ,
   own_MemKVClerk ck γ -∗
-  (|={Eo,Ei}=> (∃ v, kvptsto γ key v ∗ (kvptsto γ key v ={Ei,Eo}=∗ (∀ val_sl, typed_slice.is_slice val_sl byteT 1%Qp v -∗ (Φ (slice_val val_sl)))))) -∗
+  (|={Eo,Ei}=> (∃ v, kvptsto γ key v ∗ (kvptsto γ key v ={Ei,Eo}=∗ (∀ val_sl q, typed_slice.is_slice_small val_sl byteT q%Qp v -∗ (Φ (slice_val val_sl)))))) -∗
     WP MemKVClerk__Get #ck #key {{ Φ }}
 .
 Proof using Type*.

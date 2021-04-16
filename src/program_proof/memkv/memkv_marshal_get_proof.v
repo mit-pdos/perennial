@@ -49,7 +49,8 @@ Lemma wp_encodeGetRequest args_ptr args :
     encodeGetRequest #args_ptr
   {{{
        (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_GetRequest reqData args⌝ ∗
-                                               typed_slice.is_slice req_sl byteT 1%Qp reqData
+                                               typed_slice.is_slice req_sl byteT 1%Qp reqData ∗
+                                               own_GetRequest args_ptr args
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -162,6 +163,53 @@ Lemma wp_encodeGetReply rep_ptr rep :
        ⌜has_encoding_GetReply repData rep ⌝
   }}}.
 Proof.
+  iIntros (Φ) "Hrep HΦ".
+
+  wp_lam.
+  wp_pures.
+  iNamed "Hrep".
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_pures.
+
+  wp_apply (wp_new_enc).
+  iIntros (enc) "Henc".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { admit. (* TODO: overflow *) }
+  iIntros "Henc".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { admit. (* TODO: overflow *) }
+  iIntros "Henc".
+  wp_pures.
+
+  wp_loadField.
+  iDestruct "HValue_sl" as (?) "HValue_sl".
+  wp_apply (wp_Enc__PutBytes with "[$Henc $HValue_sl]").
+  { admit. } (* TODO: overflow *)
+  iIntros "[Henc Hsl]".
+  wp_pures.
+  wp_apply (wp_Enc__Finish with "[$Henc]").
+  iIntros (rep_sl repData).
+  iIntros "(% & % & Hrep_sl)".
+  iApply "HΦ".
+  iFrame.
+  iDestruct (typed_slice.is_slice_small_sz with "Hsl") as %Hsz.
+  iPureIntro.
+  unfold has_encoding_GetReply.
+  rewrite Hsz.
+  assert (U64 (int.nat (Slice.sz val_sl)) = (Slice.sz val_sl)).
+  { admit. }
+  rewrite H1.
+  rewrite app_nil_l in H.
+  simpl in H.
+  done.
 Admitted.
 
 End memkv_marshal_get_proof.

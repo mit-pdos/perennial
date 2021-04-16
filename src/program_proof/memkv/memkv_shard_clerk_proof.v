@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Import memkv_shard_proof.
+From Perennial.program_proof.memkv Require Export memkv_shard_proof.
 
 Section memkv_shard_clerk_proof.
 
@@ -33,8 +33,8 @@ Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
         (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
 
         ⌜e = 0⌝ ∗
-              ∃ some_sl v, value_ptr ↦[slice.T byteT] (slice_val some_sl) ∗
-                                     typed_slice.is_slice some_sl byteT 1%Qp v ∗
+              ∃ some_sl v q, value_ptr ↦[slice.T byteT] (slice_val some_sl) ∗
+                                     typed_slice.is_slice_small some_sl byteT q%Qp v ∗
                                      Q v
         )
   }}}
@@ -45,10 +45,17 @@ Proof.
   iNamed "Hck".
   wp_lam.
   wp_pures.
+  wp_apply (wp_allocStruct).
+  { admit. } (* type-check *)
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
   wp_loadField.
-  wp_loadField.
+  wp_storeField.
 
-  wp_pures.
+  wp_loadField.
+  wp_storeField.
+  wp_storeField.
   wp_loadField.
   wp_storeField.
 
@@ -75,8 +82,12 @@ Proof.
   iNamed "HrawRep".
   wp_pures.
 
-  wp_apply (wp_encodeGetRequest).
-  iIntros (reqData req_sl) "[%HencReq Hreq_sl]".
+  wp_apply (wp_encodeGetRequest with "[CID Seq Key]").
+  {
+    instantiate (1:=mkGetRequestC _ _ _).
+    iFrame.
+  }
+  iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
   wp_loadField.
 
   unfold is_shard_server.
@@ -99,6 +110,8 @@ Proof.
     iFrame.
     iDestruct "HcallPost" as "(HrawRep & $ & HcallPost)".
     iSplitL ""; first done.
+    iNamed "Hreq".
+    iFrame.
     iExists _; iFrame "HrawRep".
   }
   {
@@ -113,7 +126,7 @@ Proof.
     iDestruct "Hpost" as (??) "(% & % & Hreceipt)".
     wp_apply (wp_decodeGetReply with "[$Hrep_sl]").
     { done. }
-    iIntros (??) "(HrepErr & HrepValue & HrepValue_sl)".
+    iIntros (?) "Hrep".
     replace (req) with ({| GR_CID := cid; GR_Seq := seq; GR_Key := key |}); last first.
     { eapply has_encoding_GetRequest_inj; done. }
 
@@ -128,6 +141,7 @@ Proof.
     { done. }
     (* Doing get_request_post here so we can strip off a ▷ *)
 
+    iNamed "Hrep".
     wp_pures.
     wp_loadField.
     iNamed "Hval".
@@ -144,8 +158,8 @@ Proof.
     {
       iRight.
       iDestruct "Hpost" as "($&HQ)".
-      iExists _; iFrame.
-      iExists _; iFrame.
+      iExists _, _; iFrame.
+      iFrame "HValue_sl".
     }
   }
 Admitted.
