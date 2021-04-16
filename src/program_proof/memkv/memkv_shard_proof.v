@@ -569,6 +569,19 @@ Proof.
   }
 Admitted.
 
+Lemma wp_encodeGetReply rep_ptr rep :
+  {{{
+       own_GetReply rep_ptr rep
+  }}}
+    encodeGetReply #rep_ptr
+  {{{
+       repData rep_sl , RET (slice_val rep_sl);
+       typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
+       ⌜has_encoding_GetReply repData rep ⌝
+  }}}.
+Proof.
+Admitted.
+
 Lemma wp_MemKVShardServer__Start (s:loc) host γ :
 is_shard_server host γ -∗
 is_MemKVShardServer s γ -∗
@@ -636,13 +649,50 @@ Proof.
       wp_apply (wp_decodeGetRequest with "[$Hreq_sl]").
       { done. }
       iIntros (args_ptr) "Hargs".
-      wp_apply (wp_GetRPC with "[]").
+      wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep $HreqInv]").
+      {
+        replace (zero_val (struct.t GetReply.S)) with ((#0, (slice.nil, #()))%V); last first.
+        {
+          admit. (* zero value of GetReply *)
+        }
+
+        iDestruct (struct_fields_split with "Hrep") as "HH".
+        iNamed "HH".
+        iExists (mkGetReplyC _ []).
+        iFrame.
+        iExists (Slice.nil).
+        iFrame.
+        simpl.
+        Search "slice".
+        iDestruct (typed_slice.is_slice_zero byteT 1%Qp) as "HH".
+        iDestruct (typed_slice.is_slice_small_acc with "HH") as "[H _]".
+        iExists 1%Qp.
+        iFrame "H".
+      }
+      iIntros (rep') "[Hrep Hpost]".
+      wp_pures.
+      wp_apply (wp_encodeGetReply with "Hrep").
+      iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
+      wp_store.
+      iApply "HΦ".
+      iModIntro.
+      iFrame.
+      iNext.
+      iExists _, _; iFrame.
+      done.
     }
 
-    iSplitL "".
-  }
-  wp_pures.
+    iApply (big_sepM_insert_2 with "").
+    { admit. }
 
+
+    iApply (big_sepM_insert_2 with "").
+    { admit. }
+
+    iApply big_sepM_empty.
+    done.
+  }
+  by iApply "HΦ".
 Admitted.
 
 End memkv_shard_proof.

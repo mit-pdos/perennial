@@ -151,4 +151,17 @@ Proof.
   iExists _; iFrame.
 Admitted.
 
+Lemma wp_encodeGetReply rep_ptr rep :
+  {{{
+       own_GetReply rep_ptr rep
+  }}}
+    encodeGetReply #rep_ptr
+  {{{
+       repData rep_sl , RET (slice_val rep_sl);
+       typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
+       ⌜has_encoding_GetReply repData rep ⌝
+  }}}.
+Proof.
+Admitted.
+
 End memkv_marshal_get_proof.
