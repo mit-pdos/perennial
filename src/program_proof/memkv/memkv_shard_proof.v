@@ -53,7 +53,8 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
                       own_shard γ.(kv_gn) sid m ∗ (* own shard *)
                       ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
                       map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
-                      ([∗ map] k ↦ x;v ∈ m;mv, (∃ vsl, ⌜v = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT 1%Qp x) )
+                      ([∗ set] k ∈ (fin_to_set u64),
+                       ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT 1%Qp (default [] (m !! k))) )
                   )
                  )
 .
@@ -218,115 +219,126 @@ Proof.
       wp_pures.
       wp_apply (typed_slice.wp_NewSlice (V:=u8)).
       iIntros (val_sl') "Hval_sl".
-      destruct okValue.
+      assert (value = default (slice_val Slice.nil) (mv !! args.(GR_Key))) as Hvalue.
+      { naive_solver. }
+      rewrite Hvalue.
+
+      iDestruct (big_sepS_elem_of_acc _ _ args.(GR_Key) with "HvalSlices") as "[Hsrv_val_sl HvalSlices]".
+      { set_solver. }
+      iDestruct "Hsrv_val_sl" as "[%Hbad|Hsrv_val_sl]".
+      { exfalso. done. }
+
+      iDestruct "Hsrv_val_sl" as (?) "[%HvalSliceRe Hsrv_val_sl]".
+      rewrite HvalSliceRe.
+      wp_apply (typed_slice.wp_SliceAppendSlice (V:=u8) with "[$Hval_sl $Hsrv_val_sl]").
+
+      rewrite app_nil_l.
+      iIntros (val_sl'') "[Hval_sl Hsrv_val_sl]".
+
+      (* fill in reply struct *)
+      wp_apply (wp_storeField with "HValue").
+      { apply slice_val_ty. }
+      iIntros "HValue".
+      wp_pures.
+      wp_storeField.
+
+      (* save reply in reply table *)
+      Transparent struct.load.
+      unfold struct.load.
+      iAssert (reply_ptr ↦[struct.t GetReply.S] (#0, (slice_val val_sl'', #())) )%I with "[HValue HErr]" as "Hrep".
       {
-        apply map.map_get_true in HlookupVal.
-        iDestruct (big_sepM2_lookup_iff with "HvalSlices") as %HvalSlicesIff.
-        assert (∃ x, m !! args.(GR_Key) = Some x) as [? HlookupValM].
-        {
-          specialize (HvalSlicesIff args.(GR_Key)).
-          apply HvalSlicesIff.
-          naive_solver.
-        }
-        iDestruct (big_sepM2_lookup_acc _ _ _ args.(GR_Key)  with "HvalSlices") as "[HvalSlice HvalSlices]".
-        { done. }
-        { done. }
-        iDestruct "HvalSlice" as (?) "[%HvalSliceRe Hvsl]".
-        iEval (rewrite replicate_0) in "Hval_sl".
-        rewrite HvalSliceRe.
-        wp_apply (typed_slice.wp_SliceAppendSlice (V:=u8) with "[$Hval_sl $Hvsl]").
-        rewrite app_nil_l.
-        iIntros (val_sl'') "Hval_sl".
-
-        (* fill in reply struct *)
-        wp_apply (wp_storeField with "HValue").
-        { apply slice_val_ty. }
-        iIntros "HValue".
-        wp_pures.
-        wp_storeField.
-
-        Search "struct".
-        (* save reply in reply table *)
-        Transparent struct.load.
-        unfold struct.load.
-        Search "struct_fields_split".
-        iAssert (reply_ptr ↦[struct.t GetReply.S] (#0, (slice_val val_sl'', #())) )%I with "[HValue HErr]" as "Hrep".
-        {
-          iApply struct_fields_split.
-          iFrame.
-          done.
-        }
-        wp_load.
-        wp_loadField.
-        wp_loadField.
-
-        wp_apply (map.wp_MapInsert with "HlastReplyMap").
-        iIntros "HlastReplyMap".
-
-        (* commit point (sorta) *)
-        iMod (server_takes_request with "HreqInv Hrpc") as "HH".
-        { done. }
-        {
-          rewrite HseqGet.
-          simpl.
-          destruct ok.
-          {
-            apply map_get_true in HseqGet.
-            admit. (* negate Heqb *)
-          }
-          {
-            apply map_get_false in HseqGet as [_ HseqGet].
-            rewrite HseqGet.
-            admit. (* FIXME: add precondition that GR_Seq > 0 *)
-          }
-        }
-        iDestruct "HH" as "(Hγpre & Hpre & Hproc)".
-        wp_pures.
-        unfold PreShardGet.
-        iApply fupd_wp.
-        iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
-        { done. }
-        iDestruct "Hpre" as (v0) "(Hkvptsto & HfupdQ)".
-        iDestruct (own_shard_agree with "HshardGhost Hkvptsto") as %Hmatch.
-        { done. }
-        (* match up with HshardGhost *)
-        rewrite HlookupValM in Hmatch.
-        simpl in Hmatch.
-        rewrite Hmatch.
-        iMod ("HfupdQ" with "Hkvptsto") as "Q".
-        iMod "Hclose" as "_".
-        iMod (server_completes_request with "His_srv HreqInv Hγpre [Q] Hproc") as "HH".
-        { done. }
-        { done. }
-        { simpl. admit. (* same as above *) }
-        {
-          iNext.
-          iRight.
-          instantiate (1:=mkGetReplyC _ _).
-          iFrame "Q".
-          simpl.
-          done.
-        }
-        iDestruct "HH" as "(#Hreceipt & Hrpc)".
-        simpl.
-        iModIntro.
-
-        wp_loadField.
-        wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hval_sl Hrep]").
-        {
-          iFrame "#∗".
-          iNext.
-          iExists _,_,_, _, _, _, _, _.
-          iExists _, _, _.
-          iFrame.
-          admit.
-        }
-        iApply "HΦ".
-        admit.
+        iApply struct_fields_split.
+        iFrame.
+        done.
       }
+      wp_load.
+      wp_loadField.
+      wp_loadField.
+
+      wp_apply (map.wp_MapInsert with "HlastReplyMap").
+      iIntros "HlastReplyMap".
+
+      (* commit point (sorta) *)
+      iMod (server_takes_request with "HreqInv Hrpc") as "HH".
+      { done. }
+      {
+        rewrite HseqGet.
+        simpl.
+        destruct ok.
+        {
+          apply map_get_true in HseqGet.
+          admit. (* negate Heqb *)
+        }
+        {
+          apply map_get_false in HseqGet as [_ HseqGet].
+          rewrite HseqGet.
+          admit. (* FIXME: add precondition that GR_Seq > 0 *)
+        }
+      }
+      iDestruct "HH" as "(Hγpre & Hpre & Hproc)".
+      wp_pures.
+      unfold PreShardGet.
+      iApply fupd_wp.
+      iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
+      { done. }
+      iDestruct "Hpre" as (v0) "(Hkvptsto & HfupdQ)".
+      iDestruct (own_shard_agree with "HshardGhost Hkvptsto") as %Hmatch.
+      { done. }
+      (* match up with HshardGhost *)
+      rewrite -Hmatch.
+      iMod ("HfupdQ" with "Hkvptsto") as "Q".
+      iMod "Hclose" as "_".
+      iMod (server_completes_request with "His_srv HreqInv Hγpre [Q] Hproc") as "HH".
+      { done. }
+      { done. }
+      { simpl. admit. (* same as above *) }
+      {
+        iNext.
+        iRight.
+        instantiate (1:=mkGetReplyC _ _).
+        iFrame "Q".
+        simpl.
+        done.
+      }
+      iDestruct "HH" as "(#Hreceipt & Hrpc)".
+      iModIntro.
+
+      iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
+      wp_loadField.
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hval_sl Hrep]").
+      {
+        iFrame "#∗".
+        iNext.
+        iExists _,_,_, _, _, _, _, _.
+        iExists _, _, _.
+        iFrame.
+        iSplitL ""; first done.
+        iApply "HownShards".
+        iRight.
+        iExists _, _, _.
+        iFrame.
+        iSpecialize ("HvalSlices" with "[Hsrv_val_sl]").
+        {
+          iRight. iExists _; iFrame. done.
+        }
+        iFrame "HvalSlices".
+        done.
+      }
+      iApply "HΦ".
+      iDestruct (struct_fields_split with "Hrep") as "HH".
+      iNamed "HH".
+      instantiate (1:= mkGetReplyC _ _).
+      iSplitL "Err Value Hval_sl".
+      {
+        iExists _; iFrame.
+      }
+      iSimpl.
+      iRight.
+      iFrame "#".
+    }
+    { (* don't have shard *)
       admit.
     }
-    admit.
   }
 Admitted.
 Proof.
