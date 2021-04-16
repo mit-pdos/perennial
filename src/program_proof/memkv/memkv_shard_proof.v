@@ -25,7 +25,7 @@ Implicit Type γ : memkv_shard_names.
 
 (* FIXME: lastReplyMap type *)
 
-Axiom shardOfC : u64 → u64.
+Definition shardOfC (key:u64) : u64 := (word.modu key 65536).
 
 Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
   [∗ set] k ∈ (fin_to_set u64), ⌜shardOfC k ≠ sid⌝ ∨
@@ -101,7 +101,11 @@ Lemma wp_shardOf key :
        RET #(shardOfC key); True
   }}}.
 Proof.
-Admitted.
+  iIntros (?) "_ HΦ".
+  wp_lam.
+  wp_pures.
+  by iApply "HΦ".
+Qed.
 
 Lemma own_shard_agree key v γkv sid m:
   shardOfC key = sid →
@@ -319,6 +323,8 @@ Proof.
     {
       eapply list_lookup_lt.
       rewrite HshardMapLength.
+      unfold sid.
+
       admit. (* annoying mod ineq *)
     }
     wp_apply (typed_slice.wp_SliceGet with "[$HshardMap_sl]").
@@ -337,12 +343,16 @@ Proof.
       destruct ok.
       {
         apply map_get_true in HseqGet.
-        admit. (* negate Heqb *)
+        Search Z.lt.
+        edestruct (Z.le_gt_cases (int.Z args.(GR_Seq)) (int.Z v)) as [Hineq|Hineq].
+        { exfalso. naive_solver. }
+        { done. }
       }
       {
         apply map_get_false in HseqGet as [_ HseqGet].
         rewrite HseqGet.
-        admit. (* FIXME: add precondition that GR_Seq > 0 *)
+        simpl.
+        word.
       }
     }
     iDestruct "HH" as "(Hγpre & Hpre & Hproc)".
@@ -430,7 +440,22 @@ Proof.
       iMod (server_completes_request with "His_srv HreqInv Hγpre [Q] Hproc") as "HH".
       { done. }
       { done. }
-      { simpl. admit. (* TODO: some more pure inequality reasoning *) }
+      { (* seq inequality for server_completes_request *)
+        rewrite HseqGet.
+        simpl.
+        destruct ok.
+        {
+          intuition.
+          destruct (Z.le_gt_cases (int.Z args.(GR_Seq)) (int.Z v)) as [Hineq|Hineq].
+          { naive_solver. }
+          { naive_solver. }
+        }
+        {
+          apply map_get_false in HseqGet as [_ ->].
+          simpl.
+          word.
+        }
+      }
       {
         iNext.
         iRight.
@@ -450,11 +475,11 @@ Proof.
       Transparent typed_slice.is_slice.
       wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl Hrep]").
       {
-        iFrame "#∗".
+        iFrame "HmuInv Hlocked".
         iNext.
         iExists _,_,_, _, _, _, _, _.
         iExists _, _, _.
-        iFrame.
+        iFrame. (* FIXME: stack overflow *)
         iSplitL "".
         {
           iPureIntro.

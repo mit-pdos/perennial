@@ -26,7 +26,8 @@ Record GetReplyC := mkGetReplyC {
 Definition own_GetRequest args_ptr args : iProp Σ :=
   "HCID" ∷ args_ptr ↦[GetRequest.S :: "CID"] #args.(GR_CID) ∗
   "HSeq" ∷ args_ptr ↦[GetRequest.S :: "Seq"] #args.(GR_Seq) ∗
-  "HKey" ∷ args_ptr ↦[GetRequest.S :: "Key"] #args.(GR_Key)
+  "HKey" ∷ args_ptr ↦[GetRequest.S :: "Key"] #args.(GR_Key) ∗
+  "%HseqPositive" ∷ ⌜int.Z args.(GR_Seq) > 0⌝
 .
 
 Definition own_GetReply reply_ptr rep : iProp Σ :=
