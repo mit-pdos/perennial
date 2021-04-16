@@ -62,6 +62,7 @@ Definition memKVN := nroot .@ "memkv".
 
 Definition is_MemKVShardServer (s:loc) γ : iProp Σ :=
   ∃ mu,
+  "#His_srv" ∷ is_RPCServer γ.(rpc_gn) ∗
   "#Hmu" ∷ readonly (s ↦[MemKVShardServer.S :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock memKVN mu (own_MemKVShardServer s γ)
 .
@@ -97,6 +98,20 @@ Lemma wp_shardOf key :
        RET #(shardOfC key); True
   }}}.
 Proof.
+Admitted.
+
+Lemma own_shard_agree key v γkv sid m:
+  shardOfC key = sid →
+  own_shard γkv sid m -∗ kvptsto γkv key v -∗
+  ⌜v = default [] (m !! key)⌝
+.
+Proof.
+  iIntros (?) "Hown Hptsto".
+  unfold own_shard.
+  iDestruct (big_sepS_elem_of_acc _ _ key with "Hown") as "[[%Hbad|Hown] _]".
+  { set_solver. }
+  { exfalso. done. }
+  admit.
 Admitted.
 
 Lemma wp_GetRPC (s args_ptr reply_ptr:loc) args γ Eo Ei γreq Q :
@@ -230,15 +245,91 @@ Proof.
         wp_pures.
         wp_storeField.
 
+        Search "struct".
         (* save reply in reply table *)
         Transparent struct.load.
         unfold struct.load.
+        Search "struct_fields_split".
+        iAssert (reply_ptr ↦[struct.t GetReply.S] (#0, (slice_val val_sl'', #())) )%I with "[HValue HErr]" as "Hrep".
+        {
+          iApply struct_fields_split.
+          iFrame.
+          done.
+        }
+        wp_load.
+        wp_loadField.
+        wp_loadField.
+
+        wp_apply (map.wp_MapInsert with "HlastReplyMap").
+        iIntros "HlastReplyMap".
+
+        (* commit point (sorta) *)
+        iMod (server_takes_request with "HreqInv Hrpc") as "HH".
+        { done. }
+        {
+          rewrite HseqGet.
+          simpl.
+          destruct ok.
+          {
+            apply map_get_true in HseqGet.
+            admit. (* negate Heqb *)
+          }
+          {
+            apply map_get_false in HseqGet as [_ HseqGet].
+            rewrite HseqGet.
+            admit. (* FIXME: add precondition that GR_Seq > 0 *)
+          }
+        }
+        iDestruct "HH" as "(Hγpre & Hpre & Hproc)".
+        wp_pures.
+        unfold PreShardGet.
+        iApply fupd_wp.
+        iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
+        { done. }
+        iDestruct "Hpre" as (v0) "(Hkvptsto & HfupdQ)".
+        iDestruct (own_shard_agree with "HshardGhost Hkvptsto") as %Hmatch.
+        { done. }
+        (* match up with HshardGhost *)
+        rewrite HlookupValM in Hmatch.
+        simpl in Hmatch.
+        rewrite Hmatch.
+        iMod ("HfupdQ" with "Hkvptsto") as "Q".
+        iMod "Hclose" as "_".
+        iMod (server_completes_request with "His_srv HreqInv Hγpre [Q] Hproc") as "HH".
+        { done. }
+        { done. }
+        { simpl. admit. (* same as above *) }
+        {
+          iNext.
+          iRight.
+          instantiate (1:=mkGetReplyC _ _).
+          iFrame "Q".
+          simpl.
+          done.
+        }
+        iDestruct "HH" as "(#Hreceipt & Hrpc)".
+        simpl.
+        iModIntro.
+
+        wp_loadField.
+        wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hval_sl Hrep]").
+        {
+          iFrame "#∗".
+          iNext.
+          iExists _,_,_, _, _, _, _, _.
+          iExists _, _, _.
+          iFrame.
+          admit.
+        }
+        iApply "HΦ".
         admit.
       }
       admit.
     }
     admit.
   }
+Admitted.
+Proof.
 Admitted.
 
 End memkv_shard_proof.
