@@ -23,9 +23,7 @@ Record memkv_shard_names := {
 
 Implicit Type γ : memkv_shard_names.
 
-(* FIXME: lastReplyMap type *)
-
-Definition shardOfC (key:u64) : u64 := (word.modu key 65536).
+Definition shardOfC (key:u64) : u64 := (word.modu key (65536%Z)).
 
 Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
   [∗ set] k ∈ (fin_to_set u64), ⌜shardOfC k ≠ sid⌝ ∨
@@ -479,7 +477,7 @@ Proof.
         iNext.
         iExists _,_,_, _, _, _, _, _.
         iExists _, _, _.
-        iFrame. (* FIXME: stack overflow *)
+        iFrame.
         iSplitL "".
         {
           iPureIntro.
@@ -610,7 +608,7 @@ is_MemKVShardServer s γ -∗
   }}}.
 Proof.
   iIntros "#His_shard #His_memkv !#" (Φ) "_ HΦ".
-  wp_rec. (* FIXME: too much unfolding *)
+  wp_rec.
   change (Alloc (InjLV (λ: <>, (λ: <>, #())%V))) with
       (NewMap grove_common.RawRpcFunc).
   wp_apply map.wp_NewMap.
