@@ -37,7 +37,6 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
     (lastReplyM:gmap u64 GetReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc),
   "HlastReply" ∷ s ↦[MemKVShardServer.S :: "lastReply"] #lastReply_ptr ∗
   "HlastReplyMap" ∷ map.is_map lastReply_ptr (lastReplyMV, #0) ∗ (* TODO: default *)
-  "HreplyRecipts" ∷
   "HlastSeq" ∷ s ↦[MemKVShardServer.S :: "lastSeq"] #lastSeq_ptr ∗
   "HlastSeqMap" ∷ is_map lastSeq_ptr lastSeqM ∗
   "HnextCID" ∷ s ↦[MemKVShardServer.S :: "nextCID"] #nextCID ∗
@@ -467,6 +466,21 @@ Proof.
       iFrame "#".
     }
   }
+Admitted.
+
+Lemma wp_MemKVShardServer__Start (s:loc) γ :
+is_MemKVShardServer s γ -∗
+  {{{
+       True
+  }}}
+    MemKVShardServer__Start #s
+  {{{
+       RET #(); True
+  }}}.
+Proof.
+  iIntros "His_shard !#" (Φ) "_ HΦ".
+  wp_rec. (* FIXME: too much unfolding *)
+  (* wp_apply map.wp_NewMap. *)
 Admitted.
 
 End memkv_shard_proof.
