@@ -84,6 +84,18 @@ Proof.
   done.
 Qed.
 
+Lemma wp_decodeGetRequest req_sl reqData args :
+  {{{
+       ⌜has_encoding_GetRequest reqData args⌝ ∗
+       typed_slice.is_slice req_sl byteT 1%Qp reqData
+  }}}
+    decodeGetRequest (slice_val req_sl)
+  {{{
+       (args_ptr:loc), RET #args_ptr; own_GetRequest args_ptr args
+  }}}.
+Proof.
+Admitted.
+
 Lemma has_encoding_GetRequest_inj (reqRaw:list u8) req req' :
   has_encoding_GetRequest reqRaw req →
   has_encoding_GetRequest reqRaw req' →

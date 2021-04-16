@@ -186,7 +186,7 @@ Axiom wp_StartRPCServer : ∀ host (handlers : gmap u64 val) (mref : loc) (def :
       map.is_map mref (handlers, def) ∗
       [∗ map] rpcid ↦ handler ∈ handlers, (∃ X Pre Post, handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
   }}}
-    grove_ffi.StartRPCServer @ k ; ⊤
+    grove_ffi.StartRPCServer #mref @ k ; ⊤
   {{{
       RET #(); True
   }}}.

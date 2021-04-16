@@ -569,7 +569,8 @@ Proof.
   }
 Admitted.
 
-Lemma wp_MemKVShardServer__Start (s:loc) γ :
+Lemma wp_MemKVShardServer__Start (s:loc) host γ :
+is_shard_server host γ -∗
 is_MemKVShardServer s γ -∗
   {{{
        True
@@ -579,9 +580,69 @@ is_MemKVShardServer s γ -∗
        RET #(); True
   }}}.
 Proof.
-  iIntros "His_shard !#" (Φ) "_ HΦ".
+  iIntros "#His_shard #His_memkv !#" (Φ) "_ HΦ".
   wp_rec. (* FIXME: too much unfolding *)
-  (* wp_apply map.wp_NewMap. *)
+  change (Alloc (InjLV (λ: <>, (λ: <>, #())%V))) with
+      (NewMap grove_common.RawRpcFunc).
+  wp_apply map.wp_NewMap.
+  iIntros (handlers_ptr) "Hmap".
+  wp_pures.
+
+  wp_apply (map.wp_MapInsert with "Hmap").
+  iIntros "Hmap".
+  wp_pures.
+
+  wp_apply (map.wp_MapInsert with "Hmap").
+  iIntros "Hmap".
+  wp_pures.
+
+  wp_apply (map.wp_MapInsert with "Hmap").
+  iIntros "Hmap".
+  wp_pures.
+
+  wp_apply (map.wp_MapInsert with "Hmap").
+  iIntros "Hmap".
+  wp_pures.
+
+  wp_apply (map.wp_MapInsert with "Hmap").
+  iIntros "Hmap".
+  wp_pures.
+
+  wp_apply (grove_ffi.wp_StartRPCServer with "[$Hmap]").
+  {
+    Search "big_sepM".
+    iApply (big_sepM_insert_2 with "").
+    { admit. }
+
+    iApply (big_sepM_insert_2 with "").
+    { admit. }
+
+    iApply (big_sepM_insert_2 with "").
+    { (* Get() handler_is *)
+      iNamed "His_shard".
+      simpl.
+      iExists _, _, _; iFrame "HgetSpec".
+
+      clear Φ.
+      iIntros (?????) "!#".
+      iIntros (Φ) "Hpre HΦ".
+      wp_pures.
+      wp_apply (wp_allocStruct).
+      { admit. } (* TODO: typecheck *)
+      iIntros (rep_ptr) "Hrep".
+      wp_pures.
+      iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & Hpre)".
+      iDestruct "Hpre" as (args) "(%Henc & #HreqInv)".
+      wp_apply (wp_decodeGetRequest with "[$Hreq_sl]").
+      { done. }
+      iIntros (args_ptr) "Hargs".
+      wp_apply (wp_GetRPC with "[]").
+    }
+
+    iSplitL "".
+  }
+  wp_pures.
+
 Admitted.
 
 End memkv_shard_proof.
