@@ -37,6 +37,8 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
     (lastReplyM:gmap u64 GetReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc),
   "HlastReply" ∷ s ↦[MemKVShardServer.S :: "lastReply"] #lastReply_ptr ∗
   "HlastReplyMap" ∷ map.is_map lastReply_ptr (lastReplyMV, #0) ∗ (* TODO: default *)
+  "%HlastReplyMVdom" ∷ ⌜dom (gset u64) lastReplyMV = dom (gset u64) lastSeqM⌝ ∗
+  "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM, (∃ val_sl q, ⌜v = (#rep.(GR_Err), (slice_val val_sl, #()))%V⌝ ∗ typed_slice.is_slice_small val_sl byteT q rep.(GR_Value))) ∗
   "HlastSeq" ∷ s ↦[MemKVShardServer.S :: "lastSeq"] #lastSeq_ptr ∗
   "HlastSeqMap" ∷ is_map lastSeq_ptr lastSeqM ∗
   "HnextCID" ∷ s ↦[MemKVShardServer.S :: "nextCID"] #nextCID ∗
@@ -54,7 +56,7 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
                       ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
                       map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
-                       ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT 1%Qp (default [] (m !! k))) )
+                       ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl q, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (m !! k))) )
                   )
                  )
 .
@@ -179,15 +181,60 @@ Proof.
       done.
     }
 
-    wp_apply (wp_StoreAt with "Hrep").
-    { admit. } (* TODO: need to keep this info with HlastReplyMap, since it's untyped; alternatively, make a IntoVal instance for it *)
-    iIntros "Hrep".
-    wp_pures.
-
     destruct ok; last first.
     { exfalso. naive_solver. }
     apply map_get_true in HseqGet.
     destruct Heqb as [_ HseqLe].
+
+    (* get a copy of the is_slice for the slice we're giving in reply *)
+    assert (is_Some (lastReplyMV !! args.(GR_CID))) as [? HlastReplyMVlookup].
+    {
+      assert (args.(GR_CID) ∈ dom (gset u64) lastSeqM).
+      { by eapply elem_of_dom_2. }
+      assert (args.(GR_CID) ∈ dom (gset u64) lastReplyMV).
+      { rewrite -HlastReplyMVdom in H0. done. }
+      apply elem_of_dom.
+      done.
+    }
+
+    iDestruct (big_sepM2_lookup_iff with "HlastReply_structs") as %Hdom.
+    assert (is_Some (lastReplyM !! args.(GR_CID))) as [? HlastReplyMlookup].
+    { apply Hdom. naive_solver. }
+
+    iDestruct (big_sepM2_lookup_acc _ _ _ args.(GR_CID) with "HlastReply_structs") as "[HlastReply_struct HlastReply_structs]".
+    {
+      done.
+    }
+    {
+      done.
+    }
+
+    iDestruct "HlastReply_struct" as (srv_val_sl ?) "[%Hx Hsrv_val_sl]".
+    assert (x = reply) as ->.
+    {
+      unfold map.map_get in HlookupReply.
+      rewrite HlastReplyMVlookup in HlookupReply.
+      naive_solver.
+    }
+
+    rewrite Hx.
+    Opaque typed_slice.is_slice_small. (* to split fraction *)
+    iDestruct "Hsrv_val_sl" as "[Hsrv_val_sl Hrep_val_sl]".
+    Transparent typed_slice.is_slice_small.
+    iSpecialize ("HlastReply_structs" with "[Hsrv_val_sl]").
+    {
+      iExists _, _.
+      iFrame.
+      done.
+    }
+    (* Now we have a fraction of the slice we were looking for *)
+
+    wp_apply (wp_StoreAt with "Hrep").
+    { admit. } (* TODO: typecheck *)
+    iIntros "Hrep".
+    wp_pures.
+
+    (* now split into stale/nonstale cases *)
     destruct (Z.lt_ge_cases (int.Z args.(GR_Seq)) (int.Z v)) as [Hcase|Hcase].
     { (* Stale *)
       iMod (smaller_seqno_stale_fact _ {| Req_CID:=_; Req_Seq:=_ |} v with "His_srv Hrpc") as "HH".
@@ -196,7 +243,7 @@ Proof.
       { done. }
       iDestruct "HH" as "[Hrpc #Hstale]".
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep]").
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep Hrep_val_sl]").
       {
         iFrame "#∗".
         iNext.
@@ -206,7 +253,16 @@ Proof.
         done.
       }
       iApply "HΦ".
-      admit. (* same TODO as non-stale case *)
+
+      iDestruct (struct_fields_split with "Hrep") as "HH".
+      iNamed "HH".
+      iSplitL "Err Value Hrep_val_sl".
+      {
+        iExists _; iFrame.
+        iExists _; iFrame.
+      }
+      iLeft.
+      iFrame "#".
     }
     { (* Not stale *)
       assert (v = args.(GR_Seq)) by word.
@@ -215,9 +271,11 @@ Proof.
       { done. }
       { done. }
       { eexists _. naive_solver. }
-      iDestruct "HH" as "[Hreceipt Hrpc]".
+      iDestruct "HH" as "[#Hreceipt Hrpc]".
+
+      (* prove that args.(GR_CID) is in lastReplyMV (probably just add [∗ map] _ ↦ _;_ ∈ lastReplyMV ; lastSeq, True) *)
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep]").
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep Hrep_val_sl]").
       {
         iFrame "#∗".
         iNext.
@@ -229,9 +287,15 @@ Proof.
       iApply "HΦ".
       iDestruct (struct_fields_split with "Hrep") as "HH".
       iNamed "HH".
-      (* TODO: need to know what reply looks like, and need to have read-only
-         access to value slice *)
-      admit.
+      iSplitL "Err Value Hrep_val_sl".
+      {
+        iExists _; iFrame.
+        iExists _; iFrame.
+      }
+      iRight.
+      rewrite HlastReplyMlookup.
+      simpl.
+      iFrame "#".
     }
   }
   {
@@ -317,7 +381,7 @@ Proof.
       iDestruct "Hsrv_val_sl" as "[%Hbad|Hsrv_val_sl]".
       { exfalso. done. }
 
-      iDestruct "Hsrv_val_sl" as (?) "[%HvalSliceRe Hsrv_val_sl]".
+      iDestruct "Hsrv_val_sl" as (??) "[%HvalSliceRe Hsrv_val_sl]".
       rewrite HvalSliceRe.
       wp_apply (typed_slice.wp_SliceAppendSlice (V:=u8) with "[$Hval_sl $Hsrv_val_sl]").
 
@@ -363,7 +427,7 @@ Proof.
       iMod (server_completes_request with "His_srv HreqInv Hγpre [Q] Hproc") as "HH".
       { done. }
       { done. }
-      { simpl. admit. (* same as above *) }
+      { simpl. admit. (* TODO: some more pure inequality reasoning *) }
       {
         iNext.
         iRight.
@@ -377,13 +441,32 @@ Proof.
 
       iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hval_sl Hrep]").
+      iDestruct (typed_slice.is_slice_small_acc with "Hval_sl") as "[Hval_sl _]".
+      Opaque typed_slice.is_slice_small.
+      iDestruct "Hval_sl" as "[Hrep_val_sl Hsrv_rep_val_sl]".
+      Transparent typed_slice.is_slice.
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl Hrep]").
       {
         iFrame "#∗".
         iNext.
         iExists _,_,_, _, _, _, _, _.
         iExists _, _, _.
         iFrame.
+        iSplitL "".
+        {
+          iPureIntro.
+          simpl.
+          admit. (* TODO: pure gmap dom fact *)
+        }
+        iSplitL "HlastReply_structs Hsrv_rep_val_sl".
+        {
+          iApply (big_sepM2_insert_2 with "[Hsrv_rep_val_sl] HlastReply_structs").
+          { simpl.
+            iExists _, _.
+            iFrame.
+            done.
+          }
+        }
         iSplitL ""; first done.
         iApply "HownShards".
         iRight.
@@ -391,7 +474,7 @@ Proof.
         iFrame.
         iSpecialize ("HvalSlices" with "[Hsrv_val_sl]").
         {
-          iRight. iExists _; iFrame. done.
+          iRight. iExists _, _; iFrame. done.
         }
         iFrame "HvalSlices".
         done.
@@ -400,8 +483,9 @@ Proof.
       iDestruct (struct_fields_split with "Hrep") as "HH".
       iNamed "HH".
       instantiate (1:= mkGetReplyC _ _).
-      iSplitL "Err Value Hval_sl".
+      iSplitL "Err Value Hrep_val_sl".
       {
+        iExists _; iFrame.
         iExists _; iFrame.
       }
       iSimpl.
@@ -414,7 +498,7 @@ Proof.
       iMod (server_completes_request with "His_srv HreqInv Hγpre [Hpre] Hproc") as "HH".
       { done. }
       { done. }
-      { simpl. admit. (* same as above *) }
+      { simpl. admit. (* TODO: more pure inequality reasoning *) }
       {
         iNext.
         iLeft.
@@ -443,22 +527,36 @@ Proof.
 
       wp_loadField.
       iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep]").
+      iDestruct "HValue_sl" as (?) "Hval_sl".
+      Opaque typed_slice.is_slice_small.
+      iDestruct "Hval_sl" as "[Hsrv_rep_val_sl Hrep_val_sl]".
+      Transparent typed_slice.is_slice_small.
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl Hrep]").
       {
         iFrame "HmuInv Hlocked".
         iNext.
         iExists _,_,_, _, _, _, _, _.
         iExists _, _, _.
         iFrame.
+        iSplitL ""; first admit. (* TODO: same pure gmap dom fact as before *)
+        iSplitL "HlastReply_structs Hsrv_rep_val_sl".
+        {
+          iApply (big_sepM2_insert_2 with "[Hsrv_rep_val_sl] HlastReply_structs").
+          simpl.
+          iExists _, _; iFrame.
+          done.
+        }
         done.
       }
       iApply "HΦ".
       iDestruct (struct_fields_split with "Hrep") as "HH".
       iNamed "HH".
-      iSplitL "Err Value HValue_sl".
+      iSplitL "Err Value Hrep_val_sl".
       {
         iExists _.
         instantiate (1:=mkGetReplyC _ _).
+        iFrame.
+        iExists _.
         iFrame.
       }
       iSimpl.
