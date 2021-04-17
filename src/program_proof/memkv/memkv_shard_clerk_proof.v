@@ -8,18 +8,6 @@ Section memkv_shard_clerk_proof.
 
 Context `{!heapG Σ, rpcG Σ GetReplyC}.
 
-Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
-  ∃ (cid seq:u64) (cl:loc) (host:u64),
-    "Hcid" ∷ ck ↦[MemKVShardClerk.S :: "cid"] #cid ∗
-    "Hseq" ∷ ck ↦[MemKVShardClerk.S :: "seq"] #seq ∗
-    "Hcl" ∷ ck ↦[MemKVShardClerk.S :: "cl"] #cl ∗
-    "Hcrpc" ∷ RPCClient_own_ghost γ.(rpc_gn) cid seq ∗
-    "Hcl_own" ∷ grove_ffi.RPCClient_own cl host ∗
-    "#His_shard" ∷ is_shard_server host γ ∗
-    "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
-.
-
-
 Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
   ∃ (mv:gmap u64 val),
   map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
