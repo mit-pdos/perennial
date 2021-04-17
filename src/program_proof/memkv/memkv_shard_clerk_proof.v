@@ -9,7 +9,7 @@ Section memkv_shard_clerk_proof.
 Context `{!heapG Σ, rpcG Σ GetReplyC}.
 
 Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
-  ∃ (cid seq:u64) (cl:loc) (host:string),
+  ∃ (cid seq:u64) (cl:loc) (host:u64),
     "Hcid" ∷ ck ↦[MemKVShardClerk.S :: "cid"] #cid ∗
     "Hseq" ∷ ck ↦[MemKVShardClerk.S :: "seq"] #seq ∗
     "Hcl" ∷ ck ↦[MemKVShardClerk.S :: "cl"] #cl ∗
