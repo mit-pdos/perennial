@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_marshal_move_shard_proof.
+From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_marshal_move_shard_proof memkv_shard_clerk_proof.
 
 Section memkv_move_shard_proof.
 
@@ -80,7 +80,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   iDestruct (is_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
-  iDestruct (big_sepS_elem_of_acc _ _ args.(MR_Sid) with "HownShards") as "[HownShard HownShards]".
+  iDestruct (big_sepS_delete _ _ args.(MR_Sid) with "HownShards") as "[HownShard HownShards]".
   { set_solver. }
   iDestruct "HownShard" as "[%Hbad|HownShard]".
   { exfalso. done. }
@@ -96,6 +96,7 @@ Proof.
   iIntros "[Hkvss_small %Hkvs_ty]".
   wp_pures.
 
+  (* FIXME: too much unfolding in NewMap again *)
   wp_loadField.
   wp_loadField.
 
@@ -128,6 +129,38 @@ Proof.
   assert (v = v0) as [].
   { naive_solver. }
   wp_pures.
+  iDestruct (big_sepM_lookup_acc _ _ args.(MR_Dst) with "HpeerClerks") as "[Hclerk HpeerClerks]".
+  { apply map_get_true in Hlookup. done. }
+  iNamed "Hclerk".
+  iDestruct "Hclerk" as "[Hclerk %Hγeq]".
+  wp_apply (wp_MemKVShardClerk__InstallShard γsh0 with "[Hclerk HkvsMap HvalSlices HshardGhost]").
+  {
+    iFrame "Hclerk".
+    rewrite Hγeq.
+    iFrame "HshardGhost".
+    iSplitR ""; last done.
+    iExists _; iFrame.
+  }
+  iIntros "Hclerk".
+  iSpecialize ("HpeerClerks" with "[Hclerk]").
+  { iExists _; iFrame. done. }
+  wp_pures.
+  wp_loadField.
+  iSpecialize ("HshardMap_sl" with "HshardMap_small").
+  wp_apply (release_spec with "[- HΦ]").
+  {
+    iFrame "HmuInv Hlocked".
+    iNext.
+    iExists _,_,_,_,_,_,_,_.
+    iExists _,_,_,_.
+    iFrame "HlastReply_structs".
+    iFrame.
+    iSplitL ""; first done.
+    iSplitL "Hkvss_small".
+    {
+      admit. (* TODO: need to re-translate to make this work. *)
+    }
+  }
 Admitted.
 
 End memkv_move_shard_proof.

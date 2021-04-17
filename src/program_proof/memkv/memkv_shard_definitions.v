@@ -105,7 +105,7 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
                   )
                  ) ∗
   "HpeersMap" ∷ is_map (V:=loc) peers_ptr peersM ∗
-  "HpeerClerks" ∷ ([∗ map] k ↦ k ∈ peersM, (∃ ck γsh, own_MemKVShardClerk ck γsh ∗ ⌜γsh.(kv_gn) = γ.(kv_gn)⌝))
+  "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, (∃ γsh, own_MemKVShardClerk ck γsh ∗ ⌜γsh.(kv_gn) = γ.(kv_gn)⌝))
 .
 
 Definition is_MemKVShardServer (s:loc) γ : iProp Σ :=

@@ -373,7 +373,7 @@ Definition MemKVShardServer__MoveShardRPC: val :=
         #()
       else #());;
       let: "kvs" := SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer.S "kvss" "s") (struct.loadF MoveShardRequest.S "Sid" "args") in
-      SliceSet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer.S "kvss" "s") (struct.loadF MoveShardRequest.S "Sid" "args") slice.nil;;
+      SliceSet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer.S "kvss" "s") (struct.loadF MoveShardRequest.S "Sid" "args") (NewMap (slice.T byteT));;
       SliceSet boolT (struct.loadF MemKVShardServer.S "shardMap" "s") (struct.loadF MoveShardRequest.S "Sid" "args") #false;;
       MemKVShardClerk__InstallShard (Fst (MapGet (struct.loadF MemKVShardServer.S "peers" "s") (struct.loadF MoveShardRequest.S "Dst" "args"))) (struct.loadF MoveShardRequest.S "Sid" "args") "kvs";;
       lock.release (struct.loadF MemKVShardServer.S "mu" "s")).
