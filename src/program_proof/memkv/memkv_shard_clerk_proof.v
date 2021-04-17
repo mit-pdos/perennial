@@ -82,10 +82,11 @@ Proof.
   iNamed "HrawRep".
   wp_pures.
 
-  wp_apply (wp_encodeGetRequest with "[CID Seq Key]").
+  wp_apply (wp_encodeGetRequest _ (mkGetRequestC _ _ _) with "[CID Seq Key]").
   {
-    instantiate (1:=mkGetRequestC _ _ _).
+    rewrite /own_GetRequest /=.
     iFrame.
+    admit. (* TODO: seq > 0 *)
   }
   iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
   wp_loadField.
