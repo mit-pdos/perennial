@@ -51,6 +51,24 @@ Proof.
   }
 
   (* fresh sequence number *)
+  assert (int.Z v < int.Z args.(IR_Seq))%Z as HseqFresh.
+  {
+    simpl.
+    destruct ok.
+    {
+      intuition.
+      destruct (Z.le_gt_cases (int.Z args.(IR_Seq)) (int.Z v)) as [Hineq|Hineq].
+      { naive_solver. }
+      { naive_solver. }
+    }
+    {
+      apply map_get_false in HseqGet as [_ ->].
+      simpl.
+      word.
+    }
+  }
+
+
   wp_loadField.
   wp_loadField.
   wp_loadField.
@@ -83,7 +101,22 @@ Proof.
   }
   iIntros "Hkvss_small".
   iCombine "Hkvss_sl Hkvss_small" as "Hkvss_sl".
-  (* TODO: do ghost stuff to get pre out of reqInv *)
+
+  iMod (server_takes_request with "HreqInv Hrpc") as "HH".
+  { done. }
+  {
+    rewrite HseqGet.
+    simpl.
+    word.
+  }
+  iDestruct "HH" as "(Hγpre & HownShard & Hproc)".
+  iMod (server_completes_request with "His_srv HreqInv Hγpre [] Hproc") as "HH".
+  { done. }
+  { done. }
+  { rewrite HseqGet. simpl. word. }
+  { done. }
+  iDestruct "HH" as "[#Hreceipt Hrpc]".
+
   wp_pures.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ]").
@@ -109,8 +142,30 @@ Proof.
     }
 
     iApply (big_sepS_wand with "HownShards").
-    admit.
+    iApply (big_sepS_delete _ _ (args.(IR_Sid))).
+    { set_solver. }
+    iSplitR "".
+    {
+      iIntros "_".
+      iRight.
+      iExists _,_,_.
+      iFrame.
+      iPureIntro.
+      apply list_lookup_insert.
+      admit. (* FIXME: keep track of the length of kvs_ptrs, and keep bound on IR_Sid to know that it isn't too big *)
+    }
+    iApply big_sepS_intuitionistically_forall.
+    iModIntro.
+    iIntros.
+    assert (x ≠ args.(IR_Sid)).
+    { set_solver. }
+    assert (int.nat x ≠ int.nat args.(IR_Sid)).
+    { admit. } (* TODO: use injectivity of u64 -> nat mapping *)
+    rewrite list_lookup_insert_ne; last done.
+    rewrite list_lookup_insert_ne; last done.
+    iFrame.
   }
+  by iApply "HΦ".
 Admitted.
 
 End memkv_install_shard_proof.
