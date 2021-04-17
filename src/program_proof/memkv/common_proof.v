@@ -6,7 +6,7 @@ Section common_proof.
 
 Context `{!heapG Σ}.
 
-Definition uNSHARD : nat := 65536.
+Definition uNSHARD : nat := Z.to_nat 65536.
 Lemma wp_shardOf_bound (key:u64) :
   {{{
       True

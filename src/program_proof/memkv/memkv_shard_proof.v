@@ -119,6 +119,8 @@ Proof.
   admit.
 Admitted.
 
+Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Lemma wp_GetRPC (s args_ptr reply_ptr:loc) args γ Eo Ei γreq Q :
   is_MemKVShardServer s γ -∗
   {{{
@@ -321,9 +323,8 @@ Proof.
     {
       eapply list_lookup_lt.
       rewrite HshardMapLength.
-      unfold sid.
-
-      admit. (* annoying mod ineq *)
+      rewrite /sid /shardOfC /uNSHARD.
+      word.
     }
     wp_apply (typed_slice.wp_SliceGet with "[$HshardMap_sl]").
     {
@@ -707,3 +708,5 @@ Proof.
 Admitted.
 
 End memkv_shard_proof.
+
+Ltac Zify.zify_post_hook ::= idtac.
