@@ -15,7 +15,8 @@ Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
     "Hcl" ∷ ck ↦[MemKVShardClerk.S :: "cl"] #cl ∗
     "Hcrpc" ∷ RPCClient_own_ghost γ.(rpc_gn) cid seq ∗
     "Hcl_own" ∷ grove_ffi.RPCClient_own cl host ∗
-    "#His_shard" ∷ is_shard_server host γ
+    "#His_shard" ∷ is_shard_server host γ ∗
+    "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
 .
 
 Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
@@ -86,7 +87,9 @@ Proof.
   {
     rewrite /own_GetRequest /=.
     iFrame.
-    admit. (* TODO: seq > 0 *)
+    iPureIntro.
+    simpl.
+    word.
   }
   iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
   wp_loadField.
@@ -150,7 +153,10 @@ Proof.
     wp_loadField.
     iApply "HΦ".
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
-    { iExists _, _, _, _. iFrame "#∗". }
+    { iExists _, _, _, _. iFrame "#∗".
+      enough (0 < int.nat (word.add seq 1)).
+      { iPureIntro. word. }
+      rewrite -Hoverflow. word. }
     iDestruct "Hpost" as "[Hpost|Hpost]".
     {
       iLeft. iDestruct "Hpost" as "[$ $]".

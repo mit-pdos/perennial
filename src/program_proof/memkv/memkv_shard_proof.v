@@ -355,6 +355,23 @@ Proof.
     }
     iDestruct "HH" as "(Hγpre & Hpre & Hproc)".
 
+    assert (int.Z v < int.Z args.(GR_Seq))%Z as HseqFresh.
+    {
+      simpl.
+      destruct ok.
+      {
+        intuition.
+        destruct (Z.le_gt_cases (int.Z args.(GR_Seq)) (int.Z v)) as [Hineq|Hineq].
+        { naive_solver. }
+        { naive_solver. }
+      }
+      {
+        apply map_get_false in HseqGet as [_ ->].
+        simpl.
+        word.
+      }
+    }
+
     wp_if_destruct.
     { (* have the shard *)
       wp_loadField.
@@ -435,25 +452,12 @@ Proof.
       rewrite -Hmatch.
       iMod ("HfupdQ" with "Hkvptsto") as "Q".
       iMod "Hclose" as "_".
+
+
       iMod (server_completes_request with "His_srv HreqInv Hγpre [Q] Hproc") as "HH".
       { done. }
       { done. }
-      { (* seq inequality for server_completes_request *)
-        rewrite HseqGet.
-        simpl.
-        destruct ok.
-        {
-          intuition.
-          destruct (Z.le_gt_cases (int.Z args.(GR_Seq)) (int.Z v)) as [Hineq|Hineq].
-          { naive_solver. }
-          { naive_solver. }
-        }
-        {
-          apply map_get_false in HseqGet as [_ ->].
-          simpl.
-          word.
-        }
-      }
+      { rewrite HseqGet. simpl. done. }
       {
         iNext.
         iRight.
@@ -525,7 +529,7 @@ Proof.
       iMod (server_completes_request with "His_srv HreqInv Hγpre [Hpre] Hproc") as "HH".
       { done. }
       { done. }
-      { simpl. admit. (* TODO: more pure inequality reasoning *) }
+      { rewrite HseqGet. simpl. done. }
       {
         iNext.
         iLeft.
