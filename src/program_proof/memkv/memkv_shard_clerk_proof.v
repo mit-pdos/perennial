@@ -19,6 +19,93 @@ Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
     "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
 .
 
+
+Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
+  ∃ (mv:gmap u64 val),
+  map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
+  ([∗ set] k ∈ (fin_to_set u64),
+           ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (kvs !! k))) )
+.
+
+Lemma wp_MemKVShardClerk__InstallShard γ (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:gmap u64 (list u8)) :
+  {{{
+       own_MemKVShardClerk ck γ ∗
+       own_shard_phys kvs_ref sid kvs ∗
+       own_shard γ.(kv_gn) sid kvs
+  }}}
+    MemKVShardClerk__InstallShard #ck #sid #kvs_ref
+  {{{
+       RET #();
+       own_MemKVShardClerk ck γ
+  }}}
+.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iDestruct "Hpre" as "(Hclerk & Hphys & Hghost)".
+  iNamed "Hclerk".
+  wp_lam.
+  wp_pures.
+
+  wp_apply (wp_allocStruct).
+  { naive_solver. }
+  iIntros (l) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+
+  wp_loadField.
+  wp_storeField.
+  wp_loadField.
+  wp_storeField.
+  wp_storeField.
+  wp_storeField.
+  wp_loadField.
+  wp_storeField.
+
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rawRep) "HrawRep".
+  wp_pures.
+
+  iAssert (∃ rep_sl, rawRep ↦[slice.T byteT] (slice_val rep_sl) )%I with "[HrawRep]" as "HrawRep".
+  {
+    rewrite (zero_slice_val).
+    iExists _; iFrame.
+  }
+  assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
+  { simpl. admit. } (* FIXME: overflow guard *)
+  iNamed "His_shard".
+  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |}  (own_shard γ.(kv_gn) sid kvs) (λ _, True)%I with "His_rpc Hcrpc [Hghost]") as "[Hcrpc HreqInv]".
+  { done. }
+  { done. }
+  { iNext. iAccu. }
+  iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
+
+  wp_forBreak_cond.
+  iNamed "HrawRep".
+  wp_pures.
+
+  iDestruct "Hphys" as (?) "[Hmap Hvals]".
+  wp_apply (wp_encodeInstallShardRequest with "[CID Seq Sid Kvs Hmap Hvals]").
+  {
+    instantiate (1:=(mkInstallShardC _ _ _ _)).
+    iExists _, _.
+    iFrame.
+    iPureIntro.
+    simpl.
+    word.
+  }
+  iIntros (??) "(%Henc & Hsl & Hargs)".
+  wp_loadField.
+  wp_apply (wp_RPCClient__Call with "[$HinstallSpec $Hsl $HrawRep $Hcl_own]").
+  {
+    iModIntro.
+    iNext.
+    iExists _; iFrame.
+    admit.
+  }
+  admit.
+Admitted.
+
 Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
   {{{
        (|={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v))) ∗

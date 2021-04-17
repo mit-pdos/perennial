@@ -233,12 +233,11 @@ Definition MemKVShardClerk__Get: val :=
 
 Definition MemKVShardClerk__InstallShard: val :=
   rec: "MemKVShardClerk__InstallShard" "ck" "sid" "kvs" :=
-    let: "args" := struct.mk InstallShardRequest.S [
-      "CID" ::= struct.loadF MemKVShardClerk.S "cid" "ck";
-      "Seq" ::= struct.loadF MemKVShardClerk.S "seq" "ck";
-      "Sid" ::= "sid";
-      "Kvs" ::= "kvs"
-    ] in
+    let: "args" := struct.alloc InstallShardRequest.S (zero_val (struct.t InstallShardRequest.S)) in
+    struct.storeF InstallShardRequest.S "CID" "args" (struct.loadF MemKVShardClerk.S "cid" "ck");;
+    struct.storeF InstallShardRequest.S "Seq" "args" (struct.loadF MemKVShardClerk.S "seq" "ck");;
+    struct.storeF InstallShardRequest.S "Sid" "args" "sid";;
+    struct.storeF InstallShardRequest.S "Kvs" "args" "kvs";;
     struct.storeF MemKVShardClerk.S "seq" "ck" (struct.loadF MemKVShardClerk.S "seq" "ck" + #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
