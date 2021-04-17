@@ -1186,7 +1186,6 @@ Proof.
 
     (* Start the commit point *)
     iApply fupd_wp.
-    Search "start_commit".
     iMod (prepared_participant_start_commit with "Htxn1' Hprep1 Hdodec1 Hunstart1") as "[>Hptsto1 Hfupd1]".
     { done. }
     iMod (prepared_participant_start_commit with "Htxn2' Hprep2 Hdodec2 Hunstart2") as "[>Hptsto2 Hfupd2]".

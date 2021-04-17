@@ -341,7 +341,6 @@ Proof.
       destruct ok.
       {
         apply map_get_true in HseqGet.
-        Search Z.lt.
         edestruct (Z.le_gt_cases (int.Z args.(GR_Seq)) (int.Z v)) as [Hineq|Hineq].
         { exfalso. naive_solver. }
         { done. }
@@ -637,7 +636,6 @@ Proof.
 
   wp_apply (grove_ffi.wp_StartRPCServer with "[$Hmap]").
   {
-    Search "big_sepM".
     iApply (big_sepM_insert_2 with "").
     { admit. }
 
@@ -677,7 +675,6 @@ Proof.
         iExists (Slice.nil).
         iFrame.
         simpl.
-        Search "slice".
         iDestruct (typed_slice.is_slice_zero byteT 1%Qp) as "HH".
         iDestruct (typed_slice.is_slice_small_acc with "HH") as "[H _]".
         iExists 1%Qp.
