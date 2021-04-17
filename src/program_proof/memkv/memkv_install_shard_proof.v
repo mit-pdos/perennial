@@ -41,9 +41,10 @@ Proof.
   iIntros (v ok) "[%HseqGet HlastSeqMap]".
   wp_pures.
 
+  wp_loadField. wp_pures.
   wp_apply (wp_and ok (int.Z args.(IR_Seq) ≤ int.Z v)%Z).
   { wp_pures. by destruct ok. }
-  { iIntros "_". admit. (* tweak code to make less annoying *) }
+  { iIntros "_". wp_pures. done. }
 
   wp_if_destruct.
   { (* reply table *)
@@ -110,7 +111,7 @@ Proof.
     word.
   }
   iDestruct "HH" as "(Hγpre & HownShard & Hproc)".
-  iMod (server_completes_request with "His_srv HreqInv Hγpre [] Hproc") as "HH".
+  iMod (server_completes_request _ _ _ _ _ (mkGetReplyC 0 []) with "His_srv HreqInv Hγpre [] Hproc") as "HH".
   { done. }
   { done. }
   { rewrite HseqGet. simpl. word. }
@@ -119,23 +120,42 @@ Proof.
 
   wp_pures.
   wp_loadField.
+  wp_loadField.
+
+  wp_apply (map.wp_MapInsert with "HlastReplyMap").
+  iIntros "HlastReplyMap".
+  wp_pures.
+
+  wp_loadField.
   wp_apply (release_spec with "[-HΦ]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
     iExists _,_,_,_,_,_,_,_.
     iExists _,_,_.
-    iFrame "HlastReplyMap HlastSeqMap HlastReply_structs".
+    iFrame "HlastReplyMap HlastSeqMap".
     iFrame.
-    iSplitL ""; first admit. (* TODO: either update code, or change proof to account for the fact that lastReplyM and lastSeqM don't stay in sync *)
+    iSplitL "".
+    {
+      iPureIntro. rewrite dom_insert_L.
+      rewrite dom_insert_L. rewrite HlastReplyMVdom.
+      done.
+    }
+    iSplitL "HlastReply_structs".
+    { (* added an empty reply to lastReply *)
+      iApply (big_sepM2_insert_2 with "[] HlastReply_structs").
+      simpl.
+      iExists (Slice.nil),1%Qp.
+      iSplitL ""; first done.
+      iApply typed_slice.is_slice_small_nil.
+      done.
+    }
     iSplitL "Hkvss_sl".
     {
       iDestruct "Hkvss_sl" as "[$ H]".
       rewrite -list_fmap_insert.
       iFrame.
     }
-    iSplitL "Hrpc".
-    { admit. }
     iSplitL "".
     {
       iPureIntro. by rewrite insert_length.

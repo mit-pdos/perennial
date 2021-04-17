@@ -27,7 +27,7 @@ Definition KV_GET : expr := #2.
 
 Definition KV_INS_SHARD : expr := #3.
 
-Definition KV_MOV_SHARD : expr := #3.
+Definition KV_MOV_SHARD : expr := #4.
 
 Definition shardOf: val :=
   rec: "shardOf" "key" :=
@@ -188,34 +188,17 @@ Module MemKVShardClerk.
   Definition S := struct.decl [
     "seq" :: uint64T;
     "cid" :: uint64T;
-    "cl" :: struct.ptrT grove_ffi.RPCClient.S;
-    "config" :: mapT stringT
+    "cl" :: struct.ptrT grove_ffi.RPCClient.S
   ].
 End MemKVShardClerk.
 
 Definition MakeFreshKVClerk: val :=
   rec: "MakeFreshKVClerk" "host" :=
     let: "ck" := struct.alloc MemKVShardClerk.S (zero_val (struct.t MemKVShardClerk.S)) in
-    struct.storeF MemKVShardClerk.S "cl" "ck" (grove_ffi.MakeRPCClient (Fst (MapGet (struct.loadF MemKVShardClerk.S "config" "ck") "host")));;
+    struct.storeF MemKVShardClerk.S "cl" "ck" (grove_ffi.MakeRPCClient "host");;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     grove_ffi.RPCClient__Call (struct.loadF MemKVShardClerk.S "cl" "ck") KV_FRESHCID (NewSlice byteT #0) "rawRep";;
     struct.storeF MemKVShardClerk.S "cid" "ck" (decodeCID (![slice.T byteT] "rawRep"));;
-    struct.storeF MemKVShardClerk.S "seq" "ck" #1;;
-    "ck".
-
-Definition MakeKVClerk: val :=
-  rec: "MakeKVClerk" "cid" "host" :=
-    let: "ck" := struct.alloc MemKVShardClerk.S (zero_val (struct.t MemKVShardClerk.S)) in
-    struct.storeF MemKVShardClerk.S "cl" "ck" (grove_ffi.MakeRPCClient (Fst (MapGet (struct.loadF MemKVShardClerk.S "config" "ck") "host")));;
-    struct.storeF MemKVShardClerk.S "cid" "ck" "cid";;
-    struct.storeF MemKVShardClerk.S "seq" "ck" #1;;
-    "ck".
-
-Definition MakeKVClerkWithRPCClient: val :=
-  rec: "MakeKVClerkWithRPCClient" "cid" "cl" :=
-    let: "ck" := struct.alloc MemKVShardClerk.S (zero_val (struct.t MemKVShardClerk.S)) in
-    struct.storeF MemKVShardClerk.S "cl" "ck" "cl";;
-    struct.storeF MemKVShardClerk.S "cid" "ck" "cid";;
     struct.storeF MemKVShardClerk.S "seq" "ck" #1;;
     "ck".
 
@@ -299,7 +282,8 @@ End PutArgs.
 Definition MemKVShardServer__put_inner: val :=
   rec: "MemKVShardServer__put_inner" "s" "args" "reply" :=
     let: ("last", "ok") := MapGet (struct.loadF MemKVShardServer.S "lastSeq" "s") (struct.loadF PutRequest.S "CID" "args") in
-    (if: "ok" && (struct.loadF PutRequest.S "Seq" "args" ≤ "last")
+    let: "seq" := struct.loadF PutRequest.S "Seq" "args" in
+    (if: "ok" && ("seq" ≤ "last")
     then
       struct.storeF PutReply.S "Err" "reply" (struct.get GetReply.S "Err" (Fst (MapGet (struct.loadF MemKVShardServer.S "lastReply" "s") (struct.loadF PutRequest.S "CID" "args"))));;
       #()
@@ -324,7 +308,8 @@ Definition MemKVShardServer__PutRPC: val :=
 Definition MemKVShardServer__get_inner: val :=
   rec: "MemKVShardServer__get_inner" "s" "args" "reply" :=
     let: ("last", "ok") := MapGet (struct.loadF MemKVShardServer.S "lastSeq" "s") (struct.loadF GetRequest.S "CID" "args") in
-    (if: "ok" && (struct.loadF GetRequest.S "Seq" "args" ≤ "last")
+    let: "seq" := struct.loadF GetRequest.S "Seq" "args" in
+    (if: "ok" && ("seq" ≤ "last")
     then
       struct.store GetReply.S "reply" (Fst (MapGet (struct.loadF MemKVShardServer.S "lastReply" "s") (struct.loadF GetRequest.S "CID" "args")));;
       #()
@@ -353,12 +338,17 @@ Definition MemKVShardServer__GetRPC: val :=
 Definition MemKVShardServer__install_shard_inner: val :=
   rec: "MemKVShardServer__install_shard_inner" "s" "args" :=
     let: ("last", "ok") := MapGet (struct.loadF MemKVShardServer.S "lastSeq" "s") (struct.loadF InstallShardRequest.S "CID" "args") in
-    (if: "ok" && (struct.loadF InstallShardRequest.S "Seq" "args" ≤ "last")
+    let: "seq" := struct.loadF InstallShardRequest.S "Seq" "args" in
+    (if: "ok" && ("seq" ≤ "last")
     then #()
     else
       MapInsert (struct.loadF MemKVShardServer.S "lastSeq" "s") (struct.loadF InstallShardRequest.S "CID" "args") (struct.loadF InstallShardRequest.S "Seq" "args");;
       SliceSet boolT (struct.loadF MemKVShardServer.S "shardMap" "s") (struct.loadF InstallShardRequest.S "Sid" "args") #true;;
-      SliceSet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer.S "kvss" "s") (struct.loadF InstallShardRequest.S "Sid" "args") (struct.loadF InstallShardRequest.S "Kvs" "args")).
+      SliceSet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer.S "kvss" "s") (struct.loadF InstallShardRequest.S "Sid" "args") (struct.loadF InstallShardRequest.S "Kvs" "args");;
+      MapInsert (struct.loadF MemKVShardServer.S "lastReply" "s") (struct.loadF InstallShardRequest.S "CID" "args") (struct.mk GetReply.S [
+        "Err" ::= #0;
+        "Value" ::= slice.nil
+      ])).
 
 Definition MemKVShardServer__InstallShardRPC: val :=
   rec: "MemKVShardServer__InstallShardRPC" "s" "args" :=
@@ -386,8 +376,8 @@ Definition MemKVShardServer__MoveShardRPC: val :=
       let: "kvs" := SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer.S "kvss" "s") (struct.loadF MoveShardRequest.S "Sid" "args") in
       SliceSet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer.S "kvss" "s") (struct.loadF MoveShardRequest.S "Sid" "args") slice.nil;;
       SliceSet boolT (struct.loadF MemKVShardServer.S "shardMap" "s") (struct.loadF MoveShardRequest.S "Sid" "args") #false;;
-      lock.release (struct.loadF MemKVShardServer.S "mu" "s");;
-      MemKVShardClerk__InstallShard (Fst (MapGet (struct.loadF MemKVShardServer.S "peers" "s") (struct.loadF MoveShardRequest.S "Dst" "args"))) (struct.loadF MoveShardRequest.S "Sid" "args") "kvs").
+      MemKVShardClerk__InstallShard (Fst (MapGet (struct.loadF MemKVShardServer.S "peers" "s") (struct.loadF MoveShardRequest.S "Dst" "args"))) (struct.loadF MoveShardRequest.S "Sid" "args") "kvs";;
+      lock.release (struct.loadF MemKVShardServer.S "mu" "s")).
 
 Definition MakeMemKVShardServer: val :=
   rec: "MakeMemKVShardServer" <> :=
@@ -395,6 +385,8 @@ Definition MakeMemKVShardServer: val :=
     struct.storeF MemKVShardServer.S "mu" "srv" (lock.new #());;
     struct.storeF MemKVShardServer.S "lastReply" "srv" (NewMap (struct.t GetReply.S));;
     struct.storeF MemKVShardServer.S "lastSeq" "srv" (NewMap uint64T);;
+    struct.storeF MemKVShardServer.S "shardMap" "srv" (NewSlice boolT NSHARD);;
+    struct.storeF MemKVShardServer.S "kvss" "srv" (NewSlice KvMap NSHARD);;
     "srv".
 
 Definition MemKVShardServer__GetCIDRPC: val :=

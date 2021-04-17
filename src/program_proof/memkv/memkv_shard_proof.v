@@ -159,9 +159,12 @@ Proof.
   iIntros (v ok) "[%HseqGet HlastSeqMap]".
   wp_pures.
 
+  wp_loadField.
+  wp_pures.
+
   wp_apply (wp_and ok (int.Z args.(GR_Seq) ≤ int.Z v)%Z).
   { wp_pures. by destruct ok. }
-  { iIntros "_". admit. (* tweak code to make less annoying *) }
+  { iIntros "_". wp_pures. done. }
 
   wp_if_destruct.
   { (* reply table *)
@@ -232,7 +235,8 @@ Proof.
     (* Now we have a fraction of the slice we were looking for *)
 
     wp_apply (wp_StoreAt with "Hrep").
-    { admit. } (* TODO: typecheck *)
+    { Transparent struct.t. naive_solver. Opaque struct.t. }
+
     iIntros "Hrep".
     wp_pures.
 
@@ -596,7 +600,7 @@ Proof.
       iFrame "#".
     }
   }
-Admitted.
+Admitted. (* TODO: evars: into_val.IntoVal GetReplyC *)
 
 Lemma wp_MemKVShardServer__Start (s:loc) host γ :
 is_shard_server host γ -∗
