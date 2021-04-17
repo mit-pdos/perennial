@@ -31,7 +31,8 @@ Lemma wp_MemKVShardClerk__InstallShard γ (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:
   {{{
        own_MemKVShardClerk ck γ ∗
        own_shard_phys kvs_ref sid kvs ∗
-       own_shard γ.(kv_gn) sid kvs
+       own_shard γ.(kv_gn) sid kvs ∗
+       ⌜int.nat sid < uNSHARD⌝
   }}}
     MemKVShardClerk__InstallShard #ck #sid #kvs_ref
   {{{
@@ -41,7 +42,7 @@ Lemma wp_MemKVShardClerk__InstallShard γ (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:
 .
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  iDestruct "Hpre" as "(Hclerk & Hphys & Hghost)".
+  iDestruct "Hpre" as "(Hclerk & Hphys & Hghost & %HsidLe)".
   iNamed "Hclerk".
   wp_lam.
   wp_pures.
@@ -71,39 +72,67 @@ Proof.
     rewrite (zero_slice_val).
     iExists _; iFrame.
   }
+  iAssert (own_InstallShardRequest l _) with "[CID Seq Sid Kvs Hphys]" as "Hargs".
+  {
+    iDestruct "Hphys" as (?) "[H HH]".
+    iExists _, _.
+    instantiate (1:=(mkInstallShardC _ _ _ _)).
+    iFrame.
+    iSimpl.
+    iPureIntro; word.
+  }
   assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
   { simpl. admit. } (* FIXME: overflow guard *)
   iNamed "His_shard".
   iMod (make_request {| Req_CID:=_; Req_Seq:= _ |}  (own_shard γ.(kv_gn) sid kvs) (λ _, True)%I with "His_rpc Hcrpc [Hghost]") as "[Hcrpc HreqInv]".
   { done. }
   { done. }
-  { iNext. iAccu. }
+  { iNext. iFrame. }
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
   wp_forBreak_cond.
   iNamed "HrawRep".
   wp_pures.
 
-  iDestruct "Hphys" as (?) "[Hmap Hvals]".
-  wp_apply (wp_encodeInstallShardRequest with "[CID Seq Sid Kvs Hmap Hvals]").
-  {
-    instantiate (1:=(mkInstallShardC _ _ _ _)).
-    iExists _, _.
-    iFrame.
-    iPureIntro.
-    simpl.
-    word.
-  }
+  wp_apply (wp_encodeInstallShardRequest with "[$Hargs]").
   iIntros (??) "(%Henc & Hsl & Hargs)".
   wp_loadField.
   wp_apply (wp_RPCClient__Call with "[$HinstallSpec $Hsl $HrawRep $Hcl_own]").
   {
     iModIntro.
     iNext.
-    iExists _; iFrame.
-    admit.
+    iExists (mkInstallShardC _ _ _ _); iFrame.
+    iFrame "HreqInv".
+    iPureIntro.
+    split.
+    {
+      done.
+    }
+    simpl.
+    done.
   }
-  admit.
+  iIntros (???) "(Hrep & Hcl_own & Hreq_sl & Hrep_sl)".
+  wp_pures.
+  wp_if_destruct.
+  {
+    wp_pures.
+    iLeft.
+    iModIntro.
+    iSplitL ""; first done.
+    iFrame.
+    iExists _; iFrame.
+  }
+  (* got a reply *)
+  iRight.
+  iSplitL ""; first done.
+  iApply "HΦ".
+  iExists _, _, _, _.
+  iFrame "∗#".
+  iPureIntro.
+  simpl.
+  enough (0 < int.nat (word.add seq 1)).
+  { word. }
+  rewrite -Hoverflow. word.
 Admitted.
 
 Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
@@ -134,7 +163,7 @@ Proof.
   wp_lam.
   wp_pures.
   wp_apply (wp_allocStruct).
-  { admit. } (* type-check *)
+  { naive_solver. }
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
