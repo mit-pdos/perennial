@@ -6,6 +6,8 @@ Section common_proof.
 
 Context `{!heapG Σ}.
 
+Definition shardOfC (key:u64) : u64 := (word.modu key (65536%Z)).
+
 Definition uNSHARD : nat := Z.to_nat 65536.
 Lemma wp_shardOf_bound (key:u64) :
   {{{

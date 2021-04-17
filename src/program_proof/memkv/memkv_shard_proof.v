@@ -23,8 +23,6 @@ Record memkv_shard_names := {
 
 Implicit Type γ : memkv_shard_names.
 
-Definition shardOfC (key:u64) : u64 := (word.modu key (65536%Z)).
-
 Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
   [∗ set] k ∈ (fin_to_set u64), ⌜shardOfC k ≠ sid⌝ ∨
                                 kvptsto γkv k (default [] (m !! k))
