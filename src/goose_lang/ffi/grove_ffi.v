@@ -111,7 +111,7 @@ Class rpcregG Σ := RpcRegG {
 
 Context `{!rpcregG Σ}.
 
-Axiom handler_is : ∀ (X:Type) (host:string) (rpcid:u64) (Pre:X → list u8 → iProp Σ)
+Axiom handler_is : ∀ (X:Type) (host:u64) (rpcid:u64) (Pre:X → list u8 → iProp Σ)
                      (Post:X → list u8 → list u8 → iProp Σ), iProp Σ.
 
 Axiom handler_is_pers : ∀ X host rpcid pre post, Persistent (handler_is X host rpcid pre post).
@@ -120,13 +120,13 @@ Global Instance handler_is_pers_instance X host rpcid pre post : Persistent (han
 apply handler_is_pers.
 Defined.
 
-Axiom RPCClient_own : ∀ (cl_ptr:loc) (host:string), iProp Σ.
+Axiom RPCClient_own : ∀ (cl_ptr:loc) (host:u64), iProp Σ.
 
-Axiom wp_MakeRPCClient : ∀ (host:string) ,
+Axiom wp_MakeRPCClient : ∀ (host:u64) ,
   {{{
        True
   }}}
-    MakeRPCClient #(str host)
+    MakeRPCClient #host
   {{{
        (cl_ptr:loc), RET #cl_ptr; RPCClient_own cl_ptr host
   }}}.
@@ -149,7 +149,7 @@ handler_is host rpcid spec -∗
 .
 *)
 
-Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:string) req rep_ptr dummy_sl_val (reqData:list u8) Pre Post k,
+Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr dummy_sl_val (reqData:list u8) Pre Post k,
   {{{
       is_slice req byteT 1 reqData ∗
       rep_ptr ↦[slice.T byteT] dummy_sl_val ∗
