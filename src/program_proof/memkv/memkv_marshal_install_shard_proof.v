@@ -33,8 +33,33 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
 
 (* Pre: "HownShard" ∷ own_shard γ.(kv_gn) sid m *)
 
-Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : iProp Σ.
+Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : Prop.
 Admitted.
 
+Lemma wp_encodeInstallShardRequest args_ptr args :
+  {{{
+       own_InstallShardRequest args_ptr args
+  }}}
+    encodeInstallShardRequest #args_ptr
+  {{{
+       (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
+                                               typed_slice.is_slice req_sl byteT 1%Qp reqData ∗
+                                               own_InstallShardRequest args_ptr args
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_decodeInstallShardRequest args args_sl argsData :
+  {{{
+       typed_slice.is_slice args_sl byteT 1%Qp argsData ∗
+       ⌜has_encoding_InstallShardRequest argsData args ⌝
+  }}}
+    decodeInstallShardRequest (slice_val args_sl)
+  {{{
+       (args_ptr:loc), RET #args_ptr;
+       own_InstallShardRequest args_ptr args
+  }}}.
+Proof.
+Admitted.
 
 End memkv_marshal_install_shard_proof.
