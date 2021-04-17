@@ -12,6 +12,7 @@ Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
   is_MemKVShardServer s γ -∗
   {{{
        own_InstallShardRequest args_ptr args ∗
+       ⌜int.nat args.(IR_Sid) < uNSHARD⌝ ∗
        is_RPCRequest γ.(rpc_gn) γreq (own_shard γ.(kv_gn) args.(IR_Sid) args.(IR_Kvs))
                                 (λ _, True)
                                 {| Req_CID:=args.(IR_CID); Req_Seq:=args.(IR_Seq) |}
@@ -23,7 +24,7 @@ Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
 .
 Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".
-  iDestruct "Hpre" as "[Hargs #HreqInv]".
+  iDestruct "Hpre" as "(Hargs & %HsidLe & #HreqInv)".
   iNamed "Hargs".
   wp_lam.
   wp_pures.
@@ -84,7 +85,10 @@ Proof.
   iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_small HshardMap_sl]".
   wp_apply (typed_slice.wp_SliceSet with "[$HshardMap_small]").
   {
-    admit. (* TODO: same as something done before *)
+    iPureIntro.
+    apply lookup_lt_is_Some_2.
+    rewrite HshardMapLength.
+    done.
   }
   iIntros "HshardMap_small".
   iSpecialize ("HshardMap_sl" with "HshardMap_small").
@@ -97,8 +101,19 @@ Proof.
   iDestruct (is_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
   wp_apply (wp_SliceSet with "[$Hkvss_small]").
   {
-    (* FIXME: keep track of length of kvss_sl *)
-    admit.
+    iPureIntro.
+    split.
+    {
+      simpl.
+      rewrite list_lookup_fmap.
+      rewrite fmap_is_Some.
+      apply lookup_lt_is_Some_2.
+      rewrite HkvssLength.
+      done.
+    }
+    {
+      naive_solver.
+    }
   }
   iIntros "Hkvss_small".
   iCombine "Hkvss_sl Hkvss_small" as "Hkvss_sl".
@@ -157,9 +172,9 @@ Proof.
       iFrame.
     }
     iSplitL "".
-    {
-      iPureIntro. by rewrite insert_length.
-    }
+    { iPureIntro. by rewrite insert_length. }
+    iSplitL "".
+    { iPureIntro. by rewrite insert_length. }
 
     iApply (big_sepS_wand with "HownShards").
     iApply (big_sepS_delete _ _ (args.(IR_Sid))).
@@ -172,7 +187,8 @@ Proof.
       iFrame.
       iPureIntro.
       apply list_lookup_insert.
-      admit. (* FIXME: keep track of the length of kvs_ptrs, and keep bound on IR_Sid to know that it isn't too big *)
+      rewrite HkvssLength.
+      word.
     }
     iApply big_sepS_intuitionistically_forall.
     iModIntro.

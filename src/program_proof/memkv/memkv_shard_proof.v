@@ -45,6 +45,7 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
   "Hpeers" ∷ s ↦[MemKVShardServer.S :: "peers"] #peers_ptr ∗
   "Hrpc" ∷ RPCServer_own_ghost γ.(rpc_gn) lastSeqM lastReplyM ∗
   "%HshardMapLength" ∷ ⌜length shardMapping = uNSHARD⌝ ∗
+  "%HkvssLength" ∷ ⌜length kvs_ptrs = uNSHARD⌝ ∗
   "HownShards" ∷ ([∗ set] sid ∈ (fin_to_set u64),
                   ⌜(shardMapping !! (int.nat sid)) ≠ Some true⌝ ∨
                   (∃ (kvs_ptr:loc) (m:gmap u64 (list u8)) (mv:gmap u64 goose_lang.val),
