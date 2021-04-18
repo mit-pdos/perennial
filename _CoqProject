@@ -13,3 +13,4 @@
 -Q external/Goose Goose
 -Q external/record-update/src RecordUpdate
 -Q external/coq-tactical/src Tactical
+-Q external/iris-named-props/src iris_named_props
