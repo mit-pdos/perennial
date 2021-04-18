@@ -8,12 +8,85 @@ Section memkv_shard_clerk_proof.
 
 Context `{!heapG Σ, rpcG Σ GetReplyC}.
 
+Lemma wp_MakeFreshKVClerk (host:u64) γ :
+  is_shard_server host γ -∗
+  {{{
+       True
+  }}}
+    MakeFreshKVClerk #host
+  {{{
+       (ck:loc), RET #ck; own_MemKVShardClerk ck γ
+  }}}
+.
+Proof.
+  iIntros "#His_shard !#" (Φ) "_ HΦ".
+  wp_lam.
+  wp_apply (wp_allocStruct).
+  { naive_solver. }
+  iIntros (ck) "Hck".
+  iDestruct (struct_fields_split with "Hck") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_apply (wp_MakeRPCClient).
+  iIntros (cl) "Hcl".
+  wp_storeField.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rawRep) "HrawRep".
+  wp_pures.
+  iAssert (∃ sl, rawRep ↦[slice.T byteT] (slice_val sl))%I with "[HrawRep]" as "HrawRep".
+  {
+    rewrite zero_slice_val.
+    iExists _; iFrame.
+  }
+  wp_forBreak_cond.
+
+  wp_pures.
+
+  wp_apply (typed_slice.wp_NewSlice (V:=u8)).
+  iIntros (req_sl) "Hreq_sl".
+  wp_loadField.
+  rewrite is_shard_server_unfold.
+  iNamed "His_shard".
+  iNamed "HrawRep".
+  wp_apply (wp_RPCClient__Call () with "[$HfreshSpec $Hcl $Hreq_sl $HrawRep]").
+  { done. }
+  iIntros (???) "(HrawRep & Hcl & Hreq_sl & Hrep_sl & Hpost)".
+  wp_pures.
+  wp_if_destruct.
+  { (* continue *)
+    wp_pures. iLeft.
+    iFrame.
+    iSplitL ""; first done.
+    iModIntro. iExists _; iFrame.
+  }
+  (* got reply *)
+  iRight.
+  iDestruct "Hpost" as "[%Hbad|[_ Hpost]]"; first naive_solver.
+  iModIntro. iSplitL ""; first done.
+  wp_pures.
+  wp_load.
+  iDestruct "Hpost" as (??) "Hcid".
+  wp_apply (wp_decodeCID with "[$Hrep_sl]").
+  { done. }
+  wp_storeField.
+  wp_storeField.
+  iApply "HΦ".
+  iModIntro.
+  iExists _, _, _, _.
+  rewrite is_shard_server_unfold.
+  iFrame "∗#".
+  iPureIntro.
+  word.
+Qed.
+
 Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
   ∃ (mv:gmap u64 val),
   map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
   ([∗ set] k ∈ (fin_to_set u64),
            ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (kvs !! k))) )
 .
+
 
 Lemma wp_MemKVShardClerk__InstallShard γ (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:gmap u64 (list u8)) :
   {{{

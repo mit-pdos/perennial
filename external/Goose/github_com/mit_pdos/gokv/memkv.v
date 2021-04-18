@@ -197,7 +197,9 @@ Definition MakeFreshKVClerk: val :=
     let: "ck" := struct.alloc MemKVShardClerk.S (zero_val (struct.t MemKVShardClerk.S)) in
     struct.storeF MemKVShardClerk.S "cl" "ck" (grove_ffi.MakeRPCClient "host");;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    grove_ffi.RPCClient__Call (struct.loadF MemKVShardClerk.S "cl" "ck") KV_FRESHCID (NewSlice byteT #0) "rawRep";;
+    Skip;;
+    (for: (λ: <>, (grove_ffi.RPCClient__Call (struct.loadF MemKVShardClerk.S "cl" "ck") KV_FRESHCID (NewSlice byteT #0) "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+      Continue);;
     struct.storeF MemKVShardClerk.S "cid" "ck" (decodeCID (![slice.T byteT] "rawRep"));;
     struct.storeF MemKVShardClerk.S "seq" "ck" #1;;
     "ck".
