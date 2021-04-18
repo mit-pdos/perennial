@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
-From Perennial.program_proof.memkv Require Export memkv_marshal_get_proof memkv_marshal_install_shard_proof.
+From Perennial.program_proof.memkv Require Export memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof.
 
 Section memkv_shard_definitions.
 
@@ -14,6 +14,7 @@ Axiom kvptsto : gname → u64 → list u8 → iProp Σ.
 Global Instance kvptst_tmlss γkv k v : Timeless (kvptsto γkv k v).
 Admitted.
 
+Definition uKV_FRESHCID := 0.
 Definition uKV_GET := 2.
 Definition uKV_INS_SHARD := 3.
 
@@ -59,6 +60,13 @@ Definition is_shard_server host γ : iProp Σ :=
                                                             {| Req_CID:=args.(IR_CID); Req_Seq:=args.(IR_Seq) |}
              ) (* pre *)
              (λ x reqData repData, True
+             ) (* post *) ∗
+
+  "#HfreshSpec" ∷ handler_is unit host uKV_FRESHCID
+             (λ x reqData, True
+             ) (* pre *)
+             (λ x reqData repData, ∃ cid, ⌜has_encoding_CID repData cid⌝ ∗
+              RPCClient_own_ghost γ.(rpc_gn) cid 1
              ) (* post *)
 .
 
@@ -105,7 +113,8 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
                   )
                  ) ∗
   "HpeersMap" ∷ is_map (V:=loc) peers_ptr peersM ∗
-  "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, (∃ γsh, own_MemKVShardClerk ck γsh ∗ ⌜γsh.(kv_gn) = γ.(kv_gn)⌝))
+  "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, (∃ γsh, own_MemKVShardClerk ck γsh ∗ ⌜γsh.(kv_gn) = γ.(kv_gn)⌝)) ∗
+  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (RPCClient_own_ghost γ.(rpc_gn) cid 1)
 .
 
 Definition is_MemKVShardServer (s:loc) γ : iProp Σ :=

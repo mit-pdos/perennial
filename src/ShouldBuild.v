@@ -35,8 +35,9 @@ From Perennial.program_proof.examples Require
 From Perennial.program_proof.lockservice Require
      bank_proof incr_proof incr_proxy_proof two_pc_example. *)
 
+(* In-memory sharde KV system *)
 From Perennial.program_proof.memkv Require
-     memkv_clerk_proof.
+     memkv_clerk_proof memkv_shard_start_proof.
 
 From Perennial.goose_lang Require
      ffi.append_log_ffi.

@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Export memkv_get_proof memkv_install_shard_proof common_proof.
+From Perennial.program_proof.memkv Require Export memkv_get_proof memkv_install_shard_proof memkv_getcid_proof common_proof.
 
 Section memkv_shard_start_proof.
 
@@ -138,7 +138,26 @@ Proof.
 
 
     iApply (big_sepM_insert_2 with "").
-    { admit. }
+    { (* GetCIDRPC handler_is *)
+      iNamed "His_shard".
+      iExists _, _, _.
+      iFrame "HfreshSpec".
+
+      clear Φ.
+      iIntros (?????) "!#".
+      iIntros (Φ) "Hpre HΦ".
+      wp_pures.
+      wp_apply (wp_GetCIDRPC with "His_memkv").
+      iIntros (cid) "Hcid".
+      wp_apply (wp_encodeCID).
+      iIntros (rep_sl repData) "[Hrep_sl %HrepEnc]".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & _)".
+      wp_store.
+      iApply "HΦ".
+      iFrame.
+      iExists _; iFrame.
+      done.
+    }
 
     iApply big_sepM_empty.
     done.
