@@ -8,7 +8,7 @@ Section memkv_move_shard_proof.
 
 Context `{!heapG Σ, rpcG Σ GetReplyC}.
 
-Lemma wp_InstallShardRPC (s args_ptr:loc) args γsh γ :
+Lemma wp_MoveShardRPC (s args_ptr:loc) args γsh γ :
   is_MemKVShardServer s γ -∗
   {{{
        own_MoveShardRequest args_ptr args ∗

@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Export memkv_get_proof memkv_install_shard_proof memkv_getcid_proof common_proof.
+From Perennial.program_proof.memkv Require Export memkv_get_proof memkv_install_shard_proof memkv_getcid_proof memkv_move_shard_proof common_proof.
 
 Section memkv_shard_start_proof.
 
@@ -50,11 +50,34 @@ Proof.
   wp_apply (grove_ffi.wp_StartRPCServer with "[$Hmap]").
   {
     iApply (big_sepM_insert_2 with "").
-    { admit. }
+    { (* MoveShardRPC handler_is *)
+      rewrite is_shard_server_unfold.
+      iNamed "His_shard".
+      iExists _, _, _.
+      iFrame "#HmoveSpec".
+
+      clear Φ.
+      iIntros (?????) "!#".
+      iIntros (Φ) "Hpre HΦ".
+      wp_pures.
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hargs)".
+      iDestruct "Hargs" as (?) "(%HencArgs & %HsidLe & #Hdst_is_shard)".
+      wp_apply (wp_decodeMoveShardRequest with "[$Hreq_sl]").
+      { done. }
+      iIntros (args_ptr) "Hargs".
+      wp_apply (wp_MoveShardRPC with "His_memkv [$Hargs $Hdst_is_shard]").
+      { done. }
+      wp_pures.
+      wp_apply (typed_slice.wp_NewSlice (V:=u8)).
+      iIntros (rep_sl) "Hrep_sl".
+      wp_store.
+      iApply "HΦ".
+      iFrame.
+      done.
+    }
 
     iApply (big_sepM_insert_2 with "").
     { (* InstallShard() handler_is *)
-      simpl.
       rewrite is_shard_server_unfold.
       iNamed "His_shard".
       iExists _, _, _.
@@ -85,6 +108,7 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     { (* Get() handler_is *)
+      rewrite is_shard_server_unfold.
       iNamed "His_shard".
       simpl.
       iExists _, _, _; iFrame "HgetSpec".
@@ -94,7 +118,10 @@ Proof.
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
-      { admit. } (* TODO: typecheck *)
+      {
+        rewrite zero_slice_val.
+        naive_solver.
+      }
       iIntros (rep_ptr) "Hrep".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & Hpre)".
@@ -105,9 +132,7 @@ Proof.
       wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep $HreqInv]").
       {
         replace (zero_val (struct.t GetReply.S)) with ((#0, (slice.nil, #()))%V); last first.
-        {
-          admit. (* zero value of GetReply *)
-        }
+        { naive_solver. }
 
         iDestruct (struct_fields_split with "Hrep") as "HH".
         iNamed "HH".
@@ -140,6 +165,7 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     { (* GetCIDRPC handler_is *)
+      rewrite is_shard_server_unfold.
       iNamed "His_shard".
       iExists _, _, _.
       iFrame "HfreshSpec".
