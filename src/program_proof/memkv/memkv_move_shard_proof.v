@@ -73,6 +73,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* need to make a fresh clerk *)
+    (* FIXME: can't let go of lock here; bug in code *)
     admit.
   }
   (* have a clerk already in peers *)
@@ -96,7 +97,8 @@ Proof.
   iIntros "[Hkvss_small %Hkvs_ty]".
   wp_pures.
 
-  (* FIXME: too much unfolding in NewMap again *)
+  wp_apply (map.wp_NewMap).
+  iIntros (empty_ptr) "HemptyMap".
   wp_loadField.
   wp_loadField.
 
@@ -158,9 +160,34 @@ Proof.
     iSplitL ""; first done.
     iSplitL "Hkvss_small".
     {
-      admit. (* TODO: need to re-translate to make this work. *)
+      rewrite -list_fmap_insert.
+      iFrame.
     }
+    iSplitL "".
+    { by rewrite insert_length. }
+    iSplitL "".
+    { by rewrite insert_length. }
+    iApply (big_sepS_delete _ _ (args.(MR_Sid)) with "[HownShards]").
+    { set_solver. }
+    iSplitL "".
+    {
+      iLeft.
+      iPureIntro.
+      rewrite list_lookup_insert.
+      { done. }
+      rewrite HshardMapLength.
+      done.
+    }
+    iApply (big_sepS_impl with "HownShards").
+    iModIntro.
+    iIntros.
+    rewrite list_lookup_insert_ne; last first.
+    { admit. (* TODO: injectivity of int.nat *) }
+    rewrite list_lookup_insert_ne; last first.
+    { admit. (* TODO: injectivity of int.nat *) }
+    iFrame.
   }
+  by iApply "HΦ".
 Admitted.
 
 End memkv_move_shard_proof.

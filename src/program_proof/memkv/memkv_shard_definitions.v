@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
-From Perennial.program_proof.memkv Require Export memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof.
+From Perennial.program_proof.memkv Require Export memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 
 Section memkv_shard_definitions.
 
@@ -50,6 +50,15 @@ Definition is_shard_server host γ : iProp Σ :=
                                               ⌜has_encoding_GetRequest reqData req⌝ ∗
                                               (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} ∨
                                               RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} rep)
+             ) (* post *) ∗
+
+  "#HmoveSpec" ∷ handler_is (memkv_shard_names) host uKV_INS_SHARD
+             (λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
+                                  ⌜int.nat args.(MR_Sid) < uNSHARD⌝ ∗
+                                  (* is_shard_server args.(MR_Dst) x *)
+                                                                True
+             ) (* pre *)
+             (λ x reqData repData, True
              ) (* post *) ∗
 
   "#HinstallSpec" ∷ handler_is (rpc_request_names) host uKV_INS_SHARD
