@@ -55,6 +55,7 @@ Proof.
     iApply (big_sepM_insert_2 with "").
     { (* InstallShard() handler_is *)
       simpl.
+      rewrite is_shard_server_unfold.
       iNamed "His_shard".
       iExists _, _, _.
       iFrame "#HinstallSpec".

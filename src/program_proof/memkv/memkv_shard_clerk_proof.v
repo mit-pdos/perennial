@@ -71,6 +71,7 @@ Proof.
   }
   assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
   { simpl. admit. } (* FIXME: overflow guard *)
+  rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iMod (make_request {| Req_CID:=_; Req_Seq:= _ |}  (own_shard γ.(kv_gn) sid kvs) (λ _, True)%I with "His_rpc Hcrpc [Hghost]") as "[Hcrpc HreqInv]".
   { done. }
@@ -115,6 +116,7 @@ Proof.
   iSplitL ""; first done.
   iApply "HΦ".
   iExists _, _, _, _.
+  rewrite is_shard_server_unfold.
   iFrame "∗#".
   iPureIntro.
   simpl.
@@ -176,6 +178,7 @@ Proof.
   }
   assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
   { simpl. admit. } (* FIXME: overflow guard *)
+  rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet Eo Ei γ key Q) (PostShardGet Eo Ei γ key Q) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
@@ -257,7 +260,9 @@ Proof.
     wp_loadField.
     iApply "HΦ".
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
-    { iExists _, _, _, _. iFrame "#∗".
+    { iExists _, _, _, _.
+      rewrite is_shard_server_unfold.
+      iFrame "#∗".
       enough (0 < int.nat (word.add seq 1)).
       { iPureIntro. word. }
       rewrite -Hoverflow. word. }

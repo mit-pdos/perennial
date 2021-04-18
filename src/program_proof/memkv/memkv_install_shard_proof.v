@@ -147,7 +147,7 @@ Proof.
     iFrame "HmuInv Hlocked".
     iNext.
     iExists _,_,_,_,_,_,_,_.
-    iExists _,_,_.
+    iExists _,_,_,_.
     iFrame "HlastReplyMap HlastSeqMap".
     iFrame.
     iSplitL "".

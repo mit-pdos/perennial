@@ -4,6 +4,7 @@ From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
 From Perennial.program_proof.memkv Require Export memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
+From iris.bi.lib Require Import fixpoint.
 
 Section memkv_shard_definitions.
 
@@ -17,6 +18,7 @@ Admitted.
 Definition uKV_FRESHCID := 0.
 Definition uKV_GET := 2.
 Definition uKV_INS_SHARD := 3.
+Definition uKV_MOV_SHARD := 4.
 
 Record memkv_shard_names := {
  rpc_gn : rpc_names ;
@@ -38,8 +40,9 @@ Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
                                 kvptsto γkv k (default [] (m !! k))
 .
 
-Definition is_shard_server host γ : iProp Σ :=
-  "#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
+Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
+  λ host γ,
+  ("#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
   "#HgetSpec" ∷ handler_is (coPset * coPset * (list u8 → iProp Σ) * rpc_request_names) host uKV_GET
              (λ x reqData, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
                                    is_RPCRequest γ.(rpc_gn) x.2 (PreShardGet x.1.1.1 x.1.1.2 γ req.(GR_Key) x.1.2)
@@ -52,11 +55,10 @@ Definition is_shard_server host γ : iProp Σ :=
                                               RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} rep)
              ) (* post *) ∗
 
-  "#HmoveSpec" ∷ handler_is (memkv_shard_names) host uKV_INS_SHARD
+  "#HmoveSpec" ∷ handler_is (memkv_shard_names) host uKV_MOV_SHARD
              (λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
                                   ⌜int.nat args.(MR_Sid) < uNSHARD⌝ ∗
-                                  (* is_shard_server args.(MR_Dst) x *)
-                                                                True
+                                  (▷ ρ args.(MR_Dst) x)
              ) (* pre *)
              (λ x reqData repData, True
              ) (* post *) ∗
@@ -77,7 +79,30 @@ Definition is_shard_server host γ : iProp Σ :=
              (λ x reqData repData, ∃ cid, ⌜has_encoding_CID repData cid⌝ ∗
               RPCClient_own_ghost γ.(rpc_gn) cid 1
              ) (* post *)
+             )%I
 .
+
+Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
+Proof.
+Admitted.
+
+Definition is_shard_server :=
+  fixpoint (is_shard_server_pre).
+
+(* TODO: seal is_shard_server *)
+
+Lemma is_shard_server_unfold host γ :
+  is_shard_server host γ ⊣⊢ is_shard_server_pre (is_shard_server) host γ
+.
+Proof.
+  apply (fixpoint_unfold (is_shard_server_pre)).
+Qed.
+
+Global Instance is_shard_server_pers host γ : Persistent (is_shard_server host γ).
+Proof.
+  rewrite is_shard_server_unfold.
+  apply _.
+Qed.
 
 Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
   ∃ (cid seq:u64) (cl:loc) (host:u64),
