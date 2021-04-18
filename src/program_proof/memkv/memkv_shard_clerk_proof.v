@@ -6,7 +6,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 
 Section memkv_shard_clerk_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC}.
+Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
 
 Lemma wp_MakeFreshKVClerk (host:u64) γ :
   is_shard_server host γ -∗

@@ -387,23 +387,22 @@ Proof using Type*.
 Qed.
 
 (** Server side: lookup reply in the table, and return the appropriate receipt. *)
-Lemma server_replies_to_request E `{into_val.IntoVal R} (req:RPCRequestID) (γrpc:rpc_names) (reply:R)
+Lemma server_replies_to_request E (req:RPCRequestID) (γrpc:rpc_names) (reply:R)
     (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) :
   ↑replyTableInvN ⊆ E →
   (lastSeqM !! req.(Req_CID) = Some req.(Req_Seq)) →
-  (∃ ok, map_get lastReplyM req.(Req_CID) = (reply, ok)) →
+  (∃ def, default def (lastReplyM !! req.(Req_CID)) = reply) →
   is_RPCServer γrpc -∗
   RPCServer_own_ghost γrpc lastSeqM lastReplyM ={E}=∗
     RPCReplyReceipt γrpc req reply ∗
     RPCServer_own_ghost γrpc (lastSeqM) (lastReplyM).
 Proof.
-  intros ? Hsome [ok Hreplymapget].
+  intros ? Hsome [def Hreplymapget].
   iIntros "Hlinv Hsown"; iNamed "Hsown".
-  destruct ok; last first.
+  destruct (lastReplyM !! req.(Req_CID)) as [] eqn:X; last first.
   { iDestruct (big_sepM2_lookup_1 _ _ _ req.(Req_CID) with "Hrcagree") as (x Hmap) "?"; eauto.
-    exfalso. apply map_get_false in Hreplymapget as [Hmapget _].
-    rewrite Hmap in Hmapget. done. }
-  apply map_get_true in Hreplymapget.
+    exfalso. naive_solver. }
+  assert (r = reply) as -> by naive_solver.
   iDestruct (big_sepM2_delete with "Hrcagree") as "[#Hrcptsto _]"; eauto.
   iModIntro.
   iFrame "#"; iFrame.

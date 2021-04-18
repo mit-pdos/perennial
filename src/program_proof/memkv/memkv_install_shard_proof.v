@@ -6,7 +6,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_install_shard_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC}.
+Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
 
 Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
   is_MemKVShardServer s γ -∗
@@ -49,7 +49,18 @@ Proof.
 
   wp_if_destruct.
   { (* reply table *)
-    admit.
+    wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ]").
+    {
+      iFrame "HmuInv Hlocked".
+      iNext.
+      iExists _,_,_,_,_,_,_,_.
+      iExists _,_,_,_.
+      iFrame "HlastReply_structs ∗".
+      done.
+    }
+    by iApply "HΦ".
   }
 
   (* fresh sequence number *)
@@ -69,7 +80,6 @@ Proof.
       word.
     }
   }
-
 
   wp_loadField.
   wp_loadField.
@@ -196,12 +206,24 @@ Proof.
     assert (x ≠ args.(IR_Sid)).
     { set_solver. }
     assert (int.nat x ≠ int.nat args.(IR_Sid)).
-    { admit. } (* TODO: use injectivity of u64 -> nat mapping *)
+    {
+      destruct (bool_decide (int.Z x = int.Z args.(IR_Sid))) as [|] eqn:X.
+      {
+        apply bool_decide_eq_true in X.
+        apply word.unsigned_inj in X.
+        done.
+      }
+      {
+        apply bool_decide_eq_false in X.
+        word.
+      }
+    }
+
     rewrite list_lookup_insert_ne; last done.
     rewrite list_lookup_insert_ne; last done.
     iFrame.
   }
   by iApply "HΦ".
-Admitted.
+Qed.
 
 End memkv_install_shard_proof.

@@ -360,20 +360,20 @@ Definition MemKVShardServer__InstallShardRPC: val :=
 Definition MemKVShardServer__MoveShardRPC: val :=
   rec: "MemKVShardServer__MoveShardRPC" "s" "args" :=
     lock.acquire (struct.loadF MemKVShardServer.S "mu" "s");;
+    let: (<>, "ok") := MapGet (struct.loadF MemKVShardServer.S "peers" "s") (struct.loadF MoveShardRequest.S "Dst" "args") in
+    (if: ~ "ok"
+    then
+      lock.release (struct.loadF MemKVShardServer.S "mu" "s");;
+      let: "ck" := MakeFreshKVClerk (struct.loadF MoveShardRequest.S "Dst" "args") in
+      lock.acquire (struct.loadF MemKVShardServer.S "mu" "s");;
+      MapInsert (struct.loadF MemKVShardServer.S "peers" "s") (struct.loadF MoveShardRequest.S "Dst" "args") "ck";;
+      #()
+    else #());;
     (if: ~ (SliceGet boolT (struct.loadF MemKVShardServer.S "shardMap" "s") (struct.loadF MoveShardRequest.S "Sid" "args"))
     then
       lock.release (struct.loadF MemKVShardServer.S "mu" "s");;
       #()
     else
-      let: (<>, "ok") := MapGet (struct.loadF MemKVShardServer.S "peers" "s") (struct.loadF MoveShardRequest.S "Dst" "args") in
-      (if: ~ "ok"
-      then
-        lock.release (struct.loadF MemKVShardServer.S "mu" "s");;
-        let: "ck" := MakeFreshKVClerk (struct.loadF MoveShardRequest.S "Dst" "args") in
-        lock.acquire (struct.loadF MemKVShardServer.S "mu" "s");;
-        MapInsert (struct.loadF MemKVShardServer.S "peers" "s") (struct.loadF MoveShardRequest.S "Dst" "args") "ck";;
-        #()
-      else #());;
       let: "kvs" := SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer.S "kvss" "s") (struct.loadF MoveShardRequest.S "Sid" "args") in
       SliceSet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer.S "kvss" "s") (struct.loadF MoveShardRequest.S "Sid" "args") (NewMap (slice.T byteT));;
       SliceSet boolT (struct.loadF MemKVShardServer.S "shardMap" "s") (struct.loadF MoveShardRequest.S "Sid" "args") #false;;

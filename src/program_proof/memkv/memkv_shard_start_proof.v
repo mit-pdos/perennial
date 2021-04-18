@@ -6,7 +6,7 @@ From Perennial.program_proof.memkv Require Export memkv_get_proof memkv_install_
 
 Section memkv_shard_start_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC}.
+Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
 
 Lemma wp_MemKVShardServer__Start (s:loc) host γ :
 is_shard_server host γ -∗

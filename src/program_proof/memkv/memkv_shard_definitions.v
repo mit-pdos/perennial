@@ -3,19 +3,15 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
-From Perennial.program_proof.memkv Require Export memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
+From Perennial.program_proof.memkv Require Export memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 From iris.bi.lib Require Import fixpoint.
 
 Section memkv_shard_definitions.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC}.
-
-Axiom kvptsto : gname → u64 → list u8 → iProp Σ.
-
-Global Instance kvptst_tmlss γkv k v : Timeless (kvptsto γkv k v).
-Admitted.
+Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
 
 Definition uKV_FRESHCID := 0.
+Definition uKV_PUT := 2.
 Definition uKV_GET := 2.
 Definition uKV_INS_SHARD := 3.
 Definition uKV_MOV_SHARD := 4.
@@ -35,6 +31,14 @@ Definition PreShardGet Eo Ei γ key Q : iProp Σ :=
 Definition PostShardGet Eo Ei γ (key:u64) Q (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (PreShardGet Eo Ei γ key Q) ∨
                                                         ⌜rep.(GR_Err) = 0⌝ ∗ (Q rep.(GR_Value)).
 
+Definition PreShardPut Eo Ei γ key Q v : iProp Σ :=
+  |={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q))
+.
+
+Definition PostShardPut Eo Ei γ (key:u64) Q v (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (PreShardPut Eo Ei γ key Q v) ∨
+                                                        ⌜rep.(GR_Err) = 0⌝ ∗ Q .
+
+
 Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
   [∗ set] k ∈ (fin_to_set u64), ⌜shardOfC k ≠ sid⌝ ∨
                                 kvptsto γkv k (default [] (m !! k))
@@ -43,6 +47,19 @@ Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   λ host γ,
   ("#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
+  "#HputSpec" ∷ handler_is (coPset * coPset * (iProp Σ) * rpc_request_names) host uKV_PUT
+             (λ x reqData, ∃ req, ⌜has_encoding_PutRequest reqData req⌝ ∗
+                                   is_RPCRequest γ.(rpc_gn) x.2 (PreShardPut x.1.1.1 x.1.1.2 γ req.(PR_Key) x.1.2 req.(PR_Value))
+                                                            (PostShardPut x.1.1.1 x.1.1.2 γ req.(PR_Key) x.1.2 req.(PR_Value))
+                                                            {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |}
+             ) (* pre *)
+             (λ x reqData repData, ∃ req rep, ⌜has_encoding_PutReply repData rep⌝ ∗
+                                              ⌜has_encoding_PutRequest reqData req⌝ ∗
+                                              (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} ∨
+                                              RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkGetReplyC rep.(PR_Err) []))
+             ) (* post *) ∗
+
+
   "#HgetSpec" ∷ handler_is (coPset * coPset * (list u8 → iProp Σ) * rpc_request_names) host uKV_GET
              (λ x reqData, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
                                    is_RPCRequest γ.(rpc_gn) x.2 (PreShardGet x.1.1.1 x.1.1.2 γ req.(GR_Key) x.1.2)
@@ -84,6 +101,9 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
 
 Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
+  rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
+  do 4 (f_contractive || f_equiv).
+  (* Need to know that handler_is respects ≡{n}≡ (i.e. it's non-expansive w.r.t. the pre/post)? *)
 Admitted.
 
 Definition is_shard_server :=

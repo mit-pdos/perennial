@@ -6,7 +6,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_getcid_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC}.
+Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
 
 Lemma wp_GetCIDRPC (s:loc) γ :
   is_MemKVShardServer s γ -∗

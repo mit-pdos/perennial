@@ -9,6 +9,22 @@ Context `{!heapG Σ}.
 Definition shardOfC (key:u64) : u64 := (word.modu key (65536%Z)).
 
 Definition uNSHARD : nat := Z.to_nat 65536.
+
+Lemma wp_shardOf key :
+  {{{
+       True
+  }}}
+    shardOf #key
+  {{{
+       RET #(shardOfC key); True
+  }}}.
+Proof.
+  iIntros (?) "_ HΦ".
+  wp_lam.
+  wp_pures.
+  by iApply "HΦ".
+Qed.
+
 Lemma wp_shardOf_bound (key:u64) :
   {{{
       True
