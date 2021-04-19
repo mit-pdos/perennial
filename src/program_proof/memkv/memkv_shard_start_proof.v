@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Export memkv_get_proof memkv_install_shard_proof memkv_getcid_proof memkv_move_shard_proof common_proof.
+From Perennial.program_proof.memkv Require Export memkv_put_proof memkv_get_proof memkv_install_shard_proof memkv_getcid_proof memkv_move_shard_proof common_proof.
 
 Section memkv_shard_start_proof.
 
@@ -160,8 +160,46 @@ Proof.
     }
 
     iApply (big_sepM_insert_2 with "").
-    { admit. }
+    { (* PutRPC handler_is *)
+      rewrite is_shard_server_unfold.
+      iNamed "His_shard".
+      simpl.
+      iExists _, _, _. iFrame "HputSpec".
 
+      clear Φ.
+      iIntros (?????) "!#".
+      iIntros (Φ) "Hpre HΦ".
+      wp_pures.
+      wp_apply (wp_allocStruct).
+      {
+        naive_solver.
+      }
+      iIntros (rep_ptr) "Hrep".
+      wp_pures.
+      iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & Hpre)".
+      iDestruct "Hpre" as (args) "(%Henc & #HreqInv)".
+      wp_apply (wp_decodePutRequest with "[$Hreq_sl]").
+      { done. }
+      iIntros (args_ptr) "Hargs".
+      wp_apply (wp_PutRPC with "His_memkv [$Hargs Hrep $HreqInv]").
+      {
+        iDestruct (struct_fields_split with "Hrep") as "HH".
+        iNamed "HH".
+        iExists (mkPutReplyC _).
+        iFrame.
+      }
+      iIntros (rep') "[Hrep Hpost]".
+      wp_pures.
+      wp_apply (wp_encodePutReply with "Hrep").
+      iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
+      wp_store.
+      iApply "HΦ".
+      iModIntro.
+      iFrame.
+      iNext.
+      iExists _, _; iFrame.
+      done.
+    }
 
     iApply (big_sepM_insert_2 with "").
     { (* GetCIDRPC handler_is *)
@@ -190,6 +228,6 @@ Proof.
     done.
   }
   by iApply "HΦ".
-Admitted.
+Qed.
 
 End memkv_shard_start_proof.

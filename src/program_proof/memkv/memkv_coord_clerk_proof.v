@@ -6,7 +6,7 @@ From Perennial.program_proof.memkv Require Import common_proof memkv_shard_clerk
 
 Section memkv_coord_clerk_proof.
 
-Context `{!heapG Σ, rpcG Σ memkv_marshal_get_proof.GetReplyC}.
+Context `{!heapG Σ, rpcG Σ memkv_marshal_get_proof.GetReplyC, kvMapG Σ}.
 
 Axiom own_MemKVCoordClerk : loc → iProp Σ.
 

@@ -11,7 +11,7 @@ Section memkv_shard_definitions.
 Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
 
 Definition uKV_FRESHCID := 0.
-Definition uKV_PUT := 2.
+Definition uKV_PUT := 1.
 Definition uKV_GET := 2.
 Definition uKV_INS_SHARD := 3.
 Definition uKV_MOV_SHARD := 4.
@@ -56,7 +56,7 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
              (λ x reqData repData, ∃ req rep, ⌜has_encoding_PutReply repData rep⌝ ∗
                                               ⌜has_encoding_PutRequest reqData req⌝ ∗
                                               (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} ∨
-                                              RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkGetReplyC rep.(PR_Err) []))
+                                              ∃ dummy_val, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkGetReplyC rep.(PR_Err) dummy_val))
              ) (* post *) ∗
 
 
