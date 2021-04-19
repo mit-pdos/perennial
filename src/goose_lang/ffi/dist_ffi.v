@@ -35,6 +35,12 @@ Proof.
   refine (mkExtOp GroveOp _ _ GroveVal _ _).
 Defined.
 
+Inductive GroveTys := GroveSendTy | GroveRecvTy.
+
+(* TODO: Why is this an instance but the ones above are not? *)
+Instance grove_val_ty: val_types :=
+  {| ext_tys := GroveTys; |}.
+
 (** The global network state: a map from endpoint names to the set of messages sent to
 those endpoints. *)
 Definition endpoint := string.
@@ -78,11 +84,11 @@ Section grove.
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms);
       match m with
-      | None => ret (#false, #locations.null)%V
+      | None => ret (#false, (#locations.null, #0))%V
       | Some m =>
         l ← allocateN (length m);
         modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m) σ, g));;
-        ret  (#true, #(l : loc))%V
+        ret  (#true, (#(l : loc), #(length m)))%V
       end
     | _, _ => undefined
     end.
@@ -96,3 +102,31 @@ End grove.
 (** * Grove semantic interpretation and invariant *)
 
 (** * Grove user-facing operations and their specs *)
+Section grove.
+  (* these are local instances on purpose, so that importing this files doesn't
+  suddenly cause all FFI parameters to be inferred as the disk model *)
+  Existing Instances grove_op grove_model.
+
+  Definition SendEndpoint : ty := extT GroveSendTy.
+
+  Definition RecvEndpoint : ty := extT GroveRecvTy.
+
+  Definition MkSend : val :=
+    λ: "e", ExternalOp MkSendOp (Var "e").
+
+  Definition MkRecv : val :=
+    λ: "e", ExternalOp MkSendOp (Var "e").
+
+  Definition Send : val :=
+    (* FIXME: extract ptr and len from "m" (which is intended to have type []byte) *)
+    λ: "e" "m", ExternalOp SendOp (Var "e", Var "m").
+
+  Definition Recv : val :=
+    λ: "e",
+      let: "m" := ExternalOp RecvOp (Var "e") in
+      let: "slice" := Snd (Var "m") in
+      let: "ptr" := Fst (Var "ptr") in
+      let: "len" := Snd (Var "ptr") in
+      (* FIXME: package "ptr" and "len" to returned slice of type []byte *)
+      (Fst (Var "m"), Var "slice").
+End grove.
