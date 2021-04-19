@@ -81,7 +81,7 @@ Instance JrnlOp_fin : Countable JrnlOp.
 Proof. solve_countable JrnlOp_rec 8%nat. Qed.
 
 Definition jrnl_op : ext_op.
-Proof. refine (mkExtOp JrnlOp _ _). Defined.
+Proof. refine (mkExtOp JrnlOp _ _ Empty_set _ _). Defined.
 
 Inductive Jrnl_ty :=
  | JrnlT

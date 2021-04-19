@@ -34,7 +34,7 @@ Fixpoint expr_vars (e : expr) : gset string :=
   end
 with val_vars (v : val) : gset string :=
   match v with
-  | LitV _  => ∅
+  | LitV _ | ExtV _ => ∅
   | RecV f x e => binder_vars f ∪ binder_vars x ∪ expr_vars e
   | PairV v1 v2 => val_vars v1 ∪ val_vars v2
   | InjLV v | InjRV v => val_vars v
@@ -65,7 +65,7 @@ Fixpoint is_closed_expr (X : list string) (e : expr) : bool :=
   end
 with is_closed_val (v : val) : bool :=
   match v with
-  | LitV _  => true
+  | LitV _ | ExtV _ => true
   | RecV f x e => is_closed_expr (f :b: x :b: []) e
   | PairV v1 v2 => is_closed_val v1 && is_closed_val v2
   | InjLV v | InjRV v => is_closed_val v

@@ -90,7 +90,7 @@ Qed.
 
 Definition kvs_op : ext_op.
 Proof.
-  refine (mkExtOp KvsOp _ _).
+  refine (mkExtOp KvsOp _ _ Empty_set _ _).
 Defined.
 
 Inductive Kvs_ty := KvsT.

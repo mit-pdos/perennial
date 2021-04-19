@@ -28,7 +28,7 @@ Qed.
 
 Definition disk_op : ext_op.
 Proof.
-  refine (mkExtOp DiskOp _ _).
+  refine (mkExtOp DiskOp _ _ Empty_set _ _).
 Defined.
 
 Inductive Disk_ty := | DiskInterfaceTy.

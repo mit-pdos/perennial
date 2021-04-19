@@ -35,6 +35,9 @@ Class ext_op :=
       external: Set;
       external_eq_dec :> EqDecision external;
       external_countable :> Countable external;
+      external_val: Set;
+      external_val_eq_dec :> EqDecision external_val;
+      external_val_countable :> Countable external_val;
     }.
 
 Class ffi_model :=
@@ -142,6 +145,12 @@ with val :=
   | PairV (v1 v2 : val)
   | InjLV (v : val)
   | InjRV (v : val)
+  (** This represents "pointers to opaque types" that FFI operations may return
+  and that regular Goose code may not do anything with except for passing it to
+  other FFI operations. FFI implementations must ensure that these values are
+  indeed truly independent from anything modeled in GooseLang (i.e., no
+  aliasing/sharing with memory that GooseLang can "see"). *)
+  | ExtV (ev : external_val)
 .
 
 Bind Scope expr_scope with expr.
@@ -295,7 +304,7 @@ Definition val_is_unboxed (v : val) : Prop :=
 Global Instance lit_is_unboxed_dec l : Decision (lit_is_unboxed l).
 Proof. destruct l; simpl; exact (decide _). Defined.
 Global Instance val_is_unboxed_dec v : Decision (val_is_unboxed v).
-Proof. destruct v as [ | | | [] | [] ]; simpl; exact (decide _). Defined.
+Proof. destruct v as [ | | | [] | [] | ]; simpl; exact (decide _). Defined.
 
 (** We just compare the word-sized representation of two values, without looking
 into boxed data.  This works out fine if at least one of the to-be-compared
@@ -395,6 +404,7 @@ Proof using ext.
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
       | InjLV e, InjLV e' => cast_if (decide (e = e'))
       | InjRV e, InjRV e' => cast_if (decide (e = e'))
+      | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
       | _, _ => right _
       end
         for go); try (clear go gov; abstract intuition congruence).
@@ -412,6 +422,7 @@ Proof using ext.
        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
      | InjLV e, InjLV e' => cast_if (decide (e = e'))
      | InjRV e, InjRV e' => cast_if (decide (e = e'))
+      | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
      | _, _ => right _
      end); try abstract intuition congruence.
 Defined.
@@ -526,6 +537,7 @@ Inductive basic_type :=
   | bin_opVal (op:bin_op)
   | primOpVal (op:prim_op')
   | externOp (op:external)
+  | externVal (ev:external_val)
 .
 
 Instance basic_type_eq_dec : EqDecision basic_type.
@@ -540,7 +552,8 @@ Proof.
                               | un_opVal op => inr (inr (inr (inr (inl op))))
                               | bin_opVal op => inr (inr (inr (inr (inr (inl op)))))
                               | primOpVal op => inr (inr (inr (inr (inr (inr (inl op))))))
-                              | externOp op => inr (inr (inr (inr (inr (inr (inr op))))))
+                              | externOp op => inr (inr (inr (inr (inr (inr (inr (inl op)))))))
+                              | externVal k => inr (inr (inr (inr (inr (inr (inr (inr k)))))))
                               end)
                          (λ x, match x with
                               | inl s => stringVal s
@@ -550,7 +563,8 @@ Proof.
                               | inr (inr (inr (inr (inl op)))) => un_opVal op
                               | inr (inr (inr (inr (inr (inl op))))) => bin_opVal op
                               | inr (inr (inr (inr (inr (inr (inl op)))))) => primOpVal op
-                              | inr (inr (inr (inr (inr (inr (inr op)))))) => externOp op
+                              | inr (inr (inr (inr (inr (inr (inr (inl op))))))) => externOp op
+                              | inr (inr (inr (inr (inr (inr (inr (inr k))))))) => externVal k
                                end) _); by intros [].
 Qed.
 
@@ -609,6 +623,7 @@ Proof using ext.
      | PairV v1 v2 => GenNode 1 [gov v1; gov v2]
      | InjLV v => GenNode 2 [gov v]
      | InjRV v => GenNode 3 [gov v]
+     | ExtV ev => GenNode 4 [GenLeaf $ externVal ev]
      end
    for go).
  set (dec :=
@@ -646,6 +661,7 @@ Proof using ext.
      | GenNode 1 [v1; v2] => PairV (gov v1) (gov v2)
      | GenNode 2 [v] => InjLV (gov v)
      | GenNode 3 [v] => InjRV (gov v)
+     | GenNode 4 [GenLeaf (externVal ev)] => ExtV ev
      | _ => LitV LitUnit (* dummy *)
      end
    for go).

@@ -87,7 +87,7 @@ Qed.
 
 Definition log_op : ext_op.
 Proof.
-  refine (mkExtOp LogOp _ _).
+  refine (mkExtOp LogOp _ _ Empty_set _ _).
 Defined.
 
 Inductive Log_ty := LogT.
