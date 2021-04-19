@@ -33,7 +33,7 @@ Proof.
   wp_storeField.
   iDestruct (big_sepS_delete _ _ nextCID with "Hcids") as "[Hcid Hcids]".
   { set_solver. }
-  assert (int.Z (word.add nextCID 1) = int.Z nextCID + 1)%Z.
+  assert (int.Z (word.add nextCID 1) = int.Z nextCID + 1)%Z as HnextCID_plus_one.
   { admit. (* FIXME: overflow guard *) }
 
   wp_loadField.
@@ -51,14 +51,14 @@ Proof.
     { set_solver. }
     iSplitL "".
     {
-      iLeft. rewrite H0.
+      iLeft. rewrite HnextCID_plus_one.
       iPureIntro.
       lia.
     }
     iApply (big_sepS_impl with "Hcids").
     iModIntro. iIntros (??) "[%Hineq|$]".
     iLeft. iPureIntro.
-    rewrite H0.
+    rewrite HnextCID_plus_one.
     word.
   }
   wp_pures.
