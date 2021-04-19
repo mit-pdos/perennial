@@ -69,18 +69,18 @@ Section grove.
       ret (ExtV (SendEndp, s))
     | MkRecvOp, LitV (LitString s) =>
       ret (ExtV (RecvEndp, s))
-    | SendOp, PairV (ExtV (SendEndp, s)) (PairV (LitV (LitLoc l)) (LitV (LitInt len))) =>
+    | SendOp, PairV (ExtV (SendEndp, e)) (PairV (LitV (LitLoc l)) (LitV (LitInt len))) =>
       m ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (m : vec u8 (int.nat len)),
             forall (i:Z), 0 <= i -> i < (int.Z len) ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading _, LitV (LitByte v)) => (vec_to_list m) !! Z.to_nat i = Some v
                 | _ => False
                 end);
-      ms ← reads (λ '(σ,g), g !! s) ≫= unwrap;
-      modify (λ '(σ,g), (σ, <[ s := ms ∪ {[vec_to_list m]} ]> g));;
+      ms ← reads (λ '(σ,g), g !! e) ≫= unwrap;
+      modify (λ '(σ,g), (σ, <[ e := ms ∪ {[vec_to_list m]} ]> g));;
       ret #()
-    | RecvOp, ExtV (RecvEndp, s) =>
-      ms ← reads (λ '(σ,g), g !! s) ≫= unwrap;
+    | RecvOp, ExtV (RecvEndp, e) =>
+      ms ← reads (λ '(σ,g), g !! e) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms);
       match m with
