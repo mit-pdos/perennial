@@ -4,6 +4,7 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import
      twophase.typed_translate twophase.wrapper_proof twophase.wrapper_init_proof
      twophase.twophase_refinement_defs twophase.twophase_sub_logical_reln_defs
+     twophase.typed_translate_facts
      alloc.alloc_proof.
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
@@ -35,7 +36,7 @@ Proof.
   rewrite /sty_init_obligation1//=.
   iIntros (? hG hRG hJrnl σs gs σi gi Hinit) "Hdisk".
   rewrite /jrnl_start /twophase_init.
-  destruct Hinit as (sz&kinds&Hsize1&Hsize2&Hnn&Heqi&Heqs&Hdom&Hwf1&Hwf2).
+  destruct Hinit as (sz&kinds&Hsize1&Hsize2&Hnn&Heqi&Heqs&Hdom).
   rewrite Heqs Heqi.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
   iDestruct "Hjrnl_frag" as "(Hsmapstos&Hcrashtoks&Hcrash_ctx&Hkinds&Hdom&Hfull)".
@@ -61,8 +62,15 @@ Proof.
   rewrite -?sep_assoc.
   iSplit.
   {
-    iPureIntro. eauto. clear -Hγ Hwf1.
-    naive_solver. }
+    iPureIntro. eauto.
+    eapply map_Forall_impl; first eapply kind_heap0_ok.
+    { intros a Hin. revert Hin. rewrite Hdom elem_of_list_to_set elem_of_list_fmap; intros (x&->&Hin).
+      apply elem_of_seqZ in Hin. clear -Hsize1 Hsize2 Hin. rewrite /block_bytes in Hsize2.
+      word.
+    }
+    { intros i (?&?) (?&?&?).
+      split_and!; eauto. congruence. }
+  }
   iSplit.
   { rewrite /named. iExactEq "Hdom". f_equal. rewrite dom_fmap_L //. }
   iSplit.
@@ -80,7 +88,12 @@ Qed.
 
 Lemma jrnl_init_obligation2: sty_init_obligation2 twophase_initP.
 Proof.
-  intros ???? (?&?&?&?&?&?&?&?&?&?). rewrite //=. split_and!; eauto.
+  intros ???? (?&?&Hsize1&Hsize2&?&?&?&Hdom). rewrite //=. split_and!; eauto.
+  eexists; split; eauto. eapply wf_jrnl_alt, kind_heap0_ok.
+  { intros a Hin. revert Hin. rewrite Hdom elem_of_list_to_set elem_of_list_fmap; intros (?&->&Hin).
+    apply elem_of_seqZ in Hin. clear -Hsize1 Hsize2 Hin. rewrite /block_bytes in Hsize2.
+    word.
+  }
 Qed.
 
 Lemma jrnl_rules_obligation:

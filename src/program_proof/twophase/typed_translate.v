@@ -265,9 +265,6 @@ Definition twophase_initP (σimpl: @goose_lang.state disk_op disk_model) (σspec
   (null_non_alloc σspec.(heap)) ∧
   (σimpl.(world) = init_disk ∅ (513 + sz)) ∧
   (σspec.(world) = Closed σj) ∧
-  dom (gset _) (jrnlKinds σj) = list_to_set (U64 <$> (seqZ 513 sz)) ∧
-  (* TODO: These next two assumptions may be interprovable, or entirely redundant *)
-  map_Forall  (kinds_mapsto_valid kinds) (recovery_proof.kind_heap0 kinds) ∧
-  wf_jrnl σj.
+  dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)).
 
 End initP.
