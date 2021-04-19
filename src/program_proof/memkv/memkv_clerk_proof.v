@@ -6,7 +6,7 @@ From Perennial.program_proof.memkv Require Export common_proof memkv_coord_clerk
 
 Section memkv_clerk_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC}.
+Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
 
 Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   ∃ (s coordCk:loc) shardMap_sl (shardMapping:list u64),
@@ -44,16 +44,16 @@ Proof using Type*.
   wp_pures.
 
   wp_apply (wp_shardOf_bound).
-  iIntros (sid ?).
+  iIntros (sid HsidLe).
   wp_pures.
 
   iNamed "Hown".
   wp_loadField.
   iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
-  rewrite -HshardMap_length in H0.
-  eapply list_lookup_lt in H0.
-  destruct H0 as [hostID H0].
+  rewrite -HshardMap_length in HsidLe.
+  eapply list_lookup_lt in HsidLe.
+  destruct HsidLe as [hostID HsidLe].
   wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
   {
     iPureIntro.
@@ -61,7 +61,6 @@ Proof using Type*.
   }
   iIntros "Hsmall_sl".
   wp_pures.
-  (* FIXME: need to pass config around to map hostIDs to strings *)
   wp_loadField.
   wp_apply (wp_ShardClerkSet__getClerk with "[$HshardClerksSet]").
   iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
@@ -109,5 +108,82 @@ Proof using Type*.
     iExists _,_,_,_; iFrame.
   }
 Qed.
+
+Lemma KVClerk__Put Eo Ei (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
+  ∀ Φ,
+  own_MemKVClerk ck γ -∗
+  typed_slice.is_slice val_sl byteT 1%Qp v -∗
+  (|={Eo,Ei}=> (∃ oldv, kvptsto γ key oldv ∗ (kvptsto γ key v ={Ei,Eo}=∗ (Φ #())))) -∗
+    WP MemKVClerk__Put #ck #key (slice_val val_sl) {{ Φ }}
+.
+Proof using Type*.
+  iIntros (Φ) "Hown Hval_sl Hatomic".
+  wp_lam.
+  wp_pures.
+
+  wp_forBreak.
+  wp_pures.
+
+  wp_apply (wp_shardOf_bound).
+  iIntros (sid HsidLe).
+  wp_pures.
+
+  iNamed "Hown".
+  wp_loadField.
+  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
+
+  rewrite -HshardMap_length in HsidLe.
+  eapply list_lookup_lt in HsidLe.
+  destruct HsidLe as [hostID HsidLe].
+  wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
+  {
+    iPureIntro.
+    done.
+  }
+  iIntros "Hsmall_sl".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_ShardClerkSet__getClerk with "[$HshardClerksSet]").
+  iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
+
+  wp_pures.
+  wp_apply (wp_MemKVShardClerk__Put Eo Ei γsh with "[Hatomic $Hval_sl $HshardCk]").
+  {
+    rewrite Hre.
+    iFrame "Hatomic".
+  }
+  iIntros (e) "HshardPutPost".
+  wp_pures.
+  wp_if_destruct.
+  {
+    iRight.
+    iModIntro.
+    iSplitL ""; first done.
+    wp_pures.
+    iDestruct "HshardPutPost" as "(HshardCk & [[%Hbad _]|[_ Hpost]])".
+    { by exfalso. }
+    by iFrame.
+  }
+  {
+    wp_loadField.
+    iDestruct "HshardPutPost" as "(HshardCk & [Hatomic|[%Hbad _]])"; last first.
+    { exfalso. naive_solver. }
+    iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
+    wp_apply (wp_MemKVCoordClerk__GetShardMap with "[$HcoordCk_own]").
+    iIntros (shardMap_sl' shardMapping') "[HcoordCk_own HshardMap_sl]".
+    wp_apply (wp_storeField with "HshardMap").
+    { apply slice_val_ty. }
+    iIntros "HshardMap".
+    wp_pures.
+    iLeft.
+    iModIntro.
+
+    iSplitL ""; first done.
+    rewrite Hre.
+    iDestruct "Hatomic" as "[_ $]".
+    iSplitR ""; last admit. (* TODO: need to get back ownership of value slice from ShardClerk, which requires getting back ownership from encodePutRequest *)
+    iExists _,_,_,_; iFrame.
+  }
+Admitted.
 
 End memkv_clerk_proof.
