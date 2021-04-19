@@ -1,13 +1,11 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
-default using make as well as in CI on Travis). *)
+default using make as well as in CI). *)
 
 From Perennial.program_logic Require
      dist_weakestpre
      dist_adequacy.
 From Perennial.goose_lang Require
      adequacy recovery_adequacy dist_adequacy
-     spec_assert
-     metatheory
      refinement refinement_adequacy
      crash_lock
      logical_reln_adeq.
@@ -18,14 +16,8 @@ From Perennial.program_proof Require
      lockmap_proof
      crash_lockmap_proof
      wal.proof
-     wal.specs
-     txn.txn_proof
-     buftxn.buftxn_proof
-     buftxn.sep_buftxn_proof buftxn.sep_buftxn_recovery_proof
+     buftxn.sep_buftxn_recovery_proof
      buftxn_replication.buftxn_replication_proof
-     alloc.alloc_proof
-     twophase.twophase_proof
-     twophase.typed_translate_facts
      twophase.twophase_refinement_thm
      simple.proofs simple.example
      wp_to_wpc.
@@ -49,19 +41,9 @@ From Perennial.tutorial Require
 From Perennial.goose_lang.lib Require
      slice.pred_slice.
 
-(* WIP list algebra *)
-From Perennial.algebra Require
-     append_list.
-
 (* goose output *)
 From Perennial.goose_lang.examples Require
      goose_unittest simpledb logging2 rfc1813.
-
-(* goose-nfsd *)
-From Goose.github_com.mit_pdos Require
-     goose_nfsd.kvs
-     goose_nfsd.twophase
-     goose_nfsd.simple.
 
 (* examples goose output *)
 From Goose.github_com.mit_pdos Require
