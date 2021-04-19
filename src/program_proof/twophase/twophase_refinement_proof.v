@@ -36,7 +36,7 @@ Proof.
   rewrite /sty_init_obligation1//=.
   iIntros (? hG hRG hJrnl σs gs σi gi Hinit) "Hdisk".
   rewrite /jrnl_start /twophase_init.
-  destruct Hinit as (sz&kinds&Hsize1&Hsize2&Hnn&Heqi&Heqs&Hdom).
+  destruct Hinit as (sz&kinds&Hsize2&Hnn&Heqi&Heqs&Hdom).
   rewrite Heqs Heqi.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
   iDestruct "Hjrnl_frag" as "(Hsmapstos&Hcrashtoks&Hcrash_ctx&Hkinds&Hdom&Hfull)".
@@ -65,7 +65,7 @@ Proof.
     iPureIntro. eauto.
     eapply map_Forall_impl; first eapply kind_heap0_ok.
     { intros a Hin. revert Hin. rewrite Hdom elem_of_list_to_set elem_of_list_fmap; intros (x&->&Hin).
-      apply elem_of_seqZ in Hin. clear -Hsize1 Hsize2 Hin. rewrite /block_bytes in Hsize2.
+      apply elem_of_seqZ in Hin. clear -Hsize2 Hin. rewrite /block_bytes in Hsize2.
       word.
     }
     { intros i (?&?) (?&?&?).
@@ -88,10 +88,10 @@ Qed.
 
 Lemma jrnl_init_obligation2: sty_init_obligation2 twophase_initP.
 Proof.
-  intros ???? (?&?&Hsize1&Hsize2&?&?&?&Hdom). rewrite //=. split_and!; eauto.
+  intros ???? (?&?&Hsize2&?&?&?&Hdom). rewrite //=. split_and!; eauto.
   eexists; split; eauto. eapply wf_jrnl_alt, kind_heap0_ok.
   { intros a Hin. revert Hin. rewrite Hdom elem_of_list_to_set elem_of_list_fmap; intros (?&->&Hin).
-    apply elem_of_seqZ in Hin. clear -Hsize1 Hsize2 Hin. rewrite /block_bytes in Hsize2.
+    apply elem_of_seqZ in Hin. clear -Hsize2 Hin. rewrite /block_bytes in Hsize2.
     word.
   }
 Qed.

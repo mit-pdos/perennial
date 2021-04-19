@@ -260,7 +260,6 @@ Definition twophase_initP (σimpl: @goose_lang.state disk_op disk_model) (σspec
                  jrnlKinds := kinds;
                  jrnlAllocs := ∅
               |} in
-  (513 < sz)%nat ∧
   ((513 + Z.of_nat sz) * block_bytes * 8 < 2^64)%Z ∧
   (null_non_alloc σspec.(heap)) ∧
   (σimpl.(world) = init_disk ∅ (513 + sz)) ∧
