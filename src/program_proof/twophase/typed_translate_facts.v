@@ -87,9 +87,12 @@ Proof.
     apply bind_Some in Hlookup as [k [Hlookup Ho]].
     simpl in Ho.
     eexists; split; first by eauto.
-    destruct k; simpl.
-    + apply recovery_proof.lookup_bit0_map in Ho as [? ?]; subst; simpl; auto.
-    + apply recovery_proof.lookup_inode0_map in Ho as [i (?&?&?)]; subst; simpl; auto.
-    + apply recovery_proof.lookup_block0_map in Ho as [? ?]; subst.
-      reflexivity.
+    apply (inj Z.of_nat).
+    destruct k.
+    + apply recovery_proof.lookup_bit0_map in Ho as [? ?];
+        subst; reflexivity.
+    + apply recovery_proof.lookup_inode0_map in Ho as [i (?&?&?)];
+        subst; reflexivity.
+    + apply recovery_proof.lookup_block0_map in Ho as [? ?];
+        subst; reflexivity.
 Qed.
