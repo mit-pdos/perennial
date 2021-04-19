@@ -165,16 +165,70 @@ Hint Rewrite repeat_length : len.
 Lemma block_bytes_pos : 0 < Z.of_nat block_bytes.
 Proof. rewrite /block_bytes. lia. Qed.
 
+Lemma lookup_bit0_map (off: u64) o :
+  bit0_map !! off = Some o ↔
+  int.Z off < block_bytes * 8 ∧
+  o = existT KindBit (bufBit false).
+Proof.
+  rewrite /bit0_map.
+  rewrite lookup_gset_to_gmap_Some.
+  rewrite elem_of_list_to_set.
+  rewrite elem_of_list_fmap.
+  setoid_rewrite elem_of_seqZ.
+  change block_bytes with (Z.to_nat 4096).
+  split; intros.
+  - intuition (subst; auto).
+    destruct H0 as [off' [? ?]]; subst.
+    word.
+  - intuition (subst; auto).
+    exists (int.Z off); split; word.
+Qed.
+
+Lemma lookup_inode0_map (off: u64) o :
+  inode0_map !! off = Some o ↔
+  ∃ (i:Z), i < 32 ∧
+           int.Z off = i * 8 * 128 ∧
+           o = existT KindInode (bufInode inode_buf0).
+Proof.
+  rewrite /inode0_map.
+  rewrite lookup_gset_to_gmap_Some.
+  rewrite elem_of_list_to_set.
+  rewrite elem_of_list_fmap.
+  setoid_rewrite elem_of_seqZ.
+  split.
+  - intuition (subst; auto).
+    destruct H0 as [y [? ?]]; subst.
+    exists y; repeat split; try word.
+  - intros.
+    destruct H as [i (?&?&?)]; subst.
+    split; auto.
+    exists i; split; word.
+Qed.
+
+Lemma lookup_block0_map (off: u64) o :
+  block0_map !! off = Some o ↔
+  off = (U64 0) ∧
+  o = existT KindBlock (bufBlock block0).
+Proof.
+  rewrite /block0_map.
+  rewrite lookup_singleton_Some.
+  intuition auto.
+Qed.
+
 Opaque block_bytes.
 
 Lemma bit0_map_not_empty : ∅ ≠ bit0_map.
 Proof.
-  intro H. assert (bit0_map !! (U64 0) = None).
+  intro H.
+  assert (bit0_map !! (U64 0) = None).
   { rewrite -H. apply lookup_empty. }
-  apply lookup_gset_to_gmap_None in H0.
-  apply not_elem_of_list_to_set in H0.
-  apply H0. apply elem_of_list_fmap. eexists; intuition eauto.
-  eapply elem_of_seqZ. pose proof block_bytes_pos. lia.
+  assert (bit0_map !! (U64 0) = Some (existT KindBit (bufBit false))).
+  { apply lookup_bit0_map.
+    split; auto.
+    pose proof block_bytes_pos.
+    word. }
+  rewrite H0 in H1.
+  congruence.
 Qed.
 
 Lemma inode0_map_not_empty : ∅ ≠ inode0_map.
