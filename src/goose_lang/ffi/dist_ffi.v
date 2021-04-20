@@ -82,6 +82,8 @@ Section grove.
     | RecvOp, ExtV (RecvEndp, e) =>
       ms ← reads (λ '(σ,g), g !! e) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
+            (* FIXME HACK: We requires that the message has length <2^64.
+               We *could* make this an invariant in the proof and thus avoid asserting it here. *)
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms ∧ length m' < 2^64);
       match m with
       | None => ret (#true, (#locations.null, #0))%V
