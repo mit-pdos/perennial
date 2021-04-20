@@ -312,8 +312,6 @@ lemmas. *)
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
     inv_head_step.
     monad_inv.
-    rewrite /= in H0.
-    monad_inv.
     iMod (na_heap_alloc_list tls _ l (Block_to_vals b) (Reading O) with "Hσ")
       as "(Hσ & Hblock & Hl)".
     { rewrite length_Block_to_vals. rewrite /block_bytes. lia. }
@@ -424,7 +422,6 @@ lemmas. *)
     iNext; iIntros (v2 σ2 g2 efs Hstep).
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ]. inv_head_step.
     monad_inv.
-    rewrite /= in H1; monad_inv.
     iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
     assert (b = b1); [ | subst b1 ].
     { apply Block_to_vals_ext_eq; intros.

@@ -70,14 +70,14 @@ Section grove.
     | MkRecvOp, LitV (LitString s) =>
       ret (ExtV (RecvEndp, s))
     | SendOp, PairV (ExtV (SendEndp, e)) (PairV (LitV (LitLoc l)) (LitV (LitInt len))) =>
-      m ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (m : vec u8 (int.nat len)),
-            forall (i:Z), 0 <= i -> i < (int.Z len) ->
+      m ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (m : message),
+            length m = int.nat len ∧ forall (i:Z), 0 <= i -> i < length m ->
                 match σ.(heap) !! (l +ₗ i) with
-                | Some (Reading _, LitV (LitByte v)) => (vec_to_list m) !! Z.to_nat i = Some v
+                | Some (Reading _, LitV (LitByte v)) => m !! Z.to_nat i = Some v
                 | _ => False
                 end);
       ms ← reads (λ '(σ,g), g !! e) ≫= unwrap;
-      modify (λ '(σ,g), (σ, <[ e := ms ∪ {[vec_to_list m]} ]> g));;
+      modify (λ '(σ,g), (σ, <[ e := ms ∪ {[m]} ]> g));;
       ret #()
     | RecvOp, ExtV (RecvEndp, e) =>
       ms ← reads (λ '(σ,g), g !! e) ≫= unwrap;
@@ -127,7 +127,7 @@ Section grove.
        ffi_get_global_names _ hD := gen_heapG_get_names (groveG_gen_heapG);
        ffi_update_local  _ hD names := hD;
        ffi_ctx _ _ _ := True%I;
-       ffi_global_ctx _ _ _ := True%I;
+       ffi_global_ctx _ _ g := gen_heap_interp g;
        ffi_local_start := fun _ _ _ (g: grove_global_state) =>
                       ([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=endpoint) (V:=gset message) e (DfracOwn 1) ms))%I;
        ffi_restart _ _ _ := True%I;
@@ -143,11 +143,10 @@ End grove.
 Notation "e c↦ ms" := (mapsto (L:=endpoint) (V:=gset message) e (DfracOwn 1) ms)
                        (at level 20, format "e  c↦  ms") : bi_scope.
 
-
 Section lifting.
   Existing Instances grove_op grove_model grove_semantics grove_interp.
   Context `{!heapG Σ}.
-  (*Instance groveG0 : groveG Σ := heapG_ffiG.*)
+  Instance groveG0 : groveG Σ := heapG_ffiG.
 
   Definition send_endpoint (e : string) : val :=
     ExtV (SendEndp, e).
@@ -178,7 +177,7 @@ lemmas. *)
 
   Lemma wp_MkSendOp e s E :
     {{{ True }}}
-      ExternalOp MkSendOp (Val $ LitV $ LitString e) @ s; E
+      ExternalOp MkSendOp (LitV $ LitString e) @ s; E
     {{{ RET send_endpoint e; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -199,7 +198,7 @@ lemmas. *)
 
   Lemma wp_MkRecvOp e s E :
     {{{ True }}}
-      ExternalOp MkRecvOp (Val $ LitV $ LitString e) @ s; E
+      ExternalOp MkRecvOp (LitV $ LitString e) @ s; E
     {{{ RET recv_endpoint e; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -216,6 +215,63 @@ lemmas. *)
     iIntros "!>".
     iSplit; first done.
     by iApply "HΦ".
+  Qed.
+
+  Lemma mapsto_vals_bytes_valid l (m : message) q (σ : gmap _ _) :
+    na_heap.na_heap_ctx tls σ -∗ mapsto_vals l q ((λ b, #(LitByte b)) <$> m) -∗
+    ⌜ (forall (i:Z), (0 <= i)%Z -> (i < length m)%Z ->
+              match σ !! (l +ₗ i) with
+           | Some (Reading _, LitV (LitByte v)) => m !! Z.to_nat i = Some v
+           | _ => False
+              end) ⌝.
+  Proof.
+    iIntros "Hh Hv". iDestruct (mapsto_vals_valid with "Hh Hv") as %Hl.
+    iPureIntro. intros i Hlb Hub.
+    rewrite fmap_length in Hl. specialize (Hl _ Hlb Hub).
+    destruct (σ !! (l +ₗ i)) as [[[] v]|]; [done| |done].
+    move: Hl. rewrite list_lookup_fmap /=.
+    intros [b [? ->]]%fmap_Some_1. done.
+  Qed.
+
+  Lemma wp_SendOp e ms (l : loc) (len : u64) (m : message) (q : Qp) s E :
+    length m = int.nat len →
+    {{{ e c↦ ms ∗ mapsto_vals l q ((λ b, #(LitByte b)) <$> m) }}}
+      ExternalOp SendOp (send_endpoint e, (#l, #len))%V @ s; E
+    {{{ RET #(); e c↦ (ms ∪ {[m]}) ∗ mapsto_vals l q ((λ b, #(LitByte b)) <$> m) }}}.
+  Proof.
+    iIntros (Hmlen Φ) "[He Hl] HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns κ κs nt) "(Hσ&$&Htr) Hg !>".
+    iDestruct (@gen_heap_valid with "Hg He") as %He.
+    iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
+    iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. econstructor; first by econstructor.
+      monad_simpl. econstructor; first by econstructor.
+      monad_simpl.
+    }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    inv_head_step.
+    monad_inv.
+    iFrame.
+    iMod (@gen_heap_update with "Hg He") as "[$ He]".
+    iIntros "!> /=".
+    iSplit; first done.
+    iApply "HΦ".
+    assert (m = m0) as <-.
+    { apply list_eq=>i.
+      rename select (length m0 = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
+      assert (length m = length m0) as Hlen by rewrite Hmlen //.
+      destruct (m !! i) as [v|] eqn:Hm; last first.
+      { rewrite Hm. move: Hm. rewrite lookup_ge_None Hlen -lookup_ge_None. done. }
+      apply lookup_lt_Some in Hm. apply inj_lt in Hm.
+      feed pose proof (Hl i) as Hl; [lia..|].
+      feed pose proof (Hm0 i) as Hm0; [lia..|].
+      destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
+      destruct v'' as [lit| | | | |]; try done.
+      destruct lit; try done.
+      rewrite Nat2Z.id in Hl Hm0. rewrite Hl Hm0. done. }
+    by iFrame.
   Qed.
 
 End lifting.

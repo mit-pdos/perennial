@@ -536,6 +536,10 @@ Ltac monad_inv :=
            unfold check in H
          | [ H: context[relation.denote (when ?P _)] |- _ ] =>
            unfold when in H
+         | [ H: context[relation.denote (ret _)] |- _ ] =>
+           unfold ret in H
+         | [ H: context[relation.denote (runF ?x)] |- _ ] =>
+           change (relation.denote (runF x)) with (relation.runF x) in H
          | [ H: context[relation.denote (ifThenElse ?P _ _)] |- _ ] =>
            rewrite -> (ifThenElse_if P) in H by eauto; cbn [relation.denote ret undefined] in H
          | [ H: context[relation.denote (ifThenElse ?P _ _)] |- _ ] =>

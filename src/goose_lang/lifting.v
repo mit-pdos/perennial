@@ -731,6 +731,25 @@ Definition mapsto_vals l q vs : iProp Σ :=
 Definition mapsto_vals_toks l q vs : iProp Σ :=
   ([∗ list] j↦vj ∈ vs, (l +ₗ j) ↦{q} vj ∗ meta_token (l +ₗ j) ⊤)%I.
 
+Lemma mapsto_vals_valid l vs q (σ : gmap _ _) :
+  na_heap.na_heap_ctx tls σ -∗ mapsto_vals l q vs -∗
+  ⌜ (forall (i:Z), (0 <= i)%Z -> (i < length vs)%Z ->
+              match σ !! (l +ₗ i) with
+           | Some (Reading _, v) => vs !! Z.to_nat i = Some v
+           | _ => False
+              end) ⌝.
+Proof.
+  iIntros "Hσ Hm".
+  iIntros (i Hbound1 Hbound2).
+  destruct (lookup_lt_is_Some_2 vs (Z.to_nat i)) as [v Hv].
+  { apply Nat2Z.inj_lt. rewrite Z2Nat.id //. }
+  rewrite /mapsto_vals. rewrite big_sepL_lookup; last exact: Hv.
+  rewrite Z2Nat.id //.
+  iDestruct (heap_mapsto_na_acc with "Hm") as "[Hi Hi_rest]".
+  iDestruct (@na_heap.na_heap_read with "Hσ Hi") as %(lk&?&Hlookup&Hlock).
+  destruct lk; inversion Hlock; subst. rewrite Hlookup //.
+Qed.
+
 Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
   (0 < length (flatten_struct v))%nat →
   (0 < int.Z n)%Z →
