@@ -82,13 +82,14 @@ Section grove.
     | RecvOp, ExtV (RecvEndp, e) =>
       ms ← reads (λ '(σ,g), g !! e) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
-            m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms);
+            m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms ∧ length m' < 2^64);
       match m with
-      | None => ret (#false, (#locations.null, #0))%V
+      | None => ret (#true, (#locations.null, #0))%V
       | Some m =>
-        l ← allocateN (length m);
-        modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m) σ, g));;
-        ret  (#true, (#(l : loc), #(length m)))%V
+        (* Make sure we allocate at least 1 location, or else we might not actually create a new allocation *)
+        l ← allocateN (1 + (length m));
+        modify (λ '(σ,g), (state_insert_list l (((λ b, #(LitByte b)) <$> m) ++ [(#false) : val]) σ, g));;
+        ret  (#false, (#(l : loc), #(length m)))%V
       end
     | _, _ => undefined
     end.
@@ -168,9 +169,8 @@ lemmas. *)
         | H : head_step_atomic _ _ _ _ _ _ _ _ |- _ =>
           apply head_step_atomic_inv in H; [ | by inversion 1 ]
         | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
-          try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
-     and can thus better be avoided. *)
-          inversion H; subst; clear H
+          rewrite /head_step /= in H;
+          monad_inv; repeat (simpl in H; monad_inv)
         | H : ext_step _ _ _ _ _ |- _ =>
           inversion H; subst; clear H
         end.
@@ -188,7 +188,6 @@ lemmas. *)
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
-    monad_inv.
     simpl.
     iFrame.
     iIntros "!>".
@@ -209,7 +208,6 @@ lemmas. *)
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
-    monad_inv.
     simpl.
     iFrame.
     iIntros "!>".
@@ -252,7 +250,6 @@ lemmas. *)
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
-    monad_inv.
     iFrame.
     iMod (@gen_heap_update with "Hg He") as "[$ He]".
     iIntros "!> /=".
@@ -272,6 +269,63 @@ lemmas. *)
       destruct lit; try done.
       rewrite Nat2Z.id in Hl Hm0. rewrite Hl Hm0. done. }
     by iFrame.
+  Qed.
+
+  Lemma wp_RecvOp e ms s E :
+    {{{ e c↦ ms }}}
+      ExternalOp RecvOp (recv_endpoint e) @ s; E
+    {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
+        e c↦ ms ∗ if err then True else
+          ∃ m : message, ⌜m ∈ ms ∧ length m = int.nat len⌝ ∗
+            mapsto_vals l 1 ((λ b, #(LitByte b)) <$> m)
+    }}}.
+  Proof.
+    iIntros (Φ) "He HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns κ κs nt) "(Hσ&$&Htr) Hg !>".
+    iDestruct (@gen_heap_valid with "Hg He") as %He.
+    iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. econstructor; first by econstructor.
+      monad_simpl. econstructor.
+      { constructor. left. done. }
+      monad_simpl. econstructor; first by econstructor.
+      monad_simpl.
+    }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    inv_head_step.
+    monad_inv.
+    rename select (m = None ∨ _) into Hm. simpl in Hm.
+    destruct Hm as [->|(m' & -> & Hm & Hlen)].
+    { (* Returning no message. *)
+      monad_inv. iFrame. simpl. iModIntro. iSplit; first done.
+      iApply "HΦ". by iFrame. }
+    (* Returning a message *)
+    repeat match goal with
+           | H : relation.bind _ _ _ _ _ |- _ => simpl in H; monad_inv
+           end.
+    rename select (isFresh _ _) into Hfresh.
+    iMod (na_heap_alloc_list tls (heap σ1) l
+                             (((λ b : u8, #b) <$> m') ++ [(#false) : val])
+                             (Reading O) with "Hσ")
+      as "(Hσ & Hblock & Hl)".
+    { rewrite app_length. simpl. lia. }
+    { destruct Hfresh as (?&?); eauto. }
+    { destruct Hfresh as (H'&?); eauto. eapply H'. }
+    { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
+      by rewrite (loc_add_0) in Hfresh. }
+    { eauto. }
+    iEval simpl. iSplitR; first done. iFrame "Htr Hg Hσ".
+    iModIntro. iApply "HΦ". iFrame "He".
+    iExists m'. iSplit.
+    { iPureIntro. split; first done.
+      trans (Z.to_nat (Z.of_nat (length m'))); first by rewrite Nat2Z.id //.
+      f_equal. word. }
+    rewrite big_sepL_app. iDestruct "Hl" as "[Hl _]".
+    rewrite /mapsto_vals. iApply (big_sepL_mono with "Hl").
+    clear -Hfresh. simpl. iIntros (i v _) "[Hmapsto _]".
+    iApply (na_mapsto_to_heap with "Hmapsto").
+    destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
 End lifting.
