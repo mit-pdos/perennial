@@ -107,21 +107,25 @@ Section grove.
   suddenly cause all FFI parameters to be inferred as the disk model *)
   Existing Instances grove_op grove_model.
 
-  Definition SendEndpoint : ty := extT GroveSendTy.
+  (** We only use these types behind a ptr indirection so their size should not matter. *)
+  Definition Sender : ty := extT GroveSendTy.
+  Definition Receiver : ty := extT GroveRecvTy.
 
-  Definition RecvEndpoint : ty := extT GroveRecvTy.
-
-  Definition MkSend : val :=
+  (** Type: func(string) *Sender *)
+  Definition MakeSender : val :=
     λ: "e", ExternalOp MkSendOp (Var "e").
 
-  Definition MkRecv : val :=
+  (** Type: func(string) *Receiver *)
+  Definition MakeReceiver : val :=
     λ: "e", ExternalOp MkSendOp (Var "e").
 
+  (** Type: func( *Sender, []byte) *)
   Definition Send : val :=
     (* FIXME: extract ptr and len from "m" (which is intended to have type []byte) *)
     λ: "e" "m", ExternalOp SendOp (Var "e", Var "m").
 
-  Definition Recv : val :=
+  (** Type: func( *Receiver) []byte *)
+  Definition Receive : val :=
     λ: "e",
       let: "m" := ExternalOp RecvOp (Var "e") in
       let: "slice" := Snd (Var "m") in
