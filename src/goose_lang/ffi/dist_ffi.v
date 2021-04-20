@@ -87,7 +87,7 @@ Section grove.
       | None => ret (#true, (#locations.null, #0))%V
       | Some m =>
         (* Make sure we allocate at least 1 location, or else we might not actually create a new allocation *)
-        l ← allocateN (1 + (length m));
+        l ← allocateN;
         modify (λ '(σ,g), (state_insert_list l (((λ b, #(LitByte b)) <$> m) ++ [(#false) : val]) σ, g));;
         ret  (#false, (#(l : loc), #(length m)))%V
       end

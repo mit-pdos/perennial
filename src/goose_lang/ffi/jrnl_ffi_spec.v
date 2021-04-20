@@ -185,7 +185,7 @@ Section jrnl.
     end.
 
   Definition allocIdent: transition (state*global_state) loc :=
-    l ← allocateN 1;
+    l ← allocateN;
     modify (prod_map (set heap <[l := Free #()]>) id);;
     ret l.
 

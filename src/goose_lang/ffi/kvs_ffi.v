@@ -192,7 +192,7 @@ Section kvs.
   Definition to_block (l: list val): option disk.Block := None.
 
   Definition allocIdent: transition (state*global_state) loc :=
-    l ← allocateN 1;
+    l ← allocateN;
     modify (λ '(σ, g), (set heap <[l := Free #()]> σ, g));;
            ret l.
 
@@ -210,7 +210,7 @@ Section kvs.
       openΣ ≫= λ '(kvs, kvsPtr_), (*kvs is the state *)
       check (kvsPtr = kvsPtr_);;
       b ← unwrap (kvs !! key);
-      l ← allocateN 4096;
+      l ← allocateN;
       modify (λ '(σ,g), (state_insert_list l (disk.Block_to_vals b) σ, g));;
              ret $ (PairV #(LitLoc l) #true) (*This could return false?*) 
     | MultiPutMarkOp, PairV (LitV (LitLoc kvsPtr)) v => mark_slice KVPairT v;; ret $ #()

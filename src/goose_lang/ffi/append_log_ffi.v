@@ -139,7 +139,7 @@ Section log.
   Definition to_block (l: list val): option disk.Block := None.
 
   Definition allocIdent: transition (state*global_state) loc :=
-    l ← allocateN 1;
+    l ← allocateN;
     modify (prod_map (set heap <[l := Free #()]>) id);;
     ret l.
 
@@ -149,7 +149,7 @@ Section log.
       openΣ ≫= λ '(log, logPtr_),
       check (logPtr = logPtr_);;
       b ← unwrap (log !! int.nat a);
-      l ← allocateN 4096;
+      l ← allocateN;
       modify (prod_map (state_insert_list l (disk.Block_to_vals b)) id);;
       ret $ #(LitLoc l)
     | ResetOp, LitV (LitLoc logPtr) =>

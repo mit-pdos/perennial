@@ -179,7 +179,7 @@ Section disk.
     match op, v with
     | ReadOp, LitV (LitInt a) =>
       b ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
-      l ← allocateN 4096;
+      l ← allocateN;
       modify (λ '(σ,g), (state_insert_list l (Block_to_vals b) σ, g));;
       ret $ #(LitLoc l)
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>

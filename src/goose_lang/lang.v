@@ -1006,7 +1006,9 @@ Defined.
 Global Instance alloc_gen : GenPred loc (state*global_state) (isFresh) :=
   fun _ σ => Some (gen_isFresh σ).
 
-Definition allocateN (bound:Z): transition (state*global_state) loc :=
+(** Generate a location for a fresh block; doesn't actually insert anything into
+the heap. *)
+Definition allocateN : transition (state*global_state) loc :=
   suchThat (isFresh).
 
 (*
@@ -1066,7 +1068,7 @@ Definition head_trans (e: expr) :
   | AllocN (Val (LitV (LitInt n))) (Val v) =>
     atomically
       (check (0 < int.Z n)%Z;;
-       l ← allocateN (int.Z n * length (flatten_struct v));
+       l ← allocateN;
        modifyσ (state_init_heap l (int.Z n) v);;
        ret $ LitV $ LitLoc l)
    | StartRead (Val (LitV (LitLoc l))) => (* non-atomic load part 1 (used for map accesses) *)
