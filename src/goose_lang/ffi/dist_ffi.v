@@ -58,7 +58,7 @@ Definition init_grove (endpoints : list endpoint) : grove_global_state :=
 
 Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
-  suddenly cause all FFI parameters to be inferred as the disk model *)
+  suddenly cause all FFI parameters to be inferred as the grove model *)
   Existing Instances grove_op grove_model.
 
   Existing Instances r_mbind r_fmap.
@@ -93,18 +93,137 @@ Section grove.
     | _, _ => undefined
     end.
 
-  (* these instances are also local (to the outer section) *)
-  Instance grove_semantics : ext_semantics grove_op grove_model :=
+  Local Instance grove_semantics : ext_semantics grove_op grove_model :=
     { ext_step := ext_step;
       ext_crash := eq; }.
 End grove.
 
-(** * Grove semantic interpretation and invariant *)
+(** * Grove semantic interpretation and lifting lemmas *)
+Class groveG Σ :=
+  { groveG_gen_heapG :> gen_heap.gen_heapG endpoint (gset message) Σ; }.
+
+Class grove_preG Σ :=
+  { grove_preG_gen_heapG :> gen_heap.gen_heapPreG endpoint (gset message) Σ; }.
+
+Definition groveΣ : gFunctors :=
+  #[gen_heapΣ endpoint (gset message)].
+
+Instance subG_groveG Σ : subG groveΣ Σ → grove_preG Σ.
+Proof. solve_inG. Qed.
+
+Definition grove_update_pre {Σ} (dG: grove_preG Σ) (n: gen_heap_names) :=
+  {| groveG_gen_heapG := gen_heapG_update_pre (@grove_preG_gen_heapG _ dG) n |}.
+
+Section grove.
+  (* these are local instances on purpose, so that importing this files doesn't
+  suddenly cause all FFI parameters to be inferred as the grove model *)
+  Existing Instances grove_op grove_model.
+
+  Local Program Instance grove_interp: ffi_interp grove_model :=
+    {| ffiG := groveG;
+       ffi_local_names := unit;
+       ffi_global_names := gen_heap_names;
+       ffi_get_local_names _ hD := tt;
+       ffi_get_global_names _ hD := gen_heapG_get_names (groveG_gen_heapG);
+       ffi_update_local  _ hD names := hD;
+       ffi_ctx _ _ _ := True%I;
+       ffi_global_ctx _ _ _ := True%I;
+       ffi_local_start := fun _ _ _ (g: grove_global_state) =>
+                      ([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=endpoint) (V:=gset message) e (DfracOwn 1) ms))%I;
+       ffi_restart _ _ _ := True%I;
+       ffi_crash_rel Σ hF1 σ1 hF2 σ2 := True%I;
+    |}.
+  Next Obligation. intros ? [[]] [] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
+  Next Obligation. intros ? [[]] => //=. Qed.
+End grove.
+
+Notation "e c↦ ms" := (mapsto (L:=endpoint) (V:=gset message) e (DfracOwn 1) ms)
+                       (at level 20, format "e  c↦  ms") : bi_scope.
+
+
+Section lifting.
+  Existing Instances grove_op grove_model grove_semantics grove_interp.
+  Context `{!heapG Σ}.
+  (*Instance groveG0 : groveG Σ := heapG_ffiG.*)
+
+  Definition send_endpoint (e : string) : val :=
+    ExtV (SendEndp, e).
+  Definition recv_endpoint (e : string) : val :=
+    ExtV (RecvEndp, e).
+
+  (* Lifting automation *)
+  Local Hint Extern 0 (head_reducible _ _ _) => eexists _, _, _, _, _; simpl : core.
+  Local Hint Extern 0 (head_reducible_no_obs _ _ _) => eexists _, _, _, _; simpl : core.
+  (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
+[head_step]. The tactic will discharge head-reductions starting from values, and
+simplifies hypothesis related to conversions from and to values, and finite map
+operations. This tactic is slightly ad-hoc and tuned for proving our lifting
+lemmas. *)
+  Ltac inv_head_step :=
+    repeat match goal with
+        | _ => progress simplify_map_eq/= (* simplify memory stuff *)
+        | H : to_val _ = Some _ |- _ => apply of_to_val in H
+        | H : head_step_atomic _ _ _ _ _ _ _ _ |- _ =>
+          apply head_step_atomic_inv in H; [ | by inversion 1 ]
+        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
+          try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
+     and can thus better be avoided. *)
+          inversion H; subst; clear H
+        | H : ext_step _ _ _ _ _ |- _ =>
+          inversion H; subst; clear H
+        end.
+
+  Lemma wp_MkSendOp e s E :
+    {{{ True }}}
+      ExternalOp MkSendOp (Val $ LitV $ LitString e) @ s; E
+    {{{ RET send_endpoint e; True }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    inv_head_step.
+    monad_inv.
+    simpl.
+    iFrame.
+    iIntros "!>".
+    iSplit; first done.
+    by iApply "HΦ".
+  Qed.
+
+  Lemma wp_MkRecvOp e s E :
+    {{{ True }}}
+      ExternalOp MkRecvOp (Val $ LitV $ LitString e) @ s; E
+    {{{ RET recv_endpoint e; True }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    inv_head_step.
+    monad_inv.
+    simpl.
+    iFrame.
+    iIntros "!>".
+    iSplit; first done.
+    by iApply "HΦ".
+  Qed.
+
+End lifting.
 
 (** * Grove user-facing operations and their specs *)
 Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
-  suddenly cause all FFI parameters to be inferred as the disk model *)
+  suddenly cause all FFI parameters to be inferred as the grove model *)
   Existing Instances grove_op grove_model.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
