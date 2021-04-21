@@ -528,6 +528,8 @@ Definition a_prim_op {ar} (op: prim_op ar) : prim_op'.
   destruct ar; simpl in op; eauto.
 Defined.
 
+(** For the proof of [Countable expr], we encode [expr] as a [genTree] with some
+countable type at the leaves. [basic_type] is what we use as that leaf type. *)
 Inductive basic_type :=
   | stringVal (s:string)
   | binderVal (b:binder)
