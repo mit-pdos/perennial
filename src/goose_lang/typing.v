@@ -342,7 +342,6 @@ Section goose_lang.
       Γ ⊢ nilfun : arrowT unitT tret ->
       Γ ⊢ consfun : arrowT (prodT tl (listT tl)) tret ->
       Γ ⊢ ListMatch el nilfun consfun : tret
-  (*
   | mapNil_hasTy def vt :
       Γ ⊢ def : vt ->
       Γ ⊢ InjL def : mapValT vt
@@ -356,7 +355,6 @@ Section goose_lang.
       Γ ⊢ e1 : arrowT vt t ->
       Γ ⊢ e2 : arrowT (prodT (prodT uint64T vt ) (mapValT vt)) t ->
       Γ ⊢ Case cond e1 e2 : t
-  *)
   | inl_hasTy e t1 t2 :
       Γ ⊢ e : t1 ->
       Γ ⊢ InjL e : sumT t1 t2
@@ -445,11 +443,9 @@ Section goose_lang.
   | rec_val_hasTy f x e t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ ∅) ⊢ e : t2 ->
       Γ ⊢v RecV f x e : arrowT t1 t2
-  (*
   | mapNilV_hasTy v t :
       Γ ⊢v v : t ->
       Γ ⊢v MapNilV v : mapValT t
-  *)
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
