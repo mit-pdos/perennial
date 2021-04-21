@@ -65,8 +65,8 @@ Definition Server_mutex_cinv γrpc : iProp Σ :=
 
 Definition RPCServer_own_vol (sv:loc) rpc_server : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc),
-    "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
-∗ "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
+    "HlastSeqOwn" ∷ sv ↦[RPCServer :: "lastSeq"] #lastSeq_ptr
+∗ "HlastReplyOwn" ∷ sv ↦[RPCServer :: "lastReply"] #lastReply_ptr
 ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) rpc_server.(lastSeqM)
 ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) rpc_server.(lastReplyM)
 .
@@ -94,7 +94,7 @@ Definition mutexN : namespace := nroot .@ "server_mutexN".
 Definition is_server rpc_srv_ptr γrpc : iProp Σ :=
   ∃ (mu_ptr:loc),
   "#Hlinv" ∷ is_RPCServer γrpc ∗
-  "#Hmu_ptr" ∷ readonly(rpc_srv_ptr ↦[RPCServer.S :: "mu"] #mu_ptr) ∗
+  "#Hmu_ptr" ∷ readonly(rpc_srv_ptr ↦[RPCServer :: "mu"] #mu_ptr) ∗
   "#Hmu" ∷ is_crash_lock mutexN 37 #mu_ptr (Server_mutex_inv rpc_srv_ptr γrpc)
     (|={⊤}=> Server_mutex_cinv γrpc) (* FIXME:(US) get rid of this fupd *)
 .

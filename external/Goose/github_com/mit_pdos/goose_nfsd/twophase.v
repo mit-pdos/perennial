@@ -9,24 +9,20 @@ From Goose Require github_com.mit_pdos.goose_nfsd.lockmap.
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
 
-Module TwoPhasePre.
-  Definition S := struct.decl [
-    "txn" :: struct.ptrT txn.Txn.S;
-    "locks" :: struct.ptrT lockmap.LockMap.S
-  ].
-End TwoPhasePre.
+Definition TwoPhasePre := struct.decl [
+  "txn" :: struct.ptrT txn.Txn;
+  "locks" :: struct.ptrT lockmap.LockMap
+].
 
-Module TwoPhase.
-  Definition S := struct.decl [
-    "buftxn" :: struct.ptrT buftxn.BufTxn.S;
-    "locks" :: struct.ptrT lockmap.LockMap.S;
-    "acquired" :: slice.T uint64T
-  ].
-End TwoPhase.
+Definition TwoPhase := struct.decl [
+  "buftxn" :: struct.ptrT buftxn.BufTxn;
+  "locks" :: struct.ptrT lockmap.LockMap;
+  "acquired" :: slice.T uint64T
+].
 
 Definition Init: val :=
   rec: "Init" "d" :=
-    let: "twophasePre" := struct.new TwoPhasePre.S [
+    let: "twophasePre" := struct.new TwoPhasePre [
       "txn" ::= txn.MkTxn "d";
       "locks" ::= lockmap.MkLockMap #()
     ] in
@@ -35,9 +31,9 @@ Definition Init: val :=
 (* Start a local transaction with no writes from a global Txn manager. *)
 Definition Begin: val :=
   rec: "Begin" "twophasePre" :=
-    let: "trans" := struct.new TwoPhase.S [
-      "buftxn" ::= buftxn.Begin (struct.loadF TwoPhasePre.S "txn" "twophasePre");
-      "locks" ::= struct.loadF TwoPhasePre.S "locks" "twophasePre";
+    let: "trans" := struct.new TwoPhase [
+      "buftxn" ::= buftxn.Begin (struct.loadF TwoPhasePre "txn" "twophasePre");
+      "locks" ::= struct.loadF TwoPhasePre "locks" "twophasePre";
       "acquired" ::= NewSlice uint64T #0
     ] in
     util.DPrintf #5 (#(str"tp Begin: %v
@@ -47,14 +43,14 @@ Definition Begin: val :=
 Definition TwoPhase__acquireNoCheck: val :=
   rec: "TwoPhase__acquireNoCheck" "twophase" "addr" :=
     let: "flatAddr" := addr.Addr__Flatid "addr" in
-    lockmap.LockMap__Acquire (struct.loadF TwoPhase.S "locks" "twophase") "flatAddr";;
-    struct.storeF TwoPhase.S "acquired" "twophase" (SliceAppend uint64T (struct.loadF TwoPhase.S "acquired" "twophase") "flatAddr").
+    lockmap.LockMap__Acquire (struct.loadF TwoPhase "locks" "twophase") "flatAddr";;
+    struct.storeF TwoPhase "acquired" "twophase" (SliceAppend uint64T (struct.loadF TwoPhase "acquired" "twophase") "flatAddr").
 
 Definition TwoPhase__isAlreadyAcquired: val :=
   rec: "TwoPhase__isAlreadyAcquired" "twophase" "addr" :=
     let: "flatAddr" := addr.Addr__Flatid "addr" in
     let: "already_acquired" := ref_to boolT #false in
-    ForSlice uint64T <> "acq" (struct.loadF TwoPhase.S "acquired" "twophase")
+    ForSlice uint64T <> "acq" (struct.loadF TwoPhase "acquired" "twophase")
       (if: ("flatAddr" = "acq")
       then "already_acquired" <-[boolT] #true
       else #());;
@@ -69,20 +65,20 @@ Definition TwoPhase__Acquire: val :=
 
 Definition TwoPhase__Release: val :=
   rec: "TwoPhase__Release" "twophase" :=
-    let: "last_index" := slice.len (struct.loadF TwoPhase.S "acquired" "twophase") - #1 in
-    lockmap.LockMap__Release (struct.loadF TwoPhase.S "locks" "twophase") (SliceGet uint64T (struct.loadF TwoPhase.S "acquired" "twophase") "last_index");;
-    struct.storeF TwoPhase.S "acquired" "twophase" (SliceTake (struct.loadF TwoPhase.S "acquired" "twophase") "last_index").
+    let: "last_index" := slice.len (struct.loadF TwoPhase "acquired" "twophase") - #1 in
+    lockmap.LockMap__Release (struct.loadF TwoPhase "locks" "twophase") (SliceGet uint64T (struct.loadF TwoPhase "acquired" "twophase") "last_index");;
+    struct.storeF TwoPhase "acquired" "twophase" (SliceTake (struct.loadF TwoPhase "acquired" "twophase") "last_index").
 
 Definition TwoPhase__ReleaseAll: val :=
   rec: "TwoPhase__ReleaseAll" "twophase" :=
     Skip;;
-    (for: (λ: <>, slice.len (struct.loadF TwoPhase.S "acquired" "twophase") ≠ #0); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, slice.len (struct.loadF TwoPhase "acquired" "twophase") ≠ #0); (λ: <>, Skip) := λ: <>,
       TwoPhase__Release "twophase";;
       Continue).
 
 Definition TwoPhase__readBufNoAcquire: val :=
   rec: "TwoPhase__readBufNoAcquire" "twophase" "addr" "sz" :=
-    let: "s" := util.CloneByteSlice (struct.loadF buf.Buf.S "Data" (buftxn.BufTxn__ReadBuf (struct.loadF TwoPhase.S "buftxn" "twophase") "addr" "sz")) in
+    let: "s" := util.CloneByteSlice (struct.loadF buf.Buf "Data" (buftxn.BufTxn__ReadBuf (struct.loadF TwoPhase "buftxn" "twophase") "addr" "sz")) in
     "s".
 
 Definition TwoPhase__ReadBuf: val :=
@@ -94,12 +90,12 @@ Definition TwoPhase__ReadBuf: val :=
 Definition TwoPhase__OverWrite: val :=
   rec: "TwoPhase__OverWrite" "twophase" "addr" "sz" "data" :=
     TwoPhase__Acquire "twophase" "addr";;
-    buftxn.BufTxn__OverWrite (struct.loadF TwoPhase.S "buftxn" "twophase") "addr" "sz" "data".
+    buftxn.BufTxn__OverWrite (struct.loadF TwoPhase "buftxn" "twophase") "addr" "sz" "data".
 
 Definition TwoPhase__ReadBufBit: val :=
   rec: "TwoPhase__ReadBufBit" "twophase" "addr" :=
     let: "dataByte" := SliceGet byteT (TwoPhase__ReadBuf "twophase" "addr" #1) #0 in
-    (#(U8 1) = ("dataByte" ≫ ((struct.get addr.Addr.S "Off" "addr") `rem` #8) `and` #(U8 1))).
+    (#(U8 1) = ("dataByte" ≫ ((struct.get addr.Addr "Off" "addr") `rem` #8) `and` #(U8 1))).
 
 Definition bitToByte: val :=
   rec: "bitToByte" "off" "data" :=
@@ -110,7 +106,7 @@ Definition bitToByte: val :=
 Definition TwoPhase__OverWriteBit: val :=
   rec: "TwoPhase__OverWriteBit" "twophase" "addr" "data" :=
     let: "dataBytes" := NewSlice byteT #1 in
-    SliceSet byteT "dataBytes" #0 (bitToByte ((struct.get addr.Addr.S "Off" "addr") `rem` #8) "data");;
+    SliceSet byteT "dataBytes" #0 (bitToByte ((struct.get addr.Addr "Off" "addr") `rem` #8) "data");;
     TwoPhase__OverWrite "twophase" "addr" #1 "dataBytes".
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
@@ -119,23 +115,23 @@ Definition TwoPhase__OverWriteBit: val :=
    safety. *)
 Definition TwoPhase__NDirty: val :=
   rec: "TwoPhase__NDirty" "twophase" :=
-    buftxn.BufTxn__NDirty (struct.loadF TwoPhase.S "buftxn" "twophase").
+    buftxn.BufTxn__NDirty (struct.loadF TwoPhase "buftxn" "twophase").
 
 (* LogSz returns 511 *)
 Definition TwoPhase__LogSz: val :=
   rec: "TwoPhase__LogSz" "twophase" :=
-    buftxn.BufTxn__LogSz (struct.loadF TwoPhase.S "buftxn" "twophase").
+    buftxn.BufTxn__LogSz (struct.loadF TwoPhase "buftxn" "twophase").
 
 (* LogSzBytes returns 511*4096 *)
 Definition TwoPhase__LogSzBytes: val :=
   rec: "TwoPhase__LogSzBytes" "twophase" :=
-    buftxn.BufTxn__LogSzBytes (struct.loadF TwoPhase.S "buftxn" "twophase").
+    buftxn.BufTxn__LogSzBytes (struct.loadF TwoPhase "buftxn" "twophase").
 
 Definition TwoPhase__CommitNoRelease: val :=
   rec: "TwoPhase__CommitNoRelease" "twophase" :=
     util.DPrintf #5 (#(str"tp Commit %p
     ")) #();;
-    buftxn.BufTxn__CommitWait (struct.loadF TwoPhase.S "buftxn" "twophase") #true.
+    buftxn.BufTxn__CommitWait (struct.loadF TwoPhase "buftxn" "twophase") #true.
 
 Definition TwoPhase__Commit: val :=
   rec: "TwoPhase__Commit" "twophase" :=

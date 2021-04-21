@@ -38,10 +38,10 @@ Definition is_buf_data {K} (s : Slice.t) (d : bufDataT K) (a : addr) : iProp Σ 
 
 Definition is_buf_without_data (bufptr : loc) (a : addr) (o : buf) (data : Slice.t) : iProp Σ :=
   ∃ (sz : u64),
-    "Haddr" ∷ bufptr ↦[Buf.S :: "Addr"] (addr2val a) ∗
-    "Hsz" ∷ bufptr ↦[Buf.S :: "Sz"] #sz ∗
-    "Hdata" ∷ bufptr ↦[Buf.S :: "Data"] (slice_val data) ∗
-    "Hdirty" ∷ bufptr ↦[Buf.S :: "dirty"] #o.(bufDirty) ∗
+    "Haddr" ∷ bufptr ↦[Buf :: "Addr"] (addr2val a) ∗
+    "Hsz" ∷ bufptr ↦[Buf :: "Sz"] #sz ∗
+    "Hdata" ∷ bufptr ↦[Buf :: "Data"] (slice_val data) ∗
+    "Hdirty" ∷ bufptr ↦[Buf :: "dirty"] #o.(bufDirty) ∗
     "%" ∷ ⌜ valid_addr a ∧ valid_off o.(bufKind) a.(addrOff) ⌝ ∗
     "->" ∷ ⌜ sz = bufSz o.(bufKind) ⌝ ∗
     "%" ∷ ⌜ #bufptr ≠ #null ⌝.
@@ -53,7 +53,7 @@ Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
 
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
   ∃ (mptr : loc) (m : gmap u64 loc) (am : gmap addr loc),
-    bufmap ↦[BufMap.S :: "addrs"] #mptr ∗
+    bufmap ↦[BufMap :: "addrs"] #mptr ∗
     is_map mptr m ∗
     ⌜ flatid_addr_map m am ⌝ ∗
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
@@ -112,7 +112,7 @@ Theorem wp_buf_loadField_sz bufptr a b stk E :
   {{{
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf.S "Sz" #bufptr @ stk; E
+    struct.loadF buf.Buf "Sz" #bufptr @ stk; E
   {{{
     RET #(bufSz b.(bufKind));
     is_buf bufptr a b
@@ -130,7 +130,7 @@ Theorem wp_buf_loadField_addr bufptr a b stk E :
   {{{
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf.S "Addr" #bufptr @ stk; E
+    struct.loadF buf.Buf "Addr" #bufptr @ stk; E
   {{{
     RET (addr2val a);
     is_buf bufptr a b
@@ -148,7 +148,7 @@ Theorem wp_buf_loadField_dirty bufptr a b stk E :
   {{{
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf.S "dirty" #bufptr @ stk ; E
+    struct.loadF buf.Buf "dirty" #bufptr @ stk ; E
   {{{
     RET #(b.(bufDirty));
     is_buf bufptr a b
@@ -166,7 +166,7 @@ Theorem wp_buf_wd_loadField_sz bufptr a b dataslice stk E :
   {{{
     is_buf_without_data bufptr a b dataslice
   }}}
-    struct.loadF buf.Buf.S "Sz" #bufptr @ stk; E
+    struct.loadF buf.Buf "Sz" #bufptr @ stk; E
   {{{
     RET #(bufSz b.(bufKind));
     is_buf_without_data bufptr a b dataslice
@@ -183,7 +183,7 @@ Theorem wp_buf_wd_loadField_addr bufptr a b dataslice stk E :
   {{{
     is_buf_without_data bufptr a b dataslice
   }}}
-    struct.loadF buf.Buf.S "Addr" #bufptr @ stk; E
+    struct.loadF buf.Buf "Addr" #bufptr @ stk; E
   {{{
     RET (addr2val a);
     is_buf_without_data bufptr a b dataslice
@@ -200,7 +200,7 @@ Theorem wp_buf_wd_loadField_dirty bufptr a b dataslice stk E :
   {{{
     is_buf_without_data bufptr a b dataslice
   }}}
-    struct.loadF buf.Buf.S "dirty" #bufptr @ stk; E
+    struct.loadF buf.Buf "dirty" #bufptr @ stk; E
   {{{
     RET #(b.(bufDirty));
     is_buf_without_data bufptr a b dataslice
@@ -226,7 +226,7 @@ Theorem wp_buf_loadField_data bufptr a b stk E :
   {{{
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf.S "Data" #bufptr @ stk; E
+    struct.loadF buf.Buf "Data" #bufptr @ stk; E
   {{{
     (vslice : Slice.t), RET (slice_val vslice);
     is_buf_data vslice b.(bufData) a ∗
@@ -247,7 +247,7 @@ Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k'
     is_buf_data vslice v' a ∗
     ⌜ k' = b.(bufKind) ⌝
   }}}
-    struct.storeF buf.Buf.S "Data" #bufptr (slice_val vslice) @ stk; E
+    struct.storeF buf.Buf "Data" #bufptr (slice_val vslice) @ stk; E
   {{{
     RET #();
     is_buf bufptr a (Build_buf k' v' b.(bufDirty))
@@ -425,7 +425,7 @@ Theorem wp_BufMap__DirtyBufs l m stk E1 :
     BufMap__DirtyBufs #l @ stk ; E1
   {{{
     (s : Slice.t) (bufptrlist : list loc), RET (slice_val s);
-    is_slice s (refT (struct.t Buf.S)) 1 bufptrlist ∗
+    is_slice s (refT (struct.t Buf)) 1 bufptrlist ∗
     let dirtybufs := filter (λ x, (snd x).(bufDirty) = true) m in
     [∗ maplist] a ↦ b;bufptr ∈ dirtybufs;bufptrlist,
       is_buf bufptr a b
@@ -449,8 +449,8 @@ Proof using.
         "%Hamtodo" ∷ ⌜flatid_addr_map bmtodo amtodo ∧ dom (gset addr) amtodo = dom (gset addr) mtodo⌝ ∗
         "Htodo" ∷ ( [∗ map] fa↦b ∈ bmtodo, ∃ a, ⌜fa = addr2flat a⌝ ∗
                                            (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) ) ∗
-        "Hbufs" ∷ bufs ↦[slice.T (refT (struct.t Buf.S))] (slice_val bufptrslice) ∗
-        "Hbufptrslice" ∷ is_slice bufptrslice (refT (struct.t Buf.S)) 1 bufptrlist ∗
+        "Hbufs" ∷ bufs ↦[slice.T (refT (struct.t Buf))] (slice_val bufptrslice) ∗
+        "Hbufptrslice" ∷ is_slice bufptrslice (refT (struct.t Buf)) 1 bufptrlist ∗
         "Hresult" ∷ ( [∗ maplist] a↦b;bufptr ∈ filter (λ x, (x.2).(bufDirty) = true) mdone;bufptrlist,
                                 is_buf bufptr a b )
     )%I
@@ -580,7 +580,7 @@ Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : bufDataT K) : Prop
   end.
 
 Lemma buf_mapsto_non_null b a:
-  b ↦[Buf.S :: "Addr"] addr2val a -∗ ⌜ b ≠ null ⌝.
+  b ↦[Buf :: "Addr"] addr2val a -∗ ⌜ b ≠ null ⌝.
 Proof.
   iIntros "Hb.a".
   iDestruct (heap_mapsto_non_null with "[Hb.a]") as %Hnotnull.

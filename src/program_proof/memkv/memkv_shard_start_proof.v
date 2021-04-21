@@ -131,7 +131,7 @@ Proof.
       iIntros (args_ptr) "Hargs".
       wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep $HreqInv]").
       {
-        replace (zero_val (struct.t GetReply.S)) with ((#0, (slice.nil, #()))%V); last first.
+        replace (zero_val (struct.t GetReply)) with ((#0, (slice.nil, #()))%V); last first.
         { naive_solver. }
 
         iDestruct (struct_fields_split with "Hrep") as "HH".

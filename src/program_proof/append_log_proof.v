@@ -34,8 +34,8 @@ Definition is_log' (sz disk_sz: u64) (vs:list Block): iProp Σ :=
 .
 
 Definition log_fields (l:loc) (sz disk_sz: u64): iProp Σ :=
-  l ↦[Log.S :: "sz"] #sz ∗
-  l ↦[Log.S :: "diskSz"] #disk_sz.
+  l ↦[Log :: "sz"] #sz ∗
+  l ↦[Log :: "diskSz"] #disk_sz.
 
 Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
   ∃ (sz: u64) (disk_sz: u64),
@@ -183,7 +183,7 @@ Proof.
 Qed.
 
 Theorem log_struct_to_fields lptr (ml: loc) (sz disk_sz: u64) :
-  lptr ↦[struct.t Log.S] (#ml, (#sz, (#disk_sz, #()))) -∗
+  lptr ↦[struct.t Log] (#ml, (#sz, (#disk_sz, #()))) -∗
   log_fields lptr sz disk_sz.
 Proof.
   iIntros "Hs".
@@ -192,8 +192,8 @@ Proof.
 Qed.
 
 Theorem log_struct_to_fields' lptr (ml: loc) (sz disk_sz: u64) :
-  lptr ↦[struct.t Log.S] (#ml, (#sz, (#disk_sz, #()))) -∗
-  log_fields lptr sz disk_sz ∗ lptr ↦[Log.S :: "m"] #ml.
+  lptr ↦[struct.t Log] (#ml, (#sz, (#disk_sz, #()))) -∗
+  log_fields lptr sz disk_sz ∗ lptr ↦[Log :: "m"] #ml.
 Proof.
   iIntros "Hs".
   iDestruct (struct_fields_split with "Hs") as "(?&Hsz&Hdisk_sz&?)".
@@ -540,7 +540,7 @@ Theorem wpc_init (sz: u64) k E1 E2 vs:
   {{{ 0 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ }}}
     Init #sz @ NotStuck; k; E1
   {{{ l (ok: bool), RET (#l, #ok); ⌜ int.nat sz > 0 → ok = true ⌝ ∗
-      if ok then ptsto_log l [] ∗ (∃ (ml: loc), l ↦[Log.S :: "m"] #ml ∗ is_free_lock ml)
+      if ok then ptsto_log l [] ∗ (∃ (ml: loc), l ↦[Log :: "m"] #ml ∗ is_free_lock ml)
       else 0 d↦∗ vs }}}
   {{{ 0 d↦∗ vs ∨ (∃ b b' vs', ⌜ vs = b :: vs' ⌝ ∗ 0 d↦∗ (b' :: vs') ) }}}.
 Proof.
@@ -816,7 +816,7 @@ Qed.
 Theorem wpc_Open k E1 vs :
   {{{ crashed_log vs }}}
     Open #() @ NotStuck; k; E1
-  {{{ lptr, RET #lptr; ptsto_log lptr vs ∗ ∃ (ml: loc), lptr ↦[Log.S :: "m"] #ml ∗ is_free_lock ml }}}
+  {{{ lptr, RET #lptr; ptsto_log lptr vs ∗ ∃ (ml: loc), lptr ↦[Log :: "m"] #ml ∗ is_free_lock ml }}}
   {{{ crashed_log vs }}}.
 Proof.
   iIntros (Φ Φc) "Hlog HΦ".

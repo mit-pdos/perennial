@@ -12,17 +12,15 @@ Definition LOGMAXBLK : expr := #510.
 
 Definition LOGEND : expr := LOGMAXBLK + LOGSTART.
 
-Module Log.
-  Definition S := struct.decl [
-    "logLock" :: lockRefT;
-    "memLock" :: lockRefT;
-    "logSz" :: uint64T;
-    "memLog" :: refT (slice.T disk.blockT);
-    "memLen" :: refT uint64T;
-    "memTxnNxt" :: refT uint64T;
-    "logTxnNxt" :: refT uint64T
-  ].
-End Log.
+Definition Log := struct.decl [
+  "logLock" :: lockRefT;
+  "memLock" :: lockRefT;
+  "logSz" :: uint64T;
+  "memLog" :: refT (slice.T disk.blockT);
+  "memLen" :: refT uint64T;
+  "memTxnNxt" :: refT uint64T;
+  "logTxnNxt" :: refT uint64T
+].
 
 Definition Log__writeHdr: val :=
   rec: "Log__writeHdr" "log" "len" :=
@@ -32,7 +30,7 @@ Definition Log__writeHdr: val :=
 
 Definition Init: val :=
   rec: "Init" "logSz" :=
-    let: "log" := struct.mk Log.S [
+    let: "log" := struct.mk Log [
       "logLock" ::= lock.new #();
       "memLock" ::= lock.new #();
       "logSz" ::= "logSz";
@@ -62,10 +60,10 @@ Definition Log__readBlocks: val :=
 
 Definition Log__Read: val :=
   rec: "Log__Read" "log" :=
-    lock.acquire (struct.get Log.S "logLock" "log");;
+    lock.acquire (struct.get Log "logLock" "log");;
     let: "disklen" := Log__readHdr "log" in
     let: "blks" := Log__readBlocks "log" "disklen" in
-    lock.release (struct.get Log.S "logLock" "log");;
+    lock.release (struct.get Log "logLock" "log");;
     "blks".
 
 Definition Log__memWrite: val :=
@@ -73,30 +71,30 @@ Definition Log__memWrite: val :=
     let: "n" := slice.len "l" in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "n"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      struct.get Log.S "memLog" "log" <-[slice.T (slice.T byteT)] SliceAppend (slice.T byteT) (![slice.T (slice.T byteT)] (struct.get Log.S "memLog" "log")) (SliceGet (slice.T byteT) "l" (![uint64T] "i"));;
+      struct.get Log "memLog" "log" <-[slice.T (slice.T byteT)] SliceAppend (slice.T byteT) (![slice.T (slice.T byteT)] (struct.get Log "memLog" "log")) (SliceGet (slice.T byteT) "l" (![uint64T] "i"));;
       Continue).
 
 Definition Log__memAppend: val :=
   rec: "Log__memAppend" "log" "l" :=
-    lock.acquire (struct.get Log.S "memLock" "log");;
-    (if: ![uint64T] (struct.get Log.S "memLen" "log") + slice.len "l" ≥ struct.get Log.S "logSz" "log"
+    lock.acquire (struct.get Log "memLock" "log");;
+    (if: ![uint64T] (struct.get Log "memLen" "log") + slice.len "l" ≥ struct.get Log "logSz" "log"
     then
-      lock.release (struct.get Log.S "memLock" "log");;
+      lock.release (struct.get Log "memLock" "log");;
       (#false, #0)
     else
-      let: "txn" := ![uint64T] (struct.get Log.S "memTxnNxt" "log") in
-      let: "n" := ![uint64T] (struct.get Log.S "memLen" "log") + slice.len "l" in
-      struct.get Log.S "memLen" "log" <-[uint64T] "n";;
-      struct.get Log.S "memTxnNxt" "log" <-[uint64T] ![uint64T] (struct.get Log.S "memTxnNxt" "log") + #1;;
-      lock.release (struct.get Log.S "memLock" "log");;
+      let: "txn" := ![uint64T] (struct.get Log "memTxnNxt" "log") in
+      let: "n" := ![uint64T] (struct.get Log "memLen" "log") + slice.len "l" in
+      struct.get Log "memLen" "log" <-[uint64T] "n";;
+      struct.get Log "memTxnNxt" "log" <-[uint64T] ![uint64T] (struct.get Log "memTxnNxt" "log") + #1;;
+      lock.release (struct.get Log "memLock" "log");;
       (#true, "txn")).
 
 (* XXX just an atomic read? *)
 Definition Log__readLogTxnNxt: val :=
   rec: "Log__readLogTxnNxt" "log" :=
-    lock.acquire (struct.get Log.S "memLock" "log");;
-    let: "n" := ![uint64T] (struct.get Log.S "logTxnNxt" "log") in
-    lock.release (struct.get Log.S "memLock" "log");;
+    lock.acquire (struct.get Log "memLock" "log");;
+    let: "n" := ![uint64T] (struct.get Log "logTxnNxt" "log") in
+    lock.release (struct.get Log "memLock" "log");;
     "n".
 
 Definition Log__diskAppendWait: val :=
@@ -129,18 +127,18 @@ Definition Log__writeBlocks: val :=
 
 Definition Log__diskAppend: val :=
   rec: "Log__diskAppend" "log" :=
-    lock.acquire (struct.get Log.S "logLock" "log");;
+    lock.acquire (struct.get Log "logLock" "log");;
     let: "disklen" := Log__readHdr "log" in
-    lock.acquire (struct.get Log.S "memLock" "log");;
-    let: "memlen" := ![uint64T] (struct.get Log.S "memLen" "log") in
-    let: "allblks" := ![slice.T (slice.T byteT)] (struct.get Log.S "memLog" "log") in
+    lock.acquire (struct.get Log "memLock" "log");;
+    let: "memlen" := ![uint64T] (struct.get Log "memLen" "log") in
+    let: "allblks" := ![slice.T (slice.T byteT)] (struct.get Log "memLog" "log") in
     let: "blks" := SliceSkip (slice.T byteT) "allblks" "disklen" in
-    let: "memnxt" := ![uint64T] (struct.get Log.S "memTxnNxt" "log") in
-    lock.release (struct.get Log.S "memLock" "log");;
+    let: "memnxt" := ![uint64T] (struct.get Log "memTxnNxt" "log") in
+    lock.release (struct.get Log "memLock" "log");;
     Log__writeBlocks "log" "blks" "disklen";;
     Log__writeHdr "log" "memlen";;
-    struct.get Log.S "logTxnNxt" "log" <-[uint64T] "memnxt";;
-    lock.release (struct.get Log.S "logLock" "log").
+    struct.get Log "logTxnNxt" "log" <-[uint64T] "memnxt";;
+    lock.release (struct.get Log "logLock" "log").
 
 Definition Log__Logger: val :=
   rec: "Log__Logger" "log" :=
@@ -151,17 +149,15 @@ Definition Log__Logger: val :=
 
 (* txn.go *)
 
-Module Txn.
-  Definition S := struct.decl [
-    "log" :: struct.ptrT Log.S;
-    "blks" :: mapT disk.blockT
-  ].
-End Txn.
+Definition Txn := struct.decl [
+  "log" :: struct.ptrT Log;
+  "blks" :: mapT disk.blockT
+].
 
 (* XXX wait if cannot reserve space in log *)
 Definition Begin: val :=
   rec: "Begin" "log" :=
-    let: "txn" := struct.mk Txn.S [
+    let: "txn" := struct.mk Txn [
       "log" ::= "log";
       "blks" ::= NewMap disk.blockT
     ] in
@@ -170,24 +166,24 @@ Definition Begin: val :=
 Definition Txn__Write: val :=
   rec: "Txn__Write" "txn" "addr" "blk" :=
     let: "ret" := ref_to boolT #true in
-    let: (<>, "ok") := MapGet (struct.get Txn.S "blks" "txn") "addr" in
+    let: (<>, "ok") := MapGet (struct.get Txn "blks" "txn") "addr" in
     (if: "ok"
     then
-      MapInsert (struct.get Txn.S "blks" "txn") "addr" (![slice.T byteT] "blk");;
+      MapInsert (struct.get Txn "blks" "txn") "addr" (![slice.T byteT] "blk");;
       #()
     else #());;
     (if: ~ "ok"
     then
       (if: ("addr" = LOGMAXBLK)
       then "ret" <-[boolT] #false
-      else MapInsert (struct.get Txn.S "blks" "txn") "addr" (![slice.T byteT] "blk"));;
+      else MapInsert (struct.get Txn "blks" "txn") "addr" (![slice.T byteT] "blk"));;
       #()
     else #());;
     ![boolT] "ret".
 
 Definition Txn__Read: val :=
   rec: "Txn__Read" "txn" "addr" :=
-    let: ("v", "ok") := MapGet (struct.get Txn.S "blks" "txn") "addr" in
+    let: ("v", "ok") := MapGet (struct.get Txn "blks" "txn") "addr" in
     (if: "ok"
     then "v"
     else disk.Read ("addr" + LOGEND)).
@@ -195,7 +191,7 @@ Definition Txn__Read: val :=
 Definition Txn__Commit: val :=
   rec: "Txn__Commit" "txn" :=
     let: "blks" := ref (zero_val (slice.T disk.blockT)) in
-    MapIter (struct.get Txn.S "blks" "txn") (λ: <> "v",
+    MapIter (struct.get Txn "blks" "txn") (λ: <> "v",
       "blks" <-[slice.T (slice.T byteT)] SliceAppend (slice.T byteT) (![slice.T (slice.T byteT)] "blks") "v");;
-    let: "ok" := Log__Append (struct.load Log.S (struct.get Txn.S "log" "txn")) (![slice.T (slice.T byteT)] "blks") in
+    let: "ok" := Log__Append (struct.load Log (struct.get Txn "log" "txn")) (![slice.T (slice.T byteT)] "blks") in
     "ok".

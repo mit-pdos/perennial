@@ -55,7 +55,7 @@ Section proof.
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
       "#Hjrnl_dom" ∷ jrnl_dom (dom _ mt)
     }}}
-      let: "twophasePre" := struct.alloc TwoPhasePre.S (MkTxn #d, (lockmap.MkLockMap #(), #())) in
+      let: "twophasePre" := struct.alloc TwoPhasePre (MkTxn #d, (lockmap.MkLockMap #(), #())) in
       Var "twophasePre" @ S (S LVL); ⊤
     {{{
       γ' (l: loc), RET #l;

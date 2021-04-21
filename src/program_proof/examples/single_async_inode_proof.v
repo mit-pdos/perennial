@@ -71,8 +71,8 @@ Section goose.
 
   (** In-memory state of the inode (persistent) *)
   Definition s_inode_state l (inode_ref alloc_ref: loc) : iProp Σ :=
-    "#i" ∷ readonly (l ↦[SingleInode.S :: "i"] #inode_ref) ∗
-    "#alloc" ∷ readonly (l ↦[SingleInode.S :: "alloc"] #alloc_ref).
+    "#i" ∷ readonly (l ↦[SingleInode :: "i"] #inode_ref) ∗
+    "#alloc" ∷ readonly (l ↦[SingleInode :: "alloc"] #alloc_ref).
 
   (** State of unallocated blocks *)
   Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.Z a d↦ b.
@@ -282,7 +282,7 @@ Section goose.
     (* finished opening inode *)
     wpc_pures.
     wpc_frame_seq.
-    wp_apply (wp_NewMap _ (t:=struct.t alloc.unit.S)).
+    wp_apply (wp_NewMap _ (t:=struct.t alloc.unit)).
     iIntros (mref) "Hused".
     iDestruct (is_addrset_from_empty with "Hused") as "Hused".
     iNamed 1.

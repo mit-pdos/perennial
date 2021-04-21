@@ -613,9 +613,9 @@ Definition twophase_linv_flat k ex_mapsto γ γ' flat_addr : iProp Σ :=
 
 Definition is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat (locks_held: list u64) : iProp Σ :=
   ∃ (locksl: loc) acquired_s ghs,
-    "Htwophase.locks" ∷ l ↦[TwoPhase.S :: "locks"] #locksl ∗
+    "Htwophase.locks" ∷ l ↦[TwoPhase :: "locks"] #locksl ∗
     "Htwophase.acquired" ∷
-      l ↦[TwoPhase.S :: "acquired"] (slice_val acquired_s) ∗
+      l ↦[TwoPhase :: "acquired"] (slice_val acquired_s) ∗
     "Hacquired_s" ∷ is_slice acquired_s uint64T 1 locks_held ∗
     "Hlockeds" ∷ ([∗ list] flat_a ∈ locks_held,
       "Hlocked" ∷ Locked ghs flat_a
@@ -638,7 +638,7 @@ Qed.
 
 Definition is_twophase_buftxn l γ dinit mt_changed : iProp Σ :=
   ∃ (buftxnl: loc) γtxn γdurable,
-    "Htwophase.buftxn" ∷ l ↦[TwoPhase.S :: "buftxn"] #buftxnl ∗
+    "Htwophase.buftxn" ∷ l ↦[TwoPhase :: "buftxn"] #buftxnl ∗
     "Hbuftxn_mem" ∷ is_buftxn_mem
       Nbuftxn buftxnl γ dinit γtxn γdurable ∗
     "Hbuftxn_durable_frag" ∷ map_ctx
@@ -893,8 +893,8 @@ Theorem wp_TwoPhase__Begin_raw (prel txnl locksl: loc) γ γ' dinit k ex_mapsto 
   0 < k →
   set_Forall valid_addr objs_dom →
   {{{
-    "#Hpre.txn_ro" ∷ readonly (prel ↦[TwoPhasePre.S :: "txn"] #txnl) ∗
-    "#Hpre.locks_ro" ∷ readonly (prel ↦[TwoPhasePre.S :: "locks"] #locksl) ∗
+    "#Hpre.txn_ro" ∷ readonly (prel ↦[TwoPhasePre :: "txn"] #txnl) ∗
+    "#Hpre.locks_ro" ∷ readonly (prel ↦[TwoPhasePre :: "locks"] #locksl) ∗
     "#Htxn" ∷ (
       invariant.is_txn txnl γ.(buftxn_txn_names) dinit ∗
       is_txn_system Nbuftxn γ

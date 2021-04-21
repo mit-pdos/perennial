@@ -91,9 +91,9 @@ Definition is_inode (inum: u64) (state: list u8) (mapsto: addr -> object -> iPro
     "Hinode_data" ∷ is_inode_data (length state) blk state mapsto.
 
 Definition is_inode_mem (l: loc) (inum: u64) (len: u64) (blk: u64) : iProp Σ :=
-  "Hinum" ∷ l ↦[Inode.S :: "Inum"] #inum ∗
-  "Hisize" ∷ l ↦[Inode.S :: "Size"] #len ∗
-  "Hidata" ∷ l ↦[Inode.S :: "Data"] #blk.
+  "Hinum" ∷ l ↦[Inode :: "Inum"] #inum ∗
+  "Hisize" ∷ l ↦[Inode :: "Size"] #len ∗
+  "Hidata" ∷ l ↦[Inode :: "Data"] #blk.
 
 Definition Nbuftxn := nroot .@ "buftxn".
 
@@ -111,8 +111,8 @@ Definition is_fh (s : Slice.t) (fh : u64) : iProp Σ :=
 
 Definition is_fs γ (nfs: loc) dinit : iProp Σ :=
   ∃ (txn lm : loc),
-    "#Hfs_txn" ∷ readonly (nfs ↦[Nfs.S :: "t"] #txn) ∗
-    "#Hfs_lm" ∷ readonly (nfs ↦[Nfs.S :: "l"] #lm) ∗
+    "#Hfs_txn" ∷ readonly (nfs ↦[Nfs :: "t"] #txn) ∗
+    "#Hfs_lm" ∷ readonly (nfs ↦[Nfs :: "l"] #lm) ∗
     "#Histxn" ∷ is_txn txn γ.(simple_buftxn).(buftxn_txn_names) dinit ∗
     "#Hislm" ∷ is_crash_lockMap 10 lm γ.(simple_lockmapghs) covered_inodes
                                 (is_inode_stable γ.(simple_src) γ.(simple_buftxn))

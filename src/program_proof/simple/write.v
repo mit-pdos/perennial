@@ -23,14 +23,14 @@ Implicit Types (stk:stuckness) (E: coPset).
 Variable P : SimpleNFS.State -> iProp Σ.
 Context `{Ptimeless : !forall σ, Timeless (P σ)}.
 
-Opaque nfstypes.WRITE3res.S.
+Opaque nfstypes.WRITE3res.
 Opaque slice_val.
 
 Lemma nfstypes_write3res_merge reply s ok fail :
-  ( reply ↦[nfstypes.WRITE3res.S :: "Status"] s ∗
-    reply ↦[nfstypes.WRITE3res.S :: "Resok"] ok ∗ 
-    reply ↦[nfstypes.WRITE3res.S :: "Resfail"] fail ) -∗
-  reply ↦[struct.t nfstypes.WRITE3res.S]{1} (s, (ok, (fail, #()))).
+  ( reply ↦[nfstypes.WRITE3res :: "Status"] s ∗
+    reply ↦[nfstypes.WRITE3res :: "Resok"] ok ∗ 
+    reply ↦[nfstypes.WRITE3res :: "Resfail"] fail ) -∗
+  reply ↦[struct.t nfstypes.WRITE3res]{1} (s, (ok, (fail, #()))).
 Proof.
   iIntros "(Status & Resok & Resfail)".
   iApply struct_fields_split. iFrame. done.
@@ -47,8 +47,8 @@ Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset 
         ( P σ -∗ |8={E}=> P σ' ∗ Q r ) )
   }}}
     Nfs__NFSPROC3_WRITE #nfs
-      (struct.mk_f nfstypes.WRITE3args.S [
-        "File" ::= struct.mk_f nfstypes.Nfs_fh3.S [
+      (struct.mk_f nfstypes.WRITE3args [
+        "File" ::= struct.mk_f nfstypes.Nfs_fh3 [
           "Data" ::= slice_val fhslice
         ];
         "Offset" ::= #offset;
@@ -59,12 +59,12 @@ Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset 
   {{{ v,
       RET v;
       ( ∃ (count : u32) resok,
-        ⌜ getField_f nfstypes.WRITE3res.S "Status" v = #(U32 0) ⌝ ∗
-        ⌜ getField_f nfstypes.WRITE3res.S "Resok" v = resok ⌝ ∗
-        ⌜ getField_f nfstypes.WRITE3resok.S "Count" resok = #count ⌝ ∗
+        ⌜ getField_f nfstypes.WRITE3res "Status" v = #(U32 0) ⌝ ∗
+        ⌜ getField_f nfstypes.WRITE3res "Resok" v = resok ⌝ ∗
+        ⌜ getField_f nfstypes.WRITE3resok "Count" resok = #count ⌝ ∗
         Q (SimpleNFS.OK count) ) ∨
       ( ∃ (stat : Z),
-        ⌜ getField_f nfstypes.WRITE3res.S "Status" v = #(U32 stat) ⌝ ∗
+        ⌜ getField_f nfstypes.WRITE3res "Status" v = #(U32 stat) ⌝ ∗
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.

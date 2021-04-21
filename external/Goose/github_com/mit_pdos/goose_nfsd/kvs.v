@@ -10,24 +10,20 @@ From Goose Require github_com.mit_pdos.goose_nfsd.util.
 
 Definition DISKNAME : expr := #(str"goose_kvs.img").
 
-Module KVS.
-  Definition S := struct.decl [
-    "sz" :: uint64T;
-    "txn" :: struct.ptrT txn.Txn.S
-  ].
-End KVS.
+Definition KVS := struct.decl [
+  "sz" :: uint64T;
+  "txn" :: struct.ptrT txn.Txn
+].
 
-Module KVPair.
-  Definition S := struct.decl [
-    "Key" :: uint64T;
-    "Val" :: slice.T byteT
-  ].
-End KVPair.
+Definition KVPair := struct.decl [
+  "Key" :: uint64T;
+  "Val" :: slice.T byteT
+].
 
 Definition MkKVS: val :=
   rec: "MkKVS" "d" "sz" :=
     let: "txn" := txn.MkTxn "d" in
-    let: "kvs" := struct.new KVS.S [
+    let: "kvs" := struct.new KVS [
       "sz" ::= "sz";
       "txn" ::= "txn"
     ] in
@@ -35,34 +31,34 @@ Definition MkKVS: val :=
 
 Definition KVS__MultiPut: val :=
   rec: "KVS__MultiPut" "kvs" "pairs" :=
-    let: "btxn" := buftxn.Begin (struct.loadF KVS.S "txn" "kvs") in
-    ForSlice (struct.t KVPair.S) <> "p" "pairs"
-      (if: (struct.get KVPair.S "Key" "p" ≥ struct.loadF KVS.S "sz" "kvs") || (struct.get KVPair.S "Key" "p" < common.LOGSIZE)
+    let: "btxn" := buftxn.Begin (struct.loadF KVS "txn" "kvs") in
+    ForSlice (struct.t KVPair) <> "p" "pairs"
+      (if: (struct.get KVPair "Key" "p" ≥ struct.loadF KVS "sz" "kvs") || (struct.get KVPair "Key" "p" < common.LOGSIZE)
       then
         Panic "oops";;
         #()
       else #());;
-      let: "akey" := addr.MkAddr (struct.get KVPair.S "Key" "p") #0 in
-      buftxn.BufTxn__OverWrite "btxn" "akey" common.NBITBLOCK (struct.get KVPair.S "Val" "p");;
+      let: "akey" := addr.MkAddr (struct.get KVPair "Key" "p") #0 in
+      buftxn.BufTxn__OverWrite "btxn" "akey" common.NBITBLOCK (struct.get KVPair "Val" "p");;
     let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
     "ok".
 
 Definition KVS__Get: val :=
   rec: "KVS__Get" "kvs" "key" :=
-    (if: ("key" > struct.loadF KVS.S "sz" "kvs") || ("key" < common.LOGSIZE)
+    (if: ("key" > struct.loadF KVS "sz" "kvs") || ("key" < common.LOGSIZE)
     then
       Panic "oops";;
       #()
     else #());;
-    let: "btxn" := buftxn.Begin (struct.loadF KVS.S "txn" "kvs") in
+    let: "btxn" := buftxn.Begin (struct.loadF KVS "txn" "kvs") in
     let: "akey" := addr.MkAddr "key" #0 in
-    let: "data" := util.CloneByteSlice (struct.loadF buf.Buf.S "Data" (buftxn.BufTxn__ReadBuf "btxn" "akey" common.NBITBLOCK)) in
+    let: "data" := util.CloneByteSlice (struct.loadF buf.Buf "Data" (buftxn.BufTxn__ReadBuf "btxn" "akey" common.NBITBLOCK)) in
     let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
-    (struct.new KVPair.S [
+    (struct.new KVPair [
        "Key" ::= "key";
        "Val" ::= "data"
      ], "ok").
 
 Definition KVS__Delete: val :=
   rec: "KVS__Delete" "kvs" :=
-    txn.Txn__Shutdown (struct.loadF KVS.S "txn" "kvs").
+    txn.Txn__Shutdown (struct.loadF KVS "txn" "kvs").

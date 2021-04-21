@@ -126,9 +126,9 @@ Qed.
 
 Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
   ∃ (cid seq:u64) (cl:loc) (host:u64),
-    "Hcid" ∷ ck ↦[MemKVShardClerk.S :: "cid"] #cid ∗
-    "Hseq" ∷ ck ↦[MemKVShardClerk.S :: "seq"] #seq ∗
-    "Hcl" ∷ ck ↦[MemKVShardClerk.S :: "cl"] #cl ∗
+    "Hcid" ∷ ck ↦[MemKVShardClerk :: "cid"] #cid ∗
+    "Hseq" ∷ ck ↦[MemKVShardClerk :: "seq"] #seq ∗
+    "Hcl" ∷ ck ↦[MemKVShardClerk :: "cl"] #cl ∗
     "Hcrpc" ∷ RPCClient_own_ghost γ.(rpc_gn) cid seq ∗
     "Hcl_own" ∷ grove_ffi.RPCClient_own cl host ∗
     "#His_shard" ∷ is_shard_server host γ ∗
@@ -141,18 +141,18 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
   ∃ (lastReply_ptr lastSeq_ptr peers_ptr:loc) (kvss_sl shardMap_sl:Slice.t)
     (lastReplyM:gmap u64 GetReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc)
     (peersM:gmap u64 loc),
-  "HlastReply" ∷ s ↦[MemKVShardServer.S :: "lastReply"] #lastReply_ptr ∗
+  "HlastReply" ∷ s ↦[MemKVShardServer :: "lastReply"] #lastReply_ptr ∗
   "HlastReplyMap" ∷ map.is_map lastReply_ptr (lastReplyMV, #0) ∗ (* TODO: default *)
   "%HlastReplyMVdom" ∷ ⌜dom (gset u64) lastReplyMV = dom (gset u64) lastSeqM⌝ ∗
   "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM, (∃ val_sl q, ⌜v = (#rep.(GR_Err), (slice_val val_sl, #()))%V⌝ ∗ typed_slice.is_slice_small val_sl byteT q rep.(GR_Value))) ∗
-  "HlastSeq" ∷ s ↦[MemKVShardServer.S :: "lastSeq"] #lastSeq_ptr ∗
+  "HlastSeq" ∷ s ↦[MemKVShardServer :: "lastSeq"] #lastSeq_ptr ∗
   "HlastSeqMap" ∷ is_map lastSeq_ptr lastSeqM ∗
-  "HnextCID" ∷ s ↦[MemKVShardServer.S :: "nextCID"] #nextCID ∗
-  "HshardMap" ∷ s ↦[MemKVShardServer.S :: "shardMap"] (slice_val shardMap_sl) ∗
+  "HnextCID" ∷ s ↦[MemKVShardServer :: "nextCID"] #nextCID ∗
+  "HshardMap" ∷ s ↦[MemKVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl boolT 1%Qp shardMapping ∗
-  "Hkvss" ∷ s ↦[MemKVShardServer.S :: "kvss"] (slice_val kvss_sl) ∗
+  "Hkvss" ∷ s ↦[MemKVShardServer :: "kvss"] (slice_val kvss_sl) ∗
   "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
-  "Hpeers" ∷ s ↦[MemKVShardServer.S :: "peers"] #peers_ptr ∗
+  "Hpeers" ∷ s ↦[MemKVShardServer :: "peers"] #peers_ptr ∗
   "Hrpc" ∷ RPCServer_own_ghost γ.(rpc_gn) lastSeqM lastReplyM ∗
   "%HshardMapLength" ∷ ⌜length shardMapping = uNSHARD⌝ ∗
   "%HkvssLength" ∷ ⌜length kvs_ptrs = uNSHARD⌝ ∗
@@ -174,7 +174,7 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
 Definition is_MemKVShardServer (s:loc) γ : iProp Σ :=
   ∃ mu,
   "#His_srv" ∷ is_RPCServer γ.(rpc_gn) ∗
-  "#Hmu" ∷ readonly (s ↦[MemKVShardServer.S :: "mu"] mu) ∗
+  "#Hmu" ∷ readonly (s ↦[MemKVShardServer :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock memKVN mu (own_MemKVShardServer s γ)
 .
 

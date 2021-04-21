@@ -34,17 +34,15 @@ From Goose Require github_com.mit_pdos.goose_nfsd.util.
    partitioned into inodes, data blocks, and bitmap allocators for each (sized
    appropriately), all allocated statically. *)
 
-Module BufTxn.
-  Definition S := struct.decl [
-    "txn" :: struct.ptrT txn.Txn.S;
-    "bufs" :: struct.ptrT buf.BufMap.S
-  ].
-End BufTxn.
+Definition BufTxn := struct.decl [
+  "txn" :: struct.ptrT txn.Txn;
+  "bufs" :: struct.ptrT buf.BufMap
+].
 
 (* Start a local transaction with no writes from a global Txn manager. *)
 Definition Begin: val :=
   rec: "Begin" "txn" :=
-    let: "trans" := struct.new BufTxn.S [
+    let: "trans" := struct.new BufTxn [
       "txn" ::= "txn";
       "bufs" ::= buf.MkBufMap #()
     ] in
@@ -54,31 +52,31 @@ Definition Begin: val :=
 
 Definition BufTxn__ReadBuf: val :=
   rec: "BufTxn__ReadBuf" "buftxn" "addr" "sz" :=
-    let: "b" := buf.BufMap__Lookup (struct.loadF BufTxn.S "bufs" "buftxn") "addr" in
+    let: "b" := buf.BufMap__Lookup (struct.loadF BufTxn "bufs" "buftxn") "addr" in
     (if: ("b" = #null)
     then
-      let: "buf" := txn.Txn__Load (struct.loadF BufTxn.S "txn" "buftxn") "addr" "sz" in
-      buf.BufMap__Insert (struct.loadF BufTxn.S "bufs" "buftxn") "buf";;
-      buf.BufMap__Lookup (struct.loadF BufTxn.S "bufs" "buftxn") "addr"
+      let: "buf" := txn.Txn__Load (struct.loadF BufTxn "txn" "buftxn") "addr" "sz" in
+      buf.BufMap__Insert (struct.loadF BufTxn "bufs" "buftxn") "buf";;
+      buf.BufMap__Lookup (struct.loadF BufTxn "bufs" "buftxn") "addr"
     else "b").
 
 (* OverWrite writes an object to addr *)
 Definition BufTxn__OverWrite: val :=
   rec: "BufTxn__OverWrite" "buftxn" "addr" "sz" "data" :=
-    let: "b" := ref_to (refT (struct.t buf.Buf.S)) (buf.BufMap__Lookup (struct.loadF BufTxn.S "bufs" "buftxn") "addr") in
-    (if: (![refT (struct.t buf.Buf.S)] "b" = #null)
+    let: "b" := ref_to (refT (struct.t buf.Buf)) (buf.BufMap__Lookup (struct.loadF BufTxn "bufs" "buftxn") "addr") in
+    (if: (![refT (struct.t buf.Buf)] "b" = #null)
     then
-      "b" <-[refT (struct.t buf.Buf.S)] buf.MkBuf "addr" "sz" "data";;
-      buf.Buf__SetDirty (![refT (struct.t buf.Buf.S)] "b");;
-      buf.BufMap__Insert (struct.loadF BufTxn.S "bufs" "buftxn") (![refT (struct.t buf.Buf.S)] "b")
+      "b" <-[refT (struct.t buf.Buf)] buf.MkBuf "addr" "sz" "data";;
+      buf.Buf__SetDirty (![refT (struct.t buf.Buf)] "b");;
+      buf.BufMap__Insert (struct.loadF BufTxn "bufs" "buftxn") (![refT (struct.t buf.Buf)] "b")
     else
-      (if: "sz" ≠ struct.loadF buf.Buf.S "Sz" (![refT (struct.t buf.Buf.S)] "b")
+      (if: "sz" ≠ struct.loadF buf.Buf "Sz" (![refT (struct.t buf.Buf)] "b")
       then
         Panic "overwrite";;
         #()
       else #());;
-      struct.storeF buf.Buf.S "Data" (![refT (struct.t buf.Buf.S)] "b") "data";;
-      buf.Buf__SetDirty (![refT (struct.t buf.Buf.S)] "b")).
+      struct.storeF buf.Buf "Data" (![refT (struct.t buf.Buf)] "b") "data";;
+      buf.Buf__SetDirty (![refT (struct.t buf.Buf)] "b")).
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
 
@@ -86,17 +84,17 @@ Definition BufTxn__OverWrite: val :=
    safety. *)
 Definition BufTxn__NDirty: val :=
   rec: "BufTxn__NDirty" "buftxn" :=
-    buf.BufMap__Ndirty (struct.loadF BufTxn.S "bufs" "buftxn").
+    buf.BufMap__Ndirty (struct.loadF BufTxn "bufs" "buftxn").
 
 (* LogSz returns 511 *)
 Definition BufTxn__LogSz: val :=
   rec: "BufTxn__LogSz" "buftxn" :=
-    txn.Txn__LogSz (struct.loadF BufTxn.S "txn" "buftxn").
+    txn.Txn__LogSz (struct.loadF BufTxn "txn" "buftxn").
 
 (* LogSzBytes returns 511*4096 *)
 Definition BufTxn__LogSzBytes: val :=
   rec: "BufTxn__LogSzBytes" "buftxn" :=
-    txn.Txn__LogSz (struct.loadF BufTxn.S "txn" "buftxn") * disk.BlockSize.
+    txn.Txn__LogSz (struct.loadF BufTxn "txn" "buftxn") * disk.BlockSize.
 
 (* CommitWait commits the writes in the transaction to disk.
 
@@ -113,10 +111,10 @@ Definition BufTxn__CommitWait: val :=
   rec: "BufTxn__CommitWait" "buftxn" "wait" :=
     util.DPrintf #3 (#(str"Commit %p w %v
     ")) #();;
-    let: "ok" := txn.Txn__CommitWait (struct.loadF BufTxn.S "txn" "buftxn") (buf.BufMap__DirtyBufs (struct.loadF BufTxn.S "bufs" "buftxn")) "wait" in
+    let: "ok" := txn.Txn__CommitWait (struct.loadF BufTxn "txn" "buftxn") (buf.BufMap__DirtyBufs (struct.loadF BufTxn "bufs" "buftxn")) "wait" in
     "ok".
 
 Definition BufTxn__Flush: val :=
   rec: "BufTxn__Flush" "buftxn" :=
-    let: "ok" := txn.Txn__Flush (struct.loadF BufTxn.S "txn" "buftxn") in
+    let: "ok" := txn.Txn__Flush (struct.loadF BufTxn "txn" "buftxn") in
     "ok".

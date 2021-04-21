@@ -33,15 +33,15 @@ Definition Put_Post γ : RPCValsC -> u64 -> iProp Σ := (λ args _, args.(U64_1)
 (* FIXME: this is currently just a placeholder *)
 Definition KVClerk_own γ ck_ptr (host : string) : iProp Σ :=
   ∃ (cl_ptr:loc),
-   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
-   "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #(str host) ∗
+   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk :: "client"] #cl_ptr ∗
+   "Hprimary" ∷ ck_ptr ↦[KVClerk :: "primary"] #(str host) ∗
    "Hcl" ∷ RPCClient_own cl_ptr host γ.(ks_rpcGN).
 
 Print is_lock.
 
 Definition KVServer_own_core γ srv kvsM : iProp Σ :=
   ∃ (kvs_ptr:loc),
-  "HlocksOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr ∗
+  "HlocksOwn" ∷ srv ↦[KVServer :: "kvs"] #kvs_ptr ∗
   "HkvsMap" ∷ is_map (kvs_ptr) kvsM ∗
   "Hkvctx" ∷ map_ctx γ.(ks_kvMapGN) 1 kvsM (* ghost part *)
 .
@@ -49,7 +49,7 @@ Definition KVServer_own_core γ srv kvsM : iProp Σ :=
 Definition KVServer_mutex_inv γ (srv:loc) : iProp Σ :=
   ∃ (sv:loc) (kvsM lastSeqM lastReplyM:gmap u64 u64),
   "Hcore" ∷ KVServer_own_core γ srv kvsM ∗
-  "Hsv" ∷ srv ↦[KVServer.S :: "sv"] #sv ∗
+  "Hsv" ∷ srv ↦[KVServer :: "sv"] #sv ∗
   "Hrpc_vol" ∷ RPCServer_own_vol sv γ.(ks_rpcGN) lastSeqM lastReplyM ∗
   "Hrpc_ghost" ∷ RPCServer_own_ghost γ.(ks_rpcGN) lastSeqM lastReplyM
 .
@@ -58,7 +58,7 @@ Definition mutexN := nroot .@ "kvservermutex".
 
 Definition is_kvserver γ (srv:loc) : iProp Σ :=
   ∃ mu,
-  "#Hmu" ∷ readonly (srv ↦[KVServer.S :: "mu"] mu) ∗
+  "#Hmu" ∷ readonly (srv ↦[KVServer :: "mu"] mu) ∗
   "#His_rpc" ∷ is_lock mutexN mu (KVServer_mutex_inv γ srv)
 .
 

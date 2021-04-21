@@ -7,14 +7,12 @@ From Goose Require github_com.tchajed.marshal.
 
 Definition MaxBlocks : expr := #511.
 
-Module Inode.
-  Definition S := struct.decl [
-    "d" :: disk.Disk;
-    "m" :: lockRefT;
-    "addr" :: uint64T;
-    "addrs" :: slice.T uint64T
-  ].
-End Inode.
+Definition Inode := struct.decl [
+  "d" :: disk.Disk;
+  "m" :: lockRefT;
+  "addr" :: uint64T;
+  "addrs" :: slice.T uint64T
+].
 
 Definition Open: val :=
   rec: "Open" "d" "addr" :=
@@ -22,7 +20,7 @@ Definition Open: val :=
     let: "dec" := marshal.NewDec "b" in
     let: "numAddrs" := marshal.Dec__GetInt "dec" in
     let: "addrs" := marshal.Dec__GetInts "dec" "numAddrs" in
-    struct.new Inode.S [
+    struct.new Inode [
       "d" ::= "d";
       "m" ::= lock.new #();
       "addr" ::= "addr";
@@ -34,35 +32,35 @@ Definition Open: val :=
    and expects the caller to need only temporary access to the returned slice. *)
 Definition Inode__UsedBlocks: val :=
   rec: "Inode__UsedBlocks" "i" :=
-    struct.loadF Inode.S "addrs" "i".
+    struct.loadF Inode "addrs" "i".
 
 Definition Inode__read: val :=
   rec: "Inode__read" "i" "off" :=
-    (if: "off" ≥ slice.len (struct.loadF Inode.S "addrs" "i")
+    (if: "off" ≥ slice.len (struct.loadF Inode "addrs" "i")
     then slice.nil
     else
-      let: "a" := SliceGet uint64T (struct.loadF Inode.S "addrs" "i") "off" in
+      let: "a" := SliceGet uint64T (struct.loadF Inode "addrs" "i") "off" in
       disk.Read "a").
 
 Definition Inode__Read: val :=
   rec: "Inode__Read" "i" "off" :=
-    lock.acquire (struct.loadF Inode.S "m" "i");;
+    lock.acquire (struct.loadF Inode "m" "i");;
     let: "b" := Inode__read "i" "off" in
-    lock.release (struct.loadF Inode.S "m" "i");;
+    lock.release (struct.loadF Inode "m" "i");;
     "b".
 
 Definition Inode__Size: val :=
   rec: "Inode__Size" "i" :=
-    lock.acquire (struct.loadF Inode.S "m" "i");;
-    let: "sz" := slice.len (struct.loadF Inode.S "addrs" "i") in
-    lock.release (struct.loadF Inode.S "m" "i");;
+    lock.acquire (struct.loadF Inode "m" "i");;
+    let: "sz" := slice.len (struct.loadF Inode "addrs" "i") in
+    lock.release (struct.loadF Inode "m" "i");;
     "sz".
 
 Definition Inode__mkHdr: val :=
   rec: "Inode__mkHdr" "i" :=
     let: "enc" := marshal.NewEnc disk.BlockSize in
-    marshal.Enc__PutInt "enc" (slice.len (struct.loadF Inode.S "addrs" "i"));;
-    marshal.Enc__PutInts "enc" (struct.loadF Inode.S "addrs" "i");;
+    marshal.Enc__PutInt "enc" (slice.len (struct.loadF Inode "addrs" "i"));;
+    marshal.Enc__PutInts "enc" (struct.loadF Inode "addrs" "i");;
     let: "hdr" := marshal.Enc__Finish "enc" in
     "hdr".
 
@@ -77,12 +75,12 @@ Definition Inode__mkHdr: val :=
    case, append returns ownership of the allocated block. *)
 Definition Inode__append: val :=
   rec: "Inode__append" "i" "a" :=
-    (if: slice.len (struct.loadF Inode.S "addrs" "i") ≥ MaxBlocks
+    (if: slice.len (struct.loadF Inode "addrs" "i") ≥ MaxBlocks
     then #false
     else
-      struct.storeF Inode.S "addrs" "i" (SliceAppend uint64T (struct.loadF Inode.S "addrs" "i") "a");;
+      struct.storeF Inode "addrs" "i" (SliceAppend uint64T (struct.loadF Inode "addrs" "i") "a");;
       let: "hdr" := Inode__mkHdr "i" in
-      disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
+      disk.Write (struct.loadF Inode "addr" "i") "hdr";;
       #true).
 
 (* Append adds a block to the inode.
@@ -95,9 +93,9 @@ Definition Inode__Append: val :=
     then #false
     else
       disk.Write "a" "b";;
-      lock.acquire (struct.loadF Inode.S "m" "i");;
+      lock.acquire (struct.loadF Inode "m" "i");;
       let: "ok2" := Inode__append "i" "a" in
-      lock.release (struct.loadF Inode.S "m" "i");;
+      lock.release (struct.loadF Inode "m" "i");;
       (if: ~ "ok2"
       then
         alloc.Allocator__Free "allocator" "a";;

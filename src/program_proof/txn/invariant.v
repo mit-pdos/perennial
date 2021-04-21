@@ -130,14 +130,14 @@ Definition is_txn_locked l γ : iProp Σ :=
   (
     ∃ (nextId : u64) (pos : u64) lwh,
       "Hwal_latest" ∷ is_locked_walheap γ lwh ∗
-      "Histxn_pos" ∷ l ↦[Txn.S :: "pos"] #pos
+      "Histxn_pos" ∷ l ↦[Txn :: "pos"] #pos
  )%I.
 
 Definition is_txn (l : loc) (γ : txn_names) dinit : iProp Σ :=
   (
     ∃ (mu : loc) (walptr : loc),
-      "Histxn_mu" ∷ readonly (l ↦[Txn.S :: "mu"] #mu) ∗
-      "Histxn_wal" ∷ readonly (l ↦[Txn.S :: "log"] #walptr) ∗
+      "Histxn_mu" ∷ readonly (l ↦[Txn :: "mu"] #mu) ∗
+      "Histxn_wal" ∷ readonly (l ↦[Txn :: "log"] #walptr) ∗
       "Hiswal" ∷ is_wal (wal_heap_inv (txn_walnames γ)) walptr (wal_heap_walnames (txn_walnames γ)) dinit ∗
       "Histxna" ∷ ncinv invN (is_txn_always γ) ∗
       "Histxn_lock" ∷ is_lock lockN #mu (is_txn_locked l (txn_walnames γ))

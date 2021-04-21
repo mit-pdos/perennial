@@ -106,9 +106,9 @@ Qed.
 Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
   {{{ ncinv invN (is_txn_always γ) ∗
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
-      readonly (l ↦[Txn.S :: "log"] #walptr) ∗
+      readonly (l ↦[Txn :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗
-      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
+      is_slice bufs (refT (struct.t buf.Buf)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre γ bufptrval a buf
   }}}
@@ -409,9 +409,9 @@ Qed.
 Theorem wp_txn__installBufs l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
   {{{ ncinv invN (is_txn_always γ) ∗
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
-      readonly (l ↦[Txn.S :: "log"] #walptr) ∗
+      readonly (l ↦[Txn :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗
-      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
+      is_slice bufs (refT (struct.t buf.Buf)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre γ bufptrval a buf
   }}}
@@ -438,7 +438,7 @@ Proof.
   wp_apply (wp_MapIter_2 _ _ _ _
     (λ mtodo mdone,
       ∃ (blks : Slice.t) upds offmaps_todo offmaps_done,
-        "Hblks_var" ∷ blks_var ↦[slice.T (struct.t Update.S)] (slice_val blks) ∗
+        "Hblks_var" ∷ blks_var ↦[slice.T (struct.t Update)] (slice_val blks) ∗
         "Hblks" ∷ updates_slice blks upds ∗
         "%" ∷ ⌜ gmap_addr_by_block bufamap = offmaps_todo ∪ offmaps_done ⌝ ∗
         "%" ∷ ⌜ dom (gset u64) offmaps_todo ## dom (gset u64) offmaps_done ⌝ ∗
@@ -601,7 +601,7 @@ Qed.
 
 Theorem wp_txn__doCommit l q γ dinit bufs buflist (bufamap : gmap addr _) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   {{{ is_txn l γ dinit ∗
-      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
+      is_slice bufs (refT (struct.t buf.Buf)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       PreQ ∧ (|NC={⊤ ∖ ↑walN ∖ ↑invN, E}=>
         ∀ CP,
@@ -1207,7 +1207,7 @@ Qed.
 
 Theorem wp_txn_CommitWait l q γ dinit bufs buflist (bufamap : gmap addr _) (wait : bool) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   {{{ is_txn l γ dinit ∗
-      is_slice bufs (refT (struct.t buf.Buf.S)) q buflist ∗
+      is_slice bufs (refT (struct.t buf.Buf)) q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       PreQ ∧ ( ⌜bufamap ≠ ∅⌝ -∗ |NC={⊤ ∖ ↑walN ∖ ↑invN, E}=>
         ∀ CP,

@@ -11,8 +11,8 @@ Let N: namespace := nroot .@ "alloc".
 
 Definition alloc_linv (max: u64) (l: loc) : iProp Σ :=
   ∃ (next: u64) (bitmap_s: Slice.t) (bits: list u8),
-  "next" ∷ l ↦[Alloc.S :: "next"] #next ∗
-  "bitmap" ∷ l ↦[Alloc.S :: "bitmap"] (slice_val bitmap_s) ∗
+  "next" ∷ l ↦[Alloc :: "next"] #next ∗
+  "bitmap" ∷ l ↦[Alloc :: "bitmap"] (slice_val bitmap_s) ∗
   "%Hnext_bound" ∷ ⌜int.Z next < int.Z max⌝ ∗
   "%Hbits_len" ∷ ⌜int.Z max = (8 * (Z.of_nat $ length bits))%Z⌝ ∗
   "Hbits" ∷ is_slice_small bitmap_s byteT 1 (b2val <$> bits).
@@ -20,7 +20,7 @@ Definition alloc_linv (max: u64) (l: loc) : iProp Σ :=
 Definition is_alloc (max: u64) (l: loc) : iProp Σ :=
   ∃ (mu_l: loc),
     "%Hmax_nonzero" ∷ ⌜0 < int.Z max⌝ ∗
-    "#mu" ∷ readonly (l ↦[Alloc.S :: "mu"] #mu_l) ∗
+    "#mu" ∷ readonly (l ↦[Alloc :: "mu"] #mu_l) ∗
     "#His_lock" ∷ is_lock N #mu_l (alloc_linv max l).
 
 Global Instance is_alloc_persistent max l : Persistent (is_alloc max l).

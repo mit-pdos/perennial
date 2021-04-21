@@ -37,20 +37,20 @@ Defined.
 
 Definition RPCRequest_own_ro (args_ptr:loc) (req : RPCRequestID) (args:RPCValsC) : iProp Σ :=
     "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝ ∗
-    "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Args"] (into_val.to_val args)) ∗
-    "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest.S :: "CID"] #req.(Req_CID)) ∗
-    "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[RPCRequest.S :: "Seq"] #req.(Req_Seq))
+    "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest :: "Args"] (into_val.to_val args)) ∗
+    "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest :: "CID"] #req.(Req_CID)) ∗
+    "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[RPCRequest :: "Seq"] #req.(Req_Seq))
 .
 
 Definition RPCReply_own (reply_ptr:loc) (r : @RPCReply (u64)) : iProp Σ :=
-    "HReplyOwnStale" ∷ reply_ptr ↦[RPCReply.S :: "Stale"] #r.(Rep_Stale)
-  ∗ "HReplyOwnRet" ∷ reply_ptr ↦[RPCReply.S :: "Ret"] (into_val.to_val r.(Rep_Ret))
+    "HReplyOwnStale" ∷ reply_ptr ↦[RPCReply :: "Stale"] #r.(Rep_Stale)
+  ∗ "HReplyOwnRet" ∷ reply_ptr ↦[RPCReply :: "Ret"] (into_val.to_val r.(Rep_Ret))
 .
 
 Definition RPCServer_own_vol (sv:loc) (γrpc:rpc_names) (lastSeqM lastReplyM:gmap u64 u64) : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc),
-      "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr ∗
-      "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr ∗
+      "HlastSeqOwn" ∷ sv ↦[RPCServer :: "lastSeq"] #lastSeq_ptr ∗
+      "HlastReplyOwn" ∷ sv ↦[RPCServer :: "lastReply"] #lastReply_ptr ∗
       "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
       "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM ∗
       "#Hlinv" ∷ is_RPCServer γrpc
@@ -61,9 +61,9 @@ Definition Reply64 := @RPCReply (u64).
 Definition RPCClient_own_vol (cl_ptr:loc) (cid seqno:u64) (host:string) : iProp Σ :=
   ∃ (rawCl:loc),
     "%" ∷ ⌜int.nat seqno > 0⌝ ∗
-    "Hcid" ∷ cl_ptr ↦[RPCClient.S :: "cid"] #cid ∗
-    "Hseq" ∷ cl_ptr ↦[RPCClient.S :: "seq"] #seqno ∗
-    "HrawCl" ∷ cl_ptr ↦[RPCClient.S :: "rawCl"] #rawCl ∗
+    "Hcid" ∷ cl_ptr ↦[RPCClient :: "cid"] #cid ∗
+    "Hseq" ∷ cl_ptr ↦[RPCClient :: "seq"] #seqno ∗
+    "HrawCl" ∷ cl_ptr ↦[RPCClient :: "rawCl"] #rawCl ∗
     "HrawClOwn" ∷ grove_ffi.RPCClient_own rawCl host
 .
 
@@ -333,7 +333,7 @@ Theorem wp_rpcReqDecode (s:Slice.t) (reqptr:loc) (bs:list u8) (req:RPCRequestID)
   {{{
     is_slice_small s u8T q bs ∗
     ⌜reqEncoded req args bs⌝ ∗
-    reqptr ↦[struct.t RPCRequest.S] (#0, (#0, (#0, (#0, #()), #())))
+    reqptr ↦[struct.t RPCRequest] (#0, (#0, (#0, (#0, #()), #())))
   }}}
     rpcReqDecode (slice_val s) #reqptr
   {{{
@@ -415,7 +415,7 @@ Theorem wp_rpcReplyDecode (s:Slice.t) (reply_ptr:loc) (bs:list u8) (reply:RPCRep
   {{{
     is_slice_small s u8T q bs ∗
     ⌜replyEncoded reply bs⌝ ∗
-    reply_ptr ↦[struct.t RPCReply.S] (#v0, (#v1, #()))
+    reply_ptr ↦[struct.t RPCReply] (#v0, (#v1, #()))
   }}}
     rpcReplyDecode (slice_val s) #reply_ptr
   {{{

@@ -497,11 +497,11 @@ Definition ps_mu_inv (ps:loc) γ : iProp Σ :=
   ∃ (kvs_ptr txns_ptr finishedTxns_ptr lockMap_ptr:loc) (kvsM:gmap u64 u64) (txnsM:gmap u64 TxnResourcesC)
     (finishedTxnsM:gmap u64 bool),
 
-    "Hkvs" ∷ ps ↦[ParticipantServer.S :: "kvs"] #kvs_ptr ∗
-    "Htxns" ∷ ps ↦[ParticipantServer.S :: "txns"] #txns_ptr ∗
-    "HfinishedTxns" ∷ ps ↦[ParticipantServer.S :: "finishedTxns"] #finishedTxns_ptr ∗
+    "Hkvs" ∷ ps ↦[ParticipantServer :: "kvs"] #kvs_ptr ∗
+    "Htxns" ∷ ps ↦[ParticipantServer :: "txns"] #txns_ptr ∗
+    "HfinishedTxns" ∷ ps ↦[ParticipantServer :: "finishedTxns"] #finishedTxns_ptr ∗
 
-    "HlockMap_ptr" ∷ ps ↦[ParticipantServer.S :: "lockmap"] #lockMap_ptr ∗
+    "HlockMap_ptr" ∷ ps ↦[ParticipantServer :: "lockmap"] #lockMap_ptr ∗
     "HkvsMap" ∷ is_map (kvs_ptr) kvsM ∗
     "HtxnsMap" ∷ is_map (txns_ptr) txnsM ∗
     "HfinishedTxnsMap" ∷ is_map (finishedTxns_ptr) finishedTxnsM ∗
@@ -520,7 +520,7 @@ Definition participantN := nroot .@ "participant".
 
 Definition is_participant (ps:loc) γ : iProp Σ :=
   ∃ (mu:loc),
-  "#Hmu" ∷ readonly (ps ↦[ParticipantServer.S :: "mu"] #mu) ∗
+  "#Hmu" ∷ readonly (ps ↦[ParticipantServer :: "mu"] #mu) ∗
   "#Hmu_inv" ∷ is_lock participantN #mu (ps_mu_inv ps γ)
 .
 
@@ -1103,8 +1103,8 @@ Definition TransactionCoordinator_own (tc:loc) : iProp Σ :=
 
   "#His_part1" ∷ is_participant s0 γ1 ∗
   "#His_part2" ∷ is_participant s1 γ2 ∗
-  "Hs0" ∷ tc ↦[TransactionCoordinator.S :: "s0"] #s0 ∗
-  "Hs1" ∷ tc ↦[TransactionCoordinator.S :: "s1"] #s1
+  "Hs0" ∷ tc ↦[TransactionCoordinator :: "s0"] #s0 ∗
+  "Hs1" ∷ tc ↦[TransactionCoordinator :: "s1"] #s1
 .
 
 Lemma wp_Participant__PrepareDecrease (ps:loc) tid γ γtpc (key amnt:u64) :

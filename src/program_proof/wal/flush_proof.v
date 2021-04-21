@@ -218,8 +218,8 @@ Qed.
 doesn't matter for correctness *)
 Theorem wp_load_some_nextDiskEnd st γ :
   {{{ wal_linv st γ }}}
-        struct.loadF sliding.S "mutable"
-          (struct.loadF WalogState.S "memLog" #st)
+        struct.loadF sliding "mutable"
+          (struct.loadF WalogState "memLog" #st)
   {{{ (nextDiskEnd:u64), RET #nextDiskEnd; wal_linv st γ }}}.
 Proof.
   iIntros (Φ) "Hinv HΦ".

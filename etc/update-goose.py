@@ -109,7 +109,7 @@ def main():
         os.chdir(old_dir)
 
     def run_goose(
-        src_path, output, pkg=None, import_header=None, excludes=None
+        src_path, output, pkg=None, ffi=None, excludes=None
     ):
         if excludes is None:
             excludes = []
@@ -120,8 +120,8 @@ def main():
         args = [goose_bin, "-out", output]
         if pkg is not None:
             args.extend(["-package", pkg])
-        if import_header is not None:
-            args.extend(["-import-line", import_header])
+        if ffi is not None:
+            args.extend(["-ffi", ffi])
         for e in excludes:
             args.extend(["-exclude-import", e])
         args.append(src_path)
@@ -241,19 +241,16 @@ def main():
                 )
 
     if gokv_dir is not None:
-        pkgs = ["aof", "goosekv", "memkv"]
+        pkgs = ["urpc/rpc", "memkv"]
 
         for pkg in pkgs:
             run_goose(
                 path.join(gokv_dir, pkg),
                 path.join(perennial_dir, "external/Goose"),
                 pkg="github.com/mit-pdos/gokv/" + pkg,
-                import_header="""From Perennial.goose_lang Require Import ffi.grove_prelude.
-From Goose Require github_com.mit_pdos.lockservice.lockservice.
-                """,
+                ffi="dist",
                 excludes=[
-                    "github.com/mit-pdos/lockservice/grove_ffi",
-                    "github.com/mit-pdos/lockservice",
+                    "github.com/mit-pdos/gokv/dist_ffi",
                 ]
                 # XXX: need to change the Coq import statement for lockservice/ from
                 # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to

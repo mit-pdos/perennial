@@ -80,8 +80,8 @@ Definition is_buftxn (buftx : loc)
                      dinit anydirty : iProp Σ :=
   (
     ∃ (l : loc) (bufmap : loc) (gBufmap : gmap addr buf),
-      "Hbuftx.l" ∷ buftx ↦[BufTxn.S :: "txn"] #l ∗
-      "Hbuftx.map" ∷ buftx ↦[BufTxn.S :: "bufs"] #bufmap ∗
+      "Hbuftx.l" ∷ buftx ↦[BufTxn :: "txn"] #l ∗
+      "Hbuftx.map" ∷ buftx ↦[BufTxn :: "bufs"] #bufmap ∗
       "#Histxn" ∷ is_txn l γUnified dinit ∗
       "Hbufmap" ∷ is_bufmap bufmap gBufmap ∗
       "%Hbufmapelem" ∷ ⌜ (λ b, existT _ (bufData b)) <$> gBufmap ⊆ modified <$> mT ⌝ ∗

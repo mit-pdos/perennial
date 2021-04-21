@@ -25,16 +25,16 @@ Record PutReplyC := mkPutReplyC {
 
 Definition own_PutRequest args_ptr args : iProp Σ :=
   ∃ val_sl,
-  "HCID" ∷ args_ptr ↦[PutRequest.S :: "CID"] #args.(PR_CID) ∗
-  "HSeq" ∷ args_ptr ↦[PutRequest.S :: "Seq"] #args.(PR_Seq) ∗
-  "HKey" ∷ args_ptr ↦[PutRequest.S :: "Key"] #args.(PR_Key) ∗
-  "HValue" ∷ args_ptr ↦[PutRequest.S :: "Value"] (slice_val val_sl) ∗
+  "HCID" ∷ args_ptr ↦[PutRequest :: "CID"] #args.(PR_CID) ∗
+  "HSeq" ∷ args_ptr ↦[PutRequest :: "Seq"] #args.(PR_Seq) ∗
+  "HKey" ∷ args_ptr ↦[PutRequest :: "Key"] #args.(PR_Key) ∗
+  "HValue" ∷ args_ptr ↦[PutRequest :: "Value"] (slice_val val_sl) ∗
   "HValue_sl" ∷ typed_slice.is_slice val_sl byteT 1%Qp args.(PR_Value) ∗
   "%HseqPositive" ∷ ⌜int.Z args.(PR_Seq) > 0⌝
 .
 
 Definition own_PutReply reply_ptr rep : iProp Σ :=
-  "HErr" ∷ reply_ptr ↦[PutReply.S :: "Err"] #rep.(PR_Err)
+  "HErr" ∷ reply_ptr ↦[PutReply :: "Err"] #rep.(PR_Err)
 .
 
 Definition has_encoding_PutRequest (data:list u8) (args:PutRequestC) : Prop :=

@@ -71,9 +71,9 @@ Section goose.
   (* low-level rblock state *)
   Definition rblock_state l d_ref m_ref addr : iProp Σ :=
       (* reflect coq values in program data structure *)
-      "#d" ∷ readonly (l ↦[RepBlock.S :: "d"] #d_ref) ∗
-      "#addr" ∷ readonly (l ↦[RepBlock.S :: "addr"] #addr) ∗
-      "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_ref).
+      "#d" ∷ readonly (l ↦[RepBlock :: "d"] #d_ref) ∗
+      "#addr" ∷ readonly (l ↦[RepBlock :: "addr"] #addr) ∗
+      "#m" ∷ readonly (l ↦[RepBlock :: "m"] #m_ref).
 
   Definition is_pre_rblock (l: loc) addr σ : iProp Σ :=
     "*" ∷ (∃ (d_ref m_ref: loc),
@@ -187,7 +187,7 @@ Section goose.
   (* this is an example of a small helper function which needs only a WP spec
   since the spec does not talk about durable state. *)
   Theorem wp_RepBlock__readAddr addr l (primary: bool) :
-    {{{ readonly (l ↦[RepBlock.S :: "addr"] #addr) }}}
+    {{{ readonly (l ↦[RepBlock :: "addr"] #addr) }}}
       RepBlock__readAddr #l #primary
     {{{ (a: u64), RET #a; ⌜a = addr ∨ a = word.add addr 1⌝ }}}.
   Proof.

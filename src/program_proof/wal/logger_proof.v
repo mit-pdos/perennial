@@ -19,12 +19,12 @@ Let innerN := walN .@ "wal".
 Let circN := walN .@ "circ".
 
 Theorem wp_Walog__waitForSpace l γ σₛ :
-  {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
-      "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
-      "#HcondInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+  {{{ "#HmemLock" ∷ readonly (l ↦[Walog :: "memLock"] #σₛ.(memLock)) ∗
+      "#HcondLogger" ∷ readonly (l ↦[Walog :: "condLogger"] #σₛ.(condLogger)) ∗
+      "#HcondInstall" ∷ readonly (l ↦[Walog :: "condInstall"] #σₛ.(condInstall)) ∗
       "#His_cond1" ∷ is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
       "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
-      "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+      "#?" ∷ readonly (l ↦[Walog :: "st"] #σₛ.(wal_st)) ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
       "Hlocked" ∷ locked #σₛ.(memLock) ∗
       "#His_lock" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ)
@@ -145,14 +145,14 @@ Proof.
 Qed.
 
 Theorem wp_Walog__logAppend l circ_l γ dinit σₛ :
-  {{{ "#HmemLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
-      "#HcondLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
-      "#HcondInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
-      "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
-      "#circ" ∷ readonly (l ↦[Walog.S :: "circ"] #σₛ.(circ)) ∗
+  {{{ "#HmemLock" ∷ readonly (l ↦[Walog :: "memLock"] #σₛ.(memLock)) ∗
+      "#HcondLogger" ∷ readonly (l ↦[Walog :: "condLogger"] #σₛ.(condLogger)) ∗
+      "#HcondInstall" ∷ readonly (l ↦[Walog :: "condInstall"] #σₛ.(condInstall)) ∗
+      "#d" ∷ readonly (l ↦[Walog :: "d"] σₛ.(wal_d)) ∗
+      "#circ" ∷ readonly (l ↦[Walog :: "circ"] #σₛ.(circ)) ∗
       "#His_cond1" ∷ is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
       "#His_cond2" ∷ is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
-      "#?" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
+      "#?" ∷ readonly (l ↦[Walog :: "st"] #σₛ.(wal_st)) ∗
       "#His_lock" ∷ is_lock N #σₛ.(memLock) (wal_linv σₛ.(wal_st) γ) ∗
       "#Hwal" ∷ is_wal P l γ dinit ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗

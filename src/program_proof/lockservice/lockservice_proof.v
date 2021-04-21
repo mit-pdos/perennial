@@ -58,7 +58,7 @@ Definition Lockserver_inv γ : iProp Σ :=
 (** Lockserver mutex invariant *)
 Definition LockServer_own_core γ (srv:loc) : iProp Σ :=
   ∃ (locks_ptr:loc) (locksM:gmap u64 bool),
-    "HlocksOwn" ∷ srv ↦[LockServer.S :: "locks"] #locks_ptr ∗ (* we own the "locks" field *)
+    "HlocksOwn" ∷ srv ↦[LockServer :: "locks"] #locks_ptr ∗ (* we own the "locks" field *)
     "Hmap" ∷ is_map (locks_ptr) locksM ∗ (* we control the physical map *)
     "HmapDom" ∷ ghost_var γ.(ls_locksMapDomGN) (1/2) (dom (gset _) locksM) ∗ (* the physical domain ghost variable matches the physical map *)
     "Hlockeds" ∷ [∗ map] ln ↦ locked ∈ locksM, (⌜locked=true⌝ ∨ (Ps ln)) (* we own the invariants of all not-held locks *)
@@ -67,7 +67,7 @@ Definition LockServer_own_core γ (srv:loc) : iProp Σ :=
 Definition is_lockserver γ (srv:loc) : iProp Σ :=
   ∃ (sv:loc),
   "#Hinv" ∷ inv lockserviceInvN (Lockserver_inv γ) ∗
-  "#Hsv" ∷ readonly (srv ↦[LockServer.S :: "sv"] #sv) ∗
+  "#Hsv" ∷ readonly (srv ↦[LockServer :: "sv"] #sv) ∗
   "#His_rpc" ∷ is_rpcserver sv γ.(ls_rpcGN) (LockServer_own_core γ srv).
 
 Definition lockserver_cid_token γ cid :=
@@ -75,8 +75,8 @@ Definition lockserver_cid_token γ cid :=
 
 Definition own_lockclerk γ ck_ptr srv : iProp Σ :=
   ∃ (cl_ptr:loc),
-   "Hcl_ptr" ∷ ck_ptr ↦[Clerk.S :: "client"] #cl_ptr ∗
-   "Hprimary" ∷ ck_ptr ↦[Clerk.S :: "primary"] #srv ∗
+   "Hcl_ptr" ∷ ck_ptr ↦[Clerk :: "client"] #cl_ptr ∗
+   "Hprimary" ∷ ck_ptr ↦[Clerk :: "primary"] #srv ∗
    "Hcl" ∷ own_rpcclient cl_ptr γ.(ls_rpcGN).
 
 (** Allocate a new lock in the lockservice, given the prop guarded by the lock *)

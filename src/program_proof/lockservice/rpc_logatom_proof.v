@@ -21,8 +21,8 @@ Definition own_rpcclient_cid (cl_ptr:loc) (γrpc:rpc_names) (cid:u64) : iProp Σ
   :=
     ∃ (cseqno:u64),
       "%" ∷ ⌜int.nat cseqno > 0⌝
-    ∗ "Hcid" ∷ cl_ptr ↦[RPCClient.S :: "cid"] #cid
-    ∗ "Hseq" ∷ cl_ptr ↦[RPCClient.S :: "seq"] #cseqno
+    ∗ "Hcid" ∷ cl_ptr ↦[RPCClient :: "cid"] #cid
+    ∗ "Hseq" ∷ cl_ptr ↦[RPCClient :: "seq"] #cseqno
     ∗ "Hcrpc" ∷ RPCClient_own γrpc cid cseqno
 .
 
@@ -211,8 +211,8 @@ Proof using Type*.
 
     wpc_pures.
     iNamed "Hreply".
-    replace (RPCReply.S) with (lockservice_nocrash.RPCReply.S) by done.
-    replace (lockservice_nocrash.RPCReply.S) with (RPCReply.S) by done.
+    replace (RPCReply) with (lockservice_nocrash.RPCReply) by done.
+    replace (lockservice_nocrash.RPCReply) with (RPCReply) by done.
 
     iApply wpc_fupd.
     wpc_frame.

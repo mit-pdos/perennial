@@ -11,10 +11,8 @@ From Goose Require github_com.tchajed.marshal.
 (* This struct is very important.
 
    This is despite it being empty. *)
-Module importantStruct.
-  Definition S := struct.decl [
-  ].
-End importantStruct.
+Definition importantStruct := struct.decl [
+].
 
 (* doSubtleThings does a number of subtle things:
 
@@ -210,11 +208,9 @@ Definition getRandom: val :=
 
 (* disk.go *)
 
-Module diskWrapper.
-  Definition S := struct.decl [
-    "d" :: disk.Disk
-  ].
-End diskWrapper.
+Definition diskWrapper := struct.decl [
+  "d" :: disk.Disk
+].
 
 Definition diskArgument: val :=
   rec: "diskArgument" "d" :=
@@ -233,16 +229,14 @@ Definition emptyReturn: val :=
 
 (* encoding.go *)
 
-Module Enc.
-  Definition S := struct.decl [
-    "p" :: slice.T byteT
-  ].
-End Enc.
+Definition Enc := struct.decl [
+  "p" :: slice.T byteT
+].
 
 Definition Enc__consume: val :=
   rec: "Enc__consume" "e" "n" :=
-    let: "b" := SliceTake (struct.loadF Enc.S "p" "e") "n" in
-    struct.storeF Enc.S "p" "e" (SliceSkip byteT (struct.loadF Enc.S "p" "e") "n");;
+    let: "b" := SliceTake (struct.loadF Enc "p" "e") "n" in
+    struct.storeF Enc "p" "e" (SliceSkip byteT (struct.loadF Enc "p" "e") "n");;
     "b".
 
 Definition Enc__UInt64: val :=
@@ -253,16 +247,14 @@ Definition Enc__UInt32: val :=
   rec: "Enc__UInt32" "e" "x" :=
     UInt32Put (Enc__consume "e" #4) "x".
 
-Module Dec.
-  Definition S := struct.decl [
-    "p" :: slice.T byteT
-  ].
-End Dec.
+Definition Dec := struct.decl [
+  "p" :: slice.T byteT
+].
 
 Definition Dec__consume: val :=
   rec: "Dec__consume" "d" "n" :=
-    let: "b" := SliceTake (struct.loadF Dec.S "p" "d") "n" in
-    struct.storeF Dec.S "p" "d" (SliceSkip byteT (struct.loadF Dec.S "p" "d") "n");;
+    let: "b" := SliceTake (struct.loadF Dec "p" "d") "n" in
+    struct.storeF Dec "p" "d" (SliceSkip byteT (struct.loadF Dec "p" "d") "n");;
     "b".
 
 Definition Dec__UInt64: val :=
@@ -292,17 +284,15 @@ Definition ConstWithAbbrevType : expr := #(U32 3).
 
 (* literals.go *)
 
-Module allTheLiterals.
-  Definition S := struct.decl [
-    "int" :: uint64T;
-    "s" :: stringT;
-    "b" :: boolT
-  ].
-End allTheLiterals.
+Definition allTheLiterals := struct.decl [
+  "int" :: uint64T;
+  "s" :: stringT;
+  "b" :: boolT
+].
 
 Definition normalLiterals: val :=
   rec: "normalLiterals" <> :=
-    struct.mk allTheLiterals.S [
+    struct.mk allTheLiterals [
       "int" ::= #0;
       "s" ::= #(str"foo");
       "b" ::= #true
@@ -310,7 +300,7 @@ Definition normalLiterals: val :=
 
 Definition specialLiterals: val :=
   rec: "specialLiterals" <> :=
-    struct.mk allTheLiterals.S [
+    struct.mk allTheLiterals [
       "int" ::= #4096;
       "s" ::= #(str"");
       "b" ::= #false
@@ -318,7 +308,7 @@ Definition specialLiterals: val :=
 
 Definition oddLiterals: val :=
   rec: "oddLiterals" <> :=
-    struct.mk allTheLiterals.S [
+    struct.mk allTheLiterals [
       "int" ::= #5;
       "s" ::= #(str"backquote string");
       "b" ::= #false
@@ -341,11 +331,9 @@ Definition useCondVar: val :=
     lock.condWait "c";;
     lock.release "m".
 
-Module hasCondVar.
-  Definition S := struct.decl [
-    "cond" :: condvarRefT
-  ].
-End hasCondVar.
+Definition hasCondVar := struct.decl [
+  "cond" :: condvarRefT
+].
 
 (* log_debugging.go *)
 
@@ -557,16 +545,14 @@ Definition AssignOps: val :=
 
 (* unittest has two package comments *)
 
-Module wrapExternalStruct.
-  Definition S := struct.decl [
-    "e" :: struct.t marshal.Enc.S;
-    "d" :: struct.t marshal.Dec.S
-  ].
-End wrapExternalStruct.
+Definition wrapExternalStruct := struct.decl [
+  "e" :: struct.t marshal.Enc;
+  "d" :: struct.t marshal.Dec
+].
 
 Definition wrapExternalStruct__moveUint64: val :=
   rec: "wrapExternalStruct__moveUint64" "w" :=
-    marshal.Enc__PutInt (struct.get wrapExternalStruct.S "e" "w") (marshal.Dec__GetInt (struct.get wrapExternalStruct.S "d" "w")).
+    marshal.Enc__PutInt (struct.get wrapExternalStruct "e" "w") (marshal.Dec__GetInt (struct.get wrapExternalStruct "d" "w")).
 
 (* panic.go *)
 
@@ -576,35 +562,31 @@ Definition PanicAtTheDisco: val :=
 
 (* reassign.go *)
 
-Module composite.
-  Definition S := struct.decl [
-    "a" :: uint64T;
-    "b" :: uint64T
-  ].
-End composite.
+Definition composite := struct.decl [
+  "a" :: uint64T;
+  "b" :: uint64T
+].
 
 Definition ReassignVars: val :=
   rec: "ReassignVars" <> :=
     let: "x" := ref (zero_val uint64T) in
     let: "y" := #0 in
     "x" <-[uint64T] #3;;
-    let: "z" := ref_to (struct.t composite.S) (struct.mk composite.S [
+    let: "z" := ref_to (struct.t composite) (struct.mk composite [
       "a" ::= ![uint64T] "x";
       "b" ::= "y"
     ]) in
-    "z" <-[struct.t composite.S] struct.mk composite.S [
+    "z" <-[struct.t composite] struct.mk composite [
       "a" ::= "y";
       "b" ::= ![uint64T] "x"
     ];;
-    "x" <-[uint64T] struct.get composite.S "a" (![struct.t composite.S] "z").
+    "x" <-[uint64T] struct.get composite "a" (![struct.t composite] "z").
 
 (* replicated_disk.go *)
 
-Module Block.
-  Definition S := struct.decl [
-    "Value" :: uint64T
-  ].
-End Block.
+Definition Block := struct.decl [
+  "Value" :: uint64T
+].
 
 Definition Disk1 : expr := #0.
 
@@ -620,7 +602,7 @@ Definition TwoDiskWrite: val :=
 (* TwoDiskRead is a dummy function to represent the base layer's disk read *)
 Definition TwoDiskRead: val :=
   rec: "TwoDiskRead" "diskId" "a" :=
-    (struct.mk Block.S [
+    (struct.mk Block [
        "Value" ::= #0
      ], #true).
 
@@ -689,21 +671,17 @@ Definition makeSingletonSlice: val :=
   rec: "makeSingletonSlice" "x" :=
     SliceSingleton "x".
 
-Module thing.
-  Definition S := struct.decl [
-    "x" :: uint64T
-  ].
-End thing.
+Definition thing := struct.decl [
+  "x" :: uint64T
+].
 
-Module sliceOfThings.
-  Definition S := struct.decl [
-    "things" :: slice.T (struct.t thing.S)
-  ].
-End sliceOfThings.
+Definition sliceOfThings := struct.decl [
+  "things" :: slice.T (struct.t thing)
+].
 
 Definition sliceOfThings__getThingRef: val :=
   rec: "sliceOfThings__getThingRef" "ts" "i" :=
-    SliceRef (struct.get sliceOfThings.S "things" "ts") "i".
+    SliceRef (struct.get sliceOfThings "things" "ts") "i".
 
 Definition makeAlias: val :=
   rec: "makeAlias" <> :=
@@ -760,26 +738,24 @@ Definition stringLength: val :=
 
 (* struct_method.go *)
 
-Module Point.
-  Definition S := struct.decl [
-    "x" :: uint64T;
-    "y" :: uint64T
-  ].
-End Point.
+Definition Point := struct.decl [
+  "x" :: uint64T;
+  "y" :: uint64T
+].
 
 Definition Point__Add: val :=
   rec: "Point__Add" "c" "z" :=
-    struct.get Point.S "x" "c" + struct.get Point.S "y" "c" + "z".
+    struct.get Point "x" "c" + struct.get Point "y" "c" + "z".
 
 Definition Point__GetField: val :=
   rec: "Point__GetField" "c" :=
-    let: "x" := struct.get Point.S "x" "c" in
-    let: "y" := struct.get Point.S "y" "c" in
+    let: "x" := struct.get Point "x" "c" in
+    let: "y" := struct.get Point "y" "c" in
     "x" + "y".
 
 Definition UseAdd: val :=
   rec: "UseAdd" <> :=
-    let: "c" := struct.mk Point.S [
+    let: "c" := struct.mk Point [
       "x" ::= #2;
       "y" ::= #3
     ] in
@@ -788,7 +764,7 @@ Definition UseAdd: val :=
 
 Definition UseAddWithLiteral: val :=
   rec: "UseAddWithLiteral" <> :=
-    let: "r" := Point__Add (struct.mk Point.S [
+    let: "r" := Point__Add (struct.mk Point [
       "x" ::= #2;
       "y" ::= #3
     ]) #4 in
@@ -796,26 +772,22 @@ Definition UseAddWithLiteral: val :=
 
 (* struct_pointers.go *)
 
-Module TwoInts.
-  Definition S := struct.decl [
-    "x" :: uint64T;
-    "y" :: uint64T
-  ].
-End TwoInts.
+Definition TwoInts := struct.decl [
+  "x" :: uint64T;
+  "y" :: uint64T
+].
 
-Module S.
-  Definition S := struct.decl [
-    "a" :: uint64T;
-    "b" :: struct.t TwoInts.S;
-    "c" :: boolT
-  ].
-End S.
+Definition S := struct.decl [
+  "a" :: uint64T;
+  "b" :: struct.t TwoInts;
+  "c" :: boolT
+].
 
 Definition NewS: val :=
   rec: "NewS" <> :=
-    struct.new S.S [
+    struct.new S [
       "a" ::= #2;
-      "b" ::= struct.mk TwoInts.S [
+      "b" ::= struct.mk TwoInts [
         "x" ::= #1;
         "y" ::= #2
       ];
@@ -824,39 +796,39 @@ Definition NewS: val :=
 
 Definition S__readA: val :=
   rec: "S__readA" "s" :=
-    struct.loadF S.S "a" "s".
+    struct.loadF S "a" "s".
 
 Definition S__readB: val :=
   rec: "S__readB" "s" :=
-    struct.loadF S.S "b" "s".
+    struct.loadF S "b" "s".
 
 Definition S__readBVal: val :=
   rec: "S__readBVal" "s" :=
-    struct.get S.S "b" "s".
+    struct.get S "b" "s".
 
 Definition S__writeB: val :=
   rec: "S__writeB" "s" "two" :=
-    struct.storeF S.S "b" "s" "two".
+    struct.storeF S "b" "s" "two".
 
 Definition S__negateC: val :=
   rec: "S__negateC" "s" :=
-    struct.storeF S.S "c" "s" (~ (struct.loadF S.S "c" "s")).
+    struct.storeF S "c" "s" (~ (struct.loadF S "c" "s")).
 
 Definition S__refC: val :=
   rec: "S__refC" "s" :=
-    struct.fieldRef S.S "c" "s".
+    struct.fieldRef S "c" "s".
 
 Definition localSRef: val :=
   rec: "localSRef" <> :=
-    let: "s" := ref (zero_val (struct.t S.S)) in
-    struct.fieldRef S.S "b" "s".
+    let: "s" := ref (zero_val (struct.t S)) in
+    struct.fieldRef S "b" "s".
 
 Definition setField: val :=
   rec: "setField" <> :=
-    let: "s" := ref (zero_val (struct.t S.S)) in
-    struct.storeF S.S "a" "s" #0;;
-    struct.storeF S.S "c" "s" #true;;
-    ![struct.t S.S] "s".
+    let: "s" := ref (zero_val (struct.t S)) in
+    struct.storeF S "a" "s" #0;;
+    struct.storeF S "c" "s" #true;;
+    ![struct.t S] "s".
 
 (* synchronization.go *)
 

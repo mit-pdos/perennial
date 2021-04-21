@@ -2,30 +2,26 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-Module unit.
-  Definition S := struct.decl [
-  ].
-End unit.
+Definition unit := struct.decl [
+].
 
-Definition AddrSet: ty := mapT (struct.t unit.S).
+Definition AddrSet: ty := mapT (struct.t unit).
 
 (* Allocator manages free disk blocks. It does not store its state durably, so
    the caller is responsible for returning its set of free disk blocks on
    recovery. *)
-Module Allocator.
-  Definition S := struct.decl [
-    "m" :: lockRefT;
-    "free" :: mapT (struct.t unit.S)
-  ].
-End Allocator.
+Definition Allocator := struct.decl [
+  "m" :: lockRefT;
+  "free" :: mapT (struct.t unit)
+].
 
 Definition freeRange: val :=
   rec: "freeRange" "start" "sz" :=
-    let: "m" := NewMap (struct.t unit.S) in
+    let: "m" := NewMap (struct.t unit) in
     let: "end" := "start" + "sz" in
     let: "i" := ref_to uint64T "start" in
     (for: (λ: <>, ![uint64T] "i" < "end"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      MapInsert "m" (![uint64T] "i") (struct.mk unit.S [
+      MapInsert "m" (![uint64T] "i") (struct.mk unit [
       ]);;
       Continue);;
     "m".
@@ -44,14 +40,14 @@ Definition mapRemove: val :=
 Definition SetAdd: val :=
   rec: "SetAdd" "m" "add" :=
     ForSlice uint64T <> "k" "add"
-      (MapInsert "m" "k" (struct.mk unit.S [
+      (MapInsert "m" "k" (struct.mk unit [
       ])).
 
 Definition New: val :=
   rec: "New" "start" "sz" "used" :=
     let: "free" := freeRange "start" "sz" in
     mapRemove "free" "used";;
-    struct.new Allocator.S [
+    struct.new Allocator [
       "m" ::= lock.new #();
       "free" ::= "free"
     ].
@@ -73,17 +69,17 @@ Definition findKey: val :=
    The initial contents of the block are arbitrary. *)
 Definition Allocator__Reserve: val :=
   rec: "Allocator__Reserve" "a" :=
-    lock.acquire (struct.loadF Allocator.S "m" "a");;
-    let: ("k", "ok") := findKey (struct.loadF Allocator.S "free" "a") in
-    MapDelete (struct.loadF Allocator.S "free" "a") "k";;
+    lock.acquire (struct.loadF Allocator "m" "a");;
+    let: ("k", "ok") := findKey (struct.loadF Allocator "free" "a") in
+    MapDelete (struct.loadF Allocator "free" "a") "k";;
     Linearize;;
-    lock.release (struct.loadF Allocator.S "m" "a");;
+    lock.release (struct.loadF Allocator "m" "a");;
     ("k", "ok").
 
 Definition Allocator__Free: val :=
   rec: "Allocator__Free" "a" "addr" :=
-    lock.acquire (struct.loadF Allocator.S "m" "a");;
-    MapInsert (struct.loadF Allocator.S "free" "a") "addr" (struct.mk unit.S [
+    lock.acquire (struct.loadF Allocator "m" "a");;
+    MapInsert (struct.loadF Allocator "free" "a") "addr" (struct.mk unit [
     ]);;
     Linearize;;
-    lock.release (struct.loadF Allocator.S "m" "a").
+    lock.release (struct.loadF Allocator "m" "a").

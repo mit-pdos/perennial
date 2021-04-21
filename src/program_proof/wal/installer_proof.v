@@ -698,10 +698,10 @@ Proof.
 Qed.
 
 Theorem wp_Walog__logInstall γ l dinit (diskEnd_txn_id_bound: nat) σₛ :
-  {{{ "#st" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
-      "#d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
-      "#memLock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
-      "#condInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
+  {{{ "#st" ∷ readonly (l ↦[Walog :: "st"] #σₛ.(wal_st)) ∗
+      "#d" ∷ readonly (l ↦[Walog :: "d"] σₛ.(wal_d)) ∗
+      "#memLock" ∷ readonly (l ↦[Walog :: "memLock"] #σₛ.(memLock)) ∗
+      "#condInstall" ∷ readonly (l ↦[Walog :: "condInstall"] #σₛ.(condInstall)) ∗
       "#Hwal" ∷ is_wal P l γ dinit ∗
       "Hlkinv" ∷ wal_linv σₛ.(wal_st) γ ∗
       "His_locked" ∷ locked #σₛ.(memLock) ∗

@@ -23,7 +23,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 Variable P : SimpleNFS.State -> iProp Σ.
 Context `{Ptimeless : !forall σ, Timeless (P σ)}.
 
-Opaque nfstypes.GETATTR3res.S.
+Opaque nfstypes.GETATTR3res.
 Opaque slice_val.
 
 Theorem wp_Inode__MkFattr ip inum len blk :
@@ -33,9 +33,9 @@ Theorem wp_Inode__MkFattr ip inum len blk :
     Inode__MkFattr #ip
   {{{ fattr3, RET fattr3;
       is_inode_mem ip inum len blk ∗
-      ⌜ getField_f nfstypes.Fattr3.S "Size" fattr3 = #len ⌝ ∗
-      ⌜ getField_f nfstypes.Fattr3.S "Fileid" fattr3 = #inum ⌝ ∗
-      ⌜ val_ty fattr3 (struct.t nfstypes.Fattr3.S) ⌝
+      ⌜ getField_f nfstypes.Fattr3 "Size" fattr3 = #len ⌝ ∗
+      ⌜ getField_f nfstypes.Fattr3 "Fileid" fattr3 = #inum ⌝ ∗
+      ⌜ val_ty fattr3 (struct.t nfstypes.Fattr3) ⌝
   }}}.
 Proof.
   iIntros (Φ) "Hmem HΦ".
@@ -56,8 +56,8 @@ Theorem wp_rootFattr :
   }}}
     rootFattr #()
   {{{ fattr3, RET fattr3;
-      ⌜ getField_f nfstypes.Fattr3.S "Size" fattr3 = #0 ⌝ ∗
-      ⌜ val_ty fattr3 (struct.t nfstypes.Fattr3.S) ⌝
+      ⌜ getField_f nfstypes.Fattr3 "Size" fattr3 = #0 ⌝ ∗
+      ⌜ val_ty fattr3 (struct.t nfstypes.Fattr3) ⌝
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -66,9 +66,9 @@ Proof.
 Qed.
 
 Lemma nfstypes_getattr3res_merge reply s ok :
-  ( reply ↦[nfstypes.GETATTR3res.S :: "Status"] s ∗
-    reply ↦[nfstypes.GETATTR3res.S :: "Resok"] ok ) -∗
-  reply ↦[struct.t nfstypes.GETATTR3res.S]{1} (s, (ok, #())).
+  ( reply ↦[nfstypes.GETATTR3res :: "Status"] s ∗
+    reply ↦[nfstypes.GETATTR3res :: "Resok"] ok ) -∗
+  reply ↦[struct.t nfstypes.GETATTR3res]{1} (s, (ok, #())).
 Proof.
   iIntros "(Status & Resok)".
   iApply struct_fields_split. iFrame. done.
@@ -82,21 +82,21 @@ Theorem wp_NFSPROC3_GETATTR γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (Q : S
         ( P σ ={E}=∗ P σ' ∗ Q r )
   }}}
     Nfs__NFSPROC3_GETATTR #nfs
-      (struct.mk_f nfstypes.GETATTR3args.S [
-        "Object" ::= struct.mk_f nfstypes.Nfs_fh3.S [
+      (struct.mk_f nfstypes.GETATTR3args [
+        "Object" ::= struct.mk_f nfstypes.Nfs_fh3 [
           "Data" ::= slice_val fhslice
         ]
       ])%V
   {{{ v,
       RET v;
       ( ∃ (sz : u64) resok fattr3,
-        ⌜ getField_f nfstypes.GETATTR3res.S "Status" v = #(U32 0) ⌝ ∗
-        ⌜ getField_f nfstypes.GETATTR3res.S "Resok" v = resok ⌝ ∗
-        ⌜ getField_f nfstypes.GETATTR3resok.S "Obj_attributes" resok = fattr3 ⌝ ∗
-        ⌜ getField_f nfstypes.Fattr3.S "Size" fattr3 = #sz ⌝ ∗
+        ⌜ getField_f nfstypes.GETATTR3res "Status" v = #(U32 0) ⌝ ∗
+        ⌜ getField_f nfstypes.GETATTR3res "Resok" v = resok ⌝ ∗
+        ⌜ getField_f nfstypes.GETATTR3resok "Obj_attributes" resok = fattr3 ⌝ ∗
+        ⌜ getField_f nfstypes.Fattr3 "Size" fattr3 = #sz ⌝ ∗
         Q (SimpleNFS.OK (SimpleNFS.Build_fattr sz)) ) ∨
       ( ∃ (stat : Z),
-        ⌜ getField_f nfstypes.GETATTR3res.S "Status" v = #(U32 stat) ⌝ ∗
+        ⌜ getField_f nfstypes.GETATTR3res "Status" v = #(U32 stat) ⌝ ∗
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.
@@ -194,9 +194,9 @@ Proof using Ptimeless.
     iRight. iExists _.
     iFrame "HQ".
     iPureIntro.
-    Transparent nfstypes.GETATTR3res.S.
+    Transparent nfstypes.GETATTR3res.
     simpl. intuition eauto.
-    Opaque nfstypes.GETATTR3res.S.
+    Opaque nfstypes.GETATTR3res.
     lia.
   }
 
@@ -328,7 +328,7 @@ Proof using Ptimeless.
     iIntros "Hreply". simpl.
     iApply "HΦ". iLeft.
     iExists _, _, _.
-Transparent nfstypes.GETATTR3res.S.
+Transparent nfstypes.GETATTR3res.
     iSplit; first done.
     iSplit; first done.
     iSplit; first done.

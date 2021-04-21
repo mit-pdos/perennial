@@ -21,10 +21,10 @@ Record InstallShardRequestC := mkInstallShardC {
 
 Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   ∃ (kvs_ptr:loc) (mv:gmap u64 goose_lang.val),
-  "HCID" ∷ args_ptr ↦[InstallShardRequest.S :: "CID"] #args.(IR_CID) ∗
-  "HSeq" ∷ args_ptr ↦[InstallShardRequest.S :: "Seq"] #args.(IR_Seq) ∗
-  "HKey" ∷ args_ptr ↦[InstallShardRequest.S :: "Sid"] #args.(IR_Sid) ∗
-  "HKvs" ∷ args_ptr ↦[InstallShardRequest.S :: "Kvs"] #kvs_ptr ∗
+  "HCID" ∷ args_ptr ↦[InstallShardRequest :: "CID"] #args.(IR_CID) ∗
+  "HSeq" ∷ args_ptr ↦[InstallShardRequest :: "Seq"] #args.(IR_Seq) ∗
+  "HKey" ∷ args_ptr ↦[InstallShardRequest :: "Sid"] #args.(IR_Sid) ∗
+  "HKvs" ∷ args_ptr ↦[InstallShardRequest :: "Kvs"] #kvs_ptr ∗
   "HKvsMap" ∷ map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
   "%HseqPositive" ∷ ⌜int.Z args.(IR_Seq) > 0⌝ ∗
   "Hvals" ∷ ([∗ set] k ∈ (fin_to_set u64),

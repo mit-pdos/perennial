@@ -113,7 +113,7 @@ Proof.
   wp_apply (wp_If_join
     (∃ (countval : u64),
       "Hcount" ∷ count ↦[uint64T] #countval ∗
-      "Hisize" ∷ ip ↦[Inode.S :: "Size"] #len ∗
+      "Hisize" ∷ ip ↦[Inode :: "Size"] #len ∗
       "%Hcountval0" ∷ ⌜(int.Z countval ≤ int.Z bytesToRead)%Z⌝ ∗
       "%Hcountval1" ∷ ⌜(int.Z offset + int.Z countval ≤ int.Z len)%Z⌝
     ) with "[Hcount Hisize]").

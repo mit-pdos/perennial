@@ -38,11 +38,11 @@ Record KVReq := mkKVReq {
 
 Definition gokv_core s gkv : iProp Σ :=
   ∃ (kvs_ptr lastSeq_ptr aof_ptr lastReply_ptr:loc),
-   "HlastSeqOwn" ∷ s ↦[GoKVServer.S :: "lastSeq"] #lastSeq_ptr ∗
-   "HlastReplyOwn" ∷ s ↦[GoKVServer.S :: "lastReply"] #lastReply_ptr ∗
+   "HlastSeqOwn" ∷ s ↦[GoKVServer :: "lastSeq"] #lastSeq_ptr ∗
+   "HlastReplyOwn" ∷ s ↦[GoKVServer :: "lastReply"] #lastReply_ptr ∗
    "HlastSeqMap" ∷ is_map (lastSeq_ptr) gkv.(lastSeqM) ∗
    "HlastReplyMap" ∷ is_map (lastReply_ptr) gkv.(lastReplyM) ∗
-   "HkvsOwn" ∷ s ↦[GoKVServer.S :: "kvs"] #kvs_ptr ∗
+   "HkvsOwn" ∷ s ↦[GoKVServer :: "kvs"] #kvs_ptr ∗
    "HkvsMap" ∷ is_map (kvs_ptr) gkv.(kvsM)
 .
 
@@ -93,14 +93,14 @@ Definition gokv_aof_ctx γrpc γkv (data:list u8) : iProp Σ :=
 Definition gokv_inv s γ : iProp Σ :=
   ∃ (aof_ptr:loc) gkv,
    "Hcore" ∷ gokv_core s gkv ∗
-   "#HaofOwn" ∷ readonly (s ↦[GoKVServer.S :: "opLog"] #aof_ptr) ∗
+   "#HaofOwn" ∷ readonly (s ↦[GoKVServer :: "opLog"] #aof_ptr) ∗
    "Haof_log" ∷ (∃ data, aof_log_own γ.(aof_gn) data ∗ has_gokv_encoding data gkv) ∗
    "#His_aof" ∷ is_aof aof_ptr γ.(aof_gn) (gokv_aof_ctx γ.(rpc_gn) γ.(kvs_gn))
 .
 
 Definition is_gokvserver s γ : iProp Σ :=
   ∃ mu,
-  "#Hmu" ∷ readonly (s ↦[GoKVServer.S :: "mu"] mu) ∗
+  "#Hmu" ∷ readonly (s ↦[GoKVServer :: "mu"] mu) ∗
   "#Hmu_inv" ∷ is_lock goKVN mu (gokv_inv s γ) ∗
   "#His_rpc" ∷ is_RPCServer γ.(rpc_gn)
 .

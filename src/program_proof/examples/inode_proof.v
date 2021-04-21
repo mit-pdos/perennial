@@ -79,7 +79,7 @@ Definition inode_linv (l:loc) (addr:u64) σ : iProp Σ :=
   ∃ (addr_s: Slice.t) (addrs: list u64),
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "Hdurable" ∷ is_inode_durable addr σ addrs ∗
-    "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
+    "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
     "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
 .
 Local Hint Extern 1 (environments.envs_entails _ (inode_linv _ _ _)) => unfold inode_linv : core.
@@ -98,9 +98,9 @@ Instance into_disc_inode_linv l addr σ:
 Proof. rewrite /IntoDiscrete. iIntros "H". iNamed "H". iModIntro. iExists _; eauto. Qed.
 
 Definition inode_state l (d_ref: loc) (lref: loc) addr : iProp Σ :=
-  "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d_ref) ∗
-  "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref) ∗
-  "#addr" ∷ readonly (l ↦[Inode.S :: "addr"] #addr).
+  "#d" ∷ readonly (l ↦[Inode :: "d"] #d_ref) ∗
+  "#m" ∷ readonly (l ↦[Inode :: "m"] #lref) ∗
+  "#addr" ∷ readonly (l ↦[Inode :: "addr"] #addr).
 
 Definition is_inode l k P (addr: u64) : iProp Σ :=
   ∃ (d_ref:loc) (lref: loc),
@@ -257,7 +257,7 @@ Qed.
 Definition used_blocks_pre l σ addrs: iProp Σ :=
   ∃ addr_s,
     "%Haddr_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-    "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
+    "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
     "Haddrs" ∷ is_slice addr_s uint64T 1 addrs.
 
 (* this lets the caller frame out the durable state for the crash invariant and
@@ -606,14 +606,14 @@ Qed.
 
 Theorem wp_Inode__mkHdr {stk} l addr_s addrs :
   length addrs ≤ InodeMaxBlocks ->
-  {{{ "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
+  {{{ "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
       "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
   }}}
     Inode__mkHdr #l @ stk
   {{{ s b, RET (slice_val s);
       is_block s 1 b ∗
       ⌜block_encodes b ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
-      "addrs" ∷ l ↦[Inode.S :: "addrs"] (slice_val addr_s) ∗
+      "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
       "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
   }}}.
 Proof.

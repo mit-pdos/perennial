@@ -40,8 +40,8 @@ Implicit Types server : IncrServerC.
 
 Definition IncrServer_core_own_vol (srv:loc) server : iProp Σ :=
   ∃ (kck:loc),
-  "Hkvserver" ∷ srv ↦[IncrServer.S :: "kvserver"] #(server.(incr_kvserver)) ∗
-  "Hkck" ∷ srv ↦[IncrServer.S :: "kck"] #kck ∗
+  "Hkvserver" ∷ srv ↦[IncrServer :: "kvserver"] #(server.(incr_kvserver)) ∗
+  "Hkck" ∷ srv ↦[IncrServer :: "kck"] #kck ∗
   "#His_kvserver" ∷ is_kvserver γback server.(incr_kvserver) ∗
   "Hkck_own" ∷ own_kvclerk_cid γback kck server.(incr_kvserver) incr_cid
   (* This is using the non-crash-safe version of kvserver in kv_proof.v *)

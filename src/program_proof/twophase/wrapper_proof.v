@@ -59,8 +59,8 @@ Section proof.
 
   Definition is_twophase_pre l (γ γ' : buftxn_names) dinit (objs_dom: gset addr) : iProp Σ :=
     ∃ (txnl locksl : loc) ghs,
-      "#Hpre.txn" ∷ readonly (l ↦[TwoPhasePre.S :: "txn"] #txnl) ∗
-      "#Hpre.locks" ∷ readonly (l ↦[TwoPhasePre.S :: "locks"] #locksl) ∗
+      "#Hpre.txn" ∷ readonly (l ↦[TwoPhasePre :: "txn"] #txnl) ∗
+      "#Hpre.locks" ∷ readonly (l ↦[TwoPhasePre :: "locks"] #locksl) ∗
       "#Histxn_system" ∷ is_txn_system Nbuftxn γ ∗
       "#Histxn" ∷ is_txn txnl γ.(buftxn_txn_names) dinit ∗
       "#HlockMap" ∷ is_lockMap locksl ghs (set_map addr2flat objs_dom)

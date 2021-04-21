@@ -7,27 +7,25 @@ From Goose Require github_com.mit_pdos.perennial_examples.inode.
 
 Definition NumInodes : expr := #5.
 
-Module Dir.
-  Definition S := struct.decl [
-    "d" :: disk.Disk;
-    "allocator" :: struct.ptrT alloc.Allocator.S;
-    "inodes" :: slice.T (struct.ptrT inode.Inode.S)
-  ].
-End Dir.
+Definition Dir := struct.decl [
+  "d" :: disk.Disk;
+  "allocator" :: struct.ptrT alloc.Allocator;
+  "inodes" :: slice.T (struct.ptrT inode.Inode)
+].
 
 Definition openInodes: val :=
   rec: "openInodes" "d" :=
-    let: "inodes" := ref (zero_val (slice.T (refT (struct.t inode.Inode.S)))) in
+    let: "inodes" := ref (zero_val (slice.T (refT (struct.t inode.Inode)))) in
     let: "addr" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "addr" < NumInodes); (λ: <>, "addr" <-[uint64T] ![uint64T] "addr" + #1) := λ: <>,
-      "inodes" <-[slice.T (refT (struct.t inode.Inode.S))] SliceAppend (refT (struct.t inode.Inode.S)) (![slice.T (refT (struct.t inode.Inode.S))] "inodes") (inode.Open "d" (![uint64T] "addr"));;
+      "inodes" <-[slice.T (refT (struct.t inode.Inode))] SliceAppend (refT (struct.t inode.Inode)) (![slice.T (refT (struct.t inode.Inode))] "inodes") (inode.Open "d" (![uint64T] "addr"));;
       Continue);;
-    ![slice.T (refT (struct.t inode.Inode.S))] "inodes".
+    ![slice.T (refT (struct.t inode.Inode))] "inodes".
 
 Definition inodeUsedBlocks: val :=
   rec: "inodeUsedBlocks" "inodes" :=
-    let: "used" := NewMap (struct.t alloc.unit.S) in
-    ForSlice (refT (struct.t inode.Inode.S)) <> "i" "inodes"
+    let: "used" := NewMap (struct.t alloc.unit) in
+    ForSlice (refT (struct.t inode.Inode)) <> "i" "inodes"
       (alloc.SetAdd "used" (inode.Inode__UsedBlocks "i"));;
     "used".
 
@@ -36,7 +34,7 @@ Definition Open: val :=
     let: "inodes" := openInodes "d" in
     let: "used" := inodeUsedBlocks "inodes" in
     let: "allocator" := alloc.New NumInodes ("sz" - NumInodes) "used" in
-    struct.new Dir.S [
+    struct.new Dir [
       "d" ::= "d";
       "allocator" ::= "allocator";
       "inodes" ::= "inodes"
@@ -44,15 +42,15 @@ Definition Open: val :=
 
 Definition Dir__Read: val :=
   rec: "Dir__Read" "d" "ino" "off" :=
-    let: "i" := SliceGet (refT (struct.t inode.Inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
+    let: "i" := SliceGet (refT (struct.t inode.Inode)) (struct.loadF Dir "inodes" "d") "ino" in
     inode.Inode__Read "i" "off".
 
 Definition Dir__Size: val :=
   rec: "Dir__Size" "d" "ino" :=
-    let: "i" := SliceGet (refT (struct.t inode.Inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
+    let: "i" := SliceGet (refT (struct.t inode.Inode)) (struct.loadF Dir "inodes" "d") "ino" in
     inode.Inode__Size "i".
 
 Definition Dir__Append: val :=
   rec: "Dir__Append" "d" "ino" "b" :=
-    let: "i" := SliceGet (refT (struct.t inode.Inode.S)) (struct.loadF Dir.S "inodes" "d") "ino" in
-    inode.Inode__Append "i" "b" (struct.loadF Dir.S "allocator" "d").
+    let: "i" := SliceGet (refT (struct.t inode.Inode)) (struct.loadF Dir "inodes" "d") "ino" in
+    inode.Inode__Append "i" "b" (struct.loadF Dir "allocator" "d").

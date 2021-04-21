@@ -56,8 +56,8 @@ Definition allocator_linv γ (mref: loc) σ : iProp Σ :=
 
 Definition is_allocator (l: loc) γ : iProp Σ :=
   ∃ (lref mref: loc),
-    "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
-    "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
+    "#m" ∷ readonly (l ↦[Allocator :: "m"] #lref) ∗
+    "#free" ∷ readonly (l ↦[Allocator :: "free"] #mref) ∗
     "#His_lock" ∷ is_lock allocN #lref
                           (∃ σ, "Hlockinv" ∷ allocator_linv γ mref σ ∗ "HP" ∷ P σ)
 .

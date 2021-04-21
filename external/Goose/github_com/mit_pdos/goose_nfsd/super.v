@@ -5,23 +5,21 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.common.
 
-Module FsSuper.
-  Definition S := struct.decl [
-    "Disk" :: disk.Disk;
-    "Size" :: uint64T;
-    "nLog" :: uint64T;
-    "NBlockBitmap" :: uint64T;
-    "NInodeBitmap" :: uint64T;
-    "nInodeBlk" :: uint64T;
-    "Maxaddr" :: uint64T
-  ].
-End FsSuper.
+Definition FsSuper := struct.decl [
+  "Disk" :: disk.Disk;
+  "Size" :: uint64T;
+  "nLog" :: uint64T;
+  "NBlockBitmap" :: uint64T;
+  "NInodeBitmap" :: uint64T;
+  "nInodeBlk" :: uint64T;
+  "Maxaddr" :: uint64T
+].
 
 Definition MkFsSuper: val :=
   rec: "MkFsSuper" "d" :=
     let: "sz" := disk.Size #() in
     let: "nblockbitmap" := "sz" `quot` common.NBITBLOCK + #1 in
-    struct.new FsSuper.S [
+    struct.new FsSuper [
       "Disk" ::= "d";
       "Size" ::= "sz";
       "nLog" ::= common.LOGSIZE;
@@ -33,23 +31,23 @@ Definition MkFsSuper: val :=
 
 Definition FsSuper__MaxBnum: val :=
   rec: "FsSuper__MaxBnum" "fs" :=
-    struct.loadF FsSuper.S "Maxaddr" "fs".
+    struct.loadF FsSuper "Maxaddr" "fs".
 
 Definition FsSuper__BitmapBlockStart: val :=
   rec: "FsSuper__BitmapBlockStart" "fs" :=
-    struct.loadF FsSuper.S "nLog" "fs".
+    struct.loadF FsSuper "nLog" "fs".
 
 Definition FsSuper__BitmapInodeStart: val :=
   rec: "FsSuper__BitmapInodeStart" "fs" :=
-    FsSuper__BitmapBlockStart "fs" + struct.loadF FsSuper.S "NBlockBitmap" "fs".
+    FsSuper__BitmapBlockStart "fs" + struct.loadF FsSuper "NBlockBitmap" "fs".
 
 Definition FsSuper__InodeStart: val :=
   rec: "FsSuper__InodeStart" "fs" :=
-    FsSuper__BitmapInodeStart "fs" + struct.loadF FsSuper.S "NInodeBitmap" "fs".
+    FsSuper__BitmapInodeStart "fs" + struct.loadF FsSuper "NInodeBitmap" "fs".
 
 Definition FsSuper__DataStart: val :=
   rec: "FsSuper__DataStart" "fs" :=
-    FsSuper__InodeStart "fs" + struct.loadF FsSuper.S "nInodeBlk" "fs".
+    FsSuper__InodeStart "fs" + struct.loadF FsSuper "nInodeBlk" "fs".
 
 Definition FsSuper__Block2addr: val :=
   rec: "FsSuper__Block2addr" "fs" "blkno" :=
@@ -57,7 +55,7 @@ Definition FsSuper__Block2addr: val :=
 
 Definition FsSuper__NInode: val :=
   rec: "FsSuper__NInode" "fs" :=
-    struct.loadF FsSuper.S "nInodeBlk" "fs" * common.INODEBLK.
+    struct.loadF FsSuper "nInodeBlk" "fs" * common.INODEBLK.
 
 Definition FsSuper__Inum2Addr: val :=
   rec: "FsSuper__Inum2Addr" "fs" "inum" :=

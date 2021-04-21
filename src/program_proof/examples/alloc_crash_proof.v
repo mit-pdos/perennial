@@ -195,8 +195,8 @@ Definition allocator_linv γ n (mref: loc) : iProp Σ :=
 
 Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
   ∃ (lref mref: loc),
-    "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
-    "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
+    "#m" ∷ readonly (l ↦[Allocator :: "m"] #lref) ∗
+    "#free" ∷ readonly (l ↦[Allocator :: "free"] #mref) ∗
     "#His_lock" ∷ is_lock Nlock #lref (allocator_linv γ n mref) ∗
     "#Halloc_inv" ∷ ncinv Ninv (allocator_inv γ d)
 .
@@ -204,8 +204,8 @@ Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
 Definition is_allocator_mem_pre (l: loc) σ : iProp Σ :=
   ∃ (lref mref: loc),
     "%Hpostcrash" ∷ ⌜ alloc_post_crash σ ⌝ ∗
-    "#m" ∷ readonly (l ↦[Allocator.S :: "m"] #lref) ∗
-    "#free" ∷ readonly (l ↦[Allocator.S :: "free"] #mref) ∗
+    "#m" ∷ readonly (l ↦[Allocator :: "m"] #lref) ∗
+    "#free" ∷ readonly (l ↦[Allocator :: "free"] #mref) ∗
     "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
     "Hfree_lock" ∷ is_free_lock lref.
 

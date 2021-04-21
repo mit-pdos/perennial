@@ -314,10 +314,10 @@ Qed.
 Definition wal_linv_fields st σ: iProp Σ :=
   (∃ σₗ,
       "Hfield_ptsto" ∷
-         ("HmemLog" ∷ st ↦[WalogState.S :: "memLog"] #σₗ.(memLogPtr) ∗
-          "HdiskEnd" ∷ st ↦[WalogState.S :: "diskEnd"] #σ.(diskEnd) ∗
-          "Hshutdown" ∷ st ↦[WalogState.S :: "shutdown"] #σₗ.(shutdown) ∗
-          "Hnthread" ∷ st ↦[WalogState.S :: "nthread"] #σₗ.(nthread)) ∗
+         ("HmemLog" ∷ st ↦[WalogState :: "memLog"] #σₗ.(memLogPtr) ∗
+          "HdiskEnd" ∷ st ↦[WalogState :: "diskEnd"] #σ.(diskEnd) ∗
+          "Hshutdown" ∷ st ↦[WalogState :: "shutdown"] #σₗ.(shutdown) ∗
+          "Hnthread" ∷ st ↦[WalogState :: "nthread"] #σₗ.(nthread)) ∗
   "%Hlocked_wf" ∷ ⌜locked_wf σ⌝ ∗
   "His_memLog" ∷ is_sliding σₗ.(memLogPtr) 1 σ.(memLog)
   )%I.
@@ -372,13 +372,13 @@ Global Instance wal_state_eta : Settable _ :=
     correspond directly to any part of the abstract state *)
 Definition is_wal_mem (l: loc) γ : iProp Σ :=
   ∃ σₛ,
-    "Hstfields" ∷ ("memlock" ∷ readonly (l ↦[Walog.S :: "memLock"] #σₛ.(memLock)) ∗
-     "d" ∷ readonly (l ↦[Walog.S :: "d"] σₛ.(wal_d)) ∗
-     "circ" ∷ readonly (l ↦[Walog.S :: "circ"] #σₛ.(circ)) ∗
-     "st" ∷ readonly (l ↦[Walog.S :: "st"] #σₛ.(wal_st)) ∗
-     "condLogger" ∷ readonly (l ↦[Walog.S :: "condLogger"] #σₛ.(condLogger)) ∗
-     "condInstall" ∷ readonly (l ↦[Walog.S :: "condInstall"] #σₛ.(condInstall)) ∗
-     "condShut" ∷ readonly (l ↦[Walog.S :: "condShut"] #σₛ.(condShut))) ∗
+    "Hstfields" ∷ ("memlock" ∷ readonly (l ↦[Walog :: "memLock"] #σₛ.(memLock)) ∗
+     "d" ∷ readonly (l ↦[Walog :: "d"] σₛ.(wal_d)) ∗
+     "circ" ∷ readonly (l ↦[Walog :: "circ"] #σₛ.(circ)) ∗
+     "st" ∷ readonly (l ↦[Walog :: "st"] #σₛ.(wal_st)) ∗
+     "condLogger" ∷ readonly (l ↦[Walog :: "condLogger"] #σₛ.(condLogger)) ∗
+     "condInstall" ∷ readonly (l ↦[Walog :: "condInstall"] #σₛ.(condInstall)) ∗
+     "condShut" ∷ readonly (l ↦[Walog :: "condShut"] #σₛ.(condShut))) ∗
     "cond_logger" ∷ lock.is_cond σₛ.(condLogger) #σₛ.(memLock) ∗
     "cond_install" ∷ lock.is_cond σₛ.(condInstall) #σₛ.(memLock) ∗
     "cond_shut" ∷ lock.is_cond σₛ.(condShut) #σₛ.(memLock) ∗
@@ -756,11 +756,11 @@ Qed.
 (** * accessors for fields whose values don't matter for correctness *)
 Theorem wal_linv_shutdown st γ :
   wal_linv st γ -∗ ∃ (shutdown:bool) (nthread:u64),
-      (st ↦[WalogState.S :: "shutdown"] #shutdown ∗
-          st ↦[WalogState.S :: "nthread"] #nthread) ∗
+      (st ↦[WalogState :: "shutdown"] #shutdown ∗
+          st ↦[WalogState :: "nthread"] #nthread) ∗
       (∀ (shutdown: bool) (nthread: u64),
-          st ↦[WalogState.S :: "shutdown"] #shutdown -∗
-          st ↦[WalogState.S :: "nthread"] #nthread -∗
+          st ↦[WalogState :: "shutdown"] #shutdown -∗
+          st ↦[WalogState :: "nthread"] #nthread -∗
           wal_linv st γ).
 Proof.
   iIntros "Hlkinv".
@@ -895,9 +895,9 @@ Ltac shutdown_fields :=
   try (clear nthread).
 
 Lemma wp_inc_nthread l (st: loc) γ :
-  {{{ readonly (l ↦[Walog.S :: "st"] #st) ∗ wal_linv st γ }}}
-    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" #l)
-    (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" #l) + #1)
+  {{{ readonly (l ↦[Walog :: "st"] #st) ∗ wal_linv st γ }}}
+    struct.storeF WalogState "nthread" (struct.loadF Walog "st" #l)
+    (struct.loadF WalogState "nthread" (struct.loadF Walog "st" #l) + #1)
   {{{ RET #(); wal_linv st γ }}}.
 Proof.
   iIntros (Φ) "[#Hst Hlkinv] HΦ".
@@ -906,9 +906,9 @@ Proof.
 Qed.
 
 Lemma wp_dec_nthread l (st: loc) γ :
-  {{{ readonly (l ↦[Walog.S :: "st"] #st) ∗ wal_linv st γ }}}
-    struct.storeF WalogState.S "nthread" (struct.loadF Walog.S "st" #l)
-    (struct.loadF WalogState.S "nthread" (struct.loadF Walog.S "st" #l) - #1)
+  {{{ readonly (l ↦[Walog :: "st"] #st) ∗ wal_linv st γ }}}
+    struct.storeF WalogState "nthread" (struct.loadF Walog "st" #l)
+    (struct.loadF WalogState "nthread" (struct.loadF Walog "st" #l) - #1)
   {{{ RET #(); wal_linv st γ }}}.
 Proof.
   iIntros (Φ) "[#Hst Hlkinv] HΦ".
@@ -917,8 +917,8 @@ Proof.
 Qed.
 
 Lemma wp_load_shutdown l (st: loc) γ :
-  {{{ readonly (l ↦[Walog.S :: "st"] #st) ∗ wal_linv st γ  }}}
-    struct.loadF WalogState.S "shutdown" (struct.loadF Walog.S "st" #l)
+  {{{ readonly (l ↦[Walog :: "st"] #st) ∗ wal_linv st γ  }}}
+    struct.loadF WalogState "shutdown" (struct.loadF Walog "st" #l)
   {{{ (b:bool), RET #b; wal_linv st γ }}}.
 Proof.
   iIntros (Φ) "[#Hst Hlkinv] HΦ".

@@ -120,79 +120,61 @@ Definition NF3SOCK : expr := #(U32 6).
 
 Definition NF3FIFO : expr := #(U32 7).
 
-Module Specdata3.
-  Definition S := struct.decl [
-    "Specdata1" :: Uint32;
-    "Specdata2" :: Uint32
-  ].
-End Specdata3.
+Definition Specdata3 := struct.decl [
+  "Specdata1" :: Uint32;
+  "Specdata2" :: Uint32
+].
 
-Module Nfs_fh3.
-  Definition S := struct.decl [
-    "Data" :: slice.T byteT
-  ].
-End Nfs_fh3.
+Definition Nfs_fh3 := struct.decl [
+  "Data" :: slice.T byteT
+].
 
-Module Nfstime3.
-  Definition S := struct.decl [
-    "Seconds" :: Uint32;
-    "Nseconds" :: Uint32
-  ].
-End Nfstime3.
+Definition Nfstime3 := struct.decl [
+  "Seconds" :: Uint32;
+  "Nseconds" :: Uint32
+].
 
-Module Fattr3.
-  Definition S := struct.decl [
-    "Ftype" :: Ftype3;
-    "Mode" :: Mode3;
-    "Nlink" :: Uint32;
-    "Uid" :: Uid3;
-    "Gid" :: Gid3;
-    "Size" :: Size3;
-    "Used" :: Size3;
-    "Rdev" :: struct.t Specdata3.S;
-    "Fsid" :: Uint64;
-    "Fileid" :: Fileid3;
-    "Atime" :: struct.t Nfstime3.S;
-    "Mtime" :: struct.t Nfstime3.S;
-    "Ctime" :: struct.t Nfstime3.S
-  ].
-End Fattr3.
+Definition Fattr3 := struct.decl [
+  "Ftype" :: Ftype3;
+  "Mode" :: Mode3;
+  "Nlink" :: Uint32;
+  "Uid" :: Uid3;
+  "Gid" :: Gid3;
+  "Size" :: Size3;
+  "Used" :: Size3;
+  "Rdev" :: struct.t Specdata3;
+  "Fsid" :: Uint64;
+  "Fileid" :: Fileid3;
+  "Atime" :: struct.t Nfstime3;
+  "Mtime" :: struct.t Nfstime3;
+  "Ctime" :: struct.t Nfstime3
+].
 
-Module Post_op_attr.
-  Definition S := struct.decl [
-    "Attributes_follow" :: boolT;
-    "Attributes" :: struct.t Fattr3.S
-  ].
-End Post_op_attr.
+Definition Post_op_attr := struct.decl [
+  "Attributes_follow" :: boolT;
+  "Attributes" :: struct.t Fattr3
+].
 
-Module Wcc_attr.
-  Definition S := struct.decl [
-    "Size" :: Size3;
-    "Mtime" :: struct.t Nfstime3.S;
-    "Ctime" :: struct.t Nfstime3.S
-  ].
-End Wcc_attr.
+Definition Wcc_attr := struct.decl [
+  "Size" :: Size3;
+  "Mtime" :: struct.t Nfstime3;
+  "Ctime" :: struct.t Nfstime3
+].
 
-Module Pre_op_attr.
-  Definition S := struct.decl [
-    "Attributes_follow" :: boolT;
-    "Attributes" :: struct.t Wcc_attr.S
-  ].
-End Pre_op_attr.
+Definition Pre_op_attr := struct.decl [
+  "Attributes_follow" :: boolT;
+  "Attributes" :: struct.t Wcc_attr
+].
 
-Module Wcc_data.
-  Definition S := struct.decl [
-    "Before" :: struct.t Pre_op_attr.S;
-    "After" :: struct.t Post_op_attr.S
-  ].
-End Wcc_data.
+Definition Wcc_data := struct.decl [
+  "Before" :: struct.t Pre_op_attr;
+  "After" :: struct.t Post_op_attr
+].
 
-Module Post_op_fh3.
-  Definition S := struct.decl [
-    "Handle_follows" :: boolT;
-    "Handle" :: struct.t Nfs_fh3.S
-  ].
-End Post_op_fh3.
+Definition Post_op_fh3 := struct.decl [
+  "Handle_follows" :: boolT;
+  "Handle" :: struct.t Nfs_fh3
+].
 
 Definition Time_how: ty := uint32T.
 
@@ -202,65 +184,49 @@ Definition SET_TO_SERVER_TIME : expr := #(U32 1).
 
 Definition SET_TO_CLIENT_TIME : expr := #(U32 2).
 
-Module Set_mode3.
-  Definition S := struct.decl [
-    "Set_it" :: boolT;
-    "Mode" :: Mode3
-  ].
-End Set_mode3.
+Definition Set_mode3 := struct.decl [
+  "Set_it" :: boolT;
+  "Mode" :: Mode3
+].
 
-Module Set_uid3.
-  Definition S := struct.decl [
-    "Set_it" :: boolT;
-    "Uid" :: Uid3
-  ].
-End Set_uid3.
+Definition Set_uid3 := struct.decl [
+  "Set_it" :: boolT;
+  "Uid" :: Uid3
+].
 
-Module Set_gid3.
-  Definition S := struct.decl [
-    "Set_it" :: boolT;
-    "Gid" :: Gid3
-  ].
-End Set_gid3.
+Definition Set_gid3 := struct.decl [
+  "Set_it" :: boolT;
+  "Gid" :: Gid3
+].
 
-Module Set_size3.
-  Definition S := struct.decl [
-    "Set_it" :: boolT;
-    "Size" :: Size3
-  ].
-End Set_size3.
+Definition Set_size3 := struct.decl [
+  "Set_it" :: boolT;
+  "Size" :: Size3
+].
 
-Module Set_atime.
-  Definition S := struct.decl [
-    "Set_it" :: Time_how;
-    "Atime" :: struct.t Nfstime3.S
-  ].
-End Set_atime.
+Definition Set_atime := struct.decl [
+  "Set_it" :: Time_how;
+  "Atime" :: struct.t Nfstime3
+].
 
-Module Set_mtime.
-  Definition S := struct.decl [
-    "Set_it" :: Time_how;
-    "Mtime" :: struct.t Nfstime3.S
-  ].
-End Set_mtime.
+Definition Set_mtime := struct.decl [
+  "Set_it" :: Time_how;
+  "Mtime" :: struct.t Nfstime3
+].
 
-Module Sattr3.
-  Definition S := struct.decl [
-    "Mode" :: struct.t Set_mode3.S;
-    "Uid" :: struct.t Set_uid3.S;
-    "Gid" :: struct.t Set_gid3.S;
-    "Size" :: struct.t Set_size3.S;
-    "Atime" :: struct.t Set_atime.S;
-    "Mtime" :: struct.t Set_mtime.S
-  ].
-End Sattr3.
+Definition Sattr3 := struct.decl [
+  "Mode" :: struct.t Set_mode3;
+  "Uid" :: struct.t Set_uid3;
+  "Gid" :: struct.t Set_gid3;
+  "Size" :: struct.t Set_size3;
+  "Atime" :: struct.t Set_atime;
+  "Mtime" :: struct.t Set_mtime
+].
 
-Module Diropargs3.
-  Definition S := struct.decl [
-    "Dir" :: struct.t Nfs_fh3.S;
-    "Name" :: Filename3
-  ].
-End Diropargs3.
+Definition Diropargs3 := struct.decl [
+  "Dir" :: struct.t Nfs_fh3;
+  "Name" :: Filename3
+].
 
 Definition NFS_PROGRAM : expr := #(U32 100003).
 
@@ -310,87 +276,63 @@ Definition NFSPROC3_PATHCONF : expr := #(U32 20).
 
 Definition NFSPROC3_COMMIT : expr := #(U32 21).
 
-Module GETATTR3args.
-  Definition S := struct.decl [
-    "Object" :: struct.t Nfs_fh3.S
-  ].
-End GETATTR3args.
+Definition GETATTR3args := struct.decl [
+  "Object" :: struct.t Nfs_fh3
+].
 
-Module GETATTR3resok.
-  Definition S := struct.decl [
-    "Obj_attributes" :: struct.t Fattr3.S
-  ].
-End GETATTR3resok.
+Definition GETATTR3resok := struct.decl [
+  "Obj_attributes" :: struct.t Fattr3
+].
 
-Module GETATTR3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t GETATTR3resok.S
-  ].
-End GETATTR3res.
+Definition GETATTR3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t GETATTR3resok
+].
 
-Module Sattrguard3.
-  Definition S := struct.decl [
-    "Check" :: boolT;
-    "Obj_ctime" :: struct.t Nfstime3.S
-  ].
-End Sattrguard3.
+Definition Sattrguard3 := struct.decl [
+  "Check" :: boolT;
+  "Obj_ctime" :: struct.t Nfstime3
+].
 
-Module SETATTR3args.
-  Definition S := struct.decl [
-    "Object" :: struct.t Nfs_fh3.S;
-    "New_attributes" :: struct.t Sattr3.S;
-    "Guard" :: struct.t Sattrguard3.S
-  ].
-End SETATTR3args.
+Definition SETATTR3args := struct.decl [
+  "Object" :: struct.t Nfs_fh3;
+  "New_attributes" :: struct.t Sattr3;
+  "Guard" :: struct.t Sattrguard3
+].
 
-Module SETATTR3resok.
-  Definition S := struct.decl [
-    "Obj_wcc" :: struct.t Wcc_data.S
-  ].
-End SETATTR3resok.
+Definition SETATTR3resok := struct.decl [
+  "Obj_wcc" :: struct.t Wcc_data
+].
 
-Module SETATTR3resfail.
-  Definition S := struct.decl [
-    "Obj_wcc" :: struct.t Wcc_data.S
-  ].
-End SETATTR3resfail.
+Definition SETATTR3resfail := struct.decl [
+  "Obj_wcc" :: struct.t Wcc_data
+].
 
-Module SETATTR3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t SETATTR3resok.S;
-    "Resfail" :: struct.t SETATTR3resfail.S
-  ].
-End SETATTR3res.
+Definition SETATTR3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t SETATTR3resok;
+  "Resfail" :: struct.t SETATTR3resfail
+].
 
-Module LOOKUP3args.
-  Definition S := struct.decl [
-    "What" :: struct.t Diropargs3.S
-  ].
-End LOOKUP3args.
+Definition LOOKUP3args := struct.decl [
+  "What" :: struct.t Diropargs3
+].
 
-Module LOOKUP3resok.
-  Definition S := struct.decl [
-    "Object" :: struct.t Nfs_fh3.S;
-    "Obj_attributes" :: struct.t Post_op_attr.S;
-    "Dir_attributes" :: struct.t Post_op_attr.S
-  ].
-End LOOKUP3resok.
+Definition LOOKUP3resok := struct.decl [
+  "Object" :: struct.t Nfs_fh3;
+  "Obj_attributes" :: struct.t Post_op_attr;
+  "Dir_attributes" :: struct.t Post_op_attr
+].
 
-Module LOOKUP3resfail.
-  Definition S := struct.decl [
-    "Dir_attributes" :: struct.t Post_op_attr.S
-  ].
-End LOOKUP3resfail.
+Definition LOOKUP3resfail := struct.decl [
+  "Dir_attributes" :: struct.t Post_op_attr
+].
 
-Module LOOKUP3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t LOOKUP3resok.S;
-    "Resfail" :: struct.t LOOKUP3resfail.S
-  ].
-End LOOKUP3res.
+Definition LOOKUP3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t LOOKUP3resok;
+  "Resfail" :: struct.t LOOKUP3resfail
+].
 
 Definition ACCESS3_READ : expr := #(U32 1).
 
@@ -404,91 +346,67 @@ Definition ACCESS3_DELETE : expr := #(U32 16).
 
 Definition ACCESS3_EXECUTE : expr := #(U32 32).
 
-Module ACCESS3args.
-  Definition S := struct.decl [
-    "Object" :: struct.t Nfs_fh3.S;
-    "Access" :: Uint32
-  ].
-End ACCESS3args.
+Definition ACCESS3args := struct.decl [
+  "Object" :: struct.t Nfs_fh3;
+  "Access" :: Uint32
+].
 
-Module ACCESS3resok.
-  Definition S := struct.decl [
-    "Obj_attributes" :: struct.t Post_op_attr.S;
-    "Access" :: Uint32
-  ].
-End ACCESS3resok.
+Definition ACCESS3resok := struct.decl [
+  "Obj_attributes" :: struct.t Post_op_attr;
+  "Access" :: Uint32
+].
 
-Module ACCESS3resfail.
-  Definition S := struct.decl [
-    "Obj_attributes" :: struct.t Post_op_attr.S
-  ].
-End ACCESS3resfail.
+Definition ACCESS3resfail := struct.decl [
+  "Obj_attributes" :: struct.t Post_op_attr
+].
 
-Module ACCESS3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t ACCESS3resok.S;
-    "Resfail" :: struct.t ACCESS3resfail.S
-  ].
-End ACCESS3res.
+Definition ACCESS3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t ACCESS3resok;
+  "Resfail" :: struct.t ACCESS3resfail
+].
 
-Module READLINK3args.
-  Definition S := struct.decl [
-    "Symlink" :: struct.t Nfs_fh3.S
-  ].
-End READLINK3args.
+Definition READLINK3args := struct.decl [
+  "Symlink" :: struct.t Nfs_fh3
+].
 
-Module READLINK3resok.
-  Definition S := struct.decl [
-    "Symlink_attributes" :: struct.t Post_op_attr.S;
-    "Data" :: Nfspath3
-  ].
-End READLINK3resok.
+Definition READLINK3resok := struct.decl [
+  "Symlink_attributes" :: struct.t Post_op_attr;
+  "Data" :: Nfspath3
+].
 
-Module READLINK3resfail.
-  Definition S := struct.decl [
-    "Symlink_attributes" :: struct.t Post_op_attr.S
-  ].
-End READLINK3resfail.
+Definition READLINK3resfail := struct.decl [
+  "Symlink_attributes" :: struct.t Post_op_attr
+].
 
-Module READLINK3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t READLINK3resok.S;
-    "Resfail" :: struct.t READLINK3resfail.S
-  ].
-End READLINK3res.
+Definition READLINK3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t READLINK3resok;
+  "Resfail" :: struct.t READLINK3resfail
+].
 
-Module READ3args.
-  Definition S := struct.decl [
-    "File" :: struct.t Nfs_fh3.S;
-    "Offset" :: Offset3;
-    "Count" :: Count3
-  ].
-End READ3args.
+Definition READ3args := struct.decl [
+  "File" :: struct.t Nfs_fh3;
+  "Offset" :: Offset3;
+  "Count" :: Count3
+].
 
-Module READ3resok.
-  Definition S := struct.decl [
-    "File_attributes" :: struct.t Post_op_attr.S;
-    "Count" :: Count3;
-    "Eof" :: boolT;
-    "Data" :: slice.T byteT
-  ].
-End READ3resok.
+Definition READ3resok := struct.decl [
+  "File_attributes" :: struct.t Post_op_attr;
+  "Count" :: Count3;
+  "Eof" :: boolT;
+  "Data" :: slice.T byteT
+].
 
-Module READ3resfail.
-  Definition S := struct.decl [
-    "File_attributes" :: struct.t Post_op_attr.S
-  ].
-End READ3resfail.
+Definition READ3resfail := struct.decl [
+  "File_attributes" :: struct.t Post_op_attr
+].
 
-Module READ3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t READ3resok.S;
-    "Resfail" :: struct.t READ3resfail.S
-  ].
-End READ3res.
+Definition READ3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t READ3resok;
+  "Resfail" :: struct.t READ3resfail
+].
 
 Definition Stable_how: ty := uint32T.
 
@@ -498,38 +416,30 @@ Definition DATA_SYNC : expr := #(U32 1).
 
 Definition FILE_SYNC : expr := #(U32 2).
 
-Module WRITE3args.
-  Definition S := struct.decl [
-    "File" :: struct.t Nfs_fh3.S;
-    "Offset" :: Offset3;
-    "Count" :: Count3;
-    "Stable" :: Stable_how;
-    "Data" :: slice.T byteT
-  ].
-End WRITE3args.
+Definition WRITE3args := struct.decl [
+  "File" :: struct.t Nfs_fh3;
+  "Offset" :: Offset3;
+  "Count" :: Count3;
+  "Stable" :: Stable_how;
+  "Data" :: slice.T byteT
+].
 
-Module WRITE3resok.
-  Definition S := struct.decl [
-    "File_wcc" :: struct.t Wcc_data.S;
-    "Count" :: Count3;
-    "Committed" :: Stable_how;
-    "Verf" :: Writeverf3
-  ].
-End WRITE3resok.
+Definition WRITE3resok := struct.decl [
+  "File_wcc" :: struct.t Wcc_data;
+  "Count" :: Count3;
+  "Committed" :: Stable_how;
+  "Verf" :: Writeverf3
+].
 
-Module WRITE3resfail.
-  Definition S := struct.decl [
-    "File_wcc" :: struct.t Wcc_data.S
-  ].
-End WRITE3resfail.
+Definition WRITE3resfail := struct.decl [
+  "File_wcc" :: struct.t Wcc_data
+].
 
-Module WRITE3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t WRITE3resok.S;
-    "Resfail" :: struct.t WRITE3resfail.S
-  ].
-End WRITE3res.
+Definition WRITE3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t WRITE3resok;
+  "Resfail" :: struct.t WRITE3resfail
+].
 
 Definition Createmode3: ty := uint32T.
 
@@ -539,391 +449,287 @@ Definition GUARDED : expr := #(U32 1).
 
 Definition EXCLUSIVE : expr := #(U32 2).
 
-Module Createhow3.
-  Definition S := struct.decl [
-    "Mode" :: Createmode3;
-    "Obj_attributes" :: struct.t Sattr3.S;
-    "Verf" :: Createverf3
-  ].
-End Createhow3.
+Definition Createhow3 := struct.decl [
+  "Mode" :: Createmode3;
+  "Obj_attributes" :: struct.t Sattr3;
+  "Verf" :: Createverf3
+].
 
-Module CREATE3args.
-  Definition S := struct.decl [
-    "Where" :: struct.t Diropargs3.S;
-    "How" :: struct.t Createhow3.S
-  ].
-End CREATE3args.
+Definition CREATE3args := struct.decl [
+  "Where" :: struct.t Diropargs3;
+  "How" :: struct.t Createhow3
+].
 
-Module CREATE3resok.
-  Definition S := struct.decl [
-    "Obj" :: struct.t Post_op_fh3.S;
-    "Obj_attributes" :: struct.t Post_op_attr.S;
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End CREATE3resok.
+Definition CREATE3resok := struct.decl [
+  "Obj" :: struct.t Post_op_fh3;
+  "Obj_attributes" :: struct.t Post_op_attr;
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module CREATE3resfail.
-  Definition S := struct.decl [
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End CREATE3resfail.
+Definition CREATE3resfail := struct.decl [
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module CREATE3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t CREATE3resok.S;
-    "Resfail" :: struct.t CREATE3resfail.S
-  ].
-End CREATE3res.
+Definition CREATE3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t CREATE3resok;
+  "Resfail" :: struct.t CREATE3resfail
+].
 
-Module MKDIR3args.
-  Definition S := struct.decl [
-    "Where" :: struct.t Diropargs3.S;
-    "Attributes" :: struct.t Sattr3.S
-  ].
-End MKDIR3args.
+Definition MKDIR3args := struct.decl [
+  "Where" :: struct.t Diropargs3;
+  "Attributes" :: struct.t Sattr3
+].
 
-Module MKDIR3resok.
-  Definition S := struct.decl [
-    "Obj" :: struct.t Post_op_fh3.S;
-    "Obj_attributes" :: struct.t Post_op_attr.S;
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End MKDIR3resok.
+Definition MKDIR3resok := struct.decl [
+  "Obj" :: struct.t Post_op_fh3;
+  "Obj_attributes" :: struct.t Post_op_attr;
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module MKDIR3resfail.
-  Definition S := struct.decl [
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End MKDIR3resfail.
+Definition MKDIR3resfail := struct.decl [
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module MKDIR3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t MKDIR3resok.S;
-    "Resfail" :: struct.t MKDIR3resfail.S
-  ].
-End MKDIR3res.
+Definition MKDIR3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t MKDIR3resok;
+  "Resfail" :: struct.t MKDIR3resfail
+].
 
-Module Symlinkdata3.
-  Definition S := struct.decl [
-    "Symlink_attributes" :: struct.t Sattr3.S;
-    "Symlink_data" :: Nfspath3
-  ].
-End Symlinkdata3.
+Definition Symlinkdata3 := struct.decl [
+  "Symlink_attributes" :: struct.t Sattr3;
+  "Symlink_data" :: Nfspath3
+].
 
-Module SYMLINK3args.
-  Definition S := struct.decl [
-    "Where" :: struct.t Diropargs3.S;
-    "Symlink" :: struct.t Symlinkdata3.S
-  ].
-End SYMLINK3args.
+Definition SYMLINK3args := struct.decl [
+  "Where" :: struct.t Diropargs3;
+  "Symlink" :: struct.t Symlinkdata3
+].
 
-Module SYMLINK3resok.
-  Definition S := struct.decl [
-    "Obj" :: struct.t Post_op_fh3.S;
-    "Obj_attributes" :: struct.t Post_op_attr.S;
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End SYMLINK3resok.
+Definition SYMLINK3resok := struct.decl [
+  "Obj" :: struct.t Post_op_fh3;
+  "Obj_attributes" :: struct.t Post_op_attr;
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module SYMLINK3resfail.
-  Definition S := struct.decl [
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End SYMLINK3resfail.
+Definition SYMLINK3resfail := struct.decl [
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module SYMLINK3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t SYMLINK3resok.S;
-    "Resfail" :: struct.t SYMLINK3resfail.S
-  ].
-End SYMLINK3res.
+Definition SYMLINK3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t SYMLINK3resok;
+  "Resfail" :: struct.t SYMLINK3resfail
+].
 
-Module Devicedata3.
-  Definition S := struct.decl [
-    "Dev_attributes" :: struct.t Sattr3.S;
-    "Spec" :: struct.t Specdata3.S
-  ].
-End Devicedata3.
+Definition Devicedata3 := struct.decl [
+  "Dev_attributes" :: struct.t Sattr3;
+  "Spec" :: struct.t Specdata3
+].
 
-Module Mknoddata3.
-  Definition S := struct.decl [
-    "Ftype" :: Ftype3;
-    "Device" :: struct.t Devicedata3.S;
-    "Pipe_attributes" :: struct.t Sattr3.S
-  ].
-End Mknoddata3.
+Definition Mknoddata3 := struct.decl [
+  "Ftype" :: Ftype3;
+  "Device" :: struct.t Devicedata3;
+  "Pipe_attributes" :: struct.t Sattr3
+].
 
-Module MKNOD3args.
-  Definition S := struct.decl [
-    "Where" :: struct.t Diropargs3.S;
-    "What" :: struct.t Mknoddata3.S
-  ].
-End MKNOD3args.
+Definition MKNOD3args := struct.decl [
+  "Where" :: struct.t Diropargs3;
+  "What" :: struct.t Mknoddata3
+].
 
-Module MKNOD3resok.
-  Definition S := struct.decl [
-    "Obj" :: struct.t Post_op_fh3.S;
-    "Obj_attributes" :: struct.t Post_op_attr.S;
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End MKNOD3resok.
+Definition MKNOD3resok := struct.decl [
+  "Obj" :: struct.t Post_op_fh3;
+  "Obj_attributes" :: struct.t Post_op_attr;
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module MKNOD3resfail.
-  Definition S := struct.decl [
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End MKNOD3resfail.
+Definition MKNOD3resfail := struct.decl [
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module MKNOD3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t MKNOD3resok.S;
-    "Resfail" :: struct.t MKNOD3resfail.S
-  ].
-End MKNOD3res.
+Definition MKNOD3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t MKNOD3resok;
+  "Resfail" :: struct.t MKNOD3resfail
+].
 
-Module REMOVE3args.
-  Definition S := struct.decl [
-    "Object" :: struct.t Diropargs3.S
-  ].
-End REMOVE3args.
+Definition REMOVE3args := struct.decl [
+  "Object" :: struct.t Diropargs3
+].
 
-Module REMOVE3resok.
-  Definition S := struct.decl [
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End REMOVE3resok.
+Definition REMOVE3resok := struct.decl [
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module REMOVE3resfail.
-  Definition S := struct.decl [
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End REMOVE3resfail.
+Definition REMOVE3resfail := struct.decl [
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module REMOVE3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t REMOVE3resok.S;
-    "Resfail" :: struct.t REMOVE3resfail.S
-  ].
-End REMOVE3res.
+Definition REMOVE3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t REMOVE3resok;
+  "Resfail" :: struct.t REMOVE3resfail
+].
 
-Module RMDIR3args.
-  Definition S := struct.decl [
-    "Object" :: struct.t Diropargs3.S
-  ].
-End RMDIR3args.
+Definition RMDIR3args := struct.decl [
+  "Object" :: struct.t Diropargs3
+].
 
-Module RMDIR3resok.
-  Definition S := struct.decl [
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End RMDIR3resok.
+Definition RMDIR3resok := struct.decl [
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module RMDIR3resfail.
-  Definition S := struct.decl [
-    "Dir_wcc" :: struct.t Wcc_data.S
-  ].
-End RMDIR3resfail.
+Definition RMDIR3resfail := struct.decl [
+  "Dir_wcc" :: struct.t Wcc_data
+].
 
-Module RMDIR3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t RMDIR3resok.S;
-    "Resfail" :: struct.t RMDIR3resfail.S
-  ].
-End RMDIR3res.
+Definition RMDIR3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t RMDIR3resok;
+  "Resfail" :: struct.t RMDIR3resfail
+].
 
-Module RENAME3args.
-  Definition S := struct.decl [
-    "From" :: struct.t Diropargs3.S;
-    "To" :: struct.t Diropargs3.S
-  ].
-End RENAME3args.
+Definition RENAME3args := struct.decl [
+  "From" :: struct.t Diropargs3;
+  "To" :: struct.t Diropargs3
+].
 
-Module RENAME3resok.
-  Definition S := struct.decl [
-    "Fromdir_wcc" :: struct.t Wcc_data.S;
-    "Todir_wcc" :: struct.t Wcc_data.S
-  ].
-End RENAME3resok.
+Definition RENAME3resok := struct.decl [
+  "Fromdir_wcc" :: struct.t Wcc_data;
+  "Todir_wcc" :: struct.t Wcc_data
+].
 
-Module RENAME3resfail.
-  Definition S := struct.decl [
-    "Fromdir_wcc" :: struct.t Wcc_data.S;
-    "Todir_wcc" :: struct.t Wcc_data.S
-  ].
-End RENAME3resfail.
+Definition RENAME3resfail := struct.decl [
+  "Fromdir_wcc" :: struct.t Wcc_data;
+  "Todir_wcc" :: struct.t Wcc_data
+].
 
-Module RENAME3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t RENAME3resok.S;
-    "Resfail" :: struct.t RENAME3resfail.S
-  ].
-End RENAME3res.
+Definition RENAME3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t RENAME3resok;
+  "Resfail" :: struct.t RENAME3resfail
+].
 
-Module LINK3args.
-  Definition S := struct.decl [
-    "File" :: struct.t Nfs_fh3.S;
-    "Link" :: struct.t Diropargs3.S
-  ].
-End LINK3args.
+Definition LINK3args := struct.decl [
+  "File" :: struct.t Nfs_fh3;
+  "Link" :: struct.t Diropargs3
+].
 
-Module LINK3resok.
-  Definition S := struct.decl [
-    "File_attributes" :: struct.t Post_op_attr.S;
-    "Linkdir_wcc" :: struct.t Wcc_data.S
-  ].
-End LINK3resok.
+Definition LINK3resok := struct.decl [
+  "File_attributes" :: struct.t Post_op_attr;
+  "Linkdir_wcc" :: struct.t Wcc_data
+].
 
-Module LINK3resfail.
-  Definition S := struct.decl [
-    "File_attributes" :: struct.t Post_op_attr.S;
-    "Linkdir_wcc" :: struct.t Wcc_data.S
-  ].
-End LINK3resfail.
+Definition LINK3resfail := struct.decl [
+  "File_attributes" :: struct.t Post_op_attr;
+  "Linkdir_wcc" :: struct.t Wcc_data
+].
 
-Module LINK3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t LINK3resok.S;
-    "Resfail" :: struct.t LINK3resfail.S
-  ].
-End LINK3res.
+Definition LINK3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t LINK3resok;
+  "Resfail" :: struct.t LINK3resfail
+].
 
-Module READDIR3args.
-  Definition S := struct.decl [
-    "Dir" :: struct.t Nfs_fh3.S;
-    "Cookie" :: Cookie3;
-    "Cookieverf" :: Cookieverf3;
-    "Count" :: Count3
-  ].
-End READDIR3args.
+Definition READDIR3args := struct.decl [
+  "Dir" :: struct.t Nfs_fh3;
+  "Cookie" :: Cookie3;
+  "Cookieverf" :: Cookieverf3;
+  "Count" :: Count3
+].
 
-Module Entry3.
-  Definition S := struct.decl [
-    "Fileid" :: Fileid3;
-    "Name" :: Filename3;
-    "Cookie" :: Cookie3;
-    "Nextentry" :: refT anyT
-  ].
-End Entry3.
+Definition Entry3 := struct.decl [
+  "Fileid" :: Fileid3;
+  "Name" :: Filename3;
+  "Cookie" :: Cookie3;
+  "Nextentry" :: refT anyT
+].
 
-Module Dirlist3.
-  Definition S := struct.decl [
-    "Entries" :: struct.ptrT Entry3.S;
-    "Eof" :: boolT
-  ].
-End Dirlist3.
+Definition Dirlist3 := struct.decl [
+  "Entries" :: struct.ptrT Entry3;
+  "Eof" :: boolT
+].
 
-Module READDIR3resok.
-  Definition S := struct.decl [
-    "Dir_attributes" :: struct.t Post_op_attr.S;
-    "Cookieverf" :: Cookieverf3;
-    "Reply" :: struct.t Dirlist3.S
-  ].
-End READDIR3resok.
+Definition READDIR3resok := struct.decl [
+  "Dir_attributes" :: struct.t Post_op_attr;
+  "Cookieverf" :: Cookieverf3;
+  "Reply" :: struct.t Dirlist3
+].
 
-Module READDIR3resfail.
-  Definition S := struct.decl [
-    "Dir_attributes" :: struct.t Post_op_attr.S
-  ].
-End READDIR3resfail.
+Definition READDIR3resfail := struct.decl [
+  "Dir_attributes" :: struct.t Post_op_attr
+].
 
-Module READDIR3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t READDIR3resok.S;
-    "Resfail" :: struct.t READDIR3resfail.S
-  ].
-End READDIR3res.
+Definition READDIR3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t READDIR3resok;
+  "Resfail" :: struct.t READDIR3resfail
+].
 
-Module READDIRPLUS3args.
-  Definition S := struct.decl [
-    "Dir" :: struct.t Nfs_fh3.S;
-    "Cookie" :: Cookie3;
-    "Cookieverf" :: Cookieverf3;
-    "Dircount" :: Count3;
-    "Maxcount" :: Count3
-  ].
-End READDIRPLUS3args.
+Definition READDIRPLUS3args := struct.decl [
+  "Dir" :: struct.t Nfs_fh3;
+  "Cookie" :: Cookie3;
+  "Cookieverf" :: Cookieverf3;
+  "Dircount" :: Count3;
+  "Maxcount" :: Count3
+].
 
-Module Entryplus3.
-  Definition S := struct.decl [
-    "Fileid" :: Fileid3;
-    "Name" :: Filename3;
-    "Cookie" :: Cookie3;
-    "Name_attributes" :: struct.t Post_op_attr.S;
-    "Name_handle" :: struct.t Post_op_fh3.S;
-    "Nextentry" :: refT anyT
-  ].
-End Entryplus3.
+Definition Entryplus3 := struct.decl [
+  "Fileid" :: Fileid3;
+  "Name" :: Filename3;
+  "Cookie" :: Cookie3;
+  "Name_attributes" :: struct.t Post_op_attr;
+  "Name_handle" :: struct.t Post_op_fh3;
+  "Nextentry" :: refT anyT
+].
 
-Module Dirlistplus3.
-  Definition S := struct.decl [
-    "Entries" :: struct.ptrT Entryplus3.S;
-    "Eof" :: boolT
-  ].
-End Dirlistplus3.
+Definition Dirlistplus3 := struct.decl [
+  "Entries" :: struct.ptrT Entryplus3;
+  "Eof" :: boolT
+].
 
-Module READDIRPLUS3resok.
-  Definition S := struct.decl [
-    "Dir_attributes" :: struct.t Post_op_attr.S;
-    "Cookieverf" :: Cookieverf3;
-    "Reply" :: struct.t Dirlistplus3.S
-  ].
-End READDIRPLUS3resok.
+Definition READDIRPLUS3resok := struct.decl [
+  "Dir_attributes" :: struct.t Post_op_attr;
+  "Cookieverf" :: Cookieverf3;
+  "Reply" :: struct.t Dirlistplus3
+].
 
-Module READDIRPLUS3resfail.
-  Definition S := struct.decl [
-    "Dir_attributes" :: struct.t Post_op_attr.S
-  ].
-End READDIRPLUS3resfail.
+Definition READDIRPLUS3resfail := struct.decl [
+  "Dir_attributes" :: struct.t Post_op_attr
+].
 
-Module READDIRPLUS3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t READDIRPLUS3resok.S;
-    "Resfail" :: struct.t READDIRPLUS3resfail.S
-  ].
-End READDIRPLUS3res.
+Definition READDIRPLUS3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t READDIRPLUS3resok;
+  "Resfail" :: struct.t READDIRPLUS3resfail
+].
 
-Module FSSTAT3args.
-  Definition S := struct.decl [
-    "Fsroot" :: struct.t Nfs_fh3.S
-  ].
-End FSSTAT3args.
+Definition FSSTAT3args := struct.decl [
+  "Fsroot" :: struct.t Nfs_fh3
+].
 
-Module FSSTAT3resok.
-  Definition S := struct.decl [
-    "Obj_attributes" :: struct.t Post_op_attr.S;
-    "Tbytes" :: Size3;
-    "Fbytes" :: Size3;
-    "Abytes" :: Size3;
-    "Tfiles" :: Size3;
-    "Ffiles" :: Size3;
-    "Afiles" :: Size3;
-    "Invarsec" :: Uint32
-  ].
-End FSSTAT3resok.
+Definition FSSTAT3resok := struct.decl [
+  "Obj_attributes" :: struct.t Post_op_attr;
+  "Tbytes" :: Size3;
+  "Fbytes" :: Size3;
+  "Abytes" :: Size3;
+  "Tfiles" :: Size3;
+  "Ffiles" :: Size3;
+  "Afiles" :: Size3;
+  "Invarsec" :: Uint32
+].
 
-Module FSSTAT3resfail.
-  Definition S := struct.decl [
-    "Obj_attributes" :: struct.t Post_op_attr.S
-  ].
-End FSSTAT3resfail.
+Definition FSSTAT3resfail := struct.decl [
+  "Obj_attributes" :: struct.t Post_op_attr
+].
 
-Module FSSTAT3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t FSSTAT3resok.S;
-    "Resfail" :: struct.t FSSTAT3resfail.S
-  ].
-End FSSTAT3res.
+Definition FSSTAT3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t FSSTAT3resok;
+  "Resfail" :: struct.t FSSTAT3resfail
+].
 
 Definition FSF3_LINK : expr := #(U32 1).
 
@@ -933,102 +739,78 @@ Definition FSF3_HOMOGENEOUS : expr := #(U32 8).
 
 Definition FSF3_CANSETTIME : expr := #(U32 16).
 
-Module FSINFO3args.
-  Definition S := struct.decl [
-    "Fsroot" :: struct.t Nfs_fh3.S
-  ].
-End FSINFO3args.
+Definition FSINFO3args := struct.decl [
+  "Fsroot" :: struct.t Nfs_fh3
+].
 
-Module FSINFO3resok.
-  Definition S := struct.decl [
-    "Obj_attributes" :: struct.t Post_op_attr.S;
-    "Rtmax" :: Uint32;
-    "Rtpref" :: Uint32;
-    "Rtmult" :: Uint32;
-    "Wtmax" :: Uint32;
-    "Wtpref" :: Uint32;
-    "Wtmult" :: Uint32;
-    "Dtpref" :: Uint32;
-    "Maxfilesize" :: Size3;
-    "Time_delta" :: struct.t Nfstime3.S;
-    "Properties" :: Uint32
-  ].
-End FSINFO3resok.
+Definition FSINFO3resok := struct.decl [
+  "Obj_attributes" :: struct.t Post_op_attr;
+  "Rtmax" :: Uint32;
+  "Rtpref" :: Uint32;
+  "Rtmult" :: Uint32;
+  "Wtmax" :: Uint32;
+  "Wtpref" :: Uint32;
+  "Wtmult" :: Uint32;
+  "Dtpref" :: Uint32;
+  "Maxfilesize" :: Size3;
+  "Time_delta" :: struct.t Nfstime3;
+  "Properties" :: Uint32
+].
 
-Module FSINFO3resfail.
-  Definition S := struct.decl [
-    "Obj_attributes" :: struct.t Post_op_attr.S
-  ].
-End FSINFO3resfail.
+Definition FSINFO3resfail := struct.decl [
+  "Obj_attributes" :: struct.t Post_op_attr
+].
 
-Module FSINFO3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t FSINFO3resok.S;
-    "Resfail" :: struct.t FSINFO3resfail.S
-  ].
-End FSINFO3res.
+Definition FSINFO3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t FSINFO3resok;
+  "Resfail" :: struct.t FSINFO3resfail
+].
 
-Module PATHCONF3args.
-  Definition S := struct.decl [
-    "Object" :: struct.t Nfs_fh3.S
-  ].
-End PATHCONF3args.
+Definition PATHCONF3args := struct.decl [
+  "Object" :: struct.t Nfs_fh3
+].
 
-Module PATHCONF3resok.
-  Definition S := struct.decl [
-    "Obj_attributes" :: struct.t Post_op_attr.S;
-    "Linkmax" :: Uint32;
-    "Name_max" :: Uint32;
-    "No_trunc" :: boolT;
-    "Chown_restricted" :: boolT;
-    "Case_insensitive" :: boolT;
-    "Case_preserving" :: boolT
-  ].
-End PATHCONF3resok.
+Definition PATHCONF3resok := struct.decl [
+  "Obj_attributes" :: struct.t Post_op_attr;
+  "Linkmax" :: Uint32;
+  "Name_max" :: Uint32;
+  "No_trunc" :: boolT;
+  "Chown_restricted" :: boolT;
+  "Case_insensitive" :: boolT;
+  "Case_preserving" :: boolT
+].
 
-Module PATHCONF3resfail.
-  Definition S := struct.decl [
-    "Obj_attributes" :: struct.t Post_op_attr.S
-  ].
-End PATHCONF3resfail.
+Definition PATHCONF3resfail := struct.decl [
+  "Obj_attributes" :: struct.t Post_op_attr
+].
 
-Module PATHCONF3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t PATHCONF3resok.S;
-    "Resfail" :: struct.t PATHCONF3resfail.S
-  ].
-End PATHCONF3res.
+Definition PATHCONF3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t PATHCONF3resok;
+  "Resfail" :: struct.t PATHCONF3resfail
+].
 
-Module COMMIT3args.
-  Definition S := struct.decl [
-    "File" :: struct.t Nfs_fh3.S;
-    "Offset" :: Offset3;
-    "Count" :: Count3
-  ].
-End COMMIT3args.
+Definition COMMIT3args := struct.decl [
+  "File" :: struct.t Nfs_fh3;
+  "Offset" :: Offset3;
+  "Count" :: Count3
+].
 
-Module COMMIT3resok.
-  Definition S := struct.decl [
-    "File_wcc" :: struct.t Wcc_data.S;
-    "Verf" :: Writeverf3
-  ].
-End COMMIT3resok.
+Definition COMMIT3resok := struct.decl [
+  "File_wcc" :: struct.t Wcc_data;
+  "Verf" :: Writeverf3
+].
 
-Module COMMIT3resfail.
-  Definition S := struct.decl [
-    "File_wcc" :: struct.t Wcc_data.S
-  ].
-End COMMIT3resfail.
+Definition COMMIT3resfail := struct.decl [
+  "File_wcc" :: struct.t Wcc_data
+].
 
-Module COMMIT3res.
-  Definition S := struct.decl [
-    "Status" :: Nfsstat3;
-    "Resok" :: struct.t COMMIT3resok.S;
-    "Resfail" :: struct.t COMMIT3resfail.S
-  ].
-End COMMIT3res.
+Definition COMMIT3res := struct.decl [
+  "Status" :: Nfsstat3;
+  "Resok" :: struct.t COMMIT3resok;
+  "Resfail" :: struct.t COMMIT3resfail
+].
 
 Definition MNTPATHLEN3 : expr := #(U32 1024).
 
@@ -1080,51 +862,37 @@ Definition MOUNTPROC3_UMNTALL : expr := #(U32 4).
 
 Definition MOUNTPROC3_EXPORT : expr := #(U32 5).
 
-Module Mountres3_ok.
-  Definition S := struct.decl [
-    "Fhandle" :: Fhandle3;
-    "Auth_flavors" :: slice.T uint32T
-  ].
-End Mountres3_ok.
+Definition Mountres3_ok := struct.decl [
+  "Fhandle" :: Fhandle3;
+  "Auth_flavors" :: slice.T uint32T
+].
 
-Module Mountres3.
-  Definition S := struct.decl [
-    "Fhs_status" :: Mountstat3;
-    "Mountinfo" :: struct.t Mountres3_ok.S
-  ].
-End Mountres3.
+Definition Mountres3 := struct.decl [
+  "Fhs_status" :: Mountstat3;
+  "Mountinfo" :: struct.t Mountres3_ok
+].
 
-Module Mount3.
-  Definition S := struct.decl [
-    "Ml_hostname" :: Name3;
-    "Ml_directory" :: Dirpath3;
-    "Ml_next" :: refT anyT
-  ].
-End Mount3.
+Definition Mount3 := struct.decl [
+  "Ml_hostname" :: Name3;
+  "Ml_directory" :: Dirpath3;
+  "Ml_next" :: refT anyT
+].
 
-Module Mountopt3.
-  Definition S := struct.decl [
-    "P" :: struct.ptrT Mount3.S
-  ].
-End Mountopt3.
+Definition Mountopt3 := struct.decl [
+  "P" :: struct.ptrT Mount3
+].
 
-Module Groups3.
-  Definition S := struct.decl [
-    "Gr_name" :: Name3;
-    "Gr_next" :: refT anyT
-  ].
-End Groups3.
+Definition Groups3 := struct.decl [
+  "Gr_name" :: Name3;
+  "Gr_next" :: refT anyT
+].
 
-Module Exports3.
-  Definition S := struct.decl [
-    "Ex_dir" :: Dirpath3;
-    "Ex_groups" :: struct.ptrT Groups3.S;
-    "Ex_next" :: refT anyT
-  ].
-End Exports3.
+Definition Exports3 := struct.decl [
+  "Ex_dir" :: Dirpath3;
+  "Ex_groups" :: struct.ptrT Groups3;
+  "Ex_next" :: refT anyT
+].
 
-Module Exportsopt3.
-  Definition S := struct.decl [
-    "P" :: struct.ptrT Exports3.S
-  ].
-End Exportsopt3.
+Definition Exportsopt3 := struct.decl [
+  "P" :: struct.ptrT Exports3
+].

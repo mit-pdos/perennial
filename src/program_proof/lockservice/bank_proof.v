@@ -35,10 +35,10 @@ Definition own_bank_clerk γ (bank_ck:loc) : iProp Σ :=
   "Hlck_own" ∷ own_lockclerk γ.(bank_ls_names) lck ls_srv ∗
   "Hkck_own" ∷ own_kvclerk γ.(bank_ks_names) kck ks_srv ∗
 
-  "Hkck" ∷ bank_ck ↦[BankClerk.S :: "kvck"] #kck ∗
-  "Hlck" ∷ bank_ck ↦[BankClerk.S :: "lck"] #lck ∗
-  "Hacc1" ∷ bank_ck ↦[BankClerk.S :: "acc1"] #acc1 ∗
-  "Hacc1" ∷ bank_ck ↦[BankClerk.S :: "acc2"] #acc2 ∗
+  "Hkck" ∷ bank_ck ↦[BankClerk :: "kvck"] #kck ∗
+  "Hlck" ∷ bank_ck ↦[BankClerk :: "lck"] #lck ∗
+  "Hacc1" ∷ bank_ck ↦[BankClerk :: "acc1"] #acc1 ∗
+  "Hacc1" ∷ bank_ck ↦[BankClerk :: "acc2"] #acc2 ∗
 
   "Hacc1_is_lock" ∷ lockservice_is_lock γ.(bank_ls_names) acc1 ∗
   "Hacc2_is_lock" ∷ lockservice_is_lock γ.(bank_ls_names) acc2

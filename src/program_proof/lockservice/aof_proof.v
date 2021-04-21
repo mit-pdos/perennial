@@ -42,12 +42,12 @@ Definition list_safe_size (l:list u8) := int.nat (length l) = length l.
 
 Definition aof_mu_invariant (aof_ptr:loc) γ aof_ctx : iProp Σ :=
   ∃ membuf_sl membufC predurableC (durlen genlength:u64),
-  "Hmembuf" ∷ aof_ptr ↦[AppendOnlyFile.S :: "membuf"] (slice_val membuf_sl) ∗
-  "HdurableLength" ∷ aof_ptr ↦[AppendOnlyFile.S :: "durableLength"]{1/2} #durlen ∗
+  "Hmembuf" ∷ aof_ptr ↦[AppendOnlyFile :: "membuf"] (slice_val membuf_sl) ∗
+  "HdurableLength" ∷ aof_ptr ↦[AppendOnlyFile :: "durableLength"]{1/2} #durlen ∗
   "Hmembuf_sl" ∷ typed_slice.is_slice membuf_sl byteT 1 membufC ∗
   "Hpredurable" ∷ fmlist γ.(predurabledata) (1/2) predurableC ∗
   "Hlogdata" ∷ fmlist γ.(logdata) (1/2)%Qp (predurableC ++ membufC) ∗
-  "Hlength" ∷ aof_ptr ↦[AppendOnlyFile.S :: "length"] #genlength ∗
+  "Hlength" ∷ aof_ptr ↦[AppendOnlyFile :: "length"] #genlength ∗
   "%Hlengthsafe" ∷ ⌜list_safe_size (predurableC ++ membufC)⌝ ∗
   "Hlen_toks" ∷ ([∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜int.nat x ≤ int.nat genlength⌝) ∗
   "Hmembuf_fupd" ∷ (aof_ctx predurableC ={⊤}=∗ aof_ctx (predurableC ++ membufC)
@@ -62,9 +62,9 @@ Definition aofN := nroot .@ "aof".
 
 Definition is_aof aof_ptr γ (aof_ctx : (list u8) → iProp Σ) : iProp Σ :=
   ∃ mu_ptr (lenCond_ptr durCond_ptr:loc),
-  "#Hmu" ∷ readonly (aof_ptr ↦[AppendOnlyFile.S :: "mu"] mu_ptr) ∗
-  "#HlengthCond" ∷ readonly (aof_ptr ↦[AppendOnlyFile.S :: "lengthCond"] #lenCond_ptr) ∗
-  "#HdurableCond" ∷ readonly (aof_ptr ↦[AppendOnlyFile.S :: "durableCond"] #durCond_ptr) ∗
+  "#Hmu" ∷ readonly (aof_ptr ↦[AppendOnlyFile :: "mu"] mu_ptr) ∗
+  "#HlengthCond" ∷ readonly (aof_ptr ↦[AppendOnlyFile :: "lengthCond"] #lenCond_ptr) ∗
+  "#HdurableCond" ∷ readonly (aof_ptr ↦[AppendOnlyFile :: "durableCond"] #durCond_ptr) ∗
   "#HlenCond" ∷ is_cond lenCond_ptr mu_ptr ∗
   "#HdurCond" ∷ is_cond durCond_ptr mu_ptr ∗
   "#Hmu_inv" ∷ is_lock aofN mu_ptr (aof_mu_invariant aof_ptr γ aof_ctx) ∗
@@ -109,7 +109,7 @@ Proof.
   wp_storeField.
 
   iAssert ((|={⊤}=> ∃ γ, is_aof l γ aof_ctx ∗ fmlist γ.(predurabledata) (1 / 2) data
-            ∗ l ↦[AppendOnlyFile.S :: "durableLength"]{1 / 2} #0
+            ∗ l ↦[AppendOnlyFile :: "durableLength"]{1 / 2} #0
             ∗ own γ.(len) (mono_nat_auth (1/2) 0))
           )%I with "[-Hpre HΦ]" as ">HH".
   {
@@ -127,7 +127,7 @@ Proof.
     iIntros "[Hlocked Haof_own]".
     wp_pures.
     iAssert (∃ data', fname f↦ (data++data') ∗ aof_ctx (data++data') ∗ fmlist γ.(predurabledata) (1/2) (data ++ data')
-            ∗ l ↦[AppendOnlyFile.S :: "durableLength"]{1 / 2} #(U64 (length data'))
+            ∗ l ↦[AppendOnlyFile :: "durableLength"]{1 / 2} #(U64 (length data'))
             ∗ own γ.(len) (mono_nat_auth (1/2) (length (data')))
             )%I with "[Hpre Hpredur HdurLen Hlen]" as "Hfile_ctx".
     { iExists []; iFrame. rewrite app_nil_r. iFrame. }
@@ -159,7 +159,7 @@ Proof.
     { done. }
     iIntros (empty_membuf_sl) "Hmembuf_empty".
     wp_apply (wp_storeField with "Hmembuf").
-    { unfold AppendOnlyFile.S. unfold field_ty. simpl. apply slice_val_ty. }
+    { unfold AppendOnlyFile. unfold field_ty. simpl. apply slice_val_ty. }
     iIntros "Hmembuf".
 
     wp_pures.
@@ -273,7 +273,7 @@ Proof.
   wp_apply (typed_slice.wp_SliceAppendSlice (V:=u8) with "[$Hmembuf_sl $HnewData]").
   iIntros (membuf_sl') "Hmembuf_sl".
   wp_apply (wp_storeField with "Hmembuf").
-  { unfold AppendOnlyFile.S. unfold field_ty. simpl. apply slice_val_ty. }
+  { unfold AppendOnlyFile. unfold field_ty. simpl. apply slice_val_ty. }
   iIntros "Hmembuf".
 
   wp_pures.

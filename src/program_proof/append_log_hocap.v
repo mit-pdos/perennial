@@ -131,7 +131,7 @@ Qed.
 Definition is_log (k: nat) (l: loc) : iProp Σ :=
   ∃ lk,
   log_inv k ∗
-  inv Nlog (∃ q, l ↦[Log.S :: "m"]{q} lk) ∗
+  inv Nlog (∃ q, l ↦[Log :: "m"]{q} lk) ∗
   (is_crash_lock N1 k lk (∃ bs, ptsto_log l bs ∗ P (Opened bs l))
                  log_crash_cond).
 
@@ -322,7 +322,7 @@ Proof using PStartedOpening_Timeless.
         simpl. by iApply ptsto_log_crashed. }
       iIntros "Hfull". iSplit.
       ** iApply "HΦ". by iApply Hwand.
-      ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log.S :: "m"]{q} #ml) with "[Hpts]") as "Hread".
+      ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log :: "m"]{q} #ml) with "[Hpts]") as "Hread".
          { iNext; iExists _; iFrame. }
          iMod (alloc_crash_lock' with "Hlock Hfull") as "Hcrash_lock".
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".
@@ -440,7 +440,7 @@ Proof using PStartedIniting_Timeless SIZE_nonzero.
         simpl. by iApply ptsto_log_crashed. }
       iIntros "Hfull". iSplit.
       ** iApply "HΦ". by iApply Hwand.
-      ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log.S :: "m"]{q} #ml) with "[Hpts]") as "Hread".
+      ** iMod (inv_alloc Nlog _ (∃ q, lptr ↦[Log :: "m"]{q} #ml) with "[Hpts]") as "Hread".
          { iNext; iExists _; iFrame. }
          iMod (alloc_crash_lock' with "Hlock Hfull") as "Hcrash_lock".
          iModIntro. iApply "HΦ". iFrame. iExists _. rewrite /log_inv. iSplitL "".

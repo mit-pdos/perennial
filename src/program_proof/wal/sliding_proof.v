@@ -14,12 +14,12 @@ Implicit Types (l: loc) (σ: slidingM.t).
 
 Definition readonly_log logSlice σ : iProp Σ :=
       readonly (updates_slice_frag
-                  (slice_take logSlice (struct.t Update.S) (slidingM.numMutable σ)) 1
+                  (slice_take logSlice (struct.t Update) (slidingM.numMutable σ)) 1
                   (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
 Definition readonly_log_inner' logSlice σ (q : Qp) : iProp Σ :=
                (updates_slice_frag
-                  (slice_take logSlice (struct.t Update.S) (slidingM.numMutable σ)) q
+                  (slice_take logSlice (struct.t Update) (slidingM.numMutable σ)) q
                   (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
 Definition readonly_log_inner logSlice σ : iProp Σ :=
@@ -28,16 +28,16 @@ Definition readonly_log_inner logSlice σ : iProp Σ :=
 Definition mutable_log logSlice q σ : iProp Σ :=
   "%logSlice_wf" ∷ ⌜int.nat logSlice.(Slice.sz) = length σ.(slidingM.log) ∧ int.Z logSlice.(Slice.sz) ≤ int.Z logSlice.(Slice.cap)⌝ ∗
   "log_mutable" ∷ updates_slice' q
-        (slice_skip logSlice (struct.t Update.S) (slidingM.numMutable σ))
+        (slice_skip logSlice (struct.t Update) (slidingM.numMutable σ))
         (drop (int.nat (slidingM.numMutable σ)) σ.(slidingM.log)).
 
 Definition is_sliding (l: loc) (q: Qp) (σ: slidingM.t) : iProp Σ :=
   "%Hwf" ∷ ⌜slidingM.wf σ⌝ ∗
   "Hinv" ∷ ∃ (logSlice: Slice.t) (addrPosPtr: loc),
-    "log" ∷ l ↦[sliding.S :: "log"] (slice_val logSlice) ∗
-    "start" ∷ l ↦[sliding.S :: "start"] #σ.(slidingM.start) ∗
-    "mutable" ∷ l ↦[sliding.S :: "mutable"] #σ.(slidingM.mutable) ∗
-    "addrPos" ∷ l ↦[sliding.S :: "addrPos"] #addrPosPtr ∗
+    "log" ∷ l ↦[sliding :: "log"] (slice_val logSlice) ∗
+    "start" ∷ l ↦[sliding :: "start"] #σ.(slidingM.start) ∗
+    "mutable" ∷ l ↦[sliding :: "mutable"] #σ.(slidingM.mutable) ∗
+    "addrPos" ∷ l ↦[sliding :: "addrPos"] #addrPosPtr ∗
     "#log_readonly" ∷ readonly_log logSlice σ ∗
     "log_mutable" ∷ mutable_log logSlice q σ ∗
     "is_addrPos" ∷ is_map addrPosPtr (slidingM.addrPosMap σ).
@@ -57,7 +57,7 @@ Qed.
 
 Theorem wp_log_len l q σ :
   {{{ is_sliding l q σ }}}
-    slice.len (struct.loadF sliding.S "log" #l)
+    slice.len (struct.loadF sliding "log" #l)
   {{{ RET #(U64 $ length σ.(slidingM.log)); is_sliding l q σ }}}.
 Proof.
   iIntros (Φ) "Hsliding HΦ".
@@ -129,8 +129,8 @@ Qed.
 Theorem updates_slice_frag_split s q q_b (n: u64) log :
   (int.nat n <= int.nat s.(Slice.sz))%nat ->
   updates_slice_frag' s q q_b log -∗
-  updates_slice_frag' (slice_skip s (struct.t Update.S) n) q q_b (drop (int.nat n) log) ∗
-  updates_slice_frag' (slice_take s (struct.t Update.S) n) q q_b (take (int.nat n) log).
+  updates_slice_frag' (slice_skip s (struct.t Update) n) q q_b (drop (int.nat n) log) ∗
+  updates_slice_frag' (slice_take s (struct.t Update) n) q q_b (take (int.nat n) log).
 Proof.
   iIntros (Hbound) "Hs".
   iDestruct (updates_slice_frag_len with "Hs") as %Hlen.
@@ -149,8 +149,8 @@ Qed.
 
 Theorem updates_slice_frag_combine s q q_b (n: u64) log :
   (int.nat n <= int.nat s.(Slice.sz))%nat ->
-  updates_slice_frag' (slice_skip s (struct.t Update.S) n) q q_b (drop (int.nat n) log) ∗
-  updates_slice_frag' (slice_take s (struct.t Update.S) n) q q_b (take (int.nat n) log) -∗
+  updates_slice_frag' (slice_skip s (struct.t Update) n) q q_b (drop (int.nat n) log) ∗
+  updates_slice_frag' (slice_take s (struct.t Update) n) q q_b (take (int.nat n) log) -∗
   updates_slice_frag' s q q_b log.
 Proof.
   iIntros (Hbound) "[Hs2 Hs1]".
@@ -177,7 +177,7 @@ Qed.
 
 Theorem wp_mkSliding s q log (start: u64) :
   int.Z start + length log < 2^64 ->
-  {{{ updates_slice_frag s q log ∗ is_slice_cap s (struct.t Update.S) }}}
+  {{{ updates_slice_frag s q log ∗ is_slice_cap s (struct.t Update) }}}
     mkSliding (slice_val s) #start
   {{{ (l: loc), RET #l; is_sliding l q (slidingM.mk log start (int.Z start + length log)) }}}.
 Proof.
@@ -232,7 +232,7 @@ Proof.
   rewrite -> drop_ge by word.
   rewrite -> take_ge by word.
   iMod (readonly_alloc
-          (updates_slice_frag (slice_take s (struct.t Update.S) (length log)) 1 log) q
+          (updates_slice_frag (slice_take s (struct.t Update) (length log)) 1 log) q
           with "[$Hreadonly]") as "#Hreadonly".
   iModIntro.
   iApply "HΦ".
@@ -553,7 +553,7 @@ Lemma wp_SliceAppend_log s q_b σ uv u :
   {{{ readonly_log s σ ∗ mutable_log s q_b σ ∗ is_update uv q_b u ∗
       ⌜slidingM.wf σ⌝ ∗
       ⌜slidingM.memEnd σ + 1 < 2^64⌝ }}}
-    SliceAppend (struct.t Update.S) (slice_val s) (update_val uv)
+    SliceAppend (struct.t Update) (slice_val s) (update_val uv)
   {{{ s', RET slice_val s';
       let σ' := set slidingM.log (λ log, log ++ [u]) σ in
       readonly_log_inner s' σ' ∗ mutable_log s' q_b σ' ∗
@@ -648,7 +648,7 @@ Qed.
 
 Theorem wp_if_mutable l q_b memLog (ok: bool) (pos: u64) :
   {{{ is_sliding l q_b memLog }}}
-    if: #ok then #pos ≥ struct.loadF sliding.S "mutable" #l else #false
+    if: #ok then #pos ≥ struct.loadF sliding "mutable" #l else #false
   {{{ RET #(bool_decide (ok = true ∧ int.Z memLog.(slidingM.mutable) ≤ int.Z pos));
       is_sliding l q_b memLog }}}.
 Proof.
@@ -863,8 +863,8 @@ Proof.
   iDestruct (big_sepL2_length with "Hblocks") as %Hbks_len.
   autorewrite with len in Hbks_len.
   fold (slidingM.numMutable σ).
-  change (uint64T * (blockT * unitT))%ht with (struct.t Update.S).
-  set (s':=slice_take logSlice (struct.t Update.S) (slidingM.numMutable σ)).
+  change (uint64T * (blockT * unitT))%ht with (struct.t Update).
+  set (s':=slice_take logSlice (struct.t Update) (slidingM.numMutable σ)).
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   autorewrite with len in Hsz.
   iDestruct (is_slice_small_take_drop _ _ _ (word.sub start σ.(slidingM.start)) with "Hs") as "[Hs2 Hs1]".
@@ -906,8 +906,8 @@ Theorem wp_SliceTake_updates s (n: u64) q q_b (upds: list update.t) :
   int.Z n ≤ length upds →
   {{{ updates_slice_frag' s q q_b upds }}}
     SliceTake (slice_val s) #n
-  {{{ RET (slice_val (slice_take s (struct.t Update.S) n));
-      updates_slice_frag' (slice_take s (struct.t Update.S) n) q q_b (take (int.nat n) upds) }}}.
+  {{{ RET (slice_val (slice_take s (struct.t Update) n));
+      updates_slice_frag' (slice_take s (struct.t Update) n) q q_b (take (int.nat n) upds) }}}.
 Proof.
   iIntros (Hbound Φ) "Hupds HΦ".
   iDestruct (updates_slice_frag_len with "Hupds") as %Hlen.
@@ -1064,8 +1064,8 @@ Proof.
   iDestruct "Hupds" as (bks) "[HlogSlice Hbks] /=".
   rewrite take_take min_l. 2: word.
   wp_apply (wp_forSlice (fun i =>
-    "start" ∷ l ↦[sliding.S :: "start"] #σ.(slidingM.start) ∗
-    "addrPos" ∷ l ↦[sliding.S :: "addrPos"] #addrPosPtr ∗
+    "start" ∷ l ↦[sliding :: "start"] #σ.(slidingM.start) ∗
+    "addrPos" ∷ l ↦[sliding :: "addrPos"] #addrPosPtr ∗
     "HaddrPos" ∷ is_map addrPosPtr (slidingM.addrPosMap
       (set slidingM.start (word.add i)
         (set slidingM.log (drop (int.nat i)) σ)

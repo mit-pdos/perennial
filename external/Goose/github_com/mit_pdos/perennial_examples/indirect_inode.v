@@ -13,16 +13,14 @@ Definition maxIndirect : expr := #10.
 
 Definition indirectNumBlocks : expr := #512.
 
-Module Inode.
-  Definition S := struct.decl [
-    "d" :: disk.Disk;
-    "m" :: lockRefT;
-    "addr" :: uint64T;
-    "size" :: uint64T;
-    "direct" :: slice.T uint64T;
-    "indirect" :: slice.T uint64T
-  ].
-End Inode.
+Definition Inode := struct.decl [
+  "d" :: disk.Disk;
+  "m" :: lockRefT;
+  "addr" :: uint64T;
+  "size" :: uint64T;
+  "direct" :: slice.T uint64T;
+  "indirect" :: slice.T uint64T
+].
 
 Definition min: val :=
   rec: "min" "a" "b" :=
@@ -39,7 +37,7 @@ Definition Open: val :=
     let: "indirect" := marshal.Dec__GetInts "dec" maxIndirect in
     let: "numIndirect" := marshal.Dec__GetInt "dec" in
     let: "numDirect" := min "size" maxDirect in
-    struct.new Inode.S [
+    struct.new Inode [
       "d" ::= "d";
       "m" ::= lock.new #();
       "size" ::= "size";
@@ -64,14 +62,14 @@ Definition Inode__UsedBlocks: val :=
   rec: "Inode__UsedBlocks" "i" :=
     let: "addrs" := ref (zero_val (slice.T uint64T)) in
     "addrs" <-[slice.T uint64T] NewSlice uint64T #0;;
-    let: "direct" := struct.loadF Inode.S "direct" "i" in
-    let: "indirect" := struct.loadF Inode.S "indirect" "i" in
+    let: "direct" := struct.loadF Inode "direct" "i" in
+    let: "indirect" := struct.loadF Inode "indirect" "i" in
     ForSlice uint64T <> "a" "direct"
       ("addrs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "addrs") "a");;
     ForSlice uint64T <> "blkAddr" "indirect"
       ("addrs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "addrs") "blkAddr");;
     ForSlice uint64T <> "blkAddr" "indirect"
-      ("addrs" <-[slice.T uint64T] SliceAppendSlice uint64T (![slice.T uint64T] "addrs") (readIndirect (struct.loadF Inode.S "d" "i") "blkAddr"));;
+      ("addrs" <-[slice.T uint64T] SliceAppendSlice uint64T (![slice.T uint64T] "addrs") (readIndirect (struct.loadF Inode "d" "i") "blkAddr"));;
     ![slice.T uint64T] "addrs".
 
 Definition indNum: val :=
@@ -84,29 +82,29 @@ Definition indOff: val :=
 
 Definition Inode__Read: val :=
   rec: "Inode__Read" "i" "off" :=
-    lock.acquire (struct.loadF Inode.S "m" "i");;
-    (if: "off" ≥ struct.loadF Inode.S "size" "i"
+    lock.acquire (struct.loadF Inode "m" "i");;
+    (if: "off" ≥ struct.loadF Inode "size" "i"
     then
-      lock.release (struct.loadF Inode.S "m" "i");;
+      lock.release (struct.loadF Inode "m" "i");;
       slice.nil
     else
       (if: "off" < maxDirect
       then
-        let: "a" := SliceGet uint64T (struct.loadF Inode.S "direct" "i") "off" in
+        let: "a" := SliceGet uint64T (struct.loadF Inode "direct" "i") "off" in
         let: "b" := disk.Read "a" in
-        lock.release (struct.loadF Inode.S "m" "i");;
+        lock.release (struct.loadF Inode "m" "i");;
         "b"
       else
-        let: "addrs" := readIndirect (struct.loadF Inode.S "d" "i") (SliceGet uint64T (struct.loadF Inode.S "indirect" "i") (indNum "off")) in
+        let: "addrs" := readIndirect (struct.loadF Inode "d" "i") (SliceGet uint64T (struct.loadF Inode "indirect" "i") (indNum "off")) in
         let: "b" := disk.Read (SliceGet uint64T "addrs" (indOff "off")) in
-        lock.release (struct.loadF Inode.S "m" "i");;
+        lock.release (struct.loadF Inode "m" "i");;
         "b")).
 
 Definition Inode__Size: val :=
   rec: "Inode__Size" "i" :=
-    lock.acquire (struct.loadF Inode.S "m" "i");;
-    let: "sz" := struct.loadF Inode.S "size" "i" in
-    lock.release (struct.loadF Inode.S "m" "i");;
+    lock.acquire (struct.loadF Inode "m" "i");;
+    let: "sz" := struct.loadF Inode "size" "i" in
+    lock.release (struct.loadF Inode "m" "i");;
     "sz".
 
 Definition padInts: val :=
@@ -119,26 +117,26 @@ Definition padInts: val :=
 Definition Inode__mkHdr: val :=
   rec: "Inode__mkHdr" "i" :=
     let: "enc" := marshal.NewEnc disk.BlockSize in
-    marshal.Enc__PutInt "enc" (struct.loadF Inode.S "size" "i");;
-    marshal.Enc__PutInts "enc" (struct.loadF Inode.S "direct" "i");;
-    padInts "enc" (maxDirect - slice.len (struct.loadF Inode.S "direct" "i"));;
-    marshal.Enc__PutInts "enc" (struct.loadF Inode.S "indirect" "i");;
-    padInts "enc" (maxIndirect - slice.len (struct.loadF Inode.S "indirect" "i"));;
-    marshal.Enc__PutInt "enc" (slice.len (struct.loadF Inode.S "indirect" "i"));;
+    marshal.Enc__PutInt "enc" (struct.loadF Inode "size" "i");;
+    marshal.Enc__PutInts "enc" (struct.loadF Inode "direct" "i");;
+    padInts "enc" (maxDirect - slice.len (struct.loadF Inode "direct" "i"));;
+    marshal.Enc__PutInts "enc" (struct.loadF Inode "indirect" "i");;
+    padInts "enc" (maxIndirect - slice.len (struct.loadF Inode "indirect" "i"));;
+    marshal.Enc__PutInt "enc" (slice.len (struct.loadF Inode "indirect" "i"));;
     let: "hdr" := marshal.Enc__Finish "enc" in
     "hdr".
 
 Definition Inode__inSize: val :=
   rec: "Inode__inSize" "i" :=
     let: "hdr" := Inode__mkHdr "i" in
-    disk.Write (struct.loadF Inode.S "addr" "i") "hdr".
+    disk.Write (struct.loadF Inode "addr" "i") "hdr".
 
 (* checkTotalSize determines that the inode is not already at maximum size
 
    Requires the lock to be held. *)
 Definition Inode__checkTotalSize: val :=
   rec: "Inode__checkTotalSize" "i" :=
-    (if: struct.loadF Inode.S "size" "i" ≥ MaxBlocks
+    (if: struct.loadF Inode "size" "i" ≥ MaxBlocks
     then #false
     else #true).
 
@@ -149,12 +147,12 @@ Definition Inode__checkTotalSize: val :=
    Fails when the inode does not have direct block space. *)
 Definition Inode__appendDirect: val :=
   rec: "Inode__appendDirect" "i" "a" :=
-    (if: struct.loadF Inode.S "size" "i" < maxDirect
+    (if: struct.loadF Inode "size" "i" < maxDirect
     then
-      struct.storeF Inode.S "direct" "i" (SliceAppend uint64T (struct.loadF Inode.S "direct" "i") "a");;
-      struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
+      struct.storeF Inode "direct" "i" (SliceAppend uint64T (struct.loadF Inode "direct" "i") "a");;
+      struct.storeF Inode "size" "i" (struct.loadF Inode "size" "i" + #1);;
       let: "hdr" := Inode__mkHdr "i" in
-      disk.Write (struct.loadF Inode.S "addr" "i") "hdr";;
+      disk.Write (struct.loadF Inode "addr" "i") "hdr";;
       #true
     else #false).
 
@@ -166,9 +164,9 @@ Definition Inode__writeIndirect: val :=
   rec: "Inode__writeIndirect" "i" "indAddr" "addrs" :=
     let: "diskBlk" := prepIndirect "addrs" in
     disk.Write "indAddr" "diskBlk";;
-    struct.storeF Inode.S "size" "i" (struct.loadF Inode.S "size" "i" + #1);;
+    struct.storeF Inode "size" "i" (struct.loadF Inode "size" "i" + #1);;
     let: "hdr" := Inode__mkHdr "i" in
-    disk.Write (struct.loadF Inode.S "addr" "i") "hdr".
+    disk.Write (struct.loadF Inode "addr" "i") "hdr".
 
 (* appendIndirect adds address a (and whatever data is stored there) to the
    inode using space in an existing indirect block, without allocation
@@ -179,12 +177,12 @@ Definition Inode__writeIndirect: val :=
    indirect block is full. *)
 Definition Inode__appendIndirect: val :=
   rec: "Inode__appendIndirect" "i" "a" :=
-    (if: indNum (struct.loadF Inode.S "size" "i") ≥ slice.len (struct.loadF Inode.S "indirect" "i")
+    (if: indNum (struct.loadF Inode "size" "i") ≥ slice.len (struct.loadF Inode "indirect" "i")
     then #false
     else
-      let: "indAddr" := SliceGet uint64T (struct.loadF Inode.S "indirect" "i") (indNum (struct.loadF Inode.S "size" "i")) in
-      let: "addrs" := readIndirect (struct.loadF Inode.S "d" "i") "indAddr" in
-      SliceSet uint64T "addrs" (indOff (struct.loadF Inode.S "size" "i")) "a";;
+      let: "indAddr" := SliceGet uint64T (struct.loadF Inode "indirect" "i") (indNum (struct.loadF Inode "size" "i")) in
+      let: "addrs" := readIndirect (struct.loadF Inode "d" "i") "indAddr" in
+      SliceSet uint64T "addrs" (indOff (struct.loadF Inode "size" "i")) "a";;
       Inode__writeIndirect "i" "indAddr" "addrs";;
       #true).
 
@@ -193,40 +191,40 @@ Definition Inode__appendIndirect: val :=
    Returns false on failure (if the allocator or inode are out of space) *)
 Definition Inode__Append: val :=
   rec: "Inode__Append" "i" "b" "allocator" :=
-    lock.acquire (struct.loadF Inode.S "m" "i");;
+    lock.acquire (struct.loadF Inode "m" "i");;
     let: "ok" := Inode__checkTotalSize "i" in
     (if: ~ "ok"
     then
-      lock.release (struct.loadF Inode.S "m" "i");;
+      lock.release (struct.loadF Inode "m" "i");;
       #false
     else
       let: ("a", "ok2") := alloc.Allocator__Reserve "allocator" in
       (if: ~ "ok2"
       then
-        lock.release (struct.loadF Inode.S "m" "i");;
+        lock.release (struct.loadF Inode "m" "i");;
         #false
       else
         disk.Write "a" "b";;
         let: "ok3" := Inode__appendDirect "i" "a" in
         (if: "ok3"
         then
-          lock.release (struct.loadF Inode.S "m" "i");;
+          lock.release (struct.loadF Inode "m" "i");;
           #true
         else
           let: "ok4" := Inode__appendIndirect "i" "a" in
           (if: "ok4"
           then
-            lock.release (struct.loadF Inode.S "m" "i");;
+            lock.release (struct.loadF Inode "m" "i");;
             #true
           else
             let: ("indAddr", "ok") := alloc.Allocator__Reserve "allocator" in
             (if: ~ "ok"
             then
-              lock.release (struct.loadF Inode.S "m" "i");;
+              lock.release (struct.loadF Inode "m" "i");;
               alloc.Allocator__Free "allocator" "a";;
               #false
             else
-              struct.storeF Inode.S "indirect" "i" (SliceAppend uint64T (struct.loadF Inode.S "indirect" "i") "indAddr");;
+              struct.storeF Inode "indirect" "i" (SliceAppend uint64T (struct.loadF Inode "indirect" "i") "indAddr");;
               Inode__writeIndirect "i" "indAddr" (SliceSingleton "a");;
-              lock.release (struct.loadF Inode.S "m" "i");;
+              lock.release (struct.loadF Inode "m" "i");;
               #true))))).

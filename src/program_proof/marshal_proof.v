@@ -3,7 +3,7 @@ From Perennial.Helpers Require Import List.
 From Goose.github_com.tchajed Require Import marshal.
 From Perennial.goose_lang.lib Require Import encoding.
 
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Inductive encodable :=
@@ -111,7 +111,9 @@ Proof.
 Qed.
 
 Section goose_lang.
-Context `{!heapG Σ}.
+Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context {ext_ty: ext_types ext}.
+
 Implicit Types (v:val).
 
 Definition is_enc (enc_v:val) (sz:Z) (r: Rec) (remaining: Z) : iProp Σ :=

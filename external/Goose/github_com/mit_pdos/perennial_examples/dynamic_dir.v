@@ -10,19 +10,17 @@ Definition MaxInodes : expr := disk.BlockSize `quot` #8.
 
 Definition rootInode : expr := #0.
 
-Module Dir.
-  Definition S := struct.decl [
-    "d" :: disk.Disk;
-    "allocator" :: struct.ptrT alloc.Allocator.S;
-    "m" :: lockRefT;
-    "inodes" :: mapT (struct.ptrT inode.Inode.S)
-  ].
-End Dir.
+Definition Dir := struct.decl [
+  "d" :: disk.Disk;
+  "allocator" :: struct.ptrT alloc.Allocator;
+  "m" :: lockRefT;
+  "inodes" :: mapT (struct.ptrT inode.Inode)
+].
 
 Definition Dir__mkHdr: val :=
   rec: "Dir__mkHdr" "d" :=
     let: "inode_addrs" := ref (zero_val (slice.T uint64T)) in
-    MapIter (struct.loadF Dir.S "inodes" "d") (λ: "a" <>,
+    MapIter (struct.loadF Dir "inodes" "d") (λ: "a" <>,
       "inode_addrs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "inode_addrs") "a");;
     let: "enc" := marshal.NewEnc disk.BlockSize in
     marshal.Enc__PutInt "enc" (slice.len (![slice.T uint64T] "inode_addrs"));;
@@ -44,14 +42,14 @@ Definition parseHdr: val :=
 Definition openInodes: val :=
   rec: "openInodes" "d" :=
     let: "inode_addrs" := parseHdr (disk.Read rootInode) in
-    let: "inodes" := NewMap (struct.ptrT inode.Inode.S) in
+    let: "inodes" := NewMap (struct.ptrT inode.Inode) in
     ForSlice uint64T <> "a" "inode_addrs"
       (MapInsert "inodes" "a" (inode.Open "d" "a"));;
     "inodes".
 
 Definition inodeUsedBlocks: val :=
   rec: "inodeUsedBlocks" "inodes" :=
-    let: "used" := NewMap (struct.t alloc.unit.S) in
+    let: "used" := NewMap (struct.t alloc.unit) in
     MapIter "inodes" (λ: "a" "i",
       alloc.SetAdd "used" (SliceSingleton "a");;
       alloc.SetAdd "used" (inode.Inode__UsedBlocks "i"));;
@@ -62,7 +60,7 @@ Definition Open: val :=
     let: "inodes" := openInodes "d" in
     let: "used" := inodeUsedBlocks "inodes" in
     let: "allocator" := alloc.New #1 ("sz" - #1) "used" in
-    struct.new Dir.S [
+    struct.new Dir [
       "d" ::= "d";
       "allocator" ::= "allocator";
       "m" ::= lock.new #();
@@ -71,68 +69,68 @@ Definition Open: val :=
 
 Definition Dir__Create: val :=
   rec: "Dir__Create" "d" :=
-    let: ("a", "ok") := alloc.Allocator__Reserve (struct.loadF Dir.S "allocator" "d") in
+    let: ("a", "ok") := alloc.Allocator__Reserve (struct.loadF Dir "allocator" "d") in
     (if: ~ "ok"
     then (#0, #false)
     else
       let: "empty" := NewSlice byteT disk.BlockSize in
       disk.Write "a" "empty";;
-      lock.acquire (struct.loadF Dir.S "m" "d");;
-      MapInsert (struct.loadF Dir.S "inodes" "d") "a" (inode.Open (struct.loadF Dir.S "d" "d") "a");;
+      lock.acquire (struct.loadF Dir "m" "d");;
+      MapInsert (struct.loadF Dir "inodes" "d") "a" (inode.Open (struct.loadF Dir "d" "d") "a");;
       Dir__writeHdr "d";;
-      lock.release (struct.loadF Dir.S "m" "d");;
+      lock.release (struct.loadF Dir "m" "d");;
       ("a", #true)).
 
 Definition Dir__delete: val :=
   rec: "Dir__delete" "d" "ino" :=
-    let: "i" := Fst (MapGet (struct.loadF Dir.S "inodes" "d") "ino") in
-    MapDelete (struct.loadF Dir.S "inodes" "d") "ino";;
+    let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
+    MapDelete (struct.loadF Dir "inodes" "d") "ino";;
     Dir__writeHdr "d";;
-    alloc.Allocator__Free (struct.loadF Dir.S "allocator" "d") "ino";;
+    alloc.Allocator__Free (struct.loadF Dir "allocator" "d") "ino";;
     ForSlice uint64T <> "inode_a" (inode.Inode__UsedBlocks "i")
-      (alloc.Allocator__Free (struct.loadF Dir.S "allocator" "d") "inode_a").
+      (alloc.Allocator__Free (struct.loadF Dir "allocator" "d") "inode_a").
 
 Definition Dir__Delete: val :=
   rec: "Dir__Delete" "d" "ino" :=
-    lock.acquire (struct.loadF Dir.S "m" "d");;
+    lock.acquire (struct.loadF Dir "m" "d");;
     Dir__delete "d" "ino";;
-    lock.release (struct.loadF Dir.S "m" "d").
+    lock.release (struct.loadF Dir "m" "d").
 
 Definition Dir__Read: val :=
   rec: "Dir__Read" "d" "ino" "off" :=
-    lock.acquire (struct.loadF Dir.S "m" "d");;
-    let: "i" := Fst (MapGet (struct.loadF Dir.S "inodes" "d") "ino") in
+    lock.acquire (struct.loadF Dir "m" "d");;
+    let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
     (if: ("i" = #null)
     then
       Panic ("invalid inode");;
       #()
     else #());;
     let: "b" := inode.Inode__Read "i" "off" in
-    lock.release (struct.loadF Dir.S "m" "d");;
+    lock.release (struct.loadF Dir "m" "d");;
     "b".
 
 Definition Dir__Size: val :=
   rec: "Dir__Size" "d" "ino" :=
-    lock.acquire (struct.loadF Dir.S "m" "d");;
-    let: "i" := Fst (MapGet (struct.loadF Dir.S "inodes" "d") "ino") in
+    lock.acquire (struct.loadF Dir "m" "d");;
+    let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
     (if: ("i" = #null)
     then
       Panic ("invalid inode");;
       #()
     else #());;
     let: "sz" := inode.Inode__Size "i" in
-    lock.release (struct.loadF Dir.S "m" "d");;
+    lock.release (struct.loadF Dir "m" "d");;
     "sz".
 
 Definition Dir__Append: val :=
   rec: "Dir__Append" "d" "ino" "b" :=
-    lock.acquire (struct.loadF Dir.S "m" "d");;
-    let: "i" := Fst (MapGet (struct.loadF Dir.S "inodes" "d") "ino") in
+    lock.acquire (struct.loadF Dir "m" "d");;
+    let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
     (if: ("i" = #null)
     then
       Panic ("invalid inode");;
       #()
     else #());;
-    let: "ok" := inode.Inode__Append "i" "b" (struct.loadF Dir.S "allocator" "d") in
-    lock.release (struct.loadF Dir.S "m" "d");;
+    let: "ok" := inode.Inode__Append "i" "b" (struct.loadF Dir "allocator" "d") in
+    lock.release (struct.loadF Dir "m" "d");;
     "ok".

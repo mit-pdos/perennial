@@ -334,7 +334,7 @@ Definition wal_resources γ : iProp Σ :=
 
 Definition background_inv l γ : iProp Σ :=
   ∃ (circ_l: loc),
-    l ↦[Walog.S :: "circ"] #circ_l ∗
+    l ↦[Walog :: "circ"] #circ_l ∗
     logger_inv γ circ_l ∗
     installer_inv γ.
 
@@ -1298,7 +1298,7 @@ Theorem wpc_mkLog_recover k (d : loc) γ σ :
     mkLog #d @ k; ⊤
   {{{ l, RET #l;
        "Hwal_inv_pre" ∷ is_wal_inv_pre l γ σ dinit ∗
-       "Hlogger" ∷ (∃ (circ_l: loc), "#Hcirc2" ∷ readonly (l ↦[Walog.S :: "circ"] #circ_l) ∗
+       "Hlogger" ∷ (∃ (circ_l: loc), "#Hcirc2" ∷ readonly (l ↦[Walog :: "circ"] #circ_l) ∗
                               logger_inv γ circ_l) ∗
        "Hinstaller" ∷ installer_inv γ
        }}}

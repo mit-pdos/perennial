@@ -99,7 +99,7 @@ Proof.
     Opaque struct.t.
     wp_pures.
 
-    iAssert (reply_ptr ↦[struct.t GetReply.S] (#_, (slice_val val_sl, #())) )%I with "[HValue HErr]" as "Hrep".
+    iAssert (reply_ptr ↦[struct.t GetReply] (#_, (slice_val val_sl, #())) )%I with "[HValue HErr]" as "Hrep".
     {
       iApply struct_fields_split.
       iFrame.
@@ -349,7 +349,7 @@ Proof.
       (* save reply in reply table *)
       Transparent struct.load.
       unfold struct.load.
-      iAssert (reply_ptr ↦[struct.t GetReply.S] (#0, (slice_val val_sl'', #())) )%I with "[HValue HErr]" as "Hrep".
+      iAssert (reply_ptr ↦[struct.t GetReply] (#0, (slice_val val_sl'', #())) )%I with "[HValue HErr]" as "Hrep".
       {
         iApply struct_fields_split.
         iFrame.
@@ -466,7 +466,7 @@ Proof.
 
       Transparent struct.load.
       unfold struct.load.
-      iAssert (reply_ptr ↦[struct.t GetReply.S] (#1, (slice_val val_sl, #())) )%I with "[HValue HErr]" as "Hrep".
+      iAssert (reply_ptr ↦[struct.t GetReply] (#1, (slice_val val_sl, #())) )%I with "[HValue HErr]" as "Hrep".
       {
         iApply struct_fields_split.
         iFrame.

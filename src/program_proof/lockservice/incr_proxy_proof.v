@@ -36,10 +36,10 @@ Variable γback:incrservice_names.
 Context `{!kvserviceG Σ}.
 
 Lemma RPCRequest_merge req cid seq a1 a2:
-  req ↦[RPCRequest.S :: "CID"] #cid -∗
-  req ↦[RPCRequest.S :: "Seq"] #seq -∗
-  req ↦[RPCRequest.S :: "Args"] (#a1, (#a2, #())) -∗
-  req ↦[struct.t RPCRequest.S] (#cid, (#seq, ((#a1, (#a2, #())) , #())))
+  req ↦[RPCRequest :: "CID"] #cid -∗
+  req ↦[RPCRequest :: "Seq"] #seq -∗
+  req ↦[RPCRequest :: "Args"] (#a1, (#a2, #())) -∗
+  req ↦[struct.t RPCRequest] (#cid, (#seq, ((#a1, (#a2, #())) , #())))
   .
 Proof.
   iIntros.
@@ -48,9 +48,9 @@ Proof.
 Qed.
 
 Lemma RPCVals_merge vals a1 a2:
-  vals ↦[RPCVals.S :: "U64_1"] #a1 -∗
-  vals ↦[RPCVals.S :: "U64_2"] #a2 -∗
-  vals ↦[struct.t RPCVals.S] (#a1, (#a2, #()))
+  vals ↦[RPCVals :: "U64_1"] #a1 -∗
+  vals ↦[RPCVals :: "U64_2"] #a2 -∗
+  vals ↦[struct.t RPCVals] (#a1, (#a2, #()))
 .
 Proof.
   iIntros.
@@ -59,11 +59,11 @@ Proof.
 Qed.
 
 Definition own_onetime_incr_clerk (ck isrv:loc) (cid:u64) : iProp Σ :=
-  "cid" ∷ ck ↦[ShortTermIncrClerk.S :: "cid"] #cid ∗
-  "seq" ∷ ck ↦[ShortTermIncrClerk.S :: "seq"] #1 ∗
-  "incrserver" ∷ ck ↦[ShortTermIncrClerk.S :: "incrserver"] #isrv ∗
+  "cid" ∷ ck ↦[ShortTermIncrClerk :: "cid"] #cid ∗
+  "seq" ∷ ck ↦[ShortTermIncrClerk :: "seq"] #1 ∗
+  "incrserver" ∷ ck ↦[ShortTermIncrClerk :: "incrserver"] #isrv ∗
 
-  "req" ∷ (∃ (c s1 a1 a2:u64), ((ck ↦[ShortTermIncrClerk.S :: "req"] (#c,
+  "req" ∷ (∃ (c s1 a1 a2:u64), ((ck ↦[ShortTermIncrClerk :: "req"] (#c,
                                               (#s1,
                                               (#a1, (#a2, #()), #()))))))
 .
@@ -73,10 +73,10 @@ Definition IncrPreCond : RPCValsC → iProp Σ := (λ a, a.(U64_1) [[γback.(inc
 Definition IncrPostCond : RPCValsC → u64 → iProp Σ := (λ a r, a.(U64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1))%I.
 
 Definition own_unalloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCValsC) : iProp Σ :=
-  "cid" ∷ ck ↦[ShortTermIncrClerk.S :: "cid"] #cid ∗
-  "seq" ∷ ck ↦[ShortTermIncrClerk.S :: "seq"] #2 ∗
-  "incrserver" ∷ ck ↦[ShortTermIncrClerk.S :: "incrserver"] #isrv ∗
-  "#req" ∷ (readonly (ck ↦[ShortTermIncrClerk.S :: "req"] (#cid,
+  "cid" ∷ ck ↦[ShortTermIncrClerk :: "cid"] #cid ∗
+  "seq" ∷ ck ↦[ShortTermIncrClerk :: "seq"] #2 ∗
+  "incrserver" ∷ ck ↦[ShortTermIncrClerk :: "incrserver"] #isrv ∗
+  "#req" ∷ (readonly (ck ↦[ShortTermIncrClerk :: "req"] (#cid,
                                               (#1,
                                               (#args.(U64_1), (#args.(U64_2), #()), #())))))
 .
@@ -144,9 +144,9 @@ Proof using Type*.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
-  iMod (readonly_alloc (req ↦[RPCRequest.S :: "CID"] #cid) q with "[CID]") as "#CID"; first eauto.
-  iMod (readonly_alloc (req ↦[RPCRequest.S :: "Seq"] #1) q with "[Seq]") as "#Seq"; first eauto.
-  iMod (readonly_alloc (req ↦[RPCRequest.S :: "Args"] (into_val.to_val args)) q with "[Args]") as "#Args"; first eauto.
+  iMod (readonly_alloc (req ↦[RPCRequest :: "CID"] #cid) q with "[CID]") as "#CID"; first eauto.
+  iMod (readonly_alloc (req ↦[RPCRequest :: "Seq"] #1) q with "[Seq]") as "#Seq"; first eauto.
+  iMod (readonly_alloc (req ↦[RPCRequest :: "Args"] (into_val.to_val args)) q with "[Args]") as "#Args"; first eauto.
 
   wp_loadField.
   wp_apply (IncrServer__Increment_is_rpcHandler with "Hs_inv").
@@ -391,8 +391,8 @@ Record ProxyServerC :=
 Implicit Types server : ProxyServerC.
 
 Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
-  "Hincrserver" ∷ srv ↦[IncrProxyServer.S :: "incrserver"] #server.(incrserver) ∗
-  "HlastCID" ∷ srv ↦[IncrProxyServer.S :: "lastCID"] #(server.(lastCID)) ∗
+  "Hincrserver" ∷ srv ↦[IncrProxyServer :: "incrserver"] #server.(incrserver) ∗
+  "HlastCID" ∷ srv ↦[IncrProxyServer :: "lastCID"] #(server.(lastCID)) ∗
   "#His_incrserver" ∷ is_incrserver γback server.(incrserver)
 .
 

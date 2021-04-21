@@ -23,7 +23,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 Variable P : SimpleNFS.State -> iProp Σ.
 Context `{Ptimeless : !forall σ, Timeless (P σ)}.
 
-Opaque nfstypes.SETATTR3res.S.
+Opaque nfstypes.SETATTR3res.
 Opaque slice_val.
 
 Lemma is_inode_data_shrink: forall state blk (u: u64) M,
@@ -45,10 +45,10 @@ Proof.
 Qed.
 
 Lemma nfstypes_setattr3res_merge reply s ok fail :
-  ( reply ↦[nfstypes.SETATTR3res.S :: "Status"] s ∗
-    reply ↦[nfstypes.SETATTR3res.S :: "Resok"] ok ∗ 
-    reply ↦[nfstypes.SETATTR3res.S :: "Resfail"] fail ) -∗
-  reply ↦[struct.t nfstypes.SETATTR3res.S]{1} (s, (ok, (fail, #()))).
+  ( reply ↦[nfstypes.SETATTR3res :: "Status"] s ∗
+    reply ↦[nfstypes.SETATTR3res :: "Resok"] ok ∗ 
+    reply ↦[nfstypes.SETATTR3res :: "Resfail"] fail ) -∗
+  reply ↦[struct.t nfstypes.SETATTR3res]{1} (s, (ok, (fail, #()))).
 Proof.
   iIntros "(Status & Resok & Resfail)".
   iApply struct_fields_split. iFrame. done.
@@ -63,12 +63,12 @@ Theorem wp_NFSPROC3_SETATTR γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (sattr
         ( P σ -∗ |8={E}=> P σ' ∗ Q r ) )
   }}}
     Nfs__NFSPROC3_SETATTR #nfs
-      (struct.mk_f nfstypes.SETATTR3args.S [
-        "Object" ::= struct.mk_f nfstypes.Nfs_fh3.S [
+      (struct.mk_f nfstypes.SETATTR3args [
+        "Object" ::= struct.mk_f nfstypes.Nfs_fh3 [
           "Data" ::= slice_val fhslice
         ];
-        "New_attributes" ::= struct.mk_f nfstypes.Sattr3.S [
-          "Size" ::= struct.mk_f nfstypes.Set_size3.S [
+        "New_attributes" ::= struct.mk_f nfstypes.Sattr3 [
+          "Size" ::= struct.mk_f nfstypes.Set_size3 [
             "Set_it" ::= match sattr.(SimpleNFS.sattr_size) with | None => #false | Some _ => #true end;
             "Size" ::= match sattr.(SimpleNFS.sattr_size) with | None => #0 | Some s => #s end
           ]
@@ -76,10 +76,10 @@ Theorem wp_NFSPROC3_SETATTR γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (sattr
       ])%V
   {{{ v,
       RET v;
-      ( ⌜ getField_f nfstypes.SETATTR3res.S "Status" v = #(U32 0) ⌝ ∗
+      ( ⌜ getField_f nfstypes.SETATTR3res "Status" v = #(U32 0) ⌝ ∗
         Q (SimpleNFS.OK tt) ) ∨
       ( ∃ stat,
-        ⌜ getField_f nfstypes.SETATTR3res.S "Status" v = #(U32 stat) ⌝ ∗
+        ⌜ getField_f nfstypes.SETATTR3res "Status" v = #(U32 stat) ⌝ ∗
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.

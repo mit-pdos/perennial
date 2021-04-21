@@ -339,7 +339,7 @@ Definition KVServer_core_own_durable server rpc_server : iProp Σ :=
 
 Definition KVServer_core_own_vol (srv:loc) kv_server : iProp Σ :=
   ∃ (kvs_ptr:loc),
-  "HkvsOwn" ∷ srv ↦[KVServer.S :: "kvs"] #kvs_ptr ∗
+  "HkvsOwn" ∷ srv ↦[KVServer :: "kvs"] #kvs_ptr ∗
   "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
 .
 
@@ -349,8 +349,8 @@ Definition KVServer_core_own_ghost γ kv_server : iProp Σ :=
 
 Definition RPCServer_own_vol (sv:loc) rpc_server : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc),
-    "HlastSeqOwn" ∷ sv ↦[RPCServer.S :: "lastSeq"] #lastSeq_ptr
-∗ "HlastReplyOwn" ∷ sv ↦[RPCServer.S :: "lastReply"] #lastReply_ptr
+    "HlastSeqOwn" ∷ sv ↦[RPCServer :: "lastSeq"] #lastSeq_ptr
+∗ "HlastReplyOwn" ∷ sv ↦[RPCServer :: "lastReply"] #lastReply_ptr
 ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) rpc_server.(lastSeqM)
 ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) rpc_server.(lastReplyM)
 .
@@ -370,8 +370,8 @@ Instance durable_disc kv_server rpc_server: Discretizable (KVServer_core_own_dur
 
 Definition own_kvclerk γ ck_ptr srv : iProp Σ :=
   ∃ (cl_ptr:loc),
-   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
-   "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
+   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk :: "client"] #cl_ptr ∗
+   "Hprimary" ∷ ck_ptr ↦[KVClerk :: "primary"] #srv ∗
    "Hcl" ∷ own_rpcclient cl_ptr γ.(ks_rpcGN).
 
 
@@ -440,7 +440,7 @@ Proof.
 Qed.
 
 Lemma wpc_WriteDurableKVServer γ (srv rpc_srv:loc) server rpc_server server' rpc_server':
-  readonly (srv ↦[lockservice.KVServer.S :: "sv"] #rpc_srv) -∗
+  readonly (srv ↦[lockservice.KVServer :: "sv"] #rpc_srv) -∗
   {{{
       "Hvol" ∷ (kv_core_mu srv γ).(core_own_vol) server' ∗
       "Hrpcvol" ∷ RPCServer_own_vol rpc_srv rpc_server' ∗
@@ -625,7 +625,7 @@ Admitted.
 
 Definition is_kvserver γ (srv:loc) : iProp Σ :=
   ∃ (rpc_srv:loc),
-  "#Hsv" ∷ readonly (srv ↦[KVServer.S :: "sv"] #rpc_srv) ∗
+  "#Hsv" ∷ readonly (srv ↦[KVServer :: "sv"] #rpc_srv) ∗
   "#His_server" ∷ is_server KVServerC (kv_core_mu srv γ) rpc_srv γ.(ks_rpcGN).
 
 

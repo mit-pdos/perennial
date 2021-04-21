@@ -285,7 +285,7 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
     ⌜circ_low_wf addrs blocks⌝ ∗
     ghost_var γ.(addrs_name) (1/2) addrs ∗
     ghost_var γ.(blocks_name) (1/2) blocks ∗
-    circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
+    circ ↦[circularAppender :: "diskAddrs"] (slice_val s) ∗
     is_slice_small s uint64T 1 addrs.
 
 Definition init_ghost_state γ :=
@@ -494,11 +494,11 @@ Qed.
 
 Theorem wp_hdr1 (circ: loc) (newStart: u64) s (addrs: list u64) :
   length addrs = Z.to_nat LogSz ->
-  {{{ circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
+  {{{ circ ↦[circularAppender :: "diskAddrs"] (slice_val s) ∗
        is_slice_small s uint64T 1 addrs }}}
     circularAppender__hdr1 #circ #newStart
   {{{ b_s b, RET slice_val b_s;
-      circ ↦[circularAppender.S :: "diskAddrs"] (slice_val s) ∗
+      circ ↦[circularAppender :: "diskAddrs"] (slice_val s) ∗
       is_slice_small s uint64T 1 addrs ∗
       is_block b_s 1 b ∗
       ⌜block_encodes b ([EncUInt64 newStart] ++ (EncUInt64 <$> addrs))⌝ }}}.
@@ -826,7 +826,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       ghost_var γ.(blocks_name) (1/2) blocks ∗
       start_at_least γ startpos_lb ∗
       diskEnd_is γ (1/2) (int.Z endpos) ∗
-      c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
+      c ↦[circularAppender :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 addrs ∗
       updates_slice_frag bufs q upds
   }}}
@@ -836,7 +836,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       let blocks' := update_blocks blocks (int.Z endpos) upds in
       ghost_var γ.(blocks_name) (1/2) blocks' ∗
       diskEnd_is γ (1/2) (int.Z endpos) ∗
-      c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
+      c ↦[circularAppender :: "diskAddrs"] (slice_val diskaddrslice) ∗
       is_slice_small diskaddrslice uint64T 1 addrs' ∗
       updates_slice_frag bufs q upds
   }}}.
@@ -854,7 +854,7 @@ Proof.
     let addrs' := update_addrs addrs (int.Z endpos) (take (int.nat i) upds) in
     let blocks' := update_blocks blocks (int.Z endpos) (take (int.nat i) upds) in
     ghost_var γ.(blocks_name) (1/2) blocks' ∗
-    c ↦[circularAppender.S :: "diskAddrs"] (slice_val diskaddrslice) ∗
+    c ↦[circularAppender :: "diskAddrs"] (slice_val diskaddrslice) ∗
     is_slice_small diskaddrslice uint64T 1 addrs' ∗
     diskEnd_is γ (1/2) (int.Z endpos) ∗
     ( [∗ list] b_upd;upd ∈ bks;upds, is_update b_upd q upd)

@@ -42,7 +42,7 @@ Definition nat_key_to_addr key : specs.addr :=
 Definition kvpair_val (pair : kvpair.t): val :=
   (#(pair.(kvpair.key).(specs.addrBlock)), (slice_val (pair.(kvpair.val)), #()))%V.
 
-Theorem kvpair_val_t key data : val_ty (kvpair_val (kvpair.mk key data)) (struct.t KVPair.S).
+Theorem kvpair_val_t key data : val_ty (kvpair_val (kvpair.mk key data)) (struct.t KVPair).
 Proof.
   repeat constructor.
   rewrite /blockT; val_ty.
@@ -50,7 +50,7 @@ Qed.
 
 (* Links a list of kvpairs to a slice *)
 Definition kvpairs_valid_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t) sz: iProp Σ :=
-  ∃ slice_kvps, is_slice slice_val (struct.t KVPair.S) 1 (kvpair_val <$> slice_kvps)
+  ∃ slice_kvps, is_slice slice_val (struct.t KVPair) 1 (kvpair_val <$> slice_kvps)
                          ∗ [∗ list] _ ↦ slice_kvp;ls_kvp ∈ slice_kvps;ls_kvps,
   let '(kvpair.mk key bs) := ls_kvp in ∃ (blk: Block),
       ⌜slice_kvp.(kvpair.key) = key ∧ valid_key key sz⌝ ∗
@@ -66,8 +66,8 @@ Definition kvpairs_valid_match (pairs: list kvpair.t) (kvsblks : gmap specs.addr
 Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K})
            (sz : nat) γDisk : iProp Σ :=
   ( ∃ (l : loc),
-      kvsl↦[KVS.S :: "txn"] #l ∗
-      kvsl ↦[KVS.S :: "sz"] #(U64 (Z.of_nat sz)) ∗
+      kvsl↦[KVS :: "txn"] #l ∗
+      kvsl ↦[KVS :: "sz"] #(U64 (Z.of_nat sz)) ∗
       is_txn l γDisk ∗
       ⌜(∀ n : nat, n < sz -> ∃ blk,
              kvsblks !! (nat_key_to_addr n) = Some (existT defs.KindBlock (defs.bufBlock blk))
@@ -103,7 +103,7 @@ Admitted.
       (* Data returned is the data at the specified kvs block *)
       ∗ is_block data 1 blk
       (* Data returned is in the form of a kvpair *)
-      ∗ pairl ↦[struct.t KVPair.S] (kvpair_val (kvpair.mk key data))
+      ∗ pairl ↦[struct.t KVPair] (kvpair_val (kvpair.mk key data))
   }}}.
 Proof.
   iIntros (ϕ) "[Hkvs [%HkeyLookup %Hkey ]] Hϕ".

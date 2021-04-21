@@ -21,10 +21,10 @@ Record MoveShardRequestC := mkMoveShardRequestC {
 }.
 
 Definition own_MoveShardRequest args_ptr args : iProp Σ :=
-  "HCID" ∷ args_ptr ↦[MoveShardRequest.S :: "CID"] #args.(MR_CID) ∗
-  "HSeq" ∷ args_ptr ↦[MoveShardRequest.S :: "Seq"] #args.(MR_Seq) ∗
-  "HSid" ∷ args_ptr ↦[MoveShardRequest.S :: "Sid"] #args.(MR_Sid) ∗
-  "HDst" ∷ args_ptr ↦[MoveShardRequest.S :: "Dst"] #args.(MR_Dst) ∗
+  "HCID" ∷ args_ptr ↦[MoveShardRequest :: "CID"] #args.(MR_CID) ∗
+  "HSeq" ∷ args_ptr ↦[MoveShardRequest :: "Seq"] #args.(MR_Seq) ∗
+  "HSid" ∷ args_ptr ↦[MoveShardRequest :: "Sid"] #args.(MR_Sid) ∗
+  "HDst" ∷ args_ptr ↦[MoveShardRequest :: "Dst"] #args.(MR_Dst) ∗
   "%HseqPositive" ∷ ⌜int.Z args.(MR_Seq) > 0⌝
 .
 

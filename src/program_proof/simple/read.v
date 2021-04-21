@@ -23,14 +23,14 @@ Implicit Types (stk:stuckness) (E: coPset).
 Variable P : SimpleNFS.State -> iProp Σ.
 Context `{Ptimeless : !forall σ, Timeless (P σ)}.
 
-Opaque nfstypes.READ3res.S.
+Opaque nfstypes.READ3res.
 Opaque slice_val.
 
 Lemma nfstypes_read3res_merge reply s ok fail :
-  ( reply ↦[nfstypes.READ3res.S :: "Status"] s ∗
-    reply ↦[nfstypes.READ3res.S :: "Resok"] ok ∗
-    reply ↦[nfstypes.READ3res.S :: "Resfail"] fail ) -∗
-  reply ↦[struct.t nfstypes.READ3res.S]{1} (s, (ok, (fail, #()))).
+  ( reply ↦[nfstypes.READ3res :: "Status"] s ∗
+    reply ↦[nfstypes.READ3res :: "Resok"] ok ∗
+    reply ↦[nfstypes.READ3res :: "Resfail"] fail ) -∗
+  reply ↦[struct.t nfstypes.READ3res]{1} (s, (ok, (fail, #()))).
 Proof.
   iIntros "(Status & Resok & Resfail)".
   iApply struct_fields_split. iFrame. done.
@@ -44,8 +44,8 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
         ( P σ ={E}=∗ P σ' ∗ Q r )
   }}}
     Nfs__NFSPROC3_READ #nfs
-      (struct.mk_f nfstypes.READ3args.S [
-        "File" ::= struct.mk_f nfstypes.Nfs_fh3.S [
+      (struct.mk_f nfstypes.READ3args [
+        "File" ::= struct.mk_f nfstypes.Nfs_fh3 [
           "Data" ::= slice_val fhslice
         ];
         "Offset" ::= #offset;
@@ -54,14 +54,14 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
   {{{ v,
       RET v;
       ( ∃ (eof : bool) (databuf : list u8) (dataslice : Slice.t) resok,
-        ⌜ getField_f nfstypes.READ3res.S "Status" v = #(U32 0) ⌝ ∗
-        ⌜ getField_f nfstypes.READ3res.S "Resok" v = resok ⌝ ∗
-        ⌜ getField_f nfstypes.READ3resok.S "Eof" resok = #eof ⌝ ∗
-        ⌜ getField_f nfstypes.READ3resok.S "Data" resok = slice_val dataslice ⌝ ∗
+        ⌜ getField_f nfstypes.READ3res "Status" v = #(U32 0) ⌝ ∗
+        ⌜ getField_f nfstypes.READ3res "Resok" v = resok ⌝ ∗
+        ⌜ getField_f nfstypes.READ3resok "Eof" resok = #eof ⌝ ∗
+        ⌜ getField_f nfstypes.READ3resok "Data" resok = slice_val dataslice ⌝ ∗
         is_slice dataslice u8T 1%Qp databuf ∗
         Q (SimpleNFS.OK (eof, databuf)) ) ∨
       ( ∃ (stat : Z),
-        ⌜ getField_f nfstypes.READ3res.S "Status" v = #(U32 stat) ⌝ ∗
+        ⌜ getField_f nfstypes.READ3res "Status" v = #(U32 stat) ⌝ ∗
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.
@@ -115,9 +115,9 @@ Proof using Ptimeless.
     iRight. iExists _.
     iFrame "HQ".
     iPureIntro.
-    Transparent nfstypes.READ3res.S.
+    Transparent nfstypes.READ3res.
     simpl. intuition eauto.
-    Opaque nfstypes.READ3res.S.
+    Opaque nfstypes.READ3res.
     lia.
   }
 
@@ -278,7 +278,7 @@ Proof using Ptimeless.
     iThaw "HΦ".
     iApply "HΦ". iLeft.
     iExists _, _, _, _.
-Transparent nfstypes.READ3res.S.
+Transparent nfstypes.READ3res.
     iSplit; first done.
     iSplit; first done.
     iSplit; first done.
@@ -348,9 +348,9 @@ Transparent nfstypes.READ3res.S.
     iApply "HΦ".
     iRight. iExists _. iFrame "HQ".
     iPureIntro.
-    Transparent nfstypes.READ3res.S.
+    Transparent nfstypes.READ3res.
     simpl. intuition eauto.
-    Opaque nfstypes.READ3res.S.
+    Opaque nfstypes.READ3res.
     lia.
 
 Unshelve.

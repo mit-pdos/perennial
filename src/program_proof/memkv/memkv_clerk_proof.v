@@ -10,11 +10,11 @@ Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
 
 Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   ∃ (s coordCk:loc) shardMap_sl (shardMapping:list u64),
-  "HshardClerks" ∷ ck ↦[MemKVClerk.S :: "shardClerks"] #s ∗
+  "HshardClerks" ∷ ck ↦[MemKVClerk :: "shardClerks"] #s ∗
   "HshardClerksSet" ∷ own_ShardClerkSet s γ ∗
-  "HcoordCk" ∷ ck ↦[MemKVClerk.S :: "coordCk"] #coordCk ∗
+  "HcoordCk" ∷ ck ↦[MemKVClerk :: "coordCk"] #coordCk ∗
   "HcoordCk_own" ∷ own_MemKVCoordClerk coordCk ∗
-  "HshardMap" ∷ ck ↦[MemKVClerk.S :: "shardMap"] (slice_val shardMap_sl) ∗
+  "HshardMap" ∷ ck ↦[MemKVClerk :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
   "%HshardMap_length" ∷ ⌜length shardMapping = uNSHARD⌝
 .

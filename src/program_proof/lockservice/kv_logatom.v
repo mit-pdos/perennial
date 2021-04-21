@@ -269,8 +269,8 @@ Qed.
 
 Definition own_kvclerk_cid γ ck_ptr srv cid : iProp Σ :=
   ∃ (cl_ptr:loc),
-   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk.S :: "client"] #cl_ptr ∗
-   "Hprimary" ∷ ck_ptr ↦[KVClerk.S :: "primary"] #srv ∗
+   "Hcl_ptr" ∷ ck_ptr ↦[KVClerk :: "client"] #cl_ptr ∗
+   "Hprimary" ∷ ck_ptr ↦[KVClerk :: "primary"] #srv ∗
    "Hcl" ∷ own_rpcclient_cid cl_ptr γ.(ks_rpcGN) cid.
 
 Notation "k [[ γ ]]↦ '_'" := (∃ v, k [[γ]]↦ v)%I

@@ -24,16 +24,16 @@ Record GetReplyC := mkGetReplyC {
 }.
 
 Definition own_GetRequest args_ptr args : iProp Σ :=
-  "HCID" ∷ args_ptr ↦[GetRequest.S :: "CID"] #args.(GR_CID) ∗
-  "HSeq" ∷ args_ptr ↦[GetRequest.S :: "Seq"] #args.(GR_Seq) ∗
-  "HKey" ∷ args_ptr ↦[GetRequest.S :: "Key"] #args.(GR_Key) ∗
+  "HCID" ∷ args_ptr ↦[GetRequest :: "CID"] #args.(GR_CID) ∗
+  "HSeq" ∷ args_ptr ↦[GetRequest :: "Seq"] #args.(GR_Seq) ∗
+  "HKey" ∷ args_ptr ↦[GetRequest :: "Key"] #args.(GR_Key) ∗
   "%HseqPositive" ∷ ⌜int.Z args.(GR_Seq) > 0⌝
 .
 
 Definition own_GetReply reply_ptr rep : iProp Σ :=
   ∃ val_sl,
-  "HErr" ∷ reply_ptr ↦[GetReply.S :: "Err"] #rep.(GR_Err) ∗
-  "HValue" ∷ reply_ptr ↦[GetReply.S :: "Value"] (slice_val val_sl) ∗
+  "HErr" ∷ reply_ptr ↦[GetReply :: "Err"] #rep.(GR_Err) ∗
+  "HValue" ∷ reply_ptr ↦[GetReply :: "Value"] (slice_val val_sl) ∗
   "HValue_sl" ∷ ∃ (q:Qp), (typed_slice.is_slice_small val_sl byteT q rep.(GR_Value))
 .
 
@@ -121,7 +121,7 @@ Proof.
   iIntros (Φ) "[Hsl %Henc] HΦ".
   wp_lam.
   wp_apply (wp_allocStruct).
-  { unfold GetReply.S. simpl.
+  { unfold GetReply. simpl.
     unfold ErrorType. admit. }
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".

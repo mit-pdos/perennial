@@ -36,9 +36,9 @@ Definition locked (hm : gname) (addr : u64) : iProp Σ :=
 Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
            (lockStatePtr : loc) (covered : gset u64) (P : u64 -> iProp Σ) :=
   ( ∃ (cond : loc) (nwaiters : u64),
-      "held" ∷ lockStatePtr ↦[lockState.S :: "held"] #gheld ∗
-      "cond" ∷ lockStatePtr ↦[lockState.S :: "cond"] #cond ∗
-      "waiters" ∷ lockStatePtr ↦[lockState.S :: "waiters"] #nwaiters ∗
+      "held" ∷ lockStatePtr ↦[lockState :: "held"] #gheld ∗
+      "cond" ∷ lockStatePtr ↦[lockState :: "cond"] #cond ∗
+      "waiters" ∷ lockStatePtr ↦[lockState :: "waiters"] #nwaiters ∗
       "#Hcond" ∷ lock.is_cond cond #shardlock ∗
       "%Hcovered" ∷ ⌜ addr ∈ covered ⌝ ∗
       "Hwaiters" ∷ ( ⌜ gheld = true ⌝ ∨
@@ -58,8 +58,8 @@ Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
 
 Definition is_lockShard (ls : loc) (ghostHeap : gname) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (shardlock mptr : loc),
-      "#Hls_mu" ∷ readonly (ls ↦[lockShard.S :: "mu"] #shardlock) ∗
-      "#Hls_state" ∷ readonly (ls ↦[lockShard.S :: "state"] #mptr) ∗
+      "#Hls_mu" ∷ readonly (ls ↦[lockShard :: "mu"] #shardlock) ∗
+      "#Hls_state" ∷ readonly (ls ↦[lockShard :: "state"] #mptr) ∗
       "#Hlock" ∷ is_lock lockN #shardlock (is_lockShard_inner mptr shardlock ghostHeap covered P)
   )%I.
 
@@ -554,8 +554,8 @@ Qed.
 
 Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
-    "#Href" ∷ readonly (l ↦[LockMap.S :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (is_slice_small shardslice (struct.ptrT lockShard.S) 1 shards) ∗
+    "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
+    "#Hslice" ∷ readonly (is_slice_small shardslice (struct.ptrT lockShard) 1 shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P.
@@ -568,7 +568,7 @@ Definition Locked (ghs : list gname) (addr : u64) : iProp Σ :=
 
 (* XXX why is this needed here? *)
 Opaque load_ty.
-Opaque lockShard.S.
+Opaque lockShard.
 
 Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
   {{{ [∗ set] a ∈ covered, P a }}}
@@ -586,8 +586,8 @@ Proof.
   wp_pures.
   wp_apply (wp_forUpto (λ (i : u64),
                           ∃ s shardlocs ghs,
-                            "Hvar" ∷ shards ↦[slice.T (refT (struct.t lockShard.S))] (slice_val s) ∗
-                            "Hslice" ∷ is_slice s (struct.ptrT lockShard.S) 1 shardlocs ∗
+                            "Hvar" ∷ shards ↦[slice.T (refT (struct.t lockShard))] (slice_val s) ∗
+                            "Hslice" ∷ is_slice s (struct.ptrT lockShard) 1 shardlocs ∗
                             "%Hlen" ∷ ⌜ length shardlocs = int.nat i ⌝ ∗
                             "Hpp" ∷ ( [∗ set] shardnum ∈ rangeSet (int.Z i) (NSHARD-int.Z i),
                               [∗ set] a ∈ covered_by_shard (int.Z shardnum) covered, P a ) ∗

@@ -4,10 +4,8 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 (* allocator.go *)
 
-Module unit.
-  Definition S := struct.decl [
-  ].
-End unit.
+Definition unit := struct.decl [
+].
 
 Definition findKey: val :=
   rec: "findKey" "m" :=
@@ -29,10 +27,10 @@ Definition allocate: val :=
 
 Definition freeRange: val :=
   rec: "freeRange" "sz" :=
-    let: "m" := NewMap (struct.t unit.S) in
+    let: "m" := NewMap (struct.t unit) in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "sz"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      MapInsert "m" (![uint64T] "i") (struct.mk unit.S [
+      MapInsert "m" (![uint64T] "i") (struct.mk unit [
       ]);;
       Continue);;
     "m".
@@ -192,37 +190,33 @@ Definition testCopyShorterSrc: val :=
 (* encoding.go *)
 
 (* helpers *)
-Module Enc.
-  Definition S := struct.decl [
-    "p" :: slice.T byteT
-  ].
-End Enc.
+Definition Enc := struct.decl [
+  "p" :: slice.T byteT
+].
 
 Definition Enc__consume: val :=
   rec: "Enc__consume" "e" "n" :=
-    let: "b" := SliceTake (struct.loadF Enc.S "p" "e") "n" in
-    struct.storeF Enc.S "p" "e" (SliceSkip byteT (struct.loadF Enc.S "p" "e") "n");;
+    let: "b" := SliceTake (struct.loadF Enc "p" "e") "n" in
+    struct.storeF Enc "p" "e" (SliceSkip byteT (struct.loadF Enc "p" "e") "n");;
     "b".
 
-Module Dec.
-  Definition S := struct.decl [
-    "p" :: slice.T byteT
-  ].
-End Dec.
+Definition Dec := struct.decl [
+  "p" :: slice.T byteT
+].
 
 Definition Dec__consume: val :=
   rec: "Dec__consume" "d" "n" :=
-    let: "b" := SliceTake (struct.loadF Dec.S "p" "d") "n" in
-    struct.storeF Dec.S "p" "d" (SliceSkip byteT (struct.loadF Dec.S "p" "d") "n");;
+    let: "b" := SliceTake (struct.loadF Dec "p" "d") "n" in
+    struct.storeF Dec "p" "d" (SliceSkip byteT (struct.loadF Dec "p" "d") "n");;
     "b".
 
 Definition roundtripEncDec32: val :=
   rec: "roundtripEncDec32" "x" :=
     let: "r" := NewSlice byteT #4 in
-    let: "e" := struct.new Enc.S [
+    let: "e" := struct.new Enc [
       "p" ::= "r"
     ] in
-    let: "d" := struct.new Dec.S [
+    let: "d" := struct.new Dec [
       "p" ::= "r"
     ] in
     UInt32Put (Enc__consume "e" #4) "x";;
@@ -231,10 +225,10 @@ Definition roundtripEncDec32: val :=
 Definition roundtripEncDec64: val :=
   rec: "roundtripEncDec64" "x" :=
     let: "r" := NewSlice byteT #8 in
-    let: "e" := struct.new Enc.S [
+    let: "e" := struct.new Enc [
       "p" ::= "r"
     ] in
-    let: "d" := struct.new Dec.S [
+    let: "d" := struct.new Dec [
       "p" ::= "r"
     ] in
     UInt64Put (Enc__consume "e" #8) "x";;
@@ -284,21 +278,19 @@ Definition testEncDec64: val :=
 (* function_ordering.go *)
 
 (* helpers *)
-Module Editor.
-  Definition S := struct.decl [
-    "s" :: slice.T uint64T;
-    "next_val" :: uint64T
-  ].
-End Editor.
+Definition Editor := struct.decl [
+  "s" :: slice.T uint64T;
+  "next_val" :: uint64T
+].
 
 (* advances the array editor, and returns the value it wrote, storing
    "next" in next_val *)
 Definition Editor__AdvanceReturn: val :=
   rec: "Editor__AdvanceReturn" "e" "next" :=
-    let: "tmp" := ref_to uint64T (struct.loadF Editor.S "next_val" "e") in
-    SliceSet uint64T (struct.loadF Editor.S "s" "e") #0 (![uint64T] "tmp");;
-    struct.storeF Editor.S "next_val" "e" "next";;
-    struct.storeF Editor.S "s" "e" (SliceSkip uint64T (struct.loadF Editor.S "s" "e") #1);;
+    let: "tmp" := ref_to uint64T (struct.loadF Editor "next_val" "e") in
+    SliceSet uint64T (struct.loadF Editor "s" "e") #0 (![uint64T] "tmp");;
+    struct.storeF Editor "next_val" "e" "next";;
+    struct.storeF Editor "s" "e" (SliceSkip uint64T (struct.loadF Editor "s" "e") #1);;
     ![uint64T] "tmp".
 
 (* we call this function with side-effectful function calls as arguments,
@@ -307,22 +299,20 @@ Definition addFour64: val :=
   rec: "addFour64" "a" "b" "c" "d" :=
     "a" + "b" + "c" + "d".
 
-Module Pair.
-  Definition S := struct.decl [
-    "x" :: uint64T;
-    "y" :: uint64T
-  ].
-End Pair.
+Definition Pair := struct.decl [
+  "x" :: uint64T;
+  "y" :: uint64T
+].
 
 (* tests *)
 Definition failing_testFunctionOrdering: val :=
   rec: "failing_testFunctionOrdering" <> :=
     let: "arr" := ref_to (slice.T uint64T) (NewSlice uint64T #5) in
-    let: "e1" := struct.mk Editor.S [
+    let: "e1" := struct.mk Editor [
       "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #0;
       "next_val" ::= #1
     ] in
-    let: "e2" := struct.mk Editor.S [
+    let: "e2" := struct.mk Editor [
       "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #0;
       "next_val" ::= #101
     ] in
@@ -341,20 +331,20 @@ Definition failing_testFunctionOrdering: val :=
             (if: SliceGet uint64T (![slice.T uint64T] "arr") #2 ≠ #3
             then #false
             else
-              let: "p" := struct.mk Pair.S [
+              let: "p" := struct.mk Pair [
                 "x" ::= Editor__AdvanceReturn "e1" #5;
                 "y" ::= Editor__AdvanceReturn "e2" #105
               ] in
               (if: SliceGet uint64T (![slice.T uint64T] "arr") #3 ≠ #104
               then #false
               else
-                let: "q" := struct.mk Pair.S [
+                let: "q" := struct.mk Pair [
                   "y" ::= Editor__AdvanceReturn "e1" #6;
                   "x" ::= Editor__AdvanceReturn "e2" #106
                 ] in
                 (if: SliceGet uint64T (![slice.T uint64T] "arr") #4 ≠ #105
                 then #false
-                else (struct.get Pair.S "x" "p" + struct.get Pair.S "x" "q" = #109)))))))).
+                else (struct.get Pair "x" "p" + struct.get Pair "x" "q" = #109)))))))).
 
 (* int_conversions.go *)
 
@@ -382,56 +372,52 @@ Definition failing_testU32NewtypeLen: val :=
 
 (* interfaces.go *)
 
-Module geometryInterface.
-  Definition S := struct.decl [
-    "Square" :: (unitT -> uint64T)%ht;
-    "Volume" :: (unitT -> uint64T)%ht
-  ].
-End geometryInterface.
+Definition geometryInterface := struct.decl [
+  "Square" :: (unitT -> uint64T)%ht;
+  "Volume" :: (unitT -> uint64T)%ht
+].
 
 Definition measureArea: val :=
   rec: "measureArea" "t" :=
-    struct.get geometryInterface.S "Square" "t".
+    struct.get geometryInterface "Square" "t".
 
 Definition measureVolumePlusNM: val :=
   rec: "measureVolumePlusNM" "t" "n" "m" :=
-    struct.get geometryInterface.S "Volume" "t" + "n" + "m".
+    struct.get geometryInterface "Volume" "t" + "n" + "m".
 
 Definition measureVolume: val :=
   rec: "measureVolume" "t" :=
-    struct.get geometryInterface.S "Volume" "t".
+    struct.get geometryInterface "Volume" "t".
 
-Module SquareStruct.
-  Definition S := struct.decl [
-    "Side" :: uint64T
-  ].
-End SquareStruct.
+Definition SquareStruct := struct.decl [
+  "Side" :: uint64T
+].
 
 Definition SquareStruct__Square: val :=
   rec: "SquareStruct__Square" "t" :=
-    struct.get SquareStruct.S "Side" "t" * struct.get SquareStruct.S "Side" "t".
+    struct.get SquareStruct "Side" "t" * struct.get SquareStruct "Side" "t".
 
 Definition SquareStruct__Volume: val :=
   rec: "SquareStruct__Volume" "t" :=
-    struct.get SquareStruct.S "Side" "t" * struct.get SquareStruct.S "Side" "t" * struct.get SquareStruct.S "Side" "t".
+    struct.get SquareStruct "Side" "t" * struct.get SquareStruct "Side" "t" * struct.get SquareStruct "Side" "t".
 
 Definition SquareStruct__to__geometryInterface: val :=
   rec: "SquareStruct_to_geometryInterface" "t" :=
-    struct.mk geometryInterface.S [
+    struct.mk geometryInterface [
       "Square" ::= SquareStruct__Square "t";
       "Volume" ::= SquareStruct__Volume "t"
     ].
 
 Definition testBasicInterface: val :=
   rec: "testBasicInterface" <> :=
-    let: "s" := struct.mk SquareStruct.S [
+    let: "s" := struct.mk SquareStruct [
       "Side" ::= #2
     ] in
     (measureArea (SquareStruct__to__geometryInterface "s") = #4).
 
 Definition testAssignInterface: val :=
   rec: "testAssignInterface" <> :=
-    let: "s" := struct.mk SquareStruct.S [
+    let: "s" := struct.mk SquareStruct [
       "Side" ::= #3
     ] in
     let: "area" := measureArea (SquareStruct__to__geometryInterface "s") in
@@ -439,7 +425,7 @@ Definition testAssignInterface: val :=
 
 Definition testParamsInterface: val :=
   rec: "testParamsInterface" <> :=
-    let: "s" := struct.mk SquareStruct.S [
+    let: "s" := struct.mk SquareStruct [
       "Side" ::= #3
     ] in
     let: "volume" := measureVolumePlusNM (SquareStruct__to__geometryInterface "s") #1 #2 in
@@ -447,7 +433,7 @@ Definition testParamsInterface: val :=
 
 Definition testMultipleInterface: val :=
   rec: "testMultipleInterface" <> :=
-    let: "s" := struct.mk SquareStruct.S [
+    let: "s" := struct.mk SquareStruct [
       "Side" ::= #3
     ] in
     let: "square1" := measureArea (SquareStruct__to__geometryInterface "s") in
@@ -456,7 +442,7 @@ Definition testMultipleInterface: val :=
 
 Definition testBinaryExprInterface: val :=
   rec: "testBinaryExprInterface" <> :=
-    let: "s" := struct.mk SquareStruct.S [
+    let: "s" := struct.mk SquareStruct [
       "Side" ::= #3
     ] in
     let: "square1" := measureArea (SquareStruct__to__geometryInterface "s") in
@@ -465,7 +451,7 @@ Definition testBinaryExprInterface: val :=
 
 Definition testIfStmtInterface: val :=
   rec: "testIfStmtInterface" <> :=
-    let: "s" := struct.mk SquareStruct.S [
+    let: "s" := struct.mk SquareStruct [
       "Side" ::= #3
     ] in
     (if: (measureArea (SquareStruct__to__geometryInterface "s") = #9)
@@ -505,21 +491,19 @@ Definition standardForLoop: val :=
     "sum".
 
 (* based off diskAppendWait loop pattern in logging2 *)
-Module LoopStruct.
-  Definition S := struct.decl [
-    "loopNext" :: refT uint64T
-  ].
-End LoopStruct.
+Definition LoopStruct := struct.decl [
+  "loopNext" :: refT uint64T
+].
 
 Definition LoopStruct__forLoopWait: val :=
   rec: "LoopStruct__forLoopWait" "ls" "i" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "nxt" := struct.get LoopStruct.S "loopNext" "ls" in
+      let: "nxt" := struct.get LoopStruct "loopNext" "ls" in
       (if: "i" < ![uint64T] "nxt"
       then Break
       else
-        struct.get LoopStruct.S "loopNext" "ls" <-[uint64T] ![uint64T] (struct.get LoopStruct.S "loopNext" "ls") + #1;;
+        struct.get LoopStruct "loopNext" "ls" <-[uint64T] ![uint64T] (struct.get LoopStruct "loopNext" "ls") + #1;;
         Continue)).
 
 (* tests *)
@@ -534,11 +518,11 @@ Definition testStandardForLoop: val :=
 
 Definition testForLoopWait: val :=
   rec: "testForLoopWait" <> :=
-    let: "ls" := struct.mk LoopStruct.S [
+    let: "ls" := struct.mk LoopStruct [
       "loopNext" ::= ref (zero_val uint64T)
     ] in
     LoopStruct__forLoopWait "ls" #3;;
-    (![uint64T] (struct.get LoopStruct.S "loopNext" "ls") = #4).
+    (![uint64T] (struct.get LoopStruct "loopNext" "ls") = #4).
 
 Definition testBreakFromLoopWithContinue: val :=
   rec: "testBreakFromLoopWithContinue" <> :=
@@ -908,29 +892,27 @@ Definition testLinearize: val :=
 (* shortcircuiting.go *)
 
 (* helpers *)
-Module BoolTest.
-  Definition S := struct.decl [
-    "t" :: boolT;
-    "f" :: boolT;
-    "tc" :: uint64T;
-    "fc" :: uint64T
-  ].
-End BoolTest.
+Definition BoolTest := struct.decl [
+  "t" :: boolT;
+  "f" :: boolT;
+  "tc" :: uint64T;
+  "fc" :: uint64T
+].
 
 Definition CheckTrue: val :=
   rec: "CheckTrue" "b" :=
-    struct.storeF BoolTest.S "tc" "b" (struct.loadF BoolTest.S "tc" "b" + #1);;
-    struct.loadF BoolTest.S "t" "b".
+    struct.storeF BoolTest "tc" "b" (struct.loadF BoolTest "tc" "b" + #1);;
+    struct.loadF BoolTest "t" "b".
 
 Definition CheckFalse: val :=
   rec: "CheckFalse" "b" :=
-    struct.storeF BoolTest.S "fc" "b" (struct.loadF BoolTest.S "fc" "b" + #1);;
-    struct.loadF BoolTest.S "f" "b".
+    struct.storeF BoolTest "fc" "b" (struct.loadF BoolTest "fc" "b" + #1);;
+    struct.loadF BoolTest "f" "b".
 
 (* tests *)
 Definition testShortcircuitAndTF: val :=
   rec: "testShortcircuitAndTF" <> :=
-    let: "b" := struct.new BoolTest.S [
+    let: "b" := struct.new BoolTest [
       "t" ::= #true;
       "f" ::= #false;
       "tc" ::= #0;
@@ -938,11 +920,11 @@ Definition testShortcircuitAndTF: val :=
     ] in
     (if: (CheckTrue "b") && (CheckFalse "b")
     then #false
-    else (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #1)).
+    else (struct.loadF BoolTest "tc" "b" = #1) && (struct.loadF BoolTest "fc" "b" = #1)).
 
 Definition testShortcircuitAndFT: val :=
   rec: "testShortcircuitAndFT" <> :=
-    let: "b" := struct.new BoolTest.S [
+    let: "b" := struct.new BoolTest [
       "t" ::= #true;
       "f" ::= #false;
       "tc" ::= #0;
@@ -950,48 +932,46 @@ Definition testShortcircuitAndFT: val :=
     ] in
     (if: (CheckFalse "b") && (CheckTrue "b")
     then #false
-    else (struct.loadF BoolTest.S "tc" "b" = #0) && (struct.loadF BoolTest.S "fc" "b" = #1)).
+    else (struct.loadF BoolTest "tc" "b" = #0) && (struct.loadF BoolTest "fc" "b" = #1)).
 
 Definition testShortcircuitOrTF: val :=
   rec: "testShortcircuitOrTF" <> :=
-    let: "b" := struct.new BoolTest.S [
+    let: "b" := struct.new BoolTest [
       "t" ::= #true;
       "f" ::= #false;
       "tc" ::= #0;
       "fc" ::= #0
     ] in
     (if: (CheckTrue "b") || (CheckFalse "b")
-    then (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #0)
+    then (struct.loadF BoolTest "tc" "b" = #1) && (struct.loadF BoolTest "fc" "b" = #0)
     else #false).
 
 Definition testShortcircuitOrFT: val :=
   rec: "testShortcircuitOrFT" <> :=
-    let: "b" := struct.new BoolTest.S [
+    let: "b" := struct.new BoolTest [
       "t" ::= #true;
       "f" ::= #false;
       "tc" ::= #0;
       "fc" ::= #0
     ] in
     (if: (CheckFalse "b") || (CheckTrue "b")
-    then (struct.loadF BoolTest.S "tc" "b" = #1) && (struct.loadF BoolTest.S "fc" "b" = #1)
+    then (struct.loadF BoolTest "tc" "b" = #1) && (struct.loadF BoolTest "fc" "b" = #1)
     else #false).
 
 (* slices.go *)
 
 (* helpers *)
-Module ArrayEditor.
-  Definition S := struct.decl [
-    "s" :: slice.T uint64T;
-    "next_val" :: uint64T
-  ].
-End ArrayEditor.
+Definition ArrayEditor := struct.decl [
+  "s" :: slice.T uint64T;
+  "next_val" :: uint64T
+].
 
 Definition ArrayEditor__Advance: val :=
   rec: "ArrayEditor__Advance" "ae" "arr" "next" :=
     SliceSet uint64T "arr" #0 (SliceGet uint64T "arr" #0 + #1);;
-    SliceSet uint64T (struct.loadF ArrayEditor.S "s" "ae") #0 (struct.loadF ArrayEditor.S "next_val" "ae");;
-    struct.storeF ArrayEditor.S "next_val" "ae" "next";;
-    struct.storeF ArrayEditor.S "s" "ae" (SliceSkip uint64T (struct.loadF ArrayEditor.S "s" "ae") #1).
+    SliceSet uint64T (struct.loadF ArrayEditor "s" "ae") #0 (struct.loadF ArrayEditor "next_val" "ae");;
+    struct.storeF ArrayEditor "next_val" "ae" "next";;
+    struct.storeF ArrayEditor "s" "ae" (SliceSkip uint64T (struct.loadF ArrayEditor "s" "ae") #1).
 
 (* tests *)
 Definition testSliceOps: val :=
@@ -1018,11 +998,11 @@ Definition testSliceOps: val :=
 Definition testOverwriteArray: val :=
   rec: "testOverwriteArray" <> :=
     let: "arr" := ref_to (slice.T uint64T) (NewSlice uint64T #4) in
-    let: "ae1" := struct.new ArrayEditor.S [
+    let: "ae1" := struct.new ArrayEditor [
       "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #0;
       "next_val" ::= #1
     ] in
-    let: "ae2" := struct.new ArrayEditor.S [
+    let: "ae2" := struct.new ArrayEditor [
       "s" ::= SliceSkip uint64T (![slice.T uint64T] "arr") #1;
       "next_val" ::= #102
     ] in
@@ -1068,63 +1048,55 @@ Definition failing_testStringLength: val :=
 
 (* struct_pointers.go *)
 
-Module Bar.
-  Definition S := struct.decl [
-    "a" :: uint64T;
-    "b" :: uint64T
-  ].
-End Bar.
+Definition Bar := struct.decl [
+  "a" :: uint64T;
+  "b" :: uint64T
+].
 
 (* Foo contains a nested struct which is intended to be manipulated through a
    Foo pointer *)
-Module Foo.
-  Definition S := struct.decl [
-    "bar" :: struct.t Bar.S
-  ].
-End Foo.
+Definition Foo := struct.decl [
+  "bar" :: struct.t Bar
+].
 
 Definition Bar__mutate: val :=
   rec: "Bar__mutate" "bar" :=
-    struct.storeF Bar.S "a" "bar" #2;;
-    struct.storeF Bar.S "b" "bar" #3.
+    struct.storeF Bar "a" "bar" #2;;
+    struct.storeF Bar "b" "bar" #3.
 
 Definition Foo__mutateBar: val :=
   rec: "Foo__mutateBar" "foo" :=
-    Bar__mutate (struct.loadF Foo.S "bar" "foo").
+    Bar__mutate (struct.loadF Foo "bar" "foo").
 
 Definition failing_testFooBarMutation: val :=
   rec: "failing_testFooBarMutation" <> :=
-    let: "x" := struct.mk Foo.S [
-      "bar" ::= struct.mk Bar.S [
+    let: "x" := struct.mk Foo [
+      "bar" ::= struct.mk Bar [
         "a" ::= #0;
         "b" ::= #0
       ]
     ] in
     Foo__mutateBar "x";;
-    (struct.get Bar.S "a" (struct.get Foo.S "bar" "x") = #2).
+    (struct.get Bar "a" (struct.get Foo "bar" "x") = #2).
 
 (* structs.go *)
 
-Module TwoInts.
-  Definition S := struct.decl [
-    "x" :: uint64T;
-    "y" :: uint64T
-  ].
-End TwoInts.
+Definition TwoInts := struct.decl [
+  "x" :: uint64T;
+  "y" :: uint64T
+].
 
-Module S.
-  Definition S := struct.decl [
-    "a" :: uint64T;
-    "b" :: struct.t TwoInts.S;
-    "c" :: boolT
-  ].
-End S.
+Definition S := struct.decl [
+  "a" :: uint64T;
+  "b" :: struct.t TwoInts;
+  "c" :: boolT
+].
 
 Definition NewS: val :=
   rec: "NewS" <> :=
-    struct.new S.S [
+    struct.new S [
       "a" ::= #2;
-      "b" ::= struct.mk TwoInts.S [
+      "b" ::= struct.mk TwoInts [
         "x" ::= #1;
         "y" ::= #2
       ];
@@ -1133,125 +1105,123 @@ Definition NewS: val :=
 
 Definition S__readA: val :=
   rec: "S__readA" "s" :=
-    struct.loadF S.S "a" "s".
+    struct.loadF S "a" "s".
 
 Definition S__readB: val :=
   rec: "S__readB" "s" :=
-    struct.loadF S.S "b" "s".
+    struct.loadF S "b" "s".
 
 Definition S__readBVal: val :=
   rec: "S__readBVal" "s" :=
-    struct.get S.S "b" "s".
+    struct.get S "b" "s".
 
 Definition S__updateBValX: val :=
   rec: "S__updateBValX" "s" "i" :=
-    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" "s") "i".
+    struct.storeF TwoInts "x" (struct.fieldRef S "b" "s") "i".
 
 Definition S__negateC: val :=
   rec: "S__negateC" "s" :=
-    struct.storeF S.S "c" "s" (~ (struct.loadF S.S "c" "s")).
+    struct.storeF S "c" "s" (~ (struct.loadF S "c" "s")).
 
 Definition failing_testStructUpdates: val :=
   rec: "failing_testStructUpdates" <> :=
     let: "ok" := ref_to boolT #true in
     let: "ns" := NewS #() in
     "ok" <-[boolT] (![boolT] "ok") && (S__readA "ns" = #2);;
-    let: "b1" := ref_to (struct.t TwoInts.S) (S__readB "ns") in
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "x" (![struct.t TwoInts.S] "b1") = #1);;
+    let: "b1" := ref_to (struct.t TwoInts) (S__readB "ns") in
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (![struct.t TwoInts] "b1") = #1);;
     S__negateC "ns";;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF S.S "c" "ns" = #false);;
-    struct.storeF TwoInts.S "x" "b1" #3;;
-    let: "b2" := ref_to (struct.t TwoInts.S) (S__readB "ns") in
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "x" (![struct.t TwoInts.S] "b2") = #1);;
-    let: "b3" := ref_to (refT (struct.t TwoInts.S)) (struct.fieldRef S.S "b" "ns") in
-    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF TwoInts.S "x" (![refT (struct.t TwoInts.S)] "b3") = #1);;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF S "c" "ns" = #false);;
+    struct.storeF TwoInts "x" "b1" #3;;
+    let: "b2" := ref_to (struct.t TwoInts) (S__readB "ns") in
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (![struct.t TwoInts] "b2") = #1);;
+    let: "b3" := ref_to (refT (struct.t TwoInts)) (struct.fieldRef S "b" "ns") in
+    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF TwoInts "x" (![refT (struct.t TwoInts)] "b3") = #1);;
     S__updateBValX "ns" #4;;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "x" (S__readBVal "ns") = #4);;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (S__readBVal "ns") = #4);;
     ![boolT] "ok".
 
 Definition testNestedStructUpdates: val :=
   rec: "testNestedStructUpdates" <> :=
     let: "ok" := ref_to boolT #true in
-    let: "ns" := ref_to (refT (struct.t S.S)) (NewS #()) in
-    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns")) #5;;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "x" (struct.loadF S.S "b" (![refT (struct.t S.S)] "ns")) = #5);;
-    "ns" <-[refT (struct.t S.S)] NewS #();;
-    let: "p" := ref_to (refT (struct.t TwoInts.S)) (struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns")) in
-    struct.storeF TwoInts.S "x" (![refT (struct.t TwoInts.S)] "p") #5;;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "x" (struct.loadF S.S "b" (![refT (struct.t S.S)] "ns")) = #5);;
-    "ns" <-[refT (struct.t S.S)] NewS #();;
-    "p" <-[refT (struct.t TwoInts.S)] struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns");;
-    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns")) #5;;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "x" (struct.load TwoInts.S (![refT (struct.t TwoInts.S)] "p")) = #5);;
-    "ns" <-[refT (struct.t S.S)] NewS #();;
-    "p" <-[refT (struct.t TwoInts.S)] struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns");;
-    struct.storeF TwoInts.S "x" (struct.fieldRef S.S "b" (![refT (struct.t S.S)] "ns")) #5;;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF TwoInts.S "x" (![refT (struct.t TwoInts.S)] "p") = #5);;
+    let: "ns" := ref_to (refT (struct.t S)) (NewS #()) in
+    struct.storeF TwoInts "x" (struct.fieldRef S "b" (![refT (struct.t S)] "ns")) #5;;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.loadF S "b" (![refT (struct.t S)] "ns")) = #5);;
+    "ns" <-[refT (struct.t S)] NewS #();;
+    let: "p" := ref_to (refT (struct.t TwoInts)) (struct.fieldRef S "b" (![refT (struct.t S)] "ns")) in
+    struct.storeF TwoInts "x" (![refT (struct.t TwoInts)] "p") #5;;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.loadF S "b" (![refT (struct.t S)] "ns")) = #5);;
+    "ns" <-[refT (struct.t S)] NewS #();;
+    "p" <-[refT (struct.t TwoInts)] struct.fieldRef S "b" (![refT (struct.t S)] "ns");;
+    struct.storeF TwoInts "x" (struct.fieldRef S "b" (![refT (struct.t S)] "ns")) #5;;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.load TwoInts (![refT (struct.t TwoInts)] "p")) = #5);;
+    "ns" <-[refT (struct.t S)] NewS #();;
+    "p" <-[refT (struct.t TwoInts)] struct.fieldRef S "b" (![refT (struct.t S)] "ns");;
+    struct.storeF TwoInts "x" (struct.fieldRef S "b" (![refT (struct.t S)] "ns")) #5;;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF TwoInts "x" (![refT (struct.t TwoInts)] "p") = #5);;
     ![boolT] "ok".
 
 Definition testStructConstructions: val :=
   rec: "testStructConstructions" <> :=
     let: "ok" := ref_to boolT #true in
-    let: "p1" := ref (zero_val (refT (struct.t TwoInts.S))) in
-    let: "p2" := ref (zero_val (struct.t TwoInts.S)) in
-    let: "p3" := struct.mk TwoInts.S [
+    let: "p1" := ref (zero_val (refT (struct.t TwoInts))) in
+    let: "p2" := ref (zero_val (struct.t TwoInts)) in
+    let: "p3" := struct.mk TwoInts [
       "y" ::= #0;
       "x" ::= #0
     ] in
-    let: "p4" := struct.mk TwoInts.S [
+    let: "p4" := struct.mk TwoInts [
       "x" ::= #0;
       "y" ::= #0
     ] in
-    "ok" <-[boolT] (![boolT] "ok") && (![refT (struct.t TwoInts.S)] "p1" = #null);;
-    "p1" <-[refT (struct.t TwoInts.S)] struct.alloc TwoInts.S (zero_val (struct.t TwoInts.S));;
-    "ok" <-[boolT] (![boolT] "ok") && (![struct.t TwoInts.S] "p2" = "p3");;
+    "ok" <-[boolT] (![boolT] "ok") && (![refT (struct.t TwoInts)] "p1" = #null);;
+    "p1" <-[refT (struct.t TwoInts)] struct.alloc TwoInts (zero_val (struct.t TwoInts));;
+    "ok" <-[boolT] (![boolT] "ok") && (![struct.t TwoInts] "p2" = "p3");;
     "ok" <-[boolT] (![boolT] "ok") && ("p3" = "p4");;
-    "ok" <-[boolT] (![boolT] "ok") && ("p4" = struct.load TwoInts.S (![refT (struct.t TwoInts.S)] "p1"));;
-    "ok" <-[boolT] (![boolT] "ok") && ("p4" ≠ ![refT (struct.t TwoInts.S)] "p1");;
+    "ok" <-[boolT] (![boolT] "ok") && ("p4" = struct.load TwoInts (![refT (struct.t TwoInts)] "p1"));;
+    "ok" <-[boolT] (![boolT] "ok") && ("p4" ≠ ![refT (struct.t TwoInts)] "p1");;
     ![boolT] "ok".
 
 Definition testIncompleteStruct: val :=
   rec: "testIncompleteStruct" <> :=
     let: "ok" := ref_to boolT #true in
-    let: "p1" := struct.mk TwoInts.S [
+    let: "p1" := struct.mk TwoInts [
       "x" ::= #0
     ] in
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "y" "p1" = #0);;
-    let: "p2" := struct.mk S.S [
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "y" "p1" = #0);;
+    let: "p2" := struct.mk S [
       "a" ::= #2
     ] in
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts.S "x" (struct.get S.S "b" "p2") = #0);;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get S.S "c" "p2" = #false);;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.get S "b" "p2") = #0);;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get S "c" "p2" = #false);;
     ![boolT] "ok".
 
-Module StructWrap.
-  Definition S := struct.decl [
-    "i" :: uint64T
-  ].
-End StructWrap.
+Definition StructWrap := struct.decl [
+  "i" :: uint64T
+].
 
 Definition testStoreInStructVar: val :=
   rec: "testStoreInStructVar" <> :=
-    let: "p" := ref_to (struct.t StructWrap.S) (struct.mk StructWrap.S [
+    let: "p" := ref_to (struct.t StructWrap) (struct.mk StructWrap [
       "i" ::= #0
     ]) in
-    struct.storeF StructWrap.S "i" "p" #5;;
-    (struct.get StructWrap.S "i" (![struct.t StructWrap.S] "p") = #5).
+    struct.storeF StructWrap "i" "p" #5;;
+    (struct.get StructWrap "i" (![struct.t StructWrap] "p") = #5).
 
 Definition testStoreInStructPointerVar: val :=
   rec: "testStoreInStructPointerVar" <> :=
-    let: "p" := ref_to (refT (struct.t StructWrap.S)) (struct.alloc StructWrap.S (zero_val (struct.t StructWrap.S))) in
-    struct.storeF StructWrap.S "i" (![refT (struct.t StructWrap.S)] "p") #5;;
-    (struct.loadF StructWrap.S "i" (![refT (struct.t StructWrap.S)] "p") = #5).
+    let: "p" := ref_to (refT (struct.t StructWrap)) (struct.alloc StructWrap (zero_val (struct.t StructWrap))) in
+    struct.storeF StructWrap "i" (![refT (struct.t StructWrap)] "p") #5;;
+    (struct.loadF StructWrap "i" (![refT (struct.t StructWrap)] "p") = #5).
 
 Definition testStoreComposite: val :=
   rec: "testStoreComposite" <> :=
-    let: "p" := struct.alloc TwoInts.S (zero_val (struct.t TwoInts.S)) in
-    struct.store TwoInts.S "p" (struct.mk TwoInts.S [
+    let: "p" := struct.alloc TwoInts (zero_val (struct.t TwoInts)) in
+    struct.store TwoInts "p" (struct.mk TwoInts [
       "x" ::= #3;
       "y" ::= #4
     ]);;
-    (struct.get TwoInts.S "y" (struct.load TwoInts.S "p") = #4).
+    (struct.get TwoInts "y" (struct.load TwoInts "p") = #4).
 
 Definition testStoreSlice: val :=
   rec: "testStoreSlice" <> :=
@@ -1267,14 +1237,12 @@ Definition MaxTxnWrites : expr := #10.
 
 Definition logLength : expr := #1 + #2 * MaxTxnWrites.
 
-Module Log.
-  Definition S := struct.decl [
-    "d" :: disk.Disk;
-    "l" :: lockRefT;
-    "cache" :: mapT disk.blockT;
-    "length" :: refT uint64T
-  ].
-End Log.
+Definition Log := struct.decl [
+  "d" :: disk.Disk;
+  "l" :: lockRefT;
+  "cache" :: mapT disk.blockT;
+  "length" :: refT uint64T
+].
 
 Definition intToBlock: val :=
   rec: "intToBlock" "a" :=
@@ -1303,7 +1271,7 @@ Definition New: val :=
     let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <-[uint64T] #0;;
     let: "l" := lock.new #() in
-    struct.mk Log.S [
+    struct.mk Log [
       "d" ::= "d";
       "cache" ::= "cache";
       "length" ::= "lengthPtr";
@@ -1312,11 +1280,11 @@ Definition New: val :=
 
 Definition Log__lock: val :=
   rec: "Log__lock" "l" :=
-    lock.acquire (struct.get Log.S "l" "l").
+    lock.acquire (struct.get Log "l" "l").
 
 Definition Log__unlock: val :=
   rec: "Log__unlock" "l" :=
-    lock.release (struct.get Log.S "l" "l").
+    lock.release (struct.get Log "l" "l").
 
 (* BeginTxn allocates space for a new transaction in the log.
 
@@ -1324,7 +1292,7 @@ Definition Log__unlock: val :=
 Definition Log__BeginTxn: val :=
   rec: "Log__BeginTxn" "l" :=
     Log__lock "l";;
-    let: "length" := ![uint64T] (struct.get Log.S "length" "l") in
+    let: "length" := ![uint64T] (struct.get Log "length" "l") in
     (if: ("length" = #0)
     then
       Log__unlock "l";;
@@ -1339,7 +1307,7 @@ Definition Log__BeginTxn: val :=
 Definition Log__Read: val :=
   rec: "Log__Read" "l" "a" :=
     Log__lock "l";;
-    let: ("v", "ok") := MapGet (struct.get Log.S "cache" "l") "a" in
+    let: ("v", "ok") := MapGet (struct.get Log "cache" "l") "a" in
     (if: "ok"
     then
       Log__unlock "l";;
@@ -1358,7 +1326,7 @@ Definition Log__Size: val :=
 Definition Log__Write: val :=
   rec: "Log__Write" "l" "a" "v" :=
     Log__lock "l";;
-    let: "length" := ![uint64T] (struct.get Log.S "length" "l") in
+    let: "length" := ![uint64T] (struct.get Log "length" "l") in
     (if: "length" ≥ MaxTxnWrites
     then
       Panic ("transaction is at capacity");;
@@ -1368,15 +1336,15 @@ Definition Log__Write: val :=
     let: "nextAddr" := #1 + #2 * "length" in
     disk.Write "nextAddr" "aBlock";;
     disk.Write ("nextAddr" + #1) "v";;
-    MapInsert (struct.get Log.S "cache" "l") "a" "v";;
-    struct.get Log.S "length" "l" <-[uint64T] "length" + #1;;
+    MapInsert (struct.get Log "cache" "l") "a" "v";;
+    struct.get Log "length" "l" <-[uint64T] "length" + #1;;
     Log__unlock "l".
 
 (* Commit the current transaction. *)
 Definition Log__Commit: val :=
   rec: "Log__Commit" "l" :=
     Log__lock "l";;
-    let: "length" := ![uint64T] (struct.get Log.S "length" "l") in
+    let: "length" := ![uint64T] (struct.get Log "length" "l") in
     Log__unlock "l";;
     let: "header" := intToBlock "length" in
     disk.Write #0 "header".
@@ -1413,10 +1381,10 @@ Definition clearLog: val :=
 Definition Log__Apply: val :=
   rec: "Log__Apply" "l" :=
     Log__lock "l";;
-    let: "length" := ![uint64T] (struct.get Log.S "length" "l") in
-    applyLog (struct.get Log.S "d" "l") "length";;
-    clearLog (struct.get Log.S "d" "l");;
-    struct.get Log.S "length" "l" <-[uint64T] #0;;
+    let: "length" := ![uint64T] (struct.get Log "length" "l") in
+    applyLog (struct.get Log "d" "l") "length";;
+    clearLog (struct.get Log "d" "l");;
+    struct.get Log "length" "l" <-[uint64T] #0;;
     Log__unlock "l".
 
 (* Open recovers the log following a crash or shutdown *)
@@ -1431,7 +1399,7 @@ Definition Open: val :=
     let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <-[uint64T] #0;;
     let: "l" := lock.new #() in
-    struct.mk Log.S [
+    struct.mk Log [
       "d" ::= "d";
       "cache" ::= "cache";
       "length" ::= "lengthPtr";
@@ -1453,5 +1421,5 @@ Definition disabled_testWal: val :=
     Log__Commit "lg";;
     "ok" <-[boolT] (![boolT] "ok") && (blockToInt (disk.Read #0) = #1);;
     Log__Apply "lg";;
-    "ok" <-[boolT] (![boolT] "ok") && (![uint64T] (struct.get Log.S "length" "lg") = #0);;
+    "ok" <-[boolT] (![boolT] "ok") && (![uint64T] (struct.get Log "length" "lg") = #0);;
     ![boolT] "ok".

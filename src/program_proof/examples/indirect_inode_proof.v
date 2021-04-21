@@ -169,10 +169,10 @@ Definition is_inode_durable_with σ addr ds : iProp Σ  :=
 .
 
 Definition is_inode_volatile_with l σ addr direct_s indirect_s ds : iProp Σ :=
-    "addr" ∷ l ↦[Inode.S :: "addr"] #addr ∗
-    "size" ∷ l ↦[Inode.S :: "size"] #(length σ.(inode.blocks)) ∗
-    "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
-    "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
+    "addr" ∷ l ↦[Inode :: "addr"] #addr ∗
+    "size" ∷ l ↦[Inode :: "size"] #(length σ.(inode.blocks)) ∗
+    "direct" ∷ l ↦[Inode :: "direct"] (slice_val direct_s) ∗
+    "indirect" ∷ l ↦[Inode :: "indirect"] (slice_val indirect_s) ∗
     "Hdirect" ∷ is_slice direct_s uint64T 1 (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs))
 .
@@ -189,8 +189,8 @@ Definition inode_cinv σ addr: iProp Σ :=
   ∃ ds, is_inode_durable_with σ addr ds.
 
 Definition inode_state l (d_ref: loc) (lref: loc) : iProp Σ :=
-  "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d_ref) ∗
-  "#m" ∷ readonly (l ↦[Inode.S :: "m"] #lref).
+  "#d" ∷ readonly (l ↦[Inode :: "d"] #d_ref) ∗
+  "#m" ∷ readonly (l ↦[Inode :: "m"] #lref).
 
 Definition is_inode l k P addr : iProp Σ :=
   ∃ (d lref: loc),
@@ -507,9 +507,9 @@ Theorem wp_readIndirect {l σ}
     "%HindexMax" ∷ ⌜(index < ds.(impl_s.numInd))⌝ ∗
     "%Hlen" ∷ ⌜Z.of_nat (length(ds.(impl_s.indAddrs))) = int.Z maxIndirect
     ∧ ds.(impl_s.numInd) <= maxIndirect⌝ ∗
-    "#d" ∷ readonly (l ↦[Inode.S :: "d"] #d) ∗
+    "#d" ∷ readonly (l ↦[Inode :: "d"] #d) ∗
     "%Haddr" ∷ ⌜Some a = (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) !! index⌝ ∗
-    "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
+    "indirect" ∷ l ↦[Inode :: "indirect"] (slice_val indirect_s) ∗
     "HindBlkAddrs" ∷ is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ index)
   }}}
      readIndirect #d #a
@@ -517,7 +517,7 @@ Theorem wp_readIndirect {l σ}
     "HindBlkIndirect" ∷ is_indirect a indBlkAddrs indBlk (ind_blocks_at_index σ index) ∗
     "HindBlkAddrs" ∷ is_slice indBlkAddrs_s uint64T 1
                       (indBlkAddrs ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs)) `mod` indirectNumBlocks)) (U64 0)) ∗
-    "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s)
+    "indirect" ∷ l ↦[Inode :: "indirect"] (slice_val indirect_s)
   }}}.
 Proof.
   iIntros (ϕ) "H Hϕ". iNamed "H". iNamed "HindBlkAddrs".
@@ -623,7 +623,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
                  "%" ∷ ⌜ done ++ todo = (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) ⌝ ∗
                  "%" ∷ ⌜ done = usedIndBlks ⌝ ∗
                  "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
-                 "indirect" ∷ (l ↦[Inode.S :: "indirect"] (slice_val indirect_s)) ∗
+                 "indirect" ∷ (l ↦[Inode :: "indirect"] (slice_val indirect_s)) ∗
                  "HusedSlice" ∷ is_slice s uint64T 1 (usedBlksList ++ usedIndBlks)
       )%I
   with "[] [Hl0 Hindirect_small indirect HusedSlice]").
@@ -677,7 +677,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
                ∃ s,
                  "%" ∷ ⌜ done ++ todo = (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) ⌝ ∗
                  "Hl0" ∷ (l0 ↦[slice.T uint64T] (slice_val s)) ∗
-                 "indirect" ∷ (l ↦[Inode.S :: "indirect"] (slice_val indirect_s)) ∗
+                 "indirect" ∷ (l ↦[Inode :: "indirect"] (slice_val indirect_s)) ∗
                  "HusedSlice" ∷
                   is_slice s uint64T 1
                            (usedBlksList
@@ -1242,9 +1242,9 @@ Theorem wp_Inode__mkHdr {Stk E} l (sz numInd : Z) allocedDirAddrs allocedIndAddr
    numInd <= maxIndirect)
   ->
   {{{
-    "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
-    "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
-    "size" ∷ l ↦[Inode.S :: "size"] #sz ∗
+    "direct" ∷ l ↦[Inode :: "direct"] (slice_val direct_s) ∗
+    "indirect" ∷ l ↦[Inode :: "indirect"] (slice_val indirect_s) ∗
+    "size" ∷ l ↦[Inode :: "size"] #sz ∗
     "Hdirect" ∷ is_slice direct_s uint64T 1 allocedDirAddrs ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 allocedIndAddrs
   }}}
@@ -1254,9 +1254,9 @@ Theorem wp_Inode__mkHdr {Stk E} l (sz numInd : Z) allocedDirAddrs allocedIndAddr
     "%Hencoded" ∷ ⌜block_encodes hdr ([EncUInt64 sz] ++ (EncUInt64 <$> allocedDirAddrs) ++ (EncUInt64 <$> (replicate (int.nat (maxDirect - length allocedDirAddrs)) (U64 0)))
                                      ++ (EncUInt64 <$> allocedIndAddrs) ++ (EncUInt64 <$> (replicate (int.nat (maxIndirect - length allocedIndAddrs)) (U64 0)))
                                      ++ [EncUInt64 numInd])⌝ ∗
-    "direct" ∷ l ↦[Inode.S :: "direct"] (slice_val direct_s) ∗
-    "indirect" ∷ l ↦[Inode.S :: "indirect"] (slice_val indirect_s) ∗
-    "size" ∷ l ↦[Inode.S :: "size"] #sz ∗
+    "direct" ∷ l ↦[Inode :: "direct"] (slice_val direct_s) ∗
+    "indirect" ∷ l ↦[Inode :: "indirect"] (slice_val indirect_s) ∗
+    "size" ∷ l ↦[Inode :: "size"] #sz ∗
     "Hdirect" ∷ is_slice direct_s uint64T 1 allocedDirAddrs ∗
     "Hindirect" ∷ is_slice indirect_s uint64T 1 allocedIndAddrs
   }}}.

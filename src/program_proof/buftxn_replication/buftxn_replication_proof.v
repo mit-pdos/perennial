@@ -51,8 +51,8 @@ Section goose_lang.
 
   Definition rb_linv l γ: iProp Σ :=
     ∃ a0 a1 σ,
-      "a0" ∷ l ↦[RepBlock.S :: "a0"] (addr2val a0) ∗
-      "a1" ∷ l ↦[RepBlock.S :: "a1"] (addr2val a1) ∗
+      "a0" ∷ l ↦[RepBlock :: "a0"] (addr2val a0) ∗
+      "a1" ∷ l ↦[RepBlock :: "a1"] (addr2val a1) ∗
       "rb_rep" ∷ rb_rep a0 a1 σ
                    (λ a v, durable_mapsto_own γ a v) ∗
       "HP" ∷ P σ.
@@ -63,8 +63,8 @@ Section goose_lang.
 
   Definition is_rep_block l: iProp Σ :=
     ∃ γ dinit (txn_l m_l: loc),
-    "#txn" ∷ readonly (l ↦[RepBlock.S :: "txn"] #txn_l) ∗
-    "#m" ∷ readonly (l ↦[RepBlock.S :: "m"] #m_l) ∗
+    "#txn" ∷ readonly (l ↦[RepBlock :: "txn"] #txn_l) ∗
+    "#m" ∷ readonly (l ↦[RepBlock :: "m"] #m_l) ∗
     (* TODO: make this a crash lock with cinv *)
     "#His_lock" ∷ is_lock lockN #m_l (rb_linv l γ) ∗
     "#His_txn" ∷ invariant.is_txn txn_l γ.(buftxn_txn_names) dinit ∗

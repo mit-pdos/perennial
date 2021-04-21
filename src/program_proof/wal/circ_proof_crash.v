@@ -261,7 +261,7 @@ Proof.
   wpc_apply (wpc_forUpto (fun i =>
     ⌜int.Z σ.(start) <= int.Z i⌝ ∗
     (∃ bufSlice,
-      bufsloc ↦[slice.T (struct.t Update.S)] (slice_val bufSlice) ∗
+      bufsloc ↦[slice.T (struct.t Update)] (slice_val bufSlice) ∗
       updates_slice bufSlice (take (int.nat i - int.nat σ.(start)) σ.(upds))) ∗
       is_slice_small addrs uint64T 1 addrs0 ∗
       2 d↦∗ blocks0
