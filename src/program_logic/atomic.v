@@ -3,11 +3,11 @@ From Perennial.algebra Require Export abs_laterable.
 Set Default Proof Using "Type".
 
 (** Sugar for TaDA-style logically atomic non-crash specs. *)
-Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<' β '>>>' {{{ 'RET' v ; Q } } }" :=
-  (□ ∀ Φ, P -∗ (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ (β -∗ |NC={∅,Eo}=> Q -∗ Φ v)) .. ) -∗
+Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' β '>>>' {{{ 'RET' v ; Q } } }" :=
+  (□ ∀ Φ, P -∗ (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ▷ (β -∗ |NC={∅,Eo}=> Q -∗ Φ v)) .. ) -∗
    WP e @ ⊤ {{ Φ }})%I
   (at level 20, x1 closed binder, xn closed binder,
-   format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<'  β  '>>>'  '/' {{{  RET  v ;  Q  } } } ']' ']'")
+   format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  β  '>>>'  '/' {{{  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
 
 (** Sugar for HoCAP-style logically atomic crash specs.

@@ -136,18 +136,18 @@ Qed.
 
 Transparent disk.Read disk.Write.
 
-Theorem wp_Write_ncfupd {stk E} E' (a: u64) s q b :
-  ∀ Φ,
-    is_slice_small s byteT q (Block_to_vals b) -∗
-    (|NC={E,E'}=> ∃ b0, int.Z a d↦ b0 ∗
-       ▷ (int.Z a d↦ b -∗ |NC={E',E}=> (is_slice_small s byteT q (Block_to_vals b) -∗ Φ #()))) -∗
-    WP  Write #a (slice_val s) @ stk; E {{ Φ }}.
+Theorem wp_Write_atomic (a: u64) s q b :
+  ⊢ {{{ is_slice_small s byteT q (Block_to_vals b) }}}
+  <<< ∀∀ b0, int.Z a d↦ b0 >>>
+    Write #a (slice_val s) @ ⊤
+  <<<▷ int.Z a d↦ b >>>
+  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
-  iIntros (Φ) "Hs Hupd".
+  iIntros "!#" (Φ) "Hs Hupd".
   wp_call.
   wp_call.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  iApply (wp_ncatomic _ E E').
+  iApply (wp_ncatomic _ _ ∅).
   iMod "Hupd" as (b0) "[Hda Hupd]"; iModIntro.
   wp_apply (wp_WriteOp with "[Hda Hs]").
   { iIntros "!>".
@@ -163,27 +163,28 @@ Proof.
   by iApply array_to_block_array.
 Qed.
 
-(* The logatom triple is weaker than the above spec since it does not give a ▷. *)
-Theorem wp_Write_atomic (a: u64) s q b :
-  ⊢ {{{ is_slice_small s byteT q (Block_to_vals b) }}}
-  <<< ∀∀ b0, int.Z a d↦ b0 >>>
-    Write #a (slice_val s) @ ⊤
-  <<< int.Z a d↦ b >>>
-  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) }}}.
+Theorem wp_Write_ncfupd E' (a: u64) s q b :
+  ∀ Φ,
+    is_slice_small s byteT q (Block_to_vals b) -∗
+    (|NC={⊤,E'}=> ∃ b0, int.Z a d↦ b0 ∗
+       ▷ (int.Z a d↦ b -∗ |NC={E',⊤}=> (is_slice_small s byteT q (Block_to_vals b) -∗ Φ #()))) -∗
+    WP  Write #a (slice_val s) {{ Φ }}.
 Proof.
-  iIntros "!#" (Φ) "Hs Hupd".
-  iApply (wp_Write_ncfupd with "Hs").
+  iIntros (Φ) "Hs Hupd".
+  iApply (wp_Write_atomic with "Hs").
   iMod "Hupd" as (b0) "[Hα Hcont]".
-  iModIntro. iExists _. iFrame "Hα". iIntros "!> Hβ".
+  iMod ncfupd_mask_subseteq as "Hclose"; last iModIntro; first set_solver+.
+  iExists _. iFrame "Hα". iIntros "!> Hβ".
+  iMod "Hclose" as "_".
   iMod ("Hcont" with "Hβ") as "HΦ". iModIntro. done.
 Qed.
 
-Theorem wp_Write_fupd {stk E} E' (a: u64) s q b :
+Theorem wp_Write_fupd E' (a: u64) s q b :
   ∀ Φ,
     is_slice_small s byteT q (Block_to_vals b) -∗
-    (|={E,E'}=> ∃ b0, int.Z a d↦ b0 ∗
-       ▷ (int.Z a d↦ b ={E',E}=∗ (is_slice_small s byteT q (Block_to_vals b) -∗ Φ #()))) -∗
-    WP  Write #a (slice_val s) @ stk; E {{ Φ }}.
+    (|={⊤,E'}=> ∃ b0, int.Z a d↦ b0 ∗
+       ▷ (int.Z a d↦ b ={E',⊤}=∗ (is_slice_small s byteT q (Block_to_vals b) -∗ Φ #()))) -∗
+    WP  Write #a (slice_val s) {{ Φ }}.
 Proof.
   iIntros (Φ) "Hs Hupd".
   wp_apply (wp_Write_ncfupd with "[$]").
@@ -192,10 +193,10 @@ Proof.
   by iMod ("H1" with "[$]").
 Qed.
 
-Theorem wp_Write_fupd_triple {stk E} E' (Q: iProp Σ) (a: u64) s q b :
+Theorem wp_Write_fupd_triple E' (Q: iProp Σ) (a: u64) s q b :
   {{{ is_slice_small s byteT q (Block_to_vals b) ∗
-      (|={E,E'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b ={E',E}=∗ Q)) }}}
-    Write #a (slice_val s) @ stk; E
+      (|={⊤,E'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b ={E',⊤}=∗ Q)) }}}
+    Write #a (slice_val s)
   {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
 Proof.
   iIntros (Φ) "[Hs Hupd] HΦ". iApply (wp_Write_fupd with "Hs").
@@ -204,21 +205,21 @@ Proof.
   iIntros "!> Hs". iApply "HΦ". iFrame.
 Qed.
 
-Theorem wp_Write stk E (a: u64) s q b :
+Theorem wp_Write (a: u64) s q b :
   {{{ ∃ b0, int.Z a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
-    Write #a (slice_val s) @ stk; E
+    Write #a (slice_val s)
   {{{ RET #(); int.Z a d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
-  wp_apply (wp_Write_fupd E with "Hs").
+  wp_apply (wp_Write_fupd with "Hs").
   iModIntro. iExists _. iFrame.
   iIntros "!> Hda !> Hs". iApply "HΦ". iFrame.
 Qed.
 
-Theorem wp_Write' stk E (z: Z) (a: u64) s q b :
+Theorem wp_Write' (z: Z) (a: u64) s q b :
   {{{ ⌜int.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
-    Write #a (slice_val s) @ stk; E
+    Write #a (slice_val s)
   {{{ RET #(); z d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) "[<- >Hpre] HΦ".
