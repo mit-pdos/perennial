@@ -7,7 +7,7 @@ From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Import ectx_lifting.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
-From Perennial.goose_lang Require Import lang lifting slice typed_slice proofmode.
+From Perennial.goose_lang Require Import prelude typing struct lang lifting slice typed_slice proofmode.
 From Perennial.goose_lang Require Import crash_modality.
 
 Set Default Proof Using "Type".
@@ -420,8 +420,20 @@ Section grove.
   Local Coercion Var' (s:string) : expr := Var s.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
-  Definition Sender : ty := extT GroveClientTy.
-  Definition Receiver : ty := extT GroveHostTy.
+  (* FIXME: This is a bit strange; not sure how to think about "axiomatizing" a struct *)
+  Definition Sender : descriptor := [].
+  Definition Receiver : descriptor := [].
+
+  Definition ErrMsgSender := (struct.decl [
+                              "E" :: boolT;
+                              "M" :: slice.T byteT;
+                              "S" :: struct.ptrT Sender
+                            ])%struct.
+
+  Definition SenderReceiver := (struct.decl [
+                              "S" :: struct.ptrT Sender;
+                              "R" :: struct.ptrT Receiver
+                            ])%struct.
 
   (** Type: func(uint64) *Receiver *)
   Definition Listen : val :=
