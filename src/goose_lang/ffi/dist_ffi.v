@@ -423,11 +423,11 @@ Section grove.
   Definition Sender : ty := extT GroveClientTy.
   Definition Receiver : ty := extT GroveHostTy.
 
-  (** Type: func(string) *Receiver *)
+  (** Type: func(uint64) *Receiver *)
   Definition Listen : val :=
     λ: "e", ExternalOp ListenOp "e".
 
-  (** Type: func(string) (bool, *Sender, *Receiver) *)
+  (** Type: func(uint64) (bool, *Sender, *Receiver) *)
   Definition Connect : val :=
     λ: "e", ExternalOp ConnectOp "e".
 
