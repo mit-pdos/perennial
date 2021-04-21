@@ -13,7 +13,7 @@ From Perennial.goose_lang.lib.list Require Import list.
 From Perennial.goose_lang Require Import spec_assert.
 
 From Perennial.goose_lang Require Import ffi.disk_prelude.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 
 Section proof.
   Context `{!buftxnG Σ}.

@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof Require Export marshal_proof memkv.common_proof.

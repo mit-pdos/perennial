@@ -5,7 +5,7 @@ From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Perennial.goose_lang Require Import notation.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From RecordUpdate Require Import RecordUpdate.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
@@ -14,7 +14,7 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof.lockservice Require Import rpc_proof rpc nondet kv_proof fmcounter_map rpc_durable_proof.
-From Perennial.program_proof Require Import proof_prelude marshal_proof.
+From Perennial.program_proof Require Import disk_prelude marshal_proof.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 
 Section kv_durable_proof.

@@ -3,7 +3,7 @@ From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
 From Perennial.goose_lang.ffi Require Import grove_ffi.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.lockservice Require Import grove_common lockservice.
 From Perennial.program_proof.lockservice Require Import common_proof.
 From Perennial.program_proof.lockservice Require Export rpc.

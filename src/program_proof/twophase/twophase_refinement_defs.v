@@ -1,5 +1,5 @@
 From Perennial.goose_lang.lib Require Import encoding crash_lock.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import twophase.typed_translate twophase.wrapper_proof.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.

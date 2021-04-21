@@ -4,7 +4,7 @@ Import RecordSetNotations.
 From Perennial.algebra Require Import log_heap liftable.
 From Perennial.base_logic Require Import lib.mono_nat.
 From Perennial.Helpers Require Import Transitions.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import addr buftxn.
 From Perennial.program_proof Require Import wal.specs wal.heapspec txn.txn_proof buf.buf_proof addr.addr_proof.

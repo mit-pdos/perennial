@@ -5,7 +5,7 @@ From Perennial.goose_lang.lib Require Import into_val.
 From Perennial.goose_lang.examples Require Import append_log.
 
 From Perennial.base_logic Require Import ghost_var.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.goose_lang.lib Require Import slice.crash_slice.
 From Perennial.program_proof Require Import append_log_proof.

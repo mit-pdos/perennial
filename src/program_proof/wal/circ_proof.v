@@ -7,7 +7,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.program_logic Require Export ncinv.
 From Perennial.Helpers Require Import List Transitions.
-From Perennial.program_proof Require Import proof_prelude disk_lib.
+From Perennial.program_proof Require Import disk_prelude disk_lib.
 From Perennial.program_proof Require Import wal.lib.
 From Perennial.program_proof Require Import marshal_block util_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.

@@ -4,7 +4,7 @@ Import RecordSetNotations.
 From iris.algebra Require Import numbers.
 
 From Perennial.Helpers Require Import Transitions NamedProps Map.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
 From Perennial.base_logic.lib Require Import ghost_map.
 

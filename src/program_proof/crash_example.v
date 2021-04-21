@@ -3,7 +3,7 @@ Import RecordSetNotations.
 
 From Perennial.algebra Require Import liftable log_heap.
 From Perennial.Helpers Require Import Transitions.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import wal.specs wal.heapspec.
 From Perennial.program_proof Require Import addr.addr_proof.
 From Perennial.program_proof Require Import buf.buf_proof.

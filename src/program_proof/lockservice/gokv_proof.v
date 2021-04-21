@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import goosekv.
 From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.algebra Require Import mlist auth_map.

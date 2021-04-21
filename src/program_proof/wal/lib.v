@@ -2,7 +2,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 
 From Perennial.Helpers Require Import List.
 From Perennial.program_proof Require Export wal.abstraction.
-From Perennial.program_proof Require Import proof_prelude disk_lib.
+From Perennial.program_proof Require Import disk_prelude disk_lib.
 From Perennial.program_proof Require util_proof.
 
 Section heap.

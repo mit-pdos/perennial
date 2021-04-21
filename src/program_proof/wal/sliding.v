@@ -4,7 +4,7 @@ From Tactical Require Import SimplMatch.
 From Perennial.Helpers Require Export NamedProps List Integers Tactics.
 (* TODO: I failed to get a reasonable setup with stdpp and ssreflect and such
 without this, but it's really importing too much (we don't need the IPM here) *)
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest.
 
 Set Default Goal Selector "!".

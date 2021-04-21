@@ -1,6 +1,6 @@
 From Goose.github_com.tchajed Require Import marshal.
 
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Export marshal_proof.
 From Perennial.goose_lang.lib Require Export slice.typed_slice.

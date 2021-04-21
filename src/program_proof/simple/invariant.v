@@ -2,12 +2,12 @@ From RecordUpdate Require Import RecordUpdate.
 
 From Perennial.algebra Require Import liftable auth_map.
 From Perennial.Helpers Require Import Transitions.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
 From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
 From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
 From Perennial.program_logic Require Import spec_assert.

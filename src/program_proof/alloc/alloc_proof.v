@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import util_proof.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import alloc.
 

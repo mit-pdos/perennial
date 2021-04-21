@@ -6,7 +6,7 @@ From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
 From Perennial.program_logic Require Export na_crash_inv ncinv.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.examples Require Import alloc_addrset.
 
 Inductive block_status :=

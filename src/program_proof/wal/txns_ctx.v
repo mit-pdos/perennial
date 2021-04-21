@@ -2,7 +2,7 @@ From Perennial.algebra Require Import append_list.
 From Perennial.Helpers Require Import Integers List Map.
 From Perennial.program_proof.wal Require Import abstraction.
 
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 
 (*
 txns: list (u64 * list update.t)

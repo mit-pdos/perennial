@@ -404,6 +404,7 @@ Section grove.
   suddenly cause all FFI parameters to be inferred as the grove model *)
   (* FIXME: figure out which of these clients need to set *)
   Existing Instances grove_op grove_model grove_ty grove_semantics grove_interp heapG_groveG.
+  Local Coercion Var' (s:string) : expr := Var s.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
   Definition Sender : ty := extT GroveClientTy.
@@ -411,26 +412,26 @@ Section grove.
 
   (** Type: func(string) *Receiver *)
   Definition Listen : val :=
-    λ: "e", ExternalOp ListenOp (Var "e").
+    λ: "e", ExternalOp ListenOp "e".
 
   (** Type: func(string) ( *Sender, *Receiver) *)
   Definition Connect : val :=
-    λ: "e", ExternalOp ConnectOp (Var "e").
+    λ: "e", ExternalOp ConnectOp "e".
 
   (** Type: func( *Sender, []byte) *)
   Definition Send : val :=
-    λ: "e" "m", ExternalOp SendOp (Var "e", (slice.ptr (Var "m"), slice.len (Var "m"))).
+    λ: "e" "m", ExternalOp SendOp ("e", (slice.ptr "m", slice.len "m")).
 
   (** Type: func( *Receiver) ( *Sender, []byte) *)
   Definition Receive : val :=
     λ: "e",
-      let: "m" := ExternalOp RecvOp (Var "e") in
-      let: "err" := Fst (Fst (Var "m")) in
-      let: "sender" := Snd (Fst (Var "m")) in
-      let: "slice" := Snd (Var "m") in
-      let: "ptr" := Fst (Var "slice") in
-      let: "len" := Snd (Var "slice") in
-      (Var "err", Var "sender", (Var "ptr", Var "len", Var "len")).
+      let: "m" := ExternalOp RecvOp "e" in
+      let: "err" := Fst (Fst "m") in
+      let: "sender" := Snd (Fst "m") in
+      let: "slice" := Snd "m" in
+      let: "ptr" := Fst "slice" in
+      let: "len" := Snd "slice" in
+      ("err", "sender", ("ptr", "len", "len")).
 
   Context `{!heapG Σ}.
 

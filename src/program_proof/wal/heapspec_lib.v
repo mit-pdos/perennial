@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import wal.abstraction wal.transitions wal.lib.
 
 Definition no_updates (l: list update.t) a : Prop :=

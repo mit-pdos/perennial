@@ -6,7 +6,7 @@ From Perennial.program_logic Require Export ncinv.
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof txn.txn_proof.
 From Perennial.program_proof Require buftxn.buftxn_proof.
 From Perennial.program_proof Require Import buftxn.sep_buftxn_invariant.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import disk_prelude.
 

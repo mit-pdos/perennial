@@ -1,7 +1,7 @@
 From stdpp Require Import gmap.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice_nocrash rpc_proof nondet.
 
 Record lockservice_names := LockserviceNames {

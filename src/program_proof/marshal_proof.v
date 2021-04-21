@@ -3,7 +3,7 @@ From Perennial.Helpers Require Import List.
 From Goose.github_com.tchajed Require Import marshal.
 From Perennial.goose_lang.lib Require Import encoding.
 
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Inductive encodable :=

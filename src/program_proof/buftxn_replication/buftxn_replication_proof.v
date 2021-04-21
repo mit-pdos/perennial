@@ -6,7 +6,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn buftxn_replicati
 From Perennial.program_proof Require Import buftxn.buftxn_proof buftxn.sep_buftxn_proof txn.invariant.
 
 From Perennial.goose_lang.lib Require Import crash_lock.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section goose_lang.

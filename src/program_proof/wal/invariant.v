@@ -6,7 +6,7 @@ From Perennial.Helpers Require Export Transitions List NamedProps PropRestore Ma
 
 From Perennial.algebra Require Export append_list auth_map mono_nat.
 From Perennial.base_logic Require Import lib.ghost_map.
-From Perennial.program_proof Require Export proof_prelude.
+From Perennial.program_proof Require Export disk_prelude.
 From Perennial.program_proof.wal Require Export lib highest thread_owned txns_ctx.
 From Perennial.program_proof.wal Require Export circ_proof sliding_proof.
 From Perennial.program_proof.wal Require Export transitions.

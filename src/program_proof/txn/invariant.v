@@ -2,7 +2,7 @@ From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
 From Perennial.Helpers Require Import Transitions NamedProps Map.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
 From Perennial.base_logic Require Import lib.ghost_map.
 

@@ -1,5 +1,5 @@
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.goose_lang.lib Require Export typed_slice into_val.
 From Perennial.Helpers Require Export range_set.
 

@@ -1,7 +1,7 @@
 (** Print any assumptions made by top-level theorems *)
 (* importing the prelude ensures notations are in scope for these lemma
 statements *)
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.examples Require
      replicated_block_proof (* single_inode_proof *) dir_proof toy_proof.
 

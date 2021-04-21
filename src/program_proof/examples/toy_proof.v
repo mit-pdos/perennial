@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import crash_modality wpr_lifting.
 From Goose.github_com.mit_pdos.perennial_examples Require Import toy.
 From Perennial.program_logic Require Import na_crash_inv.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 
 Section goose.
   Context `{!heapG Σ}.

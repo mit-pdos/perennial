@@ -1,5 +1,5 @@
 From stdpp Require Import list.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.wal Require Import transitions.
 From Perennial.program_proof.wal Require Import abstraction.
 

@@ -1,5 +1,5 @@
 From RecordUpdate Require Import RecordSet.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import twophase.
 From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
 From Perennial.program_proof Require Import lockmap_proof.

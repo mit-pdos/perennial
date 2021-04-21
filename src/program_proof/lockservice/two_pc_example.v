@@ -1,5 +1,5 @@
 From Perennial.algebra Require Import auth_map.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 Require Import Decimal Ascii String DecimalString.
 From Perennial.goose_lang Require Import ffi.grove_ffi.

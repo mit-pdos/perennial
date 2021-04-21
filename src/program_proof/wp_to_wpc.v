@@ -1,5 +1,5 @@
 From Perennial.program_logic Require Import invariants_mutable.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude. (* FIXME: make this disk-independent *)
 From Perennial.base_logic.lib Require Import wsat.
 
 (* This file explores ways to promote a HOCAP wp spec that relies on Perennial 1 style

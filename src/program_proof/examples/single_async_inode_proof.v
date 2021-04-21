@@ -7,7 +7,7 @@ From Goose.github_com.mit_pdos.perennial_examples Require Import single_async_in
 From Perennial.goose_lang.lib Require Import lock.crash_lock.
 
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.examples Require Import
      alloc_addrset alloc_crash_proof async_inode_proof.
 From Perennial.goose_lang.lib Require Export typed_slice into_val.

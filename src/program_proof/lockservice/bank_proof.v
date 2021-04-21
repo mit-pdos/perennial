@@ -1,5 +1,5 @@
 From Perennial.algebra Require Import auth_map.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice_nocrash nondet lockservice_proof kv_proof.
 
 Record bank_names := BankNames {

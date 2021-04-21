@@ -33,7 +33,7 @@ Qed.
 Coercion App : expr >-> Funclass.
 
 Coercion Val : val >-> expr.
-(* Coercion Var : string >-> expr. *)
+(* Coercion Var : string >-> expr.  Doesn't work as [Var] has a typeclass parameter. *)
 
 (** Define some derived forms. *)
 Notation Lam x e := (Rec BAnon x e) (only parsing).

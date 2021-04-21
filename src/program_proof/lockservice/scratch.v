@@ -3,7 +3,7 @@ From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Perennial.goose_lang Require Import notation.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From stdpp Require Import gmap.
 From RecordUpdate Require Import RecordUpdate.
 From Perennial.algebra Require Import auth_map.

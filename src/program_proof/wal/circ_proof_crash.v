@@ -9,7 +9,7 @@ From Perennial.program_logic Require Import staged_wpc.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.Helpers Require Import NamedProps.
-From Perennial.program_proof Require Import proof_prelude disk_lib.
+From Perennial.program_proof Require Import disk_prelude disk_lib.
 From Perennial.program_proof Require Import wal.lib.
 From Perennial.program_proof Require Import marshal_block util_proof.
 From Perennial.program_proof Require Import circ_proof.

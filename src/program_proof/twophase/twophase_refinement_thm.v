@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import
      twophase.typed_translate twophase.twophase_refinement_defs twophase.twophase_refinement_proof.
 From Perennial.goose_lang Require Import crash_modality.

@@ -1,5 +1,5 @@
 From Perennial.algebra Require Import auth_map.
-From Perennial.program_proof Require Import proof_prelude marshal_proof.
+From Perennial.program_proof Require Import disk_prelude marshal_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet kv_proof kv_durable fmcounter_map wpc_proofmode common_proof rpc_durable_proof kv_logatom.

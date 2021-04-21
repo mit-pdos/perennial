@@ -10,7 +10,7 @@ From Goose.github_com.mit_pdos.perennial_examples Require Import replicated_bloc
 From Perennial.algebra Require Import own_discrete.
 From Perennial.goose_lang.lib Require Import lock.crash_lock.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 
 
 (** * Replicated block example

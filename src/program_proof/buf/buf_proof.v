@@ -4,7 +4,7 @@ From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
 From Perennial.Helpers Require Import bytes.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buf.
 From Perennial.program_proof Require Import util_proof disk_lib.
 From Perennial.program_proof Require Export buf.defs.

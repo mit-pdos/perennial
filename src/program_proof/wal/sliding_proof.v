@@ -3,7 +3,7 @@ From RecordUpdate Require Import RecordSet.
 
 From Perennial.Helpers Require Export NamedProps.
 
-From Perennial.program_proof Require Export proof_prelude.
+From Perennial.program_proof Require Export disk_prelude.
 From Perennial.program_proof Require Export wal.sliding.
 From Perennial.program_proof Require Import disk_lib.
 

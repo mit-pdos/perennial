@@ -7,7 +7,7 @@ From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
 From Perennial.Helpers Require Import Transitions List range_set gset.
 From Perennial.program_proof Require Import wal.abstraction wal.specs.
 From Perennial.program_proof Require Import wal.heapspec_lib.
-From Perennial.program_proof Require Import proof_prelude disk_lib.
+From Perennial.program_proof Require Import disk_prelude disk_lib.
 From Perennial.algebra Require Import log_heap.
 From Perennial.base_logic Require Import ghost_map.
 From Perennial.Helpers Require Import NamedProps.
