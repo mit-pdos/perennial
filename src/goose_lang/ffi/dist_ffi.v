@@ -23,11 +23,12 @@ Proof. solve_decision. Defined.
 Instance GroveOp_fin : Countable GroveOp.
 Proof. solve_countable GroveOp_rec 10%nat. Qed.
 
+Definition chan : Set := string.
 Inductive GroveVal : Set :=
-| HostEndp (c : string)
+| HostEndp (c : chan)
 (** A Client endpoint for some channel named [c] also has some *other* dedicated
 channel for responses, named [r]. *)
-| ClientEndp (c : string) (r : string).
+| ClientEndp (c : chan) (r : chan).
 Instance GroveVal_eq_decision : EqDecision GroveVal.
 Proof. solve_decision. Defined.
 Instance GroveVal_countable : Countable GroveVal.
@@ -59,7 +60,7 @@ Definition grove_ty: ext_types grove_op :=
   {| val_tys := grove_val_ty;
      get_ext_tys _ _ := False |}. (* currently we just don't give types for the GroveOps *)
 
-Record message := Message { msg_sender : string; msg_data : list u8 }.
+Record message := Message { msg_sender : chan; msg_data : list u8 }.
 Add Printing Constructor message. (* avoid printing with record syntax *)
 Instance message_eq_decision : EqDecision message.
 Proof. solve_decision. Defined.
@@ -74,7 +75,6 @@ Qed.
 
 (** The global network state: a map from endpoint names to the set of messages sent to
 those endpoints. *)
-Definition chan : Type := string.
 Definition grove_global_state : Type := gmap chan (gset message).
 
 Definition grove_model : ffi_model.
@@ -197,9 +197,9 @@ Section lifting.
   Context `{!heapG Σ}.
   Instance heapG_groveG : groveG Σ := heapG_ffiG.
 
-  Definition send_endpoint (c : string) (r : string) : val :=
+  Definition send_endpoint (c : chan) (r : chan) : val :=
     ExtV (ClientEndp c r).
-  Definition recv_endpoint (c : string) : val :=
+  Definition recv_endpoint (c : chan) : val :=
     ExtV (HostEndp c).
 
   (* Lifting automation *)
