@@ -10,8 +10,7 @@ From Perennial.goose_lang Require
      metatheory
      refinement refinement_adequacy
      crash_lock
-     logical_reln_adeq
-     ffi.dist_prelude.
+     logical_reln_adeq.
 From Perennial.program_proof Require
      wal.circ_proof_crash
      append_log_proof

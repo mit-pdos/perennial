@@ -1,6 +1,13 @@
 (** LiteBuild depends on a subset of Perennial that is relatively fast to check,
     for use in Coq's CI. *)
 
+(* Some key theorems *)
+From Perennial.goose_lang Require
+     recovery_adequacy dist_adequacy.
+(* Prelude files *)
+From Perennial.program_proof Require
+     proof_prelude disk_prelude dist_prelude.
+
 (* a couple program proofs that are pretty interesting on their own and include
 the wpc infrastructure *)
 From Perennial.program_proof Require
