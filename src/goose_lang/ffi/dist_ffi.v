@@ -343,8 +343,8 @@ lemmas. *)
     {{{ (err : bool) (l : loc) (len : u64) (sender : chan),
         RET (#err, send_endpoint sender c, (#l, #len));
         c c↦ ms ∗ if err then True else
-          ∃ m : message, ⌜m ∈ ms ∧ length m.(msg_data) = int.nat len ∧ m.(msg_sender) = sender⌝ ∗
-            mapsto_vals l 1 (data_vals m.(msg_data))
+          ∃ data : list u8, ⌜Message sender data ∈ ms ∧ length data = int.nat len⌝ ∗
+            mapsto_vals l 1 (data_vals data)
     }}}.
   Proof.
     iIntros (Φ) "He HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -386,8 +386,8 @@ lemmas. *)
     iModIntro. iEval simpl. iFrame "Htr Hg Hσ".
     do 2 (iSplit; first done).
     iApply "HΦ". iFrame "He".
-    iExists m'. iSplit.
-    { iPureIntro. split; first done. split; last done.
+    iExists m'.(msg_data). iSplit.
+    { iPureIntro. split; first by destruct m'.
       trans (Z.to_nat (Z.of_nat (length m'.(msg_data)))); first by rewrite Nat2Z.id //.
       f_equal. word. }
     rewrite /mapsto_vals. iApply (big_sepL_mono with "Hl").
@@ -513,8 +513,8 @@ Section grove.
     wp_pures.
     iModIntro. destruct err.
     { iApply ("HΦ" $! true (Slice.mk _ _ _) (Message sender [])). by iFrame. }
-    iDestruct "Hslice" as (m (Hin & Hlen & <-)) "Hl".
-    iApply ("HΦ" $! false (Slice.mk _ _ _) m). iFrame "Hc".
+    iDestruct "Hslice" as (data (Hin & Hlen)) "Hl".
+    iApply ("HΦ" $! false (Slice.mk _ _ _) (Message sender data)). iFrame "Hc".
     iSplit; first done. iSplitL.
     - iApply mapsto_vals_is_slice_small_byte; done.
     - iExists []. simpl. iSplit; first by eauto with lia.
