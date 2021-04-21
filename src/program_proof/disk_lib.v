@@ -7,17 +7,6 @@ Implicit Types z : Z.
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Lemma byte_ptsto_untype l q (x: u8) :
-  l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
-Proof.
-  rewrite struct_mapsto_eq /struct_mapsto_def /=.
-  rewrite loc_add_0 right_id.
-  iSplit.
-  - iDestruct 1 as "[$ _]".
-  - iDestruct 1 as "$".
-    auto.
-Qed.
-
 Definition is_block (s:Slice.t) (q: Qp) (b:Block) :=
   is_slice_small s byteT q (Block_to_vals b).
 
@@ -108,7 +97,7 @@ Proof.
   iApply (big_sepL_impl with "Hl"); simpl.
   iModIntro.
   iIntros (i x) "% Hl".
-  iApply (byte_ptsto_untype with "Hl").
+  iApply (byte_mapsto_untype with "Hl").
 Qed.
 
 Lemma array_to_block_array l q b :
@@ -122,7 +111,7 @@ Proof.
   intros k y Heq.
   rewrite /Block_to_vals in Heq.
   rewrite /b2val.
-  rewrite byte_ptsto_untype //.
+  rewrite byte_mapsto_untype //.
 Qed.
 
 Lemma slice_to_block_array s q b :

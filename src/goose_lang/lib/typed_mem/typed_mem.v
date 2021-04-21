@@ -123,6 +123,17 @@ Section goose_lang.
     eapply flatten_struct_inj; eauto.
   Qed.
 
+  Lemma byte_mapsto_untype l q (x: u8) :
+    l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
+  Proof.
+    rewrite struct_mapsto_eq /struct_mapsto_def /=.
+    rewrite loc_add_0 right_id.
+    iSplit.
+    - iDestruct 1 as "[$ _]".
+    - iDestruct 1 as "$".
+      auto.
+  Qed.
+
   Theorem base_mapsto_untype {l bt q v} :
     match bt with
     | unitBT => false

@@ -7,7 +7,7 @@ From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Import ectx_lifting.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
-From Perennial.goose_lang Require Import lang lifting slice typing.
+From Perennial.goose_lang Require Import lang lifting slice typed_slice proofmode.
 From Perennial.goose_lang Require Import crash_modality.
 
 Set Default Proof Using "Type".
@@ -55,6 +55,9 @@ Inductive GroveTys := GroveHostTy | GroveClientTy.
 (* TODO: Why is this an instance but the ones above are not? *)
 Instance grove_val_ty: val_types :=
   {| ext_tys := GroveTys; |}.
+Definition grove_ty: ext_types grove_op :=
+  {| val_tys := grove_val_ty;
+     get_ext_tys _ _ := False |}. (* currently we just don't give types for the GroveOps *)
 
 Record message := Message { msg_sender : string; msg_data : list u8 }.
 Add Printing Constructor message. (* avoid printing with record syntax *)
@@ -192,7 +195,7 @@ Notation "c c↦ ms" := (mapsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
 Section lifting.
   Existing Instances grove_op grove_model grove_semantics grove_interp.
   Context `{!heapG Σ}.
-  Instance groveG0 : groveG Σ := heapG_ffiG.
+  Instance heapG_groveG : groveG Σ := heapG_ffiG.
 
   Definition send_endpoint (c : string) (r : string) : val :=
     ExtV (ClientEndp c r).
@@ -399,7 +402,8 @@ End lifting.
 Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
   suddenly cause all FFI parameters to be inferred as the grove model *)
-  Existing Instances grove_op grove_model.
+  (* FIXME: figure out which of these clients need to set *)
+  Existing Instances grove_op grove_model grove_ty grove_semantics grove_interp heapG_groveG.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
   Definition Sender : ty := extT GroveClientTy.
@@ -416,7 +420,7 @@ Section grove.
   (** Type: func( *Sender, []byte) *)
   Definition Send : val :=
     (* FIXME: extract ptr and len from "m" (which is intended to have type []byte) *)
-    λ: "e" "m", ExternalOp SendOp (Var "e", Var "m").
+    λ: "e" "m", ExternalOp SendOp (Var "e", (slice.ptr (Var "m"), slice.len (Var "m"))).
 
   (** Type: func( *Receiver) ( *Sender, []byte) *)
   Definition Receive : val :=
@@ -429,4 +433,71 @@ Section grove.
       let: "len" := Snd (Var "slice") in
       (* FIXME: package "ptr" and "len" to returned slice of type []byte *)
       (Fst (Var "m"), Var "sender", Var "slice").
+
+  Context `{!heapG Σ}.
+
+  Lemma wp_Listen c s E :
+    {{{ True }}}
+      Listen (#str c) @ s; E
+    {{{ RET recv_endpoint c; True }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ". wp_lam.
+    wp_apply wp_ListenOp. by iApply "HΦ".
+  Qed.
+
+  Lemma wp_Connect c s E :
+    {{{ True }}}
+      Connect (#str c) @ s; E
+    {{{ r, RET (send_endpoint c r, recv_endpoint r); r c↦ ∅ }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ". wp_lam.
+    wp_apply wp_ConnectOp. by iApply "HΦ".
+  Qed.
+
+  Lemma is_slice_small_byte_mapsto_vals (s : Slice.t) (data : list u8) (q : Qp) :
+    is_slice_small s byteT q data -∗ mapsto_vals (Slice.ptr s) q (data_vals data).
+  Proof.
+    iIntros "[Hs _]". rewrite /array.array /mapsto_vals.
+    change (list.untype data) with (data_vals data).
+    iApply (big_sepL_impl with "Hs"). iIntros "!#" (i v Hv) "Hl".
+    move: Hv. rewrite /data_vals list_lookup_fmap.
+    intros (b & _ & ->)%fmap_Some_1.
+    rewrite byte_mapsto_untype byte_offset_untype //.
+  Qed.
+
+  Lemma mapsto_vals_is_slice_small_byte (s : Slice.t) (data : list u8) (q : Qp) :
+    length data = int.nat (Slice.sz s) →
+    mapsto_vals (Slice.ptr s) q (data_vals data) -∗
+    is_slice_small s byteT q data.
+  Proof.
+    iIntros (Hlen) "Hl". iSplit; last first.
+    { iPureIntro. rewrite /list.untype fmap_length. done. }
+    rewrite /array.array /mapsto_vals.
+    change (list.untype data) with (data_vals data).
+    iApply (big_sepL_impl with "Hl"). iIntros "!#" (i v Hv) "Hl".
+    move: Hv. rewrite /data_vals list_lookup_fmap.
+    intros (b & _ & ->)%fmap_Some_1.
+    rewrite byte_mapsto_untype byte_offset_untype //.
+  Qed.
+
+  (* FIXME: Make these logically atomic *)
+
+  Lemma wp_Send c r ms (s : Slice.t) (data : list u8) (q : Qp) E :
+    0 < length data →
+    {{{ c c↦ ms ∗ is_slice_small s byteT q data }}}
+      Send (send_endpoint c r) (slice_val s) @ E
+    {{{ RET #(); c c↦ (ms ∪ {[Message r data]}) ∗ is_slice_small s byteT q data }}}.
+  Proof.
+    iIntros (? Φ) "[Hc Hs] HΦ". wp_lam. wp_let.
+    wp_apply wp_slice_ptr.
+    wp_apply wp_slice_len.
+    wp_pures.
+    iAssert (⌜length data = int.nat (Slice.sz s)⌝)%I as %?.
+    { iDestruct "Hs" as "[_ %Hlen]". iPureIntro. revert Hlen.
+      rewrite /list.untype fmap_length. done. }
+    wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
+    { iApply is_slice_small_byte_mapsto_vals. done. }
+    iIntros "[Hc Hl]". iApply "HΦ". iFrame "Hc".
+    iApply mapsto_vals_is_slice_small_byte; done.
+  Qed.
 End grove.
