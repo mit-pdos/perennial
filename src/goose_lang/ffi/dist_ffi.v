@@ -419,20 +419,18 @@ Section grove.
 
   (** Type: func( *Sender, []byte) *)
   Definition Send : val :=
-    (* FIXME: extract ptr and len from "m" (which is intended to have type []byte) *)
     λ: "e" "m", ExternalOp SendOp (Var "e", (slice.ptr (Var "m"), slice.len (Var "m"))).
 
   (** Type: func( *Receiver) ( *Sender, []byte) *)
   Definition Receive : val :=
     λ: "e",
       let: "m" := ExternalOp RecvOp (Var "e") in
-      let: "err" := Fst (Var "m") in
-      let: "sender" := Fst (Snd (Var "m")) in
-      let: "slice" := Snd (Snd (Var "m")) in
+      let: "err" := Fst (Fst (Var "m")) in
+      let: "sender" := Snd (Fst (Var "m")) in
+      let: "slice" := Snd (Var "m") in
       let: "ptr" := Fst (Var "slice") in
       let: "len" := Snd (Var "slice") in
-      (* FIXME: package "ptr" and "len" to returned slice of type []byte *)
-      (Fst (Var "m"), Var "sender", Var "slice").
+      (Var "err", Var "sender", (Var "ptr", Var "len", Var "len")).
 
   Context `{!heapG Σ}.
 
@@ -499,5 +497,27 @@ Section grove.
     { iApply is_slice_small_byte_mapsto_vals. done. }
     iIntros "[Hc Hl]". iApply "HΦ". iFrame "Hc".
     iApply mapsto_vals_is_slice_small_byte; done.
+  Qed.
+
+  Lemma wp_Receive c ms E :
+    {{{ c c↦ ms }}}
+      Receive (recv_endpoint c) @ E
+    {{{ (err : bool) (s : Slice.t) (m : message),
+        RET (#err, send_endpoint m.(msg_sender) c, slice_val s);
+        c c↦ ms ∗ if err then True else ⌜m ∈ ms⌝ ∗ is_slice s byteT 1 m.(msg_data)
+    }}}.
+  Proof.
+    iIntros (Φ) "Hc HΦ". wp_lam.
+    wp_apply (wp_RecvOp with "Hc").
+    iIntros (err l len sender) "[Hc Hslice]".
+    wp_pures.
+    iModIntro. destruct err.
+    { iApply ("HΦ" $! true (Slice.mk _ _ _) (Message sender [])). by iFrame. }
+    iDestruct "Hslice" as (m (Hin & Hlen & <-)) "Hl".
+    iApply ("HΦ" $! false (Slice.mk _ _ _) m). iFrame "Hc".
+    iSplit; first done. iSplitL.
+    - iApply mapsto_vals_is_slice_small_byte; done.
+    - iExists []. simpl. iSplit; first by eauto with lia.
+      iApply array.array_nil. done.
   Qed.
 End grove.
