@@ -17,35 +17,62 @@ Set Printing Projections.
 
 (** * The Grove extension to GooseLang: primitive operations [Trusted definitions!] *)
 
-Inductive GroveOp := MkSendOp | MkRecvOp | SendOp | RecvOp.
+Inductive GroveOp := ListenOp | ConnectOp | SendOp | RecvOp.
 Instance eq_GroveOp : EqDecision GroveOp.
 Proof. solve_decision. Defined.
 Instance GroveOp_fin : Countable GroveOp.
 Proof. solve_countable GroveOp_rec 10%nat. Qed.
 
-Inductive GroveEndpoint := SendEndp | RecvEndp.
-Instance eq_GroveEndpoint : EqDecision GroveEndpoint.
+Inductive GroveVal : Set :=
+| HostEndp (c : string)
+(** A Client endpoint for some channel named [c] also has some *other* dedicated
+channel for responses, named [r]. *)
+| ClientEndp (c : string) (r : string).
+Instance GroveVal_eq_decision : EqDecision GroveVal.
 Proof. solve_decision. Defined.
-Instance GroveEndpoint_fin : Countable GroveEndpoint.
-Proof. solve_countable GroveEndpoint_rec 10%nat. Qed.
-Definition GroveVal : Set := GroveEndpoint * string.
+Instance GroveVal_countable : Countable GroveVal.
+Proof.
+  refine (inj_countable'
+    (λ x, match x with
+          | HostEndp c => inl c
+          | ClientEndp c r => inr (c, r)
+          end)
+    (λ x, match x with
+          | inl c => HostEndp c
+          | inr (c, r) => ClientEndp c r
+          end)
+    _);
+  by intros [].
+Qed.
 
 Definition grove_op : ext_op.
 Proof.
   refine (mkExtOp GroveOp _ _ GroveVal _ _).
 Defined.
 
-Inductive GroveTys := GroveSendTy | GroveRecvTy.
+Inductive GroveTys := GroveHostTy | GroveClientTy.
 
 (* TODO: Why is this an instance but the ones above are not? *)
 Instance grove_val_ty: val_types :=
   {| ext_tys := GroveTys; |}.
 
+Record message := Message { msg_sender : string; msg_data : list u8 }.
+Add Printing Constructor message. (* avoid printing with record syntax *)
+Instance message_eq_decision : EqDecision message.
+Proof. solve_decision. Defined.
+Instance message_countable : Countable message.
+Proof.
+  refine (inj_countable'
+    (λ x, (msg_sender x, msg_data x))
+    (λ i, Message i.1 i.2)
+    _).
+  by intros [].
+Qed.
+
 (** The global network state: a map from endpoint names to the set of messages sent to
 those endpoints. *)
-Definition chan := string.
-Definition message := list u8.
-Definition grove_global_state := gmap chan (gset message).
+Definition chan : Type := string.
+Definition grove_global_state : Type := gmap chan (gset message).
 
 Definition grove_model : ffi_model.
 Proof.
@@ -63,32 +90,45 @@ Section grove.
 
   Existing Instances r_mbind r_fmap.
 
+  Definition isFreshChan (σg : state * global_state) (c : chan) : Prop :=
+    σg.2 !! c = None.
+
+  Definition gen_isFreshChan σg : isFreshChan σg (fresh (dom (gset chan) σg.2)).
+  Proof.
+    rewrite /isFreshChan -not_elem_of_dom. apply is_fresh.
+  Defined.
+
+  Global Instance alloc_chan_gen : GenPred chan (state*global_state) isFreshChan.
+  Proof. intros _ σg. refine (Some (exist _ _ (gen_isFreshChan σg))). Defined.
+
   Definition ext_step (op: GroveOp) (v: val): transition (state*global_state) val :=
     match op, v with
-    | MkSendOp, LitV (LitString s) =>
-      ret (ExtV (SendEndp, s))
-    | MkRecvOp, LitV (LitString s) =>
-      ret (ExtV (RecvEndp, s))
-    | SendOp, PairV (ExtV (SendEndp, c)) (PairV (LitV (LitLoc l)) (LitV (LitInt len))) =>
-      m ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (m : message),
-            length m = int.nat len ∧ forall (i:Z), 0 <= i -> i < length m ->
+    | ListenOp, LitV (LitString c) =>
+      ret (ExtV (HostEndp c))
+    | ConnectOp, LitV (LitString c) =>
+      r ← suchThat isFreshChan;
+      modify (λ '(σ,g), (σ, <[ r := ∅ ]> g));;
+      ret (ExtV (ClientEndp c r), ExtV (HostEndp r))%V
+    | SendOp, PairV (ExtV (ClientEndp c r)) (PairV (LitV (LitLoc l)) (LitV (LitInt len))) =>
+      data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
+            length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
-                | Some (Reading _, LitV (LitByte v)) => m !! Z.to_nat i = Some v
+                | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
                 end);
       ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
-      modify (λ '(σ,g), (σ, <[ c := ms ∪ {[m]} ]> g));;
+      modify (λ '(σ,g), (σ, <[ c := ms ∪ {[Message r data]} ]> g));;
       ret #()
-    | RecvOp, ExtV (RecvEndp, c) =>
+    | RecvOp, ExtV (HostEndp c) =>
       ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms);
       match m with
-      | None => ret (#true, (#locations.null, #0))%V
+      | None => ret (#true, ExtV $ ClientEndp "" c, (#locations.null, #0))%V
       | Some m =>
         l ← allocateN;
-        modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m) σ, g));;
-        ret  (#false, (#(l : loc), #(length m)))%V
+        modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
+        ret  (#false, ExtV $ ClientEndp m.(msg_sender) c, (#(l : loc), #(length m.(msg_data))))%V
       end
     | _, _ => undefined
     end.
@@ -119,8 +159,11 @@ Section grove.
   suddenly cause all FFI parameters to be inferred as the grove model *)
   Existing Instances grove_op grove_model.
 
+  Local Definition data_vals (data : list u8) : list val :=
+    ((λ b, #(LitByte b)) <$> data).
+
   Local Definition chan_msg_bounds (g : gmap chan (gset message)) : Prop :=
-    ∀ c ms m, g !! c = Some ms → m ∈ ms → 0 < length m ∧ length m < 2^64.
+    ∀ c ms m, g !! c = Some ms → m ∈ ms → 0 < length m.(msg_data) < 2^64.
 
   Local Program Instance grove_interp: ffi_interp grove_model :=
     {| ffiG := groveG;
@@ -151,10 +194,10 @@ Section lifting.
   Context `{!heapG Σ}.
   Instance groveG0 : groveG Σ := heapG_ffiG.
 
-  Definition send_endpoint (c : string) : val :=
-    ExtV (SendEndp, c).
+  Definition send_endpoint (c : string) (r : string) : val :=
+    ExtV (ClientEndp c r).
   Definition recv_endpoint (c : string) : val :=
-    ExtV (RecvEndp, c).
+    ExtV (HostEndp c).
 
   (* Lifting automation *)
   Local Hint Extern 0 (head_reducible _ _ _) => eexists _, _, _, _, _; simpl : core.
@@ -177,29 +220,9 @@ lemmas. *)
           inversion H; subst; clear H
         end.
 
-  Lemma wp_MkSendOp c s E :
+  Lemma wp_ListenOp c s E :
     {{{ True }}}
-      ExternalOp MkSendOp (LitV $ LitString c) @ s; E
-    {{{ RET send_endpoint c; True }}}.
-  Proof.
-    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) Hg !>".
-    iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
-      monad_simpl. }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_head_step.
-    simpl.
-    iFrame.
-    iIntros "!>".
-    iSplit; first done.
-    by iApply "HΦ".
-  Qed.
-
-  Lemma wp_MkRecvOp c s E :
-    {{{ True }}}
-      ExternalOp MkRecvOp (LitV $ LitString c) @ s; E
+      ExternalOp ListenOp (LitV $ LitString c) @ s; E
     {{{ RET recv_endpoint c; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -217,11 +240,42 @@ lemmas. *)
     by iApply "HΦ".
   Qed.
 
-  Lemma mapsto_vals_bytes_valid l (m : message) q (σ : gmap _ _) :
-    na_heap.na_heap_ctx tls σ -∗ mapsto_vals l q ((λ b, #(LitByte b)) <$> m) -∗
-    ⌜ (forall (i:Z), (0 <= i)%Z -> (i < length m)%Z ->
+  Lemma wp_ConnectOp c s E :
+    {{{ True }}}
+      ExternalOp ConnectOp (LitV $ LitString c) @ s; E
+    {{{ r, RET (send_endpoint c r, recv_endpoint r); r c↦ ∅ }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) [Hg %Hg] !>".
+    iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. econstructor.
+      { econstructor. eapply gen_isFreshChan. }
+      monad_simpl.
+    }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    inv_head_step.
+    match goal with
+    | H : isFreshChan _ ?c |- _ => rename H into Hfresh; rename c into r
+    end.
+    iMod (@gen_heap_alloc with "Hg") as "[$ [Hr _]]".
+    { apply Hfresh. }
+    iIntros "!> /=".
+    iFrame.
+    iSplit; first done.
+    iSplit.
+    { iPureIntro. clear c. intros c ms m. destruct (decide (c = r)) as [->|Hne].
+      - rewrite lookup_insert=>-[<-]. rewrite elem_of_empty. done.
+      - rewrite lookup_insert_ne //. apply Hg. }
+    by iApply "HΦ".
+  Qed.
+
+  Lemma mapsto_vals_bytes_valid l (data : list u8) q (σ : gmap _ _) :
+    na_heap.na_heap_ctx tls σ -∗ mapsto_vals l q (data_vals data) -∗
+    ⌜ (forall (i:Z), (0 <= i)%Z -> (i < length data)%Z ->
               match σ !! (l +ₗ i) with
-           | Some (Reading _, LitV (LitByte v)) => m !! Z.to_nat i = Some v
+           | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
            | _ => False
               end) ⌝.
   Proof.
@@ -233,11 +287,11 @@ lemmas. *)
     intros [b [? ->]]%fmap_Some_1. done.
   Qed.
 
-  Lemma wp_SendOp c ms (l : loc) (len : u64) (m : message) (q : Qp) s E :
-    0 < length m → length m = int.nat len →
-    {{{ c c↦ ms ∗ mapsto_vals l q ((λ b, #(LitByte b)) <$> m) }}}
-      ExternalOp SendOp (send_endpoint c, (#l, #len))%V @ s; E
-    {{{ RET #(); c c↦ (ms ∪ {[m]}) ∗ mapsto_vals l q ((λ b, #(LitByte b)) <$> m) }}}.
+  Lemma wp_SendOp c r ms (l : loc) (len : u64) (data : list u8) (q : Qp) s E :
+    0 < length data → length data = int.nat len →
+    {{{ c c↦ ms ∗ mapsto_vals l q (data_vals data) }}}
+      ExternalOp SendOp (send_endpoint c r, (#l, #len))%V @ s; E
+    {{{ RET #(); c c↦ (ms ∪ {[Message r data]}) ∗ mapsto_vals l q (data_vals data) }}}.
   Proof.
     iIntros (Hnonemp Hmlen Φ) "[Hc Hl] HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns κ κs nt) "(Hσ&$&Htr) [Hg %Hg] !>".
@@ -254,19 +308,19 @@ lemmas. *)
     inv_head_step.
     iFrame.
     iMod (@gen_heap_update with "Hg Hc") as "[$ Hc]".
-    assert (m = m0) as <-.
+    assert (data = data0) as <-.
     { apply list_eq=>i.
-      rename select (length m0 = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length m = length m0) as Hlen by rewrite Hmlen //.
-      destruct (m !! i) as [v|] eqn:Hm; last first.
-      { rewrite Hm. move: Hm. rewrite lookup_ge_None Hlen -lookup_ge_None. done. }
-      apply lookup_lt_Some in Hm. apply inj_lt in Hm.
+      rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
+      assert (length data0 = length data) as Hlen by rewrite Hmlen //.
+      destruct (data !! i) as [v|] eqn:Hm; last first.
+      { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
+      rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
       feed pose proof (Hl i) as Hl; [lia..|].
       feed pose proof (Hm0 i) as Hm0; [lia..|].
       destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
       destruct v'' as [lit| | | | |]; try done.
       destruct lit; try done.
-      rewrite Nat2Z.id in Hl Hm0. rewrite Hl Hm0. done. }
+      rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
     iIntros "!> /=".
     iSplit; first done.
     iSplit.
@@ -280,13 +334,14 @@ lemmas. *)
     by iFrame.
   Qed.
 
-  Lemma wp_RecvOp e ms s E :
-    {{{ e c↦ ms }}}
-      ExternalOp RecvOp (recv_endpoint e) @ s; E
-    {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
-        e c↦ ms ∗ if err then True else
-          ∃ m : message, ⌜m ∈ ms ∧ length m = int.nat len⌝ ∗
-            mapsto_vals l 1 ((λ b, #(LitByte b)) <$> m)
+  Lemma wp_RecvOp c ms s E :
+    {{{ c c↦ ms }}}
+      ExternalOp RecvOp (recv_endpoint c) @ s; E
+    {{{ (err : bool) (l : loc) (len : u64) (sender : chan),
+        RET (#err, send_endpoint sender c, (#l, #len));
+        c c↦ ms ∗ if err then True else
+          ∃ m : message, ⌜m ∈ ms ∧ length m.(msg_data) = int.nat len ∧ m.(msg_sender) = sender⌝ ∗
+            mapsto_vals l 1 (data_vals m.(msg_data))
     }}}.
   Proof.
     iIntros (Φ) "He HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -316,7 +371,7 @@ lemmas. *)
     move: (Hg _ _ _ He Hm)=>Hlen.
     rename select (isFresh _ _) into Hfresh.
     iMod (na_heap_alloc_list tls (heap σ1) l
-                             ((λ b : u8, #b) <$> m')
+                             (data_vals m'.(msg_data))
                              (Reading O) with "Hσ")
       as "(Hσ & Hblock & Hl)".
     { rewrite fmap_length. apply Nat2Z.inj_lt. apply Hlen. }
@@ -329,8 +384,8 @@ lemmas. *)
     do 2 (iSplit; first done).
     iApply "HΦ". iFrame "He".
     iExists m'. iSplit.
-    { iPureIntro. split; first done.
-      trans (Z.to_nat (Z.of_nat (length m'))); first by rewrite Nat2Z.id //.
+    { iPureIntro. split; first done. split; last done.
+      trans (Z.to_nat (Z.of_nat (length m'.(msg_data)))); first by rewrite Nat2Z.id //.
       f_equal. word. }
     rewrite /mapsto_vals. iApply (big_sepL_mono with "Hl").
     clear -Hfresh. simpl. iIntros (i v _) "[Hmapsto _]".
@@ -347,29 +402,31 @@ Section grove.
   Existing Instances grove_op grove_model.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
-  Definition Sender : ty := extT GroveSendTy.
-  Definition Receiver : ty := extT GroveRecvTy.
-
-  (** Type: func(string) *Sender *)
-  Definition MakeSender : val :=
-    λ: "e", ExternalOp MkSendOp (Var "e").
+  Definition Sender : ty := extT GroveClientTy.
+  Definition Receiver : ty := extT GroveHostTy.
 
   (** Type: func(string) *Receiver *)
-  Definition MakeReceiver : val :=
-    λ: "e", ExternalOp MkSendOp (Var "e").
+  Definition Listen : val :=
+    λ: "e", ExternalOp ListenOp (Var "e").
+
+  (** Type: func(string) ( *Sender, *Receiver) *)
+  Definition Connect : val :=
+    λ: "e", ExternalOp ConnectOp (Var "e").
 
   (** Type: func( *Sender, []byte) *)
   Definition Send : val :=
     (* FIXME: extract ptr and len from "m" (which is intended to have type []byte) *)
     λ: "e" "m", ExternalOp SendOp (Var "e", Var "m").
 
-  (** Type: func( *Receiver) []byte *)
+  (** Type: func( *Receiver) ( *Sender, []byte) *)
   Definition Receive : val :=
     λ: "e",
       let: "m" := ExternalOp RecvOp (Var "e") in
-      let: "slice" := Snd (Var "m") in
-      let: "ptr" := Fst (Var "ptr") in
-      let: "len" := Snd (Var "ptr") in
+      let: "err" := Fst (Var "m") in
+      let: "sender" := Fst (Snd (Var "m")) in
+      let: "slice" := Snd (Snd (Var "m")) in
+      let: "ptr" := Fst (Var "slice") in
+      let: "len" := Snd (Var "slice") in
       (* FIXME: package "ptr" and "len" to returned slice of type []byte *)
-      (Fst (Var "m"), Var "slice").
+      (Fst (Var "m"), Var "sender", Var "slice").
 End grove.

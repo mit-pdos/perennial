@@ -3,7 +3,8 @@ From iris.prelude Require Export prelude.
 From iris.prelude Require Import options.
 From Perennial.algebra Require Export blocks.
 
-Record loc := { loc_car : Z; loc_off : Z }.
+Record loc := Loc { loc_car : Z; loc_off : Z }.
+Add Printing Constructor loc. (* avoid printing with record syntax *)
 Definition null := {| loc_car := 0; loc_off := 0 |}.
 
 Instance loc_eq_decision : EqDecision loc.
