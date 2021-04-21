@@ -23,8 +23,8 @@ Proof. solve_decision. Defined.
 Instance GroveOp_fin : Countable GroveOp.
 Proof. solve_countable GroveOp_rec 10%nat. Qed.
 
-Definition chan : Set := string.
-Inductive GroveVal : Set :=
+Definition chan := u64.
+Inductive GroveVal :=
 | HostEndp (c : chan)
 (** A Client endpoint for some channel named [c] also has some *other* dedicated
 channel for responses, named [r]. *)
@@ -93,26 +93,31 @@ Section grove.
 
   Existing Instances r_mbind r_fmap.
 
-  Definition isFreshChan (σg : state * global_state) (c : chan) : Prop :=
-    σg.2 !! c = None.
+  Definition isFreshChan (σg : state * global_state) (c : option chan) : Prop :=
+    match c with
+    | None => True
+    | Some c => σg.2 !! c = None
+    end.
 
-  Definition gen_isFreshChan σg : isFreshChan σg (fresh (dom (gset chan) σg.2)).
-  Proof.
-    rewrite /isFreshChan -not_elem_of_dom. apply is_fresh.
-  Defined.
+  Definition gen_isFreshChan σg : isFreshChan σg None.
+  Proof. rewrite /isFreshChan //. Defined.
 
-  Global Instance alloc_chan_gen : GenPred chan (state*global_state) isFreshChan.
+  Global Instance alloc_chan_gen : GenPred (option chan) (state*global_state) isFreshChan.
   Proof. intros _ σg. refine (Some (exist _ _ (gen_isFreshChan σg))). Defined.
 
   Definition ext_step (op: GroveOp) (v: val): transition (state*global_state) val :=
     match op, v with
-    | ListenOp, LitV (LitString c) =>
+    | ListenOp, LitV (LitInt c) =>
       ret (ExtV (HostEndp c))
-    | ConnectOp, LitV (LitString c) =>
+    | ConnectOp, LitV (LitInt c) =>
       r ← suchThat isFreshChan;
-      modify (λ '(σ,g), (σ, <[ r := ∅ ]> g));;
-      ret (ExtV (ClientEndp c r), ExtV (HostEndp r))%V
-    | SendOp, PairV (ExtV (ClientEndp c r)) (PairV (LitV (LitLoc l)) (LitV (LitInt len))) =>
+      match r with
+      | None => ret (#true, ExtV (ClientEndp c c), ExtV (HostEndp c))%V
+      | Some r =>
+        modify (λ '(σ,g), (σ, <[ r := ∅ ]> g));;
+        ret (#true, ExtV (ClientEndp c r), ExtV (HostEndp r))%V
+      end
+    | SendOp, (ExtV (ClientEndp c r), (LitV (LitLoc l), LitV (LitInt len)))%V =>
       data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
             length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
@@ -127,7 +132,7 @@ Section grove.
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms);
       match m with
-      | None => ret (#true, ExtV $ ClientEndp "" c, (#locations.null, #0))%V
+      | None => ret (#true, ExtV $ ClientEndp c c, (#locations.null, #0))%V
       | Some m =>
         l ← allocateN;
         modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
@@ -225,7 +230,7 @@ lemmas. *)
 
   Lemma wp_ListenOp c s E :
     {{{ True }}}
-      ExternalOp ListenOp (LitV $ LitString c) @ s; E
+      ExternalOp ListenOp (LitV $ LitInt c) @ s; E
     {{{ RET recv_endpoint c; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -245,8 +250,10 @@ lemmas. *)
 
   Lemma wp_ConnectOp c s E :
     {{{ True }}}
-      ExternalOp ConnectOp (LitV $ LitString c) @ s; E
-    {{{ r, RET (send_endpoint c r, recv_endpoint r); r c↦ ∅ }}}.
+      ExternalOp ConnectOp (LitV $ LitInt c) @ s; E
+    {{{ (err : bool) (r : chan), RET (#err, send_endpoint c r, recv_endpoint r);
+      if err then True else r c↦ ∅
+    }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) [Hg %Hg] !>".
@@ -255,6 +262,7 @@ lemmas. *)
       econstructor. rewrite /head_step/=.
       monad_simpl. econstructor.
       { econstructor. eapply gen_isFreshChan. }
+      monad_simpl. econstructor; first by econstructor.
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
@@ -262,8 +270,13 @@ lemmas. *)
     match goal with
     | H : isFreshChan _ ?c |- _ => rename H into Hfresh; rename c into r
     end.
-    iMod (@gen_heap_alloc with "Hg") as "[$ [Hr _]]".
-    { apply Hfresh. }
+    destruct r as [r|]; last first.
+    { (* Failed to pick a fresh channel. *)
+      monad_inv. simpl. iFrame. iModIntro.
+      do 2 (iSplit; first done).
+      iApply "HΦ". done. }
+    simpl in *. monad_inv. simpl.
+    iMod (@gen_heap_alloc with "Hg") as "[$ [Hr _]]"; first done.
     iIntros "!> /=".
     iFrame.
     iSplit; first done.
@@ -414,7 +427,7 @@ Section grove.
   Definition Listen : val :=
     λ: "e", ExternalOp ListenOp "e".
 
-  (** Type: func(string) ( *Sender, *Receiver) *)
+  (** Type: func(string) (bool, *Sender, *Receiver) *)
   Definition Connect : val :=
     λ: "e", ExternalOp ConnectOp "e".
 
@@ -422,7 +435,7 @@ Section grove.
   Definition Send : val :=
     λ: "e" "m", ExternalOp SendOp ("e", (slice.ptr "m", slice.len "m")).
 
-  (** Type: func( *Receiver) ( *Sender, []byte) *)
+  (** Type: func( *Receiver) (bool, *Sender, []byte) *)
   Definition Receive : val :=
     λ: "e",
       let: "m" := ExternalOp RecvOp "e" in
@@ -437,7 +450,7 @@ Section grove.
 
   Lemma wp_Listen c s E :
     {{{ True }}}
-      Listen (#str c) @ s; E
+      Listen #(LitInt c) @ s; E
     {{{ RET recv_endpoint c; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". wp_lam.
@@ -446,8 +459,10 @@ Section grove.
 
   Lemma wp_Connect c s E :
     {{{ True }}}
-      Connect (#str c) @ s; E
-    {{{ r, RET (send_endpoint c r, recv_endpoint r); r c↦ ∅ }}}.
+      Connect #(LitInt c) @ s; E
+    {{{ (err : bool) (r : chan), RET (#err, send_endpoint c r, recv_endpoint r);
+      if err then True else r c↦ ∅
+    }}}.
   Proof.
     iIntros (Φ) "_ HΦ". wp_lam.
     wp_apply wp_ConnectOp. by iApply "HΦ".

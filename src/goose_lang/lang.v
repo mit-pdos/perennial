@@ -35,7 +35,7 @@ Class ext_op :=
       external: Set;
       external_eq_dec :> EqDecision external;
       external_countable :> Countable external;
-      external_val: Set;
+      external_val: Type;
       external_val_eq_dec :> EqDecision external_val;
       external_val_countable :> Countable external_val;
     }.
