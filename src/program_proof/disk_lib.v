@@ -1,3 +1,4 @@
+From Perennial.program_logic Require Import atomic.
 From Perennial.program_proof Require Import disk_prelude.
 
 Section goose.
@@ -160,6 +161,21 @@ Proof.
   iFrame.
   iSplitL; auto.
   by iApply array_to_block_array.
+Qed.
+
+(* The logatom triple is weaker than the above spec since it does not give a ▷. *)
+Theorem wp_Write_atomic (a: u64) s q b :
+  ⊢ {{{ is_slice_small s byteT q (Block_to_vals b) }}}
+  <<< ∀∀ b0, int.Z a d↦ b0 >>>
+    Write #a (slice_val s) @ ⊤
+  <<< int.Z a d↦ b >>>
+  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) }}}.
+Proof.
+  iIntros "!#" (Φ) "Hs Hupd".
+  iApply (wp_Write_ncfupd with "Hs").
+  iMod "Hupd" as (b0) "[Hα Hcont]".
+  iModIntro. iExists _. iFrame "Hα". iIntros "!> Hβ".
+  iMod ("Hcont" with "Hβ") as "HΦ". iModIntro. done.
 Qed.
 
 Theorem wp_Write_fupd {stk E} E' (a: u64) s q b :
