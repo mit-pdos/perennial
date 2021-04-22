@@ -204,6 +204,7 @@ Lemma wp_MemKVShardClerk__Put Eo Ei γ (ck:loc) (key:u64) (v:list u8) value_sl Q
     MemKVShardClerk__Put #ck #key (slice_val value_sl)
   {{{
        (e:u64), RET #e;
+       typed_slice.is_slice value_sl byteT 1%Qp v ∗
        own_MemKVShardClerk ck γ ∗ (
        ⌜e ≠ 0⌝ ∗
         (|={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q)))
@@ -245,9 +246,9 @@ Proof.
     rewrite (zero_slice_val).
     iExists _; iFrame.
   }
-  iAssert (own_PutRequest args_ptr {| PR_CID := cid; PR_Seq := seq; PR_Key := key; PR_Value := v |}) with "[CID Seq Key Value Hval_sl]" as "Hargs".
+  iAssert (own_PutRequest args_ptr value_sl {| PR_CID := cid; PR_Seq := seq; PR_Key := key; PR_Value := v |}) with "[CID Seq Key Value Hval_sl]" as "Hargs".
   {
-    iExists _; iFrame. simpl. iPureIntro; word.
+    iFrame. simpl. iPureIntro; word.
   }
   assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
   { simpl. admit. } (* FIXME: overflow guard *)
@@ -263,7 +264,7 @@ Proof.
   iNamed "HrawRep".
   wp_pures.
 
-  wp_apply (wp_encodePutRequest _ (mkPutRequestC _ _ _ _) with "[$Hargs]").
+  wp_apply (wp_encodePutRequest _ _ (mkPutRequestC _ _ _ _) with "[$Hargs]").
   iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
   wp_loadField.
 
@@ -322,6 +323,10 @@ Proof.
     wp_pures.
     wp_loadField.
     iApply "HΦ".
+    iSplitL "Hreq".
+    {
+      iNamed "Hreq"; iFrame.
+    }
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
     { iExists _, _, _, _.
       rewrite is_shard_server_unfold.

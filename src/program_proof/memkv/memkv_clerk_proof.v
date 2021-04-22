@@ -159,13 +159,13 @@ Proof using Type*.
     iModIntro.
     iSplitL ""; first done.
     wp_pures.
-    iDestruct "HshardPutPost" as "(HshardCk & [[%Hbad _]|[_ Hpost]])".
+    iDestruct "HshardPutPost" as "(Hval_sl & HshardCk & [[%Hbad _]|[_ Hpost]])".
     { by exfalso. }
     by iFrame.
   }
   {
     wp_loadField.
-    iDestruct "HshardPutPost" as "(HshardCk & [Hatomic|[%Hbad _]])"; last first.
+    iDestruct "HshardPutPost" as "(Hval_sl & HshardCk & [Hatomic|[%Hbad _]])"; last first.
     { exfalso. naive_solver. }
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_MemKVCoordClerk__GetShardMap with "[$HcoordCk_own]").
@@ -180,9 +180,9 @@ Proof using Type*.
     iSplitL ""; first done.
     rewrite Hre.
     iDestruct "Hatomic" as "[_ $]".
-    iSplitR ""; last admit. (* TODO: need to get back ownership of value slice from ShardClerk, which requires getting back ownership from encodePutRequest *)
+    iFrame.
     iExists _,_,_,_; iFrame.
   }
-Admitted.
+Qed.
 
 End memkv_clerk_proof.

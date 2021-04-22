@@ -22,8 +22,7 @@ Record PutReplyC := mkPutReplyC {
   PR_Err : u64;
 }.
 
-Definition own_PutRequest args_ptr args : iProp Σ :=
-  ∃ val_sl,
+Definition own_PutRequest args_ptr val_sl args : iProp Σ :=
   "HCID" ∷ args_ptr ↦[PutRequest :: "CID"] #args.(PR_CID) ∗
   "HSeq" ∷ args_ptr ↦[PutRequest :: "Seq"] #args.(PR_Seq) ∗
   "HKey" ∷ args_ptr ↦[PutRequest :: "Key"] #args.(PR_Key) ∗
@@ -42,15 +41,15 @@ Definition has_encoding_PutRequest (data:list u8) (args:PutRequestC) : Prop :=
 Definition has_encoding_PutReply (data:list u8) (rep:PutReplyC) :=
   has_encoding data [ EncUInt64 rep.(PR_Err) ].
 
-Lemma wp_encodePutRequest args_ptr args :
+Lemma wp_encodePutRequest args_ptr val_sl args :
   {{{
-       own_PutRequest args_ptr args
+       own_PutRequest args_ptr val_sl args
   }}}
     encodePutRequest #args_ptr
   {{{
        (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_PutRequest reqData args⌝ ∗
                                                typed_slice.is_slice req_sl byteT 1%Qp reqData ∗
-                                               own_PutRequest args_ptr args
+                                               own_PutRequest args_ptr val_sl args
   }}}.
 Proof.
 Admitted.
@@ -62,7 +61,7 @@ Lemma wp_decodePutRequest req_sl reqData args :
   }}}
     decodePutRequest (slice_val req_sl)
   {{{
-       (args_ptr:loc), RET #args_ptr; own_PutRequest args_ptr args
+       (args_ptr:loc) val_sl, RET #args_ptr; own_PutRequest args_ptr val_sl args
   }}}.
 Proof.
 Admitted.
