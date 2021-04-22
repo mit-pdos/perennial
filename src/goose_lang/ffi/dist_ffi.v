@@ -435,16 +435,16 @@ Section grove.
                               "R" :: struct.ptrT Receiver
                             ])%struct.
 
-  Definition ReceiveRet := (struct.decl [
-                              "Err" :: boolT;
-                              "Sender" :: refT (extT GroveClientTy);
-                              "Data" :: slice.T byteT
-                            ])%struct.
-
   Definition ConnectRet := (struct.decl [
                               "Err" :: boolT;
                               "Sender" :: refT (extT GroveClientTy);
                               "Receiver" :: refT (extT GroveHostTy)
+                            ])%struct.
+
+  Definition ReceiveRet := (struct.decl [
+                              "Err" :: boolT;
+                              "Sender" :: refT (extT GroveClientTy);
+                              "Data" :: slice.T byteT
                             ])%struct.
 
   (** Type: func(uint64) *Receiver *)
@@ -458,7 +458,11 @@ Section grove.
       let: "err" := Fst (Fst "c") in
       let: "sender" := Snd (Fst "c") in
       let: "receiver" := Snd "c" in
-      ("err", ("sender", ("receiver", #()))).
+      struct.mk ConnectRet [
+        "Err" ::= "err";
+        "Sender" ::= "sender";
+        "Receiver" ::= "receiver"
+      ].
 
   (** Type: func( *Sender, []byte) *)
   Definition Send : val :=
@@ -473,8 +477,11 @@ Section grove.
       let: "slice" := Snd "r" in
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
-      let: "slice" := ("ptr", "len", "len") in
-      ("err", ("sender", ("slice", #()))).
+      struct.mk ReceiveRet [
+        "Err" ::= "err";
+        "Sender" ::= "sender";
+        "Data" ::= ("ptr", "len", "len")
+      ].
 
   Context `{!heapG Σ}.
 
