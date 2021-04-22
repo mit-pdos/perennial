@@ -435,13 +435,30 @@ Section grove.
                               "R" :: struct.ptrT Receiver
                             ])%struct.
 
+  Definition ReceiveRet := (struct.decl [
+                              "Err" :: boolT;
+                              "Sender" :: refT (extT GroveClientTy);
+                              "Data" :: slice.T byteT
+                            ])%struct.
+
+  Definition ConnectRet := (struct.decl [
+                              "Err" :: boolT;
+                              "Sender" :: refT (extT GroveClientTy);
+                              "Receiver" :: refT (extT GroveHostTy)
+                            ])%struct.
+
   (** Type: func(uint64) *Receiver *)
   Definition Listen : val :=
     λ: "e", ExternalOp ListenOp "e".
 
   (** Type: func(uint64) (bool, *Sender, *Receiver) *)
   Definition Connect : val :=
-    λ: "e", ExternalOp ConnectOp "e".
+    λ: "e",
+      let: "c" := ExternalOp ConnectOp "e" in
+      let: "err" := Fst (Fst "c") in
+      let: "sender" := Snd (Fst "c") in
+      let: "receiver" := Snd "c" in
+      ("err", ("sender", ("receiver", #()))).
 
   (** Type: func( *Sender, []byte) *)
   Definition Send : val :=
@@ -450,13 +467,14 @@ Section grove.
   (** Type: func( *Receiver) (bool, *Sender, []byte) *)
   Definition Receive : val :=
     λ: "e",
-      let: "m" := ExternalOp RecvOp "e" in
-      let: "err" := Fst (Fst "m") in
-      let: "sender" := Snd (Fst "m") in
-      let: "slice" := Snd "m" in
+      let: "r" := ExternalOp RecvOp "e" in
+      let: "err" := Fst (Fst "r") in
+      let: "sender" := Snd (Fst "r") in
+      let: "slice" := Snd "r" in
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
-      ("err", "sender", ("ptr", "len", "len")).
+      let: "slice" := ("ptr", "len", "len") in
+      ("err", ("sender", ("slice", #()))).
 
   Context `{!heapG Σ}.
 
@@ -472,12 +490,19 @@ Section grove.
   Lemma wp_Connect c s E :
     {{{ True }}}
       Connect #(LitInt c) @ s; E
-    {{{ (err : bool) (r : chan), RET (#err, send_endpoint c r, recv_endpoint r);
+    {{{ (err : bool) (r : chan),
+        RET struct.mk_f ConnectRet [
+              "Err" ::= #err;
+              "Sender" ::= send_endpoint c r;
+              "Receiver" ::= recv_endpoint r
+            ];
       if err then True else r c↦ ∅
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ". wp_lam.
-    wp_apply wp_ConnectOp. by iApply "HΦ".
+    wp_apply wp_ConnectOp.
+    iIntros (err recv) "Hr". wp_pures.
+    by iApply "HΦ". (* Wow, Coq is doing magic here *)
   Qed.
 
   Lemma is_slice_small_byte_mapsto_vals (s : Slice.t) (data : list u8) (q : Qp) :
@@ -533,7 +558,11 @@ Section grove.
         Receive (recv_endpoint c) @ ⊤
       <<<▷ ∃∃ (err : bool) (m : message), c c↦ ms ∗ if err then True else ⌜m ∈ ms⌝ >>>
       {{{ (s : Slice.t),
-          RET (#err, send_endpoint m.(msg_sender) c, slice_val s);
+        RET struct.mk_f ReceiveRet [
+              "Err" ::= #err;
+              "Sender" ::= send_endpoint m.(msg_sender) c;
+              "Data" ::= slice_val s
+            ];
           is_slice s byteT 1 m.(msg_data)
       }}}.
   Proof.
