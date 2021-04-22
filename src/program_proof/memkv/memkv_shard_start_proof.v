@@ -1,8 +1,8 @@
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Export memkv_put_proof memkv_get_proof memkv_install_shard_proof memkv_getcid_proof memkv_move_shard_proof common_proof.
+
+From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_put_proof memkv_get_proof memkv_install_shard_proof memkv_getcid_proof memkv_move_shard_proof common_proof.
 
 Section memkv_shard_start_proof.
 
@@ -14,15 +14,16 @@ is_MemKVShardServer s γ -∗
   {{{
        True
   }}}
-    MemKVShardServer__Start #s
+    MemKVShardServer__Start #s #host
   {{{
        RET #(); True
   }}}.
 Proof.
   iIntros "#His_shard #His_memkv !#" (Φ) "_ HΦ".
-  wp_rec.
+  wp_lam.
+  wp_pures.
   change (Alloc (InjLV (λ: <>, (λ: <>, #())%V))) with
-      (NewMap grove_common.RawRpcFunc).
+      (NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht)).
   wp_apply map.wp_NewMap.
   iIntros (handlers_ptr) "Hmap".
   wp_pures.
@@ -47,7 +48,11 @@ Proof.
   iIntros "Hmap".
   wp_pures.
 
-  wp_apply (grove_ffi.wp_StartRPCServer with "[$Hmap]").
+  wp_apply (wp_MakeRPCServer with "[$Hmap]").
+  iIntros (rs) "Hsown".
+  wp_pures.
+
+  wp_apply (wp_StartRPCServer with "[$Hsown]").
   {
     iApply (big_sepM_insert_2 with "").
     { (* MoveShardRPC handler_is *)
@@ -214,7 +219,7 @@ Proof.
       wp_pures.
       wp_apply (wp_GetCIDRPC with "His_memkv").
       iIntros (cid) "Hcid".
-      wp_apply (wp_encodeCID).
+      wp_apply (wp_encodeUint64).
       iIntros (rep_sl repData) "[Hrep_sl %HrepEnc]".
       iDestruct "Hpre" as "(Hreq_sl & Hrep & _)".
       wp_store.

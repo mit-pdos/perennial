@@ -1,6 +1,5 @@
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Import common_proof memkv_shard_clerk_proof memkv_shard_definitions memkv_marshal_get_proof.
 
@@ -28,11 +27,11 @@ Admitted.
 Axiom own_ShardClerkSet : loc → gname → iProp Σ.
 
 (* TODO: need precondition that [[is_shard_server host]] *)
-Lemma wp_ShardClerkSet__getClerk (γkv:gname) (s:loc) (host:u64) :
+Lemma wp_ShardClerkSet__GetClerk (γkv:gname) (s:loc) (host:u64) :
   {{{
        own_ShardClerkSet s γkv
   }}}
-    ShardClerkSet__getClerk #s #host
+    ShardClerkSet__GetClerk #s #host
   {{{
        (ck_ptr:loc) γsh, RET #ck_ptr; own_MemKVShardClerk ck_ptr γsh ∗
                                       ⌜γsh.(kv_gn) = γkv⌝ ∗

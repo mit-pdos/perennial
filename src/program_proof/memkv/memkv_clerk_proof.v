@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export rpc_axioms common_proof memkv_coord_clerk_proof memkv_shard_clerk_proof.
@@ -61,7 +61,7 @@ Proof using Type*.
   iIntros "Hsmall_sl".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_ShardClerkSet__getClerk with "[$HshardClerksSet]").
+  wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet]").
   iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
 
   wp_pures.
@@ -142,7 +142,7 @@ Proof using Type*.
   iIntros "Hsmall_sl".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_ShardClerkSet__getClerk with "[$HshardClerksSet]").
+  wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet]").
   iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
 
   wp_pures.

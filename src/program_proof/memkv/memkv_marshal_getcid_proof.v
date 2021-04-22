@@ -9,7 +9,7 @@ Admitted.
 
 Context `{!heapG Σ}.
 
-Lemma wp_encodeUin64 cid :
+Lemma wp_encodeUint64 cid :
   {{{
        True
   }}}

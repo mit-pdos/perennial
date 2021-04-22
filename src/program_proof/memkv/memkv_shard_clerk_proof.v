@@ -310,6 +310,7 @@ Proof.
       iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
       exfalso.
       simpl in Hbad.
+      rewrite -Hoverflow in Hbad.
       word.
     }
     iDestruct "Hreceipt" as (?) "Hreceipt".
@@ -461,6 +462,7 @@ Proof.
       iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
       exfalso.
       simpl in Hbad.
+      rewrite -Hoverflow in Hbad.
       word.
     }
     iMod (get_request_post with "HreqInv Hreceipt Htok") as "Hpost".

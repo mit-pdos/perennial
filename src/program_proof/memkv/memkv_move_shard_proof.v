@@ -1,6 +1,5 @@
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_marshal_move_shard_proof memkv_shard_clerk_proof.
 
@@ -42,15 +41,6 @@ Proof.
   wp_if_destruct.
   { (* need to make a fresh clerk *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HCID HSeq HSid HDst]").
-    {
-      iFrame "HmuInv Hlocked".
-      iNext.
-      iExists _,_,_, _, _, _, _, _.
-      iExists _, _, _, _.
-      iFrame "HlastReply_structs ∗".
-      done.
-    }
     (* TODO: annoying to redo rest of proof; annoying also to use wp_If_join if we let go of the lock and reacquire because all of the existentials change *)
     admit.
   }

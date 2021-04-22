@@ -68,12 +68,12 @@ Axiom wp_MakeRPCServer : ∀ (handlers : gmap u64 val) (mref:loc) (def : val) k,
       (s:loc), RET #s; own_RPCServer s handlers
   }}}.
 
-Axiom wp_StartRPCServer : ∀ host (handlers : gmap u64 val) (s : loc) (def : val) k,
+Axiom wp_StartRPCServer : ∀ host (handlers : gmap u64 val) (s : loc) k (n:u64),
   {{{
        own_RPCServer s handlers ∗
       [∗ map] rpcid ↦ handler ∈ handlers, (∃ X Pre Post, handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
   }}}
-    RPCServer__Serve #s #host @ k ; ⊤
+    RPCServer__Serve #s #host #n @ k ; ⊤
   {{{
       RET #(); True
   }}}.
