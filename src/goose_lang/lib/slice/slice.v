@@ -20,8 +20,7 @@ End Slice.
 Local Notation slice_extra s := (Slice.extra s).
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
-Context {ext_ty: ext_types ext}.
+Context `{hG: heapG Σ, !ext_semantics _ _, !ext_types _}.
 
 Implicit Types (stk:stuckness) (E:coPset).
 Implicit Types (v:val) (vs:list val).

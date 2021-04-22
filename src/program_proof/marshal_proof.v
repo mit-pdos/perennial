@@ -111,8 +111,7 @@ Proof.
 Qed.
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
-Context {ext_ty: ext_types ext}.
+Context `{hG: heapG Σ, !ext_semantics _ _, !ext_types _}.
 
 Implicit Types (v:val).
 
@@ -155,9 +154,9 @@ Lemma has_encoding_app data r data' r' :
   has_encoding (take (encoded_length r) data ++ data')
                 (r ++ r').
 Proof.
-  intros.
-  rewrite H.
-  apply has_encoding_inv in H0 as [extra' [-> _]].
+  intros Hdata Hdata'.
+  rewrite Hdata.
+  apply has_encoding_inv in Hdata' as [extra' [-> _]].
   rewrite app_assoc.
   eapply has_encoding_from_app.
   rewrite encode_app -!app_assoc //.

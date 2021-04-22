@@ -27,7 +27,7 @@ Class rpcG Σ (R : Type) := RpcG {
 (* FIXME: add subΣ instance. *)
 
 Section rpc.
-Context `{ext_semantics, !ext_types _, !ffi_interp _, !heapG Σ}.
+Context `{hG: heapG Σ, !ext_semantics _ _, !ext_types _}.
 Context  {R:Type}.
 Context `{!rpcG Σ R}.
 
@@ -293,12 +293,13 @@ Proof using Type*.
     {
       (* Set Printing All*)
       (* Need to unfold Map.t to get map lookups to match *)
-      unfold Map.t in H1.
-      simpl in H1.
-      rewrite -u64_Z_through_nat in H1.
-      replace (int.Z req.(Req_Seq)%Z) with (int.nat req.(Req_Seq):Z) in H1; last first.
+      rename select (_ < _) into Hlt.
+      unfold Map.t in Hlt.
+      simpl in Hlt.
+      rewrite -u64_Z_through_nat in Hlt.
+      replace (int.Z req.(Req_Seq)%Z) with (int.nat req.(Req_Seq):Z) in Hlt; last first.
       { rewrite u64_Z_through_nat. done. }
-      apply Nat2Z.inj_lt in H1.
+      apply Nat2Z.inj_lt in Hlt.
       lia.
     }
     iMod ("HMClose" with "[Hpost]") as "_".
