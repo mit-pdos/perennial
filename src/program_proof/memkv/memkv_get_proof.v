@@ -364,8 +364,8 @@ Proof.
       wp_pures.
       (* commit *)
       unfold PreShardGet.
-      iApply fupd_wp.
-      iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
+      iApply ncfupd_wp.
+      iMod (ncfupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
       { done. }
       iDestruct "Hpre" as (v0) "(Hkvptsto & HfupdQ)".
       iDestruct (own_shard_agree with "HshardGhost Hkvptsto") as %Hmatch.

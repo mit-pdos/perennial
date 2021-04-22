@@ -1,4 +1,3 @@
-From Perennial.program_logic Require Import atomic.
 From Perennial.program_proof Require Import disk_prelude.
 
 Section goose.

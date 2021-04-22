@@ -4,6 +4,7 @@ Set Default Proof Using "Type".
 
 (** Sugar for TaDA-style logically atomic non-crash specs. We only have the variants we need. *)
 (** Use [ncfupd_mask_intro] if you are stuck with non-matching masks. *)
+(* With ▷ *)
 (* Full variant *)
 Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' ∃∃ y1 .. yn , β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=
   (□ ∀ Φ, P -∗ (|NC={Eo%I%I%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ▷ ∀ y1, .. (∀ yn, β -∗ |NC={∅,Eo}=> ∀ z1, .. (∀ zn, Q -∗ Φ v%V) .. ) .. ) .. ) -∗
@@ -11,26 +12,49 @@ Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' ∃∃ 
   (at level 20, x1 closed binder, xn closed binder, y1 closed binder, yn closed binder, z1 closed binder, zn closed binder,
    format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  ∃∃  y1  ..  yn ,  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
-(* No ∃∃, no binders before RET *)
+(* No ∃∃, no binders before RET, with ▷ *)
 Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' β '>>>' {{{ 'RET' v ; Q } } }" :=
   (□ ∀ Φ, P -∗ (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ▷ (β -∗ |NC={∅,Eo}=> Q -∗ Φ v%V)) .. ) -∗
    WP e @ ⊤ {{ Φ }})%I
   (at level 20, x1 closed binder, xn closed binder,
    format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  β  '>>>'  '/' {{{  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
-(* No P *)
+(* No P, with ▷ *)
 Notation "'<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' ∃∃ y1 .. yn , β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=
   (□ ∀ Φ, (|NC={Eo%I%I%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ▷ ∀ y1, .. (∀ yn, β -∗ |NC={∅,Eo}=> ∀ z1, .. (∀ zn, Q -∗ Φ v%V) .. ) .. ) .. ) -∗
    WP e @ ⊤ {{ Φ }})%I
   (at level 20, x1 closed binder, xn closed binder, y1 closed binder, yn closed binder, z1 closed binder, zn closed binder,
    format "'[hv' '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  ∃∃  y1  ..  yn ,  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
-(* No P, no ∃∃ *)
+(* No P, no ∃∃, with ▷ *)
 Notation "'<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=
   (□ ∀ Φ, (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ▷ (β -∗ |NC={∅,Eo}=> ∀ z1, .. (∀ zn, Q -∗ Φ v%V) .. )) .. ) -∗
    WP e @ ⊤ {{ Φ }})%I
   (at level 20, x1 closed binder, xn closed binder, z1 closed binder, zn closed binder,
    format "'[hv' '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
+  : bi_scope.
+
+(* Without ▷ *)
+(* Full variant *)
+Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<' ∃∃ y1 .. yn , β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=
+  (□ ∀ Φ, P -∗ (|NC={Eo%I%I%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ∀ y1, .. (∀ yn, β -∗ |NC={∅,Eo}=> ∀ z1, .. (∀ zn, Q -∗ Φ v%V) .. ) .. ) .. ) -∗
+   WP e @ ⊤ {{ Φ }})%I
+  (at level 20, x1 closed binder, xn closed binder, y1 closed binder, yn closed binder, z1 closed binder, zn closed binder,
+   format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<'  ∃∃  y1  ..  yn ,  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
+  : bi_scope.
+(* No ∃∃ *)
+Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<' β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=
+  (□ ∀ Φ, P -∗ (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ (β -∗ |NC={∅,Eo}=> ∀ z1, .. (∀ zn, Q -∗ Φ v%V) .. )) .. ) -∗
+   WP e @ ⊤ {{ Φ }})%I
+  (at level 20, x1 closed binder, xn closed binder, z1 closed binder, zn closed binder,
+   format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<'  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
+  : bi_scope.
+(* No P, no ∃∃ *)
+Notation "'<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<' β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=
+  (□ ∀ Φ, (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ (β -∗ |NC={∅,Eo}=> ∀ z1, .. (∀ zn, Q -∗ Φ v%V) .. )) .. ) -∗
+   WP e @ ⊤ {{ Φ }})%I
+  (at level 20, x1 closed binder, xn closed binder, z1 closed binder, zn closed binder,
+   format "'[hv' '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<'  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
 
 (** Sugar for HoCAP-style logically atomic crash specs.

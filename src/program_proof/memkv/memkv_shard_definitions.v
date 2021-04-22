@@ -24,7 +24,7 @@ Record memkv_shard_names := {
 Implicit Type γ : memkv_shard_names.
 
 Definition PreShardGet Eo Ei γ key Q : iProp Σ :=
-  |={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v))
+  |NC={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q v))
 .
 
 Definition PostShardGet Eo Ei γ (key:u64) Q (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (PreShardGet Eo Ei γ key Q) ∨

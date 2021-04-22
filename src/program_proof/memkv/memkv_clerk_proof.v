@@ -18,14 +18,16 @@ Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   "%HshardMap_length" ∷ ⌜length shardMapping = uNSHARD⌝
 .
 
-Lemma KVClerk__Get Eo Ei (ck:loc) (γ:gname) (key:u64) :
-  ∀ Φ,
-  own_MemKVClerk ck γ -∗
-  (|={Eo,Ei}=> (∃ v, kvptsto γ key v ∗ (kvptsto γ key v ={Ei,Eo}=∗ (∀ val_sl q, typed_slice.is_slice_small val_sl byteT q%Qp v -∗ (Φ (slice_val val_sl)))))) -∗
-    WP MemKVClerk__Get #ck #key {{ Φ }}
-.
+Lemma KVClerk__Get (ck:loc) (γ:gname) (key:u64) :
+⊢ {{{ own_MemKVClerk ck γ }}}
+  <<< ∀∀ v, kvptsto γ key v >>>
+    MemKVClerk__Get #ck #key @ ⊤
+  <<< kvptsto γ key v >>>
+  {{{ val_sl q, RET slice_val val_sl;
+      own_MemKVClerk ck γ ∗ typed_slice.is_slice_small val_sl byteT q%Qp v
+  }}}.
 Proof using Type*.
-  iIntros (Φ) "Hown Hatomic".
+  iIntros "!#" (Φ) "Hown Hatomic".
   wp_lam.
   wp_pures.
   wp_apply wp_ref_of_zero.
@@ -65,7 +67,7 @@ Proof using Type*.
   iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__Get Eo Ei γsh with "[Hatomic $HshardCk $Hrep]").
+  wp_apply (wp_MemKVShardClerk__Get _ _ γsh with "[Hatomic $HshardCk $Hrep]").
   {
     rewrite Hre.
     iFrame "Hatomic".
@@ -86,6 +88,7 @@ Proof using Type*.
     iModIntro.
     iApply "HΦ".
     iFrame.
+    iExists _, _, _, _. iFrame. admit. (* Re-assembling own_MemKVClerk *)
   }
   {
     wp_loadField.
@@ -106,7 +109,7 @@ Proof using Type*.
     iDestruct "Hatomic" as "[_ $]".
     iExists _,_,_,_; iFrame.
   }
-Qed.
+Admitted.
 
 Lemma KVClerk__Put Eo Ei (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
   ∀ Φ,

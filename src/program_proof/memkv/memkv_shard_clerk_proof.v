@@ -348,7 +348,7 @@ Admitted.
 
 Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
   {{{
-       (|={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v))) ∗
+       (|NC={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q v))) ∗
        own_MemKVShardClerk ck γ ∗
        (∃ dummy_sl, value_ptr ↦[slice.T byteT] (slice_val dummy_sl))
   }}}
@@ -357,7 +357,7 @@ Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
        (e:u64), RET #e;
        own_MemKVShardClerk ck γ ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q v))) ∗
+        (|NC={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q v))) ∗
         (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
 
         ⌜e = 0⌝ ∗
