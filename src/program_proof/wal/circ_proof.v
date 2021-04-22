@@ -605,7 +605,7 @@ Proof.
   rename H into Hpre.
   wp_call.
   wp_apply wp_hdr2; iIntros (s hdr2) "[Hb %Henchdr2]".
-  wp_apply (wp_Write_ncfupd (⊤ ∖ ↑N) with "Hb").
+  wp_apply (wp_Write_atomic with "Hb").
   rewrite /is_circular.
   iInv "Hcirc" as "Hcirc_inv" "Hclose".
   iDestruct "Hcirc_inv" as (σ) "[>Hcirc_state HP]".
@@ -617,7 +617,9 @@ Proof.
   iDestruct (circ_state_wf with "Hown") as %(Hlen1&Hlen2).
   iDestruct "Hlow" as (hdr1 hdr2_0 Hhdr1 Hhdr2) "(Hhdr1&Hhdr2&Hblocks)".
   iExists hdr2_0; iFrame "Hhdr2".
-  iIntros "!> !> Hhdr2".
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "HcloseE !> Hhdr2".
+  iMod "HcloseE" as "_".
   iDestruct ("Hfupd" with "[$HP]") as "Hfupd"; first by eauto.
   iMod ("Hfupd" with "[]") as "[HP' HQ]".
   { iPureIntro.
@@ -886,7 +888,7 @@ Proof.
   wp_apply wp_DPrintf.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
-  wp_apply (wp_Write_ncfupd (⊤ ∖ ↑N) with "Hi").
+  wp_apply (wp_Write_atomic with "Hi").
   word_cleanup.
   rewrite wrap_small_log_addr.
   word_cleanup.
@@ -910,7 +912,9 @@ Proof.
           int.Z endpos + Z.of_nat (length upds) < 2^64) by len.
 
   iFrame "Hdi".
-  iIntros "!> !> Hdi".
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "HcloseE !> Hdi".
+  iMod "HcloseE" as "_".
   iSpecialize ("Hd2" with "Hdi").
   iDestruct "Hown" as (_) "[Haddrs_auth Hblocks_auth]".
   iDestruct (ghost_var_agree γ.(blocks_name) with "Hblocks_auth Hγblocks") as %->.
@@ -1135,7 +1139,7 @@ Proof.
   wp_pures.
 
   iDestruct (slice.is_slice_small_sz with "Hb") as %Hslen.
-  wp_apply (wp_Write_ncfupd with "Hb").  (*   *)
+  wp_apply (wp_Write_atomic with "Hb").  (*   *)
   rewrite fmap_length in Hslen.
 
   iInv N as "Hcircopen" "Hclose".
@@ -1147,7 +1151,9 @@ Proof.
   iDestruct "Hown" as (Hlow_wf') "[Haddrs Hblocks]".
   iDestruct "Hlow" as (hdr1 hdr2 Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
   iExists _. iFrame "Hd0".
-  iIntros "!> !> Hd0".
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "HcloseE !> Hd0".
+  iMod "HcloseE" as "_".
 
   iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
   iDestruct (ghost_var_agree with "Haddrs Hγaddrs") as %->.

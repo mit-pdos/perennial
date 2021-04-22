@@ -163,45 +163,17 @@ Proof.
   by iApply array_to_block_array.
 Qed.
 
-Theorem wp_Write_ncfupd E' (a: u64) s q b :
-  ∀ Φ,
-    is_slice_small s byteT q (Block_to_vals b) -∗
-    (|NC={⊤,E'}=> ∃ b0, int.Z a d↦ b0 ∗
-       ▷ (int.Z a d↦ b -∗ |NC={E',⊤}=> (is_slice_small s byteT q (Block_to_vals b) -∗ Φ #()))) -∗
-    WP  Write #a (slice_val s) {{ Φ }}.
-Proof.
-  iIntros (Φ) "Hs Hupd".
-  iApply (wp_Write_atomic with "Hs").
-  iMod "Hupd" as (b0) "[Hα Hcont]".
-  iMod ncfupd_mask_subseteq as "Hclose"; last iModIntro; first set_solver+.
-  iExists _. iFrame "Hα". iIntros "!> Hβ".
-  iMod "Hclose" as "_".
-  iMod ("Hcont" with "Hβ") as "HΦ". iModIntro. done.
-Qed.
-
-Theorem wp_Write_fupd E' (a: u64) s q b :
-  ∀ Φ,
-    is_slice_small s byteT q (Block_to_vals b) -∗
-    (|={⊤,E'}=> ∃ b0, int.Z a d↦ b0 ∗
-       ▷ (int.Z a d↦ b ={E',⊤}=∗ (is_slice_small s byteT q (Block_to_vals b) -∗ Φ #()))) -∗
-    WP  Write #a (slice_val s) {{ Φ }}.
-Proof.
-  iIntros (Φ) "Hs Hupd".
-  wp_apply (wp_Write_ncfupd with "[$]").
-  iApply fupd_ncfupd. iMod "Hupd" as (?) "(?&H1)".
-  iModIntro. iExists _. iFrame. iNext. iIntros "H2".
-  by iMod ("H1" with "[$]").
-Qed.
-
-Theorem wp_Write_fupd_triple E' (Q: iProp Σ) (a: u64) s q b :
+Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
   {{{ is_slice_small s byteT q (Block_to_vals b) ∗
-      (|={⊤,E'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b ={E',⊤}=∗ Q)) }}}
+      (|NC={⊤,E'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b -∗ |NC={E',⊤}=> Q)) }}}
     Write #a (slice_val s)
   {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
 Proof.
-  iIntros (Φ) "[Hs Hupd] HΦ". iApply (wp_Write_fupd with "Hs").
-  iMod "Hupd" as (b0) "[Hda Hclose]". iModIntro. iExists b0.
-  iFrame. iIntros "!> Hda". iMod ("Hclose" with "Hda").
+  iIntros (Φ) "[Hs Hupd] HΦ". iApply (wp_Write_atomic with "Hs").
+  iMod "Hupd" as (b0) "[Hda Hclose]".
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "HcloseE". iExists b0.
+  iFrame. iIntros "!> Hda". iMod "HcloseE" as "_". iMod ("Hclose" with "Hda").
   iIntros "!> Hs". iApply "HΦ". iFrame.
 Qed.
 
@@ -212,9 +184,11 @@ Theorem wp_Write (a: u64) s q b :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
-  wp_apply (wp_Write_fupd with "Hs").
-  iModIntro. iExists _. iFrame.
-  iIntros "!> Hda !> Hs". iApply "HΦ". iFrame.
+  wp_apply (wp_Write_atomic with "Hs").
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "Hclose". iExists _. iFrame.
+  iIntros "!> Hda". iMod "Hclose" as "_".
+  iIntros "!> Hs". iApply "HΦ". iFrame.
 Qed.
 
 Theorem wp_Write' (z: Z) (a: u64) s q b :

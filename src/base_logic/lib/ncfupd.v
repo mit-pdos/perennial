@@ -101,6 +101,8 @@ Qed.
 
 Lemma ncfupd_intro E P : P ⊢ |NC={E}=> P.
 Proof. by rewrite {1}(ncfupd_intro_mask E E P) // ncfupd_trans. Qed.
+(** [iMod (ncfupd_mask_subseteq E)] is the recommended way to change your
+current mask to [E]. *)
 Lemma ncfupd_mask_subseteq {E1} E2 : E2 ⊆ E1 → ⊢@{iPropI Σ} |NC={E1,E2}=> |NC={E2,E1}=> emp.
 Proof. exact: ncfupd_intro_mask. Qed.
 Lemma ncfupd_except_0 E1 E2 P : (|NC={E1,E2}=> ◇ P) ⊢ |NC={E1,E2}=> P.
@@ -312,6 +314,16 @@ Proof.
   iMod (ncfupd_mask_subseteq E1) as "Hclo"; auto.
   iMod "H".
   iApply (ncfupd_mask_weaken); auto.
+Qed.
+
+(** Introduction lemma for a mask-changing ncfupd.
+    This lemma is intended to be [iApply]ed. *)
+Lemma ncfupd_mask_intro E1 E2 P :
+  E2 ⊆ E1 →
+  ((|NC={E2,E1}=> emp) -∗ P) -∗ |NC={E1,E2}=> P.
+Proof.
+  iIntros (?) "HP". iMod ncfupd_mask_subseteq as "Hclose"; last iModIntro; first done.
+  by iApply "HP".
 Qed.
 
 Lemma step_ncfupd_mask_mono Eo1 Eo2 Ei1 Ei2 P :

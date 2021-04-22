@@ -297,7 +297,7 @@ Proof.
     wp_pures.
     wp_apply util_proof.wp_DPrintf.
     wp_pures.
-    wp_apply (wp_Write_ncfupd (⊤ ∖ ↑walN.@"wal") with "Hi").
+    wp_apply (wp_Write_atomic with "Hi").
 
     assert (((λ u : update.t, int.Z u.(update.addr)) <$> upds) !! int.nat i = Some (int.Z addr_i)) as Hu_lookup_map.
     1: rewrite list_lookup_fmap Hu_lookup //.
@@ -368,7 +368,9 @@ Proof.
     iExists _.
     rewrite -Hupd.
     iFrame "Haddr_i_mapsto".
-    iIntros "!> !> /= Haddr_i_mapsto".
+    iApply ncfupd_mask_intro; first set_solver+.
+    iIntros "HcloseE !> /= Haddr_i_mapsto".
+    iMod "HcloseE" as "_".
     iDestruct (txns_are_sound with "Htxns_ctx Hsubtxns") as %Hsubtxns.
 
     iMod ("Hclose" with "[
