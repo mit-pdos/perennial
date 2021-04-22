@@ -135,7 +135,7 @@ Proof.
     ** iRight in "HΦ". iApply "HΦ". iFrame.
 Qed.
 
-Theorem wp_write_hdr E lptr (sz0 disk_sz0 sz disk_sz:u64) :
+Theorem wp_write_hdr lptr (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 ∗ log_fields lptr sz disk_sz }}}
     Log__writeHdr #lptr
   {{{ RET #(); is_hdr sz disk_sz ∗ log_fields lptr sz disk_sz }}}.
@@ -228,9 +228,9 @@ Proof.
     word.
 Qed.
 
-Theorem wp_Log__get stk E (lptr: loc) bs (i: u64) :
+Theorem wp_Log__get (lptr: loc) bs (i: u64) :
   {{{ ptsto_log lptr bs ∗ ⌜int.Z i < 2^64-1⌝ }}}
-    Log__get #lptr #i @ stk; E
+    Log__get #lptr #i
   {{{ s (ok: bool), RET (slice_val s, #ok);
       (if ok
        then ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗ is_block s 1 b

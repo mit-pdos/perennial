@@ -10,6 +10,12 @@ Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' β '>>>
   (at level 20, x1 closed binder, xn closed binder,
    format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  β  '>>>'  '/' {{{  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
+Notation "'<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=
+  (□ ∀ Φ, (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ▷ (β -∗ |NC={∅,Eo}=> ∀ z1, .. (∀ zn, Q -∗ Φ v) .. )) .. ) -∗
+   WP e @ ⊤ {{ Φ }})%I
+  (at level 20, x1 closed binder, xn closed binder, z1 closed binder, zn closed binder,
+   format "'[hv' '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
+  : bi_scope.
 
 (** Sugar for HoCAP-style logically atomic crash specs.
 [Pa] is what the client *gets* right before the linearization point, and [Qa]

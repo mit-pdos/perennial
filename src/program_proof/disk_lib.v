@@ -201,17 +201,16 @@ Proof.
   eauto.
 Qed.
 
-Lemma wp_Read_ncfupd {stk E} E' (a: u64) q :
-  ∀ Φ,
-    (|NC={E,E'}=> ∃ b, int.Z a d↦{q} b ∗
-      ▷ (int.Z a d↦{q} b -∗ |NC={E',E}=> (∀ s, is_block_full s b -∗ Φ (slice_val s)))) -∗
-    WP  Read #a @ stk; E {{ Φ }}.
+Lemma wp_Read_atomic (a: u64) q :
+  ⊢ <<< ∀∀ b, int.Z a d↦{q} b >>>
+      Read #a @ ⊤
+    <<<▷ int.Z a d↦{q} b >>>
+    {{{ s, RET slice_val s; is_block_full s b }}}.
 Proof.
-  iIntros (Φ) "Hupd".
+  iIntros "!#" (Φ) "Hupd".
   wp_call.
   wp_bind (ExternalOp _ _).
-  iApply (wp_ncatomic _ E E').
-  iMod "Hupd" as (b) "[Hda Hupd]"; iModIntro.
+  iMod "Hupd" as (b) "[Hda Hupd]".
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
   iMod ("Hupd" with "Hda") as "HQ"; iModIntro.
@@ -222,51 +221,32 @@ Proof.
   iApply "HQ"; iFrame.
 Qed.
 
-Lemma wp_Read_fupd {stk E} E' (a: u64) q :
-  ∀ Φ,
-    (|={E,E'}=> ∃ b, int.Z a d↦{q} b ∗
-      ▷ (int.Z a d↦{q} b -∗ |={E',E}=> (∀ s, is_block_full s b -∗ Φ (slice_val s)))) -∗
-    WP  Read #a @ stk; E {{ Φ }}.
-Proof.
-  iIntros (Φ) "Hupd".
-  wp_call.
-  wp_bind (ExternalOp _ _).
-  iApply (wp_atomic _ E E').
-  iMod "Hupd" as (b) "[Hda Hupd]"; iModIntro.
-  wp_apply (wp_ReadOp with "Hda").
-  iIntros (l) "(Hda&Hl)".
-  iMod ("Hupd" with "Hda") as "HQ"; iModIntro.
-  iDestruct (block_array_to_slice _ _ _ 4096 with "Hl") as "Hs".
-  wp_pures.
-  wp_apply (wp_raw_slice with "Hs").
-  iIntros (s) "Hs".
-  iApply "HQ"; iFrame.
-Qed.
-
-Lemma wp_Read_fupd_triple {stk E} E' (Q: Block -> iProp Σ) (a: u64) q :
-  {{{ |={E,E'}=> ∃ b, int.Z a d↦{q} b ∗ ▷ (int.Z a d↦{q} b -∗ |={E',E}=> Q b) }}}
-    Read #a @ stk; E
+Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
+  {{{ |NC={⊤,E'}=> ∃ b, int.Z a d↦{q} b ∗ ▷ (int.Z a d↦{q} b -∗ |NC={E',⊤}=> Q b) }}}
+    Read #a
   {{{ s b, RET slice_val s;
       Q b ∗ is_block_full s b }}}.
 Proof.
-  iIntros (Φ) "Hupd HΦ". iApply wp_Read_fupd.
-  iMod "Hupd" as (b0) "[Hda Hclose]". iModIntro. iExists b0.
-  iFrame. iIntros "!> Hda". iMod ("Hclose" with "Hda").
+  iIntros (Φ) "Hupd HΦ". iApply wp_Read_atomic.
+  iMod "Hupd" as (b0) "[Hda Hclose]".
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "HcloseE". iExists _. iFrame.
+  iIntros "!> Hda". iMod "HcloseE" as "_". iMod ("Hclose" with "Hda").
   iIntros "!> * Hs". iApply "HΦ". iFrame.
 Qed.
 
-Lemma wp_Read {stk E} (a: u64) q b :
+Lemma wp_Read (a: u64) q b :
   {{{ int.Z a d↦{q} b }}}
-    Read #a @ stk; E
+    Read #a
   {{{ s, RET slice_val s;
       int.Z a d↦{q} b ∗ is_block_full s b }}}.
 Proof.
   iIntros (Φ) "Hda HΦ".
-  wp_apply (wp_Read_fupd E).
-  iModIntro.
-  iExists b; iFrame.
-  iIntros "!> Hda !> * Hs".
-  iApply ("HΦ" with "[$]").
+  wp_apply wp_Read_atomic.
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "HcloseE". iExists _. iFrame.
+  iIntros "!> Hda". iMod "HcloseE" as "_".
+  iIntros "!> * Hs". iApply ("HΦ" with "[$]").
 Qed.
 
 Lemma wp_Barrier stk E  :

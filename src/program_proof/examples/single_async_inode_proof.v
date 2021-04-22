@@ -486,7 +486,7 @@ Section goose.
   Qed.
 
   (* If you have the full inode_mapsto (or rather, can get it by a view-shift, then
-     you know the exact results of your read, compare with wp_Read_fupd_triple for disk *)
+     you know the exact results of your read, compare with wp_Read_triple for disk *)
 
   Theorem wpc_SingleInode__Read1 {k} (Q: option Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →

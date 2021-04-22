@@ -107,7 +107,7 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ dinit a :
 Proof.
   iIntros (Φ) "(#Hwal & #Ha_valid & Hfupd) HΦ".
   wp_call.
-  wp_apply (wp_Read_ncfupd _ _ (DfracOwn 1) (* q=1 *)).
+  wp_apply wp_Read_atomic.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
   iDestruct "Hinner" as "(>? & ? & ? & >? & >Hdisk)"; iNamed.
@@ -118,10 +118,11 @@ Proof.
   iDestruct (in_bounds_valid _ σ with "Hbasedisk Ha_valid") as %Hlookup.
   iDestruct (is_installed_read_lookup Hlookup with "Hinstalled") as
       (b txn_id) "(%Htxn_id&Hb&%Hbound&Hinstalled)".
-  iModIntro.
+  iApply ncfupd_mask_intro; first set_solver+. iIntros "HcloseE".
   iExists _; iFrame "Hb".
   iNext.
   iIntros "Hb".
+  iMod "HcloseE" as "_".
   iSpecialize ("Hinstalled" with "Hb").
   iNamed "circ.start".
   fold innerN.
