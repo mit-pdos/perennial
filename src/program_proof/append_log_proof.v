@@ -135,9 +135,9 @@ Proof.
     ** iRight in "HΦ". iApply "HΦ". iFrame.
 Qed.
 
-Theorem wp_write_hdr stk E lptr (sz0 disk_sz0 sz disk_sz:u64) :
+Theorem wp_write_hdr E lptr (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 ∗ log_fields lptr sz disk_sz }}}
-    Log__writeHdr #lptr @ stk; E
+    Log__writeHdr #lptr
   {{{ RET #(); is_hdr sz disk_sz ∗ log_fields lptr sz disk_sz }}}.
 Proof.
   iIntros (Φ) "[Hhdr Hfields] HΦ".
