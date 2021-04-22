@@ -1,6 +1,5 @@
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof Require Export marshal_proof memkv.common_proof.
 
 (*
@@ -10,14 +9,17 @@ From Perennial.program_proof Require Export marshal_proof memkv.common_proof.
 
 Section memkv_marshal_install_shard_proof.
 
-Context `{!heapG Σ}.
-
 Record InstallShardRequestC := mkInstallShardC {
   IR_CID : u64;
   IR_Seq : u64;
   IR_Sid : u64;
   IR_Kvs : gmap u64 (list u8)
 }.
+
+Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : Prop.
+Admitted.
+
+Context `{!heapG Σ}.
 
 Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   ∃ (kvs_ptr:loc) (mv:gmap u64 goose_lang.val),
@@ -32,9 +34,6 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
 .
 
 (* Pre: "HownShard" ∷ own_shard γ.(kv_gn) sid m *)
-
-Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : Prop.
-Admitted.
 
 Lemma wp_encodeInstallShardRequest args_ptr args :
   {{{

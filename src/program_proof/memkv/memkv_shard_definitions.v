@@ -1,14 +1,13 @@
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
-From Perennial.program_proof.memkv Require Export memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
+From Perennial.program_proof.memkv Require Export rpc_axioms memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 From iris.bi.lib Require Import fixpoint.
 
 Section memkv_shard_definitions.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
+Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ GetReplyC, kvMapG Σ}.
 
 Definition uKV_FRESHCID := 0.
 Definition uKV_PUT := 1.
@@ -93,7 +92,7 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
   "#HfreshSpec" ∷ handler_is unit host uKV_FRESHCID
              (λ x reqData, True
              ) (* pre *)
-             (λ x reqData repData, ∃ cid, ⌜has_encoding_CID repData cid⌝ ∗
+             (λ x reqData repData, ∃ cid, ⌜has_encoding_Uint64 repData cid⌝ ∗
               RPCClient_own_ghost γ.(rpc_gn) cid 1
              ) (* post *)
              )%I
@@ -130,7 +129,7 @@ Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
     "Hseq" ∷ ck ↦[MemKVShardClerk :: "seq"] #seq ∗
     "Hcl" ∷ ck ↦[MemKVShardClerk :: "cl"] #cl ∗
     "Hcrpc" ∷ RPCClient_own_ghost γ.(rpc_gn) cid seq ∗
-    "Hcl_own" ∷ grove_ffi.RPCClient_own cl host ∗
+    "Hcl_own" ∷ RPCClient_own cl host ∗
     "#His_shard" ∷ is_shard_server host γ ∗
     "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
 .

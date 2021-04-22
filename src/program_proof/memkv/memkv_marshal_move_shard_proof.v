@@ -1,6 +1,5 @@
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof Require Export marshal_proof memkv.common_proof.
 
 (*
@@ -11,14 +10,17 @@ From Perennial.program_proof Require Export marshal_proof memkv.common_proof.
 
 Section memkv_marshal_move_shard_proof.
 
-Context `{!heapG Σ}.
-
 Record MoveShardRequestC := mkMoveShardRequestC {
   MR_CID : u64;
   MR_Seq : u64;
   MR_Sid : u64;
   MR_Dst : u64
 }.
+
+Definition has_encoding_MoveShardRequest (data:list u8) (args:MoveShardRequestC) : Prop.
+Admitted.
+
+Context `{!heapG Σ}.
 
 Definition own_MoveShardRequest args_ptr args : iProp Σ :=
   "HCID" ∷ args_ptr ↦[MoveShardRequest :: "CID"] #args.(MR_CID) ∗
@@ -29,9 +31,6 @@ Definition own_MoveShardRequest args_ptr args : iProp Σ :=
 .
 
 (* Pre: "HownShard" ∷ own_shard γ.(kv_gn) sid m *)
-
-Definition has_encoding_MoveShardRequest (data:list u8) (args:MoveShardRequestC) : Prop.
-Admitted.
 
 Lemma wp_encodeMoveShardRequest args_ptr args :
   {{{

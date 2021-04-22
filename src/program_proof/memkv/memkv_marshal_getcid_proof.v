@@ -1,35 +1,32 @@
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
-From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
-
 
 Section memkv_marshal_getcid_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC}.
-
-Definition has_encoding_CID (data:list u8) (cid:u64) : Prop.
+Definition has_encoding_Uint64 (data:list u8) (cid:u64) : Prop.
 Admitted.
 
-Lemma wp_encodeCID cid :
+Context `{!heapG Σ}.
+
+Lemma wp_encodeUin64 cid :
   {{{
        True
   }}}
-    encodeCID #cid
+    encodeUint64 #cid
   {{{
        sl data, RET (slice_val sl); typed_slice.is_slice sl byteT 1%Qp data ∗
-                                                         ⌜has_encoding_CID data cid⌝
+                                                         ⌜has_encoding_Uint64 data cid⌝
   }}}
 .
 Proof.
 Admitted.
 
-Lemma wp_decodeCID sl data cid :
+Lemma wp_decodeUint64 sl data cid :
   {{{
-       typed_slice.is_slice sl byteT 1%Qp data ∗ ⌜has_encoding_CID data cid⌝
+       typed_slice.is_slice sl byteT 1%Qp data ∗ ⌜has_encoding_Uint64 data cid⌝
   }}}
-    decodeCID (slice_val sl)
+    decodeUint64 (slice_val sl)
   {{{
        RET #(cid); True
   }}}

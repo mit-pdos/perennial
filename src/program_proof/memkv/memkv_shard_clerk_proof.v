@@ -1,12 +1,10 @@
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 
 Section memkv_shard_clerk_proof.
-
-Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
+Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ GetReplyC, kvMapG Σ}.
 
 Lemma wp_MakeFreshKVClerk (host:u64) γ :
   is_shard_server host γ -∗
@@ -67,7 +65,7 @@ Proof.
   wp_pures.
   wp_load.
   iDestruct "Hpost" as (??) "Hcid".
-  wp_apply (wp_decodeCID with "[$Hrep_sl]").
+  wp_apply (wp_decodeUint64 with "[$Hrep_sl]").
   { done. }
   wp_storeField.
   wp_storeField.
@@ -86,7 +84,6 @@ Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
   ([∗ set] k ∈ (fin_to_set u64),
            ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (kvs !! k))) )
 .
-
 
 Lemma wp_MemKVShardClerk__InstallShard γ (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:gmap u64 (list u8)) :
   {{{
