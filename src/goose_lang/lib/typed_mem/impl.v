@@ -52,7 +52,6 @@ Section goose_lang.
   | unit_ty : lit_ty LitUnit unitT
   | loc_array_ty x t : lit_ty (LitLoc x) (arrayT t)
   | loc_struct_ty x ts : lit_ty (LitLoc x) (structRefT ts)
-  | loc_ext_ty x T : lit_ty (LitLoc x) (extT T)
   .
 
   Inductive val_ty : val -> ty -> Prop :=
@@ -72,6 +71,7 @@ Section goose_lang.
                             val_ty v t ->
                             val_ty (InjRV (k, v, mv')%V) (mapValT t)
   | rec_ty f x e t1 t2 : val_ty (RecV f x e) (arrowT t1 t2)
+  | ext_val_ty x T : val_ty (ExtV x) (extT T)
   .
 
   Ltac invc H := inversion H; subst; clear H.
@@ -138,6 +138,7 @@ Section goose_lang.
     - invc H0; simpl in *; inv_lit_ty; try congruence.
       invc H4.
       invc H2; simpl in *; inv_lit_ty; try congruence.
+    - invc H; simpl in *; inv_lit_ty; try congruence.
     - invc H; simpl in *; inv_lit_ty; try congruence.
   Qed.
 

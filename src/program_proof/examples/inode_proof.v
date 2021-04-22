@@ -97,21 +97,21 @@ Instance into_disc_inode_linv l addr σ:
   IntoDiscrete (inode_linv l addr σ) (inode_cinv addr σ).
 Proof. rewrite /IntoDiscrete. iIntros "H". iNamed "H". iModIntro. iExists _; eauto. Qed.
 
-Definition inode_state l (d_ref: loc) (lref: loc) addr : iProp Σ :=
-  "#d" ∷ readonly (l ↦[Inode :: "d"] #d_ref) ∗
+Definition inode_state l d (lref: loc) addr : iProp Σ :=
+  "#d" ∷ readonly (l ↦[Inode :: "d"] (disk_val d)) ∗
   "#m" ∷ readonly (l ↦[Inode :: "m"] #lref) ∗
   "#addr" ∷ readonly (l ↦[Inode :: "addr"] #addr).
 
 Definition is_inode l k P (addr: u64) : iProp Σ :=
-  ∃ (d_ref:loc) (lref: loc),
-    "Hro_state" ∷ inode_state l d_ref lref addr ∗
+  ∃ d (lref: loc),
+    "Hro_state" ∷ inode_state l d lref addr ∗
     "#Hlock" ∷ is_crash_lock inodeN k #lref
               (∃ σ, "Hlockinv" ∷ inode_linv l addr σ ∗ "HP" ∷ P σ)
               (∃ σ, "Hlockcinv" ∷ inode_cinv addr σ ∗ "HP" ∷ P σ).
 
 Definition pre_inode l addr σ : iProp Σ :=
-  ∃ (d_ref:loc) (lref: loc),
-    "Hro_state" ∷ inode_state l d_ref lref addr ∗
+  ∃ d (lref: loc),
+    "Hro_state" ∷ inode_state l d lref addr ∗
     "Hfree_lock" ∷ is_free_lock lref ∗
     "Hlockinv" ∷ inode_linv l addr σ.
 
@@ -186,9 +186,9 @@ Proof.
   iExists _, _; iFrame.
 Qed.
 
-Theorem wpc_Open k {d:loc} {addr σ} :
+Theorem wpc_Open k {d} {addr σ} :
   {{{ inode_cinv addr σ }}}
-    inode.Open #d #addr @ k; ⊤
+    inode.Open (disk_val d) #addr @ k; ⊤
   {{{ l, RET #l; pre_inode l addr σ }}}
   {{{ inode_cinv addr σ }}}.
 Proof.

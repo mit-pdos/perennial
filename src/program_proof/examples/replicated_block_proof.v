@@ -69,21 +69,21 @@ Section goose.
   Context (P: rblock.t → iProp Σ).
 
   (* low-level rblock state *)
-  Definition rblock_state l d_ref m_ref addr : iProp Σ :=
+  Definition rblock_state l d m_ref addr : iProp Σ :=
       (* reflect coq values in program data structure *)
-      "#d" ∷ readonly (l ↦[RepBlock :: "d"] #d_ref) ∗
+      "#d" ∷ readonly (l ↦[RepBlock :: "d"] (disk_val d)) ∗
       "#addr" ∷ readonly (l ↦[RepBlock :: "addr"] #addr) ∗
       "#m" ∷ readonly (l ↦[RepBlock :: "m"] #m_ref).
 
   Definition is_pre_rblock (l: loc) addr σ : iProp Σ :=
-    "*" ∷ (∃ (d_ref m_ref: loc),
-      "Hro_state" ∷ rblock_state l d_ref m_ref addr ∗
+    "*" ∷ (∃ d (m_ref : loc),
+      "Hro_state" ∷ rblock_state l d m_ref addr ∗
       "Hfree_lock" ∷ is_free_lock m_ref) ∗
     "Hlinv" ∷ rblock_linv addr σ.
 
   Definition is_rblock (k': nat) (l: loc) addr : iProp Σ :=
-    ∃ (d_ref m_ref: loc),
-      "Hro_state" ∷ rblock_state l d_ref m_ref addr ∗
+    ∃ d (m_ref : loc),
+      "Hro_state" ∷ rblock_state l d m_ref addr ∗
       (* lock protocol *)
       "#Hlock" ∷ is_crash_lock N k' #m_ref
         (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)
@@ -129,9 +129,9 @@ Section goose.
   (* Open is the replicated block's recovery procedure, which constructs the
   in-memory state as well as recovering the synchronization between primary and
   backup, going from the crash invariant to the lock invariant. *)
-  Theorem wpc_Open {k} (d_ref: loc) addr σ :
+  Theorem wpc_Open {k} d addr σ :
     {{{ rblock_cinv addr σ }}}
-      Open #d_ref #addr @ (S k); ⊤
+      Open (disk_val d) #addr @ (S k); ⊤
     {{{ (l:loc), RET #l; is_pre_rblock l addr σ }}}
     {{{ rblock_cinv addr σ }}}.
   Proof.
@@ -418,13 +418,13 @@ Section goose.
   Qed.
 
   (* Silly example client *)
-  Definition OpenRead (d_ref: loc) (addr: u64) : expr :=
-    (let: "l" := Open #d_ref #addr in
+  Definition OpenRead d (addr: u64) : expr :=
+    (let: "l" := Open (disk_val d) #addr in
      RepBlock__Read "l" #true).
 
-  Theorem wpc_OpenRead (d_ref: loc) addr σ:
+  Theorem wpc_OpenRead d addr σ:
     {{{ rblock_cinv addr σ ∗ P σ }}}
-      OpenRead d_ref addr @ 2; ⊤
+      OpenRead d addr @ 2; ⊤
     {{{ (x: val), RET x; True }}}
     {{{ ∃ σ, rblock_cinv addr σ ∗ ▷ P σ }}}.
   Proof using stagedG0.
@@ -488,11 +488,11 @@ Section recov.
      use different heapG instances after crash *)
 
   (* Just a simple example of using idempotence *)
-  Theorem wpr_Open (d_ref: loc) addr σ:
+  Theorem wpr_Open d addr σ:
     rblock_cinv addr σ -∗
     wpr NotStuck 2 ⊤
-        (Open #d_ref #addr)
-        (Open #d_ref #addr)
+        (Open (disk_val d) #addr)
+        (Open (disk_val d) #addr)
         (λ _, True%I)
         (λ _, True%I)
         (λ _ _, True%I).
@@ -509,11 +509,11 @@ Section recov.
     eauto 10.
   Qed.
 
-  Theorem wpr_OpenRead (d_ref: loc) addr σ:
+  Theorem wpr_OpenRead d addr σ:
     rblock_cinv addr σ -∗
     wpr NotStuck 2 ⊤
-        (OpenRead d_ref addr)
-        (OpenRead d_ref addr)
+        (OpenRead d addr)
+        (OpenRead d addr)
         (λ _, True%I)
         (λ _, True%I)
         (λ _ _, True%I).
@@ -536,11 +536,11 @@ Existing Instances subG_stagedG.
 
 Definition repΣ := #[stagedΣ; heapΣ; crashΣ].
 
-Lemma ffi_start_OpenRead σ addr g dref {hG: heapG repΣ} :
+Lemma ffi_start_OpenRead σ addr g (d : ()) {hG: heapG repΣ} :
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   ffi_local_start heapG_ffiG σ.(world) g
-  -∗ wpr NotStuck 2 ⊤ (OpenRead dref addr) (OpenRead dref addr) (λ _ : goose_lang.val, True)
+  -∗ wpr NotStuck 2 ⊤ (OpenRead d addr) (OpenRead d addr) (λ _ : goose_lang.val, True)
        (λ _, True) (λ _ _, True).
 Proof.
   rewrite ?elem_of_dom.
@@ -556,11 +556,11 @@ Proof.
   iFrame. iExists _. iFrame.
 Qed.
 
-Theorem OpenRead_adequate σ g dref addr :
+Theorem OpenRead_adequate σ g (d : ()) addr :
   (* We assume the addresses we replicate are in the disk domain *)
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
-  recv_adequate (CS := goose_crash_lang) NotStuck (OpenRead dref addr) (OpenRead dref addr)
+  recv_adequate (CS := goose_crash_lang) NotStuck (OpenRead d addr) (OpenRead d addr)
                 σ g (λ v _ _, True) (λ v _ _, True) (λ _ _, True).
 Proof.
   intros.
@@ -584,13 +584,13 @@ Definition OpenRead_init_cfg dref addr σ :=
      init_restart := OpenRead dref addr;
      init_local_state := σ |}.
 
-Theorem OpenRead_dist_adequate σ g dref addr :
+Theorem OpenRead_dist_adequate σ g (d : ()) addr :
   (* We assume the addresses we replicate are in the disk domain *)
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   dist_adequate (CS := goose_crash_lang)
-                [OpenRead_init_cfg dref addr σ;
-                 OpenRead_init_cfg dref addr σ]
+                [OpenRead_init_cfg d addr σ;
+                 OpenRead_init_cfg d addr σ]
                 g (λ _, True).
 Proof.
   intros.

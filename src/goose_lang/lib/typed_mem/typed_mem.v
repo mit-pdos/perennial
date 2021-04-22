@@ -293,7 +293,7 @@ Section goose_lang.
     (* TODO: we have to rename this so it doesn't conflict with a name generated
   by induction; seems like a bug *)
     rename l into l'.
-    (iInduction H as [ | | | | | | | ] "IH" forall (l' Φ));
+    (iInduction H as [ | | | | | | | | ] "IH" forall (l' Φ));
       simpl;
       wp_pures;
       rewrite ?loc_add_0 ?right_id.
@@ -316,6 +316,7 @@ Section goose_lang.
       setoid_rewrite ty_size_offset.
       rewrite Z.mul_1_r.
       by iFrame.
+    - wp_apply (wp_load with "[$]"); auto.
     - wp_apply (wp_load with "[$]"); auto.
     - wp_apply (wp_load with "[$]"); auto.
     - wp_apply (wp_load with "[$]"); auto.
@@ -360,7 +361,7 @@ Section goose_lang.
       iSplit; eauto. }
     rename v into v'.
     rename l into l'.
-    (iInduction H as [ | | | | | | | ] "IH" forall (v' Hty l' Φ));
+    (iInduction H as [ | | | | | | | | ] "IH" forall (v' Hty l' Φ));
       simpl;
       rewrite ?loc_add_0 ?right_id;
       wp_pures.
@@ -415,6 +416,9 @@ Section goose_lang.
         try match goal with
             | [ H: lit_ty _ _ |- _ ] => invc H
             end;
+        rewrite /= ?loc_add_0 ?right_id;
+        wp_apply (wp_store with "[$]"); auto.
+    - inv_ty;
         rewrite /= ?loc_add_0 ?right_id;
         wp_apply (wp_store with "[$]"); auto.
     - inv_ty;

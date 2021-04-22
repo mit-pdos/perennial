@@ -28,7 +28,7 @@ Qed.
 
 Definition disk_op : ext_op.
 Proof.
-  refine (mkExtOp DiskOp _ _ Empty_set _ _).
+  refine (mkExtOp DiskOp _ _ () _ _).
 Defined.
 
 Inductive Disk_ty := | DiskInterfaceTy.
@@ -116,10 +116,10 @@ Section disk.
   suddenly cause all FFI parameters to be inferred as the disk model *)
   Existing Instances disk_op disk_model disk_ty.
 
-  (* we return a unit here, which is ok as the type of the disk from a client
-  perspective *)
+  Definition disk_val (d : ()) : val := ExtV d.
+
   Definition Get: val :=
-    λ: <>, #().
+    λ: <>, disk_val ().
 
   Definition Read: val :=
     λ: "a",
