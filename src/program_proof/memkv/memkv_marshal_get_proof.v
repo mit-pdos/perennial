@@ -40,7 +40,8 @@ Definition has_encoding_GetRequest (data:list u8) (args:GetRequestC) :=
   has_encoding data [ EncUInt64 args.(GR_CID) ; EncUInt64 args.(GR_Seq) ; EncUInt64 args.(GR_Key) ].
 
 Definition has_encoding_GetReply (data:list u8) (rep:GetReplyC) :=
-  has_encoding data [ EncUInt64 rep.(GR_Err) ; EncUInt64 (length rep.(GR_Value)) ; EncBytes rep.(GR_Value) ].
+  has_encoding data [ EncUInt64 rep.(GR_Err) ; EncUInt64 (length rep.(GR_Value)) ; EncBytes rep.(GR_Value) ] ∧
+  length rep.(GR_Value) = int.nat (length rep.(GR_Value)).
 
 Lemma wp_encodeGetRequest args_ptr args :
   {{{
@@ -120,13 +121,16 @@ Proof.
   iIntros (Φ) "[Hsl %Henc] HΦ".
   wp_lam.
   wp_apply (wp_allocStruct).
-  { unfold GetReply. simpl.
-    unfold ErrorType. admit. }
+  {
+    rewrite zero_slice_val.
+    naive_solver.
+  }
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".
   iNamed "HH".
   wp_pures.
   iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl Hsl_close]".
+  destruct Henc as [Henc Hsz].
   wp_apply (wp_new_dec with "[$Hsl]").
   { done. }
   iIntros (?) "Hdec".
@@ -139,7 +143,7 @@ Proof.
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".
   wp_apply (wp_Dec__GetBytes with "[$Hdec]").
-  { admit. } (* TODO: make a "safe_size_sl" predicate and keep it everywhere *)
+  { done. }
   iIntros (??) "[Hsl Hdec]".
   wp_apply (wp_storeField with "Value").
   { apply slice_val_ty. }
@@ -150,7 +154,7 @@ Proof.
   iExists _.
   iFrame.
   iExists _; iFrame.
-Admitted.
+Qed.
 
 Lemma wp_encodeGetReply rep_ptr rep :
   {{{
@@ -183,6 +187,8 @@ Proof.
   wp_pures.
 
   wp_loadField.
+  iDestruct "HValue_sl" as (?) "HValue_sl".
+  iDestruct (typed_slice.is_slice_small_sz with "HValue_sl") as %Hsz.
   wp_apply (wp_slice_len).
   wp_apply (wp_Enc__PutInt with "Henc").
   { admit. (* TODO: overflow *) }
@@ -190,7 +196,6 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  iDestruct "HValue_sl" as (?) "HValue_sl".
   wp_apply (wp_Enc__PutBytes with "[$Henc $HValue_sl]").
   { admit. } (* TODO: overflow *)
   iIntros "[Henc Hsl]".
@@ -200,12 +205,12 @@ Proof.
   iIntros "(% & % & Hrep_sl)".
   iApply "HΦ".
   iFrame.
-  iDestruct (typed_slice.is_slice_small_sz with "Hsl") as %Hsz.
+  iDestruct (typed_slice.is_slice_small_sz with "Hsl") as %Hsz2.
   iPureIntro.
   unfold has_encoding_GetReply.
   rewrite Hsz.
   assert (U64 (int.nat (Slice.sz val_sl)) = (Slice.sz val_sl)).
-  { admit. }
+  { word. }
   rewrite H1.
   rewrite app_nil_l in H.
   simpl in H.
