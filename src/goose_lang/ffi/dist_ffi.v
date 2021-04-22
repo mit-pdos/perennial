@@ -421,29 +421,18 @@ Section grove.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
   (* FIXME: This is a bit strange; not sure how to think about "axiomatizing" a struct *)
-  Definition Sender : descriptor := [].
-  Definition Receiver : descriptor := [].
-
-  Definition ErrMsgSender := (struct.decl [
-                              "E" :: boolT;
-                              "M" :: slice.T byteT;
-                              "S" :: struct.ptrT Sender
-                            ])%struct.
-
-  Definition SenderReceiver := (struct.decl [
-                              "S" :: struct.ptrT Sender;
-                              "R" :: struct.ptrT Receiver
-                            ])%struct.
+  Definition Sender : ty := refT (extT GroveClientTy).
+  Definition Receiver : ty := refT (extT GroveHostTy).
 
   Definition ConnectRet := (struct.decl [
                               "Err" :: boolT;
-                              "Sender" :: refT (extT GroveClientTy);
-                              "Receiver" :: refT (extT GroveHostTy)
+                              "Sender" :: Sender;
+                              "Receiver" :: Receiver
                             ])%struct.
 
   Definition ReceiveRet := (struct.decl [
                               "Err" :: boolT;
-                              "Sender" :: refT (extT GroveClientTy);
+                              "Sender" :: Sender;
                               "Data" :: slice.T byteT
                             ])%struct.
 

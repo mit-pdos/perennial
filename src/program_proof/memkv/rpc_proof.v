@@ -34,8 +34,8 @@ Proof.
   wp_apply (wp_allocStruct); auto.
   iIntros (cl) "Hcl".
   wp_pures.
-  wp_apply (wp_ref_of_zero _ _ (refT (struct.t dist_ffi.Receiver))).
-  { done. }
+  wp_apply (typed_mem.wp_AllocAt (ext_ty:=grove_ty) (dist_ffi.Receiver)).
+  { naive_solver. }
   iIntros (recv) "Hrecv".
   wp_pures.
   wp_apply (wp_Connect).
@@ -48,12 +48,8 @@ Proof.
   iIntros "Hcl".
   wp_pures.
   rewrite /recv_endpoint.
-  (* Stuck here, because HostEndp is opaque. *)
-  (* This replace is utter nonsense, but just to skip over this in light of previous comment *)
-  replace (Fst (@ExtV grove_op (HostEndp r))) with (of_val #null); last by admit.
   wp_pures.
-  wp_apply (wp_StoreAt with "[Hrecv]").
-  { repeat econstructor. }
+  wp_apply (wp_StoreAt with "[$Hrecv]").
   { admit. }
   iIntros "Hrecv". wp_pures.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
@@ -61,8 +57,9 @@ Proof.
   iDestruct (struct_fields_split with "Hcl") as "Hcl". iNamed "Hcl".
   wp_storeField.
   wp_storeField.
-  wp_apply (wp_NewMap u64 (t := (struct.ptrT callback))).
-  { admit. }
+  (* XXX: I think this is going to have to be untyped since callback contains a slice in it *)
+  replace (ref (InjLV #null))%E with (NewMap (struct.ptrT callback)) by naive_solver.
+  wp_apply (map.wp_NewMap).
   iIntros (mref) "Hmref".
   wp_storeField.
 Abort.

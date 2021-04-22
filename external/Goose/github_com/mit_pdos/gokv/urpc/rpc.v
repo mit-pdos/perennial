@@ -32,11 +32,11 @@ Definition RPCServer__readThread: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := dist_ffi.Receive "recv" in
-      (if: struct.get dist_ffi.ErrMsgSender "E" "r"
+      (if: struct.get dist_ffi.ReceiveRet "Err" "r"
       then Continue
       else
-        let: "data" := struct.get dist_ffi.ErrMsgSender "M" "r" in
-        let: "sender" := struct.get dist_ffi.ErrMsgSender "S" "r" in
+        let: "data" := struct.get dist_ffi.ReceiveRet "Data" "r" in
+        let: "sender" := struct.get dist_ffi.ReceiveRet "Sender" "r" in
         let: "d" := marshal.NewDec "data" in
         let: "rpcid" := marshal.Dec__GetInt "d" in
         let: "seqno" := marshal.Dec__GetInt "d" in
@@ -60,7 +60,7 @@ Definition callback := struct.decl [
 
 Definition RPCClient := struct.decl [
   "mu" :: lockRefT;
-  "send" :: struct.ptrT dist_ffi.Sender;
+  "send" :: dist_ffi.Sender;
   "seq" :: uint64T;
   "pending" :: mapT (struct.ptrT callback)
 ].
@@ -70,10 +70,10 @@ Definition RPCClient__replyThread: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := dist_ffi.Receive "recv" in
-      (if: struct.get dist_ffi.ErrMsgSender "E" "r"
+      (if: struct.get dist_ffi.ReceiveRet "Err" "r"
       then Continue
       else
-        let: "data" := struct.get dist_ffi.ErrMsgSender "M" "r" in
+        let: "data" := struct.get dist_ffi.ReceiveRet "Data" "r" in
         let: "d" := marshal.NewDec "data" in
         let: "seqno" := marshal.Dec__GetInt "d" in
         let: "replyLen" := marshal.Dec__GetInt "d" in
@@ -93,14 +93,14 @@ Definition RPCClient__replyThread: val :=
 Definition MakeRPCClient: val :=
   rec: "MakeRPCClient" "host" :=
     let: "cl" := struct.alloc RPCClient (zero_val (struct.t RPCClient)) in
-    let: "recv" := ref (zero_val (refT (struct.t dist_ffi.Receiver))) in
+    let: "recv" := ref (zero_val dist_ffi.Receiver) in
     let: "a" := dist_ffi.Connect "host" in
-    struct.storeF RPCClient "send" "cl" (struct.get dist_ffi.SenderReceiver "S" "a");;
-    "recv" <-[refT (struct.t dist_ffi.Receiver)] struct.get dist_ffi.SenderReceiver "R" "a";;
+    struct.storeF RPCClient "send" "cl" (struct.get dist_ffi.ConnectRet "Sender" "a");;
+    "recv" <-[dist_ffi.Receiver] struct.get dist_ffi.ConnectRet "Receiver" "a";;
     struct.storeF RPCClient "mu" "cl" (lock.new #());;
     struct.storeF RPCClient "seq" "cl" #1;;
     struct.storeF RPCClient "pending" "cl" (NewMap (struct.ptrT callback));;
-    Fork (RPCClient__replyThread "cl" (![refT (struct.t dist_ffi.Receiver)] "recv"));;
+    Fork (RPCClient__replyThread "cl" (![dist_ffi.Receiver] "recv"));;
     "cl".
 
 Definition RPCClient__Call: val :=
