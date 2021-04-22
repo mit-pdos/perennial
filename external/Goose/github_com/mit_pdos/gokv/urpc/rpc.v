@@ -92,15 +92,14 @@ Definition RPCClient__replyThread: val :=
 
 Definition MakeRPCClient: val :=
   rec: "MakeRPCClient" "host" :=
-    let: "cl" := struct.alloc RPCClient (zero_val (struct.t RPCClient)) in
-    let: "recv" := ref (zero_val dist_ffi.Receiver) in
     let: "a" := dist_ffi.Connect "host" in
-    struct.storeF RPCClient "send" "cl" (struct.get dist_ffi.ConnectRet "Sender" "a");;
-    "recv" <-[dist_ffi.Receiver] struct.get dist_ffi.ConnectRet "Receiver" "a";;
-    struct.storeF RPCClient "mu" "cl" (lock.new #());;
-    struct.storeF RPCClient "seq" "cl" #1;;
-    struct.storeF RPCClient "pending" "cl" (NewMap (struct.ptrT callback));;
-    Fork (RPCClient__replyThread "cl" (![dist_ffi.Receiver] "recv"));;
+    let: "cl" := struct.new RPCClient [
+      "send" ::= struct.get dist_ffi.ConnectRet "Sender" "a";
+      "mu" ::= lock.new #();
+      "seq" ::= #1;
+      "pending" ::= NewMap (struct.ptrT callback)
+    ] in
+    Fork (RPCClient__replyThread "cl" (struct.get dist_ffi.ConnectRet "Receiver" "a"));;
     "cl".
 
 Definition RPCClient__Call: val :=

@@ -29,39 +29,29 @@ Lemma wp_MakeRPCClient (host:u64):
        (cl_ptr:loc), RET #cl_ptr; RPCClient_own cl_ptr host
   }}}.
 Proof.
-  rewrite /MakeRPCClient.
   iIntros (Φ) "_ HΦ".
-  wp_apply (wp_allocStruct); auto.
-  iIntros (cl) "Hcl".
-  wp_pures.
-  wp_apply (typed_mem.wp_AllocAt (ext_ty:=grove_ty) (dist_ffi.Receiver)).
-  { naive_solver. }
-  iIntros (recv) "Hrecv".
-  wp_pures.
+  wp_lam.
+
   wp_apply (wp_Connect).
   iIntros (err r) "Hr".
   destruct err.
   { admit. (* TODO FIXME: RPCClient should check this error, or panic *) }
   wp_pures.
-  wp_apply (wp_storeField_struct with "Hcl"); auto.
-  { admit. }
-  iIntros "Hcl".
-  wp_pures.
-  rewrite /recv_endpoint.
-  wp_pures.
-  wp_apply (wp_StoreAt with "[$Hrecv]").
-  { admit. }
-  iIntros "Hrecv". wp_pures.
-  wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
-  iNamed "Hcl".
-  iDestruct (struct_fields_split with "Hcl") as "Hcl". iNamed "Hcl".
-  wp_storeField.
-  wp_storeField.
-  (* XXX: I think this is going to have to be untyped since callback contains a slice in it *)
+
   replace (ref (InjLV #null))%E with (NewMap (struct.ptrT callback)) by naive_solver.
+  wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
+  wp_pures.
+  (* XXX: I think this is going to have to be untyped since callback contains a slice in it *)
   wp_apply (map.wp_NewMap).
   iIntros (mref) "Hmref".
-  wp_storeField.
+
+  wp_apply (wp_allocStruct).
+  { enough (val_ty (send_endpoint host r) Sender) by naive_solver.
+    admit. }
+  iIntros (cl) "Hcl".
+  iNamed "Hcl".
+  iDestruct (struct_fields_split with "Hcl") as "Hcl". iNamed "Hcl".
+  wp_pures.
 Abort.
 
 End rpc_proof.
