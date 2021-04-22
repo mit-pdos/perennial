@@ -9,10 +9,10 @@ Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
-Lemma wp_PutRPC (s args_ptr reply_ptr:loc) args γ Eo Ei γreq Q :
+Lemma wp_PutRPC (s args_ptr reply_ptr:loc) val_sl args γ Eo Ei γreq Q :
   is_MemKVShardServer s γ -∗
   {{{
-       own_PutRequest args_ptr args ∗
+       own_PutRequest args_ptr val_sl args ∗
        (∃ dummy_rep, own_PutReply reply_ptr dummy_rep) ∗
        is_RPCRequest γ.(rpc_gn) γreq (PreShardPut Eo Ei γ args.(PR_Key) Q args.(PR_Value))
                                 (PostShardPut Eo Ei γ args.(PR_Key) Q args.(PR_Value))
