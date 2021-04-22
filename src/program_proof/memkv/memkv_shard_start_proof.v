@@ -185,7 +185,7 @@ Proof.
       iDestruct "Hpre" as (args) "(%Henc & #HreqInv)".
       wp_apply (wp_decodePutRequest with "[$Hreq_sl]").
       { done. }
-      iIntros (args_ptr) "Hargs".
+      iIntros (args_ptr val_sl) "Hargs".
       wp_apply (wp_PutRPC with "His_memkv [$Hargs Hrep $HreqInv]").
       {
         iDestruct (struct_fields_split with "Hrep") as "HH".
