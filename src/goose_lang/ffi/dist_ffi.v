@@ -4,7 +4,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import gen_heap_names.
 From iris.proofmode Require Import tactics.
-From Perennial.program_logic Require Import ectx_lifting.
+From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import prelude typing struct lang lifting slice typed_slice proofmode.
@@ -353,11 +353,11 @@ lemmas. *)
   Lemma wp_RecvOp c ms s E :
     {{{ c c↦ ms }}}
       ExternalOp RecvOp (recv_endpoint c) @ s; E
-    {{{ (err : bool) (l : loc) (len : u64) (sender : chan),
+    {{{ (err : bool) (l : loc) (len : u64) (sender : chan) (data : list u8),
         RET (#err, send_endpoint sender c, (#l, #len));
-        c c↦ ms ∗ if err then True else
-          ∃ data : list u8, ⌜Message sender data ∈ ms ∧ length data = int.nat len⌝ ∗
-            mapsto_vals l 1 (data_vals data)
+        ⌜if err then l = null ∧ data = [] ∧ len = 0 else
+          Message sender data ∈ ms ∧ length data = int.nat len⌝ ∗
+        c c↦ ms ∗ mapsto_vals l 1 (data_vals data)
     }}}.
   Proof.
     iIntros (Φ) "He HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -379,7 +379,7 @@ lemmas. *)
     destruct Hm as [->|(m' & -> & Hm)].
     { (* Returning no message. *)
       monad_inv. iFrame. simpl. iModIntro. do 2 (iSplit; first done).
-      iApply "HΦ". by iFrame. }
+      iApply "HΦ". iFrame. iSplit; first done. rewrite /mapsto_vals big_sepL_nil //. }
     (* Returning a message *)
     repeat match goal with
            | H : relation.bind _ _ _ _ _ |- _ => simpl in H; monad_inv
@@ -398,8 +398,8 @@ lemmas. *)
     { eauto. }
     iModIntro. iEval simpl. iFrame "Htr Hg Hσ".
     do 2 (iSplit; first done).
-    iApply "HΦ". iFrame "He".
-    iExists m'.(msg_data). iSplit.
+    iApply ("HΦ" $! _ _ _ _ m'.(msg_data)). iFrame "He".
+    iSplit.
     { iPureIntro. split; first by destruct m'.
       trans (Z.to_nat (Z.of_nat (length m'.(msg_data)))); first by rewrite Nat2Z.id //.
       f_equal. word. }
@@ -506,44 +506,51 @@ Section grove.
     rewrite byte_mapsto_untype byte_offset_untype //.
   Qed.
 
-  (* FIXME: Make these logically atomic *)
-
-  Lemma wp_Send c r ms (s : Slice.t) (data : list u8) (q : Qp) E :
+  Lemma wp_Send c r (s : Slice.t) (data : list u8) (q : Qp) :
     0 < length data →
-    {{{ c c↦ ms ∗ is_slice_small s byteT q data }}}
-      Send (send_endpoint c r) (slice_val s) @ E
-    {{{ RET #(); c c↦ (ms ∪ {[Message r data]}) ∗ is_slice_small s byteT q data }}}.
+    ⊢ {{{ is_slice_small s byteT q data }}}
+      <<< ∀∀ ms, c c↦ ms >>>
+        Send (send_endpoint c r) (slice_val s) @ ⊤
+      <<<▷ c c↦ (ms ∪ {[Message r data]}) >>>
+      {{{ RET #(); is_slice_small s byteT q data }}}.
   Proof.
-    iIntros (? Φ) "[Hc Hs] HΦ". wp_lam. wp_let.
+    iIntros (?) "!#". iIntros (Φ) "Hs HΦ". wp_lam. wp_let.
     wp_apply wp_slice_ptr.
     wp_apply wp_slice_len.
     wp_pures.
     iAssert (⌜length data = int.nat (Slice.sz s)⌝)%I as %?.
     { iDestruct "Hs" as "[_ %Hlen]". iPureIntro. revert Hlen.
       rewrite /list.untype fmap_length. done. }
+    iMod "HΦ" as (ms) "[Hc HΦ]".
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
-    iIntros "[Hc Hl]". iApply "HΦ". iFrame "Hc".
+    iIntros "[Hc Hl]". iApply ("HΦ" with "Hc").
     iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
 
-  Lemma wp_Receive c ms E :
-    {{{ c c↦ ms }}}
-      Receive (recv_endpoint c) @ E
-    {{{ (err : bool) (s : Slice.t) (m : message),
-        RET (#err, send_endpoint m.(msg_sender) c, slice_val s);
-        c c↦ ms ∗ if err then True else ⌜m ∈ ms⌝ ∗ is_slice s byteT 1 m.(msg_data)
-    }}}.
+  Lemma wp_Receive c :
+    ⊢ <<< ∀∀ ms, c c↦ ms >>>
+        Receive (recv_endpoint c) @ ⊤
+      <<<▷ ∃∃ (err : bool) (m : message), c c↦ ms ∗ if err then True else ⌜m ∈ ms⌝ >>>
+      {{{ (s : Slice.t),
+          RET (#err, send_endpoint m.(msg_sender) c, slice_val s);
+          is_slice s byteT 1 m.(msg_data)
+      }}}.
   Proof.
-    iIntros (Φ) "Hc HΦ". wp_lam.
+    iIntros "!#" (Φ) "HΦ". wp_lam.
+    wp_bind (ExternalOp _ _).
+    iMod "HΦ" as (ms) "[Hc HΦ]".
     wp_apply (wp_RecvOp with "Hc").
-    iIntros (err l len sender) "[Hc Hslice]".
-    wp_pures.
-    iModIntro. destruct err.
-    { iApply ("HΦ" $! true (Slice.mk _ _ _) (Message sender [])). by iFrame. }
-    iDestruct "Hslice" as (data (Hin & Hlen)) "Hl".
-    iApply ("HΦ" $! false (Slice.mk _ _ _) (Message sender data)). iFrame "Hc".
-    iSplit; first done. iSplitL.
+    iIntros (err l len sender data) "(%Hm & Hc & Hl)".
+    iMod ("HΦ" $! err (Message sender data) with "[Hc]") as "HΦ".
+    { iFrame. destruct err; first done. iPureIntro. apply Hm. }
+    iModIntro. wp_pures. iModIntro.
+    destruct err.
+    { iApply ("HΦ" $! (Slice.mk _ _ _)). simpl. destruct Hm as (-> & -> & ->).
+      iApply is_slice_zero. }
+    destruct Hm as [Hin Hlen].
+    iApply ("HΦ" $! (Slice.mk _ _ _)).
+    iSplitL.
     - iApply mapsto_vals_is_slice_small_byte; done.
     - iExists []. simpl. iSplit; first by eauto with lia.
       iApply array.array_nil. done.
