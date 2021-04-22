@@ -27,7 +27,8 @@ Class rpcG Σ (R : Type) := RpcG {
 (* FIXME: add subΣ instance. *)
 
 Section rpc.
-Context `{!heapG Σ}.
+Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context {ext_ty: ext_types ext}.
 Context  {R:Type}.
 Context `{!rpcG Σ R}.
 

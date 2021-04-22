@@ -3,7 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.dist_prelude.
 
 From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
-From Goose Require github_com.upamanyus.marshal.
+From Goose Require github_com.tchajed.marshal.
 
 (* 0_common.go *)
 
