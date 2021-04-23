@@ -165,8 +165,8 @@ Section goose.
 
   (** In-memory state of the directory (persistent) *)
   Definition dir_state (l alloc_l: loc) (inode_refs: list loc) : iProp Σ :=
-    ∃ (d_l: loc) (inodes_s: Slice.t),
-      "#d" ∷ readonly (l ↦[Dir :: "d"] #d_l) ∗
+    ∃ d (inodes_s: Slice.t),
+      "#d" ∷ readonly (l ↦[Dir :: "d"] (disk_val d)) ∗
       "#allocator" ∷ readonly (l ↦[Dir :: "allocator"] #alloc_l) ∗
       "#inodes" ∷ readonly (l ↦[Dir :: "inodes"] (slice_val inodes_s)) ∗
       "#inodes_s" ∷ readonly (is_slice_small inodes_s (struct.ptrT inode.Inode) 1 (inode_refs))
@@ -464,12 +464,12 @@ Section goose.
     [ try solve [ len ]
     | ].
 
-  Lemma wpc_openInodes {k} (d: loc) s_inodes :
+  Lemma wpc_openInodes {k} d s_inodes :
     length s_inodes = num_inodes →
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
           inode_cinv (U64 (Z.of_nat i)) s_inode)
       }}}
-      openInodes #d @ k; ⊤
+      openInodes (disk_val d) @ k; ⊤
     {{{ inode_s inode_refs, RET (slice_val inode_s);
         is_slice_small inode_s (struct.ptrT inode.Inode) 1 inode_refs ∗
         [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
@@ -768,10 +768,10 @@ Section goose.
     congruence.
   Qed.
 
-  Theorem wpc_Open {k} (d: loc) (sz: u64) σ0 :
+  Theorem wpc_Open {k} d (sz: u64) σ0 :
     (5 ≤ int.Z sz)%Z →
     {{{ dir_cinv (int.Z sz) σ0 true }}}
-      Open #d #sz @ (S k); ⊤
+      Open (disk_val d) #sz @ (S k); ⊤
     {{{ l, RET #l; pre_dir l (int.Z sz) σ0 }}}
     {{{ dir_cinv (int.Z sz) σ0 false }}}.
   Proof using allocG0 heapG0 inG0 inG1 Σ.
@@ -1195,12 +1195,12 @@ Section recov.
   Set Nested Proofs Allowed.
 
   (* Just a simple example of using idempotence *)
-  Theorem wpr_Open (d: loc) (sz: u64) σ0:
+  Theorem wpr_Open (d: ()) (sz: u64) σ0:
     (5 ≤ int.Z sz)%Z →
     dir_cinv (int.Z sz) σ0 true -∗
     wpr NotStuck 2 ⊤
-        (Open #d #sz)
-        (Open #d #sz)
+        (Open (disk_val d) #sz)
+        (Open (disk_val d) #sz)
         (λ _, True%I)
         (λ _, True%I)
         (λ _ _, True%I).

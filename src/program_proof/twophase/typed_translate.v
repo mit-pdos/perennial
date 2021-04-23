@@ -220,7 +220,7 @@ Section translate.
 
   Inductive jrnl_trans : sval → ival → Prop :=
   | jrnl_open_trans (x: string) :
-      jrnl_trans (λ: x, ExternalOp OpenOp (Var x)) Init
+      jrnl_trans (λ: x, ExternalOp OpenOp (Var x)) (λ: x, Init (disk_val ()))
   | jrnl_mkalloc_trans (x: string) :
       jrnl_trans (λ: x, ExternalOp MkAllocOp (Var x)) MkMaxAlloc.
 

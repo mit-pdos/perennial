@@ -853,11 +853,11 @@ Definition txn_cfupd_res E γ γ' : iProp Σ :=
   ⌜γ'.(txn_kinds) = γ.(txn_kinds)⌝ ∗
   (<bdisc> (|C={E}_0=> ▷ ∃ logm, txn_resources γ γ' logm)).
 
-Theorem wpc_MkTxn E (d:loc) dinit (γ:txn_names) k :
+Theorem wpc_MkTxn E d dinit (γ:txn_names) k :
   ↑walN ⊆ E →
   ↑invN ⊆ E →
   {{{ is_txn_durable γ dinit }}}
-    MkTxn #d @ k; ⊤
+    MkTxn (disk_val d) @ k; ⊤
   {{{ γ' (l: loc), RET #l;
       is_txn l γ dinit ∗
       txn_cfupd_cancel E dinit 0 γ' ∗
@@ -874,7 +874,7 @@ Proof.
   wpc_bind (lock.new _).
   wpc_frame; wp_apply (wp_new_free_lock).
   iIntros (lk) "Hlock". iNamed 1.
-  wpc_bind (MkLog #d).
+  wpc_bind (MkLog _).
   iNamed "Hdur".
   iMod (alloc_heapspec_init_ghost_state (γ.(txn_walnames).(wal_heap_walnames)))
          as (γ'_txn_walnames ?) "Hheapspec_init".

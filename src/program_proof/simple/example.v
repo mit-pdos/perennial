@@ -63,13 +63,13 @@ Proof.
   iApply "HΦ". done.
 Qed.
 
-Theorem wpc_RecoverExample γ γsrc (d : loc) dinit logm :
+Theorem wpc_RecoverExample γ γsrc d dinit logm :
   {{{
     is_txn_durable γ dinit logm ∗
     is_source P γsrc ∗
     [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a
   }}}
-    RecoverExample #d @ 10; ⊤
+    RecoverExample (disk_val d) @ 10; ⊤
   {{{ RET #(); True }}}
   {{{
     ∃ γ' γsrc' logm',
@@ -124,13 +124,13 @@ Section recov.
   Context `{!simpleG Σ}.
 
   (* Just a simple example of using idempotence *)
-  Theorem wpr_RecoverExample (d: loc) γ γsrc dinit logm:
+  Theorem wpr_RecoverExample d γ γsrc dinit logm:
     is_txn_durable γ dinit logm -∗
     is_source P γsrc -∗
     ([∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a) -∗
     wpr NotStuck 10 ⊤
-        (RecoverExample #d)
-        (RecoverExample #d)
+        (RecoverExample (disk_val d))
+        (RecoverExample (disk_val d))
         (λ _, True%I)
         (λ _, True%I)
         (λ _ _, True%I).

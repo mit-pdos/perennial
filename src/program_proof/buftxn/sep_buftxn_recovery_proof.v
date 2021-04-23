@@ -129,9 +129,9 @@ Section goose_lang.
     iExists _. simpl.  iFrame "Hctx' Hlogm Hcancel".
   Qed.
 
-  Theorem wpc_MkTxn (d:loc) γ dinit logm k :
+  Theorem wpc_MkTxn d γ dinit logm k :
     {{{ is_txn_durable γ dinit logm }}}
-      txn.MkTxn #d @ k; ⊤
+      txn.MkTxn (disk_val d) @ k; ⊤
     {{{ γ' (l: loc), RET #l;
         is_txn l γ.(buftxn_txn_names) dinit ∗
         is_txn_system N γ ∗

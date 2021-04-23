@@ -103,14 +103,7 @@ Proof.
   inversion Htype0 as [op Heq|op Heq]; subst.
   - iIntros (????) "#Hinv #Hspec #Hval".
     iIntros (j K Hctx) "Hj".
-    rewrite val_interp_struct_unfold //=.
-    iAssert (⌜∃ l : loc, v0' = #l⌝)%I with "[-]" as %(l&->).
-    { rewrite /structRefT_interp//=.
-      iDestruct "Hval" as "[H1|H2]".
-      { iDestruct "H1" as (????? (?&->&_)) "H". eauto. }
-      { iDestruct "H2" as %(?&_&->). eauto. }
-    }
-    iClear "Hval".
+    iDestruct "Hval" as %[-> ->].
     inversion Htrans. subst.
     iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[$Hj]") as "(Hj&_)".
