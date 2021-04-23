@@ -556,11 +556,11 @@ Proof.
   iFrame. iExists _. iFrame.
 Qed.
 
-Theorem OpenRead_adequate σ g (d : ()) addr :
+Theorem OpenRead_adequate σ g addr :
   (* We assume the addresses we replicate are in the disk domain *)
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
-  recv_adequate (CS := goose_crash_lang) NotStuck (OpenRead d addr) (OpenRead d addr)
+  recv_adequate (CS := goose_crash_lang) NotStuck (OpenRead () addr) (OpenRead () addr)
                 σ g (λ v _ _, True) (λ v _ _, True) (λ _ _, True).
 Proof.
   intros.
@@ -584,13 +584,13 @@ Definition OpenRead_init_cfg dref addr σ :=
      init_restart := OpenRead dref addr;
      init_local_state := σ |}.
 
-Theorem OpenRead_dist_adequate σ g (d : ()) addr :
+Theorem OpenRead_dist_adequate σ g addr :
   (* We assume the addresses we replicate are in the disk domain *)
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   dist_adequate (CS := goose_crash_lang)
-                [OpenRead_init_cfg d addr σ;
-                 OpenRead_init_cfg d addr σ]
+                [OpenRead_init_cfg () addr σ;
+                 OpenRead_init_cfg () addr σ]
                 g (λ _, True).
 Proof.
   intros.
