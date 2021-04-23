@@ -4,6 +4,7 @@ From Perennial.program_proof Require Import dist_prelude.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.algebra Require Import auth_map.
 From Perennial.base_logic Require Export lib.ghost_map lib.mono_nat.
+From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Record rpc_reg_entry := RegEntry {
   rpc_reg_rpcid  : u64;
@@ -77,14 +78,15 @@ Proof. apply _. Qed.
 
 Definition RPCClient_lock_inner Γ (cl : loc) (host : u64) mref : iProp Σ :=
   ∃ pending reqs estoks extoks (n : u64),
+            "%Hnpos" ∷ ⌜ 0 < int.Z n ⌝%Z ∗
             "%Hdom_range" ∷ ⌜ ∀ id, (0 < int.Z id < int.Z n)%Z ↔ id ∈ dom (gset u64) reqs ⌝ ∗
-            "%Hdom_eq" ∷ ⌜ dom (gset u64) reqs = dom (gset u64) estoks ∧
-                                    dom (gset u64) reqs = dom (gset u64) extoks ⌝ ∗
+            "%Hdom_eq_es" ∷ ⌜ dom (gset u64) reqs = dom (gset u64) estoks ⌝ ∗
+            "%Hdom_eq_ex" ∷ ⌜ dom (gset u64) reqs = dom (gset u64) extoks ⌝ ∗
             "%Hdom_pending" ∷ ⌜ dom (gset u64) pending ⊆ dom (gset u64) reqs  ⌝ ∗
             "seq" ∷ cl ↦[RPCClient :: "seq"] #n ∗
             "Hmapping_ctx" ∷ map_ctx (ccmapping_name Γ) 1 reqs ∗
             "Hescrow_ctx" ∷ map_ctx (ccescrow_name Γ) 1 estoks ∗
-            "Hescrow_ctx" ∷ map_ctx (ccextracted_name Γ) 1 extoks ∗
+            "Hextracted_ctx" ∷ map_ctx (ccextracted_name Γ) 1 extoks ∗
             "Hpending_map" ∷ map.is_map mref (pending, zero_val (struct.ptrT callback)) ∗
             "Hreqs" ∷ [∗ map] seqno ↦ req ∈ reqs, ∃ (Post : rpc_reg_auxtype req → list u8 → list u8 → iProp Σ),
                  "Hreg_entry" ∷  ptsto_ro (ccmapping_name Γ) seqno req ∗
@@ -101,7 +103,7 @@ Definition RPCClient_lock_inner Γ (cl : loc) (host : u64) mref : iProp Σ :=
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt).
 
 Definition RPCClient_own (cl : loc) (host:u64) : iProp Σ :=
-  ∃ Γ lk r (mref : loc),
+  ∃ Γ (lk : loc) r (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[RPCClient :: "mu"] #lk) ∗
     "#send" ∷ readonly (cl ↦[RPCClient :: "send"] send_endpoint host r) ∗
     "#pending" ∷ readonly (cl ↦[RPCClient :: "pending"] #mref)) ∗
@@ -109,7 +111,7 @@ Definition RPCClient_own (cl : loc) (host:u64) : iProp Σ :=
     "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl host mref).
 
 Definition RPCClient_reply_own (cl : loc) (r : chan) : iProp Σ :=
-  ∃ Γ host lk (mref : loc),
+  ∃ Γ host (lk : loc) (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[RPCClient :: "mu"] #lk) ∗
     "#pending" ∷ readonly (cl ↦[RPCClient :: "pending"] #mref)) ∗
     "#Hchan" ∷ inv urpc_clientN (client_chan_inner Γ r) ∗
@@ -167,6 +169,7 @@ Proof.
             "Hfree [Hmapping_ctx Hescrow_ctx Hextracted_ctx seq Hmref]") as "#Hlock".
   { iNext. iExists ∅, ∅, ∅, ∅, _. iFrame.
     rewrite ?dom_empty_L.
+    iSplit; first done.
     iSplit.
     { iPureIntro. split; last by set_solver. word. }
     iSplit; first done.
@@ -181,5 +184,98 @@ Proof.
   iNext. wp_pures. iModIntro. iApply "HΦ".
   iExists _, _, _, _. iFrame "#".
 Admitted.
+
+Lemma wp_RPCClient__Call {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr
+      dummy_sl_val (reqData:list u8) Pre Post :
+  {{{
+      is_slice req byteT 1 reqData ∗
+      rep_ptr ↦[slice.T byteT] dummy_sl_val ∗
+      handler_is X host rpcid Pre Post ∗
+      RPCClient_own cl_ptr host ∗
+      □(▷ Pre x reqData)
+  }}}
+    RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_ptr
+  {{{
+       (b:bool) rep_sl (repData:list u8), RET #b;
+       rep_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
+       RPCClient_own cl_ptr host ∗
+       typed_slice.is_slice req byteT 1 reqData ∗
+       typed_slice.is_slice rep_sl byteT 1 repData ∗
+       (⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post x reqData repData))
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ".
+  wp_lam.
+  wp_pures.
+  iDestruct "H" as "(Hslice&Hrep_ptr&Handler&Hclient&#HPre)".
+  iNamed "Hclient". iNamed "Hstfields".
+  replace (#false) with (zero_val boolT) by auto.
+  wp_apply (wp_ref_of_zero); first done.
+  iIntros (cb_done) "done".
+  wp_loadField.
+  wp_bind (lock.newCond _).
+  wp_apply (wp_newCond with "[$]").
+  iIntros (cb_cond) "cond".
+  wp_pures.
+  wp_apply (wp_StoreAt with "[$]"); first eauto.
+  iIntros "done".
+  wp_pures.
+  wp_loadField.
+  wp_apply (acquire_spec with "[$]").
+  iIntros "(Hlked&Hlock_inner)".
+  iNamed "Hlock_inner".
+  wp_pures.
+  wp_loadField. wp_pures.
+  wp_loadField. wp_storeField.
+  wp_loadField.
+  wp_apply (map.wp_MapInsert with "[$]").
+  iIntros "Hpending_map".
+  wp_pures.
+  wp_loadField.
+  iMod (saved_pred_alloc (Post x reqData)) as (γ) "#Hsaved".
+  assert (reqs !! n = None).
+  { apply not_elem_of_dom. rewrite -Hdom_range. lia. }
+  iMod (map_alloc_ro n (RegEntry rpcid X x reqData γ) with "Hmapping_ctx") as "(Hmapping_ctx&#Hreg)"; auto.
+  iMod (map_alloc n tt with "Hescrow_ctx") as "(Hescrow_ctx&Hescrow)".
+  { apply not_elem_of_dom. rewrite -Hdom_eq_es -Hdom_range. lia. }
+  iMod (map_alloc n tt with "Hextracted_ctx") as "(Hextracted_ctx&Hextracted)".
+  { apply not_elem_of_dom. rewrite -Hdom_eq_ex -Hdom_range. lia. }
+  wp_apply (release_spec with "[-Hslice Hrep_ptr Handler HΦ Hextracted]").
+  { iFrame "Hlk". iFrame "Hlked". iNext. iExists _, _, _, _, _.
+    iFrame. rewrite ?dom_insert_L.
+    assert (int.Z (word.add n 1) = int.Z n + 1)%Z as ->.
+    { (* XXX: not true because of overflow, so there's actually a bug here *) admit. }
+    iSplit.
+    { iPureIntro. word. }
+    iSplit.
+    { iPureIntro. intros. set_unfold. split.
+      * intros Hrange.
+        assert (0 < int.Z id < int.Z n ∨ int.Z id = int.Z n)%Z.
+        { word. }
+        { naive_solver word. }
+      * intros [Heq|Hin].
+        { subst. word. }
+        { apply Hdom_range in Hin. word. } }
+    iSplit; first (iPureIntro; congruence).
+    iSplit; first (iPureIntro; congruence).
+    iSplit; first (iPureIntro; set_solver).
+    rewrite big_sepM_insert; last first.
+    { apply not_elem_of_dom. rewrite -Hdom_range. lia. }
+    iEval (rewrite /named).
+    iSplitR "Hreqs"; last first.
+    { iApply (big_sepM_mono with "Hreqs").
+      iIntros (k req' Hlookup). iDestruct 1 as (Post') "H".
+      iExists Post'.
+      assert (n ≠ k).
+      { intros Heq. congruence. }
+      setoid_rewrite lookup_insert_ne; eauto.
+    }
+    iExists Post.
+    iFrame "Hreg Hsaved".
+    iLeft. iExists _. iFrame.
+    (* TODO: have to put in the cb fields here *)
+    iPureIntro. rewrite lookup_insert //. }
+  wp_pures.
+Abort.
 
 End rpc_proof.
