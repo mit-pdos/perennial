@@ -165,10 +165,10 @@ Lemma repeat_app {A} n1 n2 (x:A) :
 Proof. induction n1; simpl; congruence. Qed.
 
 (* sz is the actual size of the disk *)
-Lemma wpc_Mkfs (d:loc) sz :
+Lemma wpc_Mkfs d sz :
   (513 + 1 + (32-2) ≤ sz < 2^49) →
   {{{ 0 d↦∗ repeat block0 (Z.to_nat sz) ∗ P1 (gset_to_gmap [] (rangeSet 2 (NumInodes-2)))  }}}
-    Mkfs #d @ 0; ⊤
+    Mkfs (disk_val d) @ 0; ⊤
   {{{ γtxn γsrc (txn:loc), RET #txn;
       let logm0 := Build_async (kind_heap0 (fs_kinds sz)) [] in
       is_txn_durable γtxn (fs_dinit sz) logm0 ∗
@@ -263,14 +263,14 @@ Definition fs_cfupd_cancel dinit P :=
     ▷ is_source P γsrc ∗
     [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a))%I.
 
-Theorem wpc_Recover γ γsrc (d : loc) dinit logm :
+Theorem wpc_Recover γ γsrc d dinit logm :
   {{{
     <disc> (∀ σ, ▷ P1 σ -∗ |C={⊤ ∖ ↑N}_10=> ▷ P1 σ ∗ ▷ P2 σ) ∗
     is_txn_durable γ dinit logm ∗
     ▷ is_source P1 γsrc ∗
     [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a
   }}}
-    Recover #d @ 10; ⊤
+    Recover (disk_val d) @ 10; ⊤
   {{{ γsimp nfs, RET #nfs;
       is_fs P1 γsimp nfs dinit ∗ fs_cfupd_cancel dinit P2 }}}
   {{{

@@ -1293,9 +1293,9 @@ Proof.
   lia.
 Qed.
 
-Theorem wpc_mkLog_recover k (d : loc) γ σ :
+Theorem wpc_mkLog_recover k d γ σ :
   {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ }}}
-    mkLog #d @ k; ⊤
+    mkLog (disk_val d) @ k; ⊤
   {{{ l, RET #l;
        "Hwal_inv_pre" ∷ is_wal_inv_pre l γ σ dinit ∗
        "Hlogger" ∷ (∃ (circ_l: loc), "#Hcirc2" ∷ readonly (l ↦[Walog :: "circ"] #circ_l) ∗
@@ -1458,12 +1458,12 @@ Proof.
   simpl in Heq. rewrite Heq firstn_all //.
 Qed.
 
-Theorem wpc_MkLog_recover E k (d: loc) γ σ Prec Pcrash (Hpostcrash: wal_post_crash σ):
+Theorem wpc_MkLog_recover E k d γ σ Prec Pcrash (Hpostcrash: wal_post_crash σ):
   ↑walN ⊆ E →
   □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
         ▷ P s -∗ |0={E ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
   {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ ∗ ▷ P σ }}}
-    MkLog #d @ k; ⊤
+    MkLog (disk_val d) @ k; ⊤
   {{{ γ' l, RET #l;
       is_wal P l γ dinit ∗
       wal_cfupd_cancel E 0 γ' Prec ∗
@@ -1489,7 +1489,7 @@ Proof.
     iApply "HΦ". iExists _, _, _. iFrame "Hdurable Hres Hrec".
     iPureIntro. by apply post_crash_crash_refl.
   }
-  wpc_bind (mkLog #d).
+  wpc_bind (mkLog _).
   wpc_apply (wpc_mkLog_recover with "[$]").
   iSplit.
   { iLeft in "HΦ". iModIntro.
@@ -1603,13 +1603,13 @@ Section recov.
   Context `{!walG Σ}.
 
   (* Just a simple example of using idempotence *)
-  Theorem wpr_MkLog (d: loc) γ s dinit:
+  Theorem wpr_MkLog d γ s dinit:
     wal_post_crash s →
     is_wal_inner_durable γ s dinit -∗
     wal_resources γ -∗
     wpr NotStuck 2 ⊤
-        (MkLog #d)
-        (MkLog #d)
+        (MkLog (disk_val d))
+        (MkLog (disk_val d))
         (λ _, True%I)
         (λ _, True%I)
         (λ _ _, True%I).

@@ -181,7 +181,7 @@ Qed.
 
 Theorem wpc_recoverCircular stk k E1 d σ γ :
   {{{ is_circular_state γ σ ∗ is_circular_appender_pre γ}}}
-    recoverCircular #d @ stk; k; E1
+    recoverCircular (disk_val d) @ stk; k; E1
   {{{ (c:loc) (diskStart diskEnd: u64) (bufSlice:Slice.t) (upds: list update.t),
       RET (#c, #diskStart, #diskEnd, slice_val bufSlice);
       updates_slice bufSlice upds ∗

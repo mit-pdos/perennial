@@ -39,7 +39,7 @@ Section proof.
          "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
          "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj)))%I.
 
-  Theorem wpc_Init N (d: loc) γ dinit logm mt :
+  Theorem wpc_Init N d γ dinit logm mt :
     N ## invN →
     N ## invariant.walN →
     map_Forall (mapsto_valid γ) mt →
@@ -55,7 +55,7 @@ Section proof.
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
       "#Hjrnl_dom" ∷ jrnl_dom (dom _ mt)
     }}}
-      let: "twophasePre" := struct.alloc TwoPhasePre (MkTxn #d, (lockmap.MkLockMap #(), #())) in
+      let: "twophasePre" := struct.alloc TwoPhasePre (MkTxn (disk_val d), (lockmap.MkLockMap #(), #())) in
       Var "twophasePre" @ S (S LVL); ⊤
     {{{
       γ' (l: loc), RET #l;
@@ -211,7 +211,7 @@ Section proof.
       iIntros (???) "($&$&_)".
   Qed.
 
-  Theorem wp_Init N (d: loc) j K `{LanguageCtx _ K} (vs: sval) :
+  Theorem wp_Init N d j K `{LanguageCtx _ K} (vs: sval) :
     N ## invN →
     N ## invariant.walN →
     {{{
@@ -219,7 +219,7 @@ Section proof.
       "#Htwophase_inv" ∷ twophase_inv ∗
       "Hj" ∷ j ⤇ (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp vs))
     }}}
-      Init #d @ NotStuck; ⊤
+      Init (disk_val d) @ NotStuck; ⊤
     {{{
       (l: loc), RET #l;
       j ⤇ (K #true) ∗

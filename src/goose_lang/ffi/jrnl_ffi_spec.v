@@ -114,8 +114,8 @@ Section jrnl.
 
   (* The only operations that can be called outside an atomically block are OpenOp and MkAlloc *)
   Inductive jrnl_ext_tys : @val jrnl_op -> (ty * ty) -> Prop :=
-  | JrnlOpenOpType t :
-      jrnl_ext_tys (λ: "v", ExternalOp OpenOp (Var "v"))%V (refT t, extT JrnlT)
+  | JrnlOpenOpType :
+      jrnl_ext_tys (λ: "v", ExternalOp OpenOp (Var "v"))%V (unitT, extT JrnlT)
   | JrnlMkAllocOpType :
       jrnl_ext_tys (λ: "v", ExternalOp MkAllocOp (Var "v"))%V (baseT uint64BT, extT AllocT).
 
