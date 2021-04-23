@@ -111,15 +111,14 @@ Proof using Type*.
   }
 Admitted.
 
-Lemma KVClerk__Put Eo Ei (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
-  ∀ Φ,
-  own_MemKVClerk ck γ -∗
-  typed_slice.is_slice val_sl byteT 1%Qp v -∗
-  (|={Eo,Ei}=> (∃ oldv, kvptsto γ key oldv ∗ (kvptsto γ key v ={Ei,Eo}=∗ (Φ #())))) -∗
-    WP MemKVClerk__Put #ck #key (slice_val val_sl) {{ Φ }}
-.
+Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
+⊢ {{{ own_MemKVClerk ck γ ∗ typed_slice.is_slice val_sl byteT 1%Qp v }}}
+  <<< ∀∀ oldv, kvptsto γ key oldv >>>
+    MemKVClerk__Put #ck #key (slice_val val_sl) @ ⊤
+  <<< kvptsto γ key v >>>
+  {{{ RET #(); own_MemKVClerk ck γ }}}. (* FIXME: ownership of the slice is lost? *)
 Proof using Type*.
-  iIntros (Φ) "Hown Hval_sl Hatomic".
+  iIntros "!#" (Φ) "[Hown Hval_sl] Hatomic".
   wp_lam.
   wp_pures.
 
@@ -149,7 +148,7 @@ Proof using Type*.
   iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__Put Eo Ei γsh with "[Hatomic $Hval_sl $HshardCk]").
+  wp_apply (wp_MemKVShardClerk__Put _ _ γsh with "[Hatomic $Hval_sl $HshardCk]").
   {
     rewrite Hre.
     iFrame "Hatomic".
@@ -164,7 +163,8 @@ Proof using Type*.
     wp_pures.
     iDestruct "HshardPutPost" as "(Hval_sl & HshardCk & [[%Hbad _]|[_ Hpost]])".
     { by exfalso. }
-    by iFrame.
+    iApply "Hpost". iModIntro. iExists _, _, _, _. iFrame.
+    admit. (* Re-assembling own_MemKVClerk *)
   }
   {
     wp_loadField.
@@ -186,6 +186,6 @@ Proof using Type*.
     iFrame.
     iExists _,_,_,_; iFrame.
   }
-Qed.
+Admitted.
 
 End memkv_clerk_proof.

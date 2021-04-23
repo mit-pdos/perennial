@@ -12,21 +12,21 @@ Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' ∃∃ 
   (at level 20, x1 closed binder, xn closed binder, y1 closed binder, yn closed binder, z1 closed binder, zn closed binder,
    format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  ∃∃  y1  ..  yn ,  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
-(* No ∃∃, no binders before RET, with ▷ *)
+(* No ∃∃, no RET binders *)
 Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' β '>>>' {{{ 'RET' v ; Q } } }" :=
   (□ ∀ Φ, P -∗ (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ▷ (β -∗ |NC={∅,Eo}=> Q -∗ Φ v%V)) .. ) -∗
    WP e @ ⊤ {{ Φ }})%I
   (at level 20, x1 closed binder, xn closed binder,
    format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  β  '>>>'  '/' {{{  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
-(* No P, with ▷ *)
+(* No P *)
 Notation "'<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' ∃∃ y1 .. yn , β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=
   (□ ∀ Φ, (|NC={Eo%I%I%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ▷ ∀ y1, .. (∀ yn, β -∗ |NC={∅,Eo}=> ∀ z1, .. (∀ zn, Q -∗ Φ v%V) .. ) .. ) .. ) -∗
    WP e @ ⊤ {{ Φ }})%I
   (at level 20, x1 closed binder, xn closed binder, y1 closed binder, yn closed binder, z1 closed binder, zn closed binder,
    format "'[hv' '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<▷'  ∃∃  y1  ..  yn ,  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
-(* No P, no ∃∃, with ▷ *)
+(* No P, no ∃∃ *)
 Notation "'<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<▷' β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=
   (□ ∀ Φ, (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ ▷ (β -∗ |NC={∅,Eo}=> ∀ z1, .. (∀ zn, Q -∗ Φ v%V) .. )) .. ) -∗
    WP e @ ⊤ {{ Φ }})%I
@@ -48,6 +48,13 @@ Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<' β '>>>' {
    WP e @ ⊤ {{ Φ }})%I
   (at level 20, x1 closed binder, xn closed binder, z1 closed binder, zn closed binder,
    format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<'  β  '>>>'  '/' {{{  z1  ..  zn ,  RET  v ;  Q  } } } ']' ']'")
+  : bi_scope.
+(* No ∃∃, no RET binders *)
+Notation "'{{{' P } } } '<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<' β '>>>' {{{ 'RET' v ; Q } } }" :=
+  (□ ∀ Φ, P -∗ (|NC={Eo%I%I,∅}=> ∃ x1, .. (∃ xn, α ∗ (β -∗ |NC={∅,Eo}=> Q -∗ Φ v%V)) .. ) -∗
+   WP e @ ⊤ {{ Φ }})%I
+  (at level 20, x1 closed binder, xn closed binder,
+   format "'[hv' {{{  P  } } }  '/'  '<<<'  ∀∀  x1  ..  xn ,  α  '>>>'  '/  ' e  @  Eo  '/' '[    ' '<<<'  β  '>>>'  '/' {{{  RET  v ;  Q  } } } ']' ']'")
   : bi_scope.
 (* No P, no ∃∃ *)
 Notation "'<<<' ∀∀ x1 .. xn , α '>>>' e @ Eo '<<<' β '>>>' {{{ z1 .. zn , 'RET' v ; Q } } }" :=

@@ -421,8 +421,8 @@ Section grove.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
   (* FIXME: This is a bit strange; not sure how to think about "axiomatizing" a struct *)
-  Definition Sender : ty := (extT GroveClientTy).
-  Definition Receiver : ty := (extT GroveHostTy).
+  Definition Sender : ty := extT GroveClientTy.
+  Definition Receiver : ty := extT GroveHostTy.
 
   Definition ConnectRet := (struct.decl [
                               "Err" :: boolT;

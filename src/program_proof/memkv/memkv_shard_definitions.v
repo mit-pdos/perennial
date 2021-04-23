@@ -31,7 +31,7 @@ Definition PostShardGet Eo Ei γ (key:u64) Q (rep:GetReplyC) : iProp Σ := ⌜re
                                                         ⌜rep.(GR_Err) = 0⌝ ∗ (Q rep.(GR_Value)).
 
 Definition PreShardPut Eo Ei γ key Q v : iProp Σ :=
-  |={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v ={Ei,Eo}=∗ Q))
+  |NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q))
 .
 
 Definition PostShardPut Eo Ei γ (key:u64) Q v (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (PreShardPut Eo Ei γ key Q v) ∨

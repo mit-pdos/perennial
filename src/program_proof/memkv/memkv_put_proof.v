@@ -269,8 +269,8 @@ Proof.
 
       (* Get Q by using fupd *)
       unfold PreShardPut.
-      iApply fupd_wp.
-      iMod (fupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
+      iApply ncfupd_wp.
+      iMod (ncfupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
       { done. }
       iDestruct "Hpre" as (v0) "(Hkvptsto2 & HfupdQ)".
       iMod (kvptsto_update args.(PR_Value) with "Hkvptsto Hkvptsto2") as "[Hkvptsto Hkvptsto2]".
