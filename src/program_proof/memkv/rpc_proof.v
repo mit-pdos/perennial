@@ -70,13 +70,13 @@ Definition handler_is : ∀ (X:Type) (host:u64) (rpcid:u64) (Pre:X → list u8 �
                           (Post:X → list u8 → list u8 → iProp Σ), iProp Σ :=
   λ X host rpcid Pre Post, (∃ (specs: rpc_spec_map),
   "%Hprepost" ∷ ⌜ specs !! rpcid = Some (existT X (Pre, Post)) ⌝ ∗
-  "%Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host specs)
+  "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host specs)
 )%I.
 
 Global Instance handler_is_pers_instance X host rpcid pre post : Persistent (handler_is X host rpcid pre post).
 Proof. apply _. Qed.
 
-Definition RPCClient_lock_inner Γ (cl : loc) (host : u64) mref : iProp Σ :=
+Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) (host : u64) mref : iProp Σ :=
   ∃ pending reqs estoks extoks (n : u64),
             "%Hnpos" ∷ ⌜ 0 < int.Z n ⌝%Z ∗
             "%Hdom_range" ∷ ⌜ ∀ id, (0 < int.Z id < int.Z n)%Z ↔ id ∈ dom (gset u64) reqs ⌝ ∗
@@ -93,8 +93,15 @@ Definition RPCClient_lock_inner Γ (cl : loc) (host : u64) mref : iProp Σ :=
                  "HPost_saved" ∷ saved_pred_own (rpc_reg_saved req) (Post (rpc_reg_aux req) (rpc_reg_args req)) ∗
                  (* (1) Reply thread has not yet processed, so it is in pending
                     and we have escrow token *)
-                 (∃ cb, ⌜ pending !! seqno  = Some cb ⌝ ∗ ptsto_mut (ccescrow_name Γ) seqno 1 tt ∗
-                          (* TODO: cb ownership *) True) ∨
+                 (∃ rep_ptr (cb_done cb_cond : loc),
+                    "Hpending_cb" ∷ ⌜ pending !! seqno  =
+                                        Some (struct.mk_f callback [
+                                          "reply" ::= #rep_ptr;
+                                          "done" ::= #cb_done;
+                                          "cond" ::= #cb_cond ])%V ⌝ ∗
+                    "Hescrow" ∷ ptsto_mut (ccescrow_name Γ) seqno 1 tt ∗
+                    "Hcond" ∷ is_cond cb_cond #lk ∗
+                    "Hdone" ∷ cb_done ↦[boolT] #false) ∨
                  (* (2) Reply thread has received message, removed from pending,
                     but caller has not extracted ownership *)
                  (∃ reply (cb : unit), ⌜ pending !! seqno  = None ⌝ ∗ (* TODO: cb ownership *) True ∗
@@ -108,14 +115,14 @@ Definition RPCClient_own (cl : loc) (host:u64) : iProp Σ :=
     "#send" ∷ readonly (cl ↦[RPCClient :: "send"] send_endpoint host r) ∗
     "#pending" ∷ readonly (cl ↦[RPCClient :: "pending"] #mref)) ∗
     "#Hchan" ∷ inv urpc_clientN (client_chan_inner Γ r) ∗
-    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl host mref).
+    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl lk host mref).
 
 Definition RPCClient_reply_own (cl : loc) (r : chan) : iProp Σ :=
   ∃ Γ host (lk : loc) (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[RPCClient :: "mu"] #lk) ∗
     "#pending" ∷ readonly (cl ↦[RPCClient :: "pending"] #mref)) ∗
     "#Hchan" ∷ inv urpc_clientN (client_chan_inner Γ r) ∗
-    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl host mref).
+    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl lk host mref).
 
 Lemma wp_RPCClient__replyThread cl r :
   RPCClient_reply_own cl r -∗
@@ -165,7 +172,7 @@ Proof.
   iMod (map_init (∅ : gmap u64 unit)) as (γccextracted) "Hextracted_ctx".
   set (Γ := {| ccmapping_name := γccmapping; ccescrow_name := γccescrow;
                ccextracted_name := γccextracted |}).
-  iMod (alloc_lock urpc_lockN _ _ (RPCClient_lock_inner Γ cl host mref) with
+  iMod (alloc_lock urpc_lockN _ _ (RPCClient_lock_inner Γ cl lk host mref) with
             "Hfree [Hmapping_ctx Hescrow_ctx Hextracted_ctx seq Hmref]") as "#Hlock".
   { iNext. iExists ∅, ∅, ∅, ∅, _. iFrame.
     rewrite ?dom_empty_L.
@@ -207,7 +214,7 @@ Proof.
   iIntros (Φ) "H HΦ".
   wp_lam.
   wp_pures.
-  iDestruct "H" as "(Hslice&Hrep_ptr&Handler&Hclient&#HPre)".
+  iDestruct "H" as "(Hslice&Hrep_ptr&Hhandler&Hclient&#HPre)".
   iNamed "Hclient". iNamed "Hstfields".
   replace (#false) with (zero_val boolT) by auto.
   wp_apply (wp_ref_of_zero); first done.
@@ -240,7 +247,7 @@ Proof.
   { apply not_elem_of_dom. rewrite -Hdom_eq_es -Hdom_range. lia. }
   iMod (map_alloc n tt with "Hextracted_ctx") as "(Hextracted_ctx&Hextracted)".
   { apply not_elem_of_dom. rewrite -Hdom_eq_ex -Hdom_range. lia. }
-  wp_apply (release_spec with "[-Hslice Hrep_ptr Handler HΦ Hextracted]").
+  wp_apply (release_spec with "[-Hslice Hrep_ptr Hhandler HΦ Hextracted]").
   { iFrame "Hlk". iFrame "Hlked". iNext. iExists _, _, _, _, _.
     iFrame. rewrite ?dom_insert_L.
     assert (int.Z (word.add n 1) = int.Z n + 1)%Z as ->.
@@ -272,9 +279,66 @@ Proof.
     }
     iExists Post.
     iFrame "Hreg Hsaved".
-    iLeft. iExists _. iFrame.
+    iLeft. iExists _, _, _. iFrame.
     (* TODO: have to put in the cb fields here *)
     iPureIntro. rewrite lookup_insert //. }
+  wp_pures.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  wp_apply (wp_new_enc).
+  iIntros (enc) "Henc".
+  wp_pures.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { admit. (* TODO: overflow *) }
+  iIntros "Henc".
+  wp_pures.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { admit. (* TODO: overflow *) }
+  iIntros "Henc".
+  wp_pures.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { admit. (* TODO: overflow *) }
+  iIntros "Henc".
+  wp_pures.
+  iDestruct (is_slice_to_small with "Hslice") as "Hslice".
+  iDestruct (is_slice_small_sz with "Hslice") as %Hsz.
+  wp_apply (wp_Enc__PutBytes with "[$Henc $Hslice]").
+  { admit. } (* TODO: overflow *)
+  iIntros "[Henc Hsl]".
+  wp_pures.
+  wp_apply (wp_Enc__Finish with "[$Henc]").
+  iIntros (rep_sl repData).
+  iIntros "(%Hhas_encoding & % & Hrep_sl)".
+  wp_pures.
+  wp_loadField.
+  iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+  iNamed "Hhandler".
+  wp_apply (wp_Send with "[$]").
+  { admit. } (* TODO: overflow *)
+  iInv "Hserver_inv" as "Hserver_inner" "Hclo".
+  iDestruct "Hserver_inner" as (ms) "(>Hchan'&H)".
+  iApply (ncfupd_mask_intro _); first set_solver+.
+  iIntros "Hclo'".
+  iExists _. iFrame "Hchan'". iNext.
+  iIntros "Hchan'". iNamed "H".
+  iMod ("Hclo'") as "_".
+  iMod ("Hclo" with "[Hmessages Hchan']") as "_".
+  { iNext. iExists _. iFrame.
+    destruct (decide (Message r repData ∈ ms)).
+    { assert (ms ∪ {[Message r repData]} = ms) as -> by set_solver. iFrame. }
+    iApply big_sepS_union; first by set_solver.
+    iFrame "Hmessages".
+    iApply big_sepS_singleton.
+    iExists _, _, _, _, _, _, _.
+    iExists _, _.
+    iFrame "#". iSplit; eauto.
+    iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz.
+    assert (U64 (Z.of_nat (int.nat (req.(Slice.sz)))) = req.(Slice.sz)) as ->.
+    { word. }
+    eauto.
+  }
+  iModIntro. iIntros "Hsl_rep".
   wp_pures.
 Abort.
 
