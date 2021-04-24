@@ -424,13 +424,13 @@ Section grove.
   Definition Sender : ty := extT GroveClientTy.
   Definition Receiver : ty := extT GroveHostTy.
 
-  Definition SenderReceiver := (struct.decl [
+  Definition ConnectRet := (struct.decl [
                               "Err" :: boolT;
                               "Sender" :: Sender;
                               "Receiver" :: Receiver
                             ])%struct.
 
-  Definition ErrMsgSender := (struct.decl [
+  Definition ReceiveRet := (struct.decl [
                               "Err" :: boolT;
                               "Sender" :: Sender;
                               "Data" :: slice.T byteT
@@ -447,7 +447,7 @@ Section grove.
       let: "err" := Fst (Fst "c") in
       let: "sender" := Snd (Fst "c") in
       let: "receiver" := Snd "c" in
-      struct.mk SenderReceiver [
+      struct.mk ConnectRet [
         "Err" ::= "err";
         "Sender" ::= "sender";
         "Receiver" ::= "receiver"
@@ -466,7 +466,7 @@ Section grove.
       let: "slice" := Snd "r" in
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
-      struct.mk ErrMsgSender [
+      struct.mk ReceiveRet [
         "Err" ::= "err";
         "Sender" ::= "sender";
         "Data" ::= ("ptr", "len", "len")
@@ -487,7 +487,7 @@ Section grove.
     {{{ True }}}
       Connect #(LitInt c) @ s; E
     {{{ (err : bool) (r : chan),
-        RET struct.mk_f SenderReceiver [
+        RET struct.mk_f ConnectRet [
               "Err" ::= #err;
               "Sender" ::= send_endpoint c r;
               "Receiver" ::= recv_endpoint r
@@ -554,7 +554,7 @@ Section grove.
         Receive (recv_endpoint c) @ ⊤
       <<<▷ ∃∃ (err : bool) (m : message), c c↦ ms ∗ if err then True else ⌜m ∈ ms⌝ >>>
       {{{ (s : Slice.t),
-        RET struct.mk_f ErrMsgSender [
+        RET struct.mk_f ReceiveRet [
               "Err" ::= #err;
               "Sender" ::= send_endpoint m.(msg_sender) c;
               "Data" ::= slice_val s
