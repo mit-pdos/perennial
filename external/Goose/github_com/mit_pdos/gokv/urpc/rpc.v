@@ -32,17 +32,18 @@ Definition RPCServer__readThread: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := dist_ffi.Receive "recv" in
-      (if: struct.get dist_ffi.ReceiveRet "Err" "r"
+      (if: struct.get dist_ffi.ErrMsgSender "E" "r"
       then Continue
       else
-        let: "data" := struct.get dist_ffi.ReceiveRet "Data" "r" in
-        let: "sender" := struct.get dist_ffi.ReceiveRet "Sender" "r" in
+        let: "data" := struct.get dist_ffi.ErrMsgSender "M" "r" in
+        let: "sender" := struct.get dist_ffi.ErrMsgSender "S" "r" in
         let: "d" := marshal.NewDec "data" in
         let: "rpcid" := marshal.Dec__GetInt "d" in
         let: "seqno" := marshal.Dec__GetInt "d" in
         let: "reqLen" := marshal.Dec__GetInt "d" in
         let: "req" := marshal.Dec__GetBytes "d" "reqLen" in
-        RPCServer__rpcHandle "srv" "sender" "rpcid" "seqno" "req")).
+        RPCServer__rpcHandle "srv" "sender" "rpcid" "seqno" "req";;
+        Continue)).
 
 Definition RPCServer__Serve: val :=
   rec: "RPCServer__Serve" "srv" "host" "numWorkers" :=
@@ -70,10 +71,10 @@ Definition RPCClient__replyThread: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := dist_ffi.Receive "recv" in
-      (if: struct.get dist_ffi.ReceiveRet "Err" "r"
+      (if: struct.get dist_ffi.ErrMsgSender "E" "r"
       then Continue
       else
-        let: "data" := struct.get dist_ffi.ReceiveRet "Data" "r" in
+        let: "data" := struct.get dist_ffi.ErrMsgSender "M" "r" in
         let: "d" := marshal.NewDec "data" in
         let: "seqno" := marshal.Dec__GetInt "d" in
         let: "replyLen" := marshal.Dec__GetInt "d" in
@@ -88,28 +89,30 @@ Definition RPCClient__replyThread: val :=
           lock.condSignal (struct.loadF callback "cond" "cb");;
           #()
         else #());;
-        lock.release (struct.loadF RPCClient "mu" "cl"))).
+        lock.release (struct.loadF RPCClient "mu" "cl");;
+        Continue)).
 
 Definition MakeRPCClient: val :=
   rec: "MakeRPCClient" "host" :=
+    let: "cl" := struct.alloc RPCClient (zero_val (struct.t RPCClient)) in
+    let: "recv" := ref (zero_val dist_ffi.Receiver) in
     let: "a" := dist_ffi.Connect "host" in
-    let: "cl" := struct.new RPCClient [
-      "send" ::= struct.get dist_ffi.ConnectRet "Sender" "a";
-      "mu" ::= lock.new #();
-      "seq" ::= #1;
-      "pending" ::= NewMap (struct.ptrT callback)
-    ] in
-    Fork (RPCClient__replyThread "cl" (struct.get dist_ffi.ConnectRet "Receiver" "a"));;
+    struct.storeF RPCClient "send" "cl" (struct.get dist_ffi.SenderReceiver "S" "a");;
+    "recv" <-[dist_ffi.Receiver] struct.get dist_ffi.SenderReceiver "R" "a";;
+    struct.storeF RPCClient "mu" "cl" (lock.new #());;
+    struct.storeF RPCClient "seq" "cl" #1;;
+    struct.storeF RPCClient "pending" "cl" (NewMap (struct.ptrT callback));;
+    Fork (RPCClient__replyThread "cl" (![dist_ffi.Receiver] "recv"));;
     "cl".
 
 Definition RPCClient__Call: val :=
   rec: "RPCClient__Call" "cl" "rpcid" "args" "reply" :=
-    let: "cb" := struct.mk callback [
+    let: "cb" := struct.new callback [
       "reply" ::= "reply";
       "done" ::= ref (zero_val boolT);
       "cond" ::= lock.newCond (struct.loadF RPCClient "mu" "cl")
     ] in
-    struct.get callback "done" "cb" <-[boolT] #false;;
+    struct.loadF callback "done" "cb" <-[boolT] #false;;
     lock.acquire (struct.loadF RPCClient "mu" "cl");;
     let: "seqno" := struct.loadF RPCClient "seq" "cl" in
     struct.storeF RPCClient "seq" "cl" (struct.loadF RPCClient "seq" "cl" + #1);;
@@ -124,8 +127,8 @@ Definition RPCClient__Call: val :=
     dist_ffi.Send (struct.loadF RPCClient "send" "cl") "reqData";;
     lock.acquire (struct.loadF RPCClient "mu" "cl");;
     Skip;;
-    (for: (λ: <>, ~ (![boolT] (struct.get callback "done" "cb"))); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.get callback "cond" "cb");;
+    (for: (λ: <>, ~ (![boolT] (struct.loadF callback "done" "cb"))); (λ: <>, Skip) := λ: <>,
+      lock.condWait (struct.loadF callback "cond" "cb");;
       Continue);;
     lock.release (struct.loadF RPCClient "mu" "cl");;
     #false.
