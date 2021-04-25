@@ -22,10 +22,10 @@ Context `{!heapG Σ}.
 Implicit Types (m: gmap u64 ()) (addrs: gset u64).
 
 Definition is_addrset (m_ref: loc) addrs: iProp Σ :=
-  ∃ m, is_map m_ref m ∗ ⌜dom (gset _) m = addrs⌝.
+  ∃ m, is_map m_ref 1 m ∗ ⌜dom (gset _) m = addrs⌝.
 
 Theorem is_addrset_from_empty (m_ref: loc) :
-  is_map m_ref (∅: gmap u64 ()) -∗ is_addrset m_ref ∅.
+  is_map m_ref 1 (∅: gmap u64 ()) -∗ is_addrset m_ref ∅.
 Proof.
   iIntros "Hm".
   iExists _; iFrame.
@@ -48,7 +48,7 @@ Proof.
   iIntros (il) "i".
   wp_pures.
   wp_apply (wp_forUpto (λ i, "%Hilower_bound" ∷ ⌜int.Z start ≤ int.Z i⌝ ∗
-                             "*" ∷ ∃ m, "Hmap" ∷ is_map mref m ∗
+                             "*" ∷ ∃ m, "Hmap" ∷ is_map mref 1 m ∗
                                         "%Hmapdom" ∷ ⌜dom (gset _) m = rangeSet (int.Z start) (int.Z i - int.Z start)⌝)%I
             with "[] [Hmap $i]").
   - word.
@@ -98,12 +98,12 @@ Qed.
 (* this is superceded by wp_findKey, but that theorem relies in an unproven map
 iteration theorem *)
 Theorem wp_findKey' mref m E :
-  {{{ is_map mref m }}}
+  {{{ is_map mref 1 m }}}
     findKey #mref @ E
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
       ⌜if ok then m !! k = Some tt else True⌝ ∗ (* TODO: easier if this
       promises to find a key if it exists *)
-      is_map mref m
+      is_map mref 1 m
   }}}.
 Proof.
   iIntros (Φ) "Hmap HΦ".
@@ -113,7 +113,7 @@ Proof.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (ok_l) "ok".
   wp_pures.
-  wp_apply (wp_MapIter _ _ _ _
+  wp_apply (wp_MapIter _ _ _ _ _
                        (∃ (found: u64) (ok: bool),
                            "found" ∷ found_l ↦[uint64T] #found ∗
                            "ok" ∷ ok_l ↦[boolT] #ok ∗
@@ -163,7 +163,7 @@ Proof.
   iIntros (ok_l) "ok".
   wp_pures.
   iDestruct "Hmap" as (m) "[Hmap %Hmapdom]".
-  wp_apply (wp_MapIter_fold _ _ (λ mdone, ∃ (found: u64) (ok: bool),
+  wp_apply (wp_MapIter_fold _ _ _ (λ mdone, ∃ (found: u64) (ok: bool),
                            "found" ∷ found_l ↦[uint64T] #found ∗
                            "ok" ∷ ok_l ↦[boolT] #ok ∗
                            "%Hfound_is" ∷ ⌜if ok then m !! found = Some tt else mdone = ∅⌝)%I
@@ -209,7 +209,7 @@ Proof.
   rewrite /mapRemove.
   wp_pures.
   iDestruct "His_remove" as (m) "[His_remove %Hdom]".
-  wp_apply (wp_MapIter_2 _ _ _ _
+  wp_apply (wp_MapIter_2 _ _ _ _ _
                          (λ mtodo mdone, is_addrset m_ref (free ∖ dom (gset _) mdone))
               with "His_remove [His_free] [] [HΦ]").
   - rewrite dom_empty_L.

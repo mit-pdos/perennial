@@ -91,7 +91,7 @@ Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) (host : u64) mref : iP
             "Hmapping_ctx" ∷ map_ctx (ccmapping_name Γ) 1 reqs ∗
             "Hescrow_ctx" ∷ map_ctx (ccescrow_name Γ) 1 estoks ∗
             "Hextracted_ctx" ∷ map_ctx (ccextracted_name Γ) 1 extoks ∗
-            "Hpending_map" ∷ map.is_map mref (pending, zero_val (struct.ptrT callback)) ∗
+            "Hpending_map" ∷ map.is_map mref 1 (pending, zero_val (struct.ptrT callback)) ∗
             "Hreqs" ∷ [∗ map] seqno ↦ req ∈ reqs, ∃ (Post : rpc_reg_auxtype req → list u8 → list u8 → iProp Σ),
                  "Hreg_entry" ∷  ptsto_ro (ccmapping_name Γ) seqno req ∗
                  "HPost_saved" ∷ saved_pred_own (rpc_reg_saved req) (Post (rpc_reg_aux req) (rpc_reg_args req)) ∗
@@ -131,6 +131,62 @@ Definition RPCClient_reply_own (cl : loc) (r : chan) : iProp Σ :=
     "#pending" ∷ readonly (cl ↦[RPCClient :: "pending"] #mref)) ∗
     "#Hchan" ∷ inv urpc_clientN (client_chan_inner Γ r) ∗
     "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl lk host mref).
+
+Definition own_RPCServer (s : loc) (handlers: gmap u64 val) : iProp Σ :=
+  ∃ mref def,
+  "Hhandlers_map" ∷ map.is_map mref 1 (handlers, def) ∗
+  "#handlers" ∷ readonly (s ↦[RPCServer :: "handlers"] #mref).
+
+Definition is_rpcHandler {X:Type} (f:val) Pre Post : iProp Σ :=
+  ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
+  {{{
+      is_slice req byteT 1 reqData ∗
+      rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
+      ▷ Pre x reqData
+  }}}
+    f (slice_val req) #rep
+  {{{
+       rep_sl (repData:list u8), RET #(); rep ↦[slice.T byteT] (slice_val rep_sl) ∗
+         is_slice rep_sl byteT 1 repData ∗
+         ▷ Post x reqData repData
+  }}}.
+
+Lemma wp_MakeRPCServer (handlers : gmap u64 val) (mref:loc) (def : val) k :
+  {{{
+       map.is_map mref 1 (handlers, def)
+  }}}
+    MakeRPCServer #mref @ k ; ⊤
+  {{{
+      (s:loc), RET #s; own_RPCServer s handlers
+  }}}.
+Proof.
+  iIntros (Φ) "Hmap HΦ".
+  wp_lam.
+  iApply wp_fupd.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (s) "Hs".
+  iDestruct (struct_fields_split with "Hs") as "Hs". iNamed "Hs".
+  unshelve (iMod (readonly_alloc_1 with "handlers") as "#handlers"); [| apply _ |].
+  iApply "HΦ". iExists _, _.
+  iFrame "# ∗". eauto.
+Qed.
+
+Lemma wp_StartRPCServer (host : u64) (handlers : gmap u64 val) (s : loc) k (n:u64) :
+  {{{
+       own_RPCServer s handlers ∗
+      [∗ map] rpcid ↦ handler ∈ handlers, (∃ X Pre Post, handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
+  }}}
+    RPCServer__Serve #s #host #n @ k ; ⊤
+  {{{
+      RET #(); True
+  }}}.
+Proof.
+  iIntros (Φ) "(Hserver&Hhandlers) HΦ".
+  wp_lam. wp_pures.
+  wp_apply (wp_Listen). wp_pures.
+  iNamed "Hserver".
+Abort.
 
 Lemma wp_RPCClient__replyThread cl r :
   RPCClient_reply_own cl r -∗

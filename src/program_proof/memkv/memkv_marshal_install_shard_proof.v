@@ -27,7 +27,7 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   "HSeq" ∷ args_ptr ↦[InstallShardRequest :: "Seq"] #args.(IR_Seq) ∗
   "HKey" ∷ args_ptr ↦[InstallShardRequest :: "Sid"] #args.(IR_Sid) ∗
   "HKvs" ∷ args_ptr ↦[InstallShardRequest :: "Kvs"] #kvs_ptr ∗
-  "HKvsMap" ∷ map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
+  "HKvsMap" ∷ map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
   "%HseqPositive" ∷ ⌜int.Z args.(IR_Seq) > 0⌝ ∗
   "Hvals" ∷ ([∗ set] k ∈ (fin_to_set u64),
         ⌜shardOfC k ≠ args.(IR_Sid)⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (args.(IR_Kvs) !! k))) )

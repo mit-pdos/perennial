@@ -57,15 +57,15 @@ Lemma map_get_val k m :
   (map_get m k).1 = default IntoVal_def (m !! k).
 Proof. reflexivity. Qed.
 
-Definition is_map (mref:loc) (m: Map.t V) :=
-  map.is_map mref (Map.untype m).
+Definition is_map (mref:loc) q (m: Map.t V) :=
+  map.is_map mref q (Map.untype m).
 
-Theorem is_map_untype mref m : is_map mref m -∗ map.is_map mref (Map.untype m).
+Theorem is_map_untype mref q m : is_map mref q m -∗ map.is_map mref q (Map.untype m).
 Proof.
   auto.
 Qed.
 
-Theorem is_map_retype mref m : map.is_map mref (to_val <$> m, to_val IntoVal_def) -∗ is_map mref m.
+Theorem is_map_retype mref q m : map.is_map mref q (to_val <$> m, to_val IntoVal_def) -∗ is_map mref q m.
 Proof.
   auto.
 Qed.
@@ -77,7 +77,7 @@ Theorem wp_NewMap stk E :
   {{{ True }}}
     ref (zero_val (mapValT t)) @ stk; E
   {{{ mref, RET #mref;
-      is_map mref ∅ }}}.
+      is_map mref 1 ∅ }}}.
 Proof using IntoValForType0.
   iIntros (Φ) "_ HΦ".
   wp_apply map.wp_NewMap.
@@ -106,12 +106,12 @@ Proof.
     rewrite Hlookup; auto.
 Qed.
 
-Theorem wp_MapGet stk E mref m k :
-  {{{ is_map mref m }}}
+Theorem wp_MapGet stk E mref q m k :
+  {{{ is_map mref q m }}}
     MapGet #mref #k @ stk; E
   {{{ v ok, RET (to_val v, #ok);
       ⌜map_get m k = (v, ok)⌝ ∗
-      is_map mref m }}}.
+      is_map mref q m }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".
@@ -143,9 +143,9 @@ Qed.
 
 Theorem wp_MapInsert stk E mref m k v' vv :
   vv = to_val v' ->
-  {{{ is_map mref m }}}
+  {{{ is_map mref 1 m }}}
     MapInsert #mref #k vv @ stk; E
-  {{{ RET #(); is_map mref (map_insert m k v') }}}.
+  {{{ RET #(); is_map mref 1 (map_insert m k v') }}}.
 Proof.
   intros ->.
   iIntros (Φ) "Hm HΦ".
@@ -158,9 +158,9 @@ Proof.
 Qed.
 
 Theorem wp_MapInsert_to_val stk E mref m k v' :
-  {{{ is_map mref m }}}
+  {{{ is_map mref 1 m }}}
     MapInsert #mref #k (to_val v') @ stk; E
-  {{{ RET #(); is_map mref (map_insert m k v') }}}.
+  {{{ RET #(); is_map mref 1 (map_insert m k v') }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iApply (wp_MapInsert with "Hm"); first reflexivity.
@@ -168,9 +168,9 @@ Proof.
 Qed.
 
 Theorem wp_MapDelete stk E mref m k :
-  {{{ is_map mref m }}}
+  {{{ is_map mref 1 m }}}
     MapDelete #mref #k @ stk; E
-  {{{ RET #(); is_map mref (map_del m k) }}}.
+  {{{ RET #(); is_map mref 1 (map_del m k) }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".
@@ -189,9 +189,9 @@ Proof.
 Qed.
 
 Theorem wp_MapLen stk E mref m :
-  {{{ is_map mref m }}}
+  {{{ is_map mref 1 m }}}
     MapLen #mref @ stk; E
-  {{{ RET #(size m); ⌜size m = int.nat (size m)⌝ ∗ is_map mref m }}}.
+  {{{ RET #(size m); ⌜size m = int.nat (size m)⌝ ∗ is_map mref 1 m }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".
@@ -216,20 +216,20 @@ Proof.
   intros ->; auto.
 Qed.
 
-Theorem wp_MapIter stk E mref m (I: iProp Σ) (P Q: u64 -> V -> iProp Σ) (body: val) Φ:
-  is_map mref m -∗
+Theorem wp_MapIter stk E mref q m (I: iProp Σ) (P Q: u64 -> V -> iProp Σ) (body: val) Φ:
+  is_map mref q m -∗
   I -∗
   ([∗ map] k ↦ v ∈ m, P k v) -∗
   (∀ (k: u64) (v: V),
       {{{ I ∗ P k v }}}
         body #k (to_val v) @ stk; E
       {{{ RET #(); I ∗ Q k v }}}) -∗
-  ▷ ((is_map mref m ∗ I ∗ [∗ map] k ↦ v ∈ m, Q k v) -∗ Φ #()) -∗
+  ▷ ((is_map mref q m ∗ I ∗ [∗ map] k ↦ v ∈ m, Q k v) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "Hm HI HP #Hbody HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".
-  wp_apply (map.wp_MapIter _ _ _ _ _
+  wp_apply (map.wp_MapIter _ _ _ _ _ _
     (λ k vv, ∃ v, ⌜vv = to_val v⌝ ∗ P k v)%I
     (λ k vv, ∃ v, ⌜vv = to_val v⌝ ∗ Q k v)%I with "Hm HI [HP] [Hbody]").
   { rewrite /Map.untype /=.
@@ -257,19 +257,19 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wp_MapIter_2 stk E mref m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (body: val) Φ:
-  is_map mref m -∗
+Theorem wp_MapIter_2 stk E mref q m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (body: val) Φ:
+  is_map mref q m -∗
   I m ∅ -∗
   (∀ (k: u64) (v: V) (mtodo mdone : gmap u64 V),
       {{{ I mtodo mdone ∗ ⌜mtodo !! k = Some v⌝ }}}
         body #k (to_val v) @ stk; E
       {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
-  ((is_map mref m ∗ I ∅ m) -∗ Φ #()) -∗
+  ((is_map mref q m ∗ I ∅ m) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "Hm HI #Hbody HΦ".
   iDestruct (is_map_untype with "Hm") as "Hm".
-  wp_apply (map.wp_MapIter_2 _ _ _ _
+  wp_apply (map.wp_MapIter_2 _ _ _ _ _
     (λ mtodo mdone, ∃ mtodo' mdone',
       ⌜ mtodo = to_val <$> mtodo' ⌝ ∗
       ⌜ mdone = to_val <$> mdone' ⌝ ∗
@@ -305,21 +305,21 @@ Proof.
   done.
 Qed.
 
-Theorem wp_MapIter_3 stk E mref m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (body: val) Φ:
-  is_map mref m -∗
+Theorem wp_MapIter_3 stk E mref q m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (body: val) Φ:
+  is_map mref q m -∗
   I m ∅ -∗
   (∀ (k: u64) (v: V) (mtodo mdone : gmap u64 V),
       {{{ I mtodo mdone ∗ ⌜m = mtodo ∪ mdone ∧ dom (gset u64) mtodo ## dom (gset u64) mdone ∧ mtodo !! k = Some v⌝ }}}
         body #k (to_val v) @ stk; E
       {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
-  ((is_map mref m ∗ I ∅ m) -∗ Φ #()) -∗
+  ((is_map mref q m ∗ I ∅ m) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ v, Φ v }}.
 Proof using.
   (* XXX why is this needed? *)
   clear IntoValForType0 t.
 
   iIntros "Hismap HI #Hbody HΦ".
-  wp_apply (wp_MapIter_2 _ _ _ _
+  wp_apply (wp_MapIter_2 _ _ _ _ _
     (λ mtodo mdone,
       I mtodo mdone ∗ ⌜m = mtodo ∪ mdone ∧ dom (gset u64) mtodo ## dom (gset u64) mdone⌝)%I
     with "Hismap [$HI]").
@@ -341,13 +341,13 @@ Proof using.
   iApply "HΦ". iFrame.
 Qed.
 
-Theorem wp_MapIter_empty {stk E} (mref: loc) (body: val) :
-  {{{ is_map mref (∅: Map.t V) }}}
+Theorem wp_MapIter_empty {stk E} (mref: loc) q (body: val) :
+  {{{ is_map mref q (∅: Map.t V) }}}
     MapIter #mref body @ stk; E
-  {{{ RET #(); is_map mref (∅: Map.t V) }}}.
+  {{{ RET #(); is_map mref q (∅: Map.t V) }}}.
 Proof.
   iIntros (Φ) "Hismap HΦ".
-  wp_apply (wp_MapIter stk E _ _ (emp)%I
+  wp_apply (wp_MapIter stk E _ _ _ (emp)%I
                        (λ _ _, False)%I
                        (λ _ _, False)%I body
               with "Hismap [] [] [] [HΦ]").
@@ -360,14 +360,14 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
-Theorem wp_MapIter_fold {stk E} (mref: loc) (body: val)
+Theorem wp_MapIter_fold {stk E} (mref: loc) q (body: val)
         (P: gmap u64 V → iProp Σ) m Φ :
-  is_map mref m -∗
+  is_map mref q m -∗
   P ∅ -∗
   (∀ m0 (k: u64) v, {{{ P m0 ∗ ⌜m0 !! k = None ∧ m !! k = Some v⌝ }}}
                       body #k (to_val v) @ stk; E
                     {{{ RET #(); P (<[k:=v]> m0) }}}) -∗
-  ▷ ((is_map mref m ∗ P m) -∗ Φ #()) -∗
+  ▷ ((is_map mref q m ∗ P m) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ Φ }}.
 Proof.
   iIntros "Hm HP #Hbody".

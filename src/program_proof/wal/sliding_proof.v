@@ -40,7 +40,7 @@ Definition is_sliding (l: loc) (q: Qp) (σ: slidingM.t) : iProp Σ :=
     "addrPos" ∷ l ↦[sliding :: "addrPos"] #addrPosPtr ∗
     "#log_readonly" ∷ readonly_log logSlice σ ∗
     "log_mutable" ∷ mutable_log logSlice q σ ∗
-    "is_addrPos" ∷ is_map addrPosPtr (slidingM.addrPosMap σ).
+    "is_addrPos" ∷ is_map addrPosPtr 1 (slidingM.addrPosMap σ).
 
 Theorem is_sliding_wf l q σ : is_sliding l q σ -∗ ⌜slidingM.wf σ⌝.
 Proof.
@@ -190,7 +190,7 @@ Proof.
   iDestruct "Hs" as (bks) "[Hs Hblocks]".
 
   wp_apply (wp_forSlice
-              (fun i => "Hm" ∷ is_map addrPosPtr
+              (fun i => "Hm" ∷ is_map addrPosPtr 1
                                (compute_memLogMap (take (int.nat i) log) start) ∗
                       "Hblocks" ∷ [∗ list] b_upd;upd ∈ bks;log, is_update b_upd q upd
               )%I
@@ -1066,7 +1066,7 @@ Proof.
   wp_apply (wp_forSlice (fun i =>
     "start" ∷ l ↦[sliding :: "start"] #σ.(slidingM.start) ∗
     "addrPos" ∷ l ↦[sliding :: "addrPos"] #addrPosPtr ∗
-    "HaddrPos" ∷ is_map addrPosPtr (slidingM.addrPosMap
+    "HaddrPos" ∷ is_map addrPosPtr 1 (slidingM.addrPosMap
       (set slidingM.start (word.add i)
         (set slidingM.log (drop (int.nat i)) σ)
       )

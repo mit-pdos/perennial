@@ -61,7 +61,7 @@ Axiom own_RPCServer : loc → gmap u64 val → iProp Σ.
 
 Axiom wp_MakeRPCServer : ∀ (handlers : gmap u64 val) (mref:loc) (def : val) k,
   {{{
-       map.is_map mref (handlers, def)
+       map.is_map mref 1 (handlers, def)
   }}}
     MakeRPCServer #mref @ k ; ⊤
   {{{

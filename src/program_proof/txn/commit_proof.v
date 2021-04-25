@@ -115,7 +115,7 @@ Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : g
     Txn__installBufsMap #l (slice_val bufs)
   {{{ (blkmapref : loc) (blkmap : Map.t Slice.t), RET #blkmapref;
       is_locked_walheap γ.(txn_walnames) lwh ∗
-      is_map blkmapref blkmap ∗
+      is_map blkmapref 1 blkmap ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
         mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
       [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap,
@@ -138,7 +138,7 @@ Opaque struct.t.
         "<-" ∷ ⌜ done ++ todo = buflist ⌝ ∗
         "->" ∷ ⌜ bufamap_done = bufamap ∖ bufamap_todo ⌝ ∗
         "%" ∷ ⌜ bufamap_todo ⊆ bufamap ⌝ ∗
-        "Hblks" ∷ is_map blks blkmap ∗
+        "Hblks" ∷ is_map blks 1 blkmap ∗
         "Hbufamap_todo" ∷ ( [∗ maplist] a↦buf;bufptrval ∈ bufamap_todo;todo, is_txn_buf_pre γ bufptrval a buf ) ∗
         "Hbufamap_done" ∷ ( [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap_done,
           ∃ b,
@@ -266,7 +266,7 @@ Opaque struct.t.
                          (locked_wh_disk lwh) (buf_ <$> offmap)⌝ ) ∗
             "Hisbuf" ∷ is_buf b a buf.(buf_) ∗
             "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh ∗
-            "Hblks" ∷ is_map blks blkmap' ∗
+            "Hblks" ∷ is_map blks 1 blkmap' ∗
             "%" ∷ ⌜ blkmap' !! a.(addrBlock) = Some blkslice ⌝ ∗
             "%" ∷ ⌜ updBlockOK a.(addrBlock) blk buf.(buf_).(bufKind) (locked_wh_disk lwh) (default ∅ ((gmap_addr_by_block (buf_ <$> (bufamap ∖ bufamap_todo))) !! a.(addrBlock))) ⌝
         )%I
@@ -435,7 +435,7 @@ Proof.
   wp_apply (wp_txn__installBufsMap with "[$Hinv $Hiswal $Hlog $Hlockedheap $Hbufs $Hbufpre]").
   iIntros (blkmapref blkmap) "(Hlockedheap & Hblkmapref & Hbufamap_mapsto & Hblkmap)".
 
-  wp_apply (wp_MapIter_2 _ _ _ _
+  wp_apply (wp_MapIter_2 _ _ _ _ _
     (λ mtodo mdone,
       ∃ (blks : Slice.t) upds offmaps_todo offmaps_done,
         "Hblks_var" ∷ blks_var ↦[slice.T (struct.t Update)] (slice_val blks) ∗

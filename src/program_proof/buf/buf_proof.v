@@ -54,7 +54,7 @@ Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
   ∃ (mptr : loc) (m : gmap u64 loc) (am : gmap addr loc),
     bufmap ↦[BufMap :: "addrs"] #mptr ∗
-    is_map mptr m ∗
+    is_map mptr 1 m ∗
     ⌜ flatid_addr_map m am ⌝ ∗
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
       is_buf bufptr a buf.
@@ -442,7 +442,7 @@ Proof using.
   iDestruct (big_sepM2_sepM_1 with "Hmap") as "Hmap".
   iDestruct (big_sepM_flatid_addr_map_1 with "Hmap") as "Hmap"; eauto.
 
-  wp_apply (wp_MapIter_3 _ _ _ _
+  wp_apply (wp_MapIter_3 _ _ _ _ _
     (λ (bmtodo bmdone : gmap u64 loc),
       ∃ (bufptrslice : Slice.t) (bufptrlist : list loc) (mtodo mdone : gmap addr buf) (amtodo : gmap addr loc),
         "%Hpm" ∷ ⌜m = mtodo ∪ mdone ∧ dom (gset addr) mtodo ## dom (gset addr) mdone⌝ ∗

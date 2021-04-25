@@ -141,11 +141,11 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
     (lastReplyM:gmap u64 GetReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc)
     (peersM:gmap u64 loc),
   "HlastReply" ∷ s ↦[MemKVShardServer :: "lastReply"] #lastReply_ptr ∗
-  "HlastReplyMap" ∷ map.is_map lastReply_ptr (lastReplyMV, #0) ∗ (* TODO: default *)
+  "HlastReplyMap" ∷ map.is_map lastReply_ptr 1 (lastReplyMV, #0) ∗ (* TODO: default *)
   "%HlastReplyMVdom" ∷ ⌜dom (gset u64) lastReplyMV = dom (gset u64) lastSeqM⌝ ∗
   "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM, (∃ val_sl q, ⌜v = (#rep.(GR_Err), (slice_val val_sl, #()))%V⌝ ∗ typed_slice.is_slice_small val_sl byteT q rep.(GR_Value))) ∗
   "HlastSeq" ∷ s ↦[MemKVShardServer :: "lastSeq"] #lastSeq_ptr ∗
-  "HlastSeqMap" ∷ is_map lastSeq_ptr lastSeqM ∗
+  "HlastSeqMap" ∷ is_map lastSeq_ptr 1 lastSeqM ∗
   "HnextCID" ∷ s ↦[MemKVShardServer :: "nextCID"] #nextCID ∗
   "HshardMap" ∷ s ↦[MemKVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl boolT 1%Qp shardMapping ∗
@@ -160,12 +160,12 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
                   (∃ (kvs_ptr:loc) (m:gmap u64 (list u8)) (mv:gmap u64 goose_lang.val),
                       own_shard γ.(kv_gn) sid m ∗ (* own shard *)
                       ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
-                      map.is_map kvs_ptr (mv, (slice_val Slice.nil)) ∗
+                      map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
                        ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (m !! k))) )
                   )
                  ) ∗
-  "HpeersMap" ∷ is_map (V:=loc) peers_ptr peersM ∗
+  "HpeersMap" ∷ is_map (V:=loc) peers_ptr 1 peersM ∗
   "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, (∃ γsh, own_MemKVShardClerk ck γsh ∗ ⌜γsh.(kv_gn) = γ.(kv_gn)⌝)) ∗
   "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (RPCClient_own_ghost γ.(rpc_gn) cid 1)
 .
