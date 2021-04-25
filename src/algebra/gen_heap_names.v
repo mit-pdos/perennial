@@ -51,6 +51,17 @@ Section gen_heap_defs.
 
   Local Notation "l ↦ v" := (mapsto l (DfracOwn 1) v) (at level 20) : bi_scope.
 
+  Lemma gen_heap_name_strong_init' `{!gen_heapPreG L V Σ} σ :
+    ⊢ |==> ∃ names : gen_heap_names, let _ := gen_heapG_update_pre _ names in
+           gen_heap_interp σ ∗
+           ([∗ map] i↦v ∈ σ, i ↦ v) ∗
+           [∗ map] l↦_ ∈ σ, meta_token l ⊤.
+  Proof.
+    iMod (gen_heap_init_names) as (γh γm) "(Hinterp & Hh & Hm)".
+    pose (names := {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}).
+    iExists names. iFrame. done.
+  Qed.
+
   Lemma gen_heap_name_strong_init `{!gen_heapPreG L V Σ} σ :
     ⊢ |==> ∃ names : gen_heap_names, let _ := gen_heapG_update_pre _ names in
            gen_heap_interp σ ∗

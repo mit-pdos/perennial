@@ -201,6 +201,11 @@ Section lifting.
   Context `{!heapG Σ}.
   Instance heapG_groveG : groveG Σ := heapG_ffiG.
 
+  Definition chan_meta_token (c : chan) (E: coPset) : iProp Σ :=
+    gen_heap.meta_token (hG := groveG_gen_heapG) c E.
+  Definition chan_meta `{Countable A} (c : chan) N (x : A) : iProp Σ :=
+    gen_heap.meta (hG := groveG_gen_heapG) c N x.
+
   Definition send_endpoint (c : chan) (r : chan) : val :=
     ExtV (ClientEndp c r).
   Definition recv_endpoint (c : chan) : val :=
@@ -593,7 +598,8 @@ Program Instance grove_interp_adequacy:
      ffi_update_pre := (λ _ hP _ names, @grove_update_pre _ hP names);
      ffi_pre_global_start _ hP names g :=
        let hG := @grove_update_pre _ hP names in
-       ([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
+       (([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms)) ∗
+        ([∗ map] e↦_ ∈ g, (gen_heap.meta_token e ⊤)))%I;
      ffi_pre_global_ctx  _ hP names g :=
        let hG := @grove_update_pre _ hP names in
        (gen_heap_interp g ∗ ⌜chan_msg_bounds g⌝)%I;
@@ -604,7 +610,7 @@ Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
 Next Obligation. rewrite //=. Qed.
 Next Obligation.
   rewrite //=. iIntros (Σ hPre g Hchan). eauto.
-  iMod (gen_heap_name_strong_init g) as (names) "(H1&H2)".
+  iMod (gen_heap_name_strong_init' g) as (names) "(H1&H2&H3)".
   iExists names. iFrame. eauto.
 Qed.
 Next Obligation.
