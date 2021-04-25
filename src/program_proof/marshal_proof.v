@@ -522,6 +522,39 @@ Proof.
   rewrite drop_app_ge //.
 Qed.
 
+(* This version of GetBytes consumes full ownership of the decoder to be able to
+   give the full fraction to the returned slice *)
+Theorem wp_Dec__GetBytes' stk E dec_v bs (n: u64) r s q data :
+  length bs = int.nat n →
+  {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
+    Dec__GetBytes dec_v #n @ stk; E
+  {{{ s', RET slice_val s'; is_slice_small s' byteT q bs }}}.
+Proof.
+  iIntros (Hbound Φ) "Hdec HΦ"; iNamed "Hdec".
+  pose proof (has_encoding_length Henc).
+  autorewrite with len in H.
+  rewrite encoded_length_cons /= in H.
+  wp_call.
+  wp_load.
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  (* we split the decoder state into one half used to serve the client and one
+     half to reconstruct the decoder (now with half the fraction) *)
+  wp_pures.
+  wp_apply (wp_SliceSubslice_drop_rest with "Hs"); first by word.
+  iIntros (s') "Hbs".
+  wp_pures.
+  wp_load; wp_store.
+  iApply "HΦ". iModIntro.
+  apply has_encoding_inv in Henc as [extra [Hdataeq _]].
+  rewrite encode_cons /= -app_assoc in Hdataeq.
+  iExactEq "Hbs".
+  f_equal.
+  rewrite -> subslice_drop_take by word.
+  replace (int.nat (word.add off n) - int.nat off)%nat with (int.nat n) by word.
+  rewrite Hdataeq.
+  rewrite take_app_alt //; lia.
+Qed.
+
 Theorem wp_Dec__GetBytes stk E dec_v bs (n: u64) r s q data :
   length bs = int.nat n →
   {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
