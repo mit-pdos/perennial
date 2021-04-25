@@ -173,7 +173,7 @@ Proof.
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".
   wp_pures.
-  wp_apply (wp_Dec__GetBytes' with "[$Hdec]").
+  wp_apply (wp_Dec__GetBytes' with "[$Hdec $Hsl_close]").
   { admit. } (* TODO : overflow *)
   iIntros (?) "Hsl".
   wp_pures.
@@ -254,8 +254,7 @@ Proof.
     iFrame "HPost_val". simpl. iFrame "Hrep_ptr Hdone".
     iSplit.
     { iPureIntro. apply lookup_delete_None; auto. }
-    (* TODO: I only have is_slice_small here, not is_slice. Strengthen GetBytes'? *)
-    admit.
+    iFrame.
   }
   { iNamed "Hcase2". iDestruct "Hcase2" as "(%Hlookup&_)".
     exfalso. apply map.map_get_true in Hget. congruence. }

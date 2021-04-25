@@ -526,21 +526,21 @@ Qed.
    give the full fraction to the returned slice *)
 Theorem wp_Dec__GetBytes' stk E dec_v bs (n: u64) r s q data :
   length bs = int.nat n →
-  {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
+  {{{ is_dec dec_v (EncBytes bs :: r) s q data ∗
+      (∀ vs' : list u8, is_slice_small s byteT q vs' -∗ is_slice s byteT q vs') }}}
     Dec__GetBytes dec_v #n @ stk; E
-  {{{ s', RET slice_val s'; is_slice_small s' byteT q bs }}}.
+  {{{ s', RET slice_val s'; is_slice s' byteT q bs }}}.
 Proof.
-  iIntros (Hbound Φ) "Hdec HΦ"; iNamed "Hdec".
+  iIntros (Hbound Φ) "(Hdec&Hclo) HΦ"; iNamed "Hdec".
   pose proof (has_encoding_length Henc).
   autorewrite with len in H.
   rewrite encoded_length_cons /= in H.
   wp_call.
   wp_load.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  (* we split the decoder state into one half used to serve the client and one
-     half to reconstruct the decoder (now with half the fraction) *)
   wp_pures.
-  wp_apply (wp_SliceSubslice_drop_rest with "Hs"); first by word.
+  iDestruct ("Hclo" with "[$]") as "Hs".
+  wp_apply (wp_SliceSubslice_drop_rest' with "Hs"); first by word.
   iIntros (s') "Hbs".
   wp_pures.
   wp_load; wp_store.

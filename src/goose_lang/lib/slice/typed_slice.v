@@ -255,6 +255,46 @@ Admitted.
 the slice. Most useful in read-only contexts. *)
 (* TODO: these subslicing theorems are still really messy as far as preserving
 the rest of the slice *)
+Lemma wp_SliceSubslice_drop_rest' {stk E} s t q `{!IntoVal V} (vs: list V) (n m: u64) :
+  (int.nat n ≤ int.nat m ≤ length vs)%nat →
+  {{{ is_slice s t q vs }}}
+    SliceSubslice t (slice_val s) #n #m @ stk; E
+  {{{ s', RET slice_val s'; is_slice s' t q (subslice (int.nat n) (int.nat m) vs) }}}.
+Proof.
+  iIntros (Hbound Φ) "Hs HΦ".
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
+  wp_apply wp_SliceSubslice.
+  { iPureIntro; word. }
+  iApply "HΦ".
+  rewrite /is_slice /slice.is_slice /=.
+  iDestruct "Hs" as "[Hs Hcap]".
+  iSplitL "Hs".
+  { iDestruct "Hs" as "[Ha _]".
+    rewrite /list.untype.
+    iSplit.
+    {
+      rewrite -{1}(take_drop (int.nat m) vs) fmap_app.
+      rewrite /subslice.
+      iDestruct (array.array_app with "Ha") as "[Ha1 _]".
+      set (vs':=take (int.nat m) vs).
+      rewrite -{1}(take_drop (int.nat n) vs') fmap_app.
+      iDestruct (array.array_app with "Ha1") as "[_ Ha2]".
+      rewrite fmap_length take_length.
+      iExactEq "Ha2".
+      repeat f_equal.
+      subst vs'; rewrite take_length.
+      rewrite //=.
+      rewrite min_l; last word.
+      rewrite u64_Z_through_nat. eauto.
+    }
+    { iPureIntro. rewrite fmap_length.
+      rewrite -> subslice_length by lia.
+      rewrite //=. word.
+    }
+  }
+  iApply is_slice_cap_drop; auto. word.
+Qed.
+
 Lemma wp_SliceSubslice_drop_rest {stk E} s t q `{!IntoVal V} (vs: list V) (n m: u64) :
   (int.nat n ≤ int.nat m ≤ length vs)%nat →
   {{{ is_slice_small s t q vs }}}

@@ -556,6 +556,23 @@ Proof.
   - repeat word_cleanup.
 Qed.
 
+Theorem is_slice_cap_drop s t n m :
+  (int.nat n <= int.nat m)%nat →
+  is_slice_cap s t -∗
+  is_slice_cap {| Slice.ptr := Slice.ptr s +ₗ[t] int.Z n;
+                  Slice.sz := word.sub m n;
+                  Slice.cap := word.sub m n |} t.
+Proof.
+  iDestruct 1 as (extra) "[% Hextra]".
+  rewrite /is_slice_cap.
+  simpl.
+  iExists []; simpl.
+  iSplit.
+  { iPureIntro.
+    word. }
+  rewrite /array. iApply big_sepL_nil; eauto.
+Qed.
+
 Theorem is_slice_cap_skip s t n :
   int.Z n ≤ int.Z s.(Slice.sz) →
   is_slice_cap s t -∗
