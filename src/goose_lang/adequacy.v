@@ -26,9 +26,9 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi}
     ffi_pre_global_start : forall Σ (hPre: ffi_preG Σ), ffi_global_names → global_state → iProp Σ;
     ffi_pre_global_ctx : forall Σ (hPre: ffi_preG Σ), ffi_global_names → global_state → iProp Σ;
     ffi_pre_global_ctx_spec :
-      ∀ Σ hPre hFFI g,
-        ffi_global_ctx hFFI g ≡
-        ffi_pre_global_ctx Σ hPre (ffi_get_global_names Σ hFFI) g;
+      ∀ Σ hPre names namesg g,
+        ffi_global_ctx (ffi_update_pre Σ hPre names namesg) g ≡
+        ffi_pre_global_ctx Σ hPre namesg g;
     ffi_name_global_init : forall Σ (hPre: ffi_preG Σ) (g:ffi_global_state),
           ⊢ |==> ∃ (namesg: ffi_global_names),
               ffi_pre_global_ctx Σ hPre namesg g ∗

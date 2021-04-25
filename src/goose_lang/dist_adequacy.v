@@ -52,7 +52,7 @@ Proof.
                       heap_local_trace_names := name_trace |}).
       iExists ((Hc, hnames) :: cts).
       iModIntro. iFrame.
-      rewrite ffi_pre_global_ctx_spec /= ffi_update_pre_get_global //.
+      rewrite ffi_pre_global_ctx_spec /=. eauto.
     }
   }
   iMod "H" as (cts) "(Hgw&Hres1&Hres2)".
@@ -105,8 +105,6 @@ Proof.
   - rewrite //= ffi_update_pre_update. eauto.
   - rewrite //= ffi_update_pre_update.
     iIntros. rewrite ffi_pre_global_ctx_spec; eauto.
-    rewrite ffi_update_pre_get_global //=.
-    eauto.
 Qed.
 
 (* This version might be more useful. Rather than assembling a wpd explicitly
