@@ -50,6 +50,7 @@ Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_fie
          spec_ffi_interp_adequacy_field.
 
 Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 g0 tp σ g s tr or P:
+  ffi_initgP g →
   ffi_initP σ.(world) g →
   null_non_alloc σ.(heap) →
   σ.(trace) = tr →
@@ -63,7 +64,7 @@ Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 g0 tp σ g s tr or P:
                                       ∗ spec_crash_ctx' r (tp0, (σ0,g0)) (P hR)
                                       ∗ <disc> (|C={⊤}_0=> trace_inv).
 Proof using Hrpre Hcpre.
-  iIntros (???? Hsteps Hsafe) "Htr Hor".
+  iIntros (????? Hsteps Hsafe) "Htr Hor".
   iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
   { rewrite //=. }
   iMod (source_cfg_init_names1 r tp0 σ0 g0 tp σ g (own γ (Cinl 1%Qp))) as (Hcfg_γ) "(Hsource_ctx&Hpool&Hstate&Hcfupd)"; eauto.
@@ -92,6 +93,7 @@ Proof using Hrpre Hcpre.
 Qed.
 
 Lemma goose_spec_init2 {hG: heapG Σ} r tp σ g tr or P:
+  ffi_initgP g →
   ffi_initP σ.(world) g →
   null_non_alloc σ.(heap) →
   σ.(trace) = tr →
@@ -195,7 +197,9 @@ Qed.
 
 Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: heapG Σ → iProp Σ) P :
   null_non_alloc σs.(heap) →
+  ffi_initgP g →
   ffi_initP σ.(world) g →
+  ffi_initgP gs →
   ffi_initP σs.(world) gs →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
@@ -211,7 +215,7 @@ Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: hea
         (ffi_local_start (heapG_ffiG) σ.(world) g -∗ ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗ O ⤇ es -∗ wpr NotStuck k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝)))) →
   trace_refines e r σ g es rs σs gs.
 Proof using Hrpre Hhpre Hcpre.
-  intros ????? Hwp Hsafe.
+  intros ??????? Hwp Hsafe.
   cut (recv_adequate (CS := goose_crash_lang) NotStuck e r σ g (λ v _ _, φ v) (λ v _ _, φr v)
                      (λ σ2 g2,
                       ∃ t2s σ2s g2s stats,
@@ -395,7 +399,8 @@ Definition initP_wf initP :=
   ∀ (σ: @state ext ffi) (g: @global_state ffi)
     (σs: @state (@spec_ext_op_field spec_ext) (@spec_ffi_model_field spec_ffi))
     (gs: @global_state (@spec_ffi_model_field spec_ffi)),
-    initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs.
+    initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs ∧
+                 ffi_initgP g ∧ ffi_initgP gs.
 
 Definition excl_crash_token (P : heapG Σ → refinement_heapG Σ → iProp Σ) :=
   ∀ Hheap Href, (⊢ ((P Hheap Href -∗ P Hheap Href -∗ False))).
@@ -420,6 +425,8 @@ Proof using Hrpre Hhpre Hcpre.
                (
                          ∃ Href' : refinement_heapG Σ, spec_ctx' es ([es], (σs,gs))
                                                                  ∗ trace_ctx)%I); eauto.
+  { eapply Hinit_wf; eauto. }
+  { eapply Hinit_wf; eauto. }
   { eapply Hinit_wf; eauto. }
   { eapply Hinit_wf; eauto. }
   { eapply Hinit_wf; eauto. }

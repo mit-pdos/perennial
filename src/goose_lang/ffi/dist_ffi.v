@@ -182,8 +182,7 @@ Section grove.
        ffi_update_local  _ hD names := hD;
        ffi_ctx _ _ _ := True%I;
        ffi_global_ctx _ _ g := (gen_heap_interp g ∗ ⌜chan_msg_bounds g⌝)%I;
-       ffi_local_start := fun _ _ _ (g: grove_global_state) =>
-                      ([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
+       ffi_local_start := fun _ _ _ (g: grove_global_state) => True%I;
        ffi_restart _ _ _ := True%I;
        ffi_crash_rel Σ hF1 σ1 hF2 σ2 := True%I;
     |}.
@@ -581,3 +580,41 @@ Section grove.
       iApply array.array_nil. done.
   Qed.
 End grove.
+
+From Perennial.goose_lang Require Import adequacy.
+
+Program Instance grove_interp_adequacy:
+  @ffi_interp_adequacy grove_model grove_interp grove_op grove_semantics :=
+  {| ffi_preG := grove_preG;
+     ffiΣ := groveΣ;
+     subG_ffiPreG := subG_groveG;
+     ffi_initgP := λ g, chan_msg_bounds g;
+     ffi_initP := λ _ g, True;
+     ffi_update_pre := (λ _ hP _ names, @grove_update_pre _ hP names);
+     ffi_pre_global_start _ hP names g :=
+       let hG := @grove_update_pre _ hP names in
+       ([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
+     ffi_pre_global_ctx  _ hP names g :=
+       let hG := @grove_update_pre _ hP names in
+       (gen_heap_interp g ∗ ⌜chan_msg_bounds g⌝)%I;
+  |}.
+Next Obligation. rewrite //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
+Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
+Next Obligation. rewrite //=. Qed.
+Next Obligation.
+  rewrite //=. iIntros (Σ hPre g Hchan). eauto.
+  iMod (gen_heap_name_strong_init g) as (names) "(H1&H2)".
+  iExists names. iFrame. eauto.
+Qed.
+Next Obligation.
+  rewrite //=.
+  iIntros (Σ hPre σ ???) "H".
+  iExists tt. eauto.
+Qed.
+Next Obligation.
+  iIntros (Σ σ σ' g Hcrash Hold) "Hinterp Hg".
+  iExists (ffi_get_local_names _ Hold) => //=.
+  inversion Hcrash; subst.
+  iFrame. eauto.
+Qed.

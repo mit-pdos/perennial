@@ -387,6 +387,7 @@ Program Instance jrnl_interp_adequacy:
   {| ffi_preG := jrnl_preG;
      ffiΣ := jrnlΣ;
      subG_ffiPreG := subG_jrnlG;
+     ffi_initgP := λ _, True;
      ffi_initP := λ σ _, ∃ m, σ = Closed m ∧ wf_jrnl m;
      ffi_update_pre := (λ _ hP names _, @jrnl_update_pre _ hP names);
      ffi_pre_global_start := (λ _ hP names _, True%I);

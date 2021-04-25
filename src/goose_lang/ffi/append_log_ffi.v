@@ -462,6 +462,7 @@ Program Instance log_interp_adequacy:
   {| ffi_preG := log_preG;
      ffiΣ := logΣ;
      subG_ffiPreG := subG_logG;
+     ffi_initgP := λ _, True;
      ffi_initP := λ σ _, σ = UnInit;
      ffi_update_pre := (λ _ hP names _, @log_update_pre _ hP names);
      ffi_pre_global_start := (λ _ hP names _, True%I);

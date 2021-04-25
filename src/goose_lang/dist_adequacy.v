@@ -11,7 +11,7 @@ Set Default Proof Using "Type".
 
 Theorem heap_dist_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
         Σ `{hPre: !heapPreG Σ} k (ebσs : list node_init_cfg)
-        g φinv (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
+        g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ} (cts : list (crashG Σ * heap_local_names)),
       ⊢
         ffi_pre_global_start Σ (heap_preG_ffi) (heap_globalG_names) g ={⊤}=∗
@@ -113,7 +113,7 @@ Qed.
   construct a wpr for each node. *)
 Theorem heap_dist_adequacy_alt `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
         Σ `{hPre: !heapPreG Σ} k (ebσs : list node_init_cfg)
-        g φinv (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
+        g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ},
       ⊢
         ffi_pre_global_start Σ (heap_preG_ffi) (heap_globalG_names) g ={⊤}=∗
@@ -165,7 +165,7 @@ Definition dist_adequate_failstop (ebσs: list (expr * state)) (g: global_state)
 (* Like above, but, for failstop execution one only needs to prove a wp about initial threads, not a wpr *)
 Theorem heap_dist_adequacy_failstop
         Σ `{hPre: !heapPreG Σ} (ebσs : list (expr * state))
-        g φinv (HINIT: ∀ σ, σ ∈ snd  <$> ebσs → ffi_initP σ.(world) g) :
+        g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ snd  <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ},
       ⊢
         ffi_pre_global_start Σ (heap_preG_ffi) (heap_globalG_names) g ={⊤}=∗
@@ -181,7 +181,7 @@ Theorem heap_dist_adequacy_failstop
   dist_adequate_failstop ebσs g (λ g, φinv g).
 Proof.
   intros Hwp. rewrite /dist_adequate_failstop.
-  eapply (heap_dist_adequacy_alt _ 0).
+  eapply (heap_dist_adequacy_alt _ 0); first done.
   { intros σ (?&->&Hin)%elem_of_list_fmap. eapply HINIT; eauto.
     apply elem_of_list_fmap in Hin as (?&->&?) => //=.
     eapply elem_of_list_fmap. eauto. }

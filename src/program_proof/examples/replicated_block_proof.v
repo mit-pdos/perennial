@@ -566,6 +566,7 @@ Proof.
   intros.
   apply (heap_recv_adequacy (repΣ) _ 2 _ _ _ _ _ _ _ (λ _, True)%I).
   { simpl. auto. }
+  { simpl. auto. }
   iIntros (?) "Hstart _ _".
   iModIntro.
   iSplitL "".
@@ -595,6 +596,7 @@ Theorem OpenRead_dist_adequate σ g addr :
 Proof.
   intros.
   apply (heap_dist_adequacy_alt (repΣ) 2 _ _ _).
+  { simpl. auto. }
   { simpl. auto. }
   iIntros (?) "_". iModIntro.
   iSplitL ""; last first.

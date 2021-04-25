@@ -553,6 +553,7 @@ Program Instance disk_interp_adequacy:
   {| ffi_preG := disk_preG;
      ffiΣ := diskΣ;
      subG_ffiPreG := subG_diskG;
+     ffi_initgP := λ _, True;
      ffi_initP := λ _ _, True;
      ffi_update_pre := (λ _ hP names _, @disk_update_pre _ hP names);
      ffi_pre_global_start := (λ _ hP names _, True%I);

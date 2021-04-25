@@ -266,7 +266,8 @@ Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
          |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0.
 
 Definition sty_init_obligation2 (sty_initP: istate → sstate → Prop) :=
-  ∀ σ g σs gs, sty_initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs.
+  ∀ σ g σs gs, sty_initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs ∧
+                                ffi_initgP g ∧ ffi_initgP gs.
 
 Definition sty_crash_obligation :=
   forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),

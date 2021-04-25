@@ -14,6 +14,7 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi}
     ffiΣ: gFunctors;
     (* modeled after subG_gen_heapPreG and gen_heap_init *)
     subG_ffiPreG : forall Σ, subG ffiΣ Σ -> ffi_preG Σ;
+    ffi_initgP: ffi_global_state → Prop;
     ffi_initP: ffi_state → ffi_global_state → Prop;
     ffi_update_pre: ∀ Σ, ffi_preG Σ -> ffi_local_names -> ffi_global_names -> ffiG Σ;
     ffi_update_pre_update: ∀ Σ (hPre: ffi_preG Σ) names1 names2 namesg,
@@ -30,6 +31,7 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi}
         ffi_global_ctx (ffi_update_pre Σ hPre names namesg) g ≡
         ffi_pre_global_ctx Σ hPre namesg g;
     ffi_name_global_init : forall Σ (hPre: ffi_preG Σ) (g:ffi_global_state),
+        ffi_initgP g →
           ⊢ |==> ∃ (namesg: ffi_global_names),
               ffi_pre_global_ctx Σ hPre namesg g ∗
               ffi_pre_global_start Σ hPre namesg g;
