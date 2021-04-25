@@ -37,6 +37,7 @@ Definition rpc_spec_map : Type :=
 Definition urpc_serverN : namespace := nroot.@"urpc_server".
 Definition urpc_clientN : namespace := nroot.@"urpc_client".
 Definition urpc_lockN : namespace := nroot.@"urpc_lock".
+Definition urpc_escrowN : namespace := nroot.@"urpc_escrow".
 
 Record client_chan_gnames := {
   ccmapping_name : gname;
@@ -44,16 +45,17 @@ Record client_chan_gnames := {
   ccextracted_name : gname;
 }.
 
-Definition client_chan_inner (Γ : client_chan_gnames) (host: u64) : iProp Σ :=
-  ∃ ms, "Hchan" ∷ host c↦ ms ∗
-  "Hmessages" ∷ [∗ set] m ∈ ms,
+Definition client_chan_inner_msg (Γ : client_chan_gnames) (host : u64) m : iProp Σ :=
     ∃ (rpcid seqno : u64) reqData replyData X Post (x : X) γ d rep,
        "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 seqno;
                                               EncUInt64 (length replyData); EncBytes replyData] ⌝ ∗
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (RegEntry rpcid X x reqData γ d rep) ∗
-       "HPost_saved" ∷ saved_pred_own γ (Post x reqData) ∗
-       "HPost" ∷ (Post x reqData replyData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt)
-.
+       "#HPost_saved" ∷ saved_pred_own γ (Post x reqData) ∗
+       "#HPost" ∷ inv urpc_escrowN (Post x reqData replyData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt).
+
+Definition client_chan_inner (Γ : client_chan_gnames) (host: u64) : iProp Σ :=
+  ∃ ms, "Hchan" ∷ host c↦ ms ∗
+  "Hmessages" ∷ [∗ set] m ∈ ms, client_chan_inner_msg Γ host m.
 
 Definition server_chan_inner (host: u64) (specs : rpc_spec_map) : iProp Σ :=
   ∃ ms, "Hchan" ∷ host c↦ ms ∗
@@ -95,19 +97,18 @@ Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) (host : u64) mref : iP
                  "HPost_saved" ∷ saved_pred_own (rpc_reg_saved req) (Post (rpc_reg_aux req) (rpc_reg_args req)) ∗
                  (* (1) Reply thread has not yet processed, so it is in pending
                     and we have escrow token *)
-                 ((∃ (cb_cond : loc) dummy,
-                    "Hpending_cb" ∷ ⌜ pending !! seqno  =
-                                        Some (struct.mk_f callback [
-                                          "reply" ::= #(rpc_reg_rep_ptr req);
-                                          "done" ::= #(rpc_reg_done req);
-                                          "cond" ::= #cb_cond ])%V ⌝ ∗
+                 ((∃ (cb : loc) (cb_cond : loc) dummy,
+                    "Hpending_cb" ∷ ⌜ pending !! seqno  = Some #cb ⌝ ∗
+                    "#reply" ∷ readonly (cb ↦[callback :: "reply"] #(rpc_reg_rep_ptr req)) ∗
+                    "#done" ∷ readonly (cb ↦[callback :: "done"] #(rpc_reg_done req)) ∗
+                    "#cond" ∷ readonly (cb ↦[callback :: "cond"] #cb_cond) ∗
                     "Hescrow" ∷ ptsto_mut (ccescrow_name Γ) seqno 1 tt ∗
                     "Hcond" ∷ is_cond cb_cond #lk ∗
                     "Hrep_ptr" ∷ (rpc_reg_rep_ptr req) ↦[slice.T byteT] dummy ∗
                     "Hdone" ∷ (rpc_reg_done req) ↦[boolT] #false) ∨
                  (* (2) Reply thread has received message, removed from pending,
                     but caller has not extracted ownership *)
-                 (∃ reply (cb : unit) rep_sl,
+                 (∃ reply rep_sl,
                     "Hpending_cb" ∷ ⌜ pending !! seqno  = None ⌝ ∗
                     "HPost" ∷ (Post (rpc_reg_aux req) (rpc_reg_args req) reply) ∗
                     "Hrep_ptr" ∷ (rpc_reg_rep_ptr req) ↦[slice.T byteT] (slice_val rep_sl) ∗
@@ -134,7 +135,133 @@ Definition RPCClient_reply_own (cl : loc) (r : chan) : iProp Σ :=
 Lemma wp_RPCClient__replyThread cl r :
   RPCClient_reply_own cl r -∗
   WP RPCClient__replyThread #cl (recv_endpoint r) {{ _, True }}.
-Proof. Admitted.
+Proof.
+  iIntros "H". iNamed "H".
+  wp_lam. wp_pures.
+  wp_apply (wp_forBreak' True%I with "[-]").
+  { eauto. }
+  iIntros "!> _". wp_pures.
+  wp_apply (wp_Receive).
+  iInv "Hchan" as "Hchan_inner" "Hclo".
+  iDestruct "Hchan_inner" as (ms) "(>Hchan'&#Hchan_inner)".
+  iApply (ncfupd_mask_intro _); first set_solver+.
+  iIntros "Hclo'".
+  iExists _. iFrame "Hchan'". iNext.
+  iIntros (err m) "(Hchan'&Herr)".
+  iAssert (if err then True else client_chan_inner_msg Γ r m)%I with "[Hchan_inner Herr]" as "Hmsg".
+  { destruct err; auto.
+    iDestruct "Herr" as %Hin.
+    iApply (big_sepS_elem_of with "Hchan_inner"); first eassumption.
+  }
+  iMod "Hclo'". iMod ("Hclo" with "[Hchan']").
+  { iNext. iExists _. iFrame. eauto. }
+  iModIntro. iIntros (s) "Hs".
+  wp_pures. wp_if_destruct.
+  { iModIntro. iLeft. eauto. }
+  wp_pures.
+  iNamed "Hmsg".
+  iDestruct (typed_slice.is_slice_small_acc with "Hs") as "[Hsl Hsl_close]".
+  wp_apply (wp_new_dec with "[$Hsl]").
+  { done. }
+  iIntros (?) "Hdec".
+  wp_pures.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_pures.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_pures.
+  wp_apply (wp_Dec__GetBytes' with "[$Hdec]").
+  { admit. } (* TODO : overflow *)
+  iIntros (?) "Hsl".
+  wp_pures.
+  iNamed "Hstfields".
+  wp_loadField.
+  wp_apply (acquire_spec with "[$]").
+  iIntros "(Hlked&Hlock_inner)".
+  iNamed "Hlock_inner".
+  wp_pures.
+  wp_loadField.
+  wp_apply (map.wp_MapGet with "[$]").
+  iIntros (v ok) "(%Hget&Hpending_map)".
+  wp_pures.
+  wp_if_destruct; last first.
+  { wp_pures. wp_loadField. wp_apply (release_spec with "[-]").
+    { iFrame "# ∗". iNext. iExists _, _, _, _, _. iFrame.
+      eauto. }
+    wp_pures. eauto.
+  }
+  wp_pures. wp_loadField. wp_apply (map.wp_MapDelete with "[$]").
+  iIntros "Hpending_map". wp_pures.
+  iDestruct (map_ro_valid with "Hmapping_ctx [$]") as %Hlookup_reg.
+  iDestruct (big_sepM_delete with "Hreqs") as "(H&Hclo)"; first eauto.
+  iEval (simpl) in "H".
+  iFreeze "Hclo".
+  iRename "HPost_saved" into "Hsaved".
+  iNamed "H".
+  iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
+  { iNamed "Hcase1".
+    iDestruct "Hpending_cb" as %Hpending_cb.
+    apply map.map_get_true in Hget.
+    rewrite Hget in Hpending_cb. inversion Hpending_cb as [Heq].
+    wp_loadField.
+    wp_apply (wp_StoreAt with "[Hrep_ptr]").
+    { apply slice_val_ty. }
+    { iFrame. }
+    iIntros "Hrep_ptr". wp_pures.
+    wp_loadField.
+    wp_apply (wp_StoreAt with "[Hdone]").
+    { econstructor. econstructor. }
+    { iFrame. }
+    iIntros "Hdone". wp_pures. wp_loadField.
+    wp_apply (wp_condSignal with "[$]").
+    iApply fupd_wp.
+    iInv "HPost" as "HPost_inner" "Hclo''".
+    iDestruct "HPost_inner" as "[HPost_val|>Hescrow']"; last first.
+    { iDestruct (ptsto_valid_2 with "Hescrow [$]") as %Hval. rewrite //= in Hval. }
+    iMod ("Hclo''" with "[Hescrow]").
+    { iRight. eauto. }
+    iModIntro. wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[-]"); last first.
+    { wp_pures. eauto. }
+    iFrame "Hlk Hlked". iNext. iExists (delete seqno pending) , _, _, _, _.
+    iFrame. iFrame "%".
+    iSplit.
+    { iPureIntro. rewrite dom_delete_L. set_solver. }
+    iApply big_sepM_delete; first eassumption.
+    iSplitR "Hclo"; last first.
+    { iThaw "Hclo". iApply (big_sepM_mono with "Hclo").
+      iIntros (?? Hlookup) "H". iNamed "H".
+      iExists _; iFrame.  iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
+      { iNamed "Hcase1". iLeft. iExists _, _, _. iFrame "# ∗".
+        iDestruct "Hpending_cb" as %Hpending_cb'. iPureIntro.
+        destruct (decide (seqno = k)).
+        { subst. rewrite lookup_delete in Hlookup; congruence. }
+        rewrite lookup_delete_ne //=. }
+      { iNamed "Hcase2". iRight. iLeft. iExists _, _. iFrame "# ∗".
+        iDestruct "Hpending_cb" as %Hpending_cb'. iPureIntro.
+        apply lookup_delete_None; auto.
+      }
+      { iDestruct "Hcase3" as "(%&H)". iRight. iRight. iFrame. iPureIntro.
+        apply lookup_delete_None; auto.
+      }
+    }
+    iExists _. iFrame "#".  iRight. iLeft.
+    iExists _, _.
+    iFrame "HPost_val". simpl. iFrame "Hrep_ptr Hdone".
+    iSplit.
+    { iPureIntro. apply lookup_delete_None; auto. }
+    (* TODO: I only have is_slice_small here, not is_slice. Strengthen GetBytes'? *)
+    admit.
+  }
+  { iNamed "Hcase2". iDestruct "Hcase2" as "(%Hlookup&_)".
+    exfalso. apply map.map_get_true in Hget. congruence. }
+  { iDestruct "Hcase3" as "(%Hlookup&_)".
+    exfalso. apply map.map_get_true in Hget. congruence. }
+Admitted.
 
 Lemma wp_MakeRPCClient (host:u64):
   {{{
@@ -147,7 +274,6 @@ Lemma wp_MakeRPCClient (host:u64):
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_lam.
-
   wp_apply (wp_Connect).
   iIntros (err r) "Hr".
   destruct err.
@@ -225,14 +351,24 @@ Proof.
   iNamed "Hclient". iNamed "Hstfields".
   replace (#false) with (zero_val boolT) by auto.
   wp_apply (wp_ref_of_zero); first done.
-  iIntros (cb_done) "done".
+  iIntros (cb_done) "cb_done".
   wp_loadField.
   wp_bind (lock.newCond _).
   wp_apply (wp_newCond with "[$]").
   iIntros (cb_cond) "#cond".
+  wp_apply (wp_allocStruct).
+  { naive_solver. }
   wp_pures.
+  iIntros (cb) "Hcb".
+  wp_pures.
+  iRename "cond" into "cond'".
+  iDestruct (struct_fields_split with "Hcb") as "Hcb". iNamed "Hcb".
+  unshelve (iMod (readonly_alloc_1 with "reply") as "#reply"); [| apply _ |].
+  unshelve (iMod (readonly_alloc_1 with "done") as "#done"); [| apply _ |].
+  unshelve (iMod (readonly_alloc_1 with "cond") as "#cond"); [| apply _ |].
+  wp_loadField.
   wp_apply (wp_StoreAt with "[$]"); first eauto.
-  iIntros "done".
+  iIntros "done'".
   wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
@@ -287,7 +423,7 @@ Proof.
     }
     iExists Post.
     iFrame "Hreg Hsaved".
-    iLeft. iExists _, _. iFrame "# ∗".
+    iLeft. iExists _, _, _. iFrame "# ∗".
     iPureIntro. rewrite lookup_insert //. }
   wp_pures.
   wp_apply (wp_slice_len).
@@ -363,16 +499,20 @@ Proof.
   iFreeze "Hclo".
   iNamed "H".
   iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
-  { iNamed "Hcase1". wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
+  { iNamed "Hcase1". wp_loadField.
+    iDestruct "Hcase1" as "(#?&#?&#?&Hrest)". iNamed "Hrest".
+    wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
     wp_pures. iThaw "Hclo".
     iDestruct ("Hclo" with "[Hdone Hcond Hescrow Hpending_cb Hrep_ptr]") as "H".
-    { simpl. iExists _. iFrame "Hreg". iFrame "Hsaved". iFrame "#". iLeft. iExists _, _. iFrame. }
-    wp_apply (wp_condWait with "[$cond $Hlk $Hi H HPost_saved
+    { simpl. iExists _. iFrame "Hreg". iFrame "Hsaved". iFrame "#". iLeft. iExists _, _, _. iFrame "# ∗". }
+    wp_loadField.
+    wp_apply (wp_condWait with "[$cond' $Hlk $Hi H HPost_saved
                  Hpending_map Hmapping_ctx Hescrow_ctx Hextracted_ctx seq]").
     { iExists _, _, _, _, _. iFrame. eauto. }
     iIntros "Hi". wp_pures. iModIntro.
     iLeft. iSplit; first eauto. iFrame "HΦ". iFrame "Hslice_close". iFrame. }
-  { iNamed "Hcase2". wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
+  { iNamed "Hcase2". wp_loadField.
+    wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
     iDestruct (saved_pred_agree _ _ _ reply with "HPost_saved Hsaved") as "#Hequiv".
     wp_pures. iRight. iModIntro. iSplit; first done.
     wp_pures. wp_loadField.
