@@ -62,9 +62,9 @@ Definition server_chan_inner_msg (host : u64) (specs : rpc_spec_map) m : iProp �
                                               EncUInt64 (length args); EncBytes args] ⌝ ∗
        "%Hlookup_spec" ∷ ⌜ specs !! rpcid = Some (existT X (Pre, Post)) ⌝ ∗
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (RegEntry rpcid X x args γ d rep) ∗
-       "HPre" ∷ □ (Pre x args) ∗
-       "HPost_saved" ∷ saved_pred_own γ (Post x args) ∗
-       "Hclient_chan_inv" ∷ inv urpc_clientN (client_chan_inner Γ (msg_sender m)).
+       "#HPre" ∷ □ (Pre x args) ∗
+       "#HPost_saved" ∷ saved_pred_own γ (Post x args) ∗
+       "#Hclient_chan_inv" ∷ inv urpc_clientN (client_chan_inner Γ (msg_sender m)).
 
 Definition server_chan_inner (host: u64) : iProp Σ :=
   ∃ specs ms,
@@ -324,11 +324,69 @@ Proof.
   apply Eqdep.EqdepTheory.inj_pair2 in H1; subst.
   apply Eqdep.EqdepTheory.inj_pair2 in H2; subst.
   rewrite /is_rpcHandler.
-  wp_apply ("His_rpcHandler" with "[$Hsl Hsl' HPre]").
-  { iSplitL "Hsl'".
-    * (* need to argue that zero_val of (slice.T byteT is a slice.T? *) admit.
-    * iDestruct "HPre" as "#HPre". iNext. iFrame "#".
+  replace (zero_val (slice.T byteT)) with
+      (slice_val {| Slice.ptr := null; Slice.sz := U64 0; Slice.cap := U64 0 |}) by auto.
+  wp_apply ("His_rpcHandler" with "[$Hsl $Hsl' HPre]").
+  { iDestruct "HPre" as "#HPre". iNext. iFrame "#". }
+  iIntros (rep_sl repData) "(Hsl'&His_slice&HPost)".
+  wp_pures.
+  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
+  wp_apply (wp_slice_len).
+  wp_pures.
+  wp_apply (wp_new_enc).
+  iIntros (enc) "Henc".
+  wp_pures.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { admit. (* TODO: overflow *) }
+  iIntros "Henc".
+  wp_pures.
+  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { admit. (* TODO: overflow *) }
+  iIntros "Henc".
+  wp_pures.
+  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
+  iDestruct (is_slice_small_read with "His_slice") as "(His_slice&Hsl_close)".
+  iDestruct (is_slice_small_sz with "His_slice") as %Hsz.
+  wp_apply (wp_Enc__PutBytes with "[$Henc $His_slice]").
+  { admit. } (* TODO: overflow *)
+  iIntros "[Henc Hslice]".
+  wp_pures.
+  wp_apply (wp_Enc__Finish with "[$Henc]").
+  iIntros (rep_sl_msg rep_msg_data).
+  iIntros "(%Hencoding&Hlength&Hmsg_slice)".
+
+  (* Send *)
+  iDestruct (is_slice_small_read with "Hmsg_slice") as "(Hmsg_slice&_)".
+  wp_apply (wp_Send with "[$Hmsg_slice]").
+  { admit. } (* TODO: overflow *)
+  iMod (inv_alloc urpc_escrowN _ (Post0 x args repData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt)
+          with "[HPost]") as "#HPost_escrow".
+  { eauto. }
+  iInv "Hclient_chan_inv" as "Hclient_chan_inner" "Hclo".
+  iDestruct "Hclient_chan_inner" as (ms_rep) "(>Hchan'&#Hclient_chan_inner)".
+  iApply (ncfupd_mask_intro _); first set_solver+.
+  iIntros "Hclo'".
+  iExists _. iFrame "Hchan'". iNext.
+  iIntros "Hchan'".
+  iMod "Hclo'" as "_".
+  iMod ("Hclo" with "[Hchan' Hlength]").
+  { iNext. iExists _. iFrame.
+    destruct (decide (Message host rep_msg_data ∈ ms_rep)).
+    { assert (ms_rep ∪ {[Message host rep_msg_data]} = ms_rep) as -> by set_solver. iFrame "#". }
+    iApply big_sepS_union; first by set_solver.
+    iFrame "#".
+    iApply big_sepS_singleton.
+    iExists _, _, _, _, _, _, _.
+    iExists _, _, _.
+    iFrame "#".
+    iPureIntro. simpl. rewrite ?app_nil_l //= in Hencoding. rewrite Hsz.
+    assert (U64 (Z.of_nat (int.nat (rep_sl.(Slice.sz)))) = rep_sl.(Slice.sz)) as ->.
+    { word. }
+    eauto.
   }
+  iModIntro. iIntros "?". wp_pures; eauto.
 Admitted.
 
 Lemma wp_StartRPCServer (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
@@ -510,7 +568,6 @@ Proof.
   replace (ref (InjLV #null))%E with (NewMap (struct.ptrT callback)) by naive_solver.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
   wp_pures.
-  (* XXX: I think this is going to have to be untyped since callback contains a slice in it *)
   wp_apply (map.wp_NewMap).
   iIntros (mref) "Hmref".
 
@@ -622,7 +679,7 @@ Proof.
   { iFrame "Hlk". iFrame "Hlked". iNext. iExists _, _, _, _, _.
     iFrame. rewrite ?dom_insert_L.
     assert (int.Z (word.add n 1) = int.Z n + 1)%Z as ->.
-    { (* XXX: not true because of overflow, so there's actually a bug here *) admit. }
+    { (* XXX: not true because of overflow, so there's a potential bug here, albeit irrelevant *) admit. }
     iSplit.
     { iPureIntro. word. }
     iSplit.
