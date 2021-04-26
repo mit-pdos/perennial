@@ -30,6 +30,7 @@ From Perennial.program_proof.lockservice Require
 
 (* In-memory sharded KV system *)
 From Perennial.program_proof.memkv Require
+     rpc_proof
      memkv_clerk_proof memkv_shard_start_proof.
 
 From Perennial.goose_lang Require

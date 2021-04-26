@@ -143,7 +143,7 @@ Proof.
   rewrite /fractional.Fractional.
   rewrite /map.is_map.
   iIntros (p q). iSplit.
-  - iDestruct 1 as (mv Heq) "H". Print fractional.Fractional.
+  - iDestruct 1 as (mv Heq) "H".
     iDestruct (fractional.fractional_split with "H") as "(H1&H2)".
     iSplitL "H1"; iExists _; iFrame; eauto.
   - iIntros "(H1&H2)".
@@ -193,6 +193,39 @@ Proof.
   unshelve (iMod (readonly_alloc_1 with "Hmap") as "#Hmap"); [| apply _ |].
   iApply "HΦ". iExists _, _.
   iFrame "# ∗". eauto.
+Qed.
+
+Lemma handler_is_init (host : u64) specs:
+   rpcreg_specs !! host = Some specs →
+   host c↦ ∅ ={⊤}=∗
+   [∗ map] rpcid ↦ spec ∈ specs,
+   let X := projT1 spec in
+   let Pre := fst (projT2 spec) in
+   let Post := snd (projT2 spec) in
+   handler_is X host rpcid Pre Post.
+Proof.
+  iIntros (Hlookup) "Hchan".
+  iMod (inv_alloc urpc_serverN _ ((server_chan_inner host)) with "[Hchan]") as "#Hinv".
+  { iNext. iExists _, _. iFrame "%". iFrame.
+    rewrite big_sepS_empty //. }
+  iModIntro.
+  iAssert (∀ specs', ⌜ specs' ⊆ specs ⌝ →
+           [∗ map] rpcid↦spec ∈ specs',
+             handler_is (projT1 spec) host rpcid (projT2 spec).1 (projT2 spec).2)%I as "H"; last first.
+  { iApply "H". eauto. }
+  iIntros (specs').
+  iInduction specs' as [| id spec] "IH" using map_ind.
+  { rewrite big_sepM_empty //. }
+  { iIntros (?). rewrite big_sepM_insert //; iSplit; last first.
+    { iApply "IH". iPureIntro.
+      etransitivity; last eassumption. apply insert_subseteq; eauto. }
+    iExists _. iFrame "% #".
+    iPureIntro.
+    apply: lookup_weaken; eauto.
+    rewrite lookup_insert.
+    f_equal. destruct spec => //=.
+    destruct p; eauto.
+  }
 Qed.
 
 Definition rpc_handler_mapping host handlers : iProp Σ :=
