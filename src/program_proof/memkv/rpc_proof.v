@@ -233,14 +233,21 @@ Proof.
     iExists _, _, _. eauto. }
 Qed.
 
+Definition handlers_complete host (handlers : gmap u64 val) :=
+  (match rpcreg_specs !! host with
+   | Some specs => dom (gset _) handlers = dom (gset _) specs
+   | _ => True
+   end).
+
 Lemma wp_RPCServer__readThread s host handlers mref def :
   dom (gset u64) handlers ≠ ∅ →
+  handlers_complete host handlers →
   "#His_rpc_map" ∷ rpc_handler_mapping host handlers ∗
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
   "#handlers" ∷ readonly (s ↦[RPCServer :: "handlers"] #mref) -∗
   WP RPCServer__readThread #s (recv_endpoint host) {{ _, True }}.
 Proof.
-  iIntros (Hdom).
+  iIntros (Hdom Hcomplete).
   iNamed 1.
   wp_lam. wp_pures.
   wp_apply (wp_forBreak_cond'); [ iNamedAccu |].
@@ -291,7 +298,7 @@ Proof.
   { admit. } (* TODO : overflow *)
   iIntros (? s') "Hsl".
   wp_pures.
-  
+
   wp_lam. wp_pures.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (sl') "Hsl'".
@@ -300,10 +307,28 @@ Proof.
   iMod (readonly_load with "Hhandlers_map") as (?) "Hmap_read".
   wp_apply (map.wp_MapGet with "[$]").
   iIntros (v ok) "(%Hget&_)".
-  wp_pures.
+  rewrite /map.map_get in Hget.
+  destruct (handlers !! rpcid) as [f|] eqn:Hlookup'; last first.
+  { exfalso.
+    rewrite /handlers_complete Hlookup in Hcomplete.
+    apply not_elem_of_dom in Hlookup'.
+    rewrite Hcomplete in Hlookup'.
+    eapply Hlookup'. eapply @elem_of_dom; eauto.
+    { apply _. }
+  }
+  rewrite //= in Hget. inversion Hget; subst. wp_pures.
+  iDestruct (big_sepM_lookup with "Hhandlers") as "H"; eauto.
+  iNamed "H". iDestruct "H" as (Hlookup_spec') "His_rpcHandler".
+  rewrite Hlookup_spec in Hlookup_spec'.
+  inversion Hlookup_spec'. subst.
+  apply Eqdep.EqdepTheory.inj_pair2 in H1; subst.
+  apply Eqdep.EqdepTheory.inj_pair2 in H2; subst.
+  rewrite /is_rpcHandler.
 Admitted.
 
 Lemma wp_StartRPCServer (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
+  dom (gset u64) handlers ≠ ∅ →
+  handlers_complete host handlers →
   {{{
        own_RPCServer s handlers ∗
       [∗ map] rpcid ↦ handler ∈ handlers, (∃ X Pre Post, handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
@@ -313,7 +338,7 @@ Lemma wp_StartRPCServer (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64)
       RET #(); True
   }}}.
 Proof.
-  iIntros (Φ) "(Hserver&#His_rpc_map) HΦ".
+  iIntros (?? Φ) "(Hserver&#His_rpc_map) HΦ".
   wp_lam. wp_pures.
   wp_apply (wp_Listen). wp_pures.
   iNamed "Hserver".
@@ -326,9 +351,9 @@ Proof.
   { iNext. iIntros "(?&?)". iApply "HΦ"; eauto. }
   iIntros (ival Φ') "!> (?&Hi&Hlt) HΦ'".
   wp_apply (wp_fork).
-  { wp_apply (wp_RPCServer__readThread with "[$]"). admit. }
+  { wp_apply (wp_RPCServer__readThread with "[$]"); eauto. }
   wp_pures. iModIntro. iApply "HΦ'"; iFrame.
-Admitted.
+Qed.
 
 Lemma wp_RPCClient__replyThread cl r :
   RPCClient_reply_own cl r -∗
