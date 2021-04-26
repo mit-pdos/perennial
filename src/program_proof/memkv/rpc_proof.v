@@ -56,11 +56,7 @@ Definition client_chan_inner (Γ : client_chan_gnames) (host: u64) : iProp Σ :=
   ∃ ms, "Hchan" ∷ host c↦ ms ∗
   "Hmessages" ∷ [∗ set] m ∈ ms, client_chan_inner_msg Γ host m.
 
-Definition server_chan_inner (host: u64) : iProp Σ :=
-  ∃ specs ms,
-  "%Hspecs_map" ∷ ⌜ rpcreg_specs !! host = Some specs ⌝ ∗
-  "Hchan" ∷ host c↦ ms ∗
-  "Hmessages" ∷ [∗ set] m ∈ ms,
+Definition server_chan_inner_msg (host : u64) (specs : rpc_spec_map) m : iProp Σ :=
     ∃ rpcid seqno args X Pre Post (x : X) Γ γ d rep,
        "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 rpcid; EncUInt64 seqno;
                                               EncUInt64 (length args); EncBytes args] ⌝ ∗
@@ -68,8 +64,13 @@ Definition server_chan_inner (host: u64) : iProp Σ :=
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (RegEntry rpcid X x args γ d rep) ∗
        "HPre" ∷ □ (Pre x args) ∗
        "HPost_saved" ∷ saved_pred_own γ (Post x args) ∗
-       "Hclient_chan_inv" ∷ inv urpc_clientN (client_chan_inner Γ (msg_sender m))
-.
+       "Hclient_chan_inv" ∷ inv urpc_clientN (client_chan_inner Γ (msg_sender m)).
+
+Definition server_chan_inner (host: u64) : iProp Σ :=
+  ∃ specs ms,
+  "%Hspecs_map" ∷ ⌜ rpcreg_specs !! host = Some specs ⌝ ∗
+  "Hchan" ∷ host c↦ ms ∗
+  "Hmessages" ∷ [∗ set] m ∈ ms, server_chan_inner_msg host specs m.
 
 Definition handler_is : ∀ (X:Type) (host:u64) (rpcid:u64) (Pre:X → list u8 → iProp Σ)
                           (Post:X → list u8 → list u8 → iProp Σ), iProp Σ :=
@@ -199,21 +200,106 @@ Definition rpc_handler_mapping host handlers : iProp Σ :=
                                       (Post : X → list u8 → list u8 → iProp Σ),
       handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)%I.
 
-(* Lemma non_empty_rpc_handler_mapping_inv host handlers : *)
+Lemma non_empty_rpc_handler_mapping_inv host handlers :
+  dom (gset u64) handlers ≠ ∅ →
+  rpc_handler_mapping host handlers -∗
+  ∃ specs,
+  "%Hspecs_map_handler" ∷ ⌜ rpcreg_specs !! host = Some specs ⌝ ∗
+  "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host) ∗
+  "#Hhandlers" ∷ ([∗ map] rpcid↦handler ∈ handlers, ∃ (X : Type) (Pre : X → list u8 → iProp Σ)
+                                                      (Post : X → list u8 → list u8 → iProp Σ),
+                                                      ⌜ specs !! rpcid = Some (existT X (Pre, Post)) ⌝ ∗
+                                                      is_rpcHandler handler Pre Post).
+Proof.
+  iIntros (Hdom) "Hmapping".
+  iInduction handlers as [| rpcid handler] "IH" using map_ind.
+  { rewrite dom_empty_L in Hdom; congruence. }
+  rewrite /rpc_handler_mapping big_sepM_insert //.
+  iDestruct "Hmapping" as "(H&Hmapping)".
+  destruct (decide (dom (gset _) m = ∅)) as [Hemp|Hemp].
+  { iNamed "H". iDestruct "H" as "(Hhandler_is&His_rpcHandler)".
+    iNamed "Hhandler_is". iExists _. iFrame "% #".
+    rewrite big_sepM_insert //. iSplitL "His_rpcHandler".
+    { iExists _, _, _. eauto. }
+    apply dom_empty_inv_L in Hemp. rewrite Hemp big_sepM_empty. eauto.
+  }
+  iDestruct ("IH" with "[//] [$]") as (specs) "HIH".
+  iNamed "HIH". iExists _; iFrame "% #".
+  rewrite big_sepM_insert //. iFrame "#".
+  { iNamed "H". iDestruct "H" as "(Hhandler_is&His_rpcHandler)".
+    rewrite /handler_is.
+    iDestruct "Hhandler_is" as (specs' Hlookup' Hprepost') "H".
+    assert (specs = specs') as ->; first by congruence.
+    iExists _, _, _. eauto. }
+Qed.
 
 Lemma wp_RPCServer__readThread s host handlers mref def :
-  "#His_rpc_map" ∷ ([∗ map] rpcid↦handler ∈ handlers, ∃ (X : Type) (Pre : X → list u8 → iProp Σ)
-                                                      (Post : X → list u8 → list u8 → iProp Σ),
-                                                      handler_is X host rpcid Pre Post
-                                                      ∗ is_rpcHandler handler Pre Post) ∗
+  dom (gset u64) handlers ≠ ∅ →
+  "#His_rpc_map" ∷ rpc_handler_mapping host handlers ∗
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
   "#handlers" ∷ readonly (s ↦[RPCServer :: "handlers"] #mref) -∗
   WP RPCServer__readThread #s (recv_endpoint host) {{ _, True }}.
 Proof.
+  iIntros (Hdom).
   iNamed 1.
   wp_lam. wp_pures.
   wp_apply (wp_forBreak_cond'); [ iNamedAccu |].
   iIntros "!> _".
+  wp_pures.
+  iDestruct (non_empty_rpc_handler_mapping_inv with "[$]") as "H"; first auto.
+  iNamed "H".
+  wp_apply (wp_Receive).
+  iInv "Hserver_inv" as "Hchan_inner" "Hclo".
+  iDestruct "Hchan_inner" as (specs' ms) "(>%Hlookup&>Hchan'&#Hchan_inner)".
+  assert (specs' = specs) as ->.
+  { congruence. }
+  iApply (ncfupd_mask_intro _); first set_solver+.
+  iIntros "Hclo'".
+  iExists _. iFrame "Hchan'". iNext.
+  iIntros (err m) "(Hchan&Herr)".
+  iAssert (if err then True else server_chan_inner_msg host specs m)%I with "[Hchan_inner Herr]" as "Hmsg".
+  { destruct err; auto.
+    iDestruct "Herr" as %Hin.
+    iApply (big_sepS_elem_of with "Hchan_inner"); first eassumption.
+  }
+  iMod ("Hclo'") as "_".
+  iMod ("Hclo" with "[Hchan]") as "_".
+  { iNext. iExists _, _. iFrame "% #". eauto. }
+  iModIntro.
+  iIntros (r) "Hsl".
+  wp_pures.
+  destruct err; wp_pures.
+  { eauto. }
+  iNamed "Hmsg".
+  iDestruct (is_slice_small_acc with "Hsl") as "(Hslice&Hslice_close)".
+  wp_apply (wp_new_dec with "Hslice"); first eauto.
+  iIntros (?) "Hdec".
+  wp_pures.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_pures.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_pures.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_pures.
+  wp_apply (wp_Dec__GetBytes with "[$Hdec]").
+  { admit. } (* TODO : overflow *)
+  iIntros (? s') "Hsl".
+  wp_pures.
+  
+  wp_lam. wp_pures.
+  wp_apply (wp_NewSlice (V:=u8)).
+  iIntros (sl') "Hsl'".
+  wp_pures.
+  wp_loadField.
+  iMod (readonly_load with "Hhandlers_map") as (?) "Hmap_read".
+  wp_apply (map.wp_MapGet with "[$]").
+  iIntros (v ok) "(%Hget&_)".
   wp_pures.
 Admitted.
 
@@ -240,9 +326,9 @@ Proof.
   { iNext. iIntros "(?&?)". iApply "HΦ"; eauto. }
   iIntros (ival Φ') "!> (?&Hi&Hlt) HΦ'".
   wp_apply (wp_fork).
-  { wp_apply (wp_RPCServer__readThread with "[$]"). }
+  { wp_apply (wp_RPCServer__readThread with "[$]"). admit. }
   wp_pures. iModIntro. iApply "HΦ'"; iFrame.
-Qed.
+Admitted.
 
 Lemma wp_RPCClient__replyThread cl r :
   RPCClient_reply_own cl r -∗
