@@ -294,13 +294,13 @@ Proof.
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".
   wp_pures.
-  wp_apply (wp_Dec__GetBytes with "[$Hdec]").
+  wp_apply (wp_Dec__GetBytes' with "[$Hdec $Hslice_close]").
   { admit. } (* TODO : overflow *)
-  iIntros (? s') "Hsl".
+  iIntros (s') "Hsl".
   wp_pures.
 
   wp_lam. wp_pures.
-  wp_apply (wp_NewSlice (V:=u8)).
+  wp_apply (wp_ref_of_zero); first done.
   iIntros (sl') "Hsl'".
   wp_pures.
   wp_loadField.
@@ -324,6 +324,11 @@ Proof.
   apply Eqdep.EqdepTheory.inj_pair2 in H1; subst.
   apply Eqdep.EqdepTheory.inj_pair2 in H2; subst.
   rewrite /is_rpcHandler.
+  wp_apply ("His_rpcHandler" with "[$Hsl Hsl' HPre]").
+  { iSplitL "Hsl'".
+    * (* need to argue that zero_val of (slice.T byteT is a slice.T? *) admit.
+    * iDestruct "HPre" as "#HPre". iNext. iFrame "#".
+  }
 Admitted.
 
 Lemma wp_StartRPCServer (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :

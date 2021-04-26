@@ -12,13 +12,13 @@ Definition RPCServer := struct.decl [
 
 Definition RPCServer__rpcHandle: val :=
   rec: "RPCServer__rpcHandle" "srv" "sender" "rpcid" "seqno" "data" :=
-    let: "replyData" := NewSlice byteT #0 in
+    let: "replyData" := ref (zero_val (slice.T byteT)) in
     let: "f" := Fst (MapGet (struct.loadF RPCServer "handlers" "srv") "rpcid") in
     "f" "data" "replyData";;
-    let: "e" := marshal.NewEnc (#8 + #8 + slice.len "replyData") in
+    let: "e" := marshal.NewEnc (#8 + #8 + slice.len (![slice.T byteT] "replyData")) in
     marshal.Enc__PutInt "e" "seqno";;
-    marshal.Enc__PutInt "e" (slice.len "replyData");;
-    marshal.Enc__PutBytes "e" "replyData";;
+    marshal.Enc__PutInt "e" (slice.len (![slice.T byteT] "replyData"));;
+    marshal.Enc__PutBytes "e" (![slice.T byteT] "replyData");;
     dist_ffi.Send "sender" (marshal.Enc__Finish "e").
 
 Definition MakeRPCServer: val :=
