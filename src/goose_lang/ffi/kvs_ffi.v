@@ -27,7 +27,7 @@ Section recoverable.
 
   Local Existing Instance recoverable_model.
 
-  Context {ext:ext_op}.
+  Context {ext:ffi_syntax}.
 
   Definition openΣ : transition (state*global_state) (Σ*loc) :=
     bind (reads id) (λ '(rs,g), match rs.(world) with
@@ -88,7 +88,7 @@ Proof.
   solve_countable KvsOp_rec 5%nat.
 Qed.
 
-Definition kvs_op : ext_op.
+Definition kvs_op : ffi_syntax.
 Proof.
   refine (mkExtOp KvsOp _ _ Empty_set _ _).
 Defined.
@@ -234,9 +234,9 @@ Section kvs.
     | _, _ => undefined
     end.
 
-  Instance kvs_semantics : ext_semantics kvs_op kvs_model :=
-    {| ext_step := kvs_step;
-       ext_crash := fun s s' => relation.denote close s s' tt; |}. (* everything is durable *)
+  Instance kvs_semantics : ffi_semantics kvs_op kvs_model :=
+    {| ffi_step := kvs_step;
+       ffi_crash_step := fun s s' => relation.denote close s s' tt; |}. (* everything is durable *)
 End kvs.
 
 Inductive kvs_unopen_status := UnInit' | Closed'.
@@ -658,13 +658,13 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang Require Import refinement_adequacy.
 Section spec.
 
-Instance kvs_spec_ext : spec_ext_op := {| spec_ext_op_field := kvs_op |}.
+Instance kvs_spec_ext : spec_ffi_op := {| spec_ffi_op_field := kvs_op |}.
 Instance kvs_spec_ffi_model : spec_ffi_model := {| spec_ffi_model_field := kvs_model |}.
 Instance kvs_spec_ext_semantics : spec_ext_semantics (kvs_spec_ext) (kvs_spec_ffi_model) :=
   {| spec_ext_semantics_field := kvs_semantics |}.
 Instance kvs_spec_ffi_interp : spec_ffi_interp kvs_spec_ffi_model :=
   {| spec_ffi_interp_field := kvs_interp |}.
-Instance kvs_spec_ty : ext_types (spec_ext_op_field) := kvs_ty.
+Instance kvs_spec_ty : ext_types (spec_ffi_op_field) := kvs_ty.
 Instance kvs_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := kvs_spec_ffi_interp) :=
   {| spec_ffi_interp_adequacy_field := kvs_interp_adequacy |}.
 
@@ -674,7 +674,7 @@ Context `{!refinement_heapG Σ}.
 
 Existing Instance spec_ffi_interp_field.
 Existing Instance spec_ext_semantics_field.
-Existing Instance spec_ext_op_field.
+Existing Instance spec_ffi_op_field.
 Existing Instance spec_ffi_model_field.
 
 Implicit Types K: spec_lang.(language.expr) → spec_lang.(language.expr).
@@ -688,7 +688,7 @@ Instance kvsG0 : kvsG Σ := refinement_spec_ffiG.
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
-        | H : ext_step _ _ _ _ _ |- _ =>
+        | H : ffi_step _ _ _ _ _ |- _ =>
           inversion H; subst; clear H
         | [ H1: context[ match world ?σ with | _ => _ end ], Heq: world ?σ = _ |- _ ] =>
           rewrite Heq in H1
@@ -697,7 +697,7 @@ Instance kvsG0 : kvsG Σ := refinement_spec_ffiG.
 Lemma ghost_step_init_stuck E j K {HCTX: LanguageCtx K} σ g:
   nclose sN_inv ⊆ E →
   (σ.(@world _ kvs_spec_ffi_model.(@spec_ffi_model_field)) ≠ UnInit) →
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) InitOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ g -∗
   |NC={E}=> False.
@@ -717,7 +717,7 @@ Qed.
 Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ g:
   nclose sN_inv ⊆ E →
   (∀ vs, σ.(@world _ kvs_spec_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) OpenOp #()) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ g -∗
   |NC={E}=> False.
@@ -739,7 +739,7 @@ Lemma kvs_closed_init_false E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_closed_frag -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) InitOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hj".
@@ -755,7 +755,7 @@ Lemma kvs_opened_init_false l E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_open l -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) InitOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
@@ -770,8 +770,8 @@ Qed.
 Lemma kvs_init_init_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) InitOp #()) -∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) InitOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -803,8 +803,8 @@ Qed.
 Lemma kvs_init_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) InitOp #()) -∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -830,7 +830,7 @@ Lemma ghost_step_kvs_init E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_uninit_frag -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) InitOp #())
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) InitOp #())
   -∗ |NC={E}=>
   ∃ (l: loc), j ⤇ K (#l)%V ∗ kvs_open l.
 Proof.
@@ -870,7 +870,7 @@ Lemma kvs_uninit_open_false E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_uninit_frag -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hclosed_frag Hj".
@@ -886,7 +886,7 @@ Lemma kvs_opened_open_false l E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_open l -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
@@ -902,8 +902,8 @@ Qed.
 Lemma kvs_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'}:
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) OpenOp #()) -∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) OpenOp #()) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -936,7 +936,7 @@ Lemma ghost_step_kvs_open E j K {HCTX: LanguageCtx K}:
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_closed_frag -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) OpenOp #())
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) OpenOp #())
   -∗ |NC={E}=>
   ∃ (l: loc), j ⤇ K #l%V ∗ kvs_open l.
 Proof.
@@ -973,7 +973,7 @@ Lemma ghost_step_kvs_get E j K {HCTX: LanguageCtx K} l k v :
   nclose sN ⊆ E →
   spec_ctx -∗
   kvs_open l -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field kvs_spec_ext) GetOp #l #(LitInt k))
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field kvs_spec_ext) GetOp #l #(LitInt k))
   ={E}=∗
   j ⤇ K #(LitLoc l)%V ∗ l ↦ v ∗ kvs_frag k v.
 Proof.

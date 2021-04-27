@@ -30,14 +30,14 @@ Module goose_lang.
 (** Expressions and vals. *)
 Definition proph_id := positive.
 
-Class ext_op :=
+Class ffi_syntax :=
   mkExtOp {
-      external: Set;
-      external_eq_dec :> EqDecision external;
-      external_countable :> Countable external;
-      external_val: Type;
-      external_val_eq_dec :> EqDecision external_val;
-      external_val_countable :> Countable external_val;
+      ffi_opcode: Set;
+      ffi_opcode_eq_dec :> EqDecision ffi_opcode;
+      ffi_opcode_countable :> Countable ffi_opcode;
+      ffi_val: Type;
+      ffi_val_eq_dec :> EqDecision ffi_val;
+      ffi_val_countable :> Countable ffi_val;
     }.
 
 Class ffi_model :=
@@ -52,7 +52,7 @@ Section external.
 
 (* these are codes for external operations (which all take a single val as an
    argument and evaluate to a value) and data for external values *)
-Context {ext : ext_op}.
+Context {ext : ffi_syntax}.
 
 (** We have a notion of "poison" as a variant of unit that may not be compared
 with anything. This is useful for erasure proofs: if we erased things to unit,
@@ -134,8 +134,8 @@ Inductive expr :=
   | Primitive2 (op: prim_op args2) (e1 e2 : expr)
   (* | Primitive3 (op: prim_op args3) (e0 e1 e2 : expr) *)
   | CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
-  (* External FFI *)
-  | ExternalOp (op: external) (e: expr)
+  (* External FFI operation *)
+  | ExternalOp (op: ffi_opcode) (e: expr)
   (* Prophecy *)
   | NewProph
   | Resolve (e0 : expr) (e1 : expr) (e2 : expr) (* wrapped expr, proph, val *)
@@ -149,8 +149,9 @@ with val :=
   and that regular Goose code may not do anything with except for passing it to
   other FFI operations. FFI implementations must ensure that these values are
   indeed truly independent from anything modeled in GooseLang (i.e., no
-  aliasing/sharing with memory that GooseLang can "see"). *)
-  | ExtV (ev : external_val)
+  aliasing/sharing with memory that GooseLang can "see").
+  On the Go side, these should be pointers to some private type. *)
+  | ExtV (ev : ffi_val)
 .
 
 Bind Scope expr_scope with expr.
@@ -217,7 +218,7 @@ Definition global_state : Type := ffi_global_state.
 
 Global Instance eta_state : Settable _ := settable! Build_state <heap; world; trace; oracle>.
 
-(* Note that ext_step takes a val, which is itself parameterized by the
+(* Note that ffi_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
 the syntax of GooseLang. Similarly, it "returns" an expression, the result of
 evaluating the external operation.
@@ -232,17 +233,17 @@ We produce a val to make external operations atomic.
 
 [global_state] cannot be affected by a crash.
 *)
-Class ext_semantics :=
+Class ffi_semantics :=
   {
-    ext_step : external -> val -> transition (state*global_state) val;
-    ext_crash : ffi_state -> ffi_state -> Prop;
+    ffi_step : ffi_opcode -> val -> transition (state*global_state) val;
+    ffi_crash_step : ffi_state -> ffi_state -> Prop;
   }.
-Context {ffi_semantics: ext_semantics}.
+Context {ffi_semantics: ffi_semantics}.
 
 Inductive goose_crash : state -> state -> Prop :=
   | GooseCrash σ w w' :
      w = σ.(world) ->
-     ext_crash w w' ->
+     ffi_crash_step w w' ->
      goose_crash σ (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ)))
 .
 
@@ -538,8 +539,8 @@ Inductive basic_type :=
   | un_opVal (op:un_op)
   | bin_opVal (op:bin_op)
   | primOpVal (op:prim_op')
-  | externOp (op:external)
-  | externVal (ev:external_val)
+  | externOp (op:ffi_opcode)
+  | externVal (ev:ffi_val)
 .
 
 Instance basic_type_eq_dec : EqDecision basic_type.
@@ -708,7 +709,7 @@ Inductive ectx_item :=
   (* | Primitive3LCtx (op: prim_op args3) (e1 : expr) (e2 : expr)
   | Primitive3MCtx (op: prim_op args3) (v0 : val) (e2 : expr)
   | Primitive3RCtx (op: prim_op args3) (v0 : val) (v1 : val) *)
-  | ExternalOpCtx (op : external)
+  | ExternalOpCtx (op : ffi_opcode)
   | CmpXchgLCtx (e1 : expr) (e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
   | CmpXchgRCtx (v1 : val) (v2 : val)
@@ -1113,7 +1114,7 @@ Definition head_trans (e: expr) :
        check (is_Writing nav);;
        modifyσ (set heap <[l:=Free v]>);;
        ret $ LitV $ LitUnit)
-  | ExternalOp op (Val v) => atomically $ ext_step op v
+  | ExternalOp op (Val v) => atomically $ ffi_step op v
   | Input (Val (LitV (LitInt selv))) =>
     atomically
       (x ← reads (λ '(σ,g), σ.(oracle) σ.(trace) selv);
@@ -1311,12 +1312,12 @@ End goose_lang.
 (* Prefer goose_lang names over ectx_language names. *)
 Export goose_lang.
 
-Arguments ext_semantics ext ffi : clear implicits.
+Arguments ffi_semantics ext ffi : clear implicits.
 Arguments goose_lang.goose_lang_mixin {ext} {ffi} ffi_semantics.
 
 Section goose.
-  Context {ext: ext_op} {ffi: ffi_model}
-          {ffi_semantics: ext_semantics ext ffi}.
+  Context {ext: ffi_syntax} {ffi: ffi_model}
+          {ffi_semantics: ffi_semantics ext ffi}.
   Canonical Structure goose_ectxi_lang := (EctxiLanguage (goose_lang.goose_lang_mixin ffi_semantics)).
   Canonical Structure goose_ectx_lang := (EctxLanguageOfEctxi goose_ectxi_lang).
   Canonical Structure goose_lang := (LanguageOfEctx goose_ectx_lang).

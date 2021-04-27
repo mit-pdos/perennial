@@ -18,7 +18,7 @@ Reserved Notation "l ↦∗[ t ]{ q } vs" (at level 20,
                                        format "l  ↦∗[ t ]{ q }  vs").
 
 Section goose_lang.
-Context `{ffi_semantics: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context {ext_tys:ext_types ext}.
 Context `{!ffi_interp ffi}.
 

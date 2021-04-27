@@ -8,7 +8,7 @@ From Perennial.goose_lang Require Export wpr_lifting.
 From Perennial.goose_lang Require Import typing adequacy lang.
 Set Default Proof Using "Type".
 
-Theorem heap_recv_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !heapPreG Σ} s k e r σ g φ φr φinv Φinv (HINITG: ffi_initgP g) (HINIT: ffi_initP σ.(world) g) :
+Theorem heap_recv_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !heapPreG Σ} s k e r σ g φ φr φinv Φinv (HINITG: ffi_initgP g) (HINIT: ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heapG Σ},
      ⊢ (ffi_local_start (heapG_ffiG) σ.(world) g -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) ={⊤}=∗
        □ (∀ σ nt, state_interp σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗

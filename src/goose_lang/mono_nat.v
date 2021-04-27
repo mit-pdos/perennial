@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import crash_modality lifting.
 Set Default Proof Using "Type".
 
 Section instances.
-Context `{ffi_semantics: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 Context `{!mono_natG Σ, !heapG Σ}.
 

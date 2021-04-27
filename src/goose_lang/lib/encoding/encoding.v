@@ -14,7 +14,7 @@ Set Default Proof Using "Type".
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Section heap.
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
 Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.

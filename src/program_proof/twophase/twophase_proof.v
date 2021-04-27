@@ -2382,7 +2382,7 @@ Proof.
     /object_to_versioned /modified /mspec.modified //=.
 Qed.
 
-Theorem inv_litbyte {ext:ext_op} l1 l2 : LitByte l1 = LitByte l2 -> l1 = l2.
+Theorem inv_litbyte {ext:ffi_syntax} l1 l2 : LitByte l1 = LitByte l2 -> l1 = l2.
 Proof.
   inversion 1; auto.
 Qed.

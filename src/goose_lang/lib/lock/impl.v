@@ -5,7 +5,7 @@ Definition condvarRefT {ext} {ext_ty: ext_types ext} := refT lockRefT.
 
 Module lock.
   Section goose_lang.
-    Context {ext:ext_op}.
+    Context {ext:ffi_syntax}.
 
     Local Coercion Var' (s:string): expr := Var s.
 

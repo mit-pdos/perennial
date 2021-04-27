@@ -8,15 +8,15 @@ From Perennial.goose_lang.lib Require Import map.impl list.impl.
 Section translate.
 
   (* Records defining spec language extensions *)
-  Context (spec_op: ext_op).
+  Context (spec_op: ffi_syntax).
   Context (spec_ffi: ffi_model).
-  Context (spec_semantics: ext_semantics spec_op spec_ffi).
+  Context (spec_semantics: ffi_semantics spec_op spec_ffi).
   Context (spec_ty: ext_types spec_op).
 
   (* Records for the target language *)
-  Context (impl_op: ext_op).
+  Context (impl_op: ffi_syntax).
   Context (impl_ffi: ffi_model).
-  Context (impl_semantics: ext_semantics impl_op impl_ffi).
+  Context (impl_semantics: ffi_semantics impl_op impl_ffi).
   Context (impl_ty: ext_types impl_op).
 
   Notation sexpr := (@expr spec_op).

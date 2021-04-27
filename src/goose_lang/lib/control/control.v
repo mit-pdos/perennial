@@ -6,7 +6,7 @@ From Perennial.goose_lang.lib Require Import control.impl.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 
 (** A proof principle for if e { do_stuff(); } where do_stuff() is optional and
 does something irrelevant to the proof using resources R. Allows to re-use the

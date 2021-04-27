@@ -205,8 +205,8 @@ Ltac runStateT_bind :=
   end.
 
 Section interpreter.
-  Context {ext: ext_op} {ffi: ffi_model}
-          {ffi_semantics: ext_semantics ext ffi}.
+  Context {ext: ffi_syntax} {ffi: ffi_model}
+          {ffi_semantics: ffi_semantics ext ffi}.
   Canonical Structure goose_ectxi_lang := (EctxiLanguage (goose_lang.goose_lang_mixin ffi_semantics)).
   Canonical Structure goose_ectx_lang := (EctxLanguageOfEctxi goose_ectxi_lang).
   Canonical Structure goose_lang := (LanguageOfEctx goose_ectx_lang).
@@ -215,13 +215,13 @@ Section interpreter.
   Definition btval := list string.
   Definition btstate := prod (state*global_state) btval.
 
-  (* The analog of ext_semantics for an interpretable external
-     operation. An ext_op transition isn't strong enough to let us interpret
+  (* The analog of ffi_semantics for an interpretable external
+     operation. An ffi_syntax transition isn't strong enough to let us interpret
      ExternalOps, so we need an executable interpretation of them. *)
   Class ext_interpretable :=
     {
-      ext_interpret_step : external -> val -> StateT btstate Error expr;
-      ext_interpret_ok : forall (eop : external) (arg : val) (result : expr) (σ σ': state) (g g' : global_state) (ws ws':btval),
+      ext_interpret_step : ffi_opcode -> val -> StateT btstate Error expr;
+      ext_interpret_ok : forall (eop : ffi_opcode) (arg : val) (result : expr) (σ σ': state) (g g' : global_state) (ws ws':btval),
           (runStateT (ext_interpret_step eop arg) ((σ,g),ws) = Works _ (result, ((σ',g'),ws'))) ->
           exists m l, @language.nsteps goose_lang m ([ExternalOp eop (Val arg)], (σ,g)) l ([result], (σ',g'));
     }.

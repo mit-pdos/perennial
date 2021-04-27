@@ -8,7 +8,7 @@ Require Import Program.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-  Context `{ffi_semantics: ext_semantics}.
+  Context `{ffi_sem: ffi_semantics}.
 
 Definition binder_vars (b: binder) : gset string :=
   match b with

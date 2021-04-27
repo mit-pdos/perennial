@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import lifting.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-Context `{ffi_semantics: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 
 (*
@@ -302,7 +302,7 @@ Ltac iCrash :=
   let H := iFresh in iIntros H; iNamed H.
 
 Section goose_lang.
-Context `{ffi_semantics: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 Context {Σ: gFunctors}.
 Section modality_alt.

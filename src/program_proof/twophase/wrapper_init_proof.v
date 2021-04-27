@@ -27,7 +27,7 @@ Section proof.
   Existing Instance jrnlG0.
 
   Notation spec_ext := jrnl_spec_ext.
-  Notation sval := (@val (@spec_ext_op_field spec_ext)).
+  Notation sval := (@val (@spec_ffi_op_field spec_ext)).
 
   Implicit Types (N: namespace).
   Definition twophase_obj_cfupd_cancel γ γ' d :=
@@ -217,7 +217,7 @@ Section proof.
     {{{
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Htwophase_inv" ∷ twophase_inv ∗
-      "Hj" ∷ j ⤇ (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp vs))
+      "Hj" ∷ j ⤇ (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) OpenOp vs))
     }}}
       Init (disk_val d) @ NotStuck; ⊤
     {{{

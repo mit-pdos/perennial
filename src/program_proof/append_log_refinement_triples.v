@@ -20,11 +20,11 @@ Context `{Hin_nat_ctx: inG Σ (authR (optionUR (exclR (leibnizO (nat * (spec_lan
 Context (SIZE: nat).
 Context (SIZE_nonzero: 0 < SIZE).
 Context (SIZE_bounds: int.nat SIZE = SIZE).
-Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
+Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
-Notation sstate := (@state (@spec_ext_op_field log_spec_ext) (spec_ffi_model_field)).
-Notation sexpr := (@expr (@spec_ext_op_field log_spec_ext)).
-Notation sval := (@val (@spec_ext_op_field log_spec_ext)).
+Notation sstate := (@state (@spec_ffi_op_field log_spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ffi_op_field log_spec_ext)).
+Notation sval := (@val (@spec_ffi_op_field log_spec_ext)).
 
 Definition Nlog := nroot.@"log".
 
@@ -47,11 +47,11 @@ Definition P (γ: gname) (s: log_state) :=
 Definition POpened := (∃ l, log_open l)%I.
 Definition PStartedOpening γ :=
   (∃ j (K: spec_lang.(language.expr) → spec_lang.(language.expr)) (Hctx: LanguageCtx K),
-      j ⤇ K (ExternalOp (ext := spec_ext_op_field) OpenOp #())
+      j ⤇ K (ExternalOp (ext := spec_ffi_op_field) OpenOp #())
       ∗ thread_tok_auth γ j K)%I.
 Definition PStartedIniting γ :=
   (∃ j (K: spec_lang.(language.expr) → spec_lang.(language.expr)) (Hctx: LanguageCtx K),
-      j ⤇ K (ExternalOp (ext := spec_ext_op_field) InitOp #())
+      j ⤇ K (ExternalOp (ext := spec_ffi_op_field) InitOp #())
       ∗ thread_tok_auth γ j K)%I.
 
 Lemma PStartedOpening_Timeless γ : Timeless (PStartedOpening γ).
@@ -66,7 +66,7 @@ Definition is_log γ : nat → loc → iProp Σ :=
 
 Theorem wpc_Init j γ K `{LanguageCtx _ K} k k' E2:
   (S k < k')%nat →
-  {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) InitOp #()) }}}
+  {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ffi_op_field) InitOp #()) }}}
     Init #SIZE @ NotStuck; LVL (S (S k)); ⊤; E2
   {{{ l, RET (#l, #true);  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val (#l', #true) : sexpr) ∗ log_open l')}}}
   {{{ True }}}.
@@ -113,7 +113,7 @@ Qed.
 
 Theorem wpc_Open j γ K `{LanguageCtx _ K} k k' E2:
   (S k < k')%nat →
-  {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) OpenOp #()) }}}
+  {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ffi_op_field) OpenOp #()) }}}
     Open #() @ NotStuck; LVL (S (S k)); ⊤; E2
   {{{ l, RET #l;  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val #l': sexpr) ∗ log_open l')}}}
   {{{ True }}}.
@@ -158,7 +158,7 @@ Qed.
 
 Theorem wpc_Log__Reset j γ γ0 K `{LanguageCtx _ K} k k' E2 (l l': loc):
   (S (S k) < k')%nat →
-  {{{ spec_ctx ∗ log_inv γ0 k' ∗ j ⤇ K (ExternalOp (ext := spec_ext_op_field) (ResetOp) #l') ∗
+  {{{ spec_ctx ∗ log_inv γ0 k' ∗ j ⤇ K (ExternalOp (ext := spec_ffi_op_field) (ResetOp) #l') ∗
                is_log γ k' l ∗ log_open l'
   }}}
     Log__Reset #l @ NotStuck; (LVL (S (S k))); ⊤; E2

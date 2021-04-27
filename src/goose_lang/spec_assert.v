@@ -15,26 +15,26 @@ Set Default Proof Using "Type".
    the spec and the concrete *)
 
 Class spec_ffi_model := { spec_ffi_model_field : ffi_model }.
-Class spec_ext_op := { spec_ext_op_field : ext_op }.
-Class spec_ext_semantics (H1: spec_ext_op) (H2: spec_ffi_model) :=
-  { spec_ext_semantics_field : ext_semantics (spec_ext_op_field) (spec_ffi_model_field) }.
+Class spec_ffi_op := { spec_ffi_op_field : ffi_syntax }.
+Class spec_ext_semantics (H1: spec_ffi_op) (H2: spec_ffi_model) :=
+  { spec_ext_semantics_field : ffi_semantics (spec_ffi_op_field) (spec_ffi_model_field) }.
 Class spec_ffi_interp (spec_ffi: spec_ffi_model) :=
   { spec_ffi_interp_field : ffi_interp (spec_ffi_model_field) }.
 
 Section go_refinement.
-Context {spec_ext: spec_ext_op}.
+Context {spec_ext: spec_ffi_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
 
 Canonical Structure spec_lang : language :=
-  @goose_lang (spec_ext_op_field) (spec_ffi_model_field) (spec_ext_semantics_field).
+  @goose_lang (spec_ffi_op_field) (spec_ffi_model_field) (spec_ext_semantics_field).
 Canonical Structure spec_crash_lang : crash_semantics spec_lang :=
-  @goose_crash_lang (spec_ext_op_field) (spec_ffi_model_field) (spec_ext_semantics_field).
+  @goose_crash_lang (spec_ffi_op_field) (spec_ffi_model_field) (spec_ext_semantics_field).
 
 Existing Instance spec_ffi_interp_field.
 Existing Instance spec_ext_semantics_field.
-Existing Instance spec_ext_op_field.
+Existing Instance spec_ffi_op_field.
 Existing Instance spec_ffi_model_field.
 
 
@@ -42,7 +42,7 @@ Class refinement_heapG Σ := refinement_HeapG {
   refinement_spec_ffiG : ffiG Σ;
   refinement_traceG :> traceG Σ;
   refinement_cfgG :> @cfgG spec_lang Σ;
-  refinement_na_heapG :> na_heapG loc (@val spec_ext_op_field) Σ;
+  refinement_na_heapG :> na_heapG loc (@val spec_ffi_op_field) Σ;
   refinement_frac_countG :> frac_countG Σ;
   refinement_crash_name : gname;
   (* TODO: do we need prophecies at the spec level? *)
@@ -854,11 +854,11 @@ Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
 
 Section trace_inv.
-Context {ext: ext_op}.
+Context {ext: ffi_syntax}.
 Context {ffi: ffi_model}.
-Context {ffi_semantics: ext_semantics ext ffi}.
+Context {ffi_semantics: ffi_semantics ext ffi}.
 Context `{!ffi_interp ffi}.
-Context {spec_ext: spec_ext_op}.
+Context {spec_ext: spec_ffi_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
@@ -883,11 +883,11 @@ Definition trace_ctx : iProp Σ :=
 End trace_inv.
 
 Section resolution_test.
-Context {ext: ext_op}.
+Context {ext: ffi_syntax}.
 Context {ffi: ffi_model}.
-Context {ffi_semantics: ext_semantics ext ffi}.
+Context {ffi_semantics: ffi_semantics ext ffi}.
 Context `{!ffi_interp ffi}.
-Context {spec_ext: spec_ext_op}.
+Context {spec_ext: spec_ffi_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
@@ -927,17 +927,17 @@ End resolution_test.
 Arguments refinement_spec_ffiG {spec_ext spec_ffi spec_ffi_semantics spec_ffi_interp0 Σ hRG} : rename.
 
 Section tacs.
-Context {spec_ext: spec_ext_op}.
+Context {spec_ext: spec_ffi_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
 Existing Instance spec_ffi_interp_field.
 Existing Instance spec_ext_semantics_field.
-Existing Instance spec_ext_op_field.
+Existing Instance spec_ffi_op_field.
 Existing Instance spec_ffi_model_field.
 
 
-Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
+Notation sexpr := (@expr (@spec_ffi_op_field spec_ext)).
 
 Lemma tac_refine_bind (K: sexpr → sexpr) `{LanguageCtx _ K} (K' : list (ectxi_language.ectx_item _)) (e e': sexpr):
   ectx_language.fill K' e' = e →
@@ -945,7 +945,7 @@ Lemma tac_refine_bind (K: sexpr → sexpr) `{LanguageCtx _ K} (K' : list (ectxi_
   LanguageCtx (λ x, K (ectx_language.fill K' x)).
 Proof. rewrite //=. intros ->. split; auto. apply comp_ctx; auto. apply ectx_lang_ctx. Qed.
 
-Lemma tac_refine_bind' (K: sexpr → sexpr) {Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+Lemma tac_refine_bind' (K: sexpr → sexpr) {Hctx: LanguageCtx' (ext := @spec_ffi_op_field _)
                                              (ffi := (spec_ffi_model_field))
                                              (ffi_semantics := (spec_ext_semantics_field))
                                              K} (K' : list (ectxi_language.ectx_item _)) (e e': sexpr):
@@ -964,23 +964,23 @@ Ltac refine_reshape_expr e tac :=
   let rec go K e :=
     match e with
     | _                               => tac K e
-    | App ?e (Val ?v)                 => add_item (@AppLCtx spec_ext_op_field v) K e
-    | App ?e1 ?e2                     => add_item (@AppRCtx spec_ext_op_field e1) K e2
-    | UnOp ?op ?e                     => add_item (@UnOpCtx spec_ext_op_field op) K e
-    | BinOp ?op (Val ?v) ?e           => add_item (@BinOpRCtx spec_ext_op_field op v) K e
-    | BinOp ?op ?e1 ?e2               => add_item (@BinOpLCtx spec_ext_op_field op e2) K e1
+    | App ?e (Val ?v)                 => add_item (@AppLCtx spec_ffi_op_field v) K e
+    | App ?e1 ?e2                     => add_item (@AppRCtx spec_ffi_op_field e1) K e2
+    | UnOp ?op ?e                     => add_item (@UnOpCtx spec_ffi_op_field op) K e
+    | BinOp ?op (Val ?v) ?e           => add_item (@BinOpRCtx spec_ffi_op_field op v) K e
+    | BinOp ?op ?e1 ?e2               => add_item (@BinOpLCtx spec_ffi_op_field op e2) K e1
     | If ?e0 ?e1 ?e2                  => add_item (IfCtx e1 e2) K e0
     | Pair (Val ?v) ?e                => add_item (PairRCtx v) K e
     | Pair ?e1 ?e2                    => add_item (PairLCtx e2) K e1
-    | Fst ?e                          => add_item (@FstCtx spec_ext_op_field) K e
-    | Snd ?e                          => add_item (@SndCtx spec_ext_op_field) K e
-    | InjL ?e                         => add_item (@InjLCtx spec_ext_op_field) K e
-    | InjR ?e                         => add_item (@InjRCtx spec_ext_op_field) K e
+    | Fst ?e                          => add_item (@FstCtx spec_ffi_op_field) K e
+    | Snd ?e                          => add_item (@SndCtx spec_ffi_op_field) K e
+    | InjL ?e                         => add_item (@InjLCtx spec_ffi_op_field) K e
+    | InjR ?e                         => add_item (@InjRCtx spec_ffi_op_field) K e
     | Case ?e0 ?e1 ?e2                => add_item (CaseCtx e1 e2) K e0
-    | Primitive2 ?op (Val ?v) ?e      => add_item (@Primitive2RCtx spec_ext_op_field op v) K e
-    | Primitive2 ?op ?e1 ?e2          => add_item (@Primitive2LCtx spec_ext_op_field op e2) K e1
-    | Primitive1 ?op ?e               => add_item (@Primitive1Ctx spec_ext_op_field op) K e
-    | ExternalOp ?op ?e               => add_item (@ExternalOpCtx spec_ext_op_field op) K e
+    | Primitive2 ?op (Val ?v) ?e      => add_item (@Primitive2RCtx spec_ffi_op_field op v) K e
+    | Primitive2 ?op ?e1 ?e2          => add_item (@Primitive2LCtx spec_ffi_op_field op e2) K e1
+    | Primitive1 ?op ?e               => add_item (@Primitive1Ctx spec_ffi_op_field op) K e
+    | ExternalOp ?op ?e               => add_item (@ExternalOpCtx spec_ffi_op_field op) K e
     (* | Primitive3 ?op (Val ?v0) (Val ?v1) ?e2 => add_item (Primitive3RCtx op v0 v1) K e2
     | Primitive3 ?op (Val ?v0) ?e1 ?e2     => add_item (Primitive3MCtx op v0 e2) K e1
     | Primitive3 ?op ?e0 ?e1 ?e2           => add_item (Primitive3LCtx op e1 e2) K e0 *)
@@ -992,7 +992,7 @@ Ltac refine_reshape_expr e tac :=
   with add_item Ki K e :=
     go (Ki :: K) e
   in
-  go (@nil (@ectx_item spec_ext_op_field)) e.
+  go (@nil (@ectx_item spec_ffi_op_field)) e.
 
 Tactic Notation "spec_bind" open_constr(efoc) " as " ident(H) :=
   iStartProof;
@@ -1004,20 +1004,20 @@ Tactic Notation "spec_bind" open_constr(efoc) " as " ident(H) :=
   end.
 
 Section tacs_test.
-Context {spec_ext: spec_ext_op}.
+Context {spec_ext: spec_ffi_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
 Existing Instance spec_ffi_interp_field.
 Existing Instance spec_ext_semantics_field.
-Existing Instance spec_ext_op_field.
+Existing Instance spec_ffi_op_field.
 Existing Instance spec_ffi_model_field.
 
 Context {Σ: gFunctors}.
 Context {hG: heapG Σ}.
 Context {hR: refinement_heapG Σ}.
 
-Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
+Notation sexpr := (@expr (@spec_ffi_op_field spec_ext)).
 
 Lemma test j (K: sexpr → sexpr) `{LanguageCtx _ K} (e: sexpr):
   j ⤇ K (PrepareWrite e) -∗

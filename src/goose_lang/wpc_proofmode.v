@@ -9,7 +9,7 @@ From Perennial.Helpers Require Export ipm NamedProps ProofCaching.
 Set Default Proof Using "Type".
 Import uPred.
 
-Lemma wpc_fork `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ, !crashG Σ} s k E1 e Φ Φc :
+Lemma wpc_fork `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapG Σ, !crashG Σ} s k E1 e Φ Φc :
   ▷ WPC e @ s; k; ⊤ {{ _, True }} {{ True }} -∗ (<disc> Φc ∧ ▷ Φ (LitV LitUnit)) -∗
                       WPC Fork e @ s; k; E1 {{ Φ }} {{ Φc }}.
 Proof.
@@ -28,7 +28,7 @@ Proof.
   - iDestruct "HΦ" as "(?&_)". do 2 iModIntro. auto.
 Qed.
 
-Lemma tac_wpc_expr_eval `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+Lemma tac_wpc_expr_eval `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapG Σ} Δ (s: stuckness) (k: nat) E1 Φ (Φc: iProp Σ) e e' :
   (∀ (e'':=e'), e = e'') →
   envs_entails Δ (WPC e' @ s; k; E1 {{ Φ }} {{ Φc }}) → envs_entails Δ (WPC e @ s; k; E1 {{ Φ }} {{ Φc }}).
@@ -43,7 +43,7 @@ Tactic Notation "wpc_expr_eval" tactic(t) :=
   end.
 
 (* XXX: this caches the wrong thing as compared to the old version *)
-Lemma tac_wpc_pure_ctx `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+Lemma tac_wpc_pure_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} Δ Δ' s k E1 K e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
@@ -59,7 +59,7 @@ Proof.
   rewrite HΔ' //.
 Qed.
 
-Lemma tac_wpc_pure_no_later_ctx `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+Lemma tac_wpc_pure_no_later_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ}
       Δ s k E1 K e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
@@ -77,7 +77,7 @@ Proof.
     iApply HΔ'; iAssumption.
 Qed.
 
-Lemma tac_wpc_value `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+Lemma tac_wpc_value `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapG Σ} Δ s k E1 Φ Φc v :
   envs_entails Δ (|NC={E1}=> Φ v) →
   envs_entails Δ (<disc> Φc) →
@@ -88,7 +88,7 @@ Proof.
   - rewrite H1. eauto.
   - rewrite H2. iIntros. do 2 iModIntro; auto.
 Qed.
-Lemma tac_wpc_value_fupd `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+Lemma tac_wpc_value_fupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapG Σ} Δ s k E1 Φ Φc v :
   envs_entails Δ (|NC={E1}=> Φ v) →
   envs_entails Δ (<disc> Φc) →
@@ -99,7 +99,7 @@ Proof.
   - rewrite H1. iIntros ">?". eauto.
   - rewrite H2. iIntros. do 2 iModIntro; auto.
 Qed.
-Lemma tac_wpc_value_noncfupd `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+Lemma tac_wpc_value_noncfupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapG Σ} Δ s k E1 Φ Φc v :
   envs_entails Δ (Φ v) →
   envs_entails Δ (<disc> Φc) →
@@ -230,14 +230,14 @@ Ltac wpc_pures :=
       [try iFromCache .. | repeat (wpc_pure_no_later wp_pure_filter as Hcrash; []); clear Hcrash]
   end.
 
-Lemma tac_wpc_bind `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+Lemma tac_wpc_bind `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} K Δ s k E1 Φ Φc e f :
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that we can `simpl` it *)
   envs_entails Δ (WPC e @ s; k; E1 {{ v, WPC f (Val v) @ s; k; E1 {{ Φ }} {{ Φc }} }} {{ Φc }})%I →
   envs_entails Δ (WPC fill K e @ s; k; E1 {{ Φ }} {{ Φc }}).
 Proof. rewrite envs_entails_eq=> -> ->. by apply: wpc_bind. Qed.
 
-Lemma tac_wpc_wp_frame `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+Lemma tac_wpc_wp_frame `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} Δ d js s k E1 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
   match envs_split d js Δ with
   | Some (Δ1, Δ2) => envs_entails Δ1 (<disc> Φc) ∧
@@ -266,7 +266,7 @@ Qed.
 
 (* combines using [wpc_frame Hs] with [iFromCache], simultaneously framing and
    proving the crash condition using a cache *)
-Lemma tac_wpc_wp_frame_cache `{ffi_sem: ext_semantics} `{!ffi_interp ffi}
+Lemma tac_wpc_wp_frame_cache `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapG Σ, !crashG Σ} (Φc: iProp Σ) i (* name of cache *) (c: cache (<disc> Φc)%I)
       Δ stk k E1 e (Φ: _ → iProp Σ)  :
   envs_lookup i Δ = Some (true, cached c) →

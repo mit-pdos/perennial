@@ -28,7 +28,7 @@ Section recoverable.
 
   Local Existing Instance recoverable_model.
 
-  Context {ext:ext_op}.
+  Context {ext:ffi_syntax}.
 
   Definition openΣ : transition (state*global_state) Σ :=
     bind (reads id) (λ '(rs,g), match rs.(world) with
@@ -80,7 +80,7 @@ Proof. solve_decision. Defined.
 Instance JrnlOp_fin : Countable JrnlOp.
 Proof. solve_countable JrnlOp_rec 8%nat. Qed.
 
-Definition jrnl_op : ext_op.
+Definition jrnl_op : ffi_syntax.
 Proof. refine (mkExtOp JrnlOp _ _ Empty_set _ _). Defined.
 
 Inductive Jrnl_ty :=
@@ -293,9 +293,9 @@ Section jrnl.
                            | Opened s | Closed s => modify (fun _ => Closed (clearAllocs s))
                            end).
 
-  Instance jrnl_semantics : ext_semantics jrnl_op jrnl_model :=
-    {| ext_step := jrnl_step;
-       ext_crash := fun s s' =>
+  Instance jrnl_semantics : ffi_semantics jrnl_op jrnl_model :=
+    {| ffi_step := jrnl_step;
+       ffi_crash_step := fun s s' =>
                       relation.denote crash_step s s' tt; |}.
 End jrnl.
 

@@ -9,7 +9,7 @@ Set Default Proof Using "Type".
 (** No actual adequacy theorm here, just definitions that are shared between
 recovery_adequacy and (in the future) distrib_adequacy. *)
 
-Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi} :=
+Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ffi_semantics ext ffi} :=
   { ffi_preG: gFunctors -> Type;
     ffiΣ: gFunctors;
     (* modeled after subG_gen_heapPreG and gen_heap_init *)
@@ -41,7 +41,7 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ext_semantics ext ffi}
               let H0 := ffi_update_pre _ hPre names namesg in
                    ffi_ctx H0 σ ∗ ffi_global_ctx H0 g ∗ ffi_local_start H0 σ g;
     ffi_crash : forall Σ,
-          ∀ (σ σ': ffi_state) (g: ffi_global_state) (CRASH: ext_crash σ σ') (Hold: ffiG Σ),
+          ∀ (σ σ': ffi_state) (g: ffi_global_state) (CRASH: ffi_crash_step σ σ') (Hold: ffiG Σ),
            ⊢ ffi_ctx Hold σ -∗ ffi_global_ctx Hold g ==∗
              ∃ (new: ffi_local_names), ffi_ctx (ffi_update_local Σ Hold new) σ' ∗
                                  ffi_global_ctx (ffi_update_local Σ Hold new) g ∗
@@ -54,7 +54,7 @@ typeclass resolution, which is the one thing solve_inG tries. *)
 Existing Class ffi_preG.
 Hint Resolve subG_ffiPreG : typeclass_instances.
 
-Class heapPreG `{ext: ext_op} `{EXT_SEM: !ext_semantics ext ffi}
+Class heapPreG `{ext: ffi_syntax} `{EXT_SEM: !ffi_semantics ext ffi}
       `{INTERP: !ffi_interp ffi} {ADEQ: ffi_interp_adequacy} Σ
   := HeapPreG {
   heap_preG_iris :> invPreG Σ;
@@ -109,9 +109,9 @@ Ltac solve_inG_deep :=
                            | H:subG _ _ |- _ => move : H; apply subG_inG in H || clear H
                            end; intros; try done; split; assumption || by apply _.
 
-Definition heapΣ `{ext: ext_op} `{ffi_interp_adequacy} : gFunctors :=
+Definition heapΣ `{ext: ffi_syntax} `{ffi_interp_adequacy} : gFunctors :=
   #[invΣ; crashΣ; na_heapΣ loc val; ffiΣ; traceΣ].
-Instance subG_heapPreG `{ext: ext_op} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} :
+Instance subG_heapPreG `{ext: ffi_syntax} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} :
   subG heapΣ Σ → heapPreG Σ.
 Proof.
   solve_inG_deep.

@@ -14,7 +14,7 @@ Set Default Proof Using "Type".
 Notation nonAtomic T := (naMode * T)%type.
 
 Section definitions.
-  Context `{ext:ext_op}.
+  Context `{ext:ffi_syntax}.
   Context `{hG: na_heapG loc val Σ}.
   Definition heap_mapsto_def l q v : iProp Σ :=
     ⌜l ≠ null⌝ ∗ na_heap_mapsto (L:=loc) (V:=val) l q v.
@@ -131,7 +131,7 @@ Arguments ffi_local_start {ffi FfiInterp Σ} : rename.
 Arguments ffi_restart {ffi FfiInterp Σ} : rename.
 
 Section goose_lang.
-Context `{ffi_semantics: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context {ext_tys: ext_types ext}.
 Context `{!ffi_interp ffi}.
 

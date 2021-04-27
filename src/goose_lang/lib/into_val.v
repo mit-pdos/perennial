@@ -2,7 +2,7 @@ From Perennial.goose_lang Require Import notation typing.
 From Perennial.goose_lang.lib Require Import typed_mem slice.slice struct.struct.
 Set Default Proof Using "Type".
 
-Class IntoVal {ext: ext_op} V :=
+Class IntoVal {ext: ffi_syntax} V :=
   { to_val: V -> val;
     IntoVal_def: V;
     IntoVal_inj :> Inj eq eq to_val;
@@ -63,7 +63,7 @@ Qed.
 
 (** instances for IntoVal *)
 Section instances.
-  Context {ext: ext_op} {ext_ty: ext_types ext}.
+  Context {ext: ffi_syntax} {ext_ty: ext_types ext}.
   Definition u64val (x:u64) : val := #x.
   Global Instance u64_IntoVal : IntoVal u64.
   Proof.

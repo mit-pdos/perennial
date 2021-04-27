@@ -501,13 +501,13 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang Require Import refinement_adequacy.
 Section spec.
 
-Instance jrnl_spec_ext : spec_ext_op := {| spec_ext_op_field := jrnl_op |}.
+Instance jrnl_spec_ext : spec_ffi_op := {| spec_ffi_op_field := jrnl_op |}.
 Instance jrnl_spec_ffi_model : spec_ffi_model := {| spec_ffi_model_field := jrnl_model |}.
 Instance jrnl_spec_ext_semantics : spec_ext_semantics (jrnl_spec_ext) (jrnl_spec_ffi_model) :=
   {| spec_ext_semantics_field := jrnl_semantics |}.
 Instance jrnl_spec_ffi_interp : spec_ffi_interp jrnl_spec_ffi_model :=
   {| spec_ffi_interp_field := jrnl_interp |}.
-Instance jrnl_spec_ty : ext_types (spec_ext_op_field) := jrnl_ty.
+Instance jrnl_spec_ty : ext_types (spec_ffi_op_field) := jrnl_ty.
 Instance jrnl_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := jrnl_spec_ffi_interp) :=
   {| spec_ffi_interp_adequacy_field := jrnl_interp_adequacy |}.
 
@@ -517,7 +517,7 @@ Context `{!refinement_heapG Σ}.
 
 Existing Instance spec_ffi_interp_field.
 Existing Instance spec_ext_semantics_field.
-Existing Instance spec_ext_op_field.
+Existing Instance spec_ffi_op_field.
 Existing Instance spec_ffi_model_field.
 
 Implicit Types K: spec_lang.(language.expr) → spec_lang.(language.expr).
@@ -531,18 +531,18 @@ Instance jrnlG0 : jrnlG Σ := refinement_spec_ffiG.
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
-        | H : ext_step _ _ _ _ _ |- _ =>
+        | H : ffi_step _ _ _ _ _ |- _ =>
           inversion H; subst; clear H
         | [ H1: context[ match world ?σ with | _ => _ end ], Heq: world ?σ = _ |- _ ] =>
           rewrite Heq in H1
         end.
 
 Notation spec_ext := jrnl_spec_ext.
-Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
-Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
-Notation sval := (@val (@spec_ext_op_field spec_ext)).
-Notation shead_step := (@head_step (@spec_ext_op_field spec_ext)).
-Notation sworld := (@world (@spec_ext_op_field spec_ext) (@spec_ffi_model_field jrnl_spec_ffi_model)).
+Notation sstate := (@state (@spec_ffi_op_field spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ffi_op_field spec_ext)).
+Notation sval := (@val (@spec_ffi_op_field spec_ext)).
+Notation shead_step := (@head_step (@spec_ffi_op_field spec_ext)).
+Notation sworld := (@world (@spec_ffi_op_field spec_ext) (@spec_ffi_model_field jrnl_spec_ffi_model)).
 
 Definition jrnl_sub_dom (σj1 σj2 : jrnl_map) : Prop :=
   (dom (gset _) (jrnlData σj1) = dom _ (jrnlData σj2) ∧ jrnlKinds σj1 ⊆ jrnlKinds σj2 ∧
@@ -693,7 +693,7 @@ Proof.
   rewrite dom_singleton. set_solver.
 Qed.
 
-Lemma always_steps_bind `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+Lemma always_steps_bind `{Hctx: LanguageCtx' (ext := @spec_ffi_op_field _)
                                              (ffi := (spec_ffi_model_field))
                                              (ffi_semantics := (spec_ext_semantics_field))
                                              K} e1 e2 σj1 σj2 :
@@ -851,7 +851,7 @@ Qed.
 
 Definition addr2val' (a : addr) : sval := (#(addrBlock a), (#(addrOff a), #()))%V.
 
-Lemma always_steps_lifting_puredet K `{Hctx: LanguageCtx' (ext := @spec_ext_op_field _)
+Lemma always_steps_lifting_puredet K `{Hctx: LanguageCtx' (ext := @spec_ffi_op_field _)
                                              (ffi := (spec_ffi_model_field))
                                              (ffi_semantics := (spec_ext_semantics_field))
                                              K}:
@@ -875,7 +875,7 @@ Lemma always_steps_MarkUsedOp l n max σj:
   wf_jrnl σj →
   jrnlAllocs σj !! l = Some max →
   (int.Z n < int.Z max) →
-  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            MarkUsedOp
                            (PairV #(LitLoc l) #(LitInt n)))
                σj
@@ -904,7 +904,7 @@ Lemma always_steps_FreeNumOp l n max σj:
   wf_jrnl σj →
   jrnlAllocs σj !! l = Some max →
   (int.Z n ≠ 0 ∧ int.Z n < int.Z max) →
-  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            FreeNumOp
                            (PairV #(LitLoc l) #(LitInt n)))
                σj
@@ -933,7 +933,7 @@ Lemma always_steps_AllocOp l n max σj:
   wf_jrnl σj →
   jrnlAllocs σj !! l = Some max →
   (0 < int.Z max ∧ int.Z n < int.Z max) →
-  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            AllocOp
                            #(LitLoc l))
                σj
@@ -963,7 +963,7 @@ Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
   jrnlData σj !! a = Some v →
   jrnlKinds σj !! (addrBlock a) = Some k →
   (k ≠ KindBit ∧ bufSz k = int.nat sz) →
-  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            ReadBufOp
                            (PairV (addr2val' a) #sz))
                σj
@@ -996,7 +996,7 @@ Lemma always_steps_ReadBitOp a v σj:
   wf_jrnl σj →
   jrnlData σj !! a = Some v →
   jrnlKinds σj !! (addrBlock a) = Some KindBit →
-  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            ReadBitOp
                            (addr2val' a))
                σj
@@ -1055,7 +1055,7 @@ Lemma always_steps_OverWriteOp a vs k σj:
   is_Some (jrnlData σj !! a)  →
   jrnlKinds σj !! (addrBlock a) = Some k →
   (objSz (objBytes vs) = bufSz k ∧ k ≠ KindBit) →
-  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            OverWriteOp
                            (PairV (addr2val' a) (val_of_obj' (objBytes vs))))
                σj
@@ -1105,7 +1105,7 @@ Lemma always_steps_OverWriteBitOp a b k σj:
   is_Some (jrnlData σj !! a)  →
   jrnlKinds σj !! (addrBlock a) = Some k →
   (objSz (objBit b) = bufSz k ∧ k = KindBit) →
-  always_steps (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            OverWriteBitOp
                            (PairV (addr2val' a) (val_of_obj' (objBit b))))
                σj
@@ -1154,7 +1154,7 @@ Qed.
 Lemma ghost_step_open_stuck E j K {HCTX: LanguageCtx K} σ g (v : sval):
   nclose sN_inv ⊆ E →
   (∀ vs, σ.(@world _ jrnl_spec_ffi_model.(@spec_ffi_model_field)) ≠ Closed vs) →
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v) -∗
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) OpenOp v) -∗
   source_ctx (CS := spec_crash_lang) -∗
   source_state σ g -∗
   |NC={E}=> False.
@@ -1175,7 +1175,7 @@ Lemma jrnl_opened_open_false E j K {HCTX: LanguageCtx K} (v : sval):
   nclose sN ⊆ E →
   spec_ctx -∗
   jrnl_open -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) OpenOp v) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hopened Hj".
@@ -1191,8 +1191,8 @@ Qed.
 Lemma jrnl_open_open_false E j K {HCTX: LanguageCtx K} j' K' {HCTX': LanguageCtx K'} (v: sval) :
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v) -∗
-  j' ⤇ K' (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v) -∗ |NC={E}=>
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) OpenOp v) -∗
+  j' ⤇ K' (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) OpenOp v) -∗ |NC={E}=>
   False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj Hj'".
@@ -1219,7 +1219,7 @@ Lemma ghost_step_jrnl_open E j K {HCTX: LanguageCtx K} (v: sval):
   nclose sN ⊆ E →
   spec_ctx -∗
   jrnl_closed_frag -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) OpenOp v)
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) OpenOp v)
   -∗ |NC={E}=> j ⤇ K #true%V ∗ jrnl_open.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Huninit_frag Hj".
@@ -1699,7 +1699,7 @@ Proof.
 Qed.
 
 Lemma not_stuck'_OverWriteBit_inv K `{!LanguageCtx' K} a (ov : sval) s g:
-  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  ¬ stuck' (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         OverWriteBitOp (addr2val' a, ov)%V)) s g →
   ∃ σj o, world s = Opened σj ∧
   is_Some (jrnlData σj !! a) ∧
@@ -1730,7 +1730,7 @@ Proof.
 Qed.
 
 Lemma not_stuck'_OverWrite_inv K `{!LanguageCtx' K} a (ov : sval) s g:
-  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  ¬ stuck' (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         OverWriteOp (addr2val' a, ov)%V)) s g →
   ∃ σj k o, world s = Opened σj ∧
   is_Some (jrnlData σj !! a) ∧
@@ -1762,7 +1762,7 @@ Proof.
 Qed.
 
 Lemma not_stuck'_ReadBuf_inv K `{!LanguageCtx' K} a (sz : u64) s g:
-  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  ¬ stuck' (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         ReadBufOp (addr2val' a, #sz)%V)) s g →
   ∃ σj k, world s = Opened σj ∧
   is_Some (jrnlData σj !! a) ∧
@@ -1792,7 +1792,7 @@ Proof.
 Qed.
 
 Lemma not_stuck'_ReadBit_inv K `{!LanguageCtx' K} a s g:
-  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  ¬ stuck' (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         ReadBitOp (addr2val' a)%V)) s g →
   ∃ σj, world s = Opened σj ∧
   is_Some (jrnlData σj !! a) ∧
@@ -1821,7 +1821,7 @@ Proof.
 Qed.
 
 Lemma not_stuck_MkAllocOp_inv max s g:
-  ¬ stuck ((ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  ¬ stuck ((ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         MkAllocOp #(LitInt max)%V)) s g →
   ∃ σj, world s = Opened σj ∧ 0 < int.Z max ∧ int.Z max `mod` 8 = 0.
 Proof.
@@ -1840,7 +1840,7 @@ Proof.
 Qed.
 
 Lemma not_stuck'_MarkUsedOp_inv K `{!LanguageCtx' K} l n s g:
-  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  ¬ stuck' (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         MarkUsedOp (PairV #(LitLoc l) #(LitInt n)%V))) s g →
   ∃ σj max, world s = Opened σj ∧
   jrnlAllocs σj !! l = Some max ∧ int.Z n < int.Z max.
@@ -1865,7 +1865,7 @@ Proof.
 Qed.
 
 Lemma not_stuck'_FreeNumOp_inv K `{!LanguageCtx' K} l n s g:
-  ¬ stuck' (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+  ¬ stuck' (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         FreeNumOp (PairV #(LitLoc l) #(LitInt n)%V))) s g →
   ∃ σj max, world s = Opened σj ∧
   jrnlAllocs σj !! l = Some max ∧ int.Z n ≠ 0 ∧ int.Z n < int.Z max.
@@ -1892,7 +1892,7 @@ Qed.
 Lemma ghost_step_jrnl_mkalloc E j K {HCTX: LanguageCtx K} (n: u64):
   nclose sN ⊆ E →
   spec_ctx -∗
-  j ⤇ K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext) MkAllocOp #n)
+  j ⤇ K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) MkAllocOp #n)
   -∗ |NC={E}=> ∃ (l: loc), ⌜ 0 < int.Z n ∧ int.Z n `mod` 8 = 0 ⌝ ∗ j ⤇ K #l ∗ jrnl_alloc l n.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj".

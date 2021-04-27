@@ -10,7 +10,7 @@ Set Default Proof Using "Type".
 Set Implicit Arguments.
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context {ext_ty: ext_types ext}.
 
 Definition descriptor := list (string*ty).

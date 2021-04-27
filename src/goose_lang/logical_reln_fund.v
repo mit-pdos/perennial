@@ -14,23 +14,23 @@ From Perennial.goose_lang Require Import logical_reln_defns.
 Set Default Proof Using "Type".
 
 Section pfs.
-Context {ext: ext_op}.
+Context {ext: ffi_syntax}.
 Context {ffi: ffi_model}.
-Context {ffi_semantics: ext_semantics ext ffi}.
+Context {ffi_semantics: ffi_semantics ext ffi}.
 Context `{interp: !ffi_interp ffi}.
 Context `{interp_adeq: !ffi_interp_adequacy}.
 Context (impl_ty: ext_types ext).
 
-Context {spec_ext: spec_ext_op}.
+Context {spec_ext: spec_ffi_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{spec_interp: @spec_ffi_interp spec_ffi}.
 Context `{spec_adeq: !spec_ffi_interp_adequacy}.
-Context (spec_ty: ext_types (@spec_ext_op_field spec_ext)).
+Context (spec_ty: ext_types (@spec_ffi_op_field spec_ext)).
 
-Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
-Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
-Notation sval := (@val (@spec_ext_op_field spec_ext)).
+Notation sstate := (@state (@spec_ffi_op_field spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ffi_op_field spec_ext)).
+Notation sval := (@val (@spec_ffi_op_field spec_ext)).
 Notation istate := (@state ext).
 Notation iexpr := (@expr ext).
 Notation ival := (@val ext).
@@ -200,7 +200,7 @@ Proof.
       f_equal. cut (∀ (l l': loc), #l = #l' → LitLoc l = LitLoc l'); eauto.
        inversion 1; eauto.
     ** (* this is kind of round about since inversion is behaving oddly on the null offset hypothesis *)
-      f_equal. cut (∀ (l l': loc), (#l = (#l': @val (@spec_ext_op_field spec_ext))) →
+      f_equal. cut (∀ (l l': loc), (#l = (#l': @val (@spec_ffi_op_field spec_ext))) →
                                      LitLoc l = LitLoc l'); eauto. inversion 1; eauto.
 Qed.
 

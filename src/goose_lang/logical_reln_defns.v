@@ -14,23 +14,23 @@ From Perennial.Helpers Require List.
 Set Default Proof Using "Type".
 
 Section reln.
-Context {ext: ext_op}.
+Context {ext: ffi_syntax}.
 Context {ffi: ffi_model}.
-Context {ffi_semantics: ext_semantics ext ffi}.
+Context {ffi_semantics: ffi_semantics ext ffi}.
 Context `{interp: !ffi_interp ffi}.
 Context `{interp_adeq: !ffi_interp_adequacy}.
 Context (impl_ty: ext_types ext).
 
-Context {spec_ext: spec_ext_op}.
+Context {spec_ext: spec_ffi_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{spec_interp: @spec_ffi_interp spec_ffi}.
 Context `{spec_adeq: !spec_ffi_interp_adequacy}.
-Context {spec_ty: ext_types (@spec_ext_op_field spec_ext)}.
+Context {spec_ty: ext_types (@spec_ffi_op_field spec_ext)}.
 
-Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
-Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
-Notation sval := (@val (@spec_ext_op_field spec_ext)).
+Notation sstate := (@state (@spec_ffi_op_field spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ffi_op_field spec_ext)).
+Notation sval := (@val (@spec_ffi_op_field spec_ext)).
 Notation istate := (@state ext).
 Notation iexpr := (@expr ext).
 Notation ival := (@val ext).
@@ -59,7 +59,7 @@ Class specTy_model :=
     styN: coPset;
     styN_disjoint : ↑ sN ## styN;
     sty_val_interp : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ} (hS: styG Σ),
-                     @ext_tys (@val_tys (@spec_ext_op_field spec_ext) spec_ty) → val_semTy;
+                     @ext_tys (@val_tys (@spec_ffi_op_field spec_ext) spec_ty) → val_semTy;
     sty_val_persistent:
       forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ es e,
         Persistent (sty_val_interp hS τ es e);
@@ -79,7 +79,7 @@ Context {hRG: refinement_heapG Σ}.
 Context `{hS: @styG smodel Σ}.
 
 
-Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
+Existing Instances spec_ffi_model_field (* spec_ffi_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
 Definition has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) (K: sexpr → sexpr) (CTX: LanguageCtx K),
@@ -253,7 +253,7 @@ Section reln_obligations.
 Context `{hsT_model: !specTy_model} (spec_trans: sval → ival → Prop).
 Context (spec_atomic_transTy : SCtx → sexpr → iexpr → sty → sexpr → iexpr → sty → Prop).
 
-Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
+Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 
 
 Context (upd: specTy_update hsT_model).

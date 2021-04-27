@@ -9,7 +9,7 @@ From Perennial.goose_lang.lib Require Export typed_mem.impl.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-  Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
   Context {ext_ty: ext_types ext}.
 
   Ltac invc H := inversion H; subst; clear H.

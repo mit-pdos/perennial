@@ -7,7 +7,7 @@ From Perennial.program_proof Require Import disk_prelude.
 
 Definition inode_bytes := Z.to_nat 128.
 Definition inode_buf := vec u8 inode_bytes.
-Definition inode_to_vals {ext: ext_op} (i:inode_buf) : list val :=
+Definition inode_to_vals {ext: ffi_syntax} (i:inode_buf) : list val :=
   fmap b2val (vec_to_list i).
 Definition inode_buf0 : inode_buf := vreplicate inode_bytes (U8 0).
 Instance inode_witness : Inhabited inode_buf := populate inode_buf0.

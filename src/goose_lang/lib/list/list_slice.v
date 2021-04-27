@@ -3,7 +3,7 @@ From Perennial.goose_lang.lib Require Import typed_mem.impl.
 From Perennial.goose_lang Require Import slice.impl list.impl.
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context {ext_ty:ext_types ext}.
 Local Coercion Var' (s:string) : expr := Var s.
 

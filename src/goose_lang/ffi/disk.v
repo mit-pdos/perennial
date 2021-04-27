@@ -26,7 +26,7 @@ Proof.
   solve_countable DiskOp_rec 3%nat.
 Qed.
 
-Definition disk_op : ext_op.
+Definition disk_op : ffi_syntax.
 Proof.
   refine (mkExtOp DiskOp _ _ () _ _).
 Defined.
@@ -55,7 +55,7 @@ Section disk.
 End disk.
 
 Definition block_bytes: nat := Z.to_nat 4096.
-Definition BlockSize {ext: ext_op}: val := #4096.
+Definition BlockSize {ext: ffi_syntax}: val := #4096.
 Definition Block := vec byte block_bytes.
 Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
 (* TODO: could use vreplicate; not sure how much easier it is to work with *)
@@ -81,10 +81,10 @@ Fixpoint init_disk (d: disk_state) (sz: nat) : disk_state :=
   | S n => <[(Z.of_nat n) := block0]> (init_disk d n)
   end.
 
-Definition Block_to_vals {ext: ext_op} (bl:Block) : list val :=
+Definition Block_to_vals {ext: ffi_syntax} (bl:Block) : list val :=
   fmap b2val (vec_to_list bl).
 
-Lemma length_Block_to_vals {ext: ext_op} b :
+Lemma length_Block_to_vals {ext: ffi_syntax} b :
     length (Block_to_vals b) = block_bytes.
 Proof.
   rewrite /Block_to_vals fmap_length vec_to_list_length //.
@@ -175,7 +175,7 @@ Section disk.
   Definition disk_size (d: gmap Z Block): Z :=
     1 + highest_addr (dom _ d).
 
-  Definition ext_step (op: DiskOp) (v: val): transition (state*global_state) val :=
+  Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) val :=
     match op, v with
     | ReadOp, LitV (LitInt a) =>
       b ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
@@ -200,9 +200,9 @@ Section disk.
     end.
 
   (* these instances are also local (to the outer section) *)
-  Instance disk_semantics : ext_semantics disk_op disk_model :=
-    { ext_step := ext_step;
-      ext_crash := eq; }.
+  Instance disk_semantics : ffi_semantics disk_op disk_model :=
+    { ffi_step := ffi_step;
+      ffi_crash_step := eq; }.
 
   Program Instance disk_interp: ffi_interp disk_model :=
     {| ffiG := diskG;
@@ -250,14 +250,14 @@ lemmas. *)
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
-        | H : ext_step _ _ _ _ _ |- _ =>
+        | H : ffi_step _ _ _ _ _ |- _ =>
           inversion H; subst; clear H
         end.
 
   Theorem read_fresh : forall σ g a b,
       let l := fresh_locs (dom (gset loc) (heap σ)) in
       σ.(world) !! int.Z a = Some b ->
-      relation.denote (ext_step ReadOp (LitV $ LitInt a)) (σ,g) (state_insert_list l (Block_to_vals b) σ,g) (LitV $ LitLoc $ l).
+      relation.denote (ffi_step ReadOp (LitV $ LitInt a)) (σ,g) (state_insert_list l (Block_to_vals b) σ,g) (LitV $ LitLoc $ l).
   Proof.
     intros.
     simpl.
@@ -341,7 +341,7 @@ lemmas. *)
     abstract (apply Z2Nat.inj_lt; auto; vm_compute; inversion 1).
   Defined.
 
-  Theorem block_byte_index {ext: ext_op} (b: Block) (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) :
+  Theorem block_byte_index {ext: ffi_syntax} (b: Block) (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) :
     Block_to_vals b !! Z.to_nat i = Some (LitV $ LitByte $ b !!! bindex_of_Z i Hlow Hhi).
   Proof.
     unfold Block_to_vals.

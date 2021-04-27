@@ -23,8 +23,8 @@ Coercion LitByte : u8 >-> base_lit.
 Coercion LitProphecy : proph_id >-> base_lit.
 Notation "'str' s" := (LitString s) (at level 30, format "'str' s") : val_scope.
 
-Definition b2val {ext: ext_op}: u8 -> val := λ (b:u8), LitV (LitByte b).
-Global Instance b2val_inj {ext: ext_op} : Inj eq eq b2val.
+Definition b2val {ext: ffi_syntax}: u8 -> val := λ (b:u8), LitV (LitByte b).
+Global Instance b2val_inj {ext: ffi_syntax} : Inj eq eq b2val.
 Proof.
   intros b1 b2 Heq.
   inversion Heq; auto.
@@ -50,7 +50,7 @@ Notation CAS l e1 e2 := (Snd (CmpXchg l e1 e2)) (only parsing).
 (* Skip should be atomic, we sometimes open invariants around
    it. Hence, we need to explicitly use LamV instead of e.g., Seq. *)
 Notation Skip := (App (Val $ LamV BAnon (Val $ LitV LitUnit)) (Val $ LitV LitUnit)).
-Definition Linearize {ext:ext_op}: expr := Skip.
+Definition Linearize {ext:ffi_syntax}: expr := Skip.
 
 (* No scope for the values, does not conflict and scope is often not inferred
 properly. *)
@@ -120,14 +120,14 @@ Notation "e1 = e2" := (BinOp EqOp e1%E e2%E) : expr_scope.
 Notation "e1 ≠ e2" := (UnOp NegOp (BinOp EqOp e1%E e2%E)) : expr_scope.
 
 Notation "~ e" := (UnOp NegOp e%E) (at level 75, right associativity) : expr_scope.
-Definition Store {ext:ext_op} : val :=
+Definition Store {ext:ffi_syntax} : val :=
   LamV "l" (Lam "v" (Seq
                      (PrepareWrite (Var "l"))
                      (FinishStore (Var "l") (Var "v")))).
 (* The unicode ← is already part of the notation "_ ← _; _" for bind. *)
 Notation "e1 <- e2" := (Store e1%E e2%E) (at level 80) : expr_scope.
 
-Definition Read {ext:ext_op} : val :=
+Definition Read {ext:ffi_syntax} : val :=
   LamV "l" ((Let "v" (StartRead (Var "l"))
                      (Seq (FinishRead (Var "l"))
                           (Var "v")))).

@@ -5,7 +5,7 @@ From Perennial.goose_lang.lib Require Export typed_mem loop.impl.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
 
 Theorem wp_forBreak_cond (I: bool -> iProp Σ) stk E (cond body: val) :

@@ -18,7 +18,7 @@ Section translate.
   (* Records for the target language *)
   Notation impl_op := disk_op.
   Context (impl_ffi: ffi_model).
-  Context (impl_semantics: ext_semantics impl_op impl_ffi).
+  Context (impl_semantics: ffi_semantics impl_op impl_ffi).
   Context (impl_ty: ext_types impl_op).
 
   Notation sexpr := (@expr spec_op).

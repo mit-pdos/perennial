@@ -23,11 +23,11 @@ Context (SIZE: nat).
 Context (SIZE_nonzero: 0 < SIZE).
 Context (SIZE_bounds: int.nat SIZE = SIZE).
 
-Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
+Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
-Notation sstate := (@state (@spec_ext_op_field log_spec_ext) (spec_ffi_model_field)).
-Notation sexpr := (@expr (@spec_ext_op_field log_spec_ext)).
-Notation sval := (@val (@spec_ext_op_field log_spec_ext)).
+Notation sstate := (@state (@spec_ffi_op_field log_spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ffi_op_field log_spec_ext)).
+Notation sval := (@val (@spec_ffi_op_field log_spec_ext)).
 
 Class appendG (Σ: gFunctors) :=
   { append_stagedG :> stagedG Σ;
@@ -127,7 +127,7 @@ Qed.
 Lemma append_init_obligation2: sty_init_obligation2 append_initP.
 Proof. intros ?? (?&?&?). rewrite //=. Qed.
 
-Definition append_op_trans (op: log_spec_ext.(@spec_ext_op_field).(@external)) : @val disk_op :=
+Definition append_op_trans (op: log_spec_ext.(@spec_ffi_op_field).(@external)) : @val disk_op :=
   match op with
   | AppendOp => Log__Append
   | GetOp => Log__Get
@@ -363,7 +363,7 @@ Proof using SIZE.
 Qed.
 
 Existing Instances log_semantics.
-Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
+Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 (* XXX: might need to change typed_translate / refinement to use the spec_ wrappers around type classes *)
 
 Lemma append_refinement (es: @expr log_op) σs e σ (τ: @ty log_ty.(@val_tys log_op)):

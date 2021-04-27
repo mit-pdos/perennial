@@ -29,7 +29,7 @@ Proof.
 Qed.
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
 
 Context {A: Type}.

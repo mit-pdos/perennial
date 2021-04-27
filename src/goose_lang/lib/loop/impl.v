@@ -1,7 +1,7 @@
 From Perennial.goose_lang Require Import lang notation.
 
 Section goose_lang.
-Context {ext: ext_op}.
+Context {ext: ffi_syntax}.
 
 (* idiomatic wrappers for loop control flow *)
 Definition Continue: val := #true.

@@ -11,11 +11,11 @@ Set Default Proof Using "Type".
 
 Class spec_ffi_interp_adequacy `{spec_ffi: @spec_ffi_interp ffi} `{EXT: !spec_ext_semantics ext ffi} :=
   { spec_ffi_interp_adequacy_field : @ffi_interp_adequacy _ (spec_ffi_interp_field)
-                                                          (spec_ext_op_field)
+                                                          (spec_ffi_op_field)
                                                           (spec_ext_semantics_field) }.
 
-Class refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} Σ := HeapPreG {
-  refinement_heap_preG_heap :> na_heapPreG loc (@val spec_ext_op_field) Σ;
+Class refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} Σ := HeapPreG {
+  refinement_heap_preG_heap :> na_heapPreG loc (@val spec_ffi_op_field) Σ;
   refinement_heap_preG_ffi : @ffi_preG (@spec_ffi_model_field ffi)
                                        (@spec_ffi_interp_field _ spec_ffi)
                                        _ _ (spec_ffi_interp_adequacy_field) Σ;
@@ -23,20 +23,20 @@ Class refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi sp
   refinement_heap_preG_frac :> frac_countG Σ;
 }.
 
-Existing Instances spec_ext_op_field spec_ext_semantics_field spec_ffi_model_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
-Definition refinement_heapΣ `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ; frac_countΣ].
-Instance subG_refinement_heapPreG `{ext: spec_ext_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} {Σ} :
+Existing Instances spec_ffi_op_field spec_ext_semantics_field spec_ffi_model_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
+Definition refinement_heapΣ `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ; frac_countΣ].
+Instance subG_refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} {Σ} :
   subG refinement_heapΣ Σ → refinement_heapPreG Σ.
 Proof. solve_inG_deep. Qed.
 
 Section refinement.
-Context {ext: ext_op}.
+Context {ext: ffi_syntax}.
 Context {ffi: ffi_model}.
-Context {ffi_semantics: ext_semantics ext ffi}.
+Context {ffi_semantics: ffi_semantics ext ffi}.
 Context `{interp: !ffi_interp ffi}.
 Context `{interp_adeq: !ffi_interp_adequacy}.
 
-Context {spec_ext: spec_ext_op}.
+Context {spec_ext: spec_ffi_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{spec_interp: @spec_ffi_interp spec_ffi}.
@@ -46,7 +46,7 @@ Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
 
-Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
+Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field spec_ffi_interp_field
          spec_ffi_interp_adequacy_field.
 
 Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 g0 tp σ g s tr or P:
@@ -251,13 +251,13 @@ Qed.
 End refinement.
 
 Section refinement_wpc.
-Context {ext: ext_op}.
+Context {ext: ffi_syntax}.
 Context {ffi: ffi_model}.
-Context {ffi_semantics: ext_semantics ext ffi}.
+Context {ffi_semantics: ffi_semantics ext ffi}.
 Context `{interp: !ffi_interp ffi}.
 Context `{interp_adeq: !ffi_interp_adequacy}.
 
-Context {spec_ext: spec_ext_op}.
+Context {spec_ext: spec_ffi_op}.
 Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{spec_interp: @spec_ffi_interp spec_ffi}.
@@ -267,7 +267,7 @@ Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
 
-Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field spec_ffi_interp_field
+Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field spec_ffi_interp_field
          spec_ffi_interp_adequacy_field.
 
 
@@ -278,7 +278,7 @@ Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_fie
 Definition wpc_obligation k E e es Φ Φc (hG: heapG Σ) (hRG: refinement_heapG Σ) P : iProp Σ :=
      (O ⤇ es -∗ spec_ctx -∗ spec_crash_ctx P  -∗ trace_ctx -∗ WPC e @ NotStuck; k; E {{ Φ hG hRG }} {{ Φc hG hRG }})%I.
 
-Implicit Types initP: @state ext ffi → @state (spec_ext_op_field) (spec_ffi_model_field) → Prop.
+Implicit Types initP: @state ext ffi → @state (spec_ffi_op_field) (spec_ffi_model_field) → Prop.
 
 Definition wpc_init k E e es Φ Φc initP P : iProp Σ :=
   (∀ (hG: heapG Σ) (hRG: refinement_heapG Σ) σ g σs gs,
@@ -397,7 +397,7 @@ Qed.
 
 Definition initP_wf initP :=
   ∀ (σ: @state ext ffi) (g: @global_state ffi)
-    (σs: @state (@spec_ext_op_field spec_ext) (@spec_ffi_model_field spec_ffi))
+    (σs: @state (@spec_ffi_op_field spec_ext) (@spec_ffi_model_field spec_ffi))
     (gs: @global_state (@spec_ffi_model_field spec_ffi)),
     initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs ∧
                  ffi_initgP g ∧ ffi_initgP gs.

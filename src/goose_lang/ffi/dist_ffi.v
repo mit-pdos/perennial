@@ -46,7 +46,7 @@ Proof.
   by intros [].
 Qed.
 
-Definition grove_op : ext_op.
+Definition grove_op : ffi_syntax.
 Proof.
   refine (mkExtOp GroveOp _ _ GroveVal _ _).
 Defined.
@@ -105,7 +105,7 @@ Section grove.
   Global Instance alloc_chan_gen : GenPred (option chan) (state*global_state) isFreshChan.
   Proof. intros _ σg. refine (Some (exist _ _ (gen_isFreshChan σg))). Defined.
 
-  Definition ext_step (op: GroveOp) (v: val): transition (state*global_state) val :=
+  Definition ffi_step (op: GroveOp) (v: val): transition (state*global_state) val :=
     match op, v with
     | ListenOp, LitV (LitInt c) =>
       ret (ExtV (HostEndp c))
@@ -141,9 +141,9 @@ Section grove.
     | _, _ => undefined
     end.
 
-  Local Instance grove_semantics : ext_semantics grove_op grove_model :=
-    { ext_step := ext_step;
-      ext_crash := eq; }.
+  Local Instance grove_semantics : ffi_semantics grove_op grove_model :=
+    { ffi_step := ffi_step;
+      ffi_crash_step := eq; }.
 End grove.
 
 (** * Grove semantic interpretation and lifting lemmas *)
@@ -228,7 +228,7 @@ lemmas. *)
         | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
           rewrite /head_step /= in H;
           monad_inv; repeat (simpl in H; monad_inv)
-        | H : ext_step _ _ _ _ _ |- _ =>
+        | H : ffi_step _ _ _ _ _ |- _ =>
           inversion H; subst; clear H
         end.
 

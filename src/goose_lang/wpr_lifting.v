@@ -9,7 +9,7 @@ Set Default Proof Using "Type".
 
 Section wpr_definitions.
 
-Context `{ffi_semantics: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context {ext_tys: ext_types ext}.
 Context `{!ffi_interp ffi}.
 

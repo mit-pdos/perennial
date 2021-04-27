@@ -203,7 +203,7 @@ Definition disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr
   | (ReadOp, (LitV (LitInt _))) =>
     bts <- mget;
       let 'σg := fst bts in
-      t <- mlift (Transitions.interpret [] (ext_step ReadOp v) σg) "Transitions.interpret failed in ReadOp";
+      t <- mlift (Transitions.interpret [] (ffi_step ReadOp v) σg) "Transitions.interpret failed in ReadOp";
       match t with
       | (hints, σg', v') => _ <- mput (σg', snd bts); mret (Val v')
       end
@@ -233,7 +233,7 @@ Proof.
     destruct l; try by inversion H.
     assert (runStateT mget ((σ,g), ws) = Works _ (((σ,g), ws), ((σ,g), ws))) by eauto.
     rewrite (runStateT_Error_bind _ _ _ _ _ _ _ H0) in H.
-    destruct (Transitions.interpret [] (ext_step ReadOp #n) ((σ,g), ws).1) eqn:interp_res; simpl in H; try by inversion H.
+    destruct (Transitions.interpret [] (ffi_step ReadOp #n) ((σ,g), ws).1) eqn:interp_res; simpl in H; try by inversion H.
     destruct p as ((l & s) & b).
     simpl in H.
     inversion H.

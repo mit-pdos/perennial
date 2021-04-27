@@ -25,7 +25,7 @@ Section proof.
   Existing Instance jrnlG0.
 
   Notation spec_ext := jrnl_spec_ext.
-  Notation sval := (@val (@spec_ext_op_field spec_ext)).
+  Notation sval := (@val (@spec_ffi_op_field spec_ext)).
 
   Implicit Types (N: namespace).
 
@@ -819,7 +819,7 @@ Section proof.
 
   Lemma twophase_started_ub_det_with_alloc' la u l γ γ' dinit objs_dom E j K0 K
         `{Hctx: LanguageCtx'
-          (ext := @spec_ext_op_field _)
+          (ext := @spec_ffi_op_field _)
           (ffi := (spec_ffi_model_field))
           (ffi_semantics := (spec_ext_semantics_field))
           K} e0 e :
@@ -928,7 +928,7 @@ Section proof.
 
   Lemma twophase_started_ub_det' l γ γ' dinit objs_dom E j K0 K
         `{Hctx: LanguageCtx'
-          (ext := @spec_ext_op_field _)
+          (ext := @spec_ffi_op_field _)
           (ffi := (spec_ffi_model_field))
           (ffi_semantics := (spec_ext_semantics_field))
           K} e0 e :
@@ -1021,7 +1021,7 @@ Section proof.
 
   Lemma twophase_started_ub_det l γ γ' dinit objs_dom E j K0 K
         `{Hctx: LanguageCtx'
-          (ext := @spec_ext_op_field _)
+          (ext := @spec_ffi_op_field _)
           (ffi := (spec_ffi_model_field))
           (ffi_semantics := (spec_ext_semantics_field))
           K} e0 e :
@@ -1042,13 +1042,13 @@ Section proof.
 
   Theorem wp_TwoPhase__ReadBuf' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
-            (ext := @spec_ext_op_field _)
+            (ext := @spec_ffi_op_field _)
             (ffi := (spec_ffi_model_field))
             (ffi_semantics := (spec_ext_semantics_field))
             K} e1 a (sz: u64) :
     {{{
       is_twophase_started l γ γ' dinit objs_dom j K0 e1
-        (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+        (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
           ReadBufOp (PairV (addr2val' a) #sz)))
     }}}
       TwoPhase__ReadBuf' #l (addr2val a, #sz)
@@ -1188,13 +1188,13 @@ Section proof.
 
   Theorem wp_TwoPhase__ReadBufBit' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
-            (ext := @spec_ext_op_field _)
+            (ext := @spec_ffi_op_field _)
             (ffi := (spec_ffi_model_field))
             (ffi_semantics := (spec_ext_semantics_field))
             K} e1 a :
     {{{
       is_twophase_started l γ γ' dinit objs_dom j K0 e1
-        (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+        (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
           ReadBitOp (addr2val' a)))
     }}}
       TwoPhase__ReadBufBit #l (addr2val a)
@@ -1325,14 +1325,14 @@ Section proof.
 
   Theorem wp_TwoPhase__OverWrite' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
-            (ext := @spec_ext_op_field _)
+            (ext := @spec_ffi_op_field _)
             (ffi := (spec_ffi_model_field))
             (ffi_semantics := (spec_ext_semantics_field))
             K}  e1 a ov :
     {{{
       is_twophase_started l γ γ' dinit objs_dom j K0
         e1
-        (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+        (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
           OverWriteOp (PairV (addr2val' a) (val_of_obj' ov))))
     }}}
       TwoPhase__OverWrite' #l (addr2val a, val_of_obj ov)
@@ -1560,14 +1560,14 @@ Section proof.
 
   Theorem wp_TwoPhase__OverWriteBit' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
-            (ext := @spec_ext_op_field _)
+            (ext := @spec_ffi_op_field _)
             (ffi := (spec_ffi_model_field))
             (ffi_semantics := (spec_ext_semantics_field))
             K}  e1 a ov :
     {{{
       is_twophase_started l γ γ' dinit objs_dom j K0
         e1
-        (K (ExternalOp (ext := @spec_ext_op_field jrnl_spec_ext)
+        (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
           OverWriteBitOp (PairV (addr2val' a) (val_of_obj' ov))))
     }}}
       TwoPhase__OverWriteBit' #l (addr2val a, val_of_obj ov)
@@ -1757,7 +1757,7 @@ Section proof.
 
   Lemma twophase_started_step_puredet l γ γ' dinit objs_dom j K0 K
         `{Hctx: LanguageCtx'
-          (ext := @spec_ext_op_field _)
+          (ext := @spec_ffi_op_field _)
           (ffi := (spec_ffi_model_field))
           (ffi_semantics := (spec_ext_semantics_field))
           K} e0 e1 e2:

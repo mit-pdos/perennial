@@ -11,8 +11,8 @@ From Perennial.goose_lang.lib Require Export
 Open Scope heap_types.
 Open Scope struct_scope.
 
-Definition uint64_to_string {ext: ext_op}: val := λ: <>, #().
-Definition strLen {ext: ext_op}: val := λ: "s", #0.
+Definition uint64_to_string {ext: ffi_syntax}: val := λ: <>, #().
+Definition strLen {ext: ffi_syntax}: val := λ: "s", #0.
 
 Module Data.
   Section goose_lang.
@@ -46,7 +46,7 @@ Hint Resolve Data.randomUint64_t : types.
 
 Module FS.
   Section goose_lang.
-    Context {ext:ext_op}.
+    Context {ext:ffi_syntax}.
     Definition open: val := λ: <>, #().
     Definition close: val := λ: <>, #().
     Definition list: val := λ: <>, #().
@@ -65,7 +65,7 @@ Definition fileT {val_tys: val_types}: ty := unitT.
 
 Module Globals.
   Section goose_lang.
-    Context {ext:ext_op}.
+    Context {ext:ffi_syntax}.
     Definition getX: val := λ: <>, #().
     Definition setX: val := λ: <>, #().
   End goose_lang.

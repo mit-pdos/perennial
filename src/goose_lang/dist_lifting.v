@@ -9,10 +9,10 @@ Set Default Proof Using "Type".
 
 Section wpd_definitions.
 
-Context `{ffi_semantics: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context {ext_tys: ext_types ext}.
 Context `{interp: !ffi_interp ffi}.
-Context `{@ffi_interp_adequacy ffi interp ext ffi_semantics}.
+Context `{@ffi_interp_adequacy ffi interp ext ffi_sem}.
 
 Class heap_globalG Σ := {
   heap_globalG_preG :> heapPreG Σ;

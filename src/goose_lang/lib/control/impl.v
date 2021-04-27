@@ -1,7 +1,7 @@
 From Perennial.goose_lang Require Import lang notation.
 
 Section goose_lang.
-Context {ext: ext_op}.
+Context {ext: ffi_syntax}.
 
 (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)

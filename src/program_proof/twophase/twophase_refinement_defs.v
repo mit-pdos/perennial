@@ -22,11 +22,11 @@ Context `{!refinement_heapG Σ}.
 
 Existing Instance jrnlG0.
 
-Existing Instances spec_ffi_model_field spec_ext_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
+Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
-Notation sstate := (@state (@spec_ext_op_field jrnl_spec_ext) (spec_ffi_model_field)).
-Notation sexpr := (@expr (@spec_ext_op_field jrnl_spec_ext)).
-Notation sval := (@val (@spec_ext_op_field jrnl_spec_ext)).
+Notation sstate := (@state (@spec_ffi_op_field jrnl_spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ffi_op_field jrnl_spec_ext)).
+Notation sval := (@val (@spec_ffi_op_field jrnl_spec_ext)).
 
 Notation jrnl_nat_K :=
 (leibnizO (nat * ((@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)

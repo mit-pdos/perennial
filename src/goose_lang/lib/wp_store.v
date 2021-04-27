@@ -7,7 +7,7 @@ From Perennial.goose_lang.lib Require Import typed_mem.
 Import uPred.
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
 Context {ext_ty: ext_types ext}.
 
 Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :

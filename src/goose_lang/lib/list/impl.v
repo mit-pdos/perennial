@@ -5,7 +5,7 @@ Notation ListNilV := (InjLV (LitV LitUnit)).
 Notation ListCons hd tl := (InjR (Pair hd tl)).
 
 Section goose_lang.
-Context {ext:ext_op}.
+Context {ext:ffi_syntax}.
 Local Coercion Var' (s:string) : expr := Var s.
 
 Definition ListMatch : val :=

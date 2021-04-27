@@ -29,7 +29,7 @@ Section reln.
   (* Records for the target language *)
   Notation ext := disk_op.
   Notation ffi := ffi_model.
-  Notation ffi_semantics := (ext_semantics ext ffi).
+  Notation ffi_semantics := (ffi_semantics ext ffi).
   Notation interp := (ffi_interp ffi).
   Notation interp_adeq := (ffi_interp ffi).
   Notation impl_ty := (ext_types ext).
@@ -56,9 +56,9 @@ Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrn
   Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
    *)
 
-Notation sstate := (@state (@spec_ext_op_field spec_ext) (spec_ffi_model_field)).
-Notation sexpr := (@expr (@spec_ext_op_field spec_ext)).
-Notation sval := (@val (@spec_ext_op_field spec_ext)).
+Notation sstate := (@state (@spec_ffi_op_field spec_ext) (spec_ffi_model_field)).
+Notation sexpr := (@expr (@spec_ffi_op_field spec_ext)).
+Notation sval := (@val (@spec_ffi_op_field spec_ext)).
 Notation istate := (@state ext).
 Notation sty := (@ty (@val_tys _ spec_ty)).
 Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
@@ -78,7 +78,7 @@ Context (tph: loc).
 Existing Instance jrnlG0.
 
 
-Existing Instances spec_ffi_model_field (* spec_ext_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
+Existing Instances spec_ffi_model_field (* spec_ffi_op_field *) spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 
 Definition atomically_has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) K0 e0 (K: sexpr → sexpr) (CTX: LanguageCtx' K),
@@ -1142,7 +1142,7 @@ Proof.
     iApply wp_wpc.
     rewrite /op_wrappers.Alloc__MarkUsed'.
     wp_pures.
-    assert (LanguageCtx' (λ x : sexpr, K (ectx_language.fill [@ExternalOpCtx (spec_ext_op_field) MarkUsedOp] x))).
+    assert (LanguageCtx' (λ x : sexpr, K (ectx_language.fill [@ExternalOpCtx (spec_ffi_op_field) MarkUsedOp] x))).
     { apply comp_ctx'; eauto. apply ectx_lang_ctx'. }
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) _  with "Hj") as "Hj";
@@ -1199,7 +1199,7 @@ Proof.
     iApply wp_wpc.
     rewrite /op_wrappers.Alloc__FreeNum'.
     wp_pures.
-    assert (LanguageCtx' (λ x : sexpr, K (ectx_language.fill [@ExternalOpCtx (spec_ext_op_field) FreeNumOp] x))).
+    assert (LanguageCtx' (λ x : sexpr, K (ectx_language.fill [@ExternalOpCtx (spec_ffi_op_field) FreeNumOp] x))).
     { apply comp_ctx'; eauto. apply ectx_lang_ctx'. }
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) _  with "Hj") as "Hj";

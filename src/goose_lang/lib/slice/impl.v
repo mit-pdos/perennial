@@ -34,7 +34,7 @@ End slice.
 Hint Resolve slice.ptr_t slice.len_t slice.nil_t : types.
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context {ext_ty:ext_types ext}.
 
 Implicit Types (t:ty).

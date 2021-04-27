@@ -12,7 +12,7 @@ From Perennial.goose_lang.lib Require Export lock.impl.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-Context `{ffi_sem: ext_semantics}.
+Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 Context {ext_tys: ext_types ext}.
 

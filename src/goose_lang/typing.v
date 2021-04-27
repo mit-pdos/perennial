@@ -65,7 +65,7 @@ Infix "->" := arrowT : heap_type.
 Reserved Notation "Γ ⊢ e : A" (at level 74, e, A at next level).
 Reserved Notation "Γ '⊢v' v : A" (at level 74, v, A at next level).
 
-Class ext_types (ext:ext_op) :=
+Class ext_types (ext:ffi_syntax) :=
   { val_tys :> val_types;
     (* the argument type and return type *)
     get_ext_tys: val -> ty * ty -> Prop;

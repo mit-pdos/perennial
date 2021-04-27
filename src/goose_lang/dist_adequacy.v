@@ -9,7 +9,7 @@ From Perennial.goose_lang Require Import typing adequacy lang.
 From Perennial.goose_lang Require Import crash_modality.
 Set Default Proof Using "Type".
 
-Theorem heap_dist_adequacy `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
+Theorem heap_dist_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
         Σ `{hPre: !heapPreG Σ} k (ebσs : list node_init_cfg)
         g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ} (cts : list (crashG Σ * heap_local_names)),
@@ -111,7 +111,7 @@ Qed.
   (which would require tracking and connecting the cts parameter of the wpd) it
   takes as input a list of proofs that, given initial local resources, we can
   construct a wpr for each node. *)
-Theorem heap_dist_adequacy_alt `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
+Theorem heap_dist_adequacy_alt `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
         Σ `{hPre: !heapPreG Σ} k (ebσs : list node_init_cfg)
         g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ},
@@ -151,7 +151,7 @@ Qed.
 
 Section failstop.
 
-Context `{ffi_sem: ext_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}.
 
 (* We can model failstop execution by just having the restart thread be a trivial program that just halts.
    Thus, a node "restarts" after a crash but it does not do anything. *)
