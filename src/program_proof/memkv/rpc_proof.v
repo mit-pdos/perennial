@@ -9,22 +9,23 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 Definition rpc_spec_map {Σ} : Type :=
   gmap u64 { X: Type & ((X → list u8 → iProp Σ) * (X → list u8 → list u8 → iProp Σ))%type }.
 
-Record rpc_reg_entry := RegEntry {
+(** Request descriptor: data describing a particular request *)
+Record rpc_req_desc := ReqDesc {
   rpc_reg_rpcid  : u64;
   rpc_reg_auxtype : Type;
   rpc_reg_aux : rpc_reg_auxtype;
   rpc_reg_args : list u8;
-  rpc_reg_saved : gname;
+  rpc_reg_saved : gname; (* Saved pred storing what the reply needs to satisfy *)
   rpc_reg_done : loc;
   rpc_reg_rep_ptr : loc;
 }.
 
 Class rpcregG (Σ : gFunctors) := RpcRegG {
   rpcreg_mono_natG :> mono_natG Σ;
-  rpcreg_mapG :> mapG Σ u64 rpc_reg_entry;
+  rpcreg_mapG :> mapG Σ u64 rpc_req_desc;
   rpcreg_escrowG :> mapG Σ u64 unit;
   rpcreg_savedG :> savedPredG Σ (list u8);
-  rpcreg_specs : gmap u64 (@rpc_spec_map Σ)
+  rpcreg_specs : gmap u64 (@rpc_spec_map Σ) (* [u64] here is a host name *)
 }.
 
 Section rpc_proof.
@@ -48,7 +49,7 @@ Definition client_chan_inner_msg (Γ : client_chan_gnames) (host : u64) m : iPro
     ∃ (rpcid seqno : u64) reqData replyData X Post (x : X) γ d rep,
        "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 seqno;
                                               EncUInt64 (length replyData); EncBytes replyData] ⌝ ∗
-       "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (RegEntry rpcid X x reqData γ d rep) ∗
+       "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid X x reqData γ d rep) ∗
        "#HPost_saved" ∷ saved_pred_own γ (Post x reqData) ∗
        "#HPost" ∷ inv urpc_escrowN (Post x reqData replyData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt).
 
@@ -61,7 +62,7 @@ Definition server_chan_inner_msg (host : u64) (specs : rpc_spec_map) m : iProp �
        "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 rpcid; EncUInt64 seqno;
                                               EncUInt64 (length args); EncBytes args] ⌝ ∗
        "%Hlookup_spec" ∷ ⌜ specs !! rpcid = Some (existT X (Pre, Post)) ⌝ ∗
-       "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (RegEntry rpcid X x args γ d rep) ∗
+       "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid X x args γ d rep) ∗
        "#HPre" ∷ □ (Pre x args) ∗
        "#HPost_saved" ∷ saved_pred_own γ (Post x args) ∗
        "#Hclient_chan_inv" ∷ inv urpc_clientN (client_chan_inner Γ (msg_sender m)).
@@ -617,7 +618,7 @@ Proof.
   unshelve (iMod (readonly_alloc_1 with "send") as "#send"); [| apply _ |].
   unshelve (iMod (readonly_alloc_1 with "pending") as "#pending"); [| apply _ |].
 
-  iMod (map_init (∅ : gmap u64 rpc_reg_entry)) as (γccmapping) "Hmapping_ctx".
+  iMod (map_init (∅ : gmap u64 rpc_req_desc)) as (γccmapping) "Hmapping_ctx".
   iMod (map_init (∅ : gmap u64 unit)) as (γccescrow) "Hescrow_ctx".
   iMod (map_init (∅ : gmap u64 unit)) as (γccextracted) "Hextracted_ctx".
   set (Γ := {| ccmapping_name := γccmapping; ccescrow_name := γccescrow;
@@ -702,7 +703,7 @@ Proof.
   iMod (saved_pred_alloc (Post x reqData)) as (γ) "#Hsaved".
   assert (reqs !! n = None).
   { apply not_elem_of_dom. rewrite -Hdom_range. lia. }
-  iMod (map_alloc_ro n (RegEntry rpcid X x reqData γ cb_done rep_ptr)
+  iMod (map_alloc_ro n (ReqDesc rpcid X x reqData γ cb_done rep_ptr)
           with "Hmapping_ctx") as "(Hmapping_ctx&#Hreg)"; auto.
   iMod (map_alloc n tt with "Hescrow_ctx") as "(Hescrow_ctx&Hescrow)".
   { apply not_elem_of_dom. rewrite -Hdom_eq_es -Hdom_range. lia. }
