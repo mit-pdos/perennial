@@ -104,10 +104,10 @@ Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
   f_equiv. rewrite /handler_is.
-  do 4 f_equiv. f_equiv. f_equiv.
-  (* Need to know that handler_is respects ≡{n}≡ (i.e. it's non-expansive w.r.t. the pre/post)? *)
-  (* But it's not currently ... *)
-Admitted.
+  do 4 f_equiv. f_equiv.
+  do 16 f_equiv.
+  f_contractive. apply Hpre.
+Qed.
 
 Definition is_shard_server :=
   fixpoint (is_shard_server_pre).

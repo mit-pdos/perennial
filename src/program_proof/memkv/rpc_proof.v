@@ -76,9 +76,11 @@ Definition server_chan_inner (host: u64) : iProp Σ :=
 
 Definition handler_is : ∀ (X:Type) (host:u64) (rpcid:u64) (Pre:X → list u8 → (list u8 → iProp Σ) → iProp Σ)
                           (Post:X → list u8 → (list u8 → iProp Σ) → list u8 → iProp Σ), iProp Σ :=
-  λ X host rpcid Pre Post, (∃ (specs: rpc_spec_map),
+  λ X host rpcid Pre Post, (∃ (specs: rpc_spec_map) Pre' Post',
   "%Hspecs_map_handler" ∷ ⌜ rpcreg_specs !! host = Some specs ⌝ ∗
-  "%Hprepost" ∷ ⌜ specs !! rpcid = Some (existT X (Pre, Post)) ⌝ ∗
+  "%Hprepost" ∷ ⌜ specs !! rpcid = Some (existT X (Pre', Post')) ⌝ ∗
+  "#Hequiv_pre" ∷ (∀ x l1 Q, Pre x l1 Q ≡ Pre' x l1 Q) ∗
+  "#Hequiv_post" ∷ (∀ x l1 Q l2, Post x l1 Q l2 ≡ Post' x l1 Q l2) ∗
   "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host)
 )%I.
 
@@ -222,18 +224,43 @@ Proof.
   { iIntros (?). rewrite big_sepM_insert //; iSplit; last first.
     { iApply "IH". iPureIntro.
       etransitivity; last eassumption. apply insert_subseteq; eauto. }
-    iExists _. iFrame "% #".
+    iExists _, ((fst (projT2 spec))), ((snd (projT2 spec))). iFrame "% #".
+    iSplit.
+    {
     iPureIntro.
     apply: lookup_weaken; eauto.
     rewrite lookup_insert.
     f_equal. destruct spec => //=.
     destruct p; eauto.
+    }
+    eauto.
   }
 Qed.
 
 Definition rpc_handler_mapping host handlers : iProp Σ :=
   ([∗ map] rpcid↦handler ∈ handlers, ∃ (X : Type) Pre Post,
       handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)%I.
+
+Lemma is_rpcHandler_proper' handler X Pre Pre' Post Post' :
+ □ (∀ (x : X) (l1 : list u8) (Q : list u8 → iProp Σ), Pre x l1 Q ≡ Pre' x l1 Q) -∗
+ □ (∀ (x : X) (l1 : list u8) (Q : list u8 → iProp Σ) (l2 : list u8),
+       Post x l1 Q l2 ≡ Post' x l1 Q l2) -∗
+ is_rpcHandler handler Pre Post -∗
+ is_rpcHandler handler Pre' Post'.
+Proof.
+  iIntros "#Hequiv_pre #Hequiv_post #His".
+  rewrite /is_rpcHandler.
+  iIntros. iIntros (Φc) "!# H HΦc".
+  wp_apply ("His" with "[H]").
+  { iDestruct "H" as "($&$&Hpre)". iNext.
+    iRewrite -("Hequiv_pre" $! x reqData Q) in "Hpre".
+    iExact "Hpre".
+  }
+  iIntros (??) "H". iApply "HΦc".
+  iDestruct "H" as "($&$&Hpre)". iNext.
+    iRewrite ("Hequiv_post" $! x reqData Q repData) in "Hpre".
+    iExact "Hpre".
+Qed.
 
 Lemma non_empty_rpc_handler_mapping_inv host handlers :
   dom (gset u64) handlers ≠ ∅ →
@@ -254,7 +281,8 @@ Proof.
   { iNamed "H". iDestruct "H" as "(Hhandler_is&His_rpcHandler)".
     iNamed "Hhandler_is". iExists _. iFrame "% #".
     rewrite big_sepM_insert //. iSplitL "His_rpcHandler".
-    { iExists _, _, _. eauto. }
+    { iExists _, Pre', Post'. iSplit; first eauto.
+      iApply is_rpcHandler_proper'; eauto. }
     apply dom_empty_inv_L in Hemp. rewrite Hemp big_sepM_empty. eauto.
   }
   iDestruct ("IH" with "[//] [$]") as (specs) "HIH".
@@ -263,8 +291,12 @@ Proof.
   { iNamed "H". iDestruct "H" as "(Hhandler_is&His_rpcHandler)".
     rewrite /handler_is.
     iDestruct "Hhandler_is" as (specs' Hlookup' Hprepost') "H".
+    iDestruct "H" as "(%Hspecs_map_handler'&%Hprepost''&H)".
     assert (specs = specs') as ->; first by congruence.
-    iExists _, _, _. eauto. }
+    iExists _, _, _. iSplit; first eauto.
+    iDestruct "H" as "(#Hequiv_pre&#Hequiv_post&?)".
+    iApply (is_rpcHandler_proper' with "[] [] His_rpcHandler"); eauto.
+  }
 Qed.
 
 Definition handlers_complete host (handlers : gmap u64 val) :=
@@ -795,13 +827,31 @@ Proof.
     iApply big_sepS_union; first by set_solver.
     iFrame "Hmessages".
     iApply big_sepS_singleton.
+    iAssert (saved_pred_own γ (Post x reqData Q) ≡ saved_pred_own γ (Post' x reqData Q))%I as "Hsaved_eq".
+    {
+      unfold saved_pred_own, saved_anything_own.
+      iApply f_equivI.
+      iAssert ((((λne y, Next y) ∘ Post x reqData Q) : list u8 -d> _) ≡
+               ((λne y, Next y) ∘ Post' x reqData Q : list u8 -d> (laterO (iPropO Σ))))%I as "H".
+      { iApply discrete_fun_equivI. iIntros => //=.
+        iApply later_equivI_2. iNext.
+        iApply "Hequiv_post".
+      }
+      iDestruct (agree_equivI with "H") as "Hequiv".
+      eauto.
+    }
+    iRewrite "Hsaved_eq" in "Hsaved".
     iExists _, _, _, _, _, _, _.
     iExists _, _, _, _, _.
     iFrame "#". iSplit; eauto.
-    iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz.
-    assert (U64 (Z.of_nat (int.nat (req.(Slice.sz)))) = req.(Slice.sz)) as ->.
-    { word. }
-    eauto.
+    {
+      iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz.
+      assert (U64 (Z.of_nat (int.nat (req.(Slice.sz)))) = req.(Slice.sz)) as ->.
+      { word. }
+      eauto.
+    }
+    iSplit; first eauto.
+    iModIntro. iRewrite -("Hequiv_pre" $! x reqData Q). eauto.
   }
   iModIntro. iIntros "Hsl_rep".
   wp_pures.
