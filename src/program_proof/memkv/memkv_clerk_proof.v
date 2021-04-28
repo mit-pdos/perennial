@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Export rpc_axioms common_proof memkv_coord_clerk_proof memkv_shard_clerk_proof.
+From Perennial.program_proof.memkv Require Export common_proof memkv_coord_clerk_proof memkv_shard_clerk_proof.
 
 Section memkv_clerk_proof.
 
