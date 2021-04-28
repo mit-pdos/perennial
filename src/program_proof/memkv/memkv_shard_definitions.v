@@ -53,7 +53,7 @@ Definition PostShardPut Eo Ei γ (key:u64) Q v (rep:ShardReplyC) : iProp Σ :=
 
 Definition PreShardConditionalPut Eo Ei γ key Q expv newv : iProp Σ :=
   |NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
-    (let succ := bool_decide (oldv = expv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗
+    (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗
       |NC={Ei,Eo}=> Q succ))
 .
 
@@ -84,7 +84,6 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
 
   "#HconditionalPutSpec" ∷ handler_is γh (coPset * coPset * (bool → iProp Σ) * rpc_request_names) host uKV_CONDITIONAL_PUT
              (λ x reqData, ∃ req, ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
-                (* FIXME: Q here is of type [list u8 → iProp] but we need [bool → iProp] *)
                   is_RPCRequest γ.(rpc_gn) x.2
                      (PreShardConditionalPut x.1.1.1 x.1.1.2 γ req.(CPR_Key) x.1.2 req.(CPR_ExpValue) req.(CPR_NewValue))
                      (PostShardConditionalPut x.1.1.1 x.1.1.2 γ req.(CPR_Key) x.1.2 req.(CPR_ExpValue) req.(CPR_NewValue))

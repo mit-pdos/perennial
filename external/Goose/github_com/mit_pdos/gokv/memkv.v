@@ -488,10 +488,11 @@ Definition MemKVShardServer__conditional_put_inner: val :=
       let: "sid" := shardOf (struct.loadF ConditionalPutRequest "Key" "args") in
       (if: (SliceGet boolT (struct.loadF MemKVShardServer "shardMap" "s") "sid" = #true)
       then
-        let: "equal" := bytesEqual (struct.loadF ConditionalPutRequest "ExpectedValue" "args") (Fst (MapGet (SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid") (struct.loadF ConditionalPutRequest "Key" "args"))) in
+        let: "m" := SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid" in
+        let: "equal" := bytesEqual (struct.loadF ConditionalPutRequest "ExpectedValue" "args") (Fst (MapGet "m" (struct.loadF ConditionalPutRequest "Key" "args"))) in
         (if: "equal"
         then
-          MapInsert (SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid") (struct.loadF ConditionalPutRequest "Key" "args") (struct.loadF ConditionalPutRequest "NewValue" "args");;
+          MapInsert "m" (struct.loadF ConditionalPutRequest "Key" "args") (struct.loadF ConditionalPutRequest "NewValue" "args");;
           #()
         else #());;
         struct.storeF ConditionalPutReply "Success" "reply" "equal";;

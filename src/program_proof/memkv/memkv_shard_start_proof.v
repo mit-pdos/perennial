@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 
-From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_put_proof memkv_get_proof memkv_install_shard_proof memkv_getcid_proof memkv_move_shard_proof common_proof.
+From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_put_proof memkv_conditional_put_proof memkv_get_proof memkv_install_shard_proof memkv_getcid_proof memkv_move_shard_proof common_proof.
 
 Section memkv_shard_start_proof.
 
