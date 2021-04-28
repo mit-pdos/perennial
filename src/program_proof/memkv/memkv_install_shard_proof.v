@@ -5,7 +5,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_install_shard_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
   is_MemKVShardServer s γ -∗
@@ -135,7 +135,7 @@ Proof.
     word.
   }
   iDestruct "HH" as "(Hγpre & HownShard & Hproc)".
-  iMod (server_completes_request _ _ _ _ _ (mkGetReplyC 0 []) with "His_srv HreqInv Hγpre [] Hproc") as "HH".
+  iMod (server_completes_request _ _ _ _ _ (mkShardReplyC 0 [] false) with "His_srv HreqInv Hγpre [] Hproc") as "HH".
   { done. }
   { done. }
   { rewrite HseqGet. simpl. word. }

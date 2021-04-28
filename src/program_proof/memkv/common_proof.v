@@ -35,4 +35,11 @@ Lemma wp_shardOf_bound (key:u64) :
 Proof.
 Admitted.
 
+Lemma wp_bytesEqual (x y : Slice.t) (xs ys : list byte) qx qy :
+  {{{ typed_slice.is_slice x byteT qx xs ∗ typed_slice.is_slice y byteT qy ys }}}
+    bytesEqual (slice_val x) (slice_val y)
+  {{{ RET #(bool_decide (xs = ys)); typed_slice.is_slice x byteT qx xs ∗ typed_slice.is_slice y byteT qy ys }}}.
+Proof.
+Admitted.
+
 End common_proof.

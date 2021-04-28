@@ -4,7 +4,7 @@ From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 
 Section memkv_shard_clerk_proof.
-Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ GetReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeFreshKVClerk (host:u64) γ :
   is_shard_server host γ -∗
@@ -317,7 +317,7 @@ Proof.
       rewrite -Hoverflow in Hbad.
       word.
     }
-    iDestruct "Hreceipt" as (?) "Hreceipt".
+    iDestruct "Hreceipt" as (? ?) "Hreceipt".
     iMod (get_request_post with "HreqInv Hreceipt Htok") as "Hpost".
     { done. }
     (* Doing get_request_post here so we can strip off a ▷ *)
@@ -466,7 +466,7 @@ Proof.
     replace (req) with ({| GR_CID := cid; GR_Seq := seq; GR_Key := key |}); last first.
     { eapply has_encoding_GetRequest_inj; done. }
 
-    iDestruct "Hreceipt" as "[Hbad|Hreceipt]".
+    iDestruct "Hreceipt" as "[Hbad|[% Hreceipt]]".
     {
       iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
       exfalso.

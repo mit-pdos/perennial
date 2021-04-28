@@ -5,7 +5,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions common
 
 Section memkv_put_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC, HREG: rpcregG Σ, kvMapG Σ}.
+Context `{!heapG Σ, rpcG Σ ShardReplyC, HREG: rpcregG Σ, kvMapG Σ}.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
@@ -23,7 +23,7 @@ Lemma wp_PutRPC (s args_ptr reply_ptr:loc) val_sl args γ Eo Ei γreq Q :
        rep, RET #();
        own_PutReply reply_ptr rep ∗
        (RPCRequestStale γ.(rpc_gn) {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |} ∨
-        ∃ dummy_val, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |} (mkGetReplyC rep.(PR_Err) dummy_val))
+        ∃ dummy_val dummy_succ, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |} (mkShardReplyC rep.(PR_Err) dummy_val dummy_succ))
   }}}.
 Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".
@@ -151,7 +151,7 @@ Proof.
       iMod (server_replies_to_request _ {| Req_CID:=_; Req_Seq:=_ |} with "His_srv Hrpc") as "HH".
       { done. }
       { done. }
-      { eexists (mkGetReplyC 0 []). naive_solver. }
+      { eexists (mkShardReplyC 0 [] false). naive_solver. }
 
       iDestruct "HH" as "[#Hreceipt Hrpc]".
 
@@ -176,7 +176,7 @@ Proof.
       rewrite HlastReplyMlookup.
       simpl.
       destruct x0.
-      iExists _.
+      iExists _, _.
       iFrame "#".
     }
   }
@@ -300,7 +300,7 @@ Proof.
         iNext.
         iRight.
         iFrame.
-        instantiate (1:=mkGetReplyC _ []).
+        instantiate (1:=mkShardReplyC _ [] false).
         simpl.
         done.
       }
@@ -387,7 +387,7 @@ Proof.
       }
       iSimpl.
       iRight.
-      iExists [].
+      iExists [], _.
       iFrame "#".
     }
     { (* don't have shard *)
@@ -401,7 +401,7 @@ Proof.
         iNext.
         iLeft.
         iFrame "Hpre".
-        instantiate (1:=mkGetReplyC 1 []).
+        instantiate (1:=mkShardReplyC 1 [] false).
         simpl.
         done.
       }
@@ -450,7 +450,7 @@ Proof.
       }
       iSimpl.
       iRight.
-      iExists []; iFrame "Hreceipt".
+      iExists [], _; iFrame "Hreceipt".
     }
   }
 Qed.

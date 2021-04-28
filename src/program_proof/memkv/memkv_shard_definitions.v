@@ -2,18 +2,30 @@ From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
-From Perennial.program_proof.memkv Require Export rpc_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
+From Perennial.program_proof.memkv Require Export rpc_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_conditional_put_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 From iris.bi.lib Require Import fixpoint.
+
+(** "universal" reply type for the reply cache *)
+Record ShardReplyC := mkShardReplyC {
+  SR_Err : u64;
+  SR_Value : list u8;
+  SR_Success : bool;
+}.
 
 Section memkv_shard_definitions.
 
-Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ GetReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Definition uKV_FRESHCID := 0.
-Definition uKV_PUT := 1.
-Definition uKV_GET := 2.
-Definition uKV_INS_SHARD := 3.
-Definition uKV_MOV_SHARD := 4.
+Definition uKV_FRESHCID :=
+  Eval vm_compute in match KV_FRESHCID with LitV (LitInt n) => int.nat n | _ => 0 end.
+Definition uKV_PUT :=
+  Eval vm_compute in match KV_PUT with LitV (LitInt n) => int.nat n | _ => 0 end.
+Definition uKV_GET :=
+  Eval vm_compute in match KV_GET with LitV (LitInt n) => int.nat n | _ => 0 end.
+Definition uKV_INS_SHARD :=
+  Eval vm_compute in match KV_INS_SHARD with LitV (LitInt n) => int.nat n | _ => 0 end.
+Definition uKV_MOV_SHARD :=
+  Eval vm_compute in match KV_MOV_SHARD with LitV (LitInt n) => int.nat n | _ => 0 end.
 
 Record memkv_shard_names := {
  rpc_gn : rpc_names ;
@@ -27,15 +39,24 @@ Definition PreShardGet Eo Ei γ key Q : iProp Σ :=
   |NC={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q v))
 .
 
-Definition PostShardGet Eo Ei γ (key:u64) Q (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (PreShardGet Eo Ei γ key Q) ∨
-                                                        ⌜rep.(GR_Err) = 0⌝ ∗ (Q rep.(GR_Value)).
+Definition PostShardGet Eo Ei γ (key:u64) Q (rep:ShardReplyC) : iProp Σ :=
+  ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardGet Eo Ei γ key Q) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ (Q rep.(SR_Value)).
 
 Definition PreShardPut Eo Ei γ key Q v : iProp Σ :=
   |NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q))
 .
 
-Definition PostShardPut Eo Ei γ (key:u64) Q v (rep:GetReplyC) : iProp Σ := ⌜rep.(GR_Err) ≠ 0⌝ ∗ (PreShardPut Eo Ei γ key Q v) ∨
-                                                        ⌜rep.(GR_Err) = 0⌝ ∗ Q .
+Definition PostShardPut Eo Ei γ (key:u64) Q v (rep:ShardReplyC) : iProp Σ :=
+  ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardPut Eo Ei γ key Q v) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q .
+
+Definition PreShardConditionalPut Eo Ei γ key Q expv newv : iProp Σ :=
+  |NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
+    (let succ := bool_decide (oldv = expv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗
+      |NC={Ei,Eo}=> Q succ))
+.
+
+Definition PostShardConditionalPut Eo Ei γ (key:u64) Q expv newv (rep:ShardReplyC) : iProp Σ :=
+  ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardConditionalPut Eo Ei γ key Q expv newv) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q rep.(SR_Success).
 
 
 Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
@@ -48,28 +69,28 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
   ("#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
   "#HputSpec" ∷ handler_is (coPset * coPset * rpc_request_names) host uKV_PUT
              (λ x reqData Q, ∃ req, ⌜has_encoding_PutRequest reqData req⌝ ∗
-                                   is_RPCRequest γ.(rpc_gn) x.2
-                                                            (PreShardPut x.1.1 x.1.2 γ req.(PR_Key) (Q []) req.(PR_Value))
-                                                            (PostShardPut x.1.1 x.1.2 γ req.(PR_Key) (Q []) req.(PR_Value))
-                                                            {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |}
+                  is_RPCRequest γ.(rpc_gn) x.2
+                     (PreShardPut x.1.1 x.1.2 γ req.(PR_Key) (Q []) req.(PR_Value))
+                     (PostShardPut x.1.1 x.1.2 γ req.(PR_Key) (Q []) req.(PR_Value))
+                     {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |}
              ) (* pre *)
              (λ x reqData Q repData, ∃ req rep, ⌜has_encoding_PutReply repData rep⌝ ∗
-                                              ⌜has_encoding_PutRequest reqData req⌝ ∗
-                                              (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} ∨
-                                              ∃ dummy_val, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkGetReplyC rep.(PR_Err) dummy_val))
+                  ⌜has_encoding_PutRequest reqData req⌝ ∗
+                  (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} ∨
+                    ∃ dummy_val dummy_succ, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkShardReplyC rep.(PR_Err) dummy_val dummy_succ))
              ) (* post *) ∗
 
 
   "#HgetSpec" ∷ handler_is (coPset * coPset * rpc_request_names) host uKV_GET
              (λ x reqData Q, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
-                                   is_RPCRequest γ.(rpc_gn) x.2 (PreShardGet x.1.1 x.1.2 γ req.(GR_Key) Q)
-                                                            (PostShardGet x.1.1 x.1.2 γ req.(GR_Key) Q)
-                                                            {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
+                  is_RPCRequest γ.(rpc_gn) x.2 (PreShardGet x.1.1 x.1.2 γ req.(GR_Key) Q)
+                    (PostShardGet x.1.1 x.1.2 γ req.(GR_Key) Q)
+                    {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
              ) (* pre *)
              (λ x reqData Q repData, ∃ req rep, ⌜has_encoding_GetReply repData rep⌝ ∗
-                                              ⌜has_encoding_GetRequest reqData req⌝ ∗
-                                              (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} ∨
-                                              RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} rep)
+                  ⌜has_encoding_GetRequest reqData req⌝ ∗
+                  (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} ∨
+                    ∃ dummy_succ, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} (mkShardReplyC rep.(GR_Err) rep.(GR_Value) dummy_succ))
              ) (* post *) ∗
 
   "#HmoveSpec" ∷ handler_is (memkv_shard_names) host uKV_MOV_SHARD
@@ -142,12 +163,17 @@ Definition memKVN := nroot .@ "memkv".
 
 Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
   ∃ (lastReply_ptr lastSeq_ptr peers_ptr:loc) (kvss_sl shardMap_sl:Slice.t)
-    (lastReplyM:gmap u64 GetReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc)
+    (lastReplyM:gmap u64 ShardReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc)
     (peersM:gmap u64 loc),
   "HlastReply" ∷ s ↦[MemKVShardServer :: "lastReply"] #lastReply_ptr ∗
   "HlastReplyMap" ∷ map.is_map lastReply_ptr 1 (lastReplyMV, #0) ∗ (* TODO: default *)
   "%HlastReplyMVdom" ∷ ⌜dom (gset u64) lastReplyMV = dom (gset u64) lastSeqM⌝ ∗
-  "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM, (∃ val_sl q, ⌜v = (#rep.(GR_Err), (slice_val val_sl, #()))%V⌝ ∗ typed_slice.is_slice_small val_sl byteT q rep.(GR_Value))) ∗
+  "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM,
+    (∃ val_sl q, ⌜v = struct.mk_f ShardReply [
+              "Err" ::= #rep.(SR_Err);
+              "Value" ::= slice_val val_sl;
+              "Success" ::= #rep.(SR_Success)
+            ]%V⌝ ∗ typed_slice.is_slice_small val_sl byteT q rep.(SR_Value))) ∗
   "HlastSeq" ∷ s ↦[MemKVShardServer :: "lastSeq"] #lastSeq_ptr ∗
   "HlastSeqMap" ∷ is_map lastSeq_ptr 1 lastSeqM ∗
   "HnextCID" ∷ s ↦[MemKVShardServer :: "nextCID"] #nextCID ∗

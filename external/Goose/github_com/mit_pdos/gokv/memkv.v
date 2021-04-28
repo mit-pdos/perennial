@@ -25,13 +25,38 @@ Definition KV_PUT : expr := #1.
 
 Definition KV_GET : expr := #2.
 
-Definition KV_INS_SHARD : expr := #3.
+Definition KV_CONDITIONAL_PUT : expr := #3.
 
-Definition KV_MOV_SHARD : expr := #4.
+Definition KV_INS_SHARD : expr := #4.
+
+Definition KV_MOV_SHARD : expr := #5.
 
 Definition shardOf: val :=
   rec: "shardOf" "key" :=
     "key" `rem` NSHARD.
+
+Definition bytesEqual: val :=
+  rec: "bytesEqual" "x" "y" :=
+    (if: slice.len "x" ≠ slice.len "y"
+    then #false
+    else
+      let: "i" := ref_to uint64T #0 in
+      let: "retval" := ref_to boolT #true in
+      Skip;;
+      (for: (λ: <>, ![uint64T] "i" < slice.len "x"); (λ: <>, Skip) := λ: <>,
+        (if: SliceGet byteT "x" (![uint64T] "i") ≠ SliceGet byteT "y" (![uint64T] "i")
+        then
+          "retval" <-[boolT] #false;;
+          Break
+        else "i" <-[uint64T] ![uint64T] "i" + #1));;
+      ![boolT] "retval").
+
+(* "universal" reply type for the reply table *)
+Definition ShardReply := struct.decl [
+  "Err" :: ErrorType;
+  "Value" :: slice.T byteT;
+  "Success" :: boolT
+].
 
 Definition PutRequest := struct.decl [
   "CID" :: uint64T;
@@ -123,6 +148,58 @@ Definition decodeGetReply: val :=
     struct.storeF GetReply "Err" "rep" (marshal.Dec__GetInt "d");;
     struct.storeF GetReply "Value" "rep" (marshal.Dec__GetBytes "d" (marshal.Dec__GetInt "d"));;
     "rep".
+
+Definition ConditionalPutRequest := struct.decl [
+  "CID" :: uint64T;
+  "Seq" :: uint64T;
+  "Key" :: uint64T;
+  "ExpectedValue" :: slice.T byteT;
+  "NewValue" :: slice.T byteT
+].
+
+Definition ConditionalPutReply := struct.decl [
+  "Err" :: ErrorType;
+  "Success" :: boolT
+].
+
+Definition encodeConditionalPutRequest: val :=
+  rec: "encodeConditionalPutRequest" "req" :=
+    let: "num_bytes" := #8 + #8 + #8 + #8 + slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req") + #8 + slice.len (struct.loadF ConditionalPutRequest "NewValue" "req") in
+    let: "e" := marshal.NewEnc "num_bytes" in
+    marshal.Enc__PutInt "e" (struct.loadF ConditionalPutRequest "CID" "req");;
+    marshal.Enc__PutInt "e" (struct.loadF ConditionalPutRequest "Seq" "req");;
+    marshal.Enc__PutInt "e" (struct.loadF ConditionalPutRequest "Key" "req");;
+    marshal.Enc__PutInt "e" (slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req"));;
+    marshal.Enc__PutBytes "e" (struct.loadF ConditionalPutRequest "ExpectedValue" "req");;
+    marshal.Enc__PutInt "e" (slice.len (struct.loadF ConditionalPutRequest "NewValue" "req"));;
+    marshal.Enc__PutBytes "e" (struct.loadF ConditionalPutRequest "NewValue" "req");;
+    marshal.Enc__Finish "e".
+
+Definition decodeConditionalPutRequest: val :=
+  rec: "decodeConditionalPutRequest" "rawReq" :=
+    let: "req" := struct.alloc ConditionalPutRequest (zero_val (struct.t ConditionalPutRequest)) in
+    let: "d" := marshal.NewDec "rawReq" in
+    struct.storeF ConditionalPutRequest "CID" "req" (marshal.Dec__GetInt "d");;
+    struct.storeF ConditionalPutRequest "Seq" "req" (marshal.Dec__GetInt "d");;
+    struct.storeF ConditionalPutRequest "Key" "req" (marshal.Dec__GetInt "d");;
+    struct.storeF ConditionalPutRequest "ExpectedValue" "req" (marshal.Dec__GetBytes "d" (marshal.Dec__GetInt "d"));;
+    struct.storeF ConditionalPutRequest "NewValue" "req" (marshal.Dec__GetBytes "d" (marshal.Dec__GetInt "d"));;
+    "req".
+
+Definition encodeConditionalPutReply: val :=
+  rec: "encodeConditionalPutReply" "reply" :=
+    let: "e" := marshal.NewEnc (#8 + #1) in
+    marshal.Enc__PutInt "e" (struct.loadF ConditionalPutReply "Err" "reply");;
+    marshal.Enc__PutBool "e" (struct.loadF ConditionalPutReply "Success" "reply");;
+    marshal.Enc__Finish "e".
+
+Definition decodeConditionalPutReply: val :=
+  rec: "decodeConditionalPutReply" "replyData" :=
+    let: "reply" := struct.alloc ConditionalPutReply (zero_val (struct.t ConditionalPutReply)) in
+    let: "d" := marshal.NewDec "replyData" in
+    struct.storeF ConditionalPutReply "Err" "reply" (marshal.Dec__GetInt "d");;
+    struct.storeF ConditionalPutReply "Success" "reply" (marshal.Dec__GetBool "d");;
+    "reply".
 
 Definition InstallShardRequest := struct.decl [
   "CID" :: uint64T;
@@ -262,7 +339,8 @@ Definition MemKVShardClerk__Put: val :=
     Skip;;
     (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_PUT (encodePutRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
       Continue);;
-    struct.loadF PutReply "Err" (decodePutReply (![slice.T byteT] "rawRep")).
+    let: "rep" := decodePutReply (![slice.T byteT] "rawRep") in
+    struct.loadF PutReply "Err" "rep".
 
 Definition MemKVShardClerk__Get: val :=
   rec: "MemKVShardClerk__Get" "ck" "key" "value" :=
@@ -278,6 +356,23 @@ Definition MemKVShardClerk__Get: val :=
     let: "rep" := decodeGetReply (![slice.T byteT] "rawRep") in
     "value" <-[slice.T byteT] struct.loadF GetReply "Value" "rep";;
     struct.loadF GetReply "Err" "rep".
+
+Definition MemKVShardClerk__ConditionalPut: val :=
+  rec: "MemKVShardClerk__ConditionalPut" "ck" "key" "expectedValue" "newValue" "success" :=
+    let: "args" := struct.alloc ConditionalPutRequest (zero_val (struct.t ConditionalPutRequest)) in
+    struct.storeF ConditionalPutRequest "CID" "args" (struct.loadF MemKVShardClerk "cid" "ck");;
+    struct.storeF ConditionalPutRequest "Seq" "args" (struct.loadF MemKVShardClerk "seq" "ck");;
+    struct.storeF ConditionalPutRequest "Key" "args" "key";;
+    struct.storeF ConditionalPutRequest "ExpectedValue" "args" "expectedValue";;
+    struct.storeF ConditionalPutRequest "NewValue" "args" "newValue";;
+    struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
+    let: "rawRep" := ref (zero_val (slice.T byteT)) in
+    Skip;;
+    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_PUT (encodeConditionalPutRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+      Continue);;
+    let: "rep" := decodeConditionalPutReply (![slice.T byteT] "rawRep") in
+    "success" <-[boolT] struct.loadF ConditionalPutReply "Success" "rep";;
+    struct.loadF ConditionalPutReply "Err" "rep".
 
 Definition MemKVShardClerk__InstallShard: val :=
   rec: "MemKVShardClerk__InstallShard" "ck" "sid" "kvs" :=
@@ -310,7 +405,7 @@ Definition KvMap: ty := mapT (slice.T byteT).
 Definition MemKVShardServer := struct.decl [
   "me" :: stringT;
   "mu" :: lockRefT;
-  "lastReply" :: mapT (struct.t GetReply);
+  "lastReply" :: mapT (struct.t ShardReply);
   "lastSeq" :: mapT uint64T;
   "nextCID" :: uint64T;
   "shardMap" :: slice.T boolT;
@@ -329,7 +424,7 @@ Definition MemKVShardServer__put_inner: val :=
     let: "seq" := struct.loadF PutRequest "Seq" "args" in
     (if: "ok" && ("seq" ≤ "last")
     then
-      struct.storeF PutReply "Err" "reply" (struct.get GetReply "Err" (Fst (MapGet (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF PutRequest "CID" "args"))));;
+      struct.storeF PutReply "Err" "reply" (struct.get ShardReply "Err" (Fst (MapGet (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF PutRequest "CID" "args"))));;
       #()
     else
       MapInsert (struct.loadF MemKVShardServer "lastSeq" "s") (struct.loadF PutRequest "CID" "args") (struct.loadF PutRequest "Seq" "args");;
@@ -339,7 +434,7 @@ Definition MemKVShardServer__put_inner: val :=
         MapInsert (SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid") (struct.loadF PutRequest "Key" "args") (struct.loadF PutRequest "Value" "args");;
         struct.storeF PutReply "Err" "reply" ENone
       else struct.storeF PutReply "Err" "reply" EDontHaveShard);;
-      MapInsert (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF PutRequest "CID" "args") (struct.mk GetReply [
+      MapInsert (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF PutRequest "CID" "args") (struct.mk ShardReply [
         "Err" ::= struct.loadF PutReply "Err" "reply"
       ])).
 
@@ -355,7 +450,9 @@ Definition MemKVShardServer__get_inner: val :=
     let: "seq" := struct.loadF GetRequest "Seq" "args" in
     (if: "ok" && ("seq" ≤ "last")
     then
-      struct.store GetReply "reply" (Fst (MapGet (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF GetRequest "CID" "args")));;
+      let: "lastReply" := Fst (MapGet (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF GetRequest "CID" "args")) in
+      struct.storeF GetReply "Err" "reply" (struct.get ShardReply "Err" "lastReply");;
+      struct.storeF GetReply "Value" "reply" (struct.get ShardReply "Value" "lastReply");;
       #()
     else
       MapInsert (struct.loadF MemKVShardServer "lastSeq" "s") (struct.loadF GetRequest "CID" "args") (struct.loadF GetRequest "Seq" "args");;
@@ -365,12 +462,50 @@ Definition MemKVShardServer__get_inner: val :=
         struct.storeF GetReply "Value" "reply" (SliceAppendSlice byteT (NewSlice byteT #0) (Fst (MapGet (SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid") (struct.loadF GetRequest "Key" "args"))));;
         struct.storeF GetReply "Err" "reply" ENone
       else struct.storeF GetReply "Err" "reply" EDontHaveShard);;
-      MapInsert (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF GetRequest "CID" "args") (struct.load GetReply "reply")).
+      MapInsert (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF GetRequest "CID" "args") (struct.mk ShardReply [
+        "Err" ::= struct.loadF GetReply "Err" "reply";
+        "Value" ::= struct.loadF GetReply "Value" "reply"
+      ])).
 
 Definition MemKVShardServer__GetRPC: val :=
   rec: "MemKVShardServer__GetRPC" "s" "args" "reply" :=
     lock.acquire (struct.loadF MemKVShardServer "mu" "s");;
     MemKVShardServer__get_inner "s" "args" "reply";;
+    lock.release (struct.loadF MemKVShardServer "mu" "s").
+
+Definition MemKVShardServer__conditional_put_inner: val :=
+  rec: "MemKVShardServer__conditional_put_inner" "s" "args" "reply" :=
+    let: ("last", "ok") := MapGet (struct.loadF MemKVShardServer "lastSeq" "s") (struct.loadF ConditionalPutRequest "CID" "args") in
+    let: "seq" := struct.loadF ConditionalPutRequest "Seq" "args" in
+    (if: "ok" && ("seq" ≤ "last")
+    then
+      let: "lastReply" := Fst (MapGet (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF ConditionalPutRequest "CID" "args")) in
+      struct.storeF ConditionalPutReply "Err" "reply" (struct.get ShardReply "Err" "lastReply");;
+      struct.storeF ConditionalPutReply "Success" "reply" (struct.get ShardReply "Success" "lastReply");;
+      #()
+    else
+      MapInsert (struct.loadF MemKVShardServer "lastSeq" "s") (struct.loadF ConditionalPutRequest "CID" "args") (struct.loadF ConditionalPutRequest "Seq" "args");;
+      let: "sid" := shardOf (struct.loadF ConditionalPutRequest "Key" "args") in
+      (if: (SliceGet boolT (struct.loadF MemKVShardServer "shardMap" "s") "sid" = #true)
+      then
+        let: "equal" := bytesEqual (struct.loadF ConditionalPutRequest "ExpectedValue" "args") (Fst (MapGet (SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid") (struct.loadF ConditionalPutRequest "Key" "args"))) in
+        (if: "equal"
+        then
+          MapInsert (SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid") (struct.loadF ConditionalPutRequest "Key" "args") (struct.loadF ConditionalPutRequest "NewValue" "args");;
+          #()
+        else #());;
+        struct.storeF ConditionalPutReply "Success" "reply" "equal";;
+        struct.storeF ConditionalPutReply "Err" "reply" ENone
+      else struct.storeF ConditionalPutReply "Err" "reply" EDontHaveShard);;
+      MapInsert (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF ConditionalPutRequest "CID" "args") (struct.mk ShardReply [
+        "Err" ::= struct.loadF ConditionalPutReply "Err" "reply";
+        "Success" ::= struct.loadF ConditionalPutReply "Success" "reply"
+      ])).
+
+Definition MemKVShardServer__ConditionalPutRPC: val :=
+  rec: "MemKVShardServer__ConditionalPutRPC" "s" "args" "reply" :=
+    lock.acquire (struct.loadF MemKVShardServer "mu" "s");;
+    MemKVShardServer__conditional_put_inner "s" "args" "reply";;
     lock.release (struct.loadF MemKVShardServer "mu" "s").
 
 (* NOTE: easy to do a little optimization with shard migration:
@@ -389,7 +524,7 @@ Definition MemKVShardServer__install_shard_inner: val :=
       MapInsert (struct.loadF MemKVShardServer "lastSeq" "s") (struct.loadF InstallShardRequest "CID" "args") (struct.loadF InstallShardRequest "Seq" "args");;
       SliceSet boolT (struct.loadF MemKVShardServer "shardMap" "s") (struct.loadF InstallShardRequest "Sid" "args") #true;;
       SliceSet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") (struct.loadF InstallShardRequest "Sid" "args") (struct.loadF InstallShardRequest "Kvs" "args");;
-      MapInsert (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF InstallShardRequest "CID" "args") (struct.mk GetReply [
+      MapInsert (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF InstallShardRequest "CID" "args") (struct.mk ShardReply [
         "Err" ::= #0;
         "Value" ::= slice.nil
       ])).
@@ -425,7 +560,7 @@ Definition MakeMemKVShardServer: val :=
   rec: "MakeMemKVShardServer" <> :=
     let: "srv" := struct.alloc MemKVShardServer (zero_val (struct.t MemKVShardServer)) in
     struct.storeF MemKVShardServer "mu" "srv" (lock.new #());;
-    struct.storeF MemKVShardServer "lastReply" "srv" (NewMap (struct.t GetReply));;
+    struct.storeF MemKVShardServer "lastReply" "srv" (NewMap (struct.t ShardReply));;
     struct.storeF MemKVShardServer "lastSeq" "srv" (NewMap uint64T);;
     struct.storeF MemKVShardServer "shardMap" "srv" (NewSlice boolT NSHARD);;
     struct.storeF MemKVShardServer "kvss" "srv" (NewSlice KvMap NSHARD);;
@@ -462,6 +597,11 @@ Definition MemKVShardServer__Start: val :=
       let: "rep" := struct.alloc GetReply (zero_val (struct.t GetReply)) in
       MemKVShardServer__GetRPC "mkv" (decodeGetRequest "rawReq") "rep";;
       "rawReply" <-[slice.T byteT] encodeGetReply "rep"
+      );;
+    MapInsert "handlers" KV_CONDITIONAL_PUT (λ: "rawReq" "rawReply",
+      let: "rep" := struct.alloc ConditionalPutReply (zero_val (struct.t ConditionalPutReply)) in
+      MemKVShardServer__ConditionalPutRPC "mkv" (decodeConditionalPutRequest "rawReq") "rep";;
+      "rawReply" <-[slice.T byteT] encodeConditionalPutReply "rep"
       );;
     MapInsert "handlers" KV_INS_SHARD (λ: "rawReq" "rawReply",
       MemKVShardServer__InstallShardRPC "mkv" (decodeInstallShardRequest "rawReq");;
@@ -636,6 +776,22 @@ Definition MemKVClerk__Put: val :=
         struct.storeF MemKVClerk "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk "coordCk" "ck"));;
         Continue));;
     #().
+
+Definition MemKVClerk__ConditionalPut: val :=
+  rec: "MemKVClerk__ConditionalPut" "ck" "key" "expectedValue" "newValue" :=
+    let: "success" := ref (zero_val boolT) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "sid" := shardOf "key" in
+      let: "shardServer" := SliceGet uint64T (struct.loadF MemKVClerk "shardMap" "ck") "sid" in
+      let: "shardCk" := ShardClerkSet__GetClerk (struct.loadF MemKVClerk "shardClerks" "ck") "shardServer" in
+      let: "err" := MemKVShardClerk__ConditionalPut "shardCk" "key" "expectedValue" "newValue" "success" in
+      (if: ("err" = ENone)
+      then Break
+      else
+        struct.storeF MemKVClerk "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk "coordCk" "ck"));;
+        Continue));;
+    ![boolT] "success".
 
 Definition MemKVClerk__Add: val :=
   rec: "MemKVClerk__Add" "ck" "host" :=

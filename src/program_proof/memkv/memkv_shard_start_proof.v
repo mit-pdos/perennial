@@ -6,11 +6,11 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_shard_start_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MemKVShardServer__Start (s:loc) (host : u64) γ :
   match rpcreg_specs !! host with
-  | Some specs => dom (gset u64) specs = ({[ U64 0; U64 1; U64 2; U64 3; U64 4 ]} : gset u64)
+  | Some specs => dom (gset u64) specs = ({[ U64 0; U64 1; U64 2; U64 3; U64 4; U64 5 ]} : gset u64)
   | None => True
   end →
 is_shard_server host γ -∗
@@ -30,6 +30,10 @@ Proof.
       (NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht)).
   wp_apply map.wp_NewMap.
   iIntros (handlers_ptr) "Hmap".
+  wp_pures.
+
+  wp_apply (map.wp_MapInsert with "Hmap").
+  iIntros "Hmap".
   wp_pures.
 
   wp_apply (map.wp_MapInsert with "Hmap").
@@ -116,6 +120,48 @@ Proof.
       iApply "HΦ".
       iFrame.
       done.
+    }
+
+    iApply (big_sepM_insert_2 with "").
+    { (* ConditionalPutRPC handler_is *)
+      rewrite is_shard_server_unfold.
+      iNamed "His_shard".
+      simpl.
+      iExists _, _, _. admit. (* iFrame "HconditionalPutSpec".
+
+      clear Φ.
+      iIntros (??????) "!#".
+      iIntros (Φ) "Hpre HΦ".
+      wp_pures.
+      wp_apply (wp_allocStruct).
+      {
+        naive_solver.
+      }
+      iIntros (rep_ptr) "Hrep".
+      wp_pures.
+      iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & Hpre)".
+      iDestruct "Hpre" as (args) "(%Henc & #HreqInv)".
+      wp_apply (wp_decodePutRequest with "[$Hreq_sl]").
+      { done. }
+      iIntros (args_ptr val_sl) "Hargs".
+      wp_apply (wp_PutRPC with "His_memkv [$Hargs Hrep $HreqInv]").
+      {
+        iDestruct (struct_fields_split with "Hrep") as "HH".
+        iNamed "HH".
+        iExists (mkPutReplyC _).
+        iFrame.
+      }
+      iIntros (rep') "[Hrep Hpost]".
+      wp_pures.
+      wp_apply (wp_encodePutReply with "Hrep").
+      iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
+      wp_store.
+      iApply "HΦ".
+      iModIntro.
+      iFrame.
+      iNext.
+      iExists _, _; iFrame.
+      done. *)
     }
 
     iApply (big_sepM_insert_2 with "").
@@ -240,6 +286,6 @@ Proof.
     done.
   }
   by iApply "HΦ".
-Qed.
+Admitted.
 
 End memkv_shard_start_proof.

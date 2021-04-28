@@ -5,7 +5,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions common
 
 Section memkv_shard_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC, HREG: rpcregG Σ, kvMapG Σ}.
+Context `{!heapG Σ, rpcG Σ ShardReplyC, HREG: rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_shardOf key :
   {{{
@@ -52,7 +52,7 @@ Lemma wp_GetRPC (s args_ptr reply_ptr:loc) args γ Eo Ei γreq Q :
        rep, RET #();
        own_GetReply reply_ptr rep ∗
        (RPCRequestStale γ.(rpc_gn) {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |} ∨
-        RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |} rep)
+        ∃ dummy_succ, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |} (mkShardReplyC rep.(GR_Err) rep.(GR_Value) dummy_succ))
   }}}.
 Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".
@@ -97,14 +97,14 @@ Proof.
     Opaque struct.store.
     Opaque struct.t.
     wp_pures.
-
+(*
     iAssert (reply_ptr ↦[struct.t GetReply] (#_, (slice_val val_sl, #())) )%I with "[HValue HErr]" as "Hrep".
     {
       iApply struct_fields_split.
       iFrame.
       done.
     }
-
+*)
     destruct ok; last first.
     { exfalso. naive_solver. }
     apply map_get_true in HseqGet.
@@ -152,11 +152,11 @@ Proof.
       done.
     }
     (* Now we have a fraction of the slice we were looking for *)
-
-    wp_apply (wp_StoreAt with "Hrep").
-    { Transparent struct.t. naive_solver. Opaque struct.t. }
-
-    iIntros "Hrep".
+    wp_storeField.
+    wp_pures.
+    Transparent slice.T.
+    wp_storeField.
+    Opaque slice.T.
     wp_pures.
 
     (* now split into stale/nonstale cases *)
@@ -168,7 +168,7 @@ Proof.
       { done. }
       iDestruct "HH" as "[Hrpc #Hstale]".
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep Hrep_val_sl]").
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl HValue HErr Hrep_val_sl]").
       {
         iFrame "#∗".
         iNext.
@@ -179,10 +179,9 @@ Proof.
       }
       iApply "HΦ".
 
-      iDestruct (struct_fields_split with "Hrep") as "HH".
-      iNamed "HH".
-      iSplitL "Err Value Hrep_val_sl".
+      iSplitL "HErr HValue Hrep_val_sl".
       {
+        instantiate (1:={| GR_Err := _ |}).
         iExists _; iFrame.
         iExists _; iFrame.
       }
@@ -195,13 +194,13 @@ Proof.
       iMod (server_replies_to_request _ {| Req_CID:=_; Req_Seq:=_ |} with "His_srv Hrpc") as "HH".
       { done. }
       { done. }
-      { eexists (mkGetReplyC 0 []). naive_solver. }
+      { eexists (mkShardReplyC 0 [] false). naive_solver. }
 
       iDestruct "HH" as "[#Hreceipt Hrpc]".
 
       (* prove that args.(GR_CID) is in lastReplyMV (probably just add [∗ map] _ ↦ _;_ ∈ lastReplyMV ; lastSeq, True) *)
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl Hrep Hrep_val_sl]").
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl HValue HErr Hrep_val_sl]").
       {
         iFrame "#∗".
         iNext.
@@ -211,16 +210,17 @@ Proof.
         done.
       }
       iApply "HΦ".
-      iDestruct (struct_fields_split with "Hrep") as "HH".
-      iNamed "HH".
-      iSplitL "Err Value Hrep_val_sl".
+      iSplitL "HErr HValue Hrep_val_sl".
       {
+        instantiate (1:={| GR_Err := _ |}).
         iExists _; iFrame.
         iExists _; iFrame.
       }
       iRight.
       rewrite HlastReplyMlookup.
       simpl.
+      destruct x0.
+      iExists _.
       iFrame "#".
     }
   }
@@ -348,13 +348,9 @@ Proof.
       (* save reply in reply table *)
       Transparent struct.load.
       unfold struct.load.
-      iAssert (reply_ptr ↦[struct.t GetReply] (#0, (slice_val val_sl'', #())) )%I with "[HValue HErr]" as "Hrep".
-      {
-        iApply struct_fields_split.
-        iFrame.
-        done.
-      }
-      wp_load.
+
+      wp_loadField.
+      wp_loadField.
       wp_loadField.
       wp_loadField.
 
@@ -383,7 +379,7 @@ Proof.
       {
         iNext.
         iRight.
-        instantiate (1:=mkGetReplyC _ _).
+        instantiate (1:=mkShardReplyC _ _ _).
         iFrame "Q".
         simpl.
         done.
@@ -397,7 +393,7 @@ Proof.
       Opaque typed_slice.is_slice_small.
       iDestruct "Hval_sl" as "[Hrep_val_sl Hsrv_rep_val_sl]".
       Transparent typed_slice.is_slice.
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl Hrep]").
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl HErr HValue]").
       {
         iFrame "HmuInv Hlocked".
         iNext.
@@ -434,16 +430,14 @@ Proof.
         done.
       }
       iApply "HΦ".
-      iDestruct (struct_fields_split with "Hrep") as "HH".
-      iNamed "HH".
       instantiate (1:= mkGetReplyC _ _).
-      iSplitL "Err Value Hrep_val_sl".
+      iSplitL "HErr HValue Hrep_val_sl".
       {
         iExists _; iFrame.
         iExists _; iFrame.
       }
       iSimpl.
-      iRight.
+      iRight. iExists _.
       iFrame "#".
     }
     { (* don't have shard *)
@@ -456,7 +450,7 @@ Proof.
       {
         iNext.
         iLeft.
-        instantiate (1:=mkGetReplyC 1 dummy_rep.(GR_Value)).
+        instantiate (1:=mkShardReplyC 1 dummy_rep.(GR_Value) false).
         iFrame "Hpre".
         simpl.
         done.
@@ -465,13 +459,9 @@ Proof.
 
       Transparent struct.load.
       unfold struct.load.
-      iAssert (reply_ptr ↦[struct.t GetReply] (#1, (slice_val val_sl, #())) )%I with "[HValue HErr]" as "Hrep".
-      {
-        iApply struct_fields_split.
-        iFrame.
-        done.
-      }
-      wp_load.
+
+      wp_loadField.
+      wp_loadField.
       wp_loadField.
       wp_loadField.
 
@@ -485,7 +475,7 @@ Proof.
       Opaque typed_slice.is_slice_small.
       iDestruct "Hval_sl" as "[Hsrv_rep_val_sl Hrep_val_sl]".
       Transparent typed_slice.is_slice_small.
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl Hrep]").
+      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl HValue HErr]").
       {
         iFrame "HmuInv Hlocked".
         iNext.
@@ -506,9 +496,7 @@ Proof.
         done.
       }
       iApply "HΦ".
-      iDestruct (struct_fields_split with "Hrep") as "HH".
-      iNamed "HH".
-      iSplitL "Err Value Hrep_val_sl".
+      iSplitL "HErr HValue Hrep_val_sl".
       {
         iExists _.
         instantiate (1:=mkGetReplyC _ _).
@@ -517,7 +505,7 @@ Proof.
         iFrame.
       }
       iSimpl.
-      iRight.
+      iRight. iExists _.
       iFrame "#".
     }
   }
