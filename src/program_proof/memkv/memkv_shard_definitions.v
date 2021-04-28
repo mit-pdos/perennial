@@ -2,12 +2,12 @@ From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
-From Perennial.program_proof.memkv Require Export rpc_axioms memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
+From Perennial.program_proof.memkv Require Export rpc_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 From iris.bi.lib Require Import fixpoint.
 
 Section memkv_shard_definitions.
 
-Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ GetReplyC, kvMapG Σ}.
+Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ GetReplyC, rpcregG Σ, kvMapG Σ}.
 
 Definition uKV_FRESHCID := 0.
 Definition uKV_PUT := 1.
@@ -46,53 +46,54 @@ Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   λ host γ,
   ("#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
-  "#HputSpec" ∷ handler_is (coPset * coPset * (iProp Σ) * rpc_request_names) host uKV_PUT
-             (λ x reqData, ∃ req, ⌜has_encoding_PutRequest reqData req⌝ ∗
-                                   is_RPCRequest γ.(rpc_gn) x.2 (PreShardPut x.1.1.1 x.1.1.2 γ req.(PR_Key) x.1.2 req.(PR_Value))
-                                                            (PostShardPut x.1.1.1 x.1.1.2 γ req.(PR_Key) x.1.2 req.(PR_Value))
+  "#HputSpec" ∷ handler_is (coPset * coPset * rpc_request_names) host uKV_PUT
+             (λ x reqData Q, ∃ req, ⌜has_encoding_PutRequest reqData req⌝ ∗
+                                   is_RPCRequest γ.(rpc_gn) x.2
+                                                            (PreShardPut x.1.1 x.1.2 γ req.(PR_Key) (Q []) req.(PR_Value))
+                                                            (PostShardPut x.1.1 x.1.2 γ req.(PR_Key) (Q []) req.(PR_Value))
                                                             {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |}
              ) (* pre *)
-             (λ x reqData repData, ∃ req rep, ⌜has_encoding_PutReply repData rep⌝ ∗
+             (λ x reqData Q repData, ∃ req rep, ⌜has_encoding_PutReply repData rep⌝ ∗
                                               ⌜has_encoding_PutRequest reqData req⌝ ∗
                                               (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} ∨
                                               ∃ dummy_val, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkGetReplyC rep.(PR_Err) dummy_val))
              ) (* post *) ∗
 
 
-  "#HgetSpec" ∷ handler_is (coPset * coPset * (list u8 → iProp Σ) * rpc_request_names) host uKV_GET
-             (λ x reqData, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
-                                   is_RPCRequest γ.(rpc_gn) x.2 (PreShardGet x.1.1.1 x.1.1.2 γ req.(GR_Key) x.1.2)
-                                                            (PostShardGet x.1.1.1 x.1.1.2 γ req.(GR_Key) x.1.2)
+  "#HgetSpec" ∷ handler_is (coPset * coPset * rpc_request_names) host uKV_GET
+             (λ x reqData Q, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
+                                   is_RPCRequest γ.(rpc_gn) x.2 (PreShardGet x.1.1 x.1.2 γ req.(GR_Key) Q)
+                                                            (PostShardGet x.1.1 x.1.2 γ req.(GR_Key) Q)
                                                             {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
              ) (* pre *)
-             (λ x reqData repData, ∃ req rep, ⌜has_encoding_GetReply repData rep⌝ ∗
+             (λ x reqData Q repData, ∃ req rep, ⌜has_encoding_GetReply repData rep⌝ ∗
                                               ⌜has_encoding_GetRequest reqData req⌝ ∗
                                               (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} ∨
                                               RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} rep)
              ) (* post *) ∗
 
   "#HmoveSpec" ∷ handler_is (memkv_shard_names) host uKV_MOV_SHARD
-             (λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
+             (λ x reqData Q, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
                                   ⌜int.nat args.(MR_Sid) < uNSHARD⌝ ∗
                                   (▷ ρ args.(MR_Dst) x)
              ) (* pre *)
-             (λ x reqData repData, True
+             (λ x reqData Q repData, True
              ) (* post *) ∗
 
   "#HinstallSpec" ∷ handler_is (rpc_request_names) host uKV_INS_SHARD
-             (λ x reqData, ∃ args, ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
+             (λ x reqData _, ∃ args, ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
                                   ⌜int.nat args.(IR_Sid) < uNSHARD⌝ ∗
                                   is_RPCRequest γ.(rpc_gn) x (own_shard γ.(kv_gn) args.(IR_Sid) args.(IR_Kvs))
                                                             (λ _, True)
                                                             {| Req_CID:=args.(IR_CID); Req_Seq:=args.(IR_Seq) |}
              ) (* pre *)
-             (λ x reqData repData, True
+             (λ x reqData Q repData, True
              ) (* post *) ∗
 
   "#HfreshSpec" ∷ handler_is unit host uKV_FRESHCID
-             (λ x reqData, True
+             (λ x reqData Q, True
              ) (* pre *)
-             (λ x reqData repData, ∃ cid, ⌜has_encoding_Uint64 repData cid⌝ ∗
+             (λ x reqData Q repData, ∃ cid, ⌜has_encoding_Uint64 repData cid⌝ ∗
               RPCClient_own_ghost γ.(rpc_gn) cid 1
              ) (* post *)
              )%I
@@ -102,7 +103,10 @@ Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
+  f_equiv. rewrite /handler_is.
+  do 4 f_equiv. f_equiv. f_equiv.
   (* Need to know that handler_is respects ≡{n}≡ (i.e. it's non-expansive w.r.t. the pre/post)? *)
+  (* But it's not currently ... *)
 Admitted.
 
 Definition is_shard_server :=

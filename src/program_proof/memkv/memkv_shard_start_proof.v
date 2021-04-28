@@ -6,9 +6,13 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_shard_start_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
+Context `{!heapG Σ, rpcG Σ GetReplyC, rpcregG Σ, kvMapG Σ}.
 
-Lemma wp_MemKVShardServer__Start (s:loc) host γ :
+Lemma wp_MemKVShardServer__Start (s:loc) (host : u64) γ :
+  match rpcreg_specs !! host with
+  | Some specs => dom (gset u64) specs = ({[ U64 0; U64 1; U64 2; U64 3; U64 4 ]} : gset u64)
+  | None => True
+  end →
 is_shard_server host γ -∗
 is_MemKVShardServer s γ -∗
   {{{
@@ -19,7 +23,7 @@ is_MemKVShardServer s γ -∗
        RET #(); True
   }}}.
 Proof.
-  iIntros "#His_shard #His_memkv !#" (Φ) "_ HΦ".
+  iIntros (Hdom). iIntros "#His_shard #His_memkv !#" (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
   change (Alloc (InjLV (λ: <>, (λ: <>, #())%V))) with
@@ -53,6 +57,9 @@ Proof.
   wp_pures.
 
   wp_apply (wp_StartRPCServer with "[$Hsown]").
+  { rewrite ?dom_insert_L; set_solver. }
+  { rewrite /handlers_complete. destruct (rpcreg_specs !! host); eauto.
+    rewrite ?dom_insert_L dom_empty_L Hdom. set_solver. }
   {
     iApply (big_sepM_insert_2 with "").
     { (* MoveShardRPC handler_is *)
@@ -62,7 +69,7 @@ Proof.
       iFrame "#HmoveSpec".
 
       clear Φ.
-      iIntros (?????) "!#".
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep & Hargs)".
@@ -89,7 +96,7 @@ Proof.
       iFrame "#HinstallSpec".
 
       clear Φ.
-      iIntros (?????) "!#".
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
 
@@ -119,7 +126,7 @@ Proof.
       iExists _, _, _; iFrame "HgetSpec".
 
       clear Φ.
-      iIntros (?????) "!#".
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
@@ -172,7 +179,7 @@ Proof.
       iExists _, _, _. iFrame "HputSpec".
 
       clear Φ.
-      iIntros (?????) "!#".
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
@@ -214,7 +221,7 @@ Proof.
       iFrame "HfreshSpec".
 
       clear Φ.
-      iIntros (?????) "!#".
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_GetCIDRPC with "His_memkv").

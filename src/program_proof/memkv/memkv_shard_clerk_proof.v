@@ -4,7 +4,7 @@ From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 
 Section memkv_shard_clerk_proof.
-Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ GetReplyC, kvMapG Σ}.
+Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ GetReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeFreshKVClerk (host:u64) γ :
   is_shard_server host γ -∗
@@ -47,7 +47,7 @@ Proof.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iNamed "HrawRep".
-  wp_apply (wp_RPCClient__Call () with "[$HfreshSpec $Hcl $Hreq_sl $HrawRep]").
+  wp_apply (wp_RPCClient__Call () _ _ _ _ _ _ _ _ _ (λ _, True%I) with "[$HfreshSpec $Hcl $Hreq_sl $HrawRep]").
   { done. }
   iIntros (???) "(HrawRep & Hcl & Hreq_sl & Hrep_sl & Hpost)".
   wp_pures.
@@ -193,6 +193,8 @@ Proof.
   enough (0 < int.nat (word.add seq 1)).
   { word. }
   rewrite -Hoverflow. word.
+  Unshelve.
+  apply (λ _, True%I).
 Admitted.
 
 Lemma wp_MemKVShardClerk__Put Eo Ei γ (ck:loc) (key:u64) (v:list u8) value_sl Q :
@@ -275,7 +277,8 @@ Proof.
     iModIntro.
     iExists (mkPutRequestC _ _ _ _).
     iSplitL ""; first done.
-    instantiate (1:= (Eo,Ei,Q,γreq)).
+    instantiate (1:= (λ _, Q)).
+    instantiate (2:= (Eo,Ei,γreq)).
     simpl.
     iFrame "HreqInv".
   }
@@ -429,7 +432,8 @@ Proof.
     iModIntro.
     iExists (mkGetRequestC _ _ _).
     iSplitL ""; first done.
-    instantiate (1:= (Eo,Ei,Q,γreq)).
+    instantiate (1:= Q).
+    instantiate (2:= (Eo,Ei,γreq)).
     simpl.
     iFrame "HreqInv".
   }

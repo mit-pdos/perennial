@@ -5,7 +5,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_install_shard_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
+Context `{!heapG Σ, rpcG Σ GetReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
   is_MemKVShardServer s γ -∗
