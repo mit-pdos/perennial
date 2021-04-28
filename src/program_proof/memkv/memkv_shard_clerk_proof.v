@@ -47,7 +47,7 @@ Proof.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iNamed "HrawRep".
-  wp_apply (wp_RPCClient__Call () _ _ _ _ _ _ _ _ _ (λ _, True%I) with "[$HfreshSpec $Hcl $Hreq_sl $HrawRep]").
+  wp_apply (wp_RPCClient__Call with "[$HfreshSpec $Hcl $Hreq_sl $HrawRep]").
   { done. }
   iIntros (???) "(HrawRep & Hcl & Hreq_sl & Hrep_sl & Hpost)".
   wp_pures.
@@ -73,9 +73,14 @@ Proof.
   iModIntro.
   iExists _, _, _, _.
   rewrite is_shard_server_unfold.
+  iFrame "seq cid cl". iFrame "Hcid Hcl".
+  iSplit.
+  { iExists γh. iFrame "#". }
+  iFrame "#".
   iFrame "∗#".
   iPureIntro.
   word.
+  Unshelve. exact: tt.
 Qed.
 
 Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
@@ -187,14 +192,15 @@ Proof.
   iApply "HΦ".
   iExists _, _, _, _.
   rewrite is_shard_server_unfold.
-  iFrame "∗#".
+  iModIntro.
+  iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
+  iSplit.
+  { iExists γh. iFrame "#". }
   iPureIntro.
   simpl.
   enough (0 < int.nat (word.add seq 1)).
   { word. }
   rewrite -Hoverflow. word.
-  Unshelve.
-  apply (λ _, True%I).
 Admitted.
 
 Lemma wp_MemKVShardClerk__Put Eo Ei γ (ck:loc) (key:u64) (v:list u8) value_sl Q :
@@ -277,8 +283,7 @@ Proof.
     iModIntro.
     iExists (mkPutRequestC _ _ _ _).
     iSplitL ""; first done.
-    instantiate (1:= (λ _, Q)).
-    instantiate (2:= (Eo,Ei,γreq)).
+    instantiate (3:= (Eo,Ei,Q,γreq)).
     simpl.
     iFrame "HreqInv".
   }
@@ -333,7 +338,9 @@ Proof.
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
     { iExists _, _, _, _.
       rewrite is_shard_server_unfold.
-      iFrame "#∗".
+      iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
+      iSplit.
+      { iExists γh. iFrame "#". }
       enough (0 < int.nat (word.add seq 1)).
       { iPureIntro. word. }
       rewrite -Hoverflow. word. }
@@ -432,8 +439,7 @@ Proof.
     iModIntro.
     iExists (mkGetRequestC _ _ _).
     iSplitL ""; first done.
-    instantiate (1:= Q).
-    instantiate (2:= (Eo,Ei,γreq)).
+    instantiate (2:= (Eo,Ei,Q,γreq)).
     simpl.
     iFrame "HreqInv".
   }
@@ -487,8 +493,10 @@ Proof.
     iApply "HΦ".
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
     { iExists _, _, _, _.
+      iFrame.
       rewrite is_shard_server_unfold.
-      iFrame "#∗".
+      iSplit.
+      { iExists γh. iFrame "#". }
       enough (0 < int.nat (word.add seq 1)).
       { iPureIntro. word. }
       rewrite -Hoverflow. word. }

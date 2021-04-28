@@ -6,10 +6,6 @@ From Perennial.algebra Require Import auth_map.
 From Perennial.base_logic Require Export lib.ghost_map lib.mono_nat.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
-Definition rpc_spec_map {Σ} : Type :=
-  gmap u64 { X: Type & ((X → list u8 → (list u8 → iProp Σ) → iProp Σ) *
-                        (X → list u8 → (list u8 → iProp Σ) → list u8 → iProp Σ))%type }.
-
 (** Request descriptor: data describing a particular request *)
 Record rpc_req_desc := ReqDesc {
   rpc_reg_rpcid  : u64;
@@ -25,8 +21,14 @@ Class rpcregG (Σ : gFunctors) := RpcRegG {
   rpcreg_mono_natG :> mono_natG Σ;
   rpcreg_mapG :> mapG Σ u64 rpc_req_desc;
   rpcreg_escrowG :> mapG Σ u64 unit;
+  rpcreg_saved_gname_mapG :> mapG Σ u64 gname;
+  rpcreg_saved_handler_specG :> savedPredG Σ (val);
   rpcreg_savedG :> savedPredG Σ (list u8);
-  rpcreg_specs : gmap u64 (@rpc_spec_map Σ) (* [u64] here is a host name *)
+  (* Mapping between hosts and the set of RPC ids they will service *)
+  (* This could be removed by either:
+     (1) having extra explicit arguments on some predicates in the spec, or
+     (2) having servers check whether an RPC id is actually in the set of handlers *)
+  rpcreg_doms : gmap u64 (gset u64)
 }.
 
 Section rpc_proof.
@@ -46,49 +48,64 @@ Record client_chan_gnames := {
   ccextracted_name : gname;
 }.
 
+Definition is_rpcHandler {X:Type} (f:val) Pre Post : iProp Σ :=
+  ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
+  {{{
+      is_slice req byteT 1 reqData ∗
+      rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
+      ▷ Pre x reqData
+  }}}
+    f (slice_val req) #rep
+  {{{
+       rep_sl (repData:list u8), RET #(); rep ↦[slice.T byteT] (slice_val rep_sl) ∗
+         is_slice rep_sl byteT 1 repData ∗
+         ▷ Post x reqData repData
+  }}}.
+
 Definition client_chan_inner_msg (Γ : client_chan_gnames) (host : u64) m : iProp Σ :=
-    ∃ (rpcid seqno : u64) reqData replyData X Post (x : X) γ d rep (Q : list u8 → iProp Σ),
+    ∃ (rpcid seqno : u64) reqData replyData X Post (x : X) γ d rep,
        "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 seqno;
                                               EncUInt64 (length replyData); EncBytes replyData] ⌝ ∗
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid X x reqData γ d rep) ∗
-       "#HPost_saved" ∷ saved_pred_own γ (Post x reqData Q) ∗
-       "#HPost" ∷ inv urpc_escrowN (Post x reqData Q replyData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt).
+       "#HPost_saved" ∷ saved_pred_own γ (Post x reqData) ∗
+       "#HPost" ∷ inv urpc_escrowN (Post x reqData replyData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt).
 
 Definition client_chan_inner (Γ : client_chan_gnames) (host: u64) : iProp Σ :=
   ∃ ms, "Hchan" ∷ host c↦ ms ∗
   "Hmessages" ∷ [∗ set] m ∈ ms, client_chan_inner_msg Γ host m.
 
-Definition server_chan_inner_msg (host : u64) (specs : rpc_spec_map) m : iProp Σ :=
-    ∃ rpcid seqno args X Pre Post (x : X) Γ γ d rep (Q : list u8 → iProp Σ),
+Definition server_chan_inner_msg (host : u64) γmap m : iProp Σ :=
+    ∃ rpcid seqno args X Pre Post (x : X) Γ γ1 γ2 d rep rpcdom,
+       "%Hdom" ∷ ⌜ rpcreg_doms !! host = Some rpcdom ∧ rpcid ∈ rpcdom ⌝ ∗
        "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 rpcid; EncUInt64 seqno;
                                               EncUInt64 (length args); EncBytes args] ⌝ ∗
-       "%Hlookup_spec" ∷ ⌜ specs !! rpcid = Some (existT X (Pre, Post)) ⌝ ∗
-       "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid X x args γ d rep) ∗
-       "#HPre" ∷ □ (Pre x args Q) ∗
-       "#HPost_saved" ∷ saved_pred_own γ (Post x args Q) ∗
+       "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid X x args γ1 d rep) ∗
+       "#Hspec_name" ∷ ptsto_ro γmap rpcid γ2 ∗
+       "#Hspec_saved" ∷ saved_pred_own γ2 (λ (f : val), is_rpcHandler f Pre Post) ∗
+       "#HPre" ∷ □ (Pre x args) ∗
+       "#HPost_saved" ∷ saved_pred_own γ1 (Post x args) ∗
        "#Hclient_chan_inv" ∷ inv urpc_clientN (client_chan_inner Γ (msg_sender m)).
 
-Definition server_chan_inner (host: u64) : iProp Σ :=
-  ∃ specs ms,
-  "%Hspecs_map" ∷ ⌜ rpcreg_specs !! host = Some specs ⌝ ∗
+Definition server_chan_inner (host: u64) γmap : iProp Σ :=
+  ∃ ms,
   "Hchan" ∷ host c↦ ms ∗
-  "Hmessages" ∷ [∗ set] m ∈ ms, server_chan_inner_msg host specs m.
+  "Hmessages" ∷ [∗ set] m ∈ ms, server_chan_inner_msg host γmap m.
 
-Definition handler_is : ∀ (X:Type) (host:u64) (rpcid:u64) (Pre:X → list u8 → (list u8 → iProp Σ) → iProp Σ)
-                          (Post:X → list u8 → (list u8 → iProp Σ) → list u8 → iProp Σ), iProp Σ :=
-  λ X host rpcid Pre Post, (∃ (specs: rpc_spec_map) Pre' Post',
-  "%Hspecs_map_handler" ∷ ⌜ rpcreg_specs !! host = Some specs ⌝ ∗
-  "%Hprepost" ∷ ⌜ specs !! rpcid = Some (existT X (Pre', Post')) ⌝ ∗
-  "#Hequiv_pre" ∷ (∀ x l1 Q, Pre x l1 Q ≡ Pre' x l1 Q) ∗
-  "#Hequiv_post" ∷ (∀ x l1 Q l2, Post x l1 Q l2 ≡ Post' x l1 Q l2) ∗
-  "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host)
+Definition handler_is γmap : ∀ (X:Type) (host:u64) (rpcid:u64) (Pre:X → list u8 → iProp Σ)
+                          (Post:X → list u8 → list u8 → iProp Σ), iProp Σ :=
+  λ X host rpcid Pre Post, (∃ γ rpcdom,
+  "%Hdom" ∷ ⌜ rpcreg_doms !! host = Some rpcdom ∧ rpcid ∈ rpcdom ⌝ ∗
+  "#Hspec_name" ∷ ptsto_ro γmap rpcid γ ∗
+  "#Hspec_saved" ∷ saved_pred_own γ (λ (f : val), is_rpcHandler f Pre Post) ∗
+  "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host γmap)
 )%I.
 
-Global Instance handler_is_pers_instance X host rpcid pre post : Persistent (handler_is X host rpcid pre post).
+Global Instance handler_is_pers_instance γ X host rpcid pre post :
+  Persistent (handler_is γ X host rpcid pre post).
 Proof. apply _. Qed.
 
 Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) (host : u64) mref : iProp Σ :=
-  ∃ pending reqs estoks extoks (n : u64),
+  ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
             "%Hnpos" ∷ ⌜ 0 < int.Z n ⌝%Z ∗
             "%Hdom_range" ∷ ⌜ ∀ id, (0 < int.Z id < int.Z n)%Z ↔ id ∈ dom (gset u64) reqs ⌝ ∗
             "%Hdom_eq_es" ∷ ⌜ dom (gset u64) reqs = dom (gset u64) estoks ⌝ ∗
@@ -100,9 +117,9 @@ Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) (host : u64) mref : iP
             "Hextracted_ctx" ∷ map_ctx (ccextracted_name Γ) 1 extoks ∗
             "Hpending_map" ∷ map.is_map mref 1 (pending, zero_val (struct.ptrT callback)) ∗
             "Hreqs" ∷ [∗ map] seqno ↦ req ∈ reqs,
-                 ∃ (Post : rpc_reg_auxtype req → list u8 → (list u8 → iProp Σ) → list u8 → iProp Σ) Q,
+                 ∃ (Post : rpc_reg_auxtype req → list u8 → list u8 → iProp Σ),
                  "Hreg_entry" ∷  ptsto_ro (ccmapping_name Γ) seqno req ∗
-                 "HPost_saved" ∷ saved_pred_own (rpc_reg_saved req) (Post (rpc_reg_aux req) (rpc_reg_args req) Q) ∗
+                 "HPost_saved" ∷ saved_pred_own (rpc_reg_saved req) (Post (rpc_reg_aux req) (rpc_reg_args req)) ∗
                  (* (1) Reply thread has not yet processed, so it is in pending
                     and we have escrow token *)
                  ((∃ (cb : loc) (cb_cond : loc) dummy,
@@ -118,7 +135,7 @@ Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) (host : u64) mref : iP
                     but caller has not extracted ownership *)
                  (∃ reply rep_sl,
                     "Hpending_cb" ∷ ⌜ pending !! seqno  = None ⌝ ∗
-                    "HPost" ∷ (Post (rpc_reg_aux req) (rpc_reg_args req) Q reply) ∗
+                    "HPost" ∷ (Post (rpc_reg_aux req) (rpc_reg_args req) reply) ∗
                     "Hrep_ptr" ∷ (rpc_reg_rep_ptr req) ↦[slice.T byteT] (slice_val rep_sl) ∗
                     "Hrep_data" ∷ typed_slice.is_slice rep_sl byteT 1 reply ∗
                     "Hdone" ∷ (rpc_reg_done req) ↦[boolT] #true) ∨
@@ -164,20 +181,6 @@ Definition own_RPCServer (s : loc) (handlers: gmap u64 val) : iProp Σ :=
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
   "#handlers" ∷ readonly (s ↦[RPCServer :: "handlers"] #mref).
 
-Definition is_rpcHandler {X:Type} (f:val) Pre Post : iProp Σ :=
-  ∀ (x:X) req rep dummy_rep_sl (reqData:list u8) (Q : list u8 → iProp Σ),
-  {{{
-      is_slice req byteT 1 reqData ∗
-      rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
-      ▷ Pre x reqData Q
-  }}}
-    f (slice_val req) #rep
-  {{{
-       rep_sl (repData:list u8), RET #(); rep ↦[slice.T byteT] (slice_val rep_sl) ∗
-         is_slice rep_sl byteT 1 repData ∗
-         ▷ Post x reqData Q repData
-  }}}.
-
 Lemma wp_MakeRPCServer (handlers : gmap u64 val) (mref:loc) (def : val) k :
   {{{
        map.is_map mref 1 (handlers, def)
@@ -200,51 +203,66 @@ Proof.
   iFrame "# ∗". eauto.
 Qed.
 
-Lemma handler_is_init (host : u64) specs:
-   rpcreg_specs !! host = Some specs →
-   host c↦ ∅ ={⊤}=∗
+Definition rpc_spec_map : Type :=
+  gmap u64 { X: Type & ((X → list u8 → iProp Σ) *
+                        (X → list u8 → list u8 → iProp Σ))%type }.
+
+
+Lemma handler_is_init (host : u64) (specs: rpc_spec_map) :
+   rpcreg_doms !! host = Some (dom (gset _) specs) →
+   host c↦ ∅ ={⊤}=∗ ∃ γ,
    [∗ map] rpcid ↦ spec ∈ specs,
    let X := projT1 spec in
    let Pre := fst (projT2 spec) in
    let Post := snd (projT2 spec) in
-   handler_is X host rpcid Pre Post.
+   handler_is γ X host rpcid Pre Post.
 Proof.
   iIntros (Hlookup) "Hchan".
-  iMod (inv_alloc urpc_serverN _ ((server_chan_inner host)) with "[Hchan]") as "#Hinv".
-  { iNext. iExists _, _. iFrame "%". iFrame.
+  iMod (map_init (∅ : gmap u64 gname)) as (γmap) "Hmap_ctx".
+  iMod (inv_alloc urpc_serverN _ ((server_chan_inner host γmap)) with "[Hchan]") as "#Hinv".
+  { iNext. iExists _. iFrame.
     rewrite big_sepS_empty //. }
-  iModIntro.
+  iExists γmap.
   iAssert (∀ specs', ⌜ specs' ⊆ specs ⌝ →
+           |==> ∃ gnames : gmap u64 gname, ⌜ dom (gset _) gnames = dom (gset _) specs' ⌝ ∗
+           map_ctx γmap 1 gnames ∗
            [∗ map] rpcid↦spec ∈ specs',
-             handler_is (projT1 spec) host rpcid (projT2 spec).1 (projT2 spec).2)%I as "H"; last first.
-  { iApply "H". eauto. }
+             handler_is γmap (projT1 spec) host rpcid (projT2 spec).1 (projT2 spec).2)%I with "[Hmap_ctx]" as "H"; last first.
+  { iMod ("H" with "[]") as (?) "(_&_&$)"; eauto. }
   iIntros (specs').
   iInduction specs' as [| id spec] "IH" using map_ind.
-  { rewrite big_sepM_empty //. }
-  { iIntros (?). rewrite big_sepM_insert //; iSplit; last first.
-    { iApply "IH". iPureIntro.
-      etransitivity; last eassumption. apply insert_subseteq; eauto. }
-    iExists _, ((fst (projT2 spec))), ((snd (projT2 spec))). iFrame "% #".
+  { iIntros (?). iModIntro. iExists ∅. iFrame.
     iSplit.
-    {
-    iPureIntro.
-    apply: lookup_weaken; eauto.
-    rewrite lookup_insert.
-    f_equal. destruct spec => //=.
-    destruct p; eauto.
-    }
-    eauto.
+    { iPureIntro. rewrite ?dom_empty_L //. }
+    rewrite big_sepM_empty //. }
+  { iIntros (?).
+    iMod ("IH" with "[$] []") as (gnames Hdom) "(Hmap_ctx&Hmap)".
+    { iPureIntro. etransitivity; last eassumption. apply insert_subseteq; eauto. }
+    iMod (saved_pred_alloc (λ f, is_rpcHandler f (fst (projT2 spec)) (snd (projT2 spec)))) as (γsave) "#Hsaved".
+    iMod (map_alloc_ro id γsave
+            with "Hmap_ctx") as "(Hmap_ctx&#Hsaved_name)"; auto.
+    { apply not_elem_of_dom. rewrite Hdom. apply not_elem_of_dom. eauto. }
+    iExists _; iFrame. iModIntro.
+    iSplit.
+    { iPureIntro. rewrite ?dom_insert_L Hdom. set_solver. }
+    rewrite big_sepM_insert //. iSplit; last first.
+    { iExact "Hmap". }
+    iExists _, _. iFrame "#".
+    iSplit.
+    { eauto. }
+    { iPureIntro. apply elem_of_dom. exists spec.
+      eapply lookup_weaken; last eassumption. rewrite lookup_insert //. }
   }
 Qed.
 
-Definition rpc_handler_mapping host handlers : iProp Σ :=
+Definition rpc_handler_mapping γ host handlers : iProp Σ :=
   ([∗ map] rpcid↦handler ∈ handlers, ∃ (X : Type) Pre Post,
-      handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)%I.
+      handler_is γ X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)%I.
 
 Lemma is_rpcHandler_proper' handler X Pre Pre' Post Post' :
- □ (∀ (x : X) (l1 : list u8) (Q : list u8 → iProp Σ), Pre x l1 Q ≡ Pre' x l1 Q) -∗
- □ (∀ (x : X) (l1 : list u8) (Q : list u8 → iProp Σ) (l2 : list u8),
-       Post x l1 Q l2 ≡ Post' x l1 Q l2) -∗
+ □ (∀ (x : X) (l1 : list u8), Pre x l1 ≡ Pre' x l1) -∗
+ □ (∀ (x : X) (l1 : list u8) (l2 : list u8),
+       Post x l1 l2 ≡ Post' x l1 l2) -∗
  is_rpcHandler handler Pre Post -∗
  is_rpcHandler handler Pre' Post'.
 Proof.
@@ -253,24 +271,23 @@ Proof.
   iIntros. iIntros (Φc) "!# H HΦc".
   wp_apply ("His" with "[H]").
   { iDestruct "H" as "($&$&Hpre)". iNext.
-    iRewrite -("Hequiv_pre" $! x reqData Q) in "Hpre".
+    iRewrite -("Hequiv_pre" $! x reqData) in "Hpre".
     iExact "Hpre".
   }
   iIntros (??) "H". iApply "HΦc".
   iDestruct "H" as "($&$&Hpre)". iNext.
-    iRewrite ("Hequiv_post" $! x reqData Q repData) in "Hpre".
+    iRewrite ("Hequiv_post" $! x reqData repData) in "Hpre".
     iExact "Hpre".
 Qed.
 
-Lemma non_empty_rpc_handler_mapping_inv host handlers :
+Lemma non_empty_rpc_handler_mapping_inv γ host handlers :
   dom (gset u64) handlers ≠ ∅ →
-  rpc_handler_mapping host handlers -∗
-  ∃ specs,
-  "%Hspecs_map_handler" ∷ ⌜ rpcreg_specs !! host = Some specs ⌝ ∗
-  "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host) ∗
-  "#Hhandlers" ∷ ([∗ map] rpcid↦handler ∈ handlers, ∃ (X : Type) Pre Post,
-                                                      ⌜ specs !! rpcid = Some (existT X (Pre, Post)) ⌝ ∗
-                                                      is_rpcHandler handler Pre Post).
+  rpc_handler_mapping γ host handlers -∗
+  "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host γ) ∗
+  "#Hhandlers" ∷ ([∗ map] rpcid↦handler ∈ handlers, ∃ (X : Type) Pre Post γs,
+                                                      ptsto_ro γ rpcid γs ∗
+                                                      saved_pred_own γs (λ f, is_rpcHandler f Pre Post) ∗
+                                                      is_rpcHandler (X := X) handler Pre Post).
 Proof.
   iIntros (Hdom) "Hmapping".
   iInduction handlers as [| rpcid handler] "IH" using map_ind.
@@ -279,36 +296,33 @@ Proof.
   iDestruct "Hmapping" as "(H&Hmapping)".
   destruct (decide (dom (gset _) m = ∅)) as [Hemp|Hemp].
   { iNamed "H". iDestruct "H" as "(Hhandler_is&His_rpcHandler)".
-    iNamed "Hhandler_is". iExists _. iFrame "% #".
+    iNamed "Hhandler_is". iFrame "% #".
     rewrite big_sepM_insert //. iSplitL "His_rpcHandler".
-    { iExists _, Pre', Post'. iSplit; first eauto.
-      iApply is_rpcHandler_proper'; eauto. }
+    { iExists _, Pre, Post, _. iSplit; first eauto.
+      iFrame "# ∗". }
     apply dom_empty_inv_L in Hemp. rewrite Hemp big_sepM_empty. eauto.
   }
-  iDestruct ("IH" with "[//] [$]") as (specs) "HIH".
-  iNamed "HIH". iExists _; iFrame "% #".
+  iDestruct ("IH" with "[//] [$]") as "HIH".
+  iNamed "HIH". iFrame "% #".
   rewrite big_sepM_insert //. iFrame "#".
   { iNamed "H". iDestruct "H" as "(Hhandler_is&His_rpcHandler)".
     rewrite /handler_is.
-    iDestruct "Hhandler_is" as (specs' Hlookup' Hprepost') "H".
-    iDestruct "H" as "(%Hspecs_map_handler'&%Hprepost''&H)".
-    assert (specs = specs') as ->; first by congruence.
-    iExists _, _, _. iSplit; first eauto.
-    iDestruct "H" as "(#Hequiv_pre&#Hequiv_post&?)".
-    iApply (is_rpcHandler_proper' with "[] [] His_rpcHandler"); eauto.
+    iDestruct "Hhandler_is" as (g0 rpcdom Hdom') "H".
+    iDestruct "H" as "(#Hspec_name&#Hspec_saved&H)".
+    iExists _, _, _, _.  iFrame "# ∗".
   }
 Qed.
 
 Definition handlers_complete host (handlers : gmap u64 val) :=
-  (match rpcreg_specs !! host with
-   | Some specs => dom (gset _) handlers = dom (gset _) specs
+  (match rpcreg_doms !! host with
+   | Some d => d = dom (gset _) handlers
    | _ => True
    end).
 
-Lemma wp_RPCServer__readThread s host handlers mref def :
+Lemma wp_RPCServer__readThread γ s host handlers mref def :
   dom (gset u64) handlers ≠ ∅ →
   handlers_complete host handlers →
-  "#His_rpc_map" ∷ rpc_handler_mapping host handlers ∗
+  "#His_rpc_map" ∷ rpc_handler_mapping γ host handlers ∗
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
   "#handlers" ∷ readonly (s ↦[RPCServer :: "handlers"] #mref) -∗
   WP RPCServer__readThread #s (recv_endpoint host) {{ _, True }}.
@@ -323,21 +337,19 @@ Proof.
   iNamed "H".
   wp_apply (wp_Receive).
   iInv "Hserver_inv" as "Hchan_inner" "Hclo".
-  iDestruct "Hchan_inner" as (specs' ms) "(>%Hlookup&>Hchan'&#Hchan_inner)".
-  assert (specs' = specs) as ->.
-  { congruence. }
+  iDestruct "Hchan_inner" as (ms) "(>Hchan'&#Hchan_inner)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
   iExists _. iFrame "Hchan'". iNext.
   iIntros (err m) "(Hchan&Herr)".
-  iAssert (if err then True else server_chan_inner_msg host specs m)%I with "[Hchan_inner Herr]" as "Hmsg".
+  iAssert (if err then True else server_chan_inner_msg host γ m)%I with "[Hchan_inner Herr]" as "Hmsg".
   { destruct err; auto.
     iDestruct "Herr" as %Hin.
     iApply (big_sepS_elem_of with "Hchan_inner"); first eassumption.
   }
   iMod ("Hclo'") as "_".
   iMod ("Hclo" with "[Hchan]") as "_".
-  { iNext. iExists _, _. iFrame "% #". eauto. }
+  { iNext. iExists _. iFrame "% #". eauto. }
   iModIntro.
   iIntros (r) "Hsl".
   wp_pures.
@@ -376,19 +388,18 @@ Proof.
   rewrite /map.map_get in Hget.
   destruct (handlers !! rpcid) as [f|] eqn:Hlookup'; last first.
   { exfalso.
+    destruct Hdom0 as (Hlookup&Hdom0).
     rewrite /handlers_complete Hlookup in Hcomplete.
     apply not_elem_of_dom in Hlookup'.
-    rewrite Hcomplete in Hlookup'.
-    eapply Hlookup'. eapply @elem_of_dom; eauto.
-    { apply _. }
+    rewrite Hcomplete in Hdom0. eauto.
   }
-  rewrite //= in Hget. inversion Hget; subst. wp_pures.
+  rewrite //= in Hget. inversion Hget; subst.
   iDestruct (big_sepM_lookup with "Hhandlers") as "H"; eauto.
-  iNamed "H". iDestruct "H" as (Hlookup_spec') "His_rpcHandler".
-  rewrite Hlookup_spec in Hlookup_spec'.
-  inversion Hlookup_spec'. subst.
-  apply Eqdep.EqdepTheory.inj_pair2 in H1; subst.
-  apply Eqdep.EqdepTheory.inj_pair2 in H2; subst.
+  iNamed "H". iDestruct "H" as "(#Hsname&#Hsaved&#His_rpcHandler)".
+  iDestruct (ptsto_ro_agree with "Hspec_name Hsname") as %->.
+  iDestruct (saved_pred_agree _ _ _ v with "Hspec_saved Hsaved") as "#Hequiv".
+  wp_pures.
+  iRewrite -"Hequiv" in "His_rpcHandler". iClear "Hequiv".
   rewrite /is_rpcHandler.
   replace (zero_val (slice.T byteT)) with
       (slice_val {| Slice.ptr := null; Slice.sz := U64 0; Slice.cap := U64 0 |}) by auto.
@@ -427,7 +438,7 @@ Proof.
   iDestruct (is_slice_small_read with "Hmsg_slice") as "(Hmsg_slice&_)".
   wp_apply (wp_Send with "[$Hmsg_slice]").
   { admit. } (* TODO: overflow *)
-  iMod (inv_alloc urpc_escrowN _ (Post0 x args Q repData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt)
+  iMod (inv_alloc urpc_escrowN _ (Post x args repData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt)
           with "[HPost]") as "#HPost_escrow".
   { eauto. }
   iInv "Hclient_chan_inv" as "Hclient_chan_inner" "Hclo".
@@ -445,7 +456,7 @@ Proof.
     iFrame "#".
     iApply big_sepS_singleton.
     iExists _, _, _, _, _, _, _.
-    iExists _, _, _, _.
+    iExists _, _, _.
     iFrame "#".
     iPureIntro. simpl. rewrite ?app_nil_l //= in Hencoding. rewrite Hsz.
     assert (U64 (Z.of_nat (int.nat (rep_sl.(Slice.sz)))) = rep_sl.(Slice.sz)) as ->.
@@ -455,13 +466,13 @@ Proof.
   iModIntro. iIntros "?". wp_pures; eauto.
 Admitted.
 
-Lemma wp_StartRPCServer (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
+Lemma wp_StartRPCServer γ (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
   dom (gset u64) handlers ≠ ∅ →
   handlers_complete host handlers →
   {{{
        own_RPCServer s handlers ∗
       [∗ map] rpcid ↦ handler ∈ handlers,
-       (∃ X Pre Post, handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
+       (∃ X Pre Post, handler_is γ X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
   }}}
     RPCServer__Serve #s #host #n
   {{{
@@ -481,7 +492,7 @@ Proof.
   { iNext. iIntros "(?&?)". iApply "HΦ"; eauto. }
   iIntros (ival Φ') "!> (?&Hi&Hlt) HΦ'".
   wp_apply (wp_fork).
-  { wp_apply (wp_RPCServer__readThread with "[$]"); eauto. }
+  { wp_apply (wp_RPCServer__readThread with "[]"); eauto. }
   wp_pures. iModIntro. iApply "HΦ'"; iFrame.
 Qed.
 
@@ -588,7 +599,7 @@ Proof.
     iSplitR "Hclo"; last first.
     { iThaw "Hclo". iApply (big_sepM_mono with "Hclo").
       iIntros (?? Hlookup) "H". iNamed "H".
-      iExists _, _; iFrame.  iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
+      iExists _; iFrame.  iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
       { iNamed "Hcase1". iLeft. iExists _, _, _. iFrame "# ∗".
         iDestruct "Hpending_cb" as %Hpending_cb'. iPureIntro.
         destruct (decide (seqno = k)).
@@ -602,7 +613,7 @@ Proof.
         apply lookup_delete_None; auto.
       }
     }
-    iExists _, _. iFrame "#".  iRight. iLeft.
+    iExists _. iFrame "#".  iRight. iLeft.
     iExists _, _.
     iFrame "HPost_val". simpl. iFrame "Hrep_ptr Hdone".
     iSplit.
@@ -676,14 +687,14 @@ Proof.
   iExists _, _, _, _. iFrame "#".
 Admitted.
 
-Lemma wp_RPCClient__Call {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr
-      dummy_sl_val (reqData:list u8) Pre Post Q :
+Lemma wp_RPCClient__Call {X:Type} γsmap (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr
+      dummy_sl_val (reqData:list u8) Pre Post :
   {{{
       is_slice req byteT 1 reqData ∗
       rep_ptr ↦[slice.T byteT] dummy_sl_val ∗
-      handler_is X host rpcid Pre Post ∗
+      handler_is γsmap X host rpcid Pre Post ∗
       RPCClient_own cl_ptr host ∗
-      □(▷ Pre x reqData Q)
+      □(▷ Pre x reqData)
   }}}
     RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_ptr
   {{{
@@ -692,7 +703,7 @@ Lemma wp_RPCClient__Call {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req 
        RPCClient_own cl_ptr host ∗
        typed_slice.is_slice req byteT 1 reqData ∗
        typed_slice.is_slice rep_sl byteT 1 repData ∗
-       (⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post x reqData Q repData))
+       (⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post x reqData repData))
   }}}.
 Proof.
   iIntros (Φ) "H HΦ".
@@ -733,7 +744,7 @@ Proof.
   iIntros "Hpending_map".
   wp_pures.
   wp_loadField.
-  iMod (saved_pred_alloc (Post x reqData Q)) as (γ) "#Hsaved".
+  iMod (saved_pred_alloc (Post x reqData)) as (γ) "#Hsaved".
   assert (reqs !! n = None).
   { apply not_elem_of_dom. rewrite -Hdom_range. lia. }
   iMod (map_alloc_ro n (ReqDesc rpcid X x reqData γ cb_done rep_ptr)
@@ -772,7 +783,7 @@ Proof.
       { intros Heq. congruence. }
       setoid_rewrite lookup_insert_ne; eauto.
     }
-    iExists Post, Q.
+    iExists Post.
     iFrame "Hreg Hsaved".
     iLeft. iExists _, _, _. iFrame "# ∗".
     iPureIntro. rewrite lookup_insert //. }
@@ -811,22 +822,20 @@ Proof.
   wp_apply (wp_Send with "[$]").
   { admit. } (* TODO: overflow *)
   iInv "Hserver_inv" as "Hserver_inner" "Hclo".
-  iDestruct "Hserver_inner" as (specs' ms) "(>%Hlookup&>Hchan'&H)".
-  assert (specs' = specs) as ->.
-  { congruence. }
+  iDestruct "Hserver_inner" as (ms) "(>Hchan'&H)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
   iExists _. iFrame "Hchan'". iNext.
   iIntros "Hchan'". iNamed "H".
   iMod ("Hclo'") as "_".
   iMod ("Hclo" with "[Hmessages Hchan']") as "_".
-  { iNext. iExists specs, _. iFrame.
-    iSplit; first done.
+  { iNext. iExists _. iFrame.
     destruct (decide (Message r repData ∈ ms)).
     { assert (ms ∪ {[Message r repData]} = ms) as -> by set_solver. iFrame. }
     iApply big_sepS_union; first by set_solver.
     iFrame "Hmessages".
     iApply big_sepS_singleton.
+    (*
     iAssert (saved_pred_own γ (Post x reqData Q) ≡ saved_pred_own γ (Post' x reqData Q))%I as "Hsaved_eq".
     {
       unfold saved_pred_own, saved_anything_own.
@@ -841,8 +850,10 @@ Proof.
       eauto.
     }
     iRewrite "Hsaved_eq" in "Hsaved".
+     *)
     iExists _, _, _, _, _, _, _.
-    iExists _, _, _, _, _.
+    iExists _, _, _, _, _, _.
+    iFrame "Hreg".
     iFrame "#". iSplit; eauto.
     {
       iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz.
@@ -850,8 +861,6 @@ Proof.
       { word. }
       eauto.
     }
-    iSplit; first eauto.
-    iModIntro. iRewrite -("Hequiv_pre" $! x reqData Q). eauto.
   }
   iModIntro. iIntros "Hsl_rep".
   wp_pures.
@@ -876,7 +885,7 @@ Proof.
     wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
     wp_pures. iThaw "Hclo".
     iDestruct ("Hclo" with "[Hdone Hcond Hescrow Hpending_cb Hrep_ptr]") as "H".
-    { simpl. iExists _, _. iFrame "Hreg". iFrame "Hsaved". iFrame "#". iLeft. iExists _, _, _. iFrame "# ∗". }
+    { simpl. iExists _. iFrame "Hreg". iFrame "Hsaved". iFrame "#". iLeft. iExists _, _, _. iFrame "# ∗". }
     wp_loadField.
     wp_apply (wp_condWait with "[$cond' $Hlk $Hi H HPost_saved
                  Hpending_map Hmapping_ctx Hescrow_ctx Hextracted_ctx seq]").
@@ -890,7 +899,7 @@ Proof.
     wp_pures. wp_loadField.
     iThaw "Hclo".
     iDestruct ("Hclo" with "[Hdone Hextracted Hpending_cb]") as "H".
-    { simpl. iExists _, _. iFrame "Hreg". iFrame "Hsaved". iFrame "#". iRight. iRight.
+    { simpl. iExists _. iFrame "Hreg". iFrame "Hsaved". iFrame "#". iRight. iRight.
       iSplit; eauto. }
     wp_apply (release_spec with "[$Hlk $Hi H HPost_saved
                  Hpending_map Hmapping_ctx Hescrow_ctx Hextracted_ctx seq]").

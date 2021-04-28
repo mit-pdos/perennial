@@ -9,8 +9,8 @@ Section memkv_shard_start_proof.
 Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MemKVShardServer__Start (s:loc) (host : u64) γ :
-  match rpcreg_specs !! host with
-  | Some specs => dom (gset u64) specs = ({[ U64 0; U64 1; U64 2; U64 3; U64 4; U64 5 ]} : gset u64)
+  match rpcreg_doms !! host with
+  | Some d => d = ({[ U64 0; U64 1; U64 2; U64 3; U64 4; U64 5 ]} : gset u64)
   | None => True
   end →
 is_shard_server host γ -∗
@@ -60,20 +60,20 @@ Proof.
   iIntros (rs) "Hsown".
   wp_pures.
 
+  rewrite is_shard_server_unfold.
+  iNamed "His_shard".
   wp_apply (wp_StartRPCServer with "[$Hsown]").
   { rewrite ?dom_insert_L; set_solver. }
-  { rewrite /handlers_complete. destruct (rpcreg_specs !! host); eauto.
+  { rewrite /handlers_complete. destruct (rpcreg_doms !! host); eauto.
     rewrite ?dom_insert_L dom_empty_L Hdom. set_solver. }
   {
     iApply (big_sepM_insert_2 with "").
     { (* MoveShardRPC handler_is *)
-      rewrite is_shard_server_unfold.
-      iNamed "His_shard".
       iExists _, _, _.
       iFrame "#HmoveSpec".
 
       clear Φ.
-      iIntros (??????) "!#".
+      iIntros (?????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep & Hargs)".
@@ -94,13 +94,11 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     { (* InstallShard() handler_is *)
-      rewrite is_shard_server_unfold.
-      iNamed "His_shard".
       iExists _, _, _.
       iFrame "#HinstallSpec".
 
       clear Φ.
-      iIntros (??????) "!#".
+      iIntros (?????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
 
@@ -124,13 +122,11 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     { (* ConditionalPutRPC handler_is *)
-      rewrite is_shard_server_unfold.
-      iNamed "His_shard".
       simpl.
       iExists _, _, _. iFrame "HconditionalPutSpec".
 
       clear Φ.
-      iIntros (??????) "!#".
+      iIntros (?????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
@@ -143,7 +139,8 @@ Proof.
       iDestruct "Hpre" as (args) "(%Henc & #HreqInv)".
       wp_apply (wp_decodeConditionalPutRequest with "[$Hreq_sl]").
       { done. }
-      iIntros (args_ptr expv_sl newv) "Hargs". admit. (*
+      iIntros (args_ptr expv_sl newv) "Hargs". admit.
+      (*
       wp_apply (wp_ConditionalPutRPC with "His_memkv [$Hargs Hrep $HreqInv]").
       {
         iDestruct (struct_fields_split with "Hrep") as "HH".
@@ -166,13 +163,11 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     { (* Get() handler_is *)
-      rewrite is_shard_server_unfold.
-      iNamed "His_shard".
       simpl.
       iExists _, _, _; iFrame "HgetSpec".
 
       clear Φ.
-      iIntros (??????) "!#".
+      iIntros (?????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
@@ -219,13 +214,11 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     { (* PutRPC handler_is *)
-      rewrite is_shard_server_unfold.
-      iNamed "His_shard".
       simpl.
       iExists _, _, _. iFrame "HputSpec".
 
       clear Φ.
-      iIntros (??????) "!#".
+      iIntros (?????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
@@ -261,13 +254,11 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     { (* GetCIDRPC handler_is *)
-      rewrite is_shard_server_unfold.
-      iNamed "His_shard".
       iExists _, _, _.
       iFrame "HfreshSpec".
 
       clear Φ.
-      iIntros (??????) "!#".
+      iIntros (?????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_GetCIDRPC with "His_memkv").
