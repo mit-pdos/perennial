@@ -141,7 +141,7 @@ Proof.
   do 4 (f_contractive || f_equiv).
   f_equiv. rewrite /handler_is.
   do 4 f_equiv. f_equiv.
-  do 16 f_equiv.
+  do 17 f_equiv.
   f_contractive. apply Hpre.
 Qed.
 
