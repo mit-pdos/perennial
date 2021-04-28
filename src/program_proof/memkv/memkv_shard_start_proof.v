@@ -127,7 +127,7 @@ Proof.
       rewrite is_shard_server_unfold.
       iNamed "His_shard".
       simpl.
-      iExists _, _, _. admit. (* iFrame "HconditionalPutSpec".
+      iExists _, _, _. iFrame "HconditionalPutSpec".
 
       clear Φ.
       iIntros (??????) "!#".
@@ -141,10 +141,10 @@ Proof.
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & Hpre)".
       iDestruct "Hpre" as (args) "(%Henc & #HreqInv)".
-      wp_apply (wp_decodePutRequest with "[$Hreq_sl]").
+      wp_apply (wp_decodeConditionalPutRequest with "[$Hreq_sl]").
       { done. }
-      iIntros (args_ptr val_sl) "Hargs".
-      wp_apply (wp_PutRPC with "His_memkv [$Hargs Hrep $HreqInv]").
+      iIntros (args_ptr expv_sl newv) "Hargs". admit. (*
+      wp_apply (wp_ConditionalPutRPC with "His_memkv [$Hargs Hrep $HreqInv]").
       {
         iDestruct (struct_fields_split with "Hrep") as "HH".
         iNamed "HH".
@@ -153,7 +153,7 @@ Proof.
       }
       iIntros (rep') "[Hrep Hpost]".
       wp_pures.
-      wp_apply (wp_encodePutReply with "Hrep").
+      wp_apply (wp_encodeConditionalPutReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
       wp_store.
       iApply "HΦ".

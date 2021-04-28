@@ -20,6 +20,8 @@ Definition uKV_FRESHCID :=
   Eval vm_compute in match KV_FRESHCID with LitV (LitInt n) => int.nat n | _ => 0 end.
 Definition uKV_PUT :=
   Eval vm_compute in match KV_PUT with LitV (LitInt n) => int.nat n | _ => 0 end.
+Definition uKV_CONDITIONAL_PUT :=
+  Eval vm_compute in match KV_CONDITIONAL_PUT with LitV (LitInt n) => int.nat n | _ => 0 end.
 Definition uKV_GET :=
   Eval vm_compute in match KV_GET with LitV (LitInt n) => int.nat n | _ => 0 end.
 Definition uKV_INS_SHARD :=
@@ -80,6 +82,19 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
                     ∃ dummy_val dummy_succ, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkShardReplyC rep.(PR_Err) dummy_val dummy_succ))
              ) (* post *) ∗
 
+  "#HconditionalPutSpec" ∷ handler_is (coPset * coPset * rpc_request_names) host uKV_CONDITIONAL_PUT
+             (λ x reqData Q, ∃ req, ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
+                (* FIXME: Q here is of type [list u8 → iProp] but we need [bool → iProp] *)
+                  is_RPCRequest γ.(rpc_gn) x.2
+                     (PreShardConditionalPut x.1.1 x.1.2 γ req.(CPR_Key) (λ _, Q []) req.(CPR_ExpValue) req.(CPR_NewValue))
+                     (PostShardConditionalPut x.1.1 x.1.2 γ req.(CPR_Key) (λ _, Q []) req.(CPR_ExpValue) req.(CPR_NewValue))
+                     {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |}
+             ) (* pre *)
+             (λ x reqData Q repData, ∃ req rep, ⌜has_encoding_ConditionalPutReply repData rep⌝ ∗
+                  ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
+                  (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |} ∨
+                    ∃ dummy_val, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |} (mkShardReplyC rep.(CPR_Err) dummy_val rep.(CPR_Succ)))
+             ) (* post *) ∗
 
   "#HgetSpec" ∷ handler_is (coPset * coPset * rpc_request_names) host uKV_GET
              (λ x reqData Q, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
