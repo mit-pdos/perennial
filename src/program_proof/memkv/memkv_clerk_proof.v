@@ -5,7 +5,7 @@ From Perennial.program_proof.memkv Require Export common_proof memkv_coord_clerk
 
 Section memkv_clerk_proof.
 
-Context `{!heapG Σ, rpcG Σ GetReplyC, kvMapG Σ}.
+Context `{!heapG Σ, !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ}.
 
 Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   ∃ (s coordCk:loc) shardMap_sl (shardMapping:list u64),
@@ -35,6 +35,7 @@ Proof using Type*.
   iIntros (rep_ptr) "Hrep".
   wp_pures.
 
+  (* Weaken assumption for loop invariant *)
   iAssert (∃ rep_sl, rep_ptr ↦[slice.T byteT] (slice_val rep_sl) )%I with "[Hrep]" as "Hrep".
   {
     rewrite zero_slice_val.
@@ -88,7 +89,9 @@ Proof using Type*.
     iModIntro.
     iApply "HΦ".
     iFrame.
-    iExists _, _, _, _. iFrame. admit. (* Re-assembling own_MemKVClerk *)
+    iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
+    iDestruct ("HslClose" with "Hsmall_sl") as "?".
+    iExists _, _, _, _. by iFrame.
   }
   {
     wp_loadField.
@@ -109,7 +112,7 @@ Proof using Type*.
     iDestruct "Hatomic" as "[_ $]".
     iExists _,_,_,_; iFrame.
   }
-Admitted.
+Qed.
 
 Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
 ⊢ {{{ own_MemKVClerk ck γ ∗ typed_slice.is_slice val_sl byteT 1%Qp v }}}
@@ -163,8 +166,10 @@ Proof using Type*.
     wp_pures.
     iDestruct "HshardPutPost" as "(Hval_sl & HshardCk & [[%Hbad _]|[_ Hpost]])".
     { by exfalso. }
-    iApply "Hpost". iModIntro. iExists _, _, _, _. iFrame.
-    admit. (* Re-assembling own_MemKVClerk *)
+    iApply "Hpost".
+    iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
+    iDestruct ("HslClose" with "Hsmall_sl") as "?".
+    iModIntro. iExists _, _, _, _. by iFrame.
   }
   {
     wp_loadField.
@@ -184,8 +189,97 @@ Proof using Type*.
     rewrite Hre.
     iDestruct "Hatomic" as "[_ $]".
     iFrame.
+    iExists _,_,_,_. iFrame.
+  }
+Qed.
+
+Lemma KVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
+⊢ {{{ own_MemKVClerk ck γ ∗ typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
+      typed_slice.is_slice newv_sl byteT 1%Qp newv }}}
+  <<< ∀∀ oldv, kvptsto γ key oldv >>>
+    MemKVClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) @ ⊤
+  <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>
+  {{{ RET #(bool_decide (expv = oldv)); own_MemKVClerk ck γ }}}. (* FIXME: ownership of the slices is lost? *)
+Proof using Type*.
+  iIntros "!#" (Φ) "(Hown & Hexpv_sl & Hnewv_sl) Hatomic".
+  wp_lam.
+  wp_pures.
+  wp_apply (wp_ref_of_zero _ _ boolT).
+  { done. }
+  iIntros (succ_ptr) "Hsucc".
+  wp_pures.
+  (* Weaken assumption for loop invariant *)
+  iAssert (∃ b:bool, succ_ptr ↦[boolT] #b)%I with "[Hsucc]" as "Hsucc".
+  { iExists _. done. }
+
+  wp_forBreak.
+  wp_pures.
+
+  wp_apply (wp_shardOf_bound).
+  iIntros (sid HsidLe).
+  wp_pures.
+
+  iNamed "Hown".
+  wp_loadField.
+  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
+
+  rewrite -HshardMap_length in HsidLe.
+  eapply list_lookup_lt in HsidLe.
+  destruct HsidLe as [hostID HsidLe].
+  wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
+  {
+    iPureIntro.
+    done.
+  }
+  iIntros "Hsmall_sl".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet]").
+  iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
+  subst γ.
+
+  wp_pures.
+  wp_apply (wp_MemKVShardClerk__ConditionalPut _ _ γsh _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γsh.(kv_gn) -∗ Φ #b)%I
+    with "[Hatomic $Hexpv_sl $Hnewv_sl $HshardCk Hsucc]").
+  {
+    rewrite /zero_val /=. iFrame.
+  }
+  iIntros (e) "HshardCondPutPost".
+  wp_pures.
+  wp_if_destruct.
+  {
+    iRight.
+    iModIntro.
+    iSplitL ""; first done.
+    wp_pures.
+    iDestruct "HshardCondPutPost" as "(Hexpv_sl & Hnewv_sl & HshardCk & [[%Hbad _]|[_ Hpost]])".
+    { by exfalso. }
+    iDestruct "Hpost" as (succ) "(Hsucc & HΦ)".
+    wp_load.
+    iApply "HΦ". iModIntro.
+    iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
+    iDestruct ("HslClose" with "Hsmall_sl") as "?".
+    iExists _, _, _, _. by iFrame.
+  }
+  {
+    wp_loadField.
+    iDestruct "HshardCondPutPost" as "(Hexpv_sl & Hnewv_sl & HshardCk & [Hatomic|[%Hbad _]])"; last first.
+    { exfalso. naive_solver. }
+    iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
+    wp_apply (wp_MemKVCoordClerk__GetShardMap with "[$HcoordCk_own]").
+    iIntros (shardMap_sl' shardMapping') "[HcoordCk_own HshardMap_sl]".
+    wp_apply (wp_storeField with "HshardMap").
+    { apply slice_val_ty. }
+    iIntros "HshardMap".
+    wp_pures.
+    iLeft.
+    iModIntro.
+
+    iSplitL ""; first done.
+    iDestruct "Hatomic" as "(_ & $ & Hsucc)".
+    iFrame.
     iExists _,_,_,_; iFrame.
   }
-Admitted.
+Qed.
 
 End memkv_clerk_proof.
