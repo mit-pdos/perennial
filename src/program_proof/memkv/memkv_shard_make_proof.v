@@ -50,6 +50,7 @@ Proof.
   { repeat econstructor. }
   iIntros (iptr) "Hi".
   wp_pures.
+  (*
   wp_apply (wp_forUpto (λ i,
       "shardMap" ∷ srv ↦[MemKVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
       "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl boolT 1
@@ -74,6 +75,7 @@ Proof.
     iFrame "HshardMap_sl". }
   iIntros "(H&Hi)". iNamed "H".
   wp_pures.
+   *)
 Abort.
 
 End memkv_shard_make_proof.
