@@ -9,16 +9,6 @@ Context `{!heapG Σ, rpcG Σ ShardReplyC, HREG: rpcregG Σ, kvMapG Σ}.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
-(* FIXME: move somewhere mor general *)
-Lemma wp_If_join_evar (b : bool) e1 e2 Q Φ :
-  (∀ b', ⌜b' = b⌝ -∗ WP if: #b then e1 else e2 {{ v, ⌜v = #()⌝ ∗ Q b' }}) -∗
-  (Q b -∗ Φ #()) -∗ WP if: #b then e1 else e2 {{ Φ }}.
-Proof.
-  iIntros "Hif Hcont". iApply (wp_wand with "[Hif]").
-  - iApply "Hif". done.
-  - simpl. iIntros (v) "[-> HQ]". by iApply "Hcont".
-Qed.
-
 Lemma wp_ConditionalPutRPC (s args_ptr reply_ptr:loc) expv_sl newv_sl args γ Eo Ei γreq Q :
   is_MemKVShardServer s γ -∗
   {{{

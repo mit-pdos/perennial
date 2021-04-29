@@ -54,6 +54,19 @@ Proof.
     iFrame.
 Qed.
 
+(** Designed for [Q] to be left an evar that is resolved with [iNamedAccu] when
+finishing the first branch. Coq unification will automagically generalize over
+all occurrences of [b'] in the goal at that point. *)
+Lemma wp_If_join_evar (b : bool) e1 e2 Q Φ :
+  (∀ b', ⌜b' = b⌝ -∗ WP if: #b then e1 else e2 {{ v, ⌜v = #()⌝ ∗ Q b' }}) -∗
+  (Q b -∗ Φ #()) -∗ WP if: #b then e1 else e2 {{ Φ }}.
+Proof.
+  iIntros "Hif Hcont". iApply (wp_wand with "[Hif]").
+  - iApply "Hif". done.
+  - simpl. iIntros (v) "[-> HQ]". by iApply "Hcont".
+Qed.
+
+
 Theorem wp_and (P1 P2 : Prop) `{!Decision P1, !Decision P2}
     (e1 e2 : expr) (Φ : val → iProp Σ) :
   WP e1 {{ v, ⌜v = #(bool_decide P1)⌝ }} -∗
