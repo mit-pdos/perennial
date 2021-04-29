@@ -18,7 +18,7 @@ Lemma wp_MemKVCoordClerk__GetShardMap (ck:loc) :
        shardMap_sl (shardMapping:list u64), RET (slice_val shardMap_sl);
        own_MemKVCoordClerk ck ∗
        typed_slice.is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
-       ⌜length shardMapping = uNSHARD⌝
+       ⌜Z.of_nat (length shardMapping) = uNSHARD⌝
   }}}
 .
 Proof.

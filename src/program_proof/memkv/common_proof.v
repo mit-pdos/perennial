@@ -7,7 +7,7 @@ Context `{!heapG Σ}.
 
 Definition shardOfC (key:u64) : u64 := (word.modu key (65536%Z)).
 
-Definition uNSHARD : nat := Z.to_nat 65536.
+Definition uNSHARD : Z := 65536%Z.
 
 Lemma wp_shardOf key :
   {{{
@@ -30,7 +30,7 @@ Lemma wp_shardOf_bound (key:u64) :
   }}}
     shardOf #key
   {{{
-     (s:u64), RET #s; ⌜((int.nat s) < uNSHARD)%nat⌝
+     (s:u64), RET #s; ⌜int.Z s < uNSHARD⌝
   }}}.
 Proof.
 Admitted.

@@ -201,8 +201,7 @@ Proof.
     assert (∃ b, shardMapping !! int.nat sid = Some b) as [? ?].
     {
       eapply list_lookup_lt.
-      rewrite HshardMapLength.
-      rewrite /sid /shardOfC /uNSHARD.
+      move: HshardMapLength. rewrite /sid /shardOfC /uNSHARD.
       word.
     }
     wp_apply (typed_slice.wp_SliceGet with "[$HshardMap_sl]").

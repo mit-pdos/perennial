@@ -96,8 +96,8 @@ Proof.
   {
     iPureIntro.
     apply lookup_lt_is_Some_2.
-    rewrite HshardMapLength.
-    done.
+    move: HshardMapLength.
+    word.
   }
   iIntros "HshardMap_small".
   iSpecialize ("HshardMap_sl" with "HshardMap_small").
@@ -117,8 +117,7 @@ Proof.
       rewrite list_lookup_fmap.
       rewrite fmap_is_Some.
       apply lookup_lt_is_Some_2.
-      rewrite HkvssLength.
-      done.
+      word.
     }
     {
       naive_solver.
@@ -196,8 +195,7 @@ Proof.
       iFrame.
       iPureIntro.
       apply list_lookup_insert.
-      rewrite HkvssLength.
-      word.
+      move: HkvssLength. word.
     }
     iApply big_sepS_intuitionistically_forall.
     iModIntro.

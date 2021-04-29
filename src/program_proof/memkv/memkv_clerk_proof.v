@@ -15,7 +15,7 @@ Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   "HcoordCk_own" ∷ own_MemKVCoordClerk coordCk ∗
   "HshardMap" ∷ ck ↦[MemKVClerk :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
-  "%HshardMap_length" ∷ ⌜length shardMapping = uNSHARD⌝
+  "%HshardMap_length" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝
 .
 
 Lemma KVClerk__Get (ck:loc) (γ:gname) (key:u64) :
@@ -53,9 +53,9 @@ Proof using Type*.
   wp_loadField.
   iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
-  rewrite -HshardMap_length in HsidLe.
-  eapply list_lookup_lt in HsidLe.
-  destruct HsidLe as [hostID HsidLe].
+  assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
+  eapply list_lookup_lt in HsidLe_nat.
+  destruct HsidLe_nat as [hostID HsidLe_nat].
   wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
   {
     iPureIntro.
@@ -136,9 +136,9 @@ Proof using Type*.
   wp_loadField.
   iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
-  rewrite -HshardMap_length in HsidLe.
-  eapply list_lookup_lt in HsidLe.
-  destruct HsidLe as [hostID HsidLe].
+  assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
+  eapply list_lookup_lt in HsidLe_nat.
+  destruct HsidLe_nat as [hostID HsidLe_nat].
   wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
   {
     iPureIntro.
@@ -223,9 +223,9 @@ Proof using Type*.
   wp_loadField.
   iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
-  rewrite -HshardMap_length in HsidLe.
-  eapply list_lookup_lt in HsidLe.
-  destruct HsidLe as [hostID HsidLe].
+  assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
+  eapply list_lookup_lt in HsidLe_nat.
+  destruct HsidLe_nat as [hostID HsidLe_nat].
   wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
   {
     iPureIntro.

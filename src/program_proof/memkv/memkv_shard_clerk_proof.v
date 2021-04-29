@@ -95,7 +95,7 @@ Lemma wp_MemKVShardClerk__InstallShard γ (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:
        own_MemKVShardClerk ck γ ∗
        own_shard_phys kvs_ref sid kvs ∗
        own_shard γ.(kv_gn) sid kvs ∗
-       ⌜int.nat sid < uNSHARD⌝
+       ⌜int.Z sid < uNSHARD⌝
   }}}
     MemKVShardClerk__InstallShard #ck #sid #kvs_ref
   {{{
@@ -327,7 +327,6 @@ Proof.
       exfalso.
       move: Hbad.
       simpl.
-      assert (int.nat seq + 1 = int.nat (word.add seq 1)) as -> by word.
       word.
     }
     iDestruct "Hreceipt" as (? ?) "Hreceipt".
@@ -490,7 +489,6 @@ Proof.
       exfalso.
       move: Hbad.
       simpl.
-      assert (int.nat seq + 1 = int.nat (word.add seq 1)) as -> by word.
       word.
     }
     iMod (get_request_post with "HreqInv Hreceipt Htok") as "Hpost".
@@ -657,7 +655,6 @@ Proof.
       exfalso.
       move: Hbad.
       simpl.
-      assert (int.nat seq + 1 = int.nat (word.add seq 1)) as -> by word.
       word.
     }
     iDestruct "Hreceipt" as (?) "Hreceipt".

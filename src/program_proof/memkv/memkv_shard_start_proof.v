@@ -109,7 +109,8 @@ Proof.
       iIntros (args_ptr) "Hargs".
       wp_apply (wp_InstallShardRPC with "His_memkv [$Hargs $HreqInv]").
       {
-        done.
+        iPureIntro.
+        word.
       }
       wp_pures.
       wp_apply (typed_slice.wp_NewSlice (V:=u8)).

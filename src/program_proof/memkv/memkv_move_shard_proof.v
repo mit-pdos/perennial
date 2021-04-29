@@ -11,7 +11,7 @@ Lemma wp_MoveShardRPC (s args_ptr:loc) args γsh γ :
   is_MemKVShardServer s γ -∗
   {{{
        own_MoveShardRequest args_ptr args ∗
-       ⌜int.nat args.(MR_Sid) < uNSHARD⌝ ∗
+       ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
        is_shard_server args.(MR_Dst) γsh
   }}}
     MemKVShardServer__MoveShardRPC #s #args_ptr
@@ -50,8 +50,7 @@ Proof.
   assert (∃ b, shardMapping !! int.nat args.(MR_Sid) = Some b) as [? ?].
   {
     eapply list_lookup_lt.
-    rewrite HshardMapLength.
-    done.
+    word.
   }
 
   wp_pures.
@@ -141,7 +140,7 @@ Proof.
     iFrame "Hclerk".
     rewrite Hγeq.
     iFrame "HshardGhost".
-    iSplitR ""; last done.
+    iSplitR ""; last (iPureIntro; word).
     iExists _; iFrame.
   }
   iIntros "Hclerk".
@@ -176,8 +175,7 @@ Proof.
       iPureIntro.
       rewrite list_lookup_insert.
       { done. }
-      rewrite HshardMapLength.
-      done.
+      word.
     }
     iApply (big_sepS_impl with "HownShards").
     iModIntro.

@@ -5,6 +5,8 @@ From Perennial.program_proof.memkv Require Export common_proof.
 From Perennial.program_proof.memkv Require Export rpc_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_conditional_put_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 From iris.bi.lib Require Import fixpoint.
 
+Open Scope Z.
+
 (** "universal" reply type for the reply cache *)
 Record ShardReplyC := mkShardReplyC {
   SR_Err : u64;
@@ -16,17 +18,17 @@ Section memkv_shard_definitions.
 
 Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Definition uKV_FRESHCID :=
+Definition uKV_FRESHCID: nat :=
   Eval vm_compute in match KV_FRESHCID with LitV (LitInt n) => int.nat n | _ => 0 end.
-Definition uKV_PUT :=
+Definition uKV_PUT: nat :=
   Eval vm_compute in match KV_PUT with LitV (LitInt n) => int.nat n | _ => 0 end.
-Definition uKV_CONDITIONAL_PUT :=
+Definition uKV_CONDITIONAL_PUT: nat :=
   Eval vm_compute in match KV_CONDITIONAL_PUT with LitV (LitInt n) => int.nat n | _ => 0 end.
-Definition uKV_GET :=
+Definition uKV_GET: nat :=
   Eval vm_compute in match KV_GET with LitV (LitInt n) => int.nat n | _ => 0 end.
-Definition uKV_INS_SHARD :=
+Definition uKV_INS_SHARD: nat :=
   Eval vm_compute in match KV_INS_SHARD with LitV (LitInt n) => int.nat n | _ => 0 end.
-Definition uKV_MOV_SHARD :=
+Definition uKV_MOV_SHARD: nat :=
   Eval vm_compute in match KV_MOV_SHARD with LitV (LitInt n) => int.nat n | _ => 0 end.
 
 Record memkv_shard_names := {
@@ -109,7 +111,7 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
 
   "#HmoveSpec" ∷ handler_is γh (memkv_shard_names) host uKV_MOV_SHARD
              (λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
-                                  ⌜int.nat args.(MR_Sid) < uNSHARD⌝ ∗
+                                  ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
                                   (▷ ρ args.(MR_Dst) x)
              ) (* pre *)
              (λ x reqData repData, True
@@ -117,7 +119,7 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
 
   "#HinstallSpec" ∷ handler_is γh (rpc_request_names) host uKV_INS_SHARD
              (λ x reqData, ∃ args, ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
-                                  ⌜int.nat args.(IR_Sid) < uNSHARD⌝ ∗
+                                  ⌜int.Z args.(IR_Sid) < uNSHARD⌝ ∗
                                   is_RPCRequest γ.(rpc_gn) x (own_shard γ.(kv_gn) args.(IR_Sid) args.(IR_Kvs))
                                                             (λ _, True)
                                                             {| Req_CID:=args.(IR_CID); Req_Seq:=args.(IR_Seq) |}
@@ -205,8 +207,8 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
   "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
   "Hpeers" ∷ s ↦[MemKVShardServer :: "peers"] #peers_ptr ∗
   "Hrpc" ∷ RPCServer_own_ghost γ.(rpc_gn) lastSeqM lastReplyM ∗
-  "%HshardMapLength" ∷ ⌜length shardMapping = uNSHARD⌝ ∗
-  "%HkvssLength" ∷ ⌜length kvs_ptrs = uNSHARD⌝ ∗
+  "%HshardMapLength" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
+  "%HkvssLength" ∷ ⌜Z.of_nat (length kvs_ptrs) = uNSHARD⌝ ∗
   "HownShards" ∷ ([∗ set] sid ∈ (fin_to_set u64),
                   ⌜(shardMapping !! (int.nat sid)) ≠ Some true⌝ ∨
                   (∃ (kvs_ptr:loc) (m:gmap u64 (list u8)) (mv:gmap u64 goose_lang.val),
