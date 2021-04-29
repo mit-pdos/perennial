@@ -68,7 +68,10 @@ Proof.
     simpl in Hbound.
     admit.
   }
-  { iFrame. }
+  { iFrame "shardMap".
+    change (int.nat 0) with 0%nat.
+    rewrite replicate_0 app_nil_l.
+    iFrame "HshardMap_sl". }
   iIntros "(H&Hi)". iNamed "H".
   wp_pures.
 Abort.
