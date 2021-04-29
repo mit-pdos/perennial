@@ -122,6 +122,13 @@ Proof.
   wp_storeField.
   wp_storeField.
   wp_storeField.
+
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_Assume.
+  rewrite bool_decide_eq_true.
+  iIntros (Hoverflow).
+
   wp_loadField.
   wp_storeField.
 
@@ -144,13 +151,11 @@ Proof.
     iSimpl.
     iPureIntro; word.
   }
-  assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
-  { simpl. admit. } (* FIXME: overflow guard *)
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iMod (make_request {| Req_CID:=_; Req_Seq:= _ |}  (own_shard γ.(kv_gn) sid kvs) (λ _, True)%I with "His_rpc Hcrpc [Hghost]") as "[Hcrpc HreqInv]".
   { done. }
-  { done. }
+  { simpl. word. }
   { iNext. iFrame. }
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
@@ -197,11 +202,8 @@ Proof.
   iSplit.
   { iExists γh. iFrame "#". }
   iPureIntro.
-  simpl.
-  enough (0 < int.nat (word.add seq 1)).
-  { word. }
-  rewrite -Hoverflow. word.
-Admitted.
+  simpl. word.
+Qed.
 
 Lemma wp_MemKVShardClerk__Put Eo Ei γ (ck:loc) (key:u64) (v:list u8) value_sl Q :
   {{{
@@ -241,6 +243,13 @@ Proof.
   wp_apply (wp_storeField with "Value").
   { apply slice_val_ty. }
   iIntros "Value".
+
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_Assume.
+  rewrite bool_decide_eq_true.
+  iIntros (Hoverflow).
+
   wp_loadField.
   wp_storeField.
 
@@ -258,13 +267,11 @@ Proof.
   {
     iFrame. simpl. iPureIntro; word.
   }
-  assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
-  { simpl. admit. } (* FIXME: overflow guard *)
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut Eo Ei γ key Q v) (PostShardPut Eo Ei γ key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
-  { done. }
+  { simpl. word. }
   { iNext. iFrame. }
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
@@ -318,8 +325,9 @@ Proof.
     {
       iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
       exfalso.
-      simpl in Hbad.
-      rewrite -Hoverflow in Hbad.
+      move: Hbad.
+      simpl.
+      assert (int.nat seq + 1 = int.nat (word.add seq 1)) as -> by word.
       word.
     }
     iDestruct "Hreceipt" as (? ?) "Hreceipt".
@@ -341,9 +349,8 @@ Proof.
       iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
       iSplit.
       { iExists γh. iFrame "#". }
-      enough (0 < int.nat (word.add seq 1)).
-      { iPureIntro. word. }
-      rewrite -Hoverflow. word. }
+      iPureIntro. word.
+    }
     iDestruct "Hpost" as "[Hpost|Hpost]".
     {
       iLeft. iDestruct "Hpost" as "[$ $]".
@@ -354,7 +361,7 @@ Proof.
       iFrame.
     }
   }
-Admitted.
+Qed.
 
 Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
   {{{
@@ -394,6 +401,13 @@ Proof.
   wp_loadField.
   wp_storeField.
   wp_storeField.
+
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_Assume.
+  rewrite bool_decide_eq_true.
+  iIntros (Hoverflow).
+
   wp_loadField.
   wp_storeField.
 
@@ -407,13 +421,11 @@ Proof.
     rewrite (zero_slice_val).
     iExists _; iFrame.
   }
-  assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
-  { simpl. admit. } (* FIXME: overflow guard *)
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet Eo Ei γ key Q) (PostShardGet Eo Ei γ key Q) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
-  { done. }
+  { simpl. word. }
   { iNext. iFrame. }
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
@@ -476,8 +488,9 @@ Proof.
     {
       iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
       exfalso.
-      simpl in Hbad.
-      rewrite -Hoverflow in Hbad.
+      move: Hbad.
+      simpl.
+      assert (int.nat seq + 1 = int.nat (word.add seq 1)) as -> by word.
       word.
     }
     iMod (get_request_post with "HreqInv Hreceipt Htok") as "Hpost".
@@ -497,9 +510,8 @@ Proof.
       rewrite is_shard_server_unfold.
       iSplit.
       { iExists γh. iFrame "#". }
-      enough (0 < int.nat (word.add seq 1)).
-      { iPureIntro. word. }
-      rewrite -Hoverflow. word. }
+      iPureIntro. word.
+    }
     iDestruct "Hpost" as "[Hpost|Hpost]".
     {
       iLeft. iDestruct "Hpost" as "[$ $]".
@@ -512,7 +524,7 @@ Proof.
       iFrame "HValue_sl".
     }
   }
-Admitted.
+Qed.
 
 Lemma wp_MemKVShardClerk__ConditionalPut Eo Ei γ (ck:loc) (key:u64) (expv newv:list u8) expv_sl newv_sl (succ_ptr:loc) Q :
   {{{
@@ -561,6 +573,13 @@ Proof.
   wp_apply (wp_storeField with "NewValue").
   { apply slice_val_ty. }
   iIntros "NewValue".
+
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_Assume.
+  rewrite bool_decide_eq_true.
+  iIntros (Hoverflow).
+
   wp_loadField.
   wp_storeField.
 
@@ -578,13 +597,11 @@ Proof.
   {
     iFrame. simpl. iPureIntro; word.
   }
-  assert (int.nat seq + 1 = int.nat (word.add seq 1)) as Hoverflow.
-  { simpl. admit. } (* FIXME: overflow guard *)
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardConditionalPut Eo Ei γ key Q expv newv) (PostShardConditionalPut Eo Ei γ key Q expv newv) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
-  { done. }
+  { simpl. word. }
   { iNext. iFrame. }
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
@@ -638,8 +655,9 @@ Proof.
     {
       iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
       exfalso.
-      simpl in Hbad.
-      rewrite -Hoverflow in Hbad.
+      move: Hbad.
+      simpl.
+      assert (int.nat seq + 1 = int.nat (word.add seq 1)) as -> by word.
       word.
     }
     iDestruct "Hreceipt" as (?) "Hreceipt".
@@ -665,9 +683,8 @@ Proof.
       iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
       iSplit.
       { iExists γh. iFrame "#". }
-      enough (0 < int.nat (word.add seq 1)).
-      { iPureIntro. word. }
-      rewrite -Hoverflow. word. }
+      iPureIntro. word.
+    }
     iDestruct "Hpost" as "[Hpost|Hpost]".
     {
       iLeft. iDestruct "Hpost" as "[$ $]".
@@ -679,6 +696,6 @@ Proof.
       eauto with iFrame.
     }
   }
-Admitted.
+Qed.
 
 End memkv_shard_clerk_proof.
