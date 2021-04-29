@@ -558,7 +558,7 @@ Definition MemKVShardServer__MoveShardRPC: val :=
       lock.release (struct.loadF MemKVShardServer "mu" "s")).
 
 Definition MakeMemKVShardServer: val :=
-  rec: "MakeMemKVShardServer" <> :=
+  rec: "MakeMemKVShardServer" "is_init" :=
     let: "srv" := struct.alloc MemKVShardServer (zero_val (struct.t MemKVShardServer)) in
     struct.storeF MemKVShardServer "mu" "srv" (lock.new #());;
     struct.storeF MemKVShardServer "lastReply" "srv" (NewMap (struct.t ShardReply));;
@@ -568,8 +568,10 @@ Definition MakeMemKVShardServer: val :=
     struct.storeF MemKVShardServer "peers" "srv" (NewMap (struct.ptrT MemKVShardClerk));;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      SliceSet boolT (struct.loadF MemKVShardServer "shardMap" "srv") (![uint64T] "i") #true;;
-      SliceSet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "srv") (![uint64T] "i") (NewMap (slice.T byteT));;
+      SliceSet boolT (struct.loadF MemKVShardServer "shardMap" "srv") (![uint64T] "i") "is_init";;
+      (if: "is_init"
+      then SliceSet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "srv") (![uint64T] "i") (NewMap (slice.T byteT))
+      else #());;
       Continue);;
     "srv".
 
