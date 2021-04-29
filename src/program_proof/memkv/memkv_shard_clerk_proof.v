@@ -265,7 +265,7 @@ Proof.
   iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut Eo Ei γ key Q v) (PostShardPut Eo Ei γ key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
   { done. }
-  { iNext. iAccu. }
+  { iNext. iFrame. }
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
   wp_forBreak_cond.
@@ -414,7 +414,7 @@ Proof.
   iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet Eo Ei γ key Q) (PostShardGet Eo Ei γ key Q) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
   { done. }
-  { iNext. iAccu. }
+  { iNext. iFrame. }
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
   wp_forBreak_cond.
@@ -541,7 +541,6 @@ Lemma wp_MemKVShardClerk__ConditionalPut Eo Ei γ (ck:loc) (key:u64) (expv newv:
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hkvptsto & Hexpv_sl & Hnewv_sl & Hck & Hsucc)".
-Admitted. (*
   iNamed "Hck".
   wp_lam.
   wp_pures.
@@ -556,9 +555,12 @@ Admitted. (*
   wp_loadField.
   wp_storeField.
   wp_storeField.
-  wp_apply (wp_storeField with "Value").
+  wp_apply (wp_storeField with "ExpectedValue").
   { apply slice_val_ty. }
-  iIntros "Value".
+  iIntros "ExpValue".
+  wp_apply (wp_storeField with "NewValue").
+  { apply slice_val_ty. }
+  iIntros "NewValue".
   wp_loadField.
   wp_storeField.
 
@@ -572,7 +574,7 @@ Admitted. (*
     rewrite (zero_slice_val).
     iExists _; iFrame.
   }
-  iAssert (own_PutRequest args_ptr value_sl {| PR_CID := cid; PR_Seq := seq; PR_Key := key; PR_Value := v |}) with "[CID Seq Key Value Hval_sl]" as "Hargs".
+  iAssert (own_ConditionalPutRequest args_ptr expv_sl newv_sl {| CPR_CID := cid; CPR_Seq := seq; CPR_Key := key; CPR_ExpValue := expv; CPR_NewValue := newv |}) with "[CID Seq Key ExpValue NewValue Hexpv_sl Hnewv_sl]" as "Hargs".
   {
     iFrame. simpl. iPureIntro; word.
   }
@@ -580,26 +582,26 @@ Admitted. (*
   { simpl. admit. } (* FIXME: overflow guard *)
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut Eo Ei γ key Q v) (PostShardPut Eo Ei γ key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
+  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardConditionalPut Eo Ei γ key Q expv newv) (PostShardConditionalPut Eo Ei γ key Q expv newv) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
   { done. }
-  { iNext. iAccu. }
+  { iNext. iFrame. }
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
   wp_forBreak_cond.
   iNamed "HrawRep".
   wp_pures.
 
-  wp_apply (wp_encodePutRequest _ _ (mkPutRequestC _ _ _ _) with "[$Hargs]").
+  wp_apply (wp_encodeConditionalPutRequest _ _ _ (mkConditionalPutRequestC _ _ _ _ _) with "[$Hargs]").
   iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_RPCClient__Call with "[$HputSpec $Hreq_sl $HrawRep $Hcl_own]").
+  wp_apply (wp_RPCClient__Call with "[$HconditionalPutSpec $Hreq_sl $HrawRep $Hcl_own]").
   {
     iModIntro.
     iModIntro.
-    iExists (mkPutRequestC _ _ _ _).
+    iExists (mkConditionalPutRequestC _ _ _ _ _).
     iSplitL ""; first done.
     instantiate (3:= (Eo,Ei,Q,γreq)).
     simpl.
@@ -626,11 +628,11 @@ Admitted. (*
     iDestruct "HcallPost" as "(_ & >Hpost)".
     wp_load.
     iDestruct "Hpost" as (??) "(% & % & Hreceipt)".
-    wp_apply (wp_decodePutReply with "[$Hrep_sl]").
+    wp_apply (wp_decodeConditionalPutReply with "[$Hrep_sl]").
     { done. }
     iIntros (?) "Hrep".
-    replace (req) with ({| PR_CID := cid; PR_Seq := seq; PR_Key := key ; PR_Value := v|}); last first.
-    { eapply has_encoding_PutRequest_inj; done. }
+    replace (req) with ({| CPR_CID := cid; CPR_Seq := seq; CPR_Key := key ; CPR_ExpValue := expv; CPR_NewValue := newv |}); last first.
+    { eapply has_encoding_ConditionalPutRequest_inj; done. }
 
     iDestruct "Hreceipt" as "[Hbad|Hreceipt]".
     {
@@ -640,7 +642,7 @@ Admitted. (*
       rewrite -Hoverflow in Hbad.
       word.
     }
-    iDestruct "Hreceipt" as (? ?) "Hreceipt".
+    iDestruct "Hreceipt" as (?) "Hreceipt".
     iMod (get_request_post with "HreqInv Hreceipt Htok") as "Hpost".
     { done. }
     (* Doing get_request_post here so we can strip off a ▷ *)
@@ -648,7 +650,11 @@ Admitted. (*
     iNamed "Hrep".
     wp_pures.
     wp_loadField.
+    iNamed "Hsucc".
+    wp_store.
+    wp_loadField.
     iApply "HΦ".
+    rewrite assoc.
     iSplitL "Hreq".
     {
       iNamed "Hreq"; iFrame.
@@ -665,13 +671,14 @@ Admitted. (*
     iDestruct "Hpost" as "[Hpost|Hpost]".
     {
       iLeft. iDestruct "Hpost" as "[$ $]".
+      eauto with iFrame.
     }
     {
       iRight.
       iDestruct "Hpost" as "($&HQ)".
-      iFrame.
+      eauto with iFrame.
     }
   }
-Admitted. *)
+Admitted.
 
 End memkv_shard_clerk_proof.

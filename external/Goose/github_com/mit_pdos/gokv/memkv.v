@@ -368,7 +368,7 @@ Definition MemKVShardClerk__ConditionalPut: val :=
     struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_PUT (encodeConditionalPutRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_CONDITIONAL_PUT (encodeConditionalPutRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
       Continue);;
     let: "rep" := decodeConditionalPutReply (![slice.T byteT] "rawRep") in
     "success" <-[boolT] struct.loadF ConditionalPutReply "Success" "rep";;
