@@ -39,6 +39,10 @@ Definition perennialG_equiv {Λ CS T Σ} (I1 I2: perennialG Λ CS T Σ) :=
   (∀ Hcrash t, irisG_equiv (@perennial_irisG _ _ _ _ I1 Hcrash t)
                            (@perennial_irisG _ _ _ _ I2 Hcrash t)).
 
+(* A recovery WP is parameterized by three predicates: [Φ] is the postcondition
+   for normal non-crashing execution, [Φr] is the postcondition satisfied in
+   case of a crash, and [Φinv] is a condition that holds at each restart
+   point. *)
 Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
     (wpr : crashG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
                      (crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
@@ -50,7 +54,7 @@ Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
   (WPC e @ s ; k; E
      {{ Φ }}
      {{ ∀ σ g σ' (HC: crash_prim_step CS σ σ') ns κs n,
-        state_interp σ n -∗ global_state_interp g ns κs ={E}=∗  ▷ ∀ Hc1 q, NC q ={E}=∗
+        state_interp σ n -∗ global_state_interp g ns κs ={E}=∗ ▷ ∀ Hc1 q, NC q ={E}=∗
           ∃ t1
             (Hsame_inv: @iris_invG _ _ (perennial_irisG Hc1 t1) =
                         @iris_invG _ _ (perennial_irisG Hc0 t0)),
@@ -147,7 +151,7 @@ Proof.
   iSplit.
   { iDestruct "Hc" as "($&_)". }
   iDestruct "Hc" as "(_&Hc)".
-  iApply ("IH" $! E1 rec Hc' t' (λ t v, Φrx Hc' t v)%I with " [Hc]").
+  iApply ("IH" $! E1 rec Hc' t' (λ t v, Φrx Hc' t v)%I with "[Hc]").
   { iApply (wpc_strong_mono' with "Hc"); auto. }
   eauto.
 Qed.

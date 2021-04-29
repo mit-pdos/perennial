@@ -26,9 +26,9 @@ Program Global Instance heapG_perennialG `{!heapG Σ} :
 Next Obligation. eauto. Qed.
 Next Obligation. eauto. Qed.
 
-Definition wpr `{hG: !heapG Σ} `{hC: !crashG Σ} (s: stuckness) (k: nat) (E: coPset)
+Definition wpr `{hG: !heapG Σ} (s: stuckness) (k: nat) (E: coPset)
   (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapG Σ → iProp Σ) (Φr: heapG Σ → val → iProp Σ) :=
-  wpr s k hC ({| pbundleT := heap_get_local_names Σ _ |}) E e recv
+  wpr s k _ ({| pbundleT := heap_get_local_names Σ _ |}) E e recv
               Φ
               (λ Hc names, Φinv (heap_update_local _ _ _ Hc (@pbundleT _ _ names)))
               (λ Hc names v, Φr (heap_update_local _ _ _ Hc (@pbundleT _ _ names)) v).

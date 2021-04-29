@@ -324,8 +324,8 @@ Next Obligation. intros. eauto. Qed.
 Lemma heap_get_update' Σ hG :
   heap_update_local Σ hG (iris_invG) (iris_crashG) (heap_get_local_names _ hG) = hG.
 Proof.
-  rewrite /heap_update_local/heap_get_local_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
-  destruct hG as [??? [] []]; eauto.
+  destruct hG as [??? [] []].
+  rewrite /heap_update_local ffi_get_update //=.
 Qed.
 
 Lemma heap_update_invG Σ hG Hinv Hc names:

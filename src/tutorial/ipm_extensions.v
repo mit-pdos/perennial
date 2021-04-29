@@ -59,7 +59,7 @@ Section bi.
   (** * second extension: proof caching *)
   Import Perennial.Helpers.ProofCaching.
 
-  (* note that repetition is primarily due to the structure of cache safety
+  (* note that repetition is primarily due to the structure of crash safety
   proofs; I'm not sure where else this problem would arise *)
 
   Theorem repetitive_proof :

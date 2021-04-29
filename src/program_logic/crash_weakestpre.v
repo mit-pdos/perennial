@@ -15,8 +15,8 @@ Class irisG (Λ : language) (Σ : gFunctors) := IrisG {
   iris_crashG :> crashG Σ;
 
   (** The state interpretation is a per-machine invariant that should hold in
-  between each step of reduction. Here [state Λ] is the global state, and the
-  [nat] is the number of forked-off threads (not the total number of threads,
+  between each step of reduction. Here [state Λ] is the per-machine state, and
+  the [nat] is the number of forked-off threads (not the total number of threads,
   which is one higher because there is always a main thread). *)
   state_interp : state Λ → nat → iProp Σ;
   (** The global state interpretation is a whole-system invariant that should
@@ -429,7 +429,7 @@ Definition wpc_pre `{!irisG Λ Σ} (s : stuckness) (k : nat) (mj: nat)
           ([∗ list] i ↦ ef ∈ efs, wpc ⊤ ef fork_post True) ∗
           NC q))
    end ∧
-  (* Todo introduce notion for this split up cfupd *)
+  (* Todo introduce notation for this split up cfupd *)
    (<disc> (C -∗ |k,(Some mj)={E1}=> Φc)))))%I.
 
 Local Instance wpc_pre_contractive `{!irisG Λ Σ} s k mj : Contractive (wpc_pre s k mj).
@@ -622,7 +622,7 @@ Qed.
 
 Global Instance wpc_ne s k E1 e n :
   Proper (pointwise_relation _ (dist n) ==> dist n ==> dist n) (wpc (PROP:=iProp Σ) s k E1 e).
-Proof. intros ??????. rewrite !wpc_unfold.  f_equiv => mj. rewrite -?wpc0_unfold. by apply wpc0_ne. Qed.
+Proof. intros ??????. rewrite !wpc_unfold. f_equiv => mj. rewrite -?wpc0_unfold. by apply wpc0_ne. Qed.
 
 Global Instance wpc_proper s k E1 e :
   Proper (pointwise_relation _ (≡) ==> (≡) ==> (≡)) (wpc (PROP:=iProp Σ) s k E1 e).
