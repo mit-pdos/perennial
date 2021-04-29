@@ -15,7 +15,7 @@ Definition post_crash `{hG: !heapG Σ} (P: forall {hG': heapG Σ}, iProp Σ) : i
                              @P hG').
 *)
 
-Definition post_crash {Σ} (P: heapG Σ → iProp Σ) `{hG: !heapG Σ}  : iProp Σ :=
+Definition post_crash {Σ} (P: heapG Σ → iProp Σ) `{hG: !heapG Σ} : iProp Σ :=
   (∀ σ σ' hG', ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ (heapG_ffiG (hG := hG')) σ' -∗
                              (P hG')).
 

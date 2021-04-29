@@ -6,7 +6,7 @@ From Perennial.algebra Require Import gen_heap_names.
 From Perennial.goose_lang Require Import proofmode notation.
 Set Default Proof Using "Type".
 
-(** No actual adequacy theorm here, just definitions that are shared between
+(** No actual adequacy theorem here, just definitions that are shared between
 recovery_adequacy and (in the future) distrib_adequacy. *)
 
 Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ffi_semantics ext ffi} :=

@@ -170,7 +170,7 @@ Tactic Notation "wpc_pure_later" tactic3(filter) "as" simple_intropattern(H) :=
       | try (apply H)                 (* crash condition, try to re-use existing proof *)
       | first [ intros H || intros _]; wpc_finish H (* new goal *)
       ] | fail 3 "wp_pure: first pattern match is not a redex" ]
-          (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
+          (* "3" is carefully chosen to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
    )
     || fail "wpc_pure_later: cannot find redex pattern"
   | _ => fail "wpc_pure_later: not a 'wpc'"
@@ -188,7 +188,7 @@ Tactic Notation "wpc_pure_no_later" tactic3(filter) "as" simple_intropattern(H) 
       | try (apply H)                 (* crash condition, try to re-use existing proof *)
       | first [ intros H || intros _]; wpc_finish H (* new goal *)
       ] | fail 3 "wp_pure: first pattern match is not a redex" ]
-          (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
+          (* "3" is carefully chosen to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
    )
     || fail "wpc_pure: cannot find redex pattern"
   | _ => fail "wpc_pure: not a 'wpc'"
