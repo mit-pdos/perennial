@@ -139,13 +139,12 @@ Proof.
       iDestruct "Hpre" as (args) "(%Henc & #HreqInv)".
       wp_apply (wp_decodeConditionalPutRequest with "[$Hreq_sl]").
       { done. }
-      iIntros (args_ptr expv_sl newv) "Hargs". admit.
-      (*
+      iIntros (args_ptr expv_sl newv) "Hargs".
       wp_apply (wp_ConditionalPutRPC with "His_memkv [$Hargs Hrep $HreqInv]").
       {
         iDestruct (struct_fields_split with "Hrep") as "HH".
         iNamed "HH".
-        iExists (mkPutReplyC _).
+        iExists (mkConditionalPutReplyC _ _).
         iFrame.
       }
       iIntros (rep') "[Hrep Hpost]".
@@ -158,7 +157,7 @@ Proof.
       iFrame.
       iNext.
       iExists _, _; iFrame.
-      done. *)
+      done.
     }
 
     iApply (big_sepM_insert_2 with "").
@@ -277,6 +276,6 @@ Proof.
     done.
   }
   by iApply "HΦ".
-Admitted.
+Qed.
 
 End memkv_shard_start_proof.
