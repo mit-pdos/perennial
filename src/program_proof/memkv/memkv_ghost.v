@@ -22,7 +22,11 @@ Lemma kvptsto_agree γ k q v q' v':
   ⌜v = v'⌝
 .
 Proof.
-Admitted.
+  iIntros "H1 H2".
+  iDestruct (own_valid_2 with "H1 H2") as %H. iPureIntro. move: H.
+  rewrite singleton_op singleton_valid -pair_op pair_valid.
+  intros [_ ?%to_agree_op_inv_L]. done.
+Qed.
 
 Lemma kvptsto_update v' γ k v1 v2 :
   kvptsto γ k v1 -∗
@@ -31,6 +35,12 @@ Lemma kvptsto_update v' γ k v1 v2 :
   kvptsto γ k v'
 .
 Proof.
-Admitted.
+  iIntros "H1 H2". rewrite /kvptsto -own_op.
+  iApply (own_update_2 with "H1 H2").
+  rewrite !singleton_op. apply singleton_update.
+  rewrite -!pair_op. rewrite frac_op Qp_half_half.
+  apply cmra_update_exclusive.
+  rewrite pair_valid to_agree_op_valid_L. done.
+Qed.
 
 End memkv_ghost.
