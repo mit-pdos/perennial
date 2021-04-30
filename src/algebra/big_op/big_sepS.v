@@ -7,13 +7,8 @@ Section sep_intro.
   Context `{Countable K}.
 
 
-  Lemma big_sepS_intro_emp (m: gset K) :
+  Lemma big_sepS_intro_emp `{!BiAffine PROP} (m: gset K) :
     ⊢ [∗ set] x ∈ m, (emp : PROP).
-  Proof.
-    iInduction m as [] "IH" using set_ind_L.
-    { rewrite big_sepS_empty //. }
-    { rewrite big_sepS_union; last set_solver. iFrame "IH".
-      rewrite big_sepS_singleton //. }
-  Qed.
+  Proof. iApply big_sepS_forall. eauto. Qed.
 
 End sep_intro.
