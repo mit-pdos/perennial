@@ -374,7 +374,7 @@ Proof.
     iDestruct "Hpre" as "(Hpre & Hi & %Hi)".
     iNamed "Hpre".
     wp_pures.
-    wp_load. wp_store. wp_load. wp_store.
+    wp_load. wp_load. wp_store. wp_load. wp_store.
     iModIntro.
     iApply "HΦ".
     iFrame "Hi".
@@ -382,7 +382,7 @@ Proof.
     iPureIntro.
     word_cleanup.
     rewrite Z_u8_to_u64.
-    pose proof (and_1_u8 b).
+    pose proof (and_1_u8 x).
     rewrite wrap_small; lia.
   - iExists _, _; iFrame.
     iPureIntro.
@@ -407,6 +407,8 @@ Proof.
   iIntros "[Hlocked Hlinv]".
   wp_pures.
   iNamed "Hlinv".
+  wp_loadField.
+  wp_apply wp_slice_len.
   wp_apply (typed_mem.wp_AllocAt uint64T); first by val_ty.
   iIntros (count_l) "Hcount".
   wp_pures.
@@ -440,9 +442,13 @@ Proof.
     wp_apply (release_spec with "[$His_lock $Hlocked next bitmap Hbits]").
     { iExists _, _, _; iFrame "∗%". }
     wp_load.
+    wp_pures.
     iModIntro.
     iApply "HΦ".
-    iPureIntro. word.
+    iPureIntro.
+    word_cleanup.
+    rewrite word.unsigned_mul.
+    word.
 Qed.
 
 End proof.

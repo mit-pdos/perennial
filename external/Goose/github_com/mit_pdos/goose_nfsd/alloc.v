@@ -113,7 +113,7 @@ Definition popCnt: val :=
     let: "x" := ref_to byteT "b" in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < #8); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      "count" <-[uint64T] ![uint64T] "count" + to_u64 ("b" `and` #(U8 1));;
+      "count" <-[uint64T] ![uint64T] "count" + to_u64 (![byteT] "x" `and` #(U8 1));;
       "x" <-[byteT] (![byteT] "x") ≫ #1;;
       Continue);;
     ![uint64T] "count".
@@ -121,8 +121,9 @@ Definition popCnt: val :=
 Definition Alloc__NumFree: val :=
   rec: "Alloc__NumFree" "a" :=
     lock.acquire (struct.loadF Alloc "mu" "a");;
+    let: "total" := #8 * slice.len (struct.loadF Alloc "bitmap" "a") in
     let: "count" := ref (zero_val uint64T) in
     ForSlice byteT <> "b" (struct.loadF Alloc "bitmap" "a")
       ("count" <-[uint64T] ![uint64T] "count" + popCnt "b");;
     lock.release (struct.loadF Alloc "mu" "a");;
-    ![uint64T] "count".
+    "total" - ![uint64T] "count".
