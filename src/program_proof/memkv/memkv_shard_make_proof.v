@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import range_set.
 From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
@@ -10,14 +11,15 @@ Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeMemKVShardServer (b : bool) γ :
   {{{
-       True
+       (* TODO: make this depend upon b *)
+       [∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ.(kv_gn) sid ∅
   }}}
     MakeMemKVShardServer #b
   {{{
        s, RET #s; is_MemKVShardServer s γ
   }}}.
 Proof.
-  iIntros (Φ) "? HΦ".
+  iIntros (Φ) "HghostShards HΦ".
   wp_lam.
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
@@ -56,6 +58,7 @@ Proof.
   "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)) ⌝ ∗
   "%Hkvss_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD →
                                is_Some ((fmap (λ x : loc, #x) kvs_ptrs) !! int.nat i)) ⌝ ∗
+  "HghostShards" ∷ ([∗ set] sid ∈ rangeSet (int.Z i) (uNSHARD - int.Z i), own_shard γ.(kv_gn) sid ∅) ∗
   "kvss" ∷ srv ↦[MemKVShardServer :: "kvss"] (slice_val kvss_sl) ∗
   "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
   "shardMap" ∷ srv ↦[MemKVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
@@ -68,7 +71,7 @@ Proof.
                       map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
                        ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (m !! k))))
-                  )))%I with "[] [$Hi HshardMap_sl shardMap]").
+                  )))%I with "[] [$Hi HshardMap_sl shardMap HghostShards]").
   { word. }
   { iIntros (i Φ') "!# H HΦ".
     iDestruct "H" as "(H1&H2)".
@@ -117,6 +120,15 @@ Proof.
           { rewrite fmap_is_Some. eexists. apply list_lookup_insert; eauto. }
           rewrite list_lookup_insert_ne; auto.
           rewrite -list_lookup_fmap. eauto. }
+        rewrite rangeSet_first; last first.
+        { rewrite /uNSHARD. word. }
+        iDestruct (big_sepS_union with "HghostShards") as "(Hgi&HghostShards)".
+        { apply rangeSet_first_disjoint; rewrite /uNSHARD; word. }
+        iSplitL "HghostShards".
+        { cut (rangeSet (int.Z i + 1) (uNSHARD - int.Z i - 1) =
+               rangeSet (int.Z (word.add i 1)) (uNSHARD - int.Z (word.add i 1))).
+          { intros ->. eauto. }
+          f_equal; word. }
         iSplitL "Hkvss_sl".
         { rewrite list_fmap_insert. eauto. }
         assert (i ∈ (fin_to_set u64 : gset u64)).
@@ -129,10 +141,10 @@ Proof.
         { set_solver. }
         iDestruct (big_sepS_union with "HownShards") as "(Hi&HownShards)".
         { set_solver. }
-        iSplitL "Hi Hmv".
+        iSplitL "Hi Hmv Hgi".
         { rewrite ?big_sepS_singleton.
-          iRight. iExists _, ∅, _. iFrame. iSplitL "".
-          { admit. (* MISSING INTIAL RESOURCE *) }
+          iRight. iExists _, ∅, _. iFrame. iSplitL "Hgi".
+          { iExactEq "Hgi". f_equal. word. }
           iSplit.
           { iPureIntro. rewrite list_lookup_insert; eauto. }
           iPoseProof (big_sepS_intro_emp (fin_to_set u64)) as "Hemp".
@@ -174,6 +186,15 @@ Proof.
         { apply union_difference_singleton_L; eauto. }
         iEval (rewrite {2}Heq_diff) in "HownShards".
         iEval (rewrite {2}Heq_diff).
+        rewrite rangeSet_first; last first.
+        { rewrite /uNSHARD. word. }
+        iDestruct (big_sepS_union with "HghostShards") as "(Hgi&HghostShards)".
+        { apply rangeSet_first_disjoint; rewrite /uNSHARD; word. }
+        iSplitL "HghostShards".
+        { cut (rangeSet (int.Z i + 1) (uNSHARD - int.Z i - 1) =
+               rangeSet (int.Z (word.add i 1)) (uNSHARD - int.Z (word.add i 1))).
+          { intros ->. eauto. }
+          f_equal; word. }
         iApply big_sepS_union.
         { set_solver. }
         iDestruct (big_sepS_union with "HownShards") as "(Hi&HownShards)".
@@ -193,6 +214,11 @@ Proof.
         }
       }
     }
+  }
+  {
+    iExists initShardMapping.
+    iExists (replicate (int.nat 65536) null).
+    admit.
   }
 Abort.
 

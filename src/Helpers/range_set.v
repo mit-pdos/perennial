@@ -93,3 +93,15 @@ Proof.
   simpl.
   reflexivity.
 Qed.
+
+Lemma rangeSet_first_disjoint start sz :
+  0 ≤ start →
+  start + sz < 2^64 →
+  {[U64 start]} ## (rangeSet (start+1) (sz-1)).
+Proof.
+  intros Hnonneg1 Hoverflow x Hin1 Hin2.
+  assert (x = U64 start) by set_solver.
+  subst. apply rangeSet_lookup in Hin2; eauto; try word.
+  assert (int.Z (U64 start) = start) by word.
+  word.
+Qed.
