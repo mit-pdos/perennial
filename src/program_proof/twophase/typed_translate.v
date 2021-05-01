@@ -187,7 +187,7 @@ Section translate.
   | alloc_transTy e1 e1' :
       Γ @ tph ⊢ e1 -- e1' : extT AllocT ->
       Γ @ tph ⊢ ExternalOp (ext := spec_op) AllocOp e1 --
-               (Alloc__allocBit e1') : baseT uint64BT
+               (Alloc__AllocNum e1') : baseT uint64BT
   | num_free_transTy e1 e1' :
       Γ @ tph ⊢ e1 -- e1' : extT AllocT ->
       Γ @ tph ⊢ ExternalOp (ext := spec_op) NumFreeOp e1 --

@@ -323,12 +323,15 @@ Qed.
 
 Lemma wp_AllocNum max l :
   {{{ is_alloc max l }}}
-    Alloc__allocBit #l
+    Alloc__AllocNum #l
   {{{ (n: u64), RET #n; ⌜int.Z n < int.Z max⌝ }}}.
 Proof.
   iIntros (Φ) "H HΦ".
+  wp_call.
   wp_apply (wp_allocBit with "H").
-  done.
+  iIntros (n Hlt).
+  wp_pures. iModIntro.
+  iApply "HΦ". auto.
 Qed.
 
 Lemma wp_FreeNum max l (num: u64) :
