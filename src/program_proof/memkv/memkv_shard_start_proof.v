@@ -9,10 +9,7 @@ Section memkv_shard_start_proof.
 Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MemKVShardServer__Start (s:loc) (host : u64) γ :
-  match rpcreg_doms !! host with
-  | Some d => d = ({[ U64 0; U64 1; U64 2; U64 3; U64 4; U64 5 ]} : gset u64)
-  | None => True
-  end →
+handlers_dom host γ.(urpc_gn) {[ U64 0; U64 1; U64 2; U64 3; U64 4; U64 5 ]} -∗
 is_shard_server host γ -∗
 is_MemKVShardServer s γ -∗
   {{{
@@ -23,7 +20,7 @@ is_MemKVShardServer s γ -∗
        RET #(); True
   }}}.
 Proof.
-  iIntros (Hdom). iIntros "#His_shard #His_memkv !#" (Φ) "_ HΦ".
+  iIntros "#Hdom #His_shard #His_memkv !#" (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
   change (Alloc (InjLV (λ: <>, (λ: <>, #())%V))) with
@@ -64,9 +61,10 @@ Proof.
   iNamed "His_shard".
   wp_apply (wp_StartRPCServer with "[$Hsown]").
   { rewrite ?dom_insert_L; set_solver. }
-  { rewrite /handlers_complete. destruct (rpcreg_doms !! host); eauto.
-    rewrite ?dom_insert_L dom_empty_L Hdom. set_solver. }
   {
+    iSplitL "".
+    { rewrite /handlers_complete.
+      rewrite ?dom_insert_L dom_empty_L. iExactEq "Hdom". f_equal. set_solver. }
     iApply (big_sepM_insert_2 with "").
     { (* MoveShardRPC handler_is *)
       iExists _, _, _.

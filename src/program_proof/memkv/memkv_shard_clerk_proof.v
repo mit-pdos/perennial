@@ -75,7 +75,7 @@ Proof.
   rewrite is_shard_server_unfold.
   iFrame "seq cid cl". iFrame "Hcid Hcl".
   iSplit.
-  { iExists γh. iFrame "#". }
+  { iFrame "#". }
   iFrame "#".
   iFrame "∗#".
   iPureIntro.
@@ -200,7 +200,7 @@ Proof.
   iModIntro.
   iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
   iSplit.
-  { iExists γh. iFrame "#". }
+  { iFrame "#". }
   iPureIntro.
   simpl. word.
 Qed.
@@ -347,7 +347,7 @@ Proof.
       rewrite is_shard_server_unfold.
       iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
       iSplit.
-      { iExists γh. iFrame "#". }
+      { iFrame "#". }
       iPureIntro. word.
     }
     iDestruct "Hpost" as "[Hpost|Hpost]".
@@ -507,7 +507,7 @@ Proof.
       iFrame.
       rewrite is_shard_server_unfold.
       iSplit.
-      { iExists γh. iFrame "#". }
+      { iFrame "#". }
       iPureIntro. word.
     }
     iDestruct "Hpost" as "[Hpost|Hpost]".
@@ -679,7 +679,7 @@ Proof.
       rewrite is_shard_server_unfold.
       iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
       iSplit.
-      { iExists γh. iFrame "#". }
+      { iFrame "#". }
       iPureIntro. word.
     }
     iDestruct "Hpost" as "[Hpost|Hpost]".
