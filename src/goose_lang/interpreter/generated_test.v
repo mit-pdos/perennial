@@ -103,8 +103,6 @@ Example testShiftMod_ok : testShiftMod #() ~~> #true := t.
 (* prims.go *)
 Example testLinearize_ok : testLinearize #() ~~> #true := t.
 
-(* semantics.actual.v *)
-
 (* shortcircuiting.go *)
 Example testShortcircuitAndTF_ok : testShortcircuitAndTF #() ~~> #true := t.
 Example testShortcircuitAndFT_ok : testShortcircuitAndFT #() ~~> #true := t.
@@ -131,6 +129,11 @@ Example testStoreInStructVar_ok : testStoreInStructVar #() ~~> #true := t.
 Example testStoreInStructPointerVar_ok : testStoreInStructPointerVar #() ~~> #true := t.
 Example testStoreComposite_ok : testStoreComposite #() ~~> #true := t.
 Example testStoreSlice_ok : testStoreSlice #() ~~> #true := t.
+
+(* vars.go *)
+Example testPointerAssignment_ok : testPointerAssignment #() ~~> #true := t.
+Example testAddressOfLocal_ok : testAddressOfLocal #() ~~> #true := t.
+Example testAnonymousAssign_ok : testAnonymousAssign #() ~~> #true := t.
 
 (* wal.go *)
 

@@ -1230,6 +1230,26 @@ Definition testStoreSlice: val :=
     "p" <-[slice.T uint64T] "s";;
     (slice.len (![slice.T uint64T] "p") = #3).
 
+(* vars.go *)
+
+Definition testPointerAssignment: val :=
+  rec: "testPointerAssignment" <> :=
+    let: "x" := ref (zero_val boolT) in
+    "x" <-[boolT] #true;;
+    ![boolT] "x".
+
+Definition testAddressOfLocal: val :=
+  rec: "testAddressOfLocal" <> :=
+    let: "x" := ref_to boolT #false in
+    let: "xptr" := "x" in
+    "xptr" <-[boolT] #true;;
+    (![boolT] "x") && (![boolT] "xptr").
+
+Definition testAnonymousAssign: val :=
+  rec: "testAnonymousAssign" <> :=
+    #1 + #2;;
+    #true.
+
 (* wal.go *)
 
 (* 10 is completely arbitrary *)
