@@ -71,6 +71,7 @@ Inductive JrnlOp :=
   | MkAllocOp (* max *)
   | MarkUsedOp (* alloc, idx *)
   | FreeNumOp (* alloc, idx *)
+  | NumFreeOp (* alloc *)
   | AllocOp (* alloc *)
 .
 
@@ -78,7 +79,7 @@ Instance eq_JrnlOp : EqDecision JrnlOp.
 Proof. solve_decision. Defined.
 
 Instance JrnlOp_fin : Countable JrnlOp.
-Proof. solve_countable JrnlOp_rec 8%nat. Qed.
+Proof. solve_countable JrnlOp_rec 9%nat. Qed.
 
 Definition jrnl_op : ffi_syntax.
 Proof. refine (mkExtOp JrnlOp _ _ Empty_set _ _). Defined.
@@ -219,8 +220,14 @@ Section jrnl.
   Definition gen_lt (max: u64) (Hpf: 0 < int.Z max) : {n: u64 | int.Z n < int.Z max }.
   Proof. exists (U64 0). auto. Defined.
 
+  Definition gen_le (max: u64) : {n: u64 | int.Z n ≤ int.Z max }.
+  Proof. exists (U64 0). word. Defined.
+
   Global Instance allocnum_gen (max : u64) Hpf : GenPred u64 (state*global_state) (λ _ n, int.Z n < int.Z max) :=
     fun _ σ => Some (gen_lt max Hpf).
+
+  Global Instance allocnumfree_gen (max : u64) : GenPred u64 (state*global_state) (λ _ n, int.Z n ≤ int.Z max) :=
+    fun _ σ => Some (gen_le max).
 
   Global Instance decide_gt0 (m : u64) : Decision (0 < int.Z m).
   Proof. apply _. Qed.
@@ -284,6 +291,11 @@ Section jrnl.
       Hpf ← @checkPf _ (0 < int.Z max) (decide_gt0 max);
       n ← @suchThat _ _ (λ _ n, int.Z n < int.Z max) (allocnum_gen _ Hpf);
       ret $ #(LitInt n)
+    | NumFreeOp, #(LitLoc l) =>
+      j ← openΣ;
+      max ← unwrap (jrnlAllocs j !! l);
+      n ← @suchThat _ _ (λ _ n, int.Z n ≤ int.Z max) (allocnumfree_gen _);
+      ret $ #(LitInt n)
     | _, _ => undefined
     end.
 
@@ -298,5 +310,3 @@ Section jrnl.
        ffi_crash_step := fun s s' =>
                       relation.denote crash_step s s' tt; |}.
 End jrnl.
-
-

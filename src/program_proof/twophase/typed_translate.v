@@ -188,6 +188,10 @@ Section translate.
       Γ @ tph ⊢ e1 -- e1' : extT AllocT ->
       Γ @ tph ⊢ ExternalOp (ext := spec_op) AllocOp e1 --
                (Alloc__allocBit e1') : baseT uint64BT
+  | num_free_transTy e1 e1' :
+      Γ @ tph ⊢ e1 -- e1' : extT AllocT ->
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) NumFreeOp e1 --
+               (Alloc__NumFree e1') : baseT uint64BT
 
   where "Γ @ tph ⊢ e1 -- e2 : A" := (atomic_body_expr_transTy Γ tph e1 e2 A)
 

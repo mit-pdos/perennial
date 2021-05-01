@@ -958,6 +958,34 @@ Proof.
   { rewrite /checkPf. rewrite decide_left //=. }
 Qed.
 
+Lemma always_steps_NumFreeOp l n max σj:
+  wf_jrnl σj →
+  jrnlAllocs σj !! l = Some max →
+  (int.Z n ≤ int.Z max) →
+  always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
+                           NumFreeOp
+                           #(LitLoc l))
+               σj
+               #(LitInt n)
+               σj.
+Proof.
+  intros Hwf Hlookup Hmax.
+  split_and!; eauto.
+  { split_and!; try set_solver. }
+  intros s g Hsub.
+  apply rtc_once.
+  eapply (Ectx_step' _ _ _ _ _ _ _ _ []) => //=.
+  rewrite jrnl_upd_sub // /head_step//=.
+  rewrite /jrnl_sub_state in Hsub.
+  destruct Hsub as (?&Heq&?&?&?).
+  econstructor; last econstructor; eauto.
+  econstructor; repeat (econstructor; eauto).
+  { simpl. rewrite Heq. econstructor. eauto. }
+  { simpl in Hlookup.
+    eapply lookup_weaken in Hlookup; last eassumption.
+    rewrite Hlookup. econstructor; eauto. }
+Qed.
+
 Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
   wf_jrnl σj →
   jrnlData σj !! a = Some v →

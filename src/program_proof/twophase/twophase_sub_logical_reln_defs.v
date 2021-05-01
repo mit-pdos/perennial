@@ -418,7 +418,8 @@ Proof.
       }
       iApply wpc_wp.
       iApply (IHHtyping3 with "[//] [$] [$]"); eauto.
-  - subst. simpl.
+  - (* panic_expr_transTy *)
+    subst. simpl.
     iApply wp_wpc.
     iMod (twophase_started_ub_det with "Hj") as %[]; swap 1 3.
     { set_solver+. }
@@ -530,7 +531,8 @@ Proof.
         rewrite Heq2; eauto. econstructor; eauto.
     }
     wp_pures; eauto.
-  - destruct op; try inversion e; subst. simpl.
+  - (* un_op_transTy *)
+    destruct op; try inversion e; subst. simpl.
     wpc_bind (subst_map _ e2).
     iPoseProof (IHHtyping with "[//] [$] [$]") as "H"; first auto.
     spec_bind (_ _ e1) as Hctx'.
@@ -645,7 +647,8 @@ Proof.
         [ intros ??; apply head_prim_step_trans'; repeat econstructor; eauto
         | wp_pures; eauto; iExists _; iFrame; eauto]).
   (* data *)
-  - subst. simpl.
+  - (* pair_transTy *)
+    subst. simpl.
     iPoseProof (IHHtyping1 with "[//] [$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
     spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
@@ -1265,6 +1268,38 @@ Proof.
       destruct Hsub' as (?&?&Heq_allocs&?). rewrite Heq_allocs in Hin.
       eauto.
     }
+  - subst. simpl.
+    iPoseProof (IHHtyping with "[//] [$] [$]") as "H"; eauto.
+    wpc_bind (subst_map ((subst_ival <$> Γsubst)) e1').
+    spec_bind (subst_map ((subst_sval <$> Γsubst)) e1) as Hctx'.
+    iSpecialize ("H" $! j _ _ _ Hctx' with "Hj").
+    iApply (wpc_mono' with "[] [] H"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    clear Hctx'.
+    simpl.
+    iDestruct "Hv1" as (ls li max -> -> Hgt0) "(His_alloc&Hjrnl_alloc)".
+    iApply wp_wpc.
+    iMod (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
+    { set_solver. }
+    iNamed "H".
+    destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
+    iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl'";
+      [eassumption|eassumption|].
+    subst.
+    wp_apply (wp_NumFree with "[$]").
+    iIntros (n Hle_max).
+    iExists (#n). iSplit; last eauto.
+    iExists _, _, _, _. iFrame "# ∗ %".
+    iPureIntro.
+    eapply always_steps_trans; first by eapply Halways_steps.
+    eapply always_steps_bind.
+    eapply always_steps_NumFreeOp.
+    { intuition. }
+    { destruct Halways_steps as (?&Hsub'&?).
+      destruct Hsub' as (?&?&Heq_allocs&?). rewrite Heq_allocs in Hin.
+      eauto.
+    }
+    { lia. }
   (* Value typing *)
   - iIntros "Hctx".
     inversion a; subst; eauto.
