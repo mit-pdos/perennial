@@ -238,6 +238,27 @@ Section flatid2addr.
     apply H in He. destruct He. rewrite lookup_empty in H0. intuition congruence.
   Qed.
 
+  Lemma flatid_addr_map_size fm am :
+    flatid_addr_map fm am →
+    size fm = size am.
+  Proof.
+    intros Hflatid.
+    generalize dependent am.
+    induction fm using map_ind; intros am Hflatid.
+    - apply flatid_addr_empty_1 in Hflatid; subst; auto.
+    - apply flatid_addr_insert_inv_1 in Hflatid.
+      destruct Hflatid as (a & Hvalid & -> & Hamlookup & Hflatid).
+      assert (delete (addr2flat a) m = m).
+      { rewrite delete_notin //. }
+      rewrite H0 in Hflatid.
+      rewrite map_size_insert_None //.
+      apply IHfm in Hflatid as ->.
+      rewrite map_size_delete_Some; eauto.
+      assert (0 < size am)%nat.
+      { eauto using Map.map_size_nonzero_lookup. }
+      lia.
+  Qed.
+
 End flatid2addr.
 
 
@@ -481,7 +502,7 @@ Section gmap_addr_by_block.
       + erewrite lookup_gmap_uncurry_None; intros j.
         erewrite lookup_gmap_uncurry_None in n.
         specialize (n j).
-        eapply lookup_union_None in n. intuition. 
+        eapply lookup_union_None in n. intuition.
 
       + erewrite lookup_gmap_uncurry_None; intros j.
         erewrite lookup_gmap_uncurry_None in n.

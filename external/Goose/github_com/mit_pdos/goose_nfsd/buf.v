@@ -142,6 +142,7 @@ Definition BufMap__Del: val :=
 
 Definition BufMap__Ndirty: val :=
   rec: "BufMap__Ndirty" "bmap" :=
+    MapLen (struct.loadF BufMap "addrs" "bmap");;
     let: "n" := ref_to uint64T #0 in
     MapIter (struct.loadF BufMap "addrs" "bmap") (λ: <> "buf",
       (if: struct.loadF Buf "dirty" "buf"

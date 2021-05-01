@@ -3,7 +3,7 @@ From Coq Require Import Program.Equality.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From Perennial.Helpers Require Import bytes.
+From Perennial.Helpers Require Import bytes Map.
 From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.goose_nfsd Require Import buf.
 From Perennial.program_proof Require Import util_proof disk_lib.
@@ -430,6 +430,10 @@ Proof using.
   iIntros (Φ) "Hisbufmap HΦ".
   iDestruct "Hisbufmap" as (addrs bm am) "(Haddrs & Hismap & % & Hmap)".
   wp_call.
+  wp_loadField.
+  wp_apply (wp_MapLen with "Hismap").
+  iIntros "[%Hmap_size Hismap]".
+  wp_pures.
   wp_apply wp_ref_to; eauto.
   iIntros (n_l) "Hn".
   wp_loadField.
@@ -444,7 +448,8 @@ Proof using.
       ∃ (mtodo mdone : gmap addr buf) (amtodo : gmap addr loc),
       "Hn" ∷ n_l ↦[uint64T] #n ∗
       "%Hn" ∷ ⌜int.nat n = size (filter (λ x, (x.2).(bufDirty) = true) mdone)⌝ ∗
-        "%Hpm" ∷ ⌜m = mtodo ∪ mdone ∧ dom (gset addr) mtodo ## dom (gset addr) mdone⌝ ∗
+        "%Hpm" ∷ ⌜m = mtodo ∪ mdone ∧
+                  dom (gset addr) mtodo ## dom (gset addr) mdone⌝ ∗
         "%Hamtodo" ∷ ⌜flatid_addr_map bmtodo amtodo ∧ dom (gset addr) amtodo = dom (gset addr) mtodo⌝ ∗
         "Htodo" ∷ ( [∗ map] fa↦b ∈ bmtodo, ∃ a, ⌜fa = addr2flat a⌝ ∗
                                            (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) )
@@ -456,8 +461,7 @@ Proof using.
     iPureIntro.
     split.
     - rewrite map_filter_empty //.
-    - rewrite right_id_L.
-      split_and!; try set_solver.
+    - rewrite right_id_L //.
   }
   {
     iIntros (k v bmtodo bmdone Φi).
@@ -479,10 +483,34 @@ Proof using.
 
       iSplitR.
       { iPureIntro.
+        repeat match goal with
+               | H: flatid_addr_map ?fm ?am |- _ =>
+                 lazymatch goal with
+                 | H2: size fm = size am |- _ => fail
+                 | _ => pose proof (flatid_addr_map_size H)
+                 end
+               end.
         rewrite map_filter_insert //.
         rewrite map_size_insert_None.
         - rewrite -Hn.
-          admit. (* overflow reasoning *)
+          assert (int.nat n ≤ size mdone)%nat.
+          { rewrite Hn.
+            apply map_size_filter. }
+          assert (Z.of_nat (size bm) < 2^64).
+          { rewrite Hmap_size.
+            word. }
+          assert (size mtodo + size mdone = size m)%nat.
+          { replace m.
+            rewrite !map_size_dom dom_union_L size_union //. }
+          assert (size bmtodo + size bmdone = size bm)%nat.
+          { replace bm.
+            rewrite !map_size_dom dom_union_L size_union //. }
+          assert (size am = size m).
+          { rewrite !map_size_dom. congruence. }
+          assert (Z.of_nat (size m) < 2^64) by lia.
+          assert (0 < size mtodo)%nat.
+          { eauto using map_size_nonzero_lookup. }
+          word.
         - rewrite map_filter_lookup_None_2 //.
           left.
           apply elem_of_dom_2 in H1.
@@ -554,7 +582,7 @@ Proof using.
   rewrite -H3.
   apply flatid_addr_empty_1 in H2; subst.
   set_solver.
-Admitted.
+Qed.
 
 Theorem wp_BufMap__DirtyBufs l m stk E1 :
   {{{
