@@ -14,18 +14,21 @@ def read_db(fname):
         qed_timings.append((row["fname"], row["ident"], row["time"]))
 
     file_timings = []
-    for row in conn.execute("""SELECT fname, time FROM file_timings"""):
-        file_timings.append((row["fname"], row["time"]))
+    for row in conn.execute("""SELECT fname, is_vos, time FROM file_timings"""):
+        file_timings.append((row["fname"], row["is_vos"], row["time"]))
     conn.close()
 
     qed_df = pd.DataFrame(qed_timings, columns=["fname", "ident", "time"])
     qed_sum = qed_df.groupby("fname").sum()
-    raw_file_df = pd.DataFrame(file_timings, columns=["fname", "time"])
+    raw_file_df = pd.DataFrame(
+        file_timings, columns=["fname", "is_vos", "time"]
+    )
     file_df = raw_file_df.join(qed_sum, rsuffix="_qed", on="fname")
     file_df.rename(
         mapper={"time_qed": "qed_time"}, axis="columns", inplace=True
     )
     file_df.fillna(value={"qed_time": 0.0}, inplace=True)
+    file_df.is_vos.replace({1: True, 0: False}, inplace=True)
     return qed_df, file_df
 
 
@@ -56,6 +59,11 @@ if __name__ == "__main__":
         "--db", help="sqlite database of timing info", default=".timing.sqlite3"
     )
     parser.add_argument("--filter", help="filter file names", default=None)
+    parser.add_argument(
+        "--vos",
+        help="report vos timing rather than vo",
+        action="store_true",
+    )
 
     args = parser.parse_args()
 
@@ -68,6 +76,7 @@ if __name__ == "__main__":
     pd.set_option("display.width", 300)
     if args.filter is not None:
         file_df = filter_df(file_df, col="fname", pat=args.filter)
+    file_df = file_df[file_df["is_vos"] == args.vos]
     total_s = file_df["time"].sum()
     print("{:12s} {:>6.1f}".format("total", total_s))
     print(
@@ -94,7 +103,11 @@ if __name__ == "__main__":
     if args.max_files > 0 or args.max_qeds > 0:
         print()
         print("slow files:")
-        print(file_df.nlargest(args.max_files, "time").to_string(index=False))
+        print(
+            file_df[["fname", "time", "qed_time"]]
+            .nlargest(args.max_files, "time")
+            .to_string(index=False)
+        )
 
         if args.max_qeds > 0 and len(qed_df) > 0:
             print()

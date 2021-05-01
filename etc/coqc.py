@@ -16,7 +16,7 @@ class NullDb:
     def add_qed(self, fname, ident, time):
         pass
 
-    def add_file(self, fname, time):
+    def add_file(self, fname, is_vos, time):
         pass
 
     def close(self):
@@ -29,7 +29,7 @@ class StdoutDb:
         if time > 0.1:
             print("{:15s} {:20s} {:0.2f}".format(base, ident, time))
 
-    def add_file(self, fname, time):
+    def add_file(self, fname, _is_vos, time):
         if time > 0.1:
             print("{} {:0.2f}".format(fname, time))
 
@@ -52,7 +52,8 @@ class TimingDb:
         )
         conn.execute(
             """CREATE TABLE IF NOT EXISTS file_timings """
-            + """(fname text NOT NULL PRIMARY KEY, time real)"""
+            + """(fname text NOT NULL PRIMARY KEY, """
+            + """is_vos integer NOT NULL, time real)"""
         )
         return cls(conn)
 
@@ -62,10 +63,10 @@ class TimingDb:
             (fname, ident, time),
         )
 
-    def add_file(self, fname, time):
+    def add_file(self, fname, is_vos, time):
         self.conn.execute(
-            """INSERT OR REPLACE INTO file_timings VALUES (?,?)""",
-            (fname, time),
+            """INSERT OR REPLACE INTO file_timings VALUES (?,?,?)""",
+            (fname, is_vos, time),
         )
 
     def close(self):
@@ -119,8 +120,9 @@ class Classify:
 
 
 class CoqcFilter:
-    def __init__(self, vfile, db, contents, start):
+    def __init__(self, vfile, is_vos, db, contents, start):
         self.vfile = vfile
+        self.is_vos = is_vos
         self.contents = contents
         self.db = db
         self.start = start
@@ -128,6 +130,7 @@ class CoqcFilter:
 
     @classmethod
     def from_coqargs(cls, args, db, contents=None, start=None):
+        is_vos = "-vos" in args
         vfile = None
         for arg in args:
             if arg.endswith(".v"):
@@ -135,11 +138,11 @@ class CoqcFilter:
                 break
         if start is None:
             start = datetime.now()
-        return cls(vfile, db, contents, start)
+        return cls(vfile, is_vos, db, contents, start)
 
     @classmethod
     def from_contents(cls, contents, db, start=None):
-        return cls("<in-memory>.v", db, contents, start)
+        return cls("<in-memory>.v", False, db, contents, start)
 
     def _read_vfile(self):
         with open(self.vfile, "rb") as f:
@@ -185,7 +188,7 @@ class CoqcFilter:
         if end_t is None:
             end_t = datetime.now()
         delta = (end_t - self.start).total_seconds()
-        self.db.add_file(self.vfile, delta)
+        self.db.add_file(self.vfile, self.is_vos, delta)
         self.db.close()
 
 

@@ -18,7 +18,7 @@ class MemDb:
         assert self.qeds.get(key) is None
         self.qeds[key] = time
 
-    def add_file(self, fname, time):
+    def add_file(self, fname, is_vos, time):
         assert self.files.get(fname) is None
         self.files[fname] = time
 
@@ -75,7 +75,7 @@ FIXTURE_DIR = join(os.path.dirname(os.path.realpath(__file__)), "test_coqc")
 def run_filter(fname):
     db = MemDb()
     vfile = join(FIXTURE_DIR, fname)
-    filter = CoqcFilter(vfile, db, None, datetime.now())
+    filter = CoqcFilter(vfile, False, db, None, datetime.now())
     with open(join(FIXTURE_DIR, fname + ".out"), "rb") as f:
         for line in f:
             filter.line(line)
@@ -87,7 +87,7 @@ def test_filter_unit_tests():
     db = MemDb()
     start = datetime.now()
     vfile = join(FIXTURE_DIR, "test.v")
-    filter = CoqcFilter(vfile, db, None, start)
+    filter = CoqcFilter(vfile, False, db, None, start)
     with open(join(FIXTURE_DIR, "test.v.out"), "rb") as f:
         for line in f:
             filter.line(line)
