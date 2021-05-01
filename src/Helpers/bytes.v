@@ -25,7 +25,7 @@ Qed.
 Hint Rewrite length_byte_to_bits : len.
 
 Definition bits_to_byte (bs: list bool): byte :=
-   U8 (fold_right Z.add 0 (imap (λ n (b: bool), if b then 2^n else 0) bs)).
+   U8 (fold_right Z.add 0 (imap (λ n (b: bool), if b then 2^(Z.of_nat n) else 0) bs)).
 
 Theorem byte_to_bits_to_byte (x:byte) :
   bits_to_byte (byte_to_bits x) = x.

@@ -5,7 +5,7 @@ From Perennial.Helpers Require Import Transitions Integers.
 Set Implicit Arguments.
 
 Close Scope Z_scope.
-
+Coercion Z.of_nat : nat >-> Z.
 
 Module SimpleNFS.
 

@@ -316,7 +316,7 @@ Proof.
   f_equal.
   rewrite tuple_of_to_list_u64.
   rewrite combine_split.
-  change (u64_bytes%nat * 8) with 64.
+  change (Z.of_nat u64_bytes * 8) with 64.
   rewrite word.wrap_unsigned by lia.
   by rewrite word.of_Z_unsigned.
 Qed.
@@ -359,7 +359,7 @@ Proof.
   f_equal.
   rewrite tuple_of_to_list_u32.
   rewrite combine_split.
-  change (u32_bytes%nat * 8) with 32.
+  change (Z.of_nat u32_bytes * 8) with 32.
   rewrite word.wrap_unsigned by lia.
   by rewrite word.of_Z_unsigned.
 Qed.
@@ -383,7 +383,7 @@ Proof.
 Qed.
 
 Theorem combine_bound n t :
-  0 <= combine n t < 2 ^ (8 * n).
+  0 <= combine n t < 2 ^ (8 * Z.of_nat n).
 Proof.
   induction n; simpl.
   - cbv; split; congruence.
@@ -396,8 +396,8 @@ Proof.
       split.
       { unfold Z.shiftl; simpl. lia. }
       { unfold Z.shiftl; simpl.
-        replace (2 ^ (8 * S n)) with (2^8 * 2 ^ (8 * n)); try lia.
-        replace (8 * S n) with (8 + 8*n) by lia.
+        replace (2 ^ (8 * Z.of_nat (S n))) with (2^8 * 2 ^ (8 * Z.of_nat n)); try lia.
+        replace (8 * Z.of_nat (S n)) with (8 + 8*Z.of_nat n) by lia.
         rewrite <- Z.pow_add_r; lia. } }
     pose proof (word.unsigned_range b).
     apply Z.bits_inj.
