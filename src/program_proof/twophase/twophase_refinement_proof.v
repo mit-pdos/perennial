@@ -178,7 +178,7 @@ Proof.
           with "[Hcrash_cond] []") as "(Hna_crash_inv&Hcancel)".
   { iNext. iExists _, _, _, _. iExact "Hcrash_cond". }
   { iModIntro. iIntros "H !>". iExact "H". }
-  iMod (ghost_var_alloc (0, id)) as (γghost) "Hghost".
+  iMod (ghost_var_alloc (0, expr_id)) as (γghost) "Hghost".
   iMod (inv_alloc twophaseInitN _ (twophase_inv_inner γghost) with
             "[Hclosed_frag Hna_crash_inv Hghost]") as "#Hinv".
   { iNext. iLeft. iFrame. }
