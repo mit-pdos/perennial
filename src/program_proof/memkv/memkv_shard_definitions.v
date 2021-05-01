@@ -190,7 +190,7 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
     (lastReplyM:gmap u64 ShardReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc)
     (peersM:gmap u64 loc),
   "HlastReply" ∷ s ↦[MemKVShardServer :: "lastReply"] #lastReply_ptr ∗
-  "HlastReplyMap" ∷ map.is_map lastReply_ptr 1 (lastReplyMV, #0) ∗ (* TODO: default *)
+  "HlastReplyMap" ∷ map.is_map lastReply_ptr 1 (lastReplyMV, zero_val (struct.t ShardReply)) ∗ (* TODO: default *)
   "%HlastReplyMVdom" ∷ ⌜dom (gset u64) lastReplyMV = dom (gset u64) lastSeqM⌝ ∗
   "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM,
     (∃ val_sl q, ⌜v = struct.mk_f ShardReply [

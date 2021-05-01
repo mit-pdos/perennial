@@ -11,15 +11,18 @@ Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeMemKVShardServer (b : bool) γ :
   {{{
-       (* TODO: make this depend upon b *)
-       [∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ.(kv_gn) sid ∅
+       "#His_srv" ∷ is_RPCServer γ.(rpc_gn) ∗
+       "HRPCserver_own" ∷ RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
+       "HghostShards" ∷ (if b then [∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ.(kv_gn) sid ∅ else True) ∗
+       "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), RPCClient_own_ghost γ.(rpc_gn) cid 1
   }}}
     MakeMemKVShardServer #b
   {{{
        s, RET #s; is_MemKVShardServer s γ
   }}}.
 Proof.
-  iIntros (Φ) "HghostShards HΦ".
+  iIntros (Φ) "H HΦ".
+  iNamed "H".
   wp_lam.
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
@@ -55,10 +58,13 @@ Proof.
   iIntros (iptr) "Hi".
   wp_pures.
   wp_apply (wp_forUpto (λ i, ∃ shardMapping kvs_ptrs,
+  "%Hlen_shardMapping" ∷ ⌜ Z.of_nat (length shardMapping) = uNSHARD ⌝ ∗
+  "%Hlen_kvs_ptrs" ∷ ⌜ Z.of_nat (length kvs_ptrs) = uNSHARD ⌝ ∗
   "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)) ⌝ ∗
   "%Hkvss_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD →
                                is_Some ((fmap (λ x : loc, #x) kvs_ptrs) !! int.nat i)) ⌝ ∗
-  "HghostShards" ∷ ([∗ set] sid ∈ rangeSet (int.Z i) (uNSHARD - int.Z i), own_shard γ.(kv_gn) sid ∅) ∗
+  "HghostShards" ∷ (if b then ([∗ set] sid ∈ rangeSet (int.Z i) (uNSHARD - int.Z i), own_shard γ.(kv_gn) sid ∅)
+                   else True) ∗
   "kvss" ∷ srv ↦[MemKVShardServer :: "kvss"] (slice_val kvss_sl) ∗
   "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
   "shardMap" ∷ srv ↦[MemKVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
@@ -71,7 +77,7 @@ Proof.
                       map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
                        ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (m !! k))))
-                  )))%I with "[] [$Hi HshardMap_sl shardMap HghostShards]").
+                  )))%I with "[] [$Hi HshardMap_sl shardMap HghostShards kvss Hkvss_sl]").
   { word. }
   { iIntros (i Φ') "!# H HΦ".
     iDestruct "H" as "(H1&H2)".
@@ -105,6 +111,8 @@ Proof.
         Search lookup fmap. eapply lookup_fmap_Some; eauto. } *)
       wp_pures. iModIntro. iApply "HΦ".
       { iFrame. iExists _, (<[int.nat i := mv]>kvs_ptrs). iFrame.
+        rewrite ?insert_length.
+        do 2 (iSplit; first done).
         iSplit.
         { iPureIntro. intros.
           destruct (decide (int.nat i0 = int.nat i)) as [->|Hneq].
@@ -171,6 +179,10 @@ Proof.
       wp_pures. iModIntro. iApply "HΦ".
       { iFrame. iExists _, kvs_ptrs. iFrame.
         iSplit.
+        { iPureIntro. rewrite insert_length //. }
+        iSplit.
+        { eauto. }
+        iSplit.
         { iPureIntro. intros.
           destruct (decide (int.nat i0 = int.nat i)) as [->|Hneq].
           { eexists. apply list_lookup_insert. eapply lookup_lt_is_Some_1; eauto. }
@@ -186,15 +198,6 @@ Proof.
         { apply union_difference_singleton_L; eauto. }
         iEval (rewrite {2}Heq_diff) in "HownShards".
         iEval (rewrite {2}Heq_diff).
-        rewrite rangeSet_first; last first.
-        { rewrite /uNSHARD. word. }
-        iDestruct (big_sepS_union with "HghostShards") as "(Hgi&HghostShards)".
-        { apply rangeSet_first_disjoint; rewrite /uNSHARD; word. }
-        iSplitL "HghostShards".
-        { cut (rangeSet (int.Z i + 1) (uNSHARD - int.Z i - 1) =
-               rangeSet (int.Z (word.add i 1)) (uNSHARD - int.Z (word.add i 1))).
-          { intros ->. eauto. }
-          f_equal; word. }
         iApply big_sepS_union.
         { set_solver. }
         iDestruct (big_sepS_union with "HownShards") as "(Hi&HownShards)".
@@ -218,8 +221,49 @@ Proof.
   {
     iExists initShardMapping.
     iExists (replicate (int.nat 65536) null).
-    admit.
+    iSplit.
+    { iPureIntro. rewrite Heq_initShardMapping replicate_length /uNSHARD. word. }
+    iSplit.
+    { iPureIntro. rewrite replicate_length /uNSHARD. word. }
+    iSplit.
+    { iPureIntro. rewrite /uNSHARD. intros i Hlt. rewrite Heq_initShardMapping.
+      eexists. apply lookup_replicate_2. word. }
+    iSplit.
+    { iPureIntro. rewrite /uNSHARD. intros i Hlt.
+      rewrite list_lookup_fmap fmap_is_Some.
+      eexists. apply lookup_replicate_2. word. }
+    iFrame.
+    iSplitL "Hkvss_sl".
+    { rewrite /named. iExactEq "Hkvss_sl". f_equal.
+      rewrite Heq_init_kvs_ptrs fmap_replicate. f_equal. }
+    iPoseProof (big_sepS_intro_emp) as "H".
+    iApply (big_sepS_mono with "H").
+    { iIntros (x Hin) "_". iLeft. iPureIntro. intros Hfalse.
+      rewrite Heq_initShardMapping in Hfalse.
+      apply lookup_replicate_1 in Hfalse as (Hbad&?). rewrite //= in Hbad.
+    }
   }
-Abort.
+  iIntros "(Hloop_post&Hi)".
+  iMod (alloc_lock memKVN _ lk (own_MemKVShardServer srv γ) with "[$] [-mu HΦ]").
+  {
+    iNext. iNamed "Hloop_post".
+    iExists _, _, _, _, _, _, _, _.
+    iExists _, _, _, _.
+    iFrame "lastReply lastSeq nextCID shardMap kvss peers".
+    iFrame.
+    iSplit.
+    { iPureIntro. rewrite ?dom_empty_L //. }
+    iSplitL "".
+    { rewrite big_sepM2_empty //. }
+    iSplit; first done.
+    iSplit; first done.
+    rewrite big_sepM_empty.
+    iSplit; first done.
+    iApply (big_sepS_mono with "Hcids"); by eauto.
+  }
+  unshelve (iMod (readonly_alloc_1 with "mu") as "#mu"); [| apply _|].
+  wp_pures. iApply "HΦ". iModIntro.
+  iExists _. iFrame "# ∗".
+Qed.
 
 End memkv_shard_make_proof.
