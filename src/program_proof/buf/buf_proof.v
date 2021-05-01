@@ -68,6 +68,19 @@ Proof.
   eauto.
 Qed.
 
+Theorem is_buf_without_data_valid_addr bufptr a o s :
+  is_buf_without_data bufptr a o s -∗ ⌜valid_addr a⌝.
+Proof.
+  iNamed 1; intuition auto.
+Qed.
+
+Theorem is_buf_valid_addr bufptr a o :
+  is_buf bufptr a o -∗ ⌜valid_addr a⌝.
+Proof.
+  iNamed 1.
+  iApply (is_buf_without_data_valid_addr with "[$]").
+Qed.
+
 Definition objKind (obj: object): bufDataKind := projT1 obj.
 Definition objData (obj: object): bufDataT (objKind obj) := projT2 obj.
 
@@ -425,7 +438,8 @@ Theorem wp_BufMap__Ndirty l m stk E1 :
     BufMap__Ndirty #l @ stk ; E1
   {{{
     (n : u64), RET #n;
-    ⌜int.nat n = size (filter (λ x, (snd x).(bufDirty) = true) m)⌝ }}}.
+    ⌜int.nat n = size (filter (λ x, (snd x).(bufDirty) = true) m)⌝ ∗
+    is_bufmap l m}}}.
 Proof using.
   iIntros (Φ) "Hisbufmap HΦ".
   iDestruct "Hisbufmap" as (addrs bm am) "(Haddrs & Hismap & % & Hmap)".
@@ -445,23 +459,27 @@ Proof using.
   wp_apply (wp_MapIter_3 _ _ _ _ _
     (λ (bmtodo bmdone : gmap u64 loc),
      ∃ (n : u64),
-      ∃ (mtodo mdone : gmap addr buf) (amtodo : gmap addr loc),
+      ∃ (mtodo mdone : gmap addr buf) (amdone amtodo : gmap addr loc),
       "Hn" ∷ n_l ↦[uint64T] #n ∗
       "%Hn" ∷ ⌜int.nat n = size (filter (λ x, (x.2).(bufDirty) = true) mdone)⌝ ∗
         "%Hpm" ∷ ⌜m = mtodo ∪ mdone ∧
-                  dom (gset addr) mtodo ## dom (gset addr) mdone⌝ ∗
+                  dom (gset addr) mtodo ## dom (gset addr) mdone ∧
+                  am = amtodo ∪ amdone
+                  ⌝ ∗
         "%Hamtodo" ∷ ⌜flatid_addr_map bmtodo amtodo ∧ dom (gset addr) amtodo = dom (gset addr) mtodo⌝ ∗
         "Htodo" ∷ ( [∗ map] fa↦b ∈ bmtodo, ∃ a, ⌜fa = addr2flat a⌝ ∗
-                                           (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) )
+                                           (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) ) ∗
+        "Hbufs" ∷ [∗ map] a↦bufptr;buf ∈ amdone;mdone, is_buf bufptr a buf
     )%I
     with "Hismap [Hmap Hn]").
   {
-    iExists (U64 0), m, ∅, am.
+    iExists (U64 0), m, ∅, ∅, am.
+    rewrite big_sepM2_empty.
     iFrame.
     iPureIntro.
     split.
     - rewrite map_filter_empty //.
-    - rewrite right_id_L //.
+    - rewrite !right_id_L //.
   }
   {
     iIntros (k v bmtodo bmdone Φi).
@@ -473,12 +491,17 @@ Proof using.
     iDestruct "Hv" as (a) "[-> Hv]".
     iDestruct "Hv" as (vbuf) "[% Hbuf]".
     wp_apply (wp_buf_loadField_dirty with "Hbuf"); iIntros "Hbuf".
+    iDestruct (is_buf_valid_addr with "Hbuf") as %Ha_valid.
+    assert (amtodo !! a = Some v) as Ham_lookup.
+    { destruct H4 as [Hfwd Hrev].
+      apply Hrev in H7 as (a' & Hvalid & Heq%(addr2flat_eq) & Hlookup);
+        subst; eauto. }
     wp_if_destruct.
     { wp_load.
       wp_store.
       iModIntro.
       iApply "HΦ".
-      iExists _, (delete a mtodo), (<[a:=vbuf]> mdone), (delete a amtodo).
+      iExists _, (delete a mtodo), (<[a:=vbuf]> mdone), (<[a:=v]> amdone), (delete a amtodo).
       iFrame.
 
       iSplitR.
@@ -513,19 +536,18 @@ Proof using.
           word.
         - rewrite map_filter_lookup_None_2 //.
           left.
-          apply elem_of_dom_2 in H1.
+          apply elem_of_dom_2 in H3.
           apply not_elem_of_dom.
           set_solver. }
       iSplitR.
-      { iPureIntro. split.
-        { rewrite union_delete_insert; eauto. }
+      { iPureIntro. rewrite -> !union_delete_insert by eauto.
+        split_and!; auto.
         set_solver. }
       iSplitR.
       { iPureIntro. split.
-        { apply flatid_addr_delete; eauto.
-          eapply flatid_addr_lookup_valid. { apply H4. }
-          apply (elem_of_dom (D:=gset addr)). rewrite H5. apply elem_of_dom. eauto. }
+        { apply flatid_addr_delete; eauto. }
         rewrite ?dom_delete_L. congruence. }
+      iSplitL "Htodo".
       { iApply (big_sepM_mono with "Htodo"). iIntros (k x Hkx) "H".
         iDestruct "H" as (a0) "[-> H]". iDestruct "H" as (y2) "[% H]".
         iExists a0. iSplitR; first eauto.
@@ -534,10 +556,17 @@ Proof using.
         { rewrite lookup_delete in Hkx. congruence. }
         rewrite lookup_delete_ne; eauto.
       }
+      iDestruct (big_sepM2_dom with "Hbufs") as %Hdom_bufs.
+      rewrite big_sepM2_insert.
+      { iFrame. }
+      - apply not_elem_of_dom. apply elem_of_dom_2 in H3.
+        rewrite Hdom_bufs. set_solver.
+      - apply not_elem_of_dom. apply elem_of_dom_2 in H3.
+        set_solver.
     }
     { iModIntro.
       iApply "HΦ".
-      iExists _, (delete a mtodo), (<[a:=vbuf]> mdone), (delete a amtodo).
+      iExists _, (delete a mtodo), (<[a:=vbuf]> mdone), (<[a:=v]> amdone), (delete a amtodo).
       iFrame "Hn".
       iSplitR.
       { iPureIntro.
@@ -545,20 +574,19 @@ Proof using.
         - congruence.
         - intros.
           exfalso.
-          apply elem_of_dom_2 in H1.
-          apply elem_of_dom_2 in H8.
+          apply elem_of_dom_2 in H3.
+          apply elem_of_dom_2 in H9.
           set_solver.
       }
       iSplitR.
-      { iPureIntro. split.
-        { rewrite union_delete_insert; eauto. }
+      { iPureIntro. rewrite -> !union_delete_insert by eauto.
+        split_and!; auto.
         set_solver. }
       iSplitR.
       { iPureIntro. split.
-        { apply flatid_addr_delete; eauto.
-          eapply flatid_addr_lookup_valid. { apply H4. }
-          apply (elem_of_dom (D:=gset addr)). rewrite H5. apply elem_of_dom. eauto. }
+        { apply flatid_addr_delete; eauto. }
         rewrite ?dom_delete_L. congruence. }
+      iSplitL "Htodo".
       { iApply (big_sepM_mono with "Htodo"). iIntros (k x Hkx) "H".
         iDestruct "H" as (a0) "[-> H]". iDestruct "H" as (y2) "[% H]".
         iExists a0. iSplitR; first eauto.
@@ -567,6 +595,13 @@ Proof using.
         { rewrite lookup_delete in Hkx. congruence. }
         rewrite lookup_delete_ne; eauto.
       }
+      iDestruct (big_sepM2_dom with "Hbufs") as %Hdom_bufs.
+      rewrite big_sepM2_insert.
+      { iFrame. }
+      - apply not_elem_of_dom. apply elem_of_dom_2 in H3.
+        rewrite Hdom_bufs. set_solver.
+      - apply not_elem_of_dom. apply elem_of_dom_2 in H3.
+        set_solver.
     }
   }
 
@@ -575,13 +610,23 @@ Proof using.
   wp_load.
   iModIntro.
   iApply "HΦ". iFrame.
-  intuition subst.
-  rewrite (dom_empty_inv_L (D:=gset addr) mtodo).
-  { rewrite left_id_L. by iFrame. }
 
-  rewrite -H3.
-  apply flatid_addr_empty_1 in H2; subst.
-  set_solver.
+  assert (mtodo = ∅).
+  { rewrite (dom_empty_inv_L (D:=gset addr) mtodo) //.
+    intuition subst.
+    rewrite -H3.
+    apply flatid_addr_empty_1 in H2; subst.
+    set_solver. }
+  assert (amtodo = ∅).
+  { intuition subst.
+    apply flatid_addr_empty_1 in H3; subst; auto. }
+  subst.
+  destruct Hpm as (Hm & _ & Ham).
+  rewrite left_id_L in Hm; subst mdone.
+  rewrite left_id_L in Ham; subst amdone.
+  iSplitR; first by done.
+  iExists _, _, _; iFrame.
+  auto.
 Qed.
 
 Theorem wp_BufMap__DirtyBufs l m stk E1 :

@@ -539,6 +539,26 @@ Opaque struct.t.
     eapply insert_non_empty in Hx. exfalso; eauto.
 Qed.
 
+Theorem wp_BufTxn__NDirty buftx mt γUnified dinit anydirty :
+  {{{
+    is_buftxn buftx mt γUnified dinit anydirty
+  }}}
+    BufTxn__NDirty #buftx
+  {{{
+    (n:u64), RET #n;
+    is_buftxn buftx mt γUnified dinit anydirty
+  }}}.
+Proof.
+  iIntros (Φ) "Htxn HΦ".
+  iNamed "Htxn".
+  wp_call.
+  wp_loadField.
+  wp_apply (wp_BufMap__Ndirty with "Hbufmap").
+  iIntros (n) "[%Hnval Hbufmap]".
+  iApply "HΦ".
+  iExists _, _, _. iFrameNamed.
+Qed.
+
 Theorem BufTxn_lift_one' buftx mt γUnified dinit a v E anydirty k q :
   ↑invN ⊆ E ->
   (
@@ -831,7 +851,7 @@ Proof.
             Build_buf_and_prev_data
            (Build_buf (projT1 o) (snd (projT2 o)) true)
            (fst (projT2 o))
-      ) <$> 
+      ) <$>
       (filter (λ v : addr * versioned_object, bufDirty <$> gBufmap !! v.1 = Some true) mt))
     _
     E
