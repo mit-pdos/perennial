@@ -243,6 +243,18 @@ Section goose_lang.
     destruct obj; simpl in *; subst; reflexivity.
   Qed.
 
+  Theorem wp_BufTxn__NDirty l γ dinit γtxn γdurable :
+    {{{ is_buftxn_mem N l γ dinit γtxn γdurable }}}
+      BufTxn__NDirty #l
+    {{{ (n:u64), RET #n; is_buftxn_mem N l γ dinit γtxn γdurable }}}.
+  Proof.
+    iIntros (Φ) "H HΦ". iNamed "H".
+    wp_apply (mspec.wp_BufTxn__NDirty with "Hbuftxn").
+    iIntros (n) "Hbuftxn".
+    iApply "HΦ".
+    iExists _, _; iFrameNamed.
+  Qed.
+
   (*
   lift: modify_token ∗ stable_maps_to ==∗ buftxn_maps_to
 
