@@ -78,8 +78,11 @@ Definition twophase_na_crash_inv
                              (∃ γ dinit logm mt',
                                   twophase_crash_cond_full γ dinit logm mt')%I.
 
+(* don't use [id] to avoid universe trouble *)
+Definition expr_id (e: spec_lang.(language.expr)) : spec_lang.(language.expr) := e.
+
 Definition twophase_inv_inner {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} γ : iProp Σ
-  := (twophase_na_crash_inv ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, id)) ∨ jrnl_open.
+  := (twophase_na_crash_inv ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, expr_id)) ∨ jrnl_open.
 
 Definition twophaseInitN := nroot.@"init".
 
