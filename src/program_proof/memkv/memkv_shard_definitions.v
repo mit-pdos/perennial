@@ -1,4 +1,5 @@
 From Perennial.program_proof Require Import dist_prelude.
+From Perennial.goose_lang Require Import adequacy.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
@@ -14,9 +15,13 @@ Record ShardReplyC := mkShardReplyC {
   SR_Success : bool;
 }.
 
-Section memkv_shard_definitions.
+Section memkv_shard_pre_definitions.
 
-Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ, invG Σ, groveG Σ}.
+Context `{!heapPreG Σ (ext:=grove_op) (ffi:=grove_model)}.
+(*
+, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+*)
 
 Definition uKV_FRESHCID: nat :=
   Eval vm_compute in match KV_FRESHCID with LitV (LitInt n) => int.nat n | _ => 0 end.
@@ -41,23 +46,23 @@ Record memkv_shard_names := {
 Implicit Type γ : memkv_shard_names.
 
 Definition PreShardGet Eo Ei γ key Q : iProp Σ :=
-  |NC={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q v))
+  |={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q v))
 .
 
 Definition PostShardGet Eo Ei γ (key:u64) Q (rep:ShardReplyC) : iProp Σ :=
   ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardGet Eo Ei γ key Q) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ (Q rep.(SR_Value)).
 
 Definition PreShardPut Eo Ei γ key Q v : iProp Σ :=
-  |NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q))
+  |={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q))
 .
 
 Definition PostShardPut Eo Ei γ (key:u64) Q v (rep:ShardReplyC) : iProp Σ :=
   ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardPut Eo Ei γ key Q v) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q .
 
 Definition PreShardConditionalPut Eo Ei γ key Q expv newv : iProp Σ :=
-  |NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
+  |={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
     (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗
-      |NC={Ei,Eo}=> Q succ))
+      |={Ei,Eo}=> Q succ))
 .
 
 Definition PostShardConditionalPut Eo Ei γ (key:u64) Q expv newv (rep:ShardReplyC) : iProp Σ :=
@@ -68,7 +73,6 @@ Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
   [∗ set] k ∈ (fin_to_set u64), ⌜shardOfC k ≠ sid⌝ ∨
                                 kvptsto γkv k (default [] (m !! k))
 .
-Existing Instance heapG_to_preG.
 
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   λ host γ,
@@ -172,6 +176,12 @@ Proof.
   rewrite is_shard_server_unfold.
   apply _.
 Qed.
+End memkv_shard_pre_definitions.
+
+Section memkv_shard_definitions.
+
+Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Global Instance heapG_to_preG' : heapG Σ → heapPreG Σ := heapG_to_preG Σ.
 
 Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
   ∃ (cid seq:u64) (cl:loc) (host:u64),

@@ -207,7 +207,7 @@ Qed.
 
 Lemma wp_MemKVShardClerk__Put Eo Ei γ (ck:loc) (key:u64) (v:list u8) value_sl Q :
   {{{
-       (|NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q))) ∗
+       (|={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q))) ∗
        typed_slice.is_slice value_sl byteT 1%Qp v ∗
        own_MemKVShardClerk ck γ
   }}}
@@ -217,7 +217,7 @@ Lemma wp_MemKVShardClerk__Put Eo Ei γ (ck:loc) (key:u64) (v:list u8) value_sl Q
        typed_slice.is_slice value_sl byteT 1%Qp v ∗
        own_MemKVShardClerk ck γ ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q)))
+        (|={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q)))
         ∨
         ⌜e = 0⌝ ∗ Q
         )
@@ -364,7 +364,7 @@ Qed.
 
 Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
   {{{
-       (|NC={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q v))) ∗
+       (|={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q v))) ∗
        own_MemKVShardClerk ck γ ∗
        (∃ dummy_sl, value_ptr ↦[slice.T byteT] (slice_val dummy_sl))
   }}}
@@ -373,7 +373,7 @@ Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
        (e:u64), RET #e;
        own_MemKVShardClerk ck γ ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|NC={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |NC={Ei,Eo}=> Q v))) ∗
+        (|={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q v))) ∗
         (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
 
         ⌜e = 0⌝ ∗
@@ -526,8 +526,8 @@ Qed.
 
 Lemma wp_MemKVShardClerk__ConditionalPut Eo Ei γ (ck:loc) (key:u64) (expv newv:list u8) expv_sl newv_sl (succ_ptr:loc) Q :
   {{{
-       (|NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
-         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |NC={Ei,Eo}=> Q succ))) ∗
+       (|={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
+         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |={Ei,Eo}=> Q succ))) ∗
        typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
        typed_slice.is_slice newv_sl byteT 1%Qp newv ∗
        own_MemKVShardClerk ck γ ∗
@@ -540,8 +540,8 @@ Lemma wp_MemKVShardClerk__ConditionalPut Eo Ei γ (ck:loc) (key:u64) (expv newv:
        typed_slice.is_slice newv_sl byteT 1%Qp newv ∗
        own_MemKVShardClerk ck γ ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|NC={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
-         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |NC={Ei,Eo}=> Q succ))) ∗
+        (|={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
+         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |={Ei,Eo}=> Q succ))) ∗
        (∃ b : bool, succ_ptr ↦[boolT] #b)
         ∨
         ⌜e = 0⌝ ∗ ∃ succ : bool, succ_ptr ↦[boolT] #succ ∗ Q succ
