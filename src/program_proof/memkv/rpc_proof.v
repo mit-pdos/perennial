@@ -38,9 +38,7 @@ Proof. solve_inG. Qed.
 Section rpc_global_defs.
 
 Context `{!rpcregG Σ}.
-Context `{HINV: !invG Σ}.
-Context `{HPRE: !heapPreG Σ}.
-Context `{HGROVE: !groveG Σ}.
+Context `{HPRE: !heap_globalG Σ}.
 
 (* A host-specific mapping from rpc ids on that host to pre/post conditions *)
 Definition urpc_serverN : namespace := nroot.@"urpc_server".
@@ -60,8 +58,7 @@ Record server_chan_gnames := {
 }.
 
 Definition is_rpcHandler {X:Type} (names : heap_local_names) (cname : gname) (f:val) Pre Post : iProp Σ :=
-  let hG := heap_update_pre Σ HPRE HINV {| crash_inG := _; crash_name := cname |}
-                            (heap_extend_local_names names (gen_heap_names.gen_heapG_get_names _)) in
+  let hG := heap_globalG_heapG _ {| crash_inG := _; crash_name := cname |} names in
   ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
   {{{
       is_slice req byteT 1 reqData ∗
@@ -82,6 +79,10 @@ Definition client_chan_inner_msg (Γ : client_chan_gnames) (host : u64) m : iPro
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid reqData γ d rep) ∗
        "#HPost_saved" ∷ saved_pred_own γ (Post x reqData) ∗
        "#HPost" ∷ inv urpc_escrowN (Post x reqData replyData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt).
+
+Let gn := heap_globalG_names.
+Let gpG := (heap_preG_ffi).
+Instance global_groveG : groveG Σ := @grove_update_pre _ gpG gn.
 
 Definition client_chan_inner (Γ : client_chan_gnames) (host: u64) : iProp Σ :=
   ∃ ms, "Hchan" ∷ host c↦ ms ∗
@@ -185,7 +186,7 @@ Proof.
     rewrite ?dom_empty_L //. }
   { iIntros ((Hwf'&Hdom')).
     iMod ("IH" with "[$] []") as (gnames Hdom) "(Hmap_ctx&Hmap)".
-    { iPureIntro. split. 
+    { iPureIntro. split.
       - destruct Hwf' as (_&?); eauto.
       - etransitivity; last eassumption. set_solver. }
     iMod (saved_pred_alloc (λ n, is_rpcHandler n.1.1 n.1.2 n.2
@@ -201,12 +202,12 @@ Proof.
   }
 Qed.
 
-Lemma is_rpcHandler_proper' hn gn handler X Pre Pre' Post Post' :
+Lemma is_rpcHandler_proper' hn gn' handler X Pre Pre' Post Post' :
  □ (∀ (x : X) (l1 : list u8), Pre x l1 ≡ Pre' x l1) -∗
  □ (∀ (x : X) (l1 : list u8) (l2 : list u8),
        Post x l1 l2 ≡ Post' x l1 l2) -∗
- is_rpcHandler hn gn handler Pre Post -∗
- is_rpcHandler hn gn handler Pre' Post'.
+ is_rpcHandler hn gn' handler Pre Post -∗
+ is_rpcHandler hn gn' handler Pre' Post'.
 Proof.
   iIntros "#Hequiv_pre #Hequiv_post #His".
   rewrite /is_rpcHandler.
@@ -282,6 +283,27 @@ Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) (host : u64) mref : iP
                  (* (3) Caller has extracted ownership *)
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt)).
 
+
+Instance heapG_to_preG Σ' : heapG Σ' → heapPreG Σ'.
+Proof.
+  destruct 1.
+  destruct heapG_invG.
+  destruct heapG_crashG.
+  destruct heapG_ffiG.
+  destruct groveG_gen_heapG.
+  destruct heapG_na_heapG.
+  destruct heapG_traceG.
+  econstructor; econstructor; apply _.
+Defined.
+
+Global Instance heapG_heap_globalG : heap_globalG Σ.
+Proof using hG.
+  econstructor.
+  - apply _.
+  - apply (heap_ffi_global_names (heap_get_names _ _)).
+  - apply _.
+Defined.
+
 Definition RPCClient_own (cl : loc) (host:u64) : iProp Σ :=
   ∃ Γ (lk : loc) r (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[RPCClient :: "mu"] #lk) ∗
@@ -343,18 +365,6 @@ Proof.
   iFrame "# ∗". eauto.
 Qed.
 
-Instance heapG_to_preG Σ' : heapG Σ' → heapPreG Σ'.
-Proof.
-  destruct 1.
-  destruct heapG_invG.
-  destruct heapG_crashG.
-  destruct heapG_ffiG.
-  destruct groveG_gen_heapG.
-  destruct heapG_na_heapG.
-  destruct heapG_traceG.
-  econstructor; econstructor; apply _.
-Defined.
-
 Definition rpc_handler_mapping (γ : server_chan_gnames) (host : u64) (handlers : gmap u64 val) : iProp Σ :=
   ([∗ map] rpcid↦handler ∈ handlers, ∃ (X : Type) Pre Post,
       handler_is γ X host rpcid Pre Post ∗
@@ -366,18 +376,27 @@ Lemma is_rpcHandler_convert X handler Pre Post :
   is_rpcHandler' handler Pre Post.
 Proof.
   rewrite /is_rpcHandler/is_rpcHandler'.
-  assert (heap_update_pre Σ (heapG_to_preG _ hG) _ {| crash_inG := _; crash_name := crash_name |}
-                          (heap_extend_local_names (heap_get_local_names Σ _)
-                                                   (gen_heap_names.gen_heapG_get_names _)) =
-          hG) as ->.
-  { rewrite //=. destruct hG => //=.
+  assert ((@heap_globalG_heapG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ
+              heapG_heap_globalG
+              {|
+                crash_inG :=
+                  heapG_heap_globalG
+                  .(@heap_globalG_preG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ)
+                  .(@heap_preG_crash grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ)
+                  .(@crash_inPreG Σ);
+                crash_name :=
+                  (@heapG_irisG grove_op grove_model grove_semantics grove_interp Σ hG)
+                  .(@iris_crashG (@goose_lang grove_op grove_model grove_semantics) Σ).(
+                  @crash_name Σ)
+              |} (@heap_get_local_names grove_op grove_model grove_interp Σ hG) = hG)) as ->.
+  { rewrite //=/heap_globalG_heapG/heap_update_pre//=. destruct hG => //=.
     destruct heapG_invG.
     destruct heapG_crashG.
     destruct heapG_ffiG.
     destruct groveG_gen_heapG.
     destruct heapG_na_heapG.
     destruct heapG_traceG.
-    rewrite //=. }
+    f_equal. }
   eauto.
 Qed.
 
@@ -418,6 +437,21 @@ Qed.
 Definition handlers_complete host Γ (handlers : gmap u64 val) :=
   (handlers_dom host Γ (dom (gset _) handlers)).
 
+Lemma global_groveG_conv :
+  (@global_groveG Σ heapG_heap_globalG).(@groveG_gen_heapG Σ) =
+  (@dist_ffi.heapG_groveG Σ hG).(@groveG_gen_heapG Σ).
+Proof.
+    rewrite /dist_ffi.heapG_groveG//=.
+    rewrite /heapG_to_preG//=.
+    destruct hG => //=.
+    destruct heapG_invG => //=.
+    destruct heapG_crashG => //=.
+    destruct heapG_ffiG => //=.
+    destruct groveG_gen_heapG => //=.
+    destruct heapG_na_heapG => //=.
+    destruct heapG_traceG => //=.
+Qed.
+
 Lemma wp_RPCServer__readThread γ s host handlers mref def :
   dom (gset u64) handlers ≠ ∅ →
   "#Hcomplete" ∷ handlers_complete host γ handlers ∗
@@ -439,7 +473,10 @@ Proof.
   iDestruct "Hchan_inner" as (ms) "(>Hchan'&#Hchan_inner)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
-  iExists _. iFrame "Hchan'". iNext.
+  iExists _. 
+  rewrite global_groveG_conv.
+  iFrame "Hchan'".
+  iNext.
   iIntros (err m) "(Hchan&Herr)".
   iAssert (if err then True else server_chan_inner_msg host γ m)%I with "[Hchan_inner Herr]" as "Hmsg".
   { destruct err; auto.
@@ -448,7 +485,7 @@ Proof.
   }
   iMod ("Hclo'") as "_".
   iMod ("Hclo" with "[Hchan]") as "_".
-  { iNext. iExists _. iFrame "% #". eauto. }
+  { iNext. iExists _. iFrame "% #". eauto. rewrite global_groveG_conv. eauto. }
   iModIntro.
   iIntros (r) "Hsl".
   wp_pures.
@@ -554,11 +591,14 @@ Proof.
   iDestruct "Hclient_chan_inner" as (ms_rep) "(>Hchan'&#Hclient_chan_inner)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
-  iExists _. iFrame "Hchan'". iNext.
+  iExists _. rewrite global_groveG_conv. iFrame "Hchan'". iNext.
   iIntros "Hchan'".
   iMod "Hclo'" as "_".
+  rewrite ?global_groveG_conv.
   iMod ("Hclo" with "[Hchan' Hlength]").
-  { iNext. iExists _. iFrame.
+  { iNext. iExists _.
+    rewrite ?global_groveG_conv.
+    iFrame.
     destruct (decide (Message host rep_msg_data ∈ ms_rep)).
     { assert (ms_rep ∪ {[Message host rep_msg_data]} = ms_rep) as -> by set_solver. iFrame "#". }
     iApply big_sepS_union; first by set_solver.
@@ -619,7 +659,7 @@ Proof.
   iDestruct "Hchan_inner" as (ms) "(>Hchan'&#Hchan_inner)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
-  iExists _. iFrame "Hchan'". iNext.
+  iExists _. rewrite global_groveG_conv. iFrame "Hchan'". iNext.
   iIntros (err m) "(Hchan'&Herr)".
   iAssert (if err then True else client_chan_inner_msg Γ r m)%I with "[Hchan_inner Herr]" as "Hmsg".
   { destruct err; auto.
@@ -627,7 +667,7 @@ Proof.
     iApply (big_sepS_elem_of with "Hchan_inner"); first eassumption.
   }
   iMod "Hclo'". iMod ("Hclo" with "[Hchan']").
-  { iNext. iExists _. iFrame. eauto. }
+  { iNext. iExists _. rewrite global_groveG_conv. iFrame. eauto.  }
   iModIntro. iIntros (s) "Hs".
   wp_pures. wp_if_destruct.
   { iModIntro. iLeft. eauto. }
@@ -788,10 +828,11 @@ Proof.
     rewrite big_sepM_empty //.
   }
   iMod (inv_alloc urpc_clientN _ (client_chan_inner Γ r) with "[Hr]") as "#Hchan_inv".
-  { iNext. iExists ∅. iFrame. rewrite big_sepS_empty //. }
+  { iNext. iExists ∅. rewrite global_groveG_conv. iFrame. rewrite big_sepS_empty //. }
   wp_bind (Fork _).
   iApply wp_fork.
-  { iNext. wp_pures. iApply wp_RPCClient__replyThread. iExists _, _, _, _. iFrame "#". }
+  { iNext. wp_pures. iApply wp_RPCClient__replyThread. iExists _, _, _, _. rewrite ?global_groveG_conv.
+    iFrame "#". }
   iNext. wp_pures. iModIntro. iApply "HΦ".
   iExists _, _, _, _. iFrame "#".
 Admitted.
@@ -934,32 +975,18 @@ Proof.
   iDestruct "Hserver_inner" as (ms) "(>Hchan'&H)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
-  iExists _. iFrame "Hchan'". iNext.
+  iExists _. rewrite global_groveG_conv.  iFrame "Hchan'". iNext.
   iIntros "Hchan'". iNamed "H".
   iMod ("Hclo'") as "_".
   iMod ("Hclo" with "[Hmessages Hchan']") as "_".
-  { iNext. iExists _. iFrame.
+  { iNext. iExists _.
+    rewrite global_groveG_conv.
+    iFrame.
     destruct (decide (Message r repData ∈ ms)).
     { assert (ms ∪ {[Message r repData]} = ms) as -> by set_solver. iFrame. }
     iApply big_sepS_union; first by set_solver.
     iFrame "Hmessages".
     iApply big_sepS_singleton.
-    (*
-    iAssert (saved_pred_own γ (Post x reqData Q) ≡ saved_pred_own γ (Post' x reqData Q))%I as "Hsaved_eq".
-    {
-      unfold saved_pred_own, saved_anything_own.
-      iApply f_equivI.
-      iAssert ((((λne y, Next y) ∘ Post x reqData Q) : list u8 -d> _) ≡
-               ((λne y, Next y) ∘ Post' x reqData Q : list u8 -d> (laterO (iPropO Σ))))%I as "H".
-      { iApply discrete_fun_equivI. iIntros => //=.
-        iApply later_equivI_2. iNext.
-        iApply "Hequiv_post".
-      }
-      iDestruct (agree_equivI with "H") as "Hequiv".
-      eauto.
-    }
-    iRewrite "Hsaved_eq" in "Hsaved".
-     *)
     iExists _, _, _, _, _, _, _.
     iExists _, _, _, _, _, _.
     iFrame "Hreg".
@@ -1030,3 +1057,24 @@ Proof.
 Admitted.
 
 End rpc_proof.
+
+(*
+Lemma heapG_to_preG_equiv Σ Hheap Hcrash local_names :
+  Hheap.(@heap_globalG_preG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ) =
+  heapG_to_preG Σ
+    (@heap_globalG_heapG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ Hheap
+       Hcrash local_names).
+Proof.
+  Print heap_globalG.
+  Print heap_globalG_heapG.
+  Locate heap_update_pre.
+  Print heap_update_pre.
+  Print crashPreG.
+  rewrite /heapG_to_preG. destruct Hheap => //=.
+  destruct heap_globalG_preG => //=.
+  destruct heap_globalG_invG.
+  destruct Hcrash => //=.
+  Set Printing Implicit.
+  destruct heap_preG_iris => //=.
+*)
+

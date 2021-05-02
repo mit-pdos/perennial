@@ -59,6 +59,16 @@ Proof.
   wp_pures.
   wp_apply (wp_MemKVShardServer__Start with "[] [] [$His_server]").
   { iExactEq "Hdom". rewrite //=. f_equal. set_solver. }
-  { admit. }
+  { iExactEq "Hsrv".
+    f_equal.
+    replace (Hcrash) with ({| crash_inG := @crash_inPreG _ ((heap_preG_crash));
+                              crash_name := @crash_name _ Hcrash |}); last by admit.
+    {
+      destruct Hheap => //=. rewrite /heapG_heap_globalG/heapG_to_preG //=.
+      destruct heap_globalG_preG => //=.
+      destruct heap_globalG_invG => //=.
+      admit.
+    }
+  }
   eauto.
 Abort.

@@ -11,10 +11,7 @@ Section memkv_shard_ghost_init_proof.
 (* These lemmas happen *before* we get node local names (e.g. the gname for memory, crashes etc. *)
 Context `{!heap_globalG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Let gn := heap_globalG_names.
-Let gpG := (heap_preG_ffi).
-
-Instance local_groveG : groveG Σ := @grove_update_pre _ gpG gn.
+Existing Instance global_groveG.
 
 
 (* TODO: duplicating these specs is unfortunate, should try to unify with the set up in shard_definitions *)

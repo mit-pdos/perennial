@@ -1,5 +1,6 @@
 From Perennial.program_proof Require Import dist_prelude.
 From Perennial.goose_lang Require Import adequacy.
+From Perennial.goose_lang Require Import dist_lifting.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export common_proof.
@@ -17,11 +18,8 @@ Record ShardReplyC := mkShardReplyC {
 
 Section memkv_shard_pre_definitions.
 
-Context `{rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ, invG Σ, groveG Σ}.
-Context `{!heapPreG Σ (ext:=grove_op) (ffi:=grove_model)}.
-(*
-, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
-*)
+Context `{rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heap_globalG Σ (ext := grove_op) (ffi := grove_model) }.
 
 Definition uKV_FRESHCID: nat :=
   Eval vm_compute in match KV_FRESHCID with LitV (LitInt n) => int.nat n | _ => 0 end.
@@ -154,16 +152,17 @@ Proof.
   eapply (dist_S). eapply Hpre.
 Qed.
 
-Definition is_shard_server :=
+Definition is_shard_server_def :=
   fixpoint (is_shard_server_pre).
-
-(* TODO: seal is_shard_server *)
+Definition is_shard_server_aux : seal (is_shard_server_def). by eexists. Qed.
+Definition is_shard_server := is_shard_server_aux.(unseal).
+Definition is_shard_server_eq : is_shard_server = is_shard_server_def := is_shard_server_aux.(seal_eq).
 
 Lemma is_shard_server_unfold host γ :
   is_shard_server host γ ⊣⊢ is_shard_server_pre (is_shard_server) host γ
 .
 Proof.
-  apply (fixpoint_unfold (is_shard_server_pre)).
+  rewrite is_shard_server_eq. apply (fixpoint_unfold (is_shard_server_pre)).
 Qed.
 
 Global Instance is_shard_server_pers host γ : Persistent (is_shard_server host γ).
@@ -176,7 +175,6 @@ End memkv_shard_pre_definitions.
 Section memkv_shard_definitions.
 
 Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
-Global Instance heapG_to_preG' : heapG Σ → heapPreG Σ := heapG_to_preG Σ.
 
 Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
   ∃ (cid seq:u64) (cl:loc) (host:u64),
