@@ -168,6 +168,17 @@ Proof.
   iApply (ownE_weaken with "HE"). set_solver.
 Qed.
 
+Lemma fupd_plain_soundness_strong `{HIPRE: !invPreG Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
+  (∀ `{Hinv: !invG Σ} (Heq_pre: inv_inG = HIPRE), ⊢ |={E1,E2}=> P) → ⊢ P.
+Proof.
+  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc'_strong as (Hinv HEQ) "[Hw HE]".
+  iAssert (|={⊤,E2}=> P)%I as "H".
+  { iMod (fupd_mask_subseteq E1) as "_"; first done. iApply Hfupd. eauto. }
+  rewrite uPred_fupd_eq /uPred_fupd_def.
+  iMod ("H" with "[$Hw HE]") as "[Hw [HE >H']]"; iFrame.
+  iApply (ownE_weaken with "HE"). set_solver.
+Qed.
+
 Lemma step_fupdN_soundness `{!invPreG Σ} φ n :
   (∀ `{Hinv: !invG Σ}, ⊢@{iPropI Σ} |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
   φ.
@@ -176,6 +187,20 @@ Proof.
   apply (soundness (M:=iResUR Σ) _  (S n)); simpl.
   apply (fupd_plain_soundness ⊤ ⊤ _)=> Hinv.
   iPoseProof (Hiter Hinv) as "H". clear Hiter.
+  iApply fupd_plainly_mask_empty. iMod "H".
+  iMod (step_fupdN_plain with "H") as "H". iModIntro.
+  rewrite -later_plainly -laterN_plainly -later_laterN laterN_later.
+  iNext. iMod "H" as %Hφ. auto.
+Qed.
+
+Lemma step_fupdN_soundness_strong `{HIPRE: !invPreG Σ} φ n :
+  (∀ `{Hinv: !invG Σ} (Heq_pre: inv_inG = HIPRE), ⊢@{iPropI Σ} |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
+  φ.
+Proof.
+  intros Hiter.
+  apply (soundness (M:=iResUR Σ) _  (S n)); simpl.
+  apply (fupd_plain_soundness_strong ⊤ ⊤ _)=> Hinv Heq.
+  iPoseProof (Hiter Hinv) as "H"; first done. clear Hiter.
   iApply fupd_plainly_mask_empty. iMod "H".
   iMod (step_fupdN_plain with "H") as "H". iModIntro.
   rewrite -later_plainly -laterN_plainly -later_laterN laterN_later.

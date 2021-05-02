@@ -33,6 +33,16 @@ Proof.
   rewrite /NC NC_aux.(seal_eq). by iFrame.
 Qed.
 
+Lemma NC_alloc_strong `{!crashPreG Σ} :
+  ⊢ |==> ∃ γn : gname, let Hc := {| crash_name := γn |} in NC 1.
+Proof.
+  iIntros.
+  iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
+  { rewrite //=. }
+  iExists γ.
+  rewrite /NC NC_aux.(seal_eq). by iFrame.
+Qed.
+
 Section crash_tok_props.
 Context `{!crashG Σ}.
 Implicit Types i : positive.

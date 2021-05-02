@@ -255,9 +255,10 @@ Qed.
 
 End distributed_adequacy.
 
-Theorem wpd_strong_adequacy Σ Λ CS T `{!invPreG Σ} k ebσs g1 n κs dns2 g2 φ f :
-  (∀ `{Hinv : !invG Σ},
+Theorem wpd_strong_adequacy Σ Λ CS T `{HIPRE: !invPreG Σ} `{HCPRE: !crashPreG Σ} k ebσs g1 n κs dns2 g2 φ f :
+  (∀ `{Hinv : !invG Σ} (Heq_pre: inv_inG = HIPRE),
      ⊢ |={⊤}=> ∃ (cts: list (crashG Σ * pbundleG T Σ))
+         (Heq_cpre: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = @crash_inPreG _ HCPRE)
          (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
          (global_stateI : global_state Λ → nat → list (observation Λ) → iProp Σ)
          (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf1 Hpf1' Hpf2 Hpf3,
@@ -283,9 +284,10 @@ Theorem wpd_strong_adequacy Σ Λ CS T `{!invPreG Σ} k ebσs g1 n κs dns2 g2 �
   φ.
 Proof.
   intros Hwp ?.
-  apply (step_fupdN_soundness _ (steps_sum f 0 n + S (S (f n)))) => Hinv.
+  apply (step_fupdN_soundness_strong _ (steps_sum f 0 n + S (S (f n)))) => Hinv HEQ.
   rewrite Nat_iter_add.
-  iMod Hwp as (cts stateI global_stateI fork_post Hpf1 Hpf1' Hpf2 Hpf3) "(Hg & Hσs & Hwp & Hφ)".
+  iMod Hwp as (cts Heq_cpre stateI global_stateI fork_post) "Hwp"; first done.
+  iDestruct "Hwp" as (Hpf1 Hpf1' Hpf2 Hpf3) "(Hg & Hσs & Hwp & Hφ)".
   iPoseProof (@stwpnodes_strong_adequacy _ _ _ _
                (PerennialG _ _ T Σ
                  (λ Hc t,
@@ -350,9 +352,11 @@ Proof.
   - constructor; naive_solver.
 Qed.
 
-Corollary wpd_dist_adequacy_inv Σ Λ CS (T: ofe) `{!invPreG Σ} `{!crashPreG Σ} (k : nat) ebσs g φinv f:
-  (∀ `{Hinv : !invG Σ} κs,
+Corollary wpd_dist_adequacy_inv Σ Λ CS (T: ofe) `{HIPRE: !invPreG Σ} `{HCPRE: !crashPreG Σ} (k : nat)
+          ebσs g φinv f:
+  (∀ `{Hinv : !invG Σ} (Heq_pre: inv_inG = HIPRE) κs,
      ⊢ |={⊤}=> ∃ (cts: list (crashG Σ * pbundleG T Σ))
+         (Heq_cts: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = @crash_inPreG _ HCPRE)
          (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
          (global_stateI : global_state Λ → nat → list (observation Λ) → iProp Σ)
          (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf1 Hpf1' Hpf2 Hpf3,
@@ -373,8 +377,10 @@ Proof.
   apply dist_adequate_alt.
   intros dns2 g2 Hsteps.
   apply erased_dist_steps_nsteps in Hsteps as [n [κs Hsteps]].
-  eapply (wpd_strong_adequacy Σ _); [done| |done] => ?.
-  iMod Hwp as (cts stateI global_stateI fork_post Hpf1 Hpf1' Hpf2 Hpf3) "(Hφ&Hσ&Hg&Hwp)".
-  iModIntro. iExists cts, stateI, global_stateI, fork_post, Hpf1, Hpf1', Hpf2, Hpf3.
+  eapply (wpd_strong_adequacy Σ _); [| eauto ] => ??.
+  iMod Hwp as (cts Heq_cts stateI global_stateI fork_post) "Hwp"; first done.
+  iDestruct "Hwp" as (Hpf1 Hpf1' Hpf2 Hpf3) "(Hφ&Hσ&Hg&Hwp)".
+  iModIntro. iExists cts, Heq_cts, stateI, global_stateI, fork_post.
+  iExists Hpf1, Hpf1', Hpf2, Hpf3.
   iFrame. iIntros "%Hns Hg". iMod ("Hφ" with "[$]") as %Hφ. iPureIntro; eauto.
 Qed.

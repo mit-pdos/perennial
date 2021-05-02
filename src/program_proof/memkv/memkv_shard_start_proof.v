@@ -105,6 +105,7 @@ Proof.
       wp_apply (wp_decodeInstallShardRequest with "[$Hpre_sl]").
       { done. }
       iIntros (args_ptr) "Hargs".
+      rewrite global_groveG_inv_conv'.
       wp_apply (wp_InstallShardRPC with "His_memkv [$Hargs $HreqInv]").
       {
         iPureIntro.
@@ -139,8 +140,9 @@ Proof.
       wp_apply (wp_decodeConditionalPutRequest with "[$Hreq_sl]").
       { done. }
       iIntros (args_ptr expv_sl newv) "Hargs".
-      wp_apply (wp_ConditionalPutRPC with "His_memkv [$Hargs Hrep $HreqInv]").
+      wp_apply (wp_ConditionalPutRPC with "His_memkv [$Hargs Hrep HreqInv]").
       {
+        rewrite -global_groveG_inv_conv'. iFrame "HreqInv".
         iDestruct (struct_fields_split with "Hrep") as "HH".
         iNamed "HH".
         iExists (mkConditionalPutReplyC _ _).
@@ -180,8 +182,9 @@ Proof.
       wp_apply (wp_decodeGetRequest with "[$Hreq_sl]").
       { done. }
       iIntros (args_ptr) "Hargs".
-      wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep $HreqInv]").
+      wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep HreqInv]").
       {
+        rewrite -global_groveG_inv_conv'. iFrame "HreqInv".
         replace (zero_val (struct.t GetReply)) with ((#0, (slice.nil, #()))%V); last first.
         { naive_solver. }
 
@@ -230,8 +233,9 @@ Proof.
       wp_apply (wp_decodePutRequest with "[$Hreq_sl]").
       { done. }
       iIntros (args_ptr val_sl) "Hargs".
-      wp_apply (wp_PutRPC with "His_memkv [$Hargs Hrep $HreqInv]").
+      wp_apply (wp_PutRPC with "His_memkv [$Hargs Hrep HreqInv]").
       {
+        rewrite -global_groveG_inv_conv'. iFrame "HreqInv".
         iDestruct (struct_fields_split with "Hrep") as "HH".
         iNamed "HH".
         iExists (mkPutReplyC _).

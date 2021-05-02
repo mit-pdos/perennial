@@ -603,9 +603,9 @@ Proof.
   { iMod (fupd_mask_subseteq ∅); eauto. }
   rewrite ?big_sepL_cons big_sepL_nil.
   iSplitL "".
-  { iIntros (??) "(H&_&_)". iModIntro. iExists _, _, _.
+  { iIntros (? Heq ?) "(H&_&_)". iModIntro. iExists _, _, _.
     iApply (ffi_start_OpenRead with "[-]"); eauto. }
   iSplitL ""; last done.
-  { iIntros (??) "(H&_&_)". iModIntro. iExists _, _, _.
+  { iIntros (? Heq ?) "(H&_&_)". iModIntro. iExists _, _, _.
     iApply (ffi_start_OpenRead with "[-]"); eauto. }
 Qed.

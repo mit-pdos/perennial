@@ -20,6 +20,26 @@ From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequac
 
 Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; rpcregΣ].
 
+(* TODO: move *)
+Lemma heapG_heap_globalG_roundtrip {Σ} Hheap Hcrash local_names :
+  Hheap =
+  @heapG_heap_globalG Σ
+    (@heap_globalG_heapG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ Hheap
+       Hcrash local_names).
+Proof.
+  rewrite /heapG_heap_globalG. rewrite /heap_globalG_heapG //=.
+  destruct Hheap => //=. f_equal.
+  * destruct heap_globalG_preG => //= . f_equal.
+    { destruct heap_preG_iris => //=. }
+    { destruct heap_preG_crash => //=. }
+    { destruct heap_preG_heap => //=. }
+    { destruct heap_preG_ffi => //=. }
+    { destruct heap_preG_trace => //=. }
+  * rewrite gen_heapG_update_pre_get //=.
+  * rewrite /inv_get_names //=.
+    destruct heap_globalG_inv_names => //=.
+Qed.
+
 Lemma shard_boot1 (host : chan) σ (g : ffi_global_state) :
   ffi_initgP g →
   ffi_initP σ.(world) g →
@@ -44,7 +64,7 @@ Proof.
   { iMod (fupd_mask_subseteq ∅); eauto. }
   iSplitR ""; last eauto.
 
-  iIntros (Hcrash local_names) "(_&?&?)".
+  iIntros (Hcrash Heq local_names) "(_&?&?)".
 
   iModIntro. iExists (λ _, True%I).
   rewrite /shard_boot.
@@ -59,16 +79,6 @@ Proof.
   wp_pures.
   wp_apply (wp_MemKVShardServer__Start with "[] [] [$His_server]").
   { iExactEq "Hdom". rewrite //=. f_equal. set_solver. }
-  { iExactEq "Hsrv".
-    f_equal.
-    replace (Hcrash) with ({| crash_inG := @crash_inPreG _ ((heap_preG_crash));
-                              crash_name := @crash_name _ Hcrash |}); last by admit.
-    {
-      destruct Hheap => //=. rewrite /heapG_heap_globalG/heapG_to_preG //=.
-      destruct heap_globalG_preG => //=.
-      destruct heap_globalG_invG => //=.
-      admit.
-    }
-  }
+  { iExactEq "Hsrv". f_equal. apply heapG_heap_globalG_roundtrip. }
   eauto.
-Abort.
+Qed.

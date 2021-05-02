@@ -153,10 +153,14 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |}  (own_shard γ.(kv_gn) sid kvs) (λ _, True)%I with "His_rpc Hcrpc [Hghost]") as "[Hcrpc HreqInv]".
+  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |}  (own_shard γ.(kv_gn) sid kvs) (λ _, True)%I with "His_rpc Hcrpc [Hghost]") as "Hmkreq".
   { done. }
   { simpl. word. }
   { iNext. iFrame. }
+  iApply fupd_wp.
+  iEval (rewrite global_groveG_inv_conv') in "Hmkreq".
+  iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
+  iIntros "Hclo". iMod "Hmkreq" as "[Hcrpc HreqInv]". iMod "Hclo". iModIntro.
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
   wp_forBreak_cond.
@@ -171,6 +175,7 @@ Proof.
     iModIntro.
     iNext.
     iExists (mkInstallShardC _ _ _ _); iFrame.
+    iEval (rewrite global_groveG_inv_conv').
     iFrame "HreqInv".
     iPureIntro.
     split.
@@ -269,10 +274,15 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut Eo Ei γ.(kv_gn) key Q v) (PostShardPut Eo Ei γ.(kv_gn) key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
+  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut Eo Ei γ.(kv_gn) key Q v) (PostShardPut Eo Ei γ.(kv_gn) key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq".
+
   { done. }
   { simpl. word. }
-  { iNext. iFrame. }
+  { iNext. rewrite /PreShardPut. rewrite global_groveG_inv_conv'. iFrame. }
+  iApply fupd_wp.
+  iEval (rewrite global_groveG_inv_conv') in "Hmkreq".
+  iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
+  iIntros "Hclo". iMod "Hmkreq" as "[Hcrpc HreqInv]". iMod "Hclo". iModIntro.
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
   wp_forBreak_cond.
@@ -292,6 +302,7 @@ Proof.
     iSplitL ""; first done.
     instantiate (3:= (Eo,Ei,Q,γreq)).
     simpl.
+    rewrite -global_groveG_inv_conv'.
     iFrame "HreqInv".
   }
   iIntros (b rep_sl' repData) "HcallPost".
@@ -352,7 +363,9 @@ Proof.
     }
     iDestruct "Hpost" as "[Hpost|Hpost]".
     {
-      iLeft. iDestruct "Hpost" as "[$ $]".
+      iLeft.
+      iEval (rewrite -global_groveG_inv_conv').
+      iDestruct "Hpost" as "[$ $]".
     }
     {
       iRight.
@@ -422,10 +435,14 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet Eo Ei γ.(kv_gn) key Q) (PostShardGet Eo Ei γ.(kv_gn) key Q) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
+  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet Eo Ei γ.(kv_gn) key Q) (PostShardGet Eo Ei γ.(kv_gn) key Q) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq".
   { done. }
   { simpl. word. }
-  { iNext. iFrame. }
+  { iNext. rewrite /PreShardGet. rewrite global_groveG_inv_conv'. iFrame. }
+  iApply fupd_wp.
+  iEval (rewrite global_groveG_inv_conv') in "Hmkreq".
+  iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
+  iIntros "Hclo". iMod "Hmkreq" as "[Hcrpc HreqInv]". iMod "Hclo". iModIntro.
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
   wp_forBreak_cond.
@@ -452,6 +469,7 @@ Proof.
     iSplitL ""; first done.
     instantiate (2:= (Eo,Ei,Q,γreq)).
     simpl.
+    rewrite -global_groveG_inv_conv'.
     iFrame "HreqInv".
   }
   iIntros (b rep_sl' repData) "HcallPost".
@@ -512,7 +530,7 @@ Proof.
     }
     iDestruct "Hpost" as "[Hpost|Hpost]".
     {
-      iLeft. iDestruct "Hpost" as "[$ $]".
+      iLeft. rewrite -global_groveG_inv_conv'. iDestruct "Hpost" as "[$ $]".
       iExists _; iFrame.
     }
     {
@@ -597,10 +615,14 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardConditionalPut Eo Ei γ.(kv_gn) key Q expv newv) (PostShardConditionalPut Eo Ei γ.(kv_gn) key Q expv newv) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
+  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardConditionalPut Eo Ei γ.(kv_gn) key Q expv newv) (PostShardConditionalPut Eo Ei γ.(kv_gn) key Q expv newv) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq". 
   { done. }
   { simpl. word. }
-  { iNext. iFrame. }
+  { iNext. rewrite /PreShardConditionalPut. rewrite global_groveG_inv_conv'. iFrame. }
+  iApply fupd_wp.
+  iEval (rewrite global_groveG_inv_conv') in "Hmkreq".
+  iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
+  iIntros "Hclo". iMod "Hmkreq" as "[Hcrpc HreqInv]". iMod "Hclo". iModIntro.
   iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
 
   wp_forBreak_cond.
@@ -620,6 +642,7 @@ Proof.
     iSplitL ""; first done.
     instantiate (3:= (Eo,Ei,Q,γreq)).
     simpl.
+    rewrite -global_groveG_inv_conv'.
     iFrame "HreqInv".
   }
   iIntros (b rep_sl' repData) "HcallPost".
@@ -684,7 +707,7 @@ Proof.
     }
     iDestruct "Hpost" as "[Hpost|Hpost]".
     {
-      iLeft. iDestruct "Hpost" as "[$ $]".
+      iLeft. rewrite -global_groveG_inv_conv'. iDestruct "Hpost" as "[$ $]".
       eauto with iFrame.
     }
     {

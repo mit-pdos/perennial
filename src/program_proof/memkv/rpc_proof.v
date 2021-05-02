@@ -301,7 +301,7 @@ Proof using hG.
   econstructor.
   - apply _.
   - apply (heap_ffi_global_names (heap_get_names _ _)).
-  - apply _.
+  - eapply inv_get_names. apply _.
 Defined.
 
 Definition RPCClient_own (cl : loc) (host:u64) : iProp Σ :=
@@ -389,16 +389,45 @@ Proof.
                   .(@iris_crashG (@goose_lang grove_op grove_model grove_semantics) Σ).(
                   @crash_name Σ)
               |} (@heap_get_local_names grove_op grove_model grove_interp Σ hG) = hG)) as ->.
-  { rewrite //=/heap_globalG_heapG/heap_update_pre//=. destruct hG => //=.
-    destruct heapG_invG.
+  { rewrite //=/heap_globalG_heapG/heap_update_pre//= /heap_globalG_invG.
+    rewrite /inv_update_pre/heap_preG_iris/heapG_to_preG//=.
+    rewrite /heapG_to_preG.
+    destruct hG => //=.
+    destruct heapG_invG eqn:Heq.
     destruct heapG_crashG.
     destruct heapG_ffiG.
     destruct groveG_gen_heapG.
     destruct heapG_na_heapG.
     destruct heapG_traceG.
-    f_equal. }
+    f_equal. rewrite /inv_inPreG.
+    f_equal. destruct inv_inG0 => //=.
+  }
   eauto.
 Qed.
+
+Lemma global_groveG_inv_conv :
+  @heap_globalG_invG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ heapG_heap_globalG =
+  (@heapG_irisG grove_op grove_model grove_semantics grove_interp Σ hG)
+  .(@iris_invG (@goose_lang grove_op grove_model grove_semantics) Σ).
+Proof.
+  { rewrite //=/heap_globalG_heapG/heap_update_pre//= /heap_globalG_invG.
+    rewrite /inv_update_pre/heap_preG_iris/heapG_to_preG//=.
+    rewrite /heapG_to_preG.
+    destruct hG => //=.
+    destruct heapG_invG eqn:Heq.
+    destruct heapG_crashG.
+    destruct heapG_ffiG.
+    destruct groveG_gen_heapG.
+    destruct heapG_na_heapG.
+    destruct heapG_traceG.
+    f_equal. rewrite /inv_inPreG.
+    f_equal. destruct inv_inG0 => //=.
+  }
+Qed.
+
+Lemma global_groveG_inv_conv':
+  dist_weakestpre.grove_invG = iris_invG.
+Proof. eauto using global_groveG_inv_conv. Qed.
 
 Lemma non_empty_rpc_handler_mapping_inv γ host handlers :
   dom (gset u64) handlers ≠ ∅ →
@@ -418,6 +447,7 @@ Proof.
   destruct (decide (dom (gset _) m = ∅)) as [Hemp|Hemp].
   { iNamed "H". iDestruct "H" as "(Hhandler_is&His_rpcHandler)".
     iNamed "Hhandler_is". iFrame "% #".
+    rewrite global_groveG_inv_conv'. iFrame "#".
     rewrite big_sepM_insert //. iSplitL "His_rpcHandler".
     { iExists _, Pre, Post, _. iSplit; first eauto.
       iFrame "# ∗". }
@@ -473,7 +503,7 @@ Proof.
   iDestruct "Hchan_inner" as (ms) "(>Hchan'&#Hchan_inner)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
-  iExists _. 
+  iExists _.
   rewrite global_groveG_conv.
   iFrame "Hchan'".
   iNext.
@@ -587,6 +617,7 @@ Proof.
   iMod (inv_alloc urpc_escrowN _ (Post x args repData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt)
           with "[HPost]") as "#HPost_escrow".
   { eauto. }
+  rewrite global_groveG_inv_conv'.
   iInv "Hclient_chan_inv" as "Hclient_chan_inner" "Hclo".
   iDestruct "Hclient_chan_inner" as (ms_rep) "(>Hchan'&#Hclient_chan_inner)".
   iApply (ncfupd_mask_intro _); first set_solver+.
@@ -606,6 +637,7 @@ Proof.
     iApply big_sepS_singleton.
     iExists _, _, _, _, _, _, _.
     iExists _, _, _.
+    rewrite global_groveG_inv_conv'.
     iFrame "#".
     iPureIntro. simpl. rewrite ?app_nil_l //= in Hencoding. rewrite Hsz.
     assert (U64 (Z.of_nat (int.nat (rep_sl.(Slice.sz)))) = rep_sl.(Slice.sz)) as ->.
@@ -731,6 +763,7 @@ Proof.
     iIntros "Hdone". wp_pures. wp_loadField.
     wp_apply (wp_condSignal with "[$]").
     iApply fupd_wp.
+    rewrite global_groveG_inv_conv'.
     iInv "HPost" as "HPost_inner" "Hclo''".
     iDestruct "HPost_inner" as "[HPost_val|>Hescrow']"; last first.
     { iDestruct (ptsto_valid_2 with "Hescrow [$]") as %Hval. rewrite //= in Hval. }
@@ -971,6 +1004,7 @@ Proof.
   iNamed "Hhandler".
   wp_apply (wp_Send with "[$]").
   { admit. } (* TODO: overflow *)
+  rewrite global_groveG_inv_conv'.
   iInv "Hserver_inv" as "Hserver_inner" "Hclo".
   iDestruct "Hserver_inner" as (ms) "(>Hchan'&H)".
   iApply (ncfupd_mask_intro _); first set_solver+.
@@ -990,6 +1024,7 @@ Proof.
     iExists _, _, _, _, _, _, _.
     iExists _, _, _, _, _, _.
     iFrame "Hreg".
+    rewrite global_groveG_inv_conv'.
     iFrame "#". iSplit; eauto.
     {
       iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz.
