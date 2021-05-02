@@ -14,8 +14,8 @@ Lemma wp_ConditionalPutRPC (s args_ptr reply_ptr:loc) expv_sl newv_sl args γ Eo
   {{{
        own_ConditionalPutRequest args_ptr expv_sl newv_sl args ∗
        (∃ dummy_rep, own_ConditionalPutReply reply_ptr dummy_rep) ∗
-       is_RPCRequest γ.(rpc_gn) γreq (PreShardConditionalPut Eo Ei γ args.(CPR_Key) Q args.(CPR_ExpValue) args.(CPR_NewValue))
-                                (PostShardConditionalPut Eo Ei γ args.(CPR_Key) Q args.(CPR_ExpValue) args.(CPR_NewValue))
+       is_RPCRequest γ.(rpc_gn) γreq (PreShardConditionalPut Eo Ei γ.(kv_gn) args.(CPR_Key) Q args.(CPR_ExpValue) args.(CPR_NewValue))
+                                (PostShardConditionalPut Eo Ei γ.(kv_gn) args.(CPR_Key) Q args.(CPR_ExpValue) args.(CPR_NewValue))
                                 {| Req_CID:=args.(CPR_CID); Req_Seq:=args.(CPR_Seq) |}
   }}}
     MemKVShardServer__ConditionalPutRPC #s #args_ptr #reply_ptr

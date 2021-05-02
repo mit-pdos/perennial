@@ -269,7 +269,7 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut Eo Ei γ key Q v) (PostShardPut Eo Ei γ key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
+  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut Eo Ei γ.(kv_gn) key Q v) (PostShardPut Eo Ei γ.(kv_gn) key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
   { simpl. word. }
   { iNext. iFrame. }
@@ -422,7 +422,7 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet Eo Ei γ key Q) (PostShardGet Eo Ei γ key Q) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
+  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet Eo Ei γ.(kv_gn) key Q) (PostShardGet Eo Ei γ.(kv_gn) key Q) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
   { simpl. word. }
   { iNext. iFrame. }
@@ -597,7 +597,7 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardConditionalPut Eo Ei γ key Q expv newv) (PostShardConditionalPut Eo Ei γ key Q expv newv) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
+  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardConditionalPut Eo Ei γ.(kv_gn) key Q expv newv) (PostShardConditionalPut Eo Ei γ.(kv_gn) key Q expv newv) with "His_rpc Hcrpc [Hkvptsto]") as "[Hcrpc HreqInv]".
   { done. }
   { simpl. word. }
   { iNext. iFrame. }

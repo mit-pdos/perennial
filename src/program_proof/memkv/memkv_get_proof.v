@@ -43,8 +43,8 @@ Lemma wp_GetRPC (s args_ptr reply_ptr:loc) args γ Eo Ei γreq Q :
   {{{
        own_GetRequest args_ptr args ∗
        (∃ dummy_rep, own_GetReply reply_ptr dummy_rep) ∗
-       is_RPCRequest γ.(rpc_gn) γreq (PreShardGet Eo Ei γ args.(GR_Key) Q)
-                                (PostShardGet Eo Ei γ args.(GR_Key) Q)
+       is_RPCRequest γ.(rpc_gn) γreq (PreShardGet Eo Ei γ.(kv_gn) args.(GR_Key) Q)
+                                (PostShardGet Eo Ei γ.(kv_gn) args.(GR_Key) Q)
                                 {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |}
   }}}
     MemKVShardServer__GetRPC #s #args_ptr #reply_ptr

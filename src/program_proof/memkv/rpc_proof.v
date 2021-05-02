@@ -117,58 +117,83 @@ Global Instance handler_is_pers_instance γ X host rpcid pre post :
   Persistent (handler_is γ X host rpcid pre post).
 Proof. apply _. Qed.
 
-Definition rpc_spec_map : Type :=
-  gmap u64 { X: Type & ((X → list u8 → iProp Σ) *
-                        (X → list u8 → list u8 → iProp Σ))%type }.
-
 Definition handlers_dom (host : u64) Γsrv (d: gset u64) :=
   own (scset_name Γsrv) (to_agree (d : leibnizO (gset u64))).
 
-Lemma handler_is_init (host : u64) (specs: rpc_spec_map) :
+Record RPCSpec :=
+  { spec_rpcid : u64;
+     spec_ty : Type;
+     spec_Pre : spec_ty → list u8 → iProp Σ;
+     spec_Post : spec_ty → list u8 → list u8 → iProp Σ }.
+
+(* We define a custom type for a list of RPC specs in order to state lemmas
+   about initializing a collection of handler_is facts. Unfortunately, using the
+   standard list type leads to a universe error if the spec_ty field contains an
+   iProp Σ, which turns out to be rather common. *)
+
+Inductive RPCSpecList : Type :=
+| spec_nil : RPCSpecList
+| spec_cons (x: RPCSpec) (l: RPCSpecList) : RPCSpecList.
+
+Fixpoint dom_RPCSpecList (l:  RPCSpecList) : gset u64 :=
+  match l with
+  | spec_nil => ∅
+  | spec_cons x l => {[ spec_rpcid x ]} ∪ dom_RPCSpecList l
+  end.
+
+Fixpoint handler_RPCSpecList γ host (l : RPCSpecList) :=
+  match l with
+  | spec_nil => True%I
+  | spec_cons x l =>
+    (handler_is γ (spec_ty x) host (spec_rpcid x) (spec_Pre x) (spec_Post x) ∗
+                handler_RPCSpecList γ host l)%I
+  end.
+
+Fixpoint RPCSpecList_wf (l : RPCSpecList) : Prop :=
+  match l with
+  | spec_nil => True
+  | spec_cons x l =>
+    (spec_rpcid x ∉ dom_RPCSpecList l) ∧ RPCSpecList_wf l
+  end.
+
+Lemma handler_is_init_list (host : u64) (specs: RPCSpecList) (Hwf: RPCSpecList_wf specs) :
    host c↦ ∅ ={⊤}=∗ ∃ γ,
-   handlers_dom host γ (dom (gset u64) specs) ∗
-   [∗ map] rpcid ↦ spec ∈ specs,
-   let X := projT1 spec in
-   let Pre := fst (projT2 spec) in
-   let Post := snd (projT2 spec) in
-   handler_is γ X host rpcid Pre Post.
+   handlers_dom host γ (dom_RPCSpecList specs) ∗
+   handler_RPCSpecList γ host specs.
 Proof.
   iIntros "Hchan".
   iMod (map_init (∅ : gmap u64 gname)) as (γmap) "Hmap_ctx".
-  iMod (own_alloc (to_agree (dom (gset _) specs : leibnizO (gset u64)))) as (γdom) "#Hdom".
+  iMod (own_alloc (to_agree (dom_RPCSpecList specs : leibnizO (gset u64)))) as (γdom) "#Hdom".
   { econstructor. }
   set (Γsrv := {| scmap_name := γmap; scset_name := γdom |}).
   iMod (inv_alloc urpc_serverN _ ((server_chan_inner host Γsrv)) with "[Hchan]") as "#Hinv".
   { iNext. iExists _. iFrame.
     rewrite big_sepS_empty //. }
   iExists Γsrv.
-  iAssert (∀ specs', ⌜ specs' ⊆ specs ⌝ →
-           |==> ∃ gnames : gmap u64 gname, ⌜ dom (gset _) gnames = dom (gset _) specs' ⌝ ∗
+  iAssert (∀ specs', ⌜ RPCSpecList_wf specs' ⌝ ∗ ⌜ dom_RPCSpecList specs' ⊆  dom_RPCSpecList specs ⌝ →
+           |==> ∃ gnames : gmap u64 gname, ⌜ dom (gset _) gnames = dom_RPCSpecList specs' ⌝ ∗
            map_ctx (scmap_name Γsrv) 1 gnames ∗
-           [∗ map] rpcid↦spec ∈ specs',
-             handler_is Γsrv (projT1 spec) host rpcid (projT2 spec).1 (projT2 spec).2)%I with "[Hmap_ctx]" as "H"; last first.
+           handler_RPCSpecList Γsrv host specs')%I with "[Hmap_ctx]" as "H"; last first.
   { iMod ("H" with "[]") as (?) "(_&_&$)"; eauto. }
   iIntros (specs').
-  iInduction specs' as [| id spec] "IH" using map_ind.
+  iInduction specs' as [| hd spec] "IH".
   { iIntros (?). iModIntro. iExists ∅. iFrame.
-    iSplit.
-    { iPureIntro. rewrite ?dom_empty_L //. }
-    rewrite big_sepM_empty //. }
-  { iIntros (?).
+    rewrite ?dom_empty_L //. }
+  { iIntros ((Hwf'&Hdom')).
     iMod ("IH" with "[$] []") as (gnames Hdom) "(Hmap_ctx&Hmap)".
-    { iPureIntro. etransitivity; last eassumption. apply insert_subseteq; eauto. }
-    iMod (saved_pred_alloc (λ n, is_rpcHandler n.1.1 n.1.2 n.2 (fst (projT2 spec)) (snd (projT2 spec)))) as (γsave) "#Hsaved".
-    iMod (map_alloc_ro id γsave
+    { iPureIntro. split. 
+      - destruct Hwf' as (_&?); eauto.
+      - etransitivity; last eassumption. set_solver. }
+    iMod (saved_pred_alloc (λ n, is_rpcHandler n.1.1 n.1.2 n.2
+                                               (spec_Pre hd) (spec_Post hd))) as (γsave) "#Hsaved".
+    iMod (map_alloc_ro (spec_rpcid hd) γsave
             with "Hmap_ctx") as "(Hmap_ctx&#Hsaved_name)"; auto.
-    { apply not_elem_of_dom. rewrite Hdom. apply not_elem_of_dom. eauto. }
+    { apply not_elem_of_dom. destruct (Hwf') as (?&?). rewrite Hdom. eauto. }
     iExists _; iFrame. iModIntro.
     iSplit.
     { iPureIntro. rewrite ?dom_insert_L Hdom. set_solver. }
-    rewrite big_sepM_insert //. iSplit; last first.
-    { iExact "Hmap". }
     iExists _, _. iFrame "#".
-    { iPureIntro. apply elem_of_dom. exists spec.
-      eapply lookup_weaken; last eassumption. rewrite lookup_insert //. }
+    { iPureIntro. simpl in Hdom'. set_solver. }
   }
 Qed.
 

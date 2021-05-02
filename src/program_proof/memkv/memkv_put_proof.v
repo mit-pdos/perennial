@@ -14,8 +14,8 @@ Lemma wp_PutRPC (s args_ptr reply_ptr:loc) val_sl args γ Eo Ei γreq Q :
   {{{
        own_PutRequest args_ptr val_sl args ∗
        (∃ dummy_rep, own_PutReply reply_ptr dummy_rep) ∗
-       is_RPCRequest γ.(rpc_gn) γreq (PreShardPut Eo Ei γ args.(PR_Key) Q args.(PR_Value))
-                                (PostShardPut Eo Ei γ args.(PR_Key) Q args.(PR_Value))
+       is_RPCRequest γ.(rpc_gn) γreq (PreShardPut Eo Ei γ.(kv_gn) args.(PR_Key) Q args.(PR_Value))
+                                (PostShardPut Eo Ei γ.(kv_gn) args.(PR_Key) Q args.(PR_Value))
                                 {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |}
   }}}
     MemKVShardServer__PutRPC #s #args_ptr #reply_ptr
