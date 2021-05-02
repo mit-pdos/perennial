@@ -32,9 +32,10 @@ Global Instance subG_kvMapG {Σ} R :
 Proof. solve_inG. Qed.
 
 Section rpc.
-Context `{hG: heapG Σ, !ffi_semantics _ _, !ext_types _}.
+Context `{!ffi_semantics ext ffi, !ext_types ext}.
 Context  {R:Type}.
 Context `{!rpcG Σ R}.
+Context `{!invG Σ}.
 
 (* identifier for a rpc request *)
 Record RPCRequestID :=
