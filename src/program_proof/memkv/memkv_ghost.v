@@ -1,8 +1,10 @@
+From Perennial.Helpers Require Export range_set.
 From iris.algebra Require Import gmap lib.mono_nat.
 From iris.proofmode Require Import base tactics classes.
 From Perennial.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof.memkv Require Export common_proof.
 
 Class kvMapG Σ :=
   { kv_map_inG :> inG Σ (gmapUR u64 (prodR (fracR) (agreeR (leibnizO (list u8))) )) }.
@@ -48,5 +50,15 @@ Proof.
   apply cmra_update_exclusive.
   rewrite pair_valid to_agree_op_valid_L. done.
 Qed.
+
+Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
+  [∗ set] k ∈ (fin_to_set u64), ⌜shardOfC k ≠ sid⌝ ∨
+                                kvptsto γkv k (default [] (m !! k))
+.
+
+Lemma kvptsto_init n :
+  ⊢ |==> ∃ γ, ([∗ set] sid ∈ rangeSet 0 n, own_shard γ sid ∅) ∗
+              ([∗ set] k ∈ fin_to_set u64, kvptsto γ k []).
+Proof. Admitted.
 
 End memkv_ghost.

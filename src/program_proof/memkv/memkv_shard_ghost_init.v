@@ -9,12 +9,12 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 Section memkv_shard_ghost_init_proof.
 
 (* These lemmas happen *before* we get node local names (e.g. the gname for memory, crashes etc. *)
-Context `{!heapPreG Σ, !heap_globalG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ, invG Σ}.
+Context `{!heap_globalG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Let gn := heap_globalG_names.
 Let gpG := (heap_preG_ffi).
 
-Instance local_groveG : groveG Σ := {| groveG_gen_heapG := gen_heapG_update_pre (@grove_preG_gen_heapG _ gpG) gn |}.
+Instance local_groveG : groveG Σ := @grove_update_pre _ gpG gn.
 
 
 (* TODO: duplicating these specs is unfortunate, should try to unify with the set up in shard_definitions *)
@@ -101,6 +101,7 @@ Definition shard_SpecList γkv γrpc : RPCSpecList :=
 Lemma shard_server_ghost_init host (γkv : gname) :
   host c↦ ∅ ={⊤}=∗
   ∃ γ, ⌜ γ.(kv_gn) = γkv ⌝ ∗
+       handlers_dom host γ.(urpc_gn) (dom_RPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(rpc_gn)))) ∗
        is_shard_server host γ ∗
        RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
       ([∗ set] cid ∈ fin_to_set u64, RPCClient_own_ghost γ.(rpc_gn) cid 1).

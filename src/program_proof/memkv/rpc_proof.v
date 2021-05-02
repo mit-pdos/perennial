@@ -31,6 +31,10 @@ Definition rpcregΣ :=
   #[mono_natΣ; mapΣ u64 rpc_req_desc; mapΣ u64 unit; mapΣ u64 gname; savedPredΣ (heap_local_names * gname * val); savedPredΣ (list u8);
    GFunctor (agreeR (leibnizO (gset u64)))].
 
+Global Instance subG_rpcregG {Σ} :
+  subG (rpcregΣ) Σ → rpcregG Σ.
+Proof. solve_inG. Qed.
+
 Section rpc_global_defs.
 
 Context `{!rpcregG Σ}.
