@@ -280,6 +280,11 @@ Proof.
   iIntros "[HQ HWP]". iApply (wp_wand with "HWP").
   iIntros (v) "HΦ". by iApply "HΦ".
 Qed.
+Lemma wp_frame_wand s E e Φ R : WP e @ s; E {{ v, R -∗ Φ v }} ⊢ R -∗ WP e @ s; E {{ Φ }}.
+Proof.
+  iIntros "HWP HR". iApply (wp_wand with "HWP").
+  iIntros (v) "HΦ". by iApply "HΦ".
+Qed.
 End wp.
 
 (** Proofmode class instances *)

@@ -37,18 +37,21 @@ Definition shardOf: val :=
 
 Definition bytesEqual: val :=
   rec: "bytesEqual" "x" "y" :=
-    (if: slice.len "x" ≠ slice.len "y"
+    let: "xlen" := slice.len "x" in
+    (if: "xlen" ≠ slice.len "y"
     then #false
     else
       let: "i" := ref_to uint64T #0 in
       let: "retval" := ref_to boolT #true in
       Skip;;
-      (for: (λ: <>, ![uint64T] "i" < slice.len "x"); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, ![uint64T] "i" < "xlen"); (λ: <>, Skip) := λ: <>,
         (if: SliceGet byteT "x" (![uint64T] "i") ≠ SliceGet byteT "y" (![uint64T] "i")
         then
           "retval" <-[boolT] #false;;
           Break
-        else "i" <-[uint64T] ![uint64T] "i" + #1));;
+        else
+          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          Continue));;
       ![boolT] "retval").
 
 (* "universal" reply type for the reply table *)
