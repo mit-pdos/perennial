@@ -7,6 +7,12 @@ From Perennial.program_proof Require Import proof_prelude.
 Class fmcounter_mapG Σ :=
    { fmcounter_map_inG :> inG Σ (gmapUR u64 mono_natR) }.
 
+Definition fmcounter_mapΣ := #[GFunctor (gmapUR u64 mono_natR)].
+
+Global Instance subG_fmcount_mapΣm {Σ} :
+  subG (fmcounter_mapΣ) Σ → fmcounter_mapG Σ.
+Proof. solve_inG. Qed.
+
 Definition fmcounter_map_own `{!fmcounter_mapG Σ} γ (k:u64) q n :=
   own γ {[ k := mono_nat_auth q n]}.
 Definition fmcounter_map_lb `{!fmcounter_mapG Σ} γ (k:u64) n :=

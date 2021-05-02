@@ -18,13 +18,18 @@ Record rpc_request_names := RpcRequestNames {
   post : gname (* token that a client can exchanged for the post condition of a request, if they have a reply receipt *)
 }.
 
-(** Colelcting the CMRAs we need. *)
+(** Collecting the CMRAs we need. *)
 Class rpcG Σ (R : Type) := RpcG {
   rpc_fmcounterG :> fmcounter_mapG Σ;
   rpc_escrowG :> inG Σ (exclR unitO);
   rpc_mapG :> ghost_mapG Σ (u64*u64) (option R);
 }.
-(* FIXME: add subΣ instance. *)
+
+Definition rpcΣ R := #[fmcounter_mapΣ; GFunctor (exclR unitO); ghost_mapΣ (u64*u64) (option R)].
+
+Global Instance subG_kvMapG {Σ} R :
+  subG (rpcΣ R) Σ → (rpcG Σ R).
+Proof. solve_inG. Qed.
 
 Section rpc.
 Context `{hG: heapG Σ, !ffi_semantics _ _, !ext_types _}.

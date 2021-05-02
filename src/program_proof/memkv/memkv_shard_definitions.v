@@ -68,6 +68,7 @@ Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
   [∗ set] k ∈ (fin_to_set u64), ⌜shardOfC k ≠ sid⌝ ∨
                                 kvptsto γkv k (default [] (m !! k))
 .
+Existing Instance heapG_to_preG.
 
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   λ host γ,

@@ -1,9 +1,11 @@
 From Goose.github_com.mit_pdos.gokv.urpc Require Import rpc.
 From iris.base_logic.lib Require Import saved_prop.
+From Perennial.goose_lang Require Import adequacy.
 From Perennial.program_proof Require Import dist_prelude.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.algebra Require Import auth_map.
 From Perennial.base_logic Require Export lib.ghost_map lib.mono_nat.
+From Perennial.goose_lang Require Import dist_lifting.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 (** Request descriptor: data describing a particular request *)
@@ -20,20 +22,21 @@ Class rpcregG (Σ : gFunctors) := RpcRegG {
   rpcreg_mapG :> mapG Σ u64 rpc_req_desc;
   rpcreg_escrowG :> mapG Σ u64 unit;
   rpcreg_saved_gname_mapG :> mapG Σ u64 gname;
-  rpcreg_saved_handler_specG :> savedPredG Σ (val);
+  rpcreg_saved_handler_specG :> savedPredG Σ (heap_local_names * gname * val);
   rpcreg_savedG :> savedPredG Σ (list u8);
   rpcreg_domG :> inG Σ (agreeR (leibnizO (gset u64)));
-  (* Mapping between hosts and the set of RPC ids they will service *)
-  (* This could be removed by either:
-     (1) having extra explicit arguments on some predicates in the spec, or
-     (2) having servers check whether an RPC id is actually in the set of handlers *)
-  (* rpcreg_doms : gmap u64 (gset u64) *)
 }.
 
-Section rpc_proof.
+Definition rpcregΣ :=
+  #[mono_natΣ; mapΣ u64 rpc_req_desc; mapΣ u64 unit; mapΣ u64 gname; savedPredΣ (heap_local_names * gname * val); savedPredΣ (list u8);
+   GFunctor (agreeR (leibnizO (gset u64)))].
+
+Section rpc_global_defs.
 
 Context `{!rpcregG Σ}.
-Context `{!heapG Σ}.
+Context `{HINV: !invG Σ}.
+Context `{HPRE: !heapPreG Σ}.
+Context `{HGROVE: !groveG Σ}.
 
 (* A host-specific mapping from rpc ids on that host to pre/post conditions *)
 Definition urpc_serverN : namespace := nroot.@"urpc_server".
@@ -52,7 +55,9 @@ Record server_chan_gnames := {
   scset_name : gname;
 }.
 
-Definition is_rpcHandler {X:Type} (f:val) Pre Post : iProp Σ :=
+Definition is_rpcHandler {X:Type} (names : heap_local_names) (cname : gname) (f:val) Pre Post : iProp Σ :=
+  let hG := heap_update_pre Σ HPRE HINV {| crash_inG := _; crash_name := cname |}
+                            (heap_extend_local_names names (gen_heap_names.gen_heapG_get_names _)) in
   ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
   {{{
       is_slice req byteT 1 reqData ∗
@@ -86,7 +91,8 @@ Definition server_chan_inner_msg (host : u64) Γsrv m : iProp Σ :=
                                               EncUInt64 (length args); EncBytes args] ⌝ ∗
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid args γ1 d rep) ∗
        "#Hspec_name" ∷ ptsto_ro (scmap_name Γsrv) rpcid γ2 ∗
-       "#Hspec_saved" ∷ saved_pred_own γ2 (λ (f : val), is_rpcHandler f Pre Post) ∗
+       "#Hspec_saved" ∷ saved_pred_own γ2 (λ (n : heap_local_names * gname * val),
+                                           is_rpcHandler n.1.1 n.1.2 n.2 Pre Post) ∗
        "#HPre" ∷ □ (Pre x args) ∗
        "#HPost_saved" ∷ saved_pred_own γ1 (Post x args) ∗
        "#Hclient_chan_inv" ∷ inv urpc_clientN (client_chan_inner Γ (msg_sender m)).
@@ -102,13 +108,112 @@ Definition handler_is Γsrv : ∀ (X:Type) (host:u64) (rpcid:u64) (Pre:X → lis
    "#Hdom1" ∷ own (scset_name Γsrv) (to_agree (rpcdom)) ∗
    "%Hdom2" ∷ ⌜ rpcid ∈ rpcdom ⌝ ∗
   "#Hspec_name" ∷ ptsto_ro (scmap_name Γsrv) rpcid γ ∗
-  "#Hspec_saved" ∷ saved_pred_own γ (λ (f : val), is_rpcHandler f Pre Post) ∗
+  "#Hspec_saved" ∷ saved_pred_own γ (λ (n : heap_local_names * gname * val),
+                                      is_rpcHandler n.1.1 n.1.2 n.2 Pre Post) ∗
   "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host Γsrv)
 )%I.
 
 Global Instance handler_is_pers_instance γ X host rpcid pre post :
   Persistent (handler_is γ X host rpcid pre post).
 Proof. apply _. Qed.
+
+Definition rpc_spec_map : Type :=
+  gmap u64 { X: Type & ((X → list u8 → iProp Σ) *
+                        (X → list u8 → list u8 → iProp Σ))%type }.
+
+Definition handlers_dom (host : u64) Γsrv (d: gset u64) :=
+  own (scset_name Γsrv) (to_agree (d : leibnizO (gset u64))).
+
+Lemma handler_is_init (host : u64) (specs: rpc_spec_map) :
+   host c↦ ∅ ={⊤}=∗ ∃ γ,
+   handlers_dom host γ (dom (gset u64) specs) ∗
+   [∗ map] rpcid ↦ spec ∈ specs,
+   let X := projT1 spec in
+   let Pre := fst (projT2 spec) in
+   let Post := snd (projT2 spec) in
+   handler_is γ X host rpcid Pre Post.
+Proof.
+  iIntros "Hchan".
+  iMod (map_init (∅ : gmap u64 gname)) as (γmap) "Hmap_ctx".
+  iMod (own_alloc (to_agree (dom (gset _) specs : leibnizO (gset u64)))) as (γdom) "#Hdom".
+  { econstructor. }
+  set (Γsrv := {| scmap_name := γmap; scset_name := γdom |}).
+  iMod (inv_alloc urpc_serverN _ ((server_chan_inner host Γsrv)) with "[Hchan]") as "#Hinv".
+  { iNext. iExists _. iFrame.
+    rewrite big_sepS_empty //. }
+  iExists Γsrv.
+  iAssert (∀ specs', ⌜ specs' ⊆ specs ⌝ →
+           |==> ∃ gnames : gmap u64 gname, ⌜ dom (gset _) gnames = dom (gset _) specs' ⌝ ∗
+           map_ctx (scmap_name Γsrv) 1 gnames ∗
+           [∗ map] rpcid↦spec ∈ specs',
+             handler_is Γsrv (projT1 spec) host rpcid (projT2 spec).1 (projT2 spec).2)%I with "[Hmap_ctx]" as "H"; last first.
+  { iMod ("H" with "[]") as (?) "(_&_&$)"; eauto. }
+  iIntros (specs').
+  iInduction specs' as [| id spec] "IH" using map_ind.
+  { iIntros (?). iModIntro. iExists ∅. iFrame.
+    iSplit.
+    { iPureIntro. rewrite ?dom_empty_L //. }
+    rewrite big_sepM_empty //. }
+  { iIntros (?).
+    iMod ("IH" with "[$] []") as (gnames Hdom) "(Hmap_ctx&Hmap)".
+    { iPureIntro. etransitivity; last eassumption. apply insert_subseteq; eauto. }
+    iMod (saved_pred_alloc (λ n, is_rpcHandler n.1.1 n.1.2 n.2 (fst (projT2 spec)) (snd (projT2 spec)))) as (γsave) "#Hsaved".
+    iMod (map_alloc_ro id γsave
+            with "Hmap_ctx") as "(Hmap_ctx&#Hsaved_name)"; auto.
+    { apply not_elem_of_dom. rewrite Hdom. apply not_elem_of_dom. eauto. }
+    iExists _; iFrame. iModIntro.
+    iSplit.
+    { iPureIntro. rewrite ?dom_insert_L Hdom. set_solver. }
+    rewrite big_sepM_insert //. iSplit; last first.
+    { iExact "Hmap". }
+    iExists _, _. iFrame "#".
+    { iPureIntro. apply elem_of_dom. exists spec.
+      eapply lookup_weaken; last eassumption. rewrite lookup_insert //. }
+  }
+Qed.
+
+Lemma is_rpcHandler_proper' hn gn handler X Pre Pre' Post Post' :
+ □ (∀ (x : X) (l1 : list u8), Pre x l1 ≡ Pre' x l1) -∗
+ □ (∀ (x : X) (l1 : list u8) (l2 : list u8),
+       Post x l1 l2 ≡ Post' x l1 l2) -∗
+ is_rpcHandler hn gn handler Pre Post -∗
+ is_rpcHandler hn gn handler Pre' Post'.
+Proof.
+  iIntros "#Hequiv_pre #Hequiv_post #His".
+  rewrite /is_rpcHandler.
+  iIntros. iIntros (Φc) "!# H HΦc".
+  wp_apply ("His" with "[H]").
+  { iDestruct "H" as "($&$&Hpre)". iNext.
+    iRewrite -("Hequiv_pre" $! x reqData) in "Hpre".
+    iExact "Hpre".
+  }
+  iIntros (??) "H". iApply "HΦc".
+  iDestruct "H" as "($&$&Hpre)". iNext.
+    iRewrite ("Hequiv_post" $! x reqData repData) in "Hpre".
+    iExact "Hpre".
+Qed.
+
+
+End rpc_global_defs.
+
+Section rpc_proof.
+
+Context `{hG: !heapG Σ}.
+Context `{hReg: !rpcregG Σ}.
+
+Definition is_rpcHandler' {X:Type} (f:val) Pre Post : iProp Σ :=
+  ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
+  {{{
+      is_slice req byteT 1 reqData ∗
+      rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
+      ▷ Pre x reqData
+  }}}
+    f (slice_val req) #rep
+  {{{
+       rep_sl (repData:list u8), RET #(); rep ↦[slice.T byteT] (slice_val rep_sl) ∗
+         is_slice rep_sl byteT 1 repData ∗
+         ▷ Post x reqData repData
+  }}}.
 
 Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) (host : u64) mref : iProp Σ :=
   ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
@@ -209,85 +314,42 @@ Proof.
   iFrame "# ∗". eauto.
 Qed.
 
-Definition rpc_spec_map : Type :=
-  gmap u64 { X: Type & ((X → list u8 → iProp Σ) *
-                        (X → list u8 → list u8 → iProp Σ))%type }.
-
-
-Definition handlers_dom (host : u64) Γsrv (d: gset u64) :=
-  own (scset_name Γsrv) (to_agree (d : leibnizO (gset u64))).
-
-Lemma handler_is_init (host : u64) (specs: rpc_spec_map) :
-   host c↦ ∅ ={⊤}=∗ ∃ γ,
-   handlers_dom host γ (dom (gset u64) specs) ∗
-   [∗ map] rpcid ↦ spec ∈ specs,
-   let X := projT1 spec in
-   let Pre := fst (projT2 spec) in
-   let Post := snd (projT2 spec) in
-   handler_is γ X host rpcid Pre Post.
+Instance heapG_to_preG Σ' : heapG Σ' → heapPreG Σ'.
 Proof.
-  iIntros "Hchan".
-  iMod (map_init (∅ : gmap u64 gname)) as (γmap) "Hmap_ctx".
-  iMod (own_alloc (to_agree (dom (gset _) specs : leibnizO (gset u64)))) as (γdom) "#Hdom".
-  { econstructor. }
-  set (Γsrv := {| scmap_name := γmap; scset_name := γdom |}).
-  iMod (inv_alloc urpc_serverN _ ((server_chan_inner host Γsrv)) with "[Hchan]") as "#Hinv".
-  { iNext. iExists _. iFrame.
-    rewrite big_sepS_empty //. }
-  iExists Γsrv.
-  iAssert (∀ specs', ⌜ specs' ⊆ specs ⌝ →
-           |==> ∃ gnames : gmap u64 gname, ⌜ dom (gset _) gnames = dom (gset _) specs' ⌝ ∗
-           map_ctx (scmap_name Γsrv) 1 gnames ∗
-           [∗ map] rpcid↦spec ∈ specs',
-             handler_is Γsrv (projT1 spec) host rpcid (projT2 spec).1 (projT2 spec).2)%I with "[Hmap_ctx]" as "H"; last first.
-  { iMod ("H" with "[]") as (?) "(_&_&$)"; eauto. }
-  iIntros (specs').
-  iInduction specs' as [| id spec] "IH" using map_ind.
-  { iIntros (?). iModIntro. iExists ∅. iFrame.
-    iSplit.
-    { iPureIntro. rewrite ?dom_empty_L //. }
-    rewrite big_sepM_empty //. }
-  { iIntros (?).
-    iMod ("IH" with "[$] []") as (gnames Hdom) "(Hmap_ctx&Hmap)".
-    { iPureIntro. etransitivity; last eassumption. apply insert_subseteq; eauto. }
-    iMod (saved_pred_alloc (λ f, is_rpcHandler f (fst (projT2 spec)) (snd (projT2 spec)))) as (γsave) "#Hsaved".
-    iMod (map_alloc_ro id γsave
-            with "Hmap_ctx") as "(Hmap_ctx&#Hsaved_name)"; auto.
-    { apply not_elem_of_dom. rewrite Hdom. apply not_elem_of_dom. eauto. }
-    iExists _; iFrame. iModIntro.
-    iSplit.
-    { iPureIntro. rewrite ?dom_insert_L Hdom. set_solver. }
-    rewrite big_sepM_insert //. iSplit; last first.
-    { iExact "Hmap". }
-    iExists _, _. iFrame "#".
-    { iPureIntro. apply elem_of_dom. exists spec.
-      eapply lookup_weaken; last eassumption. rewrite lookup_insert //. }
-  }
-Qed.
+  destruct 1.
+  destruct heapG_invG.
+  destruct heapG_crashG.
+  destruct heapG_ffiG.
+  destruct groveG_gen_heapG.
+  destruct heapG_na_heapG.
+  destruct heapG_traceG.
+  econstructor; econstructor; apply _.
+Defined.
 
-Definition rpc_handler_mapping γ host handlers : iProp Σ :=
+Definition rpc_handler_mapping (γ : server_chan_gnames) (host : u64) (handlers : gmap u64 val) : iProp Σ :=
   ([∗ map] rpcid↦handler ∈ handlers, ∃ (X : Type) Pre Post,
-      handler_is γ X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)%I.
+      handler_is γ X host rpcid Pre Post ∗
+      is_rpcHandler' handler Pre Post)%I.
 
-Lemma is_rpcHandler_proper' handler X Pre Pre' Post Post' :
- □ (∀ (x : X) (l1 : list u8), Pre x l1 ≡ Pre' x l1) -∗
- □ (∀ (x : X) (l1 : list u8) (l2 : list u8),
-       Post x l1 l2 ≡ Post' x l1 l2) -∗
- is_rpcHandler handler Pre Post -∗
- is_rpcHandler handler Pre' Post'.
+(* BLACK MAGIC *)
+Lemma is_rpcHandler_convert X handler Pre Post :
+  is_rpcHandler (X := X) (heap_get_local_names Σ _) (crash_name) handler Pre Post ≡
+  is_rpcHandler' handler Pre Post.
 Proof.
-  iIntros "#Hequiv_pre #Hequiv_post #His".
-  rewrite /is_rpcHandler.
-  iIntros. iIntros (Φc) "!# H HΦc".
-  wp_apply ("His" with "[H]").
-  { iDestruct "H" as "($&$&Hpre)". iNext.
-    iRewrite -("Hequiv_pre" $! x reqData) in "Hpre".
-    iExact "Hpre".
-  }
-  iIntros (??) "H". iApply "HΦc".
-  iDestruct "H" as "($&$&Hpre)". iNext.
-    iRewrite ("Hequiv_post" $! x reqData repData) in "Hpre".
-    iExact "Hpre".
+  rewrite /is_rpcHandler/is_rpcHandler'.
+  assert (heap_update_pre Σ (heapG_to_preG _ hG) _ {| crash_inG := _; crash_name := crash_name |}
+                          (heap_extend_local_names (heap_get_local_names Σ _)
+                                                   (gen_heap_names.gen_heapG_get_names _)) =
+          hG) as ->.
+  { rewrite //=. destruct hG => //=.
+    destruct heapG_invG.
+    destruct heapG_crashG.
+    destruct heapG_ffiG.
+    destruct groveG_gen_heapG.
+    destruct heapG_na_heapG.
+    destruct heapG_traceG.
+    rewrite //=. }
+  eauto.
 Qed.
 
 Lemma non_empty_rpc_handler_mapping_inv γ host handlers :
@@ -296,8 +358,9 @@ Lemma non_empty_rpc_handler_mapping_inv γ host handlers :
   "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host γ) ∗
   "#Hhandlers" ∷ ([∗ map] rpcid↦handler ∈ handlers, ∃ (X : Type) Pre Post γs,
                                                       ptsto_ro (scmap_name γ) rpcid γs ∗
-                                                      saved_pred_own γs (λ f, is_rpcHandler f Pre Post) ∗
-                                                      is_rpcHandler (X := X) handler Pre Post).
+                                                      saved_pred_own γs (λ (n : heap_local_names * gname * val),
+                                                         is_rpcHandler n.1.1 n.1.2 n.2 Pre Post) ∗
+                                                      is_rpcHandler' (X := X) handler Pre Post)%I.
 Proof.
   iIntros (Hdom) "Hmapping".
   iInduction handlers as [| rpcid handler] "IH" using map_ind.
@@ -405,8 +468,17 @@ Proof.
   iDestruct (big_sepM_lookup with "Hhandlers") as "H"; eauto.
   iNamed "H". iDestruct "H" as "(#Hsname&#Hsaved&#His_rpcHandler)".
   iDestruct (ptsto_ro_agree with "Hspec_name Hsname") as %->.
-  iDestruct (saved_pred_agree _ _ _ v with "Hspec_saved Hsaved") as "#Hequiv".
+  iDestruct (saved_pred_agree _ _ _ (heap_get_local_names Σ hG, crash_name, v) with "Hspec_saved Hsaved")
+    as "#Hequiv".
   wp_pures.
+  iEval (simpl) in "Hequiv".
+  assert ((@heapG_irisG grove_op grove_model grove_semantics grove_interp Σ hG)
+           .(@iris_crashG (@goose_lang grove_op grove_model grove_semantics) Σ).(
+           @crash_name Σ)
+           = hG.(@heapG_crashG grove_op grove_model grove_interp Σ).(@crash_name Σ)) as Heq.
+  { rewrite //=. }
+  rewrite -Heq.
+  rewrite ?(is_rpcHandler_convert).
   iRewrite -"Hequiv" in "His_rpcHandler". iClear "Hequiv".
   rewrite /is_rpcHandler.
   replace (zero_val (slice.T byteT)) with
@@ -480,7 +552,7 @@ Lemma wp_StartRPCServer γ (host : u64) (handlers : gmap u64 val) (s : loc) (n:u
       handlers_complete host γ handlers ∗
       own_RPCServer s handlers ∗
       [∗ map] rpcid ↦ handler ∈ handlers,
-      (∃ X Pre Post, handler_is γ X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
+      (∃ X Pre Post, handler_is γ X host rpcid Pre Post ∗ is_rpcHandler' handler Pre Post)
   }}}
     RPCServer__Serve #s #host #n
   {{{

@@ -7,6 +7,12 @@ From Perennial.program_proof Require Import proof_prelude.
 Class kvMapG Σ :=
   { kv_map_inG :> inG Σ (gmapUR u64 (prodR (fracR) (agreeR (leibnizO (list u8))) )) }.
 
+Definition kvMapΣ := #[GFunctor (gmapUR u64 (prodR (fracR) (agreeR (leibnizO (list u8)))))].
+
+Global Instance subG_kvMapG {Σ} :
+  subG (kvMapΣ) Σ → kvMapG Σ.
+Proof. solve_inG. Qed.
+
 Definition kvptsto_frac `{!kvMapG Σ} γ (k:u64) (q:Qp) (v:list u8) :=
   own γ {[ k := ((q / 2)%Qp, to_agree (v: leibnizO (list u8))) ]}.
 
