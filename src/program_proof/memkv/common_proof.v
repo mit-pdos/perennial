@@ -92,7 +92,7 @@ Proof.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (ret) "Hret". wp_pures.
 
-  iRevert "HΦ". iApply wp_frame_wand.
+  iApply (wp_frame_wand with "HΦ").
 
   (* Weaken for loop invariant *)
   iAssert (∃ i : nat, ⌜i < 2^64⌝ ∗ l ↦[uint64T] #i ∗ ret ↦[boolT] #(bool_decide (take i xs = take i ys)))%I with "[Hi Hret]" as "Hinv".

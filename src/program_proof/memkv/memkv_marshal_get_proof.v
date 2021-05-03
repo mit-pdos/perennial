@@ -98,15 +98,6 @@ Lemma wp_decodeGetRequest req_sl reqData args :
 Proof.
 Admitted.
 
-Lemma has_encoding_GetRequest_inj (reqRaw:list u8) req req' :
-  has_encoding_GetRequest reqRaw req →
-  has_encoding_GetRequest reqRaw req' →
-  req = req'.
-Proof.
-  intros.
-  unfold has_encoding_GetRequest in *.
-Admitted.
-
 Lemma wp_decodeGetReply rep rep_sl repData :
   {{{
        typed_slice.is_slice rep_sl byteT 1%Qp repData ∗

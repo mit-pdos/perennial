@@ -897,7 +897,7 @@ Proof.
   iExists _, _, _, _. iFrame "#".
 Qed.
 
-Lemma wp_RPCClient__Call {X:Type} γsmap (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr
+Lemma wp_RPCClient__Call {X:Type} (x:X) γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr
       dummy_sl_val (reqData:list u8) Pre Post :
   {{{
       is_slice req byteT 1 reqData ∗

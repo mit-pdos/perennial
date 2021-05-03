@@ -274,17 +274,17 @@ Proof. iIntros "[H Hwp]". iApply (wp_wand with "Hwp H"). Qed.
 Lemma wp_wand_r s E e Φ Ψ :
   WP e @ s; E {{ Φ }} ∗ (∀ v, Φ v -∗ Ψ v) ⊢ WP e @ s; E {{ Ψ }}.
 Proof. iIntros "[Hwp H]". iApply (wp_wand with "Hwp H"). Qed.
+Lemma wp_frame_wand s E e Φ R : R -∗ WP e @ s; E {{ v, R -∗ Φ v }} -∗ WP e @ s; E {{ Φ }}.
+Proof.
+  iIntros "HR HWP". iApply (wp_wand with "HWP").
+  iIntros (v) "HΦ". by iApply "HΦ".
+Qed.
 Lemma wp_frame_wand_l s E e Q Φ :
   Q ∗ WP e @ s; E {{ v, Q -∗ Φ v }} -∗ WP e @ s; E {{ Φ }}.
-Proof.
-  iIntros "[HQ HWP]". iApply (wp_wand with "HWP").
-  iIntros (v) "HΦ". by iApply "HΦ".
-Qed.
-Lemma wp_frame_wand s E e Φ R : WP e @ s; E {{ v, R -∗ Φ v }} ⊢ R -∗ WP e @ s; E {{ Φ }}.
-Proof.
-  iIntros "HWP HR". iApply (wp_wand with "HWP").
-  iIntros (v) "HΦ". by iApply "HΦ".
-Qed.
+Proof. iIntros "[HQ HWP]". by iApply (wp_frame_wand with "HQ"). Qed.
+Lemma wp_frame_wand_r s E e Q Φ :
+  WP e @ s; E {{ v, Q -∗ Φ v }} ∗ Q -∗ WP e @ s; E {{ Φ }}.
+Proof. iIntros "[HWP HQ]". by iApply (wp_frame_wand with "HQ"). Qed.
 End wp.
 
 (** Proofmode class instances *)

@@ -43,67 +43,66 @@ Record memkv_shard_names := {
 
 Implicit Type γ : memkv_shard_names.
 
-Definition PreShardGet Eo Ei γkv key Q : iProp Σ :=
-  |={Eo,Ei}=> (∃ v, kvptsto γkv key v ∗ (kvptsto γkv key v -∗ |={Ei,Eo}=> Q v))
+Definition PreShardGet γkv key Q : iProp Σ :=
+  |={⊤,∅}=> (∃ v, kvptsto γkv key v ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q v))
 .
 
-Definition PostShardGet Eo Ei γkv (key:u64) Q (rep:ShardReplyC) : iProp Σ :=
-  ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardGet Eo Ei γkv key Q) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ (Q rep.(SR_Value)).
+Definition PostShardGet γkv (key:u64) Q (rep:ShardReplyC) : iProp Σ :=
+  ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardGet γkv key Q) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ (Q rep.(SR_Value)).
 
-Definition PreShardPut Eo Ei γkv key Q v : iProp Σ :=
-  |={Eo,Ei}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={Ei,Eo}=> Q))
+Definition PreShardPut γkv key Q v : iProp Σ :=
+  |={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q))
 .
 
-Definition PostShardPut Eo Ei γkv (key:u64) Q v (rep:ShardReplyC) : iProp Σ :=
-  ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardPut Eo Ei γkv key Q v) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q .
+Definition PostShardPut γkv (key:u64) Q v (rep:ShardReplyC) : iProp Σ :=
+  ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardPut γkv key Q v) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q .
 
-Definition PreShardConditionalPut Eo Ei γkv key Q expv newv : iProp Σ :=
-  |={Eo,Ei}=> (∃ oldv, kvptsto γkv key oldv ∗
+Definition PreShardConditionalPut γkv key Q expv newv : iProp Σ :=
+  |={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗
     (let succ := bool_decide (expv = oldv) in kvptsto γkv key (if succ then newv else oldv) -∗
-      |={Ei,Eo}=> Q succ))
+      |={∅,⊤}=> Q succ))
 .
 
-Definition PostShardConditionalPut Eo Ei γkv (key:u64) Q expv newv (rep:ShardReplyC) : iProp Σ :=
-  ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardConditionalPut Eo Ei γkv key Q expv newv) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q rep.(SR_Success).
+Definition PostShardConditionalPut γkv (key:u64) Q expv newv (rep:ShardReplyC) : iProp Σ :=
+  ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardConditionalPut γkv key Q expv newv) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q rep.(SR_Success).
 
 
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   λ host γ,
   ("#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
-  "#HputSpec" ∷ handler_is (urpc_gn γ) (coPset * coPset * (iProp Σ) * rpc_request_names) host uKV_PUT
-             (λ x reqData, ∃ req, ⌜has_encoding_PutRequest reqData req⌝ ∗
-                  is_RPCRequest γ.(rpc_gn) x.2
-                     (PreShardPut x.1.1.1 x.1.1.2 γ.(kv_gn) req.(PR_Key) x.1.2 req.(PR_Value))
-                     (PostShardPut x.1.1.1 x.1.1.2 γ.(kv_gn) req.(PR_Key) x.1.2 req.(PR_Value))
+  "#HputSpec" ∷ handler_is (urpc_gn γ) ((iProp Σ) * rpc_request_names * PutRequestC) host uKV_PUT
+             (λ x reqData, let '(Q, γreq, req) := x in ⌜has_encoding_PutRequest reqData req⌝ ∗
+                  is_RPCRequest γ.(rpc_gn) γreq
+                     (PreShardPut γ.(kv_gn) req.(PR_Key) Q req.(PR_Value))
+                     (PostShardPut γ.(kv_gn) req.(PR_Key) Q req.(PR_Value))
                      {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |}
              ) (* pre *)
-             (λ x reqData repData, ∃ req rep, ⌜has_encoding_PutReply repData rep⌝ ∗
-                  ⌜has_encoding_PutRequest reqData req⌝ ∗
+             (λ x reqData repData, let '(Q, γreq, req) := x in ∃ rep, ⌜has_encoding_PutReply repData rep⌝ ∗
                   (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} ∨
                     ∃ dummy_val dummy_succ, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkShardReplyC rep.(PR_Err) dummy_val dummy_succ))
              ) (* post *) ∗
 
-  "#HconditionalPutSpec" ∷ handler_is (urpc_gn γ) (coPset * coPset * (bool → iProp Σ) * rpc_request_names) host uKV_CONDITIONAL_PUT
-             (λ x reqData, ∃ req, ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
-                  is_RPCRequest γ.(rpc_gn) x.2
-                     (PreShardConditionalPut x.1.1.1 x.1.1.2 γ.(kv_gn) req.(CPR_Key) x.1.2 req.(CPR_ExpValue) req.(CPR_NewValue))
-                     (PostShardConditionalPut x.1.1.1 x.1.1.2 γ.(kv_gn) req.(CPR_Key) x.1.2 req.(CPR_ExpValue) req.(CPR_NewValue))
+  "#HconditionalPutSpec" ∷ handler_is (urpc_gn γ) ((bool → iProp Σ) * rpc_request_names * ConditionalPutRequestC) host uKV_CONDITIONAL_PUT
+             (λ x reqData, let '(Q, γreq, req) := x in ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
+                  is_RPCRequest γ.(rpc_gn) γreq
+                     (PreShardConditionalPut γ.(kv_gn) req.(CPR_Key) Q req.(CPR_ExpValue) req.(CPR_NewValue))
+                     (PostShardConditionalPut γ.(kv_gn) req.(CPR_Key) Q req.(CPR_ExpValue) req.(CPR_NewValue))
                      {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |}
              ) (* pre *)
-             (λ x reqData repData, ∃ req rep, ⌜has_encoding_ConditionalPutReply repData rep⌝ ∗
-                  ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
+             (λ x reqData repData, let '(Q, γreq, req) := x in ∃ rep,
+                  ⌜has_encoding_ConditionalPutReply repData rep⌝ ∗
                   (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |} ∨
                     ∃ dummy_val, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |} (mkShardReplyC rep.(CPR_Err) dummy_val rep.(CPR_Succ)))
              ) (* post *) ∗
 
-  "#HgetSpec" ∷ handler_is (urpc_gn γ) (coPset * coPset * (list u8 → iProp Σ) * rpc_request_names) host uKV_GET
-             (λ x reqData, ∃ req, ⌜has_encoding_GetRequest reqData req⌝ ∗
-                  is_RPCRequest γ.(rpc_gn) x.2 (PreShardGet x.1.1.1 x.1.1.2 γ.(kv_gn) req.(GR_Key) x.1.2)
-                    (PostShardGet x.1.1.1 x.1.1.2 γ.(kv_gn) req.(GR_Key) x.1.2)
+  "#HgetSpec" ∷ handler_is (urpc_gn γ) ((list u8 → iProp Σ) * rpc_request_names * GetRequestC) host uKV_GET
+             (λ '(Q, γreq, req) reqData, ⌜has_encoding_GetRequest reqData req⌝ ∗
+                  is_RPCRequest γ.(rpc_gn) γreq
+                    (PreShardGet γ.(kv_gn) req.(GR_Key) Q)
+                    (PostShardGet γ.(kv_gn) req.(GR_Key) Q)
                     {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
              ) (* pre *)
-             (λ x reqData repData, ∃ req rep, ⌜has_encoding_GetReply repData rep⌝ ∗
-                  ⌜has_encoding_GetRequest reqData req⌝ ∗
+             (λ '(Q, γreq, req) reqData repData, ∃ rep, ⌜has_encoding_GetReply repData rep⌝ ∗
                   (RPCRequestStale γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} ∨
                     ∃ dummy_succ, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} (mkShardReplyC rep.(GR_Err) rep.(GR_Value) dummy_succ))
              ) (* post *) ∗

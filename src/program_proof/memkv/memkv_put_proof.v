@@ -9,13 +9,13 @@ Context `{!heapG Σ, rpcG Σ ShardReplyC, HREG: rpcregG Σ, kvMapG Σ}.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
-Lemma wp_PutRPC (s args_ptr reply_ptr:loc) val_sl args γ Eo Ei γreq Q :
+Lemma wp_PutRPC (s args_ptr reply_ptr:loc) val_sl args γ γreq Q :
   is_MemKVShardServer s γ -∗
   {{{
        own_PutRequest args_ptr val_sl args ∗
        (∃ dummy_rep, own_PutReply reply_ptr dummy_rep) ∗
-       is_RPCRequest γ.(rpc_gn) γreq (PreShardPut Eo Ei γ.(kv_gn) args.(PR_Key) Q args.(PR_Value))
-                                (PostShardPut Eo Ei γ.(kv_gn) args.(PR_Key) Q args.(PR_Value))
+       is_RPCRequest γ.(rpc_gn) γreq (PreShardPut γ.(kv_gn) args.(PR_Key) Q args.(PR_Value))
+                                (PostShardPut γ.(kv_gn) args.(PR_Key) Q args.(PR_Value))
                                 {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |}
   }}}
     MemKVShardServer__PutRPC #s #args_ptr #reply_ptr
@@ -269,14 +269,11 @@ Proof.
       (* Get Q by using fupd *)
       unfold PreShardPut.
       iApply fupd_wp.
-      iMod (fupd_mask_subseteq Eo) as "Hclose".
-      { done. }
       rewrite -global_groveG_inv_conv'.
       iMod "Hpre".
       iDestruct "Hpre" as (v0) "(Hkvptsto2 & HfupdQ)".
       iMod (kvptsto_update args.(PR_Value) with "Hkvptsto Hkvptsto2") as "[Hkvptsto Hkvptsto2]".
       iMod ("HfupdQ" with "Hkvptsto") as "Q".
-      iMod "Hclose" as "_".
 
       (* fill in reply struct *)
       iModIntro.

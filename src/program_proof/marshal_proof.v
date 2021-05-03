@@ -23,6 +23,31 @@ Local Definition encode1 (e:encodable) : list u8 :=
   | EncBool b => if b then [U8 1] else [U8 0]
   end.
 
+Lemma encode1_u64_inj : Inj (=) (=) (encode1 ∘ EncUInt64).
+Proof.
+  move=>x y /= Heq.
+  rewrite -(u64_le_to_word x).
+  rewrite -(u64_le_to_word y).
+  rewrite Heq //.
+Qed.
+Lemma encode1_u32_inj : Inj (=) (=) (encode1 ∘ EncUInt32).
+Proof.
+  move=>x y /= Heq.
+  rewrite -(u32_le_to_word x).
+  rewrite -(u32_le_to_word y).
+  rewrite Heq //.
+Qed.
+Lemma encode1_bytes_inj : Inj (=) (=) (encode1 ∘ EncBytes).
+Proof. move=>x y /= Heq //. Qed.
+Lemma encode1_bool_inj : Inj (=) (=) (encode1 ∘ EncBool).
+Proof.
+  move=>x y /= Heq.
+  by destruct x, y.
+Qed.
+
+Lemma encode1_bytes_len bs : length (encode1 (EncBytes bs)) = length bs.
+Proof. done. Qed.
+
 Local Definition encode (es:Rec): list u8 := concat (encode1 <$> es).
 
 Notation encoded_length r := (length (encode r)).

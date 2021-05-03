@@ -66,15 +66,6 @@ Lemma wp_decodePutRequest req_sl reqData args :
 Proof.
 Admitted.
 
-Lemma has_encoding_PutRequest_inj (reqRaw:list u8) req req' :
-  has_encoding_PutRequest reqRaw req →
-  has_encoding_PutRequest reqRaw req' →
-  req = req'.
-Proof.
-  intros.
-  unfold has_encoding_PutRequest in *.
-Admitted.
-
 Lemma wp_decodePutReply rep rep_sl repData :
   {{{
        typed_slice.is_slice rep_sl byteT 1%Qp repData ∗

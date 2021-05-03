@@ -38,13 +38,13 @@ Qed.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
-Lemma wp_GetRPC (s args_ptr reply_ptr:loc) args γ Eo Ei γreq Q :
+Lemma wp_GetRPC (s args_ptr reply_ptr:loc) args γ γreq Q :
   is_MemKVShardServer s γ -∗
   {{{
        own_GetRequest args_ptr args ∗
        (∃ dummy_rep, own_GetReply reply_ptr dummy_rep) ∗
-       is_RPCRequest γ.(rpc_gn) γreq (PreShardGet Eo Ei γ.(kv_gn) args.(GR_Key) Q)
-                                (PostShardGet Eo Ei γ.(kv_gn) args.(GR_Key) Q)
+       is_RPCRequest γ.(rpc_gn) γreq (PreShardGet γ.(kv_gn) args.(GR_Key) Q)
+                                (PostShardGet γ.(kv_gn) args.(GR_Key) Q)
                                 {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |}
   }}}
     MemKVShardServer__GetRPC #s #args_ptr #reply_ptr

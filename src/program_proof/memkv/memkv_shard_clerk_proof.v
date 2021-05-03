@@ -210,9 +210,9 @@ Proof.
   simpl. word.
 Qed.
 
-Lemma wp_MemKVShardClerk__Put Eo Ei γ (ck:loc) (key:u64) (v:list u8) value_sl Q :
+Lemma wp_MemKVShardClerk__Put γ (ck:loc) (key:u64) (v:list u8) value_sl Q :
   {{{
-       (|={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q))) ∗
+       (|={⊤,∅}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |={∅,⊤}=> Q))) ∗
        typed_slice.is_slice value_sl byteT 1%Qp v ∗
        own_MemKVShardClerk ck γ
   }}}
@@ -222,7 +222,7 @@ Lemma wp_MemKVShardClerk__Put Eo Ei γ (ck:loc) (key:u64) (v:list u8) value_sl Q
        typed_slice.is_slice value_sl byteT 1%Qp v ∗
        own_MemKVShardClerk ck γ ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q)))
+        (|={⊤,∅}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |={∅,⊤}=> Q)))
         ∨
         ⌜e = 0⌝ ∗ Q
         )
@@ -274,7 +274,7 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut Eo Ei γ.(kv_gn) key Q v) (PostShardPut Eo Ei γ.(kv_gn) key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq".
+  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut γ.(kv_gn) key Q v) (PostShardPut γ.(kv_gn) key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq".
 
   { done. }
   { simpl. word. }
@@ -294,13 +294,12 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_RPCClient__Call with "[$HputSpec $Hreq_sl $HrawRep $Hcl_own]").
+  wp_apply (wp_RPCClient__Call (Q, γreq, mkPutRequestC _ _ _ _) with "[$HputSpec $Hreq_sl $HrawRep $Hcl_own]").
   {
+    simpl.
     iModIntro.
     iModIntro.
-    iExists (mkPutRequestC _ _ _ _).
     iSplitL ""; first done.
-    instantiate (3:= (Eo,Ei,Q,γreq)).
     simpl.
     rewrite -global_groveG_inv_conv'.
     iFrame "HreqInv".
@@ -325,12 +324,10 @@ Proof.
     { exfalso. naive_solver. }
     iDestruct "HcallPost" as "(_ & >Hpost)".
     wp_load.
-    iDestruct "Hpost" as (??) "(% & % & Hreceipt)".
+    iDestruct "Hpost" as (?) "(% & Hreceipt)".
     wp_apply (wp_decodePutReply with "[$Hrep_sl]").
     { done. }
     iIntros (?) "Hrep".
-    replace (req) with ({| PR_CID := cid; PR_Seq := seq; PR_Key := key ; PR_Value := v|}); last first.
-    { eapply has_encoding_PutRequest_inj; done. }
 
     iDestruct "Hreceipt" as "[Hbad|Hreceipt]".
     {
@@ -375,9 +372,9 @@ Proof.
   }
 Qed.
 
-Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
+Lemma wp_MemKVShardClerk__Get γ (ck:loc) (key:u64) (value_ptr:loc) Q :
   {{{
-       (|={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q v))) ∗
+       (|={⊤,∅}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |={∅,⊤}=> Q v))) ∗
        own_MemKVShardClerk ck γ ∗
        (∃ dummy_sl, value_ptr ↦[slice.T byteT] (slice_val dummy_sl))
   }}}
@@ -386,7 +383,7 @@ Lemma wp_MemKVShardClerk__Get Eo Ei γ (ck:loc) (key:u64) (value_ptr:loc) Q :
        (e:u64), RET #e;
        own_MemKVShardClerk ck γ ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|={Eo,Ei}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |={Ei,Eo}=> Q v))) ∗
+        (|={⊤,∅}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |={∅,⊤}=> Q v))) ∗
         (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
 
         ⌜e = 0⌝ ∗
@@ -435,7 +432,7 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet Eo Ei γ.(kv_gn) key Q) (PostShardGet Eo Ei γ.(kv_gn) key Q) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq".
+  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet γ.(kv_gn) key Q) (PostShardGet γ.(kv_gn) key Q) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq".
   { done. }
   { simpl. word. }
   { iNext. rewrite /PreShardGet. rewrite global_groveG_inv_conv'. iFrame. }
@@ -461,13 +458,11 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_RPCClient__Call with "[$HgetSpec $Hreq_sl $HrawRep $Hcl_own]").
+  wp_apply (wp_RPCClient__Call (Q,γreq,mkGetRequestC _ _ _) with "[$HgetSpec $Hreq_sl $HrawRep $Hcl_own]").
   {
     iModIntro.
     iModIntro.
-    iExists (mkGetRequestC _ _ _).
     iSplitL ""; first done.
-    instantiate (2:= (Eo,Ei,Q,γreq)).
     simpl.
     rewrite -global_groveG_inv_conv'.
     iFrame "HreqInv".
@@ -494,12 +489,10 @@ Proof.
     { exfalso. naive_solver. }
     iDestruct "HcallPost" as "(_ & >Hpost)".
     wp_load.
-    iDestruct "Hpost" as (??) "(% & % & Hreceipt)".
+    iDestruct "Hpost" as (?) "(% & Hreceipt)".
     wp_apply (wp_decodeGetReply with "[$Hrep_sl]").
     { done. }
     iIntros (?) "Hrep".
-    replace (req) with ({| GR_CID := cid; GR_Seq := seq; GR_Key := key |}); last first.
-    { eapply has_encoding_GetRequest_inj; done. }
 
     iDestruct "Hreceipt" as "[Hbad|[% Hreceipt]]".
     {
@@ -542,10 +535,10 @@ Proof.
   }
 Qed.
 
-Lemma wp_MemKVShardClerk__ConditionalPut Eo Ei γ (ck:loc) (key:u64) (expv newv:list u8) expv_sl newv_sl (succ_ptr:loc) Q :
+Lemma wp_MemKVShardClerk__ConditionalPut γ (ck:loc) (key:u64) (expv newv:list u8) expv_sl newv_sl (succ_ptr:loc) Q :
   {{{
-       (|={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
-         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |={Ei,Eo}=> Q succ))) ∗
+       (|={⊤,∅}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
+         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗
        typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
        typed_slice.is_slice newv_sl byteT 1%Qp newv ∗
        own_MemKVShardClerk ck γ ∗
@@ -558,8 +551,8 @@ Lemma wp_MemKVShardClerk__ConditionalPut Eo Ei γ (ck:loc) (key:u64) (expv newv:
        typed_slice.is_slice newv_sl byteT 1%Qp newv ∗
        own_MemKVShardClerk ck γ ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|={Eo,Ei}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
-         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |={Ei,Eo}=> Q succ))) ∗
+        (|={⊤,∅}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
+         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗
        (∃ b : bool, succ_ptr ↦[boolT] #b)
         ∨
         ⌜e = 0⌝ ∗ ∃ succ : bool, succ_ptr ↦[boolT] #succ ∗ Q succ
@@ -615,7 +608,7 @@ Proof.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardConditionalPut Eo Ei γ.(kv_gn) key Q expv newv) (PostShardConditionalPut Eo Ei γ.(kv_gn) key Q expv newv) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq". 
+  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardConditionalPut γ.(kv_gn) key Q expv newv) (PostShardConditionalPut γ.(kv_gn) key Q expv newv) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq". 
   { done. }
   { simpl. word. }
   { iNext. rewrite /PreShardConditionalPut. rewrite global_groveG_inv_conv'. iFrame. }
@@ -634,13 +627,11 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_RPCClient__Call with "[$HconditionalPutSpec $Hreq_sl $HrawRep $Hcl_own]").
+  wp_apply (wp_RPCClient__Call (Q,γreq,mkConditionalPutRequestC _ _ _ _ _) with "[$HconditionalPutSpec $Hreq_sl $HrawRep $Hcl_own]").
   {
     iModIntro.
     iModIntro.
-    iExists (mkConditionalPutRequestC _ _ _ _ _).
     iSplitL ""; first done.
-    instantiate (3:= (Eo,Ei,Q,γreq)).
     simpl.
     rewrite -global_groveG_inv_conv'.
     iFrame "HreqInv".
@@ -665,12 +656,10 @@ Proof.
     { exfalso. naive_solver. }
     iDestruct "HcallPost" as "(_ & >Hpost)".
     wp_load.
-    iDestruct "Hpost" as (??) "(% & % & Hreceipt)".
+    iDestruct "Hpost" as (?) "(% & Hreceipt)".
     wp_apply (wp_decodeConditionalPutReply with "[$Hrep_sl]").
     { done. }
     iIntros (?) "Hrep".
-    replace (req) with ({| CPR_CID := cid; CPR_Seq := seq; CPR_Key := key ; CPR_ExpValue := expv; CPR_NewValue := newv |}); last first.
-    { eapply has_encoding_ConditionalPutRequest_inj; done. }
 
     iDestruct "Hreceipt" as "[Hbad|Hreceipt]".
     {
