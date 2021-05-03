@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import ModArith.
 From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof Require Import marshal_proof.
@@ -177,15 +178,6 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Local Lemma nooverflow (x y : u64) :
-  int.Z y < int.Z (word.add x y) →
-  int.Z (word.add x y) = (int.Z x) + (int.Z y).
-Proof.
-  intros. word_cleanup. rewrite wrap_small //.
-  assert (0 ≤ int.Z (word.add x y) < 2 ^ 64) by admit.
-  Fail word.
-Admitted.
-
 Lemma wp_encodeGetReply rep_ptr rep :
   {{{
        own_GetReply rep_ptr rep
@@ -235,7 +227,7 @@ Proof.
 
   wp_loadField.
   wp_apply (wp_Enc__PutBytes with "[$Henc $HValue_sl]").
-  { apply nooverflow in Hoverflow.
+  { apply sum_nooverflow_r in Hoverflow.
     rewrite Hoverflow Hsz.
     change (int.Z (word.add 8 8)) with 16.
     rewrite Z2Nat.id; word. }
