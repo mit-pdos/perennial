@@ -58,21 +58,13 @@ Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
                                 kvptsto γkv k (default [] (m !! k))
 .
 
-(** ** Big ops over finite sets *)
-Section gset.
-  Context `{Countable A} `{Countable B}.
-
-  Lemma big_sepS_sepS (X : gset A) (Y : gset B) (Φ : A → B → iProp Σ) :
-    ([∗ set] x ∈ X, [∗ set] y ∈ Y, Φ x y) -∗ ([∗ set] y ∈ Y, [∗ set] x ∈ X, Φ x y).
-  Proof.
-  Admitted.
-
-End gset.
-
-Lemma kvptsto_init :
-  ⊢ |==> ∃ γ, ([∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ sid ∅) ∗
+Lemma kvptsto_init n :
+  (* iMod on this lemma seems to compute things, so make n "opaque". *)
+  n = uNSHARD →
+  ⊢ |==> ∃ γ, ([∗ set] sid ∈ rangeSet 0 n, own_shard γ sid ∅) ∗
               ([∗ set] k ∈ fin_to_set u64, kvptsto γ k []).
 Proof.
+  intros ->.
   pose (m := gset_to_gmap (1%Qp, to_agree []) (fin_to_set u64) : kvMapUR).
   iMod (own_alloc m) as (γ) "Hown".
   { intros k. rewrite lookup_gset_to_gmap option_guard_True; last by apply elem_of_fin_to_set.
@@ -108,6 +100,6 @@ Proof.
     iIntros "!#" (shard [Hshard Hne]%elem_of_difference) "_". iLeft.
     iPureIntro. intros Heq. apply Hne.
     apply elem_of_singleton. done.
-Qed.  
+Qed.
 
 End memkv_ghost.

@@ -56,7 +56,7 @@ Proof.
   (* Get out the channel for the server *)
   iDestruct (big_sepM_lookup_acc with "Hchan") as "(Hg&_)"; first eassumption.
   remember (uNSHARD) as uNSHARD' eqn:Heq_unSHARD'.
-  iMod (kvptsto_init uNSHARD') as (γkv) "(Hserver_shards&Hclients_ptstos)".
+  iMod (kvptsto_init uNSHARD') as (γkv) "(Hserver_shards&Hclients_ptstos)"; first done.
   iMod (shard_server_ghost_init host γkv with "[$Hg]") as (γ Heq_kv) "(#Hdom&#Hsrv&Hsrv_rpc_ghost&Hsrv_cid)".
 
   iModIntro.

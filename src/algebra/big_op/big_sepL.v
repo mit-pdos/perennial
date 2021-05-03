@@ -19,6 +19,20 @@ Proof.
     rewrite HPQ //.
 Qed.
 
+(* FIXME: upstream (see Iris MR 673) *)
+Lemma big_sepL_sepL {PROP:bi} {A B : Type} (Φ : nat → A → nat → B → PROP) (l1 : list A) (l2 : list B) :
+  ([∗ list] k1↦x1 ∈ l1, [∗ list] k2↦x2 ∈ l2, Φ k1 x1 k2 x2) ⊣⊢
+  ([∗ list] k2↦x2 ∈ l2, [∗ list] k1↦x1 ∈ l1, Φ k1 x1 k2 x2).
+Proof.
+  revert Φ l2. induction l1 as [|x1 l1 IH]; intros Φ l2.
+  { rewrite big_sepL_nil. setoid_rewrite big_sepL_nil.
+    rewrite big_sepL_emp. done. }
+  rewrite big_sepL_cons.
+  setoid_rewrite big_sepL_cons.
+  rewrite big_sepL_sep. f_equiv.
+  rewrite IH //.
+Qed.
+
 Section list.
   Context {PROP : bi}.
   Implicit Types (P Q : PROP).
