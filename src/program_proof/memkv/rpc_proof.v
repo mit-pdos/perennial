@@ -821,9 +821,9 @@ Proof.
   wp_lam.
   wp_apply (wp_Connect).
   iIntros (err r) "Hr".
-  destruct err.
-  { admit. (* TODO FIXME: RPCClient should check this error, or panic *) }
   wp_pures.
+  wp_apply (wp_Assume).
+  iIntros (Herr). destruct err; first (simpl in Herr; first congruence).
 
   replace (ref (InjLV #null))%E with (NewMap (struct.ptrT callback)) by naive_solver.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
@@ -868,7 +868,7 @@ Proof.
     iFrame "#". }
   iNext. wp_pures. iModIntro. iApply "HΦ".
   iExists _, _, _, _. iFrame "#".
-Admitted.
+Qed.
 
 Lemma wp_RPCClient__Call {X:Type} γsmap (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr
       dummy_sl_val (reqData:list u8) Pre Post :
@@ -921,7 +921,13 @@ Proof.
   iNamed "Hlock_inner".
   wp_pures.
   wp_loadField. wp_pures.
-  wp_loadField. wp_storeField.
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_Assume).
+  iIntros (Hoverflow1).
+  wp_pures.
+  wp_loadField.
+  wp_storeField.
   wp_loadField.
   wp_apply (map.wp_MapInsert with "[$]").
   iIntros "Hpending_map".
@@ -940,7 +946,7 @@ Proof.
   { iFrame "Hlk". iFrame "Hlked". iNext. iExists _, _, _, _, _.
     iFrame. rewrite ?dom_insert_L.
     assert (int.Z (word.add n 1) = int.Z n + 1)%Z as ->.
-    { (* XXX: not true because of overflow, so there's a potential bug here, albeit irrelevant *) admit. }
+    { apply bool_decide_eq_true_1 in Hoverflow1. word. }
     iSplit.
     { iPureIntro. word. }
     iSplit.
@@ -973,26 +979,52 @@ Proof.
   wp_pures.
   wp_apply (wp_slice_len).
   wp_pures.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Assume).
+  iIntros (Hoverflow2).
+  apply bool_decide_eq_true_1 in Hoverflow2.
+  wp_pures.
+  wp_apply (wp_slice_len).
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
   wp_pures.
   wp_apply (wp_Enc__PutInt with "Henc").
-  { admit. (* TODO: overflow *) }
+  { destruct (decide (8 ≤ int.Z req.(Slice.sz)))%Z.
+    { lia. }
+    { word. } }
   iIntros "Henc".
   wp_pures.
+  assert (int.Z (word.add (word.add (word.add 8 8) 8) req.(Slice.sz)) =
+                 int.Z (req.(Slice.sz)) + 24)%Z as Hoverflow3.
+  { destruct (decide (8 ≤ int.Z req.(Slice.sz)))%Z; last first.
+    { word. }
+    rewrite ?word.unsigned_add.
+    rewrite ?wrap_small; try word.
+    split.
+    { word. }
+    destruct (decide (int.Z req.(Slice.sz) < 2^64 - 24)%Z).
+    { word. }
+    assert ((word.add (word.add 8 8) 8 = (24 : u64))) as Heq1.
+    { rewrite //=. }
+    rewrite Heq1 in Hoverflow2.
+    rewrite ?word.unsigned_add in Hoverflow2.
+    exfalso. rewrite /word.wrap in Hoverflow2.
+    assert (int.Z req.(Slice.sz) < 2^64)%Z by word.
+    rewrite (Zmod_in_range 1 _ _) in Hoverflow2; word.
+  }
   wp_apply (wp_Enc__PutInt with "Henc").
-  { admit. (* TODO: overflow *) }
+  { word. }
   iIntros "Henc".
   wp_pures.
   wp_apply (wp_slice_len).
   wp_apply (wp_Enc__PutInt with "Henc").
-  { admit. (* TODO: overflow *) }
+  { word. }
   iIntros "Henc".
   wp_pures.
   iDestruct (is_slice_small_read with "Hslice") as "(Hslice&Hslice_close)".
   iDestruct (is_slice_small_sz with "Hslice") as %Hsz.
   wp_apply (wp_Enc__PutBytes with "[$Henc $Hslice]").
-  { admit. } (* TODO: overflow *)
+  { word. }
   iIntros "[Henc Hslice]".
   wp_pures.
   wp_apply (wp_Enc__Finish with "[$Henc]").
@@ -1003,7 +1035,7 @@ Proof.
   iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
   iNamed "Hhandler".
   wp_apply (wp_Send with "[$]").
-  { admit. } (* TODO: overflow *)
+  { word. }
   rewrite global_groveG_inv_conv'.
   iInv "Hserver_inv" as "Hserver_inner" "Hclo".
   iDestruct "Hserver_inner" as (ms) "(>Hchan'&H)".
@@ -1089,7 +1121,7 @@ Proof.
     iDestruct (ptsto_valid_2 with "Hex [$]") as %Hval.
     exfalso. rewrite //= in Hval.
   }
-Admitted.
+Qed.
 
 End rpc_proof.
 

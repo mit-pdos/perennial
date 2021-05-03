@@ -95,6 +95,7 @@ Definition RPCClient__replyThread: val :=
 Definition MakeRPCClient: val :=
   rec: "MakeRPCClient" "host" :=
     let: "a" := dist_ffi.Connect "host" in
+    control.impl.Assume (~ (struct.get dist_ffi.ConnectRet "Err" "a"));;
     let: "cl" := struct.new RPCClient [
       "send" ::= struct.get dist_ffi.ConnectRet "Sender" "a";
       "mu" ::= lock.new #();
@@ -114,9 +115,11 @@ Definition RPCClient__Call: val :=
     struct.loadF callback "done" "cb" <-[boolT] #false;;
     lock.acquire (struct.loadF RPCClient "mu" "cl");;
     let: "seqno" := struct.loadF RPCClient "seq" "cl" in
+    control.impl.Assume (struct.loadF RPCClient "seq" "cl" + #1 > struct.loadF RPCClient "seq" "cl");;
     struct.storeF RPCClient "seq" "cl" (struct.loadF RPCClient "seq" "cl" + #1);;
     MapInsert (struct.loadF RPCClient "pending" "cl") "seqno" "cb";;
     lock.release (struct.loadF RPCClient "mu" "cl");;
+    control.impl.Assume (#8 + #8 + #8 + slice.len "args" > slice.len "args");;
     let: "e" := marshal.NewEnc (#8 + #8 + #8 + slice.len "args") in
     marshal.Enc__PutInt "e" "rpcid";;
     marshal.Enc__PutInt "e" "seqno";;
