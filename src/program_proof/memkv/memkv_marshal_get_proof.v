@@ -96,6 +96,36 @@ Lemma wp_decodeGetRequest req_sl reqData args :
        (args_ptr:loc), RET #args_ptr; own_GetRequest args_ptr args
   }}}.
 Proof.
+  iIntros (Φ) "[%Henc Hsl] HΦ".
+  wp_lam.
+  wp_apply (wp_allocStruct).
+  {
+    naive_solver.
+  }
+  iIntros (rep_ptr) "Hrep".
+  iDestruct (struct_fields_split with "Hrep") as "HH".
+  iNamed "HH".
+  wp_pures.
+  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
+  wp_apply (wp_new_dec with "[$Hsl]").
+  { done. }
+  iIntros (?) "Hdec".
+  wp_pures.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_storeField.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_storeField.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_storeField.
+
+  iApply "HΦ". iModIntro. iFrame.
+  admit. (* Seq > 0 *)
 Admitted.
 
 Lemma wp_decodeGetReply rep rep_sl repData :
@@ -120,7 +150,7 @@ Proof.
   iDestruct (struct_fields_split with "Hrep") as "HH".
   iNamed "HH".
   wp_pures.
-  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl Hsl_close]".
+  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
   destruct Henc as [Henc Hsz].
   wp_apply (wp_new_dec with "[$Hsl]").
   { done. }

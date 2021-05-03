@@ -120,7 +120,7 @@ Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     MemKVClerk__Put #ck #key (slice_val val_sl) @ ⊤
   <<< kvptsto γ key v >>>
-  {{{ RET #(); own_MemKVClerk ck γ }}}. (* FIXME: ownership of the slice is lost? *)
+  {{{ RET #(); own_MemKVClerk ck γ ∗ typed_slice.is_slice val_sl byteT 1%Qp v }}}.
 Proof using Type*.
   iIntros "!#" (Φ) "[Hown Hval_sl] Hatomic".
   wp_lam.
@@ -170,7 +170,7 @@ Proof using Type*.
     iApply "Hpost".
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    iModIntro. iExists _, _, _, _. by iFrame.
+    iFrame "Hval_sl". iModIntro. iExists _, _, _, _. by iFrame.
   }
   {
     wp_loadField.
@@ -195,12 +195,16 @@ Proof using Type*.
 Qed.
 
 Lemma KVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
-⊢ {{{ own_MemKVClerk ck γ ∗ typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
+⊢ {{{ own_MemKVClerk ck γ ∗
+      typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
       typed_slice.is_slice newv_sl byteT 1%Qp newv }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     MemKVClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) @ ⊤
   <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>
-  {{{ RET #(bool_decide (expv = oldv)); own_MemKVClerk ck γ }}}. (* FIXME: ownership of the slices is lost? *)
+  {{{ RET #(bool_decide (expv = oldv));
+      own_MemKVClerk ck γ ∗
+      typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
+      typed_slice.is_slice newv_sl byteT 1%Qp newv }}}.
 Proof using Type*.
   iIntros "!#" (Φ) "(Hown & Hexpv_sl & Hnewv_sl) Hatomic".
   wp_lam.
@@ -240,7 +244,7 @@ Proof using Type*.
   subst γ.
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__ConditionalPut γsh _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γsh.(kv_gn) -∗ Φ #b)%I
+  wp_apply (wp_MemKVShardClerk__ConditionalPut γsh _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γsh.(kv_gn) ∗ _ ∗ _ -∗ Φ #b)%I
     with "[Hatomic $Hexpv_sl $Hnewv_sl $HshardCk Hsucc]").
   {
     rewrite /zero_val /=. iFrame.
@@ -260,7 +264,7 @@ Proof using Type*.
     iApply "HΦ". iModIntro.
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    iExists _, _, _, _. by iFrame.
+    iFrame. iExists _, _, _, _. by iFrame.
   }
   {
     wp_loadField.
