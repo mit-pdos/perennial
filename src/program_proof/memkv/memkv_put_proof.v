@@ -311,10 +311,11 @@ Proof.
 
       iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep]").
+      wp_apply (release_spec with "[> -HΦ HCID HSeq HKey Hrep]").
       {
         iFrame "HmuInv Hlocked".
-        iNext.
+        iMod (readonly_load with "HValue_sl") as (?) "HValue_sl'".
+        iModIntro. iNext.
         iExists _,_,_, _, _, _, _, _.
         iExists _, _, _, _.
         iFrame.
@@ -362,14 +363,13 @@ Proof.
         iSplitL ""; first done.
         iApply (big_sepS_delete _ _ args.(PR_Key) with "[-]").
         { set_solver. }
-        iSplitL "HValue_sl".
+        iSplitL "HValue_sl'".
         {
           simpl. iRight.
-          iExists 1%Qp. iExists val_sl.
+          iExists _. iExists val_sl.
           rewrite lookup_insert.
           rewrite lookup_insert.
-          iSplitL ""; first done.
-          iApply (typed_slice.is_slice_to_small (V:=u8)); eauto.
+          by iFrame.
         }
         iDestruct (big_sepS_delete _ _ args.(PR_Key) with "HvalSlices") as "[_ HvalSlices]".
         { set_solver. }

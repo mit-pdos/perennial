@@ -72,6 +72,7 @@ Definition PutRequest := struct.decl [
 Definition encodePutRequest: val :=
   rec: "encodePutRequest" "args" :=
     let: "num_bytes" := #8 + #8 + #8 + #8 + slice.len (struct.loadF PutRequest "Value" "args") in
+    control.impl.Assume ("num_bytes" > slice.len (struct.loadF PutRequest "Value" "args"));;
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF PutRequest "CID" "args");;
     marshal.Enc__PutInt "e" (struct.loadF PutRequest "Seq" "args");;

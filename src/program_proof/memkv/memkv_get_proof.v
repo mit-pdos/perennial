@@ -159,7 +159,7 @@ Proof.
     Opaque slice.T.
     wp_pures.
 
-    (* now split into stale/nonstale cases *)
+    (* now split into stale/nonstale cases. FIXME: there is still a bunch of duplication here, use lemma for if-with-merging-control-flow? *)
     destruct (Z.lt_ge_cases (int.Z args.(GR_Seq)) (int.Z v)) as [Hcase|Hcase].
     { (* Stale *)
       iMod (smaller_seqno_stale_fact _ {| Req_CID:=_; Req_Seq:=_ |} v with "His_srv Hrpc") as "HH".
@@ -168,6 +168,7 @@ Proof.
       { done. }
       iDestruct "HH" as "[Hrpc #Hstale]".
       wp_loadField.
+      iApply wp_ncfupd.
       wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl HValue HErr Hrep_val_sl]").
       {
         iFrame "#∗".
@@ -183,10 +184,12 @@ Proof.
       {
         instantiate (1:={| GR_Err := _ |}).
         iExists _; iFrame.
-        iExists _; iFrame.
+        (* FIXME: we are readonly_alloc'ing several times here; we should probably push
+           this up to wherever the is_slice_small is coming from. *)
+        iMod (readonly_alloc with "[Hrep_val_sl]") as "$"; by iFrame.
       }
       iLeft.
-      iFrame "#".
+      by iFrame "#".
     }
     { (* Not stale *)
       assert (v = args.(GR_Seq)) by word.
@@ -200,6 +203,7 @@ Proof.
 
       (* prove that args.(GR_CID) is in lastReplyMV (probably just add [∗ map] _ ↦ _;_ ∈ lastReplyMV ; lastSeq, True) *)
       wp_loadField.
+      iApply wp_ncfupd.
       wp_apply (release_spec with "[-HΦ HCID HSeq HKey HValue_sl HValue HErr Hrep_val_sl]").
       {
         iFrame "#∗".
@@ -214,14 +218,14 @@ Proof.
       {
         instantiate (1:={| GR_Err := _ |}).
         iExists _; iFrame.
-        iExists _; iFrame.
+        iMod (readonly_alloc with "[Hrep_val_sl]") as "$"; by iFrame.
       }
       iRight.
       rewrite HlastReplyMlookup.
       simpl.
       destruct x0.
       iExists _.
-      iFrame "#".
+      by iFrame "#".
     }
   }
   {
@@ -404,6 +408,7 @@ Proof.
       Opaque typed_slice.is_slice_small.
       iDestruct "Hval_sl" as "[Hrep_val_sl Hsrv_rep_val_sl]".
       Transparent typed_slice.is_slice.
+      iApply wp_ncfupd.
       wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl HErr HValue]").
       {
         iFrame "HmuInv Hlocked".
@@ -445,11 +450,11 @@ Proof.
       iSplitL "HErr HValue Hrep_val_sl".
       {
         iExists _; iFrame.
-        iExists _; iFrame.
+        iMod (readonly_alloc with "[Hrep_val_sl]") as "$"; by iFrame.
       }
       iSimpl.
       iRight. iExists _.
-      iFrame "#".
+      by iFrame "#".
     }
     { (* don't have shard *)
       wp_storeField.
@@ -482,14 +487,12 @@ Proof.
 
       wp_loadField.
       iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
-      iDestruct "HValue_sl" as (?) "Hval_sl".
-      Opaque typed_slice.is_slice_small.
-      iDestruct "Hval_sl" as "[Hsrv_rep_val_sl Hrep_val_sl]".
-      Transparent typed_slice.is_slice_small.
-      wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl HValue HErr]").
+      iApply wp_ncfupd.
+      wp_apply (release_spec with "[> -HΦ HCID HSeq HKey HValue HErr]").
       {
         iFrame "HmuInv Hlocked".
-        iNext.
+        iMod (readonly_load with "HValue_sl") as (?) "HValue_sl'".
+        iModIntro. iNext.
         iExists _,_,_, _, _, _, _, _.
         iExists _, _, _, _.
         iFrame.
@@ -497,9 +500,9 @@ Proof.
         { iPureIntro.
           rewrite !dom_insert_L /=.
           congruence. }
-        iSplitL "HlastReply_structs Hsrv_rep_val_sl".
+        iSplitL "HlastReply_structs HValue_sl'".
         {
-          iApply (big_sepM2_insert_2 with "[Hsrv_rep_val_sl] HlastReply_structs").
+          iApply (big_sepM2_insert_2 with "[HValue_sl'] HlastReply_structs").
           simpl.
           iExists _, _; iFrame.
           done.
@@ -507,17 +510,15 @@ Proof.
         done.
       }
       iApply "HΦ".
-      iSplitL "HErr HValue Hrep_val_sl".
+      iSplitL "HErr HValue".
       {
         iExists _.
         instantiate (1:=mkGetReplyC _ _).
-        iFrame.
-        iExists _.
-        iFrame.
+        by iFrame.
       }
       iSimpl.
       iRight. iExists _.
-      iFrame "#".
+      by iFrame "#".
     }
   }
 Qed.

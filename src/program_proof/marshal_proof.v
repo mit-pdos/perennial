@@ -550,13 +550,13 @@ Qed.
 (* This version of GetBytes consumes full ownership of the decoder to be able to
    give the full fraction to the returned slice *)
 Theorem wp_Dec__GetBytes' stk E dec_v bs (n: u64) r s q data :
-  length bs = int.nat n →
+  n = U64 (length bs) →
   {{{ is_dec dec_v (EncBytes bs :: r) s q data ∗
       (∀ vs' : list u8, is_slice_small s byteT q vs' -∗ is_slice s byteT q vs') }}}
     Dec__GetBytes dec_v #n @ stk; E
   {{{ s', RET slice_val s'; is_slice s' byteT q bs }}}.
 Proof.
-  iIntros (Hbound Φ) "(Hdec&Hclo) HΦ"; iNamed "Hdec".
+  iIntros (-> Φ) "(Hdec&Hclo) HΦ"; iNamed "Hdec".
   pose proof (has_encoding_length Henc).
   autorewrite with len in H.
   rewrite encoded_length_cons /= in H.
@@ -575,18 +575,18 @@ Proof.
   iExactEq "Hbs".
   f_equal.
   rewrite -> subslice_drop_take by word.
-  replace (int.nat (word.add off n) - int.nat off)%nat with (int.nat n) by word.
+  replace (int.nat (word.add off (length bs)) - int.nat off)%nat with (length bs) by word.
   rewrite Hdataeq.
   rewrite take_app_alt //; lia.
 Qed.
 
 Theorem wp_Dec__GetBytes stk E dec_v bs (n: u64) r s q data :
-  length bs = int.nat n →
+  n = U64 (length bs) →
   {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
     Dec__GetBytes dec_v #n @ stk; E
   {{{ q' s', RET slice_val s'; is_slice_small s' byteT q' bs ∗ is_dec dec_v r s q' data }}}.
 Proof.
-  iIntros (Hbound Φ) "Hdec HΦ"; iNamed "Hdec".
+  iIntros (-> Φ) "Hdec HΦ"; iNamed "Hdec".
   pose proof (has_encoding_length Henc).
   autorewrite with len in H.
   rewrite encoded_length_cons /= in H.
@@ -608,18 +608,32 @@ Proof.
   { iExactEq "Hbs".
     f_equal.
     rewrite -> subslice_drop_take by word.
-    replace (int.nat (word.add off n) - int.nat off)%nat with (int.nat n) by word.
+    replace (int.nat (word.add off (length bs)) - int.nat off)%nat with (length bs) by word.
     rewrite Hdataeq.
     rewrite take_app_alt //; lia.
   }
   iExists _, _; iFrame.
   iPureIntro.
   split_and!; auto; try len.
-  replace (int.nat (word.add off n)) with (int.nat off + int.nat n)%nat by word.
+  replace (int.nat (word.add off (length bs))) with (int.nat off + int.nat (length bs))%nat by word.
   rewrite -drop_drop.
   eapply has_encoding_from_app.
   rewrite Hdataeq.
-  rewrite drop_app_alt //; lia.
+  rewrite drop_app_alt //; word.
+Qed.
+
+Theorem wp_Dec__GetBytes_ro stk E dec_v bs (n: u64) r s q data :
+  n = U64 (length bs) →
+  {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
+    Dec__GetBytes dec_v #n @ stk; E
+  {{{ q' s', RET slice_val s'; readonly (is_slice_small s' byteT 1 bs) ∗ is_dec dec_v r s q' data }}}.
+Proof.
+  iIntros (-> Φ) "Hdec HΦ".
+  iApply wp_ncfupd.
+  iApply (wp_Dec__GetBytes with "Hdec"); first done.
+  iIntros "!>" (q' s') "[Hsl Hdec]".
+  iApply "HΦ". iFrame "Hdec".
+  iMod (readonly_alloc with "[Hsl]") as "$"; by iFrame.
 Qed.
 
 (* TODO: use this to replace list_lookup_lt (it's much easier to remember) *)

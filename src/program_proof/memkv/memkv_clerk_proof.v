@@ -95,6 +95,7 @@ Proof using Type*.
     iNamed "Hpost".
     iDestruct "Hpost" as "(Hrep & Hval_sl & HΦ)".
     wp_load.
+    iMod (readonly_load with "Hval_sl") as (?) "Hval_sl".
     iModIntro.
     iApply "HΦ".
     iFrame.
@@ -123,13 +124,13 @@ Proof using Type*.
 Qed.
 
 Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
-⊢ {{{ own_MemKVClerk ck γ ∗ typed_slice.is_slice val_sl byteT 1%Qp v }}}
+⊢ {{{ own_MemKVClerk ck γ ∗ readonly (typed_slice.is_slice_small val_sl byteT 1 v) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     MemKVClerk__Put #ck #key (slice_val val_sl) @ ⊤
   <<< kvptsto γ key v >>>
-  {{{ RET #(); own_MemKVClerk ck γ ∗ typed_slice.is_slice val_sl byteT 1%Qp v }}}.
+  {{{ RET #(); own_MemKVClerk ck γ }}}.
 Proof using Type*.
-  iIntros "!#" (Φ) "[Hown Hval_sl] Hatomic".
+  iIntros "!#" (Φ) "[Hown #Hval_sl] Hatomic".
   wp_lam.
   wp_pures.
 
@@ -177,16 +178,16 @@ Proof using Type*.
     iModIntro.
     iSplitL ""; first done.
     wp_pures.
-    iDestruct "HshardPutPost" as "(Hval_sl & HshardCk & [[%Hbad _]|[_ Hpost]])".
+    iDestruct "HshardPutPost" as "(HshardCk & [[%Hbad _]|[_ Hpost]])".
     { by exfalso. }
     iApply "Hpost".
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    iFrame "Hval_sl". iModIntro. iExists _, _, _, _. by iFrame "#∗".
+    iModIntro. iExists _, _, _, _. by iFrame "#∗".
   }
   {
     wp_loadField.
-    iDestruct "HshardPutPost" as "(Hval_sl & HshardCk & [Hatomic|[%Hbad _]])"; last first.
+    iDestruct "HshardPutPost" as "(HshardCk & [Hatomic|[%Hbad _]])"; last first.
     { exfalso. naive_solver. }
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_MemKVCoordClerk__GetShardMap with "[$HcoordCk_own]").

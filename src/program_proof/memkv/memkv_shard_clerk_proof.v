@@ -213,13 +213,12 @@ Qed.
 Lemma wp_MemKVShardClerk__Put γkv (ck:loc) (key:u64) (v:list u8) value_sl Q :
   {{{
        (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q))) ∗
-       typed_slice.is_slice value_sl byteT 1%Qp v ∗
+       readonly (typed_slice.is_slice_small value_sl byteT 1%Qp v) ∗
        own_MemKVShardClerk ck γkv
   }}}
     MemKVShardClerk__Put #ck #key (slice_val value_sl)
   {{{
        (e:u64), RET #e;
-       typed_slice.is_slice value_sl byteT 1%Qp v ∗
        own_MemKVShardClerk ck γkv ∗ (
        ⌜e ≠ 0⌝ ∗
         (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q)))
@@ -230,7 +229,7 @@ Lemma wp_MemKVShardClerk__Put γkv (ck:loc) (key:u64) (v:list u8) value_sl Q :
 .
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  iDestruct "Hpre" as "(Hkvptsto & Hval_sl & Hck)".
+  iDestruct "Hpre" as "(Hkvptsto & #Hval_sl & Hck)".
   iNamed "Hck".
   wp_lam.
   wp_pures.
@@ -268,9 +267,9 @@ Proof.
     rewrite (zero_slice_val).
     iExists _; iFrame.
   }
-  iAssert (own_PutRequest args_ptr value_sl {| PR_CID := cid; PR_Seq := seq; PR_Key := key; PR_Value := v |}) with "[CID Seq Key Value Hval_sl]" as "Hargs".
+  iAssert (own_PutRequest args_ptr value_sl {| PR_CID := cid; PR_Seq := seq; PR_Key := key; PR_Value := v |}) with "[CID Seq Key Value]" as "Hargs".
   {
-    iFrame. simpl. iPureIntro; word.
+    iFrame "∗#". simpl. iPureIntro; word.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
@@ -347,29 +346,24 @@ Proof.
     wp_pures.
     wp_loadField.
     iApply "HΦ".
-    iSplitL "Hreq".
-    {
-      iNamed "Hreq"; iFrame.
-    }
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
     { iExists _, _, _, _, _.
       rewrite is_shard_server_unfold.
       iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
-      iSplit.
-      { iFrame "#". }
-      iPureIntro. word.
+      iFrame "#". iPureIntro.
+      split; last done. word.
     }
     iDestruct "Hpost" as "[Hpost|Hpost]".
     {
       iLeft.
       iEval (rewrite -global_groveG_inv_conv').
       rewrite Hγeq.
-      iDestruct "Hpost" as "[$ $]".
+      by iDestruct "Hpost" as "[$ $]".
     }
     {
       iRight.
       iDestruct "Hpost" as "($&HQ)".
-      iFrame.
+      by iFrame.
     }
   }
 Qed.
@@ -389,9 +383,9 @@ Lemma wp_MemKVShardClerk__Get γkv (ck:loc) (key:u64) (value_ptr:loc) Q :
         (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
 
         ⌜e = 0⌝ ∗
-              ∃ some_sl v q, value_ptr ↦[slice.T byteT] (slice_val some_sl) ∗
-                                     typed_slice.is_slice_small some_sl byteT q%Qp v ∗
-                                     Q v
+              ∃ some_sl v, value_ptr ↦[slice.T byteT] (slice_val some_sl) ∗
+                           readonly (typed_slice.is_slice_small some_sl byteT 1 v) ∗
+                           Q v
         )
   }}}
 .

@@ -181,7 +181,10 @@ Proof.
       wp_apply (wp_decodeGetRequest with "[$Hreq_sl]").
       { done. }
       iIntros (args_ptr) "Hargs".
-      wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep HreqInv]").
+      iDestruct (typed_slice.is_slice_zero byteT 1%Qp) as "Hzero_sl".
+      iDestruct (typed_slice.is_slice_small_acc with "Hzero_sl") as "{Hzero_sl} [Hzero_sl _]".
+      iMod (readonly_alloc_1 with "Hzero_sl") as "{Hzero_sl} Hzero_sl".
+      wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep HreqInv Hzero_sl]").
       {
         rewrite -global_groveG_inv_conv'. iFrame "HreqInv".
         replace (zero_val (struct.t GetReply)) with ((#0, (slice.nil, #()))%V); last first.
@@ -192,12 +195,8 @@ Proof.
         iExists (mkGetReplyC _ []).
         iFrame.
         iExists (Slice.nil).
+        rewrite -global_groveG_inv_conv'. (* WTF... *)
         iFrame.
-        simpl.
-        iDestruct (typed_slice.is_slice_zero byteT 1%Qp) as "HH".
-        iDestruct (typed_slice.is_slice_small_acc with "HH") as "[H _]".
-        iExists 1%Qp.
-        iFrame "H".
       }
       iIntros (rep') "[Hrep Hpost]".
       wp_pures.
