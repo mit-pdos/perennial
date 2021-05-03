@@ -63,6 +63,12 @@ def main():
         default=None,
     )
     parser.add_argument(
+        "--marshal",
+        help="path to marshal repo (skip translation if not provided)",
+        metavar="MARSHAL_PATH",
+        default=None,
+    )
+    parser.add_argument(
         "--gokv",
         help="path to gokv repo (skip translation if not provided)",
         metavar="GOKV_PATH",
@@ -77,6 +83,7 @@ def main():
     examples_dir = args.examples
     distributed_dir = args.distributed_examples
     gokv_dir = args.gokv
+    marshal_dir = args.marshal
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -90,6 +97,8 @@ def main():
         )
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
+    if marshal_dir is not None and not os.path.isdir(marshal_dir):
+        parser.error("marshal directory does not exist")
 
     # Goose is not module-aware, so we revert to the pre-1.16 behavior of
     # detecting whether to use modules or not.
@@ -257,6 +266,13 @@ def main():
                 # "From Goose Require github_com.mit_pdos.lockservice."
             )
 
+    if marshal_dir is not None:
+        run_goose(
+            marshal_dir,
+            path.join(perennial_dir, "external/Goose"),
+            pkg="github.com/tchajed/marshal",
+            ffi="none",
+        )
 
 if __name__ == "__main__":
     main()
