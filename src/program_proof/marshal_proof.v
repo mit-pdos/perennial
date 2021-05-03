@@ -286,7 +286,9 @@ Local Lemma wp_bool2byte stk E (x:bool) :
     bool2byte #x @ stk; E
   {{{ RET #(U8 (if x then 1 else 0))%Z; True }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "_ HΦ". wp_lam.
+  destruct x; wp_pures; by iApply "HΦ".
+Qed.
 
 Theorem wp_Enc__PutBool stk E enc_v sz r (x:bool) remaining :
   1 ≤ remaining →
