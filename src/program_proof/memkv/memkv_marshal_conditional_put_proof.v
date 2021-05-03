@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import ModArith.
 From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof Require Import marshal_proof.
@@ -30,8 +31,8 @@ Definition own_ConditionalPutRequest args_ptr expv_sl newv_sl args : iProp Σ :=
   "HKey" ∷ args_ptr ↦[ConditionalPutRequest :: "Key"] #args.(CPR_Key) ∗
   "HExpValue" ∷ args_ptr ↦[ConditionalPutRequest :: "ExpectedValue"] (slice_val expv_sl) ∗
   "HNewValue" ∷ args_ptr ↦[ConditionalPutRequest :: "NewValue"] (slice_val newv_sl) ∗
-  "HExpValue_sl" ∷ typed_slice.is_slice expv_sl byteT 1%Qp args.(CPR_ExpValue) ∗
-  "HNewValue_sl" ∷ typed_slice.is_slice newv_sl byteT 1%Qp args.(CPR_NewValue) ∗
+  "#HExpValue_sl" ∷ readonly (typed_slice.is_slice_small expv_sl byteT 1%Qp args.(CPR_ExpValue)) ∗
+  "#HNewValue_sl" ∷ readonly (typed_slice.is_slice_small newv_sl byteT 1%Qp args.(CPR_NewValue)) ∗
   "%HseqPositive" ∷ ⌜int.Z args.(CPR_Seq) > 0⌝
 .
 
@@ -43,7 +44,8 @@ Definition own_ConditionalPutReply reply_ptr rep : iProp Σ :=
 Definition has_encoding_ConditionalPutRequest (data:list u8) (args:ConditionalPutRequestC) : Prop :=
   has_encoding data [ EncUInt64 args.(CPR_CID) ; EncUInt64 args.(CPR_Seq); EncUInt64 args.(CPR_Key);
     EncUInt64 (length args.(CPR_ExpValue)) ; EncBytes args.(CPR_ExpValue);
-    EncUInt64 (length args.(CPR_NewValue)) ; EncBytes args.(CPR_NewValue)  ].
+    EncUInt64 (length args.(CPR_NewValue)) ; EncBytes args.(CPR_NewValue)  ] ∧
+  int.Z args.(CPR_Seq) > 0.
 
 Definition has_encoding_ConditionalPutReply (data:list u8) (rep:ConditionalPutReplyC) :=
   has_encoding data [ EncUInt64 rep.(CPR_Err); EncBool rep.(CPR_Succ) ].
@@ -59,7 +61,101 @@ Lemma wp_encodeConditionalPutRequest args_ptr expv_sl newv_sl args :
          own_ConditionalPutRequest args_ptr expv_sl newv_sl args
   }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "Hrep HΦ".
+
+  wp_lam.
+  wp_pures.
+  iNamed "Hrep".
+
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Assume).
+  rewrite bool_decide_eq_true.
+  iIntros (Hoverflow1).
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Assume).
+  rewrite bool_decide_eq_true.
+  iIntros (Hoverflow2).
+  apply sum_nooverflow_l in Hoverflow1.
+  rewrite -word.add_assoc in Hoverflow2.
+  apply sum_nooverflow_r in Hoverflow2.
+  change (int.Z (word.add (word.add (word.add (word.add 8 8) 8) 8) 8)) with 40%Z in Hoverflow2.
+
+  wp_apply (wp_new_enc).
+  iIntros (enc) "Henc".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_pures.
+
+  wp_loadField.
+  iMod (readonly_load with "HExpValue_sl") as (q) "HExpValue_sl'".
+  iDestruct (typed_slice.is_slice_small_sz with "HExpValue_sl'") as %Hsz.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Enc__PutBytes with "[$Henc $HExpValue_sl']").
+  { word. }
+  iIntros "[Henc _]".
+  wp_pures.
+
+  wp_loadField.
+  iMod (readonly_load with "HNewValue_sl") as (q') "HNewValue_sl'".
+  iDestruct (typed_slice.is_slice_small_sz with "HNewValue_sl'") as %Hsz'.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Enc__PutBytes with "[$Henc $HNewValue_sl']").
+  { word. }
+  iIntros "[Henc _]".
+  wp_pures.
+
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (rep_sl repData).
+  iIntros "(%Henc & %Hlen & Hrep_sl)".
+  iApply "HΦ".
+  iFrame "∗#".
+  iPureIntro.
+  split; last word.
+  rewrite /has_encoding_ConditionalPutRequest.
+  split; last done.
+  replace (U64 (length args.(CPR_ExpValue))) with expv_sl.(Slice.sz) by word.
+  replace (U64 (length args.(CPR_NewValue))) with newv_sl.(Slice.sz) by word.
+  done.
+Qed.
 
 Lemma wp_decodeConditionalPutRequest req_sl reqData args :
   {{{
@@ -71,20 +167,58 @@ Lemma wp_decodeConditionalPutRequest req_sl reqData args :
        (args_ptr:loc) expv_sl newv_sl, RET #args_ptr; own_ConditionalPutRequest args_ptr expv_sl newv_sl args
   }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "[%Henc Hsl] HΦ".
+  wp_lam.
+  wp_apply (wp_allocStruct).
+  {
+    rewrite zero_slice_val.
+    naive_solver.
+  }
+  iIntros (rep_ptr) "Hrep".
+  iDestruct (struct_fields_split with "Hrep") as "HH".
+  iNamed "HH".
+  wp_pures.
 
-Lemma wp_decodeConditionalPutReply rep rep_sl repData :
-  {{{
-       typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
-       ⌜has_encoding_ConditionalPutReply repData rep ⌝
-  }}}
-    decodeConditionalPutReply (slice_val rep_sl)
-  {{{
-       (rep_ptr:loc) , RET #rep_ptr;
-       own_ConditionalPutReply rep_ptr rep
-  }}}.
-Proof.
-Admitted.
+  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
+  destruct Henc as [Henc Hseq].
+  wp_apply (wp_new_dec with "[$Hsl]").
+  { done. }
+  iIntros (?) "Hdec".
+  wp_pures.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_storeField.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_storeField.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_storeField.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
+  iIntros (??) "[Hexp_sl Hdec]".
+  wp_apply (wp_storeField with "ExpectedValue").
+  { apply slice_val_ty. }
+  iIntros "ExpectedValue".
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
+  iIntros (??) "[Hnew_sl Hdec]".
+  wp_apply (wp_storeField with "NewValue").
+  { apply slice_val_ty. }
+  iIntros "NewValue".
+
+  wp_pures.
+  iApply "HΦ".
+  iFrame.
+  iPureIntro. done.
+Qed.
 
 Lemma wp_encodeConditionalPutReply rep_ptr rep :
   {{{
@@ -97,6 +231,77 @@ Lemma wp_encodeConditionalPutReply rep_ptr rep :
        ⌜has_encoding_ConditionalPutReply repData rep ⌝
   }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "Hrep HΦ".
+
+  wp_lam.
+  wp_pures.
+  iNamed "Hrep".
+
+  wp_apply (wp_new_enc).
+  iIntros (enc) "Henc".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_Enc__PutBool with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_pures.
+
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (rep_sl repData).
+  iIntros "(%Henc & %Hlen & Hrep_sl)".
+  iApply "HΦ".
+  iFrame.
+  iPureIntro.
+  rewrite /has_encoding_ConditionalPutReply.
+  done.
+Qed.
+
+Lemma wp_decodeConditionalPutReply rep rep_sl repData :
+  {{{
+       typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
+       ⌜has_encoding_ConditionalPutReply repData rep ⌝
+  }}}
+    decodeConditionalPutReply (slice_val rep_sl)
+  {{{
+       (rep_ptr:loc) , RET #rep_ptr;
+       own_ConditionalPutReply rep_ptr rep
+  }}}.
+Proof.
+  iIntros (Φ) "[Hsl %Henc] HΦ".
+  wp_lam.
+  wp_apply (wp_allocStruct).
+  {
+    naive_solver.
+  }
+  iIntros (rep_ptr) "Hrep".
+  iDestruct (struct_fields_split with "Hrep") as "HH".
+  iNamed "HH".
+  wp_pures.
+
+  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
+  wp_apply (wp_new_dec with "[$Hsl]").
+  { done. }
+  iIntros (?) "Hdec".
+  wp_pures.
+
+  wp_apply (wp_Dec__GetInt with "[$Hdec]").
+  iIntros "Hdec".
+  wp_storeField.
+
+  wp_apply (wp_Dec__GetBool with "[$Hdec]").
+  iIntros "Hdec".
+  wp_storeField.
+
+  iApply "HΦ".
+  iModIntro.
+  iFrame.
+Qed.
 
 End memkv_marshal_conditional_put_proof.

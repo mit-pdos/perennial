@@ -169,7 +169,9 @@ Definition ConditionalPutReply := struct.decl [
 
 Definition encodeConditionalPutRequest: val :=
   rec: "encodeConditionalPutRequest" "req" :=
-    let: "num_bytes" := #8 + #8 + #8 + #8 + slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req") + #8 + slice.len (struct.loadF ConditionalPutRequest "NewValue" "req") in
+    control.impl.Assume (slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req") + slice.len (struct.loadF ConditionalPutRequest "NewValue" "req") > slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req"));;
+    let: "num_bytes" := #8 + #8 + #8 + #8 + #8 + slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req") + slice.len (struct.loadF ConditionalPutRequest "NewValue" "req") in
+    control.impl.Assume ("num_bytes" > slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req") + slice.len (struct.loadF ConditionalPutRequest "NewValue" "req"));;
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF ConditionalPutRequest "CID" "req");;
     marshal.Enc__PutInt "e" (struct.loadF ConditionalPutRequest "Seq" "req");;

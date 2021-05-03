@@ -62,7 +62,6 @@ Proof.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_pures.
-
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_apply (wp_Assume).
@@ -101,7 +100,6 @@ Proof.
   { word. }
   iIntros "Henc".
   wp_pures.
-
   wp_loadField.
   wp_apply (wp_Enc__PutBytes with "[$Henc $HValue_sl']").
   { word. }
@@ -117,8 +115,8 @@ Proof.
   split; last word.
   rewrite /has_encoding_PutRequest.
   split; last done.
-  replace (U64 (length args.(PR_Value))) with val_sl.(Slice.sz); first done.
-  word.
+  replace (U64 (length args.(PR_Value))) with val_sl.(Slice.sz) by word.
+  done.
 Qed.
 
 Lemma wp_decodePutRequest req_sl reqData args :

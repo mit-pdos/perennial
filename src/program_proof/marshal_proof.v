@@ -20,7 +20,7 @@ Local Definition encode1 (e:encodable) : list u8 :=
   | EncUInt64 x => u64_le x
   | EncUInt32 x => u32_le x
   | EncBytes bs => bs
-  | EncBool b => if b then [U8 1] else [U8 0]
+  | EncBool b => [U8 (if b then 1 else 0)%Z]
   end.
 
 Lemma encode1_u64_inj : Inj (=) (=) (encode1 ∘ EncUInt64).
@@ -281,6 +281,54 @@ Proof.
     eapply has_encoding_from_app; eauto.
 Qed.
 
+Local Lemma wp_bool2byte stk E (x:bool) :
+  {{{ True }}}
+    bool2byte #x @ stk; E
+  {{{ RET #(U8 (if x then 1 else 0))%Z; True }}}.
+Proof.
+Admitted.
+
+Theorem wp_Enc__PutBool stk E enc_v sz r (x:bool) remaining :
+  1 ≤ remaining →
+  {{{ is_enc enc_v sz r remaining }}}
+    Enc__PutBool enc_v #x @ stk; E
+  {{{ RET #(); is_enc enc_v sz (r ++ [EncBool x]) (remaining - 1) }}}.
+Proof.
+  iIntros (Hspace Φ) "Hpre HΦ"; iNamed "Hpre".
+  set (off:=encoded_length r) in *.
+  wp_call.
+  wp_load.
+  wp_pures.
+  iDestruct (is_slice_small_sz with "Hs") as %Hslice_len.
+  wp_pures.
+  wp_apply wp_bool2byte.
+  set (u:=U8 (if x then 1 else 0)%Z).
+  wp_pures.
+  wp_apply (wp_SliceSet (V:=byte) with "[$Hs]").
+  { iPureIntro. apply lookup_lt_is_Some_2. word. }
+  iIntros "Hs".
+  wp_pures.
+  wp_load. wp_store.
+  iApply "HΦ". iModIntro.
+  iExists _, _, _. iFrame.
+  iSplit; eauto.
+  rewrite insert_length.
+  iSplit; eauto.
+  rewrite encoded_length_app1. simpl.
+  iSplit.
+  { iPureIntro. word. }
+  iSplit.
+  { iExactEq "Hoff". rewrite /named. do 3 f_equal. word. }
+  iPureIntro.
+  split; first word.
+  replace (<[int.nat off:=u]> data) with
+      (take off data ++ [u] ++ drop (off + 1) data); last first.
+  { rewrite insert_app. 2:word.
+    repeat f_equal; word. }
+  apply has_encoding_app; eauto.
+  eapply has_encoding_from_app; eauto.
+Qed.
+
 Theorem wp_Enc__PutInts stk E enc_v sz r (x_s: Slice.t) q (xs:list u64) remaining :
   8*(Z.of_nat $ length xs) ≤ remaining →
   {{{ is_enc enc_v sz r remaining ∗ is_slice_small x_s uint64T q xs }}}
@@ -365,55 +413,6 @@ Proof.
     eapply has_encoding_from_app.
     rewrite encode_app encode_singleton //=.
 Qed.
-
-Theorem wp_Enc__PutBool stk E enc_v sz r (x:bool) remaining :
-  1 ≤ remaining →
-  {{{ is_enc enc_v sz r remaining }}}
-    Enc__PutBool enc_v #x @ stk; E
-  {{{ RET #(); is_enc enc_v sz (r ++ [EncBool x]) (remaining - 1) }}}.
-Proof.
-  iIntros (Hspace Φ) "Hpre HΦ"; iNamed "Hpre".
-  set (off:=encoded_length r) in *.
-  wp_call.
-  wp_load.
-  wp_pures.
-  iDestruct (is_slice_small_sz with "Hs") as %Hslice_len.
-  wp_if_destruct.
-  - wp_pures.
-    wp_apply (wp_SliceSet (V:=byte) with "[$Hs]").
-    { iPureIntro. apply lookup_lt_is_Some_2. word. }
-    iIntros "Hs".
-    wp_pures.
-    wp_load. wp_store.
-    iApply "HΦ". iModIntro.
-    iExists _, _, _. iFrame.
-    iSplit; eauto.
-    rewrite insert_length.
-    iSplit; eauto.
-    rewrite encoded_length_app1. simpl.
-    iSplit.
-    { iPureIntro. word. }
-    iSplit.
-    { iExactEq "Hoff". rewrite /named. f_equal. f_equal. admit. }
-    iSplit.
-    { iPureIntro. word. }
-    iPureIntro.
-    rewrite -(take_drop (int.nat off) (<[int.nat off:=U8 0]> data)).
-    rewrite take_insert; last by lia.
-    rewrite drop_insert_le; last by lia.
-    replace (int.nat off - int.nat off)%nat with 0%nat by lia.
-    subst off.
-    replace (int.nat (U64 (Z.of_nat (encoded_length r)))) with (encoded_length r).
-    2: { word. }
-    apply has_encoding_app; eauto.
-    rewrite -(take_drop 1 (drop (encoded_length r) data)).
-    rewrite insert_app_l.
-    2: { rewrite take_length. rewrite min_l; try lia.
-         rewrite drop_length. lia. }
-    eapply has_encoding_from_app.
-    f_equal. admit.
-  - admit.
-Admitted.
 
 Theorem wp_Enc__Finish stk E enc_v r sz remaining :
   {{{ is_enc enc_v sz r remaining }}}
@@ -545,6 +544,44 @@ Proof.
   eapply has_encoding_from_app.
   rewrite -app_assoc.
   rewrite drop_app_ge //.
+Qed.
+
+Theorem wp_Dec__GetBool stk E dec_v (x: bool) r s q data :
+  {{{ is_dec dec_v (EncBool x :: r) s q data }}}
+    Dec__GetBool dec_v @ stk; E
+  {{{ RET #x; is_dec dec_v r s q data }}}.
+Proof.
+  iIntros (Φ) "Hdec HΦ"; iNamed "Hdec".
+  wp_call.
+  wp_load; wp_pures.
+  wp_load; wp_store.
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  pose proof (has_encoding_length Henc).
+  autorewrite with len in H.
+  rewrite encoded_length_cons in H.
+  change (length (encode1 _)) with 1%nat in H.
+  apply has_encoding_inv in Henc as [extra [Henc ?]].
+  rewrite encode_cons in Henc.
+  assert (drop (int.nat off) data !! 0%nat = Some $ U8 (if x then 1 else 0)) as Hx.
+  { rewrite Henc. done. }
+  rewrite lookup_drop Nat.add_0_r in Hx.
+  wp_apply (wp_SliceGet (V:=byte) with "[$Hs]").
+  { done. }
+  iIntros "Hl". wp_pures.
+  destruct x; wp_pures; iApply "HΦ";
+    iExists _, _; iFrame; iPureIntro.
+  - split; first done.
+    split; first word.
+    eapply has_encoding_from_app.
+    replace (int.nat (word.add off 1)) with (int.nat off + 1)%nat by word.
+    rewrite -drop_drop.
+    rewrite Henc /= drop_0 //.
+  - split; first done.
+    split; first word.
+    eapply has_encoding_from_app.
+    replace (int.nat (word.add off 1)) with (int.nat off + 1)%nat by word.
+    rewrite -drop_drop.
+    rewrite Henc /= drop_0 //.
 Qed.
 
 (* This version of GetBytes consumes full ownership of the decoder to be able to
@@ -711,21 +748,6 @@ Proof.
   - rewrite app_nil_r //.
   - auto.
 Qed.
-
-Theorem wp_Dec__GetBool stk E dec_v (x: bool) r s q data :
-  {{{ is_dec dec_v (EncBool x :: r) s q data }}}
-    Dec__GetBool dec_v @ stk; E
-  {{{ RET #x; is_dec dec_v r s q data }}}.
-Proof.
-  iIntros (Φ) "Hdec HΦ"; iNamed "Hdec".
-  wp_call.
-  wp_load; wp_pures.
-  wp_load; wp_store.
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  wp_apply (wp_SliceGet (V:=byte) with "[$Hs]").
-  { admit. }
-  admit.
-Admitted.
 
 End goose_lang.
 

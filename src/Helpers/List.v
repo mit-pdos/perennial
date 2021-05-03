@@ -102,15 +102,24 @@ Section list.
     exists x; auto.
   Qed.
 
+  (* FIXME: upstream (std++ MR 260 *)
+  Lemma insert_app {A} (i : nat) (x : A) (l : list A) :
+    i < length l →
+    <[i := x]> l = (take i l) ++ [x] ++ drop (S i) l.
+  Proof.
+    intros Hi.
+    rewrite -(take_drop_middle (<[i := x]> l) i x).
+    { rewrite list_lookup_insert //. }
+    rewrite take_insert // drop_insert_gt //.
+  Qed.
+
   Lemma concat_insert_app {A} : forall (index: nat) (l: list (list A)) (x: list A),
     index < length l ->
     concat (<[index := x]> l) = (concat (take index l)) ++ x ++ (concat (drop (index+1) l)).
   Proof.
     intros.
-    rewrite -(take_drop_middle (<[index := x]> l) index x); auto.
-    rewrite list_lookup_insert; auto.
-    rewrite concat_app concat_cons take_insert; auto.
-    rewrite drop_insert_gt; auto.
+    rewrite insert_app //.
+    rewrite concat_app concat_cons.
     by replace (index + 1) with (S index) by lia.
   Qed.
 

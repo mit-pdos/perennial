@@ -196,12 +196,13 @@ Proof.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_pures.
-
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_apply (wp_Assume).
   rewrite bool_decide_eq_true.
   iIntros (Hoverflow).
+  apply sum_nooverflow_r in Hoverflow.
+  change (int.Z (word.add 8 8)) with 16%Z in Hoverflow.
 
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
@@ -209,9 +210,7 @@ Proof.
 
   wp_loadField.
   wp_apply (wp_Enc__PutInt with "Henc").
-  { (* For some reason, having the negation in the context helps word -- but not if the goal is already False! *)
-    apply dec_stable. intros HP. apply HP. word.
-  }
+  { word. }
   iIntros "Henc".
   wp_pures.
 
@@ -220,16 +219,12 @@ Proof.
   iDestruct (typed_slice.is_slice_small_sz with "HValue_sl'") as %Hsz.
   wp_apply (wp_slice_len).
   wp_apply (wp_Enc__PutInt with "Henc").
-  { apply dec_stable. intros HP. apply HP. word. }
+  { word. }
   iIntros "Henc".
   wp_pures.
-
   wp_loadField.
   wp_apply (wp_Enc__PutBytes with "[$Henc $HValue_sl']").
-  { apply sum_nooverflow_r in Hoverflow.
-    rewrite Hoverflow Hsz.
-    change (int.Z (word.add 8 8)) with 16.
-    rewrite Z2Nat.id; word. }
+  { word. }
   iIntros "[Henc _]".
   wp_pures.
 
@@ -240,8 +235,8 @@ Proof.
   iFrame.
   iPureIntro.
   unfold has_encoding_GetReply.
-  replace (U64 (length rep.(GR_Value))) with val_sl.(Slice.sz); first done.
-  word.
+  replace (U64 (length rep.(GR_Value))) with val_sl.(Slice.sz) by word.
+  done.
 Qed.
 
 End memkv_marshal_get_proof.

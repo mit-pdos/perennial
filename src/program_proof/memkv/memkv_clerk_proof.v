@@ -208,17 +208,15 @@ Qed.
 
 Lemma KVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
 ⊢ {{{ own_MemKVClerk ck γ ∗
-      typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
-      typed_slice.is_slice newv_sl byteT 1%Qp newv }}}
+      readonly (typed_slice.is_slice_small expv_sl byteT 1 expv) ∗
+      readonly (typed_slice.is_slice_small newv_sl byteT 1 newv) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     MemKVClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) @ ⊤
   <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>
   {{{ RET #(bool_decide (expv = oldv));
-      own_MemKVClerk ck γ ∗
-      typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
-      typed_slice.is_slice newv_sl byteT 1%Qp newv }}}.
+      own_MemKVClerk ck γ }}}.
 Proof using Type*.
-  iIntros "!#" (Φ) "(Hown & Hexpv_sl & Hnewv_sl) Hatomic".
+  iIntros "!#" (Φ) "(Hown & #Hexpv_sl & #Hnewv_sl) Hatomic".
   wp_lam.
   wp_pures.
   wp_apply (wp_ref_of_zero _ _ boolT).
@@ -261,9 +259,10 @@ Proof using Type*.
   iIntros (?) "(HshardCk & HcloseShardSet)".
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__ConditionalPut _ _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γ ∗ _ ∗ _ -∗ Φ #b)%I
-    with "[Hatomic $Hexpv_sl $Hnewv_sl $HshardCk Hsucc]").
+  wp_apply (wp_MemKVShardClerk__ConditionalPut _ _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γ -∗ Φ #b)%I
+    with "[Hatomic $HshardCk Hsucc]").
   {
+    iFrame "#".
     rewrite /zero_val /=. iFrame.
   }
   iIntros (e) "HshardCondPutPost".
@@ -274,7 +273,7 @@ Proof using Type*.
     iModIntro.
     iSplitL ""; first done.
     wp_pures.
-    iDestruct "HshardCondPutPost" as "(Hexpv_sl & Hnewv_sl & HshardCk & [[%Hbad _]|[_ Hpost]])".
+    iDestruct "HshardCondPutPost" as "(HshardCk & [[%Hbad _]|[_ Hpost]])".
     { by exfalso. }
     iDestruct "Hpost" as (succ) "(Hsucc & HΦ)".
     wp_load.
@@ -285,7 +284,7 @@ Proof using Type*.
   }
   {
     wp_loadField.
-    iDestruct "HshardCondPutPost" as "(Hexpv_sl & Hnewv_sl & HshardCk & [Hatomic|[%Hbad _]])"; last first.
+    iDestruct "HshardCondPutPost" as "(HshardCk & [Hatomic|[%Hbad _]])"; last first.
     { exfalso. naive_solver. }
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_MemKVCoordClerk__GetShardMap with "[$HcoordCk_own]").

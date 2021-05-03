@@ -269,13 +269,12 @@ Proof.
       rewrite HvalSliceRe.
 
       wp_loadField.
-      iDestruct (is_slice_small_acc with "HExpValue_sl") as "[HExpValue_sl HExpValue_close]".
+      iMod (readonly_load with "HExpValue_sl") as (?) "HExpValue_sl'".
       (*
       iDestruct (is_slice_small_acc with "Hsrv_val_sl") as "[Hsrv_val_sl Hsrv_val_close]".
        *)
-      wp_apply (wp_bytesEqual with "[$HExpValue_sl $Hsrv_val_sl]").
-      iIntros "[HExpValue_sl Hsrv_val_sl]".
-      iDestruct ("HExpValue_close" with "HExpValue_sl") as "HExpValue_sl".
+      wp_apply (wp_bytesEqual with "[$HExpValue_sl' $Hsrv_val_sl]").
+      iIntros "[_ Hsrv_val_sl]".
 
       (* Avoid duplicating the proof of the merged control flow after this if *)
       wp_apply (wp_If_join_evar with "[HkvsMap HKey HNewValue]").
@@ -349,6 +348,7 @@ Proof.
 
       iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
       wp_loadField.
+      iMod (readonly_load with "HNewValue_sl") as (?) "HNewValue_sl'".
       wp_apply (release_spec with "[-HΦ HCID HSeq HKey HErr HSucc]").
       {
         iFrame "HmuInv Hlocked".
@@ -403,18 +403,16 @@ Proof.
           destruct succ; done. }
         iApply (big_sepS_delete _ _ args.(CPR_Key) with "[-]").
         { set_solver. }
-        simpl. iSplitL "HNewValue_sl Hsrv_val_sl".
+        simpl. iSplitL "HNewValue_sl' Hsrv_val_sl".
         {
           simpl. iRight. destruct succ.
-          - iExists 1%Qp, newv_sl.
+          - iExists _, newv_sl.
             rewrite lookup_insert.
             rewrite lookup_insert.
-            iSplitL ""; first done.
-            iApply (typed_slice.is_slice_to_small (V := u8)). iFrame.
+            eauto with iFrame.
           - iExists _, curv_sl.
             rewrite lookup_insert.
-            iSplitL ""; first done.
-            iFrame.
+            eauto with iFrame.
         }
         iApply (big_sepS_impl with "HvalSlices").
         iModIntro.
