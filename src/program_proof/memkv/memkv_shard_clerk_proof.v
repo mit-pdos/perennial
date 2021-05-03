@@ -13,7 +13,7 @@ Lemma wp_MakeFreshKVClerk (host:u64) γ :
   }}}
     MakeFreshKVClerk #host
   {{{
-       (ck:loc), RET #ck; own_MemKVShardClerk ck γ
+       (ck:loc), RET #ck; own_MemKVShardClerk ck γ.(kv_gn)
   }}}
 .
 Proof.
@@ -71,7 +71,7 @@ Proof.
   wp_storeField.
   iApply "HΦ".
   iModIntro.
-  iExists _, _, _, _.
+  iExists _, _, _, _, _.
   rewrite is_shard_server_unfold.
   iFrame "seq cid cl". iFrame "Hcid Hcl".
   iSplit.
@@ -89,17 +89,17 @@ Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
            ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (kvs !! k))) )
 .
 
-Lemma wp_MemKVShardClerk__InstallShard γ (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:gmap u64 (list u8)) :
+Lemma wp_MemKVShardClerk__InstallShard γkv (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:gmap u64 (list u8)) :
   {{{
-       own_MemKVShardClerk ck γ ∗
+       own_MemKVShardClerk ck γkv ∗
        own_shard_phys kvs_ref sid kvs ∗
-       own_shard γ.(kv_gn) sid kvs ∗
+       own_shard γkv sid kvs ∗
        ⌜int.Z sid < uNSHARD⌝
   }}}
     MemKVShardClerk__InstallShard #ck #sid #kvs_ref
   {{{
        RET #();
-       own_MemKVShardClerk ck γ
+       own_MemKVShardClerk ck γkv
   }}}
 .
 Proof.
@@ -155,7 +155,7 @@ Proof.
   iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |}  (own_shard γ.(kv_gn) sid kvs) (λ _, True)%I with "His_rpc Hcrpc [Hghost]") as "Hmkreq".
   { done. }
   { simpl. word. }
-  { iNext. iFrame. }
+  { iNext. rewrite Hγeq. iFrame. }
   iApply fupd_wp.
   iEval (rewrite global_groveG_inv_conv') in "Hmkreq".
   iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
@@ -200,7 +200,7 @@ Proof.
   iRight.
   iSplitL ""; first done.
   iApply "HΦ".
-  iExists _, _, _, _.
+  iExists _, _, _, _, _.
   rewrite is_shard_server_unfold.
   iModIntro.
   iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
@@ -210,19 +210,19 @@ Proof.
   simpl. word.
 Qed.
 
-Lemma wp_MemKVShardClerk__Put γ (ck:loc) (key:u64) (v:list u8) value_sl Q :
+Lemma wp_MemKVShardClerk__Put γkv (ck:loc) (key:u64) (v:list u8) value_sl Q :
   {{{
-       (|={⊤,∅}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |={∅,⊤}=> Q))) ∗
+       (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q))) ∗
        typed_slice.is_slice value_sl byteT 1%Qp v ∗
-       own_MemKVShardClerk ck γ
+       own_MemKVShardClerk ck γkv
   }}}
     MemKVShardClerk__Put #ck #key (slice_val value_sl)
   {{{
        (e:u64), RET #e;
        typed_slice.is_slice value_sl byteT 1%Qp v ∗
-       own_MemKVShardClerk ck γ ∗ (
+       own_MemKVShardClerk ck γkv ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|={⊤,∅}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗ (kvptsto γ.(kv_gn) key v -∗ |={∅,⊤}=> Q)))
+        (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q)))
         ∨
         ⌜e = 0⌝ ∗ Q
         )
@@ -278,7 +278,7 @@ Proof.
 
   { done. }
   { simpl. word. }
-  { iNext. rewrite /PreShardPut. rewrite global_groveG_inv_conv'. iFrame. }
+  { iNext. rewrite Hγeq /PreShardPut. rewrite global_groveG_inv_conv'. iFrame. }
   iApply fupd_wp.
   iEval (rewrite global_groveG_inv_conv') in "Hmkreq".
   iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
@@ -352,7 +352,7 @@ Proof.
       iNamed "Hreq"; iFrame.
     }
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
-    { iExists _, _, _, _.
+    { iExists _, _, _, _, _.
       rewrite is_shard_server_unfold.
       iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
       iSplit.
@@ -363,6 +363,7 @@ Proof.
     {
       iLeft.
       iEval (rewrite -global_groveG_inv_conv').
+      rewrite Hγeq.
       iDestruct "Hpost" as "[$ $]".
     }
     {
@@ -373,18 +374,18 @@ Proof.
   }
 Qed.
 
-Lemma wp_MemKVShardClerk__Get γ (ck:loc) (key:u64) (value_ptr:loc) Q :
+Lemma wp_MemKVShardClerk__Get γkv (ck:loc) (key:u64) (value_ptr:loc) Q :
   {{{
-       (|={⊤,∅}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |={∅,⊤}=> Q v))) ∗
-       own_MemKVShardClerk ck γ ∗
+       (|={⊤,∅}=> (∃ v, kvptsto γkv key v ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q v))) ∗
+       own_MemKVShardClerk ck γkv ∗
        (∃ dummy_sl, value_ptr ↦[slice.T byteT] (slice_val dummy_sl))
   }}}
     MemKVShardClerk__Get #ck #key #value_ptr
   {{{
        (e:u64), RET #e;
-       own_MemKVShardClerk ck γ ∗ (
+       own_MemKVShardClerk ck γkv ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|={⊤,∅}=> (∃ v, kvptsto γ.(kv_gn) key v ∗ (kvptsto γ.(kv_gn) key v -∗ |={∅,⊤}=> Q v))) ∗
+        (|={⊤,∅}=> (∃ v, kvptsto γkv key v ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q v))) ∗
         (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
 
         ⌜e = 0⌝ ∗
@@ -398,6 +399,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hkvptsto & Hck & Hval)".
   iNamed "Hck".
+  rewrite -Hγeq.
   wp_lam.
   wp_pures.
   wp_apply (wp_allocStruct).
@@ -516,7 +518,7 @@ Proof.
     wp_loadField.
     iApply "HΦ".
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
-    { iExists _, _, _, _.
+    { iExists _, _, _, _, _.
       iFrame.
       rewrite is_shard_server_unfold.
       iSplit.
@@ -537,13 +539,13 @@ Proof.
   }
 Qed.
 
-Lemma wp_MemKVShardClerk__ConditionalPut γ (ck:loc) (key:u64) (expv newv:list u8) expv_sl newv_sl (succ_ptr:loc) Q :
+Lemma wp_MemKVShardClerk__ConditionalPut γkv (ck:loc) (key:u64) (expv newv:list u8) expv_sl newv_sl (succ_ptr:loc) Q :
   {{{
-       (|={⊤,∅}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
-         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗
+       (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗
+         (let succ := bool_decide (expv = oldv) in kvptsto γkv key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗
        typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
        typed_slice.is_slice newv_sl byteT 1%Qp newv ∗
-       own_MemKVShardClerk ck γ ∗
+       own_MemKVShardClerk ck γkv ∗
        (∃ b : bool, succ_ptr ↦[boolT] #b)
   }}}
     MemKVShardClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) #succ_ptr
@@ -551,10 +553,10 @@ Lemma wp_MemKVShardClerk__ConditionalPut γ (ck:loc) (key:u64) (expv newv:list u
        (e:u64), RET #e;
        typed_slice.is_slice expv_sl byteT 1%Qp expv ∗
        typed_slice.is_slice newv_sl byteT 1%Qp newv ∗
-       own_MemKVShardClerk ck γ ∗ (
+       own_MemKVShardClerk ck γkv ∗ (
        ⌜e ≠ 0⌝ ∗
-        (|={⊤,∅}=> (∃ oldv, kvptsto γ.(kv_gn) key oldv ∗
-         (let succ := bool_decide (expv = oldv) in kvptsto γ.(kv_gn) key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗
+        (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗
+         (let succ := bool_decide (expv = oldv) in kvptsto γkv key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗
        (∃ b : bool, succ_ptr ↦[boolT] #b)
         ∨
         ⌜e = 0⌝ ∗ ∃ succ : bool, succ_ptr ↦[boolT] #succ ∗ Q succ
@@ -565,6 +567,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hkvptsto & Hexpv_sl & Hnewv_sl & Hck & Hsucc)".
   iNamed "Hck".
+  rewrite -Hγeq.
   wp_lam.
   wp_pures.
   wp_apply (wp_allocStruct).
@@ -690,7 +693,7 @@ Proof.
       iNamed "Hreq"; iFrame.
     }
     iSplitL "Hcl_own Hcrpc Hcl Hcid Hseq".
-    { iExists _, _, _, _.
+    { iExists _, _, _, _, _.
       rewrite is_shard_server_unfold.
       iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
       iSplit.

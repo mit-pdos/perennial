@@ -13,10 +13,11 @@ Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   "HshardClerks" ∷ ck ↦[MemKVClerk :: "shardClerks"] #s ∗
   "HshardClerksSet" ∷ own_ShardClerkSet s γ ∗
   "HcoordCk" ∷ ck ↦[MemKVClerk :: "coordCk"] #coordCk ∗
-  "HcoordCk_own" ∷ own_MemKVCoordClerk coordCk ∗
+  "HcoordCk_own" ∷ own_MemKVCoordClerk coordCk γ ∗
   "HshardMap" ∷ ck ↦[MemKVClerk :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
-  "%HshardMap_length" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝
+  "%HshardMap_length" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
+  "#HshardServers" ∷ all_are_shard_servers shardMapping γ
 .
 
 Lemma KVClerk__Get (ck:loc) (γ:gname) (key:u64) :
@@ -65,13 +66,20 @@ Proof using Type*.
   iIntros "Hsmall_sl".
   wp_pures.
   wp_loadField.
+
+  unfold all_are_shard_servers.
+  iDestruct ("HshardServers" $! (int.nat sid) hostID HsidLe_nat) as "HH".
+  iNamed "HH".
+
   wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet]").
-  iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
+  { iFrame "HH". }
+  iClear "HH".
+
+  iIntros (?) "(HshardCk & HcloseShardSet)".
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__Get γsh with "[Hatomic $HshardCk $Hrep]").
+  wp_apply (wp_MemKVShardClerk__Get with "[Hatomic $HshardCk $Hrep]").
   {
-    rewrite Hre.
     iFrame "Hatomic".
   }
   iIntros (e) "HshardGetPost".
@@ -92,7 +100,7 @@ Proof using Type*.
     iFrame.
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    iExists _, _, _, _. by iFrame.
+    iExists _, _, _, _. by iFrame "#∗".
   }
   {
     wp_loadField.
@@ -100,7 +108,7 @@ Proof using Type*.
     { exfalso. naive_solver. }
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_MemKVCoordClerk__GetShardMap with "[$HcoordCk_own]").
-    iIntros (shardMap_sl' shardMapping') "[HcoordCk_own HshardMap_sl]".
+    iIntros (shardMap_sl' shardMapping') "(HcoordCk_own & HshardMap_sl & %Hlength & #HshardServers')".
     wp_apply (wp_storeField with "HshardMap").
     { apply slice_val_ty. }
     iIntros "HshardMap".
@@ -109,9 +117,8 @@ Proof using Type*.
     iModIntro.
 
     iSplitL ""; first done.
-    rewrite Hre.
     iDestruct "Hatomic" as "[_ $]".
-    iExists _,_,_,_; iFrame.
+    iExists _,_,_,_; by iFrame "#∗".
   }
 Qed.
 
@@ -148,13 +155,18 @@ Proof using Type*.
   iIntros "Hsmall_sl".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet]").
-  iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
+
+  unfold all_are_shard_servers.
+  iDestruct ("HshardServers" $! (int.nat sid) hostID HsidLe_nat) as "HH".
+  iNamed "HH".
+  wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet $HH]").
+  iClear "HH".
+
+  iIntros (?) "(HshardCk & HcloseShardSet)".
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__Put γsh with "[Hatomic $Hval_sl $HshardCk]").
+  wp_apply (wp_MemKVShardClerk__Put with "[Hatomic $Hval_sl $HshardCk]").
   {
-    rewrite Hre.
     iFrame "Hatomic".
   }
   iIntros (e) "HshardPutPost".
@@ -170,7 +182,7 @@ Proof using Type*.
     iApply "Hpost".
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    iFrame "Hval_sl". iModIntro. iExists _, _, _, _. by iFrame.
+    iFrame "Hval_sl". iModIntro. iExists _, _, _, _. by iFrame "#∗".
   }
   {
     wp_loadField.
@@ -178,7 +190,7 @@ Proof using Type*.
     { exfalso. naive_solver. }
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_MemKVCoordClerk__GetShardMap with "[$HcoordCk_own]").
-    iIntros (shardMap_sl' shardMapping') "[HcoordCk_own HshardMap_sl]".
+    iIntros (shardMap_sl' shardMapping') "(HcoordCk_own & HshardMap_sl & %Hlength & #HshardServers')".
     wp_apply (wp_storeField with "HshardMap").
     { apply slice_val_ty. }
     iIntros "HshardMap".
@@ -187,10 +199,9 @@ Proof using Type*.
     iModIntro.
 
     iSplitL ""; first done.
-    rewrite Hre.
     iDestruct "Hatomic" as "[_ $]".
     iFrame.
-    iExists _,_,_,_. iFrame.
+    iExists _,_,_,_. by iFrame "#∗".
   }
 Qed.
 
@@ -239,12 +250,17 @@ Proof using Type*.
   iIntros "Hsmall_sl".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet]").
-  iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
-  subst γ.
+
+  unfold all_are_shard_servers.
+  iDestruct ("HshardServers" $! (int.nat sid) hostID HsidLe_nat) as "HH".
+  iNamed "HH".
+  wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet $HH]").
+  iClear "HH".
+
+  iIntros (?) "(HshardCk & HcloseShardSet)".
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__ConditionalPut γsh _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γsh.(kv_gn) ∗ _ ∗ _ -∗ Φ #b)%I
+  wp_apply (wp_MemKVShardClerk__ConditionalPut _ _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γ ∗ _ ∗ _ -∗ Φ #b)%I
     with "[Hatomic $Hexpv_sl $Hnewv_sl $HshardCk Hsucc]").
   {
     rewrite /zero_val /=. iFrame.
@@ -264,7 +280,7 @@ Proof using Type*.
     iApply "HΦ". iModIntro.
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    iFrame. iExists _, _, _, _. by iFrame.
+    iFrame. iExists _, _, _, _. by iFrame "#∗".
   }
   {
     wp_loadField.
@@ -272,7 +288,7 @@ Proof using Type*.
     { exfalso. naive_solver. }
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_MemKVCoordClerk__GetShardMap with "[$HcoordCk_own]").
-    iIntros (shardMap_sl' shardMapping') "[HcoordCk_own HshardMap_sl]".
+    iIntros (shardMap_sl' shardMapping') "(HcoordCk_own & HshardMap_sl & %Hlength & #HshardServers')".
     wp_apply (wp_storeField with "HshardMap").
     { apply slice_val_ty. }
     iIntros "HshardMap".
@@ -283,7 +299,7 @@ Proof using Type*.
     iSplitL ""; first done.
     iDestruct "Hatomic" as "(_ & $ & Hsucc)".
     iFrame.
-    iExists _,_,_,_; iFrame.
+    iExists _,_,_,_; by iFrame "#∗".
   }
 Qed.
 
