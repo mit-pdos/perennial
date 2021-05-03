@@ -133,19 +133,16 @@ Proof.
   wp_pures.
   iDestruct (big_sepM_lookup_acc _ _ args.(MR_Dst) with "HpeerClerks") as "[Hclerk HpeerClerks]".
   { apply map_get_true in Hlookup. done. }
-  iNamed "Hclerk".
-  iDestruct "Hclerk" as "[Hclerk %Hγeq]".
-  wp_apply (wp_MemKVShardClerk__InstallShard γsh0 with "[Hclerk HkvsMap HvalSlices HshardGhost]").
+  wp_apply (wp_MemKVShardClerk__InstallShard with "[Hclerk HkvsMap HvalSlices HshardGhost]").
   {
     iFrame "Hclerk".
-    rewrite Hγeq.
     iFrame "HshardGhost".
     iSplitR ""; last (iPureIntro; word).
     iExists _; iFrame.
   }
   iIntros "Hclerk".
   iSpecialize ("HpeerClerks" with "[Hclerk]").
-  { iExists _; iFrame. done. }
+  { iFrame. }
   wp_pures.
   wp_loadField.
   iSpecialize ("HshardMap_sl" with "HshardMap_small").
