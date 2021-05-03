@@ -177,6 +177,15 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Local Lemma nooverflow (x y : u64) :
+  int.Z y < int.Z (word.add x y) →
+  int.Z (word.add x y) = (int.Z x) + (int.Z y).
+Proof.
+  intros. word_cleanup. rewrite wrap_small //.
+  assert (0 ≤ int.Z (word.add x y) < 2 ^ 64) by admit.
+  Fail word.
+Admitted.
+
 Lemma wp_encodeGetReply rep_ptr rep :
   {{{
        own_GetReply rep_ptr rep
@@ -197,13 +206,21 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
 
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Assume).
+  rewrite bool_decide_eq_true.
+  iIntros (Hoverflow).
+
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
   wp_pures.
 
   wp_loadField.
   wp_apply (wp_Enc__PutInt with "Henc").
-  { admit. (* TODO: overflow *) }
+  { (* For some reason, having the negation in the context helps word -- but not if the goal is already False! *)
+    apply dec_stable. intros HP. apply HP. word.
+  }
   iIntros "Henc".
   wp_pures.
 
@@ -212,13 +229,16 @@ Proof.
   iDestruct (typed_slice.is_slice_small_sz with "HValue_sl") as %Hsz.
   wp_apply (wp_slice_len).
   wp_apply (wp_Enc__PutInt with "Henc").
-  { admit. (* TODO: overflow *) }
+  { apply dec_stable. intros HP. apply HP. word. }
   iIntros "Henc".
   wp_pures.
 
   wp_loadField.
   wp_apply (wp_Enc__PutBytes with "[$Henc $HValue_sl]").
-  { admit. } (* TODO: overflow *)
+  { apply nooverflow in Hoverflow.
+    rewrite Hoverflow Hsz.
+    change (int.Z (word.add 8 8)) with 16.
+    rewrite Z2Nat.id; word. }
   iIntros "[Henc Hsl]".
   wp_pures.
   wp_apply (wp_Enc__Finish with "[$Henc]").
@@ -236,6 +256,6 @@ Proof.
   rewrite app_nil_l in H.
   simpl in H.
   done.
-Admitted.
+Qed.
 
 End memkv_marshal_get_proof.

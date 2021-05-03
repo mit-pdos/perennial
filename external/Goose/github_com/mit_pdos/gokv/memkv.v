@@ -138,6 +138,7 @@ Definition decodeGetRequest: val :=
 Definition encodeGetReply: val :=
   rec: "encodeGetReply" "rep" :=
     let: "num_bytes" := #8 + #8 + slice.len (struct.loadF GetReply "Value" "rep") in
+    control.impl.Assume ("num_bytes" > slice.len (struct.loadF GetReply "Value" "rep"));;
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF GetReply "Err" "rep");;
     marshal.Enc__PutInt "e" (slice.len (struct.loadF GetReply "Value" "rep"));;
