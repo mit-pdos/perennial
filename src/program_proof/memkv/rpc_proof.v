@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.gokv.urpc Require Import rpc.
 From iris.base_logic.lib Require Import saved_prop.
 From Perennial.goose_lang Require Import adequacy.
@@ -605,19 +606,9 @@ Proof.
   assert (int.Z (word.add (word.add 8 8) rep_sl.(Slice.sz)) =
                  int.Z (rep_sl.(Slice.sz)) + 16)%Z as Hoverflow3.
   {
-    rewrite ?word.unsigned_add.
-    rewrite ?wrap_small; try word.
-    split.
-    { word. }
-    destruct (decide (int.Z rep_sl.(Slice.sz) < 2^64 - 16)%Z).
-    { word. }
-    assert ((word.add 8 8) = (16 : u64)) as Heq1.
-    { rewrite //=. }
-    rewrite Heq1 in Hoverflow.
-    rewrite ?word.unsigned_add in Hoverflow.
-    exfalso. rewrite /word.wrap in Hoverflow.
-    assert (int.Z rep_sl.(Slice.sz) < 2^64)%Z by word.
-    rewrite (Zmod_in_range 1 _ _) in Hoverflow; word.
+    apply sum_nooverflow_r in Hoverflow.
+    rewrite Hoverflow.
+    change (int.Z (word.add 8 8))%Z with 16%Z. lia.
   }
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
@@ -1018,30 +1009,16 @@ Proof.
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
   wp_pures.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { destruct (decide (8 ≤ int.Z req.(Slice.sz)))%Z.
-    { lia. }
-    { word. } }
-  iIntros "Henc".
-  wp_pures.
   assert (int.Z (word.add (word.add (word.add 8 8) 8) req.(Slice.sz)) =
                  int.Z (req.(Slice.sz)) + 24)%Z as Hoverflow3.
-  { destruct (decide (8 ≤ int.Z req.(Slice.sz)))%Z; last first.
-    { word. }
-    rewrite ?word.unsigned_add.
-    rewrite ?wrap_small; try word.
-    split.
-    { word. }
-    destruct (decide (int.Z req.(Slice.sz) < 2^64 - 24)%Z).
-    { word. }
-    assert ((word.add (word.add 8 8) 8 = (24 : u64))) as Heq1.
-    { rewrite //=. }
-    rewrite Heq1 in Hoverflow2.
-    rewrite ?word.unsigned_add in Hoverflow2.
-    exfalso. rewrite /word.wrap in Hoverflow2.
-    assert (int.Z req.(Slice.sz) < 2^64)%Z by word.
-    rewrite (Zmod_in_range 1 _ _) in Hoverflow2; word.
-  }
+  {
+    apply sum_nooverflow_r in Hoverflow2.
+    rewrite Hoverflow2.
+    change (int.Z $ word.add (word.add 8 8) 8)%Z with 24%Z. lia. }
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { word. }
+  iIntros "Henc".
+  wp_pures.
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
   iIntros "Henc".
