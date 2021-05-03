@@ -69,7 +69,7 @@ Proof using Type*.
   iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__Get _ _ γsh with "[Hatomic $HshardCk $Hrep]").
+  wp_apply (wp_MemKVShardClerk__Get γsh with "[Hatomic $HshardCk $Hrep]").
   {
     rewrite Hre.
     iFrame "Hatomic".
@@ -152,7 +152,7 @@ Proof using Type*.
   iIntros (??) "(HshardCk & %Hre & HcloseShardSet)".
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__Put _ _ γsh with "[Hatomic $Hval_sl $HshardCk]").
+  wp_apply (wp_MemKVShardClerk__Put γsh with "[Hatomic $Hval_sl $HshardCk]").
   {
     rewrite Hre.
     iFrame "Hatomic".
@@ -240,7 +240,7 @@ Proof using Type*.
   subst γ.
 
   wp_pures.
-  wp_apply (wp_MemKVShardClerk__ConditionalPut _ _ γsh _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γsh.(kv_gn) -∗ Φ #b)%I
+  wp_apply (wp_MemKVShardClerk__ConditionalPut γsh _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γsh.(kv_gn) -∗ Φ #b)%I
     with "[Hatomic $Hexpv_sl $Hnewv_sl $HshardCk Hsucc]").
   {
     rewrite /zero_val /=. iFrame.

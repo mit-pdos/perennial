@@ -133,6 +133,9 @@ Record RPCSpec :=
      spec_Pre : spec_ty → list u8 → iProp Σ;
      spec_Post : spec_ty → list u8 → list u8 → iProp Σ }.
 
+Definition has_handler Γsrv (host:u64) (spec : RPCSpec) :=
+  handler_is Γsrv _ host spec.(spec_rpcid) spec.(spec_Pre) spec.(spec_Post).
+
 (* We define a custom type for a list of RPC specs in order to state lemmas
    about initializing a collection of handler_is facts. Unfortunately, using the
    standard list type leads to a universe error if the spec_ty field contains an
