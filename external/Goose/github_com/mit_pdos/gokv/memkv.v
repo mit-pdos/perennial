@@ -591,6 +591,7 @@ Definition MemKVShardServer__GetCIDRPC: val :=
     (* log.Println("GetCIDRPC() starting") *)
     lock.acquire (struct.loadF MemKVShardServer "mu" "s");;
     let: "r" := struct.loadF MemKVShardServer "nextCID" "s" in
+    control.impl.Assume (struct.loadF MemKVShardServer "nextCID" "s" + #1 > struct.loadF MemKVShardServer "nextCID" "s");;
     struct.storeF MemKVShardServer "nextCID" "s" (struct.loadF MemKVShardServer "nextCID" "s" + #1);;
     lock.release (struct.loadF MemKVShardServer "mu" "s");;
     (* log.Println("GetCIDRPC() done") *)

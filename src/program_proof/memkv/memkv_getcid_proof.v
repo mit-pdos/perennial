@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import ModArith.
 From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
@@ -29,11 +30,16 @@ Proof.
   wp_loadField.
   wp_pures.
   wp_loadField.
+  wp_loadField.
+  wp_apply wp_Assume.
+  rewrite bool_decide_eq_true.
+  iIntros (Hoverflow).
+  apply sum_nooverflow_l in Hoverflow.
+
+  wp_loadField.
   wp_storeField.
   iDestruct (big_sepS_delete _ _ nextCID with "Hcids") as "[Hcid Hcids]".
   { set_solver. }
-  assert (int.Z (word.add nextCID 1) = int.Z nextCID + 1)%Z as HnextCID_plus_one.
-  { admit. (* FIXME: overflow guard *) }
 
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Hcid]").
@@ -50,14 +56,13 @@ Proof.
     { set_solver. }
     iSplitL "".
     {
-      iLeft. rewrite HnextCID_plus_one.
+      iLeft.
       iPureIntro.
-      lia.
+      word.
     }
     iApply (big_sepS_impl with "Hcids").
     iModIntro. iIntros (??) "[%Hineq|$]".
     iLeft. iPureIntro.
-    rewrite HnextCID_plus_one.
     word.
   }
   wp_pures.
@@ -66,6 +71,6 @@ Proof.
   iDestruct "Hcid" as "[%Hbad|$]".
   exfalso.
   word.
-Admitted.
+Qed.
 
 End memkv_getcid_proof.
