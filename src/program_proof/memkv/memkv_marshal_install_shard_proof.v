@@ -30,7 +30,7 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   "HKvsMap" ∷ map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
   "%HseqPositive" ∷ ⌜int.Z args.(IR_Seq) > 0⌝ ∗
   "Hvals" ∷ ([∗ set] k ∈ (fin_to_set u64),
-        ⌜shardOfC k ≠ args.(IR_Sid)⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (args.(IR_Kvs) !! k))) )
+        ⌜shardOfC k ≠ args.(IR_Sid)⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (args.(IR_Kvs) !! k))) )
 .
 
 (* Pre: "HownShard" ∷ own_shard γ.(kv_gn) sid m *)

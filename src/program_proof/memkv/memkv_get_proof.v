@@ -316,26 +316,34 @@ Proof.
       wp_apply (map.wp_MapGet with "[$HkvsMap]").
       iIntros (value okValue) "[%HlookupVal HkvsMap]".
       wp_pures.
-      wp_apply (typed_slice.wp_NewSlice (V:=u8)).
-      iIntros (val_sl') "Hval_sl".
       assert (value = default (slice_val Slice.nil) (mv !! args.(GR_Key))) as Hvalue.
       { naive_solver. }
       rewrite Hvalue.
+      (*
+      wp_apply (typed_slice.wp_NewSlice (V:=u8)).
+      iIntros (val_sl') "Hval_sl".
+      rewrite Hvalue.
+       *)
 
       iDestruct (big_sepS_elem_of_acc _ _ args.(GR_Key) with "HvalSlices") as "[Hsrv_val_sl HvalSlices]".
       { set_solver. }
       iDestruct "Hsrv_val_sl" as "[%Hbad|Hsrv_val_sl]".
       { exfalso. done. }
 
-      iDestruct "Hsrv_val_sl" as (?) "[%HvalSliceRe Hsrv_val_sl]".
+      iDestruct "Hsrv_val_sl" as (q ?) "[%HvalSliceRe Hsrv_val_sl]".
       rewrite HvalSliceRe.
+      (*
       iDestruct (typed_slice.is_slice_small_acc with "Hsrv_val_sl") as "[Hsrv_val_sl_small Hsrv_val_sl]".
+       *)
+
+      (*
       wp_apply (typed_slice.wp_SliceAppendSlice (V:=u8) with "[$Hval_sl $Hsrv_val_sl_small]").
 
       rewrite app_nil_l.
       iIntros (val_sl'') "[Hval_sl Hsrv_val_sl_small]".
 
       iSpecialize ("Hsrv_val_sl" with "Hsrv_val_sl_small").
+       *)
 
       (* fill in reply struct *)
       wp_apply (wp_storeField with "HValue").
@@ -387,9 +395,12 @@ Proof.
       iDestruct "HH" as "(#Hreceipt & Hrpc)".
       iModIntro.
 
+      Opaque typed_slice.is_slice_small. (* to split fraction *)
+      iDestruct "Hsrv_val_sl" as "[Hsrv_val_sl Hval_sl]".
+      Transparent typed_slice.is_slice_small.
+
       iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
       wp_loadField.
-      iDestruct (typed_slice.is_slice_small_acc with "Hval_sl") as "[Hval_sl _]".
       Opaque typed_slice.is_slice_small.
       iDestruct "Hval_sl" as "[Hrep_val_sl Hsrv_rep_val_sl]".
       Transparent typed_slice.is_slice.
@@ -424,7 +435,7 @@ Proof.
         iFrame.
         iSpecialize ("HvalSlices" with "[Hsrv_val_sl]").
         {
-          iRight. iExists _; iFrame. done.
+          iRight. iExists _, _; iFrame. done.
         }
         iFrame "HvalSlices".
         done.

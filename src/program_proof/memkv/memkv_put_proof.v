@@ -365,11 +365,11 @@ Proof.
         iSplitL "HValue_sl".
         {
           simpl. iRight.
-          iExists val_sl.
+          iExists 1%Qp. iExists val_sl.
           rewrite lookup_insert.
           rewrite lookup_insert.
           iSplitL ""; first done.
-          iFrame.
+          iApply (typed_slice.is_slice_to_small (V:=u8)); eauto.
         }
         iDestruct (big_sepS_delete _ _ args.(PR_Key) with "HvalSlices") as "[_ HvalSlices]".
         { set_solver. }

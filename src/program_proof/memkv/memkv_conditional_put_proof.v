@@ -265,16 +265,17 @@ Proof.
       { set_solver. }
       iDestruct "Hsrv_val_sl" as "[%Hbad|Hsrv_val_sl]".
       { exfalso. done. }
-      iDestruct "Hsrv_val_sl" as (curv_sl) "[%HvalSliceRe Hsrv_val_sl]".
+      iDestruct "Hsrv_val_sl" as (q curv_sl) "[%HvalSliceRe Hsrv_val_sl]".
       rewrite HvalSliceRe.
 
       wp_loadField.
       iDestruct (is_slice_small_acc with "HExpValue_sl") as "[HExpValue_sl HExpValue_close]".
+      (*
       iDestruct (is_slice_small_acc with "Hsrv_val_sl") as "[Hsrv_val_sl Hsrv_val_close]".
+       *)
       wp_apply (wp_bytesEqual with "[$HExpValue_sl $Hsrv_val_sl]").
       iIntros "[HExpValue_sl Hsrv_val_sl]".
       iDestruct ("HExpValue_close" with "HExpValue_sl") as "HExpValue_sl".
-      iDestruct ("Hsrv_val_close" with "Hsrv_val_sl") as "Hsrv_val_sl".
 
       (* Avoid duplicating the proof of the merged control flow after this if *)
       wp_apply (wp_If_join_evar with "[HkvsMap HKey HNewValue]").
@@ -405,12 +406,12 @@ Proof.
         simpl. iSplitL "HNewValue_sl Hsrv_val_sl".
         {
           simpl. iRight. destruct succ.
-          - iExists newv_sl.
+          - iExists 1%Qp, newv_sl.
             rewrite lookup_insert.
             rewrite lookup_insert.
             iSplitL ""; first done.
-            iFrame.
-          - iExists curv_sl.
+            iApply (typed_slice.is_slice_to_small (V := u8)). iFrame.
+          - iExists _, curv_sl.
             rewrite lookup_insert.
             iSplitL ""; first done.
             iFrame.

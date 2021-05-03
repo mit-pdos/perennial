@@ -466,7 +466,7 @@ Definition MemKVShardServer__get_inner: val :=
       let: "sid" := shardOf (struct.loadF GetRequest "Key" "args") in
       (if: (SliceGet boolT (struct.loadF MemKVShardServer "shardMap" "s") "sid" = #true)
       then
-        struct.storeF GetReply "Value" "reply" (SliceAppendSlice byteT (NewSlice byteT #0) (Fst (MapGet (SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid") (struct.loadF GetRequest "Key" "args"))));;
+        struct.storeF GetReply "Value" "reply" (Fst (MapGet (SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid") (struct.loadF GetRequest "Key" "args")));;
         struct.storeF GetReply "Err" "reply" ENone
       else struct.storeF GetReply "Err" "reply" EDontHaveShard);;
       MapInsert (struct.loadF MemKVShardServer "lastReply" "s") (struct.loadF GetRequest "CID" "args") (struct.mk ShardReply [

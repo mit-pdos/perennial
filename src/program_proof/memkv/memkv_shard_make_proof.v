@@ -76,7 +76,7 @@ Proof.
                       ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
                       map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
-                       ⌜shardOfC k ≠ sid⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice vsl byteT (1%Qp) (default [] (m !! k))))
+                       ⌜shardOfC k ≠ sid⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (m !! k))))
                   )))%I with "[] [$Hi HshardMap_sl shardMap HghostShards kvss Hkvss_sl]").
   { word. }
   { iIntros (i Φ') "!# H HΦ".
@@ -159,8 +159,10 @@ Proof.
           iApply (big_sepS_mono with "Hemp").
           { iIntros (??) "_".
             destruct (decide (shardOfC x = i)); last by eauto.
-            { iRight. iExists _. rewrite ?lookup_empty //=.
-              iSplit; first eauto. iApply typed_slice.is_slice_zero. }
+            { iRight. iExists 1%Qp, _. rewrite ?lookup_empty //=.
+              iSplit; first eauto.
+              iApply (typed_slice.is_slice_to_small (V:=u8)).
+              iApply typed_slice.is_slice_zero. }
           }
         }
         iApply (big_sepS_mono with "HownShards").
