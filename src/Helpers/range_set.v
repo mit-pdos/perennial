@@ -32,6 +32,13 @@ Proof.
   auto.
 Qed.
 
+Lemma rangeSet_empty (start sz: Z) :
+  sz ≤ 0 →
+  rangeSet start sz = ∅.
+Proof.
+  intros. rewrite /rangeSet seqZ_nil //.
+Qed.
+
 Lemma rangeSet_size (start sz: Z) :
   0 ≤ start →
   0 ≤ sz →

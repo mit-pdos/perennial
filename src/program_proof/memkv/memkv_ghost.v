@@ -6,10 +6,12 @@ From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof.memkv Require Export common_proof.
 
-Class kvMapG Σ :=
-  { kv_map_inG :> inG Σ (gmapUR u64 (prodR (fracR) (agreeR (leibnizO (list u8))) )) }.
+Local Definition kvMapUR := gmapUR u64 (prodR (fracR) (agreeR (leibnizO (list u8))) ).
 
-Definition kvMapΣ := #[GFunctor (gmapUR u64 (prodR (fracR) (agreeR (leibnizO (list u8)))))].
+Class kvMapG Σ :=
+  { kv_map_inG :> inG Σ kvMapUR }.
+
+Definition kvMapΣ := #[GFunctor kvMapUR].
 
 Global Instance subG_kvMapG {Σ} :
   subG (kvMapΣ) Σ → kvMapG Σ.
@@ -56,9 +58,56 @@ Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
                                 kvptsto γkv k (default [] (m !! k))
 .
 
-Lemma kvptsto_init n :
-  ⊢ |==> ∃ γ, ([∗ set] sid ∈ rangeSet 0 n, own_shard γ sid ∅) ∗
+(** ** Big ops over finite sets *)
+Section gset.
+  Context `{Countable A} `{Countable B}.
+
+  Lemma big_sepS_sepS (X : gset A) (Y : gset B) (Φ : A → B → iProp Σ) :
+    ([∗ set] x ∈ X, [∗ set] y ∈ Y, Φ x y) -∗ ([∗ set] y ∈ Y, [∗ set] x ∈ X, Φ x y).
+  Proof.
+  Admitted.
+
+End gset.
+
+Lemma kvptsto_init :
+  ⊢ |==> ∃ γ, ([∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ sid ∅) ∗
               ([∗ set] k ∈ fin_to_set u64, kvptsto γ k []).
-Proof. Admitted.
+Proof.
+  pose (m := gset_to_gmap (1%Qp, to_agree []) (fin_to_set u64) : kvMapUR).
+  iMod (own_alloc m) as (γ) "Hown".
+  { intros k. rewrite lookup_gset_to_gmap option_guard_True; last by apply elem_of_fin_to_set.
+    rewrite Some_valid. done. }
+  iExists γ. iModIntro.
+  iAssert ([∗ set] k ∈ fin_to_set u64, kvptsto γ k [] ∗ kvptsto γ k [])%I with "[Hown]" as "Hown".
+  { rewrite -(big_opM_singletons m).
+    rewrite big_opM_own_1.
+    replace (fin_to_set u64) with (dom (gset _) m); last first.
+    { rewrite dom_gset_to_gmap. done. }
+    iApply big_sepM_dom.
+    iApply (big_sepM_impl with "Hown").
+    iIntros "!#" (k x). subst m.
+    rewrite lookup_gset_to_gmap_Some.
+    iIntros ([_ [= <-]]).
+    iIntros "[H1 H2]".
+    iFrame. }
+  rewrite big_sepS_sep.
+  iDestruct "Hown" as "[Hown $]".
+  rewrite /own_shard.
+  iApply big_sepS_sepS.
+  iApply (big_sepS_impl with "Hown").
+  iIntros "!#" (k _) "Hown".
+  rewrite (big_sepS_delete _ _ (shardOfC k)); last first.
+  { apply rangeSet_lookup; first done.
+    - apply (bool_decide_unpack _); by vm_compute.
+    - split; first word.
+      specialize (shardOfC_bound k). word. }
+  iSplitL.
+  - iRight. rewrite lookup_empty. done.
+  - iApply (big_sepS_impl with "[]").
+    { iApply big_sepS_intro_emp. }
+    iIntros "!#" (shard [Hshard Hne]%elem_of_difference) "_". iLeft.
+    iPureIntro. intros Heq. apply Hne.
+    apply elem_of_singleton. done.
+Qed.  
 
 End memkv_ghost.

@@ -9,6 +9,13 @@ Definition uNSHARD : Z := 65536%Z.
 
 Definition shardOfC (key:u64) : u64 := (word.modu key uNSHARD).
 
+Lemma shardOfC_bound k : int.Z (shardOfC k) < uNSHARD.
+Proof.
+  rewrite /shardOfC /uNSHARD.
+  rewrite word.unsigned_modu_nowrap //.
+  apply Z.mod_pos_bound. done.
+Qed.
+
 Lemma wp_shardOf key :
   {{{
        True
@@ -36,9 +43,7 @@ Proof.
   iIntros (Φ) "_ HΦ".
   iApply wp_shardOf; first done.
   iIntros "!> _". iApply "HΦ".
-  rewrite /shardOfC /uNSHARD.
-  iPureIntro. rewrite word.unsigned_modu_nowrap //.
-  apply Z.mod_pos_bound. done.
+  iPureIntro. apply shardOfC_bound.
 Qed.
 
 Local Lemma take_S_lookup_ne {T} (xs : list T) i j :
