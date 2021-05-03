@@ -180,15 +180,16 @@ Section memkv_shard_definitions.
 
 Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Definition own_MemKVShardClerk (ck:loc) γ : iProp Σ :=
-  ∃ (cid seq:u64) (cl:loc) (host:u64),
+Definition own_MemKVShardClerk (ck:loc) γkv : iProp Σ :=
+  ∃ (cid seq:u64) (cl:loc) (host:u64) (γ:memkv_shard_names),
     "Hcid" ∷ ck ↦[MemKVShardClerk :: "cid"] #cid ∗
     "Hseq" ∷ ck ↦[MemKVShardClerk :: "seq"] #seq ∗
     "Hcl" ∷ ck ↦[MemKVShardClerk :: "cl"] #cl ∗
     "Hcrpc" ∷ RPCClient_own_ghost γ.(rpc_gn) cid seq ∗
     "Hcl_own" ∷ RPCClient_own cl host ∗
     "#His_shard" ∷ is_shard_server host γ ∗
-    "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
+    "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z ∗
+    "%Hγeq" ∷ ⌜γ.(kv_gn) = γkv⌝
 .
 
 Definition memKVN := nroot .@ "memkv".
@@ -228,7 +229,7 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
                   )
                  ) ∗
   "HpeersMap" ∷ is_map (V:=loc) peers_ptr 1 peersM ∗
-  "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, (∃ γsh, own_MemKVShardClerk ck γsh ∗ ⌜γsh.(kv_gn) = γ.(kv_gn)⌝)) ∗
+  "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, own_MemKVShardClerk ck γ.(kv_gn)) ∗
   "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (RPCClient_own_ghost γ.(rpc_gn) cid 1)
 .
 
