@@ -16,15 +16,6 @@ Existing Instance global_groveG.
 
 (* TODO: duplicating this specs is unfortunate, should try to unify with the set up in shard_definitions *)
 
-Definition is_shard_server_moveSpec : @RPCSpec Σ :=
-  {| spec_rpcid := uKV_MOV_SHARD;
-     spec_ty := memkv_shard_names;
-     spec_Pre :=(λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
-                                  ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
-                                  (▷ is_shard_server args.(MR_Dst) x)
-             )%I;
-     spec_Post := (λ x reqData repData, True)%I |}.
-
 Definition shard_SpecList γkv γrpc : RPCSpecList :=
   spec_cons (is_shard_server_putSpec γkv γrpc)
     (spec_cons (is_shard_server_conditionalPutSpec γkv γrpc)

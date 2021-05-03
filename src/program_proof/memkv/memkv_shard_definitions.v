@@ -117,22 +117,22 @@ Definition is_shard_server_freshSpec γrpc : RPCSpec :=
      spec_Post := (λ x reqData repData, ∃ cid, ⌜has_encoding_Uint64 repData cid⌝ ∗
               RPCClient_own_ghost γrpc cid 1)%I |}.
 
+Definition is_shard_server_moveSpec_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : RPCSpec :=
+  {| spec_rpcid := uKV_MOV_SHARD;
+     spec_ty := memkv_shard_names;
+     spec_Pre :=(λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
+                                  ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
+                                  (▷ ρ args.(MR_Dst) x)
+             )%I;
+     spec_Post := (λ x reqData repData, True)%I |}.
+
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   (λ host γ,
   "#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
   "#HputSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_putSpec γ.(kv_gn) γ.(rpc_gn)) ∗
   "#HconditionalPutSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_conditionalPutSpec γ.(kv_gn) γ.(rpc_gn)) ∗
   "#HgetSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_getSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-
-  (* MoveSpec is recursive *)
-  "#HmoveSpec" ∷ handler_is (urpc_gn γ) (memkv_shard_names) host uKV_MOV_SHARD
-             (λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
-                                  ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
-                                  (▷ ρ args.(MR_Dst) x)
-             ) (* pre *)
-             (λ x reqData repData, True
-             ) (* post *) ∗
-
+  "#HmoveSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_moveSpec_pre ρ) ∗
   "#HinstallSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_installSpec γ.(kv_gn) γ.(rpc_gn)) ∗
   "#HfreshSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_freshSpec γ.(rpc_gn))
 )%I.
@@ -142,13 +142,13 @@ Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
-  f_equiv. rewrite /handler_is.
+  f_equiv. rewrite /has_handler /handler_is.
   do 10 f_equiv.
   unfold named.
   apply saved_prop.saved_pred_own_contractive.
   rewrite /dist_later. destruct n; auto.
   intros => ?.
-  rewrite /is_rpcHandler.
+  rewrite /is_rpcHandler /is_shard_server_moveSpec_pre /=.
   do 21 f_equiv.
   f_contractive. simpl in Hpre.
   eapply (dist_S). eapply Hpre.
@@ -159,6 +159,8 @@ Definition is_shard_server_def :=
 Definition is_shard_server_aux : seal (is_shard_server_def). by eexists. Qed.
 Definition is_shard_server := is_shard_server_aux.(unseal).
 Definition is_shard_server_eq : is_shard_server = is_shard_server_def := is_shard_server_aux.(seal_eq).
+
+Definition is_shard_server_moveSpec := is_shard_server_moveSpec_pre is_shard_server.
 
 Lemma is_shard_server_unfold host γ :
   is_shard_server host γ ⊣⊢ is_shard_server_pre (is_shard_server) host γ
