@@ -47,8 +47,8 @@ Proof.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iNamed "HrawRep".
-  wp_apply (wp_RPCClient__Call with "[$HfreshSpec $Hcl $Hreq_sl $HrawRep]").
-  { done. }
+  wp_apply (wp_RPCClient__Call () with "[$Hcl $Hreq_sl $HrawRep]").
+  { rewrite /has_handler. iFrame "HfreshSpec". done. }
   iIntros (???) "(HrawRep & Hcl & Hreq_sl & Hrep_sl & Hpost)".
   wp_pures.
   wp_if_destruct.
@@ -80,7 +80,6 @@ Proof.
   iFrame "∗#".
   iPureIntro.
   word.
-  Unshelve. exact: tt.
 Qed.
 
 Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
@@ -170,8 +169,9 @@ Proof.
   wp_apply (wp_encodeInstallShardRequest with "[$Hargs]").
   iIntros (??) "(%Henc & Hsl & Hargs)".
   wp_loadField.
-  wp_apply (wp_RPCClient__Call with "[$HinstallSpec $Hsl $HrawRep $Hcl_own]").
+  wp_apply (wp_RPCClient__Call with "[$Hsl $HrawRep $Hcl_own]").
   {
+    iEval (rewrite /has_handler) in "HinstallSpec". iFrame "HinstallSpec".
     iModIntro.
     iNext.
     iExists (mkInstallShardC _ _ _ _); iFrame.
@@ -294,8 +294,9 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_RPCClient__Call (Q, γreq, mkPutRequestC _ _ _ _) with "[$HputSpec $Hreq_sl $HrawRep $Hcl_own]").
+  wp_apply (wp_RPCClient__Call (Q, γreq, mkPutRequestC _ _ _ _) with "[$Hreq_sl $HrawRep $Hcl_own]").
   {
+    iEval (rewrite /has_handler) in "HputSpec". iFrame "HputSpec".
     simpl.
     iModIntro.
     iModIntro.
@@ -458,8 +459,9 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_RPCClient__Call (Q,γreq,mkGetRequestC _ _ _) with "[$HgetSpec $Hreq_sl $HrawRep $Hcl_own]").
+  wp_apply (wp_RPCClient__Call (Q,γreq,mkGetRequestC _ _ _) with "[$Hreq_sl $HrawRep $Hcl_own]").
   {
+    iEval (rewrite /has_handler) in "HgetSpec". iFrame "HgetSpec".
     iModIntro.
     iModIntro.
     iSplitL ""; first done.
@@ -627,8 +629,9 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_RPCClient__Call (Q,γreq,mkConditionalPutRequestC _ _ _ _ _) with "[$HconditionalPutSpec $Hreq_sl $HrawRep $Hcl_own]").
+  wp_apply (wp_RPCClient__Call (Q,γreq,mkConditionalPutRequestC _ _ _ _ _) with "[$Hreq_sl $HrawRep $Hcl_own]").
   {
+    iEval (rewrite /has_handler) in "HconditionalPutSpec". iFrame "HconditionalPutSpec".
     iModIntro.
     iModIntro.
     iSplitL ""; first done.
