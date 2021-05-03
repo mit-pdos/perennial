@@ -37,7 +37,8 @@ Definition own_GetReply reply_ptr rep : iProp Σ :=
 .
 
 Definition has_encoding_GetRequest (data:list u8) (args:GetRequestC) :=
-  has_encoding data [ EncUInt64 args.(GR_CID) ; EncUInt64 args.(GR_Seq) ; EncUInt64 args.(GR_Key) ].
+  has_encoding data [ EncUInt64 args.(GR_CID) ; EncUInt64 args.(GR_Seq) ; EncUInt64 args.(GR_Key) ] ∧
+  int.Z args.(GR_Seq) > 0.
 
 Definition has_encoding_GetReply (data:list u8) (rep:GetReplyC) :=
   has_encoding data [ EncUInt64 rep.(GR_Err) ; EncUInt64 (length rep.(GR_Value)) ; EncBytes rep.(GR_Value) ] ∧
@@ -96,7 +97,7 @@ Lemma wp_decodeGetRequest req_sl reqData args :
        (args_ptr:loc), RET #args_ptr; own_GetRequest args_ptr args
   }}}.
 Proof.
-  iIntros (Φ) "[%Henc Hsl] HΦ".
+  iIntros (Φ) "[[%Henc %] Hsl] HΦ".
   wp_lam.
   wp_apply (wp_allocStruct).
   {
@@ -124,9 +125,8 @@ Proof.
   iIntros "Hdec".
   wp_storeField.
 
-  iApply "HΦ". iModIntro. iFrame.
-  admit. (* Seq > 0 *)
-Admitted.
+  iApply "HΦ". iModIntro. by iFrame.
+Qed.
 
 Lemma wp_decodeGetReply rep rep_sl repData :
   {{{
