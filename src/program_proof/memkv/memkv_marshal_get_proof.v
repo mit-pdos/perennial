@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import ModArith.
 From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof Require Import marshal_proof.
@@ -37,7 +38,8 @@ Definition own_GetReply reply_ptr rep : iProp Σ :=
 .
 
 Definition has_encoding_GetRequest (data:list u8) (args:GetRequestC) :=
-  has_encoding data [ EncUInt64 args.(GR_CID) ; EncUInt64 args.(GR_Seq) ; EncUInt64 args.(GR_Key) ].
+  has_encoding data [ EncUInt64 args.(GR_CID) ; EncUInt64 args.(GR_Seq) ; EncUInt64 args.(GR_Key) ] ∧
+  int.Z args.(GR_Seq) > 0.
 
 Definition has_encoding_GetReply (data:list u8) (rep:GetReplyC) :=
   has_encoding data [ EncUInt64 rep.(GR_Err) ; EncUInt64 (length rep.(GR_Value)) ; EncBytes rep.(GR_Value) ] ∧
@@ -96,7 +98,7 @@ Lemma wp_decodeGetRequest req_sl reqData args :
        (args_ptr:loc), RET #args_ptr; own_GetRequest args_ptr args
   }}}.
 Proof.
-  iIntros (Φ) "[%Henc Hsl] HΦ".
+  iIntros (Φ) "[[%Henc %] Hsl] HΦ".
   wp_lam.
   wp_apply (wp_allocStruct).
   {
@@ -124,9 +126,8 @@ Proof.
   iIntros "Hdec".
   wp_storeField.
 
-  iApply "HΦ". iModIntro. iFrame.
-  admit. (* Seq > 0 *)
-Admitted.
+  iApply "HΦ". iModIntro. by iFrame.
+Qed.
 
 Lemma wp_decodeGetReply rep rep_sl repData :
   {{{
@@ -197,13 +198,21 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
 
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Assume).
+  rewrite bool_decide_eq_true.
+  iIntros (Hoverflow).
+
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
   wp_pures.
 
   wp_loadField.
   wp_apply (wp_Enc__PutInt with "Henc").
-  { admit. (* TODO: overflow *) }
+  { (* For some reason, having the negation in the context helps word -- but not if the goal is already False! *)
+    apply dec_stable. intros HP. apply HP. word.
+  }
   iIntros "Henc".
   wp_pures.
 
@@ -212,13 +221,16 @@ Proof.
   iDestruct (typed_slice.is_slice_small_sz with "HValue_sl") as %Hsz.
   wp_apply (wp_slice_len).
   wp_apply (wp_Enc__PutInt with "Henc").
-  { admit. (* TODO: overflow *) }
+  { apply dec_stable. intros HP. apply HP. word. }
   iIntros "Henc".
   wp_pures.
 
   wp_loadField.
   wp_apply (wp_Enc__PutBytes with "[$Henc $HValue_sl]").
-  { admit. } (* TODO: overflow *)
+  { apply sum_nooverflow_r in Hoverflow.
+    rewrite Hoverflow Hsz.
+    change (int.Z (word.add 8 8)) with 16.
+    rewrite Z2Nat.id; word. }
   iIntros "[Henc Hsl]".
   wp_pures.
   wp_apply (wp_Enc__Finish with "[$Henc]").
@@ -236,6 +248,6 @@ Proof.
   rewrite app_nil_l in H.
   simpl in H.
   done.
-Admitted.
+Qed.
 
 End memkv_marshal_get_proof.

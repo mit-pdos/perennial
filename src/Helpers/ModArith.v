@@ -46,6 +46,32 @@ Proof.
     lia.
 Qed.
 
+Lemma sum_nooverflow_l (x y : u64) :
+  int.Z x < int.Z (word.add x y) →
+  int.Z (word.add x y) = (int.Z x) + (int.Z y).
+Proof.
+  intros. word_cleanup. rewrite wrap_small //.
+  split; first word.
+  destruct (Z_lt_ge_dec (int.Z x + int.Z y) (2 ^ 64)) as [Hlt|Hge]; first done.
+  apply sum_overflow_check in Hge.
+  lia.
+Qed.
+
+Lemma word_add_comm (x y : u64) :
+  word.add x y = word.add y x.
+Proof.
+  specialize (@word.ring_theory _ u64_instance.u64 _). intros W.
+  rewrite W.(Radd_comm). done.
+Qed.
+
+Lemma sum_nooverflow_r (x y : u64) :
+  int.Z y < int.Z (word.add x y) →
+  int.Z (word.add x y) = (int.Z x) + (int.Z y).
+Proof.
+  rewrite word_add_comm. intros ?%sum_nooverflow_l.
+  rewrite Z.add_comm //.
+Qed.
+
 Theorem word_add1_neq (x: u64) :
   int.Z x ≠ int.Z (word.add x (U64 1)).
 Proof.
