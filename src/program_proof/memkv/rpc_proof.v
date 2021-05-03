@@ -74,6 +74,7 @@ Definition is_rpcHandler {X:Type} (names : heap_local_names) (cname : gname) (f:
 
 Definition client_chan_inner_msg (Γ : client_chan_gnames) (host : u64) m : iProp Σ :=
     ∃ (rpcid seqno : u64) reqData replyData X Post (x : X) γ d rep,
+       "%Hlen_reply" ∷ ⌜ length replyData = int.nat (length replyData) ⌝ ∗
        "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 seqno;
                                               EncUInt64 (length replyData); EncBytes replyData] ⌝ ∗
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid reqData γ d rep) ∗
@@ -90,6 +91,7 @@ Definition client_chan_inner (Γ : client_chan_gnames) (host: u64) : iProp Σ :=
 
 Definition server_chan_inner_msg (host : u64) Γsrv m : iProp Σ :=
     ∃ rpcid seqno args X Pre Post (x : X) Γ γ1 γ2 d rep rpcdom,
+       "%Hlen_args" ∷ ⌜ length args = int.nat (U64 (Z.of_nat (length args))) ⌝ ∗
        "#Hdom1" ∷ own (scset_name Γsrv) (to_agree (rpcdom)) ∗
        "%Hdom2" ∷ ⌜ rpcid ∈ rpcdom ⌝ ∗
        "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 rpcid; EncUInt64 seqno;
@@ -539,7 +541,7 @@ Proof.
   iIntros "Hdec".
   wp_pures.
   wp_apply (wp_Dec__GetBytes' with "[$Hdec $Hslice_close]").
-  { admit. } (* TODO : overflow *)
+  { word. }
   iIntros (s') "Hsl".
   wp_pures.
 
@@ -586,24 +588,49 @@ Proof.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
   wp_apply (wp_slice_len).
   wp_pures.
+  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
+  wp_apply (wp_slice_len).
+  wp_apply (wp_Assume).
+  iIntros (Hoverflow).
+  apply bool_decide_eq_true_1 in Hoverflow.
+  wp_pures.
+  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
+  wp_apply (wp_slice_len).
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
   wp_pures.
+  assert (int.Z (word.add (word.add 8 8) rep_sl.(Slice.sz)) =
+                 int.Z (rep_sl.(Slice.sz)) + 16)%Z as Hoverflow3.
+  {
+    rewrite ?word.unsigned_add.
+    rewrite ?wrap_small; try word.
+    split.
+    { word. }
+    destruct (decide (int.Z rep_sl.(Slice.sz) < 2^64 - 16)%Z).
+    { word. }
+    assert ((word.add 8 8) = (16 : u64)) as Heq1.
+    { rewrite //=. }
+    rewrite Heq1 in Hoverflow.
+    rewrite ?word.unsigned_add in Hoverflow.
+    exfalso. rewrite /word.wrap in Hoverflow.
+    assert (int.Z rep_sl.(Slice.sz) < 2^64)%Z by word.
+    rewrite (Zmod_in_range 1 _ _) in Hoverflow; word.
+  }
   wp_apply (wp_Enc__PutInt with "Henc").
-  { admit. (* TODO: overflow *) }
+  { word. }
   iIntros "Henc".
   wp_pures.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
   wp_apply (wp_slice_len).
   wp_apply (wp_Enc__PutInt with "Henc").
-  { admit. (* TODO: overflow *) }
+  { word. }
   iIntros "Henc".
   wp_pures.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
   iDestruct (is_slice_small_read with "His_slice") as "(His_slice&Hsl_close)".
   iDestruct (is_slice_small_sz with "His_slice") as %Hsz.
   wp_apply (wp_Enc__PutBytes with "[$Henc $His_slice]").
-  { admit. } (* TODO: overflow *)
+  { word. }
   iIntros "[Henc Hslice]".
   wp_pures.
   wp_apply (wp_Enc__Finish with "[$Henc]").
@@ -613,7 +640,7 @@ Proof.
   (* Send *)
   iDestruct (is_slice_small_read with "Hmsg_slice") as "(Hmsg_slice&_)".
   wp_apply (wp_Send with "[$Hmsg_slice]").
-  { admit. } (* TODO: overflow *)
+  { apply has_encoding_length in Hencoding. rewrite //= in Hencoding. word. }
   iMod (inv_alloc urpc_escrowN _ (Post x args repData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt)
           with "[HPost]") as "#HPost_escrow".
   { eauto. }
@@ -645,7 +672,7 @@ Proof.
     eauto.
   }
   iModIntro. iIntros "?". wp_pures; eauto.
-Admitted.
+Qed.
 
 Lemma wp_StartRPCServer γ (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
   dom (gset u64) handlers ≠ ∅ →
@@ -719,7 +746,7 @@ Proof.
   iIntros "Hdec".
   wp_pures.
   wp_apply (wp_Dec__GetBytes' with "[$Hdec $Hsl_close]").
-  { admit. } (* TODO : overflow *)
+  { word. }
   iIntros (?) "Hsl".
   wp_pures.
   iNamed "Hstfields".
@@ -806,7 +833,7 @@ Proof.
     exfalso. apply map.map_get_true in Hget. congruence. }
   { iDestruct "Hcase3" as "(%Hlookup&_)".
     exfalso. apply map.map_get_true in Hget. congruence. }
-Admitted.
+Qed.
 
 Lemma wp_MakeRPCClient (host:u64):
   {{{
@@ -1057,13 +1084,12 @@ Proof.
     iExists _, _, _, _, _, _.
     iFrame "Hreg".
     rewrite global_groveG_inv_conv'.
+    assert (U64 (Z.of_nat (int.nat (req.(Slice.sz)))) = req.(Slice.sz)) as Heqlen.
+    { word. }
     iFrame "#". iSplit; eauto.
-    {
-      iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz.
-      assert (U64 (Z.of_nat (int.nat (req.(Slice.sz)))) = req.(Slice.sz)) as ->.
-      { word. }
-      eauto.
-    }
+    { iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz. word. }
+    iSplit; eauto.
+    { iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz Heqlen. eauto. }
   }
   iModIntro. iIntros "Hsl_rep".
   wp_pures.
@@ -1124,24 +1150,3 @@ Proof.
 Qed.
 
 End rpc_proof.
-
-(*
-Lemma heapG_to_preG_equiv Σ Hheap Hcrash local_names :
-  Hheap.(@heap_globalG_preG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ) =
-  heapG_to_preG Σ
-    (@heap_globalG_heapG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ Hheap
-       Hcrash local_names).
-Proof.
-  Print heap_globalG.
-  Print heap_globalG_heapG.
-  Locate heap_update_pre.
-  Print heap_update_pre.
-  Print crashPreG.
-  rewrite /heapG_to_preG. destruct Hheap => //=.
-  destruct heap_globalG_preG => //=.
-  destruct heap_globalG_invG.
-  destruct Hcrash => //=.
-  Set Printing Implicit.
-  destruct heap_preG_iris => //=.
-*)
-

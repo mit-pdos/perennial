@@ -15,6 +15,7 @@ Definition RPCServer__rpcHandle: val :=
     let: "replyData" := ref (zero_val (slice.T byteT)) in
     let: "f" := Fst (MapGet (struct.loadF RPCServer "handlers" "srv") "rpcid") in
     "f" "data" "replyData";;
+    control.impl.Assume (#8 + #8 + slice.len (![slice.T byteT] "replyData") > slice.len (![slice.T byteT] "replyData"));;
     let: "e" := marshal.NewEnc (#8 + #8 + slice.len (![slice.T byteT] "replyData")) in
     marshal.Enc__PutInt "e" "seqno";;
     marshal.Enc__PutInt "e" (slice.len (![slice.T byteT] "replyData"));;
