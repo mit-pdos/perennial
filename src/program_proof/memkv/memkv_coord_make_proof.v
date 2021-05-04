@@ -145,18 +145,16 @@ Proof.
     iSplit.
     { iPureIntro. rewrite /uNSHARD. intros i Hlt. rewrite Heq_initShardMapping.
       eexists. apply lookup_replicate_2. word. }
-    iPoseProof (big_sepS_intro_emp) as "H".
-    iApply (big_sepS_mono with "H").
-    { iIntros (x Hin) "_".
-      rewrite Heq_initShardMapping. iExists _.
-      iSplit.
-      { iPureIntro. apply lookup_replicate_2.
-        apply rangeSet_lookup in Hin; try word.
-        { rewrite /uNSHARD in Hin. word. }
-        { rewrite /uNSHARD. word. }
-      }
-      iLeft. iPureIntro; split; eauto. word.
+    iApply big_sepS_intuitionistically_forall.
+    iIntros "!#" (x Hin).
+    rewrite Heq_initShardMapping. iExists _.
+    iSplit.
+    { iPureIntro. apply lookup_replicate_2.
+      apply rangeSet_lookup in Hin; try word.
+      { rewrite /uNSHARD in Hin. word. }
+      { rewrite /uNSHARD. word. }
     }
+    iLeft. iPureIntro; split; eauto. word.
   }
   iIntros "(Hloop_post&Hi)".
   wp_pures.

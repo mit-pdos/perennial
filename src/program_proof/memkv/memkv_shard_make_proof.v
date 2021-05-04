@@ -155,15 +155,13 @@ Proof.
           { iExactEq "Hgi". f_equal. word. }
           iSplit.
           { iPureIntro. rewrite list_lookup_insert; eauto. }
-          iPoseProof (big_sepS_intro_emp (fin_to_set u64)) as "Hemp".
-          iApply (big_sepS_mono with "Hemp").
-          { iIntros (??) "_".
-            destruct (decide (shardOfC x = i)); last by eauto.
-            { iRight. iExists 1%Qp, _. rewrite ?lookup_empty //=.
-              iSplit; first eauto.
-              iApply (typed_slice.is_slice_to_small (V:=u8)).
-              iApply typed_slice.is_slice_zero. }
-          }
+          iApply big_sepS_intuitionistically_forall.
+          iIntros "!#" (??).
+          destruct (decide (shardOfC x = i)); last by eauto.
+          { iRight. iExists 1%Qp, _. rewrite ?lookup_empty //=.
+            iSplit; first eauto.
+            iApply (typed_slice.is_slice_to_small (V:=u8)).
+            iApply typed_slice.is_slice_zero. }
         }
         iApply (big_sepS_mono with "HownShards").
         { iIntros (??) "H".
@@ -238,12 +236,10 @@ Proof.
     iSplitL "Hkvss_sl".
     { rewrite /named. iExactEq "Hkvss_sl". f_equal.
       rewrite Heq_init_kvs_ptrs fmap_replicate. f_equal. }
-    iPoseProof (big_sepS_intro_emp) as "H".
-    iApply (big_sepS_mono with "H").
-    { iIntros (x Hin) "_". iLeft. iPureIntro. intros Hfalse.
-      rewrite Heq_initShardMapping in Hfalse.
-      apply lookup_replicate_1 in Hfalse as (Hbad&?). rewrite //= in Hbad.
-    }
+    iApply big_sepS_intuitionistically_forall.
+    iIntros "!#" (x Hin). iLeft. iPureIntro. intros Hfalse.
+    rewrite Heq_initShardMapping in Hfalse.
+    apply lookup_replicate_1 in Hfalse as (Hbad&?). rewrite //= in Hbad.
   }
   iIntros "(Hloop_post&Hi)".
   iMod (alloc_lock memKVN _ lk (own_MemKVShardServer srv γ) with "[$] [-mu HΦ]").

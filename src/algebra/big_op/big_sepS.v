@@ -16,14 +16,3 @@ Proof.
   repeat setoid_rewrite big_sepS_elements.
   rewrite big_sepL_sepL. done.
 Qed.
-
-Section sep_intro.
-  Context {PROP:bi}.
-  Context `{Countable K}.
-
-  (* FIXME: upstream (see Iris MR 673) *)
-  Lemma big_sepS_intro_emp `{!BiAffine PROP} (m: gset K) :
-    ⊢ [∗ set] x ∈ m, (emp : PROP).
-  Proof. iApply big_sepS_forall. eauto. Qed.
-
-End sep_intro.
