@@ -25,13 +25,6 @@ Lemma wp_MemKVCoordClerk__GetShardMap (ck:loc) γkv :
 Proof.
 Admitted.
 
-Definition own_ShardClerkSet (s:loc) (γkv:gname) : iProp Σ :=
-  ∃ (cls_ptr:loc) (clsM:gmap u64 loc),
-  "Hcls" ∷ s ↦[ShardClerkSet :: "cls"] #cls_ptr ∗
-  "HclsMap" ∷ is_map cls_ptr 1 clsM ∗
-  "HclsOwn" ∷ [∗ map] host ↦ cl_ptr ∈ clsM, own_MemKVShardClerk cl_ptr γkv
-.
-
 (* TODO: need precondition that [[is_shard_server host]] *)
 Lemma wp_ShardClerkSet__GetClerk (γ:memkv_shard_names) (γkv:gname) (s:loc) (host:u64) :
   {{{

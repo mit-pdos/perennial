@@ -3,31 +3,45 @@ From Perennial.program_proof Require Import dist_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 
-From Perennial.program_proof.memkv Require Export memkv_shard_definitions common_proof.
+From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_coord_definitions common_proof.
 
 Section memkv_coord_make_proof.
 
 Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Record memkv_coord_names := {
- coord_rpc_gn : rpc_names ;
  coord_urpc_gn : server_chan_gnames ;
  coord_kv_gn : gname
 }
 .
 
+Definition own_MemKVCoordServer (s : loc) γ : iProp Σ :=
+  ∃ cfg (hostShards_ptr : loc) hostShards (clset : loc) shardMap_sl (shardMapping : list u64),
+  "config" ∷ s ↦[MemKVCoord :: "config"] #cfg ∗
+  "hostShards" ∷ s ↦[MemKVCoord :: "hostShards"] #hostShards_ptr ∗
+  "shardClerks" ∷ s ↦[MemKVCoord :: "shardClerks"] #clset ∗
+  "%Hlen_shardMapping" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝%Z ∗
+  "%HshardMapping_dom" ∷ ⌜∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)⌝ ∗
+  "shardMap" ∷ s ↦[MemKVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
+  "HshardMap_sl" ∷ typed_slice.is_slice (V:=u64) shardMap_sl HostName 1 shardMapping ∗
+  "#HshardServers" ∷ all_are_shard_servers shardMapping γ ∗
+  "Hmap" ∷ is_map (V:=u64) hostShards_ptr 1 hostShards ∗
+  "HshardClerksSet" ∷ own_ShardClerkSet clset γ.
+
+Definition is_MemKVCoordServer (s:loc) γ : iProp Σ :=
+  ∃ mu,
+  "#Hmu" ∷ readonly (s ↦[MemKVCoord :: "mu"] mu) ∗
+  "#HmuInv" ∷ is_lock memKVN mu (own_MemKVCoordServer s γ.(coord_kv_gn))
+.
+
 Lemma wp_MakeMemKVCoordServer (initserver : u64) (γ : memkv_coord_names) γinit :
   {{{
        "%Hinitserver_gnames" ∷ ⌜γinit.(kv_gn) = γ.(coord_kv_gn)⌝ ∗
-       "#Hinit_is_shard_server" ∷ is_shard_server initserver γinit ∗
-       "#His_srv" ∷ is_RPCServer γ.(coord_rpc_gn) ∗
-       "HRPCserver_own" ∷ RPCServer_own_ghost γ.(coord_rpc_gn) ∅ ∅ ∗
-       "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), RPCClient_own_ghost γ.(coord_rpc_gn) cid 1
+       "#Hinit_is_shard_server" ∷ is_shard_server initserver γinit
   }}}
     MakeMemKVCoordServer #initserver
   {{{
-       s, RET #s; True%I
-       (* TODO: this is obviously not the correct postcondition *)
+       s, RET #s; is_MemKVCoordServer s γ
   }}}.
 Proof.
   iIntros (Φ) "H HΦ".
@@ -57,7 +71,7 @@ Proof.
                      (@u64_IntoVal grove_op) shardMap_sl HostName 1 shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ rangeSet 0 uNSHARD, ∃ (hid : u64),
                   ⌜ shardMapping !! int.nat sid = Some hid ⌝ ∗
-                  (⌜ hid = 0 ⌝ ∨ ∃ hγ, ⌜ hγ.(kv_gn) = γ.(coord_kv_gn) ⌝ ∗ is_shard_server hid hγ)
+                  (⌜ hid = 0 ∧ int.nat i ≤ int.nat sid ⌝  ∨ ∃ hγ, ⌜ hγ.(kv_gn) = γ.(coord_kv_gn) ⌝ ∗ is_shard_server hid hγ)
                   ))%I with "[] [$Hi HshardMap_sl shardMap]").
   { word. }
   { iIntros (i Φ') "!# H HΦ".
@@ -116,6 +130,11 @@ Proof.
           }
           move:Hin. set_solver+. }
         rewrite ?list_lookup_insert_ne //.
+        iDestruct "H" as (hid ?) "H". iExists hid; iSplit; first eauto.
+        iDestruct "H" as "[%Hzero|H2]".
+        { iLeft. iPureIntro. destruct Hzero as (?&?); split; first auto.
+          word_cleanup. }
+        { eauto. }
       }
     }
   }
@@ -136,7 +155,7 @@ Proof.
         { rewrite /uNSHARD in Hin. word. }
         { rewrite /uNSHARD. word. }
       }
-      iLeft. eauto.
+      iLeft. iPureIntro; split; eauto. word.
     }
   }
   iIntros "(Hloop_post&Hi)".
@@ -155,12 +174,66 @@ Proof.
   rewrite /MakeShardClerkSet.
   wp_lam.
   replace (ref (InjLV #null))%E with (NewMap (struct.ptrT MemKVShardClerk)) by auto.
-  wp_apply (map.wp_NewMap).
+  wp_apply (wp_NewMap).
   iIntros (mref_set) "Hmap_set".
   wp_apply (wp_allocStruct).
   { eauto. }
   iIntros (clset) "Hset".
   wp_storeField.
-  iModIntro. iApply "HΦ".
-  eauto.
+  iMod (alloc_lock memKVN _ lk (own_MemKVCoordServer s γ.(coord_kv_gn)) with "[$Hfree] [-mu HΦ]").
+  {
+    iNext.
+    iNamed "Hloop_post".
+    remember uNSHARD as uNSHARD' eqn:Heq_uNSHARD.
+    iExists _, _, _, _, _, _. iFrame.
+    iSplit.
+    { iPureIntro. congruence. }
+    iSplit.
+    { iPureIntro. intros i Hlt.
+      eapply HshardMapping_dom. rewrite Heq_uNSHARD. eauto. }
+    iSplitL "HownShards".
+    {
+      rewrite /all_are_shard_servers. iIntros (sid host Hlookup).
+      iDestruct (big_sepS_elem_of _ _ (U64 sid) with "HownShards") as "H".
+      { apply rangeSet_lookup; try word.
+        - rewrite Heq_uNSHARD /uNSHARD. lia.
+        - split.
+          * apply encoding.unsigned_64_nonneg.
+          * apply lookup_lt_Some in Hlookup.
+            rewrite Z_u64.
+            ** lia.
+            ** split; try lia. rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping. lia.
+      }
+      iDestruct "H" as (? Hlookup2) "[%Hbad|H]".
+      { destruct Hbad as (_&Hle). exfalso.
+        apply lookup_lt_Some in Hlookup.
+        rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping.
+        word_cleanup.
+        rewrite -Hlen_shardMapping in Hle.
+        rewrite Z_u64 ?Nat2Z.id in Hle; word_cleanup.
+      }
+      iDestruct "H" as (??) "H". iExists _.
+      assert (host = hid) as ->.
+      {
+        assert (int.nat (U64 (Z.of_nat sid)) = sid) as Hcoerce.
+        { word_cleanup.
+          rewrite wrap_small; first lia.
+          { split.
+          * lia.
+          *  apply lookup_lt_Some in Hlookup.
+            rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping. lia.
+          }
+        }
+        { rewrite Hcoerce in Hlookup2. congruence. }
+      }
+      iFrame. eauto.
+    }
+    iExists _, _. iFrame "# ∗".
+    iDestruct (struct_fields_split with "Hset") as "Hset". iNamed "Hset".
+    iFrame. rewrite big_sepM_empty. eauto.
+  }
+  unshelve (iMod (readonly_alloc_1 with "mu") as "#mu"); [| apply _ |].
+  iModIntro. iApply "HΦ". iExists _. iFrame "# ∗".
 Qed.
+
+End memkv_coord_make_proof.
