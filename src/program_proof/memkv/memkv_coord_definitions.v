@@ -33,7 +33,8 @@ Definition is_coord_server_addSpec γkv : RPCSpec :=
      spec_Post := (λ host reqData repData, True)%I |}.
 
 Definition has_encoding_shardMapping (data : list u8) (l: list u64) :=
-  has_encoding data (map EncUInt64 l).
+  has_encoding data (EncUInt64 <$> l) ∧
+  length l = int.nat 65536.
 
 Definition is_coord_server_getSpec γkv : RPCSpec :=
   {| spec_rpcid := uCOORD_GET;

@@ -7,7 +7,38 @@ Section memkv_coord_clerk_proof.
 
 Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Axiom own_MemKVCoordClerk : loc → gname → iProp Σ.
+Definition own_MemKVCoordClerk ck γkv : iProp Σ :=
+  ∃ γh host (cl : loc),
+    "%Heq_kv_gn" ∷ ⌜ γh.(coord_kv_gn) = γkv ⌝ ∗
+    "Hcl" ∷ ck ↦[MemKVCoordClerk :: "cl"] #cl ∗
+    "#His_coord" ∷ is_coord_server host γh ∗
+    "Hcl_own" ∷ RPCClient_own cl host.
+
+Lemma wp_decodeShardMap data_sl data (shardMapping : list u64) :
+  {{{
+       "%Henc" ∷ ⌜ has_encoding_shardMapping data shardMapping ⌝ ∗
+      "Hsl" ∷ typed_slice.is_slice (V:=u8) data_sl byteT 1 data
+  }}}
+    decodeShardMap (slice_val data_sl)
+  {{{  rep_sl , RET (slice_val rep_sl);
+       ⌜ length shardMapping = int.nat 65536 ⌝ ∗
+       typed_slice.is_slice rep_sl uint64T 1 shardMapping }}}.
+Proof.
+  wp_pures. iIntros (Φ) "H HΦ".
+  iNamed "H".
+  wp_lam.
+
+  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
+  destruct Henc as [Henc Hlen].
+  wp_apply (wp_new_dec with "[$Hsl]").
+  { done. }
+  iIntros (?) "Hdec".
+  wp_pures.
+  wp_apply (wp_Dec__GetInts _ _ _ _ [] with "[Hdec]").
+  { eauto. }
+  { rewrite app_nil_r. iFrame. }
+  iIntros (?) "(?&H)". iApply "HΦ". iSplit; eauto.
+Qed.
 
 Lemma wp_MemKVCoordClerk__GetShardMap (ck:loc) γkv :
   {{{
@@ -23,9 +54,74 @@ Lemma wp_MemKVCoordClerk__GetShardMap (ck:loc) γkv :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ) "Hclerk HΦ".
+  wp_lam.
+  wp_apply (wp_ref_of_zero).
+  { naive_solver. }
+  iIntros (rawRep) "HrawRep".
+  wp_pures.
+  iAssert (∃ sl, rawRep ↦[slice.T byteT] (slice_val sl))%I with "[HrawRep]" as "HrawRep".
+  {
+    rewrite zero_slice_val.
+    iExists _; iFrame.
+  }
 
-(* TODO: need precondition that [[is_shard_server host]] *)
+  wp_forBreak_cond.
+  wp_pures.
+  iNamed "Hclerk".
+  iNamed "His_coord".
+  iNamed "HrawRep".
+  wp_apply (typed_slice.wp_NewSlice (V:=u8)).
+  iIntros (s) "H".
+  wp_loadField.
+  wp_apply (wp_RPCClient__Call () with "[Hcl_own H $HrawRep]").
+  { iFrame "H". iFrame "Hcl_own".
+    rewrite /has_handler. iFrame "HgetSpec". done. }
+  iIntros (???) "(HrawRep & Hcl_own & Hreq_sl & Hrep_sl & Hpost)".
+  wp_pures.
+  wp_if_destruct.
+  { (* continue *)
+    wp_pures. iLeft.
+    iModIntro. iSplit; first done.
+    iFrame "HΦ".
+    iSplitR "HrawRep"; last first.
+    { eauto. }
+    iExists _, _, _. iFrame "Hcl". iFrame "Hcl_own".
+    iSplitL ""; last first.
+    { rewrite /is_coord_server.
+      iSplit.
+      { iExact "HaddSpec". }
+      { iExact "HgetSpec". }
+    }
+    eauto.
+  }
+  (* got reply *)
+  iRight.
+  iDestruct "Hpost" as "[%Hbad|[_ Hpost]]"; first naive_solver.
+  iModIntro. iSplitL ""; first done.
+  wp_pures.
+  wp_load.
+  iDestruct "Hpost" as (??) "Hcid".
+  wp_apply (wp_decodeShardMap with "[$Hrep_sl]").
+  { done. }
+  iIntros (shardMap_sl) "(%Hlen&HshardMap_sl)".
+  iApply "HΦ".
+  iFrame "HshardMap_sl". 
+  iSplitR "Hcid".
+  { iExists _, _, _. iFrame "Hcl". iFrame "Hcl_own".
+    iSplitL ""; last first.
+    { rewrite /is_coord_server.
+      iSplit.
+      { iExact "HaddSpec". }
+      { iExact "HgetSpec". }
+    }
+    eauto.
+  }
+  rewrite Heq_kv_gn. iFrame "Hcid".
+  rewrite /uNSHARD.
+  iPureIntro. word.
+Qed.
+
 Lemma wp_ShardClerkSet__GetClerk (γ:memkv_shard_names) (γkv:gname) (s:loc) (host:u64) :
   {{{
        own_ShardClerkSet s γkv ∗

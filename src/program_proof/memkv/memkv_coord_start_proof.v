@@ -13,7 +13,7 @@ Section memkv_coord_start_proof.
 Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
-  length shardMapping ≤ uNSHARD →
+  length shardMapping = int.nat uNSHARD →
   {{{ "Hs_ptr" ∷ s ↦[slice.T HostName] (slice_val shardMap_sl) ∗
       "HshardMap_sl" ∷ typed_slice.is_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
   }}}
@@ -37,7 +37,7 @@ Proof.
 
   wp_load.
   wp_apply (wp_Enc__PutInts with "[$Henc $HshardMap_sl]").
-  { rewrite /uNSHARD in Hshards. lia. }
+  { rewrite /uNSHARD in Hshards. rewrite Hshards. word. }
   iIntros "[Henc HshardMap_sl]".
 
   wp_apply (wp_Enc__Finish with "Henc").
@@ -333,7 +333,9 @@ Proof.
       { eauto. }
       iIntros (fl) "(H1&H2)".
       iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_close]".
-      wp_apply (wp_encodeShardMap with "[$]"); first lia.
+      wp_apply (wp_encodeShardMap with "[$]").
+      { word_cleanup. rewrite wrap_small; last (rewrite /uNSHARD; lia).
+        rewrite -Hlen_shardMapping. lia. }
       iIntros (sl data) "(%Henc&H)".
       wp_apply (wp_StoreAt with "[$]").
       { apply slice_val_ty. }
