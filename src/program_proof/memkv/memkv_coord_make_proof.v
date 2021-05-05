@@ -9,31 +9,6 @@ Section memkv_coord_make_proof.
 
 Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Record memkv_coord_names := {
- coord_urpc_gn : server_chan_gnames ;
- coord_kv_gn : gname
-}
-.
-
-Definition own_MemKVCoordServer (s : loc) γ : iProp Σ :=
-  ∃ cfg (hostShards_ptr : loc) hostShards (clset : loc) shardMap_sl (shardMapping : list u64),
-  "config" ∷ s ↦[MemKVCoord :: "config"] #cfg ∗
-  "hostShards" ∷ s ↦[MemKVCoord :: "hostShards"] #hostShards_ptr ∗
-  "shardClerks" ∷ s ↦[MemKVCoord :: "shardClerks"] #clset ∗
-  "%Hlen_shardMapping" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝%Z ∗
-  "%HshardMapping_dom" ∷ ⌜∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)⌝ ∗
-  "shardMap" ∷ s ↦[MemKVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷ typed_slice.is_slice (V:=u64) shardMap_sl HostName 1 shardMapping ∗
-  "#HshardServers" ∷ all_are_shard_servers shardMapping γ ∗
-  "Hmap" ∷ is_map (V:=u64) hostShards_ptr 1 hostShards ∗
-  "HshardClerksSet" ∷ own_ShardClerkSet clset γ.
-
-Definition is_MemKVCoordServer (s:loc) γ : iProp Σ :=
-  ∃ mu,
-  "#Hmu" ∷ readonly (s ↦[MemKVCoord :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock memKVN mu (own_MemKVCoordServer s γ.(coord_kv_gn))
-.
-
 Lemma wp_MakeMemKVCoordServer (initserver : u64) (γ : memkv_coord_names) γinit :
   {{{
        "%Hinitserver_gnames" ∷ ⌜γinit.(kv_gn) = γ.(coord_kv_gn)⌝ ∗
