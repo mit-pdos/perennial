@@ -11,8 +11,6 @@ From Perennial.program_proof Require Export marshal_proof memkv.common_proof.
 Section memkv_marshal_move_shard_proof.
 
 Record MoveShardRequestC := mkMoveShardRequestC {
-  MR_CID : u64;
-  MR_Seq : u64;
   MR_Sid : u64;
   MR_Dst : u64
 }.
@@ -23,11 +21,8 @@ Admitted.
 Context `{!heapG Σ}.
 
 Definition own_MoveShardRequest args_ptr args : iProp Σ :=
-  "HCID" ∷ args_ptr ↦[MoveShardRequest :: "CID"] #args.(MR_CID) ∗
-  "HSeq" ∷ args_ptr ↦[MoveShardRequest :: "Seq"] #args.(MR_Seq) ∗
   "HSid" ∷ args_ptr ↦[MoveShardRequest :: "Sid"] #args.(MR_Sid) ∗
-  "HDst" ∷ args_ptr ↦[MoveShardRequest :: "Dst"] #args.(MR_Dst) ∗
-  "%HseqPositive" ∷ ⌜int.Z args.(MR_Seq) > 0⌝
+  "HDst" ∷ args_ptr ↦[MoveShardRequest :: "Dst"] #args.(MR_Dst)
 .
 
 (* Pre: "HownShard" ∷ own_shard γ.(kv_gn) sid m *)

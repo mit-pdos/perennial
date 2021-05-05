@@ -3,6 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_coord_definitions common_proof.
+From Perennial.program_proof.memkv Require Import memkv_shard_clerk_proof.
 
 (* Needed for ShardClerkSet GetClerk *)
 From Perennial.program_proof.memkv Require Import memkv_coord_clerk_proof.
@@ -12,7 +13,7 @@ Section memkv_coord_start_proof.
 Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
-  length shardMapping ≤ uNSHARD →
+  length shardMapping = int.nat uNSHARD →
   {{{ "Hs_ptr" ∷ s ↦[slice.T HostName] (slice_val shardMap_sl) ∗
       "HshardMap_sl" ∷ typed_slice.is_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
   }}}
@@ -36,7 +37,7 @@ Proof.
 
   wp_load.
   wp_apply (wp_Enc__PutInts with "[$Henc $HshardMap_sl]").
-  { rewrite /uNSHARD in Hshards. lia. }
+  { rewrite /uNSHARD in Hshards. rewrite Hshards. word. }
   iIntros "[Henc HshardMap_sl]".
 
   wp_apply (wp_Enc__Finish with "Henc").
@@ -45,13 +46,6 @@ Proof.
   iApply "HΦ". rewrite /named. iFrame. iPureIntro.
   rewrite /has_encoding_shardMapping. done.
 Qed.
-
-(* Obviously this spec is not provable, one actually knows a bit more in the precondition *)
-Lemma wp_MemKVShardClerk__MoveShard ck_ptr i x:
-{{{ True }}}
-MemKVShardClerk__MoveShard #ck_ptr #i #x
-{{{ RET #(); True }}}.
-Proof. Admitted.
 
 Lemma wp_MemKVCoord__AddServerRPC s x γ γsh :
   {{{ "#His_memkv" ∷ is_MemKVCoordServer s γ ∗
@@ -157,9 +151,12 @@ Proof.
       rewrite /all_are_shard_servers.
       iDestruct ("HshardServers" $! _ _ with "[//]") as (γh) "(His_shard_host&Heq)".
       wp_apply (wp_ShardClerkSet__GetClerk with "[$]").
-      iIntros (ck_ptr) "Hclerk".
+      iIntros (ck_ptr) "(Hclerk&Hclerk_clo)".
       wp_bind (MemKVShardClerk__MoveShard #ck_ptr #_ #x).
-      wp_apply (wp_MemKVShardClerk__MoveShard with "[$]").
+      wp_apply (wp_MemKVShardClerk__MoveShard with "[$Hclerk]").
+      { iFrame "#His_shard". iPureIntro.
+        eapply lookup_lt_Some in Heq. lia. }
+      iIntros "Hclerk".
       wp_pures.
       wp_loadField.
       wp_apply (wp_MapInsert with "[$]").
@@ -182,7 +179,7 @@ Proof.
       wp_pure (goose_lang.App _ _).
       iThaw "IH".
       wp_pure (_ + _)%E.
-      iDestruct "Hclerk" as "(Hclerk&Hclo)". iDestruct ("Hclo" with "[$]") as "Hclerk".
+      iDestruct ("Hclerk_clo" with "[$]") as "Hclerk".
       iApply ("IH" $! _ (typed_map.map_insert
                   (typed_map.map_insert hostShards' v (word.sub (word.add (word.divu 65536 _) 1) 1))
                   x (word.add v' 1)) with "[] [] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
@@ -220,9 +217,12 @@ Proof.
       rewrite /all_are_shard_servers.
       iDestruct ("HshardServers" $! _ _ with "[//]") as (γh) "(His_shard_host&Heq)".
       wp_apply (wp_ShardClerkSet__GetClerk with "[$]").
-      iIntros (ck_ptr) "Hclerk".
+      iIntros (ck_ptr) "(Hclerk&Hclerk_clo)".
       wp_bind (MemKVShardClerk__MoveShard #ck_ptr #_ #x).
-      wp_apply (wp_MemKVShardClerk__MoveShard with "[$]").
+      wp_apply (wp_MemKVShardClerk__MoveShard with "[$Hclerk]").
+      { iFrame "#His_shard". iPureIntro.
+        eapply lookup_lt_Some in Heq. lia. }
+      iIntros "Hclerk".
       wp_pures.
       wp_loadField.
       wp_apply (wp_MapInsert with "[$]").
@@ -245,7 +245,7 @@ Proof.
       wp_pure (goose_lang.App _ _).
       iThaw "IH".
       wp_pure (_ + _)%E.
-      iDestruct "Hclerk" as "(Hclerk&Hclo)". iDestruct ("Hclo" with "[$]") as "Hclerk".
+      iDestruct ("Hclerk_clo" with "[$]") as "Hclerk".
       iApply ("IH" $! _ _ with "[] [] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
       { iPureIntro. rewrite insert_length. eauto. }
       { iPureIntro. intros i Hlt.
@@ -333,7 +333,9 @@ Proof.
       { eauto. }
       iIntros (fl) "(H1&H2)".
       iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_close]".
-      wp_apply (wp_encodeShardMap with "[$]"); first lia.
+      wp_apply (wp_encodeShardMap with "[$]").
+      { word_cleanup. rewrite wrap_small; last (rewrite /uNSHARD; lia).
+        rewrite -Hlen_shardMapping. lia. }
       iIntros (sl data) "(%Henc&H)".
       wp_apply (wp_StoreAt with "[$]").
       { apply slice_val_ty. }
