@@ -89,6 +89,77 @@ Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
            ⌜shardOfC k ≠ sid⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (kvs !! k))) )
 .
 
+Lemma wp_MemKVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γdst:
+  {{{
+       own_MemKVShardClerk ck γkv ∗
+       is_shard_server dst γdst ∗
+       ⌜int.Z sid < uNSHARD⌝
+  }}}
+    MemKVShardClerk__MoveShard #ck #sid #dst
+  {{{ RET #();
+        own_MemKVShardClerk ck γkv
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iDestruct "Hpre" as "(Hclerk & #Hserver & %Hid_lt)".
+  iNamed "Hclerk".
+  wp_lam.
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { naive_solver. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_storeField.
+  wp_storeField.
+
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rawRep) "HrawRep".
+  wp_pures.
+  iAssert (∃ sl, rawRep ↦[slice.T byteT] (slice_val sl))%I with "[HrawRep]" as "HrawRep".
+  {
+    rewrite zero_slice_val.
+    iExists _; iFrame.
+  }
+
+  wp_pures.
+  wp_forBreak_cond.
+  wp_pures.
+
+  wp_bind (encodeMoveShardRequest _).
+  wp_apply (wp_encodeMoveShardRequest _ {| MR_Sid := sid; MR_Dst := dst |} with "[Sid Dst]").
+  { iFrame. }
+  iIntros (??) "(%Henc & Hsl & Hargs)".
+
+  wp_loadField.
+  iEval (rewrite is_shard_server_unfold) in "His_shard".
+  iNamed "His_shard".
+  iNamed "HrawRep".
+  wp_apply (wp_RPCClient__Call _ with "[Hsl HrawRep Hcl_own]").
+  { iFrame "HrawRep Hsl Hcl_own". iSplitL.
+    { rewrite /has_handler. simpl. iFrame "HmoveSpec". }
+    iModIntro. iNext. iExists _. iFrame "%". iNext => /=. iFrame "Hserver". }
+  iIntros (???) "(HrawRep & Hcl_own & Hreq_sl & Hrep_sl & Hpost)".
+  wp_pures.
+  wp_if_destruct.
+  { (* continue *)
+    wp_pures. iLeft.
+    iFrame.
+    iSplitL ""; first done.
+    iNamed "HrawRep".
+    iModIntro. iNamed "Hargs". iFrame. iExists _. iFrame.
+  }
+  (* got reply *)
+  iRight. iModIntro. iSplit; first done.
+  iApply "HΦ". iExists _, _, _, _, _.
+  iFrame "Hcid Hseq Hcl Hcrpc Hcl_own".
+  iSplit; last eauto.
+  iEval (rewrite is_shard_server_unfold).
+  { iFrame "#". }
+Qed.
+
 Lemma wp_MemKVShardClerk__InstallShard γkv (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:gmap u64 (list u8)) :
   {{{
        own_MemKVShardClerk ck γkv ∗

@@ -64,7 +64,7 @@ Proof.
   { (* don't have the shard, so we're not going to install it somewhere else *)
     iSpecialize ("HshardMap_sl" with "HshardMap_small").
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HCID HSeq HSid]").
+    wp_apply (release_spec with "[-HΦ HSid]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
