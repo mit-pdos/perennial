@@ -50,7 +50,6 @@ Proof.
   wp_apply (wp_RPCClient__Call () with "[$Hcl $Hreq_sl $HrawRep]").
   { rewrite /has_handler. iFrame "HfreshSpec". done. }
   iIntros (?) "(Hcl & Hreq_sl & Hpost)".
-  wp_pures.
   iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
   { (* continue *)
     wp_pures. iLeft.
@@ -144,9 +143,8 @@ Proof.
     { iNext => /=. iFrame "Hserver". }
     { iPureIntro. congruence. }
   }
-  iIntros (???) "(HrawRep & Hcl_own & Hreq_sl & Hrep_sl & Hpost)".
-  wp_pures.
-  wp_if_destruct.
+  iIntros (?) "(Hcl_own & Hreq_sl & Hpost)".
+  iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
   { (* continue *)
     wp_pures. iLeft.
     iFrame.

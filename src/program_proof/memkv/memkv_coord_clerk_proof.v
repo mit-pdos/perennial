@@ -77,9 +77,8 @@ Proof.
   wp_apply (wp_RPCClient__Call () with "[Hcl_own H $HrawRep]").
   { iFrame "H". iFrame "Hcl_own".
     rewrite /has_handler. iFrame "HgetSpec". done. }
-  iIntros (???) "(HrawRep & Hcl_own & Hreq_sl & Hrep_sl & Hpost)".
-  wp_pures.
-  wp_if_destruct.
+  iIntros (?) "(Hcl_own & Hreq_sl & Hpost)".
+  iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
   { (* continue *)
     wp_pures. iLeft.
     iModIntro. iSplit; first done.
@@ -97,7 +96,6 @@ Proof.
   }
   (* got reply *)
   iRight.
-  iDestruct "Hpost" as "[%Hbad|[_ Hpost]]"; first naive_solver.
   iModIntro. iSplitL ""; first done.
   wp_pures.
   wp_load.
