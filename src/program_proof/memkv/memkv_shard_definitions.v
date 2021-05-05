@@ -117,12 +117,13 @@ Definition is_shard_server_freshSpec γrpc : RPCSpec :=
      spec_Post := (λ x reqData repData, ∃ cid, ⌜has_encoding_Uint64 repData cid⌝ ∗
               RPCClient_own_ghost γrpc cid 1)%I |}.
 
-Definition is_shard_server_moveSpec_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : RPCSpec :=
+Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : RPCSpec :=
   {| spec_rpcid := uKV_MOV_SHARD;
      spec_ty := memkv_shard_names;
      spec_Pre :=(λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
                                   ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
-                                  (▷ ρ args.(MR_Dst) x)
+                                  (▷ ρ args.(MR_Dst) x) ∗
+                                  ⌜ x.(kv_gn) = γkv ⌝
              )%I;
      spec_Post := (λ x reqData repData, True)%I |}.
 
@@ -132,7 +133,7 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
   "#HputSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_putSpec γ.(kv_gn) γ.(rpc_gn)) ∗
   "#HconditionalPutSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_conditionalPutSpec γ.(kv_gn) γ.(rpc_gn)) ∗
   "#HgetSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_getSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-  "#HmoveSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_moveSpec_pre ρ) ∗
+  "#HmoveSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_moveSpec_pre γ.(kv_gn) ρ) ∗
   "#HinstallSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_installSpec γ.(kv_gn) γ.(rpc_gn)) ∗
   "#HfreshSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_freshSpec γ.(rpc_gn))
 )%I.
@@ -149,7 +150,7 @@ Proof.
   rewrite /dist_later. destruct n; auto.
   intros => ?.
   rewrite /is_rpcHandler /is_shard_server_moveSpec_pre /=.
-  do 24 f_equiv.
+  do 25 f_equiv.
   f_contractive. simpl in Hpre.
   eapply (dist_S). eapply Hpre.
 Qed.
@@ -160,7 +161,7 @@ Definition is_shard_server_aux : seal (is_shard_server_def). by eexists. Qed.
 Definition is_shard_server := is_shard_server_aux.(unseal).
 Definition is_shard_server_eq : is_shard_server = is_shard_server_def := is_shard_server_aux.(seal_eq).
 
-Definition is_shard_server_moveSpec := is_shard_server_moveSpec_pre is_shard_server.
+Definition is_shard_server_moveSpec γkv := is_shard_server_moveSpec_pre γkv is_shard_server.
 
 Lemma is_shard_server_unfold host γ :
   is_shard_server host γ ⊣⊢ is_shard_server_pre (is_shard_server) host γ

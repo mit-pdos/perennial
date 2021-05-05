@@ -93,7 +93,8 @@ Lemma wp_MemKVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γds
   {{{
        own_MemKVShardClerk ck γkv ∗
        is_shard_server dst γdst ∗
-       ⌜int.Z sid < uNSHARD⌝
+       ⌜int.Z sid < uNSHARD⌝ ∗
+       ⌜γdst.(kv_gn) = γkv⌝
   }}}
     MemKVShardClerk__MoveShard #ck #sid #dst
   {{{ RET #();
@@ -101,7 +102,7 @@ Lemma wp_MemKVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γds
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  iDestruct "Hpre" as "(Hclerk & #Hserver & %Hid_lt)".
+  iDestruct "Hpre" as "(Hclerk & #Hserver & %Hid_lt & %Heq_kv_gn)".
   iNamed "Hclerk".
   wp_lam.
   wp_pures.
@@ -140,7 +141,10 @@ Proof.
   wp_apply (wp_RPCClient__Call _ with "[Hsl HrawRep Hcl_own]").
   { iFrame "HrawRep Hsl Hcl_own". iSplitL.
     { rewrite /has_handler. simpl. iFrame "HmoveSpec". }
-    iModIntro. iNext. iExists _. iFrame "%". iNext => /=. iFrame "Hserver". }
+    iModIntro. iNext. iExists _. iFrame "%". iSplit. 
+    { iNext => /=. iFrame "Hserver". }
+    { iPureIntro. congruence. }
+  }
   iIntros (???) "(HrawRep & Hcl_own & Hreq_sl & Hrep_sl & Hpost)".
   wp_pures.
   wp_if_destruct.

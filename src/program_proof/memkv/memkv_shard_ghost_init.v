@@ -20,7 +20,7 @@ Definition shard_SpecList γkv γrpc : RPCSpecList :=
   spec_cons (is_shard_server_putSpec γkv γrpc)
     (spec_cons (is_shard_server_conditionalPutSpec γkv γrpc)
       (spec_cons (is_shard_server_getSpec γkv γrpc)
-        (spec_cons (is_shard_server_moveSpec)
+        (spec_cons (is_shard_server_moveSpec γkv)
           (spec_cons (is_shard_server_installSpec γkv γrpc)
             (spec_cons (is_shard_server_freshSpec γrpc) spec_nil))))).
 

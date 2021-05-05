@@ -12,7 +12,8 @@ Lemma wp_MoveShardRPC (s args_ptr:loc) args γsh γ :
   {{{
        own_MoveShardRequest args_ptr args ∗
        ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
-       is_shard_server args.(MR_Dst) γsh
+       is_shard_server args.(MR_Dst) γsh ∗
+       ⌜ γsh.(kv_gn) = γ.(kv_gn) ⌝
   }}}
     MemKVShardServer__MoveShardRPC #s #args_ptr
   {{{
@@ -21,7 +22,7 @@ Lemma wp_MoveShardRPC (s args_ptr:loc) args γsh γ :
 .
 Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".
-  iDestruct "Hpre" as "(Hargs & %HsidLe & #Hother_shard)".
+  iDestruct "Hpre" as "(Hargs & %HsidLe & #Hother_shard & %Heq_kv_gn)".
   wp_lam.
   wp_pures.
   iNamed "His_shard".
@@ -38,13 +39,35 @@ Proof.
   wp_apply (wp_MapGet with "HpeersMap").
   iIntros (v ok) "[%Hlookup HpeersMap]".
   wp_pures.
-  wp_if_destruct.
-  { (* need to make a fresh clerk *)
-    wp_loadField.
-    (* TODO: annoying to redo rest of proof; annoying also to use wp_If_join if we let go of the lock and reacquire because all of the existentials change *)
-    admit.
+  wp_apply (wp_If_join_evar _ _ _ (λ _, ∃ peersM, "%Hlookup'" ∷ ⌜ is_Some (peersM !! args.(MR_Dst)) ⌝ ∗
+                        "HDst" ∷ args_ptr ↦[MoveShardRequest :: "Dst"] #args.(MR_Dst) ∗
+                        "Hpeers" ∷ s ↦[MemKVShardServer :: "peers"] #peers_ptr ∗
+                        "HpeerClerks" ∷ ([∗ map] ck ∈ peersM, own_MemKVShardClerk ck γ.(kv_gn)) ∗
+                        "HpeersMap" ∷ is_map peers_ptr 1 peersM)%I
+              with "[HDst HpeersMap HpeerClerks Hpeers]").
+  {
+    iIntros (b' Heq). wp_if_destruct.
+    - wp_loadField.
+      wp_apply (wp_MakeFreshKVClerk with "Hother_shard").
+      iIntros (ck) "Hclerk".
+      wp_pures. wp_loadField. wp_loadField.
+      wp_apply (wp_MapInsert with "[$]").
+      { eauto. }
+      iIntros "Hmap".
+      wp_pures.
+      iModIntro. iSplit; eauto.
+      iExists _. iFrame "# ∗".
+      iSplit.
+      { iPureIntro. rewrite /typed_map.map_insert lookup_insert; eauto. }
+      iApply big_sepM_insert.
+      { apply map_get_false in Hlookup; intuition. }
+      rewrite Heq_kv_gn. iFrame.
+    - iModIntro. iSplit; auto.
+      iExists _. iFrame. iPureIntro.
+      { apply map_get_true in Hlookup; intuition. eauto. }
   }
-
+  clear peersM Hlookup.
+  iNamed 1.
   iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_small HshardMap_sl]".
 
   assert (∃ b, shardMapping !! int.nat args.(MR_Sid) = Some b) as [? ?].
@@ -127,12 +150,14 @@ Proof.
   wp_loadField.
   wp_apply (wp_MapGet with "HpeersMap").
   iIntros (??) "[%Hlookup2 HpeersMap]".
-  rewrite Hlookup in Hlookup2.
-  assert (v = v0) as [].
-  { naive_solver. }
+  destruct Hlookup' as (v'&Hlookup').
+  assert (v' = v0) as [].
+  { replace v0 with (fst (map_get peersM args.(MR_Dst))); last first.
+    { rewrite Hlookup2 //=. }
+    rewrite map_get_val Hlookup' //. }
   wp_pures.
   iDestruct (big_sepM_lookup_acc _ _ args.(MR_Dst) with "HpeerClerks") as "[Hclerk HpeerClerks]".
-  { apply map_get_true in Hlookup. done. }
+  { eauto. }
   wp_apply (wp_MemKVShardClerk__InstallShard with "[Hclerk HkvsMap HvalSlices HshardGhost]").
   {
     iFrame "Hclerk".
@@ -199,6 +224,6 @@ Proof.
     iFrame.
   }
   by iApply "HΦ".
-Admitted.
+Qed.
 
 End memkv_move_shard_proof.
