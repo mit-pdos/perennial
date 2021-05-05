@@ -63,7 +63,6 @@ Definition callback := struct.decl [
 Definition RPCClient := struct.decl [
   "mu" :: lockRefT;
   "send" :: dist_ffi.Sender;
-  "host" :: dist_ffi.Address;
   "seq" :: uint64T;
   "pending" :: mapT (struct.ptrT callback)
 ].
@@ -101,7 +100,6 @@ Definition MakeRPCClient: val :=
     control.impl.Assume (~ (struct.get dist_ffi.ConnectRet "Err" "a"));;
     let: "cl" := struct.new RPCClient [
       "send" ::= struct.get dist_ffi.ConnectRet "Sender" "a";
-      "host" ::= "host";
       "mu" ::= lock.new #();
       "seq" ::= #1;
       "pending" ::= NewMap (struct.ptrT callback)
@@ -131,7 +129,7 @@ Definition RPCClient__Call: val :=
     marshal.Enc__PutInt "e" (slice.len "args");;
     marshal.Enc__PutBytes "e" "args";;
     let: "reqData" := marshal.Enc__Finish "e" in
-    (if: ~ (dist_ffi.Send (struct.loadF RPCClient "send" "cl") "reqData")
+    (if: dist_ffi.Send (struct.loadF RPCClient "send" "cl") "reqData"
     then #true
     else
       lock.acquire (struct.loadF RPCClient "mu" "cl");;

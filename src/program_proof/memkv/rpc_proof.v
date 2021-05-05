@@ -1088,7 +1088,7 @@ Proof.
     { iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz Heqlen. eauto. }
   }
   iModIntro. iIntros "Hsl_rep".
-  destruct err; wp_pures; last first.
+  destruct err; wp_pures.
   { iApply "HΦ".
     iDestruct ("Hslice_close" with "Hslice") as "$".
     iModIntro.
