@@ -11,10 +11,16 @@ From Perennial.program_proof Require Import dist_prelude.
 From Perennial.program_proof.lockservice Require Export rpc.
 From Perennial.program_proof.memkv Require Export
      memkv_shard_definitions memkv_shard_start_proof memkv_shard_make_proof memkv_shard_ghost_init.
+From Perennial.program_proof.memkv Require Export
+     memkv_coord_definitions memkv_coord_start_proof memkv_coord_make_proof memkv_coord_ghost_init.
 
 Definition shard_boot (host : u64) : expr :=
   let: "s" := MakeMemKVShardServer #true in
   MemKVShardServer__Start "s" #host.
+
+Definition coord_boot (host : u64) (init : u64) : expr :=
+  let: "s" := MakeMemKVCoordServer #init in
+  MemKVCoord__Start "s" #host.
 
 From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequacy.
 
@@ -40,45 +46,76 @@ Proof.
     destruct heap_globalG_inv_names => //=.
 Qed.
 
-Lemma shard_boot1 (host : chan) σ (g : ffi_global_state) :
+Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord (g : ffi_global_state) :
+  shardId ≠ coordId →
   ffi_initgP g →
-  ffi_initP σ.(world) g →
-  (g : gmap chan (gset message)) !! host = Some (∅ : gset message) →
-  dist_adequate_failstop [(shard_boot host, σ)] g (λ _, True).
+  ffi_initP σshard.(world) g →
+  ffi_initP σcoord.(world) g →
+  (g : gmap chan (gset message)) !! shardId = Some (∅ : gset message) →
+  (g : gmap chan (gset message)) !! coordId = Some (∅ : gset message) →
+  dist_adequate_failstop [(shard_boot shardId, σshard);
+                          (coord_boot coordId shardId, σcoord)] g (λ _, True).
 Proof.
-  intros Hinit1 Hinit2 Hlookup.
+  intros Hneq Hinitg Hinitshard Hinitcoord Hlookup1 Hlookup2.
   eapply (heap_dist_adequacy_failstop (shardΣ)).
   { assumption. }
   { auto. }
   intros Hheap. rewrite /=.
   iIntros "(Hchan&_)".
 
-  (* Get out the channel for the server *)
-  iDestruct (big_sepM_lookup_acc with "Hchan") as "(Hg&_)"; first eassumption.
+  (* Init the channel inv for the shard server *)
+  iDestruct (big_sepM_delete with "Hchan") as "(Hshard_chan&Hrest)"; first eapply Hlookup1.
   remember (uNSHARD) as uNSHARD' eqn:Heq_unSHARD'.
   iMod (kvptsto_init uNSHARD') as (γkv) "(Hserver_shards&Hclients_ptstos)"; first done.
-  iMod (shard_server_ghost_init host γkv with "[$Hg]") as (γ Heq_kv) "(#Hdom&#Hsrv&Hsrv_rpc_ghost&Hsrv_cid)".
+  iMod (shard_server_ghost_init shardId γkv with "[$Hshard_chan]")
+    as (γ Heq_kv) "(#Hdom&#Hsrv&Hsrv_rpc_ghost&Hsrv_cid)".
+
+  (* Init the channel inv for the shard server *)
+  iDestruct (big_sepM_delete with "Hrest") as "(Hcoord_chan&_)".
+  { rewrite lookup_delete_ne; first eapply Hlookup2; eauto. }
+  iMod (coord_server_ghost_init coordId γkv with "[$Hcoord_chan]")
+    as (γ' Heq_kv') "(#Hdom'&#Hsrv')".
 
   iModIntro.
   iSplitR ""; last first.
   { iMod (fupd_mask_subseteq ∅); eauto. }
-  iSplitR ""; last eauto.
-
-  iIntros (Hcrash Heq local_names) "(_&?&?)".
-
-  iModIntro. iExists (λ _, True%I).
-  rewrite /shard_boot.
-  wp_bind (MakeMemKVShardServer #true).
-  wp_apply (wp_MakeMemKVShardServer with "[Hsrv_cid Hserver_shards Hsrv_rpc_ghost]").
-  { iSplitL "".
-    { rewrite is_shard_server_unfold. iNamed "Hsrv". iFrame "#". }
-    iClear "Hsrv". iFrame "Hsrv_rpc_ghost".
-    rewrite -Heq_unSHARD' Heq_kv. iFrame "Hserver_shards".
-    eauto. }
-  iIntros (s) "His_server".
-  wp_pures.
-  wp_apply (wp_MemKVShardServer__Start with "[] [] [$His_server]").
-  { iExactEq "Hdom". rewrite //=. f_equal. set_solver. }
-  { iExactEq "Hsrv". f_equal. apply heapG_heap_globalG_roundtrip. }
-  eauto.
+  iSplitL "Hserver_shards Hsrv_rpc_ghost Hsrv_cid".
+  {
+    iIntros (Hcrash Heq local_names) "(_&?&?)".
+    iModIntro. iExists (λ _, True%I).
+    rewrite /shard_boot.
+    wp_bind (MakeMemKVShardServer #true).
+    wp_apply (wp_MakeMemKVShardServer with "[Hsrv_cid Hserver_shards Hsrv_rpc_ghost]").
+    { iSplitL "".
+      { rewrite is_shard_server_unfold. iNamed "Hsrv". iFrame "#". }
+      iClear "Hsrv". iFrame "Hsrv_rpc_ghost".
+      rewrite -Heq_unSHARD' Heq_kv. iFrame "Hserver_shards".
+      eauto. }
+    iIntros (s) "His_server".
+    wp_pures.
+    wp_apply (wp_MemKVShardServer__Start with "[] [] [$His_server]").
+    { iExactEq "Hdom". rewrite //=. f_equal. set_solver. }
+    { iExactEq "Hsrv". f_equal. apply heapG_heap_globalG_roundtrip. }
+    eauto.
+  }
+  {
+    iSplitR ""; last eauto.
+    iIntros (Hcrash Heq local_names) "(_&?&?)".
+    iModIntro. iExists (λ _, True%I).
+    rewrite /coord_boot.
+    wp_bind (MakeMemKVCoordServer #(shardId : u64)).
+    wp_apply (wp_MakeMemKVCoordServer with "[]").
+    { iSplitL ""; last first.
+      { rewrite /named. iExactEq "Hsrv".
+        f_equal. apply heapG_heap_globalG_roundtrip. }
+      { iPureIntro. rewrite Heq_kv; symmetry; eauto. }
+    }
+    iIntros (s) "His_server".
+    wp_pures.
+    wp_apply (wp_MemKVCoordServer__Start with "[] [] [His_server]").
+    { iExactEq "Hdom'". rewrite //=. f_equal. set_solver. }
+    { iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. eauto. }
+    { iFrame "His_server". }
+    eauto.
+  }
 Qed.
