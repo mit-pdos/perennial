@@ -46,9 +46,9 @@ Proof.
   done.
 Qed.
 
-Lemma wp_decodeUint64 sl data cid :
+Lemma wp_decodeUint64 sl data cid q :
   {{{
-       typed_slice.is_slice sl byteT 1%Qp data ∗ ⌜has_encoding_Uint64 data cid⌝
+       typed_slice.is_slice sl byteT q data ∗ ⌜has_encoding_Uint64 data cid⌝
   }}}
     decodeUint64 (slice_val sl)
   {{{

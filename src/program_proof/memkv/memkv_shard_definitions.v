@@ -149,7 +149,7 @@ Proof.
   rewrite /dist_later. destruct n; auto.
   intros => ?.
   rewrite /is_rpcHandler /is_shard_server_moveSpec_pre /=.
-  do 21 f_equiv.
+  do 24 f_equiv.
   f_contractive. simpl in Hpre.
   eapply (dist_S). eapply Hpre.
 Qed.

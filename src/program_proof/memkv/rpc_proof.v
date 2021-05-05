@@ -60,10 +60,11 @@ Record server_chan_gnames := {
 
 Definition is_rpcHandler {X:Type} (names : heap_local_names) (cname : gname) (f:val) Pre Post : iProp Σ :=
   let hG := heap_globalG_heapG _ {| crash_inG := _; crash_name := cname |} names in
-  ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
+  ∀ (x:X) req rep dummy_rep_sl dummy (reqData:list u8),
   {{{
       is_slice req byteT 1 reqData ∗
       rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
+      is_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
       ▷ Pre x reqData
   }}}
     f (slice_val req) #rep
@@ -219,7 +220,7 @@ Proof.
   rewrite /is_rpcHandler.
   iIntros. iIntros (Φc) "!# H HΦc".
   wp_apply ("His" with "[H]").
-  { iDestruct "H" as "($&$&Hpre)". iNext.
+  { iDestruct "H" as "($&$&$&Hpre)". iNext.
     iRewrite -("Hequiv_pre" $! x reqData) in "Hpre".
     iExact "Hpre".
   }
@@ -238,10 +239,11 @@ Context `{hG: !heapG Σ}.
 Context `{hReg: !rpcregG Σ}.
 
 Definition is_rpcHandler' {X:Type} (f:val) Pre Post : iProp Σ :=
-  ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
+  ∀ (x:X) req rep dummy_rep_sl dummy (reqData:list u8),
   {{{
       is_slice req byteT 1 reqData ∗
       rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
+      is_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
       ▷ Pre x reqData
   }}}
     f (slice_val req) #rep
@@ -586,7 +588,10 @@ Proof.
   replace (zero_val (slice.T byteT)) with
       (slice_val {| Slice.ptr := null; Slice.sz := U64 0; Slice.cap := U64 0 |}) by auto.
   wp_apply ("His_rpcHandler" with "[$Hsl $Hsl' HPre]").
-  { iDestruct "HPre" as "#HPre". iNext. iFrame "#". }
+  { iSplitL "".
+    { iApply @is_slice_zero. }
+    { iDestruct "HPre" as "#HPre". iNext. iFrame "#". }
+  }
   iIntros (rep_sl repData) "(Hsl'&His_slice&HPost)".
   wp_pures.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
