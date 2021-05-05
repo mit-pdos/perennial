@@ -12,21 +12,39 @@ Section memkv_coord_start_proof.
 Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
+  length shardMapping ≤ uNSHARD →
   {{{ "Hs_ptr" ∷ s ↦[slice.T HostName] (slice_val shardMap_sl) ∗
-      "HshardMap_sl" ∷ typed_slice.is_slice (V:=u64) shardMap_sl HostName 1 shardMapping
+      "HshardMap_sl" ∷ typed_slice.is_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
   }}}
     encodeShardMap #s
   {{{ (sl: Slice.t) (data: list u8), RET (slice_val sl);
       "%Henc" ∷ ⌜ has_encoding_shardMapping data shardMapping ⌝ ∗
       "Hdata" ∷  typed_slice.is_slice sl byteT 1 data ∗
       "Hs_ptr" ∷ s ↦[slice.T HostName] (slice_val shardMap_sl) ∗
-      "HshardMap_sl" ∷ typed_slice.is_slice (V:=u64) shardMap_sl HostName 1 shardMapping
+      "HshardMap_sl" ∷ typed_slice.is_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
   }}}.
 Proof.
-  wp_pures. iIntros (Φ) "H HΦ".
+  wp_pures. iIntros (Hshards Φ) "H HΦ".
   iNamed "H".
   wp_lam.
-Admitted.
+
+  wp_pures.
+  wp_apply (wp_new_enc).
+  iIntros (enc) "Henc".
+  wp_pures.
+  change (int.Z (word.mul 8 65536)) with (8 * 65536).
+
+  wp_load.
+  wp_apply (wp_Enc__PutInts with "[$Henc $HshardMap_sl]").
+  { rewrite /uNSHARD in Hshards. lia. }
+  iIntros "[Henc HshardMap_sl]".
+
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (rep_sl repData).
+  iIntros "(%Henc & %Hlen & Hrep_sl)".
+  iApply "HΦ". rewrite /named. iFrame. iPureIntro.
+  rewrite /has_encoding_shardMapping. done.
+Qed.
 
 (* Obviously this spec is not provable, one actually knows a bit more in the precondition *)
 Lemma wp_MemKVShardClerk__MoveShard ck_ptr i x:
@@ -314,12 +332,14 @@ Proof.
       wp_apply (wp_struct_fieldRef_mapsto with "[$shardMap]").
       { eauto. }
       iIntros (fl) "(H1&H2)".
-      wp_apply (wp_encodeShardMap with "[$]").
+      iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_close]".
+      wp_apply (wp_encodeShardMap with "[$]"); first lia.
       iIntros (sl data) "(%Henc&H)".
       wp_apply (wp_StoreAt with "[$]").
       { apply slice_val_ty. }
       iIntros "Hrep".
       iNamed "H".
+      iDestruct ("HshardMap_close" with "HshardMap_sl") as "HshardMap_sl".
       wp_pures.
       wp_loadField.
       wp_apply (release_spec with "[-HΦ Hrep Hdata]").

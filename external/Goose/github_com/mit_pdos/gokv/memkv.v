@@ -298,21 +298,13 @@ Definition decodeUint64: val :=
 Definition encodeShardMap: val :=
   rec: "encodeShardMap" "shardMap" :=
     let: "e" := marshal.NewEnc (#8 * NSHARD) in
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      marshal.Enc__PutInt "e" (SliceGet uint64T (![slice.T uint64T] "shardMap") (![uint64T] "i"));;
-      Continue);;
+    marshal.Enc__PutInts "e" (![slice.T uint64T] "shardMap");;
     marshal.Enc__Finish "e".
 
 Definition decodeShardMap: val :=
   rec: "decodeShardMap" "raw" :=
-    let: "shardMap" := NewSlice HostName NSHARD in
     let: "d" := marshal.NewDec "raw" in
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      SliceSet uint64T "shardMap" (![uint64T] "i") (marshal.Dec__GetInt "d");;
-      Continue);;
-    "shardMap".
+    marshal.Dec__GetInts "d" NSHARD.
 
 (* 1_memkv_shard_clerk.go *)
 
