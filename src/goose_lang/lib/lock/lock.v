@@ -265,6 +265,17 @@ Section proof.
     iFrame.
   Qed.
 
+  Theorem wp_condWaitTimeout c (t : u64) lk R :
+    {{{ is_cond c lk ∗ is_lock lk R ∗ locked lk ∗ R }}}
+      lock.condWaitTimeout #c #t
+    {{{ RET #(); locked lk ∗ R }}}.
+  Proof.
+    iIntros (Φ) "Hpre HΦ".
+    wp_lam. wp_pures.
+    wp_apply (wp_condWait with "Hpre").
+    done.
+  Qed.
+
 End proof.
 End goose_lang.
 

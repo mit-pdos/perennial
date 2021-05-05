@@ -115,9 +115,11 @@ Section grove.
       | None => ret (#true, ExtV (ClientEndp c c), ExtV (HostEndp c))%V
       | Some r =>
         modify (λ '(σ,g), (σ, <[ r := ∅ ]> g));;
-        ret (#true, ExtV (ClientEndp c r), ExtV (HostEndp r))%V
+        ret (#false, ExtV (ClientEndp c r), ExtV (HostEndp r))%V
       end
     | SendOp, (ExtV (ClientEndp c r), (LitV (LitLoc l), LitV (LitInt len)))%V =>
+      err ← any bool;
+      if err is true then ret #true else
       data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
             length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
@@ -126,7 +128,7 @@ Section grove.
                 end);
       ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
       modify (λ '(σ,g), (σ, <[ c := ms ∪ {[Message r data]} ]> g));;
-      ret #()
+      ret #false
     | RecvOp, ExtV (HostEndp c) =>
       ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
@@ -311,7 +313,7 @@ lemmas. *)
     0 < length data → length data = int.nat len →
     {{{ c c↦ ms ∗ mapsto_vals l q (data_vals data) }}}
       ExternalOp SendOp (send_endpoint c r, (#l, #len))%V @ s; E
-    {{{ RET #(); c c↦ (ms ∪ {[Message r data]}) ∗ mapsto_vals l q (data_vals data) }}}.
+    {{{ (err : bool), RET #err; c c↦ (if err then ms else ms ∪ {[Message r data]}) ∗ mapsto_vals l q (data_vals data) }}}.
   Proof.
     iIntros (Hnonemp Hmlen Φ) "[Hc Hl] HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns κ κs nt) "(Hσ&$&Htr) [Hg %Hg] !>".
@@ -320,12 +322,19 @@ lemmas. *)
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /head_step/=.
-      monad_simpl. econstructor; first by econstructor.
+      monad_simpl. econstructor. 1:by eapply (relation.suchThat_runs _ _ true).
       monad_simpl. econstructor; first by econstructor.
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
+    rename x into err. clear H.
+    destruct err.
+    { monad_inv. iFrame. iModIntro.
+      do 2 (iSplitR; first done).
+      iApply "HΦ". by iFrame. }
+    inv_head_step.
+    monad_inv.
     iFrame.
     iMod (@gen_heap_update with "Hg Hc") as "[$ Hc]".
     assert (data = data0) as <-.
@@ -427,6 +436,7 @@ Section grove.
   (* FIXME: This is a bit strange; not sure how to think about "axiomatizing" a struct *)
   Definition Sender : ty := extT GroveClientTy.
   Definition Receiver : ty := extT GroveHostTy.
+  Definition Address : ty := uint64T.
 
   Definition ConnectRet := (struct.decl [
                               "Err" :: boolT;
@@ -536,8 +546,8 @@ Section grove.
     ⊢ {{{ is_slice_small s byteT q data }}}
       <<< ∀∀ ms, c c↦ ms >>>
         Send (send_endpoint c r) (slice_val s) @ ⊤
-      <<<▷ c c↦ (ms ∪ {[Message r data]}) >>>
-      {{{ RET #(); is_slice_small s byteT q data }}}.
+      <<<▷ ∃∃ (err : bool), c c↦ (if err then ms else ms ∪ {[Message r data]}) >>>
+      {{{ RET #err; is_slice_small s byteT q data }}}.
   Proof.
     iIntros (?) "!#". iIntros (Φ) "Hs HΦ". wp_lam. wp_let.
     wp_apply wp_slice_ptr.
@@ -549,7 +559,7 @@ Section grove.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
-    iIntros "[Hc Hl]". iApply ("HΦ" with "Hc").
+    iIntros (err) "[Hc Hl]". iApply ("HΦ" $! err with "Hc").
     iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
 

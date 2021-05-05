@@ -392,11 +392,10 @@ Definition MemKVShardClerk__InstallShard: val :=
 
 Definition MemKVShardClerk__MoveShard: val :=
   rec: "MemKVShardClerk__MoveShard" "ck" "sid" "dst" :=
-    let: "args" := struct.mk MoveShardRequest [
-      "Sid" ::= "sid";
-      "Dst" ::= "dst"
-    ] in
-    let: "rawRep" := NewSlice byteT #0 in
+    let: "args" := struct.alloc MoveShardRequest (zero_val (struct.t MoveShardRequest)) in
+    struct.storeF MoveShardRequest "Sid" "args" "sid";;
+    struct.storeF MoveShardRequest "Dst" "args" "dst";;
+    let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_MOV_SHARD (encodeMoveShardRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
       Continue).

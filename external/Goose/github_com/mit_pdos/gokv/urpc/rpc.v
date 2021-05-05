@@ -63,6 +63,7 @@ Definition callback := struct.decl [
 Definition RPCClient := struct.decl [
   "mu" :: lockRefT;
   "send" :: dist_ffi.Sender;
+  "host" :: dist_ffi.Address;
   "seq" :: uint64T;
   "pending" :: mapT (struct.ptrT callback)
 ].
@@ -94,11 +95,13 @@ Definition RPCClient__replyThread: val :=
         Continue)).
 
 Definition MakeRPCClient: val :=
-  rec: "MakeRPCClient" "host" :=
+  rec: "MakeRPCClient" "host_name" :=
+    let: "host" := "host_name" in
     let: "a" := dist_ffi.Connect "host" in
     control.impl.Assume (~ (struct.get dist_ffi.ConnectRet "Err" "a"));;
     let: "cl" := struct.new RPCClient [
       "send" ::= struct.get dist_ffi.ConnectRet "Sender" "a";
+      "host" ::= "host";
       "mu" ::= lock.new #();
       "seq" ::= #1;
       "pending" ::= NewMap (struct.ptrT callback)
@@ -108,8 +111,9 @@ Definition MakeRPCClient: val :=
 
 Definition RPCClient__Call: val :=
   rec: "RPCClient__Call" "cl" "rpcid" "args" "reply" :=
+    let: "reply_buf" := ref (zero_val (slice.T byteT)) in
     let: "cb" := struct.new callback [
-      "reply" ::= "reply";
+      "reply" ::= "reply_buf";
       "done" ::= ref (zero_val boolT);
       "cond" ::= lock.newCond (struct.loadF RPCClient "mu" "cl")
     ] in
@@ -127,11 +131,15 @@ Definition RPCClient__Call: val :=
     marshal.Enc__PutInt "e" (slice.len "args");;
     marshal.Enc__PutBytes "e" "args";;
     let: "reqData" := marshal.Enc__Finish "e" in
-    dist_ffi.Send (struct.loadF RPCClient "send" "cl") "reqData";;
-    lock.acquire (struct.loadF RPCClient "mu" "cl");;
-    Skip;;
-    (for: (λ: <>, ~ (![boolT] (struct.loadF callback "done" "cb"))); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF callback "cond" "cb");;
-      Continue);;
-    lock.release (struct.loadF RPCClient "mu" "cl");;
-    #false.
+    (if: ~ (dist_ffi.Send (struct.loadF RPCClient "send" "cl") "reqData")
+    then #true
+    else
+      lock.acquire (struct.loadF RPCClient "mu" "cl");;
+      lock.condWaitTimeout (struct.loadF callback "cond" "cb") #100;;
+      let: "done" := ![boolT] (struct.loadF callback "done" "cb") in
+      lock.release (struct.loadF RPCClient "mu" "cl");;
+      (if: "done"
+      then
+        "reply" <-[slice.T byteT] ![slice.T byteT] "reply_buf";;
+        #false
+      else #true)).

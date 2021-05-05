@@ -649,13 +649,15 @@ Proof.
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
   iExists _. rewrite global_groveG_conv. iFrame "Hchan'". iNext.
-  iIntros "Hchan'".
+  iIntros (err) "Hchan'".
   iMod "Hclo'" as "_".
   rewrite ?global_groveG_conv.
   iMod ("Hclo" with "[Hchan' Hlength]").
   { iNext. iExists _.
     rewrite ?global_groveG_conv.
     iFrame.
+    destruct err.
+    { iFrame "#". }
     destruct (decide (Message host rep_msg_data ∈ ms_rep)).
     { assert (ms_rep ∪ {[Message host rep_msg_data]} = ms_rep) as -> by set_solver. iFrame "#". }
     iApply big_sepS_union; first by set_solver.
@@ -896,30 +898,38 @@ Proof.
   iExists _, _, _, _. iFrame "#".
 Qed.
 
-Lemma wp_RPCClient__Call {X:Type} (x:X) γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr
+Lemma wp_RPCClient__Call {X:Type} (x:X) γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       dummy_sl_val (reqData:list u8) Pre Post :
   {{{
       is_slice req byteT 1 reqData ∗
-      rep_ptr ↦[slice.T byteT] dummy_sl_val ∗
+      rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       handler_is γsmap X host rpcid Pre Post ∗
       RPCClient_own cl_ptr host ∗
       □(▷ Pre x reqData)
   }}}
-    RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_ptr
+    RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr
   {{{
-       (b:bool) rep_sl (repData:list u8), RET #b;
-       rep_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
+       (b:bool), RET #b;
        RPCClient_own cl_ptr host ∗
        typed_slice.is_slice req byteT 1 reqData ∗
-       typed_slice.is_slice rep_sl byteT 1 repData ∗
-       (⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post x reqData repData))
+       (⌜b = true⌝ ∗ rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∨
+        ∃ rep_sl (repData:list u8), ⌜b = false⌝ ∗
+          rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
+          typed_slice.is_slice rep_sl byteT 1 repData ∗
+          (▷ Post x reqData repData))
   }}}.
 Proof.
   iIntros (Φ) "H HΦ".
   wp_lam.
   wp_pures.
-  iDestruct "H" as "(Hslice&Hrep_ptr&Hhandler&Hclient&#HPre)".
+  iDestruct "H" as "(Hslice&Hrep_out_ptr&Hhandler&Hclient&#HPre)".
   iNamed "Hclient". iNamed "Hstfields".
+
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep_ptr) "Hrep_ptr".
+  wp_pures.
+
   replace (#false) with (zero_val boolT) by auto.
   wp_apply (wp_ref_of_zero); first done.
   iIntros (cb_done) "cb_done".
@@ -968,7 +978,7 @@ Proof.
   { apply not_elem_of_dom. rewrite -Hdom_eq_es -Hdom_range. lia. }
   iMod (map_alloc n tt with "Hextracted_ctx") as "(Hextracted_ctx&Hextracted)".
   { apply not_elem_of_dom. rewrite -Hdom_eq_ex -Hdom_range. lia. }
-  wp_apply (release_spec with "[-Hslice Hhandler HΦ Hextracted]").
+  wp_apply (release_spec with "[-Hslice Hhandler HΦ Hextracted Hrep_out_ptr]").
   { iFrame "Hlk". iFrame "Hlked". iNext. iExists _, _, _, _, _.
     iFrame. rewrite ?dom_insert_L.
     assert (int.Z (word.add n 1) = int.Z n + 1)%Z as ->.
@@ -1054,12 +1064,13 @@ Proof.
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
   iExists _. rewrite global_groveG_conv.  iFrame "Hchan'". iNext.
-  iIntros "Hchan'". iNamed "H".
+  iIntros (err) "Hchan'". iNamed "H".
   iMod ("Hclo'") as "_".
   iMod ("Hclo" with "[Hmessages Hchan']") as "_".
   { iNext. iExists _.
     rewrite global_groveG_conv.
     iFrame.
+    destruct err; first by iFrame.
     destruct (decide (Message r repData ∈ ms)).
     { assert (ms ∪ {[Message r repData]} = ms) as -> by set_solver. iFrame. }
     iApply big_sepS_union; first by set_solver.
@@ -1077,17 +1088,21 @@ Proof.
     { iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz Heqlen. eauto. }
   }
   iModIntro. iIntros "Hsl_rep".
-  wp_pures.
+  destruct err; wp_pures; last first.
+  { iApply "HΦ".
+    iDestruct ("Hslice_close" with "Hslice") as "$".
+    iModIntro.
+    iSplitR "Hrep_out_ptr".
+    - iExists _, _, _, _. by iFrame "#".
+    - iLeft. by iFrame. }
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
-  iIntros "Hi".
+  iIntros "[Hi Hlockinv]".
   wp_pures.
-  wp_apply (wp_forBreak_cond' with "[-]").
-  { iNamedAccu. }
-  iModIntro. iNamed 1.
-  wp_pures.
-  iDestruct "Hi" as "(Hi&Hlock_inner)".
-  iNamed "Hlock_inner".
+  wp_loadField.
+  wp_apply (wp_condWaitTimeout with "[$cond' $Hi $Hlk $Hlockinv]").
+  iIntros "[Hi Hlockinv]".
+  iNamed "Hlockinv".
   iDestruct (map_ro_valid with "Hmapping_ctx [$]") as %Hlookup_reg.
   iDestruct (big_sepM_lookup_acc with "Hreqs") as "(H&Hclo)"; first eauto.
   iEval (simpl) in "H".
@@ -1097,19 +1112,23 @@ Proof.
   { iNamed "Hcase1". wp_loadField.
     iDestruct "Hcase1" as "(#?&#?&#?&Hrest)". iNamed "Hrest".
     wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
-    wp_pures. iThaw "Hclo".
+    wp_pures.
+    iThaw "Hclo".
     iDestruct ("Hclo" with "[Hdone Hcond Hescrow Hpending_cb Hrep_ptr]") as "H".
     { simpl. iExists _, _, _. iFrame "Hreg". iFrame "Hsaved". iFrame "#". iLeft. iExists _, _, _. iFrame "# ∗". }
     wp_loadField.
-    wp_apply (wp_condWait with "[$cond' $Hlk $Hi H HPost_saved
+    wp_apply (release_spec with "[$Hlk $Hi H HPost_saved
                  Hpending_map Hmapping_ctx Hescrow_ctx Hextracted_ctx seq]").
     { iExists _, _, _, _, _. iFrame. eauto. }
-    iIntros "Hi". wp_pures. iModIntro.
-    iLeft. iSplit; first eauto. iFrame "HΦ". iFrame "Hslice_close". iFrame. }
+    wp_pures. iModIntro.
+    iApply "HΦ".
+    iDestruct ("Hslice_close" with "Hslice") as "$".
+    iSplitR "Hrep_out_ptr"; last by eauto.
+    iExists _, _, _, _. by iFrame "∗#".
+  }
   { iNamed "Hcase2". wp_loadField.
     wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
     iDestruct (saved_pred_agree _ _ _ reply with "HPost_saved Hsaved") as "#Hequiv".
-    wp_pures. iRight. iModIntro. iSplit; first done.
     wp_pures. wp_loadField.
     iThaw "Hclo".
     iDestruct ("Hclo" with "[Hdone Hextracted Hpending_cb]") as "H".
@@ -1118,15 +1137,18 @@ Proof.
     wp_apply (release_spec with "[$Hlk $Hi H HPost_saved
                  Hpending_map Hmapping_ctx Hescrow_ctx Hextracted_ctx seq]").
     { iExists _, _, _, _, _. iFrame. eauto. }
-    wp_pures. iModIntro.
+    wp_pures.
+    wp_load.
+    wp_store.
+    iModIntro.
     iRewrite ("Hequiv") in "HPost".
-    iApply ("HΦ" $! false _ reply).
-    iFrame "Hrep_ptr Hrep_data".
-    iSplitL "".
+    iApply "HΦ".
+    iSplitR.
     { iExists _, _, _, _. iFrame "#". }
     iSplitL "Hslice Hslice_close".
     { iApply "Hslice_close". eauto. }
-    iRight. iFrame. eauto.
+    iRight. iExists _, reply.
+    iFrame. eauto.
   }
   { iDestruct "Hcase3" as "(?&Hex)".
     iDestruct (ptsto_valid_2 with "Hex [$]") as %Hval.

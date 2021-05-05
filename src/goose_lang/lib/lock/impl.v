@@ -25,5 +25,6 @@ Module lock.
                                            here, but the model does not take this
                                            into account *)
                                         acquire !"l".
+    Definition condWaitTimeout: val := λ: "l" "timeout", condWait "l".
   End goose_lang.
 End lock.
