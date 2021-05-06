@@ -579,13 +579,11 @@ Definition MakeMemKVShardServer: val :=
 
 Definition MemKVShardServer__GetCIDRPC: val :=
   rec: "MemKVShardServer__GetCIDRPC" "s" :=
-    (* log.Println("GetCIDRPC() starting") *)
     lock.acquire (struct.loadF MemKVShardServer "mu" "s");;
     let: "r" := struct.loadF MemKVShardServer "nextCID" "s" in
     control.impl.Assume (struct.loadF MemKVShardServer "nextCID" "s" + #1 > struct.loadF MemKVShardServer "nextCID" "s");;
     struct.storeF MemKVShardServer "nextCID" "s" (struct.loadF MemKVShardServer "nextCID" "s" + #1);;
     lock.release (struct.loadF MemKVShardServer "mu" "s");;
-    (* log.Println("GetCIDRPC() done") *)
     "r".
 
 Definition MemKVShardServer__Start: val :=
@@ -673,14 +671,12 @@ Definition MemKVCoord__AddServerRPC: val :=
           (if: ![uint64T] "nf_left" > #0
           then
             "nf_left" <-[uint64T] ![uint64T] "nf_left" - #1;;
-            (* log.Printf("Moving %d from %s -> %s", sid, host, newhost) *)
             MemKVShardClerk__MoveShard (ShardClerkSet__GetClerk (struct.loadF MemKVCoord "shardClerks" "c") "host") "sid" "newhost";;
             MapInsert (struct.loadF MemKVCoord "hostShards" "c") "host" ("n" - #1);;
             MapInsert (struct.loadF MemKVCoord "hostShards" "c") "newhost" (Fst (MapGet (struct.loadF MemKVCoord "hostShards" "c") "newhost") + #1);;
             SliceSet uint64T (struct.loadF MemKVCoord "shardMap" "c") "sid" "newhost"
           else #())
         else
-          (* log.Printf("Moving %d from %s -> %s", sid, host, newhost) *)
           MemKVShardClerk__MoveShard (ShardClerkSet__GetClerk (struct.loadF MemKVCoord "shardClerks" "c") "host") "sid" "newhost";;
           MapInsert (struct.loadF MemKVCoord "hostShards" "c") "host" ("n" - #1);;
           MapInsert (struct.loadF MemKVCoord "hostShards" "c") "newhost" (Fst (MapGet (struct.loadF MemKVCoord "hostShards" "c") "newhost") + #1);;

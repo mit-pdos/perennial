@@ -133,11 +133,16 @@ Definition RPCClient__Call: val :=
     then #true
     else
       lock.acquire (struct.loadF RPCClient "mu" "cl");;
-      lock.condWaitTimeout (struct.loadF callback "cond" "cb") #100;;
-      let: "done" := ![boolT] (struct.loadF callback "done" "cb") in
-      lock.release (struct.loadF RPCClient "mu" "cl");;
-      (if: "done"
+      (if: ~ (![boolT] (struct.loadF callback "done" "cb"))
+      then
+        lock.condWaitTimeout (struct.loadF callback "cond" "cb") #100000;;
+        #()
+      else #());;
+      (if: ![boolT] (struct.loadF callback "done" "cb")
       then
         "reply" <-[slice.T byteT] ![slice.T byteT] "reply_buf";;
+        lock.release (struct.loadF RPCClient "mu" "cl");;
         #false
-      else #true)).
+      else
+        lock.release (struct.loadF RPCClient "mu" "cl");;
+        #true)).
