@@ -13,6 +13,7 @@ From Perennial.program_proof.memkv Require Export
      memkv_shard_definitions memkv_shard_start_proof memkv_shard_make_proof memkv_shard_ghost_init.
 From Perennial.program_proof.memkv Require Export
      memkv_coord_definitions memkv_coord_start_proof memkv_coord_make_proof memkv_coord_ghost_init.
+From Perennial.program_proof.memkv Require Export memkv_clerk_proof.
 
 Definition shard_boot (host : u64) : expr :=
   let: "s" := MakeMemKVShardServer #true in
@@ -21,6 +22,9 @@ Definition shard_boot (host : u64) : expr :=
 Definition coord_boot (host : u64) (init : u64) : expr :=
   let: "s" := MakeMemKVCoordServer #init in
   MemKVCoord__Start "s" #host.
+
+Definition client_boot (coord : u64) : expr :=
+  MakeMemKVClerk #coord.
 
 From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequacy.
 
@@ -46,17 +50,19 @@ Proof.
     destruct heap_globalG_inv_names => //=.
 Qed.
 
-Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord (g : ffi_global_state) :
+Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord σclient (g : ffi_global_state) :
   shardId ≠ coordId →
   ffi_initgP g →
   ffi_initP σshard.(world) g →
   ffi_initP σcoord.(world) g →
+  ffi_initP σclient.(world) g →
   (g : gmap chan (gset message)) !! shardId = Some (∅ : gset message) →
   (g : gmap chan (gset message)) !! coordId = Some (∅ : gset message) →
   dist_adequate_failstop [(shard_boot shardId, σshard);
-                          (coord_boot coordId shardId, σcoord)] g (λ _, True).
+                          (coord_boot coordId shardId, σcoord);
+                          (client_boot coordId, σclient)] g (λ _, True).
 Proof.
-  intros Hneq Hinitg Hinitshard Hinitcoord Hlookup1 Hlookup2.
+  intros Hneq Hinitg Hinitshard Hinitcoord Hinitclient Hlookup1 Hlookup2.
   eapply (heap_dist_adequacy_failstop (shardΣ)).
   { assumption. }
   { auto. }
@@ -98,8 +104,8 @@ Proof.
     { iExactEq "Hsrv". f_equal. apply heapG_heap_globalG_roundtrip. }
     eauto.
   }
+  iSplitR "Hclients_ptstos".
   {
-    iSplitR ""; last eauto.
     iIntros (Hcrash Heq local_names) "(_&?&?)".
     iModIntro. iExists (λ _, True%I).
     rewrite /coord_boot.
@@ -116,6 +122,17 @@ Proof.
     { iExactEq "Hdom'". rewrite //=. f_equal. set_solver. }
     { iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. eauto. }
     { iFrame "His_server". }
+    eauto.
+  }
+  iSplitR ""; last eauto.
+  {
+    iIntros (Hcrash Heq local_names) "(_&?&?)".
+    iModIntro. iExists (λ _, True%I).
+    rewrite /client_boot.
+    wp_apply (wp_MakeMemKVClerk with "[]").
+    {
+      iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. f_equal.
+    }
     eauto.
   }
 Qed.
