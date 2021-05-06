@@ -639,7 +639,6 @@ Proof.
   (* Send *)
   iDestruct (is_slice_small_read with "Hmsg_slice") as "(Hmsg_slice&_)".
   wp_apply (wp_Send with "[$Hmsg_slice]").
-  { apply has_encoding_length in Hencoding. rewrite //= in Hencoding. word. }
   iMod (inv_alloc urpc_escrowN _ (Post x args repData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt)
           with "[HPost]") as "#HPost_escrow".
   { eauto. }
@@ -1057,7 +1056,6 @@ Proof.
   iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
   iNamed "Hhandler".
   wp_apply (wp_Send with "[$]").
-  { word. }
   rewrite global_groveG_inv_conv'.
   iInv "Hserver_inv" as "Hserver_inner" "Hclo".
   iDestruct "Hserver_inner" as (ms) "(>Hchan'&H)".

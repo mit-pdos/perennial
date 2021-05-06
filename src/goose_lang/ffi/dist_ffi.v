@@ -95,7 +95,7 @@ Section grove.
 
   Definition isFreshChan (σg : state * global_state) (c : option chan) : Prop :=
     match c with
-    | None => True
+    | None => True (* failure (to allocate a channel) is always an option *)
     | Some c => σg.2 !! c = None
     end.
 
@@ -112,14 +112,14 @@ Section grove.
     | ConnectOp, LitV (LitInt c) =>
       r ← suchThat isFreshChan;
       match r with
-      | None => ret (#true, ExtV (ClientEndp c c), ExtV (HostEndp c))%V
+      | None => ret ((*err*)#true, ExtV (ClientEndp c c), ExtV (HostEndp c))%V
       | Some r =>
         modify (λ '(σ,g), (σ, <[ r := ∅ ]> g));;
-        ret (#false, ExtV (ClientEndp c r), ExtV (HostEndp r))%V
+        ret ((*err*)#false, ExtV (ClientEndp c r), ExtV (HostEndp r))%V
       end
     | SendOp, (ExtV (ClientEndp c r), (LitV (LitLoc l), LitV (LitInt len)))%V =>
       err ← any bool;
-      if err is true then ret #true else
+      if err is true then ret (*err*)#true else
       data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
             length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
@@ -128,17 +128,18 @@ Section grove.
                 end);
       ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
       modify (λ '(σ,g), (σ, <[ c := ms ∪ {[Message r data]} ]> g));;
-      ret #false
+      ret (*err*)#false
     | RecvOp, ExtV (HostEndp c) =>
       ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms);
+      (* TODO: distinguish "no message" from "error" *)
       match m with
-      | None => ret (#true, ExtV $ ClientEndp c c, (#locations.null, #0))%V
+      | None => ret ((*err*)#true, ExtV $ ClientEndp c c, (#locations.null, #0))%V
       | Some m =>
         l ← allocateN;
         modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
-        ret  (#false, ExtV $ ClientEndp m.(msg_sender) c, (#(l : loc), #(length m.(msg_data))))%V
+        ret  ((*err*)#false, ExtV $ ClientEndp m.(msg_sender) c, (#(l : loc), #(length m.(msg_data))))%V
       end
     | _, _ => undefined
     end.
@@ -173,7 +174,7 @@ Section grove.
     ((λ b, #(LitByte b)) <$> data).
 
   Local Definition chan_msg_bounds (g : gmap chan (gset message)) : Prop :=
-    ∀ c ms m, g !! c = Some ms → m ∈ ms → 0 < length m.(msg_data) < 2^64.
+    ∀ c ms m, g !! c = Some ms → m ∈ ms → length m.(msg_data) < 2^64.
 
   Local Program Instance grove_interp: ffi_interp grove_model :=
     {| ffiG := groveG;
@@ -310,12 +311,12 @@ lemmas. *)
   Qed.
 
   Lemma wp_SendOp c r ms (l : loc) (len : u64) (data : list u8) (q : Qp) s E :
-    0 < length data → length data = int.nat len →
+    length data = int.nat len →
     {{{ c c↦ ms ∗ mapsto_vals l q (data_vals data) }}}
       ExternalOp SendOp (send_endpoint c r, (#l, #len))%V @ s; E
     {{{ (err : bool), RET #err; c c↦ (if err then ms else ms ∪ {[Message r data]}) ∗ mapsto_vals l q (data_vals data) }}}.
   Proof.
-    iIntros (Hnonemp Hmlen Φ) "[Hc Hl] HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Hmlen Φ) "[Hc Hl] HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns κ κs nt) "(Hσ&$&Htr) [Hg %Hg] !>".
     iDestruct (@gen_heap_valid with "Hg Hc") as %Hc.
     iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
@@ -356,7 +357,7 @@ lemmas. *)
     { iPureIntro. intros c' ms' m'. destruct (decide (c=c')) as [<-|Hne].
       - rewrite lookup_insert=>-[<-]. rewrite elem_of_union=>-[Hm'|Hm'].
         + eapply Hg; done.
-        + rewrite ->elem_of_singleton in Hm'. subst m'. split; first done.
+        + rewrite ->elem_of_singleton in Hm'. subst m'.
           rewrite Hmlen. word.
       - rewrite lookup_insert_ne //. eapply Hg. }
     iApply "HΦ".
@@ -399,16 +400,26 @@ lemmas. *)
            end.
     move: (Hg _ _ _ He Hm)=>Hlen.
     rename select (isFresh _ _) into Hfresh.
-    iMod (na_heap_alloc_list tls (heap σ1) l
-                             (data_vals m'.(msg_data))
-                             (Reading O) with "Hσ")
-      as "(Hσ & Hblock & Hl)".
-    { rewrite fmap_length. apply Nat2Z.inj_lt. apply Hlen. }
-    { destruct Hfresh as (?&?); eauto. }
-    { destruct Hfresh as (H'&?); eauto. eapply H'. }
-    { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
-      by rewrite (loc_add_0) in Hfresh. }
-    { eauto. }
+    iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals m'.(msg_data)) ∪ σ1.(heap)) ∗
+      [∗ list] i↦v ∈ data_vals m'.(msg_data), na_heap_mapsto (addr_plus_off l i) 1 v)%I
+      with "[> Hσ]" as "[Hσ Hl]".
+    { destruct (decide (length m'.(msg_data) = 0%nat)) as [Heq%nil_length_inv|Hne].
+      { (* Zero-length message... no actually new memory allocation, so the proof needs
+           to work a bit differently. *)
+        rewrite Heq big_sepL_nil fmap_nil /= left_id. by iFrame. }
+      iMod (na_heap_alloc_list tls (heap σ1) l
+                               (data_vals m'.(msg_data))
+                               (Reading O) with "Hσ")
+        as "(Hσ & Hblock & Hl)".
+      { rewrite fmap_length. apply Nat2Z.inj_lt. lia. }
+      { destruct Hfresh as (?&?); eauto. }
+      { destruct Hfresh as (H'&?); eauto. eapply H'. }
+      { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
+          by rewrite (loc_add_0) in Hfresh. }
+      { eauto. }
+      iModIntro. iFrame "Hσ". iApply (big_sepL_impl with "Hl").
+      iIntros "!#" (???) "[$ _]".
+    }
     iModIntro. iEval simpl. iFrame "Htr Hg Hσ".
     do 2 (iSplit; first done).
     iApply ("HΦ" $! _ _ _ _ m'.(msg_data)). iFrame "He".
@@ -417,7 +428,7 @@ lemmas. *)
       trans (Z.to_nat (Z.of_nat (length m'.(msg_data)))); first by rewrite Nat2Z.id //.
       f_equal. word. }
     rewrite /mapsto_vals. iApply (big_sepL_mono with "Hl").
-    clear -Hfresh. simpl. iIntros (i v _) "[Hmapsto _]".
+    clear -Hfresh. simpl. iIntros (i v _) "Hmapsto".
     iApply (na_mapsto_to_heap with "Hmapsto").
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
@@ -542,14 +553,13 @@ Section grove.
   Qed.
 
   Lemma wp_Send c r (s : Slice.t) (data : list u8) (q : Qp) :
-    0 < length data →
     ⊢ {{{ is_slice_small s byteT q data }}}
       <<< ∀∀ ms, c c↦ ms >>>
         Send (send_endpoint c r) (slice_val s) @ ⊤
       <<<▷ ∃∃ (err : bool), c c↦ (if err then ms else ms ∪ {[Message r data]}) >>>
       {{{ RET #err; is_slice_small s byteT q data }}}.
   Proof.
-    iIntros (?) "!#". iIntros (Φ) "Hs HΦ". wp_lam. wp_let.
+    iIntros "!#" (Φ) "Hs HΦ". wp_lam. wp_let.
     wp_apply wp_slice_ptr.
     wp_apply wp_slice_len.
     wp_pures.
