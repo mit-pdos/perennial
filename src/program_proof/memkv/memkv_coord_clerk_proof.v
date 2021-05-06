@@ -35,7 +35,7 @@ Proof.
   iIntros (?) "Hdec".
   wp_pures.
   wp_apply (wp_Dec__GetInts _ _ _ _ [] with "[Hdec]").
-  { eauto. }
+  { exact Hlen. }
   { rewrite app_nil_r. iFrame. }
   iIntros (?) "(?&H)". iApply "HΦ". iSplit; eauto.
 Qed.
