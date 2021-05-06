@@ -748,7 +748,7 @@ Definition MemKVCoordClerk__GetShardMap: val :=
    safe for concurrent use *)
 Definition MemKVClerk := struct.decl [
   "shardClerks" :: struct.ptrT ShardClerkSet;
-  "coordCk" :: struct.t MemKVCoordClerk;
+  "coordCk" :: struct.ptrT MemKVCoordClerk;
   "shardMap" :: slice.T HostName
 ].
 
@@ -805,8 +805,10 @@ Definition MemKVClerk__Add: val :=
 
 Definition MakeMemKVClerk: val :=
   rec: "MakeMemKVClerk" "coord" :=
+    let: "cck" := struct.alloc MemKVCoordClerk (zero_val (struct.t MemKVCoordClerk)) in
     let: "ck" := struct.alloc MemKVClerk (zero_val (struct.t MemKVClerk)) in
-    struct.storeF MemKVCoordClerk "cl" (struct.fieldRef MemKVClerk "coordCk" "ck") (rpc.MakeRPCClient "coord");;
+    struct.storeF MemKVClerk "coordCk" "ck" "cck";;
+    struct.storeF MemKVCoordClerk "cl" (struct.loadF MemKVClerk "coordCk" "ck") (rpc.MakeRPCClient "coord");;
     struct.storeF MemKVClerk "shardClerks" "ck" (MakeShardClerkSet #());;
     struct.storeF MemKVClerk "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk "coordCk" "ck"));;
     "ck".

@@ -20,6 +20,68 @@ Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   "#HshardServers" ∷ all_are_shard_servers shardMapping γ
 .
 
+Lemma wp_MakeMemKVClerk (coord:u64) γ :
+  {{{
+       is_coord_server coord γ
+  }}}
+    MakeMemKVClerk #coord
+  {{{
+       (ck:loc), RET #ck; own_MemKVClerk ck γ.(coord_kv_gn)
+  }}}
+.
+Proof.
+  iIntros (Φ) "#Hcoord HΦ".
+  rewrite /MakeMemKVClerk.
+  wp_lam.
+  wp_apply (wp_allocStruct).
+  { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
+  iIntros (cck) "Hcck".
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
+  iIntros (ck) "Hck".
+  iDestruct (struct_fields_split with "Hck") as "HH".
+  iNamed "HH".
+  iDestruct (struct_fields_split with "Hcck") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_storeField.
+  wp_apply (wp_MakeRPCClient).
+  iIntros (cl) "Hcl".
+  wp_loadField.
+  wp_storeField.
+  wp_bind (MakeShardClerkSet #()).
+  rewrite /MakeShardClerkSet.
+  wp_lam.
+  replace (ref (InjLV #null))%E with (NewMap (struct.ptrT MemKVShardClerk)) by auto.
+  wp_apply (wp_NewMap).
+  iIntros (mref_set) "Hmap_set".
+  wp_apply (wp_allocStruct).
+  { eauto. }
+  iIntros (clset) "Hset".
+  wp_storeField.
+  wp_loadField.
+  wp_apply (wp_MemKVCoordClerk__GetShardMap with "[cl Hcl]").
+  { rewrite /own_MemKVCoordClerk. iExists _, _, _. iFrame "cl".
+    iSplit; last first.
+    { iSplit.
+      { iExact "Hcoord". }
+      { iExact "Hcl". }
+    }
+    eauto.
+  }
+  iIntros (shardMap_sl shardMapping) "(Hcck & HshardMap_sl & %Hlen & #Hall_are_shard_servers)".
+  Transparent slice.T.
+  wp_storeField.
+  Opaque slice.T.
+  iModIntro. iApply "HΦ".
+  iExists _, _, _, _. iFrame.
+  iFrame "% #". iExists _, _.
+  iFrame "Hmap_set". rewrite big_sepM_empty; iSplit; last done.
+  iDestruct (struct_fields_split with "Hset") as "HH".
+  iNamed "HH". eauto.
+Qed.
+
 Lemma KVClerk__Get (ck:loc) (γ:gname) (key:u64) :
 ⊢ {{{ own_MemKVClerk ck γ }}}
   <<< ∀∀ v, kvptsto γ key v >>>
