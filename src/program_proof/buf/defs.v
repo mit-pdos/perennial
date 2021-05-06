@@ -34,7 +34,7 @@ Theorem list_to_inode_buf_to_list l :
 Proof.
   intros H.
   rewrite /list_to_inode_buf.
-  rewrite decide_left.
+  rewrite decide_True_pi.
   rewrite vec_to_list_to_vec_eq_rect; auto.
 Qed.
 

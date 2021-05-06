@@ -54,7 +54,7 @@ Theorem list_to_block_to_list l :
 Proof.
   intros H.
   rewrite /list_to_block /Block_to_vals.
-  rewrite decide_left.
+  rewrite decide_True_pi.
   rewrite vec_to_list_to_vec_eq_rect; auto.
 Qed.
 

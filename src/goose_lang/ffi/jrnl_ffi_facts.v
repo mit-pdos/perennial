@@ -955,7 +955,7 @@ Proof.
   { simpl in Hlookup.
     eapply lookup_weaken in Hlookup; last eassumption.
     rewrite Hlookup. econstructor; eauto. }
-  { rewrite /checkPf. rewrite decide_left //=. }
+  { rewrite /checkPf. rewrite decide_True_pi //=. }
 Qed.
 
 Lemma always_steps_NumFreeOp l n max σj:
