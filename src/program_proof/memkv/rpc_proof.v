@@ -1100,8 +1100,49 @@ Proof.
   iIntros "[Hi Hlockinv]".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_condWaitTimeout with "[$cond' $Hi $Hlk $Hlockinv]").
+  wp_bind (if: _ then _ else _)%E.
+  iAssert (∃ (b: bool), cb_done ↦[boolT] #b ∗ n [[Γ.(ccextracted_name)]]↦ () ∗
+                        (cb_done ↦[boolT] #b -∗ RPCClient_lock_inner Γ cl_ptr lk host mref))%I
+          with "[Hlockinv Hextracted]" as "H".
+  { iNamed "Hlockinv".
+    iDestruct (map_ro_valid with "Hmapping_ctx [$]") as %Hlookup_reg.
+    iDestruct (big_sepM_lookup_acc with "Hreqs") as "(H&Hclo)"; first eauto.
+  iEval (simpl) in "H".
+  iFreeze "Hclo".
+  iNamed "H".
+  iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
+  { iNamed "Hcase1".
+    iDestruct "Hcase1" as "(#?&#?&#?&Hrest)". iNamed "Hrest". iExists _. iFrame.
+    iIntros "H". iExists _, _, _, _, _. iFrame "∗ # %".
+    iThaw "Hclo". iApply "Hclo".
+    { simpl. iExists _, _, _. iFrame "Hreg". iFrame "Hsaved". iFrame "#". iLeft. iExists _, _, _. iFrame "# ∗". }
+  }
+  { iNamed "Hcase2". iExists _. iFrame.
+    iIntros "H".  iExists _, _, _, _, _. iFrame "∗ # %".
+    iThaw "Hclo". iApply "Hclo".
+    { simpl. iExists _, _, _. iFrame "Hreg". iFrame "HPost_saved". iRight.
+      iLeft. iExists _, _. iFrame "# ∗". }
+  }
+  { iDestruct "Hcase3" as "(?&Hex)".
+    iDestruct (ptsto_valid_2 with "Hex [$]") as %Hval.
+    exfalso. rewrite //= in Hval.
+  }
+  }
+
+  iDestruct "H" as (b) "(Hdone&Hextracted&Hdone_clo)".
+  wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
+  iDestruct ("Hdone_clo" with "[$]") as "Hlockinv".
+  wp_apply (wp_If_join_evar _ _ _ (λ _, lock.locked #lk ∗
+                                  RPCClient_lock_inner Γ cl_ptr lk host mref)%I
+   with "[Hi Hlockinv]").
+  { iIntros (b' Heq). destruct b; wp_pures.
+    - iFrame. eauto.
+    - wp_loadField. wp_apply (wp_condWaitTimeout with "[$cond' $Hi $Hlk $Hlockinv]").
+      iIntros "(Hi&Hlockinv)". wp_pures.
+      iFrame. eauto. }
+
   iIntros "[Hi Hlockinv]".
+  wp_pures. wp_loadField.
   iNamed "Hlockinv".
   iDestruct (map_ro_valid with "Hmapping_ctx [$]") as %Hlookup_reg.
   iDestruct (big_sepM_lookup_acc with "Hreqs") as "(H&Hclo)"; first eauto.
@@ -1109,7 +1150,7 @@ Proof.
   iFreeze "Hclo".
   iNamed "H".
   iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
-  { iNamed "Hcase1". wp_loadField.
+  { iNamed "Hcase1". 
     iDestruct "Hcase1" as "(#?&#?&#?&Hrest)". iNamed "Hrest".
     wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
     wp_pures.
@@ -1126,20 +1167,25 @@ Proof.
     iSplitR "Hrep_out_ptr"; last by eauto.
     iExists _, _, _, _. by iFrame "∗#".
   }
-  { iNamed "Hcase2". wp_loadField.
+  { iNamed "Hcase2".
     wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
     iDestruct (saved_pred_agree _ _ _ reply with "HPost_saved Hsaved") as "#Hequiv".
-    wp_pures. wp_loadField.
+    wp_pures.
+    wp_apply (wp_LoadAt with "[$Hrep_ptr]"). iIntros "Hrep_ptr".
+    wp_apply (wp_StoreAt with "[$Hrep_out_ptr]").
+    { naive_solver. }
+    iIntros "Hrep_out_ptr".
+    wp_pures.
+
     iThaw "Hclo".
     iDestruct ("Hclo" with "[Hdone Hextracted Hpending_cb]") as "H".
     { simpl. iExists _, _, _. iFrame "Hreg". iFrame "Hsaved". iFrame "#". iRight. iRight.
       iSplit; eauto. }
+    wp_loadField.
     wp_apply (release_spec with "[$Hlk $Hi H HPost_saved
                  Hpending_map Hmapping_ctx Hescrow_ctx Hextracted_ctx seq]").
     { iExists _, _, _, _, _. iFrame. eauto. }
     wp_pures.
-    wp_load.
-    wp_store.
     iModIntro.
     iRewrite ("Hequiv") in "HPost".
     iApply "HΦ".
