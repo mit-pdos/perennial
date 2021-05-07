@@ -79,7 +79,7 @@ Definition lockShard__release: val :=
     else MapDelete (struct.loadF lockShard "state" "lmap") "addr");;
     lock.release (struct.loadF lockShard "mu" "lmap").
 
-Definition NSHARD : expr := #43.
+Definition NSHARD : expr := #65537.
 
 Definition LockMap := struct.decl [
   "shards" :: slice.T (struct.ptrT lockShard)

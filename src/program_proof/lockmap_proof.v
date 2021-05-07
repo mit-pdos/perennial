@@ -446,9 +446,12 @@ Proof.
 Qed.
 
 
-Definition NSHARD : Z := 43.
+Definition NSHARD_def : Z := Eval vm_compute in (match NSHARD with #(LitInt z) => int.Z z | _ => 0 end).
+Definition NSHARD_aux : seal (@NSHARD_def). Proof. by eexists. Qed.
+Definition NSHARD := NSHARD_aux.(unseal).
+Definition NSHARD_eq : @NSHARD = @NSHARD_def := NSHARD_aux.(seal_eq).
 
-Hint Unfold NSHARD : word.
+Ltac unseal_nshard := rewrite NSHARD_eq /NSHARD_def.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
@@ -463,6 +466,7 @@ Proof.
   rewrite /covered_by_shard.
   split; intros.
   + apply elem_of_filter; intuition.
+    unseal_nshard.
     word.
   + apply elem_of_filter in H; intuition.
 Qed.
@@ -478,6 +482,7 @@ Lemma covered_by_shard_insert x X :
   {[x]} ∪ covered_by_shard (int.Z (word.modu x (U64 NSHARD))) X.
 Proof.
   rewrite /covered_by_shard filter_union_L filter_singleton_L //.
+  unseal_nshard.
   word.
 Qed.
 
@@ -519,7 +524,8 @@ Proof.
                                       rangeSet 0 NSHARD ∖ {[ word.modu x NSHARD ]}).
     2: {
       rewrite -union_difference_L; auto.
-      pose proof (rangeSet_lookup_mod x NSHARD).
+      assert (0 < NSHARD < 2^64)%Z as Hbound by (unseal_nshard; done).
+      pose proof (rangeSet_lookup_mod x NSHARD Hbound).
       set_solver.
     }
 
@@ -531,7 +537,7 @@ Proof.
       iApply big_sepS_insert.
       { intro Hx. apply H. apply covered_by_shard_mod.
         rewrite Z2Nat.id; eauto.
-        word. }
+        revert Hx. unseal_nshard. word. }
       iFrame.
     + iApply (big_sepS_mono with "Hother").
       iIntros (x' Hx') "H".
@@ -544,7 +550,7 @@ Proof.
       apply H1.
       apply elem_of_singleton.
       revert Heq.
-      rewrite /NSHARD.
+      unseal_nshard.
       word_cleanup.
 
       intros.
@@ -601,9 +607,9 @@ Proof.
     iNamed "HI".
     wp_pures.
     rewrite rangeSet_first.
-    2: { rewrite /NSHARD. word. }
+    2: { unseal_nshard. word. }
     iDestruct (big_sepS_insert with "Hpp") as "[Hp Hpp]".
-    { rewrite /NSHARD. intro Hx.
+    { unseal_nshard. intro Hx.
       apply rangeSet_lookup in Hx; try word.
       intuition. revert H. word. }
     wp_apply (wp_mkLockShard with "Hp").
@@ -658,7 +664,7 @@ Proof.
   iFrame "Hlm".
   iFrame "Hslice".
   iSplitR.
-  { iPureIntro. rewrite Hlen. reflexivity. }
+  { iPureIntro. rewrite Hlen. unseal_nshard. reflexivity. }
   iApply "Hshards".
 Qed.
 
@@ -679,10 +685,12 @@ Proof.
   iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
 
   list_elem shards (int.nat (word.modu addr NSHARD)) as shard.
+  { revert Hlen. unseal_nshard. word. }
   list_elem ghs (int.nat (word.modu addr NSHARD)) as gh.
+  { revert Hlen. unseal_nshard. word. }
 
   wp_apply (wp_SliceGet _ _ _ _ _ shards with "[$Hslice_copy]").
-  { eauto. }
+  { revert Hshard_lookup. unseal_nshard. eauto. }
   iIntros "Hslice_copy".
 
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
@@ -695,7 +703,8 @@ Proof.
 
   iExists _. iFrame.
   iPureIntro.
-  rewrite -Hgh_lookup /NSHARD. f_equal.
+  rewrite -Hgh_lookup. f_equal.
+  unseal_nshard.
   word.
 Qed.
 
@@ -713,15 +722,16 @@ Proof.
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
 
   list_elem shards (int.nat (word.modu addr NSHARD)) as shard.
+  { revert Hlen. unseal_nshard. word. }
 
   iDestruct "Hlocked" as (gh) "[% Hlocked]".
 
   wp_apply (wp_SliceGet _ _ _ _ _ shards with "[$Hslice_copy]").
-  { eauto. }
+  { revert Hshard_lookup. unseal_nshard. eauto. }
   iIntros "Hslice_copy".
 
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
-  { erewrite <- H. rewrite /NSHARD. f_equal. word. }
+  { erewrite <- H. unseal_nshard. f_equal. word. }
 
   wp_apply (wp_lockShard__release with "[$Hshard $HP $Hlocked]").
   iApply "HΦ". done.
