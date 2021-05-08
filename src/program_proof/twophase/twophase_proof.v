@@ -5,7 +5,7 @@ From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
 From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
 From Perennial.program_proof Require Import wal.abstraction.
-From Perennial.goose_lang.lib Require Import slice.typed_slice.
+From Perennial.goose_lang.lib Require Import slice.typed_slice map.impl.
 From Perennial.Helpers Require Import PropRestore.
 From Perennial.algebra Require Import auth_map.
 From Perennial.program_logic Require Import na_crash_inv.
@@ -65,25 +65,24 @@ Definition twophase_linv_flat k ex_mapsto γ γ' flat_addr : iProp Σ :=
     "Hlinv" ∷ twophase_linv k ex_mapsto γ γ' a ∗
     "%Ha" ∷ ⌜addr2flat a = flat_addr⌝.
 
-Definition is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat (locks_held: list u64) : iProp Σ :=
-  ∃ (locksl: loc) acquired_s ghs,
+Definition is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat (locks_held: gset u64) : iProp Σ :=
+  ∃ (locksl: loc) (acquired_m: loc) ghs,
     "Htwophase.locks" ∷ l ↦[TwoPhase :: "locks"] #locksl ∗
     "Htwophase.acquired" ∷
-      l ↦[TwoPhase :: "acquired"] (slice_val acquired_s) ∗
-    "Hacquired_s" ∷ is_slice acquired_s uint64T 1 locks_held ∗
-    "Hlockeds" ∷ ([∗ list] flat_a ∈ locks_held,
+      l ↦[TwoPhase :: "acquired"] #acquired_m ∗
+    "Hacquired_m" ∷ is_map acquired_m 1
+      (set_to_map (λ k, (k, true)) locks_held) ∗
+    "Hlockeds" ∷ ([∗ set] flat_a ∈ locks_held,
       "Hlocked" ∷ Locked ghs flat_a
     ) ∗
     "#HlockMap" ∷ is_lockMap locksl ghs objs_dom_flat
       (twophase_linv_flat k ex_mapsto γ γ') ∗
-    "%Hlocks_held_NoDup" ∷ ⌜NoDup locks_held⌝ ∗
-    "%Hlocks_in_dom" ∷ ⌜list_to_set locks_held ⊆ objs_dom_flat⌝.
+    "%Hlocks_in_dom" ∷ ⌜locks_held ⊆ objs_dom_flat⌝.
 
 Lemma is_twophase_locks_get_pures l γ γ' k ex_mapsto objs_dom_flat locks_held :
   "Hlocks" ∷ is_twophase_locks
     l γ γ' k ex_mapsto objs_dom_flat locks_held -∗
-  "%Hlocks_held_NoDup" ∷ ⌜NoDup locks_held⌝ ∗
-  "%Hlocks_in_dom" ∷ ⌜list_to_set locks_held ⊆ objs_dom_flat⌝.
+  "%Hlocks_in_dom" ∷ ⌜locks_held ⊆ objs_dom_flat⌝.
 Proof.
   iNamed 1.
   iNamed "Hlocks".
@@ -102,29 +101,25 @@ Definition is_twophase_buftxn l γ dinit mt_changed : iProp Σ :=
     ).
 
 Definition is_twophase_raw l γ γ' dinit k ex_mapsto objs_dom mt_changed : iProp Σ :=
-  ∃ locks_held,
-    "%Hkgt0" ∷ ⌜ 0 < k ⌝ ∗
-    "Hlocks" ∷ is_twophase_locks
-      l γ γ' k ex_mapsto (set_map addr2flat objs_dom) locks_held ∗
-    "Hbuftxn" ∷ is_twophase_buftxn l γ dinit mt_changed ∗
-    "Hcrash_invs" ∷ (
-      [∗ map] a ↦ vobj ∈ mt_changed,
-        "Hcrash_inv" ∷ twophase_crash_inv
-          k ex_mapsto γ γ' a (committed vobj)
-    ) ∗
-    "#Htxn_cinv" ∷ txn_cinv Nbuftxn γ γ' ∗
-    "%Hlocks_held" ∷ ⌜
-      set_map addr2flat (dom (gset addr) mt_changed) =
-      (list_to_set locks_held: gset u64)
-    ⌝ ∗
-    "%Hvalids" ∷ ⌜
-      map_Forall
-        (λ a vobj,
-          mapsto_valid γ a (modified vobj)
-        )
-        mt_changed
-    ⌝ ∗
-    "%Haddrs_valid" ∷ ⌜set_Forall valid_addr objs_dom⌝.
+  "%Hkgt0" ∷ ⌜ 0 < k ⌝ ∗
+  "Hlocks" ∷ is_twophase_locks
+    l γ γ' k ex_mapsto (set_map addr2flat objs_dom)
+    (set_map addr2flat (dom (gset addr) mt_changed)) ∗
+  "Hbuftxn" ∷ is_twophase_buftxn l γ dinit mt_changed ∗
+  "Hcrash_invs" ∷ (
+    [∗ map] a ↦ vobj ∈ mt_changed,
+      "Hcrash_inv" ∷ twophase_crash_inv
+        k ex_mapsto γ γ' a (committed vobj)
+  ) ∗
+  "#Htxn_cinv" ∷ txn_cinv Nbuftxn γ γ' ∗
+  "%Hvalids" ∷ ⌜
+    map_Forall
+      (λ a vobj,
+        mapsto_valid γ a (modified vobj)
+      )
+      mt_changed
+  ⌝ ∗
+  "%Haddrs_valid" ∷ ⌜set_Forall valid_addr objs_dom⌝.
 
 Ltac wp_start :=
   iIntros (Φ) "Hpre HΦ";
@@ -360,8 +355,8 @@ Proof.
   iIntros (? ? buftxnl) "(?&?)".
   iNamed.
   wp_loadField.
-  wp_apply (wp_NewSlice _ _ uint64T).
-  iIntros (acquired_s) "Hacquired_s".
+  wp_apply (wp_NewMap bool (t:=boolT)).
+  iIntros (acquired_m) "Hacquired_m".
   wp_apply wp_allocStruct; first by auto.
   iIntros (l) "Hl".
   wp_pures.
@@ -369,17 +364,15 @@ Proof.
   wp_pures.
   iApply "HΦ". iModIntro.
 
-  iExists [].
   iDestruct (struct_fields_split with "Hl") as "(?&?&?&_)".
   iNamed.
   iSplit; first by (iPureIntro; lia).
-  iSplitL "locks acquired Hacquired_s".
+  iSplitL "locks acquired Hacquired_m".
   {
     iExists _, _, _.
-    rewrite big_sepL_nil.
+    rewrite big_sepS_empty dom_empty_L set_map_empty.
     iFrame "∗ #".
     iPureIntro.
-    split; first by apply NoDup_nil_2.
     set_solver.
   }
   iSplitL.
@@ -388,9 +381,7 @@ Proof.
     rewrite fmap_empty big_sepM_empty.
     by iFrame.
   }
-  iFrame "#".
-  rewrite big_sepM_empty
-    dom_empty_L list_to_set_nil set_map_empty //.
+  auto.
 Qed.
 
 Lemma twophase_linv_get_addr_valid k ex_mapsto γ γ' a :
@@ -429,7 +420,6 @@ Proof.
   iNamed "Htwophase".
   iNamed "Hlocks".
   iPureIntro.
-  rewrite -Hlocks_held in Hlocks_in_dom.
   intros a Hin.
   apply elem_of_map_2 with (f := addr2flat) in Hin as Hin'.
   pose proof ((iffLR (elem_of_subseteq _ _)) Hlocks_in_dom _ Hin') as Hin''.
@@ -445,6 +435,14 @@ Proof.
     assumption.
 Qed.
 
+Lemma pair_fst_fmap {A B} (l: list A) (b: B) :
+  ((λ k, (k, b)) <$> l).*1 = l.
+Proof.
+  rewrite -list_fmap_compose (Forall_fmap_ext_1 _ id).
+  2: apply Forall_forall; auto.
+  apply list_fmap_id.
+Qed.
+
 Theorem wp_TwoPhase__acquireNoCheck l γ γ' k ex_mapsto objs_dom_flat locks_held (a: addr):
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
@@ -456,7 +454,7 @@ Theorem wp_TwoPhase__acquireNoCheck l γ γ' k ex_mapsto objs_dom_flat locks_hel
   {{{
     RET #();
     "Hlocks" ∷ is_twophase_locks
-      l γ γ' k ex_mapsto objs_dom_flat (locks_held ++ [addr2flat a]) ∗
+      l γ γ' k ex_mapsto objs_dom_flat ({[addr2flat a]} ∪ locks_held) ∗
     "Hlinv" ∷ twophase_linv k ex_mapsto γ γ' a
   }}}.
 Proof.
@@ -471,11 +469,48 @@ Proof.
     first by (iPureIntro; assumption).
   iIntros "[Hlinv Hlocked]".
   wp_loadField.
-  wp_apply (wp_SliceAppend (V:=u64) with "[$Hacquired_s]").
-  iIntros (acquired_s') "Hacquired_s".
-  wp_apply (wp_storeField with "Htwophase.acquired").
-  1: rewrite /field_ty /=; val_ty.
-  iIntros "Htwophase.acquired".
+  wp_apply (wp_MapInsert with "Hacquired_m"); first by auto.
+  iIntros "Hacquired_m".
+  rewrite /typed_map.map_insert.
+  replace (<[_:=_]>_) with (
+    set_to_map (λ k, (k, true)) ({[addr2flat a]} ∪ locks_held): gmap _ _
+  ).
+  2: {
+    apply map_eq.
+    intros a'.
+    destruct
+      (set_to_map (λ k, (k, true)) ({[addr2flat a]} ∪ locks_held) !! a')
+      as [b|] eqn:Hacc.
+    2: {
+      apply not_elem_of_list_to_map_2 in Hacc.
+      rewrite pair_fst_fmap in Hacc.
+      apply (iffLRn (elem_of_elements _ _)) in Hacc.
+      apply not_elem_of_union in Hacc.
+      destruct Hacc as [Hnota' Hnotin].
+      apply not_elem_of_singleton_1 in Hnota'.
+      rewrite lookup_insert_ne; last by auto.
+      rewrite not_elem_of_list_to_map_1 //.
+      rewrite pair_fst_fmap.
+      set_solver.
+    }
+    apply lookup_set_to_map in Hacc; last by auto.
+    destruct Hacc as [a'' [Hin Heq]].
+    inversion Heq; subst a' b; clear Heq.
+    apply elem_of_union in Hin.
+    destruct (decide (a'' = addr2flat a)) as [Heq|Hneq].
+    {
+      subst a''.
+      rewrite lookup_insert.
+      reflexivity.
+    }
+    destruct Hin as [Hin|Hin]; first by set_solver.
+    rewrite lookup_insert_ne; last by auto.
+    symmetry.
+    eapply (lookup_set_to_map (λ k, (k, true))); first by auto.
+    eexists _.
+    split; last by reflexivity.
+    assumption.
+  }
 
   iApply "HΦ".
   iDestruct "Hlinv" as (a') "[??]".
@@ -485,21 +520,15 @@ Proof.
   subst a'.
   iFrame "Hlinv".
   iExists _, _, _.
+  rewrite big_sepS_union.
+  2: {
+    apply disjoint_singleton_l.
+    assumption.
+  }
+  rewrite big_sepS_singleton.
   iFrame "∗ #".
-  iSplit; first by iApply big_sepL_nil.
   iPureIntro.
-  split.
-  - apply NoDup_app.
-    split; first by assumption.
-    split.
-    2: apply NoDup_singleton.
-    intros addr' Hin1 Hin2.
-    apply elem_of_list_singleton in Hin2.
-    subst addr'.
-    contradiction.
-  - rewrite list_to_set_app.
-    apply union_least; first by assumption.
-    set_solver.
+  set_solver.
 Qed.
 
 Theorem wp_TwoPhase__isAlreadyAcquired l γ γ' k ex_mapsto objs_dom_flat locks_held a :
@@ -519,62 +548,32 @@ Proof.
   wp_call.
   wp_apply wp_Addr__Flatid; first by (iPureIntro; assumption).
   iIntros (flat_addr) "->".
-  wp_apply wp_ref_to; first by auto.
-  iIntros (already_acquired_l) "Halready_acquired_l".
   iNamed "Hlocks".
   wp_loadField.
-  iDestruct (is_slice_small_read with "Hacquired_s") as "[Hacquired_s Hacquired_s_wrap]".
-  wp_apply (wp_forSlicePrefix (λ done todo,
-    let already_acquired_val := bool_decide (addr2flat a ∈ done) in
-    "Halready_acquired_l" ∷
-      already_acquired_l ↦[boolT] #already_acquired_val
-  )%I (V:=u64) with "[] [$Hacquired_s Halready_acquired_l]").
+  wp_apply (wp_MapGet with "Hacquired_m").
+  iIntros (b ok) "[%Hget Hacquired_m]".
+  rewrite /map_get /= in Hget.
+  inversion Hget; subst b ok; clear Hget.
+  wp_pures.
+  iModIntro.
+  replace (default _ _) with (bool_decide (addr2flat a ∈ locks_held)).
   2: {
-    rewrite bool_decide_eq_false_2; first by iFrame.
-    apply not_elem_of_nil.
-  }
-  {
-    iIntros (i x done todo Harr Φ0).
-    iModIntro.
-    iNamed 1.
-    iIntros "HΦ".
-    wp_if_destruct.
-    {
-      wp_apply (wp_StoreAt with "[$Halready_acquired_l]").
-      1: auto.
-      iIntros "Halready_acquired_l".
-      iApply "HΦ".
-      rewrite bool_decide_eq_true_2; first by iFrame.
-      apply elem_of_app.
-      right.
-      apply (iffRL (elem_of_list_singleton _ _)).
-      reflexivity.
-    }
-    iApply "HΦ".
-    destruct (decide (addr2flat a ∈ done)).
-    - rewrite bool_decide_eq_true_2.
-      2: assumption.
-      rewrite bool_decide_eq_true_2; first by iFrame.
-      apply elem_of_app.
-      left.
+    destruct (set_to_map (λ k, (k, true)) locks_held !! addr2flat a)
+      as [b|] eqn:Hacc.
+    2: {
+      rewrite bool_decide_eq_false_2 //.
+      apply (not_elem_of_list_to_map_2 ((λ k, (k, true)) <$> _) _) in Hacc.
+      rewrite pair_fst_fmap in Hacc.
+      apply (iffLRn (elem_of_elements _ _)) in Hacc.
       assumption.
-    - rewrite bool_decide_eq_false_2.
-      2: assumption.
-      rewrite bool_decide_eq_false_2; first by iFrame.
-      apply not_elem_of_app.
-      split; first by assumption.
-      intro Hin.
-      apply elem_of_list_singleton in Hin.
-      apply Heqb.
-      f_equal.
-      f_equal.
-      apply Hin.
+    }
+    simpl.
+    eapply (lookup_set_to_map (λ k, (k, true))) in Hacc; last by auto.
+    destruct Hacc as [a' [Hin Heq]].
+    inversion Heq; subst a' b; clear Heq.
+    apply bool_decide_eq_true_2.
+    assumption.
   }
-  iIntros "[Hacquired_s ?]".
-  iNamed.
-  iApply "Hacquired_s_wrap" in "Hacquired_s".
-  wp_apply (wp_LoadAt with "[$Halready_acquired_l]").
-  iIntros "Halready_acquired_l".
   iApply "HΦ".
   iExists _, _, _.
   iFrame "∗ # %".
@@ -592,7 +591,7 @@ Theorem wp_TwoPhase__Acquire l γ γ' k ex_mapsto objs_dom_flat locks_held (a: a
     let a_locked := addr2flat a ∈ locks_held in
     "Hlocks" ∷ is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat (
       if decide (a_locked) then locks_held
-      else locks_held ++ [addr2flat a]
+      else ({[addr2flat a]} ∪ locks_held)
     ) ∗
     "Hlinv" ∷ (
       if decide (a_locked)
@@ -818,18 +817,16 @@ Proof.
     assumption.
   }
   iNamed 1.
-  assert (addr2flat a ∈ locks_held ↔ is_Some (mt_changed !! a))
-    as Hlocked_iff.
+  assert (
+    addr2flat a ∈ (set_map addr2flat (dom (gset addr) mt_changed): gset _) ↔
+    is_Some (mt_changed !! a)
+  ) as Hlocked_iff.
   {
     split.
     - intros Hlocked.
       apply elem_of_dom.
-      assert (addr2flat a ∈ (list_to_set locks_held: gset u64))
-        as Hlocked'
-        by (apply elem_of_list_to_set; assumption).
-      rewrite -Hlocks_held in Hlocked'.
-      apply elem_of_map_1 in Hlocked'.
-      destruct Hlocked' as (a'&Ha_eq&Ha').
+      apply elem_of_map_1 in Hlocked.
+      destruct Hlocked as (a'&Ha_eq&Ha').
       pose proof ((iffLR (elem_of_subseteq _ _)) Hmt_in_spec _ Ha')
         as Ha'_tracked.
       apply Haddrs_valid in Ha'_tracked.
@@ -839,8 +836,6 @@ Proof.
     - intros Hin.
       apply elem_of_dom in Hin.
       apply (elem_of_map_2 addr2flat) in Hin.
-      rewrite Hlocks_held in Hin.
-      apply elem_of_list_to_set in Hin.
       assumption.
   }
   rewrite !(decide_iff _ _ _ _ Hlocked_iff) !decide_is_Some.
@@ -850,95 +845,19 @@ Proof.
   iModIntro.
 
   iApply "HΦ".
-  iExists _.
   iFrame "∗ #".
+  iSplit; first by auto.
+  iSplitL "Hlocks".
+  {
+    destruct (mt_changed !! a) as [v|] eqn:Hacc; first by iFrame.
+    rewrite dom_insert_L set_map_union_L set_map_singleton_L //.
+  }
   iPureIntro.
   destruct (mt_changed !! a) as [old_vobj|] eqn:Hlookup_old;
     first by intuition.
-  split; first done.
-  split.
-  {
-    rewrite dom_insert_L set_map_union_L
-      list_to_set_app_L union_comm_L
-      set_map_singleton_L (leibniz_equiv _ _ (list_to_set_singleton _))
-      Hlocks_held //.
-  }
   split; last by assumption.
   apply map_Forall_insert_2; last by assumption.
   apply Hvalid.
-Qed.
-
-Theorem wp_TwoPhase__Release l γ γ' k ex_mapsto locks_held objs_dom_flat flat_a :
-  {{{
-    "Hlocks" ∷ is_twophase_locks
-      l γ γ' k ex_mapsto objs_dom_flat (locks_held ++ [flat_a]) ∗
-    "Hlinv" ∷ twophase_linv_flat k ex_mapsto γ γ' flat_a
-  }}}
-    TwoPhase__Release #l
-  {{{
-    RET #();
-    "Hlocks" ∷ is_twophase_locks
-      l γ γ' k ex_mapsto objs_dom_flat locks_held
-  }}}.
-Proof.
-  wp_start.
-  wp_call.
-  iNamed "Hlocks".
-  wp_loadField.
-  wp_apply wp_slice_len.
-  wp_loadField.
-  iDestruct (is_slice_small_read with "Hacquired_s") as "[Hacquired_s Hacquired_s_wrap]".
-  iDestruct (is_slice_small_sz with "Hacquired_s") as "%Hacquired_s_sz".
-  assert (
-    (locks_held ++ [flat_a]) !! (length locks_held) = Some flat_a
-  ) as Hlockeds_acc.
-  {
-    rewrite -> lookup_app_r by lia.
-    rewrite Nat.sub_diag //.
-  }
-  rewrite app_length /= in Hacquired_s_sz.
-  assert (int.nat acquired_s.(Slice.sz) > 0) as Hacquired_s_sz_gt by lia.
-  wp_apply (wp_SliceGet (V:=u64) with "[$Hacquired_s]").
-  {
-    iPureIntro.
-    replace (int.nat (word.sub _ 1)) with ((int.nat acquired_s.(Slice.sz)) - 1)%nat by word.
-    rewrite -Hacquired_s_sz Nat.add_sub.
-    apply Hlockeds_acc.
-  }
-  iIntros "Hacquired_s".
-  iApply "Hacquired_s_wrap" in "Hacquired_s".
-  wp_loadField.
-  iDestruct (big_sepL_app with "Hlockeds")
-    as "[Hlockeds Hlocked]".
-  rewrite big_sepL_singleton.
-  iNamed.
-  wp_apply (wp_LockMap__Release with "[$HlockMap $Hlocked $Hlinv]").
-  wp_loadField.
-  wp_apply (wp_SliceTake uint64T); first by word.
-  wp_apply (wp_storeField with "Htwophase.acquired");
-    first by (rewrite /field_ty /=; val_ty).
-  iIntros "Htwophase.acquired".
-
-  iApply "HΦ".
-  iExists _, _, _.
-  iFrame "∗ #".
-  iSplit.
-  {
-    iApply (is_slice_take_cap _ _ _ (word.sub acquired_s.(Slice.sz) 1))
-      in "Hacquired_s";
-      first by (rewrite fmap_length app_length /=; word).
-    replace (int.nat (word.sub _ 1))
-      with ((int.nat acquired_s.(Slice.sz)) - 1)%nat by word.
-    rewrite -fmap_take -Hacquired_s_sz Nat.add_sub take_app.
-    iFrame.
-  }
-  iPureIntro.
-  split.
-  - apply NoDup_app in Hlocks_held_NoDup.
-    intuition.
-  - rewrite list_to_set_app_L in Hlocks_in_dom.
-    apply union_subseteq in Hlocks_in_dom.
-    intuition.
 Qed.
 
 Lemma big_sepM_list_to_map `{Countable K} {A} l (Φ: K → A → iProp Σ) :
@@ -973,7 +892,7 @@ Qed.
 Theorem wp_TwoPhase__ReleaseAll l γ γ' k ex_mapsto objs_dom_flat locks_held :
   {{{
     "Hlocks" ∷ is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat locks_held ∗
-    "Hlinvs" ∷ ([∗ list] flat_a ∈ locks_held, (
+    "Hlinvs" ∷ ([∗ set] flat_a ∈ locks_held, (
       "Hlinv" ∷ twophase_linv_flat k ex_mapsto γ γ' flat_a
     ))
   }}}
@@ -984,97 +903,45 @@ Theorem wp_TwoPhase__ReleaseAll l γ γ' k ex_mapsto objs_dom_flat locks_held :
 Proof.
   wp_start.
   wp_call.
-  wp_apply (wp_forBreak_cond (λ b,
-    ∃ i,
-      "Hlocks" ∷ is_twophase_locks
-        l γ γ' k ex_mapsto objs_dom_flat (take i locks_held) ∗
-      "Hlinvs" ∷ ([∗ list] blkno ∈ take i locks_held, (
-        "Hlinv" ∷ twophase_linv_flat k ex_mapsto γ γ' blkno
-      )) ∗
-      "%Hi" ∷ ⌜i ≤ length locks_held⌝ ∗
-      "%Hb" ∷ ⌜b = false → drop i locks_held = locks_held⌝
-  )%I with "[] [Hlocks Hlinvs]").
-  2: {
-    iExists (length locks_held).
-    rewrite firstn_all drop_all.
+  iNamed "Hlocks".
+  wp_loadField.
+  wp_apply (
+    wp_MapIter_3 _ _ _ _ _
+    (λ mtodo mdone,
+      "Htwophase.locks" ∷ l ↦[TwoPhase :: "locks"] #locksl ∗
+      "Hlockeds" ∷ ([∗ set] flat_a ∈ dom (gset _) mtodo,
+        "Hlocked" ∷ Locked ghs flat_a
+      ) ∗
+      "Hlinvs" ∷ ([∗ set] flat_a ∈ dom (gset _) mtodo,
+        "Hlinv" ∷ twophase_linv_flat k ex_mapsto γ γ' flat_a
+      )
+    )%I
+    with "Hacquired_m [$Htwophase.locks Hlockeds Hlinvs] [] [HΦ]"
+  ).
+  {
+    rewrite dom_list_to_map_L pair_fst_fmap list_to_set_elements_L.
     iFrame.
-    iSplit; first by auto.
-    auto.
   }
   {
-    iModIntro.
-    iIntros (Φ') "Hloop HΦ'".
-    iDestruct "Hloop" as (i) "(?&?&?&?)".
-    iNamed.
-    iNamed "Hlocks".
+    iIntros (a b ? ? Φ') "!> (Hpre&%Htodo_done&(%Hdisj&%Hin_todo)) HΦ'".
+    iNamed "Hpre".
     wp_loadField.
-    wp_apply wp_slice_len.
-    iDestruct (is_slice_sz with "Hacquired_s") as "%Hlocked_blknos_len".
-    wp_if_destruct.
-    2: {
-      iApply "HΦ'". iModIntro.
-      iExists 0%nat.
-      rewrite Heqb in Hlocked_blknos_len.
-      replace (int.nat 0) with 0%nat in Hlocked_blknos_len by word.
-      apply nil_length_inv in Hlocked_blknos_len.
-      pose proof (take_drop i locks_held) as Htake_drop.
-      rewrite Hlocked_blknos_len app_nil_l in Htake_drop.
-      rewrite Hlocked_blknos_len take_0 drop_0.
-      iFrame.
-      iSplit.
-      2: {
-        iPureIntro.
-        split.
-        2: auto.
-        lia.
-      }
-      iExists _, _, _.
-      iFrame "∗ #".
-      iPureIntro.
-      split; last by set_solver.
-      apply NoDup_nil_2.
-    }
-
-    iAssert (
-      is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat (take i locks_held)
-    ) with
-        "[Htwophase.locks Htwophase.acquired
-        Hacquired_s Hlockeds]"
-      as "Htwophase";
-      first by (iExists _, _, _; iFrame "∗ # %").
-    destruct i.
-    {
-      rewrite take_0 /= in Hlocked_blknos_len.
-      apply u64_val_ne in Heqb.
-      replace (int.Z 0%Z) with 0%Z in Heqb by word.
-      word.
-    }
-    assert (i < length locks_held) as Hi_bounds by lia.
-    apply list_lookup_lt in Hi_bounds.
-    destruct Hi_bounds as [curr_lock Hcurr_lock].
-    rewrite (take_S_r _ _ _ Hcurr_lock).
-    iDestruct (big_sepL_app with "Hlinvs") as "[Hlinvs Hlinv]".
-    iDestruct (big_sepL_cons with "Hlinv") as "[? _]".
+    rewrite -(insert_id mtodo a b); last by assumption.
+    rewrite -insert_delete dom_insert_L.
+    rewrite big_sepS_insert; last by set_solver.
+    rewrite big_sepS_insert; last by set_solver.
+    iDestruct "Hlockeds" as "[? Hlockeds]".
+    iDestruct "Hlinvs" as "[? Hlinvs]".
     iNamed.
-    wp_apply (wp_TwoPhase__Release with "[$Htwophase $Hlinv]").
-    iNamed 1.
-
-    wp_pures.
+    wp_apply (wp_LockMap__Release with "[$HlockMap $Hlocked $Hlinv]").
     iApply "HΦ'".
-    iExists _.
+    rewrite delete_insert; last by apply lookup_delete.
     iFrame.
-    iPureIntro.
-    split; first by lia.
-    intros Hc.
-    inversion Hc.
   }
-  iIntros "Hloop".
-  iDestruct "Hloop" as (?) "(?&?&?&?)".
-  iNamed.
-  pose proof (Hb eq_refl) as Hlocked_blknos.
-
+  iIntros "(Hacquired_m&Hpost)".
+  iNamed "Hpost".
   iApply "HΦ".
-  auto.
+  done.
 Qed.
 
 Lemma wpc_na_crash_inv_open_modify_sepM {A} `{Countable K} Qnew  k k' k'' E1 e Φ Φc
@@ -1227,18 +1094,15 @@ Theorem wp_TwoPhase__CommitNoRelease_raw l γ γ' dinit k ex_mapsto `{!∀ a obj
   }}}
     TwoPhase__CommitNoRelease #l
   {{{
-    (ok:bool) locks_held, RET #ok;
+    (ok:bool), RET #ok;
     "Hlocks" ∷ is_twophase_locks
-      l γ γ' k ex_mapsto (set_map addr2flat objs_dom) locks_held ∗
+      l γ γ' k ex_mapsto (set_map addr2flat objs_dom)
+      (set_map addr2flat (dom (gset addr) mt_changed)) ∗
     "Hlinvs" ∷ (
       [∗ set] a ∈ dom (gset addr) mt_changed,
         "Hlinv" ∷ twophase_linv_flat k ex_mapsto γ γ' (addr2flat a)
     ) ∗
-    "HQ" ∷ (if ok then Qok else Qnok) ∗
-    "%Hlocks_held" ∷ ⌜
-      set_map addr2flat (dom (gset addr) mt_changed) =
-      (list_to_set locks_held: gset u64)
-    ⌝
+    "HQ" ∷ (if ok then Qok else Qnok)
   }}}.
 Proof.
   wp_start.
@@ -1381,7 +1245,7 @@ Proof.
   iIntros "Hcrash_invs".
 
   iApply "HΦ".
-  iFrame (Hlocks_held) "Hlocks ∗".
+  iFrame "Hlocks ∗".
   iApply (
     big_sepM_fmap (if ok then modified else committed)
   ) in "Htokens".
@@ -1455,7 +1319,6 @@ Proof.
   iDestruct ("Hbuftxn_maps_tos" with "Hbuftxn_maps_to")
     as "Hbuftxn_maps_tos".
 
-  iExists _.
   iFrame "Hlocks Hcrash_invs".
   iSplit; first done.
   iSplitL "
@@ -1706,7 +1569,14 @@ Proof.
       destruct obj'.
       rewrite /modified /mspec.modified //=.
     }
-    iExists _.
+
+    rewrite /is_twophase_raw dom_insert_L subseteq_union_1_L.
+    2: {
+      apply elem_of_subseteq_singleton.
+      apply elem_of_dom.
+      eexists _.
+      eassumption.
+    }
     iFrame "Hlocks".
     iSplit; first done.
     iSplitR "Hcrash_invs".
@@ -1731,11 +1601,6 @@ Proof.
     }
     iFrame "#".
     iPureIntro.
-    split.
-    {
-      rewrite dom_insert_lookup_L; last by eauto.
-      assumption.
-    }
     split; last by assumption.
     apply map_Forall_insert_2; last by assumption.
     rewrite /mapsto_valid //.
@@ -1765,7 +1630,8 @@ Proof.
     subst kind'.
     iApply ("HΦ" $! (mspec.mkVersioned obj obj')).
     iSplit; last by rewrite /modified /mspec.modified //=.
-    iExists _.
+
+    rewrite /is_twophase_raw !dom_insert_L.
     iFrame "Hlocks".
     iSplit; first done.
     iSplitR "Hcrash_invs".
@@ -1789,12 +1655,6 @@ Proof.
         /committed /mspec.committed //=.
     iFrame "#".
     iPureIntro.
-    split.
-    {
-      rewrite dom_insert_L.
-      rewrite dom_insert_L in Hlocks_held.
-      assumption.
-    }
     split; last by assumption.
     apply map_Forall_insert_2; first by rewrite /mapsto_valid //.
     apply map_Forall_insert_1_2 in Hvalids; assumption.

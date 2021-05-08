@@ -4,7 +4,6 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.goose_nfsd.addr.
 From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
-From Goose Require github_com.mit_pdos.goose_nfsd.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.lockmap.
 From Goose Require github_com.mit_pdos.goose_nfsd.txn.
 From Goose Require github_com.mit_pdos.goose_nfsd.util.
@@ -17,7 +16,7 @@ Definition TwoPhasePre := struct.decl [
 Definition TwoPhase := struct.decl [
   "buftxn" :: struct.ptrT buftxn.BufTxn;
   "locks" :: struct.ptrT lockmap.LockMap;
-  "acquired" :: slice.T uint64T
+  "acquired" :: mapT boolT
 ].
 
 Definition Init: val :=
@@ -34,7 +33,7 @@ Definition Begin: val :=
     let: "trans" := struct.new TwoPhase [
       "buftxn" ::= buftxn.Begin (struct.loadF TwoPhasePre "txn" "twophasePre");
       "locks" ::= struct.loadF TwoPhasePre "locks" "twophasePre";
-      "acquired" ::= NewSlice uint64T #0
+      "acquired" ::= NewMap boolT
     ] in
     util.DPrintf #5 (#(str"tp Begin: %v
     ")) #();;
@@ -44,17 +43,12 @@ Definition TwoPhase__acquireNoCheck: val :=
   rec: "TwoPhase__acquireNoCheck" "twophase" "addr" :=
     let: "flatAddr" := addr.Addr__Flatid "addr" in
     lockmap.LockMap__Acquire (struct.loadF TwoPhase "locks" "twophase") "flatAddr";;
-    struct.storeF TwoPhase "acquired" "twophase" (SliceAppend uint64T (struct.loadF TwoPhase "acquired" "twophase") "flatAddr").
+    MapInsert (struct.loadF TwoPhase "acquired" "twophase") "flatAddr" #true.
 
 Definition TwoPhase__isAlreadyAcquired: val :=
   rec: "TwoPhase__isAlreadyAcquired" "twophase" "addr" :=
     let: "flatAddr" := addr.Addr__Flatid "addr" in
-    let: "already_acquired" := ref_to boolT #false in
-    ForSlice uint64T <> "acq" (struct.loadF TwoPhase "acquired" "twophase")
-      (if: ("flatAddr" = "acq")
-      then "already_acquired" <-[boolT] #true
-      else #());;
-    ![boolT] "already_acquired".
+    Fst (MapGet (struct.loadF TwoPhase "acquired" "twophase") "flatAddr").
 
 Definition TwoPhase__Acquire: val :=
   rec: "TwoPhase__Acquire" "twophase" "addr" :=
@@ -63,18 +57,10 @@ Definition TwoPhase__Acquire: val :=
     then TwoPhase__acquireNoCheck "twophase" "addr"
     else #()).
 
-Definition TwoPhase__Release: val :=
-  rec: "TwoPhase__Release" "twophase" :=
-    let: "last_index" := slice.len (struct.loadF TwoPhase "acquired" "twophase") - #1 in
-    lockmap.LockMap__Release (struct.loadF TwoPhase "locks" "twophase") (SliceGet uint64T (struct.loadF TwoPhase "acquired" "twophase") "last_index");;
-    struct.storeF TwoPhase "acquired" "twophase" (SliceTake (struct.loadF TwoPhase "acquired" "twophase") "last_index").
-
 Definition TwoPhase__ReleaseAll: val :=
   rec: "TwoPhase__ReleaseAll" "twophase" :=
-    Skip;;
-    (for: (λ: <>, slice.len (struct.loadF TwoPhase "acquired" "twophase") ≠ #0); (λ: <>, Skip) := λ: <>,
-      TwoPhase__Release "twophase";;
-      Continue).
+    MapIter (struct.loadF TwoPhase "acquired" "twophase") (λ: "flatAddr" <>,
+      lockmap.LockMap__Release (struct.loadF TwoPhase "locks" "twophase") "flatAddr").
 
 Definition TwoPhase__readBufNoAcquire: val :=
   rec: "TwoPhase__readBufNoAcquire" "twophase" "addr" "sz" :=

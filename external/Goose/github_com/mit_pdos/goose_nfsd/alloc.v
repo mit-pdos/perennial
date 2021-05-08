@@ -2,8 +2,6 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-From Goose Require github_com.mit_pdos.goose_nfsd.util.
-
 (* Allocator uses a bit map to allocate and free numbers. Bit 0
    corresponds to number 0, bit 1 to 1, and so on. *)
 Definition Alloc := struct.decl [
