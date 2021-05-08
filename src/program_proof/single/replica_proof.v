@@ -1,24 +1,24 @@
-From Perennial.Helpers Require Export range_set.
-From iris.algebra Require Import gmap lib.mono_nat.
 From iris.proofmode Require Import base tactics classes.
 From Perennial.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.program_proof.memkv Require Export common_proof.
 From Perennial.base_logic Require Export lib.ghost_map.
 From iris.algebra Require Import excl agree auth gmap csum.
 
 Section replica_ghost.
 
-Context `{!heapG Σ}.
+Definition one_shotR V := csumR (exclR unitR) (agreeR (leibnizO V)).
+
+Class paxosG Σ (V : Type) := PaxosG {
+  paxos_oneshotG :> inG Σ (one_shotR V);
+  paxos_proposalG :> ghost_mapG Σ nat (option V);
+  paxos_acceptG :> ghost_mapG Σ (nat*nat) (option bool);
+}.
+
+Context (f:nat).
 Context {V:Type}.
-Context `{ghost_mapG Σ nat (option V)}.
-Context `{ghost_mapG Σ (nat * nat) (option bool)}.
-
-Definition one_shot_decideR := csumR (exclR unitR) (agreeR (leibnizO V)).
-Context `{inG Σ one_shot_decideR}.
-
-Context `{f:nat}.
+Context `{!paxosG Σ V}.
+Context `{!invG Σ}.
 
 Record single_names :=
 {
@@ -41,7 +41,7 @@ Implicit Types c:V.
   Then, pn' ↦ c
 *)
 
-Definition fresh_pn γ pid pn : iProp Σ :=
+Definition undecided γ pid pn : iProp Σ :=
   (pn,pid) ↪[γ.(acc_gn)] None
 .
 

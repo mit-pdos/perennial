@@ -56,11 +56,10 @@ Definition Replica__PrepareRPC: val :=
       struct.storeF Replica "promisedPN" "r" "pn";;
       struct.storeF PrepareReply "Pn" "reply" (struct.loadF Replica "valPN" "r");;
       struct.storeF PrepareReply "Val" "reply" (struct.loadF Replica "acceptedVal" "r");;
-      struct.storeF PrepareReply "Success" "reply" #true;;
-      #()
-    else #());;
-    struct.storeF PrepareReply "Success" "reply" #false;;
-    struct.storeF PrepareReply "Pn" "reply" (struct.loadF Replica "promisedPN" "r").
+      struct.storeF PrepareReply "Success" "reply" #true
+    else
+      struct.storeF PrepareReply "Success" "reply" #false;;
+      struct.storeF PrepareReply "Pn" "reply" (struct.loadF Replica "promisedPN" "r")).
 
 Definition ProposeArgs := struct.decl [
   "Pn" :: uint64T;
