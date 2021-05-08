@@ -72,9 +72,9 @@ Definition committed γ pn : iProp Σ :=
 Definition pn_prop γ (pn:nat) c : iProp Σ :=
   □(
     ∀ (pn':nat),
-      ⌜pn' < pn⌝ →
+      ⌜pn' ≤ pn⌝ →
       committed γ pn' -∗
-      pn' ↪[γ.(pn_gn)]□ Some c
+      pn' ↪[γ.(pn_gn)]□ Some c (* NOTE: generalize this to knowledge that c is a superset of what was proposed earlier *)
     )
 .
 
@@ -83,6 +83,10 @@ proposals that were committed must match the value that this proposal chose *)
 Definition pn_ptsto γ pn (c:V) : iProp Σ :=
   pn ↪[γ.(pn_gn)]□ Some c ∗
   pn_prop γ pn c
+.
+
+Definition pn_undec γ pn : iProp Σ :=
+  pn ↪[γ.(pn_gn)] None
 .
 
 Definition cmd_undec γ : iProp Σ :=
@@ -135,7 +139,7 @@ Proof.
 
     iDestruct "Hpn" as (pn') "[#Hptsto' #Hcom']".
 
-    assert (pn' < pn) as Hineq by admit. (* cases *)
+    assert (pn' ≤ pn) as Hineq by admit. (* cases *)
     iDestruct "Hptsto" as "[Hptsto Hprop]".
     iDestruct ("Hprop" $! pn' with "[] Hcom'") as "Hptsto'2".
     { done. }
@@ -143,5 +147,47 @@ Proof.
     admit.
   }
 Admitted.
+
+(* Choosing proposals; this is where the real heavy-lifting will be *)
+Lemma key_fact2 γ pn pn' c :
+  pn' < pn →
+  pn_undec γ pn -∗
+  pn_ptsto γ pn' c -∗
+  □(∀ pn'', ⌜pn' < pn''⌝ → ⌜pn'' < pn⌝ → committed γ pn'' -∗ False) ==∗
+  pn_ptsto γ pn c
+.
+Proof.
+  iIntros (Hineq) "Hpn #Hptsto #Hrej".
+  Search "ghost_map".
+  iMod (ghost_map_update (Some c) with "[] Hpn") as "[_ Hpn]".
+  { admit. }
+  Search "ghost_map".
+  iMod (ghost_map_elem_persist with "Hpn") as "#Hpn".
+  iFrame "Hpn".
+
+  iModIntro. iModIntro.
+  unfold pn_prop.
+  iIntros (pm' Hmineq) "Hcom'".
+  (* case 1: pm' < pn' *)
+  assert (pm' <= pn' ∨ pn' < pm') as [Hcase|Hcase] by lia.
+  (* TODO: missing pm' = pn' case *)
+  {
+    iDestruct "Hptsto" as "[Hptsto Hprop]".
+    iDestruct ("Hprop" with "[] Hcom'") as "$".
+    { done. }
+  }
+  {
+    assert (pm' = pn ∨ pm' < pn) as [Hcase2|Hcase2] by lia.
+    { (* equality case; we already have ghost state for that *)
+      rewrite Hcase2.
+      iFrame "#".
+    }
+
+    iSpecialize ("Hrej" $! pm' with "[] [] Hcom'").
+    { done. }
+    { done. }
+    done.
+  }
+Admitted. (* FIXME: don't use ghost_map, because we don't want an auth *)
 
 End replica_ghost.
