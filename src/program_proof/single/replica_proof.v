@@ -13,6 +13,7 @@ Section replica_ghost.
 Context `{!heapG Σ}.
 Context {V:Type}.
 Context `{ghost_mapG Σ nat (option V)}.
+Context `{ghost_mapG Σ (nat * nat) (option bool)}.
 
 Definition one_shot_decideR := csumR (exclR unitR) (agreeR (leibnizO V)).
 Context `{inG Σ one_shot_decideR}.
@@ -21,6 +22,7 @@ Context `{f:nat}.
 
 Record single_names :=
 {
+  acc_gn: gname;
   pn_gn : gname;
   val_gn : gname;
 }
@@ -37,21 +39,19 @@ Implicit Types c:V.
   Want pn ↦ c ∗ pn' ↦ c' ∗ (committed pn) ∗ ⌜pn' > pn⌝ ={⊤}=∗ c = c'.
 
   Then, pn' ↦ c
-
-  Only allow a
 *)
 
-Definition accepted γ pid pn : iProp Σ.
-Admitted.
+Definition fresh_pn γ pid pn : iProp Σ :=
+  (pn,pid) ↪[γ.(acc_gn)] None
+.
 
-Instance accepted_pers γ pid pn : Persistent (accepted γ pid pn).
-Admitted.
+Definition accepted γ pid pn : iProp Σ :=
+  (pn,pid) ↪[γ.(acc_gn)]□ Some true
+.
 
-Instance accepted_tmlss γ pid pn : Timeless (accepted γ pid pn).
-Admitted.
-
-Definition rejected γ pid pn : iProp Σ.
-Admitted.
+Definition rejected γ pid pn : iProp Σ :=
+  (pn,pid) ↪[γ.(acc_gn)]□ Some false
+.
 
 Definition is_valid (Q:gset nat) : Prop :=
   (∀ q, q ∈ Q → q ≤ (2 * f + 1))
@@ -139,14 +139,34 @@ Proof.
 
     iDestruct "Hpn" as (pn') "[#Hptsto' #Hcom']".
 
-    assert (pn' ≤ pn) as Hineq by admit. (* cases *)
-    iDestruct "Hptsto" as "[Hptsto Hprop]".
-    iDestruct ("Hprop" $! pn' with "[] Hcom'") as "Hptsto'2".
-    { done. }
-    (* TODO: use the two pn_ptstos we have to match up c and c', then finish *)
-    admit.
+    assert (pn' ≤ pn ∨ pn < pn') as [Hineq|Hineq] by lia. (* cases *)
+    {
+      iDestruct "Hptsto" as "[Hptsto Hprop]".
+      iDestruct ("Hprop" $! pn' with "[] Hcom'") as "Hptsto'2".
+      { done. }
+      Search "ghost_map".
+      iDestruct "Hptsto'" as "[Hptsto' Hprop']".
+      iDestruct (ghost_map_elem_agree with "Hptsto' Hptsto'2") as %Heq.
+      replace (c) with (c') by naive_solver.
+      iFrame "#".
+      iMod ("Hclose" with "[]"); last done.
+      iRight.
+      iExists _; iFrame "#".
+    }
+    {
+      iDestruct "Hptsto'" as "[Hptsto' Hprop']".
+      iDestruct ("Hprop'" $! pn with "[] Hcom") as "Hptsto2".
+      { iPureIntro. lia. }
+      iDestruct "Hptsto" as "[Hptsto Hprop]".
+      iDestruct (ghost_map_elem_agree with "Hptsto Hptsto2") as %Heq.
+      replace (c) with (c') by naive_solver.
+      iFrame "#".
+      iMod ("Hclose" with "[]"); last done.
+      iRight.
+      iExists _; iFrame "#".
+    }
   }
-Admitted.
+Qed.
 
 (* Choosing proposals; this is where the real heavy-lifting will be *)
 Lemma key_fact2 γ pn pn' c :
@@ -158,10 +178,8 @@ Lemma key_fact2 γ pn pn' c :
 .
 Proof.
   iIntros (Hineq) "Hpn #Hptsto #Hrej".
-  Search "ghost_map".
   iMod (ghost_map_update (Some c) with "[] Hpn") as "[_ Hpn]".
   { admit. }
-  Search "ghost_map".
   iMod (ghost_map_elem_persist with "Hpn") as "#Hpn".
   iFrame "Hpn".
 
