@@ -250,7 +250,7 @@ def main():
                 )
 
     if gokv_dir is not None:
-        pkgs = ["urpc/rpc", "memkv"]
+        pkgs = ["urpc/rpc", "memkv", "paxi/single"]
 
         for pkg in pkgs:
             run_goose(
