@@ -241,8 +241,6 @@ Proof.
     iIntros "!>" (Φ) "Hinv HΦ". iNamed "Hinv".
     wp_pures. wp_load. wp_load.
     wp_pures.
-    wp_apply wp_DPrintf.
-    wp_pures.
     iNamed "Hlinv".
     wp_loadField.
     destruct (bits_lookup_byte max bits num) as [b Hlookup]; [ done | done | ].
