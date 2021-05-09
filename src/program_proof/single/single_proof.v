@@ -29,26 +29,35 @@ Context `{paxosG Σ u64}.
 Context `{f:nat}.
 
 Definition own_Replica (r:loc) (pid:nat) γ : iProp Σ :=
-  ∃ (promisePN valPN:u64) (v:u64),
+  ∃ (promisePN acceptedPN:u64) (v:u64) (cv:u64),
   "HpromisedPN" ∷ r ↦[Replica :: "promisedPN"] #promisePN ∗
-  "HvalPN" ∷ r ↦[Replica :: "valPN"] #valPN ∗
+  "HacceptedPN" ∷ r ↦[Replica :: "acceptedPN"] #acceptedPN ∗
   "HacceptedVal" ∷ r ↦[Replica :: "acceptedVal"] #v ∗
-  "HcommittedVal" ∷ r ↦[Replica :: "committedVal"] #v ∗
-  "#Hacc_prop" ∷ pn_ptsto f γ (int.nat valPN) v ∗
-  "#Hrej" ∷ (∀ pn', ⌜(int.nat valPN) < pn'⌝ → ⌜pn' ≤ int.nat promisePN⌝ → rejected γ pid pn') ∗
-  "Hundec" ∷ ([∗ set] pn' ∈ (fin_to_set (C:=gset u64) u64), ⌜int.nat pn' ≤ int.nat promisePN⌝ ∨ undecided γ pid (int.nat pn')) ∗
+  "HcommittedVal" ∷ r ↦[Replica :: "committedVal"] #cv ∗
+  "#Hacc_prop" ∷ pn_ptsto f γ (int.nat acceptedPN) v ∗
+  "#Hrej" ∷ (∀ pn', ⌜(int.nat acceptedPN) < pn'⌝ → ⌜pn' ≤ int.nat promisePN⌝ → rejected γ pid pn') ∗
+  "Hundec" ∷ ([∗ set] pn' ∈ (fin_to_set (C:=gset u64) u64), ⌜int.nat pn' < int.nat promisePN⌝ ∨ ⌜int.nat pn' < int.nat acceptedPN⌝ ∨ undecided γ pid (int.nat pn')) ∗
+  "Haccepted" ∷ accepted γ pid (int.nat acceptedPN) ∗
   "Hvotes" ∷ True
   (* "Hpeers" ∷ *)
 .
 
+Definition mutexN := nroot.@ "mutex".
+
+Definition is_Replica (r:loc) pid γ : iProp Σ :=
+  ∃ mu,
+  "#Hmu" ∷ readonly (r ↦[Replica :: "mu"] mu) ∗
+  "#Hmu_inv" ∷ is_lock mutexN mu (own_Replica r pid γ)
+.
+
 Lemma wp_PrepareRPC (r:loc) γ pid (reply_ptr:loc) (pn:u64) dummy_rep :
+  is_Replica r pid γ -∗
   {{{
-       own_Replica r pid γ ∗
        own_PrepareReply reply_ptr dummy_rep
   }}}
     Replica__PrepareRPC #r #pn #reply_ptr
   {{{
-       reply, RET #(); own_Replica r pid γ ∗
+       reply, RET #();
             own_PrepareReply reply_ptr reply ∗
             (⌜reply.(Prep_Success) = false⌝ ∨
              pn_ptsto f γ (int.nat reply.(Prep_Pn)) (reply.(Prep_Val)) ∗
@@ -57,37 +66,45 @@ Lemma wp_PrepareRPC (r:loc) γ pid (reply_ptr:loc) (pn:u64) dummy_rep :
   }}}
 .
 Proof.
-  iIntros (Φ) "Hpre HΦ".
+  iIntros "#His !#" (Φ) "Hpre HΦ".
   wp_lam.
   wp_pures.
-  iDestruct "Hpre" as "[Hown Hrep]".
-  iNamed "Hown".
+  iNamed "His".
 
+  wp_loadField.
+  wp_apply (acquire_spec with "Hmu_inv").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
   wp_loadField.
   wp_if_destruct.
   { (* able to make a promise for that key *)
     wp_storeField.
     wp_loadField.
-    iNamed "Hrep".
+    iNamed "Hpre".
     wp_storeField.
     wp_loadField.
     wp_storeField.
     wp_storeField.
-    iApply "HΦ".
+    wp_loadField.
+    iApply wp_fupd.
+    (* assert (fin_to_set u64 = (rangeSet ) ∪ (fin_to_set u64)) as Hsplit.
+    iDestruct (big_sepS_union with "Hundec") as "[Htorej Hundec]". *)
+
     (* XXX: will be annoying to do a ghost update to a range of pns in "Hundec" *)
     admit.
   }
   { (* can't vote for caller *)
-    iNamed "Hrep".
+    iNamed "Hpre".
     wp_storeField.
     wp_loadField.
     wp_storeField.
-    iApply "HΦ".
-    iSplitR "HPn HVal HSuccess".
+    wp_loadField.
+    wp_apply (release_spec with "[$Hmu_inv $Hlocked HpromisedPN HacceptedVal HacceptedPN Hundec Haccepted Hvotes HcommittedVal]").
     {
-      iExists _, _, _.
+      iNext. iExists _, _, _, _.
       iFrame "∗#".
     }
+    iApply "HΦ".
     iSplitR "".
     {
       instantiate (1:=(mkPrepareReplyC _ _ _)).
@@ -97,5 +114,76 @@ Proof.
     by iLeft.
   }
 Admitted.
+
+Lemma wp_ProposeRPC (r:loc) γ pid (args_ptr reply_ptr:loc) (pn:u64) (val:u64) (dummy_rep:bool) :
+  is_Replica r pid γ -∗
+  {{{
+       True (* XXX: will need pn_ptsto *)
+  }}}
+    Replica__ProposeRPC #r #pn #val
+  {{{
+       (ret:bool), RET #r;
+       ⌜ret = false⌝ ∨ accepted γ pid (int.nat pn)
+  }}}
+.
+Proof.
+  iIntros "#His !#" (Φ) "Hpre HΦ".
+  wp_lam.
+  wp_pures.
+  iNamed "His".
+  wp_loadField.
+  wp_apply (acquire_spec with "Hmu_inv").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+
+  wp_loadField.
+  wp_pures.
+  wp_bind (if: #(bool_decide (_)) then _ else #false)%E.
+  wp_if_destruct.
+  { (* *)
+    wp_loadField.
+    wp_if_destruct.
+    { (* able to accept *)
+      (* undecided ==∗ accepted *)
+      iDestruct (big_sepS_elem_of_acc_impl pn with "Hundec") as "[Hundec1 Hundec]".
+      { set_solver. }
+      iDestruct "Hundec1" as "[%Hbad|[%Hbad|Hundec1]]".
+      { exfalso. lia. }
+      { exfalso. lia. }
+      (* TODO: now we can go undecided ==∗ accepted *)
+      wp_storeField.
+      wp_storeField.
+      wp_loadField.
+      wp_apply (release_spec with "[-HΦ]").
+      {
+        iFrame "Hmu_inv Hlocked".
+        iNext.
+        iExists _, _, _, _.
+        iFrame "HacceptedPN HacceptedVal ∗#".
+        iSplitL ""; first admit. (* add pre *)
+        iSplitL "".
+        { (* XXX: acceptedPN > promisePN now, so we don't need to keep any reject witnesses *)
+          iIntros (pn' Hle1 Hle2).
+          assert (int.nat pn < int.nat acceptedPN) as Hineq by word.
+          iApply "Hrej".
+          { word. }
+          { word. }
+        }
+        admit.
+      }
+    }
+    (* won't accept because acceptedPN too high *)
+    (* if we wanted, we could have it accept even if acceptedPN is too high, so
+      long as we don't update our "highest accepted" state; we could e.g.
+      automatically accept everything from promisePN up to acceptedPN all the
+      time, and that would make accepting in this case trivial. *)
+    admit.
+  }
+  {
+    wp_pures.
+    admit. (* same exact proof as above, though for a different reason *)
+  }
+Admitted.
+
 
 End single_proof.

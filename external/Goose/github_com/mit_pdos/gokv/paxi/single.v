@@ -36,8 +36,9 @@ Definition PROPOSE : expr := #2.
 
 (* This isn't quite paxos *)
 Definition Replica := struct.decl [
+  "mu" :: lockRefT;
   "promisedPN" :: uint64T;
-  "valPN" :: uint64T;
+  "acceptedPN" :: uint64T;
   "acceptedVal" :: ValType;
   "committedVal" :: ValType;
   "peers" :: slice.T (struct.ptrT Clerk)
@@ -51,15 +52,17 @@ Definition PrepareReply := struct.decl [
 
 Definition Replica__PrepareRPC: val :=
   rec: "Replica__PrepareRPC" "r" "pn" "reply" :=
+    lock.acquire (struct.loadF Replica "mu" "r");;
     (if: "pn" > struct.loadF Replica "promisedPN" "r"
     then
       struct.storeF Replica "promisedPN" "r" "pn";;
-      struct.storeF PrepareReply "Pn" "reply" (struct.loadF Replica "valPN" "r");;
+      struct.storeF PrepareReply "Pn" "reply" (struct.loadF Replica "acceptedPN" "r");;
       struct.storeF PrepareReply "Val" "reply" (struct.loadF Replica "acceptedVal" "r");;
       struct.storeF PrepareReply "Success" "reply" #true
     else
       struct.storeF PrepareReply "Success" "reply" #false;;
-      struct.storeF PrepareReply "Pn" "reply" (struct.loadF Replica "promisedPN" "r")).
+      struct.storeF PrepareReply "Pn" "reply" (struct.loadF Replica "promisedPN" "r"));;
+    lock.release (struct.loadF Replica "mu" "r").
 
 Definition ProposeArgs := struct.decl [
   "Pn" :: uint64T;
@@ -67,19 +70,25 @@ Definition ProposeArgs := struct.decl [
 ].
 
 Definition Replica__ProposeRPC: val :=
-  rec: "Replica__ProposeRPC" "r" "args" "reply" :=
-    (if: struct.loadF ProposeArgs "Pn" "args" ≥ struct.loadF Replica "promisedPN" "r"
+  rec: "Replica__ProposeRPC" "r" "pn" "val" :=
+    lock.acquire (struct.loadF Replica "mu" "r");;
+    (if: ("pn" ≥ struct.loadF Replica "promisedPN" "r") && ("pn" ≥ struct.loadF Replica "acceptedPN" "r")
     then
-      struct.storeF Replica "acceptedVal" "r" (struct.loadF ProposeArgs "Val" "args");;
-      struct.storeF Replica "valPN" "r" (struct.loadF ProposeArgs "Pn" "args");;
-      "reply" <-[boolT] #true
-    else "reply" <-[boolT] #false).
+      struct.storeF Replica "acceptedVal" "r" "val";;
+      struct.storeF Replica "acceptedPN" "r" "pn";;
+      lock.release (struct.loadF Replica "mu" "r");;
+      #true
+    else
+      lock.release (struct.loadF Replica "mu" "r");;
+      #false).
 
 (* returns true iff there was an error *)
 Definition Replica__TryDecide: val :=
   rec: "Replica__TryDecide" "r" "v" "outv" :=
+    lock.acquire (struct.loadF Replica "mu" "r");;
     let: "pn" := struct.loadF Replica "promisedPN" "r" + #1 in
     struct.storeF Replica "promisedPN" "r" (struct.loadF Replica "promisedPN" "r" + #1);;
+    lock.release (struct.loadF Replica "mu" "r");;
     let: "numPrepared" := ref (zero_val uint64T) in
     "numPrepared" <-[uint64T] #0;;
     let: "highestPn" := ref (zero_val uint64T) in
