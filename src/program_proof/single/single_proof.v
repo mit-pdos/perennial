@@ -36,8 +36,8 @@ Definition own_Replica (r:loc) (pid:nat) γ : iProp Σ :=
   "HcommittedVal" ∷ r ↦[Replica :: "committedVal"] #cv ∗
   "#Hacc_prop" ∷ pn_ptsto f γ (int.nat acceptedPN) v ∗
   "#Hrej" ∷ (∀ pn', ⌜(int.nat acceptedPN) < pn'⌝ → ⌜pn' ≤ int.nat promisePN⌝ → rejected γ pid pn') ∗
-  "Hundec" ∷ ([∗ set] pn' ∈ (fin_to_set (C:=gset u64) u64), ⌜int.nat pn' < int.nat promisePN⌝ ∨ ⌜int.nat pn' < int.nat acceptedPN⌝ ∨ undecided γ pid (int.nat pn')) ∗
-  "Haccepted" ∷ accepted γ pid (int.nat acceptedPN) ∗
+  "Hundec" ∷ ([∗ set] pn' ∈ (fin_to_set (C:=gset u64) u64), ⌜int.nat pn' < int.nat promisePN⌝ ∨ ⌜int.nat pn' ≤ int.nat acceptedPN⌝ ∨ undecided γ pid (int.nat pn')) ∗
+  "#Haccepted" ∷ accepted γ pid (int.nat acceptedPN) ∗
   "Hvotes" ∷ True
   (* "Hpeers" ∷ *)
 .
@@ -118,16 +118,16 @@ Admitted.
 Lemma wp_ProposeRPC (r:loc) γ pid (args_ptr reply_ptr:loc) (pn:u64) (val:u64) (dummy_rep:bool) :
   is_Replica r pid γ -∗
   {{{
-       True (* XXX: will need pn_ptsto *)
+       pn_ptsto f γ (int.nat pn) val
   }}}
     Replica__ProposeRPC #r #pn #val
   {{{
-       (ret:bool), RET #r;
+       (ret:bool), RET #ret;
        ⌜ret = false⌝ ∨ accepted γ pid (int.nat pn)
   }}}
 .
 Proof.
-  iIntros "#His !#" (Φ) "Hpre HΦ".
+  iIntros "#His !#" (Φ) "#Hpre HΦ".
   wp_lam.
   wp_pures.
   iNamed "His".
@@ -145,12 +145,32 @@ Proof.
     wp_if_destruct.
     { (* able to accept *)
       (* undecided ==∗ accepted *)
+      assert (int.nat acceptedPN = int.nat pn ∨ int.nat acceptedPN < int.nat pn) as [HacceptedBefore|Hfresh] by word.
+      { (* just send old accept witness *)
+        assert (acceptedPN = pn) as -> by word.
+        iDestruct (pn_ptsto_agree with "Hpre Hacc_prop") as %->.
+        wp_storeField.
+        wp_storeField.
+        wp_loadField.
+        wp_apply (release_spec with "[-HΦ]").
+        {
+          iFrame "Hmu_inv Hlocked".
+          iNext.
+          iExists _, _, _, _.
+          iFrame "∗#".
+        }
+        wp_pures.
+        iApply "HΦ"; iModIntro.
+        iFrame "#".
+      }
       iDestruct (big_sepS_elem_of_acc_impl pn with "Hundec") as "[Hundec1 Hundec]".
       { set_solver. }
+      (* need to accept now *)
       iDestruct "Hundec1" as "[%Hbad|[%Hbad|Hundec1]]".
       { exfalso. lia. }
       { exfalso. lia. }
       (* TODO: now we can go undecided ==∗ accepted *)
+      iMod (do_accept with "Hundec1") as "#HacceptedNew".
       wp_storeField.
       wp_storeField.
       wp_loadField.
@@ -160,7 +180,6 @@ Proof.
         iNext.
         iExists _, _, _, _.
         iFrame "HacceptedPN HacceptedVal ∗#".
-        iSplitL ""; first admit. (* add pre *)
         iSplitL "".
         { (* XXX: acceptedPN > promisePN now, so we don't need to keep any reject witnesses *)
           iIntros (pn' Hle1 Hle2).
@@ -169,15 +188,28 @@ Proof.
           { word. }
           { word. }
         }
-        admit.
+        iApply "Hundec".
+        {
+          iModIntro.
+          iIntros (???) "Hcases".
+          iDestruct "Hcases" as "[$|[%Hcase|$]]".
+          iRight. iLeft.
+          iPureIntro.
+          word. (* because acceptedPN ≤ pn *)
+        }
+        iRight; iLeft; done.
       }
+      wp_pures.
+      iModIntro.
+      iApply "HΦ".
+      iFrame "#".
     }
     (* won't accept because acceptedPN too high *)
     (* if we wanted, we could have it accept even if acceptedPN is too high, so
       long as we don't update our "highest accepted" state; we could e.g.
       automatically accept everything from promisePN up to acceptedPN all the
       time, and that would make accepting in this case trivial. *)
-    admit.
+    admit. (* This is a copy of above; wp_and doesn't work well *)
   }
   {
     wp_pures.

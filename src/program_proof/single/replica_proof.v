@@ -53,6 +53,11 @@ Definition rejected γ pid pn : iProp Σ :=
   (pn,pid) ↪[γ.(acc_gn)]□ Some false
 .
 
+Lemma do_accept γ pid pn :
+  undecided γ pid pn ==∗ accepted γ pid pn.
+Proof. (* Don't want auth again... *)
+Admitted.
+
 Definition is_valid (Q:gset nat) : Prop :=
   (∀ q, q ∈ Q → q ≤ (2 * f + 1))
 .
@@ -84,6 +89,11 @@ Definition pn_ptsto γ pn (c:V) : iProp Σ :=
   pn ↪[γ.(pn_gn)]□ Some c ∗
   pn_prop γ pn c
 .
+
+Lemma pn_ptsto_agree γ pn c c':
+  pn_ptsto γ pn c -∗ pn_ptsto γ pn c' -∗ ⌜c = c'⌝.
+Proof. (* Don't want auth again... *)
+Admitted.
 
 Definition pn_undec γ pn : iProp Σ :=
   pn ↪[γ.(pn_gn)] None
