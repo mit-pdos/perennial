@@ -92,15 +92,13 @@ Section proof.
 
   Definition is_twophase_releasable l γ γ' (objs_dom: gset addr) : iProp Σ :=
     ∃ locks_held mt_changed σj1 σj2,
-      (* mark: do we need is_twophase_pre in here too? *)
       "Hlocks" ∷ is_twophase_locks
         l γ γ' LVL jrnl_mapsto_own (set_map addr2flat objs_dom) locks_held ∗
-      "Hlinvs" ∷ ([∗ list] flat_a ∈ locks_held, (
+      "Hlinvs" ∷ ([∗ set] flat_a ∈ locks_held, (
         "Hlinv" ∷ twophase_linv_flat LVL jrnl_mapsto_own γ γ' flat_a
       )) ∗
       "%Hlocks_held" ∷ ⌜
-        set_map addr2flat (dom (gset addr) mt_changed) =
-        (list_to_set locks_held: gset u64)
+        set_map addr2flat (dom (gset addr) mt_changed) = locks_held
       ⌝ ∗
       "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
       "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝.
@@ -373,7 +371,7 @@ Section proof.
         iApply big_sepM_sep.
         iFrame.
     }
-    iIntros (??) "Hpost".
+    iIntros (?) "Hpost".
     iNamed "Hpost".
     iApply "HΦ".
     iSplitL "Hlocks Hlinvs".
@@ -383,8 +381,8 @@ Section proof.
         as "#Hlocks_pures".
       iNamed "Hlocks_pures".
       iFrame "∗ %".
-      rewrite -big_sepS_list_to_set; last by assumption.
-      rewrite -Hlocks_held.
+      iModIntro.
+      iSplit; last by auto.
       iApply big_sepS_set_map; last by iFrame.
 
       intros a1 a2 Hacc1 Hacc2 Heq.
@@ -523,8 +521,6 @@ Section proof.
       as "#Hlocks_pures".
     iNamed "Hlocks_pures".
     iFrame "∗ %".
-    rewrite -big_sepS_list_to_set; last by assumption.
-    rewrite -Hlocks_held.
     iNamed "Hbuftxn".
     iDestruct (na_crash_inv_status_wand_sepM with "Hcrash_invs") as
       "#Hstatuses".
@@ -569,6 +565,7 @@ Section proof.
     }
     iDestruct (big_sepM_sep with "[$Htoks $Hcrash_invs]") as "Hcrash_invs".
     iModIntro.
+    iSplit; last by auto.
     iApply big_sepS_set_map.
     {
       intros a1 a2 Hacc1 Hacc2 Heq.
@@ -918,11 +915,7 @@ Section proof.
     iFrame "Hj".
     iSplit.
     { iPureIntro. rewrite //= lookup_insert //=. }
-    iSplit.
-    {
-      iExists _.
-      iFrame "∗ # %".
-    }
+    iSplit; first by iFrame "∗ # %".
     iFrame "# %".
   Qed.
 
@@ -1010,11 +1003,7 @@ Section proof.
     iModIntro.
     iExists _, _, _, _.
     iFrame "Hj".
-    iSplit.
-    {
-      iExists _.
-      iFrame "∗ # %".
-    }
+    iSplit; first by iFrame "∗ # %".
     by iFrame "# %".
   Qed.
 
