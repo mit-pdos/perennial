@@ -49,7 +49,8 @@ Definition is_Replica (r:loc) pid γ : iProp Σ :=
   "#Hmu" ∷ readonly (r ↦[Replica :: "mu"] mu) ∗
   "#Hmu_inv" ∷ is_lock mutexN mu (own_Replica r pid γ) ∗
   "#Hpeers" ∷ readonly (r ↦[Replica :: "peers"] (slice_val peers_sl)) ∗
-  "#HpeersSl" ∷ readonly (typed_slice.is_slice_small peers_sl (refT uint64T) 1%Qp peers)
+  (* XXX: what does refT (struct.t ... ) vs struct.ptrT ... *)
+  "#HpeersSl" ∷ readonly (typed_slice.is_slice_small peers_sl (refT (struct.t Clerk)) 1%Qp peers)
   (* "#HpeersAreClerks" *)
 .
 
