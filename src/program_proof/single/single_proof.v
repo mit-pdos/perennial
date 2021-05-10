@@ -45,9 +45,12 @@ Definition own_Replica (r:loc) (pid:nat) γ : iProp Σ :=
 Definition mutexN := nroot.@ "mutex".
 
 Definition is_Replica (r:loc) pid γ : iProp Σ :=
-  ∃ mu,
+  ∃ mu peers_sl (peers:list loc),
   "#Hmu" ∷ readonly (r ↦[Replica :: "mu"] mu) ∗
-  "#Hmu_inv" ∷ is_lock mutexN mu (own_Replica r pid γ)
+  "#Hmu_inv" ∷ is_lock mutexN mu (own_Replica r pid γ) ∗
+  "#Hpeers" ∷ readonly (r ↦[Replica :: "peers"] (slice_val peers_sl)) ∗
+  "#HpeersSl" ∷ readonly (typed_slice.is_slice_small peers_sl (refT uint64T) 1%Qp peers)
+  (* "#HpeersAreClerks" *)
 .
 
 Lemma wp_PrepareRPC (r:loc) γ pid (reply_ptr:loc) (pn:u64) dummy_rep :

@@ -94,4 +94,25 @@ Proof.
   wp_apply (wp_new_free_lock).
   iIntros (l) "Hl".
   wp_pures.
-  (* Need to have read-only ownership of clerks for peers *)
+  Search (forSlice).
+  wp_loadField.
+
+  iMod (readonly_load with "HpeersSl") as (peersq) "HH".
+  wp_apply (wp_forSlice (λ _, True)%I with "[] [$HH]").
+  {
+    iIntros.
+    clear Φ.
+    iIntros (Φ) "!# Hpre HΦ".
+    wp_pures.
+    wp_apply (wp_fork).
+    {
+      admit. (* FIXME: Will need per-thread token for updating state under mutex l *)
+      (* Will make (I n) be ownership of all of the tokens except for the first n (exclusive) *)
+    }
+    by iApply "HΦ".
+  }
+  iIntros "_".
+  wp_pures.
+Admitted.
+
+End try_decide_proof.
