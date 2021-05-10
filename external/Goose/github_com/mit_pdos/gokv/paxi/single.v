@@ -87,7 +87,6 @@ Definition Replica__TryDecide: val :=
   rec: "Replica__TryDecide" "r" "v" "outv" :=
     lock.acquire (struct.loadF Replica "mu" "r");;
     let: "pn" := struct.loadF Replica "promisedPN" "r" + #1 in
-    struct.storeF Replica "promisedPN" "r" (struct.loadF Replica "promisedPN" "r" + #1);;
     lock.release (struct.loadF Replica "mu" "r");;
     let: "numPrepared" := ref (zero_val uint64T) in
     "numPrepared" <-[uint64T] #0;;

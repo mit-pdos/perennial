@@ -35,10 +35,28 @@ Definition is_election γ P : iProp Σ :=
 Lemma claim_victory γ P (S:gset nat) n :
   (2*size S) > (n+1) →
   is_election γ P -∗
-  ([∗ set] k ∈ S, vote n γ) -∗
-  P
+  ([∗ set] k ∈ S, vote n γ) ={⊤}=∗
+  ▷ P
 .
 Proof.
+  iIntros (?) "#His Hvotes".
+  iInv "His" as "Hinner" "Hclose".
+  iDestruct "Hinner" as "[Hinner|>Hinner]".
+  {
+    iFrame "Hinner".
+    iMod ("Hclose" with "[Hvotes]").
+    {
+      iNext.
+      iRight.
+      admit.
+    }
+    done.
+  }
+  {
+    iExFalso.
+    iDestruct "Hinner" as (q) "[Hinner %Hq]".
+    admit.
+  }
 Admitted.
 
 End election.
