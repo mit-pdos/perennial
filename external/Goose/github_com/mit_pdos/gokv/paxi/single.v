@@ -99,18 +99,18 @@ Definition Replica__TryDecide: val :=
       (let: "local_peer" := "peer" in
       Fork (let: "reply_ptr" := struct.alloc PrepareReply (zero_val (struct.t PrepareReply)) in
             Clerk__Prepare "local_peer" "pn" "reply_ptr";;
-            lock.acquire "mu";;
             (if: struct.loadF PrepareReply "Success" "reply_ptr"
             then
+              lock.acquire "mu";;
               "numPrepared" <-[uint64T] ![uint64T] "numPrepared" + #1;;
               (if: struct.loadF PrepareReply "Pn" "reply_ptr" > ![uint64T] "highestPn"
               then
                 "highestVal" <-[uint64T] struct.loadF PrepareReply "Val" "reply_ptr";;
-                "highestPn" <-[uint64T] struct.loadF PrepareReply "Pn" "reply_ptr"
+                "highestPn" <-[uint64T] struct.loadF PrepareReply "Pn" "reply_ptr";;
+                #()
               else #());;
-              #()
-            else #());;
-            lock.release "mu"));;
+              lock.release "mu"
+            else #())));;
     lock.acquire "mu";;
     let: "n" := ![uint64T] "numPrepared" in
     lock.release "mu";;

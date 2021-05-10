@@ -57,7 +57,7 @@ Definition peers_prop γ (peers:list loc) : iProp Σ :=
 .
 
 Notation "'[∗' 'range]' n1 < x < n2 , P" := ([∗ set] x ∈ (fin_to_set u64),
-                                                   ⌜int.nat n1 ≤ int.nat x⌝ ∨
+                                                   ⌜int.nat x ≤ int.nat n1⌝ ∨
                                            ⌜int.nat n2 ≤ int.nat x⌝ ∨
                                            ((λ x, P) x))%I
   (at level 200, n1 at level 10, n2 at level 10, x at level 1, right associativity,
@@ -130,14 +130,14 @@ Proof.
   iIntros (l) "Hl".
   wp_pures.
 
-  set (pn:=(word.add promisePN 1)).
+  set (pn:=(word.add promisePN 1)) in *.
   iAssert (peers_prop γ peers) with "[]" as (pids) "HpeersProp".
   { admit. } (* FIXME: this should be part of is_Replica *)
   iNamed "HpeersProp".
   iMod ("HdistinctPeers") as (γtok) "Hγtoks".
   (* FIXME: this should not disappear *)
 
-  iMod (alloc_lock mutexN _ _ (prepare_lock_inv γ γtok pn numPrepared_ptr highestVal_ptr highestPN_ptr) with "Hl [HnumPrepared HhighestPN HhighestVal]").
+  iMod (alloc_lock mutexN _ _ (prepare_lock_inv γ γtok pn numPrepared_ptr highestVal_ptr highestPN_ptr) with "Hl [HnumPrepared HhighestPN HhighestVal]") as "#Hl_inv".
   {
     iNext.
     iExists _, _, _, ∅.
@@ -164,12 +164,6 @@ Proof.
     iIntros (Φ) "!# [Hpre [%HindexLe %Hlookup]] HΦ".
     wp_pures.
     iDestruct (big_sepL2_length with "Hclerks") as %HlengthEq.
-    assert (∃ ck, peers !! (int.nat i) = Some ck) as [ck Htemp].
-    {
-      apply list_lookup_lt.
-      rewrite -typed_slice.list_untype_length.
-      word.
-    }
     iDestruct (big_sepL2_lookup_1_some with "Hclerks") as %Heq.
     { done. }
     destruct Heq as [pid' HpidLookup].
@@ -179,8 +173,108 @@ Proof.
     { exfalso. word. }
     wp_apply (wp_fork with "[Hγtok]").
     {
-      admit. (* FIXME: Will need per-thread token for updating state under mutex l *)
-      (* Will make (I n) be ownership of all of the tokens except for the first n (exclusive) *)
+      iNext.
+      wp_apply (wp_allocStruct).
+      { naive_solver. }
+      iIntros (reply_ptr) "Hreply".
+      wp_pures.
+      iDestruct (big_sepL2_lookup with "Hclerks") as "Hclerk".
+      { done. }
+      { done. }
+      wp_apply (wp_Clerk__Prepare with "Hclerk [Hreply]").
+      { admit. }
+      iIntros (reply) "[Hreply Hpost]".
+      wp_pures.
+      wp_pures.
+      iNamed "Hreply".
+      wp_loadField.
+      wp_if_destruct.
+      { (* got a promise *)
+        iDestruct "Hpost" as "[%Hbad|#Hpost]".
+        { exfalso. done. }
+        wp_apply (acquire_spec with "Hl_inv").
+        iIntros "[Hlocked Hown]".
+        iNamed "Hown".
+        wp_pures.
+        wp_load.
+        wp_store.
+        wp_load.
+        wp_loadField.
+        wp_if_destruct.
+        { (* new highest PN; need to update Hrejected *)
+          wp_loadField.
+          wp_store.
+          wp_loadField.
+          wp_store.
+          wp_pures.
+          admit.
+        }
+        { (* NOTE: not a higher PN; just use Hpost to update Hrejected *)
+          wp_pures.
+          wp_apply (release_spec with "[-]").
+          {
+            iFrame "Hl_inv Hlocked".
+            iNext.
+            iExists _, _, _, ({[ pid' ]} ∪ S).
+            iFrame "∗#".
+            assert (pid' ∈ S ∨ pid' ∉ S) as [Hbad|HnewPid'].
+            {
+              admit.
+            }
+            { (* impossible *)
+              iDestruct (big_sepS_elem_of _ _ pid' with "Htoks") as "Htok".
+              { done. }
+              iExFalso.
+              iDestruct (ghost_map_elem_valid_2 with "Hγtok Htok") as %[Hbad2 _].
+              exfalso.
+              naive_solver.
+            }
+            iSplitL "".
+            {
+              rewrite size_union.
+              {
+                iPureIntro.
+                rewrite size_singleton.
+                rewrite HpreparedSize.
+                admit.
+                (* TODO: numPrepared overflow guard *)
+              }
+              { set_solver. }
+            }
+            iSplitL "Hγtok Htoks".
+            {
+              iApply (big_sepS_insert with "[$Htoks $Hγtok]").
+              done.
+            }
+            (* rejected *)
+            iApply (big_sepS_insert with "[$Hrejected]").
+            { done. }
+            iApply (big_sepS_intuitionistically_forall).
+            iModIntro.
+            iIntros (y?).
+            assert (int.nat y ≤ int.nat highestPn ∨
+                    int.nat highestPn < int.nat y) as [Hdone|Hineq] by word.
+            { iLeft. done. }
+            assert (int.nat pn ≤ int.nat y ∨
+                    int.nat y < int.nat pn) as [Hdone|Hineq2] by word.
+            { iRight; iLeft. done. }
+            iRight; iRight.
+            iDestruct "Hpost" as "[_ Hpost]".
+            iApply "Hpost".
+            {
+              replace (word.add promisePN 1%Z) with (pn) by done.
+              iPureIntro.
+              word.
+            }
+            {
+              iPureIntro.
+              word.
+            }
+          }
+          done.
+        }
+      }
+      done.
     }
     iApply "HΦ".
     iApply "Hγtoks".
@@ -194,7 +288,7 @@ Proof.
     iPureIntro.
     clear -i HindexLe.
     word. (* XXX: Because int.Z i < int.Z blah -> int.Z i < 2^64 - 1 *)
-  }
+  } (* end of first for loop *)
   {
     iApply (big_sepL_impl with "Hγtoks").
     iModIntro. iIntros.
@@ -205,6 +299,5 @@ Proof.
   iIntros "_".
 
 Admitted.
-
 
 End try_decide_proof.
