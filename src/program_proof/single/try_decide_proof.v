@@ -207,7 +207,80 @@ Proof.
           wp_loadField.
           wp_store.
           wp_pures.
-          admit.
+          wp_apply (release_spec with "[-]").
+          {
+            iFrame "Hl_inv Hlocked".
+            iNext.
+            iDestruct "Hpost" as "[Hptsto HrejectedPost]".
+            iExists _, _, _, ({[ pid' ]} ∪ S).
+            iFrame "∗#".
+            assert (pid' ∈ S ∨ pid' ∉ S) as [Hbad|HnewPid'].
+            {
+              admit.
+            }
+            { (* impossible *)
+              iDestruct (big_sepS_elem_of _ _ pid' with "Htoks") as "Htok".
+              { done. }
+              iExFalso.
+              iDestruct (ghost_map_elem_valid_2 with "Hγtok Htok") as %[Hbad2 _].
+              exfalso.
+              naive_solver.
+            }
+            iSplitL "".
+            {
+              rewrite size_union.
+              {
+                iPureIntro.
+                rewrite size_singleton.
+                rewrite HpreparedSize.
+                admit.
+                (* TODO: numPrepared overflow guard *)
+              }
+              { set_solver. }
+            }
+            iSplitL "Hγtok Htoks".
+            {
+              iApply (big_sepS_insert with "[$Htoks $Hγtok]").
+              done.
+            }
+            { (* rejected *) (* TODO: these are generic "range" related lemmas *)
+              iApply (big_sepS_insert with "[Hrejected]").
+              { done. }
+              iSplitL ""; last first.
+              {
+                iApply (big_sepS_impl with "Hrejected").
+                iModIntro.
+                iIntros.
+                iApply (big_sepS_impl with "[$]").
+                iModIntro.
+                iIntros (y?) "[%HleHighestPn|$]".
+                iLeft.
+                iPureIntro.
+                word.
+              }
+              {
+                iApply (big_sepS_intuitionistically_forall).
+                iModIntro.
+                iIntros (y?).
+                assert (int.nat y ≤ int.nat reply.(Prep_Pn) ∨
+                        int.nat reply.(Prep_Pn) < int.nat y) as [Hdone|Hineq] by word.
+                { iLeft. done. }
+                assert (int.nat pn ≤ int.nat y ∨
+                        int.nat y < int.nat pn) as [Hdone|Hineq2] by word.
+                { iRight; iLeft. done. }
+                iRight; iRight.
+                iApply "HrejectedPost".
+                {
+                  replace (word.add promisePN 1%Z) with (pn) by done.
+                  iPureIntro.
+                  word.
+                }
+                {
+                  iPureIntro.
+                  word.
+              }
+            }
+          }
         }
         { (* NOTE: not a higher PN; just use Hpost to update Hrejected *)
           wp_pures.
