@@ -180,14 +180,13 @@ Qed.
 
 (* Choosing proposals; this is where the real heavy-lifting will be *)
 Lemma key_fact2 γ pn pn' c :
-  pn' < pn →
   pn_undec γ pn -∗
   pn_ptsto γ pn' c -∗
   □(∀ pn'', ⌜pn' < pn''⌝ → ⌜pn'' < pn⌝ → committed γ pn'' -∗ False) ==∗
   pn_ptsto γ pn c
 .
 Proof.
-  iIntros (Hineq) "Hpn #Hptsto #Hrej".
+  iIntros "Hpn #Hptsto #Hrej".
   iMod (ghost_map_update (Some c) with "[] Hpn") as "[_ Hpn]".
   { admit. }
   iMod (ghost_map_elem_persist with "Hpn") as "#Hpn".
