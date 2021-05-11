@@ -182,7 +182,12 @@ Proof.
       { done. }
       { done. }
       wp_apply (wp_Clerk__Prepare with "Hclerk [Hreply]").
-      { admit. }
+      {
+        instantiate (1:=(mkPrepareReplyC _ _ _)).
+        iDestruct (struct_fields_split with "Hreply") as "HH".
+        iNamed "HH".
+        iFrame.
+      }
       iIntros (reply) "[Hreply Hpost]".
       wp_pures.
       wp_pures.
@@ -207,7 +212,7 @@ Proof.
           wp_loadField.
           wp_store.
           wp_pures.
-          wp_apply (release_spec with "[-]").
+          wp_apply (release_spec with "[-]"); last done.
           {
             iFrame "Hl_inv Hlocked".
             iNext.
@@ -216,7 +221,9 @@ Proof.
             iFrame "∗#".
             assert (pid' ∈ S ∨ pid' ∉ S) as [Hbad|HnewPid'].
             {
-              admit.
+              destruct (bool_decide (pid' ∈ S)) as [] eqn:X.
+              { apply bool_decide_eq_true in X. naive_solver. }
+              { apply bool_decide_eq_false in X. naive_solver. }
             }
             { (* impossible *)
               iDestruct (big_sepS_elem_of _ _ pid' with "Htoks") as "Htok".
@@ -278,11 +285,12 @@ Proof.
                 {
                   iPureIntro.
                   word.
+                }
               }
             }
           }
         }
-        { (* NOTE: not a higher PN; just use Hpost to update Hrejected *)
+        { (* not a higher PN; just use Hpost to update Hrejected *)
           wp_pures.
           wp_apply (release_spec with "[-]").
           {
@@ -292,7 +300,9 @@ Proof.
             iFrame "∗#".
             assert (pid' ∈ S ∨ pid' ∉ S) as [Hbad|HnewPid'].
             {
-              admit.
+              destruct (bool_decide (pid' ∈ S)) as [] eqn:X.
+              { apply bool_decide_eq_true in X. naive_solver. }
+              { apply bool_decide_eq_false in X. naive_solver. }
             }
             { (* impossible *)
               iDestruct (big_sepS_elem_of _ _ pid' with "Htoks") as "Htok".
@@ -370,6 +380,54 @@ Proof.
   }
 
   iIntros "_".
+  wp_pures.
+  wp_apply (acquire_spec with "Hl_inv").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_apply (release_spec with "[$Hl_inv $Hlocked HnumPrepared HhighestPn HhighestVal Htoks]").
+  { iNext. iExists _, _, _, _. iFrame "∗#". done. }
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  wp_if_destruct.
+  { (* Got enough promises *)
+    wp_pures.
+    iAssert (pn_undec γ (int.nat pn)) with "[]" as "Hunproposed"; first admit. (* TODO: use majority election *)
+    iMod (key_fact2 with "Hunproposed Hhighest_ptsto []") as "#Hptsto".
+    {
+      iModIntro.
+      iIntros (???) "#Hcommitted".
+      iDestruct (big_sepS_sepS with "Hrejected") as "Hrejected2".
+      iDestruct (big_sepS_elem_of _ _ (U64 pn'') with "Hrejected2") as "Hrejected3".
+      { set_solver. }
+      iAssert ([∗ set] x ∈ S, rejected γ x (int.nat pn''))%I with "[Hrejected3]" as "HmajorityRejected".
+      {
+        iApply (big_sepS_impl with "Hrejected3").
+        iModIntro. iIntros (??) "[%Hbad|[%Hbad|$]]".
+        {
+          exfalso.
+          assert (int.nat highestPn < int.nat pn'') by word.
+          word.
+        }
+        {
+          exfalso.
+          assert (int.nat pn'' < int.nat pn) by word.
+          word.
+        }
+      }
+      iNamed "Hcommitted".
+      iDestruct "Hcommitted" as "[_ [%Hmaj HmajorityAccepted]]".
+      unfold is_majority in Hmaj.
+      (* TODO: need to have is_valid f S to establish is_majority f S *)
+      admit.
+    }
+
+    (* Do the same thing as before to deal with the loop *)
+  }
 
 Admitted.
 
