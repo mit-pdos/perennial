@@ -113,6 +113,7 @@ Definition Replica__TryDecide: val :=
             else #())));;
     lock.acquire "mu";;
     let: "n" := ![uint64T] "numPrepared" in
+    let: "proposeVal" := ![uint64T] "highestVal" in
     lock.release "mu";;
     (if: #2 * "n" > slice.len (struct.loadF Replica "peers" "r")
     then
@@ -121,7 +122,7 @@ Definition Replica__TryDecide: val :=
       "numAccepted" <-[uint64T] #0;;
       ForSlice (refT (struct.t Clerk)) <> "peer" (struct.loadF Replica "peers" "r")
         (let: "local_peer" := "peer" in
-        Fork (let: "r" := Clerk__Propose "local_peer" "pn" (![uint64T] "highestVal") in
+        Fork (let: "r" := Clerk__Propose "local_peer" "pn" "proposeVal" in
               (if: "r"
               then
                 lock.acquire "mu2";;
@@ -133,7 +134,7 @@ Definition Replica__TryDecide: val :=
       lock.release "mu2";;
       (if: #2 * "n" > slice.len (struct.loadF Replica "peers" "r")
       then
-        "outv" <-[uint64T] ![uint64T] "highestVal";;
+        "outv" <-[uint64T] "proposeVal";;
         #false
       else #true)
     else #true).
