@@ -133,7 +133,7 @@ Definition Replica__TryDecide: val :=
       lock.release "mu2";;
       (if: #2 * "n" > slice.len (struct.loadF Replica "peers" "r")
       then
-        "outv" <-[uint64T] "v";;
+        "outv" <-[uint64T] ![uint64T] "highestVal";;
         #false
       else #true)
     else #true).
