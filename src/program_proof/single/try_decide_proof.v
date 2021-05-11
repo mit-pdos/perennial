@@ -83,7 +83,7 @@ Definition prepare_lock_inv γ γtok (pn:u64) (numPrepared_ptr highestVal_ptr hi
 
 Definition propose_lock_inv γ γtok (pn:u64) (numAccepted_ptr:loc) : iProp Σ :=
   ∃ (numAccepted:u64) (S:gset nat),
-  "HnumPrepared" ∷ numAccepted_ptr ↦[uint64T] #numAccepted ∗
+  "HnumAccepted" ∷ numAccepted_ptr ↦[uint64T] #numAccepted ∗
   "%HacceptedSize" ∷ ⌜size S = int.nat numAccepted⌝ ∗
   "Htoks" ∷ ([∗ set] pid ∈ S, pid ↪[γtok] ()) ∗
   "#Haccepted" ∷ ([∗ set] pid ∈ S, accepted γ pid (int.nat pn)) ∗
@@ -503,6 +503,8 @@ Proof.
     clear peersq.
     iMod (readonly_load with "HpeersSl") as (peersq) "HH".
 
+    iClear "Hrejected".
+    clear Hvalid HpreparedSize S.
     wp_loadField.
     wp_apply (typed_slice.wp_forSlice (V:=loc) (λ i, [∗ list] k ↦ pid ∈ pids, ⌜k < int.nat i⌝ ∨ pid ↪[γtok] ()
                           )%I with "[] [$HH Hγtoks]").
@@ -522,7 +524,79 @@ Proof.
 
       wp_apply (wp_fork with "[Hγtok]").
       {
-        admit.
+        iNext.
+        replace (word.add promisePN 1%Z) with (pn) by done.
+
+        iDestruct (big_sepL2_lookup with "Hclerks") as "Hclerk".
+        { done. }
+        { done. }
+        wp_apply (wp_Clerk__Propose with "Hclerk [$Hptsto]").
+        iIntros (ret) "Hret".
+        wp_pures.
+        wp_if_destruct.
+        { (* accepted *)
+          iDestruct "Hret" as "[%Hbad|#HacceptedReply]"; first by exfalso.
+          wp_apply (acquire_spec with "Hl2_inv").
+          iIntros "[Hlocked Hown]".
+          iRename "Haccepted" into "HacceptedServer".
+          iNamed "Hown".
+          wp_pures.
+          wp_load.
+          wp_store.
+          wp_apply (release_spec with "[$Hl2_inv $Hlocked HnumAccepted Hγtok Htoks]"); last done.
+          {
+            iNext.
+            iExists _, ({[pid']} ∪ S).
+            iFrame "∗#".
+
+            assert (pid' ∈ S ∨ pid' ∉ S) as [Hbad|HnewPid'].
+            {
+              destruct (bool_decide (pid' ∈ S)) as [] eqn:X.
+              { apply bool_decide_eq_true in X. naive_solver. }
+              { apply bool_decide_eq_false in X. naive_solver. }
+            }
+            { (* impossible *)
+              iDestruct (big_sepS_elem_of _ _ pid' with "Htoks") as "Htok".
+              { done. }
+              iExFalso.
+              iDestruct (ghost_map_elem_valid_2 with "Hγtok Htok") as %[Hbad2 _].
+              exfalso.
+              naive_solver.
+            }
+
+            iSplitL "".
+            {
+              admit. (* TODO: overflow *)
+            }
+            iSplitL "Hγtok Htoks".
+            {
+              iApply (big_sepS_insert with "[$Htoks $Hγtok]").
+              done.
+            }
+            iSplitL "".
+            {
+              iApply (big_sepS_insert with "[$Haccepted $HacceptedReply]").
+              done.
+            }
+            { (* show that pid is less than 2f + 1 *)
+              unfold is_valid in *.
+              iIntros (q?).
+              assert (q = pid' ∨ q ∈ S) as [Hcase|Hcase] by set_solver.
+              {
+                rewrite Hcase.
+                iApply (big_sepL_lookup with "HpidsValid").
+                done.
+              }
+              {
+                iPureIntro.
+                by apply Hvalid.
+              }
+            }
+          }
+        }
+        {
+          done.
+        }
       }
       iApply "HΦ".
       iApply "Hγtoks".
@@ -549,8 +623,6 @@ Proof.
     wp_apply (acquire_spec with "Hl2_inv").
     iIntros "[Hlocked Hown]".
     iRename "Haccepted" into "HacceptedOld".
-    iClear "Hrejected".
-    clear Hvalid HpreparedSize S.
     iNamed "Hown".
     wp_pures.
     wp_load.
