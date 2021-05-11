@@ -432,6 +432,8 @@ Proof.
   wp_pures.
   wp_load.
   wp_pures.
+  wp_load.
+  wp_pures.
   wp_apply (release_spec with "[$Hl_inv $Hlocked HnumPrepared HhighestPn HhighestVal Htoks]").
   { iNext. iExists _, _, _, _. iFrame "∗#". done. }
   wp_pures.
@@ -546,22 +548,55 @@ Proof.
 
     wp_apply (acquire_spec with "Hl2_inv").
     iIntros "[Hlocked Hown]".
-    iClear "Haccepted".
+    iRename "Haccepted" into "HacceptedOld".
+    iClear "Hrejected".
+    clear Hvalid HpreparedSize S.
     iNamed "Hown".
     wp_pures.
     wp_load.
     wp_pures.
-    wp_apply (release_spec with "[-HΦ]").
-    { iFrame "Hl2_inv Hlocked". iNext; iExists _, _; iFrame; done. }
+    wp_apply (release_spec with "[-HΦ Houtv]").
+    { iFrame "Hl2_inv Hlocked". iNext; iExists _, _; iFrame "∗#"; done. }
     wp_pures.
     wp_loadField.
     wp_apply (wp_slice_len).
     wp_pures.
     wp_if_destruct.
     {
-      admit.
+      wp_store.
+      iApply "HΦ".
+      iRight.
+      iExists highestVal.
+      iFrame.
+      iMod (key_fact1 f mutexN γ (int.nat pn) highestVal with "[] Hptsto [Haccepted]").
+      { admit. } (* FIXME: add this invariant somewhere *)
+      {
+        iExists S.
+        iSplitL "".
+        {
+          iExists _.
+          iDestruct "Hptsto" as "[$ _]".
+        }
+        iFrame "Haccepted".
+        iPureIntro.
+        split; first done.
+        rewrite HacceptedSize.
+        (* TODO: Pure reasoning to know that numAccepted > f+1 *)
+        admit.
+      }
+      iFrame "#∗".
+      done.
     }
-    admit.
+    iApply "HΦ".
+    iModIntro.
+    iLeft. iFrame.
+    done.
+  }
+  {
+    iApply "HΦ".
+    iModIntro.
+    iLeft. iFrame.
+    done.
   }
 Admitted.
 
