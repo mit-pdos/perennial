@@ -59,7 +59,7 @@ Proof. (* Don't want auth again... *)
 Admitted.
 
 Definition is_valid (Q:gset nat) : Prop :=
-  (∀ q, q ∈ Q → q ≤ (2 * f + 1))
+  (∀ q, q ∈ Q → q < (2 * f + 1))
 .
 
 Definition is_majority (Q:gset nat) : Prop :=
