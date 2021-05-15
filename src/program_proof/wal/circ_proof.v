@@ -1132,6 +1132,7 @@ Proof.
   iIntros "(Hγblocks&Hend&HdiskAddrs&Hs&Hupds)".
   iDestruct (updates_slice_frag_len with "Hupds") as %Hbufsz.
   wp_pures.
+  wp_apply wp_Barrier.
   wp_apply wp_slice_len.
   wp_pures.
   wp_apply (wp_hdr1 with "[$HdiskAddrs $Hs]"); first by len.

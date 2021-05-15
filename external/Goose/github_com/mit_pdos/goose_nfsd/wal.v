@@ -136,6 +136,7 @@ Definition circularAppender__logBlocks: val :=
 Definition circularAppender__Append: val :=
   rec: "circularAppender__Append" "c" "d" "end" "bufs" :=
     circularAppender__logBlocks "c" "d" "end" "bufs";;
+    disk.Barrier #();;
     let: "newEnd" := "end" + slice.len "bufs" in
     let: "b" := circularAppender__hdr1 "c" "newEnd" in
     disk.Write LOGHDR "b";;
