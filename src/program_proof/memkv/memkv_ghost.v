@@ -90,7 +90,7 @@ Proof.
   iIntros "!#" (k _) "Hown".
   rewrite (big_sepS_delete _ _ (shardOfC k)); last first.
   { apply rangeSet_lookup; first done.
-    - apply (bool_decide_unpack _); by vm_compute.
+    - compute_done.
     - split; first word.
       specialize (shardOfC_bound k). word. }
   iSplitL.
