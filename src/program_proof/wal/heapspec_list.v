@@ -3,7 +3,7 @@ Import RecordSetNotations.
 
 From iris.algebra Require Import numbers.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From Goose.github_com.mit_pdos.go_journal Require Import wal.
 
 From Perennial.algebra Require Import mlist.
 From Perennial.Helpers Require Import Transitions List.

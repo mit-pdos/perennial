@@ -2,14 +2,14 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-From Goose Require github_com.mit_pdos.goose_nfsd.addr.
-From Goose Require github_com.mit_pdos.goose_nfsd.buf.
-From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
-From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.lockmap.
+From Goose Require github_com.mit_pdos.go_journal.addr.
+From Goose Require github_com.mit_pdos.go_journal.buf.
+From Goose Require github_com.mit_pdos.go_journal.buftxn.
+From Goose Require github_com.mit_pdos.go_journal.common.
+From Goose Require github_com.mit_pdos.go_journal.lockmap.
+From Goose Require github_com.mit_pdos.go_journal.txn.
+From Goose Require github_com.mit_pdos.go_journal.util.
 From Goose Require github_com.mit_pdos.goose_nfsd.nfstypes.
-From Goose Require github_com.mit_pdos.goose_nfsd.txn.
-From Goose Require github_com.mit_pdos.goose_nfsd.util.
 From Goose Require github_com.tchajed.marshal.
 
 (* 0super.go *)

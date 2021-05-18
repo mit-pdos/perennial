@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From Goose.github_com.mit_pdos.go_journal Require Import wal.
 
 From Perennial.program_proof Require util_proof.
 From Perennial.program_proof Require Import disk_prelude disk_lib.

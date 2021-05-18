@@ -51,6 +51,12 @@ def main():
         default=None,
     )
     parser.add_argument(
+        "--journal",
+        help="path to go-journal repo (skip translation if not provided)",
+        metavar="GO_JOURNAL_PATH",
+        default=None,
+    )
+    parser.add_argument(
         "--examples",
         help="path to perennial-examples repo (skip translation if not provided)",
         metavar="PERENNIAL_EXAMPLES_PATH",
@@ -79,6 +85,7 @@ def main():
 
     goose_dir = args.goose
     goose_nfsd_dir = args.nfsd
+    journal_dir = args.journal
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     examples_dir = args.examples
     distributed_dir = args.distributed_examples
@@ -89,6 +96,8 @@ def main():
         parser.error("goose directory does not exist")
     if goose_nfsd_dir is not None and not os.path.isdir(goose_nfsd_dir):
         parser.error("goose-nfsd directory does not exist")
+    if journal_dir is not None and not os.path.isdir(journal_dir):
+        parser.error("go-journal directory does not exist")
     if examples_dir is not None and not os.path.isdir(examples_dir):
         parser.error("perennial-examples directory does not exist")
     if distributed_dir is not None and not os.path.isdir(distributed_dir):
@@ -117,9 +126,7 @@ def main():
         do_run(["go", "install", "./cmd/goose"])
         os.chdir(old_dir)
 
-    def run_goose(
-        src_path, output, pkg=None, ffi=None, excludes=None
-    ):
+    def run_goose(src_path, output, pkg=None, ffi=None, excludes=None):
         if excludes is None:
             excludes = []
         gopath = os.getenv("GOPATH", default=None)
@@ -171,23 +178,33 @@ def main():
                 ),
             )
 
-    if goose_nfsd_dir is not None:
+    if journal_dir is not None:
         pkgs = [
             "addr",
             "alloc",
             "buf",
             "buftxn",
             "common",
-            "kvs",
             "lockmap",
-            "super",
             "txn",
             "util",
             "wal",
-            "fh",
             "buftxn_replication",
-            "simple",
             "twophase",
+        ]
+        for pkg in pkgs:
+            run_goose(
+                path.join(journal_dir, pkg),
+                path.join(perennial_dir, "external/Goose"),
+                pkg="github.com/mit-pdos/go-journal/" + pkg,
+            )
+
+    if goose_nfsd_dir is not None:
+        pkgs = [
+            "kvs",
+            "super",
+            "fh",
+            "simple",
         ]
         for pkg in pkgs:
             if pkg == ".":
@@ -210,6 +227,7 @@ def main():
             path.join(perennial_dir, "external/Goose"),
             pkg="github.com/mit-pdos/goose-nfsd/nfstypes",
         )
+
     if examples_dir is not None:
         pkgs = [
             "replicated_block",
@@ -229,6 +247,7 @@ def main():
                 path.join(perennial_dir, "external/Goose"),
                 pkg="github.com/mit-pdos/perennial-examples/" + pkg,
             )
+
     if distributed_dir is not None:
         pkgs = ["grove_common", "."]
         for pkg in pkgs:
@@ -273,6 +292,7 @@ def main():
             pkg="github.com/tchajed/marshal",
             ffi="none",
         )
+
 
 if __name__ == "__main__":
     main()

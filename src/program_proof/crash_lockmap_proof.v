@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.base_logic Require Import lib.ghost_map.
-From Goose.github_com.mit_pdos.goose_nfsd Require Import lockmap.
+From Goose.github_com.mit_pdos.go_journal Require Import lockmap.
 From Perennial.goose_lang.lib Require Import wp_store.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 

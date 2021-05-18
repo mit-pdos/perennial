@@ -1,4 +1,4 @@
-From Goose.github_com.mit_pdos.goose_nfsd Require Export wal.
+From Goose.github_com.mit_pdos.go_journal Require Export wal.
 From RecordUpdate Require Import RecordUpdate.
 From iris.algebra Require Import gset.
 

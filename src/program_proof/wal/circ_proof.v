@@ -3,7 +3,7 @@ From Perennial.base_logic.lib Require Import mono_nat.
 
 From RecordUpdate Require Import RecordSet.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From Goose.github_com.mit_pdos.go_journal Require Import wal.
 
 From Perennial.program_logic Require Export ncinv.
 From Perennial.Helpers Require Import List Transitions.

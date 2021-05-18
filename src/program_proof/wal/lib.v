@@ -1,4 +1,4 @@
-From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From Goose.github_com.mit_pdos.go_journal Require Import wal.
 
 From Perennial.Helpers Require Import List.
 From Perennial.program_proof Require Export wal.abstraction.

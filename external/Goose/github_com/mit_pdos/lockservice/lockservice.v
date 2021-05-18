@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-From Goose Require github_com.mit_pdos.goose_nfsd.lockmap.
+From Goose Require github_com.mit_pdos.go_journal.lockmap.
 From Goose Require github_com.mit_pdos.lockservice.grove_common.
 From Goose Require github_com.tchajed.marshal.
 

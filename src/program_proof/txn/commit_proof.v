@@ -8,8 +8,8 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
 From Perennial.base_logic Require Import lib.ghost_map.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import txn.
-From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From Goose.github_com.mit_pdos.go_journal Require Import txn.
+From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.program_proof Require Export txn.invariant txn.map_helpers.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.

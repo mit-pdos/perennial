@@ -1,4 +1,4 @@
-From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.Helpers Require Export NamedProps.

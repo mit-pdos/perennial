@@ -2,7 +2,7 @@ From RecordUpdate Require Import RecordUpdate.
 
 From Perennial.algebra Require Import mono_nat.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import wal.
+From Goose.github_com.mit_pdos.go_journal Require Import wal.
 
 From Perennial.Helpers Require Import Transitions List range_set gset.
 From Perennial.program_proof Require Import wal.abstraction wal.specs.

@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import util_proof.
 From Perennial.Helpers Require Import bytes.
-From Goose.github_com.mit_pdos.goose_nfsd Require Import alloc.
+From Goose.github_com.mit_pdos.go_journal Require Import alloc.
 
 (* TODO: this file isn't using typed_slice, should fix that *)
 

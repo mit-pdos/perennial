@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-From Goose Require github_com.mit_pdos.goose_nfsd.common.
+From Goose Require github_com.mit_pdos.go_journal.common.
 From Goose Require github_com.mit_pdos.goose_nfsd.nfstypes.
 From Goose Require github_com.tchajed.marshal.
 

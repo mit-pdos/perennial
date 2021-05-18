@@ -2,7 +2,7 @@ Import EqNotations.
 From Perennial.Helpers Require Import Map.
 From Perennial.algebra Require Import auth_map liftable log_heap async.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import buftxn.
+From Goose.github_com.mit_pdos.go_journal Require Import buftxn.
 From Perennial.program_logic Require Export ncinv.
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof txn.txn_proof.
 From Perennial.program_proof Require buftxn.buftxn_proof.

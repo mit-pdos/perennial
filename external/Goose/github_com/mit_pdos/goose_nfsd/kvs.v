@@ -2,11 +2,11 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-From Goose Require github_com.mit_pdos.goose_nfsd.addr.
-From Goose Require github_com.mit_pdos.goose_nfsd.buftxn.
-From Goose Require github_com.mit_pdos.goose_nfsd.common.
-From Goose Require github_com.mit_pdos.goose_nfsd.txn.
-From Goose Require github_com.mit_pdos.goose_nfsd.util.
+From Goose Require github_com.mit_pdos.go_journal.addr.
+From Goose Require github_com.mit_pdos.go_journal.buftxn.
+From Goose Require github_com.mit_pdos.go_journal.common.
+From Goose Require github_com.mit_pdos.go_journal.txn.
+From Goose Require github_com.mit_pdos.go_journal.util.
 
 Definition DISKNAME : expr := #(str"goose_kvs.img").
 
