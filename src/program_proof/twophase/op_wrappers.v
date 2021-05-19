@@ -2,17 +2,17 @@ From Perennial.goose_lang Require Import lang notation typing.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list_slice.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
-From Goose.github_com.mit_pdos.go_journal Require Import txn twophase alloc.
+From Goose.github_com.mit_pdos.go_journal Require Import obj twophase alloc.
 
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.go_journal.addr.
 From Goose Require github_com.mit_pdos.go_journal.buf.
-From Goose Require github_com.mit_pdos.go_journal.buftxn.
+From Goose Require github_com.mit_pdos.go_journal.jrnl.
 From Goose Require github_com.mit_pdos.go_journal.common.
 From Goose Require github_com.mit_pdos.go_journal.lockmap.
-From Goose Require github_com.mit_pdos.go_journal.txn.
+From Goose Require github_com.mit_pdos.go_journal.obj.
 From Goose Require github_com.mit_pdos.go_journal.util.
 
 Definition TwoPhase__ReadBuf' : val :=

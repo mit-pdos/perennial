@@ -3,18 +3,18 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.go_journal.addr.
-From Goose Require github_com.mit_pdos.go_journal.buftxn.
+From Goose Require github_com.mit_pdos.go_journal.jrnl.
 From Goose Require github_com.mit_pdos.go_journal.lockmap.
-From Goose Require github_com.mit_pdos.go_journal.txn.
+From Goose Require github_com.mit_pdos.go_journal.obj.
 From Goose Require github_com.mit_pdos.go_journal.util.
 
 Definition TwoPhasePre := struct.decl [
-  "txn" :: struct.ptrT txn.Txn;
+  "txn" :: struct.ptrT obj.Log;
   "locks" :: struct.ptrT lockmap.LockMap
 ].
 
 Definition TwoPhase := struct.decl [
-  "buftxn" :: struct.ptrT buftxn.BufTxn;
+  "buftxn" :: struct.ptrT jrnl.BufTxn;
   "locks" :: struct.ptrT lockmap.LockMap;
   "acquired" :: mapT boolT
 ].
@@ -22,16 +22,16 @@ Definition TwoPhase := struct.decl [
 Definition Init: val :=
   rec: "Init" "d" :=
     let: "twophasePre" := struct.new TwoPhasePre [
-      "txn" ::= txn.MkTxn "d";
+      "txn" ::= obj.MkLog "d";
       "locks" ::= lockmap.MkLockMap #()
     ] in
     "twophasePre".
 
-(* Start a local transaction with no writes from a global Txn manager. *)
+(* Start a local transaction with no writes from a global Log manager. *)
 Definition Begin: val :=
   rec: "Begin" "twophasePre" :=
     let: "trans" := struct.new TwoPhase [
-      "buftxn" ::= buftxn.Begin (struct.loadF TwoPhasePre "txn" "twophasePre");
+      "buftxn" ::= jrnl.Begin (struct.loadF TwoPhasePre "txn" "twophasePre");
       "locks" ::= struct.loadF TwoPhasePre "locks" "twophasePre";
       "acquired" ::= NewMap boolT
     ] in
@@ -64,7 +64,7 @@ Definition TwoPhase__ReleaseAll: val :=
 
 Definition TwoPhase__readBufNoAcquire: val :=
   rec: "TwoPhase__readBufNoAcquire" "twophase" "addr" "sz" :=
-    let: "s" := util.CloneByteSlice (struct.loadF buf.Buf "Data" (buftxn.BufTxn__ReadBuf (struct.loadF TwoPhase "buftxn" "twophase") "addr" "sz")) in
+    let: "s" := util.CloneByteSlice (struct.loadF buf.Buf "Data" (jrnl.BufTxn__ReadBuf (struct.loadF TwoPhase "buftxn" "twophase") "addr" "sz")) in
     "s".
 
 Definition TwoPhase__ReadBuf: val :=
@@ -76,7 +76,7 @@ Definition TwoPhase__ReadBuf: val :=
 Definition TwoPhase__OverWrite: val :=
   rec: "TwoPhase__OverWrite" "twophase" "addr" "sz" "data" :=
     TwoPhase__Acquire "twophase" "addr";;
-    buftxn.BufTxn__OverWrite (struct.loadF TwoPhase "buftxn" "twophase") "addr" "sz" "data".
+    jrnl.BufTxn__OverWrite (struct.loadF TwoPhase "buftxn" "twophase") "addr" "sz" "data".
 
 Definition TwoPhase__ReadBufBit: val :=
   rec: "TwoPhase__ReadBufBit" "twophase" "addr" :=
@@ -101,23 +101,23 @@ Definition TwoPhase__OverWriteBit: val :=
    safety. *)
 Definition TwoPhase__NDirty: val :=
   rec: "TwoPhase__NDirty" "twophase" :=
-    buftxn.BufTxn__NDirty (struct.loadF TwoPhase "buftxn" "twophase").
+    jrnl.BufTxn__NDirty (struct.loadF TwoPhase "buftxn" "twophase").
 
 (* LogSz returns 511 *)
 Definition TwoPhase__LogSz: val :=
   rec: "TwoPhase__LogSz" "twophase" :=
-    buftxn.BufTxn__LogSz (struct.loadF TwoPhase "buftxn" "twophase").
+    jrnl.BufTxn__LogSz (struct.loadF TwoPhase "buftxn" "twophase").
 
 (* LogSzBytes returns 511*4096 *)
 Definition TwoPhase__LogSzBytes: val :=
   rec: "TwoPhase__LogSzBytes" "twophase" :=
-    buftxn.BufTxn__LogSzBytes (struct.loadF TwoPhase "buftxn" "twophase").
+    jrnl.BufTxn__LogSzBytes (struct.loadF TwoPhase "buftxn" "twophase").
 
 Definition TwoPhase__CommitNoRelease: val :=
   rec: "TwoPhase__CommitNoRelease" "twophase" :=
     util.DPrintf #5 (#(str"tp Commit %p
     ")) #();;
-    buftxn.BufTxn__CommitWait (struct.loadF TwoPhase "buftxn" "twophase") #true.
+    jrnl.BufTxn__CommitWait (struct.loadF TwoPhase "buftxn" "twophase") #true.
 
 Definition TwoPhase__Commit: val :=
   rec: "TwoPhase__Commit" "twophase" :=

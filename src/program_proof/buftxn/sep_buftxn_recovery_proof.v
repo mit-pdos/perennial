@@ -1,7 +1,7 @@
 From Perennial.Helpers Require Import Map.
 From Perennial.algebra Require Import auth_map liftable log_heap async.
 
-From Goose.github_com.mit_pdos.go_journal Require Import buftxn.
+From Goose.github_com.mit_pdos.go_journal Require Import jrnl.
 From Perennial.program_logic Require Export ncinv.
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof txn.txn_proof.
 From Perennial.program_proof Require buftxn.buftxn_proof.
@@ -129,9 +129,9 @@ Section goose_lang.
     iExists _. simpl.  iFrame "Hctx' Hlogm Hcancel".
   Qed.
 
-  Theorem wpc_MkTxn d γ dinit logm k :
+  Theorem wpc_MkLog d γ dinit logm k :
     {{{ is_txn_durable γ dinit logm }}}
-      txn.MkTxn (disk_val d) @ k; ⊤
+      obj.MkLog (disk_val d) @ k; ⊤
     {{{ γ' (l: loc), RET #l;
         is_txn l γ.(buftxn_txn_names) dinit ∗
         is_txn_system N γ ∗
@@ -147,7 +147,7 @@ Section goose_lang.
     iNamed "H".
     iApply wpc_cfupd.
     iApply wpc_ncfupd.
-    wpc_apply (recovery_proof.wpc_MkTxn (↑invariant.walN ∪ ↑invN) with "[$Hlower_durable]").
+    wpc_apply (recovery_proof.wpc_MkLog (↑invariant.walN ∪ ↑invN) with "[$Hlower_durable]").
     3: {
       iSplit.
       - iLeft in "HΦ". iModIntro.

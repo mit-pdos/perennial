@@ -8,7 +8,7 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
 From Perennial.base_logic Require Import lib.ghost_map.
 
-From Goose.github_com.mit_pdos.go_journal Require Import txn.
+From Goose.github_com.mit_pdos.go_journal Require Import obj.
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.program_proof Require Export txn.invariant txn.map_helpers.
@@ -106,13 +106,13 @@ Qed.
 Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
   {{{ ncinv invN (is_txn_always γ) ∗
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
-      readonly (l ↦[Txn :: "log"] #walptr) ∗
+      readonly (l ↦[obj.Log :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗
       is_slice bufs (refT (struct.t buf.Buf)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre γ bufptrval a buf
   }}}
-    Txn__installBufsMap #l (slice_val bufs)
+    Log__installBufsMap #l (slice_val bufs)
   {{{ (blkmapref : loc) (blkmap : Map.t Slice.t), RET #blkmapref;
       is_locked_walheap γ.(txn_walnames) lwh ∗
       is_map blkmapref 1 blkmap ∗
@@ -409,13 +409,13 @@ Qed.
 Theorem wp_txn__installBufs l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
   {{{ ncinv invN (is_txn_always γ) ∗
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
-      readonly (l ↦[Txn :: "log"] #walptr) ∗
+      readonly (l ↦[obj.Log :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗
       is_slice bufs (refT (struct.t buf.Buf)) q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre γ bufptrval a buf
   }}}
-    Txn__installBufs #l (slice_val bufs)
+    Log__installBufs #l (slice_val bufs)
   {{{ (blkslice : Slice.t) upds, RET (slice_val blkslice);
       is_locked_walheap γ.(txn_walnames) lwh ∗
       updates_slice blkslice upds ∗
@@ -618,7 +618,7 @@ Theorem wp_txn__doCommit l q γ dinit bufs buflist (bufamap : gmap addr _) E (Pr
             ghost_var γ.(txn_crashstates) (3/4) (async_put σ σl)
            -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN}=> Q (length (possible σl)) ))
   }}}
-    Txn__doCommit #l (slice_val bufs)
+    Log__doCommit #l (slice_val bufs)
   {{{ (commitpos : u64) (ok : bool), RET (#commitpos, #ok);
       if ok then
         ∃ txn_id,
@@ -1223,7 +1223,7 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist (bufamap : gmap addr _) (wai
             ghost_var γ.(txn_crashstates) (3/4) (async_put σ σl)
             -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN}=> Q (length (possible σl))  ))
   }}}
-    Txn__CommitWait #l (slice_val bufs) #wait
+    Log__CommitWait #l (slice_val bufs) #wait
   {{{ (ok : bool), RET #ok;
       if ok then
         (( ⌜bufamap ≠ ∅⌝ -∗ ∃ (txn_id : nat),

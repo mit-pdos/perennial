@@ -12,7 +12,7 @@ From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq sp
 From Perennial.base_logic Require Import ghost_var.
 From Perennial.program_proof Require Import lockmap_proof.
 
-From Goose Require github_com.mit_pdos.go_journal.txn.
+From Goose Require github_com.mit_pdos.go_journal.obj.
 
 Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp jrnl_spec_interp_adequacy.
 

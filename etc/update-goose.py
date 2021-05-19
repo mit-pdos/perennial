@@ -183,13 +183,13 @@ def main():
             "addr",
             "alloc",
             "buf",
-            "buftxn",
+            "jrnl",
             "common",
             "lockmap",
-            "txn",
+            "obj",
             "util",
             "wal",
-            "buftxn_replication",
+            "jrnl_replication",
             "twophase",
         ]
         for pkg in pkgs:

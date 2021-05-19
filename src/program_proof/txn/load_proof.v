@@ -8,7 +8,7 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
 From Perennial.base_logic.lib Require Import ghost_map.
 
-From Goose.github_com.mit_pdos.go_journal Require Import txn.
+From Goose.github_com.mit_pdos.go_journal Require Import obj.
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.program_proof Require Export txn.invariant.
@@ -52,7 +52,7 @@ Theorem wp_txn_Load l γ dinit a v :
   {{{ is_txn l γ dinit ∗
       mapsto_txn γ a v
   }}}
-    Txn__Load #l (addr2val a) #(bufSz (projT1 v))
+    Log__Load #l (addr2val a) #(bufSz (projT1 v))
   {{{ (bufptr : loc) b, RET #bufptr;
       is_buf bufptr a b ∗
       ⌜ b.(bufDirty) = false ⌝ ∗

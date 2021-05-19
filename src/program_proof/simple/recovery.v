@@ -198,7 +198,7 @@ Proof.
   { crash_case; auto. }
   iCache (<disc> Φc)%I with "HΦ".
   { crash_case; auto. }
-  wpc_apply (wpc_MkTxn (nroot.@"simple") with "[$Htxn]").
+  wpc_apply (wpc_MkLog (nroot.@"simple") with "[$Htxn]").
   { solve_ndisj. }
   { solve_ndisj. }
   iSplit.
@@ -290,7 +290,7 @@ Proof using All.
     iModIntro. iApply "HΦc".
     iExists _, _, _. iFrame. }
 
-  wpc_apply (wpc_MkTxn Nbuftxn with "Htxndurable").
+  wpc_apply (wpc_MkLog Nbuftxn with "Htxndurable").
   { solve_ndisj. }
   { solve_ndisj. }
 

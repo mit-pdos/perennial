@@ -4,7 +4,7 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
 From Perennial.base_logic Require Import lib.ghost_map.
 
-From Goose.github_com.mit_pdos.go_journal Require Import txn.
+From Goose.github_com.mit_pdos.go_journal Require Import obj.
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.program_proof Require Import txn.invariant.
@@ -853,11 +853,11 @@ Definition txn_cfupd_res E γ γ' : iProp Σ :=
   ⌜γ'.(txn_kinds) = γ.(txn_kinds)⌝ ∗
   (<bdisc> (|C={E}_0=> ▷ ∃ logm, txn_resources γ γ' logm)).
 
-Theorem wpc_MkTxn E d dinit (γ:txn_names) k :
+Theorem wpc_MkLog E d dinit (γ:txn_names) k :
   ↑walN ⊆ E →
   ↑invN ⊆ E →
   {{{ is_txn_durable γ dinit }}}
-    MkTxn (disk_val d) @ k; ⊤
+    MkLog (disk_val d) @ k; ⊤
   {{{ γ' (l: loc), RET #l;
       is_txn l γ dinit ∗
       txn_cfupd_cancel E dinit 0 γ' ∗
@@ -866,7 +866,7 @@ Theorem wpc_MkTxn E d dinit (γ:txn_names) k :
       ∗ (⌜ γ' = γ ⌝ ∨ txn_resources γ γ' logm') }}}.
 Proof.
   iIntros (?? Φ Φc) "Hdur HΦ".
-  rewrite /MkTxn. wpc_pures.
+  rewrite /MkLog. wpc_pures.
   { crash_case. iExists _, _. iFrame. eauto. }
 
   iCache with "Hdur HΦ".

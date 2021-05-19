@@ -4,10 +4,10 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.go_journal.addr.
 From Goose Require github_com.mit_pdos.go_journal.buf.
-From Goose Require github_com.mit_pdos.go_journal.buftxn.
 From Goose Require github_com.mit_pdos.go_journal.common.
+From Goose Require github_com.mit_pdos.go_journal.jrnl.
 From Goose Require github_com.mit_pdos.go_journal.lockmap.
-From Goose Require github_com.mit_pdos.go_journal.txn.
+From Goose Require github_com.mit_pdos.go_journal.obj.
 From Goose Require github_com.mit_pdos.go_journal.util.
 From Goose Require github_com.mit_pdos.goose_nfsd.nfstypes.
 From Goose Require github_com.tchajed.marshal.
@@ -83,7 +83,7 @@ Definition Decode: val :=
 
 (* Returns number of bytes read and eof *)
 Definition Inode__Read: val :=
-  rec: "Inode__Read" "ip" "btxn" "offset" "bytesToRead" :=
+  rec: "Inode__Read" "ip" "op" "offset" "bytesToRead" :=
     (if: "offset" ≥ struct.loadF Inode "Size" "ip"
     then (slice.nil, #true)
     else
@@ -96,7 +96,7 @@ Definition Inode__Read: val :=
       util.DPrintf #5 (#(str"Read: off %d cnt %d
       ")) #();;
       let: "data" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-      let: "buf" := buftxn.BufTxn__ReadBuf "btxn" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
+      let: "buf" := jrnl.BufTxn__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
       let: "countCopy" := ![uint64T] "count" in
       let: "b" := ref_to uint64T #0 in
       (for: (λ: <>, ![uint64T] "b" < "countCopy"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
@@ -108,15 +108,15 @@ Definition Inode__Read: val :=
       (![slice.T byteT] "data", "eof")).
 
 Definition Inode__WriteInode: val :=
-  rec: "Inode__WriteInode" "ip" "btxn" :=
+  rec: "Inode__WriteInode" "ip" "op" :=
     let: "d" := Inode__Encode "ip" in
-    buftxn.BufTxn__OverWrite "btxn" (inum2Addr (struct.loadF Inode "Inum" "ip")) (common.INODESZ * #8) "d";;
+    jrnl.BufTxn__OverWrite "op" (inum2Addr (struct.loadF Inode "Inum" "ip")) (common.INODESZ * #8) "d";;
     util.DPrintf #1 (#(str"WriteInode %v
     ")) #().
 
 (* Returns number of bytes written and error *)
 Definition Inode__Write: val :=
-  rec: "Inode__Write" "ip" "btxn" "offset" "count" "dataBuf" :=
+  rec: "Inode__Write" "ip" "op" "offset" "count" "dataBuf" :=
     util.DPrintf #5 (#(str"Write: off %d cnt %d
     ")) #();;
     (if: "count" ≠ slice.len "dataBuf"
@@ -131,7 +131,7 @@ Definition Inode__Write: val :=
           (if: "offset" > struct.loadF Inode "Size" "ip"
           then (#0, #false)
           else
-            let: "buffer" := buftxn.BufTxn__ReadBuf "btxn" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
+            let: "buffer" := jrnl.BufTxn__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
             let: "b" := ref_to uint64T #0 in
             (for: (λ: <>, ![uint64T] "b" < "count"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
               SliceSet byteT (struct.loadF buf.Buf "Data" "buffer") ("offset" + ![uint64T] "b") (SliceGet byteT "dataBuf" (![uint64T] "b"));;
@@ -142,14 +142,14 @@ Definition Inode__Write: val :=
             (if: "offset" + "count" > struct.loadF Inode "Size" "ip"
             then
               struct.storeF Inode "Size" "ip" ("offset" + "count");;
-              Inode__WriteInode "ip" "btxn";;
+              Inode__WriteInode "ip" "op";;
               #()
             else #());;
             ("count", #true))))).
 
 Definition ReadInode: val :=
-  rec: "ReadInode" "btxn" "inum" :=
-    let: "buffer" := buftxn.BufTxn__ReadBuf "btxn" (inum2Addr "inum") (common.INODESZ * #8) in
+  rec: "ReadInode" "op" "inum" :=
+    let: "buffer" := jrnl.BufTxn__ReadBuf "op" (inum2Addr "inum") (common.INODESZ * #8) in
     let: "ip" := Decode "buffer" "inum" in
     "ip".
 
@@ -184,53 +184,53 @@ Definition Inode__MkFattr: val :=
     ].
 
 Definition inodeInit: val :=
-  rec: "inodeInit" "btxn" :=
+  rec: "inodeInit" "op" :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < nInode #()); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: "ip" := ReadInode "btxn" (![uint64T] "i") in
+      let: "ip" := ReadInode "op" (![uint64T] "i") in
       struct.storeF Inode "Data" "ip" (common.LOGSIZE + #1 + ![uint64T] "i");;
-      Inode__WriteInode "ip" "btxn";;
+      Inode__WriteInode "ip" "op";;
       Continue).
 
 (* mkfs.go *)
 
 Definition Nfs := struct.decl [
-  "t" :: struct.ptrT txn.Txn;
+  "t" :: struct.ptrT obj.Log;
   "l" :: struct.ptrT lockmap.LockMap
 ].
 
 Definition Mkfs: val :=
   rec: "Mkfs" "d" :=
-    let: "txn" := txn.MkTxn "d" in
-    let: "btxn" := buftxn.Begin "txn" in
-    inodeInit "btxn";;
-    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
+    let: "log" := obj.MkLog "d" in
+    let: "op" := jrnl.Begin "log" in
+    inodeInit "op";;
+    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
     (if: ~ "ok"
     then slice.nil
-    else "txn").
+    else "log").
 
 Definition Recover: val :=
   rec: "Recover" "d" :=
-    let: "txn" := txn.MkTxn "d" in
+    let: "log" := obj.MkLog "d" in
     let: "lockmap" := lockmap.MkLockMap #() in
     let: "nfs" := struct.new Nfs [
-      "t" ::= "txn";
+      "t" ::= "log";
       "l" ::= "lockmap"
     ] in
     "nfs".
 
 Definition MakeNfs: val :=
   rec: "MakeNfs" "d" :=
-    let: "txn" := txn.MkTxn "d" in
-    let: "btxn" := buftxn.Begin "txn" in
-    inodeInit "btxn";;
-    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
+    let: "log" := obj.MkLog "d" in
+    let: "op" := jrnl.Begin "log" in
+    inodeInit "op";;
+    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
     (if: ~ "ok"
     then slice.nil
     else
       let: "lockmap" := lockmap.MkLockMap #() in
       let: "nfs" := struct.new Nfs [
-        "t" ::= "txn";
+        "t" ::= "log";
         "l" ::= "lockmap"
       ] in
       "nfs").
@@ -333,14 +333,14 @@ Definition validInum: val :=
         else #true))).
 
 Definition NFSPROC3_GETATTR_wp: val :=
-  rec: "NFSPROC3_GETATTR_wp" "args" "reply" "inum" "txn" :=
-    let: "ip" := ReadInode "txn" "inum" in
+  rec: "NFSPROC3_GETATTR_wp" "args" "reply" "inum" "op" :=
+    let: "ip" := ReadInode "op" "inum" in
     struct.storeF nfstypes.GETATTR3resok "Obj_attributes" (struct.fieldRef nfstypes.GETATTR3res "Resok" "reply") (Inode__MkFattr "ip").
 
 Definition NFSPROC3_GETATTR_internal: val :=
-  rec: "NFSPROC3_GETATTR_internal" "args" "reply" "inum" "txn" :=
-    NFSPROC3_GETATTR_wp "args" "reply" "inum" "txn";;
-    let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+  rec: "NFSPROC3_GETATTR_internal" "args" "reply" "inum" "op" :=
+    NFSPROC3_GETATTR_wp "args" "reply" "inum" "op";;
+    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
     (if: "ok"
     then struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3_OK
     else struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT).
@@ -350,7 +350,7 @@ Definition Nfs__NFSPROC3_GETATTR: val :=
     let: "reply" := ref (zero_val (struct.t nfstypes.GETATTR3res)) in
     util.DPrintf #1 (#(str"NFS GetAttr %v
     ")) #();;
-    let: "txn" := buftxn.Begin (struct.loadF Nfs "t" "nfs") in
+    let: "txn" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.GETATTR3args "Object" "args") in
     (if: ("inum" = common.ROOTINUM)
     then
@@ -369,8 +369,8 @@ Definition Nfs__NFSPROC3_GETATTR: val :=
         ![struct.t nfstypes.GETATTR3res] "reply")).
 
 Definition NFSPROC3_SETATTR_wp: val :=
-  rec: "NFSPROC3_SETATTR_wp" "args" "reply" "inum" "txn" :=
-    let: "ip" := ReadInode "txn" "inum" in
+  rec: "NFSPROC3_SETATTR_wp" "args" "reply" "inum" "op" :=
+    let: "ip" := ReadInode "op" "inum" in
     let: "ok" := ref (zero_val boolT) in
     (if: struct.get nfstypes.Set_size3 "Set_it" (struct.get nfstypes.Sattr3 "Size" (struct.get nfstypes.SETATTR3args "New_attributes" "args"))
     then
@@ -378,24 +378,24 @@ Definition NFSPROC3_SETATTR_wp: val :=
       (if: struct.loadF Inode "Size" "ip" < "newsize"
       then
         let: "data" := NewSlice byteT ("newsize" - struct.loadF Inode "Size" "ip") in
-        Inode__Write "ip" "txn" (struct.loadF Inode "Size" "ip") ("newsize" - struct.loadF Inode "Size" "ip") "data";;
+        Inode__Write "ip" "op" (struct.loadF Inode "Size" "ip") ("newsize" - struct.loadF Inode "Size" "ip") "data";;
         (if: struct.loadF Inode "Size" "ip" ≠ "newsize"
         then struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3ERR_NOSPC
         else "ok" <-[boolT] #true)
       else
         struct.storeF Inode "Size" "ip" "newsize";;
-        Inode__WriteInode "ip" "txn";;
+        Inode__WriteInode "ip" "op";;
         "ok" <-[boolT] #true)
     else "ok" <-[boolT] #true);;
     ![boolT] "ok".
 
 Definition NFSPROC3_SETATTR_internal: val :=
-  rec: "NFSPROC3_SETATTR_internal" "args" "reply" "inum" "txn" :=
-    let: "ok1" := NFSPROC3_SETATTR_wp "args" "reply" "inum" "txn" in
+  rec: "NFSPROC3_SETATTR_internal" "args" "reply" "inum" "op" :=
+    let: "ok1" := NFSPROC3_SETATTR_wp "args" "reply" "inum" "op" in
     (if: ~ "ok1"
     then #()
     else
-      let: "ok2" := buftxn.BufTxn__CommitWait "txn" #true in
+      let: "ok2" := jrnl.BufTxn__CommitWait "op" #true in
       (if: "ok2"
       then struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3_OK
       else struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT)).
@@ -405,7 +405,7 @@ Definition Nfs__NFSPROC3_SETATTR: val :=
     let: "reply" := ref (zero_val (struct.t nfstypes.SETATTR3res)) in
     util.DPrintf #1 (#(str"NFS SetAttr %v
     ")) #();;
-    let: "txn" := buftxn.Begin (struct.loadF Nfs "t" "nfs") in
+    let: "txn" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.SETATTR3args "Object" "args") in
     util.DPrintf #1 (#(str"inum %d %d
     ")) #();;
@@ -459,17 +459,17 @@ Definition Nfs__NFSPROC3_ACCESS: val :=
     ![struct.t nfstypes.ACCESS3res] "reply".
 
 Definition NFSPROC3_READ_wp: val :=
-  rec: "NFSPROC3_READ_wp" "args" "reply" "inum" "txn" :=
-    let: "ip" := ReadInode "txn" "inum" in
-    let: ("data", "eof") := Inode__Read "ip" "txn" (struct.get nfstypes.READ3args "Offset" "args") (to_u64 (struct.get nfstypes.READ3args "Count" "args")) in
+  rec: "NFSPROC3_READ_wp" "args" "reply" "inum" "op" :=
+    let: "ip" := ReadInode "op" "inum" in
+    let: ("data", "eof") := Inode__Read "ip" "op" (struct.get nfstypes.READ3args "Offset" "args") (to_u64 (struct.get nfstypes.READ3args "Count" "args")) in
     struct.storeF nfstypes.READ3resok "Count" (struct.fieldRef nfstypes.READ3res "Resok" "reply") (to_u32 (slice.len "data"));;
     struct.storeF nfstypes.READ3resok "Data" (struct.fieldRef nfstypes.READ3res "Resok" "reply") "data";;
     struct.storeF nfstypes.READ3resok "Eof" (struct.fieldRef nfstypes.READ3res "Resok" "reply") "eof".
 
 Definition NFSPROC3_READ_internal: val :=
-  rec: "NFSPROC3_READ_internal" "args" "reply" "inum" "txn" :=
-    NFSPROC3_READ_wp "args" "reply" "inum" "txn";;
-    let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+  rec: "NFSPROC3_READ_internal" "args" "reply" "inum" "op" :=
+    NFSPROC3_READ_wp "args" "reply" "inum" "op";;
+    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
     (if: "ok"
     then struct.storeF nfstypes.READ3res "Status" "reply" nfstypes.NFS3_OK
     else struct.storeF nfstypes.READ3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT).
@@ -479,7 +479,7 @@ Definition Nfs__NFSPROC3_READ: val :=
     let: "reply" := ref (zero_val (struct.t nfstypes.READ3res)) in
     util.DPrintf #1 (#(str"NFS Read %v %d %d
     ")) #();;
-    let: "txn" := buftxn.Begin (struct.loadF Nfs "t" "nfs") in
+    let: "txn" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.READ3args "File" "args") in
     (if: ~ (validInum "inum")
     then
@@ -492,9 +492,9 @@ Definition Nfs__NFSPROC3_READ: val :=
       ![struct.t nfstypes.READ3res] "reply").
 
 Definition NFSPROC3_WRITE_wp: val :=
-  rec: "NFSPROC3_WRITE_wp" "args" "reply" "inum" "txn" :=
-    let: "ip" := ReadInode "txn" "inum" in
-    let: ("count", "writeok") := Inode__Write "ip" "txn" (struct.get nfstypes.WRITE3args "Offset" "args") (to_u64 (struct.get nfstypes.WRITE3args "Count" "args")) (struct.get nfstypes.WRITE3args "Data" "args") in
+  rec: "NFSPROC3_WRITE_wp" "args" "reply" "inum" "op" :=
+    let: "ip" := ReadInode "op" "inum" in
+    let: ("count", "writeok") := Inode__Write "ip" "op" (struct.get nfstypes.WRITE3args "Offset" "args") (to_u64 (struct.get nfstypes.WRITE3args "Count" "args")) (struct.get nfstypes.WRITE3args "Data" "args") in
     (if: ~ "writeok"
     then
       struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT;;
@@ -505,12 +505,12 @@ Definition NFSPROC3_WRITE_wp: val :=
       #true).
 
 Definition NFSPROC3_WRITE_internal: val :=
-  rec: "NFSPROC3_WRITE_internal" "args" "reply" "inum" "txn" :=
-    let: "ok1" := NFSPROC3_WRITE_wp "args" "reply" "inum" "txn" in
+  rec: "NFSPROC3_WRITE_internal" "args" "reply" "inum" "op" :=
+    let: "ok1" := NFSPROC3_WRITE_wp "args" "reply" "inum" "op" in
     (if: ~ "ok1"
     then #()
     else
-      let: "ok2" := buftxn.BufTxn__CommitWait "txn" #true in
+      let: "ok2" := jrnl.BufTxn__CommitWait "op" #true in
       (if: "ok2"
       then struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3_OK
       else struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT)).
@@ -520,7 +520,7 @@ Definition Nfs__NFSPROC3_WRITE: val :=
     let: "reply" := ref (zero_val (struct.t nfstypes.WRITE3res)) in
     util.DPrintf #1 (#(str"NFS Write %v off %d cnt %d how %d
     ")) #();;
-    let: "txn" := buftxn.Begin (struct.loadF Nfs "t" "nfs") in
+    let: "txn" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.WRITE3args "File" "args") in
     util.DPrintf #1 (#(str"inum %d %d
     ")) #();;
@@ -669,7 +669,7 @@ Definition Nfs__NFSPROC3_COMMIT: val :=
     util.DPrintf #1 (#(str"NFS Commit %v
     ")) #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.COMMIT3res)) in
-    let: "txn" := buftxn.Begin (struct.loadF Nfs "t" "nfs") in
+    let: "op" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.COMMIT3args "File" "args") in
     (if: ~ (validInum "inum")
     then
@@ -677,7 +677,7 @@ Definition Nfs__NFSPROC3_COMMIT: val :=
       ![struct.t nfstypes.COMMIT3res] "reply"
     else
       lockmap.LockMap__Acquire (struct.loadF Nfs "l" "nfs") "inum";;
-      let: "ok" := buftxn.BufTxn__CommitWait "txn" #true in
+      let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
       (if: "ok"
       then struct.storeF nfstypes.COMMIT3res "Status" "reply" nfstypes.NFS3_OK
       else struct.storeF nfstypes.COMMIT3res "Status" "reply" nfstypes.NFS3ERR_IO);;

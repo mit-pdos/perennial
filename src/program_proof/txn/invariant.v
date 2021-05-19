@@ -6,7 +6,7 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
 From Perennial.base_logic Require Import lib.ghost_map.
 
-From Goose.github_com.mit_pdos.go_journal Require Import txn.
+From Goose.github_com.mit_pdos.go_journal Require Import obj.
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
@@ -130,14 +130,14 @@ Definition is_txn_locked l γ : iProp Σ :=
   (
     ∃ (nextId : u64) (pos : u64) lwh,
       "Hwal_latest" ∷ is_locked_walheap γ lwh ∗
-      "Histxn_pos" ∷ l ↦[Txn :: "pos"] #pos
+      "Histxn_pos" ∷ l ↦[obj.Log :: "pos"] #pos
  )%I.
 
 Definition is_txn (l : loc) (γ : txn_names) dinit : iProp Σ :=
   (
     ∃ (mu : loc) (walptr : loc),
-      "Histxn_mu" ∷ readonly (l ↦[Txn :: "mu"] #mu) ∗
-      "Histxn_wal" ∷ readonly (l ↦[Txn :: "log"] #walptr) ∗
+      "Histxn_mu" ∷ readonly (l ↦[obj.Log :: "mu"] #mu) ∗
+      "Histxn_wal" ∷ readonly (l ↦[obj.Log :: "log"] #walptr) ∗
       "Hiswal" ∷ is_wal (wal_heap_inv (txn_walnames γ)) walptr (wal_heap_walnames (txn_walnames γ)) dinit ∗
       "Histxna" ∷ ncinv invN (is_txn_always γ) ∗
       "Histxn_lock" ∷ is_lock lockN #mu (is_txn_locked l (txn_walnames γ))

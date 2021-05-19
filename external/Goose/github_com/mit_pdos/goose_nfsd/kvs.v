@@ -3,16 +3,16 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 From Goose Require github_com.mit_pdos.go_journal.addr.
-From Goose Require github_com.mit_pdos.go_journal.buftxn.
 From Goose Require github_com.mit_pdos.go_journal.common.
-From Goose Require github_com.mit_pdos.go_journal.txn.
+From Goose Require github_com.mit_pdos.go_journal.jrnl.
+From Goose Require github_com.mit_pdos.go_journal.obj.
 From Goose Require github_com.mit_pdos.go_journal.util.
 
 Definition DISKNAME : expr := #(str"goose_kvs.img").
 
 Definition KVS := struct.decl [
   "sz" :: uint64T;
-  "txn" :: struct.ptrT txn.Txn
+  "log" :: struct.ptrT obj.Log
 ].
 
 Definition KVPair := struct.decl [
@@ -22,16 +22,16 @@ Definition KVPair := struct.decl [
 
 Definition MkKVS: val :=
   rec: "MkKVS" "d" "sz" :=
-    let: "txn" := txn.MkTxn "d" in
+    let: "log" := obj.MkLog "d" in
     let: "kvs" := struct.new KVS [
       "sz" ::= "sz";
-      "txn" ::= "txn"
+      "log" ::= "log"
     ] in
     "kvs".
 
 Definition KVS__MultiPut: val :=
   rec: "KVS__MultiPut" "kvs" "pairs" :=
-    let: "btxn" := buftxn.Begin (struct.loadF KVS "txn" "kvs") in
+    let: "op" := jrnl.Begin (struct.loadF KVS "log" "kvs") in
     ForSlice (struct.t KVPair) <> "p" "pairs"
       (if: (struct.get KVPair "Key" "p" ≥ struct.loadF KVS "sz" "kvs") || (struct.get KVPair "Key" "p" < common.LOGSIZE)
       then
@@ -39,8 +39,8 @@ Definition KVS__MultiPut: val :=
         #()
       else #());;
       let: "akey" := addr.MkAddr (struct.get KVPair "Key" "p") #0 in
-      buftxn.BufTxn__OverWrite "btxn" "akey" common.NBITBLOCK (struct.get KVPair "Val" "p");;
-    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
+      jrnl.BufTxn__OverWrite "op" "akey" common.NBITBLOCK (struct.get KVPair "Val" "p");;
+    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
     "ok".
 
 Definition KVS__Get: val :=
@@ -50,10 +50,10 @@ Definition KVS__Get: val :=
       Panic "oops";;
       #()
     else #());;
-    let: "btxn" := buftxn.Begin (struct.loadF KVS "txn" "kvs") in
+    let: "op" := jrnl.Begin (struct.loadF KVS "log" "kvs") in
     let: "akey" := addr.MkAddr "key" #0 in
-    let: "data" := util.CloneByteSlice (struct.loadF buf.Buf "Data" (buftxn.BufTxn__ReadBuf "btxn" "akey" common.NBITBLOCK)) in
-    let: "ok" := buftxn.BufTxn__CommitWait "btxn" #true in
+    let: "data" := util.CloneByteSlice (struct.loadF buf.Buf "Data" (jrnl.BufTxn__ReadBuf "op" "akey" common.NBITBLOCK)) in
+    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
     (struct.new KVPair [
        "Key" ::= "key";
        "Val" ::= "data"
@@ -61,4 +61,4 @@ Definition KVS__Get: val :=
 
 Definition KVS__Delete: val :=
   rec: "KVS__Delete" "kvs" :=
-    txn.Txn__Shutdown (struct.loadF KVS "txn" "kvs").
+    obj.Log__Shutdown (struct.loadF KVS "log" "kvs").
