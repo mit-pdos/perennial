@@ -174,7 +174,7 @@ Section proof.
     iIntros (prel) "Hprel".
     iDestruct (struct_fields_split with "Hprel") as "(?&?&_)".
     iNamed.
-    iMod (readonly_alloc_1 with "txn") as "#Hpre.txn".
+    iMod (readonly_alloc_1 with "log") as "#Hpre.log".
     iMod (readonly_alloc_1 with "locks") as "#Hpre.locks".
     wp_pures.
     iIntros "!> [? H2]".

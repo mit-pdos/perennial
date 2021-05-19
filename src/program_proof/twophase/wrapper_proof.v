@@ -59,7 +59,7 @@ Section proof.
 
   Definition is_twophase_pre l (γ γ' : buftxn_names) dinit (objs_dom: gset addr) : iProp Σ :=
     ∃ (txnl locksl : loc) ghs,
-      "#Hpre.txn" ∷ readonly (l ↦[txn.Log :: "txn"] #txnl) ∗
+      "#Hpre.txn" ∷ readonly (l ↦[txn.Log :: "log"] #txnl) ∗
       "#Hpre.locks" ∷ readonly (l ↦[txn.Log :: "locks"] #locksl) ∗
       "#Histxn_system" ∷ is_txn_system Nbuftxn γ ∗
       "#Histxn" ∷ is_txn txnl γ.(buftxn_txn_names) dinit ∗

@@ -740,7 +740,7 @@ Proof.
   iApply (wpc_strong_mono with "H"); auto.
   iSplit; last by (iModIntro; eauto).
   iIntros (v) "Hv". iModIntro.
-  wpc_bind (twophase.Begin v).
+  wpc_bind (txn.Begin v).
   iApply wp_wpc.
   iDestruct "Hv" as (vs) "(Hj&Hinterp)".
   iDestruct (jrnl_inv_twophase_pre with "[$] [$]") as "H".
@@ -800,7 +800,7 @@ Proof.
     wp_pures.
     rewrite /txn.Txn__Commit.
     wp_pures.
-    wp_apply (wp_Txn__CommitNoRelease' with "[$]").
+    wp_apply (wp_Txn__commitNoRelease' with "[$]").
     iIntros (ok) "H".
     destruct ok.
     - iDestruct "H" as "(Hrel&Hj)".
