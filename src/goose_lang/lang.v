@@ -893,8 +893,6 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | _, _ => None
     end.
 
-Close Scope Z.
-
 (* [h] is added on the right here to make [state_init_heap_singleton] true. *)
 Definition state_insert_list (l: loc) (vs: list val) (σ: state): state :=
   set heap (λ h, heap_array l (fmap Free vs) ∪ h) σ.
@@ -1034,7 +1032,7 @@ Definition arbitraryInt {state}: transition state u64 :=
 
 Fixpoint transition_repeat (n:nat) {Σ T} (t: T → transition Σ T) (init:T) : transition Σ T :=
   match n with
-  | 0 => ret init
+  | 0%nat => ret init
   | S n => Transitions.bind (t init) (transition_repeat n t)
   end.
 
@@ -1130,7 +1128,7 @@ Definition head_trans (e: expr) :
       match nav with
       | (Reading n, vl) =>
         check (vals_compare_safe vl v1);;
-        when (vl = v1) (check (n = 0);; modifyσ (set heap <[l:=Free v2]>));;
+        when (vl = v1) (check (n = 0%nat);; modifyσ (set heap <[l:=Free v2]>));;
         ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
       | _ => undefined
       end)

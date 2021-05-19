@@ -4,7 +4,6 @@ From RecordUpdate Require Import RecordUpdate.
 From Perennial.Helpers Require Import Transitions Integers.
 Set Implicit Arguments.
 
-Close Scope Z_scope.
 Coercion Z.of_nat : nat >-> Z.
 
 Module SimpleNFS.
@@ -75,7 +74,7 @@ Definition setattr (f : fh) (a : sattr) (i : buf) : transition State unit :=
 
 Definition read (f : fh) (off : u64) (count : u32) (i : buf) : transition State (bool * buf) :=
   let off := int.nat off in
-  readcount <- suchThat (gen:=fun _ _ => None) (λ s readcount, readcount = 0 ∨ off + readcount ≤ length i);
+  readcount <- suchThat (gen:=fun _ _ => None) (λ s readcount, readcount = 0 ∨ off + readcount ≤ length i)%nat;
   let resbuf := take readcount (drop off i) in
   let reseof := if ge_dec (off + readcount) (length i) then true else false in
   ret (reseof, resbuf).

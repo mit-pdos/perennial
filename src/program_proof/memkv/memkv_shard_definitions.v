@@ -1,13 +1,12 @@
 From Perennial.program_proof Require Import dist_prelude.
+From iris.bi.lib Require Import fixpoint.
 From Perennial.goose_lang Require Import adequacy.
 From Perennial.goose_lang Require Import dist_lifting.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
+From Perennial.program_proof Require Import dist_prelude.
 From Perennial.program_proof.memkv Require Export common_proof.
 From Perennial.program_proof.memkv Require Export rpc_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_conditional_put_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
-From iris.bi.lib Require Import fixpoint.
-
-Open Scope Z.
 
 (** "universal" reply type for the reply cache *)
 Record ShardReplyC := mkShardReplyC {

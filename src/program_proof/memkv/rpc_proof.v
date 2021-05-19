@@ -5,7 +5,7 @@ From Perennial.goose_lang Require Import adequacy.
 From Perennial.program_proof Require Import dist_prelude.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.algebra Require Import auth_map.
-From Perennial.base_logic Require Export lib.ghost_map lib.mono_nat.
+From Perennial.base_logic Require Import lib.ghost_map lib.mono_nat.
 From Perennial.goose_lang Require Import dist_lifting.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 

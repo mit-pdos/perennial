@@ -1,9 +1,9 @@
 From Perennial.base_logic.lib Require Import mono_nat.
 From Perennial.Helpers Require Import Transitions NamedProps Map gset range_set.
-From Perennial.program_proof Require Import disk_prelude.
 From Perennial.algebra Require Import auth_map log_heap.
 From Perennial.base_logic Require Import lib.ghost_map.
 
+From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.go_journal Require Import obj.
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.

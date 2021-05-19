@@ -5,13 +5,11 @@ From RecordUpdate Require Import RecordSet.
 
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 
-From Perennial.program_logic Require Export ncinv.
 From Perennial.Helpers Require Import List Transitions.
 From Perennial.program_proof Require Import disk_prelude disk_lib.
 From Perennial.program_proof Require Import wal.lib.
 From Perennial.program_proof Require Import marshal_block util_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
-Open Scope Z_scope.
 
 Existing Instance r_mbind.
 

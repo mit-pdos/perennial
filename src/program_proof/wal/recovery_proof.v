@@ -10,8 +10,6 @@ From Perennial.goose_lang Require wpr_lifting.
 From Perennial.program_proof Require Import wal.logger_proof.
 From Perennial.program_proof Require Import wal.installer_proof.
 
-Open Scope Z.
-
 Section goose_lang.
 Context `{!heapG Σ}.
 Context `{!walG Σ}.

@@ -42,8 +42,6 @@ Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
     log_fields l sz disk_sz ∗
     is_log' sz disk_sz vs.
 
-Open Scope Z.
-
 Theorem wp_mkHdr stk E lptr (sz disk_sz: u64) :
   {{{ log_fields lptr sz disk_sz }}}
     Log__mkHdr #lptr @ stk; E

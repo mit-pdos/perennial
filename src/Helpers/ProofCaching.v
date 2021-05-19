@@ -41,7 +41,7 @@ From Perennial.Helpers Require Import NamedProps.
       going on.
     - We have a little more control over the display (for example, it says
       [cache_for! ... with ...] as a hint for what the second argument means).
-    - Caches can be temporarily displayed with [Close Scope cache_hide_scope].
+    - Caches can be temporarily displayed with [Local Close Scope cache_hide_scope].
 
  *)
 

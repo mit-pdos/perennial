@@ -5,7 +5,7 @@ From Perennial.goose_lang.lib Require Export
      typed_mem persistent_readonly struct.impl.
 From Perennial.Helpers Require Import NamedProps.
 
-Close Scope struct_scope.
+Local Close Scope struct_scope.
 
 Set Default Proof Using "Type".
 

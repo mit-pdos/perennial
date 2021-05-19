@@ -4,15 +4,15 @@ Import RecordSetNotations.
 From Perennial.algebra Require Import liftable auth_map.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
+From Perennial.Helpers Require Import NamedProps Map List range_set.
+From Perennial.algebra Require Import log_heap.
+From Perennial.program_logic Require Import spec_assert.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
 From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
 From Perennial.program_proof Require Import buftxn.sep_buftxn_proof buftxn.sep_buftxn_recovery_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.Helpers Require Import NamedProps Map List range_set.
-From Perennial.algebra Require Import log_heap.
-From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof.simple Require Import spec invariant common.
 From Perennial.goose_lang Require Import crash_modality.
@@ -56,8 +56,6 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Context (P1 : SimpleNFS.State → iProp Σ).
 Context (P2 : SimpleNFS.State → iProp Σ).
-
-Open Scope Z_scope.
 
 Definition fs_kinds sz : gmap u64 bufDataKind :=
   {[U64 513 := KindInode]} ∪

@@ -5,6 +5,8 @@ Set Default Proof Using "Type".
 Delimit Scope expr_scope with E.
 Delimit Scope val_scope with V.
 
+Global Open Scope Z. (* Make sure everyone gets this scope. *)
+
 (** Coercions to make programs easier to type. *)
 (* integers by default turn into u64 literals
 

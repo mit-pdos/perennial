@@ -4,13 +4,14 @@ From Perennial.algebra Require Import mono_nat.
 
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 
-From Perennial.Helpers Require Import Transitions List range_set gset.
-From Perennial.program_proof Require Import wal.abstraction wal.specs.
-From Perennial.program_proof Require Import wal.heapspec_lib.
-From Perennial.program_proof Require Import disk_prelude disk_lib.
 From Perennial.algebra Require Import log_heap.
 From Perennial.base_logic Require Import ghost_map.
 From Perennial.Helpers Require Import NamedProps.
+From Perennial.Helpers Require Import Transitions List range_set gset.
+
+From Perennial.program_proof Require Import wal.abstraction wal.specs.
+From Perennial.program_proof Require Import wal.heapspec_lib.
+From Perennial.program_proof Require Import disk_prelude disk_lib.
 
 Inductive heap_block :=
 | HB (installed_block : Block) (blocks_since_install : list Block)
@@ -47,7 +48,7 @@ Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iPr
     | HB installed_block blocks_since_install =>
       ∃ (txn_id : nat),
       (* TODO: why is this _less than_ the installed lower-bound? *)
-        txn_id ≤ ls.(log_state.installed_lb) ∧
+        (txn_id ≤ ls.(log_state.installed_lb))%nat ∧
         disk_at_txn_id txn_id ls !! int.Z a = Some installed_block ∧
         updates_since txn_id a ls = blocks_since_install
     end ⌝.
@@ -128,8 +129,6 @@ Proof.
   iFrame.
   eauto.
 Qed.
-
-Open Scope Z_scope.
 
 Lemma lookup_list_to_map_1 K `{Countable K} A (l: list (K * A)) k v :
   list_to_map (M:=gmap K A) l !! k = Some v → (k, v) ∈ l.
@@ -340,8 +339,6 @@ Proof.
   word.
 Qed.
 
-Close Scope Z_scope.
-
 Lemma wal_heap_inv_crashes_crash crash_heaps crash_txn ls ls' :
   ls'.(log_state.d) = ls.(log_state.d) →
   ls'.(log_state.txns) = take (S crash_txn) ls.(log_state.txns) →
@@ -371,7 +368,7 @@ Proof.
 Qed.
 
 Lemma wal_heap_inv_addr_crash ls k x crash_txn :
-  ls.(log_state.installed_lb) ≤ crash_txn →
+  (ls.(log_state.installed_lb) ≤ crash_txn)%nat →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
                 <| log_state.durable_lb := crash_txn |> in
   wal_heap_inv_addr ls k x -∗
@@ -459,7 +456,7 @@ Proof.
 Qed.
 
 Lemma wal_heap_inv_addr_crash ls a b crash_txn :
-  ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns) →
+  (ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns))%nat →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
                 <| log_state.durable_lb := crash_txn |> in
   wal_heap_inv_addr ls a b -∗
@@ -512,7 +509,7 @@ Proof.
 Qed.
 
 Lemma wal_heap_gh_crash (γ: gname) crash_txn (gh: gmap u64 heap_block) ls :
-  ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns) →
+  (ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns))%nat →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
                 <| log_state.durable_lb := crash_txn |> in
   ghost_map_auth γ 1 ∅ -∗
@@ -727,7 +724,7 @@ Definition crash_heaps_post_exchange γ : iProp Σ :=
       "Hcrash_heaps_old" ∷ ghost_var γ.(wal_heap_crash_heaps) (3/4) crash_heaps).
 
 Definition heapspec_durable_exchanger γ bnd : iProp Σ :=
-  (∃ q n (Hle: n ≤ bnd), mono_nat_auth_own γ.(wal_heap_durable_lb) q n).
+  (∃ q n (Hle: (n ≤ bnd)%nat), mono_nat_auth_own γ.(wal_heap_durable_lb) q n).
 
 Definition heapspec_exchanger ls ls' γ γ' : iProp Σ :=
   "%Hwal_wf" ∷ ⌜ wal_wf ls' ⌝ ∗
@@ -765,7 +762,7 @@ Qed.
 Lemma heapspec_durable_exchanger_use γ n lb :
   heapspec_durable_exchanger γ n -∗
   mono_nat_lb_own γ.(wal_heap_durable_lb) lb -∗
-  ⌜ lb ≤ n ⌝.
+  ⌜ lb ≤ n ⌝%nat.
 Proof.
   iIntros "H1 H2".
   iDestruct "H1" as (? ? ?) "H".
@@ -1604,7 +1601,7 @@ Qed.
 
 Theorem wal_wf_advance_installed_lb σ (txn_id:nat) :
   wal_wf σ ->
-  txn_id ≤ σ.(log_state.durable_lb) ->
+  (txn_id ≤ σ.(log_state.durable_lb))%nat ->
   wal_wf (set log_state.installed_lb (λ _ : nat, txn_id) σ).
 Proof.
   destruct σ.
@@ -1629,7 +1626,7 @@ Qed.
 
 Lemma updates_since_updates σ (txn_id:nat) (a:u64) pos' bs :
   wal_wf σ ->
-  txn_id ≤ σ.(log_state.installed_lb) ->
+  (txn_id ≤ σ.(log_state.installed_lb))%nat ->
   updates_since txn_id a
     (set log_state.txns
      (λ _ : list (u64 * list update.t), σ.(log_state.txns) ++ [(pos',bs)]) σ) =
