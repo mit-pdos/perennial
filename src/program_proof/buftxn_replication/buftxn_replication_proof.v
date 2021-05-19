@@ -89,7 +89,7 @@ Section goose_lang.
     iNamed "Hinv".
     wp_pures.
     wp_loadField.
-    wp_apply (wp_BufTxn__Begin with "[]").
+    wp_apply (wp_Op__Begin with "[]").
     { iFrame "#". }
     iIntros (γtxn l_txn) "Htxn".
     wp_pures.
@@ -102,7 +102,7 @@ Section goose_lang.
     iNamed "rb_rep".
     iMod ("Hfupd" with "HP") as "[HP HQ]".
     iNamed "Htxn".
-    wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn_mem $Ha0]").
+    wp_apply (wp_Op__ReadBuf with "[$Hbuftxn_mem $Ha0]").
     { reflexivity. }
     iIntros (dirty bufptr) "[Hbuf Htxn_restore]".
     wp_pures.
@@ -120,7 +120,7 @@ Section goose_lang.
     iAssert (rb_rep a0 a1 σ (buftxn_maps_to γtxn)) with "[Ha0 Ha1]" as "rb_rep".
     { iFrame. }
     iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Htxn".
-    wp_apply (wp_BufTxn__CommitWait _ _ (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
+    wp_apply (wp_Op__CommitWait _ _ (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
     { solve_ndisj. }
     { solve_ndisj. }
 

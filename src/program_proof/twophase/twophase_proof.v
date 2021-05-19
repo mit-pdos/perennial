@@ -325,7 +325,7 @@ Theorem wp_Txn__Begin_raw (prel txnl locksl: loc) γ γ' dinit k ex_mapsto ghs o
   0 < k →
   set_Forall valid_addr objs_dom →
   {{{
-    "#Hpre.txn_ro" ∷ readonly (prel ↦[txn.Log :: "txn"] #txnl) ∗
+    "#Hpre.txn_ro" ∷ readonly (prel ↦[txn.Log :: "log"] #txnl) ∗
     "#Hpre.locks_ro" ∷ readonly (prel ↦[txn.Log :: "locks"] #locksl) ∗
     "#Htxn" ∷ (
       invariant.is_txn txnl γ.(buftxn_txn_names) dinit ∗
@@ -351,7 +351,7 @@ Proof.
   iDestruct "Hpre.txn" as (qtxn) "Hpre.txn".
   iDestruct "Hpre.locks" as (qlocks) "Hpre.locks".
   wp_loadField.
-  wp_apply (wp_BufTxn__Begin' with "Htxn").
+  wp_apply (wp_Op__Begin' with "Htxn").
   iIntros (? ? buftxnl) "(?&?)".
   iNamed.
   wp_loadField.
@@ -1142,7 +1142,7 @@ Proof.
   iApply big_sepM_fmap in "Hdurable_mapstos".
   iApply wpc_cfupd.
   iApply wpc_ncfupd.
-  wpc_apply (wpc_BufTxn__CommitWait' with "[
+  wpc_apply (wpc_Op__CommitWait' with "[
     $Hbuftxn_mem $Hbuftxn_durable_frag $Hbuftxn_maps_tos $Hdurable_mapstos
     $Htxn_cinv
   ]").
@@ -1297,7 +1297,7 @@ Proof.
   iDestruct (big_sepM_lookup_acc with "Hbuftxn_maps_tos")
     as "[Hbuftxn_maps_to Hbuftxn_maps_tos]";
     first by eassumption.
-  wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn_mem $Hbuftxn_maps_to]");
+  wp_apply (wp_Op__ReadBuf with "[$Hbuftxn_mem $Hbuftxn_maps_to]");
     first by assumption.
   iIntros (??) "[Hbuf Hrestore]".
   wp_apply (wp_buf_loadField_data with "Hbuf").
@@ -1543,7 +1543,7 @@ Proof.
       first by eassumption.
     pose proof (Hvalids _ _ Hlookup_old) as (Hvalid_addr&Hvalid_off&Hkind).
     wp_apply (
-      wp_BufTxn__OverWrite
+      wp_Op__OverWrite
       with "[$Hbuftxn_mem Hbuftxn_maps_to Hdata_s]"
     ); [eassumption|eassumption| |iFrame|].
     {
@@ -1608,7 +1608,7 @@ Proof.
       as "[Hbuftxn_maps_to Hbuftxn_maps_tos]";
       first by assumption.
     wp_apply (
-      wp_BufTxn__OverWrite
+      wp_Op__OverWrite
       with "[$Hbuftxn_mem Hbuftxn_maps_to Hdata_s]"
     ); [eassumption|eassumption| |iFrame|].
     {

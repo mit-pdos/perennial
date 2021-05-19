@@ -135,14 +135,14 @@ Proof.
       iDestruct (big_sepM_lookup_acc (λ k b, mapsto_txn γDisk k b) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
       pose ({[key := existT defs.KindBlock (defs.bufBlock blk)]} : gmap (specs.addr) ({K & defs.bufDataT K})) as keyMp.
 
-      iDestruct (BufTxn_lift buftx _ γDisk keyMp _ with "[Hbtxn HkeyMt]") as "He".
+      iDestruct (Op_lift buftx _ γDisk keyMp _ with "[Hbtxn HkeyMt]") as "He".
       1: admit. (* E top? *)
       1: iFrame.
       { iApply big_sepM_singleton; auto. }
       rewrite right_id.
       iMod "He".
 
-      wp_apply (wp_BufTxn__ReadBuf buftx keyMp γDisk (specs.Build_addr key.(specs.addrBlock) 0) (Z.to_nat 32768) with "[He]").
+      wp_apply (wp_Op__ReadBuf buftx keyMp γDisk (specs.Build_addr key.(specs.addrBlock) 0) (Z.to_nat 32768) with "[He]").
       -- iSplitL "He"; auto.
          iPureIntro. split.
          {
@@ -163,7 +163,7 @@ Proof.
          iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "HisBuf"; unfold specs.is_buf.
          { iSplit; eauto. iExists data. iFrame; auto. iExists sz0; simpl. iSplitL "Hbsz"; auto. }
          (* {[key := existT defs.KindBlock (defs.bufBlock blk)]} *)
-         wp_apply (wp_BufTxn__CommitWait _ _ γDisk _ _
+         wp_apply (wp_Op__CommitWait _ _ γDisk _ _
                                        (* TODO: need a real Q *)
                                        (λ _, emp)%I  with "[HisBuf]").
          {

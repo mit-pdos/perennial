@@ -52,7 +52,7 @@ Proof.
   }
   iNamed "Henc".
   iDestruct (is_slice_to_small with "Hs") as "Hs".
-  wp_apply (wp_BufTxn__OverWrite
+  wp_apply (wp_Op__OverWrite
     _ _ _ _ _ _ _ _ _ _ _ (existT KindInode (bufInode (list_to_inode_buf data))) with "[$Hbuftxn $Hinode_enc_mapsto $Hs]").
   { eauto. }
   { rewrite /data_has_obj /=. apply list_to_inode_buf_to_list.
@@ -123,7 +123,7 @@ Proof.
   iNamed "Hdata".
   wp_loadField.
   wp_apply wp_block2addr.
-  wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn $Hdiskblk]"); first by eauto.
+  wp_apply (wp_Op__ReadBuf with "[$Hbuftxn $Hdiskblk]"); first by eauto.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
   wp_apply wp_ref_to; first by val_ty.

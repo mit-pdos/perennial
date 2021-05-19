@@ -77,7 +77,7 @@ Proof using Ptimeless.
   iIntros (reply) "Hreply".
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
-  wp_apply (wp_BufTxn__Begin with "[$Histxn $Htxnsys]").
+  wp_apply (wp_Op__Begin with "[$Histxn $Htxnsys]").
   iIntros (γtxn buftx) "Hbuftxn".
   wp_apply (wp_fh2ino with "Hfh").
   wp_pures.
@@ -228,7 +228,7 @@ Proof using Ptimeless.
     rewrite (firstn_all2 databuf); last by lia.
     replace (Z.to_nat (length databuf)) with (length databuf) by lia.
 
-    wpc_apply (wpc_BufTxn__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
+    wpc_apply (wpc_Op__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
     5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
     2-4: solve_ndisj.
     { typeclasses eauto. }

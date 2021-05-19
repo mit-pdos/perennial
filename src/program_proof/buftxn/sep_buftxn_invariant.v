@@ -445,7 +445,7 @@ Section goose_lang.
     { rewrite lookup_fmap Hnotin //. }
     assert ((mspec.committed <$> mT) !! a = None).
     { rewrite lookup_fmap Hnotin //. }
-    iMod (mspec.BufTxn_lift_one' _ _ _ _ _ _ E with "[$Ha $Hbuftxn] [$]") as "(Hbuftxn&HNC)"; auto.
+    iMod (mspec.Op_lift_one' _ _ _ _ _ _ E with "[$Ha $Hbuftxn] [$]") as "(Hbuftxn&HNC)"; auto.
     iMod (map_alloc a obj with "Htxn_ctx") as "[Htxn_ctx Ha]"; eauto.
 
     iDestruct (map_ctx_agree with "Hdurable Hdurable_frag") as %<-.

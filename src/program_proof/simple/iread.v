@@ -43,7 +43,7 @@ Proof.
   }
 
   replace (#(LitInt (word.mul 128 8))) with (#1024%nat) by reflexivity.
-  wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn $Hinode_enc_mapsto]"); eauto.
+  wp_apply (wp_Op__ReadBuf with "[$Hbuftxn $Hinode_enc_mapsto]"); eauto.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
   wp_pures. wp_call.
@@ -143,7 +143,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_apply wp_block2addr.
-  wp_apply (wp_BufTxn__ReadBuf with "[$Hbuftxn $Hdiskblk]"); first by reflexivity.
+  wp_apply (wp_Op__ReadBuf with "[$Hbuftxn $Hdiskblk]"); first by reflexivity.
 
   iIntros (dirty bufptr) "[Hbuf Hbufupd]".
   wp_pures.

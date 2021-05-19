@@ -80,7 +80,7 @@ Definition is_buftxn (buftx : loc)
                      dinit anydirty : iProp Σ :=
   (
     ∃ (l : loc) (bufmap : loc) (gBufmap : gmap addr buf),
-      "Hbuftx.l" ∷ buftx ↦[jrnl.Op :: "txn"] #l ∗
+      "Hbuftx.l" ∷ buftx ↦[jrnl.Op :: "log"] #l ∗
       "Hbuftx.map" ∷ buftx ↦[jrnl.Op :: "bufs"] #bufmap ∗
       "#Histxn" ∷ is_txn l γUnified dinit ∗
       "Hbufmap" ∷ is_bufmap bufmap gBufmap ∗
@@ -124,7 +124,7 @@ Qed.
 Theorem wp_buftxn_Begin l γUnified dinit:
   {{{ is_txn l γUnified dinit
   }}}
-    Begin #l
+    jrnl.Begin #l
   {{{ (buftx : loc), RET #buftx;
       is_buftxn buftx ∅ γUnified dinit false
   }}}.
