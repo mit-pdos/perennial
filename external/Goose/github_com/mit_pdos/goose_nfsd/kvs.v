@@ -39,8 +39,8 @@ Definition KVS__MultiPut: val :=
         #()
       else #());;
       let: "akey" := addr.MkAddr (struct.get KVPair "Key" "p") #0 in
-      jrnl.BufTxn__OverWrite "op" "akey" common.NBITBLOCK (struct.get KVPair "Val" "p");;
-    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
+      jrnl.Op__OverWrite "op" "akey" common.NBITBLOCK (struct.get KVPair "Val" "p");;
+    let: "ok" := jrnl.Op__CommitWait "op" #true in
     "ok".
 
 Definition KVS__Get: val :=
@@ -52,8 +52,8 @@ Definition KVS__Get: val :=
     else #());;
     let: "op" := jrnl.Begin (struct.loadF KVS "log" "kvs") in
     let: "akey" := addr.MkAddr "key" #0 in
-    let: "data" := util.CloneByteSlice (struct.loadF buf.Buf "Data" (jrnl.BufTxn__ReadBuf "op" "akey" common.NBITBLOCK)) in
-    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
+    let: "data" := util.CloneByteSlice (struct.loadF buf.Buf "Data" (jrnl.Op__ReadBuf "op" "akey" common.NBITBLOCK)) in
+    let: "ok" := jrnl.Op__CommitWait "op" #true in
     (struct.new KVPair [
        "Key" ::= "key";
        "Val" ::= "data"

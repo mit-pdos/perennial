@@ -12,7 +12,7 @@ From Goose Require github_com.mit_pdos.go_journal.util.
    It provides atomic operations that are buffered locally and manipulate
    objects via buffers of type *buf.Buf.
 
-   The caller uses this interface by beginning an operation BufTxn,
+   The caller uses this interface by beginning an operation Op,
    reading/writing within the transaction, and finally committing the buffered
    transaction.
 
@@ -38,15 +38,20 @@ From Goose Require github_com.mit_pdos.go_journal.util.
    partitioned into inodes, data blocks, and bitmap allocators for each (sized
    appropriately), all allocated statically. *)
 
-Definition BufTxn := struct.decl [
+(* Op is an in-progress journal operation.
+
+   Call CommitWait to persist the operation's writes.
+   To abort the operation simply stop using it. *)
+Definition Op := struct.decl [
   "log" :: struct.ptrT obj.Log;
   "bufs" :: struct.ptrT buf.BufMap
 ].
 
-(* Begin starts a local transaction with no writes from a global object manager. *)
+(* Begin starts a local journal operation with no writes from a global object
+   manager. *)
 Definition Begin: val :=
   rec: "Begin" "log" :=
-    let: "trans" := struct.new BufTxn [
+    let: "trans" := struct.new Op [
       "log" ::= "log";
       "bufs" ::= buf.MkBufMap #()
     ] in
@@ -54,25 +59,25 @@ Definition Begin: val :=
     ")) #();;
     "trans".
 
-Definition BufTxn__ReadBuf: val :=
-  rec: "BufTxn__ReadBuf" "op" "addr" "sz" :=
-    let: "b" := buf.BufMap__Lookup (struct.loadF BufTxn "bufs" "op") "addr" in
+Definition Op__ReadBuf: val :=
+  rec: "Op__ReadBuf" "op" "addr" "sz" :=
+    let: "b" := buf.BufMap__Lookup (struct.loadF Op "bufs" "op") "addr" in
     (if: ("b" = #null)
     then
-      let: "buf" := obj.Log__Load (struct.loadF BufTxn "log" "op") "addr" "sz" in
-      buf.BufMap__Insert (struct.loadF BufTxn "bufs" "op") "buf";;
-      buf.BufMap__Lookup (struct.loadF BufTxn "bufs" "op") "addr"
+      let: "buf" := obj.Log__Load (struct.loadF Op "log" "op") "addr" "sz" in
+      buf.BufMap__Insert (struct.loadF Op "bufs" "op") "buf";;
+      buf.BufMap__Lookup (struct.loadF Op "bufs" "op") "addr"
     else "b").
 
 (* OverWrite writes an object to addr *)
-Definition BufTxn__OverWrite: val :=
-  rec: "BufTxn__OverWrite" "op" "addr" "sz" "data" :=
-    let: "b" := ref_to (refT (struct.t buf.Buf)) (buf.BufMap__Lookup (struct.loadF BufTxn "bufs" "op") "addr") in
+Definition Op__OverWrite: val :=
+  rec: "Op__OverWrite" "op" "addr" "sz" "data" :=
+    let: "b" := ref_to (refT (struct.t buf.Buf)) (buf.BufMap__Lookup (struct.loadF Op "bufs" "op") "addr") in
     (if: (![refT (struct.t buf.Buf)] "b" = #null)
     then
       "b" <-[refT (struct.t buf.Buf)] buf.MkBuf "addr" "sz" "data";;
       buf.Buf__SetDirty (![refT (struct.t buf.Buf)] "b");;
-      buf.BufMap__Insert (struct.loadF BufTxn "bufs" "op") (![refT (struct.t buf.Buf)] "b")
+      buf.BufMap__Insert (struct.loadF Op "bufs" "op") (![refT (struct.t buf.Buf)] "b")
     else
       (if: "sz" ≠ struct.loadF buf.Buf "Sz" (![refT (struct.t buf.Buf)] "b")
       then
@@ -86,19 +91,19 @@ Definition BufTxn__OverWrite: val :=
 
    The caller cannot rely on any particular properties of this function for
    safety. *)
-Definition BufTxn__NDirty: val :=
-  rec: "BufTxn__NDirty" "op" :=
-    buf.BufMap__Ndirty (struct.loadF BufTxn "bufs" "op").
+Definition Op__NDirty: val :=
+  rec: "Op__NDirty" "op" :=
+    buf.BufMap__Ndirty (struct.loadF Op "bufs" "op").
 
 (* LogSz returns 511 *)
-Definition BufTxn__LogSz: val :=
-  rec: "BufTxn__LogSz" "op" :=
-    obj.Log__LogSz (struct.loadF BufTxn "log" "op").
+Definition Op__LogSz: val :=
+  rec: "Op__LogSz" "op" :=
+    obj.Log__LogSz (struct.loadF Op "log" "op").
 
 (* LogSzBytes returns 511*4096 *)
-Definition BufTxn__LogSzBytes: val :=
-  rec: "BufTxn__LogSzBytes" "op" :=
-    obj.Log__LogSz (struct.loadF BufTxn "log" "op") * disk.BlockSize.
+Definition Op__LogSzBytes: val :=
+  rec: "Op__LogSzBytes" "op" :=
+    obj.Log__LogSz (struct.loadF Op "log" "op") * disk.BlockSize.
 
 (* CommitWait commits the writes in the transaction to disk.
 
@@ -111,14 +116,14 @@ Definition BufTxn__LogSzBytes: val :=
 
    wait=false is an asynchronous commit, which can be made durable later with
    Flush. *)
-Definition BufTxn__CommitWait: val :=
-  rec: "BufTxn__CommitWait" "op" "wait" :=
+Definition Op__CommitWait: val :=
+  rec: "Op__CommitWait" "op" "wait" :=
     util.DPrintf #3 (#(str"Commit %p w %v
     ")) #();;
-    let: "ok" := obj.Log__CommitWait (struct.loadF BufTxn "log" "op") (buf.BufMap__DirtyBufs (struct.loadF BufTxn "bufs" "op")) "wait" in
+    let: "ok" := obj.Log__CommitWait (struct.loadF Op "log" "op") (buf.BufMap__DirtyBufs (struct.loadF Op "bufs" "op")) "wait" in
     "ok".
 
-Definition BufTxn__Flush: val :=
-  rec: "BufTxn__Flush" "op" :=
-    let: "ok" := obj.Log__Flush (struct.loadF BufTxn "log" "op") in
+Definition Op__Flush: val :=
+  rec: "Op__Flush" "op" :=
+    let: "ok" := obj.Log__Flush (struct.loadF Op "log" "op") in
     "ok".

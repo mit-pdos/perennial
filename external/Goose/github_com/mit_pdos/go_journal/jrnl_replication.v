@@ -30,9 +30,9 @@ Definition RepBlock__Read: val :=
   rec: "RepBlock__Read" "rb" :=
     lock.acquire (struct.loadF RepBlock "m" "rb");;
     let: "tx" := jrnl.Begin (struct.loadF RepBlock "txn" "rb") in
-    let: "buf" := jrnl.BufTxn__ReadBuf "tx" (struct.loadF RepBlock "a0" "rb") (#8 * disk.BlockSize) in
+    let: "buf" := jrnl.Op__ReadBuf "tx" (struct.loadF RepBlock "a0" "rb") (#8 * disk.BlockSize) in
     let: "b" := util.CloneByteSlice (struct.loadF buf.Buf "Data" "buf") in
-    let: "ok" := jrnl.BufTxn__CommitWait "tx" #true in
+    let: "ok" := jrnl.Op__CommitWait "tx" #true in
     lock.release (struct.loadF RepBlock "m" "rb");;
     ("b", "ok").
 
@@ -40,8 +40,8 @@ Definition RepBlock__Write: val :=
   rec: "RepBlock__Write" "rb" "b" :=
     lock.acquire (struct.loadF RepBlock "m" "rb");;
     let: "tx" := jrnl.Begin (struct.loadF RepBlock "txn" "rb") in
-    jrnl.BufTxn__OverWrite "tx" (struct.loadF RepBlock "a0" "rb") (#8 * disk.BlockSize) "b";;
-    jrnl.BufTxn__OverWrite "tx" (struct.loadF RepBlock "a1" "rb") (#8 * disk.BlockSize) "b";;
-    let: "ok" := jrnl.BufTxn__CommitWait "tx" #true in
+    jrnl.Op__OverWrite "tx" (struct.loadF RepBlock "a0" "rb") (#8 * disk.BlockSize) "b";;
+    jrnl.Op__OverWrite "tx" (struct.loadF RepBlock "a1" "rb") (#8 * disk.BlockSize) "b";;
+    let: "ok" := jrnl.Op__CommitWait "tx" #true in
     lock.release (struct.loadF RepBlock "m" "rb");;
     "ok".

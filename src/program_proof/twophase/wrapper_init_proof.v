@@ -2,7 +2,7 @@ From Perennial.goose_lang Require Import lang notation typing.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list.list_slice slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
-From Goose.github_com.mit_pdos.go_journal Require Import obj twophase.
+From Goose.github_com.mit_pdos.go_journal Require Import obj txn.
 From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.program_proof Require Import twophase.op_wrappers.
 From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
@@ -55,7 +55,7 @@ Section proof.
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
       "#Hjrnl_dom" ∷ jrnl_dom (dom _ mt)
     }}}
-      let: "twophasePre" := struct.alloc TwoPhasePre (MkLog (disk_val d), (lockmap.MkLockMap #(), #())) in
+      let: "twophasePre" := struct.alloc txn.Log (MkLog (disk_val d), (lockmap.MkLockMap #(), #())) in
       Var "twophasePre" @ S (S LVL); ⊤
     {{{
       γ' (l: loc), RET #l;

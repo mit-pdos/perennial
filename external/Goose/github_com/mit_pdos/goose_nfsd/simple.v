@@ -96,7 +96,7 @@ Definition Inode__Read: val :=
       util.DPrintf #5 (#(str"Read: off %d cnt %d
       ")) #();;
       let: "data" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-      let: "buf" := jrnl.BufTxn__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
+      let: "buf" := jrnl.Op__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
       let: "countCopy" := ![uint64T] "count" in
       let: "b" := ref_to uint64T #0 in
       (for: (λ: <>, ![uint64T] "b" < "countCopy"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
@@ -110,7 +110,7 @@ Definition Inode__Read: val :=
 Definition Inode__WriteInode: val :=
   rec: "Inode__WriteInode" "ip" "op" :=
     let: "d" := Inode__Encode "ip" in
-    jrnl.BufTxn__OverWrite "op" (inum2Addr (struct.loadF Inode "Inum" "ip")) (common.INODESZ * #8) "d";;
+    jrnl.Op__OverWrite "op" (inum2Addr (struct.loadF Inode "Inum" "ip")) (common.INODESZ * #8) "d";;
     util.DPrintf #1 (#(str"WriteInode %v
     ")) #().
 
@@ -131,7 +131,7 @@ Definition Inode__Write: val :=
           (if: "offset" > struct.loadF Inode "Size" "ip"
           then (#0, #false)
           else
-            let: "buffer" := jrnl.BufTxn__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
+            let: "buffer" := jrnl.Op__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
             let: "b" := ref_to uint64T #0 in
             (for: (λ: <>, ![uint64T] "b" < "count"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
               SliceSet byteT (struct.loadF buf.Buf "Data" "buffer") ("offset" + ![uint64T] "b") (SliceGet byteT "dataBuf" (![uint64T] "b"));;
@@ -149,7 +149,7 @@ Definition Inode__Write: val :=
 
 Definition ReadInode: val :=
   rec: "ReadInode" "op" "inum" :=
-    let: "buffer" := jrnl.BufTxn__ReadBuf "op" (inum2Addr "inum") (common.INODESZ * #8) in
+    let: "buffer" := jrnl.Op__ReadBuf "op" (inum2Addr "inum") (common.INODESZ * #8) in
     let: "ip" := Decode "buffer" "inum" in
     "ip".
 
@@ -204,7 +204,7 @@ Definition Mkfs: val :=
     let: "log" := obj.MkLog "d" in
     let: "op" := jrnl.Begin "log" in
     inodeInit "op";;
-    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
+    let: "ok" := jrnl.Op__CommitWait "op" #true in
     (if: ~ "ok"
     then slice.nil
     else "log").
@@ -224,7 +224,7 @@ Definition MakeNfs: val :=
     let: "log" := obj.MkLog "d" in
     let: "op" := jrnl.Begin "log" in
     inodeInit "op";;
-    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
+    let: "ok" := jrnl.Op__CommitWait "op" #true in
     (if: ~ "ok"
     then slice.nil
     else
@@ -340,7 +340,7 @@ Definition NFSPROC3_GETATTR_wp: val :=
 Definition NFSPROC3_GETATTR_internal: val :=
   rec: "NFSPROC3_GETATTR_internal" "args" "reply" "inum" "op" :=
     NFSPROC3_GETATTR_wp "args" "reply" "inum" "op";;
-    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
+    let: "ok" := jrnl.Op__CommitWait "op" #true in
     (if: "ok"
     then struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3_OK
     else struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT).
@@ -395,7 +395,7 @@ Definition NFSPROC3_SETATTR_internal: val :=
     (if: ~ "ok1"
     then #()
     else
-      let: "ok2" := jrnl.BufTxn__CommitWait "op" #true in
+      let: "ok2" := jrnl.Op__CommitWait "op" #true in
       (if: "ok2"
       then struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3_OK
       else struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT)).
@@ -469,7 +469,7 @@ Definition NFSPROC3_READ_wp: val :=
 Definition NFSPROC3_READ_internal: val :=
   rec: "NFSPROC3_READ_internal" "args" "reply" "inum" "op" :=
     NFSPROC3_READ_wp "args" "reply" "inum" "op";;
-    let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
+    let: "ok" := jrnl.Op__CommitWait "op" #true in
     (if: "ok"
     then struct.storeF nfstypes.READ3res "Status" "reply" nfstypes.NFS3_OK
     else struct.storeF nfstypes.READ3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT).
@@ -510,7 +510,7 @@ Definition NFSPROC3_WRITE_internal: val :=
     (if: ~ "ok1"
     then #()
     else
-      let: "ok2" := jrnl.BufTxn__CommitWait "op" #true in
+      let: "ok2" := jrnl.Op__CommitWait "op" #true in
       (if: "ok2"
       then struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3_OK
       else struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT)).
@@ -677,7 +677,7 @@ Definition Nfs__NFSPROC3_COMMIT: val :=
       ![struct.t nfstypes.COMMIT3res] "reply"
     else
       lockmap.LockMap__Acquire (struct.loadF Nfs "l" "nfs") "inum";;
-      let: "ok" := jrnl.BufTxn__CommitWait "op" #true in
+      let: "ok" := jrnl.Op__CommitWait "op" #true in
       (if: "ok"
       then struct.storeF nfstypes.COMMIT3res "Status" "reply" nfstypes.NFS3_OK
       else struct.storeF nfstypes.COMMIT3res "Status" "reply" nfstypes.NFS3ERR_IO);;

@@ -745,7 +745,7 @@ Proof.
   iDestruct "Hv" as (vs) "(Hj&Hinterp)".
   iDestruct (jrnl_inv_twophase_pre with "[$] [$]") as "H".
   iDestruct "H" as (l γ γ' ?? ->) "H".
-  wp_apply (wp_TwoPhase__Begin' N  with "[$]").
+  wp_apply (wp_Txn__Begin' N  with "[$]").
   iIntros (tph_val) "Hstarted".
   iApply wp_wpc.
   wp_pures.
@@ -783,7 +783,7 @@ Proof.
   iApply (wp_wand with "H [-]").
   iIntros (v') "Hv".
   iDestruct "Hv" as (vs') "(Hstarted&Hinterp)".
-  rewrite /op_wrappers.TwoPhase__ConditionalCommit'.
+  rewrite /op_wrappers.Txn__ConditionalCommit'.
   wp_pures.
   rewrite /=.
   iDestruct "Hinterp" as "[Hnone|Hsome]".
@@ -792,20 +792,20 @@ Proof.
     iDestruct "Hunit" as %(->&->).
     wp_pures.
     iMod (twophase_started_abort with "Hstarted") as "(Hrel&Hj)".
-    wp_apply (wp_TwoPhase__ReleaseAll' with "Hrel").
+    wp_apply (wp_Txn__ReleaseAll' with "Hrel").
     wp_pures. iExists _. iFrame. iLeft. eauto.
   }
   {
     iDestruct "Hsome" as (vssome vsome (->&->)) "Hv".
     wp_pures.
-    rewrite /twophase.TwoPhase__Commit.
+    rewrite /txn.Txn__Commit.
     wp_pures.
-    wp_apply (wp_TwoPhase__CommitNoRelease' with "[$]").
+    wp_apply (wp_Txn__CommitNoRelease' with "[$]").
     iIntros (ok) "H".
     destruct ok.
     - iDestruct "H" as "(Hrel&Hj)".
       wp_pures.
-      wp_apply (wp_TwoPhase__ReleaseAll' with "[$]").
+      wp_apply (wp_Txn__ReleaseAll' with "[$]").
       wp_pures. iExists _. iFrame. iModIntro.
       rewrite /val_interp -/val_interp.
       iRight. iExists _, _. iSplit; first eauto. simpl; auto.
@@ -813,7 +813,7 @@ Proof.
       naive_solver.
     - iDestruct "H" as "(Hrel&Hj)".
       wp_pures.
-      wp_apply (wp_TwoPhase__ReleaseAll' with "[$]").
+      wp_apply (wp_Txn__ReleaseAll' with "[$]").
       wp_pures. iExists _. iFrame. iModIntro.
       rewrite /val_interp -/val_interp.
       iLeft. iExists _, _. iSplit; first eauto. simpl; auto.

@@ -80,8 +80,8 @@ Definition is_buftxn (buftx : loc)
                      dinit anydirty : iProp Σ :=
   (
     ∃ (l : loc) (bufmap : loc) (gBufmap : gmap addr buf),
-      "Hbuftx.l" ∷ buftx ↦[BufTxn :: "txn"] #l ∗
-      "Hbuftx.map" ∷ buftx ↦[BufTxn :: "bufs"] #bufmap ∗
+      "Hbuftx.l" ∷ buftx ↦[jrnl.Op :: "txn"] #l ∗
+      "Hbuftx.map" ∷ buftx ↦[jrnl.Op :: "bufs"] #bufmap ∗
       "#Histxn" ∷ is_txn l γUnified dinit ∗
       "Hbufmap" ∷ is_bufmap bufmap gBufmap ∗
       "%Hbufmapelem" ∷ ⌜ (λ b, existT _ (bufData b)) <$> gBufmap ⊆ modified <$> mT ⌝ ∗
@@ -148,13 +148,13 @@ Proof.
   rewrite big_sepM_empty //.
 Qed.
 
-Theorem wp_BufTxn__ReadBuf buftx mT γUnified dinit anydirty a (sz : u64) v :
+Theorem wp_Op__ReadBuf buftx mT γUnified dinit anydirty a (sz : u64) v :
   {{{
     is_buftxn buftx mT γUnified dinit anydirty ∗
     ⌜ mT !! a = Some v ⌝ ∗
     ⌜ sz = bufSz (projT1 v) ⌝
   }}}
-    BufTxn__ReadBuf #buftx (addr2val a) #sz
+    Op__ReadBuf #buftx (addr2val a) #sz
   {{{
     (bufptr : loc) dirty, RET #bufptr;
     is_buf bufptr a (Build_buf (projT1 v) (snd (projT2 v)) dirty) ∗
@@ -391,7 +391,7 @@ Proof.
       eapply insert_non_empty in Hx; eauto.
 Qed.
 
-Theorem wp_BufTxn__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K * bufDataT K)%type}) (sz : u64) (vslice : Slice.t) anydirty :
+Theorem wp_Op__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K * bufDataT K)%type}) (sz : u64) (vslice : Slice.t) anydirty :
   {{{
     is_buftxn buftx mt γUnified dinit anydirty ∗
     ⌜ mt !! a = Some v0 ⌝ ∗
@@ -399,7 +399,7 @@ Theorem wp_BufTxn__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K
     ⌜ sz = bufSz (projT1 v) ⌝ ∗
     ⌜ existT (projT1 v) (fst (projT2 v)) = existT (projT1 v0) (fst (projT2 v0)) ⌝
   }}}
-    BufTxn__OverWrite #buftx (addr2val a) #sz (slice_val vslice)
+    Op__OverWrite #buftx (addr2val a) #sz (slice_val vslice)
   {{{
     RET #();
     is_buftxn buftx (<[a := v]> mt) γUnified dinit true
@@ -539,11 +539,11 @@ Opaque struct.t.
     eapply insert_non_empty in Hx. exfalso; eauto.
 Qed.
 
-Theorem wp_BufTxn__NDirty buftx mt γUnified dinit anydirty :
+Theorem wp_Op__NDirty buftx mt γUnified dinit anydirty :
   {{{
     is_buftxn buftx mt γUnified dinit anydirty
   }}}
-    BufTxn__NDirty #buftx
+    Op__NDirty #buftx
   {{{
     (n:u64), RET #n;
     is_buftxn buftx mt γUnified dinit anydirty
@@ -559,7 +559,7 @@ Proof.
   iExists _, _, _. iFrameNamed.
 Qed.
 
-Theorem BufTxn_lift_one' buftx mt γUnified dinit a v E anydirty k q :
+Theorem Op_lift_one' buftx mt γUnified dinit a v E anydirty k q :
   ↑invN ⊆ E ->
   (
     is_buftxn buftx mt γUnified dinit anydirty ∗
@@ -614,7 +614,7 @@ Proof.
   rewrite /modified /=. intuition.
 Qed.
 
-Theorem BufTxn_lift_one buftx mt γUnified dinit a v E anydirty :
+Theorem Op_lift_one buftx mt γUnified dinit a v E anydirty :
   ↑invN ⊆ E ->
   (
     is_buftxn buftx mt γUnified dinit anydirty ∗
@@ -686,7 +686,7 @@ Proof.
   rewrite !map_disjoint_dom !dom_fmap_L //.
 Qed.
 
-Theorem BufTxn_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E anydirty :
+Theorem Op_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E anydirty :
   ↑invN ⊆ E ->
   (
     is_buftxn buftx mt γUnified dinit anydirty ∗
@@ -767,7 +767,7 @@ Proof.
     apply map_filter_lookup_Some; eauto.
 Qed.
 
-Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) anydirty :
+Theorem wp_Op__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) anydirty :
   {{{
     is_buftxn buftx mt γUnified dinit anydirty ∗
     (|NC={⊤ ∖ ↑walN ∖ ↑ invN}=> PreQ) ∧ (|NC={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
@@ -777,7 +777,7 @@ Theorem wp_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : 
           ghost_var γUnified.(txn_crashstates) (3/4) (async_put σ σl)
           -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN}=> Q (length (possible σl)) ))
   }}}
-    BufTxn__CommitWait #buftx #wait
+    Op__CommitWait #buftx #wait
   {{{
     (ok : bool), RET #ok;
     if ok then
@@ -1073,7 +1073,7 @@ Context `{!stagedG Σ}.
 
 Definition wpwpcN := nroot.@"temp".
 
-Theorem wpc_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q Qc : nat -> iProp Σ) {HT1: Timeless PreQ} {HT2: ∀ n, Timeless (Qc n)} anydirty k :
+Theorem wpc_Op__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q Qc : nat -> iProp Σ) {HT1: Timeless PreQ} {HT2: ∀ n, Timeless (Qc n)} anydirty k :
   {{{
     is_buftxn buftx mt γUnified dinit anydirty ∗
     <disc> PreQ ∧ ( |NC={⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
@@ -1083,7 +1083,7 @@ Theorem wpc_BufTxn__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait :
           ghost_var γUnified.(txn_crashstates) (3/4) (async_put σ σl)
           -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN}=> <disc> (▷ Qc (length (possible σl))) ∧ Q (length (possible σl)) ))
   }}}
-    BufTxn__CommitWait #buftx #wait @ (S k) ; ⊤
+    Op__CommitWait #buftx #wait @ (S k) ; ⊤
   {{{
     (ok : bool), RET #ok;
     if ok then
@@ -1152,7 +1152,7 @@ Proof using stagedG0.
   }
   iApply (wp_wpc).
   iApply wp_ncfupd.
-  wp_apply (wp_BufTxn__CommitWait (staged_pending (3/4) γpending -∗ |NC={⊤}=> PreQ) _ _ _ _ _ E
+  wp_apply (wp_Op__CommitWait (staged_pending (3/4) γpending -∗ |NC={⊤}=> PreQ) _ _ _ _ _ E
                                   (λ n, staged_pending (3/4) γpending -∗ |NC={⊤}=> Q n)%I
               with "[$His_buftxn Hfull Hpend14 HQ_keep]").
   { iSplit.

@@ -2,7 +2,7 @@ From Perennial.goose_lang Require Import lang notation typing.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list_slice.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
-From Goose.github_com.mit_pdos.go_journal Require Import obj twophase alloc.
+From Goose.github_com.mit_pdos.go_journal Require Import obj txn alloc.
 
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
@@ -15,24 +15,24 @@ From Goose Require github_com.mit_pdos.go_journal.lockmap.
 From Goose Require github_com.mit_pdos.go_journal.obj.
 From Goose Require github_com.mit_pdos.go_journal.util.
 
-Definition TwoPhase__ReadBuf' : val :=
-  λ: "twophase" "az", SliceToList byteT (TwoPhase__ReadBuf "twophase" (Fst "az") (Snd "az")).
+Definition Txn__ReadBuf' : val :=
+  λ: "twophase" "az", SliceToList byteT (Txn__ReadBuf "twophase" (Fst "az") (Snd "az")).
 
-Definition TwoPhase__OverWrite' : val :=
+Definition Txn__OverWrite' : val :=
   λ: "twophase" "ad",
   let: "s" := ListToSlice byteT (Snd "ad") in
-  TwoPhase__OverWrite "twophase" (Fst "ad") (slice.len "s" * #8) "s".
+  Txn__OverWrite "twophase" (Fst "ad") (slice.len "s" * #8) "s".
 
-Definition TwoPhase__OverWriteBit' : val :=
+Definition Txn__OverWriteBit' : val :=
   λ: "twophase" "ad",
-  TwoPhase__OverWriteBit "twophase" (Fst "ad") (Snd "ad").
+  Txn__OverWriteBit "twophase" (Fst "ad") (Snd "ad").
 
-Definition TwoPhase__ConditionalCommit' : val :=
+Definition Txn__ConditionalCommit' : val :=
   λ: "twophase" "v",
   match: "v" with
-      NONE => TwoPhase__ReleaseAll "twophase";; "v"
+      NONE => Txn__ReleaseAll "twophase";; "v"
     | SOME "_" =>
-    if: TwoPhase__Commit "twophase" then
+    if: Txn__Commit "twophase" then
       "v"
     else
       NONEV

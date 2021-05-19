@@ -190,7 +190,7 @@ def main():
             "util",
             "wal",
             "jrnl_replication",
-            "twophase",
+            "txn",
         ]
         for pkg in pkgs:
             run_goose(

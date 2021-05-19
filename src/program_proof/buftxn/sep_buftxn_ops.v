@@ -47,7 +47,7 @@ Section goose_lang.
   Implicit Types (l: loc) (γ: buftxn_names) (γtxn: gname).
   Implicit Types (obj: object).
 
-  Theorem wp_BufTxn__Begin' (l_txn: loc) γ dinit :
+  Theorem wp_Op__Begin' (l_txn: loc) γ dinit :
     {{{ is_txn l_txn γ.(buftxn_txn_names) dinit ∗ is_txn_system N γ }}}
       Begin #l_txn
     {{{
@@ -72,13 +72,13 @@ Section goose_lang.
     auto with iFrame.
   Qed.
 
-  Theorem wp_BufTxn__Begin (l_txn: loc) γ dinit :
+  Theorem wp_Op__Begin (l_txn: loc) γ dinit :
     {{{ is_txn l_txn γ.(buftxn_txn_names) dinit ∗ is_txn_system N γ }}}
       Begin #l_txn
     {{{ γtxn l, RET #l; is_buftxn N l γ dinit γtxn (λ _, emp) }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ".
-    wp_apply (wp_BufTxn__Begin' with "Hpre").
+    wp_apply (wp_Op__Begin' with "Hpre").
     iIntros (???) "[? ?]".
     iNamed.
     iApply "HΦ".
@@ -96,10 +96,10 @@ Section goose_lang.
                        bufData := objData obj;
                        bufDirty := dirty |}.
 
-  Theorem wp_BufTxn__ReadBuf l γ dinit γtxn γdurable (a: addr) (sz: u64) obj :
+  Theorem wp_Op__ReadBuf l γ dinit γtxn γdurable (a: addr) (sz: u64) obj :
     bufSz (objKind obj) = int.nat sz →
     {{{ is_buftxn_mem N l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a obj }}}
-      BufTxn__ReadBuf #l (addr2val a) #sz
+      Op__ReadBuf #l (addr2val a) #sz
     {{{ dirty (bufptr:loc), RET #bufptr;
         is_buf bufptr a (Build_buf _ (objData obj) dirty) ∗
         (∀ (obj': bufDataT (objKind obj)) dirty',
@@ -112,7 +112,7 @@ Section goose_lang.
     iNamed "Hbuftxn".
     iDestruct (map_valid with "Htxn_ctx Ha") as %Hmt_lookup.
     fmap_Some in Hmt_lookup as vo.
-    wp_apply (mspec.wp_BufTxn__ReadBuf with "[$Hbuftxn]").
+    wp_apply (mspec.wp_Op__ReadBuf with "[$Hbuftxn]").
     { iPureIntro.
       split; first by eauto.
       rewrite H.
@@ -195,7 +195,7 @@ Section goose_lang.
     reflexivity.
   Qed.
 
-  Theorem wp_BufTxn__OverWrite l γ dinit γtxn γdurable (a: addr) (sz: u64)
+  Theorem wp_Op__OverWrite l γ dinit γtxn γdurable (a: addr) (sz: u64)
           (data_s: Slice.t) (data: list byte) obj0 obj :
     bufSz (objKind obj) = int.nat sz →
     data_has_obj data a obj →
@@ -205,7 +205,7 @@ Section goose_lang.
         incorporated into the buftxn, is handed out in ReadBuf, and should then
         be mutable. *)
         is_slice_small data_s byteT 1 data }}}
-      BufTxn__OverWrite #l (addr2val a) #sz (slice_val data_s)
+      Op__OverWrite #l (addr2val a) #sz (slice_val data_s)
     {{{ RET #(); is_buftxn_mem N l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a obj }}}.
   Proof.
     iIntros (??? Φ) "Hpre HΦ".
@@ -214,7 +214,7 @@ Section goose_lang.
     iApply wp_fupd.
     iDestruct (map_valid with "Htxn_ctx Ha") as %Hlookup.
     fmap_Some in Hlookup as vo0.
-    wp_apply (mspec.wp_BufTxn__OverWrite _ _ _ _ _ _ (mspec.mkVersioned (objData (mspec.committed vo0)) (rew H1 in objData obj)) with "[$Hbuftxn Hdata]").
+    wp_apply (mspec.wp_Op__OverWrite _ _ _ _ _ _ (mspec.mkVersioned (objData (mspec.committed vo0)) (rew H1 in objData obj)) with "[$Hbuftxn Hdata]").
     { iSplit; eauto.
       iSplitL.
       - iApply data_has_obj_to_buf_data in "Hdata"; eauto.
@@ -243,13 +243,13 @@ Section goose_lang.
     destruct obj; simpl in *; subst; reflexivity.
   Qed.
 
-  Theorem wp_BufTxn__NDirty l γ dinit γtxn γdurable :
+  Theorem wp_Op__NDirty l γ dinit γtxn γdurable :
     {{{ is_buftxn_mem N l γ dinit γtxn γdurable }}}
-      BufTxn__NDirty #l
+      Op__NDirty #l
     {{{ (n:u64), RET #n; is_buftxn_mem N l γ dinit γtxn γdurable }}}.
   Proof.
     iIntros (Φ) "H HΦ". iNamed "H".
-    wp_apply (mspec.wp_BufTxn__NDirty with "Hbuftxn").
+    wp_apply (mspec.wp_Op__NDirty with "Hbuftxn").
     iIntros (n) "Hbuftxn".
     iApply "HΦ".
     iExists _, _; iFrameNamed.
@@ -308,13 +308,13 @@ Section goose_lang.
   Qed.
 
 
-  Theorem wp_BufTxn__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} :
+  Theorem wp_Op__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} :
     N ## invariant.walN →
     N ## invN →
     {{{ "Hbuftxn" ∷ is_buftxn N l γ dinit γtxn P0 ∗
         "HP" ∷ P (buftxn_maps_to γtxn)
     }}}
-      BufTxn__CommitWait #l #true
+      Op__CommitWait #l #true
     {{{ (ok:bool), RET #ok;
         if ok then
             P (λ a v, durable_mapsto_own γ a v)
@@ -335,7 +335,7 @@ Section goose_lang.
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
     (* here things are a little tricky because committing doesn't give us
     [durable_mapsto] but just [ephemeral_val_from] *)
-    wp_apply (mspec.wp_BufTxn__CommitWait
+    wp_apply (mspec.wp_Op__CommitWait
                 (* ([∗ map] a↦v ∈ (mspec.committed <$> mT),
                  ephemeral_val_from γ.(buftxn_async_name) txn_id0 a v) *) _
                 _ _ _ _ _ _
@@ -407,7 +407,7 @@ Section goose_lang.
       iExists _; iFrame.
   Qed.
 
-  Theorem wpc_BufTxn__CommitWait' {l γ γ' dinit γtxn γdurable committed_mT m} klevel :
+  Theorem wpc_Op__CommitWait' {l γ γ' dinit γtxn γdurable committed_mT m} klevel :
     N ## invariant.walN →
     N ## invN →
     N ## mspec.wpwpcN →
@@ -418,7 +418,7 @@ Section goose_lang.
       "Hstable" ∷ ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
       "#Htxn_cinv" ∷ txn_cinv N γ γ'
     }}}
-      BufTxn__CommitWait #l #true @ S klevel; ⊤
+      Op__CommitWait #l #true @ S klevel; ⊤
     {{{
       (ok:bool), RET #ok;
       ([∗ map] a↦v ∈ (if ok then m else committed_mT), durable_mapsto_own γ a v)
@@ -438,7 +438,7 @@ Section goose_lang.
 
     (* here things are a little tricky because committing doesn't give us
     [durable_mapsto] but just [ephemeral_val_from] *)
-    wpc_apply (mspec.wpc_BufTxn__CommitWait
+    wpc_apply (mspec.wpc_Op__CommitWait
                 (* ([∗ map] a↦v ∈ (mspec.committed <$> mT),
                  ephemeral_val_from γ.(buftxn_async_name) txn_id0 a v) *) _
                 _ _ _ _ _ _
@@ -537,7 +537,7 @@ Section goose_lang.
       apply _.
   Qed.
 
-  Theorem wpc_BufTxn__CommitWait {l γ γ' dinit γtxn} P0 P `{!Liftable P} klevel :
+  Theorem wpc_Op__CommitWait {l γ γ' dinit γtxn} P0 P `{!Liftable P} klevel :
     N ## invariant.walN →
     N ## invN →
     N ## mspec.wpwpcN ->
@@ -545,7 +545,7 @@ Section goose_lang.
         "HP" ∷ P (buftxn_maps_to γtxn) ∗
         "#Htxn_cinv" ∷ txn_cinv N γ γ'
     }}}
-      BufTxn__CommitWait #l #true @ S klevel; ⊤
+      Op__CommitWait #l #true @ S klevel; ⊤
     {{{ (ok:bool), RET #ok;
         if ok then
             P (λ a v, durable_mapsto_own γ a v)
@@ -561,7 +561,7 @@ Section goose_lang.
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable #HPrestore]".
 
     wpc_apply (
-      wpc_BufTxn__CommitWait'
+      wpc_Op__CommitWait'
       with "[$Hbuftxn_mem Hdurable_frag Hold_vals Hstable Htxn_cinv]"
     ).
     1-3: solve_ndisj.

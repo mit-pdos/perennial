@@ -2,7 +2,7 @@ From Perennial.goose_lang Require Import lang notation typing metatheory.
 From Perennial.goose_lang.lib Require Import map.impl list.impl.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
-From Goose.github_com.mit_pdos.go_journal Require Import obj twophase alloc.
+From Goose.github_com.mit_pdos.go_journal Require Import obj txn alloc.
 From Perennial.program_proof Require Import twophase.op_wrappers.
 From Perennial.program_proof Require buftxn.sep_buftxn_proof buf.defs.
 
@@ -161,18 +161,18 @@ Section translate.
   | readbuf_transTy e1 e1' e2 e2' :
       Γ @ tph ⊢ e1 -- e1' : addrT ->
       Γ @ tph ⊢ e2-- e2' : uint64T ->
-      Γ @ tph ⊢ ExternalOp (ext := spec_op) ReadBufOp (e1, e2) -- (TwoPhase__ReadBuf' tph (e1', e2')%E) : listT byteT
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) ReadBufOp (e1, e2) -- (Txn__ReadBuf' tph (e1', e2')%E) : listT byteT
   | readbit_transTy e1 e1' :
       Γ @ tph ⊢ e1 -- e1' : addrT ->
-      Γ @ tph ⊢ ExternalOp (ext := spec_op) ReadBitOp e1 -- (TwoPhase__ReadBufBit tph e1') : boolT
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) ReadBitOp e1 -- (Txn__ReadBufBit tph e1') : boolT
   | overwrite_transTy e1 e1' e2 e2' :
       Γ @ tph ⊢ e1 -- e1' : addrT ->
       Γ @ tph ⊢ e2 -- e2' : listT byteT ->
-      Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteOp (e1, e2) -- (TwoPhase__OverWrite' tph (e1', e2')%E) : unitT
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteOp (e1, e2) -- (Txn__OverWrite' tph (e1', e2')%E) : unitT
   | overwritebit_transTy e1 e1' e2 e2' :
       Γ @ tph ⊢ e1 -- e1' : addrT ->
       Γ @ tph ⊢ e2 -- e2' : boolT ->
-      Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteBitOp (e1, e2) -- (TwoPhase__OverWriteBit' tph (e1', e2')%E) : unitT
+      Γ @ tph ⊢ ExternalOp (ext := spec_op) OverWriteBitOp (e1, e2) -- (Txn__OverWriteBit' tph (e1', e2')%E) : unitT
  (* Alloc operations *)
   | markused_transTy e1 e1' e2 e2' :
       Γ @ tph ⊢ e1 -- e1' : extT AllocT ->
@@ -239,7 +239,7 @@ Section translate.
                             ebdy
                             (* This final argument is what Atomically etxn ebdy will get translated to *)
                             (let: tph := Begin etxn' in
-                             TwoPhase__ConditionalCommit' (Var tph) ebdy') t.
+                             Txn__ConditionalCommit' (Var tph) ebdy') t.
 
 End translate.
 

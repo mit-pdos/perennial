@@ -1027,7 +1027,7 @@ Proof.
     { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
-    iPoseProof (wp_TwoPhase__ReadBuf' tph _ _ _ _ _ _ _ _ (a, o) x with "Hj") as "H".
+    iPoseProof (wp_Txn__ReadBuf' tph _ _ _ _ _ _ _ _ (a, o) x with "Hj") as "H".
     iApply "H".
     iNext. iIntros (v) "H". iExists _. iFrame.
     iApply atomically_listT_interp_refl_obj.
@@ -1047,7 +1047,7 @@ Proof.
     replace (#a, (#o, #()))%V with (addr2val (a,o)) by auto.
     replace (#a, (#o, #()))%V with (addr2val' (a,o)) by auto.
     iApply wp_wpc.
-    iPoseProof (wp_TwoPhase__ReadBufBit' tph _ _ _ _ _ _ _ _ (a, o) with "Hj") as "H".
+    iPoseProof (wp_Txn__ReadBufBit' tph _ _ _ _ _ _ _ _ (a, o) with "Hj") as "H".
     iApply "H".
     iNext. iIntros (v) "H". iExists _. iFrame.
     iExists _. eauto.
@@ -1082,7 +1082,7 @@ Proof.
     { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
-    iPoseProof (wp_TwoPhase__OverWrite' tph _ _ _ _ _ _ _ _ (a, o) (objBytes v) with "Hj") as "H".
+    iPoseProof (wp_Txn__OverWrite' tph _ _ _ _ _ _ _ _ (a, o) (objBytes v) with "Hj") as "H".
     iApply "H".
     iNext. iIntros "H". iExists _. iFrame.
     eauto.
@@ -1119,7 +1119,7 @@ Proof.
     { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
     }
-    iPoseProof (wp_TwoPhase__OverWriteBit' tph _ _ _ _ _ _ _ _ (a, o) (objBit b) with "Hj") as "H".
+    iPoseProof (wp_Txn__OverWriteBit' tph _ _ _ _ _ _ _ _ (a, o) (objBit b) with "Hj") as "H".
     iApply "H".
     iNext. iIntros "H". iExists _. iFrame.
     eauto.

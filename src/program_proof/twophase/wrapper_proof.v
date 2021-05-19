@@ -2,7 +2,7 @@ From Perennial.goose_lang Require Import lang notation typing.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list.list_slice slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
-From Goose.github_com.mit_pdos.go_journal Require Import obj twophase.
+From Goose.github_com.mit_pdos.go_journal Require Import obj txn.
 From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.program_proof Require Import twophase.op_wrappers typed_translate.
 From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
@@ -59,8 +59,8 @@ Section proof.
 
   Definition is_twophase_pre l (γ γ' : buftxn_names) dinit (objs_dom: gset addr) : iProp Σ :=
     ∃ (txnl locksl : loc) ghs,
-      "#Hpre.txn" ∷ readonly (l ↦[TwoPhasePre :: "txn"] #txnl) ∗
-      "#Hpre.locks" ∷ readonly (l ↦[TwoPhasePre :: "locks"] #locksl) ∗
+      "#Hpre.txn" ∷ readonly (l ↦[txn.Log :: "txn"] #txnl) ∗
+      "#Hpre.locks" ∷ readonly (l ↦[txn.Log :: "locks"] #locksl) ∗
       "#Histxn_system" ∷ is_txn_system Nbuftxn γ ∗
       "#Histxn" ∷ is_txn txnl γ.(buftxn_txn_names) dinit ∗
       "#HlockMap" ∷ is_lockMap locksl ghs (set_map addr2flat objs_dom)
@@ -253,7 +253,7 @@ Section proof.
     assumption.
   Qed.
 
-  Theorem wp_TwoPhase__Begin' N prel γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} (ls: sval) e1 :
+  Theorem wp_Txn__Begin' N prel γ γ' dinit objs_dom j K {HCTX: LanguageCtx K} (ls: sval) e1 :
     {{{
       "Htwophase" ∷ is_twophase_pre prel γ γ' dinit objs_dom ∗
       "Hatom" ∷ j ⤇ K (Atomically ls e1)
@@ -265,7 +265,7 @@ Section proof.
     iIntros (Φ) "Hpre HΦ".
     iNamed "Hpre".
     iNamed "Htwophase".
-    wp_apply (wp_TwoPhase__Begin_raw with "[$]"); [ rewrite /LVL; lia | assumption |..].
+    wp_apply (wp_Txn__Begin_raw with "[$]"); [ rewrite /LVL; lia | assumption |..].
     iIntros (?) "?".
     iNamed.
 
@@ -285,9 +285,9 @@ Section proof.
     rewrite /wf_jrnl /offsets_aligned dom_empty_L //.
   Qed.
 
-  Theorem wp_TwoPhase__CommitNoRelease' l γ γ' dinit objs_dom j K e1 v :
+  Theorem wp_Txn__commitNoRelease' l γ γ' dinit objs_dom j K e1 v :
     {{{ is_twophase_started l γ γ' dinit objs_dom j K e1 (SOMEV v) }}}
-      TwoPhase__CommitNoRelease #l
+      Txn__commitNoRelease #l
     {{{ (ok:bool), RET #ok;
         "Htwophase" ∷ is_twophase_releasable l γ γ' objs_dom ∗
         "Hj" ∷ (
@@ -303,7 +303,7 @@ Section proof.
     iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
     iApply wp_ncfupd.
     unshelve (wp_apply (
-      wp_TwoPhase__CommitNoRelease_raw
+      wp_Txn__commitNoRelease_raw
       _ _ _ _ _ _ _ _
       (j ⤇ K (SOMEV v))%I
       (|NC={⊤}=> j ⤇ K NONEV)%I
@@ -592,14 +592,14 @@ Section proof.
     rewrite /mapsto_valid //.
   Qed.
 
-  Theorem wp_TwoPhase__ReleaseAll' l γ γ' objs_dom :
+  Theorem wp_Txn__ReleaseAll' l γ γ' objs_dom :
     {{{ is_twophase_releasable l γ γ' objs_dom }}}
-      TwoPhase__ReleaseAll #l
+      Txn__ReleaseAll #l
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "Htwophase HΦ".
     iNamed "Htwophase".
-    wp_apply (wp_TwoPhase__ReleaseAll with "[$]").
+    wp_apply (wp_Txn__ReleaseAll with "[$]").
     iApply "HΦ".
     trivial.
   Qed.
@@ -1029,7 +1029,7 @@ Section proof.
     eapply stuck'_fill; eauto.
   Qed.
 
-  Theorem wp_TwoPhase__ReadBuf' l γ γ' dinit objs_dom j K0 K
+  Theorem wp_Txn__ReadBuf' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
             (ext := @spec_ffi_op_field _)
             (ffi := (spec_ffi_model_field))
@@ -1040,7 +1040,7 @@ Section proof.
         (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
           ReadBufOp (PairV (addr2val' a) #sz)))
     }}}
-      TwoPhase__ReadBuf' #l (addr2val a, #sz)
+      Txn__ReadBuf' #l (addr2val a, #sz)
     {{{ data, RET (val_of_obj (objBytes data));
         is_twophase_started l γ γ' dinit objs_dom j K0 e1
           (K (val_of_obj' (objBytes data)))
@@ -1052,7 +1052,7 @@ Section proof.
     iNamed "Htwophase".
     iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
       [eassumption|eassumption|].
-    rewrite /TwoPhase__ReadBuf'.
+    rewrite /Txn__ReadBuf'.
 
 
     destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
@@ -1069,7 +1069,7 @@ Section proof.
     }
 
 
-    wp_apply (wp_TwoPhase__ReadBuf_raw with "Htwophase");
+    wp_apply (wp_Txn__ReadBuf_raw with "Htwophase");
       [assumption|rewrite Hk -Hsz //|].
     iIntros (????) "Hpost".
     iNamed "Hpost".
@@ -1175,7 +1175,7 @@ Section proof.
       intuition.
   Qed.
 
-  Theorem wp_TwoPhase__ReadBufBit' l γ γ' dinit objs_dom j K0 K
+  Theorem wp_Txn__ReadBufBit' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
             (ext := @spec_ffi_op_field _)
             (ffi := (spec_ffi_model_field))
@@ -1186,7 +1186,7 @@ Section proof.
         (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
           ReadBitOp (addr2val' a)))
     }}}
-      TwoPhase__ReadBufBit #l (addr2val a)
+      Txn__ReadBufBit #l (addr2val a)
     {{{ data, RET (val_of_obj (objBit data));
         is_twophase_started l γ γ' dinit objs_dom j K0 e1
           (K (val_of_obj' (objBit data)))
@@ -1198,7 +1198,7 @@ Section proof.
     iNamed "Htwophase".
     iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
       [eassumption|eassumption|].
-    rewrite /TwoPhase__ReadBuf'.
+    rewrite /Txn__ReadBuf'.
 
 
     destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
@@ -1215,7 +1215,7 @@ Section proof.
     }
 
 
-    wp_apply (wp_TwoPhase__ReadBufBit with "Htwophase");
+    wp_apply (wp_Txn__ReadBufBit with "Htwophase");
       [assumption|rewrite Hk //|].
     iIntros (??) "Hpost".
     iNamed "Hpost".
@@ -1312,7 +1312,7 @@ Section proof.
       }
   Qed.
 
-  Theorem wp_TwoPhase__OverWrite' l γ γ' dinit objs_dom j K0 K
+  Theorem wp_Txn__OverWrite' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
             (ext := @spec_ffi_op_field _)
             (ffi := (spec_ffi_model_field))
@@ -1324,7 +1324,7 @@ Section proof.
         (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
           OverWriteOp (PairV (addr2val' a) (val_of_obj' ov))))
     }}}
-      TwoPhase__OverWrite' #l (addr2val a, val_of_obj ov)
+      Txn__OverWrite' #l (addr2val a, val_of_obj ov)
     {{{ RET #();
         is_twophase_started l γ γ' dinit objs_dom j K0
                             e1 (K #())
@@ -1337,7 +1337,7 @@ Section proof.
     iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
       [eassumption|eassumption|].
     destruct Hwf_jrnl as [Hwf_jrnl1 Hwf_jrnl2].
-    rewrite /TwoPhase__OverWrite'.
+    rewrite /Txn__OverWrite'.
 
     destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
     apply not_stuck'_OverWrite_inv in Hnotstuck
@@ -1379,7 +1379,7 @@ Section proof.
     iDestruct (is_slice_small_sz with "Hslice") as "%Hsz".
     rewrite list_untype_length in Hsz.
 
-    wp_apply (wp_TwoPhase__OverWrite_raw with "[$Htwophase $Hslice]");
+    wp_apply (wp_Txn__OverWrite_raw with "[$Htwophase $Hslice]");
       first by assumption.
     1: rewrite Hk //.
     {
@@ -1547,7 +1547,7 @@ Section proof.
       apply Halways_steps'.
   Qed.
 
-  Theorem wp_TwoPhase__OverWriteBit' l γ γ' dinit objs_dom j K0 K
+  Theorem wp_Txn__OverWriteBit' l γ γ' dinit objs_dom j K0 K
           {Hctx: LanguageCtx'
             (ext := @spec_ffi_op_field _)
             (ffi := (spec_ffi_model_field))
@@ -1559,7 +1559,7 @@ Section proof.
         (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
           OverWriteBitOp (PairV (addr2val' a) (val_of_obj' ov))))
     }}}
-      TwoPhase__OverWriteBit' #l (addr2val a, val_of_obj ov)
+      Txn__OverWriteBit' #l (addr2val a, val_of_obj ov)
     {{{ RET #();
         is_twophase_started l γ γ' dinit objs_dom j K0
                             e1 (K #())
@@ -1572,7 +1572,7 @@ Section proof.
     iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl";
       [eassumption|eassumption|].
     destruct Hwf_jrnl as [Hwf_jrnl1 Hwf_jrnl2].
-    rewrite /TwoPhase__OverWrite'.
+    rewrite /Txn__OverWrite'.
 
     destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
     apply not_stuck'_OverWriteBit_inv in Hnotstuck
@@ -1590,9 +1590,9 @@ Section proof.
     }
 
 
-    rewrite /TwoPhase__OverWriteBit'.
+    rewrite /Txn__OverWriteBit'.
     wp_pures.
-    wp_apply (wp_TwoPhase__OverWriteBit with "[$Htwophase]");
+    wp_apply (wp_Txn__OverWriteBit with "[$Htwophase]");
       first by assumption.
     1: rewrite Hk //.
     iIntros (?) "Hpost".

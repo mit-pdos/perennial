@@ -1,6 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 From Perennial.program_proof Require Import disk_prelude.
-From Goose.github_com.mit_pdos.go_journal Require Import twophase.
+From Goose.github_com.mit_pdos.go_journal Require Import txn.
 From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
 From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
@@ -67,9 +67,9 @@ Definition twophase_linv_flat k ex_mapsto γ γ' flat_addr : iProp Σ :=
 
 Definition is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat (locks_held: gset u64) : iProp Σ :=
   ∃ (locksl: loc) (acquired_m: loc) ghs,
-    "Htwophase.locks" ∷ l ↦[TwoPhase :: "locks"] #locksl ∗
+    "Htwophase.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
     "Htwophase.acquired" ∷
-      l ↦[TwoPhase :: "acquired"] #acquired_m ∗
+      l ↦[Txn :: "acquired"] #acquired_m ∗
     "Hacquired_m" ∷ is_map acquired_m 1
       (set_to_map (λ k, (k, true)) locks_held) ∗
     "Hlockeds" ∷ ([∗ set] flat_a ∈ locks_held,
@@ -91,7 +91,7 @@ Qed.
 
 Definition is_twophase_buftxn l γ dinit mt_changed : iProp Σ :=
   ∃ (buftxnl: loc) γtxn γdurable,
-    "Htwophase.buftxn" ∷ l ↦[TwoPhase :: "buftxn"] #buftxnl ∗
+    "Htwophase.buftxn" ∷ l ↦[Txn :: "buftxn"] #buftxnl ∗
     "Hbuftxn_mem" ∷ is_buftxn_mem
       Nbuftxn buftxnl γ dinit γtxn γdurable ∗
     "Hbuftxn_durable_frag" ∷ map_ctx
@@ -321,12 +321,12 @@ Proof.
   iModIntro. iExists _. iFrame.
 Qed.
 
-Theorem wp_TwoPhase__Begin_raw (prel txnl locksl: loc) γ γ' dinit k ex_mapsto ghs objs_dom :
+Theorem wp_Txn__Begin_raw (prel txnl locksl: loc) γ γ' dinit k ex_mapsto ghs objs_dom :
   0 < k →
   set_Forall valid_addr objs_dom →
   {{{
-    "#Hpre.txn_ro" ∷ readonly (prel ↦[TwoPhasePre :: "txn"] #txnl) ∗
-    "#Hpre.locks_ro" ∷ readonly (prel ↦[TwoPhasePre :: "locks"] #locksl) ∗
+    "#Hpre.txn_ro" ∷ readonly (prel ↦[txn.Log :: "txn"] #txnl) ∗
+    "#Hpre.locks_ro" ∷ readonly (prel ↦[txn.Log :: "locks"] #locksl) ∗
     "#Htxn" ∷ (
       invariant.is_txn txnl γ.(buftxn_txn_names) dinit ∗
       is_txn_system Nbuftxn γ
@@ -443,14 +443,14 @@ Proof.
   apply list_fmap_id.
 Qed.
 
-Theorem wp_TwoPhase__acquireNoCheck l γ γ' k ex_mapsto objs_dom_flat locks_held (a: addr):
+Theorem wp_Txn__acquireNoCheck l γ γ' k ex_mapsto objs_dom_flat locks_held (a: addr):
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
   addr2flat a ∉ locks_held →
   {{{
     "Hlocks" ∷ is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat locks_held
   }}}
-    TwoPhase__acquireNoCheck #l (addr2val a)
+    Txn__acquireNoCheck #l (addr2val a)
   {{{
     RET #();
     "Hlocks" ∷ is_twophase_locks
@@ -531,13 +531,13 @@ Proof.
   set_solver.
 Qed.
 
-Theorem wp_TwoPhase__isAlreadyAcquired l γ γ' k ex_mapsto objs_dom_flat locks_held a :
+Theorem wp_Txn__isAlreadyAcquired l γ γ' k ex_mapsto objs_dom_flat locks_held a :
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
   {{{
     "Hlocks" ∷ is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat locks_held
   }}}
-    TwoPhase__isAlreadyAcquired #l (addr2val a)
+    Txn__isAlreadyAcquired #l (addr2val a)
   {{{
     RET #(bool_decide (addr2flat a ∈ locks_held));
     "Hlocks" ∷ is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat locks_held
@@ -579,13 +579,13 @@ Proof.
   iFrame "∗ # %".
 Qed.
 
-Theorem wp_TwoPhase__Acquire l γ γ' k ex_mapsto objs_dom_flat locks_held (a: addr):
+Theorem wp_Txn__Acquire l γ γ' k ex_mapsto objs_dom_flat locks_held (a: addr):
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
   {{{
     "Hlocks" ∷ is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat locks_held
   }}}
-    TwoPhase__Acquire #l (addr2val a)
+    Txn__Acquire #l (addr2val a)
   {{{
     RET #();
     let a_locked := addr2flat a ∈ locks_held in
@@ -603,7 +603,7 @@ Proof.
   intros Ha_valid Hin_spec.
   wp_start.
   wp_call.
-  wp_apply (wp_TwoPhase__isAlreadyAcquired with "Hlocks");
+  wp_apply (wp_Txn__isAlreadyAcquired with "Hlocks");
     [assumption|assumption|].
   iNamed 1.
   wp_if_destruct.
@@ -612,7 +612,7 @@ Proof.
     rewrite !(decide_True _ _ Heqb).
     by iFrame.
   }
-  wp_apply (wp_TwoPhase__acquireNoCheck with "Hlocks");
+  wp_apply (wp_Txn__acquireNoCheck with "Hlocks");
     [assumption|assumption|assumption|].
   iNamed 1.
   iApply "HΦ".
@@ -782,13 +782,13 @@ Proof.
   destruct x; rewrite //=.
 Qed.
 
-Theorem wp_TwoPhase__Acquire_lift l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} k objs_dom mt_changed a:
+Theorem wp_Txn__Acquire_lift l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} k objs_dom mt_changed a:
   a ∈ objs_dom →
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit k ex_mapsto objs_dom mt_changed
   }}}
-    TwoPhase__Acquire #l (addr2val a)
+    Txn__Acquire #l (addr2val a)
   {{{
     obj, RET #();
     let mt_changed' :=
@@ -807,7 +807,7 @@ Proof.
     as "%Hmt_in_spec".
   iNamed "Htwophase".
   iApply wp_ncfupd.
-  wp_apply (wp_TwoPhase__Acquire with "Hlocks").
+  wp_apply (wp_Txn__Acquire with "Hlocks").
   {
     apply Haddrs_valid.
     assumption.
@@ -889,14 +889,14 @@ Proof.
   iApply ((IHl HNoDup) with "Hsep").
 Qed.
 
-Theorem wp_TwoPhase__ReleaseAll l γ γ' k ex_mapsto objs_dom_flat locks_held :
+Theorem wp_Txn__ReleaseAll l γ γ' k ex_mapsto objs_dom_flat locks_held :
   {{{
     "Hlocks" ∷ is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat locks_held ∗
     "Hlinvs" ∷ ([∗ set] flat_a ∈ locks_held, (
       "Hlinv" ∷ twophase_linv_flat k ex_mapsto γ γ' flat_a
     ))
   }}}
-    TwoPhase__ReleaseAll #l
+    Txn__ReleaseAll #l
   {{{
     RET #(); True
   }}}.
@@ -908,7 +908,7 @@ Proof.
   wp_apply (
     wp_MapIter_3 _ _ _ _ _
     (λ mtodo mdone,
-      "Htwophase.locks" ∷ l ↦[TwoPhase :: "locks"] #locksl ∗
+      "Htwophase.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
       "Hlockeds" ∷ ([∗ set] flat_a ∈ dom (gset _) mtodo,
         "Hlocked" ∷ Locked ghs flat_a
       ) ∗
@@ -1053,7 +1053,7 @@ Proof.
   }
 Qed.
 
-Theorem wp_TwoPhase__CommitNoRelease_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Discretizable (ex_mapsto a obj)} `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed Qok Qnok :
+Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Discretizable (ex_mapsto a obj)} `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed Qok Qnok :
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit k ex_mapsto objs_dom mt_changed ∗
@@ -1092,7 +1092,7 @@ Theorem wp_TwoPhase__CommitNoRelease_raw l γ γ' dinit k ex_mapsto `{!∀ a obj
       )
     )
   }}}
-    TwoPhase__CommitNoRelease #l
+    Txn__commitNoRelease #l
   {{{
     (ok:bool), RET #ok;
     "Hlocks" ∷ is_twophase_locks
@@ -1270,14 +1270,14 @@ Proof.
     assumption.
 Qed.
 
-Theorem wp_TwoPhase__readBufNoAcquire l γ γ' dinit k ex_mapsto objs_dom mt_changed a obj (sz: u64) :
+Theorem wp_Txn__readBufNoAcquire l γ γ' dinit k ex_mapsto objs_dom mt_changed a obj (sz: u64) :
   modified <$> (mt_changed !! a) = Some obj →
   bufSz (objKind obj) = int.nat sz →
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit k ex_mapsto objs_dom mt_changed
   }}}
-    TwoPhase__readBufNoAcquire #l (addr2val a) #sz
+    Txn__readBufNoAcquire #l (addr2val a) #sz
   {{{
     data_s data, RET (slice_val data_s);
     "Htwophase" ∷ is_twophase_raw
@@ -1327,7 +1327,7 @@ Proof.
   by iFrame "# %".
 Qed.
 
-Theorem wp_TwoPhase__ReadBuf_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a sz :
+Theorem wp_Txn__ReadBuf_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a sz :
   a ∈ objs_dom →
   bufSz <$> (
     γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock)
@@ -1336,7 +1336,7 @@ Theorem wp_TwoPhase__ReadBuf_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Timele
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit k ex_mapsto objs_dom mt_changed
   }}}
-    TwoPhase__ReadBuf #l (addr2val a) #sz
+    Txn__ReadBuf #l (addr2val a) #sz
   {{{
     data_s data obj mt_changed', RET (slice_val data_s);
     "Htwophase" ∷ is_twophase_raw
@@ -1358,13 +1358,13 @@ Proof.
   wp_call.
   apply fmap_Some in Hsz.
   destruct Hsz as [kind [Hkind Hsz]].
-  wp_apply (wp_TwoPhase__Acquire_lift with "Htwophase"); first by assumption.
+  wp_apply (wp_Txn__Acquire_lift with "Htwophase"); first by assumption.
 
   iIntros (obj') "?".
   iNamed.
   iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
   wp_apply (
-    wp_TwoPhase__readBufNoAcquire
+    wp_Txn__readBufNoAcquire
     _ _ _ _ _ _ _ _ _
     (
       match mt_changed !! a with
@@ -1425,14 +1425,14 @@ Proof.
   congruence.
 Qed.
 
-Theorem wp_TwoPhase__ReadBufBit l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a :
+Theorem wp_Txn__ReadBufBit l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a :
   a ∈ objs_dom →
   γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit →
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit k ex_mapsto objs_dom mt_changed
   }}}
-    TwoPhase__ReadBufBit #l (addr2val a)
+    Txn__ReadBufBit #l (addr2val a)
   {{{
     b mt_changed', RET #b;
     "Htwophase" ∷ is_twophase_raw
@@ -1453,7 +1453,7 @@ Proof.
   intros Ha_in_dom Hkind.
   wp_start.
   wp_call.
-  wp_apply (wp_TwoPhase__ReadBuf_raw with "Htwophase").
+  wp_apply (wp_Txn__ReadBuf_raw with "Htwophase").
   1: eassumption.
   1: rewrite Hkind //.
   iIntros (????) "Hpost".
@@ -1503,7 +1503,7 @@ Proof.
   - rewrite Hmt_changed' //.
 Qed.
 
-Theorem wp_TwoPhase__OverWrite_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a sz data_s data obj' :
+Theorem wp_Txn__OverWrite_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a sz data_s data obj' :
   a ∈ objs_dom →
   γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some (objKind obj') →
   bufSz (objKind obj') = int.nat sz →
@@ -1513,7 +1513,7 @@ Theorem wp_TwoPhase__OverWrite_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Time
       l γ γ' dinit k ex_mapsto objs_dom mt_changed ∗
     "Hdata_s" ∷ is_slice_small data_s byteT 1 data
   }}}
-    TwoPhase__OverWrite #l (addr2val a) #sz (slice_val data_s)
+    Txn__OverWrite #l (addr2val a) #sz (slice_val data_s)
   {{{
     vobj, RET #();
     "Htwophase" ∷ is_twophase_raw
@@ -1530,7 +1530,7 @@ Proof.
   intros Ha_in_dom Hobj' Hsz Hdata.
   wp_start.
   wp_call.
-  wp_apply (wp_TwoPhase__Acquire_lift with "Htwophase");
+  wp_apply (wp_Txn__Acquire_lift with "Htwophase");
     first by assumption.
   iIntros (?) "?".
   iNamed.
@@ -1710,14 +1710,14 @@ Proof.
   lia.
 Qed.
 
-Theorem wp_TwoPhase__OverWriteBit l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a b :
+Theorem wp_Txn__OverWriteBit l γ γ' dinit k ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a b :
   a ∈ objs_dom →
   γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit →
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit k ex_mapsto objs_dom mt_changed
   }}}
-    TwoPhase__OverWriteBit #l (addr2val a) #b
+    Txn__OverWriteBit #l (addr2val a) #b
   {{{
     vobj, RET #();
     "Htwophase" ∷ is_twophase_raw
@@ -1755,7 +1755,7 @@ Proof.
   iIntros "Hslice".
   rewrite unsigned_U64 /word.wrap Z.mod_small //=.
   unshelve (wp_apply (
-    wp_TwoPhase__OverWrite_raw _ _ _ _ _ _ _ _ _ _ _ _
+    wp_Txn__OverWrite_raw _ _ _ _ _ _ _ _ _ _ _ _
     (existT _ (bufBit b))
     with "[$Htwophase $Hslice]"
   )).

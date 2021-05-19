@@ -210,7 +210,7 @@ Proof.
   iDestruct "Hpost" as "(#Htxn & #Htxn_system & Hcfupd & Hcinv)".
   wpc_pures.
   wpc_frame "HΦ".
-  wp_apply (wp_BufTxn__Begin with "[$Htxn $Htxn_system]").
+  wp_apply (wp_Op__Begin with "[$Htxn $Htxn_system]").
   iIntros (γtxn l).
   iIntros "Hbuftxn".
   wp_pures.
