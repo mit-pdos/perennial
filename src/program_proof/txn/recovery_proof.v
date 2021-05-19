@@ -857,7 +857,7 @@ Theorem wpc_MkLog E d dinit (γ:txn_names) k :
   ↑walN ⊆ E →
   ↑invN ⊆ E →
   {{{ is_txn_durable γ dinit }}}
-    MkLog (disk_val d) @ k; ⊤
+    obj.MkLog (disk_val d) @ k; ⊤
   {{{ γ' (l: loc), RET #l;
       is_txn l γ dinit ∗
       txn_cfupd_cancel E dinit 0 γ' ∗
@@ -866,7 +866,7 @@ Theorem wpc_MkLog E d dinit (γ:txn_names) k :
       ∗ (⌜ γ' = γ ⌝ ∨ txn_resources γ γ' logm') }}}.
 Proof.
   iIntros (?? Φ Φc) "Hdur HΦ".
-  rewrite /MkLog. wpc_pures.
+  rewrite /obj.MkLog. wpc_pures.
   { crash_case. iExists _, _. iFrame. eauto. }
 
   iCache with "Hdur HΦ".
@@ -874,7 +874,7 @@ Proof.
   wpc_bind (lock.new _).
   wpc_frame; wp_apply (wp_new_free_lock).
   iIntros (lk) "Hlock". iNamed 1.
-  wpc_bind (MkLog _).
+  wpc_bind (wal.MkLog _).
   iNamed "Hdur".
   iMod (alloc_heapspec_init_ghost_state (γ.(txn_walnames).(wal_heap_walnames)))
          as (γ'_txn_walnames ?) "Hheapspec_init".
