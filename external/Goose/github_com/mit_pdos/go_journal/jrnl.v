@@ -38,6 +38,10 @@ From Goose Require github_com.mit_pdos.go_journal.util.
    partitioned into inodes, data blocks, and bitmap allocators for each (sized
    appropriately), all allocated statically. *)
 
+Definition LogBlocks : expr := #511.
+
+Definition LogBytes : expr := #4096 * #511.
+
 (* Op is an in-progress journal operation.
 
    Call CommitWait to persist the operation's writes.
@@ -94,16 +98,6 @@ Definition Op__OverWrite: val :=
 Definition Op__NDirty: val :=
   rec: "Op__NDirty" "op" :=
     buf.BufMap__Ndirty (struct.loadF Op "bufs" "op").
-
-(* LogSz returns 511 *)
-Definition Op__LogSz: val :=
-  rec: "Op__LogSz" "op" :=
-    obj.Log__LogSz (struct.loadF Op "log" "op").
-
-(* LogSzBytes returns 511*4096 *)
-Definition Op__LogSzBytes: val :=
-  rec: "Op__LogSzBytes" "op" :=
-    obj.Log__LogSz (struct.loadF Op "log" "op") * disk.BlockSize.
 
 (* CommitWait commits the writes in the transaction to disk.
 
