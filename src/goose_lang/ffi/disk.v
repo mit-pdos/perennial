@@ -126,6 +126,11 @@ Section disk.
     let: "p" := ExternalOp ReadOp (Var "a") in
     raw_slice byteT (Var "p") #4096.
 
+  Definition ReadTo: val :=
+    λ: "a" "buf",
+    let: "p" := ExternalOp ReadOp (Var "a") in
+    MemCpy_rec byteT (slice.ptr (Var "buf")) (Var "p") #4096.
+
   (*
   Theorem Read_t : ⊢ Read : (uint64T -> blockT).
   Proof.

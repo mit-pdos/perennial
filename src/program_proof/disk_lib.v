@@ -220,6 +220,46 @@ Proof.
   iApply "HQ"; iFrame.
 Qed.
 
+Lemma wp_ReadTo_atomic (a: u64) b0 s q :
+  ⊢ {{{ is_block_full s b0 }}}
+  <<< ∀∀ b, int.Z a d↦{q} b >>>
+      ReadTo #a (slice_val s) @ ⊤
+    <<< ▷ int.Z a d↦{q} b >>>
+    {{{ RET #(); is_block_full s b }}}.
+Proof.
+  iIntros "!#" (Φ) "Hs Hupd".
+  wp_call.
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
+  wp_bind (ExternalOp _ _).
+  iApply (wp_ncatomic _ _ ∅).
+  iMod "Hupd" as (db0) "[Hda Hupd]"; iModIntro.
+  wp_apply (wp_ReadOp with "[$Hda]").
+  iIntros (l) "(Hda&Hl)".
+  iMod ("Hupd" with "Hda") as "HQ".
+  iModIntro.
+  wp_pures.
+  wp_apply wp_slice_ptr.
+  iDestruct "Hs" as "[Hs Hcap]".
+  iDestruct "Hs" as "[Hs _]".
+  wp_apply (wp_MemCpy_rec with "[Hs Hl]").
+  { iFrame.
+    iDestruct (array_to_block_array with "Hl") as "$".
+    iPureIntro.
+    rewrite !length_Block_to_vals.
+    rewrite /block_bytes.
+    split; [ reflexivity | ].
+    cbv; congruence.
+  }
+  rewrite take_ge; last first.
+  { rewrite length_Block_to_vals.
+    rewrite /block_bytes //. }
+  iIntros "[Hs Hl]".
+  iApply "HQ".
+  iFrame.
+  iPureIntro.
+  move: Hsz; rewrite !length_Block_to_vals //.
+Qed.
+
 Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
   {{{ |NC={⊤,E'}=> ∃ b, int.Z a d↦{q} b ∗ ▷ (int.Z a d↦{q} b -∗ |NC={E',⊤}=> Q b) }}}
     Read #a
