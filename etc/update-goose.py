@@ -207,18 +207,11 @@ def main():
             "simple",
         ]
         for pkg in pkgs:
-            if pkg == ".":
-                run_goose(
-                    goose_nfsd_dir,
-                    path.join(perennial_dir, "external/Goose"),
-                    pkg="github.com/mit-pdos/goose-nfsd",
-                )
-            else:
-                run_goose(
-                    path.join(goose_nfsd_dir, pkg),
-                    path.join(perennial_dir, "external/Goose"),
-                    pkg="github.com/mit-pdos/goose-nfsd/" + pkg,
-                )
+            run_goose(
+                path.join(goose_nfsd_dir, pkg),
+                path.join(perennial_dir, "external/Goose"),
+                pkg="github.com/mit-pdos/goose-nfsd/" + pkg,
+            )
         # the workaround here is to have a directory nfstypes that only has
         # nfs_types.go and not nfs_xdr.go (Goose doesn't support excluding some
         # files)
