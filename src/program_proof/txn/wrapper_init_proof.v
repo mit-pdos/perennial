@@ -4,12 +4,12 @@ From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.go_journal Require Import obj txn.
 From Perennial.program_proof Require Import lockmap_proof.
-From Perennial.program_proof Require Import twophase.op_wrappers.
+From Perennial.program_proof Require Import txn.op_wrappers.
 From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof obj.obj_proof.
 From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
-From Perennial.program_proof Require Import twophase.twophase_proof.
-From Perennial.program_proof Require Import twophase.wrapper_proof.
-From Perennial.program_proof Require Import twophase.twophase_refinement_defs.
+From Perennial.program_proof Require Import txn.txn_proof.
+From Perennial.program_proof Require Import txn.wrapper_proof.
+From Perennial.program_proof Require Import txn.twophase_refinement_defs.
 From Perennial.program_logic Require Import na_crash_inv.
 From Perennial.goose_lang.lib.list Require Import list.
 From Perennial.goose_lang Require Import spec_assert.

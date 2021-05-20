@@ -16,9 +16,9 @@ From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Perennial.program_proof Require Import addr.addr_proof.
-From Perennial.program_proof Require Import twophase.typed_translate.
-From Perennial.program_proof Require Import twophase.twophase_refinement_defs.
-From Perennial.program_proof Require Import twophase.wrapper_proof.
+From Perennial.program_proof Require Import txn.typed_translate.
+From Perennial.program_proof Require Import txn.twophase_refinement_defs.
+From Perennial.program_proof Require Import txn.wrapper_proof.
 From Perennial.program_proof Require Import alloc.alloc_proof.
 From Perennial.program_proof Require jrnl.sep_jrnl_proof.
 

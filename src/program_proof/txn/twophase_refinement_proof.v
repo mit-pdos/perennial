@@ -2,9 +2,9 @@ From Perennial.goose_lang.lib Require Import encoding crash_lock.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import
-     twophase.typed_translate twophase.wrapper_proof twophase.wrapper_init_proof
-     twophase.twophase_refinement_defs twophase.twophase_sub_logical_reln_defs
-     twophase.typed_translate_facts
+     txn.typed_translate txn.wrapper_proof txn.wrapper_init_proof
+     txn.twophase_refinement_defs txn.twophase_sub_logical_reln_defs
+     txn.typed_translate_facts
      alloc.alloc_proof.
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.

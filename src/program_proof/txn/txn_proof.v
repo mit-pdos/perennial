@@ -67,8 +67,8 @@ Definition twophase_linv_flat k ex_mapsto γ γ' flat_addr : iProp Σ :=
 
 Definition is_twophase_locks l γ γ' k ex_mapsto objs_dom_flat (locks_held: gset u64) : iProp Σ :=
   ∃ (locksl: loc) (acquired_m: loc) ghs,
-    "Htwophase.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
-    "Htwophase.acquired" ∷
+    "Htxn.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
+    "Htxn.acquired" ∷
       l ↦[Txn :: "acquired"] #acquired_m ∗
     "Hacquired_m" ∷ is_map acquired_m 1
       (set_to_map (λ k, (k, true)) locks_held) ∗
@@ -91,7 +91,7 @@ Qed.
 
 Definition is_twophase_jrnl l γ dinit mt_changed : iProp Σ :=
   ∃ (jrnll: loc) γtxn γdurable,
-    "Htwophase.jrnl" ∷ l ↦[Txn :: "jrnl"] #jrnll ∗
+    "Htxn.jrnl" ∷ l ↦[Txn :: "buftxn"] #jrnll ∗
     "Hjrnl_mem" ∷ is_jrnl_mem
       Njrnl jrnll γ dinit γtxn γdurable ∗
     "Hjrnl_durable_frag" ∷ map_ctx
@@ -716,7 +716,7 @@ Proof.
   {
     iExists _, _, _.
     rewrite fmap_insert /committed committed_to_versioned.
-    iFrame "Hjrnl_mem Htwophase.jrnl Hjrnl_durable_frag".
+    iFrame "Hjrnl_mem Htxn.jrnl Hjrnl_durable_frag".
     iApply big_sepM_insert; first by assumption.
     rewrite /modified modified_to_versioned.
     iFrame.
@@ -908,7 +908,7 @@ Proof.
   wp_apply (
     wp_MapIter_3 _ _ _ _ _
     (λ mtodo mdone,
-      "Htwophase.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
+      "Htxn.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
       "Hlockeds" ∷ ([∗ set] flat_a ∈ dom (gset _) mtodo,
         "Hlocked" ∷ Locked ghs flat_a
       ) ∗
@@ -916,7 +916,7 @@ Proof.
         "Hlinv" ∷ twophase_linv_flat k ex_mapsto γ γ' flat_a
       )
     )%I
-    with "Hacquired_m [$Htwophase.locks Hlockeds Hlinvs] [] [HΦ]"
+    with "Hacquired_m [$Htxn.locks Hlockeds Hlinvs] [] [HΦ]"
   ).
   {
     rewrite dom_list_to_map_L pair_fst_fmap list_to_set_elements_L.
@@ -1322,7 +1322,7 @@ Proof.
   iFrame "Hlocks Hcrash_invs".
   iSplit; first done.
   iSplitL "
-    Htwophase.jrnl Hjrnl_mem Hjrnl_durable_frag Hjrnl_maps_tos
+    Htxn.jrnl Hjrnl_mem Hjrnl_durable_frag Hjrnl_maps_tos
   "; first by (iExists _, _, _; iFrame).
   by iFrame "# %".
 Qed.

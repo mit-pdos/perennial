@@ -5,7 +5,7 @@ From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.program_proof Require Import
      buf.defs
      addr.addr_proof
-     twophase.typed_translate.
+     txn.typed_translate.
 
 (* TODO: this file reduces the assumptions required in twophase_initP. Using
 these theorems, it should be straightforward to delete the last two assumptions

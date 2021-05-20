@@ -1,7 +1,7 @@
 From Perennial.goose_lang.lib Require Import encoding crash_lock.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.program_proof Require Import twophase.typed_translate twophase.wrapper_proof.
+From Perennial.program_proof Require Import txn.typed_translate txn.wrapper_proof.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert.
 From Perennial.base_logic Require Import ghost_var.
@@ -9,7 +9,7 @@ From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.program_proof Require jrnl.sep_jrnl_invariant.
 From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof obj.obj_proof.
 From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
-From Perennial.program_proof Require Import twophase.twophase_proof.
+From Perennial.program_proof Require Import txn.txn_proof.
 From Perennial.program_proof Require Import alloc.alloc_proof.
 
 From Goose Require github_com.mit_pdos.go_journal.obj.

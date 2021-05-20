@@ -3,7 +3,7 @@ From Perennial.goose_lang.lib Require Import map.impl list.impl.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.go_journal Require Import obj txn alloc.
-From Perennial.program_proof Require Import twophase.op_wrappers.
+From Perennial.program_proof Require Import txn.op_wrappers.
 From Perennial.program_proof Require jrnl.sep_jrnl_proof buf.defs.
 
 Section translate.
