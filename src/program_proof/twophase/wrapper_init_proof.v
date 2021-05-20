@@ -5,8 +5,8 @@ From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.go_journal Require Import obj txn.
 From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.program_proof Require Import twophase.op_wrappers.
-From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof obj.obj_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import twophase.twophase_proof.
 From Perennial.program_proof Require Import twophase.wrapper_proof.
 From Perennial.program_proof Require Import twophase.twophase_refinement_defs.
@@ -33,7 +33,7 @@ Section proof.
   Definition twophase_obj_cfupd_cancel γ γ' d :=
    (<bdisc> (|C={⊤}_(S (S LVL))=> ∃ mt',
        ⌜ dom (gset _) mt' = d ⌝ ∗
-       ⌜γ.(buftxn_txn_names).(txn_kinds) = γ'.(buftxn_txn_names).(txn_kinds)⌝ ∗
+       ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
        ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
        "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
          "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
@@ -52,7 +52,7 @@ Section proof.
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
-      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
       "#Hjrnl_dom" ∷ jrnl_dom (dom _ mt)
     }}}
       let: "twophasePre" := struct.alloc txn.Log (MkLog (disk_val d), (lockmap.MkLockMap #(), #())) in
@@ -65,7 +65,7 @@ Section proof.
     }}}
     {{{ ∃ γ' logm' mt',
        ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
-       ⌜γ.(buftxn_txn_names).(txn_kinds) = γ'.(buftxn_txn_names).(txn_kinds)⌝ ∗
+       ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
        ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
       is_txn_durable γ' dinit logm' ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
@@ -77,7 +77,7 @@ Section proof.
     iIntros (HinvN HwalN Hvalids Φ Φc) "Hpre HΦ".
     iNamed "Hpre".
     iApply wpc_cfupd.
-    wpc_apply (wpc_MkLog Nbuftxn with "Htxn_durable").
+    wpc_apply (wpc_MkLog Njrnl with "Htxn_durable").
     1-2: solve_ndisj.
     iSplit.
     {

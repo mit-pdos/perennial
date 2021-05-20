@@ -3,14 +3,14 @@ From Perennial.algebra Require Import liftable async.
 
 From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof.
 From Goose.github_com.mit_pdos.go_journal Require Import jrnl jrnl_replication.
-From Perennial.program_proof Require Import buftxn.buftxn_proof buftxn.sep_buftxn_proof txn.invariant.
+From Perennial.program_proof Require Import jrnl.jrnl_proof jrnl.sep_jrnl_proof obj.invariant.
 
 From Perennial.goose_lang.lib Require Import crash_lock.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section goose_lang.
-  Context `{!buftxnG Σ}.
+  Context `{!jrnlG Σ}.
   Context `{!heapG Σ}.
 
   Context (N:namespace).
@@ -67,7 +67,7 @@ Section goose_lang.
     "#m" ∷ readonly (l ↦[RepBlock :: "m"] #m_l) ∗
     (* TODO: make this a crash lock with cinv *)
     "#His_lock" ∷ is_lock lockN #m_l (rb_linv l γ) ∗
-    "#His_txn" ∷ invariant.is_txn txn_l γ.(buftxn_txn_names) dinit ∗
+    "#His_txn" ∷ invariant.is_txn txn_l γ.(jrnl_txn_names) dinit ∗
     "#Htxns" ∷ is_txn_system txnN γ.
 
   Theorem wp_RepBlock__Read l Q :
@@ -102,7 +102,7 @@ Section goose_lang.
     iNamed "rb_rep".
     iMod ("Hfupd" with "HP") as "[HP HQ]".
     iNamed "Htxn".
-    wp_apply (wp_Op__ReadBuf with "[$Hbuftxn_mem $Ha0]").
+    wp_apply (wp_Op__ReadBuf with "[$Hjrnl_mem $Ha0]").
     { reflexivity. }
     iIntros (dirty bufptr) "[Hbuf Htxn_restore]".
     wp_pures.
@@ -114,12 +114,12 @@ Section goose_lang.
     iDestruct (is_buf_return_data _ _ {| bufKind := KindBlock |} _ (bufBlock _) with "[Hdata $Hbuf]") as "Hbuf".
     { simpl; iFrame. }
     simpl.
-    iMod ("Htxn_restore" with "Hbuf [%]") as "[Hbuftxn_mem Ha0]".
+    iMod ("Htxn_restore" with "Hbuf [%]") as "[Hjrnl_mem Ha0]".
     { eauto. }
     wp_pures.
-    iAssert (rb_rep a0 a1 σ (buftxn_maps_to γtxn)) with "[Ha0 Ha1]" as "rb_rep".
+    iAssert (rb_rep a0 a1 σ (jrnl_maps_to γtxn)) with "[Ha0 Ha1]" as "rb_rep".
     { iFrame. }
-    iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Htxn".
+    iDestruct (is_jrnl_mem_durable with "Hjrnl_mem Hjrnl_durable") as "Htxn".
     wp_apply (wp_Op__CommitWait _ _ (rb_rep a0 a1 σ) with "[$Htxn $rb_rep]").
     { solve_ndisj. }
     { solve_ndisj. }

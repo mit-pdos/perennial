@@ -7,8 +7,8 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import wal.specs wal.heapspec.
 From Perennial.program_proof Require Import addr.addr_proof.
 From Perennial.program_proof Require Import buf.buf_proof.
-From Perennial.program_proof Require Import txn.txn_proof.
-From Perennial.program_proof Require Import buftxn.buftxn_proof.
+From Perennial.program_proof Require Import obj.obj_proof.
+From Perennial.program_proof Require Import jrnl.jrnl_proof.
 From Perennial.goose_lang Require Import spec_assert.
 
 
@@ -352,7 +352,7 @@ Proof.
     * wp_apply wp_panic.
       destruct (decide_rel Z.lt _ (int.Z LogSz)); try discriminate. lia.
     * wp_loadField.
-      wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
+      wp_apply (wp_jrnl_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx γt) "Hbtxn".
       wp_let.
       wp_call.

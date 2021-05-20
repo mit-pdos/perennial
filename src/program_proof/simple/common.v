@@ -6,8 +6,8 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
-From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import obj.obj_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
@@ -154,7 +154,7 @@ Proof.
 Qed.
 
 Lemma is_inode_crash_prev γsrc γprev γnext fh state blk klevel :
-  txn_cinv Nbuftxn γprev γnext -∗
+  txn_cinv Njrnl γprev γnext -∗
   fh [[γsrc]]↦ state ∗
   ( is_inode fh state (durable_mapsto γprev)
     ∨ is_inode_enc fh (length state) blk (durable_mapsto γprev)
@@ -175,7 +175,7 @@ Proof.
 Qed.
 
 Lemma is_inode_crash_prev_own γsrc γprev γnext fh state blk klevel :
-  txn_cinv Nbuftxn γprev γnext -∗
+  txn_cinv Njrnl γprev γnext -∗
   fh [[γsrc]]↦ state ∗
   ( is_inode fh state (durable_mapsto_own γprev)
     ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γprev)
@@ -196,7 +196,7 @@ Proof.
 Qed.
 
 Lemma is_inode_stable_crash γsrc γprev γnext fh klevel :
-  txn_cinv Nbuftxn γprev γnext -∗
+  txn_cinv Njrnl γprev γnext -∗
   is_inode_stable γsrc γprev fh
   -∗
   |C={⊤}_S klevel=>

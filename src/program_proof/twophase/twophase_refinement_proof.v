@@ -41,7 +41,7 @@ Proof.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
   iDestruct "Hjrnl_frag" as "(Hsmapstos&Hcrashtoks&Hcrash_ctx&Hkinds&Hdom&Hfull)".
   rewrite /twophase_crash_cond_full.
-  iMod (sep_buftxn_recovery_proof.is_txn_durable_init
+  iMod (sep_jrnl_recovery_proof.is_txn_durable_init
           (dinit0 (sz + 513)) kinds sz with "[Hdisk]") as "H".
   { rewrite dom_dinit0. repeat f_equal. lia. }
   { eauto. }
@@ -259,7 +259,7 @@ Proof.
   rewrite -sep_assoc.
   iSplitL "Htxn_durable".
   {
-    rewrite /sep_buftxn_recovery_proof.is_txn_durable.
+    rewrite /sep_jrnl_recovery_proof.is_txn_durable.
     iNamed "Htxn_durable". iFrame "Hlogm Hasync_ctx".
     specialize (@recovery_proof.is_txn_durable_stable) => Hcrash.
     rewrite /IntoCrash in Hcrash.

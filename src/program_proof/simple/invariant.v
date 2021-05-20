@@ -5,8 +5,8 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
-From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import obj.obj_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
@@ -17,14 +17,14 @@ From Perennial.program_proof Require Import simple.spec.
 Class simpleG Σ :=
   { simple_fs_stateG :> ghost_varG Σ (gmap u64 (list u8));
     simple_mapG :> mapG Σ u64 (list u8);
-    simple_buftxnG :> buftxnG Σ;
+    simple_jrnlG :> jrnlG Σ;
     simple_lockmapG :> lockmapG Σ;
   }.
 
 Definition simpleΣ :=
   #[ ghost_varΣ (gmap u64 (list u8));
    mapΣ u64 (list u8);
-   buftxnΣ;
+   jrnlΣ;
    lockmapΣ
   ].
 
@@ -37,8 +37,8 @@ Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Record simple_names := {
-  simple_buftxn : buftxn_names;
-  simple_buftxn_next : buftxn_names;
+  simple_jrnl : jrnl_names;
+  simple_jrnl_next : jrnl_names;
   simple_src : gname;
   simple_lockmapghs : list gname;
 }.
@@ -95,7 +95,7 @@ Definition is_inode_mem (l: loc) (inum: u64) (len: u64) (blk: u64) : iProp Σ :=
   "Hisize" ∷ l ↦[Inode :: "Size"] #len ∗
   "Hidata" ∷ l ↦[Inode :: "Data"] #blk.
 
-Definition Nbuftxn := nroot .@ "buftxn".
+Definition Njrnl := nroot .@ "jrnl".
 
 Definition is_inode_stable γsrc γtxn (inum: u64) : iProp Σ :=
   ∃ (state: list u8),
@@ -113,13 +113,13 @@ Definition is_fs γ (nfs: loc) dinit : iProp Σ :=
   ∃ (txn lm : loc),
     "#Hfs_txn" ∷ readonly (nfs ↦[Nfs :: "t"] #txn) ∗
     "#Hfs_lm" ∷ readonly (nfs ↦[Nfs :: "l"] #lm) ∗
-    "#Histxn" ∷ is_txn txn γ.(simple_buftxn).(buftxn_txn_names) dinit ∗
+    "#Histxn" ∷ is_txn txn γ.(simple_jrnl).(jrnl_txn_names) dinit ∗
     "#Hislm" ∷ is_crash_lockMap 10 lm γ.(simple_lockmapghs) covered_inodes
-                                (is_inode_stable γ.(simple_src) γ.(simple_buftxn))
-                                (is_inode_stable γ.(simple_src) γ.(simple_buftxn_next)) ∗
+                                (is_inode_stable γ.(simple_src) γ.(simple_jrnl))
+                                (is_inode_stable γ.(simple_src) γ.(simple_jrnl_next)) ∗
     "#Hsrc" ∷ inv N (is_source γ.(simple_src)) ∗
-    "#Htxnsys" ∷ is_txn_system Nbuftxn γ.(simple_buftxn) ∗
-    "#Htxncrash" ∷ txn_cinv Nbuftxn γ.(simple_buftxn) γ.(simple_buftxn_next).
+    "#Htxnsys" ∷ is_txn_system Njrnl γ.(simple_jrnl) ∗
+    "#Htxncrash" ∷ txn_cinv Njrnl γ.(simple_jrnl) γ.(simple_jrnl_next).
 
 Global Instance is_fs_persistent γ nfs dinit : Persistent (is_fs γ nfs dinit).
 Proof. apply _. Qed.

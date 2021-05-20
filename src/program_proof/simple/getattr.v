@@ -6,8 +6,8 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
-From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import obj.obj_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
@@ -110,7 +110,7 @@ Proof using Ptimeless.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
   wp_apply (wp_Op__Begin with "[$Histxn $Htxnsys]").
-  iIntros (γtxn buftx) "Hbuftxn".
+  iIntros (γtxn buftx) "Hjrnl".
   wp_apply (wp_fh2ino with "Hfh").
   wp_pures.
   wp_if_destruct.
@@ -220,19 +220,19 @@ Proof using Ptimeless.
   }
   iNamed "Hstable".
 
-  iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]".
+  iMod (lift_liftable_into_txn with "Hjrnl Hinode_disk") as "[Hinode_disk Hjrnl]".
   { solve_ndisj. }
   { solve_ndisj. }
   { solve_ndisj. }
   iNamed "Hinode_disk".
 
-  iNamed "Hbuftxn".
+  iNamed "Hjrnl".
   iModIntro.
 
   iApply wpc_cfupd.
-  iCache with "Hinode_state Hbuftxn_durable".
+  iCache with "Hinode_state Hjrnl_durable".
   { crash_case.
-    iDestruct (is_buftxn_durable_to_old_pred with "Hbuftxn_durable") as "[Hold _]".
+    iDestruct (is_jrnl_durable_to_old_pred with "Hjrnl_durable") as "[Hold _]".
     iModIntro.
     iMod (is_inode_crash_prev with "Htxncrash [$Hinode_state $Hold]") as "H".
     iModIntro.
@@ -244,8 +244,8 @@ Proof using Ptimeless.
   wpc_frame.
   wp_call.
 
-  wp_apply (wp_ReadInode with "[$Hbuftxn_mem $Hinode_enc]"); first by intuition eauto.
-  iIntros (ip) "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
+  wp_apply (wp_ReadInode with "[$Hjrnl_mem $Hinode_enc]"); first by intuition eauto.
+  iIntros (ip) "(Hjrnl_mem & Hinode_enc & Hinode_mem)".
 
   wp_apply (wp_Inode__MkFattr with "Hinode_mem").
   iIntros (fattr3) "(Hinode_mem & % & % & %)".
@@ -262,10 +262,10 @@ Proof using Ptimeless.
   iNamed 1.
   wpc_pures.
 
-  iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
+  iDestruct (is_jrnl_mem_durable with "Hjrnl_mem Hjrnl_durable") as "Hjrnl".
 
-  wpc_apply (wpc_Op__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
-  5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
+  wpc_apply (wpc_Op__CommitWait with "[$Hjrnl $Htxncrash Hinode_enc Hinode_data]").
+  5: { (* XXX is there a clean version of this? *) generalize (jrnl_maps_to γtxn). intros. iAccu. }
   all: try solve_ndisj.
   { typeclasses eauto. }
 

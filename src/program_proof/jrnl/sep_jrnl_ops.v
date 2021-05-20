@@ -4,63 +4,63 @@ From Perennial.algebra Require Import auth_map liftable log_heap async.
 
 From Goose.github_com.mit_pdos.go_journal Require Import jrnl.
 From Perennial.program_logic Require Export ncinv.
-From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof txn.txn_proof.
-From Perennial.program_proof Require buftxn.buftxn_proof.
+From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof obj.obj_proof.
+From Perennial.program_proof Require jrnl.jrnl_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import disk_prelude.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_invariant.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_invariant.
 
-(** * A more separation logic-friendly spec for buftxn
+(** * A more separation logic-friendly spec for jrnl
 
 Overview of resources used here:
 
 durable_mapsto_own - durable, exclusive
 durable_mapsto - durable but missing modify_token
-buftxn_maps_to - ephemeral
+jrnl_maps_to - ephemeral
 
 is_crash_lock (durable_mapsto_own) (durable_mapsto)
 on crash: exchange durable_mapsto for durable_mapsto_own
 
-lift: move durable_mapsto_own into transaction and get buftxn_maps_to and durable_mapsto is added to is_buftxn
+lift: move durable_mapsto_own into transaction and get jrnl_maps_to and durable_mapsto is added to is_jrnl
 
-is_buftxn P = is_buftxn_mem * is_buftxn_durable P
+is_jrnl P = is_jrnl_mem * is_jrnl_durable P
 
-reads and writes need buftxn_maps_to and is_buftxn_mem
+reads and writes need jrnl_maps_to and is_jrnl_mem
 
-is_buftxn_durable P -* P (P is going to be durable_mapsto) (use this to frame out crash condition)
+is_jrnl_durable P -* P (P is going to be durable_mapsto) (use this to frame out crash condition)
 
-exchange own_last_frag γ for own_last_frag γ' ∗ modify_token γ' (in sep_buftxn layer)
+exchange own_last_frag γ for own_last_frag γ' ∗ modify_token γ' (in sep_jrnl layer)
 exchange ephemeral_txn_val γ for ephemeral_txn_val γ' if the transaction id was preserved
  *)
 
 (* mspec is a shorthand for referring to the old "map-based" spec, since we will
 want to use similar names in this spec *)
-Module mspec := buftxn.buftxn_proof.
+Module mspec := jrnl.jrnl_proof.
 
 Section goose_lang.
-  Context `{!buftxnG Σ}.
+  Context `{!jrnlG Σ}.
   Context `{!heapG Σ}.
 
   Context (N:namespace).
 
-  Implicit Types (l: loc) (γ: buftxn_names) (γtxn: gname).
+  Implicit Types (l: loc) (γ: jrnl_names) (γtxn: gname).
   Implicit Types (obj: object).
 
   Theorem wp_Op__Begin' (l_txn: loc) γ dinit :
-    {{{ is_txn l_txn γ.(buftxn_txn_names) dinit ∗ is_txn_system N γ }}}
+    {{{ is_txn l_txn γ.(jrnl_txn_names) dinit ∗ is_txn_system N γ }}}
       Begin #l_txn
     {{{
       γtxn γdurable l, RET #l;
-      "Hbuftxn_mem" ∷ is_buftxn_mem N l γ dinit γtxn γdurable ∗
+      "Hjrnl_mem" ∷ is_jrnl_mem N l γ dinit γtxn γdurable ∗
       "Hdurable_frag" ∷ map_ctx γdurable (1/2) ∅
     }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ".
     iDestruct "Hpre" as "[#His_txn #Htxn_inv]".
     iApply wp_fupd.
-    wp_apply (mspec.wp_buftxn_Begin with "His_txn").
-    iIntros (l) "Hbuftxn".
+    wp_apply (mspec.wp_jrnl_Begin with "His_txn").
+    iIntros (l) "Hjrnl".
     iMod (map_init ∅) as (γtxn) "Hctx".
     iMod (map_init ∅) as (γdurable) "[Hdurable Hdurable_frag]".
     iModIntro.
@@ -73,9 +73,9 @@ Section goose_lang.
   Qed.
 
   Theorem wp_Op__Begin (l_txn: loc) γ dinit :
-    {{{ is_txn l_txn γ.(buftxn_txn_names) dinit ∗ is_txn_system N γ }}}
+    {{{ is_txn l_txn γ.(jrnl_txn_names) dinit ∗ is_txn_system N γ }}}
       Begin #l_txn
-    {{{ γtxn l, RET #l; is_buftxn N l γ dinit γtxn (λ _, emp) }}}.
+    {{{ γtxn l, RET #l; is_jrnl N l γ dinit γtxn (λ _, emp) }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ".
     wp_apply (wp_Op__Begin' with "Hpre").
@@ -98,21 +98,21 @@ Section goose_lang.
 
   Theorem wp_Op__ReadBuf l γ dinit γtxn γdurable (a: addr) (sz: u64) obj :
     bufSz (objKind obj) = int.nat sz →
-    {{{ is_buftxn_mem N l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a obj }}}
+    {{{ is_jrnl_mem N l γ dinit γtxn γdurable ∗ jrnl_maps_to γtxn a obj }}}
       Op__ReadBuf #l (addr2val a) #sz
     {{{ dirty (bufptr:loc), RET #bufptr;
         is_buf bufptr a (Build_buf _ (objData obj) dirty) ∗
         (∀ (obj': bufDataT (objKind obj)) dirty',
             is_buf bufptr a (Build_buf _ obj' dirty') -∗
             ⌜dirty' = true ∨ (dirty' = dirty ∧ obj' = objData obj)⌝ ==∗
-            is_buftxn_mem N l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a (existT (objKind obj) obj')) }}}.
+            is_jrnl_mem N l γ dinit γtxn γdurable ∗ jrnl_maps_to γtxn a (existT (objKind obj) obj')) }}}.
   Proof.
     iIntros (? Φ) "Hpre HΦ".
-    iDestruct "Hpre" as "[Hbuftxn Ha]".
-    iNamed "Hbuftxn".
+    iDestruct "Hpre" as "[Hjrnl Ha]".
+    iNamed "Hjrnl".
     iDestruct (map_valid with "Htxn_ctx Ha") as %Hmt_lookup.
     fmap_Some in Hmt_lookup as vo.
-    wp_apply (mspec.wp_Op__ReadBuf with "[$Hbuftxn]").
+    wp_apply (mspec.wp_Op__ReadBuf with "[$Hjrnl]").
     { iPureIntro.
       split; first by eauto.
       rewrite H.
@@ -121,7 +121,7 @@ Section goose_lang.
     iApply "HΦ".
     iFrame "Hbuf".
     iIntros (obj' dirty') "Hbuf". iIntros (Hdirty).
-    iMod ("Hbuf_upd" with "[$Hbuf]") as "Hbuftxn".
+    iMod ("Hbuf_upd" with "[$Hbuf]") as "Hjrnl".
     { iPureIntro; intuition auto. }
     intuition subst.
     - (* user inserted a new value into the read buffer; need to do the updates
@@ -200,21 +200,21 @@ Section goose_lang.
     bufSz (objKind obj) = int.nat sz →
     data_has_obj data a obj →
     objKind obj = objKind obj0 →
-    {{{ is_buftxn_mem N l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a obj0 ∗
+    {{{ is_jrnl_mem N l γ dinit γtxn γdurable ∗ jrnl_maps_to γtxn a obj0 ∗
         (* NOTE(tej): this has to be a 1 fraction, because the slice is
-        incorporated into the buftxn, is handed out in ReadBuf, and should then
+        incorporated into the jrnl, is handed out in ReadBuf, and should then
         be mutable. *)
         is_slice_small data_s byteT 1 data }}}
       Op__OverWrite #l (addr2val a) #sz (slice_val data_s)
-    {{{ RET #(); is_buftxn_mem N l γ dinit γtxn γdurable ∗ buftxn_maps_to γtxn a obj }}}.
+    {{{ RET #(); is_jrnl_mem N l γ dinit γtxn γdurable ∗ jrnl_maps_to γtxn a obj }}}.
   Proof.
     iIntros (??? Φ) "Hpre HΦ".
-    iDestruct "Hpre" as "(Hbuftxn & Ha & Hdata)".
-    iNamed "Hbuftxn".
+    iDestruct "Hpre" as "(Hjrnl & Ha & Hdata)".
+    iNamed "Hjrnl".
     iApply wp_fupd.
     iDestruct (map_valid with "Htxn_ctx Ha") as %Hlookup.
     fmap_Some in Hlookup as vo0.
-    wp_apply (mspec.wp_Op__OverWrite _ _ _ _ _ _ (mspec.mkVersioned (objData (mspec.committed vo0)) (rew H1 in objData obj)) with "[$Hbuftxn Hdata]").
+    wp_apply (mspec.wp_Op__OverWrite _ _ _ _ _ _ (mspec.mkVersioned (objData (mspec.committed vo0)) (rew H1 in objData obj)) with "[$Hjrnl Hdata]").
     { iSplit; eauto.
       iSplitL.
       - iApply data_has_obj_to_buf_data in "Hdata"; eauto.
@@ -224,12 +224,12 @@ Section goose_lang.
         simpl.
         destruct vo0 as [K0 [c0 m0]]; simpl in *; subst.
         split; [rewrite H; word|done]. }
-    iIntros "Hbuftxn".
+    iIntros "Hjrnl".
     iMod (map_update _ _ obj with "Htxn_ctx Ha") as "[Htxn_ctx Ha]".
     iModIntro.
     iApply "HΦ".
     iFrame "Ha".
-    iExists _, true; iFrame "Htxn_system Hbuftxn".
+    iExists _, true; iFrame "Htxn_system Hjrnl".
     rewrite !fmap_insert !mspec.committed_mkVersioned !mspec.modified_mkVersioned /=.
     rewrite (insert_id (mspec.committed <$> mT)); last first.
     { rewrite lookup_fmap Hlookup //. }
@@ -244,19 +244,19 @@ Section goose_lang.
   Qed.
 
   Theorem wp_Op__NDirty l γ dinit γtxn γdurable :
-    {{{ is_buftxn_mem N l γ dinit γtxn γdurable }}}
+    {{{ is_jrnl_mem N l γ dinit γtxn γdurable }}}
       Op__NDirty #l
-    {{{ (n:u64), RET #n; is_buftxn_mem N l γ dinit γtxn γdurable }}}.
+    {{{ (n:u64), RET #n; is_jrnl_mem N l γ dinit γtxn γdurable }}}.
   Proof.
     iIntros (Φ) "H HΦ". iNamed "H".
-    wp_apply (mspec.wp_Op__NDirty with "Hbuftxn").
-    iIntros (n) "Hbuftxn".
+    wp_apply (mspec.wp_Op__NDirty with "Hjrnl").
+    iIntros (n) "Hjrnl".
     iApply "HΦ".
     iExists _, _; iFrameNamed.
   Qed.
 
   (*
-  lift: modify_token ∗ stable_maps_to ==∗ buftxn_maps_to
+  lift: modify_token ∗ stable_maps_to ==∗ jrnl_maps_to
 
   is_crash_lock (P (modify_token ∗ stable_maps_to)) (P stable_maps_to)
 
@@ -270,7 +270,7 @@ Section goose_lang.
   P (ephemeral_maps_to (≥i+1)) ∗ P0 (stable_maps_to i) ∗ durable_lb i
   -∗
 
-  {P buftxn_maps_to ∧ P0 stable_maps_to}
+  {P jrnl_maps_to ∧ P0 stable_maps_to}
     CommitWait
   {P (modify_token ∗ stable_maps_to)}
   {P0 stable_maps_to ∨ P stable_maps_to}
@@ -279,17 +279,17 @@ Section goose_lang.
   (* TODO: is this too weak with [durable_mapsto]? does it need to be
   [durable_mapsto_own]? *)
   Lemma async_ctx_durable_map_split γ mT σs :
-    async_ctx γ.(buftxn_async_name) 1 σs -∗
+    async_ctx γ.(jrnl_async_name) 1 σs -∗
     ([∗ map] a↦v ∈ mT, durable_mapsto γ a v) -∗
-    |==> async_ctx γ.(buftxn_async_name) 1 σs ∗
+    |==> async_ctx γ.(jrnl_async_name) 1 σs ∗
           (* this complex expression is persistent and guarantees that the value
           after a crash comes from [mT] if we crash to any current transaction
           (that is, to a transaction id [≤ length (possible σs)]) *)
           (([∗ map] k↦x ∈ mT,
                 ∃ i, txn_durable γ i ∗
-                     ephemeral_txn_val_range γ.(buftxn_async_name)
+                     ephemeral_txn_val_range γ.(jrnl_async_name)
                         i (length (possible σs)) k x)) ∗
-          ([∗ map] k↦x ∈ mT, ephemeral_val_from γ.(buftxn_async_name)
+          ([∗ map] k↦x ∈ mT, ephemeral_val_from γ.(jrnl_async_name)
                                (length (possible σs) - 1) k x).
   Proof.
     iIntros "Hctx".
@@ -311,8 +311,8 @@ Section goose_lang.
   Theorem wp_Op__CommitWait {l γ dinit γtxn} P0 P `{!Liftable P} :
     N ## invariant.walN →
     N ## invN →
-    {{{ "Hbuftxn" ∷ is_buftxn N l γ dinit γtxn P0 ∗
-        "HP" ∷ P (buftxn_maps_to γtxn)
+    {{{ "Hjrnl" ∷ is_jrnl N l γ dinit γtxn P0 ∗
+        "HP" ∷ P (jrnl_maps_to γtxn)
     }}}
       Op__CommitWait #l #true
     {{{ (ok:bool), RET #ok;
@@ -320,16 +320,16 @@ Section goose_lang.
             P (λ a v, durable_mapsto_own γ a v)
         else P0 (λ a v, durable_mapsto_own γ a v) }}}.
   (* crash condition will be [∃ txn_id', P0 (ephemeral_val_from
-     γ.(buftxn_async_name) txn_id') ∨ P (ephemeral_val_from γ.(buftxn_async_name)
+     γ.(jrnl_async_name) txn_id') ∨ P (ephemeral_val_from γ.(jrnl_async_name)
      txn_id') ]
 
      where txn_id' is either the original and we get P0 or we commit and advance
      to produce new [ephemeral_val_from]'s *)
   Proof.
     iIntros (?? Φ) "Hpre HΦ"; iNamed "Hpre".
-    iNamed "Hbuftxn".
-    iNamed "Hbuftxn_mem".
-    iNamed "Hbuftxn_durable".
+    iNamed "Hjrnl".
+    iNamed "Hjrnl_mem".
+    iNamed "Hjrnl_durable".
     iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->.
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
@@ -337,10 +337,10 @@ Section goose_lang.
     [durable_mapsto] but just [ephemeral_val_from] *)
     wp_apply (mspec.wp_Op__CommitWait
                 (* ([∗ map] a↦v ∈ (mspec.committed <$> mT),
-                 ephemeral_val_from γ.(buftxn_async_name) txn_id0 a v) *) _
+                 ephemeral_val_from γ.(jrnl_async_name) txn_id0 a v) *) _
                 _ _ _ _ _ _
-              (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
-                with "[$Hbuftxn Hold_vals]").
+              (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT, ephemeral_val_from γ.(jrnl_async_name) txn_id' a v))%I
+                with "[$Hjrnl Hold_vals]").
     { iSplit; [ iModIntro; iAccu | ].
       iDestruct "Htxn_system" as "[Hinv _]".
       iInv "Hinv" as ">Hinner" "Hclo".
@@ -412,10 +412,10 @@ Section goose_lang.
     N ## invN →
     N ## mspec.wpwpcN →
     {{{
-      "Hbuftxn_mem" ∷ is_buftxn_mem N l γ dinit γtxn γdurable ∗
+      "Hjrnl_mem" ∷ is_jrnl_mem N l γ dinit γtxn γdurable ∗
       "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT ∗
       "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) ∗
-      "Hstable" ∷ ([∗ map] a↦v ∈ m, buftxn_maps_to γtxn a v) ∗
+      "Hstable" ∷ ([∗ map] a↦v ∈ m, jrnl_maps_to γtxn a v) ∗
       "#Htxn_cinv" ∷ txn_cinv N γ γ'
     }}}
       Op__CommitWait #l #true @ S klevel; ⊤
@@ -430,7 +430,7 @@ Section goose_lang.
   Proof.
     iIntros (HwalN HinvN HwpwpcN Φ Φc) "(?&?&?&?&?) HΦ".
     iNamed.
-    iNamed "Hbuftxn_mem".
+    iNamed "Hjrnl_mem".
     iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->.
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
 
@@ -440,18 +440,18 @@ Section goose_lang.
     [durable_mapsto] but just [ephemeral_val_from] *)
     wpc_apply (mspec.wpc_Op__CommitWait
                 (* ([∗ map] a↦v ∈ (mspec.committed <$> mT),
-                 ephemeral_val_from γ.(buftxn_async_name) txn_id0 a v) *) _
+                 ephemeral_val_from γ.(jrnl_async_name) txn_id0 a v) *) _
                 _ _ _ _ _ _
               (λ txn_id', ([∗ map] a↦v∈mspec.modified <$> mT,
-                            ephemeral_val_from γ.(buftxn_async_name) txn_id' a v))%I
+                            ephemeral_val_from γ.(jrnl_async_name) txn_id' a v))%I
               (λ txn_id',
                ([∗ map] a↦v∈mspec.modified <$> mT,
-                            ephemeral_val_from γ.(buftxn_async_name) txn_id' a v) ∗
+                            ephemeral_val_from γ.(jrnl_async_name) txn_id' a v) ∗
                ([∗ map] k↦x ∈ (mspec.committed <$> mT), ∃ i : nat,
                    txn_durable γ i
-                               ∗ ephemeral_txn_val_range γ.(buftxn_async_name) i
+                               ∗ ephemeral_txn_val_range γ.(jrnl_async_name) i
                                                               txn_id' k x))%I
-                with "[$Hbuftxn Hold_vals]").
+                with "[$Hjrnl Hold_vals]").
     1: { iSplit; [ iModIntro; iAccu | ].
       iDestruct "Htxn_system" as "[Hinv _]".
       iInv "Hinv" as ">Hinner" "Hclo".
@@ -541,8 +541,8 @@ Section goose_lang.
     N ## invariant.walN →
     N ## invN →
     N ## mspec.wpwpcN ->
-    {{{ "Hbuftxn" ∷ is_buftxn N l γ dinit γtxn P0 ∗
-        "HP" ∷ P (buftxn_maps_to γtxn) ∗
+    {{{ "Hjrnl" ∷ is_jrnl N l γ dinit γtxn P0 ∗
+        "HP" ∷ P (jrnl_maps_to γtxn) ∗
         "#Htxn_cinv" ∷ txn_cinv N γ γ'
     }}}
       Op__CommitWait #l #true @ S klevel; ⊤
@@ -554,15 +554,15 @@ Section goose_lang.
          P (durable_mapsto_own γ') }}}.
   Proof.
     iIntros (??? Φ Φc) "Hpre HΦ". iNamed "Hpre".
-    iNamed "Hbuftxn".
-    (* iNamed "Hbuftxn_mem". *)
-    iNamed "Hbuftxn_durable".
+    iNamed "Hjrnl".
+    (* iNamed "Hjrnl_mem". *)
+    iNamed "Hjrnl_durable".
     (* iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->. *)
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable #HPrestore]".
 
     wpc_apply (
       wpc_Op__CommitWait'
-      with "[$Hbuftxn_mem Hdurable_frag Hold_vals Hstable Htxn_cinv]"
+      with "[$Hjrnl_mem Hdurable_frag Hold_vals Hstable Htxn_cinv]"
     ).
     1-3: solve_ndisj.
     1: iFrame "∗ #".
@@ -587,10 +587,10 @@ Section goose_lang.
       iApply "H".
   Qed.
 
-  Theorem is_buftxn_mem_durable l γ dinit γtxn P0 γdurable :
-    is_buftxn_mem N l γ dinit γtxn γdurable -∗
-    is_buftxn_durable γ γdurable P0 -∗
-    is_buftxn N l γ dinit γtxn P0.
+  Theorem is_jrnl_mem_durable l γ dinit γtxn P0 γdurable :
+    is_jrnl_mem N l γ dinit γtxn γdurable -∗
+    is_jrnl_durable γ γdurable P0 -∗
+    is_jrnl N l γ dinit γtxn P0.
   Proof.
     iIntros "Hmem Hdurable".
     iExists _. iFrame.

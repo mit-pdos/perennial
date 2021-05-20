@@ -20,7 +20,7 @@ From Perennial.program_proof Require Import twophase.typed_translate.
 From Perennial.program_proof Require Import twophase.twophase_refinement_defs.
 From Perennial.program_proof Require Import twophase.wrapper_proof.
 From Perennial.program_proof Require Import alloc.alloc_proof.
-From Perennial.program_proof Require buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require jrnl.sep_jrnl_proof.
 
 Set Default Proof Using "Type".
 
@@ -65,7 +65,7 @@ Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
 Definition val_semTy `{!heapG Σ} `{refinement_heapG Σ} := sval → ival → iProp Σ.
 
-Import sep_buftxn_invariant.
+Import sep_jrnl_invariant.
 Section reln_defs.
 Context `{hG: !heapG Σ}.
 Context {hRG: refinement_heapG Σ}.
@@ -73,7 +73,7 @@ Context {htpG: twophaseG Σ}.
 Context (N: namespace).
 Context (dinit : abstraction.disk).
 Context (objs_dom : gset addr_proof.addr).
-Context (γ γ': sep_buftxn_invariant.buftxn_names).
+Context (γ γ': sep_jrnl_invariant.jrnl_names).
 Context (tph: loc).
 Existing Instance jrnlG0.
 

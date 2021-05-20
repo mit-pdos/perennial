@@ -5,8 +5,8 @@ From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.go_journal Require Import obj txn.
 From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.program_proof Require Import twophase.op_wrappers typed_translate.
-From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof obj.obj_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import twophase.twophase_proof.
 From Perennial.program_logic Require Import na_crash_inv.
 From Perennial.goose_lang.lib.list Require Import list.
@@ -16,7 +16,7 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Perennial.program_proof Require Import disk_prelude.
 
 Section proof.
-  Context `{!buftxnG Σ}.
+  Context `{!jrnlG Σ}.
   Context `{!heapG Σ}.
   Context `{!lockmapG Σ}.
   Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp
@@ -50,27 +50,27 @@ Section proof.
   Proof. refine _. Qed.
 
   Definition jrnl_maps_kinds_valid γ (σj1 σj2: jrnl_map) :=
-    jrnlKinds σj1 = γ.(buftxn_txn_names).(txn_kinds) ∧
-    jrnlKinds σj2 = γ.(buftxn_txn_names).(txn_kinds).
+    jrnlKinds σj1 = γ.(jrnl_txn_names).(txn_kinds) ∧
+    jrnlKinds σj2 = γ.(jrnl_txn_names).(txn_kinds).
 
   Definition jrnl_maps_have_mt (mt_changed: gmap addr versioned_object) (σj1 σj2: jrnl_map) :=
     bufObj_to_obj <$> (committed <$> mt_changed) = jrnlData σj1 ∧
     bufObj_to_obj <$> (modified <$> mt_changed) = jrnlData σj2.
 
-  Definition is_twophase_pre l (γ γ' : buftxn_names) dinit (objs_dom: gset addr) : iProp Σ :=
+  Definition is_twophase_pre l (γ γ' : jrnl_names) dinit (objs_dom: gset addr) : iProp Σ :=
     ∃ (txnl locksl : loc) ghs,
       "#Hpre.txn" ∷ readonly (l ↦[txn.Log :: "log"] #txnl) ∗
       "#Hpre.locks" ∷ readonly (l ↦[txn.Log :: "locks"] #locksl) ∗
-      "#Histxn_system" ∷ is_txn_system Nbuftxn γ ∗
-      "#Histxn" ∷ is_txn txnl γ.(buftxn_txn_names) dinit ∗
+      "#Histxn_system" ∷ is_txn_system Njrnl γ ∗
+      "#Histxn" ∷ is_txn txnl γ.(jrnl_txn_names) dinit ∗
       "#HlockMap" ∷ is_lockMap locksl ghs (set_map addr2flat objs_dom)
         (twophase_linv_flat LVL jrnl_mapsto_own γ γ') ∗
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
-      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
       "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
-      "#Htxn_cinv" ∷ txn_cinv Nbuftxn γ γ' ∗
+      "#Htxn_cinv" ∷ txn_cinv Njrnl γ γ' ∗
       "%Haddrs_valid" ∷ ⌜set_Forall valid_addr objs_dom⌝.
 
   Definition is_twophase_started l γ γ' dinit objs_dom j K e1 e2 : iProp Σ :=
@@ -82,7 +82,7 @@ Section proof.
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
-      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
       "#Hjrnl_allocs" ∷ jrnl_alloc_map (jrnlAllocs σj1) ∗
       "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
       "%Halways_steps" ∷ ⌜always_steps e1 σj1 e2 σj2⌝ ∗
@@ -521,7 +521,7 @@ Section proof.
       as "#Hlocks_pures".
     iNamed "Hlocks_pures".
     iFrame "∗ %".
-    iNamed "Hbuftxn".
+    iNamed "Hjrnl".
     iDestruct (na_crash_inv_status_wand_sepM with "Hcrash_invs") as
       "#Hstatuses".
     iDestruct (
@@ -534,7 +534,7 @@ Section proof.
           modify_token γ a
       )%I
       with
-      "Hcrash_invs [Hbuftxn_mem Hbuftxn_durable_frag]"
+      "Hcrash_invs [Hjrnl_mem Hjrnl_durable_frag]"
     ) as "> [Htoks Hcrash_invs]".
     {
       iIntros "Hpreds".
@@ -545,8 +545,8 @@ Section proof.
         as "[Hdurable_mapstos %Hcommitted_valids]".
       iApply big_sepM_fmap in "Hdurable_mapstos".
       iDestruct (
-        is_buftxn_to_old_pred' with
-        "Hbuftxn_mem Hbuftxn_durable_frag Hdurable_mapstos"
+        is_jrnl_to_old_pred' with
+        "Hjrnl_mem Hjrnl_durable_frag Hdurable_mapstos"
       ) as "?".
       iNamed.
       iApply (big_sepM_fmap committed) in "Hold_vals".
@@ -832,7 +832,7 @@ Section proof.
         "#Hspec_ctx" ∷ spec_ctx ∗
         "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
         "#Hjrnl_open" ∷ jrnl_open ∗
-        "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+        "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
         "#Hjrnl_allocs" ∷ jrnl_alloc_map (jrnlAllocs σj1) ∗
         "%Halways_steps" ∷ ⌜always_steps e0 σj1 (K e) σj2⌝ ∗
         "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
@@ -935,7 +935,7 @@ Section proof.
         "#Hspec_ctx" ∷ spec_ctx ∗
         "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
         "#Hjrnl_open" ∷ jrnl_open ∗
-        "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+        "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
         "#Hjrnl_allocs" ∷ jrnl_alloc_map (jrnlAllocs σj1) ∗
         "%Halways_steps" ∷ ⌜always_steps e0 σj1 (K e) σj2⌝ ∗
         "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
@@ -1061,7 +1061,7 @@ Section proof.
       last done.
     assert (Ha_in_dom: a ∈ objs_dom).
     { rewrite -Hdom. apply elem_of_dom. rewrite Hopen => //=. }
-    assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some k).
+    assert (Hk: γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock) = Some k).
     { destruct Hjrnl_maps_kinds as (_&<-).
       destruct Hsub as (?&Hs_eq&?&?&?).
       rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
@@ -1207,7 +1207,7 @@ Section proof.
       last eauto.
     assert (Ha_in_dom: a ∈ objs_dom).
     { rewrite -Hdom. apply elem_of_dom. rewrite Hopen => //=. }
-    assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit).
+    assert (Hk: γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit).
     { destruct Hjrnl_maps_kinds as (_&<-).
       destruct Hsub as (?&Hs_eq&?&?&?).
       rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
@@ -1347,7 +1347,7 @@ Section proof.
     assert (Ha_in_dom: a ∈ objs_dom).
     { rewrite -Hdom. apply elem_of_dom. rewrite Hopen => //=. }
     subst.
-    assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some k).
+    assert (Hk: γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock) = Some k).
     { destruct Hjrnl_maps_kinds as (_&<-).
       destruct Hsub as (?&Hs_eq&?&?&?).
       rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.
@@ -1582,7 +1582,7 @@ Section proof.
     assert (Ha_in_dom: a ∈ objs_dom).
     { rewrite -Hdom. apply elem_of_dom. rewrite Hopen => //=. }
     subst.
-    assert (Hk: γ.(buftxn_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit).
+    assert (Hk: γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit).
     { destruct Hjrnl_maps_kinds as (_&<-).
       destruct Hsub as (?&Hs_eq&?&?&?).
       rewrite Hs_eq in Hopen. inversion Hopen; subst. rewrite -Hlookup2. f_equal.

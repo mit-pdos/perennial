@@ -6,8 +6,8 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
-From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import obj.obj_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
@@ -21,16 +21,16 @@ Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Theorem wp_ReadInode γ γtxn (inum : u64) len blk (btxn : loc) dinit γdurable :
-  {{{ is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
-      is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
+  {{{ is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
+      is_inode_enc inum len blk (jrnl_maps_to γtxn) ∗
       ⌜ inum ∈ covered_inodes ⌝ }}}
     ReadInode #btxn #inum
   {{{ l, RET #l;
-      is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
-      is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
+      is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
+      is_inode_enc inum len blk (jrnl_maps_to γtxn) ∗
       is_inode_mem l inum len blk }}}.
 Proof.
-  iIntros (Φ) "(Hbuftxn & Henc & %Hcovered) HΦ".
+  iIntros (Φ) "(Hjrnl & Henc & %Hcovered) HΦ".
   iNamed "Henc".
 
   wp_call.
@@ -43,7 +43,7 @@ Proof.
   }
 
   replace (#(LitInt (word.mul 128 8))) with (#1024%nat) by reflexivity.
-  wp_apply (wp_Op__ReadBuf with "[$Hbuftxn $Hinode_enc_mapsto]"); eauto.
+  wp_apply (wp_Op__ReadBuf with "[$Hjrnl $Hinode_enc_mapsto]"); eauto.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
   wp_pures. wp_call.
@@ -63,7 +63,7 @@ Proof.
   wp_apply (wp_Dec__GetInt with "Hdec"). iIntros "Hdec".
   wp_storeField.
   iDestruct (is_dec_to_is_slice_small with "Hdec") as "Hbufslice".
-  iMod ("Hbufdone" with "[Hbufslice Hbufwithoutdata] []") as "[Hbuftxn Hbuf]"; eauto.
+  iMod ("Hbufdone" with "[Hbufslice Hbufwithoutdata] []") as "[Hjrnl Hbuf]"; eauto.
   {
     iApply is_buf_return_data. iFrame.
     iApply (data_has_obj_to_buf_data with "Hbufslice").
@@ -75,22 +75,22 @@ Proof.
 Qed.
 
 Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents γdurable dinit :
-  {{{ is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
+  {{{ is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
       is_inode_mem ip inum len blk ∗
-      is_inode_data len blk contents (buftxn_maps_to γtxn)
+      is_inode_data len blk contents (jrnl_maps_to γtxn)
   }}}
     Inode__Read #ip #btxn #offset #bytesToRead
   {{{ resSlice (eof : bool) (vs : list u8), RET (slice_val resSlice, #eof);
       is_slice resSlice u8T 1 vs ∗
-      is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
+      is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
       is_inode_mem ip inum len blk ∗
-      is_inode_data len blk contents (buftxn_maps_to γtxn) ∗
+      is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
       ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
       ⌜ length vs ≤ int.nat bytesToRead ⌝ ∗
       ⌜ eof = true <-> (int.nat offset + length vs ≥ int.nat len)%nat ⌝
   }}}.
 Proof.
-  iIntros (Φ) "(Hbuftxn & Hmem & Hdata) HΦ".
+  iIntros (Φ) "(Hjrnl & Hmem & Hdata) HΦ".
   wp_call.
   iNamed "Hmem".
   iNamed "Hdata".
@@ -143,7 +143,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_apply wp_block2addr.
-  wp_apply (wp_Op__ReadBuf with "[$Hbuftxn $Hdiskblk]"); first by reflexivity.
+  wp_apply (wp_Op__ReadBuf with "[$Hjrnl $Hdiskblk]"); first by reflexivity.
 
   iIntros (dirty bufptr) "[Hbuf Hbufupd]".
   wp_pures.
@@ -224,7 +224,7 @@ Proof.
   iIntros "(HI & Hb)".
   iNamed "HI".
 
-  iMod ("Hbufupd" with "[$Hbuf] []") as "[Hbuftxn Hbuf]".
+  iMod ("Hbufupd" with "[$Hbuf] []") as "[Hjrnl Hbuf]".
   { intuition. }
 
   wp_loadField. wp_load. wp_pures.
@@ -233,7 +233,7 @@ Proof.
   wp_load.
   wp_pures.
   iApply "HΦ". iModIntro.
-  iFrame "Hdataslice Hbuftxn".
+  iFrame "Hdataslice Hjrnl".
   iFrame. iSplit.
   { iExists _. iFrame "∗%". }
 

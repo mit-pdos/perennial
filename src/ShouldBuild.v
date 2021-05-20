@@ -16,8 +16,8 @@ From Perennial.program_proof Require
      lockmap_proof
      crash_lockmap_proof
      wal.proof
-     buftxn.sep_buftxn_recovery_proof
-     buftxn_replication.buftxn_replication_proof
+     jrnl.sep_jrnl_recovery_proof
+     jrnl_replication.jrnl_replication_proof
      twophase.twophase_refinement_thm
      simple.proofs simple.example
      wp_to_wpc.

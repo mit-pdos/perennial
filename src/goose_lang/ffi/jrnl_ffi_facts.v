@@ -14,7 +14,7 @@ From Perennial.goose_lang Require ffi.disk.
 From Perennial.goose_lang.lib.struct Require Import struct.
 From Perennial.goose_lang.lib.list Require Import list.
 From Perennial.program_proof Require Import addr_proof buf.buf_proof.
-From Perennial.program_proof Require txn.recovery_proof.
+From Perennial.program_proof Require obj.recovery_proof.
 
 From Perennial.goose_lang Require Import ffi.jrnl_ffi_spec.
 

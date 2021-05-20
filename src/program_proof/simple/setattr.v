@@ -6,8 +6,8 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
-From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import obj.obj_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
@@ -94,7 +94,7 @@ Proof using Ptimeless.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
   wp_apply (wp_Op__Begin with "[$Histxn $Htxnsys]").
-  iIntros (γtxn buftx) "Hbuftxn".
+  iIntros (γtxn buftx) "Hjrnl".
 
   wp_apply (wp_fh2ino with "Hfh").
   wp_pures.
@@ -163,17 +163,17 @@ Proof using Ptimeless.
   }
   iNamed "Hstable".
 
-  iMod (lift_liftable_into_txn with "Hbuftxn Hinode_disk") as "[Hinode_disk Hbuftxn]";
+  iMod (lift_liftable_into_txn with "Hjrnl Hinode_disk") as "[Hinode_disk Hjrnl]";
     [ solve_ndisj .. | ].
   iNamed "Hinode_disk".
 
-  iNamed "Hbuftxn".
+  iNamed "Hjrnl".
   iModIntro.
 
   iApply wpc_cfupd.
-  iCache with "Hinode_state Hbuftxn_durable".
+  iCache with "Hinode_state Hjrnl_durable".
   { crash_case.
-    iDestruct (is_buftxn_durable_to_old_pred with "Hbuftxn_durable") as "[Hold _]".
+    iDestruct (is_jrnl_durable_to_old_pred with "Hjrnl_durable") as "[Hold _]".
     iModIntro.
     iMod (is_inode_crash_prev with "Htxncrash [$Hinode_state $Hold]") as "H".
     iModIntro.
@@ -185,8 +185,8 @@ Proof using Ptimeless.
   wpc_frame.
   wp_call.
 
-  wp_apply (wp_ReadInode with "[$Hbuftxn_mem $Hinode_enc]"); first by intuition eauto.
-  iIntros (ip) "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
+  wp_apply (wp_ReadInode with "[$Hjrnl_mem $Hinode_enc]"); first by intuition eauto.
+  iIntros (ip) "(Hjrnl_mem & Hinode_enc & Hinode_mem)".
 
   wp_apply (typed_mem.wp_AllocAt); eauto.
   iIntros (wpok) "Hwpok".
@@ -205,13 +205,13 @@ Proof using Ptimeless.
       iIntros (zeros) "Hzeros".
       wp_loadField. wp_loadField.
 
-      wp_apply (wp_Inode__Write with "[$Hbuftxn_mem $Hinum $Hisize $Hidata $Hinode_data $Hinode_enc Hzeros]").
+      wp_apply (wp_Inode__Write with "[$Hjrnl_mem $Hinum $Hisize $Hidata $Hinode_data $Hinode_enc Hzeros]").
       { iDestruct (is_slice_to_small with "Hzeros") as "$".
         iPureIntro. intuition eauto.
         rewrite replicate_length. done.
       }
 
-      iIntros (wcount ok) "[Hbuftxn_mem [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
+      iIntros (wcount ok) "[Hjrnl_mem [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
       {
         iNamed "Hinode_mem".
         wp_loadField.
@@ -240,10 +240,10 @@ Proof using Ptimeless.
 
           iNamed 1.
           wpc_pures.
-          iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
+          iDestruct (is_jrnl_mem_durable with "Hjrnl_mem Hjrnl_durable") as "Hjrnl".
 
-          wpc_apply (wpc_Op__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
-          5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
+          wpc_apply (wpc_Op__CommitWait with "[$Hjrnl $Htxncrash Hinode_enc Hinode_data]").
+          5: { (* XXX is there a clean version of this? *) generalize (jrnl_maps_to γtxn). intros. iAccu. }
           2-4: solve_ndisj.
           { typeclasses eauto. }
 
@@ -525,8 +525,8 @@ Proof using Ptimeless.
         wpc_pures.
 
         (* Implicit transaction abort *)
-        iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
-        iDestruct (is_buftxn_to_old_pred with "Hbuftxn") as "[Hold _]".
+        iDestruct (is_jrnl_mem_durable with "Hjrnl_mem Hjrnl_durable") as "Hjrnl".
+        iDestruct (is_jrnl_to_old_pred with "Hjrnl") as "[Hold _]".
 
         iSplitR "Hinode_state Hold".
         2: { iModIntro. iExists _. iFrame. }
@@ -550,9 +550,9 @@ Proof using Ptimeless.
     {
       (* shrink inode *)
       wp_storeField.
-      wp_apply (wp_Inode__WriteInode with "[$Hbuftxn_mem Hinum Hisize Hidata $Hinode_enc]").
+      wp_apply (wp_Inode__WriteInode with "[$Hjrnl_mem Hinum Hisize Hidata $Hinode_enc]").
       { iFrame. iPureIntro. apply Hvalid; auto. }
-      iIntros "(Hbuftxn_mem & Hinode_enc & Hinode_mem)".
+      iIntros "(Hjrnl_mem & Hinode_enc & Hinode_mem)".
       wp_pures.
       wp_store.
       wp_load. iModIntro.
@@ -560,10 +560,10 @@ Proof using Ptimeless.
       iNamed 1.
       wpc_pures.
 
-      iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
+      iDestruct (is_jrnl_mem_durable with "Hjrnl_mem Hjrnl_durable") as "Hjrnl".
 
-      wpc_apply (wpc_Op__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
-      5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
+      wpc_apply (wpc_Op__CommitWait with "[$Hjrnl $Htxncrash Hinode_enc Hinode_data]").
+      5: { (* XXX is there a clean version of this? *) generalize (jrnl_maps_to γtxn). intros. iAccu. }
       2-4: solve_ndisj.
       { typeclasses eauto. }
 
@@ -776,11 +776,11 @@ Proof using Ptimeless.
   iNamed 1.
   wpc_pures.
 
-  iDestruct (is_buftxn_mem_durable with "Hbuftxn_mem Hbuftxn_durable") as "Hbuftxn".
+  iDestruct (is_jrnl_mem_durable with "Hjrnl_mem Hjrnl_durable") as "Hjrnl".
 
   (* Not changing the length at all. *)
-  wpc_apply (wpc_Op__CommitWait with "[$Hbuftxn $Htxncrash Hinode_enc Hinode_data]").
-  5: { (* XXX is there a clean version of this? *) generalize (buftxn_maps_to γtxn). intros. iAccu. }
+  wpc_apply (wpc_Op__CommitWait with "[$Hjrnl $Htxncrash Hinode_enc Hinode_data]").
+  5: { (* XXX is there a clean version of this? *) generalize (jrnl_maps_to γtxn). intros. iAccu. }
   { typeclasses eauto. }
   all: try solve_ndisj.
 

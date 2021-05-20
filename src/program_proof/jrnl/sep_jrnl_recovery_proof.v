@@ -3,9 +3,9 @@ From Perennial.algebra Require Import auth_map liftable log_heap async.
 
 From Goose.github_com.mit_pdos.go_journal Require Import jrnl.
 From Perennial.program_logic Require Export ncinv.
-From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof txn.txn_proof.
-From Perennial.program_proof Require buftxn.buftxn_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_invariant.
+From Perennial.program_proof Require Import buf.buf_proof addr.addr_proof obj.obj_proof.
+From Perennial.program_proof Require jrnl.jrnl_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_invariant.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.goose_lang.ffi Require Import disk_prelude.
@@ -14,24 +14,24 @@ From RecordUpdate Require Import RecordUpdate.
 Import RecordSetNotations.
 
 Section goose_lang.
-  Context `{!buftxnG Σ}.
+  Context `{!jrnlG Σ}.
   Context `{!heapG Σ}.
   Context (N:namespace).
   Context (Hdisj1: (↑N : coPset) ## ↑invN).
   Context (Hdisj2: (↑N : coPset) ## ↑invariant.walN).
 
-  Implicit Types (l: loc) (γ: buftxn_names) (γtxn: gname).
+  Implicit Types (l: loc) (γ: jrnl_names) (γtxn: gname).
   Implicit Types (obj: object).
 
   Definition txn_init_ghost_state γ : iProp Σ :=
-    async_pre_ctx γ.(buftxn_async_name).
+    async_pre_ctx γ.(jrnl_async_name).
 
   (* NOTE(tej): we're combining the durable part with the resources into one
   definition here, unlike in lower layers (they should be fixed) *)
   Definition is_txn_durable γ dinit logm : iProp Σ :=
-    "Hlower_durable" ∷ is_txn_durable γ.(buftxn_txn_names) dinit ∗
-    "Hlogm" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (3/4) logm ∗
-    "Hasync_ctx" ∷ async_ctx γ.(buftxn_async_name) 1 logm.
+    "Hlower_durable" ∷ is_txn_durable γ.(jrnl_txn_names) dinit ∗
+    "Hlogm" ∷ ghost_var γ.(jrnl_txn_names).(txn_crashstates) (3/4) logm ∗
+    "Hasync_ctx" ∷ async_ctx γ.(jrnl_async_name) 1 logm.
 
   Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
     dom (gset _) dinit = list_to_set (seqZ 513 sz) →
@@ -39,7 +39,7 @@ Section goose_lang.
     (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
     0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
   |==> ∃ γ, let logm0 := Build_async (kind_heap0 kinds) [] in
-            ⌜ γ.(buftxn_txn_names).(txn_kinds) = kinds ⌝ ∗
+            ⌜ γ.(jrnl_txn_names).(txn_kinds) = kinds ⌝ ∗
               is_txn_durable γ dinit logm0 ∗
               txn_durable γ 0 ∗
               ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_mapsto_own γ a o)
@@ -57,8 +57,8 @@ Section goose_lang.
     simpl.
 
     iModIntro.
-    iExists {| buftxn_txn_names := γtxn;
-               buftxn_async_name := γasync; |}.
+    iExists {| jrnl_txn_names := γtxn;
+               jrnl_async_name := γasync; |}.
     rewrite /is_txn_durable /=.
     (* TODO: iFrame here is way slower than it should be, if Htxn_durable isn't
     specified first *)
@@ -83,12 +83,12 @@ Section goose_lang.
 
 
   Lemma sep_txn_crash_transform γ σs γasync' γtxn_names' dinit :
-    "H◯async" ∷ ghost_var γ.(buftxn_txn_names).(txn_crashstates) (3 / 4) σs ∗
-    "H●latest" ∷ async_ctx γ.(buftxn_async_name) 1 σs ∗
+    "H◯async" ∷ ghost_var γ.(jrnl_txn_names).(txn_crashstates) (3 / 4) σs ∗
+    "H●latest" ∷ async_ctx γ.(jrnl_async_name) 1 σs ∗
     "Hctx" ∷ async_pre_ctx γasync' ∗
-    "H" ∷ (∃ logm0 : async (gmap addr object), txn_resources γ.(buftxn_txn_names) γtxn_names' logm0) ∗
+    "H" ∷ (∃ logm0 : async (gmap addr object), txn_resources γ.(jrnl_txn_names) γtxn_names' logm0) ∗
     "Hcancel" ∷ recovery_proof.is_txn_durable γtxn_names' dinit ==∗
-    let γ' := {| buftxn_txn_names := γtxn_names'; buftxn_async_name := γasync' |} in
+    let γ' := {| jrnl_txn_names := γtxn_names'; jrnl_async_name := γasync' |} in
      sep_txn_exchanger γ γ' ∗ (∃ logm' : async (gmap addr object), is_txn_durable γ' dinit logm').
   Proof.
     iNamed 1.
@@ -133,7 +133,7 @@ Section goose_lang.
     {{{ is_txn_durable γ dinit logm }}}
       obj.MkLog (disk_val d) @ k; ⊤
     {{{ γ' (l: loc), RET #l;
-        is_txn l γ.(buftxn_txn_names) dinit ∗
+        is_txn l γ.(jrnl_txn_names) dinit ∗
         is_txn_system N γ ∗
         txn_cfupd_cancel dinit γ' ∗
         txn_cinv N γ γ' }}}
@@ -162,7 +162,7 @@ Section goose_lang.
 
         iApply "HΦ".
         iDestruct "H2" as (logm'') "H2".
-        iExists {| buftxn_txn_names := γ'; buftxn_async_name := γasync' |}, logm''.
+        iExists {| jrnl_txn_names := γ'; jrnl_async_name := γasync' |}, logm''.
         iMod (inv_alloc' with "H1") as "#Hinv".
         iModIntro.
         iFrame "H2".
@@ -181,7 +181,7 @@ Section goose_lang.
 
         iMod (async_pre_ctx_init) as (γasync') "Hasync_init_ctx'".
         iDestruct (async_ctx_to_lb with "Hasync_ctx") as "#Hasync_lb".
-        set (γ' := {| buftxn_txn_names := γtxn_names'; buftxn_async_name := γasync' |}).
+        set (γ' := {| jrnl_txn_names := γtxn_names'; jrnl_async_name := γasync' |}).
         iMod (ncinv_cinv_alloc N _ _ ⊤
                 (txn_system_inv γ ∗ (async_pre_ctx γasync' ∗ Ptxn_tok ∗ Ptxn_cancel_tok))
                 (sep_txn_exchanger γ γ')

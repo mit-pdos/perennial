@@ -7,7 +7,7 @@ From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.go_journal Require Import obj.
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
-From Perennial.program_proof Require Import txn.invariant.
+From Perennial.program_proof Require Import obj.invariant.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Perennial.goose_lang Require Import crash_modality.
 

@@ -6,9 +6,9 @@ From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert.
 From Perennial.base_logic Require Import ghost_var.
 From Perennial.program_proof Require Import lockmap_proof.
-From Perennial.program_proof Require buftxn.sep_buftxn_invariant.
-From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof txn.txn_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require jrnl.sep_jrnl_invariant.
+From Perennial.program_proof Require Import addr.addr_proof buf.buf_proof obj.obj_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import twophase.twophase_proof.
 From Perennial.program_proof Require Import alloc.alloc_proof.
 
@@ -35,7 +35,7 @@ Notation jrnl_nat_K :=
 Class twophaseG (Σ: gFunctors) :=
   { twophase_stagedG :> stagedG Σ;
     twophase_lockmapG :> lockmapG Σ;
-    twophase_buftxnG :> sep_buftxn_invariant.buftxnG Σ;
+    twophase_jrnlG :> sep_jrnl_invariant.jrnlG Σ;
     twophase_nat_ctx :> ghost_varG Σ (nat * (spec_lang.(language.expr) → spec_lang.(language.expr)))%type;
   }.
 
@@ -52,7 +52,7 @@ Definition twophase_crash_cond_full
   := ("%Hvalids" ∷ ⌜ map_Forall (mapsto_valid γ) mt ⌝ ∗
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "#Hdom" ∷ jrnl_dom (dom _ mt) ∗
-      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
       "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
       "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj))%I.
@@ -62,7 +62,7 @@ Definition twophase_crash_cond_partial
   := ("%Hvalids" ∷ ⌜ map_Forall (mapsto_valid γ) mt ⌝ ∗
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "#Hdom" ∷ jrnl_dom (dom _ mt) ∗
-      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(buftxn_txn_names).(txn_kinds) ∗
+      "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
       "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
       "Hjrnl_mapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj obj)))%I.
@@ -145,7 +145,7 @@ Defined.
 
 Existing Instances subG_stagedG.
 
-Definition twophaseΣ := #[stagedΣ; lockmapΣ; sep_buftxn_invariant.buftxnΣ;
+Definition twophaseΣ := #[stagedΣ; lockmapΣ; sep_jrnl_invariant.jrnlΣ;
                          ghost_varΣ (nat * (spec_lang.(language.expr) → spec_lang.(language.expr)))].
 
 Instance subG_twophaseG: ∀ Σ, subG twophaseΣ Σ → twophaseG Σ.

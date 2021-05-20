@@ -6,8 +6,8 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
-From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof.
+From Perennial.program_proof Require Import obj.obj_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List range_set.
@@ -21,18 +21,18 @@ Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Theorem wp_Inode__WriteInode γ γtxn (inum : u64) len len' blk (l : loc) (btxn : loc) dinit γdurable :
-  {{{ is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
-      is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
+  {{{ is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
+      is_inode_enc inum len blk (jrnl_maps_to γtxn) ∗
       is_inode_mem l inum len' blk ∗
       ⌜ inum ∈ covered_inodes ⌝
   }}}
     Inode__WriteInode #l #btxn
   {{{ RET #();
-      is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
-      is_inode_enc inum len' blk (buftxn_maps_to γtxn) ∗
+      is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
+      is_inode_enc inum len' blk (jrnl_maps_to γtxn) ∗
       is_inode_mem l inum len' blk }}}.
 Proof.
-  iIntros (Φ) "(Hbuftxn & Henc & Hmem & %Hcovered) HΦ".
+  iIntros (Φ) "(Hjrnl & Henc & Hmem & %Hcovered) HΦ".
   wp_call.
   iNamed "Hmem".
   wp_call.
@@ -53,12 +53,12 @@ Proof.
   iNamed "Henc".
   iDestruct (is_slice_to_small with "Hs") as "Hs".
   wp_apply (wp_Op__OverWrite
-    _ _ _ _ _ _ _ _ _ _ _ (existT KindInode (bufInode (list_to_inode_buf data))) with "[$Hbuftxn $Hinode_enc_mapsto $Hs]").
+    _ _ _ _ _ _ _ _ _ _ _ (existT KindInode (bufInode (list_to_inode_buf data))) with "[$Hjrnl $Hinode_enc_mapsto $Hs]").
   { eauto. }
   { rewrite /data_has_obj /=. apply list_to_inode_buf_to_list.
     rewrite /inode_bytes. word. }
   { eauto. }
-  iIntros "[Hbuftxn Hinode_enc_mapsto]".
+  iIntros "[Hjrnl Hinode_enc_mapsto]".
   wp_apply util_proof.wp_DPrintf.
   iApply "HΦ". iFrame.
   iExists _. iFrame. iPureIntro.
@@ -76,34 +76,34 @@ Proof.
 Qed.
 
 Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (count : u64) dataslice databuf γdurable dinit contents :
-  {{{ is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
+  {{{ is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
       is_inode_mem ip inum len blk ∗
-      is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
-      is_inode_data len blk contents (buftxn_maps_to γtxn) ∗
+      is_inode_enc inum len blk (jrnl_maps_to γtxn) ∗
+      is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
       is_slice_small dataslice u8T 1 databuf ∗
       ⌜ int.nat count = length databuf ⌝ ∗
       ⌜ inum ∈ covered_inodes ⌝
   }}}
     Inode__Write #ip #btxn #offset #count (slice_val dataslice)
   {{{ (wcount: u64) (ok: bool), RET (#wcount, #ok);
-      is_buftxn_mem Nbuftxn btxn γ.(simple_buftxn) dinit γtxn γdurable ∗
+      is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
       ( ( let contents' := ((firstn (int.nat offset) contents) ++
                           (firstn (int.nat count) databuf) ++
                           (skipn (int.nat offset + int.nat count) contents))%list in
         let len' := U64 (Z.max (int.Z len) (int.Z offset + int.Z count)) in
         is_inode_mem ip inum len' blk ∗
-        is_inode_enc inum len' blk (buftxn_maps_to γtxn) ∗
-        is_inode_data len' blk contents' (buftxn_maps_to γtxn) ∗
+        is_inode_enc inum len' blk (jrnl_maps_to γtxn) ∗
+        is_inode_data len' blk contents' (jrnl_maps_to γtxn) ∗
         ⌜ wcount = count ∧ ok = true ∧
           (int.Z offset + length databuf < 2^64)%Z ∧
           (int.Z offset ≤ int.Z len)%Z ⌝ ) ∨
       ( is_inode_mem ip inum len blk ∗
-        is_inode_enc inum len blk (buftxn_maps_to γtxn) ∗
-        is_inode_data len blk contents (buftxn_maps_to γtxn) ∗
+        is_inode_enc inum len blk (jrnl_maps_to γtxn) ∗
+        is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
         ⌜ int.Z wcount = 0 ∧ ok = false ⌝ ) )
   }}}.
 Proof.
-  iIntros (Φ) "(Hbuftxn & Hmem & Hienc & Hdata & Hdatabuf & %Hcount & %Hcovered) HΦ".
+  iIntros (Φ) "(Hjrnl & Hmem & Hienc & Hdata & Hdatabuf & %Hcount & %Hcovered) HΦ".
   wp_call.
   wp_apply util_proof.wp_DPrintf.
   wp_apply wp_slice_len.
@@ -112,18 +112,18 @@ Proof.
   wp_apply util_proof.wp_SumOverflows.
   iIntros (ok) "%Hok". subst.
   wp_if_destruct.
-  { wp_pures. iApply "HΦ". iFrame "Hbuftxn". iRight. iFrame. done. }
+  { wp_pures. iApply "HΦ". iFrame "Hjrnl". iRight. iFrame. done. }
   wp_if_destruct.
-  { wp_pures. iApply "HΦ". iFrame "Hbuftxn". iRight. iFrame. done. }
+  { wp_pures. iApply "HΦ". iFrame "Hjrnl". iRight. iFrame. done. }
   iNamed "Hmem".
   wp_loadField.
   wp_if_destruct.
-  { wp_pures. iApply "HΦ". iFrame "Hbuftxn". iRight. iFrame. done. }
+  { wp_pures. iApply "HΦ". iFrame "Hjrnl". iRight. iFrame. done. }
 
   iNamed "Hdata".
   wp_loadField.
   wp_apply wp_block2addr.
-  wp_apply (wp_Op__ReadBuf with "[$Hbuftxn $Hdiskblk]"); first by eauto.
+  wp_apply (wp_Op__ReadBuf with "[$Hjrnl $Hdiskblk]"); first by eauto.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
   wp_apply wp_ref_to; first by val_ty.
@@ -237,7 +237,7 @@ Proof.
   iNamed "HI".
   wp_apply (wp_Buf__SetDirty with "Hbuf"). iIntros "Hbuf".
 
-  iMod ("Hbufdone" with "Hbuf []") as "[Hbuftxn Hdiskblk]".
+  iMod ("Hbufdone" with "Hbuf []") as "[Hjrnl Hdiskblk]".
   { iLeft. done. }
 
   wp_apply util_proof.wp_DPrintf.
@@ -265,11 +265,11 @@ Proof.
 
   wp_if_destruct.
   { wp_storeField.
-    wp_apply (wp_Inode__WriteInode with "[$Hbuftxn Hinum Hisize Hidata $Hienc]").
+    wp_apply (wp_Inode__WriteInode with "[$Hjrnl Hinum Hisize Hidata $Hienc]").
     { iFrame. iFrame "%". }
-    iIntros "(Hbuftxn & Hienc & Hmem)".
+    iIntros "(Hjrnl & Hienc & Hmem)".
     wp_pures.
-    iApply "HΦ". iModIntro. iFrame "Hbuftxn". iLeft.
+    iApply "HΦ". iModIntro. iFrame "Hjrnl". iLeft.
     rewrite Z.max_r.
     2: { revert Heqb2. word. }
     iFrame.
@@ -307,7 +307,7 @@ Proof.
     rewrite Hcount. revert Heqb2. word.
   }
   { wp_pures.
-    iApply "HΦ". iModIntro. iFrame "Hbuftxn". iLeft.
+    iApply "HΦ". iModIntro. iFrame "Hjrnl". iLeft.
     rewrite Z.max_l.
     2: { revert Heqb2. word. }
     replace (U64 (int.Z len)) with (len) by word.

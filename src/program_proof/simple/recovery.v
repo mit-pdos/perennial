@@ -9,8 +9,8 @@ From Perennial.algebra Require Import log_heap.
 From Perennial.program_logic Require Import spec_assert.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
-From Perennial.program_proof Require Import txn.txn_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
-From Perennial.program_proof Require Import buftxn.sep_buftxn_proof buftxn.sep_buftxn_recovery_proof.
+From Perennial.program_proof Require Import obj.obj_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
+From Perennial.program_proof Require Import jrnl.sep_jrnl_proof jrnl.sep_jrnl_recovery_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
@@ -210,7 +210,7 @@ Proof.
   wpc_frame "HΦ".
   wp_apply (wp_Op__Begin with "[$Htxn $Htxn_system]").
   iIntros (γtxn l).
-  iIntros "Hbuftxn".
+  iIntros "Hjrnl".
   wp_pures.
   (* the interesting part, reasoning about [inodeInit]; will need to break apart
      Hmapstos and turn it into a bunch of inodes in order to lift them *)
@@ -288,7 +288,7 @@ Proof using All.
     iModIntro. iApply "HΦc".
     iExists _, _, _. iFrame. }
 
-  wpc_apply (wpc_MkLog Nbuftxn with "Htxndurable").
+  wpc_apply (wpc_MkLog Njrnl with "Htxndurable").
   { solve_ndisj. }
   { solve_ndisj. }
 

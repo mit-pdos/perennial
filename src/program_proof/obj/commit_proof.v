@@ -11,7 +11,7 @@ From Perennial.base_logic Require Import lib.ghost_map.
 From Goose.github_com.mit_pdos.go_journal Require Import obj.
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
-From Perennial.program_proof Require Export txn.invariant txn.map_helpers.
+From Perennial.program_proof Require Export obj.invariant obj.map_helpers.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Remove Hints fractional.into_sep_fractional : typeclass_instances.

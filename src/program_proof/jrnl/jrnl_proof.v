@@ -7,7 +7,7 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.go_journal Require Import addr jrnl.
-From Perennial.program_proof Require Import wal.specs wal.heapspec txn.txn_proof buf.buf_proof addr.addr_proof.
+From Perennial.program_proof Require Import wal.specs wal.heapspec obj.obj_proof buf.buf_proof addr.addr_proof.
 
 From Perennial.program_logic Require Import invariants_mutable.
 From Perennial.program_proof Require wp_to_wpc.
@@ -56,25 +56,25 @@ Proof. reflexivity. Qed.
 Lemma modified_mkVersioned {K} c m : modified (@mkVersioned K c m) = existT K m.
 Proof. reflexivity. Qed.
 
-Class buftxnG Σ :=
-  { buftxn_txn   :> txnG Σ;
+Class jrnlG Σ :=
+  { jrnl_txn   :> txnG Σ;
   }.
 
-Definition buftxnΣ : gFunctors :=
+Definition jrnlΣ : gFunctors :=
   #[ txnΣ ].
 
-Instance subG_buftxnΣ Σ : subG buftxnΣ Σ → buftxnG Σ.
+Instance subG_jrnlΣ Σ : subG jrnlΣ Σ → jrnlG Σ.
 Proof. solve_inG. Qed.
 
 Section heap.
-Context `{!buftxnG Σ}.
+Context `{!jrnlG Σ}.
 Context `{!heapG Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 Implicit Types (mT : gmap addr versioned_object).
 
-Definition is_buftxn (buftx : loc)
+Definition is_jrnl (buftx : loc)
                      mT
                      γUnified
                      dinit anydirty : iProp Σ :=
@@ -97,8 +97,8 @@ Definition is_buftxn (buftx : loc)
       "%Hanydirty" ∷ ⌜anydirty=false <-> filter (λ b, (snd b).(bufDirty) = true) gBufmap = ∅⌝
   )%I.
 
-Lemma is_buftxn_to_committed_mapsto_txn buftx mT γUnified dinit anydirty :
-  is_buftxn buftx mT γUnified dinit anydirty -∗
+Lemma is_jrnl_to_committed_mapsto_txn buftx mT γUnified dinit anydirty :
+  is_jrnl buftx mT γUnified dinit anydirty -∗
   [∗ map] a ↦ v ∈ committed <$> mT, mapsto_txn γUnified a v.
 Proof.
   iNamed 1.
@@ -107,12 +107,12 @@ Proof.
   iIntros (a obj Hlookup) "[Ha _]". iFrame.
 Qed.
 
-Lemma is_buftxn_not_in_map buftx mT γUnified dinit anydirty a v0 :
-  is_buftxn buftx mT γUnified dinit anydirty -∗
+Lemma is_jrnl_not_in_map buftx mT γUnified dinit anydirty a v0 :
+  is_jrnl buftx mT γUnified dinit anydirty -∗
   mapsto_txn γUnified a v0 -∗
   ⌜mT !! a = None⌝.
 Proof.
-  rewrite is_buftxn_to_committed_mapsto_txn.
+  rewrite is_jrnl_to_committed_mapsto_txn.
   iIntros "Hm Ha".
   destruct (mT !! a) eqn:Helem; eauto.
   iExFalso.
@@ -121,12 +121,12 @@ Proof.
   iDestruct (mapsto_txn_2 with "Ha Ha2") as %[].
 Qed.
 
-Theorem wp_buftxn_Begin l γUnified dinit:
+Theorem wp_jrnl_Begin l γUnified dinit:
   {{{ is_txn l γUnified dinit
   }}}
     jrnl.Begin #l
   {{{ (buftx : loc), RET #buftx;
-      is_buftxn buftx ∅ γUnified dinit false
+      is_jrnl buftx ∅ γUnified dinit false
   }}}.
 Proof.
   iIntros (Φ) "#Htxn HΦ".
@@ -150,7 +150,7 @@ Qed.
 
 Theorem wp_Op__ReadBuf buftx mT γUnified dinit anydirty a (sz : u64) v :
   {{{
-    is_buftxn buftx mT γUnified dinit anydirty ∗
+    is_jrnl buftx mT γUnified dinit anydirty ∗
     ⌜ mT !! a = Some v ⌝ ∗
     ⌜ sz = bufSz (projT1 v) ⌝
   }}}
@@ -161,7 +161,7 @@ Theorem wp_Op__ReadBuf buftx mT γUnified dinit anydirty a (sz : u64) v :
     ( ∀ v' dirty',
       ( ⌜ dirty' = true ∨ (dirty' = dirty ∧ snd (projT2 v) = v') ⌝ ∗
         is_buf bufptr a (Build_buf (projT1 v) v' dirty') ) ==∗
-      ( is_buftxn buftx (<[a := existT _ (fst (projT2 v), v')]> mT) γUnified dinit (orb anydirty dirty') ) )
+      ( is_jrnl buftx (<[a := existT _ (fst (projT2 v), v')]> mT) γUnified dinit (orb anydirty dirty') ) )
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %Ha & ->) HΦ".
@@ -393,7 +393,7 @@ Qed.
 
 Theorem wp_Op__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K * bufDataT K)%type}) (sz : u64) (vslice : Slice.t) anydirty :
   {{{
-    is_buftxn buftx mt γUnified dinit anydirty ∗
+    is_jrnl buftx mt γUnified dinit anydirty ∗
     ⌜ mt !! a = Some v0 ⌝ ∗
     is_buf_data vslice (snd (projT2 v)) a ∗
     ⌜ sz = bufSz (projT1 v) ⌝ ∗
@@ -402,7 +402,7 @@ Theorem wp_Op__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K * b
     Op__OverWrite #buftx (addr2val a) #sz (slice_val vslice)
   {{{
     RET #();
-    is_buftxn buftx (<[a := v]> mt) γUnified dinit true
+    is_jrnl buftx (<[a := v]> mt) γUnified dinit true
   }}}.
 Proof using.
   iIntros (Φ) "(Htxn & %Ha & Hvslice & -> & %) HΦ".
@@ -541,12 +541,12 @@ Qed.
 
 Theorem wp_Op__NDirty buftx mt γUnified dinit anydirty :
   {{{
-    is_buftxn buftx mt γUnified dinit anydirty
+    is_jrnl buftx mt γUnified dinit anydirty
   }}}
     Op__NDirty #buftx
   {{{
     (n:u64), RET #n;
-    is_buftxn buftx mt γUnified dinit anydirty
+    is_jrnl buftx mt γUnified dinit anydirty
   }}}.
 Proof.
   iIntros (Φ) "Htxn HΦ".
@@ -562,13 +562,13 @@ Qed.
 Theorem Op_lift_one' buftx mt γUnified dinit a v E anydirty k q :
   ↑invN ⊆ E ->
   (
-    is_buftxn buftx mt γUnified dinit anydirty ∗
+    is_jrnl buftx mt γUnified dinit anydirty ∗
     mapsto_txn γUnified a v
   ) -∗
     NC q -∗
     |k={E}=>
   (
-    is_buftxn buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified dinit anydirty
+    is_jrnl buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified dinit anydirty
   ) ∗
     NC q
   .
@@ -617,12 +617,12 @@ Qed.
 Theorem Op_lift_one buftx mt γUnified dinit a v E anydirty :
   ↑invN ⊆ E ->
   (
-    is_buftxn buftx mt γUnified dinit anydirty ∗
+    is_jrnl buftx mt γUnified dinit anydirty ∗
     mapsto_txn γUnified a v
   )
     -∗ |NC={E}=>
   (
-    is_buftxn buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified dinit anydirty
+    is_jrnl buftx (<[a := (existT (projT1 v) (projT2 v, projT2 v))]> mt) γUnified dinit anydirty
   ).
 Proof.
   iIntros (HNE) "[Htxn Ha]".
@@ -689,12 +689,12 @@ Qed.
 Theorem Op_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E anydirty :
   ↑invN ⊆ E ->
   (
-    is_buftxn buftx mt γUnified dinit anydirty ∗
+    is_jrnl buftx mt γUnified dinit anydirty ∗
     [∗ map] a ↦ v ∈ m, mapsto_txn γUnified a v
   )
     -∗ |NC={E}=>
   (
-    is_buftxn buftx (((λ v, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ mt) γUnified dinit anydirty
+    is_jrnl buftx (((λ v, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ mt) γUnified dinit anydirty
   ).
 Proof.
   iIntros (HNE) "[Htxn Ha]".
@@ -769,7 +769,7 @@ Qed.
 
 Theorem wp_Op__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) anydirty :
   {{{
-    is_buftxn buftx mt γUnified dinit anydirty ∗
+    is_jrnl buftx mt γUnified dinit anydirty ∗
     (|NC={⊤ ∖ ↑walN ∖ ↑ invN}=> PreQ) ∧ (|NC={⊤ ∖ ↑walN ∖ ↑invN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
         "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (3/4) σl ∗
         "Hcrashstates_fupd" ∷ (
@@ -1075,7 +1075,7 @@ Definition wpwpcN := nroot.@"temp".
 
 Theorem wpc_Op__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q Qc : nat -> iProp Σ) {HT1: Timeless PreQ} {HT2: ∀ n, Timeless (Qc n)} anydirty k :
   {{{
-    is_buftxn buftx mt γUnified dinit anydirty ∗
+    is_jrnl buftx mt γUnified dinit anydirty ∗
     <disc> PreQ ∧ ( |NC={⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
         "Hcrashstates_frag" ∷ ghost_var γUnified.(txn_crashstates) (3/4) σl ∗
         "Hcrashstates_fupd" ∷ (
@@ -1099,7 +1099,7 @@ Theorem wpc_Op__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : boo
   }}}
   {{{ (∃ txnid, Qc txnid) ∨ PreQ }}}.
 Proof using stagedG0.
-  iIntros (Φ Φc) "(His_buftxn&Hfupd) HΦc".
+  iIntros (Φ Φc) "(His_jrnl&Hfupd) HΦc".
   rewrite bi.and_comm.
   rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
   iDestruct (own_discrete_elim_conj with "Hfupd") as (Q_keep Q_inv) "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
@@ -1122,7 +1122,7 @@ Proof using stagedG0.
                         ∗ ([∗ map] a↦v ∈ (modified <$> mt), mapsto_txn γUnified a v)
                           ∗ (⌜wait = true⌝ -∗ mono_nat_lb_own γUnified.(txn_walnames).(wal_heap_durable_lb) txnid))
                    ∨ ⌜anydirty = false⌝ ∗ PreQ ∗ ([∗ map] a↦v ∈ (modified <$> mt), mapsto_txn γUnified a v)
-                  else PreQ ∗ ([∗ map] a↦v ∈ (committed <$> mt), mapsto_txn γUnified a v)))}} {{ True }})%I with "[His_buftxn HQ_keep Hpend14 Hfull]" as "Hwpc";
+                  else PreQ ∗ ([∗ map] a↦v ∈ (committed <$> mt), mapsto_txn γUnified a v)))}} {{ True }})%I with "[His_jrnl HQ_keep Hpend14 Hfull]" as "Hwpc";
     last first.
   {
     iApply wpc_ncfupd.
@@ -1154,7 +1154,7 @@ Proof using stagedG0.
   iApply wp_ncfupd.
   wp_apply (wp_Op__CommitWait (staged_pending (3/4) γpending -∗ |NC={⊤}=> PreQ) _ _ _ _ _ E
                                   (λ n, staged_pending (3/4) γpending -∗ |NC={⊤}=> Q n)%I
-              with "[$His_buftxn Hfull Hpend14 HQ_keep]").
+              with "[$His_jrnl Hfull Hpend14 HQ_keep]").
   { iSplit.
     - rewrite ncfupd_eq /ncfupd_def. iIntros (q) "HNC".
       iMod (inv_mut_full_acc with "Hfull") as "(H&Hclo)"; first auto.

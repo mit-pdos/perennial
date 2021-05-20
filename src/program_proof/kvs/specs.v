@@ -5,7 +5,7 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
 
 From Goose.github_com.mit_pdos.goose_nfsd Require Import kvs.
-From Perennial.program_proof Require Import txn.txn_proof buftxn.buftxn_proof.
+From Perennial.program_proof Require Import obj.obj_proof jrnl.jrnl_proof.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.Helpers Require Import NamedProps Map List.
@@ -20,7 +20,7 @@ End kvpair.
 
 Section heap.
 Context `{!lockG Σ}.
-Context `{!buftxnG Σ}.
+Context `{!jrnlG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Definition LogSz := 513.
@@ -124,7 +124,7 @@ Proof.
     * wp_apply wp_panic.
       destruct (decide_rel Z.lt _ (int.Z LogSz)); try discriminate. lia.
     * wp_loadField.
-      wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
+      wp_apply (wp_jrnl_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx) "Hbtxn".
       wp_let.
       wp_call.
@@ -191,7 +191,7 @@ Proof.
   wp_call.
   wp_loadField.
   wp_pures.
-  wp_apply (wp_buftxn_Begin l γDisk _ with "[Htxn]"); auto.
+  wp_apply (wp_jrnl_Begin l γDisk _ with "[Htxn]"); auto.
   iIntros (buftx) "Hbtxn".
   wp_let.
   wp_apply (wp_forSlicePrefix

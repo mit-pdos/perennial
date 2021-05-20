@@ -4,7 +4,7 @@ From Perennial.goose_lang.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.go_journal Require Import obj txn alloc.
 From Perennial.program_proof Require Import twophase.op_wrappers.
-From Perennial.program_proof Require buftxn.sep_buftxn_proof buf.defs.
+From Perennial.program_proof Require jrnl.sep_jrnl_proof buf.defs.
 
 Section translate.
 
@@ -253,7 +253,7 @@ Definition kinds_mapsto_valid (kinds : gmap u64 defs.bufDataKind)
     ∧ kinds !! addr_proof.addrBlock a = Some (buf_proof.objKind obj).
 
 Definition bufObj_to_obj bufObj : obj :=
-  match sep_buftxn_invariant.objData bufObj with
+  match sep_jrnl_invariant.objData bufObj with
   | buf.defs.bufBit b => objBit b
   | buf.defs.bufInode data | buf.defs.bufBlock data => objBytes data
   end.
