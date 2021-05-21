@@ -623,6 +623,7 @@ Section map2.
       eauto.
   Qed.
 
+  (* FIXME: shadows / shadowed by an Iris lemma *)
   Lemma big_sepM2_sepM_2
       Φ (m1 : gmap K A) (m2 : gmap K B)
       (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
@@ -696,7 +697,7 @@ Section map2.
     [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 ∗ Ψ k y2.
   Proof using BiAffine0.
     iIntros (Hdom) "[Hm1 Hm2]".
-    iApply big_sepM_sepM2; last by iFrame.
+    iApply big_sepM2_sepM; last by iFrame.
     intros k. rewrite -!elem_of_dom Hdom. auto.
   Qed.
 

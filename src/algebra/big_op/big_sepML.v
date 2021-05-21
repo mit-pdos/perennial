@@ -424,7 +424,7 @@ Section maplist.
     iDestruct (big_sepM2_sep with "Hlm") as "[Hlm0 Hlm1]".
     iSplitL "Hlm0".
     + iExists _. iFrame. done.
-    + iDestruct (big_sepM2_sepM_2 with "Hlm1") as "Hlm1".
+    + iDestruct (big_sepM.big_sepM2_sepM_2 with "Hlm1") as "Hlm1".
       rewrite big_opM_eq /big_opM_def H0 big_sepL_fmap.
       iApply big_sepL_mono; last by iFrame.
       iIntros (???) "H".
@@ -492,7 +492,7 @@ Section maplist.
     rewrite big_sepML_eq /big_sepML_def.
     iIntros "Hml".
     iDestruct "Hml" as (lm) "[%Hllm Hml]".
-    iDestruct (big_sepM2_sepM_2 with "Hml") as "Hlm".
+    iDestruct (big_sepM.big_sepM2_sepM_2 with "Hml") as "Hlm".
 
     rewrite Hllm; clear Hllm.
     iInduction lm as [|i x lm] "IH" using map_ind.

@@ -506,7 +506,7 @@ Proof.
       eapply list_fmap_ext; eauto. lia.
     }
 
-    iDestruct (big_sepM2_sepM_2 with "H") as "H".
+    iDestruct (big_sepM.big_sepM2_sepM_2 with "H") as "H".
     iApply (big_sepM_mono with "H").
     intros.
     iIntros "Hm".

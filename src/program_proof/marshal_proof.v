@@ -325,7 +325,7 @@ Proof.
   split; first word.
   replace (<[int.nat off:=u]> data) with
       (take off data ++ [u] ++ drop (off + 1) data); last first.
-  { rewrite insert_app. 2:word.
+  { rewrite insert_take_drop. 2:word.
     repeat f_equal; word. }
   apply has_encoding_app; eauto.
   eapply has_encoding_from_app; eauto.

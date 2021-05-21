@@ -1640,7 +1640,7 @@ Proof using spec_trans.
     iApply big_sepL_fupd.
     iApply (big_sepL_mono_with_pers with "Hv Hpts").
     { iIntros (k x Hlookup) "#Hval (Hmtoks&Hsmtoks)".
-      iDestruct (big_sepL_sepL2_2 with "Hmtoks Hsmtoks") as "Hmtoks"; first lia.
+      iDestruct (big_sepL2_sepL_2 with "Hmtoks Hsmtoks") as "Hmtoks"; first lia.
       iApply big_sepL_fupd.
       iApply (big_sepL2_elim_big_sepL with "[] Hmtoks").
       { rewrite map_length //=. }
