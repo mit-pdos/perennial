@@ -139,8 +139,7 @@ a path to.
   The proofs about programs we have so far.
 
   - `append_log_proof.v` Hoare triples about the `append_log` example, which is
-    implemented in the Goose repo at `internal/examples/append_log/` and
-    extracted to `goose_lang/examples/append_log/`.
+    implemented in the Goose repo at `internal/examples/append_log/`.
 
   - `examples/` Examples we wrote for POPL
 

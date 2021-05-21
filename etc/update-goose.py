@@ -152,30 +152,25 @@ def main():
         compile_goose()
 
     if not args.skip_goose_examples:
-        run_goose(
-            path.join(goose_dir, "internal/examples/unittest"),
-            path.join(
-                perennial_dir, "src/goose_lang/examples/goose_unittest.v"
-            ),
-        )
-        run_goose(
-            path.join(goose_dir, "internal/examples/semantics"),
-            path.join(
-                perennial_dir, "src/goose_lang/examples/goose_semantics.v"
-            ),
-        )
         run_goose_test_gen(
             path.join(goose_dir, "internal/examples/semantics"),
             path.join(
                 perennial_dir, "src/goose_lang/interpreter/generated_test.v"
             ),
         )
-        for example in ["append_log", "logging2", "rfc1813", "simpledb", "wal"]:
+        for example in [
+            "unittest",
+            "semantics",
+            "append_log",
+            "logging2",
+            "rfc1813",
+            "simpledb",
+            "wal",
+        ]:
             run_goose(
                 path.join(goose_dir, "internal/examples/", example),
-                path.join(
-                    perennial_dir, "src/goose_lang/examples/", example + ".v"
-                ),
+                path.join(perennial_dir, "external/Goose"),
+                pkg="github.com/tchajed/goose/internal/examples/" + example,
             )
 
     if journal_dir is not None:

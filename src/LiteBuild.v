@@ -16,7 +16,7 @@ From Perennial.program_proof Require
 
 (* Goose tests: goose_unittest has the syntactic tests while generated_test
 includes running all the semantics tests *)
-From Perennial.goose_lang.examples Require
-     goose_unittest.
+From Goose.github_com.tchajed.goose.internal.examples Require
+     unittest.
 From Perennial.goose_lang.interpreter Require
      generated_test.

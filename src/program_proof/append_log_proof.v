@@ -2,7 +2,7 @@ From Perennial.goose_lang.lib Require Import encoding.
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang.lib Require Import into_val.
 
-From Perennial.goose_lang.examples Require Import append_log.
+From Goose.github_com.tchajed.goose.internal.examples Require Import append_log.
 
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.

@@ -4,7 +4,7 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Perennial.goose_lang.interpreter Require Import test_config.
 
 (* test functions *)
-From Perennial.goose_lang.examples Require Import goose_semantics.
+From Goose.github_com.tchajed.goose.internal.examples Require Import semantics.
 
 (* allocator.go *)
 Example testAllocateDistinct_ok : testAllocateDistinct #() ~~> #true := t.
@@ -45,7 +45,6 @@ Fail Example testU32NewtypeLen_ok : failing_testU32NewtypeLen #() ~~> #true := t
 (* interfaces.go *)
 Example testBasicInterface_ok : testBasicInterface #() ~~> #true := t.
 Example testAssignInterface_ok : testAssignInterface #() ~~> #true := t.
-Example testParamsInterface_ok : testParamsInterface #() ~~> #true := t.
 Example testMultipleInterface_ok : testMultipleInterface #() ~~> #true := t.
 Example testBinaryExprInterface_ok : testBinaryExprInterface #() ~~> #true := t.
 Example testIfStmtInterface_ok : testIfStmtInterface #() ~~> #true := t.
@@ -102,8 +101,6 @@ Example testShiftMod_ok : testShiftMod #() ~~> #true := t.
 
 (* prims.go *)
 Example testLinearize_ok : testLinearize #() ~~> #true := t.
-
-(* semantics.actual.v *)
 
 (* shortcircuiting.go *)
 Example testShortcircuitAndTF_ok : testShortcircuitAndTF #() ~~> #true := t.

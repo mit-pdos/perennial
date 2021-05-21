@@ -1,4 +1,4 @@
-From Perennial.goose_lang.examples Require Import append_log.
+From Goose.github_com.tchajed.goose.internal.examples Require Import append_log.
 From Perennial.goose_lang.lib Require Import encoding crash_lock.
 From Perennial.base_logic Require Import ghost_var.
 From Perennial.program_proof Require Import disk_prelude.

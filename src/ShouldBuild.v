@@ -44,8 +44,8 @@ From Perennial.goose_lang.lib Require
      slice.pred_slice.
 
 (* goose output *)
-From Perennial.goose_lang.examples Require
-     goose_unittest simpledb logging2 rfc1813.
+From Goose.github_com.tchajed.goose.internal.examples Require
+     semantics unittest simpledb logging2 rfc1813.
 
 (* examples goose output *)
 From Goose.github_com.mit_pdos Require
