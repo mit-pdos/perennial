@@ -16,7 +16,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Update goose output from goose tests and goose-nfsd"
+        description="Update goose output from goose tests and go-nfsd"
     )
     parser.add_argument(
         "--compile", help="also compile and install goose", action="store_true"
@@ -46,8 +46,8 @@ def main():
     )
     parser.add_argument(
         "--nfsd",
-        help="path to goose-nfsd repo (skip translation if not provided)",
-        metavar="GOOSE_NFSD_PATH",
+        help="path to go-nfsd repo (skip translation if not provided)",
+        metavar="GO_NFSD_PATH",
         default=None,
     )
     parser.add_argument(
@@ -84,7 +84,7 @@ def main():
     args = parser.parse_args()
 
     goose_dir = args.goose
-    goose_nfsd_dir = args.nfsd
+    go_nfsd_dir = args.nfsd
     journal_dir = args.journal
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     examples_dir = args.examples
@@ -94,8 +94,8 @@ def main():
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
-    if goose_nfsd_dir is not None and not os.path.isdir(goose_nfsd_dir):
-        parser.error("goose-nfsd directory does not exist")
+    if go_nfsd_dir is not None and not os.path.isdir(go_nfsd_dir):
+        parser.error("go-nfsd directory does not exist")
     if journal_dir is not None and not os.path.isdir(journal_dir):
         parser.error("go-journal directory does not exist")
     if examples_dir is not None and not os.path.isdir(examples_dir):
@@ -194,7 +194,7 @@ def main():
                 pkg="github.com/mit-pdos/go-journal/" + pkg,
             )
 
-    if goose_nfsd_dir is not None:
+    if go_nfsd_dir is not None:
         pkgs = [
             "kvs",
             "super",
@@ -203,17 +203,17 @@ def main():
         ]
         for pkg in pkgs:
             run_goose(
-                path.join(goose_nfsd_dir, pkg),
+                path.join(go_nfsd_dir, pkg),
                 path.join(perennial_dir, "external/Goose"),
-                pkg="github.com/mit-pdos/goose-nfsd/" + pkg,
+                pkg="github.com/mit-pdos/go-nfsd/" + pkg,
             )
         # the workaround here is to have a directory nfstypes that only has
         # nfs_types.go and not nfs_xdr.go (Goose doesn't support excluding some
         # files)
         run_goose(
-            path.join(goose_nfsd_dir, "nfstypes/goose-workaround/nfstypes"),
+            path.join(go_nfsd_dir, "nfstypes/goose-workaround/nfstypes"),
             path.join(perennial_dir, "external/Goose"),
-            pkg="github.com/mit-pdos/goose-nfsd/nfstypes",
+            pkg="github.com/mit-pdos/go-nfsd/nfstypes",
         )
 
     if examples_dir is not None:

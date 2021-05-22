@@ -8,7 +8,7 @@ From Perennial.Helpers Require Import NamedProps Map List range_set.
 From Perennial.algebra Require Import log_heap.
 From Perennial.program_logic Require Import spec_assert.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
+From Goose.github_com.mit_pdos.go_nfsd Require Import simple.
 From Perennial.program_proof Require Import obj.obj_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
 From Perennial.program_proof Require Import jrnl.sep_jrnl_proof jrnl.sep_jrnl_recovery_proof.
 From Perennial.program_proof Require Import disk_prelude.

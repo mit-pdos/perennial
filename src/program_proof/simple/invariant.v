@@ -4,7 +4,7 @@ From Perennial.algebra Require Import liftable auth_map.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.program_proof Require Import disk_prelude.
 
-From Goose.github_com.mit_pdos.goose_nfsd Require Import simple.
+From Goose.github_com.mit_pdos.go_nfsd Require Import simple.
 From Perennial.program_proof Require Import obj.obj_proof marshal_proof addr_proof crash_lockmap_proof addr.addr_proof buf.buf_proof.
 From Perennial.program_proof Require Import jrnl.sep_jrnl_proof.
 From Perennial.program_proof Require Import disk_prelude.
