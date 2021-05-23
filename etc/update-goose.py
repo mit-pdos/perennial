@@ -109,13 +109,6 @@ def main():
     if marshal_dir is not None and not os.path.isdir(marshal_dir):
         parser.error("marshal directory does not exist")
 
-    # Goose is not module-aware, so we revert to the pre-1.16 behavior of
-    # detecting whether to use modules or not.
-    if not args.dry_run:
-        os.environ["GO111MODULE"] = "auto"
-    if args.dry_run or args.verbose:
-        print("set GO111MODULE=auto")
-
     do_run = lambda cmd_args: run_command(
         cmd_args, dry_run=args.dry_run, verbose=args.verbose
     )
@@ -126,21 +119,20 @@ def main():
         do_run(["go", "install", "./cmd/goose"])
         os.chdir(old_dir)
 
-    def run_goose(src_path, output, pkg=None, ffi=None, excludes=None):
-        if excludes is None:
-            excludes = []
+    def run_goose(src_path, *pkgs):
+        if not pkgs:
+            pkgs = ["."]
+
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
             gopath = path.join(path.expanduser("~"), "go")
         goose_bin = path.join(gopath, "bin", "goose")
-        args = [goose_bin, "-out", output]
-        if pkg is not None:
-            args.extend(["-package", pkg])
-        if ffi is not None:
-            args.extend(["-ffi", ffi])
-        for e in excludes:
-            args.extend(["-exclude-import", e])
-        args.append(src_path)
+        args = [goose_bin]
+
+        output = path.join(perennial_dir, "external/Goose")
+        args.extend(["-out", output])
+        args.extend(["-dir", src_path])
+        args.extend(pkgs)
         do_run(args)
 
     def run_goose_test_gen(src_path, output):
@@ -158,41 +150,32 @@ def main():
                 perennial_dir, "src/goose_lang/interpreter/generated_test.v"
             ),
         )
-        for example in [
-            "unittest",
-            "semantics",
-            "append_log",
-            "logging2",
-            "rfc1813",
-            "simpledb",
-            "wal",
-        ]:
-            run_goose(
-                path.join(goose_dir, "internal/examples/", example),
-                path.join(perennial_dir, "external/Goose"),
-                pkg="github.com/tchajed/goose/internal/examples/" + example,
-            )
+        run_goose(
+            path.join(goose_dir, "internal/examples"),
+            "./unittest",
+            "./semantics",
+            "./append_log",
+            "./logging2",
+            "./rfc1813",
+            "./simpledb",
+            "./wal",
+        )
 
     if journal_dir is not None:
-        pkgs = [
-            "addr",
-            "alloc",
-            "buf",
-            "jrnl",
-            "common",
-            "lockmap",
-            "obj",
-            "util",
-            "wal",
-            "jrnl_replication",
-            "txn",
-        ]
-        for pkg in pkgs:
-            run_goose(
-                path.join(journal_dir, pkg),
-                path.join(perennial_dir, "external/Goose"),
-                pkg="github.com/mit-pdos/go-journal/" + pkg,
-            )
+        run_goose(
+            journal_dir,
+            "./addr",
+            "./alloc",
+            "./buf",
+            "./jrnl",
+            "./common",
+            "./lockmap",
+            "./obj",
+            "./util",
+            "./wal",
+            "./jrnl_replication",
+            "./txn",
+        )
 
     if go_nfsd_dir is not None:
         pkgs = [
@@ -200,61 +183,28 @@ def main():
             "super",
             "fh",
             "simple",
+            "nfstypes",
         ]
         for pkg in pkgs:
-            run_goose(
-                path.join(go_nfsd_dir, pkg),
-                path.join(perennial_dir, "external/Goose"),
-                pkg="github.com/mit-pdos/go-nfsd/" + pkg,
-            )
-        # the workaround here is to have a directory nfstypes that only has
-        # nfs_types.go and not nfs_xdr.go (Goose doesn't support excluding some
-        # files)
-        run_goose(
-            path.join(go_nfsd_dir, "nfstypes/goose-workaround/nfstypes"),
-            path.join(perennial_dir, "external/Goose"),
-            pkg="github.com/mit-pdos/go-nfsd/nfstypes",
-        )
+            run_goose(path.join(go_nfsd_dir, pkg))
 
     if examples_dir is not None:
-        pkgs = [
-            "replicated_block",
-            "alloc",
-            "inode",
-            "indirect_inode",
-            "async_inode",
-            "dir",
-            "dynamic_dir",
-            "single_inode",
-            "single_async_inode",
-            "toy",
-        ]
-        for pkg in pkgs:
-            run_goose(
-                path.join(examples_dir, pkg),
-                path.join(perennial_dir, "external/Goose"),
-                pkg="github.com/mit-pdos/perennial-examples/" + pkg,
-            )
+        run_goose(
+            examples_dir,
+            "./replicated_block",
+            "./alloc",
+            "./inode",
+            "./indirect_inode",
+            "./async_inode",
+            "./dir",
+            "./dynamic_dir",
+            "./single_inode",
+            "./single_async_inode",
+            "./toy",
+        )
 
     if distributed_dir is not None:
-        pkgs = ["grove_common", "."]
-        for pkg in pkgs:
-            if pkg == ".":
-                run_goose(
-                    path.join(distributed_dir),
-                    path.join(perennial_dir, "external/Goose"),
-                    pkg="github.com/mit-pdos/lockservice/",
-                    import_header="From Perennial.goose_lang Require Import ffi.grove_prelude.",
-                    excludes=["github.com/mit-pdos/lockservice/grove_ffi"],
-                )
-            else:
-                run_goose(
-                    path.join(distributed_dir, pkg),
-                    path.join(perennial_dir, "external/Goose"),
-                    pkg="github.com/mit-pdos/lockservice/" + pkg,
-                    import_header="From Perennial.goose_lang Require Import ffi.grove_prelude.",
-                    excludes=["github.com/mit-pdos/lockservice/grove_ffi"],
-                )
+        run_goose(distributed_dir, ".", "./grove_common")
 
     if gokv_dir is not None:
         pkgs = ["urpc/rpc", "memkv", "paxi/single"]
@@ -262,24 +212,13 @@ def main():
         for pkg in pkgs:
             run_goose(
                 path.join(gokv_dir, pkg),
-                path.join(perennial_dir, "external/Goose"),
-                pkg="github.com/mit-pdos/gokv/" + pkg,
-                ffi="dist",
-                excludes=[
-                    "github.com/mit-pdos/gokv/dist_ffi",
-                ]
                 # XXX: need to change the Coq import statement for lockservice/ from
                 # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
                 # "From Goose Require github_com.mit_pdos.lockservice."
             )
 
     if marshal_dir is not None:
-        run_goose(
-            marshal_dir,
-            path.join(perennial_dir, "external/Goose"),
-            pkg="github.com/tchajed/marshal",
-            ffi="none",
-        )
+        run_goose(marshal_dir, ".")
 
 
 if __name__ == "__main__":

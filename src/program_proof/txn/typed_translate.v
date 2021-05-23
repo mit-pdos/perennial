@@ -59,6 +59,8 @@ Section translate.
   | unit_hasTy : atomically_base_lit_hasTy (LitUnit) unitT
   | string_hasTy s : atomically_base_lit_hasTy (LitString s) stringT.
 
+  Local Existing Instance disk_ty.
+
   Inductive atomic_body_expr_transTy (Γ: SCtx) (tph : iexpr) : sexpr -> iexpr -> sty -> Prop :=
   | var_transTy x t :
       Γ !! x = Some t ->

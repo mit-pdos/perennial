@@ -45,7 +45,7 @@ From Perennial.goose_lang.lib Require
 
 (* goose output *)
 From Goose.github_com.tchajed.goose.internal.examples Require
-     semantics unittest simpledb logging2 rfc1813.
+     semantics unittest comments simpledb logging2 rfc1813.
 
 (* examples goose output *)
 From Goose.github_com.mit_pdos Require

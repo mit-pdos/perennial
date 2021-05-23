@@ -4,7 +4,7 @@ From Perennial.program_proof Require Import proof_prelude.
 From Goose.github_com.mit_pdos.go_journal Require Import util.
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{hG: heapG Σ, !ffi_semantics _ _, !ext_types _}.
 Context `{!crashG Σ}.
 Implicit Types (v:val).
 Implicit Types (stk:stuckness) (E: coPset).
