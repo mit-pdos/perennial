@@ -648,14 +648,14 @@ Proof.
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
   iExists _. rewrite global_groveG_conv. iFrame "Hchan'". iNext.
-  iIntros (err) "Hchan'".
+  iIntros (msg_sent) "Hchan'".
   iMod "Hclo'" as "_".
   rewrite ?global_groveG_conv.
   iMod ("Hclo" with "[Hchan' Hlength]").
   { iNext. iExists _.
     rewrite ?global_groveG_conv.
     iFrame.
-    destruct err.
+    destruct msg_sent; last first.
     { iFrame "#". }
     destruct (decide (Message host rep_msg_data ∈ ms_rep)).
     { assert (ms_rep ∪ {[Message host rep_msg_data]} = ms_rep) as -> by set_solver. iFrame "#". }
@@ -671,7 +671,7 @@ Proof.
     { word. }
     eauto.
   }
-  iModIntro. iIntros "?". wp_pures; eauto.
+  iModIntro. iIntros (err) "[%?]". wp_pures; eauto.
 Qed.
 
 Lemma wp_StartRPCServer γ (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
@@ -1062,13 +1062,13 @@ Proof.
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
   iExists _. rewrite global_groveG_conv.  iFrame "Hchan'". iNext.
-  iIntros (err) "Hchan'". iNamed "H".
+  iIntros (msg_sent) "Hchan'". iNamed "H".
   iMod ("Hclo'") as "_".
   iMod ("Hclo" with "[Hmessages Hchan']") as "_".
   { iNext. iExists _.
     rewrite global_groveG_conv.
     iFrame.
-    destruct err; first by iFrame.
+    destruct msg_sent; last by iFrame.
     destruct (decide (Message r repData ∈ ms)).
     { assert (ms ∪ {[Message r repData]} = ms) as -> by set_solver. iFrame. }
     iApply big_sepS_union; first by set_solver.
@@ -1085,7 +1085,7 @@ Proof.
     iSplit; eauto.
     { iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz Heqlen. eauto. }
   }
-  iModIntro. iIntros "Hsl_rep".
+  iModIntro. iIntros (err) "[%Herr Hsl_rep]".
   destruct err; wp_pures.
   { iApply "HΦ".
     iDestruct ("Hslice_close" with "Hslice") as "$".
@@ -1093,6 +1093,7 @@ Proof.
     iSplitR "Hrep_out_ptr".
     - iExists _, _, _, _. by iFrame "#".
     - iLeft. by iFrame. }
+  destruct msg_sent; last done. clear Herr.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "[Hi Hlockinv]".

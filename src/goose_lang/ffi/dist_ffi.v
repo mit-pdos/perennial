@@ -118,8 +118,8 @@ Section grove.
         ret ((*err*)#false, ExtV (ClientEndp c r), ExtV (HostEndp r))%V
       end
     | SendOp, (ExtV (ClientEndp c r), (LitV (LitLoc l), LitV (LitInt len)))%V =>
-      err ← any bool;
-      if err is true then ret (*err*)#true else
+      err_early ← any bool;
+      if err_early is true then ret (*err*)#true else
       data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
             length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
@@ -128,7 +128,8 @@ Section grove.
                 end);
       ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
       modify (λ '(σ,g), (σ, <[ c := ms ∪ {[Message r data]} ]> g));;
-      ret (*err*)#false
+      err_late ← any bool;
+      ret (*err*)#(err_late : bool)
     | RecvOp, ExtV (HostEndp c) =>
       ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
@@ -314,7 +315,8 @@ lemmas. *)
     length data = int.nat len →
     {{{ c c↦ ms ∗ mapsto_vals l q (data_vals data) }}}
       ExternalOp SendOp (send_endpoint c r, (#l, #len))%V @ s; E
-    {{{ (err : bool), RET #err; c c↦ (if err then ms else ms ∪ {[Message r data]}) ∗ mapsto_vals l q (data_vals data) }}}.
+    {{{ (err_early err_late : bool), RET #(err_early || err_late);
+       c c↦ (if err_early then ms else ms ∪ {[Message r data]}) ∗ mapsto_vals l q (data_vals data) }}}.
   Proof.
     iIntros (Hmlen Φ) "[Hc Hl] HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns κ κs nt) "(Hσ&$&Htr) [Hg %Hg] !>".
@@ -329,13 +331,14 @@ lemmas. *)
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
-    rename x into err. clear H.
-    destruct err.
+    rename x into err_early. clear H.
+    destruct err_early.
     { monad_inv. iFrame. iModIntro.
       do 2 (iSplitR; first done).
-      iApply "HΦ". by iFrame. }
+      iApply ("HΦ" $! true true). by iFrame. }
     inv_head_step.
     monad_inv.
+    rename x into err_late.
     iFrame.
     iMod (@gen_heap_update with "Hg Hc") as "[$ Hc]".
     assert (data = data0) as <-.
@@ -360,7 +363,7 @@ lemmas. *)
         + rewrite ->elem_of_singleton in Hm'. subst m'.
           rewrite Hmlen. word.
       - rewrite lookup_insert_ne //. eapply Hg. }
-    iApply "HΦ".
+    iApply ("HΦ" $! false err_late).
     by iFrame.
   Qed.
 
@@ -556,8 +559,9 @@ Section grove.
     ⊢ {{{ is_slice_small s byteT q data }}}
       <<< ∀∀ ms, c c↦ ms >>>
         Send (send_endpoint c r) (slice_val s) @ ⊤
-      <<<▷ ∃∃ (err : bool), c c↦ (if err then ms else ms ∪ {[Message r data]}) >>>
-      {{{ RET #err; is_slice_small s byteT q data }}}.
+      <<<▷ ∃∃ (msg_sent : bool), c c↦ (if msg_sent then ms ∪ {[Message r data]} else ms) >>>
+      {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
+        is_slice_small s byteT q data }}}.
   Proof.
     iIntros "!#" (Φ) "Hs HΦ". wp_lam. wp_let.
     wp_apply wp_slice_ptr.
@@ -569,8 +573,12 @@ Section grove.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
-    iIntros (err) "[Hc Hl]". iApply ("HΦ" $! err with "Hc").
-    iApply mapsto_vals_is_slice_small_byte; done.
+    iIntros (err_early err_late) "[Hc Hl]".
+    iApply ("HΦ" $! (negb err_early) with "[Hc]").
+    { by destruct err_early. }
+    iSplit.
+    - iPureIntro. by destruct err_early, err_late.
+    - iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
 
   Lemma wp_Receive c :
