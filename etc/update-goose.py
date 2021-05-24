@@ -178,15 +178,14 @@ def main():
         )
 
     if go_nfsd_dir is not None:
-        pkgs = [
-            "kvs",
-            "super",
-            "fh",
-            "simple",
-            "nfstypes",
-        ]
-        for pkg in pkgs:
-            run_goose(path.join(go_nfsd_dir, pkg))
+        run_goose(
+            go_nfsd_dir,
+            "./kvs",
+            "./super",
+            "./fh",
+            "./simple",
+            "./nfstypes",
+        )
 
     if examples_dir is not None:
         run_goose(
