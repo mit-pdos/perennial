@@ -4,7 +4,7 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet kv_proof kv_durable fmcounter_map wpc_proofmode common_proof rpc_durable_proof kv_logatom.
 Require Import Decimal Ascii String DecimalString.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
+From Perennial.program_proof.lockservice Require Import grove_ffi.
 
 Section incr_proof.
 

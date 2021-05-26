@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import aof.
-From Perennial.goose_lang Require Import ffi.grove_ffi.
+From Perennial.program_proof.lockservice Require Import grove_ffi.
 From Perennial.algebra Require Import mlist auth_map.
 From iris.algebra Require Import mono_nat.
 From Perennial.Helpers Require Import ModArith.

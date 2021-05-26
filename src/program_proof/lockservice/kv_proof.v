@@ -1,7 +1,7 @@
 From stdpp Require Import gmap.
 From Perennial.algebra Require Import auth_map.
 From Perennial.goose_lang.lib Require Import lock.
-From Perennial.goose_lang.ffi Require Import grove_ffi.
+From Perennial.program_proof.lockservice Require Import grove_ffi.
 From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof.lockservice Require Import rpc_proof nondet.
