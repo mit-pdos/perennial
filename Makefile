@@ -44,15 +44,15 @@ TIMING_EXTRA = > $<.$(TIMING_EXT)
 endif
 
 
-%.vo: %.v _CoqProject
+%.vo: %.v _CoqProject | .coqdeps.d
 	@echo "COQC $<"
 	$(Q)$(COQC) $(COQPROJECT_ARGS) $(COQ_ARGS) $(TIMING_ARGS) -o $@ $< $(TIMING_EXTRA)
 
-%.vos: %.v _CoqProject
+%.vos: %.v _CoqProject | .coqdeps.d
 	@echo "COQC -vos $<"
 	$(Q)$(COQC) $(COQPROJECT_ARGS) -vos $(COQ_ARGS) $< -o $@
 
-%.vok: %.v _CoqProject
+%.vok: %.v _CoqProject | .coqdeps.d
 	@echo "COQC -vok $<"
 	$(Q)$(COQC) $(COQPROJECT_ARGS) $(TIMING_ARGS) -vok $(COQ_ARGS) $< -o $@
 
