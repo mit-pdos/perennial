@@ -134,7 +134,6 @@ Section grove.
       ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms);
-      (* TODO: distinguish "no message" from "error" *)
       match m with
       | None =>
         (* We errored, non-deterministically pick error code 1 (timeout) or 2 (other error). *)
@@ -319,9 +318,11 @@ lemmas. *)
     {{{ c c↦ ms ∗ mapsto_vals l q (data_vals data) }}}
       ExternalOp SendOp (send_endpoint c r, (#l, #len))%V @ s; E
     {{{ (err_early err_late : bool), RET #(err_early || err_late);
-       c c↦ (if err_early then ms else ms ∪ {[Message r data]}) ∗ mapsto_vals l q (data_vals data) }}}.
+       c c↦ (if err_early then ms else ms ∪ {[Message r data]}) ∗
+       mapsto_vals l q (data_vals data) }}}.
   Proof.
-    iIntros (Hmlen Φ) "[Hc Hl] HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Hmlen Φ) "[Hc Hl] HΦ".
+    iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns κ κs nt) "(Hσ&$&Htr) [Hg %Hg] !>".
     iDestruct (@gen_heap_valid with "Hg Hc") as %Hc.
     iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
@@ -577,7 +578,9 @@ Section grove.
     ⊢ {{{ is_slice_small s byteT q data }}}
       <<< ∀∀ ms, c c↦ ms >>>
         Send (send_endpoint c r) (slice_val s) @ ⊤
-      <<<▷ ∃∃ (msg_sent : bool), c c↦ (if msg_sent then ms ∪ {[Message r data]} else ms) >>>
+      <<<▷ ∃∃ (msg_sent : bool),
+        c c↦ (if msg_sent then ms ∪ {[Message r data]} else ms)
+      >>>
       {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
         is_slice_small s byteT q data }}}.
   Proof.
