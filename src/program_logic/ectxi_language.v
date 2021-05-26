@@ -41,6 +41,8 @@ Section ectxi_language_mixin.
     mixin_fill_item_val Ki e : is_Some (to_val (fill_item Ki e)) → is_Some (to_val e);
     (** [fill_item] is always injective on the expression for a fixed
         context. *)
+    mixin_fill_item_val_inv Ki v v' :
+      is_Some (to_val (fill_item Ki (of_val v))) → is_Some (to_val (fill_item Ki (of_val v')));
     mixin_fill_item_inj Ki : Inj (=) (=) (fill_item Ki);
     (** [fill_item] with (potentially different) non-value expressions is
         injective on the context. *)
@@ -93,6 +95,9 @@ Section ectxi_language.
   Proof. apply ectxi_language_mixin. Qed.
   Lemma fill_item_val Ki e : is_Some (to_val (fill_item Ki e)) → is_Some (to_val e).
   Proof. apply ectxi_language_mixin. Qed.
+  Lemma fill_item_val_inv Ki v v' :
+      is_Some (to_val (fill_item Ki (of_val v))) → is_Some (to_val (fill_item Ki (of_val v'))).
+  Proof. apply ectxi_language_mixin. Qed.
   Lemma fill_item_no_val_inj Ki1 Ki2 e1 e2 :
     to_val e1 = None → to_val e2 = None →
     fill_item Ki1 e1 = fill_item Ki2 e2 → Ki1 = Ki2.
@@ -113,6 +118,10 @@ Section ectxi_language.
     { intros K. induction K as [|Ki K IH]=> e //=. by intros ?%IH%fill_item_val. }
     assert (fill_not_val : ∀ K e, to_val e = None → to_val (fill K e) = None).
     { intros K e. rewrite !eq_None_not_Some. eauto. }
+    assert (to_of_val: ∀ (v : val Λ), to_val (of_val v) = Some v).
+    { apply ectxi_language_mixin. }
+    assert (of_to_val : ∀ e (v : val Λ), to_val e = Some v → of_val v = e).
+    { apply ectxi_language_mixin. }
     split.
     - apply ectxi_language_mixin.
     - apply ectxi_language_mixin.
@@ -121,6 +130,20 @@ Section ectxi_language.
     - intros K1 K2 e. by rewrite /fill /= foldl_app.
     - intros K; induction K as [|Ki K IH]; rewrite /Inj; naive_solver.
     - done.
+    - intros K; induction K as [|Ki K IH].
+      * intros ??. rewrite ?to_of_val //=. eauto.
+      * simpl. intros v v' Hval_full.
+        assert (Hval': is_Some (to_val (fill_item Ki (of_val v')))).
+        { by apply fill_val, (fill_item_val_inv Ki _ v') in Hval_full. }
+        assert (Hval: is_Some (to_val (fill_item Ki (of_val v)))).
+        { by apply fill_val in Hval_full. }
+        destruct Hval as (v0&Heq).
+        destruct Hval' as (v0'&Heq').
+        apply of_to_val in Heq'.
+        apply of_to_val in Heq.
+        rewrite -Heq'.
+        rewrite -Heq in Hval_full.
+        eapply IH; eauto.
     - intros K K' e1 κ e1' σ1 g1 e2 σ2 g2 efs Hfill Hred Hstep; revert K' Hfill.
       induction K as [|Ki K IH] using rev_ind=> /= K' Hfill; eauto using app_nil_r.
       destruct K' as [|Ki' K' _] using @rev_ind; simplify_eq/=.

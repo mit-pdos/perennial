@@ -12,7 +12,7 @@ From Perennial.program_proof Require Import txn.wrapper_proof.
 From Perennial.program_proof Require Import txn.twophase_refinement_defs.
 From Perennial.program_logic Require Import na_crash_inv.
 From Perennial.goose_lang.lib.list Require Import list.
-From Perennial.goose_lang Require Import spec_assert.
+From Perennial.goose_lang Require Import spec_assert crash_borrow.
 
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Perennial.program_proof Require Import disk_prelude.
@@ -25,30 +25,34 @@ Section proof.
   Context `{hRG: !refinement_heapG Σ}.
   Context `{aG: twophaseG Σ}.
   Existing Instance jrnlG0.
+  Context (JRNL_SIZE : nat).
 
   Notation spec_ext := jrnl_spec_ext.
   Notation sval := (@val (@spec_ffi_op_field spec_ext)).
 
   Implicit Types (N: namespace).
   Definition twophase_obj_cfupd_cancel γ γ' d :=
-   (<bdisc> (|C={⊤}_(S (S LVL))=> ∃ mt',
+   ((|C={⊤}_(S (S LVL))=> ∃ mt',
        ⌜ dom (gset _) mt' = d ⌝ ∗
        ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
        ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
        "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
          "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
-         "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj)))%I.
+         "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj) ∗
+      "%Hdomsize" ∷ ⌜ size mt' = JRNL_SIZE ⌝))%I.
 
-  Theorem wpc_Init N d γ dinit logm mt :
+  Theorem wpc_Init N d γ dinit logm mt mj (Hlt: (/2 < mj)%Qp) :
     N ## invN →
     N ## invariant.walN →
     map_Forall (mapsto_valid γ) mt →
     {{{
+      "Hpre" ∷ ([∗ map] _ ↦ _ ∈ mt, pre_borrow) ∗
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
         "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
         "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj
       ) ∗
+      "%Hdomsize" ∷ ⌜ size mt = JRNL_SIZE ⌝ ∗
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
@@ -61,7 +65,7 @@ Section proof.
       γ' (l: loc), RET #l;
       "Htwophase" ∷ is_twophase_pre l γ γ' dinit (dom (gset addr) mt) ∗
       "Hcancel_txn" ∷ txn_cfupd_cancel dinit γ' ∗
-      "Hcancel_obj" ∷ twophase_obj_cfupd_cancel γ γ' (dom (gset addr) mt)
+      "Hcancel_obj" ∷ wpc_crash_modality ⊤ mj (twophase_obj_cfupd_cancel γ γ' (dom (gset addr) mt))
     }}}
     {{{ ∃ γ' logm' mt',
        ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
@@ -71,7 +75,8 @@ Section proof.
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
         "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
         "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj
-      )
+      ) ∗
+      "%Hdomsize" ∷ ⌜ size mt' = JRNL_SIZE ⌝
     }}}.
   Proof.
     iIntros (HinvN HwalN Hvalids Φ Φc) "Hpre HΦ".
@@ -82,7 +87,6 @@ Section proof.
     iSplit.
     {
       iDestruct "HΦ" as "[HΦ _]".
-      iModIntro.
       iIntros "H". iDestruct "H" as (γ' logm') "(Hdur&Hcase)".
       iDestruct "Hcase" as "[%|#Hcinv]".
       { subst. iModIntro. iApply "HΦ". iExists _, _, mt. by iFrame. }
@@ -98,6 +102,7 @@ Section proof.
       iSplit; first eauto.
       { iPureIntro. eapply map_Forall_impl; try eassumption.
         intros. eapply exchange_mapsto_valid; try eassumption. }
+      iFrame "%".
       iApply big_sepM_sep. iFrame.
     }
     iModIntro.
@@ -107,7 +112,9 @@ Section proof.
     iSplit.
     {
       iDestruct "HΦ" as "[HΦ _]".
-      iModIntro. iModIntro.
+      iModIntro.
+      rewrite /txn_cfupd_cancel.
+      rewrite own_discrete_elim.
       iMod "Htxn_cancel"; first by lia.
       iDestruct (big_sepM_sep with "Hmapstos") as "(Hm1&Hm2)".
       rewrite /named.
@@ -123,9 +130,10 @@ Section proof.
       iSplit; first eauto.
       { iPureIntro. eapply map_Forall_impl; try eassumption.
         intros. eapply exchange_mapsto_valid; try eassumption. }
+      iFrame "%".
       iApply big_sepM_sep. iFrame.
     }
-    iMod (twophase_init_locks with "Histxn_system Htxn_cinv Hmapstos") as "(Hlinvs&Hcrash)".
+    iMod (twophase_init_locks with "Hpre Histxn_system Htxn_cinv Hmapstos") as "Hcrash".
     1-2: set_solver.
     {
       intros a Hin.
@@ -137,13 +145,17 @@ Section proof.
     }
     iNamed.
     iModIntro.
-    iCache with "HΦ Htxn_cancel Hcrash".
+    iApply (init_cancel_elim' _ _ _ _ _ _ _ mj Hlt with "Hlinvs").
+    iIntros "Hlinvs".
+
+    iCache with "HΦ Htxn_cancel".
     {
       iDestruct "HΦ" as "[HΦ _]".
-      iModIntro.
+      iIntros "Hcrash".
+      rewrite /txn_cfupd_cancel. rewrite own_discrete_elim.
       iMod "Htxn_cancel"; first by lia.
       iMod "Hcrash".
-      eauto.
+      { lia. }
       iIntros "#HC".
       iDestruct "Htxn_cancel" as (?) ">Htxn_cancel".
       iModIntro.
@@ -157,12 +169,14 @@ Section proof.
       iSplit.
       { iIntros (i o Hin).
         iDestruct (big_sepM_lookup with "[$]") as "(?&?&$)"; eauto. }
+      rewrite -Hdomsize. rewrite ?Map.map_size_dom.
+      rewrite Hdom. iSplitR ""; last by eauto.
       iApply (big_sepM_mono with "H").
       iIntros (???) "($&$&_)".
     }
     wpc_frame.
     wp_apply (
-      wp_MkLockMap _ (twophase_linv_flat _ jrnl_mapsto_own γ γ')
+      wp_MkLockMap _ (twophase_linv_flat jrnl_mapsto_own γ γ')
       with "[Hlinvs]"
     ).
     {
@@ -179,36 +193,44 @@ Section proof.
     wp_pures.
     iIntros "!> [? H2]".
     iNamed.
-    iNamed "H2".
+    iIntros "Hwpc".
 
     iApply "HΦ".
-    iSplitL "".
     {
-      iExists _, _, _.
-      iFrame "#".
-      iPureIntro.
-      intros addr Hin.
-      apply elem_of_dom in Hin.
-      destruct Hin as [obj Hacc].
-      apply Hvalids in Hacc.
-      destruct Hacc as (Hvalid&_&_).
-      assumption.
+      iFrame "Htxn_cancel".
+      iSplitR "Hwpc".
+      {
+        iFrame.
+        iExists _, _, _.
+        iFrame "#".
+        iPureIntro.
+        intros addr Hin.
+        apply elem_of_dom in Hin.
+        destruct Hin as [obj Hacc].
+        apply Hvalids in Hacc.
+        destruct Hacc as (Hvalid&_&_).
+        assumption.
+      }
+      iApply (wpc_crash_modality_wand with "Hwpc").
+      {
+        iNamed 1.
+        iModIntro. iIntros "HC". iMod ("Hcrash" with "[$]") as "Hcrash".
+        iModIntro.
+        iDestruct (big_sepM_dom with "Hcrash") as "H".
+        iDestruct (big_sepS_exists_sepM with "H") as (mt' Hdom) "H".
+        iExists mt'.
+        iDestruct "Htxn_cinv" as "(_&%)".
+        iSplit; first eauto.
+        iSplit; first eauto.
+        iSplit.
+        { iIntros (i o Hin).
+          iDestruct (big_sepM_lookup with "[$]") as "(?&?&$)"; eauto. }
+        rewrite -Hdomsize. rewrite ?Map.map_size_dom.
+        rewrite Hdom. iSplitR ""; last by eauto.
+        iApply (big_sepM_mono with "H").
+        iIntros (???) "($&$&_)".
+      }
     }
-    iFrame "Htxn_cancel".
-    rewrite /twophase_obj_cfupd_cancel.
-    iModIntro. iMod "Hcrash".
-    iModIntro.
-    iDestruct (big_sepM_dom with "Hcrash") as "H".
-    iDestruct (big_sepS_exists_sepM with "H") as (mt' Hdom) "H".
-    iExists mt'.
-    iDestruct "Htxn_cinv" as "(_&%)".
-    iSplit; first eauto.
-    iSplit; first eauto.
-    iSplit.
-    { iIntros (i o Hin).
-      iDestruct (big_sepM_lookup with "[$]") as "(?&?&$)"; eauto. }
-    iApply (big_sepM_mono with "H").
-      iIntros (???) "($&$&_)".
   Qed.
 
   Theorem wp_Init N d j K `{LanguageCtx _ K} (vs: sval) :
@@ -216,7 +238,7 @@ Section proof.
     N ## invariant.walN →
     {{{
       "#Hspec_ctx" ∷ spec_ctx ∗
-      "#Htwophase_inv" ∷ twophase_inv ∗
+      "#Htwophase_inv" ∷ twophase_inv JRNL_SIZE ∗
       "Hj" ∷ j ⤇ (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) OpenOp vs))
     }}}
       Init (disk_val d) @ NotStuck; ⊤
@@ -248,49 +270,41 @@ Section proof.
     iClear "Htwophase_inv".
 
     iApply (wpc_wp _ (S (S LVL)) _ _ _ True%I).
-    iApply (wpc_na_crash_inv_open_modify_defer
-              (* (λ _, ∃ γ' dinit mt',
-                  txn_cfupd_cancel dinit γ' ∗ twophase_obj_cfupd_cancel γ' (dom (gset addr) mt') )%I *)
-              with "Hna").
-    2:{ reflexivity. }
-    { rewrite /LVL. lia. }
-    { rewrite /LVL. lia. }
+    iApply (wpc_crash_borrow_open_cancel with "Hna").
+    { eauto. }
     iSplit; first done.
-    iIntros ">H". iNamed "H".
-    wpc_apply (wpc_Init _ _ γ dinit logm with "[Htxn_durable Hmapstos] [HΦ Hj]"); try eassumption.
-    { iSplitL "Htxn_durable".
+    iIntros "H". iNamed "H". iDestruct "H" as "(Hpre&H)". iNamed "H".
+    iIntros (mj Hlt).
+    wpc_apply (wpc_Init _ _ γ dinit logm with "[Hpre Htxn_durable Hmapstos] [HΦ Hj]"); try eassumption.
+    { iFrame "Hpre". iSplitL "Htxn_durable".
       { iExact "Htxn_durable". }
       iFrame "Hmapstos".
       iFrame "#".
+      eauto.
     }
     iSplit.
-    * iModIntro. iIntros "H".
+    * iIntros "H".
       iSplit; first done.
       iDestruct "H" as (??? Heq Heq' Hforall) "(Hdurable&Hmapstos)".
-      iNamed. iNext.
+      iNamed.
       iExists _, _, _, _. iFrame.
       rewrite Heq Heq'. iFrame "#".
       eauto.
     * iNext. iIntros (γ' l) "H". iNamed "H".
       rewrite /txn_cfupd_cancel.
-      iDestruct (own_discrete_laterable with "Hcancel_txn") as (Ptxn) "(HPtxn&#HPtxn_spec)".
-      iDestruct (own_discrete_laterable with "Hcancel_obj") as (Pobj) "(HPobj&#HPobj_spec)".
-      iExists (Ptxn ∗ Pobj)%I.
-      iFrame "HPtxn HPobj".
-      iSplitL "".
-      { iModIntro. iIntros "(HPtxn&HPobj)".
-        iMod ("HPtxn_spec" with "[$]") as "Htxn".
-        iMod ("HPobj_spec" with "[$]") as "Hobj".
-        iMod "Htxn"; first by lia.
-        iMod "Hobj"; first by (rewrite /LVL; lia).
-        iModIntro. iNext.
+      iSplitL "Hcancel_obj Hcancel_txn".
+      {
+        iApply (wpc_crash_modality_intro_C). iIntros "#HC".
+        iApply (wpc_crash_modality_wand with "Hcancel_obj").
+        iIntros "Hobj".
+        rewrite own_discrete_elim. iMod ("Hcancel_txn" with "[$]") as ">Htxn".
         iDestruct "Htxn" as (logm') "Htxn".
+        iMod ("Hobj" with "[$]") as "Hobj".
         iDestruct "Hobj" as (mt'' Hdom Heqkinds Hforall) "Hmapstos".
         iExists _, _, _, _. iFrame.
         rewrite Hdom Heqkinds. iFrame "#Hdom".
         eauto.
       }
-      iIntros.
       iSplit; first done.
       iApply "HΦ".
       iFrame "Hj".

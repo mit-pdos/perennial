@@ -25,8 +25,8 @@ Definition ae_inv_mut_full_eq : @ae_inv_mut_full = @ae_inv_mut_full_def := ae_in
 Instance: Params (@ae_inv_mut_full) 3 := {}.
 Typeclasses Opaque ae_inv_mut_full.
 
-Local Hint Extern 0 (AE _ _ ## MaybeEn _) => apply AE_MaybeEn_disj : core.
-Local Hint Extern 0 (AlwaysEn ## MaybeEn _) => apply coPset_inl_inr_disj : core.
+Local Hint Extern 0 (AE _ _ ## MaybeEn1 _) => apply AE_MaybeEn_disj : core.
+Local Hint Extern 0 (AlwaysEn ## MaybeEn1 _) => apply coPset_inl_inr_disj : core.
 
 Section ae_inv_mut.
   Context `{!invGS Σ}.

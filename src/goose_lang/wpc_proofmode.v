@@ -10,22 +10,25 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Lemma wpc_fork `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ, !crashG Σ} s k E1 e Φ Φc :
-  ▷ WPC e @ s; k; ⊤ {{ _, True }} {{ True }} -∗ (<disc> Φc ∧ ▷ Φ (LitV LitUnit)) -∗
+  ▷ WPC e @ s; k; ⊤ {{ _, True }} {{ True }} -∗ (Φc ∧ ▷ Φ (LitV LitUnit)) -∗
                       WPC Fork e @ s; k; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "He HΦ". iApply wpc_lift_head_step; [done|].
   iSplit; last first.
-  {  iDestruct "HΦ" as "(HΦc&_)". iModIntro. by iModIntro. }
-  iIntros (σ1 g1 ns κ κs n) "Hσ Hg".
+  {  iDestruct "HΦ" as "(HΦc&_)". eauto. }
+  iIntros (σ1 g1 ns mj D κ κs n) "Hσ Hg".
   iMod (fupd_mask_subseteq ∅) as "Hclose"; first by set_solver+.
   iModIntro. iNext. iSplit.
   { iPureIntro; econstructor; do 4 eexists. constructor. constructor. eauto. }
    iIntros (v2 σ2 g2 efs Hstep). apply head_step_atomic_inv in Hstep; [ | by inversion 1 ]. rewrite /head_step /= in Hstep.
   inversion Hstep as [??? Heq]. inversion Heq; subst.
-  iMod "Hclose". iFrame. iModIntro => //=. rewrite right_id.
+  iMod "Hclose". iFrame.
+  iMod (global_state_interp_le with "Hg") as "$".
+  { apply step_count_next_incr. }
+  iModIntro => //=. rewrite right_id.
   iApply wpc_value; iSplit.
   - by iDestruct "HΦ" as "(_&$)".
-  - iDestruct "HΦ" as "(?&_)". do 2 iModIntro. auto.
+  - iDestruct "HΦ" as "(?&_)". eauto.
 Qed.
 
 Lemma tac_wpc_expr_eval `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
@@ -42,14 +45,13 @@ Tactic Notation "wpc_expr_eval" tactic(t) :=
       [let x := fresh in intros x; t; unfold x; notypeclasses refine eq_refl|]
   end.
 
-(* XXX: this caches the wrong thing as compared to the old version *)
 Lemma tac_wpc_pure_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapGS Σ, !crashG Σ} Δ Δ' s k E1 K e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_entails Δ (<disc> Φc) →
-  (envs_entails Δ (<disc> Φc) → envs_entails Δ' (WPC (fill K e2) @ s; k; E1 {{ Φ }} {{ Φc }})) →
+  envs_entails Δ (Φc) →
+  (envs_entails Δ (Φc) → envs_entails Δ' (WPC (fill K e2) @ s; k; E1 {{ Φ }} {{ Φc }})) →
   envs_entails Δ (WPC (fill K e1) @ s; k; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq=> ??? Hcrash HΔ'.
@@ -64,8 +66,8 @@ Lemma tac_wpc_pure_no_later_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       Δ s k E1 K e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
-  envs_entails Δ (<disc> Φc) →
-  (envs_entails Δ (<disc> Φc) → envs_entails Δ (WPC (fill K e2) @ s; k; E1 {{ Φ }} {{ Φc }})) →
+  envs_entails Δ Φc →
+  (envs_entails Δ Φc → envs_entails Δ (WPC (fill K e2) @ s; k; E1 {{ Φ }} {{ Φc }})) →
   envs_entails Δ (WPC (fill K e1) @ s; k; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq=> ?? Hcrash HΔ'.
@@ -80,35 +82,35 @@ Qed.
 Lemma tac_wpc_value `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapGS Σ} Δ s k E1 Φ Φc v :
   envs_entails Δ (|NC={E1}=> Φ v) →
-  envs_entails Δ (<disc> Φc) →
+  envs_entails Δ Φc →
   envs_entails Δ (WPC (Val v) @ s; k; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq -wpc_value => H1 H2.
   apply and_intro.
   - rewrite H1. eauto.
-  - rewrite H2. iIntros. do 2 iModIntro; auto.
+  - rewrite H2. iIntros. eauto.
 Qed.
 Lemma tac_wpc_value_fupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapGS Σ} Δ s k E1 Φ Φc v :
   envs_entails Δ (|NC={E1}=> Φ v) →
-  envs_entails Δ (<disc> Φc) →
+  envs_entails Δ Φc →
   envs_entails Δ (WPC (Val v) @ s; k; E1 {{ v, |={E1}=> Φ v }} {{ Φc }})%I.
 Proof.
   rewrite envs_entails_eq -wpc_value => H1 H2.
   apply and_intro.
   - rewrite H1. iIntros ">?". eauto.
-  - rewrite H2. iIntros. do 2 iModIntro; auto.
+  - rewrite H2. iIntros. eauto.
 Qed.
 Lemma tac_wpc_value_noncfupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapGS Σ} Δ s k E1 Φ Φc v :
   envs_entails Δ (Φ v) →
-  envs_entails Δ (<disc> Φc) →
+  envs_entails Δ Φc →
   envs_entails Δ (WPC (Val v) @ s; k; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq -wpc_value => H1 H2.
   apply and_intro.
   - rewrite H1. eauto.
-  - rewrite H2. iIntros. do 2 iModIntro; auto.
+  - rewrite H2. iIntros. eauto.
 Qed.
 
 Ltac wpc_expr_simpl := wpc_expr_eval simpl.
@@ -145,7 +147,7 @@ Ltac solve_vals_compare_safe :=
 Tactic Notation "iCache" "with" constr(Hs) :=
   lazymatch goal with
   | [ |- envs_entails _ (wpc _ _ _ _ _ ?Φc) ] =>
-        iCache_go (<disc> Φc)%I Hs "#?"
+        iCache_go Φc Hs "#?"
   | _ => fail 1 "not a wpc goal"
   end.
 
@@ -209,11 +211,11 @@ Tactic Notation "wpc_pure" open_constr(efoc) simple_intropattern(H) :=
 
 Ltac crash_case :=
   try lazymatch goal with
-      | [ |- envs_entails (Envs ?ienv ?senv _) (<disc> ?Φc) ] =>
+      | [ |- envs_entails (Envs ?ienv ?senv _) ?Φc ] =>
         is_var Φc;
         lazymatch senv with
-        | context[Esnoc _ ?H (<disc> (_ -∗ Φc) ∧ _)%I] => iLeft in H; iModIntro; iApply H
-        | context[Esnoc _ ?H (<disc> Φc ∧ _)%I] => iLeft in H; iModIntro; iExact H
+        | context[Esnoc _ ?H ((_ -∗ Φc) ∧ _)%I] => iLeft in H; iApply H
+        | context[Esnoc _ ?H (Φc ∧ _)%I] => iLeft in H; iExact H
         end
       end.
 
@@ -240,7 +242,7 @@ Proof. rewrite envs_entails_eq=> -> ->. by apply: wpc_bind. Qed.
 Lemma tac_wpc_wp_frame `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapGS Σ, !crashG Σ} Δ d js s k E1 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
   match envs_split d js Δ with
-  | Some (Δ1, Δ2) => envs_entails Δ1 (<disc> Φc) ∧
+  | Some (Δ1, Δ2) => envs_entails Δ1 Φc ∧
                      envs_entails Δ2 (WP e @ s; E1
                              {{ v, (env_to_named_prop Δ1.(env_spatial) -∗ Φ v)%I }})
   | None => False
@@ -267,7 +269,7 @@ Qed.
 (* combines using [wpc_frame Hs] with [iFromCache], simultaneously framing and
    proving the crash condition using a cache *)
 Lemma tac_wpc_wp_frame_cache `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ, !crashG Σ} (Φc: iProp Σ) i (* name of cache *) (c: cache (<disc> Φc)%I)
+      `{!heapGS Σ, !crashG Σ} (Φc: iProp Σ) i (* name of cache *) (c: cache Φc)
       Δ stk k E1 e (Φ: _ → iProp Σ)  :
   envs_lookup i Δ = Some (true, cached c) →
   match envs_split Left c.(cache_names) Δ with
@@ -306,7 +308,7 @@ Tactic Notation "wpc_frame" :=
   lazymatch goal with
   | [ |- envs_entails (Envs ?Γp _ _) (wpc _ _ _ _ _ ?Φc) ] =>
     first [ match Γp with
-            | context[Esnoc _ ?i (@cached _ (<disc> Φc)%I ?c)] =>
+            | context[Esnoc _ ?i (@cached _ Φc ?c)] =>
               apply (tac_wpc_wp_frame_cache Φc i c);
               [ reflexivity (* lookup should always succeed, found by context match *)
               | reduction.pm_reduce; split;

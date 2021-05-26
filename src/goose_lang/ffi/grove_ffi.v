@@ -258,12 +258,14 @@ lemmas. *)
     {{{ RET listen_socket c; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /head_step/=.
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
     inv_head_step.
     simpl.
     iFrame.
@@ -281,7 +283,7 @@ lemmas. *)
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) [Hg %Hg] !>".
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /head_step/=.
@@ -291,6 +293,9 @@ lemmas. *)
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
+    iDestruct "Hg" as "([Hg %Hg]&?)".
     inv_head_step.
     match goal with
     | H : isFreshChan _ ?c |- _ => rename H into Hfresh; rename c into c_l
@@ -318,7 +323,7 @@ lemmas. *)
     {{{ c_r, RET connection_socket c_l c_r; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /head_step/=.
@@ -326,6 +331,8 @@ lemmas. *)
       1:by eapply (relation.suchThat_runs _ _ (U64 0)).
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
     inv_head_step.
     simpl.
     iFrame.
@@ -360,9 +367,13 @@ lemmas. *)
   Proof.
     iIntros (Hmlen Φ) "[Hc Hl] HΦ".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns κ κs nt) "(Hσ&$&Htr) [Hg %Hg] !>".
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&$&Htr) Hg".
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
+    iDestruct "Hg" as "([Hg %Hg]&?)".
     iDestruct (@gen_heap_valid with "Hg Hc") as %Hc.
     iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
+    iModIntro.
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /head_step/=.
@@ -427,7 +438,11 @@ lemmas. *)
     }}}.
   Proof.
     iIntros (Φ) "He HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns κ κs nt) "(Hσ&$&Htr) [Hg %Hg] !>".
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&$&Htr) Hg".
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
+    iDestruct "Hg" as "([Hg %Hg]&?)".
+    iModIntro.
     iDestruct (@gen_heap_valid with "Hg He") as %He.
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
@@ -479,7 +494,7 @@ lemmas. *)
       iModIntro. iFrame "Hσ". iApply (big_sepL_impl with "Hl").
       iIntros "!#" (???) "[$ _]".
     }
-    iModIntro. iEval simpl. iFrame "Htr Hg Hσ".
+    iModIntro. iEval simpl. iFrame "Htr Hg Hσ ∗".
     do 2 (iSplit; first done).
     iApply ("HΦ" $! None _ _ m'.(msg_data)). iFrame "He".
     iSplit.

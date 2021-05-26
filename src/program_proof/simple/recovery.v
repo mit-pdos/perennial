@@ -194,14 +194,14 @@ Proof.
   rewrite /Mkfs.
   wpc_pures.
   { crash_case; auto. }
-  iCache (<disc> Φc)%I with "HΦ".
+  iCache (Φc)%I with "HΦ".
   { crash_case; auto. }
   wpc_apply (wpc_MkLog (nroot.@"simple") with "[$Htxn]").
   { solve_ndisj. }
   { solve_ndisj. }
   iSplit.
   { iLeft in "HΦ".
-    iIntros "!> H".
+    iIntros "H".
     iApply "HΦ"; auto. }
   iNext.
   iIntros (γ' txn_l) "Hpost".
@@ -255,7 +255,7 @@ Proof.
 Qed.
 
 Definition fs_cfupd_cancel dinit P :=
-  (<disc> (|C={⊤}_10=>
+  ((|C={⊤}_10=>
     ∃ γ γsrc logm',
     is_txn_durable γ dinit logm' ∗
     ▷ is_source P γsrc ∗
@@ -263,14 +263,14 @@ Definition fs_cfupd_cancel dinit P :=
 
 Theorem wpc_Recover γ γsrc d dinit logm :
   {{{
-    <disc> (∀ σ, ▷ P1 σ -∗ |C={⊤ ∖ ↑N}_10=> ▷ P1 σ ∗ ▷ P2 σ) ∗
+    (∀ σ, ▷ P1 σ -∗ |C={⊤ ∖ ↑N}_10=> ▷ P1 σ ∗ ▷ P2 σ) ∗
     is_txn_durable γ dinit logm ∗
     ▷ is_source P1 γsrc ∗
     [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a
   }}}
     Recover (disk_val d) @ 10; ⊤
-  {{{ γsimp nfs, RET #nfs;
-      is_fs P1 γsimp nfs dinit ∗ fs_cfupd_cancel dinit P2 }}}
+  {{{ nfs, RET #nfs;
+      init_cancel (∃ γsimp, is_fs P1 γsimp nfs dinit) (fs_cfupd_cancel dinit P2)}}}
   {{{
     ∃ γ' γsrc' logm',
     is_txn_durable γ' dinit logm' ∗
@@ -279,11 +279,10 @@ Theorem wpc_Recover γ γsrc d dinit logm :
   }}}.
 Proof using All.
   iIntros (Φ Φc) "(Hshift & Htxndurable & Hsrc & Hstable) HΦ".
-  iMod (fupd_later_to_disc with "Hsrc") as "Hsrc".
   rewrite /Recover.
   iApply wpc_cfupd.
   wpc_pures.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro.
+  { iDestruct "HΦ" as "[HΦc _]".
     iMod (is_source_later_upd P1 P2 with "Hshift Hsrc") as "Hsrc".
     iModIntro. iApply "HΦc".
     iExists _, _, _. iFrame. }
@@ -292,67 +291,86 @@ Proof using All.
   { solve_ndisj. }
   { solve_ndisj. }
 
+
   iSplit.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
+  { iDestruct "HΦ" as "[HΦc _]". iIntros "H".
     iDestruct "H" as (γ' logm') "Htxndurable".
     iDestruct "Htxndurable" as "(Hdurable&[%Heq|#Hexch])".
     { subst.
       iMod (is_source_later_upd P1 P2 with "[$] Hsrc") as "Hsrc".
       iModIntro. iApply "HΦc". iExists _, _, _.
       iFrame. }
-    iMod (big_sepS_impl_cfupd with "Hstable []") as "Hcrash".
-    { iModIntro. iIntros (x Hx) "H".
-      iApply (is_inode_stable_crash with "[$] H").
-    }
     iMod (is_source_later_upd P1 P2 with "[$] Hsrc") as "Hsrc".
+    iIntros "#HC".
+    iAssert (|={⊤}=> [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)%I with "[Hstable]" as ">Hcrash".
+    {
+      iApply big_sepS_fupd.
+      iApply (big_sepS_wand with "Hstable").
+      iApply big_sepS_intro. iModIntro. iIntros (? Hin) "H".
+      unshelve (iMod (is_inode_stable_crash with "[$] [$] [$]"); eauto).
+      { exact O. (* This will go away when we remove the useless k parameter *) }
+    }
     iModIntro.
     iApply "HΦc".
     iExists _, _, _. iFrame.
+
   }
 
   iModIntro.
   iIntros (γ' l) "(#Histxn & #Htxnsys & Hcfupdcancel & #Htxncrash)".
-
-  wpc_pures.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro.
-    iMod (big_sepS_impl_cfupd with "Hstable []") as "Hcrash".
-    { iModIntro. iIntros (x Hx) "H".
-      iMod (is_inode_stable_crash with "Htxncrash H") as "H".
-      iModIntro. iExact "H". }
-    iMod "Hcfupdcancel" as ">Hcfupdcancel".
-    iMod (is_source_later_upd P1 P2 with "[$] Hsrc") as "Hsrc".
+  iCache (|C={⊤}_10=> Φc)%I with "Hshift Hsrc Hstable Hcfupdcancel HΦ".
+  { iDestruct "HΦ" as "[HΦc _]". iIntros "#HC".
+    iAssert (|={⊤}=> [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)%I with "[Hstable]" as ">Hcrash".
+    {
+      iApply big_sepS_fupd.
+      iApply (big_sepS_wand with "Hstable").
+      iApply big_sepS_intro. iModIntro. iIntros (? Hin) "H".
+      unshelve (iMod (is_inode_stable_crash with "[$] [$] [$]"); eauto).
+      { exact O. (* This will go away when we remove the useless k parameter *)  }
+    }
+    rewrite /txn_cfupd_cancel.
+    iMod (is_source_later_upd P1 P2 with "[$] Hsrc [$]") as "Hsrc".
+    rewrite own_discrete_elim.
+    iMod ("Hcfupdcancel" with "[$]") as ">Hcfupdcancel".
     iModIntro.
     iApply "HΦc".
     iDestruct "Hcfupdcancel" as (?) "H".
     iExists _, _, _. iFrame.
   }
 
-  wpc_apply (wpc_MkLockMap _ covered_inodes (is_inode_stable γsrc γ) (is_inode_stable γsrc γ') with "[Hstable]").
-  { iApply (big_sepS_impl with "Hstable").
-    iModIntro.
-    iIntros (a Ha) "H". iFrame.
-    iModIntro. iIntros ">Hstable".
-    iMod (is_inode_stable_crash with "Htxncrash Hstable") as "Hstable".
-    iModIntro. done. }
+  wpc_frame.
+  wp_pures.
+  (*
 
-  iSplit.
-  { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
-    rewrite -big_sepS_later.
-    iDestruct "H" as ">H".
-    iMod "Hcfupdcancel" as ">Hcfupdcancel".
-    iDestruct "Hcfupdcancel" as (?) "Hcfupdcancel".
-    iMod (is_source_later_upd P1 P2 with "[$] Hsrc") as "Hsrc".
+  wpc_pures.
+  { iDestruct "HΦ" as "[HΦc _]". iIntros "#HC".
+    iAssert (|={⊤}=> [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)%I with "[Hstable]" as ">Hcrash".
+    {
+      iApply big_sepS_fupd.
+      iApply (big_sepS_wand with "Hstable").
+      iApply big_sepS_intro. iModIntro. iIntros (? Hin) "H".
+      unshelve (iMod (is_inode_stable_crash with "[$] [$] [$]"); eauto).
+      { exact O. (* This will go away when we remove the useless k parameter *)  }
+    }
+    rewrite /txn_cfupd_cancel.
+    iMod (is_source_later_upd P1 P2 with "[$] Hsrc [$]") as "Hsrc".
+    rewrite own_discrete_elim.
+    iMod ("Hcfupdcancel" with "[$]") as ">Hcfupdcancel".
     iModIntro.
     iApply "HΦc".
+    iDestruct "Hcfupdcancel" as (?) "H".
     iExists _, _, _. iFrame.
   }
+   *)
 
-  iModIntro.
-  iIntros (lm ghs) "[#Hlm Hlmcrash]".
+  wp_apply (wp_MkLockMap).
+  iIntros (lm) "Hfree".
 
-  iMod (own_disc_fupd_elim with "Hsrc") as "Hsrc".
+  (*
   iMod (inv_alloc N with "Hsrc") as "#Hsrc".
+   *)
 
+  (*
   iApply wp_wpc_frame'.
   iSplitL "Hlmcrash Hcfupdcancel HΦ Hsrc Hshift".
   {
@@ -377,6 +395,7 @@ Proof using All.
     { iNamedAccu. }
   }
 
+   *)
   wp_apply wp_allocStruct; first by eauto.
   iIntros (nfs) "Hnfs".
 
@@ -384,10 +403,54 @@ Proof using All.
   iMod (readonly_alloc_1 with "t") as "#Ht".
   iMod (readonly_alloc_1 with "l") as "#Hl".
 
+  (*
   iAssert (is_fs P1 (Build_simple_names γ γ' γsrc ghs) nfs dinit) with "[]" as "Hfs".
   { iExists _, _. iFrame "Ht Hl Histxn Htxnsys Htxncrash Hlm Hsrc". }
+   *)
   wp_pures. iModIntro. iNamed 1.
-  iRight in "HΦ". iApply "HΦ". iFrame "# ∗".
+  iRight in "HΦ". iApply "HΦ".
+  iApply fupd_init_cancel.
+  iMod (inv_alloc N with "Hsrc") as "#Hsrc".
+  rewrite /txn_cfupd_cancel.
+  iDestruct (alloc_lockMap_init_cancel covered_inodes lm
+                                       (is_inode_stable γsrc γ)
+                                       (λ a, C -∗ |={⊤}=> is_inode_stable γsrc γ' a)%I
+               with "[Hstable] [$]") as "Hcancel".
+  {
+    iApply (big_sepS_wand with "Hstable").
+    iApply big_sepS_intro. iModIntro. iIntros (? Hin) "H".
+    iFrame. iModIntro. iIntros "Hstable".
+    iMod (is_inode_stable_crash with "[$] [$]"); eauto.
+  }
+  iApply (init_cancel_wand with "Hcancel [] [Hcfupdcancel Hshift]").
+  {
+    iDestruct 1 as (ghs) "Hlm".
+    iExists (Build_simple_names γ γ' γsrc ghs).
+    { iExists _, _. iFrame "Ht Hl Histxn Htxnsys Htxncrash Hsrc". eauto. }
+  }
+
+  iIntros "H".
+  rewrite /fs_cfupd_cancel.
+  iAssert (|C={⊤}_10=> [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)%I
+    with "[H]" as ">H".
+  { iIntros "#HC". iApply big_sepS_fupd.
+    iApply (big_sepS_wand with "H"). iApply big_sepS_intro.
+    iModIntro. iIntros (??) "H". iMod ("H" with "[$]") as "$". eauto. }
+  iEval (rewrite own_discrete_elim) in "Hcfupdcancel".
+  iMod ("Hcfupdcancel") as "Hcfupdcancel".
+  iIntros "HC". iDestruct "Hcfupdcancel" as ">Hcfupdcancel".
+  iInv "Hsrc" as "Hopen" "Hclose".
+  iDestruct "Hopen" as (?) "(>Hsrcheap&>%Hdom&>#Hnooverflow&HP)".
+  iMod (crash_upd_src with "[$]") as (γsrc') "(Hsrcheap&Hsrcheap'&Hlmcrash)".
+  { eauto. }
+  iMod ("Hshift" with "HP HC") as "(HP1&HP2)".
+  iMod ("Hclose" with "[HP1 Hsrcheap]") as "_".
+  { iNext. iExists _. iFrame "# ∗ %". }
+  iDestruct "Hcfupdcancel" as (?) "?".
+  iExists γ', γsrc', _. iFrame.
+  iModIntro. iNext. iExists _. iFrame "# ∗ %".
+  Unshelve.
+  exact O.
 Qed.
 
 End goose_lang.

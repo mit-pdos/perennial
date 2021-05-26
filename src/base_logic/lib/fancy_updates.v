@@ -52,12 +52,14 @@ Proof.
 Qed.
 
 Definition AlwaysEn := coPset_inl ⊤.
-Definition MaybeEn := coPset_inr.
+Definition MaybeEn1 E := coPset_inr (coPset_inr E).
+Definition MaybeEn2 E := coPset_inr (coPset_inl E).
 
-Local Hint Extern 0 (AlwaysEn ## MaybeEn _) => apply coPset_inl_inr_disj : core.
+Local Hint Extern 0 (AlwaysEn ## MaybeEn1 _) => apply coPset_inl_inr_disj : core.
+Local Hint Extern 0 (AlwaysEn ## MaybeEn2 _) => apply coPset_inl_inr_disj : core.
 
 Definition uPred_fupd_def `{!invGS Σ} (E1 E2 : coPset) (P : iProp Σ) : iProp Σ :=
-  wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn E1) ==∗ ◇ (wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn E2) ∗ P).
+  wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn1 E1) ==∗ ◇ (wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn1 E2) ∗ P).
 Definition uPred_fupd_aux : seal (@uPred_fupd_def). Proof. by eexists. Qed.
 Definition uPred_fupd := uPred_fupd_aux.(unseal).
 Global Arguments uPred_fupd {Σ _}.
@@ -82,21 +84,39 @@ Proof.
   - intros. apply (Hin (Papp x p)); apply elem_coPset_suffixes_of; eauto.
 Qed.
 
-Lemma MaybeEn_union E1 E2 : MaybeEn (E1 ∪ E2) = MaybeEn E1 ∪ MaybeEn E2.
-Proof. apply coPset_suffixes_of_union. Qed.
-Lemma MaybeEn_disj E1 E2 : E1 ## E2 ↔ MaybeEn E1 ## MaybeEn E2.
-Proof. apply coPset_suffixes_of_disj. Qed.
+Lemma MaybeEn_union E1 E2 : MaybeEn1 (E1 ∪ E2) = MaybeEn1 E1 ∪ MaybeEn1 E2.
+Proof.
+  rewrite /MaybeEn1/coPset_inr/coPset_inl ?coPset_suffixes_of_union //. Qed.
+Lemma MaybeEn_disj E1 E2 : E1 ## E2 ↔ MaybeEn1 E1 ## MaybeEn1 E2.
+Proof. rewrite /MaybeEn1/coPset_inr/coPset_inl -?coPset_suffixes_of_disj //. Qed.
 Lemma MaybeEn_infinite E:
-  (¬ set_finite E) → (¬ set_finite (MaybeEn E)).
-Proof. apply coPset_suffixes_of_infinite. Qed.
+  (¬ set_finite E) → (¬ set_finite (MaybeEn1 E)).
+Proof. intros Hnf. by do 2 apply coPset_suffixes_of_infinite. Qed.
+
+Lemma MaybeEn2_union E1 E2 : MaybeEn2 (E1 ∪ E2) = MaybeEn2 E1 ∪ MaybeEn2 E2.
+Proof.
+  rewrite /MaybeEn2/coPset_inr/coPset_inl ?coPset_suffixes_of_union //. Qed.
+Lemma MaybeEn2_disj E1 E2 : E1 ## E2 ↔ MaybeEn2 E1 ## MaybeEn2 E2.
+Proof. rewrite /MaybeEn2/coPset_inr/coPset_inl -?coPset_suffixes_of_disj //. Qed.
+Lemma MaybeEn2_infinite E:
+  (¬ set_finite E) → (¬ set_finite (MaybeEn2 E)).
+Proof. intros Hnf. by do 2 apply coPset_suffixes_of_infinite. Qed.
 
 Lemma ownE_op_MaybeEn `{!invGS Σ} E1 E2 :
-  E1 ## E2 → ownE (MaybeEn (E1 ∪ E2)) ⊣⊢ ownE (MaybeEn E1) ∗ ownE (MaybeEn E2).
-Proof. intros Hdisj. rewrite MaybeEn_union ownE_op //=. by apply coPset_suffixes_of_disj. Qed.
+  E1 ## E2 → ownE (MaybeEn1 (E1 ∪ E2)) ⊣⊢ ownE (MaybeEn1 E1) ∗ ownE (MaybeEn1 E2).
+Proof. intros Hdisj. rewrite MaybeEn_union ownE_op //=. by do 2 apply coPset_suffixes_of_disj. Qed.
+
+Lemma ownE_op_MaybeEn2 `{!invGS Σ} E1 E2 :
+  E1 ## E2 → ownE (MaybeEn2 (E1 ∪ E2)) ⊣⊢ ownE (MaybeEn2 E1) ∗ ownE (MaybeEn2 E2).
+Proof. intros Hdisj. rewrite MaybeEn2_union ownE_op //=. by do 2 apply coPset_suffixes_of_disj. Qed.
 
 Lemma ownE_op_MaybeEn' `{!invGS Σ} E1 E2 :
-  ⌜ E1 ## E2 ⌝ ∧ ownE (MaybeEn (E1 ∪ E2)) ⊣⊢ ownE (MaybeEn E1) ∗ ownE (MaybeEn E2).
+  ⌜ E1 ## E2 ⌝ ∧ ownE (MaybeEn1 (E1 ∪ E2)) ⊣⊢ ownE (MaybeEn1 E1) ∗ ownE (MaybeEn1 E2).
 Proof. rewrite MaybeEn_union MaybeEn_disj ownE_op' //=. Qed.
+
+Lemma ownE_op_MaybeEn2' `{!invGS Σ} E1 E2 :
+  ⌜ E1 ## E2 ⌝ ∧ ownE (MaybeEn2 (E1 ∪ E2)) ⊣⊢ ownE (MaybeEn2 E1) ∗ ownE (MaybeEn2 E2).
+Proof. rewrite MaybeEn2_union MaybeEn2_disj ownE_op' //=. Qed.
 
 Lemma uPred_fupd_mixin `{!invGS Σ} : BiFUpdMixin (uPredI (iResUR Σ)) uPred_fupd.
 Proof.

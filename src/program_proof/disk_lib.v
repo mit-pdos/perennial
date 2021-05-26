@@ -346,8 +346,8 @@ Qed.
 Theorem wpc_Write_ncfupd {stk k E1} E1' (a: u64) s q b :
   ∀ Φ Φc,
     is_block s q b -∗
-    (<disc> Φc ∧ |NC={E1,E1'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b -∗ |NC={E1',E1}=>
-          <disc> Φc ∧ (is_block s q b -∗ Φ #()))) -∗
+    (Φc ∧ |NC={E1,E1'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b -∗ |NC={E1',E1}=>
+          Φc ∧ (is_block s q b -∗ Φ #()))) -∗
     WPC Write #a (slice_val s) @ stk;k; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Φ Φc) "Hs Hfupd".
@@ -381,8 +381,8 @@ Qed.
 Theorem wpc_Write_fupd {stk k E1} E1' (a: u64) s q b :
   ∀ Φ Φc,
     is_block s q b -∗
-    (<disc> Φc ∧ |={E1,E1'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b ={E1',E1}=∗
-          <disc> Φc ∧ (is_block s q b -∗ Φ #()))) -∗
+    (Φc ∧ |={E1,E1'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b ={E1',E1}=∗
+          Φc ∧ (is_block s q b -∗ Φ #()))) -∗
     WPC Write #a (slice_val s) @ stk;k; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??) "Hblock HΦc".
@@ -396,19 +396,19 @@ Qed.
 
 Theorem wpc_Write_fupd_triple {stk k E1} E1' (Q Qc: iProp Σ) (a: u64) s q b :
   {{{ is_block s q b ∗
-      (<disc> Qc ∧ |={E1,E1'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b ={E1',E1}=∗ <disc> Qc ∧ Q)) }}}
+      (Qc ∧ |={E1,E1'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b ={E1',E1}=∗ Qc ∧ Q)) }}}
     Write #a (slice_val s) @ stk;k; E1
-  {{{ RET #(); is_block s q b ∗ <disc> Qc ∧ Q }}}
+  {{{ RET #(); is_block s q b ∗ Qc ∧ Q }}}
   {{{ Qc }}}.
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as "[Hs Hfupd]".
   iApply (wpc_Write_fupd with "Hs"). iSplit.
-  { iLeft in "Hfupd". iLeft in "HΦ". iModIntro. iApply "HΦ". iFrame. }
+  { iLeft in "Hfupd". iLeft in "HΦ". iApply "HΦ". iFrame. }
   iRight in "Hfupd". iMod "Hfupd" as (b0) "[Hv Hclose]". iModIntro.
   iExists b0. iFrame. iIntros "!> Hv". iMod ("Hclose" with "Hv") as "HQ".
   iModIntro. iSplit.
-  { iLeft in "HΦ". iLeft in "HQ". iModIntro. iApply "HΦ". iFrame. }
+  { iLeft in "HΦ". iLeft in "HQ". iApply "HΦ". iFrame. }
   iRight in "HΦ". iIntros "Hblock". iApply "HΦ". iFrame.
 Qed.
 
@@ -444,7 +444,7 @@ Proof.
   iDestruct "Hpre" as (b0) "[Hda Hs]".
   wpc_apply (wpc_Write' with "[$Hda $Hs]").
   iSplit.
-  { iLeft in "HΦ". iModIntro. iIntros "[Hda|Hda]"; iApply "HΦ"; eauto. }
+  { iLeft in "HΦ". iIntros "[Hda|Hda]"; iApply "HΦ"; eauto. }
   iIntros "!> [Hda Hb]".
   iRight in "HΦ".
   iApply "HΦ"; iFrame.

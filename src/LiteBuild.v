@@ -3,13 +3,13 @@
 
 (* Some key theorems *)
 From Perennial.goose_lang Require
-     recovery_adequacy dist_adequacy.
+     recovery_adequacy (* dist_adequacy *).
 (* Some core libraries *)
 From Perennial.base_logic Require
      gmap_own.
 (* Prelude files *)
 From Perennial.program_proof Require
-     proof_prelude disk_prelude grove_prelude.
+     proof_prelude disk_prelude (* grove_prelude *).
 
 (* a couple program proofs that are pretty interesting on their own and include
 the wpc infrastructure *)

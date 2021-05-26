@@ -309,6 +309,7 @@ Proof using hG.
   econstructor.
   - apply _.
   - apply (heap_ffi_global_names (heap_get_names _ _)).
+  - apply (heap_credit_names (heap_get_names _ _)).
   - eapply inv_get_names. apply _.
 Defined.
 
@@ -408,6 +409,7 @@ Proof.
     destruct groveG_gen_heapG.
     destruct heapG_na_heapG.
     destruct heapG_traceG.
+    destruct heapG_creditG.
     f_equal. rewrite /inv_inPreG.
     f_equal. destruct inv_inG0 => //=.
   }

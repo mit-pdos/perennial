@@ -40,7 +40,7 @@ Section goose.
     { iExists _, _; eauto. }
     { iExists _, _; eauto. }
     rewrite /BlockSize.
-    iCache (<disc> Φc)%I with "HΦ Ha".
+    iCache Φc with "HΦ Ha".
     { crash_case. iExists _, _; eauto. }
     wpc_pures.
     wpc_frame_seq.
@@ -64,7 +64,7 @@ Section goose.
     iExists _. iFrame. iNext.
     iIntros "Hwritten".
     iModIntro.
-    iCache (<disc> Φc)%I with "Hwritten HΦ".
+    iCache Φc with "Hwritten HΦ".
     { crash_case. iExists _, 4. iFrame. iPureIntro. rewrite //=. }
     iSplit; first iFromCache.
     iIntros "Hblock".
@@ -73,7 +73,7 @@ Section goose.
     wpc_bind (Read _).
     iApply (wpc_Read with "Hwritten").
     iSplit.
-    { iLeft in "HΦ". iModIntro. iIntros "Hwritten". iApply "HΦ".
+    { iLeft in "HΦ". iIntros "Hwritten". iApply "HΦ".
       iExists _, 4. iFrame. iPureIntro. rewrite //=. }
     iNext. iIntros (s') "(Hwritten&Hslice)".
     wpc_pures.

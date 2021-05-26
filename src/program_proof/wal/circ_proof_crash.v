@@ -5,7 +5,6 @@ From RecordUpdate Require Import RecordSet.
 
 From Goose.github_com.mit_pdos.go_journal Require Import wal.
 
-From Perennial.program_logic Require Import staged_wpc.
 From Perennial.Helpers Require Import Transitions.
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.Helpers Require Import NamedProps.
@@ -214,7 +213,7 @@ Proof.
 
   wpc_apply (wpc_Read with "[Hd0]"); first by iFrame.
   iSplit.
-  { iLeft in "HΦ". iModIntro. iIntros "Hd0". iApply "HΦ".
+  { iLeft in "HΦ". iIntros "Hd0". iApply "HΦ".
     iFrame "% ∗".
     iExists _, _; iFrame "∗ %".
     iExists _, _; iFrame "∗ %". }
@@ -224,7 +223,7 @@ Proof.
 
   wpc_apply (wpc_Read with "[Hd1]"); first iFrame.
   iSplit.
-  { iLeft in "HΦ". iModIntro. iIntros "Hd1". iApply "HΦ".
+  { iLeft in "HΦ". iIntros "Hd1". iApply "HΦ".
     iFrame "% ∗".
     iExists _, _; iFrame "∗ %".
     iExists _, _; iFrame "∗ %". }
@@ -272,7 +271,7 @@ Proof.
     rewrite /circΣ.diskEnd.
     word.
   - iIntros (??) "(H&?&?&?)".
-    iModIntro; eauto.
+    eauto.
   - iIntros (i Φₗ Φcₗ) "!> (HI&Hposl&%) HΦ".
     iDestruct "HI" as (Hstart_bound) "(Hbufs&Hdiskaddrs&Hd2)".
     iDestruct "Hbufs" as (bufSlice) "[Hbufsloc Hupds]".
@@ -308,21 +307,20 @@ Proof.
     destruct (list_lookup_lt _ blocks0 (Z.to_nat (int.Z i `mod` LogSz))) as [b Hblookup].
     { destruct Hlow_wf.
       mod_bound; word. }
-    iDestruct (disk_array_acc_disc _ blocks0 (int.Z i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.
+    iDestruct (disk_array_acc _ blocks0 (int.Z i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.
     { mod_bound; word. }
     wpc_apply (wpc_Read with "[Hdi]").
     { iExactEq "Hdi".
       f_equal.
       mod_bound; word. }
     iSplit.
-    { iLeft in "HΦ". iModIntro. iIntros "Hdi".
+    { iLeft in "HΦ". iIntros "Hdi".
       iSpecialize ("Hd2'" with "[Hdi]").
       { iExactEq "Hdi". f_equal. mod_bound. word. }
       rewrite list_insert_id; eauto. iApply "HΦ"; eauto. }
 
     iNext.
     iIntros (b_s) "[Hdi Hb_s]".
-    iDestruct (own_discrete_elim with "Hd2'") as "Hd2'".
 
     iDestruct ("Hd2'" with "[Hdi]") as "Hd2".
     { iExactEq "Hdi".
@@ -382,7 +380,7 @@ Proof.
     auto.
 
   - iSplit.
-    { iLeft in "HΦ". iModIntro. iDestruct 1 as (i) "(Hd2&%)".
+    { iLeft in "HΦ". iDestruct 1 as (i) "(Hd2&%)".
       iApply "HΦ".
       iFrame "% ∗".
       iExists _, _; iFrame "∗ %".
@@ -509,9 +507,11 @@ Proof.
   { solve_ndisj. }
   { iModIntro. iIntros "(H1&>Hinit)".
     iDestruct "H1" as (σ') "(>Hstate&HP)".
+    iIntros "#HC".
+    iApply (fupd_level_fupd).
     iMod ("HPwand" with "[$]") as "(HPrec&HPcrash)".
     iMod (crash_upd with "[$] [$]") as "(Hcs&Hres&Hcs_crash&Hexchange)".
-    iIntros "HC". iModIntro.
+    iModIntro.
     iSplitR "Hcs HPrec Hres".
     { iNext. iExists _. iFrame. }
     { iNext. iExists _. iFrame. }
@@ -545,11 +545,13 @@ Proof.
   { iNext. iExists _. iFrame. }
   iFrame "Hinv".
   iModIntro.
-  iMod "Hcfupd".
+  iMod (own_disc_fupd_elim with "Hcfupd") as "Hcfupd".
   iSpecialize ("HWP" with "[$]").
   iApply (wpc_strong_mono with "HWP"); auto.
   iSplit; first eauto.
-  iModIntro. iIntros "H1 !> H2".
+   iIntros "H1".
+  iMod (cfupd_weaken_all with "[$]"); try lia; eauto.
+  iModIntro.
   iApply ("Hcrash1" with "[$] [$]").
 Qed.
 

@@ -900,13 +900,13 @@ Proof.
   - iFrame.
   - iSplit.
     { iLeft in "HΦ".
-      iModIntro.
       iIntros "Hcrash HC".
       iDestruct "Hcrash" as (γ'wal_names) "Hcrash".
       iPoseProof (txn_crash_transform with "[$]") as "Htransform".
       { auto. }
       iDestruct (fupd_level_le _ _ _ k with "Htransform") as "Htransform".
       { lia. }
+      iApply fupd_level_fupd.
       iMod (fupd_level_mask_mono with "Htransform") as "Htransform"; auto.
       iModIntro. iApply "HΦ".
       iDestruct "Htransform" as (?) "(?&?&?)".
@@ -918,16 +918,17 @@ Proof.
     wpc_frame_compl "Hlock Hlocked_walheap".
     {
       iLeft in "HΦ".
-      iModIntro.
       iIntros "HC".
+      rewrite /wal_cfupd_cancel.
+      rewrite own_discrete_elim.
       iSpecialize ("Hwal_cfupd" with "[$]").
-      iPoseProof (fupd_level_le _ _ _ k with "Hwal_cfupd") as "Hwal_cfupd"; first lia.
-      iMod (fupd_level_mask_mono with "Hwal_cfupd") as "Hwal_cfupd"; auto.
+      iMod (fupd_mask_mono with "Hwal_cfupd") as "Hwal_cfupd"; auto.
       iPoseProof (txn_crash_transform with "[$His_txn_always $Htxn_init Hwal_cfupd]") as "Htransform".
       { auto. }
       { iDestruct "Hwal_cfupd" as (??) "H".
         iExists _, _. iFrame.
       }
+      iApply fupd_level_fupd.
       iDestruct (fupd_level_le _ _ _ k with "Htransform") as "Htransform".
       { lia. }
       iMod (fupd_level_mask_mono with "Htransform") as "Htransform"; auto.
@@ -962,7 +963,7 @@ Proof.
       iMod ("HPwal_tok_wand" with "[$]") as "Hwal_cfupd".
       iSpecialize ("Hwal_cfupd" with "HC").
       iDestruct "H" as (??) "H".
-      iMod (fupd_level_mask_mono with "Hwal_cfupd") as "Hwal_cfupd".
+      iMod (fupd_mask_mono with "Hwal_cfupd") as "Hwal_cfupd".
       { solve_ndisj. }
       iPoseProof (txn_crash_transform _ γ γ' with "[H Hwal_cfupd Hinit]") as "Htransform".
       { auto. }
@@ -970,6 +971,7 @@ Proof.
         iDestruct "Hwal_cfupd" as (??) "(?&?&?&?)".
         iExists _, _. iFrame.
       }
+      iApply fupd_level_fupd.
       iMod (fupd_level_mask_mono with "Htransform") as "Htransform"; auto.
       { set_solver+. }
       iModIntro.

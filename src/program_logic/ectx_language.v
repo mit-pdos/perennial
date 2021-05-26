@@ -28,6 +28,7 @@ Section ectx_language_mixin.
     mixin_fill_comp K1 K2 e : fill K1 (fill K2 e) = fill (comp_ectx K1 K2) e;
     mixin_fill_inj K : Inj (=) (=) (fill K);
     mixin_fill_val K e : is_Some (to_val (fill K e)) → is_Some (to_val e);
+    mixin_fill_val_inv K v v' : is_Some (to_val (fill K (of_val v))) → is_Some (to_val (fill K (of_val v')));
 
     (** Given a head redex [e1_redex] somewhere in a term, and another
         decomposition of the same term into [fill K' e1'] such that [e1'] is not
@@ -99,6 +100,8 @@ Section ectx_language.
   Global Instance fill_inj K : Inj (=) (=) (fill K).
   Proof. apply ectx_language_mixin. Qed.
   Lemma fill_val K e : is_Some (to_val (fill K e)) → is_Some (to_val e).
+  Proof. apply ectx_language_mixin. Qed.
+  Lemma fill_val_inv K v v' : is_Some (to_val (fill K (of_val v))) → is_Some (to_val (fill K (of_val v'))).
   Proof. apply ectx_language_mixin. Qed.
   Lemma step_by_val K' K_redex e1' e1_redex σ1 g1 κ e2 σ2 g2 efs :
       fill K' e1' = fill K_redex e1_redex →
@@ -278,6 +281,7 @@ Section ectx_language.
   Proof.
     split; simpl.
     - eauto using fill_not_val.
+    - eauto using fill_val_inv.
     - intros ???????? [K' e1' e2' Heq1 Heq2 Hstep].
       by exists (comp_ectx K K') e1' e2'; rewrite ?Heq1 ?Heq2 ?fill_comp.
     - intros e1 σ1 g1 κ e2 σ2 g2 efs Hnval [K'' e1'' e2'' Heq1 -> Hstep].

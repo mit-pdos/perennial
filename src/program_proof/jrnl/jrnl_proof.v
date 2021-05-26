@@ -1130,10 +1130,9 @@ Proof using stagedG0.
     iSplit.
     * iNext. iIntros (?) "Hwand". iDestruct "Hwand" as (ok ->) "Hwand". iModIntro. iRight in "HΦc".
       iApply "HΦc". iApply "Hwand". by iFrame.
-    * iLeft in "HΦc". iIntros "!> _". iIntros "HC".
+    * iLeft in "HΦc". iIntros "_". iIntros "HC".
       {
-        iPoseProof (fupd_level_le _ _ _ (S k) with "HΦc") as "HΦc".
-        { lia. }
+        iApply (fupd_level_fupd _ _ _ (S k)).
         iMod (fupd_level_mask_mono with "HΦc") as "HΦc"; first by set_solver+.
         iMod (inv_mut_acc with "Hinv") as (Qs) "(H&Hclo)"; first auto.
         rewrite wp_to_wpc.mysch_interp_weak /=.

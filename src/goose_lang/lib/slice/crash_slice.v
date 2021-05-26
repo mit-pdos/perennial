@@ -16,7 +16,7 @@ Context `{!IntoVal V}.
 Implicit Types (v:V) (vs: list V).
 
 Lemma wpc_slice_len k stk E1 s Φ Φc :
-  <disc> Φc ∧ Φ #(Slice.sz s) -∗
+  Φc ∧ Φ #(Slice.sz s) -∗
   WPC slice.len (slice_val s) @ stk; k; E1 {{ v, Φ v }} {{ Φc }}.
 Proof.
   iIntros "HΦ".
@@ -50,7 +50,7 @@ Proof.
 Qed.
 
 Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk k E1 s t q (vs: list V) (body: val) :
-  □ (∀ x, I x -∗ <disc> Φc') -∗
+  □ (∀ x, I x -∗ Φc') -∗
   (∀ (i: u64) (x: V),
       {{{ I i ∗ ⌜(int.nat i < length vs)%nat⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
@@ -66,14 +66,14 @@ Proof.
   iIntros (Φ Φc) "!> [Hi0 Hs] HΦ".
   rewrite /forSlice.
   wpc_pures.
-  { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
+  { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
   wpc_pures.
-  { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
+  { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
   wpc_apply wpc_slice_len.
   iSplit.
-  { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
+  { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
   wpc_pures.
-  { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
+  { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
   remember 0 as z.
   iRename "Hi0" into "Hiz".
   assert (0 <= z <= int.Z s.(Slice.sz)) by word.
@@ -85,17 +85,17 @@ Proof.
   (iLöb as "IH" forall (z Hzrange H)).
   wpc_if_destruct.
   - wpc_pures.
-    { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
+    { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
     destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first word.
     wpc_apply (wpc_SliceGet with "[$Hs] [HΦ Hiz]").
     { replace (int.Z z); eauto. }
     { iSplit.
-      - iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro.
+      - iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ".
         iIntros "_".
         iApply ("HΦ" with "[$]").
       - iIntros "!> Hs".
         wpc_pures.
-        { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
+        { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
         wpc_apply ("Hind" with "[Hiz]").
         + iFrame.
           iPureIntro.
@@ -105,7 +105,7 @@ Proof.
           { iLeft in "HΦ"; iFrame. }
           iIntros "!> Hiz1".
           wpc_pures.
-          { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
+          { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
           assert (int.Z (z + 1) = int.Z z + 1) by word.
           replace (word.add z 1) with (U64 (z + 1)) by word.
           iSpecialize ("IH" $! (z+1) with "[] []").
@@ -114,8 +114,8 @@ Proof.
           wpc_apply ("IH" with "[$] [$] [$]"). }
   - assert (z = int.Z s.(Slice.sz)) by lia; subst z.
     wpc_pures; swap 2 3.
-    { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
-    { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iModIntro. iApply "HΦ". eauto. }
+    { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
+    { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
     iRight in "HΦ".
     replace (U64 (int.Z s.(Slice.sz))) with s.(Slice.sz); last first.
     { rewrite /U64 word.of_Z_unsigned //. }

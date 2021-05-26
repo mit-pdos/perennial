@@ -54,6 +54,8 @@ Definition cfg (Λ : language) := (list (expr Λ) * (state Λ * global_state Λ)
 Class LanguageCtx {Λ : language} (K : expr Λ → expr Λ) := {
   fill_not_val e :
     to_val e = None → to_val (K e) = None;
+  fill_val_inv v v' :
+    is_Some (to_val (K (of_val v))) → is_Some (to_val (K (of_val v')));
   fill_step e1 σ1 g1 κ e2 σ2 g2 efs :
     prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
     prim_step (K e1) σ1 g1 κ (K e2) σ2 g2 efs;
@@ -62,8 +64,6 @@ Class LanguageCtx {Λ : language} (K : expr Λ → expr Λ) := {
     ∃ e2', e2 = K e2' ∧ prim_step e1' σ1 g1 κ e2' σ2 g2 efs
 }.
 
-Global Instance language_ctx_id Λ : LanguageCtx (@id (expr Λ)).
-Proof. constructor; naive_solver. Qed.
 
 Inductive atomicity := StronglyAtomic | WeaklyAtomic.
 
@@ -72,12 +72,19 @@ Section language.
   Implicit Types v : val Λ.
   Implicit Types e : expr Λ.
 
+
   Lemma to_of_val v : to_val (of_val v) = Some v.
   Proof. apply language_mixin. Qed.
   Lemma of_to_val e v : to_val e = Some v → of_val v = e.
   Proof. apply language_mixin. Qed.
   Lemma val_stuck e σ g κ e' σ' g' efs : prim_step e σ g κ e' σ' g' efs → to_val e = None.
   Proof. apply language_mixin. Qed.
+
+  Global Instance language_ctx_id : LanguageCtx (@id (expr Λ)).
+  Proof.
+    constructor; try naive_solver.
+    intros ?? Hval. rewrite to_of_val //=; eauto.
+  Qed.
 
   Definition reducible (e : expr Λ) (σ : state Λ) (g : global_state Λ) :=
     ∃ κ e' σ' g' efs, prim_step e σ g κ e' σ' g' efs.

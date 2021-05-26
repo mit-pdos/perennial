@@ -23,8 +23,8 @@ Definition ae_inv_eq : @ae_inv = @ae_inv_def := ae_inv_aux.(seal_eq).
 Instance: Params (@ae_inv) 3 := {}.
 Typeclasses Opaque ae_inv.
 
-Local Hint Extern 0 (AE _ _ ## MaybeEn _) => apply AE_MaybeEn_disj : core.
-Local Hint Extern 0 (AlwaysEn ## MaybeEn _) => apply coPset_inl_inr_disj : core.
+Local Hint Extern 0 (AE _ _ ## MaybeEn1 _) => apply AE_MaybeEn_disj : core.
+Local Hint Extern 0 (AlwaysEn ## MaybeEn1 _) => apply coPset_inl_inr_disj : core.
 
 (** * Ae_Invariants *)
 Section ae_inv.

@@ -15,7 +15,7 @@ Theorem heap_dist_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_ad
   (∀ `{Hheap : !heap_globalG Σ} (cts : list (crashG Σ * heap_local_names))
       (Heq_cts: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = crash_inPreG),
       ⊢
-        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := heap_globalG_preG)) (heap_globalG_names) g ={⊤}=∗
+        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := heap_globalG_preG)) (heap_globalG_names) g -∗
         ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
               let hG := heap_globalG_heapG Hheap (fst ct) (snd ct) in
               ffi_local_start (heapG_ffiG) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)) ={⊤}=∗
@@ -24,11 +24,14 @@ Theorem heap_dist_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_ad
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
   intros Hwp.
-  eapply (wpd_dist_adequacy_inv _ _ _ heap_local_namesO).
+  eapply (wpd_dist_adequacy_inv _ _ _ heap_local_namesO _ _ _ _ _ _ (λ n, 10 * (n + 1))%nat).
   iIntros (Hinv Heq_inv ?) "".
   iMod (ffi_name_global_init _ _ g) as (ffi_namesg) "(Hgw&Hgstart)"; first auto.
+  iMod (credit_name_init (crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
   set (hgG := {| heap_globalG_preG := _; heap_globalG_names := ffi_namesg;
-                     heap_globalG_inv_names := inv_get_names Hinv |}).
+                 heap_globalG_inv_names := inv_get_names Hinv;
+                 heap_globalG_credit_names := name_credit;
+              |}).
   iAssert (|==> ∃ cts (Heq_cts: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = crash_inPreG),
               ffi_pre_global_ctx Σ heap_preG_ffi ffi_namesg g ∗
               ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
@@ -70,26 +73,36 @@ Proof.
   iExists
     (λ t σ nt, let _ := heap_globalG_heapG hgG {| crash_name := γn |} (@pbundleT _ _ t) in
                state_interp σ nt)%I.
-  iExists
-    (λ g ns κs, ffi_pre_global_ctx Σ heap_preG_ffi ffi_namesg g).
+  iExists (λ g ns mj D κs,
+    (ffi_pre_global_ctx Σ (heap_preG_ffi) ffi_namesg g ∗
+     @crash_borrow_ginv _ (heap_globalG_invG) _ ∗
+     cred_interp ns ∗
+     ⌜(/ 2 < mj ≤ 1) ⌝%Qp ∗
+     pinv_tok mj D)%I).
   iExists (λ _ _, True)%I.
-  unshelve (iExists _, _, _, _); eauto.
+  unshelve (iExists _, _, _, _, _, _); eauto.
+  { iIntros (??). iIntros (?????) "($&$&Hc&$&$)".
+    iMod (cred_interp_incr ns with "Hc") as "($&_)". eauto. }
+  { lia. }
   iPoseProof (Hwp hgG with "[$] [$]") as "Hwp".
   { eauto. }
   assert ((@grove_invG (@goose_lang ext ffi ffi_sem) (@goose_crash_lang ext ffi ffi_sem) Σ
                       (@heapG_groveG ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG)) =
-          Hinv) as ->.
+          Hinv) as Heqinv.
   { rewrite /grove_invG/heapG_groveG.
     rewrite /heap_globalG_invG.
     rewrite /inv_update_pre.
     destruct Hinv. f_equal.
     eauto. }
-  iMod "Hwp" as ">(H1&Hwp)".
+  rewrite Heqinv.
+  iMod "Hwp" as "(H1&Hwp)".
+  iAssert (|={⊤}=> crash_borrow_ginv)%I with "[Hcred]" as ">#Hinv".
+  { rewrite /crash_borrow_ginv. iApply (inv_alloc _). iNext. eauto. }
   iModIntro.
   iSplitL "H1".
   {  iIntros (???) "Hσ".
     iApply ("H1" with "[Hσ]").
-    rewrite //=.
+    iDestruct "Hσ" as "($&_)".
   }
   iFrame "Hgw".
   iSplitL "Hres1".
@@ -101,6 +114,8 @@ Proof.
     destruct y1; eauto => //=.
     rewrite //= in Hlookup1. destruct c. rewrite -Hlookup1 //=. }
   rewrite /wpd/dist_weakestpre.wpd.
+  iSplitL "Hcred_auth Htok".
+  { iFrame. iSplit; last eauto. rewrite -Heqinv. eauto. }
   iSplit.
   { iModIntro. iIntros (ct Hin). iSplit; first eauto.
     iIntros (g' ns' κs'). rewrite //=. eauto. }
@@ -127,7 +142,6 @@ Proof.
       rewrite //= in Hin1. rewrite -Hin1 //=. }
     iApply (@recovery_weakestpre.wpr_strong_mono with "Hwpr []").
     iSplit; eauto.
-    iModIntro.
     assert (Hc' = {| crash_inG := crash_inPreG; crash_name := crash_name |}) as Heq_c'.
     {
       eapply Heq_cts in Hin1.
@@ -137,22 +151,26 @@ Proof.
     { iIntros (??) "H". iExactEq "H". f_equal. rewrite /hG.
       rewrite Heq_c'.
       rewrite /heap_update_local. f_equal.
-      { rewrite /heapG_irisG//=.
+      { rewrite /heapG_irisG//=. }
+      (*
         transitivity (@heap_globalG_invG ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG); first done.
         rewrite /heap_globalG_invG.
         rewrite /inv_update_pre.
         destruct Hinv. f_equal.
         eauto. }
+       *)
     }
     { iIntros (???) "H". iModIntro. iExactEq "H". f_equal. rewrite /hG.
       rewrite Heq_c'.
       rewrite /heap_update_local. f_equal.
-      { rewrite /heapG_irisG//=.
+      { rewrite /heapG_irisG//=. }
+      (*
         transitivity (@heap_globalG_invG ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG); first done.
         rewrite /heap_globalG_invG.
         rewrite /inv_update_pre.
         destruct Hinv. f_equal.
         eauto. }
+       *)
     }
   }
   clear -Heq_inv.
@@ -200,7 +218,7 @@ Proof.
   eapply (heap_dist_adequacy _ k); eauto.
   iIntros (???) "H".
   iMod (Hwp with "[$]") as "(Hwprs&Hinv)".
-  iModIntro. iIntros "H". iFrame "Hinv".
+  iIntros "H". iFrame "Hinv".
   rewrite /wpd.
   rewrite ?big_sepL2_fmap_r.
   iDestruct (big_sepL2_length with "[$]") as %Hlength.

@@ -3,7 +3,7 @@ From iris.algebra Require Import auth excl.
 From Perennial.base_logic.lib Require Import proph_map.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.algebra Require Import proph_map frac_count big_op.
-From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.
+From Perennial.goose_lang Require Import proofmode notation wpc_proofmode crash_borrow.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert language_ctx.
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
@@ -70,6 +70,7 @@ Section reln_defs.
 Context `{hG: !heapGS Σ}.
 Context {hRG: refinement_heapG Σ}.
 Context {htpG: twophaseG Σ}.
+Context (JRNL_SIZE: nat).
 Context (N: namespace).
 Context (dinit : abstraction.disk).
 Context (objs_dom : gset addr_proof.addr).
@@ -83,7 +84,7 @@ Existing Instances spec_ffi_model_field (* spec_ffi_op_field *) spec_ext_semanti
 Definition atomically_has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) K0 e0 (K: sexpr → sexpr) (CTX: LanguageCtx' K),
       is_twophase_started tph γ γ' dinit objs_dom j K0 e0 (K es) -∗
-      WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := twophaseTy_model)); ⊤
+      WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := twophaseTy_model JRNL_SIZE)); ⊤
                     {{ v, ∃ vs, is_twophase_started tph γ γ' dinit objs_dom j K0 e0 (K (of_val vs)) ∗
                                 vty vs v }} {{ True }})%I.
 
@@ -311,6 +312,9 @@ Proof.
   - intros. iIntros "[] H2".
 Qed.
 
+Opaque is_twophase_started.
+Opaque crash_borrow.
+
 Lemma atomically_fundamental_lemma:
   ∀ Γ (es : sexpr) (e : iexpr) τ, atomic_body_expr_transTy Γ (of_val #tph) es e τ →
     ⊢ ctx_has_semTy Γ es e τ.
@@ -334,7 +338,7 @@ Proof.
     rewrite /= ?lookup_fmap H //=.
     iApply wpc_value; iSplit.
     * iModIntro. iExists _; iFrame "H"; iFrame.
-    * iApply disc_crash_true.
+    * eauto.
   - subst.
     simpl.
     iPoseProof (IHHtyping1 with "[//] [$] [$]") as "H"; first done.
@@ -348,7 +352,7 @@ Proof.
     iPoseProof (IHHtyping2 with "[//] [$] [$]") as "H"; first done.
     iSpecialize ("H" $! j _ _ (λ x, K (ectx_language.fill [AppLCtx (vs2)] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx'; last done. apply ectx_lang_ctx'. }
-    iApply (wpc_mono' with "[Hv2] [] H"); last by iModIntro.
+    iApply (wpc_mono' with "[Hv2] [] H"); last by eauto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
     iSpecialize ("Hinterp" $! _ _ with "Hv2").
@@ -421,9 +425,12 @@ Proof.
   - (* panic_expr_transTy *)
     subst. simpl.
     iApply wp_wpc.
-    iMod (twophase_started_ub_det with "Hj") as %[]; swap 1 3.
+    iDestruct (twophase_started_ub_det with "Hj") as "H".
     { set_solver+. }
     { intros; eapply stuck_Panic'. }
+    wp_bind (Skip)%E.
+    iApply (wpc_nval_elim_wp with "H"); eauto.
+    wp_pures. iIntros "!> []".
   - subst. simpl.
     iApply wp_wpc.
     iApply wp_ncfupd.
@@ -960,13 +967,13 @@ Proof.
       spec_bind (subst_map _ e1) as Hctx'.
       iSpecialize ("H" $! j _ _ _ Hctx' with "Hj").
       iApply (wpc_mono' with "[Hv] [] H"); last first.
-      { iModIntro. iIntros "H". iExact "H". }
+      { iIntros "H". iExact "H". }
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
       iSpecialize ("Hinterp" with "[$]").
       iSpecialize ("Hinterp" $! j _ _ _ Hctx with "Hj").
       iApply (wpc_mono' with "[] [] Hinterp"); last first.
-      { iModIntro. iIntros "H". iExact "H". }
+      { iIntros "H". iExact "H". }
       { iIntros (v'') "H". iDestruct "H" as (vs'') "(Hj&Hv')".
         iExists _. iFrame. }
     }
@@ -985,7 +992,7 @@ Proof.
       spec_bind (subst_map _ e2) as Hctx'.
       iSpecialize ("H" $! j _ _ _ Hctx' with "Hj").
       iApply (wpc_mono' with "[Hv] [] H"); last first.
-      { iModIntro. iIntros "H". iExact "H". }
+      { iIntros "H". iExact "H". }
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
       iSpecialize ("Hinterp" with "[$]").
@@ -1144,14 +1151,17 @@ Proof.
     iDestruct "Hv2" as %(n&->&->).
     iApply wp_wpc.
     rewrite /op_wrappers.Alloc__MarkUsed'.
-    wp_pures.
     assert (LanguageCtx' (λ x : sexpr, K (ectx_language.fill [@ExternalOpCtx (spec_ffi_op_field) MarkUsedOp] x))).
     { apply comp_ctx'; eauto. apply ectx_lang_ctx'. }
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) _  with "Hj") as "Hj";
               first (intros ??; apply head_prim_step_trans'; repeat econstructor; eauto).
-    iMod (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
+    wp_bind (#li, #n)%E.
+    iDestruct (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
     { set_solver. }
+    iApply (wpc_nval_elim_wp with "H"); auto.
+    wp_pures.
+    iIntros "!> H".
     iNamed "H".
     destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
     apply not_stuck'_MarkUsedOp_inv in Hnotstuck
@@ -1200,15 +1210,18 @@ Proof.
     iDestruct "Hv1" as (ls li max -> -> Hgt0) "(His_alloc&Hjrnl_alloc)".
     iDestruct "Hv2" as %(n&->&->).
     iApply wp_wpc.
-    rewrite /op_wrappers.Alloc__FreeNum'.
-    wp_pures.
+    wp_bind (#li, #n)%E.
     assert (LanguageCtx' (λ x : sexpr, K (ectx_language.fill [@ExternalOpCtx (spec_ffi_op_field) FreeNumOp] x))).
     { apply comp_ctx'; eauto. apply ectx_lang_ctx'. }
     iDestruct (twophase_started_step_puredet _ _ _ _ _ _ _
                  (λ x : sexpr, K (ectx_language.fill [ExternalOpCtx _] x)) _  with "Hj") as "Hj";
               first (intros ??; apply head_prim_step_trans'; repeat econstructor; eauto).
-    iMod (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
+    iDestruct (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
     { set_solver. }
+    iApply (wpc_nval_elim_wp with "H"); auto.
+    rewrite /op_wrappers.Alloc__FreeNum'.
+    wp_pures.
+    iIntros "!> H".
     iNamed "H".
     destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
     apply not_stuck'_FreeNumOp_inv in Hnotstuck
@@ -1248,17 +1261,25 @@ Proof.
     simpl.
     iDestruct "Hv1" as (ls li max -> -> Hgt0) "(His_alloc&Hjrnl_alloc)".
     iApply wp_wpc.
-    iMod (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
+    wp_pure1.
+    wp_bind (Skip)%E.
+    iDestruct (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
     { set_solver. }
+    iApply (wpc_nval_elim_wp with "[$]"); auto.
+    wp_pures.
+    iIntros "!> H".
     iNamed "H".
     destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
     iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl'";
       [eassumption|eassumption|].
     subst.
+    wp_pures.
     wp_apply (wp_AllocNum with "[$]").
     iIntros (n Hlt_max).
     iExists (#n). iSplit; last eauto.
-    iExists _, _, _, _. iFrame "# ∗ %".
+    iExists _, _, _, _. iFrame "Hj". iSplitL "Htwophase".
+    { iExact "Htwophase". }
+    iFrame "# ∗ %".
     iPureIntro.
     eapply always_steps_trans; first by eapply Halways_steps.
     eapply always_steps_bind.
@@ -1279,8 +1300,13 @@ Proof.
     simpl.
     iDestruct "Hv1" as (ls li max -> -> Hgt0) "(His_alloc&Hjrnl_alloc)".
     iApply wp_wpc.
-    iMod (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
+    wp_pure1.
+    wp_bind (Skip)%E.
+    iDestruct (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
     { set_solver. }
+    iApply (wpc_nval_elim_wp with "[$]"); auto.
+    wp_pures.
+    iIntros "!> H".
     iNamed "H".
     destruct Hnotstuck as (s&g&Hsub&Hdom&Hnotstuck).
     iDestruct (is_twophase_wf_jrnl with "Htwophase") as "%Hwf_jrnl'";
@@ -1289,7 +1315,9 @@ Proof.
     wp_apply (wp_NumFree with "[$]").
     iIntros (n Hle_max).
     iExists (#n). iSplit; last eauto.
-    iExists _, _, _, _. iFrame "# ∗ %".
+    iExists _, _, _, _. iFrame "Hj". iSplitL "Htwophase".
+    { iExact "Htwophase". }
+    iFrame "# ∗ %".
     iPureIntro.
     eapply always_steps_trans; first by eapply Halways_steps.
     eapply always_steps_bind.
