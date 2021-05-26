@@ -4,6 +4,9 @@
 (* Some key theorems *)
 From Perennial.goose_lang Require
      recovery_adequacy dist_adequacy.
+(* Some core libraries *)
+From Perennial.base_logic Require
+     gmap_own.
 (* Prelude files *)
 From Perennial.program_proof Require
      proof_prelude disk_prelude dist_prelude.
