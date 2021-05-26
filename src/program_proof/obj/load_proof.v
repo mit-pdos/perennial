@@ -36,7 +36,7 @@ Proof.
   iFrame "Hmapsto".
   eapply gmap_addr_by_block_lookup in Hmapsto.
   destruct Hmapsto as [offmap [Hmapsto_block Hoff]].
-  iDestruct (big_sepM2_lookup_1_some with "Hheapmatch") as (metaoff) "%"; eauto.
+  iDestruct (big_sepM2_lookup_l_some with "Hheapmatch") as (metaoff) "%"; eauto.
   iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hblock Hheapmatch]"; eauto.
   iNamed "Hblock".
   iMod (wal_heap_inv_mapsto_in_bounds with "Hwal Htxn_hb") as "[Htxn_hb $]".

@@ -423,7 +423,7 @@ Section instances_iProp.
     Modality _ (modality_own_discrete_mixin).
 
   Global Instance from_modal_own_discrete (P: iProp Σ):
-    FromModal modality_own_discrete (own_discrete P) (own_discrete P) P.
+    FromModal True modality_own_discrete (own_discrete P) (own_discrete P) P.
   Proof. rewrite /FromModal//=. Qed.
 
   Lemma into_forall_disc {A: Type} P (Φ: A → iProp Σ):
@@ -662,7 +662,7 @@ Section own_disc_fupd_props.
    *)
 
   Global Instance from_modal_own_discrete_fupd (P: iProp Σ):
-    FromModal modality_own_discrete_fupd (own_discrete_fupd P) (own_discrete_fupd P) P.
+    FromModal True modality_own_discrete_fupd (own_discrete_fupd P) (own_discrete_fupd P) P.
   Proof. rewrite /FromModal//=. Qed.
 
   (*

@@ -249,7 +249,7 @@ Proof.
   iDestruct (map_valid with "Hmetactx Hmapsto_meta") as %Hvalid.
   eapply gmap_addr_by_block_lookup in Hvalid.
   destruct Hvalid as [offmap [Hmetam Hoffmap]].
-  iDestruct (big_sepM2_lookup_2_some with "Hheapmatch") as (x) "%Hlm"; eauto.
+  iDestruct (big_sepM2_lookup_r_some with "Hheapmatch") as (x) "%Hlm"; eauto.
   iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hx Hheapmatch]"; eauto.
   iNamed "Hx".
   iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Htxn_hb]") as "(Hlockedheap & Htxn_hb & %)"; eauto.

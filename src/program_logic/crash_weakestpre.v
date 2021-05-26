@@ -105,12 +105,12 @@ Section cfupd.
   Qed.
 
   Global Instance from_modal_fupd_iter k E P :
-    FromModal modality_id
+    FromModal True modality_id
               (Nat.iter k (fupd E E) P)
               (Nat.iter k (fupd E E) P) P.
   Proof.
     rewrite /FromModal /=.
-    iIntros "HP".
+    iIntros (_) "HP".
     iInduction k as [|k] "IH".
     - simpl; auto.
     - simpl.
@@ -160,10 +160,10 @@ Section cfupd.
   Qed.
 
   Global Instance from_modal_cfupd k E1 P :
-    FromModal modality_id (cfupd k E1 P) (cfupd k E1 P) (P).
+    FromModal True modality_id (cfupd k E1 P) (cfupd k E1 P) (P).
   Proof.
     rewrite /FromModal /=.
-    iIntros "HP".
+    iIntros (_) "HP".
     iIntros "_".
     iModIntro. by iFrame.
   Qed.

@@ -57,7 +57,7 @@ Section maplist.
     iIntros "% [Hp Hml]".
     rewrite big_sepML_eq.
     iDestruct "Hml" as (lm) "[% Hml]".
-    iDestruct (big_sepM2_lookup_1_none with "Hml") as %Hlmnone; eauto.
+    iDestruct (big_sepM2_lookup_l_none with "Hml") as %Hlmnone; eauto.
     iExists (<[k := lv]> lm).
     iSplitR.
     - iPureIntro.
@@ -94,7 +94,7 @@ Section maplist.
     apply elem_of_list_fmap_2 in H1 as [[k lv0] H1].
     simpl in H1; intuition subst.
     apply elem_of_map_to_list in H3.
-    iDestruct (big_sepM2_lookup_2_some with "Hml") as %[v Hmk]; eauto.
+    iDestruct (big_sepM2_lookup_r_some with "Hml") as %[v Hmk]; eauto.
     iExists _, _.
     iSplitR; eauto.
     iDestruct (big_sepM2_delete with "Hml") as "[Hp Hml]"; eauto.
@@ -171,7 +171,7 @@ Section maplist.
     iIntros (Hm) "Hml".
     rewrite big_sepML_eq.
     iDestruct "Hml" as (lm) "[% Hml]".
-    iDestruct (big_sepM2_lookup_1_some with "Hml") as (x2) "%"; eauto.
+    iDestruct (big_sepM2_lookup_l_some with "Hml") as (x2) "%"; eauto.
     iDestruct (big_sepM2_delete with "Hml") as "[Hk Hml]"; eauto.
 
     apply elem_of_map_to_list in H1 as H1'.
@@ -230,7 +230,7 @@ Section maplist.
     rewrite big_sepML_eq /big_sepML_def.
     iDestruct "Hml" as (lm) "[% Hml]".
     eapply list_some_map_to_list in Hi as Hi'; eauto. destruct Hi'.
-    iDestruct (big_sepM2_lookup_2_some with "Hml") as (xm) "%"; eauto.
+    iDestruct (big_sepM2_lookup_r_some with "Hml") as (xm) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Hml") as "[Hx Hml]"; eauto.
     iExists _, _.
     iSplitR; first by done.
@@ -273,7 +273,7 @@ Section maplist.
     iIntros (Hi) "Hml".
     rewrite big_sepML_eq /big_sepML_def.
     iDestruct "Hml" as (lm) "[% Hml]".
-    iDestruct (big_sepM2_lookup_1_some with "Hml") as (xm) "%"; eauto.
+    iDestruct (big_sepM2_lookup_l_some with "Hml") as (xm) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Hml") as "[Hx Hml]"; eauto.
     eapply map_to_list_some_list in H1 as H1'; eauto. destruct H1'.
     iExists _, _.
@@ -552,10 +552,10 @@ Section maplist.
       destruct (decide (ki = kj)); subst.
       { rewrite lookup_delete in Hkj; congruence. }
 
-      iDestruct (big_sepM2_lookup_2_some with "Hlm") as (mi) "%Hmi"; eauto.
+      iDestruct (big_sepM2_lookup_r_some with "Hlm") as (mi) "%Hmi"; eauto.
       iDestruct (big_sepM2_delete with "Hlm") as "[Hi Hlm]"; eauto.
 
-      iDestruct (big_sepM2_lookup_2_some with "Hlm") as (mj) "%Hmj"; eauto.
+      iDestruct (big_sepM2_lookup_r_some with "Hlm") as (mj) "%Hmj"; eauto.
       iDestruct (big_sepM2_delete with "Hlm") as "[Hj Hlm]"; eauto.
 
       iDestruct ("Heq" with "[] Hi Hj") as "%Hx".
@@ -571,10 +571,10 @@ Section maplist.
       destruct (decide (ki = kj)); subst.
       { rewrite lookup_delete in Hkj; congruence. }
 
-      iDestruct (big_sepM2_lookup_2_some with "Hlm") as (mi) "%Hmi"; eauto.
+      iDestruct (big_sepM2_lookup_r_some with "Hlm") as (mi) "%Hmi"; eauto.
       iDestruct (big_sepM2_delete with "Hlm") as "[Hi Hlm]"; eauto.
 
-      iDestruct (big_sepM2_lookup_2_some with "Hlm") as (mj) "%Hmj"; eauto.
+      iDestruct (big_sepM2_lookup_r_some with "Hlm") as (mj) "%Hmj"; eauto.
       iDestruct (big_sepM2_delete with "Hlm") as "[Hj Hlm]"; eauto.
 
       iDestruct ("Heq" with "[] Hi Hj") as "%Hx".

@@ -89,7 +89,7 @@ Proof.
   iDestruct (map_valid with "Hmetactx Hmapsto_meta") as %Hvalid.
   eapply gmap_addr_by_block_lookup in Hvalid.
   destruct Hvalid as [offmap [Hmetam Hoffmap]].
-  iDestruct (big_sepM2_lookup_2_some with "Hheapmatch") as (x) "%Hlm"; eauto.
+  iDestruct (big_sepM2_lookup_r_some with "Hheapmatch") as (x) "%Hlm"; eauto.
   iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hx Hheapmatch]"; eauto.
   iNamed "Hx".
   iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Htxn_hb]") as "(Hlockedheap & Htxn_hb & %)"; eauto.
@@ -275,7 +275,7 @@ Opaque struct.t.
         iIntros "(-> & HΦ)".
         wp_store.
         apply map_get_true in H0.
-        iDestruct (big_sepM2_lookup_1_some with "Hbufamap_done") as (xx) "%Hx"; eauto.
+        iDestruct (big_sepM2_lookup_l_some with "Hbufamap_done") as (xx) "%Hx"; eauto.
         iDestruct (big_sepM2_delete with "Hbufamap_done") as "[Ha Hbufamap_done]"; eauto.
         iDestruct "Ha" as (b0) "[Hisblock %]".
         iApply "HΦ".
@@ -304,7 +304,7 @@ Opaque struct.t.
         iExists _, _, _. iFrame.
 
         apply map_get_false in H0; destruct H0; subst.
-        iDestruct (big_sepM2_lookup_1_none with "Hbufamap_done") as %Hnone; eauto.
+        iDestruct (big_sepM2_lookup_l_none with "Hbufamap_done") as %Hnone; eauto.
 
         rewrite delete_insert_delete.
         rewrite delete_notin; eauto.
@@ -470,7 +470,7 @@ Proof.
     iIntros (Φ') "!> [HI %] HΦ'".
     iNamed "HI".
 
-    iDestruct (big_sepM2_lookup_1_some with "Hmtodo") as (x) "%Hx"; eauto.
+    iDestruct (big_sepM2_lookup_l_some with "Hmtodo") as (x) "%Hx"; eauto.
     iDestruct (big_sepM2_delete with "Hmtodo") as "[Htodo Hmtodo]"; eauto.
     iDestruct "Htodo" as (b) "[Hisblock %]".
 
@@ -1097,7 +1097,7 @@ Proof using txnG0 Σ.
         eapply Hupdlist_olds_σl_latest in Hlv as Hl.
         eapply elem_of_subseteq in Hl; eauto.
         apply elem_of_dom in Hl. destruct Hl as [offmap'' Hl].
-        iDestruct (big_sepM2_lookup_1_some with "Hcrashheap_latest") as (?) "%Hsome"; eauto.
+        iDestruct (big_sepM2_lookup_l_some with "Hcrashheap_latest") as (?) "%Hsome"; eauto.
         iDestruct (big_sepM2_lookup with "Hcrashheap_latest") as (K') "(%Hk' & Hpre)"; eauto.
         rewrite Hkind in Hk'; inversion Hk'; clear Hk'; subst.
 

@@ -295,43 +295,6 @@ Section map.
       iFrame. iApply big_sepM_insert; eauto. iFrame. done.
   Qed.
 
-  (** * IntoPure/FromPure instances for big_sepM *)
-  (* TODO: upstream; see Iris MR 626 *)
-  Global Instance big_sepM_IntoPure
-           (Φ: K → A → PROP) (P: K → A → Prop)
-           {ΦP: ∀ k v, IntoPure (Φ k v) (P k v)}
-           (m: gmap K A) :
-    IntoPure ([∗ map] k↦x ∈ m, Φ k x) (map_Forall P m).
-  Proof.
-    induction m using map_ind; simpl.
-    - hnf; iIntros "_ !%".
-      apply map_Forall_empty.
-    - hnf; iIntros "HP".
-      rewrite -> big_sepM_insert by auto.
-      iDestruct (into_pure with "HP") as %?.
-      iPureIntro.
-      rewrite -> map_Forall_insert by auto.
-      auto.
-  Qed.
-  Global Instance from_pure_big_sepM
-         a (Φ : K → A → PROP) (φ : K → A → Prop) (m: gmap K A) :
-    (∀ k v, FromPure a (Φ k v) (φ k v)) →
-    TCOr (TCEq a true) (BiAffine PROP) →
-    FromPure a ([∗ map] k↦x ∈ m, Φ k x) (map_Forall φ m).
-  Proof.
-    rewrite /FromPure=>HΦ Haffine. induction m using map_ind; simpl; intros.
-    - rewrite bi.pure_True; last apply map_Forall_empty.
-      rewrite big_sepM_empty.
-      destruct a; simpl.
-      + apply bi.affinely_elim_emp.
-      + destruct Haffine as [Hne%TCEq_eq|?]; first done.
-        rewrite bi.True_emp. done.
-    - rewrite -> big_sepM_insert by auto.
-      rewrite -> map_Forall_insert by auto.
-      rewrite bi.pure_and bi.affinely_if_and bi.persistent_and_sep_1 IHm.
-      apply bi.sep_mono_l. apply HΦ.
-  Qed.
-
   Lemma big_sepM_lookup_holds
         `{BiAffine PROP} (m: gmap K A) :
     ⊢@{PROP} [∗ map] k↦v ∈ m, ⌜m !! k = Some v⌝.
@@ -527,7 +490,7 @@ Section map2.
   Context `{Countable K} {A B : Type}.
   Implicit Types Φ Ψ : K → A → B → PROP.
 
-  Lemma big_sepM2_lookup_1_some
+  Lemma big_sepM2_lookup_l_some
       Φ (m1 : gmap K A) (m2 : gmap K B) (i : K) (x1 : A)
       (_ : forall x2 : B, Absorbing (Φ i x1 x2)) :
     m1 !! i = Some x1 ->
@@ -536,10 +499,10 @@ Section map2.
   Proof using BiAffine0.
     intros.
     iIntros "H".
-    iDestruct (big_sepM2_lookup_1 with "H") as (x2) "[% _]"; eauto.
+    iDestruct (big_sepM2_lookup_l with "H") as (x2) "[% _]"; eauto.
   Qed.
 
-  Lemma big_sepM2_lookup_2_some
+  Lemma big_sepM2_lookup_r_some
       Φ (m1 : gmap K A) (m2 : gmap K B) (i : K) (x2 : B)
       (_ : forall x1 : A, Absorbing (Φ i x1 x2)) :
     m2 !! i = Some x2 ->
@@ -548,10 +511,10 @@ Section map2.
   Proof using BiAffine0.
     intros.
     iIntros "H".
-    iDestruct (big_sepM2_lookup_2 with "H") as (x1) "[% _]"; eauto.
+    iDestruct (big_sepM2_lookup_r with "H") as (x1) "[% _]"; eauto.
   Qed.
 
-  Lemma big_sepM2_lookup_1_none
+  Lemma big_sepM2_lookup_l_none
       Φ (m1 : gmap K A) (m2 : gmap K B) (i : K)
       (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
     m1 !! i = None ->
@@ -560,10 +523,10 @@ Section map2.
   Proof using BiAffine0.
     case_eq (m2 !! i); auto.
     iIntros (? ? ?) "H".
-    iDestruct (big_sepM2_lookup_2 with "H") as (x2) "[% _]"; eauto; congruence.
+    iDestruct (big_sepM2_lookup_r with "H") as (x2) "[% _]"; eauto; congruence.
   Qed.
 
-  Lemma big_sepM2_lookup_2_none
+  Lemma big_sepM2_lookup_r_none
       Φ (m1 : gmap K A) (m2 : gmap K B) (i : K)
       (_ : forall (x1 : A) (x2 : B), Absorbing (Φ i x1 x2)) :
     m2 !! i = None ->
@@ -572,7 +535,7 @@ Section map2.
   Proof using BiAffine0.
     case_eq (m1 !! i); auto.
     iIntros (? ? ?) "H".
-    iDestruct (big_sepM2_lookup_1 with "H") as (x1) "[% _]"; eauto; congruence.
+    iDestruct (big_sepM2_lookup_l with "H") as (x1) "[% _]"; eauto; congruence.
   Qed.
 
   Lemma big_sepM2_sepM_1
@@ -591,7 +554,7 @@ Section map2.
       iDestruct (big_sepM2_empty with "H") as "H".
       iApply big_sepM_empty; iFrame.
     - simpl.
-      iDestruct (big_sepM2_lookup_1_some with "H") as %H2.
+      iDestruct (big_sepM2_lookup_l_some with "H") as %H2.
       { apply lookup_insert. }
       destruct H2.
       rewrite <- insert_delete at 1.
@@ -640,7 +603,7 @@ Section map2.
       iDestruct (big_sepM2_empty with "H") as "H".
       iApply big_sepM_empty; iFrame.
     - simpl.
-      iDestruct (big_sepM2_lookup_2_some with "H") as %H2.
+      iDestruct (big_sepM2_lookup_r_some with "H") as %H2.
       { apply lookup_insert. }
       destruct H2.
       rewrite <- insert_delete at 1.
@@ -684,7 +647,7 @@ Section map2.
       iDestruct "Hi" as (y2) "Hi".
       iDestruct ("IH" with "Hm") as (m2) "Hm".
       iExists (<[i := y2]> m2).
-      iDestruct (big_sepM2_lookup_1_none with "Hm") as "%Hm2i"; eauto.
+      iDestruct (big_sepM2_lookup_l_none with "Hm") as "%Hm2i"; eauto.
       iApply big_sepM2_insert; eauto.
       iFrame.
   Qed.
@@ -724,7 +687,7 @@ Section map2.
     iInduction m1 as [|i x m] "IH" using map_ind forall (m2).
     - iDestruct (big_sepM2_empty_r with "Hm2") as "%He". subst. iApply big_sepM2_empty. done.
     - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
-      iDestruct (big_sepM2_lookup_1_some _ _ _ i with "Hm2") as (x2) "%Hm2i"; eauto.
+      iDestruct (big_sepM2_lookup_l_some _ _ _ i with "Hm2") as (x2) "%Hm2i"; eauto.
       { rewrite lookup_insert; eauto. }
       replace (m2) with (<[i:=x2]> (delete i m2)).
       2: { rewrite insert_delete insert_id //. }

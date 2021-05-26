@@ -160,7 +160,7 @@ Proof.
 
       wp_untyped_load.
       apply map_get_true in H0.
-      iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
+      iDestruct (big_sepM2_lookup_r_some with "Haddrs") as (gheld) "%"; eauto.
       iDestruct (big_sepM2_insert_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
       iNamed "Haddr".
       wp_loadField.
@@ -197,7 +197,7 @@ Proof.
         * wp_pures.
 
           apply map_get_true in H2.
-          iDestruct (big_sepM2_lookup_2_some with "Haddrs") as (gheld) "%"; eauto.
+          iDestruct (big_sepM2_lookup_r_some with "Haddrs") as (gheld) "%"; eauto.
           iDestruct (big_sepM2_lookup_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
           iDestruct "Haddr" as (cond2 nwaiters2) "(? & ? & ? & Hcond2 & % & Hwaiters2)".
 
@@ -272,7 +272,7 @@ Proof.
       wp_storeField.
 
       apply map_get_false in H0.
-      iDestruct (big_sepM2_lookup_2_none with "Haddrs") as %Hgaddr; intuition eauto.
+      iDestruct (big_sepM2_lookup_r_none with "Haddrs") as %Hgaddr; intuition eauto.
 
       iMod (ghost_map_insert addr true with "Hghctx") as "(Hghctx & Haddrlocked)"; [auto|].  
 
@@ -355,7 +355,7 @@ Proof.
 
   rewrite /locked.
   iDestruct (ghost_map_lookup with "Hghctx Haddrlocked") as %Hsome.
-  iDestruct (big_sepM2_lookup_1_some with "Haddrs") as %Hsome2; eauto.
+  iDestruct (big_sepM2_lookup_l_some with "Haddrs") as %Hsome2; eauto.
   destruct Hsome2.
 
   iDestruct (big_sepM2_delete with "Haddrs") as "[Haddr Haddrs]"; eauto.

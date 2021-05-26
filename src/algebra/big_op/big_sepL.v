@@ -19,20 +19,6 @@ Proof.
     rewrite HPQ //.
 Qed.
 
-(* FIXME: upstream (see Iris MR 673) *)
-Lemma big_sepL_sepL {PROP:bi} {A B : Type} (Φ : nat → A → nat → B → PROP) (l1 : list A) (l2 : list B) :
-  ([∗ list] k1↦x1 ∈ l1, [∗ list] k2↦x2 ∈ l2, Φ k1 x1 k2 x2) ⊣⊢
-  ([∗ list] k2↦x2 ∈ l2, [∗ list] k1↦x1 ∈ l1, Φ k1 x1 k2 x2).
-Proof.
-  revert Φ l2. induction l1 as [|x1 l1 IH]; intros Φ l2.
-  { rewrite big_sepL_nil. setoid_rewrite big_sepL_nil.
-    rewrite big_sepL_emp. done. }
-  rewrite big_sepL_cons.
-  setoid_rewrite big_sepL_cons.
-  rewrite big_sepL_sep. f_equiv.
-  rewrite IH //.
-Qed.
-
 Section list.
   Context {PROP : bi}.
   Implicit Types (P Q : PROP).
@@ -306,33 +292,6 @@ Section list2.
       iDestruct (big_sepL2_app_inv with "H") as "[$ $]"; auto.
   Qed.
 
-  Lemma big_sepL2_delete Φ l1 l2 i x1 x2 :
-    l1 !! i = Some x1 →
-    l2 !! i = Some x2 →
-    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ⊣⊢
-    Φ i x1 x2 ∗ ([∗ list] k↦y1;y2 ∈ l1;l2, if decide (k = i) then emp else Φ k y1 y2).
-  Proof.
-    intros.
-
-    apply (wlog_assume_pure (length l1 = length l2)).
-    { rewrite big_sepL2_length; auto. }
-    { rewrite big_sepL2_length.
-      iIntros "[_ $]". }
-
-    intros Hlen.
-    rewrite !big_sepL2_to_sepL_1' //.
-    rewrite big_sepL_delete; eauto.
-    f_equiv.
-    - iSplit; iIntros "H"; eauto with iFrame.
-      iDestruct "H" as (?) "(%&H)".
-      replace y2 with x2 by congruence.
-      iExact "H".
-    - f_equiv.
-      intros k y1.
-      destruct (decide (k = i)); subst; eauto.
-      iSplit; auto.
-  Qed.
-
   (* this is a general theorem but we use Φ and Φc to suggest that Φc is the
   weaker crash condition for each element in the big_sepL2 *)
   Theorem big_sepL2_lookup_acc_and Φ Φc l1 l2 i x1 x2 :
@@ -350,7 +309,7 @@ Section list2.
     iSplit.
     - iIntros "$"; iFrame.
     - iIntros "HΦ".
-      iDestruct (big_sepL2_delete with "[HΦ Hl]") as "H"; eauto.
+      iApply (big_sepL2_delete Φc); eauto.
       iFrame.
       iApply (big_sepL2_mono with "Hl").
       intros; simpl.

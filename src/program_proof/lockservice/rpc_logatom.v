@@ -148,7 +148,7 @@ Definition modality_rpc_atomic γrpc cid seq :=
 
 (* IPM typeclasses for rnfupd *)
 Global Instance from_modal_rpc_atomic γrpc cid seq P :
-  FromModal (modality_rpc_atomic γrpc cid seq) (|RN={γrpc,cid,seq}=> P) (|RN={γrpc,cid,seq}=> P) P | 2.
+  FromModal True (modality_rpc_atomic γrpc cid seq) (|RN={γrpc,cid,seq}=> P) (|RN={γrpc,cid,seq}=> P) P | 2.
 Proof. by rewrite /FromModal. Qed.
 
 Global Instance elim_modal_rpc_atomic γrpc p cid seq' seq P Q :
@@ -361,7 +361,7 @@ Definition modality_pnfupd γrpc cid :=
 (* IPM typeclasses for rnfupd *)
 (* Want to keep diamond around to eliminate laters on timeless resources; if we could iMod away pnfupds, then we could also make it so that laters could be iMod'd away *)
 Global Instance from_modal_pnfupd γrpc cid P :
-  FromModal (modality_pnfupd γrpc cid) (|PN={γrpc,cid}=> P) (|PN={γrpc,cid}=> P) (◇ P) | 2.
+  FromModal True (modality_pnfupd γrpc cid) (|PN={γrpc,cid}=> P) (|PN={γrpc,cid}=> P) (◇ P) | 2.
 Proof.
   rewrite /FromModal //=.
   iIntros "HP".

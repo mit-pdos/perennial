@@ -109,7 +109,7 @@ Lemma ncfupd_except_0 E1 E2 P : (|NC={E1,E2}=> ◇ P) ⊢ |NC={E1,E2}=> P.
 Proof. by rewrite {1}(ncfupd_intro E2 P) except_0_ncfupd ncfupd_trans. Qed.
 
 Global Instance from_assumption_ncfupd E p P Q :
-  FromAssumption p P (|==> Q) → KnownRFromAssumption p P (|NC={E}=> Q)%I.
+  FromAssumption p P (|==> Q) → KnownRFromAssumption p P (|NC={E}=> Q).
 Proof. rewrite /KnownRFromAssumption /FromAssumption=>->. apply bupd_ncfupd. Qed.
 
 Global Instance from_pure_ncfupd a E P φ :
@@ -266,7 +266,7 @@ Global Instance except_0_ncfupd' E1 E2 P :
 Proof. by rewrite /IsExcept0 except_0_ncfupd. Qed.
 
 Global Instance from_modal_ncfupd E P :
-  FromModal modality_id (|NC={E}=> P) (|NC={E}=> P) P.
+  FromModal True modality_id (|NC={E}=> P) (|NC={E}=> P) P.
 Proof. by rewrite /FromModal /= -ncfupd_intro. Qed.
 
 Global Instance elim_modal_bupd_ncfupd p E1 E2 P Q :
@@ -492,7 +492,7 @@ Proof.
   iPoseProof (Hiter Hinv) as "H". clear Hiter.
   destruct n as [|n].
   - iApply ncfupd_plainly_mask_empty. iMod "H" as %?; auto.
-  - iDestruct (step_ncfupdN_wand _ _ _ _ (|NC={⊤}=> ⌜φ⌝)%I with "H []") as "H'".
+  - iDestruct (step_ncfupdN_wand _ _ _ _ (|NC={⊤}=> ⌜φ⌝) with "H []") as "H'".
     { by iApply ncfupd_plain_mask_empty. }
     rewrite -step_ncfupdN_S_ncfupd.
     iMod (step_ncfupdN_plain with "H'") as "Hφ". iModIntro. iNext.

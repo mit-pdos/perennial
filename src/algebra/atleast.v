@@ -358,7 +358,7 @@ Global Instance from_forall_atleast {A} P (Φ : A → uPred M) i :
   FromForall P Φ i → FromForall (◇_k P)%I (λ a, ◇_k (Φ a))%I i.
 Proof. rewrite /FromForall=> <-. by rewrite atleast_forall. Qed.
 
-Global Instance from_modal_atleast P : FromModal modality_id (◇_k P) (◇_k P) P.
+Global Instance from_modal_atleast P : FromModal True modality_id (◇_k P) (◇_k P) P.
 Proof. by rewrite /FromModal /= -atleast_intro. Qed.
 
 (** IsAtLeast *)

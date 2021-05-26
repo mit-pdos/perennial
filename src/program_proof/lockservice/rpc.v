@@ -407,7 +407,7 @@ Proof.
   intros ? Hsome [def Hreplymapget].
   iIntros "Hlinv Hsown"; iNamed "Hsown".
   destruct (lastReplyM !! req.(Req_CID)) as [] eqn:X; last first.
-  { iDestruct (big_sepM2_lookup_1 _ _ _ req.(Req_CID) with "Hrcagree") as (x Hmap) "?"; eauto.
+  { iDestruct (big_sepM2_lookup_l _ _ _ req.(Req_CID) with "Hrcagree") as (x Hmap) "?"; eauto.
     exfalso. naive_solver. }
   assert (r = reply) as -> by naive_solver.
   iDestruct (big_sepM2_delete with "Hrcagree") as "[#Hrcptsto _]"; eauto.

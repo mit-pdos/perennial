@@ -336,12 +336,12 @@ Proof using.
 
   (* Two cases: either we are inserting a new addr or overwriting *)
   destruct (am !! a) eqn:Heq.
-  - iDestruct (big_sepM2_lookup_1_some with "Ham") as (v2) "%"; eauto.
+  - iDestruct (big_sepM2_lookup_l_some with "Ham") as (v2) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Ham") as "[Hcur Hacc]"; eauto.
     iApply "Hacc".
     iExists _; iFrame. iExists _; iFrame. done.
 
-  - iDestruct (big_sepM2_lookup_1_none with "Ham") as "%"; eauto.
+  - iDestruct (big_sepM2_lookup_l_none with "Ham") as "%"; eauto.
     iApply big_sepM2_insert; eauto.
     iFrame "Ham".
     iExists _; iFrame. iExists _; iFrame. done.
@@ -372,10 +372,10 @@ Proof using.
 
   (* Two cases: either we are deleting an existing addr or noop *)
   destruct (am !! a) eqn:Heq.
-  - iDestruct (big_sepM2_lookup_1_some with "Ham") as (v2) "%"; eauto.
+  - iDestruct (big_sepM2_lookup_l_some with "Ham") as (v2) "%"; eauto.
     iDestruct (big_sepM2_delete with "Ham") as "[Hcur Hacc]"; eauto.
 
-  - iDestruct (big_sepM2_lookup_1_none with "Ham") as "%"; eauto.
+  - iDestruct (big_sepM2_lookup_l_none with "Ham") as "%"; eauto.
     rewrite delete_notin; eauto.
     rewrite delete_notin; eauto.
 Qed.
@@ -409,7 +409,7 @@ Proof using.
   destruct ok.
   - apply map_get_true in H1.
     erewrite flatid_addr_lookup in H1; eauto.
-    iDestruct (big_sepM2_lookup_1_some with "Ham") as (vv) "%"; eauto.
+    iDestruct (big_sepM2_lookup_l_some with "Ham") as (vv) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Ham") as "[Hbuf Ham]"; eauto.
     rewrite H2.
     iApply "HΦ".
@@ -424,7 +424,7 @@ Proof using.
 
   - apply map_get_false in H1; intuition subst.
     erewrite flatid_addr_lookup in H2; eauto.
-    iDestruct (big_sepM2_lookup_1_none with "Ham") as "%"; eauto.
+    iDestruct (big_sepM2_lookup_l_none with "Ham") as "%"; eauto.
     rewrite H1.
     iApply "HΦ".
     iSplitR; first done.

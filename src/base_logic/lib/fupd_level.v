@@ -602,7 +602,7 @@ Global Instance except_0_fupd_level' E1 E2 k P :
 Proof. by rewrite /IsExcept0 except_0_fupd_level. Qed.
 
 Global Instance from_modal_fupd_level E k P :
-  FromModal modality_id (|k={E}=> P) (|k={E}=> P) P.
+  FromModal True modality_id (|k={E}=> P) (|k={E}=> P) P.
 Proof. by rewrite /FromModal /= -fupd_level_intro. Qed.
 
 Global Instance elim_modal_bupd_fupd_level p E1 E2 k P Q :
@@ -778,7 +778,7 @@ Global Instance except_0_fupd_split_level' E1 E2 k mj P :
 Proof. by rewrite /IsExcept0 except_0_fupd_split_level. Qed.
 
 Global Instance from_modal_fupd_split_level E k mj P :
-  FromModal modality_id (|k,mj={E}=> P) (|k,mj={E}=> P) P.
+  FromModal True modality_id (|k,mj={E}=> P) (|k,mj={E}=> P) P.
 Proof. by rewrite /FromModal /= -fupd_split_level_intro. Qed.
 
 Global Instance elim_modal_bupd_fupd_split_level p E1 E2 k mj P Q :

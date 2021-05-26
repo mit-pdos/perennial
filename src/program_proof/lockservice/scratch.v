@@ -59,8 +59,8 @@ Proof.
     admit.
   }
 
-  iDestruct (big_sepM2_lookup_1_none with "Hissued") as %Hproc; eauto.
-  iDestruct (big_sepM2_lookup_1_none with "Hprocessed") as %Hclaim; eauto.
+  iDestruct (big_sepM2_lookup_l_none with "Hissued") as %Hproc; eauto.
+  iDestruct (big_sepM2_lookup_l_none with "Hprocessed") as %Hclaim; eauto.
 
   iMod (map_alloc_ro _ tt with "Hctxi") as "[Hctxi #Hissue]"; eauto.
   iMod (map_alloc _ false with "Hctxp") as "[Hctxp Hproc]"; eauto.
@@ -105,7 +105,7 @@ Proof.
   iInv "H" as ">Hinner" "Hclose".
   iNamed "Hinner".
   iDestruct (map_valid with "Hctxi Hreq") as %Hreq.
-  iDestruct (big_sepM2_lookup_1_some with "Hissued") as (proc) "%"; eauto.
+  iDestruct (big_sepM2_lookup_l_some with "Hissued") as (proc) "%"; eauto.
   destruct proc.
   - iDestruct (big_sepM_lookup_acc with "Hprocro") as "[Hdupreply Hprocro]"; eauto.
     iDestruct "Hdupreply" as "[Hdupreply|#Hdupreply]".
@@ -121,7 +121,7 @@ Proof.
       iModIntro. iLeft. done.
     + iDestruct (big_sepM2_delete with "Hissued") as "[_ Hissued]"; eauto.
       iDestruct (big_sepM2_insert_delete with "[$Hissued]") as "Hissued".
-      iDestruct (big_sepM2_lookup_1_some with "Hprocessed") as (claim) "%"; eauto.
+      iDestruct (big_sepM2_lookup_l_some with "Hprocessed") as (claim) "%"; eauto.
       iDestruct (big_sepM2_delete with "Hprocessed") as "[_ Hprocessed]"; eauto.
       iDestruct (big_sepM2_insert_delete with "[$Hprocessed Havail]") as "Hprocessed".
       { iDestruct "Havail" as "[%|Havail]"; first by congruence. iFrame. }

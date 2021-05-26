@@ -828,7 +828,6 @@ Proof.
     apply nil_length_inv in Hlen. rewrite Hlen //=.
     rewrite /mapsto_vals. setoid_rewrite big_sepL_nil.
     iInduction (seq 0 (int.nat n)) as [| ??] "IH"; eauto => //=.
-    iSplitL ""; eauto.
   - iApply wp_allocN_seq_sized_meta; auto.
     { lia. }
     iNext. iIntros (?) "(_&_&H)". iApply "HΦ".
