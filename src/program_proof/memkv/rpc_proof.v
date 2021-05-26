@@ -527,8 +527,8 @@ Proof.
   iModIntro.
   iIntros (r) "Hsl".
   wp_pures.
-  destruct err; wp_pures.
-  { eauto. }
+  destruct err as [err|]; wp_pures.
+  { destruct err; simpl; wp_pures; eauto. }
   iNamed "Hmsg".
   iDestruct (is_slice_small_acc with "Hsl") as "(Hslice&Hslice_close)".
   wp_apply (wp_new_dec with "Hslice"); first eauto.
@@ -728,8 +728,9 @@ Proof.
   iMod "Hclo'". iMod ("Hclo" with "[Hchan']").
   { iNext. iExists _. rewrite global_groveG_conv. iFrame. eauto.  }
   iModIntro. iIntros (s) "Hs".
-  wp_pures. wp_if_destruct.
-  { iModIntro. iLeft. eauto. }
+  wp_pures.
+  destruct err as [err|].
+  { destruct err; simpl; wp_pures; eauto. }
   wp_pures.
   iNamed "Hmsg".
   iDestruct (typed_slice.is_slice_small_acc with "Hs") as "[Hsl Hsl_close]".

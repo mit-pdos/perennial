@@ -136,11 +136,14 @@ Section grove.
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms);
       (* TODO: distinguish "no message" from "error" *)
       match m with
-      | None => ret ((*err*)#true, ExtV $ ClientEndp c c, (#locations.null, #0))%V
+      | None =>
+        (* We errored, non-deterministically pick error code 1 (timeout) or 2 (other error). *)
+        timeout ← any bool;
+        ret ((*err*)#(if timeout is true then 1 else 2), ExtV $ ClientEndp c c, (#locations.null, #0))%V
       | Some m =>
         l ← allocateN;
         modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
-        ret  ((*err*)#false, ExtV $ ClientEndp m.(msg_sender) c, (#(l : loc), #(length m.(msg_data))))%V
+        ret  ((*err*)#0, ExtV $ ClientEndp m.(msg_sender) c, (#(l : loc), #(length m.(msg_data))))%V
       end
     | _, _ => undefined
     end.
@@ -367,12 +370,20 @@ lemmas. *)
     by iFrame.
   Qed.
 
+  Inductive recv_err := RecvErrTimeout | RecvErrOther.
+  Definition recv_errno (err : option recv_err) : Z :=
+    match err with
+    | None => 0
+    | Some RecvErrTimeout => 1
+    | Some RecvErrOther => 2
+    end.
+
   Lemma wp_RecvOp c ms s E :
     {{{ c c↦ ms }}}
       ExternalOp RecvOp (recv_endpoint c) @ s; E
-    {{{ (err : bool) (l : loc) (len : u64) (sender : chan) (data : list u8),
-        RET (#err, send_endpoint sender c, (#l, #len));
-        ⌜if err then l = null ∧ data = [] ∧ len = 0 else
+    {{{ (err : option recv_err) (l : loc) (len : u64) (sender : chan) (data : list u8),
+        RET (#(recv_errno err), send_endpoint sender c, (#l, #len));
+        ⌜if err is Some _ then l = null ∧ data = [] ∧ len = 0 else
           Message sender data ∈ ms ∧ length data = int.nat len⌝ ∗
         c c↦ ms ∗ mapsto_vals l 1 (data_vals data)
     }}}.
@@ -386,7 +397,8 @@ lemmas. *)
       monad_simpl. econstructor; first by econstructor.
       monad_simpl. econstructor.
       { constructor. left. done. }
-      monad_simpl. econstructor; first by econstructor.
+      monad_simpl. econstructor.
+      { econstructor. 1: by eapply (relation.suchThat_runs _ _ true). done. }
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
@@ -395,8 +407,14 @@ lemmas. *)
     rename select (m = None ∨ _) into Hm. simpl in Hm.
     destruct Hm as [->|(m' & -> & Hm)].
     { (* Returning no message. *)
-      monad_inv. iFrame. simpl. iModIntro. do 2 (iSplit; first done).
-      iApply "HΦ". iFrame. iSplit; first done. rewrite /mapsto_vals big_sepL_nil //. }
+      inv_head_step.
+      monad_inv.
+      rename x into timeout.
+      iFrame. simpl. iModIntro. do 2 (iSplit; first done). destruct timeout.
+      1: iApply ("HΦ" $! (Some RecvErrTimeout)).
+      2: iApply ("HΦ" $! (Some RecvErrOther)).
+      all: iFrame; (iSplit; first done); rewrite /mapsto_vals big_sepL_nil //.
+    }
     (* Returning a message *)
     repeat match goal with
            | H : relation.bind _ _ _ _ _ |- _ => simpl in H; monad_inv
@@ -425,7 +443,7 @@ lemmas. *)
     }
     iModIntro. iEval simpl. iFrame "Htr Hg Hσ".
     do 2 (iSplit; first done).
-    iApply ("HΦ" $! _ _ _ _ m'.(msg_data)). iFrame "He".
+    iApply ("HΦ" $! None _ _ _ m'.(msg_data)). iFrame "He".
     iSplit.
     { iPureIntro. split; first by destruct m'.
       trans (Z.to_nat (Z.of_nat (length m'.(msg_data)))); first by rewrite Nat2Z.id //.
@@ -459,7 +477,7 @@ Section grove.
                             ])%struct.
 
   Definition ReceiveRet := (struct.decl [
-                              "Err" :: boolT;
+                              "Err" :: uint64T;
                               "Sender" :: Sender;
                               "Data" :: slice.T byteT
                             ])%struct.
@@ -487,7 +505,7 @@ Section grove.
 
   (** Type: func( *Receiver) (bool, *Sender, []byte) *)
   Definition Receive : val :=
-    λ: "e",
+    λ: "e" "timeout_ms",
       let: "r" := ExternalOp RecvOp "e" in
       let: "err" := Fst (Fst "r") in
       let: "sender" := Snd (Fst "r") in
@@ -581,20 +599,22 @@ Section grove.
     - iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
 
-  Lemma wp_Receive c :
+  Lemma wp_Receive c (timeout_ms : u64) :
     ⊢ <<< ∀∀ ms, c c↦ ms >>>
-        Receive (recv_endpoint c) @ ⊤
-      <<<▷ ∃∃ (err : bool) (m : message), c c↦ ms ∗ if err then True else ⌜m ∈ ms⌝ >>>
+        Receive (recv_endpoint c) #timeout_ms @ ⊤
+      <<<▷ ∃∃ (err : option recv_err) (m : message),
+        c c↦ ms ∗ if err then True else ⌜m ∈ ms⌝
+      >>>
       {{{ (s : Slice.t),
         RET struct.mk_f ReceiveRet [
-              "Err" ::= #err;
+              "Err" ::= #(recv_errno err);
               "Sender" ::= send_endpoint m.(msg_sender) c;
               "Data" ::= slice_val s
             ];
           is_slice s byteT 1 m.(msg_data)
       }}}.
   Proof.
-    iIntros "!#" (Φ) "HΦ". wp_lam.
+    iIntros "!#" (Φ) "HΦ". wp_lam. wp_pures.
     wp_bind (ExternalOp _ _).
     iMod "HΦ" as (ms) "[Hc HΦ]".
     wp_apply (wp_RecvOp with "Hc").

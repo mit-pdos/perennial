@@ -32,8 +32,8 @@ Definition RPCServer__readThread: val :=
   rec: "RPCServer__readThread" "srv" "recv" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "r" := dist_ffi.Receive "recv" in
-      (if: struct.get dist_ffi.ReceiveRet "Err" "r"
+      let: "r" := dist_ffi.Receive "recv" #1000 in
+      (if: struct.get dist_ffi.ReceiveRet "Err" "r" ≠ #0
       then Continue
       else
         let: "data" := struct.get dist_ffi.ReceiveRet "Data" "r" in
@@ -71,8 +71,8 @@ Definition RPCClient__replyThread: val :=
   rec: "RPCClient__replyThread" "cl" "recv" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "r" := dist_ffi.Receive "recv" in
-      (if: struct.get dist_ffi.ReceiveRet "Err" "r"
+      let: "r" := dist_ffi.Receive "recv" #1000 in
+      (if: struct.get dist_ffi.ReceiveRet "Err" "r" ≠ #0
       then Continue
       else
         let: "data" := struct.get dist_ffi.ReceiveRet "Data" "r" in
