@@ -5,7 +5,7 @@ QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
 
 # extract any global arguments for Coq from _CoqProject
 COQPROJECT_ARGS := $(shell sed -E -e '/^\#/d' -e 's/-arg ([^ ]*)/\1/g' _CoqProject)
-COQ_ARGS := -noglob
+COQ_ARGS :=
 
 # user configurable
 Q:=@
