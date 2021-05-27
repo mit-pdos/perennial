@@ -507,7 +507,7 @@ Proof.
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
   { eauto. }
-  iIntros (s) "Hblock". iExists _, _; iSplit; first done. iFrame. iApply "Hblock".
+  iIntros (s) "Hblock". iExists _, _; iSplit; first done. iFrame; iApply "Hblock".
 Qed.
 
 Theorem wpc_Inode__Size {k} {l k' P addr}:
