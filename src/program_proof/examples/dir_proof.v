@@ -930,7 +930,7 @@ Section goose.
     iSplit.
     { eauto. }
     iIntros (s) "Hpost".
-    iExists _, _; iSplit; first eauto; iFrame. eauto.
+    iExists _, _; iSplit; first eauto; iFrame; eauto.
   Qed.
 
   Theorem wpc_Dir__Size {k} (Q: u64 → iProp Σ) l sz k' (idx: u64):
