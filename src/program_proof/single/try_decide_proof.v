@@ -281,7 +281,7 @@ Proof.
                 word.
               }
               {
-                iApply (big_sepS_intuitionistically_forall).
+                iApply (big_sepS_intro).
                 iModIntro.
                 iIntros (y?).
                 assert (int.nat y ≤ int.nat reply.(Prep_Pn) ∨
@@ -362,7 +362,7 @@ Proof.
             { (* rejected *)
               iApply (big_sepS_insert with "[$Hrejected]").
               { done. }
-              iApply (big_sepS_intuitionistically_forall).
+              iApply (big_sepS_intro).
               iModIntro.
               iIntros (y?).
               assert (int.nat y ≤ int.nat highestPn ∨

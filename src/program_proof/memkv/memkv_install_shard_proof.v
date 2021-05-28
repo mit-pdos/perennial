@@ -197,7 +197,7 @@ Proof.
       apply list_lookup_insert.
       move: HkvssLength. word.
     }
-    iApply big_sepS_intuitionistically_forall.
+    iApply big_sepS_intro.
     iModIntro.
     iIntros.
     assert (x ≠ args.(IR_Sid)).

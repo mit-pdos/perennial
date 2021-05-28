@@ -155,7 +155,7 @@ Proof.
           { iExactEq "Hgi". f_equal. word. }
           iSplit.
           { iPureIntro. rewrite list_lookup_insert; eauto. }
-          iApply big_sepS_intuitionistically_forall.
+          iApply big_sepS_intro.
           iIntros "!#" (??).
           destruct (decide (shardOfC x = i)); last by eauto.
           { iRight. iExists 1%Qp, _. rewrite ?lookup_empty //=.
@@ -236,7 +236,7 @@ Proof.
     iSplitL "Hkvss_sl".
     { rewrite /named. iExactEq "Hkvss_sl". f_equal.
       rewrite Heq_init_kvs_ptrs fmap_replicate. f_equal. }
-    iApply big_sepS_intuitionistically_forall.
+    iApply big_sepS_intro.
     iIntros "!#" (x Hin). iLeft. iPureIntro. intros Hfalse.
     rewrite Heq_initShardMapping in Hfalse.
     apply lookup_replicate_1 in Hfalse as (Hbad&?). rewrite //= in Hbad.

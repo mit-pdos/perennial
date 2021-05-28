@@ -95,7 +95,7 @@ Proof.
       specialize (shardOfC_bound k). word. }
   iSplitL.
   - iRight. rewrite lookup_empty. done.
-  - iApply big_sepS_intuitionistically_forall.
+  - iApply big_sepS_intro.
     iIntros "!#" (shard [Hshard Hne]%elem_of_difference). iLeft.
     iPureIntro. intros Heq. apply Hne.
     apply elem_of_singleton. done.

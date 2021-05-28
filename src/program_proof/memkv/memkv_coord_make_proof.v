@@ -120,7 +120,7 @@ Proof.
     iSplit.
     { iPureIntro. rewrite /uNSHARD. intros i Hlt. rewrite Heq_initShardMapping.
       eexists. apply lookup_replicate_2. word. }
-    iApply big_sepS_intuitionistically_forall.
+    iApply big_sepS_intro.
     iIntros "!#" (x Hin).
     rewrite Heq_initShardMapping. iExists _.
     iSplit.
