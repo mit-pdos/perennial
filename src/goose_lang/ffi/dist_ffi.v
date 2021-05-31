@@ -17,30 +17,35 @@ Set Printing Projections.
 
 (** * The Grove extension to GooseLang: primitive operations [Trusted definitions!] *)
 
-Inductive GroveOp := ListenOp | ConnectOp | SendOp | RecvOp.
+Inductive GroveOp := ListenOp | ConnectOp | AcceptOp | SendOp | RecvOp.
 Instance eq_GroveOp : EqDecision GroveOp.
 Proof. solve_decision. Defined.
 Instance GroveOp_fin : Countable GroveOp.
 Proof. solve_countable GroveOp_rec 10%nat. Qed.
 
+(** [char] corresponds to a host-IP-pair *)
 Definition chan := u64.
 Inductive GroveVal :=
-| HostEndp (c : chan)
-(** A Client endpoint for some channel named [c] also has some *other* dedicated
-channel for responses, named [r]. *)
-| ClientEndp (c : chan) (r : chan).
+(** Corresponds to a 2-tuple. *)
+| ListenSocketV (c : chan)
+(** Corresponds to a 4-tuple. [c_l] is the local part, [c_r] the remote part. *)
+| ConnectionSocketV (c_l : chan) (c_r : chan)
+(** A bad (error'd) connection *)
+| BadSocketV.
 Instance GroveVal_eq_decision : EqDecision GroveVal.
 Proof. solve_decision. Defined.
 Instance GroveVal_countable : Countable GroveVal.
 Proof.
   refine (inj_countable'
     (λ x, match x with
-          | HostEndp c => inl c
-          | ClientEndp c r => inr (c, r)
+          | ListenSocketV c => inl c
+          | ConnectionSocketV c_l c_r => inr $ inl (c_l, c_r)
+          | BadSocketV => inr $ inr ()
           end)
     (λ x, match x with
-          | inl c => HostEndp c
-          | inr (c, r) => ClientEndp c r
+          | inl c => ListenSocketV c
+          | inr (inl (c_l, c_r)) => ConnectionSocketV c_l c_r
+          | inr (inr ()) => BadSocketV
           end)
     _);
   by intros [].
@@ -51,7 +56,7 @@ Proof.
   refine (mkExtOp GroveOp _ _ GroveVal _ _).
 Defined.
 
-Inductive GroveTys := GroveHostTy | GroveClientTy.
+Inductive GroveTys := GroveListenTy | GroveConnectionTy.
 
 (* TODO: Why is this an instance but the ones above are not? *)
 Instance grove_val_ty: val_types :=
@@ -105,19 +110,25 @@ Section grove.
   Global Instance alloc_chan_gen : GenPred (option chan) (state*global_state) isFreshChan.
   Proof. intros _ σg. refine (Some (exist _ _ (gen_isFreshChan σg))). Defined.
 
+  Global Instance chan_GenType Σ : GenType chan Σ :=
+    fun z _ => Some (exist _ (U64 z) I).
+
   Definition ffi_step (op: GroveOp) (v: val): transition (state*global_state) val :=
     match op, v with
     | ListenOp, LitV (LitInt c) =>
-      ret (ExtV (HostEndp c))
-    | ConnectOp, LitV (LitInt c) =>
-      r ← suchThat isFreshChan;
-      match r with
-      | None => ret ((*err*)#true, ExtV (ClientEndp c c), ExtV (HostEndp c))%V
-      | Some r =>
-        modify (λ '(σ,g), (σ, <[ r := ∅ ]> g));;
-        ret ((*err*)#false, ExtV (ClientEndp c r), ExtV (HostEndp r))%V
+      ret (ExtV (ListenSocketV c))
+    | ConnectOp, LitV (LitInt c_r) =>
+      c_l ← suchThat isFreshChan;
+      match c_l with
+      | None => ret ((*err*)#true, ExtV BadSocketV)%V
+      | Some c_l =>
+        modify (λ '(σ,g), (σ, <[ c_l := ∅ ]> g));;
+        ret ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
       end
-    | SendOp, (ExtV (ClientEndp c r), (LitV (LitLoc l), LitV (LitInt len)))%V =>
+    | AcceptOp, ExtV (ListenSocketV c_l) =>
+      c_r ← any chan;
+      ret (ExtV (ConnectionSocketV c_l c_r))
+    | SendOp, (ExtV (ConnectionSocketV c_l c_r), (LitV (LitLoc l), LitV (LitInt len)))%V =>
       err_early ← any bool;
       if err_early is true then ret (*err*)#true else
       data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
@@ -126,23 +137,23 @@ Section grove.
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
                 end);
-      ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
-      modify (λ '(σ,g), (σ, <[ c := ms ∪ {[Message r data]} ]> g));;
+      ms ← reads (λ '(σ,g), g !! c_r) ≫= unwrap;
+      modify (λ '(σ,g), (σ, <[ c_r := ms ∪ {[Message c_l data]} ]> g));;
       err_late ← any bool;
       ret (*err*)#(err_late : bool)
-    | RecvOp, ExtV (HostEndp c) =>
-      ms ← reads (λ '(σ,g), g !! c) ≫= unwrap;
+    | RecvOp, ExtV (ConnectionSocketV c_l c_r) =>
+      ms ← reads (λ '(σ,g), g !! c_l) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
-            m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms);
+            m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms ∧ m'.(msg_sender) = c_r);
       match m with
       | None =>
         (* We errored, non-deterministically pick error code 1 (timeout) or 2 (other error). *)
         timeout ← any bool;
-        ret ((*err*)#(if timeout is true then 1 else 2), ExtV $ ClientEndp c c, (#locations.null, #0))%V
+        ret ((*err*)#(if timeout is true then 1 else 2), (#locations.null, #0))%V
       | Some m =>
         l ← allocateN;
         modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
-        ret  ((*err*)#0, ExtV $ ClientEndp m.(msg_sender) c, (#(l : loc), #(length m.(msg_data))))%V
+        ret  ((*err*)#0, (#(l : loc), #(length m.(msg_data))))%V
       end
     | _, _ => undefined
     end.
@@ -212,10 +223,12 @@ Section lifting.
   Definition chan_meta `{Countable A} (c : chan) N (x : A) : iProp Σ :=
     gen_heap.meta (hG := groveG_gen_heapG) c N x.
 
-  Definition send_endpoint (c : chan) (r : chan) : val :=
-    ExtV (ClientEndp c r).
-  Definition recv_endpoint (c : chan) : val :=
-    ExtV (HostEndp c).
+  Definition connection_socket (c_l : chan) (c_r : chan) : val :=
+    ExtV (ConnectionSocketV c_l c_r).
+  Definition listen_socket (c : chan) : val :=
+    ExtV (ListenSocketV c).
+  Definition bad_socket : val :=
+    ExtV BadSocketV.
 
   (* Lifting automation *)
   Local Hint Extern 0 (head_reducible _ _ _) => eexists _, _, _, _, _; simpl : core.
@@ -241,7 +254,7 @@ lemmas. *)
   Lemma wp_ListenOp c s E :
     {{{ True }}}
       ExternalOp ListenOp (LitV $ LitInt c) @ s; E
-    {{{ RET recv_endpoint c; True }}}.
+    {{{ RET listen_socket c; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) Hg !>".
@@ -258,11 +271,12 @@ lemmas. *)
     by iApply "HΦ".
   Qed.
 
-  Lemma wp_ConnectOp c s E :
+  Lemma wp_ConnectOp c_r s E :
     {{{ True }}}
-      ExternalOp ConnectOp (LitV $ LitInt c) @ s; E
-    {{{ (err : bool) (r : chan), RET (#err, send_endpoint c r, recv_endpoint r);
-      if err then True else r c↦ ∅
+      ExternalOp ConnectOp (LitV $ LitInt c_r) @ s; E
+    {{{ (err : bool) (c_l : chan),
+      RET (#err, if err then bad_socket else connection_socket c_l c_r);
+      if err then True else c_l c↦ ∅
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -278,22 +292,44 @@ lemmas. *)
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
     match goal with
-    | H : isFreshChan _ ?c |- _ => rename H into Hfresh; rename c into r
+    | H : isFreshChan _ ?c |- _ => rename H into Hfresh; rename c into c_l
     end.
-    destruct r as [r|]; last first.
+    destruct c_l as [c_l|]; last first.
     { (* Failed to pick a fresh channel. *)
       monad_inv. simpl. iFrame. iModIntro.
       do 2 (iSplit; first done).
-      iApply "HΦ". done. }
+      iApply ("HΦ" $! true (U64 0)). done. }
     simpl in *. monad_inv. simpl.
     iMod (@gen_heap_alloc with "Hg") as "[$ [Hr _]]"; first done.
     iIntros "!> /=".
     iFrame.
     iSplit; first done.
     iSplit.
-    { iPureIntro. clear c. intros c ms m. destruct (decide (c = r)) as [->|Hne].
+    { iPureIntro. clear c_r. intros c ms m. destruct (decide (c = c_l)) as [->|Hne].
       - rewrite lookup_insert=>-[<-]. rewrite elem_of_empty. done.
       - rewrite lookup_insert_ne //. apply Hg. }
+    by iApply ("HΦ" $! false).
+  Qed.
+
+  Lemma wp_AcceptOp c_l s E :
+    {{{ True }}}
+      ExternalOp AcceptOp (listen_socket c_l) @ s; E
+    {{{ c_r, RET connection_socket c_l c_r; True }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. econstructor.
+      1:by eapply (relation.suchThat_runs _ _ (U64 0)).
+      monad_simpl. }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    inv_head_step.
+    simpl.
+    iFrame.
+    iIntros "!>".
+    iSplit; first done.
     by iApply "HΦ".
   Qed.
 
@@ -313,12 +349,12 @@ lemmas. *)
     intros [b [? ->]]%fmap_Some_1. done.
   Qed.
 
-  Lemma wp_SendOp c r ms (l : loc) (len : u64) (data : list u8) (q : Qp) s E :
+  Lemma wp_SendOp c_l c_r ms (l : loc) (len : u64) (data : list u8) (q : Qp) s E :
     length data = int.nat len →
-    {{{ c c↦ ms ∗ mapsto_vals l q (data_vals data) }}}
-      ExternalOp SendOp (send_endpoint c r, (#l, #len))%V @ s; E
+    {{{ c_r c↦ ms ∗ mapsto_vals l q (data_vals data) }}}
+      ExternalOp SendOp (connection_socket c_l c_r, (#l, #len))%V @ s; E
     {{{ (err_early err_late : bool), RET #(err_early || err_late);
-       c c↦ (if err_early then ms else ms ∪ {[Message r data]}) ∗
+       c_r c↦ (if err_early then ms else ms ∪ {[Message c_l data]}) ∗
        mapsto_vals l q (data_vals data) }}}.
   Proof.
     iIntros (Hmlen Φ) "[Hc Hl] HΦ".
@@ -361,7 +397,7 @@ lemmas. *)
     iIntros "!> /=".
     iSplit; first done.
     iSplit.
-    { iPureIntro. intros c' ms' m'. destruct (decide (c=c')) as [<-|Hne].
+    { iPureIntro. intros c' ms' m'. destruct (decide (c_r = c')) as [<-|Hne].
       - rewrite lookup_insert=>-[<-]. rewrite elem_of_union=>-[Hm'|Hm'].
         + eapply Hg; done.
         + rewrite ->elem_of_singleton in Hm'. subst m'.
@@ -379,14 +415,14 @@ lemmas. *)
     | Some RecvErrOther => 2
     end.
 
-  Lemma wp_RecvOp c ms s E :
-    {{{ c c↦ ms }}}
-      ExternalOp RecvOp (recv_endpoint c) @ s; E
-    {{{ (err : option recv_err) (l : loc) (len : u64) (sender : chan) (data : list u8),
-        RET (#(recv_errno err), send_endpoint sender c, (#l, #len));
+  Lemma wp_RecvOp c_l c_r ms s E :
+    {{{ c_l c↦ ms }}}
+      ExternalOp RecvOp (connection_socket c_l c_r) @ s; E
+    {{{ (err : option recv_err) (l : loc) (len : u64) (data : list u8),
+        RET (#(recv_errno err), (#l, #len));
         ⌜if err is Some _ then l = null ∧ data = [] ∧ len = 0 else
-          Message sender data ∈ ms ∧ length data = int.nat len⌝ ∗
-        c c↦ ms ∗ mapsto_vals l 1 (data_vals data)
+          Message c_r data ∈ ms ∧ length data = int.nat len⌝ ∗
+        c_l c↦ ms ∗ mapsto_vals l 1 (data_vals data)
     }}}.
   Proof.
     iIntros (Φ) "He HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -406,7 +442,7 @@ lemmas. *)
     inv_head_step.
     monad_inv.
     rename select (m = None ∨ _) into Hm. simpl in Hm.
-    destruct Hm as [->|(m' & -> & Hm)].
+    destruct Hm as [->|(m' & -> & Hm & <-)].
     { (* Returning no message. *)
       inv_head_step.
       monad_inv.
@@ -444,7 +480,7 @@ lemmas. *)
     }
     iModIntro. iEval simpl. iFrame "Htr Hg Hσ".
     do 2 (iSplit; first done).
-    iApply ("HΦ" $! None _ _ _ m'.(msg_data)). iFrame "He".
+    iApply ("HΦ" $! None _ _ m'.(msg_data)). iFrame "He".
     iSplit.
     { iPureIntro. split; first by destruct m'.
       trans (Z.to_nat (Z.of_nat (length m'.(msg_data)))); first by rewrite Nat2Z.id //.
@@ -467,85 +503,91 @@ Section grove.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
   (* FIXME: This is a bit strange; not sure how to think about "axiomatizing" a struct *)
-  Definition Sender : ty := extT GroveClientTy.
-  Definition Receiver : ty := extT GroveHostTy.
+  Definition ListenSocket : ty := extT GroveListenTy.
+  Definition ConnectionSocket : ty := extT GroveConnectionTy.
   Definition Address : ty := uint64T.
 
   Definition ConnectRet := (struct.decl [
                               "Err" :: boolT;
-                              "Sender" :: Sender;
-                              "Receiver" :: Receiver
+                              "Socket" :: ConnectionSocket
                             ])%struct.
 
   Definition ReceiveRet := (struct.decl [
                               "Err" :: uint64T;
-                              "Sender" :: Sender;
                               "Data" :: slice.T byteT
                             ])%struct.
 
-  (** Type: func(uint64) *Receiver *)
+  (** Type: func(uint64) ListenSocket *)
   Definition Listen : val :=
     λ: "e", ExternalOp ListenOp "e".
 
-  (** Type: func(uint64) (bool, *Sender, *Receiver) *)
+  (** Type: func(uint64) (bool, ConnectionSocket) *)
   Definition Connect : val :=
     λ: "e",
       let: "c" := ExternalOp ConnectOp "e" in
-      let: "err" := Fst (Fst "c") in
-      let: "sender" := Snd (Fst "c") in
-      let: "receiver" := Snd "c" in
+      let: "err" := Fst "c" in
+      let: "socket" := Snd "c" in
       struct.mk ConnectRet [
         "Err" ::= "err";
-        "Sender" ::= "sender";
-        "Receiver" ::= "receiver"
+        "Socket" ::= "socket"
       ].
 
-  (** Type: func( *Sender, []byte) *)
+  (** Type: func(ListenSocket) ConnectionSocket *)
+  Definition Accept : val :=
+    λ: "e", ExternalOp AcceptOp "e".
+
+  (** Type: func(ConnectionSocket, []byte) *)
   Definition Send : val :=
     λ: "e" "m", ExternalOp SendOp ("e", (slice.ptr "m", slice.len "m")).
 
-  (** Type: func( *Receiver) (bool, *Sender, []byte) *)
+  (** Type: func(ConnectionSocket) (bool, []byte) *)
   Definition Receive : val :=
     λ: "e" "timeout_ms",
       let: "r" := ExternalOp RecvOp "e" in
-      let: "err" := Fst (Fst "r") in
-      let: "sender" := Snd (Fst "r") in
+      let: "err" := Fst "r" in
       let: "slice" := Snd "r" in
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
       struct.mk ReceiveRet [
         "Err" ::= "err";
-        "Sender" ::= "sender";
         "Data" ::= ("ptr", "len", "len")
       ].
 
   Context `{!heapG Σ}.
 
-  Lemma wp_Listen c s E :
+  Lemma wp_Listen c_l s E :
     {{{ True }}}
-      Listen #(LitInt c) @ s; E
-    {{{ RET recv_endpoint c; True }}}.
+      Listen #(LitInt c_l) @ s; E
+    {{{ RET listen_socket c_l; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". wp_lam.
     wp_apply wp_ListenOp. by iApply "HΦ".
   Qed.
 
-  Lemma wp_Connect c s E :
+  Lemma wp_Connect c_r s E :
     {{{ True }}}
-      Connect #(LitInt c) @ s; E
-    {{{ (err : bool) (r : chan),
+      Connect #(LitInt c_r) @ s; E
+    {{{ (err : bool) (c_l : chan),
         RET struct.mk_f ConnectRet [
               "Err" ::= #err;
-              "Sender" ::= send_endpoint c r;
-              "Receiver" ::= recv_endpoint r
+              "Socket" ::= if err then bad_socket else connection_socket c_l c_r
             ];
-      if err then True else r c↦ ∅
+      if err then True else c_l c↦ ∅
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ". wp_lam.
     wp_apply wp_ConnectOp.
     iIntros (err recv) "Hr". wp_pures.
-    by iApply "HΦ". (* Wow, Coq is doing magic here *)
+    by iApply ("HΦ" $! err). (* Wow, Coq is doing magic here *)
+  Qed.
+
+  Lemma wp_Accept c_l s E :
+    {{{ True }}}
+      Accept (listen_socket c_l)  @ s; E
+    {{{ (c_r : chan), RET connection_socket c_l c_r; True }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ". wp_lam.
+    wp_apply wp_AcceptOp. by iApply "HΦ".
   Qed.
 
   Lemma is_slice_small_byte_mapsto_vals (s : Slice.t) (data : list u8) (q : Qp) :
@@ -574,12 +616,12 @@ Section grove.
     rewrite byte_mapsto_untype byte_offset_untype //.
   Qed.
 
-  Lemma wp_Send c r (s : Slice.t) (data : list u8) (q : Qp) :
+  Lemma wp_Send c_l c_r (s : Slice.t) (data : list u8) (q : Qp) :
     ⊢ {{{ is_slice_small s byteT q data }}}
-      <<< ∀∀ ms, c c↦ ms >>>
-        Send (send_endpoint c r) (slice_val s) @ ⊤
+      <<< ∀∀ ms, c_r c↦ ms >>>
+        Send (connection_socket c_l c_r) (slice_val s) @ ⊤
       <<<▷ ∃∃ (msg_sent : bool),
-        c c↦ (if msg_sent then ms ∪ {[Message r data]} else ms)
+        c_r c↦ (if msg_sent then ms ∪ {[Message c_l data]} else ms)
       >>>
       {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
         is_slice_small s byteT q data }}}.
@@ -602,27 +644,26 @@ Section grove.
     - iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
 
-  Lemma wp_Receive c (timeout_ms : u64) :
-    ⊢ <<< ∀∀ ms, c c↦ ms >>>
-        Receive (recv_endpoint c) #timeout_ms @ ⊤
-      <<<▷ ∃∃ (err : option recv_err) (m : message),
-        c c↦ ms ∗ if err then True else ⌜m ∈ ms⌝
+  Lemma wp_Receive c_l c_r (timeout_ms : u64) :
+    ⊢ <<< ∀∀ ms, c_l c↦ ms >>>
+        Receive (connection_socket c_l c_r) #timeout_ms @ ⊤
+      <<<▷ ∃∃ (err : option recv_err) (data : list u8),
+        c_l c↦ ms ∗ if err then True else ⌜Message c_r data ∈ ms⌝
       >>>
       {{{ (s : Slice.t),
         RET struct.mk_f ReceiveRet [
               "Err" ::= #(recv_errno err);
-              "Sender" ::= send_endpoint m.(msg_sender) c;
               "Data" ::= slice_val s
             ];
-          is_slice s byteT 1 m.(msg_data)
+          is_slice s byteT 1 data
       }}}.
   Proof.
     iIntros "!#" (Φ) "HΦ". wp_lam. wp_pures.
     wp_bind (ExternalOp _ _).
     iMod "HΦ" as (ms) "[Hc HΦ]".
     wp_apply (wp_RecvOp with "Hc").
-    iIntros (err l len sender data) "(%Hm & Hc & Hl)".
-    iMod ("HΦ" $! err (Message sender data) with "[Hc]") as "HΦ".
+    iIntros (err l len data) "(%Hm & Hc & Hl)".
+    iMod ("HΦ" $! err data with "[Hc]") as "HΦ".
     { iFrame. destruct err; first done. iPureIntro. apply Hm. }
     iModIntro. wp_pures. iModIntro.
     destruct err.
