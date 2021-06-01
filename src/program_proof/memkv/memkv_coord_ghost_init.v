@@ -20,7 +20,7 @@ Definition coord_SpecList γkv : RPCSpecList :=
 Lemma coord_server_ghost_init host (γkv : gname) :
   host c↦ ∅ ={⊤}=∗
   ∃ γ, ⌜ γ.(coord_kv_gn) = γkv ⌝ ∗
-       handlers_dom host γ.(coord_urpc_gn) (dom_RPCSpecList (coord_SpecList (γ.(coord_kv_gn)))) ∗
+       handlers_dom γ.(coord_urpc_gn) (dom_RPCSpecList (coord_SpecList (γ.(coord_kv_gn)))) ∗
        is_coord_server host γ.
 Proof.
   iIntros "Hg".

@@ -74,7 +74,7 @@ Definition is_rpcHandler {X:Type} (names : heap_local_names) (cname : gname) (f:
          ▷ Post x reqData repData
   }}}.
 
-Definition client_chan_inner_msg (Γ : client_chan_gnames) (host : u64) m : iProp Σ :=
+Definition reply_chan_inner_msg (Γ : client_chan_gnames) m : iProp Σ :=
     ∃ (rpcid seqno : u64) reqData replyData X Post (x : X) γ d rep,
        "%Hlen_reply" ∷ ⌜ length replyData = int.nat (length replyData) ⌝ ∗
        "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 seqno;
@@ -87,11 +87,11 @@ Let gn := heap_globalG_names.
 Let gpG := (heap_preG_ffi).
 Instance global_groveG : groveG Σ := @grove_update_pre _ gpG gn.
 
-Definition client_chan_inner (Γ : client_chan_gnames) (host: u64) : iProp Σ :=
-  ∃ ms, "Hchan" ∷ host c↦ ms ∗
-  "Hmessages" ∷ [∗ set] m ∈ ms, client_chan_inner_msg Γ host m.
+Definition reply_chan_inner (Γ : client_chan_gnames) (c: chan) : iProp Σ :=
+  ∃ ms, "Hchan" ∷ c c↦ ms ∗
+  "Hmessages" ∷ [∗ set] m ∈ ms, reply_chan_inner_msg Γ m.
 
-Definition server_chan_inner_msg (host : u64) Γsrv m : iProp Σ :=
+Definition server_chan_inner_msg Γsrv m : iProp Σ :=
     ∃ rpcid seqno args X Pre Post (x : X) Γ γ1 γ2 d rep rpcdom,
        "%Hlen_args" ∷ ⌜ length args = int.nat (U64 (Z.of_nat (length args))) ⌝ ∗
        "#Hdom1" ∷ own (scset_name Γsrv) (to_agree (rpcdom)) ∗
@@ -104,14 +104,14 @@ Definition server_chan_inner_msg (host : u64) Γsrv m : iProp Σ :=
                                            is_rpcHandler n.1.1 n.1.2 n.2 Pre Post) ∗
        "#HPre" ∷ □ (Pre x args) ∗
        "#HPost_saved" ∷ saved_pred_own γ1 (Post x args) ∗
-       "#Hclient_chan_inv" ∷ inv urpc_clientN (client_chan_inner Γ (msg_sender m)).
+       "#Hclient_chan_inv" ∷ inv urpc_clientN (reply_chan_inner Γ (msg_sender m)).
 
-Definition server_chan_inner (host: u64) γmap : iProp Σ :=
+Definition server_chan_inner (c: chan) γmap : iProp Σ :=
   ∃ ms,
-  "Hchan" ∷ host c↦ ms ∗
-  "Hmessages" ∷ [∗ set] m ∈ ms, server_chan_inner_msg host γmap m.
+  "Hchan" ∷ c c↦ ms ∗
+  "Hmessages" ∷ [∗ set] m ∈ ms, server_chan_inner_msg γmap m.
 
-Definition handler_is Γsrv : ∀ (X:Type) (host:u64) (rpcid:u64) (Pre:X → list u8 → iProp Σ)
+Definition handler_is Γsrv : ∀ (X:Type) (host:chan) (rpcid:u64) (Pre:X → list u8 → iProp Σ)
                           (Post:X → list u8 → list u8 → iProp Σ), iProp Σ :=
   λ X host rpcid Pre Post, (∃ γ rpcdom,
    "#Hdom1" ∷ own (scset_name Γsrv) (to_agree (rpcdom)) ∗
@@ -126,7 +126,7 @@ Global Instance handler_is_pers_instance γ X host rpcid pre post :
   Persistent (handler_is γ X host rpcid pre post).
 Proof. apply _. Qed.
 
-Definition handlers_dom (host : u64) Γsrv (d: gset u64) :=
+Definition handlers_dom Γsrv (d: gset u64) :=
   own (scset_name Γsrv) (to_agree (d : leibnizO (gset u64))).
 
 Record RPCSpec :=
@@ -168,9 +168,9 @@ Fixpoint RPCSpecList_wf (l : RPCSpecList) : Prop :=
     (spec_rpcid x ∉ dom_RPCSpecList l) ∧ RPCSpecList_wf l
   end.
 
-Lemma handler_is_init_list (host : u64) (specs: RPCSpecList) (Hwf: RPCSpecList_wf specs) :
+Lemma handler_is_init_list (host : chan) (specs: RPCSpecList) (Hwf: RPCSpecList_wf specs) :
    host c↦ ∅ ={⊤}=∗ ∃ γ,
-   handlers_dom host γ (dom_RPCSpecList specs) ∗
+   handlers_dom γ (dom_RPCSpecList specs) ∗
    handler_RPCSpecList γ host specs.
 Proof.
   iIntros "Hchan".
@@ -253,7 +253,7 @@ Definition is_rpcHandler' {X:Type} (f:val) Pre Post : iProp Σ :=
          ▷ Post x reqData repData
   }}}.
 
-Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) (host : u64) mref : iProp Σ :=
+Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
   ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
             "%Hnpos" ∷ ⌜ 0 < int.Z n ⌝%Z ∗
             "%Hdom_range" ∷ ⌜ ∀ id, (0 < int.Z id < int.Z n)%Z ↔ id ∈ dom (gset u64) reqs ⌝ ∗
@@ -312,20 +312,21 @@ Proof using hG.
   - eapply inv_get_names. apply _.
 Defined.
 
-Definition RPCClient_own (cl : loc) (host:u64) : iProp Σ :=
-  ∃ Γ (lk : loc) r (mref : loc),
+Definition RPCClient_own (cl : loc) (srv : chan) : iProp Σ :=
+  ∃ Γ (lk : loc) client (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[RPCClient :: "mu"] #lk) ∗
-    "#send" ∷ readonly (cl ↦[RPCClient :: "send"] send_endpoint host r) ∗
+    "#conn" ∷ readonly (cl ↦[RPCClient :: "conn"] connection_socket client srv) ∗
     "#pending" ∷ readonly (cl ↦[RPCClient :: "pending"] #mref)) ∗
-    "#Hchan" ∷ inv urpc_clientN (client_chan_inner Γ r) ∗
-    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl lk host mref).
+    "#Hchan" ∷ inv urpc_clientN (reply_chan_inner Γ client) ∗
+    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl lk mref).
 
-Definition RPCClient_reply_own (cl : loc) (r : chan) : iProp Σ :=
-  ∃ Γ host (lk : loc) (mref : loc),
+Definition RPCClient_reply_own (cl : loc) : iProp Σ :=
+  ∃ Γ (lk : loc) client srv (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[RPCClient :: "mu"] #lk) ∗
+    "#conn" ∷ readonly (cl ↦[RPCClient :: "conn"] connection_socket client srv) ∗
     "#pending" ∷ readonly (cl ↦[RPCClient :: "pending"] #mref)) ∗
-    "#Hchan" ∷ inv urpc_clientN (client_chan_inner Γ r) ∗
-    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl lk host mref).
+    "#Hchan" ∷ inv urpc_clientN (reply_chan_inner Γ client) ∗
+    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl lk mref).
 
 (* TODO: move this *)
 Global Instance is_map_AsMapsTo mref hd :
@@ -472,8 +473,8 @@ Proof.
   }
 Qed.
 
-Definition handlers_complete host Γ (handlers : gmap u64 val) :=
-  (handlers_dom host Γ (dom (gset _) handlers)).
+Definition handlers_complete Γ (handlers : gmap u64 val) :=
+  (handlers_dom Γ (dom (gset _) handlers)).
 
 Lemma global_groveG_conv :
   (@global_groveG Σ heapG_heap_globalG).(@groveG_gen_heapG Σ) =
@@ -490,13 +491,13 @@ Proof.
     destruct heapG_traceG => //=.
 Qed.
 
-Lemma wp_RPCServer__readThread γ s host handlers mref def :
+Lemma wp_RPCServer__readThread γ s host client handlers mref def :
   dom (gset u64) handlers ≠ ∅ →
-  "#Hcomplete" ∷ handlers_complete host γ handlers ∗
+  "#Hcomplete" ∷ handlers_complete γ handlers ∗
   "#His_rpc_map" ∷ rpc_handler_mapping γ host handlers ∗
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
   "#handlers" ∷ readonly (s ↦[RPCServer :: "handlers"] #mref) -∗
-  WP RPCServer__readThread #s (recv_endpoint host) {{ _, True }}.
+  WP RPCServer__readThread #s (connection_socket host client) {{ _, True }}.
 Proof.
   iIntros (Hdom).
   iNamed 1.
@@ -516,7 +517,7 @@ Proof.
   iFrame "Hchan'".
   iNext.
   iIntros (err m) "(Hchan&Herr)".
-  iAssert (if err then True else server_chan_inner_msg host γ m)%I with "[Hchan_inner Herr]" as "Hmsg".
+  iAssert (if err then True else server_chan_inner_msg γ (Message client m))%I with "[Hchan_inner Herr]" as "Hmsg".
   { destruct err; auto.
     iDestruct "Herr" as %Hin.
     iApply (big_sepS_elem_of with "Hchan_inner"); first eassumption.
@@ -677,7 +678,7 @@ Qed.
 Lemma wp_StartRPCServer γ (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
   dom (gset u64) handlers ≠ ∅ →
   {{{
-      handlers_complete host γ handlers ∗
+      handlers_complete γ handlers ∗
       own_RPCServer s handlers ∗
       [∗ map] rpcid ↦ handler ∈ handlers,
       (∃ X Pre Post, handler_is γ X host rpcid Pre Post ∗ is_rpcHandler' handler Pre Post)
@@ -691,28 +692,28 @@ Proof.
   wp_lam. wp_pures.
   wp_apply (wp_Listen). wp_pures.
   iNamed "Hserver".
-  wp_apply (wp_ref_to).
-  { repeat econstructor. }
-  iIntros (i) "Hi".
-  wp_pures.
-  iApply (wp_forUpto (λ _, emp%I) with "[] [$Hi]"); swap 2 3.
-  { word. }
-  { iNext. iIntros "(?&?)". iApply "HΦ"; eauto. }
-  iIntros (ival Φ') "!> (?&Hi&Hlt) HΦ'".
+  wp_apply (wp_fork).
+  2:{ by iApply "HΦ". }
+
+  wp_apply (wp_forBreak_cond'); [ iNamedAccu |].
+  iIntros "!# _". wp_pures.
+  wp_apply (wp_Accept).
+  iIntros (client) "_". wp_pures.
   wp_apply (wp_fork).
   { wp_apply (wp_RPCServer__readThread with "[]"); eauto. }
-  wp_pures. iModIntro. iApply "HΦ'"; iFrame.
+  wp_pures. iModIntro. by iLeft.
 Qed.
 
-Lemma wp_RPCClient__replyThread cl r :
-  RPCClient_reply_own cl r -∗
-  WP RPCClient__replyThread #cl (recv_endpoint r) {{ _, True }}.
+Lemma wp_RPCClient__replyThread cl :
+  RPCClient_reply_own cl -∗
+  WP RPCClient__replyThread #cl {{ _, True }}.
 Proof.
-  iIntros "H". iNamed "H".
+  iIntros "H". iNamed "H". iNamed "Hstfields".
   wp_lam. wp_pures.
   wp_apply (wp_forBreak' True%I with "[-]").
   { eauto. }
   iIntros "!> _". wp_pures.
+  wp_loadField.
   wp_apply (wp_Receive).
   iInv "Hchan" as "Hchan_inner" "Hclo".
   iDestruct "Hchan_inner" as (ms) "(>Hchan'&#Hchan_inner)".
@@ -720,7 +721,7 @@ Proof.
   iIntros "Hclo'".
   iExists _. rewrite global_groveG_conv. iFrame "Hchan'". iNext.
   iIntros (err m) "(Hchan'&Herr)".
-  iAssert (if err then True else client_chan_inner_msg Γ r m)%I with "[Hchan_inner Herr]" as "Hmsg".
+  iAssert (if err then True else reply_chan_inner_msg Γ (Message srv m))%I with "[Hchan_inner Herr]" as "Hmsg".
   { destruct err; auto.
     iDestruct "Herr" as %Hin.
     iApply (big_sepS_elem_of with "Hchan_inner"); first eassumption.
@@ -750,7 +751,6 @@ Proof.
   { word. }
   iIntros (?) "Hsl".
   wp_pures.
-  iNamed "Hstfields".
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "(Hlked&Hlock_inner)".
@@ -836,22 +836,22 @@ Proof.
     exfalso. apply map.map_get_true in Hget. congruence. }
 Qed.
 
-Lemma wp_MakeRPCClient (host:u64):
+Lemma wp_MakeRPCClient (srv:u64):
   {{{
        True
   }}}
-    MakeRPCClient #host
+    MakeRPCClient #srv
   {{{
-       (cl_ptr:loc), RET #cl_ptr; RPCClient_own cl_ptr host
+       (cl_ptr:loc), RET #cl_ptr; RPCClient_own cl_ptr srv
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_lam.
   wp_apply (wp_Connect).
-  iIntros (err r) "Hr".
+  iIntros (err client) "Hr".
   wp_pures.
   wp_apply (wp_Assume).
-  iIntros (Herr). destruct err; first (simpl in Herr; first congruence).
+  iIntros (Herr). destruct err; first by (simpl in Herr; first congruence).
 
   replace (ref (InjLV #null))%E with (NewMap (struct.ptrT callback)) by naive_solver.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
@@ -860,7 +860,7 @@ Proof.
   iIntros (mref) "Hmref".
 
   wp_apply (wp_allocStruct).
-  { enough (val_ty (send_endpoint host r) Sender) by naive_solver.
+  { enough (val_ty (connection_socket client srv) Connection) by naive_solver.
     econstructor.
   }
   iIntros (cl) "Hcl".
@@ -869,7 +869,7 @@ Proof.
   wp_pures.
   (* TODO: why do I have to unshelve this, when in other cases it appears to get picked up automatically *)
   unshelve (iMod (readonly_alloc_1 with "mu") as "#mu"); [| apply _ |].
-  unshelve (iMod (readonly_alloc_1 with "send") as "#send"); [| apply _ |].
+  unshelve (iMod (readonly_alloc_1 with "conn") as "#conn"); [| apply _ |].
   unshelve (iMod (readonly_alloc_1 with "pending") as "#pending"); [| apply _ |].
 
   iMod (map_init (∅ : gmap u64 rpc_req_desc)) as (γccmapping) "Hmapping_ctx".
@@ -877,7 +877,7 @@ Proof.
   iMod (map_init (∅ : gmap u64 unit)) as (γccextracted) "Hextracted_ctx".
   set (Γ := {| ccmapping_name := γccmapping; ccescrow_name := γccescrow;
                ccextracted_name := γccextracted |}).
-  iMod (alloc_lock urpc_lockN _ _ (RPCClient_lock_inner Γ cl lk host mref) with
+  iMod (alloc_lock urpc_lockN _ _ (RPCClient_lock_inner Γ cl lk mref) with
             "Hfree [Hmapping_ctx Hescrow_ctx Hextracted_ctx seq Hmref]") as "#Hlock".
   { iNext. iExists ∅, ∅, ∅, ∅, _. iFrame.
     rewrite ?dom_empty_L.
@@ -888,11 +888,12 @@ Proof.
     iSplit; first done.
     rewrite big_sepM_empty //.
   }
-  iMod (inv_alloc urpc_clientN _ (client_chan_inner Γ r) with "[Hr]") as "#Hchan_inv".
+  iMod (inv_alloc urpc_clientN _ (reply_chan_inner Γ client) with "[Hr]") as "#Hchan_inv".
   { iNext. iExists ∅. rewrite global_groveG_conv. iFrame. rewrite big_sepS_empty //. }
   wp_bind (Fork _).
   iApply wp_fork.
-  { iNext. wp_pures. iApply wp_RPCClient__replyThread. iExists _, _, _, _. rewrite ?global_groveG_conv.
+  { iNext. wp_pures. iApply wp_RPCClient__replyThread. repeat iExists _.
+    rewrite ?global_groveG_conv.
     iFrame "#". }
   iNext. wp_pures. iModIntro. iApply "HΦ".
   iExists _, _, _, _. iFrame "#".
@@ -1070,8 +1071,8 @@ Proof.
     rewrite global_groveG_conv.
     iFrame.
     destruct msg_sent; last by iFrame.
-    destruct (decide (Message r repData ∈ ms)).
-    { assert (ms ∪ {[Message r repData]} = ms) as -> by set_solver. iFrame. }
+    destruct (decide (Message client repData ∈ ms)).
+    { assert (ms ∪ {[Message client repData]} = ms) as -> by set_solver. iFrame. }
     iApply big_sepS_union; first by set_solver.
     iFrame "Hmessages".
     iApply big_sepS_singleton.
@@ -1102,7 +1103,7 @@ Proof.
   wp_loadField.
   wp_bind (if: _ then _ else _)%E.
   iAssert (∃ (b: bool), cb_done ↦[boolT] #b ∗ n [[Γ.(ccextracted_name)]]↦ () ∗
-                        (cb_done ↦[boolT] #b -∗ RPCClient_lock_inner Γ cl_ptr lk host mref))%I
+                        (cb_done ↦[boolT] #b -∗ RPCClient_lock_inner Γ cl_ptr lk mref))%I
           with "[Hlockinv Hextracted]" as "H".
   { iNamed "Hlockinv".
     iDestruct (map_ro_valid with "Hmapping_ctx [$]") as %Hlookup_reg.
@@ -1133,7 +1134,7 @@ Proof.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
   iDestruct ("Hdone_clo" with "[$]") as "Hlockinv".
   wp_apply (wp_If_join_evar _ _ _ (λ _, lock.locked #lk ∗
-                                  RPCClient_lock_inner Γ cl_ptr lk host mref)%I
+                                  RPCClient_lock_inner Γ cl_ptr lk mref)%I
    with "[Hi Hlockinv]").
   { iIntros (b' Heq). destruct b; wp_pures.
     - iFrame. eauto.

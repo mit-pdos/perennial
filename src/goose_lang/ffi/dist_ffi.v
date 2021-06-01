@@ -503,13 +503,13 @@ Section grove.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
   (* FIXME: This is a bit strange; not sure how to think about "axiomatizing" a struct *)
-  Definition ListenSocket : ty := extT GroveListenTy.
-  Definition ConnectionSocket : ty := extT GroveConnectionTy.
+  Definition Listener : ty := extT GroveListenTy.
+  Definition Connection : ty := extT GroveConnectionTy.
   Definition Address : ty := uint64T.
 
   Definition ConnectRet := (struct.decl [
                               "Err" :: boolT;
-                              "Socket" :: ConnectionSocket
+                              "Connection" :: Connection
                             ])%struct.
 
   Definition ReceiveRet := (struct.decl [
@@ -517,11 +517,11 @@ Section grove.
                               "Data" :: slice.T byteT
                             ])%struct.
 
-  (** Type: func(uint64) ListenSocket *)
+  (** Type: func(uint64) Listener *)
   Definition Listen : val :=
     λ: "e", ExternalOp ListenOp "e".
 
-  (** Type: func(uint64) (bool, ConnectionSocket) *)
+  (** Type: func(uint64) (bool, Connection) *)
   Definition Connect : val :=
     λ: "e",
       let: "c" := ExternalOp ConnectOp "e" in
@@ -529,18 +529,18 @@ Section grove.
       let: "socket" := Snd "c" in
       struct.mk ConnectRet [
         "Err" ::= "err";
-        "Socket" ::= "socket"
+        "Connection" ::= "socket"
       ].
 
-  (** Type: func(ListenSocket) ConnectionSocket *)
+  (** Type: func(Listener) Connection *)
   Definition Accept : val :=
     λ: "e", ExternalOp AcceptOp "e".
 
-  (** Type: func(ConnectionSocket, []byte) *)
+  (** Type: func(Connection, []byte) *)
   Definition Send : val :=
     λ: "e" "m", ExternalOp SendOp ("e", (slice.ptr "m", slice.len "m")).
 
-  (** Type: func(ConnectionSocket) (bool, []byte) *)
+  (** Type: func(Connection, uint64) (bool, []byte) *)
   Definition Receive : val :=
     λ: "e" "timeout_ms",
       let: "r" := ExternalOp RecvOp "e" in
@@ -570,7 +570,7 @@ Section grove.
     {{{ (err : bool) (c_l : chan),
         RET struct.mk_f ConnectRet [
               "Err" ::= #err;
-              "Socket" ::= if err then bad_socket else connection_socket c_l c_r
+              "Connection" ::= if err then bad_socket else connection_socket c_l c_r
             ];
       if err then True else c_l c↦ ∅
     }}}.

@@ -272,7 +272,7 @@ Proof.
 Qed.
 
 Lemma wp_MemKVCoordServer__Start (s:loc) (host : u64) γ :
-handlers_dom host γ.(coord_urpc_gn) {[ U64 1; U64 2 ]} -∗
+handlers_dom γ.(coord_urpc_gn) {[ U64 1; U64 2 ]} -∗
 is_coord_server host γ -∗
 is_MemKVCoordServer s γ -∗
   {{{

@@ -27,7 +27,7 @@ Definition shard_SpecList γkv γrpc : RPCSpecList :=
 Lemma shard_server_ghost_init host (γkv : gname) :
   host c↦ ∅ ={⊤}=∗
   ∃ γ, ⌜ γ.(kv_gn) = γkv ⌝ ∗
-       handlers_dom host γ.(urpc_gn) (dom_RPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(rpc_gn)))) ∗
+       handlers_dom γ.(urpc_gn) (dom_RPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(rpc_gn)))) ∗
        is_shard_server host γ ∗
        RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
       ([∗ set] cid ∈ fin_to_set u64, RPCClient_own_ghost γ.(rpc_gn) cid 1).

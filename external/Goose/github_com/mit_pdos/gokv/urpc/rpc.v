@@ -11,7 +11,7 @@ Definition RPCServer := struct.decl [
 ].
 
 Definition RPCServer__rpcHandle: val :=
-  rec: "RPCServer__rpcHandle" "srv" "sender" "rpcid" "seqno" "data" :=
+  rec: "RPCServer__rpcHandle" "srv" "conn" "rpcid" "seqno" "data" :=
     let: "replyData" := ref (zero_val (slice.T byteT)) in
     let: "f" := Fst (MapGet (struct.loadF RPCServer "handlers" "srv") "rpcid") in
     "f" "data" "replyData";;
@@ -20,7 +20,7 @@ Definition RPCServer__rpcHandle: val :=
     marshal.Enc__PutInt "e" "seqno";;
     marshal.Enc__PutInt "e" (slice.len (![slice.T byteT] "replyData"));;
     marshal.Enc__PutBytes "e" (![slice.T byteT] "replyData");;
-    dist_ffi.Send "sender" (marshal.Enc__Finish "e").
+    dist_ffi.Send "conn" (marshal.Enc__Finish "e").
 
 Definition MakeRPCServer: val :=
   rec: "MakeRPCServer" "handlers" :=
@@ -29,30 +29,33 @@ Definition MakeRPCServer: val :=
     ].
 
 Definition RPCServer__readThread: val :=
-  rec: "RPCServer__readThread" "srv" "recv" :=
+  rec: "RPCServer__readThread" "srv" "conn" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "r" := dist_ffi.Receive "recv" #1000 in
+      let: "r" := dist_ffi.Receive "conn" #1000 in
       (if: struct.get dist_ffi.ReceiveRet "Err" "r" ≠ #0
-      then Continue
+      then
+        (if: (struct.get dist_ffi.ReceiveRet "Err" "r" = #1)
+        then Continue
+        else Break)
       else
         let: "data" := struct.get dist_ffi.ReceiveRet "Data" "r" in
-        let: "sender" := struct.get dist_ffi.ReceiveRet "Sender" "r" in
         let: "d" := marshal.NewDec "data" in
         let: "rpcid" := marshal.Dec__GetInt "d" in
         let: "seqno" := marshal.Dec__GetInt "d" in
         let: "reqLen" := marshal.Dec__GetInt "d" in
         let: "req" := marshal.Dec__GetBytes "d" "reqLen" in
-        RPCServer__rpcHandle "srv" "sender" "rpcid" "seqno" "req";;
+        RPCServer__rpcHandle "srv" "conn" "rpcid" "seqno" "req";;
         Continue)).
 
 Definition RPCServer__Serve: val :=
   rec: "RPCServer__Serve" "srv" "host" "numWorkers" :=
-    let: "recv" := dist_ffi.Listen "host" in
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < "numWorkers"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      Fork (RPCServer__readThread "srv" "recv");;
-      Continue).
+    let: "listener" := dist_ffi.Listen "host" in
+    Fork (Skip;;
+          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+            let: "conn" := dist_ffi.Accept "listener" in
+            Fork (RPCServer__readThread "srv" "conn");;
+            Continue)).
 
 Definition callback := struct.decl [
   "reply" :: refT (slice.T byteT);
@@ -62,16 +65,16 @@ Definition callback := struct.decl [
 
 Definition RPCClient := struct.decl [
   "mu" :: lockRefT;
-  "send" :: dist_ffi.Sender;
+  "conn" :: dist_ffi.Connection;
   "seq" :: uint64T;
   "pending" :: mapT (struct.ptrT callback)
 ].
 
 Definition RPCClient__replyThread: val :=
-  rec: "RPCClient__replyThread" "cl" "recv" :=
+  rec: "RPCClient__replyThread" "cl" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "r" := dist_ffi.Receive "recv" #1000 in
+      let: "r" := dist_ffi.Receive (struct.loadF RPCClient "conn" "cl") #1000 in
       (if: struct.get dist_ffi.ReceiveRet "Err" "r" ≠ #0
       then Continue
       else
@@ -99,12 +102,12 @@ Definition MakeRPCClient: val :=
     let: "a" := dist_ffi.Connect "host" in
     control.impl.Assume (~ (struct.get dist_ffi.ConnectRet "Err" "a"));;
     let: "cl" := struct.new RPCClient [
-      "send" ::= struct.get dist_ffi.ConnectRet "Sender" "a";
+      "conn" ::= struct.get dist_ffi.ConnectRet "Connection" "a";
       "mu" ::= lock.new #();
       "seq" ::= #1;
       "pending" ::= NewMap (struct.ptrT callback)
     ] in
-    Fork (RPCClient__replyThread "cl" (struct.get dist_ffi.ConnectRet "Receiver" "a"));;
+    Fork (RPCClient__replyThread "cl");;
     "cl".
 
 Definition RPCClient__Call: val :=
@@ -129,7 +132,7 @@ Definition RPCClient__Call: val :=
     marshal.Enc__PutInt "e" (slice.len "args");;
     marshal.Enc__PutBytes "e" "args";;
     let: "reqData" := marshal.Enc__Finish "e" in
-    (if: dist_ffi.Send (struct.loadF RPCClient "send" "cl") "reqData"
+    (if: dist_ffi.Send (struct.loadF RPCClient "conn" "cl") "reqData"
     then #true
     else
       lock.acquire (struct.loadF RPCClient "mu" "cl");;
