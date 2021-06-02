@@ -27,7 +27,7 @@ Proof.
   - destruct l'; simpl in H; auto.
     apply Permutation_nil_cons in H; contradiction.
   - rewrite fmap_cons in H. symmetry in H.
-    eapply Permutation_cons_inv in H as (l0' & l1' & [Hfl Hfl']).
+    eapply Permutation_cons_inv_r in H as (l0' & l1' & [Hfl Hfl']).
     eapply fmap_app_inv in Hfl as (l0 & l1 & (->&Hfl&->)).
     destruct l1; first by simpl in *; congruence.
     rewrite fmap_cons in Hfl. inversion Hfl; clear Hfl.

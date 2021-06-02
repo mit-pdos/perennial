@@ -202,7 +202,7 @@ Section language.
   Proof.
     intros Ht [e1 σ1' g1' e2 σ2' g2' efs tl tr ?? Hstep]; simplify_eq/=.
     move: Ht; rewrite -Permutation_middle (symmetry_iff (≡ₚ)).
-    intros (tl'&tr'&->&Ht)%Permutation_cons_inv.
+    intros (tl'&tr'&->&Ht)%Permutation_cons_inv_r.
     exists (tl' ++ e2 :: tr' ++ efs); split; [|by econstructor].
     by rewrite -!Permutation_middle !assoc_L Ht.
   Qed.

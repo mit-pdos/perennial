@@ -136,11 +136,11 @@ Section maplist.
     simpl in *.
     apply Permutation.Permutation_cons_inv in H2.
     rewrite -H2.
-    eapply Permutation_cons.
+    f_equiv.
     repeat rewrite delete_take_drop.
     rewrite -> take_insert by lia.
     rewrite -> drop_insert_gt by lia.
-    eauto.
+    f_equiv.
   Qed.
 
   Lemma map_to_list_delete (l : list LV) (lm : gmap K LV) (k : K) (i : nat) (x : LV) :
@@ -337,7 +337,7 @@ Section maplist.
     iDestruct "Hml" as (lm) "[% Hml]".
     iDestruct (big_sepM2_empty_r with "Hml") as %He; subst.
     rewrite map_to_list_empty /= in H0.
-    iPureIntro. eapply Permutation.Permutation_nil. done.
+    iPureIntro. eapply Permutation_nil_r. done.
   Qed.
 
   Theorem big_sepML_sep Φ Ψ m l :
