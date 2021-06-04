@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import disk_prelude.
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Implicit Types v : val.
 Implicit Types z : Z.
 Implicit Types s : Slice.t.

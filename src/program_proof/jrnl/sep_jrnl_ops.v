@@ -40,7 +40,7 @@ Module mspec := jrnl.jrnl_proof.
 
 Section goose_lang.
   Context `{!jrnlG Σ}.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
 
   Context (N:namespace).
 

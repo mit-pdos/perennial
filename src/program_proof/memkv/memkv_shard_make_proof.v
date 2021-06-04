@@ -7,7 +7,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions common
 
 Section memkv_shard_make_proof.
 
-Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeMemKVShardServer (b : bool) γ :
   {{{

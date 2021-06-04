@@ -8,7 +8,7 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Section ci.
-Context `{!irisG Λ Σ}.
+Context `{!irisGS Λ Σ}.
 Context `{STAGED: !stagedG Σ}.
 Context `{inG Σ (exclR unitO)}.
 Implicit Types s : stuckness.

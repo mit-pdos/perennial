@@ -23,7 +23,7 @@ Definition lockserviceInvN := nroot .@ "lockservice" .@ "inv".
 Definition locknameN (lockname : u64) := lockserviceN .@ "lock" .@ lockname.
 
 Section lockservice_proof.
-Context `{!heapG Σ, !lockserviceG Σ}.
+Context `{!heapGS Σ, !lockserviceG Σ}.
 Context {Ps : u64 -> iProp Σ}. (* Per-lock invariant *)
 
 Implicit Types (γ : lockservice_names).

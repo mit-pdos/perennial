@@ -54,7 +54,7 @@ Instance subG_walΣ Σ : subG walΣ Σ → walG Σ.
 Proof. solve_inG. Qed.
 
 Section goose_lang.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
@@ -938,7 +938,7 @@ Qed.
 
 End goose_lang.
 
-Lemma is_wal_alter `{!heapG Σ, !walG Σ} (P1 P2: log_state.t → iProp Σ) l γ dinit :
+Lemma is_wal_alter `{!heapGS Σ, !walG Σ} (P1 P2: log_state.t → iProp Σ) l γ dinit :
   is_wal P1 l γ dinit -∗
   □(∀ σ, P1 σ -∗ P2 σ ∗ (∀ σ', P2 σ' -∗ P1 σ')) -∗
   is_wal P2 l γ dinit.

@@ -15,7 +15,7 @@ Class bankG Σ := BankG {
 }.
 
 Section bank_proof.
-Context `{!heapG Σ, !bankG Σ}.
+Context `{!heapGS Σ, !bankG Σ}.
 
 Implicit Types (γ : bank_names).
 

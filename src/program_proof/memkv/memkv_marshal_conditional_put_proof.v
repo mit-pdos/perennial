@@ -10,7 +10,7 @@ From Perennial.program_proof Require Import marshal_proof.
 
 Section memkv_marshal_conditional_put_proof.
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Record ConditionalPutRequestC := mkConditionalPutRequestC {
   CPR_CID : u64;

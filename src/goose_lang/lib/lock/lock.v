@@ -19,7 +19,7 @@ Context {ext_tys: ext_types ext}.
 Local Coercion Var' (s:string): expr := Var s.
 
 Section proof.
-  Context `{!heapG Σ} (N : namespace).
+  Context `{!heapGS Σ} (N : namespace).
 
   Definition lock_inv (l : loc) (R : iProp Σ) : iProp Σ :=
     (∃ b : bool, l ↦{1/4} #b ∗ if b then True else l ↦{3/4} #b ∗ R)%I.

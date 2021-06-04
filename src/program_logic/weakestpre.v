@@ -5,7 +5,7 @@ From iris.prelude Require Import options.
 Import uPred.
 
 Section wp.
-Context `{!irisG Λ Σ}.
+Context `{!irisGS Λ Σ}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
@@ -283,7 +283,7 @@ End wp.
 
 (** Proofmode class instances *)
 Section proofmode_classes.
-  Context `{!irisG Λ Σ}.
+  Context `{!irisGS Λ Σ}.
   Implicit Types P Q : iProp Σ.
   Implicit Types Φ : val Λ → iProp Σ.
 

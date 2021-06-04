@@ -8,7 +8,7 @@ Set Default Proof Using "Type".
 Section instances.
 Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
-Context `{!mono_natG Σ, !heapG Σ}.
+Context `{!mono_natG Σ, !heapGS Σ}.
 
 Global Instance mono_nat_lb_own_durable γ n:
   IntoCrash (mono_nat_lb_own γ n) (λ _, mono_nat_lb_own γ n).

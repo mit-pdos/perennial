@@ -22,7 +22,7 @@ Proof.
 Qed.
 
 Section proof.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Let N: namespace := nroot .@ "alloc".
 

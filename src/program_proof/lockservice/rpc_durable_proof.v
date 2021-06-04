@@ -16,7 +16,7 @@ From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof.lockservice Require Import rpc_proof rpc rpc_logatom nondet kv_proof fmcounter_map.
 
 Section rpc_durable_proof.
-Context `{!heapG Σ, !rpcG Σ u64, !stagedG Σ}.
+Context `{!heapGS Σ, !rpcG Σ u64, !stagedG Σ}.
 
 Record RPCServerC :=
   {

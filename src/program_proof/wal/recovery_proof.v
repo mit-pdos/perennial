@@ -11,7 +11,7 @@ From Perennial.program_proof Require Import wal.logger_proof.
 From Perennial.program_proof Require Import wal.installer_proof.
 
 Section goose_lang.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).
@@ -1534,7 +1534,7 @@ Qed.
 End goose_lang.
 
 Section stable.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!walG Σ}.
 
 Local Instance ghost_var_into_crash {A} `{ghost_varG Σ A} (γ: gname) q (x: A):
@@ -1597,7 +1597,7 @@ End stable.
 Import wpr_lifting.
 
 Section recov.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!walG Σ}.
 
   (* Just a simple example of using idempotence *)

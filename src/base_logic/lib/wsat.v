@@ -27,7 +27,7 @@ Inductive bi_schema :=
 Canonical Structure bi_schemaO := leibnizO bi_schema.
 
 (** All definitions in this file are internal to [fancy_updates] with the
-exception of what's in the [invG] module. The module [invG] is thus exported in
+exception of what's in the [invGS] module. The module [invGS] is thus exported in
 [fancy_updates], which [wsat] is only imported. *)
 
 Record invariant_level_names := { invariant_name : gname; }.
@@ -39,8 +39,8 @@ Proof.
   repeat (decide equality).
 Qed.
 
-Module invG.
-  Class invPreG (Σ : gFunctors) : Set := WsatPreG {
+Module invGS.
+  Class invGpreS (Σ : gFunctors) : Set := WsatPreG {
     inv_inPreG :> inG Σ (authR (gmapUR positive
                                     (prodR (agreeR (prodO (listO (laterO (iPropO Σ))) bi_schemaO))
                                            (optionR (prodR fracR (agreeR (listO (laterO (iPropO Σ)))))))));
@@ -49,8 +49,8 @@ Module invG.
     mlist_inPreG :> fmlistG (invariant_level_names) Σ;
   }.
 
-  Class invG (Σ : gFunctors) : Set := WsatG {
-    inv_inG :> invPreG Σ;
+  Class invGS (Σ : gFunctors) : Set := WsatG {
+    inv_inG :> invGpreS Σ;
     inv_list_name : gname;
     enabled_name : gname;
     disabled_name : gname;
@@ -61,13 +61,13 @@ Module invG.
       inv_names_enabled_name : gname;
       inv_names_disabled_name : gname }.
 
-  Definition inv_update_pre `(ipG : invPreG Σ) (names : inv_names) :=
+  Definition inv_update_pre `(ipG : invGpreS Σ) (names : inv_names) :=
     {| inv_inG := ipG;
        inv_list_name := inv_names_list_name names;
        enabled_name := inv_names_enabled_name names;
        disabled_name := inv_names_disabled_name names |}.
 
-  Definition inv_get_names `(iG : invG Σ) : inv_names :=
+  Definition inv_get_names `(iG : invGS Σ) : inv_names :=
     {| inv_names_list_name := inv_list_name;
       inv_names_enabled_name := enabled_name;
       inv_names_disabled_name := disabled_name |}.
@@ -91,16 +91,16 @@ Module invG.
   Local Strategy 100 [laterO].
   Local Strategy 100 [listO].
 
-  Global Instance subG_invΣ {Σ} : subG invΣ Σ → invPreG Σ.
+  Global Instance subG_invΣ {Σ} : subG invΣ Σ → invGpreS Σ.
   Proof. solve_inG. Qed.
-End invG.
-Import invG.
+End invGS.
+Import invGS.
 
 Definition invariant_unfold {Σ} {n} sch (Ps : vec (iProp Σ) n) : agree (list (later (iPropO Σ)) * bi_schema) :=
   to_agree ((λ P, Next P) <$> (vec_to_list Ps), sch).
 Definition inv_mut_unfold {Σ} {n} q (Ps : vec (iProp Σ) n) : option (frac * (agree (list (later (iPropO Σ))))) :=
   Some (q%Qp, to_agree ((λ P, Next P) <$> (vec_to_list Ps))).
-Definition ownI `{!invG Σ} {n} (lvl: nat) (i : positive) (sch: bi_schema) (Ps : vec (iProp Σ) n) : iProp Σ :=
+Definition ownI `{!invGS Σ} {n} (lvl: nat) (i : positive) (sch: bi_schema) (Ps : vec (iProp Σ) n) : iProp Σ :=
   (∃ γs, fmlist_idx inv_list_name lvl γs ∗
          own (invariant_name γs) (◯ {[ i := (invariant_unfold sch Ps, ε) ]})).
 Global Arguments ownI {_ _ _} _ _ _%I _%I.
@@ -108,7 +108,7 @@ Typeclasses Opaque ownI.
 Global Instance: Params (@invariant_unfold) 1 := {}.
 Global Instance: Params (@ownI) 3 := {}.
 
-Definition ownI_mut `{!invG Σ} {n} (lvl: nat) (i : positive) q (Qs : vec (iProp Σ) n) : iProp Σ :=
+Definition ownI_mut `{!invGS Σ} {n} (lvl: nat) (i : positive) q (Qs : vec (iProp Σ) n) : iProp Σ :=
   (∃ (l: agree (list (later (iPropO Σ)) * bi_schema)) γs, fmlist_idx inv_list_name lvl γs ∗
          own (invariant_name γs) (◯ {[ i := (l, inv_mut_unfold q Qs) ]})).
 Global Arguments ownI_mut {_ _ _} _ _ _%I.
@@ -116,21 +116,21 @@ Typeclasses Opaque ownI_mut.
 Instance: Params (@inv_mut_unfold) 1 := {}.
 Instance: Params (@ownI_mut) 3 := {}.
 
-Definition ownE `{!invG Σ} (E : coPset) : iProp Σ :=
+Definition ownE `{!invGS Σ} (E : coPset) : iProp Σ :=
   own enabled_name (CoPset E).
 Typeclasses Opaque ownE.
 Global Instance: Params (@ownE) 3 := {}.
 
-Definition ownD `{!invG Σ} (E : gset positive) : iProp Σ :=
+Definition ownD `{!invGS Σ} (E : gset positive) : iProp Σ :=
   own disabled_name (GSet E).
 Typeclasses Opaque ownD.
 Global Instance: Params (@ownD) 3 := {}.
 
-Definition inv_cmra_fmap `{!invG Σ} (v: (list (iProp Σ) * bi_schema) * list (iProp Σ)) :=
+Definition inv_cmra_fmap `{!invGS Σ} (v: (list (iProp Σ) * bi_schema) * list (iProp Σ)) :=
   let '((Ps, sch), Qs) := v in
   (invariant_unfold sch (list_to_vec Ps), inv_mut_unfold 1%Qp (list_to_vec Qs)).
 
-Fixpoint bi_schema_pre `{!invG Σ} n (Ps Ps_mut: list (iProp Σ)) wsat (sch: bi_schema) :=
+Fixpoint bi_schema_pre `{!invGS Σ} n (Ps Ps_mut: list (iProp Σ)) wsat (sch: bi_schema) :=
   match sch with
   | bi_sch_emp => emp
   | bi_sch_pure φ => ⌜φ⌝
@@ -157,7 +157,7 @@ Fixpoint bi_schema_pre `{!invG Σ} n (Ps Ps_mut: list (iProp Σ)) wsat (sch: bi_
   | bi_sch_ownE E => ownE (E n)
   end%I.
 
-Definition wsat_pre `{!invG Σ} n bi_schema_interp :=
+Definition wsat_pre `{!invGS Σ} n bi_schema_interp :=
   (∃ I : gmap positive ((list (iProp Σ) * bi_schema) * list (iProp Σ)),
         (∃ γs, fmlist_idx inv_list_name n γs ∗
              own (invariant_name γs) (● (inv_cmra_fmap <$> I : gmap _ _))) ∗
@@ -166,13 +166,13 @@ Definition wsat_pre `{!invG Σ} n bi_schema_interp :=
                              ownD {[i]}) ∨
                             ownE {[i]})%I.
 
-Fixpoint bi_schema_interp `{!invG Σ} n (Ps Ps_mut: list (iProp Σ)) sch {struct n} :=
+Fixpoint bi_schema_interp `{!invGS Σ} n (Ps Ps_mut: list (iProp Σ)) sch {struct n} :=
   match n with
   | O => bi_schema_pre O Ps Ps_mut True%I sch
   | S n' => bi_schema_pre (S n') Ps Ps_mut (wsat_pre n' (bi_schema_interp n') ∗ wsat n')%I sch
   end
   with
-  wsat `{!invG Σ} n :=
+  wsat `{!invGS Σ} n :=
   match n with
     | S n =>
   (∃ I : gmap positive ((list (iProp Σ) * bi_schema) * list (iProp Σ)),
@@ -188,7 +188,7 @@ Fixpoint bi_schema_interp `{!invG Σ} n (Ps Ps_mut: list (iProp Σ)) sch {struct
 Global Arguments bi_schema_interp {_ _} _ _ _ _.
 Global Arguments wsat {_ _} _.
 
-Lemma wsat_unfold `{!invG Σ} n:
+Lemma wsat_unfold `{!invGS Σ} n:
   wsat n =
   match n with
     | S n =>
@@ -204,7 +204,7 @@ Lemma wsat_unfold `{!invG Σ} n:
   end%I.
 Proof. rewrite /=. destruct n => //=. Qed.
 
-Lemma bi_schema_interp_unfold `{!invG Σ} n Ps Ps_mut sch :
+Lemma bi_schema_interp_unfold `{!invGS Σ} n Ps Ps_mut sch :
   bi_schema_interp n Ps Ps_mut sch =
   match sch with
   | bi_sch_emp => emp
@@ -236,7 +236,7 @@ Proof. destruct n, sch => //=. Qed.
 Opaque wsat bi_schema_interp_unfold.
 
 Section wsat.
-Context `{!invG Σ}.
+Context `{!invGS Σ}.
 Implicit Types P : iProp Σ.
 
 Lemma wsat_le_acc n1 n2:
@@ -903,8 +903,8 @@ Qed.
 End wsat.
 
 (* Allocation of an initial world *)
-Lemma wsat_alloc'_strong `{HIPRE: !invPreG Σ} :
-  ⊢ |==> ∃ (_ : invG Σ) (HEQ: inv_inG = HIPRE), wsat_all ∗ ownE ⊤.
+Lemma wsat_alloc'_strong `{HIPRE: !invGpreS Σ} :
+  ⊢ |==> ∃ (_ : invGS Σ) (HEQ: inv_inG = HIPRE), wsat_all ∗ ownE ⊤.
 Proof.
   iIntros.
   iMod (fmlist_alloc []) as (γI) "HI".
@@ -917,8 +917,8 @@ Proof.
   iExists [] => //=. iFrame. rewrite wsat_unfold //.
 Qed.
 
-Lemma wsat_alloc' `{!invPreG Σ} :
-  ⊢ |==> ∃ (_ : invG Σ), wsat_all ∗ ownE ⊤.
+Lemma wsat_alloc' `{!invGpreS Σ} :
+  ⊢ |==> ∃ (_ : invGS Σ), wsat_all ∗ ownE ⊤.
 Proof.
   iIntros.
   iMod (fmlist_alloc []) as (γI) "HI".
@@ -931,7 +931,7 @@ Proof.
   iExists [] => //=. iFrame. rewrite wsat_unfold //.
 Qed.
 
-Lemma wsat_alloc `{!invPreG Σ} n : ⊢ |==> ∃ _ : invG Σ, wsat n ∗ ownE ⊤.
+Lemma wsat_alloc `{!invGpreS Σ} n : ⊢ |==> ∃ _ : invGS Σ, wsat n ∗ ownE ⊤.
 Proof.
   iIntros.
   iMod (wsat_alloc') as (?) "(Hall&Hown)".
@@ -940,7 +940,7 @@ Proof.
 Qed.
 
 Section schema_test_bupd.
-Context `{!invG Σ}.
+Context `{!invGS Σ}.
 Implicit Types P : iProp Σ.
 
 Definition ownI_bupd lvl i P := ownI lvl i (bi_sch_bupd (bi_sch_var_fixed O)) (list_to_vec [P]).
@@ -966,7 +966,7 @@ Qed.
 End schema_test_bupd.
 
 Section schema_test_mut.
-Context `{!invG Σ}.
+Context `{!invGS Σ}.
 Implicit Types P Q : iProp Σ.
 
 Definition bi_sch_bupd_factory (Q P: bi_schema) : bi_schema :=

@@ -4,7 +4,7 @@ From Perennial.program_logic Require Export ectx_language weakestpre lifting.
 From iris.prelude Require Import options.
 
 Section wp.
-Context {Λ : ectxLanguage} `{!irisG Λ Σ} {Hinh : Inhabited (state Λ)} {Hginh : Inhabited (global_state Λ)}.
+Context {Λ : ectxLanguage} `{!irisGS Λ Σ} {Hinh : Inhabited (state Λ)} {Hginh : Inhabited (global_state Λ)}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.

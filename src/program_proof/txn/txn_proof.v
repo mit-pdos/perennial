@@ -12,7 +12,7 @@ From Perennial.program_logic Require Import na_crash_inv.
 
 Section proof.
 Context `{!jrnlG Σ}.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!lockmapG Σ}.
 Definition Njrnl := nroot .@ "jrnl".
 

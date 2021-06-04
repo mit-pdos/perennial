@@ -12,7 +12,7 @@ Set Default Proof Using "Type".
 Class groveG (Λ : language) (CS: crash_semantics Λ) (Σ : gFunctors) := GroveG {
   grove_global_state_interp : global_state Λ → nat → list (observation Λ) → iProp Σ;
   grove_num_laters_per_step : nat → nat;
-  grove_invG :> invG Σ;
+  grove_invG :> invGS Σ;
 }.
 
 Section wpd.

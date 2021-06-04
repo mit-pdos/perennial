@@ -14,7 +14,7 @@ From Perennial.goose_lang.ffi Require Import append_log_ffi.
 Canonical Structure log_stateO := leibnizO log_state.
 
 Section hocap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!stagedG Σ}.
 Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
 
@@ -457,7 +457,7 @@ Qed.
 End hocap.
 
 Section hocap_crash.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!stagedG Σ}.
 Context `{Hin: inG Σ (authR (optionUR (exclR log_stateO)))}.
 

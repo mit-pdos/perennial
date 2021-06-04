@@ -50,15 +50,15 @@ Existing Instance sty_inv_persistent.
 
 Section pre_assumptions.
 
-Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
+Context `{Hhpre: @heapGpreS ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
 Context `{Hcrashpre: crashPreG Σ}.
 Context `{Hstypre: !sty_preG (hsT_model := hsT_model) (specTy_update := upd) Σ}.
 
 Definition sty_derived_crash_condition :=
-    (λ (hG: heapG Σ) (hRG: refinement_heapG Σ), ∃ hS,
-      ▷ ∀ (hG': heapG Σ), |={⊤}=>
+    (λ (hG: heapGS Σ) (hRG: refinement_heapG Σ), ∃ hS,
+      ▷ ∀ (hG': heapGS Σ), |={⊤}=>
       ∀ σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
       ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗

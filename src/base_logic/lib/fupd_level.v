@@ -5,7 +5,7 @@ From iris.algebra Require Import gmap auth agree gset coPset.
 From Perennial.base_logic.lib Require Export own.
 From Perennial.base_logic.lib Require Import wsat fancy_updates.
 From iris.prelude Require Import options.
-Export invG.
+Export invGS.
 Import uPred.
 
 
@@ -296,18 +296,18 @@ Local Hint Extern 0 (AE_full _ ## MaybeEn _) => apply AE_full_MaybeEn_disj : cor
 Local Hint Extern 0 (AE _ _ ## MaybeEn _) => apply AE_MaybeEn_disj : core.
 Local Hint Extern 0 (AlwaysEn ## MaybeEn _) => apply coPset_inl_inr_disj : core.
 
-Definition uPred_fupd_split_level_def `{!invG Σ} (E1 E2 : coPset) (k : nat) mj (P : iProp Σ) : iProp Σ :=
+Definition uPred_fupd_split_level_def `{!invGS Σ} (E1 E2 : coPset) (k : nat) mj (P : iProp Σ) : iProp Σ :=
   wsat (S k) ∗ ownE (AE (S k) mj ∪ MaybeEn E1) ==∗ ◇ (wsat (S k) ∗ ownE (AE (S k) mj ∪ MaybeEn E2) ∗ P).
-Definition uPred_fupd_split_level_aux `{!invG Σ} : seal uPred_fupd_split_level_def. Proof. by eexists. Qed.
-Definition uPred_fupd_split_level `{!invG Σ} := uPred_fupd_split_level_aux.(unseal).
-Definition uPred_fupd_split_level_eq `{!invG Σ} : uPred_fupd_split_level = uPred_fupd_split_level_def :=
+Definition uPred_fupd_split_level_aux `{!invGS Σ} : seal uPred_fupd_split_level_def. Proof. by eexists. Qed.
+Definition uPred_fupd_split_level `{!invGS Σ} := uPred_fupd_split_level_aux.(unseal).
+Definition uPred_fupd_split_level_eq `{!invGS Σ} : uPred_fupd_split_level = uPred_fupd_split_level_def :=
   uPred_fupd_split_level_aux.(seal_eq).
 
-Definition uPred_fupd_level_def `{!invG Σ} (E1 E2 : coPset) (k : nat) (P : iProp Σ) : iProp Σ :=
+Definition uPred_fupd_level_def `{!invGS Σ} (E1 E2 : coPset) (k : nat) (P : iProp Σ) : iProp Σ :=
   uPred_fupd_split_level E1 E2 k None P.
-Definition uPred_fupd_level_aux `{!invG Σ} : seal uPred_fupd_level_def. Proof. by eexists. Qed.
-Definition uPred_fupd_level `{!invG Σ} := uPred_fupd_level_aux.(unseal).
-Definition uPred_fupd_level_eq `{!invG Σ} : uPred_fupd_level = uPred_fupd_level_def :=
+Definition uPred_fupd_level_aux `{!invGS Σ} : seal uPred_fupd_level_def. Proof. by eexists. Qed.
+Definition uPred_fupd_level `{!invGS Σ} := uPred_fupd_level_aux.(unseal).
+Definition uPred_fupd_level_eq `{!invGS Σ} : uPred_fupd_level = uPred_fupd_level_def :=
   uPred_fupd_level_aux.(seal_eq).
 
 Reserved Notation "| k , j ={ E1 }=> Q"
@@ -339,7 +339,7 @@ Notation "P = k ={ E1 , E2 }=∗ Q" := (P -∗ |k={E1,E2}=> Q) : stdpp_scope.
 *)
 
 Section fupd_level.
-Context `{!invG Σ}.
+Context `{!invGS Σ}.
 Implicit Types P: iProp Σ.
 Implicit Types E : coPset.
 Implicit Types j k : nat.
@@ -671,7 +671,7 @@ Proof. intros. by rewrite -(step_fupd_level_mask_mono Ei _ Ei _) // -!fupd_level
 End fupd_level.
 
 Section fupd_split_level.
-Context `{!invG Σ}.
+Context `{!invGS Σ}.
 Lemma fupd_split_level_intro E k mj P : P ⊢ |k,mj={E}=> P.
 Proof. by rewrite {1}(fupd_split_level_intro_mask E E k mj P) // fupd_split_level_trans. Qed.
 Lemma fupd_split_level_intro_mask' E1 E2 k mj : E2 ⊆ E1 → ⊢@{iPropI Σ} |k,mj={E1,E2}=> |k,mj={E2,E1}=> emp.
@@ -827,7 +827,7 @@ Qed.
 End fupd_split_level.
 
 Section schema_test_fupd.
-Context `{!invG Σ}.
+Context `{!invGS Σ}.
 Implicit Types P : iProp Σ.
 
 Definition bi_sch_False : bi_schema := bi_sch_pure False.

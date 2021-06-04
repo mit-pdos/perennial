@@ -15,7 +15,7 @@ Context `{!ffi_interp ffi}.
 
 Canonical Structure heap_local_namesO := leibnizO heap_local_names.
 
-Program Global Instance heapG_perennialG `{!heapG Σ} :
+Program Global Instance heapG_perennialG `{!heapGS Σ} :
   perennialG goose_lang goose_crash_lang heap_local_namesO Σ :=
 {
   perennial_irisG := λ Hcrash hnames,
@@ -26,8 +26,8 @@ Program Global Instance heapG_perennialG `{!heapG Σ} :
 Next Obligation. eauto. Qed.
 Next Obligation. eauto. Qed.
 
-Definition wpr `{hG: !heapG Σ} (s: stuckness) (k: nat) (E: coPset)
-  (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapG Σ → iProp Σ) (Φr: heapG Σ → val → iProp Σ) :=
+Definition wpr `{hG: !heapGS Σ} (s: stuckness) (k: nat) (E: coPset)
+  (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapGS Σ → iProp Σ) (Φr: heapGS Σ → val → iProp Σ) :=
   wpr s k _ ({| pbundleT := heap_get_local_names Σ _ |}) E e recv
               Φ
               (λ Hc names, Φinv (heap_update_local _ _ _ Hc (@pbundleT _ _ names)))
@@ -35,7 +35,7 @@ Definition wpr `{hG: !heapG Σ} (s: stuckness) (k: nat) (E: coPset)
 
 
 Section wpr.
-Context `{hG: !heapG Σ}.
+Context `{hG: !heapGS Σ}.
 Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types P : iProp Σ.
@@ -63,7 +63,7 @@ Qed.
 
 Lemma idempotence_wpr `{!ffi_interp_adequacy} s k E1 e rec Φx Φinv Φrx Φcx:
   ⊢ WPC e @ s ; k ; E1 {{ Φx }} {{ Φcx hG }} -∗
-   (□ ∀ (hG': heapG Σ) (Hpf: @heapG_invG _ _ _ _ hG = @heapG_invG _ _ _ _ hG') σ σ'
+   (□ ∀ (hG': heapGS Σ) (Hpf: @heapG_invG _ _ _ _ hG = @heapG_invG _ _ _ _ hG') σ σ'
         (HC: crash_prim_step (goose_crash_lang) σ σ'),
         Φcx hG' -∗ ▷ post_crash(λ hG', ffi_restart (heapG_ffiG) σ'.(world) -∗
         (Φinv hG' ∧ WPC rec @ s ; k; E1 {{ Φrx hG' }} {{ Φcx hG' }}))) -∗

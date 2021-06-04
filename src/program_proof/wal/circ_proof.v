@@ -52,7 +52,7 @@ Instance subG_circΣ Σ : subG circΣ Σ → circG Σ.
 Proof. solve_inG. Qed.
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!circG Σ}.
 
 Context (N: namespace).

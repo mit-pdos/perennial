@@ -14,7 +14,7 @@ Class spec_ffi_interp_adequacy `{spec_ffi: @spec_ffi_interp ffi} `{EXT: !spec_ex
                                                           (spec_ffi_op_field)
                                                           (spec_ext_semantics_field) }.
 
-Class refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} Σ := HeapPreG {
+Class refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} Σ := HeapGpreS {
   refinement_heap_preG_heap :> na_heapPreG loc (@val spec_ffi_op_field) Σ;
   refinement_heap_preG_ffi : @ffi_preG (@spec_ffi_model_field ffi)
                                        (@spec_ffi_interp_field _ spec_ffi)
@@ -42,14 +42,14 @@ Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{spec_interp: @spec_ffi_interp spec_ffi}.
 Context `{spec_adeq: !spec_ffi_interp_adequacy}.
 
-Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
+Context `{Hhpre: @heapGpreS ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
 
 Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field spec_ffi_interp_field
          spec_ffi_interp_adequacy_field.
 
-Lemma goose_spec_init1 {hG: heapG Σ} r tp0 σ0 g0 tp σ g s tr or P:
+Lemma goose_spec_init1 {hG: heapGS Σ} r tp0 σ0 g0 tp σ g s tr or P:
   ffi_initgP g →
   ffi_initP σ.(world) g →
   null_non_alloc σ.(heap) →
@@ -92,7 +92,7 @@ Proof using Hrpre Hcpre.
   { iModIntro. iMod (cfupd_weaken_all with "[$]") as "H"; auto. iDestruct "H" as ">$". eauto. }
 Qed.
 
-Lemma goose_spec_init2 {hG: heapG Σ} r tp σ g tr or P:
+Lemma goose_spec_init2 {hG: heapGS Σ} r tp σ g tr or P:
   ffi_initgP g →
   ffi_initP σ.(world) g →
   null_non_alloc σ.(heap) →
@@ -110,7 +110,7 @@ Proof using Hrpre Hcpre.
   { do 2 econstructor. }
 Qed.
 
-Lemma goose_spec_crash_init {hG: heapG Σ} {hRG: refinement_heapG Σ} r tp0 σ0 g0 tp σ g σ_post_crash s tr or P:
+Lemma goose_spec_crash_init {hG: heapGS Σ} {hRG: refinement_heapG Σ} r tp0 σ0 g0 tp σ g σ_post_crash s tr or P:
   σ_post_crash.(trace) = tr →
   σ_post_crash.(oracle) = or →
   erased_rsteps (CS := spec_crash_lang) r (tp0, (σ0,g0)) (tp, (σ,g)) s →
@@ -158,7 +158,7 @@ Proof using Hrpre Hcpre.
   { iModIntro. iMod (cfupd_weaken_all with "[$]") as "H"; auto. iDestruct "H" as ">$". eauto. }
 Qed.
 
-Lemma trace_inv_open {hG: heapG Σ} {hrG: refinement_heapG Σ}  rs es σgs σ:
+Lemma trace_inv_open {hG: heapGS Σ} {hrG: refinement_heapG Σ}  rs es σgs σ:
   spec_ctx' rs ([es], σgs) -∗
   trace_ctx -∗
   trace_auth (trace σ) -∗
@@ -195,7 +195,7 @@ Proof.
   { subst. congruence. }
 Qed.
 
-Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: heapG Σ → iProp Σ) P :
+Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: heapGS Σ → iProp Σ) P :
   null_non_alloc σs.(heap) →
   ffi_initgP g →
   ffi_initP σ.(world) g →
@@ -203,7 +203,7 @@ Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: hea
   ffi_initP σs.(world) gs →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
-  (∀ `{Hheap : !heapG Σ} {Href: refinement_heapG Σ}
+  (∀ `{Hheap : !heapGS Σ} {Href: refinement_heapG Σ}
     (* (HPF: ∃ Hi' Ht', Hheap = heap_update_pre _ _ Hi' (@pbundleT _ Σ Ht') *),
      ⊢ |={⊤}=>
        (spec_ctx' rs ([es], (σs,gs)) -∗
@@ -263,7 +263,7 @@ Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{spec_interp: @spec_ffi_interp spec_ffi}.
 Context `{spec_adeq: !spec_ffi_interp_adequacy}.
 
-Context `{Hhpre: @heapPreG ext ffi ffi_semantics interp _ Σ}.
+Context `{Hhpre: @heapGpreS ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
 
@@ -275,13 +275,13 @@ Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_fie
    where it has to be shown to hold: from an initial state, and from post-crash
    (assuming Φc on the previous generation) *)
 
-Definition wpc_obligation k E e es Φ Φc (hG: heapG Σ) (hRG: refinement_heapG Σ) P : iProp Σ :=
+Definition wpc_obligation k E e es Φ Φc (hG: heapGS Σ) (hRG: refinement_heapG Σ) P : iProp Σ :=
      (O ⤇ es -∗ spec_ctx -∗ spec_crash_ctx P  -∗ trace_ctx -∗ WPC e @ NotStuck; k; E {{ Φ hG hRG }} {{ Φc hG hRG }})%I.
 
 Implicit Types initP: @state ext ffi → @state (spec_ffi_op_field) (spec_ffi_model_field) → Prop.
 
 Definition wpc_init k E e es Φ Φc initP P : iProp Σ :=
-  (∀ (hG: heapG Σ) (hRG: refinement_heapG Σ) σ g σs gs,
+  (∀ (hG: heapGS Σ) (hRG: refinement_heapG Σ) σ g σs gs,
       ⌜ initP σ σs ⌝ →
       ffi_local_start (heapG_ffiG) σ.(world) g -∗
       ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
@@ -292,8 +292,8 @@ Definition wpc_init k E e es Φ Φc initP P : iProp Σ :=
    to be able to depend on what state the impl crashed to. If spec crah steps
    or impl crash steps are deterministic, there is probably a much simpler defn. *)
 Definition wpc_post_crash k E e es Φ Φc P : iProp Σ :=
-  (∀ (hG: heapG Σ) (hRG: refinement_heapG Σ),
-      Φc hG hRG -∗ ▷ ∀ (hG': heapG Σ), |={⊤}=>
+  (∀ (hG: heapGS Σ) (hRG: refinement_heapG Σ),
+      Φc hG hRG -∗ ▷ ∀ (hG': heapGS Σ), |={⊤}=>
       ∀ σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
       ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
@@ -402,7 +402,7 @@ Definition initP_wf initP :=
     initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs ∧
                  ffi_initgP g ∧ ffi_initgP gs.
 
-Definition excl_crash_token (P : heapG Σ → refinement_heapG Σ → iProp Σ) :=
+Definition excl_crash_token (P : heapGS Σ → refinement_heapG Σ → iProp Σ) :=
   ∀ Hheap Href, (⊢ ((P Hheap Href -∗ P Hheap Href -∗ False))).
 
 Theorem heap_wpc_refinement_adequacy `{crashPreG Σ} k es e

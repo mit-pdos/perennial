@@ -12,7 +12,7 @@ From Perennial.goose_lang.lib.slice Require Import typed_slice.
 From Perennial.program_proof Require Import marshal_proof.
 
 Section rpc_proof.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!rpcG Σ u64}.
 Context `{!rpcregG Σ}.
 

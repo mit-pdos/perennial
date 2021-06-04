@@ -12,7 +12,7 @@ From Perennial.Helpers Require Import NamedProps.
 From iris.algebra Require Import numbers.
 
 Section lockservice_proof.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!mapG Σ u64 bool}.
 Context `{!mapG Σ u64 unit}.
 Context `{!ghost_varG Σ bool}.

@@ -7,7 +7,7 @@ From iris.prelude Require Import options.
 Import uPred.
 
 (** Always Enabled Semantic Invariants *)
-Definition ae_inv_def `{!invG Σ} (k : nat) (mj: option nat) (P : iProp Σ) : iProp Σ :=
+Definition ae_inv_def `{!invGS Σ} (k : nat) (mj: option nat) (P : iProp Σ) : iProp Σ :=
   □ ∀ Q E, (match mj with
             | None =>
               match k with
@@ -28,7 +28,7 @@ Local Hint Extern 0 (AlwaysEn ## MaybeEn _) => apply coPset_inl_inr_disj : core.
 
 (** * Ae_Invariants *)
 Section ae_inv.
-  Context `{!invG Σ}.
+  Context `{!invGS Σ}.
   Implicit Types i : positive.
   Implicit Types E : coPset.
   Implicit Types P Q R : iProp Σ.

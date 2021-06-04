@@ -21,7 +21,7 @@ Instance subG_lockmapΣ Σ : subG lockmapΣ Σ → lockmapG Σ.
 Proof. solve_inG. Qed.
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!lockmapG Σ}.
 
 Implicit Types s : Slice.t.

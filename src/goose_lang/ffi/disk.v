@@ -96,11 +96,11 @@ Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
 Proof. reflexivity. Qed.
 
 Class diskG Σ :=
-  { diskG_gen_heapG :> gen_heap.gen_heapG Z Block Σ; }.
+  { diskG_gen_heapG :> gen_heap.gen_heapGS Z Block Σ; }.
 
 
 Class disk_preG Σ :=
-  { disk_preG_gen_heapG :> gen_heap.gen_heapPreG Z Block Σ; }.
+  { disk_preG_gen_heapG :> gen_heap.gen_heapGpreS Z Block Σ; }.
 
 Definition diskΣ : gFunctors :=
   #[gen_heapΣ Z Block].
@@ -232,7 +232,7 @@ Section disk.
   Next Obligation. intros ? [[]] => //=. Qed.
 
   Section proof.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Instance diskG0 : diskG Σ := heapG_ffiG.
 
   Notation "l d↦{ dq } v" := (gen_heap.mapsto (L:=Z) (V:=Block) l dq v%V)
@@ -587,7 +587,7 @@ Section crash.
   Existing Instances disk.disk_semantics disk.disk_interp.
   Existing Instance diskG0.
 
-  Lemma disk_mapsto_post_crash `{!heapG Σ} l q v:
+  Lemma disk_mapsto_post_crash `{!heapGS Σ} l q v:
     l d↦{q} v -∗ post_crash (λ _, l d↦{q} v).
   Proof.
     iIntros "H". iIntros (???) "#Hrel".
@@ -596,11 +596,11 @@ Section crash.
     rewrite /diskG0. rewrite Heq1. eauto.
   Qed.
 
-  Global Instance disk_mapsto_into_crash `{!heapG Σ} l q v:
+  Global Instance disk_mapsto_into_crash `{!heapGS Σ} l q v:
     IntoCrash (l d↦{q} v)%I (λ hG, l d↦{q} v)%I.
   Proof. apply disk_mapsto_post_crash. Qed.
 
-  Global Instance disk_array_into_crash `{!heapG Σ} l vs:
+  Global Instance disk_array_into_crash `{!heapGS Σ} l vs:
     IntoCrash (l d↦∗ vs)%I (λ _, l d↦∗ vs)%I.
   Proof. apply _. Qed.
 End crash.

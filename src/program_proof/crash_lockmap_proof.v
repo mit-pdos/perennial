@@ -10,7 +10,7 @@ From Perennial.program_logic Require Export na_crash_inv.
 From Perennial.goose_lang Require Import proofmode wpc_proofmode notation.
 
 Section proof.
-  Context `{!heapG Σ, stagedG Σ}.
+  Context `{!heapGS Σ, stagedG Σ}.
   Context `{!lockmapG Σ}.
 
   Implicit Types s : Slice.t.

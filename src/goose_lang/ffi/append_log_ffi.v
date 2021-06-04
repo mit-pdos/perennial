@@ -534,7 +534,7 @@ Instance log_spec_ty : ext_types (spec_ffi_op_field) := log_ty.
 Instance log_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := log_spec_ffi_interp) :=
   {| spec_ffi_interp_adequacy_field := log_interp_adequacy |}.
 
-Context `{invG Σ}.
+Context `{invGS Σ}.
 Context `{crashG Σ}.
 Context `{!refinement_heapG Σ}.
 

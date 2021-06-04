@@ -24,7 +24,7 @@ Module s_inode.
 End s_inode.
 
 Section goose.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!allocG Σ}.
   Context `{!stagedG Σ}.
   Context `{fmlistG Block Σ}.

@@ -18,7 +18,7 @@ Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!crashG Σ}.
 Context `{!stagedG Σ}.
 Context `{!allocG Σ}.

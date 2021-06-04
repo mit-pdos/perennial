@@ -25,7 +25,7 @@ Class walheapG (Σ: gFunctors) :=
 
 Section heap.
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!walheapG Σ}.
 
 (* Invariant and definitions *)

@@ -165,10 +165,10 @@ End grove.
 
 (** * Grove semantic interpretation and lifting lemmas *)
 Class groveG Σ :=
-  { groveG_gen_heapG :> gen_heap.gen_heapG chan (gset message) Σ; }.
+  { groveG_gen_heapG :> gen_heap.gen_heapGS chan (gset message) Σ; }.
 
 Class grove_preG Σ :=
-  { grove_preG_gen_heapG :> gen_heap.gen_heapPreG chan (gset message) Σ; }.
+  { grove_preG_gen_heapG :> gen_heap.gen_heapGpreS chan (gset message) Σ; }.
 
 Definition groveΣ : gFunctors :=
   #[gen_heapΣ chan (gset message)].
@@ -215,7 +215,7 @@ Notation "c c↦ ms" := (mapsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
 
 Section lifting.
   Existing Instances grove_op grove_model grove_semantics grove_interp.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Instance heapG_groveG : groveG Σ := heapG_ffiG.
 
   Definition chan_meta_token (c : chan) (E: coPset) : iProp Σ :=
@@ -553,7 +553,7 @@ Section grove.
         "Data" ::= ("ptr", "len", "len")
       ].
 
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
 
   Lemma wp_Listen c_l s E :
     {{{ True }}}

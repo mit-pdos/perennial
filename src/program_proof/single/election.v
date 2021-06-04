@@ -15,7 +15,7 @@ Class electionG Σ := PaxosG {
 }.
 
 Context `{!electionG Σ}.
-Context `{!invG Σ}.
+Context `{!invGS Σ}.
 
 Definition vote (n_pred:nat) (γ:gname) : iProp Σ :=
   own γ (1/(pos_to_Qp (Pos.of_nat n_pred)))%Qp

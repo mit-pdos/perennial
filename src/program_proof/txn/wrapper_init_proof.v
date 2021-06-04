@@ -18,7 +18,7 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 From Perennial.program_proof Require Import disk_prelude.
 
 Section proof.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!lockmapG Σ}.
   Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp
            jrnl_spec_interp_adequacy.

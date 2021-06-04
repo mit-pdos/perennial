@@ -18,7 +18,7 @@ From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang Require wpr_lifting.
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
@@ -120,7 +120,7 @@ End heap.
 Import wpr_lifting.
 
 Section recov.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!simpleG Σ}.
 
   (* Just a simple example of using idempotence *)

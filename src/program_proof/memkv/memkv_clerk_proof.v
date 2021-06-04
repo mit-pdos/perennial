@@ -6,7 +6,7 @@ From Perennial.program_proof.memkv Require Export common_proof memkv_coord_defin
 
 Section memkv_clerk_proof.
 
-Context `{!heapG Σ, !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ}.
+Context `{!heapGS Σ, !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ}.
 
 Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   ∃ (s coordCk:loc) shardMap_sl (shardMapping:list u64),

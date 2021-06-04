@@ -54,17 +54,17 @@ typeclass resolution, which is the one thing solve_inG tries. *)
 Existing Class ffi_preG.
 Hint Resolve subG_ffiPreG : typeclass_instances.
 
-Class heapPreG `{ext: ffi_syntax} `{EXT_SEM: !ffi_semantics ext ffi}
+Class heapGpreS `{ext: ffi_syntax} `{EXT_SEM: !ffi_semantics ext ffi}
       `{INTERP: !ffi_interp ffi} {ADEQ: ffi_interp_adequacy} Σ
-  := HeapPreG {
-  heap_preG_iris :> invPreG Σ;
+  := HeapGpreS {
+  heap_preG_iris :> invGpreS Σ;
   heap_preG_crash :> crashPreG Σ;
   heap_preG_heap :> na_heapPreG loc val Σ;
   heap_preG_ffi : ffi_preG Σ;
   heap_preG_trace :> trace_preG Σ;
 }.
 
-Definition heap_update_pre Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (Hcrash: crashG Σ) (names: heap_names) :=
+Definition heap_update_pre Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashG Σ) (names: heap_names) :=
   {| heapG_invG := Hinv;
      heapG_crashG := Hcrash;
      heapG_ffiG := ffi_update_pre Σ (heap_preG_ffi) (heap_ffi_local_names names) (heap_ffi_global_names names);
@@ -72,7 +72,7 @@ Definition heap_update_pre Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (Hcrash: cr
      heapG_traceG := traceG_update_pre Σ (heap_preG_trace) (heap_trace_names names)
  |}.
 
-Lemma heap_update_pre_get Σ `(hpreG : heapPreG Σ) (Hinv: invG Σ) (Hcrash: crashG Σ) (names: heap_names) :
+Lemma heap_update_pre_get Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashG Σ) (names: heap_names) :
   heap_get_names _ (heap_update_pre Σ hpreG Hinv Hcrash names) = names.
 Proof.
   rewrite /heap_get_names/heap_update_pre ffi_update_pre_get_local ffi_update_pre_get_global.
@@ -81,7 +81,7 @@ Proof.
 Qed.
 
 (*
-Lemma heap_update_pre_update Σ `(hpreG : heapPreG Σ) (Hinv1 Hinv2: invG Σ) (Hcrash1 Hcrash2: crashG Σ)
+Lemma heap_update_pre_update Σ `(hpreG : heapGpreS Σ) (Hinv1 Hinv2: invGS Σ) (Hcrash1 Hcrash2: crashG Σ)
       (names1 names2: heap_names) :
   heap_update _ (heap_update_pre Σ hpreG Hinv1 Hcrash1 names2) Hinv2 Hcrash2 names2 =
   (heap_update_pre Σ hpreG Hinv2 Hcrash2 names2).
@@ -112,7 +112,7 @@ Ltac solve_inG_deep :=
 Definition heapΣ `{ext: ffi_syntax} `{ffi_interp_adequacy} : gFunctors :=
   #[invΣ; crashΣ; na_heapΣ loc val; ffiΣ; traceΣ].
 Instance subG_heapPreG `{ext: ffi_syntax} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} :
-  subG heapΣ Σ → heapPreG Σ.
+  subG heapΣ Σ → heapGpreS Σ.
 Proof.
   solve_inG_deep.
 Qed.

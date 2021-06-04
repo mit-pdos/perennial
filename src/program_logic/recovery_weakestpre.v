@@ -9,7 +9,7 @@ Set Default Proof Using "Type".
 
 (*** Recovery ***)
 
-(* An irisG instance usually depends on some implicit ghost names as part of
+(* An irisGS instance usually depends on some implicit ghost names as part of
    state interpretation. Some of these names need to be changed as a result of a
    crash.  A pbundleG T instance is a way to declare a dependence on some type T
    which can encode this set of names *)
@@ -18,15 +18,15 @@ Class pbundleG (T: ofe) (Σ: gFunctors) := {
   pbundleT : T;
 }.
 
-(* A perennialG instance generates an irisG instance given an element t of the designated type T and
-   a crashG instance. We require some properties of the generated irisG instances, such as that
+(* A perennialG instance generates an irisGS instance given an element t of the designated type T and
+   a crashG instance. We require some properties of the generated irisGS instances, such as that
    they all use the same num_laters_per_step function.
 
    TODO: for the distributed version, we also need to similarly add fields requiring that for every t,
-   the invG Σ instance is the same, and the global_state_interp function is the same *)
+   the invGS Σ instance is the same, and the global_state_interp function is the same *)
 
 Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofe) (Σ : gFunctors) := PerennialG {
-  perennial_irisG :> ∀ (Hcrash: crashG Σ), pbundleG T Σ → irisG Λ Σ;
+  perennial_irisG :> ∀ (Hcrash: crashG Σ), pbundleG T Σ → irisGS Λ Σ;
   perennial_crashG: ∀ H2 t, @iris_crashG _ _ (perennial_irisG H2 t) = H2;
   perennial_inv_crashG: ∀ H1 H2 t, @iris_invG _ _ (perennial_irisG H1 t) =
                                    @iris_invG _ _ (perennial_irisG H2 t);

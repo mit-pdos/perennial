@@ -6,7 +6,7 @@ From iris.algebra Require Import mono_nat.
 From Perennial.Helpers Require Import ModArith.
 
 Section aof_proof.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!filesysG Σ}.
 
 Class aofG Σ := AofG {

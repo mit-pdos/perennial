@@ -23,7 +23,7 @@ Notation object := ({K & bufDataT K}).
 Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).

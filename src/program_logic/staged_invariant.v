@@ -45,7 +45,7 @@ Definition bi_sch_staged E :=
 
 (* XXX: unfortunately this lemma swaps the ▷ C and the staged_pending 1%Qp γ from the way
    the schema is structured, but to not break other proofs, we swap the order here *)
-Lemma bi_sch_staged_interp `{!invG Σ, !crashG Σ, !stagedG Σ} E k Qs P γ :
+Lemma bi_sch_staged_interp `{!invGS Σ, !crashG Σ, !stagedG Σ} E k Qs P γ :
   bi_schema_interp (S k) (bi_later <$> [C; P; staged_pending 1%Qp γ])
                    (bi_later <$> [Qs]) (bi_sch_staged E)
   ⊣⊢ ((▷ Qs ∧ □ (▷ Qs -∗ ▷ C -∗ staged_pending 1%Qp γ -∗ |k,Some O={E}=> ▷ P ∗ ▷ Qs)))%I.
@@ -79,7 +79,7 @@ Proof.
    - iIntros "H1 >H2". iApply "H1". eauto.
 Qed.
 
-Lemma bi_sch_staged_interp_weak `{!invG Σ, !crashG Σ, !stagedG Σ} E k Qs_mut P γ :
+Lemma bi_sch_staged_interp_weak `{!invGS Σ, !crashG Σ, !stagedG Σ} E k Qs_mut P γ :
   bi_schema_interp (S k) (bi_later <$> [C; P; staged_pending 1%Qp γ]) (bi_later <$> Qs_mut) (bi_sch_staged E)
                    ⊣⊢ let Qs := default emp%I (bi_later <$> (Qs_mut !! O)) in
                       (((Qs ∧ □ (Qs -∗ ▷ C -∗ staged_pending 1%Qp γ -∗ |k,Some O={E}=> ▷ P ∗ Qs))))%I.
@@ -118,7 +118,7 @@ Qed.
 
 Section staged_inv_defns.
 
-  Context `{!invG Σ, !crashG Σ, !stagedG Σ}.
+  Context `{!invGS Σ, !crashG Σ, !stagedG Σ}.
 
 Definition staged_inv (k: nat) E (γ: gname) (P: iProp Σ) : iProp Σ :=
   ae_inv_mut k None (bi_sch_staged E) [C; P; staged_pending 1%Qp γ].
@@ -139,7 +139,7 @@ Definition staged_value_disc (k: nat) (mj: nat) (γp: gname) (Qs Qr P: iProp Σ)
 End staged_inv_defns.
 
 Section inv.
-Context `{!invG Σ, !stagedG Σ, !crashG Σ}.
+Context `{!invGS Σ, !stagedG Σ, !crashG Σ}.
 Implicit Types i : positive.
 Implicit Types N : namespace.
 Implicit Types P Q R : iProp Σ.

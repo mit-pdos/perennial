@@ -28,7 +28,7 @@ Module rblock.
 End rblock.
 
 Section goose.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!stagedG Σ}.
 
   Implicit Types (l:loc) (addr: u64) (σ: rblock.t) (γ: gname).
@@ -473,7 +473,7 @@ End goose.
 Typeclasses Opaque rblock_cinv.
 
 (* rblock_cinv is durable *)
-Instance rblock_crash `{!heapG Σ} addr σ :
+Instance rblock_crash `{!heapGS Σ} addr σ :
   IntoCrash (rblock_cinv addr σ) (λ _, rblock_cinv addr σ).
 Proof.
   rewrite /IntoCrash /rblock_cinv. iIntros "?".
@@ -481,11 +481,11 @@ Proof.
 Qed.
 
 Section recov.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!stagedG Σ}.
 
   (* This has to be in a separate section from the wpc lemmas because we will
-     use different heapG instances after crash *)
+     use different heapGS instances after crash *)
 
   (* Just a simple example of using idempotence *)
   Theorem wpr_Open d addr σ:
@@ -536,7 +536,7 @@ Existing Instances subG_stagedG.
 
 Definition repΣ := #[stagedΣ; heapΣ; crashΣ].
 
-Lemma ffi_start_OpenRead σ addr g (d : ()) {hG: heapG repΣ} :
+Lemma ffi_start_OpenRead σ addr g (d : ()) {hG: heapGS repΣ} :
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   ffi_local_start heapG_ffiG σ.(world) g

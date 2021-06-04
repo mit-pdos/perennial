@@ -24,7 +24,7 @@ End state.
 
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!txnG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 

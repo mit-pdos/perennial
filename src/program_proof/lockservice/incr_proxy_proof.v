@@ -11,7 +11,7 @@ Section incr_proof.
 (* Proof for increment backed by another increment service
  *)
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!filesysG Σ}.
 
 Definition has_encoding_for_onetime_clerk data cid (args:RPCValsC) :=

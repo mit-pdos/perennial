@@ -309,7 +309,7 @@ Proof.
 Qed.
 
 
-Lemma jrnl_inv_twophase_pre {Σ} {hG: heapG Σ} {hRG: refinement_heapG Σ}
+Lemma jrnl_inv_twophase_pre {Σ} {hG: heapGS Σ} {hRG: refinement_heapG Σ}
       {hJrnl : twophaseG Σ} vs v:
     twophase_inv -∗
     val_interp (smodel := twophaseTy_model) (hS := hJrnl) (@extT jrnl_val_ty JrnlT) vs v -∗
@@ -455,7 +455,7 @@ Notation sty := (@ty (@val_tys _ spec_ty)).
 Global Instance styG_twophaseG Σ: (styG (specTy_model := twophaseTy_model)) Σ → twophaseG Σ.
 Proof. rewrite /styG//=. Defined.
 
-Lemma atomic_convertible_val_interp {Σ} {hG: heapG Σ} {hRG : refinement_heapG Σ}
+Lemma atomic_convertible_val_interp {Σ} {hG: heapGS Σ} {hRG : refinement_heapG Σ}
      {hS: (styG (specTy_model := twophaseTy_model)) Σ}
     (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_convertible t →
@@ -497,7 +497,7 @@ Proof.
     destruct x; eauto.
 Qed.
 
-Lemma atomically_deconvertible_val_interp `{hG: !heapG Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
+Lemma atomically_deconvertible_val_interp `{hG: !heapGS Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
       (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_deconvertible t →
   atomically_val_interp (htpG := (styG_twophaseG _ hS)) dinit objs_dom γ γ' tph_val t es e -∗

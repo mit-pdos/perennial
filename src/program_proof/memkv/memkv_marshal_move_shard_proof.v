@@ -18,7 +18,7 @@ Record MoveShardRequestC := mkMoveShardRequestC {
 Definition has_encoding_MoveShardRequest (data:list u8) (args:MoveShardRequestC) : Prop :=
   has_encoding data [ EncUInt64 args.(MR_Sid) ; EncUInt64 args.(MR_Dst) ].
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Definition own_MoveShardRequest args_ptr args : iProp Σ :=
   "HSid" ∷ args_ptr ↦[MoveShardRequest :: "Sid"] #args.(MR_Sid) ∗

@@ -45,7 +45,7 @@ Admitted.
 End rpc_namespace.
 
 Section rpc_atomic_pre.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!rpcG Σ u64}.
 
 (* This fupd grants resources R post-neutralization of the given sequence number *)
@@ -391,7 +391,7 @@ Notation "|PN={ γrpc , cid }=> R" :=
 
 Section rpc_neutralization.
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!rpcG Σ u64}.
 Definition neutralized_pre γrpc cid PreCond PostCond : iProp Σ :=
   |PN={γrpc,cid}=> (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret)%I.

@@ -761,7 +761,7 @@ Qed.
 
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Hint Unfold block_bytes : word.
 Hint Unfold valid_addr : word.

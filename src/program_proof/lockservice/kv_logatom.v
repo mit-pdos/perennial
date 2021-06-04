@@ -15,7 +15,7 @@ From Perennial.program_proof.lockservice Require Import grove_ffi.
 From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet fmcounter_map rpc_logatom_proof rpc_durable_proof kv_proof kv_durable wpc_proofmode.
 
 Section kv_logatom_proof.
-Context `{!heapG Σ, !kvserviceG Σ, stagedG Σ}.
+Context `{!heapGS Σ, !kvserviceG Σ, stagedG Σ}.
 Context `{!filesysG Σ}.
 
 Lemma wpc_put_logatom_core γ (srv:loc) args req kvserver Q:

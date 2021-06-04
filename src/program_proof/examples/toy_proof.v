@@ -9,7 +9,7 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import disk_prelude.
 
 Section goose.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!stagedG Σ}.
 
   Definition EBlk (addr: u64) :=

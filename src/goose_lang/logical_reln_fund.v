@@ -40,7 +40,7 @@ Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 Context `{hsT_model: !specTy_model spec_ty}.
 Context (spec_trans: sval → ival → Prop).
 Context (spec_atomic_transTy : SCtx -> sexpr -> iexpr -> sty -> sexpr -> iexpr -> sty -> Prop).
-Context `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}.
+Context `{hG: !heapGS Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}.
 Lemma loc_paired_eq_iff ls l ls' l':
   loc_paired ls l -∗
   loc_paired ls' l' -∗
@@ -305,8 +305,7 @@ Proof.
   - intros. apply structRefT_comparableTy_val_eq.
 Qed.
 
-Arguments sty_val_interp {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec_interp _ specTy_model Σ
-  heapG0 refinement_heapG0}.
+Arguments sty_val_interp {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec_interp _ specTy_model Σ _ _}.
 
 Lemma sty_val_size:
       forall  τ vs v,

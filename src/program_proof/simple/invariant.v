@@ -32,7 +32,7 @@ Instance subG_simpleΣ Σ : subG simpleΣ Σ → simpleG Σ.
 Proof. solve_inG. Qed.
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 

@@ -27,7 +27,7 @@ From Perennial.base_logic.lib Require Import wsat.
 *)
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!stagedG Σ}.
 
 Axiom (state : Type).

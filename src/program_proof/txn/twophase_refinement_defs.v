@@ -17,7 +17,7 @@ From Goose Require github_com.mit_pdos.go_journal.obj.
 Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp jrnl_spec_interp_adequacy.
 
 Section refinement_defs.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!refinement_heapG Σ}.
 
 Existing Instance jrnlG0.
@@ -48,7 +48,7 @@ Definition LVL_INV : nat := 125.
 Definition LVL_OPS : nat := 100.
 
 Definition twophase_crash_cond_full
-           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
+           {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
   := ("%Hvalids" ∷ ⌜ map_Forall (mapsto_valid γ) mt ⌝ ∗
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "#Hdom" ∷ jrnl_dom (dom _ mt) ∗
@@ -58,7 +58,7 @@ Definition twophase_crash_cond_full
       "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj))%I.
 
 Definition twophase_crash_cond_partial
-           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
+           {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
   := ("%Hvalids" ∷ ⌜ map_Forall (mapsto_valid γ) mt ⌝ ∗
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "#Hdom" ∷ jrnl_dom (dom _ mt) ∗
@@ -68,11 +68,11 @@ Definition twophase_crash_cond_partial
       "Hjrnl_mapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj obj)))%I.
 
 Definition twophase_crash_cond
-           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
+           {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := ∃ γ dinit logm mt, twophase_crash_cond_partial γ dinit logm mt.
 
 Definition twophase_na_crash_inv
-           {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
+           {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := na_crash_inv (LVL_INIT) (∃ γ dinit logm mt',
                                   twophase_crash_cond_full γ dinit logm mt')%I
                              (∃ γ dinit logm mt',
@@ -81,25 +81,25 @@ Definition twophase_na_crash_inv
 (* don't use [id] to avoid universe trouble *)
 Definition expr_id (e: spec_lang.(language.expr)) : spec_lang.(language.expr) := e.
 
-Definition twophase_inv_inner {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} γ : iProp Σ
+Definition twophase_inv_inner {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} γ : iProp Σ
   := (twophase_na_crash_inv ∗ jrnl_closed_frag ∗ ghost_var γ 1 (0, expr_id)) ∨ jrnl_open.
 
 Definition twophaseInitN := nroot.@"init".
 
-Definition twophase_inv {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
+Definition twophase_inv {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := ∃ γ, inv twophaseInitN (twophase_inv_inner γ) ∗ spec_crash_ctx (jrnl_crash_ctx).
 
-Definition twophase_crash_tok {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} : iProp Σ
+Definition twophase_crash_tok {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} : iProp Σ
   := jrnl_crash_ctx.
 
-Definition twophase_init {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
+Definition twophase_init {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := (∃ γ dinit logm mt, twophase_crash_cond_full γ dinit logm mt ∗
           auth_map.map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> (bufObj_to_obj <$> mt)) ∗
           jrnl_full_crash_tok ∗ jrnl_closed_frag).
 
 Definition twophaseN : coPset := (∅ : coPset).
 
-Definition twophase_val_interp {Σ: gFunctors} {hG: heapG Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}
+Definition twophase_val_interp {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}
            (ty: @ext_tys (@val_tys _ jrnl_ty)) : val_semTy :=
   λ vspec vimpl,
   match ty with

@@ -6,7 +6,7 @@ From Perennial.program_logic Require Export weakestpre.
 From iris.prelude Require Import options.
 
 Section lifting.
-Context `{!irisG Λ Σ}.
+Context `{!irisGS Λ Σ}.
 Implicit Types s : stuckness.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.

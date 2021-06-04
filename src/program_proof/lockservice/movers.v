@@ -25,7 +25,7 @@ Class netG Σ := NetG {
 }.
 
 Section movers.
-  Context `{!heapG Σ, !netG Σ}.
+  Context `{!heapGS Σ, !netG Σ}.
 
   Definition message := positive.
   

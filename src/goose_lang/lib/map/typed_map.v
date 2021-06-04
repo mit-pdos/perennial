@@ -16,7 +16,7 @@ Module Map.
 End Map.
 
 Section heap.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapG Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context {ext_ty: ext_types ext}.
 
 Context `{!IntoVal V}.

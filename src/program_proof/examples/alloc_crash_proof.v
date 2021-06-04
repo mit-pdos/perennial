@@ -126,7 +126,7 @@ Proof.
 Qed.
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!allocG Σ}.
 Context `{!stagedG Σ}.
 
@@ -1017,11 +1017,11 @@ Qed.
 End goose.
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!allocG Σ}.
 
-Context (P: heapG Σ → alloc.t → iProp Σ).
-Context (Ψ: heapG Σ → u64 → iProp Σ).
+Context (P: heapGS Σ → alloc.t → iProp Σ).
+Context (Ψ: heapGS Σ → u64 → iProp Σ).
 
 Instance allocator_crash_cond_stable d b :
   (∀ x, IntoCrash (▷ P _ x) (λ hG, ▷ P hG x)%I) →

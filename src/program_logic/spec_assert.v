@@ -51,7 +51,7 @@ Definition sN := nroot .@ "source".
 Definition sN_inv := sN.@ "base".
 
 Section ghost_spec.
-  Context `{cfgG Σ, crashG Σ, invG Σ}.
+  Context `{cfgG Σ, crashG Σ, invGS Σ}.
 
   Definition tpool_mapsto (j: nat) (e: language.expr Λ) : iProp Σ :=
     own cfg_name (◯ ({[ j := Excl e]}, ε)).
@@ -101,7 +101,7 @@ End ghost_spec.
 Notation "j ⤇ e" := (tpool_mapsto j e) (at level 20) : bi_scope.
 
 Section ghost_step.
-  Context `{invG Σ, crashG Σ, stagedG Σ}.
+  Context `{invGS Σ, crashG Σ, stagedG Σ}.
   Implicit Types (σ : state Λ) (g : global_state Λ).
 
   Lemma tpool_to_map_lookup_aux tp id j e:

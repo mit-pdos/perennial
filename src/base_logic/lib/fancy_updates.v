@@ -4,7 +4,7 @@ From iris.proofmode Require Import tactics.
 From Perennial.base_logic.lib Require Export own.
 From Perennial.base_logic.lib Require Import wsat.
 From iris.prelude Require Import options.
-Export invG.
+Export invGS.
 Import uPred.
 
 (** * Suffix subsets *)
@@ -56,12 +56,12 @@ Definition MaybeEn := coPset_inr.
 
 Local Hint Extern 0 (AlwaysEn ## MaybeEn _) => apply coPset_inl_inr_disj : core.
 
-Definition uPred_fupd_def `{!invG Σ} (E1 E2 : coPset) (P : iProp Σ) : iProp Σ :=
+Definition uPred_fupd_def `{!invGS Σ} (E1 E2 : coPset) (P : iProp Σ) : iProp Σ :=
   wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn E1) ==∗ ◇ (wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn E2) ∗ P).
 Definition uPred_fupd_aux : seal (@uPred_fupd_def). Proof. by eexists. Qed.
 Definition uPred_fupd := uPred_fupd_aux.(unseal).
 Global Arguments uPred_fupd {Σ _}.
-Lemma uPred_fupd_eq `{!invG Σ} : @fupd _ uPred_fupd = uPred_fupd_def.
+Lemma uPred_fupd_eq `{!invGS Σ} : @fupd _ uPred_fupd = uPred_fupd_def.
 Proof. rewrite -uPred_fupd_aux.(seal_eq) //. Qed.
 
 Lemma coPset_suffixes_of_union p E1 E2 :
@@ -90,15 +90,15 @@ Lemma MaybeEn_infinite E:
   (¬ set_finite E) → (¬ set_finite (MaybeEn E)).
 Proof. apply coPset_suffixes_of_infinite. Qed.
 
-Lemma ownE_op_MaybeEn `{!invG Σ} E1 E2 :
+Lemma ownE_op_MaybeEn `{!invGS Σ} E1 E2 :
   E1 ## E2 → ownE (MaybeEn (E1 ∪ E2)) ⊣⊢ ownE (MaybeEn E1) ∗ ownE (MaybeEn E2).
 Proof. intros Hdisj. rewrite MaybeEn_union ownE_op //=. by apply coPset_suffixes_of_disj. Qed.
 
-Lemma ownE_op_MaybeEn' `{!invG Σ} E1 E2 :
+Lemma ownE_op_MaybeEn' `{!invGS Σ} E1 E2 :
   ⌜ E1 ## E2 ⌝ ∧ ownE (MaybeEn (E1 ∪ E2)) ⊣⊢ ownE (MaybeEn E1) ∗ ownE (MaybeEn E2).
 Proof. rewrite MaybeEn_union MaybeEn_disj ownE_op' //=. Qed.
 
-Lemma uPred_fupd_mixin `{!invG Σ} : BiFUpdMixin (uPredI (iResUR Σ)) uPred_fupd.
+Lemma uPred_fupd_mixin `{!invGS Σ} : BiFUpdMixin (uPredI (iResUR Σ)) uPred_fupd.
 Proof.
   split.
   - rewrite uPred_fupd_eq. solve_proper.
@@ -116,13 +116,13 @@ Proof.
     iIntros "!> !>". iFrame. by iApply "HP".
   - rewrite uPred_fupd_eq /uPred_fupd_def. by iIntros (????) "[HwP $]".
 Qed.
-Global Instance uPred_bi_fupd `{!invG Σ} : BiFUpd (uPredI (iResUR Σ)) :=
+Global Instance uPred_bi_fupd `{!invGS Σ} : BiFUpd (uPredI (iResUR Σ)) :=
   {| bi_fupd_mixin := uPred_fupd_mixin |}.
 
-Global Instance uPred_bi_bupd_fupd `{!invG Σ} : BiBUpdFUpd (uPredI (iResUR Σ)).
+Global Instance uPred_bi_bupd_fupd `{!invGS Σ} : BiBUpdFUpd (uPredI (iResUR Σ)).
 Proof. rewrite /BiBUpdFUpd uPred_fupd_eq. by iIntros (E P) ">? [$ $] !> !>". Qed.
 
-Global Instance uPred_bi_fupd_plainly `{!invG Σ} : BiFUpdPlainly (uPredI (iResUR Σ)).
+Global Instance uPred_bi_fupd_plainly `{!invGS Σ} : BiFUpdPlainly (uPredI (iResUR Σ)).
 Proof.
   split.
   - rewrite uPred_fupd_eq /uPred_fupd_def. iIntros (E P) "H [Hw HE]".
@@ -143,7 +143,7 @@ Proof.
     by iFrame.
 Qed.
 
-Lemma ownE_mono_le_acc `{!invG Σ} E1 E2:
+Lemma ownE_mono_le_acc `{!invGS Σ} E1 E2:
   E1 ⊆ E2 →
   ownE E2 -∗ ownE E1 ∗ (ownE E1 -∗ ownE E2).
 Proof.
@@ -152,13 +152,13 @@ Proof.
   { rewrite difference_union_L. set_solver. }
 Qed.
 
-Lemma ownE_weaken `{!invG Σ} E1 E2 : E2 ⊆ E1 → ownE E1 -∗ ownE E2.
+Lemma ownE_weaken `{!invGS Σ} E1 E2 : E2 ⊆ E1 → ownE E1 -∗ ownE E2.
 Proof.
   iIntros (?) "H". by iDestruct (ownE_mono_le_acc with "H") as "($&_)".
 Qed.
 
-Lemma fupd_plain_soundness `{!invPreG Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
-  (∀ `{Hinv: !invG Σ}, ⊢ |={E1,E2}=> P) → ⊢ P.
+Lemma fupd_plain_soundness `{!invGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
+  (∀ `{Hinv: !invGS Σ}, ⊢ |={E1,E2}=> P) → ⊢ P.
 Proof.
   iIntros (Hfupd). apply later_soundness. iMod wsat_alloc' as (Hinv) "[Hw HE]".
   iAssert (|={⊤,E2}=> P)%I as "H".
@@ -168,8 +168,8 @@ Proof.
   iApply (ownE_weaken with "HE"). set_solver.
 Qed.
 
-Lemma fupd_plain_soundness_strong `{HIPRE: !invPreG Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
-  (∀ `{Hinv: !invG Σ} (Heq_pre: inv_inG = HIPRE), ⊢ |={E1,E2}=> P) → ⊢ P.
+Lemma fupd_plain_soundness_strong `{HIPRE: !invGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
+  (∀ `{Hinv: !invGS Σ} (Heq_pre: inv_inG = HIPRE), ⊢ |={E1,E2}=> P) → ⊢ P.
 Proof.
   iIntros (Hfupd). apply later_soundness. iMod wsat_alloc'_strong as (Hinv HEQ) "[Hw HE]".
   iAssert (|={⊤,E2}=> P)%I as "H".
@@ -179,8 +179,8 @@ Proof.
   iApply (ownE_weaken with "HE"). set_solver.
 Qed.
 
-Lemma step_fupdN_soundness `{!invPreG Σ} φ n :
-  (∀ `{Hinv: !invG Σ}, ⊢@{iPropI Σ} |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
+Lemma step_fupdN_soundness `{!invGpreS Σ} φ n :
+  (∀ `{Hinv: !invGS Σ}, ⊢@{iPropI Σ} |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
   intros Hiter.
@@ -193,8 +193,8 @@ Proof.
   iNext. iMod "H" as %Hφ. auto.
 Qed.
 
-Lemma step_fupdN_soundness_strong `{HIPRE: !invPreG Σ} φ n :
-  (∀ `{Hinv: !invG Σ} (Heq_pre: inv_inG = HIPRE), ⊢@{iPropI Σ} |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
+Lemma step_fupdN_soundness_strong `{HIPRE: !invGpreS Σ} φ n :
+  (∀ `{Hinv: !invGS Σ} (Heq_pre: inv_inG = HIPRE), ⊢@{iPropI Σ} |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
   intros Hiter.
@@ -207,8 +207,8 @@ Proof.
   iNext. iMod "H" as %Hφ. auto.
 Qed.
 
-Lemma step_fupdN_soundness' `{!invPreG Σ} φ n :
-  (∀ `{Hinv: !invG Σ}, ⊢@{iPropI Σ} |={⊤}[∅]▷=>^n ⌜ φ ⌝) →
+Lemma step_fupdN_soundness' `{!invGpreS Σ} φ n :
+  (∀ `{Hinv: !invGS Σ}, ⊢@{iPropI Σ} |={⊤}[∅]▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
   iIntros (Hiter). eapply (step_fupdN_soundness _ n)=>Hinv. destruct n as [|n].

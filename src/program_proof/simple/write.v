@@ -16,7 +16,7 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof Require Import simple.spec simple.invariant simple.common simple.iread simple.iwrite.
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 

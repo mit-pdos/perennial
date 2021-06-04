@@ -22,7 +22,7 @@ Axiom RPCClient__Call : val.
 Axiom StartRPCServer : val.
 
 Section grove_ffi.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Class filesysG Σ := FileSysG {
   filesys_gname : gname ; (* Name of str -> []byte authmap used for filesys ffi *)

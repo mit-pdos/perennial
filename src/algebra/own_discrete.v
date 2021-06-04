@@ -544,14 +544,14 @@ End test.
 (** A variant of own_discrete with better support for things that already have ▷
 in front of them.  See fupd_level_later_to_disc in crash_weakestpre.v for the
 key lemma. *)
-Definition own_discrete_fupd_def `{!invG Σ} (P: iProp Σ) := own_discrete (|0={∅}=> P).
-Definition own_discrete_fupd_aux `{!invG Σ} : seal own_discrete_fupd_def. Proof. by eexists. Qed.
-Definition own_discrete_fupd `{!invG Σ} := own_discrete_fupd_aux.(unseal).
-Definition own_discrete_fupd_eq `{!invG Σ} : own_discrete_fupd = own_discrete_fupd_def :=
+Definition own_discrete_fupd_def `{!invGS Σ} (P: iProp Σ) := own_discrete (|0={∅}=> P).
+Definition own_discrete_fupd_aux `{!invGS Σ} : seal own_discrete_fupd_def. Proof. by eexists. Qed.
+Definition own_discrete_fupd `{!invGS Σ} := own_discrete_fupd_aux.(unseal).
+Definition own_discrete_fupd_eq `{!invGS Σ} : own_discrete_fupd = own_discrete_fupd_def :=
   own_discrete_fupd_aux.(seal_eq).
 Arguments own_discrete_fupd {_ _} _%I.
 
-Class IntoDiscreteFupd `{!invG Σ} (P Q : iProp Σ) :=
+Class IntoDiscreteFupd `{!invGS Σ} (P Q : iProp Σ) :=
   into_discrete_fupd : P ⊢ own_discrete_fupd Q.
 Arguments IntoDiscreteFupd {_ _} _%I _%I.
 Arguments into_discrete_fupd {_ _} _%I _%I {_}.
@@ -561,7 +561,7 @@ Hint Mode IntoDiscreteFupd + + ! - : typeclass_instances.
 Notation "'<disc>' P" := (own_discrete_fupd P) (at level 20, right associativity) : bi_scope.
 
 Section own_disc_fupd_props.
-  Context `{!invG Σ}.
+  Context `{!invGS Σ}.
   Implicit Types P Q : iProp Σ.
 
   Global Instance own_discrete_fupd_ne : NonExpansive own_discrete_fupd.
@@ -720,7 +720,7 @@ Hint Extern 1 (environments.envs_entails _ (<disc> _)) => iModIntro : core.
 
 Section test.
 
-  Context `{invG Σ}.
+  Context `{invGS Σ}.
   Context (P Q Q' R: iProp Σ).
   Context {HP: Discretizable P}.
   Context {HQ: IntoDiscrete Q Q'}.

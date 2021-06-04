@@ -15,15 +15,15 @@ Context `{interp: !ffi_interp ffi}.
 Context `{@ffi_interp_adequacy ffi interp ext ffi_sem}.
 
 Class heap_globalG Σ := {
-  heap_globalG_preG :> heapPreG Σ;
+  heap_globalG_preG :> heapGpreS Σ;
   heap_globalG_names : ffi_global_names;
   heap_globalG_inv_names : inv_names;
   (*
-  heap_globalG_invG :> invG Σ;
+  heap_globalG_invG :> invGS Σ;
    *)
 }.
 
-Global Instance heap_globalG_invG {Σ} {hgG: heap_globalG Σ} : invG Σ :=
+Global Instance heap_globalG_invG {Σ} {hgG: heap_globalG Σ} : invGS Σ :=
   inv_update_pre (heap_preG_iris) (heap_globalG_inv_names).
 
 Program Global Instance heapG_groveG `{!heap_globalG Σ} : groveG goose_lang goose_crash_lang Σ :=
@@ -39,7 +39,7 @@ Definition hgG_extend_local_names {Σ} (hgG : heap_globalG Σ) (names : heap_loc
      heap_trace_names := heap_local_trace_names names;
      heap_ffi_global_names := heap_globalG_names |}.
 
-Definition heap_globalG_heapG {Σ} (hgG: heap_globalG Σ) (Hc: crashG Σ) (names: heap_local_names) : heapG Σ :=
+Definition heap_globalG_heapG {Σ} (hgG: heap_globalG Σ) (Hc: crashG Σ) (names: heap_local_names) : heapGS Σ :=
   heap_update_pre Σ (heap_globalG_preG) (heap_globalG_invG)
                   {| crash_inG := (@crash_inPreG _ heap_preG_crash); crash_name := @crash_name _ Hc |}
                   (hgG_extend_local_names hgG names).

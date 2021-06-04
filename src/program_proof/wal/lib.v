@@ -6,7 +6,7 @@ From Perennial.program_proof Require Import disk_prelude disk_lib.
 From Perennial.program_proof Require util_proof.
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Definition update_val (up:u64*Slice.t): val :=
   (#(fst up), (slice_val (snd up), #()))%V.
 

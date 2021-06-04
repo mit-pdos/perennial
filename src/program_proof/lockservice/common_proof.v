@@ -3,7 +3,7 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.lockservice Require Import lockservice_nocrash nondet.
 
 Section common_proof.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 (* This spec is delibertaely weaker than the implementation. *)
 Lemma nondet_spec:

@@ -47,14 +47,14 @@ Class refinement_heapG Σ := refinement_HeapG {
   refinement_crash_name : gname;
   (* TODO: do we need prophecies at the spec level? *)
   (*
-  refinement_proph_mapG :> proph_mapG proph_id (val * val) Σ;
+  refinement_proph_mapG :> proph_mapGS proph_id (val * val) Σ;
    *)
 }.
 
 Section go_spec_definitions.
 Context {Σ: gFunctors}.
 Context {hR: refinement_heapG Σ}.
-Context `{invG Σ}.
+Context `{invGS Σ}.
 Context `{crashG Σ}.
 
 Definition refinement_ctok := staged_pending 1 (refinement_crash_name).
@@ -863,7 +863,7 @@ Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
 Context {Σ: gFunctors}.
-Context {hG: heapG Σ}.
+Context {hG: heapGS Σ}.
 Context {hS: stagedG Σ}.
 Context {hR: refinement_heapG Σ}.
 
@@ -892,7 +892,7 @@ Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
 Context {Σ: gFunctors}.
-Context {hG: heapG Σ}.
+Context {hG: heapGS Σ}.
 Context {hS: stagedG Σ}.
 Context {hR: refinement_heapG Σ}.
 Set Printing Implicit.
@@ -1014,7 +1014,7 @@ Existing Instance spec_ffi_op_field.
 Existing Instance spec_ffi_model_field.
 
 Context {Σ: gFunctors}.
-Context {hG: heapG Σ}.
+Context {hG: heapGS Σ}.
 Context {hR: refinement_heapG Σ}.
 
 Notation sexpr := (@expr (@spec_ffi_op_field spec_ext)).

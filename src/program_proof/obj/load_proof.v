@@ -18,7 +18,7 @@ Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
 Section goose_lang.
 Context `{!txnG Σ}.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Implicit Types (s : Slice.t) (γ: txn_names).
 

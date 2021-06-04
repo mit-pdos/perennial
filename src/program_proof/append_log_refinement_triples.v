@@ -10,7 +10,7 @@ From Perennial.goose_lang Require Import spec_assert refinement_adequacy.
 Existing Instances log_spec_ext log_spec_ffi_model log_spec_ext_semantics log_spec_ffi_interp log_spec_interp_adequacy.
 
 Section refinement.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!refinement_heapG Σ}.
 Context `{stagedG Σ}.
 Existing Instance logG0.

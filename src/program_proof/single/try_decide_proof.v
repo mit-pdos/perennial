@@ -7,7 +7,7 @@ From Perennial.program_proof.single Require Import single_proof replica_proof.
 
 Section try_decide_proof.
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{paxosG Σ u64}.
 
 Context `{f:nat}.

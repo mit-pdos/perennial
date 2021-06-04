@@ -7,11 +7,11 @@ From iris.prelude Require Import options.
 Import uPred.
 
 
-Definition ncfupd_def `{!invG Σ, !crashG Σ} (E1 E2 : coPset) (P: iProp Σ) : iProp Σ :=
+Definition ncfupd_def `{!invGS Σ, !crashG Σ} (E1 E2 : coPset) (P: iProp Σ) : iProp Σ :=
   ∀ q, NC q -∗ |={E1, E2}=> P ∗ NC q.
-Definition ncfupd_aux `{!invG Σ, !crashG Σ} : seal (ncfupd_def). Proof. by eexists. Qed.
-Definition ncfupd `{!invG Σ, !crashG Σ} := ncfupd_aux.(unseal).
-Definition ncfupd_eq `{!invG Σ, !crashG Σ} : ncfupd = ncfupd_def := ncfupd_aux.(seal_eq).
+Definition ncfupd_aux `{!invGS Σ, !crashG Σ} : seal (ncfupd_def). Proof. by eexists. Qed.
+Definition ncfupd `{!invGS Σ, !crashG Σ} := ncfupd_aux.(unseal).
+Definition ncfupd_eq `{!invGS Σ, !crashG Σ} : ncfupd = ncfupd_def := ncfupd_aux.(seal_eq).
 
 Notation "|NC={ E1 }=> Q" := (ncfupd E1 E1 Q)
   (at level 99, E1 at level 50, Q at level 200,
@@ -27,7 +27,7 @@ Notation "|NC={ E1 } [ E2 ]▷=>^ n Q" := (Nat.iter n (λ P, |NC={E1}[E2]▷=> P
    format "|NC={ E1 } [ E2 ]▷=>^ n  Q").
 
 Section ncfupd.
-Context `{!invG Σ, !crashG Σ}.
+Context `{!invGS Σ, !crashG Σ}.
 Implicit Types P: iProp Σ.
 Implicit Types E : coPset.
 
@@ -441,8 +441,8 @@ Qed.
 
 End ncfupd.
 
-Lemma ncfupd_plain_soundness' `{!invPreG Σ, !crashPreG Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
-  (∀ `{Hinv: !invG Σ} `{Hcrash: !crashG Σ}, ⊢ ∀ q, NC q -∗ |={E1,E2}=> P) → ⊢ P.
+Lemma ncfupd_plain_soundness' `{!invGpreS Σ, !crashPreG Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
+  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashG Σ}, ⊢ ∀ q, NC q -∗ |={E1,E2}=> P) → ⊢ P.
 Proof.
   iIntros (Hfupd). apply later_soundness. iMod wsat_alloc' as (Hinv) "[Hw HE]".
   iMod NC_alloc as (Hc) "HNC".
@@ -454,8 +454,8 @@ Proof.
   iApply (ownE_weaken with "HE"). set_solver.
 Qed.
 
-Lemma ncfupd_plain_soundness `{!invPreG Σ, !crashPreG Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
-  (∀ `{Hinv: !invG Σ} `{Hcrash: !crashG Σ}, ⊢ |NC={E1,E2}=> P) → ⊢ P.
+Lemma ncfupd_plain_soundness `{!invGpreS Σ, !crashPreG Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
+  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashG Σ}, ⊢ |NC={E1,E2}=> P) → ⊢ P.
 Proof.
   iIntros (Hfupd). apply later_soundness. iMod wsat_alloc' as (Hinv) "[Hw HE]".
   iMod NC_alloc as (Hc) "HNC".
@@ -467,8 +467,8 @@ Proof.
   iApply (ownE_weaken with "HE"). set_solver.
 Qed.
 
-Lemma step_ncfupdN_soundness_alt `{!invPreG Σ, !crashPreG Σ} φ n :
-  (∀ `{Hinv: !invG Σ} `{Hcrash: !crashG Σ}, ⊢@{iPropI Σ} ∀ q, NC q -∗ |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
+Lemma step_ncfupdN_soundness_alt `{!invGpreS Σ, !crashPreG Σ} φ n :
+  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashG Σ}, ⊢@{iPropI Σ} ∀ q, NC q -∗ |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
   intros Hiter.
@@ -482,8 +482,8 @@ Proof.
   iMod "H" as %Hφ. auto.
 Qed.
 
-Lemma step_ncfupdN_soundness `{!invPreG Σ, !crashPreG Σ} φ n :
-  (∀ `{Hinv: !invG Σ} `{Hcrash: !crashG Σ}, ⊢@{iPropI Σ} |NC={⊤}[∅]▷=>^n |NC={⊤,∅}=> ⌜ φ ⌝) →
+Lemma step_ncfupdN_soundness `{!invGpreS Σ, !crashPreG Σ} φ n :
+  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashG Σ}, ⊢@{iPropI Σ} |NC={⊤}[∅]▷=>^n |NC={⊤,∅}=> ⌜ φ ⌝) →
   φ.
 Proof.
   intros Hiter.
@@ -500,8 +500,8 @@ Proof.
     iNext. by iMod "Hφ".
 Qed.
 
-Lemma step_ncfupdN_soundness' `{!invPreG Σ, !crashPreG Σ} φ n :
-  (∀ `{Hinv: !invG Σ} `{Hcrash: !crashG Σ}, ⊢@{iPropI Σ} |NC={⊤}[∅]▷=>^n ⌜ φ ⌝) →
+Lemma step_ncfupdN_soundness' `{!invGpreS Σ, !crashPreG Σ} φ n :
+  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashG Σ}, ⊢@{iPropI Σ} |NC={⊤}[∅]▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
   iIntros (Hiter). eapply (step_ncfupdN_soundness _ n).

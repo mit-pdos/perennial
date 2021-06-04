@@ -10,7 +10,7 @@ From Perennial.goose_lang.lib Require Import slice.crash_slice.
 From Perennial.program_proof Require Import marshal_block.
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Implicit Types v : val.
 Implicit Types z : Z.
 Implicit Types s : Slice.t.
@@ -863,7 +863,7 @@ Qed.
 End heap.
 
 Section crash.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Instance is_hdr_durable sz disk_sz:
   IntoCrash (is_hdr sz disk_sz) (λ _, is_hdr sz disk_sz).

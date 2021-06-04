@@ -18,7 +18,7 @@ Class paxosG Σ (V : Type) := PaxosG {
 Context (f:nat).
 Context {V:Type}.
 Context `{!paxosG Σ V}.
-Context `{!invG Σ}.
+Context `{!invGS Σ}.
 
 Record single_names :=
 {

@@ -51,7 +51,7 @@ Section tpc_example.
  *)
 
 
-Context `{!heapG Σ, !lockmapG Σ}.
+Context `{!heapGS Σ, !lockmapG Σ}.
 Definition one_shot_decideR := csumR fracR (agreeR boolO).
 (* TODO: too annoying to have both csums in context *)
 (* Definition one_shotR := csumR fracR (agreeR unitO). *)

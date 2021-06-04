@@ -15,7 +15,7 @@ Import RecordSetNotations.
 
 Section goose_lang.
   Context `{!jrnlG Σ}.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context (N:namespace).
   Context (Hdisj1: (↑N : coPset) ## ↑invN).
   Context (Hdisj2: (↑N : coPset) ## ↑invariant.walN).

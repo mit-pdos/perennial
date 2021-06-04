@@ -68,7 +68,7 @@ Proof. solve_inG. Qed.
 
 Section heap.
 Context `{!jrnlG Σ}.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).

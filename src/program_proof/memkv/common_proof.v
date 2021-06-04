@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 
 Section common_proof.
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Definition uNSHARD : Z := 65536%Z.
 

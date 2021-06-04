@@ -10,7 +10,7 @@ From Perennial.goose_lang Require Import proofmode.
 Set Default Proof Using "Type".
 
 Section goose_lang.
-  Context `{!invG Σ}.
+  Context `{!invGS Σ}.
 
   Class AsMapsTo (P: iProp Σ)
         (Φ : Qp -> iProp Σ) :=
@@ -135,4 +135,4 @@ Proof.
 Qed.
 
 Hint Mode AsMapsTo - + - : typeclass_instances.
-Arguments readonly {Σ invG0} _%bi_scope {Φ}%function_scope {H}.
+Arguments readonly {Σ _} _%bi_scope {Φ}%function_scope {H}.

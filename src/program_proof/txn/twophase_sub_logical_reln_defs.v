@@ -63,11 +63,11 @@ Notation istate := (@state ext).
 Notation sty := (@ty (@val_tys _ spec_ty)).
 Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
-Definition val_semTy `{!heapG Σ} `{refinement_heapG Σ} := sval → ival → iProp Σ.
+Definition val_semTy `{!heapGS Σ} `{refinement_heapG Σ} := sval → ival → iProp Σ.
 
 Import sep_jrnl_invariant.
 Section reln_defs.
-Context `{hG: !heapG Σ}.
+Context `{hG: !heapGS Σ}.
 Context {hRG: refinement_heapG Σ}.
 Context {htpG: twophaseG Σ}.
 Context (N: namespace).
@@ -155,7 +155,7 @@ Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.
 Definition subst_ctx := gmap string subst_tuple.
 
-Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ}
+Definition ctx_has_semTy `{hG: !heapGS Σ} `{hRG: !refinement_heapG Σ}
            (Γ: Ctx) es e τ : iProp Σ :=
   ∀ Γsubst (HPROJ: subst_ty <$> Γsubst = Γ),
   spec_ctx -∗

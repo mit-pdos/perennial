@@ -37,7 +37,7 @@ Notation ival := (@val ext).
 Notation sty := (@ty (@val_tys _ spec_ty)).
 Notation SCtx := (@Ctx (@val_tys _ spec_ty)).
 
-Definition val_semTy `{!heapG Σ} `{refinement_heapG Σ} := sval → ival → iProp Σ.
+Definition val_semTy `{!heapGS Σ} `{refinement_heapG Σ} := sval → ival → iProp Σ.
 
 Class specTy_model :=
   { styG : gFunctors → Set;
@@ -49,32 +49,32 @@ Class specTy_model :=
     sty_get_update : ∀ (Σ : gFunctors) (hF : styG Σ), sty_update Σ hF (sty_get_names Σ hF) = hF;
     sty_update_update : ∀ (Σ : gFunctors) (hF : styG Σ) (names1 names2 : sty_names),
                           sty_update Σ (sty_update Σ hF names1) names2 = sty_update Σ hF names2;
-    sty_inv : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, styG Σ → iProp Σ;
-    sty_init : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, styG Σ → iProp Σ;
-    sty_crash_cond : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, styG Σ → iProp Σ;
-    sty_crash_tok : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, iProp Σ;
-    sty_crash_tok_excl : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ},
+    sty_inv : ∀ {Σ} `{!heapGS Σ} `{!refinement_heapG Σ}, styG Σ → iProp Σ;
+    sty_init : ∀ {Σ} `{!heapGS Σ} `{!refinement_heapG Σ}, styG Σ → iProp Σ;
+    sty_crash_cond : ∀ {Σ} `{!heapGS Σ} `{!refinement_heapG Σ}, styG Σ → iProp Σ;
+    sty_crash_tok : ∀ {Σ} `{!heapGS Σ} `{!refinement_heapG Σ}, iProp Σ;
+    sty_crash_tok_excl : ∀ {Σ} `{!heapGS Σ} `{!refinement_heapG Σ},
         sty_crash_tok -∗ sty_crash_tok -∗ False;
-    sty_crash_tok_timeless : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ}, Timeless sty_crash_tok;
+    sty_crash_tok_timeless : ∀ {Σ} `{!heapGS Σ} `{!refinement_heapG Σ}, Timeless sty_crash_tok;
     styN: coPset;
     styN_disjoint : ↑ sN ## styN;
-    sty_val_interp : ∀ {Σ} `{!heapG Σ} `{!refinement_heapG Σ} (hS: styG Σ),
+    sty_val_interp : ∀ {Σ} `{!heapGS Σ} `{!refinement_heapG Σ} (hS: styG Σ),
                      @ext_tys (@val_tys (@spec_ffi_op_field spec_ext) spec_ty) → val_semTy;
     sty_val_persistent:
-      forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ es e,
+      forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hG': heapGS Σ) (hS: styG Σ) τ es e,
         Persistent (sty_val_interp hS τ es e);
     sty_val_flatten:
-      forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ) τ vs v,
+      forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hG': heapGS Σ) (hS: styG Σ) τ vs v,
         sty_val_interp hS τ vs v -∗
         ⌜ flatten_struct vs = [vs] ∧ flatten_struct v = [v] ⌝;
     sty_lvl_init: nat;
     sty_lvl_ops: nat;
     sty_inv_persistent:
-      forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hG': heapG Σ) (hS: styG Σ),
+      forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hG': heapGS Σ) (hS: styG Σ),
         Persistent (sty_inv hS) }.
 
 Section reln_defs.
-Context `{hG: !heapG Σ}.
+Context `{hG: !heapGS Σ}.
 Context {hRG: refinement_heapG Σ}.
 Context `{hS: @styG smodel Σ}.
 
@@ -259,7 +259,7 @@ Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_fie
 Context (upd: specTy_update hsT_model).
 
 Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
-      forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hPre: sty_preG Σ) σs gs σ g
+      forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hPre: sty_preG Σ) σs gs σ g
       (HINIT: sty_initP σ σs),
         ⊢ ffi_local_start (heapG_ffiG) σ.(world) g -∗
          ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
@@ -270,8 +270,8 @@ Definition sty_init_obligation2 (sty_initP: istate → sstate → Prop) :=
                                 ffi_initgP g ∧ ffi_initgP gs.
 
 Definition sty_crash_obligation :=
-  forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
-      ⊢ sty_inv hS -∗ ▷ sty_crash_cond hS -∗ |sty_lvl_init={styN}=> ▷ ∀ (hG': heapG Σ), |={⊤}=>
+  forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
+      ⊢ sty_inv hS -∗ ▷ sty_crash_cond hS -∗ |sty_lvl_init={styN}=> ▷ ∀ (hG': heapGS Σ), |={⊤}=>
       ∀ σs,
       (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
       ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
@@ -288,14 +288,14 @@ Definition sty_rules_obligation :=
   ∀ (es: sval) (vs: sval) e v t1 t2,
     get_ext_tys es (t1, t2) →
     spec_trans es e →
-    forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ) ,
+    forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ) ,
     sty_inv hS -∗
     spec_ctx -∗
     val_interp (hS := hS) t1 vs v -∗
     has_semTy (es vs) (e v) (val_interp (hS := hS) t2).
 
 Definition sty_crash_inv_obligation :=
-  (forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
+  (forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
      e (Φ: ival → iProp Σ),
     ⊢ sty_init hS -∗
     spec_ctx -∗
@@ -309,7 +309,7 @@ Record subst_tuple :=
 Definition subst_ctx := gmap string subst_tuple.
 
 Definition sty_atomic_obligation :=
-  forall Σ `(hG: !heapG Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
+  forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
          el1 el2 tl e1 e2 t (Γsubst: gmap string subst_tuple),
   (spec_atomic_transTy (subst_ty <$> Γsubst) el1 el2 tl e1 e2 (sumT unitT t)) ->
   sty_inv hS -∗
@@ -321,7 +321,7 @@ Definition sty_atomic_obligation :=
   has_semTy (subst_map (subst_sval <$> Γsubst) (Atomically el1 e1)) (subst_map (subst_ival <$> Γsubst) e2)
     (val_interp (hS := hS) (sumT unitT t)).
 
-Definition ctx_has_semTy `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
+Definition ctx_has_semTy `{hG: !heapGS Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
            (Γ: Ctx) es e τ : iProp Σ :=
   ∀ Γsubst (HPROJ: subst_ty <$> Γsubst = Γ),
   sty_inv hS -∗
@@ -336,7 +336,7 @@ Global Instance base_interp_pers Σ es e t:
       Persistent (base_ty_interp (Σ := Σ) t es e).
 Proof. destruct t; apply _. Qed.
 
-Instance listT_interp_aux_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} ls l
+Instance listT_interp_aux_pers `{hG: !heapGS Σ} `{hRG: !refinement_heapG Σ} ls l
        (vTy: sval → ival → iProp Σ) :
        (∀ es' e', Persistent (vTy es' e')) →
        Persistent (listT_interp_aux vTy ls l).
@@ -344,7 +344,7 @@ Proof.
   intros ?. revert l. induction ls; destruct l => //=; apply _.
 Qed.
 
-Instance listT_interp_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t
+Instance listT_interp_pers `{hG: !heapGS Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t
        (vTy: sty → sval → ival → iProp Σ) :
        (∀ t' es' e', Persistent (vTy t' es' e')) →
        Persistent (listT_interp t vTy es e).
@@ -352,14 +352,14 @@ Proof.
   intros. rewrite /listT_interp. apply _.
 Qed.
 
-Global Instance val_interp_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t:
+Global Instance val_interp_pers `{hG: !heapGS Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ} es e t:
       Persistent (val_interp (hS := hS) t es e).
 Proof.
  revert es e. induction t => ?? //=; try apply _.
  by apply sty_val_persistent.
 Qed.
 
-Global Instance sty_ctx_prop_pers `{hG: !heapG Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
+Global Instance sty_ctx_prop_pers `{hG: !heapGS Σ} `{hRG: !refinement_heapG Σ} {hS: styG Σ}
       (Γsubst: gmap string subst_tuple) :
       Persistent ([∗ map] t ∈ Γsubst, val_interp (hS := hS) (subst_ty t) (subst_sval t) (subst_ival t))%I.
 Proof.

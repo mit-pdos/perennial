@@ -15,7 +15,7 @@ From RecordUpdate Require Import RecordUpdate.
 Import RecordSetNotations.
 Section goose_lang.
 Context `{!txnG Σ}.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Implicit Types (γ: txn_names).
 
@@ -1011,7 +1011,7 @@ End goose_lang.
 
 Section stable.
 Context `{!txnG Σ}.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Existing Instance ghost_var_into_crash.
 Existing Instance mono_nat_auth_own_into_crash.

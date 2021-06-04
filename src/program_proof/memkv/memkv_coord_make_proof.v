@@ -7,7 +7,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_coord_make_proof.
 
-Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeMemKVCoordServer (initserver : u64) (γ : memkv_coord_names) γinit :
   {{{
@@ -42,7 +42,7 @@ Proof.
   "%Hlen_shardMapping" ∷ ⌜ Z.of_nat (length shardMapping) = uNSHARD ⌝ ∗
   "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)) ⌝ ∗
   "shardMap" ∷ s ↦[MemKVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷ @typed_slice.is_slice grove_op grove_model grove_interp Σ heapG0 grove_ty u64
+  "HshardMap_sl" ∷ @typed_slice.is_slice grove_op grove_model grove_interp Σ _ grove_ty u64
                      (@u64_IntoVal grove_op) shardMap_sl HostName 1 shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ rangeSet 0 uNSHARD, ∃ (hid : u64),
                   ⌜ shardMapping !! int.nat sid = Some hid ⌝ ∗

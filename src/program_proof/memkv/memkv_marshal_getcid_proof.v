@@ -8,7 +8,7 @@ Section memkv_marshal_getcid_proof.
 Definition has_encoding_Uint64 (data:list u8) (cid:u64) : Prop :=
   has_encoding data [ EncUInt64 cid ].
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Lemma wp_encodeUint64 cid :
   {{{

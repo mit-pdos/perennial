@@ -136,7 +136,7 @@ Proof.
 Qed.
 
 Section goose_lang.
-Context `{hG: heapG Σ, !ffi_semantics _ _, !ext_types _}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
 
 Implicit Types (v:val).
 

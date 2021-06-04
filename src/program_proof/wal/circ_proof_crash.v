@@ -73,7 +73,7 @@ should only hold if σ' is a post-crash state.
 (***************)
 
 Section heap.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!circG Σ}.
 
 Context (N: namespace).

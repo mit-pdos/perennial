@@ -7,7 +7,7 @@ From Perennial.program_proof.lockservice Require Import rpc rpc_proof aof_proof.
 From Perennial.program_proof Require Import marshal_proof.
 
 Section gokv_proof.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!filesysG Σ}.
 Context `{!rpcG Σ u64}.
 Context `{!mapG Σ u64 u64}.

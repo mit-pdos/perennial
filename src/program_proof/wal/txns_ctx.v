@@ -17,7 +17,7 @@ Instance subG_txns_ctx Σ : subG txns_ctxΣ Σ → txns_ctxG Σ.
 Proof. solve_inG. Qed.
 
 Section goose.
-Context `{!heapG Σ} `{!txns_ctxG Σ}.
+Context `{!heapGS Σ} `{!txns_ctxG Σ}.
 Implicit Types (γ:gname).
 
 Definition txn_val γ txn_id (txn: u64 * list update.t): iProp Σ :=

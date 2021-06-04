@@ -235,7 +235,7 @@ End rpc_global_defs.
 
 Section rpc_proof.
 
-Context `{hG: !heapG Σ}.
+Context `{hG: !heapGS Σ}.
 Context `{hReg: !rpcregG Σ}.
 
 Definition is_rpcHandler' {X:Type} (f:val) Pre Post : iProp Σ :=
@@ -292,7 +292,7 @@ Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt)).
 
 
-Instance heapG_to_preG Σ' : heapG Σ' → heapPreG Σ'.
+Instance heapG_to_preG Σ' : heapGS Σ' → heapGpreS Σ'.
 Proof.
   destruct 1.
   destruct heapG_invG.

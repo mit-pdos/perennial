@@ -18,7 +18,7 @@ From Perennial.program_proof.simple Require Import spec invariant common.
 From Perennial.goose_lang Require Import crash_modality.
 
 Section stable.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!simpleG Σ}.
 
 Global Instance is_inode_stable_set_stable γsrc γ':
@@ -50,7 +50,7 @@ Qed.
 End stable.
 
 Section goose_lang.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 

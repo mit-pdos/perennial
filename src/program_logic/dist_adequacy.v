@@ -255,8 +255,8 @@ Qed.
 
 End distributed_adequacy.
 
-Theorem wpd_strong_adequacy Σ Λ CS T `{HIPRE: !invPreG Σ} `{HCPRE: !crashPreG Σ} k ebσs g1 n κs dns2 g2 φ f :
-  (∀ `{Hinv : !invG Σ} (Heq_pre: inv_inG = HIPRE),
+Theorem wpd_strong_adequacy Σ Λ CS T `{HIPRE: !invGpreS Σ} `{HCPRE: !crashPreG Σ} k ebσs g1 n κs dns2 g2 φ f :
+  (∀ `{Hinv : !invGS Σ} (Heq_pre: inv_inG = HIPRE),
      ⊢ |={⊤}=> ∃ (cts: list (crashG Σ * pbundleG T Σ))
          (Heq_cpre: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = @crash_inPreG _ HCPRE)
          (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
@@ -352,9 +352,9 @@ Proof.
   - constructor; naive_solver.
 Qed.
 
-Corollary wpd_dist_adequacy_inv Σ Λ CS (T: ofe) `{HIPRE: !invPreG Σ} `{HCPRE: !crashPreG Σ} (k : nat)
+Corollary wpd_dist_adequacy_inv Σ Λ CS (T: ofe) `{HIPRE: !invGpreS Σ} `{HCPRE: !crashPreG Σ} (k : nat)
           ebσs g φinv f:
-  (∀ `{Hinv : !invG Σ} (Heq_pre: inv_inG = HIPRE) κs,
+  (∀ `{Hinv : !invGS Σ} (Heq_pre: inv_inG = HIPRE) κs,
      ⊢ |={⊤}=> ∃ (cts: list (crashG Σ * pbundleG T Σ))
          (Heq_cts: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = @crash_inPreG _ HCPRE)
          (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)

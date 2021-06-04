@@ -4,7 +4,7 @@ From iris.proofmode Require Import tactics.
 From iris.prelude Require Import options.
 
 Section simulation.
-  Context `{!invG Σ}.
+  Context `{!invGS Σ}.
   Context {state: Type} (wf: state -> Prop) (P: state -> iProp Σ).
   Context (E: coPset).
   (* TODO: if we can start using this everywhere I think we can start proving

@@ -25,7 +25,7 @@ Module alloc.
 End alloc.
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!allocG Σ}.
 
 Let allocN := nroot.@"allocator".

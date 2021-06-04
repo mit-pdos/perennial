@@ -10,12 +10,12 @@ From Perennial.goose_lang Require Import crash_modality.
 Set Default Proof Using "Type".
 
 Theorem heap_dist_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
-        Σ `{hPre: !heapPreG Σ} k (ebσs : list node_init_cfg)
+        Σ `{hPre: !heapGpreS Σ} k (ebσs : list node_init_cfg)
         g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ} (cts : list (crashG Σ * heap_local_names))
       (Heq_cts: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = crash_inPreG),
       ⊢
-        ffi_pre_global_start Σ (heap_preG_ffi (heapPreG := heap_globalG_preG)) (heap_globalG_names) g ={⊤}=∗
+        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := heap_globalG_preG)) (heap_globalG_names) g ={⊤}=∗
         ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
               let hG := heap_globalG_heapG Hheap (fst ct) (snd ct) in
               ffi_local_start (heapG_ffiG) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)) ={⊤}=∗
@@ -179,11 +179,11 @@ Qed.
   takes as input a list of proofs that, given initial local resources, we can
   construct a wpr for each node. *)
 Theorem heap_dist_adequacy_alt `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
-        Σ `{hPre: !heapPreG Σ} k (ebσs : list node_init_cfg)
+        Σ `{hPre: !heapGpreS Σ} k (ebσs : list node_init_cfg)
         g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ},
       ⊢
-        ffi_pre_global_start Σ (heap_preG_ffi (heapPreG := heap_globalG_preG)) (heap_globalG_names) g ={⊤}=∗
+        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := heap_globalG_preG)) (heap_globalG_names) g ={⊤}=∗
         ([∗ list] ebσ ∈ ebσs,
               let e := init_thread ebσ in
               let r := init_restart ebσ in
@@ -233,11 +233,11 @@ Definition dist_adequate_failstop (ebσs: list (expr * state)) (g: global_state)
 
 (* Like above, but, for failstop execution one only needs to prove a wp about initial threads, not a wpr *)
 Theorem heap_dist_adequacy_failstop
-        Σ `{hPre: !heapPreG Σ} (ebσs : list (expr * state))
+        Σ `{hPre: !heapGpreS Σ} (ebσs : list (expr * state))
         g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ snd  <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `{Hheap : !heap_globalG Σ},
       ⊢
-        ffi_pre_global_start Σ (heap_preG_ffi (heapPreG := heap_globalG_preG)) (heap_globalG_names) g ={⊤}=∗
+        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := heap_globalG_preG)) (heap_globalG_names) g ={⊤}=∗
         ([∗ list] ebσ ∈ ebσs,
               let e := fst ebσ in
               let σ := snd ebσ in

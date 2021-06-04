@@ -17,7 +17,7 @@ Class kvserviceG Σ := KVserviceG {
 }.
 
 Section kv_proof.
-Context `{!heapG Σ, !kvserviceG Σ, !rpcregG Σ}.
+Context `{!heapGS Σ, !kvserviceG Σ, !rpcregG Σ}.
 
 Implicit Types (γ : kvservice_names).
 

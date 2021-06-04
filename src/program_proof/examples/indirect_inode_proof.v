@@ -102,7 +102,7 @@ End impl_s.
 Hint Unfold inode.wf MaxBlocks indirectNumBlocks maxDirect maxIndirect: word.
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!stagedG Σ}.
 Context `{!allocG Σ}.
 

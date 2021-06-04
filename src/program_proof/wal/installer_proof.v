@@ -7,7 +7,7 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 
 Section goose_lang.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!walG Σ}.
 
 Implicit Types (v:val) (z:Z).

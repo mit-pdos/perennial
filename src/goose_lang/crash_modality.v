@@ -10,26 +10,26 @@ Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 
 (*
-Definition post_crash `{hG: !heapG Σ} (P: forall {hG': heapG Σ}, iProp Σ) : iProp Σ :=
+Definition post_crash `{hG: !heapGS Σ} (P: forall {hG': heapGS Σ}, iProp Σ) : iProp Σ :=
   (∀ σ σ' hG', ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ (heapG_ffiG (hG := hG')) σ' -∗
                              @P hG').
 *)
 
-Definition post_crash {Σ} (P: heapG Σ → iProp Σ) `{hG: !heapG Σ} : iProp Σ :=
+Definition post_crash {Σ} (P: heapGS Σ → iProp Σ) `{hG: !heapGS Σ} : iProp Σ :=
   (∀ σ σ' hG', ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ (heapG_ffiG (hG := hG')) σ' -∗
                              (P hG')).
 
 (*
-Definition post_crash `{hG: !heapG Σ} (P: forall {hG': heapG Σ}, iProp Σ) : iProp Σ :=
+Definition post_crash `{hG: !heapGS Σ} (P: forall {hG': heapGS Σ}, iProp Σ) : iProp Σ :=
   (∀ σ σ' new, ffi_crash_rel Σ hG σ (ffi_update Σ hG new) σ' -∗
                              @P (ffi_update Σ hG new)).
 *)
 
-Class IntoCrash {Σ} `{!heapG Σ} (P: iProp Σ) (Q: heapG Σ → iProp Σ) :=
+Class IntoCrash {Σ} `{!heapGS Σ} (P: iProp Σ) (Q: heapGS Σ → iProp Σ) :=
   into_crash : P -∗ post_crash (Σ := Σ) (λ hG', Q hG').
 
 Section post_crash_prop.
-Context `{hG: !heapG Σ}.
+Context `{hG: !heapGS Σ}.
 Implicit Types Φ : val → iProp Σ.
 Implicit Types efs : list expr.
 Implicit Types σ : state.
@@ -118,7 +118,7 @@ Proof.
   iExists x. iApply ("Hall" with "[$] [$]").
 Qed.
 
-Global Instance from_exist_post_crash {A} (Φ: heapG Σ → iProp Σ) (Ψ: heapG Σ → A → iProp Σ)
+Global Instance from_exist_post_crash {A} (Φ: heapGS Σ → iProp Σ) (Ψ: heapGS Σ → A → iProp Σ)
   {Himpl: ∀ hG, FromExist (Φ hG) (λ x, Ψ hG x)} :
   FromExist (post_crash (λ hG, Φ hG)) (λ x, post_crash (λ hG, Ψ hG x)).
 Proof.
@@ -139,7 +139,7 @@ End post_crash_prop.
 
 Section IntoCrash.
 
-  Context `{hG: !heapG Σ}.
+  Context `{hG: !heapGS Σ}.
   Global Instance sep_into_crash P P' Q Q':
     IntoCrash P P' →
     IntoCrash Q Q' →
@@ -215,7 +215,7 @@ Section IntoCrash.
   Qed.
 
   Global Instance big_sepL_into_crash:
-    ∀ (A : Type) Φ (Ψ : heapG Σ → nat → A → iProp Σ) (l : list A),
+    ∀ (A : Type) Φ (Ψ : heapGS Σ → nat → A → iProp Σ) (l : list A),
     (∀ (k : nat) (x : A), IntoCrash (Φ k x) (λ hG, Ψ hG k x)) →
     IntoCrash ([∗ list] k↦x ∈ l, Φ k x)%I (λ hG, [∗ list] k↦x ∈ l, Ψ hG k x)%I.
   Proof.
@@ -232,7 +232,7 @@ Section IntoCrash.
   Qed.
 
   Global Instance big_sepM_into_crash `{Countable K} :
-    ∀ (A : Type) Φ (Ψ : heapG Σ → K → A → iProp Σ) (m : gmap K A),
+    ∀ (A : Type) Φ (Ψ : heapGS Σ → K → A → iProp Σ) (m : gmap K A),
     (∀ (k : K) (x : A), IntoCrash (Φ k x) (λ hG, Ψ hG k x)) →
     IntoCrash ([∗ map] k↦x ∈ m, Φ k x)%I (λ hG, [∗ map] k↦x ∈ m, Ψ hG k x)%I.
   Proof.
@@ -249,7 +249,7 @@ Section IntoCrash.
   Qed.
 
   Global Instance big_sepS_into_crash `{Countable K} :
-    ∀ Φ (Ψ : heapG Σ → K → iProp Σ) (m : gset K),
+    ∀ Φ (Ψ : heapGS Σ → K → iProp Σ) (m : gset K),
     (∀ (k : K), IntoCrash (Φ k) (λ hG, Ψ hG k)) →
     IntoCrash ([∗ set] k ∈ m, Φ k)%I (λ hG, [∗ set] k ∈ m, Ψ hG k)%I.
   Proof.
@@ -306,7 +306,7 @@ Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 Context {Σ: gFunctors}.
 Section modality_alt.
-  Context `{hG: !heapG Σ}.
+  Context `{hG: !heapGS Σ}.
   Context `{Hi1: !IntoCrash P P'}.
   Context `{Hi2: !IntoCrash Q Q'}.
   Lemma test R :

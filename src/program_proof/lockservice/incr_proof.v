@@ -11,7 +11,7 @@ Section incr_proof.
 (* Proof for increment backed by kv service
  *)
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!filesysG Σ}.
 Context `{!stagedG Σ}.
 

@@ -4,7 +4,7 @@ From iris Require Import base_logic.lib.invariants.
 (** if the goal [Q] can be duplicated out of an invariant, we can access it
 conveniently with this theorem (which weakens the normal invariant opening by
 hiding the ability to open further invariants) *)
-Theorem inv_dup_acc {Σ} `{!invG Σ} (Q: iProp Σ) N E (P: iProp Σ) :
+Theorem inv_dup_acc {Σ} `{!invGS Σ} (Q: iProp Σ) N E (P: iProp Σ) :
   ↑N ⊆ E →
   inv N P -∗
   (P -∗ P ∗ Q) -∗
@@ -26,7 +26,7 @@ the goal (the later can be stripped from [P] for any timeless components).
 
  The reason this is sound is informally because [P -∗ Q] can be upgraded to
  [P -∗ P ∗ Q] because [Q] is persistent. *)
-Lemma inv_open_persistent `{!invG Σ} N E (P Q: iProp Σ) `{!Persistent Q} :
+Lemma inv_open_persistent `{!invGS Σ} N E (P Q: iProp Σ) `{!Persistent Q} :
   ↑N ⊆ E →
   inv N P -∗
   (▷ P -∗ ◇ Q) -∗

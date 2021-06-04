@@ -32,7 +32,7 @@ Fixpoint step_fupdN_fresh ncurrent (ns: list nat) (Hc0: crashG Σ) t0
      |={⊤, ⊤}_2=> ∀ Hc', NC 1 ={⊤}=∗ (∃ t' : pbundleG T Σ, step_fupdN_fresh (S (n + ncurrent)) ns Hc' t' P))%I
   end.
 
-Lemma step_fupdN_fresh_pattern_fupd {H: invG Σ} n (Q Q': iProp Σ):
+Lemma step_fupdN_fresh_pattern_fupd {H: invGS Σ} n (Q Q': iProp Σ):
   (|={⊤,⊤}_n=> |={⊤,⊤}_2=> Q) -∗ (Q ={⊤}=∗ Q') -∗
   (|={⊤,⊤}_n=> |={⊤,⊤}_2=> Q').
 Proof.
@@ -47,7 +47,7 @@ Proof.
   iMod 1 as "H". by iMod ("Hwand" with "[$]").
 Qed.
 
-Lemma step_fupdN_fresh_pattern_bupd {H: invG Σ} n (Q Q': iProp Σ):
+Lemma step_fupdN_fresh_pattern_bupd {H: invGS Σ} n (Q Q': iProp Σ):
   (|={⊤,⊤}_n=> |={⊤,⊤}_2=> Q) -∗ (Q ==∗ Q') -∗
   (|={⊤,⊤}_n=> |={⊤,⊤}_2=> Q').
 Proof.
@@ -55,7 +55,7 @@ Proof.
   iIntros. by iMod ("Hwand" with "[$]").
 Qed.
 
-Lemma step_fupdN_fresh_pattern_wand {H: invG Σ} n (Q Q': iProp Σ):
+Lemma step_fupdN_fresh_pattern_wand {H: invGS Σ} n (Q Q': iProp Σ):
   (|={⊤,⊤}_n=> |={⊤,⊤}_2=> Q) -∗ (Q -∗ Q') -∗
   (|={⊤,⊤}_n=> |={⊤,⊤}_2=> Q').
 Proof.
@@ -63,7 +63,7 @@ Proof.
   iIntros. by iApply "Hwand".
 Qed.
 
-Lemma step_fupdN_fresh_pattern_plain {H: invG Σ} n (Q: iProp Σ) `{!Plain Q}:
+Lemma step_fupdN_fresh_pattern_plain {H: invGS Σ} n (Q: iProp Σ) `{!Plain Q}:
   (|={⊤}[∅]▷=>^n |={⊤, ∅}=> ▷ Q) -∗
   (|={⊤}=> ▷^(S n) Q).
 Proof.
@@ -77,7 +77,7 @@ Proof.
   iMod "H". iModIntro. iNext. rewrite -later_laterN laterN_later. iNext. by iMod "H".
 Qed.
 
-Lemma step_fupdN_fresh_pattern_plain' {H: invG Σ} n (Q: iProp Σ) `{!Plain Q}:
+Lemma step_fupdN_fresh_pattern_plain' {H: invGS Σ} n (Q: iProp Σ) `{!Plain Q}:
   (|={⊤}[∅]▷=>^(S n) |={⊤, ∅}_2=> Q) -∗
   (|={⊤}=> ▷^(S (S (S (S n)))) Q).
 Proof.
@@ -90,7 +90,7 @@ Proof.
   iMod "H". eauto.
 Qed.
 
-Lemma step_fupdN_fresh_pattern_plain'' {H: invG Σ} n (Q: iProp Σ) `{!Plain Q}:
+Lemma step_fupdN_fresh_pattern_plain'' {H: invGS Σ} n (Q: iProp Σ) `{!Plain Q}:
   (|={⊤}[∅]▷=>^(S n) |={⊤, ⊤}_2=> Q) -∗
   (|={⊤}=> ▷^(S (S (S (S n)))) Q).
 Proof.
@@ -300,8 +300,8 @@ Qed.
 
 End recovery_adequacy.
 
-Lemma step_fupdN_fresh_plain {Λ CS T Σ} `{!invPreG Σ} `{!crashPreG Σ} P `{!Plain P} ns ncurr f k:
-  (∀ (Hi': invG Σ) Hc', NC 1-∗ |={⊤}=>
+Lemma step_fupdN_fresh_plain {Λ CS T Σ} `{!invGpreS Σ} `{!crashPreG Σ} P `{!Plain P} ns ncurr f k:
+  (∀ (Hi': invGS Σ) Hc', NC 1-∗ |={⊤}=>
    ∃ (pG: perennialG Λ CS T Σ)
      (Hpf1: ∀ Hc t, @iris_invG _ _ (perennial_irisG Hc t) = Hi')
      (Hpf2: perennial_num_laters_per_step = f) t,
@@ -364,8 +364,8 @@ Proof.
     iNext. auto.
 Qed.
 
-Lemma step_fupdN_fresh_soundness {Λ CS T Σ} `{!invPreG Σ} `{!crashPreG Σ} (φ : Prop) ns ncurr k k2 f:
-  (∀ (Hi: invG Σ) (Hc: crashG Σ), NC 1 ={⊤}=∗
+Lemma step_fupdN_fresh_soundness {Λ CS T Σ} `{!invGpreS Σ} `{!crashPreG Σ} (φ : Prop) ns ncurr k k2 f:
+  (∀ (Hi: invGS Σ) (Hc: crashG Σ), NC 1 ={⊤}=∗
     ∃ (pG: perennialG Λ CS T Σ) (Hpf1: ∀ Hc t, @iris_invG _ _ (perennial_irisG Hc t) = Hi)
      (Hpf2: perennial_num_laters_per_step = f) t0,
       (|={⊤}=> step_fupdN_fresh ncurr ns Hc t0 (λ _ _,
@@ -411,8 +411,8 @@ Proof.
   - constructor; naive_solver.
 Qed.
 
-Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofe) `{!invPreG Σ} `{!crashPreG Σ} s k e r σ g φ φr φinv f:
-  (∀ `{Hinv : !invG Σ} `{Hc: !crashG Σ} κs,
+Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofe) `{!invGpreS Σ} `{!crashPreG Σ} s k e r σ g φ φr φinv f:
+  (∀ `{Hinv : !invGS Σ} `{Hc: !crashG Σ} κs,
      ⊢ |={⊤}=> ∃ (t: pbundleG T Σ)
          (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
          (global_stateI : pbundleG T Σ → global_state Λ → nat → list (observation Λ) → iProp Σ)

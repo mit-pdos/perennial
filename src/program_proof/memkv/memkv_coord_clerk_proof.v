@@ -5,7 +5,7 @@ From Perennial.program_proof.memkv Require Import common_proof memkv_shard_clerk
 
 Section memkv_coord_clerk_proof.
 
-Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Definition own_MemKVCoordClerk ck γkv : iProp Σ :=
   ∃ γh host (cl : loc),

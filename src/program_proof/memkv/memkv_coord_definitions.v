@@ -16,7 +16,7 @@ Record memkv_coord_names := {
 
 Section memkv_global_coord_definitions.
 
-(* TODO: should it be heap_globalG or heapG? *)
+(* TODO: should it be heap_globalG or heapGS? *)
 (* I think the former because it is sent from a coord server to a client *)
 Context `{!dist_lifting.heap_globalG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
@@ -53,7 +53,7 @@ End memkv_global_coord_definitions.
 
 Section memkv_coord_definitions.
 
-Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Definition own_ShardClerkSet (s:loc) (γkv:gname) : iProp Σ :=
   ∃ (cls_ptr:loc) (clsM:gmap u64 loc),

@@ -10,7 +10,7 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Section staged_inv_wpc.
-Context `{!irisG Λ Σ}.
+Context `{!irisGS Λ Σ}.
 Context `{!stagedG Σ}.
 Context `{inG Σ (exclR unitO)}.
 Implicit Types s : stuckness.

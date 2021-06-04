@@ -178,7 +178,7 @@ End memkv_shard_pre_definitions.
 
 Section memkv_shard_definitions.
 
-Context `{!heapG Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Definition own_MemKVShardClerk (ck:loc) γkv : iProp Σ :=
   ∃ (cid seq:u64) (cl:loc) (host:u64) (γ:memkv_shard_names),

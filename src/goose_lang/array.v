@@ -24,7 +24,7 @@ Context `{!ffi_interp ffi}.
 
 (* technically the definition of array doesn't depend on a state interp, only
 the ffiG type; fixing this would require unbundling ffi_interp *)
-Definition array `{!heapG Σ} (l : loc) (q:Qp) (t:ty) (vs : list val) : iProp Σ :=
+Definition array `{!heapGS Σ} (l : loc) (q:Qp) (t:ty) (vs : list val) : iProp Σ :=
   ([∗ list] i ↦ v ∈ vs, (l +ₗ[t] i) ↦[t]{q} v)%I.
 Notation "l ↦∗[ t ]{ q } vs" := (array l q t vs) : bi_scope.
 Notation "l ↦∗[ t ] vs" := (array l 1%Qp t vs) : bi_scope.
@@ -34,7 +34,7 @@ with a fractional array assertion, that will split the fraction, not the
 list. *)
 
 Section lifting.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Implicit Types Φ : val → iProp Σ.
 Implicit Types (v:val) (t:ty) (l:loc).
 Implicit Types (vs : list val).

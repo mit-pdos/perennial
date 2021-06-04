@@ -10,8 +10,8 @@ From Perennial.program_logic Require ectx_language.
 From iris.prelude Require Import options.
 Import uPred.
 
-Class irisG (Λ : language) (Σ : gFunctors) := IrisG {
-  iris_invG :> invG Σ;
+Class irisGS (Λ : language) (Σ : gFunctors) := IrisG {
+  iris_invG :> invGS Σ;
   iris_crashG :> crashG Σ;
 
   (** The state interpretation is a per-machine invariant that should hold in
@@ -53,7 +53,7 @@ Class irisG (Λ : language) (Σ : gFunctors) := IrisG {
 }.
 Global Opaque iris_invG.
 
-Definition irisG_equiv {Λ Σ} (I1 I2: irisG Λ Σ) :=
+Definition irisG_equiv {Λ Σ} (I1 I2: irisGS Λ Σ) :=
   @iris_invG _ _ I1 = @iris_invG _ _ I2 ∧
   @iris_crashG _ _ I1 = @iris_crashG _ _ I2 ∧
   (∀ σ n, @state_interp _ _ I1 σ n ≡ @state_interp _ _ I2 σ n) ∧
@@ -65,7 +65,7 @@ Definition irisG_equiv {Λ Σ} (I1 I2: irisG Λ Σ) :=
 
 (* first, define a modality for establishing crash conditions *)
 Section cfupd.
-  Context `{crashG Σ} `{invG Σ}.
+  Context `{crashG Σ} `{invGS Σ}.
   Implicit Types (P: iProp Σ).
 
   Definition cfupd (k: nat) E1 :=
@@ -413,7 +413,7 @@ Notation "|C={ E1 }_ k => P" := (cfupd k E1 P)
 
 Global Hint Extern 1 (environments.envs_entails _ (|C={_}_ _ => _)) => iModIntro : core.
 
-Definition wpc_pre `{!irisG Λ Σ} (s : stuckness) (k : nat) (mj: nat)
+Definition wpc_pre `{!irisGS Λ Σ} (s : stuckness) (k : nat) (mj: nat)
     (wpc : coPset -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> iPropO Σ -d> iPropO Σ) :
     coPset -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> iPropO Σ -d> iPropO Σ := λ E1 e1 Φ Φc,
   (|={E1}=>
@@ -432,7 +432,7 @@ Definition wpc_pre `{!irisG Λ Σ} (s : stuckness) (k : nat) (mj: nat)
   (* Todo introduce notation for this split up cfupd *)
    (<disc> (C -∗ |k,(Some mj)={E1}=> Φc)))))%I.
 
-Local Instance wpc_pre_contractive `{!irisG Λ Σ} s k mj : Contractive (wpc_pre s k mj).
+Local Instance wpc_pre_contractive `{!irisGS Λ Σ} s k mj : Contractive (wpc_pre s k mj).
 Proof.
   rewrite /wpc_pre=> n wp wp' Hwp E1 e1 Φ Φc.
   do 21 (f_contractive || f_equiv).
@@ -441,13 +441,13 @@ Proof.
   - simpl in IH. rewrite -IH. eauto.
 Qed.
 
-Definition wpc0 `{!irisG Λ Σ} (s : stuckness) (k: nat) mj :
+Definition wpc0 `{!irisGS Λ Σ} (s : stuckness) (k: nat) mj :
   coPset → expr Λ → (val Λ → iProp Σ) → iProp Σ → iProp Σ := fixpoint (wpc_pre s k mj).
 
-Definition wpc_def `{!irisG Λ Σ} (s : stuckness) (k: nat) :
+Definition wpc_def `{!irisGS Λ Σ} (s : stuckness) (k: nat) :
   coPset → expr Λ → (val Λ → iProp Σ) → iProp Σ → iProp Σ :=
   λ E1 e1 Φ Φc, (∀ mj, wpc0 s k mj E1 e1 Φ Φc)%I.
-Definition wpc_aux `{!irisG Λ Σ} : seal (@wpc_def Λ Σ _). by eexists. Qed.
+Definition wpc_aux `{!irisGS Λ Σ} : seal (@wpc_def Λ Σ _). by eexists. Qed.
 
 
 (* Notation: copied from iris bi/weakestpre.v *)
@@ -456,8 +456,8 @@ Class Wpc (Λ : language) (PROP A B : Type) :=
 Arguments wpc {_ _ _ _ _} _ _ _ _%E _%I _%I.
 Instance: Params (@wpc) 9 := {}.
 
-Instance wpc' `{!irisG Λ Σ} : Wpc Λ (iProp Σ) stuckness nat := wpc_aux.(unseal).
-Definition wpc_eq `{!irisG Λ Σ} : wpc = @wpc_def Λ Σ _ := wpc_aux.(seal_eq).
+Instance wpc' `{!irisGS Λ Σ} : Wpc Λ (iProp Σ) stuckness nat := wpc_aux.(unseal).
+Definition wpc_eq `{!irisGS Λ Σ} : wpc = @wpc_def Λ Σ _ := wpc_aux.(seal_eq).
 
 (** Notations for partial crash weakest preconditions *)
 (** Notations without binder -- only parsing because they overlap with the
@@ -573,17 +573,17 @@ Notation "'{{{' P } } } e ? {{{ 'RET' pat ; Q } } }" :=
 
 (** Defining WP in terms of WPC (needs to be here since WP is used in this file)
 *)
-Definition wp_def `{!irisG Λ Σ} : Wp Λ (iProp Σ) stuckness :=
+Definition wp_def `{!irisGS Λ Σ} : Wp Λ (iProp Σ) stuckness :=
   λ s E e Φ, (WPC e @ s ; 0 ; E {{ Φ }} {{ True }})%I.
 Definition wp_aux : seal (@wp_def). Proof. by eexists. Qed.
 Definition wp' := wp_aux.(unseal).
 Global Arguments wp' {Λ Σ _}.
 Existing Instance wp'.
-Lemma wp_eq `{!irisG Λ Σ} : wp = @wp_def Λ Σ _.
+Lemma wp_eq `{!irisGS Λ Σ} : wp = @wp_def Λ Σ _.
 Proof. rewrite -wp_aux.(seal_eq) //. Qed.
 
 Section wpc.
-Context `{!irisG Λ Σ}.
+Context `{!irisGS Λ Σ}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
@@ -1856,7 +1856,7 @@ End wpc.
 
 (** Proofmode class instances *)
 Section proofmode_classes.
-  Context `{!irisG Λ Σ}.
+  Context `{!irisGS Λ Σ}.
   Implicit Types P Q : iProp Σ.
   Implicit Types Φ : val Λ → iProp Σ.
 
@@ -2013,7 +2013,7 @@ End proofmode_classes.
 
 Section wpc_ectx_lifting.
 Import ectx_language.
-Context {Λ : ectxLanguage} `{!irisG Λ Σ} {Hinh : Inhabited (state Λ)}.
+Context {Λ : ectxLanguage} `{!irisGS Λ Σ} {Hinh : Inhabited (state Λ)}.
 Hint Resolve head_prim_reducible head_reducible_prim_step : core.
 Local Definition reducible_not_val_inhabitant_state e := reducible_not_val e inhabitant.
 Hint Resolve reducible_not_val_inhabitant_state : core.
@@ -2060,7 +2060,7 @@ Qed.
 End wpc_ectx_lifting.
 
 
-Lemma wpc0_proper_irisG_equiv {Λ Σ} (I1 I2 : irisG Λ Σ) s k mj E Φ Φc (e : expr Λ) :
+Lemma wpc0_proper_irisG_equiv {Λ Σ} (I1 I2 : irisGS Λ Σ) s k mj E Φ Φc (e : expr Λ) :
   irisG_equiv I1 I2 →
   @wpc0 _ _ I1 s k mj E e Φ Φc -∗
   @wpc0 _ _ I2 s k mj E e Φ Φc.
@@ -2101,7 +2101,7 @@ Proof.
     }
 Qed.
 
-Lemma wpc_proper_irisG_equiv {Λ Σ} (I1 I2 : irisG Λ Σ) s k E Φ Φc (e : expr Λ) :
+Lemma wpc_proper_irisG_equiv {Λ Σ} (I1 I2 : irisGS Λ Σ) s k E Φ Φc (e : expr Λ) :
   irisG_equiv I1 I2 →
   @wpc_def _ _ I1 s k E e Φ Φc -∗
   @wpc_def _ _ I2 s k E e Φ Φc.

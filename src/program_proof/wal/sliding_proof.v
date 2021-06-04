@@ -8,7 +8,7 @@ From Perennial.program_proof Require Export wal.sliding.
 From Perennial.program_proof Require Import disk_lib.
 
 Section goose_lang.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Implicit Types (l: loc) (σ: slidingM.t).
 

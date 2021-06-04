@@ -9,7 +9,7 @@ Import uPred.
 
 (* TODO: work out semantic characterization ? *)
 
-Definition ae_inv_mut_def `{!invG Σ} (k: nat) mj sch (Ps : list (iProp Σ)) : iProp Σ :=
+Definition ae_inv_mut_def `{!invGS Σ} (k: nat) mj sch (Ps : list (iProp Σ)) : iProp Σ :=
     ∃ i, ⌜i ∈ AE_next_diff (S k) mj⌝ ∧ ownI k i sch (list_to_vec Ps).
 Definition ae_inv_mut_aux : seal (@ae_inv_mut_def). Proof. by eexists. Qed.
 Definition ae_inv_mut {Σ i} := ae_inv_mut_aux.(unseal) Σ i.
@@ -17,7 +17,7 @@ Definition ae_inv_mut_eq : @ae_inv_mut = @ae_inv_mut_def := ae_inv_mut_aux.(seal
 Instance: Params (@ae_inv_mut) 3 := {}.
 Typeclasses Opaque ae_inv_mut.
 
-Definition ae_inv_mut_full_def `{!invG Σ} (k: nat) mj sch (Qs Ps : list (iProp Σ)) : iProp Σ :=
+Definition ae_inv_mut_full_def `{!invGS Σ} (k: nat) mj sch (Qs Ps : list (iProp Σ)) : iProp Σ :=
     ∃ i, ⌜i ∈ AE_next_diff (S k) mj ⌝ ∗ ownI k i sch (list_to_vec Ps) ∗ ownI_mut k i (1/2)%Qp (list_to_vec Qs).
 Definition ae_inv_mut_full_aux : seal (@ae_inv_mut_full_def). Proof. by eexists. Qed.
 Definition ae_inv_mut_full {Σ i} := ae_inv_mut_full_aux.(unseal) Σ i.
@@ -29,7 +29,7 @@ Local Hint Extern 0 (AE _ _ ## MaybeEn _) => apply AE_MaybeEn_disj : core.
 Local Hint Extern 0 (AlwaysEn ## MaybeEn _) => apply coPset_inl_inr_disj : core.
 
 Section ae_inv_mut.
-  Context `{!invG Σ}.
+  Context `{!invGS Σ}.
   Implicit Types i : positive.
   Implicit Types mj: option nat.
   Implicit Types E : coPset.

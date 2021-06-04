@@ -11,7 +11,7 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section goose_lang.
   Context `{!jrnlG Σ}.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
 
   Context (N:namespace).
   Context (P: Block → iProp Σ).

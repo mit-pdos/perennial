@@ -7,11 +7,11 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Class partitionG (L V: Type) (Σ: gFunctors) `{Countable L, Infinite L, Countable V, Infinite V} := {
-  partition_heap_inG :> gen_heapG L (gset V) Σ;
+  partition_heap_inG :> gen_heapGS L (gset V) Σ;
 }.
 
 Class partition_preG (L V: Type) Σ `{Countable L, Infinite L, Countable V, Infinite V} := {
-  partition_heap_preG :> gen_heapPreG L (gset V) Σ;
+  partition_heap_preG :> gen_heapGpreS L (gset V) Σ;
 }.
 
 

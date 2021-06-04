@@ -7,7 +7,7 @@ From Goose.github_com.mit_pdos.gokv.paxi Require Import single.
 
 Section single_proof.
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Record PrepareReplyC := mkPrepareReplyC
 {

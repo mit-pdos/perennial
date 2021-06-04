@@ -19,7 +19,7 @@ Record InstallShardRequestC := mkInstallShardC {
 Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : Prop.
 Admitted.
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   ∃ (kvs_ptr:loc) (mv:gmap u64 goose_lang.val),

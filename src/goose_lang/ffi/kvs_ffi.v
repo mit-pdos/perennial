@@ -253,13 +253,13 @@ Class kvsG Σ :=
     (* implicitly insert names for elements, used to tag which generation *)
     kvsG_open_name : gname;
     (* (2) exlusive/etc. algebra for disk blocks --> allows for ownership of blocks *)
-    kvsG_state_inG :> gen_heap.gen_heapG u64 disk.Block Σ;
+    kvsG_state_inG :> gen_heap.gen_heapGS u64 disk.Block Σ;
   }.
 
 (* without names: e.g. disk names stay same, memory ones are forgotten *)
 Class kvs_preG Σ :=
   { kvsG_preG_open_inG :> inG Σ openR;
-    kvsG_preG_state_inG :> gen_heap.gen_heapPreG u64 disk.Block Σ;
+    kvsG_preG_state_inG :> gen_heap.gen_heapGpreS u64 disk.Block Σ;
   }.
 
 Definition kvsΣ : gFunctors :=
@@ -668,7 +668,7 @@ Instance kvs_spec_ty : ext_types (spec_ffi_op_field) := kvs_ty.
 Instance kvs_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := kvs_spec_ffi_interp) :=
   {| spec_ffi_interp_adequacy_field := kvs_interp_adequacy |}.
 
-Context `{invG Σ}.
+Context `{invGS Σ}.
 Context `{crashG Σ}.
 Context `{!refinement_heapG Σ}.
 

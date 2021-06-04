@@ -25,33 +25,33 @@ Section gen_heap_defs.
     gen_heap_meta_name : gname
   }.
 
-  Definition gen_heapG_update {Σ} (hG: gen_heapG L V Σ) (names: gen_heap_names) :=
-    @GenHeapG _ _ _ _ _
+  Definition gen_heapG_update {Σ} (hG: gen_heapGS L V Σ) (names: gen_heap_names) :=
+    @GenHeapGS _ _ _ _ _
              (@gen_heap_inG _ _ _ _ _ hG)
              (gen_heap_heap_name names)
              (gen_heap_meta_name names).
 
-  Definition gen_heapG_update_pre {Σ} (hG: gen_heapPreG L V Σ) (names: gen_heap_names) :=
-    @GenHeapG _ _ _ _ _
+  Definition gen_heapG_update_pre {Σ} (hG: gen_heapGpreS L V Σ) (names: gen_heap_names) :=
+    @GenHeapGS _ _ _ _ _
              hG
              (gen_heap_heap_name names)
              (gen_heap_meta_name names).
 
-  Definition gen_heapG_get_names {Σ} (hG: gen_heapG L V Σ) : gen_heap_names :=
+  Definition gen_heapG_get_names {Σ} (hG: gen_heapGS L V Σ) : gen_heap_names :=
     {| gen_heap_heap_name := gen_heap_name hG;
        gen_heap_meta_name := gen_meta_name hG |}.
 
-  Lemma gen_heapG_get_update {Σ} (hG: gen_heapG L V Σ) :
+  Lemma gen_heapG_get_update {Σ} (hG: gen_heapGS L V Σ) :
     gen_heapG_update hG (gen_heapG_get_names hG) = hG.
   Proof. destruct hG => //=. Qed.
 
-  Lemma gen_heapG_update_pre_get {Σ} (hG: gen_heapPreG L V Σ) names:
+  Lemma gen_heapG_update_pre_get {Σ} (hG: gen_heapGpreS L V Σ) names:
     (gen_heapG_get_names (gen_heapG_update_pre hG names)) = names.
   Proof. destruct hG, names => //=. Qed.
 
   Local Notation "l ↦ v" := (mapsto l (DfracOwn 1) v) (at level 20) : bi_scope.
 
-  Lemma gen_heap_name_strong_init' `{!gen_heapPreG L V Σ} σ :
+  Lemma gen_heap_name_strong_init' `{!gen_heapGpreS L V Σ} σ :
     ⊢ |==> ∃ names : gen_heap_names, let _ := gen_heapG_update_pre _ names in
            gen_heap_interp σ ∗
            ([∗ map] i↦v ∈ σ, i ↦ v) ∗
@@ -62,7 +62,7 @@ Section gen_heap_defs.
     iExists names. iFrame. done.
   Qed.
 
-  Lemma gen_heap_name_strong_init `{!gen_heapPreG L V Σ} σ :
+  Lemma gen_heap_name_strong_init `{!gen_heapGpreS L V Σ} σ :
     ⊢ |==> ∃ names : gen_heap_names, let _ := gen_heapG_update_pre _ names in
            gen_heap_interp σ ∗
            [∗ map] i↦v ∈ σ, i ↦ v .
@@ -72,13 +72,13 @@ Section gen_heap_defs.
     iExists names. iFrame. done.
   Qed.
 
-  Lemma gen_heap_name_init `{!gen_heapPreG L V Σ} σ :
+  Lemma gen_heap_name_init `{!gen_heapGpreS L V Σ} σ :
     ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update_pre _ names) σ.
   Proof.
     iMod (gen_heap_name_strong_init σ) as (n) "(H&_)". iExists n. eauto.
   Qed.
 
-  Lemma gen_heap_name_reinit {Σ} (hG: gen_heapG L V Σ) σ :
+  Lemma gen_heap_name_reinit {Σ} (hG: gen_heapGS L V Σ) σ :
     ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update hG names) σ.
   Proof.
     iMod (gen_heap_init_names) as (γh γm) "(Hinterp & Hh & Hm)".
@@ -86,15 +86,15 @@ Section gen_heap_defs.
     iFrame. done.
   Qed.
 
-  Global Instance mapsto_discretizable {Σ} (hG: gen_heapG L V Σ) l q v:
+  Global Instance mapsto_discretizable {Σ} (hG: gen_heapGS L V Σ) l q v:
     Discretizable (mapsto (hG:=hG) l q v).
   Proof. rewrite mapsto_eq. apply _. Qed.
 
-  Global Instance mapsto_abs_timless {Σ} (hG: gen_heapG L V Σ) l q v:
+  Global Instance mapsto_abs_timless {Σ} (hG: gen_heapGS L V Σ) l q v:
     AbsolutelyTimeless (mapsto (hG:=hG) l q v).
   Proof. rewrite mapsto_eq. apply _. Qed.
 
-  Global Instance gen_heap_interp_abs_timeless {Σ} (hG: gen_heapG L V Σ) σ:
+  Global Instance gen_heap_interp_abs_timeless {Σ} (hG: gen_heapGS L V Σ) σ:
     AbsolutelyTimeless (gen_heap_interp (hG:=hG) σ).
   Proof. apply _. Qed.
 

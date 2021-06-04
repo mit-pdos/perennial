@@ -19,7 +19,7 @@ Context `{!ffi_interp ffi}.
 Context {ext_tys: ext_types ext}.
 
 Section proof.
-  Context `{!heapG Σ, stagedG Σ} (Nlock: namespace).
+  Context `{!heapGS Σ, stagedG Σ} (Nlock: namespace).
 
   Definition is_crash_lock k (lk: val) (R Rcrash: iProp Σ) : iProp Σ :=
     is_lock Nlock lk (na_crash_inv k R Rcrash).

@@ -26,7 +26,7 @@ Local Definition blocksR := authR $ gmapUR nat (exclR $ listLO Block).
 Local Definition allocsR := authR $ gmapUR nat (exclR $ gset64O).
 
 Section goose.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!allocG Σ}.
   Context `{!stagedG Σ}.
   Context `{!inG Σ blocksR}.
@@ -774,7 +774,7 @@ Section goose.
       Open (disk_val d) #sz @ (S k); ⊤
     {{{ l, RET #l; pre_dir l (int.Z sz) σ0 }}}
     {{{ dir_cinv (int.Z sz) σ0 false }}}.
-  Proof using allocG0 heapG0 inG0 inG1 Σ.
+  Proof using Type* - P.
     iIntros (? Φ Φc) "Hcinv HΦ".
     wpc_call.
     { iApply dir_cinv_post_crash; auto. }
@@ -1145,7 +1145,7 @@ End goose.
 From Perennial.goose_lang Require Import crash_modality wpr_lifting.
 
 Section crash_stable.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!stagedG Σ}.
   Context `{!inG Σ blocksR}.
   Context `{!inG Σ allocsR}.
@@ -1186,7 +1186,7 @@ Section crash_stable.
 End crash_stable.
 
 Section recov.
-  Context `{!heapG Σ}.
+  Context `{!heapGS Σ}.
   Context `{!allocG Σ}.
   Context `{!stagedG Σ}.
   Context `{!inG Σ blocksR}.
@@ -1204,7 +1204,7 @@ Section recov.
         (λ _, True%I)
         (λ _, True%I)
         (λ _ _, True%I).
-  Proof using allocG0.
+  Proof using Type*.
     iIntros (Hsz) "Hstart".
     iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I (λ _, ∃ σ', dir_cinv (int.Z sz) σ' false)%I with "[Hstart] []").
     { wpc_apply (wpc_Open with "Hstart"); auto 10. }

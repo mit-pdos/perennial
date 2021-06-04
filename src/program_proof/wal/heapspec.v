@@ -38,7 +38,7 @@ Proof. solve_inG. Qed.
 Section heap.
 
 Context `{!walheapG Σ}.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 (* Invariant and definitions *)
 

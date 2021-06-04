@@ -17,7 +17,7 @@ Proof.
 Qed.
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Implicit Types (m: gmap u64 ()) (addrs: gset u64).
 

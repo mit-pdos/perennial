@@ -34,7 +34,7 @@ End inode.
 Hint Unfold inode.wf InodeMaxBlocks : word.
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!stagedG Σ}.
 Context `{!allocG Σ}.
 
@@ -987,7 +987,7 @@ Qed.
 End goose.
 
 Section goose.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!allocG Σ}.
 
 Context (P: inode.t → iProp Σ).

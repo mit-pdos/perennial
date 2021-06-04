@@ -7,7 +7,7 @@ Require Import Decimal Ascii String DecimalString.
 From Perennial.program_proof.lockservice Require Import grove_ffi.
 
 Section rpc_proof.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Context `{!rpcG Σ u64}.
 
 Definition is_rpcHandler' f γrpc cid args PreCond PostCond : iProp Σ :=

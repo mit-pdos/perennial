@@ -511,7 +511,7 @@ Instance jrnl_spec_ty : ext_types (spec_ffi_op_field) := jrnl_ty.
 Instance jrnl_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := jrnl_spec_ffi_interp) :=
   {| spec_ffi_interp_adequacy_field := jrnl_interp_adequacy |}.
 
-Context `{invG Σ}.
+Context `{invGS Σ}.
 Context `{crashG Σ}.
 Context `{!refinement_heapG Σ}.
 

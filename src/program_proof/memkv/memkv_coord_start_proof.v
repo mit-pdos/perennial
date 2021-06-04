@@ -10,7 +10,7 @@ From Perennial.program_proof.memkv Require Import memkv_coord_clerk_proof.
 
 Section memkv_coord_start_proof.
 
-Context `{!heapG Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
   length shardMapping = int.nat uNSHARD →

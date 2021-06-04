@@ -35,7 +35,7 @@ Section rpc.
 Context `{!ffi_semantics ext ffi, !ext_types ext}.
 Context  {R:Type}.
 Context `{!rpcG Σ R}.
-Context `{!invG Σ}.
+Context `{!invGS Σ}.
 
 (* identifier for a rpc request *)
 Record RPCRequestID :=

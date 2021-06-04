@@ -10,7 +10,7 @@ From Perennial.program_proof Require Import marshal_proof.
 
 Section memkv_marshal_get_proof.
 
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 
 Record GetRequestC := mkGetRequestC {
   GR_CID : u64;

@@ -235,8 +235,8 @@ Proof.
   done.
 Qed.
 
-Class heapG Σ := HeapG {
-  heapG_invG : invG Σ;
+Class heapGS Σ := HeapGS {
+  heapG_invG : invGS Σ;
   heapG_crashG : crashG Σ;
   heapG_ffiG : ffiG Σ;
   heapG_na_heapG :> na_heapG loc val Σ;
@@ -258,7 +258,7 @@ Record heap_local_names := {
   heap_local_trace_names : tr_names;
 }.
 
-Definition heap_update_local_names Σ (hG : heapG Σ) (names: heap_local_names) :=
+Definition heap_update_local_names Σ (hG : heapGS Σ) (names: heap_local_names) :=
   {| heapG_invG := heapG_invG;
      heapG_crashG := heapG_crashG;
      heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_local_ffi_local_names names);
@@ -266,7 +266,7 @@ Definition heap_update_local_names Σ (hG : heapG Σ) (names: heap_local_names) 
      heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names)
  |}.
 
-Definition heap_update_local Σ (hG : heapG Σ) (Hinv: invG Σ) (Hcrash : crashG Σ) (names: heap_local_names) :=
+Definition heap_update_local Σ (hG : heapGS Σ) (Hinv: invGS Σ) (Hcrash : crashG Σ) (names: heap_local_names) :=
   {| heapG_invG := Hinv;
      heapG_crashG := Hcrash;
      heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_local_ffi_local_names names);
@@ -274,14 +274,14 @@ Definition heap_update_local Σ (hG : heapG Σ) (Hinv: invG Σ) (Hcrash : crashG
      heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names)
  |}.
 
-Definition heap_get_names Σ (hG : heapG Σ) : heap_names :=
+Definition heap_get_names Σ (hG : heapGS Σ) : heap_names :=
   {| heap_heap_names := na_heapG_get_names (heapG_na_heapG);
      heap_ffi_local_names := ffi_get_local_names Σ (heapG_ffiG);
      heap_ffi_global_names := ffi_get_global_names Σ (heapG_ffiG);
      heap_trace_names := trace_tr_names;
  |}.
 
-Definition heap_get_local_names Σ (hG : heapG Σ) : heap_local_names :=
+Definition heap_get_local_names Σ (hG : heapGS Σ) : heap_local_names :=
   {| heap_local_heap_names := na_heapG_get_names (heapG_na_heapG);
      heap_local_ffi_local_names := ffi_get_local_names Σ (heapG_ffiG);
      heap_local_trace_names := trace_tr_names;
@@ -308,8 +308,8 @@ Definition tls (na: naMode) : lock_state :=
 
 Global Existing Instances heapG_na_heapG.
 
-Global Program Instance heapG_irisG `{!heapG Σ}:
-  irisG goose_lang Σ := {
+Global Program Instance heapG_irisG `{!heapGS Σ}:
+  irisGS goose_lang Σ := {
   iris_invG := heapG_invG;
   iris_crashG := heapG_crashG;
   num_laters_per_step := λ n, n;
@@ -530,7 +530,7 @@ Global Instance pure_case_inr v e1 e2 :
 Proof. solve_pure_exec. Qed.
 
 Section lifting.
-Context `{!heapG Σ}.
+Context `{!heapGS Σ}.
 Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
 Implicit Types efs : list expr.
