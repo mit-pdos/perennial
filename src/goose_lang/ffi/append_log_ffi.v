@@ -171,7 +171,7 @@ Section log.
       (* FIXME: append should be non-atomic in the spec because it needs to read
          an input slice (and the slices the input points to). *)
       (* this is absolutely horrendous to reason about *)
-      block_slices ← read_slice (slice.T (slice.T byteT)) v;
+      block_slices ← read_slice (slice.T (ext_ty:=log_ty) (slice.T byteT)) v;
       block_vals ← tmapM (read_slice (@slice.T _ log_ty byteT)) block_slices;
       new_blocks ← tmapM (unwrap ∘ to_block) block_vals;
       modifyΣ (λ s, s ++ new_blocks);;

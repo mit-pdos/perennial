@@ -11,7 +11,8 @@ if test -z "$FILE"; then
     FILE=src/ShouldBuild.v
 fi
 
-if test -z ${FOLDER+x}; then
+#if test -z ${FOLDER+x}; then
+if test -z "$FOLDER"; then
     FOLDER=src/
 fi
 

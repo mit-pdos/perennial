@@ -421,7 +421,7 @@ Proof.
   iNamed "Hlocks".
   iPureIntro.
   intros a Hin.
-  apply elem_of_map_2 with (f := addr2flat) in Hin as Hin'.
+  apply (elem_of_map_2 (D:=gset _)) with (f := addr2flat) in Hin as Hin'.
   pose proof ((iffLR (elem_of_subseteq _ _)) Hlocks_in_dom _ Hin') as Hin''.
   apply elem_of_map_1 in Hin''.
   destruct Hin'' as [addr' [Heq Haddr'_in]].
@@ -835,7 +835,7 @@ Proof.
         [subst a'; assumption|assumption|assumption].
     - intros Hin.
       apply elem_of_dom in Hin.
-      apply (elem_of_map_2 addr2flat) in Hin.
+      apply (elem_of_map_2 (D:=gset _) addr2flat) in Hin.
       assumption.
   }
   rewrite !(decide_iff _ _ _ _ Hlocked_iff) !decide_is_Some.
