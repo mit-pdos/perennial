@@ -2,7 +2,7 @@ From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.gokv.urpc Require Import rpc.
 From iris.base_logic.lib Require Import saved_prop.
 From Perennial.goose_lang Require Import adequacy.
-From Perennial.program_proof Require Import dist_prelude.
+From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.algebra Require Import auth_map.
 From Perennial.base_logic Require Import lib.ghost_map lib.mono_nat.
@@ -478,9 +478,9 @@ Definition handlers_complete Γ (handlers : gmap u64 val) :=
 
 Lemma global_groveG_conv :
   (@global_groveG Σ heapG_heap_globalG).(@groveG_gen_heapG Σ) =
-  (@dist_ffi.heapG_groveG Σ hG).(@groveG_gen_heapG Σ).
+  (@grove_ffi.heapG_groveG Σ hG).(@groveG_gen_heapG Σ).
 Proof.
-    rewrite /dist_ffi.heapG_groveG//=.
+    rewrite /grove_ffi.heapG_groveG//=.
     rewrite /heapG_to_preG//=.
     destruct hG => //=.
     destruct heapG_invG => //=.

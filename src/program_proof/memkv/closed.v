@@ -2,12 +2,11 @@ From Perennial.algebra Require Import gen_heap_names.
 From Perennial.goose_lang Require Import lang notation typing lifting.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list_slice.
 From Perennial.goose_lang Require Import prelude.
-From Perennial.goose_lang.ffi Require Import dist_ffi.
-From Perennial.goose_lang Require Import ffi.dist_prelude.
+From Perennial.goose_lang Require Import ffi.grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 
 
-From Perennial.program_proof Require Import dist_prelude.
+From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.lockservice Require Export rpc.
 From Perennial.program_proof.memkv Require Export
      memkv_shard_definitions memkv_shard_start_proof memkv_shard_make_proof memkv_shard_ghost_init.

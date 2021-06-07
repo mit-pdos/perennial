@@ -9,7 +9,7 @@ From Perennial.base_logic Require
      gmap_own.
 (* Prelude files *)
 From Perennial.program_proof Require
-     proof_prelude disk_prelude dist_prelude.
+     proof_prelude disk_prelude grove_prelude.
 
 (* a couple program proofs that are pretty interesting on their own and include
 the wpc infrastructure *)

@@ -1,4 +1,5 @@
-(** FFI module for distributed Perennial (Grove): network *)
+(** FFI module for distributed Perennial (Grove). So far, consist only of a
+network *)
 From stdpp Require Import gmap vector fin_maps.
 From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.

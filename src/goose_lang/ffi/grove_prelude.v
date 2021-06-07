@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import lang.
-From Perennial.goose_lang Require Export ffi.dist_ffi.
+From Perennial.goose_lang Require Export ffi.grove_ffi.
 Existing Instances grove_op grove_model grove_ty.
 Existing Instances grove_semantics grove_interp.
 Existing Instance heapG_groveG.
