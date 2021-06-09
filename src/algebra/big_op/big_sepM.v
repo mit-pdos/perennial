@@ -342,14 +342,14 @@ Section map.
   Proof using BiAffine0.
     iSplit.
     - iIntros "Hm".
-      erewrite <- (map_union_filter (λ x, P x) m) at 1.
+      erewrite <- (map_filter_union_complement (λ x, P x) m) at 1.
       iDestruct (big_sepM_union with "Hm") as "[Hmp Hmnp]".
-      { eapply map_disjoint_filter. }
+      { eapply map_disjoint_filter_complement. }
       iFrame.
     - iIntros "[Hm1 Hm2]".
       iDestruct (big_sepM_union with "[$Hm1 $Hm2]") as "Hm".
-      { eapply map_disjoint_filter. }
-      rewrite map_union_filter. iFrame.
+      { eapply map_disjoint_filter_complement. }
+      rewrite map_filter_union_complement. iFrame.
   Qed.
 
   Lemma big_sepM_mono_gen_Q {B} (Q : PROP) (Φ : K->A->PROP) (Ψ : K->B->PROP) (m1 : gmap K A) (m2 : gmap K B) :
@@ -709,9 +709,9 @@ Section map2.
     rewrite big_sepM2_eq /big_sepM2_def.
     iSplit.
     - iIntros "[% Hm]".
-      erewrite <- (map_union_filter _ (map_zip m1 m2)).
+      erewrite <- (map_filter_union_complement _ (map_zip m1 m2)).
       iDestruct (big_sepM_union with "Hm") as "[Hmp Hmnp]".
-      { eapply map_disjoint_filter. }
+      { eapply map_disjoint_filter_complement. }
       iSplitL "Hmp".
       + iSplit.
         { iPureIntro; eapply filter_same_keys_0; eauto. }
@@ -726,8 +726,8 @@ Section map2.
       rewrite map_zip_filter.
       rewrite (map_zip_filter _ _ (λ k, ¬ P k)).
       iDestruct (big_sepM_union with "[$Hm1 $Hm2]") as "Hm".
-      { eapply map_disjoint_filter. }
-      rewrite map_union_filter. iFrame.
+      { eapply map_disjoint_filter_complement. }
+      rewrite map_filter_union_complement. iFrame.
   Unshelve.
     all: typeclasses eauto.
   Qed.

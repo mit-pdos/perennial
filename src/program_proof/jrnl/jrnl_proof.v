@@ -802,12 +802,12 @@ Proof.
   iIntros (dirtyslice bufptrlist) "(Hdirtyslice & Hdirtylist)".
   wp_loadField.
 
-  pose proof (map_union_filter
+  pose proof (map_filter_union_complement
               (λ x, bufDirty <$> (gBufmap !! fst x) = Some true)
               mt) as Hmt.
   rewrite <- Hmt at 2.
   iDestruct (big_sepM_union with "Hctxelem") as "[Hctxelem0 Hctxelem1]".
-  { apply map_disjoint_filter. }
+  { apply map_disjoint_filter_complement. }
 
   iAssert (⌜ dom (gset addr) (filter (λ x, bufDirty <$> (gBufmap !! fst x) = Some true) mt) =
              dom (gset addr) (filter (λ x, (snd x).(bufDirty) = true) gBufmap) ⌝)%I as "%Hdom".
@@ -948,7 +948,7 @@ Proof.
 
       replace (modified <$> mt) with (modified <$> (filter (λ v, bufDirty <$> gBufmap !! v.1 = Some true) mt ∪
                                                     filter (λ v, bufDirty <$> gBufmap !! v.1 ≠ Some true) mt)).
-      2: { rewrite map_union_filter; eauto. }
+      2: { rewrite map_filter_union_complement; eauto. }
       rewrite map_fmap_union.
       rewrite -assoc.
       iExactEq "H". f_equal. f_equal. f_equal.
@@ -1002,8 +1002,8 @@ Proof.
         destruct Heq as [Heq | Heq]; first congruence.
         rewrite Heq; iFrame.
       }
-      { eapply map_disjoint_filter. }
-      rewrite map_union_filter.
+      { eapply map_disjoint_filter_complement. }
+      rewrite map_filter_union_complement.
       rewrite big_sepM_fmap.
       iFrame.
       eauto.
@@ -1040,8 +1040,8 @@ Proof.
         destruct Heq as [Heq | Heq]; first congruence.
         rewrite Heq; iFrame.
       }
-      { eapply map_disjoint_filter. }
-      rewrite map_union_filter.
+      { eapply map_disjoint_filter_complement. }
+      rewrite map_filter_union_complement.
       rewrite big_sepM_fmap.
       iFrame.
       iMod (ncfupd_mask_mono with "Hpreq"); auto.
@@ -1063,8 +1063,8 @@ Proof.
       iApply (big_sepM_mono with "Hctxelem1").
       iIntros (k x Hkx) "[H _]". iFrame.
     }
-    { eapply map_disjoint_filter. }
-    rewrite map_union_filter.
+    { eapply map_disjoint_filter_complement. }
+    rewrite map_filter_union_complement.
     rewrite big_sepM_fmap.
     iFrame.
 Qed.
