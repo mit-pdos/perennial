@@ -253,12 +253,12 @@ Section map.
     iFrame.
   Qed.
 
-  Lemma big_sepM_mono_wand `{!BiAffine PROP} Φ Ψ m (I : PROP) :
+  Lemma big_sepM_mono_wand Φ Ψ m (I : PROP) :
     □ ( ∀ k x, ⌜ m !! k = Some x ⌝ -∗
       I ∗ Φ k x -∗ I ∗ Ψ k x ) -∗
     I ∗ ([∗ map] k↦x ∈ m, Φ k x) -∗
     I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
-  Proof.
+  Proof using BiAffine0.
     iIntros "#Hwand [HI Hm]".
     iInduction m as [|i x m] "IH" using map_ind.
     - iFrame. iApply big_sepM_empty. done.
@@ -275,12 +275,12 @@ Section map.
       iFrame. iApply big_sepM_insert; eauto. iFrame.
   Qed.
 
-  Lemma big_sepM_mono_fupd `{!BiAffine PROP} `{!BiFUpd PROP} Φ Ψ m (I : PROP) E :
+  Lemma big_sepM_mono_fupd `{!BiFUpd PROP} Φ Ψ m (I : PROP) E :
    □ ( ∀ k x, ⌜ m !! k = Some x ⌝ →
       I ∗ Φ k x ={E}=∗ I ∗ Ψ k x ) -∗
     I ∗ ([∗ map] k↦x ∈ m, Φ k x) ={E}=∗
     I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
-  Proof.
+  Proof using BiAffine0.
     iIntros "#Hfupd [HI Hm]".
     iInduction m as [|i x m] "IH" using map_ind.
     - iModIntro. iFrame. iApply big_sepM_empty. done.
@@ -297,20 +297,19 @@ Section map.
       iFrame. iApply big_sepM_insert; eauto. iFrame. done.
   Qed.
 
-  Lemma big_sepM_lookup_holds
-        `{BiAffine PROP} (m: gmap K A) :
+  Lemma big_sepM_lookup_holds (m: gmap K A) :
     ⊢@{PROP} [∗ map] k↦v ∈ m, ⌜m !! k = Some v⌝.
   Proof using BiAffine0.
     iPureIntro.
     apply map_Forall_lookup; auto.
   Qed.
 
-  Lemma big_sepM_subseteq_diff `{!BiAffine PROP} Φ m1 m2 :
+  Lemma big_sepM_subseteq_diff Φ m1 m2 :
     m2 ⊆ m1 ->
     ([∗ map] k↦x ∈ m1, Φ k x) -∗
     ([∗ map] k↦x ∈ m2, Φ k x) ∗
     ([∗ map] k↦x ∈ m1 ∖ m2, Φ k x).
-  Proof.
+  Proof using BiAffine0.
     iIntros (Hsubset) "Hm".
     replace (m1) with (m2 ∪ m1 ∖ m2) at 1.
     2: { rewrite map_difference_union; eauto. }
@@ -319,13 +318,13 @@ Section map.
     iFrame.
   Qed.
 
-  Lemma big_sepM_subseteq_acc `{!BiAffine PROP} Φ m1 m2 :
+  Lemma big_sepM_subseteq_acc Φ m1 m2 :
     m2 ⊆ m1 ->
     ([∗ map] k↦x ∈ m1, Φ k x) -∗
     ([∗ map] k↦x ∈ m2, Φ k x) ∗
     (([∗ map] k↦x ∈ m2, Φ k x) -∗
      [∗ map] k↦x ∈ m1, Φ k x).
-  Proof.
+  Proof using BiAffine0.
     iIntros (Hsubseteq) "Hm1".
     iDestruct (big_sepM_subseteq_diff with "Hm1") as "[Hm2 Hm12]"; eauto.
     iFrame "Hm2".
