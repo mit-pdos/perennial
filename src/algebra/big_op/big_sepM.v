@@ -117,20 +117,21 @@ Section map_zip.
   Theorem map_zip_empty_l (m2 : gmap K B) :
     map_zip (∅ : gmap K A) m2 = ∅.
   Proof.
-    rewrite /map_zip.
     apply map_eq; intros.
+    rewrite /map_zip.
     erewrite lookup_merge by reflexivity.
-    rewrite !lookup_empty; eauto.
+    rewrite !lookup_empty /=.
+    destruct (m2 !! i); done.
   Qed.
 
   Theorem map_zip_empty_r (m1 : gmap K A) :
     map_zip m1 (∅ : gmap K B) = ∅.
   Proof.
-    rewrite /map_zip.
     apply map_eq; intros.
+    rewrite /map_zip.
     erewrite lookup_merge by reflexivity.
-    rewrite !lookup_empty; eauto.
-    destruct (m1 !! i); eauto.
+    rewrite !lookup_empty /=.
+    destruct (m1 !! i); done.
   Qed.
 
   Theorem map_zip_insert (m1 : gmap K A) (m2 : gmap K B) i v1 v2 :
@@ -154,7 +155,8 @@ Section map_zip.
   Proof.
     intros; rewrite /map_zip.
     erewrite lookup_merge by reflexivity.
-    rewrite H0; eauto.
+    rewrite H0 /=.
+    destruct (m2 !! i); auto.
   Qed.
 
   Theorem map_zip_lookup_none_2 (m1 : gmap K A) (m2 : gmap K B) i :
