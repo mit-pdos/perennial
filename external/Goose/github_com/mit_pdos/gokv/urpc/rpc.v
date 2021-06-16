@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.tchajed.marshal.
 
 Definition HostName: ty := uint64T.
@@ -15,8 +16,8 @@ Definition RPCServer__rpcHandle: val :=
     let: "replyData" := ref (zero_val (slice.T byteT)) in
     let: "f" := Fst (MapGet (struct.loadF RPCServer "handlers" "srv") "rpcid") in
     "f" "data" "replyData";;
-    control.impl.Assume (#8 + #8 + slice.len (![slice.T byteT] "replyData") > slice.len (![slice.T byteT] "replyData"));;
-    let: "e" := marshal.NewEnc (#8 + #8 + slice.len (![slice.T byteT] "replyData")) in
+    let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8) (slice.len (![slice.T byteT] "replyData")) in
+    let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" "seqno";;
     marshal.Enc__PutInt "e" (slice.len (![slice.T byteT] "replyData"));;
     marshal.Enc__PutBytes "e" (![slice.T byteT] "replyData");;
@@ -122,12 +123,11 @@ Definition RPCClient__Call: val :=
     struct.loadF callback "done" "cb" <-[boolT] #false;;
     lock.acquire (struct.loadF RPCClient "mu" "cl");;
     let: "seqno" := struct.loadF RPCClient "seq" "cl" in
-    control.impl.Assume (struct.loadF RPCClient "seq" "cl" + #1 > struct.loadF RPCClient "seq" "cl");;
-    struct.storeF RPCClient "seq" "cl" (struct.loadF RPCClient "seq" "cl" + #1);;
+    struct.storeF RPCClient "seq" "cl" (std.SumAssumeNoOverflow (struct.loadF RPCClient "seq" "cl") #1);;
     MapInsert (struct.loadF RPCClient "pending" "cl") "seqno" "cb";;
     lock.release (struct.loadF RPCClient "mu" "cl");;
-    control.impl.Assume (#8 + #8 + #8 + slice.len "args" > slice.len "args");;
-    let: "e" := marshal.NewEnc (#8 + #8 + #8 + slice.len "args") in
+    let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8 + #8) (slice.len "args") in
+    let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" "rpcid";;
     marshal.Enc__PutInt "e" "seqno";;
     marshal.Enc__PutInt "e" (slice.len "args");;

@@ -1,5 +1,5 @@
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import grove_prelude std_proof.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof Require Import marshal_proof.
 
@@ -59,16 +59,12 @@ Proof.
   wp_lam.
   wp_pures.
   iNamed "Hrep".
+
   wp_loadField.
   wp_apply (wp_slice_len).
-  wp_pures.
-  wp_loadField.
-  wp_apply (wp_slice_len).
-  wp_apply (wp_Assume).
-  rewrite bool_decide_eq_true.
-  iIntros (Hoverflow).
-  apply sum_nooverflow_r in Hoverflow.
-  change (int.Z (word.add (word.add (word.add 8 8) 8) 8)) with 32%Z in Hoverflow.
+  wp_apply wp_SumAssumeNoOverflow.
+  change (word.add (word.add (word.add 8 8) 8) 8) with (U64 32).
+  iIntros (Hnooverflow).
 
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".

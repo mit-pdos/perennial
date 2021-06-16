@@ -47,7 +47,7 @@ Proof.
 Qed.
 
 Lemma sum_nooverflow_l (x y : u64) :
-  int.Z x < int.Z (word.add x y) →
+  int.Z x ≤ int.Z (word.add x y) →
   int.Z (word.add x y) = (int.Z x) + (int.Z y).
 Proof.
   intros. word_cleanup. rewrite wrap_small //.
@@ -65,7 +65,7 @@ Proof.
 Qed.
 
 Lemma sum_nooverflow_r (x y : u64) :
-  int.Z y < int.Z (word.add x y) →
+  int.Z y ≤ int.Z (word.add x y) →
   int.Z (word.add x y) = (int.Z x) + (int.Z y).
 Proof.
   rewrite word_add_comm. intros ?%sum_nooverflow_l.

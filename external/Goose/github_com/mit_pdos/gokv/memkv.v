@@ -53,8 +53,7 @@ Definition PutRequest := struct.decl [
 (* doesn't include the operation type *)
 Definition encodePutRequest: val :=
   rec: "encodePutRequest" "args" :=
-    let: "num_bytes" := #8 + #8 + #8 + #8 + slice.len (struct.loadF PutRequest "Value" "args") in
-    control.impl.Assume ("num_bytes" > slice.len (struct.loadF PutRequest "Value" "args"));;
+    let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8 + #8 + #8) (slice.len (struct.loadF PutRequest "Value" "args")) in
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF PutRequest "CID" "args");;
     marshal.Enc__PutInt "e" (struct.loadF PutRequest "Seq" "args");;
@@ -120,8 +119,7 @@ Definition decodeGetRequest: val :=
 
 Definition encodeGetReply: val :=
   rec: "encodeGetReply" "rep" :=
-    let: "num_bytes" := #8 + #8 + slice.len (struct.loadF GetReply "Value" "rep") in
-    control.impl.Assume ("num_bytes" > slice.len (struct.loadF GetReply "Value" "rep"));;
+    let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8) (slice.len (struct.loadF GetReply "Value" "rep")) in
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF GetReply "Err" "rep");;
     marshal.Enc__PutInt "e" (slice.len (struct.loadF GetReply "Value" "rep"));;
@@ -151,9 +149,7 @@ Definition ConditionalPutReply := struct.decl [
 
 Definition encodeConditionalPutRequest: val :=
   rec: "encodeConditionalPutRequest" "req" :=
-    control.impl.Assume (slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req") + slice.len (struct.loadF ConditionalPutRequest "NewValue" "req") > slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req"));;
-    let: "num_bytes" := #8 + #8 + #8 + #8 + #8 + slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req") + slice.len (struct.loadF ConditionalPutRequest "NewValue" "req") in
-    control.impl.Assume ("num_bytes" > slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req") + slice.len (struct.loadF ConditionalPutRequest "NewValue" "req"));;
+    let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8 + #8 + #8 + #8) (std.SumAssumeNoOverflow (slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req")) (slice.len (struct.loadF ConditionalPutRequest "NewValue" "req"))) in
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF ConditionalPutRequest "CID" "req");;
     marshal.Enc__PutInt "e" (struct.loadF ConditionalPutRequest "Seq" "req");;
@@ -559,7 +555,7 @@ Definition MemKVShardServer__GetCIDRPC: val :=
   rec: "MemKVShardServer__GetCIDRPC" "s" :=
     lock.acquire (struct.loadF MemKVShardServer "mu" "s");;
     let: "r" := struct.loadF MemKVShardServer "nextCID" "s" in
-    control.impl.Assume (struct.loadF MemKVShardServer "nextCID" "s" + #1 > struct.loadF MemKVShardServer "nextCID" "s");;
+    std.SumAssumeNoOverflow (struct.loadF MemKVShardServer "nextCID" "s") #1;;
     struct.storeF MemKVShardServer "nextCID" "s" (struct.loadF MemKVShardServer "nextCID" "s" + #1);;
     lock.release (struct.loadF MemKVShardServer "mu" "s");;
     "r".

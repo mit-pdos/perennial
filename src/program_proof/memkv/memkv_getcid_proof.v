@@ -1,5 +1,5 @@
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import grove_prelude std_proof.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_marshal_getcid_proof memkv_shard_clerk_proof.
@@ -30,11 +30,8 @@ Proof.
   wp_loadField.
   wp_pures.
   wp_loadField.
-  wp_loadField.
-  wp_apply wp_Assume.
-  rewrite bool_decide_eq_true.
+  wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hoverflow).
-  apply sum_nooverflow_l in Hoverflow.
 
   wp_loadField.
   wp_storeField.

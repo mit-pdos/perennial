@@ -28,7 +28,7 @@ Definition BytesEqual: val :=
    *Use with care*, assumptions are trusted and should be justified! *)
 Definition SumAssumeNoOverflow: val :=
   rec: "SumAssumeNoOverflow" "x" "y" :=
-    control.impl.Assume ("x" + "y" > "x");;
+    control.impl.Assume ("x" + "y" ≥ "x");;
     "x" + "y".
 
 End code.

@@ -137,17 +137,14 @@ Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
   ∀ Φ : val → iProp Σ,
-    (⌜int.Z x + int.Z y < 2^64⌝ -∗ Φ #(int.Z x + int.Z y)) -∗
+    (⌜int.Z (word.add x y) = (int.Z x + int.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
     WP SumAssumeNoOverflow #x #y {{ Φ }}.
 Proof.
   iIntros "%Φ HΦ". wp_lam; wp_pures.
   wp_apply wp_Assume.
   rewrite bool_decide_eq_true.
   iIntros (<-%sum_nooverflow_l). wp_pures. iModIntro.
-  rewrite u64_Z. iApply "HΦ". iPureIntro.
-  (* Why is there no theorem proving [int.Z _ < 2^width]? *)
-  destruct (decide (int.Z (word.add x y) < 2 ^ 64)); first done.
-  word.
+  iApply "HΦ". iPureIntro. done.
 Qed.
 
 End goose_lang.

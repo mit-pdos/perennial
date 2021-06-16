@@ -2,7 +2,7 @@ From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.gokv.urpc Require Import rpc.
 From iris.base_logic.lib Require Import saved_prop.
 From Perennial.goose_lang Require Import adequacy.
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import grove_prelude std_proof.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.algebra Require Import auth_map.
 From Perennial.base_logic Require Import lib.ghost_map lib.mono_nat.
@@ -597,25 +597,13 @@ Proof.
   wp_pures.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
   wp_apply (wp_slice_len).
-  wp_pures.
-  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
-  wp_apply (wp_slice_len).
-  wp_apply (wp_Assume).
-  iIntros (Hoverflow).
-  apply bool_decide_eq_true_1 in Hoverflow.
-  wp_pures.
-  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
-  wp_apply (wp_slice_len).
+  wp_apply wp_SumAssumeNoOverflow.
+  change (word.add 8 8)%Z with (U64 16).
+  iIntros (Hnooverflow).
+
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
   wp_pures.
-  assert (int.Z (word.add (word.add 8 8) rep_sl.(Slice.sz)) =
-                 int.Z (rep_sl.(Slice.sz)) + 16)%Z as Hoverflow3.
-  {
-    apply sum_nooverflow_r in Hoverflow.
-    rewrite Hoverflow.
-    change (int.Z (word.add 8 8))%Z with 16%Z. lia.
-  }
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
   iIntros "Henc".
@@ -965,14 +953,13 @@ Proof.
   iIntros "(Hlked&Hlock_inner)".
   iNamed "Hlock_inner".
   wp_pures.
-  wp_loadField. wp_pures.
   wp_loadField.
+
   wp_loadField.
-  wp_apply (wp_Assume).
+  wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hoverflow1).
-  wp_pures.
-  wp_loadField.
   wp_storeField.
+
   wp_loadField.
   wp_apply (map.wp_MapInsert with "[$]").
   iIntros "Hpending_map".
@@ -990,8 +977,7 @@ Proof.
   wp_apply (release_spec with "[-Hslice Hhandler HΦ Hextracted Hrep_out_ptr]").
   { iFrame "Hlk". iFrame "Hlked". iNext. iExists _, _, _, _, _.
     iFrame. rewrite ?dom_insert_L.
-    assert (int.Z (word.add n 1) = int.Z n + 1)%Z as ->.
-    { apply bool_decide_eq_true_1 in Hoverflow1. word. }
+    replace (int.Z (word.add n 1)) with (int.Z n + 1)%Z by word.
     iSplit.
     { iPureIntro. word. }
     iSplit.
@@ -1023,22 +1009,12 @@ Proof.
     iPureIntro. rewrite lookup_insert //. }
   wp_pures.
   wp_apply (wp_slice_len).
-  wp_pures.
-  wp_apply (wp_slice_len).
-  wp_apply (wp_Assume).
+  wp_apply wp_SumAssumeNoOverflow.
+  change (word.add (word.add 8 8) 8)%Z with (U64 24).
   iIntros (Hoverflow2).
-  apply bool_decide_eq_true_1 in Hoverflow2.
-  wp_pures.
-  wp_apply (wp_slice_len).
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
   wp_pures.
-  assert (int.Z (word.add (word.add (word.add 8 8) 8) req.(Slice.sz)) =
-                 int.Z (req.(Slice.sz)) + 24)%Z as Hoverflow3.
-  {
-    apply sum_nooverflow_r in Hoverflow2.
-    rewrite Hoverflow2.
-    change (int.Z $ word.add (word.add 8 8) 8)%Z with 24%Z. lia. }
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
   iIntros "Henc".
