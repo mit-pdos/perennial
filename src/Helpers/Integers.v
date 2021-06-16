@@ -575,9 +575,9 @@ Lemma word_wrap_bounds (width : Z) (word : Interface.word width) (word_ok : word
   0 ≤ @word.wrap width word word_ok x < 2^width.
 Proof.
   unfold word.wrap. split.
-  - apply Z_mod_pos. apply ZifyInst.pow_pos_strict; [lia|].
-    apply word.width_pos.
+  - apply Z_mod_pos. apply Z.pow_pos_nonneg; [lia|].
+    apply Z.lt_le_incl, word.width_pos.
   - apply Z_mod_lt. apply Z.lt_gt.
-    apply ZifyInst.pow_pos_strict; [lia|].
-    apply word.width_pos.
+    apply Z.pow_pos_nonneg; [lia|].
+    apply Z.lt_le_incl, word.width_pos.
 Qed.
