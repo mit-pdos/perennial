@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import grove_prelude std_proof.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
@@ -198,12 +198,8 @@ Proof.
   wp_storeField.
 
   wp_loadField.
-  wp_loadField.
-  wp_apply wp_Assume.
-  rewrite bool_decide_eq_true.
-  iIntros (Hoverflow).
-
-  wp_loadField.
+  wp_apply wp_SumAssumeNoOverflow.
+  iIntros (Hnooverflow).
   wp_storeField.
 
   wp_apply (wp_ref_of_zero).
@@ -323,12 +319,8 @@ Proof.
   iIntros "Value".
 
   wp_loadField.
-  wp_loadField.
-  wp_apply wp_Assume.
-  rewrite bool_decide_eq_true.
-  iIntros (Hoverflow).
-
-  wp_loadField.
+  wp_apply wp_SumAssumeNoOverflow.
+  iIntros (Hnooverflow).
   wp_storeField.
 
   wp_apply (wp_ref_of_zero).
@@ -479,12 +471,8 @@ Proof.
   wp_storeField.
 
   wp_loadField.
-  wp_loadField.
-  wp_apply wp_Assume.
-  rewrite bool_decide_eq_true.
-  iIntros (Hoverflow).
-
-  wp_loadField.
+  wp_apply wp_SumAssumeNoOverflow.
+  iIntros (Hnooverflow).
   wp_storeField.
 
   wp_apply (wp_ref_of_zero).
@@ -647,12 +635,8 @@ Proof.
   iIntros "NewValue".
 
   wp_loadField.
-  wp_loadField.
-  wp_apply wp_Assume.
-  rewrite bool_decide_eq_true.
-  iIntros (Hoverflow).
-
-  wp_loadField.
+  wp_apply wp_SumAssumeNoOverflow.
+  iIntros (Hnooverflow).
   wp_storeField.
 
   wp_apply (wp_ref_of_zero).

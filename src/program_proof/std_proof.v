@@ -1,4 +1,4 @@
-From Perennial.Helpers Require Import List.
+From Perennial.Helpers Require Import List ModArith.
 
 From Goose.github_com.goose_lang Require Import std.
 
@@ -133,6 +133,21 @@ Proof.
       * rewrite -take_S_lookup_ne //.
         rewrite -[take i ys !! _]take_S_lookup_ne //.
         rewrite Heq //.
+Qed.
+
+Lemma wp_SumAssumeNoOverflow (x y : u64) :
+  ∀ Φ : val → iProp Σ,
+    (⌜int.Z x + int.Z y < 2^64⌝ -∗ Φ #(int.Z x + int.Z y)) -∗
+    WP SumAssumeNoOverflow #x #y {{ Φ }}.
+Proof.
+  iIntros "%Φ HΦ". wp_lam; wp_pures.
+  wp_apply wp_Assume.
+  rewrite bool_decide_eq_true.
+  iIntros (<-%sum_nooverflow_l). wp_pures. iModIntro.
+  rewrite u64_Z. iApply "HΦ". iPureIntro.
+  (* Why is there no theorem proving [int.Z _ < 2^width]? *)
+  destruct (decide (int.Z (word.add x y) < 2 ^ 64)); first done.
+  word.
 Qed.
 
 End goose_lang.

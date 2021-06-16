@@ -315,8 +315,7 @@ Definition MemKVShardClerk__Put: val :=
     struct.storeF PutRequest "Seq" "args" (struct.loadF MemKVShardClerk "seq" "ck");;
     struct.storeF PutRequest "Key" "args" "key";;
     struct.storeF PutRequest "Value" "args" "value";;
-    control.impl.Assume (struct.loadF MemKVShardClerk "seq" "ck" + #1 > struct.loadF MemKVShardClerk "seq" "ck");;
-    struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
+    struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_PUT (encodePutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
@@ -330,8 +329,7 @@ Definition MemKVShardClerk__Get: val :=
     struct.storeF GetRequest "CID" "args" (struct.loadF MemKVShardClerk "cid" "ck");;
     struct.storeF GetRequest "Seq" "args" (struct.loadF MemKVShardClerk "seq" "ck");;
     struct.storeF GetRequest "Key" "args" "key";;
-    control.impl.Assume (struct.loadF MemKVShardClerk "seq" "ck" + #1 > struct.loadF MemKVShardClerk "seq" "ck");;
-    struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
+    struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_GET (encodeGetRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
@@ -348,8 +346,7 @@ Definition MemKVShardClerk__ConditionalPut: val :=
     struct.storeF ConditionalPutRequest "Key" "args" "key";;
     struct.storeF ConditionalPutRequest "ExpectedValue" "args" "expectedValue";;
     struct.storeF ConditionalPutRequest "NewValue" "args" "newValue";;
-    control.impl.Assume (struct.loadF MemKVShardClerk "seq" "ck" + #1 > struct.loadF MemKVShardClerk "seq" "ck");;
-    struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
+    struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_CONDITIONAL_PUT (encodeConditionalPutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
@@ -365,8 +362,7 @@ Definition MemKVShardClerk__InstallShard: val :=
     struct.storeF InstallShardRequest "Seq" "args" (struct.loadF MemKVShardClerk "seq" "ck");;
     struct.storeF InstallShardRequest "Sid" "args" "sid";;
     struct.storeF InstallShardRequest "Kvs" "args" "kvs";;
-    control.impl.Assume (struct.loadF MemKVShardClerk "seq" "ck" + #1 > struct.loadF MemKVShardClerk "seq" "ck");;
-    struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
+    struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_INS_SHARD (encodeInstallShardRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,

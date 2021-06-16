@@ -511,6 +511,12 @@ Proof.
   rewrite wrap_small; auto.
 Qed.
 
+Lemma u32_Z (x : u32) :
+  U32 (int.Z x) = x.
+Proof.
+  unfold U32. apply word.of_Z_unsigned.
+Qed.
+
 Theorem Z_u64 z :
   0 <= z < 2 ^ 64 ->
   int.Z (U64 z) = z.
@@ -519,6 +525,12 @@ Proof.
   unfold U64.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small; auto.
+Qed.
+
+Lemma u64_Z (x : u64) :
+  U64 (int.Z x) = x.
+Proof.
+  unfold U64. apply word.of_Z_unsigned.
 Qed.
 
 Lemma seq_U64_NoDup (m len : Z) :
