@@ -148,13 +148,12 @@ Section grove.
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms ∧ m'.(msg_sender) = c_r);
       match m with
       | None =>
-        (* We errored, non-deterministically pick error code 1 (timeout) or 2 (other error). *)
-        timeout ← any bool;
-        ret ((*err*)#(if timeout is true then 1 else 2), (#locations.null, #0))%V
+        (* We errored *)
+        ret ((*err*)#true, (#locations.null, #0))%V
       | Some m =>
         l ← allocateN;
         modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
-        ret  ((*err*)#0, (#(l : loc), #(length m.(msg_data))))%V
+        ret  ((*err*)#false, (#(l : loc), #(length m.(msg_data))))%V
       end
     | _, _ => undefined
     end.
@@ -408,20 +407,12 @@ lemmas. *)
     by iFrame.
   Qed.
 
-  Inductive recv_err := RecvErrTimeout | RecvErrOther.
-  Definition recv_errno (err : option recv_err) : Z :=
-    match err with
-    | None => 0
-    | Some RecvErrTimeout => 1
-    | Some RecvErrOther => 2
-    end.
-
   Lemma wp_RecvOp c_l c_r ms s E :
     {{{ c_l c↦ ms }}}
       ExternalOp RecvOp (connection_socket c_l c_r) @ s; E
-    {{{ (err : option recv_err) (l : loc) (len : u64) (data : list u8),
-        RET (#(recv_errno err), (#l, #len));
-        ⌜if err is Some _ then l = null ∧ data = [] ∧ len = 0 else
+    {{{ (err : bool) (l : loc) (len : u64) (data : list u8),
+        RET (#err, (#l, #len));
+        ⌜if err then l = null ∧ data = [] ∧ len = 0 else
           Message c_r data ∈ ms ∧ length data = int.nat len⌝ ∗
         c_l c↦ ms ∗ mapsto_vals l 1 (data_vals data)
     }}}.
@@ -436,7 +427,7 @@ lemmas. *)
       monad_simpl. econstructor.
       { constructor. left. done. }
       monad_simpl. econstructor.
-      { econstructor. 1: by eapply (relation.suchThat_runs _ _ true). done. }
+      { econstructor. done. }
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
@@ -447,11 +438,9 @@ lemmas. *)
     { (* Returning no message. *)
       inv_head_step.
       monad_inv.
-      rename x into timeout.
-      iFrame. simpl. iModIntro. do 2 (iSplit; first done). destruct timeout.
-      1: iApply ("HΦ" $! (Some RecvErrTimeout)).
-      2: iApply ("HΦ" $! (Some RecvErrOther)).
-      all: iFrame; (iSplit; first done); rewrite /mapsto_vals big_sepL_nil //.
+      iFrame. simpl. iModIntro. do 2 (iSplit; first done).
+      iApply ("HΦ" $! true).
+      iFrame; (iSplit; first done); rewrite /mapsto_vals big_sepL_nil //.
     }
     (* Returning a message *)
     repeat match goal with
@@ -481,7 +470,7 @@ lemmas. *)
     }
     iModIntro. iEval simpl. iFrame "Htr Hg Hσ".
     do 2 (iSplit; first done).
-    iApply ("HΦ" $! None _ _ m'.(msg_data)). iFrame "He".
+    iApply ("HΦ" $! false _ _ m'.(msg_data)). iFrame "He".
     iSplit.
     { iPureIntro. split; first by destruct m'.
       trans (Z.to_nat (Z.of_nat (length m'.(msg_data)))); first by rewrite Nat2Z.id //.
@@ -514,7 +503,7 @@ Section grove.
                             ])%struct.
 
   Definition ReceiveRet := (struct.decl [
-                              "Err" :: uint64T;
+                              "Err" :: boolT;
                               "Data" :: slice.T byteT
                             ])%struct.
 
@@ -541,9 +530,9 @@ Section grove.
   Definition Send : val :=
     λ: "e" "m", ExternalOp SendOp ("e", (slice.ptr "m", slice.len "m")).
 
-  (** Type: func(Connection, uint64) (bool, []byte) *)
+  (** Type: func(Connection) (bool, []byte) *)
   Definition Receive : val :=
-    λ: "e" "timeout_ms",
+    λ: "e",
       let: "r" := ExternalOp RecvOp "e" in
       let: "err" := Fst "r" in
       let: "slice" := Snd "r" in
@@ -645,15 +634,15 @@ Section grove.
     - iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
 
-  Lemma wp_Receive c_l c_r (timeout_ms : u64) :
+  Lemma wp_Receive c_l c_r :
     ⊢ <<< ∀∀ ms, c_l c↦ ms >>>
-        Receive (connection_socket c_l c_r) #timeout_ms @ ⊤
-      <<<▷ ∃∃ (err : option recv_err) (data : list u8),
+        Receive (connection_socket c_l c_r) @ ⊤
+      <<<▷ ∃∃ (err : bool) (data : list u8),
         c_l c↦ ms ∗ if err then True else ⌜Message c_r data ∈ ms⌝
       >>>
       {{{ (s : Slice.t),
         RET struct.mk_f ReceiveRet [
-              "Err" ::= #(recv_errno err);
+              "Err" ::= #err;
               "Data" ::= slice_val s
             ];
           is_slice s byteT 1 data

@@ -50,13 +50,15 @@ Proof.
   wp_apply (wp_RPCClient__Call () with "[$Hcl $Hreq_sl $HrawRep]").
   { rewrite /has_handler. iFrame "HfreshSpec". done. }
   iIntros (?) "(Hcl & Hreq_sl & Hpost)".
-  iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
+  destruct err as [err|].
   { (* continue *)
+    wp_pures. rewrite bool_decide_false; last by destruct err.
     wp_pures. iLeft.
     iFrame.
     iSplitL ""; first done.
     iModIntro. iExists _; iFrame.
   }
+  iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got reply *)
   iRight.
   iModIntro. iSplitL ""; first done.
@@ -144,14 +146,15 @@ Proof.
     { iPureIntro. congruence. }
   }
   iIntros (?) "(Hcl_own & Hreq_sl & Hpost)".
-  iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
+  destruct err as [err|].
   { (* continue *)
+    wp_pures. rewrite bool_decide_false; last by destruct err.
     wp_pures. iLeft.
     iFrame.
     iSplitL ""; first done.
-    iNamed "HrawRep".
     iModIntro. iNamed "Hargs". iFrame. iExists _. iFrame.
   }
+  iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got reply *)
   iRight. iModIntro. iSplit; first done.
   iApply "HΦ". iExists _, _, _, _, _.
@@ -258,15 +261,15 @@ Proof.
     done.
   }
   iIntros (?) "(Hcl_own & Hreq_sl & Hpost)".
-  iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
-  {
-    wp_pures.
-    iLeft.
-    iModIntro.
-    iSplitL ""; first done.
+  destruct err as [err|].
+  { (* continue *)
+    wp_pures. rewrite bool_decide_false; last by destruct err.
+    wp_pures. iLeft.
     iFrame.
-    iExists _; iFrame.
+    iSplitL ""; first done.
+    iModIntro. iExists _; iFrame.
   }
+  iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got a reply *)
   iRight.
   iSplitL ""; first done.
@@ -376,16 +379,16 @@ Proof.
     iFrame "HreqInv".
   }
   iIntros (?) "(Hcl_own & Hreq_sl & Hpost)".
-  iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
-  {
-    wp_pures.
-    iModIntro.
-    iLeft.
+  destruct err as [err|].
+  { (* continue *)
+    wp_pures. rewrite bool_decide_false; last by destruct err.
+    wp_pures. iLeft.
     iFrame.
     iSplitL ""; first done.
-    iExists _; iFrame "HrawRep".
+    iModIntro. iExists _; iFrame.
   }
   {
+    iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
     iModIntro.
     iRight.
     iSplitL ""; first done.
@@ -533,18 +536,18 @@ Proof.
     iFrame "HreqInv".
   }
   iIntros (?) "(Hcl_own & Hreq_sl & Hpost)".
-  iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
-  {
-    wp_pures.
-    iModIntro.
-    iLeft.
+  destruct err as [err|].
+  { (* continue *)
+    wp_pures. rewrite bool_decide_false; last by destruct err.
+    wp_pures. iLeft.
     iFrame.
     iSplitL ""; first done.
     iNamed "Hreq".
     iFrame.
-    iExists _; iFrame "HrawRep".
+    iExists _; by iFrame.
   }
   {
+    iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
     iModIntro.
     iRight.
     iSplitL ""; first done.
@@ -698,16 +701,16 @@ Proof.
     iFrame "HreqInv".
   }
   iIntros (?) "(Hcl_own & Hreq_sl & Hpost)".
-  iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
-  {
-    wp_pures.
-    iModIntro.
-    iLeft.
+  destruct err as [err|].
+  { (* continue *)
+    wp_pures. rewrite bool_decide_false; last by destruct err.
+    wp_pures. iLeft.
     iFrame.
     iSplitL ""; first done.
-    iExists _; iFrame "HrawRep".
+    iModIntro. iExists _; iFrame.
   }
   {
+    iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
     iModIntro.
     iRight.
     iSplitL ""; first done.

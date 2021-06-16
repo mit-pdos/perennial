@@ -32,12 +32,9 @@ Definition RPCServer__readThread: val :=
   rec: "RPCServer__readThread" "srv" "conn" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "r" := grove_ffi.Receive "conn" #1000 in
-      (if: struct.get grove_ffi.ReceiveRet "Err" "r" ≠ #0
-      then
-        (if: (struct.get grove_ffi.ReceiveRet "Err" "r" = #1)
-        then Continue
-        else Break)
+      let: "r" := grove_ffi.Receive "conn" in
+      (if: struct.get grove_ffi.ReceiveRet "Err" "r"
+      then Break
       else
         let: "data" := struct.get grove_ffi.ReceiveRet "Data" "r" in
         let: "d" := marshal.NewDec "data" in
@@ -74,9 +71,9 @@ Definition RPCClient__replyThread: val :=
   rec: "RPCClient__replyThread" "cl" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "r" := grove_ffi.Receive (struct.loadF RPCClient "conn" "cl") #1000 in
-      (if: struct.get grove_ffi.ReceiveRet "Err" "r" ≠ #0
-      then Continue
+      let: "r" := grove_ffi.Receive (struct.loadF RPCClient "conn" "cl") in
+      (if: struct.get grove_ffi.ReceiveRet "Err" "r"
+      then Break
       else
         let: "data" := struct.get grove_ffi.ReceiveRet "Data" "r" in
         let: "d" := marshal.NewDec "data" in
@@ -110,8 +107,12 @@ Definition MakeRPCClient: val :=
     Fork (RPCClient__replyThread "cl");;
     "cl".
 
+Definition ErrTimeout : expr := #1.
+
+Definition ErrDisconnect : expr := #2.
+
 Definition RPCClient__Call: val :=
-  rec: "RPCClient__Call" "cl" "rpcid" "args" "reply" :=
+  rec: "RPCClient__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
     let: "reply_buf" := ref (zero_val (slice.T byteT)) in
     let: "cb" := struct.new callback [
       "reply" ::= "reply_buf";
@@ -133,19 +134,19 @@ Definition RPCClient__Call: val :=
     marshal.Enc__PutBytes "e" "args";;
     let: "reqData" := marshal.Enc__Finish "e" in
     (if: grove_ffi.Send (struct.loadF RPCClient "conn" "cl") "reqData"
-    then #true
+    then ErrDisconnect
     else
       lock.acquire (struct.loadF RPCClient "mu" "cl");;
       (if: ~ (![boolT] (struct.loadF callback "done" "cb"))
       then
-        lock.condWaitTimeout (struct.loadF callback "cond" "cb") #100000;;
+        lock.condWaitTimeout (struct.loadF callback "cond" "cb") "timeout_ms";;
         #()
       else #());;
       (if: ![boolT] (struct.loadF callback "done" "cb")
       then
         "reply" <-[slice.T byteT] ![slice.T byteT] "reply_buf";;
         lock.release (struct.loadF RPCClient "mu" "cl");;
-        #false
+        #0
       else
         lock.release (struct.loadF RPCClient "mu" "cl");;
-        #true)).
+        ErrTimeout)).

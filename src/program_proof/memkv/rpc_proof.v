@@ -528,8 +528,8 @@ Proof.
   iModIntro.
   iIntros (r) "Hsl".
   wp_pures.
-  destruct err as [err|]; wp_pures.
-  { destruct err; simpl; wp_pures; eauto. }
+  destruct err; wp_pures.
+  { eauto. }
   iNamed "Hmsg".
   iDestruct (is_slice_small_acc with "Hsl") as "(Hslice&Hslice_close)".
   wp_apply (wp_new_dec with "Hslice"); first eauto.
@@ -730,8 +730,8 @@ Proof.
   { iNext. iExists _. rewrite global_groveG_conv. iFrame. eauto.  }
   iModIntro. iIntros (s) "Hs".
   wp_pures.
-  destruct err as [err|].
-  { destruct err; simpl; wp_pures; eauto. }
+  destruct err.
+  { simpl; wp_pures; eauto. }
   wp_pures.
   iNamed "Hmsg".
   iDestruct (typed_slice.is_slice_small_acc with "Hs") as "[Hsl Hsl_close]".
@@ -899,8 +899,16 @@ Proof.
   iExists _, _, _, _. iFrame "#".
 Qed.
 
+Inductive call_err := CallErrTimeout | CallErrDisconnect.
+Definition call_errno (err : option call_err) : Z :=
+  match err with
+  | None => 0
+  | Some CallErrTimeout => 1
+  | Some CallErrDisconnect => 2
+  end.
+
 Lemma wp_RPCClient__Call {X:Type} (x:X) γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
-      dummy_sl_val (reqData:list u8) Pre Post :
+      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Pre Post :
   {{{
       is_slice req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
@@ -908,13 +916,13 @@ Lemma wp_RPCClient__Call {X:Type} (x:X) γsmap (cl_ptr:loc) (rpcid:u64) (host:u6
       RPCClient_own cl_ptr host ∗
       □(▷ Pre x reqData)
   }}}
-    RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr
+    RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
   {{{
-       (b:bool), RET #b;
+       (err : option call_err), RET #(call_errno err);
        RPCClient_own cl_ptr host ∗
        typed_slice.is_slice req byteT 1 reqData ∗
-       (⌜b = true⌝ ∗ rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∨
-        ∃ rep_sl (repData:list u8), ⌜b = false⌝ ∗
+       (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
+        ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
           typed_slice.is_slice rep_sl byteT 1 repData ∗
           (▷ Post x reqData repData))
@@ -1089,12 +1097,12 @@ Proof.
   }
   iModIntro. iIntros (err) "[%Herr Hsl_rep]".
   destruct err; wp_pures.
-  { iApply "HΦ".
+  { iApply ("HΦ" $! (Some CallErrDisconnect)).
     iDestruct ("Hslice_close" with "Hslice") as "$".
     iModIntro.
     iSplitR "Hrep_out_ptr".
     - iExists _, _, _, _. by iFrame "#".
-    - iLeft. by iFrame. }
+    - by iFrame. }
   destruct msg_sent; last done. clear Herr.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
@@ -1163,7 +1171,7 @@ Proof.
                  Hpending_map Hmapping_ctx Hescrow_ctx Hextracted_ctx seq]").
     { iExists _, _, _, _, _. iFrame. eauto. }
     wp_pures. iModIntro.
-    iApply "HΦ".
+    iApply ("HΦ" $! (Some (CallErrTimeout))).
     iDestruct ("Hslice_close" with "Hslice") as "$".
     iSplitR "Hrep_out_ptr"; last by eauto.
     iExists _, _, _, _. by iFrame "∗#".
@@ -1189,13 +1197,13 @@ Proof.
     wp_pures.
     iModIntro.
     iRewrite ("Hequiv") in "HPost".
-    iApply "HΦ".
+    iApply ("HΦ" $! None).
     iSplitR.
     { iExists _, _, _, _. iFrame "#". }
     iSplitL "Hslice Hslice_close".
     { iApply "Hslice_close". eauto. }
-    iRight. iExists _, reply.
-    iFrame. eauto.
+    iExists _, reply.
+    by iFrame.
   }
   { iDestruct "Hcase3" as "(?&Hex)".
     iDestruct (ptsto_valid_2 with "Hex [$]") as %Hval.

@@ -78,12 +78,13 @@ Proof.
   { iFrame "H". iFrame "Hcl_own".
     rewrite /has_handler. iFrame "HgetSpec". done. }
   iIntros (?) "(Hcl_own & Hreq_sl & Hpost)".
-  iDestruct "Hpost" as "[(-> & HrawRep) | (% & % & -> & HrawRep & Hrep_sl & Hpost)]"; wp_pures.
+  destruct err as [err|].
   { (* continue *)
+    wp_pures. rewrite bool_decide_false; last by destruct err.
     wp_pures. iLeft.
     iModIntro. iSplit; first done.
     iFrame "HΦ".
-    iSplitR "HrawRep"; last first.
+    iSplitR "Hpost"; last first.
     { eauto. }
     iExists _, _, _. iFrame "Hcl". iFrame "Hcl_own".
     iSplitL ""; last first.
@@ -95,6 +96,7 @@ Proof.
     eauto.
   }
   (* got reply *)
+  iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   iRight.
   iModIntro. iSplitL ""; first done.
   wp_pures.

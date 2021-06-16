@@ -320,7 +320,7 @@ Definition MakeFreshKVClerk: val :=
     struct.storeF MemKVShardClerk "cl" "ck" (rpc.MakeRPCClient "host");;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_FRESHCID (NewSlice byteT #0) "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_FRESHCID (NewSlice byteT #0) "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
     struct.storeF MemKVShardClerk "cid" "ck" (decodeUint64 (![slice.T byteT] "rawRep"));;
     struct.storeF MemKVShardClerk "seq" "ck" #1;;
@@ -337,7 +337,7 @@ Definition MemKVShardClerk__Put: val :=
     struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_PUT (encodePutRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_PUT (encodePutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
     let: "rep" := decodePutReply (![slice.T byteT] "rawRep") in
     struct.loadF PutReply "Err" "rep".
@@ -352,7 +352,7 @@ Definition MemKVShardClerk__Get: val :=
     struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_GET (encodeGetRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_GET (encodeGetRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
     let: "rep" := decodeGetReply (![slice.T byteT] "rawRep") in
     "value" <-[slice.T byteT] struct.loadF GetReply "Value" "rep";;
@@ -370,7 +370,7 @@ Definition MemKVShardClerk__ConditionalPut: val :=
     struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_CONDITIONAL_PUT (encodeConditionalPutRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_CONDITIONAL_PUT (encodeConditionalPutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
     let: "rep" := decodeConditionalPutReply (![slice.T byteT] "rawRep") in
     "success" <-[boolT] struct.loadF ConditionalPutReply "Success" "rep";;
@@ -387,7 +387,7 @@ Definition MemKVShardClerk__InstallShard: val :=
     struct.storeF MemKVShardClerk "seq" "ck" (struct.loadF MemKVShardClerk "seq" "ck" + #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_INS_SHARD (encodeInstallShardRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_INS_SHARD (encodeInstallShardRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue).
 
 Definition MemKVShardClerk__MoveShard: val :=
@@ -397,7 +397,7 @@ Definition MemKVShardClerk__MoveShard: val :=
     struct.storeF MoveShardRequest "Dst" "args" "dst";;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_MOV_SHARD (encodeMoveShardRequest "args") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_MOV_SHARD (encodeMoveShardRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue).
 
 (* 2_memkv_shard.go *)
@@ -727,7 +727,7 @@ Definition MemKVCoordClerk__AddShardServer: val :=
   rec: "MemKVCoordClerk__AddShardServer" "ck" "dst" :=
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVCoordClerk "cl" "ck") COORD_ADD (encodeUint64 "dst") "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVCoordClerk "cl" "ck") COORD_ADD (encodeUint64 "dst") "rawRep" #10000 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
     #().
 
@@ -735,7 +735,7 @@ Definition MemKVCoordClerk__GetShardMap: val :=
   rec: "MemKVCoordClerk__GetShardMap" "ck" :=
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, (rpc.RPCClient__Call (struct.loadF MemKVCoordClerk "cl" "ck") COORD_GET (NewSlice byteT #0) "rawRep" = #true)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVCoordClerk "cl" "ck") COORD_GET (NewSlice byteT #0) "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
     decodeShardMap (![slice.T byteT] "rawRep").
 
