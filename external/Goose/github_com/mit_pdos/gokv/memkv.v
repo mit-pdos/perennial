@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
 From Goose Require github_com.tchajed.marshal.
 
@@ -34,25 +35,6 @@ Definition KV_MOV_SHARD : expr := #5.
 Definition shardOf: val :=
   rec: "shardOf" "key" :=
     "key" `rem` NSHARD.
-
-Definition bytesEqual: val :=
-  rec: "bytesEqual" "x" "y" :=
-    let: "xlen" := slice.len "x" in
-    (if: "xlen" ≠ slice.len "y"
-    then #false
-    else
-      let: "i" := ref_to uint64T #0 in
-      let: "retval" := ref_to boolT #true in
-      Skip;;
-      (for: (λ: <>, ![uint64T] "i" < "xlen"); (λ: <>, Skip) := λ: <>,
-        (if: SliceGet byteT "x" (![uint64T] "i") ≠ SliceGet byteT "y" (![uint64T] "i")
-        then
-          "retval" <-[boolT] #false;;
-          Break
-        else
-          "i" <-[uint64T] ![uint64T] "i" + #1;;
-          Continue));;
-      ![boolT] "retval").
 
 (* "universal" reply type for the reply table *)
 Definition ShardReply := struct.decl [
@@ -491,7 +473,7 @@ Definition MemKVShardServer__conditional_put_inner: val :=
       (if: (SliceGet boolT (struct.loadF MemKVShardServer "shardMap" "s") "sid" = #true)
       then
         let: "m" := SliceGet (mapT (slice.T byteT)) (struct.loadF MemKVShardServer "kvss" "s") "sid" in
-        let: "equal" := bytesEqual (struct.loadF ConditionalPutRequest "ExpectedValue" "args") (Fst (MapGet "m" (struct.loadF ConditionalPutRequest "Key" "args"))) in
+        let: "equal" := std.BytesEqual (struct.loadF ConditionalPutRequest "ExpectedValue" "args") (Fst (MapGet "m" (struct.loadF ConditionalPutRequest "Key" "args"))) in
         (if: "equal"
         then
           MapInsert "m" (struct.loadF ConditionalPutRequest "Key" "args") (struct.loadF ConditionalPutRequest "NewValue" "args");;

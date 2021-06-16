@@ -75,6 +75,12 @@ def main():
         default=None,
     )
     parser.add_argument(
+        "--std",
+        help="path to goose-lang/std repo (skip translation if not provided)",
+        metavar="STD_PATH",
+        default=None,
+    )
+    parser.add_argument(
         "--gokv",
         help="path to gokv repo (skip translation if not provided)",
         metavar="GOKV_PATH",
@@ -91,6 +97,7 @@ def main():
     distributed_dir = args.distributed_examples
     gokv_dir = args.gokv
     marshal_dir = args.marshal
+    std_dir = args.std
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -108,6 +115,8 @@ def main():
         parser.error("gokv directory does not exist")
     if marshal_dir is not None and not os.path.isdir(marshal_dir):
         parser.error("marshal directory does not exist")
+    if std_dir is not None and not os.path.isdir(std_dir):
+        parser.error("std directory does not exist")
 
     do_run = lambda cmd_args: run_command(
         cmd_args, dry_run=args.dry_run, verbose=args.verbose
@@ -218,6 +227,9 @@ def main():
 
     if marshal_dir is not None:
         run_goose(marshal_dir, ".")
+
+    if std_dir is not None:
+        run_goose(std_dir, ".")
 
 
 if __name__ == "__main__":

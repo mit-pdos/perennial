@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import grove_prelude std_proof.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions common_proof.
@@ -273,7 +273,7 @@ Proof.
       (*
       iDestruct (is_slice_small_acc with "Hsrv_val_sl") as "[Hsrv_val_sl Hsrv_val_close]".
        *)
-      wp_apply (wp_bytesEqual with "[$HExpValue_sl' $Hsrv_val_sl]").
+      wp_apply (wp_BytesEqual with "[$HExpValue_sl' $Hsrv_val_sl]").
       iIntros "[_ Hsrv_val_sl]".
 
       (* Avoid duplicating the proof of the merged control flow after this if *)

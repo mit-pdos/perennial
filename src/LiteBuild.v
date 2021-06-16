@@ -7,9 +7,10 @@ From Perennial.goose_lang Require
 (* Some core libraries *)
 From Perennial.base_logic Require
      gmap_own.
-(* Prelude files *)
+(* Prelude and shared files *)
 From Perennial.program_proof Require
-     proof_prelude disk_prelude grove_prelude.
+     proof_prelude disk_prelude grove_prelude
+     marshal_proof std_proof.
 
 (* a couple program proofs that are pretty interesting on their own and include
 the wpc infrastructure *)
