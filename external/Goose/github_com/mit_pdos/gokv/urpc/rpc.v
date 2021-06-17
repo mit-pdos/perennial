@@ -55,9 +55,15 @@ Definition RPCServer__Serve: val :=
             Fork (RPCServer__readThread "srv" "conn");;
             Continue)).
 
+Definition callbackStateWaiting : expr := #0.
+
+Definition callbackStateDone : expr := #1.
+
+Definition callbackStateAborted : expr := #2.
+
 Definition callback := struct.decl [
   "reply" :: refT (slice.T byteT);
-  "done" :: refT boolT;
+  "state" :: refT uint64T;
   "cond" :: condvarRefT
 ].
 
@@ -77,6 +83,7 @@ Definition RPCClient__replyThread: val :=
       then
         lock.acquire (struct.loadF RPCClient "mu" "cl");;
         MapIter (struct.loadF RPCClient "pending" "cl") (λ: <> "cb",
+          struct.loadF callback "state" "cb" <-[uint64T] callbackStateAborted;;
           lock.condSignal (struct.loadF callback "cond" "cb"));;
         lock.release (struct.loadF RPCClient "mu" "cl");;
         Break
@@ -92,7 +99,7 @@ Definition RPCClient__replyThread: val :=
         then
           MapDelete (struct.loadF RPCClient "pending" "cl") "seqno";;
           struct.loadF callback "reply" "cb" <-[slice.T byteT] "reply";;
-          struct.loadF callback "done" "cb" <-[boolT] #true;;
+          struct.loadF callback "state" "cb" <-[uint64T] callbackStateDone;;
           lock.condSignal (struct.loadF callback "cond" "cb");;
           #()
         else #());;
@@ -122,10 +129,10 @@ Definition RPCClient__Call: val :=
     let: "reply_buf" := ref (zero_val (slice.T byteT)) in
     let: "cb" := struct.new callback [
       "reply" ::= "reply_buf";
-      "done" ::= ref (zero_val boolT);
+      "state" ::= ref (zero_val uint64T);
       "cond" ::= lock.newCond (struct.loadF RPCClient "mu" "cl")
     ] in
-    struct.loadF callback "done" "cb" <-[boolT] #false;;
+    struct.loadF callback "state" "cb" <-[uint64T] callbackStateWaiting;;
     lock.acquire (struct.loadF RPCClient "mu" "cl");;
     let: "seqno" := struct.loadF RPCClient "seq" "cl" in
     struct.storeF RPCClient "seq" "cl" (std.SumAssumeNoOverflow (struct.loadF RPCClient "seq" "cl") #1);;
@@ -142,16 +149,19 @@ Definition RPCClient__Call: val :=
     then ErrDisconnect
     else
       lock.acquire (struct.loadF RPCClient "mu" "cl");;
-      (if: ~ (![boolT] (struct.loadF callback "done" "cb"))
+      (if: (![uint64T] (struct.loadF callback "state" "cb") = callbackStateWaiting)
       then
         lock.condWaitTimeout (struct.loadF callback "cond" "cb") "timeout_ms";;
         #()
       else #());;
-      (if: ![boolT] (struct.loadF callback "done" "cb")
+      let: "state" := ![uint64T] (struct.loadF callback "state" "cb") in
+      (if: ("state" = callbackStateDone)
       then
         "reply" <-[slice.T byteT] ![slice.T byteT] "reply_buf";;
         lock.release (struct.loadF RPCClient "mu" "cl");;
         #0
       else
         lock.release (struct.loadF RPCClient "mu" "cl");;
-        ErrTimeout)).
+        (if: ("state" = callbackStateAborted)
+        then ErrDisconnect
+        else ErrTimeout))).
