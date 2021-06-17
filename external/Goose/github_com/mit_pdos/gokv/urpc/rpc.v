@@ -74,7 +74,12 @@ Definition RPCClient__replyThread: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := grove_ffi.Receive (struct.loadF RPCClient "conn" "cl") in
       (if: struct.get grove_ffi.ReceiveRet "Err" "r"
-      then Break
+      then
+        lock.acquire (struct.loadF RPCClient "mu" "cl");;
+        MapIter (struct.loadF RPCClient "pending" "cl") (λ: <> "cb",
+          lock.condSignal (struct.loadF callback "cond" "cb"));;
+        lock.release (struct.loadF RPCClient "mu" "cl");;
+        Break
       else
         let: "data" := struct.get grove_ffi.ReceiveRet "Data" "r" in
         let: "d" := marshal.NewDec "data" in
