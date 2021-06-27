@@ -375,7 +375,7 @@ Section map.
       iDestruct ("Hsome" with "[] [$HQ $Hi]") as (x2) "[% [HQ Hi]]".
       { rewrite lookup_insert; done. }
       replace m2 with (<[i := x2]> (delete i m2)).
-      2: { rewrite insert_delete insert_id; eauto. }
+      2: { rewrite insert_delete_insert insert_id; eauto. }
       iDestruct ("IH" $! (delete i m2) with "[] [] HQ Hm") as "[HQ Hm]".
       { iDestruct "Hnone" as "%Hnone".
         iPureIntro. intros k Hk. destruct (decide (i = k)); subst.
@@ -558,7 +558,7 @@ Section map2.
       iDestruct (big_sepM2_lookup_l_some with "H") as %H2.
       { apply lookup_insert. }
       destruct H2.
-      rewrite <- insert_delete at 1.
+      rewrite <- insert_delete_insert at 1.
       replace m2 with (<[a.1 := x]> m2).
       2: {
         rewrite insert_id //.
@@ -607,7 +607,7 @@ Section map2.
       iDestruct (big_sepM2_lookup_r_some with "H") as %H2.
       { apply lookup_insert. }
       destruct H2.
-      rewrite <- insert_delete at 1.
+      rewrite <- insert_delete_insert at 1.
       replace m1 with (<[a.1 := x]> m1).
       2: {
         rewrite insert_id //.
@@ -691,7 +691,7 @@ Section map2.
       iDestruct (big_sepM2_lookup_l_some _ _ _ i with "Hm2") as (x2) "%Hm2i"; eauto.
       { rewrite lookup_insert; eauto. }
       replace (m2) with (<[i:=x2]> (delete i m2)).
-      2: { rewrite insert_delete insert_id //. }
+      2: { rewrite insert_delete_insert insert_id //. }
       iDestruct (big_sepM2_insert with "Hm2") as "[Hii Hm2]"; eauto.
       { rewrite lookup_delete; eauto. }
       iDestruct ("IH" with "Hm2 Hm") as "Hm2".
@@ -793,7 +793,7 @@ Section gmap_curry.
       (delete (fst k) (gmap_uncurry m)).
   Proof.
     intros.
-    rewrite gmap_uncurry_insert //. rewrite insert_delete //.
+    rewrite gmap_uncurry_insert //. rewrite insert_delete_insert //.
   Qed.
 
   Theorem gmap_uncurry_lookup_exists (m : gmap (A * B) T) (k : A * B) (v : T) :
@@ -839,7 +839,7 @@ Proof.
     rewrite big_sepM_insert ?lookup_delete //.
     destruct (gmap_uncurry m1 !! i.1) as [m1'|] eqn:Hlookup.
     ** assert (Hdel: gmap_uncurry m1 = <[i.1 := m1']> (delete i.1 (gmap_uncurry m1))).
-       { rewrite insert_delete insert_id //=. }
+       { rewrite insert_delete_insert insert_id //=. }
        iEval (rewrite Hdel) in "H".
        rewrite big_sepM_insert ?lookup_delete //.
        iDestruct "H" as "(H1&H2)".

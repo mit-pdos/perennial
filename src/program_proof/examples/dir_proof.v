@@ -742,7 +742,7 @@ Section goose.
     iDestruct "Hinodes" as "[Ha Hinodes]". iNamed "Ha".
     iDestruct (inode_used_lookup with "Hused1 Hall") as "%".
     replace (allocs) with (<[off := a.(inode.addrs)]> (delete off allocs)) at 2 3.
-    2: { rewrite insert_delete insert_id //. replace (off) with (off + 0) by lia. done. }
+    2: { rewrite insert_delete_insert insert_id //. replace (off) with (off + 0) by lia. done. }
     rewrite delete_below_insert; last by lia.
     rewrite map_to_list_insert.
     2: { rewrite delete_below_delete; last by lia. rewrite lookup_delete //. }

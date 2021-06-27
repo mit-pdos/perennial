@@ -396,8 +396,8 @@ Proof.
         by iFrame.
       }
 
-      rewrite insert_delete.
-      rewrite insert_delete.
+      rewrite insert_delete_insert.
+      rewrite insert_delete_insert.
       rewrite (insert_id m); eauto.
     }
 

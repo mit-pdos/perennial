@@ -927,7 +927,7 @@ Proof.
     iNamed "Hpre".
     wp_loadField.
     rewrite -(insert_id mtodo a b); last by assumption.
-    rewrite -insert_delete dom_insert_L.
+    rewrite -insert_delete_insert dom_insert_L.
     rewrite big_sepS_insert; last by set_solver.
     rewrite big_sepS_insert; last by set_solver.
     iDestruct "Hlockeds" as "[? Hlockeds]".
@@ -1585,7 +1585,7 @@ Proof.
       rewrite fmap_insert insert_id;
         last by rewrite lookup_fmap Hlookup_old //=.
       iFrame.
-      rewrite -insert_delete -!(big_sepM_fmap modified) fmap_insert.
+      rewrite -insert_delete_insert -!(big_sepM_fmap modified) fmap_insert.
       iApply big_sepM_insert;
         first by rewrite lookup_fmap lookup_delete //=.
       iFrame.

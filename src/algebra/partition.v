@@ -141,11 +141,11 @@ Proof.
   intros Hneq Hdisj Hl1 Hl2.
   assert (<[l1:=s1]> (<[l2:=s2 ∪ s1']> σ) =
           <[l1:=s1]> (delete l1 (<[l2:=s2 ∪ s1']> (delete l2 σ)))) as Heq.
-  { by rewrite ?insert_delete. }
+  { by rewrite ?insert_delete_insert. }
   rewrite Heq.
 
   assert (σ = <[l1:=s1 ∪ s1']> (delete l1 (<[l2:=s2]> (delete l2 σ)))) as Heq'.
-  { rewrite ?insert_delete ?insert_id //. }
+  { rewrite ?insert_delete_insert ?insert_id //. }
   rewrite {1}Heq'.
 
   rewrite /union_partition ?map_fold_insert ?lookup_delete //; try set_solver+.

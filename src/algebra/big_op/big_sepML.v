@@ -104,7 +104,7 @@ Section maplist.
     iPureIntro.
     replace lm with (<[k := lv0]> (delete k lm)) in H0.
     2: {
-      rewrite insert_delete.
+      rewrite insert_delete_insert.
       rewrite insert_id; eauto.
     }
     setoid_rewrite map_to_list_insert in H0.
@@ -121,7 +121,7 @@ Section maplist.
     <[i := lv']> l ≡ₚ (map_to_list (<[k := lv']> lm)).*2.
   Proof.
     intros.
-    rewrite -insert_delete.
+    rewrite -insert_delete_insert.
     rewrite map_to_list_insert.
     2: apply lookup_delete.
 
@@ -130,7 +130,7 @@ Section maplist.
     2: { rewrite list_lookup_insert; eauto.
          eapply lookup_lt_Some; eauto. }
     erewrite <- (insert_id lm) in H2; eauto.
-    rewrite -insert_delete in H2.
+    rewrite -insert_delete_insert in H2.
     erewrite map_to_list_insert in H2.
     2: apply lookup_delete.
     simpl in *.
@@ -152,7 +152,7 @@ Section maplist.
     intros.
     erewrite delete_Permutation in H2; eauto.
     erewrite <- (insert_id lm) in H2; eauto.
-    rewrite -insert_delete in H2.
+    rewrite -insert_delete_insert in H2.
     erewrite map_to_list_insert in H2.
     2: apply lookup_delete.
     simpl in *.
@@ -387,7 +387,7 @@ Section maplist.
       { apply (elem_of_dom (D:=gset K)). rewrite -Hmlm. apply elem_of_dom. rewrite lookup_insert; eauto. }
       destruct Hlmi.
       replace lm with (<[i:=x0]> (delete i lm)).
-      2: { rewrite insert_delete insert_id; eauto. }
+      2: { rewrite insert_delete_insert insert_id; eauto. }
       rewrite map_zip_insert.
       iApply big_sepM_insert.
       { rewrite map_zip_lookup_none_1; eauto. }
@@ -457,7 +457,7 @@ Section maplist.
     { apply H1. rewrite lookup_insert. eauto. }
     destruct Hmi.
     replace m with (<[i:=x0]> (delete i m)).
-    2: { rewrite insert_delete insert_id; eauto. }
+    2: { rewrite insert_delete_insert insert_id; eauto. }
     rewrite map_zip_insert.
     iApply big_sepM_insert.
     { rewrite map_zip_lookup_none_2; eauto. }
@@ -666,7 +666,7 @@ Section maplist2.
       iExists ((a, w) :: lw).
       iSplitR; first by subst; eauto.
       replace m with (<[k := v]> (delete k m)) at 2.
-      2: { rewrite insert_delete. rewrite insert_id; eauto. }
+      2: { rewrite insert_delete_insert. rewrite insert_id; eauto. }
       iApply big_sepML_insert.
       { rewrite lookup_delete; eauto. }
       iFrame.

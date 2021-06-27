@@ -663,7 +663,7 @@ Proof.
     { apply H0. rewrite lookup_insert. eauto. }
     destruct Hk2 as [x2 Hkx2].
     replace m2 with (<[i:=x2]> (delete i m2)).
-    2: rewrite insert_delete insert_id //.
+    2: rewrite insert_delete_insert insert_id //.
     rewrite gmap_addr_by_block_insert; eauto.
     rewrite gmap_addr_by_block_insert. 2: rewrite lookup_delete //.
     rewrite !map_zip_insert.
