@@ -1452,7 +1452,7 @@ Proof.
     subst.
     iFrame. simpl.
     rewrite insert_union_l.
-    rewrite insert_delete_insert insert_id //.
+    rewrite insert_delete //.
     iFrame.
     assert (size_consistent_and_aligned i o (jrnlKinds (get_jrnl s.(world)))).
     {
@@ -1461,7 +1461,7 @@ Proof.
     iModIntro; iSplit; auto.
     { iPureIntro. eapply wf_jrnl_extend in Hwf'; last eauto.
       rewrite /updateData//= in Hwf'.
-      rewrite /= insert_union_l insert_delete_insert insert_id in Hwf'; eauto.
+      rewrite /= insert_union_l insert_delete in Hwf'; eauto.
     }
 Qed.
 
