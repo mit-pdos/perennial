@@ -64,7 +64,7 @@ Proof.
       rewrite Heq_kv_gn. iFrame.
     - iModIntro. iSplit; auto.
       iExists _. iFrame. iPureIntro.
-      { apply map_get_true in Hlookup; intuition. eauto. }
+      { apply map_get_true in Hlookup; intuition auto. }
   }
   clear peersM Hlookup.
   iNamed 1.

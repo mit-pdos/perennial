@@ -1133,7 +1133,6 @@ Section goose.
         (* Show that the domain bookeeping worked out. *)
         iPureIntro. split.
         - rewrite map_size_insert_Some //.
-          eauto.
         - rewrite alloc_used_insert.
           apply alloc_insert_dom; auto.
       }

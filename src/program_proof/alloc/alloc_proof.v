@@ -114,8 +114,7 @@ Proof.
   iIntros "[Hbits _]".
   wp_loadField.
   wp_apply (wp_SliceSet with "[$Hbits]").
-  { iSplit; iPureIntro; auto.
-    rewrite Hlookup; eauto. }
+  { iSplit; iPureIntro; [ done | auto ]. }
   iIntros "Hbits".
   wp_pures.
   wp_loadField.
@@ -253,9 +252,7 @@ Proof.
       iIntros "[Hbits _]".
       wp_loadField.
       wp_apply (wp_SliceSet with "[$Hbits]").
-      { iSplit; iPureIntro; auto.
-        rewrite Hlookup.
-        eauto. }
+      { iSplit; iPureIntro; [ done | auto ]. }
       iIntros "Hbits".
       wp_pures.
       iApply "HΦ".
@@ -306,8 +303,7 @@ Proof.
   iIntros "[Hbits _]".
   wp_loadField.
   wp_apply (wp_SliceSet with "[$Hbits]").
-  { iSplit; iPureIntro; auto.
-    rewrite Hlookup; eauto. }
+  { iSplit; iPureIntro; [ done | auto ]. }
   iIntros "Hbits".
   wp_pures.
   wp_loadField.
