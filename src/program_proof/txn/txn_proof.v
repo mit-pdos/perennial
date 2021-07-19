@@ -141,16 +141,10 @@ Proof.
   induction s as [|x s ? IH] using set_ind_L.
   { by rewrite set_map_empty !big_opS_empty. }
   rewrite set_map_union_L set_map_singleton_L.
-  rewrite !big_opS_union; [ | | set_solver ].
-  { rewrite !big_opS_singleton IH //.
-    intros x' y' Hx_in Hy_in Heq.
-    apply Hinj; set_solver. }
-
-  (* TODO: this used to be solved by [set_solver] *)
-  apply disjoint_singleton_l.
-  rewrite elem_of_map.
-  intros (y & Heq & Hel); subst; auto.
-  apply Hinj in Heq; set_solver.
+  rewrite !big_opS_union; [ | set_solver.. ].
+  rewrite !big_opS_singleton IH //.
+  intros x' y' Hx_in Hy_in Heq.
+  apply Hinj; set_solver.
 Qed.
 
 Lemma na_crash_inv_alloc_map_bdisc `{Countable A} {B} k E (P: A → B → iProp Σ) Q `{∀ a obj, Timeless (Q a obj)} m:
