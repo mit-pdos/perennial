@@ -883,12 +883,12 @@ Proof using txnG0 Σ.
         eapply elem_of_dom in Hoff'. destruct Hoff' as [x Hoff'].
         replace (offmap' !! off) with (bufamap !! ((lv.1).(update.addr), off)) in Hoff'.
         2: {
-          rewrite -lookup_gmap_uncurry. rewrite Hbufamap_in. done.
+          rewrite -lookup_gmap_curry. rewrite Hbufamap_in. done.
         }
         assert (((lv.1).(update.addr), off) ∈ dom (gset _) σl.(latest)).
         { eapply elem_of_dom_2 in Hoff'. set_solver. }
         eapply elem_of_dom in H. destruct H as [x' H].
-        rewrite -lookup_gmap_uncurry in H. rewrite Hoffmap /= in H.
+        rewrite -lookup_gmap_curry in H. rewrite Hoffmap /= in H.
         eapply elem_of_dom; eauto.
       }
 
@@ -938,10 +938,10 @@ Proof using txnG0 Σ.
         {
           apply elem_of_dom in e. destruct e.
           iDestruct (big_sepM_lookup_acc _ bufamap ((lv.1).(update.addr), k) with "Hmapstos") as "[Hk Hmapstos]".
-          { erewrite <- (lookup_gmap_uncurry bufamap). rewrite Hbufamap_in /=. eauto. }
+          { erewrite <- (lookup_gmap_curry bufamap). rewrite Hbufamap_in /=. eauto. }
           iNamed "Hk".
           iDestruct (map_valid with "Hmetactx Hmapsto_meta") as "%Hmeta_name".
-          rewrite <- (lookup_gmap_uncurry metam) in Hmeta_name. rewrite H0 /= in Hmeta_name.
+          rewrite <- (lookup_gmap_curry metam) in Hmeta_name. rewrite H0 /= in Hmeta_name.
           replace (γmeta) with (γm) by congruence.
           iDestruct (ghost_var_agree with "Hmod Hmod_frag") as %->.
           iDestruct ("Hmapstos" with "[Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hmapstos".

@@ -91,16 +91,16 @@ Proof.
   auto with f_equal lia.
 Qed.
 
-Lemma gmap_curry_union K1 K2 `{Countable K1} `{Countable K2} A
+Lemma gmap_uncurry_union K1 K2 `{Countable K1} `{Countable K2} A
       (m1 m2: gmap K1 (gmap K2 A)) :
   m1 ##ₘ m2 →
-  gmap_curry (m1 ∪ m2) = gmap_curry m1 ∪ gmap_curry m2.
+  gmap_uncurry (m1 ∪ m2) = gmap_uncurry m1 ∪ gmap_uncurry m2.
 Proof.
   intros.
   apply map_eq; intros.
   rewrite lookup_union.
   destruct i as [i1 i2].
-  rewrite !lookup_gmap_curry.
+  rewrite !lookup_gmap_uncurry.
   rewrite lookup_union.
   destruct (m1 !! i1) eqn:?;
            destruct (m2 !! i1) eqn:?;
@@ -115,12 +115,12 @@ Proof.
     destruct (g !! i2); simpl; auto.
 Qed.
 
-Lemma gmap_curry_insert K1 K2 `{Countable K1} `{Countable K2} A
+Lemma gmap_uncurry_insert K1 K2 `{Countable K1} `{Countable K2} A
       k (m11: gmap K2 A) (m2: gmap K1 (gmap K2 A)) :
   m2 !! k = None →
-  gmap_curry (<[k := m11]> m2) = map_fold (λ i2 x, <[(k,i2):=x]>) (gmap_curry m2) m11.
+  gmap_uncurry (<[k := m11]> m2) = map_fold (λ i2 x, <[(k,i2):=x]>) (gmap_uncurry m2) m11.
 Proof.
-  rewrite /gmap_curry => Hlookup.
+  rewrite /gmap_uncurry => Hlookup.
   simpl.
 
   rewrite map_fold_insert_L //; last first.
@@ -139,7 +139,7 @@ Proof.
   rewrite /kind_heap0.
 
   rewrite map_fmap_union.
-  rewrite gmap_curry_union.
+  rewrite gmap_uncurry_union.
   2: {
     admit.
   }

@@ -64,7 +64,7 @@ Definition block0_map : gmap u64 object :=
   {[U64 0 := existT _ (bufBlock block0)]}.
 
 Definition kind_heap0 (kinds: gmap u64 bufDataKind) : gmap addr object :=
-  gmap_curry ((λ K, match K with
+  gmap_uncurry ((λ K, match K with
                    | KindBit => bit0_map
                    | KindInode => inode0_map
                    | KindBlock => block0_map
@@ -486,7 +486,7 @@ Proof.
     iDestruct (big_sepM2_sepM_1 with "Hmetas") as "Hmetas".
 
     rewrite /kind_heap0 /gmap_addr_by_block.
-    rewrite gmap_uncurry_curry_non_empty; last first.
+    rewrite gmap_curry_uncurry_non_empty; last first.
     {
       intros i x Hix. rewrite lookup_fmap in Hix.
       apply fmap_Some_1 in Hix. destruct Hix. intuition idtac.
@@ -540,7 +540,7 @@ Proof.
     rewrite /bufDataTs_in_crashblock.
 
     rewrite /kind_heap0 /gmap_addr_by_block.
-    rewrite gmap_uncurry_curry_non_empty; last first.
+    rewrite gmap_curry_uncurry_non_empty; last first.
     {
       intros i x Hix. rewrite lookup_fmap in Hix.
       apply fmap_Some_1 in Hix. destruct Hix. intuition idtac.

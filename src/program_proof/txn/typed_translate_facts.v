@@ -21,7 +21,7 @@ Proof.
   intros Hdom.
   apply map_Forall_lookup => a o Hlookup.
   destruct a as [blk off].
-  rewrite /recovery_proof.kind_heap0 lookup_gmap_curry in Hlookup.
+  rewrite /recovery_proof.kind_heap0 lookup_gmap_uncurry in Hlookup.
   rewrite lookup_fmap in Hlookup.
   rewrite option_fmap_bind in Hlookup.
   apply bind_Some in Hlookup as [k [Hlookup Ho]].
@@ -81,7 +81,7 @@ Proof.
     intros a o' Hlookup.
     fmap_Some in Hlookup as o.
     destruct a as [blk off]; simpl.
-    rewrite /recovery_proof.kind_heap0 lookup_gmap_curry in Hlookup.
+    rewrite /recovery_proof.kind_heap0 lookup_gmap_uncurry in Hlookup.
     rewrite lookup_fmap in Hlookup.
     rewrite option_fmap_bind in Hlookup.
     apply bind_Some in Hlookup as [k [Hlookup Ho]].
