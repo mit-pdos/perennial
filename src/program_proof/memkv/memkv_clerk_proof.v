@@ -85,7 +85,7 @@ Qed.
 Lemma KVClerk__Get (ck:loc) (γ:gname) (key:u64) :
 ⊢ {{{ own_MemKVClerk ck γ }}}
   <<< ∀∀ v, kvptsto γ key v >>>
-    MemKVClerk__Get #ck #key @ ⊤
+    MemKVClerk__Get #ck #key @ ∅
   <<< kvptsto γ key v >>>
   {{{ val_sl q, RET slice_val val_sl;
       own_MemKVClerk ck γ ∗ typed_slice.is_slice_small val_sl byteT q%Qp v
@@ -140,6 +140,7 @@ Proof using Type*.
   iIntros (?) "(HshardCk & HcloseShardSet)".
 
   wp_pures.
+  rewrite difference_empty_L.
   wp_apply (wp_MemKVShardClerk__Get with "[Hatomic $HshardCk $Hrep]").
   {
     iFrame "Hatomic".
@@ -188,7 +189,7 @@ Qed.
 Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
 ⊢ {{{ own_MemKVClerk ck γ ∗ readonly (typed_slice.is_slice_small val_sl byteT 1 v) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
-    MemKVClerk__Put #ck #key (slice_val val_sl) @ ⊤
+    MemKVClerk__Put #ck #key (slice_val val_sl) @ ∅
   <<< kvptsto γ key v >>>
   {{{ RET #(); own_MemKVClerk ck γ }}}.
 Proof using Type*.
@@ -228,6 +229,7 @@ Proof using Type*.
   iIntros (?) "(HshardCk & HcloseShardSet)".
 
   wp_pures.
+  rewrite difference_empty_L.
   wp_apply (wp_MemKVShardClerk__Put with "[Hatomic $Hval_sl $HshardCk]").
   {
     iFrame "Hatomic".
@@ -273,7 +275,7 @@ Lemma KVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Sli
       readonly (typed_slice.is_slice_small expv_sl byteT 1 expv) ∗
       readonly (typed_slice.is_slice_small newv_sl byteT 1 newv) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
-    MemKVClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) @ ⊤
+    MemKVClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) @ ∅
   <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>
   {{{ RET #(bool_decide (expv = oldv));
       own_MemKVClerk ck γ }}}.
@@ -321,6 +323,7 @@ Proof using Type*.
   iIntros (?) "(HshardCk & HcloseShardSet)".
 
   wp_pures.
+  rewrite difference_empty_L.
   wp_apply (wp_MemKVShardClerk__ConditionalPut _ _ _ _ _ _ _ _ (λ b, own_MemKVClerk ck γ -∗ Φ #b)%I
     with "[Hatomic $HshardCk Hsucc]").
   {

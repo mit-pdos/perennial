@@ -619,6 +619,7 @@ Proof.
   iIntros "HcloseE !> Hhdr2".
   iMod "HcloseE" as "_".
   iDestruct ("Hfupd" with "[$HP]") as "Hfupd"; first by eauto.
+  rewrite difference_empty_L.
   iMod ("Hfupd" with "[]") as "[HP' HQ]".
   { iPureIntro.
     split.
@@ -1161,6 +1162,7 @@ Proof.
   iDestruct (diskEnd_is_to_eq with "[$] [$]") as %HdiskEnd'.
   iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb'.
 
+  rewrite difference_empty_L.
   iMod ("Hfupd" with "[$HP //] []") as "[HP HQ]".
   { iPureIntro.
     split.

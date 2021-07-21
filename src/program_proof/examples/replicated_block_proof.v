@@ -205,7 +205,7 @@ Section goose.
     (S k ≤ k')%nat →
     ⊢ {{{ "Hrb" ∷ is_rblock (S k') l addr }}}
       <<{ ∀∀ σ, ▷ P σ }>>
-        RepBlock__Read #l #primary @ (S k); ⊤
+        RepBlock__Read #l #primary @ (S k); ∅
       <<{ ▷ P σ }>>
       {{{ s, RET (slice_val s); is_block s 1 σ }}}
       {{{ True }}}.
@@ -243,6 +243,7 @@ Section goose.
       destruct Haddr'_eq; subst; iFrame; iModIntro; iFrame; auto. }
     iMod (own_disc_fupd_elim with "HP") as "HP".
     iRight in "Hfupd".
+    rewrite difference_empty_L.
     iMod ("Hfupd" with "HP") as "[HP HQ]".
     iEval (rewrite ->(left_id True bi_wand)%I) in "HQ".
     iMod (fupd_later_to_disc with "HP") as "HP".
@@ -297,6 +298,7 @@ Section goose.
     { iPureIntro; apply _. }
     iSplit.
     { iLeft in "Hfupd". iIntros "!> _". eauto. }
+    rewrite difference_empty_L.
     iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
     iModIntro. iFrame "HP". iSplit.
     { iSpecialize ("HQc" with "[$]"). iIntros "!> _"; by iApply "HQc". }
@@ -308,7 +310,7 @@ Section goose.
     ⊢ {{{ "Hrb" ∷ is_rblock (S k') l addr ∗
           "Hb" ∷ is_block s q b }}}
       <<{ ∀∀ σ, ▷ P σ }>>
-        RepBlock__Write #l (slice_val s) @ (S k); ⊤
+        RepBlock__Write #l (slice_val s) @ (S k); ∅
       <<{ ▷ P b }>>
       {{{ RET #(); is_block s q b }}}
       {{{ True }}}.
@@ -354,6 +356,7 @@ Section goose.
     (* linearization/simulation point: run Hfupd. *)
     iRight in "Hfupd".
     iMod (own_disc_fupd_elim with "HP") as "HP".
+    rewrite difference_empty_L.
     iMod ("Hfupd" with "HP") as "[HP HΦ]".
     iEval (rewrite ->(left_id True bi_wand)%I) in "HΦ".
     iMod (fupd_later_to_disc with "HP") as "HP".
@@ -411,6 +414,7 @@ Section goose.
     { iPureIntro; apply _. }
     iFrame. iSplit.
     { iLeft in "Hfupd". by iIntros "!> _". }
+    rewrite difference_empty_L.
     iNext. iIntros (σ) "HP". iRight in "Hfupd". iMod ("Hfupd" with "HP") as "[HP HQ]".
     iModIntro. iFrame "HP". iSplit.
     { iSpecialize ("HQc" with "[$]"). by iIntros "!> _". }

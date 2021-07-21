@@ -334,7 +334,7 @@ Theorem wpc_Inode__Read {k} {l k' P addr} {off: u64} :
   (S k < k')%nat →
   ⊢ {{{ "Hinode" ∷ is_inode l (S k') P addr }}}
     <<{ ∀∀ σ mb, ⌜mb = σ.(inode.blocks) !! int.nat off⌝ ∗ ▷ P σ }>>
-      Inode__Read #l #off @ S k; ⊤
+      Inode__Read #l #off @ S k; ∅
     <<{ ▷ P σ }>>
     {{{ s, RET (slice_val s); match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end }}}
     {{{ True }}}.
@@ -397,6 +397,7 @@ Ltac crash_lock_open H :=
     iRight in "Hfupd".
     iMod (own_disc_fupd_elim with "HP") as "HP".
 
+    rewrite difference_empty_L.
     iMod ("Hfupd" $! σ None with "[$HP]") as "[HP HQ]".
     { iPureIntro.
       rewrite lookup_ge_None_2 //.
@@ -441,6 +442,7 @@ Ltac crash_lock_open H :=
     iDestruct (big_sepL2_lookup_acc_disc with "Hdata") as "[Hb Hdata]"; eauto.
     iRight in "Hfupd".
     iMod (own_disc_fupd_elim with "HP") as "HP".
+    rewrite difference_empty_L.
     iMod ("Hfupd" $! σ with "[$HP]") as "[HP HQ]".
     { iPureIntro; eauto. }
     iEval (rewrite ->(left_id True bi_wand)%I) in "HQ".
@@ -504,6 +506,7 @@ Proof.
   { iPureIntro; apply _. }
   iSplit.
   { eauto. }
+  rewrite difference_empty_L.
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
   { eauto. }
@@ -514,7 +517,7 @@ Theorem wpc_Inode__Size {k} {l k' P addr}:
   (S k < k')%nat →
   ⊢ {{{ "Hinode" ∷ is_inode l (S k') P addr }}}
     <<{ ∀∀ σ (sz: u64), ⌜int.nat sz = inode.size σ⌝ ∗ ▷ P σ }>>
-      Inode__Size #l @ S k; ⊤
+      Inode__Size #l @ S k; ∅
     <<{ ▷ P σ }>>
     {{{ RET #sz; True }}}
     {{{ True }}}.
@@ -546,6 +549,7 @@ Proof.
 
   iRight in "Hfupd".
   iMod (own_disc_fupd_elim with "HP") as "HP".
+  rewrite difference_empty_L.
   iMod ("Hfupd" $! σ addr_s.(Slice.sz) with "[$HP]") as "[HP HQ]".
   { iPureIntro.
     rewrite /inode.size.
@@ -598,6 +602,7 @@ Proof.
   iApply (wpc_Inode__Size with "[//] Hinode"); first done.
   iSplit.
   { iLeft in "Hfupd". iIntros "!> _". eauto. }
+  rewrite difference_empty_L.
   iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[$HP //]") as "[HP HQ]".
   iModIntro. iFrame "HP". iSplit.
   { iSpecialize ("HQc" with "[$]"). iIntros "!> _". eauto. }

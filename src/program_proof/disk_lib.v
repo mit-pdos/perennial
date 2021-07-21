@@ -138,7 +138,7 @@ Transparent disk.Read disk.Write.
 Theorem wp_Write_atomic (a: u64) s q b :
   ⊢ {{{ is_slice_small s byteT q (Block_to_vals b) }}}
   <<< ∀∀ b0, int.Z a d↦ b0 >>>
-    Write #a (slice_val s) @ ⊤
+    Write #a (slice_val s) @ ∅
   <<<▷ int.Z a d↦ b >>>
   {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
@@ -147,6 +147,7 @@ Proof.
   wp_call.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   iApply (wp_ncatomic _ _ ∅).
+  rewrite difference_empty_L.
   iMod "Hupd" as (b0) "[Hda Hupd]"; iModIntro.
   wp_apply (wp_WriteOp with "[Hda Hs]").
   { iIntros "!>".
@@ -169,6 +170,7 @@ Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
   {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
 Proof.
   iIntros (Φ) "[Hs Hupd] HΦ". iApply (wp_Write_atomic with "Hs").
+  rewrite difference_empty_L.
   iMod "Hupd" as (b0) "[Hda Hclose]".
   iApply ncfupd_mask_intro; first set_solver+.
   iIntros "HcloseE". iExists b0.
@@ -202,13 +204,14 @@ Qed.
 
 Lemma wp_Read_atomic (a: u64) q :
   ⊢ <<< ∀∀ b, int.Z a d↦{q} b >>>
-      Read #a @ ⊤
+      Read #a @ ∅
     <<<▷ int.Z a d↦{q} b >>>
     {{{ s, RET slice_val s; is_block_full s b }}}.
 Proof.
   iIntros "!#" (Φ) "Hupd".
   wp_call.
   wp_bind (ExternalOp _ _).
+  rewrite difference_empty_L.
   iMod "Hupd" as (b) "[Hda Hupd]".
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
@@ -223,7 +226,7 @@ Qed.
 Lemma wp_ReadTo_atomic (a: u64) b0 s q :
   ⊢ {{{ is_block_full s b0 }}}
   <<< ∀∀ b, int.Z a d↦{q} b >>>
-      ReadTo #a (slice_val s) @ ⊤
+      ReadTo #a (slice_val s) @ ∅
     <<< ▷ int.Z a d↦{q} b >>>
     {{{ RET #(); is_block_full s b }}}.
 Proof.
@@ -232,6 +235,7 @@ Proof.
   iDestruct (is_slice_sz with "Hs") as %Hsz.
   wp_bind (ExternalOp _ _).
   iApply (wp_ncatomic _ _ ∅).
+  rewrite difference_empty_L.
   iMod "Hupd" as (db0) "[Hda Hupd]"; iModIntro.
   wp_apply (wp_ReadOp with "[$Hda]").
   iIntros (l) "(Hda&Hl)".
@@ -267,6 +271,7 @@ Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
       Q b ∗ is_block_full s b }}}.
 Proof.
   iIntros (Φ) "Hupd HΦ". iApply wp_Read_atomic.
+  rewrite difference_empty_L.
   iMod "Hupd" as (b0) "[Hda Hclose]".
   iApply ncfupd_mask_intro; first set_solver+.
   iIntros "HcloseE". iExists _. iFrame.

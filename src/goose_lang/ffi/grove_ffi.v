@@ -609,7 +609,7 @@ Section grove.
   Lemma wp_Send c_l c_r (s : Slice.t) (data : list u8) (q : Qp) :
     ⊢ {{{ is_slice_small s byteT q data }}}
       <<< ∀∀ ms, c_r c↦ ms >>>
-        Send (connection_socket c_l c_r) (slice_val s) @ ⊤
+        Send (connection_socket c_l c_r) (slice_val s) @ ∅
       <<<▷ ∃∃ (msg_sent : bool),
         c_r c↦ (if msg_sent then ms ∪ {[Message c_l data]} else ms)
       >>>
@@ -623,6 +623,7 @@ Section grove.
     iAssert (⌜length data = int.nat (Slice.sz s)⌝)%I as %?.
     { iDestruct "Hs" as "[_ %Hlen]". iPureIntro. revert Hlen.
       rewrite /list.untype fmap_length. done. }
+    rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
@@ -636,7 +637,7 @@ Section grove.
 
   Lemma wp_Receive c_l c_r :
     ⊢ <<< ∀∀ ms, c_l c↦ ms >>>
-        Receive (connection_socket c_l c_r) @ ⊤
+        Receive (connection_socket c_l c_r) @ ∅
       <<<▷ ∃∃ (err : bool) (data : list u8),
         c_l c↦ ms ∗ if err then True else ⌜Message c_r data ∈ ms⌝
       >>>
@@ -650,6 +651,7 @@ Section grove.
   Proof.
     iIntros "!#" (Φ) "HΦ". wp_lam. wp_pures.
     wp_bind (ExternalOp _ _).
+    rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     wp_apply (wp_RecvOp with "Hc").
     iIntros (err l len data) "(%Hm & Hc & Hl)".

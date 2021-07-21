@@ -315,7 +315,7 @@ Section goose.
     (S k < k')%nat →
     ⊢ {{{ "#Hinode" ∷ is_single_inode l sz k' }}}
       <<{ ∀∀ σ mb, ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ ∗ ▷ P σ }>>
-        SingleInode__Read #l #i @ (S k); ⊤∖↑N
+        SingleInode__Read #l #i @ (S k); ↑N
       <<{ ▷ P σ }>>
       {{{ (s:Slice.t), RET (slice_val s);
         match mb with
