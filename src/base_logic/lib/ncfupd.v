@@ -15,16 +15,16 @@ Definition ncfupd_eq `{!invGS Σ, !crashG Σ} : ncfupd = ncfupd_def := ncfupd_au
 
 Notation "|NC={ E1 }=> Q" := (ncfupd E1 E1 Q)
   (at level 99, E1 at level 50, Q at level 200,
-   format "|NC={ E1 }=>  Q") : bi_scope.
+   format "'[  ' |NC={ E1 }=>  '/' Q ']'") : bi_scope.
 Notation "|NC={ E1 , E2 }=> P" := (ncfupd E1 E2 P)
       (at level 99, E1, E2 at level 50, P at level 200,
-       format "|NC={ E1 , E2 }=>  P") : bi_scope.
+       format "'[  ' |NC={ E1 , E2 }=>  '/' P ']'") : bi_scope.
 Notation "|NC={ Eo } [ Ei ]▷=> Q" := (∀ q, NC q -∗ |={Eo,Ei}=> ▷ |={Ei,Eo}=> Q ∗ NC q)%I
   (at level 99, Eo, Ei at level 50, Q at level 200,
-   format "|NC={ Eo } [ Ei ]▷=>  Q") : bi_scope.
+   format "'[  ' |NC={ Eo } [ Ei ]▷=>  '/' Q ']'") : bi_scope.
 Notation "|NC={ E1 } [ E2 ]▷=>^ n Q" := (Nat.iter n (λ P, |NC={E1}[E2]▷=> P) Q)%I
   (at level 99, E1, E2 at level 50, n at level 9, Q at level 200,
-   format "|NC={ E1 } [ E2 ]▷=>^ n  Q").
+   format "'[  ' |NC={ E1 } [ E2 ]▷=>^ n  '/' Q ']'").
 
 Section ncfupd.
 Context `{!invGS Σ, !crashG Σ}.

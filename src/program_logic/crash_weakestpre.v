@@ -1,11 +1,12 @@
 From iris.algebra Require Import auth agree excl csum.
 From Perennial.base_logic Require Import ae_invariants.
+From iris.bi Require Export weakestpre.
 From iris.proofmode Require Import base tactics classes.
 From Perennial.base_logic Require Export invariants fupd_level.
 From Perennial.program_logic Require Import step_fupd_extra ae_invariants_mutable.
 From Perennial.algebra Require Export own_discrete.
 From Perennial.base_logic.lib Require Export ncfupd.
-From Perennial.program_logic Require Export language weakestpre_notation.
+From Perennial.program_logic Require Export language.
 From Perennial.program_logic Require ectx_language.
 From iris.prelude Require Import options.
 Import uPred.
@@ -409,7 +410,7 @@ End cfupd.
 (* Open to alternative notation for this. *)
 Notation "|C={ E1 }_ k => P" := (cfupd k E1 P)
       (at level 99, E1 at level 50, P at level 200,
-       format "|C={ E1 }_ k =>  P").
+       format "'[  ' |C={ E1 }_ k =>  '/' P ']'").
 
 Global Hint Extern 1 (environments.envs_entails _ (|C={_}_ _ => _)) => iModIntro : core.
 
@@ -469,27 +470,25 @@ Notation "'WPC' e @ k ; E1 {{ Φ } } {{ Φc } }" := (wpc NotStuck k%nat E1 e%E �
 Notation "'WPC' e @ k {{ Φ } } {{ Φc } }" := (wpc NotStuck k%nat ⊤ e%E Φ Φc)
   (at level 20, e, Φ, Φc at level 200, only parsing) : bi_scope.
 
-(** Notations with binder.  The indentation for the inner format block is chosen
-such that *if* one has a single-character mask (e.g. [E]), the second line
-should align with the binder(s) on the first line. *)
+(** Notations with binder.  *)
 Notation "'WPC' e @ s ; k ; E1 {{ v , Q } } {{ R } }" := (wpc s k%nat E1 e%E (λ v, Q) R)
   (at level 20, e, Q, R at level 200,
-   format "'[' 'WPC'  e  '/' '[          ' @  s ;  k ;  E1  {{  v ,  Q  } }  {{  R  } } ']' ']'") : bi_scope.
+   format "'[hv' 'WPC'  e  '/' @  '[' s ;  k ;  E1  ']' '/' {{  '[' v ,  '/' Q  ']' } }  '/' {{  '[' R  ']' } } ']'") : bi_scope.
 Notation "'WPC' e @ k ; E1 {{ v , Q } } {{ R } }" := (wpc NotStuck k%nat E1 e%E (λ v, Q) R)
   (at level 20, e, Q, R at level 200,
-   format "'[' 'WPC'  e  '/' '[       ' @  k ;  E1  {{  v ,  Q  } }  {{  R  } } ']' ']'") : bi_scope.
+   format "'[hv' 'WPC'  e  '/' @  '[' k ;  E1  ']' '/' {{  '[' v ,  '/' Q  ']' } }  '/' {{  '[' R  ']' } } ']'") : bi_scope.
 
 (* Texan triples *)
 Notation "'{{{' P } } } e @ s ; k ; E1 {{{ x .. y , 'RET' pat ; Q } } } {{{ Qc } } }" :=
   (□ ∀ Φ Φc,
       P -∗ <disc> (Qc -∗ Φc) ∧ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WPC e @ s; k; E1 {{ Φ }} {{ Φc }})%I
     (at level 20, x closed binder, y closed binder,
-     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  s ; k ;  E1 '/' {{{  x  ..  y ,  RET  pat ;  Q  } } }  '/' {{{  Qc  } } } ']'") : bi_scope.
+     format "'[hv' {{{  '[' P  ']' } } }  '/  ' e  '/' @  '[' s ;  k ;  E1  ']' '/' {{{  '[' x  ..  y ,  RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
 Notation "'{{{' P } } } e @ k ; E1 {{{ x .. y , 'RET' pat ; Q } } } {{{ Qc } } }" :=
   (□ ∀ Φ Φc,
       P -∗ <disc> (Qc -∗ Φc) ∧ ▷ (∀ x, .. (∀ y, Q -∗ Φ pat%V) .. ) -∗ WPC e @ k; E1 {{ Φ }} {{ Φc }})%I
     (at level 20, x closed binder, y closed binder,
-     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  k ;  E1 '/' {{{  x  ..  y ,  RET  pat ;  Q  } } }  '/' {{{  Qc  } } } ']'") : bi_scope.
+     format "'[hv' {{{  '[' P  ']' } } }  '/  ' e  '/' @  '[' k ;  E1  ']' '/' {{{  '[' x  ..  y ,  RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
 
 (*
 Notation "'{{{' P } } } e @ E {{{ x .. y , 'RET' pat ; Q } } }" :=
@@ -517,11 +516,11 @@ Notation "'{{{' P } } } e ? {{{ x .. y , 'RET' pat ; Q } } }" :=
 Notation "'{{{' P } } } e @ s ; k ; E1 {{{ 'RET' pat ; Q } } } {{{ Qc } } }" :=
   (□ ∀ Φ Φc, P -∗ <disc> (Qc -∗ Φc) ∧ ▷ (Q -∗ Φ pat%V) -∗ WPC e @ s; k; E1 {{ Φ }} {{ Φc }})%I
     (at level 20,
-     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  s ; k ;  E1 '/' {{{  RET  pat ;  Q  } } }  '/' {{{  Qc  } } } ']'") : bi_scope.
+     format "'[hv' {{{  '[' P  ']' } } }  '/  ' e  '/' @  '[' s ;  k ;  E1  ']' '/' {{{  '[' RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
 Notation "'{{{' P } } } e @ k ; E1 {{{ 'RET' pat ; Q } } } {{{ Qc } } }" :=
   (□ ∀ Φ Φc, P -∗ <disc> (Qc -∗ Φc) ∧ ▷ (Q -∗ Φ pat%V) -∗ WPC e @ k; E1 {{ Φ }} {{ Φc }})%I
     (at level 20,
-     format "'[hv' {{{  P  } } }  '/  ' e  '/' @  k ;  E1 '/' {{{  RET  pat ;  Q  } } }  '/' {{{  Qc  } } } ']'") : bi_scope.
+     format "'[hv' {{{  '[' P  ']' } } }  '/  ' e  '/' @  '[' k ;  E1  ']' '/' {{{  '[' RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
 (*
 Notation "'{{{' P } } } e @ E {{{ 'RET' pat ; Q } } }" :=
   (□ ∀ Φ, P -∗ ▷ (Q -∗ Φ pat%V) -∗ WP e @ E {{ Φ }})%I
@@ -573,12 +572,13 @@ Notation "'{{{' P } } } e ? {{{ 'RET' pat ; Q } } }" :=
 
 (** Defining WP in terms of WPC (needs to be here since WP is used in this file)
 *)
-Definition wp_def `{!irisGS Λ Σ} : Wp Λ (iProp Σ) stuckness :=
+Definition wp_def `{!irisGS Λ Σ} : Wp (iProp Σ) (expr Λ) (val Λ) stuckness :=
   λ s E e Φ, (WPC e @ s ; 0 ; E {{ Φ }} {{ True }})%I.
 Definition wp_aux : seal (@wp_def). Proof. by eexists. Qed.
 Definition wp' := wp_aux.(unseal).
 Global Arguments wp' {Λ Σ _}.
-Existing Instance wp'.
+(* We cannot make this an instance since [simple apply] unification is too weak. *)
+Global Hint Extern 0 (Wp _ _ _ _) => apply wp' : typeclass_instances.
 Lemma wp_eq `{!irisGS Λ Σ} : wp = @wp_def Λ Σ _.
 Proof. rewrite -wp_aux.(seal_eq) //. Qed.
 
@@ -592,7 +592,7 @@ Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
 Lemma wpc0_unfold s k mj E1 e Φ Φc :
-  wpc0 s k mj E1 e Φ Φc ⊣⊢  wpc_pre s k mj (wpc0 s k mj) E1 e Φ Φc.
+  wpc0 s k mj E1 e Φ Φc ⊣⊢ wpc_pre s k mj (wpc0 s k mj) E1 e Φ Φc.
 Proof. apply (fixpoint_unfold (wpc_pre s k mj)). Qed.
 
 Lemma wpc_unfold s k E1 e Φ Φc :

@@ -1,6 +1,7 @@
+From iris.bi Require Export weakestpre.
 From iris.proofmode Require Import base tactics classes.
 From Perennial.base_logic.lib Require Export ncfupd.
-From Perennial.program_logic Require Export language weakestpre_notation crash_weakestpre.
+From Perennial.program_logic Require Export language crash_weakestpre.
 From iris.prelude Require Import options.
 Import uPred.
 
