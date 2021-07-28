@@ -251,7 +251,7 @@ Proof.
       iPureIntro.
       split; intro Hx.
       { destruct anydirty; simpl in *; congruence. }
-      rewrite map_filter_insert in Hx; last eauto.
+      rewrite map_filter_insert_True in Hx; last eauto.
       eapply insert_non_empty in Hx. exfalso; eauto.
 
     + iModIntro.
@@ -285,7 +285,7 @@ Proof.
         { eapply map_filter_lookup_Some_2; eauto. }
         rewrite H in Hz; eauto. congruence. }
       destruct anydirty; simpl; try reflexivity.
-      rewrite map_filter_insert_not_delete in Hx; last eauto.
+      rewrite map_filter_insert_False in Hx; last eauto.
       rewrite delete_notin in Hx; eauto.
 
   - destruct (gBufmap !! a) eqn:Hbufmap_a.
@@ -341,7 +341,7 @@ Proof.
       iPureIntro.
       split; intro Hx.
       { destruct anydirty; simpl in *; congruence. }
-      rewrite map_filter_insert in Hx; last eauto.
+      rewrite map_filter_insert_True in Hx; last eauto.
       eapply insert_non_empty in Hx. exfalso; eauto.
 
     + iModIntro.
@@ -379,7 +379,7 @@ Proof.
         exfalso.
         destruct bufDirty.
         {
-          rewrite map_filter_insert in Hx; eauto.
+          rewrite map_filter_insert_True in Hx; eauto.
           eapply insert_non_empty in Hx; eauto.
         }
         rewrite map_filter_insert_not' in Hx; eauto.
@@ -387,7 +387,7 @@ Proof.
         intros y Hy. rewrite Hbufmap_a in Hy. inversion Hy; subst. eauto.
       }
       destruct bufDirty; try reflexivity. exfalso.
-      rewrite map_filter_insert in Hx; eauto.
+      rewrite map_filter_insert_True in Hx; eauto.
       eapply insert_non_empty in Hx; eauto.
 Qed.
 
@@ -487,7 +487,7 @@ Opaque struct.t.
       rewrite lookup_insert_ne; eauto.
     }
     iPureIntro. split; intros Hx; try congruence.
-    rewrite -> map_filter_insert in Hx by eauto.
+    rewrite -> map_filter_insert_True in Hx by eauto.
     eapply insert_non_empty in Hx. exfalso; eauto.
 
   - iDestruct "Hbufmapptr" as "[-> Hisbufmap]".
@@ -535,7 +535,7 @@ Opaque struct.t.
       rewrite lookup_insert_ne; eauto.
     }
     iPureIntro. split; intros Hx; try congruence.
-    rewrite -> map_filter_insert in Hx by eauto.
+    rewrite -> map_filter_insert_True in Hx by eauto.
     eapply insert_non_empty in Hx. exfalso; eauto.
 Qed.
 
@@ -968,7 +968,7 @@ Proof.
       iLeft.
       iDestruct ("Hq" with "[]") as (txnid) "[Hq Hflush]".
       {
-        iPureIntro. intro Hempty. eapply fmap_empty_inv in Hempty.
+        iPureIntro. intro Hempty. apply fmap_empty_iff in Hempty.
         assert (filter (λ b, (b.2).(bufDirty) = true) gBufmap = ∅); intuition try congruence.
         eapply map_empty; intros a.
         eapply map_filter_lookup_None.

@@ -1426,7 +1426,7 @@ Proof.
   clear Hdom_sub.
   iInduction (jrnlData σj) as [| i x m] "IH" using map_ind forall (σjd' Hwf Hdom).
   - rewrite dom_empty_L in Hdom.
-    symmetry in Hdom. apply dom_empty_inv_L in Hdom.
+    symmetry in Hdom. apply dom_empty_iff_L in Hdom.
     rewrite ?Hdom big_sepM_empty. iFrame.
     rewrite /=. rewrite left_id_L //=. rewrite Heq => //=. iFrame. eauto.
   - assert (Hin: i ∈ dom (gset _) σjd').
@@ -1542,7 +1542,7 @@ Proof.
     destruct Hwf as (Hdom&?).
     iDestruct "Hbad" as (?) "(Htok&Hcrash_ctx&Hfull_tok)".
     induction (jrnlData σj) as [| x v' ? ? _] using map_ind.
-    { rewrite dom_empty_L in Hdom. symmetry in Hdom. apply dom_empty_inv_L in Hdom. rewrite Hdom.
+    { rewrite dom_empty_L in Hdom. symmetry in Hdom. apply dom_empty_iff_L in Hdom. rewrite Hdom.
       rewrite ?big_sepM_empty. iMod ("Hclo" with "[-]").
       { iLeft. iNext; iExists _; eauto. iFrame. }
       eauto. }

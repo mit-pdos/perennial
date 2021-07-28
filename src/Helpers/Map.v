@@ -80,7 +80,7 @@ Proof.
   - rewrite map_filter_empty //.
   - rewrite map_size_insert_None //.
     destruct (decide (P (i, x))).
-    + rewrite map_filter_insert //.
+    + rewrite map_filter_insert_True //.
       rewrite map_size_insert_None.
       { apply map_filter_lookup_None_2; auto. }
       lia.

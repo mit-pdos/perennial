@@ -121,7 +121,7 @@ Lemma alloc_used_insert s a :
   alloc.used (<[a := block_used]> s) = {[a]} ∪ alloc.used s.
 Proof.
   rewrite /alloc.used.
-  rewrite map_filter_insert //.
+  rewrite map_filter_insert_True //.
   set_solver.
 Qed.
 
@@ -615,7 +615,7 @@ Theorem alloc_free_reserve σ new :
 Proof.
   clear.
   rewrite /alloc.free /=.
-  rewrite map_filter_insert_not_delete //=.
+  rewrite map_filter_insert_False //=.
   rewrite map_filter_delete dom_delete_L //.
 Qed.
 
@@ -625,7 +625,7 @@ Theorem alloc_free_free σ new :
 Proof.
   clear.
   rewrite /alloc.free /=.
-  rewrite map_filter_insert //= dom_insert_L. set_solver.
+  rewrite map_filter_insert_True //= dom_insert_L. set_solver.
 Qed.
 
 Theorem reserved_not_in_alloc_free σ a :

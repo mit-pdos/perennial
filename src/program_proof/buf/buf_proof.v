@@ -513,7 +513,7 @@ Proof using.
                  | _ => pose proof (flatid_addr_map_size H)
                  end
                end.
-        rewrite map_filter_insert //.
+        rewrite map_filter_insert_True //.
         rewrite map_size_insert_None.
         - rewrite -Hn.
           assert (int.nat n ≤ size mdone)%nat.
@@ -612,10 +612,11 @@ Proof using.
   iApply "HΦ". iFrame.
 
   assert (mtodo = ∅).
-  { rewrite (dom_empty_inv_L (D:=gset addr) mtodo) //.
+  { apply dom_empty_iff_L.
     intuition subst.
     rewrite -H3.
     apply flatid_addr_empty_1 in H2; subst.
+
     set_solver. }
   assert (amtodo = ∅).
   { intuition subst.
@@ -714,7 +715,7 @@ Proof using.
         rewrite lookup_delete_ne; eauto.
       }
       iFrame "Hbufs". iFrame "Hbufptrslice".
-      rewrite map_filter_insert; last by eauto.
+      rewrite map_filter_insert_True; last by eauto.
       iApply big_sepML_insert_app.
       { rewrite map_filter_lookup_None. left.
         apply (not_elem_of_dom (D:=gset addr)).
@@ -744,7 +745,7 @@ Proof using.
         rewrite lookup_delete_ne; eauto.
       }
       iFrame "Hbufs". iFrame "Hbufptrslice".
-      rewrite map_filter_insert_not_delete.
+      rewrite map_filter_insert_False.
       2: { simpl. congruence. }
       rewrite delete_notin.
       { by iFrame. }
@@ -759,12 +760,15 @@ Proof using.
   wp_load.
   iApply "HΦ". iFrame.
   intuition subst.
-  rewrite (dom_empty_inv_L (D:=gset addr) mtodo).
-  { rewrite left_id. by iFrame. }
 
-  rewrite -H3.
-  apply flatid_addr_empty_1 in H2; subst.
-  set_solver.
+  assert (mtodo = ∅); subst.
+  { apply dom_empty_iff_L.
+    rewrite -H3.
+    apply flatid_addr_empty_1 in H2; subst.
+    set_solver.
+  }
+
+  rewrite left_id. by iFrame.
 Qed.
 
 Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : list val :=

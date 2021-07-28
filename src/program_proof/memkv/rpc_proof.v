@@ -459,7 +459,7 @@ Proof.
     rewrite big_sepM_insert //. iSplitL "His_rpcHandler".
     { iExists _, Pre, Post, _. iSplit; first eauto.
       iFrame "# ∗". }
-    apply dom_empty_inv_L in Hemp. rewrite Hemp big_sepM_empty. eauto.
+    apply dom_empty_iff_L in Hemp. rewrite Hemp big_sepM_empty. eauto.
   }
   iDestruct ("IH" with "[//] [$]") as "HIH".
   iNamed "HIH". iFrame "% #".

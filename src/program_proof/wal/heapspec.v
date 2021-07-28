@@ -361,10 +361,10 @@ Proof.
     iDestruct (big_sepL_app with "Hpossible_heaps") as "[Hpre _]".
     iApply (big_sepL_mono with "Hpre").
     intros.
-    apply lookup_take_Some in H.
+    apply lookup_take_Some in H as [Hlookup Hbound].
     iIntros "H".
     rewrite take_take.
-    rewrite Nat.min_l //.
+    rewrite -> Nat.min_l by lia; auto.
 Qed.
 
 Lemma wal_heap_inv_addr_crash ls k x crash_txn :

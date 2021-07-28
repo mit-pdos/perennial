@@ -577,7 +577,7 @@ Proof.
   rewrite length_possible_async_put. clear Hm0.
   iInduction m' as [|a v m] "IH" using map_ind forall (m0 Hdom).
   - assert (m0 = ∅) as ->.
-    { apply dom_empty_inv. rewrite -Hdom dom_empty. done. }
+    { apply dom_empty_iff. rewrite -Hdom dom_empty. done. }
     rewrite !big_sepM_empty. rewrite !left_id. by iFrame.
   - rewrite big_sepM_insert //.
     assert (is_Some (m0 !! a)) as [v0 Hv0].

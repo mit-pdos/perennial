@@ -507,7 +507,7 @@ Section auth_map.
   Proof.
     iIntros (Hdom) "Hctx Hm0".
     iInduction m0 as [|l v m0] "IH" using map_ind forall (m m' Hdom).
-    - rewrite dom_empty_L in Hdom; apply dom_empty_inv_L in Hdom as ->.
+    - rewrite dom_empty_L in Hdom; apply dom_empty_iff_L in Hdom as ->.
       rewrite left_id_L big_sepM_empty.
       by iFrame.
     - rewrite big_sepM_insert //.

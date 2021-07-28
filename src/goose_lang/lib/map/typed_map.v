@@ -298,8 +298,7 @@ Proof.
   iIntros "(Hm & HI)".
   iDestruct "HI" as (mtodo' mdone') "(% & % & HI)".
   iApply "HΦ". iFrame.
-  replace mtodo' with (∅ : gmap u64 V).
-  2: { erewrite fmap_empty_inv; eauto. }
+  assert (mtodo' = ∅) by (eapply fmap_empty_iff; eauto); subst mtodo'.
   rewrite /Map.untype /= in H0.
   apply (inj (fmap to_val)) in H0; subst.
   done.

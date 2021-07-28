@@ -322,7 +322,7 @@ Section maplist.
     iIntros "Hml".
     iDestruct "Hml" as (lm) "[% Hml]".
     destruct (map_to_list lm) eqn:Heq.
-    - apply map_to_list_empty_inv in Heq; subst.
+    - apply map_to_list_empty_iff in Heq; subst.
       iDestruct (big_sepM2_empty_l with "Hml") as %He. done.
     - simpl in *. apply Permutation_nil_cons in H0. eauto.
   Qed.
@@ -379,7 +379,8 @@ Section maplist.
       }
       clear H0.
       iInduction m as [|i x m] "IH" using map_ind forall (lm Hmlm).
-      { rewrite dom_empty_L in Hmlm. rewrite (dom_empty_inv_L (D:=gset K) lm); eauto.
+      { rewrite dom_empty_L in Hmlm.
+        assert (lm = ∅) by (apply dom_empty_iff_L; auto); subst.
         rewrite map_zip_empty_l. iApply big_sepM_empty. done. }
       iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
       assert (is_Some (lm !! i)) as Hlmi.

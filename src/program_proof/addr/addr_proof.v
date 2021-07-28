@@ -370,8 +370,8 @@ Section gmap_addr_by_block.
         rewrite map_filter_insert_not; eauto.
       }
 
-      rewrite map_filter_insert; eauto.
-      rewrite map_filter_insert; eauto.
+      rewrite map_filter_insert_True; eauto.
+      rewrite map_filter_insert_True; eauto.
       rewrite -IHm; clear IHm.
       rewrite gmap_addr_by_block_insert; eauto; simpl.
       2: { rewrite map_filter_lookup_None; eauto. }
@@ -383,7 +383,7 @@ Section gmap_addr_by_block.
       induction m using map_ind.
       + rewrite map_filter_empty. eauto.
       + destruct (decide (P (addrBlock i))).
-        * rewrite map_filter_insert; eauto.
+        * rewrite map_filter_insert_True; eauto.
           repeat rewrite gmap_curry_insert; eauto.
           2: rewrite map_filter_lookup_None; eauto.
           destruct (decide (i.1 = b)); subst.
