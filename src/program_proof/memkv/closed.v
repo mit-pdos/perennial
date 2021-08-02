@@ -44,6 +44,7 @@ Proof.
     { destruct heap_preG_heap => //=. }
     { destruct heap_preG_ffi => //=. }
     { destruct heap_preG_trace => //=. }
+    { destruct heap_preG_credit => //=. }
   * rewrite gen_heapG_update_pre_get //=.
   * rewrite /inv_get_names //=.
     destruct heap_globalG_inv_names => //=.

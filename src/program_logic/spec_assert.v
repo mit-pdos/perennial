@@ -454,8 +454,8 @@ Section ghost_step.
 
   Lemma ghost_step_crash_stuck' E P Q j K `{LanguageCtx Λ K} e σ g:
     nclose sN_inv ⊆ E →
-    □ (Q ∗ ▷ P -∗ |0={∅}=> False) -∗
-    source_crash_ctx P -∗ Q -∗ j ⤇ K e -∗ source_state σ g -∗ |C={E}_0=>
+    □ (Q ∗ ▷ P -∗ |={∅}=> False) -∗
+    source_crash_ctx P -∗ Q -∗ j ⤇ K e -∗ source_state σ g -∗ C -∗ |={E}=>
     ⌜ ¬ stuck e σ g ⌝ ∗ j ⤇ K e ∗ source_state σ g ∗ Q.
   Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (?) "#Hwand #Hctx HQ Hj Hstate ". rewrite /source_ctx/source_inv.
@@ -463,7 +463,7 @@ Section ghost_step.
     iMod (cfupd_weaken_all with "Hctx") as "#Hinv"; eauto.
     iIntros "HC".
     iInv "Hinv" as "[HP|Hrest]" "Hclose".
-    { iMod (fupd_level_mask_subseteq ∅); first by solve_ndisj.
+    { iMod (fupd_mask_subseteq ∅); first by solve_ndisj.
       iMod ("Hwand" with "[$]") as %[]. }
     iDestruct "Hrest" as (? tp' σ' g') ">[Hauth Hpure]".
     iDestruct "Hpure" as %(Hstep&Hnoerr).
@@ -492,15 +492,15 @@ Section ghost_step.
   Lemma ghost_step_crash_lifting' E P Q r ρ j K `{LanguageCtx Λ K} e1 σ1 g1 κ σ2 g2 e2 efs:
     language.prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
     nclose sN_inv ⊆ E →
-    □ (Q ∗ ▷ P -∗ |0={∅}=> False) -∗
+    □ (Q ∗ ▷ P -∗ |={∅}=> False) -∗
     source_crash_ctx' r ρ P ∗ Q ∗ j ⤇ K e1 ∗ source_state σ1 g1
-      -∗ |C={E}_0=> Q ∗ j ⤇ K e2 ∗ source_state σ2 g2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
+      -∗ C -∗ |={E}=> Q ∗ j ⤇ K e2 ∗ source_state σ2 g2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
   Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (Hstep ?) "#Hwand (#Hctx&HQ&Hj&Hstate)". rewrite /source_ctx/source_inv.
     iMod (cfupd_weaken_all with "Hctx") as "#Hinv"; eauto.
     iIntros "HC".
     iInv "Hinv" as "[HP|Hrest]" "Hclose".
-    { iMod (fupd_level_mask_subseteq ∅); first by solve_ndisj.
+    { iMod (fupd_mask_subseteq ∅); first by solve_ndisj.
       iMod ("Hwand" with "[$]") as %[]. }
     iDestruct "Hrest" as (s' tp' σ' g') ">[Hauth %]".
 
@@ -547,10 +547,10 @@ Section ghost_step.
   Lemma ghost_step_crash_lifting E P Q j K `{LanguageCtx Λ K} e1 σ1 g1 κ σ2 g2 e2 efs:
     language.prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
     nclose sN_inv ⊆ E →
-    □ (Q ∗ ▷ P -∗ |0={∅}=> False) -∗
+    □ (Q ∗ ▷ P -∗ |={∅}=> False) -∗
     Q -∗
     j ⤇ K e1 -∗ source_crash_ctx P -∗ source_state σ1 g1
-      -∗ |C={E}_0=> Q ∗ j ⤇ K e2 ∗ source_state σ2 g2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
+      -∗ C -∗ |={E}=> Q ∗ j ⤇ K e2 ∗ source_state σ2 g2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
   Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (??) "#Hwand HQ Hj Hsrc ?".
     iDestruct "Hsrc" as (??) "Hsrc".

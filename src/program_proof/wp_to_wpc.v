@@ -85,7 +85,6 @@ Proof.
   rewrite Heq.
   erewrite (bi_sch_fupd_interp); last first.
   { rewrite ?bi_schema_interp_unfold /= //=. }
-  rewrite /bi_sch_staged_fupd.
   do 2 (rewrite ?bi_schema_interp_unfold /= //=).
 Qed.
 
@@ -134,12 +133,13 @@ Proof using stagedG0.
     iApply (wpc_strong_mono with "Hwpc"); auto.
     iSplit.
     * iIntros (?) "Hwand". iModIntro. iApply "Hwand". by iFrame.
-    * iIntros "!> _". iIntros "HC".
+    * iIntros "_ HC".
       {
         iMod (inv_mut_acc with "Hinv") as (Qs) "(H&Hclo)"; first auto.
         rewrite mysch_interp_weak /=.
         iDestruct "H" as "[(_&>H)|[Hfalse1|Hfalse2]]".
-        * iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def).
+        * iApply (fupd_level_fupd _ _ _ (S k)).
+          iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def).
           iMod (fupd_split_level_intro_mask' _ ∅) as "Hclo''"; first by set_solver+.
           iMod (fupd_split_level_le with "H") as "H"; first lia.
           iMod "Hclo''".

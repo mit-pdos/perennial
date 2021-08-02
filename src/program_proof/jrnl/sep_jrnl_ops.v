@@ -484,7 +484,7 @@ Section goose_lang.
       iExactEq "Hnew".
       auto with f_equal lia. }
     iSplit.
-    { iDestruct "HΦ" as "[HΦc _]". iModIntro. iIntros "H".
+    { iDestruct "HΦ" as "[HΦc _]". iIntros "H".
       iDestruct "H" as "[H|H]".
       {
         iDestruct "H" as (txnid) "(H&#Hold_vals)".
@@ -569,7 +569,6 @@ Section goose_lang.
     iSplit.
     {
       iDestruct "HΦ" as "[HΦc _]".
-      iModIntro.
       iDestruct 1 as "[H|H]"; iApply "HΦc".
       - iLeft.
         iApply "HrestoreP0".

@@ -3,7 +3,7 @@
 
 (* Some key theorems *)
 From Perennial.goose_lang Require
-     recovery_adequacy dist_adequacy.
+     recovery_adequacy (* dist_adequacy *).
 (* Some core libraries *)
 From Perennial.base_logic Require
      gmap_own.

@@ -62,6 +62,7 @@ Class heapGpreS `{ext: ffi_syntax} `{EXT_SEM: !ffi_semantics ext ffi}
   heap_preG_heap :> na_heapPreG loc val Σ;
   heap_preG_ffi : ffi_preG Σ;
   heap_preG_trace :> trace_preG Σ;
+  heap_preG_credit :> credit_preG Σ;
 }.
 
 Definition heap_update_pre Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashG Σ) (names: heap_names) :=
@@ -69,7 +70,8 @@ Definition heap_update_pre Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: 
      heapG_crashG := Hcrash;
      heapG_ffiG := ffi_update_pre Σ (heap_preG_ffi) (heap_ffi_local_names names) (heap_ffi_global_names names);
      heapG_na_heapG := na_heapG_update_pre (heap_preG_heap) (heap_heap_names names);
-     heapG_traceG := traceG_update_pre Σ (heap_preG_trace) (heap_trace_names names)
+     heapG_traceG := traceG_update_pre Σ (heap_preG_trace) (heap_trace_names names);
+     heapG_creditG := creditGS_update_pre Σ (heap_preG_credit) (heap_credit_names names)
  |}.
 
 Lemma heap_update_pre_get Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashG Σ) (names: heap_names) :
@@ -110,7 +112,7 @@ Ltac solve_inG_deep :=
                            end; intros; try done; split; assumption || by apply _.
 
 Definition heapΣ `{ext: ffi_syntax} `{ffi_interp_adequacy} : gFunctors :=
-  #[invΣ; crashΣ; na_heapΣ loc val; ffiΣ; traceΣ].
+  #[invΣ; crashΣ; na_heapΣ loc val; ffiΣ; traceΣ; creditΣ].
 Instance subG_heapPreG `{ext: ffi_syntax} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} :
   subG heapΣ Σ → heapGpreS Σ.
 Proof.

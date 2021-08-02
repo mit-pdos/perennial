@@ -150,7 +150,7 @@ Section goose_lang.
     wpc_apply (recovery_proof.wpc_MkLog (↑invariant.walN ∪ ↑invN) with "[$Hlower_durable]").
     3: {
       iSplit.
-      - iLeft in "HΦ". iModIntro.
+      - iLeft in "HΦ".
         iIntros "H". iDestruct "H" as (?? Heq) "(Hlower_durable&[%Heq2|Hres])".
         { rewrite Heq2. iModIntro. iApply "HΦ". iExists γ, _. iFrame. eauto. }
         iRename "Hlogm" into "Holdlogm1".
@@ -193,11 +193,11 @@ Section goose_lang.
           iNamed "Hinv".
           iDestruct ("HPtxn_tok_wand" with "[$]") as ">H".
           iSpecialize ("H" with "[$]").
-          iMod (fupd_level_mask_mono with "H") as ">H".
+          iMod (fupd_mask_mono with "H") as ">H".
           { set_solver. }
           iDestruct ("HPtxn_cancel_tok_wand" with "[$]") as ">Hcancel".
           iSpecialize ("Hcancel" with "[$]").
-          iMod (fupd_level_mask_mono with "Hcancel") as ">Hcancel".
+          iMod (fupd_mask_mono with "Hcancel") as ">Hcancel".
           { set_solver. }
           iMod (sep_txn_crash_transform with "[$]") as "($&$)".
           eauto.
@@ -219,6 +219,8 @@ Section goose_lang.
     }
     { set_solver+. }
     { set_solver+. }
+    Unshelve.
+    exact O. (* This will almost certainly go away when we remove the useless k subscript on wpc *)
   Qed.
 
 End goose_lang.

@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert language_ctx.
 From Perennial.goose_lang Require Import typing typed_translate adequacy refinement.
 From Perennial.goose_lang Require Export recovery_adequacy spec_assert refinement_adequacy.
-From Perennial.goose_lang Require Import metatheory.
+From Perennial.goose_lang Require Import metatheory crash_borrow.
 From Perennial.goose_lang.lib Require Import list.
 From Perennial.Helpers Require Import Qextra.
 From Perennial.Helpers Require List.
@@ -263,6 +263,7 @@ Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
       (HINIT: sty_initP σ σs),
         ⊢ ffi_local_start (heapG_ffiG) σ.(world) g -∗
          ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
+         pre_borrowN (sty_lvl_init) -∗
          |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0.
 
 Definition sty_init_obligation2 (sty_initP: istate → sstate → Prop) :=
@@ -282,6 +283,7 @@ Definition sty_crash_obligation :=
       ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
                       (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
       ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
+      pre_borrowN (sty_lvl_init) -∗
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new).
 
 Definition sty_rules_obligation :=
@@ -295,14 +297,14 @@ Definition sty_rules_obligation :=
     has_semTy (es vs) (e v) (val_interp (hS := hS) t2).
 
 Definition sty_crash_inv_obligation :=
-  (forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ)
-     e (Φ: ival → iProp Σ),
+  (forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
     ⊢ sty_init hS -∗
     spec_ctx -∗
     spec_crash_ctx (sty_crash_tok) -∗
-    (sty_inv hS -∗ (WPC e @ sty_lvl_ops; ⊤ {{ Φ }} {{ True%I }})) -∗
-    |={⊤}=> sty_inv hS ∗
+    |={⊤}=> init_cancel (sty_inv hS) (sty_crash_cond hS ∗ sty_crash_tok)).
+(*
     WPC e @ sty_lvl_init; ⊤ {{ Φ }} {{ sty_crash_cond hS ∗ sty_crash_tok }}).
+ *)
 
 Record subst_tuple :=
   { subst_ty : sty ; subst_sval : sval; subst_ival: ival }.

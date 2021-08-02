@@ -3,7 +3,7 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import txn.typed_translate txn.wrapper_proof.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi.
-From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert.
+From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert crash_borrow.
 From Perennial.base_logic Require Import ghost_var.
 From Perennial.program_proof Require Import lockmap_proof.
 From Perennial.program_proof Require jrnl.sep_jrnl_invariant.
@@ -19,6 +19,7 @@ Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrn
 Section refinement_defs.
 Context `{!heapGS Σ}.
 Context `{!refinement_heapG Σ}.
+Context (JRNL_SIZE: nat).
 
 Existing Instance jrnlG0.
 
@@ -43,7 +44,8 @@ Definition twophase_names := unit.
 Definition twophase_get_names (Σ: gFunctors) (hG: twophaseG Σ) := tt.
 Definition twophase_update (Σ: gFunctors) (hG: twophaseG Σ) (n: twophase_names) := hG.
 
-Definition LVL_INIT : nat := 150.
+
+Definition LVL_INIT : nat := 1 + JRNL_SIZE.
 Definition LVL_INV : nat := 125.
 Definition LVL_OPS : nat := 100.
 
@@ -55,7 +57,8 @@ Definition twophase_crash_cond_full
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
       "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
-      "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj))%I.
+      "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj) ∗
+      "%Hdomsize" ∷ ⌜ size mt = JRNL_SIZE ⌝).
 
 Definition twophase_crash_cond_partial
            {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
@@ -65,7 +68,8 @@ Definition twophase_crash_cond_partial
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
       "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
-      "Hjrnl_mapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj obj)))%I.
+      "Hjrnl_mapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj obj)) ∗
+      "%Hdomsize" ∷ ⌜ size mt = JRNL_SIZE ⌝).
 
 Definition twophase_crash_cond
            {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
@@ -73,7 +77,8 @@ Definition twophase_crash_cond
 
 Definition twophase_na_crash_inv
            {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
-  := na_crash_inv (LVL_INIT) (∃ γ dinit logm mt',
+  := crash_borrow (∃ γ dinit logm mt',
+                                  ([∗ map] _ ↦ _ ∈ mt', pre_borrow) ∗
                                   twophase_crash_cond_full γ dinit logm mt')%I
                              (∃ γ dinit logm mt',
                                   twophase_crash_cond_full γ dinit logm mt')%I.
@@ -95,7 +100,9 @@ Definition twophase_crash_tok {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_he
 Definition twophase_init {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ} : iProp Σ
   := (∃ γ dinit logm mt, twophase_crash_cond_full γ dinit logm mt ∗
           auth_map.map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> (bufObj_to_obj <$> mt)) ∗
-          jrnl_full_crash_tok ∗ jrnl_closed_frag).
+          jrnl_full_crash_tok ∗ jrnl_closed_frag ∗
+          pre_borrow ∗
+          ([∗ map] _ ↦ _ ∈ mt, pre_borrow)).
 
 Definition twophaseN : coPset := (∅ : coPset).
 
@@ -110,7 +117,7 @@ Definition twophase_val_interp {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_h
   end.
 
 Instance twophaseTy_model : specTy_model jrnl_ty.
-Proof.
+Proof using JRNL_SIZE.
  refine
   {| styG := twophaseG;
      sty_names := twophase_names;

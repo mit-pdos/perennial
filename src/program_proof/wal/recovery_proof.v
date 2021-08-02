@@ -949,7 +949,7 @@ Proof.
   { iModIntro. iIntros "(H1&>Hinit&Htok) #HC".
     iMod ("HPcirc_tok_wand" with "[$]") as "H".
     iSpecialize ("H" with "[$]").
-    iMod (fupd_level_mask_mono with "H") as (cs0') "(Hcirc&Hcirc_resources&>Hcirc_pred)"; first solve_ndisj.
+    iMod (fupd_mask_mono with "H") as (cs0') "(Hcirc&Hcirc_resources&>Hcirc_pred)"; first solve_ndisj.
     iDestruct "H1" as (σ) "(His_wal_inner&HP)".
     iDestruct "His_wal_inner" as "(>%Hwf&_&>?&>?&>?&>?)"; iNamed.
     iNamed "Hdisk".
@@ -1034,6 +1034,7 @@ Proof.
 
 
     iThaw "Hwand".
+    iApply (fupd_level_fupd).
     iMod ("Hwand" $! σ σ' with "[//] HP") as "(HPrec&HPcrash)".
     iClear "Hwand".
     iSplitL "HPcrash".
@@ -1318,7 +1319,7 @@ Proof.
 
   wpc_apply (wpc_recoverCircular with "[$]").
   iSplit.
-  { iLeft in "HΦ". iModIntro. iIntros "(Hcirc&Happend)". iApply "HΦ".
+  { iLeft in "HΦ". iIntros "(Hcirc&Happend)". iApply "HΦ".
     iSplitR "Happend HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hinstaller".
     {
       iSplit; first by auto.
@@ -1473,13 +1474,12 @@ Proof.
   iIntros (?) "#Hwand".
   iIntros "!>" (Φ Φc) "(Hdurable&Hres&HP) HΦ".
   rewrite /MkLog.
-  iMod (fupd_later_to_disc with "HP") as "HP".
   iApply wpc_cfupd.
   wpc_pures.
-  { iLeft in "HΦ". iModIntro.
-    iIntros "HC".
+  { iLeft in "HΦ". iIntros "HC".
     iSpecialize ("Hwand" with "[] [$]").
     { iPureIntro. by apply post_crash_crash_refl. }
+    iApply (fupd_level_fupd).
     iPoseProof (fupd_level_le _ _ _ k with "Hwand") as "Hwand"; first lia.
     iMod (fupd_level_mask_mono with "Hwand") as "(Hrec&Hcrash)".
     { set_solver. }
@@ -1490,10 +1490,12 @@ Proof.
   wpc_bind (mkLog _).
   wpc_apply (wpc_mkLog_recover with "[$]").
   iSplit.
-  { iLeft in "HΦ". iModIntro.
+  { iLeft in "HΦ".
     iIntros "(Hdurable&Hres)".
+    iIntros "HC".
     iSpecialize ("Hwand" with "[] [$]").
     { iPureIntro. by apply post_crash_crash_refl. }
+    iApply (fupd_level_fupd).
     iPoseProof (fupd_level_le _ _ _ k with "Hwand") as "Hwand"; first lia.
     iMod (fupd_level_mask_mono with "Hwand") as "(Hrec&Hcrash)".
     { set_solver. }
@@ -1502,14 +1504,13 @@ Proof.
     iPureIntro. by apply post_crash_crash_refl.
   }
   iNext. iIntros (l). iNamed 1.
-  iMod (own_disc_fupd_elim with "HP") as "HP".
   iMod (wal_crash_obligation_alt E  with "Hwal_inv_pre Hwand HP") as (γ') "(#His_wal&Hcancel&#Hcinv)".
   { auto. }
-  iApply (wpc_crash_frame_wand_bdisc with "[-Hcancel] [Hcancel]"); last first; try auto; try lia.
+  iApply (wpc_crash_frame_wand_bdisc with "[-Hcancel] Hcancel"); auto; try lia.
   iApply (wp_wpc_frame').
   iSplitL "HΦ".
   { iApply (and_mono with "HΦ"); last done.
-    { iIntros "H1". iModIntro. iIntros "H2".
+    { iIntros "H1". iIntros "H2 HC".
       iDestruct "H2" as (s0 s1 Hcrash) "(Hinner&Hres&Hrec)".
       iModIntro. iApply "H1". iExists _, _, _.
       iSplit; first eauto.
@@ -1620,8 +1621,7 @@ Section recov.
     { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ _ (λ _ _, True)%I (λ _ _, True)%I
                    with "[] [$His_wal_inner_durable $Hres]"); auto 10.
       iSplit.
-      * iModIntro.
-        iDestruct 1 as (????) "(?&?&_)".
+      * iDestruct 1 as (????) "(?&?&_)".
         unshelve (iExists _, _, _; iFrame; eauto).
         { eapply log_crash_to_post_crash; eauto. }
       * eauto.
@@ -1636,8 +1636,7 @@ Section recov.
     { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ _ (λ _ _, True)%I (λ _ _, True)%I
                  with "[] [$H1 $Hres]"); auto 10.
       iSplit.
-      * iModIntro.
-        iDestruct 1 as (????) "(?&?&_)".
+      * iDestruct 1 as (????) "(?&?&_)".
         unshelve (iExists _, _, _; iFrame; eauto).
         { eapply log_crash_to_post_crash; eauto. }
       * eauto.

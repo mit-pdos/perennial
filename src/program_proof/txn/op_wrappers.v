@@ -18,6 +18,9 @@ From Goose Require github_com.mit_pdos.go_journal.util.
 Definition Txn__ReadBuf' : val :=
   λ: "twophase" "az", SliceToList byteT (Txn__ReadBuf "twophase" (Fst "az") (Snd "az")).
 
+Definition Txn__ReadBufBit' : val :=
+  (λ: "twophase" "a", Skip;; Txn__ReadBufBit "twophase" "a").
+
 Definition Txn__OverWrite' : val :=
   λ: "twophase" "ad",
   let: "s" := ListToSlice byteT (Snd "ad") in

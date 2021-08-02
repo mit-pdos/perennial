@@ -1,10 +1,11 @@
 From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics.
-From iris.algebra Require Import auth gmap excl.
+From iris.algebra Require Import lib.frac_auth auth numbers gmap excl.
 From iris.bi Require Import fractional.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
+From Perennial.base_logic Require Export frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Export tactics notation.
@@ -235,12 +236,171 @@ Proof.
   done.
 Qed.
 
+Record cr_names := {
+  credit_name : gname;
+  coPset_name : gname;
+}.
+
+Class credit_preG (Σ: gFunctors) := {
+  credit_preG_inG :> inG Σ (authR natUR);
+  frac_coPset_preG_inG :> inG Σ (frac_coPsetR);
+}.
+
+Class creditGS (Σ: gFunctors) := {
+  credit_inG :> inG Σ (authR natUR);
+  frac_coPset_inG :> inG Σ (frac_coPsetR);
+  credit_cr_names : cr_names;
+}.
+
+Definition creditGS_update (Σ: gFunctors) (hC: creditGS Σ) (names: cr_names) :=
+  {| credit_inG := credit_inG; frac_coPset_inG := frac_coPset_inG; credit_cr_names := names |}.
+
+Definition creditGS_update_pre (Σ: gFunctors) (hT: credit_preG Σ) (names: cr_names) :=
+  {| credit_inG := credit_preG_inG; frac_coPset_inG := frac_coPset_preG_inG; credit_cr_names := names |}.
+
+Definition creditΣ : gFunctors :=
+  #[GFunctor (authR natUR);
+      GFunctor frac_coPsetR].
+
+Global Instance subG_creditG {Σ} : subG creditΣ Σ → credit_preG Σ.
+Proof. solve_inG. Qed.
+
+Section creditGS_defs.
+Context `{creditGS Σ}.
+
+Definition cred_frag (n : nat) : iProp Σ := (own (credit_name (credit_cr_names)) (◯ n)).
+
+Definition cred_auth (ns : nat) : iProp Σ :=
+  (own (credit_name (credit_cr_names)) (● ns)).
+
+Definition pinv_tok_inf q E := ownfCP_inf (coPset_name (credit_cr_names)) q E.
+Definition pinv_tok q E := ownfCP (coPset_name (credit_cr_names)) q E.
+
+Lemma cred_auth_frag_incr (ns n: nat) :
+  cred_auth ns ∗ cred_frag n ==∗
+  cred_auth (S ns) ∗ cred_frag (S n).
+Proof.
+  iIntros "(Hγ&Hγf)".
+  iDestruct "Hγf" as "Hγf".
+  iMod (own_update_2 with "Hγ Hγf") as "[Hγ Hγf]".
+  { apply auth_update, (nat_local_update _ _ (S ns) (S n)); lia. }
+  iFrame. eauto.
+Qed.
+
+Lemma cred_auth_frag_incr_k (ns n k: nat) :
+  cred_auth ns ∗ cred_frag n ==∗
+  cred_auth (ns + k) ∗ cred_frag (n + k).
+Proof.
+  iIntros "(Hγ&Hγf)".
+  iDestruct "Hγf" as "Hγf".
+  iMod (own_update_2 with "Hγ Hγf") as "[Hγ Hγf]".
+  { apply auth_update, (nat_local_update _ _ (ns + k) (n + k)); lia. }
+  iFrame. eauto.
+Qed.
+
+Lemma cred_auth_frag_decr (ns n: nat) :
+  cred_auth ns ∗ cred_frag (S n) ==∗
+  ∃ ns', ⌜ ns = S ns' ⌝ ∗ cred_auth ns' ∗ cred_frag n.
+Proof.
+  iIntros "(Hγ&Hγf)".
+  iDestruct "Hγf" as "Hγf".
+  iDestruct (own_valid_2 with "Hγ Hγf") as % Hval.
+  apply auth_both_valid_discrete in Hval as (Hincl%nat_included&_).
+  destruct ns as [| ns']; first lia.
+  iMod (own_update_2 with "Hγ Hγf") as "[Hγ Hγf]".
+  { apply auth_update, (nat_local_update _ _ ns' n); lia. }
+  iExists _. iFrame. iModIntro. eauto.
+Qed.
+
+Lemma cred_auth_frag_invert (ns n: nat) :
+  cred_auth ns ∗ cred_frag n -∗ ∃ ns', ⌜ (ns = n + ns')%nat ⌝.
+Proof.
+  iIntros "(Hγ&Hγf)".
+  iDestruct (own_valid_2 with "Hγ Hγf") as % Hval.
+  apply auth_both_valid_discrete in Hval as (Hincl%nat_included&_).
+  iExists (ns - n)%nat. iFrame. iPureIntro; lia.
+Qed.
+
+Definition cred_interp ns : iProp Σ :=
+  cred_auth ns ∗ cred_frag 0.
+
+Lemma cred_frag_split ns1 ns2 :
+  cred_frag (ns1 + ns2) -∗ cred_frag ns1 ∗ cred_frag ns2.
+Proof.
+  iIntros "H".
+  rewrite /cred_frag auth_frag_op.
+  iDestruct "H" as "(H1&H2)".
+  iFrame.
+Qed.
+
+Lemma cred_frag_join ns1 ns2 :
+  cred_frag ns1 ∗ cred_frag ns2 -∗ cred_frag (ns1 + ns2).
+Proof.
+  iIntros "(H1&H2)".
+  iCombine "H1 H2" as "H".
+  iFrame.
+Qed.
+
+Lemma cred_interp_incr ns :
+  cred_interp ns ==∗ cred_interp (S ns) ∗ cred_frag 1.
+Proof.
+  iIntros "H".
+  iMod (cred_auth_frag_incr with "H") as "(?&H)".
+  iEval (replace 1%nat with (1 + 0)%nat by lia) in "H".
+  iDestruct (cred_frag_split with "H") as "($&$)".
+  eauto.
+Qed.
+
+Lemma cred_interp_incr_k ns k :
+  cred_interp ns ==∗ cred_interp (ns + k) ∗ cred_frag k.
+Proof.
+  iIntros "H".
+  iMod (cred_auth_frag_incr_k _ _ k with "H") as "(?&H)".
+  iDestruct (cred_frag_split with "H") as "($&$)".
+  eauto.
+Qed.
+
+Lemma cred_interp_decr ns n :
+  cred_interp ns ∗ cred_frag (S n) ==∗
+  ∃ ns', ⌜ ns = S ns' ⌝ ∗ cred_interp ns' ∗ cred_frag n.
+Proof.
+  iIntros "((H&?)&Hfrag)".
+  iMod (cred_auth_frag_decr with "[$H $Hfrag]") as (ns' Heq) "(?&H)". subst.
+  iExists ns'. iModIntro. iSplit; eauto.
+  iFrame.
+Qed.
+
+Lemma cred_interp_invert ns k :
+  cred_interp ns ∗ cred_frag k -∗ ∃ ns', ⌜ ns = (k + ns')%nat ⌝.
+Proof.
+  iIntros "((H&?)&Hfrag)".
+  iDestruct (cred_auth_frag_invert with "[$H $Hfrag]") as %[ns' Heq]; eauto.
+Qed.
+
+End creditGS_defs.
+
+Lemma credit_name_init `{hC: credit_preG Σ} k :
+  ⊢ |==> ∃ name : cr_names, let _ := creditGS_update_pre _ _ name in
+                           cred_interp k ∗ cred_frag k ∗ pinv_tok 1 ∅.
+Proof.
+  iMod (own_alloc (● k ⋅ ◯ k)) as (γ) "[H1 H2]".
+  { apply auth_both_valid_discrete; split; eauto. econstructor. }
+  iMod (ownfCP_init_empty γ) as "Hemp".
+  iModIntro. iExists {| credit_name := γ; coPset_name := γ |}.
+  rewrite -{2}(plus_0_l k).
+  iDestruct (cred_frag_split with "[H2]") as "($&$)".
+  { rewrite /cred_frag//=. }
+  iFrame.
+Qed.
+
+
 Class heapGS Σ := HeapGS {
   heapG_invG : invGS Σ;
   heapG_crashG : crashG Σ;
   heapG_ffiG : ffiG Σ;
   heapG_na_heapG :> na_heapG loc val Σ;
   heapG_traceG :> traceG Σ;
+  heapG_creditG :> creditGS Σ;
 }.
 
 
@@ -250,6 +410,7 @@ Record heap_names := {
   heap_ffi_local_names : ffi_local_names;
   heap_ffi_global_names : ffi_global_names;
   heap_trace_names : tr_names;
+  heap_credit_names : cr_names;
 }.
 
 Record heap_local_names := {
@@ -263,7 +424,8 @@ Definition heap_update_local_names Σ (hG : heapGS Σ) (names: heap_local_names)
      heapG_crashG := heapG_crashG;
      heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_local_ffi_local_names names);
      heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_local_heap_names names);
-     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names)
+     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names);
+     heapG_creditG := heapG_creditG;
  |}.
 
 Definition heap_update_local Σ (hG : heapGS Σ) (Hinv: invGS Σ) (Hcrash : crashG Σ) (names: heap_local_names) :=
@@ -271,7 +433,8 @@ Definition heap_update_local Σ (hG : heapGS Σ) (Hinv: invGS Σ) (Hcrash : cras
      heapG_crashG := Hcrash;
      heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_local_ffi_local_names names);
      heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_local_heap_names names);
-     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names)
+     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names);
+     heapG_creditG := heapG_creditG;
  |}.
 
 Definition heap_get_names Σ (hG : heapGS Σ) : heap_names :=
@@ -279,6 +442,7 @@ Definition heap_get_names Σ (hG : heapGS Σ) : heap_names :=
      heap_ffi_local_names := ffi_get_local_names Σ (heapG_ffiG);
      heap_ffi_global_names := ffi_get_global_names Σ (heapG_ffiG);
      heap_trace_names := trace_tr_names;
+     heap_credit_names := credit_cr_names;
  |}.
 
 Definition heap_get_local_names Σ (hG : heapGS Σ) : heap_local_names :=
@@ -287,11 +451,13 @@ Definition heap_get_local_names Σ (hG : heapGS Σ) : heap_local_names :=
      heap_local_trace_names := trace_tr_names;
  |}.
 
-Definition heap_extend_local_names (names : heap_local_names) (namesg: ffi_global_names) : heap_names :=
+Definition heap_extend_local_names (names : heap_local_names) (namesg: ffi_global_names) (namescr: cr_names) : heap_names :=
   {| heap_heap_names := heap_local_heap_names names;
      heap_ffi_local_names := heap_local_ffi_local_names names;
      heap_trace_names := heap_local_trace_names names;
-     heap_ffi_global_names := namesg |}.
+     heap_ffi_global_names := namesg;
+     heap_credit_names := namescr;
+ |}.
 
 Lemma heap_get_update Σ hG :
   heap_update_local_names Σ hG (heap_get_local_names _ hG) = hG.
@@ -308,18 +474,33 @@ Definition tls (na: naMode) : lock_state :=
 
 Global Existing Instances heapG_na_heapG.
 
+Definition borrowN := nroot.@"borrow".
+Definition crash_borrow_ginv_number : nat := 6%nat.
+Definition crash_borrow_ginv `{!invGS Σ} `{creditGS Σ}
+  := (inv borrowN (cred_frag crash_borrow_ginv_number)).
+
 Global Program Instance heapG_irisG `{!heapGS Σ}:
   irisGS goose_lang Σ := {
   iris_invG := heapG_invG;
   iris_crashG := heapG_crashG;
-  num_laters_per_step := λ n, n;
+  num_laters_per_step := (λ n, 3 ^ (n + 1))%nat;
+  step_count_next := (λ n, 10 * (n + 1))%nat;
   state_interp σ nt :=
     (na_heap_ctx tls σ.(heap) ∗ ffi_ctx heapG_ffiG σ.(world)
       ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
-  global_state_interp g ns κs := ffi_global_ctx heapG_ffiG g;
+  global_state_interp g ns mj D κs :=
+    (ffi_global_ctx heapG_ffiG g ∗
+     @crash_borrow_ginv _ heapG_invG _ ∗
+     cred_interp ns ∗
+     ⌜(/ 2 < mj ≤ 1) ⌝%Qp ∗
+     pinv_tok mj D)%I;
   fork_post _ := True%I;
 }.
-Next Obligation. intros. eauto. Qed.
+Next Obligation.
+  iIntros (Σ ? g ns q D κs) "($&$&Hcred&Htok)".
+  iFrame. iMod (cred_interp_incr with "Hcred") as "($&_)". eauto.
+Qed.
+Next Obligation. intros => //=. lia. Qed.
 
 Lemma heap_get_update' Σ hG :
   heap_update_local Σ hG (iris_invG) (iris_crashG) (heap_get_local_names _ hG) = hG.
@@ -538,6 +719,35 @@ Implicit Types σ : state.
 Implicit Types v : val.
 Implicit Types l : loc.
 
+Lemma wpc_borrow_inv s k E e Φ Φc :
+  (crash_borrow_ginv -∗ WPC e @ s; k; E {{ Φ }} {{ Φc }}) -∗
+  WPC e @ s; k; E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros "H".
+  rewrite wpc_unfold.
+  iIntros (mj). rewrite /wpc_pre.
+  iSplit; last first.
+  { iIntros (????) "Hg HC".
+    iAssert (crash_borrow_ginv) with "[Hg]" as "#Hinv". 
+    { iDestruct "Hg" as "(_&#Hinv&_)". eauto. }
+    iDestruct ("H" with "[$]") as "H".
+    iDestruct ("H" $! _) as "(_&H)".
+    iApply ("H" with "[$]"); eauto. }
+  destruct (language.to_val _).
+  - iIntros (?????) "Hg HNC".
+    iAssert (crash_borrow_ginv) with "[Hg]" as "#Hinv".
+    { iDestruct "Hg" as "(_&#Hinv&_)". eauto. }
+    iDestruct ("H" with "[$]") as "H".
+    iDestruct ("H" $! _) as "(H&_)".
+    iApply ("H" with "[$]"); eauto.
+  - iIntros (????????) "Hσ Hg HNC".
+    iAssert (crash_borrow_ginv) with "[Hg]" as "#Hinv".
+    { iDestruct "Hg" as "(_&#Hinv&_)". eauto. }
+    iDestruct ("H" with "[$]") as "H".
+    iDestruct ("H" $! _) as "(H&_)".
+    iApply ("H" with "[$] [$]"); eauto.
+Qed.
+
 Lemma wp_panic s msg E Φ :
   ▷ False -∗ WP Panic msg @ s; E {{ Φ }}.
 Proof.
@@ -550,8 +760,9 @@ Lemma wp_ArbitraryInt stk E :
   {{{ (x:u64), RET #x; True }}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&?&?) Hg !>"; iSplit; first by eauto.
+  iIntros (σ1 g1 ns mj D κ κs n) "(Hσ&?&?&?) Hg !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step; iFrame.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro. by iApply "HΦ".
 Qed.
 
@@ -561,10 +772,11 @@ Lemma wp_output s E tr lit :
   {{{ RET (LitV LitUnit); trace_frag (add_event (Out_ev lit) tr)}}}.
 Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&Htr_auth&?) Hg !>"; iSplit; first by eauto.
+  iIntros (σ1 g1 ns mj D κ κs n) "(Hσ&?&Htr_auth&?) Hg !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step. iFrame.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iMod (trace_update with "[$] [$]") as "(?&?)".
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
 Qed.
 
@@ -574,12 +786,13 @@ Lemma wp_input s E tr (sel: u64) Or :
   {{{ RET (LitV (LitInt (Or tr sel))); trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr) ∗ oracle_frag Or}}}.
 Proof.
   iIntros (Φ) "(Htr&Hor) HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 g1 ns κ κs n) "(Hσ&?&Htr_auth&Hor_auth) Hg !>"; iSplit.
+  iIntros (σ1 g1 ns mj D κ κs n) "(Hσ&?&Htr_auth&Hor_auth) Hg !>"; iSplit.
   { iPureIntro. unshelve (by eauto); apply (U64 0). }
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
   iFrame. iMod (trace_update with "[$] [$]") as "(?&?)".
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro. iFrame; iSplitL; last done. iApply ("HΦ" with "[$]").
 Qed.
 
@@ -588,8 +801,9 @@ Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ (LitV LitUnit) -∗ WP Fork e @ s; E {{ Φ }}.
 Proof.
   iIntros "He HΦ". iApply wp_lift_atomic_head_step; [done|].
-  iIntros (σ1 g1 ns κ κs n) "Hσ Hg !>"; iSplit; first by eauto.
-  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step. by iFrame.
+  iIntros (σ1 g1 mj D ns κ κs n) "Hσ Hg !>"; iSplit; first by eauto.
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step. iFrame.
+  by iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
 Qed.
 
 (** Heap *)
@@ -762,7 +976,7 @@ Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
                               }}}.
 Proof.
   iIntros (Hlen Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs k) "[Hσ Hκs] Hg !>"; iSplit; first by auto with lia.
+  iIntros (σ1 g1 ns mj D κ κs k) "[Hσ Hκs] Hg !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iMod (na_heap_alloc_list tls (heap σ1) l
                            (concat_replicate (int.nat n) (flatten_struct v))
@@ -776,6 +990,7 @@ Proof.
     by rewrite (loc_add_0) in Hfresh.
   }
   { eauto. }
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro; iSplit; first done.
   iFrame.
   iApply "HΦ".
@@ -806,10 +1021,11 @@ Lemma wp_allocN_seq0 s E v (n: u64) :
   {{{ l, RET LitV (LitLoc l); True }}}.
 Proof.
   iIntros (Hlen Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs k) "[Hσ Hκs] Hg !>"; iSplit; first by auto with lia.
+  iIntros (σ1 g1 ns mj D κ κs k) "[Hσ Hκs] Hg !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   assert (concat_replicate (int.nat n) (flatten_struct v) = []) as ->.
   { apply nil_length_inv. rewrite concat_replicate_length. lia. }
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   rewrite fmap_nil //= left_id. iFrame. iSplitL ""; eauto. by iApply "HΦ".
 Qed.
 
@@ -853,12 +1069,13 @@ Lemma wp_load s E l q v :
   {{{ ▷ l ↦{q} v }}} Load (Val $ LitV $ LitLoc l) @ s; E {{{ RET v; l ↦{q} v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg !>".
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ Hκs] Hg !>".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iDestruct (na_heap_read with "Hσ Hl") as %([|]&?&Heq&Hlock).
   { simpl in Hlock. congruence. }
   iSplit; first by eauto 8.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro; iSplit=> //. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
 Qed.
@@ -878,11 +1095,12 @@ Lemma wp_prepare_write s E l v :
 Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ Hκs] Hg".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iMod (na_heap_write_prepare _ _ _ _ Writing with "Hσ Hl") as (lk1 (Hlookup&Hlock)) "(?&?)"; first done.
   destruct lk1; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
@@ -892,10 +1110,11 @@ Lemma wp_finish_store s E l v v' :
 Proof.
   iIntros (Φ) "[>Hl Hl_rest] HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ Hκs] Hg".
   iMod (na_heap_write_finish_vs _ _ _ _ (Reading 0) with "Hl Hσ") as (lkw (?&Hlock)) "(Hσ&Hl)"; first done.
   destruct lkw; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
 Qed.
@@ -906,7 +1125,7 @@ Lemma wp_start_read s E l q v :
 Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ Hκs] Hg".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iMod (na_heap_read_prepare _ (fun m => match m with | Reading n => Reading (S n) | _ => m end) with "Hσ Hl") as (lk1 n1 (Hlookup&Hlock)) "[Hσ Hl]".
   1: {
@@ -915,6 +1134,7 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
@@ -925,7 +1145,7 @@ Lemma wp_finish_read s E l q v :
 Proof.
   iIntros (Φ) "[>Hl Hl_rest] HΦ".
   iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ Hκs] Hg".
   iMod (na_heap_read_finish_vs _ (fun m => match m with | Reading (S n) => Reading n | _ => m end) with "Hl Hσ") as (lk1 n1 (Hlookup&Hlock)) "[Hσ Hl]".
   1: {
     intros lk lkn Hlk. destruct lk; inversion Hlk; subst.
@@ -933,6 +1153,7 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ". iApply "Hl_rest". iApply "Hl".
 Qed.
 
@@ -962,12 +1183,13 @@ Lemma wp_cmpxchg_fail s E l q v' v1 v2 :
   {{{ RET PairV v' (LitV $ LitBool false); l ↦{q} v' }}}.
 Proof.
   iIntros (?? Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg !>".
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ Hκs] Hg !>".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iDestruct (@na_heap_read with "Hσ Hl") as %(lk&?&?&?Hlock).
   destruct lk; inversion Hlock; subst.
   iSplit; first by eauto 8. iNext; iIntros (v2' σ2 g2 efs Hstep); inv_head_step.
   rewrite bool_decide_false //.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro; iSplit=> //. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
 Qed.
@@ -978,7 +1200,7 @@ Lemma wp_cmpxchg_suc s E l v1 v2 v' :
   {{{ RET PairV v' (LitV $ LitBool true); l ↦ v2 }}}.
 Proof.
   iIntros (?? Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
-  iIntros (σ1 g1 ns κ κs n) "[Hσ Hκs] Hg".
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ Hκs] Hg".
   iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
   destruct lk; inversion Hlock; subst.
@@ -986,6 +1208,7 @@ Proof.
   iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2' σ2 g2 efs Hstep); inv_head_step.
   rewrite bool_decide_true //.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
   iModIntro. iSplit=>//. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "[$]").
 Qed.

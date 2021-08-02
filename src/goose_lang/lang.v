@@ -1190,6 +1190,10 @@ Lemma fill_item_val Ki e :
   is_Some (to_val (fill_item Ki e)) → is_Some (to_val e).
 Proof. intros [v ?]. induction Ki; simplify_option_eq; eauto. Qed.
 
+Lemma fill_item_val_inv Ki v v' :
+  is_Some (to_val (fill_item Ki (of_val v))) → is_Some (to_val (fill_item Ki (of_val v'))).
+Proof. intros. induction Ki; simplify_option_eq; eauto. Qed.
+
 Lemma suchThat_false state T (s1 s2: state) (v: T) :
   relation.suchThat (fun _ _ => False) s1 s2 v -> False.
 Proof.
@@ -1299,7 +1303,7 @@ Qed.
 Lemma goose_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step_atomic.
 Proof.
   split; apply _ || eauto using to_of_val, of_to_val, val_head_atomic_stuck,
-    fill_item_val, fill_item_no_val_inj, head_ctx_step_atomic_val.
+    fill_item_val, fill_item_val_inv, fill_item_no_val_inj, head_ctx_step_atomic_val.
 Qed.
 
 End external.

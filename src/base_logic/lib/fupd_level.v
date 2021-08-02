@@ -155,10 +155,10 @@ Lemma AE'_subset_AlwaysEn n : AE' n ⊆ AlwaysEn.
 Proof. rewrite AlwaysEn_alt. solve_ndisj. Qed.
 Lemma AE_full_subset_AlwaysEn n : AE_full n ⊆ AlwaysEn.
 Proof. rewrite AE_full_eq AlwaysEn_alt. induction n; solve_ndisj. Qed.
-Lemma AE_full_MaybeEn_disj n E : AE_full n ## MaybeEn E.
+Lemma AE_full_MaybeEn_disj n E : AE_full n ## MaybeEn1 E.
 Proof.
   pose proof (AE_full_subset_AlwaysEn n).
-  cut (AlwaysEn ## MaybeEn E); last by apply coPset_inl_inr_disj.
+  cut (AlwaysEn ## MaybeEn1 E); last by apply coPset_inl_inr_disj.
   { set_solver. }
 Qed.
 Lemma AE''_subset_AE' n mj : AE'' n mj ⊆ AE' n.
@@ -233,7 +233,7 @@ Proof.
   apply AE_full_subset_AlwaysEn.
 Qed.
 
-Lemma AE_MaybeEn_disj n mj E : AE n mj ## MaybeEn E.
+Lemma AE_MaybeEn_disj n mj E : AE n mj ## MaybeEn1 E.
 Proof.
   pose proof (AE_full_MaybeEn_disj n E).
   pose proof (AE_subset_AE_full n mj). set_solver.
@@ -292,12 +292,12 @@ Proof.
   eapply nclose_infinite; eauto.
 Qed.
 
-Local Hint Extern 0 (AE_full _ ## MaybeEn _) => apply AE_full_MaybeEn_disj : core.
-Local Hint Extern 0 (AE _ _ ## MaybeEn _) => apply AE_MaybeEn_disj : core.
-Local Hint Extern 0 (AlwaysEn ## MaybeEn _) => apply coPset_inl_inr_disj : core.
+Local Hint Extern 0 (AE_full _ ## MaybeEn1 _) => apply AE_full_MaybeEn_disj : core.
+Local Hint Extern 0 (AE _ _ ## MaybeEn1 _) => apply AE_MaybeEn_disj : core.
+Local Hint Extern 0 (AlwaysEn ## MaybeEn1 _) => apply coPset_inl_inr_disj : core.
 
 Definition uPred_fupd_split_level_def `{!invGS Σ} (E1 E2 : coPset) (k : nat) mj (P : iProp Σ) : iProp Σ :=
-  wsat (S k) ∗ ownE (AE (S k) mj ∪ MaybeEn E1) ==∗ ◇ (wsat (S k) ∗ ownE (AE (S k) mj ∪ MaybeEn E2) ∗ P).
+  wsat (S k) ∗ ownE (AE (S k) mj ∪ MaybeEn1 E1) ==∗ ◇ (wsat (S k) ∗ ownE (AE (S k) mj ∪ MaybeEn1 E2) ∗ P).
 Definition uPred_fupd_split_level_aux `{!invGS Σ} : seal uPred_fupd_split_level_def. Proof. by eexists. Qed.
 Definition uPred_fupd_split_level `{!invGS Σ} := uPred_fupd_split_level_aux.(unseal).
 Definition uPred_fupd_split_level_eq `{!invGS Σ} : uPred_fupd_split_level = uPred_fupd_split_level_def :=
@@ -840,20 +840,20 @@ Definition bi_sch_bupd_wand (P1 P2: bi_schema) :=
 
 Definition bi_sch_fupd_mj E1 E2 mj (P: bi_schema) : bi_schema :=
   bi_sch_bupd_wand
-    (bi_sch_sep (bi_sch_wsat) (bi_sch_ownE (λ k, AE k mj ∪ MaybeEn E1)))
+    (bi_sch_sep (bi_sch_wsat) (bi_sch_ownE (λ k, AE k mj ∪ MaybeEn1 E1)))
     (bi_sch_except_0 (bi_sch_sep (bi_sch_wsat)
-                                (bi_sch_sep (bi_sch_ownE (λ k, AE k mj ∪ MaybeEn E2)) P))).
+                                (bi_sch_sep (bi_sch_ownE (λ k, AE k mj ∪ MaybeEn1 E2)) P))).
 
 Definition bi_sch_fupd E1 E2 (P: bi_schema) : bi_schema :=
   bi_sch_bupd_wand
-    (bi_sch_sep (bi_sch_wsat) (bi_sch_ownE (λ k, AE k (Some O) ∪ MaybeEn E1)))
+    (bi_sch_sep (bi_sch_wsat) (bi_sch_ownE (λ k, AE k (Some O) ∪ MaybeEn1 E1)))
     (bi_sch_except_0 (bi_sch_sep (bi_sch_wsat)
-                                (bi_sch_sep (bi_sch_ownE (λ k, AE k (Some O) ∪ MaybeEn E2)) P))).
+                                (bi_sch_sep (bi_sch_ownE (λ k, AE k (Some O) ∪ MaybeEn1 E2)) P))).
 
 Lemma bi_sch_fupd_interp' E1 E2 lvl Qs Qs_mut Psch P:
   bi_schema_interp lvl Qs Qs_mut Psch = P →
   bi_schema_interp lvl Qs Qs_mut (bi_sch_fupd E1 E2 Psch) =
-    (wsat lvl ∗ ownE (AE lvl (Some 0) ∪ MaybeEn E1) ==∗ ◇ (wsat lvl ∗ ownE (AE lvl (Some 0) ∪ MaybeEn E2) ∗ P))%I.
+    (wsat lvl ∗ ownE (AE lvl (Some 0) ∪ MaybeEn1 E1) ==∗ ◇ (wsat lvl ∗ ownE (AE lvl (Some 0) ∪ MaybeEn1 E2) ∗ P))%I.
 Proof.
   intros Heq.
   rewrite ?bi_schema_interp_unfold //=.
@@ -872,7 +872,7 @@ Qed.
 Lemma bi_sch_fupd_interp_mj' E1 E2 lvl mj Qs Qs_mut Psch P:
   bi_schema_interp lvl Qs Qs_mut Psch = P →
   bi_schema_interp lvl Qs Qs_mut (bi_sch_fupd_mj E1 E2 mj Psch) =
-    (wsat lvl ∗ ownE (AE lvl mj ∪ MaybeEn E1) ==∗ ◇ (wsat lvl ∗ ownE (AE lvl mj ∪ MaybeEn E2) ∗ P))%I.
+    (wsat lvl ∗ ownE (AE lvl mj ∪ MaybeEn1 E1) ==∗ ◇ (wsat lvl ∗ ownE (AE lvl mj ∪ MaybeEn1 E2) ∗ P))%I.
 Proof.
   intros Heq.
   rewrite ?bi_schema_interp_unfold //=.

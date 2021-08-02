@@ -816,7 +816,7 @@ Proof using spec_trans.
     rewrite /= ?lookup_fmap H //=.
     iIntros (j K Hctx) "Hj". iApply wpc_value; iSplit.
     * iModIntro. iExists _; iFrame "H"; iFrame.
-    * iModIntro. by iModIntro.
+    * by iModIntro.
   (* Function app. *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -830,7 +830,7 @@ Proof using spec_trans.
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H"; eauto.
     iSpecialize ("H" $! j (λ x, K (ectx_language.fill [AppLCtx (vs2)] x)) with "[] Hj").
     { iPureIntro. apply comp_ctx; last done. apply ectx_lang_ctx. }
-    iApply (wpc_mono' with "[Hv2] [] H"); last by iModIntro.
+    iApply (wpc_mono' with "[Hv2] [] H"); last by eauto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
     simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
     iSpecialize ("Hinterp" $! _ _ with "Hv2").
@@ -857,7 +857,7 @@ Proof using spec_trans.
     iModIntro. iIntros (v vs) "Hval".
     clear j K Hctx.
     iIntros (j K Hctx) "Hj".
-    wpc_pures; first by iModIntro.
+    wpc_pures; first by eauto.
     iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&_)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)".
@@ -897,7 +897,7 @@ Proof using spec_trans.
       iApply (wpc_mono with "H"); eauto.
     }
 
-    iSplit; first (iModIntro; iApply "Hj"). iNext. iExists _; iFrame; eauto.
+    iSplit; first (iApply "Hj"). iNext. iExists _; iFrame; eauto.
   - iApply (Hatomic _ _ _ _ _ _ _ _ _ _ Γsubst with "[$] [$] [$] [$]").
     { intros. rewrite HPROJ. eauto. }
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
@@ -1543,13 +1543,13 @@ Proof using spec_trans.
       spec_bind (subst_map _ e1) as Hctx'.
       iSpecialize ("H" $! j _ Hctx' with "Hj").
       iApply (wpc_mono' with "[Hv] [] H"); last first.
-      { iModIntro. iIntros "H". iExact "H". }
+      { iIntros "H". iExact "H". }
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
       iSpecialize ("Hinterp" with "[$]").
       iSpecialize ("Hinterp" $! j _ Hctx with "Hj").
       iApply (wpc_mono' with "[] [] Hinterp"); last first.
-      { iModIntro. iIntros "H". iExact "H". }
+      { iIntros "H". iExact "H". }
       { iIntros (v'') "H". iDestruct "H" as (vs'') "(Hj&Hv')".
         iExists _. iFrame. }
     }
@@ -1569,7 +1569,7 @@ Proof using spec_trans.
       spec_bind (subst_map _ e2) as Hctx'.
       iSpecialize ("H" $! j _ Hctx' with "Hj").
       iApply (wpc_mono' with "[Hv] [] H"); last first.
-      { iModIntro. iIntros "H". iExact "H". }
+      { iIntros "H". iExact "H". }
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       simpl. iDestruct "Hv1" as (?????? (Heq1&Heq2)) "#Hinterp".
       iSpecialize ("Hinterp" with "[$]").

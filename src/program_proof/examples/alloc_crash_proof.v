@@ -1,11 +1,11 @@
 From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import Map gset.
 
-From Perennial.goose_lang Require Import crash_modality.
+From Perennial.goose_lang Require Import crash_modality crash_borrow.
 From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
-From Perennial.program_logic Require Export na_crash_inv ncinv.
+From Perennial.program_logic Require Export ncinv.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.examples Require Import alloc_addrset.
 
@@ -158,46 +158,39 @@ Definition allocator_inv γ (d: gset u64) : iProp Σ :=
 Definition block_cinv γ addr : iProp Σ :=
   Ψ addr ∨ addr ↪[alloc_status_name γ] block_used.
 
-Definition free_block γ n k : iProp Σ :=
-  "Hcrashinv" ∷ (na_crash_inv (S n) (Ψ k) (block_cinv γ k)) ∗
+Definition free_block γ k : iProp Σ :=
+  "Hcrashinv" ∷ (crash_borrow (Ψ k) (block_cinv γ k)) ∗
   "Hmapsto" ∷ (k ↪[alloc_status_name γ] block_free).
 
+(*
 Definition free_block_pending γ n k : iProp Σ :=
   (|C={⊤}_((S n))=> block_cinv γ k).
+*)
 
-Definition reserved_block γ n k P : iProp Σ :=
-  "Hcrashinv" ∷ (na_crash_inv n P (block_cinv γ k)) ∗
+Definition reserved_block γ k P : iProp Σ :=
+  "Hcrashinv" ∷ (crash_borrow P (block_cinv γ k)) ∗
   "Hmapsto" ∷ (k ↪[alloc_status_name γ] block_reserved) ∗
   "Halloc_inv" ∷ ∃ d, ncinv Ninv (allocator_inv γ d).
 
-Definition reserved_block_in_prep γ (n: nat) k : iProp Σ :=
+Definition reserved_block_in_prep γ k : iProp Σ :=
   "Hmapsto" ∷ (k ↪[alloc_status_name γ] block_reserved) ∗
   "Halloc_inv" ∷ ∃ d, ncinv Ninv (allocator_inv γ d).
 
 Definition used_block γ k : iProp Σ :=
   "Hmapsto" ∷ (k ↪[alloc_status_name γ] block_used).
 
-(*
-Definition block_status_interp γ k st : iProp Σ :=
-  match st with
-  | block_free => free_block γ k
-  | block_used => True
-  | block_reserved => True
-  end.
-*)
-
-Definition allocator_linv γ n (mref: loc) : iProp Σ :=
+Definition allocator_linv γ (mref: loc) : iProp Σ :=
  ∃ (freeset: gset u64),
   "Hfreemap" ∷ is_addrset mref (freeset) ∗
-  "Hblocks" ∷ ([∗ set] k ∈ freeset, free_block γ n k) ∗
+  "Hblocks" ∷ crash_borrow ([∗ set] k ∈ freeset, Ψ k) ([∗ set] k ∈ freeset, block_cinv γ k) ∗
   "Hfreeset_frag" ∷ ghost_var (γ.(alloc_free_name)) (1/2) (freeset)
 .
 
-Definition is_allocator (l: loc) (d: gset u64) γ n : iProp Σ :=
+Definition is_allocator (l: loc) (d: gset u64) γ : iProp Σ :=
   ∃ (lref mref: loc),
     "#m" ∷ readonly (l ↦[Allocator :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator :: "free"] #mref) ∗
-    "#His_lock" ∷ is_lock Nlock #lref (allocator_linv γ n mref) ∗
+    "#His_lock" ∷ is_lock Nlock #lref (allocator_linv γ mref) ∗
     "#Halloc_inv" ∷ ncinv Ninv (allocator_inv γ d)
 .
 
@@ -207,7 +200,8 @@ Definition is_allocator_mem_pre (l: loc) σ : iProp Σ :=
     "#m" ∷ readonly (l ↦[Allocator :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator :: "free"] #mref) ∗
     "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
-    "Hfree_lock" ∷ is_free_lock lref.
+    "Hfree_lock" ∷ is_free_lock lref ∗
+    "Hltok" ∷ later_tok ∗ later_tok ∗ later_tok ∗ later_tok.
 
 
 Theorem is_allocator_pre_post_crash l σ :
@@ -342,10 +336,11 @@ Theorem wp_newAllocator {mref} {start sz: u64} σ (used: gset u64) :
   alloc.used σ = used →
   alloc_post_crash σ →
   {{{ is_addrset mref used  }}}
-    New #start #sz #mref
+    New #start #sz #mref 
   {{{ l, RET #l; is_allocator_mem_pre l σ }}}.
 Proof using allocG0.
   iIntros (Hoverflow Hdom Hused Hfree Φ) "Hused HΦ".
+  iApply wp_crash_borrow_generate_tokens; auto.
   wp_call.
   wp_apply wp_freeRange; first by auto.
   iIntros (mref') "Hfree".
@@ -360,9 +355,12 @@ Proof using allocG0.
   iMod (readonly_alloc_1 with "m") as "#m".
   iMod (readonly_alloc_1 with "free") as "#free".
   iModIntro.
+  iIntros "Htoks".
   iApply "HΦ".
   iExists _, _; iFrame "# ∗".
   iSplitR; first auto.
+  iSplitR "Htoks"; last first.
+  { iDestruct "Htoks" as "($&$&$&$&_)". }
   iExactEq "Hfree".
   rewrite /named.
   f_equal.
@@ -372,20 +370,14 @@ Qed.
 
 Context {Hitemcrash: ∀ x, IntoCrash (Ψ x) (λ _, Ψ x)}.
 
-Global Instance is_allocator_Persistent l γ d n:
-  Persistent (is_allocator l d γ n).
+Global Instance is_allocator_Persistent l γ d:
+  Persistent (is_allocator l d γ).
 Proof. apply _. Qed.
 
 Definition alloc_crash_cond' σ : iProp Σ :=
   [∗ set] k ∈ alloc.unused σ, Ψ k.
 
 Definition alloc_crash_cond (d: gset u64) (post_crash: bool) : iProp Σ :=
-  ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
-       "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
-       "HPalloc" ∷ ▷ P σ ∗
-       "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
-
-Definition alloc_crash_cond_no_later (d: gset u64) (post_crash: bool) : iProp Σ :=
   ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
        "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
        "HPalloc" ∷ P σ ∗
@@ -396,20 +388,6 @@ Lemma alloc_crash_cond_from_post_crash d :
 Proof.
   iNamed 1.
   iExists _; iFrame "% ∗".
-Qed.
-
-Lemma alloc_crash_cond_no_later_from_post_crash d :
-  alloc_crash_cond_no_later d true -∗ alloc_crash_cond_no_later d false.
-Proof.
-  iNamed 1.
-  iExists _; iFrame "% ∗".
-Qed.
-
-Lemma alloc_crash_cond_strip_later `{∀ x, Timeless (P x)} d b:
-  alloc_crash_cond d b -∗ ◇ alloc_crash_cond_no_later d b.
-Proof.
-  iIntros "H".
-  iNamed "H". iDestruct "HPalloc" as ">HPalloc". iModIntro. iExists _; by iFrame.
 Qed.
 
 Definition revert_reserved (σ : alloc.t) : alloc.t :=
@@ -459,7 +437,7 @@ Proof.
 Qed.
 
 Lemma alloc_crash_cond_crash_true d E :
-  (∀ σ, ▷ P σ ={E}=∗ ▷ P (revert_reserved σ)) -∗
+  (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
   alloc_crash_cond d false ={E}=∗ alloc_crash_cond d true.
 Proof.
   clear.
@@ -472,30 +450,20 @@ Proof.
   - rewrite dom_revert_reserved. auto.
 Qed.
 
-Lemma alloc_crash_cond_no_later_crash_true d E :
-  (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
-  alloc_crash_cond_no_later d false ={E}=∗ alloc_crash_cond_no_later d true.
-Proof.
-  clear.
-  iIntros "H".
-  iNamed 1.
-  iMod ("H" with "HPalloc"). iModIntro. iExists _. iFrame.
-  rewrite unused_revert_reserved. iFrame.
-  iPureIntro; split.
-  - apply alloc_post_crash_revert_reserved.
-  - rewrite dom_revert_reserved. auto.
-Qed.
-
-Theorem reserved_block_weaken γ n k R R' :
+(*
+Theorem reserved_block_weaken γ k R R' :
   □(R -∗ R') -∗
   ▷ □(R' -∗ block_cinv γ k) -∗
-  reserved_block γ n k R -∗
-  reserved_block γ n k R'.
+  reserved_block γ k R -∗
+  reserved_block γ k R'.
 Proof.
   iIntros "#HR' #Hwand"; iNamed 1.
-  iFrame. iApply (na_crash_inv_weaken with "HR' []"); auto.
+  iFrame.
+Abort.
+  iApply (na_crash_inv_weaken with "HR' []"); auto.
   iModIntro. iIntros "H". iModIntro. iNext. by iApply "Hwand".
 Qed.
+*)
 
 Lemma free_big_sepS_to_all σ (Φ: u64 → iProp Σ):
   ([∗ set] k ∈ alloc.free σ, Φ k) ⊣⊢

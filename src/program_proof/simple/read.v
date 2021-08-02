@@ -129,16 +129,14 @@ Proof using Ptimeless.
   wp_bind (NFSPROC3_READ_internal _ _ _ _).
   iApply (wpc_wp _ _ _ _ _ True).
 
-  iDestruct (use_CrashLocked _ 8 with "Hcrashlocked") as "Hcrashuse"; [| lia | iApply "Hcrashuse"].
-  { apply _. }
-  iSplit.
-  { iModIntro. done. }
-  iIntros ">Hstable".
+  iDestruct (use_CrashLocked _ with "Hcrashlocked") as "Hcrashuse"; last iApply "Hcrashuse".
+  { rewrite //=. }
+  iSplit; first done.
+  iIntros "Hstable".
   iApply ncfupd_wpc; iSplit.
   {
-    iModIntro.
     iMod (is_inode_stable_crash with "Htxncrash Hstable") as "Hcrash".
-    iModIntro. iSplit; first done. done.
+    iModIntro. iSplit; first done. iIntros "_ !>"; done.
   }
   iNamed "Hstable".
 
@@ -153,10 +151,8 @@ Proof using Ptimeless.
   iCache with "Hinode_state Hjrnl_durable".
   { crash_case.
     iDestruct (is_jrnl_durable_to_old_pred with "Hjrnl_durable") as "[Hold _]".
-    iModIntro.
     iMod (is_inode_crash_prev with "Htxncrash [$Hinode_state $Hold]") as "Hcrash".
-    iModIntro.
-    iSplit; done.
+    iModIntro. iSplit; first done. iIntros "_ !>"; done.
   }
 
   wpc_call.
@@ -207,8 +203,7 @@ Proof using Ptimeless.
   { typeclasses eauto. }
 
   iSplit.
-  { iModIntro.
-    iIntros "[[H _]|[H0 H1]]"; iModIntro; iSplit; try done; iModIntro.
+  { iIntros "[[H _]|[H0 H1]]"; iModIntro; iSplit; try done; iIntros "_ !>".
     { iApply is_inode_crash_next. iFrame. }
     { iApply is_inode_crash_next. iFrame "Hinode_state". iRight. iFrame. }
   }
@@ -252,22 +247,20 @@ Proof using Ptimeless.
     iModIntro.
 
     wpc_frame "Hinode_state Hcommit".
-    { iModIntro.
-      iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
-      iModIntro. iSplit; done. }
+    { iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
+      iModIntro. iSplit; try done; iIntros "_ !>"; done. }
 
     wp_storeField.
     iNamed 1.
 
     iSplitR "Hinode_state Hcommit".
     2: {
-      iModIntro.
       iExists _; iFrame.
       iExists _; iFrame.
     }
     iIntros "Hcrashlocked".
     iSplit.
-    { iModIntro. done. }
+    { done. }
 
     wp_loadField.
     wp_apply (wp_LockMap__Release with "Hcrashlocked").
@@ -321,22 +314,18 @@ Transparent nfstypes.READ3res.
 
     iDestruct "Hcommit" as "[Hcommit _]".
     wpc_frame "Hinode_state Hcommit".
-    { iModIntro.
-      iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
-      iModIntro.
-      iSplit; done. }
-
+    { iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
+      iModIntro. iSplit; first done. iIntros "_ !>"; done. }
     wp_storeField.
     iNamed 1.
 
     iSplitR "Hinode_state Hcommit".
     2: {
-      iModIntro.
       iExists _; iFrame.
     }
     iIntros "Hcrashlocked".
     iSplit.
-    { iModIntro. done. }
+    { done. }
 
     wp_loadField.
     wp_apply (wp_LockMap__Release with "Hcrashlocked").
@@ -355,6 +344,7 @@ Transparent nfstypes.READ3res.
 
 Unshelve.
   all: eauto.
+  exact O.
 Qed.
 
 End heap.

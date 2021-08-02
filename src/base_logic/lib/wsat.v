@@ -59,7 +59,8 @@ Module invGS.
   Record inv_names :=
     { inv_names_list_name : gname;
       inv_names_enabled_name : gname;
-      inv_names_disabled_name : gname }.
+      inv_names_disabled_name : gname;
+    }.
 
   Definition inv_update_pre `(ipG : invGpreS Σ) (names : inv_names) :=
     {| inv_inG := ipG;

@@ -61,7 +61,8 @@ Lemma tac_wp_value_fupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS �
   envs_entails Δ (|NC={E}=> Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ v, |={E}=> Φ v }})%I.
 Proof.
   rewrite envs_entails_eq=> ->. rewrite wp_value_fupd.
-  iIntros ">HΦ". done.
+  iIntros "H".
+  iApply (wp_wand with "H"); auto.
 Qed.
 Lemma tac_wp_value `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Δ s E Φ v :
   envs_entails Δ (|NC={E}=> Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ Φ }}).

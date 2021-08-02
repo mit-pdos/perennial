@@ -151,8 +151,8 @@ Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
 iExists _; iFrame; iPureIntro; word : core.
 
 Theorem wpc_forBreak_cond' (I: bool -> iProp Σ) Ic Φ Φc stk k E1 (cond body: val) :
-  (∀ b, I b -∗ <disc> Ic) -∗
-  <disc> (Ic -∗ Φc) ∧ ▷ (I false -∗ Φ #()) -∗
+  (∀ b, I b -∗ Ic) -∗
+  (Ic -∗ Φc) ∧ ▷ (I false -∗ Φ #()) -∗
   □ (I true -∗
      WPC if: cond #() then body #() else #false @ stk; k; E1
      {{ v, ∃ b : bool, ⌜ v = #b ⌝ ∧ I b }}
@@ -165,22 +165,22 @@ Proof.
   iIntros "HIc HΦ #Hbody I".
   rewrite /For.
   iCache with "HIc I HΦ".
-  { iLeft in "HΦ". iDestruct ("HIc" with "[$]") as "HI". iModIntro. by iApply "HΦ". }
+  { iLeft in "HΦ". iDestruct ("HIc" with "[$]") as "HI". by iApply "HΦ". }
   wpc_pures.
   wpc_pures.
-  { iLeft in "HΦ". iDestruct ("HIc" with "[$]") as "HI". iModIntro. by iApply "HΦ". }
+  { iLeft in "HΦ". iDestruct ("HIc" with "[$]") as "HI". by iApply "HΦ". }
   iLöb as "IH".
   wpc_bind_seq.
   iDestruct ("Hbody" with "I") as "Hbody1".
   iApply (wpc_strong_mono with "Hbody1"); try auto.
   iSplit; last first.
-  { iLeft in "HΦ". iModIntro. iIntros "H". iModIntro.
+  { iLeft in "HΦ". iIntros "H". iModIntro.
     by iApply "HΦ". }
   iIntros (v) "H".
   iModIntro.
   iDestruct "H" as (b Heq) "I".
   iCache with "HIc I HΦ".
-  { iLeft in "HΦ". iDestruct ("HIc" with "[$]") as "HI". iModIntro. by iApply "HΦ". }
+  { iLeft in "HΦ". iDestruct ("HIc" with "[$]") as "HI". by iApply "HΦ". }
   wpc_pures. wpc_pures.
   subst.
   destruct b.
@@ -191,7 +191,7 @@ Proof.
 Qed.
 
 Theorem wpc_forBreak_cond (I: bool -> iProp Σ) Ic stk k E1 (cond body: val) :
-  (∀ b, I b -∗ <disc> Ic) →
+  (∀ b, I b -∗ Ic) →
   {{{ I true }}}
     if: cond #() then body #() else #false @ stk; k; E1
   {{{ r, RET #r; I r }}}
@@ -208,16 +208,15 @@ Proof.
   { iIntros. by iApply Hcrash. }
   iModIntro. iIntros "HI".
   iApply ("Hbody" with "[$]").
-  eauto.
-  iSplit; iModIntro; eauto.
+  iSplit; eauto.
 Qed.
 
 Theorem wpc_forBreak_cond_2 (P: iProp Σ) stk k E (cond body: goose_lang.val) (Φ : goose_lang.val → iProp Σ) (Φc: iProp Σ) :
   P -∗
-  (P -∗ <disc> Φc) -∗
+  (P -∗ Φc) -∗
   □ (P -∗
       WPC if: cond #() then body #() else #false @ stk; k; E
-      {{ v, ⌜v = #true⌝ ∗ P ∨ ⌜v = #false⌝ ∗ (Φ #() ∧ <disc> Φc) }} {{ Φc }} ) -∗
+      {{ v, ⌜v = #true⌝ ∗ P ∨ ⌜v = #false⌝ ∗ (Φ #() ∧ Φc) }} {{ Φc }} ) -∗
   WPC (for: cond; (λ: <>, Skip)%V := body) @ stk; k ; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "HP HΦc #Hbody".
@@ -230,10 +229,7 @@ Proof.
   iDestruct ("Hbody" with "HP") as "Hbody1".
   iApply (wpc_strong_mono with "Hbody1"); try auto.
   iSplit; last first.
-  {
-    iModIntro. iIntros.
-    by iModIntro.
-  }
+  { iIntros. by iModIntro. }
   iIntros (v) "H".
   iModIntro.
   iDestruct "H" as "[[% H]|[% H]]"; subst.
@@ -251,7 +247,7 @@ Qed.
 
 Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 (start max:u64) (l:loc) (body: val) :
   int.Z start <= int.Z max ->
-  (∀ (i:u64), ⌜int.Z start ≤ int.Z i ≤ int.Z max⌝ -∗ I i -∗ <disc> I' i) →
+  (∀ (i:u64), ⌜int.Z start ≤ int.Z i ≤ int.Z max⌝ -∗ I i -∗ I' i) →
   (∀ (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.Z i < int.Z max⌝ }}}
         body #() @ stk; k; E1
@@ -316,7 +312,7 @@ Proof.
   - wpc_apply ("Hbody" with "[$HIx $Hl]").
     { iPureIntro; lia. }
     iSplit.
-    { iDestruct "HΦ" as "(HΦ&_)". iModIntro. iIntros "[IH1 | IH2]"; iApply "HΦ"; auto. }
+    { iDestruct "HΦ" as "(HΦ&_)".  iIntros "[IH1 | IH2]"; iApply "HΦ"; auto. }
     iIntros "!> [HIx Hl]".
     iCache with "HΦ HIx".
     {
@@ -339,7 +335,7 @@ Proof.
       revert Hbound; word. }
     { iPureIntro; word. }
     iSplit.
-    + iLeft in "HΦ". iModIntro.
+    + iLeft in "HΦ".
       iIntros "HIx".
       iApply "HΦ".
       iDestruct "HIx" as (x') "[HI %]".
