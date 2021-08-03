@@ -183,6 +183,6 @@ Goose](https://www.chajed.io/papers/goose:coqpl2020.pdf)".
 The verified interpreter and test framework for Goose is described in Sydney Gibson's masters thesis, "[Waddle: A proven interpreter and test framework for a subset of the Go semantics](https://pdos.csail.mit.edu/papers/gibsons-meng.pdf)".
 
 The proof of GoJournal's correctness is described in the OSDI paper,
-"[GoJournal: a verified, concurrent, crash-safe journaling system]"(https://www.chajed.io/papers/gojournal:osdi2021.pdf).  The framework
+"[GoJournal: a verified, concurrent, crash-safe journaling system](https://www.chajed.io/papers/gojournal:osdi2021.pdf)".  The framework
 has evolved in several ways since then. See the tag `osdi21` for the version
 used there.
