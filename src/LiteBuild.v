@@ -3,7 +3,7 @@
 
 (* Some key theorems *)
 From Perennial.goose_lang Require
-     recovery_adequacy (* dist_adequacy *).
+     recovery_adequacy dist_adequacy.
 (* Some core libraries *)
 From Perennial.base_logic Require
      gmap_own.
@@ -12,11 +12,15 @@ From Perennial.program_proof Require
      proof_prelude disk_prelude grove_prelude
      marshal_proof std_proof.
 
+From Perennial.goose_lang Require
+     adequacy recovery_adequacy dist_adequacy
+     crash_lock
+     rwlock.
+
 (* a couple program proofs that are pretty interesting on their own and include
 the wpc infrastructure *)
 From Perennial.program_proof Require
-     append_log_proof
-     examples.dir_proof.
+     wal.circ_proof_crash.
 
 (* Goose tests: goose_unittest has the syntactic tests while generated_test
 includes running all the semantics tests *)

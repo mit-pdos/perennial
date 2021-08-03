@@ -1,12 +1,8 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
 default using make as well as in CI). *)
 
-(*
-From Perennial.program_logic Require
-     dist_weakestpre
-     dist_adequacy.  *)
 From Perennial.goose_lang Require
-     adequacy recovery_adequacy (* dist_adequacy *)
+     adequacy recovery_adequacy dist_adequacy
      crash_lock
      rwlock
      barrier
@@ -14,10 +10,6 @@ From Perennial.goose_lang Require
      logical_reln_adeq.
 From Perennial.program_proof Require
      wal.circ_proof_crash
-(*
-     append_log_proof
-     (* append_log_refinement *)
-*)
      lockmap_proof
      crash_lockmap_proof
      wal.proof
@@ -72,6 +64,4 @@ From Perennial.goose_lang.interpreter Require
 
 (* ensures this file itself works for Coq's CI and catches any oversight where
 something in the lite build isn't listed here *)
-(*
 From Perennial Require LiteBuild.
-*)
