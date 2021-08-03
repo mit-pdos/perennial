@@ -11,8 +11,8 @@ layer, and persistent key-value stores like RocksDB.
 Perennial uses [Goose](https://github.com/tchajed/goose) to enable verification
 of programs written in (a subset of) Go.
 
-This repository also includes a proof of the transaction system in
-[goose-nfsd](https://github.com/mit-pdos/goose-nfsd), including a simple NFS
+This repository also includes a proof of correctness for GoJournal, the verified journaling system used in
+[go-nfsd](https://github.com/mit-pdos/go-nfsd), including a simple NFS
 server built on top.
 
 ## Compiling
@@ -174,10 +174,16 @@ Perennial 1 is described in our SOSP paper, "[Verifying concurrent, crash-safe
 systems with Perennial](https://www.chajed.io/papers/perennial:sosp2019.pdf)".
 The actual codebase was quite different at the time of this paper; it notably
 used a shallow embedding of Goose and did not have WPCs or any of the associated
-program logic infrastructure.
+program logic infrastructure. See the tag `sosp2019` or the `shallow` branch.
 
 Goose is briefly described in a CoqPL extended abstract and associated talk,
 "[Verifying concurrent Go code in Coq with
 Goose](https://www.chajed.io/papers/goose:coqpl2020.pdf)".
 
 The verified interpreter and test framework for Goose is described in Sydney Gibson's masters thesis, "[Waddle: A proven interpreter and test framework for a subset of the Go semantics](https://pdos.csail.mit.edu/papers/gibsons-meng.pdf)".
+
+The proof of GoJournal's correctness is described in the OSDI paper,
+"[GoJournal: a verified, concurrent, crash-safe journaling
+system]"(https://www.chajed.io/papers/gojournal:osdi2021.pdf).  The framework
+has evolved in several ways since then. See the tag `osdi21` for the version
+used there.
