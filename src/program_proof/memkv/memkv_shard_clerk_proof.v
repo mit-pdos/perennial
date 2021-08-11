@@ -354,7 +354,7 @@ Proof.
   iNamed "HrawRep".
   wp_pures.
 
-  wp_apply (wp_encodePutRequest _ _ (mkPutRequestC _ _ _ _) with "[$Hargs]").
+  wp_apply (wp_EncodePutRequest _ _ (mkPutRequestC _ _ _ _) with "[$Hargs]").
   iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
   wp_loadField.
 
@@ -387,7 +387,7 @@ Proof.
     wp_pures.
     wp_load.
     iDestruct "Hpost" as (?) "(% & Hreceipt)".
-    wp_apply (wp_decodePutReply with "[$Hrep_sl]").
+    wp_apply (wp_DecodePutReply with "[$Hrep_sl]").
     { done. }
     iIntros (?) "Hrep".
 
@@ -501,7 +501,7 @@ Proof.
   iNamed "HrawRep".
   wp_pures.
 
-  wp_apply (wp_encodeGetRequest _ (mkGetRequestC _ _ _) with "[CID Seq Key]").
+  wp_apply (wp_EncodeGetRequest _ (mkGetRequestC _ _ _) with "[CID Seq Key]").
   {
     rewrite /own_GetRequest /=.
     iFrame.
@@ -542,7 +542,7 @@ Proof.
     wp_pures.
     wp_load.
     iDestruct "Hpost" as (?) "(% & Hreceipt)".
-    wp_apply (wp_decodeGetReply with "[$Hrep_sl]").
+    wp_apply (wp_DecodeGetReply with "[$Hrep_sl]").
     { done. }
     iIntros (?) "Hrep".
 
@@ -669,7 +669,7 @@ Proof.
   iNamed "HrawRep".
   wp_pures.
 
-  wp_apply (wp_encodeConditionalPutRequest _ _ _ (mkConditionalPutRequestC _ _ _ _ _) with "[$Hargs]").
+  wp_apply (wp_EncodeConditionalPutRequest _ _ _ (mkConditionalPutRequestC _ _ _ _ _) with "[$Hargs]").
   iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
   wp_loadField.
 
@@ -701,7 +701,7 @@ Proof.
     wp_pures.
     wp_load.
     iDestruct "Hpost" as (?) "(% & Hreceipt)".
-    wp_apply (wp_decodeConditionalPutReply with "[$Hrep_sl]").
+    wp_apply (wp_DecodeConditionalPutReply with "[$Hrep_sl]").
     { done. }
     iIntros (?) "Hrep".
 

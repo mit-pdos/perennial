@@ -43,11 +43,11 @@ Definition has_encoding_PutRequest (data:list u8) (args:PutRequestC) : Prop :=
 Definition has_encoding_PutReply (data:list u8) (rep:PutReplyC) :=
   has_encoding data [ EncUInt64 rep.(PR_Err) ].
 
-Lemma wp_encodePutRequest args_ptr val_sl args :
+Lemma wp_EncodePutRequest args_ptr val_sl args :
   {{{
        own_PutRequest args_ptr val_sl args
   }}}
-    encodePutRequest #args_ptr
+    EncodePutRequest #args_ptr
   {{{
        (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_PutRequest reqData args⌝ ∗
                                                typed_slice.is_slice req_sl byteT 1%Qp reqData ∗
@@ -115,12 +115,12 @@ Proof.
   done.
 Qed.
 
-Lemma wp_decodePutRequest req_sl reqData args :
+Lemma wp_DecodePutRequest req_sl reqData args :
   {{{
        ⌜has_encoding_PutRequest reqData args⌝ ∗
        typed_slice.is_slice req_sl byteT 1%Qp reqData
   }}}
-    decodePutRequest (slice_val req_sl)
+    DecodePutRequest (slice_val req_sl)
   {{{
        (args_ptr:loc) val_sl, RET #args_ptr; own_PutRequest args_ptr val_sl args
   }}}.
@@ -170,11 +170,11 @@ Proof.
   iPureIntro. done.
 Qed.
 
-Lemma wp_encodePutReply rep_ptr rep :
+Lemma wp_EncodePutReply rep_ptr rep :
   {{{
        own_PutReply rep_ptr rep
   }}}
-    encodePutReply #rep_ptr
+    EncodePutReply #rep_ptr
   {{{
        repData rep_sl , RET (slice_val rep_sl);
        typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
@@ -207,12 +207,12 @@ Proof.
   done.
 Qed.
 
-Lemma wp_decodePutReply rep rep_sl repData :
+Lemma wp_DecodePutReply rep rep_sl repData :
   {{{
        typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
        ⌜has_encoding_PutReply repData rep ⌝
   }}}
-    decodePutReply (slice_val rep_sl)
+    DecodePutReply (slice_val rep_sl)
   {{{
        (rep_ptr:loc) , RET #rep_ptr;
        own_PutReply rep_ptr rep

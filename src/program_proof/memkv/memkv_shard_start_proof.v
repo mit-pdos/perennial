@@ -136,7 +136,7 @@ Proof.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & Hpre)".
       iSimpl in "Hpre".
       iDestruct "Hpre" as "(%Henc & #HreqInv)".
-      wp_apply (wp_decodeConditionalPutRequest with "[$Hreq_sl]").
+      wp_apply (wp_DecodeConditionalPutRequest with "[$Hreq_sl]").
       { done. }
       iIntros (args_ptr expv_sl newv) "Hargs".
       wp_apply (wp_ConditionalPutRPC with "His_memkv [$Hargs Hrep HreqInv]").
@@ -149,7 +149,7 @@ Proof.
       }
       iIntros (rep') "[Hrep Hpost]".
       wp_pures.
-      wp_apply (wp_encodeConditionalPutReply with "Hrep").
+      wp_apply (wp_EncodeConditionalPutReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
       wp_store.
       iApply "HΦ".
@@ -178,7 +178,7 @@ Proof.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & Hpre)".
       iSimpl in "Hpre".
       iDestruct "Hpre" as "(%Henc & #HreqInv)".
-      wp_apply (wp_decodeGetRequest with "[$Hreq_sl]").
+      wp_apply (wp_DecodeGetRequest with "[$Hreq_sl]").
       { done. }
       iIntros (args_ptr) "Hargs".
       iDestruct (typed_slice.is_slice_zero byteT 1%Qp) as "Hzero_sl".
@@ -200,7 +200,7 @@ Proof.
       }
       iIntros (rep') "[Hrep Hpost]".
       wp_pures.
-      wp_apply (wp_encodeGetReply with "Hrep").
+      wp_apply (wp_EncodeGetReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
       wp_store.
       iApply "HΦ".
@@ -227,7 +227,7 @@ Proof.
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & Hpre)".
       iDestruct "Hpre" as "(%Henc & #HreqInv)".
-      wp_apply (wp_decodePutRequest with "[$Hreq_sl]").
+      wp_apply (wp_DecodePutRequest with "[$Hreq_sl]").
       { done. }
       iIntros (args_ptr val_sl) "Hargs".
       wp_apply (wp_PutRPC with "His_memkv [$Hargs Hrep HreqInv]").
@@ -240,7 +240,7 @@ Proof.
       }
       iIntros (rep') "[Hrep Hpost]".
       wp_pures.
-      wp_apply (wp_encodePutReply with "Hrep").
+      wp_apply (wp_EncodePutReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
       wp_store.
       iApply "HΦ".

@@ -51,8 +51,8 @@ Definition PutRequest := struct.decl [
 ].
 
 (* doesn't include the operation type *)
-Definition encodePutRequest: val :=
-  rec: "encodePutRequest" "args" :=
+Definition EncodePutRequest: val :=
+  rec: "EncodePutRequest" "args" :=
     let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8 + #8 + #8) (slice.len (struct.loadF PutRequest "Value" "args")) in
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF PutRequest "CID" "args");;
@@ -62,8 +62,8 @@ Definition encodePutRequest: val :=
     marshal.Enc__PutBytes "e" (struct.loadF PutRequest "Value" "args");;
     marshal.Enc__Finish "e".
 
-Definition decodePutRequest: val :=
-  rec: "decodePutRequest" "reqData" :=
+Definition DecodePutRequest: val :=
+  rec: "DecodePutRequest" "reqData" :=
     let: "req" := struct.alloc PutRequest (zero_val (struct.t PutRequest)) in
     let: "d" := marshal.NewDec "reqData" in
     struct.storeF PutRequest "CID" "req" (marshal.Dec__GetInt "d");;
@@ -76,14 +76,14 @@ Definition PutReply := struct.decl [
   "Err" :: ErrorType
 ].
 
-Definition encodePutReply: val :=
-  rec: "encodePutReply" "reply" :=
+Definition EncodePutReply: val :=
+  rec: "EncodePutReply" "reply" :=
     let: "e" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "e" (struct.loadF PutReply "Err" "reply");;
     marshal.Enc__Finish "e".
 
-Definition decodePutReply: val :=
-  rec: "decodePutReply" "replyData" :=
+Definition DecodePutReply: val :=
+  rec: "DecodePutReply" "replyData" :=
     let: "reply" := struct.alloc PutReply (zero_val (struct.t PutReply)) in
     let: "d" := marshal.NewDec "replyData" in
     struct.storeF PutReply "Err" "reply" (marshal.Dec__GetInt "d");;
@@ -100,16 +100,16 @@ Definition GetReply := struct.decl [
   "Value" :: slice.T byteT
 ].
 
-Definition encodeGetRequest: val :=
-  rec: "encodeGetRequest" "req" :=
+Definition EncodeGetRequest: val :=
+  rec: "EncodeGetRequest" "req" :=
     let: "e" := marshal.NewEnc (#3 * #8) in
     marshal.Enc__PutInt "e" (struct.loadF GetRequest "CID" "req");;
     marshal.Enc__PutInt "e" (struct.loadF GetRequest "Seq" "req");;
     marshal.Enc__PutInt "e" (struct.loadF GetRequest "Key" "req");;
     marshal.Enc__Finish "e".
 
-Definition decodeGetRequest: val :=
-  rec: "decodeGetRequest" "rawReq" :=
+Definition DecodeGetRequest: val :=
+  rec: "DecodeGetRequest" "rawReq" :=
     let: "req" := struct.alloc GetRequest (zero_val (struct.t GetRequest)) in
     let: "d" := marshal.NewDec "rawReq" in
     struct.storeF GetRequest "CID" "req" (marshal.Dec__GetInt "d");;
@@ -117,8 +117,8 @@ Definition decodeGetRequest: val :=
     struct.storeF GetRequest "Key" "req" (marshal.Dec__GetInt "d");;
     "req".
 
-Definition encodeGetReply: val :=
-  rec: "encodeGetReply" "rep" :=
+Definition EncodeGetReply: val :=
+  rec: "EncodeGetReply" "rep" :=
     let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8) (slice.len (struct.loadF GetReply "Value" "rep")) in
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF GetReply "Err" "rep");;
@@ -126,8 +126,8 @@ Definition encodeGetReply: val :=
     marshal.Enc__PutBytes "e" (struct.loadF GetReply "Value" "rep");;
     marshal.Enc__Finish "e".
 
-Definition decodeGetReply: val :=
-  rec: "decodeGetReply" "rawRep" :=
+Definition DecodeGetReply: val :=
+  rec: "DecodeGetReply" "rawRep" :=
     let: "rep" := struct.alloc GetReply (zero_val (struct.t GetReply)) in
     let: "d" := marshal.NewDec "rawRep" in
     struct.storeF GetReply "Err" "rep" (marshal.Dec__GetInt "d");;
@@ -147,8 +147,8 @@ Definition ConditionalPutReply := struct.decl [
   "Success" :: boolT
 ].
 
-Definition encodeConditionalPutRequest: val :=
-  rec: "encodeConditionalPutRequest" "req" :=
+Definition EncodeConditionalPutRequest: val :=
+  rec: "EncodeConditionalPutRequest" "req" :=
     let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8 + #8 + #8 + #8) (std.SumAssumeNoOverflow (slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req")) (slice.len (struct.loadF ConditionalPutRequest "NewValue" "req"))) in
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF ConditionalPutRequest "CID" "req");;
@@ -160,8 +160,8 @@ Definition encodeConditionalPutRequest: val :=
     marshal.Enc__PutBytes "e" (struct.loadF ConditionalPutRequest "NewValue" "req");;
     marshal.Enc__Finish "e".
 
-Definition decodeConditionalPutRequest: val :=
-  rec: "decodeConditionalPutRequest" "rawReq" :=
+Definition DecodeConditionalPutRequest: val :=
+  rec: "DecodeConditionalPutRequest" "rawReq" :=
     let: "req" := struct.alloc ConditionalPutRequest (zero_val (struct.t ConditionalPutRequest)) in
     let: "d" := marshal.NewDec "rawReq" in
     struct.storeF ConditionalPutRequest "CID" "req" (marshal.Dec__GetInt "d");;
@@ -171,15 +171,15 @@ Definition decodeConditionalPutRequest: val :=
     struct.storeF ConditionalPutRequest "NewValue" "req" (marshal.Dec__GetBytes "d" (marshal.Dec__GetInt "d"));;
     "req".
 
-Definition encodeConditionalPutReply: val :=
-  rec: "encodeConditionalPutReply" "reply" :=
+Definition EncodeConditionalPutReply: val :=
+  rec: "EncodeConditionalPutReply" "reply" :=
     let: "e" := marshal.NewEnc (#8 + #1) in
     marshal.Enc__PutInt "e" (struct.loadF ConditionalPutReply "Err" "reply");;
     marshal.Enc__PutBool "e" (struct.loadF ConditionalPutReply "Success" "reply");;
     marshal.Enc__Finish "e".
 
-Definition decodeConditionalPutReply: val :=
-  rec: "decodeConditionalPutReply" "replyData" :=
+Definition DecodeConditionalPutReply: val :=
+  rec: "DecodeConditionalPutReply" "replyData" :=
     let: "reply" := struct.alloc ConditionalPutReply (zero_val (struct.t ConditionalPutReply)) in
     let: "d" := marshal.NewDec "replyData" in
     struct.storeF ConditionalPutReply "Err" "reply" (marshal.Dec__GetInt "d");;
@@ -226,7 +226,8 @@ Definition DecSliceMap: val :=
 
 Definition encodeInstallShardRequest: val :=
   rec: "encodeInstallShardRequest" "req" :=
-    let: "e" := marshal.NewEnc (#8 + #8 + #8 + SizeOfMarshalledMap (struct.loadF InstallShardRequest "Kvs" "req")) in
+    let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8 + #8) (SizeOfMarshalledMap (struct.loadF InstallShardRequest "Kvs" "req")) in
+    let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF InstallShardRequest "CID" "req");;
     marshal.Enc__PutInt "e" (struct.loadF InstallShardRequest "Seq" "req");;
     marshal.Enc__PutInt "e" (struct.loadF InstallShardRequest "Sid" "req");;
@@ -314,9 +315,9 @@ Definition MemKVShardClerk__Put: val :=
     struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_PUT (encodePutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_PUT (EncodePutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
-    let: "rep" := decodePutReply (![slice.T byteT] "rawRep") in
+    let: "rep" := DecodePutReply (![slice.T byteT] "rawRep") in
     struct.loadF PutReply "Err" "rep".
 
 Definition MemKVShardClerk__Get: val :=
@@ -328,9 +329,9 @@ Definition MemKVShardClerk__Get: val :=
     struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_GET (encodeGetRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_GET (EncodeGetRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
-    let: "rep" := decodeGetReply (![slice.T byteT] "rawRep") in
+    let: "rep" := DecodeGetReply (![slice.T byteT] "rawRep") in
     "value" <-[slice.T byteT] struct.loadF GetReply "Value" "rep";;
     struct.loadF GetReply "Err" "rep".
 
@@ -345,9 +346,9 @@ Definition MemKVShardClerk__ConditionalPut: val :=
     struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_CONDITIONAL_PUT (encodeConditionalPutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_CONDITIONAL_PUT (EncodeConditionalPutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
-    let: "rep" := decodeConditionalPutReply (![slice.T byteT] "rawRep") in
+    let: "rep" := DecodeConditionalPutReply (![slice.T byteT] "rawRep") in
     "success" <-[boolT] struct.loadF ConditionalPutReply "Success" "rep";;
     struct.loadF ConditionalPutReply "Err" "rep".
 
@@ -568,18 +569,18 @@ Definition MemKVShardServer__Start: val :=
       );;
     MapInsert "handlers" KV_PUT (λ: "rawReq" "rawReply",
       let: "rep" := struct.alloc PutReply (zero_val (struct.t PutReply)) in
-      MemKVShardServer__PutRPC "mkv" (decodePutRequest "rawReq") "rep";;
-      "rawReply" <-[slice.T byteT] encodePutReply "rep"
+      MemKVShardServer__PutRPC "mkv" (DecodePutRequest "rawReq") "rep";;
+      "rawReply" <-[slice.T byteT] EncodePutReply "rep"
       );;
     MapInsert "handlers" KV_GET (λ: "rawReq" "rawReply",
       let: "rep" := struct.alloc GetReply (zero_val (struct.t GetReply)) in
-      MemKVShardServer__GetRPC "mkv" (decodeGetRequest "rawReq") "rep";;
-      "rawReply" <-[slice.T byteT] encodeGetReply "rep"
+      MemKVShardServer__GetRPC "mkv" (DecodeGetRequest "rawReq") "rep";;
+      "rawReply" <-[slice.T byteT] EncodeGetReply "rep"
       );;
     MapInsert "handlers" KV_CONDITIONAL_PUT (λ: "rawReq" "rawReply",
       let: "rep" := struct.alloc ConditionalPutReply (zero_val (struct.t ConditionalPutReply)) in
-      MemKVShardServer__ConditionalPutRPC "mkv" (decodeConditionalPutRequest "rawReq") "rep";;
-      "rawReply" <-[slice.T byteT] encodeConditionalPutReply "rep"
+      MemKVShardServer__ConditionalPutRPC "mkv" (DecodeConditionalPutRequest "rawReq") "rep";;
+      "rawReply" <-[slice.T byteT] EncodeConditionalPutReply "rep"
       );;
     MapInsert "handlers" KV_INS_SHARD (λ: "rawReq" "rawReply",
       MemKVShardServer__InstallShardRPC "mkv" (decodeInstallShardRequest "rawReq");;

@@ -44,11 +44,11 @@ Definition has_encoding_GetRequest (data:list u8) (args:GetRequestC) :=
 Definition has_encoding_GetReply (data:list u8) (rep:GetReplyC) :=
   has_encoding data [ EncUInt64 rep.(GR_Err) ; EncUInt64 (length rep.(GR_Value)) ; EncBytes rep.(GR_Value) ].
 
-Lemma wp_encodeGetRequest args_ptr args :
+Lemma wp_EncodeGetRequest args_ptr args :
   {{{
        own_GetRequest args_ptr args
   }}}
-    encodeGetRequest #args_ptr
+    EncodeGetRequest #args_ptr
   {{{
        (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_GetRequest reqData args⌝ ∗
                                                typed_slice.is_slice req_sl byteT 1%Qp reqData ∗
@@ -87,12 +87,12 @@ Proof.
   done.
 Qed.
 
-Lemma wp_decodeGetRequest req_sl reqData args :
+Lemma wp_DecodeGetRequest req_sl reqData args :
   {{{
        ⌜has_encoding_GetRequest reqData args⌝ ∗
        typed_slice.is_slice req_sl byteT 1%Qp reqData
   }}}
-    decodeGetRequest (slice_val req_sl)
+    DecodeGetRequest (slice_val req_sl)
   {{{
        (args_ptr:loc), RET #args_ptr; own_GetRequest args_ptr args
   }}}.
@@ -128,12 +128,12 @@ Proof.
   iApply "HΦ". iModIntro. by iFrame.
 Qed.
 
-Lemma wp_decodeGetReply rep rep_sl repData :
+Lemma wp_DecodeGetReply rep rep_sl repData :
   {{{
        typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
        ⌜has_encoding_GetReply repData rep ⌝
   }}}
-    decodeGetReply (slice_val rep_sl)
+    DecodeGetReply (slice_val rep_sl)
   {{{
        (rep_ptr:loc) , RET #rep_ptr;
        own_GetReply rep_ptr rep
@@ -177,11 +177,11 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma wp_encodeGetReply rep_ptr rep :
+Lemma wp_EncodeGetReply rep_ptr rep :
   {{{
        own_GetReply rep_ptr rep
   }}}
-    encodeGetReply #rep_ptr
+    EncodeGetReply #rep_ptr
   {{{
        repData rep_sl , RET (slice_val rep_sl);
        typed_slice.is_slice rep_sl byteT 1%Qp repData ∗

@@ -50,11 +50,11 @@ Definition has_encoding_ConditionalPutRequest (data:list u8) (args:ConditionalPu
 Definition has_encoding_ConditionalPutReply (data:list u8) (rep:ConditionalPutReplyC) :=
   has_encoding data [ EncUInt64 rep.(CPR_Err); EncBool rep.(CPR_Succ) ].
 
-Lemma wp_encodeConditionalPutRequest args_ptr expv_sl newv_sl args :
+Lemma wp_EncodeConditionalPutRequest args_ptr expv_sl newv_sl args :
   {{{
        own_ConditionalPutRequest args_ptr expv_sl newv_sl args
   }}}
-    encodeConditionalPutRequest #args_ptr
+    EncodeConditionalPutRequest #args_ptr
   {{{
        (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_ConditionalPutRequest reqData args⌝ ∗
          typed_slice.is_slice req_sl byteT 1%Qp reqData ∗
@@ -141,12 +141,12 @@ Proof.
   done.
 Qed.
 
-Lemma wp_decodeConditionalPutRequest req_sl reqData args :
+Lemma wp_DecodeConditionalPutRequest req_sl reqData args :
   {{{
        ⌜has_encoding_ConditionalPutRequest reqData args⌝ ∗
        typed_slice.is_slice req_sl byteT 1%Qp reqData
   }}}
-    decodeConditionalPutRequest (slice_val req_sl)
+    DecodeConditionalPutRequest (slice_val req_sl)
   {{{
        (args_ptr:loc) expv_sl newv_sl, RET #args_ptr; own_ConditionalPutRequest args_ptr expv_sl newv_sl args
   }}}.
@@ -204,11 +204,11 @@ Proof.
   iPureIntro. done.
 Qed.
 
-Lemma wp_encodeConditionalPutReply rep_ptr rep :
+Lemma wp_EncodeConditionalPutReply rep_ptr rep :
   {{{
        own_ConditionalPutReply rep_ptr rep
   }}}
-    encodeConditionalPutReply #rep_ptr
+    EncodeConditionalPutReply #rep_ptr
   {{{
        repData rep_sl, RET (slice_val rep_sl);
        typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
@@ -247,12 +247,12 @@ Proof.
   done.
 Qed.
 
-Lemma wp_decodeConditionalPutReply rep rep_sl repData :
+Lemma wp_DecodeConditionalPutReply rep rep_sl repData :
   {{{
        typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
        ⌜has_encoding_ConditionalPutReply repData rep ⌝
   }}}
-    decodeConditionalPutReply (slice_val rep_sl)
+    DecodeConditionalPutReply (slice_val rep_sl)
   {{{
        (rep_ptr:loc) , RET #rep_ptr;
        own_ConditionalPutReply rep_ptr rep
