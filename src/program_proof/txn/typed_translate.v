@@ -268,6 +268,7 @@ Definition twophase_initP kind_sz (σimpl: @goose_lang.state disk_op disk_model)
               |} in
   ((513 + Z.of_nat sz) * block_bytes * 8 < 2^64)%Z ∧
   (null_non_alloc σspec.(heap)) ∧
+  (neg_non_alloc σspec.(heap)) ∧
   (σimpl.(world) = init_disk ∅ (513 + sz)) ∧
   (σspec.(world) = Closed σj) ∧
   dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)) ∧

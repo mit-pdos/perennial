@@ -1,6 +1,6 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth frac agree gmap excl csum.
-From Perennial.base_logic.lib Require Import proph_map.
+From Perennial.base_logic.lib Require Import proph_map frac_coPset.
 From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation crash_borrow.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert.
@@ -21,13 +21,18 @@ Class refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi sp
                                        _ _ (spec_ffi_interp_adequacy_field) Σ;
   refinement_heap_preG_trace :> trace_preG Σ;
   refinement_heap_preG_frac :> frac_countG Σ;
+  refinement_heap_resv :> inG Σ (frac_coPsetR);
 }.
 
 Existing Instances spec_ffi_op_field spec_ext_semantics_field spec_ffi_model_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
-Definition refinement_heapΣ `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ; frac_countΣ].
+Definition refinement_heapΣ `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[GFunctor (frac_coPsetR); invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ; frac_countΣ].
 Instance subG_refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} {Σ} :
   subG refinement_heapΣ Σ → refinement_heapPreG Σ.
-Proof. solve_inG_deep. Qed.
+Proof.
+  assert (subG (GFunctor (frac_coPsetR)) Σ → inG Σ frac_coPsetR).
+  { solve_inG. }
+  solve_inG_deep.
+Qed.
 
 Section refinement.
 Context {ext: ffi_syntax}.
@@ -53,6 +58,7 @@ Lemma goose_spec_init1 {hG: heapGS Σ} r tp0 σ0 g0 tp σ g s tr or P:
   ffi_initgP g →
   ffi_initP σ.(world) g →
   null_non_alloc σ.(heap) →
+  neg_non_alloc σ.(heap) →
   σ.(trace) = tr →
   σ.(oracle) = or →
   erased_rsteps (CS := spec_crash_lang) r (tp0, (σ0,g0)) (tp, (σ, g)) s →
@@ -64,7 +70,7 @@ Lemma goose_spec_init1 {hG: heapGS Σ} r tp0 σ0 g0 tp σ g s tr or P:
                                       ∗ spec_crash_ctx' r (tp0, (σ0,g0)) (P hR)
                                       ∗ <disc> (|C={⊤}_0=> trace_inv).
 Proof using Hrpre Hcpre.
-  iIntros (????? Hsteps Hsafe) "Htr Hor".
+  iIntros (??? Hnonneg ?? Hsteps Hsafe) "Htr Hor".
   iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
   { rewrite //=. }
   iMod (source_cfg_init_names1 r tp0 σ0 g0 tp σ g (own γ (Cinl 1%Qp))) as (Hcfg_γ) "(Hsource_ctx&Hpool&Hstate&Hcfupd)"; eauto.
@@ -73,8 +79,10 @@ Proof using Hrpre Hcpre.
   iMod (ffi_name_init _ (refinement_heap_preG_ffi) σ.(world) g with "Hgw")
     as (HffiG) "(Hrw&Hrg&Hrs)"; first auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
+  set (D := (list_to_set (Z.to_pos <$> (loc_car <$> ((map_to_list σ.(heap)).*1))) : gset positive)).
+  iMod (ownfCP_init_fresh_name_finite D) as (γsrv) "Hresv".
   set (HrhG := (refinement_HeapG _ (ffi_update_pre _ (refinement_heap_preG_ffi) HffiG ffi_namesg) HtraceG
-                                  {| cfg_name := Hcfg_γ |} Hrheap) _ γ).
+                                  {| cfg_name := Hcfg_γ |} Hrheap) _ γ γsrv _).
   iExists HrhG.
   iFrame "Hsource_ctx Hpool Hrs Hcfupd".
   iMod (ncinv_cinv_alloc (spec_stateN) 0 ⊤ (↑spec_stateN)
@@ -84,7 +92,19 @@ Proof using Hrpre Hcpre.
             with "[] [-Htr' Hor' Htr Hor]") as "(#Hinv&_&#Hcfupd2)".
   { set_solver. }
   { iModIntro. iIntros "H _". iModIntro; eauto. }
-  { iNext. iExists _, _. iFrame. iPureIntro; eauto. }
+  { iNext. iExists _, _. iFrame. iSplit; first iPureIntro; eauto.
+    iExists _; iFrame. iPureIntro.
+    intros l Hdom. split.
+    * apply Hnonneg. apply elem_of_dom. auto.
+    * rewrite /D. rewrite elem_of_gset_to_coPset elem_of_list_to_set elem_of_list_fmap.
+      eexists; split; eauto.
+      apply elem_of_list_fmap.
+      eexists; split; eauto.
+      apply elem_of_list_fmap.
+      apply elem_of_dom in Hdom as (v&?).
+      exists (l, v); split; eauto.
+      apply elem_of_map_to_list'; eauto.
+  }
   rewrite /trace_ctx.
   iMod (ncinv_alloc (spec_traceN) _ trace_inv with "[-Hcfupd2]") as "($&Hcfupd3)".
   { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame; eauto. }
@@ -97,6 +117,7 @@ Lemma goose_spec_init2 {hG: heapGS Σ} r tp σ g tr or P:
   ffi_initgP g →
   ffi_initP σ.(world) g →
   null_non_alloc σ.(heap) →
+  neg_non_alloc σ.(heap) →
   σ.(trace) = tr →
   σ.(oracle) = or →
   crash_safe (CS := spec_crash_lang) r (tp, (σ,g)) →
@@ -139,8 +160,9 @@ Proof using Hrpre Hcpre.
     as (ffi_names) "(Hrw&Hrg&Hcrash_rel&Hrs)".
   { inversion Hcrash. subst. eauto. }
   iMod (trace_init σ_post_crash.(trace) σ_post_crash.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
+  iMod (ownfCP_init_fresh_name_finite ∅) as (γsrv) "Hresv".
   set (HrhG := (refinement_HeapG _ (ffi_update_local Σ (refinement_spec_ffiG) ffi_names) HtraceG
-                                 {| cfg_name := Hcfg_γ |} Hrheap) _ γ).
+                                 {| cfg_name := Hcfg_γ |} Hrheap) _ γ γsrv _).
   iExists HrhG.
   rewrite /spec_ctx'.  iFrame "Hsource_ctx Hpool Hrs Hcfupd Hcrash_rel".
   iMod (ncinv_cinv_alloc (spec_stateN) 0 ⊤ (↑spec_stateN)
@@ -151,7 +173,11 @@ Proof using Hrpre Hcpre.
   { set_solver. }
   { iModIntro. iIntros "H _". iModIntro; eauto. }
   { iNext. iExists _, _. iFrame.
-    inversion Hcrash. subst. simpl. iPureIntro => ?. rewrite lookup_empty //. }
+    inversion Hcrash. subst.
+    simpl. iSplit.
+    { iPureIntro => ?. rewrite lookup_empty //. }
+    { iExists ∅; iFrame. iPureIntro => ?. rewrite dom_empty_L; inversion 1. }
+  }
   rewrite /trace_ctx.
   iMod (ncinv_alloc (spec_traceN) _ trace_inv with "[-Hcfupd2]") as "($&Hcfupd3)".
   { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame; eauto. }
@@ -199,6 +225,7 @@ Qed.
 
 Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: heapGS Σ → iProp Σ) P n :
   null_non_alloc σs.(heap) →
+  neg_non_alloc σs.(heap) →
   ffi_initgP g →
   ffi_initP σ.(world) g →
   ffi_initgP gs →
@@ -219,7 +246,7 @@ Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: hea
          O ⤇ es -∗ wpr NotStuck k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝)))) →
   trace_refines e r σ g es rs σs gs.
 Proof using Hrpre Hhpre Hcpre.
-  intros ??????? Hwp Hsafe.
+  intros ???????? Hwp Hsafe.
   cut (recv_adequate (CS := goose_crash_lang) NotStuck e r σ g (λ v _ _, φ v) (λ v _ _, φr v)
                      (λ σ2 g2,
                       ∃ t2s σ2s g2s stats,
@@ -352,7 +379,7 @@ Proof.
   { iDestruct ("Hexcl" with "[$] [$]") as %[]. }
   iDestruct "Hc2" as (σs'' gs'') "(>Hspec_state_frag&Hspec_interp)".
   rewrite /spec_assert.spec_interp.
-  iDestruct "Hspec_interp" as "(?&?&?&>Hspec_trace_auth&>Hspec_oracle_auth&?&>Hrefinement_ctok)".
+  iDestruct "Hspec_interp" as "(?&?&?&>Hspec_trace_auth&>Hspec_oracle_auth&?&>Hrefinement_ctok&Hresv)".
 
   iDestruct "Hc1" as "[Hbad|Hc1]".
   { by iDestruct (own_valid_2 with "Hbad Hrefinement_ctok") as %?. }
@@ -405,7 +432,8 @@ Definition initP_wf initP :=
   ∀ (σ: @state ext ffi) (g: @global_state ffi)
     (σs: @state (@spec_ffi_op_field spec_ext) (@spec_ffi_model_field spec_ffi))
     (gs: @global_state (@spec_ffi_model_field spec_ffi)),
-    initP σ σs → null_non_alloc σs.(heap) ∧ ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs ∧
+    initP σ σs → null_non_alloc σs.(heap) ∧ neg_non_alloc σs.(heap) ∧
+                 ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs ∧
                  ffi_initgP g ∧ ffi_initgP gs.
 
 Definition excl_crash_token (P : heapGS Σ → refinement_heapG Σ → iProp Σ) :=
@@ -432,6 +460,7 @@ Proof using Hrpre Hhpre Hcpre.
                (
                          ∃ Href' : refinement_heapG Σ, spec_ctx' es ([es], (σs,gs))
                                                                  ∗ trace_ctx)%I); eauto.
+  { eapply Hinit_wf; eauto. }
   { eapply Hinit_wf; eauto. }
   { eapply Hinit_wf; eauto. }
   { eapply Hinit_wf; eauto. }

@@ -1563,6 +1563,9 @@ Qed.
 Definition null_non_alloc {V} (h : gmap loc V) :=
   ∀ off, h !! (addr_plus_off null off) = None.
 
+Definition neg_non_alloc {V} (h : gmap loc V) :=
+  ∀ l, is_Some (h !! l) → 0 < loc_car l.
+
 Lemma fresh_alloc_equiv_null_non_alloc σ v:
   null_non_alloc (<[fresh_locs (dom (gset loc) σ.(heap)):=v]> σ.(heap)) ↔
   null_non_alloc (σ.(heap)).

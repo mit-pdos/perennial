@@ -45,6 +45,8 @@ Class refinement_heapG Σ := refinement_HeapG {
   refinement_na_heapG :> na_heapG loc (@val spec_ffi_op_field) Σ;
   refinement_frac_countG :> frac_countG Σ;
   refinement_crash_name : gname;
+  refinement_resv_name : gname;
+  refinement_coPset_inG :> inG Σ (frac_coPsetR);
   (* TODO: do we need prophecies at the spec level? *)
   (*
   refinement_proph_mapG :> proph_mapGS proph_id (val * val) Σ;
@@ -59,9 +61,14 @@ Context `{crashG Σ}.
 
 Definition refinement_ctok := staged_pending 1 (refinement_crash_name).
 
+Definition heap_dom_resv {A} (σheap : gmap loc A) : iProp Σ :=
+  (∃ D: coPset, ownfCP (refinement_resv_name) 1 D ∧
+               ⌜ (∀ l, l ∈ dom (gset loc) σheap → 0 < loc_car l ∧ Z.to_pos (loc_car l) ∈ D) ⌝).
+
 Definition spec_interp σ g : iProp Σ :=
-    (na_heap_ctx tls σ.(heap) ∗ (* proph_map_ctx κs σ.(used_proph_id) ∗ *) ffi_ctx refinement_spec_ffiG σ.(world) ∗ ffi_global_ctx refinement_spec_ffiG g ∗
-     trace_auth σ.(trace) ∗ oracle_auth σ.(oracle) ∗ ⌜ null_non_alloc σ.(heap) ⌝ ∗ refinement_ctok)%I.
+    (na_heap_ctx tls σ.(heap) ∗ ffi_ctx refinement_spec_ffiG σ.(world) ∗ ffi_global_ctx refinement_spec_ffiG g ∗
+     trace_auth σ.(trace) ∗ oracle_auth σ.(oracle) ∗ ⌜ null_non_alloc σ.(heap) ⌝ ∗ refinement_ctok ∗
+     heap_dom_resv σ.(heap))%I.
 
 Definition spec_stateN := nroot .@ "source".@  "state".
 
@@ -341,6 +348,16 @@ Proof.
   iModIntro. iApply "Hclo_l". iFrame.
 Qed.
 
+Lemma heap_dom_resv_dom_eq {A} (σ1 σ2 : gmap loc A) :
+  dom (gset loc) σ1 = dom (gset loc) σ2 →
+  heap_dom_resv σ1 ≡ heap_dom_resv σ2.
+Proof. rewrite /heap_dom_resv => -> //. Qed.
+
+Lemma heap_dom_resv_insert_non_alloc {A} (σ : gmap loc A) l v :
+  l ∈ dom (gset loc) σ →
+  heap_dom_resv (<[l := v]>σ) ≡ heap_dom_resv σ.
+Proof. intros. apply heap_dom_resv_dom_eq. rewrite dom_insert_L. set_solver. Qed.
+
 Lemma ghost_cmpxchg_suc j K `{LanguageCtx _ K} E l v' v1 v2:
   v' = v1 → vals_compare_safe v' v1 →
   nclose sN ⊆ E →
@@ -365,7 +382,10 @@ Proof.
   rewrite bool_decide_true //.
   iMod ("Hclo" with "[Hσ H Hrest]").
   { iNext. iExists _, _. iFrame "H". simpl. iFrame; simpl.
-    rewrite upd_equiv_null_non_alloc; eauto. }
+    rewrite upd_equiv_null_non_alloc; eauto.
+    rewrite heap_dom_resv_insert_non_alloc; try iFrame.
+    apply elem_of_dom. eauto.
+  }
   simpl. iFrame. iModIntro. iApply "Hclo_l"; eauto.
 Qed.
 
@@ -493,7 +513,10 @@ Proof.
   { eauto. }
   iMod ("Hclo" with "[Hσ H Hrest]").
   { iNext. iExists _, _. iFrame "H". simpl. iFrame; simpl.
-    rewrite upd_equiv_null_non_alloc; eauto. }
+    rewrite upd_equiv_null_non_alloc; eauto.
+    rewrite heap_dom_resv_insert_non_alloc; try iFrame.
+    apply elem_of_dom. eauto.
+  }
   simpl. iFrame. iModIntro. iApply "Hlclo"; eauto.
 Qed.
 
@@ -517,7 +540,11 @@ Proof.
   }
   { eauto. }
   iMod ("Hclo" with "[Hσ H Hrest]").
-  { iNext. iExists _, _. iFrame "H". simpl. iFrame; simpl. rewrite upd_equiv_null_non_alloc; eauto. }
+  { iNext. iExists _, _. iFrame "H". simpl. iFrame; simpl.
+    rewrite upd_equiv_null_non_alloc; eauto.
+    rewrite heap_dom_resv_insert_non_alloc; try iFrame.
+    apply elem_of_dom. eauto.
+  }
   by iFrame.
 Qed.
 
@@ -640,7 +667,10 @@ Proof.
   { eauto. }
   iMod ("Hclo" with "[Hσ H Hrest]").
   { iNext. iExists _, _. iFrame "H". simpl. iFrame; simpl.
-    rewrite upd_equiv_null_non_alloc; eauto. }
+    rewrite upd_equiv_null_non_alloc; eauto.
+    rewrite heap_dom_resv_insert_non_alloc; try iFrame.
+    apply elem_of_dom. eauto.
+  }
   simpl. by iFrame.
 Qed.
 
@@ -668,7 +698,10 @@ Proof.
   { eauto. }
   iMod ("Hclo" with "[Hσ H Hrest]").
   { iNext. iExists _, _. iFrame "H". simpl. iFrame; simpl.
-    rewrite upd_equiv_null_non_alloc; eauto. }
+    rewrite upd_equiv_null_non_alloc; eauto.
+    rewrite heap_dom_resv_insert_non_alloc; try iFrame.
+    apply elem_of_dom. eauto.
+  }
   by iFrame.
 Qed.
 
@@ -766,6 +799,102 @@ Qed.
 Definition spec_mapsto_vals_toks l q vs : iProp Σ :=
   ([∗ list] j↦vj ∈ vs, (l +ₗ j) s↦{q} vj ∗ meta_token (hG := refinement_na_heapG) (l +ₗ j) ⊤)%I.
 
+Lemma ghost_allocN_seq_sized_meta_own_resv j K `{LanguageCtx _ K} E D d v (n: u64) :
+  d ∈ D →
+  (0 < length (flatten_struct v))%nat →
+  (0 < int.Z n)%Z →
+  nclose sN ⊆ E →
+  spec_ctx -∗
+  ownfCP (refinement_resv_name) 1 D -∗
+  j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) -∗ |NC={E}=>
+   let l := {| loc_car := Zpos d; loc_off := 0 |} in
+   j ⤇ K (#l) ∗
+   na_block_size (hG := refinement_na_heapG) l (int.nat n * length (flatten_struct v))%nat ∗
+   [∗ list] i ∈ seq 0 (int.nat n),
+   (spec_mapsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
+                     (flatten_struct v)).
+Proof.
+  iIntros (HinD Hlen Hn Φ) "(#Hctx&Hstate) HresD Hj".
+  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
+  iDestruct "Hinterp" as "(>Hσ&(Hrest1&Hrest2&Hrest2'&Hrest3&Hrest4&Hrest5&>Hresv))".
+  set l := {| loc_car := Zpos d; loc_off := 0 |}.
+  iDestruct "Hresv" as (D') "(Hresv&%Hdom_resv)".
+  iDestruct (ownfCP_disj1' with "[$]") as %Hdisj.
+  assert (isFresh (σ, g) l) as Hfresh.
+  { rewrite /isFresh. split; last eauto.
+    intros i. split.
+    - eauto.
+    - rewrite //=. apply not_elem_of_dom.
+      intros Hin. set_solver. }
+  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
+  { apply head_prim_step_trans. simpl.
+    econstructor; last (repeat econstructor).
+    econstructor. { monad_simpl. }
+    eexists _ l; repeat econstructor.
+      ** eauto.
+      ** hnf; intros. apply (not_elem_of_dom (D := gset loc)).
+         naive_solver.
+  }
+  { solve_ndisj. }
+  iMod (na_heap_alloc_list tls (heap _) l
+                           (concat_replicate (int.nat n) (flatten_struct v))
+                           (Reading O) with "Hσ")
+    as "(Hσ & Hblock & Hl)".
+  { rewrite concat_replicate_length. cut (0 < int.nat n)%nat; first by lia.
+    lia. }
+  { destruct Hfresh as (?&?). rewrite //=. }
+  { destruct Hfresh as (H'&?); eauto. eapply H'. }
+  { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
+    by rewrite (loc_add_0) in Hfresh.
+  }
+  { eauto. }
+  iMod ("Hclo" with "[Hσ H Hrest1 Hrest2 Hrest2' Hrest3 Hrest4 Hrest5 HresD Hresv]").
+  { iNext. iExists _, _. iFrame "H". iFrame.
+    iDestruct "Hrest4" as %Hnon_null.
+    iSplit.
+    {
+      iPureIntro. intros off.
+      cut (∀ off x, heap (state_init_heap l x v σ) !! addr_plus_off null off =
+                    heap σ !! addr_plus_off null off).
+      { intros ->. eauto. }
+      intros.  rewrite /state_init_heap/ state_insert_list.
+      rewrite lookup_union_r //.
+      eapply heap_array_lookup_base_ne. erewrite isFresh_base; eauto.
+    }
+    iExists (D ∪ D').
+    iSplit.
+    * iApply ownfCP_op_union; auto. iFrame.
+    * iPureIntro. simpl. iIntros (l' Hin).
+      rewrite dom_union_L in Hin.
+      apply elem_of_union in Hin.
+      destruct Hin as [HinL|HinR].
+      ** apply heap_array_lookup_dom_base in HinL.
+         assert (loc_car l' = Z.pos d) as ->.
+         { rewrite /addr_base//=/addr_id/addr_decode//= in HinL; congruence. }
+         split; first lia. rewrite Pos2Z.id. set_solver.
+      ** destruct (Hdom_resv l' HinR). split; auto. set_solver.
+  }
+  iModIntro.
+  iFrame.
+  unfold mapsto_vals.
+  rewrite concat_replicate_length. iFrame.
+  iDestruct (heap_seq_replicate_to_nested_mapsto l (flatten_struct v) (int.nat n)
+                                                 (λ l v, l s↦ v ∗ meta_token l ⊤)%I
+               with "[Hl]") as "Hl".
+  {
+    iApply (big_sepL_mono with "Hl").
+    iIntros (l0 x Heq) "(Hli&$)".
+    iApply (na_mapsto_to_heap with "Hli").
+    destruct Hfresh as (H'&?). eapply H'.
+  }
+  (* { iPureIntro; split; eauto using isFresh_not_null, isFresh_offset0. } *)
+  iApply (big_sepL_mono with "Hl").
+  iIntros (k0 ? _) "H".
+  setoid_rewrite Z.mul_comm at 1.
+  setoid_rewrite Z.mul_comm at 2.
+  rewrite /spec_mapsto_vals_toks. eauto.
+Qed.
+
 Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
   (0 < length (flatten_struct v))%nat →
   (0 < int.Z n)%Z →
@@ -779,65 +908,11 @@ Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
              (spec_mapsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
                                (flatten_struct v)).
 Proof.
-  iIntros (Hlen Hn Φ) "(#Hctx&Hstate) Hj".
-  iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
-  iDestruct "Hinterp" as "(>Hσ&(Hrest1&Hrest2&Hrest2'&Hrest3&Hrest4&Hrest5))".
-  iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step_trans. simpl.
-    econstructor; last (repeat econstructor).
-    econstructor. { monad_simpl. }
-    eexists _ (fresh_locs (dom (gset loc) _.(heap))); repeat econstructor.
-      ** apply fresh_locs_non_null; lia.
-      ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
-  }
-  { solve_ndisj. }
-  set (l := fresh_locs (dom (gset loc) (heap _))).
-  assert (isFresh (σ, g) l) as Hfresh.
-  { apply fresh_locs_isFresh. }
-  iMod (na_heap_alloc_list tls (heap _) l
-                           (concat_replicate (int.nat n) (flatten_struct v))
-                           (Reading O) with "Hσ")
-    as "(Hσ & Hblock & Hl)".
-  { rewrite concat_replicate_length. cut (0 < int.nat n)%nat; first by lia.
-    lia. }
-  { destruct Hfresh as (?&?). rewrite //=. }
-  { destruct Hfresh as (H'&?); eauto. eapply H'. }
-  { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
-    by rewrite (loc_add_0) in Hfresh.
-  }
-  { eauto. }
-  iMod ("Hclo" with "[Hσ H Hrest1 Hrest2 Hrest2' Hrest3 Hrest4 Hrest5]").
-  { iNext. iExists _, _. iFrame "H". iFrame.
-    iDestruct "Hrest4" as %Hnon_null.
-    iPureIntro. intros off.
-    cut (∀ off x, heap (state_init_heap l x v σ) !! addr_plus_off null off =
-                heap σ !! addr_plus_off null off).
-    { intros ->. eauto. }
-    intros.  rewrite /state_init_heap/ state_insert_list.
-    rewrite lookup_union_r //.
-    eapply heap_array_lookup_base_ne. erewrite isFresh_base; eauto.
-    eapply isFresh_not_null; eauto.
-  }
-  iModIntro.
-  iExists _. iFrame.
-  unfold mapsto_vals.
-  rewrite concat_replicate_length. iFrame.
-  iDestruct (heap_seq_replicate_to_nested_mapsto l (flatten_struct v) (int.nat n)
-                                                 (λ l v, l s↦ v ∗ meta_token l ⊤)%I
-               with "[Hl]") as "Hl".
-  {
-    iApply (big_sepL_mono with "Hl").
-    iIntros (l0 x Heq) "(Hli&$)".
-    iApply (na_mapsto_to_heap with "Hli").
-    destruct Hfresh as (H'&?). eapply H'.
-  }
-  iSplitL "".
-  { iPureIntro; split; eauto using isFresh_not_null, isFresh_offset0. }
-  iApply (big_sepL_mono with "Hl").
-  iIntros (k0 ? _) "H".
-  setoid_rewrite Z.mul_comm at 1.
-  setoid_rewrite Z.mul_comm at 2.
-  rewrite /spec_mapsto_vals_toks. eauto.
+  iIntros.
+  iMod (ownfCP_inf_init (refinement_resv_name)) as (D) "(%Hinf&Hres)".
+  iMod (ghost_allocN_seq_sized_meta_own_resv j K E D (coPpick D) with "[$] [$] [$]") as "(?&?&?)"; auto.
+  { apply coPpick_elem_of. by apply coPset_infinite_finite. }
+  iModIntro. iExists _. iFrame. iPureIntro; eauto.
 Qed.
 
 End go_ghost_step.

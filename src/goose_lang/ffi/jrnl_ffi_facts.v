@@ -1554,7 +1554,7 @@ Proof.
     iDestruct (ptsto_conflict with "Hcrash1 H1") as %[].
   }
   iDestruct "Hrest" as (s g) "(>H&Hinterp)".
-  iDestruct "Hinterp" as "(>Hσ&>Hffi&?&?&?&?&>Hctok)".
+  iDestruct "Hinterp" as "(>Hσ&>Hffi&?&?&?&?&>Hctok&Hresv)".
   iDestruct (jrnl_ctx_sub_state_valid with "[$] [$] [$] [$] [$]") as %Hsub.
   iIntros "#HC".
   iMod (ghost_step_crash_stuck' with "[] Hctx Hctok Hj [$] [$]") as (Hnstuck) "(Hj&H&Hctok)"; first by solve_ndisj.

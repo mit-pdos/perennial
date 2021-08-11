@@ -242,6 +242,16 @@ Section frac_coPset_prop.
 
   Definition ownfCP γ q E : iProp Σ := own γ (fCoPset q E).
 
+  Lemma ownfCP_init_fresh_name_finite (E : gset positive) : ⊢ |==> ∃ γ, ownfCP γ 1 (gset_to_coPset E).
+  Proof.
+    iMod (own_alloc _) as "H"; last by iFrame.
+    { apply fCoPset_valid2; auto.
+      apply difference_infinite; auto.
+      * apply top_infinite.
+      * apply gset_to_coPset_finite.
+    }
+  Qed.
+
   Lemma ownfCP_init γ : ⊢ |==> ∃ E, ownfCP γ 1 E.
   Proof.
     iMod (own_unit _ γ) as "H".
@@ -317,10 +327,10 @@ Section frac_coPset_prop.
     ownfCP_inf γ q E ⊣⊢ ⌜ set_infinite E ⌝ ∧ ownfCP γ q E.
   Proof. auto. Qed.
 
-  Lemma ownfCP_disj γ q1 q2 D E :
-    ownfCP γ q1 D ∗ ownfCP_inf γ q2 E -∗ ⌜ E ## D ∨ ✓(q1 + q2)%Qp ⌝.
+  Lemma ownfCP_disj' γ q1 q2 D E :
+    ownfCP γ q1 D ∗ ownfCP γ q2 E -∗ ⌜ E ## D ∨ ✓(q1 + q2)%Qp ⌝.
   Proof.
-    iIntros "(H1&(%&H2))".
+    iIntros "(H1&H2)".
     iCombine "H1 H2" as "H".
     iDestruct (own_valid with "H") as %Hval.
     iPureIntro.
@@ -329,5 +339,23 @@ Section frac_coPset_prop.
     - left. apply fCoPset_valid_op1 in Hval as (?&?); auto; set_solver.
     - right. apply Qp_le_ngt; auto.
   Qed.
+
+  Lemma ownfCP_disj γ q1 q2 D E :
+    ownfCP γ q1 D ∗ ownfCP_inf γ q2 E -∗ ⌜ E ## D ∨ ✓(q1 + q2)%Qp ⌝.
+  Proof.
+    iIntros "(H1&(%&H2))".
+    iApply ownfCP_disj'; by iFrame.
+  Qed.
+
+  Lemma ownfCP_disj1' γ D E :
+    ownfCP γ 1 D ∗ ownfCP γ 1 E -∗ ⌜ E ## D ⌝.
+  Proof.
+    iIntros "H". iDestruct (ownfCP_disj' with "[$]") as %Hcases.
+    iPureIntro. destruct Hcases as [?|Hbad]; auto. rewrite //= in Hbad.
+  Qed.
+
+  Lemma ownfCP_disj1 γ D E :
+    ownfCP γ 1 D ∗ ownfCP_inf γ 1 E -∗ ⌜ E ## D ⌝.
+  Proof. iIntros "(H1&(_&H2))". iApply (ownfCP_disj1'); by iFrame. Qed.
 
 End frac_coPset_prop.
