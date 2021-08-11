@@ -332,7 +332,7 @@ Proof.
       iDestruct (big_sepS_elem_of_acc _ _ args.(GR_Key) with "HvalSlices") as "[Hsrv_val_sl HvalSlices]".
       { set_solver. }
       iDestruct "Hsrv_val_sl" as "[%Hbad|Hsrv_val_sl]".
-      { exfalso. done. }
+      { exfalso. naive_solver. }
 
       iDestruct "Hsrv_val_sl" as (q ?) "[%HvalSliceRe Hsrv_val_sl]".
       rewrite HvalSliceRe.

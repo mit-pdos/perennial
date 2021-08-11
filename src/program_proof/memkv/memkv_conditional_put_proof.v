@@ -264,7 +264,7 @@ Proof.
       iDestruct (big_sepS_delete _ _ args.(CPR_Key) with "HvalSlices") as "[Hsrv_val_sl HvalSlices]".
       { set_solver. }
       iDestruct "Hsrv_val_sl" as "[%Hbad|Hsrv_val_sl]".
-      { exfalso. done. }
+      { exfalso. naive_solver. }
       iDestruct "Hsrv_val_sl" as (q curv_sl) "[%HvalSliceRe Hsrv_val_sl]".
       rewrite HvalSliceRe.
 

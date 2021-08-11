@@ -84,10 +84,19 @@ Qed.
 
 Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
   ∃ (mv:gmap u64 val),
-  map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
+  "Hmap_phys" ∷ map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
   ([∗ set] k ∈ (fin_to_set u64),
-           ⌜shardOfC k ≠ sid⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (kvs !! k))) )
+           (⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ kvs !! k = None ⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (kvs !! k)))))
 .
+
+(*
+Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
+  ∃ (mv:gmap u64 val),
+  "%Hdom_phys" ∷ ⌜ dom (gset u64) mv = dom (gset u64) kvs ⌝ ∗
+  "Hmap_phys" ∷ map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
+  "%Hdom_sid" ∷ ⌜ (∀ k, shardOfC k = sid → k ∈ dom (gset u64) mv) ⌝ ∗
+  ([∗ map] k ↦ vsl' ∈ mv, ∃ q vsl, ⌜ vsl' = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (kvs !! k))).
+*)
 
 Lemma wp_MemKVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γdst:
   {{{
@@ -218,8 +227,7 @@ Proof.
     iExists _, _.
     instantiate (1:=(mkInstallShardC _ _ _ _)).
     iFrame.
-    iSimpl.
-    iPureIntro; word.
+    iSimpl. iPureIntro; lia.
   }
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
