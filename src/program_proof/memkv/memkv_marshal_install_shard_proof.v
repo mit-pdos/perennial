@@ -72,17 +72,6 @@ Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardReq
   ∃ r, has_byte_map_encoding (args.(IR_Kvs)) r ∧
        has_encoding data ([EncUInt64 args.(IR_CID); EncUInt64 args.(IR_Seq); EncUInt64 args.(IR_Sid)] ++ r).
 
-(*
-Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : Prop :=
-  ∃ l,
-   let m := args.(IR_Kvs) in
-  (int.Z (size m) = size m) ∧
-  NoDup l.*1 ∧
-  (list_to_map l) = m ∧
-  has_encoding data ([EncUInt64 args.(IR_CID); EncUInt64 args.(IR_Seq); EncUInt64 args.(IR_Sid)] ++
-                    (EncUInt64 (size m) :: ((flat_map (λ u, [EncUInt64 u.1 ; EncBytes u.2]) l)))).
-*)
-
 Context `{!heapGS Σ}.
 
 Definition is_slicemap_rep (mv : gmap u64 val) (m : gmap u64 (list u8)) : iProp Σ :=
@@ -93,6 +82,14 @@ Definition is_slicemap_rep (mv : gmap u64 val) (m : gmap u64 (list u8)) : iProp 
 Lemma is_slicemap_rep_dom  mv m :
   is_slicemap_rep mv m -∗ ⌜ dom (gset _) mv = dom (gset _) m ⌝.
 Proof. iIntros "($&_)". Qed.
+
+Lemma is_slicemap_rep_empty_inv m :
+  is_slicemap_rep ∅ m -∗ ⌜ m = ∅ ⌝.
+Proof.
+  iIntros "(%Hdom&_)".
+  iPureIntro. rewrite dom_empty_L in Hdom.
+  apply dom_empty_inv_L. eauto.
+Qed.
 
 Lemma is_slicemap_rep_dup mv m :
   is_slicemap_rep mv m -∗ is_slicemap_rep mv m ∗ is_slicemap_rep mv m.
@@ -164,11 +161,12 @@ Proof.
   iExists q, vsl, l. iFrame "%". rewrite Heq' //.
 Qed.
 
-Definition EncSliceMap_invariant enc_v (r:Rec) sz map_sz
+Definition EncSliceMap_invariant m0 enc_v (r:Rec) sz map_sz
            (original_remaining:Z) (mtodo' mdone':gmap u64 val) : iProp Σ :=
   ∃ mtodo mdone (l:list (u64 * (list u8))) (remaining:Z),
     is_slicemap_rep mtodo' mtodo ∗
     is_slicemap_rep mdone' mdone ∗
+    ⌜ mtodo ∪ mdone = m0 ⌝ ∗
     ⌜ NoDup l.*1 ⌝ ∗
     ⌜(list_to_map l) = mdone⌝ ∗
     ⌜marshalledMapSize_data mtodo ≤ remaining⌝ ∗
@@ -177,20 +175,6 @@ Definition EncSliceMap_invariant enc_v (r:Rec) sz map_sz
     is_enc enc_v sz (r ++ [EncUInt64 map_sz] ++
  (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 (int.Z (length (u.2))); EncBytes u.2]) l )) remaining
 .
-
-(*
-Definition EncSliceMap_invariant enc_v (r:Rec) sz map_sz
-           (original_remaining:Z) (mtodo mdone:gmap u64 (list u8)) : iProp Σ :=
-  ∃ (l:list (u64 * (list u8))) (remaining:Z),
-    ⌜ NoDup l.*1 ⌝ ∗
-    ⌜(list_to_map l) = mdone⌝ ∗
-    ⌜8 * 2 * (size mtodo) ≤ remaining⌝ ∗
-    ⌜remaining = original_remaining - 8 * 2 * (size mdone)⌝ ∗
-    ⌜mtodo ##ₘ mdone ⌝ ∗
-    is_enc enc_v sz (r ++ [EncUInt64 map_sz] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncBytes u.2]) l )) remaining
-.
-*)
-
 
 
 Definition own_InstallShardRequest args_ptr args : iProp Σ :=
@@ -206,25 +190,26 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
 .
 
 Lemma wp_EncSliceMap e mref mv m sz r remaining :
-marshalledMapSize m <= remaining →
-{{{
-    "HKvsMap" ∷ map.is_map mref 1 (mv, slice_val Slice.nil) ∗
-    "Henc" ∷ is_enc e sz r remaining ∗
-    "Hvals" ∷ is_slicemap_rep mv m
-}}}
-  EncSliceMap e #mref
-{{{
-     rmap, RET #();
-     ⌜has_byte_map_encoding m rmap⌝ ∗
-     map.is_map mref 1 (mv, slice_val Slice.nil) ∗
-     is_slicemap_rep mv m ∗
-     is_enc e sz (r ++ rmap) (remaining - marshalledMapSize m)
-}}}.
+  marshalledMapSize m <= remaining →
+  {{{
+      "HKvsMap" ∷ map.is_map mref 1 (mv, slice_val Slice.nil) ∗
+      "Henc" ∷ is_enc e sz r remaining ∗
+      "Hvals" ∷ is_slicemap_rep mv m
+  }}}
+    EncSliceMap e #mref
+  {{{
+       rmap, RET #();
+       ⌜has_byte_map_encoding m rmap⌝ ∗
+       map.is_map mref 1 (mv, slice_val Slice.nil) ∗
+       is_slicemap_rep mv m ∗
+       is_enc e sz (r ++ rmap) (remaining - marshalledMapSize m)
+  }}}.
 Proof using Type*.
   intros Hrem.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_lam. wp_pures.
+    iDestruct (is_slicemap_rep_dom with "[$]") as %Hdom_init.
 
   wp_apply (map.wp_MapLen with "HKvsMap").
   iIntros "[%Hsize Hmap]".
@@ -233,18 +218,19 @@ Proof using Type*.
   { lia. }
   iIntros "Henc".
   wp_pures.
-  wp_apply (map.wp_MapIter_2 _ _ _ _ _ (EncSliceMap_invariant e r sz (size m) (remaining - 8))
+  wp_apply (map.wp_MapIter_2 _ _ _ _ _ (EncSliceMap_invariant m e r sz (size m) (remaining - 8))
               with "Hmap [Henc Hvals] [] [HΦ]").
   {
-    iDestruct (is_slicemap_rep_dom with "[$]") as %Hdom.
     iExists m, ∅.
     iExists []. iExists (remaining-8). simpl. iFrame.
     iSplitL "".
     { rewrite /is_slicemap_rep. rewrite ?dom_empty_L big_sepM_empty //=. }
     iSplit.
+    { iPureIntro. rewrite right_id_L //. }
+    iSplit.
     { iPureIntro. apply NoDup_nil_2. }
     iSplit; first done.
-    rewrite ?Map.map_size_dom Hdom //.
+    rewrite ?Map.map_size_dom Hdom_init //.
     rewrite ?Map.map_size_dom // in Hrem.
     iFrame.
     iPureIntro.
@@ -258,7 +244,7 @@ Proof using Type*.
     wp_pures.
     iDestruct "Hpre" as (mtodo mdone l rem') "Hpre".
     iDestruct "Hpre" as "(Hrep_todo&Hrep_done&Hpre)".
-    iDestruct "Hpre" as (Hnodup Hl Hrem' Hremeq Hmdisjoint) "Henc".
+    iDestruct "Hpre" as (Hunion Hnodup Hl Hrem' Hremeq Hmdisjoint) "Henc".
     iDestruct (is_slicemap_rep_dom with "Hrep_todo") as %Hdom_todo.
     iDestruct (is_slicemap_rep_dom with "Hrep_done") as %Hdom_done.
     assert (16 <= marshalledMapSize_data mtodo).
@@ -313,6 +299,8 @@ Proof using Type*.
       }
       apply NoDup_singleton.
     }
+    iSplit.
+    { iPureIntro. rewrite union_delete_insert //. }
     iSplit; first done.
     iSplit.
     { iPureIntro. rewrite -list_to_map_cons. eapply list_to_map_proper; eauto.
@@ -350,16 +338,25 @@ Proof using Type*.
   iNamed "Hinv".
   iApply ("HΦ" $! ([EncUInt64 (size m)] ++
                  flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l)).
-  iDestruct "Hinv" as "(?&?&?&?&?&->&?&Henc)".
+  iDestruct "Hinv" as "(?&?&%Hunion&%&%&%&->&%&Henc)".
   iFrame.
   rewrite /marshalledMapSize.
+  iDestruct (is_slicemap_rep_empty_inv with "[$]") as %Hemp.
+  assert (m = mdone) as Hdone.
+  { rewrite Hemp left_id_L in Hunion. auto. }
+  rewrite Hdone.
   iSplit.
-  { admit. }
+  { iPureIntro.
+    rewrite /has_byte_map_encoding. eexists.
+    split_and!; eauto.
+    assert (size mdone = size mv) as ->; last first.
+    { simpl in Hsize. word. }
+    rewrite ?Map.map_size_dom. congruence.
+  }
   iSplitR "Henc"; last first.
-  { iExactEq "Henc". f_equal.
-    (* Need to strengthen EncMap invariant to say that mtodo ∪ mdone is the original map,
-       so that at end when we know mtodo = ∅, we can deduce mdone = m *)
-Abort.
+  { iExactEq "Henc". f_equal. lia. }
+  iFrame.
+Qed.
 
 Lemma wp_encodeInstallShardRequest args_ptr args :
   {{{
