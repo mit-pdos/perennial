@@ -16,7 +16,49 @@ Record InstallShardRequestC := mkInstallShardC {
   IR_Kvs : gmap u64 (list u8)
 }.
 
-Definition marshalledMapSize (m:gmap u64 (list u8)) : nat := 8 + 8 * 2 * (size m).
+(* A marshalled map requires:
+   - 8 bytes to record the number of keys
+   - 8 bytes per key to record the key (8 * size m)
+   - 8 bytes per key to record the length of the slice for that key's value
+   - 1 byte * length of each value to record the values *)
+Definition marshalledMapSize_data (m : gmap u64 (list u8)) : nat :=
+  map_fold (λ k v tot, 8 + 8 + length v + tot)%nat O m.
+
+Definition marshalledMapSize (m: gmap u64 (list u8)) : nat :=
+  8 + marshalledMapSize_data m.
+
+Lemma marshalledMapSize_data_delete m k l :
+  m !! k = Some l →
+  marshalledMapSize_data m = (16 + length l + marshalledMapSize_data (delete k m))%nat.
+Proof.
+  intros Hlookup.
+  rewrite /marshalledMapSize_data.
+  assert (m = <[k := l]> (delete k m)) as Heq.
+  { rewrite insert_delete_insert. rewrite insert_id //. }
+  rewrite Heq.
+  rewrite map_fold_insert_L //; last by apply lookup_delete.
+  { rewrite insert_delete_insert.
+    rewrite delete_insert_delete. lia. }
+  intros.
+  lia.
+Qed.
+
+Lemma marshalledMapSize_data_insert m k l :
+  m !! k = None →
+  marshalledMapSize_data (<[k := l]>m) = (16 + length l + marshalledMapSize_data m)%nat.
+Proof.
+  intros Hlookup.
+  rewrite /marshalledMapSize_data.
+  rewrite map_fold_insert_L //.
+  intros.
+  lia.
+Qed.
+
+
+(*
+Definition marshalledMapSize (m:gmap u64 (list u8)) : nat :=
+  8 + 2 * (size m)
+*)
 
 Definition has_byte_map_encoding (m:gmap u64 (list u8)) (r:Rec) :=
   ∃ l,
@@ -69,6 +111,43 @@ Proof.
   { iExists _, _. iFrame. eauto. }
 Qed.
 
+
+Lemma is_slicemap_rep_move1 m1 m1' m2 m2' k l l':
+  m2 !! k = None →
+  m1 !! k = Some l →
+  m1' !! k = Some l' →
+  is_slicemap_rep m1 m1' -∗
+  is_slicemap_rep m2 m2' -∗
+  (is_slicemap_rep (delete k m1) (delete k m1') ∗
+   is_slicemap_rep (<[k := l]> m2) (<[k := l']> m2')).
+Proof.
+  iIntros (Hnone Hl Hl') "Hs1 Hs2".
+  iNamed "Hs1".
+  iRename "Hmvals" into "Hmvals1".
+  iNamed "Hs2".
+  iRename "Hmvals" into "Hmvals2".
+  iDestruct (big_sepM_delete with "Hmvals1") as "(Hl&Hmvals1)"; eauto.
+  iSplitL "Hmvals1".
+  { iSplit; first iPureIntro.
+    { rewrite ?dom_delete_L Hmdoms. eauto. }
+    iApply (big_sepM_mono with "Hmvals1").
+    { iIntros (?? Hldel) "H". iDestruct "H" as (?? Heq) "H". iExists _, _. iFrame "%".
+      rewrite lookup_delete_ne //.
+      intros Heq'. rewrite Heq' lookup_delete in Hldel. congruence. }
+  }
+  iSplit; first iPureIntro.
+  { rewrite ?dom_insert_L; congruence. }
+  iApply (big_sepM_insert_2 with "[Hl]"); auto.
+  { simpl. iDestruct "Hl" as (?? Heql) "H". iExists _, _. iFrame "%".
+    rewrite lookup_insert. rewrite Hl'. eauto. }
+  iApply (big_sepM_mono with "Hmvals2").
+  { iIntros (k' ? Hldel) "H". iDestruct "H" as (?? Heq) "H". iExists _, _. iFrame "%".
+    destruct (decide (k = k')).
+    { subst. congruence. }
+    rewrite lookup_insert_ne //.
+  }
+Qed.
+
 Lemma is_slicemap_lookup_l mv m k v :
   mv !! k = Some v →
   is_slicemap_rep mv m -∗
@@ -92,8 +171,8 @@ Definition EncSliceMap_invariant enc_v (r:Rec) sz map_sz
     is_slicemap_rep mdone' mdone ∗
     ⌜ NoDup l.*1 ⌝ ∗
     ⌜(list_to_map l) = mdone⌝ ∗
-    ⌜8 * 2 * (size mtodo) ≤ remaining⌝ ∗
-    ⌜remaining = original_remaining - 8 * 2 * (size mdone)⌝ ∗
+    ⌜marshalledMapSize_data mtodo ≤ remaining⌝ ∗
+    ⌜remaining = (original_remaining - marshalledMapSize_data mdone)%Z⌝ ∗
     ⌜mtodo ##ₘ mdone ⌝ ∗
     is_enc enc_v sz (r ++ [EncUInt64 map_sz] ++
  (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 (int.Z (length (u.2))); EncBytes u.2]) l )) remaining
@@ -168,11 +247,10 @@ Proof using Type*.
     rewrite ?Map.map_size_dom Hdom //.
     rewrite ?Map.map_size_dom // in Hrem.
     iFrame.
-    iPureIntro. split; first by lia.
-    rewrite dom_empty_L.
-    replace (size ∅) with (0%nat).
-    { split; first by lia. apply map_disjoint_empty_r. }
-    symmetry. rewrite size_empty //.
+    iPureIntro.
+    split; first by lia.
+    rewrite /marshalledMapSize_data. rewrite map_fold_empty.
+    split; first by lia. apply map_disjoint_empty_r.
   }
   {
     clear Φ.
@@ -182,11 +260,13 @@ Proof using Type*.
     iDestruct "Hpre" as "(Hrep_todo&Hrep_done&Hpre)".
     iDestruct "Hpre" as (Hnodup Hl Hrem' Hremeq Hmdisjoint) "Henc".
     iDestruct (is_slicemap_rep_dom with "Hrep_todo") as %Hdom_todo.
-
-    assert (size mtodo ≠ 0%nat).
-    { apply map_size_non_empty_iff.
-      intros Heq. rewrite Heq dom_empty_L in Hdom_todo.
-      apply elem_of_dom_2 in Htodo. set_solver.
+    iDestruct (is_slicemap_rep_dom with "Hrep_done") as %Hdom_done.
+    assert (16 <= marshalledMapSize_data mtodo).
+    {
+      assert (is_Some (mtodo !! k)) as (vl&Heq_vl).
+      { apply elem_of_dom_2 in Htodo. rewrite Hdom_todo in Htodo. apply elem_of_dom. eauto. }
+      erewrite marshalledMapSize_data_delete; last eauto.
+      lia.
     }
     wp_apply (wp_Enc__PutInt with "Henc").
     {
@@ -206,83 +286,80 @@ Proof using Type*.
     iIntros "Henc".
     wp_pures.
     wp_apply (wp_Enc__PutBytes with "[$Henc $Hslice]").
-Abort.
-(*
+    {
+      erewrite (marshalledMapSize_data_delete mtodo) in Hrem' ; last eassumption.
+      lia.
+    }
+    iIntros "(Henc&Hslice)".
     iApply "HΦ".
-    iExists (l ++ [(k, v)]), (rem' - 8 - 8).
-    iSplit.
-    { iPureIntro.
-      rewrite fmap_app.
-      rewrite NoDup_app.
-      split; first done.
-      split.
-      { intros.
-        simpl.
-        rewrite not_elem_of_cons.
-        split; last apply not_elem_of_nil.
-        destruct (decide (x = k)) as [->|]; last done.
-        exfalso.
-        apply elem_of_list_fmap_2 in H1 as [ [k0 v0] [Hk Hp]].
-        simpl in Hk.
-        eapply (elem_of_list_to_map_1 (M:=gmap _)) in Hnodup; eauto.
-        replace (list_to_map l) with (mdone) in Hnodup by eauto.
-        eapply map_disjoint_spec; eauto.
-        by rewrite Hk.
+    iExists (delete k mtodo), (<[k := l']> (list_to_map l)).
+    iExists (l ++ [(k, l')]), ((remaining - 8 - marshalledMapSize_data (list_to_map l) - 8 - 8 - length l')).
+    assert (k ∉ dom (gset u64) (list_to_map l : gmap u64 (list u8))).
+    { intros Hin. apply map_disjoint_dom_1 in Hmdisjoint.
+      apply elem_of_dom_2 in Heq2. eauto. }
+    iDestruct (is_slicemap_rep_move1 with "Hrep_todo Hrep_done") as "($&$)".
+    { apply not_elem_of_dom. rewrite Hdom_done. set_solver. }
+    { eauto. }
+    { eauto. }
+    assert (NoDup (l ++ [(k, l')]).*1).
+    { rewrite fmap_app; simpl.
+      apply NoDup_app; split_and!; eauto.
+      { intros x Hinl. intros. intros Hin. apply elem_of_list_singleton in Hin; subst.
+        apply map_disjoint_dom_1 in Hmdisjoint.
+        rewrite dom_list_to_map_L in Hmdisjoint.
+        assert (k ∈ (list_to_set l.*1 : gset u64)).
+        { apply elem_of_list_to_set. eauto. }
+        apply elem_of_dom_2 in Heq2. set_solver.
       }
-      { apply NoDup_cons_2.
-        - apply not_elem_of_nil.
-        - apply NoDup_nil_2.
-      }
+      apply NoDup_singleton.
+    }
+    iSplit; first done.
+    iSplit.
+    { iPureIntro. rewrite -list_to_map_cons. eapply list_to_map_proper; eauto.
+      rewrite Permutation_app_comm //. }
+    iSplit.
+    {
+      iPureIntro.
+      erewrite marshalledMapSize_data_delete in Hrem'; eauto.
+      lia.
     }
     iSplit.
-    { iPureIntro.
-      rewrite -Hl.
-      apply list_to_map_snoc.
-      (* XXX: had to put the M there because typeclass resolution was not working well *)
-      rewrite (not_elem_of_list_to_map (M:=(@gmap u64 u64_eq_dec u64_countable))).
-      rewrite Hl.
-      destruct (mdone !! k) eqn:Hcase; last done.
-      exfalso; by eapply map_disjoint_spec.
+    {
+      iPureIntro.
+      rewrite marshalledMapSize_data_insert; last first.
+      { apply not_elem_of_dom. eauto. }
+      lia.
     }
     iSplit.
-    { replace (size (delete k mtodo)) with (pred (size mtodo)).
-      { iPureIntro. lia. }
-      { symmetry. apply map_size_delete_Some. eauto. }
+    {
+      iPureIntro.
+      apply map_disjoint_dom_2.
+      apply map_disjoint_dom_1 in Hmdisjoint.
+      rewrite dom_delete_L dom_insert_L. set_solver.
     }
-    rewrite flat_map_app.
+    iDestruct (typed_slice.is_slice_small_sz with "Hslice") as %Hsz'.
+    iExactEq "Henc".
+    f_equal.
     simpl.
-    replace ([EncUInt64 k; EncUInt64 v]) with ([EncUInt64 k] ++ [EncUInt64 v]) by eauto.
-    iFrame.
-    rewrite -app_assoc.
-    rewrite -app_assoc.
-    iFrame.
-    iPureIntro.
-
-    destruct (mdone !! k) eqn:X.
-    - exfalso. eapply map_disjoint_spec; eauto.
-    - split.
-      + rewrite map_size_insert_None; first lia. done.
-      + apply map_disjoint_insert_r_2.
-        { apply lookup_delete. }
-        by apply map_disjoint_delete_l.
+    rewrite -?app_assoc; f_equal.
+    simpl. f_equal.
+    rewrite flat_map_app //=. repeat f_equal.
+    word.
   }
-  iIntros "[Hmap Henc]".
-  iDestruct "Henc" as (l rem' Hnodup Hl _ ? ?) "Henc".
-  iApply ("HΦ" $! (
-              [EncUInt64 (size m)] ++
-              flat_map (λ u : u64 * u64, [EncUInt64 u.1; EncUInt64 u.2]) l)
-         ).
-  iFrame "Hmap".
-  unfold marshalledMapSize.
-  replace (remaining - (8 + 8 * 2 * size m)%nat) with (rem') by lia.
+  iIntros "(Hmap&Hinv)".
+  iNamed "Hinv".
+  iApply ("HΦ" $! ([EncUInt64 (size m)] ++
+                 flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l)).
+  iDestruct "Hinv" as "(?&?&?&?&?&->&?&Henc)".
   iFrame.
-  iPureIntro.
-  exists l.
-  rewrite -u64_Z_through_nat.
-  eauto.
-Qed.
-*)
-
+  rewrite /marshalledMapSize.
+  iSplit.
+  { admit. }
+  iSplitR "Henc"; last first.
+  { iExactEq "Henc". f_equal.
+    (* Need to strengthen EncMap invariant to say that mtodo ∪ mdone is the original map,
+       so that at end when we know mtodo = ∅, we can deduce mdone = m *)
+Abort.
 
 Lemma wp_encodeInstallShardRequest args_ptr args :
   {{{
