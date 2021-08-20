@@ -69,7 +69,8 @@ Definition has_byte_map_encoding (m:gmap u64 (list u8)) (r:Rec) :=
       ((flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 (int.Z (length (u.2))); EncBytes u.2]) l)).
 
 Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : Prop :=
-  ∃ r, has_byte_map_encoding (args.(IR_Kvs)) r ∧
+  ∃ r, (* (∀ k, k ∈ dom (gset _ ) args.(IR_Kvs) → shardOfC k = args.(IR_CID)) ∧ *)
+       has_byte_map_encoding (args.(IR_Kvs)) r ∧
        has_encoding data ([EncUInt64 args.(IR_CID); EncUInt64 args.(IR_Seq); EncUInt64 args.(IR_Sid)] ++ r).
 
 Context `{!heapGS Σ}.
@@ -107,7 +108,6 @@ Proof.
   { iExists _, _. iFrame. eauto. }
   { iExists _, _. iFrame. eauto. }
 Qed.
-
 
 Lemma is_slicemap_rep_move1 m1 m1' m2 m2' k l l':
   m2 !! k = None →
@@ -477,6 +477,19 @@ Definition shard_own (mv : gmap u64 val) (m : gmap u64 (list u8)) id : iProp Σ 
                                      ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
                                              typed_slice.is_slice_small vsl byteT q
                                              (default [] (m !! k)))).
+(*
+Lemma shard_own_shardOfC mv m id :
+  shard_own mv m id -∗
+  ⌜ (∀ k, k ∈ dom (gset _ ) m → shardOfC k = id) ⌝.
+Proof.
+  iIntros "H" (k Hin).
+  rewrite /shard_own.
+  iDestruct (big_sepS_elem_of _ _ k with "H") as "H".
+  { apply elem_of_fin_to_set. }
+  destruct (decide (shardOfC k = id)); auto.
+  iDestruct "H" as "[H|H]".
+  {
+*)
 
 Lemma shard_own_dup mv m id:
   shard_own mv m id -∗ shard_own mv m id ∗ shard_own mv m id.
@@ -594,6 +607,192 @@ Proof.
   iPureIntro. rewrite /has_encoding_InstallShardRequest. eexists; split; eauto.
 Qed.
 
+Definition DecSliceMap_invariant dec_v i_ptr m (r:Rec) mref s data : iProp Σ :=
+  ∃ q (l:list (u64 * (list u8))) mdone' (mdone:gmap u64 (list u8)),
+    ⌜NoDup l.*1⌝ ∗
+    ⌜(list_to_map l) ##ₘ mdone⌝ ∗
+    ⌜(list_to_map l) ∪ mdone = m⌝ ∗
+    i_ptr ↦[uint64T] #(size mdone) ∗
+    map.is_map mref 1 (mdone', (slice_val Slice.nil)) ∗
+    is_slicemap_rep mdone' mdone ∗
+    is_dec dec_v
+          ((flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l) ++ r)
+          s q data
+.
+
+(* FIXME: use upstream version *)
+Lemma gmap_size_union {X} (A B:gmap u64 X) :
+  A ##ₘ B → size (A ∪ B) = ((size A) + (size B))%nat.
+Proof.
+Admitted.
+
+Lemma wp_DecSliceMap d l m args_sl argsData :
+  NoDup l.*1 →
+  int.Z (size m) = size m →
+  list_to_map l = m →
+  {{{
+      "Hdec" ∷ is_dec d
+             ([EncUInt64 (size m)] ++
+              flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l)
+             args_sl 1 argsData
+  }}}
+    DecSliceMap d
+  {{{
+       rmap mv, RET #rmap;
+       map.is_map rmap 1 (mv, slice_val Slice.nil) ∗
+       is_slicemap_rep mv m
+  }}}.
+Proof.
+  iIntros (Hnodup Hsize Hlist).
+  iIntros (Φ) "Hdec HΦ".
+  wp_lam.
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_pures.
+  wp_apply map.wp_NewMap.
+  iIntros (mref) "Hmref".
+  wp_pures.
+  wp_apply (wp_ref_to); first eauto.
+  iIntros (i_ptr) "Hi".
+  wp_pures.
+  iAssert (DecSliceMap_invariant d i_ptr m [] mref args_sl argsData) with "[Hi Hmref Hdec]" as "HloopInv".
+  {
+    iExists 1%Qp, l, ∅, ∅.
+    iFrame.
+    iSplit; first done.
+    iSplitL "".
+    { iPureIntro. eapply (map_disjoint_empty_r (M:=gmap _)). }
+    rewrite right_id.
+    iSplit; first done.
+    rewrite app_nil_r. iFrame.
+    rewrite /is_slicemap_rep. rewrite ?dom_empty_L. rewrite big_sepM_empty //.
+  }
+
+  wp_forBreak_cond.
+  clear Hlist Hnodup l.
+  iDestruct "HloopInv" as (q l' mdone mdone' Hnodup Hdisj Hunion) "(Hi & Hmref & Hslicemap & Hdec)".
+  wp_load.
+  wp_pures.
+  wp_if_destruct.
+  { (* Start of loop iteration *)
+    wp_pures.
+    destruct l'.
+    { simpl in Heqb. exfalso.
+      simpl in *. rewrite left_id in Hunion.
+      rewrite Hunion in Heqb. lia. }
+    destruct p as [k v].
+    simpl.
+    wp_apply (wp_Dec__GetInt with "Hdec").
+    iIntros "Hdec".
+    wp_apply (wp_Dec__GetInt with "Hdec").
+    iIntros "Hdec".
+    wp_apply (wp_Dec__GetBytes with "Hdec").
+    { admit. (* need to strengthen encoding to say that all the keys have lenghts don't overflow,
+                but also seems that should be derivable from is_dec? *) }
+    iIntros (q' s') "(Hsl&Hdec)".
+    wp_pures.
+    wp_apply (map.wp_MapInsert with "Hmref").
+    iIntros "Hmref".
+    wp_pures.
+    wp_load.
+    wp_store.
+    iLeft.
+    iSplitL ""; first done.
+    iSplitL "HΦ"; first done.
+    iExists q', l', _,  (<[k:=v]> mdone').
+    iFrame "Hmref".
+    iModIntro.
+    iSplitL "".
+    { by apply NoDup_cons in Hnodup as [??]. }
+    assert ((list_to_map l' (M:=gmap _ _)) !! k = None) as Hnok.
+    { apply NoDup_cons in Hnodup as [HkNotInL Hnodup].
+        by apply not_elem_of_list_to_map_1. }
+    iFrame.
+    iSplitL "".
+    { iPureIntro. simpl in Hdisj.
+      rewrite map_disjoint_insert_r.
+      split; first done.
+      eapply map_disjoint_weaken; eauto.
+      simpl.
+      apply insert_subseteq.
+      done.
+    }
+    iSplitL "".
+    { iPureIntro. simpl in Hunion.
+      rewrite -insert_union_r; last done.
+      rewrite insert_union_l.
+      done.
+    }
+    rewrite (map_size_insert_None); last first.
+    { eapply map_disjoint_Some_l; eauto.
+      simpl. apply lookup_insert. }
+    replace (word.add (size mdone') 1) with (int.Z (size mdone') + 1:u64) by word.
+    rewrite Z_u64; last first.
+    { split; first lia.
+      word_cleanup.
+      rewrite Hsize in Heqb.
+      assert (size mdone' ≤ size m)%nat.
+      { rewrite -Hunion.
+        rewrite ?Map.map_size_dom.
+        apply subseteq_size. set_solver. }
+      lia.
+    }
+    replace (Z.of_nat (S (size mdone'))) with (size mdone' + 1)%Z by lia.
+    iFrame.
+    rewrite /is_slicemap_rep.
+    iNamed "Hslicemap".
+    iSplit.
+    { rewrite ?dom_insert_L; iPureIntro; congruence. }
+    assert (mdone !! k = None).
+    { apply not_elem_of_dom. rewrite Hmdoms.
+      rewrite list_to_map_cons in Hdisj.
+      apply map_disjoint_dom_1 in Hdisj.
+      rewrite dom_insert_L in Hdisj. set_solver.
+    }
+    iApply big_sepM_insert; first auto.
+    iSplitL "Hsl".
+    { iExists _, _. iSplit; first eauto.
+      rewrite lookup_insert //=. }
+    iApply (big_sepM_mono with "Hmvals").
+    iIntros (k' x' Hlookup).
+    simpl. rewrite lookup_insert_ne //.
+    intros Heq. subst. congruence.
+  }
+  assert (size mdone' ≤ size m)%nat.
+  { rewrite -Hunion.
+    rewrite ?Map.map_size_dom.
+    apply subseteq_size. set_solver. }
+  iRight. iSplitL ""; first done.
+  iModIntro.
+  wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  iFrame.
+  destruct l'; last first.
+  {
+    exfalso.
+    set (mtodo:=(list_to_map (p :: l'))) in *.
+    assert (size m <= size mdone').
+    { rewrite ?Z_u64 in Heqb; try word. }
+    rewrite -Hunion in Heqb.
+    rewrite gmap_size_union in Heqb; eauto.
+    assert (size mtodo > 0).
+    { destruct (decide (size mtodo = O)) as [Hz|Hnz]; try lia.
+      rewrite ?Map.map_size_dom in Hz.
+      apply size_empty_inv in Hz.
+      apply dom_empty_inv in Hz.
+      rewrite /mtodo in Hz.
+      destruct p. rewrite list_to_map_cons in Hz.
+      apply insert_non_empty in Hz. exfalso; eauto.
+    }
+    assert (size m = size mtodo + size mdone')%nat.
+    { rewrite -Hunion.
+      rewrite gmap_size_union; eauto. }
+    word.
+  }
+  rewrite list_to_map_nil left_id_L in Hunion. subst. iFrame.
+Admitted.
+
 Lemma wp_decodeInstallShardRequest args args_sl argsData :
   {{{
        typed_slice.is_slice args_sl byteT 1%Qp argsData ∗
@@ -605,6 +804,41 @@ Lemma wp_decodeInstallShardRequest args args_sl argsData :
        own_InstallShardRequest args_ptr args
   }}}.
 Proof.
+  iIntros (Φ) "(Hslice&%Henc) HΦ".
+  wp_lam.
+  destruct Henc as (r&(l&Hsize&Hnodup&HlistMap&Hmapencoded)&Hdata).
+  rewrite Hmapencoded in Hdata.
+  iDestruct (typed_slice.is_slice_to_small with "Hslice") as "Hslice".
+  wp_apply (wp_new_dec with "Hslice"); eauto.
+  iIntros (d) "Hdec".
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { eauto. }
+  iIntros (req) "Hreq".
+  wp_pures.
+  iDestruct (struct_fields_split with "Hreq") as "H".
+  iNamed "H".
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_storeField.
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_storeField.
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_storeField.
+  wp_apply (wp_DecSliceMap with "[$]"); try eauto.
+  iIntros (rmap mv) "(Hmref&Hslicemap)".
+  wp_storeField.
+  iModIntro.
+  iApply "HΦ".
+  iExists _, _. iFrame.
+  iDestruct (is_slicemap_rep_dom with "[$]") as "%Hdom".
+  iSplit.
+  { admit. }
+  iSplit.
+  { eauto. }
 Admitted.
+
 
 End memkv_marshal_install_shard_proof.
