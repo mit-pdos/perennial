@@ -358,6 +358,116 @@ Proof using Type*.
   iFrame.
 Qed.
 
+Definition SizeOfMarshalledMap_invariant m0 (s : loc) (mtodo' mdone':gmap u64 val) : iProp Σ :=
+  (∃ (z : u64) mtodo mdone,
+    is_slicemap_rep mtodo' mtodo ∗
+    is_slicemap_rep mdone' mdone ∗
+    ⌜ mtodo ∪ mdone = m0 ⌝ ∗
+    ⌜mtodo ##ₘ mdone ⌝ ∗
+    s ↦[uint64T] #z ∗
+    ⌜ (8 + marshalledMapSize_data mdone)%nat = int.nat z ⌝).
+
+Lemma wp_SizeOfMarshalledMap mref mv m :
+  {{{
+      "HKvsMap" ∷ map.is_map mref 1 (mv, slice_val Slice.nil) ∗
+      "Hvals" ∷ is_slicemap_rep mv m
+  }}}
+    SizeOfMarshalledMap #mref
+  {{{
+       (z : u64), RET #z; ⌜ int.nat z = marshalledMapSize m ⌝ ∗
+       map.is_map mref 1 (mv, slice_val Slice.nil) ∗
+       is_slicemap_rep mv m
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H".
+  wp_pures.
+  rewrite /SizeOfMarshalledMap.
+  wp_pure _.
+  wp_apply (wp_ref_of_zero _ _ (uint64T)); first done.
+  iIntros (s) "Hs".
+  wp_pures.
+  wp_apply (wp_StoreAt with "[$]"); first eauto.
+  iIntros "Hs".
+  wp_pures.
+  wp_apply (map.wp_MapIter_2 _ _ _ _ _ (SizeOfMarshalledMap_invariant m s)
+              with "HKvsMap [Hs Hvals] [] [HΦ]").
+  {
+    iExists (U64 8), m, ∅.
+    simpl. iFrame.
+    iSplitL "".
+    { rewrite /is_slicemap_rep. rewrite ?dom_empty_L big_sepM_empty //=. }
+    iSplit.
+    { iPureIntro. rewrite right_id_L //. }
+    iPureIntro; split.
+    * apply map_disjoint_empty_r.
+    * rewrite /marshalledMapSize_data map_fold_empty. word.
+  }
+  {
+    clear Φ.
+    iIntros (?? mtodo' mdone' Φ) "!# [Hpre %Htodo] HΦ".
+    wp_pures.
+    iDestruct "Hpre" as (z mtodo mdone) "Hpre".
+    iDestruct "Hpre" as "(Hrep_todo&Hrep_done&%Hunion&%Hdisj&Hs&%Hsum)".
+    iDestruct (is_slicemap_rep_dom with "Hrep_todo") as %Hdom_todo.
+    iDestruct (is_slicemap_rep_dom with "Hrep_done") as %Hdom_done.
+    wp_apply (wp_LoadAt with "[$]").
+    iIntros "Hs".
+    iDestruct (is_slicemap_lookup_l with "Hrep_todo") as "(Hrep_todo&Hval)"; eauto.
+    iDestruct "Hval" as (q vsl l' Heq1 Heq2) "Hslice".
+    iDestruct (typed_slice.is_slice_small_sz with "Hslice") as %Hsz'.
+    subst. wp_apply (wp_slice_len).
+    wp_pures.
+    wp_apply (wp_StoreAt with "[$]").
+    { eauto. }
+    iIntros "Hs".
+    iApply "HΦ".
+    iExists _, (delete k mtodo), (<[k := l']> mdone).
+    iFrame.
+    iDestruct (is_slicemap_rep_move1 with "Hrep_todo Hrep_done") as "($&$)".
+    { apply not_elem_of_dom. rewrite Hdom_done.
+      apply map_disjoint_dom_1 in Hdisj.
+      apply elem_of_dom_2 in Heq2.
+      set_solver. }
+    { eauto. }
+    { eauto. }
+    iSplit.
+    { iPureIntro. rewrite union_delete_insert //. }
+    iSplit.
+    {
+      iPureIntro.
+      apply map_disjoint_dom_2.
+      apply map_disjoint_dom_1 in Hdisj.
+      rewrite dom_delete_L dom_insert_L. set_solver.
+    }
+    iPureIntro.
+    rewrite marshalledMapSize_data_insert; last first.
+    { apply not_elem_of_dom.
+      apply map_disjoint_dom_1 in Hdisj.
+      apply elem_of_dom_2 in Heq2.
+      eauto. }
+    rewrite Hsz'.
+    transitivity (16 + int.nat vsl.(Slice.sz) + int.nat z)%nat.
+    { lia. }
+    word_cleanup.
+    (* TODO: need assume no overflow when computing this *)
+    admit.
+  }
+  iIntros "(Hmap&Hinv)".
+  iNamed "Hinv".
+  iDestruct "Hinv" as "(?&?&%Hunion&%&?&%)".
+  wp_pures.
+  wp_apply (wp_LoadAt with "[$]").
+  iIntros "Hs".
+  iDestruct (is_slicemap_rep_empty_inv with "[$]") as %Hemp.
+  assert (m = mdone) as Hdone.
+  { rewrite Hemp left_id_L in Hunion. auto. }
+  rewrite Hdone.
+  iApply "HΦ".
+  iFrame.
+  iPureIntro.
+  rewrite /marshalledMapSize. word.
+Abort.
+
 Lemma wp_encodeInstallShardRequest args_ptr args :
   {{{
        own_InstallShardRequest args_ptr args
@@ -374,8 +484,8 @@ Proof.
   wp_lam.
   wp_loadField.
   wp_pures.
-  rewrite /SizeOfMarshalledMap.
   (*
+  rewrite /SizeOfMarshalledMap.
   wp_apply (wp_SumAssumeNoOverflow).
   iIntros (?) "Henc".
   wp_pures.
