@@ -470,6 +470,32 @@ Proof.
   rewrite /marshalledMapSize. word.
 Qed.
 
+Lemma shard_to_is_slicemap_rep (mv : gmap u64 val) m id:
+([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
+                             ∨ (∃ (q : Qp) (vsl : Slice.t),
+                                   ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
+                                           typed_slice.is_slice_small vsl byteT q
+                                           (default [] (m !! k)))) -∗
+is_slicemap_rep mv m.
+Proof.
+  iIntros "H".
+  rewrite /is_slicemap_rep.
+  iSplit.
+  - iInduction mv as [| k v] "IH" using map_ind.
+    * iInduction m as [| k' v'] "_" using map_ind.
+      { rewrite ?dom_empty_L //. }
+      iDestruct (big_sepS_elem_of _ _ k' with "H") as "H".
+      { apply elem_of_fin_to_set. }
+      iDestruct "H" as "[%Hbad|H]".
+      { exfalso. rewrite lookup_insert in Hbad; intuition congruence. }
+      { iDestruct "H" as (?? Hbad) "H".
+        rewrite lookup_insert /=.
+        rewrite lookup_empty /= in Hbad.
+        subst. rewrite /= in Hbad.
+        (* Stuck here *)
+    *
+Abort.
+
 Lemma wp_encodeInstallShardRequest args_ptr args :
   {{{
        own_InstallShardRequest args_ptr args
@@ -485,7 +511,8 @@ Proof.
   iNamed "Hpre".
   wp_lam.
   wp_loadField.
-  wp_pures.
+  wp_apply (wp_SizeOfMarshalledMap with "[$HKvsMap]").
+
   (*
   rewrite /SizeOfMarshalledMap.
   wp_apply (wp_SumAssumeNoOverflow).
