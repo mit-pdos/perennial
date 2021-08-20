@@ -471,31 +471,73 @@ Proof.
   rewrite /marshalledMapSize. word.
 Qed.
 
-Lemma shard_to_is_slicemap_rep (mv : gmap u64 val) m id:
-([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
-                             ∨ (∃ (q : Qp) (vsl : Slice.t),
-                                   ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
-                                           typed_slice.is_slice_small vsl byteT q
-                                           (default [] (m !! k)))) -∗
-is_slicemap_rep mv m.
+Definition shard_own (mv : gmap u64 val) (m : gmap u64 (list u8)) id : iProp Σ :=
+  ([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
+                               ∨ (∃ (q : Qp) (vsl : Slice.t),
+                                     ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
+                                             typed_slice.is_slice_small vsl byteT q
+                                             (default [] (m !! k)))).
+
+Lemma shard_own_dup mv m id:
+  shard_own mv m id -∗ shard_own mv m id ∗ shard_own mv m id.
 Proof.
   iIntros "H".
-  rewrite /is_slicemap_rep.
-  iSplit.
-  - iInduction mv as [| k v] "IH" using map_ind.
-    * iInduction m as [| k' v'] "_" using map_ind.
-      { rewrite ?dom_empty_L //. }
-      iDestruct (big_sepS_elem_of _ _ k' with "H") as "H".
-      { apply elem_of_fin_to_set. }
-      iDestruct "H" as "[%Hbad|H]".
-      { exfalso. rewrite lookup_insert in Hbad; intuition congruence. }
-      { iDestruct "H" as (?? Hbad) "H".
-        rewrite lookup_insert /=.
-        rewrite lookup_empty /= in Hbad.
-        subst. rewrite /= in Hbad.
-        (* Stuck here *)
-    *
-Abort.
+  rewrite /shard_own. iApply big_sepS_sep.
+  iApply (big_sepS_mono with "H").
+  iIntros (x Hin) "H". iDestruct "H" as "[%Hl|Hr]".
+  { iFrame "%". }
+  iDestruct "Hr" as (q vsl Heq) "Hslice".
+  rewrite -(Qp_div_2 q).
+  iDestruct (fractional.fractional_split_1 with "Hslice") as "[Hl1 Hl2]".
+  iSplitL "Hl1".
+  { iRight. iExists _, _. iFrame. eauto. }
+  { iRight. iExists _, _. iFrame. eauto. }
+Qed.
+
+Lemma shard_to_is_slicemap_rep (mv : gmap u64 val) m id:
+  dom (gset _) mv = dom (gset _) m →
+  ([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
+                               ∨ (∃ (q : Qp) (vsl : Slice.t),
+                                     ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
+                                             typed_slice.is_slice_small vsl byteT q
+                                             (default [] (m !! k)))) -∗
+  is_slicemap_rep mv m.
+Proof.
+  iIntros (Hdom) "H".
+  assert (dom (gset _) mv ⊆ fin_to_set u64) as Hdomsub.
+  { set_unfold. trivial. }
+  remember (fin_to_set u64) as U eqn:Heq. clear Heq.
+  iSplit; first done.
+  iInduction mv as [| k v mv Hlookup] "IH" using map_ind forall (m U Hdom Hdomsub).
+  { iApply big_sepM_empty. eauto. }
+  iApply big_sepM_insert; eauto.
+  iDestruct (big_sepS_delete _ _ k with "H") as "(Hk&H)".
+  { rewrite dom_insert_L in Hdomsub. set_solver. }
+  iDestruct ("IH" $! (delete k m) (U ∖ {[k]}) with "[] [] [H]") as "H".
+  { iPureIntro.
+    rewrite dom_insert_L in Hdom.
+    rewrite dom_delete_L.
+    rewrite -Hdom.
+    apply not_elem_of_dom in Hlookup.
+    set_solver. }
+  { iPureIntro.
+    rewrite dom_insert_L in Hdomsub.
+    apply not_elem_of_dom in Hlookup.
+    set_solver. }
+  { iApply (big_sepS_mono with "H").
+    iIntros (??) "H".
+    rewrite lookup_insert_ne; last set_solver.
+    rewrite lookup_delete_ne; last set_solver. eauto. }
+  iSplitR "H".
+  { iDestruct "Hk" as "[%Hbad|H]".
+    { exfalso. rewrite lookup_insert in Hbad. intuition congruence. }
+    rewrite lookup_insert. iDestruct "H" as (?? Heq) "H".
+    iExists _, _. iSplit; first eauto. iFrame.
+  }
+  iApply (big_sepM_mono with "H").
+  { iIntros (k' v' Hlookup').
+    simpl. rewrite lookup_delete_ne; last set_solver. eauto. }
+Qed.
 
 Lemma wp_encodeInstallShardRequest args_ptr args :
   {{{
@@ -511,16 +553,46 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_lam.
+  iDestruct (shard_own_dup with "Hvals") as "(Hvals&Hex)".
+  iDestruct (shard_to_is_slicemap_rep with "Hex") as "Hslicemap".
+  { eauto. }
   wp_loadField.
-  wp_apply (wp_SizeOfMarshalledMap with "[$HKvsMap]").
-
-  (*
-  rewrite /SizeOfMarshalledMap.
+  wp_apply (wp_SizeOfMarshalledMap with "[$Hslicemap $HKvsMap]").
+  iIntros (z) "(%Hsize&HKvsMap&Hslicemap)".
   wp_apply (wp_SumAssumeNoOverflow).
-  iIntros (?) "Henc".
+  iIntros (Hoverflow).
   wp_pures.
-   *)
-Admitted.
+  wp_apply (wp_new_enc).
+  iIntros (e) "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { rewrite Hoverflow. word. }
+  iIntros "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { rewrite Hoverflow. word. }
+  iIntros "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { rewrite Hoverflow. word. }
+  iIntros "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_EncSliceMap with "[$Hslicemap $Henc $HKvsMap]").
+  { rewrite Hoverflow. word. }
+  iIntros (rmap) "(%Hhas&Hismap&Hslicemap&Henc)".
+  wp_pures.
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (??) "(%&%&?)".
+  iApply "HΦ".
+  iFrame.
+  iSplit; last first.
+  { iExists _, _. iFrame. eauto. }
+  iPureIntro. rewrite /has_encoding_InstallShardRequest. eexists; split; eauto.
+Qed.
 
 Lemma wp_decodeInstallShardRequest args args_sl argsData :
   {{{
