@@ -199,7 +199,8 @@ Definition SizeOfMarshalledMap: val :=
     let: "s" := ref (zero_val uint64T) in
     "s" <-[uint64T] #8;;
     MapIter "m" (λ: <> "value",
-      "s" <-[uint64T] ![uint64T] "s" + slice.len "value" + #8 + #8);;
+      let: "v" := std.SumAssumeNoOverflow (slice.len "value") (#8 + #8) in
+      "s" <-[uint64T] std.SumAssumeNoOverflow (![uint64T] "s") "v");;
     ![uint64T] "s".
 
 Definition EncSliceMap: val :=

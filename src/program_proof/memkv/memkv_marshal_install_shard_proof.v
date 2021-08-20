@@ -410,12 +410,16 @@ Proof.
     iDestruct "Hpre" as "(Hrep_todo&Hrep_done&%Hunion&%Hdisj&Hs&%Hsum)".
     iDestruct (is_slicemap_rep_dom with "Hrep_todo") as %Hdom_todo.
     iDestruct (is_slicemap_rep_dom with "Hrep_done") as %Hdom_done.
-    wp_apply (wp_LoadAt with "[$]").
-    iIntros "Hs".
     iDestruct (is_slicemap_lookup_l with "Hrep_todo") as "(Hrep_todo&Hval)"; eauto.
     iDestruct "Hval" as (q vsl l' Heq1 Heq2) "Hslice".
     iDestruct (typed_slice.is_slice_small_sz with "Hslice") as %Hsz'.
     subst. wp_apply (wp_slice_len).
+    wp_apply (wp_SumAssumeNoOverflow).
+    iIntros (Hnooverflow1).
+    wp_apply (wp_LoadAt with "[$]").
+    iIntros "Hs".
+    wp_apply (wp_SumAssumeNoOverflow).
+    iIntros (Hnooverflow2).
     wp_pures.
     wp_apply (wp_StoreAt with "[$]").
     { eauto. }
@@ -448,9 +452,7 @@ Proof.
     rewrite Hsz'.
     transitivity (16 + int.nat vsl.(Slice.sz) + int.nat z)%nat.
     { lia. }
-    word_cleanup.
-    (* TODO: need assume no overflow when computing this *)
-    admit.
+    rewrite Hnooverflow2. rewrite Hnooverflow1. word.
   }
   iIntros "(Hmap&Hinv)".
   iNamed "Hinv".
@@ -466,7 +468,7 @@ Proof.
   iFrame.
   iPureIntro.
   rewrite /marshalledMapSize. word.
-Abort.
+Qed.
 
 Lemma wp_encodeInstallShardRequest args_ptr args :
   {{{
