@@ -194,8 +194,10 @@ Proof.
       iExists _,_,_.
       iFrame.
       iPureIntro.
-      apply list_lookup_insert.
-      move: HkvssLength. word.
+      split.
+      - apply list_lookup_insert.
+        move: HkvssLength. word.
+      - eauto.
     }
     iApply big_sepS_intro.
     iModIntro.

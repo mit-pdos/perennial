@@ -85,6 +85,7 @@ Qed.
 Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
   ∃ (mv:gmap u64 val),
   "Hmap_phys" ∷ map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
+  "%Hdom_phys" ∷ ⌜ dom (gset _) kvs = dom (gset _) mv ⌝ ∗
   ([∗ set] k ∈ (fin_to_set u64),
            (⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ kvs !! k = None ⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (kvs !! k)))))
 .

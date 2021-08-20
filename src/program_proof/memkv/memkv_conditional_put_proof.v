@@ -245,7 +245,7 @@ Proof.
       { set_solver. }
       iDestruct "HownShard" as "[%Hbad|HownShard]".
       { exfalso. done. }
-      iDestruct "HownShard" as (kvs_ptr m mv) "(HshardGhost & %Hkvs_lookup & HkvsMap & HvalSlices)".
+      iDestruct "HownShard" as (kvs_ptr m mv) "(HshardGhost & %Hkvs_lookup & %Hdom_kvs& HkvsMap & HvalSlices)".
       wp_apply (wp_SliceGet _ _ _ _ _ _ _ (#kvs_ptr) with "[Hkvss_sl]").
       {
         iFrame "Hkvss_sl".
@@ -380,7 +380,7 @@ Proof.
         iRight.
         iExists _, _, _.
         iFrame.
-        instantiate (1:=(<[args.(CPR_Key):=newv]> m)).
+        instantiate (1:=(if succ then <[args.(CPR_Key):=args.(CPR_NewValue)]> m else m)).
         iSplitL "HshardGhost Hkvptsto2".
         {
           iApply (big_sepS_delete _ _ args.(CPR_Key) with "[-]").
@@ -388,42 +388,46 @@ Proof.
           iSplitL "Hkvptsto2".
           {
             iRight.
-            rewrite lookup_insert.
-            iFrame.
+            destruct succ.
+            * rewrite lookup_insert. iFrame.
+            * iFrame.
           }
           iApply (big_sepS_impl with "HshardGhost").
           iModIntro; iIntros.
-          rewrite lookup_insert_ne; last first.
-          { set_solver. }
-          iFrame.
+          destruct succ.
+          * rewrite lookup_insert_ne; last first.
+            { set_solver. }
+            iFrame.
+          * iFrame.
         }
         iSplitL ""; first done.
-        iSplitL "HkvsMap".
-        { instantiate (1:=if succ then _ else _).
-          destruct succ; done. }
-        iApply (big_sepS_delete _ _ args.(CPR_Key) with "[-]").
-        { set_solver. }
-        simpl. iSplitL "HNewValue_sl' Hsrv_val_sl".
-        {
-          simpl. iRight. destruct succ.
-          - iExists _, newv_sl.
-            rewrite lookup_insert.
-            rewrite lookup_insert.
-            eauto with iFrame.
-          - iExists _, curv_sl.
-            rewrite lookup_insert.
-            eauto with iFrame.
-        }
-        iApply (big_sepS_impl with "HvalSlices").
-        iModIntro.
-        iIntros.
-        rewrite lookup_insert_ne; last first.
-        { set_solver. }
-        destruct succ.
-        - rewrite lookup_insert_ne; last first.
+        iSplitL ""; last first.
+        { iSplitL "HkvsMap".
+          { instantiate (1:=if succ then _ else _).
+            destruct succ; done. }
+          iApply (big_sepS_delete _ _ args.(CPR_Key) with "[-]").
           { set_solver. }
-          iFrame.
-        - iFrame.
+          simpl. iSplitL "HNewValue_sl' Hsrv_val_sl".
+          {
+            simpl. iRight. destruct succ.
+            - iExists _, newv_sl.
+              rewrite lookup_insert.
+              rewrite lookup_insert.
+              eauto with iFrame.
+            - iExists _, curv_sl.
+              eauto with iFrame.
+          }
+          iApply (big_sepS_impl with "HvalSlices").
+          iModIntro.
+          iIntros.
+          destruct succ.
+          * rewrite ?lookup_insert_ne; last first.
+            { set_solver. }
+            { set_solver. }
+            iFrame.
+          * iFrame.
+        }
+        destruct succ; rewrite ?dom_insert_L; iPureIntro; congruence.
       }
       iApply "HΦ".
       iSplitL "HErr HSucc".

@@ -109,7 +109,7 @@ Proof.
   { set_solver. }
   iDestruct "HownShard" as "[%Hbad|HownShard]".
   { exfalso. done. }
-  iDestruct "HownShard" as (kvs_ptr m mv) "(HshardGhost & %Hkvs_lookup & HkvsMap & HvalSlices)".
+  iDestruct "HownShard" as (kvs_ptr m mv) "(HshardGhost & %Hkvs_lookup & %Hkvs_dom & HkvsMap & HvalSlices)".
 
   wp_apply (wp_SliceGet with "[$Hkvss_small]").
   {
@@ -164,6 +164,7 @@ Proof.
     iFrame "HshardGhost".
     iSplitR ""; last (iPureIntro; word).
     iExists _; iFrame.
+    eauto.
   }
   iIntros "Hclerk".
   iSpecialize ("HpeerClerks" with "[Hclerk]").

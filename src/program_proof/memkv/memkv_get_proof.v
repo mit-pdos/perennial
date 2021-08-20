@@ -306,7 +306,7 @@ Proof.
       { set_solver. }
       iDestruct "HownShard" as "[%Hbad|HownShard]".
       { exfalso. done. }
-      iDestruct "HownShard" as (kvs_ptr m mv) "(HshardGhost & %Hkvs_lookup & HkvsMap & HvalSlices)".
+      iDestruct "HownShard" as (kvs_ptr m mv) "(HshardGhost & %Hkvs_lookup & %Hkvs_dom & HkvsMap & HvalSlices)".
       wp_apply (wp_SliceGet _ _ _ _ _ _ _ (#kvs_ptr) with "[Hkvss_sl]").
       {
         iFrame "Hkvss_sl".

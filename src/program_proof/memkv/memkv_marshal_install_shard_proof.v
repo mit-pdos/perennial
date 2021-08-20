@@ -185,6 +185,7 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   "HKvs" ∷ args_ptr ↦[InstallShardRequest :: "Kvs"] #kvs_ptr ∗
   "HKvsMap" ∷ map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
   "%HseqPositive" ∷ ⌜int.Z args.(IR_Seq) > 0⌝ ∗
+  "%Hdom_install" ∷ ⌜dom (gset _) args.(IR_Kvs) = dom (gset _) mv ⌝ ∗
   "Hvals" ∷ ([∗ set] k ∈ (fin_to_set u64),
         ⌜shardOfC k ≠ args.(IR_Sid) ∧ mv !! k = None ∧ args.(IR_Kvs) !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (args.(IR_Kvs) !! k))) )
 .
