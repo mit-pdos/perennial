@@ -775,6 +775,23 @@ Definition MemKVClerk__Add: val :=
   rec: "MemKVClerk__Add" "ck" "host" :=
     MemKVCoordClerk__AddShardServer (struct.loadF MemKVClerk "coordCk" "ck") "host".
 
+(* returns a slice of "values" (which are byte slices) in the same order as the
+   keys passed in as input
+   FIXME: benchmark *)
+Definition MemKVClerk__MGet: val :=
+  rec: "MemKVClerk__MGet" "ck" "keys" :=
+    let: "num_left" := slice.len "keys" in
+    let: "num_left_mu" := lock.new #() in
+    let: "num_left_cond" := lock.newCond "num_left_mu" in
+    let: "vals" := NewSlice (slice.T byteT) (slice.len "keys") in
+    ForSlice uint64T "i" "k" "keys"
+      (Fork (SliceSet (slice.T byteT) "vals" "i" (MemKVClerk__Get "ck" "k")));;
+    Skip;;
+    (for: (λ: <>, "num_left" > #0); (λ: <>, Skip) := λ: <>,
+      lock.condWait "num_left_cond";;
+      Continue);;
+    "vals".
+
 Definition MakeMemKVClerk: val :=
   rec: "MakeMemKVClerk" "coord" :=
     let: "cck" := struct.alloc MemKVCoordClerk (zero_val (struct.t MemKVCoordClerk)) in
