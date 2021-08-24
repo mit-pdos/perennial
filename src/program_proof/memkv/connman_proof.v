@@ -45,6 +45,7 @@ Lemma wp_ConnMan__Call {X:Type} (x:X) γsmap (c_ptr:loc) (rpcid:u64) (host:u64) 
     .
 Proof.
   iIntros "#Hconn !#" (Φ) "Hpre HΦ".
+  iDestruct "Hpre" as "(Hslice & Hrep & #Hhandler & #Hpre)".
   iNamed "Hconn".
   Opaque rpc.RPCClient.
   Opaque zero_val.
@@ -63,12 +64,11 @@ Proof.
   wp_apply (map.wp_MapGet with "Hcls_map").
   iIntros (cl1 ok1) "[%Hcl1 Hcls_map]".
   wp_pures.
-  Search "wp_if".
   wp_apply (wp_If_join (∃ (cl:loc), "Hown" ∷ own_ConnMan c_ptr ∗
                         "Hcl" ∷ cl_ptr ↦[refT (struct.t rpc.RPCClient)] #cl ∗
                         "#HisRpcCl" ∷ RPCClient_own cl host ∗
                         "Hlocked" ∷ locked mu
-                       ) with "[-Hpre HΦ]"); first iSplit.
+                       ) with "[-Hslice Hrep Hpre HΦ]"); first iSplit.
   { (* *)
     iIntros "HΦ".
     (* TODO: apply spec for getNewClient *)
@@ -100,6 +100,61 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[$Hinv $Hlocked $Hown]").
   wp_pures.
+  wp_forBreak_cond.
+  wp_pures.
+  wp_load.
+  wp_apply (wp_RPCClient__Call with "[$Hslice $Hrep $Hhandler $HisRpcCl Hpre]").
+  {
+    instantiate (1:=x).
+    iModIntro.
+    iModIntro.
+    done.
+  }
+  iIntros (err).
+  iIntros "(_ & Hslice & Hrep)".
+  wp_pures.
+  destruct err as [|].
+  {
+    wp_pures.
+    destruct c.
+    { (* ErrTimeout *)
+      wp_pures.
+      iModIntro.
+      iLeft.
+      iSplitL ""; first done.
+      iFrame.
+    }
+    { (* ErrDisconnected *)
+      wp_pures.
+      wp_loadField.
+      wp_apply (acquire_spec with "Hinv").
+      iIntros "[Hlocked Hown]".
+      iClear "HownRpcCls".
+      iNamed "Hown".
+      wp_pures.
+      wp_load.
+      wp_loadField.
+      wp_apply (map.wp_MapGet with "Hcls_map").
+      iIntros (cl2 ok2) "[%Hcl2 Hcls_map]".
+      wp_apply (wp_If_join (∃ (cl:loc), "Hown" ∷ own_ConnMan c_ptr ∗
+                                               "Hcl" ∷ cl_ptr ↦[refT (struct.t rpc.RPCClient)] #cl ∗
+                                               "#HisRpcCl" ∷ RPCClient_own cl host ∗
+                                               "Hlocked" ∷ locked mu
+                           ) with "[-Hslice Hrep Hpre HΦ]"); first iSplit.
+      {
+        iIntros "[%Hnegb HΦ]".
+        wp_loadField.
+        wp_apply (map.wp_MapGet with "Hcls_map").
+        iIntros (cl3 ok3) "[%Hcl3 Hcls_map]".
+        wp_pures.
+        admit.
+      }
+      {
+        admit.
+      }
+      admit.
+    }
+  }
 Admitted.
 
 End connman_proof.
