@@ -312,6 +312,7 @@ Proof using hG.
   - eapply inv_get_names. apply _.
 Defined.
 
+(* TODO: rename to is_RPCClient for consistency? *)
 Definition RPCClient_own (cl : loc) (srv : chan) : iProp Σ :=
   ∃ Γ (lk : loc) client (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[RPCClient :: "mu"] #lk) ∗

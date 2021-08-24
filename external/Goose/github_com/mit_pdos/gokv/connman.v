@@ -35,12 +35,10 @@ Definition ConnMan__CallAtLeastOnce: val :=
   rec: "ConnMan__CallAtLeastOnce" "c" "host" "rpcid" "args" "reply" "retryTimeout" :=
     let: "cl" := ref (zero_val (refT (struct.t rpc.RPCClient))) in
     lock.acquire (struct.loadF ConnMan "mu" "c");;
-    let: ("cl", "ok") := MapGet (struct.loadF ConnMan "rpcCls" "c") "host" in
+    let: ("cl1", "ok") := MapGet (struct.loadF ConnMan "rpcCls" "c") "host" in
     (if: ~ "ok"
-    then
-      "cl" <-[refT (struct.t rpc.RPCClient)] ConnMan__getNewClient "c" "host";;
-      #()
-    else #());;
+    then "cl" <-[refT (struct.t rpc.RPCClient)] ConnMan__getNewClient "c" "host"
+    else "cl" <-[refT (struct.t rpc.RPCClient)] "cl1");;
     lock.release (struct.loadF ConnMan "mu" "c");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
