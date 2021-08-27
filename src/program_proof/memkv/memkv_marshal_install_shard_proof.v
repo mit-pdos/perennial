@@ -70,6 +70,7 @@ Definition has_byte_map_encoding (m:gmap u64 (list u8)) (r:Rec) :=
 
 Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : Prop :=
   ∃ r, (* (∀ k, k ∈ dom (gset _ ) args.(IR_Kvs) → shardOfC k = args.(IR_CID)) ∧ *)
+       int.Z args.(IR_Seq) > 0 ∧
        has_byte_map_encoding (args.(IR_Kvs)) r ∧
        has_encoding data ([EncUInt64 args.(IR_CID); EncUInt64 args.(IR_Seq); EncUInt64 args.(IR_Sid)] ++ r).
 
@@ -635,6 +636,20 @@ Proof.
   rewrite IH; done.
 Qed.
 
+Lemma is_dec_EncBytes_length d v r s q l :
+  is_dec d (EncBytes v :: r) s q l  -∗
+  ⌜int.Z (length v) = length v⌝.
+Proof.
+  iNamed 1.
+  apply has_encoding_length in Henc.
+  rewrite ?encoded_length_cons encode1_bytes_len in Henc.
+  iDestruct (typed_slice.is_slice_small_sz with "Hs") as %Hlen.
+  iPureIntro.
+  assert (length (drop (int.nat off) l) <= length l).
+  { rewrite drop_length. lia. }
+  word.
+Qed.
+
 Lemma wp_DecSliceMap d l m args_sl argsData :
   NoDup l.*1 →
   int.Z (size m) = size m →
@@ -695,9 +710,9 @@ Proof.
     iIntros "Hdec".
     wp_apply (wp_Dec__GetInt with "Hdec").
     iIntros "Hdec".
+    iDestruct (is_dec_EncBytes_length with "Hdec") as %Hlen_dec.
     wp_apply (wp_Dec__GetBytes with "Hdec").
-    { admit. (* need to strengthen encoding to say that all the keys have lenghts don't overflow,
-                but also seems that should be derivable from is_dec? *) }
+    { word. }
     iIntros (q' s') "(Hsl&Hdec)".
     wp_pures.
     wp_apply (map.wp_MapInsert with "Hmref").
@@ -799,7 +814,7 @@ Proof.
     word.
   }
   rewrite list_to_map_nil left_id_L in Hunion. subst. iFrame.
-Admitted.
+Qed.
 
 Lemma is_slicemap_rep_to_shard (mv : gmap u64 val) m id:
   is_slicemap_rep mv m -∗
@@ -855,7 +870,7 @@ Lemma wp_decodeInstallShardRequest args args_sl argsData :
 Proof.
   iIntros (Φ) "(Hslice&%Henc) HΦ".
   wp_lam.
-  destruct Henc as (r&(l&Hsize&Hnodup&HlistMap&Hmapencoded)&Hdata).
+  destruct Henc as (r&?&(l&Hsize&Hnodup&HlistMap&Hmapencoded)&Hdata).
   rewrite Hmapencoded in Hdata.
   iDestruct (typed_slice.is_slice_to_small with "Hslice") as "Hslice".
   wp_apply (wp_new_dec with "Hslice"); eauto.
@@ -884,10 +899,9 @@ Proof.
   iExists _, _. iFrame.
   iDestruct (is_slicemap_rep_dom with "[$]") as "%Hdom".
   iSplit; auto.
-  { admit. }
   iSplit.
   { eauto. }
   iApply is_slicemap_rep_to_shard. eauto.
-Admitted.
+Qed.
 
 End memkv_marshal_install_shard_proof.
