@@ -620,11 +620,20 @@ Definition DecSliceMap_invariant dec_v i_ptr m (r:Rec) mref s data : iProp Σ :=
           s q data
 .
 
-(* FIXME: use upstream version *)
-Lemma gmap_size_union {X} (A B:gmap u64 X) :
-  A ##ₘ B → size (A ∪ B) = ((size A) + (size B))%nat.
+(* FIXME: use upstream version when merged *)
+Lemma map_size_disj_union `{FinMap K M} {A} (m1 m2 : M A) :
+  (m1 ##ₘ m2 → size (m1 ∪ m2) = size m1 + size m2)%nat.
 Proof.
-Admitted.
+  intros Hdisj. induction m1 as [|k x m1 Hm1 IH] using map_ind.
+  { rewrite map_empty_union. (* FIXME: [rewrite left_id] leaves a goal *)
+    rewrite map_size_empty. done. }
+  rewrite <-insert_union_l.
+  rewrite map_size_insert.
+  rewrite lookup_union_r; try by done.
+  apply map_disjoint_insert_l in Hdisj as [-> Hdisj].
+  rewrite map_size_insert Hm1.
+  rewrite IH; done.
+Qed.
 
 Lemma wp_DecSliceMap d l m args_sl argsData :
   NoDup l.*1 →
@@ -775,7 +784,7 @@ Proof.
     assert (size m <= size mdone').
     { rewrite ?Z_u64 in Heqb; try word. }
     rewrite -Hunion in Heqb.
-    rewrite gmap_size_union in Heqb; eauto.
+    rewrite map_size_disj_union in Heqb; eauto.
     assert (size mtodo > 0).
     { destruct (decide (size mtodo = O)) as [Hz|Hnz]; try lia.
       rewrite ?Map.map_size_dom in Hz.
@@ -786,12 +795,52 @@ Proof.
       apply insert_non_empty in Hz. exfalso; eauto.
     }
     assert (size m = size mtodo + size mdone')%nat.
-    { rewrite -Hunion.
-      rewrite gmap_size_union; eauto. }
+    { rewrite -Hunion map_size_disj_union; eauto. }
     word.
   }
   rewrite list_to_map_nil left_id_L in Hunion. subst. iFrame.
 Admitted.
+
+Lemma is_slicemap_rep_to_shard (mv : gmap u64 val) m id:
+  is_slicemap_rep mv m -∗
+  ([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
+                               ∨ (∃ (q : Qp) (vsl : Slice.t),
+                                     ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
+                                             typed_slice.is_slice_small vsl byteT q
+                                             (default [] (m !! k)))).
+Proof.
+  iInduction mv as [| k v mv Hlookup] "IH" using map_ind forall (m).
+  { iNamed 1. iApply big_sepS_intro.
+    iIntros "!>" (?) "?". iRight.
+    assert (m = ∅) as ->.
+    { apply dom_empty_inv_L. rewrite dom_empty_L in Hmdoms. congruence. }
+    rewrite ?lookup_empty /=.
+    iExists 1%Qp, _. iSplit; first eauto.
+    iApply (@typed_slice.is_slice_to_small with "[]").
+    iApply typed_slice.is_slice_zero.
+  }
+  iNamed 1. iDestruct (big_sepM_insert with "Hmvals") as "(Hk&Hmvals)"; auto.
+  iDestruct ("IH" $! (delete k m) with "[Hmvals]") as "Hrest".
+  { iSplit; first iPureIntro.
+    { rewrite dom_insert_L in Hmdoms.
+      rewrite dom_delete_L.
+      apply not_elem_of_dom in Hlookup.
+      set_solver. }
+    iApply (big_sepM_mono with "Hmvals").
+    { iIntros (k' x' Hlookup') "H".
+      rewrite lookup_delete_ne; eauto. congruence. }
+  }
+  iApply (big_sepS_delete _ _ k); first apply elem_of_fin_to_set.
+  iDestruct (big_sepS_delete _ _ k with "Hrest") as "(_&Hrest)"; first apply elem_of_fin_to_set.
+  iSplitL "Hk".
+  { iRight. rewrite lookup_insert. iDestruct "Hk" as (?? Heq) "H". iExists _, _. iSplit; eauto. }
+  iApply (big_sepS_mono with "Hrest").
+  { iIntros (??) "H".
+    rewrite lookup_insert_ne; last by set_solver.
+    rewrite lookup_delete_ne; last by set_solver.
+    eauto.
+  }
+Qed.
 
 Lemma wp_decodeInstallShardRequest args args_sl argsData :
   {{{
@@ -834,11 +883,11 @@ Proof.
   iApply "HΦ".
   iExists _, _. iFrame.
   iDestruct (is_slicemap_rep_dom with "[$]") as "%Hdom".
-  iSplit.
+  iSplit; auto.
   { admit. }
   iSplit.
   { eauto. }
+  iApply is_slicemap_rep_to_shard. eauto.
 Admitted.
-
 
 End memkv_marshal_install_shard_proof.
