@@ -14,7 +14,7 @@ Context `{!ffi_interp ffi}.
 Context `{!heapGS Σ}.
 Context `{!stagedG Σ}.
 
-Global Instance later_tokG_heap : later_tokG (heapG_irisG).
+Global Instance later_tokG_heap : later_tokG (heapGS_irisGS).
 Proof.
   refine {| later_tok := cred_frag 1 |}.
   - iIntros (g ns mj D κ) "(Hg&Hfrag)".
@@ -75,7 +75,7 @@ Proof.
   apply Qp_add_lt_mono; auto.
 Qed.
 
-Global Instance pri_invG_heap : pri_invG (heapG_irisG).
+Global Instance pri_invG_heap : pri_invG (heapGS_irisGS).
 Proof.
   refine {| pri_inv_tok := λ q E, pinv_tok_inf q E |}; rewrite /pinv_tok_inf.
   - iIntros (??) "($&?)".

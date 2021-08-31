@@ -210,7 +210,7 @@ Section disk.
       ffi_crash_step := eq; }.
 
   Program Instance disk_interp: ffi_interp disk_model :=
-    {| ffiG := diskG;
+    {| ffiGS := diskG;
        ffi_local_names := gen_heap_names;
        ffi_global_names := unit;
        ffi_get_local_names := fun _ hD => gen_heapG_get_names (diskG_gen_heapG);
@@ -233,7 +233,7 @@ Section disk.
 
   Section proof.
   Context `{!heapGS Σ}.
-  Instance diskG0 : diskG Σ := heapG_ffiG.
+  Instance diskG0 : diskG Σ := heapGS_ffiGS.
 
   Notation "l d↦{ dq } v" := (gen_heap.mapsto (L:=Z) (V:=Block) l dq v%V)
                              (at level 20, dq at level 50, format "l  d↦{ dq }  v") : bi_scope.

@@ -10,7 +10,7 @@ Set Default Proof Using "Type".
 
 Section distributed_adequacy.
 Context `{!perennialG Λ CS T Σ}.
-Context `{!groveG Λ CS Σ}.
+Context `{!distGS Λ CS Σ}.
 
 Context (mj: fracR).
 (* The IH of the theorems here requires working with some fixed choice of mj in the wpc0 form,
@@ -26,17 +26,17 @@ Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
-Implicit Types Φinv : crashG Σ → pbundleG T Σ → iProp Σ.
-Implicit Types Φc : crashG Σ → pbundleG T Σ → val Λ → iProp Σ.
+Implicit Types Φinv : crashGS Σ → pbundleG T Σ → iProp Σ.
+Implicit Types Φc : crashGS Σ → pbundleG T Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Definition wptp (ct : crashG Σ * pbundleG T Σ) s k tpool :=
+Definition wptp (ct : crashGS Σ * pbundleG T Σ) s k tpool :=
   let Hc := fst ct in
   let t := snd ct in
   ([∗ list] ef ∈ tpool, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})%I.
 
-Definition wpnode (ct : crashG Σ * pbundleG T Σ) k (dn: dist_node) :=
+Definition wpnode (ct : crashGS Σ * pbundleG T Σ) k (dn: dist_node) :=
   (□ equal_global_inG ct ∗
   match tpool dn with
   | [] => False%I
@@ -46,7 +46,7 @@ Definition wpnode (ct : crashG Σ * pbundleG T Σ) k (dn: dist_node) :=
     wptp ct NotStuck k tp
   end)%I.
 
-Definition stwpnode (ct : crashG Σ * pbundleG T Σ) k (dn: dist_node) : iProp Σ :=
+Definition stwpnode (ct : crashGS Σ * pbundleG T Σ) k (dn: dist_node) : iProp Σ :=
   (let Hc := fst ct in
    let t := snd ct in
    state_interp (local_state dn) (pred (length (tpool dn))) ∗
@@ -132,7 +132,7 @@ Proof.
   iFrame.
   iExists (Hc', t'). iFrame.
   assert (@step_count_next Λ Σ (@perennial_irisG Λ CS T Σ perennialG0 Hc' t') =
-          @grove_step_count_next Λ CS Σ groveG0) as Hnext'.
+          @grove_step_count_next Λ CS Σ distGS0) as Hnext'.
   { rewrite -Hnext ?perennial_step_count_next_spec //. }
   iSplitL "Hg".
   { iApply "Hglobal". rewrite //=. iApply "Heq". rewrite ?Hnext ?Hnext' //. }
@@ -267,15 +267,15 @@ Qed.
 
 End distributed_adequacy.
 
-Theorem wpd_strong_adequacy Σ Λ CS T `{HIPRE: !invGpreS Σ} `{HCPRE: !crashPreG Σ} nsinit k ebσs g1 n κs dns2 g2 φ f1 f2 :
+Theorem wpd_strong_adequacy Σ Λ CS T `{HIPRE: !invGpreS Σ} `{HCPRE: !crashGpreS Σ} nsinit k ebσs g1 n κs dns2 g2 φ f1 f2 :
   (∀ `{Hinv : !invGS Σ} (Heq_pre: inv_inG = HIPRE),
-     ⊢ |={⊤}=> ∃ (cts: list (crashG Σ * pbundleG T Σ))
+     ⊢ |={⊤}=> ∃ (cts: list (crashGS Σ * pbundleG T Σ))
          (Heq_cpre: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = @crash_inPreG _ HCPRE)
          (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
          (global_stateI : global_state Λ → nat → fracR → coPset → list (observation Λ) → iProp Σ)
          (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf1a Hpf1b Hpf1' Hpf2 Hpf3 Hpf4,
-        let _ : groveG Λ CS Σ :=
-            GroveG _ _ Σ global_stateI f1 f2 Hinv in
+        let _ : distGS Λ CS Σ :=
+            DistGS _ _ Σ global_stateI f1 f2 Hinv in
         let _ : perennialG Λ CS _ Σ :=
             PerennialG _ _ T Σ
               (λ Hc t,
@@ -306,7 +306,7 @@ Proof.
                (PerennialG _ _ T Σ
                  (λ Hc t,
                   IrisG Λ Σ Hinv Hc (stateI t) (global_stateI) (fork_post t) f1 f2 (Hpf1a Hc t) Hpf1b) Hpf1' Hpf2 f1 Hpf3 f2 Hpf4)
-               (GroveG _ _ Σ global_stateI f1 f2 Hinv)
+               (DistGS _ _ Σ global_stateI f1 f2 Hinv)
                1%Qp n k _ _ nsinit _ _ _ _ []
     with "[Hg] [Hσs Hwp]") as "H"; first done.
   { rewrite app_nil_r /=. iExact "Hg". }
@@ -367,16 +367,16 @@ Proof.
   - constructor; naive_solver.
 Qed.
 
-Corollary wpd_dist_adequacy_inv Σ Λ CS (T: ofe) `{HIPRE: !invGpreS Σ} `{HCPRE: !crashPreG Σ} nsinit (k : nat)
+Corollary wpd_dist_adequacy_inv Σ Λ CS (T: ofe) `{HIPRE: !invGpreS Σ} `{HCPRE: !crashGpreS Σ} nsinit (k : nat)
           ebσs g φinv f1 f2:
   (∀ `{Hinv : !invGS Σ} (Heq_pre: inv_inG = HIPRE) κs,
-     ⊢ |={⊤}=> ∃ (cts: list (crashG Σ * pbundleG T Σ))
+     ⊢ |={⊤}=> ∃ (cts: list (crashGS Σ * pbundleG T Σ))
          (Heq_cts: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = @crash_inPreG _ HCPRE)
          (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
          (global_stateI : global_state Λ → nat → fracR → coPset → list (observation Λ) → iProp Σ)
          (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf1a Hpf1b Hpf1' Hpf2 Hpf3 Hpf4,
-        let _ : groveG Λ CS Σ :=
-            GroveG _ _ Σ global_stateI f1 f2 Hinv in
+        let _ : distGS Λ CS Σ :=
+            DistGS _ _ Σ global_stateI f1 f2 Hinv in
         let _ : perennialG Λ CS _ Σ :=
             PerennialG _ _ T Σ
               (λ Hc t,

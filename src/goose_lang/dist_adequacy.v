@@ -12,14 +12,14 @@ Set Default Proof Using "Type".
 Theorem heap_dist_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
         Σ `{hPre: !heapGpreS Σ} k (ebσs : list node_init_cfg)
         g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
-  (∀ `{Hheap : !heap_globalG Σ} (cts : list (crashG Σ * heap_local_names))
+  (∀ `{Hheap : !dist_heapGS Σ} (cts : list (crashGS Σ * heap_local_names))
       (Heq_cts: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = crash_inPreG),
       ⊢
-        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := heap_globalG_preG)) (heap_globalG_names) g -∗
+        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := dist_heapGpreS)) (dist_heapGS_names) g -∗
         ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
-              let hG := heap_globalG_heapG Hheap (fst ct) (snd ct) in
-              ffi_local_start (heapG_ffiG) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)) ={⊤}=∗
-        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (heap_globalG_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝) ∗
+              let hG := dist_heapGS_heapGS Hheap (fst ct) (snd ct) in
+              ffi_local_start (heapGS_ffiGS) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)) ={⊤}=∗
+        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (dist_heapGS_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝) ∗
         wpd k ⊤ cts ((λ x, (init_thread x, init_restart x)) <$> ebσs)) →
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
@@ -28,18 +28,18 @@ Proof.
   iIntros (Hinv Heq_inv ?) "".
   iMod (ffi_name_global_init _ _ g) as (ffi_namesg) "(Hgw&Hgstart)"; first auto.
   iMod (credit_name_init (crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
-  set (hgG := {| heap_globalG_preG := _; heap_globalG_names := ffi_namesg;
-                 heap_globalG_inv_names := inv_get_names Hinv;
-                 heap_globalG_credit_names := name_credit;
+  set (hgG := {| dist_heapGpreS := _; dist_heapGS_names := ffi_namesg;
+                 dist_heapGS_inv_names := inv_get_names Hinv;
+                 dist_heapGS_credit_names := name_credit;
               |}).
   iAssert (|==> ∃ cts (Heq_cts: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = crash_inPreG),
               ffi_pre_global_ctx Σ heap_preG_ffi ffi_namesg g ∗
               ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
-              let hG := heap_globalG_heapG hgG (fst ct) (snd ct) in
+              let hG := dist_heapGS_heapGS hgG (fst ct) (snd ct) in
               NC 1 ∗ state_interp σ 0) ∗
               ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
-              let hG := heap_globalG_heapG hgG (fst ct) (snd ct) in
-              ffi_local_start (heapG_ffiG) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)))%I
+              let hG := dist_heapGS_heapGS hgG (fst ct) (snd ct) in
+              ffi_local_start (heapGS_ffiGS) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)))%I
 
     with "[Hgw]" as "H".
   { clear -HINIT. remember (init_local_state <$> ebσs) as σs eqn:Heq. clear Heq.
@@ -71,11 +71,11 @@ Proof.
     apply fmap_Some_1 in Hlookup as ((Hc&t)&Hlookup1&Heq1).
     specialize (Heq_cts k' (Hc, t)). rewrite Heq1. rewrite Heq_cts; eauto. }
   iExists
-    (λ t σ nt, let _ := heap_globalG_heapG hgG {| crash_name := γn |} (@pbundleT _ _ t) in
+    (λ t σ nt, let _ := dist_heapGS_heapGS hgG {| crash_name := γn |} (@pbundleT _ _ t) in
                state_interp σ nt)%I.
   iExists (λ g ns mj D κs,
     (ffi_pre_global_ctx Σ (heap_preG_ffi) ffi_namesg g ∗
-     @crash_borrow_ginv _ (heap_globalG_invG) _ ∗
+     @crash_borrow_ginv _ (dist_heapGS_invGS) _ ∗
      cred_interp ns ∗
      ⌜(/ 2 < mj ≤ 1) ⌝%Qp ∗
      pinv_tok mj D)%I).
@@ -87,10 +87,10 @@ Proof.
   iPoseProof (Hwp hgG with "[$] [$]") as "Hwp".
   { eauto. }
   assert ((@grove_invG (@goose_lang ext ffi ffi_sem) (@goose_crash_lang ext ffi ffi_sem) Σ
-                      (@heapG_groveG ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG)) =
+                      (@heapGS_distGS ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG)) =
           Hinv) as Heqinv.
-  { rewrite /grove_invG/heapG_groveG.
-    rewrite /heap_globalG_invG.
+  { rewrite /grove_invG/heapGS_distGS.
+    rewrite /dist_heapGS_invGS.
     rewrite /inv_update_pre.
     destruct Hinv. f_equal.
     eauto. }
@@ -123,14 +123,14 @@ Proof.
   iApply (big_sepL2_mono with "Hwp").
   iIntros (k' (Hc'&Hnames) ρ Hin1 Hin2) "H".
   iDestruct "H" as (Φ Φrx Φinv) "Hwpr".
-  set (hG := heap_globalG_heapG hgG {| crash_name := γn |} Hnames).
+  set (hG := dist_heapGS_heapGS hgG {| crash_name := γn |} Hnames).
   iExists Φ, (λ Hc names v, Φrx (heap_update_local _ hG _ Hc (@pbundleT _ _ names)) v),
     (λ Hc names, Φinv (heap_update_local _ hG _ Hc (@pbundleT _ _ names))).
   rewrite /wpr//=.
-  assert (heap_get_local_names Σ (heap_globalG_heapG hgG Hc' Hnames) = Hnames) as Heqnames.
-  { rewrite /heap_globalG_heapG.
+  assert (heap_get_local_names Σ (dist_heapGS_heapGS hgG Hc' Hnames) = Hnames) as Heqnames.
+  { rewrite /dist_heapGS_heapGS.
     rewrite /heap_get_local_names/heap_update_pre//=.
-    destruct Hnames => //=. rewrite /na_heapG_get_names/na_heapG_update_pre//=.
+    destruct Hnames => //=. rewrite /na_heapGS_get_names/na_heapGS_update_pre//=.
     rewrite ffi_update_pre_get_local; eauto. destruct heap_local_heap_names; eauto. }
   rewrite Heqnames.
   iDestruct (wpr_proper_irisG_equiv with "Hwpr") as "Hwpr"; last first.
@@ -151,10 +151,10 @@ Proof.
     { iIntros (??) "H". iExactEq "H". f_equal. rewrite /hG.
       rewrite Heq_c'.
       rewrite /heap_update_local. f_equal.
-      { rewrite /heapG_irisG//=. }
+      { rewrite /heapGS_irisGS//=. }
       (*
-        transitivity (@heap_globalG_invG ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG); first done.
-        rewrite /heap_globalG_invG.
+        transitivity (@dist_heapGS_invG ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG); first done.
+        rewrite /dist_heapGS_invG.
         rewrite /inv_update_pre.
         destruct Hinv. f_equal.
         eauto. }
@@ -163,10 +163,10 @@ Proof.
     { iIntros (???) "H". iModIntro. iExactEq "H". f_equal. rewrite /hG.
       rewrite Heq_c'.
       rewrite /heap_update_local. f_equal.
-      { rewrite /heapG_irisG//=. }
+      { rewrite /heapGS_irisGS//=. }
       (*
-        transitivity (@heap_globalG_invG ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG); first done.
-        rewrite /heap_globalG_invG.
+        transitivity (@dist_heapGS_invG ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG); first done.
+        rewrite /dist_heapGS_invG.
         rewrite /inv_update_pre.
         destruct Hinv. f_equal.
         eauto. }
@@ -176,9 +176,9 @@ Proof.
   clear -Heq_inv.
   intros Hcnew tnew.
   split_and!; eauto.
-  - transitivity ( @heap_globalG_invG ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG); first done.
+  - transitivity ( @dist_heapGS_invGS ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hgG); first done.
     transitivity (Hinv); last done.
-    rewrite /heap_globalG_invG.
+    rewrite /dist_heapGS_invGS.
     rewrite /inv_update_pre.
     destruct Hinv. f_equal.
     eauto.
@@ -199,19 +199,19 @@ Qed.
 Theorem heap_dist_adequacy_alt `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
         Σ `{hPre: !heapGpreS Σ} k (ebσs : list node_init_cfg)
         g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
-  (∀ `{Hheap : !heap_globalG Σ},
+  (∀ `{Hheap : !dist_heapGS Σ},
       ⊢
-        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := heap_globalG_preG)) (heap_globalG_names) g ={⊤}=∗
+        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := dist_heapGpreS)) (dist_heapGS_names) g ={⊤}=∗
         ([∗ list] ebσ ∈ ebσs,
               let e := init_thread ebσ in
               let r := init_restart ebσ in
               let σ := init_local_state ebσ in
               ∀ Hcrash (Heq: @crash_inG _ Hcrash = crash_inPreG) local_names,
-              let hG := heap_globalG_heapG Hheap Hcrash local_names in
-              ffi_local_start (heapG_ffiG) σ.(world) g ∗
+              let hG := dist_heapGS_heapGS Hheap Hcrash local_names in
+              ffi_local_start (heapGS_ffiGS) σ.(world) g ∗
               trace_frag σ.(trace) ∗ oracle_frag σ.(oracle) ={⊤}=∗
               ∃ Φ Φinv Φrx, wpr NotStuck k ⊤ e r Φ Φinv Φrx) ∗
-        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (heap_globalG_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
+        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (dist_heapGS_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
   intros Hwp.
@@ -253,18 +253,18 @@ Definition dist_adequate_failstop (ebσs: list (expr * state)) (g: global_state)
 Theorem heap_dist_adequacy_failstop
         Σ `{hPre: !heapGpreS Σ} (ebσs : list (expr * state))
         g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ snd  <$> ebσs → ffi_initP σ.(world) g) :
-  (∀ `{Hheap : !heap_globalG Σ},
+  (∀ `{Hheap : !dist_heapGS Σ},
       ⊢
-        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := heap_globalG_preG)) (heap_globalG_names) g ={⊤}=∗
+        ffi_pre_global_start Σ (heap_preG_ffi (heapGpreS := dist_heapGpreS)) (dist_heapGS_names) g ={⊤}=∗
         ([∗ list] ebσ ∈ ebσs,
               let e := fst ebσ in
               let σ := snd ebσ in
               ∀ Hcrash (Heq: @crash_inG _ Hcrash = crash_inPreG) local_names,
-              let hG := heap_globalG_heapG Hheap Hcrash local_names in
-              ffi_local_start (heapG_ffiG) σ.(world) g ∗
+              let hG := dist_heapGS_heapGS Hheap Hcrash local_names in
+              ffi_local_start (heapGS_ffiGS) σ.(world) g ∗
               trace_frag σ.(trace) ∗ oracle_frag σ.(oracle) ={⊤}=∗
               ∃ Φ, wp NotStuck ⊤ e Φ) ∗
-        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (heap_globalG_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
+        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (dist_heapGS_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
   dist_adequate_failstop ebσs g (λ g, φinv g).
 Proof.
   intros Hwp. rewrite /dist_adequate_failstop.

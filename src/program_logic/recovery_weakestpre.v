@@ -19,17 +19,17 @@ Class pbundleG (T: ofe) (Σ: gFunctors) := {
 }.
 
 (* A perennialG instance generates an irisGS instance given an element t of the designated type T and
-   a crashG instance. We require some properties of the generated irisGS instances, such as that
+   a crashGS instance. We require some properties of the generated irisGS instances, such as that
    they all use the same num_laters_per_step function.
 
    TODO: for the distributed version, we also need to similarly add fields requiring that for every t,
    the invGS Σ instance is the same, and the global_state_interp function is the same *)
 
 Class perennialG (Λ : language) (CS: crash_semantics Λ) (T: ofe) (Σ : gFunctors) := PerennialG {
-  perennial_irisG :> ∀ (Hcrash: crashG Σ), pbundleG T Σ → irisGS Λ Σ;
-  perennial_crashG: ∀ H2 t, @iris_crashG _ _ (perennial_irisG H2 t) = H2;
-  perennial_inv_crashG: ∀ H1 H2 t, @iris_invG _ _ (perennial_irisG H1 t) =
-                                   @iris_invG _ _ (perennial_irisG H2 t);
+  perennial_irisG :> ∀ (Hcrash: crashGS Σ), pbundleG T Σ → irisGS Λ Σ;
+  perennial_crashG: ∀ H2 t, @iris_crashGS _ _ (perennial_irisG H2 t) = H2;
+  perennial_inv_crashG: ∀ H1 H2 t, @iris_invGS _ _ (perennial_irisG H1 t) =
+                                   @iris_invGS _ _ (perennial_irisG H2 t);
   perennial_num_laters_per_step: nat → nat;
   perennial_num_laters_per_step_spec:
     ∀ Hc Ht, (@num_laters_per_step _ _ (@perennial_irisG Hc Ht)) = perennial_num_laters_per_step;
@@ -47,20 +47,20 @@ Definition perennialG_equiv {Λ CS T Σ} (I1 I2: perennialG Λ CS T Σ) :=
    case of a crash, and [Φinv] is a condition that holds at each restart
    point. *)
 Definition wpr_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat)
-    (wpr : crashG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
-                     (crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
-                     (crashG Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ) :
-  crashG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
-  (crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
-  (crashG Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ :=
+    (wpr : crashGS Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
+                     (crashGS Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
+                     (crashGS Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ) :
+  crashGS Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
+  (crashGS Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
+  (crashGS Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ :=
   λ Hc0 t0 E e rec Φ Φinv Φr,
   (WPC e @ s ; k; E
      {{ Φ }}
      {{ ∀ σ g mj D σ' (HC: crash_prim_step CS σ σ') ns κs n,
         state_interp σ n -∗ global_state_interp g ns mj D κs ={E}=∗ ▷ ∀ Hc1 q, NC q ={E}=∗
           ∃ t1
-            (Hsame_inv: @iris_invG _ _ (perennial_irisG Hc1 t1) =
-                        @iris_invG _ _ (perennial_irisG Hc0 t0)),
+            (Hsame_inv: @iris_invGS _ _ (perennial_irisG Hc1 t1) =
+                        @iris_invGS _ _ (perennial_irisG Hc0 t0)),
           □ (∀ g ns mj D κs, @global_state_interp _ _ (perennial_irisG Hc1 t1) g ns mj D κs ∗-∗
                              @global_state_interp _ _ (perennial_irisG Hc0 t0) g ns mj D κs) ∗
           state_interp σ' 0 ∗
@@ -75,9 +75,9 @@ Proof.
 Qed.
 
 Definition wpr_def `{!perennialG Λ CS T Σ} (s : stuckness) k :
-  crashG Σ → pbundleG T Σ → coPset → expr Λ → expr Λ → (val Λ → iProp Σ) →
-  (crashG Σ → pbundleG T Σ → iProp Σ) →
-  (crashG Σ → pbundleG T Σ → val Λ → iProp Σ) → iProp Σ := fixpoint (wpr_pre s k).
+  crashGS Σ → pbundleG T Σ → coPset → expr Λ → expr Λ → (val Λ → iProp Σ) →
+  (crashGS Σ → pbundleG T Σ → iProp Σ) →
+  (crashGS Σ → pbundleG T Σ → val Λ → iProp Σ) → iProp Σ := fixpoint (wpr_pre s k).
 Definition wpr_aux `{!perennialG Λ CS T Σ} : seal (@wpr_def Λ CS T Σ _). by eexists. Qed.
 Definition wpr `{!perennialG Λ CS T Σ} := wpr_aux.(unseal).
 Definition wpr_eq `{!perennialG Λ CS T Σ} : wpr = @wpr_def Λ CS T Σ _ := wpr_aux.(seal_eq).
@@ -88,7 +88,7 @@ Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
-Implicit Types Φc : crashG Σ → pbundleG T Σ → val Λ → iProp Σ.
+Implicit Types Φc : crashGS Σ → pbundleG T Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
@@ -122,16 +122,16 @@ Qed.
 
 (* To prove a recovery wp for e with rec, it suffices to prove a crash wp for e,
    where the crash condition implies the precondition for a crash wp for rec *)
-Lemma idempotence_wpr s k E1 e rec Φx Φinv Φrx (Φcx: crashG Σ → _ → iProp Σ) Hc t:
+Lemma idempotence_wpr s k E1 e rec Φx Φinv Φrx (Φcx: crashGS Σ → _ → iProp Σ) Hc t:
   ⊢ WPC e @ s ; k ; E1 {{ Φx t }} {{ Φcx _ t }} -∗
-   (□ ∀ (Hc: crashG Σ) (t: pbundleG T Σ) σ g σ' (HC: crash_prim_step CS σ σ') ns mj D κs n,
+   (□ ∀ (Hc: crashGS Σ) (t: pbundleG T Σ) σ g σ' (HC: crash_prim_step CS σ σ') ns mj D κs n,
         Φcx Hc t -∗ state_interp σ n -∗ global_state_interp g ns mj D κs ={E1}=∗
-        ▷ ∀ (Hc': crashG Σ) q, NC q ={E1}=∗
+        ▷ ∀ (Hc': crashGS Σ) q, NC q ={E1}=∗
           ∃ t'
             (Hsame_global_interp: @global_state_interp _ _ (perennial_irisG Hc' t') =
                                   @global_state_interp _ _ (perennial_irisG Hc t))
-            (Hsame_inv: @iris_invG _ _ (perennial_irisG Hc' t') =
-                        @iris_invG _ _ (perennial_irisG Hc t)),
+            (Hsame_inv: @iris_invGS _ _ (perennial_irisG Hc' t') =
+                        @iris_invGS _ _ (perennial_irisG Hc t)),
             state_interp σ' 0 ∗ global_state_interp g (step_count_next ns) mj D κs ∗
             (Φinv Hc' t' ∧ WPC rec @ s ; k; E1 {{ Φrx Hc' t' }} {{ Φcx Hc' t' }}) ∗ NC q) -∗
     wpr s k Hc t E1 e rec (Φx t) Φinv Φrx.
@@ -199,20 +199,20 @@ Proof.
 Qed.
 
 Definition wpr0_pre `{perennialG Λ CS T Σ} (s : stuckness) (k: nat) (mj: fracR)
-    (wpr : crashG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
-                     (crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
-                     (crashG Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ) :
-  crashG Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
-  (crashG Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
-  (crashG Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ :=
+    (wpr : crashGS Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
+                     (crashGS Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
+                     (crashGS Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ) :
+  crashGS Σ -d> pbundleG T Σ -d> coPset -d> expr Λ -d> expr Λ -d> (val Λ -d> iPropO Σ) -d>
+  (crashGS Σ -d> pbundleG T Σ -d> iPropO Σ) -d>
+  (crashGS Σ -d> pbundleG T Σ -d> val Λ -d> iPropO Σ) -d> iPropO Σ :=
   λ Hc0 t0 E e rec Φ Φinv Φr,
   (wpc0 s k mj E e
      Φ
      (∀ σ g σ' (HC: crash_prim_step CS σ σ') ns mj D κs n,
         state_interp σ n -∗ global_state_interp g ns mj D κs ={E}=∗  ▷ ∀ Hc1 q, NC q ={E}=∗
           ∃ t1
-            (Hsame_inv: @iris_invG _ _ (perennial_irisG Hc1 t1) =
-                        @iris_invG _ _ (perennial_irisG Hc0 t0)),
+            (Hsame_inv: @iris_invGS _ _ (perennial_irisG Hc1 t1) =
+                        @iris_invGS _ _ (perennial_irisG Hc0 t0)),
           □ (∀ g ns mj D κs, @global_state_interp _ _ (perennial_irisG Hc1 t1) g ns mj D κs ∗-∗
                              @global_state_interp _ _ (perennial_irisG Hc0 t0) g ns mj D κs) ∗
           state_interp σ' 0 ∗
@@ -227,9 +227,9 @@ Proof.
 Qed.
 
 Definition wpr0_def `{!perennialG Λ CS T Σ} (s : stuckness) k (mj : fracR) :
-  crashG Σ → pbundleG T Σ → coPset → expr Λ → expr Λ → (val Λ → iProp Σ) →
-  (crashG Σ → pbundleG T Σ → iProp Σ) →
-  (crashG Σ → pbundleG T Σ → val Λ → iProp Σ) → iProp Σ := fixpoint (wpr0_pre s k mj).
+  crashGS Σ → pbundleG T Σ → coPset → expr Λ → expr Λ → (val Λ → iProp Σ) →
+  (crashGS Σ → pbundleG T Σ → iProp Σ) →
+  (crashGS Σ → pbundleG T Σ → val Λ → iProp Σ) → iProp Σ := fixpoint (wpr0_pre s k mj).
 Definition wpr0_aux `{!perennialG Λ CS T Σ} : seal (@wpr0_def Λ CS T Σ _). by eexists. Qed.
 Definition wpr0 `{!perennialG Λ CS T Σ} := wpr0_aux.(unseal).
 Definition wpr0_eq `{!perennialG Λ CS T Σ} : wpr0 = @wpr0_def Λ CS T Σ _ := wpr0_aux.(seal_eq).
@@ -240,7 +240,7 @@ Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
-Implicit Types Φc : crashG Σ → pbundleG T Σ → val Λ → iProp Σ.
+Implicit Types Φc : crashGS Σ → pbundleG T Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 

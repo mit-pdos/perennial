@@ -41,13 +41,13 @@ Definition staged_done `{stagedG Σ} (γ: gname) : iProp Σ :=
   own γ (Cinr (to_agree ())).
 
 (* This is the modality guarding the crash condition in a wpc *)
-Definition wpc_crash_modality `{!irisGS Λ Σ, !crashG Σ} E1 mj Φc :=
+Definition wpc_crash_modality `{!irisGS Λ Σ, !crashGS Σ} E1 mj Φc :=
   ((∀ g1 ns D κs,
        let E2 :=  ⊤ ∖ D in
        global_state_interp g1 ns mj D κs -∗ C -∗
      ||={E1|E2,∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,E1|E2}=> global_state_interp g1 ns mj D κs ∗ Φc))%I.
 
-Definition wpc_value_modality `{!irisGS Λ Σ, !crashG Σ} E1 mj Φc :=
+Definition wpc_value_modality `{!irisGS Λ Σ, !crashGS Σ} E1 mj Φc :=
   ((∀ q g1 ns D κs,
        let E2 :=  ⊤ ∖ D in
        global_state_interp g1 ns mj D κs -∗ NC q -∗

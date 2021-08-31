@@ -233,7 +233,7 @@ Section jrnl_interp.
     end.
 
   Program Instance jrnl_interp : ffi_interp jrnl_model :=
-    {| ffiG := jrnlG;
+    {| ffiGS := jrnlG;
        ffi_local_names := jrnl_names;
        ffi_global_names := unit;
        ffi_get_local_names := @jrnl_get_names;
@@ -512,7 +512,7 @@ Instance jrnl_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := jrnl_
   {| spec_ffi_interp_adequacy_field := jrnl_interp_adequacy |}.
 
 Context `{invGS Σ}.
-Context `{crashG Σ}.
+Context `{crashGS Σ}.
 Context `{!refinement_heapG Σ}.
 
 Existing Instance spec_ffi_interp_field.

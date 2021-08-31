@@ -461,7 +461,7 @@ Lemma logical_reln_prepare_write t ts vs v j K (Hctx: LanguageCtx K):
                        j ⤇ K #() ∗
                        na_heap_mapsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp mem_vs ∗
                        (∀ v' : sval, na_heap_mapsto ls 1 v' -∗ heap_mapsto ls 1 v') ∗
-                       na_heap_mapsto_st (hG := heapG_na_heapG) WSt l 1 mem_v ∗
+                       na_heap_mapsto_st (hG := heapGS_na_heapGS) WSt l 1 mem_v ∗
                        (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')}}}.
 Proof.
   intros. iIntros "(#Hctx&Hvl&Hj) HΦ".
@@ -526,7 +526,7 @@ Lemma logical_reln_finish_store (ls l: loc) (vs vs': sval) (v v': ival) j K (Hct
       inv locN (loc_inv γ ls l vTy) ∗
       na_heap_mapsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp vs' ∗
       (∀ v' : sval, na_heap_mapsto ls 1 v' -∗ heap_mapsto ls 1 v') ∗
-      na_heap_mapsto_st (hG := heapG_na_heapG) WSt l 1 v' ∗
+      na_heap_mapsto_st (hG := heapGS_na_heapGS) WSt l 1 v' ∗
       (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')
  }}}
     FinishStore #l v
@@ -580,7 +580,7 @@ Lemma logical_reln_start_read t ts vs v j K (Hctx: LanguageCtx K):
                        j ⤇ K mem_vs ∗
                        val_interp (hS := hS) t mem_vs mem_v ∗
                        na_heap_mapsto_st (hG := refinement_na_heapG) (RSt O) ls q mem_vs ∗
-                       na_heap_mapsto_st (hG := heapG_na_heapG) (RSt 1) l q mem_v ∗
+                       na_heap_mapsto_st (hG := heapGS_na_heapGS) (RSt 1) l q mem_v ∗
                        (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')}}}.
 Proof.
   intros. iIntros "(#Hctx&Hvl&Hj) HΦ".
@@ -691,7 +691,7 @@ Lemma logical_reln_finish_read (ls l: loc) (vs': sval) (v': ival) j K (Hctx: Lan
  {{{ spec_ctx ∗ j ⤇ K (FinishRead #ls) ∗ fc_tok γ q ∗
       inv locN (loc_inv γ ls l vTy) ∗
       na_heap_mapsto_st (hG := refinement_na_heapG) (RSt O) ls q vs' ∗
-      na_heap_mapsto_st (hG := heapG_na_heapG) (RSt 1) l q v' ∗
+      na_heap_mapsto_st (hG := heapGS_na_heapGS) (RSt 1) l q v' ∗
       (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')
  }}}
     FinishRead #l

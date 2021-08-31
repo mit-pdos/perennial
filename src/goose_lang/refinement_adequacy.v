@@ -15,7 +15,7 @@ Class spec_ffi_interp_adequacy `{spec_ffi: @spec_ffi_interp ffi} `{EXT: !spec_ex
                                                           (spec_ext_semantics_field) }.
 
 Class refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} Σ := HeapGpreS {
-  refinement_heap_preG_heap :> na_heapPreG loc (@val spec_ffi_op_field) Σ;
+  refinement_heap_preG_heap :> na_heapGpreS loc (@val spec_ffi_op_field) Σ;
   refinement_heap_preG_ffi : @ffi_preG (@spec_ffi_model_field ffi)
                                        (@spec_ffi_interp_field _ spec_ffi)
                                        _ _ (spec_ffi_interp_adequacy_field) Σ;
@@ -241,7 +241,7 @@ Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: hea
         <disc> (|C={⊤}_0=> trace_inv) -∗
        □ (∀ hG, Φinv hG -∗
                        ∃ Href', spec_ctx' (hR := Href') rs ([es], (σs,gs)) ∗ trace_ctx (hR := Href')) ∗
-        (ffi_local_start (heapG_ffiG) σ.(world) g -∗ ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
+        (ffi_local_start (heapGS_ffiGS) σ.(world) g -∗ ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
          pre_borrowN n -∗
          O ⤇ es -∗ wpr NotStuck k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝)))) →
   trace_refines e r σ g es rs σs gs.
@@ -314,7 +314,7 @@ Implicit Types initP: @state ext ffi → @state (spec_ffi_op_field) (spec_ffi_mo
 Definition wpc_init k E e es Φ Φc initP P n : iProp Σ :=
   (∀ (hG: heapGS Σ) (hRG: refinement_heapG Σ) σ g σs gs,
       ⌜ initP σ σs ⌝ →
-      ffi_local_start (heapG_ffiG) σ.(world) g -∗
+      ffi_local_start (heapGS_ffiGS) σ.(world) g -∗
       ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
       pre_borrowN n -∗
       wpc_obligation k E e es Φ (λ hG hRG, Φc hG hRG ∗ P hG hRG) hG hRG (P hG hRG))%I.
@@ -327,8 +327,8 @@ Definition wpc_post_crash k E e es Φ Φc P n : iProp Σ :=
   (∀ (hG: heapGS Σ) (hRG: refinement_heapG Σ),
       Φc hG hRG -∗ ▷ ∀ (hG': heapGS Σ), |={⊤}=>
       ∀ σs,
-      (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
-      ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
+      (∃ σ0 σ1, ffi_restart (heapGS_ffiGS) σ1.(world) ∗
+      ffi_crash_rel Σ (heapGS_ffiGS (hG := hG)) σ0.(world) (heapGS_ffiGS (hG := hG')) σ1.(world)) -∗
       ffi_ctx (refinement_spec_ffiG) σs.(world) -∗
       ∃ σs' (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
       ffi_ctx (refinement_spec_ffiG) σs.(world) ∗
@@ -354,7 +354,7 @@ Lemma wpc_trace_inv_open k es σs gs e Hheap Href Φ Φc
   spec_crash_ctx' es ([es], (σs,gs)) (P Hheap Href) -∗
   (|C={⊤}_0=> trace_inv) -∗
   WPC e @ k; ⊤ {{ v, Φ Hheap Href v }}{{Φc Hheap Href ∗ P Hheap Href}} -∗
-  WPC e @ k; ⊤ {{ _, True }}{{∃ (hC : crashG Σ) (hRef : refinement_heapG Σ)
+  WPC e @ k; ⊤ {{ _, True }}{{∃ (hC : crashGS Σ) (hRef : refinement_heapG Σ)
                         (es' : list expr) (σs' : state) (gs' : global_state) (stat : status),
                         ⌜erased_rsteps (CS := spec_crash_lang) es ([es], (σs,gs)) (es', (σs',gs')) stat⌝
                         ∗ ⌜crash_safe (CS := spec_crash_lang) es ([es], (σs,gs))⌝
@@ -439,7 +439,7 @@ Definition initP_wf initP :=
 Definition excl_crash_token (P : heapGS Σ → refinement_heapG Σ → iProp Σ) :=
   ∀ Hheap Href, (⊢ ((P Hheap Href -∗ P Hheap Href -∗ False))).
 
-Theorem heap_wpc_refinement_adequacy `{crashPreG Σ} k es e
+Theorem heap_wpc_refinement_adequacy `{crashGpreS Σ} k es e
         σs gs σ g Φ Φc initP P n `{∀ hG hRG, Timeless (P hG hRG)} :
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
@@ -537,7 +537,7 @@ Proof using Hrpre Hhpre Hcpre.
     iApply fupd_idemp.
     (* XXX: This is horrible, but iMod does not work here for some reason, so we have to manually do it *)
     iApply (@fupd_wand_l _ (@uPred_bi_fupd Σ
-         (@iris_invG (@goose_lang ext ffi ffi_semantics) Σ (@heapG_irisG ext ffi ffi_semantics interp Σ Hheap))) with "[-]").
+         (@iris_invGS (@goose_lang ext ffi ffi_semantics) Σ (@heapGS_irisGS ext ffi ffi_semantics interp Σ Hheap))) with "[-]").
     iSplitR "H"; last first.
     { iExact "H". }
     iIntros "H".
@@ -587,7 +587,7 @@ Proof using Hrpre Hhpre Hcpre.
       { iApply Hexcl. }
       rewrite /hG//=.
       rewrite /heap_update_local/heap_get_names//= ffi_update_update.
-      rewrite /traceG_update//=.
+      rewrite /traceGS_update//=.
       rewrite /gen_heap_names.gen_heapG_update//=.
       rewrite ffi_update_get_local //=.
 Qed.

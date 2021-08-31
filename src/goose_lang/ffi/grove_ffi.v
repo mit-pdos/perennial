@@ -164,19 +164,19 @@ Section grove.
 End grove.
 
 (** * Grove semantic interpretation and lifting lemmas *)
-Class groveG Σ :=
+Class groveGS Σ :=
   { groveG_gen_heapG :> gen_heap.gen_heapGS chan (gset message) Σ; }.
 
-Class grove_preG Σ :=
+Class groveGpreS Σ :=
   { grove_preG_gen_heapG :> gen_heap.gen_heapGpreS chan (gset message) Σ; }.
 
 Definition groveΣ : gFunctors :=
   #[gen_heapΣ chan (gset message)].
 
-Instance subG_groveG Σ : subG groveΣ Σ → grove_preG Σ.
+Instance subG_groveGpreS Σ : subG groveΣ Σ → groveGpreS Σ.
 Proof. solve_inG. Qed.
 
-Definition grove_update_pre {Σ} (dG: grove_preG Σ) (n: gen_heap_names) :=
+Definition grove_update_pre {Σ} (dG: groveGpreS Σ) (n: gen_heap_names) :=
   {| groveG_gen_heapG := gen_heapG_update_pre (@grove_preG_gen_heapG _ dG) n |}.
 
 Section grove.
@@ -191,7 +191,7 @@ Section grove.
     ∀ c ms m, g !! c = Some ms → m ∈ ms → length m.(msg_data) < 2^64.
 
   Local Program Instance grove_interp: ffi_interp grove_model :=
-    {| ffiG := groveG;
+    {| ffiGS := groveGS;
        ffi_local_names := unit;
        ffi_global_names := gen_heap_names;
        ffi_get_local_names _ hD := tt;
@@ -216,7 +216,7 @@ Notation "c c↦ ms" := (mapsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
 Section lifting.
   Existing Instances grove_op grove_model grove_semantics grove_interp.
   Context `{!heapGS Σ}.
-  Instance heapG_groveG : groveG Σ := heapG_ffiG.
+  Instance heapG_groveG : groveGS Σ := heapGS_ffiGS.
 
   Definition chan_meta_token (c : chan) (E: coPset) : iProp Σ :=
     gen_heap.meta_token (hG := groveG_gen_heapG) c E.
@@ -689,9 +689,9 @@ From Perennial.goose_lang Require Import adequacy.
 
 Program Instance grove_interp_adequacy:
   @ffi_interp_adequacy grove_model grove_interp grove_op grove_semantics :=
-  {| ffi_preG := grove_preG;
+  {| ffi_preG := groveGpreS;
      ffiΣ := groveΣ;
-     subG_ffiPreG := subG_groveG;
+     subG_ffiPreG := subG_groveGpreS;
      ffi_initgP := λ g, chan_msg_bounds g;
      ffi_initP := λ _ g, True;
      ffi_update_pre := (λ _ hP _ names, @grove_update_pre _ hP names);

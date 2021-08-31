@@ -12,8 +12,8 @@ From iris.prelude Require Import options.
 Import uPred.
 
 Class irisGS (Λ : language) (Σ : gFunctors) := IrisG {
-  iris_invG :> invGS Σ;
-  iris_crashG :> crashG Σ;
+  iris_invGS :> invGS Σ;
+  iris_crashGS :> crashGS Σ;
 
   (** The state interpretation is a per-machine invariant that should hold in
   between each step of reduction. Here [state Λ] is the per-machine state, and
@@ -57,11 +57,11 @@ Class irisGS (Λ : language) (Σ : gFunctors) := IrisG {
 
   step_count_next_incr n : n ≤ step_count_next n
 }.
-Global Opaque iris_invG.
+Global Opaque iris_invGS.
 
 Definition irisG_equiv {Λ Σ} (I1 I2: irisGS Λ Σ) :=
-  @iris_invG _ _ I1 = @iris_invG _ _ I2 ∧
-  @iris_crashG _ _ I1 = @iris_crashG _ _ I2 ∧
+  @iris_invGS _ _ I1 = @iris_invGS _ _ I2 ∧
+  @iris_crashGS _ _ I1 = @iris_crashGS _ _ I2 ∧
   (∀ σ n, @state_interp _ _ I1 σ n ≡ @state_interp _ _ I2 σ n) ∧
   (∀ g n q D κs, @global_state_interp _ _ I1 g n q D κs ≡ @global_state_interp _ _ I2 g n q D κs) ∧
   (∀ v, @fork_post _ _ I1 v ≡ @fork_post _ _ I2 v) ∧
@@ -72,7 +72,7 @@ Definition irisG_equiv {Λ Σ} (I1 I2: irisGS Λ Σ) :=
 
 (* first, define a modality for establishing crash conditions *)
 Section cfupd.
-  Context `{crashG Σ} `{invGS Σ}.
+  Context `{crashGS Σ} `{invGS Σ}.
   Implicit Types (P: iProp Σ).
 
   Definition cfupd (k: nat) E1 :=

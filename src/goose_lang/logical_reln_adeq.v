@@ -53,15 +53,15 @@ Section pre_assumptions.
 Context `{Hhpre: @heapGpreS ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
-Context `{Hcrashpre: crashPreG Σ}.
+Context `{Hcrashpre: crashGpreS Σ}.
 Context `{Hstypre: !sty_preG (hsT_model := hsT_model) (specTy_update := upd) Σ}.
 
 Definition sty_derived_crash_condition :=
     (λ (hG: heapGS Σ) (hRG: refinement_heapG Σ), ∃ hS,
       ▷ ∀ (hG': heapGS Σ), |={⊤}=>
       ∀ σs,
-      (∃ σ0 σ1, ffi_restart (heapG_ffiG) σ1.(world) ∗
-      ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ0.(world) (heapG_ffiG (hG := hG')) σ1.(world)) -∗
+      (∃ σ0 σ1, ffi_restart (heapGS_ffiGS) σ1.(world) ∗
+      ffi_crash_rel Σ (heapGS_ffiGS (hG := hG)) σ0.(world) (heapGS_ffiGS (hG := hG')) σ1.(world)) -∗
       ffi_ctx (refinement_spec_ffiG) σs.(world) -∗
       ∃ (σs': sstate) (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
       ffi_ctx (refinement_spec_ffiG) σs.(world) ∗

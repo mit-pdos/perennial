@@ -10,10 +10,10 @@ Set Default Proof Using "Type".
 
 Theorem heap_recv_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !heapGpreS Σ} s k e r σ g φ φr φinv Φinv (HINITG: ffi_initgP g) (HINIT: ffi_initP σ.(world) g) n :
   (∀ `{Hheap : !heapGS Σ},
-     ⊢ (ffi_local_start (heapG_ffiG) σ.(world) g -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗
+     ⊢ (ffi_local_start (heapGS_ffiGS) σ.(world) g -∗ trace_frag σ.(trace) -∗ oracle_frag σ.(oracle) -∗
         pre_borrowN n ={⊤}=∗
        □ (∀ σ nt, state_interp σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
-       □ (∀ hG (Hpf: @heapG_invG _ _ _ _ Hheap = @heapG_invG _ _ _ _ hG),
+       □ (∀ hG (Hpf: @heapGS_invGS _ _ _ _ Hheap = @heapGS_invGS _ _ _ _ hG),
                      Φinv hG -∗ □ ∀ σ nt, state_interp σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
         wpr s k ⊤ e r (λ v, ⌜φ v⌝) Φinv (λ _ v, ⌜φr v⌝))) →
   recv_adequate (CS := goose_crash_lang) s e r σ g (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, φinv σ).

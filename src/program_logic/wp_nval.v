@@ -6,7 +6,7 @@ Import uPred.
 Section modality.
 Context `{IRISG: !irisGS Λ Σ}.
 
-Definition wp_nval `{!irisGS Λ Σ, !crashG Σ} E1 P :=
+Definition wp_nval `{!irisGS Λ Σ, !crashGS Σ} E1 P :=
   ((∀ mj q g1 ns D κs,
        let E2 :=  ⊤ ∖ D in
        let E2 :=  ⊤ ∖ D in

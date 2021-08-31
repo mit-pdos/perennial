@@ -16,7 +16,7 @@ Notation nonAtomic T := (naMode * T)%type.
 
 Section definitions.
   Context `{ext:ffi_syntax}.
-  Context `{hG: na_heapG loc val Σ}.
+  Context `{hG: na_heapGS loc val Σ}.
   Definition heap_mapsto_def l q v : iProp Σ :=
     ⌜l ≠ null⌝ ∗ na_heap_mapsto (L:=loc) (V:=val) l q v.
   Definition heap_mapsto_aux : seal (@heap_mapsto_def). by eexists. Qed.
@@ -96,34 +96,34 @@ Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
    Besides needing to know that these CMRAs are included in Σ, there may
    be some implicit ghost names that are used to identify instances
    of these algebras. (For example, na_heap has an implicit name used for
-   the ghost heap). These are bundled together in ffiG.
+   the ghost heap). These are bundled together in ffiGS.
 
    On a crash, a new "generation" might use fresh names for these instances.
-   Thus, an FFI needs to tell the framework how to unbundle ffiG and swap in a
+   Thus, an FFI needs to tell the framework how to unbundle ffiGS and swap in a
    new set of names.
 *)
 
 Class ffi_interp (ffi: ffi_model) :=
-  { ffiG: gFunctors -> Set;
+  { ffiGS: gFunctors -> Set;
     ffi_local_names : Set;
     ffi_global_names : Set;
-    ffi_get_local_names : ∀ Σ, ffiG Σ → ffi_local_names;
-    ffi_get_global_names : ∀ Σ, ffiG Σ → ffi_global_names;
-    ffi_update_local : ∀ Σ, ffiG Σ → ffi_local_names → ffiG Σ;
+    ffi_get_local_names : ∀ Σ, ffiGS Σ → ffi_local_names;
+    ffi_get_global_names : ∀ Σ, ffiGS Σ → ffi_global_names;
+    ffi_update_local : ∀ Σ, ffiGS Σ → ffi_local_names → ffiGS Σ;
     ffi_update_get_local: ∀ Σ hF names, ffi_get_local_names Σ (ffi_update_local _ hF names) = names;
     ffi_update_get_global: ∀ Σ hF names, ffi_get_global_names Σ (ffi_update_local _ hF names) =
                                          ffi_get_global_names Σ hF;
     ffi_get_update: ∀ Σ hF, ffi_update_local Σ hF (ffi_get_local_names _ hF) = hF;
     ffi_update_update: ∀ Σ hF names1 names2, ffi_update_local Σ (ffi_update_local Σ hF names1) names2
                                      = ffi_update_local Σ hF names2;
-    ffi_ctx: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
-    ffi_global_ctx: ∀ `{ffiG Σ}, ffi_global_state -> iProp Σ;
+    ffi_ctx: ∀ `{ffiGS Σ}, ffi_state -> iProp Σ;
+    ffi_global_ctx: ∀ `{ffiGS Σ}, ffi_global_state -> iProp Σ;
     ffi_global_ctx_nolocal : ∀ Σ hF names,
         @ffi_global_ctx Σ (ffi_update_local Σ hF names) = @ffi_global_ctx Σ hF;
-    ffi_local_start: ∀ `{ffiG Σ}, ffi_state -> ffi_global_state -> iProp Σ;
-    ffi_restart: ∀ `{ffiG Σ}, ffi_state -> iProp Σ;
-    ffi_crash_rel: ∀ Σ, ffiG Σ → ffi_state → ffiG Σ → ffi_state → iProp Σ;
-    ffi_crash_rel_pers: ∀ Σ (Hold Hnew: ffiG Σ) σ σ', Persistent (ffi_crash_rel Σ Hold σ Hnew σ');
+    ffi_local_start: ∀ `{ffiGS Σ}, ffi_state -> ffi_global_state -> iProp Σ;
+    ffi_restart: ∀ `{ffiGS Σ}, ffi_state -> iProp Σ;
+    ffi_crash_rel: ∀ Σ, ffiGS Σ → ffi_state → ffiGS Σ → ffi_state → iProp Σ;
+    ffi_crash_rel_pers: ∀ Σ (Hold Hnew: ffiGS Σ) σ σ', Persistent (ffi_crash_rel Σ Hold σ Hnew σ');
   }.
 
 Arguments ffi_ctx {ffi FfiInterp Σ} : rename.
@@ -144,7 +144,7 @@ Record tr_names := {
   oracle_name : gname;
 }.
 
-Class traceG (Σ: gFunctors) := {
+Class traceGS (Σ: gFunctors) := {
   trace_inG :> inG Σ (authR (optionUR (exclR traceO)));
   oracle_inG :> inG Σ (authR (optionUR (exclR OracleO)));
   trace_tr_names : tr_names;
@@ -155,10 +155,10 @@ Class trace_preG (Σ: gFunctors) := {
   oracle_preG_inG :> inG Σ (authR (optionUR (exclR OracleO)));
 }.
 
-Definition traceG_update (Σ: gFunctors) (hT: traceG Σ) (names: tr_names) :=
+Definition traceGS_update (Σ: gFunctors) (hT: traceGS Σ) (names: tr_names) :=
   {| trace_inG := trace_inG; oracle_inG := oracle_inG; trace_tr_names := names |}.
 
-Definition traceG_update_pre (Σ: gFunctors) (hT: trace_preG Σ) (names: tr_names) :=
+Definition traceGS_update_pre (Σ: gFunctors) (hT: trace_preG Σ) (names: tr_names) :=
   {| trace_inG := trace_preG_inG; oracle_inG := oracle_preG_inG; trace_tr_names := names |}.
 
 Definition traceΣ : gFunctors :=
@@ -168,17 +168,17 @@ Definition traceΣ : gFunctors :=
 Global Instance subG_crashG {Σ} : subG traceΣ Σ → trace_preG Σ.
 Proof. solve_inG. Qed.
 
-Definition trace_auth `{hT: traceG Σ} (l: Trace) :=
+Definition trace_auth `{hT: traceGS Σ} (l: Trace) :=
   own (trace_name (trace_tr_names)) (● (Excl' (l: traceO))).
-Definition trace_frag `{hT: traceG Σ} (l: Trace) :=
+Definition trace_frag `{hT: traceGS Σ} (l: Trace) :=
   own (trace_name (trace_tr_names)) (◯ (Excl' (l: traceO))).
-Definition oracle_auth `{hT: traceG Σ} (o: Oracle) :=
+Definition oracle_auth `{hT: traceGS Σ} (o: Oracle) :=
   own (oracle_name (trace_tr_names)) (● (Excl' (o: OracleO))).
-Definition oracle_frag `{hT: traceG Σ} (o: Oracle) :=
+Definition oracle_frag `{hT: traceGS Σ} (o: Oracle) :=
   own (oracle_name (trace_tr_names)) (◯ (Excl' (o: OracleO))).
 
 Lemma trace_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
-  ⊢ |==> ∃ H : traceG Σ, trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o .
+  ⊢ |==> ∃ H : traceGS Σ, trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o .
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
   { apply auth_both_valid_discrete; split; eauto. econstructor. }
@@ -188,7 +188,7 @@ Proof.
 Qed.
 
 Lemma trace_name_init `{hT: trace_preG Σ} (l: list event) (o: Oracle):
-  ⊢ |==> ∃ name : tr_names, let _ := traceG_update_pre _ _ name in
+  ⊢ |==> ∃ name : tr_names, let _ := traceGS_update_pre _ _ name in
                            trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o.
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
@@ -198,8 +198,8 @@ Proof.
   iModIntro. iExists {| trace_name := γ; oracle_name := γ' |}. iFrame.
 Qed.
 
-Lemma trace_reinit `(hT: traceG Σ) (l: list event) (o: Oracle):
-  ⊢ |==> ∃ names : tr_names, let _ := traceG_update Σ hT names in
+Lemma trace_reinit `(hT: traceGS Σ) (l: list event) (o: Oracle):
+  ⊢ |==> ∃ names : tr_names, let _ := traceGS_update Σ hT names in
      trace_auth l ∗ trace_frag l ∗ oracle_auth o ∗ oracle_frag o.
 Proof.
   iMod (own_alloc (● (Excl' (l: traceO)) ⋅ ◯ (Excl' (l: traceO)))) as (γ) "[H1 H2]".
@@ -209,7 +209,7 @@ Proof.
   iModIntro. iExists {| trace_name := γ; oracle_name := γ' |}. iFrame.
 Qed.
 
-Lemma trace_update `{hT: traceG Σ} (l: Trace) (x: event):
+Lemma trace_update `{hT: traceGS Σ} (l: Trace) (x: event):
   trace_auth l -∗ trace_frag l ==∗ trace_auth (add_event x l) ∗ trace_frag (add_event x l).
 Proof.
   iIntros "Hγ● Hγ◯".
@@ -218,7 +218,7 @@ Proof.
   done.
 Qed.
 
-Lemma trace_agree `{hT: traceG Σ} (l l': list event):
+Lemma trace_agree `{hT: traceGS Σ} (l l': list event):
   trace_auth l -∗ trace_frag l' -∗ ⌜ l = l' ⌝.
 Proof.
   iIntros "Hγ1 Hγ2".
@@ -227,7 +227,7 @@ Proof.
   done.
 Qed.
 
-Lemma oracle_agree `{hT: traceG Σ} (o o': Oracle):
+Lemma oracle_agree `{hT: traceGS Σ} (o o': Oracle):
   oracle_auth o -∗ oracle_frag o' -∗ ⌜ o = o' ⌝.
 Proof.
   iIntros "Hγ1 Hγ2".
@@ -393,18 +393,19 @@ Proof.
   iFrame.
 Qed.
 
-
+(** Global ghost state for GooseLang. *)
 Class heapGS Σ := HeapGS {
-  heapG_invG : invGS Σ;
-  heapG_crashG : crashG Σ;
-  heapG_ffiG : ffiG Σ;
-  heapG_na_heapG :> na_heapG loc val Σ;
-  heapG_traceG :> traceG Σ;
-  heapG_creditG :> creditGS Σ;
+  heapGS_invGS : invGS Σ;
+  heapGS_crashGS : crashGS Σ;
+  heapGS_ffiGS : ffiGS Σ;
+  heapGS_na_heapGS :> na_heapGS loc val Σ;
+  heapGS_traceGS :> traceGS Σ;
+  heapGS_creditGS :> creditGS Σ;
 }.
 
 
 (* The word 'heap' is really overloaded... *)
+(* RJ: I think we should rename heapGS → gooseGS or gooseLangGS *)
 Record heap_names := {
   heap_heap_names : na_heap_names;
   heap_ffi_local_names : ffi_local_names;
@@ -420,34 +421,34 @@ Record heap_local_names := {
 }.
 
 Definition heap_update_local_names Σ (hG : heapGS Σ) (names: heap_local_names) :=
-  {| heapG_invG := heapG_invG;
-     heapG_crashG := heapG_crashG;
-     heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_local_ffi_local_names names);
-     heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_local_heap_names names);
-     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names);
-     heapG_creditG := heapG_creditG;
+  {| heapGS_invGS := heapGS_invGS;
+     heapGS_crashGS := heapGS_crashGS;
+     heapGS_ffiGS := ffi_update_local Σ (heapGS_ffiGS) (heap_local_ffi_local_names names);
+     heapGS_na_heapGS := na_heapGS_update (heapGS_na_heapGS) (heap_local_heap_names names);
+     heapGS_traceGS := traceGS_update Σ (heapGS_traceGS) (heap_local_trace_names names);
+     heapGS_creditGS := heapGS_creditGS;
  |}.
 
-Definition heap_update_local Σ (hG : heapGS Σ) (Hinv: invGS Σ) (Hcrash : crashG Σ) (names: heap_local_names) :=
-  {| heapG_invG := Hinv;
-     heapG_crashG := Hcrash;
-     heapG_ffiG := ffi_update_local Σ (heapG_ffiG) (heap_local_ffi_local_names names);
-     heapG_na_heapG := na_heapG_update (heapG_na_heapG) (heap_local_heap_names names);
-     heapG_traceG := traceG_update Σ (heapG_traceG) (heap_local_trace_names names);
-     heapG_creditG := heapG_creditG;
+Definition heap_update_local Σ (hG : heapGS Σ) (Hinv: invGS Σ) (Hcrash : crashGS Σ) (names: heap_local_names) :=
+  {| heapGS_invGS := Hinv;
+     heapGS_crashGS := Hcrash;
+     heapGS_ffiGS := ffi_update_local Σ (heapGS_ffiGS) (heap_local_ffi_local_names names);
+     heapGS_na_heapGS := na_heapGS_update (heapGS_na_heapGS) (heap_local_heap_names names);
+     heapGS_traceGS := traceGS_update Σ (heapGS_traceGS) (heap_local_trace_names names);
+     heapGS_creditGS := heapGS_creditGS;
  |}.
 
 Definition heap_get_names Σ (hG : heapGS Σ) : heap_names :=
-  {| heap_heap_names := na_heapG_get_names (heapG_na_heapG);
-     heap_ffi_local_names := ffi_get_local_names Σ (heapG_ffiG);
-     heap_ffi_global_names := ffi_get_global_names Σ (heapG_ffiG);
+  {| heap_heap_names := na_heapGS_get_names (heapGS_na_heapGS);
+     heap_ffi_local_names := ffi_get_local_names Σ (heapGS_ffiGS);
+     heap_ffi_global_names := ffi_get_global_names Σ (heapGS_ffiGS);
      heap_trace_names := trace_tr_names;
      heap_credit_names := credit_cr_names;
  |}.
 
 Definition heap_get_local_names Σ (hG : heapGS Σ) : heap_local_names :=
-  {| heap_local_heap_names := na_heapG_get_names (heapG_na_heapG);
-     heap_local_ffi_local_names := ffi_get_local_names Σ (heapG_ffiG);
+  {| heap_local_heap_names := na_heapGS_get_names (heapGS_na_heapGS);
+     heap_local_ffi_local_names := ffi_get_local_names Σ (heapGS_ffiGS);
      heap_local_trace_names := trace_tr_names;
  |}.
 
@@ -462,7 +463,7 @@ Definition heap_extend_local_names (names : heap_local_names) (namesg: ffi_globa
 Lemma heap_get_update Σ hG :
   heap_update_local_names Σ hG (heap_get_local_names _ hG) = hG.
 Proof.
-  rewrite /heap_update_local_names/heap_get_local_names/na_heapG_update/na_heapG_get_names ffi_get_update //=.
+  rewrite /heap_update_local_names/heap_get_local_names/na_heapGS_update/na_heapGS_get_names ffi_get_update //=.
   destruct hG as [??? [] []]; eauto.
 Qed.
 
@@ -472,25 +473,25 @@ Definition tls (na: naMode) : lock_state :=
   | Reading n => RSt n
   end.
 
-Global Existing Instances heapG_na_heapG.
+Global Existing Instances heapGS_na_heapGS.
 
 Definition borrowN := nroot.@"borrow".
 Definition crash_borrow_ginv_number : nat := 6%nat.
 Definition crash_borrow_ginv `{!invGS Σ} `{creditGS Σ}
   := (inv borrowN (cred_frag crash_borrow_ginv_number)).
 
-Global Program Instance heapG_irisG `{!heapGS Σ}:
+Global Program Instance heapGS_irisGS `{!heapGS Σ}:
   irisGS goose_lang Σ := {
-  iris_invG := heapG_invG;
-  iris_crashG := heapG_crashG;
+  iris_invGS := heapGS_invGS;
+  iris_crashGS := heapGS_crashGS;
   num_laters_per_step := (λ n, 3 ^ (n + 1))%nat;
   step_count_next := (λ n, 10 * (n + 1))%nat;
   state_interp σ nt :=
-    (na_heap_ctx tls σ.(heap) ∗ ffi_ctx heapG_ffiG σ.(world)
+    (na_heap_ctx tls σ.(heap) ∗ ffi_ctx heapGS_ffiGS σ.(world)
       ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
   global_state_interp g ns mj D κs :=
-    (ffi_global_ctx heapG_ffiG g ∗
-     @crash_borrow_ginv _ heapG_invG _ ∗
+    (ffi_global_ctx heapGS_ffiGS g ∗
+     @crash_borrow_ginv _ heapGS_invGS _ ∗
      cred_interp ns ∗
      ⌜(/ 2 < mj ≤ 1) ⌝%Qp ∗
      pinv_tok mj D)%I;
@@ -503,14 +504,14 @@ Qed.
 Next Obligation. intros => //=. lia. Qed.
 
 Lemma heap_get_update' Σ hG :
-  heap_update_local Σ hG (iris_invG) (iris_crashG) (heap_get_local_names _ hG) = hG.
+  heap_update_local Σ hG (iris_invGS) (iris_crashGS) (heap_get_local_names _ hG) = hG.
 Proof.
   destruct hG as [??? [] []].
   rewrite /heap_update_local ffi_get_update //=.
 Qed.
 
 Lemma heap_update_invG Σ hG Hinv Hc names:
-  @iris_invG _ _ (@heapG_irisG _ (heap_update_local Σ hG Hinv Hc names)) = Hinv.
+  @iris_invGS _ _ (@heapGS_irisGS _ (heap_update_local Σ hG Hinv Hc names)) = Hinv.
 Proof. rewrite //=. Qed.
 
 (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
@@ -1348,4 +1349,4 @@ End goose_lang.
 Hint Extern 0 (AsRecV (RecV _ _ _) _ _ _) =>
   apply AsRecV_recv : typeclass_instances.
 
-Arguments heapG_ffiG {_ _ _ _ hG}: rename.
+Arguments heapGS_ffiGS {_ _ _ _ hG}: rename.

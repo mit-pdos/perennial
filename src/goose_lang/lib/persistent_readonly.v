@@ -127,7 +127,7 @@ Section goose_lang.
 
 End goose_lang.
 
-Instance heap_mapsto_AsMapsTo `{ext: !ffi_syntax} `{!na_heapG loc val Σ}
+Instance heap_mapsto_AsMapsTo `{ext: !ffi_syntax} `{!na_heapGS loc val Σ}
          (l: loc) (v: val) :
   AsMapsTo (l ↦ v) (λ q, l ↦{q} v)%I.
 Proof.

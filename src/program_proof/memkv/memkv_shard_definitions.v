@@ -18,7 +18,7 @@ Record ShardReplyC := mkShardReplyC {
 Section memkv_shard_pre_definitions.
 
 Context `{rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
-Context `{!heap_globalG Σ (ext := grove_op) (ffi := grove_model) }.
+Context `{!dist_heapGS Σ (ext := grove_op) (ffi := grove_model) }.
 
 Definition uKV_FRESHCID: nat :=
   Eval vm_compute in match KV_FRESHCID with LitV (LitInt n) => int.nat n | _ => 0 end.

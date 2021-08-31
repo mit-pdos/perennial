@@ -45,14 +45,14 @@ Definition LVL_INV : nat := 75.
 Definition LVL_OPS : nat := 50.
 Existing Instance logG0.
 
-Definition append_inv {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ} :=
+Definition append_inv {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {cG: crashGS Σ} {aG : appendG Σ} :=
   (∃ γ, log_inv SIZE γ LVL_INV%nat)%I.
-Definition append_init {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
+Definition append_init {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {cG: crashGS Σ} {aG : appendG Σ}
   : iProp Σ := (∃ γ, log_init (P γ) SIZE).
-Definition append_crash_cond {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
+Definition append_crash_cond {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {cG: crashGS Σ} {aG : appendG Σ}
   : iProp Σ := (∃ γ, log_crash_cond (P γ) SIZE).
 Definition appendN : coPset := (∅ : coPset).
-Definition append_val_interp {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {cG: crashG Σ} {aG : appendG Σ}
+Definition append_val_interp {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {cG: crashGS Σ} {aG : appendG Σ}
            (ty: @ext_tys (@val_tys _ log_ty)) : val_semTy :=
   λ vspec vimpl, (∃ (lspec: loc) (limpl: loc) γ,
             ⌜ vspec = #lspec ∧ vimpl = #limpl ⌝ ∗ is_log SIZE γ LVL_INV limpl ∗ log_open lspec)%I.

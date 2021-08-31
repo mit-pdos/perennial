@@ -459,12 +459,12 @@ End map.
 
 Section iprop_map.
 
-  Context `{invGS Σ, crashG Σ}.
+  Context `{invGS Σ, crashGS Σ}.
   Context `{Countable K} {A : Type}.
   Implicit Types m : gmap K A.
   Implicit Types Φ Ψ : K → A → iProp Σ.
 
-  Lemma big_sepM_mono_ncfupd `{invGS Σ, crashG Σ} Φ Ψ m (I : iProp Σ) E :
+  Lemma big_sepM_mono_ncfupd `{invGS Σ, crashGS Σ} Φ Ψ m (I : iProp Σ) E :
    □ ( ∀ k x, ⌜ m !! k = Some x ⌝ →
       I ∗ Φ k x -∗ |NC={E}=> I ∗ Ψ k x ) -∗
     I ∗ ([∗ map] k↦x ∈ m, Φ k x) -∗ |NC={E}=>

@@ -39,7 +39,7 @@ Proof. solve_inG. Qed.
 Section rpc_global_defs.
 
 Context `{!rpcregG Σ}.
-Context `{HPRE: !heap_globalG Σ}.
+Context `{HPRE: !dist_heapGS Σ}.
 
 (* A host-specific mapping from rpc ids on that host to pre/post conditions *)
 Definition urpc_serverN : namespace := nroot.@"urpc_server".
@@ -59,7 +59,7 @@ Record server_chan_gnames := {
 }.
 
 Definition is_rpcHandler {X:Type} (names : heap_local_names) (cname : gname) (f:val) Pre Post : iProp Σ :=
-  let hG := heap_globalG_heapG _ {| crash_inG := _; crash_name := cname |} names in
+  let hG := dist_heapGS_heapGS _ {| crash_inG := _; crash_name := cname |} names in
   ∀ (x:X) req rep dummy_rep_sl dummy (reqData:list u8),
   {{{
       is_slice req byteT 1 reqData ∗
@@ -83,9 +83,10 @@ Definition reply_chan_inner_msg (Γ : client_chan_gnames) m : iProp Σ :=
        "#HPost_saved" ∷ saved_pred_own γ (Post x reqData) ∗
        "#HPost" ∷ inv urpc_escrowN (Post x reqData replyData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt).
 
-Let gn := heap_globalG_names.
+(* FIXME this is definitely the wrong place for this instance *)
+Let gn := dist_heapGS_names.
 Let gpG := (heap_preG_ffi).
-Instance global_groveG : groveG Σ := @grove_update_pre _ gpG gn.
+Instance global_groveG : groveGS Σ := @grove_update_pre _ gpG gn.
 
 Definition reply_chan_inner (Γ : client_chan_gnames) (c: chan) : iProp Σ :=
   ∃ ms, "Hchan" ∷ c c↦ ms ∗
@@ -294,16 +295,16 @@ Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
 Instance heapG_to_preG Σ' : heapGS Σ' → heapGpreS Σ'.
 Proof.
   destruct 1.
-  destruct heapG_invG.
-  destruct heapG_crashG.
-  destruct heapG_ffiG.
+  destruct heapGS_invGS.
+  destruct heapGS_crashGS.
+  destruct heapGS_ffiGS.
   destruct groveG_gen_heapG.
-  destruct heapG_na_heapG.
-  destruct heapG_traceG.
+  destruct heapGS_na_heapGS.
+  destruct heapGS_traceGS.
   econstructor; econstructor; apply _.
 Defined.
 
-Global Instance heapG_heap_globalG : heap_globalG Σ.
+Global Instance heapG_heap_globalG : dist_heapGS Σ.
 Proof using hG.
   econstructor.
   - apply _.
@@ -386,30 +387,30 @@ Lemma is_rpcHandler_convert X handler Pre Post :
   is_rpcHandler' handler Pre Post.
 Proof.
   rewrite /is_rpcHandler/is_rpcHandler'.
-  assert ((@heap_globalG_heapG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ
+  assert ((@dist_heapGS_heapGS grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ
               heapG_heap_globalG
               {|
                 crash_inG :=
                   heapG_heap_globalG
-                  .(@heap_globalG_preG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ)
+                  .(@dist_heapGpreS grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ)
                   .(@heap_preG_crash grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ)
                   .(@crash_inPreG Σ);
                 crash_name :=
-                  (@heapG_irisG grove_op grove_model grove_semantics grove_interp Σ hG)
-                  .(@iris_crashG (@goose_lang grove_op grove_model grove_semantics) Σ).(
+                  (@heapGS_irisGS grove_op grove_model grove_semantics grove_interp Σ hG)
+                  .(@iris_crashGS (@goose_lang grove_op grove_model grove_semantics) Σ).(
                   @crash_name Σ)
               |} (@heap_get_local_names grove_op grove_model grove_interp Σ hG) = hG)) as ->.
-  { rewrite //=/heap_globalG_heapG/heap_update_pre//= /heap_globalG_invG.
+  { rewrite //=/dist_heapGS_heapGS/heap_update_pre//= /dist_heapGS_invGS.
     rewrite /inv_update_pre/heap_preG_iris/heapG_to_preG//=.
     rewrite /heapG_to_preG.
     destruct hG => //=.
-    destruct heapG_invG eqn:Heq.
-    destruct heapG_crashG.
-    destruct heapG_ffiG.
+    destruct heapGS_invGS eqn:Heq.
+    destruct heapGS_crashGS.
+    destruct heapGS_ffiGS.
     destruct groveG_gen_heapG.
-    destruct heapG_na_heapG.
-    destruct heapG_traceG.
-    destruct heapG_creditG.
+    destruct heapGS_na_heapGS.
+    destruct heapGS_traceGS.
+    destruct heapGS_creditGS.
     f_equal. rewrite /inv_inPreG.
     f_equal. destruct inv_inG0 => //=.
   }
@@ -417,27 +418,27 @@ Proof.
 Qed.
 
 Lemma global_groveG_inv_conv :
-  @heap_globalG_invG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ heapG_heap_globalG =
-  (@heapG_irisG grove_op grove_model grove_semantics grove_interp Σ hG)
-  .(@iris_invG (@goose_lang grove_op grove_model grove_semantics) Σ).
+  @dist_heapGS_invGS grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ heapG_heap_globalG =
+  (@heapGS_irisGS grove_op grove_model grove_semantics grove_interp Σ hG)
+  .(@iris_invGS (@goose_lang grove_op grove_model grove_semantics) Σ).
 Proof.
-  { rewrite //=/heap_globalG_heapG/heap_update_pre//= /heap_globalG_invG.
+  { rewrite //=/dist_heapGS_heapGS/heap_update_pre//= /dist_heapGS_invGS.
     rewrite /inv_update_pre/heap_preG_iris/heapG_to_preG//=.
     rewrite /heapG_to_preG.
     destruct hG => //=.
-    destruct heapG_invG eqn:Heq.
-    destruct heapG_crashG.
-    destruct heapG_ffiG.
+    destruct heapGS_invGS eqn:Heq.
+    destruct heapGS_crashGS.
+    destruct heapGS_ffiGS.
     destruct groveG_gen_heapG.
-    destruct heapG_na_heapG.
-    destruct heapG_traceG.
+    destruct heapGS_na_heapGS.
+    destruct heapGS_traceGS.
     f_equal. rewrite /inv_inPreG.
     f_equal. destruct inv_inG0 => //=.
   }
 Qed.
 
 Lemma global_groveG_inv_conv':
-  dist_weakestpre.grove_invG = iris_invG.
+  dist_weakestpre.grove_invG = iris_invGS.
 Proof. eauto using global_groveG_inv_conv. Qed.
 
 Lemma non_empty_rpc_handler_mapping_inv γ host handlers :
@@ -485,12 +486,12 @@ Proof.
     rewrite /grove_ffi.heapG_groveG//=.
     rewrite /heapG_to_preG//=.
     destruct hG => //=.
-    destruct heapG_invG => //=.
-    destruct heapG_crashG => //=.
-    destruct heapG_ffiG => //=.
+    destruct heapGS_invGS => //=.
+    destruct heapGS_crashGS => //=.
+    destruct heapGS_ffiGS => //=.
     destruct groveG_gen_heapG => //=.
-    destruct heapG_na_heapG => //=.
-    destruct heapG_traceG => //=.
+    destruct heapGS_na_heapGS => //=.
+    destruct heapGS_traceGS => //=.
 Qed.
 
 Lemma wp_RPCServer__readThread γ s host client handlers mref def :
@@ -579,10 +580,10 @@ Proof.
     as "#Hequiv".
   wp_pures.
   iEval (simpl) in "Hequiv".
-  assert ((@heapG_irisG grove_op grove_model grove_semantics grove_interp Σ hG)
-           .(@iris_crashG (@goose_lang grove_op grove_model grove_semantics) Σ).(
+  assert ((@heapGS_irisGS grove_op grove_model grove_semantics grove_interp Σ hG)
+           .(@iris_crashGS (@goose_lang grove_op grove_model grove_semantics) Σ).(
            @crash_name Σ)
-           = hG.(@heapG_crashG grove_op grove_model grove_interp Σ).(@crash_name Σ)) as Heq.
+           = hG.(@heapGS_crashGS grove_op grove_model grove_interp Σ).(@crash_name Σ)) as Heq.
   { rewrite //=. }
   rewrite -Heq.
   rewrite ?(is_rpcHandler_convert).

@@ -271,7 +271,7 @@ Section log_interp.
     end.
 
   Program Instance log_interp : ffi_interp log_model :=
-    {| ffiG := logG;
+    {| ffiGS := logG;
        ffi_local_names := log_names;
        ffi_global_names := unit;
        ffi_get_local_names := @log_get_names;
@@ -535,7 +535,7 @@ Instance log_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := log_sp
   {| spec_ffi_interp_adequacy_field := log_interp_adequacy |}.
 
 Context `{invGS Σ}.
-Context `{crashG Σ}.
+Context `{crashGS Σ}.
 Context `{!refinement_heapG Σ}.
 
 Existing Instance spec_ffi_interp_field.

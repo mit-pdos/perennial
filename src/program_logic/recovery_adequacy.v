@@ -14,8 +14,8 @@ Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
-Implicit Types Φinv : crashG Σ → pbundleG T Σ → iProp Σ.
-Implicit Types Φc : crashG Σ → pbundleG T Σ → val Λ → iProp Σ.
+Implicit Types Φinv : crashGS Σ → pbundleG T Σ → iProp Σ.
+Implicit Types Φc : crashGS Σ → pbundleG T Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
@@ -23,8 +23,8 @@ Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤ {{ fork_post }} 
 
 Notation steps_sum := crash_adequacy.steps_sum.
 
-Fixpoint step_fupdN_fresh ncurrent (ns: list nat) (Hc0: crashG Σ) t0
-         (P: crashG Σ → pbundleG T Σ → iProp Σ) {struct ns} :=
+Fixpoint step_fupdN_fresh ncurrent (ns: list nat) (Hc0: crashGS Σ) t0
+         (P: crashGS Σ → pbundleG T Σ → iProp Σ) {struct ns} :=
   match ns with
   | [] => P Hc0 t0
   | (n :: ns) =>
@@ -334,10 +334,10 @@ Fixpoint fresh_later_count f g ncurr (ns: list nat) :=
   end.
 
 
-Lemma step_fupdN_fresh_plain {Λ CS T Σ} `{!invGpreS Σ} `{!crashPreG Σ} P `{!Plain P} ns ncurr f g k:
+Lemma step_fupdN_fresh_plain {Λ CS T Σ} `{!invGpreS Σ} `{!crashGpreS Σ} P `{!Plain P} ns ncurr f g k:
   (∀ (Hi': invGS Σ) Hc', NC 1-∗ |={⊤}=>
    ∃ (pG: perennialG Λ CS T Σ)
-     (Hpf1: ∀ Hc t, @iris_invG _ _ (perennial_irisG Hc t) = Hi')
+     (Hpf1: ∀ Hc t, @iris_invGS _ _ (perennial_irisG Hc t) = Hi')
      (Hpf2: perennial_num_laters_per_step = f)
      (Hpf3: perennial_step_count_next = g) t,
      |={⊤}=> step_fupdN_fresh ncurr ns Hc' t
@@ -408,9 +408,9 @@ Proof.
     { lia. }
 Qed.
 
-Lemma step_fupdN_fresh_soundness {Λ CS T Σ} `{!invGpreS Σ} `{!crashPreG Σ} (φ : Prop) ns ncurr k k2 f g:
-  (∀ (Hi: invGS Σ) (Hc: crashG Σ), NC 1 ={⊤}=∗
-    ∃ (pG: perennialG Λ CS T Σ) (Hpf1: ∀ Hc t, @iris_invG _ _ (perennial_irisG Hc t) = Hi)
+Lemma step_fupdN_fresh_soundness {Λ CS T Σ} `{!invGpreS Σ} `{!crashGpreS Σ} (φ : Prop) ns ncurr k k2 f g:
+  (∀ (Hi: invGS Σ) (Hc: crashGS Σ), NC 1 ={⊤}=∗
+    ∃ (pG: perennialG Λ CS T Σ) (Hpf1: ∀ Hc t, @iris_invGS _ _ (perennial_irisG Hc t) = Hi)
      (Hpf2: perennial_num_laters_per_step = f) (Hpf2: perennial_step_count_next = g) t0,
       (|={⊤}=> step_fupdN_fresh ncurr ns Hc t0 (λ _ _,
        ||={⊤|⊤,∅|∅}=> ||▷=>^k ||={∅|∅, ⊤|⊤}=> ▷^k2 ⌜φ⌝))%I) →
@@ -456,8 +456,8 @@ Proof.
   - constructor; naive_solver.
 Qed.
 
-Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofe) `{!invGpreS Σ} `{!crashPreG Σ} nsinit s k e r σ g φ φr φinv f1 f2:
-  (∀ `{Hinv : !invGS Σ} `{Hc: !crashG Σ} κs,
+Corollary wp_recv_adequacy_inv Σ Λ CS (T: ofe) `{!invGpreS Σ} `{!crashGpreS Σ} nsinit s k e r σ g φ φr φinv f1 f2:
+  (∀ `{Hinv : !invGS Σ} `{Hc: !crashGS Σ} κs,
      ⊢ |={⊤}=> ∃ (t: pbundleG T Σ)
          (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
          (global_stateI : pbundleG T Σ → global_state Λ → nat → fracR → coPset → list (observation Λ) → iProp Σ)

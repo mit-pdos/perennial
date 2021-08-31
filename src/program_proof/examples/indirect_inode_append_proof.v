@@ -19,7 +19,7 @@ Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
 Section goose.
 Context `{!heapGS Σ}.
-Context `{!crashG Σ}.
+Context `{!crashGS Σ}.
 Context `{!stagedG Σ}.
 Context `{!allocG Σ}.
 

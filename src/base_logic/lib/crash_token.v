@@ -7,24 +7,24 @@ Definition crashR := csumR fracR (agreeR unitO).
 Definition NC_tok q : crashR := Cinl q.
 Definition C_tok : crashR := Cinr (to_agree ()).
 
-Class crashG Σ := { crash_inG :> inG Σ crashR; crash_name : gname }.
-Class crashPreG Σ := { crash_inPreG :> inG Σ crashR }.
+Class crashGS Σ := { crash_inG :> inG Σ crashR; crash_name : gname }.
+Class crashGpreS Σ := { crash_inPreG :> inG Σ crashR }.
 
 Definition crashΣ : gFunctors :=
     #[GFunctor (csumR fracR (agreeR unitO))].
 
-Global Instance subG_crashG {Σ} : subG crashΣ Σ → crashPreG Σ.
+Global Instance subG_crashGS {Σ} : subG crashΣ Σ → crashGpreS Σ.
 Proof. solve_inG. Qed.
 
-Definition NC_def `{crashG Σ} q := own crash_name (NC_tok q).
-Definition NC_aux `{crashG Σ} : seal NC_def. by eexists. Qed.
-Definition NC `{crashG Σ} := NC_aux.(unseal).
+Definition NC_def `{crashGS Σ} q := own crash_name (NC_tok q).
+Definition NC_aux `{crashGS Σ} : seal NC_def. by eexists. Qed.
+Definition NC `{crashGS Σ} := NC_aux.(unseal).
 Global Arguments NC {_ _} _%Qp.
-Definition C_def `{crashG Σ} := own crash_name C_tok.
-Definition C_aux `{crashG Σ} : seal C_def. by eexists. Qed.
-Definition C `{crashG Σ} := C_aux.(unseal).
+Definition C_def `{crashGS Σ} := own crash_name C_tok.
+Definition C_aux `{crashGS Σ} : seal C_def. by eexists. Qed.
+Definition C `{crashGS Σ} := C_aux.(unseal).
 
-Lemma NC_alloc `{!crashPreG Σ} : ⊢ |==> ∃ _ : crashG Σ, NC 1.
+Lemma NC_alloc `{!crashGpreS Σ} : ⊢ |==> ∃ _ : crashGS Σ, NC 1.
 Proof.
   iIntros.
   iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
@@ -33,7 +33,7 @@ Proof.
   rewrite /NC NC_aux.(seal_eq). by iFrame.
 Qed.
 
-Lemma NC_alloc_strong `{!crashPreG Σ} :
+Lemma NC_alloc_strong `{!crashGpreS Σ} :
   ⊢ |==> ∃ γn : gname, let Hc := {| crash_name := γn |} in NC 1.
 Proof.
   iIntros.
@@ -44,7 +44,7 @@ Proof.
 Qed.
 
 Section crash_tok_props.
-Context `{!crashG Σ}.
+Context `{!crashGS Σ}.
 Implicit Types i : positive.
 Implicit Types P Q R : iProp Σ.
 

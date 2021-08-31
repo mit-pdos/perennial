@@ -6,7 +6,7 @@ From Perennial.program_logic Require Import staged_invariant crash_weakestpre.
 Set Default Proof Using "Type".
 Import uPred.
 
-Definition ncinv_def `{!invGS Σ, !crashG Σ} N P : iProp Σ :=
+Definition ncinv_def `{!invGS Σ, !crashGS Σ} N P : iProp Σ :=
   □ ∀ E, ⌜↑N ⊆ E⌝ → ∀ q, NC q -∗ |0={E,E ∖ ↑N}=> ▷ P ∗ NC q ∗ (▷ P -∗ ∀ q', NC q' -∗ |0={E ∖ ↑N,E}=> NC q').
 Definition ncinv_aux : seal (@ncinv_def). Proof. by eexists. Qed.
 Definition ncinv := ncinv_aux.(unseal).
@@ -14,7 +14,7 @@ Arguments ncinv {Σ _ _} N P%bi_scope.
 Definition ncinv_eq : @ncinv = @ncinv_def := ncinv_aux.(seal_eq).
 Instance: Params (@ncinv) 4 := {}.
 
-Definition crash_inv_def `{!invGS Σ, !crashG Σ} N P : iProp Σ :=
+Definition crash_inv_def `{!invGS Σ, !crashGS Σ} N P : iProp Σ :=
   □ ∀ E, ⌜↑N ⊆ E⌝ → C -∗ |0={E,E ∖ ↑N}=> ▷ P ∗ (▷ P -∗ |0={E ∖ ↑N,E}=> True).
 Definition crash_inv_aux : seal (@crash_inv_def). Proof. by eexists. Qed.
 Definition crash_inv := crash_inv_aux.(unseal).
@@ -23,7 +23,7 @@ Definition crash_inv_eq : @crash_inv = @crash_inv_def := crash_inv_aux.(seal_eq)
 Instance: Params (@crash_inv) 4 := {}.
 
 Section ci.
-Context `{!crashG Σ}.
+Context `{!crashGS Σ}.
 Context `{!invGS Σ}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.

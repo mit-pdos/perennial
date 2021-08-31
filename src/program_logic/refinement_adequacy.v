@@ -16,9 +16,9 @@ Context {CS: crash_semantics Λ}.
 Context `{INH: Inhabited (state Λspec)}.
 
 Corollary wp_recv_refinement_adequacy Σ (T: ofe) (cfgT : _ → @cfgG Λspec Σ)
-  `{!invGpreS Σ} `{!crashPreG Σ} s k es e rs r σs σ φ φr Φinv (R: state Λspec -> state Λ -> Prop)
+  `{!invGpreS Σ} `{!crashGpreS Σ} s k es e rs r σs σ φ φr Φinv (R: state Λspec -> state Λ -> Prop)
 :
-  (∀ `{Hinv : !invGS Σ} `{Hc: !crashG Σ} κs,
+  (∀ `{Hinv : !invGS Σ} `{Hc: !crashGS Σ} κs,
      (|={⊤}=> ∃ (t: pbundleG T Σ)
          (stateI : pbundleG T Σ → state Λ → list (observation Λ) → iProp Σ)
          (fork_post : pbundleG T Σ → val Λ → iProp Σ) Hpf,

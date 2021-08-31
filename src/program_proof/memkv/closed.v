@@ -33,12 +33,12 @@ Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; rpcregΣ].
 Lemma heapG_heap_globalG_roundtrip {Σ} Hheap Hcrash local_names :
   Hheap =
   @heapG_heap_globalG Σ
-    (@heap_globalG_heapG grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ Hheap
+    (@dist_heapGS_heapGS grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ Hheap
        Hcrash local_names).
 Proof.
-  rewrite /heapG_heap_globalG. rewrite /heap_globalG_heapG //=.
+  rewrite /heapG_heap_globalG. rewrite /dist_heapGS_heapGS //=.
   destruct Hheap => //=. f_equal.
-  * destruct heap_globalG_preG => //= . f_equal.
+  * destruct dist_heapGpreS => //= . f_equal.
     { destruct heap_preG_iris => //=. }
     { destruct heap_preG_crash => //=. }
     { destruct heap_preG_heap => //=. }
@@ -47,7 +47,7 @@ Proof.
     { destruct heap_preG_credit => //=. }
   * rewrite gen_heapG_update_pre_get //=.
   * rewrite /inv_get_names //=.
-    destruct heap_globalG_inv_names => //=.
+    destruct dist_heapGS_inv_names => //=.
 Qed.
 
 Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord σclient (g : ffi_global_state) :

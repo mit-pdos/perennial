@@ -23,7 +23,7 @@ Context {ext_tys:ext_types ext}.
 Context `{!ffi_interp ffi}.
 
 (* technically the definition of array doesn't depend on a state interp, only
-the ffiG type; fixing this would require unbundling ffi_interp *)
+the ffiGS type; fixing this would require unbundling ffi_interp *)
 Definition array `{!heapGS Σ} (l : loc) (q:Qp) (t:ty) (vs : list val) : iProp Σ :=
   ([∗ list] i ↦ v ∈ vs, (l +ₗ[t] i) ↦[t]{q} v)%I.
 Notation "l ↦∗[ t ]{ q } vs" := (array l q t vs) : bi_scope.

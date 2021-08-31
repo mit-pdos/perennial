@@ -39,10 +39,10 @@ Existing Instance spec_ffi_model_field.
 
 
 Class refinement_heapG Σ := refinement_HeapG {
-  refinement_spec_ffiG : ffiG Σ;
-  refinement_traceG :> traceG Σ;
+  refinement_spec_ffiG : ffiGS Σ;
+  refinement_traceG :> traceGS Σ;
   refinement_cfgG :> @cfgG spec_lang Σ;
-  refinement_na_heapG :> na_heapG loc (@val spec_ffi_op_field) Σ;
+  refinement_na_heapG :> na_heapGS loc (@val spec_ffi_op_field) Σ;
   refinement_frac_countG :> frac_countG Σ;
   refinement_crash_name : gname;
   refinement_resv_name : gname;
@@ -57,7 +57,7 @@ Section go_spec_definitions.
 Context {Σ: gFunctors}.
 Context {hR: refinement_heapG Σ}.
 Context `{invGS Σ}.
-Context `{crashG Σ}.
+Context `{crashGS Σ}.
 
 Definition refinement_ctok := staged_pending 1 (refinement_crash_name).
 
@@ -945,9 +945,9 @@ Context {hR: refinement_heapG Σ}.
 Definition trace_inv : iProp Σ :=
   (∃ tr trs or ors, ⌜ tr = trs ⌝ ∗
                     ⌜ or = ors ⌝ ∗
-                    trace_frag (hT := heapG_traceG) tr ∗
+                    trace_frag (hT := heapGS_traceGS) tr ∗
                     trace_frag (hT := refinement_traceG) trs ∗
-                    oracle_frag (hT := heapG_traceG) or ∗
+                    oracle_frag (hT := heapGS_traceGS) or ∗
                     oracle_frag (hT := refinement_traceG) ors).
 
 Definition spec_traceN := sN .@ "trace".
@@ -973,7 +973,7 @@ Context {hR: refinement_heapG Σ}.
 Set Printing Implicit.
 
 Lemma test_resolution1 l v :
-  l ↦ v -∗ (heap_mapsto (hG := heapG_na_heapG) l 1 (v)).
+  l ↦ v -∗ (heap_mapsto (hG := heapGS_na_heapGS) l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.

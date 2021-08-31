@@ -11,12 +11,12 @@ Context `{!ffi_interp ffi}.
 
 (*
 Definition post_crash `{hG: !heapGS Σ} (P: forall {hG': heapGS Σ}, iProp Σ) : iProp Σ :=
-  (∀ σ σ' hG', ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ (heapG_ffiG (hG := hG')) σ' -∗
+  (∀ σ σ' hG', ffi_crash_rel Σ (heapGS_ffiGS (hG := hG)) σ (heapGS_ffiGS (hG := hG')) σ' -∗
                              @P hG').
 *)
 
 Definition post_crash {Σ} (P: heapGS Σ → iProp Σ) `{hG: !heapGS Σ} : iProp Σ :=
-  (∀ σ σ' hG', ffi_crash_rel Σ (heapG_ffiG (hG := hG)) σ (heapG_ffiG (hG := hG')) σ' -∗
+  (∀ σ σ' hG', ffi_crash_rel Σ (heapGS_ffiGS (hG := hG)) σ (heapGS_ffiGS (hG := hG')) σ' -∗
                              (P hG')).
 
 (*

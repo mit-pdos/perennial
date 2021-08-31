@@ -543,7 +543,7 @@ Definition repΣ := #[stagedΣ; heapΣ; crashΣ].
 Lemma ffi_start_OpenRead σ addr g (d : ()) {hG: heapGS repΣ} :
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
-  ffi_local_start heapG_ffiG σ.(world) g
+  ffi_local_start heapGS_ffiGS σ.(world) g
   -∗ wpr NotStuck 2 ⊤ (OpenRead d addr) (OpenRead d addr) (λ _ : goose_lang.val, True)
        (λ _, True) (λ _ _, True).
 Proof.

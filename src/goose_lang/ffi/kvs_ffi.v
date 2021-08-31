@@ -339,7 +339,7 @@ Section kvs_interp.
     end.
   (*how to interpret physical state as ghost resources*)
   Program Instance kvs_interp : ffi_interp kvs_model :=
-    {| ffiG := kvsG;
+    {| ffiGS := kvsG;
        ffi_local_names := kvs_names;
        ffi_global_names := unit;
        ffi_get_local_names := @kvs_get_names;
@@ -602,7 +602,7 @@ Next Obligation.
   iSplitL "H2'"; auto.
 Qed.
 
-Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiG, ffi_update plugs in new names *)
+Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiGS, ffi_update plugs in new names *)
   iIntros (Σ σ σ' g Hcrash Hold) "Hinterp _".
   inversion Hcrash; subst.
   monad_inv. inversion H. subst. inversion H1. subst.
@@ -669,7 +669,7 @@ Instance kvs_spec_interp_adequacy : spec_ffi_interp_adequacy (spec_ffi := kvs_sp
   {| spec_ffi_interp_adequacy_field := kvs_interp_adequacy |}.
 
 Context `{invGS Σ}.
-Context `{crashG Σ}.
+Context `{crashGS Σ}.
 Context `{!refinement_heapG Σ}.
 
 Existing Instance spec_ffi_interp_field.

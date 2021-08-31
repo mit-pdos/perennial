@@ -16,7 +16,7 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ffi_semantics ext ffi}
     subG_ffiPreG : forall Σ, subG ffiΣ Σ -> ffi_preG Σ;
     ffi_initgP: ffi_global_state → Prop;
     ffi_initP: ffi_state → ffi_global_state → Prop;
-    ffi_update_pre: ∀ Σ, ffi_preG Σ -> ffi_local_names -> ffi_global_names -> ffiG Σ;
+    ffi_update_pre: ∀ Σ, ffi_preG Σ -> ffi_local_names -> ffi_global_names -> ffiGS Σ;
     ffi_update_pre_update: ∀ Σ (hPre: ffi_preG Σ) names1 names2 namesg,
         ffi_update_local Σ (ffi_update_pre _ hPre names1 namesg) names2 =
         ffi_update_pre _ hPre names2 namesg;
@@ -41,7 +41,7 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ffi_semantics ext ffi}
               let H0 := ffi_update_pre _ hPre names namesg in
                    ffi_ctx H0 σ ∗ ffi_global_ctx H0 g ∗ ffi_local_start H0 σ g;
     ffi_crash : forall Σ,
-          ∀ (σ σ': ffi_state) (g: ffi_global_state) (CRASH: ffi_crash_step σ σ') (Hold: ffiG Σ),
+          ∀ (σ σ': ffi_state) (g: ffi_global_state) (CRASH: ffi_crash_step σ σ') (Hold: ffiGS Σ),
            ⊢ ffi_ctx Hold σ -∗ ffi_global_ctx Hold g ==∗
              ∃ (new: ffi_local_names), ffi_ctx (ffi_update_local Σ Hold new) σ' ∗
                                  ffi_global_ctx (ffi_update_local Σ Hold new) g ∗
@@ -58,32 +58,32 @@ Class heapGpreS `{ext: ffi_syntax} `{EXT_SEM: !ffi_semantics ext ffi}
       `{INTERP: !ffi_interp ffi} {ADEQ: ffi_interp_adequacy} Σ
   := HeapGpreS {
   heap_preG_iris :> invGpreS Σ;
-  heap_preG_crash :> crashPreG Σ;
-  heap_preG_heap :> na_heapPreG loc val Σ;
+  heap_preG_crash :> crashGpreS Σ;
+  heap_preG_heap :> na_heapGpreS loc val Σ;
   heap_preG_ffi : ffi_preG Σ;
   heap_preG_trace :> trace_preG Σ;
   heap_preG_credit :> credit_preG Σ;
 }.
 
-Definition heap_update_pre Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashG Σ) (names: heap_names) :=
-  {| heapG_invG := Hinv;
-     heapG_crashG := Hcrash;
-     heapG_ffiG := ffi_update_pre Σ (heap_preG_ffi) (heap_ffi_local_names names) (heap_ffi_global_names names);
-     heapG_na_heapG := na_heapG_update_pre (heap_preG_heap) (heap_heap_names names);
-     heapG_traceG := traceG_update_pre Σ (heap_preG_trace) (heap_trace_names names);
-     heapG_creditG := creditGS_update_pre Σ (heap_preG_credit) (heap_credit_names names)
+Definition heap_update_pre Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashGS Σ) (names: heap_names) :=
+  {| heapGS_invGS := Hinv;
+     heapGS_crashGS := Hcrash;
+     heapGS_ffiGS := ffi_update_pre Σ (heap_preG_ffi) (heap_ffi_local_names names) (heap_ffi_global_names names);
+     heapGS_na_heapGS := na_heapGS_update_pre (heap_preG_heap) (heap_heap_names names);
+     heapGS_traceGS := traceGS_update_pre Σ (heap_preG_trace) (heap_trace_names names);
+     heapGS_creditGS := creditGS_update_pre Σ (heap_preG_credit) (heap_credit_names names)
  |}.
 
-Lemma heap_update_pre_get Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashG Σ) (names: heap_names) :
+Lemma heap_update_pre_get Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashGS Σ) (names: heap_names) :
   heap_get_names _ (heap_update_pre Σ hpreG Hinv Hcrash names) = names.
 Proof.
   rewrite /heap_get_names/heap_update_pre ffi_update_pre_get_local ffi_update_pre_get_global.
-  rewrite  na_heapG_update_pre_get //=.
+  rewrite  na_heapGS_update_pre_get //=.
   destruct names => //=.
 Qed.
 
 (*
-Lemma heap_update_pre_update Σ `(hpreG : heapGpreS Σ) (Hinv1 Hinv2: invGS Σ) (Hcrash1 Hcrash2: crashG Σ)
+Lemma heap_update_pre_update Σ `(hpreG : heapGpreS Σ) (Hinv1 Hinv2: invGS Σ) (Hcrash1 Hcrash2: crashGS Σ)
       (names1 names2: heap_names) :
   heap_update _ (heap_update_pre Σ hpreG Hinv1 Hcrash1 names2) Hinv2 Hcrash2 names2 =
   (heap_update_pre Σ hpreG Hinv2 Hcrash2 names2).

@@ -19,7 +19,7 @@ Program Global Instance heapG_perennialG `{!heapGS Σ} :
   perennialG goose_lang goose_crash_lang heap_local_namesO Σ :=
 {
   perennial_irisG := λ Hcrash hnames,
-                     @heapG_irisG _ _ _ _ _ (heap_update_local _ _ _ Hcrash (@pbundleT _ _ hnames));
+                     @heapGS_irisGS _ _ _ _ _ (heap_update_local _ _ _ Hcrash (@pbundleT _ _ hnames));
   perennial_crashG := λ _ _, eq_refl;
   perennial_num_laters_per_step := (λ n, 3 ^ (n + 1))%nat;
   perennial_step_count_next := (λ n, 10 * (n + 1))%nat;
@@ -75,9 +75,9 @@ Qed.
 
 Lemma idempotence_wpr `{!ffi_interp_adequacy} s k E1 e rec Φx Φinv Φrx Φcx:
   ⊢ WPC e @ s ; k ; E1 {{ Φx }} {{ Φcx hG }} -∗
-   (□ ∀ (hG': heapGS Σ) (Hpf: @heapG_invG _ _ _ _ hG = @heapG_invG _ _ _ _ hG') σ σ'
+   (□ ∀ (hG': heapGS Σ) (Hpf: @heapGS_invGS _ _ _ _ hG = @heapGS_invGS _ _ _ _ hG') σ σ'
         (HC: crash_prim_step (goose_crash_lang) σ σ'),
-        Φcx hG' -∗ ▷ post_crash(λ hG', ffi_restart (heapG_ffiG) σ'.(world) -∗
+        Φcx hG' -∗ ▷ post_crash(λ hG', ffi_restart (heapGS_ffiGS) σ'.(world) -∗
         (Φinv hG' ∧ WPC rec @ s ; k; E1 {{ Φrx hG' }} {{ Φcx hG' }}))) -∗
     wpr s k E1 e rec Φx Φinv Φrx.
 Proof.

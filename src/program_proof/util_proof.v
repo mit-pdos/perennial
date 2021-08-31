@@ -5,7 +5,7 @@ From Goose.github_com.mit_pdos.go_journal Require Import util.
 
 Section heap.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
-Context `{!crashG Σ}.
+Context `{!crashGS Σ}.
 Implicit Types (v:val).
 Implicit Types (stk:stuckness) (E: coPset).
 
