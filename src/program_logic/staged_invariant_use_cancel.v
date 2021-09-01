@@ -7,6 +7,8 @@ From iris.algebra Require Import gmap.
 From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Export step_fupd_extra crash_weakestpre ae_invariants_mutable later_res private_invariants staged_invariant_alt.
 
+Set Default Proof Using "Type".
+
 Section def.
 Context `{IRISG: !irisGS Λ Σ}.
 Context `{!pri_invG IRISG}.

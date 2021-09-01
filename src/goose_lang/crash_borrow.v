@@ -5,6 +5,7 @@ From Perennial.goose_lang Require Import wpc_proofmode.
 From Perennial.base_logic.lib Require Import saved_prop.
 From Perennial.Helpers Require Import Qextra.
 
+Set Default Proof Using "Type".
 
 Section crash_borrow_def.
 Context `{ext:ffi_syntax}.

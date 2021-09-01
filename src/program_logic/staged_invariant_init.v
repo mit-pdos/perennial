@@ -7,6 +7,8 @@ From iris.algebra Require Import gmap.
 From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Export step_fupd_extra crash_weakestpre ae_invariants_mutable later_res private_invariants staged_invariant_alt init_cancel.
 
+Set Default Proof Using "Type".
+
 Existing Instances pri_inv_tok_timeless later_tok_timeless.
 
 Section inv.
@@ -95,7 +97,7 @@ Lemma wpc0_crash_modality_cancel s k mj' mj E1 E2 e Φ Φc Pc:
   wpc_crash_modality E1 mj' Pc -∗
   wpc0 s k mj E2 e (λ v, (later_tok ∗ wpc_crash_modality E1 mj' Pc) -∗ Φ v) Φc -∗
   wpc0 s k mj E2 e Φ (Φc ∗ Pc).
-Proof.
+Proof using PRI.
   iIntros (Hsub Hle_mj) "Htok Hcm Hwp".
   iLöb as "IH" forall (e E2 Hsub).
   rewrite ?wpc0_unfold. rewrite /wpc_pre.
