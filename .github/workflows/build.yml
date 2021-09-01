@@ -89,7 +89,7 @@ jobs:
             endGroup
           after_script: |
             startGroup Create timing report
-              ./etc/timing-report.py --max-files 50
+              ./etc/timing-report.py --vos --max-files 50
             endGroup
           uninstall: |
             make clean
