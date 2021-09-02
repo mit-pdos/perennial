@@ -183,6 +183,12 @@ Section proof.
     {{{ is_lock lk R ∗ locked lk ∗ ▷ R }}} lock.release lk {{{ RET #(); True }}}.
   Proof. eapply release_spec'; auto. Qed.
 
+  Lemma release_spec'' lk R :
+    is_lock lk R -∗ {{{ locked lk ∗ ▷ R }}} lock.release lk {{{ RET #(); True }}}.
+  Proof.
+    iIntros "#Hlock !# %Φ [??] HΦ". iApply (release_spec with "[-HΦ]"); by iFrame.
+  Qed.
+
   (** cond var proofs *)
 
   Definition is_cond (c: loc) (lk : val) : iProp Σ :=
