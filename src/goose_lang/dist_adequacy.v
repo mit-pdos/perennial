@@ -19,7 +19,7 @@ Theorem heap_dist_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_ad
         ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
               let hG := dist_heapGS_heapGS Hheap (fst ct) (snd ct) in
               ffi_local_start (heapGS_ffiGS) σ.(world) g ∗ trace_frag σ.(trace) ∗ oracle_frag σ.(oracle)) ={⊤}=∗
-        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (dist_heapGS_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝) ∗
+        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi (heapGpreS := dist_heapGpreS)) (dist_heapGS_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝) ∗
         wpd k ⊤ cts ((λ x, (init_thread x, init_restart x)) <$> ebσs)) →
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
@@ -211,7 +211,7 @@ Theorem heap_dist_adequacy_alt `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hff
               ffi_local_start (heapGS_ffiGS) σ.(world) g ∗
               trace_frag σ.(trace) ∗ oracle_frag σ.(oracle) ={⊤}=∗
               ∃ Φ Φinv Φrx, wpr NotStuck k ⊤ e r Φ Φinv Φrx) ∗
-        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (dist_heapGS_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
+        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi (heapGpreS := dist_heapGpreS)) (dist_heapGS_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
   intros Hwp.
@@ -264,7 +264,7 @@ Theorem heap_dist_adequacy_failstop
               ffi_local_start (heapGS_ffiGS) σ.(world) g ∗
               trace_frag σ.(trace) ∗ oracle_frag σ.(oracle) ={⊤}=∗
               ∃ Φ, wp NotStuck ⊤ e Φ) ∗
-        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi) (dist_heapGS_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
+        (∀ g, ffi_pre_global_ctx Σ (heap_preG_ffi (heapGpreS := dist_heapGpreS)) (dist_heapGS_names) g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
   dist_adequate_failstop ebσs g (λ g, φinv g).
 Proof.
   intros Hwp. rewrite /dist_adequate_failstop.

@@ -25,7 +25,8 @@ Definition coord_boot (host : u64) (init : u64) : expr :=
 Definition client_boot (coord : u64) : expr :=
   MakeMemKVClerk #coord.
 
-From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequacy.
+From Perennial.goose_lang Require Import adequacy dist_adequacy grove_ffi_adequacy.
+From Perennial.goose_lang.ffi Require Import grove_ffi_adequacy.
 
 Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; rpcregΣ].
 
@@ -63,11 +64,10 @@ Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord σclient (g : ff
                           (client_boot coordId, σclient)] g (λ _, True).
 Proof.
   intros Hneq Hinitg Hinitshard Hinitcoord Hinitclient Hlookup1 Hlookup2.
-  eapply (heap_dist_adequacy_failstop (shardΣ)).
+  eapply (grove_ffi_dist_adequacy_failstop (shardΣ)).
   { assumption. }
-  { auto. }
-  intros Hheap. rewrite /=.
-  iIntros "(Hchan&_)".
+  intros Hheap.
+  iIntros "Hchan".
 
   (* Init the channel inv for the shard server *)
   iDestruct (big_sepM_delete with "Hchan") as "(Hshard_chan&Hrest)"; first eapply Hlookup1.
@@ -87,9 +87,9 @@ Proof.
   { iMod (fupd_mask_subseteq ∅); eauto. }
   iSplitL "Hserver_shards Hsrv_rpc_ghost Hsrv_cid".
   {
-    iIntros (Hcrash Heq local_names) "(_&?&?)".
+    iIntros (Hcrash local_names).
     iModIntro. iExists (λ _, True%I).
-    rewrite /shard_boot.
+    rewrite /shard_boot. simpl.
     wp_bind (MakeMemKVShardServer #true).
     wp_apply (wp_MakeMemKVShardServer with "[Hsrv_cid Hserver_shards Hsrv_rpc_ghost]").
     { iSplitL "".
@@ -106,9 +106,9 @@ Proof.
   }
   iSplitR "Hclients_ptstos".
   {
-    iIntros (Hcrash Heq local_names) "(_&?&?)".
+    iIntros (Hcrash local_names).
     iModIntro. iExists (λ _, True%I).
-    rewrite /coord_boot.
+    rewrite /coord_boot. simpl.
     wp_bind (MakeMemKVCoordServer #(shardId : u64)).
     wp_apply (wp_MakeMemKVCoordServer with "[]").
     { iSplitL ""; last first.
@@ -126,7 +126,7 @@ Proof.
   }
   iSplitR ""; last eauto.
   {
-    iIntros (Hcrash Heq local_names) "(_&?&?)".
+    iIntros (Hcrash local_names).
     iModIntro. iExists (λ _, True%I).
     rewrite /client_boot.
     wp_apply (wp_MakeMemKVClerk with "[]").
