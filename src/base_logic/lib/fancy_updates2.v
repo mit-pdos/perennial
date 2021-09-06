@@ -19,10 +19,10 @@ Proof. rewrite -uPred_fupd2_aux.(seal_eq) //. Qed.
 
 Reserved Notation "||={ E1 | E2 }=> Q"
   (at level 99, E1, E2 at level 50, Q at level 200,
-   format "||={ E1 | E2 }=>  Q").
+   format "'[  ' ||={ E1 | E2 }=>  '/' Q ']'").
 Reserved Notation "||={ E1a | E1b , E2a | E2b }=> Q"
   (at level 99, E1a, E1b, E2a, E2b, Q at level 200,
-   format "||={ E1a | E1b , E2a | E2b }=>  Q").
+   format "'[  ' ||={ E1a | E1b , E2a | E2b }=>  '/' Q ']'").
 
 Notation "||={ E1a | E1b , E2a | E2b }=> Q" := (uPred_fupd2 E1a E1b E2a E2b Q) : bi_scope.
 Notation "||={ E1a | E1b }=> Q" := (uPred_fupd2 E1a E1b E1a E1b Q) : bi_scope.
