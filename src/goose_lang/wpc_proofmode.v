@@ -9,7 +9,7 @@ From Perennial.Helpers Require Export ipm NamedProps ProofCaching.
 Set Default Proof Using "Type".
 Import uPred.
 
-Lemma wpc_fork `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ, !crashGS Σ} s k E1 e Φ Φc :
+Lemma wpc_fork `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s k E1 e Φ Φc :
   ▷ WPC e @ s; k; ⊤ {{ _, True }} {{ True }} -∗ (Φc ∧ ▷ Φ (LitV LitUnit)) -∗
                       WPC Fork e @ s; k; E1 {{ Φ }} {{ Φc }}.
 Proof.
@@ -45,8 +45,8 @@ Tactic Notation "wpc_expr_eval" tactic(t) :=
       [let x := fresh in intros x; t; unfold x; notypeclasses refine eq_refl|]
   end.
 
-Lemma tac_wpc_pure_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ, !crashGS Σ} Δ Δ' s k E1 K e1 e2 φ Φ Φc :
+Lemma tac_wpc_pure_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+      Δ Δ' s k E1 K e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -61,8 +61,7 @@ Proof.
   rewrite HΔ' //.
 Qed.
 
-Lemma tac_wpc_pure_no_later_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ, !crashGS Σ}
+Lemma tac_wpc_pure_no_later_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
       Δ s k E1 K e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
@@ -233,14 +232,14 @@ Ltac wpc_pures :=
   end.
 
 Lemma tac_wpc_bind `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ, !crashGS Σ} K Δ s k E1 Φ Φc e f :
+      `{!heapGS Σ} K Δ s k E1 Φ Φc e f :
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that we can `simpl` it *)
   envs_entails Δ (WPC e @ s; k; E1 {{ v, WPC f (Val v) @ s; k; E1 {{ Φ }} {{ Φc }} }} {{ Φc }})%I →
   envs_entails Δ (WPC fill K e @ s; k; E1 {{ Φ }} {{ Φc }}).
 Proof. rewrite envs_entails_eq=> -> ->. by apply: wpc_bind. Qed.
 
 Lemma tac_wpc_wp_frame `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ, !crashGS Σ} Δ d js s k E1 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
+      `{!heapGS Σ} Δ d js s k E1 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
   match envs_split d js Δ with
   | Some (Δ1, Δ2) => envs_entails Δ1 Φc ∧
                      envs_entails Δ2 (WP e @ s; E1
@@ -269,7 +268,7 @@ Qed.
 (* combines using [wpc_frame Hs] with [iFromCache], simultaneously framing and
    proving the crash condition using a cache *)
 Lemma tac_wpc_wp_frame_cache `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ, !crashGS Σ} (Φc: iProp Σ) i (* name of cache *) (c: cache Φc)
+      `{!heapGS Σ} (Φc: iProp Σ) i (* name of cache *) (c: cache Φc)
       Δ stk k E1 e (Φ: _ → iProp Σ)  :
   envs_lookup i Δ = Some (true, cached c) →
   match envs_split Left c.(cache_names) Δ with
