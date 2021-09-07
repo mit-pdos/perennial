@@ -15,7 +15,7 @@ Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
 Implicit Types Φinv : crashGS Σ → pbundleG T Σ → iProp Σ.
-Implicit Types Φc : crashGS Σ → pbundleG T Σ → val Λ → iProp Σ.
+Implicit Types Φr : crashGS Σ → pbundleG T Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
@@ -122,18 +122,17 @@ Proof.
     eauto.
 Qed.
 
-Lemma wptp_recv_strong_normal_adequacy Φ Φinv Φr κs' s k Hc t n ns ncurr mj D r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
-  nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) Normal →
+Lemma wptp_recv_strong_normal_adequacy Φ Φinv Φr κs' s k Hc t n ncurr mj D r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
+  nrsteps (CS := CS) r1 [n] (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) Normal →
   state_interp σ1 (length t1) -∗
   global_state_interp g1 ncurr mj D (κs ++ κs') -∗
   wpr s k Hc t ⊤ e1 r1 Φ Φinv Φr -∗
-  wptp s k t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns Hc t (λ Hc' t',
-    ⌜ Hc' = Hc ∧ t' = t ⌝ ∗
+  wptp s k t1 -∗ NC 1-∗ (
     (||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ncurr n) ||={∅|∅,⊤|⊤}=>
     ∃ e2 t2',
     ⌜ t2 = e2 :: t2' ⌝ ∗
     ▷^(S (S (num_laters_per_step (Nat.iter n step_count_next ncurr))))
-        (⌜ ∀ e2, s = NotStuck → e2 ∈ t2 → not_stuck e2 σ2 g2 ⌝) ∗
+        (⌜ ∀ e, s = NotStuck → e ∈ t2 → not_stuck e σ2 g2 ⌝) ∗
     state_interp σ2 (length t2') ∗
     global_state_interp g2 (Nat.iter n step_count_next ncurr) mj D κs' ∗
     from_option Φ True (to_val e2) ∗
@@ -144,14 +143,9 @@ Proof.
   inversion Hstep. subst.
   iPoseProof (wptp_strong_adequacy with "Hσ Hg [He] Ht") as "H".
   { eauto. }
-  {rewrite wpr_unfold /wpr_pre. iApply "He". }
+  { rewrite wpr_unfold /wpr_pre. iApply "He". }
   rewrite perennial_crashG.
   iSpecialize ("H" with "[$]").
-  assert (ns = []) as ->;
-    first by (eapply nrsteps_normal_empty_prefix; eauto).
-  inversion H. subst.
-  rewrite /step_fupdN_fresh.
-  iSplitL ""; first by eauto.
   iApply (step_fupd2N_wand with "H"); auto.
 Qed.
 
@@ -258,14 +252,9 @@ Proof.
       iApply "Hinv". eauto.
     }
     iDestruct "Hr" as "(_&Hr)".
-    iDestruct (wptp_recv_strong_normal_adequacy with "[Hσ] [Hg] [Hr] [] HNC") as "H"; eauto.
-    iApply (step_fupdN_fresh_wand with "H").
-    { simpl. rewrite perennial_step_count_next_spec. lia. }
-    iModIntro.
-    iIntros (??) "H".
-    iDestruct "H" as ((?&?)) "H". subst.
-    iClear "HC". simpl.
     assert (ns' = []) as ->; first by (eapply nrsteps_normal_empty_prefix; eauto).
+    iDestruct (wptp_recv_strong_normal_adequacy with "[Hσ] [Hg] [Hr] [] HNC") as "H"; eauto.
+    iModIntro.
     simpl.
     rewrite ?perennial_num_laters_per_step_spec.
     rewrite ?perennial_step_count_next_spec.
@@ -309,12 +298,10 @@ Proof.
     iIntros "H".
     iMod "H" as (???) "(?&H&?&?&?)". iExists _, _.
     repeat (iSplitL ""; try iFrame; eauto).
-  - iIntros. iDestruct (wptp_recv_strong_normal_adequacy with "[$] [$] [$] [$] [$]") as "H"; eauto.
-    iApply (step_fupdN_fresh_wand with "H"); first auto.
-    iIntros (??) "H".
-    iDestruct "H" as ((?&?)) "H". subst.
+  - iIntros.
     assert (ns = []) as ->; first by (eapply nrsteps_normal_empty_prefix; eauto).
-    simpl. rewrite Nat.add_0_r.
+    rewrite Nat.add_0_r.
+    iDestruct (wptp_recv_strong_normal_adequacy with "[$] [$] [$] [$] [$]") as "H"; eauto.
     iMod "H". iModIntro.
     rewrite perennial_num_laters_per_step_spec.
     rewrite perennial_step_count_next_spec.
@@ -332,7 +319,6 @@ Fixpoint fresh_later_count f g ncurr (ns: list nat) :=
   | n :: ns' => S (S (S (crash_adequacy.steps_sum f g ncurr (S n))))
                  + fresh_later_count f g (Nat.iter (S n) g ncurr) ns'
   end.
-
 
 Lemma step_fupdN_fresh_plain {Λ CS T Σ} `{!invGpreS Σ} `{!crashGpreS Σ} P `{!Plain P} ns ncurr f g k:
   (∀ (Hi': invGS Σ) Hc', NC 1-∗ |={⊤}=>
