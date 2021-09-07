@@ -14,10 +14,13 @@ Fixpoint coPset_suffixes_of_raw (p : positive) (E: coPset_raw) : coPset_raw :=
   | p~0 => coPNode' false (coPset_suffixes_of_raw p E) (coPLeaf false)
   | p~1 => coPNode' false (coPLeaf false) (coPset_suffixes_of_raw p E)
   end%positive.
-Lemma coPset_suffixes_of_wf p E : coPset_wf E → coPset_wf (coPset_suffixes_of_raw p E).
-Proof. induction p; simpl; eauto. Qed.
+Lemma coPset_suffixes_of_wf p E : SIs_true (coPset_wf E) → SIs_true (coPset_wf (coPset_suffixes_of_raw p E)).
+Proof.
+  intros Hwf%SIs_true_elim. apply SIs_true_intro.
+  induction p; simpl; eauto.
+Qed.
 Definition coPset_suffixes_of (p : positive) (E : coPset) : coPset :=
-  coPset_suffixes_of_raw p (`E) ↾ coPset_suffixes_of_wf _ _ (proj2_sig E).
+  CoPset_ (coPset_suffixes_of_raw p (coPset_car E)) (coPset_suffixes_of_wf _ _ (coPset_prf E)).
 Lemma elem_coPset_suffixes_of p q E : p ∈ coPset_suffixes_of q E ↔ ∃ q', (p = Papp q' q) ∧ q' ∈ E.
 Proof.
   unfold elem_of, coPset_elem_of; simpl; split.

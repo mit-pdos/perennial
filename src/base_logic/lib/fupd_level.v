@@ -134,7 +134,6 @@ Lemma AlwaysEn_alt : AlwaysEn = ↑(nroot.@(1%positive)).
 Proof.
   rewrite /AlwaysEn/coPset_inl ?nclose_eq /nclose_def/up_close.
   rewrite /nroot ndot_eq /ndot_def/encode //=.
-  apply coPset_suffixes_of_top.
 Qed.
 
 Lemma AE'_disj n1 n2 : n1 ≠ n2 → AE' n1 ## AE' n2.
