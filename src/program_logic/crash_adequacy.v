@@ -84,7 +84,8 @@ Local Fixpoint steps_sum (num_laters_per_step step_count_next : nat → nat) (st
   match ns with
   | O => 0
   | S ns =>
-    S $ num_laters_per_step start + steps_sum num_laters_per_step step_count_next (step_count_next start) ns
+    S $ num_laters_per_step start +
+    steps_sum num_laters_per_step step_count_next (step_count_next start) ns
   end.
 
 Lemma steps_sum_S (num_laters_per_step step_count_next : nat → nat) (start ns : nat) :
