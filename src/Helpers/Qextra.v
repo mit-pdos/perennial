@@ -14,11 +14,11 @@ Proof.
 Qed.
 *)
 
-Definition Qp_of_Z (z : Z) : Qp :=
-  match Qc_to_Qp (Qc_of_Z (1 `max` z)) with
-  | Some p => p
-  | None => 1%Qp
-  end.
+Definition Qp_of_Z (z : Z) : Qp.
+Proof.
+  refine (mk_Qp (Qc_of_Z (1 `max` z)) _).
+  abstract (rewrite -Z2Qc_inj_0 -Z2Qc_inj_lt; lia).
+Defined.
 
 Lemma Qp_of_Z_add (z1 z2 : Z) :
   (0 < z1)%Z →
@@ -26,10 +26,12 @@ Lemma Qp_of_Z_add (z1 z2 : Z) :
   Qp_of_Z (z1 + z2)%Z =
   Qp_add (Qp_of_Z z1) (Qp_of_Z z2).
 Proof.
-  intros ??.
-  rewrite /Qp_of_Z.
-  rewrite -> !Zmax_right by lia.
-Admitted.
+  intros Hpos1 Hpos2.
+  rewrite /Qp_of_Z //=.
+  apply Qp_to_Qc_inj_iff => //=.
+  rewrite -Z2Qc_inj_add.
+  f_equal. lia.
+Qed.
 
 Fixpoint Qppower (q: Qp) (n: nat) :=
   match n with
@@ -192,7 +194,32 @@ Qed.
 Lemma Qp_plus_inv_2_gt_1_split q:
   ((/2  < q)%Qp → ∃ q1 q2, q1 + q2 = /2 ∧ 1 < q + q1)%Qp.
 Proof.
-Admitted.
+  intros. destruct q as (q&Hpos). destruct q as (q&Hcanon).
+  edestruct (Q_plus_inv_2_gt_1_split q) as (q1&q2&?&?&?&?).
+  { eauto with *. }
+  unshelve (eexists _).
+  { unshelve (econstructor).
+    - apply (Qcanon.Q2Qc q1).
+    - apply Qred_lt; auto.
+  }
+  unshelve (eexists _).
+  { unshelve (econstructor).
+    - apply (Qcanon.Q2Qc q2).
+    - apply Qred_lt; auto.
+  }
+  rewrite //=.
+  split.
+  - rewrite /Qp_add//=.
+    apply Qp_to_Qc_inj_iff.
+    rewrite /Qcanon.Qcplus//=.
+    apply Qcanon.Q2Qc_eq_iff.
+    transitivity (Qplus' q1 q2).
+    { rewrite Qplus'_correct.
+      apply Qplus_comp; apply Qred_correct. }
+    { rewrite /Qplus'. rewrite H2. constructor. }
+  - rewrite /Qcanon.Qclt => //=.
+    rewrite ?Qred_correct; auto.
+Qed.
 
 Local Open Scope Qp.
 

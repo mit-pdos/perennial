@@ -9,6 +9,7 @@ Lemma default_fmap `{Countable K} `{EqDecision K} {A B:Type} (m : option (gmap K
   f <$> (default ∅ m).
 Proof.
   destruct m; simpl; eauto.
+  rewrite fmap_empty; eauto.
 Qed.
 
 Lemma filter_union_ignored {K A} `{EqDecision K} `{Countable K} (m m' : gmap K A) (P : K->Prop)
