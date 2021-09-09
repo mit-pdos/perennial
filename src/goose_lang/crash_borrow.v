@@ -1,5 +1,5 @@
 From iris.algebra Require Import gmap auth agree gset coPset excl csum.
-From Perennial.program_logic Require Import staged_invariant.
+From Perennial.program_logic Require Import staged_invariant post_expr.
 From Perennial.goose_lang Require Import crash_modality lifting wpr_lifting.
 From Perennial.goose_lang Require Import wpc_proofmode.
 From Perennial.base_logic.lib Require Import saved_prop.
@@ -717,6 +717,36 @@ Lemma wpc_crash_borrow_combine k E e Φ Φc P Pc P1 P2 Pc1 Pc2 :
 Proof.
   iIntros (Hnval) "Hborrow1 Hborrow2 #Hc Hwandc12 HwandP Hwpc".
   iApply (wpc_crash_borrow_combine' with "[$Hborrow1] [$Hborrow2] [$] [$Hwandc12] [$HwandP]"); eauto.
+Qed.
+
+Lemma crash_borrow_split_post P Pc P1 P2 Pc1 Pc2 E :
+  ▷ crash_borrow P Pc -∗
+  ▷ (P -∗ P1 ∗ P2) -∗
+  ▷ □ (P1 -∗ Pc1) -∗
+  ▷ □ (P2 -∗ Pc2) -∗
+  ▷ (Pc1 ∗ Pc2 -∗ Pc) -∗
+  post_expr E (crash_borrow P1 Pc1 ∗ crash_borrow P2 Pc2).
+Proof.
+  iIntros "Hcb Hsplit Hc1 Hc2 Hc".
+  rewrite /post_expr. iIntros (??????) "H".
+  iApply (wpc_crash_borrow_split with "Hcb [$] [$] [$] [$]"); auto.
+  iApply (wpc_mono with "H"); auto.
+  iIntros (?) "H H'". iSplit; first done. by iApply "H".
+Qed.
+
+Lemma crash_borrow_combine_post P Pc P1 P2 Pc1 Pc2 E :
+  ▷ crash_borrow P1 Pc1 -∗
+  ▷ crash_borrow P2 Pc2 -∗
+  ▷ □ (P -∗ Pc) -∗
+  ▷ (Pc -∗ (Pc1 ∗ Pc2)) -∗
+  ▷ (P1 ∗ P2 ==∗ P) -∗
+  post_expr E (crash_borrow P Pc).
+Proof.
+  iIntros "Hcb1 Hcb2 Hc1 Hc2 Hc".
+  rewrite /post_expr. iIntros (??????) "H".
+  iApply (wpc_crash_borrow_combine with "Hcb1 Hcb2 [$] [$] [$]"); auto.
+  iApply (wpc_mono with "H"); auto.
+  iIntros (?) "H H'". iSplit; first done. by iApply "H".
 Qed.
 
 Lemma wpc_crash_borrow_open_modify k E1 e Φ Φc P Pc:
