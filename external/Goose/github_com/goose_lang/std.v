@@ -31,4 +31,25 @@ Definition SumAssumeNoOverflow: val :=
     control.impl.Assume ("x" + "y" ≥ "x");;
     "x" + "y".
 
+Definition Multipar: val :=
+  rec: "Multipar" "num" "op" :=
+    let: "num_left" := ref_to uint64T "num" in
+    let: "num_left_mu" := lock.new #() in
+    let: "num_left_cond" := lock.newCond "num_left_mu" in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, ![uint64T] "i" < "num"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      let: "i2" := ![uint64T] "i" in
+      Fork ("op" "i2";;
+            lock.acquire "num_left_mu";;
+            "num_left" <-[uint64T] ![uint64T] "num_left" - #1;;
+            lock.condSignal "num_left_cond";;
+            lock.release "num_left_mu");;
+      Continue);;
+    lock.acquire "num_left_mu";;
+    Skip;;
+    (for: (λ: <>, ![uint64T] "num_left" > #0); (λ: <>, Skip) := λ: <>,
+      lock.condWait "num_left_cond";;
+      Continue);;
+    lock.release "num_left_mu".
+
 End code.
