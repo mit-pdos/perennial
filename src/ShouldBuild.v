@@ -7,7 +7,9 @@ From Perennial.goose_lang Require
      rwlock
      barrier
      refinement refinement_adequacy
-     logical_reln_adeq.
+     logical_reln_adeq
+     paper_proof
+.
 From Perennial.program_proof Require
      wal.circ_proof_crash
      lockmap_proof
