@@ -114,8 +114,7 @@ Definition readTableIndex: val :=
             "offset" ::= struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf");
             "next" ::= "newBuf"
           ];;
-          Continue));;
-      Continue).
+          Continue))).
 
 (* RecoverTable restores a table from disk on startup. *)
 Definition RecoverTable: val :=
@@ -379,8 +378,7 @@ Definition tablePutOldTable: val :=
             "offset" ::= struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf");
             "next" ::= "newBuf"
           ];;
-          Continue));;
-      Continue).
+          Continue))).
 
 (* Build a new shadow table that incorporates the current table and a
    (write) buffer wbuf.

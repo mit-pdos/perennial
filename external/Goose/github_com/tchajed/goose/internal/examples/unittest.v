@@ -387,6 +387,16 @@ Definition conditionalInLoop: val :=
         "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue)).
 
+Definition conditionalInLoopElse: val :=
+  rec: "conditionalInLoopElse" <> :=
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: ![uint64T] "i" > #5
+      then Break
+      else
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        Continue)).
+
 Definition ImplicitLoopContinue: val :=
   rec: "ImplicitLoopContinue" <> :=
     let: "i" := ref_to uint64T #0 in
