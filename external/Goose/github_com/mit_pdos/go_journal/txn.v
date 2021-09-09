@@ -80,7 +80,8 @@ Definition Txn__ReadBuf: val :=
 
 (* OverWrite writes an object to addr *)
 Definition Txn__OverWrite: val :=
-  rec: "Txn__OverWrite" "txn" "addr" "sz" "data" :=
+  rec: "Txn__OverWrite" "txn" "addr" "sz" "data0" :=
+    let: "data" := util.CloneByteSlice "data0" in
     Txn__Acquire "txn" "addr";;
     jrnl.Op__OverWrite (struct.loadF Txn "buftxn" "txn") "addr" "sz" "data".
 

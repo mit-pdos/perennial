@@ -19,14 +19,16 @@ From Goose Require github_com.mit_pdos.go_journal.util.
    Note that while the API has reads and writes, these are not the usual database
    read/write transactions. Only writes are made atomic and visible atomically;
    reads are cached on first read. Thus to use this library the file
-   system in practice locks (sub-block) objects before running a transaction.
-   This is necessary so that loaded objects are read from a consistent view.
+   system in practice locks (sub-block) objects before using them in an
+   operation. This is necessary so that loaded objects are read from a consistent
+   view.
 
-   Transactions support asynchronous durability by setting wait=false in
-   CommitWait. An asynchronous transaction is made visible atomically to other
-   threads, including across crashes, but if the system crashes a committed
-   asynchronous transaction can be lost. To guarantee that a particular
-   transaction is durable, call ( *Buftxn) Flush (which flushes all transactions).
+   Operations support asynchronous durability by setting wait=false in
+   CommitWait, which results in an "unstable" operation. An unstable operation is
+   made visible atomically to other threads, including across crashes, but if the
+   system crashes the latest unstable operations can be lost. To guarantee that a
+   particular operation is durable, call Flush on the underlying *obj.Log (which
+   flushes all transactions).
 
    Objects have sizes. Implicit in the code is that there is a static "schema"
    that determines the disk layout: each block has objects of a particular size,
@@ -34,7 +36,7 @@ From Goose Require github_com.mit_pdos.go_journal.util.
    guarantees that objects never overlap, as long as operations involving an
    addr.Addr use the correct size for that block number.
 
-   The file system realizes this schema fairly simply, since the disk is simply
+   A file system can realize this schema fairly simply, since the disk is
    partitioned into inodes, data blocks, and bitmap allocators for each (sized
    appropriately), all allocated statically. *)
 
@@ -115,9 +117,4 @@ Definition Op__CommitWait: val :=
     util.DPrintf #3 (#(str"Commit %p w %v
     ")) #();;
     let: "ok" := obj.Log__CommitWait (struct.loadF Op "log" "op") (buf.BufMap__DirtyBufs (struct.loadF Op "bufs" "op")) "wait" in
-    "ok".
-
-Definition Op__Flush: val :=
-  rec: "Op__Flush" "op" :=
-    let: "ok" := obj.Log__Flush (struct.loadF Op "log" "op") in
     "ok".

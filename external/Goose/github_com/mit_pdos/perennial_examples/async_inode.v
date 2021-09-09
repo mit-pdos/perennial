@@ -101,8 +101,7 @@ Definition Inode__flush: val :=
       let: "ok" := Inode__flushOne "i" "allocator" in
       (if: ~ "ok"
       then Break
-      else #());;
-      Continue);;
+      else Continue));;
     (if: slice.len (struct.loadF Inode "buffered" "i") > #0
     then #false
     else #true).
