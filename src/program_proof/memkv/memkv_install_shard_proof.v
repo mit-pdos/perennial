@@ -107,8 +107,8 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_loadField.
-  iDestruct (is_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
-  wp_apply (wp_SliceSet with "[$Hkvss_small]").
+  iDestruct (slice.is_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
+  wp_apply (slice.wp_SliceSet with "[$Hkvss_small]").
   {
     iPureIntro.
     split.

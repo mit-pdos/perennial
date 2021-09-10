@@ -40,7 +40,7 @@ Proof.
   wp_apply (wp_NewMap).
   iIntros (lastSeq_ptr) "HlastSeqMap".
   wp_storeField.
-  wp_apply (typed_slice.wp_NewSlice).
+  wp_apply (wp_NewSlice).
   iIntros (shardMap_sl) "HshardMap_sl".
   Transparent slice.T. wp_storeField. Opaque slice.T.
   wp_apply (wp_new_slice).
@@ -102,8 +102,8 @@ Proof.
       wp_apply (wp_LoadAt with "[$Hi]").
       iIntros "Hi".
       wp_loadField.
-      iDestruct (is_slice_small_acc with "Hkvss_sl") as "(Hkvss_sl&Hkvss_sl_close)".
-      wp_apply (wp_SliceSet with "[$Hkvss_sl]").
+      iDestruct (slice.is_slice_small_acc with "Hkvss_sl") as "(Hkvss_sl&Hkvss_sl_close)".
+      wp_apply (slice.wp_SliceSet with "[$Hkvss_sl]").
       { iPureIntro; split; eauto. }
       iIntros "Hkvss_sl".
       iDestruct ("Hkvss_sl_close" with "[$Hkvss_sl]") as "Hkvss_sl".

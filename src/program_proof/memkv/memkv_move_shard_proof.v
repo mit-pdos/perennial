@@ -111,7 +111,7 @@ Proof.
   { exfalso. done. }
   iDestruct "HownShard" as (kvs_ptr m mv) "(HshardGhost & %Hkvs_lookup & %Hkvs_dom & HkvsMap & HvalSlices)".
 
-  wp_apply (wp_SliceGet with "[$Hkvss_small]").
+  wp_apply (slice.wp_SliceGet with "[$Hkvss_small]").
   {
     iPureIntro.
     rewrite list_lookup_fmap.
@@ -126,7 +126,7 @@ Proof.
   wp_loadField.
   wp_loadField.
 
-  wp_apply (wp_SliceSet with "[$Hkvss_small]").
+  wp_apply (slice.wp_SliceSet with "[$Hkvss_small]").
   {
     iPureIntro.
     split.

@@ -15,7 +15,7 @@ Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   "HcoordCk" ∷ ck ↦[MemKVClerk :: "coordCk"] #coordCk ∗
   "HcoordCk_own" ∷ own_MemKVCoordClerk coordCk γ ∗
   "HshardMap" ∷ ck ↦[MemKVClerk :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
+  "HshardMap_sl" ∷ is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
   "%HshardMap_length" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
   "#HshardServers" ∷ all_are_shard_servers shardMapping γ
 .
@@ -88,7 +88,7 @@ Lemma KVClerk__Get (ck:loc) (γ:gname) (key:u64) :
     MemKVClerk__Get #ck #key @ ∅
   <<< kvptsto γ key v >>>
   {{{ val_sl q, RET slice_val val_sl;
-      own_MemKVClerk ck γ ∗ typed_slice.is_slice_small val_sl byteT q%Qp v
+      own_MemKVClerk ck γ ∗ is_slice_small val_sl byteT q%Qp v
   }}}.
 Proof using Type*.
   iIntros "!#" (Φ) "Hown Hatomic".
@@ -115,12 +115,12 @@ Proof using Type*.
 
   iNamed "Hown".
   wp_loadField.
-  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
+  iDestruct (is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
   assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
   eapply list_lookup_lt in HsidLe_nat.
   destruct HsidLe_nat as [hostID HsidLe_nat].
-  wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
+  wp_apply (wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
   {
     iPureIntro.
     done.
@@ -191,7 +191,7 @@ Lemma KVClerk__Get_seq (ck:loc) (γ:gname) (key:u64) (v:list u8) :
   {{{ own_MemKVClerk ck γ ∗ kvptsto γ key v }}}
     MemKVClerk__Get #ck #key @ ⊤
   {{{ val_sl q, RET slice_val val_sl;
-      own_MemKVClerk ck γ ∗ kvptsto γ key v ∗ typed_slice.is_slice_small val_sl byteT q%Qp v
+      own_MemKVClerk ck γ ∗ kvptsto γ key v ∗ is_slice_small val_sl byteT q%Qp v
   }}}.
 Proof using Type*.
   iIntros (Φ) "(Hclerk & Hkey) HΦ".
@@ -204,25 +204,25 @@ Qed.
 
 Lemma KVClerk__MGet (ck:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64 * list u8)) q :
   {{{ □ own_MemKVClerk ck γ (* FIXME this cannot be satisfied *) ∗
-      typed_slice.is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
+      is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
       [∗ list] key_val ∈ keys_vals, kvptsto γ key_val.1 key_val.2
   }}}
     MemKVClerk__MGet #ck (slice_val keys_sl) @ ⊤
   {{{ (vals_sl:Slice.t) (val_sls:list Slice.t), RET slice_val vals_sl;
       own_MemKVClerk ck γ ∗
-      typed_slice.is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
-      typed_slice.is_slice_small vals_sl (slice.T byteT) 1 val_sls ∗
+      is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
+      is_slice_small vals_sl (slice.T byteT) 1 val_sls ∗
       [∗ list] key_val;sl ∈ keys_vals;val_sls, kvptsto γ key_val.1 key_val.2 ∗
-        readonly (typed_slice.is_slice_small sl byteT 1 key_val.2)
+        readonly (is_slice_small sl byteT 1 key_val.2)
   }}}.
 Proof using Type*.
   iIntros (Φ) "(#Hclerk & Hkeys_sl & Hkeys) HΦ". wp_lam.
   wp_apply wp_slice_len.
-  wp_apply (typed_slice.wp_NewSlice (V:=Slice.t)).
+  wp_apply (wp_NewSlice (V:=Slice.t)).
   iIntros (vals_sl) "Hvals_sl".
   wp_apply wp_slice_len.
 
-  iDestruct (typed_slice.is_slice_small_sz with "Hkeys_sl") as %Hlen.
+  iDestruct (is_slice_small_sz with "Hkeys_sl") as %Hlen.
   rewrite fmap_length in Hlen.
   wp_apply (wp_Multipar (X:=(u64 * list u8))
     (λ i '(key, val),
@@ -233,7 +233,7 @@ Proof using Type*.
       (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T] #key ∗
       kvptsto γ key val ∗
       (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val val_sl ∗
-      readonly (typed_slice.is_slice_small val_sl byteT 1 val))%I
+      readonly (is_slice_small val_sl byteT 1 val))%I
     keys_sl.(Slice.sz)
     keys_vals
     with "[] [Hkeys_sl Hkeys Hvals_sl]").
@@ -263,7 +263,7 @@ Proof using Type*.
 Abort.
 
 Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
-⊢ {{{ own_MemKVClerk ck γ ∗ readonly (typed_slice.is_slice_small val_sl byteT 1 v) }}}
+⊢ {{{ own_MemKVClerk ck γ ∗ readonly (is_slice_small val_sl byteT 1 v) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     MemKVClerk__Put #ck #key (slice_val val_sl) @ ∅
   <<< kvptsto γ key v >>>
@@ -282,12 +282,12 @@ Proof using Type*.
 
   iNamed "Hown".
   wp_loadField.
-  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
+  iDestruct (is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
   assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
   eapply list_lookup_lt in HsidLe_nat.
   destruct HsidLe_nat as [hostID HsidLe_nat].
-  wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
+  wp_apply (wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
   {
     iPureIntro.
     done.
@@ -348,8 +348,8 @@ Qed.
 
 Lemma KVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
 ⊢ {{{ own_MemKVClerk ck γ ∗
-      readonly (typed_slice.is_slice_small expv_sl byteT 1 expv) ∗
-      readonly (typed_slice.is_slice_small newv_sl byteT 1 newv) }}}
+      readonly (is_slice_small expv_sl byteT 1 expv) ∗
+      readonly (is_slice_small newv_sl byteT 1 newv) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     MemKVClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) @ ∅
   <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>
@@ -376,12 +376,12 @@ Proof using Type*.
 
   iNamed "Hown".
   wp_loadField.
-  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
+  iDestruct (is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
   assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
   eapply list_lookup_lt in HsidLe_nat.
   destruct HsidLe_nat as [hostID HsidLe_nat].
-  wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
+  wp_apply (wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
   {
     iPureIntro.
     done.

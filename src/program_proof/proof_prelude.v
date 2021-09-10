@@ -9,7 +9,7 @@ From Perennial.program_logic Require Export atomic ncinv.
 From Perennial.goose_lang Require Export proofmode wpc_proofmode array.
 From Perennial.goose_lang Require Export into_val.
 From Perennial.goose_lang.lib Require Export
-     persistent_readonly slice struct loop lock control map.typed_map.
+     persistent_readonly slice slice.typed_slice struct loop lock control map.typed_map.
 
 Export uPred.
 
