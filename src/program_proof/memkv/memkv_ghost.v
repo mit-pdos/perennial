@@ -3,15 +3,16 @@ From iris.algebra Require Import gmap lib.mono_nat.
 From iris.proofmode Require Import base tactics classes.
 From Perennial.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import proof_prelude std_proof.
 From Perennial.program_proof.memkv Require Export common_proof.
 
 Local Definition kvMapUR := gmapUR u64 (prodR (fracR) (agreeR (leibnizO (list u8))) ).
 
 Class kvMapG Σ :=
-  { kv_map_inG :> inG Σ kvMapUR }.
+  { kv_map_inG :> inG Σ kvMapUR;
+    kvMapG_multipar :> multiparG Σ }.
 
-Definition kvMapΣ := #[GFunctor kvMapUR].
+Definition kvMapΣ := #[GFunctor kvMapUR; multiparΣ].
 
 Global Instance subG_kvMapG {Σ} :
   subG (kvMapΣ) Σ → kvMapG Σ.

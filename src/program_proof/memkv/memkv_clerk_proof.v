@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import grove_prelude std_proof.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_logic Require Import atomic_fupd.
@@ -6,7 +6,7 @@ From Perennial.program_proof.memkv Require Export common_proof memkv_coord_defin
 
 Section memkv_clerk_proof.
 
-Context `{!heapGS Σ, !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ}.
 
 Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   ∃ (s coordCk:loc) shardMap_sl (shardMapping:list u64),
@@ -185,6 +185,78 @@ Proof using Type*.
     iExists _,_,_,_; by iFrame "#∗".
   }
 Qed.
+
+(* Sequential spec *)
+Lemma KVClerk__Get_seq (ck:loc) (γ:gname) (key:u64) (v:list u8) :
+  {{{ own_MemKVClerk ck γ ∗ kvptsto γ key v }}}
+    MemKVClerk__Get #ck #key @ ⊤
+  {{{ val_sl q, RET slice_val val_sl;
+      own_MemKVClerk ck γ ∗ kvptsto γ key v ∗ typed_slice.is_slice_small val_sl byteT q%Qp v
+  }}}.
+Proof using Type*.
+  iIntros (Φ) "(Hclerk & Hkey) HΦ".
+  iApply (KVClerk__Get with "Hclerk").
+  iApply fupd_mask_intro; first done. iNext.
+  iIntros "Hclose". iExists _. iFrame "Hkey".
+  iIntros "Hkey". iMod "Hclose" as "_". iModIntro.
+  iIntros (??) "[Hclerk Hsl]". iApply "HΦ". iFrame.
+Qed.
+
+Lemma KVClerk__MGet (ck:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64 * list u8)) q :
+  {{{ □ own_MemKVClerk ck γ (* FIXME this cannot be satisfied *) ∗
+      typed_slice.is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
+      [∗ list] key_val ∈ keys_vals, kvptsto γ key_val.1 key_val.2
+  }}}
+    MemKVClerk__MGet #ck (slice_val keys_sl) @ ⊤
+  {{{ (vals_sl:Slice.t) (val_sls:list Slice.t), RET slice_val vals_sl;
+      own_MemKVClerk ck γ ∗
+      typed_slice.is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
+      typed_slice.is_slice_small vals_sl (slice.T byteT) 1 val_sls ∗
+      [∗ list] key_val;sl ∈ keys_vals;val_sls, kvptsto γ key_val.1 key_val.2 ∗
+        readonly (typed_slice.is_slice_small sl byteT 1 key_val.2)
+  }}}.
+Proof using Type*.
+  iIntros (Φ) "(#Hclerk & Hkeys_sl & Hkeys) HΦ". wp_lam.
+  wp_apply wp_slice_len.
+  wp_apply (typed_slice.wp_NewSlice (V:=Slice.t)).
+  iIntros (vals_sl) "Hvals_sl".
+  wp_apply wp_slice_len.
+
+  wp_apply (wp_Multipar
+    (λ i, ∃ (key:u64) val, ⌜keys_vals !! i = Some (key, val)⌝ ∗
+      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T] #key ∗
+      kvptsto γ key val ∗
+      (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val Slice.nil)%I
+    (λ i, ∃ (key:u64) val (val_sl:Slice.t), ⌜keys_vals !! i = Some (key, val)⌝ ∗
+      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T] #key ∗
+      kvptsto γ key val ∗
+      (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val val_sl ∗
+      readonly (typed_slice.is_slice_small val_sl byteT 1 val))%I
+    keys_sl.(Slice.sz)
+    with "[] [Hkeys_sl Hkeys Hvals_sl]").
+  {
+    iIntros "!> %i %Hi Hpre".
+    iDestruct "Hpre" as (key val) "(%Hkv & Hkey_l & Hkey & Hval_l)".
+    wp_pures.
+
+    (* Breaking the SLiceGet (and later SliceSet) abstraction -- we only
+       own that one element, not the entire slice! *)
+    rewrite /SliceGet. wp_pures.
+    wp_apply wp_slice_ptr. wp_pures.
+    replace (int.nat i : Z) with (int.Z i) by word.
+    wp_load.
+
+    wp_apply (KVClerk__Get_seq with "[$Hkey //]").
+    iIntros (val_sl qval_sl) "(_ & Hkey & Hval_sl)".
+
+    rewrite /SliceSet. wp_pures.
+    wp_apply wp_slice_ptr. wp_pures.
+    wp_store.
+
+    iExists _, _, _.
+    iMod (readonly_alloc with "[Hval_sl]") as "$"; first done.
+    eauto with iFrame. }
+Abort.
 
 Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
 ⊢ {{{ own_MemKVClerk ck γ ∗ readonly (typed_slice.is_slice_small val_sl byteT 1 v) }}}
