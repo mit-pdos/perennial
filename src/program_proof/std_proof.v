@@ -155,16 +155,19 @@ Proof.
   iApply "HΦ". iPureIntro. done.
 Qed.
 
-Lemma wp_Multipar `{!multiparG Σ} (P Q : nat → iProp Σ) (num : u64) (op : val) :
-  □(∀ i : u64, ⌜int.Z i < int.Z num⌝ -∗ P (int.nat i) -∗ WP op #i {{ _, Q (int.nat i) }}) -∗
-  {{{ [∗ list] i ∈ seq 0 (int.nat num), P i }}}
+(* We pass some "ghost data" from [elems] to each invocation; [length elems] determines
+   how many threads there are. *)
+Lemma wp_Multipar `{!multiparG Σ} {X:Type} (P Q : nat → X → iProp Σ) (num:u64) (elems : list X) (op : val) :
+  length elems = int.nat num →
+  □(∀ (i : u64) x, ⌜elems !! int.nat i = Some x⌝ -∗ P (int.nat i) x -∗ WP op #i {{ _, Q (int.nat i) x }}) -∗
+  {{{ [∗ list] i ↦ x ∈ elems, P i x }}}
     Multipar #num op
-  {{{ RET #(); [∗ list] i ∈ seq 0 (int.nat num), Q i }}}.
+  {{{ RET #(); [∗ list] i ↦ x ∈ elems, Q i x }}}.
 Proof.
-  iIntros "#Hop !> %Φ HPs HΦ". wp_lam.
+  iIntros "%Hlen #Hop !> %Φ HPs HΦ". wp_lam.
   wp_apply wp_ref_to. { val_ty. }
   iIntros (nleft_l) "Hnleft". wp_pures.
-  iMod (own_alloc (GSet (set_seq 0 (int.nat num)))) as (γpending) "Hpending".
+  iMod (own_alloc (GSet (set_seq 0 (length elems)))) as (γpending) "Hpending".
   { done. }
   iMod (own_alloc (Excl ())) as (γtok) "Htok".
   { done. }
@@ -172,7 +175,7 @@ Proof.
     ∃ (nleft : u64) (pending : gset nat),
       "%Hsz" ∷ ⌜size pending = int.nat nleft⌝ ∗
       "Hnleft" ∷ nleft_l ↦[uint64T] #nleft ∗
-      "HPQ" ∷ ([∗ list] i ∈ seq 0 (int.nat num), ⌜i ∈ pending⌝ ∨ own γpending (GSet {[i]}) ∗ Q i)
+      "HPQ" ∷ ([∗ list] i ↦ x ∈ elems, ⌜i ∈ pending⌝ ∨ own γpending (GSet {[i]}) ∗ Q i x)
       )%I.
   wp_apply (newlock_spec nroot _ lock_inv with "[Hnleft]").
   { iModIntro. rewrite /lock_inv. iRight.
@@ -180,7 +183,8 @@ Proof.
     - iPureIntro. rewrite -list_to_set_seq size_list_to_set ?seq_length //.
       apply NoDup_seq.
     - iApply big_sepL_intro. iIntros "!> %k %i %Hlk". iLeft. iPureIntro.
-      apply elem_of_set_seq. apply lookup_seq in Hlk. lia. }
+      apply elem_of_set_seq. split; first lia.
+      rewrite -Hlen. apply lookup_lt_is_Some_1. eauto. }
   iIntros (lk) "#Hlk". wp_pures.
   wp_apply (wp_newCond with "Hlk").
   iIntros (cond) "#Hcond". wp_pures.
@@ -188,20 +192,22 @@ Proof.
   wp_apply wp_ref_to. { val_ty. }
   iIntros (i_l) "Hi".
   set loop_inv := (λ cur : u64,
-    [∗ list] i ∈ seq (int.nat cur) (int.nat num - int.nat cur)%nat, own γpending (GSet {[i]}) ∗ P i)%I.
+    [∗ list] i ↦ x ∈ drop (int.nat cur) elems, own γpending (GSet {[(int.nat cur)+i]}) ∗ P ((int.nat cur)+i) x)%I%nat.
   wp_apply (wp_forUpto loop_inv _ _ 0 with "[] [HPs Hpending Hi]").
   { word. }
   { clear Φ.
     iIntros "%cur !> %Φ (Hloop & Hcur & %Hcur) HΦ". wp_pures.
     wp_load.
-    iAssert (loop_inv (word.add cur 1) ∗ own γpending (GSet {[int.nat cur]}) ∗ P (int.nat cur))%I with "[Hloop]"
+    assert (is_Some (elems !! int.nat cur)) as [x Hx].
+    { apply lookup_lt_is_Some. word. }
+    iAssert (loop_inv (word.add cur 1) ∗ own γpending (GSet {[int.nat cur]}) ∗ P (int.nat cur) x)%I with "[Hloop]"
       as "(Hloop & Hpending & HP)".
     { rewrite /loop_inv.
-      replace (int.nat num - int.nat cur)%nat with (1 + (int.nat num - int.nat (word.add cur 1)))%nat by word.
-      rewrite seq_app. simpl.
+      rewrite (drop_S _ _ _ Hx).
+      simpl. rewrite Nat.add_0_r.
       iDestruct "Hloop" as "(($ & $) & Hloop)".
-      replace (int.nat cur + 1)%nat with (int.nat (word.add cur 1)) by word.
-      done. }
+      replace (int.nat (word.add cur 1)) with (S (int.nat cur)) by word.
+      setoid_rewrite Nat.add_succ_r. done. }
     wp_apply (wp_fork with "[HP Hpending]").
     { iModIntro. wp_bind (op _). iApply (wp_wand with "[HP]").
       { iApply "Hop"; done. }
@@ -220,8 +226,8 @@ Proof.
       wp_apply (wp_condSignal with "Hcond").
       wp_apply (release_spec with "[-]"); last done. iFrame "Hlocked Hlk".
       iRight. iExists _, (pending ∖ {[int.nat cur]}). iFrame "Hnleft".
-      iDestruct (big_sepL_lookup_acc_impl (int.nat cur) (int.nat cur) with "HPQ") as "[Hcur Hclose]".
-      { rewrite lookup_seq. word. }
+      iDestruct (big_sepL_lookup_acc_impl (int.nat cur) with "HPQ") as "[Hcur Hclose]".
+      { done. }
       iFreeze "Hclose".
       iDestruct "Hcur" as "[%Hpending|[Hpending2 _]]"; last first.
       { (* This index is supposedly already done -- contradiction. *)
@@ -238,22 +244,24 @@ Proof.
           rewrite ->Hemp in Hpending. set_solver. }
       iThaw "Hclose". iApply "Hclose"; last by eauto with iFrame.
       iIntros "!> %i' %i %Hi %Hnotcur [%Hpend|Hdone]".
-      - iLeft. iPureIntro. apply lookup_seq in Hi as [-> ?]. set_solver.
+      - iLeft. iPureIntro. set_solver.
       - iRight. eauto. }
     wp_pures. iApply "HΦ". eauto with iFrame. }
   { (* loop invariant holds initially *)
     iFrame "Hi". rewrite /loop_inv.
     replace (int.nat num - int.nat 0%Z)%nat with (int.nat num) by word.
-    iClear "#". clear loop_inv lock_inv.
-    change (int.nat 0) with 0%nat.
-    remember 0%nat as start eqn:Hstart. clear Hstart.
-    iInduction (int.nat num) as [|n] "IH" forall (start); clear num; simpl.
+    iClear "#". clear loop_inv lock_inv num Hlen.
+    iInduction elems as [|x elems] "IH" using rev_ind; simpl.
     { done. }
-    iDestruct "HPs" as "[$ HPs]".
-    rewrite -gset_disj_union; last first.
-    { apply disjoint_singleton_l.
+    rewrite big_sepL_app big_sepL_singleton.
+    rewrite big_sepL_app big_sepL_singleton.
+    rewrite app_length /= Nat.add_0_r set_seq_plus_L.
+    change (int.nat 0) with 0%nat. simpl.
+    iDestruct "HPs" as "[HPs $]".
+    rewrite [_ ∪ ∅]right_id_L -gset_disj_union; last first.
+    { apply disjoint_singleton_r.
       rewrite elem_of_set_seq. lia. }
-    iDestruct "Hpending" as "[$ Hpending]".
+    iDestruct "Hpending" as "[Hpending $]".
     iApply ("IH" with "HPs Hpending"). }
   (* continuation after loop *)
   iIntros "_".

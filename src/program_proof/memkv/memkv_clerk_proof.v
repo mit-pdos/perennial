@@ -222,21 +222,25 @@ Proof using Type*.
   iIntros (vals_sl) "Hvals_sl".
   wp_apply wp_slice_len.
 
-  wp_apply (wp_Multipar
-    (λ i, ∃ (key:u64) val, ⌜keys_vals !! i = Some (key, val)⌝ ∗
+  iDestruct (typed_slice.is_slice_small_sz with "Hkeys_sl") as %Hlen.
+  rewrite fmap_length in Hlen.
+  wp_apply (wp_Multipar (X:=(u64 * list u8))
+    (λ i '(key, val),
       (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T] #key ∗
       kvptsto γ key val ∗
       (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val Slice.nil)%I
-    (λ i, ∃ (key:u64) val (val_sl:Slice.t), ⌜keys_vals !! i = Some (key, val)⌝ ∗
+    (λ i '(key, val), ∃ (val_sl:Slice.t),
       (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T] #key ∗
       kvptsto γ key val ∗
       (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val val_sl ∗
       readonly (typed_slice.is_slice_small val_sl byteT 1 val))%I
     keys_sl.(Slice.sz)
+    keys_vals
     with "[] [Hkeys_sl Hkeys Hvals_sl]").
+  { done. }
   {
-    iIntros "!> %i %Hi Hpre".
-    iDestruct "Hpre" as (key val) "(%Hkv & Hkey_l & Hkey & Hval_l)".
+    iIntros "!> %i %kv %Hi Hpre". destruct kv as [key val].
+    iDestruct "Hpre" as "(Hkey_l & Hkey & Hval_l)".
     wp_pures.
 
     (* Breaking the SLiceGet (and later SliceSet) abstraction -- we only
@@ -253,7 +257,7 @@ Proof using Type*.
     wp_apply wp_slice_ptr. wp_pures.
     wp_store.
 
-    iExists _, _, _.
+    iExists _.
     iMod (readonly_alloc with "[Hval_sl]") as "$"; first done.
     eauto with iFrame. }
 Abort.
