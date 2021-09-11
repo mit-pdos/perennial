@@ -27,6 +27,36 @@ Definition is_ConnMan (c_ptr:loc) : iProp Σ :=
   "#Hinv" ∷ is_lock connmanN mu (own_ConnMan c_ptr mu)
 .
 
+Lemma wp_MakeConnMan :
+  {{{ True }}}
+    MakeConnMan #()
+  {{{ (c_ptr:loc), RET #c_ptr; is_ConnMan c_ptr }}}.
+Proof.
+  iIntros "%Φ _ HΦ".
+  wp_lam. (* FIXME this unfolds zero_val and NewMap... *)
+  wp_apply wp_allocStruct. { val_ty. }
+  iIntros (c_ptr) "Hc".
+  iDestruct (struct_fields_split with "Hc") as "HH".
+  iNamed "HH".
+  wp_apply wp_new_free_lock.
+  iIntros (mu) "Hfreelock".
+  wp_storeField.
+  replace (ref (InjLV #null))%E with (NewMap (struct.ptrT rpc.RPCClient)) at 2 by naive_solver.
+  wp_apply (wp_NewMap).
+  iIntros (rpcCls) "HrpcCls".
+  wp_storeField.
+  replace (ref (InjLV #null))%E with (NewMap condvarRefT) at 1 by naive_solver.
+  wp_apply (wp_NewMap).
+  iIntros (making) "Hmaking".
+  wp_storeField.
+  iApply "HΦ".
+  iExists #mu.
+  iMod (readonly_alloc_1 with "mu") as "$".
+  iMod (alloc_lock with "Hfreelock [-]") as "$"; last done.
+  rewrite /own_ConnMan. iModIntro. iExists rpcCls, making, _, _.
+  iFrame. by rewrite !big_sepM_empty.
+Qed.
+
 Local Lemma wp_ConnMan__getClient (c_ptr:loc) (host:u64) :
   is_ConnMan c_ptr -∗
   {{{ True }}}

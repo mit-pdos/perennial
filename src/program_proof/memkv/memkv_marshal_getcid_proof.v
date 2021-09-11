@@ -10,11 +10,11 @@ Definition has_encoding_Uint64 (data:list u8) (cid:u64) : Prop :=
 
 Context `{!heapGS Σ}.
 
-Lemma wp_encodeUint64 cid :
+Lemma wp_EncodeUint64 cid :
   {{{
        True
   }}}
-    encodeUint64 #cid
+    EncodeUint64 #cid
   {{{
        sl data, RET (slice_val sl); typed_slice.is_slice sl byteT 1%Qp data ∗
                                                          ⌜has_encoding_Uint64 data cid⌝
@@ -46,11 +46,11 @@ Proof.
   done.
 Qed.
 
-Lemma wp_decodeUint64 sl data cid q :
+Lemma wp_DecodeUint64 sl data cid q :
   {{{
        typed_slice.is_slice sl byteT q data ∗ ⌜has_encoding_Uint64 data cid⌝
   }}}
-    decodeUint64 (slice_val sl)
+    DecodeUint64 (slice_val sl)
   {{{
        RET #(cid); True
   }}}

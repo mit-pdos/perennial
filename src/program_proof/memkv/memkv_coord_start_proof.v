@@ -114,7 +114,7 @@ Proof.
   iFreeze "IH".
   wp_if_destruct; last first.
   { iClear "IH". wp_pures. wp_loadField. wp_apply (release_spec with "[-HΦ]").
-    { iFrame "Hlocked HmuInv". iNext. iExists _, _, _, _, _, _.
+    { iFrame "Hlocked HmuInv". iNext. iExists _, _, _, _, _.
       iDestruct ("HshardMap_clo" with "[$]") as "$".
       iFrame. iSplit; eauto. }
     iApply "HΦ". eauto. }
@@ -133,7 +133,6 @@ Proof.
     iThaw "IH".
     wp_pure (_ + _)%E.
     iApply ("IH" $! _ with "[//] [//] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
-    iModIntro. iFrame "#".
   }
   wp_pures.
   wp_if_destruct.
@@ -182,7 +181,7 @@ Proof.
       iDestruct ("Hclerk_clo" with "[$]") as "Hclerk".
       iApply ("IH" $! _ (typed_map.map_insert
                   (typed_map.map_insert hostShards' v (word.sub (word.add (word.divu 65536 _) 1) 1))
-                  x (word.add v' 1)) with "[] [] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
+                  x (word.add v' 1)) with "[] [] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
       { iPureIntro. rewrite insert_length. eauto. }
       { iPureIntro. intros i Hlt.
         destruct (decide (i = k)).
@@ -210,7 +209,6 @@ Proof.
     wp_pure (_ + _)%E.
     iThaw "IH".
     iApply ("IH" $! _ _ with "[//] [//] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
-    { eauto. }
   }
   {
     wp_loadField.
@@ -246,7 +244,7 @@ Proof.
       iThaw "IH".
       wp_pure (_ + _)%E.
       iDestruct ("Hclerk_clo" with "[$]") as "Hclerk".
-      iApply ("IH" $! _ _ with "[] [] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
+      iApply ("IH" $! _ _ with "[] [] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
       { iPureIntro. rewrite insert_length. eauto. }
       { iPureIntro. intros i Hlt.
         destruct (decide (i = k)).
@@ -346,7 +344,7 @@ Proof.
       wp_loadField.
       wp_apply (release_spec with "[-HΦ Hrep Hdata]").
       { iFrame "Hlocked HmuInv".
-        iNext. iExists _, _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
+        iNext. iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
         iDestruct "H1" as %Hequiv. iApply Hequiv. iFrame. }
       iApply "HΦ". iFrame. iNext. iExists _. iFrame "% #".
     }
@@ -363,7 +361,7 @@ Proof.
       simpl.
       iDestruct "Hpre" as "(%Henc&Hshard)".
       iDestruct "Hshard" as (γsh Heq) "#His_shard".
-      wp_apply (wp_decodeUint64 with "[$Hreq_sl]"); first eauto.
+      wp_apply (wp_DecodeUint64 with "[$Hreq_sl]"); first eauto.
       wp_pures.
       simpl in x.
       wp_apply (wp_MemKVCoord__AddServerRPC with "[]").

@@ -202,6 +202,7 @@ Proof using Type*.
   iIntros (??) "[Hclerk Hsl]". iApply "HΦ". iFrame.
 Qed.
 
+(*
 Lemma KVClerk__MGet (ck:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64 * list u8)) q :
   {{{ □ own_MemKVClerk ck γ (* FIXME this cannot be satisfied *) ∗
       is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
@@ -292,6 +293,7 @@ Proof using Type*.
   iIntros "!> %i %kv %val_sl %Hi1 %Hi2". destruct kv as [key val].
   iIntros "(Hkeys_sl & Hkey & Hvals_sl & Hval_sl)". iFrame.
 Qed.
+*)
 
 Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
 ⊢ {{{ own_MemKVClerk ck γ ∗ readonly (is_slice_small val_sl byteT 1 v) }}}

@@ -63,8 +63,7 @@ Definition own_ShardClerkSet (s:loc) (γkv:gname) : iProp Σ :=
 .
 
 Definition own_MemKVCoordServer (s : loc) γ : iProp Σ :=
-  ∃ cfg (hostShards_ptr : loc) hostShards (clset : loc) shardMap_sl (shardMapping : list u64),
-  "config" ∷ s ↦[MemKVCoord :: "config"] #cfg ∗
+  ∃ (hostShards_ptr : loc) hostShards (clset : loc) shardMap_sl (shardMapping : list u64),
   "hostShards" ∷ s ↦[MemKVCoord :: "hostShards"] #hostShards_ptr ∗
   "shardClerks" ∷ s ↦[MemKVCoord :: "shardClerks"] #clset ∗
   "%Hlen_shardMapping" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝%Z ∗

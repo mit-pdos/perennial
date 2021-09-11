@@ -158,7 +158,7 @@ Proof.
     iNext.
     iNamed "Hloop_post".
     remember uNSHARD as uNSHARD' eqn:Heq_uNSHARD.
-    iExists _, _, _, _, _, _. iFrame.
+    iExists _, _, _, _, _. iFrame.
     iSplit.
     { iPureIntro. congruence. }
     iSplit.

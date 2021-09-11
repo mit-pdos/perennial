@@ -6,7 +6,7 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.memkv Require Export common_proof.
-From Perennial.program_proof.memkv Require Export rpc_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_conditional_put_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
+From Perennial.program_proof.memkv Require Export rpc_proof connman_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_conditional_put_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 
 (** "universal" reply type for the reply cache *)
 Record ShardReplyC := mkShardReplyC {
@@ -181,12 +181,13 @@ Section memkv_shard_definitions.
 Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Definition own_MemKVShardClerk (ck:loc) γkv : iProp Σ :=
-  ∃ (cid seq:u64) (cl:loc) (host:u64) (γ:memkv_shard_names),
+  ∃ (cid seq:u64) (c:loc) (host:u64) (γ:memkv_shard_names),
     "Hcid" ∷ ck ↦[MemKVShardClerk :: "cid"] #cid ∗
     "Hseq" ∷ ck ↦[MemKVShardClerk :: "seq"] #seq ∗
-    "Hcl" ∷ ck ↦[MemKVShardClerk :: "cl"] #cl ∗
+    "Hc" ∷ ck ↦[MemKVShardClerk :: "c"] #c ∗
+    "Hhost" ∷ ck ↦[MemKVShardClerk :: "host"] #host ∗
     "Hcrpc" ∷ RPCClient_own_ghost γ.(rpc_gn) cid seq ∗
-    "Hcl_own" ∷ RPCClient_own cl host ∗
+    "#Hc_own" ∷ is_ConnMan c ∗
     "#His_shard" ∷ is_shard_server host γ ∗
     "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z ∗
     "%Hγeq" ∷ ⌜γ.(kv_gn) = γkv⌝

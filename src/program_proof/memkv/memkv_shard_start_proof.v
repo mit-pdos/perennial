@@ -261,7 +261,7 @@ Proof.
       wp_pures.
       wp_apply (wp_GetCIDRPC with "His_memkv").
       iIntros (cid) "Hcid".
-      wp_apply (wp_encodeUint64).
+      wp_apply (wp_EncodeUint64).
       iIntros (rep_sl repData) "[Hrep_sl %HrepEnc]".
       iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & _)".
       wp_store.

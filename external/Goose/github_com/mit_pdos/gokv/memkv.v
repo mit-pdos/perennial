@@ -3,6 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 From Goose Require github_com.goose_lang.std.
+From Goose Require github_com.mit_pdos.gokv.connman.
 From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
 From Goose Require github_com.tchajed.marshal.
 
@@ -265,14 +266,15 @@ Definition decodeMoveShardRequest: val :=
     struct.storeF MoveShardRequest "Dst" "req" (marshal.Dec__GetInt "d");;
     "req".
 
-Definition encodeUint64: val :=
-  rec: "encodeUint64" "i" :=
+(* FIXME: these should just be in goose std or something *)
+Definition EncodeUint64: val :=
+  rec: "EncodeUint64" "i" :=
     let: "e" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "e" "i";;
     marshal.Enc__Finish "e".
 
-Definition decodeUint64: val :=
-  rec: "decodeUint64" "raw" :=
+Definition DecodeUint64: val :=
+  rec: "DecodeUint64" "raw" :=
     marshal.Dec__GetInt (marshal.NewDec "raw").
 
 Definition encodeShardMap: val :=
@@ -291,18 +293,18 @@ Definition decodeShardMap: val :=
 Definition MemKVShardClerk := struct.decl [
   "seq" :: uint64T;
   "cid" :: uint64T;
-  "cl" :: struct.ptrT rpc.RPCClient
+  "host" :: HostName;
+  "c" :: struct.ptrT connman.ConnMan
 ].
 
 Definition MakeFreshKVClerk: val :=
   rec: "MakeFreshKVClerk" "host" :=
     let: "ck" := struct.alloc MemKVShardClerk (zero_val (struct.t MemKVShardClerk)) in
-    struct.storeF MemKVShardClerk "cl" "ck" (rpc.MakeRPCClient "host");;
+    struct.storeF MemKVShardClerk "host" "ck" "host";;
+    struct.storeF MemKVShardClerk "c" "ck" (connman.MakeConnMan #());;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_FRESHCID (NewSlice byteT #0) "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
-      Continue);;
-    struct.storeF MemKVShardClerk "cid" "ck" (decodeUint64 (![slice.T byteT] "rawRep"));;
+    connman.ConnMan__CallAtLeastOnce (struct.loadF MemKVShardClerk "c" "ck") "host" KV_FRESHCID (NewSlice byteT #0) "rawRep" #100;;
+    struct.storeF MemKVShardClerk "cid" "ck" (DecodeUint64 (![slice.T byteT] "rawRep"));;
     struct.storeF MemKVShardClerk "seq" "ck" #1;;
     "ck".
 
@@ -315,9 +317,7 @@ Definition MemKVShardClerk__Put: val :=
     struct.storeF PutRequest "Value" "args" "value";;
     struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_PUT (EncodePutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
-      Continue);;
+    connman.ConnMan__CallAtLeastOnce (struct.loadF MemKVShardClerk "c" "ck") (struct.loadF MemKVShardClerk "host" "ck") KV_PUT (EncodePutRequest "args") "rawRep" #100;;
     let: "rep" := DecodePutReply (![slice.T byteT] "rawRep") in
     struct.loadF PutReply "Err" "rep".
 
@@ -329,9 +329,7 @@ Definition MemKVShardClerk__Get: val :=
     struct.storeF GetRequest "Key" "args" "key";;
     struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_GET (EncodeGetRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
-      Continue);;
+    connman.ConnMan__CallAtLeastOnce (struct.loadF MemKVShardClerk "c" "ck") (struct.loadF MemKVShardClerk "host" "ck") KV_GET (EncodeGetRequest "args") "rawRep" #100;;
     let: "rep" := DecodeGetReply (![slice.T byteT] "rawRep") in
     "value" <-[slice.T byteT] struct.loadF GetReply "Value" "rep";;
     struct.loadF GetReply "Err" "rep".
@@ -346,9 +344,7 @@ Definition MemKVShardClerk__ConditionalPut: val :=
     struct.storeF ConditionalPutRequest "NewValue" "args" "newValue";;
     struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_CONDITIONAL_PUT (EncodeConditionalPutRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
-      Continue);;
+    connman.ConnMan__CallAtLeastOnce (struct.loadF MemKVShardClerk "c" "ck") (struct.loadF MemKVShardClerk "host" "ck") KV_CONDITIONAL_PUT (EncodeConditionalPutRequest "args") "rawRep" #100;;
     let: "rep" := DecodeConditionalPutReply (![slice.T byteT] "rawRep") in
     "success" <-[boolT] struct.loadF ConditionalPutReply "Success" "rep";;
     struct.loadF ConditionalPutReply "Err" "rep".
@@ -362,9 +358,7 @@ Definition MemKVShardClerk__InstallShard: val :=
     struct.storeF InstallShardRequest "Kvs" "args" "kvs";;
     struct.storeF MemKVShardClerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF MemKVShardClerk "seq" "ck") #1);;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_INS_SHARD (encodeInstallShardRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
-      Continue).
+    connman.ConnMan__CallAtLeastOnce (struct.loadF MemKVShardClerk "c" "ck") (struct.loadF MemKVShardClerk "host" "ck") KV_INS_SHARD (encodeInstallShardRequest "args") "rawRep" #100.
 
 Definition MemKVShardClerk__MoveShard: val :=
   rec: "MemKVShardClerk__MoveShard" "ck" "sid" "dst" :=
@@ -372,9 +366,7 @@ Definition MemKVShardClerk__MoveShard: val :=
     struct.storeF MoveShardRequest "Sid" "args" "sid";;
     struct.storeF MoveShardRequest "Dst" "args" "dst";;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVShardClerk "cl" "ck") KV_MOV_SHARD (encodeMoveShardRequest "args") "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
-      Continue).
+    connman.ConnMan__CallAtLeastOnce (struct.loadF MemKVShardClerk "c" "ck") (struct.loadF MemKVShardClerk "host" "ck") KV_MOV_SHARD (encodeMoveShardRequest "args") "rawRep" #100.
 
 (* 2_memkv_shard.go *)
 
@@ -566,7 +558,7 @@ Definition MemKVShardServer__Start: val :=
   rec: "MemKVShardServer__Start" "mkv" "host" :=
     let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) in
     MapInsert "handlers" KV_FRESHCID (λ: "rawReq" "rawReply",
-      "rawReply" <-[slice.T byteT] encodeUint64 (MemKVShardServer__GetCIDRPC "mkv")
+      "rawReply" <-[slice.T byteT] EncodeUint64 (MemKVShardServer__GetCIDRPC "mkv")
       );;
     MapInsert "handlers" KV_PUT (λ: "rawReq" "rawReply",
       let: "rep" := struct.alloc PutReply (zero_val (struct.t PutReply)) in
@@ -622,7 +614,6 @@ Definition ShardClerkSet__GetClerk: val :=
 
 Definition MemKVCoord := struct.decl [
   "mu" :: lockRefT;
-  "config" :: mapT stringT;
   "shardMap" :: slice.T HostName;
   "hostShards" :: mapT uint64T;
   "shardClerks" :: struct.ptrT ShardClerkSet
@@ -686,7 +677,7 @@ Definition MemKVCoord__Start: val :=
   rec: "MemKVCoord__Start" "c" "host" :=
     let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) in
     MapInsert "handlers" COORD_ADD (λ: "rawReq" "rawRep",
-      let: "s" := decodeUint64 "rawReq" in
+      let: "s" := DecodeUint64 "rawReq" in
       MemKVCoord__AddServerRPC "c" "s"
       );;
     MapInsert "handlers" COORD_GET (MemKVCoord__GetShardMapRPC "c");;
@@ -703,7 +694,7 @@ Definition MemKVCoordClerk__AddShardServer: val :=
   rec: "MemKVCoordClerk__AddShardServer" "ck" "dst" :=
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVCoordClerk "cl" "ck") COORD_ADD (encodeUint64 "dst") "rawRep" #10000 ≠ #0); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVCoordClerk "cl" "ck") COORD_ADD (EncodeUint64 "dst") "rawRep" #10000 ≠ #0); (λ: <>, Skip) := λ: <>,
       Continue);;
     #().
 
@@ -775,17 +766,6 @@ Definition MemKVClerk__Add: val :=
   rec: "MemKVClerk__Add" "ck" "host" :=
     MemKVCoordClerk__AddShardServer (struct.loadF MemKVClerk "coordCk" "ck") "host".
 
-(* returns a slice of "values" (which are byte slices) in the same order as the
-   keys passed in as input
-   FIXME: benchmark *)
-Definition MemKVClerk__MGet: val :=
-  rec: "MemKVClerk__MGet" "ck" "keys" :=
-    let: "vals" := NewSlice (slice.T byteT) (slice.len "keys") in
-    std.Multipar (slice.len "keys") (λ: "i",
-      SliceSet (slice.T byteT) "vals" "i" (MemKVClerk__Get "ck" (SliceGet uint64T "keys" "i"))
-      );;
-    "vals".
-
 Definition MakeMemKVClerk: val :=
   rec: "MakeMemKVClerk" "coord" :=
     let: "cck" := struct.alloc MemKVCoordClerk (zero_val (struct.t MemKVCoordClerk)) in
@@ -795,3 +775,69 @@ Definition MakeMemKVClerk: val :=
     struct.storeF MemKVClerk "shardClerks" "ck" (MakeShardClerkSet #());;
     struct.storeF MemKVClerk "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk "coordCk" "ck"));;
     "ck".
+
+(* memkv_concurrent_clerk.go *)
+
+Definition KVClerkPool := struct.decl [
+  "mu" :: lockRefT;
+  "freeClerks" :: slice.T (struct.ptrT MemKVClerk);
+  "coord" :: HostName
+].
+
+Definition KVClerkPool__getClerk: val :=
+  rec: "KVClerkPool__getClerk" "p" :=
+    lock.acquire (struct.loadF KVClerkPool "mu" "p");;
+    let: "ck" := ref (zero_val (refT (struct.t MemKVClerk))) in
+    (if: (slice.len (struct.loadF KVClerkPool "freeClerks" "p") = #0)
+    then
+      lock.release (struct.loadF KVClerkPool "mu" "p");;
+      "ck" <-[refT (struct.t MemKVClerk)] MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p")
+    else
+      "ck" <-[refT (struct.t MemKVClerk)] SliceGet (refT (struct.t MemKVClerk)) (struct.loadF KVClerkPool "freeClerks" "p") #0;;
+      struct.storeF KVClerkPool "freeClerks" "p" (SliceSkip (refT (struct.t MemKVClerk)) (struct.loadF KVClerkPool "freeClerks" "p") #1);;
+      lock.release (struct.loadF KVClerkPool "mu" "p"));;
+    ![refT (struct.t MemKVClerk)] "ck".
+
+Definition KVClerkPool__putClerk: val :=
+  rec: "KVClerkPool__putClerk" "p" "ck" :=
+    Fork (lock.acquire (struct.loadF KVClerkPool "mu" "p");;
+          struct.storeF KVClerkPool "freeClerks" "p" (SliceAppend (refT (struct.t MemKVClerk)) (struct.loadF KVClerkPool "freeClerks" "p") "ck");;
+          lock.release (struct.loadF KVClerkPool "mu" "p")).
+
+(* the hope is that after a while, the number of clerks needed to maintain a
+   request rate for an open system benchmark will stabilize. *)
+Definition KVClerkPool__Put: val :=
+  rec: "KVClerkPool__Put" "p" "key" "value" :=
+    let: "ck" := KVClerkPool__getClerk "p" in
+    MemKVClerk__Put "ck" "key" "value";;
+    KVClerkPool__putClerk "p" "ck".
+
+Definition KVClerkPool__Get: val :=
+  rec: "KVClerkPool__Get" "p" "key" :=
+    let: "ck" := KVClerkPool__getClerk "p" in
+    let: "value" := MemKVClerk__Get "ck" "key" in
+    KVClerkPool__putClerk "p" "ck";;
+    "value".
+
+(* returns a slice of "values" (which are byte slices) in the same order as the
+   keys passed in as input
+   FIXME: benchmark *)
+Definition KVClerkPool__MGet: val :=
+  rec: "KVClerkPool__MGet" "p" "keys" :=
+    let: "vals" := NewSlice (slice.T byteT) (slice.len "keys") in
+    std.Multipar (slice.len "keys") (λ: "i",
+      SliceSet (slice.T byteT) "vals" "i" (KVClerkPool__Get "p" (SliceGet uint64T "keys" "i"))
+      );;
+    "vals".
+
+Definition MakeKVClerkPool: val :=
+  rec: "MakeKVClerkPool" "numInit" "coord" :=
+    let: "p" := struct.alloc KVClerkPool (zero_val (struct.t KVClerkPool)) in
+    struct.storeF KVClerkPool "mu" "p" (lock.new #());;
+    struct.storeF KVClerkPool "coord" "p" "coord";;
+    struct.storeF KVClerkPool "freeClerks" "p" (NewSlice (struct.ptrT MemKVClerk) "numInit");;
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, ![uint64T] "i" < "numInit"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      SliceSet (refT (struct.t MemKVClerk)) (struct.loadF KVClerkPool "freeClerks" "p") (![uint64T] "i") (MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p"));;
+      Continue);;
+    "p".
