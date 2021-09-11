@@ -298,10 +298,10 @@ Definition MemKVShardClerk := struct.decl [
 ].
 
 Definition MakeFreshKVClerk: val :=
-  rec: "MakeFreshKVClerk" "host" :=
+  rec: "MakeFreshKVClerk" "host" "c" :=
     let: "ck" := struct.alloc MemKVShardClerk (zero_val (struct.t MemKVShardClerk)) in
     struct.storeF MemKVShardClerk "host" "ck" "host";;
-    struct.storeF MemKVShardClerk "c" "ck" (connman.MakeConnMan #());;
+    struct.storeF MemKVShardClerk "c" "ck" "c";;
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
     connman.ConnMan__CallAtLeastOnce (struct.loadF MemKVShardClerk "c" "ck") "host" KV_FRESHCID (NewSlice byteT #0) "rawRep" #100;;
     struct.storeF MemKVShardClerk "cid" "ck" (DecodeUint64 (![slice.T byteT] "rawRep"));;
@@ -512,7 +512,8 @@ Definition MemKVShardServer__MoveShardRPC: val :=
     let: (<>, "ok") := MapGet (struct.loadF MemKVShardServer "peers" "s") (struct.loadF MoveShardRequest "Dst" "args") in
     (if: ~ "ok"
     then
-      let: "ck" := MakeFreshKVClerk (struct.loadF MoveShardRequest "Dst" "args") in
+      let: "c" := connman.MakeConnMan #() in
+      let: "ck" := MakeFreshKVClerk (struct.loadF MoveShardRequest "Dst" "args") "c" in
       MapInsert (struct.loadF MemKVShardServer "peers" "s") (struct.loadF MoveShardRequest "Dst" "args") "ck";;
       #()
     else #());;
@@ -593,13 +594,15 @@ Definition COORD_ADD : expr := #1.
 Definition COORD_GET : expr := #2.
 
 Definition ShardClerkSet := struct.decl [
-  "cls" :: mapT (struct.ptrT MemKVShardClerk)
+  "cls" :: mapT (struct.ptrT MemKVShardClerk);
+  "c" :: struct.ptrT connman.ConnMan
 ].
 
 Definition MakeShardClerkSet: val :=
-  rec: "MakeShardClerkSet" <> :=
+  rec: "MakeShardClerkSet" "c" :=
     struct.new ShardClerkSet [
-      "cls" ::= NewMap (struct.ptrT MemKVShardClerk)
+      "cls" ::= NewMap (struct.ptrT MemKVShardClerk);
+      "c" ::= "c"
     ].
 
 Definition ShardClerkSet__GetClerk: val :=
@@ -607,7 +610,7 @@ Definition ShardClerkSet__GetClerk: val :=
     let: ("ck", "ok") := MapGet (struct.loadF ShardClerkSet "cls" "s") "host" in
     (if: ~ "ok"
     then
-      let: "ck2" := MakeFreshKVClerk "host" in
+      let: "ck2" := MakeFreshKVClerk "host" (struct.loadF ShardClerkSet "c" "s") in
       MapInsert (struct.loadF ShardClerkSet "cls" "s") "host" "ck2";;
       "ck2"
     else "ck").
@@ -670,7 +673,7 @@ Definition MakeMemKVCoordServer: val :=
       Continue);;
     struct.storeF MemKVCoord "hostShards" "s" (NewMap uint64T);;
     MapInsert (struct.loadF MemKVCoord "hostShards" "s") "initserver" NSHARD;;
-    struct.storeF MemKVCoord "shardClerks" "s" (MakeShardClerkSet #());;
+    struct.storeF MemKVCoord "shardClerks" "s" (MakeShardClerkSet (connman.MakeConnMan #()));;
     "s".
 
 Definition MemKVCoord__Start: val :=
@@ -687,23 +690,20 @@ Definition MemKVCoord__Start: val :=
 (* memkv_clerk.go *)
 
 Definition MemKVCoordClerk := struct.decl [
-  "cl" :: struct.ptrT rpc.RPCClient
+  "host" :: HostName;
+  "c" :: struct.ptrT connman.ConnMan
 ].
 
 Definition MemKVCoordClerk__AddShardServer: val :=
   rec: "MemKVCoordClerk__AddShardServer" "ck" "dst" :=
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVCoordClerk "cl" "ck") COORD_ADD (EncodeUint64 "dst") "rawRep" #10000 ≠ #0); (λ: <>, Skip) := λ: <>,
-      Continue);;
+    connman.ConnMan__CallAtLeastOnce (struct.loadF MemKVCoordClerk "c" "ck") (struct.loadF MemKVCoordClerk "host" "ck") COORD_ADD (EncodeUint64 "dst") "rawRep" #10000;;
     #().
 
 Definition MemKVCoordClerk__GetShardMap: val :=
   rec: "MemKVCoordClerk__GetShardMap" "ck" :=
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    Skip;;
-    (for: (λ: <>, rpc.RPCClient__Call (struct.loadF MemKVCoordClerk "cl" "ck") COORD_GET (NewSlice byteT #0) "rawRep" #100 ≠ #0); (λ: <>, Skip) := λ: <>,
-      Continue);;
+    connman.ConnMan__CallAtLeastOnce (struct.loadF MemKVCoordClerk "c" "ck") (struct.loadF MemKVCoordClerk "host" "ck") COORD_GET (NewSlice byteT #0) "rawRep" #100;;
     decodeShardMap (![slice.T byteT] "rawRep").
 
 (* NOTE: a single clerk keeps quite a bit of state, via the shardMap[], so it
@@ -768,11 +768,13 @@ Definition MemKVClerk__Add: val :=
 
 Definition MakeMemKVClerk: val :=
   rec: "MakeMemKVClerk" "coord" :=
+    let: "c" := connman.MakeConnMan #() in
     let: "cck" := struct.alloc MemKVCoordClerk (zero_val (struct.t MemKVCoordClerk)) in
     let: "ck" := struct.alloc MemKVClerk (zero_val (struct.t MemKVClerk)) in
     struct.storeF MemKVClerk "coordCk" "ck" "cck";;
-    struct.storeF MemKVCoordClerk "cl" (struct.loadF MemKVClerk "coordCk" "ck") (rpc.MakeRPCClient "coord");;
-    struct.storeF MemKVClerk "shardClerks" "ck" (MakeShardClerkSet #());;
+    struct.storeF MemKVCoordClerk "host" (struct.loadF MemKVClerk "coordCk" "ck") "coord";;
+    struct.storeF MemKVCoordClerk "c" (struct.loadF MemKVClerk "coordCk" "ck") "c";;
+    struct.storeF MemKVClerk "shardClerks" "ck" (MakeShardClerkSet "c");;
     struct.storeF MemKVClerk "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk "coordCk" "ck"));;
     "ck".
 

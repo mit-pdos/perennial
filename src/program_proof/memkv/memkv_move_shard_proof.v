@@ -47,8 +47,10 @@ Proof.
               with "[HDst HpeersMap HpeerClerks Hpeers]").
   {
     iIntros (b' Heq). wp_if_destruct.
-    - wp_loadField.
-      wp_apply (wp_MakeFreshKVClerk with "Hother_shard").
+    - wp_apply wp_MakeConnMan.
+      iIntros (c) "Hc_own".
+      wp_loadField.
+      wp_apply (wp_MakeFreshKVClerk with "Hother_shard Hc_own").
       iIntros (ck) "Hclerk".
       wp_pures. wp_loadField. wp_loadField.
       wp_apply (wp_MapInsert with "[$]").

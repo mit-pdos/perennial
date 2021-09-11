@@ -6,18 +6,19 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 Section memkv_shard_clerk_proof.
 Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Lemma wp_MakeFreshKVClerk (host:u64) γ :
+Lemma wp_MakeFreshKVClerk (host:u64) (c:loc) γ :
   is_shard_server host γ -∗
+  is_ConnMan c -∗
   {{{
        True
   }}}
-    MakeFreshKVClerk #host
+    MakeFreshKVClerk #host #c
   {{{
        (ck:loc), RET #ck; own_MemKVShardClerk ck γ.(kv_gn)
   }}}
 .
 Proof.
-  iIntros "#His_shard !#" (Φ) "_ HΦ".
+  iIntros "#His_shard #Hc !#" (Φ) "_ HΦ".
   wp_lam.
   wp_apply (wp_allocStruct).
   { naive_solver. }
@@ -26,8 +27,6 @@ Proof.
   iNamed "HH".
   wp_pures.
   wp_storeField.
-  wp_apply (wp_MakeConnMan).
-  iIntros (c) "#Hc".
   wp_storeField.
   wp_apply (wp_ref_of_zero).
   { done. }

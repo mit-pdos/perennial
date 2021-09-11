@@ -33,6 +33,8 @@ Proof.
   iIntros (Φ) "#Hcoord HΦ".
   rewrite /MakeMemKVClerk.
   wp_lam.
+  wp_apply wp_MakeConnMan.
+  iIntros (c) "#Hc_own".
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
   iIntros (cck) "Hcck".
@@ -46,12 +48,11 @@ Proof.
   iNamed "HH".
   wp_pures.
   wp_storeField.
-  wp_apply (wp_MakeRPCClient).
-  iIntros (cl) "Hcl".
   wp_loadField.
   wp_storeField.
-  wp_bind (MakeShardClerkSet #()).
-  rewrite /MakeShardClerkSet.
+  wp_loadField.
+  wp_storeField.
+  wp_bind (MakeShardClerkSet _).
   wp_lam.
   replace (ref (InjLV #null))%E with (NewMap (struct.ptrT MemKVShardClerk)) by auto.
   wp_apply (wp_NewMap).
@@ -61,14 +62,11 @@ Proof.
   iIntros (clset) "Hset".
   wp_storeField.
   wp_loadField.
-  wp_apply (wp_MemKVCoordClerk__GetShardMap with "[cl Hcl]").
-  { rewrite /own_MemKVCoordClerk. iExists _, _, _. iFrame "cl".
+  wp_apply (wp_MemKVCoordClerk__GetShardMap with "[c host]").
+  { rewrite /own_MemKVCoordClerk. iExists _, _, _. iFrame "c host Hc_own".
     iSplit; last first.
-    { iSplit.
-      { iExact "Hcoord". }
-      { iExact "Hcl". }
-    }
-    eauto.
+    { iExact "Hcoord". }
+    done.
   }
   iIntros (shardMap_sl shardMapping) "(Hcck & HshardMap_sl & %Hlen & #Hall_are_shard_servers)".
   Transparent slice.T.
@@ -76,10 +74,11 @@ Proof.
   Opaque slice.T.
   iModIntro. iApply "HΦ".
   iExists _, _, _, _. iFrame.
-  iFrame "% #". iExists _, _.
-  iFrame "Hmap_set". rewrite big_sepM_empty; iSplit; last done.
+  iFrame "% #". iExists _, _, _.
+  iFrame "Hmap_set Hc_own".
   iDestruct (struct_fields_split with "Hset") as "HH".
-  iNamed "HH". eauto.
+  iNamed "HH". iFrame.
+  rewrite big_sepM_empty; done.
 Qed.
 
 Lemma KVClerk__Get (ck:loc) (γ:gname) (key:u64) :

@@ -8,11 +8,12 @@ Section memkv_coord_clerk_proof.
 Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Definition own_MemKVCoordClerk ck γkv : iProp Σ :=
-  ∃ γh host (cl : loc),
+  ∃ γh (host : u64) (c : loc),
     "%Heq_kv_gn" ∷ ⌜ γh.(coord_kv_gn) = γkv ⌝ ∗
-    "Hcl" ∷ ck ↦[MemKVCoordClerk :: "cl"] #cl ∗
+    "Hcl" ∷ ck ↦[MemKVCoordClerk :: "c"] #c ∗
+    "Hhost" ∷ ck ↦[MemKVCoordClerk :: "host"] #host ∗
     "#His_coord" ∷ is_coord_server host γh ∗
-    "Hcl_own" ∷ RPCClient_own cl host.
+    "#Hc_own" ∷ is_ConnMan c.
 
 Lemma wp_decodeShardMap data_sl data (shardMapping : list u64) :
   {{{
@@ -66,7 +67,6 @@ Proof.
     iExists _; iFrame.
   }
 
-  wp_forBreak_cond.
   wp_pures.
   iNamed "Hclerk".
   iNamed "His_coord".
@@ -74,31 +74,11 @@ Proof.
   wp_apply (typed_slice.wp_NewSlice (V:=u8)).
   iIntros (s) "H".
   wp_loadField.
-  wp_apply (wp_RPCClient__Call () with "[Hcl_own H $HrawRep]").
-  { iFrame "H". iFrame "Hcl_own".
-    rewrite /has_handler. iFrame "HgetSpec". done. }
-  iIntros (?) "(Hcl_own & Hreq_sl & Hpost)".
-  destruct err as [err|].
-  { (* continue *)
-    wp_pures. rewrite bool_decide_false; last by destruct err.
-    wp_pures. iLeft.
-    iModIntro. iSplit; first done.
-    iFrame "HΦ".
-    iSplitR "Hpost"; last first.
-    { eauto. }
-    iExists _, _, _. iFrame "Hcl". iFrame "Hcl_own".
-    iSplitL ""; last first.
-    { rewrite /is_coord_server.
-      iSplit.
-      { iExact "HaddSpec". }
-      { iExact "HgetSpec". }
-    }
-    eauto.
-  }
-  (* got reply *)
+  wp_loadField.
+  wp_apply (wp_ConnMan__CallAtLeastOnce () with "Hc_own HgetSpec [] [$H $HrawRep //]").
+  { done. }
+  iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
-  iRight.
-  iModIntro. iSplitL ""; first done.
   wp_pures.
   wp_load.
   iDestruct "Hpost" as (??) "Hcid".
@@ -108,7 +88,7 @@ Proof.
   iApply "HΦ".
   iFrame "HshardMap_sl". 
   iSplitR "Hcid".
-  { iExists _, _, _. iFrame "Hcl". iFrame "Hcl_own".
+  { iExists _, _, _. iFrame "Hcl Hc_own Hhost".
     iSplitL ""; last first.
     { rewrite /is_coord_server.
       iSplit.
@@ -146,7 +126,8 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* Make fresh clerk*)
-    wp_apply (wp_MakeFreshKVClerk with "His_shard").
+    wp_loadField.
+    wp_apply (wp_MakeFreshKVClerk with "His_shard Hc_own").
     iIntros (ck) "HownCk".
     wp_pures.
     wp_loadField.
@@ -158,7 +139,7 @@ Proof.
     iModIntro.
     iFrame "HownCk".
     iIntros "Hown".
-    iExists _, _; iFrame "Hcls HclsMap".
+    iExists _, _, _; iFrame "Hcls HclsMap Hc Hc_own".
     rewrite /typed_map.map_insert.
     apply map_get_false in Hlookup.
     iApply (big_sepM_insert with "[Hown $HclsOwn]").
@@ -174,7 +155,7 @@ Proof.
     iFrame.
     iIntros "Hown".
     iSpecialize ("HclsOwn" with "Hown").
-    iExists _, _; iFrame.
+    rewrite /own_ShardClerkSet. eauto with iFrame.
   }
 Qed.
 

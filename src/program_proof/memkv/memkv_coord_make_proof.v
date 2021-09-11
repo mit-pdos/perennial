@@ -142,9 +142,10 @@ Proof.
   { eauto. }
   iIntros "Hmap".
   wp_pures.
-  (* TODO: Pull this out to separate wp? *)
-  wp_bind (MakeShardClerkSet #()).
-  rewrite /MakeShardClerkSet.
+  wp_apply wp_MakeConnMan.
+  iIntros (c) "Hc_own".
+  (* TODO: Pull this out to separate wp? it is called at least twice *)
+  wp_bind (MakeShardClerkSet _).
   wp_lam.
   replace (ref (InjLV #null))%E with (NewMap (struct.ptrT MemKVShardClerk)) by auto.
   wp_apply (wp_NewMap).
@@ -201,7 +202,7 @@ Proof.
       }
       iFrame. eauto.
     }
-    iExists _, _. iFrame "# ∗".
+    iExists _, _, _. iFrame "# ∗".
     iDestruct (struct_fields_split with "Hset") as "Hset". iNamed "Hset".
     iFrame. rewrite big_sepM_empty. eauto.
   }

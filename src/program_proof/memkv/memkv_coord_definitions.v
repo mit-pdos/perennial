@@ -56,10 +56,12 @@ Section memkv_coord_definitions.
 Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Definition own_ShardClerkSet (s:loc) (γkv:gname) : iProp Σ :=
-  ∃ (cls_ptr:loc) (clsM:gmap u64 loc),
+  ∃ (c:loc) (cls_ptr:loc)  (clsM:gmap u64 loc),
   "Hcls" ∷ s ↦[ShardClerkSet :: "cls"] #cls_ptr ∗
+  "Hc" ∷ s ↦[ShardClerkSet :: "c"] #c ∗
   "HclsMap" ∷ is_map cls_ptr 1 clsM ∗
-  "HclsOwn" ∷ [∗ map] host ↦ cl_ptr ∈ clsM, own_MemKVShardClerk cl_ptr γkv
+  "HclsOwn" ∷ ([∗ map] host ↦ cl_ptr ∈ clsM, own_MemKVShardClerk cl_ptr γkv) ∗
+  "#Hc_own" ∷ is_ConnMan c
 .
 
 Definition own_MemKVCoordServer (s : loc) γ : iProp Σ :=
