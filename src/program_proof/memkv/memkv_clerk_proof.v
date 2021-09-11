@@ -224,13 +224,18 @@ Proof using Type*.
 
   iDestruct (is_slice_small_sz with "Hkeys_sl") as %Hlen.
   rewrite fmap_length in Hlen.
+  iDestruct (is_slice_to_small with "Hvals_sl") as "Hvals_sl".
+  iEval (rewrite /is_slice_small /slice.is_slice_small ?untype_replicate ?replicate_length)
+    in "Hkeys_sl Hvals_sl".
+  iDestruct "Hkeys_sl" as "[Hkeys_sl %Hkeys_sl_len]".
+  iDestruct "Hvals_sl" as "[Hvals_sl %Hvals_sl_len]".
   wp_apply (wp_Multipar (X:=(u64 * list u8))
     (λ i '(key, val),
-      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T] #key ∗
+      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T]{q} #key ∗
       kvptsto γ key val ∗
       (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val Slice.nil)%I
-    (λ i '(key, val), ∃ (val_sl:Slice.t),
-      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T] #key ∗
+    (λ i kv, ∃ (val_sl:Slice.t), let '(key, val) := kv in
+      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T]{q} #key ∗
       kvptsto γ key val ∗
       (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val val_sl ∗
       readonly (is_slice_small val_sl byteT 1 val))%I
@@ -260,7 +265,33 @@ Proof using Type*.
     iExists _.
     iMod (readonly_alloc with "[Hval_sl]") as "$"; first done.
     eauto with iFrame. }
-Abort.
+  { rewrite /array /list.untype !big_sepL_fmap.
+    iDestruct (big_sepL2_sepL_2 with "Hkeys_sl Hvals_sl") as "Hsl".
+    { rewrite Hlen replicate_length //. }
+    rewrite big_sepL2_replicate_r //.
+    iCombine "Hkeys Hsl" as "H". rewrite -big_sepL_sep.
+    iApply (big_sepL_impl with "H").
+    iIntros "!> %i %kv %Hi (Hkey & Hkey_sl & Hval_sl)".
+    destruct kv as [key value].
+    iFrame. }
+  iIntros "H".
+  wp_pures.
+  iDestruct (big_sepL_exists_to_sepL2 with "H") as (xs) "H".
+  iDestruct (big_sepL2_length with "H") as %Hlenxs.
+  iApply ("HΦ" $! vals_sl xs). iFrame "Hclerk". iModIntro.
+  iEval (rewrite {1 2}/is_slice_small /slice.is_slice_small).
+  rewrite /array /list.untype !big_sepL_fmap !fmap_length.
+  iEval (rewrite [(_ ∗ ⌜length keys_vals = _⌝)%I]comm -!assoc).
+  iSplit; first done.
+  iEval (rewrite !assoc [(_ ∗ ⌜length xs = _⌝)%I]comm -!assoc).
+  rewrite -Hlenxs Hlen. iSplit; first done.
+  iEval (rewrite [(([∗ list] k↦y ∈ xs, _) ∗ _)%I]comm).
+  rewrite -big_sepL2_sep_sepL_r.
+  rewrite -big_sepL2_sep_sepL_l.
+  iApply (big_sepL2_impl with "H").
+  iIntros "!> %i %kv %val_sl %Hi1 %Hi2". destruct kv as [key val].
+  iIntros "(Hkeys_sl & Hkey & Hvals_sl & Hval_sl)". iFrame.
+Qed.
 
 Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
 ⊢ {{{ own_MemKVClerk ck γ ∗ readonly (is_slice_small val_sl byteT 1 v) }}}

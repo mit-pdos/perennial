@@ -73,6 +73,57 @@ Section list2.
   Context {A B : Type}.
   Implicit Types Φ Ψ : nat → A → B → PROP.
 
+
+  Lemma big_sepL2_const_sepL_l (Φ : nat → A → PROP) (l1 : list A) (l2 : list B) :
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1) ⊣⊢ ⌜length l1 = length l2⌝ ∧ ([∗ list] k↦y1 ∈ l1, Φ k y1).
+  Proof.
+    rewrite big_sepL2_alt.
+    trans (⌜length l1 = length l2⌝ ∧ [∗ list] k↦y1 ∈ (zip l1 l2).*1, Φ k y1)%I.
+    - rewrite big_sepL_fmap //.
+    - apply (anti_symm (⊢)); apply bi.pure_elim_l=> Hl; rewrite fst_zip;
+      try (rewrite Hl //);
+      (apply bi.and_intro; [by apply bi.pure_intro|done]).
+  Qed.
+
+  Lemma big_sepL2_const_sepL_r (Φ : nat → B → PROP) (l1 : list A) (l2 : list B) :
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y2) ⊣⊢ ⌜length l1 = length l2⌝ ∧ ([∗ list] k↦y2 ∈ l2, Φ k y2).
+  Proof.
+    rewrite big_sepL2_alt.
+    trans (⌜length l1 = length l2⌝ ∧ [∗ list] k↦y2 ∈ (zip l1 l2).*2, Φ k y2)%I.
+    - rewrite big_sepL_fmap //.
+    - apply (anti_symm (⊢)); apply bi.pure_elim_l=> Hl; rewrite snd_zip;
+      try (rewrite Hl //);
+      (apply bi.and_intro; [by apply bi.pure_intro|done]).
+  Qed.
+
+  Lemma big_sepL2_sep_sepL_l (Φ : nat → A → PROP) Ψ l1 l2 :
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 ∗ Ψ k y1 y2)
+    ⊣⊢ ([∗ list] k↦y1 ∈ l1, Φ k y1) ∗ ([∗ list] k↦y1;y2 ∈ l1;l2, Ψ k y1 y2).
+  Proof.
+    rewrite big_sepL2_sep big_sepL2_const_sepL_l. apply (anti_symm _).
+    - rewrite bi.and_elim_r. done.
+    - rewrite !big_sepL2_alt [(_ ∗ _)%I]comm -!bi.persistent_and_sep_assoc.
+      apply bi.pure_elim_l=>Hl. apply bi.and_intro.
+      { apply bi.pure_intro. done. }
+      rewrite [(_ ∗ _)%I]comm. apply bi.sep_mono; first done.
+      apply bi.and_intro; last done.
+      apply bi.pure_intro. done.
+  Qed.
+
+  Lemma big_sepL2_sep_sepL_r Φ (Ψ : nat → B → PROP) l1 l2 :
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2 ∗ Ψ k y2)
+    ⊣⊢ ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ∗ ([∗ list] k↦y2 ∈ l2, Ψ k y2).
+  Proof.
+    rewrite big_sepL2_sep big_sepL2_const_sepL_r. apply (anti_symm _).
+    - rewrite bi.and_elim_r. done.
+    - rewrite !big_sepL2_alt -!bi.persistent_and_sep_assoc.
+      apply bi.pure_elim_l=>Hl. apply bi.and_intro.
+      { apply bi.pure_intro. done. }
+      apply bi.sep_mono; first done.
+      apply bi.and_intro; last done.
+      apply bi.pure_intro. done.
+  Qed.
+
   Lemma big_sepL2_elim_big_sepL_aux `{!BiAffine PROP} {C} (P: nat → C → PROP) Φ (l1: list A) (l2: list B) (l: list C) n:
     length l = length l1 →
     □ (∀ k x y z, ⌜ l1 !! k = Some x ⌝ -∗
@@ -276,6 +327,15 @@ Section list2.
                     ([∗ list] i ↦ a ∈ l, ∃ x, ⌜xs !! i = Some x⌝ ∧ Φ i a x).
   Proof.
     apply (big_sepL_exists_list_aux 0 Φ).
+  Qed.
+
+  Lemma big_sepL_exists_to_sepL2 Φ l :
+    ([∗ list] i↦a ∈ l, ∃ x, Φ i a x) -∗
+    ∃ xs, [∗ list] i ↦ a;x ∈ l;xs, Φ i a x.
+  Proof.
+    iIntros "H".
+    iDestruct (big_sepL_exists_list with "H") as (xs Hlen) "H".
+    iExists xs. iApply big_sepL2_to_sepL_1'; done.
   Qed.
 
   Lemma big_sepL2_app_equiv Φ l1 l2 l1' l2' :
