@@ -14,12 +14,12 @@ Implicit Types (l: loc) (σ: slidingM.t).
 
 Definition readonly_log logSlice σ : iProp Σ :=
       readonly (updates_slice_frag
-                  (slice_take logSlice (struct.t Update) (slidingM.numMutable σ)) 1
+                  (slice_take logSlice (slidingM.numMutable σ)) 1
                   (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
 Definition readonly_log_inner' logSlice σ (q : Qp) : iProp Σ :=
                (updates_slice_frag
-                  (slice_take logSlice (struct.t Update) (slidingM.numMutable σ)) q
+                  (slice_take logSlice (slidingM.numMutable σ)) q
                   (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
 Definition readonly_log_inner logSlice σ : iProp Σ :=
@@ -130,7 +130,7 @@ Theorem updates_slice_frag_split s q q_b (n: u64) log :
   (int.nat n <= int.nat s.(Slice.sz))%nat ->
   updates_slice_frag' s q q_b log -∗
   updates_slice_frag' (slice_skip s (struct.t Update) n) q q_b (drop (int.nat n) log) ∗
-  updates_slice_frag' (slice_take s (struct.t Update) n) q q_b (take (int.nat n) log).
+  updates_slice_frag' (slice_take s n) q q_b (take (int.nat n) log).
 Proof.
   iIntros (Hbound) "Hs".
   iDestruct (updates_slice_frag_len with "Hs") as %Hlen.
@@ -150,7 +150,7 @@ Qed.
 Theorem updates_slice_frag_combine s q q_b (n: u64) log :
   (int.nat n <= int.nat s.(Slice.sz))%nat ->
   updates_slice_frag' (slice_skip s (struct.t Update) n) q q_b (drop (int.nat n) log) ∗
-  updates_slice_frag' (slice_take s (struct.t Update) n) q q_b (take (int.nat n) log) -∗
+  updates_slice_frag' (slice_take s n) q q_b (take (int.nat n) log) -∗
   updates_slice_frag' s q q_b log.
 Proof.
   iIntros (Hbound) "[Hs2 Hs1]".
@@ -232,7 +232,7 @@ Proof.
   rewrite -> drop_ge by word.
   rewrite -> take_ge by word.
   iMod (readonly_alloc
-          (updates_slice_frag (slice_take s (struct.t Update) (length log)) 1 log) q
+          (updates_slice_frag (slice_take s (length log)) 1 log) q
           with "[$Hreadonly]") as "#Hreadonly".
   iModIntro.
   iApply "HΦ".
@@ -856,7 +856,7 @@ Proof.
   iDestruct (memLog_sz with "log_mutable") as %Hs.
   iMod (readonly_load with "log_readonly") as (q) "Hlog".
   iDestruct "Hlog" as (bks) "[Hs Hblocks]".
-  wp_apply (wp_SliceTake (uint64T * (blockT * unitT))%ht); first by word.
+  wp_apply wp_SliceTake; first by word.
   wp_apply wp_SliceSkip'.
   { iPureIntro.
     simpl; word. }
@@ -864,7 +864,7 @@ Proof.
   autorewrite with len in Hbks_len.
   fold (slidingM.numMutable σ).
   change (uint64T * (blockT * unitT))%ht with (struct.t Update).
-  set (s':=slice_take logSlice (struct.t Update) (slidingM.numMutable σ)).
+  set (s':=slice_take logSlice (slidingM.numMutable σ)).
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   autorewrite with len in Hsz.
   iDestruct (is_slice_small_take_drop _ _ _ (word.sub start σ.(slidingM.start)) with "Hs") as "[Hs2 Hs1]".
@@ -906,8 +906,8 @@ Theorem wp_SliceTake_updates s (n: u64) q q_b (upds: list update.t) :
   int.Z n ≤ length upds →
   {{{ updates_slice_frag' s q q_b upds }}}
     SliceTake (slice_val s) #n
-  {{{ RET (slice_val (slice_take s (struct.t Update) n));
-      updates_slice_frag' (slice_take s (struct.t Update) n) q q_b (take (int.nat n) upds) }}}.
+  {{{ RET (slice_val (slice_take s n));
+      updates_slice_frag' (slice_take s n) q q_b (take (int.nat n) upds) }}}.
 Proof.
   iIntros (Hbound Φ) "Hupds HΦ".
   iDestruct (updates_slice_frag_len with "Hupds") as %Hlen.
@@ -1058,7 +1058,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   iMod (readonly_load with "log_readonly") as (q) "Hlog".
-  wp_apply (wp_SliceTake (uint64T * (blockT * unitT)%ht)); first by word.
+  wp_apply wp_SliceTake; first by word.
   wp_apply (wp_SliceTake_updates with "Hlog"); first by len.
   iIntros "Hupds".
   iDestruct "Hupds" as (bks) "[HlogSlice Hbks] /=".
@@ -1197,7 +1197,6 @@ Proof.
 
   iAssert (∀ q, (updates_slice_frag
                       (slice_take logSlice
-                         (uint64T * (blockT * unitT)%ht)
                          (word.sub mutable start)) q
                       (take (int.nat (word.sub mutable start))
                          log)) -∗
@@ -1205,7 +1204,6 @@ Proof.
        (slice_take
           (slice_skip logSlice (uint64T * (blockT * unitT)%ht)
              (word.sub newStart start))
-          (uint64T * (blockT * unitT)%ht)
           (word.sub mutable newStart)) q
        (take (int.nat (word.sub mutable newStart))
           (drop (int.nat newStart - int.nat start) log))))%I as "Hlog_implies".
@@ -1266,7 +1264,7 @@ Qed.
 
 Theorem is_slice_small_take_all s t q vs (n: u64) :
   int.Z n = int.nat s.(Slice.sz) →
-  is_slice_small (slice_take s t n) t q vs ⊣⊢
+  is_slice_small (slice_take s n) t q vs ⊣⊢
   is_slice_small s t q vs.
 Proof.
   intros.

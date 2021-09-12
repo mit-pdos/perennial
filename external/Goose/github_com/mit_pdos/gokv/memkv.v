@@ -791,13 +791,14 @@ Definition KVClerkPool := struct.decl [
 Definition KVClerkPool__getClerk: val :=
   rec: "KVClerkPool__getClerk" "p" :=
     lock.acquire (struct.loadF KVClerkPool "mu" "p");;
-    (if: (slice.len (struct.loadF KVClerkPool "freeClerks" "p") = #0)
+    let: "n" := slice.len (struct.loadF KVClerkPool "freeClerks" "p") in
+    (if: ("n" = #0)
     then
       lock.release (struct.loadF KVClerkPool "mu" "p");;
       MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p")
     else
-      let: "ck" := SliceGet MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") #0 in
-      struct.storeF KVClerkPool "freeClerks" "p" (SliceSkip MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") #1);;
+      let: "ck" := SliceGet MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") ("n" - #1) in
+      struct.storeF KVClerkPool "freeClerks" "p" (SliceTake (struct.loadF KVClerkPool "freeClerks" "p") ("n" - #1));;
       lock.release (struct.loadF KVClerkPool "mu" "p");;
       "ck").
 
@@ -834,13 +835,9 @@ Definition KVClerkPool__MGet: val :=
     "vals".
 
 Definition MakeKVClerkPool: val :=
-  rec: "MakeKVClerkPool" "numInit" "coord" :=
+  rec: "MakeKVClerkPool" "coord" :=
     let: "p" := struct.alloc KVClerkPool (zero_val (struct.t KVClerkPool)) in
     struct.storeF KVClerkPool "mu" "p" (lock.new #());;
     struct.storeF KVClerkPool "coord" "p" "coord";;
-    struct.storeF KVClerkPool "freeClerks" "p" (NewSlice MemKVClerkPtr "numInit");;
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < "numInit"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      SliceSet MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") (![uint64T] "i") (MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p"));;
-      Continue);;
+    struct.storeF KVClerkPool "freeClerks" "p" (NewSlice MemKVClerkPtr #0);;
     "p".

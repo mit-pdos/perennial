@@ -11,7 +11,7 @@ Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !
 Local Definition own_ConcMemKVClerk (p:loc) (γ:memkv_coord_names) : iProp Σ :=
   ∃ (freeClerks_sl:Slice.t) (freeClerks:list loc),
   "HfreeClerks" ∷ p ↦[KVClerkPool :: "freeClerks"] (slice_val freeClerks_sl) ∗
-  "HfreeClerks_sl" ∷ is_slice_small (V:=loc) freeClerks_sl MemKVClerkPtr 1 freeClerks ∗
+  "HfreeClerks_sl" ∷ is_slice (V:=loc) freeClerks_sl MemKVClerkPtr 1 freeClerks ∗
   "HfreeClerks_own" ∷ [∗ list] ck ∈ freeClerks, own_MemKVClerk ck γ.(coord_kv_gn)
 .
 
@@ -57,29 +57,60 @@ Proof.
     rewrite bool_decide_false; last first.
     { intros [=Hz]. apply Hnzero. rewrite Hz. word. }
     wp_loadField.
-    iDestruct (is_slice_small_sz with "HfreeClerks_sl") as %Hlen.
-    destruct freeClerks as [|Hck freeClerks].
+    iDestruct (is_slice_sz with "HfreeClerks_sl") as %Hlen.
+    destruct freeClerks as [|freeClerks Hck _] using rev_ind.
     { exfalso. apply Hnzero. done. }
+    rewrite app_length in Hlen. simpl in Hlen.
+    rewrite big_sepL_snoc.
+    iDestruct (is_slice_small_read with "HfreeClerks_sl") as "[HfreeClerks_sl HfreeClerks_close]".
     wp_apply (wp_SliceGet (V:=loc) with "[$HfreeClerks_sl]").
-    { iPureIntro. done. }
+    { iPureIntro.
+      replace (int.nat (word.sub freeClerks_sl.(Slice.sz) 1%Z)) with (int.nat freeClerks_sl.(Slice.sz) - 1) by word.
+      rewrite lookup_app_r; last by word. rewrite -Hlen.
+      replace (length Hck + 1 - 1 - length Hck) with 0 by lia.
+      done. }
     iIntros "HfreeClerks_sl".
 
     wp_loadField.
-    wp_apply wp_SliceSkip'.
-    { iPureIntro. word. }
+    wp_apply wp_SliceTake.
+    { word. }
     wp_bind (struct.storeF _ _ _ _).
     (* FIXME why do we have to apply storeField by hand here? *)
     iApply (wp_storeField with "HfreeClerks").
     { rewrite /field_ty. simpl. val_ty. }
     iIntros "!> HfreeClerks".
-    iDestruct "HfreeClerks_own" as "[Hck HfreeClerks_own]".
+    iDestruct "HfreeClerks_own" as "[HfreeClerks_own Hck]".
     wp_loadField.
+    iDestruct ("HfreeClerks_close" with "HfreeClerks_sl") as "HfreeClerks_sl".
     wp_apply (release_spec'' with "Hinv [$Hlocked HfreeClerks_own HfreeClerks_sl HfreeClerks]").
     { rewrite /own_ConcMemKVClerk. iModIntro. iExists _, _. iFrame.
-      iDestruct (slice_small_split _ 1 with "HfreeClerks_sl") as "[_ $]".
-      simpl. word. }
+      (* FIXME need typed slice lemma *)
+      iClear "#".
+      rewrite /is_slice.
+      iDestruct (is_slice_take_cap _ _ _ (length Hck) with "HfreeClerks_sl") as "HfreeClerks_sl".
+      { rewrite /list.untype fmap_length app_length /=. word. }
+      rewrite /list.untype fmap_app take_app_alt; last first.
+      { rewrite fmap_length. word. }
+      replace (word.sub freeClerks_sl.(Slice.sz) 1%Z) with (length Hck : u64) by word.
+      iFrame. }
     wp_pures. iApply "HΦ".
     eauto.
 Qed.
+
+Local Lemma wp_KVClerkPool__putClerk p γ ck :
+  is_ConcMemKVClerk p γ -∗
+  {{{ own_MemKVClerk ck γ.(coord_kv_gn) }}}
+    KVClerkPool__putClerk #p #ck
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros "#Hcck !> %Φ Hck HΦ". wp_lam.
+  wp_apply (wp_fork with "[Hck]").
+  { iModIntro.
+    iNamed "Hcck".
+    wp_loadField.
+    wp_apply (acquire_spec with "Hinv").
+    iIntros "[Hlocked Hown]". iNamed "Hown".
+    wp_loadField.
+Abort.
 
 End memkv_concurrent_clerk_proof.

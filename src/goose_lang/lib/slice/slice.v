@@ -405,7 +405,7 @@ Proof.
   auto.
 Qed.
 
-Definition slice_take (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
+Definition slice_take (sl: Slice.t) (n: u64) : Slice.t :=
   {| Slice.ptr := sl.(Slice.ptr);
      Slice.sz := n;
      Slice.cap := sl.(Slice.cap);
@@ -430,7 +430,7 @@ Lemma slice_split s (n: u64) t q vs :
 Theorem is_slice_take_cap s t vs n :
   int.Z n <= length vs ->
   is_slice s t 1 vs -∗
-  is_slice (slice_take s t n) t 1 (take (int.nat n) vs).
+  is_slice (slice_take s n) t 1 (take (int.nat n) vs).
 Proof.
   intros.
   rewrite /is_slice /is_slice_small /is_slice_cap /slice_take /=.
@@ -454,7 +454,7 @@ Qed.
 
 Lemma slice_small_split s (n: u64) t q vs :
   int.Z n <= length vs →
-  is_slice_small s t q vs -∗ is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ∗
+  is_slice_small s t q vs -∗ is_slice_small (slice_take s n) t q (take (int.nat n) vs) ∗
            is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs).
 Proof.
   iIntros (Hbounds) "Hs".
@@ -478,7 +478,7 @@ Qed.
 Theorem is_slice_small_take_drop s t q n vs :
   (int.nat n <= int.nat s.(Slice.sz))%nat ->
    is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
-   is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ⊣⊢
+   is_slice_small (slice_take s n) t q (take (int.nat n) vs) ⊣⊢
   is_slice_small s t q vs.
 Proof.
   intros Hbound.
@@ -504,7 +504,7 @@ Qed.
 Theorem is_slice_small_take_drop_1 s t q n vs :
   (int.nat n <= int.nat s.(Slice.sz))%nat ->
   is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
-                  is_slice_small (slice_take s t n) t q (take (int.nat n) vs) -∗
+                  is_slice_small (slice_take s n) t q (take (int.nat n) vs) -∗
   is_slice_small s t q vs.
 Proof.
   intros Hbound.
@@ -513,7 +513,7 @@ Qed.
 
 Theorem is_slice_combine s t q n vs1 vs2 :
   (int.nat n ≤ int.nat s.(Slice.sz))%nat →
-  is_slice_small (slice_take s t n) t q vs1 -∗
+  is_slice_small (slice_take s n) t q vs1 -∗
   is_slice_small (slice_skip s t n) t q vs2 -∗
   is_slice_small s t q (vs1 ++ vs2).
 Proof.
@@ -601,8 +601,8 @@ Proof.
 Qed.
 
 Theorem slice_skip_take_commute s t n1 n2 :
-  slice_skip (slice_take s t n1) t n2 =
-  slice_take (slice_skip s t n2) t (word.sub n1 n2).
+  slice_skip (slice_take s n1) t n2 =
+  slice_take (slice_skip s t n2) (word.sub n1 n2).
 Proof.
   intros.
   destruct s as [ptr len cap]; simpl.
@@ -625,9 +625,9 @@ Proof.
   iApply "HΦ".
 Qed.
 
-Lemma wp_SliceTake {Φ stk E s} t (n: u64):
+Lemma wp_SliceTake {Φ stk E s} (n: u64):
   int.Z n ≤ int.Z s.(Slice.sz) →
-  ▷ Φ (slice_val (slice_take s t n)) -∗
+  ▷ Φ (slice_val (slice_take s n)) -∗
   WP (SliceTake (slice_val s) #n) @ stk; E {{ Φ }}.
 Proof.
   iIntros (?) "HΦ".
@@ -645,11 +645,11 @@ Lemma wp_SliceTake' {stk E s} t q vs (n: u64):
   int.Z n ≤ length vs →
   {{{ is_slice_small s t q vs }}}
     SliceTake (slice_val s) #n @ stk; E
-  {{{ RET (slice_val (slice_take s t n)); is_slice_small (slice_take s t n) t q (take (int.nat n) vs) }}}.
+  {{{ RET (slice_val (slice_take s n)); is_slice_small (slice_take s n) t q (take (int.nat n) vs) }}}.
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  wp_apply (wp_SliceTake t).
+  wp_apply (wp_SliceTake).
   { word. }
   iApply "HΦ".
   iDestruct (is_slice_small_take_drop _ _ _ n with "Hs") as "[_ $]".
@@ -1044,11 +1044,11 @@ Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) (n : u64) :
   val_ty x t ->
   0 ≤ int.Z n ≤ int.Z (Slice.sz s) ≤ int.Z (Slice.cap s) ->
   (q < 1)%Qp ->
-  {{{ is_slice_small (slice_take s t n) t q vs1 ∗
+  {{{ is_slice_small (slice_take s n) t q vs1 ∗
       is_slice (slice_skip s t n) t 1 vs2 }}}
     SliceAppend t s x @ stk; E
   {{{ s', RET slice_val s';
-      is_slice_small (slice_take s' t n) t q vs1 ∗
+      is_slice_small (slice_take s' n) t q vs1 ∗
       is_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) ∗
       ⌜int.Z (Slice.sz s') ≤ int.Z (Slice.cap s') ∧
        int.Z (Slice.sz s') = (int.Z (Slice.sz s) + 1)%Z ⌝}}}.

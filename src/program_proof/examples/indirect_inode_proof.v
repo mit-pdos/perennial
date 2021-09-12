@@ -311,13 +311,13 @@ Proof.
       rewrite HnumInd.
       unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *; try word.
     }
-    wp_apply (wp_SliceTake uint64T (length σ.(inode.blocks))).
+    wp_apply (wp_SliceTake (length σ.(inode.blocks))).
     {
       assert (int.Z maxDirect = int.Z (diraddr_s.(Slice.sz))).
       { unfold maxDirect in *. word. }
       replace (int.Z (U64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in H; word.
     }
-    wp_apply (wp_SliceTake uint64T (ds.(impl_s.numInd))).
+    wp_apply (wp_SliceTake (ds.(impl_s.numInd))).
     {
       word.
     }
@@ -331,7 +331,7 @@ Proof.
                     (∃ σ addr, "Hlockinv" ∷ inode_linv l σ addr ∗ "HP" ∷ P σ)%I
             with "[$Hlock] [-HΦ]") as "#Hlock".
     { iExists _, _; iFrame.
-      iExists (slice_take diraddr_s uint64T (length σ.(inode.blocks))), _, ds.
+      iExists (slice_take diraddr_s (length σ.(inode.blocks))), _, ds.
       iFrame.
       iSplit; iFrame.
       - iFrame "∗ %".
@@ -375,7 +375,7 @@ Proof.
       apply Zdiv_lt_upper_bound; eauto; lia.
     }
 
-    wp_apply (wp_SliceTake uint64T maxDirect).
+    wp_apply (wp_SliceTake maxDirect).
     {
       assert (maxDirect = int.Z (diraddr_s.(Slice.sz))).
       {
@@ -383,7 +383,7 @@ Proof.
       }
       rewrite -H; word.
     }
-    wp_apply (wp_SliceTake uint64T (ds.(impl_s.numInd))).
+    wp_apply (wp_SliceTake (ds.(impl_s.numInd))).
     {
       rewrite HnumIndGt.
       unfold roundUpDiv, maxIndirect, maxDirect, indirectNumBlocks in *.
@@ -451,7 +451,7 @@ Proof.
     repeat rewrite take_length in H1.
 Admitted.
 
-Definition slice_subslice A n m s := slice_skip (slice_take s A m) A n.
+Definition slice_subslice A n m s := slice_skip (slice_take s m) A n.
 
 Definition is_alloced_blocks_slice σ s (direct_s indirect_s : Slice.t)
            numInd (dirAddrs indAddrs : list u64) (indBlkAddrsList: list (list u64)) : iProp Σ :=
@@ -860,7 +860,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
     }
     iDestruct "Hsmall" as "[HsmallTake HsmallSkip]".
     unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-    replace (slice_take s2 uint64T s2.(Slice.sz)) with s2 by (destruct s2; simpl; auto).
+    replace (slice_take s2 s2.(Slice.sz)) with s2 by (destruct s2; simpl; auto).
     assert ((int.nat direct_s.(Slice.sz) + int.nat indirect_s.(Slice.sz)) = length (usedBlksList ++ usedIndBlks))
       as HrewriteMe.
     {

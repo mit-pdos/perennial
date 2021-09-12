@@ -96,7 +96,7 @@ Qed.
 
 Lemma slice_small_split s (n: u64) t q vs :
   int.Z n <= length vs →
-  is_slice_small s t q vs -∗ is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ∗
+  is_slice_small s t q vs -∗ is_slice_small (slice_take s n) t q (take (int.nat n) vs) ∗
            is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs).
 Proof.
   iIntros (Hbounds) "Hs".
@@ -110,7 +110,7 @@ Qed.
 Theorem is_slice_small_take_drop s t q n vs :
   (int.nat n <= int.nat s.(Slice.sz))%nat ->
   is_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
-  is_slice_small (slice_take s t n) t q (take (int.nat n) vs) ⊣⊢
+  is_slice_small (slice_take s n) t q (take (int.nat n) vs) ⊣⊢
   is_slice_small s t q vs.
 Proof.
   intros Hbound.
@@ -121,7 +121,7 @@ Qed.
 
 Theorem is_slice_combine s t q n vs1 vs2 :
   (int.nat n ≤ int.nat s.(Slice.sz))%nat →
-  is_slice_small (slice_take s t n) t q vs1 -∗
+  is_slice_small (slice_take s n) t q vs1 -∗
   is_slice_small (slice_skip s t n) t q vs2 -∗
   is_slice_small s t q (vs1 ++ vs2).
 Proof.
@@ -196,11 +196,11 @@ Qed.
 Lemma wp_SliceAppend'' stk E s t `{!IntoValForType IntoVal0 t} vs1 vs2 (x: V) (q : Qp) (n : u64) :
   0 ≤ int.Z n ≤ int.Z (Slice.sz s) ≤ int.Z (Slice.cap s) ->
   (q < 1)%Qp ->
-  {{{ is_slice_small (slice_take s t n) t q vs1 ∗
+  {{{ is_slice_small (slice_take s n) t q vs1 ∗
       is_slice (slice_skip s t n) t 1 vs2 }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
   {{{ s', RET slice_val s';
-      is_slice_small (slice_take s' t n) t q vs1 ∗
+      is_slice_small (slice_take s' n) t q vs1 ∗
       is_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) ∗
       ⌜int.Z (Slice.sz s') ≤ int.Z (Slice.cap s') ∧
        int.Z (Slice.sz s') = (int.Z (Slice.sz s) + 1)%Z⌝}}}.

@@ -308,12 +308,12 @@ Qed.
 Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : u64) (q q_b q_b' : Qp) :
   0 ≤ int.Z n ≤ int.Z (Slice.sz bk_s) ≤ int.Z (Slice.cap bk_s) ->
   (q < 1)%Qp ->
-  {{{ updates_slice_frag' (slice_take bk_s (struct.t Update) n) q q_b (take (int.nat n) bs) ∗
+  {{{ updates_slice_frag' (slice_take bk_s n) q q_b (take (int.nat n) bs) ∗
       updates_slice' q_b' (slice_skip bk_s (struct.t Update) n) (drop (int.nat n) bs) ∗
       is_block uv.2 q_b' b }}}
     SliceAppend (struct.t Update) (slice_val bk_s) (update_val uv) @ stk; E
   {{{ bk_s', RET slice_val bk_s';
-      updates_slice_frag' (slice_take bk_s' (struct.t Update) n) q q_b (take (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
+      updates_slice_frag' (slice_take bk_s' n) q q_b (take (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
       updates_slice' q_b' (slice_skip bk_s' (struct.t Update) n) (drop (int.nat n) (bs ++ [update.mk uv.1 b])) ∗
       ⌜int.Z (Slice.sz bk_s') ≤ int.Z (Slice.cap bk_s') ∧
        int.Z (Slice.sz bk_s') = (int.Z (Slice.sz bk_s) + 1)%Z⌝
