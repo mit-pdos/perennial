@@ -11,7 +11,7 @@ Section connman_proof.
 Context `{!rpcregG Σ}.
 Context `{hG: !heapGS Σ}.
 Definition connmanN := nroot .@ "connman".
-Definition own_ConnMan (c_ptr:loc) (lock: val) : iProp Σ :=
+Local Definition own_ConnMan (c_ptr:loc) (lock: val) : iProp Σ :=
   ∃ (rpcCls making:loc) (rpcClsM makingM:gmap u64 loc),
     "HrpcCls" ∷ c_ptr ↦[ConnMan :: "rpcCls"] #rpcCls ∗
     "Hmaking" ∷ c_ptr ↦[ConnMan :: "making"] #making ∗

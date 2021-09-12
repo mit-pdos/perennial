@@ -38,6 +38,7 @@ From Perennial.program_proof.memkv Require
      rpc_proof
      connman_proof
      memkv_clerk_proof memkv_shard_start_proof memkv_shard_make_proof memkv_coord_make_proof
+     memkv_concurrent_clerk_proof
      closed.
 
 (*

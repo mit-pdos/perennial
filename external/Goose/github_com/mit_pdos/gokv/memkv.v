@@ -780,9 +780,11 @@ Definition MakeMemKVClerk: val :=
 
 (* memkv_concurrent_clerk.go *)
 
+Definition MemKVClerkPtr: ty := struct.ptrT MemKVClerk.
+
 Definition KVClerkPool := struct.decl [
   "mu" :: lockRefT;
-  "freeClerks" :: slice.T (struct.ptrT MemKVClerk);
+  "freeClerks" :: slice.T MemKVClerkPtr;
   "coord" :: HostName
 ].
 
@@ -795,15 +797,15 @@ Definition KVClerkPool__getClerk: val :=
       lock.release (struct.loadF KVClerkPool "mu" "p");;
       "ck" <-[refT (struct.t MemKVClerk)] MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p")
     else
-      "ck" <-[refT (struct.t MemKVClerk)] SliceGet (refT (struct.t MemKVClerk)) (struct.loadF KVClerkPool "freeClerks" "p") #0;;
-      struct.storeF KVClerkPool "freeClerks" "p" (SliceSkip (refT (struct.t MemKVClerk)) (struct.loadF KVClerkPool "freeClerks" "p") #1);;
+      "ck" <-[refT (struct.t MemKVClerk)] SliceGet MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") #0;;
+      struct.storeF KVClerkPool "freeClerks" "p" (SliceSkip MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") #1);;
       lock.release (struct.loadF KVClerkPool "mu" "p"));;
     ![refT (struct.t MemKVClerk)] "ck".
 
 Definition KVClerkPool__putClerk: val :=
   rec: "KVClerkPool__putClerk" "p" "ck" :=
     Fork (lock.acquire (struct.loadF KVClerkPool "mu" "p");;
-          struct.storeF KVClerkPool "freeClerks" "p" (SliceAppend (refT (struct.t MemKVClerk)) (struct.loadF KVClerkPool "freeClerks" "p") "ck");;
+          struct.storeF KVClerkPool "freeClerks" "p" (SliceAppend MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") "ck");;
           lock.release (struct.loadF KVClerkPool "mu" "p")).
 
 (* the hope is that after a while, the number of clerks needed to maintain a
@@ -837,9 +839,9 @@ Definition MakeKVClerkPool: val :=
     let: "p" := struct.alloc KVClerkPool (zero_val (struct.t KVClerkPool)) in
     struct.storeF KVClerkPool "mu" "p" (lock.new #());;
     struct.storeF KVClerkPool "coord" "p" "coord";;
-    struct.storeF KVClerkPool "freeClerks" "p" (NewSlice (struct.ptrT MemKVClerk) "numInit");;
+    struct.storeF KVClerkPool "freeClerks" "p" (NewSlice MemKVClerkPtr "numInit");;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "numInit"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      SliceSet (refT (struct.t MemKVClerk)) (struct.loadF KVClerkPool "freeClerks" "p") (![uint64T] "i") (MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p"));;
+      SliceSet MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") (![uint64T] "i") (MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p"));;
       Continue);;
     "p".
