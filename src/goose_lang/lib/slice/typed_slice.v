@@ -218,7 +218,7 @@ Proof.
   iApply ("HΦ" with "[$Hsm $Hs]").
 Qed.
 
-Lemma wp_SliceAppend' stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
+Lemma wp_SliceAppend stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
   {{{ is_slice s t 1 vs }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
   {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
@@ -234,22 +234,13 @@ Proof.
   iApply ("HΦ" with "Hs").
 Qed.
 
-Lemma wp_SliceAppend stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
-  {{{ is_slice s t 1 vs }}}
-    SliceAppend t (slice_val s) (to_val x) @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
-Proof.
-  iIntros (Φ) "Hs HΦ".
-  wp_apply (wp_SliceAppend' with "Hs"); auto.
-Qed.
-
 Lemma wp_SliceAppendSlice stk E s1 s2 t q `{!IntoValForType IntoVal0 t} (vs1 vs2: list V) :
   {{{ is_slice s1 t 1 vs1 ∗ is_slice_small s2 t q vs2 }}}
     SliceAppendSlice t (slice_val s1) (slice_val s2) @ stk; E
   {{{ s', RET slice_val s'; is_slice s' t 1 (vs1 ++ vs2) ∗ is_slice_small s2 t q vs2 }}}.
 Proof.
   iIntros (Φ) "[Hs1 Hs2] HΦ".
-Admitted.
+Abort.
 
 (** subslice and produce a new [is_slice_small], dropping the other elements of
 the slice. Most useful in read-only contexts. *)

@@ -718,7 +718,7 @@ Proof.
     rewrite (drop_S _ _ _ Hx_lookup) /=.
     wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
     wp_load.
-    wp_apply (wp_SliceAppend' with "Hdone"); iIntros (s') "Hdone".
+    wp_apply (wp_SliceAppend with "Hdone"); iIntros (s') "Hdone".
     wp_store.
     iApply "HΦ"; iFrame.
     replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
