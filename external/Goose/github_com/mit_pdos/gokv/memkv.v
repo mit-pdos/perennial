@@ -791,16 +791,15 @@ Definition KVClerkPool := struct.decl [
 Definition KVClerkPool__getClerk: val :=
   rec: "KVClerkPool__getClerk" "p" :=
     lock.acquire (struct.loadF KVClerkPool "mu" "p");;
-    let: "ck" := ref (zero_val (refT (struct.t MemKVClerk))) in
     (if: (slice.len (struct.loadF KVClerkPool "freeClerks" "p") = #0)
     then
       lock.release (struct.loadF KVClerkPool "mu" "p");;
-      "ck" <-[refT (struct.t MemKVClerk)] MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p")
+      MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p")
     else
-      "ck" <-[refT (struct.t MemKVClerk)] SliceGet MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") #0;;
+      let: "ck" := SliceGet MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") #0 in
       struct.storeF KVClerkPool "freeClerks" "p" (SliceSkip MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") #1);;
-      lock.release (struct.loadF KVClerkPool "mu" "p"));;
-    ![refT (struct.t MemKVClerk)] "ck".
+      lock.release (struct.loadF KVClerkPool "mu" "p");;
+      "ck").
 
 Definition KVClerkPool__putClerk: val :=
   rec: "KVClerkPool__putClerk" "p" "ck" :=

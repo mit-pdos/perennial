@@ -31,18 +31,11 @@ Local Lemma wp_KVClerkPool__getClerk p γ :
   {{{ (ck:loc), RET #ck; own_MemKVClerk ck γ.(coord_kv_gn) }}}.
 Proof.
   iIntros "#Hcck !> %Φ _ HΦ".
-  Opaque zero_val.
   wp_lam.
   iNamed "Hcck".
   wp_loadField.
   wp_apply (acquire_spec with "Hinv").
   iIntros "[Hlocked Hown]". iNamed "Hown".
-  wp_pures.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (cl_ptr) "Hcl_ptr".
-  Transparent zero_val.
-  simpl.
   wp_pures.
   wp_loadField.
   wp_apply wp_slice_len.
@@ -52,14 +45,12 @@ Proof.
     rewrite bool_decide_true; last first.
     { do 2 f_equal. word. }
     wp_loadField.
-    wp_apply (release_spec'' with "Hinv [-HΦ Hcl_ptr]").
+    wp_apply (release_spec'' with "Hinv [-HΦ]").
     { iFrame. rewrite /own_ConcMemKVClerk. eauto with iFrame. }
     wp_pures.
     wp_loadField.
     wp_apply (wp_MakeMemKVClerk with "Hiscoord").
     iIntros (ck) "Hck".
-    wp_store.
-    wp_load.
     iApply "HΦ".
     eauto.
   - (* using existing clerk *)
@@ -72,7 +63,6 @@ Proof.
     wp_apply (wp_SliceGet (V:=loc) with "[$HfreeClerks_sl]").
     { iPureIntro. done. }
     iIntros "HfreeClerks_sl".
-    wp_store.
 
     wp_loadField.
     wp_apply wp_SliceSkip'.
@@ -88,8 +78,7 @@ Proof.
     { rewrite /own_ConcMemKVClerk. iModIntro. iExists _, _. iFrame.
       iDestruct (slice_small_split _ 1 with "HfreeClerks_sl") as "[_ $]".
       simpl. word. }
-    wp_load.
-    iApply "HΦ".
+    wp_pures. iApply "HΦ".
     eauto.
 Qed.
 
