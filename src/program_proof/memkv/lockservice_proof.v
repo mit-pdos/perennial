@@ -14,17 +14,17 @@ Definition own_LockClerk (ck:loc) (γ:gname) : iProp Σ :=
     "HkvCk" ∷ ck ↦[LockClerk :: "kv"] #kvCk ∗
     own_MemKVClerk kvCk γ.
 
-Lemma wp_MakeLockClerk (coord:u64) γ :
+Lemma wp_MakeLockClerk (coord:u64) cm γ :
   {{{
-       is_coord_server coord γ
+       is_coord_server coord γ ∗ is_ConnMan cm
   }}}
-    MakeLockClerk #coord
+    MakeLockClerk #coord #cm
   {{{
        (ck:loc), RET #ck; own_LockClerk ck γ.(coord_kv_gn)
   }}}
 .
 Proof.
-  iIntros (Φ) "#Hcoord HΦ".
+  iIntros (Φ) "#[Hcoord Hcm] HΦ".
   rewrite /MakeLockClerk.
   wp_lam.
   wp_apply (wp_MakeMemKVClerk with "[$]").

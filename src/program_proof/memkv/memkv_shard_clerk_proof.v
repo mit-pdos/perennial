@@ -6,13 +6,13 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 Section memkv_shard_clerk_proof.
 Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Lemma wp_MakeFreshKVClerk (host:u64) (c:loc) γ :
+Lemma wp_MakeFreshKVShardClerk (host:u64) (c:loc) γ :
   is_shard_server host γ -∗
   is_ConnMan c -∗
   {{{
        True
   }}}
-    MakeFreshKVClerk #host #c
+    MakeFreshKVShardClerk #host #c
   {{{
        (ck:loc), RET #ck; own_MemKVShardClerk ck γ.(kv_gn)
   }}}

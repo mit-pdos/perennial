@@ -53,6 +53,9 @@ Proof.
   wp_apply (wp_NewMap).
   iIntros (peers_ptr) "HpeersMap".
   wp_storeField.
+  wp_apply (wp_MakeConnMan).
+  iIntros (cm) "#Hcm".
+  wp_storeField.
   wp_apply (wp_ref_to).
   { repeat econstructor. }
   iIntros (iptr) "Hi".
@@ -245,7 +248,7 @@ Proof.
     apply lookup_replicate_1 in Hfalse as (Hbad&?). rewrite //= in Hbad.
   }
   iIntros "(Hloop_post&Hi)".
-  iMod (alloc_lock memKVN _ lk (own_MemKVShardServer srv γ) with "[$] [-mu HΦ]").
+  iMod (alloc_lock memKVN _ lk (own_MemKVShardServer srv γ) with "[$] [-mu cm HΦ]").
   {
     iNext. iNamed "Hloop_post".
     iExists _, _, _, _, _, _, _, _.
@@ -262,9 +265,10 @@ Proof.
     iSplit; first done.
     iApply (big_sepS_mono with "Hcids"); by eauto.
   }
-  unshelve (iMod (readonly_alloc_1 with "mu") as "#mu"); [| apply _|].
-  wp_pures. iApply "HΦ". iModIntro.
-  iExists _. iFrame "# ∗".
+  wp_pures. iApply "HΦ". iExists _, _.
+  iMod (readonly_alloc_1 with "mu") as "$".
+  iMod (readonly_alloc_1 with "cm") as "$".
+  by iFrame "# ∗".
 Qed.
 
 End memkv_shard_make_proof.

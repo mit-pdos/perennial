@@ -236,10 +236,12 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
 .
 
 Definition is_MemKVShardServer (s:loc) γ : iProp Σ :=
-  ∃ mu,
+  ∃ mu (cm:loc),
   "#His_srv" ∷ is_RPCServer γ.(rpc_gn) ∗
   "#Hmu" ∷ readonly (s ↦[MemKVShardServer :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock memKVN mu (own_MemKVShardServer s γ)
+  "#Hcm" ∷ readonly (s ↦[MemKVShardServer :: "cm"] #cm) ∗
+  "#HmuInv" ∷ is_lock memKVN mu (own_MemKVShardServer s γ) ∗
+  "#Hiscm" ∷ is_ConnMan cm
 .
 
 End memkv_shard_definitions.

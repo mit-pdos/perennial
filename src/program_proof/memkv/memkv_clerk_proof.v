@@ -20,21 +20,19 @@ Definition own_MemKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   "#HshardServers" ∷ all_are_shard_servers shardMapping γ
 .
 
-Lemma wp_MakeMemKVClerk (coord:u64) γ :
+Lemma wp_MakeMemKVClerk (coord:u64) cm γ :
   {{{
-       is_coord_server coord γ
+       is_coord_server coord γ ∗ is_ConnMan cm
   }}}
-    MakeMemKVClerk #coord
+    MakeMemKVClerk #coord #cm
   {{{
        (ck:loc), RET #ck; own_MemKVClerk ck γ.(coord_kv_gn)
   }}}
 .
 Proof.
-  iIntros (Φ) "#Hcoord HΦ".
+  iIntros (Φ) "[#Hcoord #Hcm] HΦ".
   rewrite /MakeMemKVClerk.
   wp_lam.
-  wp_apply wp_MakeConnMan.
-  iIntros (c) "#Hc_own".
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
   iIntros (cck) "Hcck".
@@ -63,7 +61,7 @@ Proof.
   wp_storeField.
   wp_loadField.
   wp_apply (wp_MemKVCoordClerk__GetShardMap with "[c host]").
-  { rewrite /own_MemKVCoordClerk. iExists _, _, _. iFrame "c host Hc_own".
+  { rewrite /own_MemKVCoordClerk. iExists _, _, _. iFrame "c host Hcm".
     iSplit; last first.
     { iExact "Hcoord". }
     done.
@@ -75,7 +73,7 @@ Proof.
   iModIntro. iApply "HΦ".
   iExists _, _, _, _. iFrame.
   iFrame "% #". iExists _, _, _.
-  iFrame "Hmap_set Hc_own".
+  iFrame "Hmap_set Hcm".
   iDestruct (struct_fields_split with "Hset") as "HH".
   iNamed "HH". iFrame.
   rewrite big_sepM_empty; done.

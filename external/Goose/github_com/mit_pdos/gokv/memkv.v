@@ -297,8 +297,8 @@ Definition MemKVShardClerk := struct.decl [
   "c" :: struct.ptrT connman.ConnMan
 ].
 
-Definition MakeFreshKVClerk: val :=
-  rec: "MakeFreshKVClerk" "host" "c" :=
+Definition MakeFreshKVShardClerk: val :=
+  rec: "MakeFreshKVShardClerk" "host" "c" :=
     let: "ck" := struct.alloc MemKVShardClerk (zero_val (struct.t MemKVShardClerk)) in
     struct.storeF MemKVShardClerk "host" "ck" "host";;
     struct.storeF MemKVShardClerk "c" "ck" "c";;
@@ -380,7 +380,8 @@ Definition MemKVShardServer := struct.decl [
   "nextCID" :: uint64T;
   "shardMap" :: slice.T boolT;
   "kvss" :: slice.T KvMap;
-  "peers" :: mapT (struct.ptrT MemKVShardClerk)
+  "peers" :: mapT (struct.ptrT MemKVShardClerk);
+  "cm" :: struct.ptrT connman.ConnMan
 ].
 
 Definition PutArgs := struct.decl [
@@ -512,8 +513,7 @@ Definition MemKVShardServer__MoveShardRPC: val :=
     let: (<>, "ok") := MapGet (struct.loadF MemKVShardServer "peers" "s") (struct.loadF MoveShardRequest "Dst" "args") in
     (if: ~ "ok"
     then
-      let: "c" := connman.MakeConnMan #() in
-      let: "ck" := MakeFreshKVClerk (struct.loadF MoveShardRequest "Dst" "args") "c" in
+      let: "ck" := MakeFreshKVShardClerk (struct.loadF MoveShardRequest "Dst" "args") (struct.loadF MemKVShardServer "cm" "s") in
       MapInsert (struct.loadF MemKVShardServer "peers" "s") (struct.loadF MoveShardRequest "Dst" "args") "ck";;
       #()
     else #());;
@@ -537,6 +537,7 @@ Definition MakeMemKVShardServer: val :=
     struct.storeF MemKVShardServer "shardMap" "srv" (NewSlice boolT NSHARD);;
     struct.storeF MemKVShardServer "kvss" "srv" (NewSlice KvMap NSHARD);;
     struct.storeF MemKVShardServer "peers" "srv" (NewMap (struct.ptrT MemKVShardClerk));;
+    struct.storeF MemKVShardServer "cm" "srv" (connman.MakeConnMan #());;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       SliceSet boolT (struct.loadF MemKVShardServer "shardMap" "srv") (![uint64T] "i") "is_init";;
@@ -610,7 +611,7 @@ Definition ShardClerkSet__GetClerk: val :=
     let: ("ck", "ok") := MapGet (struct.loadF ShardClerkSet "cls" "s") "host" in
     (if: ~ "ok"
     then
-      let: "ck2" := MakeFreshKVClerk "host" (struct.loadF ShardClerkSet "c" "s") in
+      let: "ck2" := MakeFreshKVShardClerk "host" (struct.loadF ShardClerkSet "c" "s") in
       MapInsert (struct.loadF ShardClerkSet "cls" "s") "host" "ck2";;
       "ck2"
     else "ck").
@@ -767,14 +768,13 @@ Definition MemKVClerk__Add: val :=
     MemKVCoordClerk__AddShardServer (struct.loadF MemKVClerk "coordCk" "ck") "host".
 
 Definition MakeMemKVClerk: val :=
-  rec: "MakeMemKVClerk" "coord" :=
-    let: "c" := connman.MakeConnMan #() in
+  rec: "MakeMemKVClerk" "coord" "cm" :=
     let: "cck" := struct.alloc MemKVCoordClerk (zero_val (struct.t MemKVCoordClerk)) in
     let: "ck" := struct.alloc MemKVClerk (zero_val (struct.t MemKVClerk)) in
     struct.storeF MemKVClerk "coordCk" "ck" "cck";;
     struct.storeF MemKVCoordClerk "host" (struct.loadF MemKVClerk "coordCk" "ck") "coord";;
-    struct.storeF MemKVCoordClerk "c" (struct.loadF MemKVClerk "coordCk" "ck") "c";;
-    struct.storeF MemKVClerk "shardClerks" "ck" (MakeShardClerkSet "c");;
+    struct.storeF MemKVCoordClerk "c" (struct.loadF MemKVClerk "coordCk" "ck") "cm";;
+    struct.storeF MemKVClerk "shardClerks" "ck" (MakeShardClerkSet "cm");;
     struct.storeF MemKVClerk "shardMap" "ck" (MemKVCoordClerk__GetShardMap (struct.loadF MemKVClerk "coordCk" "ck"));;
     "ck".
 
@@ -785,6 +785,7 @@ Definition MemKVClerkPtr: ty := struct.ptrT MemKVClerk.
 Definition KVClerkPool := struct.decl [
   "mu" :: lockRefT;
   "freeClerks" :: slice.T MemKVClerkPtr;
+  "cm" :: struct.ptrT connman.ConnMan;
   "coord" :: HostName
 ].
 
@@ -795,7 +796,7 @@ Definition KVClerkPool__getClerk: val :=
     (if: ("n" = #0)
     then
       lock.release (struct.loadF KVClerkPool "mu" "p");;
-      MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p")
+      MakeMemKVClerk (struct.loadF KVClerkPool "coord" "p") (struct.loadF KVClerkPool "cm" "p")
     else
       let: "ck" := SliceGet MemKVClerkPtr (struct.loadF KVClerkPool "freeClerks" "p") ("n" - #1) in
       struct.storeF KVClerkPool "freeClerks" "p" (SliceTake (struct.loadF KVClerkPool "freeClerks" "p") ("n" - #1));;
@@ -842,9 +843,10 @@ Definition KVClerkPool__MGet: val :=
     "vals".
 
 Definition MakeKVClerkPool: val :=
-  rec: "MakeKVClerkPool" "coord" :=
+  rec: "MakeKVClerkPool" "coord" "cm" :=
     let: "p" := struct.alloc KVClerkPool (zero_val (struct.t KVClerkPool)) in
     struct.storeF KVClerkPool "mu" "p" (lock.new #());;
     struct.storeF KVClerkPool "coord" "p" "coord";;
+    struct.storeF KVClerkPool "cm" "p" "cm";;
     struct.storeF KVClerkPool "freeClerks" "p" (NewSlice MemKVClerkPtr #0);;
     "p".

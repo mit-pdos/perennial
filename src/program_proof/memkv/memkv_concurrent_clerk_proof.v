@@ -17,11 +17,13 @@ Local Definition own_ConcMemKVClerk (p:loc) (γ:gname) : iProp Σ :=
 
 (* FIXME: imports are screwed somewhere, [val] is shadowed the wrong way. *)
 Definition is_ConcMemKVClerk (p_ptr:loc) (γ:gname) : iProp Σ :=
-  ∃ (coord:u64) mu (γcoord:server_chan_gnames),
+  ∃ (coord:u64) mu (cm:loc) (γcoord:server_chan_gnames),
   "#Hmu" ∷ readonly (p_ptr ↦[KVClerkPool :: "mu"] mu) ∗
   "#Hcoord" ∷ readonly (p_ptr ↦[KVClerkPool :: "coord"] #coord) ∗
+  "#Hcm" ∷ readonly (p_ptr ↦[KVClerkPool :: "cm"] #cm) ∗
   "#Hiscoord" ∷ is_coord_server coord (Build_memkv_coord_names γcoord γ) ∗
-  "#Hinv" ∷ is_lock nroot mu (own_ConcMemKVClerk p_ptr γ)
+  "#Hinv" ∷ is_lock nroot mu (own_ConcMemKVClerk p_ptr γ) ∗
+  "#Hiscm" ∷ is_ConnMan cm
 .
 
 Local Lemma wp_KVClerkPool__getClerk p γ :
@@ -49,7 +51,8 @@ Proof.
     { iFrame. rewrite /own_ConcMemKVClerk. eauto with iFrame. }
     wp_pures.
     wp_loadField.
-    wp_apply (wp_MakeMemKVClerk with "Hiscoord").
+    wp_loadField.
+    wp_apply (wp_MakeMemKVClerk with "[$Hiscoord $Hiscm]").
     iIntros (ck) "Hck".
     iApply "HΦ".
     eauto.
@@ -127,19 +130,21 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_MakeKVClerkPool coord γ :
+Lemma wp_MakeKVClerkPool coord cm γ :
   is_coord_server coord γ -∗
+  is_ConnMan cm -∗
   {{{ True }}}
-    MakeKVClerkPool #coord
+    MakeKVClerkPool #coord #cm
   {{{ (p:loc), RET #p; is_ConcMemKVClerk p γ.(coord_kv_gn) }}}.
 Proof.
-  iIntros "#Hcoord !> %Φ _ HΦ". wp_lam.
+  iIntros "#Hcoord #Hcm !> %Φ _ HΦ". wp_lam.
   wp_apply (wp_allocStruct).
   { Transparent slice.T. val_ty. Opaque slice.T. }
   iIntros (l) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH". iNamed "HH".
   wp_apply wp_new_free_lock.
   iIntros (mu) "Hfreelock".
+  wp_storeField.
   wp_storeField.
   wp_storeField.
   wp_apply (wp_NewSlice (V:=loc)).
@@ -150,10 +155,11 @@ Proof.
   iIntros "HfreeClerks".
   iMod (alloc_lock with "Hfreelock [HfreeClerks HfreeClerks_sl]") as "Hlock"; last first.
   { wp_pures. iApply "HΦ". rewrite /is_ConcMemKVClerk.
-    iExists coord, #mu, γ.(coord_urpc_gn). iFrame "Hcoord Hlock".
+    iExists coord, #mu, _, γ.(coord_urpc_gn). iFrame "Hcoord Hlock".
     iMod (readonly_alloc_1 with "mu") as "$".
     iMod (readonly_alloc_1 with "coord") as "$".
-    done. }
+    iMod (readonly_alloc_1 with "cm") as "$".
+    eauto with iFrame. }
   rewrite /own_ConcMemKVClerk. iExists _, _. iFrame.
   rewrite big_sepL_nil. done.
 Qed.

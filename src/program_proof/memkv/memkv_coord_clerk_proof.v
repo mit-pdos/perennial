@@ -127,7 +127,7 @@ Proof.
   wp_if_destruct.
   { (* Make fresh clerk*)
     wp_loadField.
-    wp_apply (wp_MakeFreshKVClerk with "His_shard Hc_own").
+    wp_apply (wp_MakeFreshKVShardClerk with "His_shard Hc_own").
     iIntros (ck) "HownCk".
     wp_pures.
     wp_loadField.

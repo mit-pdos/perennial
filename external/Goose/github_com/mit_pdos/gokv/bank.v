@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+From Goose Require github_com.mit_pdos.gokv.connman.
 From Goose Require github_com.mit_pdos.gokv.lockservice.
 From Goose Require github_com.mit_pdos.gokv.memkv.
 
@@ -61,10 +62,10 @@ Definition BankClerk__SimpleAudit: val :=
     "sum".
 
 Definition MakeBankClerk: val :=
-  rec: "MakeBankClerk" "lockhost" "kvhost" "acc1" "acc2" "cid" :=
+  rec: "MakeBankClerk" "lockhost" "kvhost" "cm" "acc1" "acc2" "cid" :=
     let: "bck" := struct.alloc BankClerk (zero_val (struct.t BankClerk)) in
-    struct.storeF BankClerk "lck" "bck" (lockservice.MakeLockClerk "lockhost");;
-    struct.storeF BankClerk "kvck" "bck" (memkv.MakeMemKVClerk "kvhost");;
+    struct.storeF BankClerk "lck" "bck" (lockservice.MakeLockClerk "lockhost" "cm");;
+    struct.storeF BankClerk "kvck" "bck" (memkv.MakeMemKVClerk "kvhost" "cm");;
     struct.storeF BankClerk "acc1" "bck" "acc1";;
     struct.storeF BankClerk "acc2" "bck" "acc2";;
     "bck".

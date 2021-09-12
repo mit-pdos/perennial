@@ -3,7 +3,7 @@ From Perennial.goose_lang Require Import lang notation typing lifting.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list_slice.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
-From Goose.github_com.mit_pdos.gokv Require Import memkv.
+From Goose.github_com.mit_pdos.gokv Require Import memkv connman.
 
 
 From Perennial.program_proof Require Import grove_prelude.
@@ -23,7 +23,8 @@ Definition coord_boot (host : u64) (init : u64) : expr :=
   MemKVCoord__Start "s" #host.
 
 Definition client_boot (coord : u64) : expr :=
-  MakeMemKVClerk #coord.
+  let: "cm" := MakeConnMan #() in
+  MakeMemKVClerk #coord "cm".
 
 From Perennial.goose_lang Require Import adequacy dist_adequacy grove_ffi_adequacy.
 From Perennial.goose_lang.ffi Require Import grove_ffi_adequacy.
@@ -128,9 +129,12 @@ Proof.
   {
     iIntros (Hcrash local_names).
     iModIntro. iExists (λ _, True%I).
-    rewrite /client_boot.
-    wp_apply (wp_MakeMemKVClerk with "[]").
+    rewrite /client_boot. iEval simpl.
+    wp_apply wp_MakeConnMan.
+    iIntros (cm) "Hcm".
+    wp_apply (wp_MakeMemKVClerk with "[Hcm]").
     {
+      iFrame "Hcm".
       iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. f_equal.
     }
     eauto.

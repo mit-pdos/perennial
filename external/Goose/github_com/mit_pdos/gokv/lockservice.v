@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+From Goose Require github_com.mit_pdos.gokv.connman.
 From Goose Require github_com.mit_pdos.gokv.memkv.
 
 Definition LockClerk := struct.decl [
@@ -19,7 +20,7 @@ Definition LockClerk__Unlock: val :=
     memkv.MemKVClerk__Put (struct.loadF LockClerk "kv" "ck") "key" (NewSlice byteT #0).
 
 Definition MakeLockClerk: val :=
-  rec: "MakeLockClerk" "lockhost" :=
+  rec: "MakeLockClerk" "lockhost" "cm" :=
     struct.new LockClerk [
-      "kv" ::= memkv.MakeMemKVClerk "lockhost"
+      "kv" ::= memkv.MakeMemKVClerk "lockhost" "cm"
     ].
