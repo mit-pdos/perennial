@@ -823,6 +823,13 @@ Definition KVClerkPool__Get: val :=
     KVClerkPool__putClerk "p" "ck";;
     "value".
 
+Definition KVClerkPool__ConditionalPut: val :=
+  rec: "KVClerkPool__ConditionalPut" "p" "key" "expectedValue" "newValue" :=
+    let: "ck" := KVClerkPool__getClerk "p" in
+    let: "ret" := MemKVClerk__ConditionalPut "ck" "key" "expectedValue" "newValue" in
+    KVClerkPool__putClerk "p" "ck";;
+    "ret".
+
 (* returns a slice of "values" (which are byte slices) in the same order as the
    keys passed in as input
    FIXME: benchmark *)

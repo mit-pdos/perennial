@@ -8,19 +8,19 @@ Section memkv_concurrent_clerk_proof.
 
 Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ}.
 
-Local Definition own_ConcMemKVClerk (p:loc) (γ:memkv_coord_names) : iProp Σ :=
+Local Definition own_ConcMemKVClerk (p:loc) (γ:gname) : iProp Σ :=
   ∃ (freeClerks_sl:Slice.t) (freeClerks:list loc),
   "HfreeClerks" ∷ p ↦[KVClerkPool :: "freeClerks"] (slice_val freeClerks_sl) ∗
   "HfreeClerks_sl" ∷ is_slice (V:=loc) freeClerks_sl MemKVClerkPtr 1 freeClerks ∗
-  "HfreeClerks_own" ∷ [∗ list] ck ∈ freeClerks, own_MemKVClerk ck γ.(coord_kv_gn)
+  "HfreeClerks_own" ∷ [∗ list] ck ∈ freeClerks, own_MemKVClerk ck γ
 .
 
 (* FIXME: imports are screwed somewhere, [val] is shadowed the wrong way. *)
-Definition is_ConcMemKVClerk (p_ptr:loc) (γ:memkv_coord_names) : iProp Σ :=
-  ∃ (coord:u64) mu,
+Definition is_ConcMemKVClerk (p_ptr:loc) (γ:gname) : iProp Σ :=
+  ∃ (coord:u64) mu (γcoord:server_chan_gnames),
   "#Hmu" ∷ readonly (p_ptr ↦[KVClerkPool :: "mu"] mu) ∗
   "#Hcoord" ∷ readonly (p_ptr ↦[KVClerkPool :: "coord"] #coord) ∗
-  "#Hiscoord" ∷ is_coord_server coord γ ∗
+  "#Hiscoord" ∷ is_coord_server coord (Build_memkv_coord_names γcoord γ) ∗
   "#Hinv" ∷ is_lock nroot mu (own_ConcMemKVClerk p_ptr γ)
 .
 
@@ -28,7 +28,7 @@ Local Lemma wp_KVClerkPool__getClerk p γ :
   is_ConcMemKVClerk p γ -∗
   {{{ True }}}
     KVClerkPool__getClerk #p
-  {{{ (ck:loc), RET #ck; own_MemKVClerk ck γ.(coord_kv_gn) }}}.
+  {{{ (ck:loc), RET #ck; own_MemKVClerk ck γ }}}.
 Proof.
   iIntros "#Hcck !> %Φ _ HΦ".
   wp_lam.
@@ -99,7 +99,7 @@ Qed.
 
 Local Lemma wp_KVClerkPool__putClerk p γ ck :
   is_ConcMemKVClerk p γ -∗
-  {{{ own_MemKVClerk ck γ.(coord_kv_gn) }}}
+  {{{ own_MemKVClerk ck γ }}}
     KVClerkPool__putClerk #p #ck
   {{{ RET #(); True }}}.
 Proof.
@@ -125,6 +125,217 @@ Proof.
     done.
   }
   by iApply "HΦ".
+Qed.
+
+Lemma wp_MakeKVClerkPool coord γ :
+  is_coord_server coord γ -∗
+  {{{ True }}}
+    MakeKVClerkPool #coord
+  {{{ (p:loc), RET #p; is_ConcMemKVClerk p γ.(coord_kv_gn) }}}.
+Proof.
+  iIntros "#Hcoord !> %Φ _ HΦ". wp_lam.
+  wp_apply (wp_allocStruct).
+  { Transparent slice.T. val_ty. Opaque slice.T. }
+  iIntros (l) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "HH". iNamed "HH".
+  wp_apply wp_new_free_lock.
+  iIntros (mu) "Hfreelock".
+  wp_storeField.
+  wp_storeField.
+  wp_apply (wp_NewSlice (V:=loc)).
+  iIntros (freeClerks_sl) "HfreeClerks_sl".
+  (* FIXME why do we have to apply storeField by hand here? *)
+  wp_apply (wp_storeField with "freeClerks").
+  { rewrite /field_ty. simpl. val_ty. }
+  iIntros "HfreeClerks".
+  iMod (alloc_lock with "Hfreelock [HfreeClerks HfreeClerks_sl]") as "Hlock"; last first.
+  { wp_pures. iApply "HΦ". rewrite /is_ConcMemKVClerk.
+    iExists coord, #mu, γ.(coord_urpc_gn). iFrame "Hcoord Hlock".
+    iMod (readonly_alloc_1 with "mu") as "$".
+    iMod (readonly_alloc_1 with "coord") as "$".
+    done. }
+  rewrite /own_ConcMemKVClerk. iExists _, _. iFrame.
+  rewrite big_sepL_nil. done.
+Qed.
+
+Lemma wp_KVClerkPool__Get (p:loc) (γ:gname) (key:u64) :
+⊢ {{{ is_ConcMemKVClerk p γ }}}
+  <<< ∀∀ v, kvptsto γ key v >>>
+    KVClerkPool__Get #p #key @ ∅
+  <<< kvptsto γ key v >>>
+  {{{ val_sl q, RET slice_val val_sl;
+      is_slice_small val_sl byteT q%Qp v
+  }}}.
+Proof.
+  iIntros "!#" (Φ) "#Hp Hatomic". wp_lam.
+  wp_apply (wp_KVClerkPool__getClerk with "Hp").
+  iIntros (ck) "Hck".
+  wp_apply (wp_MemKVClerk__Get with "Hck").
+  iMod "Hatomic" as (v) "[Hkv HΦ]".
+  iModIntro. iExists v. iFrame "Hkv".
+  iIntros "Hkv". iMod ("HΦ" with "Hkv") as "HΦ".
+  iIntros "!> %val_sl %q [Hck Hsl]".
+  wp_apply (wp_KVClerkPool__putClerk with "Hp Hck").
+  wp_pures. iApply "HΦ". done.
+Qed.
+
+(* Sequential spec (for when you have full ownership of the [kvptsto]) *)
+Lemma wp_KVClerkPool__Get_seq (p:loc) (γ:gname) (key:u64) (v:list u8) :
+  {{{ is_ConcMemKVClerk p γ ∗ kvptsto γ key v }}}
+    KVClerkPool__Get #p #key @ ⊤
+  {{{ val_sl q, RET slice_val val_sl;
+      kvptsto γ key v ∗ is_slice_small val_sl byteT q%Qp v
+  }}}.
+Proof.
+  iIntros (Φ) "(Hclerk & Hkey) HΦ".
+  iApply (wp_KVClerkPool__Get with "Hclerk").
+  iApply fupd_mask_intro; first done. iNext.
+  iIntros "Hclose". iExists _. iFrame "Hkey".
+  iIntros "Hkey". iMod "Hclose" as "_". iModIntro.
+  iIntros (??) "[Hclerk Hsl]". iApply "HΦ". iFrame.
+Qed.
+
+Lemma wp_KVClerkPool__Put (p:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8) :
+⊢ {{{ is_ConcMemKVClerk p γ ∗ readonly (is_slice_small val_sl byteT 1 v) }}}
+  <<< ∀∀ oldv, kvptsto γ key oldv >>>
+    KVClerkPool__Put #p #key (slice_val val_sl) @ ∅
+  <<< kvptsto γ key v >>>
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros "!#" (Φ) "#[Hp Hsl] Hatomic". wp_lam.
+  wp_apply (wp_KVClerkPool__getClerk with "Hp").
+  iIntros (ck) "Hck".
+  wp_apply (wp_MemKVClerk__Put with "[$Hck $Hsl]").
+  iMod "Hatomic" as (oldv) "[Hkv HΦ]".
+  iModIntro. iExists oldv. iFrame "Hkv".
+  iIntros "Hkv". iMod ("HΦ" with "Hkv") as "HΦ".
+  iIntros "!> Hck".
+  wp_apply (wp_KVClerkPool__putClerk with "Hp Hck").
+  iApply "HΦ". done.
+Qed.
+
+Lemma wp_KVClerkPool__Put_seq (p:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v oldv:list u8) :
+  {{{ is_ConcMemKVClerk p γ ∗ readonly (is_slice_small val_sl byteT 1 v) ∗ kvptsto γ key oldv }}}
+    KVClerkPool__Put #p #key (slice_val val_sl) @ ⊤
+  {{{ RET #(); kvptsto γ key v }}}.
+Proof.
+  iIntros (Φ) "(Hclerk & Hsl & Hkey) HΦ".
+  iApply (wp_KVClerkPool__Put with "[$Hclerk $Hsl]").
+  iApply fupd_mask_intro; first done. iNext.
+  iIntros "Hclose". iExists _. iFrame "Hkey".
+  iIntros "Hkey". iMod "Hclose" as "_". iModIntro.
+  iIntros "_". iApply "HΦ". iFrame.
+Qed.
+
+Lemma wp_KVClerkPool__ConditionalPut (p:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
+⊢ {{{ is_ConcMemKVClerk p γ ∗
+      readonly (is_slice_small expv_sl byteT 1 expv) ∗
+      readonly (is_slice_small newv_sl byteT 1 newv) }}}
+  <<< ∀∀ oldv, kvptsto γ key oldv >>>
+    KVClerkPool__ConditionalPut #p #key (slice_val expv_sl) (slice_val newv_sl) @ ∅
+  <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>
+  {{{ RET #(bool_decide (expv = oldv)); True }}}.
+Proof.
+  iIntros "!#" (Φ) "#[Hp Hsl] Hatomic". wp_lam.
+  wp_apply (wp_KVClerkPool__getClerk with "Hp").
+  iIntros (ck) "Hck".
+  wp_apply (wp_MemKVClerk__ConditionalPut with "[$Hck $Hsl]").
+  iMod "Hatomic" as (oldv) "[Hkv HΦ]".
+  iModIntro. iExists oldv. iFrame "Hkv".
+  iIntros "Hkv". iMod ("HΦ" with "Hkv") as "HΦ".
+  iIntros "!> Hck".
+  wp_apply (wp_KVClerkPool__putClerk with "Hp Hck").
+  wp_pures. iApply "HΦ". done.
+Qed.
+
+Lemma wp_KVClerkPool__MGet (p:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64 * list u8)) q :
+  {{{ is_ConcMemKVClerk p γ ∗
+      is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
+      [∗ list] key_val ∈ keys_vals, kvptsto γ key_val.1 key_val.2
+  }}}
+    KVClerkPool__MGet #p (slice_val keys_sl) @ ⊤
+  {{{ (vals_sl:Slice.t) (val_sls:list Slice.t), RET slice_val vals_sl;
+      is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
+      is_slice_small vals_sl (slice.T byteT) 1 val_sls ∗
+      [∗ list] key_val;sl ∈ keys_vals;val_sls, kvptsto γ key_val.1 key_val.2 ∗
+        readonly (is_slice_small sl byteT 1 key_val.2)
+  }}}.
+Proof using Type*.
+  iIntros (Φ) "(#Hclerk & Hkeys_sl & Hkeys) HΦ". wp_lam.
+  wp_apply wp_slice_len.
+  wp_apply (wp_NewSlice (V:=Slice.t)).
+  iIntros (vals_sl) "Hvals_sl".
+  wp_apply wp_slice_len.
+
+  iDestruct (is_slice_small_sz with "Hkeys_sl") as %Hlen.
+  rewrite fmap_length in Hlen.
+  iDestruct (is_slice_to_small with "Hvals_sl") as "Hvals_sl".
+  iEval (rewrite /is_slice_small /slice.is_slice_small ?untype_replicate ?replicate_length)
+    in "Hkeys_sl Hvals_sl".
+  iDestruct "Hkeys_sl" as "[Hkeys_sl %Hkeys_sl_len]".
+  iDestruct "Hvals_sl" as "[Hvals_sl %Hvals_sl_len]".
+  wp_apply (wp_Multipar (X:=(u64 * list u8))
+    (λ i '(key, val),
+      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T]{q} #key ∗
+      kvptsto γ key val ∗
+      (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val Slice.nil)%I
+    (λ i kv, ∃ (val_sl:Slice.t), let '(key, val) := kv in
+      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T]{q} #key ∗
+      kvptsto γ key val ∗
+      (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val val_sl ∗
+      readonly (is_slice_small val_sl byteT 1 val))%I
+    keys_sl.(Slice.sz)
+    keys_vals
+    with "[] [Hkeys_sl Hkeys Hvals_sl]").
+  { done. }
+  {
+    iIntros "!> %i %kv %Hi Hpre". destruct kv as [key val].
+    iDestruct "Hpre" as "(Hkey_l & Hkey & Hval_l)".
+    wp_pures.
+
+    (* Breaking the SLiceGet (and later SliceSet) abstraction -- we only
+       own that one element, not the entire slice! *)
+    rewrite /SliceGet. wp_pures.
+    wp_apply wp_slice_ptr. wp_pures.
+    replace (int.nat i : Z) with (int.Z i) by word.
+    wp_load.
+
+    wp_apply (wp_KVClerkPool__Get_seq with "[$Hkey //]").
+    iIntros (val_sl qval_sl) "(Hkey & Hval_sl)".
+
+    rewrite /SliceSet. wp_pures.
+    wp_apply wp_slice_ptr. wp_pures.
+    wp_store.
+
+    iExists _.
+    iMod (readonly_alloc with "[Hval_sl]") as "$"; first done.
+    eauto with iFrame. }
+  { rewrite /array /list.untype !big_sepL_fmap.
+    iDestruct (big_sepL2_sepL_2 with "Hkeys_sl Hvals_sl") as "Hsl".
+    { rewrite Hlen replicate_length //. }
+    rewrite big_sepL2_replicate_r //.
+    iCombine "Hkeys Hsl" as "H". rewrite -big_sepL_sep.
+    iApply (big_sepL_impl with "H").
+    iIntros "!> %i %kv %Hi (Hkey & Hkey_sl & Hval_sl)".
+    destruct kv as [key value].
+    iFrame. }
+  iIntros "H".
+  wp_pures.
+  iDestruct (big_sepL_exists_to_sepL2 with "H") as (xs) "H".
+  iDestruct (big_sepL2_length with "H") as %Hlenxs.
+  iApply ("HΦ" $! vals_sl xs). iModIntro.
+  iEval (rewrite {1 2}/is_slice_small /slice.is_slice_small).
+  rewrite /array /list.untype !big_sepL_fmap !fmap_length.
+  iEval (rewrite [(_ ∗ ⌜length keys_vals = _⌝)%I]comm -!assoc).
+  iSplit; first done.
+  iEval (rewrite !assoc [(_ ∗ ⌜length xs = _⌝)%I]comm -!assoc).
+  rewrite -Hlenxs Hlen. iSplit; first done.
+  iEval (rewrite [(([∗ list] k↦y ∈ xs, _) ∗ _)%I]comm).
+  rewrite -big_sepL2_sep_sepL_r.
+  rewrite -big_sepL2_sep_sepL_l.
+  iApply (big_sepL2_impl with "H").
+  iIntros "!> %i %kv %val_sl %Hi1 %Hi2". destruct kv as [key val].
+  iIntros "(Hkeys_sl & Hkey & Hvals_sl & Hval_sl)". iFrame.
 Qed.
 
 End memkv_concurrent_clerk_proof.

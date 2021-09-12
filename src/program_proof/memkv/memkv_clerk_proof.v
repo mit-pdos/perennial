@@ -81,7 +81,7 @@ Proof.
   rewrite big_sepM_empty; done.
 Qed.
 
-Lemma KVClerk__Get (ck:loc) (γ:gname) (key:u64) :
+Lemma wp_MemKVClerk__Get (ck:loc) (γ:gname) (key:u64) :
 ⊢ {{{ own_MemKVClerk ck γ }}}
   <<< ∀∀ v, kvptsto γ key v >>>
     MemKVClerk__Get #ck #key @ ∅
@@ -186,7 +186,7 @@ Proof using Type*.
 Qed.
 
 (* Sequential spec *)
-Lemma KVClerk__Get_seq (ck:loc) (γ:gname) (key:u64) (v:list u8) :
+Lemma wp_MemKVClerk__Get_seq (ck:loc) (γ:gname) (key:u64) (v:list u8) :
   {{{ own_MemKVClerk ck γ ∗ kvptsto γ key v }}}
     MemKVClerk__Get #ck #key @ ⊤
   {{{ val_sl q, RET slice_val val_sl;
@@ -194,107 +194,14 @@ Lemma KVClerk__Get_seq (ck:loc) (γ:gname) (key:u64) (v:list u8) :
   }}}.
 Proof using Type*.
   iIntros (Φ) "(Hclerk & Hkey) HΦ".
-  iApply (KVClerk__Get with "Hclerk").
+  iApply (wp_MemKVClerk__Get with "Hclerk").
   iApply fupd_mask_intro; first done. iNext.
   iIntros "Hclose". iExists _. iFrame "Hkey".
   iIntros "Hkey". iMod "Hclose" as "_". iModIntro.
   iIntros (??) "[Hclerk Hsl]". iApply "HΦ". iFrame.
 Qed.
 
-(*
-Lemma KVClerk__MGet (ck:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64 * list u8)) q :
-  {{{ □ own_MemKVClerk ck γ (* FIXME this cannot be satisfied *) ∗
-      is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
-      [∗ list] key_val ∈ keys_vals, kvptsto γ key_val.1 key_val.2
-  }}}
-    MemKVClerk__MGet #ck (slice_val keys_sl) @ ⊤
-  {{{ (vals_sl:Slice.t) (val_sls:list Slice.t), RET slice_val vals_sl;
-      own_MemKVClerk ck γ ∗
-      is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
-      is_slice_small vals_sl (slice.T byteT) 1 val_sls ∗
-      [∗ list] key_val;sl ∈ keys_vals;val_sls, kvptsto γ key_val.1 key_val.2 ∗
-        readonly (is_slice_small sl byteT 1 key_val.2)
-  }}}.
-Proof using Type*.
-  iIntros (Φ) "(#Hclerk & Hkeys_sl & Hkeys) HΦ". wp_lam.
-  wp_apply wp_slice_len.
-  wp_apply (wp_NewSlice (V:=Slice.t)).
-  iIntros (vals_sl) "Hvals_sl".
-  wp_apply wp_slice_len.
-
-  iDestruct (is_slice_small_sz with "Hkeys_sl") as %Hlen.
-  rewrite fmap_length in Hlen.
-  iDestruct (is_slice_to_small with "Hvals_sl") as "Hvals_sl".
-  iEval (rewrite /is_slice_small /slice.is_slice_small ?untype_replicate ?replicate_length)
-    in "Hkeys_sl Hvals_sl".
-  iDestruct "Hkeys_sl" as "[Hkeys_sl %Hkeys_sl_len]".
-  iDestruct "Hvals_sl" as "[Hvals_sl %Hvals_sl_len]".
-  wp_apply (wp_Multipar (X:=(u64 * list u8))
-    (λ i '(key, val),
-      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T]{q} #key ∗
-      kvptsto γ key val ∗
-      (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val Slice.nil)%I
-    (λ i kv, ∃ (val_sl:Slice.t), let '(key, val) := kv in
-      (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T]{q} #key ∗
-      kvptsto γ key val ∗
-      (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val val_sl ∗
-      readonly (is_slice_small val_sl byteT 1 val))%I
-    keys_sl.(Slice.sz)
-    keys_vals
-    with "[] [Hkeys_sl Hkeys Hvals_sl]").
-  { done. }
-  {
-    iIntros "!> %i %kv %Hi Hpre". destruct kv as [key val].
-    iDestruct "Hpre" as "(Hkey_l & Hkey & Hval_l)".
-    wp_pures.
-
-    (* Breaking the SLiceGet (and later SliceSet) abstraction -- we only
-       own that one element, not the entire slice! *)
-    rewrite /SliceGet. wp_pures.
-    wp_apply wp_slice_ptr. wp_pures.
-    replace (int.nat i : Z) with (int.Z i) by word.
-    wp_load.
-
-    wp_apply (KVClerk__Get_seq with "[$Hkey //]").
-    iIntros (val_sl qval_sl) "(_ & Hkey & Hval_sl)".
-
-    rewrite /SliceSet. wp_pures.
-    wp_apply wp_slice_ptr. wp_pures.
-    wp_store.
-
-    iExists _.
-    iMod (readonly_alloc with "[Hval_sl]") as "$"; first done.
-    eauto with iFrame. }
-  { rewrite /array /list.untype !big_sepL_fmap.
-    iDestruct (big_sepL2_sepL_2 with "Hkeys_sl Hvals_sl") as "Hsl".
-    { rewrite Hlen replicate_length //. }
-    rewrite big_sepL2_replicate_r //.
-    iCombine "Hkeys Hsl" as "H". rewrite -big_sepL_sep.
-    iApply (big_sepL_impl with "H").
-    iIntros "!> %i %kv %Hi (Hkey & Hkey_sl & Hval_sl)".
-    destruct kv as [key value].
-    iFrame. }
-  iIntros "H".
-  wp_pures.
-  iDestruct (big_sepL_exists_to_sepL2 with "H") as (xs) "H".
-  iDestruct (big_sepL2_length with "H") as %Hlenxs.
-  iApply ("HΦ" $! vals_sl xs). iFrame "Hclerk". iModIntro.
-  iEval (rewrite {1 2}/is_slice_small /slice.is_slice_small).
-  rewrite /array /list.untype !big_sepL_fmap !fmap_length.
-  iEval (rewrite [(_ ∗ ⌜length keys_vals = _⌝)%I]comm -!assoc).
-  iSplit; first done.
-  iEval (rewrite !assoc [(_ ∗ ⌜length xs = _⌝)%I]comm -!assoc).
-  rewrite -Hlenxs Hlen. iSplit; first done.
-  iEval (rewrite [(([∗ list] k↦y ∈ xs, _) ∗ _)%I]comm).
-  rewrite -big_sepL2_sep_sepL_r.
-  rewrite -big_sepL2_sep_sepL_l.
-  iApply (big_sepL2_impl with "H").
-  iIntros "!> %i %kv %val_sl %Hi1 %Hi2". destruct kv as [key val].
-  iIntros "(Hkeys_sl & Hkey & Hvals_sl & Hval_sl)". iFrame.
-Qed.
-*)
-
-Lemma KVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
+Lemma wp_MemKVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
 ⊢ {{{ own_MemKVClerk ck γ ∗ readonly (is_slice_small val_sl byteT 1 v) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     MemKVClerk__Put #ck #key (slice_val val_sl) @ ∅
@@ -378,7 +285,7 @@ Proof using Type*.
   }
 Qed.
 
-Lemma KVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
+Lemma wp_MemKVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
 ⊢ {{{ own_MemKVClerk ck γ ∗
       readonly (is_slice_small expv_sl byteT 1 expv) ∗
       readonly (is_slice_small newv_sl byteT 1 newv) }}}

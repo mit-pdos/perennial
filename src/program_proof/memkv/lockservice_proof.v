@@ -81,7 +81,7 @@ Proof.
   iDestruct (is_slice_to_small with "Hsl1") as "Hsl1".
   iMod (readonly_alloc_1 with "Hsl0") as "#Hsl0".
   iMod (readonly_alloc_1 with "Hsl1") as "#Hsl1".
-  wp_apply (KVClerk__ConditionalPut with "[$Hck]").
+  wp_apply (wp_MemKVClerk__ConditionalPut with "[$Hck]").
   { iFrame "#". }
   rewrite /is_lock.
   replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver+.
@@ -128,7 +128,7 @@ Proof.
   wp_loadField.
   iDestruct (is_slice_to_small with "Hsl0") as "Hsl0".
   iMod (readonly_alloc_1 with "Hsl0") as "#Hsl0".
-  wp_apply (KVClerk__Put with "[$Hck]").
+  wp_apply (wp_MemKVClerk__Put with "[$Hck]").
   { iFrame "#". }
   rewrite /is_lock.
   replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver+.
