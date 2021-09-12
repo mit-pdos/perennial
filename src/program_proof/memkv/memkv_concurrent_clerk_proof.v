@@ -111,6 +111,20 @@ Proof.
     wp_apply (acquire_spec with "Hinv").
     iIntros "[Hlocked Hown]". iNamed "Hown".
     wp_loadField.
-Abort.
+    wp_apply (wp_SliceAppend with "HfreeClerks_sl").
+    iIntros (freeClerks_sl') "HfreeClerks_sl".
+    wp_bind (struct.storeF _ _ _ _).
+    (* FIXME why do we have to apply storeField by hand here? *)
+    iApply (wp_storeField with "HfreeClerks").
+    { rewrite /field_ty. simpl. val_ty. }
+    iIntros "!> HfreeClerks".
+    wp_loadField.
+    wp_apply (release_spec'' with "Hinv [$Hlocked HfreeClerks_own HfreeClerks_sl HfreeClerks Hck]").
+    { rewrite /own_ConcMemKVClerk. iModIntro. iExists _, _. iFrame.
+      rewrite big_sepL_singleton. done. }
+    done.
+  }
+  by iApply "HΦ".
+Qed.
 
 End memkv_concurrent_clerk_proof.
