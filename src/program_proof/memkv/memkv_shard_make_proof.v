@@ -9,16 +9,16 @@ Section memkv_shard_make_proof.
 
 Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Lemma wp_MakeMemKVShardServer (b : bool) γ :
+Lemma wp_MakeKVShardServer (b : bool) γ :
   {{{
        "#His_srv" ∷ is_RPCServer γ.(rpc_gn) ∗
        "HRPCserver_own" ∷ RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
        "HghostShards" ∷ (if b then [∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ.(kv_gn) sid ∅ else True) ∗
        "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), RPCClient_own_ghost γ.(rpc_gn) cid 1
   }}}
-    MakeMemKVShardServer #b
+    MakeKVShardServer #b
   {{{
-       s, RET #s; is_MemKVShardServer s γ
+       s, RET #s; is_KVShardServer s γ
   }}}.
 Proof.
   iIntros (Φ) "H HΦ".
@@ -47,7 +47,7 @@ Proof.
   { econstructor. }
   iIntros (kvss_sl) "Hkvss_sl".
   Transparent slice.T. wp_storeField. Opaque slice.T.
-  replace (ref (InjLV #null))%E with ((NewMap (struct.ptrT MemKVShardClerk))) by auto.
+  replace (ref (InjLV #null))%E with ((NewMap (struct.ptrT KVShardClerk))) by auto.
   remember (replicate (int.nat 65536) IntoVal_def) as initShardMapping eqn:Heq_initShardMapping.
   remember (replicate (int.nat 65536) (@zero_val grove_op grove_ty KvMap)) as init_kvs_ptrs eqn:Heq_init_kvs_ptrs.
   wp_apply (wp_NewMap).
@@ -68,9 +68,9 @@ Proof.
                                is_Some ((fmap (λ x : loc, #x) kvs_ptrs) !! int.nat i)) ⌝ ∗
   "HghostShards" ∷ (if b then ([∗ set] sid ∈ rangeSet (int.Z i) (uNSHARD - int.Z i), own_shard γ.(kv_gn) sid ∅)
                    else True) ∗
-  "kvss" ∷ srv ↦[MemKVShardServer :: "kvss"] (slice_val kvss_sl) ∗
+  "kvss" ∷ srv ↦[KVShardServer :: "kvss"] (slice_val kvss_sl) ∗
   "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
-  "shardMap" ∷ srv ↦[MemKVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
+  "shardMap" ∷ srv ↦[KVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷  typed_slice.is_slice shardMap_sl boolT 1 shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ (fin_to_set u64),
                   ⌜(shardMapping !! (int.nat sid)) ≠ Some true⌝ ∨
@@ -248,7 +248,7 @@ Proof.
     apply lookup_replicate_1 in Hfalse as (Hbad&?). rewrite //= in Hbad.
   }
   iIntros "(Hloop_post&Hi)".
-  iMod (alloc_lock memKVN _ lk (own_MemKVShardServer srv γ) with "[$] [-mu cm HΦ]").
+  iMod (alloc_lock memKVN _ lk (own_KVShardServer srv γ) with "[$] [-mu cm HΦ]").
   {
     iNext. iNamed "Hloop_post".
     iExists _, _, _, _, _, _, _, _.

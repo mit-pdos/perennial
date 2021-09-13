@@ -47,12 +47,12 @@ Proof.
   rewrite /has_encoding_shardMapping. done.
 Qed.
 
-Lemma wp_MemKVCoord__AddServerRPC s x γ γsh :
-  {{{ "#His_memkv" ∷ is_MemKVCoordServer s γ ∗
+Lemma wp_KVCoord__AddServerRPC s x γ γsh :
+  {{{ "#His_memkv" ∷ is_KVCoordServer s γ ∗
       "#His_shard" ∷ is_shard_server x γsh ∗
       "%Heq_kv_gn" ∷ ⌜γsh.(kv_gn) = γ.(coord_kv_gn)⌝
   }}}
-    MemKVCoord__AddServerRPC #s #x
+    KVCoord__AddServerRPC #s #x
   {{{ RET #(); True%I }}}.
 Proof.
   iIntros (Φ) "H HΦ".
@@ -151,8 +151,8 @@ Proof.
       iDestruct ("HshardServers" $! _ _ with "[//]") as (γh) "(His_shard_host&Heq)".
       wp_apply (wp_ShardClerkSet__GetClerk with "[$]").
       iIntros (ck_ptr) "(Hclerk&Hclerk_clo)".
-      wp_bind (MemKVShardClerk__MoveShard #ck_ptr #_ #x).
-      wp_apply (wp_MemKVShardClerk__MoveShard with "[$Hclerk]").
+      wp_bind (KVShardClerk__MoveShard #ck_ptr #_ #x).
+      wp_apply (wp_KVShardClerk__MoveShard with "[$Hclerk]").
       { iFrame "#His_shard". iPureIntro.
         eapply lookup_lt_Some in Heq. lia. }
       iIntros "Hclerk".
@@ -216,8 +216,8 @@ Proof.
       iDestruct ("HshardServers" $! _ _ with "[//]") as (γh) "(His_shard_host&Heq)".
       wp_apply (wp_ShardClerkSet__GetClerk with "[$]").
       iIntros (ck_ptr) "(Hclerk&Hclerk_clo)".
-      wp_bind (MemKVShardClerk__MoveShard #ck_ptr #_ #x).
-      wp_apply (wp_MemKVShardClerk__MoveShard with "[$Hclerk]").
+      wp_bind (KVShardClerk__MoveShard #ck_ptr #_ #x).
+      wp_apply (wp_KVShardClerk__MoveShard with "[$Hclerk]").
       { iFrame "#His_shard". iPureIntro.
         eapply lookup_lt_Some in Heq. lia. }
       iIntros "Hclerk".
@@ -269,14 +269,14 @@ Proof.
     }
 Qed.
 
-Lemma wp_MemKVCoordServer__Start (s:loc) (host : u64) γ :
+Lemma wp_KVCoordServer__Start (s:loc) (host : u64) γ :
 handlers_dom γ.(coord_urpc_gn) {[ U64 1; U64 2 ]} -∗
 is_coord_server host γ -∗
-is_MemKVCoordServer s γ -∗
+is_KVCoordServer s γ -∗
   {{{
        True
   }}}
-    MemKVCoord__Start #s #host
+    KVCoord__Start #s #host
   {{{
        RET #(); True
   }}}.
@@ -293,7 +293,7 @@ Proof.
   wp_apply (map.wp_MapInsert with "Hmap").
   iIntros "Hmap".
   wp_pures.
-  rewrite /MemKVCoord__GetShardMapRPC.
+  rewrite /KVCoord__GetShardMapRPC.
 
   wp_apply (map.wp_MapInsert with "Hmap").
   iIntros "Hmap".
@@ -364,7 +364,7 @@ Proof.
       wp_apply (wp_DecodeUint64 with "[$Hreq_sl]"); first eauto.
       wp_pures.
       simpl in x.
-      wp_apply (wp_MemKVCoord__AddServerRPC with "[]").
+      wp_apply (wp_KVCoord__AddServerRPC with "[]").
       { iSplitL "".
         { rewrite /named. iExactEq "His_memkv". eauto. }
         iFrame "His_shard". eauto.

@@ -60,26 +60,26 @@ Definition own_ShardClerkSet (s:loc) (γkv:gname) : iProp Σ :=
   "Hcls" ∷ s ↦[ShardClerkSet :: "cls"] #cls_ptr ∗
   "Hc" ∷ s ↦[ShardClerkSet :: "c"] #c ∗
   "HclsMap" ∷ is_map cls_ptr 1 clsM ∗
-  "HclsOwn" ∷ ([∗ map] host ↦ cl_ptr ∈ clsM, own_MemKVShardClerk cl_ptr γkv) ∗
+  "HclsOwn" ∷ ([∗ map] host ↦ cl_ptr ∈ clsM, own_KVShardClerk cl_ptr γkv) ∗
   "#Hc_own" ∷ is_ConnMan c
 .
 
-Definition own_MemKVCoordServer (s : loc) γ : iProp Σ :=
+Definition own_KVCoordServer (s : loc) γ : iProp Σ :=
   ∃ (hostShards_ptr : loc) hostShards (clset : loc) shardMap_sl (shardMapping : list u64),
-  "hostShards" ∷ s ↦[MemKVCoord :: "hostShards"] #hostShards_ptr ∗
-  "shardClerks" ∷ s ↦[MemKVCoord :: "shardClerks"] #clset ∗
+  "hostShards" ∷ s ↦[KVCoord :: "hostShards"] #hostShards_ptr ∗
+  "shardClerks" ∷ s ↦[KVCoord :: "shardClerks"] #clset ∗
   "%Hlen_shardMapping" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝%Z ∗
   "%HshardMapping_dom" ∷ ⌜∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)⌝ ∗
-  "shardMap" ∷ s ↦[MemKVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
+  "shardMap" ∷ s ↦[KVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.is_slice (V:=u64) shardMap_sl HostName 1 shardMapping ∗
   "#HshardServers" ∷ all_are_shard_servers shardMapping γ ∗
   "Hmap" ∷ is_map (V:=u64) hostShards_ptr 1 hostShards ∗
   "HshardClerksSet" ∷ own_ShardClerkSet clset γ.
 
-Definition is_MemKVCoordServer (s:loc) γ : iProp Σ :=
+Definition is_KVCoordServer (s:loc) γ : iProp Σ :=
   ∃ mu,
-  "#Hmu" ∷ readonly (s ↦[MemKVCoord :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock memKVN mu (own_MemKVCoordServer s γ.(coord_kv_gn))
+  "#Hmu" ∷ readonly (s ↦[KVCoord :: "mu"] mu) ∗
+  "#HmuInv" ∷ is_lock memKVN mu (own_KVCoordServer s γ.(coord_kv_gn))
 .
 
 

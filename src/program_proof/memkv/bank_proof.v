@@ -42,7 +42,7 @@ Definition own_bank_clerk γ (bank_ck:loc) : iProp Σ :=
   ∃ (lck kck : loc),
   "%" ∷ ⌜acc1 ≠ acc2⌝ ∗
   "Hlck_own" ∷ own_LockClerk lck γ.(bank_ls_names) ∗
-  "Hkck_own" ∷ own_MemKVClerk kck γ.(bank_ks_names) ∗
+  "Hkck_own" ∷ own_SeqKVClerk kck γ.(bank_ks_names) ∗
 
   "Hkck" ∷ bank_ck ↦[BankClerk :: "kvck"] #kck ∗
   "Hlck" ∷ bank_ck ↦[BankClerk :: "lck"] #lck ∗
@@ -163,7 +163,7 @@ Proof.
   iDestruct "Hacc2_unlocked" as (bytes2 bal2 Henc2) "(Hacc2_phys & Hacc2_log)".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_MemKVClerk__Get with "[$Hkck_own]").
+  wp_apply (wp_SeqKVClerk__Get with "[$Hkck_own]").
   iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
   iExists _. iFrame "Hacc1_phys".
   iIntros "Hacc1_phys". iMod ("Hclo") as "_". iModIntro.
@@ -177,14 +177,14 @@ Proof.
     wp_loadField.
     iDestruct (is_slice_to_small with "Hsl") as "Hsl".
     iMod (readonly_alloc_1 with "Hsl") as "#Hsl".
-    wp_apply (wp_MemKVClerk__Put with "[$Hkck_own]"); first by eauto.
+    wp_apply (wp_SeqKVClerk__Put with "[$Hkck_own]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame. iIntros "Hacc1_phys".
     iMod ("Hclo") as "_". iIntros "!> Hkck_own".
     wp_pures.
     wp_loadField.
 
-    wp_apply (wp_MemKVClerk__Get with "[$Hkck_own]").
+    wp_apply (wp_SeqKVClerk__Get with "[$Hkck_own]").
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame "Hacc2_phys".
     iIntros "Hacc2_phys". iMod ("Hclo") as "_". iModIntro.
@@ -198,7 +198,7 @@ Proof.
     wp_loadField.
     iDestruct (is_slice_to_small with "Hsl2") as "Hsl2".
     iMod (readonly_alloc_1 with "Hsl2") as "#Hsl2".
-    wp_apply (wp_MemKVClerk__Put with "[$Hkck_own]"); first by eauto.
+    wp_apply (wp_SeqKVClerk__Put with "[$Hkck_own]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame. iIntros "Hacc2_phys".
     iMod ("Hclo") as "_". iIntros "!> Hkck_own".
@@ -266,7 +266,7 @@ Proof.
 
   wp_pures.
   repeat wp_loadField.
-  wp_apply (wp_MemKVClerk__Get with "[$Hkck_own]").
+  wp_apply (wp_SeqKVClerk__Get with "[$Hkck_own]").
   iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
   iExists _. iFrame "Hacc1_phys".
   iIntros "Hacc1_phys". iMod ("Hclo") as "_". iModIntro.
@@ -275,7 +275,7 @@ Proof.
 
   wp_pures.
   repeat wp_loadField.
-  wp_apply (wp_MemKVClerk__Get with "[$Hkck_own]").
+  wp_apply (wp_SeqKVClerk__Get with "[$Hkck_own]").
   iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
   iExists _. iFrame "Hacc2_phys".
   iIntros "Hacc2_phys". iMod ("Hclo") as "_". iModIntro.

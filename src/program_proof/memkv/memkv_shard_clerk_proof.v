@@ -14,7 +14,7 @@ Lemma wp_MakeFreshKVShardClerk (host:u64) (c:loc) γ :
   }}}
     MakeFreshKVShardClerk #host #c
   {{{
-       (ck:loc), RET #ck; own_MemKVShardClerk ck γ.(kv_gn)
+       (ck:loc), RET #ck; own_KVShardClerk ck γ.(kv_gn)
   }}}
 .
 Proof.
@@ -85,16 +85,16 @@ Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
   ([∗ map] k ↦ vsl' ∈ mv, ∃ q vsl, ⌜ vsl' = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (kvs !! k))).
 *)
 
-Lemma wp_MemKVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γdst:
+Lemma wp_KVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γdst:
   {{{
-       own_MemKVShardClerk ck γkv ∗
+       own_KVShardClerk ck γkv ∗
        is_shard_server dst γdst ∗
        ⌜int.Z sid < uNSHARD⌝ ∗
        ⌜γdst.(kv_gn) = γkv⌝
   }}}
-    MemKVShardClerk__MoveShard #ck #sid #dst
+    KVShardClerk__MoveShard #ck #sid #dst
   {{{ RET #();
-        own_MemKVShardClerk ck γkv
+        own_KVShardClerk ck γkv
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -148,17 +148,17 @@ Proof.
   { iFrame "#". }
 Qed.
 
-Lemma wp_MemKVShardClerk__InstallShard γkv (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:gmap u64 (list u8)) :
+Lemma wp_KVShardClerk__InstallShard γkv (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:gmap u64 (list u8)) :
   {{{
-       own_MemKVShardClerk ck γkv ∗
+       own_KVShardClerk ck γkv ∗
        own_shard_phys kvs_ref sid kvs ∗
        own_shard γkv sid kvs ∗
        ⌜int.Z sid < uNSHARD⌝
   }}}
-    MemKVShardClerk__InstallShard #ck #sid #kvs_ref
+    KVShardClerk__InstallShard #ck #sid #kvs_ref
   {{{
        RET #();
-       own_MemKVShardClerk ck γkv
+       own_KVShardClerk ck γkv
   }}}
 .
 Proof.
@@ -252,16 +252,16 @@ Proof.
   simpl. word.
 Qed.
 
-Lemma wp_MemKVShardClerk__Put γkv (ck:loc) (key:u64) (v:list u8) value_sl Q :
+Lemma wp_KVShardClerk__Put γkv (ck:loc) (key:u64) (v:list u8) value_sl Q :
   {{{
        (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q))) ∗
        readonly (typed_slice.is_slice_small value_sl byteT 1%Qp v) ∗
-       own_MemKVShardClerk ck γkv
+       own_KVShardClerk ck γkv
   }}}
-    MemKVShardClerk__Put #ck #key (slice_val value_sl)
+    KVShardClerk__Put #ck #key (slice_val value_sl)
   {{{
        (e:u64), RET #e;
-       own_MemKVShardClerk ck γkv ∗ (
+       own_KVShardClerk ck γkv ∗ (
        ⌜e ≠ 0⌝ ∗
         (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q)))
         ∨
@@ -389,16 +389,16 @@ Proof.
   }
 Qed.
 
-Lemma wp_MemKVShardClerk__Get γkv (ck:loc) (key:u64) (value_ptr:loc) Q :
+Lemma wp_KVShardClerk__Get γkv (ck:loc) (key:u64) (value_ptr:loc) Q :
   {{{
        (|={⊤,∅}=> (∃ v, kvptsto γkv key v ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q v))) ∗
-       own_MemKVShardClerk ck γkv ∗
+       own_KVShardClerk ck γkv ∗
        (∃ dummy_sl, value_ptr ↦[slice.T byteT] (slice_val dummy_sl))
   }}}
-    MemKVShardClerk__Get #ck #key #value_ptr
+    KVShardClerk__Get #ck #key #value_ptr
   {{{
        (e:u64), RET #e;
-       own_MemKVShardClerk ck γkv ∗ (
+       own_KVShardClerk ck γkv ∗ (
        ⌜e ≠ 0⌝ ∗
         (|={⊤,∅}=> (∃ v, kvptsto γkv key v ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q v))) ∗
         (∃ some_sl, value_ptr ↦[slice.T byteT] (slice_val some_sl)) ∨
@@ -530,19 +530,19 @@ Proof.
   }
 Qed.
 
-Lemma wp_MemKVShardClerk__ConditionalPut γkv (ck:loc) (key:u64) (expv newv:list u8) expv_sl newv_sl (succ_ptr:loc) Q :
+Lemma wp_KVShardClerk__ConditionalPut γkv (ck:loc) (key:u64) (expv newv:list u8) expv_sl newv_sl (succ_ptr:loc) Q :
   {{{
        (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗
          (let succ := bool_decide (expv = oldv) in kvptsto γkv key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗
        readonly (typed_slice.is_slice_small expv_sl byteT 1 expv) ∗
        readonly (typed_slice.is_slice_small newv_sl byteT 1 newv) ∗
-       own_MemKVShardClerk ck γkv ∗
+       own_KVShardClerk ck γkv ∗
        (∃ b : bool, succ_ptr ↦[boolT] #b)
   }}}
-    MemKVShardClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) #succ_ptr
+    KVShardClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) #succ_ptr
   {{{
        (e:u64), RET #e;
-       own_MemKVShardClerk ck γkv ∗ (
+       own_KVShardClerk ck γkv ∗ (
        ⌜e ≠ 0⌝ ∗
         (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗
          (let succ := bool_decide (expv = oldv) in kvptsto γkv key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗

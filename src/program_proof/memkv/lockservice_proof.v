@@ -12,7 +12,7 @@ Context (N: namespace).
 Definition own_LockClerk (ck:loc) (γ:gname) : iProp Σ :=
   ∃ (kvCk : loc),
     "HkvCk" ∷ ck ↦[LockClerk :: "kv"] #kvCk ∗
-    own_MemKVClerk kvCk γ.
+    "#Hclerk" ∷ is_KVClerk kvCk γ.
 
 Lemma wp_MakeLockClerk (coord:u64) cm γ :
   {{{
@@ -27,7 +27,7 @@ Proof.
   iIntros (Φ) "#[Hcoord Hcm] HΦ".
   rewrite /MakeLockClerk.
   wp_lam.
-  wp_apply (wp_MakeMemKVClerk with "[$]").
+  wp_apply (wp_MakeKVClerk with "[$] [$]").
   iIntros (kvCk) "H".
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
@@ -81,7 +81,7 @@ Proof.
   iDestruct (is_slice_to_small with "Hsl1") as "Hsl1".
   iMod (readonly_alloc_1 with "Hsl0") as "#Hsl0".
   iMod (readonly_alloc_1 with "Hsl1") as "#Hsl1".
-  wp_apply (wp_MemKVClerk__ConditionalPut with "[$Hck]").
+  wp_apply (wp_KVClerk__ConditionalPut with "[$Hclerk]").
   { iFrame "#". }
   rewrite /is_lock.
   replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver+.
@@ -98,15 +98,15 @@ Proof.
     iMod ("Hclo" with "[HR Hk]").
     { iExists true. iFrame. }
     iModIntro. iIntros "Hck". wp_pures. iModIntro. iLeft.
-    iSplit; first eauto.
-    iFrame "HΦ". iExists _. iFrame.
+    iSplit; first by eauto.
+    iFrame "HΦ". iExists _. eauto with iFrame.
   - rewrite bool_decide_true //.
     iMod ("Hclo" with "[Hk]").
     { iExists true. iFrame. }
     iModIntro. iIntros "Hck". wp_pures. iModIntro. iRight.
-    iSplit; first eauto.
+    iSplit; first by eauto.
     iApply "HΦ".
-    iFrame "HR". iExists _. iFrame.
+    iFrame "HR". iExists _. eauto with iFrame.
 Qed.
 
 Lemma wp_LockClerk__Unlock ck γkv key R :
@@ -128,7 +128,7 @@ Proof.
   wp_loadField.
   iDestruct (is_slice_to_small with "Hsl0") as "Hsl0".
   iMod (readonly_alloc_1 with "Hsl0") as "#Hsl0".
-  wp_apply (wp_MemKVClerk__Put with "[$Hck]").
+  wp_apply (wp_KVClerk__Put with "[$Hclerk]").
   { iFrame "#". }
   rewrite /is_lock.
   replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver+.
@@ -143,7 +143,7 @@ Proof.
   iMod ("Hclo" with "[HR Hk]").
   { iExists false. iFrame. }
   iModIntro. iIntros "Hck". 
-  iApply "HΦ".  iExists _. iFrame.
+  iApply "HΦ".  iExists _. eauto with iFrame.
 Qed.
 
 End lockservice_proof.

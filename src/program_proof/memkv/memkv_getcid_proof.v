@@ -9,11 +9,11 @@ Section memkv_getcid_proof.
 Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_GetCIDRPC (s:loc) γ :
-  is_MemKVShardServer s γ -∗
+  is_KVShardServer s γ -∗
   {{{
        True
   }}}
-    MemKVShardServer__GetCIDRPC #s
+    KVShardServer__GetCIDRPC #s
   {{{
        cid, RET #cid; RPCClient_own_ghost γ.(rpc_gn) cid 1
   }}}

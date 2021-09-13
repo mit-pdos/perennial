@@ -7,11 +7,11 @@ Section memkv_coord_clerk_proof.
 
 Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Definition own_MemKVCoordClerk ck γkv : iProp Σ :=
+Definition own_KVCoordClerk ck γkv : iProp Σ :=
   ∃ γh (host : u64) (c : loc),
     "%Heq_kv_gn" ∷ ⌜ γh.(coord_kv_gn) = γkv ⌝ ∗
-    "Hcl" ∷ ck ↦[MemKVCoordClerk :: "c"] #c ∗
-    "Hhost" ∷ ck ↦[MemKVCoordClerk :: "host"] #host ∗
+    "Hcl" ∷ ck ↦[KVCoordClerk :: "c"] #c ∗
+    "Hhost" ∷ ck ↦[KVCoordClerk :: "host"] #host ∗
     "#His_coord" ∷ is_coord_server host γh ∗
     "#Hc_own" ∷ is_ConnMan c.
 
@@ -41,14 +41,14 @@ Proof.
   iIntros (?) "(?&H)". iApply "HΦ". iSplit; eauto.
 Qed.
 
-Lemma wp_MemKVCoordClerk__GetShardMap (ck:loc) γkv :
+Lemma wp_KVCoordClerk__GetShardMap (ck:loc) γkv :
   {{{
-       own_MemKVCoordClerk ck γkv
+       own_KVCoordClerk ck γkv
   }}}
-    MemKVCoordClerk__GetShardMap #ck
+    KVCoordClerk__GetShardMap #ck
   {{{
        shardMap_sl (shardMapping:list u64), RET (slice_val shardMap_sl);
-       own_MemKVCoordClerk ck γkv ∗
+       own_KVCoordClerk ck γkv ∗
        typed_slice.is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
        ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
        all_are_shard_servers shardMapping γkv
@@ -110,8 +110,8 @@ Lemma wp_ShardClerkSet__GetClerk (γ:memkv_shard_names) (γkv:gname) (s:loc) (ho
   }}}
     ShardClerkSet__GetClerk #s #host
   {{{
-       (ck_ptr:loc), RET #ck_ptr; own_MemKVShardClerk ck_ptr γkv ∗
-                                    (own_MemKVShardClerk ck_ptr γkv -∗ own_ShardClerkSet s γkv)
+       (ck_ptr:loc), RET #ck_ptr; own_KVShardClerk ck_ptr γkv ∗
+                                    (own_KVShardClerk ck_ptr γkv -∗ own_ShardClerkSet s γkv)
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".

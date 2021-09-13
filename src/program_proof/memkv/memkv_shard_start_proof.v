@@ -8,14 +8,14 @@ Section memkv_shard_start_proof.
 
 Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Lemma wp_MemKVShardServer__Start (s:loc) (host : u64) γ :
+Lemma wp_KVShardServer__Start (s:loc) (host : u64) γ :
 handlers_dom γ.(urpc_gn) {[ U64 0; U64 1; U64 2; U64 3; U64 4; U64 5 ]} -∗
 is_shard_server host γ -∗
-is_MemKVShardServer s γ -∗
+is_KVShardServer s γ -∗
   {{{
        True
   }}}
-    MemKVShardServer__Start #s #host
+    KVShardServer__Start #s #host
   {{{
        RET #(); True
   }}}.

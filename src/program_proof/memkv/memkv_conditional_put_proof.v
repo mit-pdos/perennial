@@ -10,7 +10,7 @@ Context `{!heapGS Σ, rpcG Σ ShardReplyC, HREG: rpcregG Σ, kvMapG Σ}.
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Lemma wp_ConditionalPutRPC (s args_ptr reply_ptr:loc) expv_sl newv_sl args γ γreq Q :
-  is_MemKVShardServer s γ -∗
+  is_KVShardServer s γ -∗
   {{{
        own_ConditionalPutRequest args_ptr expv_sl newv_sl args ∗
        (∃ dummy_rep, own_ConditionalPutReply reply_ptr dummy_rep) ∗
@@ -18,7 +18,7 @@ Lemma wp_ConditionalPutRPC (s args_ptr reply_ptr:loc) expv_sl newv_sl args γ γ
                                 (PostShardConditionalPut γ.(kv_gn) args.(CPR_Key) Q args.(CPR_ExpValue) args.(CPR_NewValue))
                                 {| Req_CID:=args.(CPR_CID); Req_Seq:=args.(CPR_Seq) |}
   }}}
-    MemKVShardServer__ConditionalPutRPC #s #args_ptr #reply_ptr
+    KVShardServer__ConditionalPutRPC #s #args_ptr #reply_ptr
   {{{
        rep, RET #();
        own_ConditionalPutReply reply_ptr rep ∗

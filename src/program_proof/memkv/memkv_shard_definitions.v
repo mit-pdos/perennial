@@ -180,12 +180,12 @@ Section memkv_shard_definitions.
 
 Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Definition own_MemKVShardClerk (ck:loc) γkv : iProp Σ :=
+Definition own_KVShardClerk (ck:loc) γkv : iProp Σ :=
   ∃ (cid seq:u64) (c:loc) (host:u64) (γ:memkv_shard_names),
-    "Hcid" ∷ ck ↦[MemKVShardClerk :: "cid"] #cid ∗
-    "Hseq" ∷ ck ↦[MemKVShardClerk :: "seq"] #seq ∗
-    "Hc" ∷ ck ↦[MemKVShardClerk :: "c"] #c ∗
-    "Hhost" ∷ ck ↦[MemKVShardClerk :: "host"] #host ∗
+    "Hcid" ∷ ck ↦[KVShardClerk :: "cid"] #cid ∗
+    "Hseq" ∷ ck ↦[KVShardClerk :: "seq"] #seq ∗
+    "Hc" ∷ ck ↦[KVShardClerk :: "c"] #c ∗
+    "Hhost" ∷ ck ↦[KVShardClerk :: "host"] #host ∗
     "Hcrpc" ∷ RPCClient_own_ghost γ.(rpc_gn) cid seq ∗
     "#Hc_own" ∷ is_ConnMan c ∗
     "#His_shard" ∷ is_shard_server host γ ∗
@@ -195,11 +195,11 @@ Definition own_MemKVShardClerk (ck:loc) γkv : iProp Σ :=
 
 Definition memKVN := nroot .@ "memkv".
 
-Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
+Definition own_KVShardServer (s:loc) γ : iProp Σ :=
   ∃ (lastReply_ptr lastSeq_ptr peers_ptr:loc) (kvss_sl shardMap_sl:Slice.t)
     (lastReplyM:gmap u64 ShardReplyC) (lastReplyMV:gmap u64 goose_lang.val) (lastSeqM:gmap u64 u64) (nextCID:u64) (shardMapping:list bool) (kvs_ptrs:list loc)
     (peersM:gmap u64 loc),
-  "HlastReply" ∷ s ↦[MemKVShardServer :: "lastReply"] #lastReply_ptr ∗
+  "HlastReply" ∷ s ↦[KVShardServer :: "lastReply"] #lastReply_ptr ∗
   "HlastReplyMap" ∷ map.is_map lastReply_ptr 1 (lastReplyMV, zero_val (struct.t ShardReply)) ∗ (* TODO: default *)
   "%HlastReplyMVdom" ∷ ⌜dom (gset u64) lastReplyMV = dom (gset u64) lastSeqM⌝ ∗
   "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM,
@@ -208,14 +208,14 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
               "Value" ::= slice_val val_sl;
               "Success" ::= #rep.(SR_Success)
             ]%V⌝ ∗ typed_slice.is_slice_small val_sl byteT q rep.(SR_Value))) ∗
-  "HlastSeq" ∷ s ↦[MemKVShardServer :: "lastSeq"] #lastSeq_ptr ∗
+  "HlastSeq" ∷ s ↦[KVShardServer :: "lastSeq"] #lastSeq_ptr ∗
   "HlastSeqMap" ∷ is_map lastSeq_ptr 1 lastSeqM ∗
-  "HnextCID" ∷ s ↦[MemKVShardServer :: "nextCID"] #nextCID ∗
-  "HshardMap" ∷ s ↦[MemKVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
+  "HnextCID" ∷ s ↦[KVShardServer :: "nextCID"] #nextCID ∗
+  "HshardMap" ∷ s ↦[KVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl boolT 1%Qp shardMapping ∗
-  "Hkvss" ∷ s ↦[MemKVShardServer :: "kvss"] (slice_val kvss_sl) ∗
+  "Hkvss" ∷ s ↦[KVShardServer :: "kvss"] (slice_val kvss_sl) ∗
   "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
-  "Hpeers" ∷ s ↦[MemKVShardServer :: "peers"] #peers_ptr ∗
+  "Hpeers" ∷ s ↦[KVShardServer :: "peers"] #peers_ptr ∗
   "Hrpc" ∷ RPCServer_own_ghost γ.(rpc_gn) lastSeqM lastReplyM ∗
   "%HshardMapLength" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
   "%HkvssLength" ∷ ⌜Z.of_nat (length kvs_ptrs) = uNSHARD⌝ ∗
@@ -231,16 +231,16 @@ Definition own_MemKVShardServer (s:loc) γ : iProp Σ :=
                   )
                  ) ∗
   "HpeersMap" ∷ is_map (V:=loc) peers_ptr 1 peersM ∗
-  "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, own_MemKVShardClerk ck γ.(kv_gn)) ∗
+  "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, own_KVShardClerk ck γ.(kv_gn)) ∗
   "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (RPCClient_own_ghost γ.(rpc_gn) cid 1)
 .
 
-Definition is_MemKVShardServer (s:loc) γ : iProp Σ :=
+Definition is_KVShardServer (s:loc) γ : iProp Σ :=
   ∃ mu (cm:loc),
   "#His_srv" ∷ is_RPCServer γ.(rpc_gn) ∗
-  "#Hmu" ∷ readonly (s ↦[MemKVShardServer :: "mu"] mu) ∗
-  "#Hcm" ∷ readonly (s ↦[MemKVShardServer :: "cm"] #cm) ∗
-  "#HmuInv" ∷ is_lock memKVN mu (own_MemKVShardServer s γ) ∗
+  "#Hmu" ∷ readonly (s ↦[KVShardServer :: "mu"] mu) ∗
+  "#Hcm" ∷ readonly (s ↦[KVShardServer :: "cm"] #cm) ∗
+  "#HmuInv" ∷ is_lock memKVN mu (own_KVShardServer s γ) ∗
   "#Hiscm" ∷ is_ConnMan cm
 .
 

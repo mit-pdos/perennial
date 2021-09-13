@@ -15,16 +15,16 @@ From Perennial.program_proof.memkv Require Export
 From Perennial.program_proof.memkv Require Export memkv_clerk_proof.
 
 Definition shard_boot (host : u64) : expr :=
-  let: "s" := MakeMemKVShardServer #true in
-  MemKVShardServer__Start "s" #host.
+  let: "s" := MakeKVShardServer #true in
+  KVShardServer__Start "s" #host.
 
 Definition coord_boot (host : u64) (init : u64) : expr :=
-  let: "s" := MakeMemKVCoordServer #init in
-  MemKVCoord__Start "s" #host.
+  let: "s" := MakeKVCoordServer #init in
+  KVCoord__Start "s" #host.
 
 Definition client_boot (coord : u64) : expr :=
   let: "cm" := MakeConnMan #() in
-  MakeMemKVClerk #coord "cm".
+  MakeKVClerk #coord "cm".
 
 From Perennial.goose_lang Require Import adequacy dist_adequacy grove_ffi_adequacy.
 From Perennial.goose_lang.ffi Require Import grove_ffi_adequacy.
@@ -91,8 +91,8 @@ Proof.
     iIntros (Hcrash local_names).
     iModIntro. iExists (λ _, True%I).
     rewrite /shard_boot. simpl.
-    wp_bind (MakeMemKVShardServer #true).
-    wp_apply (wp_MakeMemKVShardServer with "[Hsrv_cid Hserver_shards Hsrv_rpc_ghost]").
+    wp_bind (MakeKVShardServer #true).
+    wp_apply (wp_MakeKVShardServer with "[Hsrv_cid Hserver_shards Hsrv_rpc_ghost]").
     { iSplitL "".
       { rewrite is_shard_server_unfold. iNamed "Hsrv". iFrame "#". }
       iClear "Hsrv". iFrame "Hsrv_rpc_ghost".
@@ -100,7 +100,7 @@ Proof.
       eauto. }
     iIntros (s) "His_server".
     wp_pures.
-    wp_apply (wp_MemKVShardServer__Start with "[] [] [$His_server]").
+    wp_apply (wp_KVShardServer__Start with "[] [] [$His_server]").
     { iExactEq "Hdom". rewrite //=. f_equal. set_solver. }
     { iExactEq "Hsrv". f_equal. apply heapG_heap_globalG_roundtrip. }
     eauto.
@@ -110,8 +110,8 @@ Proof.
     iIntros (Hcrash local_names).
     iModIntro. iExists (λ _, True%I).
     rewrite /coord_boot. simpl.
-    wp_bind (MakeMemKVCoordServer #(shardId : u64)).
-    wp_apply (wp_MakeMemKVCoordServer with "[]").
+    wp_bind (MakeKVCoordServer #(shardId : u64)).
+    wp_apply (wp_MakeKVCoordServer with "[]").
     { iSplitL ""; last first.
       { rewrite /named. iExactEq "Hsrv".
         f_equal. apply heapG_heap_globalG_roundtrip. }
@@ -119,7 +119,7 @@ Proof.
     }
     iIntros (s) "His_server".
     wp_pures.
-    wp_apply (wp_MemKVCoordServer__Start with "[] [] [His_server]").
+    wp_apply (wp_KVCoordServer__Start with "[] [] [His_server]").
     { iExactEq "Hdom'". rewrite //=. f_equal. set_solver. }
     { iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. eauto. }
     { iFrame "His_server". }
@@ -132,9 +132,8 @@ Proof.
     rewrite /client_boot. iEval simpl.
     wp_apply wp_MakeConnMan.
     iIntros (cm) "Hcm".
-    wp_apply (wp_MakeMemKVClerk with "[Hcm]").
+    wp_apply (wp_MakeKVClerk with "[] Hcm").
     {
-      iFrame "Hcm".
       iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. f_equal.
     }
     eauto.

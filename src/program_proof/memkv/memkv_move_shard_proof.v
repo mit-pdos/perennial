@@ -8,14 +8,14 @@ Section memkv_move_shard_proof.
 Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MoveShardRPC (s args_ptr:loc) args γsh γ :
-  is_MemKVShardServer s γ -∗
+  is_KVShardServer s γ -∗
   {{{
        own_MoveShardRequest args_ptr args ∗
        ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
        is_shard_server args.(MR_Dst) γsh ∗
        ⌜ γsh.(kv_gn) = γ.(kv_gn) ⌝
   }}}
-    MemKVShardServer__MoveShardRPC #s #args_ptr
+    KVShardServer__MoveShardRPC #s #args_ptr
   {{{
        RET #(); True
   }}}
@@ -41,8 +41,8 @@ Proof.
   wp_pures.
   wp_apply (wp_If_join_evar _ _ _ (λ _, ∃ peersM, "%Hlookup'" ∷ ⌜ is_Some (peersM !! args.(MR_Dst)) ⌝ ∗
                         "HDst" ∷ args_ptr ↦[MoveShardRequest :: "Dst"] #args.(MR_Dst) ∗
-                        "Hpeers" ∷ s ↦[MemKVShardServer :: "peers"] #peers_ptr ∗
-                        "HpeerClerks" ∷ ([∗ map] ck ∈ peersM, own_MemKVShardClerk ck γ.(kv_gn)) ∗
+                        "Hpeers" ∷ s ↦[KVShardServer :: "peers"] #peers_ptr ∗
+                        "HpeerClerks" ∷ ([∗ map] ck ∈ peersM, own_KVShardClerk ck γ.(kv_gn)) ∗
                         "HpeersMap" ∷ is_map peers_ptr 1 peersM)%I
               with "[HDst HpeersMap HpeerClerks Hpeers]").
   {
@@ -158,7 +158,7 @@ Proof.
   wp_pures.
   iDestruct (big_sepM_lookup_acc _ _ args.(MR_Dst) with "HpeerClerks") as "[Hclerk HpeerClerks]".
   { eauto. }
-  wp_apply (wp_MemKVShardClerk__InstallShard with "[Hclerk HkvsMap HvalSlices HshardGhost]").
+  wp_apply (wp_KVShardClerk__InstallShard with "[Hclerk HkvsMap HvalSlices HshardGhost]").
   {
     iFrame "Hclerk".
     iFrame "HshardGhost".

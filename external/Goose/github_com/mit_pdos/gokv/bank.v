@@ -8,7 +8,7 @@ From Goose Require github_com.mit_pdos.gokv.memkv.
 
 Definition BankClerk := struct.decl [
   "lck" :: struct.ptrT lockservice.LockClerk;
-  "kvck" :: struct.ptrT memkv.MemKVClerk;
+  "kvck" :: struct.ptrT memkv.SeqKVClerk;
   "acc1" :: uint64T;
   "acc2" :: uint64T
 ].
@@ -40,11 +40,11 @@ Definition release_two: val :=
 Definition BankClerk__transfer_internal: val :=
   rec: "BankClerk__transfer_internal" "bck" "acc_from" "acc_to" "amount" :=
     acquire_two (struct.loadF BankClerk "lck" "bck") "acc_from" "acc_to";;
-    let: "old_amount" := memkv.DecodeUint64 (memkv.MemKVClerk__Get (struct.loadF BankClerk "kvck" "bck") "acc_from") in
+    let: "old_amount" := memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") "acc_from") in
     (if: "old_amount" ≥ "amount"
     then
-      memkv.MemKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_from" (memkv.EncodeUint64 ("old_amount" - "amount"));;
-      memkv.MemKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_to" (memkv.EncodeUint64 (memkv.DecodeUint64 (memkv.MemKVClerk__Get (struct.loadF BankClerk "kvck" "bck") "acc_to") + "amount"));;
+      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_from" (memkv.EncodeUint64 ("old_amount" - "amount"));;
+      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_to" (memkv.EncodeUint64 (memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") "acc_to") + "amount"));;
       #()
     else #());;
     release_two (struct.loadF BankClerk "lck" "bck") "acc_from" "acc_to".
@@ -57,7 +57,7 @@ Definition BankClerk__SimpleTransfer: val :=
 Definition BankClerk__SimpleAudit: val :=
   rec: "BankClerk__SimpleAudit" "bck" :=
     acquire_two (struct.loadF BankClerk "lck" "bck") (struct.loadF BankClerk "acc1" "bck") (struct.loadF BankClerk "acc2" "bck");;
-    let: "sum" := memkv.DecodeUint64 (memkv.MemKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc1" "bck")) + memkv.DecodeUint64 (memkv.MemKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc2" "bck")) in
+    let: "sum" := memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc1" "bck")) + memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc2" "bck")) in
     release_two (struct.loadF BankClerk "lck" "bck") (struct.loadF BankClerk "acc1" "bck") (struct.loadF BankClerk "acc2" "bck");;
     "sum".
 
@@ -65,7 +65,7 @@ Definition MakeBankClerk: val :=
   rec: "MakeBankClerk" "lockhost" "kvhost" "cm" "acc1" "acc2" "cid" :=
     let: "bck" := struct.alloc BankClerk (zero_val (struct.t BankClerk)) in
     struct.storeF BankClerk "lck" "bck" (lockservice.MakeLockClerk "lockhost" "cm");;
-    struct.storeF BankClerk "kvck" "bck" (memkv.MakeMemKVClerk "kvhost" "cm");;
+    struct.storeF BankClerk "kvck" "bck" (memkv.MakeSeqKVClerk "kvhost" "cm");;
     struct.storeF BankClerk "acc1" "bck" "acc1";;
     struct.storeF BankClerk "acc2" "bck" "acc2";;
     "bck".

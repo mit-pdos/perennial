@@ -8,7 +8,7 @@ Section memkv_install_shard_proof.
 Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
-  is_MemKVShardServer s γ -∗
+  is_KVShardServer s γ -∗
   {{{
        own_InstallShardRequest args_ptr args ∗
        ⌜int.nat args.(IR_Sid) < uNSHARD⌝ ∗
@@ -16,7 +16,7 @@ Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
                                 (λ _, True)
                                 {| Req_CID:=args.(IR_CID); Req_Seq:=args.(IR_Seq) |}
   }}}
-    MemKVShardServer__InstallShardRPC #s #args_ptr
+    KVShardServer__InstallShardRPC #s #args_ptr
   {{{
        RET #(); True
   }}}

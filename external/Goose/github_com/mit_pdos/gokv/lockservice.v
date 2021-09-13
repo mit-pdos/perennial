@@ -6,21 +6,21 @@ From Goose Require github_com.mit_pdos.gokv.connman.
 From Goose Require github_com.mit_pdos.gokv.memkv.
 
 Definition LockClerk := struct.decl [
-  "kv" :: struct.ptrT memkv.MemKVClerk
+  "kv" :: struct.ptrT memkv.KVClerk
 ].
 
 Definition LockClerk__Lock: val :=
   rec: "LockClerk__Lock" "ck" "key" :=
     Skip;;
-    (for: (λ: <>, ~ (memkv.MemKVClerk__ConditionalPut (struct.loadF LockClerk "kv" "ck") "key" (NewSlice byteT #0) (NewSlice byteT #1))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, ~ (memkv.KVClerk__ConditionalPut (struct.loadF LockClerk "kv" "ck") "key" (NewSlice byteT #0) (NewSlice byteT #1))); (λ: <>, Skip) := λ: <>,
       Continue).
 
 Definition LockClerk__Unlock: val :=
   rec: "LockClerk__Unlock" "ck" "key" :=
-    memkv.MemKVClerk__Put (struct.loadF LockClerk "kv" "ck") "key" (NewSlice byteT #0).
+    memkv.KVClerk__Put (struct.loadF LockClerk "kv" "ck") "key" (NewSlice byteT #0).
 
 Definition MakeLockClerk: val :=
   rec: "MakeLockClerk" "lockhost" "cm" :=
     struct.new LockClerk [
-      "kv" ::= memkv.MakeMemKVClerk "lockhost" "cm"
+      "kv" ::= memkv.MakeKVClerk "lockhost" "cm"
     ].

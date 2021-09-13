@@ -9,14 +9,14 @@ Section memkv_coord_make_proof.
 
 Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
-Lemma wp_MakeMemKVCoordServer (initserver : u64) (γ : memkv_coord_names) γinit :
+Lemma wp_MakeKVCoordServer (initserver : u64) (γ : memkv_coord_names) γinit :
   {{{
        "%Hinitserver_gnames" ∷ ⌜γinit.(kv_gn) = γ.(coord_kv_gn)⌝ ∗
        "#Hinit_is_shard_server" ∷ is_shard_server initserver γinit
   }}}
-    MakeMemKVCoordServer #initserver
+    MakeKVCoordServer #initserver
   {{{
-       s, RET #s; is_MemKVCoordServer s γ
+       s, RET #s; is_KVCoordServer s γ
   }}}.
 Proof.
   iIntros (Φ) "H HΦ".
@@ -41,7 +41,7 @@ Proof.
   wp_apply (wp_forUpto (λ i, ∃ shardMapping,
   "%Hlen_shardMapping" ∷ ⌜ Z.of_nat (length shardMapping) = uNSHARD ⌝ ∗
   "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)) ⌝ ∗
-  "shardMap" ∷ s ↦[MemKVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
+  "shardMap" ∷ s ↦[KVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ @typed_slice.is_slice grove_op grove_model grove_interp Σ _ grove_ty u64
                      (@u64_IntoVal grove_op) shardMap_sl HostName 1 shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ rangeSet 0 uNSHARD, ∃ (hid : u64),
@@ -147,14 +147,14 @@ Proof.
   (* TODO: Pull this out to separate wp? it is called at least twice *)
   wp_bind (MakeShardClerkSet _).
   wp_lam.
-  replace (ref (InjLV #null))%E with (NewMap (struct.ptrT MemKVShardClerk)) by auto.
+  replace (ref (InjLV #null))%E with (NewMap (struct.ptrT KVShardClerk)) by auto.
   wp_apply (wp_NewMap).
   iIntros (mref_set) "Hmap_set".
   wp_apply (wp_allocStruct).
   { eauto. }
   iIntros (clset) "Hset".
   wp_storeField.
-  iMod (alloc_lock memKVN _ lk (own_MemKVCoordServer s γ.(coord_kv_gn)) with "[$Hfree] [-mu HΦ]").
+  iMod (alloc_lock memKVN _ lk (own_KVCoordServer s γ.(coord_kv_gn)) with "[$Hfree] [-mu HΦ]").
   {
     iNext.
     iNamed "Hloop_post".
