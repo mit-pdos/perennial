@@ -46,9 +46,10 @@ Proof.
   done.
 Qed.
 
-Lemma wp_DecodeUint64 sl data cid q :
+
+Lemma wp_DecodeUint64' sl data cid q :
   {{{
-       typed_slice.is_slice sl byteT q data ∗ ⌜has_encoding_Uint64 data cid⌝
+       typed_slice.is_slice_small sl byteT q data ∗ ⌜has_encoding_Uint64 data cid⌝
   }}}
     DecodeUint64 (slice_val sl)
   {{{
@@ -60,7 +61,6 @@ Proof.
   wp_lam.
   wp_pures.
 
-  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
   wp_apply (wp_new_dec with "[$Hsl]").
   { done. }
   iIntros (?) "Hdec".
@@ -71,6 +71,22 @@ Proof.
 
   iApply "HΦ".
   by iFrame.
+Qed.
+
+Lemma wp_DecodeUint64 sl data cid q :
+  {{{
+       typed_slice.is_slice sl byteT q data ∗ ⌜has_encoding_Uint64 data cid⌝
+  }}}
+    DecodeUint64 (slice_val sl)
+  {{{
+       RET #(cid); True
+  }}}
+.
+Proof.
+  iIntros (Φ) "[Hsl %Henc] HΦ".
+  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
+  wp_apply (wp_DecodeUint64' with "[$Hsl //]").
+  by iApply "HΦ".
 Qed.
 
 End memkv_marshal_getcid_proof.
