@@ -380,4 +380,23 @@ Proof using Type*.
   }
 Qed.
 
+Lemma wp_SeqKVClerk__Add (ck:loc) γkv γ (dst : u64) :
+  {{{
+       own_SeqKVClerk ck γkv ∗
+       is_shard_server dst γ ∗
+       ⌜γ.(kv_gn) = γkv⌝
+  }}}
+    SeqKVClerk__Add #ck #dst
+  {{{RET #(); True }}}
+.
+Proof.
+  iIntros (Φ) "(Hown&#His_shard&%) HΦ".
+  wp_lam.
+  wp_pures.
+  iNamed "Hown".
+  wp_loadField.
+  wp_apply (wp_KVCoordClerk__AddShardServer with "[$HcoordCk_own $His_shard]"); eauto.
+  by iApply "HΦ".
+Qed.
+
 End memkv_clerk_proof.

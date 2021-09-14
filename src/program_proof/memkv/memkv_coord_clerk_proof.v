@@ -41,6 +41,43 @@ Proof.
   iIntros (?) "(?&H)". iApply "HΦ". iSplit; eauto.
 Qed.
 
+Lemma wp_KVCoordClerk__AddShardServer (ck:loc) γkv γ (dst : u64) :
+  {{{
+       own_KVCoordClerk ck γkv ∗
+       is_shard_server dst γ ∗
+       ⌜γ.(kv_gn) = γkv⌝
+  }}}
+    KVCoordClerk__AddShardServer #ck #dst
+  {{{RET #(); True }}}
+.
+Proof.
+  iIntros (Φ) "(Hclerk&#His_shard&%) HΦ".
+  wp_lam.
+  wp_apply (wp_ref_of_zero).
+  { naive_solver. }
+  iIntros (rawRep) "HrawRep".
+  wp_pures.
+  iAssert (∃ sl, rawRep ↦[slice.T byteT] (slice_val sl))%I with "[HrawRep]" as "HrawRep".
+  {
+    rewrite zero_slice_val.
+    iExists _; iFrame.
+  }
+
+  wp_pures.
+  iNamed "Hclerk".
+  iNamed "His_coord".
+  iNamed "HrawRep".
+  wp_apply (wp_EncodeUint64).
+  iIntros (sl0 d) "(Hsl&%)".
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_ConnMan__CallAtLeastOnce dst with "Hc_own HaddSpec [] [Hsl $HrawRep //]").
+  { simpl. iModIntro. iNext. iFrame "%". iExists _. iFrame "#". iPureIntro; congruence. }
+  iIntros "(Hreq_sl & Hpost)".
+  iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
+  iModIntro. by iApply "HΦ".
+Qed.
+
 Lemma wp_KVCoordClerk__GetShardMap (ck:loc) γkv :
   {{{
        own_KVCoordClerk ck γkv
