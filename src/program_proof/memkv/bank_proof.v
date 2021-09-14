@@ -148,6 +148,8 @@ Proof.
   }
 Qed.
 
+Add Ring u64ring : (word.ring_theory (word := u64_instance.u64)).
+
 Lemma Bank__SimpleTransfer_spec (bck:loc) (amount:u64) γ :
 {{{
      inv bankN (bank_inv γ) ∗
@@ -236,9 +238,7 @@ Proof.
       - rewrite insert_union_l. rewrite insert_singleton.
         rewrite insert_union_r; last by apply lookup_singleton_ne. rewrite insert_singleton.
         iFrame.
-      - iPureIntro.
-        admit. (* FIXME: add the necessary overflow checks and use them here... *)
-        (* FIXME: but actually this should just be provable even without overflow by ring properties of u64 *)
+      - iPureIntro. ring_simplify. eauto.
     }
     iModIntro.
     wp_apply (release_two_spec with "[$Hlck_own Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
@@ -252,7 +252,7 @@ Proof.
     iIntros "Hlck_own".
     iApply "Hpost".
     iExists _, _; iFrame "∗ # %".
-Admitted.
+Qed.
 
 Lemma Bank__get_total_spec (bck:loc) γ :
 {{{
