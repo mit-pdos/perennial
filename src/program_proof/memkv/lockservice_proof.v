@@ -6,8 +6,25 @@ From Perennial.program_proof.memkv Require Export common_proof memkv_clerk_proof
 
 Section lockservice_proof.
 
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ}.
+Context `{!kvMapG Σ}.
+Definition lock_inv (γkv : gname) key R : iProp Σ :=
+  ∃ b : bool, kvptsto γkv key (if b then [U8 0] else []) ∗ if b then True else R.
+
 Context (N: namespace).
+
+Definition is_lock `{invGS Σ} γkv key R :=
+  inv N (lock_inv γkv key R).
+
+Lemma lock_alloc `{invGS Σ} E γkv key R :
+  kvptsto γkv key [] -∗ R ={E}=∗ is_lock γkv key R.
+Proof.
+  iIntros "Hkv HR".
+  iMod (inv_alloc _ _ (lock_inv γkv key R) with "[Hkv HR]").
+  { iNext. iExists false. iFrame. }
+  eauto.
+Qed.
+
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !rpcregG Σ}.
 
 Definition own_LockClerk (ck:loc) (γ:gname) : iProp Σ :=
   ∃ (kvCk : loc),
@@ -36,21 +53,6 @@ Proof.
   iNamed "HH".
   iApply "HΦ".
   iExists _. iFrame.
-Qed.
-
-Definition lock_inv (γkv : gname) key R : iProp Σ :=
-  ∃ b : bool, kvptsto γkv key (if b then [U8 0] else []) ∗ if b then True else R.
-
-Definition is_lock γkv key R :=
-  inv N (lock_inv γkv key R).
-
-Lemma lock_alloc {E} γkv key R :
-  kvptsto γkv key [] -∗ R ={E}=∗ is_lock γkv key R.
-Proof.
-  iIntros "Hkv HR".
-  iMod (inv_alloc _ _ (lock_inv γkv key R) with "[Hkv HR]").
-  { iNext. iExists false. iFrame. }
-  eauto.
 Qed.
 
 Lemma wp_LockClerk__Lock ck γkv key R :

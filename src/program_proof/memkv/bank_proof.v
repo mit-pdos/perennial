@@ -5,9 +5,6 @@ From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_logic Require Import atomic_fupd.
 From Perennial.program_proof.memkv Require Export common_proof memkv_clerk_proof lockservice_proof.
 
-Section bank_proof.
-
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ, mapG Σ u64 u64}.
 
 Record bank_names := BankNames {
   bank_ls_names : gname;
@@ -15,45 +12,22 @@ Record bank_names := BankNames {
   bank_logBalGN : gname (* Logical balances of accounts; must match the physical balance by the time you give up the lock *)
 }.
 
-(*
-Class bankG Σ := BankG {
-  bank_ls :> lockserviceG Σ;
-  bank_ks :> kvMapG Σ;
-  bank_rpc :> rpcregG Σ;
-  (* bank_logBalG :> mapG Σ u64 u64 *)
-}.
-
-Section bank_proof.
-Context `{!heapGS Σ, !bankG Σ}.
-*)
-
-Definition bal_total : u64 := 1000.
-
-Context (init_flag: u64) (acc1:u64) (acc2:u64). (* Account names for bank *)
-
 Definition kv_gn γ := γ.(bank_ks_names).
 Definition lk_gn γ := γ.(bank_ls_names).
 Definition log_gn γ := γ.(bank_logBalGN).
+
+Section bank_defs.
+
+Context `{!invGS Σ, !kvMapG Σ, mapG Σ u64 u64}.
 
 Definition bankPs γ := λ k, (∃ vd v, ⌜ has_encoding_Uint64 vd v ⌝ ∗ kvptsto (kv_gn γ) k vd ∗ k [[log_gn γ]]↦v)%I.
 
 Definition bankN := nroot .@ "grove_bank_of_boston".
 Definition lockN : namespace := nroot.@"grove_bank_of_boston_vault".
 
-Definition own_bank_clerk γ (bank_ck:loc) : iProp Σ :=
-  ∃ (lck kck : loc),
-  "%" ∷ ⌜acc1 ≠ acc2⌝ ∗
-  "Hlck_own" ∷ own_LockClerk lck γ.(bank_ls_names) ∗
-  "Hkck_own" ∷ own_SeqKVClerk kck γ.(bank_ks_names) ∗
+Definition bal_total : u64 := 1000.
 
-  "Hkck" ∷ bank_ck ↦[BankClerk :: "kvck"] #kck ∗
-  "Hlck" ∷ bank_ck ↦[BankClerk :: "lck"] #lck ∗
-  "Hacc1" ∷ bank_ck ↦[BankClerk :: "acc1"] #acc1 ∗
-  "Hacc1" ∷ bank_ck ↦[BankClerk :: "acc2"] #acc2 ∗
-
-  "Hacc1_is_lock" ∷ is_lock lockN γ.(bank_ls_names) acc1 (bankPs γ acc1) ∗
-  "Hacc2_is_lock" ∷ is_lock lockN γ.(bank_ls_names) acc2 (bankPs γ acc2)
-.
+Context (init_flag: u64) (acc1:u64) (acc2:u64). (* Account names for bank *)
 
 Definition bank_inv γ : iProp Σ :=
   ∃ (bal1 bal2:u64),
@@ -73,6 +47,30 @@ Definition init_lock_inv γlock γkv : iProp Σ :=
    kvptsto γkv init_flag [U8 0] ∗ inv bankN (bank_inv γ) ∗
    "#Hacc1_is_lock" ∷ is_lock lockN γlock acc1 (bankPs γ acc1) ∗
    "#Hacc2_is_lock" ∷ is_lock lockN γlock acc2 (bankPs γ acc2)).
+
+End bank_defs.
+
+Section bank_proof.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ, mapG Σ u64 u64}.
+
+Context (init_flag: u64) (acc1:u64) (acc2:u64). (* Account names for bank *)
+
+
+Definition own_bank_clerk γ (bank_ck:loc) : iProp Σ :=
+  ∃ (lck kck : loc),
+  "%" ∷ ⌜acc1 ≠ acc2⌝ ∗
+  "Hlck_own" ∷ own_LockClerk lck γ.(bank_ls_names) ∗
+  "Hkck_own" ∷ own_SeqKVClerk kck γ.(bank_ks_names) ∗
+
+  "Hkck" ∷ bank_ck ↦[BankClerk :: "kvck"] #kck ∗
+  "Hlck" ∷ bank_ck ↦[BankClerk :: "lck"] #lck ∗
+  "Hacc1" ∷ bank_ck ↦[BankClerk :: "acc1"] #acc1 ∗
+  "Hacc1" ∷ bank_ck ↦[BankClerk :: "acc2"] #acc2 ∗
+
+  "Hacc1_is_lock" ∷ is_lock lockN γ.(bank_ls_names) acc1 (bankPs γ acc1) ∗
+  "Hacc2_is_lock" ∷ is_lock lockN γ.(bank_ls_names) acc2 (bankPs γ acc2)
+.
+
 
 Lemma acquire_two_spec (lck :loc) (ln1 ln2:u64) γ:
 {{{
@@ -152,7 +150,7 @@ Add Ring u64ring : (word.ring_theory (word := u64_instance.u64)).
 
 Lemma Bank__SimpleTransfer_spec (bck:loc) (amount:u64) γ :
 {{{
-     inv bankN (bank_inv γ) ∗
+     inv bankN (bank_inv acc1 acc2 γ) ∗
      own_bank_clerk γ bck
 }}}
   BankClerk__SimpleTransfer #bck #amount
@@ -256,7 +254,7 @@ Qed.
 
 Lemma Bank__get_total_spec (bck:loc) γ :
 {{{
-     inv bankN (bank_inv γ) ∗
+     inv bankN (bank_inv acc1 acc2 γ) ∗
      own_bank_clerk γ bck
 }}}
   BankClerk__get_total #bck
@@ -332,7 +330,7 @@ Qed.
 
 Lemma Bank__SimpleAudit_spec (bck:loc) γ :
 {{{
-     inv bankN (bank_inv γ) ∗
+     inv bankN (bank_inv acc1 acc2 γ) ∗
      own_bank_clerk γ bck
 }}}
   BankClerk__SimpleAudit #bck
@@ -359,11 +357,12 @@ Lemma wp_MakeBankClerk (lockhost kvhost : u64) cm γ1 γ2 cid  (Hneq: acc1 ≠ a
        is_coord_server lockhost γ1 ∗
        is_coord_server kvhost γ2 ∗
        is_ConnMan cm ∗
-       is_lock lockN (γ1.(coord_kv_gn)) init_flag (init_lock_inv γ1.(coord_kv_gn) γ2.(coord_kv_gn))
+       is_lock lockN (γ1.(coord_kv_gn)) init_flag
+         (init_lock_inv init_flag acc1 acc2 γ1.(coord_kv_gn) γ2.(coord_kv_gn))
   }}}
     MakeBankClerk #lockhost #kvhost #cm #init_flag #acc1 #acc2 #cid
   {{{
-      γ (ck:loc), RET #ck; own_bank_clerk γ ck ∗ inv bankN (bank_inv γ)
+      γ (ck:loc), RET #ck; own_bank_clerk γ ck ∗ inv bankN (bank_inv acc1 acc2 γ)
   }}}
 .
 Proof.
@@ -416,7 +415,7 @@ Proof.
     iExists _. iFrame. iIntros "Hacc1_phys".
     iMod ("Hclo") as "_". iIntros "!> Hkv".
     wp_pures.
-    
+
     wp_apply (wp_EncodeUint64).
     iIntros (??) "(Hacc2_val_slice&%)".
     wp_loadField.
@@ -448,11 +447,11 @@ Proof.
     set γ := {| bank_ls_names := γ1.(coord_kv_gn);
                 bank_ks_names := γ2.(coord_kv_gn);
                 bank_logBalGN := γlog |}.
-    iMod (lock_alloc lockN _ acc1 (bankPs γ acc1) with "[$] [Hacc1_phys Hacc1]") as "#Hlk1".
+    iMod (lock_alloc lockN _ _ acc1 (bankPs γ acc1) with "[$] [Hacc1_phys Hacc1]") as "#Hlk1".
     { iExists _, _. by iFrame. }
-    iMod (lock_alloc lockN _ acc2 (bankPs γ acc2) with "[$] [Hacc2_phys Hacc2]") as "#Hlk2".
+    iMod (lock_alloc lockN _ _ acc2 (bankPs γ acc2) with "[$] [Hacc2_phys Hacc2]") as "#Hlk2".
     { iExists _, _. by iFrame. }
-    iMod (inv_alloc bankN _ (bank_inv γ) with "[Hmap_ctx]") as "#Hinv".
+    iMod (inv_alloc bankN _ (bank_inv acc1 acc2 γ) with "[Hmap_ctx]") as "#Hinv".
     { iNext. iExists _, _. iSplitL "Hmap_ctx".
       { rewrite /named. iExactEq "Hmap_ctx". simpl.
         rewrite insert_union_singleton_l.
