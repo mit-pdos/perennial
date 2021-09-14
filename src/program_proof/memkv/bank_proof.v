@@ -241,12 +241,12 @@ Proof.
     iExists _, _; iFrame "∗ # %".
 Admitted.
 
-Lemma Bank__SimpleAudit_spec (bck:loc) γ :
+Lemma Bank__get_total_spec (bck:loc) γ :
 {{{
      inv bankN (bank_inv γ) ∗
      own_bank_clerk γ bck
 }}}
-  BankClerk__SimpleAudit #bck
+  BankClerk__get_total #bck
 {{{
      RET #bal_total;
      own_bank_clerk γ bck

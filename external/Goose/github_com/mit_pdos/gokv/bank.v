@@ -2,9 +2,12 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.gokv.connman.
 From Goose Require github_com.mit_pdos.gokv.lockservice.
 From Goose Require github_com.mit_pdos.gokv.memkv.
+
+Definition BAL_TOTAL : expr := #1000.
 
 Definition BankClerk := struct.decl [
   "lck" :: struct.ptrT lockservice.LockClerk;
@@ -53,19 +56,36 @@ Definition BankClerk__SimpleTransfer: val :=
   rec: "BankClerk__SimpleTransfer" "bck" "amount" :=
     BankClerk__transfer_internal "bck" (struct.loadF BankClerk "acc1" "bck") (struct.loadF BankClerk "acc2" "bck") "amount".
 
-(* If account balance in acc_from is at least amount, transfer amount to acc_to *)
-Definition BankClerk__SimpleAudit: val :=
-  rec: "BankClerk__SimpleAudit" "bck" :=
+Definition BankClerk__get_total: val :=
+  rec: "BankClerk__get_total" "bck" :=
     acquire_two (struct.loadF BankClerk "lck" "bck") (struct.loadF BankClerk "acc1" "bck") (struct.loadF BankClerk "acc2" "bck");;
     let: "sum" := memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc1" "bck")) + memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc2" "bck")) in
     release_two (struct.loadF BankClerk "lck" "bck") (struct.loadF BankClerk "acc1" "bck") (struct.loadF BankClerk "acc2" "bck");;
     "sum".
 
+Definition BankClerk__SimpleAudit: val :=
+  rec: "BankClerk__SimpleAudit" "bck" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: BankClerk__get_total "bck" ≠ BAL_TOTAL
+      then Panic ("Balance total invariant violated")
+      else #());;
+      Continue).
+
 Definition MakeBankClerk: val :=
-  rec: "MakeBankClerk" "lockhost" "kvhost" "cm" "acc1" "acc2" "cid" :=
+  rec: "MakeBankClerk" "lockhost" "kvhost" "cm" "init_flag" "acc1" "acc2" "cid" :=
     let: "bck" := struct.alloc BankClerk (zero_val (struct.t BankClerk)) in
     struct.storeF BankClerk "lck" "bck" (lockservice.MakeLockClerk "lockhost" "cm");;
     struct.storeF BankClerk "kvck" "bck" (memkv.MakeSeqKVClerk "kvhost" "cm");;
     struct.storeF BankClerk "acc1" "bck" "acc1";;
     struct.storeF BankClerk "acc2" "bck" "acc2";;
+    lockservice.LockClerk__Lock (struct.loadF BankClerk "lck" "bck") "init_flag";;
+    (if: std.BytesEqual (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") "init_flag") (NewSlice byteT #0)
+    then
+      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc1" (memkv.EncodeUint64 BAL_TOTAL);;
+      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc2" (memkv.EncodeUint64 #0);;
+      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "init_flag" (memkv.EncodeUint64 #1);;
+      #()
+    else #());;
+    lockservice.LockClerk__Unlock (struct.loadF BankClerk "lck" "bck") "init_flag";;
     "bck".
