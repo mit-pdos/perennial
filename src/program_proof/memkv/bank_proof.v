@@ -27,16 +27,18 @@ Section bank_proof.
 Context `{!heapGS Σ, !bankG Σ}.
 *)
 
-Implicit Types (γ : bank_names).
+Definition bal_total : u64 := 1000.
 
-Context `{acc1:u64, acc2:u64, bal_total:u64}. (* Account names and total balance for bank *)
+Context (init_flag: u64) (acc1:u64) (acc2:u64). (* Account names for bank *)
 
 Definition kv_gn γ := γ.(bank_ks_names).
+Definition lk_gn γ := γ.(bank_ls_names).
 Definition log_gn γ := γ.(bank_logBalGN).
 
 Definition bankPs γ := λ k, (∃ vd v, ⌜ has_encoding_Uint64 vd v ⌝ ∗ kvptsto (kv_gn γ) k vd ∗ k [[log_gn γ]]↦v)%I.
 
-Definition N : namespace := nroot.@"grove_bank_of_boston".
+Definition bankN := nroot .@ "grove_bank_of_boston".
+Definition lockN : namespace := nroot.@"grove_bank_of_boston_vault".
 
 Definition own_bank_clerk γ (bank_ck:loc) : iProp Σ :=
   ∃ (lck kck : loc),
@@ -49,8 +51,8 @@ Definition own_bank_clerk γ (bank_ck:loc) : iProp Σ :=
   "Hacc1" ∷ bank_ck ↦[BankClerk :: "acc1"] #acc1 ∗
   "Hacc1" ∷ bank_ck ↦[BankClerk :: "acc2"] #acc2 ∗
 
-  "Hacc1_is_lock" ∷ is_lock N γ.(bank_ls_names) acc1 (bankPs γ acc1) ∗
-  "Hacc2_is_lock" ∷ is_lock N γ.(bank_ls_names) acc2 (bankPs γ acc2)
+  "Hacc1_is_lock" ∷ is_lock lockN γ.(bank_ls_names) acc1 (bankPs γ acc1) ∗
+  "Hacc2_is_lock" ∷ is_lock lockN γ.(bank_ls_names) acc2 (bankPs γ acc2)
 .
 
 Definition bank_inv γ : iProp Σ :=
@@ -59,13 +61,24 @@ Definition bank_inv γ : iProp Σ :=
   "%" ∷ ⌜(word.add bal1 bal2 = bal_total)%Z⌝
   .
 
-Definition bankN := nroot .@ "bank".
+Definition init_lock_inv γlock γkv : iProp Σ :=
+  (* Uninit case *)
+  (kvptsto γkv init_flag [] ∗
+   kvptsto γkv acc1 [] ∗ kvptsto γkv acc2 [] ∗
+   kvptsto γlock acc1 [] ∗ kvptsto γlock acc2 []
+  ) ∨
+  (* Already init case *)
+  (∃ γlog,
+   let γ := {| bank_ls_names := γlock; bank_ks_names := γkv; bank_logBalGN := γlog |} in
+   kvptsto γkv init_flag [U8 0] ∗ inv bankN (bank_inv γ) ∗
+   "#Hacc1_is_lock" ∷ is_lock lockN γlock acc1 (bankPs γ acc1) ∗
+   "#Hacc2_is_lock" ∷ is_lock lockN γlock acc2 (bankPs γ acc2)).
 
 Lemma acquire_two_spec (lck :loc) (ln1 ln2:u64) γ:
 {{{
      own_LockClerk lck γ.(bank_ls_names) ∗
-     is_lock N γ.(bank_ls_names) ln1 (bankPs γ acc1) ∗
-     is_lock N γ.(bank_ls_names) ln2 (bankPs γ acc2)
+     is_lock lockN γ.(bank_ls_names) ln1 (bankPs γ acc1) ∗
+     is_lock lockN γ.(bank_ls_names) ln2 (bankPs γ acc2)
 }}}
   acquire_two #lck #ln1 #ln2
 {{{
@@ -101,8 +114,8 @@ Qed.
 Lemma release_two_spec (lck :loc) (ln1 ln2:u64) γ:
 {{{
      own_LockClerk lck γ.(bank_ls_names) ∗
-     is_lock N γ.(bank_ls_names) ln1 (bankPs γ acc1) ∗
-     is_lock N γ.(bank_ls_names) ln2 (bankPs γ acc2) ∗
+     is_lock lockN γ.(bank_ls_names) ln1 (bankPs γ acc1) ∗
+     is_lock lockN γ.(bank_ls_names) ln2 (bankPs γ acc2) ∗
      bankPs γ acc1 ∗
      bankPs γ acc2
 }}}
@@ -315,6 +328,156 @@ Proof.
   rewrite H2.
   iApply "Hpost".
   iExists _, _; iFrame "∗ # %"; eauto.
+Qed.
+
+Lemma Bank__SimpleAudit_spec (bck:loc) γ :
+{{{
+     inv bankN (bank_inv γ) ∗
+     own_bank_clerk γ bck
+}}}
+  BankClerk__SimpleAudit #bck
+{{{
+     RET #(); True
+}}}.
+Proof.
+  iIntros (Φ) "[#Hbinv Hpre] Hpost".
+  wp_lam.
+  wp_pures.
+  iCombine "Hpre Hpost" as "H".
+  wp_apply (wp_forBreak' with "[-]").
+  { iExact "H". }
+  iModIntro. iIntros "[Hpre Hpost]".
+  wp_pures.
+  wp_apply (Bank__get_total_spec with "[$]").
+  iIntros "Hpre". rewrite /bal_total.
+  wp_pures.
+  iModIntro. iLeft. iFrame. eauto.
+Qed.
+
+Lemma wp_MakeBankClerk (lockhost kvhost : u64) cm γ1 γ2 cid  (Hneq: acc1 ≠ acc2) :
+  {{{
+       is_coord_server lockhost γ1 ∗
+       is_coord_server kvhost γ2 ∗
+       is_ConnMan cm ∗
+       is_lock lockN (γ1.(coord_kv_gn)) init_flag (init_lock_inv γ1.(coord_kv_gn) γ2.(coord_kv_gn))
+  }}}
+    MakeBankClerk #lockhost #kvhost #cm #init_flag #acc1 #acc2 #cid
+  {{{
+      γ (ck:loc), RET #ck; own_bank_clerk γ ck ∗ inv bankN (bank_inv γ)
+  }}}
+.
+Proof.
+  iIntros (Φ) "#(Hcoord_lock&Hcoord_kv&#Hcm&Hinit_lock) HΦ".
+  rewrite /MakeBankClerk.
+  wp_lam.
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (?) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_apply (wp_MakeLockClerk with "[$Hcoord_lock $Hcm]").
+  iIntros (lkCk) "Hlk".
+  wp_storeField.
+
+  wp_apply (wp_MakeSeqKVClerk with "[$Hcoord_kv $Hcm]").
+  iIntros (kvCk) "Hkv".
+  do 3 wp_storeField.
+
+  wp_loadField.
+  wp_apply (wp_LockClerk__Lock with "[$]").
+  iIntros "(Hlk&Hinit)".
+
+  wp_pures.
+  wp_apply (typed_slice.wp_NewSlice (V:=u8)).
+  iIntros (s0) "Hsl0".
+  wp_loadField.
+  wp_apply (wp_SeqKVClerk__Get with "[$Hkv]").
+  iDestruct "Hinit" as "[Huninit|Hinit]".
+  - iDestruct "Huninit" as "(Hflag&Hacc1&Hacc2&Hacc_lk1&Hacc_lk2)".
+    iApply (fupd_mask_weaken ∅); first by set_solver+. iIntros "Hclo'".
+    iModIntro. iExists _. iFrame. iIntros "Hflag".
+    iMod "Hclo'" as "_". iModIntro.
+    iIntros (val_sl_flag q). iIntros "(Hkv&Hsl1)".
+    iDestruct (is_slice_to_small with "Hsl0") as "Hsl0".
+    wp_apply (wp_BytesEqual with "[Hsl0 Hsl1]").
+    { by iFrame. }
+    iIntros "(Hsl1&Hsl0)".
+    wp_pures.
+
+    wp_apply (wp_EncodeUint64).
+    iIntros (??) "(Hacc1_val_slice&%)".
+    wp_loadField.
+    iDestruct (is_slice_to_small with "Hacc1_val_slice") as "Hacc1_val_slice".
+    iMod (readonly_alloc_1 with "Hacc1_val_slice") as "#Hacc1_val_Slice".
+    wp_apply (wp_SeqKVClerk__Put with "[$Hkv]"); first by eauto.
+    iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
+    iExists _. iFrame. iIntros "Hacc1_phys".
+    iMod ("Hclo") as "_". iIntros "!> Hkv".
+    wp_pures.
+    
+    wp_apply (wp_EncodeUint64).
+    iIntros (??) "(Hacc2_val_slice&%)".
+    wp_loadField.
+    iDestruct (is_slice_to_small with "Hacc2_val_slice") as "Hacc2_val_slice".
+    iMod (readonly_alloc_1 with "Hacc2_val_slice") as "#Hacc2_val_Slice".
+    wp_apply (wp_SeqKVClerk__Put with "[$Hkv]"); first by eauto.
+    iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
+    iExists _. iFrame. iIntros "Hacc2_phys".
+    iMod ("Hclo") as "_". iIntros "!> Hkv".
+    wp_pures.
+
+    wp_apply (typed_slice.wp_NewSlice (V:=u8)).
+    iIntros (?) "Hflag_val_slice".
+    wp_loadField.
+    iDestruct (is_slice_to_small with "Hflag_val_slice") as "Hflag_val_slice".
+    iMod (readonly_alloc_1 with "Hflag_val_slice") as "#Hflag_val_Slice".
+    wp_apply (wp_SeqKVClerk__Put with "[$Hkv]"); first by eauto.
+    iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
+    iExists _. iFrame. iIntros "Hflag_phys".
+    iMod ("Hclo") as "_". iIntros "!> Hkv".
+    wp_pures.
+
+    wp_loadField.
+    iMod (map_init (∅ : gmap u64 u64)) as (γlog) "Hmap_ctx".
+    iMod (map_alloc acc2 (U64 0) with "[$]") as "(Hmap_ctx&Hacc2)".
+    { rewrite lookup_empty //. }
+    iMod (map_alloc acc1 bal_total with "[$]") as "(Hmap_ctx&Hacc1)".
+    { rewrite lookup_insert_ne //. }
+    set γ := {| bank_ls_names := γ1.(coord_kv_gn);
+                bank_ks_names := γ2.(coord_kv_gn);
+                bank_logBalGN := γlog |}.
+    iMod (lock_alloc lockN _ acc1 (bankPs γ acc1) with "[$] [Hacc1_phys Hacc1]") as "#Hlk1".
+    { iExists _, _. by iFrame. }
+    iMod (lock_alloc lockN _ acc2 (bankPs γ acc2) with "[$] [Hacc2_phys Hacc2]") as "#Hlk2".
+    { iExists _, _. by iFrame. }
+    iMod (inv_alloc bankN _ (bank_inv γ) with "[Hmap_ctx]") as "#Hinv".
+    { iNext. iExists _, _. iSplitL "Hmap_ctx".
+      { rewrite /named. iExactEq "Hmap_ctx". simpl.
+        rewrite insert_union_singleton_l.
+        rewrite insert_empty //=. }
+      eauto.
+    }
+    wp_apply (wp_LockClerk__Unlock with "[$Hlk $Hinit_lock Hflag_phys]").
+    { iRight. iExists γlog. iFrame "#". iFrame "Hflag_phys". }
+    iIntros "H". wp_pures. iApply "HΦ". iModIntro. iFrame "Hinv".
+    iExists _, _. iFrame. eauto.
+  - iDestruct "Hinit" as (γlog) "(Hflag&#Hinv&H)". iNamed "H".
+    iApply (fupd_mask_weaken ∅); first by set_solver+. iIntros "Hclo'".
+    iModIntro. iExists _. iFrame. iIntros "Hflag".
+    iMod "Hclo'" as "_". iModIntro.
+    iIntros (val_sl_flag q). iIntros "(Hkv&Hsl1)".
+    iDestruct (is_slice_to_small with "Hsl0") as "Hsl0".
+    wp_apply (wp_BytesEqual with "[Hsl0 Hsl1]").
+    { by iFrame. }
+    iIntros "(Hsl1&Hsl0)".
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_LockClerk__Unlock with "[$Hlk $Hinit_lock Hflag]").
+    { iRight. iExists γlog. iFrame "#". eauto. }
+    iIntros "H". wp_pures. iApply "HΦ". iModIntro. iFrame "Hinv".
+    iExists _, _. iFrame. eauto.
 Qed.
 
 End bank_proof.

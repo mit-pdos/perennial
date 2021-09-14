@@ -84,7 +84,7 @@ Definition MakeBankClerk: val :=
     then
       memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc1" (memkv.EncodeUint64 BAL_TOTAL);;
       memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc2" (memkv.EncodeUint64 #0);;
-      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "init_flag" (memkv.EncodeUint64 #1);;
+      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "init_flag" (NewSlice byteT #1);;
       #()
     else #());;
     lockservice.LockClerk__Unlock (struct.loadF BankClerk "lck" "bck") "init_flag";;
