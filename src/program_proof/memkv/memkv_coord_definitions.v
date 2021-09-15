@@ -1,7 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.program_proof.lockservice Require Import rpc.
-From Perennial.program_proof.memkv Require Import common_proof memkv_shard_definitions.
+From Perennial.program_proof.memkv Require Import rpc_lib common_proof memkv_shard_definitions.
 
 Definition uCOORD_ADD: nat :=
   Eval vm_compute in match COORD_ADD with LitV (LitInt n) => int.nat n | _ => 0 end.

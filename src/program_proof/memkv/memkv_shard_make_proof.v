@@ -1,7 +1,6 @@
 From Perennial.Helpers Require Import range_set.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.program_proof.lockservice Require Import rpc.
 
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions common_proof.
 

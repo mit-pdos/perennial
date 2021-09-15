@@ -8,7 +8,6 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv connman bank.
 
 
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.lockservice Require Export rpc.
 From Perennial.program_proof.memkv Require Export
      memkv_shard_definitions memkv_shard_start_proof memkv_shard_make_proof memkv_shard_ghost_init.
 From Perennial.program_proof.memkv Require Export
