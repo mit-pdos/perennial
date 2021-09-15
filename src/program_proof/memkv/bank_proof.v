@@ -1,9 +1,8 @@
 From Perennial.algebra Require Import auth_map.
 From Perennial.program_proof Require Import grove_prelude std_proof.
 From Goose.github_com.mit_pdos.gokv Require Import memkv lockservice bank.
-From Perennial.program_proof.lockservice Require Import rpc.
 From Perennial.program_logic Require Import atomic_fupd.
-From Perennial.program_proof.memkv Require Export common_proof memkv_clerk_proof lockservice_proof.
+From Perennial.program_proof.memkv Require Export common_proof rpc_lib memkv_clerk_proof lockservice_proof.
 
 
 Record bank_names := BankNames {
