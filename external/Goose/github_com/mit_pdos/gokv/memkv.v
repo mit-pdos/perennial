@@ -699,13 +699,13 @@ Definition KVCoordClerk := struct.decl [
 Definition KVCoordClerk__AddShardServer: val :=
   rec: "KVCoordClerk__AddShardServer" "ck" "dst" :=
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    connman.ConnMan__CallAtLeastOnce (struct.loadF KVCoordClerk "c" "ck") (struct.loadF KVCoordClerk "host" "ck") COORD_ADD (EncodeUint64 "dst") "rawRep" #10000;;
+    connman.ConnMan__CallAtLeastOnce (struct.loadF KVCoordClerk "c" "ck") (struct.loadF KVCoordClerk "host" "ck") COORD_ADD (EncodeUint64 "dst") "rawRep" #50000;;
     #().
 
 Definition KVCoordClerk__GetShardMap: val :=
   rec: "KVCoordClerk__GetShardMap" "ck" :=
     let: "rawRep" := ref (zero_val (slice.T byteT)) in
-    connman.ConnMan__CallAtLeastOnce (struct.loadF KVCoordClerk "c" "ck") (struct.loadF KVCoordClerk "host" "ck") COORD_GET (NewSlice byteT #0) "rawRep" #100;;
+    connman.ConnMan__CallAtLeastOnce (struct.loadF KVCoordClerk "c" "ck") (struct.loadF KVCoordClerk "host" "ck") COORD_GET (NewSlice byteT #0) "rawRep" #50000;;
     decodeShardMap (![slice.T byteT] "rawRep").
 
 (* "Sequential" KV clerk, can only be used for one request at a time.
@@ -798,7 +798,7 @@ Definition KVClerk__getSeqClerk: val :=
     (if: ("n" = #0)
     then
       lock.release (struct.loadF KVClerk "mu" "p");;
-      MakeSeqKVClerk (struct.loadF KVClerk "coord" "p") (struct.loadF KVClerk "cm" "p")
+      MakeSeqKVClerk (struct.loadF KVClerk "coord" "p") (connman.MakeConnMan #())
     else
       let: "ck" := SliceGet seqKVClerkPtr (struct.loadF KVClerk "freeClerks" "p") ("n" - #1) in
       struct.storeF KVClerk "freeClerks" "p" (SliceTake (struct.loadF KVClerk "freeClerks" "p") ("n" - #1));;
@@ -832,6 +832,13 @@ Definition KVClerk__ConditionalPut: val :=
     let: "ret" := SeqKVClerk__ConditionalPut "ck" "key" "expectedValue" "newValue" in
     KVClerk__putSeqClerk "p" "ck";;
     "ret".
+
+(* FIXME: rename to AddShardServer *)
+Definition KVClerk__Add: val :=
+  rec: "KVClerk__Add" "p" "host" :=
+    let: "ck" := KVClerk__getSeqClerk "p" in
+    SeqKVClerk__Add "ck" "host";;
+    KVClerk__putSeqClerk "p" "ck".
 
 (* returns a slice of "values" (which are byte slices) in the same order as the
    keys passed in as input

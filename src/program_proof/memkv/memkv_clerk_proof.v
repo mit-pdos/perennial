@@ -49,9 +49,10 @@ Proof.
     wp_apply (release_spec'' with "Hinv [-HΦ]").
     { iFrame. rewrite /own_KVClerk. eauto with iFrame. }
     wp_pures.
+    wp_apply (wp_MakeConnMan).
+    iIntros (cm2) "Hcm2".
     wp_loadField.
-    wp_loadField.
-    wp_apply (wp_MakeSeqKVClerk with "[$Hiscoord $Hiscm]").
+    wp_apply (wp_MakeSeqKVClerk with "[$Hiscoord $Hcm2]").
     iIntros (ck) "Hck".
     iApply "HΦ".
     eauto.
@@ -251,6 +252,25 @@ Proof.
   iIntros "!> Hck".
   wp_apply (wp_KVClerk__putSeqClerk with "Hp Hck").
   wp_pures. iApply "HΦ". done.
+Qed.
+
+Lemma wp_KVClerk__Add (p:loc) γkv γ (dst : u64) :
+  {{{
+       is_KVClerk p γkv ∗
+       is_shard_server dst γ ∗
+       ⌜γ.(kv_gn) = γkv⌝
+  }}}
+    KVClerk__Add #p #dst
+  {{{RET #(); True }}}
+.
+Proof.
+  iIntros (Φ) "#(Hp & Hshard & %) HΦ". wp_lam. subst γkv.
+  wp_apply (wp_KVClerk__getSeqClerk with "Hp").
+  iIntros (ck) "Hck".
+  wp_apply (wp_SeqKVClerk__Add with "[$Hck $Hshard //]").
+  iIntros "Hck".
+  wp_apply (wp_KVClerk__putSeqClerk with "Hp Hck").
+  iApply "HΦ". done.
 Qed.
 
 Lemma wp_KVClerk__MGet (p:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64 * list u8)) q :

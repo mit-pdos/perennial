@@ -47,7 +47,7 @@ Lemma wp_KVCoordClerk__AddShardServer (ck:loc) γkv γ (dst : u64) :
        ⌜γ.(kv_gn) = γkv⌝
   }}}
     KVCoordClerk__AddShardServer #ck #dst
-  {{{RET #(); True }}}
+  {{{RET #(); own_KVCoordClerk ck γkv }}}
 .
 Proof.
   iIntros (Φ) "(Hclerk&#His_shard&%) HΦ".
@@ -74,7 +74,10 @@ Proof.
   { simpl. iModIntro. iNext. iFrame "%". iExists _. iFrame "#". iPureIntro; congruence. }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
-  iModIntro. by iApply "HΦ".
+  iModIntro. iApply "HΦ". rewrite /own_KVCoordClerk.
+  iExists γh, _, _.
+  iFrame. iSplit; first done. iFrame "Hc_own". rewrite /is_coord_server.
+  iSplit; done.
 Qed.
 
 Lemma wp_KVCoordClerk__GetShardMap (ck:loc) γkv :

@@ -386,7 +386,7 @@ Lemma wp_SeqKVClerk__Add (ck:loc) γkv γ (dst : u64) :
        ⌜γ.(kv_gn) = γkv⌝
   }}}
     SeqKVClerk__Add #ck #dst
-  {{{RET #(); True }}}
+  {{{RET #(); own_SeqKVClerk ck γkv }}}
 .
 Proof.
   iIntros (Φ) "(Hown&#His_shard&%) HΦ".
@@ -395,7 +395,10 @@ Proof.
   iNamed "Hown".
   wp_loadField.
   wp_apply (wp_KVCoordClerk__AddShardServer with "[$HcoordCk_own $His_shard]"); eauto.
-  by iApply "HΦ".
+  iIntros "HcoordCk_own".
+  iApply "HΦ".
+  rewrite /own_SeqKVClerk.
+  iExists _, _, _, _. iFrame. eauto.
 Qed.
 
 End memkv_clerk_proof.
