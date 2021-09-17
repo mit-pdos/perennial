@@ -26,7 +26,8 @@ Definition Log__writeHdr: val :=
   rec: "Log__writeHdr" "log" "len" :=
     let: "hdr" := NewSlice byteT #4096 in
     UInt64Put "hdr" "len";;
-    disk.Write LOGCOMMIT "hdr".
+    disk.Write LOGCOMMIT "hdr";;
+    #().
 
 Definition Init: val :=
   rec: "Init" "logSz" :=
@@ -72,7 +73,8 @@ Definition Log__memWrite: val :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "n"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       struct.get Log "memLog" "log" <-[slice.T (slice.T byteT)] SliceAppend (slice.T byteT) (![slice.T (slice.T byteT)] (struct.get Log "memLog" "log")) (SliceGet (slice.T byteT) "l" (![uint64T] "i"));;
-      Continue).
+      Continue);;
+    #().
 
 Definition Log__memAppend: val :=
   rec: "Log__memAppend" "log" "l" :=
@@ -104,15 +106,14 @@ Definition Log__diskAppendWait: val :=
       let: "logtxn" := Log__readLogTxnNxt "log" in
       (if: "txn" < "logtxn"
       then Break
-      else Continue)).
+      else Continue));;
+    #().
 
 Definition Log__Append: val :=
   rec: "Log__Append" "log" "l" :=
     let: ("ok", "txn") := Log__memAppend "log" "l" in
     (if: "ok"
-    then
-      Log__diskAppendWait "log" "txn";;
-      #()
+    then Log__diskAppendWait "log" "txn"
     else #());;
     "ok".
 
@@ -123,7 +124,8 @@ Definition Log__writeBlocks: val :=
     (for: (λ: <>, ![uint64T] "i" < "n"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       let: "bk" := SliceGet (slice.T byteT) "l" (![uint64T] "i") in
       disk.Write ("pos" + ![uint64T] "i") "bk";;
-      Continue).
+      Continue);;
+    #().
 
 Definition Log__diskAppend: val :=
   rec: "Log__diskAppend" "log" :=
@@ -138,14 +140,16 @@ Definition Log__diskAppend: val :=
     Log__writeBlocks "log" "blks" "disklen";;
     Log__writeHdr "log" "memlen";;
     struct.get Log "logTxnNxt" "log" <-[uint64T] "memnxt";;
-    lock.release (struct.get Log "logLock" "log").
+    lock.release (struct.get Log "logLock" "log");;
+    #().
 
 Definition Log__Logger: val :=
   rec: "Log__Logger" "log" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       Log__diskAppend "log";;
-      Continue).
+      Continue);;
+    #().
 
 (* txn.go *)
 
@@ -168,16 +172,13 @@ Definition Txn__Write: val :=
     let: "ret" := ref_to boolT #true in
     let: (<>, "ok") := MapGet (struct.get Txn "blks" "txn") "addr" in
     (if: "ok"
-    then
-      MapInsert (struct.get Txn "blks" "txn") "addr" (![slice.T byteT] "blk");;
-      #()
+    then MapInsert (struct.get Txn "blks" "txn") "addr" (![slice.T byteT] "blk")
     else #());;
     (if: ~ "ok"
     then
       (if: ("addr" = LOGMAXBLK)
       then "ret" <-[boolT] #false
-      else MapInsert (struct.get Txn "blks" "txn") "addr" (![slice.T byteT] "blk"));;
-      #()
+      else MapInsert (struct.get Txn "blks" "txn") "addr" (![slice.T byteT] "blk"))
     else #());;
     ![boolT] "ret".
 

@@ -83,15 +83,15 @@ Definition Op__OverWrite: val :=
     then
       "b" <-[refT (struct.t buf.Buf)] buf.MkBuf "addr" "sz" "data";;
       buf.Buf__SetDirty (![refT (struct.t buf.Buf)] "b");;
-      buf.BufMap__Insert (struct.loadF Op "bufs" "op") (![refT (struct.t buf.Buf)] "b")
+      buf.BufMap__Insert (struct.loadF Op "bufs" "op") (![refT (struct.t buf.Buf)] "b");;
+      #()
     else
       (if: "sz" ≠ struct.loadF buf.Buf "Sz" (![refT (struct.t buf.Buf)] "b")
-      then
-        Panic "overwrite";;
-        #()
+      then Panic "overwrite"
       else #());;
       struct.storeF buf.Buf "Data" (![refT (struct.t buf.Buf)] "b") "data";;
-      buf.Buf__SetDirty (![refT (struct.t buf.Buf)] "b")).
+      buf.Buf__SetDirty (![refT (struct.t buf.Buf)] "b");;
+      #()).
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
 

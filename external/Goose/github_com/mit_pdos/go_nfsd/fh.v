@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.go_journal.common.
 From Goose Require github_com.mit_pdos.go_nfsd.nfstypes.
 From Goose Require github_com.tchajed.marshal.
@@ -42,14 +43,4 @@ Definition MkRootFh3: val :=
 
 Definition Equal: val :=
   rec: "Equal" "h1" "h2" :=
-    (if: slice.len (struct.get nfstypes.Nfs_fh3 "Data" "h1") ≠ slice.len (struct.get nfstypes.Nfs_fh3 "Data" "h2")
-    then #false
-    else
-      let: "equal" := ref_to boolT #true in
-      ForSlice byteT "i" "x" (struct.get nfstypes.Nfs_fh3 "Data" "h1")
-        (if: "x" ≠ SliceGet byteT (struct.get nfstypes.Nfs_fh3 "Data" "h2") "i"
-        then
-          "equal" <-[boolT] #false;;
-          Break
-        else #());;
-      ![boolT] "equal").
+    std.BytesEqual (struct.get nfstypes.Nfs_fh3 "Data" "h1") (struct.get nfstypes.Nfs_fh3 "Data" "h2").

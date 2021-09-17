@@ -85,7 +85,7 @@ Proof.
   wp_apply (wp_sliding__clearMutable with "His_memLog").
   iIntros "His_memLog".
 
-  iApply "HΦ".
+  wp_pures. iApply "HΦ".
   iNamed "HmemLog_linv".
   iNamed "Hlinv_pers".
   iNamed "Htxns".

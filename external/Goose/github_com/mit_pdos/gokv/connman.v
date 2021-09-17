@@ -65,11 +65,10 @@ Definition ConnMan__CallAtLeastOnce: val :=
         then
           lock.acquire (struct.loadF ConnMan "mu" "c");;
           (if: (![refT (struct.t rpc.RPCClient)] "cl" = Fst (MapGet (struct.loadF ConnMan "rpcCls" "c") "host"))
-          then
-            MapDelete (struct.loadF ConnMan "rpcCls" "c") "host";;
-            #()
+          then MapDelete (struct.loadF ConnMan "rpcCls" "c") "host"
           else #());;
           lock.release (struct.loadF ConnMan "mu" "c");;
           "cl" <-[refT (struct.t rpc.RPCClient)] ConnMan__getClient "c" "host";;
           Continue
-        else Break))).
+        else Break)));;
+    #().

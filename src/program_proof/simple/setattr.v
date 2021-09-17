@@ -368,6 +368,7 @@ Proof using Ptimeless.
             wp_storeField.
             wp_pures.
 
+            wp_pures. iModIntro.
             iNamed 1.
             iSplitR "Hinode_state Hinode_enc Hinode_data".
             2: {
@@ -440,6 +441,7 @@ Proof using Ptimeless.
             iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
             wp_storeField.
 
+            wp_pures. iModIntro.
             iNamed 1.
             iSplitR "Hinode_state Hcommit".
             2: { iExists _; iFrame. }
@@ -657,6 +659,7 @@ Proof using Ptimeless.
         wp_storeField.
         wp_pures.
 
+        wp_pures. iModIntro.
         iNamed 1.
         iSplitR "Hinode_state Hinode_enc Hinode_data".
         2: {
@@ -716,6 +719,7 @@ Proof using Ptimeless.
         iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
         wp_storeField.
 
+        wp_pures. iModIntro.
         iNamed 1.
         iSplitR "Hinode_state Hcommit".
         2: { iExists _. iFrame. }
@@ -794,6 +798,7 @@ Proof using Ptimeless.
     iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
     wp_storeField.
 
+    wp_pures. iModIntro.
     iNamed 1.
     iSplitR "Hinode_state Hcommit".
     2: {
@@ -847,6 +852,7 @@ Proof using Ptimeless.
     iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
     wp_storeField.
 
+    wp_pures. iModIntro.
     iNamed 1.
     iSplitR "Hinode_state Hcommit".
     2: { iExists _; iFrame. }

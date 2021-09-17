@@ -60,7 +60,7 @@ Proof.
   { eauto. }
   iIntros "[Hjrnl Hinode_enc_mapsto]".
   wp_apply util_proof.wp_DPrintf.
-  iApply "HΦ". iFrame.
+  wp_pures. iModIntro. iApply "HΦ". iFrame.
   iExists _. iFrame. iPureIntro.
   rewrite /encodes_inode.
   rewrite list_to_inode_buf_to_list. 2: { rewrite /inode_bytes; word. }

@@ -363,7 +363,7 @@ Proof.
     rewrite /named; f_equal; len.
     rewrite app_nil_r //.
   - iIntros "(Hs&HI)"; iNamed "HI".
-    iApply "HΦ"; by iFrame.
+    wp_pures. iApply "HΦ"; by iFrame.
 Qed.
 
 Hint Rewrite encoded_length_app1 : len.

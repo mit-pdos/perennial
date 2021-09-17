@@ -272,7 +272,7 @@ Proof.
     iApply big_sepM_empty.
     done.
   }
-  by iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 End memkv_shard_start_proof.

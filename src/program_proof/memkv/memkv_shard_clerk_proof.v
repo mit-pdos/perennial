@@ -140,7 +140,7 @@ Proof.
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got reply *)
-  iApply "HΦ". iExists _, _, _, _, _.
+  wp_pures. iModIntro. iApply "HΦ". iExists _, _, _, _, _.
   iFrame "Hcid Hseq Hc Hhost Hcrpc Hc_own".
   iSplit; last eauto.
   iEval (rewrite is_shard_server_unfold).
@@ -241,7 +241,7 @@ Proof.
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got a reply *)
-  iApply "HΦ".
+  iApply "HΦ". iModIntro.
   iExists _, _, _, _, _.
   rewrite is_shard_server_unfold.
   iFrame "Hcid Hseq Hc Hhost Hcrpc Hc_own".

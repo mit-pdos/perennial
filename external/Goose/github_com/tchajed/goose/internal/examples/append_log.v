@@ -25,7 +25,8 @@ Definition Log__mkHdr: val :=
 
 Definition Log__writeHdr: val :=
   rec: "Log__writeHdr" "log" :=
-    disk.Write #0 (Log__mkHdr "log").
+    disk.Write #0 (Log__mkHdr "log");;
+    #().
 
 Definition Init: val :=
   rec: "Init" "diskSz" :=
@@ -74,7 +75,8 @@ Definition Log__Get: val :=
 Definition writeAll: val :=
   rec: "writeAll" "bks" "off" :=
     ForSlice (slice.T byteT) "i" "bk" "bks"
-      (disk.Write ("off" + "i") "bk").
+      (disk.Write ("off" + "i") "bk");;
+    #().
 
 Definition Log__append: val :=
   rec: "Log__append" "log" "bks" :=
@@ -97,10 +99,12 @@ Definition Log__Append: val :=
 Definition Log__reset: val :=
   rec: "Log__reset" "log" :=
     struct.storeF Log "sz" "log" #0;;
-    Log__writeHdr "log".
+    Log__writeHdr "log";;
+    #().
 
 Definition Log__Reset: val :=
   rec: "Log__Reset" "log" :=
     lock.acquire (struct.loadF Log "m" "log");;
     Log__reset "log";;
-    lock.release (struct.loadF Log "m" "log").
+    lock.release (struct.loadF Log "m" "log");;
+    #().

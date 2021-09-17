@@ -427,7 +427,7 @@ Proof.
     iDestruct "Hb" as "[$ $]". }
   iIntros "[(?&?&?&?) Hbks_s]".
   iNamed.
-  iApply "HΦ".
+  wp_pures. iModIntro. iApply "HΦ".
   rewrite take_ge.
   2: rewrite fmap_length; lia.
   rewrite (equiv_upds_addrs_eq bufs upds Hsame_upds).
@@ -1360,7 +1360,7 @@ Proof.
   wp_apply (wp_condSignal with "[$cond_shut]").
   wp_loadField.
   wp_apply (release_spec with "[$lk $Hlocked $Hlockinv]").
-  by iApply ("HΦ" with "[$]").
+  wp_pures. by iApply ("HΦ" with "[$]").
 Qed.
 
 End goose_lang.

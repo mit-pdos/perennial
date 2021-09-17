@@ -21,7 +21,8 @@ Definition RPCServer__rpcHandle: val :=
     marshal.Enc__PutInt "e" "seqno";;
     marshal.Enc__PutInt "e" (slice.len (![slice.T byteT] "replyData"));;
     marshal.Enc__PutBytes "e" (![slice.T byteT] "replyData");;
-    grove_ffi.Send "conn" (marshal.Enc__Finish "e").
+    grove_ffi.Send "conn" (marshal.Enc__Finish "e");;
+    #().
 
 Definition MakeRPCServer: val :=
   rec: "MakeRPCServer" "handlers" :=
@@ -44,7 +45,8 @@ Definition RPCServer__readThread: val :=
         let: "reqLen" := marshal.Dec__GetInt "d" in
         let: "req" := marshal.Dec__GetBytes "d" "reqLen" in
         RPCServer__rpcHandle "srv" "conn" "rpcid" "seqno" "req";;
-        Continue)).
+        Continue));;
+    #().
 
 Definition RPCServer__Serve: val :=
   rec: "RPCServer__Serve" "srv" "host" "numWorkers" :=
@@ -53,7 +55,8 @@ Definition RPCServer__Serve: val :=
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             let: "conn" := grove_ffi.Accept "listener" in
             Fork (RPCServer__readThread "srv" "conn");;
-            Continue)).
+            Continue));;
+    #().
 
 Definition callbackStateWaiting : expr := #0.
 
@@ -100,11 +103,11 @@ Definition RPCClient__replyThread: val :=
           MapDelete (struct.loadF RPCClient "pending" "cl") "seqno";;
           struct.loadF callback "reply" "cb" <-[slice.T byteT] "reply";;
           struct.loadF callback "state" "cb" <-[uint64T] callbackStateDone;;
-          lock.condSignal (struct.loadF callback "cond" "cb");;
-          #()
+          lock.condSignal (struct.loadF callback "cond" "cb")
         else #());;
         lock.release (struct.loadF RPCClient "mu" "cl");;
-        Continue)).
+        Continue));;
+    #().
 
 Definition MakeRPCClient: val :=
   rec: "MakeRPCClient" "host_name" :=
@@ -150,9 +153,7 @@ Definition RPCClient__Call: val :=
     else
       lock.acquire (struct.loadF RPCClient "mu" "cl");;
       (if: (![uint64T] (struct.loadF callback "state" "cb") = callbackStateWaiting)
-      then
-        lock.condWaitTimeout (struct.loadF callback "cond" "cb") "timeout_ms";;
-        #()
+      then lock.condWaitTimeout (struct.loadF callback "cond" "cb") "timeout_ms"
       else #());;
       let: "state" := ![uint64T] (struct.loadF callback "state" "cb") in
       (if: ("state" = callbackStateDone)

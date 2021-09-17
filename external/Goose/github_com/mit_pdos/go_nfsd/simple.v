@@ -89,9 +89,7 @@ Definition Inode__Read: val :=
     else
       let: "count" := ref_to uint64T "bytesToRead" in
       (if: ![uint64T] "count" > struct.loadF Inode "Size" "ip" - "offset"
-      then
-        "count" <-[uint64T] struct.loadF Inode "Size" "ip" - "offset";;
-        #()
+      then "count" <-[uint64T] struct.loadF Inode "Size" "ip" - "offset"
       else #());;
       util.DPrintf #5 (#(str"Read: off %d cnt %d
       ")) #();;
@@ -112,7 +110,8 @@ Definition Inode__WriteInode: val :=
     let: "d" := Inode__Encode "ip" in
     jrnl.Op__OverWrite "op" (inum2Addr (struct.loadF Inode "Inum" "ip")) (common.INODESZ * #8) "d";;
     util.DPrintf #1 (#(str"WriteInode %v
-    ")) #().
+    ")) #();;
+    #().
 
 (* Returns number of bytes written and error *)
 Definition Inode__Write: val :=
@@ -142,8 +141,7 @@ Definition Inode__Write: val :=
             (if: "offset" + "count" > struct.loadF Inode "Size" "ip"
             then
               struct.storeF Inode "Size" "ip" ("offset" + "count");;
-              Inode__WriteInode "ip" "op";;
-              #()
+              Inode__WriteInode "ip" "op"
             else #());;
             ("count", #true))))).
 
@@ -190,7 +188,8 @@ Definition inodeInit: val :=
       let: "ip" := ReadInode "op" (![uint64T] "i") in
       struct.storeF Inode "Data" "ip" (common.LOGSIZE + #1 + ![uint64T] "i");;
       Inode__WriteInode "ip" "op";;
-      Continue).
+      Continue);;
+    #().
 
 (* mkfs.go *)
 
@@ -318,7 +317,8 @@ Definition rootFattr: val :=
 Definition Nfs__NFSPROC3_NULL: val :=
   rec: "Nfs__NFSPROC3_NULL" "nfs" :=
     util.DPrintf #0 (#(str"NFS Null
-    ")) #().
+    ")) #();;
+    #().
 
 Definition validInum: val :=
   rec: "validInum" "inum" :=
@@ -335,15 +335,20 @@ Definition validInum: val :=
 Definition NFSPROC3_GETATTR_wp: val :=
   rec: "NFSPROC3_GETATTR_wp" "args" "reply" "inum" "op" :=
     let: "ip" := ReadInode "op" "inum" in
-    struct.storeF nfstypes.GETATTR3resok "Obj_attributes" (struct.fieldRef nfstypes.GETATTR3res "Resok" "reply") (Inode__MkFattr "ip").
+    struct.storeF nfstypes.GETATTR3resok "Obj_attributes" (struct.fieldRef nfstypes.GETATTR3res "Resok" "reply") (Inode__MkFattr "ip");;
+    #().
 
 Definition NFSPROC3_GETATTR_internal: val :=
   rec: "NFSPROC3_GETATTR_internal" "args" "reply" "inum" "op" :=
     NFSPROC3_GETATTR_wp "args" "reply" "inum" "op";;
     let: "ok" := jrnl.Op__CommitWait "op" #true in
     (if: "ok"
-    then struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3_OK
-    else struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT).
+    then
+      struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3_OK;;
+      #()
+    else
+      struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT;;
+      #()).
 
 Definition Nfs__NFSPROC3_GETATTR: val :=
   rec: "Nfs__NFSPROC3_GETATTR" "nfs" "args" :=
@@ -397,8 +402,12 @@ Definition NFSPROC3_SETATTR_internal: val :=
     else
       let: "ok2" := jrnl.Op__CommitWait "op" #true in
       (if: "ok2"
-      then struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3_OK
-      else struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT)).
+      then
+        struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3_OK;;
+        #()
+      else
+        struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT;;
+        #())).
 
 Definition Nfs__NFSPROC3_SETATTR: val :=
   rec: "Nfs__NFSPROC3_SETATTR" "nfs" "args" :=
@@ -428,14 +437,10 @@ Definition Nfs__NFSPROC3_LOOKUP: val :=
     let: "fn" := struct.get nfstypes.Diropargs3 "Name" (struct.get nfstypes.LOOKUP3args "What" "args") in
     let: "inum" := ref (zero_val uint64T) in
     (if: ("fn" = #(str"a"))
-    then
-      "inum" <-[uint64T] #2;;
-      #()
+    then "inum" <-[uint64T] #2
     else #());;
     (if: ("fn" = #(str"b"))
-    then
-      "inum" <-[uint64T] #3;;
-      #()
+    then "inum" <-[uint64T] #3
     else #());;
     (if: ~ (validInum (![uint64T] "inum"))
     then
@@ -464,15 +469,20 @@ Definition NFSPROC3_READ_wp: val :=
     let: ("data", "eof") := Inode__Read "ip" "op" (struct.get nfstypes.READ3args "Offset" "args") (to_u64 (struct.get nfstypes.READ3args "Count" "args")) in
     struct.storeF nfstypes.READ3resok "Count" (struct.fieldRef nfstypes.READ3res "Resok" "reply") (to_u32 (slice.len "data"));;
     struct.storeF nfstypes.READ3resok "Data" (struct.fieldRef nfstypes.READ3res "Resok" "reply") "data";;
-    struct.storeF nfstypes.READ3resok "Eof" (struct.fieldRef nfstypes.READ3res "Resok" "reply") "eof".
+    struct.storeF nfstypes.READ3resok "Eof" (struct.fieldRef nfstypes.READ3res "Resok" "reply") "eof";;
+    #().
 
 Definition NFSPROC3_READ_internal: val :=
   rec: "NFSPROC3_READ_internal" "args" "reply" "inum" "op" :=
     NFSPROC3_READ_wp "args" "reply" "inum" "op";;
     let: "ok" := jrnl.Op__CommitWait "op" #true in
     (if: "ok"
-    then struct.storeF nfstypes.READ3res "Status" "reply" nfstypes.NFS3_OK
-    else struct.storeF nfstypes.READ3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT).
+    then
+      struct.storeF nfstypes.READ3res "Status" "reply" nfstypes.NFS3_OK;;
+      #()
+    else
+      struct.storeF nfstypes.READ3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT;;
+      #()).
 
 Definition Nfs__NFSPROC3_READ: val :=
   rec: "Nfs__NFSPROC3_READ" "nfs" "args" :=
@@ -512,8 +522,12 @@ Definition NFSPROC3_WRITE_internal: val :=
     else
       let: "ok2" := jrnl.Op__CommitWait "op" #true in
       (if: "ok2"
-      then struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3_OK
-      else struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT)).
+      then
+        struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3_OK;;
+        #()
+      else
+        struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT;;
+        #())).
 
 Definition Nfs__NFSPROC3_WRITE: val :=
   rec: "Nfs__NFSPROC3_WRITE" "nfs" "args" :=
@@ -713,4 +727,5 @@ Definition RecoverExample: val :=
     let: "nfs" := Recover "d" in
     Fork (exampleWorker "nfs" #3);;
     Fork (exampleWorker "nfs" #3);;
-    Fork (exampleWorker "nfs" #4).
+    Fork (exampleWorker "nfs" #4);;
+    #().

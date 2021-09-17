@@ -192,6 +192,7 @@ Proof using Ptimeless.
 
   iFreeze "Status Resok Resfail".
 
+  wp_pures. iModIntro.
   iNamed 1.
   wpc_pures.
 
@@ -251,6 +252,7 @@ Proof using Ptimeless.
       iModIntro. iSplit; try done; iIntros "_ !>"; done. }
 
     wp_storeField.
+    wp_pures. iModIntro.
     iNamed 1.
 
     iSplitR "Hinode_state Hcommit".
@@ -317,6 +319,7 @@ Transparent nfstypes.READ3res.
     { iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
       iModIntro. iSplit; first done. iIntros "_ !>"; done. }
     wp_storeField.
+    wp_pures. iModIntro. 
     iNamed 1.
 
     iSplitR "Hinode_state Hcommit".

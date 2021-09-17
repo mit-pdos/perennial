@@ -97,8 +97,6 @@ Definition Inode__Append: val :=
       let: "ok2" := Inode__append "i" "a" in
       lock.release (struct.loadF Inode "m" "i");;
       (if: ~ "ok2"
-      then
-        alloc.Allocator__Free "allocator" "a";;
-        #()
+      then alloc.Allocator__Free "allocator" "a"
       else #());;
       "ok2").

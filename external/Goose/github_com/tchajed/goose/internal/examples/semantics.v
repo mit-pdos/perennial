@@ -496,7 +496,8 @@ Definition LoopStruct__forLoopWait: val :=
       then Break
       else
         struct.get LoopStruct "loopNext" "ls" <-[uint64T] ![uint64T] (struct.get LoopStruct "loopNext" "ls") + #1;;
-        Continue)).
+        Continue));;
+    #().
 
 (* tests *)
 Definition testStandardForLoop: val :=
@@ -537,11 +538,13 @@ Definition testBreakFromLoopNoContinue: val :=
       then
         "i" <-[uint64T] ![uint64T] "i" + #1;;
         Break
-      else "i" <-[uint64T] ![uint64T] "i" + #2));;
+      else
+        "i" <-[uint64T] ![uint64T] "i" + #2;;
+        Continue));;
     (![uint64T] "i" = #1).
 
-Definition failing_testBreakFromLoopNoContinueDouble: val :=
-  rec: "failing_testBreakFromLoopNoContinueDouble" <> :=
+Definition testBreakFromLoopNoContinueDouble: val :=
+  rec: "testBreakFromLoopNoContinueDouble" <> :=
     let: "i" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, ![uint64T] "i" < #3); (λ: <>, Skip) := λ: <>,
@@ -551,7 +554,8 @@ Definition failing_testBreakFromLoopNoContinueDouble: val :=
         Break
       else
         "i" <-[uint64T] ![uint64T] "i" + #2;;
-        "i" <-[uint64T] ![uint64T] "i" + #2));;
+        "i" <-[uint64T] ![uint64T] "i" + #2;;
+        Continue));;
     (![uint64T] "i" = #4).
 
 Definition testBreakFromLoopForOnly: val :=
@@ -845,9 +849,7 @@ Definition testOrCompare: val :=
   rec: "testOrCompare" <> :=
     let: "ok" := ref_to boolT #true in
     (if: ~ (#3 > #4) || (#4 > #3)
-    then
-      "ok" <-[boolT] #false;;
-      #()
+    then "ok" <-[boolT] #false
     else #());;
     (if: (#4 < #3) || (#2 > #3)
     then "ok" <-[boolT] #false
@@ -858,9 +860,7 @@ Definition testAndCompare: val :=
   rec: "testAndCompare" <> :=
     let: "ok" := ref_to boolT #true in
     (if: (#3 > #4) && (#4 > #3)
-    then
-      "ok" <-[boolT] #false;;
-      #()
+    then "ok" <-[boolT] #false
     else #());;
     (if: (#4 > #3) || (#2 < #3)
     then #()
@@ -963,7 +963,8 @@ Definition ArrayEditor__Advance: val :=
     SliceSet uint64T "arr" #0 (SliceGet uint64T "arr" #0 + #1);;
     SliceSet uint64T (struct.loadF ArrayEditor "s" "ae") #0 (struct.loadF ArrayEditor "next_val" "ae");;
     struct.storeF ArrayEditor "next_val" "ae" "next";;
-    struct.storeF ArrayEditor "s" "ae" (SliceSkip uint64T (struct.loadF ArrayEditor "s" "ae") #1).
+    struct.storeF ArrayEditor "s" "ae" (SliceSkip uint64T (struct.loadF ArrayEditor "s" "ae") #1);;
+    #().
 
 (* tests *)
 Definition testSliceOps: val :=
@@ -1054,11 +1055,13 @@ Definition Foo := struct.decl [
 Definition Bar__mutate: val :=
   rec: "Bar__mutate" "bar" :=
     struct.storeF Bar "a" "bar" #2;;
-    struct.storeF Bar "b" "bar" #3.
+    struct.storeF Bar "b" "bar" #3;;
+    #().
 
 Definition Foo__mutateBar: val :=
   rec: "Foo__mutateBar" "foo" :=
-    Bar__mutate (struct.loadF Foo "bar" "foo").
+    Bar__mutate (struct.loadF Foo "bar" "foo");;
+    #().
 
 Definition failing_testFooBarMutation: val :=
   rec: "failing_testFooBarMutation" <> :=
@@ -1109,11 +1112,13 @@ Definition S__readBVal: val :=
 
 Definition S__updateBValX: val :=
   rec: "S__updateBValX" "s" "i" :=
-    struct.storeF TwoInts "x" (struct.fieldRef S "b" "s") "i".
+    struct.storeF TwoInts "x" (struct.fieldRef S "b" "s") "i";;
+    #().
 
 Definition S__negateC: val :=
   rec: "S__negateC" "s" :=
-    struct.storeF S "c" "s" (~ (struct.loadF S "c" "s")).
+    struct.storeF S "c" "s" (~ (struct.loadF S "c" "s"));;
+    #().
 
 Definition failing_testStructUpdates: val :=
   rec: "failing_testStructUpdates" <> :=
@@ -1273,9 +1278,7 @@ Definition New: val :=
     let: "d" := disk.Get #() in
     let: "diskSize" := disk.Size #() in
     (if: "diskSize" ≤ logLength
-    then
-      Panic ("disk is too small to host log");;
-      #()
+    then Panic ("disk is too small to host log")
     else #());;
     let: "cache" := NewMap disk.blockT in
     let: "header" := intToBlock #0 in
@@ -1292,11 +1295,13 @@ Definition New: val :=
 
 Definition Log__lock: val :=
   rec: "Log__lock" "l" :=
-    lock.acquire (struct.get Log "l" "l").
+    lock.acquire (struct.get Log "l" "l");;
+    #().
 
 Definition Log__unlock: val :=
   rec: "Log__unlock" "l" :=
-    lock.release (struct.get Log "l" "l").
+    lock.release (struct.get Log "l" "l");;
+    #().
 
 (* BeginTxn allocates space for a new transaction in the log.
 
@@ -1340,9 +1345,7 @@ Definition Log__Write: val :=
     Log__lock "l";;
     let: "length" := ![uint64T] (struct.get Log "length" "l") in
     (if: "length" ≥ MaxTxnWrites
-    then
-      Panic ("transaction is at capacity");;
-      #()
+    then Panic ("transaction is at capacity")
     else #());;
     let: "aBlock" := intToBlock "a" in
     let: "nextAddr" := #1 + #2 * "length" in
@@ -1350,7 +1353,8 @@ Definition Log__Write: val :=
     disk.Write ("nextAddr" + #1) "v";;
     MapInsert (struct.get Log "cache" "l") "a" "v";;
     struct.get Log "length" "l" <-[uint64T] "length" + #1;;
-    Log__unlock "l".
+    Log__unlock "l";;
+    #().
 
 (* Commit the current transaction. *)
 Definition Log__Commit: val :=
@@ -1359,7 +1363,8 @@ Definition Log__Commit: val :=
     let: "length" := ![uint64T] (struct.get Log "length" "l") in
     Log__unlock "l";;
     let: "header" := intToBlock "length" in
-    disk.Write #0 "header".
+    disk.Write #0 "header";;
+    #().
 
 Definition getLogEntry: val :=
   rec: "getLogEntry" "d" "logOffset" :=
@@ -1380,12 +1385,14 @@ Definition applyLog: val :=
         disk.Write (logLength + "a") "v";;
         "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue
-      else Break)).
+      else Break));;
+    #().
 
 Definition clearLog: val :=
   rec: "clearLog" "d" :=
     let: "header" := intToBlock #0 in
-    disk.Write #0 "header".
+    disk.Write #0 "header";;
+    #().
 
 (* Apply all the committed transactions.
 
@@ -1397,7 +1404,8 @@ Definition Log__Apply: val :=
     applyLog (struct.get Log "d" "l") "length";;
     clearLog (struct.get Log "d" "l");;
     struct.get Log "length" "l" <-[uint64T] #0;;
-    Log__unlock "l".
+    Log__unlock "l";;
+    #().
 
 (* Open recovers the log following a crash or shutdown *)
 Definition Open: val :=
@@ -1424,9 +1432,7 @@ Definition disabled_testWal: val :=
     let: "ok" := ref_to boolT #true in
     let: "lg" := New #() in
     (if: Log__BeginTxn "lg"
-    then
-      Log__Write "lg" #2 (intToBlock #11);;
-      #()
+    then Log__Write "lg" #2 (intToBlock #11)
     else #());;
     "ok" <-[boolT] (![boolT] "ok") && (blockToInt (Log__Read "lg" #2) = #11);;
     "ok" <-[boolT] (![boolT] "ok") && (blockToInt (disk.Read #0) = #0);;

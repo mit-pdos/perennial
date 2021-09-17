@@ -416,7 +416,7 @@ Proof.
     iFrame.
   }
 
-  iApply "HΦ".
+  wp_pures. iApply "HΦ".
   by iFrame.
 Qed.
 
@@ -487,7 +487,7 @@ Proof.
       rewrite (insert_id m); eauto.
     }
 
-    iApply "HΦ".
+    wp_pures. iApply "HΦ".
     auto.
   }
 
@@ -564,7 +564,7 @@ Proof.
       iExists _, (delete addr gm).
       iFrame.
     }
-    by iApply "HΦ".
+    wp_pures. by iApply "HΦ".
   }
 Qed.
 
@@ -985,7 +985,7 @@ Proof.
   { iPureIntro. rewrite -covered_by_shard_mod. auto. }
 
   iIntros "[HP Hlocked]".
-  iApply "HΦ".
+  wp_pures. iModIntro. iApply "HΦ".
   iFrame "HP".
 
   iExists _. iFrame.
@@ -1023,7 +1023,7 @@ Proof.
   { erewrite <- H. unseal_nshard. f_equal. word. }
 
   wp_apply (wp_lockShard__release with "[$Hshard $HP $Hlocked]").
-  iApply "HΦ". done.
+  wp_pures. iApply "HΦ". eauto.
 Qed.
 
 Lemma use_CrashLocked k E1 e lk ghs addr R Rcrash Φ Φc :

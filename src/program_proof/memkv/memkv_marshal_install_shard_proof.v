@@ -338,6 +338,7 @@ Proof using Type*.
   }
   iIntros "(Hmap&Hinv)".
   iNamed "Hinv".
+  wp_pures. iModIntro.
   iApply ("HΦ" $! ([EncUInt64 (size m)] ++
                  flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l)).
   iDestruct "Hinv" as "(?&?&%Hunion&%&%&%&->&%&Henc)".

@@ -347,7 +347,7 @@ Proof.
       rewrite -> (subslice_split_r _ (S nextDiskEnd_txn_id') _ σ.(log_state.txns)) in His_nextTxn by lia.
       eapply has_updates_prepend_nils in His_nextTxn; eauto.
   }
-  iApply ("HΦ" with "HQ").
+  wp_pures. by iApply ("HΦ" with "HQ").
 Qed.
 
 End goose_lang.

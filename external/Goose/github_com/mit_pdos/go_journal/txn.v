@@ -49,7 +49,8 @@ Definition Txn__acquireNoCheck: val :=
   rec: "Txn__acquireNoCheck" "txn" "addr" :=
     let: "flatAddr" := addr.Addr__Flatid "addr" in
     lockmap.LockMap__Acquire (struct.loadF Txn "locks" "txn") "flatAddr";;
-    MapInsert (struct.loadF Txn "acquired" "txn") "flatAddr" #true.
+    MapInsert (struct.loadF Txn "acquired" "txn") "flatAddr" #true;;
+    #().
 
 Definition Txn__isAlreadyAcquired: val :=
   rec: "Txn__isAlreadyAcquired" "txn" "addr" :=
@@ -60,13 +61,16 @@ Definition Txn__Acquire: val :=
   rec: "Txn__Acquire" "txn" "addr" :=
     let: "already_acquired" := Txn__isAlreadyAcquired "txn" "addr" in
     (if: ~ "already_acquired"
-    then Txn__acquireNoCheck "txn" "addr"
+    then
+      Txn__acquireNoCheck "txn" "addr";;
+      #()
     else #()).
 
 Definition Txn__ReleaseAll: val :=
   rec: "Txn__ReleaseAll" "txn" :=
     MapIter (struct.loadF Txn "acquired" "txn") (λ: "flatAddr" <>,
-      lockmap.LockMap__Release (struct.loadF Txn "locks" "txn") "flatAddr").
+      lockmap.LockMap__Release (struct.loadF Txn "locks" "txn") "flatAddr");;
+    #().
 
 Definition Txn__readBufNoAcquire: val :=
   rec: "Txn__readBufNoAcquire" "txn" "addr" "sz" :=
@@ -83,7 +87,8 @@ Definition Txn__OverWrite: val :=
   rec: "Txn__OverWrite" "txn" "addr" "sz" "data0" :=
     let: "data" := util.CloneByteSlice "data0" in
     Txn__Acquire "txn" "addr";;
-    jrnl.Op__OverWrite (struct.loadF Txn "buftxn" "txn") "addr" "sz" "data".
+    jrnl.Op__OverWrite (struct.loadF Txn "buftxn" "txn") "addr" "sz" "data";;
+    #().
 
 Definition Txn__ReadBufBit: val :=
   rec: "Txn__ReadBufBit" "txn" "addr" :=
@@ -100,7 +105,8 @@ Definition Txn__OverWriteBit: val :=
   rec: "Txn__OverWriteBit" "txn" "addr" "data" :=
     let: "dataBytes" := NewSlice byteT #1 in
     SliceSet byteT "dataBytes" #0 (bitToByte ((struct.get addr.Addr "Off" "addr") `rem` #8) "data");;
-    Txn__OverWrite "txn" "addr" #1 "dataBytes".
+    Txn__OverWrite "txn" "addr" #1 "dataBytes";;
+    #().
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
 

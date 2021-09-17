@@ -243,7 +243,7 @@ Proof.
         - wp_loadField.
           wp_apply (wp_MapDelete with "Hcls_map").
           iIntros "Hcls_map".
-          wp_pures. iModIntro. iSplitR; first done.
+          iSplitR; first done.
           replace (map_del rpcClsM host) with
             (if succ then (map_del rpcClsM host) else rpcClsM); last by rewrite Hsucc.
           iNamedAccu.
@@ -270,7 +270,7 @@ Proof.
   (* no err *)
   wp_pures.
   iModIntro. iRight. iSplitR; first done.
-  iApply "HΦ".
+  wp_pures. iApply "HΦ".
   iDestruct "Hrep" as (rep_sl repData) "(? & ? & ?)".
   eauto with iFrame.
 Qed.

@@ -123,7 +123,7 @@ Proof.
     iExists _, _, _; iFrame "∗%".
     rewrite insert_length.
     iFrame "%". }
-  by iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
@@ -312,7 +312,7 @@ Proof.
     iExists _, _, _; iFrame "∗%".
     rewrite insert_length.
     iFrame "%". }
-  by iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_AllocNum max l :
@@ -341,7 +341,7 @@ Proof.
   wp_if_destruct.
   { contradiction Hnonzero. word. }
   wp_apply (wp_freeBit with "H"); eauto.
-  by iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_popCnt (b: u8) :

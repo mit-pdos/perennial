@@ -255,6 +255,7 @@ Proof using Ptimeless.
   { eauto. }
   iIntros "Resok".
   rewrite Hfl; clear Hfl fl.
+  wp_pures. iModIntro.
 
   iNamed 1.
   wpc_pures.
@@ -303,6 +304,7 @@ Proof using Ptimeless.
       iModIntro. iSplit; try (iIntros "? !>"); done. }
 
     wp_storeField.
+    iModIntro.
     iNamed 1.
 
     iSplitR "Hinode_state Hcommit".
@@ -358,6 +360,7 @@ Transparent nfstypes.GETATTR3res.
       iModIntro. iSplit; try (iIntros "? !>"); done. }
 
     wp_storeField.
+    iModIntro.
     iNamed 1.
 
     iSplitR "Hinode_state Hcommit".

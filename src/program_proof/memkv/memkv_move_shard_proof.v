@@ -54,7 +54,7 @@ Proof.
       { eauto. }
       iIntros "Hmap".
       wp_pures.
-      iModIntro. iSplit; eauto.
+      iSplit; eauto.
       iExists _. iFrame "# ∗".
       iSplit.
       { iPureIntro. rewrite /typed_map.map_insert lookup_insert; eauto. }
@@ -223,7 +223,7 @@ Proof.
     rewrite list_lookup_insert_ne; last done.
     iFrame.
   }
-  by iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 End memkv_move_shard_proof.

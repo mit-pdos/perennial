@@ -127,7 +127,7 @@ Proof.
       rewrite big_sepL_singleton. done. }
     done.
   }
-  by iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_MakeKVClerk coord cm γ :
@@ -217,7 +217,7 @@ Proof.
   iIntros "Hkv". iMod ("HΦ" with "Hkv") as "HΦ".
   iIntros "!> Hck".
   wp_apply (wp_KVClerk__putSeqClerk with "Hp Hck").
-  iApply "HΦ". done.
+  wp_pures. iApply "HΦ". done.
 Qed.
 
 Lemma wp_KVClerk__Put_seq (p:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v oldv:list u8) :
@@ -270,7 +270,7 @@ Proof.
   wp_apply (wp_SeqKVClerk__Add with "[$Hck $Hshard //]").
   iIntros "Hck".
   wp_apply (wp_KVClerk__putSeqClerk with "Hp Hck").
-  iApply "HΦ". done.
+  wp_pures. iApply "HΦ". done.
 Qed.
 
 Lemma wp_KVClerk__MGet (p:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64 * list u8)) q :

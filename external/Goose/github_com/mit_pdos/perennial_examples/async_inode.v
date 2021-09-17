@@ -74,7 +74,8 @@ Definition Inode__appendOne: val :=
   rec: "Inode__appendOne" "i" "a" :=
     struct.storeF Inode "addrs" "i" (SliceAppend uint64T (struct.loadF Inode "addrs" "i") "a");;
     let: "hdr" := Inode__mkHdr "i" in
-    disk.Write (struct.loadF Inode "addr" "i") "hdr".
+    disk.Write (struct.loadF Inode "addr" "i") "hdr";;
+    #().
 
 (* flushOne extends the on-disk inode with the next buffered write
 

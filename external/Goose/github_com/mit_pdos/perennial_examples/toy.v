@@ -12,7 +12,9 @@ Definition consumeEvenBlock: val :=
     disk.Write "a" "b4";;
     let: "b" := disk.Read "a" in
     (if: SliceGet byteT "b" #0 ≠ #(U8 4)
-    then Panic ("unexpected value on disk")
+    then
+      Panic ("unexpected value on disk");;
+      #()
     else #()).
 
 (* TransferEvenBlock assumes it is given ownership of a and that a initially has
@@ -22,4 +24,5 @@ Definition consumeEvenBlock: val :=
    crashes) and is safe (that is, the panic does not get triggered) *)
 Definition TransferEvenBlock: val :=
   rec: "TransferEvenBlock" "d" "a" :=
-    Fork (consumeEvenBlock "d" "a").
+    Fork (consumeEvenBlock "d" "a");;
+    #().

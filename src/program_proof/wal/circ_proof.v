@@ -648,7 +648,7 @@ Proof.
   iIntros "!> Hs". (* done committing to disk *)
 
   wp_apply wp_Barrier.
-  iApply ("HΦ" with "[$]").
+  wp_pures. iApply ("HΦ" with "[$]").
 Qed.
 
 Fixpoint update_list_circ {A B} (f: B -> A) (xs: list A) (start: Z) (upds: list B): list A :=
@@ -865,7 +865,7 @@ Proof.
   2: {
     iIntros "(HI&Hupdslice)".
     iDestruct "HI" as "(?&? & Hblocks&Hend&Hupds)".
-    iApply "HΦ"; iFrame.
+    wp_pures. iModIntro. iApply "HΦ"; iFrame.
     rewrite -> take_ge by lia.
     iFrame.
     rewrite /updates_slice.
@@ -1201,7 +1201,7 @@ Proof.
   }
   iIntros "!> Hb_s".
   wp_apply wp_Barrier.
-  iApply "HΦ". iFrame. iExists _, _, _. iFrame.
+  wp_pures. iModIntro. iApply "HΦ". iFrame. iExists _, _, _. iFrame.
   eauto using circ_low_wf_update_addrs.
 Qed.
 

@@ -396,7 +396,7 @@ Proof.
   wp_loadField.
   wp_apply (wp_KVCoordClerk__AddShardServer with "[$HcoordCk_own $His_shard]"); eauto.
   iIntros "HcoordCk_own".
-  iApply "HΦ".
+  wp_pures. iModIntro. iApply "HΦ".
   rewrite /own_SeqKVClerk.
   iExists _, _, _, _. iFrame. eauto.
 Qed.

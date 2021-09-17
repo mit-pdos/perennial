@@ -31,9 +31,7 @@ Definition New: val :=
     let: "d" := disk.Get #() in
     let: "diskSize" := disk.Size #() in
     (if: "diskSize" ≤ logLength
-    then
-      Panic ("disk is too small to host log");;
-      #()
+    then Panic ("disk is too small to host log")
     else #());;
     let: "cache" := NewMap disk.blockT in
     let: "header" := intToBlock #0 in
@@ -50,11 +48,13 @@ Definition New: val :=
 
 Definition Log__lock: val :=
   rec: "Log__lock" "l" :=
-    lock.acquire (struct.get Log "l" "l").
+    lock.acquire (struct.get Log "l" "l");;
+    #().
 
 Definition Log__unlock: val :=
   rec: "Log__unlock" "l" :=
-    lock.release (struct.get Log "l" "l").
+    lock.release (struct.get Log "l" "l");;
+    #().
 
 (* BeginTxn allocates space for a new transaction in the log.
 
@@ -98,9 +98,7 @@ Definition Log__Write: val :=
     Log__lock "l";;
     let: "length" := ![uint64T] (struct.get Log "length" "l") in
     (if: "length" ≥ MaxTxnWrites
-    then
-      Panic ("transaction is at capacity");;
-      #()
+    then Panic ("transaction is at capacity")
     else #());;
     let: "aBlock" := intToBlock "a" in
     let: "nextAddr" := #1 + #2 * "length" in
@@ -108,7 +106,8 @@ Definition Log__Write: val :=
     disk.Write ("nextAddr" + #1) "v";;
     MapInsert (struct.get Log "cache" "l") "a" "v";;
     struct.get Log "length" "l" <-[uint64T] "length" + #1;;
-    Log__unlock "l".
+    Log__unlock "l";;
+    #().
 
 (* Commit the current transaction. *)
 Definition Log__Commit: val :=
@@ -117,7 +116,8 @@ Definition Log__Commit: val :=
     let: "length" := ![uint64T] (struct.get Log "length" "l") in
     Log__unlock "l";;
     let: "header" := intToBlock "length" in
-    disk.Write #0 "header".
+    disk.Write #0 "header";;
+    #().
 
 Definition getLogEntry: val :=
   rec: "getLogEntry" "d" "logOffset" :=
@@ -138,12 +138,14 @@ Definition applyLog: val :=
         disk.Write (logLength + "a") "v";;
         "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue
-      else Break)).
+      else Break));;
+    #().
 
 Definition clearLog: val :=
   rec: "clearLog" "d" :=
     let: "header" := intToBlock #0 in
-    disk.Write #0 "header".
+    disk.Write #0 "header";;
+    #().
 
 (* Apply all the committed transactions.
 
@@ -155,7 +157,8 @@ Definition Log__Apply: val :=
     applyLog (struct.get Log "d" "l") "length";;
     clearLog (struct.get Log "d" "l");;
     struct.get Log "length" "l" <-[uint64T] #0;;
-    Log__unlock "l".
+    Log__unlock "l";;
+    #().
 
 (* Open recovers the log following a crash or shutdown *)
 Definition Open: val :=

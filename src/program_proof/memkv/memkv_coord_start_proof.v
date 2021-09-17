@@ -116,7 +116,7 @@ Proof.
     { iFrame "Hlocked HmuInv". iNext. iExists _, _, _, _, _.
       iDestruct ("HshardMap_clo" with "[$]") as "$".
       iFrame. iSplit; eauto. }
-    iApply "HΦ". eauto. }
+    wp_pures. iApply "HΦ". eauto. }
   iDestruct (typed_slice.is_slice_small_sz (V:=u64) with "[$]") as %Hsz.
   edestruct (list_lookup_lt _ (shardMapping) (int.nat k)) as (v&Heq).
   { word_cleanup. }
@@ -345,7 +345,7 @@ Proof.
       { iFrame "Hlocked HmuInv".
         iNext. iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
         iDestruct "H1" as %Hequiv. iApply Hequiv. iFrame. }
-      iApply "HΦ". iFrame. iNext. iExists _. iFrame "% #".
+      wp_pures. iApply "HΦ". iFrame. do 2 iModIntro. iExists _. iFrame "% #".
     }
     iApply (big_sepM_insert_2 with "").
     { (* AddServerRPC *)
@@ -368,11 +368,11 @@ Proof.
         { rewrite /named. iExactEq "His_memkv". eauto. }
         iFrame "His_shard". eauto.
       }
-      iApply "HΦ". iFrame. eauto.
+      wp_pures. iApply "HΦ". iFrame. eauto.
     }
     rewrite big_sepM_empty. eauto.
   }
-  iApply "HΦ".
+  wp_pures. iApply "HΦ".
   auto.
 Qed.
 

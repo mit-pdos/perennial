@@ -316,6 +316,7 @@ Proof using Ptimeless.
         iModIntro. iSplit; try (iIntros "? !>"); done. }
 
       wp_storeField.
+      wp_pures. iModIntro.
       iNamed 1.
 
       iSplitR "Hinode_state Hcommit".
@@ -372,6 +373,7 @@ Proof using Ptimeless.
         iModIntro. iSplit; try (iIntros "? !>"); done. }
 
       wp_storeField.
+      wp_pures. iModIntro.
       iNamed 1.
 
       iSplitR "Hinode_state Hcommit".

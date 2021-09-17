@@ -30,7 +30,8 @@ Definition Alloc__MarkUsed: val :=
     let: "byte" := "bn" `quot` #8 in
     let: "bit" := "bn" `rem` #8 in
     SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte" `or` (#(U8 1)) ≪ "bit");;
-    lock.release (struct.loadF Alloc "mu" "a").
+    lock.release (struct.loadF Alloc "mu" "a");;
+    #().
 
 (* MkMaxAlloc initializes an allocator to be fully free with a range of (0,
    max).
@@ -39,9 +40,7 @@ Definition Alloc__MarkUsed: val :=
 Definition MkMaxAlloc: val :=
   rec: "MkMaxAlloc" "max" :=
     (if: ~ (#0 < "max") && ("max" `rem` #8 = #0)
-    then
-      Panic ("invalid max, must be at least 0 and divisible by 8");;
-      #()
+    then Panic ("invalid max, must be at least 0 and divisible by 8")
     else #());;
     let: "bitmap" := NewSlice byteT ("max" `quot` #8) in
     let: "a" := MkAlloc "bitmap" in
@@ -52,9 +51,7 @@ Definition Alloc__incNext: val :=
   rec: "Alloc__incNext" "a" :=
     struct.storeF Alloc "next" "a" (struct.loadF Alloc "next" "a" + #1);;
     (if: struct.loadF Alloc "next" "a" ≥ slice.len (struct.loadF Alloc "bitmap" "a") * #8
-    then
-      struct.storeF Alloc "next" "a" #0;;
-      #()
+    then struct.storeF Alloc "next" "a" #0
     else #());;
     struct.loadF Alloc "next" "a".
 
@@ -89,7 +86,8 @@ Definition Alloc__freeBit: val :=
     let: "byte" := "bn" `quot` #8 in
     let: "bit" := "bn" `rem` #8 in
     SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte" `and` ~ ((#(U8 1)) ≪ "bit"));;
-    lock.release (struct.loadF Alloc "mu" "a").
+    lock.release (struct.loadF Alloc "mu" "a");;
+    #().
 
 Definition Alloc__AllocNum: val :=
   rec: "Alloc__AllocNum" "a" :=
@@ -99,11 +97,10 @@ Definition Alloc__AllocNum: val :=
 Definition Alloc__FreeNum: val :=
   rec: "Alloc__FreeNum" "a" "num" :=
     (if: ("num" = #0)
-    then
-      Panic "FreeNum";;
-      #()
+    then Panic "FreeNum"
     else #());;
-    Alloc__freeBit "a" "num".
+    Alloc__freeBit "a" "num";;
+    #().
 
 Definition popCnt: val :=
   rec: "popCnt" "b" :=

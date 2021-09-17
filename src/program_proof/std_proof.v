@@ -284,9 +284,9 @@ Proof.
   iModIntro. iRight. iSplit; first done.
   wp_apply (release_spec with "[$Hlk $Hlocked Hnleft Htok]").
   { rewrite /lock_inv. iLeft. eauto 10 with iFrame. }
-  iApply "HΦ".
+  wp_pures. iApply "HΦ".
   iApply (big_sepL_impl with "HPQ").
-  iIntros "!> %i' %i %Hlk [%Hpending|[_ $]]".
+  iIntros "!> !> %i' %i %Hlk [%Hpending|[_ $]]".
   exfalso.
   apply Znot_lt_ge in Hleft.
   change (int.Z 0) with 0 in Hleft.

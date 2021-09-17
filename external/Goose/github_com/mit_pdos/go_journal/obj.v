@@ -117,4 +117,5 @@ Definition Log__LogSz: val :=
 
 Definition Log__Shutdown: val :=
   rec: "Log__Shutdown" "l" :=
-    wal.Walog__Shutdown (struct.loadF Log "log" "l").
+    wal.Walog__Shutdown (struct.loadF Log "log" "l");;
+    #().

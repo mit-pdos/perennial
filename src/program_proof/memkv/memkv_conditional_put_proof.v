@@ -135,7 +135,7 @@ Proof.
         iFrame.
         done.
       }
-      iApply "HΦ".
+      wp_pures. iApply "HΦ". iModIntro.
 
       iSplitL "HErr HSucc".
       {
@@ -166,7 +166,7 @@ Proof.
         iFrame.
         done.
       }
-      iApply "HΦ".
+      wp_pures. iModIntro. iApply "HΦ".
       iSplitL "HErr HSucc".
       {
         instantiate (1:={| CPR_Err := _ |}).
@@ -284,7 +284,7 @@ Proof.
           set (old_map := (mv, _)).
           wp_apply (map.wp_MapInsert with "[$HkvsMap]").
           iIntros "HkvsMap".
-          wp_pures. iModIntro.
+          wp_pures.
           iSplit; first done.
           set (new_map := map.map_insert _ args.(CPR_Key) _).
           replace (new_map) with (if succ then new_map else old_map); last by rewrite Hsucc.
@@ -428,7 +428,7 @@ Proof.
         }
         destruct succ; rewrite ?dom_insert_L; iPureIntro; congruence.
       }
-      iApply "HΦ".
+      wp_pures. iApply "HΦ". iModIntro.
       iSplitL "HErr HSucc".
       {
         instantiate (1:=mkConditionalPutReplyC _ _).
@@ -492,7 +492,7 @@ Proof.
         }
         done.
       }
-      iApply "HΦ".
+      wp_pures. iApply "HΦ". iModIntro.
       iSplitL "HErr HSucc".
       {
         instantiate (1:=mkConditionalPutReplyC _ _).

@@ -113,6 +113,7 @@ Proof using All.
   wp_apply wp_fork.
   { wp_apply wp_exampleWorker. { iExact "Hfs". } done. }
 
+  wp_pures. iModIntro.
   iIntros "HΦ". iApply "HΦ". done.
   Unshelve.
   all: exact O.

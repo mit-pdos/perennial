@@ -58,7 +58,7 @@ Proof.
       iFrame "HlastReply_structs ∗".
       done.
     }
-    by iApply "HΦ".
+    wp_pures. by iApply "HΦ".
   }
 
   (* fresh sequence number *)
@@ -221,7 +221,7 @@ Proof.
     rewrite list_lookup_insert_ne; last done.
     iFrame.
   }
-  by iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 End memkv_install_shard_proof.

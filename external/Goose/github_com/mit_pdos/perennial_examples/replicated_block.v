@@ -41,10 +41,12 @@ Definition RepBlock__Read: val :=
 Definition RepBlock__write: val :=
   rec: "RepBlock__write" "rb" "b" :=
     disk.Write (struct.loadF RepBlock "addr" "rb") "b";;
-    disk.Write (struct.loadF RepBlock "addr" "rb" + #1) "b".
+    disk.Write (struct.loadF RepBlock "addr" "rb" + #1) "b";;
+    #().
 
 Definition RepBlock__Write: val :=
   rec: "RepBlock__Write" "rb" "b" :=
     lock.acquire (struct.loadF RepBlock "m" "rb");;
     RepBlock__write "rb" "b";;
-    lock.release (struct.loadF RepBlock "m" "rb").
+    lock.release (struct.loadF RepBlock "m" "rb");;
+    #().

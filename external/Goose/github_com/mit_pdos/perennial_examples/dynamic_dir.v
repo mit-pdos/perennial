@@ -30,7 +30,8 @@ Definition Dir__mkHdr: val :=
 Definition Dir__writeHdr: val :=
   rec: "Dir__writeHdr" "d" :=
     let: "hdr" := Dir__mkHdr "d" in
-    disk.Write rootInode "hdr".
+    disk.Write rootInode "hdr";;
+    #().
 
 (* read header (which has addresses for inodes in use) *)
 Definition parseHdr: val :=
@@ -88,22 +89,22 @@ Definition Dir__delete: val :=
     Dir__writeHdr "d";;
     alloc.Allocator__Free (struct.loadF Dir "allocator" "d") "ino";;
     ForSlice uint64T <> "inode_a" (inode.Inode__UsedBlocks "i")
-      (alloc.Allocator__Free (struct.loadF Dir "allocator" "d") "inode_a").
+      (alloc.Allocator__Free (struct.loadF Dir "allocator" "d") "inode_a");;
+    #().
 
 Definition Dir__Delete: val :=
   rec: "Dir__Delete" "d" "ino" :=
     lock.acquire (struct.loadF Dir "m" "d");;
     Dir__delete "d" "ino";;
-    lock.release (struct.loadF Dir "m" "d").
+    lock.release (struct.loadF Dir "m" "d");;
+    #().
 
 Definition Dir__Read: val :=
   rec: "Dir__Read" "d" "ino" "off" :=
     lock.acquire (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
     (if: ("i" = #null)
-    then
-      Panic ("invalid inode");;
-      #()
+    then Panic ("invalid inode")
     else #());;
     let: "b" := inode.Inode__Read "i" "off" in
     lock.release (struct.loadF Dir "m" "d");;
@@ -114,9 +115,7 @@ Definition Dir__Size: val :=
     lock.acquire (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
     (if: ("i" = #null)
-    then
-      Panic ("invalid inode");;
-      #()
+    then Panic ("invalid inode")
     else #());;
     let: "sz" := inode.Inode__Size "i" in
     lock.release (struct.loadF Dir "m" "d");;
@@ -127,9 +126,7 @@ Definition Dir__Append: val :=
     lock.acquire (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
     (if: ("i" = #null)
-    then
-      Panic ("invalid inode");;
-      #()
+    then Panic ("invalid inode")
     else #());;
     let: "ok" := inode.Inode__Append "i" "b" (struct.loadF Dir "allocator" "d") in
     lock.release (struct.loadF Dir "m" "d");;

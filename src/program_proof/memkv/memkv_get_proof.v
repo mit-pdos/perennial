@@ -177,7 +177,7 @@ Proof.
         iFrame.
         done.
       }
-      iApply "HΦ".
+      wp_pures. iApply "HΦ".
 
       iSplitL "HErr HValue Hrep_val_sl".
       {
@@ -212,7 +212,7 @@ Proof.
         iFrame.
         done.
       }
-      iApply "HΦ".
+      wp_pures. iApply "HΦ".
       iSplitL "HErr HValue Hrep_val_sl".
       {
         instantiate (1:={| GR_Err := _ |}).
@@ -444,7 +444,7 @@ Proof.
         iFrame "HvalSlices".
         done.
       }
-      iApply "HΦ".
+      wp_pures. iApply "HΦ".
       instantiate (1:= mkGetReplyC _ _).
       iSplitL "HErr HValue Hrep_val_sl".
       {
@@ -508,7 +508,7 @@ Proof.
         }
         done.
       }
-      iApply "HΦ".
+      wp_pures. iModIntro. iApply "HΦ".
       iSplitL "HErr HValue".
       {
         iExists _.

@@ -69,7 +69,8 @@ Definition lockShard__acquire: val :=
       (if: ![boolT] "acquired"
       then Break
       else Continue));;
-    lock.release (struct.loadF lockShard "mu" "lmap").
+    lock.release (struct.loadF lockShard "mu" "lmap");;
+    #().
 
 Definition lockShard__release: val :=
   rec: "lockShard__release" "lmap" "addr" :=
@@ -79,7 +80,8 @@ Definition lockShard__release: val :=
     (if: struct.loadF lockState "waiters" "state" > #0
     then lock.condSignal (struct.loadF lockState "cond" "state")
     else MapDelete (struct.loadF lockShard "state" "lmap") "addr");;
-    lock.release (struct.loadF lockShard "mu" "lmap").
+    lock.release (struct.loadF lockShard "mu" "lmap");;
+    #().
 
 Definition NSHARD : expr := #65537.
 
@@ -102,11 +104,13 @@ Definition MkLockMap: val :=
 Definition LockMap__Acquire: val :=
   rec: "LockMap__Acquire" "lmap" "flataddr" :=
     let: "shard" := SliceGet (refT (struct.t lockShard)) (struct.loadF LockMap "shards" "lmap") ("flataddr" `rem` NSHARD) in
-    lockShard__acquire "shard" "flataddr".
+    lockShard__acquire "shard" "flataddr";;
+    #().
 
 Definition LockMap__Release: val :=
   rec: "LockMap__Release" "lmap" "flataddr" :=
     let: "shard" := SliceGet (refT (struct.t lockShard)) (struct.loadF LockMap "shards" "lmap") ("flataddr" `rem` NSHARD) in
-    lockShard__release "shard" "flataddr".
+    lockShard__release "shard" "flataddr";;
+    #().
 
 End code.

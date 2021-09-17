@@ -134,7 +134,7 @@ Proof.
         iFrame.
         done.
       }
-      iApply "HΦ".
+      wp_pures. iModIntro. iApply "HΦ".
 
       iSplitL "Hrep".
       {
@@ -165,7 +165,7 @@ Proof.
         iFrame.
         done.
       }
-      iApply "HΦ".
+      wp_pures. iModIntro. iApply "HΦ".
       iSplitL "Hrep".
       {
         instantiate (1:={| PR_Err := _ |}).
@@ -383,7 +383,7 @@ Proof.
         { set_solver. }
         iFrame.
       }
-      iApply "HΦ".
+      wp_pures. iModIntro. iApply "HΦ".
       iSplitL "Hrep".
       {
         instantiate (1:=mkPutReplyC _).
@@ -446,7 +446,7 @@ Proof.
         }
         done.
       }
-      iApply "HΦ".
+      wp_pures. iModIntro. iApply "HΦ".
       iSplitL "Hrep".
       {
         instantiate (1:=mkPutReplyC _).

@@ -86,7 +86,7 @@ Proof.
   }
   iIntros "HI"; iNamed "HI".
   specialize (Hbreak ltac:(auto)).
-  iApply "HΦ".
+  wp_pures. iModIntro. iApply "HΦ".
   iFrameNamed. auto.
 Qed.
 
@@ -696,7 +696,7 @@ Proof.
   wp_apply (wp_condSignal with "cond_shut").
   wp_loadField.
   wp_apply (release_spec with "[$lk $Hlk_held $Hlkinv]").
-  by iApply ("HΦ" with "[//]").
+  wp_pures. by iApply ("HΦ" with "[//]").
 Qed.
 
 End goose_lang.

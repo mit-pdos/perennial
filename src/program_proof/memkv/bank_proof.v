@@ -241,14 +241,14 @@ Proof.
     wp_apply (release_two_spec with "[$Hlck_own Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
     { iFrame "#". iSplitL "Hacc1_phys Hacc1_log"; iExists _, _; iFrame; eauto. }
     iIntros "Hlck_own".
-    iApply "Hpost".
-    iExists _, _; iFrame "∗ # %".
+    wp_pures. iApply "Hpost".
+    iExists _, _; by iFrame "∗ # %".
   - (* Don't do the transfer *)
     wp_loadField. wp_apply (release_two_spec with "[$Hlck_own Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
     { iFrame "#". iSplitL "Hacc1_phys Hacc1_log"; iExists _, _; iFrame; eauto. }
     iIntros "Hlck_own".
-    iApply "Hpost".
-    iExists _, _; iFrame "∗ # %".
+    wp_pures. iApply "Hpost".
+    iExists _, _; by iFrame "∗ # %".
 Qed.
 
 Lemma Bank__get_total_spec (bck:loc) γ :

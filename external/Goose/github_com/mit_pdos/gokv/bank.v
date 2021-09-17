@@ -47,14 +47,15 @@ Definition BankClerk__transfer_internal: val :=
     (if: "old_amount" ≥ "amount"
     then
       memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_from" (memkv.EncodeUint64 ("old_amount" - "amount"));;
-      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_to" (memkv.EncodeUint64 (memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") "acc_to") + "amount"));;
-      #()
+      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_to" (memkv.EncodeUint64 (memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") "acc_to") + "amount"))
     else #());;
-    release_two (struct.loadF BankClerk "lck" "bck") "acc_from" "acc_to".
+    release_two (struct.loadF BankClerk "lck" "bck") "acc_from" "acc_to";;
+    #().
 
 Definition BankClerk__SimpleTransfer: val :=
   rec: "BankClerk__SimpleTransfer" "bck" "amount" :=
-    BankClerk__transfer_internal "bck" (struct.loadF BankClerk "acc1" "bck") (struct.loadF BankClerk "acc2" "bck") "amount".
+    BankClerk__transfer_internal "bck" (struct.loadF BankClerk "acc1" "bck") (struct.loadF BankClerk "acc2" "bck") "amount";;
+    #().
 
 Definition BankClerk__get_total: val :=
   rec: "BankClerk__get_total" "bck" :=
@@ -68,9 +69,11 @@ Definition BankClerk__SimpleAudit: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: BankClerk__get_total "bck" ≠ BAL_TOTAL
-      then Panic ("Balance total invariant violated")
-      else #());;
-      Continue).
+      then
+        Panic ("Balance total invariant violated");;
+        Continue
+      else Continue));;
+    #().
 
 Definition MakeBankClerk: val :=
   rec: "MakeBankClerk" "lockhost" "kvhost" "cm" "init_flag" "acc1" "acc2" "cid" :=
@@ -84,8 +87,7 @@ Definition MakeBankClerk: val :=
     then
       memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc1" (memkv.EncodeUint64 BAL_TOTAL);;
       memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc2" (memkv.EncodeUint64 #0);;
-      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "init_flag" (NewSlice byteT #1);;
-      #()
+      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "init_flag" (NewSlice byteT #1)
     else #());;
     lockservice.LockClerk__Unlock (struct.loadF BankClerk "lck" "bck") "init_flag";;
     "bck".

@@ -455,7 +455,7 @@ Opaque struct.t.
     wp_pures.
     wp_load.
     wp_apply (wp_Buf__SetDirty with "Hisbuf"); iIntros "Hisbuf".
-    iApply "HΦ".
+    wp_pures. iModIntro. iApply "HΦ".
     iFrame.
 
     iDestruct ("Hisbufmap" with "Hisbuf") as "Hisbufmap".
@@ -506,7 +506,7 @@ Opaque struct.t.
 
     wp_apply (wp_BufMap__Insert with "[$Hisbufmap $Hisbuf]").
     iIntros "Hisbufmap".
-    iApply "HΦ".
+    wp_pures. iModIntro. iApply "HΦ".
 
     iDestruct (big_sepM_delete with "Hctxvalid") as "[%Ha2 Hctxvalid2]"; eauto.
     iDestruct (big_sepM_delete with "Hctxelem") as "[[He %Hedirty] Hctxelem]"; eauto. rewrite Hbufmap_a /= in Hedirty.

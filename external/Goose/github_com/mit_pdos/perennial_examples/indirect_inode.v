@@ -112,7 +112,8 @@ Definition padInts: val :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "num"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       marshal.Enc__PutInt "enc" #0;;
-      Continue).
+      Continue);;
+    #().
 
 Definition Inode__mkHdr: val :=
   rec: "Inode__mkHdr" "i" :=
@@ -129,7 +130,8 @@ Definition Inode__mkHdr: val :=
 Definition Inode__inSize: val :=
   rec: "Inode__inSize" "i" :=
     let: "hdr" := Inode__mkHdr "i" in
-    disk.Write (struct.loadF Inode "addr" "i") "hdr".
+    disk.Write (struct.loadF Inode "addr" "i") "hdr";;
+    #().
 
 (* checkTotalSize determines that the inode is not already at maximum size
 
@@ -166,7 +168,8 @@ Definition Inode__writeIndirect: val :=
     disk.Write "indAddr" "diskBlk";;
     struct.storeF Inode "size" "i" (struct.loadF Inode "size" "i" + #1);;
     let: "hdr" := Inode__mkHdr "i" in
-    disk.Write (struct.loadF Inode "addr" "i") "hdr".
+    disk.Write (struct.loadF Inode "addr" "i") "hdr";;
+    #().
 
 (* appendIndirect adds address a (and whatever data is stored there) to the
    inode using space in an existing indirect block, without allocation

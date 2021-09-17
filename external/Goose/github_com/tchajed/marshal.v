@@ -21,24 +21,28 @@ Definition Enc__PutInt: val :=
   rec: "Enc__PutInt" "enc" "x" :=
     let: "off" := ![uint64T] (struct.get Enc "off" "enc") in
     UInt64Put (SliceSkip byteT (struct.get Enc "b" "enc") "off") "x";;
-    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + #8.
+    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + #8;;
+    #().
 
 Definition Enc__PutInt32: val :=
   rec: "Enc__PutInt32" "enc" "x" :=
     let: "off" := ![uint64T] (struct.get Enc "off" "enc") in
     UInt32Put (SliceSkip byteT (struct.get Enc "b" "enc") "off") "x";;
-    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + #4.
+    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + #4;;
+    #().
 
 Definition Enc__PutInts: val :=
   rec: "Enc__PutInts" "enc" "xs" :=
     ForSlice uint64T <> "x" "xs"
-      (Enc__PutInt "enc" "x").
+      (Enc__PutInt "enc" "x");;
+    #().
 
 Definition Enc__PutBytes: val :=
   rec: "Enc__PutBytes" "enc" "b" :=
     let: "off" := ![uint64T] (struct.get Enc "off" "enc") in
     let: "n" := SliceCopy byteT (SliceSkip byteT (struct.get Enc "b" "enc") "off") "b" in
-    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + "n".
+    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + "n";;
+    #().
 
 Definition bool2byte: val :=
   rec: "bool2byte" "b" :=
@@ -50,7 +54,8 @@ Definition Enc__PutBool: val :=
   rec: "Enc__PutBool" "enc" "b" :=
     let: "off" := ![uint64T] (struct.get Enc "off" "enc") in
     SliceSet byteT (struct.get Enc "b" "enc") "off" (bool2byte "b");;
-    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + #1.
+    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + #1;;
+    #().
 
 Definition Enc__Finish: val :=
   rec: "Enc__Finish" "enc" :=

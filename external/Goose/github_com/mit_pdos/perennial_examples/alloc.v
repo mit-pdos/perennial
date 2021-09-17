@@ -34,7 +34,8 @@ Definition freeRange: val :=
 Definition mapRemove: val :=
   rec: "mapRemove" "m" "remove" :=
     MapIter "remove" (λ: "k" <>,
-      MapDelete "m" "k").
+      MapDelete "m" "k");;
+    #().
 
 (* SetAdd adds addresses in add to m
 
@@ -43,7 +44,8 @@ Definition SetAdd: val :=
   rec: "SetAdd" "m" "add" :=
     ForSlice uint64T <> "k" "add"
       (MapInsert "m" "k" (struct.mk unit [
-      ])).
+      ]));;
+    #().
 
 Definition New: val :=
   rec: "New" "start" "sz" "used" :=
@@ -84,6 +86,7 @@ Definition Allocator__Free: val :=
     MapInsert (struct.loadF Allocator "free" "a") "addr" (struct.mk unit [
     ]);;
     Linearize;;
-    lock.release (struct.loadF Allocator "m" "a").
+    lock.release (struct.loadF Allocator "m" "a");;
+    #().
 
 End code.

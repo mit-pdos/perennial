@@ -62,7 +62,8 @@ Definition Replica__PrepareRPC: val :=
     else
       struct.storeF PrepareReply "Success" "reply" #false;;
       struct.storeF PrepareReply "Pn" "reply" (struct.loadF Replica "promisedPN" "r"));;
-    lock.release (struct.loadF Replica "mu" "r").
+    lock.release (struct.loadF Replica "mu" "r");;
+    #().
 
 Definition ProposeArgs := struct.decl [
   "Pn" :: uint64T;
@@ -106,8 +107,7 @@ Definition Replica__TryDecide: val :=
               (if: struct.loadF PrepareReply "Pn" "reply_ptr" > ![uint64T] "highestPn"
               then
                 "highestVal" <-[uint64T] struct.loadF PrepareReply "Val" "reply_ptr";;
-                "highestPn" <-[uint64T] struct.loadF PrepareReply "Pn" "reply_ptr";;
-                #()
+                "highestPn" <-[uint64T] struct.loadF PrepareReply "Pn" "reply_ptr"
               else #());;
               lock.release "mu"
             else #())));;

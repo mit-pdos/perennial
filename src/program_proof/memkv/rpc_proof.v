@@ -532,7 +532,7 @@ Proof.
   iIntros (r) "Hsl".
   wp_pures.
   destruct err; wp_pures.
-  { eauto. }
+  { iRight. iModIntro. iSplit; first done. wp_pures. eauto. }
   iNamed "Hmsg".
   iDestruct (is_slice_small_acc with "Hsl") as "(Hslice&Hslice_close)".
   wp_apply (wp_new_dec with "Hslice"); first eauto.
@@ -684,7 +684,7 @@ Proof.
   wp_apply (wp_Listen). wp_pures.
   iNamed "Hserver".
   wp_apply (wp_fork).
-  2:{ by iApply "HΦ". }
+  2:{ wp_pures. by iApply "HΦ". }
 
   wp_apply (wp_forBreak_cond'); [ iNamedAccu |].
   iIntros "!# _". wp_pures.
@@ -763,7 +763,7 @@ Proof.
     wp_loadField.
     wp_apply (release_spec with "[-]").
     { iFrame "Hlked Hlk". iNext. iExists _, _, _, _, _. iFrame. eauto. }
-    wp_pures. eauto.
+    wp_pures. iRight. iModIntro. iSplit; first done. wp_pures. eauto.
   }
   wp_pures.
   iNamed "Hmsg".
@@ -926,9 +926,10 @@ Proof.
   iApply wp_fork.
   { iNext. wp_pures. iApply wp_RPCClient__replyThread. repeat iExists _.
     rewrite ?global_groveG_conv.
-    iFrame "#". }
+    iSplit. 1:iFrame "mu conn pending".
+    iSplit; done. }
   iNext. wp_pures. iModIntro. iApply "HΦ".
-  iExists _, _, _, _. iFrame "#".
+  iExists _, _, _, _. iSplit; first by iFrame "#". iSplit; done.
 Qed.
 
 Inductive call_err := CallErrTimeout | CallErrDisconnect.

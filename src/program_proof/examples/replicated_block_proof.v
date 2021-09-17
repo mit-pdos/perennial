@@ -374,7 +374,8 @@ FIXME: looks like crash locks no longer support cfupd.
     { iLeft in "HΦ".
       iIntros "[Hbackup|Hbackup]"; eauto 10 with iFrame.
     }
-    iIntros "(Hbackup&Hb)".
+    iIntros "(Hbackup&Hb)". wpc_pures.
+    { iLeft in "HΦ". eauto 10 with iFrame. }
     iSplitR "Hprimary Hbackup HP"; last first.
     { eauto with iFrame. }
     iIntros "!> His_locked".
@@ -383,6 +384,7 @@ FIXME: looks like crash locks no longer support cfupd.
     wpc_frame.
     wp_loadField.
     wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
+    wp_pures. iModIntro.
     iNamed 1.
     iApply "HΦ"; iFrame.
   Qed.

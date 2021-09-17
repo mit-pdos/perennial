@@ -329,7 +329,7 @@ Proof using.
   wp_apply wp_Addr__Flatid; intuition eauto. iIntros (?) "->".
   wp_loadField.
   wp_apply (wp_MapInsert_to_val with "Hmap"); iIntros "Hmap".
-  iApply "HΦ".
+  wp_pures. iApply "HΦ".
   iExists _, _, _. iFrame.
   iSplitR.
   { iPureIntro. apply flatid_addr_insert; eauto. }
@@ -365,7 +365,7 @@ Proof using.
   wp_apply wp_Addr__Flatid; eauto. iIntros (?) "->".
   wp_loadField.
   wp_apply (wp_MapDelete with "Hmap"); iIntros "Hmap".
-  iApply "HΦ".
+  wp_pures. iApply "HΦ".
   iExists _, _, _. iFrame.
   iSplitR.
   { iPureIntro. apply flatid_addr_delete; eauto. }
@@ -1421,7 +1421,7 @@ Proof.
   wp_apply (wp_SliceSet (V:=u8) with "[$Hdst]").
   { iPureIntro. word_cleanup. eauto. }
   iIntros "Hdst".
-  iApply "HΦ".
+  wp_pures. iModIntro. iApply "HΦ".
   iFrame "Hsrc".
   iExactEq "Hdst".
   f_equal.
@@ -1778,7 +1778,7 @@ Proof.
       word. }
     iIntros "[Hsrc Hdst]".
     wp_apply wp_DPrintf.
-    iApply "HΦ".
+    wp_pures. iApply "HΦ". iModIntro.
     iDestruct (is_slice_to_block with "Hdst") as "$".
     { len. }
     iSplitL.
@@ -1819,7 +1819,7 @@ Proof.
     wp_pures. wp_apply wp_DPrintf.
     iDestruct (is_slice_to_block with "Hblk") as "Hblk".
     { len. }
-    iApply "HΦ".
+    wp_pures. iApply "HΦ". iModIntro.
     iFrame "Hblk".
     iSplitL.
     { iExists _; iFrame.
@@ -1852,7 +1852,7 @@ Proof.
     iDestruct (is_slice_to_block with "Hblk") as "Hblk".
     { len. }
     wp_pures. wp_apply wp_DPrintf.
-    iApply "HΦ".
+    wp_pures. iModIntro. iApply "HΦ".
     iFrame "Hblk".
     iSplitL.
     { iExists _; iFrame.

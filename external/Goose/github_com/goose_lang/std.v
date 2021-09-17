@@ -50,6 +50,7 @@ Definition Multipar: val :=
     (for: (λ: <>, ![uint64T] "num_left" > #0); (λ: <>, Skip) := λ: <>,
       lock.condWait "num_left_cond";;
       Continue);;
-    lock.release "num_left_mu".
+    lock.release "num_left_mu";;
+    #().
 
 End code.

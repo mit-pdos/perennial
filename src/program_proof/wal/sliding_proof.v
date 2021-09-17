@@ -523,7 +523,7 @@ Proof.
     f_equal.
     word. }
   iIntros "log_mutable".
-  iApply "HΦ".
+  wp_pures. iModIntro. iApply "HΦ".
   iSplit.
   - iPureIntro.
     rewrite /slidingM.wf /=.
@@ -636,7 +636,7 @@ Proof.
   wp_loadField.
   wp_apply (wp_MapInsert_to_val with "is_addrPos").
   iIntros "is_addrPos".
-  iApply "HΦ".
+  wp_pures. iModIntro. iApply "HΦ".
   iSplitR.
   { eauto. }
   iExists _, _; iFrame "# ∗".
@@ -766,7 +766,7 @@ Proof.
       word.
   }
   iNamed 1.
-  iApply "HΦ"; iFrame.
+  wp_pures. iModIntro. iApply "HΦ"; iFrame.
 Qed.
 
 Lemma wp_sliding__intoMutable l q_b σ :
@@ -1227,7 +1227,7 @@ Proof.
   iClear "Hlog_implies".
 
   wp_storeField.
-  iApply "HΦ".
+  wp_pures. iModIntro. iApply "HΦ".
   iFrame.
   iSplit.
   {
@@ -1294,7 +1294,7 @@ Proof.
   rewrite /readonly_log.
   iDestruct (readonly_extend with "log_readonly readonly_new") as "log_readonly'".
   iClear "log_readonly".
-  iModIntro.
+  wp_pures. iModIntro.
   iApply "HΦ".
   iSplit.
   - iPureIntro.

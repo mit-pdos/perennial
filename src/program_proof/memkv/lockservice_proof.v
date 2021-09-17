@@ -106,7 +106,7 @@ Proof.
     { iExists true. iFrame. }
     iModIntro. iIntros "Hck". wp_pures. iModIntro. iRight.
     iSplit; first by eauto.
-    iApply "HΦ".
+    wp_pures. iModIntro. iApply "HΦ".
     iFrame "HR". iExists _. eauto with iFrame.
 Qed.
 
@@ -144,7 +144,7 @@ Proof.
   iMod ("Hclo" with "[HR Hk]").
   { iExists false. iFrame. }
   iModIntro. iIntros "Hck". 
-  iApply "HΦ".  iExists _. eauto with iFrame.
+  wp_pures. iApply "HΦ". iExists _. eauto with iFrame.
 Qed.
 
 End lockservice_proof.

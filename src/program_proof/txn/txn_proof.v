@@ -413,7 +413,7 @@ Theorem wp_Txn__acquireNoCheck' l γ γ' ex_mapsto objs_dom_flat locks_held (a: 
   -∗ (▷ ("Hlinv" ∷ twophase_linv ex_mapsto γ γ' a -∗
         wpc_nval ⊤ ("Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat ({[addr2flat a]} ∪ locks_held)
                     -∗ Φ #())))
-     -∗ WP Txn__acquireNoCheck #l (addr2val a) {{ v, Φ v }}.
+     -∗ WP Txn__acquireNoCheck #l (addr2val a);; #() {{ v, Φ v }}.
 Proof.
   intros Ha_valid Hin_spec Haddr_not_locked.
   iIntros (Φ).
@@ -482,6 +482,7 @@ Proof.
     assumption.
   }
 
+  wp_pures. iModIntro.
   iIntros "HΦ".
   iApply "HΦ".
   iExists _, _, _.
@@ -496,6 +497,7 @@ Proof.
   set_solver.
 Qed.
 
+(*
 Theorem wp_Txn__acquireNoCheck l γ γ' ex_mapsto objs_dom_flat locks_held (a: addr):
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
@@ -518,6 +520,7 @@ Proof.
   iApply wpc_nval_intro.
   iNext. iIntros "H". iApply "HΦ". iFrame.
 Qed.
+*)
 
 Theorem wp_Txn__isAlreadyAcquired' l γ γ' ex_mapsto objs_dom_flat locks_held a :
   valid_addr a →
@@ -973,7 +976,7 @@ Proof.
   }
   iIntros "(Hacquired_m&Hpost)".
   iNamed "Hpost".
-  iApply "HΦ".
+  wp_pures. iApply "HΦ".
   done.
 Qed.
 
@@ -1586,6 +1589,7 @@ Proof.
     rewrite Hkind in Hobj'.
     inversion Hobj'.
     subst kind.
+    wp_pures. iModIntro.
     iApply ("HΦ" $! (
       mspec.mkVersioned vobj'_c (objData obj')
     )).
@@ -1653,6 +1657,7 @@ Proof.
     rewrite Hobj' /= in Hkind.
     inversion Hkind.
     subst kind'.
+    wp_pures. iModIntro.
     iApply ("HΦ" $! (mspec.mkVersioned obj obj')).
     iSplit; last by rewrite /modified /mspec.modified //=.
 
@@ -1860,8 +1865,8 @@ Proof.
   }
   iIntros (?) "Hpost".
   iNamed "Hpost".
-  iApply "HΦ".
-  iFrame "∗ %".
+  wp_pures. iApply "HΦ".
+  by iFrame "∗ %".
 Qed.
 
 End proof.
