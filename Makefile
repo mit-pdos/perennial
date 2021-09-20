@@ -74,9 +74,14 @@ SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/program_proof/wal/sliding_proof.v\
 	src/program_proof/wal/recovery_proof.v\
 	src/program_proof/obj/commit_proof.v\
+	src/program_proof/txn/twophase_refinement_proof.v\
 	src/program_proof/simple/setattr.v\
 	src/program_proof/simple/write.v\
-	src/program_proof/examples/inode_proof.v
+	src/program_proof/examples/inode_proof.v\
+	src/program_proof/memkv/rpc_proof.v\
+	src/program_proof/memkv/memkv_conditional_put_proof.v\
+	src/program_proof/memkv/memkv_coord_start_proof.v\
+	src/program_proof/memkv/memkv_get_proof.v
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
