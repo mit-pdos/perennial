@@ -3,15 +3,15 @@ From Perennial.program_logic Require Export crash_weakestpre staged_invariant_al
 Set Default Proof Using "Type".
 Import uPred.
 
-Section modality.
-Context `{IRISG: !irisGS Λ Σ}.
-
 Definition wp_nval `{!irisGS Λ Σ, !crashGS Σ} E1 P :=
   ((∀ mj q g1 ns D κs,
        let E2 :=  ⊤ ∖ D in
        let E2 :=  ⊤ ∖ D in
        global_state_interp g1 ns mj D κs -∗ NC q -∗
      ||={E1|E2,∅|∅}=> ||▷=>^(S (num_laters_per_step ns)) ||={∅|∅,E1|E2}=> global_state_interp g1 ns mj D κs ∗ P ∗ NC q))%I.
+
+Section modality.
+Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 
 Lemma wp_nval_strong_mono E P P' :
   wp_nval E P -∗

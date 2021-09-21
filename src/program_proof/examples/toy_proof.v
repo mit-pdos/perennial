@@ -1,7 +1,7 @@
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.Helpers Require Import ModArith.
-From Perennial.goose_lang Require Import crash_modality wpr_lifting.
+From Perennial.goose_lang Require Import crash_modality recovery_lifting.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import toy.
 From Perennial.program_logic Require Import na_crash_inv.

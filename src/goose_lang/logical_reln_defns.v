@@ -120,7 +120,7 @@ Definition rlN := nroot.@"reln".@"eq".
 
 Definition loc_paired ls l :=
   (meta (hG := refinement_na_heapG) ls rlN l ∗
-   meta (hG := heapGS_na_heapGS) l rlN ls)%I.
+   meta (hG := goose_na_heapGS) l rlN ls)%I.
 
 Definition is_loc ls l vTy :=
   ((∃ γ, inv locN (loc_inv γ ls l vTy)) ∗ loc_paired ls l)%I.
@@ -157,7 +157,7 @@ Definition arrayT_interp (t: sty) (val_list_interp: sty → list (sval → ival 
                      addr_offset l = (idx * length (flatten_ty t))%Z ∧
                      addr_offset ls = (idx * length (flatten_ty t))%Z ⌝ ∗
                      (na_block_size (hG := refinement_na_heapG) (addr_base ls) (n * length (flatten_ty t))) ∗
-                     (na_block_size (hG := heapGS_na_heapGS) (addr_base l) (n * length (flatten_ty t))) ∗
+                     (na_block_size (hG := goose_na_heapGS) (addr_base l) (n * length (flatten_ty t))) ∗
                      [∗ list] i ∈ seq 0 n,
                      [∗ list] j↦vty ∈ (val_list_interp t),
                          is_loc (addr_base ls +ₗ (length (flatten_ty t) * Z.of_nat i) +ₗ j)
@@ -172,7 +172,7 @@ Definition structRefT_interp (ts: list (sval → ival → iProp Σ)) (* (val_lis
                        addr_offset l = addr_offset ls⌝ ∗
                        loc_paired (addr_base ls) (addr_base l) ∗
                      (na_block_size (hG := refinement_na_heapG) (addr_base ls) n) ∗
-                     (na_block_size (hG := heapGS_na_heapGS) (addr_base l) n) ∗
+                     (na_block_size (hG := goose_na_heapGS) (addr_base l) n) ∗
                      (([∗ list] j↦vty ∈ (ts),
                        is_loc (ls +ₗ j) (l +ₗ j) vty)
                        ∨
@@ -261,8 +261,8 @@ Context (upd: specTy_update hsT_model).
 Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
       forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hPre: sty_preG Σ) σs gs σ g
       (HINIT: sty_initP σ σs),
-        ⊢ ffi_local_start (heapGS_ffiGS) σ.(world) g -∗
-         ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
+        ⊢ ffi_local_start (goose_ffiLocalGS) goose_ffiGlobalGS σ.(world) g -∗
+         ffi_local_start (refinement_spec_ffiLocalGS) refinement_spec_ffiGlobalGS σs.(world) gs -∗
          pre_borrowN (sty_lvl_init) -∗
          |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0.
 
@@ -275,15 +275,16 @@ Definition sty_crash_obligation :=
   forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
       ⊢ sty_inv hS -∗ ▷ sty_crash_cond hS -∗ |sty_lvl_init={styN}=> ▷ ∀ (hG': heapGS Σ), |={⊤}=>
       ∀ σs,
-      (∃ σ0 σ1, ffi_restart (heapGS_ffiGS (hG := hG')) σ1.(world) ∗
-      ffi_crash_rel Σ (heapGS_ffiGS (hG := hG)) σ0.(world) (heapGS_ffiGS (hG := hG')) σ1.(world)) -∗
-      ffi_ctx (refinement_spec_ffiG) σs.(world) -∗
+      (∃ σ0 σ1, ffi_restart (goose_ffiLocalGS (hL:=goose_localGS (heapGS:=hG'))) σ1.(world) ∗
+      ffi_crash_rel Σ (goose_ffiLocalGS (hL:=goose_localGS (heapGS:=hG))) σ0.(world)
+                      (goose_ffiLocalGS (hL:=goose_localGS (heapGS:=hG'))) σ1.(world)) -∗
+      ffi_local_ctx (refinement_spec_ffiLocalGS) σs.(world) -∗
       ∃ (σs': sstate) (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
-      ffi_ctx (refinement_spec_ffiG) σs.(world) ∗
+      ffi_local_ctx (refinement_spec_ffiLocalGS) σs.(world) ∗
       ∀ (hRG': refinement_heapG Σ),
-      ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
-                      (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
-      ffi_restart (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
+      ffi_crash_rel Σ (refinement_spec_ffiLocalGS (hRG := hRG)) σs.(world)
+                      (refinement_spec_ffiLocalGS (hRG := hRG')) σs'.(world) -∗
+      ffi_restart (refinement_spec_ffiLocalGS (hRG := hRG')) σs'.(world) -∗
       pre_borrowN (sty_lvl_init) -∗
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new).
 

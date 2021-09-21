@@ -13,12 +13,19 @@ Definition ncfupd_aux `{!invGS Σ, !crashGS Σ} : seal (ncfupd_def). Proof. by e
 Definition ncfupd `{!invGS Σ, !crashGS Σ} := ncfupd_aux.(unseal).
 Definition ncfupd_eq `{!invGS Σ, !crashGS Σ} : ncfupd = ncfupd_def := ncfupd_aux.(seal_eq).
 
+Arguments ncfupd {Σ I C} : rename.
+
 Notation "|NC={ E1 }=> Q" := (ncfupd E1 E1 Q)
   (at level 99, E1 at level 50, Q at level 200,
    format "'[  ' |NC={ E1 }=>  '/' Q ']'") : bi_scope.
+Notation "|@NC={ C , E1 }=> Q" := (ncfupd (C:=C) E1 E1 Q)
+  (at level 99, C, E1 at level 50, Q at level 200, only parsing) : bi_scope.
 Notation "|NC={ E1 , E2 }=> P" := (ncfupd E1 E2 P)
       (at level 99, E1, E2 at level 50, P at level 200,
        format "'[  ' |NC={ E1 , E2 }=>  '/' P ']'") : bi_scope.
+Notation "|@NC={ C , E1 , E2 }=> P" := (ncfupd (C:=C) E1 E2 P)
+      (at level 99, C, E1, E2 at level 50, P at level 200, only parsing) : bi_scope.
+
 Notation "|NC={ Eo } [ Ei ]▷=> Q" := (∀ q, NC q -∗ |={Eo,Ei}=> ▷ |={Ei,Eo}=> Q ∗ NC q)%I
   (at level 99, Eo, Ei at level 50, Q at level 200,
    format "'[  ' |NC={ Eo } [ Ei ]▷=>  '/' Q ']'") : bi_scope.

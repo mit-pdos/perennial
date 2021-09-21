@@ -74,7 +74,7 @@ Local Hint Extern 0 (AlwaysEn ## MaybeEn2 _) => apply coPset_inl_inr_disj : core
 Local Hint Extern 0 (MaybeEn1 _ ## MaybeEn2 _) => apply MaybeEn12_disj : core.
 
 Section pri_inv.
-Context `{IRISG: !irisGS Λ Σ}.
+Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 Context `{PRI: !pri_invG IRISG}.
   Implicit Types i : positive.
   Implicit Types E : coPset.

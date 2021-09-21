@@ -96,39 +96,31 @@ Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
    Besides needing to know that these CMRAs are included in Σ, there may
    be some implicit ghost names that are used to identify instances
    of these algebras. (For example, na_heap has an implicit name used for
-   the ghost heap). These are bundled together in ffiGS.
+   the ghost heap). These are bundled together in ffiLocalGS and ffiGlobalGS.
 
    On a crash, a new "generation" might use fresh names for these instances.
-   Thus, an FFI needs to tell the framework how to unbundle ffiGS and swap in a
+   Thus, an FFI needs to tell the framework how to unbundle ffiLocalGS and swap in a
    new set of names.
 *)
 
 Class ffi_interp (ffi: ffi_model) :=
-  { ffiGS: gFunctors -> Set;
-    ffi_local_names : Set;
-    ffi_global_names : Set;
-    ffi_get_local_names : ∀ Σ, ffiGS Σ → ffi_local_names;
-    ffi_get_global_names : ∀ Σ, ffiGS Σ → ffi_global_names;
-    ffi_update_local : ∀ Σ, ffiGS Σ → ffi_local_names → ffiGS Σ;
-    ffi_update_get_local: ∀ Σ hF names, ffi_get_local_names Σ (ffi_update_local _ hF names) = names;
-    ffi_update_get_global: ∀ Σ hF names, ffi_get_global_names Σ (ffi_update_local _ hF names) =
-                                         ffi_get_global_names Σ hF;
-    ffi_get_update: ∀ Σ hF, ffi_update_local Σ hF (ffi_get_local_names _ hF) = hF;
-    ffi_update_update: ∀ Σ hF names1 names2, ffi_update_local Σ (ffi_update_local Σ hF names1) names2
-                                     = ffi_update_local Σ hF names2;
-    ffi_ctx: ∀ `{ffiGS Σ}, ffi_state -> iProp Σ;
-    ffi_global_ctx: ∀ `{ffiGS Σ}, ffi_global_state -> iProp Σ;
-    ffi_global_ctx_nolocal : ∀ Σ hF names,
-        @ffi_global_ctx Σ (ffi_update_local Σ hF names) = @ffi_global_ctx Σ hF;
-    ffi_local_start: ∀ `{ffiGS Σ}, ffi_state -> ffi_global_state -> iProp Σ;
-    ffi_restart: ∀ `{ffiGS Σ}, ffi_state -> iProp Σ;
-    ffi_crash_rel: ∀ Σ, ffiGS Σ → ffi_state → ffiGS Σ → ffi_state → iProp Σ;
-    ffi_crash_rel_pers: ∀ Σ (Hold Hnew: ffiGS Σ) σ σ', Persistent (ffi_crash_rel Σ Hold σ Hnew σ');
+  { ffiLocalGS: gFunctors -> Set;
+    ffiGlobalGS: gFunctors -> Set;
+    ffi_global_ctx: ∀ `{ffiGlobalGS Σ}, ffi_global_state -> iProp Σ;
+    ffi_local_ctx: ∀ `{ffiLocalGS Σ}, ffi_state -> iProp Σ;
+    ffi_global_start: ∀ `{ffiGlobalGS Σ}, ffi_global_state -> iProp Σ;
+    (* Valid local starting states may depend on whatever the current global state is. *)
+    ffi_local_start: ∀ `{ffiLocalGS Σ, ffiGlobalGS Σ}, ffi_state -> ffi_global_state -> iProp Σ;
+    (* ffi_restart is provided to the client in idempotence_wpr *)
+    ffi_restart: ∀ `{ffiLocalGS Σ}, ffi_state -> iProp Σ;
+    ffi_crash_rel: ∀ Σ, ffiLocalGS Σ → ffi_state → ffiLocalGS Σ → ffi_state → iProp Σ;
+    ffi_crash_rel_pers: ∀ Σ (Hold Hnew: ffiLocalGS Σ) σ σ', Persistent (ffi_crash_rel Σ Hold σ Hnew σ');
   }.
 
-Arguments ffi_ctx {ffi FfiInterp Σ} : rename.
+Arguments ffi_local_ctx {ffi FfiInterp Σ} : rename.
 Arguments ffi_global_ctx {ffi FfiInterp Σ} : rename.
 Arguments ffi_local_start {ffi FfiInterp Σ} : rename.
+Arguments ffi_global_start {ffi FfiInterp Σ} : rename.
 Arguments ffi_restart {ffi FfiInterp Σ} : rename.
 
 Section goose_lang.
@@ -394,78 +386,31 @@ Proof.
 Qed.
 
 (** Global ghost state for GooseLang. *)
+Class gooseGlobalGS Σ := GooseGlobalGS {
+  goose_invGS : invGS Σ;
+  goose_creditGS :> creditGS Σ;
+  goose_ffiGlobalGS : ffiGlobalGS Σ;
+}.
+(* Per-generation / "local" ghost state.
+
+TODO: in program_logic we use the term "generation", in GooseLang we say "local".
+Would be good to align terminology. *)
+Class gooseLocalGS Σ := GooseLocalGS {
+  goose_crashGS : crashGS Σ;
+  goose_ffiLocalGS : ffiLocalGS Σ;
+  goose_na_heapGS :> na_heapGS loc val Σ;
+  goose_traceGS :> traceGS Σ;
+}.
+
+(* For convenience we also have a class that bundles both the
+   global and per-generation parameters.
+   For historic reasons, this is called heapGS
+   TODO: rename to gooseGS. *)
 Class heapGS Σ := HeapGS {
-  heapGS_invGS : invGS Σ;
-  heapGS_crashGS : crashGS Σ;
-  heapGS_ffiGS : ffiGS Σ;
-  heapGS_na_heapGS :> na_heapGS loc val Σ;
-  heapGS_traceGS :> traceGS Σ;
-  heapGS_creditGS :> creditGS Σ;
+  goose_globalGS : gooseGlobalGS Σ;
+  goose_localGS : gooseLocalGS Σ;
 }.
-
-
-(* The word 'heap' is really overloaded... *)
-(* RJ: I think we should rename heapGS → gooseGS or gooseLangGS *)
-Record heap_names := {
-  heap_heap_names : na_heap_names;
-  heap_ffi_local_names : ffi_local_names;
-  heap_ffi_global_names : ffi_global_names;
-  heap_trace_names : tr_names;
-  heap_credit_names : cr_names;
-}.
-
-Record heap_local_names := {
-  heap_local_heap_names : na_heap_names;
-  heap_local_ffi_local_names : ffi_local_names;
-  heap_local_trace_names : tr_names;
-}.
-
-Definition heap_update_local_names Σ (hG : heapGS Σ) (names: heap_local_names) :=
-  {| heapGS_invGS := heapGS_invGS;
-     heapGS_crashGS := heapGS_crashGS;
-     heapGS_ffiGS := ffi_update_local Σ (heapGS_ffiGS) (heap_local_ffi_local_names names);
-     heapGS_na_heapGS := na_heapGS_update (heapGS_na_heapGS) (heap_local_heap_names names);
-     heapGS_traceGS := traceGS_update Σ (heapGS_traceGS) (heap_local_trace_names names);
-     heapGS_creditGS := heapGS_creditGS;
- |}.
-
-Definition heap_update_local Σ (hG : heapGS Σ) (Hinv: invGS Σ) (Hcrash : crashGS Σ) (names: heap_local_names) :=
-  {| heapGS_invGS := Hinv;
-     heapGS_crashGS := Hcrash;
-     heapGS_ffiGS := ffi_update_local Σ (heapGS_ffiGS) (heap_local_ffi_local_names names);
-     heapGS_na_heapGS := na_heapGS_update (heapGS_na_heapGS) (heap_local_heap_names names);
-     heapGS_traceGS := traceGS_update Σ (heapGS_traceGS) (heap_local_trace_names names);
-     heapGS_creditGS := heapGS_creditGS;
- |}.
-
-Definition heap_get_names Σ (hG : heapGS Σ) : heap_names :=
-  {| heap_heap_names := na_heapGS_get_names (heapGS_na_heapGS);
-     heap_ffi_local_names := ffi_get_local_names Σ (heapGS_ffiGS);
-     heap_ffi_global_names := ffi_get_global_names Σ (heapGS_ffiGS);
-     heap_trace_names := trace_tr_names;
-     heap_credit_names := credit_cr_names;
- |}.
-
-Definition heap_get_local_names Σ (hG : heapGS Σ) : heap_local_names :=
-  {| heap_local_heap_names := na_heapGS_get_names (heapGS_na_heapGS);
-     heap_local_ffi_local_names := ffi_get_local_names Σ (heapGS_ffiGS);
-     heap_local_trace_names := trace_tr_names;
- |}.
-
-Definition heap_extend_local_names (names : heap_local_names) (namesg: ffi_global_names) (namescr: cr_names) : heap_names :=
-  {| heap_heap_names := heap_local_heap_names names;
-     heap_ffi_local_names := heap_local_ffi_local_names names;
-     heap_trace_names := heap_local_trace_names names;
-     heap_ffi_global_names := namesg;
-     heap_credit_names := namescr;
- |}.
-
-Lemma heap_get_update Σ hG :
-  heap_update_local_names Σ hG (heap_get_local_names _ hG) = hG.
-Proof.
-  rewrite /heap_update_local_names/heap_get_local_names/na_heapGS_update/na_heapGS_get_names ffi_get_update //=.
-  destruct hG as [??? [] []]; eauto.
-Qed.
+(* Hints are set up at the bottom of the file, outside the section. *)
 
 Definition tls (na: naMode) : lock_state :=
   match na with
@@ -473,25 +418,19 @@ Definition tls (na: naMode) : lock_state :=
   | Reading n => RSt n
   end.
 
-Global Existing Instances heapGS_na_heapGS.
-
 Definition borrowN := nroot.@"borrow".
 Definition crash_borrow_ginv_number : nat := 6%nat.
 Definition crash_borrow_ginv `{!invGS Σ} `{creditGS Σ}
   := (inv borrowN (cred_frag crash_borrow_ginv_number)).
 
-Global Program Instance heapGS_irisGS `{!heapGS Σ}:
+Global Program Instance goose_irisGS `{G: !gooseGlobalGS Σ}:
   irisGS goose_lang Σ := {
-  iris_invGS := heapGS_invGS;
-  iris_crashGS := heapGS_crashGS;
+  iris_invGS := goose_invGS;
   num_laters_per_step := (λ n, 3 ^ (n + 1))%nat;
   step_count_next := (λ n, 10 * (n + 1))%nat;
-  state_interp σ nt :=
-    (na_heap_ctx tls σ.(heap) ∗ ffi_ctx heapGS_ffiGS σ.(world)
-      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
   global_state_interp g ns mj D κs :=
-    (ffi_global_ctx heapGS_ffiGS g ∗
-     @crash_borrow_ginv _ heapGS_invGS _ ∗
+    (ffi_global_ctx goose_ffiGlobalGS g ∗
+     @crash_borrow_ginv _ goose_invGS _ ∗
      cred_interp ns ∗
      ⌜(/ 2 < mj ≤ 1) ⌝%Qp ∗
      pinv_tok mj D)%I;
@@ -503,16 +442,13 @@ Next Obligation.
 Qed.
 Next Obligation. intros => //=. lia. Qed.
 
-Lemma heap_get_update' Σ hG :
-  heap_update_local Σ hG (iris_invGS) (iris_crashGS) (heap_get_local_names _ hG) = hG.
-Proof.
-  destruct hG as [??? [] []].
-  rewrite /heap_update_local ffi_get_update //=.
-Qed.
-
-Lemma heap_update_invG Σ hG Hinv Hc names:
-  @iris_invGS _ _ (@heapGS_irisGS _ (heap_update_local Σ hG Hinv Hc names)) = Hinv.
-Proof. rewrite //=. Qed.
+Global Program Instance goose_generationGS `{L: !gooseLocalGS Σ}:
+  generationGS goose_lang Σ := {
+  iris_crashGS := goose_crashGS;
+  state_interp σ nt :=
+    (na_heap_ctx tls σ.(heap) ∗ ffi_local_ctx goose_ffiLocalGS σ.(world)
+      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
+}.
 
 (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
 [head_step]. The tactic will discharge head-reductions starting from values, and
@@ -712,7 +648,9 @@ Global Instance pure_case_inr v e1 e2 :
 Proof. solve_pure_exec. Qed.
 
 Section lifting.
-Context `{!heapGS Σ}.
+(* TODO: measure perf impact of parameterizing over heapGS
+vs gooseGS+gooseLocalGS *)
+Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
 Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
 Implicit Types efs : list expr.
@@ -1346,7 +1284,16 @@ Qed.
 End lifting.
 End goose_lang.
 
+(*
+(* We want [heapGS] to be enough to get [gooseGlobalGS] and [gooseGlobalGS],
+*and vice versa*, so we have to be careful to avoid loops. *)
+Global Existing Instances goose_globalGS goose_localGS HeapGS.
+Hint Cut [ ( _* ) HeapGS ( _* ) (goose_localGS | goose_globalGS)] : typeclass_instances.
+Hint Cut [ ( _* ) (goose_localGS | goose_globalGS) ( _* ) HeapGS] : typeclass_instances.
+*)
+Global Existing Instances goose_globalGS goose_localGS.
+
 Hint Extern 0 (AsRecV (RecV _ _ _) _ _ _) =>
   apply AsRecV_recv : typeclass_instances.
 
-Arguments heapGS_ffiGS {_ _ _ _ hG}: rename.
+Arguments goose_ffiLocalGS {_ _ _ _ hL}: rename.

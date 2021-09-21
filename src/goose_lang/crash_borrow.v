@@ -1,6 +1,6 @@
 From iris.algebra Require Import gmap auth agree gset coPset excl csum.
 From Perennial.program_logic Require Import staged_invariant post_expr.
-From Perennial.goose_lang Require Import crash_modality lifting wpr_lifting.
+From Perennial.goose_lang Require Import crash_modality lifting recovery_lifting.
 From Perennial.goose_lang Require Import wpc_proofmode.
 From Perennial.base_logic.lib Require Import saved_prop.
 From Perennial.Helpers Require Import Qextra.
@@ -12,10 +12,10 @@ Context `{ext:ffi_syntax}.
 Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 
-Context `{!heapGS Σ}.
+Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
 Context `{!stagedG Σ}.
 
-Global Instance later_tokG_heap : later_tokG (heapGS_irisGS).
+Global Instance later_tokG_heap : later_tokG (goose_irisGS).
 Proof.
   refine {| later_tok := cred_frag 1 |}.
   - iIntros (g ns mj D κ) "(Hg&Hfrag)".
@@ -76,7 +76,7 @@ Proof.
   apply Qp_add_lt_mono; auto.
 Qed.
 
-Global Instance pri_invG_heap : pri_invG (heapGS_irisGS).
+Global Instance pri_invG_heap : pri_invG (goose_irisGS).
 Proof.
   refine {| pri_inv_tok := λ q E, pinv_tok_inf q E |}; rewrite /pinv_tok_inf.
   - iIntros (??) "($&?)".

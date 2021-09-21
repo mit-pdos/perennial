@@ -10,7 +10,7 @@ From Perennial.program_logic Require Export step_fupd_extra crash_weakestpre ae_
 Set Default Proof Using "Type".
 
 Section def.
-Context `{IRISG: !irisGS Λ Σ}.
+Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 Context `{!pri_invG IRISG}.
 Context `{!later_tokG IRISG}.
 Context `{!stagedG Σ}.
@@ -37,7 +37,7 @@ Definition staged_value_inuse_cancel k e E1' E1 mj mj_wp mj_ukeep Φ Φc P :=
 End def.
 
 Section inv.
-Context `{IRISG: !irisGS Λ Σ}.
+Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 Context `{PRI: !pri_invG IRISG}.
 Context `{!later_tokG IRISG}.
 Context `{!stagedG Σ}.

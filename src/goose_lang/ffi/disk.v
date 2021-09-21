@@ -95,7 +95,7 @@ Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
   Block_to_vals block0.
 Proof. reflexivity. Qed.
 
-Class diskG Σ :=
+Class diskGS Σ := DiskGS
   { diskG_gen_heapG :> gen_heap.gen_heapGS Z Block Σ; }.
 
 
@@ -210,30 +210,20 @@ Section disk.
       ffi_crash_step := eq; }.
 
   Program Instance disk_interp: ffi_interp disk_model :=
-    {| ffiGS := diskG;
-       ffi_local_names := gen_heap_names;
-       ffi_global_names := unit;
-       ffi_get_local_names := fun _ hD => gen_heapG_get_names (diskG_gen_heapG);
-       ffi_get_global_names := fun _ hD => tt;
-       ffi_update_local := fun _ hD names =>
-                       {| diskG_gen_heapG := gen_heapG_update (@diskG_gen_heapG _ hD) names |};
-       ffi_get_update := fun _ _ => _;
-       ffi_ctx := fun _ _ (d: @ffi_state disk_model) => gen_heap.gen_heap_interp d;
-       ffi_global_ctx := fun _ _ _ => True%I;
-       ffi_local_start := fun _ _ (d: @ffi_state disk_model) _ =>
+    {| ffiLocalGS := diskGS;
+       ffiGlobalGS _ := ()%type;
+       ffi_local_ctx Σ _ (d: @ffi_state disk_model) := gen_heap.gen_heap_interp d;
+       ffi_global_ctx _ _ _ := True%I;
+       ffi_local_start Σ _ _ (d: @ffi_state disk_model) _ :=
                       ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=Block) l (DfracOwn 1) v))%I;
+       ffi_global_start _ _ _ := True%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I;
-       ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
+       ffi_crash_rel Σ hF1 σ1 hF2 σ2 := ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
     |}.
-  Next Obligation. intros ? [[]] [] => //=. Qed.
-  Next Obligation. intros ? [[]] => //=. Qed.
-  Next Obligation. intros ? [[]] => //=. Qed.
-  Next Obligation. intros ? [[]] => //=. Qed.
-  Next Obligation. intros ? [[]] => //=. Qed.
 
   Section proof.
-  Context `{!heapGS Σ}.
-  Instance diskG0 : diskG Σ := heapGS_ffiGS.
+  Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
+  Instance goose_diskGS : diskGS Σ := goose_ffiLocalGS.
 
   Notation "l d↦{ dq } v" := (gen_heap.mapsto (L:=Z) (V:=Block) l dq v%V)
                              (at level 20, dq at level 50, format "l  d↦{ dq }  v") : bi_scope.
@@ -301,7 +291,7 @@ lemmas. *)
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
-    cbv [ffi_ctx disk_interp].
+    cbv [ffi_local_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iSplit.
     { iPureIntro.
@@ -417,7 +407,7 @@ lemmas. *)
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
-    cbv [ffi_ctx disk_interp].
+    cbv [ffi_local_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
     iDestruct (heap_valid_block with "Hσ Hl") as %?.
     iSplit.
@@ -560,37 +550,30 @@ From Perennial.goose_lang Require Import adequacy.
 
 Program Instance disk_interp_adequacy:
   @ffi_interp_adequacy disk_model disk_interp disk_op disk_semantics :=
-  {| ffi_preG := disk_preG;
+  {| ffiGpreS := disk_preG;
      ffiΣ := diskΣ;
      subG_ffiPreG := subG_diskG;
      ffi_initgP := λ _, True;
      ffi_initP := λ _ _, True;
-     ffi_update_pre := (λ _ hP names _, @disk_update_pre _ hP names);
-     ffi_pre_global_start := (λ _ hP names _, True%I);
-     ffi_pre_global_ctx := (λ _ hP names _, True%I);
   |}.
-Next Obligation. rewrite //=. Qed.
-Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
-Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
-Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. iIntros (Σ hPre g). eauto. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ ???) "_". iMod (gen_heap_name_strong_init σ) as (names) "(Hctx&Hpts)".
-  iExists names. by iFrame.
+  iIntros (Σ hPre ? σ ??) "_".
+  iMod (gen_heap_init σ) as (?) "(Hctx & Hpts & _)".
+  iExists (DiskGS _ _). by iFrame.
 Qed.
 Next Obligation.
-  iIntros (Σ σ σ' g Hcrash Hold) "Hinterp Hg".
-  iExists (ffi_get_local_names _ Hold) => //=.
+  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  iExists Hold.
   inversion Hcrash; subst.
   iFrame. iPureIntro; split_and!; auto.
-  destruct Hold as [[]] => //=.
 Qed.
 
 Section crash.
   Existing Instances disk.disk_op disk.disk_model disk.disk_ty.
   Existing Instances disk.disk_semantics disk.disk_interp.
-  Existing Instance diskG0.
+  Existing Instance goose_diskGS.
 
   Lemma disk_mapsto_post_crash `{!heapGS Σ} l q v:
     l d↦{q} v -∗ post_crash (λ _, l d↦{q} v).
@@ -598,7 +581,7 @@ Section crash.
     iIntros "H". iIntros (???) "#Hrel".
     rewrite /ffi_crash_rel.
     iDestruct "Hrel" as %(Heq1&Heq2).
-    rewrite /diskG0. rewrite Heq1. eauto.
+    rewrite /goose_diskGS. rewrite Heq1. eauto.
   Qed.
 
   Global Instance disk_mapsto_into_crash `{!heapGS Σ} l q v:

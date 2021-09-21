@@ -9,7 +9,7 @@ Import language.
 Set Default Proof Using "Type".
 
 Section crash_adequacy.
-Context `{!irisGS Λ Σ}.
+Context `{!irisGS Λ Σ, generationGS Λ Σ}.
 Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types e : expr Λ.
@@ -237,7 +237,7 @@ Qed.
 End crash_adequacy.
 
 Section crash_adequacy.
-Context `{!irisGS Λ Σ}.
+Context `{!irisGS Λ Σ, generationGS Λ Σ}.
 Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types e : expr Λ.

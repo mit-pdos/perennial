@@ -27,7 +27,7 @@ Arguments later_tok {_ _ _ _}.
 
 Section res.
 
-Context `{IRISG: !irisGS Λ Σ}.
+Context `{IRISG: !irisGS Λ Σ, generationGS Λ Σ}.
 Context `{LT: !later_tokG IRISG}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.

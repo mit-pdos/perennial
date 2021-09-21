@@ -4,7 +4,7 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Section modality.
-Context `{IRISG: !irisGS Λ Σ}.
+Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 
 Definition post_expr (E : coPset) (P : iProp Σ) : iProp Σ :=
   (∀ e k E' Φ (Hsub: E ⊆ E') (Hnval : to_val e = None),

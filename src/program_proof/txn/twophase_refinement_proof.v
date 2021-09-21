@@ -281,7 +281,7 @@ Proof.
     specialize (@recovery_proof.is_txn_durable_stable) => Hcrash.
     rewrite /IntoCrash in Hcrash.
     iPoseProof (Hcrash _ _ hG _ with "Hlower_durable") as "H".
-    rewrite /post_crash. iApply ("H" $! _ _ hG').
+    rewrite /post_crash. iApply ("H" $! _ _ (goose_localGS (heapGS:=hG'))).
     eauto.
   }
   iAssert (⌜ dom (gset _) mt = dom (gset _) (jrnlData s)⌝)%I with "[]" as %Hdomeq.

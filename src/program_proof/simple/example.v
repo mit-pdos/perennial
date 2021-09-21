@@ -15,7 +15,7 @@ From Perennial.program_logic Require Import spec_assert.
 From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof.simple Require Import spec invariant proofs.
 From Perennial.goose_lang Require Import crash_modality.
-From Perennial.goose_lang Require wpr_lifting.
+From Perennial.goose_lang Require recovery_lifting.
 
 Section heap.
 Context `{!heapGS Σ}.

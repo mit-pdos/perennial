@@ -50,25 +50,26 @@ Existing Instance sty_inv_persistent.
 
 Section pre_assumptions.
 
-Context `{Hhpre: @heapGpreS ext ffi ffi_semantics interp _ Σ}.
+Context `{Hhpre: @gooseGpreS ext ffi ffi_semantics interp _ Σ}.
 Context `{Hcpre: @cfgPreG spec_lang Σ}.
 Context `{Hrpre: @refinement_heapPreG spec_ext spec_ffi spec_interp _ spec_adeq Σ}.
 Context `{Hcrashpre: crashGpreS Σ}.
 Context `{Hstypre: !sty_preG (hsT_model := hsT_model) (specTy_update := upd) Σ}.
 
-Definition sty_derived_crash_condition :=
+Local Definition sty_derived_crash_condition :=
     (λ (hG: heapGS Σ) (hRG: refinement_heapG Σ), ∃ hS,
       ▷ ∀ (hG': heapGS Σ), |={⊤}=>
       ∀ σs,
-      (∃ σ0 σ1, ffi_restart (heapGS_ffiGS) σ1.(world) ∗
-      ffi_crash_rel Σ (heapGS_ffiGS (hG := hG)) σ0.(world) (heapGS_ffiGS (hG := hG')) σ1.(world)) -∗
-      ffi_ctx (refinement_spec_ffiG) σs.(world) -∗
+      (∃ σ0 σ1, ffi_restart (goose_ffiLocalGS) σ1.(world) ∗
+      ffi_crash_rel Σ (goose_ffiLocalGS (hL:=goose_localGS (heapGS:=hG))) σ0.(world)
+                      (goose_ffiLocalGS (hL:=goose_localGS (heapGS:=hG'))) σ1.(world)) -∗
+      ffi_local_ctx (refinement_spec_ffiLocalGS) σs.(world) -∗
       ∃ (σs': sstate) (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
-      ffi_ctx (refinement_spec_ffiG) σs.(world) ∗
+      ffi_local_ctx (refinement_spec_ffiLocalGS) σs.(world) ∗
       ∀ (hRG': refinement_heapG Σ),
-      ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
-                      (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
-      ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
+      ffi_crash_rel Σ (refinement_spec_ffiLocalGS (hRG := hRG)) σs.(world)
+                      (refinement_spec_ffiLocalGS (hRG := hRG')) σs'.(world) -∗
+      ffi_restart (refinement_spec_ffiLocalGS) σs'.(world) -∗
       crash_borrow.pre_borrowN sty_lvl_init -∗
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new))%I.
 
@@ -137,7 +138,8 @@ Lemma sty_adequacy es σs gs e σ g τ initP:
 Proof.
   intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Hatomic Htype Htrace Horacle Hinit.
   eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
-           (Φ := λ _ _ _, True%I) (Φc := sty_derived_crash_condition)
+           (Φ := λ _ _ _, True%I) (Φc := λ hG hL, sty_derived_crash_condition (HeapGS _ hG hL))
+           (P := λ hG hL _, sty_crash_tok (heapGS0:=HeapGS _ hG hL))
            (k := sty_lvl_init) (initP := initP); eauto.
   { apply _. }
   { apply _. }
@@ -145,21 +147,22 @@ Proof.
   { apply _. }
   { intros. apply sty_crash_tok_timeless. }
   { intros. rewrite /excl_crash_token. iIntros. iApply (sty_crash_tok_excl with "[$] [$]"). }
-  { clear dependent σ σs g gs. rewrite /wpc_init. iIntros (hG hRG σ g σs gs Hinit) "Hffi Hffi_spec".
+  { clear dependent σ σs g gs. rewrite /wpc_init. iIntros (hG hL hRG σ g σs gs Hinit) "Hffi Hffi_spec".
     rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.
     iIntros "Hborrow Hj #Hspec #Hcrash_spec #Htrace".
     iApply fupd_wpc.
-    iPoseProof (Hsty_init1 _ _ _ _  with "[$] [$] [$]") as "H"; first auto.
+    set (hGoose := HeapGS _ hG hL).
+    iPoseProof (Hsty_init1 _ _ _  with "[$] [$] [$]") as "H"; first auto.
     iApply (fupd_mask_mono styN); first by set_solver+.
     iMod "H" as (names) "Hinit".
     iModIntro.
-    iApply (sty_inv_to_wpc with "[$] [$] [$] [$]"); eauto.
+    iApply (sty_inv_to_wpc _ _ with "[$] [$] [$] [$]"); eauto.
   }
   { clear dependent σ σs.
     rewrite /wpc_post_crash.
-    iIntros (??) "H". iDestruct "H" as (hS') "H". iNext.
-    iIntros (hG'). iMod ("H" $! hG') as "H". iModIntro.
+    iIntros (hG hL ?) "H". iDestruct "H" as (hS') "H". iNext.
+    iIntros (hL'). iMod ("H" $! (HeapGS _ _ hL')) as "H". iModIntro.
     iIntros. iSpecialize ("H" with "[$] [$]").
     iDestruct "H" as (σs' Hcrash) "(Hctx&Hrest)".
     iExists σs', Hcrash. iFrame. iIntros (hRG') "Hcrash_rel Hrestart".
@@ -170,7 +173,7 @@ Proof.
     iApply (fupd_mask_mono styN); first by set_solver+.
     iMod ("Hrest" with "[$]") as (names) "Hinv".
     iModIntro.
-    iApply (sty_inv_to_wpc _ _ (sty_update logical_relnΣ hS' names) with "[$] [$] [$] [$]"); eauto.
+    iApply (sty_inv_to_wpc (HeapGS _ _ hL') _ (sty_update logical_relnΣ hS' names) with "[$] [$] [$] [$]"); eauto.
   }
   (* BUG: Coq v8.11 requires Grab Existential Variables and not Unshelve to get
   this obligation *)

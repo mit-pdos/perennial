@@ -11,19 +11,18 @@ From Perennial.program_logic Require ectx_language.
 From iris.prelude Require Import options.
 Import uPred.
 
-Class irisGS (Λ : language) (Σ : gFunctors) := IrisG {
+(** [irisGS] captures the parameters that remain the same throughout the
+entire execution of the crashing or distributed system. It is a single fixed
+global parameter, instantiated once all the way at the top in adequacy. *)
+Class irisGS (Λ : language) (Σ : gFunctors) := IrisGS {
   iris_invGS :> invGS Σ;
-  iris_crashGS :> crashGS Σ;
 
-  (** The state interpretation is a per-machine invariant that should hold in
-  between each step of reduction. Here [state Λ] is the per-machine state, and
-  the [nat] is the number of forked-off threads (not the total number of threads,
-  which is one higher because there is always a main thread). *)
-  state_interp : state Λ → nat → iProp Σ;
   (** The global state interpretation is a whole-system invariant that should
   hold in between each step of reduction. Here [global_state Λ] is the global
   state, the [nat] is the number of steps already performed by the system, and
-  [list Λobservation] are the remaining observations. *)
+  [list Λobservation] are the remaining observations.
+  The fracR and the coPset are relevant for crash borrows; also see later_res
+  and private_invariants *)
   global_state_interp : global_state Λ → nat → fracR → coPset → list (observation Λ) → iProp Σ;
 
   (** A fixed postcondition for any forked-off thread. For most languages, e.g.
@@ -38,7 +37,7 @@ Class irisGS (Λ : language) (Σ : gFunctors) := IrisG {
   one later for each physical step. *)
   num_laters_per_step : nat → nat;
 
-
+  (** Further inflate how many laters we generate per step. *)
   step_count_next : nat → nat;
 
   (** When performing pure steps, the state interpretation needs to be
@@ -59,19 +58,24 @@ Class irisGS (Λ : language) (Σ : gFunctors) := IrisG {
 }.
 Global Opaque iris_invGS.
 
-Definition irisG_equiv {Λ Σ} (I1 I2: irisGS Λ Σ) :=
-  @iris_invGS _ _ I1 = @iris_invGS _ _ I2 ∧
-  @iris_crashGS _ _ I1 = @iris_crashGS _ _ I2 ∧
-  (∀ σ n, @state_interp _ _ I1 σ n ≡ @state_interp _ _ I2 σ n) ∧
-  (∀ g n q D κs, @global_state_interp _ _ I1 g n q D κs ≡ @global_state_interp _ _ I2 g n q D κs) ∧
-  (∀ v, @fork_post _ _ I1 v ≡ @fork_post _ _ I2 v) ∧
-  (∀ n, @num_laters_per_step _ _ I1 n ≡ @num_laters_per_step _ _ I2 n) ∧
-  (∀ n, @step_count_next _ _ I1 n = @step_count_next _ _ I2 n).
+(* [generationGS] captures the parameters that can change on each crash,
+   and between machines in the distributed setting. *)
+Class generationGS (Λ : language) (Σ : gFunctors) := GenerationGS {
+  iris_crashGS :> crashGS Σ;
+
+  (** The state interpretation is a per-machine invariant that should hold in
+  between each step of reduction. Here [state Λ] is the per-machine state, and
+  the [nat] is the number of forked-off threads (not the total number of threads,
+  which is one higher because there is always a main thread). *)
+  state_interp : state Λ → nat → iProp Σ;
+}.
+
+Arguments iris_crashGS {Λ Σ G} : rename.
+Arguments state_interp {Λ Σ G} : rename.
 
 (* Define a weakestpre with an explicit crash invariant (i.e. there is a postcondition and a crash condition *)
-
-
-Definition wpc_pre `{!irisGS Λ Σ} (s : stuckness) (k : nat) (mj: fracR)
+(* FIXME(RJ): [k] seems unused; get rid of it? *)
+Definition wpc_pre `{!irisGS Λ Σ, !generationGS Λ Σ} (s : stuckness) (k : nat) (mj: fracR)
     (wpc : coPset -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> iPropO Σ -d> iPropO Σ) :
     coPset -d> expr Λ -d> (val Λ -d> iPropO Σ) -d> iPropO Σ -d> iPropO Σ := λ E1 e1 Φ Φc,
   ((match to_val e1 with
@@ -95,7 +99,7 @@ Definition wpc_pre `{!irisGS Λ Σ} (s : stuckness) (k : nat) (mj: fracR)
     ((∀ g1 ns D κs, global_state_interp g1 ns mj D κs -∗ C -∗
      ||={E1|⊤∖D,∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,E1|⊤∖D}=> global_state_interp g1 ns mj D κs ∗ Φc))))%I.
 
-Local Instance wpc_pre_contractive `{!irisGS Λ Σ} s k mj : Contractive (wpc_pre s k mj).
+Local Instance wpc_pre_contractive `{!irisGS Λ Σ, !generationGS Λ Σ} s k mj : Contractive (wpc_pre s k mj).
 Proof.
   rewrite /wpc_pre=> n wp wp' Hwp E1 e1 Φ Φc.
   do 22 (f_contractive || f_equiv).
@@ -104,13 +108,13 @@ Proof.
   - simpl in IH. rewrite -IH. eauto.
 Qed.
 
-Definition wpc0 `{!irisGS Λ Σ} (s : stuckness) (k: nat) mj :
+Definition wpc0 `{!irisGS Λ Σ, !generationGS Λ Σ} (s : stuckness) (k: nat) mj :
   coPset → expr Λ → (val Λ → iProp Σ) → iProp Σ → iProp Σ := fixpoint (wpc_pre s k mj).
 
-Definition wpc_def `{!irisGS Λ Σ} (s : stuckness) (k: nat) :
+Definition wpc_def `{!irisGS Λ Σ, !generationGS Λ Σ} (s : stuckness) (k: nat) :
   coPset → expr Λ → (val Λ → iProp Σ) → iProp Σ → iProp Σ :=
   λ E1 e1 Φ Φc, (∀ mj, wpc0 s k mj E1 e1 Φ Φc)%I.
-Definition wpc_aux `{!irisGS Λ Σ} : seal (@wpc_def Λ Σ _). by eexists. Qed.
+Definition wpc_aux `{!irisGS Λ Σ, !generationGS Λ Σ} : seal (@wpc_def Λ Σ _ _). by eexists. Qed.
 
 
 (* Notation: copied from iris bi/weakestpre.v *)
@@ -119,8 +123,8 @@ Class Wpc (Λ : language) (PROP A B : Type) :=
 Arguments wpc {_ _ _ _ _} _ _ _ _%E _%I _%I.
 Instance: Params (@wpc) 9 := {}.
 
-Instance wpc' `{!irisGS Λ Σ} : Wpc Λ (iProp Σ) stuckness nat := wpc_aux.(unseal).
-Definition wpc_eq `{!irisGS Λ Σ} : wpc = @wpc_def Λ Σ _ := wpc_aux.(seal_eq).
+Instance wpc' `{!irisGS Λ Σ, !generationGS Λ Σ} : Wpc Λ (iProp Σ) stuckness nat := wpc_aux.(unseal).
+Definition wpc_eq `{!irisGS Λ Σ, !generationGS Λ Σ} : wpc = @wpc_def Λ Σ _ _ := wpc_aux.(seal_eq).
 
 (** Notations for partial crash weakest preconditions *)
 (** Notations without binder -- only parsing because they overlap with the
@@ -234,18 +238,45 @@ Notation "'{{{' P } } } e ? {{{ 'RET' pat ; Q } } }" :=
 
 (** Defining WP in terms of WPC (needs to be here since WP is used in this file)
 *)
-Definition wp_def `{!irisGS Λ Σ} : Wp (iProp Σ) (expr Λ) (val Λ) stuckness :=
+Definition wp_def `{!irisGS Λ Σ, !generationGS Λ Σ} : Wp (iProp Σ) (expr Λ) (val Λ) stuckness :=
   λ s E e Φ, (WPC e @ s ; 0 ; E {{ Φ }} {{ True }})%I.
 Definition wp_aux : seal (@wp_def). Proof. by eexists. Qed.
 Definition wp' := wp_aux.(unseal).
 Global Arguments wp' {Λ Σ _}.
 (* We cannot make this an instance since [simple apply] unification is too weak. *)
 Global Hint Extern 0 (Wp _ _ _ _) => apply wp' : typeclass_instances.
-Lemma wp_eq `{!irisGS Λ Σ} : wp = @wp_def Λ Σ _.
+Lemma wp_eq `{!irisGS Λ Σ, !generationGS Λ Σ} : wp = @wp_def Λ Σ _ _.
 Proof. rewrite -wp_aux.(seal_eq) //. Qed.
 
+(** We do not really need crashGS, but it is the laziest way
+    to get an inG fracR. *)
+Lemma fupd_level_later_to_disc `{!invGS Σ, !crashGS Σ} k E P:
+  ▷ P -∗ |k={E}=> <disc> ▷ P.
+Proof.
+  iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
+  { rewrite //=. }
+  iIntros "HP".
+  iPoseProof (ae_inv_alloc' O None E (P ∨ own γ (Cinl 1%Qp)) with "[HP]") as "Hinv".
+  { by iLeft. }
+  rewrite uPred_fupd_level_eq.
+  iMod (fupd_split_level_le with "Hinv") as "#Hinv"; first naive_solver lia.
+  iModIntro. rewrite own_discrete_fupd_eq /own_discrete_fupd_def. iModIntro.
+  rewrite uPred_fupd_level_eq.
+  iMod (ae_inv_acc_bupd _ _ _ _ (▷ P) with "Hinv [H]").
+  { iDestruct 1 as "[HP|>Hfalse]"; do 2 iModIntro; last first.
+    { by iDestruct (own_valid_2 with "H Hfalse") as %?. }
+    iFrame "H". eauto.
+  }
+  iModIntro; eauto.
+Qed.
+Lemma fupd_later_to_disc `{!invGS Σ, !crashGS Σ} E P:
+  ▷ P -∗ |={E}=> <disc> ▷ P.
+Proof.
+  iIntros "H". iApply (fupd_level_fupd _ _ _ O). by iApply fupd_level_later_to_disc.
+Qed.
+
 Section wpc.
-Context `{!irisGS Λ Σ}.
+Context `{!irisGS Λ Σ, !generationGS Λ Σ}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
@@ -1511,26 +1542,6 @@ Proof.
   iMod "Hbdisc". iMod "Hclo". iModIntro. iApply "H"; eauto.
 Qed.
 
-Lemma fupd_level_later_to_disc k E P:
-  ▷ P -∗ |k={E}=> <disc> ▷ P.
-Proof.
-  iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
-  { rewrite //=. }
-  iIntros "HP".
-  iPoseProof (ae_inv_alloc' O None E (P ∨ own γ (Cinl 1%Qp)) with "[HP]") as "Hinv".
-  { by iLeft. }
-  rewrite uPred_fupd_level_eq.
-  iMod (fupd_split_level_le with "Hinv") as "#Hinv"; first naive_solver lia.
-  iModIntro. rewrite own_discrete_fupd_eq /own_discrete_fupd_def. iModIntro.
-  rewrite uPred_fupd_level_eq.
-  iMod (ae_inv_acc_bupd _ _ _ _ (▷ P) with "Hinv [H]").
-  { iDestruct 1 as "[HP|>Hfalse]"; do 2 iModIntro; last first.
-    { by iDestruct (own_valid_2 with "H Hfalse") as %?. }
-    iFrame "H". eauto.
-  }
-  iModIntro; eauto.
-Qed.
-
 Definition bi_sch_cfupd_protector E :=
   (wsat.bi_sch_or (wsat.bi_sch_wand (wsat.bi_sch_var_fixed O) (bi_sch_fupd_mj E E None (wsat.bi_sch_var_fixed 1)))
                   (wsat.bi_sch_var_fixed 2))%I.
@@ -1584,12 +1595,6 @@ Proof.
   iApply (fupd_split_level_le with "H"); eauto.
 Qed.
 *)
-
-Lemma fupd_later_to_disc E P:
-  ▷ P -∗ |={E}=> <disc> ▷ P.
-Proof.
-  iIntros "H". iApply (fupd_level_fupd _ _ _ O). by iApply fupd_level_later_to_disc.
-Qed.
 
 
 (*
@@ -1660,7 +1665,7 @@ End wpc.
 
 (** Proofmode class instances *)
 Section proofmode_classes.
-  Context `{!irisGS Λ Σ}.
+  Context `{!irisGS Λ Σ, !generationGS Λ Σ}.
   Implicit Types P Q : iProp Σ.
   Implicit Types Φ : val Λ → iProp Σ.
 
@@ -1809,7 +1814,7 @@ End proofmode_classes.
 
 Section wpc_ectx_lifting.
 Import ectx_language.
-Context {Λ : ectxLanguage} `{!irisGS Λ Σ} {Hinh : Inhabited (state Λ)}.
+Context {Λ : ectxLanguage} `{!irisGS Λ Σ, !generationGS Λ Σ} {Hinh : Inhabited (state Λ)}.
 Hint Resolve head_prim_reducible head_reducible_prim_step : core.
 Local Definition reducible_not_val_inhabitant_state e := reducible_not_val e inhabitant.
 Hint Resolve reducible_not_val_inhabitant_state : core.
@@ -1854,75 +1859,3 @@ Proof.
 Qed.
 
 End wpc_ectx_lifting.
-
-
-Lemma wpc0_proper_irisG_equiv {Λ Σ} (I1 I2 : irisGS Λ Σ) s k mj E Φ Φc (e : expr Λ) :
-  irisG_equiv I1 I2 →
-  @wpc0 _ _ I1 s k mj E e Φ Φc -∗
-  @wpc0 _ _ I2 s k mj E e Φ Φc.
-Proof.
-  iIntros (Hequiv) "Hwp".
-  iLöb as "IH" forall (e E Φ Φc).
-  iEval (rewrite ?wpc0_unfold /wpc_pre).
-  iEval (rewrite ?wpc0_unfold /wpc_pre) in "Hwp".
-  destruct Hequiv as (Heqinv&Heqcrash&Heqstate&Heqglobal&Heqfork&Heqnum&Heq_next).
-  rewrite Heqinv.
-  destruct (to_val e).
-  - rewrite ?Heqinv ?Heqcrash ?Heqglobal ?Heqnum.
-    iSplit; last first; eauto.
-    { iIntros (????) "Hg". iDestruct "Hwp" as "(_&Hwp)". iIntros. rewrite ?Heqinv ?Heqcrash ?Heqglobal ?Heqnum.
-      iMod ("Hwp" with "[Hg] []") as "H".
-      { rewrite Heqglobal. iApply "Hg". }
-      { eauto. }
-      iModIntro.
-      rewrite ?Heqinv ?Heqnum. iApply (@step_fupd2N_wand with "H").
-      iIntros "H". rewrite ?Heqglobal. iMod "H" as "($&$)". eauto.
-    }
-    iDestruct "Hwp" as "(Hwp&_)".
-    iIntros (q g ns D κs) "Hg HNC".
-    rewrite -Heqglobal.
-    iSpecialize ("Hwp" with "[$] [$]").
-    eauto.
-  - iSplit; last first.
-    { iIntros (????) "Hg". iDestruct "Hwp" as "(_&Hwp)". iIntros. rewrite ?Heqinv ?Heqcrash ?Heqglobal ?Heqnum.
-      iMod ("Hwp" with "[Hg] []") as "H".
-      { rewrite Heqglobal. iApply "Hg". }
-      { eauto. }
-      iModIntro.
-      rewrite ?Heqinv ?Heqnum. iApply (@step_fupd2N_wand with "H").
-      iIntros "H". rewrite ?Heqglobal. iMod "H" as "($&$)". eauto.
-    }
-    iDestruct "Hwp" as "(Hwp&_)".
-    rewrite ?Heqinv ?Heqfork.
-    iIntros (????????) "Hσ Hg HNC".
-    iMod ("Hwp" with "[Hσ] [Hg] [HNC]") as "H".
-    { rewrite ?Heqstate. iApply "Hσ". }
-    { rewrite ?Heqglobal. iApply "Hg". }
-    { rewrite ?Heqcrash. iApply "HNC". }
-    iModIntro. simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
-    rewrite ?Heqinv ?Heqnum. iApply (@step_fupd2N_wand with "H").
-    iIntros "($&H)".
-    iIntros (????) "Hstep".
-    iMod ("H" with "[$]") as "(Hσ&Hg&Hwpc&Hefs&HNC)".
-    rewrite ?Heqstate ?Heqglobal ?Heqcrash. iFrame.
-    iModIntro.
-    iSplitL "Hg".
-    { rewrite Heq_next. iFrame. }
-    iSplitL "Hwpc".
-    { iApply "IH". eauto. }
-    iRevert "IH". iIntros "H".
-    iApply (big_sepL.big_sepL_mono_with_pers with "H Hefs").
-    { iIntros (?? Hlookup) "#IH". iIntros "H". iApply "IH".
-      iApply (wpc0_strong_mono with "H"); eauto.
-      { iSplit; eauto. iIntros. rewrite Heqfork; eauto. }
-    }
-Qed.
-
-Lemma wpc_proper_irisG_equiv {Λ Σ} (I1 I2 : irisGS Λ Σ) s k E Φ Φc (e : expr Λ) :
-  irisG_equiv I1 I2 →
-  @wpc_def _ _ I1 s k E e Φ Φc -∗
-  @wpc_def _ _ I2 s k E e Φ Φc.
-Proof.
-  intros Hequiv. rewrite /wpc_def.
-  iIntros "H" (mj). iApply wpc0_proper_irisG_equiv; try eassumption; eauto.
-Qed.

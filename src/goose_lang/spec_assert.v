@@ -37,9 +37,11 @@ Existing Instance spec_ext_semantics_field.
 Existing Instance spec_ffi_op_field.
 Existing Instance spec_ffi_model_field.
 
-
+(* TODO(RJ): does this need splitting into local and global?
+TODO(RJ): rename to refinement_goose. *)
 Class refinement_heapG Σ := refinement_HeapG {
-  refinement_spec_ffiG : ffiGS Σ;
+  refinement_spec_ffiLocalGS : ffiLocalGS Σ;
+  refinement_spec_ffiGlobalGS : ffiGlobalGS Σ;
   refinement_traceG :> traceGS Σ;
   refinement_cfgG :> @cfgG spec_lang Σ;
   refinement_na_heapG :> na_heapGS loc (@val spec_ffi_op_field) Σ;
@@ -66,7 +68,7 @@ Definition heap_dom_resv {A} (σheap : gmap loc A) : iProp Σ :=
                ⌜ (∀ l, l ∈ dom (gset loc) σheap → 0 < loc_car l ∧ Z.to_pos (loc_car l) ∈ D) ⌝).
 
 Definition spec_interp σ g : iProp Σ :=
-    (na_heap_ctx tls σ.(heap) ∗ ffi_ctx refinement_spec_ffiG σ.(world) ∗ ffi_global_ctx refinement_spec_ffiG g ∗
+    (na_heap_ctx tls σ.(heap) ∗ ffi_local_ctx refinement_spec_ffiLocalGS σ.(world) ∗ ffi_global_ctx refinement_spec_ffiGlobalGS g ∗
      trace_auth σ.(trace) ∗ oracle_auth σ.(oracle) ∗ ⌜ null_non_alloc σ.(heap) ⌝ ∗ refinement_ctok ∗
      heap_dom_resv σ.(heap))%I.
 
@@ -938,16 +940,17 @@ Context {spec_ffi: spec_ffi_model}.
 Context {spec_ffi_semantics: spec_ext_semantics spec_ext spec_ffi}.
 Context `{!spec_ffi_interp spec_ffi}.
 Context {Σ: gFunctors}.
-Context {hG: heapGS Σ}.
+Context {hG: gooseGlobalGS Σ}.
+Context {hL: gooseLocalGS Σ}.
 Context {hS: stagedG Σ}.
 Context {hR: refinement_heapG Σ}.
 
 Definition trace_inv : iProp Σ :=
   (∃ tr trs or ors, ⌜ tr = trs ⌝ ∗
                     ⌜ or = ors ⌝ ∗
-                    trace_frag (hT := heapGS_traceGS) tr ∗
+                    trace_frag (hT := goose_traceGS) tr ∗
                     trace_frag (hT := refinement_traceG) trs ∗
-                    oracle_frag (hT := heapGS_traceGS) or ∗
+                    oracle_frag (hT := goose_traceGS) or ∗
                     oracle_frag (hT := refinement_traceG) ors).
 
 Definition spec_traceN := sN .@ "trace".
@@ -973,7 +976,7 @@ Context {hR: refinement_heapG Σ}.
 Set Printing Implicit.
 
 Lemma test_resolution1 l v :
-  l ↦ v -∗ (heap_mapsto (hG := heapGS_na_heapGS) l 1 (v)).
+  l ↦ v -∗ (heap_mapsto (hG := goose_na_heapGS) l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
@@ -999,7 +1002,8 @@ Unset Printing Implicit.
 
 End resolution_test.
 
-Arguments refinement_spec_ffiG {spec_ext spec_ffi spec_ffi_semantics spec_ffi_interp0 Σ hRG} : rename.
+Arguments refinement_spec_ffiLocalGS {spec_ext spec_ffi spec_ffi_semantics spec_ffi_interp0 Σ hRG} : rename.
+Arguments refinement_spec_ffiGlobalGS {spec_ext spec_ffi spec_ffi_semantics spec_ffi_interp0 Σ hRG} : rename.
 
 Section tacs.
 Context {spec_ext: spec_ffi_op}.

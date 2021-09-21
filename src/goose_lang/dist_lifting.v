@@ -4,7 +4,7 @@ From Perennial.base_logic.lib Require Import proph_map.
 From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy dist_weakestpre.
-From Perennial.goose_lang Require Import crash_modality typing adequacy lang wpr_lifting.
+From Perennial.goose_lang Require Import crash_modality typing adequacy lang recovery_lifting.
 Set Default Proof Using "Type".
 
 Section wpd_definitions.
@@ -20,10 +20,7 @@ Class dist_heapGS Σ := {
   dist_heapGpreS :> heapGpreS Σ;
   dist_heapGS_names : ffi_global_names;
   dist_heapGS_credit_names : cr_names;
-  dist_heapGS_inv_names : inv_names;
-  (*
   dist_heapGS_invG :> invGS Σ;
-   *)
 }.
 
 Global Instance dist_heapGS_invGS {Σ} {hgG: dist_heapGS Σ} : invGS Σ :=
@@ -32,7 +29,14 @@ Global Instance dist_heapGS_invGS {Σ} {hgG: dist_heapGS Σ} : invGS Σ :=
 Global Instance dist_heapGS_creditGS {Σ} {hgG: dist_heapGS Σ} : creditGS Σ :=
   creditGS_update_pre _ _ (dist_heapGS_credit_names).
 
-Program Global Instance heapGS_distGS `{!dist_heapGS Σ} : distGS goose_lang goose_crash_lang Σ :=
+Program Global Instance heapGS_perennialG `{!dist_heapGS Σ} : perennialG goose_lang goose_crash_lang heap_local_namesO Σ :=
+{
+  perennial_irisGS := heapGS_irisGS;
+  perennial_generationGS := λ Hcrash hnames,
+                     @heapGS_generationGS _ _ _ _ _ (heap_update_pre _ _ _ Hcrash (@pbundleT _ _ hnames));
+  perennial_crashGS := λ _ _, eq_refl;
+}.
+
 {
   grove_global_state_interp := λ g ns mj D κs,
     (ffi_pre_global_ctx Σ (heap_preG_ffi) (dist_heapGS_names) g ∗

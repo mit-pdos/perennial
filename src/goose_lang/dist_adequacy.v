@@ -4,7 +4,7 @@ From Perennial.base_logic.lib Require Import proph_map.
 From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre dist_weakestpre dist_adequacy.
-From Perennial.goose_lang Require Export wpr_lifting dist_lifting.
+From Perennial.goose_lang Require Export recovery_lifting dist_lifting.
 From Perennial.goose_lang Require Import typing adequacy lang.
 From Perennial.goose_lang Require Import crash_modality.
 Set Default Proof Using "Type".

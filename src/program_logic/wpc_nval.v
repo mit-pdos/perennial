@@ -4,7 +4,7 @@ Set Default Proof Using "Type".
 Import uPred.
 
 Section modality.
-Context `{IRISG: !irisGS Λ Σ}.
+Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 
 Definition wpc_nval E (P : iProp Σ) : iProp Σ :=
   (∀ E' e s k Φ Φc,

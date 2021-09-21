@@ -10,89 +10,45 @@ Set Default Proof Using "Type".
 recovery_adequacy and (in the future) distrib_adequacy. *)
 
 Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ffi_semantics ext ffi} :=
-  { ffi_preG: gFunctors -> Type;
-    ffiΣ: gFunctors;
+  { ffiΣ: gFunctors;
+    ffiGpreS: gFunctors -> Type;
     (* modeled after subG_gen_heapPreG and gen_heap_init *)
-    subG_ffiPreG : forall Σ, subG ffiΣ Σ -> ffi_preG Σ;
+    subG_ffiPreG : forall Σ, subG ffiΣ Σ -> ffiGpreS Σ;
     ffi_initgP: ffi_global_state → Prop;
+    (* Valid local starting states may depend on whatever the current global state is. *)
     ffi_initP: ffi_state → ffi_global_state → Prop;
-    ffi_update_pre: ∀ Σ, ffi_preG Σ -> ffi_local_names -> ffi_global_names -> ffiGS Σ;
-    ffi_update_pre_update: ∀ Σ (hPre: ffi_preG Σ) names1 names2 namesg,
-        ffi_update_local Σ (ffi_update_pre _ hPre names1 namesg) names2 =
-        ffi_update_pre _ hPre names2 namesg;
-    ffi_update_pre_get_local: ∀ Σ (hPre: ffi_preG Σ) names namesg,
-        ffi_get_local_names _ (ffi_update_pre _ hPre names namesg) = names;
-    ffi_update_pre_get_global: ∀ Σ (hPre: ffi_preG Σ) names namesg,
-        ffi_get_global_names _ (ffi_update_pre _ hPre names namesg) = namesg;
-    ffi_pre_global_start : forall Σ (hPre: ffi_preG Σ), ffi_global_names → global_state → iProp Σ;
-    ffi_pre_global_ctx : forall Σ (hPre: ffi_preG Σ), ffi_global_names → global_state → iProp Σ;
-    ffi_pre_global_ctx_spec :
-      ∀ Σ hPre names namesg g,
-        ffi_global_ctx (ffi_update_pre Σ hPre names namesg) g ≡
-        ffi_pre_global_ctx Σ hPre namesg g;
-    ffi_name_global_init : forall Σ (hPre: ffi_preG Σ) (g:ffi_global_state),
+    ffi_global_init : forall Σ (hPre: ffiGpreS Σ) (g:ffi_global_state),
         ffi_initgP g →
-          ⊢ |==> ∃ (namesg: ffi_global_names),
-              ffi_pre_global_ctx Σ hPre namesg g ∗
-              ffi_pre_global_start Σ hPre namesg g;
-    ffi_name_init : forall Σ (hPre: ffi_preG Σ) (σ:ffi_state) (g:ffi_global_state) (namesg: ffi_global_names),
+          ⊢ |==> ∃ (hG: ffiGlobalGS Σ),
+              ffi_global_ctx hG g ∗
+              ffi_global_start hG g;
+    ffi_local_init : forall Σ (hPre: ffiGpreS Σ) (hG:ffiGlobalGS Σ) (σ:ffi_state) (g:ffi_global_state),
         ffi_initP σ g →
-          ⊢ ffi_pre_global_ctx Σ hPre namesg g ==∗ ∃ (names: ffi_local_names),
-              let H0 := ffi_update_pre _ hPre names namesg in
-                   ffi_ctx H0 σ ∗ ffi_global_ctx H0 g ∗ ffi_local_start H0 σ g;
+          ⊢ ffi_global_ctx hG g ==∗ ∃ (hL: ffiLocalGS Σ),
+                   ffi_local_ctx hL σ ∗ ffi_global_ctx hG g ∗ ffi_local_start hL hG σ g;
     ffi_crash : forall Σ,
-          ∀ (σ σ': ffi_state) (g: ffi_global_state) (CRASH: ffi_crash_step σ σ') (Hold: ffiGS Σ),
-           ⊢ ffi_ctx Hold σ -∗ ffi_global_ctx Hold g ==∗
-             ∃ (new: ffi_local_names), ffi_ctx (ffi_update_local Σ Hold new) σ' ∗
-                                 ffi_global_ctx (ffi_update_local Σ Hold new) g ∗
-                                 ffi_crash_rel Σ Hold σ (ffi_update_local Σ Hold new) σ' ∗
-                                 ffi_restart (ffi_update_local Σ Hold new) σ';
+          ∀ (σ σ': ffi_state) (CRASH: ffi_crash_step σ σ') (Hold: ffiLocalGS Σ),
+           ⊢ ffi_local_ctx Hold σ ==∗
+             ∃ (Hnew: ffiLocalGS Σ), ffi_local_ctx Hnew σ' ∗
+                                 ffi_crash_rel Σ Hold σ Hnew σ' ∗
+                                 ffi_restart Hnew σ';
   }.
 
-(* this is the magic that lets subG_ffiPreG solve for an ffi_preG using only
+(* this is the magic that lets subG_ffiPreG solve for an ffiGpreS using only
 typeclass resolution, which is the one thing solve_inG tries. *)
-Existing Class ffi_preG.
+Existing Class ffiGpreS.
 Hint Resolve subG_ffiPreG : typeclass_instances.
 
-Class heapGpreS `{ext: ffi_syntax} `{EXT_SEM: !ffi_semantics ext ffi}
-      `{INTERP: !ffi_interp ffi} {ADEQ: ffi_interp_adequacy} Σ
-  := HeapGpreS {
-  heap_preG_iris :> invGpreS Σ;
-  heap_preG_crash :> crashGpreS Σ;
-  heap_preG_heap :> na_heapGpreS loc val Σ;
-  heap_preG_ffi : ffi_preG Σ;
-  heap_preG_trace :> trace_preG Σ;
-  heap_preG_credit :> credit_preG Σ;
+Class gooseGpreS `{ext: ffi_syntax} `{EXT_SEM: !ffi_semantics ext ffi}
+      `{INTERP: !ffi_interp ffi} `{!ffi_interp_adequacy} Σ
+  := GooseGpreS {
+  goose_preG_iris :> invGpreS Σ;
+  goose_preG_crash :> crashGpreS Σ;
+  goose_preG_heap :> na_heapGpreS loc val Σ;
+  goose_preG_ffi :> ffiGpreS Σ;
+  goose_preG_trace :> trace_preG Σ;
+  goose_preG_credit :> credit_preG Σ;
 }.
-
-Definition heap_update_pre Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashGS Σ) (names: heap_names) :=
-  {| heapGS_invGS := Hinv;
-     heapGS_crashGS := Hcrash;
-     heapGS_ffiGS := ffi_update_pre Σ (heap_preG_ffi) (heap_ffi_local_names names) (heap_ffi_global_names names);
-     heapGS_na_heapGS := na_heapGS_update_pre (heap_preG_heap) (heap_heap_names names);
-     heapGS_traceGS := traceGS_update_pre Σ (heap_preG_trace) (heap_trace_names names);
-     heapGS_creditGS := creditGS_update_pre Σ (heap_preG_credit) (heap_credit_names names)
- |}.
-
-Lemma heap_update_pre_get Σ `(hpreG : heapGpreS Σ) (Hinv: invGS Σ) (Hcrash: crashGS Σ) (names: heap_names) :
-  heap_get_names _ (heap_update_pre Σ hpreG Hinv Hcrash names) = names.
-Proof.
-  rewrite /heap_get_names/heap_update_pre ffi_update_pre_get_local ffi_update_pre_get_global.
-  rewrite  na_heapGS_update_pre_get //=.
-  destruct names => //=.
-Qed.
-
-(*
-Lemma heap_update_pre_update Σ `(hpreG : heapGpreS Σ) (Hinv1 Hinv2: invGS Σ) (Hcrash1 Hcrash2: crashGS Σ)
-      (names1 names2: heap_names) :
-  heap_update _ (heap_update_pre Σ hpreG Hinv1 Hcrash1 names2) Hinv2 Hcrash2 names2 =
-  (heap_update_pre Σ hpreG Hinv2 Hcrash2 names2).
-Proof.
-  rewrite /heap_update/heap_update_pre ffi_update_pre_update/traceG_update/gen_heapG_update//=.
-Qed.
-*)
-
-Hint Resolve heap_preG_ffi : typeclass_instances.
 
 Ltac solve_inG_deep :=
   intros;
@@ -114,7 +70,7 @@ Ltac solve_inG_deep :=
 Definition heapΣ `{ext: ffi_syntax} `{ffi_interp_adequacy} : gFunctors :=
   #[invΣ; crashΣ; na_heapΣ loc val; ffiΣ; traceΣ; creditΣ].
 Instance subG_heapPreG `{ext: ffi_syntax} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} :
-  subG heapΣ Σ → heapGpreS Σ.
+  subG heapΣ Σ → gooseGpreS Σ.
 Proof.
   solve_inG_deep.
 Qed.

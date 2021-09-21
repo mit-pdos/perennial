@@ -233,16 +233,12 @@ Section jrnl_interp.
     end.
 
   Program Instance jrnl_interp : ffi_interp jrnl_model :=
-    {| ffiGS := jrnlG;
-       ffi_local_names := jrnl_names;
-       ffi_global_names := unit;
-       ffi_get_local_names := @jrnl_get_names;
-       ffi_get_global_names := (λ _ _, tt);
-       ffi_update_local := @jrnl_update;
-       ffi_get_update := _;
-       ffi_ctx := @jrnl_ctx;
+    {| ffiLocalGS := jrnlG;
+       ffiGlobalGS _ := ()%type;
+       ffi_local_ctx := @jrnl_ctx;
        ffi_global_ctx _ _ _ := True%I;
-       ffi_local_start Σ G w _ := @jrnl_start Σ G w;
+       ffi_local_start Σ G _ w _ := @jrnl_start Σ G w;
+       ffi_global_start _ _ _ := True%I;
        ffi_restart := @jrnl_restart;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @jrnlG_data_inG _ hF1 = @jrnlG_data_inG _ hF2 ∧
                                              @jrnlG_kinds_inG _ hF1 = @jrnlG_kinds_inG _ hF2 ∧
@@ -254,11 +250,6 @@ Section jrnl_interp.
                                            jrnl_names_dom (jrnl_get_names hF1) =
                                            jrnl_names_dom (jrnl_get_names hF2) ⌝%I;
     |}.
-  Next Obligation. intros ? [] [] => //=. Qed.
-  Next Obligation. intros ? [] => //=. Qed.
-  Next Obligation. intros ? [] => //=. Qed.
-  Next Obligation. intros ? [] => //=. Qed.
-  Next Obligation. intros ? [] => //=. Qed.
 
 End jrnl_interp.
 
@@ -384,19 +375,12 @@ From Perennial.goose_lang Require Import adequacy.
 
 Program Instance jrnl_interp_adequacy:
   @ffi_interp_adequacy jrnl_model jrnl_interp jrnl_op jrnl_semantics :=
-  {| ffi_preG := jrnl_preG;
+  {| ffiGpreS := jrnl_preG;
      ffiΣ := jrnlΣ;
      subG_ffiPreG := subG_jrnlG;
      ffi_initgP := λ _, True;
      ffi_initP := λ σ _, ∃ m, σ = Closed m ∧ wf_jrnl m;
-     ffi_update_pre := (λ _ hP names _, @jrnl_update_pre _ hP names);
-     ffi_pre_global_start := (λ _ hP names _, True%I);
-     ffi_pre_global_ctx := (λ _ hP names _, True%I);
   |}.
-Next Obligation. rewrite //=. Qed.
-Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
-Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
-Next Obligation. rewrite //=. Qed.
 Next Obligation. rewrite //=. eauto. Qed.
 Next Obligation.
   rewrite //=.
@@ -411,12 +395,13 @@ Next Obligation.
   { constructor. }
   iMod (ghost_var_alloc ()) as (γfull) "Hfull".
   iMod (map_init_many (jrnlAllocs m)) as (γallocs) "(Hallocs_ctx&_)".
-  iExists {| jrnl_names_open := γ1; jrnl_names_data := γdata; jrnl_names_kinds := γkinds;
+  set (names := {| jrnl_names_open := γ1; jrnl_names_data := γdata; jrnl_names_kinds := γkinds;
              jrnl_names_dom := γdom;
              jrnl_names_crash := γcrash;
              jrnl_names_full_crash := γfull;
              jrnl_names_allocs := γallocs;
-          |}.
+          |}).
+  iExists (jrnl_update_pre _ names).
   iFrame. iModIntro. iFrame "% #".
   rewrite assoc.
   iSplitL "H".
@@ -438,7 +423,7 @@ Next Obligation.
   naive_solver.
 Qed.
 Next Obligation.
-  iIntros (Σ σ σ' g Hcrash Hold) "Hinterp _".
+  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
   inversion Hcrash; subst.
   monad_inv. inversion H. subst. inversion H1. subst.
   destruct x; monad_inv.
@@ -450,18 +435,18 @@ Next Obligation.
     iMod (map_init_many ((λ _, tt) <$> jrnlData s)) as (γcrash) "(Hcrash_ctx&Hcrash)".
     iMod (ghost_var_alloc ()) as (γfull) "Hfull".
     iMod (map_init_many ∅) as (γallocs) "(Hallocs_ctx&_)".
-    iExists {| jrnl_names_open := γ1;
+    iExists (jrnl_update _ {| jrnl_names_open := γ1;
                jrnl_names_data := jrnl_names_data (jrnl_get_names _);
                jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) ;
                jrnl_names_crash := γcrash;
                jrnl_names_full_crash := γfull;
                jrnl_names_allocs := γallocs;
-            |}.
+            |}).
     iDestruct "Hinterp" as "(?&Hstate)".
     iDestruct (jrnl_state_ctx_extract_pers with "Hstate") as "(%&#?&#?)".
     iDestruct "Hstate" as "(?&?&?&?&?)".
     rewrite //=/jrnl_restart//=.
-    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite comm -assoc. iSplitL ""; first by eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
     rewrite big_sepM_fmap.
     rewrite /jrnl_state_restart.
@@ -477,17 +462,17 @@ Next Obligation.
     iMod (map_init_many ((λ _, tt) <$> jrnlData s)) as (γcrash) "(Hcrash_ctx&Hcrash)".
     iMod (ghost_var_alloc ()) as (γfull) "Hfull".
     iMod (map_init_many ∅) as (γallocs) "(Hallocs_ctx&_)".
-    iExists {| jrnl_names_open := γ1;
+    iExists (jrnl_update _ {| jrnl_names_open := γ1;
                jrnl_names_data := jrnl_names_data (jrnl_get_names _);
                jrnl_names_kinds := jrnl_names_kinds (jrnl_get_names _) ;
                jrnl_names_crash := γcrash;
                jrnl_names_allocs := γallocs;
-            |}.
+            |}).
     iDestruct "Hinterp" as "(?&Hstate)".
     iDestruct (jrnl_state_ctx_extract_pers with "Hstate") as "(%&#?&#?)".
     rewrite //=/jrnl_restart//=.
     iDestruct "Hstate" as "(?&?&?&?&?)".
-    iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
+    iFrame. rewrite comm -assoc. iSplitL ""; first eauto.
     rewrite /jrnl_closed_auth/jrnl_closed_frag.
     rewrite big_sepM_fmap.
     rewrite /jrnl_state_restart.
@@ -521,7 +506,7 @@ Existing Instance spec_ffi_op_field.
 Existing Instance spec_ffi_model_field.
 
 Implicit Types K: spec_lang.(language.expr) → spec_lang.(language.expr).
-Instance jrnlG0 : jrnlG Σ := refinement_spec_ffiG.
+Instance jrnlG0 : jrnlG Σ := refinement_spec_ffiLocalGS.
 
   Ltac inv_head_step :=
     repeat match goal with

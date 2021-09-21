@@ -6,7 +6,7 @@ From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant.
 From Perennial.program_proof Require Import wal.circ_proof_crash.
 From Perennial.goose_lang Require Import crash_modality.
-From Perennial.goose_lang Require wpr_lifting.
+From Perennial.goose_lang Require recovery_lifting.
 From Perennial.program_proof Require Import wal.logger_proof.
 From Perennial.program_proof Require Import wal.installer_proof.
 
@@ -1595,7 +1595,7 @@ End stable.
 (* this is not interesting on its own, but is just a test to make sure that the
    wal spec is coherent *)
 
-Import wpr_lifting.
+Import recovery_lifting.
 
 Section recov.
   Context `{!heapGS Σ}.
@@ -1626,7 +1626,11 @@ Section recov.
         { eapply log_crash_to_post_crash; eauto. }
       * eauto.
     }
-    iModIntro. iIntros (?????) "H".
+    iModIntro. iIntros (????) "H".
+    (* FIXME: we bundle local and global, but [idempotence_wpr] quantifies only over the local part...
+       and we want the terms below to pick up the new local part. Sadly the let-binding in the
+       statement of [idempotence_wpr] is lost so we have to introduce it again ourselves here. *)
+    set (hG' := HeapGS _ _ _).
     iDestruct "H" as (σ'') "Hstart".
     iNext.
     iDestruct "Hstart" as (??) "(H1&Hres&_)".

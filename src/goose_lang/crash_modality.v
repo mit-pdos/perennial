@@ -9,27 +9,18 @@ Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 
-(*
-Definition post_crash `{hG: !heapGS Σ} (P: forall {hG': heapGS Σ}, iProp Σ) : iProp Σ :=
-  (∀ σ σ' hG', ffi_crash_rel Σ (heapGS_ffiGS (hG := hG)) σ (heapGS_ffiGS (hG := hG')) σ' -∗
-                             @P hG').
-*)
+(* We use heapGS here since all our proofs are heapGS-parameterized;
+providing a lone gooseLocalGS is not nerribly useful. *)
 
-Definition post_crash {Σ} (P: heapGS Σ → iProp Σ) `{hG: !heapGS Σ} : iProp Σ :=
-  (∀ σ σ' hG', ffi_crash_rel Σ (heapGS_ffiGS (hG := hG)) σ (heapGS_ffiGS (hG := hG')) σ' -∗
-                             (P hG')).
-
-(*
-Definition post_crash `{hG: !heapGS Σ} (P: forall {hG': heapGS Σ}, iProp Σ) : iProp Σ :=
-  (∀ σ σ' new, ffi_crash_rel Σ hG σ (ffi_update Σ hG new) σ' -∗
-                             @P (ffi_update Σ hG new)).
-*)
+Definition post_crash {Σ} `{hG: !heapGS Σ} (P: heapGS Σ → iProp Σ) : iProp Σ :=
+  (∀ σ σ' hL', ffi_crash_rel Σ (goose_ffiLocalGS (hL := goose_localGS)) σ (goose_ffiLocalGS (hL := hL')) σ' -∗
+                             (P (HeapGS _ _ hL'))).
 
 Class IntoCrash {Σ} `{!heapGS Σ} (P: iProp Σ) (Q: heapGS Σ → iProp Σ) :=
   into_crash : P -∗ post_crash (Σ := Σ) (λ hG', Q hG').
 
 Section post_crash_prop.
-Context `{hG: !heapGS Σ}.
+Context `{hL: !heapGS Σ}.
 Implicit Types Φ : val → iProp Σ.
 Implicit Types efs : list expr.
 Implicit Types σ : state.
@@ -43,7 +34,7 @@ Lemma post_crash_intro Q:
 Proof. iIntros (Hmono). iIntros (???) "#Hrel". iApply Hmono. Qed.
 
 Lemma post_crash_mono P Q:
-  (∀ hG, P hG -∗ Q hG) →
+  (∀ hL, P hL -∗ Q hL) →
   post_crash P -∗ post_crash Q.
 Proof.
   iIntros (Hmono) "HP". iIntros (???) "#Hrel".
@@ -52,14 +43,14 @@ Qed.
 
 Lemma post_crash_pers P Q:
   (P -∗ post_crash Q) →
-  □ P -∗ post_crash (λ hG, □ Q hG).
+  □ P -∗ post_crash (λ hL, □ Q hL).
 Proof.
   iIntros (Hmono) "#HP". iIntros (???) "#Hrel".
   iModIntro. iApply Hmono; eauto.
 Qed.
 
 Lemma post_crash_sep P Q:
-  post_crash P ∗ post_crash Q -∗ post_crash (λ hG, P hG ∗ Q hG).
+  post_crash P ∗ post_crash Q -∗ post_crash (λ hL, P hL ∗ Q hL).
 Proof.
   iIntros "(HP&HQ)". iIntros (???) "#Hrel".
   iDestruct ("HP" with "[$]") as "$".
@@ -67,7 +58,7 @@ Proof.
 Qed.
 
 Lemma post_crash_or P Q:
-  post_crash P ∨ post_crash Q -∗ post_crash (λ hG, P hG ∨ Q hG).
+  post_crash P ∨ post_crash Q -∗ post_crash (λ hL, P hL ∨ Q hL).
 Proof.
   iIntros "[HP|HQ]"; iIntros (???) "#Hrel".
   - iLeft. by iApply "HP".
@@ -75,7 +66,7 @@ Proof.
 Qed.
 
 Lemma post_crash_and P Q:
-  post_crash P ∧ post_crash Q -∗ post_crash (λ hG, P hG ∧ Q hG).
+  post_crash P ∧ post_crash Q -∗ post_crash (λ hL, P hL ∧ Q hL).
 Proof.
   iIntros "HPQ"; iIntros (???) "#Hrel".
   iSplit.
@@ -94,8 +85,8 @@ Lemma post_crash_nodep (P: iProp Σ) :
 Proof. iIntros "HP". iIntros (???); eauto. Qed.
 
 Lemma post_crash_exists {A} P Q:
-  (∀ (x: A), P hG x -∗ post_crash (λ hG, Q hG x)) -∗
-  (∃ x, P hG x) -∗ post_crash (λ hG, ∃ x, Q hG x).
+  (∀ (x: A), P hL x -∗ post_crash (λ hL, Q hL x)) -∗
+  (∃ x, P hL x) -∗ post_crash (λ hL, ∃ x, Q hL x).
 Proof.
   iIntros "Hall HP". iIntros (???) "#Hrel".
   iDestruct "HP" as (x) "HP".
@@ -103,16 +94,16 @@ Proof.
 Qed.
 
 Lemma post_crash_forall {A} P Q:
-  (∀ (x: A), P hG x -∗ post_crash (λ hG, Q hG x)) -∗
-  (∀ x, P hG x) -∗ post_crash (λ hG, ∀ x, Q hG x).
+  (∀ (x: A), P hL x -∗ post_crash (λ hL, Q hL x)) -∗
+  (∀ x, P hL x) -∗ post_crash (λ hL, ∀ x, Q hL x).
 Proof.
   iIntros "Hall HP". iIntros (???) "#Hrel".
   iIntros (?). iApply ("Hall" with "[HP] [$]"). iApply "HP".
 Qed.
 
 Lemma post_crash_exists_intro {A} P (x: A):
-  (∀ (x: A), P hG x -∗ post_crash (λ hG, P hG x)) -∗
-  P hG x -∗ post_crash (λ hG, ∃ x, P hG x).
+  (∀ (x: A), P hL x -∗ post_crash (λ hL, P hL x)) -∗
+  P hL x -∗ post_crash (λ hL, ∃ x, P hL x).
 Proof.
   iIntros "Hall HP". iIntros (???) "#Hrel".
   iExists x. iApply ("Hall" with "[$] [$]").
@@ -125,25 +116,25 @@ Proof.
   hnf; iIntros "H".
   iDestruct "H" as (x) "H".
   rewrite /post_crash.
-  iIntros (σ σ' hG') "Hrel".
+  iIntros (σ σ' hL') "Hrel".
   iSpecialize ("H" with "Hrel").
   iExists x; iFrame.
 Qed.
 
 Lemma post_crash_named P name:
-  named name (post_crash (λ hG, P hG)) -∗
-  post_crash (λ hG, named name (P hG)).
+  named name (post_crash (λ hL, P hL)) -∗
+  post_crash (λ hL, named name (P hL)).
 Proof. rewrite //=. Qed.
 
 End post_crash_prop.
 
 Section IntoCrash.
 
-  Context `{hG: !heapGS Σ}.
+  Context `{hL: !heapGS Σ}.
   Global Instance sep_into_crash P P' Q Q':
     IntoCrash P P' →
     IntoCrash Q Q' →
-    IntoCrash (P ∗ Q)%I (λ hG, P' hG ∗ Q' hG)%I.
+    IntoCrash (P ∗ Q)%I (λ hL, P' hL ∗ Q' hL)%I.
   Proof.
     iIntros (H1 H2). rewrite /IntoCrash.
     rewrite (@into_crash _ _ P).
@@ -154,7 +145,7 @@ Section IntoCrash.
   Global Instance or_into_crash P P' Q Q':
     IntoCrash P P' →
     IntoCrash Q Q' →
-    IntoCrash (P ∨ Q)%I (λ hG, P' hG ∨ Q' hG)%I.
+    IntoCrash (P ∨ Q)%I (λ hL, P' hL ∨ Q' hL)%I.
   Proof.
     iIntros (H1 H2). rewrite /IntoCrash.
     rewrite (@into_crash _ _ P).
@@ -165,7 +156,7 @@ Section IntoCrash.
   Global Instance and_into_crash P P' Q Q':
     IntoCrash P P' →
     IntoCrash Q Q' →
-    IntoCrash (P ∧ Q)%I (λ hG, P' hG ∧ Q' hG)%I.
+    IntoCrash (P ∧ Q)%I (λ hL, P' hL ∧ Q' hL)%I.
   Proof.
     iIntros (H1 H2). rewrite /IntoCrash.
     rewrite (@into_crash _ _ P).
@@ -179,8 +170,8 @@ Section IntoCrash.
   Proof. rewrite /IntoCrash. iIntros "%". by iApply post_crash_pure. Qed.
 
   Global Instance exist_into_crash {A} Φ Ψ:
-    (∀ x : A, IntoCrash (Φ x) (λ hG, Ψ hG x)) →
-    IntoCrash (∃ x, Φ x)%I (λ hG, (∃ x, Ψ hG x)%I).
+    (∀ x : A, IntoCrash (Φ x) (λ hL, Ψ hL x)) →
+    IntoCrash (∃ x, Φ x)%I (λ hL, (∃ x, Ψ hL x)%I).
   Proof.
     rewrite /IntoCrash.
     iIntros (?) "H". iDestruct "H" as (?) "HΦ". iPoseProof (H with "[$]") as "HΦ".
@@ -188,8 +179,8 @@ Section IntoCrash.
   Qed.
 
   Global Instance forall_into_crash {A} Φ Ψ:
-    (∀ x : A, IntoCrash (Φ x) (λ hG, Ψ hG x)) →
-    IntoCrash (∀ x, Φ x)%I (λ hG, (∀ x, Ψ hG x)%I).
+    (∀ x : A, IntoCrash (Φ x) (λ hL, Ψ hL x)) →
+    IntoCrash (∀ x, Φ x)%I (λ hL, (∀ x, Ψ hL x)%I).
   Proof.
     rewrite /IntoCrash.
     iIntros (?) "H". iApply post_crash_forall; last eauto. iIntros (?). iApply H.
@@ -204,7 +195,7 @@ Section IntoCrash.
   Lemma into_crash_proper P P' Q Q':
     IntoCrash P Q →
     (P ⊣⊢ P') →
-    (∀ hG, Q hG ⊣⊢ Q' hG) →
+    (∀ hL, Q hL ⊣⊢ Q' hL) →
     IntoCrash P' Q'.
   Proof.
     rewrite /IntoCrash.
@@ -216,12 +207,12 @@ Section IntoCrash.
 
   Global Instance big_sepL_into_crash:
     ∀ (A : Type) Φ (Ψ : heapGS Σ → nat → A → iProp Σ) (l : list A),
-    (∀ (k : nat) (x : A), IntoCrash (Φ k x) (λ hG, Ψ hG k x)) →
-    IntoCrash ([∗ list] k↦x ∈ l, Φ k x)%I (λ hG, [∗ list] k↦x ∈ l, Ψ hG k x)%I.
+    (∀ (k : nat) (x : A), IntoCrash (Φ k x) (λ hL, Ψ hL k x)) →
+    IntoCrash ([∗ list] k↦x ∈ l, Φ k x)%I (λ hL, [∗ list] k↦x ∈ l, Ψ hL k x)%I.
   Proof.
     intros.
     cut (∀ n, IntoCrash ([∗ list] k↦x ∈ l, Φ (n + k)%nat x)%I
-                        (λ hG, [∗ list] k↦x ∈ l, Ψ hG (n + k)%nat x)%I).
+                        (λ hL, [∗ list] k↦x ∈ l, Ψ hL (n + k)%nat x)%I).
     { intros Hres. specialize (Hres O). eauto. }
     induction l => n.
     - rewrite //=. apply _.
@@ -233,8 +224,8 @@ Section IntoCrash.
 
   Global Instance big_sepM_into_crash `{Countable K} :
     ∀ (A : Type) Φ (Ψ : heapGS Σ → K → A → iProp Σ) (m : gmap K A),
-    (∀ (k : K) (x : A), IntoCrash (Φ k x) (λ hG, Ψ hG k x)) →
-    IntoCrash ([∗ map] k↦x ∈ m, Φ k x)%I (λ hG, [∗ map] k↦x ∈ m, Ψ hG k x)%I.
+    (∀ (k : K) (x : A), IntoCrash (Φ k x) (λ hL, Ψ hL k x)) →
+    IntoCrash ([∗ map] k↦x ∈ m, Φ k x)%I (λ hL, [∗ map] k↦x ∈ m, Ψ hL k x)%I.
   Proof.
     intros. induction m using map_ind.
     - eapply (into_crash_proper True%I _ (λ _, True%I)).
@@ -250,8 +241,8 @@ Section IntoCrash.
 
   Global Instance big_sepS_into_crash `{Countable K} :
     ∀ Φ (Ψ : heapGS Σ → K → iProp Σ) (m : gset K),
-    (∀ (k : K), IntoCrash (Φ k) (λ hG, Ψ hG k)) →
-    IntoCrash ([∗ set] k ∈ m, Φ k)%I (λ hG, [∗ set] k ∈ m, Ψ hG k)%I.
+    (∀ (k : K), IntoCrash (Φ k) (λ hL, Ψ hL k)) →
+    IntoCrash ([∗ set] k ∈ m, Φ k)%I (λ hL, [∗ set] k ∈ m, Ψ hL k)%I.
   Proof.
     intros. induction m as [|i m ? IH] using set_ind_L => //=.
     - eapply (into_crash_proper True%I _ (λ _, True%I)).
@@ -266,11 +257,11 @@ Section IntoCrash.
   Qed.
 
   Lemma into_crash_post_crash_frame_l P P' `{!IntoCrash P P'} Q:
-    P -∗ post_crash Q -∗ post_crash (λ hG', P' hG' ∗ Q hG').
+    P -∗ post_crash Q -∗ post_crash (λ hL', P' hL' ∗ Q hL').
   Proof. iIntros "HP HQ". rewrite (@into_crash _ _ P). iApply post_crash_sep. iFrame. Qed.
 
   Lemma into_crash_post_crash_frame_r P P' `{!IntoCrash P P'} Q:
-    post_crash Q -∗ P  -∗ post_crash (λ hG', Q hG' ∗ P' hG').
+    post_crash Q -∗ P  -∗ post_crash (λ hL', Q hL' ∗ P' hL').
   Proof. iIntros "HP HQ". rewrite (@into_crash _ _ P). iApply post_crash_sep. iFrame. Qed.
 
 End IntoCrash.
@@ -283,7 +274,7 @@ Ltac crash_env Γ :=
   match Γ with
     | environments.Enil => idtac
     | environments.Esnoc ?Γ' ?id (post_crash _) => crash_env Γ'
-    | environments.Esnoc ?Γ' ?id ?A => first [ iEval (rewrite (@into_crash _ _ _ _ _ A) )in id || iClear id ] ; crash_env Γ'
+    | environments.Esnoc ?Γ' ?id ?A => first [ iEval (rewrite (into_crash (P:=A))) in id || iClear id ] ; crash_env Γ'
   end.
 
 Ltac crash_ctx :=
@@ -306,11 +297,11 @@ Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 Context {Σ: gFunctors}.
 Section modality_alt.
-  Context `{hG: !heapGS Σ}.
+  Context `{hL: !heapGS Σ}.
   Context `{Hi1: !IntoCrash P P'}.
   Context `{Hi2: !IntoCrash Q Q'}.
   Lemma test R :
-    P -∗ Q -∗ R -∗ post_crash (λ hG', P' hG' ∗ Q' hG').
+    P -∗ Q -∗ R -∗ post_crash (λ hL', P' hL' ∗ Q' hL').
   Proof using All.
     iIntros "HP HQ HR". iCrash. iFrame.
   Qed.

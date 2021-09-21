@@ -1141,7 +1141,7 @@ Section goose.
 
 End goose.
 
-From Perennial.goose_lang Require Import crash_modality wpr_lifting.
+From Perennial.goose_lang Require Import crash_modality recovery_lifting.
 
 Section crash_stable.
   Context `{!heapGS Σ}.
