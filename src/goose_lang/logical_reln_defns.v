@@ -275,7 +275,7 @@ Definition sty_crash_obligation :=
   forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hS: styG Σ),
       ⊢ sty_inv hS -∗ ▷ sty_crash_cond hS -∗ |sty_lvl_init={styN}=> ▷ ∀ (hG': heapGS Σ), |={⊤}=>
       ∀ σs,
-      (∃ σ0 σ1, ffi_restart (heapGS_ffiGS) σ1.(world) ∗
+      (∃ σ0 σ1, ffi_restart (heapGS_ffiGS (hG := hG')) σ1.(world) ∗
       ffi_crash_rel Σ (heapGS_ffiGS (hG := hG)) σ0.(world) (heapGS_ffiGS (hG := hG')) σ1.(world)) -∗
       ffi_ctx (refinement_spec_ffiG) σs.(world) -∗
       ∃ (σs': sstate) (HCRASH: crash_prim_step (spec_crash_lang) σs σs'),
@@ -283,7 +283,7 @@ Definition sty_crash_obligation :=
       ∀ (hRG': refinement_heapG Σ),
       ffi_crash_rel Σ (refinement_spec_ffiG (hRG := hRG)) σs.(world)
                       (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
-      ffi_restart (refinement_spec_ffiG) σs'.(world) -∗
+      ffi_restart (refinement_spec_ffiG (hRG := hRG')) σs'.(world) -∗
       pre_borrowN (sty_lvl_init) -∗
       |={styN}=> ∃ (new: sty_names), sty_init (sty_update Σ hS new).
 
