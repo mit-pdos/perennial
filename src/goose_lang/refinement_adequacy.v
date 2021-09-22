@@ -68,7 +68,7 @@ Lemma goose_spec_init1 {hG: heapGS Σ} r tp0 σ0 g0 tp σ g s tr or P:
                                       ∗ ffi_local_start (refinement_spec_ffiG) σ.(world) g
                                       ∗ trace_ctx
                                       ∗ spec_crash_ctx' r (tp0, (σ0,g0)) (P hR)
-                                      ∗ <disc> (|C={⊤}_0=> trace_inv).
+                                      ∗ (|C={⊤}_0=> trace_inv).
 Proof using Hrpre Hcpre.
   iIntros (??? Hnonneg ?? Hsteps Hsafe) "Htr Hor".
   iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
@@ -109,7 +109,8 @@ Proof using Hrpre Hcpre.
   iMod (ncinv_alloc (spec_traceN) _ trace_inv with "[-Hcfupd2]") as "($&Hcfupd3)".
   { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame; eauto. }
   iModIntro. iFrame "Hinv Hcfupd2".
-  { iModIntro. iMod (cfupd_weaken_all with "[$]") as "H"; auto. iDestruct "H" as ">$". eauto. }
+  { iMod (own_disc_fupd_elim with "Hcfupd3") as "Hcfupd3".
+    iMod (cfupd_weaken_all with "Hcfupd3") as "H"; auto. iDestruct "H" as ">$". eauto. }
   Unshelve. exact O.
 Qed.
 
@@ -126,7 +127,7 @@ Lemma goose_spec_init2 {hG: heapGS Σ} r tp σ g tr or P:
                                      ∗ ffi_local_start (refinement_spec_ffiG) σ.(world) g
                                      ∗ trace_ctx
                                      ∗ spec_crash_ctx' r (tp, (σ,g)) (P hR)
-                                     ∗ <disc> (|C={⊤}_0=> trace_inv).
+                                     ∗ (|C={⊤}_0=> trace_inv).
 Proof using Hrpre Hcpre.
   intros; eapply goose_spec_init1; eauto.
   { do 2 econstructor. }
@@ -148,7 +149,7 @@ Lemma goose_spec_crash_init {hG: heapGS Σ} {hRG: refinement_heapG Σ} r tp0 σ0
              ∗ ffi_restart (refinement_spec_ffiG) (world σ_post_crash)
              ∗ trace_ctx
              ∗ spec_crash_ctx' r (tp0, (σ0,g0)) (P hRG')
-             ∗ <disc> (|C={⊤}_0=> trace_inv).
+             ∗ (|C={⊤}_0=> trace_inv).
 Proof using Hrpre Hcpre.
   iIntros (?? Hsteps Hsafe Hcrash) "Htr Hor Hffi Hffig".
   iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
@@ -182,7 +183,8 @@ Proof using Hrpre Hcpre.
   iMod (ncinv_alloc (spec_traceN) _ trace_inv with "[-Hcfupd2]") as "($&Hcfupd3)".
   { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame; eauto. }
   iModIntro. iFrame "Hinv Hcfupd2".
-  { iModIntro. iMod (cfupd_weaken_all with "[$]") as "H"; auto. iDestruct "H" as ">$". eauto. }
+  { iMod (own_disc_fupd_elim with "Hcfupd3") as "Hcfupd3".
+    iMod (cfupd_weaken_all with "[$]") as "H"; auto. iDestruct "H" as ">$". eauto. }
   Unshelve. exact O.
 Qed.
 
@@ -238,7 +240,7 @@ Theorem heap_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: hea
        (spec_ctx' rs ([es], (σs,gs)) -∗
         trace_ctx -∗
         spec_crash_ctx' rs ([es], (σs,gs)) (P Hheap Href) -∗
-        <disc> (|C={⊤}_0=> trace_inv) -∗
+        (|C={⊤}_0=> trace_inv) -∗
        □ (∀ hG, Φinv hG -∗
                        ∃ Href', spec_ctx' (hR := Href') rs ([es], (σs,gs)) ∗ trace_ctx (hR := Href')) ∗
         (ffi_local_start (heapGS_ffiGS) σ.(world) g -∗ ffi_local_start (refinement_spec_ffiG) σs.(world) gs -∗
@@ -502,7 +504,6 @@ Proof using Hrpre Hhpre Hcpre.
     }
     rewrite /perennial_irisG. simpl.
     rewrite heap_get_update'.
-    iMod (own_disc_fupd_elim with "Hcfupd3") as "Hcfupd3".
     iApply (wpc_trace_inv_open with "[] Hspec Htrace Hcfupd1 Hcfupd3 H").
     { iApply Hexcl. }
   - iModIntro. iClear "Hspec Htrace".
@@ -582,7 +583,6 @@ Proof using Hrpre Hhpre Hcpre.
           iExists _, _. iDestruct "Hcfupd1'" as "($&_)". }
         iDestruct "Hcfupd1'" as "(_&$)".
       }
-      iMod (own_disc_fupd_elim with "Hcfupd3") as "Hcfupd3".
       iPoseProof (wpc_trace_inv_open k _ _ _ e _ _ Φ Φc with "[] Hspec Htrace Hcfupd1' Hcfupd3 H") as "H".
       { iApply Hexcl. }
       rewrite /hG//=.
