@@ -295,7 +295,7 @@ Proof.
     repeat (rewrite -(cred_frag_join (S 0)); iFrame). }
   iModIntro.
   iApply (wpc0_strong_mono with "Hwp"); auto.
-  { destruct (to_val e2); eauto. }
+  { destruct (language.to_val e2); eauto. }
   iSplit; last eauto.
   iIntros (?) "H". iModIntro.
   iApply "H". iFrame.
@@ -412,20 +412,20 @@ Proof.
     repeat (rewrite -(cred_frag_join (S 0)); iFrame). }
   iModIntro.
   iApply (wpc0_staged_inv_cancel with "[$]").
-  { destruct (to_val e2); eauto. }
+  { destruct (language.to_val e2); eauto. }
   { auto. }
   iApply (wpc0_strong_mono with "Hwp"); auto.
-  { destruct (to_val e2); eauto. }
+  { destruct (language.to_val e2); eauto. }
   iSplit; last first.
   { iIntros "H !>"; eauto. }
   iIntros (v) "Hwpc". iModIntro. iIntros "Hcancel".
 
   iApply (wpc0_staged_inv_cancel with "[$]").
-  { destruct (to_val (K _)); eauto. }
+  { destruct (language.to_val (K _)); eauto. }
   { auto. }
 
   iApply (wpc0_strong_mono with "Hwpc"); auto.
-  { destruct (to_val (K _)); auto. }
+  { destruct (language.to_val (K _)); auto. }
 Qed.
 
 Lemma wpc_crash_borrow_init_ctx' s k e Φ Φc P Pc K `{!LanguageCtx K} :
@@ -750,7 +750,7 @@ Proof.
 Qed.
 
 Lemma wpc_crash_borrow_open_modify k E1 e Φ Φc P Pc:
-  to_val e = None →
+  language.to_val e = None →
   crash_borrow P Pc -∗
   (Φc ∧ (P -∗ WPC e @ k; E1
                     {{λ v, ∃ P', P' ∗ □ (P' -∗ Pc) ∗ (crash_borrow P' Pc -∗ (Φc ∧ Φ v))}}
@@ -921,7 +921,7 @@ Proof.
 Qed.
 
 Lemma wpc_crash_borrow_open k E1 e Φ Φc P Pc:
-  to_val e = None →
+  language.to_val e = None →
   crash_borrow P Pc -∗
   (Φc ∧ (P -∗ WPC e @ k; E1
                     {{λ v, P ∗ (crash_borrow P Pc -∗ (Φc ∧ Φ v))}}
@@ -943,7 +943,7 @@ Proof.
 Qed.
 
 Lemma wpc_crash_borrow_open_cancel k E1 e Φ Φc P Pc:
-  to_val e = None →
+  language.to_val e = None →
   crash_borrow P Pc -∗
   (Φc ∧ (P -∗ ∀ mj, ⌜ (/2 < mj)%Qp ⌝ -∗ WPC e @ k; E1
                     {{λ v, wpc_crash_modality ⊤ mj Pc ∗ (Φc ∧ Φ v)}}

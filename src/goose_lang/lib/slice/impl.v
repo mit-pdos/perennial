@@ -1,3 +1,4 @@
+From Perennial.goose_lang Require Import notation typing.
 From Perennial.goose_lang.lib Require Import typed_mem.impl.
 From Perennial.goose_lang.lib Require Import control.impl.
 

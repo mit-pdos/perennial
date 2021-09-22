@@ -11,6 +11,8 @@ From Perennial.goose_lang Require Export locations.
 From Perennial Require Export Helpers.Integers.
 Set Default Proof Using "Type".
 
+Open Scope Z_scope.
+
 (** GooseLang, an adaptation of HeapLang with extensions to model Go, including
 support for a customizable "FFI" (foreign-function interface) for new primitive
 operations and crash semantics for foreign operations. See goose_lang/ffi/disk.v

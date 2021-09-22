@@ -197,7 +197,7 @@ Proof.
     first by apply elem_of_fin_to_set.
   iDestruct (fmcounter_map_agree_lb with "Hlseq_one Hlseq_lb") as %Hlseq_lb_ineq.
   iPureIntro.
-  set cur_seq:=(default IntoVal_def (lastSeqM !! req.(Req_CID))) in Hrseq Hlseq_lb_ineq.
+  set cur_seq:=(default (IntoVal_def _) (lastSeqM !! req.(Req_CID))) in Hrseq Hlseq_lb_ineq.
   word.
 Qed.
 

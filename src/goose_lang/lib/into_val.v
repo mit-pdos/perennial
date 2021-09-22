@@ -7,13 +7,16 @@ Class IntoVal {ext: ffi_syntax} V :=
     IntoVal_def: V;
     IntoVal_inj :> Inj eq eq to_val;
   }.
+Hint Mode IntoVal - ! : typeclass_instances.
+
+Arguments IntoVal_def {_} V {_}.
 
 (* TODO: make V explicit and H implicit, so `{!IntoValForType V t} does the right thing *)
 Class IntoValForType {ext V} (H: @IntoVal ext V) {ext_ty: ext_types ext} (t:ty) :=
-    { def_is_zero: to_val IntoVal_def = zero_val t;
+    { def_is_zero: to_val (IntoVal_def V) = zero_val t;
       to_val_has_zero: has_zero t;
       (* TODO: this isn't necessary, but it seems reasonable *)
-      to_val_ty: forall v, val_ty (to_val v) t; }.
+      to_val_ty: forall v:V, val_ty (to_val v) t; }.
 (* Require [V] or [ty] to not be an evar before doing TC search *)
 Hint Mode IntoValForType - - - - ! : typeclass_instances.
 Hint Mode IntoValForType - ! - - - : typeclass_instances.
@@ -37,7 +40,7 @@ Proof.
 Qed.
 
 Theorem IntoVal_eq_fmap_prod_permutation {ext V} (H: @IntoVal ext V) {K} :
-  Inj (≡ₚ) (≡ₚ) (fmap (prod_map (@id K) to_val)).
+  Inj (≡ₚ) (≡ₚ) (fmap (prod_map (@id K) (to_val (V:=V)))).
 Proof.
   apply _.
 Qed.

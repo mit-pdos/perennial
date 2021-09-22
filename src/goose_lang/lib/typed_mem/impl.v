@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Export notation typing.
+From Perennial.goose_lang Require Import notation typing.
 From Perennial.goose_lang.lib Require Import map.impl.
 
 Reserved Notation "![ t ] e"

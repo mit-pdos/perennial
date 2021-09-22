@@ -2,9 +2,9 @@ From stdpp Require Import namespaces.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl.
 From Perennial.base_logic.lib Require Import invariants.
-From Perennial.program_logic Require Export weakestpre.
+From Perennial.program_logic Require Import weakestpre.
 
-From Perennial.goose_lang Require Export lang typing.
+From Perennial.goose_lang Require Import lang typing.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.goose_lang Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Import typed_mem.

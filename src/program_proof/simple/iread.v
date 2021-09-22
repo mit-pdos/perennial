@@ -153,7 +153,7 @@ Proof.
   iIntros (b) "Hb".
   wp_pures.
 
-  replace (replicate (int.nat 0%Z) IntoVal_def) with (@nil u8) by reflexivity.
+  replace (replicate (int.nat 0%Z) (IntoVal_def _)) with (@nil u8) by reflexivity.
 
   wp_apply (wp_forUpto (λ i,
     ∃ dataslice vs,

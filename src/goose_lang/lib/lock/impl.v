@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Export notation typing.
+From Perennial.goose_lang Require Import notation typing.
 
 Definition lockRefT {ext} {ext_ty: ext_types ext} := refT boolT.
 Definition condvarRefT {ext} {ext_ty: ext_types ext} := refT lockRefT.

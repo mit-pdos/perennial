@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Import lang notation.
+From Perennial.goose_lang Require Import lang notation typing.
 From Perennial.goose_lang.lib Require Import typed_mem.impl.
 From Perennial.goose_lang Require Import slice.impl list.impl.
 

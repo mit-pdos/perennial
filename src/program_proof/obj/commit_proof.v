@@ -457,7 +457,7 @@ Proof.
     iSplitL.
     { rewrite /updates_slice. iExists nil. simpl.
       iSplitL; last by done.
-      iApply is_slice_zero.
+      iApply slice.is_slice_zero.
     }
     iSplitL.
     { iPureIntro. rewrite right_id. done. }

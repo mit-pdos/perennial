@@ -39,7 +39,7 @@ Proof.
   wp_apply (wp_NewMap).
   iIntros (lastSeq_ptr) "HlastSeqMap".
   wp_storeField.
-  wp_apply (wp_NewSlice).
+  wp_apply (wp_NewSlice (V:=bool)).
   iIntros (shardMap_sl) "HshardMap_sl".
   Transparent slice.T. wp_storeField. Opaque slice.T.
   wp_apply (wp_new_slice).
@@ -47,7 +47,7 @@ Proof.
   iIntros (kvss_sl) "Hkvss_sl".
   Transparent slice.T. wp_storeField. Opaque slice.T.
   replace (ref (InjLV #null))%E with ((NewMap (struct.ptrT KVShardClerk))) by auto.
-  remember (replicate (int.nat 65536) IntoVal_def) as initShardMapping eqn:Heq_initShardMapping.
+  remember (replicate (int.nat 65536) (IntoVal_def _)) as initShardMapping eqn:Heq_initShardMapping.
   remember (replicate (int.nat 65536) (@zero_val grove_op grove_ty KvMap)) as init_kvs_ptrs eqn:Heq_init_kvs_ptrs.
   wp_apply (wp_NewMap).
   iIntros (peers_ptr) "HpeersMap".

@@ -1,11 +1,11 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export tactics.
+From Perennial.Helpers Require Export ipm NamedProps ProofCaching.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import atomic.
-From Perennial.goose_lang Require Import lifting proofmode.
-From Perennial.goose_lang.lib Require Import struct.struct.
 From Perennial.program_logic Require Export crash_weakestpre staged_invariant.
-From Perennial.Helpers Require Export ipm NamedProps ProofCaching.
+From Perennial.goose_lang Require Export lifting proofmode.
+From Perennial.goose_lang.lib Require Import struct.struct.
 Set Default Proof Using "Type".
 Import uPred.
 

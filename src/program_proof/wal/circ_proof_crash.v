@@ -373,7 +373,7 @@ Proof.
     iExists _. iFrame.
     iExists nil; simpl.
     iSplitL.
-    { iApply is_slice_zero. }
+    { iApply (slice.is_slice_zero). }
     replace (int.nat (start σ) - int.nat (start σ))%nat with 0%nat by lia.
     rewrite take_0.
     rewrite big_sepL2_nil.

@@ -12,7 +12,7 @@ Module Map.
   Definition t V {ext} `{@IntoVal ext V} := gmap u64 V.
   Definition untype `{IntoVal V}:
     t V -> gmap u64 val * val :=
-    fun m => (to_val <$> m, to_val IntoVal_def).
+    fun m => (to_val <$> m, to_val (IntoVal_def V)).
 End Map.
 
 Section heap.
@@ -25,7 +25,7 @@ Context `{!IntoValForType IntoVal0 t}.
 Implicit Types (m: Map.t V) (k: u64) (v:V).
 
 Definition map_get m k : V * bool :=
-  let r := default IntoVal_def (m !! k) in
+  let r := default (IntoVal_def V) (m !! k) in
   let ok := bool_decide (is_Some (m !! k)) in
   (r, ok).
 
@@ -45,7 +45,7 @@ Qed.
 
 Lemma map_get_false k v m :
   map_get m k = (v, false) ->
-  m !! k = None ∧ v = IntoVal_def.
+  m !! k = None ∧ v = (IntoVal_def V).
 Proof.
   rewrite /map_get.
   destruct (m !! k); rewrite /=.
@@ -54,7 +54,7 @@ Proof.
 Qed.
 
 Lemma map_get_val k m :
-  (map_get m k).1 = default IntoVal_def (m !! k).
+  (map_get m k).1 = default (IntoVal_def V) (m !! k).
 Proof. reflexivity. Qed.
 
 Definition is_map (mref:loc) q (m: Map.t V) :=
@@ -65,7 +65,7 @@ Proof.
   auto.
 Qed.
 
-Theorem is_map_retype mref q m : map.is_map mref q (to_val <$> m, to_val IntoVal_def) -∗ is_map mref q m.
+Theorem is_map_retype mref q m : map.is_map mref q (to_val <$> m, to_val (IntoVal_def V)) -∗ is_map mref q m.
 Proof.
   auto.
 Qed.

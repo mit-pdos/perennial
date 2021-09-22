@@ -50,7 +50,7 @@ Proof.
   iApply ("Hs" with "[$]").
 Qed.
 
-Lemma untype_replicate n x :
+Lemma untype_replicate n (x : V) :
   list.untype (replicate n x) = replicate n (to_val x).
 Proof.
   rewrite /list.untype fmap_replicate //.
@@ -149,7 +149,7 @@ Qed.
 Lemma wp_NewSlice stk E t `{!IntoValForType IntoVal0 t} (sz: u64) :
   {{{ True }}}
     NewSlice t #sz @ stk; E
-  {{{ s, RET slice_val s; is_slice s t 1 (replicate (int.nat sz) IntoVal_def) }}}.
+  {{{ s, RET slice_val s; is_slice s t 1 (replicate (int.nat sz) (IntoVal_def V)) }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_apply slice.wp_new_slice.
