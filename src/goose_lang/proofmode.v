@@ -8,10 +8,6 @@ From Perennial.goose_lang Require Export typing.
 Set Default Proof Using "Type".
 Import uPred.
 
-(** Hack to work around ltac parsing idiosyncracies: make 2nd argument an open_constr *)
-Tactic Notation "open_unify" constr(e1) open_constr(e2) :=
-  unify e1 e2.
-
 Lemma tac_wp_expr_eval `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Δ s E Φ e e' :
   (∀ (e'':=e'), e = e'') →
   envs_entails Δ (WP e' @ s; E {{ Φ }}) → envs_entails Δ (WP e @ s; E {{ Φ }}).
@@ -172,16 +168,16 @@ Ltac wp_pure_filter e' :=
   (* For Beta-redices, we do *syntactic* matching only, to avoid unfolding
      definitions. This matches the treatment for [pure_beta] via [AsRecV]. *)
   first [ lazymatch e' with (App (Val (RecV _ _ _)) (Val _)) => idtac end
-        | open_unify e' (rec: _ _ := _)%E
-        | open_unify e' (InjL (Val _))
-        | open_unify e' (InjR (Val _))
-        | open_unify e' (Val _, Val _)%E
-        | open_unify e' (Fst (Val _))
-        | open_unify e' (Snd (Val _))
-        | open_unify e' (if: (Val _) then _ else _)%E
-        | open_unify e' (Case (Val _) _ _)
-        | open_unify e' (UnOp _ (Val _))
-        | open_unify e' (BinOp _ (Val _) (Val _))].
+        | eunify e' (rec: _ _ := _)%E
+        | eunify e' (InjL (Val _))
+        | eunify e' (InjR (Val _))
+        | eunify e' (Val _, Val _)%E
+        | eunify e' (Fst (Val _))
+        | eunify e' (Snd (Val _))
+        | eunify e' (if: (Val _) then _ else _)%E
+        | eunify e' (Case (Val _) _ _)
+        | eunify e' (UnOp _ (Val _))
+        | eunify e' (BinOp _ (Val _) (Val _))].
 
 Ltac wp_pure1 :=
   iStartProof; wp_pure_smart wp_pure_filter.
