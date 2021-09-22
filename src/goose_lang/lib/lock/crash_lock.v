@@ -300,3 +300,5 @@ Ltac crash_lock_open H :=
     end
   | _ => fail 1 "crash_lock_open: not a wpc"
   end.
+
+Typeclasses Opaque crash_locked.
