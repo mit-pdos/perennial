@@ -8,9 +8,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 Section memkv_coord_ghost_init_proof.
 
 (* These lemmas happen *before* we get node local names (e.g. the gname for memory, crashes etc. *)
-Context `{!dist_heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
-
-Existing Instance global_groveG.
+Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Definition coord_SpecList γkv : RPCSpecList :=
   spec_cons (is_coord_server_addSpec γkv)

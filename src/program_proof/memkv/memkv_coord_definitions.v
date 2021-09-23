@@ -15,9 +15,7 @@ Record memkv_coord_names := {
 
 Section memkv_global_coord_definitions.
 
-(* TODO: should it be dist_heapGS or heapGS? *)
-(* I think the former because it is sent from a coord server to a client *)
-Context `{!dist_lifting.dist_heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 Definition all_are_shard_servers (s:list u64) γkv : iProp Σ :=
   ∀ sid host, ⌜s !! sid = Some host⌝ →

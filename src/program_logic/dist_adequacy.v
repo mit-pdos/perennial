@@ -9,8 +9,8 @@ Import uPred.
 Set Default Proof Using "Type".
 
 Section distributed_adequacy.
-Context `{!perennialG Λ CS T Σ}.
-Context `{!distGS Λ CS Σ}.
+Context `{!irisGS Λ Σ}.
+Context (CS : crash_semantics Λ).
 
 Context (mj: fracR).
 (* The IH of the theorems here requires working with some fixed choice of mj in the wpc0 form,
@@ -26,72 +26,63 @@ Implicit Types s : stuckness.
 Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
-Implicit Types Φinv : crashGS Σ → pbundleG T Σ → iProp Σ.
-Implicit Types Φc : crashGS Σ → pbundleG T Σ → val Λ → iProp Σ.
+Implicit Types Φinv : generationGS Λ Σ → iProp Σ.
+Implicit Types Φc : generationGS Λ Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Definition wptp (ct : crashGS Σ * pbundleG T Σ) s k tpool :=
-  let Hc := fst ct in
-  let t := snd ct in
+Definition wptp (gen : generationGS Λ Σ) s k tpool :=
   ([∗ list] ef ∈ tpool, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})%I.
 
-Definition wpnode (ct : crashGS Σ * pbundleG T Σ) k (dn: dist_node) :=
+Definition wpnode (gen : generationGS Λ Σ) k (dn: dist_node) :=
   (match tpool dn with
   | [] => False%I
   | e :: tp =>
     ∃ Φ Φinv Φr,
-    wpr0 NotStuck k mj (fst ct) (snd ct) ⊤ e (boot dn) Φ Φinv Φr ∗
-    wptp ct NotStuck k tp
+    wpr0 CS NotStuck k mj gen ⊤ e (boot dn) Φ Φinv Φr (* to be used after a reboot *) ∗
+    wptp gen NotStuck k tp
   end)%I.
 
-Definition stwpnode (ct : crashGS Σ * pbundleG T Σ) k (dn: dist_node) : iProp Σ :=
-  (let Hc := fst ct in
-   let t := snd ct in
-   state_interp (local_state dn) (pred (length (tpool dn))) ∗
+Definition stwpnode (gen : generationGS Λ Σ) k (dn: dist_node) : iProp Σ :=
+  (state_interp (local_state dn) (pred (length (tpool dn))) ∗
    NC 1) ∗
-  wpnode ct k dn.
+  wpnode gen k dn.
 
 Definition stwpnodes k (dns: list dist_node) : iProp Σ :=
-  [∗ list] dn ∈ dns, ∃ ct, stwpnode ct k dn.
+  [∗ list] dn ∈ dns, ∃ gen, stwpnode gen k dn.
 
-Lemma stwpnode_step ct k eb t1 σ1 g1 D t2 σ2 g2 κ κs ns:
+Lemma stwpnode_step gen k eb t1 σ1 g1 D t2 σ2 g2 κ κs ns:
   step (t1, (σ1,g1)) κ (t2, (σ2,g2)) →
   global_state_interp g1 ns mj D (κ ++ κs) -∗
-  stwpnode ct k {| boot := eb; tpool := t1; local_state := σ1 |} -∗
+  stwpnode gen k {| boot := eb; tpool := t1; local_state := σ1 |} -∗
   ||={⊤|⊤,∅|∅}=> ||▷=>^(S $ num_laters_per_step ns) ||={∅|∅, ⊤|⊤}=>
   global_state_interp g2 (step_count_next ns) mj D κs ∗
-  stwpnode ct k {| boot := eb; tpool := t2; local_state := σ2 |}.
+  stwpnode gen k {| boot := eb; tpool := t2; local_state := σ2 |}.
 Proof.
   iIntros (Hstep) "Hg Hnode".
-  destruct ct as (Hc&t).
   iDestruct "Hnode" as "((Hσ&HNC)&Hwptp)".
   destruct t1; first done. simpl.
-  iDestruct "Hwptp" as (Φ Φinv Φr) "(Hwpr&Hwptp)".
+  iDestruct "Hwptp" as (Φ Φinv Φr) "(Hwpr&Hwptp)". simpl.
   iPoseProof (crash_adequacy.wptp_step with "[$Hσ] [Hg] [Hwpr] [Hwptp] [HNC]") as "H"; eauto.
   { rewrite wpr0_unfold/wpr0_pre. eauto. }
-  { rewrite perennial_crashGS. iFrame. }
   iMod "H" as (e2 t2' ->) "H".
   iMod "H". iModIntro. simpl. iMod "H". iModIntro. iNext.
   iApply (step_fupd2N_wand with "H"). iIntros "H".
   iMod "H" as "(Hσ&Hg&Hwpr&Hwptp&HNC)".
   iFrame. iModIntro.
-  iSplitL "HNC".
-  { rewrite perennial_crashGS. iFrame. }
   simpl. iExists Φ, Φinv, Φr.
   rewrite wpr0_unfold/wpr0_pre. eauto.
 Qed.
 
-Lemma stwpnode_crash ct k eb t1 σ1 g σ2 κs ns D:
+Lemma stwpnode_crash gen k eb t1 σ1 g σ2 κs ns D:
   crash_prim_step CS σ1 σ2 →
   global_state_interp g ns mj D κs -∗
-  stwpnode ct k {| boot := eb; tpool := t1; local_state := σ1 |} -∗
-  ||={⊤|⊤, ∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,⊤|⊤}=> ▷ |={⊤}=> ∃ ct',
+  stwpnode gen k {| boot := eb; tpool := t1; local_state := σ1 |} -∗
+  ||={⊤|⊤, ∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,⊤|⊤}=> ▷ |={⊤}=> ∃ gen',
   global_state_interp g (step_count_next ns) mj D κs ∗
-  stwpnode ct' k {| boot := eb; tpool := [eb]; local_state := σ2 |}.
+  stwpnode gen' k {| boot := eb; tpool := [eb]; local_state := σ2 |}.
 Proof.
   iIntros (Hstep) "Hg Hnode".
-  destruct ct as (Hc&t).
   iDestruct "Hnode" as "((Hσ&HNC)&Hwptp)".
   destruct t1; first done. simpl.
   iDestruct "Hwptp" as (Φ Φinv Φr) "(Hwpr&Hwptp)".
@@ -101,7 +92,7 @@ Proof.
   iMod ("Hclo").
   iMod (wpc0_crash with "Hwpr [Hg] []") as "H".
   { eauto. }
-  { rewrite perennial_crashGS. iFrame "#". }
+  { iFrame "#". }
   iModIntro.
   iApply (step_fupd2N_wand with "H"). iIntros "H".
   iMod "H" as "(Hg&H)". iMod "Hclo".
@@ -110,13 +101,13 @@ Proof.
   iModIntro. iNext.
   iClear "HC".
   unshelve (iMod NC_alloc as (Hc') "HNC").
-  { destruct Hc. constructor. apply _. }
+  { constructor. apply _. }
   iSpecialize ("H" with "HNC").
   iMod "H".
-  iDestruct "H" as (t') "(Hσ&Hg&(_&Hwpr)&HNC)".
+  iDestruct "H" as (p') "(Hσ&Hg&(_&Hwpr)&HNC)".
   iModIntro.
   iFrame.
-  iExists (Hc', t'). iFrame.
+  iExists (generation_from_params Hc' p'). iFrame.
   rewrite /wpnode/=.
   iExists _, _, _. iFrame. rewrite /wptp. rewrite big_sepL_nil. eauto.
 Qed.
@@ -189,14 +180,14 @@ Qed.
 Lemma stwpnodes_strong_adequacy n k dns1 g1 ns D dns2 g2 κs κs' :
   dist_nsteps (CS := CS) n (dns1, g1) κs (dns2, g2) →
   global_state_interp g1 ns mj D (κs ++ κs') -∗
-  stwpnodes k dns1 -∗
+  (|={⊤}=> stwpnodes k dns1) -∗
   ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ⊤|⊤}=>
   (▷^(S (S (num_laters_per_step (Nat.iter n step_count_next ns))))
       (⌜ ∀ dn e, dn ∈ dns2 → e ∈ tpool dn → not_stuck e (local_state dn) g2 ⌝)) ∗
   global_state_interp g2 (Nat.iter n step_count_next ns) mj D κs' ∗
   stwpnodes k dns2.
 Proof.
-  iIntros (Hstep) "Hg Ht".
+  iIntros (Hstep) "Hg >Ht".
   iMod (stwpnodes_steps with "Hg Ht") as "Hgt"; first done.
   iModIntro. iApply (step_fupd2N_wand with "Hgt").
   iMod 1 as "(Hg & Ht)".
@@ -220,13 +211,13 @@ Proof.
       iPoseProof (wpc_safe with "Hσ [Hg] Hwpr") as "H".
       { eauto. }
       iMod ("H" with "[HNC]") as "H".
-      { rewrite perennial_crashGS. iFrame. }
+      { iFrame. }
       iModIntro. iNext. iNext. iNext. eauto.
     - iDestruct "Ht" as "(_ & He' & _)".
       iPoseProof (wpc_safe with "Hσ [Hg] He'") as "H".
       { eauto. }
       iMod ("H" with "[HNC]") as "H".
-      { rewrite perennial_crashGS. iFrame. }
+      { iFrame. }
       iModIntro. iNext. iNext. iNext. eauto.
   }
   iModIntro. iFrame.
@@ -234,29 +225,21 @@ Qed.
 
 End distributed_adequacy.
 
-Theorem wpd_strong_adequacy Σ Λ CS T `{HIPRE: !invGpreS Σ} `{HCPRE: !crashGpreS Σ} nsinit k ebσs g1 n κs dns2 g2 φ f1 f2 :
-  (∀ `{Hinv : !invGS Σ} (Heq_pre: inv_inG = HIPRE),
-     ⊢ |={⊤}=> ∃ (cts: list (crashGS Σ * pbundleG T Σ))
-         (Heq_cpre: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = @crash_inPreG _ HCPRE)
-         (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
-         (global_stateI : global_state Λ → nat → fracR → coPset → list (observation Λ) → iProp Σ)
-         (fork_post : val Λ → iProp Σ) Hpf1a Hpf1b Hpf1',
-        let _ : perennialG Λ CS _ Σ :=
-            PerennialG _ _ T Σ
-              (IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b)
-              (λ Hc t, GenerationGS Λ Σ Hc (stateI t))
-              Hpf1'
-               in
-       global_stateI g1 nsinit 1%Qp ∅ κs ∗
-       ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs,
-                                  let _ := fst ct in NC 1 ∗ stateI (snd ct) σ 0) ∗
-       wpd k ⊤ cts ((λ x, (init_thread x, init_restart x)) <$> ebσs) ∗
+Theorem wpd_strong_adequacy Σ Λ CS `{!invGpreS Σ} `{!crashGpreS Σ}
+  nsinit (k : nat) (ebσs : list node_init_cfg) g1 n κs dns2 g2 φ f1 f2 :
+  (∀ `(Hinv : !invGS Σ),
+     ⊢ |={⊤}=> ∃
+       (global_stateI : global_state Λ → nat → fracR → coPset → list (observation Λ) → iProp Σ)
+       (fork_post : val Λ → iProp Σ) Hpf1a Hpf1b,
+       let HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b in
+       global_stateI g1 nsinit 1%Qp ∅ κs  ∗
+       wpd CS k ⊤ ebσs ∗
        (⌜ ∀ dn, dn ∈ dns2 → not_stuck_node dn g2 ⌝ -∗
          global_stateI g2 (Nat.iter n f2 nsinit) 1%Qp ∅ [] -∗
          (* Under these assumptions, and while opening all invariants, we
          can conclude [φ] in the logic. After opening all required invariants,
          one can use [fupd_mask_subseteq] to introduce the fancy update. *)
-         |={⊤,∅}=> ⌜ φ ⌝)) →
+         |={⊤,∅}=> ⌜ φ ⌝ )) →
   dist_nsteps (CS := CS) n (starting_dist_cfg ebσs g1) κs (dns2, g2) →
   (* Then we can conclude [φ] at the meta-level. *)
   φ.
@@ -266,34 +249,29 @@ Proof.
          + S (S (f1 (Nat.iter n f2 nsinit))))) => Hinv HEQ.
 (*  (Nat.iter (steps_sum n)) (S (S (f1 (Nat.iter n f2 nsinit)))))) => Hinv HEQ. *)
   rewrite Nat_iter_add.
-  iMod Hwp as (cts Heq_cpre stateI global_stateI fork_post) "Hwp"; first done.
-  iDestruct "Hwp" as (Hpf1a Hpf1b Hpf1') "(Hg & Hσs & Hwp & Hφ)".
-  iPoseProof (@stwpnodes_strong_adequacy _ _ _ _
-               (PerennialG _ _ T Σ
-                  (IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b)
-                  (λ Hc t, GenerationGS Λ Σ Hc (stateI t))
-                  Hpf1')
+  iMod Hwp as (global_stateI fork_post) "Hwp".
+  iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
+  set (HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b).
+  iMod (stwpnodes_strong_adequacy _
                1%Qp n k _ _ nsinit _ _ _ _ []
-    with "[Hg] [Hσs Hwp]") as "H"; first done.
+    with "[Hg] [Hwp]") as "H"; first done.
   { rewrite app_nil_r /=. iExact "Hg". }
   { rewrite /stwpnodes/wpd.
-    iCombine "Hσs Hwp" as "H".
-    rewrite ?big_sepL2_fmap_r.
-    iDestruct (big_sepL2_sep with "H") as "H".
     iApply big_sepL_fmap.
-    iDestruct (big_sepL.big_sepL2_to_sepL_2 with "H") as "H".
-    iApply (big_sepL_impl with "H").
+    iApply big_sepL_fupd.
+    iApply (big_sepL_impl with "Hwp").
     iIntros "!#" (i ρ Hlookup) "H".
-    iDestruct "H" as (ct Hlookup') "((HNC&Hσ)&Hwp)". iExists ct.
-    simpl. rewrite /stwpnode.
+    iMod NC_alloc as (Hc) "HNC".
+    iMod ("H" $! Hc) as (stateI Φ Φrx Φinv) "(Hσ&Hwp)".
+    set (HG := GenerationGS Λ Σ Hc stateI). iExists HG.
+    rewrite /stwpnode.
     rewrite /=. iFrame "HNC Hσ".
     rewrite /wpnode/=.
-    iDestruct "Hwp" as (Φ Φrx Φinv) "H".
-    iExists Φ, Φinv, Φrx.
+    iModIntro. iExists Φ, Φinv, Φrx.
     rewrite /wptp big_sepL_nil right_id.
     by iApply wpr0_wpr.
   }
-  iMod "H". iModIntro.
+  iModIntro.
   iApply (step_fupd2N_wand with "H").
   iIntros "H".
   iApply step_fupd2N_S_fupd2. simpl. iMod "H".
@@ -330,34 +308,26 @@ Proof.
   - constructor; naive_solver.
 Qed.
 
-Corollary wpd_dist_adequacy_inv Σ Λ CS (T: ofe) `{HIPRE: !invGpreS Σ} `{HCPRE: !crashGpreS Σ} nsinit (k : nat)
+Corollary wpd_dist_adequacy_inv Σ Λ CS `{!invGpreS Σ} `{!crashGpreS Σ} nsinit (k : nat)
           ebσs g φinv f1 f2:
-  (∀ `{Hinv : !invGS Σ} (Heq_pre: inv_inG = HIPRE) κs,
-     ⊢ |={⊤}=> ∃ (cts: list (crashGS Σ * pbundleG T Σ))
-         (Heq_cts: ∀ k ct, cts !! k = Some ct → @crash_inG _ (fst ct) = @crash_inPreG _ HCPRE)
-         (stateI : pbundleG T Σ → state Λ → nat → iProp Σ)
-         (global_stateI : global_state Λ → nat → fracR → coPset → list (observation Λ) → iProp Σ)
-         (fork_post : val Λ → iProp Σ) Hpf1a Hpf1b Hpf1',
-        let _ : perennialG Λ CS _ Σ :=
-                  PerennialG _ _ T Σ
-                    (IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b)
-                    (λ Hc t, GenerationGS Λ Σ Hc (stateI t))
-                    Hpf1'
-               in
-       (∀ g κs ns, global_stateI g ns 1%Qp ∅ κs -∗ |={⊤, ∅}=> ⌜ φinv g ⌝) ∗
-       ([∗ list] i ↦ ct; σ ∈ cts; init_local_state <$> ebσs, let _ := fst ct in NC 1 ∗ stateI (snd ct) σ 0) ∗
-       global_stateI g nsinit 1%Qp ∅ κs ∗
-       wpd k ⊤ cts ((λ x, (init_thread x, init_restart x)) <$> ebσs)) →
+  (∀ `(Hinv : !invGS Σ) κs,
+     ⊢ |={⊤}=> ∃
+       (global_stateI : global_state Λ → nat → fracR → coPset → list (observation Λ) → iProp Σ)
+       (fork_post : val Λ → iProp Σ) Hpf1a Hpf1b,
+       let HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b in
+       global_stateI g nsinit 1%Qp ∅ κs  ∗
+       wpd CS k ⊤ ebσs ∗
+       (∀ g κs ns, global_stateI g ns 1%Qp ∅ κs -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
   dist_adequate (CS := CS) ebσs g (λ g, φinv g).
 Proof.
   intros Hwp.
   apply dist_adequate_alt.
   intros dns2 g2 Hsteps.
   apply erased_dist_steps_nsteps in Hsteps as [n [κs Hsteps]].
-  eapply (wpd_strong_adequacy Σ _); [| eauto ] => ??.
-  iMod Hwp as (cts Heq_cts stateI global_stateI fork_post) "Hwp"; first done.
-  iDestruct "Hwp" as (Hpf1a Hpf1b Hpf1') "(Hφ&Hσ&Hg&Hwp)".
-  iModIntro. iExists cts, Heq_cts, stateI, global_stateI, fork_post.
-  iExists Hpf1a, Hpf1b, Hpf1'.
+  eapply (wpd_strong_adequacy Σ _ _); [| by eauto ] => ?.
+  iMod Hwp as (global_stateI fork_post) "Hwp".
+  iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg&Hwp&Hφ)".
+  iModIntro. iExists global_stateI, fork_post.
+  iExists Hpf1a, Hpf1b.
   iFrame. iIntros "%Hns Hg". iMod ("Hφ" with "[$]") as %Hφ. iPureIntro; eauto.
 Qed.

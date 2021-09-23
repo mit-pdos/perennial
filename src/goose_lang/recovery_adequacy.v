@@ -10,9 +10,9 @@ Set Default Proof Using "Type".
 
 Theorem goose_recv_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !gooseGpreS Σ} s k e r σ g φ φr φinv Φinv n :
   ffi_initgP g → ffi_initP σ.(world) g →
-  (∀ `{Hheap : !heapGS Σ},
+  (∀ `(Hheap : !heapGS Σ),
      ⊢ (ffi_global_start goose_ffiGlobalGS g -∗
-        ffi_local_start goose_ffiLocalGS goose_ffiGlobalGS σ.(world) g -∗
+        ffi_local_start goose_ffiLocalGS σ.(world) -∗
         trace_frag σ.(trace) -∗
         oracle_frag σ.(oracle) -∗
         pre_borrowN n ={⊤}=∗
@@ -28,7 +28,7 @@ Proof.
   iIntros (???).
   iMod (na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
   iMod (ffi_global_init _ _ g) as (ffi_namesg) "(Hgw&Hgstart)"; first by eauto.
-  iMod (ffi_local_init _ _ _ σ.(world) g with "Hgw") as (ffi_names) "(Hw&Hgw&Hstart)"; first by eauto.
+  iMod (ffi_local_init _ _ σ.(world)) as (ffi_names) "(Hw&Hstart)"; first by eauto.
   iMod (trace_name_init σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   iMod (credit_name_init (n*4 + crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
   iDestruct (cred_frag_split with "Hcred") as "(Hpre&Hcred)".

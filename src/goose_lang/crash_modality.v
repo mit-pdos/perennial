@@ -10,7 +10,7 @@ Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 
 (* We use heapGS here since all our proofs are heapGS-parameterized;
-providing a lone gooseLocalGS is not nerribly useful. *)
+providing a lone gooseLocalGS is not terribly useful. *)
 
 Definition post_crash {Σ} `{hG: !heapGS Σ} (P: heapGS Σ → iProp Σ) : iProp Σ :=
   (∀ σ σ' hL', ffi_crash_rel Σ (goose_ffiLocalGS (hL := goose_localGS)) σ (goose_ffiLocalGS (hL := hL')) σ' -∗

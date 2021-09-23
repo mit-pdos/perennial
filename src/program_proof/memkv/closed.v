@@ -35,27 +35,6 @@ Import adequacy dist_adequacy grove_ffi_adequacy.
 
 Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; rpcregΣ].
 
-(* TODO: move *)
-Lemma heapG_heap_globalG_roundtrip {Σ} Hheap Hcrash local_names :
-  Hheap =
-  @heapG_heap_globalG Σ
-    (@dist_heapGS_heapGS grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ Hheap
-       Hcrash local_names).
-Proof.
-  rewrite /heapG_heap_globalG. rewrite /dist_heapGS_heapGS //=.
-  destruct Hheap => //=. f_equal.
-  * destruct dist_heapGpreS => //= . f_equal.
-    { destruct heap_preG_iris => //=. }
-    { destruct heap_preG_crash => //=. }
-    { destruct heap_preG_heap => //=. }
-    { destruct heap_preG_ffi => //=. }
-    { destruct heap_preG_trace => //=. }
-    { destruct heap_preG_credit => //=. }
-  * rewrite gen_heapG_update_pre_get //=.
-  * rewrite /inv_get_names //=.
-    destruct dist_heapGS_inv_names => //=.
-Qed.
-
 Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord σclient (g : ffi_global_state) :
   shardId ≠ coordId →
   ffi_initgP g →
@@ -92,7 +71,9 @@ Proof.
   { iMod (fupd_mask_subseteq ∅); eauto. }
   iSplitL "Hserver_shards Hsrv_rpc_ghost Hsrv_cid".
   {
-    iIntros (Hcrash local_names).
+    iIntros (HL).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+
     iModIntro. iExists (λ _, True%I).
     rewrite /shard_boot. simpl.
     wp_bind (MakeKVShardServer #true).
@@ -106,40 +87,40 @@ Proof.
     wp_pures.
     wp_apply (wp_KVShardServer__Start with "[] [] [$His_server]").
     { iExactEq "Hdom". rewrite //=. f_equal. set_solver. }
-    { iExactEq "Hsrv". f_equal. apply heapG_heap_globalG_roundtrip. }
+    { done. }
     eauto.
   }
   iSplitR "Hclients_ptstos".
   {
-    iIntros (Hcrash local_names).
+    iIntros (HL).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /coord_boot. simpl.
     wp_bind (MakeKVCoordServer #(shardId : u64)).
     wp_apply (wp_MakeKVCoordServer with "[]").
     { iSplitL ""; last first.
       { rewrite /named. iExactEq "Hsrv".
-        f_equal. apply heapG_heap_globalG_roundtrip. }
+        f_equal.  }
       { iPureIntro. rewrite Heq_kv; symmetry; eauto. }
     }
     iIntros (s) "His_server".
     wp_pures.
     wp_apply (wp_KVCoordServer__Start with "[] [] [His_server]").
     { iExactEq "Hdom'". rewrite //=. f_equal. set_solver. }
-    { iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. eauto. }
+    { done. }
     { iFrame "His_server". }
     eauto.
   }
   iSplitR ""; last eauto.
   {
-    iIntros (Hcrash local_names).
+    iIntros (HL).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /client_boot. iEval simpl.
     wp_apply wp_MakeConnMan.
     iIntros (cm) "Hcm".
     wp_apply (wp_MakeKVClerk with "[] Hcm").
-    {
-      iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. f_equal.
-    }
+    { done. }
     eauto.
   }
 Qed.
@@ -169,27 +150,6 @@ Definition auditor_boot (lockcoord kvcoord : u64) (init acc1 acc2 : u64)  : expr
 Import adequacy dist_adequacy grove_ffi_adequacy.
 
 Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; rpcregΣ; mapΣ u64 u64].
-
-(* TODO: move *)
-Lemma heapG_heap_globalG_roundtrip {Σ} Hheap Hcrash local_names :
-  Hheap =
-  @heapG_heap_globalG Σ
-    (@dist_heapGS_heapGS grove_op grove_model grove_semantics grove_interp grove_interp_adequacy Σ Hheap
-       Hcrash local_names).
-Proof.
-  rewrite /heapG_heap_globalG. rewrite /dist_heapGS_heapGS //=.
-  destruct Hheap => //=. f_equal.
-  * destruct dist_heapGpreS => //= . f_equal.
-    { destruct heap_preG_iris => //=. }
-    { destruct heap_preG_crash => //=. }
-    { destruct heap_preG_heap => //=. }
-    { destruct heap_preG_ffi => //=. }
-    { destruct heap_preG_trace => //=. }
-    { destruct heap_preG_credit => //=. }
-  * rewrite gen_heapG_update_pre_get //=.
-  * rewrite /inv_get_names //=.
-    destruct dist_heapGS_inv_names => //=.
-Qed.
 
 Definition lockshardId := U64 0.
 Definition lockcoordId := U64 1.
@@ -284,7 +244,8 @@ Proof.
   (* lockserver shard *)
   iSplitL "Hserver_lockshards Hsrv_rpc_ghost Hsrv_cid".
   {
-    iIntros (Hcrash local_names).
+    iIntros (HL).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /shard_boot. simpl.
     wp_bind (MakeKVShardServer #true).
@@ -298,28 +259,28 @@ Proof.
     wp_pures.
     wp_apply (wp_KVShardServer__Start with "[] [] [$His_server]").
     { iExactEq "Hdom". rewrite //=. f_equal. set_solver. }
-    { iExactEq "Hsrv". f_equal. apply heapG_heap_globalG_roundtrip. }
+    { done.  }
     eauto.
   }
 
   (* lockserver coordinator *)
   iSplitL "".
   {
-    iIntros (Hcrash local_names).
+    iIntros (HL).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /coord_boot. simpl.
     wp_bind (MakeKVCoordServer #(lockshardId : u64)).
     wp_apply (wp_MakeKVCoordServer with "[]").
     { iSplitL ""; last first.
-      { rewrite /named. iExactEq "Hsrv".
-        f_equal. apply heapG_heap_globalG_roundtrip. }
+      { rewrite /named. done. }
       { iPureIntro. rewrite Heq_lockshard; symmetry; eauto. }
     }
     iIntros (s) "His_server".
     wp_pures.
     wp_apply (wp_KVCoordServer__Start with "[] [] [His_server]").
     { iExactEq "Hdom'". rewrite //=. f_equal. set_solver. }
-    { iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. eauto. }
+    { iExact "Hsrv'". }
     { iFrame "His_server". }
     eauto.
   }
@@ -327,7 +288,8 @@ Proof.
   (* kv shard *)
   iSplitL "Hserver_kvshards Hsrv_kv_rpc_ghost Hsrv_kv_cid".
   {
-    iIntros (Hcrash local_names).
+    iIntros (HL).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /shard_boot. simpl.
     wp_bind (MakeKVShardServer #true).
@@ -341,35 +303,36 @@ Proof.
     wp_pures.
     wp_apply (wp_KVShardServer__Start with "[] [] [$His_server]").
     { iExactEq "Hdom''". rewrite //=. f_equal. set_solver. }
-    { iExactEq "Hsrv_kv". f_equal. apply heapG_heap_globalG_roundtrip. }
+    { iExact "Hsrv_kv". }
     eauto.
   }
 
   (* kv coordinator *)
   iSplitL "".
   {
-    iIntros (Hcrash local_names).
+    iIntros (HL).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /coord_boot. simpl.
     wp_bind (MakeKVCoordServer #(kvshardId : u64)).
     wp_apply (wp_MakeKVCoordServer with "[]").
     { iSplitL ""; last first.
-      { rewrite /named. iExactEq "Hsrv_kv".
-        f_equal. apply heapG_heap_globalG_roundtrip. }
+      { rewrite /named. iExact "Hsrv_kv". }
       { iPureIntro. rewrite Heq_kvshard; symmetry; eauto. }
     }
     iIntros (s) "His_server".
     wp_pures.
     wp_apply (wp_KVCoordServer__Start with "[] [] [His_server]").
     { iExactEq "Hdom'''". rewrite //=. f_equal. set_solver. }
-    { iExactEq "Hsrv''". rewrite -heapG_heap_globalG_roundtrip. eauto. }
+    { iExact "Hsrv''". }
     { iFrame "His_server". }
     eauto.
   }
 
   iSplitR "".
   {
-    iIntros (Hcrash local_names).
+    iIntros (HL).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /transferrer_boot. iEval simpl.
     wp_apply wp_MakeConnMan.
@@ -377,12 +340,12 @@ Proof.
     wp_pures.
     wp_apply (wp_MakeBankClerk with "[Hcm]").
     { eauto. }
-    {
+    { iFrame "Hcm".
       iSplitL "".
-      { iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. f_equal. }
+      { iExact "Hsrv'". }
       iSplitL "".
-      { iExactEq "Hsrv''". rewrite -heapG_heap_globalG_roundtrip. f_equal. }
-      iFrame "Hcm". iExactEq "His_lock".
+      { iExact "Hsrv''". }
+      iExactEq "His_lock".
       rewrite Heq_kvcoord Heq_lockcoord; auto.
     }
     iIntros (??) "(?&?)". wp_pures.
@@ -392,7 +355,8 @@ Proof.
 
   iSplitR "".
   {
-    iIntros (Hcrash local_names).
+    iIntros (HL).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /auditor_boot. iEval simpl.
     wp_apply wp_MakeConnMan.
@@ -402,9 +366,9 @@ Proof.
     { eauto. }
     {
       iSplitL "".
-      { iExactEq "Hsrv'". rewrite -heapG_heap_globalG_roundtrip. f_equal. }
+      { iExact "Hsrv'". }
       iSplitL "".
-      { iExactEq "Hsrv''". rewrite -heapG_heap_globalG_roundtrip. f_equal. }
+      { iExact "Hsrv''".  }
       iFrame "Hcm". iExactEq "His_lock".
       rewrite Heq_kvcoord Heq_lockcoord; auto.
     }

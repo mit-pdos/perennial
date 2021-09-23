@@ -165,7 +165,7 @@ End grove.
 
 (** * Grove semantic interpretation and lifting lemmas *)
 Class groveGS Σ :=
-  { groveG_gen_heapG :> gen_heap.gen_heapGS chan (gset message) Σ; }.
+  GroveGS { groveG_gen_heapG :> gen_heap.gen_heapGS chan (gset message) Σ; }.
 
 Class groveGpreS Σ :=
   { grove_preG_gen_heapG :> gen_heap.gen_heapGpreS chan (gset message) Σ; }.
@@ -191,23 +191,15 @@ Section grove.
     ∀ c ms m, g !! c = Some ms → m ∈ ms → length m.(msg_data) < 2^64.
 
   Local Program Instance grove_interp: ffi_interp grove_model :=
-    {| ffiGS := groveGS;
-       ffi_local_names := unit;
-       ffi_global_names := gen_heap_names;
-       ffi_get_local_names _ hD := tt;
-       ffi_get_global_names _ hD := gen_heapG_get_names (groveG_gen_heapG);
-       ffi_update_local  _ hD names := hD;
-       ffi_ctx _ _ _ := True%I;
+    {| ffiGlobalGS := groveGS;
+       ffiLocalGS _ := ()%type;
+       ffi_local_ctx _ _ _ := True%I;
        ffi_global_ctx _ _ g := (gen_heap_interp g ∗ ⌜chan_msg_bounds g⌝)%I;
-       ffi_local_start := fun _ _ _ (g: grove_global_state) => True%I;
+       ffi_local_start _ _ _ := True%I;
+       ffi_global_start _ _ g := ([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
        ffi_restart _ _ _ := True%I;
        ffi_crash_rel Σ hF1 σ1 hF2 σ2 := True%I;
     |}.
-  Next Obligation. intros ? [[]] [] => //=. Qed.
-  Next Obligation. intros ? [[]] => //=. Qed.
-  Next Obligation. intros ? [[]] => //=. Qed.
-  Next Obligation. intros ? [[]] => //=. Qed.
-  Next Obligation. intros ? [[]] => //=. Qed.
 End grove.
 
 Notation "c c↦ ms" := (mapsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
@@ -215,8 +207,8 @@ Notation "c c↦ ms" := (mapsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
 
 Section lifting.
   Existing Instances grove_op grove_model grove_semantics grove_interp.
-  Context `{!heapGS Σ}.
-  Instance heapG_groveG : groveGS Σ := heapGS_ffiGS.
+  Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
+  Instance goose_groveGS : groveGS Σ := goose_ffiGlobalGS.
 
   Definition chan_meta_token (c : chan) (E: coPset) : iProp Σ :=
     gen_heap.meta_token (hG := groveG_gen_heapG) c E.
@@ -503,7 +495,7 @@ Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
   suddenly cause all FFI parameters to be inferred as the grove model *)
   (* FIXME: figure out which of these clients need to set *)
-  Existing Instances grove_op grove_model grove_ty grove_semantics grove_interp heapG_groveG.
+  Existing Instances grove_op grove_model grove_ty grove_semantics grove_interp goose_groveGS.
   Local Coercion Var' (s:string) : expr := Var s.
 
   (** We only use these types behind a ptr indirection so their size should not matter. *)
@@ -689,37 +681,25 @@ From Perennial.goose_lang Require Import adequacy.
 
 Program Instance grove_interp_adequacy:
   @ffi_interp_adequacy grove_model grove_interp grove_op grove_semantics :=
-  {| ffi_preG := groveGpreS;
+  {| ffiGpreS := groveGpreS;
      ffiΣ := groveΣ;
      subG_ffiPreG := subG_groveGpreS;
      ffi_initgP := λ g, chan_msg_bounds g;
      ffi_initP := λ _ g, True;
-     ffi_update_pre := (λ _ hP _ names, @grove_update_pre _ hP names);
-     ffi_pre_global_start _ hP names g :=
-       let hG := @grove_update_pre _ hP names in
-       (([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms)) ∗
-        ([∗ map] e↦_ ∈ g, (gen_heap.meta_token e ⊤)))%I;
-     ffi_pre_global_ctx  _ hP names g :=
-       let hG := @grove_update_pre _ hP names in
-       (gen_heap_interp g ∗ ⌜chan_msg_bounds g⌝)%I;
   |}.
-Next Obligation. rewrite //=. Qed.
-Next Obligation. rewrite //=. intros ?? [] => //=. Qed.
-Next Obligation. rewrite //=. intros ?? [] [] => //=. Qed.
-Next Obligation. rewrite //=. Qed.
 Next Obligation.
   rewrite //=. iIntros (Σ hPre g Hchan). eauto.
-  iMod (gen_heap_name_strong_init' g) as (names) "(H1&H2&H3)".
-  iExists names. iFrame. eauto.
+  iMod (gen_heap_init g) as (names) "(H1&H2&H3)".
+  iExists (GroveGS _ names). iFrame. eauto.
 Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ ???) "H".
+  iIntros (Σ hPre σ ??).
   iExists tt. eauto.
 Qed.
 Next Obligation.
-  iIntros (Σ σ σ' g Hcrash Hold) "Hinterp Hg".
-  iExists (ffi_get_local_names _ Hold) => //=.
+  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
+  iExists tt.
   inversion Hcrash; subst.
   iFrame. eauto.
 Qed.

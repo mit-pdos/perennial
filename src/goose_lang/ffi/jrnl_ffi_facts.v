@@ -237,7 +237,7 @@ Section jrnl_interp.
        ffiGlobalGS _ := ()%type;
        ffi_local_ctx := @jrnl_ctx;
        ffi_global_ctx _ _ _ := True%I;
-       ffi_local_start Σ G _ w _ := @jrnl_start Σ G w;
+       ffi_local_start Σ G w := @jrnl_start Σ G w;
        ffi_global_start _ _ _ := True%I;
        ffi_restart := @jrnl_restart;
        ffi_crash_rel := λ Σ hF1 σ1 hF2 σ2, ⌜ @jrnlG_data_inG _ hF1 = @jrnlG_data_inG _ hF2 ∧
@@ -384,7 +384,7 @@ Program Instance jrnl_interp_adequacy:
 Next Obligation. rewrite //=. eauto. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ g _ (m&->&Hwf)) "_". simpl.
+  iIntros (Σ hPre σ g (m&->&Hwf)). simpl.
   iMod (own_alloc (Cinl (1%Qp, to_agree tt) : openR)) as (γ1) "H".
   { repeat econstructor => //=. }
   iMod (map_init_many (jrnlData m)) as (γdata) "(Hdata_ctx&Hdata)".

@@ -491,7 +491,12 @@ Section recov.
     iIntros "Hstart".
     iApply (idempotence_wpr _ (S (S O)) ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ)%I with "[Hstart]").
     { wpc_apply (wpc_Open with "Hstart"). eauto 10. }
-    iModIntro. iIntros (?????) "H".
+    iModIntro. iIntros (????) "H".
+    (* FIXME: we bundle local and global, but [idempotence_wpr] quantifies only over the local part...
+       and we want the terms below to pick up the new local part. Sadly the let-binding in the
+       statement of [idempotence_wpr] is lost so we have to introduce it again ourselves here. *)
+    set (hG' := HeapGS _ _ _).
+
     iDestruct "H" as (σ'') "Hstart".
     iNext. iCrash.
     iIntros.
@@ -512,8 +517,13 @@ Section recov.
     iIntros "Hstart".
     iApply (idempotence_wpr _ 2 ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ ∗ True)%I with "[Hstart]").
     { wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart]").
-      iSplit; eauto.  }
-    iModIntro. iIntros (?????) "H".
+      iSplit; eauto. }
+    iModIntro. iIntros (????) "H".
+    (* FIXME: we bundle local and global, but [idempotence_wpr] quantifies only over the local part...
+       and we want the terms below to pick up the new local part. Sadly the let-binding in the
+       statement of [idempotence_wpr] is lost so we have to introduce it again ourselves here. *)
+    set (hG' := HeapGS _ _ _).
+
     iDestruct "H" as (σ'') "(Hstart&_)".
     iNext. iCrash.
     iIntros (?).
@@ -527,10 +537,10 @@ Existing Instances subG_stagedG.
 
 Definition repΣ := #[stagedΣ; heapΣ; crashΣ].
 
-Lemma ffi_start_OpenRead σ addr g (d : ()) {hG: heapGS repΣ} :
+Lemma ffi_start_OpenRead {hG: heapGS repΣ} σ addr (d : ()) :
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
-  ffi_local_start heapGS_ffiGS σ.(world) g
+  ffi_local_start goose_ffiLocalGS σ.(world)
   -∗ wpr NotStuck 2 ⊤ (OpenRead d addr) (OpenRead d addr) (λ _ : goose_lang.val, True)
        (λ _, True) (λ _ _, True).
 Proof.
@@ -555,10 +565,10 @@ Theorem OpenRead_adequate σ g addr :
                 σ g (λ v _ _, True) (λ v _ _, True) (λ _ _, True).
 Proof.
   intros.
-  eapply (heap_recv_adequacy (repΣ) _ 2 _ _ _ _ _ _ _ (λ _, True%I)).
+  eapply (goose_recv_adequacy (repΣ) _ 2 _ _ _ _ _ _ _ (λ _, True%I)).
   { simpl. auto. }
   { simpl. auto. }
-  iIntros (?) "Hstart _ _ _".
+  iIntros (?) "Hstart Hgstart _ _ _".
   iModIntro.
   iSplitL "".
   { iModIntro; iIntros. iMod (fupd_mask_subseteq ∅); eauto. }
@@ -566,7 +576,7 @@ Proof.
   { iModIntro; iIntros. iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
   iApply (ffi_start_OpenRead); eauto.
 Unshelve.
-  exact 0%nat.
+- exact 0%nat.
 Qed.
 
 (* Trivial example showing we can run OpenRead on two nodes safely.
@@ -587,17 +597,19 @@ Theorem OpenRead_dist_adequate σ g addr :
                 g (λ _, True).
 Proof.
   intros.
-  apply (heap_dist_adequacy_alt (repΣ) 2 _ _ _).
+  apply (goose_dist_adequacy (repΣ) 2 _ _ _).
   { simpl. auto. }
   { simpl. auto. }
   iIntros (?) "_". iModIntro.
   iSplitL ""; last first.
   { iMod (fupd_mask_subseteq ∅); eauto. }
-  rewrite ?big_sepL_cons big_sepL_nil.
+  rewrite /wpd ?big_sepL_cons big_sepL_nil.
   iSplitL "".
-  { iIntros (? Heq ?) "(H&_&_)". iModIntro. iExists _, _, _.
+  { iIntros (?) "H _ _". iModIntro. set (hG' := HeapGS _ _ _).
+    iExists _, _, _. simpl.
     iApply (ffi_start_OpenRead with "[-]"); eauto. }
   iSplitL ""; last done.
-  { iIntros (? Heq ?) "(H&_&_)". iModIntro. iExists _, _, _.
+  { iIntros (?) "H _ _". iModIntro. set (hG' := HeapGS _ _ _).
+    iExists _, _, _. simpl.
     iApply (ffi_start_OpenRead with "[-]"); eauto. }
 Qed.

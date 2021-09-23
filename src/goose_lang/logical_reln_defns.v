@@ -259,10 +259,10 @@ Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_fie
 Context (upd: specTy_update hsT_model).
 
 Definition sty_init_obligation1 (sty_initP: istate → sstate → Prop) :=
-      forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hPre: sty_preG Σ) σs gs σ g
+      forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hPre: sty_preG Σ) σs σ
       (HINIT: sty_initP σ σs),
-        ⊢ ffi_local_start (goose_ffiLocalGS) goose_ffiGlobalGS σ.(world) g -∗
-         ffi_local_start (refinement_spec_ffiLocalGS) refinement_spec_ffiGlobalGS σs.(world) gs -∗
+        ⊢ ffi_local_start (goose_ffiLocalGS) σ.(world) -∗
+         ffi_local_start (refinement_spec_ffiLocalGS) σs.(world) -∗
          pre_borrowN (sty_lvl_init) -∗
          |={styN}=> ∃ (names: sty_names), let H0 := sty_update_pre _ hPre names in sty_init H0.
 

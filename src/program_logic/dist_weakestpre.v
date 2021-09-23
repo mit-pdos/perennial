@@ -18,7 +18,7 @@ Class distGS (Λ : language) (CS: crash_semantics Λ) (Σ : gFunctors) := DistGS
 *)
 
 Section wpd.
-Context `{pG: !perennialG Λ CS T Σ}.
+Context `{HI: !irisGS Λ Σ}.
 
 (*
 Definition equal_global_interp ct1 ct2 :=
@@ -34,7 +34,17 @@ Definition equal_global_inG ct : iProp Σ :=
                grove_global_state_interp g ns mj D κs).
 *)
 
-Definition wpd (k : nat) (E: coPset) (cts: list (crashGS Σ * pbundleG T Σ)) (ers: list (expr Λ * expr Λ)) :=
- ([∗ list] i↦ct;er ∈ cts;ers, ∃ Φ Φrx Φinv, wpr NotStuck k (fst ct) (snd ct) E (fst er) (snd er) Φ Φinv Φrx)%I.
+Definition wpd CS (k : nat) (E: coPset) (ers: list node_init_cfg) :=
+ ([∗ list] i↦σ ∈ ers, ∀ `(Hc: !crashGS Σ),
+   |={⊤}=> ∃ (stateI : state Λ → nat → iProp Σ) (* for the initial generation *) Φ Φrx Φinv,
+   let HG := GenerationGS Λ Σ Hc stateI in
+   stateI σ.(init_local_state) 0 ∗
+   wpr CS NotStuck k HG E σ.(init_thread) σ.(init_restart) Φ Φinv Φrx)%I.
+
+Lemma wpd_compose CS k E ers1 ers2 :
+  wpd CS k E ers1 -∗
+  wpd CS k E ers2 -∗
+  wpd CS k E (ers1 ++ ers2).
+Proof. rewrite /wpd big_sepL_app. iIntros "$ $". Qed.
 
 End wpd.

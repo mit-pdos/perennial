@@ -370,7 +370,6 @@ Proof.
       wp_pures.
       (* commit *)
       unfold PreShardGet.
-      rewrite global_groveG_inv_conv'.
       iApply ncfupd_wp.
       iMod (ncfupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
       { done. }

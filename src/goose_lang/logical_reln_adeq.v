@@ -137,17 +137,13 @@ Lemma sty_adequacy es σs gs e σ g τ initP:
   trace_refines e e σ g es es σs gs.
 Proof.
   intros Hsty_init1 Hsty_init2 Hsty_crash_inv Hsty_crash Hsty_rules Hatomic Htype Htrace Horacle Hinit.
-  eapply @heap_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
+  eapply @goose_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
            (Φ := λ _ _ _, True%I) (Φc := λ hG hL, sty_derived_crash_condition (HeapGS _ hG hL))
            (P := λ hG hL _, sty_crash_tok (heapGS0:=HeapGS _ hG hL))
-           (k := sty_lvl_init) (initP := initP); eauto.
-  { apply _. }
-  { apply _. }
-  { apply _. }
-  { apply _. }
+           (k := sty_lvl_init) (initP := initP); (eauto || (try apply _)); [| | |].
   { intros. apply sty_crash_tok_timeless. }
   { intros. rewrite /excl_crash_token. iIntros. iApply (sty_crash_tok_excl with "[$] [$]"). }
-  { clear dependent σ σs g gs. rewrite /wpc_init. iIntros (hG hL hRG σ g σs gs Hinit) "Hffi Hffi_spec".
+  { clear dependent σ σs g gs. rewrite /wpc_init. iIntros (hG hL hRG σ σs Hinit) "Hffi Hffi_spec".
     rewrite /sty_init_obligation1 in Hsty_init1.
     rewrite /wpc_obligation.
     iIntros "Hborrow Hj #Hspec #Hcrash_spec #Htrace".

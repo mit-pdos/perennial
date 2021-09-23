@@ -109,8 +109,7 @@ Class ffi_interp (ffi: ffi_model) :=
     ffi_global_ctx: ∀ `{ffiGlobalGS Σ}, ffi_global_state -> iProp Σ;
     ffi_local_ctx: ∀ `{ffiLocalGS Σ}, ffi_state -> iProp Σ;
     ffi_global_start: ∀ `{ffiGlobalGS Σ}, ffi_global_state -> iProp Σ;
-    (* Valid local starting states may depend on whatever the current global state is. *)
-    ffi_local_start: ∀ `{ffiLocalGS Σ, ffiGlobalGS Σ}, ffi_state -> ffi_global_state -> iProp Σ;
+    ffi_local_start: ∀ `{ffiLocalGS Σ}, ffi_state -> iProp Σ;
     (* ffi_restart is provided to the client in idempotence_wpr *)
     ffi_restart: ∀ `{ffiLocalGS Σ}, ffi_state -> iProp Σ;
     ffi_crash_rel: ∀ Σ, ffiLocalGS Σ → ffi_state → ffiLocalGS Σ → ffi_state → iProp Σ;

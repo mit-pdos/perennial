@@ -268,7 +268,6 @@ Proof.
       (* Get Q by using fupd *)
       unfold PreShardPut.
       iApply fupd_wp.
-      rewrite -global_groveG_inv_conv'.
       iMod "Hpre".
       iDestruct "Hpre" as (v0) "(Hkvptsto2 & HfupdQ)".
       iMod (kvptsto_update args.(PR_Value) with "Hkvptsto Hkvptsto2") as "[Hkvptsto Hkvptsto2]".
@@ -290,7 +289,6 @@ Proof.
       wp_pures.
 
       iApply (fupd_wp).
-      rewrite -global_groveG_inv_conv'.
       iMod (server_completes_request with "His_srv HreqInv Hγpre [Q] Hproc") as "HH".
       { done. }
       { done. }
@@ -305,7 +303,6 @@ Proof.
       }
       iDestruct "HH" as "(#Hreceipt & Hrpc)".
       iModIntro.
-      rewrite global_groveG_inv_conv'.
 
 
       iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".

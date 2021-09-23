@@ -20,12 +20,11 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ffi_semantics ext ffi}
     ffi_global_init : forall Σ (hPre: ffiGpreS Σ) (g:ffi_global_state),
         ffi_initgP g →
           ⊢ |==> ∃ (hG: ffiGlobalGS Σ),
-              ffi_global_ctx hG g ∗
-              ffi_global_start hG g;
-    ffi_local_init : forall Σ (hPre: ffiGpreS Σ) (hG:ffiGlobalGS Σ) (σ:ffi_state) (g:ffi_global_state),
+              ffi_global_ctx hG g ∗ ffi_global_start hG g;
+    ffi_local_init : forall Σ (hPre: ffiGpreS Σ) (σ:ffi_state) (g:ffi_global_state),
         ffi_initP σ g →
-          ⊢ ffi_global_ctx hG g ==∗ ∃ (hL: ffiLocalGS Σ),
-                   ffi_local_ctx hL σ ∗ ffi_global_ctx hG g ∗ ffi_local_start hL hG σ g;
+          ⊢ |==> ∃ (hL: ffiLocalGS Σ),
+                   ffi_local_ctx hL σ ∗ ffi_local_start hL σ;
     ffi_crash : forall Σ,
           ∀ (σ σ': ffi_state) (CRASH: ffi_crash_step σ σ') (Hold: ffiLocalGS Σ),
            ⊢ ffi_local_ctx Hold σ ==∗

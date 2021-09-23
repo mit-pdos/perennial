@@ -8,10 +8,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 Section memkv_shard_ghost_init_proof.
 
 (* These lemmas happen *before* we get node local names (e.g. the gname for memory, crashes etc. *)
-Context `{!dist_heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
-
-Existing Instance global_groveG.
-
+Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
 
 (* TODO: duplicating this specs is unfortunate, should try to unify with the set up in shard_definitions *)
 

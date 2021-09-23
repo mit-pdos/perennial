@@ -37,7 +37,7 @@ Opaque crash_borrow.pre_borrow.
 Lemma jrnl_init_obligation1: sty_init_obligation1 (twophaseTy_update_model JRNL_KIND_SIZE) (twophase_initP JRNL_KIND_SIZE).
 Proof.
   rewrite /sty_init_obligation1//=.
-  iIntros (? hG hRG hJrnl σs gs σi gi Hinit) "Hdisk".
+  iIntros (? hG hRG hJrnl σs σi Hinit) "Hdisk".
   rewrite /jrnl_start /twophase_init.
   destruct Hinit as (sz&kinds&Hsize2&Hnn&Hnonneg&Heqi&Heqs&Hdom&Hkind_size).
   rewrite Heqs Heqi.

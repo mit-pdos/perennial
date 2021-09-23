@@ -121,7 +121,7 @@ Qed.
 
 End heap.
 
-Import wpr_lifting.
+Import recovery_lifting.
 
 Section recov.
   Context `{!heapGS Σ}.
@@ -150,7 +150,11 @@ Section recov.
       { iFrame "Hdurable". iFrame "Hsource". iExact "Hinodes". }
       eauto. }
     iModIntro.
-    iIntros (?????) "H".
+    iIntros (????) "H".
+    (* FIXME: we bundle local and global, but [idempotence_wpr] quantifies only over the local part...
+       and we want the terms below to pick up the new local part. Sadly the let-binding in the
+       statement of [idempotence_wpr] is lost so we have to introduce it again ourselves here. *)
+    set (hG' := HeapGS _ _ _).
     iDestruct "H" as (???) "(Hdurable&Hsource&Hinodes)".
     iNext. iDestruct (is_source_into_crash P (λ _, P) with "[] [$]") as "Hsource".
     { eauto. }

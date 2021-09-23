@@ -453,7 +453,7 @@ Proof.
 Qed.
 
 Corollary wp_recv_adequacy_inv Σ Λ CS `{!invGpreS Σ} `{!crashGpreS Σ} nsinit s k e r σ g φ φr φinv f1 f2:
-  (∀ `{Hinv : !invGS Σ} `{Hc: !crashGS Σ} κs,
+  (∀ `(Hinv : !invGS Σ) `(Hc: !crashGS Σ) κs,
      ⊢ |={⊤}=> ∃
          (stateI : state Λ → nat → iProp Σ) (* for the initial generation *)
          (global_stateI : global_state Λ → nat → fracR → coPset → list (observation Λ) → iProp Σ)

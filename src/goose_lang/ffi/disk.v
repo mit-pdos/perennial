@@ -214,7 +214,7 @@ Section disk.
        ffiGlobalGS _ := ()%type;
        ffi_local_ctx Σ _ (d: @ffi_state disk_model) := gen_heap.gen_heap_interp d;
        ffi_global_ctx _ _ _ := True%I;
-       ffi_local_start Σ _ _ (d: @ffi_state disk_model) _ :=
+       ffi_local_start Σ _ (d: @ffi_state disk_model) :=
                       ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=Block) l (DfracOwn 1) v))%I;
        ffi_global_start _ _ _ := True%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I;
@@ -559,7 +559,7 @@ Program Instance disk_interp_adequacy:
 Next Obligation. rewrite //=. iIntros (Σ hPre g). eauto. Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre ? σ ??) "_".
+  iIntros (Σ hPre σ ?) "_".
   iMod (gen_heap_init σ) as (?) "(Hctx & Hpts & _)".
   iExists (DiskGS _ _). by iFrame.
 Qed.

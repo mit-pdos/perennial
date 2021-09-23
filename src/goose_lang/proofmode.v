@@ -8,7 +8,7 @@ From Perennial.goose_lang Require Export typing.
 Set Default Proof Using "Type".
 Import uPred.
 
-Lemma tac_wp_expr_eval `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Δ s E Φ e e' :
+Lemma tac_wp_expr_eval `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ} Δ s E Φ e e' :
   (∀ (e'':=e'), e = e'') →
   envs_entails Δ (WP e' @ s; E {{ Φ }}) → envs_entails Δ (WP e @ s; E {{ Φ }}).
 Proof. by intros ->. Qed.
@@ -22,7 +22,7 @@ Tactic Notation "wp_expr_eval" tactic(t) :=
   | _ => fail "wp_expr_eval: not a 'wp'"
   end.
 
-Lemma tac_wp_pure `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+Lemma tac_wp_pure `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
       Δ Δ' s E K e1 e2 φ n Φ :
   PureExec φ n e1 e2 →
   φ →
@@ -36,7 +36,7 @@ Proof.
   rewrite HΔ' -lifting.wp_pure_step_later //.
 Qed.
 
-Lemma tac_wp_pure_no_later `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+Lemma tac_wp_pure_no_later `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
       Δ s E K e1 e2 φ n Φ :
   PureExec φ n e1 e2 →
   φ →
@@ -50,17 +50,17 @@ Proof.
   iIntros "$".
 Qed.
 
-Lemma tac_wp_value_noncfupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Δ s E Φ v :
+Lemma tac_wp_value_noncfupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ} Δ s E Φ v :
   envs_entails Δ (Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ Φ }}).
 Proof. rewrite envs_entails_eq=> ->. by apply wp_value. Qed.
-Lemma tac_wp_value_fupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Δ s E Φ v :
+Lemma tac_wp_value_fupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ} Δ s E Φ v :
   envs_entails Δ (|NC={E}=> Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ v, |={E}=> Φ v }})%I.
 Proof.
   rewrite envs_entails_eq=> ->. rewrite wp_value_fupd.
   iIntros "H".
   iApply (wp_wand with "H"); auto.
 Qed.
-Lemma tac_wp_value `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Δ s E Φ v :
+Lemma tac_wp_value `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ} Δ s E Φ v :
   envs_entails Δ (|NC={E}=> Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ Φ }}).
 Proof. rewrite envs_entails_eq=> ->. rewrite wp_value_fupd //. Qed.
 
@@ -231,7 +231,8 @@ Ltac wp_step := try wp_pures.
 Ltac wp_steps := try wp_pures.
 Ltac wp_call := wp_lam; wp_steps.
 
-Lemma tac_wp_bind `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} K Δ s E Φ e f :
+Lemma tac_wp_bind `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseLocalGS Σ, !gooseGlobalGS Σ}
+    K Δ s E Φ e f :
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that we can `simpl` it *)
   envs_entails Δ (WP e @ s; E {{ v, WP f (Val v) @ s; E {{ Φ }} }})%I →
   envs_entails Δ (WP fill K e @ s; E {{ Φ }}).
@@ -298,7 +299,7 @@ Tactic Notation "wp_if_destruct" :=
 
 (** Heap tactics *)
 Section heap.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
 Context {ext_tys: ext_types ext}.
 Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.

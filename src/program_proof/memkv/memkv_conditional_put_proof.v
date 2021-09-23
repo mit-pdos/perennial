@@ -304,7 +304,6 @@ Proof.
 
       (* Get Q by using fupd *)
       unfold PreShardConditionalPut.
-      rewrite global_groveG_inv_conv'.
       iApply ncfupd_wp.
       iMod (ncfupd_mask_subseteq _) as "Hclose"; last iMod "Hpre".
       { done. }
