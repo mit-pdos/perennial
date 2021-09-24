@@ -164,11 +164,12 @@ Proof.
   iApply "HΦ". done.
 Qed.
 
-Lemma wp_ConnMan__CallAtLeastOnce {X:Type} (x:X) γsmap (c_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
-      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Pre Post :
+Lemma wp_ConnMan__CallAtLeastOnce (γsmap:server_chan_gnames) (c_ptr:loc) (rpcid:u64) (host:u64)
+    req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
+    Spec Post :
   is_ConnMan c_ptr -∗
-  handler_is γsmap X host rpcid Pre Post -∗
-  □(▷ Pre x reqData) -∗
+  handler_is γsmap host rpcid Spec -∗
+  □(▷ Spec reqData Post) -∗
   {{{
       is_slice req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val
@@ -180,7 +181,7 @@ Lemma wp_ConnMan__CallAtLeastOnce {X:Type} (x:X) γsmap (c_ptr:loc) (rpcid:u64) 
       ∃ rep_sl (repData:list u8),
         rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
         typed_slice.is_slice rep_sl byteT 1 repData ∗
-        (▷ Post x reqData repData)
+        (▷ Post repData)
     }}}
     .
 Proof.
@@ -273,6 +274,35 @@ Proof.
   wp_pures. iApply "HΦ".
   iDestruct "Hrep" as (rep_sl repData) "(? & ? & ?)".
   eauto with iFrame.
+Qed.
+
+Lemma wp_ConnMan__CallAtLeastOnce_RPCSpec (spec : RPCSpec) (x : spec.(spec_ty))
+  (γsmap:server_chan_gnames) (c_ptr:loc) (host:u64)
+  req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
+  :
+  is_ConnMan c_ptr -∗
+  has_handler γsmap host spec -∗
+  □(▷ spec.(spec_Pre) x reqData) -∗
+  {{{
+      is_slice req byteT 1 reqData ∗
+      rep_out_ptr ↦[slice.T byteT] dummy_sl_val
+  }}}
+      ConnMan__CallAtLeastOnce #c_ptr #host #spec.(spec_rpcid) (slice_val req) #rep_out_ptr #timeout_ms
+    {{{
+      RET #();
+      is_slice req byteT 1 reqData ∗
+      ∃ rep_sl (repData:list u8),
+        rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
+        typed_slice.is_slice rep_sl byteT 1 repData ∗
+        (▷ spec.(spec_Post) x reqData repData)
+    }}}
+    .
+Proof.
+  iIntros "#Hconn #Hhandler #Hpre !#" (Φ) "H HΦ".
+  iApply (wp_ConnMan__CallAtLeastOnce with "Hconn Hhandler [Hpre] H").
+  { simpl. do 2 iModIntro. iExists x. iSplitL; first done.
+    iIntros (rep) "?". iAccu. }
+  done.
 Qed.
 
 End connman_proof.

@@ -311,15 +311,16 @@ Proof.
       rewrite ?dom_insert_L dom_empty_L. iExactEq "Hdom". f_equal. set_solver. }
     iApply (big_sepM_insert_2 with "").
     { (* GetShardMapping RPC handler_is *)
-      iExists _, _, _.
+      iExists _.
       iFrame "#HgetSpec".
 
       clear Φ.
       iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & _)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
       simpl.
+      iDestruct "Hpre" as (_) "[_ Hpost]".
       iNamed "His_memkv".
       wp_loadField.
       wp_apply (acquire_spec with "[$HmuInv]").
@@ -341,15 +342,15 @@ Proof.
       iDestruct ("HshardMap_close" with "HshardMap_sl") as "HshardMap_sl".
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hrep Hdata]").
+      wp_apply (release_spec with "[-HΦ Hpost Hrep Hdata]").
       { iFrame "Hlocked HmuInv".
         iNext. iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
         iDestruct "H1" as %Hequiv. iApply Hequiv. iFrame. }
-      wp_pures. iApply "HΦ". iFrame. do 2 iModIntro. iExists _. iFrame "% #".
+      wp_pures. iApply "HΦ". iFrame. iApply "Hpost". iModIntro. iExists _. iFrame "% #".
     }
     iApply (big_sepM_insert_2 with "").
     { (* AddServerRPC *)
-      iExists _, _, _.
+      iExists _.
       iFrame "#HaddSpec".
 
       clear Φ.
@@ -358,6 +359,7 @@ Proof.
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & Hpre)".
       simpl.
+      iDestruct "Hpre" as (x) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc&Hshard)".
       iDestruct "Hshard" as (γsh Heq) "#His_shard".
       wp_apply (wp_DecodeUint64 with "[$Hreq_sl]"); first eauto.
@@ -368,7 +370,7 @@ Proof.
         { rewrite /named. iExactEq "His_memkv". eauto. }
         iFrame "His_shard". eauto.
       }
-      wp_pures. iApply "HΦ". iFrame. eauto.
+      wp_pures. iApply "HΦ". iFrame. iApply "Hpost". eauto.
     }
     rewrite big_sepM_empty. eauto.
   }

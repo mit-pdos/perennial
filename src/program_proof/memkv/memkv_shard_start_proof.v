@@ -66,7 +66,7 @@ Proof.
       rewrite ?dom_insert_L dom_empty_L. iExactEq "Hdom". f_equal. set_solver. }
     iApply (big_sepM_insert_2 with "").
     { (* MoveShardRPC handler_is *)
-      iExists _, _, _.
+      simpl. iExists _.
       iFrame "#HmoveSpec".
 
       clear Φ.
@@ -74,6 +74,7 @@ Proof.
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hargs)".
+      simpl. iDestruct "Hargs" as (x) "[Hargs Hpost]".
       iDestruct "Hargs" as (?) "(%HencArgs & %HsidLe & #Hdst_is_shard)".
       wp_apply (wp_decodeMoveShardRequest with "[$Hreq_sl]").
       { done. }
@@ -85,12 +86,13 @@ Proof.
       iIntros (rep_sl) "Hrep_sl".
       wp_store.
       iApply "HΦ".
-      by iFrame.
+      iFrame.
+      by iApply "Hpost".
     }
 
     iApply (big_sepM_insert_2 with "").
     { (* InstallShard() handler_is *)
-      iExists _, _, _.
+      iExists _.
       iFrame "#HinstallSpec".
 
       clear Φ.
@@ -99,6 +101,7 @@ Proof.
       wp_pures.
 
       iDestruct "Hpre" as "(Hpre_sl & Hrep & _ & Hpre)".
+      iDestruct "Hpre" as (x) "[Hpre Hpost]".
       iDestruct "Hpre" as (?) "(%Hargs_enc & %HsidLe & HreqInv)".
       wp_apply (wp_decodeInstallShardRequest with "[$Hpre_sl]").
       { done. }
@@ -114,16 +117,17 @@ Proof.
       iIntros (reply_sl) "Hrep_sl".
       wp_store.
       iApply "HΦ".
-      by iFrame.
+      iFrame.
+      iApply "Hpost". by iFrame.
     }
 
     iApply (big_sepM_insert_2 with "").
     { (* ConditionalPutRPC handler_is *)
       simpl.
-      iExists _, _, _. iFrame "HconditionalPutSpec".
+      iExists _. iFrame "HconditionalPutSpec".
 
       clear Φ.
-      iIntros ([[Q γreq] req] ?????) "!#".
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
@@ -133,7 +137,7 @@ Proof.
       iIntros (rep_ptr) "Hrep".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & Hpre)".
-      iSimpl in "Hpre".
+      iSimpl in "Hpre". iDestruct "Hpre" as ([[Q γreq] req1]) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc & #HreqInv)".
       wp_apply (wp_DecodeConditionalPutRequest with "[$Hreq_sl]").
       { done. }
@@ -146,25 +150,23 @@ Proof.
         iExists (mkConditionalPutReplyC _ _).
         iFrame.
       }
-      iIntros (rep') "[Hrep Hpost]".
+      iIntros (rep') "[Hrep Hpost']".
       wp_pures.
       wp_apply (wp_EncodeConditionalPutReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
       wp_store.
-      iApply "HΦ".
+      iApply "HΦ". iFrame. iApply "Hpost".
       iModIntro.
-      iFrame.
-      iNext.
       iExists _; by iFrame.
     }
 
     iApply (big_sepM_insert_2 with "").
     { (* Get() handler_is *)
       simpl.
-      iExists _, _, _; iFrame "HgetSpec".
+      iExists _; iFrame "HgetSpec".
 
       clear Φ.
-      iIntros ([[Q γreq] req] ?????) "!#".
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
@@ -175,7 +177,7 @@ Proof.
       iIntros (rep_ptr) "Hrep".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & Hpre)".
-      iSimpl in "Hpre".
+      iSimpl in "Hpre". iDestruct "Hpre" as ([[Q γreq] req1]) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc & #HreqInv)".
       wp_apply (wp_DecodeGetRequest with "[$Hreq_sl]").
       { done. }
@@ -197,25 +199,23 @@ Proof.
         rewrite -global_groveG_inv_conv'. (* WTF... *)
         iFrame.
       }
-      iIntros (rep') "[Hrep Hpost]".
+      iIntros (rep') "[Hrep Hpost']".
       wp_pures.
       wp_apply (wp_EncodeGetReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
       wp_store.
-      iApply "HΦ".
+      iApply "HΦ". iFrame. iApply "Hpost".
       iModIntro.
-      iFrame.
-      iNext.
       iExists _; by iFrame.
     }
 
     iApply (big_sepM_insert_2 with "").
     { (* PutRPC handler_is *)
       simpl.
-      iExists _, _, _. iFrame "HputSpec".
+      iExists _. iFrame "HputSpec".
 
       clear Φ.
-      iIntros ([[Q γreq] req] ?????) "!#".
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
@@ -225,6 +225,7 @@ Proof.
       iIntros (rep_ptr) "Hrep".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & Hpre)".
+      iSimpl in "Hpre". iDestruct "Hpre" as ([[Q γreq] req1]) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc & #HreqInv)".
       wp_apply (wp_DecodePutRequest with "[$Hreq_sl]").
       { done. }
@@ -237,21 +238,19 @@ Proof.
         iExists (mkPutReplyC _).
         iFrame.
       }
-      iIntros (rep') "[Hrep Hpost]".
+      iIntros (rep') "[Hrep Hpost']".
       wp_pures.
       wp_apply (wp_EncodePutReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
       wp_store.
-      iApply "HΦ".
+      iApply "HΦ". iFrame. iApply "Hpost".
       iModIntro.
-      iFrame.
-      iNext.
       iExists _; by iFrame.
     }
 
     iApply (big_sepM_insert_2 with "").
     { (* GetCIDRPC handler_is *)
-      iExists _, _, _.
+      iExists _.
       iFrame "HfreshSpec".
 
       clear Φ.
@@ -262,10 +261,12 @@ Proof.
       iIntros (cid) "Hcid".
       wp_apply (wp_EncodeUint64).
       iIntros (rep_sl repData) "[Hrep_sl %HrepEnc]".
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & _)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
+      iSimpl in "Hpre". iDestruct "Hpre" as (_) "[_ Hpost]".
       wp_store.
       iApply "HΦ".
       iFrame.
+      iApply "Hpost".
       iExists _; by iFrame.
     }
 

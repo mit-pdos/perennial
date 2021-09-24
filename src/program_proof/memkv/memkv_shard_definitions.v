@@ -141,16 +141,16 @@ Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
-  f_equiv. rewrite /has_handler /handler_is.
+  f_equiv. rewrite /has_handler /handler_is. (* FIXME unfolding other abstractions *)
   do 10 f_equiv.
   unfold named.
-  apply saved_prop.saved_pred_own_contractive.
+  apply saved_spec.saved_spec_own_contractive.
   rewrite /dist_later. destruct n; auto.
   intros => ?.
-  rewrite /is_rpcHandler /is_shard_server_moveSpec_pre /=.
-  do 25 f_equiv.
-  f_contractive. simpl in Hpre.
-  eapply (dist_S). eapply Hpre.
+  rewrite /RPCSpec_Spec /is_shard_server_moveSpec_pre /=.
+  intros Φ. simpl.
+  repeat f_equiv.
+  eapply Hpre.
 Qed.
 
 Definition is_shard_server_def :=

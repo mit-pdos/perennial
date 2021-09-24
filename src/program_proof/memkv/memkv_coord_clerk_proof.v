@@ -70,7 +70,7 @@ Proof.
   iIntros (sl0 d) "(Hsl&%)".
   wp_loadField.
   wp_loadField.
-  wp_apply (wp_ConnMan__CallAtLeastOnce dst with "Hc_own HaddSpec [] [Hsl $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_coord_server_addSpec _) dst with "Hc_own HaddSpec [] [Hsl $HrawRep //]").
   { simpl. iModIntro. iNext. iFrame "%". iExists _. iFrame "#". iPureIntro; congruence. }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
@@ -114,7 +114,7 @@ Proof.
   iIntros (s) "H".
   wp_loadField.
   wp_loadField.
-  wp_apply (wp_ConnMan__CallAtLeastOnce () with "Hc_own HgetSpec [] [$H $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_coord_server_getSpec _) () with "Hc_own HgetSpec [] [$H $HrawRep //]").
   { done. }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.

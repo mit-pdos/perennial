@@ -520,7 +520,7 @@ Proof.
       by iFrame "#".
     }
   }
-Qed.
+Qed. (* FIXME Qed takes forever, why that? *)
 
 End memkv_shard_proof.
 

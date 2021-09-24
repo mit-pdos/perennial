@@ -43,7 +43,7 @@ Proof.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iNamed "HrawRep".
-  wp_apply (wp_ConnMan__CallAtLeastOnce () with "Hc HfreshSpec [] [$Hreq_sl $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_shard_server_freshSpec _) () with "Hc [$] [] [$Hreq_sl $HrawRep //]").
   { simpl. done. }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
@@ -132,7 +132,7 @@ Proof.
   iEval (rewrite is_shard_server_unfold) in "His_shard".
   iNamed "His_shard".
   iNamed "HrawRep".
-  wp_apply (wp_ConnMan__CallAtLeastOnce _ with "Hc_own HmoveSpec [] [$Hsl $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_shard_server_moveSpec_pre _ _) with "Hc_own HmoveSpec [] [$Hsl $HrawRep //]").
   { simpl. iModIntro. iNext. iExists _. iFrame "%". iSplit. 
     - iNext => /=. iFrame "Hserver".
     - iPureIntro. congruence.
@@ -222,7 +222,7 @@ Proof.
   iIntros (??) "(%Henc & Hsl & Hargs)".
   wp_loadField.
   wp_loadField.
-  wp_apply (wp_ConnMan__CallAtLeastOnce with "Hc_own HinstallSpec [] [$Hsl $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_shard_server_installSpec _ _) with "Hc_own HinstallSpec [] [$Hsl $HrawRep //]").
   {
     simpl.
     iModIntro.
@@ -330,7 +330,7 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_ConnMan__CallAtLeastOnce (Q, γreq, mkPutRequestC _ _ _ _)
+  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_shard_server_putSpec _ _) (Q, γreq, mkPutRequestC _ _ _ _)
     with "Hc_own HputSpec [] [$Hreq_sl $HrawRep //]").
   {
     simpl.
@@ -471,7 +471,7 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_ConnMan__CallAtLeastOnce (Q,γreq,mkGetRequestC _ _ _) with "Hc_own HgetSpec [] [$Hreq_sl $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_shard_server_getSpec _ _) (Q,γreq,mkGetRequestC _ _ _) with "Hc_own HgetSpec [] [$Hreq_sl $HrawRep //]").
   {
     iModIntro.
     iModIntro.
@@ -616,7 +616,7 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
-  wp_apply (wp_ConnMan__CallAtLeastOnce (Q,γreq,mkConditionalPutRequestC _ _ _ _ _)
+  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_shard_server_conditionalPutSpec _ _) (Q,γreq,mkConditionalPutRequestC _ _ _ _ _)
     with "Hc_own HconditionalPutSpec [] [$Hreq_sl $HrawRep //]").
   {
     iModIntro.
