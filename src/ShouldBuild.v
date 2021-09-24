@@ -24,10 +24,10 @@ From Perennial.program_proof Require
      wp_to_wpc
 .
 
-(*
 From Perennial.program_proof.examples Require
-     all_examples.
-*)
+     replicated_block_proof
+     (*all_examples*)
+.
 
 (* TODO: refactoring in progress
 From Perennial.program_proof.lockservice Require

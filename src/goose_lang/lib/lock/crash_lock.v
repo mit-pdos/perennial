@@ -284,7 +284,7 @@ End proof.
 End goose_lang.
 
 (* XXX: this probably doesn't work correctly anymore *)
-Ltac crash_lock_open H :=
+(* Ltac crash_lock_open H :=
   lazymatch goal with
   | [ |- envs_entails _ (wpc _ ?k _ _ _ _) ] =>
     match iTypeOf H with
@@ -299,6 +299,6 @@ Ltac crash_lock_open H :=
     | None => fail 1 "crash_lock_open:" H "not found"
     end
   | _ => fail 1 "crash_lock_open: not a wpc"
-  end.
+  end. *)
 
 Typeclasses Opaque crash_locked.
