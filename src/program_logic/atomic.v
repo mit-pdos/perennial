@@ -83,7 +83,7 @@ And maybe versions with an ∃∃ binder in front of [Qa]? *)
 
 (* Full variant *)
 Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ k ; E1 <<{ ∃∃ y1 .. yn , Qa '}>>' {{{ z1 .. zn , 'RET' pat ; Q } } } {{{ Qc } } }" :=
-  (□ ∀ Φ Φc (HL: AbsLaterable Φc),
+  (□ ∀ Φ Φc,
       P -∗
       (Qc%I%I%I%I -∗ Φc) (* crash condition before lin.point *) ∧
         ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={⊤∖E1}=> ∀ y1, .. (∀ yn, Qa ∗
@@ -94,7 +94,7 @@ Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ k ; E1 <<{ ∃∃ y
      format "'[hv' {{{  '[' P  ']' } } }  '/'  <<{  '[' ∀∀  x1  ..  xn ,  '/' Pa  ']' }>>  '/  ' e  '/' @  '[' k ;  E1  ']' '/' <<{  '[' ∃∃  y1  ..  yn ,  '/' Qa ']' }>>  '/' {{{  '[' z1  ..  zn ,  RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
 (* No ∃∃ *)
 Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ k ; E1 <<{ Qa '}>>' {{{ z1 .. zn , 'RET' pat ; Q } } } {{{ Qc } } }" :=
-  (□ ∀ Φ Φc (HL: AbsLaterable Φc),
+  (□ ∀ Φ Φc,
       P -∗
       (Qc%I%I -∗ Φc) (* crash condition before lin.point *) ∧
         ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={⊤∖E1}=> Qa ∗
@@ -105,7 +105,7 @@ Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ k ; E1 <<{ Qa '}>>'
      format "'[hv' {{{  '[' P  ']' } } }  '/'  <<{  '[' ∀∀  x1  ..  xn ,  '/' Pa  ']' }>>  '/  ' e  '/' @  '[' k ;  E1  ']' '/' <<{  '[' Qa ']' }>>  '/' {{{  '[' z1  ..  zn ,  RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
 (* No ∃∃, no binders before RET *)
 Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ k ; E1 <<{ Qa '}>>' {{{ 'RET' pat ; Q } } } {{{ Qc } } }" :=
-  (□ ∀ Φ Φc (HL: AbsLaterable Φc),
+  (□ ∀ Φ Φc,
       P -∗
       (Qc%I%I -∗ Φc) (* crash condition before lin.point *) ∧
         ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={⊤∖E1}=> Qa ∗

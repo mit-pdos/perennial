@@ -212,7 +212,7 @@ FIXME: looks like crash locks no longer support cfupd.
       {{{ s, RET (slice_val s); is_block s 1 σ }}}
       {{{ True }}}.
   Proof.
-    iIntros (Φ Φc HL) "!# Hpre Hfupd"; iNamed "Hpre".
+    iIntros (Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
     iNamed "Hrb".
     iNamed "Hro_state".
     wpc_call; [done..|].
@@ -291,8 +291,7 @@ FIXME: looks like crash locks no longer support cfupd.
          * iNext. iIntros (?) "H". iDestruct "H" as (??) "(%&?)". subst.
            iModIntro. iRight in "HΦ". by iApply "HΦ".
          * iLeft in "HΦ".  iIntros. iModIntro. by iApply "HΦ". }
-    iApply (wpc_RepBlock__Read with "[] [$Hrb]").
-    { iPureIntro; apply _. }
+    iApply (wpc_RepBlock__Read with "[$Hrb]").
     iSplit.
     { iLeft in "Hfupd". eauto. }
     rewrite difference_empty_L.
@@ -311,7 +310,7 @@ FIXME: looks like crash locks no longer support cfupd.
       {{{ RET #(); is_block s q b }}}
       {{{ True }}}.
   Proof.
-    iIntros (Φ Φc HL) "!# Hpre Hfupd"; iNamed "Hpre".
+    iIntros (Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
     iNamed "Hrb".
     iNamed "Hro_state".
     wpc_call; [done..|].
@@ -405,8 +404,7 @@ FIXME: looks like crash locks no longer support cfupd.
          * iNext. iIntros (?) "H". iDestruct "H" as "(%&?)". subst.
            iModIntro. iRight in "HΦ". by iApply "HΦ".
          * iLeft in "HΦ". iIntros. iModIntro. by iApply "HΦ". }
-    iApply (wpc_RepBlock__Write with "[] [$Hrb $Hb //]").
-    { iPureIntro; apply _. }
+    iApply (wpc_RepBlock__Write with "[$Hrb $Hb //]").
     iFrame. iSplit.
     { iLeft in "Hfupd". eauto. }
     rewrite difference_empty_L.
@@ -425,7 +423,7 @@ FIXME: looks like crash locks no longer support cfupd.
     {{{ rblock_cinv addr σ ∗ P σ }}}
       OpenRead d addr @ 2; ⊤
     {{{ (x: val), RET x; True }}}
-    {{{ ∃ σ, rblock_cinv addr σ ∗ ▷ P σ }}}.
+    {{{ ∃ σ, rblock_cinv addr σ ∗ P σ }}}.
   Proof using stagedG0.
     rewrite /OpenRead.
     iIntros (??) "(H&HP) HΦ".
@@ -451,24 +449,14 @@ FIXME: looks like crash locks no longer support cfupd.
     { iLeft in "HΦ". iDestruct 1 as (?) "(?&?)". iApply "HΦ".
       iExists _. by iFrame. }
     wpc_pures.
-    (* Weaken the levels. *)
-    iApply (wpc_idx_mono 1); first lia.
-    iApply (wpc_step_strong_mono _ _ _ _ _ _ _
-           (λ v, True)%I _ True
-              with "[-HΦ] [HΦ]"); auto.
-    2: { iSplit.
-         * iNext. iIntros (?) "H". iModIntro. iRight in "HΦ". by iApply "HΦ".
-         * iLeft in "HΦ".
-           iIntros. iModIntro.  
-           iDestruct 1 as (?) "(?&?)". iIntros. iApply "HΦ".
-           iExists _. by iFrame. }
-    wpc_apply (wpc_RepBlock__Read with "[] Hrblock").
-    { iPureIntro; apply _. }
+    wpc_apply (wpc_RepBlock__Read with "Hrblock").
     iSplit.
-    { eauto. }
+    { iIntros "_". iLeft in "HΦ". eauto. }
     iIntros "!> * ?". iModIntro. iFrame "# ∗".
     rewrite left_id.
-    iSplit; eauto.
+    iSplit.
+    - iLeft in "HΦ". eauto.
+    - iRight in "HΦ". iIntros (?) "_". by iApply "HΦ".
   Qed.
 
 End goose.
@@ -524,14 +512,14 @@ Section recov.
     iIntros "Hstart".
     iApply (idempotence_wpr _ 2 ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ ∗ True)%I with "[Hstart]").
     { wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart]").
-      iSplit; eauto. iDestruct 1 as (?) "(H&_)". iExists _. iFrame. }
+      iSplit; eauto.  }
     iModIntro. iIntros (?????) "H".
     iDestruct "H" as (σ'') "(Hstart&_)".
     iNext. iCrash.
     iIntros (?).
     iSplit; first done.
     wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart] []").
-    { iSplit; eauto. iDestruct 1 as (?) "(H&_)". iExists _. iFrame. }
+    { iSplit; eauto.  }
   Qed.
 End recov.
 
