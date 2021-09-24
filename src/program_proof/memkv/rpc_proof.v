@@ -112,9 +112,9 @@ Definition server_chan_inner (c: chan) γmap : iProp Σ :=
   "Hchan" ∷ c c↦ ms ∗
   "Hmessages" ∷ [∗ set] m ∈ ms, server_chan_inner_msg γmap m.
 
-Definition handler_is Γsrv : ∀ (X:Type) (host:chan) (rpcid:u64) (Pre:X → list u8 → iProp Σ)
-                          (Post:X → list u8 → list u8 → iProp Σ), iProp Σ :=
-  λ X host rpcid Pre Post, (∃ γ rpcdom,
+Definition handler_is Γsrv (X:Type) (host:chan) (rpcid:u64) (Pre:X → list u8 → iProp Σ)
+                          (Post:X → list u8 → list u8 → iProp Σ) : iProp Σ :=
+  (∃ γ rpcdom,
    "#Hdom1" ∷ own (scset_name Γsrv) (to_agree (rpcdom)) ∗
    "%Hdom2" ∷ ⌜ rpcid ∈ rpcdom ⌝ ∗
   "#Hspec_name" ∷ ptsto_ro (scmap_name Γsrv) rpcid γ ∗
@@ -576,9 +576,9 @@ Proof.
   iDestruct (big_sepM_lookup with "Hhandlers") as "H"; eauto.
   iNamed "H". iDestruct "H" as "(#Hsname&#Hsaved&#His_rpcHandler)".
   iDestruct (ptsto_ro_agree with "Hspec_name Hsname") as %->.
+  wp_pures.
   iDestruct (saved_pred_agree _ _ _ (heap_get_local_names Σ hG, crash_name, v) with "Hspec_saved Hsaved")
     as "#Hequiv".
-  wp_pures.
   iEval (simpl) in "Hequiv".
   assert ((@heapGS_irisGS grove_op grove_model grove_semantics grove_interp Σ hG)
            .(@iris_crashGS (@goose_lang grove_op grove_model grove_semantics) Σ).(
