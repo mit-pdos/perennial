@@ -215,15 +215,15 @@ Section proof.
     iApply "HΦ". iFrame.
  Qed.
 
-  Lemma alloc_rwlock k Φ Φc e lk (R Rc : Qp → iProp Σ):
+  Lemma alloc_rwlock Φ Φc e lk (R Rc : Qp → iProp Σ):
     □ (∀ q1 q2, R (q1 + q2)%Qp ∗-∗ R q1 ∗ R q2) -∗
     □ (∀ q1 q2, Rc (q1 + q2)%Qp ∗-∗ Rc q1 ∗ Rc q2) -∗
     □ (∀ q, R q -∗ Rc q) -∗
     R 1%Qp ∗
     is_free_lock lk ∗
     (is_rwlock #lk R Rc -∗
-          WPC e @ k; ⊤ {{ Φ }} {{ Rc 1%Qp -∗ Φc }}) -∗
-    WPC e @ k; ⊤ {{ Φ }} {{ Φc }}.
+          WPC e @ ⊤ {{ Φ }} {{ Rc 1%Qp -∗ Φc }}) -∗
+    WPC e @ ⊤ {{ Φ }} {{ Φc }}.
   Proof.
     clear.
     iIntros "#Hwand1 #Hwand2 #Hwand3 (HR&Hfree&Hwp)".
@@ -237,7 +237,7 @@ Section proof.
 
   Lemma try_read_acquire_spec E lk R Rc :
     ↑N ⊆ E →
-    {{{ is_rwlock lk R Rc }}} rwlock.try_read_acquire lk @ NotStuck; E
+    {{{ is_rwlock lk R Rc }}} rwlock.try_read_acquire lk @ E
     {{{ b, RET #b; if b is true then crash_borrow (R rfrac) (Rc rfrac) else True }}}.
   Proof.
     iIntros (? Φ) "(#Hwand1&#Hwand2&#Hwand3&#Hl) HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -259,8 +259,8 @@ Section proof.
         iDestruct "HR" as "[>Hl2 HR]".
         iCombine "Hl Hl2" as "Hl".
         rewrite Qp_quarter_three_quarter.
-        iApply (wpc_wp NotStuck 0 _ _ _ True).
-        iApply (wpc_crash_borrow_split _ _ _ _ _ _ _
+        iApply (wpc_wp NotStuck _ _ _ True).
+        iApply (wpc_crash_borrow_split _ _ _ _ _ _
                                        (R (remaining_frac (word.add u 1)))
                                        (R rfrac)
                                        (Rc (remaining_frac (word.add u 1)))
@@ -332,8 +332,8 @@ Section proof.
         iDestruct "HR" as "[>Hl2 HR]".
         iCombine "Hl Hl2" as "Hl".
         rewrite Qp_quarter_three_quarter.
-        iApply (wpc_wp NotStuck 0 _ _ _ True).
-        iApply (wpc_crash_borrow_combine _ _ _ _ _ (R (remaining_frac (word.sub u 1))) _
+        iApply (wpc_wp NotStuck _ _ _ True).
+        iApply (wpc_crash_borrow_combine _ _ _ _ (R (remaining_frac (word.sub u 1))) _
                                        (R (remaining_frac u))
                                        (R rfrac)
                                        (Rc (remaining_frac u))

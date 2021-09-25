@@ -67,7 +67,7 @@ Definition is_log γ : nat → loc → iProp Σ :=
 Theorem wpc_Init j γ K `{LanguageCtx _ K} k k' E2:
   (S k < k')%nat →
   {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ffi_op_field) InitOp #()) }}}
-    Init #SIZE @ NotStuck; LVL (S (S k)); ⊤; E2
+    Init #SIZE @ LVL (S (S k)); ⊤; E2
   {{{ l, RET (#l, #true);  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val (#l', #true) : sexpr) ∗ log_open l')}}}
   {{{ True }}}.
 Proof using SIZE_nonzero SIZE_bounds.
@@ -114,7 +114,7 @@ Qed.
 Theorem wpc_Open j γ K `{LanguageCtx _ K} k k' E2:
   (S k < k')%nat →
   {{{ spec_ctx ∗ log_inv γ k' ∗ j ⤇ K (ExternalOp (ext := spec_ffi_op_field) OpenOp #()) }}}
-    Open #() @ NotStuck; LVL (S (S k)); ⊤; E2
+    Open #() @ LVL (S (S k)); ⊤; E2
   {{{ l, RET #l;  is_log γ k' l ∗ (∃ (l': loc), j ⤇ K (of_val #l': sexpr) ∗ log_open l')}}}
   {{{ True }}}.
 Proof using SIZE_bounds.
@@ -161,7 +161,7 @@ Theorem wpc_Log__Reset j γ γ0 K `{LanguageCtx _ K} k k' E2 (l l': loc):
   {{{ spec_ctx ∗ log_inv γ0 k' ∗ j ⤇ K (ExternalOp (ext := spec_ffi_op_field) (ResetOp) #l') ∗
                is_log γ k' l ∗ log_open l'
   }}}
-    Log__Reset #l @ NotStuck; (LVL (S (S k))); ⊤; E2
+    Log__Reset #l @ (LVL (S (S k))); ⊤; E2
   {{{ RET #(); j ⤇ K (of_val #(): sexpr)}}}
   {{{ True }}}.
 Proof using SIZE_bounds.

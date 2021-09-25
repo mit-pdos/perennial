@@ -33,7 +33,7 @@ Lemma wpc_RPCClient__MakeRequest k (f:goose_lang.val) cl_ptr cid γrpc args (Pre
     own_rpcclient_cid cl_ptr γrpc cid ∗
     is_RPCServer γrpc
   }}}
-    RPCClient__MakeRequest #cl_ptr f (into_val.to_val args) @ k ; ⊤
+    RPCClient__MakeRequest #cl_ptr f (into_val.to_val args) @ ⊤
   {{{ (retv:u64), RET #retv; own_rpcclient_cid cl_ptr γrpc cid ∗ ▷ PostCond retv }}}
   {{{ |={⊤}=> |PN={γrpc,cid}=> (▷ PreCond ∨ ▷ (∃ ret, PostCond ret)) }}}.
 Proof using Type*.

@@ -7,18 +7,18 @@ Section modality.
 Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 
 Definition init_cancel (P Pc : iProp Σ) : iProp Σ :=
-  (∀ e s k Φ Φc Φc' mj (HLT: (/2 < mj)%Qp),
-    (P -∗ WPC e @ s; k; ⊤ {{ λ v, wpc_crash_modality ⊤ mj (Pc ∗ Φc') -∗ Φ v }} {{ Pc -∗ Φc }}) -∗
-    WPC e @ s; k; ⊤ {{ λ v, wpc_crash_modality ⊤ mj Φc' -∗ Φ v }} {{ Φc }}).
+  (∀ e s Φ Φc Φc' mj (HLT: (/2 < mj)%Qp),
+    (P -∗ WPC e @ s; ⊤ {{ λ v, wpc_crash_modality ⊤ mj (Pc ∗ Φc') -∗ Φ v }} {{ Pc -∗ Φc }}) -∗
+    WPC e @ s; ⊤ {{ λ v, wpc_crash_modality ⊤ mj Φc' -∗ Φ v }} {{ Φc }}).
 
-Lemma init_cancel_elim s k e Φ Φc P Pc :
+Lemma init_cancel_elim s e Φ Φc P Pc :
   init_cancel P Pc -∗
-  (P -∗ WPC e @ s; k; ⊤ {{ Φ }} {{ Pc -∗ Φc }}) -∗
-  WPC e @ s; k; ⊤ {{ Φ }} {{ Φc }}.
+  (P -∗ WPC e @ s; ⊤ {{ Φ }} {{ Pc -∗ Φc }}) -∗
+  WPC e @ s; ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   rewrite /init_cancel. iIntros "H Hwp".
-  iAssert (WPC e @ s; k; ⊤ {{ v, wpc_crash_modality ⊤ 1%Qp True%I -∗ Φ v }} {{ Φc }})%I with "[-]" as "H".
-  { unshelve (iApply ("H" $! _ _ _ _ _ True%I 1%Qp _)); eauto.
+  iAssert (WPC e @ s; ⊤ {{ v, wpc_crash_modality ⊤ 1%Qp True%I -∗ Φ v }} {{ Φc }})%I with "[-]" as "H".
+  { unshelve (iApply ("H" $! _ _ _ _ True%I 1%Qp _)); eauto.
     { rewrite //=. }
     iIntros "HP". iSpecialize ("Hwp" with "[$]").
     iApply (wpc_mono with "Hwp"); eauto. }
@@ -27,15 +27,15 @@ Proof.
   iApply wpc_crash_modality_intro; eauto.
 Qed.
 
-Lemma init_cancel_elim' s k e Φ Φc P Pc mj :
+Lemma init_cancel_elim' s e Φ Φc P Pc mj :
   (/2 < mj)%Qp →
   init_cancel P Pc -∗
-  (P -∗ WPC e @ s; k; ⊤ {{ λ v, wpc_crash_modality ⊤ mj Pc -∗ Φ v }} {{ Pc -∗ Φc }}) -∗
-  WPC e @ s; k; ⊤ {{ Φ }} {{ Φc }}.
+  (P -∗ WPC e @ s; ⊤ {{ λ v, wpc_crash_modality ⊤ mj Pc -∗ Φ v }} {{ Pc -∗ Φc }}) -∗
+  WPC e @ s; ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   rewrite /init_cancel. iIntros (?) "H Hwp".
-  iAssert (WPC e @ s; k; ⊤ {{ v, wpc_crash_modality ⊤ mj%Qp True%I -∗ Φ v }} {{ Φc }})%I with "[-]" as "H".
-  { unshelve (iApply ("H" $! _ _ _ _ _ True%I mj%Qp _)); eauto.
+  iAssert (WPC e @ s; ⊤ {{ v, wpc_crash_modality ⊤ mj%Qp True%I -∗ Φ v }} {{ Φc }})%I with "[-]" as "H".
+  { unshelve (iApply ("H" $! _ _ _ _ True%I mj%Qp _)); eauto.
     iIntros "HP". iSpecialize ("Hwp" with "[$]").
     iApply (wpc_mono with "Hwp"); eauto.
     iIntros (?) "H Hcm". iApply "H".
@@ -52,7 +52,7 @@ Lemma init_cancel_sep P1 Pc1 P2 Pc2 :
 Proof.
   iIntros "Hc1 Hc2".
   rewrite /init_cancel.
-  iIntros (e s k Φ Φc Φc' mj Hlt) "Hwp".
+  iIntros (e s Φ Φc Φc' mj Hlt) "Hwp".
   iApply ("Hc1" with "[//]"). iIntros "HP1".
   iApply ("Hc2" with "[//]"). iIntros "HP2".
   iSpecialize ("Hwp" with "[$]").
@@ -67,7 +67,7 @@ Lemma fupd_init_cancel P Pc :
   (|={⊤}=> init_cancel P Pc) -∗ init_cancel P Pc.
 Proof.
   iIntros "H".
-  iIntros (e s k Φ Φc ???) "Hwp".
+  iIntros (e s Φ Φc ???) "Hwp".
   iApply (fupd_wpc).
   iMod "H". iModIntro.
   iApply "H"; eauto.
@@ -77,7 +77,7 @@ Lemma init_cancel_fupd E P Pc :
   init_cancel (|={E}=> P) (|={E}=> Pc) -∗ init_cancel P Pc.
 Proof.
   iIntros "H".
-  iIntros (e s k Φ Φc ???) "Hwp".
+  iIntros (e s Φ Φc ???) "Hwp".
   iApply wpc_cfupd.
   iApply "H"; auto. iIntros "HP".
   iApply (fupd_wpc).
@@ -99,7 +99,7 @@ Lemma init_cancel_intro_l P :
   P -∗ init_cancel P True%I.
 Proof.
   iIntros "HP".
-  iIntros (e s k Φ Φc ???) "Hwp".
+  iIntros (e s Φ Φc ???) "Hwp".
   iSpecialize ("Hwp" with "[$]").
   iApply (wpc_mono with "Hwp").
   { iIntros (?) "H Hcm". iApply "H".
@@ -111,7 +111,7 @@ Lemma init_cancel_intro_r P :
   P -∗ init_cancel True%I P.
 Proof.
   iIntros "HP".
-  iIntros (e s k Φ Φc ???) "Hwp".
+  iIntros (e s Φ Φc ???) "Hwp".
   iSpecialize ("Hwp" with "[]"); first done.
   iApply (wpc_strong_mono with "Hwp"); auto.
   iSplit; eauto.
@@ -124,7 +124,7 @@ Lemma init_cancel_intro P Pc :
   P -∗ Pc -∗ init_cancel P Pc.
 Proof.
   iIntros "HP HPc".
-  iIntros (e s k Φ Φc ???) "Hwp".
+  iIntros (e s Φ Φc ???) "Hwp".
   iSpecialize ("Hwp" with "[$]").
   iApply (wpc_strong_mono with "Hwp"); auto.
   iSplit; eauto.
@@ -137,7 +137,7 @@ Lemma init_cancel_shift P1 P2 Pc:
   init_cancel (P1 ∗ P2) Pc -∗ init_cancel P1 (Pc ∗ P2).
 Proof.
   iIntros "H".
-  iIntros (e s k Φ Φc ???) "Hwp".
+  iIntros (e s Φ Φc ???) "Hwp".
   iApply "H"; auto. iIntros "(HP1&HP2)".
   iSpecialize ("Hwp" with "[$]").
   iApply (wpc_strong_mono with "Hwp"); auto.
@@ -154,7 +154,7 @@ Lemma init_cancel_wand P P' Pc Pc' :
   init_cancel P' Pc'.
 Proof.
   iIntros "H H1 H2".
-  iIntros (e s k Φ Φc ???) "Hwp".
+  iIntros (e s Φ Φc ???) "Hwp".
   iApply "H"; auto. iIntros "HP".
   iDestruct ("H1" with "[$]") as "HP".
   iSpecialize ("Hwp" with "[$]").

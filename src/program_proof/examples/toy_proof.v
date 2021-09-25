@@ -31,7 +31,7 @@ Section goose.
 
   Theorem wpc_consumeEvenBlock_seq {k E1} (d_ref: loc) (addr: u64) :
     {{{ EBlk addr }}}
-      consumeEvenBlock #d_ref #addr @ k; E1
+      consumeEvenBlock #d_ref #addr @ E1
     {{{ RET #(); EBlk addr }}}
     {{{ EBlk addr }}}.
   Proof.

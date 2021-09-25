@@ -151,12 +151,12 @@ Proof.
     iIntros (??) "HP". iApply "HP". eauto.
 Qed.
 
-Theorem alloc_lockShard_wpc k covered Φ Φc e ls (P Pc : u64 → iProp Σ):
+Theorem alloc_lockShard_wpc covered Φ Φc e ls (P Pc : u64 → iProp Σ):
    ([∗ set] a ∈ covered, P a ∗ □ (P a -∗ Pc a)) -∗
     is_free_lockShard ls -∗
     (∀ gh, is_lockShard ls gh covered P Pc -∗
-           WPC e @ k; ⊤ {{ Φ }} {{ ([∗ set] a ∈ covered, Pc a) -∗ Φc }}) -∗
-    WPC e @ k; ⊤ {{ Φ }} {{ Φc }}.
+           WPC e @ ⊤ {{ Φ }} {{ ([∗ set] a ∈ covered, Pc a) -∗ Φc }}) -∗
+    WPC e @ ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "HP Hfree Hwp".
   iDestruct (alloc_lockShard_init_cancel with "HP Hfree") as "H".
@@ -331,8 +331,8 @@ Proof.
       (* Creating a new lock, so we split out that piece from the shard's primary crash borrow *)
 
         set (m' := typed_map.map_insert m addr lst).
-        iApply (wpc_wp NotStuck 0 _ _ _ True).
-        iApply (wpc_crash_borrow_split _ _ _ _ _ _ _
+        iApply (wpc_wp NotStuck _ _ _ True).
+        iApply (wpc_crash_borrow_split _ _ _ _ _ _
                                        ([∗ set] addr0 ∈ covered, ⌜m' !! addr0 = None⌝ → P addr0)
                                        (P addr)
                                        ([∗ set] addr0 ∈ covered, ⌜m' !! addr0 = None⌝ → Pc addr0)
@@ -494,9 +494,9 @@ Proof.
   {
     wp_pures.
     wp_bind (struct.loadF _ _ _).
-    iApply (wpc_wp NotStuck 0 _ _ _ True).
+    iApply (wpc_wp NotStuck _ _ _ True).
     set (m' := delete addr m).
-    iApply (wpc_crash_borrow_combine _ _ _ _ _
+    iApply (wpc_crash_borrow_combine _ _ _ _
                                    ([∗ set] addr0 ∈ covered, ⌜m' !! addr0 = None⌝ → P addr0)
                                    ([∗ set] addr0 ∈ covered, ⌜m' !! addr0 = None⌝ → Pc addr0)
                                    (P addr)
@@ -942,12 +942,12 @@ Proof.
 Qed.
 
 
-Theorem alloc_lockMap k covered Φ Φc e ls (P Pc : u64 → iProp Σ):
+Theorem alloc_lockMap covered Φ Φc e ls (P Pc : u64 → iProp Σ):
    ([∗ set] a ∈ covered, P a ∗ □ (P a -∗ Pc a)) -∗
     is_free_lockMap ls -∗
     (∀ gh, is_lockMap ls gh covered P Pc -∗
-           WPC e @ k; ⊤ {{ Φ }} {{ ([∗ set] a ∈ covered, Pc a) -∗ Φc }}) -∗
-    WPC e @ k; ⊤ {{ Φ }} {{ Φc }}.
+           WPC e @ ⊤ {{ Φ }} {{ ([∗ set] a ∈ covered, Pc a) -∗ Φc }}) -∗
+    WPC e @ ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "Hcovered Hfree Hwp".
   iDestruct (alloc_lockMap_init_cancel with "[$] [$]") as "Hcancel".
@@ -1026,13 +1026,13 @@ Proof.
   wp_pures. iApply "HΦ". eauto.
 Qed.
 
-Lemma use_CrashLocked k E1 e lk ghs addr R Rcrash Φ Φc :
+Lemma use_CrashLocked E1 e lk ghs addr R Rcrash Φ Φc :
   language.to_val e = None →
   CrashLocked lk ghs addr R Rcrash -∗
   Φc ∧ (R addr -∗
-       WPC e @ k; E1 {{ λ v, (CrashLocked lk ghs addr R Rcrash -∗ (Φc ∧ Φ v)) ∗ R addr }}
+       WPC e @ E1 {{ λ v, (CrashLocked lk ghs addr R Rcrash -∗ (Φc ∧ Φ v)) ∗ R addr }}
                                        {{ Φc ∗ Rcrash addr }}) -∗
-  WPC e @ k; E1 {{ Φ }} {{ Φc }}.
+  WPC e @ E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (?) "Hcrash_locked H".
   iDestruct "Hcrash_locked" as (?) "(Hfull&#His_lock&Hlocked)".

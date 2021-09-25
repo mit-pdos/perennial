@@ -387,7 +387,7 @@ Section goose.
     ▷ P σ -∗
     pre_dir l sz σ ={⊤}=∗
     is_dir l sz k ∗
-    <disc> |C={⊤}_(S k)=> ∃ σ', dir_cinv sz σ' false ∗ ▷ P σ'.
+    <disc> |C={⊤}=> ∃ σ', dir_cinv sz σ' false ∗ ▷ P σ'.
   Proof.
     iIntros (?) "HP"; iNamed 1.
     iNamed "Hinodes".
@@ -428,7 +428,7 @@ Section goose.
     iModIntro.
     iMod "Halloc_crash" as "Halloc".
     iMod "Hinodes_crash" as "Hinodes".
-    iMod (cfupd_weaken_all with "Hinv_crash") as "Hdir"; auto.
+    iMod (cfupd_weaken_mask with "Hinv_crash") as "Hdir"; auto.
     { lia. }
     iDestruct "Hdir" as (σ') "(>Hdir_inv&HP)".
     iIntros "HC". rewrite -big_sepL_later.
@@ -469,7 +469,7 @@ Section goose.
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
           inode_cinv (U64 (Z.of_nat i)) s_inode)
       }}}
-      openInodes (disk_val d) @ k; ⊤
+      openInodes (disk_val d) @ ⊤
     {{{ inode_s inode_refs, RET (slice_val inode_s);
         is_slice_small inode_s (struct.ptrT inode.Inode) 1 inode_refs ∗
         [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
@@ -606,7 +606,7 @@ Section goose.
     {{{ "Hinode_s" ∷ is_slice_small inode_s (struct.ptrT inode.Inode) 1 inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                     pre_inode inode_ref i s_inode }}}
-      inodeUsedBlocks (slice_val inode_s) @ k; ⊤
+      inodeUsedBlocks (slice_val inode_s) @ ⊤
     {{{ (addrs_ref:loc) used, RET #addrs_ref;
         "Hused_set" ∷ is_addrset addrs_ref used ∗
         "%Hused_eq" ∷ ⌜used = ⋃ (inode.addrs <$> s_inodes)⌝ ∗

@@ -1427,7 +1427,7 @@ Proof using spec_trans.
       iDestruct "Hvnilfun" as (f x e fs xs es (->&->)) "#Hwand".
       iSpecialize ("Hwand" $! #() #() with "[] Hj").
       { eauto. }
-      iApply (wpc_wp _ _ _ _ _ True%I).
+      iApply (wpc_wp _ _ _ _ True%I).
       iApply (wpc_mono' with "[] [] Hwand"); last by auto.
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       iExists _. iFrame.
@@ -1469,7 +1469,7 @@ Proof using spec_trans.
         iDestruct "H" as "($&H)".
         iExists _, _. iSplit; first eauto. iFrame.
       }
-      iApply (wpc_wp _ _ _ _ _ True%I).
+      iApply (wpc_wp _ _ _ _ True%I).
       iApply (wpc_mono' with "[] [] Hwand"); last by auto.
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       iExists _. iFrame.
@@ -1563,7 +1563,7 @@ Proof using spec_trans.
       { intros ?. eexists. simpl.
         apply head_prim_step_trans. repeat econstructor; eauto.
       }
-      iApply (wpc_wp _ (sty_lvl_ops)).
+      iApply (wpc_wp _).
       wpc_bind (subst_map _ e2').
       iPoseProof (IHHtyping3 with "[//] [$] [$] [$] [$]") as "H"; eauto.
       spec_bind (subst_map _ e2) as Hctx'.

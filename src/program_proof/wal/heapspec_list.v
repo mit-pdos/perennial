@@ -1377,7 +1377,7 @@ Proof. apply _. Qed.
 
 Theorem wpc_MkLog_recover stk k E1 E2 d γd γe σ :
   {{{ walheap_cinv γd γe σ }}}
-    MkLog #d @ stk; k; E1; E2
+    MkLog #d @ stk; E2
   {{{ σ' γe' l, RET #l;
       ⌜relation.denote (log_crash) σ σ' tt⌝ ∗
        ∃ ld,

@@ -178,9 +178,9 @@ Proof.
       iFrame "#".
 Qed.
 
-Theorem wpc_recoverCircular stk k E1 d σ γ :
+Theorem wpc_recoverCircular stk E1 d σ γ :
   {{{ is_circular_state γ σ ∗ is_circular_appender_pre γ}}}
-    recoverCircular (disk_val d) @ stk; k; E1
+    recoverCircular (disk_val d) @ stk; E1
   {{{ (c:loc) (diskStart diskEnd: u64) (bufSlice:Slice.t) (upds: list update.t),
       RET (#c, #diskStart, #diskEnd, slice_val bufSlice);
       updates_slice bufSlice upds ∗
@@ -488,16 +488,16 @@ Lemma circ_buf_crash_obligation_alt E Prec Pcrash γ σ:
   □ (∀ σ, ▷ P σ -∗ |0={E ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
   P σ -∗
   |={⊤}=> ∃ γ', is_circular N P γ ∗
-                            (<bdisc> (|C={E}_0=> ∃ σ, is_circular_state γ' σ ∗
+                            (<bdisc> (|C={E}=> ∃ σ, is_circular_state γ' σ ∗
                                                     circ_resources γ' σ ∗
                                                     ▷ Prec σ))
-                            ∗ □ (|C={E}_0=> inv N (∃ σ, is_circular_state_crash γ σ ∗
+                            ∗ □ (|C={E}=> inv N (∃ σ, is_circular_state_crash γ σ ∗
                                                            circular_crash_ghost_exchange γ γ' ∗
                                                            Pcrash σ)).
 Proof.
   iIntros (?) "Hcs #HPwand HP".
   iMod (alloc_init_ghost_state) as (γ') "Hinit".
-  iMod (ncinv_cinv_alloc N 0 ⊤ E
+  iMod (ncinv_cinv_alloc N ⊤ E
          ((∃ σ, is_circular_state γ σ ∗ P σ) ∗ init_ghost_state γ')
          (∃ σ, is_circular_state_crash γ σ ∗
                circular_crash_ghost_exchange γ γ' ∗
@@ -533,12 +533,12 @@ Qed.
    This lemma encodes this principle.
  *)
 
-Lemma circ_buf_crash_obligation e Φ Φc Φc' k σ γ:
+Lemma circ_buf_crash_obligation e Φ Φc Φc' σ γ:
   is_circular_state γ σ  -∗
   P σ -∗
   □ (▷ (∃ σ', is_circular_state γ σ' ∗ P σ') -∗ Φc -∗ Φc') -∗
-  (is_circular N P γ -∗ (WPC e @ k; ⊤ {{ Φ }} {{ Φc }})) -∗
-  |={⊤}=> is_circular N P γ ∗ WPC e @ k; ⊤ {{ Φ }} {{ Φc' }}%I.
+  (is_circular N P γ -∗ (WPC e @ ⊤ {{ Φ }} {{ Φc }})) -∗
+  |={⊤}=> is_circular N P γ ∗ WPC e @ ⊤ {{ Φ }} {{ Φc' }}%I.
 Proof.
   iIntros "Hstate HP #Hcrash1 HWP". rewrite /is_circular.
   iMod (ncinv_alloc N _ (∃ σ, is_circular_state γ σ ∗ P σ)%I with "[Hstate HP]") as "(#Hinv&Hcfupd)".
@@ -550,18 +550,18 @@ Proof.
   iApply (wpc_strong_mono with "HWP"); auto.
   iSplit; first eauto.
    iIntros "H1".
-  iMod (cfupd_weaken_all with "[$]"); try lia; eauto.
+  iMod (cfupd_weaken_mask with "[$]"); try lia; eauto.
   iModIntro.
   iApply ("Hcrash1" with "[$] [$]").
 Qed.
 
 (* Note: the version above is more usable, but this helps understand what it achieves *)
-Lemma circ_buf_crash_obligation_simple e Φ k σ γ:
+Lemma circ_buf_crash_obligation_simple e Φ σ γ:
   is_circular_state γ σ  -∗
   P σ -∗
-  (is_circular N P γ -∗ (WPC e @ k; ⊤ {{ Φ }} {{ True }})) -∗
+  (is_circular N P γ -∗ (WPC e @ ⊤ {{ Φ }} {{ True }})) -∗
   |={⊤}=> is_circular N P γ ∗
-          WPC e @ k; ⊤ {{ Φ }} {{ ▷ ∃ σ', is_circular_state γ σ' ∗ P σ' }}%I.
+          WPC e @ ⊤ {{ Φ }} {{ ▷ ∃ σ', is_circular_state γ σ' ∗ P σ' }}%I.
 Proof.
   iIntros "Hstate HP HWP".
   iApply (circ_buf_crash_obligation with "[$] [$] [] [$]"); auto; set_solver+.

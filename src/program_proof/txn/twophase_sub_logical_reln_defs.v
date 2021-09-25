@@ -84,8 +84,7 @@ Existing Instances spec_ffi_model_field (* spec_ffi_op_field *) spec_ext_semanti
 Definition atomically_has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) K0 e0 (K: sexpr → sexpr) (CTX: LanguageCtx' K),
       is_twophase_started tph γ γ' dinit objs_dom j K0 e0 (K es) -∗
-      WPC e @ (logical_reln_defns.sty_lvl_ops (specTy_model := twophaseTy_model JRNL_SIZE)); ⊤
-                    {{ v, ∃ vs, is_twophase_started tph γ γ' dinit objs_dom j K0 e0 (K (of_val vs)) ∗
+      WPC e @ ⊤ {{ v, ∃ vs, is_twophase_started tph γ γ' dinit objs_dom j K0 e0 (K (of_val vs)) ∗
                                 vty vs v }} {{ True }})%I.
 
 Definition atomically_base_ty_interp (t: base_ty) :=
@@ -242,8 +241,8 @@ Arguments specTy_model {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec
 Scheme expr_typing_ind := Induction for atomic_body_expr_transTy Sort Prop with
     val_typing_ind := Induction for atomic_body_val_transTy Sort Prop.
 
-Lemma disc_crash_true E k :
-  ⊢ <disc> (|C={E}_k=> True).
+Lemma disc_crash_true E :
+  ⊢ <disc> (|C={E}=> True).
 Proof. auto. Qed.
 
 Tactic Notation "spec_bind" open_constr(efoc) " as " ident(H) :=
@@ -862,7 +861,7 @@ Proof.
       iDestruct "Hvnilfun" as (f x e fs xs es (->&->)) "#Hwand".
       iSpecialize ("Hwand" $! #() #() with "[] Hj").
       { eauto. }
-      iApply (wpc_wp _ _ _ _ _ True%I).
+      iApply (wpc_wp _ _ _ _ True%I).
       iApply (wpc_mono' with "[] [] Hwand"); last by auto.
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       iExists _. iFrame.
@@ -898,7 +897,7 @@ Proof.
         iDestruct "H" as "($&H)".
         iExists _, _. iSplit; first eauto. iFrame.
       }
-      iApply (wpc_wp _ _ _ _ _ True%I).
+      iApply (wpc_wp _ _ _ _ True%I).
       iApply (wpc_mono' with "[] [] Hwand"); last by auto.
       iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
       iExists _. iFrame.

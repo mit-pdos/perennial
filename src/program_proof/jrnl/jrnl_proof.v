@@ -1073,7 +1073,7 @@ Context `{!stagedG Σ}.
 
 Definition wpwpcN := nroot.@"temp".
 
-Theorem wpc_Op__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q Qc : nat -> iProp Σ) {HT1: Timeless PreQ} {HT2: ∀ n, Timeless (Qc n)} anydirty k :
+Theorem wpc_Op__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q Qc : nat -> iProp Σ) {HT1: Timeless PreQ} {HT2: ∀ n, Timeless (Qc n)} anydirty :
   {{{
     is_jrnl buftx mt γUnified dinit anydirty ∗
     <disc> PreQ ∧ ( |NC={⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN, E}=> ∃ (σl : async (gmap addr {K & bufDataT K})),
@@ -1083,7 +1083,7 @@ Theorem wpc_Op__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : boo
           ghost_var γUnified.(txn_crashstates) (3/4) (async_put σ σl)
           -∗ |NC={E, ⊤ ∖ ↑walN ∖ ↑invN ∖ ↑ wpwpcN}=> <disc> (▷ Qc (length (possible σl))) ∧ Q (length (possible σl)) ))
   }}}
-    Op__CommitWait #buftx #wait @ (S k) ; ⊤
+    Op__CommitWait #buftx #wait @ ⊤
   {{{
     (ok : bool), RET #ok;
     if ok then
@@ -1104,7 +1104,7 @@ Proof using stagedG0.
   rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
   iDestruct (own_discrete_elim_conj with "Hfupd") as (Q_keep Q_inv) "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
   iMod (pending_alloc) as (γpending) "Hpending".
-  iMod (inv_mut_alloc (S k) wpwpcN _ wp_to_wpc.mysch ([
+  iMod (inv_mut_alloc (S 0) wpwpcN _ wp_to_wpc.mysch ([
    (∃ txnid, Qc txnid) ∨ PreQ; staged_done γpending; C; staged_pending (3/4)%Qp γpending])%I [Q_inv] with "[HQ_inv]") as "(#Hinv&Hfull)".
   { rewrite wp_to_wpc.mysch_interp_strong. iLeft. iSplit; first auto.
     iMod ("Hwand1" with "[$]") as "H".
@@ -1113,7 +1113,7 @@ Proof using stagedG0.
     eauto.
   }
   iDestruct (pending_split34 with "Hpending") as "(Hpend34&Hpend14)".
-  iAssert (WPC _ @ S k; ⊤ {{ v, ∃ (ok: bool), ⌜ v = #ok ⌝ ∗ (staged_pending (3 / 4)%Qp γpending -∗ |NC={⊤}=>
+  iAssert (WPC _ @ ⊤ {{ v, ∃ (ok: bool), ⌜ v = #ok ⌝ ∗ (staged_pending (3 / 4)%Qp γpending -∗ |NC={⊤}=>
                  (if ok
                   then
                    ⌜anydirty = true⌝
@@ -1132,7 +1132,7 @@ Proof using stagedG0.
       iApply "HΦc". iApply "Hwand". by iFrame.
     * iLeft in "HΦc". iIntros "_". iIntros "HC".
       {
-        iApply (fupd_level_fupd _ _ _ (S k)).
+        iApply (fupd_level_fupd _ _ _ (S 0)).
         iMod (fupd_level_mask_mono with "HΦc") as "HΦc"; first by set_solver+.
         iMod (inv_mut_acc with "Hinv") as (Qs) "(H&Hclo)"; first auto.
         rewrite wp_to_wpc.mysch_interp_weak /=.

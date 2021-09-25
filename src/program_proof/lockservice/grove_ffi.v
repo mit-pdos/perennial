@@ -44,7 +44,7 @@ Axiom wpc_Read : ∀ {k} filename (q:Qp) content,
   {{{
       filename f↦{q} content
   }}}
-    grove_ffi.Read #(str filename) @ k ; ⊤
+    grove_ffi.Read #(str filename) @ ⊤
   {{{
        s, RET slice_val s; typed_slice.is_slice s byteT 1 content ∗
                            filename f↦{q} content
@@ -58,7 +58,7 @@ Axiom wpc_Write : ∀ {k} filename content_old content (content_sl:Slice.t) q,
       filename f↦ content_old ∗
       typed_slice.is_slice content_sl byteT q content
   }}}
-    grove_ffi.Write #(str filename) (slice_val content_sl) @ k ; ⊤
+    grove_ffi.Write #(str filename) (slice_val content_sl) @ ⊤
   {{{
        RET #(); filename f↦ content ∗
       typed_slice.is_slice content_sl byteT q content
@@ -73,7 +73,7 @@ Axiom wpc_AtomicAppend : ∀ {k} filename content_old content (content_sl:Slice.
       filename f↦ content_old ∗
       typed_slice.is_slice content_sl byteT q content
   }}}
-    grove_ffi.AtomicAppend #(str filename) (slice_val content_sl) @ k ; ⊤
+    grove_ffi.AtomicAppend #(str filename) (slice_val content_sl) @ ⊤
   {{{
        RET #(); filename f↦ (content_old ++ content) ∗
       typed_slice.is_slice content_sl byteT q (content_old ++ content)
@@ -157,7 +157,7 @@ Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64
       RPCClient_own cl_ptr host ∗
       □(▷ Pre x reqData)
   }}}
-    grove_ffi.RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_ptr @ k ; ⊤
+    grove_ffi.RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_ptr @ ⊤
   {{{
        (b:bool) rep_sl (repData:list u8), RET #b;
        rep_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
@@ -186,7 +186,7 @@ Axiom wp_StartRPCServer : ∀ host (handlers : gmap u64 val) (mref : loc) (def :
       map.is_map mref (handlers, def) ∗
       [∗ map] rpcid ↦ handler ∈ handlers, (∃ X Pre Post, handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
   }}}
-    grove_ffi.StartRPCServer #mref @ k ; ⊤
+    grove_ffi.StartRPCServer #mref @ ⊤
   {{{
       RET #(); True
   }}}.

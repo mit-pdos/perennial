@@ -82,35 +82,35 @@ TODO: add versions without the ∀∀ binder.
 And maybe versions with an ∃∃ binder in front of [Qa]? *)
 
 (* Full variant *)
-Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ k ; E1 <<{ ∃∃ y1 .. yn , Qa '}>>' {{{ z1 .. zn , 'RET' pat ; Q } } } {{{ Qc } } }" :=
+Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ E1 <<{ ∃∃ y1 .. yn , Qa '}>>' {{{ z1 .. zn , 'RET' pat ; Q } } } {{{ Qc } } }" :=
   (□ ∀ Φ Φc,
       P -∗
       (Qc%I%I%I%I -∗ Φc) (* crash condition before lin.point *) ∧
         ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={⊤∖E1}=> ∀ y1, .. (∀ yn, Qa ∗
           ((Qc -∗ Φc) (* crash condition after lin.point *) ∧
            ∀ z1, .. (∀ zn, Q -∗ Φ pat%V) .. )) .. ) .. ) -∗
-      WPC e @ k; ⊤ {{ Φ }} {{ Φc }})%I
+      WPC e @ ⊤ {{ Φ }} {{ Φc }})%I
     (at level 20, x1 closed binder, xn closed binder, y1 closed binder, yn closed binder, z1 closed binder, zn closed binder,
-     format "'[hv' {{{  '[' P  ']' } } }  '/'  <<{  '[' ∀∀  x1  ..  xn ,  '/' Pa  ']' }>>  '/  ' e  '/' @  '[' k ;  E1  ']' '/' <<{  '[' ∃∃  y1  ..  yn ,  '/' Qa ']' }>>  '/' {{{  '[' z1  ..  zn ,  RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
+     format "'[hv' {{{  '[' P  ']' } } }  '/'  <<{  '[' ∀∀  x1  ..  xn ,  '/' Pa  ']' }>>  '/  ' e  '/' @  '[' E1  ']' '/' <<{  '[' ∃∃  y1  ..  yn ,  '/' Qa ']' }>>  '/' {{{  '[' z1  ..  zn ,  RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
 (* No ∃∃ *)
-Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ k ; E1 <<{ Qa '}>>' {{{ z1 .. zn , 'RET' pat ; Q } } } {{{ Qc } } }" :=
+Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ E1 <<{ Qa '}>>' {{{ z1 .. zn , 'RET' pat ; Q } } } {{{ Qc } } }" :=
   (□ ∀ Φ Φc,
       P -∗
       (Qc%I%I -∗ Φc) (* crash condition before lin.point *) ∧
         ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={⊤∖E1}=> Qa ∗
           ((Qc -∗ Φc) (* crash condition after lin.point *) ∧
            ∀ z1, .. (∀ zn, Q -∗ Φ pat%V) .. )) .. ) -∗
-      WPC e @ k; ⊤ {{ Φ }} {{ Φc }})%I
+      WPC e @ ⊤ {{ Φ }} {{ Φc }})%I
     (at level 20, x1 closed binder, xn closed binder, z1 closed binder, zn closed binder,
-     format "'[hv' {{{  '[' P  ']' } } }  '/'  <<{  '[' ∀∀  x1  ..  xn ,  '/' Pa  ']' }>>  '/  ' e  '/' @  '[' k ;  E1  ']' '/' <<{  '[' Qa ']' }>>  '/' {{{  '[' z1  ..  zn ,  RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
+     format "'[hv' {{{  '[' P  ']' } } }  '/'  <<{  '[' ∀∀  x1  ..  xn ,  '/' Pa  ']' }>>  '/  ' e  '/' @  '[' E1  ']' '/' <<{  '[' Qa ']' }>>  '/' {{{  '[' z1  ..  zn ,  RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
 (* No ∃∃, no binders before RET *)
-Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ k ; E1 <<{ Qa '}>>' {{{ 'RET' pat ; Q } } } {{{ Qc } } }" :=
+Notation "'{{{' P } } } '<<{' ∀∀ x1 .. xn , Pa '}>>' e @ E1 <<{ Qa '}>>' {{{ 'RET' pat ; Q } } } {{{ Qc } } }" :=
   (□ ∀ Φ Φc,
       P -∗
       (Qc%I%I -∗ Φc) (* crash condition before lin.point *) ∧
         ▷ (∀ x1, .. (∀ xn, Pa -∗ |NC={⊤∖E1}=> Qa ∗
           ((Qc -∗ Φc) (* crash condition after lin.point *) ∧
           (Q -∗ Φ pat%V) )) .. ) -∗
-      WPC e @ k; ⊤ {{ Φ }} {{ Φc }})%I
+      WPC e @ ⊤ {{ Φ }} {{ Φc }})%I
     (at level 20, x1 closed binder, xn closed binder,
-     format "'[hv' {{{  '[' P  ']' } } }  '/'  <<{  '[' ∀∀  x1  ..  xn ,  '/' Pa  ']' }>>  '/  ' e  '/' @  '[' k ;  E1  ']' '/' <<{  '[' Qa ']' }>>  '/' {{{  '[' RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.
+     format "'[hv' {{{  '[' P  ']' } } }  '/'  <<{  '[' ∀∀  x1  ..  xn ,  '/' Pa  ']' }>>  '/  ' e  '/' @  '[' E1  ']' '/' <<{  '[' Qa ']' }>>  '/' {{{  '[' RET  pat ;  '/' Q  ']' } } }  '/' {{{  '[' Qc  ']' } } } ']'") : bi_scope.

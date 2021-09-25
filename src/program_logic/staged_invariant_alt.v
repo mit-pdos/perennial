@@ -278,9 +278,9 @@ Proof using PRI.
   by iMod ("Hwand" with "[$]") as "$".
 Qed.
 
-Lemma wpc0_modality_postcondition_cancel_atomic s k mj E e Φ Φc `{!Atomic StronglyAtomic e}:
-  (wpc0 s k mj E e Φ Φc) -∗
-  (wpc0 s k mj E e (λ v, wpc_crash_modality E mj Φc ∧ (wpc_value_modality E mj (Φ v))) Φc).
+Lemma wpc0_modality_postcondition_cancel_atomic s mj E e Φ Φc `{!Atomic StronglyAtomic e}:
+  (wpc0 s mj E e Φ Φc) -∗
+  (wpc0 s mj E e (λ v, wpc_crash_modality E mj Φc ∧ (wpc_value_modality E mj (Φ v))) Φc).
 Proof.
   iIntros "H".
   rewrite ?wpc0_unfold. rewrite /wpc_pre.
@@ -332,9 +332,9 @@ Proof.
       iMod "H" as "($&$&$)". iMod "Hclo"; eauto. }
 Qed.
 
-Lemma wpc0_modality_postcondition_cancel s k mj E e Φ Φc :
-  (wpc0 s k mj E e Φ Φc) -∗
-  (wpc0 s k mj E e (λ v, wpc_crash_modality ⊤ mj Φc ∧ (wpc_value_modality ⊤ mj (Φ v))) Φc).
+Lemma wpc0_modality_postcondition_cancel s mj E e Φ Φc :
+  (wpc0 s mj E e Φ Φc) -∗
+  (wpc0 s mj E e (λ v, wpc_crash_modality ⊤ mj Φc ∧ (wpc_value_modality ⊤ mj (Φ v))) Φc).
 Proof.
   iIntros "H".
   iLöb as "IH" forall (e E).

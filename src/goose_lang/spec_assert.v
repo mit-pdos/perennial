@@ -82,11 +82,11 @@ Definition spec_ctx' r ρ : iProp Σ :=
 
 Definition spec_crash_ctx P : iProp Σ :=
   source_crash_ctx (CS := spec_crash_lang) refinement_ctok ∗
-  □ (|C={↑spec_stateN}_0=> inv spec_stateN (P ∨ (∃ σ g, source_state σ g ∗ spec_interp σ g)))%I.
+  □ (|C={↑spec_stateN}=> inv spec_stateN (P ∨ (∃ σ g, source_state σ g ∗ spec_interp σ g)))%I.
 
 Definition spec_crash_ctx' r ρ P : iProp Σ :=
   source_crash_ctx' (CS := spec_crash_lang) r ρ refinement_ctok ∗
-  □ (|C={↑spec_stateN}_0=> inv spec_stateN (P ∨ (∃ σ g, source_state σ g ∗ spec_interp σ g)))%I.
+  □ (|C={↑spec_stateN}=> inv spec_stateN (P ∨ (∃ σ g, source_state σ g ∗ spec_interp σ g)))%I.
 
 Global Instance spec_ctx_persistent : Persistent (spec_ctx).
 Proof. apply _. Qed.

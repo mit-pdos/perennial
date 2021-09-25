@@ -407,7 +407,7 @@ Section goose_lang.
       iExists _; iFrame.
   Qed.
 
-  Theorem wpc_Op__CommitWait' {l γ γ' dinit γtxn γdurable committed_mT m} klevel :
+  Theorem wpc_Op__CommitWait' {l γ γ' dinit γtxn γdurable committed_mT m} :
     N ## invariant.walN →
     N ## invN →
     N ## mspec.wpwpcN →
@@ -418,7 +418,7 @@ Section goose_lang.
       "Hstable" ∷ ([∗ map] a↦v ∈ m, jrnl_maps_to γtxn a v) ∗
       "#Htxn_cinv" ∷ txn_cinv N γ γ'
     }}}
-      Op__CommitWait #l #true @ S klevel; ⊤
+      Op__CommitWait #l #true @ ⊤
     {{{
       (ok:bool), RET #ok;
       ([∗ map] a↦v ∈ (if ok then m else committed_mT), durable_mapsto_own γ a v)
@@ -537,7 +537,7 @@ Section goose_lang.
       apply _.
   Qed.
 
-  Theorem wpc_Op__CommitWait {l γ γ' dinit γtxn} P0 P `{!Liftable P} klevel :
+  Theorem wpc_Op__CommitWait {l γ γ' dinit γtxn} P0 P `{!Liftable P} :
     N ## invariant.walN →
     N ## invN →
     N ## mspec.wpwpcN ->
@@ -545,7 +545,7 @@ Section goose_lang.
         "HP" ∷ P (jrnl_maps_to γtxn) ∗
         "#Htxn_cinv" ∷ txn_cinv N γ γ'
     }}}
-      Op__CommitWait #l #true @ S klevel; ⊤
+      Op__CommitWait #l #true @ ⊤
     {{{ (ok:bool), RET #ok;
         if ok then
             P (λ a v, durable_mapsto_own γ a v)

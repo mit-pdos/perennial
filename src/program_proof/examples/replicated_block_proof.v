@@ -110,7 +110,7 @@ FIXME: looks like crash locks no longer support cfupd.
     is_pre_rblock l addr σ0 -∗
     ▷ P σ0 ={⊤}=∗
       is_rblock (S k') l addr ∗
-      <disc> |C={⊤}_(S k')=> ▷ (∃ σ, rblock_cinv addr σ ∗ P σ).
+      <disc> |C={⊤}=> ▷ (∃ σ, rblock_cinv addr σ ∗ P σ).
   Proof.
     iIntros "Hpre HP"; iNamed "Hpre".
 
@@ -132,9 +132,9 @@ FIXME: looks like crash locks no longer support cfupd.
   (* Open is the replicated block's recovery procedure, which constructs the
   in-memory state as well as recovering the synchronization between primary and
   backup, going from the crash invariant to the lock invariant. *)
-  Theorem wpc_Open {k} d addr σ :
+  Theorem wpc_Open d addr σ :
     {{{ rblock_cinv addr σ }}}
-      Open (disk_val d) #addr @ (S k); ⊤
+      Open (disk_val d) #addr @ ⊤
     {{{ (l:loc), RET #l; is_pre_rblock l addr σ }}}
     {{{ rblock_cinv addr σ }}}.
   Proof.
@@ -204,10 +204,10 @@ FIXME: looks like crash locks no longer support cfupd.
       iApply "HΦ"; auto.
   Qed.
 
-  Lemma wpc_RepBlock__Read {k} {l} addr (primary: bool) :
+  Lemma wpc_RepBlock__Read {l} addr (primary: bool) :
     ⊢ {{{ "Hrb" ∷ is_rblock l addr }}}
       <<{ ∀∀ σ, P σ }>>
-        RepBlock__Read #l #primary @ (S k); ∅
+        RepBlock__Read #l #primary @ ∅
       <<{ P σ }>>
       {{{ s, RET (slice_val s); is_block s 1 σ }}}
       {{{ True }}}.
@@ -275,17 +275,17 @@ FIXME: looks like crash locks no longer support cfupd.
     iApply "HQ"; iFrame.
   Qed.
 
-  Theorem wpc_RepBlock__Read_triple (Q: Block → iProp Σ) (Qc: iProp Σ) `{Timeless _ Qc} {k} {l} addr (primary: bool) :
+  Theorem wpc_RepBlock__Read_triple (Q: Block → iProp Σ) (Qc: iProp Σ) `{Timeless _ Qc} {l} addr (primary: bool) :
     {{{ "Hrb" ∷ is_rblock l addr ∗ (* replicated block protocol *)
         "HQc" ∷ (∀ σ, Q σ -∗ Qc) ∗ (* crash condition after "linearization point" *)
         "Hfupd" ∷ (Qc (* crash condition before "linearization point" *) ∧
                    (∀ σ, P σ ={⊤}=∗ P σ ∗ Q σ)) }}}
-      RepBlock__Read #l #primary @ (S k); ⊤
+      RepBlock__Read #l #primary @ ⊤
     {{{ s b, RET (slice_val s); is_block s 1 b ∗ Q b }}}
     {{{ Qc }}}.
   Proof.
     iIntros (Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    iApply (wpc_step_strong_mono _ _ _ _ _ _ _
+    iApply (wpc_step_strong_mono _ _ _ _ _
            (λ v, ∃ s b, ⌜ v = slice_val s ⌝ ∗ is_block s 1 b ∗ Q b)%I _ _ with "[-HΦ] [HΦ]"); auto.
     2: { iSplit.
          * iNext. iIntros (?) "H". iDestruct "H" as (??) "(%&?)". subst.
@@ -301,11 +301,11 @@ FIXME: looks like crash locks no longer support cfupd.
     iIntros (s) "Hblock". iExists _, _; iSplit; first eauto; by iFrame.
   Qed.
 
-  Lemma wpc_RepBlock__Write {k} l addr (s: Slice.t) q (b: Block) :
+  Lemma wpc_RepBlock__Write l addr (s: Slice.t) q (b: Block) :
     ⊢ {{{ "Hrb" ∷ is_rblock l addr ∗
           "Hb" ∷ is_block s q b }}}
       <<{ ∀∀ σ, P σ }>>
-        RepBlock__Write #l (slice_val s) @ (S k); ∅
+        RepBlock__Write #l (slice_val s) @ ∅
       <<{ P b }>>
       {{{ RET #(); is_block s q b }}}
       {{{ True }}}.
@@ -388,17 +388,17 @@ FIXME: looks like crash locks no longer support cfupd.
     iApply "HΦ"; iFrame.
   Qed.
 
-  Theorem wpc_RepBlock__Write_triple (Q: iProp Σ) (Qc: iProp Σ) `{Timeless _ Qc} {k} l addr (s: Slice.t) q (b: Block) :
+  Theorem wpc_RepBlock__Write_triple (Q: iProp Σ) (Qc: iProp Σ) `{Timeless _ Qc} l addr (s: Slice.t) q (b: Block) :
     {{{ "Hrb" ∷ is_rblock l addr ∗
         "Hb" ∷ is_block s q b ∗
         "HQc" ∷ (Q -∗ Qc) ∗
         "Hfupd" ∷ (Qc ∧ (∀ σ, P σ ={⊤}=∗ P b ∗ Q)) }}}
-      RepBlock__Write #l (slice_val s) @ (S k); ⊤
+      RepBlock__Write #l (slice_val s) @ ⊤
     {{{ RET #(); Q ∗ is_block s q b }}}
     {{{ Qc }}}.
   Proof.
     iIntros (Φ Φc) "Hpre HΦ"; iNamed "Hpre".
-    iApply (wpc_step_strong_mono _ _ _ _ _ _ _
+    iApply (wpc_step_strong_mono _ _ _ _ _
            (λ v, ⌜ v = #()⌝ ∗ Q ∗ is_block s q b)%I _ _ with "[-HΦ] [HΦ]"); auto.
     2: { iSplit.
          * iNext. iIntros (?) "H". iDestruct "H" as "(%&?)". subst.
@@ -421,7 +421,7 @@ FIXME: looks like crash locks no longer support cfupd.
 
   Theorem wpc_OpenRead d addr σ:
     {{{ rblock_cinv addr σ ∗ P σ }}}
-      OpenRead d addr @ 2; ⊤
+      OpenRead d addr @ ⊤
     {{{ (x: val), RET x; True }}}
     {{{ ∃ σ, rblock_cinv addr σ ∗ P σ }}}.
   Proof using stagedG0.
@@ -481,7 +481,7 @@ Section recov.
   (* Just a simple example of using idempotence *)
   Theorem wpr_Open d addr σ:
     rblock_cinv addr σ -∗
-    wpr NotStuck 2 ⊤
+    wpr NotStuck ⊤
         (Open (disk_val d) #addr)
         (Open (disk_val d) #addr)
         (λ _, True%I)
@@ -489,7 +489,7 @@ Section recov.
         (λ _ _, True%I).
   Proof.
     iIntros "Hstart".
-    iApply (idempotence_wpr _ (S (S O)) ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ)%I with "[Hstart]").
+    iApply (idempotence_wpr _ ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ)%I with "[Hstart]").
     { wpc_apply (wpc_Open with "Hstart"). eauto 10. }
     iModIntro. iIntros (????) "H".
     (* FIXME: we bundle local and global, but [idempotence_wpr] quantifies only over the local part...
@@ -507,7 +507,7 @@ Section recov.
 
   Theorem wpr_OpenRead d addr σ:
     rblock_cinv addr σ -∗
-    wpr NotStuck 2 ⊤
+    wpr NotStuck ⊤
         (OpenRead d addr)
         (OpenRead d addr)
         (λ _, True%I)
@@ -515,7 +515,7 @@ Section recov.
         (λ _ _, True%I).
   Proof using stagedG0.
     iIntros "Hstart".
-    iApply (idempotence_wpr _ 2 ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ ∗ True)%I with "[Hstart]").
+    iApply (idempotence_wpr _ ⊤ _ _ _ _ _ (λ _, ∃ σ, rblock_cinv addr σ ∗ True)%I with "[Hstart]").
     { wpc_apply (wpc_OpenRead (λ _, True)%I with "[$Hstart]").
       iSplit; eauto. }
     iModIntro. iIntros (????) "H".
@@ -541,7 +541,7 @@ Lemma ffi_start_OpenRead {hG: heapGS repΣ} σ addr (d : ()) :
   int.Z addr ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   int.Z (word.add addr 1) ∈ dom (gset Z) (σ.(world) : (@ffi_state disk_model)) →
   ffi_local_start goose_ffiLocalGS σ.(world)
-  -∗ wpr NotStuck 2 ⊤ (OpenRead d addr) (OpenRead d addr) (λ _ : goose_lang.val, True)
+  -∗ wpr NotStuck ⊤ (OpenRead d addr) (OpenRead d addr) (λ _ : goose_lang.val, True)
        (λ _, True) (λ _ _, True).
 Proof.
   rewrite ?elem_of_dom.
@@ -565,7 +565,7 @@ Theorem OpenRead_adequate σ g addr :
                 σ g (λ v _ _, True) (λ v _ _, True) (λ _ _, True).
 Proof.
   intros.
-  eapply (goose_recv_adequacy (repΣ) _ 2 _ _ _ _ _ _ _ (λ _, True%I)).
+  eapply (goose_recv_adequacy (repΣ) _ _ _ _ _ _ _ _ (λ _, True%I)).
   { simpl. auto. }
   { simpl. auto. }
   iIntros (?) "Hstart Hgstart _ _ _".
@@ -597,7 +597,7 @@ Theorem OpenRead_dist_adequate σ g addr :
                 g (λ _, True).
 Proof.
   intros.
-  apply (goose_dist_adequacy (repΣ) 2 _ _ _).
+  apply (goose_dist_adequacy (repΣ) _ _ _).
   { simpl. auto. }
   { simpl. auto. }
   iIntros (?) "_". iModIntro.

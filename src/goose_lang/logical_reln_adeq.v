@@ -84,12 +84,12 @@ Lemma sty_inv_to_wpc hG hRG hS es e τ j:
   trace_ctx -∗
   sty_init hS -∗
   j ⤇ es -∗
-  WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_derived_crash_condition hG hRG ∗ sty_crash_tok}}.
+  WPC e @ ⊤ {{ _, True }}{{sty_derived_crash_condition hG hRG ∗ sty_crash_tok}}.
 Proof.
   iIntros (Htype Hsty_crash_inv Hsty_crash Hsty_rules Hatomic) "#Hspec #Hspec_crash #Htrace Hinit Hj".
   rewrite /sty_crash_obligation in Hsty_crash.
   iMod (Hsty_crash_inv with "[$] [$] [$]") as "Hinit".
-  iAssert (|={⊤}=> WPC e @ sty_lvl_init; ⊤ {{ _, True }}{{sty_inv hS ∗ sty_crash_cond hS ∗ sty_crash_tok}})%I with "[-]" as ">H".
+  iAssert (|={⊤}=> WPC e @ ⊤ {{ _, True }}{{sty_inv hS ∗ sty_crash_cond hS ∗ sty_crash_tok}})%I with "[-]" as ">H".
   {
     rewrite /sty_crash_inv_obligation in Hsty_crash_inv.
     iModIntro.
@@ -104,8 +104,7 @@ Proof.
       { iPureIntro. apply _. }
       { simpl. by rewrite fmap_empty subst_map_empty. }
       rewrite fmap_empty subst_map_empty.
-      iApply wpc_idx_change.
-      iApply (wpc_strong_mono _ _ _ _ _ _ _ _ (λ _, True%I) with "[$]"); eauto 10.
+      iApply (wpc_strong_mono _ _ _ _ _ _ (λ _, True%I) with "[$]"); eauto 10.
   }
   iApply (wpc_strong_mono with "[$]"); eauto.
   iSplit.
@@ -140,7 +139,7 @@ Proof.
   eapply @goose_wpc_refinement_adequacy with (spec_ext := spec_ext) (Σ := logical_relnΣ)
            (Φ := λ _ _ _, True%I) (Φc := λ hG hL, sty_derived_crash_condition (HeapGS _ hG hL))
            (P := λ hG hL _, sty_crash_tok (heapGS0:=HeapGS _ hG hL))
-           (k := sty_lvl_init) (initP := initP); (eauto || (try apply _)); [| | |].
+           (initP := initP); (eauto || (try apply _)); [| | |].
   { intros. apply sty_crash_tok_timeless. }
   { intros. rewrite /excl_crash_token. iIntros. iApply (sty_crash_tok_excl with "[$] [$]"). }
   { clear dependent σ σs g gs. rewrite /wpc_init. iIntros (hG hL hRG σ σs Hinit) "Hffi Hffi_spec".

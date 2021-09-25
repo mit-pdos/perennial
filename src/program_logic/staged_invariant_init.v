@@ -21,9 +21,9 @@ Implicit Types N : namespace.
 Implicit Types P Q R : iProp Σ.
 Existing Instances pri_inv_tok_timeless later_tok_timeless.
 
-Lemma wpc0_mj_valid s k mj E e Φ Φc :
-  (⌜ (/2 < mj)%Qp ⌝ → wpc0 s k mj E e Φ Φc) -∗
-  wpc0 s k mj E e Φ Φc.
+Lemma wpc0_mj_valid s mj E e Φ Φc :
+  (⌜ (/2 < mj)%Qp ⌝ → wpc0 s mj E e Φ Φc) -∗
+  wpc0 s mj E e Φ Φc.
 Proof using PRI.
   iIntros "H".
   iApply wpc0_pri_inv_tok_res. iIntros (??) "(H'&%)".
@@ -74,14 +74,14 @@ Proof.
   }
 Qed.
 
-Lemma wpc0_staged_inv_create s k mj' mj E e Φ Φc P Pc :
+Lemma wpc0_staged_inv_create s mj' mj E e Φ Φc P Pc :
   (/ 2 < mj')%Qp →
   later_tok ∗
   later_tok ∗
   P ∗
   □ (P -∗ Pc) ∗
-  (staged_value E P Pc ∗ staged_inv_cancel E mj' Pc -∗ wpc0 s k mj E e Φ (Φc ∗ Pc))
-  ⊢ wpc0 s k mj E e Φ (Φc ∗ Pc).
+  (staged_value E P Pc ∗ staged_inv_cancel E mj' Pc -∗ wpc0 s mj E e Φ (Φc ∗ Pc))
+  ⊢ wpc0 s mj E e Φ (Φc ∗ Pc).
 Proof.
   iIntros (Hlt) "(Htok1&Htok2&HP&#Hwand&Hwp)".
   iApply wpc0_pri_inv_tok_res.
@@ -90,13 +90,13 @@ Proof.
   iModIntro. by iApply "Hwp".
 Qed.
 
-Lemma wpc0_crash_modality_cancel s k mj' mj E1 E2 e Φ Φc Pc:
+Lemma wpc0_crash_modality_cancel s mj' mj E1 E2 e Φ Φc Pc:
   E1 ⊆ E2 →
   (/2 < mj' ≤ mj)%Qp →
   later_tok -∗
   wpc_crash_modality E1 mj' Pc -∗
-  wpc0 s k mj E2 e (λ v, (later_tok ∗ wpc_crash_modality E1 mj' Pc) -∗ Φ v) Φc -∗
-  wpc0 s k mj E2 e Φ (Φc ∗ Pc).
+  wpc0 s mj E2 e (λ v, (later_tok ∗ wpc_crash_modality E1 mj' Pc) -∗ Φ v) Φc -∗
+  wpc0 s mj E2 e Φ (Φc ∗ Pc).
 Proof using PRI.
   iIntros (Hsub Hle_mj) "Htok Hcm Hwp".
   iLöb as "IH" forall (e E2 Hsub).
@@ -292,12 +292,12 @@ Proof.
 Qed.
 
 (* At the cost of weakening this by requiring an extra token, this can be derived from some of the previous lemmas *)
-Lemma wpc0_staged_inv_cancel s k mj' mj E1 E2 e Φ Φc Pc:
+Lemma wpc0_staged_inv_cancel s mj' mj E1 E2 e Φ Φc Pc:
   E1 ⊆ E2 →
   (mj' ≤ mj)%Qp →
   staged_inv_cancel E1 mj' Pc -∗
-  wpc0 s k mj E2 e (λ v, staged_inv_cancel E1 mj' Pc -∗ Φ v) Φc -∗
-  wpc0 s k mj E2 e Φ (Φc ∗ Pc).
+  wpc0 s mj E2 e (λ v, staged_inv_cancel E1 mj' Pc -∗ Φ v) Φc -∗
+  wpc0 s mj E2 e Φ (Φc ∗ Pc).
 Proof.
   iIntros (Hsub Hle_mj) "Hsc Hwp".
   iDestruct "Hsc" as (mj0 Einv mj_ishare mj_ikeep γ γ' ?) "Hsc".
@@ -465,10 +465,10 @@ Lemma staged_value_init_cancel P Pc :
 Proof.
   iIntros "(Htok1&Htok2&HP&#Hwand)".
   rewrite /init_cancel.
-  iIntros (?????? mj1 Hlt1) "Hwp".
+  iIntros (????? mj1 Hlt1) "Hwp".
   rewrite wpc_eq /wpc_def. iIntros (mj2).
   iApply (wpc0_mj_valid). iIntros (Hlt2).
-  iPoseProof (wpc0_staged_inv_create _ _ (mj1 `min` mj2)%Qp mj2 _ _ (λ v, wpc_crash_modality ⊤ mj1 Φc' -∗ Φ v)%I ((Pc -∗ Φc)) P Pc) as "H".
+  iPoseProof (wpc0_staged_inv_create _ (mj1 `min` mj2)%Qp mj2 _ _ (λ v, wpc_crash_modality ⊤ mj1 Φc' -∗ Φ v)%I ((Pc -∗ Φc)) P Pc) as "H".
   { apply Qp_min_glb1_lt; intuition eauto. }
   iSpecialize ("H" with "[$HP $Htok1 $Htok2 $Hwand Hwp]").
   { iIntros "(Hval&Hcancel)".
@@ -487,18 +487,18 @@ Proof.
   iSplit; first eauto. iIntros "(Hw&HP) !>". by iApply "Hw".
 Qed.
 
-Lemma wpc_staged_inv_init s k E e Φ Φc P Pc:
+Lemma wpc_staged_inv_init s E e Φ Φc P Pc:
   later_tok ∗
   later_tok ∗
   P ∗
   □ (P -∗ Pc) ∗
-  (staged_value E P Pc -∗ WPC e @ s; k; E {{ Φ }} {{ Φc }})
-  ⊢ WPC e @ s; k; E {{ Φ }} {{ Φc ∗ Pc }}.
+  (staged_value E P Pc -∗ WPC e @ s; E {{ Φ }} {{ Φc }})
+  ⊢ WPC e @ s; E {{ Φ }} {{ Φc ∗ Pc }}.
 Proof.
   iIntros "(Htok1&Htok2&HP&#Hwand&Hwp)".
   rewrite wpc_eq /wpc_def. iIntros (mj).
   iApply (wpc0_mj_valid). iIntros (Hlt).
-  iApply (wpc0_staged_inv_create _ _ _ _ _ _ _ _ P); try eassumption.
+  iApply (wpc0_staged_inv_create _ _ _ _ _ _ _ P); try eassumption.
   iFrame "∗ #". iIntros "(Hval&Hcancel)".
   iApply (wpc0_staged_inv_cancel with "Hcancel"); auto.
   iSpecialize ("Hwp" with "[$]").

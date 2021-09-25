@@ -83,8 +83,8 @@ Lemma append_log_na_crash_inv_obligation e (Φ: val → iProp Σ) Φc E kinit ki
   (kinv < kinit - 1)%nat →
   (kpost < kinit)%nat →
   log_init -∗
-  (log_inv (S kinv) -∗ (WPC e @ NotStuck; kpost; ⊤; E {{ Φ }} {{ Φc }})) -∗
-  |={⊤}=> log_inv (S kinv) ∗ WPC e @ NotStuck; kinit; ⊤; E {{ Φ }} {{ Φc ∗ log_crash_cond }}%I.
+  (log_inv (S kinv) -∗ (WPC e @ E {{ Φ }} {{ Φc }})) -∗
+  |={⊤}=> log_inv (S kinv) ∗ WPC e @ E {{ Φ }} {{ Φc ∗ log_crash_cond }}%I.
 Proof.
   clear SIZE_nonzero.
   iIntros (??) "Hinit Hwp".
@@ -148,7 +148,7 @@ Theorem wpc_Log__Reset k k' E2 l Q Qc:
      ((∀ bs, ▷ P (Opened bs l) ={⊤}=∗ ▷ P (Opened [] l) ∗ Q) ∧
              <disc> ▷ Qc)
   }}}
-    Log__Reset #l @ NotStuck; (S k); ⊤; E2
+    Log__Reset #l @ (S k); ⊤; E2
   {{{ RET #() ; Q }}}
   {{{ Qc }}}.
 Proof.
@@ -244,7 +244,7 @@ Theorem wpc_Open k k' E2 Qc Q:
                  ∗ (Qc ∧ ∀ l, P (Opening vs) -∗ PStartedOpening ={⊤ ∖ ↑N2 ∖ ↑N}=∗
                               Q l ∗ P (Opened vs l) ∗ POpened))
         ∧ Qc) }}}
-    Open #() @ NotStuck; (S k); ⊤; E2
+    Open #() @ (S k); ⊤; E2
   {{{ lptr, RET #lptr; is_log k' lptr ∗ Q lptr }}}
   {{{ Qc }}}.
 Proof using PStartedOpening_Timeless.
@@ -348,7 +348,7 @@ Theorem wpc_Init (sz: u64) k k' E2 Qc Q:
               ∗ (Qc ∧ ∀ l, P Initing -∗ PStartedIniting ={⊤ ∖ ↑N2 ∖ ↑N}=∗
                            Q l ∗ P (Opened [] l) ∗ POpened))
         ∧ Qc) }}}
-    Init #sz @ NotStuck; LVL (S (S k)); ⊤; E2
+    Init #sz @ LVL (S (S k)); ⊤; E2
   {{{ l, RET (#l, #true);  is_log k' l ∗ Q l}}}
   {{{ Qc }}}.
 Proof using PStartedIniting_Timeless SIZE_nonzero.

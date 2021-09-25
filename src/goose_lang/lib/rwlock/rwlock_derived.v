@@ -89,8 +89,8 @@ Section proof.
     R 1%Qp ∗
     is_free_lock lk ∗
     (is_crash_rwlock #lk R Rc -∗
-          WPC e @ k; ⊤ {{ Φ }} {{ Rc 1%Qp -∗ Φc }}) -∗
-    WPC e @ k; ⊤ {{ Φ }} {{ Φc }}.
+          WPC e @ ⊤ {{ Φ }} {{ Rc 1%Qp -∗ Φc }}) -∗
+    WPC e @ ⊤ {{ Φ }} {{ Φc }}.
   Proof.
     clear.
     iIntros "#Hwand1 #Hwand2 #Hwand3 (HR&Hfree&Hwp)".

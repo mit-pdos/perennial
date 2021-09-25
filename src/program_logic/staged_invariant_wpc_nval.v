@@ -24,7 +24,7 @@ Lemma staged_inv_wpc_nval E P Qs Qs' R :
 Proof.
   iIntros "Hstaged Hwand".
   rewrite /wpc_nval.
-  iIntros (E' e s k Φ Φc Hnval Hsub) "Hwp".
+  iIntros (E' e s Φ Φc Hnval Hsub) "Hwp".
   iDestruct "Hstaged" as (??????) "(Hown&Hownstat&#Hsaved1&#Hsaved2&Hltok&Hitok&Hinv)".
   iDestruct "Hinv" as (mj_wp_init mj_ishare Hlt) "#Hinv".
   rewrite /staged_inv.

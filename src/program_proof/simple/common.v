@@ -153,14 +153,14 @@ Proof.
   iExists _. iFrame.
 Qed.
 
-Lemma is_inode_crash_prev γsrc γprev γnext fh state blk klevel :
+Lemma is_inode_crash_prev γsrc γprev γnext fh state blk :
   txn_cinv Njrnl γprev γnext -∗
   fh [[γsrc]]↦ state ∗
   ( is_inode fh state (durable_mapsto γprev)
     ∨ is_inode_enc fh (length state) blk (durable_mapsto γprev)
     ∗ is_inode_data (length state) blk state (durable_mapsto γprev) )
   -∗
-  |C={⊤}_S klevel=>
+  |C={⊤}=>
   is_inode_stable γsrc γnext fh.
 Proof.
   iIntros "#Hcinv [Hfh H]".
@@ -174,14 +174,14 @@ Proof.
   iApply is_inode_crash_next; iFrame.
 Qed.
 
-Lemma is_inode_crash_prev_own γsrc γprev γnext fh state blk klevel :
+Lemma is_inode_crash_prev_own γsrc γprev γnext fh state blk :
   txn_cinv Njrnl γprev γnext -∗
   fh [[γsrc]]↦ state ∗
   ( is_inode fh state (durable_mapsto_own γprev)
     ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γprev)
     ∗ is_inode_data (length state) blk state (durable_mapsto_own γprev) )
   -∗
-  |C={⊤}_S klevel=>
+  |C={⊤}=>
   is_inode_stable γsrc γnext fh.
 Proof.
   iIntros "#Hcinv [Hfh H]".
@@ -195,11 +195,11 @@ Proof.
   iApply (is_inode_crash_prev with "Hcinv"). iFrame.
 Qed.
 
-Lemma is_inode_stable_crash γsrc γprev γnext fh klevel :
+Lemma is_inode_stable_crash γsrc γprev γnext fh :
   txn_cinv Njrnl γprev γnext -∗
   is_inode_stable γsrc γprev fh
   -∗
-  |C={⊤}_S klevel=>
+  |C={⊤}=>
   is_inode_stable γsrc γnext fh.
 Proof.
   iIntros "#Hcinv".

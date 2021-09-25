@@ -37,9 +37,9 @@ Context `{!stagedG Σ}.
 Context {ext_ty: ext_types ext}.
 
 
-Lemma wpc0_crash_to_post stk k mj E (e: expr) Φ Φc :
-      wpc0 stk k mj E e Φ Φc -∗
-      wpc0 stk k mj E e (λ (v: val), Φ v ∧ wpc_crash_modality E mj Φc) Φc.
+Lemma wpc0_crash_to_post stk mj E (e: expr) Φ Φc :
+      wpc0 stk mj E e Φ Φc -∗
+      wpc0 stk mj E e (λ (v: val), Φ v ∧ wpc_crash_modality E mj Φc) Φc.
 Proof.
   iIntros "H".
   iLöb as "IH" forall (e).
@@ -58,8 +58,8 @@ Proof.
     iDestruct (bi_and_wand_l_apply with "H NC") as "H".
 Abort.
 
-Lemma wpc_elim_wpc_crash_modality stk k E (e: expr) (Φ: val → iProp Σ) Φc :
-  WPC e @ stk; k; E {{ Φ }} {{ Φc }} -∗
+Lemma wpc_elim_wpc_crash_modality stk E (e: expr) (Φ: val → iProp Σ) Φc :
+  WPC e @ stk; E {{ Φ }} {{ Φc }} -∗
   ∀ mj, wpc_crash_modality E mj Φc.
 Proof.
   rewrite wpc_unfold /wpc_pre.
@@ -68,14 +68,14 @@ Proof.
 Qed.
 
 (* paper presentation of fork rule, with wpc *)
-Theorem wpc_fork_paper (k: nat)
+Theorem wpc_fork_paper
         (e e': expr) (P Q: iProp Σ) (R: val → iProp Σ) (Rc Rc': iProp Σ) :
   to_val e = None →
   □ (P -∗ Rc) -∗
   (Q -∗ Rc') -∗
-  (P -∗ WPC e @ k; ⊤ {{ λ _, Rc }} {{ Rc }}) -∗
-  (Q -∗ WPC e' @ k; ⊤ {{ R }} {{ Rc' }}) -∗
-  (P ∗ Q -∗ WPC Fork e;; e' @ k; ⊤ {{ R }} {{ Rc ∗ Rc' }}).
+  (P -∗ WPC e @ ⊤ {{ λ _, Rc }} {{ Rc }}) -∗
+  (Q -∗ WPC e' @ ⊤ {{ R }} {{ Rc' }}) -∗
+  (P ∗ Q -∗ WPC Fork e;; e' @ ⊤ {{ R }} {{ Rc ∗ Rc' }}).
 Proof using stagedG0.
   iIntros (Henotval) "#HPRc HQRc' He He' [HP HQ]".
   (* iSpecialize ("He" with "HP").

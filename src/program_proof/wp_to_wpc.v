@@ -88,17 +88,17 @@ Proof.
   do 2 (rewrite ?bi_schema_interp_unfold /= //=).
 Qed.
 
-Lemma wpc_spec P Φ Φc `{HT: Timeless _ Φc} γ k :
+Lemma wpc_spec P Φ Φc `{HT: Timeless _ Φc} γ :
   is_foo1 N1 P γ ∗
   (<disc> Φc ∧ (∀ σ, ▷ P σ -∗ |NC={⊤ ∖ ↑ N}=> ▷ P (transition σ) ∗ (<disc> Φc ∧ Φ (#())))) -∗
-  WPC e @ (S k); ⊤ {{ Φ }} {{ Φc }}.
+  WPC e @ ⊤ {{ Φ }} {{ Φc }}.
 Proof using stagedG0.
   iIntros "(His_foo&Hfupd)".
   rewrite bi.and_comm.
   rewrite own_discrete_fupd_eq /own_discrete_fupd_def.
   iDestruct (own_discrete_elim_conj with "Hfupd") as (Q_keep Q_inv) "(HQ_keep&HQ_inv&#Hwand1&#Hwand2)".
   iMod (pending_alloc) as (γpending) "Hpending".
-  iMod (inv_mut_alloc (S k) N2 _ mysch ([ Φc; staged_done γpending; C; staged_pending (3/4)%Qp γpending])%I [Q_inv] with "[HQ_inv]") as "(#Hinv&Hfull)".
+  iMod (inv_mut_alloc (S 0) N2 _ mysch ([ Φc; staged_done γpending; C; staged_pending (3/4)%Qp γpending])%I [Q_inv] with "[HQ_inv]") as "(#Hinv&Hfull)".
   { rewrite mysch_interp_strong. iLeft. iSplit; first auto.
     iMod ("Hwand1" with "[$]") as "H".
     iModIntro. iMod (fupd_level_split_level with "H") as "$".
@@ -107,7 +107,7 @@ Proof using stagedG0.
   }
   iDestruct (pending_split34 with "Hpending") as "(Hpend34&Hpend14)".
   (*
-  iAssert (<disc> |C={⊤}_(S k)=> Φc)%I with "[Hpend34]" as "Hcfupd".
+  iAssert (<disc> |C={⊤}=> Φc)%I with "[Hpend34]" as "Hcfupd".
   {
     iModIntro. iIntros "HC".
     iMod (inv_mut_acc with "Hinv") as (Qs) "(H&Hclo)"; first auto.
@@ -126,7 +126,7 @@ Proof using stagedG0.
   }
   iMod "Hcfupd".
    *)
-  iAssert (WPC e @ S k; ⊤ {{ v, staged_pending (3 / 4)%Qp γpending -∗ |NC={⊤}=> Φ v }} {{ True }})%I with "[His_foo HQ_keep Hpend14 Hfull]" as "Hwpc";
+  iAssert (WPC e @ ⊤ {{ v, staged_pending (3 / 4)%Qp γpending -∗ |NC={⊤}=> Φ v }} {{ True }})%I with "[His_foo HQ_keep Hpend14 Hfull]" as "Hwpc";
     last first.
   {
     iApply wpc_ncfupd.
@@ -138,7 +138,7 @@ Proof using stagedG0.
         iMod (inv_mut_acc with "Hinv") as (Qs) "(H&Hclo)"; first auto.
         rewrite mysch_interp_weak /=.
         iDestruct "H" as "[(_&>H)|[Hfalse1|Hfalse2]]".
-        * iApply (fupd_level_fupd _ _ _ (S k)).
+        * iApply (fupd_level_fupd _ _ _ (S 0)).
           iEval (rewrite uPred_fupd_level_eq /uPred_fupd_level_def).
           iMod (fupd_split_level_intro_mask' _ ∅) as "Hclo''"; first by set_solver+.
           iMod (fupd_split_level_le with "H") as "H"; first lia.

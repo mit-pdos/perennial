@@ -307,7 +307,7 @@ Definition crashed_kvs kvp_ls kvsblks γDisk : iProp Σ :=
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
-    MkKVS #d #(U64(Z.of_nat sz)) @ NotStuck; k; E1; E2
+    MkKVS #d #(U64(Z.of_nat sz)) @ E2
   {{{ kvsl kvsblks γDisk, RET #kvsl; ptsto_kvs kvsl kvsblks sz γDisk}}}
   {{{ True }}}.
 Proof.
@@ -414,7 +414,7 @@ Theorem wpc_KVS__MultiPut kvsl s sz kvp_ls_before kvp_slice kvp_ls stk k E1 E2:
                  ∗ kvpairs_match s kvp_ls_before
                  ∗ kvpairs_slice kvp_slice kvp_ls
   }}}
-    KVS__MultiPut #kvsl (slice_val kvp_slice) @ stk; k; E1; E2
+    KVS__MultiPut #kvsl (slice_val kvp_slice) @ stk; E2
   {{{ (ok: bool), RET #ok;
       ptsto_kvs kvsl s sz ∗ kvpairs_match s kvp_ls
   }}}

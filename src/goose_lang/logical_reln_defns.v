@@ -68,7 +68,6 @@ Class specTy_model :=
         sty_val_interp hS τ vs v -∗
         ⌜ flatten_struct vs = [vs] ∧ flatten_struct v = [v] ⌝;
     sty_lvl_init: nat;
-    sty_lvl_ops: nat;
     sty_inv_persistent:
       forall Σ `(hG: !heapGS Σ) `(hRG: !refinement_heapG Σ) (hG': heapGS Σ) (hS: styG Σ),
         Persistent (sty_inv hS) }.
@@ -83,7 +82,7 @@ Existing Instances spec_ffi_model_field (* spec_ffi_op_field *) spec_ext_semanti
 
 Definition has_semTy (es: sexpr) (e: iexpr) (vty: val_semTy) : iProp Σ :=
   (∀ (j: nat) (K: sexpr → sexpr) (CTX: LanguageCtx K),
-      j ⤇ K es -∗ WPC e @ sty_lvl_ops; ⊤ {{ v, ∃ vs, j ⤇ K (of_val vs)
+      j ⤇ K es -∗ WPC e @ ⊤ {{ v, ∃ vs, j ⤇ K (of_val vs)
                                                                     ∗ vty vs v }}
                                                       {{ True }})%I.
 

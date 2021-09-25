@@ -51,7 +51,7 @@ Definition twophase_crash_inv_pred ex_mapsto γ a obj : iProp Σ :=
 
 Definition twophase_crash_inv ex_mapsto γ γ' a obj : iProp Σ :=
   crash_borrow (twophase_pre_crash_inv_pred ex_mapsto γ a obj)
-    (|C={⊤}_O=> ∃ obj', twophase_crash_inv_pred ex_mapsto γ' a obj')%I.
+    (|C={⊤}=> ∃ obj', twophase_crash_inv_pred ex_mapsto γ' a obj')%I.
 
 Definition twophase_linv ex_mapsto γ γ' a : iProp Σ :=
   ∃ obj,
@@ -200,7 +200,7 @@ Theorem twophase_init_locks {E} ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a ob
     init_cancel ([∗ set] a ∈ set_map addr2flat (dom (gset addr) mt),
                  "Hlinv" ∷ twophase_linv_flat ex_mapsto γ γ' a)
                 ("Hcrash" ∷
-                   (|C={⊤}_O=> ([∗ map] a↦_ ∈ mt, ∃ (obj : object),
+                   (|C={⊤}=> ([∗ map] a↦_ ∈ mt, ∃ (obj : object),
                                      "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
                                      "Hex_mapsto" ∷ ex_mapsto a obj ∗
                                      "%Hvalid" ∷ ⌜ mapsto_valid γ' a obj ⌝)))
@@ -236,7 +236,7 @@ Proof.
   iDestruct (
     big_sepM_crash_borrow_init_cancel
     (λ a _,
-      |C={⊤}_(S (S O))=> (∃ obj', twophase_crash_inv_pred ex_mapsto γ' a obj'))%I
+      |C={⊤}=> (∃ obj', twophase_crash_inv_pred ex_mapsto γ' a obj'))%I
     (λ a o, twophase_pre_crash_inv_pred ex_mapsto γ a o)
     with "Hpre [Hdurable_mapstos Hex_mapstos] []") as "Hcrash".
   {
@@ -730,8 +730,7 @@ Proof.
     iSplit; last by (iPureIntro; assumption).
     iIntros "!> (?&?&?)".
     iIntros "Hc".
-    unshelve (iMod (exchange_durable_mapsto1 with "[$] [$]") as "Hdurable").
-    { exact 10. }
+    iMod (exchange_durable_mapsto1 with "[$] [$]") as "Hdurable".
     iNamed.
     iIntros "!>".
     iExists _.
@@ -980,30 +979,29 @@ Proof.
   done.
 Qed.
 
-Lemma wpc_crash_borrow_open_modify_sepM {A} `{Countable K} k Qnew  E1 e Φ Φc
+Lemma wpc_crash_borrow_open_modify_sepM {A} `{Countable K} Qnew  E1 e Φ Φc
        Q P (m: gmap K A) :
   to_val e = None →
   (□ (∀ i x, ⌜ m !! i = Some x ⌝ → Q i x -∗ P i x)) -∗
   ([∗ map] i ↦ v ∈ m, crash_borrow (Q i v) (P i v)) -∗
   (Φc ∧
    (([∗ map] i ↦ v ∈ m, Q i v) -∗
-      WPC e @ k; E1
+      WPC e @ E1
       {{λ retv,
         ([∗ map] i ↦ v ∈ m, Qnew retv i v) ∗
           ([∗ map] i ↦ v ∈ m, □ (Qnew retv i v -∗ P i v)) ∗
          Φc ∧ (([∗ map] i ↦ v ∈ m, crash_borrow (Qnew retv i v) (P i v)) -∗ (Φ retv))
       }}
       {{Φc ∗ ([∗ map] i ↦ v ∈ m, P i v)}}) -∗
-  WPC e @ NotStuck; k; E1 {{ Φ }} {{ Φc }}).
+  WPC e @ E1 {{ Φ }} {{ Φc }}).
 Proof.
   iIntros (Hnval) "#Hstatuses Hcrash_invs Hwpc".
   iInduction m as [|i x m] "IH" using map_ind forall (Φ Φc).
   {
     iDestruct "Hwpc" as "[_ Hwpc]".
     iDestruct ("Hwpc" with "[]") as "Hwpc"; first by auto.
-    iDestruct (wpc_subscript_mono _ _ _ _ _ E1 with "Hwpc") as "Hwpc";
-      [auto| |auto|].
-    { reflexivity. }
+    iDestruct (wpc_subscript_mono _ _ _ E1 with "Hwpc") as "Hwpc";
+      [auto|auto|].
     iApply (wpc_mono with "Hwpc").
     {
       iIntros (v) "/= (_&_&(_&Hcrash))".
@@ -1013,7 +1011,7 @@ Proof.
   }
   iDestruct (big_sepM_insert with "Hcrash_invs") as "(Hcrash_inv&Hcrash_invs)"; auto.
   iApply (
-    wpc_crash_borrow_open_modify  _ _ _ _
+    wpc_crash_borrow_open_modify
     with "Hcrash_inv [Hwpc Hcrash_invs]"
   ).
   { eauto. }
@@ -1021,7 +1019,7 @@ Proof.
   { iDestruct "Hwpc" as "[H _]". iFrame. }
   iIntros "HQ".
   iApply wpc_fupd.
-  iApply (wpc_strong_mono _ _ _ _ _ _ _ _ _
+  iApply (wpc_strong_mono _ _ _ _ _ _ _
                           (Φc ∗ (P i x ∨ Q i x))%I with "[-] []"); auto; last first.
   { iSplit.
    { iIntros (?) "H". iModIntro. iExact "H". }
@@ -1079,7 +1077,7 @@ Proof.
   }
 Qed.
 
-Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Discretizable (ex_mapsto a obj)} `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed Qok Qnok :
+Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit ex_mapsto `{!∀ a obj, Discretizable (ex_mapsto a obj)} `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed Qok Qnok :
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit ex_mapsto objs_dom mt_changed ∗
@@ -1089,7 +1087,7 @@ Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit k ex_mapsto `{!∀ a obj, Dis
           [∗ map] a ↦ vobj ∈ mt_changed,
             ex_mapsto a (committed vobj)
         )
-        -∗ |C={⊤}_S k=>
+        -∗ |C={⊤}=>
         "Hmodified" ∷ (
           [∗ map] a ↦ vobj ∈ mt_changed,
             ex_mapsto a (modified vobj)
@@ -1138,9 +1136,9 @@ Proof.
   iNamed "Htwophase".
   iNamed "Hjrnl".
   wp_loadField.
-  iApply (wpc_wp _ (S k) _ _ _ True).
+  iApply (wpc_wp _ _ _ _ True).
   iApply (
-    wpc_crash_borrow_open_modify_sepM _
+    wpc_crash_borrow_open_modify_sepM
     (λ v a vobj,
       let vobj_branch := (
         if decide (v = #true) then modified else committed
@@ -1154,7 +1152,7 @@ Proof.
     iModIntro.
     iIntros (?? Hacc) "[? [? %]]".
     iIntros "HC".
-    iMod (exchange_durable_mapsto1 _ _ _ (S (S O)) with "[$] [$]") as "Hdurable".
+    iMod (exchange_durable_mapsto1 _ _ _ with "[$] [$]") as "Hdurable".
     iModIntro. iExists _. iFrame.
     iDestruct ("Htxn_cinv") as "(_&%)".
     iPureIntro. eapply exchange_mapsto_valid; eauto.
@@ -1262,7 +1260,7 @@ Proof.
     iApply big_sepM_forall.
     iIntros (a vobj Hacc) "!> [? [? %]]".
     iIntros "HC".
-    iMod (exchange_durable_mapsto1 _ _ _ (S (S O)) with "[$] [$]") as "Hdurable".
+    iMod (exchange_durable_mapsto1 with "[$] [$]") as "Hdurable".
     iModIntro. iExists _. iFrame.
     iDestruct ("Htxn_cinv") as "(_&%)".
     iPureIntro. eapply exchange_mapsto_valid; eauto.

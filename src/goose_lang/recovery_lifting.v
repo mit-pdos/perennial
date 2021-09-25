@@ -13,9 +13,9 @@ Context `{ffi_sem: ffi_semantics}.
 Context {ext_tys: ext_types ext}.
 Context `{!ffi_interp ffi}.
 
-Definition wpr `{hG: !gooseGlobalGS Σ, hL: !gooseLocalGS Σ} (s: stuckness) (k: nat) (E: coPset)
+Definition wpr `{hG: !gooseGlobalGS Σ, hL: !gooseLocalGS Σ} (s: stuckness) (E: coPset)
   (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapGS Σ → iProp Σ) (Φr: heapGS Σ → val → iProp Σ) :=
-  wpr goose_crash_lang s k _ E e recv
+  wpr goose_crash_lang s _ E e recv
               Φ
               (λ hGen, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗ Φinv (HeapGS _ _ hL))%I
               (λ hGen v, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗ Φr (HeapGS _ _ hL) v)%I.
@@ -23,17 +23,16 @@ Definition wpr `{hG: !gooseGlobalGS Σ, hL: !gooseLocalGS Σ} (s: stuckness) (k:
 Section wpr.
 Context `{hG: !heapGS Σ}.
 Implicit Types s : stuckness.
-Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
 Implicit Types Φc : iProp Σ.
 Implicit Types v : val.
 Implicit Types e : expr.
 
-Lemma wpr_strong_mono s k E e rec Φ Ψ Φinv Ψinv Φr Ψr :
-  wpr s k E e rec Φ Φinv Φr -∗
+Lemma wpr_strong_mono s E e rec Φ Ψ Φinv Ψinv Φr Ψr :
+  wpr s E e rec Φ Φinv Φr -∗
   (∀ v, Φ v ==∗ Ψ v) ∧ ((∀ hG, Φinv hG -∗ Ψinv hG) ∧ (∀ hG v, Φr hG v ==∗ Ψr hG v)) -∗
-  wpr s k E e rec Ψ Ψinv Ψr.
+  wpr s E e rec Ψ Ψinv Ψr.
 Proof.
   rewrite /wpr. iIntros "Hwpr Himpl".
   iApply (wpr_strong_mono with "Hwpr [Himpl]").
@@ -47,9 +46,9 @@ Proof.
     iExists _. iSplitR; first done. by iApply "H".
 Qed.
 
-Lemma fupd_wpr s k E e rec Φ Φinv Φr :
-  (|={E}=> wpr s k E e rec Φ Φinv Φr) -∗
-  wpr s k E e rec Φ Φinv Φr.
+Lemma fupd_wpr s E e rec Φ Φinv Φr :
+  (|={E}=> wpr s E e rec Φ Φinv Φr) -∗
+  wpr s E e rec Φ Φinv Φr.
 Proof.
   iIntros "H".
   rewrite /wpr.
@@ -57,21 +56,21 @@ Proof.
   iApply @fupd_wpc. eauto.
 Qed.
 
-Lemma idempotence_wpr `{!ffi_interp_adequacy} s k E1 e rec Φx
+Lemma idempotence_wpr `{!ffi_interp_adequacy} s E1 e rec Φx
   (Φinv : heapGS Σ → iProp Σ)
   (Φrx : heapGS Σ → val → iProp Σ)
   (Φcx : heapGS Σ → iProp Σ):
-  ⊢ WPC e @ s ; k ; E1 {{ Φx }} {{ Φcx _ }} -∗
+  ⊢ WPC e @ s ; E1 {{ Φx }} {{ Φcx _ }} -∗
    (□ ∀ (hL': gooseLocalGS Σ) σ σ'
         (HC: goose_crash σ σ'),
         let hG' := HeapGS _ _ hL' in (* sadly this let-binding is lost for users of this lemma, but they should really have it in scope to use the right instances of everything. *)
         Φcx hG' -∗ ▷ post_crash (hG := hG') (λ hG'', let hL'' := goose_localGS (heapGS:=hG'') in
         ffi_restart (goose_ffiLocalGS (hL:=hL'')) σ'.(world) -∗
-        (Φinv hG'' ∧ WPC rec @ s ; k; E1 {{ Φrx hG'' }} {{ Φcx hG'' }}))) -∗
-    wpr s k E1 e rec Φx Φinv Φrx.
+        (Φinv hG'' ∧ WPC rec @ s ; E1 {{ Φrx hG'' }} {{ Φcx hG'' }}))) -∗
+    wpr s E1 e rec Φx Φinv Φrx.
 Proof.
   iIntros "Hwpc #Hidemp".
-  iApply (idempotence_wpr goose_crash_lang s k E1 e rec _ _ _
+  iApply (idempotence_wpr goose_crash_lang s E1 e rec _ _ _
                           (λ hGen, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗
                                    Φcx (HeapGS _ _ hL))%I
                                                     with "[Hwpc] [Hidemp]"); first auto.

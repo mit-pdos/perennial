@@ -1136,7 +1136,7 @@ Theorem wpc_Inode__Append {k}  (*  *)
         ⌜s !! addr' = Some block_reserved⌝ -∗
          ▷ P σ ∗ ▷ Palloc s ={⊤ ∖ ↑allocN ∖ ↑inodeN}=∗
          ▷ P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (Φc ∧ Φ #true))) -∗
-  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ k; ⊤ {{ Φ }} {{ Φc }}.
+  WPC Inode__Append #l (slice_val b_s) #alloc_ref @ ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (???? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".

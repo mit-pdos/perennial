@@ -282,7 +282,7 @@ Lemma wpc_KVClerk__Put k γ (kck srv:loc) (cid:u64) (key value:u64) :
        own_kvclerk_cid γ kck srv cid ∗
        |PN={γ.(ks_rpcGN),cid}=> (key [[γ.(ks_kvMapGN)]]↦ _)
   }}}
-    KVClerk__Put #kck #key #value @ k; ⊤
+    KVClerk__Put #kck #key #value @ ⊤
   {{{
       RET #();
       own_kvclerk_cid γ kck srv cid ∗
@@ -367,7 +367,7 @@ Lemma wpc_KVClerk__Get k γ (kck srv:loc) (old_v cid:u64) (key:u64) :
        own_kvclerk_cid γ kck srv cid ∗
        |PN={γ.(ks_rpcGN),cid}=> (key [[γ.(ks_kvMapGN)]]↦ old_v)
   }}}
-    KVClerk__Get #kck #key @ k; ⊤
+    KVClerk__Get #kck #key @ ⊤
   {{{
       RET #old_v;
       own_kvclerk_cid γ kck srv cid ∗

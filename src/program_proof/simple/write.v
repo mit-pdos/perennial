@@ -127,7 +127,7 @@ Proof using Ptimeless.
   wp_pures.
   wp_bind (NFSPROC3_WRITE_internal _ _ _ _).
 
-  iApply (wpc_wp _ _ _ _ _ True).
+  iApply (wpc_wp _ _ _ _ True).
   iApply (use_CrashLocked _ with "Hcrashlocked").
   { eauto. }
   iSplit.
@@ -459,7 +459,6 @@ Proof using Ptimeless.
 
 Unshelve.
   all: eauto.
-  all: try exact 0.
 Qed.
 
 End heap.

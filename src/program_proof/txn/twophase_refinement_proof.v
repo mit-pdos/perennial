@@ -481,7 +481,7 @@ Lemma atomic_convertible_val_interp {Σ} {hG: heapGS Σ} {hRG : refinement_heapG
     (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_convertible t →
   @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG (twophaseTy_model JRNL_KIND_SIZE) hS t es e -∗
-  atomically_val_interp (htpG := hS) JRNL_KIND_SIZE dinit objs_dom γ γ' tph_val t es e.
+  atomically_val_interp (htpG := hS) dinit objs_dom γ γ' tph_val t es e.
 Proof.
   revert es e.
   rewrite /styG in hS * => //=.
@@ -521,7 +521,7 @@ Qed.
 Lemma atomically_deconvertible_val_interp `{hG: !heapGS Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
       (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_deconvertible t →
-  atomically_val_interp (htpG := (styG_twophaseG _ hS)) JRNL_KIND_SIZE dinit objs_dom γ γ' tph_val t es e -∗
+  atomically_val_interp (htpG := (styG_twophaseG _ hS)) dinit objs_dom γ γ' tph_val t es e -∗
   @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG (twophaseTy_model JRNL_KIND_SIZE) hS t es e.
 Proof.
   revert es e.
@@ -757,7 +757,6 @@ Proof.
   wpc_bind (subst_map _ el2).
   spec_bind (subst_map _ el1) as Hctx.
   iDestruct ("HhasTy" with "[//] Hj") as "H".
-  rewrite /sty_lvl_ops/=.
   iApply (wpc_strong_mono with "H"); auto.
   iSplit; last by (eauto).
   iIntros (v) "Hv". iModIntro.
@@ -779,7 +778,7 @@ Proof.
   wp_bind (subst _ _ _).
   rewrite subst_map_subst_comm //; last first.
   { rewrite dom_fmap. rewrite dom_fmap in H0 *. eauto. }
-  iDestruct (atomically_fundamental_lemma JRNL_KIND_SIZE dinit objs_dom γ γ' tph_val Γ') as "Hhas_semTy".
+  iDestruct (atomically_fundamental_lemma dinit objs_dom γ γ' tph_val Γ') as "Hhas_semTy".
   { eauto. }
   rewrite /twophase_sub_logical_reln_defs.ctx_has_semTy.
   iDestruct ("Hhas_semTy" $! (filtered_subst Γsubst Γ') with "[] [$] [] [] [Hstarted]") as "H".

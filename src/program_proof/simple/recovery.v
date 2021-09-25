@@ -125,7 +125,7 @@ Proof.
 
   rewrite map_fold_insert_L //; last first.
   intros.
-Admitted.
+Abort.
 
 Lemma zero_disk_to_inodes γ sz :
   (513 + 1 + (32-2) ≤ sz < 2^49) →
@@ -155,7 +155,7 @@ Proof.
   - rewrite /is_inode_enc.
     admit.
   - admit.
-Admitted.
+Abort.
 
 (* amazingly not in Coq 8.12 *)
 Lemma repeat_app {A} n1 n2 (x:A) :
@@ -166,7 +166,7 @@ Proof. induction n1; simpl; congruence. Qed.
 Lemma wpc_Mkfs d sz :
   (513 + 1 + (32-2) ≤ sz < 2^49) →
   {{{ 0 d↦∗ repeat block0 (Z.to_nat sz) ∗ P1 (gset_to_gmap [] (rangeSet 2 (NumInodes-2)))  }}}
-    Mkfs (disk_val d) @ 0; ⊤
+    Mkfs (disk_val d) @ ⊤
   {{{ γtxn γsrc (txn:loc), RET #txn;
       let logm0 := Build_async (kind_heap0 (fs_kinds sz)) [] in
       is_txn_durable γtxn (fs_dinit sz) logm0 ∗
@@ -217,13 +217,13 @@ Proof.
 Abort.
 
 Lemma is_source_later_upd P P' γsrc:
-  (∀ σ, ▷ P σ -∗ |C={⊤ ∖ ↑N}_10=> ▷ P σ ∗ ▷ P' σ) -∗
+  (∀ σ, ▷ P σ -∗ |C={⊤ ∖ ↑N}=> ▷ P σ ∗ ▷ P' σ) -∗
    ▷ is_source P γsrc -∗
-   |C={⊤}_10=> ▷ is_source P' γsrc.
+   |C={⊤}=> ▷ is_source P' γsrc.
 Proof.
   iIntros "Hwand H". iDestruct "H" as (?) "(>?&>%&>#?&?)".
   iSpecialize ("Hwand" with "[$]").
-  iMod (cfupd_weaken_all with "Hwand") as "(HP1&HP2)"; auto.
+  iMod (cfupd_weaken_mask with "Hwand") as "(HP1&HP2)"; auto.
   iModIntro.
   iNext. iExists _. iFrame "# ∗ %".
 Qed.
@@ -255,7 +255,7 @@ Proof.
 Qed.
 
 Definition fs_cfupd_cancel dinit P :=
-  ((|C={⊤}_10=>
+  ((|C={⊤}=>
     ∃ γ γsrc logm',
     is_txn_durable γ dinit logm' ∗
     ▷ is_source P γsrc ∗
@@ -263,12 +263,12 @@ Definition fs_cfupd_cancel dinit P :=
 
 Theorem wpc_Recover γ γsrc d dinit logm :
   {{{
-    (∀ σ, ▷ P1 σ -∗ |C={⊤ ∖ ↑N}_10=> ▷ P1 σ ∗ ▷ P2 σ) ∗
+    (∀ σ, ▷ P1 σ -∗ |C={⊤ ∖ ↑N}=> ▷ P1 σ ∗ ▷ P2 σ) ∗
     is_txn_durable γ dinit logm ∗
     ▷ is_source P1 γsrc ∗
     [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a
   }}}
-    Recover (disk_val d) @ 10; ⊤
+    Recover (disk_val d) @ ⊤
   {{{ nfs, RET #nfs;
       init_cancel (∃ γsimp, is_fs P1 γsimp nfs dinit) (fs_cfupd_cancel dinit P2)}}}
   {{{
@@ -307,8 +307,7 @@ Proof using All.
       iApply big_sepS_fupd.
       iApply (big_sepS_wand with "Hstable").
       iApply big_sepS_intro. iModIntro. iIntros (? Hin) "H".
-      unshelve (iMod (is_inode_stable_crash with "[$] [$] [$]"); eauto).
-      { exact O. (* This will go away when we remove the useless k parameter *) }
+      iMod (is_inode_stable_crash with "[$] [$] [$]"); eauto.
     }
     iModIntro.
     iApply "HΦc".
@@ -318,15 +317,14 @@ Proof using All.
 
   iModIntro.
   iIntros (γ' l) "(#Histxn & #Htxnsys & Hcfupdcancel & #Htxncrash)".
-  iCache (|C={⊤}_10=> Φc)%I with "Hshift Hsrc Hstable Hcfupdcancel HΦ".
+  iCache (|C={⊤}=> Φc)%I with "Hshift Hsrc Hstable Hcfupdcancel HΦ".
   { iDestruct "HΦ" as "[HΦc _]". iIntros "#HC".
     iAssert (|={⊤}=> [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)%I with "[Hstable]" as ">Hcrash".
     {
       iApply big_sepS_fupd.
       iApply (big_sepS_wand with "Hstable").
       iApply big_sepS_intro. iModIntro. iIntros (? Hin) "H".
-      unshelve (iMod (is_inode_stable_crash with "[$] [$] [$]"); eauto).
-      { exact O. (* This will go away when we remove the useless k parameter *)  }
+      iMod (is_inode_stable_crash with "[$] [$] [$]"); eauto.
     }
     rewrite /txn_cfupd_cancel.
     iMod (is_source_later_upd P1 P2 with "[$] Hsrc [$]") as "Hsrc".
@@ -431,7 +429,7 @@ Proof using All.
 
   iIntros "H".
   rewrite /fs_cfupd_cancel.
-  iAssert (|C={⊤}_10=> [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)%I
+  iAssert (|C={⊤}=> [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ' a)%I
     with "[H]" as ">H".
   { iIntros "#HC". iApply big_sepS_fupd.
     iApply (big_sepS_wand with "H"). iApply big_sepS_intro.
@@ -449,8 +447,6 @@ Proof using All.
   iDestruct "Hcfupdcancel" as (?) "?".
   iExists γ', γsrc', _. iFrame.
   iModIntro. iNext. iExists _. iFrame "# ∗ %".
-  Unshelve.
-  exact O.
 Qed.
 
 End goose_lang.

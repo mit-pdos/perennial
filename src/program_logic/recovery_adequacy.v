@@ -11,7 +11,6 @@ Set Default Proof Using "Type".
 Section recovery_adequacy.
 Context `{!irisGS Λ Σ}.
 Implicit Types s : stuckness.
-Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
 Implicit Types Φinv : generationGS Λ Σ → iProp Σ.
@@ -19,7 +18,7 @@ Implicit Types Φc : generationGS Λ Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Notation wptp s k t := ([∗ list] ef ∈ t, WPC ef @ s; k; ⊤ {{ fork_post }} {{ True }})%I.
+Notation wptp s t := ([∗ list] ef ∈ t, WPC ef @ s; ⊤ {{ fork_post }} {{ True }})%I.
 
 Notation steps_sum := crash_adequacy.steps_sum.
 
@@ -125,12 +124,12 @@ Proof.
     eauto.
 Qed.
 
-Lemma wptp_recv_strong_normal_adequacy {CS Φ Φinv Φr κs' s k HG} n ns ncurr mj D r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
+Lemma wptp_recv_strong_normal_adequacy {CS Φ Φinv Φr κs' s HG} n ns ncurr mj D r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
   nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) Normal →
   state_interp σ1 (length t1) -∗
   global_state_interp g1 ncurr mj D (κs ++ κs') -∗
-  wpr CS s k HG ⊤ e1 r1 Φ Φinv Φr -∗
-  wptp s k t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns HG (λ HG',
+  wpr CS s HG ⊤ e1 r1 Φ Φinv Φr -∗
+  wptp s t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns HG (λ HG',
     ⌜ HG' = HG ⌝ ∗
     (||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ncurr n) ||={∅|∅,⊤|⊤}=>
     ∃ e2 t2',
@@ -163,13 +162,13 @@ Fixpoint sum_crash_steps ns :=
   | n :: ns => (S n) + (sum_crash_steps ns)
   end.
 
-Lemma wptp_recv_strong_crash_adequacy {CS Φ Φinv Φinv' Φr κs' s k HG} ncurr mj D ns n r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
+Lemma wptp_recv_strong_crash_adequacy {CS Φ Φinv Φinv' Φr κs' s HG} ncurr mj D ns n r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
   nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) Crashed →
   state_interp σ1 (length t1) -∗
   global_state_interp g1 ncurr mj D (κs ++ κs') -∗
-  wpr CS s k HG ⊤ e1 r1 Φ Φinv Φr -∗
+  wpr CS s HG ⊤ e1 r1 Φ Φinv Φr -∗
   □ (∀ HG', Φinv HG' -∗ □ Φinv' HG') -∗
-  wptp s k t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns HG (λ HG',
+  wptp s t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns HG (λ HG',
     let ntot := (steps_sum num_laters_per_step step_count_next
                            (Nat.iter (sum_crash_steps ns) step_count_next ncurr )
                            n)  in
@@ -278,13 +277,13 @@ Proof.
     eauto.
 Qed.
 
-Lemma wptp_recv_strong_adequacy {CS Φ Φinv Φinv' Φr κs' s k HG} ns mj D n r1 e1 t1 κs t2 σ1 g1 ncurr σ2 g2 stat :
+Lemma wptp_recv_strong_adequacy {CS Φ Φinv Φinv' Φr κs' s HG} ns mj D n r1 e1 t1 κs t2 σ1 g1 ncurr σ2 g2 stat :
   nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) stat →
   state_interp σ1 (length t1) -∗
   global_state_interp g1 ncurr mj D (κs ++ κs') -∗
-  wpr CS s k HG ⊤ e1 r1 Φ Φinv Φr -∗
+  wpr CS s HG ⊤ e1 r1 Φ Φinv Φr -∗
   □ (∀ HG', Φinv HG' -∗ □ Φinv' HG') -∗
-  wptp s k t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns HG (λ HG',
+  wptp s t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns HG (λ HG',
     let ntot := (steps_sum num_laters_per_step step_count_next
                            (Nat.iter (sum_crash_steps ns) step_count_next ncurr )
                            n)  in
@@ -452,7 +451,7 @@ Proof.
   - constructor; naive_solver.
 Qed.
 
-Corollary wp_recv_adequacy_inv Σ Λ CS `{!invGpreS Σ} `{!crashGpreS Σ} nsinit s k e r σ g φ φr φinv f1 f2:
+Corollary wp_recv_adequacy_inv Σ Λ CS `{!invGpreS Σ} `{!crashGpreS Σ} nsinit s e r σ g φ φr φinv f1 f2:
   (∀ `(Hinv : !invGS Σ) `(Hc: !crashGS Σ) κs,
      ⊢ |={⊤}=> ∃
          (stateI : state Λ → nat → iProp Σ) (* for the initial generation *)
@@ -464,7 +463,7 @@ Corollary wp_recv_adequacy_inv Σ Λ CS `{!invGpreS Σ} `{!crashGpreS Σ} nsinit
        □ (∀ σ nt, stateI σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗ (* φinv for initial gen. *)
        □ (∀ HG, Φinv Hinv HG -∗ □ ∀ σ nt, state_interp σ nt -∗ |@NC={iris_crashGS, ⊤, ∅}=> ⌜ φinv σ ⌝) ∗ (* φinv for later generations *)
        stateI σ 0 ∗ global_stateI g nsinit 1%Qp ∅ κs ∗
-       wpr CS s k HG ⊤ e r (λ v, ⌜φ v⌝) (Φinv Hinv) (λ _ v, ⌜φr v⌝)) →
+       wpr CS s HG ⊤ e r (λ v, ⌜φ v⌝) (Φinv Hinv) (λ _ v, ⌜φr v⌝)) →
   recv_adequate (CS := CS) s e r σ g (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, φinv σ).
 Proof.
   intros Hwp.

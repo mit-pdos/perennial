@@ -46,21 +46,21 @@ Section proof.
     {{{ True }}} lock.new #() {{{ lk, RET #lk; is_free_crash_lock lk }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
-    iApply (wpc_wp _ O).
+    iApply (wpc_wp _).
     iApply wpc_crash_borrow_generate_pre; auto.
     iApply wp_wpc.
     wp_apply wp_new_free_lock.
     iIntros. iApply "HΦ". iFrame.
   Qed.
 
-  Lemma newlock_crash_spec k (P R Rcrash : iProp Σ) K `{!LanguageCtx K} Φ Φc :
+  Lemma newlock_crash_spec (P R Rcrash : iProp Σ) K `{!LanguageCtx K} Φ Φc :
     R -∗
     □ (R -∗ Rcrash) -∗
-    Φc ∧ (∀ lk, is_crash_lock lk R Rcrash -∗ WPC (K (of_val lk)) @ k; ⊤ {{ Φ }} {{ Φc }}) -∗
-    WPC K (lock.new #()) @ k; ⊤ {{ Φ }} {{ Φc ∗ Rcrash }}.
+    Φc ∧ (∀ lk, is_crash_lock lk R Rcrash -∗ WPC (K (of_val lk)) @ ⊤ {{ Φ }} {{ Φc }}) -∗
+    WPC K (lock.new #()) @ ⊤ {{ Φ }} {{ Φc ∗ Rcrash }}.
   Proof.
     iIntros "HR #Hwand1 Hwpc".
-    iApply (wpc_crash_borrow_init_ctx' _ _ _ _ _ R Rcrash with "[$] [$] [-]").
+    iApply (wpc_crash_borrow_init_ctx' _ _ _ _ R Rcrash with "[$] [$] [-]").
     { auto. }
     iSplit.
     { iDestruct "Hwpc" as "($&_)". }
@@ -75,13 +75,13 @@ Section proof.
     iApply "HP". eauto.
   Qed.
 
-  Lemma alloc_crash_lock k Φ Φc e lk (R Rcrash : iProp Σ):
+  Lemma alloc_crash_lock Φ Φc e lk (R Rcrash : iProp Σ):
     □ (R -∗ Rcrash) ∗
     R ∗
     is_free_crash_lock lk ∗
     (is_crash_lock #lk R Rcrash -∗
-          WPC e @ k; ⊤ {{ Φ }} {{ Rcrash -∗ Φc }}) -∗
-    WPC e @ k; ⊤ {{ Φ }} {{ Φc }}.
+          WPC e @ ⊤ {{ Φ }} {{ Rcrash -∗ Φc }}) -∗
+    WPC e @ ⊤ {{ Φ }} {{ Φc }}.
   Proof.
     clear.
     iIntros "(#HRcrash&HR&Hfree&Hwp)".
@@ -122,10 +122,10 @@ Section proof.
     - iDestruct "HR" as "[Hl2 HR]".
       iCombine "Hl Hl2" as "Hl".
       rewrite Qp_quarter_three_quarter.
-      iApply (wpc_wp NotStuck 0 _ _ _ True).
+      iApply (wpc_wp NotStuck _ _ _ True).
       iAssert (▷ □ (R' -∗ Rcrash'))%I with "[HR]" as "#Hwand".
       { iNext. by iApply crash_borrow_crash_wand. }
-      iApply (wpc_crash_borrow_split _ _ _ _ _ _ _
+      iApply (wpc_crash_borrow_split _ _ _ _ _ _
                                      R
                                      ((R -∗ R') ∧ (Rcrash -∗ Rcrash'))
                                      Rcrash
@@ -164,12 +164,12 @@ Section proof.
     - iIntros "_". wp_if. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
-  Lemma use_crash_locked E1 k e lk R Rcrash Φ Φc :
+  Lemma use_crash_locked E1 e lk R Rcrash Φ Φc :
     to_val e = None →
     crash_locked lk R Rcrash -∗
-    Φc ∧ (R -∗ WPC e @ k; E1 {{ λ v, (crash_locked lk R Rcrash -∗ (Φc ∧ Φ v)) ∗ R }}
+    Φc ∧ (R -∗ WPC e @ E1 {{ λ v, (crash_locked lk R Rcrash -∗ (Φc ∧ Φ v)) ∗ R }}
                                          {{ Φc ∗ Rcrash }}) -∗
-    WPC e @ k; E1 {{ Φ }} {{ Φc }}.
+    WPC e @ E1 {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (?) "Hcrash_locked H".
     iDestruct "Hcrash_locked" as "(Hfull&#His_lock&Hlocked)".
@@ -217,8 +217,8 @@ Section proof.
     iDestruct (heap_mapsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp_quarter_three_quarter.
-    iApply (wpc_wp NotStuck 0 _ _ _ True).
-    iApply (wpc_crash_borrow_combine _ _ _ _ _ R' Rcrash'
+    iApply (wpc_wp NotStuck _ _ _ True).
+    iApply (wpc_crash_borrow_combine _ _ _ _ R' Rcrash'
                   with "Hc1 Hc2"); auto.
     { iNext. iIntros "(HR&Hw)". iDestruct "Hw" as "(H&_)". iApply "H". eauto. }
     iApply wp_wpc.
@@ -237,11 +237,11 @@ Section proof.
      let: "v" := e in
      lock.release lk)%E.
 
-  Lemma with_lock_spec k Φ Φc (R Rcrash : iProp Σ) lk e:
+  Lemma with_lock_spec Φ Φc (R Rcrash : iProp Σ) lk e:
     to_val e = None →
     is_crash_lock lk R Rcrash ∗
-    (Φc ∧ (R -∗ WPC e @ k; ⊤ {{ λ v, (Φc ∧ Φ #()) ∗ R }} {{ Φc ∗ Rcrash }})) -∗
-    WPC (with_lock lk e) @ k ; ⊤ {{ Φ }} {{ Φc }}.
+    (Φc ∧ (R -∗ WPC e @ ⊤ {{ λ v, (Φc ∧ Φ #()) ∗ R }} {{ Φc ∗ Rcrash }})) -∗
+    WPC (with_lock lk e) @ ⊤ {{ Φ }} {{ Φc }}.
   Proof.
     iIntros (Hnv) "(#Hcrash&Hwp)".
     rewrite /with_lock.

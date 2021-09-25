@@ -127,7 +127,7 @@ Proof using Ptimeless.
 
   wp_pures.
   wp_bind (NFSPROC3_READ_internal _ _ _ _).
-  iApply (wpc_wp _ _ _ _ _ True).
+  iApply (wpc_wp _ _ _ _ True).
 
   iDestruct (use_CrashLocked _ with "Hcrashlocked") as "Hcrashuse"; last iApply "Hcrashuse".
   { rewrite //=. }
@@ -347,7 +347,6 @@ Transparent nfstypes.READ3res.
 
 Unshelve.
   all: eauto.
-  exact O.
 Qed.
 
 End heap.

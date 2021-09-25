@@ -161,7 +161,7 @@ Section goose_lang.
   (* TODO: note that we don't promise γ'.(jrnl_txn_names).(txn_kinds) =
   γ.(jrnl_txn_names).(txn_kinds), even though txn_cfupd_res has this fact *)
   Definition txn_cinv γ γ' : iProp Σ :=
-    (□ |C={⊤}_0=> inv N (sep_txn_exchanger γ γ')) ∗
+    (□ |C={⊤}=> inv N (sep_txn_exchanger γ γ')) ∗
     ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝.
 
   (* this is for the entire txn manager, and relates it to some ghost state *)
@@ -675,14 +675,14 @@ Section goose_lang.
     iFrame "# ∗". iExists _. iFrame "# ∗".
   Qed.
 
-  Lemma exchange_durable_mapsto γ γ' m k :
+  Lemma exchange_durable_mapsto γ γ' m :
     ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
      "Hm" ∷ [∗ map] a↦v ∈ m, durable_mapsto γ a v) -∗
-    |C={⊤}_S k => ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
+    |C={⊤}=> ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
   Proof.
     iNamed 1.
     iDestruct "Htxn_cinv" as "[#Hinv %kinds]".
-    iMod ("Hinv"); first lia.
+    iMod ("Hinv").
     iIntros "HC".
     iInv ("Hinv") as ">H" "Hclo".
     iNamed "H".
@@ -724,30 +724,30 @@ Section goose_lang.
     iModIntro. eauto.
   Qed.
 
-  Lemma exchange_durable_mapsto1 γ γ' k a v :
+  Lemma exchange_durable_mapsto1 γ γ' a v :
     ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
      "Hm" ∷ durable_mapsto γ a v) -∗
-    |C={⊤}_S k => durable_mapsto_own γ' a v.
+    |C={⊤}=> durable_mapsto_own γ' a v.
   Proof.
     iIntros "H".
-    iMod (exchange_durable_mapsto γ γ' {[ a := v ]} k with "[-]").
+    iMod (exchange_durable_mapsto γ γ' {[ a := v ]} with "[-]").
     { iNamed "H". iFrame "Htxn_cinv". rewrite big_sepM_singleton. eauto. }
     iModIntro. rewrite big_sepM_singleton. eauto.
   Qed.
 
-  Lemma exchange_mapsto_commit γ γ' m0 m txn_id k :
+  Lemma exchange_mapsto_commit γ γ' m0 m txn_id :
     dom (gset _) m0 ⊆ dom (gset _) m →
     ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
     "Hold_vals" ∷ ([∗ map] k↦x ∈ m0,
           ∃ i : nat, txn_durable γ i ∗
                      ephemeral_txn_val_range γ.(jrnl_async_name) i txn_id k x) ∗
     "Hval" ∷ [∗ map] k↦x ∈ m, ephemeral_val_from γ.(jrnl_async_name) txn_id k x) -∗
-    |C={⊤}_S k => ([∗ map] a↦v ∈ m0, durable_mapsto_own γ' a v) ∨
+    |C={⊤}=> ([∗ map] a↦v ∈ m0, durable_mapsto_own γ' a v) ∨
                   ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
   Proof.
     iIntros (Hdom1) "H". iNamed "H".
     iDestruct "Htxn_cinv" as "[#Hinv %kinds]".
-    iMod ("Hinv"); first lia.
+    iMod ("Hinv").
     iIntros "HC".
     iInv ("Hinv") as ">H" "Hclo".
     iNamed "H".

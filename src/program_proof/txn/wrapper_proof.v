@@ -203,7 +203,7 @@ Section proof.
   Qed.
 
   Definition twophase_obj_cfupd_cancel γ' d :=
-   ((|C={⊤}_LVL=> ∃ mt',
+   ((|C={⊤}=> ∃ mt',
        ⌜ dom (gset _) mt' = d ⌝ ∗
        "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
          "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
@@ -303,12 +303,11 @@ Section proof.
     iApply wp_ncfupd.
     unshelve (wp_apply (
       wp_Txn__commitNoRelease_raw
-      _ _ _ _ _ _ _ _
+      _ _ _ _ _ _ _
       (j ⤇ K (SOMEV v))%I
       (|NC={⊤}=> j ⤇ K NONEV)%I
       with "[$Htwophase Hj]"
     )).
-    { exact O. }
     1-2: refine _.
     {
       iSplit.
@@ -329,8 +328,7 @@ Section proof.
           ghost_step_jrnl_atomically_crash
           with "Hspec_crash_ctx Hmapstos Htoks Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
         ) as "H"; (* "> [Hmapstos Htoks]" *) [eassumption|set_solver|].
-        iMod (cfupd_weaken_all with "H") as "[Hmapstos Htoks]".
-        { lia. }
+        iMod (cfupd_weaken_mask with "H") as "[Hmapstos Htoks]".
         { auto. }
         iModIntro.
         iApply big_sepM_sep.

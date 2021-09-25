@@ -98,10 +98,10 @@ Context `{PRI: !pri_invG IRISG}.
     iFrame.
   Qed.
 
-  Lemma wpc0_mj_le s k mj1 mj2 e Φ Φc:
+  Lemma wpc0_mj_le s mj1 mj2 e Φ Φc:
     (/2 < mj1 ≤ mj2)%Qp →
-    wpc0 s k mj1 ⊤ e Φ Φc -∗
-    wpc0 s k mj2 ⊤ e Φ Φc.
+    wpc0 s mj1 ⊤ e Φ Φc -∗
+    wpc0 s mj2 ⊤ e Φ Φc.
   Proof using PRI.
     iIntros (Hle) "Hwpc".
     iLöb as "IH" forall (e Φ Φc).
@@ -235,9 +235,9 @@ Context `{PRI: !pri_invG IRISG}.
   Global Instance pri_inv_persistent E P : Persistent (pri_inv E P).
   Proof. rewrite pri_inv_eq. apply _. Qed.
 
-  Lemma wpc0_pri_inv_tok_res s k mj E1 e Φ Φc :
-    (∀ D E', pri_inv_tok 1%Qp E' ∗ ⌜ (/2 < mj)%Qp ∧ E' ## D ⌝ -∗ ||={E1|⊤∖D, E1|⊤∖D}=> wpc0 s k mj E1 e Φ Φc) -∗
-    wpc0 s k mj E1 e Φ Φc.
+  Lemma wpc0_pri_inv_tok_res s mj E1 e Φ Φc :
+    (∀ D E', pri_inv_tok 1%Qp E' ∗ ⌜ (/2 < mj)%Qp ∧ E' ## D ⌝ -∗ ||={E1|⊤∖D, E1|⊤∖D}=> wpc0 s mj E1 e Φ Φc) -∗
+    wpc0 s mj E1 e Φ Φc.
   Proof.
     iIntros "H".
     iEval (rewrite wpc0_unfold).
@@ -266,9 +266,9 @@ Context `{PRI: !pri_invG IRISG}.
     iMod "H" as "(_&H)". by iMod ("H" with "[$] [$]") as "$".
   Qed.
 
-  Lemma wpc_pri_inv_tok_res s k E1 e Φ Φc :
-    (∀ E', pri_inv_tok 1%Qp E' -∗ wpc s k E1 e Φ Φc) -∗
-    wpc s k E1 e Φ Φc.
+  Lemma wpc_pri_inv_tok_res s E1 e Φ Φc :
+    (∀ E', pri_inv_tok 1%Qp E' -∗ wpc s E1 e Φ Φc) -∗
+    wpc s E1 e Φ Φc.
   Proof.
     iIntros "H". rewrite wpc_eq. iIntros (mj).
     iApply wpc0_pri_inv_tok_res. iIntros (D E') "(Htok&%)".

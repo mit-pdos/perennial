@@ -80,7 +80,7 @@ Definition crashed_kvs kvp_ls kvsblks γDisk sz : iProp Σ :=
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
-    MkKVS #d #(U64(Z.of_nat sz)) @ NotStuck; k; E1; E2
+    MkKVS #d #(U64(Z.of_nat sz)) @ E2
   {{{ kvsl kvsblks γDisk, RET #kvsl; ptsto_kvs kvsl kvsblks sz γDisk}}}
   {{{ True }}}.
 Proof.

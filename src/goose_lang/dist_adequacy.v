@@ -10,17 +10,17 @@ From Perennial.goose_lang Require Import crash_modality.
 Set Default Proof Using "Type".
 
 Theorem goose_dist_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
-        Σ `{hPre: !gooseGpreS Σ} k (ebσs : list node_init_cfg)
+        Σ `{hPre: !gooseGpreS Σ} (ebσs : list node_init_cfg)
         g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
   (∀ `(HG : !gooseGlobalGS Σ),
       ⊢
         ffi_global_start goose_ffiGlobalGS g ={⊤}=∗
-        wpd k ⊤ ebσs ∗
+        wpd ⊤ ebσs ∗
         (∀ g, ffi_global_ctx goose_ffiGlobalGS g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
   intros Hwp.
-  eapply (wpd_dist_adequacy_inv Σ _ _ _ _ _ _ _ _ (λ n, 10 * (n + 1))%nat).
+  eapply (wpd_dist_adequacy_inv Σ _ _ _ _ _ _ _ (λ n, 10 * (n + 1))%nat).
   iIntros (Hinv ?) "".
   iMod (ffi_global_init _ _ g) as (ffi_namesg) "(Hgw&Hgstart)"; first by auto.
   iMod (credit_name_init (crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
@@ -92,7 +92,7 @@ Theorem goose_dist_adequacy_failstop
   dist_adequate_failstop ebσs g (λ g, φinv g).
 Proof.
   intros Hwp. rewrite /dist_adequate_failstop.
-  eapply (goose_dist_adequacy Σ 0); first done.
+  eapply (goose_dist_adequacy Σ); first done.
   { intros σ (?&->&Hin)%elem_of_list_fmap. eapply HINIT; eauto.
     apply elem_of_list_fmap in Hin as (?&->&?) => //=.
     eapply elem_of_list_fmap. eauto. }
@@ -105,7 +105,7 @@ Proof.
   iDestruct "Hwp" as (Φ) "H". simpl.
   iModIntro. iExists Φ, (λ _ _, True%I), (λ _, True%I).
   set (Hheao := HeapGS _ HG HL).
-  iApply (idempotence_wpr _ _ _ _ _ _ _ _ (λ _, True%I) with "[H] []").
+  iApply (idempotence_wpr _ _ _ _ _ _ _ (λ _, True%I) with "[H] []").
   { iApply wp_wpc. eauto. }
   { iModIntro. iIntros (????) "_".
     iModIntro.

@@ -169,7 +169,7 @@ Theorem is_inode_alloc {k} l P addr σ :
   ▷ P σ -∗
   pre_inode l addr σ ={⊤}=∗
   is_inode l (S k) P addr ∗
-  <disc> |C={⊤}_(S k)=> ▷ (∃ σ', inode_cinv addr σ' ∗ P σ').
+  <disc> |C={⊤}=> ▷ (∃ σ', inode_cinv addr σ' ∗ P σ').
    (* Crash condition has [P] without extra ▷ because [alloc_crash_lock] strips that later for us. *)
 Proof.
   iIntros "HP Hinode"; iNamed "Hinode".
@@ -188,7 +188,7 @@ Qed.
 
 Theorem wpc_Open k {d} {addr σ} :
   {{{ inode_cinv addr σ }}}
-    inode.Open (disk_val d) #addr @ k; ⊤
+    inode.Open (disk_val d) #addr @ ⊤
   {{{ l, RET #l; pre_inode l addr σ }}}
   {{{ inode_cinv addr σ }}}.
 Proof.
@@ -302,7 +302,7 @@ Qed.
 
 Theorem wpc_Inode__UsedBlocks {k } {l σ addr} :
   {{{ pre_inode l addr σ  }}}
-    Inode__UsedBlocks #l @ k; ⊤
+    Inode__UsedBlocks #l @ ⊤
   {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
       is_slice s uint64T 1 addrs ∗
       ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗

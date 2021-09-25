@@ -78,7 +78,7 @@ Section goose_lang.
   Qed.
 
   Definition txn_cfupd_cancel dinit γ' : iProp Σ :=
-    (<bdisc> (|C={⊤}_0=>
+    (<bdisc> (|C={⊤}=>
               ▷ ∃ logm', is_txn_durable γ' dinit logm' )).
 
 
@@ -129,9 +129,9 @@ Section goose_lang.
     iExists _. simpl.  iFrame "Hctx' Hlogm Hcancel".
   Qed.
 
-  Theorem wpc_MkLog d γ dinit logm k :
+  Theorem wpc_MkLog d γ dinit logm :
     {{{ is_txn_durable γ dinit logm }}}
-      obj.MkLog (disk_val d) @ k; ⊤
+      obj.MkLog (disk_val d) @ ⊤
     {{{ γ' (l: loc), RET #l;
         is_txn l γ.(jrnl_txn_names) dinit ∗
         is_txn_system N γ ∗
@@ -163,7 +163,7 @@ Section goose_lang.
         iApply "HΦ".
         iDestruct "H2" as (logm'') "H2".
         iExists {| jrnl_txn_names := γ'; jrnl_async_name := γasync' |}, logm''.
-        iMod (inv_alloc' with "H1") as "#Hinv".
+        iMod (inv_alloc with "H1") as "#Hinv".
         iModIntro.
         iFrame "H2".
         iRight.
@@ -182,7 +182,7 @@ Section goose_lang.
         iMod (async_pre_ctx_init) as (γasync') "Hasync_init_ctx'".
         iDestruct (async_ctx_to_lb with "Hasync_ctx") as "#Hasync_lb".
         set (γ' := {| jrnl_txn_names := γtxn_names'; jrnl_async_name := γasync' |}).
-        iMod (ncinv_cinv_alloc N _ _ ⊤
+        iMod (ncinv_cinv_alloc N _ ⊤
                 (txn_system_inv γ ∗ (async_pre_ctx γasync' ∗ Ptxn_tok ∗ Ptxn_cancel_tok))
                 (sep_txn_exchanger γ γ')
                 (∃ logm', is_txn_durable γ' dinit logm')%I
@@ -219,8 +219,6 @@ Section goose_lang.
     }
     { set_solver+. }
     { set_solver+. }
-    Unshelve.
-    exact O. (* This will almost certainly go away when we remove the useless k subscript on wpc *)
   Qed.
 
 End goose_lang.

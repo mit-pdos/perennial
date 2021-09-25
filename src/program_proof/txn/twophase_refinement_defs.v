@@ -47,7 +47,6 @@ Definition twophase_update (Σ: gFunctors) (hG: twophaseG Σ) (n: twophase_names
 
 Definition LVL_INIT : nat := 1 + JRNL_SIZE.
 Definition LVL_INV : nat := 125.
-Definition LVL_OPS : nat := 100.
 
 Definition twophase_crash_cond_full
            {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
@@ -129,7 +128,6 @@ Proof using JRNL_SIZE.
      sty_crash_tok := @twophase_crash_tok;
      styN := twophaseN;
      sty_lvl_init := LVL_INIT;
-     sty_lvl_ops := LVL_OPS;
      sty_val_interp := @twophase_val_interp |}.
  - intros ? [] [] => //=.
  - intros ? [] => //=.

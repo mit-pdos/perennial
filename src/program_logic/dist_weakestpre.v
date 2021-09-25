@@ -34,17 +34,17 @@ Definition equal_global_inG ct : iProp Σ :=
                grove_global_state_interp g ns mj D κs).
 *)
 
-Definition wpd CS (k : nat) (E: coPset) (ers: list node_init_cfg) :=
+Definition wpd CS (E: coPset) (ers: list node_init_cfg) :=
  ([∗ list] i↦σ ∈ ers, ∀ `(Hc: !crashGS Σ),
    |={⊤}=> ∃ (stateI : state Λ → nat → iProp Σ) (* for the initial generation *) Φ Φrx Φinv,
    let HG := GenerationGS Λ Σ Hc stateI in
    stateI σ.(init_local_state) 0 ∗
-   wpr CS NotStuck k HG E σ.(init_thread) σ.(init_restart) Φ Φinv Φrx)%I.
+   wpr CS NotStuck HG E σ.(init_thread) σ.(init_restart) Φ Φinv Φrx)%I.
 
-Lemma wpd_compose CS k E ers1 ers2 :
-  wpd CS k E ers1 -∗
-  wpd CS k E ers2 -∗
-  wpd CS k E (ers1 ++ ers2).
+Lemma wpd_compose CS E ers1 ers2 :
+  wpd CS E ers1 -∗
+  wpd CS E ers2 -∗
+  wpd CS E (ers1 ++ ers2).
 Proof. rewrite /wpd big_sepL_app. iIntros "$ $". Qed.
 
 End wpd.

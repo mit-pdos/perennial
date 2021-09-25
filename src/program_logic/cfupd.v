@@ -14,32 +14,31 @@ Section cfupd.
   Context `{crashGS Σ} `{invGS Σ}.
   Implicit Types (P: iProp Σ).
 
-  Definition cfupd (k: nat) E1 :=
+  Definition cfupd E1 :=
     λ P, (C -∗ |={E1}=> P)%I.
 
-  Lemma cfupd_wand  (E1 E1' : coPset) (k1 k2 : nat) P Q:
+  Lemma cfupd_wand  (E1 E1' : coPset) P Q:
     E1' ⊆ E1 →
-    k2 ≤ k1 →
-    cfupd k2 E1' P -∗
+    cfupd E1' P -∗
     (P -∗ Q) -∗
-    cfupd k1 E1 Q.
+    cfupd E1 Q.
   Proof.
-    iIntros (??) "HP HPQ".
+    iIntros (?) "HP HPQ".
     iIntros "HC". iSpecialize ("HP" with "[$]").
     iMod (fupd_mask_mono with "HP") as "HP"; auto.
     iModIntro. by iApply "HPQ".
   Qed.
 
-  Global Instance cfupd_proper_ent k E1 :
-    Proper ((⊢) ==> (⊢)) (cfupd k E1).
+  Global Instance cfupd_proper_ent E1 :
+    Proper ((⊢) ==> (⊢)) (cfupd E1).
   Proof.
     iIntros (P Q Hent) "Hfupd".
     iApply (cfupd_wand with "Hfupd"); eauto.
     iApply Hent.
   Qed.
 
-  Global Instance cfupd_proper_equiv k E1 :
-    Proper ((⊣⊢) ==> (⊣⊢)) (cfupd k E1).
+  Global Instance cfupd_proper_equiv E1 :
+    Proper ((⊣⊢) ==> (⊣⊢)) (cfupd E1).
   Proof.
     intros P Q Hequiv.
     iSplit; iIntros "H".
@@ -104,8 +103,8 @@ Section cfupd.
     iApply fupd_mask_intro_discard; auto.
   Qed.
 
-  Global Instance from_modal_cfupd k E1 P :
-    FromModal True modality_id (cfupd k E1 P) (cfupd k E1 P) (P).
+  Global Instance from_modal_cfupd E1 P :
+    FromModal True modality_id (cfupd E1 P) (cfupd E1 P) (P).
   Proof.
     rewrite /FromModal /=.
     iIntros (_) "HP".
@@ -225,12 +224,11 @@ Section cfupd.
     auto.
   Qed.
 
-  Theorem cfupd_weaken_all k1 k2 E1 E1' P :
-    (k1 ≤ k2)%nat →
+  Theorem cfupd_weaken_mask E1 E1' P :
     E1' ⊆ E1 →
-    cfupd k1 E1'  P -∗ cfupd k2 E1 P.
+    cfupd  E1'  P -∗ cfupd E1 P.
   Proof.
-    iIntros (??) "H".
+    iIntros (?) "H".
     iApply (cfupd_wand with "[$]"); eauto.
   Qed.
 
@@ -259,9 +257,9 @@ Section cfupd.
     iApply fupd_mask_intro_subseteq; first set_solver; auto.
   Qed.
 
-  Global Instance elim_modal_cfupd k p E1 P Q :
-    ElimModal True p false (cfupd k E1 P) (P)
-              (cfupd k E1 Q) (cfupd k E1 Q).
+  Global Instance elim_modal_cfupd p E1 P Q :
+    ElimModal True p false (cfupd E1 P) (P)
+              (cfupd E1 Q) (cfupd E1 Q).
   Proof.
     rewrite /ElimModal intuitionistically_if_elim /cfupd /=.
     iIntros (?) "[Hfupd HQ]".
@@ -272,21 +270,9 @@ Section cfupd.
     iModIntro. auto.
   Qed.
 
-  Global Instance elim_modal_cfupd_le k k' p E1 P Q :
-    ElimModal (k' ≤ k)%nat p false (cfupd k' E1 P) (P)
-              (cfupd k E1 Q) (cfupd k E1 Q).
-  Proof.
-    rewrite /ElimModal intuitionistically_if_elim /cfupd /=.
-    iIntros (?) "[Hfupd HQ]".
-    iIntros "#HC".
-    iSpecialize ("Hfupd" with "HC").
-    iMod (fupd_mask_subseteq ∅) as "Hclo"; first set_solver.
-    iMod "Hclo". iMod "Hfupd". iApply ("HQ" with "[$] [$]").
-  Qed.
-
-  Global Instance cfupd_frame k p E1 R P Q :
+  Global Instance cfupd_frame p E1 R P Q :
     Frame p R P Q →
-    Frame p R (cfupd k E1 P) (cfupd k E1 Q).
+    Frame p R (cfupd E1 P) (cfupd E1 Q).
   Proof.
     rewrite /Frame.
     iIntros (Hframe) "[HR Hfupd]".
@@ -295,9 +281,9 @@ Section cfupd.
     iMod "Hfupd". iModIntro. iApply Hframe; by iFrame.
   Qed.
 
-  Lemma cfupd_big_sepL_aux {A} (l: list A) (Φ: nat → A → iProp Σ) n k E1 :
-    ([∗ list] i↦a ∈ l, cfupd k E1 (Φ (n + i) a)) -∗
-    cfupd k E1 ([∗ list] i↦a ∈ l, Φ (n + i) a).
+  Lemma cfupd_big_sepL_aux {A} (l: list A) (Φ: nat → A → iProp Σ) n E1 :
+    ([∗ list] i↦a ∈ l, cfupd E1 (Φ (n + i) a)) -∗
+    cfupd E1 ([∗ list] i↦a ∈ l, Φ (n + i) a).
   Proof.
     iIntros "H".
     iInduction l as [| x l] "IH" forall (n).
@@ -314,14 +300,14 @@ Section cfupd.
       iModIntro. eauto.
   Qed.
 
-  Lemma cfupd_big_sepL {A} (l: list A) (Φ: nat → A → iProp Σ) k E1 :
-    ([∗ list] i↦a ∈ l, cfupd k E1 (Φ i a)) -∗
-    cfupd k E1 ([∗ list] i↦a ∈ l, Φ i a).
+  Lemma cfupd_big_sepL {A} (l: list A) (Φ: nat → A → iProp Σ) E1 :
+    ([∗ list] i↦a ∈ l, cfupd E1 (Φ i a)) -∗
+    cfupd E1 ([∗ list] i↦a ∈ l, Φ i a).
   Proof. iApply (cfupd_big_sepL_aux _ _ 0). Qed.
 
-  Lemma cfupd_big_sepS `{Countable A} (σ: gset A)(P: A → iProp Σ) k E1  :
-    ([∗ set] a ∈ σ, cfupd k E1 (P a)) -∗
-    cfupd k E1 ([∗ set] a ∈ σ, P a).
+  Lemma cfupd_big_sepS `{Countable A} (σ: gset A)(P: A → iProp Σ) E1  :
+    ([∗ set] a ∈ σ, cfupd E1 (P a)) -∗
+    cfupd E1 ([∗ set] a ∈ σ, P a).
   Proof. rewrite big_opS_eq. apply cfupd_big_sepL. Qed.
 
   Lemma is_except_0_wand {PROP:bi} (P Q: PROP) :
@@ -334,15 +320,15 @@ Section cfupd.
     iApply ("HQ" with "HP").
   Qed.
 
-  Global Instance cfupd_is_except0 k E Q : IsExcept0 (cfupd k E Q).
+  Global Instance cfupd_is_except0 E Q : IsExcept0 (cfupd E Q).
   Proof.
     rewrite /cfupd.
     apply is_except_0_wand.
     apply _.
   Qed.
 
-  Global Instance from_pure_cfupd a k E P φ :
-    FromPure a P φ → FromPure a (cfupd k E P) φ.
+  Global Instance from_pure_cfupd a E P φ :
+    FromPure a P φ → FromPure a (cfupd E P) φ.
   Proof.
     rewrite /FromPure=> HP. iIntros "? !>". by iApply HP.
   Qed.
@@ -350,8 +336,8 @@ Section cfupd.
 End cfupd.
 
 (* Open to alternative notation for this. *)
-Notation "|C={ E1 }_ k => P" := (cfupd k E1 P)
+Notation "|C={ E1 }=> P" := (cfupd E1 P)
       (at level 99, E1 at level 50, P at level 200,
-       format "'[  ' |C={ E1 }_ k =>  '/' P ']'").
+       format "'[  ' |C={ E1 }=>  '/' P ']'").
 
-Global Hint Extern 1 (environments.envs_entails _ (|C={_}_ _ => _)) => iModIntro : core.
+Global Hint Extern 1 (environments.envs_entails _ (|C={_}=> _)) => iModIntro : core.

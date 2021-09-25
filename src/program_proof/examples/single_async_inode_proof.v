@@ -403,7 +403,7 @@ Section goose.
     (1 ≤ sz < 2^64)%Z →
     pre_s_inode γdur γbuf l sz σ ={⊤}=∗
     is_single_inode γdur γbuf l sz k ∗
-    <disc> |C={⊤}_(S k)=> ∃ σ', s_inode_cinv γdur γbuf sz σ' false.
+    <disc> |C={⊤}=> ∃ σ', s_inode_cinv γdur γbuf sz σ' false.
   Proof.
     iIntros (?); iNamed 1.
     iNamed "Hinode".
@@ -423,7 +423,7 @@ Section goose.
     iModIntro.
     iMod "Halloc_crash" as "Halloc".
     iMod "Hinode_crash" as "Hinode".
-    iMod (cfupd_weaken_all with "Hinv_crash") as "Hs_inode"; first lia.
+    iMod (cfupd_weaken_mask with "Hinv_crash") as "Hs_inode"; first lia.
     { solve_ndisj. }
     iModIntro. iNext.
     iDestruct "Hs_inode" as (σ') "[Hs_inv HP]".

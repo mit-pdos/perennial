@@ -207,7 +207,7 @@ Proof using Ptimeless.
   wp_pures.
   wp_bind (NFSPROC3_GETATTR_internal _ _ _ _).
 
-  iApply (wpc_wp _ _ _ _ _ True).
+  iApply (wpc_wp _ _ _ _ True).
   iApply (use_CrashLocked _ with "Hcrashlocked"); first by eauto.
   iSplit.
   { done. }
@@ -384,7 +384,6 @@ Transparent nfstypes.GETATTR3res.
     lia.
 Unshelve.
   all: eauto.
-  all: try exact O.
 Qed.
 
 End heap.

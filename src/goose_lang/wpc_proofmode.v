@@ -9,9 +9,9 @@ From Perennial.goose_lang.lib Require Import struct.struct.
 Set Default Proof Using "Type".
 Import uPred.
 
-Lemma wpc_fork `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s k E1 e Φ Φc :
-  ▷ WPC e @ s; k; ⊤ {{ _, True }} {{ True }} -∗ (Φc ∧ ▷ Φ (LitV LitUnit)) -∗
-                      WPC Fork e @ s; k; E1 {{ Φ }} {{ Φc }}.
+Lemma wpc_fork `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s E1 e Φ Φc :
+  ▷ WPC e @ s; ⊤ {{ _, True }} {{ True }} -∗ (Φc ∧ ▷ Φ (LitV LitUnit)) -∗
+                      WPC Fork e @ s; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "He HΦ". iApply wpc_lift_head_step; [done|].
   iSplit; last first.
@@ -32,27 +32,27 @@ Proof.
 Qed.
 
 Lemma tac_wpc_expr_eval `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ} Δ (s: stuckness) (k: nat) E1 Φ (Φc: iProp Σ) e e' :
+      `{!heapGS Σ} Δ (s: stuckness) E1 Φ (Φc: iProp Σ) e e' :
   (∀ (e'':=e'), e = e'') →
-  envs_entails Δ (WPC e' @ s; k; E1 {{ Φ }} {{ Φc }}) → envs_entails Δ (WPC e @ s; k; E1 {{ Φ }} {{ Φc }}).
+  envs_entails Δ (WPC e' @ s; E1 {{ Φ }} {{ Φc }}) → envs_entails Δ (WPC e @ s; E1 {{ Φ }} {{ Φc }}).
 Proof. by intros ->. Qed.
 
 Tactic Notation "wpc_expr_eval" tactic(t) :=
   iStartProof;
   lazymatch goal with
-  | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q1 ?Q2) =>
-    notypeclasses refine (tac_wpc_expr_eval _ _ _ _ _ _ e _ _ _);
+  | |- envs_entails _ (wpc ?s ?E1 ?e ?Q1 ?Q2) =>
+    notypeclasses refine (tac_wpc_expr_eval _ _ _ _ _ e _ _ _);
       [let x := fresh in intros x; t; unfold x; notypeclasses refine eq_refl|]
   end.
 
 Lemma tac_wpc_pure_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-      Δ Δ' s k E1 K e1 e2 φ Φ Φc :
+      Δ Δ' s E1 K e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_entails Δ (Φc) →
-  (envs_entails Δ (Φc) → envs_entails Δ' (WPC (fill K e2) @ s; k; E1 {{ Φ }} {{ Φc }})) →
-  envs_entails Δ (WPC (fill K e1) @ s; k; E1 {{ Φ }} {{ Φc }}).
+  (envs_entails Δ (Φc) → envs_entails Δ' (WPC (fill K e2) @ s; E1 {{ Φ }} {{ Φc }})) →
+  envs_entails Δ (WPC (fill K e1) @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq=> ??? Hcrash HΔ'.
   pose proof @pure_exec_fill.
@@ -62,12 +62,12 @@ Proof.
 Qed.
 
 Lemma tac_wpc_pure_no_later_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-      Δ s k E1 K e1 e2 φ Φ Φc :
+      Δ s E1 K e1 e2 φ Φ Φc :
   PureExec φ 1 e1 e2 →
   φ →
   envs_entails Δ Φc →
-  (envs_entails Δ Φc → envs_entails Δ (WPC (fill K e2) @ s; k; E1 {{ Φ }} {{ Φc }})) →
-  envs_entails Δ (WPC (fill K e1) @ s; k; E1 {{ Φ }} {{ Φc }}).
+  (envs_entails Δ Φc → envs_entails Δ (WPC (fill K e2) @ s; E1 {{ Φ }} {{ Φc }})) →
+  envs_entails Δ (WPC (fill K e1) @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq=> ?? Hcrash HΔ'.
   pose proof @pure_exec_fill.
@@ -79,10 +79,10 @@ Proof.
 Qed.
 
 Lemma tac_wpc_value `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ} Δ s k E1 Φ Φc v :
+      `{!heapGS Σ} Δ s E1 Φ Φc v :
   envs_entails Δ (|NC={E1}=> Φ v) →
   envs_entails Δ Φc →
-  envs_entails Δ (WPC (Val v) @ s; k; E1 {{ Φ }} {{ Φc }}).
+  envs_entails Δ (WPC (Val v) @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq -wpc_value => H1 H2.
   apply and_intro.
@@ -90,10 +90,10 @@ Proof.
   - rewrite H2. iIntros. eauto.
 Qed.
 Lemma tac_wpc_value_fupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ} Δ s k E1 Φ Φc v :
+      `{!heapGS Σ} Δ s E1 Φ Φc v :
   envs_entails Δ (|NC={E1}=> Φ v) →
   envs_entails Δ Φc →
-  envs_entails Δ (WPC (Val v) @ s; k; E1 {{ v, |={E1}=> Φ v }} {{ Φc }})%I.
+  envs_entails Δ (WPC (Val v) @ s; E1 {{ v, |={E1}=> Φ v }} {{ Φc }})%I.
 Proof.
   rewrite envs_entails_eq -wpc_value => H1 H2.
   apply and_intro.
@@ -101,10 +101,10 @@ Proof.
   - rewrite H2. iIntros. eauto.
 Qed.
 Lemma tac_wpc_value_noncfupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ} Δ s k E1 Φ Φc v :
+      `{!heapGS Σ} Δ s E1 Φ Φc v :
   envs_entails Δ (Φ v) →
   envs_entails Δ Φc →
-  envs_entails Δ (WPC (Val v) @ s; k; E1 {{ Φ }} {{ Φc }}).
+  envs_entails Δ (WPC (Val v) @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq -wpc_value => H1 H2.
   apply and_intro.
@@ -121,13 +121,13 @@ Ltac wpc_expr_simpl := wpc_expr_eval simpl.
   here are bidirectional, so we never will make a goal unprovable. *)
 Ltac wpc_value_head :=
   lazymatch goal with
-  | |- envs_entails _ (wpc ?s ?k ?E (Val _) (λ _, ncfupd ?E _ _) _) =>
+  | |- envs_entails _ (wpc ?s ?E (Val _) (λ _, ncfupd ?E _ _) _) =>
       eapply tac_wpc_value_noncfupd
-  | |- envs_entails _ (wpc ?s ?k ?E (Val _) (λ _, wpc _ _ ?E _ _ _) _) =>
+  | |- envs_entails _ (wpc ?s ?E (Val _) (λ _, wpc _ ?E _ _ _) _) =>
       eapply tac_wpc_value_noncfupd
-  | |- envs_entails _ (wpc ?s ?k ?E (Val _) (λ _, fupd ?E _ _) _) =>
+  | |- envs_entails _ (wpc ?s ?E (Val _) (λ _, fupd ?E _ _) _) =>
       eapply tac_wpc_value_fupd
-  | |- envs_entails _ (wpc ?s ?k ?E (Val _) _ _) =>
+  | |- envs_entails _ (wpc ?s ?E (Val _) _ _) =>
       eapply tac_wpc_value
   end.
 
@@ -145,7 +145,7 @@ Ltac solve_vals_compare_safe :=
 
 Tactic Notation "iCache" "with" constr(Hs) :=
   lazymatch goal with
-  | [ |- envs_entails _ (wpc _ _ _ _ _ ?Φc) ] =>
+  | [ |- envs_entails _ (wpc _ _ _ _ ?Φc) ] =>
         iCache_go Φc Hs "#?"
   | _ => fail 1 "not a wpc goal"
   end.
@@ -160,11 +160,11 @@ The use of [open_constr] in this tactic is essential. It will convert all holes
 
 Tactic Notation "wpc_pure_later" tactic3(filter) "as" simple_intropattern(H) :=
   lazymatch goal with
-  | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q ?Qc) =>
+  | |- envs_entails _ (wpc ?s ?E1 ?e ?Q ?Qc) =>
     let e := eval simpl in e in
     reshape_expr e ltac:(fun K e' =>
       filter e';
-      first [ eapply (tac_wpc_pure_ctx _ _ _ _ _ K e');
+      first [ eapply (tac_wpc_pure_ctx _ _ _ _ K e');
       [iSolveTC                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |iSolveTC                       (* IntoLaters *)
@@ -179,11 +179,11 @@ Tactic Notation "wpc_pure_later" tactic3(filter) "as" simple_intropattern(H) :=
 
 Tactic Notation "wpc_pure_no_later" tactic3(filter) "as" simple_intropattern(H) :=
   lazymatch goal with
-  | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q ?Qc) =>
+  | |- envs_entails _ (wpc ?s ?E1 ?e ?Q ?Qc) =>
     let e := eval simpl in e in
     reshape_expr e ltac:(fun K e' =>
       filter e';
-      first [ eapply (tac_wpc_pure_no_later_ctx _ _ _ _ K e');
+      first [ eapply (tac_wpc_pure_no_later_ctx _ _ _ K e');
       [iSolveTC                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       | try (apply H)                 (* crash condition, try to re-use existing proof *)
@@ -225,28 +225,28 @@ Ltac wpc_pures :=
   iStartProof;
   let Hcrash := fresh "Hcrash" in
   lazymatch goal with
-    | |- envs_entails ?envs (wpc ?s ?k ?E1 (Val _) ?Q ?Qc) => wpc_finish Hcrash
+    | |- envs_entails ?envs (wpc ?s ?E1 (Val _) ?Q ?Qc) => wpc_finish Hcrash
     | |- _ =>
       wpc_pure1 Hcrash;
       [try iFromCache .. | repeat (wpc_pure_no_later wp_pure_filter as Hcrash; []); clear Hcrash]
   end.
 
 Lemma tac_wpc_bind `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ} K Δ s k E1 Φ Φc e f :
+      `{!heapGS Σ} K Δ s E1 Φ Φc e f :
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that we can `simpl` it *)
-  envs_entails Δ (WPC e @ s; k; E1 {{ v, WPC f (Val v) @ s; k; E1 {{ Φ }} {{ Φc }} }} {{ Φc }})%I →
-  envs_entails Δ (WPC fill K e @ s; k; E1 {{ Φ }} {{ Φc }}).
+  envs_entails Δ (WPC e @ s; E1 {{ v, WPC f (Val v) @ s; E1 {{ Φ }} {{ Φc }} }} {{ Φc }})%I →
+  envs_entails Δ (WPC fill K e @ s; E1 {{ Φ }} {{ Φc }}).
 Proof. rewrite envs_entails_eq=> -> ->. by apply: wpc_bind. Qed.
 
 Lemma tac_wpc_wp_frame `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-      `{!heapGS Σ} Δ d js s k E1 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
+      `{!heapGS Σ} Δ d js s E1 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
   match envs_split d js Δ with
   | Some (Δ1, Δ2) => envs_entails Δ1 Φc ∧
                      envs_entails Δ2 (WP e @ s; E1
                              {{ v, (env_to_named_prop Δ1.(env_spatial) -∗ Φ v)%I }})
   | None => False
   end ->
-  envs_entails Δ (WPC e @ s; k; E1 {{ Φ }} {{ Φc }}).
+  envs_entails Δ (WPC e @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
   destruct (envs_split d js Δ) as [[Δ1 Δ2]|] eqn:Hsplit; [ | contradiction ].
   rewrite envs_entails_eq=> Hentails.
@@ -254,7 +254,7 @@ Proof.
   rewrite (envs_split_sound _ _ _ _ _ Hsplit).
   rewrite {}Hwp.
   iIntros "[HΦc' Hwp]".
-  iApply (wp_wpc_frame' _ _ _ _ _ (Φc) (of_envs Δ1)).
+  iApply (wp_wpc_frame' _ _ _ _ (Φc) (of_envs Δ1)).
   iSplitR "Hwp".
   { iSplit; iFrame. by iApply HΦc. }
   iApply (wp_mono with "Hwp"); cbv beta.
@@ -269,7 +269,7 @@ Qed.
    proving the crash condition using a cache *)
 Lemma tac_wpc_wp_frame_cache `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapGS Σ} (Φc: iProp Σ) i (* name of cache *) (c: cache Φc)
-      Δ stk k E1 e (Φ: _ → iProp Σ)  :
+      Δ stk E1 e (Φ: _ → iProp Σ)  :
   envs_lookup i Δ = Some (true, cached c) →
   match envs_split Left c.(cache_names) Δ with
   | Some (Δ1, Δ2) =>
@@ -279,7 +279,7 @@ Lemma tac_wpc_wp_frame_cache `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       (WP e @ stk; E1 {{ v, (env_to_named_prop Δ1.(env_spatial) -∗ Φ v)%I }})
   | None => False
   end →
-  envs_entails Δ (WPC e @ stk; k; E1 {{ Φ }} {{ Φc }}).
+  envs_entails Δ (WPC e @ stk; E1 {{ Φ }} {{ Φc }}).
 Proof.
   rewrite envs_entails_eq=> Hcache H.
   destruct (envs_split Left (cache_names c) Δ) as [[Δ1 Δ2]|] eqn:Hsplit;
@@ -305,7 +305,7 @@ Qed.
 
 Tactic Notation "wpc_frame" :=
   lazymatch goal with
-  | [ |- envs_entails (Envs ?Γp _ _) (wpc _ _ _ _ _ ?Φc) ] =>
+  | [ |- envs_entails (Envs ?Γp _ _) (wpc _ _ _ _ ?Φc) ] =>
     first [ match Γp with
             | context[Esnoc _ ?i (@cached _ Φc ?c)] =>
               apply (tac_wpc_wp_frame_cache Φc i c);
@@ -366,7 +366,7 @@ Ltac wpc_bind_core K :=
 Tactic Notation "wpc_bind" open_constr(efoc) :=
   iStartProof;
   lazymatch goal with
-  | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q1 ?Q2) =>
+  | |- envs_entails _ (wpc ?s ?E1 ?e ?Q1 ?Q2) =>
     first [ reshape_expr e ltac:(fun K e' => unify e' efoc; wpc_bind_core K)
       | fail 1 "wpc_bind: cannot find" efoc "in" e ]
   | |- envs_entails _ (wp ?s ?E ?e ?Q) => fail "wpc_bind: 'wp', not a 'wpc'"
@@ -375,7 +375,7 @@ Tactic Notation "wpc_bind" open_constr(efoc) :=
 
 Ltac wpc_bind_seq :=
   lazymatch goal with
-  | [ |- envs_entails _ (wpc _ _ _ (App (Lam _ ?e2) ?e1) _ _) ] =>
+  | [ |- envs_entails _ (wpc _ _ (App (Lam _ ?e2) ?e1) _ _) ] =>
     wpc_bind e1
   end.
 
@@ -392,14 +392,13 @@ happens *after* [tac H] got executed. *)
 Tactic Notation "wpc_apply_core" open_constr(lem) tactic(tac) :=
   iPoseProofCore lem as false (fun H =>
     lazymatch goal with
-    | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q ?Qc) =>
+    | |- envs_entails _ (wpc ?s ?E1 ?e ?Q ?Qc) =>
       reshape_expr e ltac:(fun K e' =>
         wpc_bind_core K; tac H) ||
       lazymatch iTypeOf H with
       | Some (_,?P) =>
         lazymatch P with
-        | wpc _ ?k' ?E1' ?e' _ _ =>
-          first [ unify k k' | fail 1 "wpc_apply: cannot apply, k mismatch:" k' "≠" k ];
+        | wpc _ ?E1' ?e' _ _ =>
           first [ unify E1 E1' | fail 1 "wpc_apply: cannot apply E1 mismatch:" E1' "≠" E1 ];
           first [ unify e e' | fail 1 "wpc_apply: cannot apply" P ];
           fail "wpc_apply: cannot apply" P
@@ -413,7 +412,7 @@ Tactic Notation "wpc_apply" open_constr(lem) :=
 
 Tactic Notation "wpc_if_destruct" :=
   match goal with
-  | |- envs_entails _ (wpc _ _ _ (if: Val $ LitV $ LitBool ?cond then _ else _) _ _) =>
+  | |- envs_entails _ (wpc _ _ (if: Val $ LitV $ LitBool ?cond then _ else _) _ _) =>
     destruct cond eqn:?;
              repeat match goal with
                     (* TODO: factor out common code with wp_if_destruct *)
@@ -430,10 +429,10 @@ Tactic Notation "wpc_if_destruct" :=
 
 Tactic Notation "wpc_loadField" :=
   lazymatch goal with
-  | |- envs_entails _ (wpc _ _ _ _ _ _) =>
+  | |- envs_entails _ (wpc _ _ _ _ _) =>
     wpc_bind (struct.loadF _ _ (Val _));
     lazymatch goal with
-    | |- envs_entails ?env (wpc _ _ _
+    | |- envs_entails ?env (wpc _ _
                                 (App (Val (struct.loadF ?d ?fname))
                                      (Val (LitV (LitLoc ?l)))) _ _) =>
       match env with

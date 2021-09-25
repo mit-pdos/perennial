@@ -900,15 +900,15 @@ Lemma wal_crash_obligation_alt E Prec Pcrash l γ s :
   ↑walN ⊆ E →
   is_wal_inv_pre l γ s dinit -∗
   □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
-    ▷ P s -∗ |0={E ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
+    ▷ P s -∗ |={E ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
   ▷ P s -∗
   |={⊤}=> ∃ γ', is_wal P l γ dinit ∗
-    (<bdisc> (|C={E}_0=> ∃ s s',
+    (<bdisc> (|C={E}=> ∃ s s',
       ⌜relation.denote log_crash s s' tt⌝ ∗
       (* NOTE: need to add the ghost state that the logger will need *)
       is_wal_inner_durable γ' s' dinit ∗
       wal_resources γ' ∗ ▷ Prec s s')) ∗
-      □ (|C={E}_0=> inv (N.@"wal") (∃ s s',
+      □ (|C={E}=> inv (N.@"wal") (∃ s s',
         ⌜relation.denote log_crash s s' tt⌝ ∗
         is_wal_inner_crash γ s ∗
         wal_ghost_exchange γ γ' ∗
@@ -933,7 +933,7 @@ Proof.
 
   iExists γ'. rewrite /is_wal.
   iFrame "His_circular".
-  iMod (ncinv_cinv_alloc (N.@"wal") 0 ⊤ E
+  iMod (ncinv_cinv_alloc (N.@"wal") ⊤ E
          ((∃ σ, is_wal_inner l γ σ dinit ∗ P σ) ∗
                 wal_init_ghost_state γ' ∗ Pcirc_tok)
          (∃ σ σ',
@@ -1034,7 +1034,6 @@ Proof.
 
 
     iThaw "Hwand".
-    iApply (fupd_level_fupd).
     iMod ("Hwand" $! σ σ' with "[//] HP") as "(HPrec&HPcrash)".
     iClear "Hwand".
     iSplitL "HPcrash".
@@ -1292,9 +1291,9 @@ Proof.
   lia.
 Qed.
 
-Theorem wpc_mkLog_recover k d γ σ :
+Theorem wpc_mkLog_recover d γ σ :
   {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ }}}
-    mkLog (disk_val d) @ k; ⊤
+    mkLog (disk_val d) @ ⊤
   {{{ l, RET #l;
        "Hwal_inv_pre" ∷ is_wal_inv_pre l γ σ dinit ∗
        "Hlogger" ∷ (∃ (circ_l: loc), "#Hcirc2" ∷ readonly (l ↦[Walog :: "circ"] #circ_l) ∗
@@ -1432,13 +1431,13 @@ Proof.
   iFrame "Hinstaller".
 Qed.
 
-Definition wal_cfupd_cancel E k γ' Prec : iProp Σ :=
-  (<bdisc> (|C={E}_k=>  ∃ s s', ⌜relation.denote log_crash s s' tt⌝ ∗
+Definition wal_cfupd_cancel E γ' Prec : iProp Σ :=
+  (<bdisc> (|C={E}=>  ∃ s s', ⌜relation.denote log_crash s s' tt⌝ ∗
                                  is_wal_inner_durable γ' s' dinit ∗
                                  wal_resources γ' ∗ ▷ Prec s s')).
 
 Definition wal_cinv E γ γ' Pcrash : iProp Σ :=
-  □ (|C={E}_0=> inv (N.@"wal") (∃ s s',
+  □ (|C={E}=> inv (N.@"wal") (∃ s s',
                                       ⌜relation.denote log_crash s s' tt⌝ ∗
                                        is_wal_inner_crash γ s ∗
                                        wal_ghost_exchange γ γ' ∗
@@ -1457,15 +1456,15 @@ Proof.
   simpl in Heq. rewrite Heq firstn_all //.
 Qed.
 
-Theorem wpc_MkLog_recover E k d γ σ Prec Pcrash (Hpostcrash: wal_post_crash σ):
+Theorem wpc_MkLog_recover E d γ σ Prec Pcrash (Hpostcrash: wal_post_crash σ):
   ↑walN ⊆ E →
   □ (∀ s s' (Hcrash: relation.denote log_crash s s' ()),
-        ▷ P s -∗ |0={E ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
+        ▷ P s -∗ |={E ∖ ↑N.@"wal"}=> ▷ Prec s s' ∗ ▷ Pcrash s s') -∗
   {{{ is_wal_inner_durable γ σ dinit ∗ wal_resources γ ∗ ▷ P σ }}}
-    MkLog (disk_val d) @ k; ⊤
+    MkLog (disk_val d) @ ⊤
   {{{ γ' l, RET #l;
       is_wal P l γ dinit ∗
-      wal_cfupd_cancel E 0 γ' Prec ∗
+      wal_cfupd_cancel E γ' Prec ∗
       wal_cinv E γ γ' Pcrash
   }}}
   {{{ (∃ γ' σ0 σ', ⌜relation.denote log_crash σ0 σ' tt⌝ ∗
@@ -1479,9 +1478,7 @@ Proof.
   { iLeft in "HΦ". iIntros "HC".
     iSpecialize ("Hwand" with "[] [$]").
     { iPureIntro. by apply post_crash_crash_refl. }
-    iApply (fupd_level_fupd).
-    iPoseProof (fupd_level_le _ _ _ k with "Hwand") as "Hwand"; first lia.
-    iMod (fupd_level_mask_mono with "Hwand") as "(Hrec&Hcrash)".
+    iMod (fupd_mask_mono with "Hwand") as "(Hrec&Hcrash)".
     { set_solver. }
     iModIntro.
     iApply "HΦ". iExists _, _, _. iFrame "Hdurable Hres Hrec".
@@ -1495,9 +1492,7 @@ Proof.
     iIntros "HC".
     iSpecialize ("Hwand" with "[] [$]").
     { iPureIntro. by apply post_crash_crash_refl. }
-    iApply (fupd_level_fupd).
-    iPoseProof (fupd_level_le _ _ _ k with "Hwand") as "Hwand"; first lia.
-    iMod (fupd_level_mask_mono with "Hwand") as "(Hrec&Hcrash)".
+    iMod (fupd_mask_mono with "Hwand") as "(Hrec&Hcrash)".
     { set_solver. }
     iModIntro.
     iApply "HΦ". iExists _, _, _. iFrame "Hdurable Hres Hrec".
@@ -1606,7 +1601,7 @@ Section recov.
     wal_post_crash s →
     is_wal_inner_durable γ s dinit -∗
     wal_resources γ -∗
-    wpr NotStuck 2 ⊤
+    wpr NotStuck ⊤
         (MkLog (disk_val d))
         (MkLog (disk_val d))
         (λ _, True%I)
@@ -1614,11 +1609,11 @@ Section recov.
         (λ _ _, True%I).
   Proof.
     iIntros (?) "His_wal_inner_durable Hres".
-    iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I
+    iApply (idempotence_wpr NotStuck ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I
                             (λ _, ∃ σ' γ' (Hpost: wal_post_crash σ'),
                                 is_wal_inner_durable γ' σ' dinit ∗ wal_resources γ' ∗ ▷ True)%I
                             with "[His_wal_inner_durable Hres] []").
-    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ _ (λ _ _, True)%I (λ _ _, True)%I
+    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ (λ _ _, True)%I (λ _ _, True)%I
                    with "[] [$His_wal_inner_durable $Hres]"); auto 10.
       iSplit.
       * iDestruct 1 as (????) "(?&?&_)".
@@ -1637,7 +1632,7 @@ Section recov.
     rewrite is_wal_inner_durable_stable.
     iDestruct (post_crash_nodep with "Hres") as "Hres".
     iCrash. iIntros "_". iSplit; first done.
-    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ _ (λ _ _, True)%I (λ _ _, True)%I
+    { wpc_apply (wpc_MkLog_recover dinit (λ _, True)%I _ _ _ _ (λ _ _, True)%I (λ _ _, True)%I
                  with "[] [$H1 $Hres]"); auto 10.
       iSplit.
       * iDestruct 1 as (????) "(?&?&_)".

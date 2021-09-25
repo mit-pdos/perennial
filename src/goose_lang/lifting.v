@@ -659,9 +659,9 @@ Implicit Types σ : state.
 Implicit Types v : val.
 Implicit Types l : loc.
 
-Lemma wpc_borrow_inv s k E e Φ Φc :
-  (crash_borrow_ginv -∗ WPC e @ s; k; E {{ Φ }} {{ Φc }}) -∗
-  WPC e @ s; k; E {{ Φ }} {{ Φc }}.
+Lemma wpc_borrow_inv s E e Φ Φc :
+  (crash_borrow_ginv -∗ WPC e @ s; E {{ Φ }} {{ Φc }}) -∗
+  WPC e @ s; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "H".
   rewrite wpc_unfold.

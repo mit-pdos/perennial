@@ -150,15 +150,15 @@ Qed.
 Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
 iExists _; iFrame; iPureIntro; word : core.
 
-Theorem wpc_forBreak_cond' (I: bool -> iProp Σ) Ic Φ Φc stk k E1 (cond body: val) :
+Theorem wpc_forBreak_cond' (I: bool -> iProp Σ) Ic Φ Φc stk E1 (cond body: val) :
   (∀ b, I b -∗ Ic) -∗
   (Ic -∗ Φc) ∧ ▷ (I false -∗ Φ #()) -∗
   □ (I true -∗
-     WPC if: cond #() then body #() else #false @ stk; k; E1
+     WPC if: cond #() then body #() else #false @ stk; E1
      {{ v, ∃ b : bool, ⌜ v = #b ⌝ ∧ I b }}
      {{ Ic }}) -∗
   I true -∗
-  WPC (for: cond; (λ: <>, (λ: <>, #())%V #())%V := body) @ stk; k; E1
+  WPC (for: cond; (λ: <>, (λ: <>, #())%V #())%V := body) @ stk; E1
   {{ Φ }}
   {{ Φc }}.
 Proof.
@@ -190,15 +190,15 @@ Proof.
     { iRight in "HΦ". by iApply "HΦ". }
 Qed.
 
-Theorem wpc_forBreak_cond (I: bool -> iProp Σ) Ic stk k E1 (cond body: val) :
+Theorem wpc_forBreak_cond (I: bool -> iProp Σ) Ic stk E1 (cond body: val) :
   (∀ b, I b -∗ Ic) →
   {{{ I true }}}
-    if: cond #() then body #() else #false @ stk; k; E1
+    if: cond #() then body #() else #false @ stk; E1
   {{{ r, RET #r; I r }}}
   {{{ Ic }}} -∗
   {{{ I true }}}
     (for: cond; (λ: <>, (λ: <>, #())%V #())%V :=
-       body) @ stk; k; E1
+       body) @ stk; E1
   {{{ RET #(); I false }}}
   {{{ Ic }}}.
 Proof.
@@ -211,13 +211,13 @@ Proof.
   iSplit; eauto.
 Qed.
 
-Theorem wpc_forBreak_cond_2 (P: iProp Σ) stk k E (cond body: goose_lang.val) (Φ : goose_lang.val → iProp Σ) (Φc: iProp Σ) :
+Theorem wpc_forBreak_cond_2 (P: iProp Σ) stk E (cond body: goose_lang.val) (Φ : goose_lang.val → iProp Σ) (Φc: iProp Σ) :
   P -∗
   (P -∗ Φc) -∗
   □ (P -∗
-      WPC if: cond #() then body #() else #false @ stk; k; E
+      WPC if: cond #() then body #() else #false @ stk; E
       {{ v, ⌜v = #true⌝ ∗ P ∨ ⌜v = #false⌝ ∗ (Φ #() ∧ Φc) }} {{ Φc }} ) -∗
-  WPC (for: cond; (λ: <>, Skip)%V := body) @ stk; k ; E {{ Φ }} {{ Φc }}.
+  WPC (for: cond; (λ: <>, Skip)%V := body) @ stk; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros "HP HΦc #Hbody".
   rewrite /For.
@@ -245,17 +245,17 @@ Proof.
     by iLeft in "H".
 Qed.
 
-Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk k E1 (start max:u64) (l:loc) (body: val) :
+Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk E1 (start max:u64) (l:loc) (body: val) :
   int.Z start <= int.Z max ->
   (∀ (i:u64), ⌜int.Z start ≤ int.Z i ≤ int.Z max⌝ -∗ I i -∗ I' i) →
   (∀ (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.Z i < int.Z max⌝ }}}
-        body #() @ stk; k; E1
+        body #() @ stk; E1
       {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦[uint64T] #i }}}
       {{{ I' i ∨ I' (word.add i (U64 1)) }}}) -∗
   {{{ I start ∗ l ↦[uint64T] #start }}}
     (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
-       body) @ stk; k; E1
+       body) @ stk; E1
   {{{ RET #(); I max ∗ l ↦[uint64T] #max }}}
   {{{ ∃ (i:u64), I' i ∗ ⌜int.Z start <= int.Z i <= int.Z max⌝ }}}.
 Proof.

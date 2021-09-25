@@ -32,7 +32,7 @@ Section proof.
 
   Implicit Types (N: namespace).
   Definition twophase_obj_cfupd_cancel γ γ' d :=
-   ((|C={⊤}_(S (S LVL))=> ∃ mt',
+   ((|C={⊤}=> ∃ mt',
        ⌜ dom (gset _) mt' = d ⌝ ∗
        ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
        ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
@@ -60,7 +60,7 @@ Section proof.
       "#Hjrnl_dom" ∷ jrnl_dom (dom _ mt)
     }}}
       let: "twophasePre" := struct.alloc txn.Log (MkLog (disk_val d), (lockmap.MkLockMap #(), #())) in
-      Var "twophasePre" @ S (S LVL); ⊤
+      Var "twophasePre" @ ⊤
     {{{
       γ' (l: loc), RET #l;
       "Htwophase" ∷ is_twophase_pre l γ γ' dinit (dom (gset addr) mt) ∗
@@ -115,7 +115,7 @@ Section proof.
       iModIntro.
       rewrite /txn_cfupd_cancel.
       rewrite own_discrete_elim.
-      iMod "Htxn_cancel"; first by lia.
+      iMod "Htxn_cancel".
       iDestruct (big_sepM_sep with "Hmapstos") as "(Hm1&Hm2)".
       rewrite /named.
       iMod (exchange_durable_mapsto with "[Hm1]") as "Hm1".
@@ -145,7 +145,7 @@ Section proof.
     }
     iNamed.
     iModIntro.
-    iApply (init_cancel_elim' _ _ _ _ _ _ _ mj Hlt with "Hlinvs").
+    iApply (init_cancel_elim' _ _ _ _ _ _ mj Hlt with "Hlinvs").
     iIntros "Hlinvs".
 
     iCache with "HΦ Htxn_cancel".
@@ -153,9 +153,8 @@ Section proof.
       iDestruct "HΦ" as "[HΦ _]".
       iIntros "Hcrash".
       rewrite /txn_cfupd_cancel. rewrite own_discrete_elim.
-      iMod "Htxn_cancel"; first by lia.
+      iMod "Htxn_cancel".
       iMod "Hcrash".
-      { lia. }
       iIntros "#HC".
       iDestruct "Htxn_cancel" as (?) ">Htxn_cancel".
       iModIntro.
@@ -241,7 +240,7 @@ Section proof.
       "#Htwophase_inv" ∷ twophase_inv JRNL_SIZE ∗
       "Hj" ∷ j ⤇ (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) OpenOp vs))
     }}}
-      Init (disk_val d) @ NotStuck; ⊤
+      Init (disk_val d) @ ⊤
     {{{
       (l: loc), RET #l;
       j ⤇ (K #true) ∗
@@ -269,7 +268,7 @@ Section proof.
     rewrite /twophase_na_crash_inv.
     iClear "Htwophase_inv".
 
-    iApply (wpc_wp _ (S (S LVL)) _ _ _ True%I).
+    iApply (wpc_wp _ _ _ _ True%I).
     iApply (wpc_crash_borrow_open_cancel with "Hna").
     { eauto. }
     iSplit; first done.

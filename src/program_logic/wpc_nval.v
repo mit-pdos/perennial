@@ -7,11 +7,11 @@ Section modality.
 Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 
 Definition wpc_nval E (P : iProp Σ) : iProp Σ :=
-  (∀ E' e s k Φ Φc,
+  (∀ E' e s Φ Φc,
     ⌜ to_val e = None ⌝ →
     ⌜ E ⊆ E' ⌝ →
-    (WPC e @ s; k; E' {{ λ v, P -∗ Φ v }} {{ Φc }}) -∗
-    WPC e @ s; k; E' {{ λ v, Φ v }} {{ Φc }}).
+    (WPC e @ s; E' {{ λ v, P -∗ Φ v }} {{ Φc }}) -∗
+    WPC e @ s; E' {{ λ v, Φ v }} {{ Φc }}).
 
 
 Lemma wpc_nval_strong_mono E P P' :
@@ -20,7 +20,7 @@ Lemma wpc_nval_strong_mono E P P' :
   wpc_nval E P'.
 Proof.
   iIntros "Hwpc_nval Hwand".
-  rewrite /wpc_nval. iIntros (?????? Hnval Hsub) "H".
+  rewrite /wpc_nval. iIntros (????? Hnval Hsub) "H".
   iApply wpc_ncfupd.
   iApply "Hwpc_nval"; auto.
   iApply (wpc_step_strong_mono with "[$]"); eauto.
@@ -33,7 +33,7 @@ Qed.
 
 Lemma wpc_nval_True E : ⊢ wpc_nval E True%I.
 Proof.
-  rewrite /wpc_nval. iIntros (??????) "Hnval Hsub H".
+  rewrite /wpc_nval. iIntros (?????) "Hnval Hsub H".
   iApply (wpc_strong_mono with "H"); eauto.
   iSplit; last eauto.
   iIntros (?) "H". iApply "H". eauto.
@@ -58,7 +58,7 @@ Lemma ncfupd_wpc_nval E P :
   (|NC={E}=> wpc_nval E P) -∗ wpc_nval E P.
 Proof.
   iIntros "HP".
-  rewrite /wpc_nval. iIntros (?????? Hnval Hsub) "H".
+  rewrite /wpc_nval. iIntros (????? Hnval Hsub) "H".
   rewrite ?wpc_unfold. iIntros (mj).
   rewrite /wpc_pre.
   rewrite Hnval.
@@ -67,7 +67,7 @@ Proof.
   iIntros. rewrite ncfupd_eq.
   iSpecialize ("HP" with "[$]").
   iMod (fupd_mask_mono with "HP") as "(HP&HNC)"; auto.
-  iSpecialize ("HP" $! E' e s k Φ Φc with "[//] [//]").
+  iSpecialize ("HP" $! E' e s Φ Φc with "[//] [//]").
   rewrite ?wpc_unfold.
   rewrite /wpc_pre.
   rewrite Hnval.
@@ -76,12 +76,12 @@ Proof.
   iApply ("H" with "[$] [$] [$]").
 Qed.
 
-Lemma wpc_nval_elim E1 E2 P e s k Φ Φc :
+Lemma wpc_nval_elim E1 E2 P e s Φ Φc :
   to_val e = None →
   E1 ⊆ E2 →
   wpc_nval E1 P -∗
-  (WPC e @ s; k; E2 {{ λ v, P -∗ Φ v }} {{ Φc }}) -∗
-  WPC e @ s; k; E2 {{ λ v, Φ v }} {{ Φc }}.
+  (WPC e @ s; E2 {{ λ v, P -∗ Φ v }} {{ Φc }}) -∗
+  WPC e @ s; E2 {{ λ v, Φ v }} {{ Φc }}.
 Proof.
   iIntros (Hnval Hsub) "Hwpc_nval Hwpc".
   iApply "Hwpc_nval"; eauto.

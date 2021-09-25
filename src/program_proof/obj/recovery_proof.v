@@ -752,7 +752,7 @@ Lemma txn_crash_transform dinit (γ γ': txn_names) γ'_walnames logm1 crash_hea
              is_wal_inner_durable γ'_walnames σ' dinit ∗ wal_resources γ'_walnames ∗
              ▷ (wal_heap_inv γ'.(txn_walnames) σ' ∗
                 heapspec_resources γ.(txn_walnames) γ'.(txn_walnames) σ0 σ')) -∗
-  (|0={∅}=> ∃ (logm' : async (gmap addr object)),
+  (|={∅}=> ∃ (logm' : async (gmap addr object)),
           let γ' := (γ'<|txn_walnames;wal_heap_walnames := γ'_walnames|>) in
          ⌜γ'.(txn_kinds) = γ.(txn_kinds)⌝ ∗ is_txn_durable γ' dinit ∗ txn_resources γ γ' logm').
 Proof.
@@ -846,21 +846,21 @@ Proof.
   eauto.
 Qed.
 
-  Definition txn_cfupd_cancel E dinit k γ' : iProp Σ :=
-    (<bdisc> (|C={E}_k=> ▷ is_txn_durable γ' dinit)).
+  Definition txn_cfupd_cancel E dinit γ' : iProp Σ :=
+    (<bdisc> (|C={E}=> ▷ is_txn_durable γ' dinit)).
 
 Definition txn_cfupd_res E γ γ' : iProp Σ :=
   ⌜γ'.(txn_kinds) = γ.(txn_kinds)⌝ ∗
-  (<bdisc> (|C={E}_0=> ▷ ∃ logm, txn_resources γ γ' logm)).
+  (<bdisc> (|C={E}=> ▷ ∃ logm, txn_resources γ γ' logm)).
 
-Theorem wpc_MkLog E d dinit (γ:txn_names) k :
+Theorem wpc_MkLog E d dinit (γ:txn_names) :
   ↑walN ⊆ E →
   ↑invN ⊆ E →
   {{{ is_txn_durable γ dinit }}}
-    obj.MkLog (disk_val d) @ k; ⊤
+    obj.MkLog (disk_val d) @ ⊤
   {{{ γ' (l: loc), RET #l;
       is_txn l γ dinit ∗
-      txn_cfupd_cancel E dinit 0 γ' ∗
+      txn_cfupd_cancel E dinit γ' ∗
       txn_cfupd_res E γ γ' }}}
   {{{ ∃ γ' logm', ⌜ txn_kinds γ' = txn_kinds γ ⌝ ∗ is_txn_durable γ' dinit
       ∗ (⌜ γ' = γ ⌝ ∨ txn_resources γ γ' logm') }}}.
@@ -886,7 +886,7 @@ Proof.
           heapspec_resources γ.(txn_walnames) γ'.(txn_walnames) ls ls')%I).
   set (Pcrash (ls ls' : log_state.t) := (True)%I : iProp Σ).
   iApply wpc_cfupd.
-  wpc_apply (wpc_MkLog_recover dinit P (↑walN) _ _ _ _ Prec Pcrash
+  wpc_apply (wpc_MkLog_recover dinit P (↑walN) _ _ _ Prec Pcrash
             with "[] [$His_wal_inner_durable Hwal_res Hwal_heap_inv Hheapspec_init]").
   - auto.
   - auto.
@@ -904,10 +904,7 @@ Proof.
       iDestruct "Hcrash" as (γ'wal_names) "Hcrash".
       iPoseProof (txn_crash_transform with "[$]") as "Htransform".
       { auto. }
-      iDestruct (fupd_level_le _ _ _ k with "Htransform") as "Htransform".
-      { lia. }
-      iApply fupd_level_fupd.
-      iMod (fupd_level_mask_mono with "Htransform") as "Htransform"; auto.
+      iMod (fupd_mask_mono with "Htransform") as "Htransform"; auto.
       iModIntro. iApply "HΦ".
       iDestruct "Htransform" as (?) "(?&?&?)".
       iExists _, _. iFrame.
@@ -928,10 +925,7 @@ Proof.
       { iDestruct "Hwal_cfupd" as (??) "H".
         iExists _, _. iFrame.
       }
-      iApply fupd_level_fupd.
-      iDestruct (fupd_level_le _ _ _ k with "Htransform") as "Htransform".
-      { lia. }
-      iMod (fupd_level_mask_mono with "Htransform") as "Htransform"; auto.
+      iMod (fupd_mask_mono with "Htransform") as "Htransform"; auto.
       iModIntro. iApply "HΦ".
       iDestruct "Htransform" as (?) "(?&?&?)".
       iExists _, _. iFrame.
@@ -951,7 +945,7 @@ Proof.
     iNamed 1.
     rewrite /wal_cfupd_cancel.
     iDestruct (own_discrete_laterable with "Hwal_cfupd") as (Pwal_tok) "(HPwal_tok&#HPwal_tok_wand)".
-    iMod (ncinv_cinv_alloc' invN _ _ E
+    iMod (ncinv_cinv_alloc' invN _ E
             (is_txn_always γ ∗ Pwal_tok ∗ txn_init_ghost_state γ')
             (∃ logm',
                 txn_resources γ ((γ' <| txn_walnames; wal_heap_walnames := γ'' |>)) logm')%I
@@ -971,8 +965,7 @@ Proof.
         iDestruct "Hwal_cfupd" as (??) "(?&?&?&?)".
         iExists _, _. iFrame.
       }
-      iApply fupd_level_fupd.
-      iMod (fupd_level_mask_mono with "Htransform") as "Htransform"; auto.
+      iMod (fupd_mask_mono with "Htransform") as "Htransform"; auto.
       { set_solver+. }
       iModIntro.
       iDestruct "Htransform" as (??) "(Hdur&Hres)".

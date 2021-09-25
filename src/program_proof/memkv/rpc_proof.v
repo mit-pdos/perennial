@@ -304,11 +304,11 @@ Definition own_RPCServer (s : loc) (handlers: gmap u64 val) : iProp Σ :=
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
   "#handlers" ∷ readonly (s ↦[RPCServer :: "handlers"] #mref).
 
-Lemma wp_MakeRPCServer (handlers : gmap u64 val) (mref:loc) (def : val) k :
+Lemma wp_MakeRPCServer (handlers : gmap u64 val) (mref:loc) (def : val) :
   {{{
        map.is_map mref 1 (handlers, def)
   }}}
-    MakeRPCServer #mref @ k ; ⊤
+    MakeRPCServer #mref @ ⊤
   {{{
       (s:loc), RET #s; own_RPCServer s handlers
   }}}.

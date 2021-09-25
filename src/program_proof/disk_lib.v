@@ -303,9 +303,9 @@ Proof.
   iApply ("HΦ" with "[//]").
 Qed.
 
-Lemma wpc_Barrier stk k E1 :
+Lemma wpc_Barrier stk E1 :
   {{{ True }}}
-    Barrier #() @ stk; k; E1
+    Barrier #() @ stk; E1
   {{{ RET #(); True }}}
   {{{ True }}}.
 Proof.
@@ -318,9 +318,9 @@ Proof.
   - by crash_case.
 Qed.
 
-Lemma wpc_Read stk k E1 (a: u64) q b :
+Lemma wpc_Read stk E1 (a: u64) q b :
   {{{ int.Z a d↦{q} b }}}
-    Read #a @ stk; k; E1
+    Read #a @ stk; E1
   {{{ s, RET slice_val s;
       int.Z a d↦{q} b ∗
       is_slice s byteT 1%Qp (Block_to_vals b) }}}
@@ -348,12 +348,12 @@ Proof.
   iFrame.
 Qed.
 
-Theorem wpc_Write_ncfupd {stk k E1} E1' (a: u64) s q b :
+Theorem wpc_Write_ncfupd {stk E1} E1' (a: u64) s q b :
   ∀ Φ Φc,
     is_block s q b -∗
     (Φc ∧ |NC={E1,E1'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b -∗ |NC={E1',E1}=>
           Φc ∧ (is_block s q b -∗ Φ #()))) -∗
-    WPC Write #a (slice_val s) @ stk;k; E1 {{ Φ }} {{ Φc }}.
+    WPC Write #a (slice_val s) @ stk; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Φ Φc) "Hs Hfupd".
   rewrite /Write /slice.ptr.
@@ -383,12 +383,12 @@ Proof.
 Qed.
 
 (* This is a TaDA-syle logically atomic spec, so the HoCAP-style sugar does not work. *)
-Theorem wpc_Write_fupd {stk k E1} E1' (a: u64) s q b :
+Theorem wpc_Write_fupd {stk E1} E1' (a: u64) s q b :
   ∀ Φ Φc,
     is_block s q b -∗
     (Φc ∧ |={E1,E1'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b ={E1',E1}=∗
           Φc ∧ (is_block s q b -∗ Φ #()))) -∗
-    WPC Write #a (slice_val s) @ stk;k; E1 {{ Φ }} {{ Φc }}.
+    WPC Write #a (slice_val s) @ stk; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??) "Hblock HΦc".
   wpc_apply (wpc_Write_ncfupd with "[$]").
@@ -399,10 +399,10 @@ Proof.
       by iMod ("H1" with "[$]").
 Qed.
 
-Theorem wpc_Write_fupd_triple {stk k E1} E1' (Q Qc: iProp Σ) (a: u64) s q b :
+Theorem wpc_Write_fupd_triple {stk E1} E1' (Q Qc: iProp Σ) (a: u64) s q b :
   {{{ is_block s q b ∗
       (Qc ∧ |={E1,E1'}=> ∃ b0, int.Z a d↦ b0 ∗ ▷ (int.Z a d↦ b ={E1',E1}=∗ Qc ∧ Q)) }}}
-    Write #a (slice_val s) @ stk;k; E1
+    Write #a (slice_val s) @ stk; E1
   {{{ RET #(); is_block s q b ∗ Qc ∧ Q }}}
   {{{ Qc }}}.
 Proof.
@@ -417,9 +417,9 @@ Proof.
   iRight in "HΦ". iIntros "Hblock". iApply "HΦ". iFrame.
 Qed.
 
-Theorem wpc_Write' stk k E1 (a: u64) s q b0 b :
+Theorem wpc_Write' stk E1 (a: u64) s q b0 b :
   {{{ int.Z a d↦ b0 ∗ is_block s q b }}}
-    Write #a (slice_val s) @ stk; k; E1
+    Write #a (slice_val s) @ stk; E1
   {{{ RET #(); int.Z a d↦ b ∗ is_block s q b }}}
   {{{ (int.Z a d↦ b0 ∨ int.Z a d↦ b) }}}.
 Proof.
@@ -439,9 +439,9 @@ Proof.
   iApply "HΦ"; iFrame.
 Qed.
 
-Theorem wpc_Write stk k E1 (a: u64) s q b :
+Theorem wpc_Write stk E1 (a: u64) s q b :
   {{{ ∃ b0, int.Z a d↦ b0 ∗ is_block s q b }}}
-    Write #a (slice_val s) @ stk; k; E1
+    Write #a (slice_val s) @ stk; E1
   {{{ RET #(); int.Z a d↦ b ∗ is_block s q b }}}
   {{{ ∃ b', int.Z a d↦ b' }}}.
 Proof.

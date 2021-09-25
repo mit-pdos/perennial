@@ -68,7 +68,7 @@ Theorem wpc_RecoverExample γ γsrc d dinit logm :
     is_source P γsrc ∗
     [∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a
   }}}
-    RecoverExample (disk_val d) @ 10; ⊤
+    RecoverExample (disk_val d) @ ⊤
   {{{ RET #(); True }}}
   {{{
     ∃ γ' γsrc' logm',
@@ -115,8 +115,6 @@ Proof using All.
 
   wp_pures. iModIntro.
   iIntros "HΦ". iApply "HΦ". done.
-  Unshelve.
-  all: exact O.
 Qed.
 
 End heap.
@@ -132,7 +130,7 @@ Section recov.
     is_txn_durable γ dinit logm -∗
     is_source P γsrc -∗
     ([∗ set] a ∈ covered_inodes, is_inode_stable γsrc γ a) -∗
-    wpr NotStuck 10 ⊤
+    wpr NotStuck ⊤
         (RecoverExample (disk_val d))
         (RecoverExample (disk_val d))
         (λ _, True%I)
@@ -140,7 +138,7 @@ Section recov.
         (λ _ _, True%I).
   Proof using All.
     iIntros "Hdurable Hsource Hinodes".
-    iApply (idempotence_wpr NotStuck 10 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I
+    iApply (idempotence_wpr NotStuck ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I
                             (λ _, ∃ γ' γsrc' logm',
                                 is_txn_durable γ' dinit logm' ∗
                                 is_source P γsrc' ∗

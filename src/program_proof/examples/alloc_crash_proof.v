@@ -164,7 +164,7 @@ Definition free_block γ k : iProp Σ :=
 
 (*
 Definition free_block_pending γ n k : iProp Σ :=
-  (|C={⊤}_((S n))=> block_cinv γ k).
+  (|C={⊤}=> block_cinv γ k).
 *)
 
 Definition reserved_block γ k P : iProp Σ :=
@@ -479,7 +479,7 @@ Lemma free_block_init γ n σ E `{∀ a, Timeless (Ψ a)}:
   alloc_post_crash σ →
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
   ([∗ map] k↦v ∈ σ, k ↪[alloc_status_name γ] v) -∗
-  |={E}=> ([∗ set] k ∈ dom (gset _) σ, <disc> |C={⊤}_S n=> free_block_pending γ n k) ∗
+  |={E}=> ([∗ set] k ∈ dom (gset _) σ, <disc> |C={⊤}=> free_block_pending γ n k) ∗
           ([∗ set] k ∈ alloc.free σ, free_block γ n k).
 Proof.
   iIntros (Hcrashed) "Hfree Hpts".
@@ -511,7 +511,7 @@ Theorem is_allocator_alloc n l σ `{∀ a, Timeless (Ψ a)} :
   is_allocator_mem_pre l σ
   ={⊤}=∗
   ∃ γ, is_allocator l (alloc.domain σ) γ n ∗
-  <disc> |C={⊤}_(S n)=> alloc_crash_cond (alloc.domain σ) false.
+  <disc> |C={⊤}=> alloc_crash_cond (alloc.domain σ) false.
 Proof.
   clear Hitemcrash.
   iIntros "Hunused HP". iNamed 1.
@@ -539,7 +539,7 @@ Proof.
   { iExists _, _; iFrame "#". }
   iModIntro.
   iMod "Hpending" as "Hset".
-  iMod (cfupd_weaken_all with "Hallocinv") as "Hallocinner"; auto.
+  iMod (cfupd_weaken_mask with "Hallocinv") as "Hallocinner"; auto.
   { lia. }
   rewrite /free_block_pending.
   rewrite cfupd_big_sepS.

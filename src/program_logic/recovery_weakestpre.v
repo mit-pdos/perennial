@@ -32,7 +32,7 @@ Definition generation_from_params {Λ Σ} (Hc: crashGS Σ) (p : generation_param
 
    The program starts running in the "current generation", which is why WPR
    needs a [generationGS]; after a crash, a fresh generation can be generated. *)
-Definition wpr_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness) (k: nat)
+Definition wpr_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness)
     (wpr : generationGS Λ Σ -d> coPset -d> expr Λ -d> expr Λ -d>
                      (val Λ -d> iPropO Σ) -d>
                      (generationGS Λ Σ -d> iPropO Σ) -d>
@@ -43,7 +43,7 @@ Definition wpr_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness) (k: 
   (generationGS Λ Σ -d> val Λ -d> iPropO Σ) -d>
   iPropO Σ :=
   λ (_:generationGS Λ Σ) E e rec Φ Φinv Φr,
-  (WPC e @ s ; k; E
+  (WPC e @ s ; E
      {{ Φ }}
      {{ ∀ σ g mj D σ' (HC: crash_prim_step CS σ σ') ns κs n,
         state_interp σ n -∗ global_state_interp g ns mj D κs ={E}=∗ ▷ ∀ Hc1 q, NC q ={E}=∗
@@ -55,18 +55,18 @@ Definition wpr_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness) (k: 
             global_state_interp g (step_count_next ns) mj D κs ∗
             (Φinv HGnew ∧ wpr HGnew E rec rec (Φr HGnew) Φinv Φr) ∗ NC q}})%I.
 
-Local Instance wpr_pre_contractive `{!irisGS Λ Σ} CS s k: Contractive (wpr_pre CS s k).
+Local Instance wpr_pre_contractive `{!irisGS Λ Σ} CS s: Contractive (wpr_pre CS s).
 Proof.
   rewrite /wpr_pre=> n wp wp' Hwp Hgen E1 e1 rec Φ Φinv Φc.
   apply wpc_ne; eauto;
   repeat (f_contractive || f_equiv). apply Hwp.
 Qed.
 
-Definition wpr_def `{!irisGS Λ Σ} CS (s : stuckness) k :
+Definition wpr_def `{!irisGS Λ Σ} CS (s : stuckness) :
   generationGS Λ Σ → coPset → expr Λ → expr Λ →
   (val Λ → iProp Σ) →
   (generationGS Λ Σ → iProp Σ) →
-  (generationGS Λ Σ → val Λ → iProp Σ) → iProp Σ := fixpoint (wpr_pre CS s k).
+  (generationGS Λ Σ → val Λ → iProp Σ) → iProp Σ := fixpoint (wpr_pre CS s).
 Definition wpr_aux `{!irisGS Λ Σ} : seal (@wpr_def Λ Σ _). by eexists. Qed.
 Definition wpr `{!irisGS Λ Σ} := wpr_aux.(unseal).
 Definition wpr_eq `{!irisGS Λ Σ} : wpr = @wpr_def Λ Σ _ := wpr_aux.(seal_eq).
@@ -78,22 +78,21 @@ Section wpr.
 Context `{!irisGS Λ Σ}.
 Implicit Types CS : crash_semantics Λ.
 Implicit Types s : stuckness.
-Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
 Implicit Types Φc : generationGS Λ Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Lemma wpr_unfold CS s k HG E e rec Φ Φinv Φc :
-  wpr CS s k HG E e rec Φ Φinv Φc ⊣⊢ wpr_pre CS s k (wpr CS s k) HG E e rec Φ Φinv Φc.
-Proof. rewrite wpr_eq. apply (fixpoint_unfold (wpr_pre _ s k)). Qed.
+Lemma wpr_unfold CS s HG E e rec Φ Φinv Φc :
+  wpr CS s HG E e rec Φ Φinv Φc ⊣⊢ wpr_pre CS s (wpr CS s) HG E e rec Φ Φinv Φc.
+Proof. rewrite wpr_eq. apply (fixpoint_unfold (wpr_pre _ s)). Qed.
 
 (* There's a stronger version of this *)
-Lemma wpr_strong_mono CS s k HG E e rec Φ Ψ Φinv Ψinv Φr Ψr :
-  wpr CS s k HG E e rec Φ Φinv Φr -∗
+Lemma wpr_strong_mono CS s HG E e rec Φ Ψ Φinv Ψinv Φr Ψr :
+  wpr CS s HG E e rec Φ Φinv Φr -∗
       ((∀ v, Φ v ==∗ Ψ v) ∧ (∀ HG, Φinv HG -∗ Ψinv HG) ∧ (∀ HG v, Φr HG v ==∗ Ψr HG v)) -∗
-  wpr CS s k HG E e rec Ψ Ψinv Ψr.
+  wpr CS s HG E e rec Ψ Ψinv Ψr.
 Proof.
   iIntros "H HΦ". iLöb as "IH" forall (e HG E Φ Ψ Φinv Ψinv Φr Ψr).
   rewrite ?wpr_unfold /wpr_pre.
@@ -117,20 +116,20 @@ Qed.
 
 (* To prove a recovery wp for e with rec, it suffices to prove a crash wp for e,
    where the crash condition implies the precondition for a crash wp for rec *)
-Lemma idempotence_wpr CS s k E1 e rec Φx Φinv Φrx (Φcx: generationGS Λ Σ → iProp Σ) HG :
-  ⊢ WPC e @ s ; k ; E1 {{ Φx }} {{ Φcx HG }} -∗
+Lemma idempotence_wpr CS s E1 e rec Φx Φinv Φrx (Φcx: generationGS Λ Σ → iProp Σ) HG :
+  ⊢ WPC e @ s ; E1 {{ Φx }} {{ Φcx HG }} -∗
    (□ ∀ (HG': generationGS Λ Σ) σ g σ' (HC: crash_prim_step CS σ σ') ns mj D κs n,
         Φcx HG' -∗ state_interp (G:=HG') σ n -∗ global_state_interp g ns mj D κs ={E1}=∗
         ▷ ∀ (Hc: crashGS Σ) q, NC q ={E1}=∗
           ∃ (HG'': generationGS Λ Σ), ⌜iris_crashGS (G:=HG'') = Hc⌝ ∗
             state_interp (G:=HG'') σ' 0 ∗ global_state_interp g (step_count_next ns) mj D κs ∗
-            (Φinv HG'' ∧ WPC rec @ s ; k; E1 {{ Φrx HG'' }} {{ Φcx HG'' }}) ∗ NC q) -∗
-    wpr CS s k HG E1 e rec (Φx) Φinv Φrx.
+            (Φinv HG'' ∧ WPC rec @ s ; E1 {{ Φrx HG'' }} {{ Φcx HG'' }}) ∗ NC q) -∗
+    wpr CS s HG E1 e rec (Φx) Φinv Φrx.
 Proof.
   iLöb as "IH" forall (E1 e HG Φx).
   iIntros  "He #Hidemp".
   rewrite wpr_unfold. rewrite /wpr_pre.
-  iApply (wpc_strong_mono' with "He"); [ auto | auto | auto | ].
+  iApply (wpc_strong_mono' with "He"); [ by auto | by auto | ].
   iSplit; first auto. iIntros "Hcx".
   iApply @fupd_mask_intro_discard.
   { set_solver +. }
@@ -153,7 +152,7 @@ Qed.
 
 End wpr.
 
-Definition wpr0_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness) (k: nat) (mj: fracR)
+Definition wpr0_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness) (mj: fracR)
     (wpr : generationGS Λ Σ -d> coPset -d> expr Λ -d> expr Λ -d>
                      (val Λ -d> iPropO Σ) -d>
                      (generationGS Λ Σ -d> iPropO Σ) -d>
@@ -164,7 +163,7 @@ Definition wpr0_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness) (k:
   (generationGS Λ Σ -d> val Λ -d> iPropO Σ) -d>
   iPropO Σ :=
   λ (_:generationGS Λ Σ) E e rec Φ Φinv Φr,
-  (wpc0 s k mj E e
+  (wpc0 s mj E e
      Φ
      (∀ σ g σ' (HC: crash_prim_step CS σ σ') ns mj D κs n,
         state_interp σ n -∗ global_state_interp g ns mj D κs ={E}=∗  ▷ ∀ Hc1 q, NC q ={E}=∗
@@ -176,19 +175,19 @@ Definition wpr0_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness) (k:
             global_state_interp g (step_count_next ns) mj D κs ∗
             (Φinv HGnew ∧ wpr HGnew E rec rec (Φr HGnew) Φinv Φr) ∗ NC q))%I.
 
-Local Instance wpr0_pre_contractive `{!irisGS Λ Σ} CS s k mj: Contractive (wpr0_pre CS s k mj).
+Local Instance wpr0_pre_contractive `{!irisGS Λ Σ} CS s mj: Contractive (wpr0_pre CS s mj).
 Proof.
   rewrite /wpr_pre=> n wp wp' Hwp HG E1 e1 rec Φ Φinv Φc.
   apply wpc0_ne; eauto;
   repeat (f_contractive || f_equiv || simpl). apply Hwp.
 Qed.
 
-Definition wpr0_def `{!irisGS Λ Σ} CS (s : stuckness) k (mj : fracR) :
+Definition wpr0_def `{!irisGS Λ Σ} CS (s : stuckness) (mj : fracR) :
   generationGS Λ Σ → coPset → expr Λ → expr Λ →
   (val Λ → iProp Σ) →
   (generationGS Λ Σ → iProp Σ) →
   (generationGS Λ Σ → val Λ → iProp Σ) → iProp Σ
-  := fixpoint (wpr0_pre CS s k mj).
+  := fixpoint (wpr0_pre CS s mj).
 Definition wpr0_aux `{!irisGS Λ Σ} : seal (@wpr0_def Λ Σ _). by eexists. Qed.
 Definition wpr0 `{!irisGS Λ Σ} := wpr0_aux.(unseal).
 Definition wpr0_eq `{!irisGS Λ Σ} : wpr0 = @wpr0_def Λ Σ _ := wpr0_aux.(seal_eq).
@@ -197,27 +196,26 @@ Section wpr0.
 Context `{!irisGS Λ Σ}.
 Implicit Types CS : crash_semantics Λ.
 Implicit Types s : stuckness.
-Implicit Types k : nat.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
 Implicit Types Φc : generationGS Λ Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
-Lemma wpr0_unfold CS s k mj HG E e rec Φ Φinv Φc :
-  wpr0 CS s k mj HG E e rec Φ Φinv Φc ⊣⊢ wpr0_pre CS s k mj (wpr0 CS s k mj) HG E e rec Φ Φinv Φc.
-Proof. rewrite wpr0_eq. apply (fixpoint_unfold (wpr0_pre _ s k mj)). Qed.
+Lemma wpr0_unfold CS s mj HG E e rec Φ Φinv Φc :
+  wpr0 CS s mj HG E e rec Φ Φinv Φc ⊣⊢ wpr0_pre CS s mj (wpr0 CS s mj) HG E e rec Φ Φinv Φc.
+Proof. rewrite wpr0_eq. apply (fixpoint_unfold (wpr0_pre _ s mj)). Qed.
 
-Lemma wpr0_wpr CS s k mj HG E e rec Φ Φinv Φc :
-  wpr CS s k HG E e rec Φ Φinv Φc -∗
-  wpr0 CS s k mj HG E e rec Φ Φinv Φc.
+Lemma wpr0_wpr CS s mj HG E e rec Φ Φinv Φc :
+  wpr CS s HG E e rec Φ Φinv Φc -∗
+  wpr0 CS s mj HG E e rec Φ Φinv Φc.
 Proof.
   iIntros "Hwpr".
   iLöb as "IH" forall (HG e Φ).
   iEval (rewrite wpr0_unfold /wpr0_pre).
   iEval (rewrite wpr_unfold /wpr_pre) in "Hwpr".
   iApply wpc0_wpc.
-  iApply (wpc_strong_mono with "Hwpr"); [auto|auto|auto |].
+  iApply (wpc_strong_mono with "Hwpr"); [auto|auto|].
   iSplit; first eauto.
   iIntros "H !>". iIntros (σ g σ' Hcrash ns mj' D κs n) "Hσ Hg".
   iMod ("H" with "[//] [$] [$]") as "H".

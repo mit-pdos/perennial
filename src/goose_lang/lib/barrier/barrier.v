@@ -89,15 +89,15 @@ Lemma newbarrier_spec (P Pc : iProp Σ) :
 Proof.
   iIntros (Φ) "#Hwand HΦ". wp_lam.
   iApply wp_fupd.
-  iApply (wpc_wp _ 0 _ _ _ True%I).
-  iApply (wpc_crash_borrow_init_ctx _ _ _ _ _ True%I True%I id); auto.
+  iApply (wpc_wp _ _ _ _ True%I).
+  iApply (wpc_crash_borrow_init_ctx _ _ _ _ True%I True%I id); auto.
   iSplit; first done.
   iIntros "Hc".
-  iApply (wpc_crash_mono _ _ _ _ _ _ True%I); first eauto.
+  iApply (wpc_crash_mono _ _ _ _ _ True%I); first eauto.
   iApply wp_wpc.
   wp_apply wp_alloc_untyped; auto.
   iIntros (l) "Hl". simpl.
-  iApply (wpc_crash_mono _ _ _ _ _ _ True%I); first eauto.
+  iApply (wpc_crash_mono _ _ _ _ _ True%I); first eauto.
   iApply wp_wpc.
   wp_pures.
   iApply ("HΦ" with "[> -]").
@@ -128,11 +128,11 @@ Proof.
 Qed.
 
 (* TODO: this extra Φc can be removed. *)
-Lemma signal_spec l P Pc Φ Φc k K `{!LanguageCtx K}:
+Lemma signal_spec l P Pc Φ Φc K `{!LanguageCtx K}:
   send l P Pc -∗
   P -∗
-  Φc ∧ (∀ (b: bool), WPC K (of_val #b) @ NotStuck; k; ⊤ {{ Φ }} {{ Φc }}) -∗
-  WPC K (barrier.signal #l) @ NotStuck ; k ; ⊤ {{ Φ }} {{ Φc ∗ Pc }}.
+  Φc ∧ (∀ (b: bool), WPC K (of_val #b) @ ⊤ {{ Φ }} {{ Φc }}) -∗
+  WPC K (barrier.signal #l) @ ⊤ {{ Φ }} {{ Φc ∗ Pc }}.
 Proof.
   iIntros "Hs HP HK".
   iAssert (□ (P -∗ Pc))%I with "[Hs]" as "#Hcwand".
@@ -152,8 +152,8 @@ Proof.
     wp_pures. iModIntro. iIntros "(_&HK)". by iApply "HK".
   }
   iDestruct "HRs" as "(#Hcrash&Hcb'&HP&#HPc)".
-  iApply (wpc_wp _ 0 _ _ _ True%I).
-  iApply (wpc_crash_borrow_combine' _ _ _ _ _
+  iApply (wpc_wp _ _ _ _ True%I).
+  iApply (wpc_crash_borrow_combine' _ _ _ _
             ([∗ map] _ ↦ γsp ∈ fst <$> gmm, (fprop γsp))
             ([∗ map] _ ↦ γsp ∈ snd <$> gmm, (fcprop γsp))
             with "[$Hcb] [$Hcb'] [] [] [HP]").
@@ -206,8 +206,8 @@ Proof.
     { rewrite lookup_fmap Hin //. }
     iDestruct (saved_prop_agree with "Hthis Hsp") as "Hequiv". eauto. }
 
-  iApply (wpc_wp _ 0 _ _ _ True%I).
-  iApply (wpc_crash_borrow_split' _ _ _ _ _ _ _
+  iApply (wpc_wp _ _ _ _ True%I).
+  iApply (wpc_crash_borrow_split' _ _ _ _ _ _
             ([∗ map] _ ↦ γsp ∈ fst <$> delete i gmm, (fprop γsp))
             R
             ([∗ map] _ ↦ γsp ∈ snd <$> delete i gmm, (fcprop γsp))

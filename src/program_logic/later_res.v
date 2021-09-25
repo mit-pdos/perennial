@@ -57,11 +57,11 @@ Proof.
     by iMod (later_tok_incr with "[$]") as "($&$)".
 Qed.
 
-Lemma wpc_later_tok_use2 s E e k Φ Φc :
+Lemma wpc_later_tok_use2 s E e Φ Φc :
   language.to_val e = None →
   later_tok -∗
-  ▷▷ WPC e @ s; k; E {{ v, later_tok -∗ Φ v }} {{ later_tok -∗ Φc }} -∗
-  WPC e @ s; k; E {{ Φ }} {{ Φc }}.
+  ▷▷ WPC e @ s; E {{ v, later_tok -∗ Φ v }} {{ later_tok -∗ Φc }} -∗
+  WPC e @ s; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hnval) "Htok Hwp".
   rewrite ?wpc_unfold /wpc_pre.
@@ -116,21 +116,21 @@ Proof.
     iModIntro. by iApply "HΦc".
 Qed.
 
-Lemma wpc_later_tok_use s E e k Φ Φc :
+Lemma wpc_later_tok_use s E e Φ Φc :
   language.to_val e = None →
   later_tok -∗
-  ▷ WPC e @ s; k; E {{ v, later_tok -∗ Φ v }} {{ later_tok -∗ Φc }} -∗
-  WPC e @ s; k; E {{ Φ }} {{ Φc }}.
+  ▷ WPC e @ s; E {{ v, later_tok -∗ Φ v }} {{ later_tok -∗ Φc }} -∗
+  WPC e @ s; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hnval) "Htok Hwp".
   iApply (wpc_later_tok_use2 with "[$]"); auto.
 Qed.
 
-Lemma wpc_later_tok_invest s E e k Φ Φc :
+Lemma wpc_later_tok_invest s E e Φ Φc :
   language.to_val e = None →
   later_tok -∗
-  WPC e @ s; k; E {{ v, Nat.iter 10 (λ P, later_tok ∗ P) True%I -∗ Φ v }} {{ Φc }} -∗
-  WPC e @ s; k; E {{ Φ }} {{ Φc }}.
+  WPC e @ s; E {{ v, Nat.iter 10 (λ P, later_tok ∗ P) True%I -∗ Φ v }} {{ Φc }} -∗
+  WPC e @ s; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hnval) "Htok Hwp".
   rewrite ?wpc_unfold /wpc_pre.

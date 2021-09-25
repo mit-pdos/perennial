@@ -1514,13 +1514,13 @@ Lemma ghost_step_jrnl_atomically_crash E j K {HCTX: LanguageCtx K} (l: sval) e �
   jrnl_alloc_map (jrnlAllocs σj) -∗
   jrnl_open -∗
   j ⤇ K (Atomically l e)
-  -∗ |C={E}_0=>
+  -∗ |C={E}=>
     ([∗ map] a ↦ o ∈ (jrnlData σj'), jrnl_mapsto a 1 o) ∗
     ([∗ map] a ↦ _ ∈ (jrnlData σj), jrnl_crash_tok a).
 Proof.
   iIntros (Hsteps ?) "(#Hctx&#Hstate) Hσj_data Hσj_crash_toks Hσj_kinds Hσj_allocs Hopen Hj".
   destruct Hsteps as (Heq_kinds&Hwf&Hrtc).
-  iMod (cfupd_weaken_all with "Hstate") as "#Hstate'"; eauto.
+  iMod (cfupd_weaken_mask with "Hstate") as "#Hstate'"; eauto.
   { solve_ndisj. }
   iInv "Hstate'" as "[>Hbad|Hrest]" "Hclo".
   { iIntros "HC".

@@ -283,7 +283,7 @@ Section goose.
     ▷ P σ -∗
     pre_s_inode l sz σ ={⊤}=∗
     is_single_inode l sz k ∗
-    <disc> |C={⊤}_(S k)=> ∃ σ', s_inode_cinv sz σ' false ∗ P σ'.
+    <disc> |C={⊤}=> ∃ σ', s_inode_cinv sz σ' false ∗ P σ'.
   Proof.
     iIntros (?) "HP"; iNamed 1.
     iNamed "Hinode".
@@ -303,7 +303,7 @@ Section goose.
     iModIntro.
     iMod "Halloc_crash" as "Halloc".
     iMod "Hinode_crash" as "Hinode".
-    iMod (cfupd_weaken_all with "Hinv_crash") as "Hs_inode"; first lia.
+    iMod (cfupd_weaken_mask with "Hinv_crash") as "Hs_inode"; first lia.
     { solve_ndisj. }
     iModIntro. iNext.
     iDestruct "Hs_inode" as (σ') "[Hs_inv HP]".

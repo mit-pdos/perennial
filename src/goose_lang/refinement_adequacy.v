@@ -69,7 +69,7 @@ Lemma goose_spec_init1 {hG: heapGS Σ} r tp0 σ0 g0 tp σ g s tr or P:
                                       ∗ ffi_local_start (refinement_spec_ffiLocalGS) σ.(world)
                                       ∗ trace_ctx
                                       ∗ spec_crash_ctx' r (tp0, (σ0,g0)) (P hR)
-                                      ∗ (|C={⊤}_0=> trace_inv).
+                                      ∗ (|C={⊤}=> trace_inv).
 Proof using Hrpre Hcpre.
   iIntros (??? Hnonneg ?? Hsteps Hsafe) "Htr Hor".
   iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
@@ -86,7 +86,7 @@ Proof using Hrpre Hcpre.
                                   {| cfg_name := Hcfg_γ |} Hrheap) _ γ γsrv _).
   iExists HrhG.
   iFrame "Hsource_ctx Hpool Hrs Hcfupd Hgs".
-  iMod (ncinv_cinv_alloc (spec_stateN) 0 ⊤ (↑spec_stateN)
+  iMod (ncinv_cinv_alloc (spec_stateN) ⊤ (↑spec_stateN)
                          (∃ (σ0 : language.state goose_lang) g0, (source_state σ0 g0 ∗ spec_assert.spec_interp σ0 g0))
                          (P HrhG ∨ (∃ (σ0 : language.state goose_lang) g0, (source_state σ0 g0 ∗ spec_assert.spec_interp σ0 g0)))%I
                          True%I
@@ -111,8 +111,8 @@ Proof using Hrpre Hcpre.
   { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame; eauto. }
   iModIntro. iFrame "Hinv Hcfupd2".
   { iMod (own_disc_fupd_elim with "Hcfupd3") as "Hcfupd3".
-    iMod (cfupd_weaken_all with "Hcfupd3") as "H"; auto.
-    unshelve iDestruct "H" as ">$". { (* FIXME why does iMod introduce an evar here? *) exact 0%nat. }
+    iMod (cfupd_weaken_mask with "Hcfupd3") as "H"; auto.
+    iDestruct "H" as ">$".
     eauto. }
 Qed.
 
@@ -130,7 +130,7 @@ Lemma goose_spec_init2 {hG: heapGS Σ} r tp σ g tr or P:
                                      ∗ ffi_local_start (refinement_spec_ffiLocalGS) σ.(world)
                                      ∗ trace_ctx
                                      ∗ spec_crash_ctx' r (tp, (σ,g)) (P hR)
-                                     ∗ (|C={⊤}_0=> trace_inv).
+                                     ∗ (|C={⊤}=> trace_inv).
 Proof using Hrpre Hcpre.
   intros; eapply goose_spec_init1; eauto.
   { do 2 econstructor. }
@@ -152,7 +152,7 @@ Lemma goose_spec_crash_init {hG: gooseGlobalGS Σ} {hL: gooseLocalGS Σ} {hRG: r
              ∗ ffi_restart (refinement_spec_ffiLocalGS) (world σ_post_crash)
              ∗ trace_ctx
              ∗ spec_crash_ctx' r (tp0, (σ0,g0)) (P hRG')
-             ∗ (|C={⊤}_0=> trace_inv).
+             ∗ (|C={⊤}=> trace_inv).
 Proof using Hrpre Hcpre.
   iIntros (?? Hsteps Hsafe Hcrash) "Htr Hor Hffi Hffig".
   iMod (own_alloc (Cinl 1%Qp)) as (γ) "H".
@@ -169,7 +169,7 @@ Proof using Hrpre Hcpre.
                                  {| cfg_name := Hcfg_γ |} Hrheap) _ γ γsrv _).
   iExists HrhG.
   rewrite /spec_ctx'.  iFrame "Hsource_ctx Hpool Hrs Hcfupd Hcrash_rel".
-  iMod (ncinv_cinv_alloc (spec_stateN) 0 ⊤ (↑spec_stateN)
+  iMod (ncinv_cinv_alloc (spec_stateN) ⊤ (↑spec_stateN)
                          (∃ (σ0 : language.state goose_lang) g0, (source_state σ0 g0 ∗ spec_assert.spec_interp σ0 g0))
                          (P HrhG ∨ (∃ (σ0 : language.state goose_lang) g0, (source_state σ0 g0 ∗ spec_assert.spec_interp σ0 g0)))%I
                          True%I
@@ -187,8 +187,8 @@ Proof using Hrpre Hcpre.
   { iNext. subst. rewrite /trace_inv. iExists _, _, _, _. iFrame; eauto. }
   iModIntro. iFrame "Hinv Hcfupd2".
   { iMod (own_disc_fupd_elim with "Hcfupd3") as "H".
-    iMod (cfupd_weaken_all with "[$]") as "H"; auto.
-    unshelve iDestruct "H" as ">$". { (* FIXME why does iMod introduce an evar here? *) exact 0%nat. }
+    iMod (cfupd_weaken_mask with "[$]") as "H"; auto.
+    iDestruct "H" as ">$".
     eauto. }
 Qed.
 
@@ -229,7 +229,7 @@ Proof.
   { subst. congruence. }
 Qed.
 
-Theorem goose_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: heapGS Σ → iProp Σ) P n :
+Theorem goose_recv_refinement_adequacy es e rs r σs gs σ g φ φr (Φinv: heapGS Σ → iProp Σ) P n :
   null_non_alloc σs.(heap) →
   neg_non_alloc σs.(heap) →
   ffi_initgP g →
@@ -243,12 +243,12 @@ Theorem goose_recv_refinement_adequacy k es e rs r σs gs σ g φ φr (Φinv: he
        (spec_ctx' rs ([es], (σs,gs)) -∗
         trace_ctx -∗
         spec_crash_ctx' rs ([es], (σs,gs)) (P Hheap Href) -∗
-        (|C={⊤}_0=> trace_inv) -∗
+        (|C={⊤}=> trace_inv) -∗
        □ (∀ hL, Φinv (HeapGS _ goose_globalGS hL) -∗
                        ∃ Href', spec_ctx' (hR := Href') rs ([es], (σs,gs)) ∗ trace_ctx (hR := Href')) ∗
         (ffi_local_start (goose_ffiLocalGS) σ.(world) -∗ ffi_local_start (refinement_spec_ffiLocalGS) σs.(world) -∗
          pre_borrowN n -∗
-         O ⤇ es -∗ wpr NotStuck k ⊤ e r (λ v, ⌜φ v⌝) (Φinv) (λ _ v, ⌜φr v⌝)))) →
+         O ⤇ es -∗ wpr NotStuck ⊤ e r (λ v, ⌜φ v⌝) (Φinv) (λ _ v, ⌜φr v⌝)))) →
   trace_refines e r σ g es rs σs gs.
 Proof using Hrpre Hhpre Hcpre.
   intros ???????? Hwp Hsafe.
@@ -265,7 +265,7 @@ Proof using Hrpre Hhpre Hcpre.
       subst. destruct Hexec as (t2s&σ2s&g2s&?&Hexecs&Htrs).
       do 3 eexists; eauto.
   }
-  eapply (goose_recv_adequacy _ _ _ _ _ _ _ _ _ _ Φinv); auto.
+  eapply (goose_recv_adequacy _ _ _ _ _ _ _ _ _ Φinv); auto.
   iIntros (hG) "???? Hpre".
   iMod (goose_spec_init2 _ _ _ _ _ _ (P _) with "[$] [$]") as
       (HrG) "(#Hspec&Hpool&Hgs&Hrs&#Htrace&Hcfupd1&Hcfupd3)"; try (by symmetry); eauto.
@@ -311,24 +311,24 @@ Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_fie
    where it has to be shown to hold: from an initial state, and from post-crash
    (assuming Φc on the previous generation) *)
 
-Definition wpc_obligation k E e es Φ Φc (hG: gooseGlobalGS Σ) (hL:gooseLocalGS Σ) (hRG: refinement_heapG Σ) P : iProp Σ :=
-     (O ⤇ es -∗ spec_ctx -∗ spec_crash_ctx P  -∗ trace_ctx -∗ WPC e @ NotStuck; k; E {{ Φ hL hRG }} {{ Φc hL hRG }})%I.
+Definition wpc_obligation E e es Φ Φc (hG: gooseGlobalGS Σ) (hL:gooseLocalGS Σ) (hRG: refinement_heapG Σ) P : iProp Σ :=
+     (O ⤇ es -∗ spec_ctx -∗ spec_crash_ctx P  -∗ trace_ctx -∗ WPC e @ E {{ Φ hL hRG }} {{ Φc hL hRG }})%I.
 
 Implicit Types initP: @state ext ffi → @state (spec_ffi_op_field) (spec_ffi_model_field) → Prop.
 
-Definition wpc_init k E e es Φ Φc initP (P : gooseGlobalGS Σ → gooseLocalGS Σ → refinement_heapG Σ → iProp Σ) n : iProp Σ :=
+Definition wpc_init E e es Φ Φc initP (P : gooseGlobalGS Σ → gooseLocalGS Σ → refinement_heapG Σ → iProp Σ) n : iProp Σ :=
   (∀ (hG: gooseGlobalGS Σ) (hL:gooseLocalGS Σ) (hRG: refinement_heapG Σ) σ σs,
       ⌜ initP σ σs ⌝ →
       ffi_local_start (goose_ffiLocalGS) σ.(world) -∗
       ffi_local_start (refinement_spec_ffiLocalGS) σs.(world) -∗
       pre_borrowN n -∗
-      wpc_obligation k E e es Φ (λ hL hRG, Φc hG hL hRG ∗ P hG hL hRG) hG hL hRG (P hG hL hRG))%I.
+      wpc_obligation E e es Φ (λ hL hRG, Φc hG hL hRG ∗ P hG hL hRG) hG hL hRG (P hG hL hRG))%I.
 
 (* XXX: ffi_restart seems unnecessary, given ffi_crash_rel *)
 (* This is very complicated to allow the choice of simulated spec crash step
    to be able to depend on what state the impl crashed to. If spec crah steps
    or impl crash steps are deterministic, there is probably a much simpler defn. *)
-Definition wpc_post_crash k E e es
+Definition wpc_post_crash E e es
     (Φ : gooseLocalGS Σ → refinement_heapG Σ → val → iProp Σ)
     (Φc : gooseGlobalGS Σ → gooseLocalGS Σ → refinement_heapG Σ → iProp Σ)
     (P : gooseGlobalGS Σ → gooseLocalGS Σ → refinement_heapG Σ → iProp Σ)
@@ -349,7 +349,7 @@ Definition wpc_post_crash k E e es
                       (refinement_spec_ffiLocalGS (hRG := hRG')) σs'.(world) -∗
       ffi_restart (refinement_spec_ffiLocalGS) σs'.(world) -∗
       pre_borrowN n -∗
-      wpc_obligation k E e es Φ (λ hL hRG, Φc hG hL hRG ∗ P hG hL hRG) hG hL' hRG' (P hG hL' hRG'))%I.
+      wpc_obligation E e es Φ (λ hL hRG, Φc hG hL hRG ∗ P hG hL hRG) hG hL' hRG' (P hG hL' hRG'))%I.
 
 Lemma difference_difference_remainder_L (E1 E2: coPset) :
   E1 ⊆ E2 → (E2 ∖ (E2 ∖ E1)) = E1.
@@ -357,15 +357,15 @@ Proof.
   intros Hsub. rewrite (union_difference_L E1 E2 Hsub). set_solver.
 Qed.
 
-Lemma wpc_trace_inv_open k es σs gs e (hG: gooseGlobalGS Σ) (hL:gooseLocalGS Σ) Href Φ Φc
+Lemma wpc_trace_inv_open es σs gs e (hG: gooseGlobalGS Σ) (hL:gooseLocalGS Σ) Href Φ Φc
       `{!Timeless P}:
   □ (P -∗ P -∗ False) -∗
   spec_ctx' es ([es], (σs,gs)) -∗
   trace_ctx -∗
   spec_crash_ctx' es ([es], (σs,gs)) (P) -∗
-  (|C={⊤}_0=> trace_inv) -∗
-  WPC e @ k; ⊤ {{ v, Φ v }}{{Φc Href ∗ P}} -∗
-  WPC e @ k; ⊤ {{ _, True }}{{∃ (hRef : refinement_heapG Σ)
+  (|C={⊤}=> trace_inv) -∗
+  WPC e @ ⊤ {{ v, Φ v }}{{Φc Href ∗ P}} -∗
+  WPC e @ ⊤ {{ _, True }}{{∃ (hRef : refinement_heapG Σ)
                         (es' : list expr) (σs' : state) (gs' : global_state) (stat : status),
                         ⌜erased_rsteps (CS := spec_crash_lang) es ([es], (σs,gs)) (es', (σs',gs')) stat⌝
                         ∗ ⌜crash_safe (CS := spec_crash_lang) es ([es], (σs,gs))⌝
@@ -383,11 +383,11 @@ Proof.
   iApply (@wpc_strong_mono with "H"); eauto.
   iSplit; first eauto.
   iIntros "(HΦc&HP)".
-  iMod ("Hcfupd2") as "Htrace_open"; first lia.
+  iMod ("Hcfupd2") as "Htrace_open".
   iDestruct "Hcfupd1" as "(#Hcinv1&#Hcinv2)".
   rewrite /source_crash_ctx'.
-  iMod (cfupd_weaken_all with "Hcinv1") as "#Hcinv1'"; [ lia | set_solver+ |].
-  iMod (cfupd_weaken_all with "Hcinv2") as "#Hcinv2'"; [ lia | set_solver+ |].
+  iMod (cfupd_weaken_mask with "Hcinv1") as "#Hcinv1'"; [ set_solver+ |].
+  iMod (cfupd_weaken_mask with "Hcinv2") as "#Hcinv2'"; [ set_solver+ |].
   iInv "Hcinv1'" as ">Hc1" "Hclo1".
   iInv "Hcinv2'" as "Hc2" "Hclo2".
   iDestruct "Hc2" as "[>Hbad|Hc2]".
@@ -453,20 +453,19 @@ Definition initP_wf initP :=
 Definition excl_crash_token (P : gooseGlobalGS Σ → gooseLocalGS Σ → refinement_heapG Σ → iProp Σ) :=
   ∀ hG hL Href, (⊢ ((P hG hL Href -∗ P hG hL Href -∗ False))).
 
-Theorem goose_wpc_refinement_adequacy `{crashGpreS Σ} k es e
+Theorem goose_wpc_refinement_adequacy `{crashGpreS Σ} es e
         σs gs σ g Φ Φc initP P n `{∀ hG (hL:gooseLocalGS Σ) hRG, Timeless (P hG hL hRG)} :
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   initP σ σs →
   initP_wf initP →
   excl_crash_token P →
-  (⊢ wpc_init k ⊤ e es Φ Φc initP P n) →
-  (⊢ wpc_post_crash k ⊤ e es Φ Φc P n) →
+  (⊢ wpc_init ⊤ e es Φ Φc initP P n) →
+  (⊢ wpc_post_crash ⊤ e es Φ Φc P n) →
   trace_refines e e σ g es es σs gs.
 Proof using Hrpre Hhpre Hcpre.
   intros Heq1 Heq2 Hinit Hinit_wf Hexcl Hwp_init Hwp_crash.
   eapply goose_recv_refinement_adequacy with
-      (k0 := k)
       (φ := λ _, True) (φr := λ _, True)
       (n0 := (n + n)%nat)
       (Φinv := λ hG,
@@ -494,7 +493,7 @@ Proof using Hrpre Hhpre Hcpre.
   iModIntro.
 
 
-  iApply (recovery_weakestpre.idempotence_wpr _ _ _ ⊤ _ _ (λ _, _) _ _ (λ hGen,
+  iApply (recovery_weakestpre.idempotence_wpr _ _ ⊤ _ _ (λ _, _) _ _ (λ hGen,
    ∃ hL hRef, ∃ es' σs' gs' stat, 
          ⌜ hGen = goose_generationGS (L:=hL) ⌝ ∗
          ⌜ erased_rsteps es ([es], (σs,gs)) (es', (σs',gs')) stat ⌝ ∗
@@ -578,7 +577,7 @@ Proof using Hrpre Hhpre Hcpre.
         { iExists _, _. iDestruct "Hcfupd1'" as "($&_)". }
         iDestruct "Hcfupd1'" as "(_&$)".
       }
-      iPoseProof (wpc_trace_inv_open k _ _ _ e _ hL' _ (Φ hL' _) (Φc _ hL') with "[] Hspec Htrace Hcfupd1' Hcfupd3 H") as "H".
+      iPoseProof (wpc_trace_inv_open _ _ _ e _ hL' _ (Φ hL' _) (Φc _ hL') with "[] Hspec Htrace Hcfupd1' Hcfupd3 H") as "H".
       { iApply Hexcl. }
       iApply (wpc_mono with "H").
       * naive_solver.

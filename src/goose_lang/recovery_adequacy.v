@@ -8,7 +8,7 @@ From Perennial.goose_lang Require Export recovery_lifting.
 From Perennial.goose_lang Require Import typing adequacy lang crash_borrow.
 Set Default Proof Using "Type".
 
-Theorem goose_recv_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !gooseGpreS Σ} s k e r σ g φ φr φinv Φinv n :
+Theorem goose_recv_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !gooseGpreS Σ} s e r σ g φ φr φinv Φinv n :
   ffi_initgP g → ffi_initP σ.(world) g →
   (∀ `(Hheap : !heapGS Σ),
      ⊢ (ffi_global_start goose_ffiGlobalGS g -∗
@@ -20,11 +20,11 @@ Theorem goose_recv_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_a
         □ (∀ hL : gooseLocalGS Σ,
             let hG := HeapGS _ _ hL in
             Φinv hG -∗ □ ∀ σ nt, state_interp σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
-        wpr s k ⊤ e r (λ v, ⌜φ v⌝) (Φinv) (λ _ v, ⌜φr v⌝))) →
+        wpr s ⊤ e r (λ v, ⌜φ v⌝) (Φinv) (λ _ v, ⌜φr v⌝))) →
   recv_adequate (CS := goose_crash_lang) s e r σ g (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, φinv σ).
 Proof.
   intros Hinit Hinitg Hwp.
-  eapply (wp_recv_adequacy_inv Σ _ _ (n * 4 + crash_borrow_ginv_number) _ _ _ _ _ _ _ _ _).
+  eapply (wp_recv_adequacy_inv Σ _ _ (n * 4 + crash_borrow_ginv_number)).
   iIntros (???).
   iMod (na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
   iMod (ffi_global_init _ _ g) as (ffi_namesg) "(Hgw&Hgstart)"; first by eauto.

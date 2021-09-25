@@ -78,7 +78,7 @@ Section ghost_spec.
     (∃ r ρ, source_ctx' r ρ)%I.
 
   Definition source_crash_ctx' r (ρ : cfg Λ) P : iProp Σ :=
-    □ (|C={↑sN_inv}_0=> inv sN_inv (P ∨ source_inv r (fst ρ) (ρ.2.1) (ρ.2.2))).
+    □ (|C={↑sN_inv}=> inv sN_inv (P ∨ source_inv r (fst ρ) (ρ.2.1) (ρ.2.2))).
 
   Definition source_crash_ctx P : iProp Σ :=
     (∃ r ρ, source_crash_ctx' r ρ P)%I.
@@ -267,7 +267,7 @@ Section ghost_step.
     }
     set (IN := {| cfg_name := γ |}).
     iExists γ.
-    iMod (ncinv_cinv_alloc sN_inv 0 ⊤ (↑sN_inv) (source_inv r tp0 σ0 g0) (P ∨ source_inv r tp0 σ0 g0)%I True%I
+    iMod (ncinv_cinv_alloc sN_inv ⊤ (↑sN_inv) (source_inv r tp0 σ0 g0) (P ∨ source_inv r tp0 σ0 g0)%I True%I
             with "[] [Hauth]") as "(#Hinv&_&#Hcfupd)".
     { set_solver. }
     { iModIntro. iIntros ">H _". iModIntro; eauto. }
@@ -277,7 +277,7 @@ Section ghost_step.
     rewrite pair_split.
     iDestruct "Hfrag" as "($&$)". iFrame "Hinv".
     iModIntro.
-    iMod (cfupd_weaken_all with "[Hcfupd]") as "H"; eauto.
+    iMod (cfupd_weaken_mask with "[Hcfupd]") as "H"; eauto.
   Qed.
 
   Lemma source_cfg_init_names2 `{cfgPreG Σ} r tp σ g P :
@@ -460,7 +460,7 @@ Section ghost_step.
   Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (?) "#Hwand #Hctx HQ Hj Hstate ". rewrite /source_ctx/source_inv.
     iDestruct "Hctx" as (??) "Hctx".
-    iMod (cfupd_weaken_all with "Hctx") as "#Hinv"; eauto.
+    iMod (cfupd_weaken_mask with "Hctx") as "#Hinv"; eauto.
     iIntros "HC".
     iInv "Hinv" as "[HP|Hrest]" "Hclose".
     { iMod (fupd_mask_subseteq ∅); first by solve_ndisj.
@@ -497,7 +497,7 @@ Section ghost_step.
       -∗ C -∗ |={E}=> Q ∗ j ⤇ K e2 ∗ source_state σ2 g2 ∗ [∗ list] ef ∈ efs, ∃ j', j' ⤇ ef.
   Proof using Type Hgstate_inhabited Hstate_inhabited.
     iIntros (Hstep ?) "#Hwand (#Hctx&HQ&Hj&Hstate)". rewrite /source_ctx/source_inv.
-    iMod (cfupd_weaken_all with "Hctx") as "#Hinv"; eauto.
+    iMod (cfupd_weaken_mask with "Hctx") as "#Hinv"; eauto.
     iIntros "HC".
     iInv "Hinv" as "[HP|Hrest]" "Hclose".
     { iMod (fupd_mask_subseteq ∅); first by solve_ndisj.

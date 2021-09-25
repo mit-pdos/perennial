@@ -218,8 +218,8 @@ Section proof.
     R 1%Qp ∗
     is_free_lock lk ∗
     (is_rwlock #lk R -∗
-          WPC e @ k; ⊤ {{ Φ }} {{ Φc }}) -∗
-    WPC e @ k; ⊤ {{ Φ }} {{ Φc }}.
+          WPC e @ ⊤ {{ Φ }} {{ Φc }}) -∗
+    WPC e @ ⊤ {{ Φ }} {{ Φc }}.
   Proof.
     clear.
     iIntros "#Hwand1 #Hwand2 (HR&Hfree&Hwp)".
@@ -230,7 +230,7 @@ Section proof.
 
   Lemma try_read_acquire_spec E lk R :
     ↑N ⊆ E →
-    {{{ is_rwlock lk R }}} rwlock.try_read_acquire lk @ NotStuck; E
+    {{{ is_rwlock lk R }}} rwlock.try_read_acquire lk @ E
     {{{ b, RET #b; if b is true then (R rfrac) else True }}}.
   Proof.
     iIntros (? Φ) "(#Hwand1&#Hwand2&#Hl) HΦ". iDestruct "Hl" as (l ->) "#Hinv".

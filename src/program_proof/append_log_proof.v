@@ -88,7 +88,7 @@ Theorem wpc_write_hdr_fupd stk k E1 lptr (sz0 disk_sz0 sz disk_sz:u64) :
   ∀ Φ Φc,
     log_fields lptr sz disk_sz -∗
     (<disc> Φc ∧ is_hdr sz0 disk_sz0 ∗ ▷ (is_hdr sz disk_sz ∗ log_fields lptr sz disk_sz ={E1}=∗ <disc> Φc ∧ Φ #())) -∗
-    WPC Log__writeHdr #lptr @ stk; k; E1 {{ Φ }} {{ Φc }}.
+    WPC Log__writeHdr #lptr @ stk; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Φ Φc) "Hlog HΦ".
   rewrite /Log__writeHdr.
@@ -120,7 +120,7 @@ Qed.
 Theorem wpc_write_hdr stk k E1 lptr (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ is_hdr sz0 disk_sz0 ∗
       log_fields lptr sz disk_sz }}}
-    Log__writeHdr #lptr @ stk; k; E1
+    Log__writeHdr #lptr @ stk; E1
   {{{ RET #(); is_hdr sz disk_sz ∗ log_fields lptr sz disk_sz }}}
   {{{ is_hdr sz0 disk_sz0 ∨ is_hdr sz disk_sz }}}.
 Proof.
@@ -270,7 +270,7 @@ Qed.
 (* TODO: prove this based on [wp_Log__get] *)
 Theorem wpc_Log__get stk k E1 (lptr: loc) bs (i: u64) :
   {{{ ptsto_log lptr bs ∗ ⌜int.Z i < 2^64-1⌝ }}}
-    Log__get #lptr #i @ stk; k; E1
+    Log__get #lptr #i @ stk; E1
   {{{ s (ok: bool), RET (slice_val s, #ok);
       (if ok
        then ∃ b, ⌜bs !! int.nat i = Some b⌝ ∗ is_block s 1 b
@@ -345,7 +345,7 @@ Qed.
 (* TODO: move to basic_triples *)
 Lemma wpc_slice_len k stk E1 s Φ Φc :
   <disc> Φc ∧ Φ #(Slice.sz s) -∗
-  WPC slice.len (slice_val s) @ stk; k; E1 {{ v, Φ v }} {{ Φc }}.
+  WPC slice.len (slice_val s) @ stk; E1 {{ v, Φ v }} {{ Φc }}.
 Proof.
   iIntros "HΦ".
   rewrite /slice.len.
@@ -356,7 +356,7 @@ Qed.
 
 Lemma wpc_SliceGet {stk k E1} `{!into_val.IntoVal V} s t q (vs: list V) (i: u64) (v0: V) :
   {{{ is_slice_small s t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
-    SliceGet t (slice_val s) #i @ stk; k; E1
+    SliceGet t (slice_val s) #i @ stk; E1
   {{{ RET into_val.to_val v0; is_slice_small s t q vs }}}
   {{{ True }}}.
 Proof.
@@ -376,7 +376,7 @@ Qed.
 
 Theorem wpc_WriteArray stk k E1 l bs q (s: Slice.t) b (off: u64) :
   {{{ l d↦∗ bs ∗ is_block s q b ∗ ⌜0 <= int.Z off - l < Z.of_nat (length bs)⌝ }}}
-    Write #off (slice_val s) @ stk; k; E1
+    Write #off (slice_val s) @ stk; E1
   {{{ RET #(); l d↦∗ <[Z.to_nat (int.Z off - l) := b]> bs ∗ is_block s q b }}}
   {{{ ∃ bs', l d↦∗ bs' ∗ ⌜length bs' = length bs⌝ }}}.
 Proof.
@@ -402,11 +402,11 @@ Proof.
       iFrame.
 Qed.
 
-Theorem wpc_writeAll stk (k: nat) E1 bk_s bks bs0 bs (off: u64) :
+Theorem wpc_writeAll stk E1 bk_s bks bs0 bs (off: u64) :
   {{{ blocks_slice bk_s bks bs ∗ int.Z off d↦∗ bs0 ∗
                                  ⌜length bs0 = length bs⌝ ∗
                                  ⌜int.Z off + length bs0 < 2^64⌝ }}}
-    writeAll (slice_val bk_s) #off @ stk; k; E1
+    writeAll (slice_val bk_s) #off @ stk; E1
   {{{ RET #(); blocks_slice bk_s bks bs ∗ int.Z off d↦∗ bs }}}
   {{{ ∃ bs', int.Z off d↦∗ bs' ∗ ⌜length bs' = length bs0⌝ }}}.
 Proof.
@@ -536,7 +536,7 @@ Qed.
 
 Theorem wpc_init (sz: u64) k E1 E2 vs:
   {{{ 0 d↦∗ vs ∗ ⌜length vs = int.nat sz⌝ }}}
-    Init #sz @ NotStuck; k; E1
+    Init #sz @ E1
   {{{ l (ok: bool), RET (#l, #ok); ⌜ int.nat sz > 0 → ok = true ⌝ ∗
       if ok then ptsto_log l [] ∗ (∃ (ml: loc), l ↦[Log :: "m"] #ml ∗ is_free_lock ml)
       else 0 d↦∗ vs }}}
@@ -613,7 +613,7 @@ Opaque struct.t.
 
 Theorem wpc_Log__append k stk E1 l bs0 bk_s bks bs :
   {{{ ptsto_log l bs0 ∗ blocks_slice bk_s bks bs }}}
-    Log__append #l (slice_val bk_s) @ stk; k; E1
+    Log__append #l (slice_val bk_s) @ stk; E1
   {{{ (ok: bool), RET #ok; (ptsto_log l (if ok then bs0 ++ bs else bs0)) ∗
                           blocks_slice bk_s bks bs }}}
   {{{ crashed_log bs0 ∨ crashed_log (bs0 ++ bs) }}}.
@@ -795,7 +795,7 @@ Qed.
 
 Theorem wpc_Log__reset stk k E1 l bs :
   {{{ ptsto_log l bs }}}
-    Log__reset #l @ stk; k; E1
+    Log__reset #l @ stk; E1
   {{{ RET #(); ptsto_log l [] }}}
   {{{ crashed_log bs ∨ crashed_log [] }}}.
 Proof.
@@ -813,7 +813,7 @@ Qed.
 
 Theorem wpc_Open k E1 vs :
   {{{ crashed_log vs }}}
-    Open #() @ NotStuck; k; E1
+    Open #() @ E1
   {{{ lptr, RET #lptr; ptsto_log lptr vs ∗ ∃ (ml: loc), lptr ↦[Log :: "m"] #ml ∗ is_free_lock ml }}}
   {{{ crashed_log vs }}}.
 Proof.

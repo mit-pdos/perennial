@@ -67,7 +67,7 @@ Lemma wp_nval_wpc_nval E P :
   ▷ wp_nval E (later_tok -∗ P) -∗
   wpc_nval E P.
 Proof.
-  rewrite /wp_nval/wpc_nval. iIntros "Htok H" (E' e s k Φ Φc Hnval Hsub) "Hwp".
+  rewrite /wp_nval/wpc_nval. iIntros "Htok H" (E' e s Φ Φc Hnval Hsub) "Hwp".
   rewrite ?wpc_unfold /wpc_pre. iIntros (mj).
   rewrite Hnval. iSplit; last first.
   { iDestruct ("Hwp" $! _) as "(_&$)". }
