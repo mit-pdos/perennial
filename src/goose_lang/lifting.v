@@ -404,11 +404,13 @@ Class gooseLocalGS Σ := GooseLocalGS {
 (* For convenience we also have a class that bundles both the
    global and per-generation parameters.
    For historic reasons, this is called heapGS
-   TODO: rename to gooseGS. *)
+   TODO: rename to gooseGS, or remove. *)
+Local Set Primitive Projections.
 Class heapGS Σ := HeapGS {
   goose_globalGS : gooseGlobalGS Σ;
   goose_localGS : gooseLocalGS Σ;
 }.
+Local Unset Primitive Projections.
 (* Hints are set up at the bottom of the file, outside the section. *)
 
 Definition tls (na: naMode) : lock_state :=
