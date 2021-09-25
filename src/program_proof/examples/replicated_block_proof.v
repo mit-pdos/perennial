@@ -104,31 +104,6 @@ Section goose.
     - iExists block0; iExact "Hb".
   Qed.
 
-(*
-FIXME: looks like crash locks no longer support cfupd.
-  Theorem replicated_block_cfupd {l} k' addr σ0 :
-    is_pre_rblock l addr σ0 -∗
-    ▷ P σ0 ={⊤}=∗
-      is_rblock (S k') l addr ∗
-      <disc> |C={⊤}=> ▷ (∃ σ, rblock_cinv addr σ ∗ P σ).
-  Proof.
-    iIntros "Hpre HP"; iNamed "Hpre".
-
-    (* actually initialize the lock *)
-    iMod (alloc_crash_lock_cfupd N k'
-                             (∃ σ, "Hlkinv" ∷ rblock_linv addr σ ∗ "HP" ∷ P σ)%I
-                             (∃ σ, "Hclkinv" ∷ rblock_cinv addr σ ∗ "HP" ∷ P σ)%I
-            with "Hfree_lock [] [Hlinv HP]") as "(Hlk&$)".
-    { iIntros "!> H !> !>". iNamed "H".
-      iExists _; iFrame.
-      iApply rblock_linv_to_cinv; iFrame. }
-    { eauto with iFrame. }
-
-    iModIntro.
-    iExists _, _; iFrame.
-  Qed.
-*)
-
   (* Open is the replicated block's recovery procedure, which constructs the
   in-memory state as well as recovering the synchronization between primary and
   backup, going from the crash invariant to the lock invariant. *)

@@ -784,11 +784,6 @@ Qed.
 
 Existing Instances sty_inv_persistent.
 
-(*
-Local Hint Extern 1 (envs_entails _ (<disc> ▷ True)) => by iModIntro : core.
-*)
-Local Hint Extern 1 (envs_entails _ (<disc> _)) => by iModIntro : core.
-
 Lemma sty_fundamental_lemma:
   sty_rules_obligation spec_trans →
   sty_atomic_obligation spec_atomic_transTy →
