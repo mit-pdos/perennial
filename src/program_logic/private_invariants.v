@@ -1,7 +1,7 @@
 From stdpp Require Export namespaces.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import gmap frac.
-From Perennial.base_logic.lib Require Export fancy_updates fupd_level.
+From Perennial.base_logic.lib Require Export fancy_updates.
 From Perennial.base_logic.lib Require Import wsat.
 From Perennial.program_logic Require Import crash_weakestpre step_fupd_extra.
 From Perennial.Helpers Require Import Qextra.

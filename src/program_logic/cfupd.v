@@ -2,7 +2,7 @@ From iris.algebra Require Import auth agree excl csum.
 From Perennial.base_logic Require Import ae_invariants.
 From iris.bi Require Export weakestpre.
 From iris.proofmode Require Import base tactics classes.
-From Perennial.base_logic Require Export invariants fupd_level fancy_updates2.
+From Perennial.base_logic Require Export invariants fancy_updates2.
 From Perennial.program_logic Require Import step_fupd_extra ae_invariants_mutable.
 From Perennial.algebra Require Export own_discrete.
 From Perennial.base_logic.lib Require Export ncfupd.

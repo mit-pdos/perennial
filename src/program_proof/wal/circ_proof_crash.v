@@ -485,7 +485,7 @@ Qed.
 Lemma circ_buf_crash_obligation_alt E Prec Pcrash γ σ:
   ↑N ⊆ E →
   is_circular_state γ σ -∗
-  □ (∀ σ, ▷ P σ -∗ |0={E ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
+  □ (∀ σ, ▷ P σ -∗ |={E ∖ ↑N}=> ▷ Prec σ ∗ ▷ Pcrash σ) -∗
   P σ -∗
   |={⊤}=> ∃ γ', is_circular N P γ ∗
                             (<bdisc> (|C={E}=> ∃ σ, is_circular_state γ' σ ∗
@@ -508,7 +508,6 @@ Proof.
   { iModIntro. iIntros "(H1&>Hinit)".
     iDestruct "H1" as (σ') "(>Hstate&HP)".
     iIntros "#HC".
-    iApply (fupd_level_fupd).
     iMod ("HPwand" with "[$]") as "(HPrec&HPcrash)".
     iMod (crash_upd with "[$] [$]") as "(Hcs&Hres&Hcs_crash&Hexchange)".
     iModIntro.

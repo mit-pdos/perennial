@@ -145,14 +145,14 @@ Definition is_txn (l : loc) (γ : txn_names) dinit : iProp Σ :=
 
 Global Instance is_txn_persistent l γ dinit : Persistent (is_txn l γ dinit) := _.
 
-Theorem mapsto_txn_valid' γ a v E k q :
+Theorem mapsto_txn_valid γ a v E :
   ↑invN ⊆ E ->
   ncinv invN (is_txn_always γ) -∗
-  mapsto_txn γ a v -∗ NC q -∗ |k={E}=>
-    mapsto_txn γ a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ∧ γ.(txn_kinds) !! a.(addrBlock) = Some (projT1 v) ⌝ ∗ NC q.
+  mapsto_txn γ a v -∗ |NC={E}=>
+    mapsto_txn γ a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ∧ γ.(txn_kinds) !! a.(addrBlock) = Some (projT1 v) ⌝.
 Proof.
-  iIntros (HN) "#Hinv H HNC".
-  iMod (ncinv_acc_k with "Hinv HNC") as "(>Halways&HNC&Hclose)"; auto.
+  iIntros (HN) "#Hinv H".
+  iMod (ncinv_acc with "Hinv") as "(>Halways&Hclose)"; auto.
   lazymatch goal with
   | |- envs_entails _ ?g =>
     lazymatch g with
@@ -160,7 +160,7 @@ Proof.
       iAssert (⌜φ⌝)%I as "#-#Hgoal"
     end
   end; last first.
-  { iMod ("Hclose" with "[$] [$]"). iFrame. auto. }
+  { iMod ("Hclose" with "[$]"). iFrame. auto. }
 
   iNamed "H".
   iNamed "Halways".
@@ -183,19 +183,6 @@ Proof.
   iPureIntro.
   unfold bufDataT_in_block in *.
   intuition eauto; congruence.
-Qed.
-
-
-Theorem mapsto_txn_valid γ a v E :
-  ↑invN ⊆ E ->
-  ncinv invN (is_txn_always γ) -∗
-  mapsto_txn γ a v -∗ |NC={E}=>
-    mapsto_txn γ a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ∧ γ.(txn_kinds) !! a.(addrBlock) = Some (projT1 v) ⌝.
-Proof.
-  iIntros (HN) "#Hinv H".
-  rewrite ncfupd_eq. iIntros (?) "HNC".
-  iApply (fupd_level_fupd _ _ _ O).
-  iMod (mapsto_txn_valid' with "[$] [$] [$]") as "($&$)"; auto.
 Qed.
 
 Theorem mapsto_txn_cur γ (a : addr) (v : {K & bufDataT K}) :
