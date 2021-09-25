@@ -1632,8 +1632,8 @@ Proof using spec_trans.
     iDestruct "Hv2" as "#Hv".
     iFrame.
     iApply big_sepL_fupd.
-    iApply (big_sepL_mono_with_pers with "Hv Hpts").
-    { iIntros (k x Hlookup) "#Hval (Hmtoks&Hsmtoks)".
+    iApply (big_sepL_impl with "Hpts").
+    { iIntros "!> !>" (k x Hlookup) "(Hmtoks&Hsmtoks)".
       iDestruct (big_sepL2_sepL_2 with "Hmtoks Hsmtoks") as "Hmtoks"; first lia.
       iApply big_sepL_fupd.
       iApply (big_sepL2_elim_big_sepL with "[] Hmtoks").
@@ -1641,7 +1641,7 @@ Proof using spec_trans.
       { iModIntro. iIntros (i vi vsi vty Hlookup1 Hlookup2 Hlookup3) "((Hpts&Hm)&(Hspts&Hsm))".
         rewrite list_lookup_fmap in Hlookup3.
         apply fmap_Some_1 in Hlookup3 as (sty&Hlookup3&Heq). subst.
-        iDestruct (flatten_well_typed with "Hval") as "Hvali"; eauto.
+        iDestruct (flatten_well_typed with "Hv") as "Hvali"; eauto.
         iMod (is_loc_init with "Hpts Hm Hspts Hsm Hvali") as "$".
         eauto.
       }
