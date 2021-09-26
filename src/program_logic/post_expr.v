@@ -1,3 +1,7 @@
+(** Modality for "after a step".
+
+Useful to derive crash-rwlock from non-crash-rwlock. *)
+
 From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Export crash_weakestpre staged_invariant_alt.
 Set Default Proof Using "Type".
