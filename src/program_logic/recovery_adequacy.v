@@ -30,8 +30,7 @@ Fixpoint step_fupdN_fresh ncurrent (ns: list nat) (HG0: generationGS Λ Σ)
     (||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum (num_laters_per_step) (step_count_next)
                                      ncurrent (S n)) ||={∅|∅, ⊤|⊤}=>
      ||={⊤|⊤,∅|∅}=> ||▷=>^2 ||={∅|∅, ⊤|⊤}=>
-     ∀ Hc', NC 1 ={⊤}=∗ ∃ p' : generation_params Λ Σ,
-       let HG' := generation_from_params Hc' p' in
+     |={⊤}=> ∃ HG' : generationGS Λ Σ,
        step_fupdN_fresh ((Nat.iter (S n) step_count_next ncurrent)) ns HG' P)
   end%I.
 
@@ -117,8 +116,7 @@ Proof.
     iIntros "H".
     iMod "H". iModIntro. iApply (step_fupd2N_wand with "H"). iIntros "H".
     iMod "H". iModIntro.
-    iIntros (Hc') "HNC". iSpecialize ("H" $! Hc' with "[$]"). iMod "H" as (p') "H".
-    set (HG' := generation_from_params _ p').
+    iMod "H" as (HG') "H".
     iExists _. iModIntro. iApply (IHns with "H").
     { subst. auto. }
     eauto.
@@ -216,9 +214,7 @@ Proof.
   iMod ("Hclo") as "_".
   iModIntro.
   destruct s0.
-  - iIntros (Hc') "HNC". iSpecialize ("H" $! Hc' with "[$]").
-    iMod "H" as (p') "(Hσ&Hg&Hr&HNC)".
-    set (HG' := generation_from_params _ p').
+  - iMod "H" as (HG') "(HNC&Hσ&Hg&Hr)".
     iDestruct "Hr" as "(_&Hr)".
     simpl in *.
     iPoseProof (IH with "[Hσ] [Hg] Hr [] [] HNC") as "H"; eauto.
@@ -248,10 +244,8 @@ Proof.
       rewrite -?Nat_iter_S_r -?Nat_iter_add plus_assoc.
       f_equal. lia. }
     iModIntro; done.
-  - iIntros (Hc') "HNC".
-    iMod ("H" $! Hc' with "[$]") as (p') "(Hσ&Hg&Hr&HNC)".
-    set (HG' := generation_from_params Hc' p').
-    iExists p'.
+  - iMod "H" as (HG') "(HNC&Hσ&Hg&Hr)".
+    iExists HG'.
     iAssert (□Φinv' HG')%I as "#Hinv'".
     { iDestruct "Hr" as "(Hr&_)".
       iApply "Hinv". eauto.
@@ -382,11 +376,9 @@ Proof.
     rewrite /step_fupdN_fresh -/step_fupdN_fresh.
     iDestruct (step_fupdN_fresh_pattern_fupd _ _ _ (▷^ (S _) P)%I with "H [IH HNC]") as "H".
     { iIntros "H".
-      iSpecialize ("H" with "[$]").
       rewrite ?Hpf1 ?Hpf2 ?Hpf3 ?Hpf4.
-      iMod "H". iDestruct "H" as (p') "H".
-      set (HG' := generation_from_params Hc' p').
-      iMod ("IH" with "[//] H") as "H".
+      iMod "H" as (HG') "H".
+      iMod ("IH" $! HG' (iris_crashGS (G:=HG')) with "[//] H") as "H".
       rewrite ?perennial_step_count_next_spec.
       iModIntro; eauto.
     }

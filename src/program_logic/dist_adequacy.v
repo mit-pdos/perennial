@@ -99,14 +99,9 @@ Proof.
   { eauto. }
   iModIntro. iNext.
   iClear "HC".
-  unshelve (iMod NC_alloc as (Hc') "HNC").
-  { constructor. apply _. }
-  iSpecialize ("H" with "HNC").
-  iMod "H".
-  iDestruct "H" as (p') "(Hσ&Hg&(_&Hwpr)&HNC)".
-  iModIntro.
+  iMod "H" as (HG') "(HNC&Hσ&Hg&(_&Hwpr))".
+  iModIntro. iExists HG'.
   iFrame.
-  iExists (generation_from_params Hc' p'). iFrame.
   rewrite /wpnode/=.
   iExists _, _, _. iFrame. rewrite /wptp. rewrite big_sepL_nil. eauto.
 Qed.

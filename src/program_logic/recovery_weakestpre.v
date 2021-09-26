@@ -9,21 +9,6 @@ Set Default Proof Using "Type".
 
 (*** Recovery ***)
 
-(* The parameters of a generation that the user gets to pick each round.
-Basically [generationGS] without [crashGS].
-Collected in a record to make it easier to extend [generationGS].
-Internal implementation detail. *)
-Record generation_params {Λ Σ} := {
-  gparams_state_interp : state Λ → nat → iProp Σ;
-}.
-Arguments generation_params : clear implicits.
-
-Definition generation_from_params {Λ Σ} (Hc: crashGS Σ) (p : generation_params Λ Σ) :
-  generationGS Λ Σ
-  :=
-  {| iris_crashGS := Hc;
-    state_interp := gparams_state_interp p |}.
-
 (* A recovery WP is parameterized by three predicates: [Φ] is the postcondition
    for normal non-crashing execution, [Φinv] is a condition that holds at each restart
    point, and [Φr] is the postcondition satisfied in case of a crash.
@@ -46,14 +31,11 @@ Definition wpr_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness)
   (WPC e @ s ; E
      {{ Φ }}
      {{ ∀ σ g mj D σ' (HC: crash_prim_step CS σ σ') ns κs n,
-        state_interp σ n -∗ global_state_interp g ns mj D κs ={E}=∗ ▷ ∀ Hc1 q, NC q ={E}=∗
-          (* Pick a new generationGS, but we provide the crashGS
-             TODO(RJ): can we let them pick crashGS? *)
-          ∃ (p:generation_params Λ Σ),
-            let HGnew := generation_from_params Hc1 p in
+        state_interp σ n -∗ global_state_interp g ns mj D κs ={E}=∗ ▷ |={E}=>
+          ∃ (HGnew:generationGS Λ Σ), NC 1 ∗
             state_interp (G:=HGnew) σ' 0 ∗
             global_state_interp g (step_count_next ns) mj D κs ∗
-            (Φinv HGnew ∧ wpr HGnew E rec rec (Φr HGnew) Φinv Φr) ∗ NC q}})%I.
+            (Φinv HGnew ∧ wpr HGnew E rec rec (Φr HGnew) Φinv Φr) }})%I.
 
 Local Instance wpr_pre_contractive `{!irisGS Λ Σ} CS s: Contractive (wpr_pre CS s).
 Proof.
@@ -102,10 +84,9 @@ Proof.
   iDestruct "HΦ" as "(_&HΦ)".
   iIntros "H".
   iModIntro. iIntros (?????????) "Hσ Hg". iMod ("H" with "[//] Hσ Hg") as "H".
-  iModIntro. iNext. iIntros (Hc' ?) "HNC".
-  iMod ("H" $! Hc' with "[$]") as (p) "(?&?&H&HNC)".
-  set (HG' := generation_from_params Hc' p).
-  iModIntro. iExists _. iFrame.
+  iModIntro. iNext.
+  iMod ("H") as (HG') "(HNC&?&?&H)".
+  iModIntro. iExists HG'. iFrame.
   iSplit.
   - iDestruct "H" as "(H&_)". iDestruct "HΦ" as "(HΦ&_)". by iApply "HΦ".
   - iDestruct "H" as "(_&H)".
@@ -120,10 +101,9 @@ Lemma idempotence_wpr CS s E1 e rec Φx Φinv Φrx (Φcx: generationGS Λ Σ →
   ⊢ WPC e @ s ; E1 {{ Φx }} {{ Φcx HG }} -∗
    (□ ∀ (HG': generationGS Λ Σ) σ g σ' (HC: crash_prim_step CS σ σ') ns mj D κs n,
         Φcx HG' -∗ state_interp (G:=HG') σ n -∗ global_state_interp g ns mj D κs ={E1}=∗
-        ▷ ∀ (Hc: crashGS Σ) q, NC q ={E1}=∗
-          ∃ (HG'': generationGS Λ Σ), ⌜iris_crashGS (G:=HG'') = Hc⌝ ∗
+        ▷ |={E1}=> ∃ (HG'': generationGS Λ Σ), NC 1 ∗
             state_interp (G:=HG'') σ' 0 ∗ global_state_interp g (step_count_next ns) mj D κs ∗
-            (Φinv HG'' ∧ WPC rec @ s ; E1 {{ Φrx HG'' }} {{ Φcx HG'' }}) ∗ NC q) -∗
+            (Φinv HG'' ∧ WPC rec @ s ; E1 {{ Φrx HG'' }} {{ Φcx HG'' }})) -∗
     wpr CS s HG E1 e rec (Φx) Φinv Φrx.
 Proof.
   iLöb as "IH" forall (E1 e HG Φx).
@@ -135,17 +115,13 @@ Proof.
   { set_solver +. }
   iIntros. iMod ("Hidemp" with "[ ] [$] [$] [$]") as "H".
   { eauto. }
-  iModIntro. iNext. iIntros (Hc' ?) "HNC".
-  iMod ("H" $! Hc' with "[$]") as (HG'' <-) "(?&?&Hc&HNC)".
-  (* convert from parameterization over generationGS to generation_params. *)
-  set (p := Build_generation_params _ _ state_interp).
-  assert (HG'' = generation_from_params iris_crashGS p) as ->.
-  { destruct HG''. done. }
-  iExists p. iFrame. iModIntro.
+  iModIntro. iNext.
+  iMod "H" as (HG'') "(HNC&?&?&Hc)".
+  iExists HG''. iFrame. iModIntro.
   iSplit.
   { iDestruct "Hc" as "($&_)". }
   iDestruct "Hc" as "(_&Hc)".
-  iApply ("IH" $! E1 rec _ (λ v, Φrx (generation_from_params iris_crashGS p) v)%I with "[Hc]").
+  iApply ("IH" $! E1 rec _ (λ v, Φrx _ v)%I with "[Hc]").
   { iApply (wpc_strong_mono' with "Hc"); auto. }
   eauto.
 Qed.
@@ -166,14 +142,11 @@ Definition wpr0_pre `{irisGS Λ Σ} (CS: crash_semantics Λ) (s : stuckness) (mj
   (wpc0 s mj E e
      Φ
      (∀ σ g σ' (HC: crash_prim_step CS σ σ') ns mj D κs n,
-        state_interp σ n -∗ global_state_interp g ns mj D κs ={E}=∗  ▷ ∀ Hc1 q, NC q ={E}=∗
-          (* Pick a new generationGS, but we provide the crashGS
-             TODO(RJ): can we let them pick crashGS? *)
-          ∃ (p:generation_params Λ Σ),
-            let HGnew := generation_from_params Hc1 p in
+        state_interp σ n -∗ global_state_interp g ns mj D κs ={E}=∗  ▷ |={E}=>
+          ∃ (HGnew:generationGS Λ Σ), NC 1 ∗
             state_interp (G:=HGnew) σ' 0 ∗
             global_state_interp g (step_count_next ns) mj D κs ∗
-            (Φinv HGnew ∧ wpr HGnew E rec rec (Φr HGnew) Φinv Φr) ∗ NC q))%I.
+            (Φinv HGnew ∧ wpr HGnew E rec rec (Φr HGnew) Φinv Φr)))%I.
 
 Local Instance wpr0_pre_contractive `{!irisGS Λ Σ} CS s mj: Contractive (wpr0_pre CS s mj).
 Proof.
@@ -219,9 +192,8 @@ Proof.
   iSplit; first eauto.
   iIntros "H !>". iIntros (σ g σ' Hcrash ns mj' D κs n) "Hσ Hg".
   iMod ("H" with "[//] [$] [$]") as "H".
-  do 2 iModIntro. iIntros (??) "HNC".
-  iMod ("H" with "[$]") as (p') "(Hσ&Hg&H&HNC)".
-  set (HG' := generation_from_params Hc1 p').
+  do 2 iModIntro.
+  iMod "H" as (HG') "(HNC&Hσ&Hg&H)".
   iModIntro. iExists _. iFrame. iSplit.
   { iDestruct "H" as "($&_)". }
   { iApply "IH". iDestruct "H" as "(_&$)". }

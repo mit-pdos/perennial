@@ -538,10 +538,10 @@ Proof using Hrpre Hhpre Hcpre.
     iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi_old") as (ffi_names) "(Hw&Hcrel&Hc)".
     { inversion Hcrash; subst; eauto. }
     iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
+    iMod NC_alloc as (Hc) "HNC".
     set (hL' := GooseLocalGS _ Hc ffi_names (na_heapGS_update _ name_na_heap) (traceGS_update Σ _ name_trace)).
     iSpecialize ("H" $! hL').
     iExists (goose_generationGS (L:=hL')).
-    iSplitR; first done.
     iMod "H".
     iSpecialize ("H" with "[Hc Hcrel] [$]").
     {  simpl. iExists _, _. iFrame. }

@@ -86,11 +86,11 @@ Proof.
   { inversion Hcrash; subst; eauto. }
   iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   iModIntro.
-  iNext. iIntros (Hc' ?) "HNC".
+  iNext.
+  iMod (NC_alloc) as (Hc') "HNC".
   (* TODO(RJ): reformulate na_heap_reinit and trace_reinit to better match what we need here. *)
   set (hL' := GooseLocalGS Σ Hc' ffi_names (na_heapGS_update _ name_na_heap) (traceGS_update Σ _ name_trace)).
   iExists (goose_generationGS (L:=hL')).
-  iSplitR; first done.
   iSpecialize ("Hidemp" $! σ_pre_crash.(world) σ_post_crash.(world) hL' with "Hcrel Hc").
   rewrite /state_interp//=.
   iFrame.

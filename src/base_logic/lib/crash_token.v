@@ -16,6 +16,10 @@ Definition crashΣ : gFunctors :=
 Global Instance subG_crashGS {Σ} : subG crashΣ Σ → crashGpreS Σ.
 Proof. solve_inG. Qed.
 
+Global Instance crashGpreS_fromGS Σ :
+  crashGS Σ → crashGpreS Σ.
+Proof. intros ?. constructor. apply _. Defined.
+
 Definition NC_def `{crashGS Σ} q := own crash_name (NC_tok q).
 Definition NC_aux `{crashGS Σ} : seal NC_def. by eexists. Qed.
 Definition NC `{crashGS Σ} := NC_aux.(unseal).
