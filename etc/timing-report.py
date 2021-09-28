@@ -56,6 +56,11 @@ if __name__ == "__main__":
         help="number of slow QED proofs to show",
     )
     parser.add_argument(
+        "--sort-qed",
+        help="sort by QED time rather than total time",
+        action="store_true",
+    )
+    parser.add_argument(
         "--db", help="sqlite database of timing info", default=".timing.sqlite3"
     )
     parser.add_argument("--filter", help="filter file names", default=None)
@@ -105,7 +110,7 @@ if __name__ == "__main__":
         print("slow files:")
         print(
             file_df[["fname", "time", "qed_time"]]
-            .nlargest(args.max_files, "time")
+            .nlargest(args.max_files, "qed_time" if args.sort_qed else "time")
             .to_string(index=False)
         )
 
