@@ -150,7 +150,6 @@ Proof.
   rewrite /RPCSpec_Spec /is_shard_server_moveSpec_pre /=.
   intros Φ. simpl.
   repeat f_equiv.
-  eapply Hpre.
 Qed.
 
 Definition is_shard_server_def :=
