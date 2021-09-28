@@ -135,4 +135,5 @@ Proof.
 Qed.
 
 Hint Mode AsMapsTo - + - : typeclass_instances.
+Typeclasses Opaque readonly.
 Arguments readonly {Σ _} _%bi_scope {Φ}%function_scope {H}.

@@ -12,7 +12,6 @@ From Perennial.program_proof.wal Require Export circ_proof sliding_proof.
 From Perennial.program_proof.wal Require Export transitions.
 
 Transparent slice.T.
-Typeclasses Opaque struct_field_mapsto.
 
 Class walG Σ :=
   { wal_circ         :> circG Σ;

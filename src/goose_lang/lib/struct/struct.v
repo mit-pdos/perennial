@@ -706,6 +706,9 @@ Qed.
 
 End goose_lang.
 
+Typeclasses Opaque struct_mapsto.
+Typeclasses Opaque struct_field_mapsto.
+
 Notation "l ↦[ d :: f ]{ q } v" :=
   (struct_field_mapsto l q d f%string v%V).
 Notation "l ↦[ d :: f ] v" :=
