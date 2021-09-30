@@ -273,7 +273,7 @@ Proof.
   wp_let.
   wp_lam.
   wp_pures.
-  iDestruct "Hsl" as "(Hptr&%)".
+  rewrite /is_slice_small. iDestruct "Hsl" as "(Hptr&%)".
   iDestruct (array_split 8 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
   wp_apply (wp_EncodeUInt64 with "[$Henc]").
   { iPureIntro.
@@ -306,6 +306,7 @@ Proof.
   wp_let.
   wp_lam.
   wp_pures.
+  rewrite /is_slice_small.
   iDestruct "Hsl" as "(Hptr&%)".
   iDestruct (array_split 4 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
   wp_apply (wp_EncodeUInt32 with "[$Henc]").
@@ -658,6 +659,7 @@ Proof.
   rewrite [vs in is_slice_small _ _ _ vs](H0).
   wp_call.
   wp_apply wp_slice_ptr.
+  rewrite /is_slice_small.
   iDestruct "Hs" as "(Hptr&%)".
   iDestruct (array_app with "Hptr") as "[Htake Hrest]"; try lia;
     rewrite u64_le_bytes_length.
@@ -731,6 +733,7 @@ Theorem wp_UInt32Get_unchanged stk E s q (x: u32) vs :
   {{{ RET #x; is_slice_small s byteT q vs }}}.
 Proof.
   iIntros (Htake Φ) "Hs HΦ".
+  rewrite /is_slice_small.
   iDestruct "Hs" as "[Hptr %]".
   rewrite -(take_drop 4 vs).
   iDestruct (array_app with "Hptr") as "[Hptr1 Hptr2]".

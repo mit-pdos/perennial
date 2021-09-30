@@ -141,9 +141,7 @@ Proof.
     }
 
     rewrite Hx.
-    Opaque typed_slice.is_slice_small. (* to split fraction *)
     iDestruct "Hsrv_val_sl" as "[Hsrv_val_sl Hrep_val_sl]".
-    Transparent typed_slice.is_slice_small.
     iSpecialize ("HlastReply_structs" with "[Hsrv_val_sl]").
     {
       iExists _, _.
@@ -241,7 +239,7 @@ Proof.
     wp_pures.
     wp_loadField.
 
-    iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_sl_close]".
+    iDestruct (is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_sl_close]".
     set (sid:=shardOfC args.(GR_Key)) in *.
 
     assert (∃ b, shardMapping !! int.nat sid = Some b) as [? ?].
@@ -397,15 +395,11 @@ Proof.
       iDestruct "HH" as "(#Hreceipt & Hrpc)".
       iModIntro.
 
-      Opaque typed_slice.is_slice_small. (* to split fraction *)
       iDestruct "Hsrv_val_sl" as "[Hsrv_val_sl Hval_sl]".
-      Transparent typed_slice.is_slice_small.
 
       iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
       wp_loadField.
-      Opaque typed_slice.is_slice_small.
       iDestruct "Hval_sl" as "[Hrep_val_sl Hsrv_rep_val_sl]".
-      Transparent typed_slice.is_slice.
       iApply wp_ncfupd.
       wp_apply (release_spec with "[-HΦ HCID HSeq HKey Hrep_val_sl HErr HValue]").
       {

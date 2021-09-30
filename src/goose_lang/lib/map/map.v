@@ -135,6 +135,9 @@ Qed.
 Definition is_map (mref:loc) q (m: gmap u64 val * val): iProp Σ :=
   ∃ mv, ⌜map_val mv = Some m⌝ ∗ mref ↦{q} mv.
 
+Global Instance is_map_timeless mref q m :
+  Timeless (is_map mref q m) := _.
+
 Theorem map_zero_val t :
   flatten_struct (zero_val (mapValT t)) = [MapNilV (zero_val t)].
 Proof. reflexivity. Qed.
@@ -640,3 +643,5 @@ Proof.
 Qed.
 
 End heap.
+
+Typeclasses Opaque is_map.

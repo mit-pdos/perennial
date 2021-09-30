@@ -18,7 +18,7 @@ Global Instance is_block_timeless s q b :
 
 Global Instance is_block_fractional s b :
   fractional.Fractional (λ q, is_block s q b).
-Proof. unshelve (apply _); apply 1%Qp. Qed.
+Proof. apply is_slice_small_fractional. Qed.
 
 Theorem is_block_not_nil s q b :
   is_block s q b -∗
@@ -117,6 +117,7 @@ Qed.
 Lemma slice_to_block_array s q b :
   is_slice_small s byteT q (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) q b.
 Proof.
+  rewrite /is_slice_small.
   iIntros "[Ha _]".
   by iApply array_to_block_array.
 Qed.
@@ -125,6 +126,7 @@ Lemma block_array_to_slice l q b cap :
   mapsto_block l q b -∗ is_slice_small (Slice.mk l 4096 cap) byteT q (Block_to_vals b).
 Proof.
   iIntros "Hm".
+  rewrite /is_slice_small.
   iSplitL.
   { by iApply array_to_block_array. }
   iPureIntro.
@@ -158,6 +160,7 @@ Proof.
   iMod ("Hupd" with "Hda") as "HQ".
   iModIntro.
   iApply "HQ".
+  rewrite /is_slice_small.
   iFrame.
   iSplitL; auto.
   by iApply array_to_block_array.
@@ -244,6 +247,7 @@ Proof.
   wp_pures.
   wp_apply wp_slice_ptr.
   iDestruct "Hs" as "[Hs Hcap]".
+  rewrite /is_slice_small.
   iDestruct "Hs" as "[Hs _]".
   wp_apply (wp_MemCpy_rec with "[Hs Hl]").
   { iFrame.
@@ -259,6 +263,7 @@ Proof.
     rewrite /block_bytes //. }
   iIntros "[Hs Hl]".
   iApply "HQ".
+  rewrite /is_block_full /is_slice /is_slice_small.
   iFrame.
   iPureIntro.
   move: Hsz; rewrite !length_Block_to_vals //.
@@ -461,6 +466,7 @@ Theorem slice_to_block s q bs :
   mapsto_block s.(Slice.ptr) q (list_to_block bs).
 Proof.
   iIntros (Hsz) "Hs".
+  rewrite /is_slice_small.
   iDestruct "Hs" as "[Hl %]".
   rewrite fmap_length in H.
   iApply (array_to_block with "Hl").

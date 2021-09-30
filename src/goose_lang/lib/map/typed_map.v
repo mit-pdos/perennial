@@ -405,3 +405,5 @@ Arguments wp_NewMap {_ _ _ _ _ _ _} V {_} {t}.
 Arguments wp_MapGet {_ _ _ _ _ _} V {_} {_ _}.
 Arguments wp_MapInsert {_ _ _ _ _ _} V {_} {_ _}.
 Arguments wp_MapDelete {_ _ _ _ _ _} V {_} {_ _}.
+
+Typeclasses Opaque is_map.

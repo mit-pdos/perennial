@@ -1313,3 +1313,5 @@ Arguments wp_forSlice {_ _ _ _ _ _ _}
           _%bi_scope _ _ _ _%heap_type _%Qp_scope _%list_scope _%val_scope.
 Arguments wp_forSliceEach {_ _ _ _ _ _ _}
           (_ _ _)%bi_scope _ _ _ _%heap_type _%Qp_scope _%list_scope _%val_scope.
+
+Typeclasses Opaque is_slice_small is_slice_cap.

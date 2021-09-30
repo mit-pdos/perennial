@@ -587,9 +587,11 @@ Section grove.
     wp_apply wp_AcceptOp. by iApply "HΦ".
   Qed.
 
+  (* FIXME move the next 2 lemmas some place more general *)
   Lemma is_slice_small_byte_mapsto_vals (s : Slice.t) (data : list u8) (q : Qp) :
     is_slice_small s byteT q data -∗ mapsto_vals (Slice.ptr s) q (data_vals data).
   Proof.
+    rewrite /is_slice_small /slice.is_slice_small.
     iIntros "[Hs _]". rewrite /array.array /mapsto_vals.
     change (list.untype data) with (data_vals data).
     iApply (big_sepL_impl with "Hs"). iIntros "!#" (i v Hv) "Hl".
@@ -603,7 +605,7 @@ Section grove.
     mapsto_vals (Slice.ptr s) q (data_vals data) -∗
     is_slice_small s byteT q data.
   Proof.
-    iIntros (Hlen) "Hl". iSplit; last first.
+    iIntros (Hlen) "Hl". rewrite /is_slice_small /slice.is_slice_small. iSplit; last first.
     { iPureIntro. rewrite /list.untype fmap_length. done. }
     rewrite /array.array /mapsto_vals.
     change (list.untype data) with (data_vals data).
@@ -627,9 +629,7 @@ Section grove.
     wp_apply wp_slice_ptr.
     wp_apply wp_slice_len.
     wp_pures.
-    iAssert (⌜length data = int.nat (Slice.sz s)⌝)%I as %?.
-    { iDestruct "Hs" as "[_ %Hlen]". iPureIntro. revert Hlen.
-      rewrite /list.untype fmap_length. done. }
+    iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
     rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
@@ -670,6 +670,7 @@ Section grove.
       iApply is_slice_zero. }
     destruct Hm as [Hin Hlen].
     iApply ("HΦ" $! (Slice.mk _ _ _)).
+    rewrite /is_slice.
     iSplitL.
     - iApply mapsto_vals_is_slice_small_byte; done.
     - iExists []. simpl. iSplit; first by eauto with lia.

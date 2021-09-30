@@ -105,9 +105,7 @@ Proof.
     }
 
     rewrite Hx.
-    Opaque typed_slice.is_slice_small. (* to split fraction *)
     iDestruct "Hsrv_val_sl" as "[Hsrv_val_sl Hrep_val_sl]".
-    Transparent typed_slice.is_slice_small.
     iSpecialize ("HlastReply_structs" with "[Hsrv_val_sl]").
     {
       iExists _, _.

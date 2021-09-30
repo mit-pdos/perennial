@@ -29,6 +29,9 @@ Context `{!IntoVal V}.
 Implicit Types (s:Slice.t) (vs: list V) (v:V).
 Implicit Types (t:ty).
 
+(* We need to break this abstraction. *)
+Typeclasses Transparent slice.is_slice_small.
+
 Definition is_slice s t q vs := slice.is_slice s t q (list.untype vs).
 Definition is_slice_small s t q vs := slice.is_slice_small s t q (list.untype vs).
 
