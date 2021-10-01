@@ -17,8 +17,6 @@ From Perennial.program_proof Require Import marshal_block disk_lib.
 
 Definition InodeMaxBlocks: Z := 511.
 
-Remove Hints fractional.into_sep_fractional : typeclass_instances.
-
 Module inode.
   Record t :=
     mk { (* addresses consumed by this inode *)

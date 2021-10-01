@@ -12,8 +12,6 @@ From Perennial.program_proof Require Import addr.addr_proof wal.abstraction.
 From Perennial.Helpers Require Import NamedProps PropRestore.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
-Remove Hints fractional.into_sep_fractional : typeclass_instances.
-
 (* an object is the data for a sub-block object, a dynamic bundle of a kind and
 data of the appropriate size *)
 (* NOTE(tej): not necessarily the best name, because it's so general as to be

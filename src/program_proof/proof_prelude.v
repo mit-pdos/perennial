@@ -19,7 +19,6 @@ Global Set Printing Projections.
 Global Opaque load_ty store_ty.
 
 Global Remove Hints fractional.frame_fractional : typeclass_instances.
-Global Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
 Import sel_patterns.
 

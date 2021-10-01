@@ -12,8 +12,6 @@ From Perennial.program_proof.examples Require Import
      alloc_addrset alloc_crash_proof async_inode_proof.
 From Perennial.goose_lang.lib Require Export typed_slice into_val.
 
-Remove Hints fractional.into_sep_fractional : typeclass_instances.
-
 Module s_inode.
   Record t :=
     mk { durable_blocks: list Block;

@@ -14,8 +14,6 @@ From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.
 From Perennial.program_proof Require Export obj.invariant obj.map_helpers.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
-Remove Hints fractional.into_sep_fractional : typeclass_instances.
-
 Section goose_lang.
 Context `{!txnG Σ}.
 Context `{!heapGS Σ}.

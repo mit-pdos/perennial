@@ -15,8 +15,6 @@ Hint Unfold inode.wf MaxBlocks indirectNumBlocks maxDirect maxIndirect: auto.
 
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
-Remove Hints fractional.into_sep_fractional : typeclass_instances.
-
 Section goose.
 Context `{!heapGS Σ}.
 Context `{!crashGS Σ}.

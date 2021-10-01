@@ -19,7 +19,6 @@ Definition lastBlockFiller (blkLen : Z) (x : list (list u64)) : nat :=
    Z.to_nat ((blkLen - (length (concat x) `mod` blkLen)) `mod` blkLen).
 
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
-Remove Hints fractional.into_sep_fractional : typeclass_instances.
 
 Lemma roundUpDiv_lt_succ (x k: Z) : x >= 0 -> k > 0 -> (x / k) < roundUpDiv x k -> (x / k) + 1 = roundUpDiv x k.
 Proof.
