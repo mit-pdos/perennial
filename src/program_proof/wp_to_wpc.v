@@ -71,7 +71,7 @@ Proof.
   rewrite Heq.
   erewrite (bi_sch_fupd_interp); last first.
   { rewrite ?bi_schema_interp_unfold /= //=. }
-  rewrite list_lookup_fmap. f_equiv.
+  rewrite list_lookup_fmap. by f_equiv.
 Qed.
 
 Lemma mysch_interp_strong k P Q γ :

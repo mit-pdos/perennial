@@ -293,8 +293,6 @@ Proof.
   revert E1 e. induction (lt_wf n) as [n _ IH]=> E1 e Φ Ψ HΦ Φc Ψc HΦc.
   rewrite !wpc0_unfold /wpc_pre.
   (* FIXME: figure out a way to properly automate this proof *)
-  (* FIXME: reflexivity, as being called many times by f_equiv and f_contractive
-  is very slow here *)
   rewrite /cfupd.
   do 13 (apply step_fupd2N_ne || f_contractive || f_equiv); auto; last first.
   { repeat f_equiv. eauto. }
