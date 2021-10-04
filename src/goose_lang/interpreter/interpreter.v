@@ -166,7 +166,7 @@ Proof.
     rewrite H20 in prim_step_e_e''.
     pose proof (fill_step _ _ _ _ _ _ _ _ prim_step_e_e'') as prim_step_ic.
     eapply language.nsteps_l; [|exact nstep_ic_rest].
-    eapply step_atomic with (t3 := []) (t4 := []); [| |exact prim_step_ic]; eauto.
+    eapply @step_atomic with (t1 := []) (t2 := []); [| |exact prim_step_ic]; eauto.
     simpl. subst. done.
   }
 Qed.
