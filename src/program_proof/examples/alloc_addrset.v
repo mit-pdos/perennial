@@ -11,7 +11,7 @@ Proof.
   intros [] [] _; auto.
 Defined.
 
-Instance unit_IntoValForType : IntoValForType unit_IntoVal (struct.t unit).
+Instance unit_IntoValForType : IntoValForType unit (struct.t unit).
 Proof.
   constructor; auto.
 Qed.

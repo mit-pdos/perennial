@@ -11,8 +11,8 @@ Hint Mode IntoVal - ! : typeclass_instances.
 
 Arguments IntoVal_def {_} V {_}.
 
-(* TODO: make V explicit and H implicit, so `{!IntoValForType V t} does the right thing *)
-Class IntoValForType {ext V} (H: @IntoVal ext V) {ext_ty: ext_types ext} (t:ty) :=
+(* IntoVal for a particular GooseLang type *)
+Class IntoValForType {ext} V {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) :=
     { def_is_zero: to_val (IntoVal_def V) = zero_val t;
       to_val_has_zero: has_zero t;
       (* TODO: this isn't necessary, but it seems reasonable *)
@@ -20,7 +20,6 @@ Class IntoValForType {ext V} (H: @IntoVal ext V) {ext_ty: ext_types ext} (t:ty) 
 (* Require [V] or [ty] to not be an evar before doing TC search *)
 Hint Mode IntoValForType - - - - ! : typeclass_instances.
 Hint Mode IntoValForType - ! - - - : typeclass_instances.
-
 
 Instance Permutation_inj_list_fmap {A B} (f: A -> B) `{!Inj eq eq f} :
   Inj (≡ₚ) (≡ₚ) (fmap (M:=list) f).
@@ -74,7 +73,7 @@ Section instances.
               IntoVal_def := U64 0; |}; congruence.
   Defined.
 
-  Global Instance u64_IntoVal_uint64T : IntoValForType u64_IntoVal uint64T.
+  Global Instance u64_IntoVal_uint64T : IntoValForType u64 uint64T.
   Proof.
     constructor; auto.
   Qed.
@@ -85,7 +84,7 @@ Section instances.
               IntoVal_def := U8 0; |}; congruence.
   Defined.
 
-  Global Instance u8_IntoVal_byteT : IntoValForType u8_IntoVal byteT.
+  Global Instance u8_IntoVal_byteT : IntoValForType u8 byteT.
   Proof.
     constructor; eauto.
   Qed.
@@ -96,12 +95,12 @@ Section instances.
               IntoVal_def := null; |}; congruence.
   Defined.
 
-  Global Instance loc_IntoVal_struct_ptr t : IntoValForType loc_IntoVal (struct.ptrT t).
+  Global Instance loc_IntoVal_struct_ptr t : IntoValForType loc (struct.ptrT t).
   Proof.
     constructor; auto.
   Qed.
 
-  Global Instance loc_IntoVal_ref t : IntoValForType loc_IntoVal (refT t).
+  Global Instance loc_IntoVal_ref t : IntoValForType loc (refT t).
   Proof.
     constructor; auto.
   Qed.
@@ -115,7 +114,7 @@ Section instances.
     inversion 1; auto.
   Defined.
 
-  Global Instance slice_IntoVal_ref t : IntoValForType slice_IntoVal (slice.T t).
+  Global Instance slice_IntoVal_ref t : IntoValForType Slice.t (slice.T t).
   Proof.
     constructor; auto.
     intros.
@@ -129,7 +128,7 @@ Section instances.
               IntoVal_def := false; |}; congruence.
   Defined.
 
-  Global Instance bool_IntoVal_boolT : IntoValForType bool_IntoVal boolT.
+  Global Instance bool_IntoVal_boolT : IntoValForType bool boolT.
   Proof. constructor; auto. Qed.
 
 End instances.

@@ -149,7 +149,7 @@ Proof.
   exact 1%Qp.
 Qed.
 
-Lemma wp_NewSlice stk E t `{!IntoValForType IntoVal0 t} (sz: u64) :
+Lemma wp_NewSlice stk E t `{!IntoValForType V t} (sz: u64) :
   {{{ True }}}
     NewSlice t #sz @ stk; E
   {{{ s, RET slice_val s; is_slice s t 1 (replicate (int.nat sz) (IntoVal_def V)) }}}.
@@ -179,7 +179,7 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
-Lemma wp_SliceSet stk E s t `{!IntoValForType IntoVal0 t} vs (i: u64) v :
+Lemma wp_SliceSet stk E s t `{!IntoValForType V t} vs (i: u64) v :
   {{{ is_slice_small s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ }}}
     SliceSet t (slice_val s) #i (to_val v) @ stk; E
   {{{ RET #(); is_slice_small s t 1 (<[int.nat i:=v]> vs) }}}.
@@ -196,7 +196,7 @@ Proof.
   rewrite /is_slice_small /list.untype list_fmap_insert. iFrame.
 Qed.
 
-Lemma wp_SliceAppend'' stk E s t `{!IntoValForType IntoVal0 t} vs1 vs2 (x: V) (q : Qp) (n : u64) :
+Lemma wp_SliceAppend'' stk E s t `{!IntoValForType V t} vs1 vs2 (x: V) (q : Qp) (n : u64) :
   0 ≤ int.Z n ≤ int.Z (Slice.sz s) ≤ int.Z (Slice.cap s) ->
   (q < 1)%Qp ->
   {{{ is_slice_small (slice_take s n) t q vs1 ∗
@@ -221,7 +221,7 @@ Proof.
   iApply ("HΦ" with "[$Hsm $Hs]").
 Qed.
 
-Lemma wp_SliceAppend stk E s t `{!IntoValForType IntoVal0 t} vs (x: V) :
+Lemma wp_SliceAppend stk E s t `{!IntoValForType V t} vs (x: V) :
   {{{ is_slice s t 1 vs }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
   {{{ s', RET slice_val s'; is_slice s' t 1 (vs ++ [x]) }}}.
@@ -237,7 +237,7 @@ Proof.
   iApply ("HΦ" with "Hs").
 Qed.
 
-Lemma wp_SliceAppendSlice stk E s1 s2 t q `{!IntoValForType IntoVal0 t} (vs1 vs2: list V) :
+Lemma wp_SliceAppendSlice stk E s1 s2 t q `{!IntoValForType V t} (vs1 vs2: list V) :
   {{{ is_slice s1 t 1 vs1 ∗ is_slice_small s2 t q vs2 }}}
     SliceAppendSlice t (slice_val s1) (slice_val s2) @ stk; E
   {{{ s', RET slice_val s'; is_slice s' t 1 (vs1 ++ vs2) ∗ is_slice_small s2 t q vs2 }}}.
@@ -370,7 +370,7 @@ Proof.
 Qed.
 Opaque SliceCopy.
 
-Lemma wp_SliceAppend_to_zero stk E t `{!IntoValForType IntoVal0 t} v (x: val) :
+Lemma wp_SliceAppend_to_zero stk E t `{!IntoValForType V t} v (x: val) :
   x = to_val v ->
   {{{ True }}}
     SliceAppend t (zero_val (slice.T t)) x @ stk; E

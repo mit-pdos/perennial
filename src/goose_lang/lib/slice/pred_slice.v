@@ -34,7 +34,7 @@ Context {ext_ty: ext_types ext}.
 
 Context {A: Type}.
 Context `{!IntoVal V}.
-Context `{!IntoValForType IntoVal0 t}.
+Context `{!IntoValForType V t}.
 Context (Ψ: V → A → iProp Σ).
 
 Implicit Types (s: Slice.t) (t: ty) (q: Qp) (l: list A).

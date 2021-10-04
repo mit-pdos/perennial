@@ -20,7 +20,6 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context {ext_ty: ext_types ext}.
 
 Context `{!IntoVal V}.
-Context `{!IntoValForType IntoVal0 t}.
 
 Implicit Types (m: Map.t V) (k: u64) (v:V).
 
@@ -73,12 +72,12 @@ Qed.
 Ltac untype :=
   rewrite /is_map /Map.untype.
 
-Theorem wp_NewMap stk E :
+Theorem wp_NewMap `{!IntoValForType V t} stk E :
   {{{ True }}}
     ref (zero_val (mapValT t)) @ stk; E
   {{{ mref, RET #mref;
       is_map mref 1 ∅ }}}.
-Proof using IntoValForType0.
+Proof.
   iIntros (Φ) "_ HΦ".
   wp_apply map.wp_NewMap.
   iIntros (mref) "Hm".
@@ -314,8 +313,6 @@ Theorem wp_MapIter_3 stk E mref q m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (b
   ((is_map mref q m ∗ I ∅ m) -∗ Φ #()) -∗
   WP MapIter #mref body @ stk; E {{ v, Φ v }}.
 Proof using.
-  (* XXX why is this needed? *)
-  clear IntoValForType0 t.
 
   iIntros "Hismap HI #Hbody HΦ".
   wp_apply (wp_MapIter_2 _ _ _ _ _
