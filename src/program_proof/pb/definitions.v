@@ -49,11 +49,43 @@ Notation "'commit↦' l" := (commit_ptsto γ l)
    configuration changes *)
 Definition pb_invariant : iProp Σ :=
   ∃ cn l,
-  "Hconfig" ∷ (∀ cn' conf, ⌜cn' < cn⌝ → config(cn)↦□ conf -∗ ∃ r l, ⌜r ∈ conf⌝ ∗
-               accepted(r,cn)↦□ l ∗ proposal(cn)≥ l
+  "Hconfig" ∷ (∀ cn' conf, ⌜cn' < cn⌝ → config(cn')↦□ conf -∗ ∃ r l, ⌜r ∈ conf⌝ ∗
+               accepted(r,cn')↦□ l ∗ proposal(cn)≥ l
               ) ∗
   "Hcommit" ∷ commit↦ l ∗
+  "Hprop" ∷ proposal(cn) ≥ l ∗
   "Haccepted" ∷ (∃ cn' conf, config(cn')↦□ conf ∗ (∀ r, ⌜r ∈ conf⌝ → accepted(r,cn')≥ l))
 .
+
+(*
+  Lemma 1.
+  Primary wants to commit something after getting accept(-,cn)≥ l_with_op from all replicas.
+  It opens pb_invariant.
+  if l_with_op > l_committed:
+    updates commit↦ l_committed.
+    To prove "Hprop":
+      if cn == cn_latest:
+        produce proposal(cn_latest)≥ l_with_op via one of the
+        acceptances/produce it by virtue of us being the primary
+      else:
+        we know that cn < cn_latest
+        We can apply Hconfig, and know that one of the acceptances we have in
+        hand is smaller than an l that shows up in Hconfig, which gives us the
+        proposal(cn)≥ l
+  else:
+    We know that l_with_op ≤ l_committed, because of the proposal(cn)≥
+    l_committed and proposal(cn)≥ l_with_op, so we can extract a commit_lb
+    witness.
+
+  Lemma 2.
+  Primary wants to add a new node to the system.
+  It opens invariant.
+  Increments cn_latest by doing a VersionedPut on the configuration service.
+  To prove "Hprop":
+    knows that it is the primary the previous configuration.
+    ???
+  To prove "Hconfig":
+    ???
+ *)
 
 End definitions.
