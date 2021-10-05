@@ -28,6 +28,12 @@ Admitted.
 Definition commit_ptsto γ (l:Log): iProp Σ.
 Admitted.
 
+Definition degen_ptsto γ (cn:u64): iProp Σ.
+Admitted.
+
+Definition nondegen_witness γ (cn:u64): iProp Σ.
+Admitted.
+
 Context {γ}.
 
 Notation "'config(' cn ')↦□' conf" := (config_ptsto γ cn conf)
@@ -45,16 +51,26 @@ Notation "'proposal(' cn ')≥' l" := (accepted_lb γ cn 0 l)
 Notation "'commit↦' l" := (commit_ptsto γ l)
 (at level 20, format "commit↦ l") : bi_scope.
 
+Notation "'degen(' cn ')'" := (degen_ptsto γ cn)
+(at level 20, format "degen( cn )") : bi_scope.
+
+Notation "'nondegen(' cn ')'" := (nondegen_witness γ cn)
+(at level 20, format "nondegen( cn )") : bi_scope.
+
 (* System-wide invariant for primary/backup replication with many replicas with
    configuration changes *)
 Definition pb_invariant : iProp Σ :=
-  ∃ cn l,
-  "Hconfig" ∷ (∀ cn' conf, ⌜cn' < cn⌝ → config(cn')↦□ conf -∗ ∃ r l, ⌜r ∈ conf⌝ ∗
-               accepted(r,cn')↦□ l ∗ proposal(cn)≥ l
+  ∃ cn_latest l_committed,
+  "Hconfig" ∷ (∀ cn' conf, ⌜cn' < cn_latest⌝ → config(cn')↦□ conf -∗ ∃ r l, ⌜r ∈ conf⌝ ∗
+               accepted(r,cn')↦□ l ∗ proposal(cn_latest)≥ l
               ) ∗
-  "Hcommit" ∷ commit↦ l ∗
-  "Hprop" ∷ proposal(cn) ≥ l ∗
-  "Haccepted" ∷ (∃ cn' conf, config(cn')↦□ conf ∗ (∀ r, ⌜r ∈ conf⌝ → accepted(r,cn')≥ l))
+  "Hcommit" ∷ commit↦ l_committed ∗
+  "Hprop" ∷ proposal(cn_latest)≥ l_committed ∗
+  "Haccepted" ∷ (
+    degen(cn_latest) ∗ ∃ cn' conf, config(cn')↦□ conf ∗ (∀ r, ⌜r ∈ conf⌝ → accepted(r,cn')≥ l_committed)
+      ∨
+    nondegen(cn_latest) ∗ ∃ conf, config(cn_latest)↦□ conf ∗ (∀ r, ⌜r ∈ conf⌝ → accepted(r,cn_latest)≥ l_committed)
+  )
 .
 
 (*
@@ -78,6 +94,19 @@ Definition pb_invariant : iProp Σ :=
     witness.
 
   Lemma 2.
+  Backup becomes primary after config change.
+  Open pb_invariant. Increment cn_latest by VersionedPut.
+  Need to prove "Hprop". How?
+  Need to know that backup's accepted log is at least as big as the logically committed log.
+  If we
+
+  Degenerate "Haccepted": ∃ cn', blah blah. No new nodes can be added.
+  Nondegenerate "Haccepted": in cn_latest, all replicas have accepted l.
+  "HacceptedNondegen" ∷ config(cn_latest)↦□ conf ∗ (∀ r, ⌜r ∈ conf⌝ → accepted(r, cn_latest)≥ l)
+  Then,
+
+
+  Lemma 3.
   Primary wants to add a new node to the system.
   It opens invariant.
   Increments cn_latest by doing a VersionedPut on the configuration service.
