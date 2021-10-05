@@ -66,11 +66,9 @@ Definition pb_invariant : iProp Σ :=
               ) ∗
   "Hcommit" ∷ commit↦ l_committed ∗
   "Hprop" ∷ proposal(cn_latest)≥ l_committed ∗
-  "Haccepted" ∷ (
-    degen(cn_latest) ∗ ∃ cn' conf, config(cn')↦□ conf ∗ (∀ r, ⌜r ∈ conf⌝ → accepted(r,cn')≥ l_committed)
-      ∨
-    nondegen(cn_latest) ∗ ∃ conf, config(cn_latest)↦□ conf ∗ (∀ r, ⌜r ∈ conf⌝ → accepted(r,cn_latest)≥ l_committed)
-  )
+  "Haccepted" ∷ (∃ cn' conf,
+      (degen(cn_latest) ∨ nondegen(cn_latest) ∗ ⌜cn' = cn_latest⌝) ∗
+      config(cn')↦□ conf ∗ (∀ r, ⌜r ∈ conf⌝ → accepted(r,cn')≥ l_committed))
 .
 
 (*
