@@ -95,6 +95,26 @@ Proof.
   iApply "Hc". eauto.
 Qed.
 
+Lemma init_cancel_cfupd E P Pc :
+  init_cancel (P) (|C={E}=> Pc) -∗ init_cancel P Pc.
+Proof.
+  iIntros "H".
+  iIntros (e s Φ Φc ???) "Hwp".
+  iApply wpc_cfupd.
+  iApply "H"; auto. iIntros "HP".
+  iSpecialize ("Hwp" with "[$]").
+  iApply (wpc_mono with "Hwp").
+  { iIntros (?) "H Hcm". iApply "H".
+    iApply wpc_crash_modality_intro_C. iIntros "HC".
+    iApply (wpc_crash_modality_wand with "Hcm"). iIntros "(H&$)".
+    iMod (fupd_mask_subseteq E) as "Hclo"; first set_solver+.
+    iMod ("H" with "[$]"). iMod "Hclo". iModIntro. eauto. }
+  iIntros "Hc HPC". iIntros "HC".
+  iMod (fupd_mask_subseteq E) as "Hclo"; first set_solver+.
+  iMod ("HPC" with "[$]"). iMod "Hclo". iModIntro.
+  iApply "Hc". eauto.
+Qed.
+
 Lemma init_cancel_intro_l P :
   P -∗ init_cancel P True%I.
 Proof.

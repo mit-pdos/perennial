@@ -11,7 +11,7 @@ Proof.
   intros [] [] _; auto.
 Defined.
 
-Instance unit_IntoValForType : IntoValForType unit (struct.t unit).
+Instance unit_IntoValForType : IntoValForType () (struct.t unit).
 Proof.
   constructor; auto.
 Qed.
@@ -229,10 +229,11 @@ Proof.
     rewrite /map_del dom_delete_L.
     set_solver.
   - iIntros "[Hremove Hfree]".
+    wp_pures.
     iApply "HΦ".
     rewrite Hdom.
     iFrame.
-    iExists _; iFrame "% ∗".
+    iExists _; by iFrame "% ∗".
 Qed.
 
 Theorem wp_SetAdd mref used addr_s q (addrs: list u64) E :
@@ -264,7 +265,7 @@ Proof.
     f_equal.
     set_solver.
   - iIntros "[Hs Haddrs]".
-    iApply "HΦ"; iFrame.
+    wp_pures. iApply "HΦ"; by iFrame.
 Qed.
 
 End goose.

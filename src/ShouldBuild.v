@@ -26,7 +26,7 @@ From Perennial.program_proof Require
 
 From Perennial.program_proof.examples Require
      replicated_block_proof
-     (*all_examples*)
+     all_examples
 .
 
 (* TODO: refactoring in progress

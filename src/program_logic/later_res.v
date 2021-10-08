@@ -181,14 +181,13 @@ Proof.
     iModIntro. eauto.
 Qed.
 
-Lemma wp_later_tok_pure_step `{!Inhabited (state Λ)} `{!Inhabited (global_state Λ)} φ s E e1 e2 Φ:
+Lemma wpc_later_tok_pure_step `{!Inhabited (state Λ)} `{!Inhabited (global_state Λ)} φ s E e1 e2 Φ Φc:
   PureExec φ 1 e1 e2 →
   φ →
-  ((later_tok ∗ later_tok) -∗ WP e2 @ s; E {{ Φ }}) -∗
-  WP e1 @ s; E {{ Φ }}.
+  (Φc ∧ ((later_tok ∗ later_tok) -∗ WPC e2 @ s; E {{ Φ }} {{ Φc }})) -∗
+  WPC e1 @ s; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hexec Hφ) "H".
-  rewrite wp_eq /wp_def.
   specialize (Hexec Hφ).
   inversion Hexec as [|? e1' e2' e3' [Hsafe ?] Hrest]. subst.
   inversion Hrest; subst.
@@ -199,7 +198,8 @@ Proof.
     { eapply inhabitant. }
     { eapply inhabitant. }
   }
-  iSplit; last done.
+  iSplit; last first.
+  { iLeft in "H". eauto. }
   iIntros (????????) "Hs Hg".
   iMod fupd_mask_subseteq as "Hclose"; last iModIntro; first by set_solver. iSplit.
   { iPureIntro. destruct s; eauto. }
@@ -212,6 +212,17 @@ Proof.
   iMod (global_state_interp_le with "[$]") as "$".
   { etransitivity; last eapply step_count_next_iter. lia. }
   eauto.
+Qed.
+
+Lemma wp_later_tok_pure_step `{!Inhabited (state Λ)} `{!Inhabited (global_state Λ)} φ s E e1 e2 Φ:
+  PureExec φ 1 e1 e2 →
+  φ →
+  ((later_tok ∗ later_tok) -∗ WP e2 @ s; E {{ Φ }}) -∗
+  WP e1 @ s; E {{ Φ }}.
+Proof.
+  iIntros (Hexec Hφ) "H".
+  rewrite wp_eq /wp_def.
+  iApply wpc_later_tok_pure_step; auto.
 Qed.
 
 End res.
