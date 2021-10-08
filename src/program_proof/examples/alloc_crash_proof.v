@@ -474,20 +474,15 @@ Proof.
     ** intros Hdom. apply elem_of_filter_dom in Hdom as (?&?&Hfree). simpl in Hfree. congruence.
 Qed.
 
-(*
 Theorem reserved_block_weaken γ k R R' :
-  □(R -∗ R') -∗
-  ▷ □(R' -∗ block_cinv γ k) -∗
+  □ (R -∗ R') -∗
+  □ (R' -∗ block_cinv γ k) -∗
   reserved_block γ k R -∗
   reserved_block γ k R'.
 Proof.
   iIntros "#HR' #Hwand"; iNamed 1.
-  iFrame.
-Abort.
-  iApply (na_crash_inv_weaken with "HR' []"); auto.
-  iModIntro. iIntros "H". iModIntro. iNext. by iApply "Hwand".
+  iFrame. iApply (crash_borrow_conseq with "[] [] [] Hcrashinv"); eauto.
 Qed.
-*)
 
 Lemma free_big_sepS_to_all σ (Φ: u64 → iProp Σ):
   ([∗ set] k ∈ alloc.free σ, Φ k) ⊣⊢
