@@ -376,7 +376,7 @@ Section goose.
     iNext. iIntros (σ mb) "[%Hσ HP]". iMod ("Hfupd" with "[//] HP") as "[HP HQ]".
     iModIntro. iFrame "HP". iSplit.
     { iLeft in "HΦ". iApply "HΦ". }
-    iIntros (s) "Hblock". iApply "HΦ". iFrame. done.
+    iIntros (s) "Hblock". iApply "HΦ". iFrame; done.
   Qed.
 
   (* these two fupds are easy to prove universally because the change they make
