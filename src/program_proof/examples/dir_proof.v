@@ -173,14 +173,14 @@ Section goose.
   (** State of unallocated blocks *)
   Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.Z a d↦ b.
 
-  Definition is_dir l (sz: Z) k' : iProp Σ :=
+  Definition is_dir l (sz: Z) : iProp Σ :=
     ∃ (alloc_ref: loc) (inode_refs: list loc) γalloc γused γblocks,
       "%Hlen" ∷ ⌜length inode_refs = num_inodes⌝ ∗
       "Hro_state" ∷ dir_state l alloc_ref inode_refs ∗
       "#Hinodes" ∷ ([∗ list] i ↦ inode_ref ∈ inode_refs,
-        is_inode inodeN inode_ref (S k') (Pinode γblocks γused i) (U64 (Z.of_nat i))) ∗
+        is_inode inodeN inode_ref (Pinode γblocks γused i) (U64 (Z.of_nat i))) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
-        allocΨ allocN alloc_ref (rangeSet num_inodes (sz-num_inodes)) γalloc k' ∗
+        allocΨ allocN alloc_ref (rangeSet num_inodes (sz-num_inodes)) γalloc ∗
       "#Hinv" ∷ ncinv dirN (∃ σ, dir_inv γblocks σ ∗ P σ)
   .
 
@@ -326,8 +326,8 @@ Section goose.
         iExists _.
         iExactEq "H".
         f_equiv.
-        apply lookup_seqZ in H.
-        word.
+        * apply lookup_seqZ in H. word.
+        * eauto.
     }
 
     iPureIntro.
@@ -380,27 +380,33 @@ Section goose.
       iExists _; iFrame "∗ %".
   Qed.
 
-  Theorem is_dir_alloc k l (sz: Z) σ :
+  Theorem is_dir_alloc l (sz: Z) σ :
     (5 ≤ sz < 2^64)%Z →
     ▷ P σ -∗
     pre_dir l sz σ ={⊤}=∗
-    is_dir l sz k ∗
-    <disc> |C={⊤}=> ∃ σ', dir_cinv sz σ' false ∗ ▷ P σ'.
+    init_cancel (is_dir l sz)
+                (∃ σ', dir_cinv sz σ' false ∗ ▷ P σ').
   Proof.
     iIntros (?) "HP"; iNamed 1.
     iNamed "Hinodes".
     iNamed "Halloc".
-    iMod (is_allocator_alloc with "Hunused HPalloc Halloc_mem") as (γalloc) "[Halloc Halloc_crash]".
+    iMod (is_allocator_alloc with "Hunused HPalloc Halloc_mem") as "Halloc".
 
     (* allocate all the inodes into a list of is_inodes and a cfupd for all the
     crash obligations *)
     iDestruct (big_sepL2_length with "Hinodes") as %Hs_inodes_len.
     iDestruct (big_sepL2_mono with "Hinodes") as "inode_fupds".
     { iIntros (?????) "[Hpre HP]".
-      iApply (is_inode_alloc inodeN (k:=k) with "HP Hpre"). }
+      iDestruct (is_inode_alloc inodeN with "HP Hpre") as "H".
+      iDestruct (bupd_fupd with "H") as "H". iExact "H". }
     cbv beta.
     iMod (big_sepL2_fupd with "inode_fupds") as "Hinodes".
+    iDestruct (big_sepL2_init_cancel with "Hinodes") as "Hinodes".
+    (*
     iDestruct (big_sepL2_sep with "Hinodes") as "[His_inodes Hcfupds]".
+     *)
+    (*
+    iApply big_sepL2_to_sepL_1 in "Hinodes".
     iApply big_sepL2_to_sepL_1 in "His_inodes".
     iApply big_sepL2_to_sepL_2 in "Hcfupds".
     iDestruct (big_sepL_mono with "Hcfupds") as "Hinodes_crash".
@@ -410,42 +416,49 @@ Section goose.
     iApply big_sepL_own_disc_fupd in "Hinodes_crash".
     rewrite cfupd_big_sepL.
     replace (length s_inodes) with num_inodes by lia.
+    *)
 
     iMod (ncinv_alloc dirN _ (∃ σ, dir_inv γblocks σ ∗ P σ)
          with "[Hd_inv HP]") as "(#Hinv&Hinv_crash)".
     { iNext.
       iExists _; iFrame. }
+    iMod (own_disc_fupd_elim with "Hinv_crash") as "Hinv_crash".
     rewrite Halloc_dom.
     iModIntro.
-    iSplitL "Hro_state Halloc His_inodes".
-    { iExists _, _, _, _, _; iFrame "# ∗".
-      iSplit; first (iPureIntro; congruence).
-      iApply (big_sepL_mono with "His_inodes").
-      iIntros (???) "H".
-      iDestruct "H" as (?) "[_ $]". }
-    iModIntro.
-    iMod "Halloc_crash" as "Halloc".
-    iMod "Hinodes_crash" as "Hinodes".
-    iMod (cfupd_weaken_mask with "Hinv_crash") as "Hdir"; auto.
-    { lia. }
-    iDestruct "Hdir" as (σ') "(>Hdir_inv&HP)".
-    iIntros "HC". rewrite -big_sepL_later.
-    iDestruct "Hinodes" as ">Hinodes".
-    iDestruct (alloc_crash_cond_strip_later with "[$Halloc]") as ">Halloc".
-    iModIntro.
-    iExists _; iFrame.
-    iExists _, _; iFrame.
+    (* Combine then use init_cancel wand *)
+    iDestruct (init_cancel_sep with "Halloc Hinodes") as "H".
 
-    (* here's a bit of gymnastics to maneuver big_sepL: *)
+    iApply (init_cancel_cfupd ⊤).
+    iApply (init_cancel_fupd ⊤).
+    iApply (init_cancel_wand with "H [Hro_state] [Hinv_crash]").
+    { iIntros "H". iDestruct "H" as "(H1&Hinodes)".
+      iDestruct "H1" as (γ) "Halloc".
+      iModIntro. iExists _, _, _, _, _. iFrame.
+      iSplit; first eauto.
+      iFrame "Hinv".
+      iApply big_sepL2_to_sepL_1' in "Hinodes"; eauto.
+      iApply (big_sepL_mono with "Hinodes"); eauto.
+      iIntros (???) "H". iDestruct "H" as (s_inode) "(_&$)".
+    }
+    iIntros "(Halloc&Hinodes)".
+    iModIntro.
+    iMod (cfupd_weaken_mask with "Hinv_crash") as "Hdir"; auto.
+    iDestruct "Hdir" as (σ') "(>Hdir_inv&HP)".
+    iIntros "Hc". iExists _. iFrame.
+    iMod (alloc_crash_cond_strip_later with "Halloc") as "Halloc".
+    iModIntro.
+    iExists _, _; iFrame.
+    (* here's a bit of gymnastics to maneuver the existential in the big_sepL: *)
+    iDestruct (big_sepL2_const_sepL_r with "Hinodes") as "(_&Hinodes)".
     iDestruct (big_sepL_exists_list with "Hinodes") as (s_inodes') "[%Hlen' Hinodes]".
     iApply big_sepL2_to_sepL_1' in "Hinodes"; auto.
     iApply big_sepL2_to_sepL_2 in "Hinodes".
-    iExists s_inodes'.
+    iExists s_inodes'. iSplit; first (iPureIntro; congruence).
 
-    iSplit; first (iPureIntro; congruence).
     iApply (big_sepL_mono with "Hinodes").
     iIntros (???) "H".
-    iDestruct "H" as (s_inode) "(_&$&$)".
+    iDestruct "H" as (s_inode) "(_&H)".
+    iFrame.
   Qed.
 
   Opaque struct.t.
@@ -462,7 +475,7 @@ Section goose.
     [ try solve [ len ]
     | ].
 
-  Lemma wpc_openInodes {k} d s_inodes :
+  Lemma wpc_openInodes d s_inodes :
     length s_inodes = num_inodes →
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
           inode_cinv (U64 (Z.of_nat i)) s_inode)
@@ -478,7 +491,7 @@ Section goose.
   Proof.
     iIntros (? Φ Φc) "Hinode_cinvs HΦ".
     rewrite /openInodes; wpc_pures.
-    { iLeft in "HΦ". iModIntro. by iApply "HΦ". }
+    { iLeft in "HΦ". by iApply "HΦ". }
     iCache with "HΦ Hinode_cinvs".
     { crash_case; auto. }
     wpc_frame_seq.
@@ -509,13 +522,13 @@ Section goose.
               )%I
               with "[] [Hinodes $Haddr Hinode_cinvs]").
     { word. }
-    { iIntros (i Hbound); iNamed 1. iModIntro. iFrame. }
+    { iIntros (i Hbound); iNamed 1. iFrame. by iApply pre_inodes_to_cinv. }
     { iIntros (n Φ' Φc') "!> (inv&Haddr&%Hbound) HΦ".
       iNamed "inv".
       wpc_pures.
-      { crash_case. iLeft. iFrame. }
+      { crash_case. iLeft. iFrame. by iApply pre_inodes_to_cinv. }
       iCache with "HΦ Hpre_inodes Hinode_cinvs".
-      { crash_case. iLeft. iFrame. }
+      { crash_case. iLeft. iFrame. by iApply pre_inodes_to_cinv. }
       wpc_bind (load_ty _ _). wpc_frame. wp_load. iModIntro. iNamed 1.
       wpc_bind (inode.Open _ _).
       change (int.Z (U64 5)) with (Z.of_nat num_inodes) in Hbound.
@@ -526,18 +539,22 @@ Section goose.
       { replace (U64 $ int.nat n + 0) with n by word.
         iFrame. }
       iSplit.
-      { iLeft in "HΦ". iModIntro. iIntros "Hs_inode".
+      { iLeft in "HΦ". iIntros "Hs_inode".
         iDestruct (big_sepL_cons (λ k y, inode_cinv (int.nat n + k) y) with "[Hs_inode $Hinode_cinvs]") as "Hinode_cinvs".
         { replace (U64 $ int.nat n + 0) with n by word.
           iFrame. }
         iApply ("HΦ").
         iLeft. iFrame.
+        by iApply pre_inodes_to_cinv.
       }
       iIntros "!>" (inode_ref) "Hpre_inode".
       wpc_frame "HΦ Hpre_inode Hpre_inodes Hinode_cinvs".
-      { crash_case. iLeft. iFrame. iExactEq "Hpre_inode". f_equal; word. }
+      { crash_case. iLeft. iApply (pre_inodes_to_cinv) in "Hpre_inodes". iFrame.
+        iApply pre_inode_to_cinv. iExactEq "Hpre_inode". f_equal. word. }
       wp_load.
       wp_apply (wp_SliceAppend' with "Hinode_slice").
+      { econstructor. }
+      { eauto. }
       iIntros (inode_s') "Hinode_slice".
       wp_store. iModIntro.
       iNamed 1.

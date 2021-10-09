@@ -397,6 +397,21 @@ Proof.
   iExists _; iFrame "% ∗".
 Qed.
 
+Lemma alloc_crash_cond_strip_later `{∀ σ, Timeless (P σ)} d b :
+  alloc_crash_cond d b ={⊤}=∗ alloc_crash_cond_no_later d b.
+Proof.
+  iNamed 1.
+  iDestruct "HPalloc" as ">HPalloc".
+  iExists _; by iFrame.
+Qed.
+
+Lemma alloc_crash_cond_no_later_from_post_crash d :
+  alloc_crash_cond_no_later d true -∗ alloc_crash_cond_no_later d false.
+Proof.
+  iNamed 1.
+  iExists _; iFrame "% ∗".
+Qed.
+
 Definition revert_reserved (σ : alloc.t) : alloc.t :=
   (λ x, if decide (x = block_reserved) then block_free else x) <$> (σ: gmap u64 block_status).
 
