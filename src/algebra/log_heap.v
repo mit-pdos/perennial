@@ -21,6 +21,8 @@ Definition sync {T} (v : T) : async T :=
 Definition async_put {T} (v : T) (a : async T) :=
   Build_async v (possible a).
 
+Definition flush {T} (ab : async T) := sync (latest ab).
+
 Lemma length_possible_pending {T} (a : async T) :
   length (possible a) = S (length (pending a)).
 Proof. rewrite /possible last_length //. Qed.
