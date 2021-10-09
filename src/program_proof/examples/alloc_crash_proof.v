@@ -472,6 +472,20 @@ Proof.
   - rewrite dom_revert_reserved. auto.
 Qed.
 
+Lemma alloc_crash_cond_no_later_crash_true d E :
+  (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
+  alloc_crash_cond_no_later d false ={E}=∗ alloc_crash_cond_no_later d true.
+Proof.
+  clear.
+  iIntros "H".
+  iNamed 1.
+  iMod ("H" with "HPalloc"). iModIntro. iExists _. iFrame.
+  rewrite unused_revert_reserved. iFrame.
+  iPureIntro; split.
+  - apply alloc_post_crash_revert_reserved.
+  - rewrite dom_revert_reserved. auto.
+Qed.
+
 (* TODO: this is a more general property about filter *)
 Lemma dom_filter_unfree σ :
   dom (gset u64) (filter (λ x : u64 * block_status, x.2 ≠ block_free) σ) = alloc.domain σ ∖ alloc.free σ.

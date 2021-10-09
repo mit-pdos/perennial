@@ -552,9 +552,7 @@ Section goose.
       { crash_case. iLeft. iApply (pre_inodes_to_cinv) in "Hpre_inodes". iFrame.
         iApply pre_inode_to_cinv. iExactEq "Hpre_inode". f_equal. word. }
       wp_load.
-      wp_apply (wp_SliceAppend' with "Hinode_slice").
-      { econstructor. }
-      { eauto. }
+      wp_apply (wp_SliceAppend with "Hinode_slice").
       iIntros (inode_s') "Hinode_slice".
       wp_store. iModIntro.
       iNamed 1.
@@ -584,7 +582,7 @@ Section goose.
       rewrite /named //. }
     iSplit.
     { (* loop crash condition implies overall crash condition *)
-      iLeft in "HΦ". iModIntro.
+      iLeft in "HΦ".
       iIntros "Hinv".
       iDestruct "Hinv" as (i) "(Hpre&%Hbound')".
       iNamed "Hpre".
@@ -609,7 +607,7 @@ Section goose.
     rewrite -> take_ge by word.
     rewrite -> drop_ge by word.
     wpc_frame_compl "Hinodes".
-    { crash_case. eauto. }
+    { crash_case. iApply pre_inodes_to_cinv. eauto. }
     wp_load. iModIntro.
     iNamed 1.
     iRight in "HΦ"; iApply "HΦ".
@@ -617,7 +615,7 @@ Section goose.
     iApply (is_slice_to_small with "Hinode_slice").
   Qed.
 
-  Theorem wpc_inodeUsedBlocks {k} inode_s inode_refs s_inodes :
+  Theorem wpc_inodeUsedBlocks inode_s inode_refs s_inodes :
     {{{ "Hinode_s" ∷ is_slice_small inode_s (struct.ptrT inode.Inode) 1 inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                     pre_inode inode_ref i s_inode }}}
@@ -635,9 +633,9 @@ Section goose.
     iIntros (Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     rewrite /inodeUsedBlocks.
     wpc_pures.
-    { iLeft in "HΦ". iModIntro. by iApply "HΦ". }
+    { iLeft in "HΦ". iApply "HΦ". by iApply pre_inodes_to_cinv. }
     iCache with "HΦ Hpre_inodes".
-    { crash_case. eauto. }
+    { crash_case. by iApply pre_inodes_to_cinv. }
     wpc_frame_seq.
     wp_apply wp_NewMap.
     iIntros (addrs_ref) "Hused_set".
@@ -652,20 +650,21 @@ Section goose.
                   (⋃ (take (int.nat n) (inode.addrs <$> s_inodes))))%I
                 ([∗ list] i↦s_inode ∈ s_inodes, inode_cinv i s_inode)%I
              with "[] [] [$Hinode_s $Hpre_inodes $Hused_set]").
-    { iIntros "!>" (x) "Hpre"; iNamed "Hpre". iModIntro. eauto. }
+    { iIntros "!>" (x) "Hpre"; iNamed "Hpre". iApply pre_inodes_to_cinv. eauto. }
     { iIntros (i inode_ref) "!>".
       iIntros (Φ' Φc') "(Hpre&%Hbound&%Hlookup) HΦ"; iNamed "Hpre".
       wpc_pures.
-      { by crash_case. }
+      { crash_case. by iApply pre_inodes_to_cinv. }
       iDestruct (big_sepL2_lookup_1_some with "Hpre_inodes") as "%Hs_inode_lookup"; eauto.
       destruct Hs_inode_lookup as [s_inode Hs_inode_lookup].
-      iDestruct (big_sepL2_lookup_acc_and_disc _ (λ i inode_ref s_inode, inode_cinv i s_inode) with "Hpre_inodes") as "(Hinode&Hpre_inodes)"; eauto.
+      iDestruct (big_sepL2_lookup_acc_and _ (λ i inode_ref s_inode, inode_cinv i s_inode) with "Hpre_inodes") as "(Hinode&Hpre_inodes)"; eauto.
       { clear.
         iIntros (k inode_ref s_inode ??) "Hpre".
         iApply pre_inode_to_cinv; eauto. }
       wpc_pures.
       { iRight in "Hpre_inodes".
         crash_case.
+        iApply pre_inode_to_cinv in "Hinode".
         iSpecialize ("Hpre_inodes" with "Hinode").
         iApply big_sepL2_to_sepL_2 in "Hpre_inodes".
         iApply (big_sepL_mono with "Hpre_inodes").
@@ -674,7 +673,7 @@ Section goose.
       wpc_apply (wpc_Inode__UsedBlocks with "Hinode").
       iSplit.
       { iRight in "Hpre_inodes".
-        crash_case. iLeft in "HΦ". iModIntro. iIntros. iApply "HΦ".
+        crash_case. iLeft in "HΦ". iIntros. iApply "HΦ".
         iSpecialize ("Hpre_inodes" with "[$]").
         iApply big_sepL2_to_sepL_2 in "Hpre_inodes".
         iApply (big_sepL_mono with "Hpre_inodes").
@@ -783,10 +782,10 @@ Section goose.
     congruence.
   Qed.
 
-  Theorem wpc_Open {k} d (sz: u64) σ0 :
+  Theorem wpc_Open d (sz: u64) σ0 :
     (5 ≤ int.Z sz)%Z →
     {{{ dir_cinv (int.Z sz) σ0 true }}}
-      Open (disk_val d) #sz @ (S k); ⊤
+      Open (disk_val d) #sz @ ⊤
     {{{ l, RET #l; pre_dir l (int.Z sz) σ0 }}}
     {{{ dir_cinv (int.Z sz) σ0 false }}}.
   Proof using Type* - P.
@@ -804,7 +803,7 @@ Section goose.
     iDestruct (big_sepL_sep with "Hinodes") as "(Hinode_cinvs&HPinodes)".
     wpc_apply (wpc_openInodes with "Hinode_cinvs"); auto.
     iSplit.
-    { iLeft in "HΦ". iModIntro. iIntros "Hinode_cinvs".
+    { iLeft in "HΦ". iIntros "Hinode_cinvs".
       iApply "HΦ".
       iApply dir_cinv_post_crash.
       iExists _, _; iFrame.
@@ -817,11 +816,12 @@ Section goose.
       iExists _, _; iFrame.
       iExists _; iFrame "%".
       iApply big_sepL_sep; iFrame.
+      iApply pre_inodes_to_cinv. eauto.
     }
     wpc_pures.
     wpc_apply (wpc_inodeUsedBlocks with "[$Hinode_s $Hpre_inodes]").
     iSplit.
-    { iLeft in "HΦ". iModIntro. iIntros "Hinode_cinvs".
+    { iLeft in "HΦ". iIntros "Hinode_cinvs".
       iApply "HΦ".
       iApply dir_cinv_post_crash.
       iExists _, _; iFrame.
@@ -837,6 +837,7 @@ Section goose.
       iSplitL "Hpre_inodes HPinodes".
       - iExists s_inodes; iFrame "∗ %".
         iApply big_sepL_sep; iFrame.
+        iApply pre_inodes_to_cinv. eauto.
       - iExists _; iFrame "∗ %". }
     rewrite -wp_fupd.
     wp_apply (wp_newAllocator s_alloc with "Hused_set").
@@ -878,16 +879,15 @@ Section goose.
     iExists _; iFrame "∗ %".
   Qed.
 
-  Theorem wpc_Dir__Read {k} (Q: option Block → iProp Σ) l sz k' (idx: u64) (i: u64) :
-    (S k < k')%nat →
+  Theorem wpc_Dir__Read (Q: option Block → iProp Σ) l sz (idx: u64) (i: u64) :
     int.nat idx < num_inodes →
-    {{{ "#Hdir" ∷ is_dir l sz k' ∗
+    {{{ "#Hdir" ∷ is_dir l sz ∗
         "Hfupd" ∷ (∀ σ blocks mb,
                       ⌜σ.(dir.inodes) !! int.nat idx = Some blocks ∧
                        mb = blocks !! int.nat i⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
-      Dir__Read #l #idx #i @ (S k); ⊤
+      Dir__Read #l #idx #i @ ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
@@ -895,7 +895,7 @@ Section goose.
         end ∗ Q mb }}}
     {{{ True }}}.
   Proof.
-    iIntros (? Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { crash_case; auto. }
     { crash_case; auto. }
@@ -913,7 +913,7 @@ Section goose.
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
     (* Now we get to the actual read operation. *)
-    iApply (wpc_step_strong_mono _ _ _ _ _ _ _
+    iApply (wpc_step_strong_mono _ _ _ _ _
          (λ v, (∃ s mb, ⌜ v = slice_val s ⌝ ∗
                 match mb with
                 | Some b => is_block s 1 b
@@ -922,12 +922,10 @@ Section goose.
     2: { iSplit.
          * iNext. iIntros (?) "H". iDestruct "H" as (??) "(%&?)". subst.
            iModIntro. iRight in "HΦ". by iApply "HΦ".
-         * iLeft in "HΦ".  iModIntro. iIntros. iModIntro. by iApply "HΦ". }
+         * iLeft in "HΦ". iIntros. iModIntro. by iApply "HΦ". }
     iApply (wpc_Inode__Read with "[Hinode]"); first done.
-    { iPureIntro; apply _. }
-    { iFrame "#". }
     iSplit; first eauto.
-    iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
+    iIntros "!>" (σI mb) "[%Hmb HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
     (* We need to learn that this inode exists in σD. *)
     rewrite /dir_inv. iNamed "Hdir".
@@ -948,20 +946,19 @@ Section goose.
     iExists _, _; iSplit; first eauto; iFrame; eauto.
   Qed.
 
-  Theorem wpc_Dir__Size {k} (Q: u64 → iProp Σ) l sz k' (idx: u64):
-    (S k < k')%nat →
+  Theorem wpc_Dir__Size (Q: u64 → iProp Σ) l sz (idx: u64):
     int.nat idx < num_inodes →
-    {{{ "#Hdir" ∷ is_dir l sz k' ∗
+    {{{ "#Hdir" ∷ is_dir l sz ∗
         "Hfupd" ∷ (∀ σ blocks sz,
                       ⌜σ.(dir.inodes) !! int.nat idx = Some blocks ∧
                        int.nat sz = length blocks⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q sz)
     }}}
-      Dir__Size #l #idx @ (S k); ⊤
+      Dir__Size #l #idx @ ⊤
     {{{ sz, RET #sz; Q sz }}}
     {{{ True }}}.
   Proof.
-    iIntros (? Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { crash_case; auto. }
     { crash_case; auto. }
@@ -979,16 +976,15 @@ Section goose.
     iIntros "inodes_s Hrest". iNamed "Hrest".
     wpc_pures.
     (* Now we get to the actual size operation. *)
-    iApply (wpc_step_strong_mono _ _ _ _ _ _ _
+    iApply (wpc_step_strong_mono _ _ _ _ _
            (λ v, ∃ (sz : u64), ⌜ v = #sz ⌝ ∗ Q sz)%I _ _ with "[-HΦ] [HΦ]"); auto.
     2: { iSplit.
          * iNext. iIntros (?) "H". iDestruct "H" as (?) "(%&?)". subst.
            iModIntro. iRight in "HΦ". by iApply "HΦ".
-         * iLeft in "HΦ".  iModIntro. iIntros. iModIntro. by iApply "HΦ". }
-    iApply (wpc_Inode__Size with "[] [$Hinode]"); first done.
-    { iPureIntro; apply _. }
+         * iLeft in "HΦ". iIntros. iModIntro. by iApply "HΦ". }
+    iApply (wpc_Inode__Size with "[$Hinode]").
     iSplit; first eauto.
-    iIntros "!>" (σI mb) "[%Hmb >HPI]". iNamed "HPI".
+    iIntros "!>" (σI mb) "[%Hmb HPI]". iNamed "HPI".
     iInv dirN as (σD) "[>Hdir HPD]".
     (* We need to learn that this inode exists in σD. *)
     rewrite /dir_inv. iNamed "Hdir".
@@ -1069,20 +1065,19 @@ Section goose.
   Qed.
 
   (* FIXME: in case of failure, the resources put into "Hfupd" are lost! *)
-  Theorem wpc_Dir__Append {k} (Q: iProp Σ) l sz b_s b0 k' (idx: u64) :
-    (2 + k < k')%nat →
+  Theorem wpc_Dir__Append (Q: iProp Σ) l sz b_s b0 (idx: u64) :
     int.nat idx < num_inodes →
-    {{{ "#Hdir" ∷ is_dir l sz k' ∗
+    {{{ "#Hdir" ∷ is_dir l sz ∗
         "Hb" ∷ is_block b_s 1 b0 ∗
         "Hfupd" ∷ (∀ σ blocks,
                       ⌜σ.(dir.inodes) !! int.nat idx = Some blocks⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P (dir.mk $ <[ int.nat idx := blocks ++ [b0] ]> σ.(dir.inodes)) ∗ Q)
     }}}
-      Dir__Append #l #idx (slice_val b_s) @ (S k); ⊤
+      Dir__Append #l #idx (slice_val b_s) @ ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
     {{{ True }}}.
   Proof.
-    iIntros (? Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
+    iIntros (Hidx Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
     { crash_case; auto. }
     { crash_case; auto. }
@@ -1101,14 +1096,14 @@ Section goose.
     wpc_pures.
     wpc_loadField.
     (* Now we get to the actual append operation. *)
-    iApply (wpc_step_strong_mono _ _ _ _ _ _ _
+    iApply (wpc_step_strong_mono _ _ _ _ _
            (λ v, ∃ (ok: bool), ⌜ v = #ok ⌝ ∗ if ok then Q else emp)%I _ _ with "[-HΦ] [HΦ]"); auto.
     2: { iSplit.
          * iNext. iIntros (?) "H". iDestruct "H" as (?) "(%&?)". subst.
            iModIntro. iRight in "HΦ". by iApply "HΦ".
-         * iLeft in "HΦ".  iModIntro. iIntros. iModIntro. by iApply "HΦ". }
-    iApply (wpc_Inode__Append (n:=k') (k':=k') inodeN allocN);
-      [lia|lia|solve_ndisj|..].
+         * iLeft in "HΦ". iIntros. iModIntro. by iApply "HΦ". }
+    iApply (wpc_Inode__Append inodeN allocN);
+      [solve_ndisj|..].
     iFrame "Hinode Hb Halloc".
     iSplit; [ | iSplit; [ | iSplit ] ].
     - iApply reserve_fupd_Palloc.
@@ -1116,7 +1111,7 @@ Section goose.
     - eauto.
     - iSplit.
       { (* Failure case *) iNext. iExists _; iSplit; eauto. }
-      iIntros "!>" (σ σ' addr' -> Hwf s Hreserved) "(>HPinode&>HPalloc)".
+      iIntros "!>" (σ σ' addr' -> Hwf s Hreserved) "(HPinode&>HPalloc)".
       iEval (rewrite /Palloc) in "HPalloc". iNamed "HPalloc".
       iNamed "HPinode".
       iDestruct (inode_used_lookup with "Hused1 Hused2") as %Heq.
@@ -1212,7 +1207,7 @@ Section recov.
   Theorem wpr_Open (d: ()) (sz: u64) σ0:
     (5 ≤ int.Z sz)%Z →
     dir_cinv (int.Z sz) σ0 true -∗
-    wpr NotStuck 2 ⊤
+    wpr NotStuck ⊤
         (Open (disk_val d) #sz)
         (Open (disk_val d) #sz)
         (λ _, True%I)
@@ -1220,12 +1215,14 @@ Section recov.
         (λ _ _, True%I).
   Proof using Type*.
     iIntros (Hsz) "Hstart".
-    iApply (idempotence_wpr NotStuck 2 ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I (λ _, ∃ σ', dir_cinv (int.Z sz) σ' false)%I with "[Hstart] []").
+    iApply (idempotence_wpr NotStuck ⊤ _ _ (λ _, True)%I (λ _, True)%I (λ _ _, True)%I (λ _, ∃ σ', dir_cinv (int.Z sz) σ' false)%I with "[Hstart] []").
     { wpc_apply (wpc_Open with "Hstart"); auto 10. }
-    iModIntro. iIntros (?????) "H".
+    iModIntro. iIntros (????) "H".
     iDestruct "H" as (σ'') "Hstart".
-    iNext. iCrash.
-    iIntros.
+    (* TODO(Joe): why does iCrash not work after the iNext? *)
+    iNext. rewrite dir_cinv_crash. iRevert "Hstart".
+    iApply @post_crash_mono.
+    iIntros (?) "Hstart _".
     iSplit; first done.
     iMod (dir_cinv_crash_true with "Hstart") as "Hstart".
     wpc_apply (wpc_Open with "Hstart").
