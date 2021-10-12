@@ -465,9 +465,9 @@ Theorem goose_wpc_refinement_adequacy `{crashGpreS Σ} es e
   trace_refines e e σ g es es σs gs.
 Proof using Hrpre Hhpre Hcpre.
   intros Heq1 Heq2 Hinit Hinit_wf Hexcl Hwp_init Hwp_crash.
-  eapply goose_recv_refinement_adequacy with
+  eapply @goose_recv_refinement_adequacy with
       (φ := λ _, True) (φr := λ _, True)
-      (n0 := (n + n)%nat)
+      (n := (n + n)%nat)
       (Φinv := λ hG,
                (
                          ∃ Href' : refinement_heapG Σ, spec_ctx' es ([es], (σs,gs))
@@ -494,7 +494,7 @@ Proof using Hrpre Hhpre Hcpre.
 
 
   iApply (recovery_weakestpre.idempotence_wpr _ _ ⊤ _ _ (λ _, _) _ _ (λ hGen,
-   ∃ hL hRef, ∃ es' σs' gs' stat, 
+   ∃ hL hRef, ∃ es' σs' gs' stat,
          ⌜ hGen = goose_generationGS (L:=hL) ⌝ ∗
          ⌜ erased_rsteps es ([es], (σs,gs)) (es', (σs',gs')) stat ⌝ ∗
          ⌜ crash_safe es ([es], (σs,gs)) ⌝ ∗
